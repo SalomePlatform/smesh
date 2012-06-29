@@ -97,6 +97,9 @@
 #include <algorithm>
 #include <sstream>
 
+#include <Standard_Failure.hxx>
+#include <Standard_ErrorHandler.hxx>
+
 #define cast2Node(elem) static_cast<const SMDS_MeshNode*>( elem )
 
 using namespace std;
@@ -1049,6 +1052,97 @@ bool SMESH_MeshEditor::Reorient (const SMDS_MeshElement * theElem)
   }
 
   return false;
+}
+
+//================================================================================
+/*!
+ * \brief Reorient faces.
+ * \param theFaces - the faces to reorient. If empty the whole mesh is meant
+ * \param theDirection - desired direction of normal of \a theFace
+ * \param theFace - one of \a theFaces that sould be orientated according to
+ *        \a theDirection and whose orientation defines orientation of other faces
+ * \return number of reoriented faces.
+ */
+//================================================================================
+
+int SMESH_MeshEditor::Reorient2D (TIDSortedElemSet &       theFaces,
+                                  const gp_Dir&            theDirection,
+                                  const SMDS_MeshElement * theFace)
+{
+  int nbReori = 0;
+  if ( !theFace || theFace->GetType() != SMDSAbs_Face ) return nbReori;
+
+  if ( theFaces.empty() )
+  {
+    SMDS_FaceIteratorPtr fIt = GetMeshDS()->facesIterator(/*idInceasingOrder=*/true);
+    while ( fIt->more() )
+      theFaces.insert( theFaces.end(), fIt->next() );
+  }
+
+  // orient theFace according to theDirection
+  gp_XYZ normal;
+  SMESH_Algo::FaceNormal( theFace, normal, /*normalized=*/false );
+  if ( normal * theDirection.XYZ() < 0 )
+    nbReori += Reorient( theFace );
+
+  // Orient other faces
+
+  set< const SMDS_MeshElement* > startFaces;
+  TIDSortedElemSet avoidSet;
+  set< SMESH_TLink > checkedLinks;
+  pair< set< SMESH_TLink >::iterator, bool > linkIt_isNew;
+
+  if ( theFaces.size() > 1 )// leave 1 face to prevent finding not selected faces
+    theFaces.erase( theFace );
+  startFaces.insert( theFace );
+
+  set< const SMDS_MeshElement* >::iterator startFace = startFaces.begin();
+  while ( startFace != startFaces.end() )
+  {
+    theFace = *startFace;
+    const int nbNodes = theFace->NbCornerNodes();
+
+    avoidSet.clear();
+    avoidSet.insert(theFace);
+
+    NLink link( theFace->GetNode( 0 ), 0 );
+    for ( int i = 0; i < nbNodes; ++i ) // loop on links of theFace
+    {
+      link.second = theFace->GetNode(( i+1 ) % nbNodes );
+      linkIt_isNew = checkedLinks.insert( link );
+      if ( !linkIt_isNew.second )
+      {
+        // link has already been checked and won't be encountered more
+        // if the group (theFaces) is manifold
+        checkedLinks.erase( linkIt_isNew.first );
+      }
+      else
+      {
+        int nodeInd1, nodeInd2;
+        const SMDS_MeshElement* otherFace = FindFaceInSet( link.first, link.second,
+                                                           theFaces, avoidSet,
+                                                           & nodeInd1, & nodeInd2);
+        if ( otherFace && otherFace != theFace)
+        {
+          // link must be reversed in otherFace if orientation ot otherFace
+          // is same as that of theFace
+          if ( abs(nodeInd2-nodeInd1) == 1 ? nodeInd2 > nodeInd1 : nodeInd1 > nodeInd2 )
+          {
+            // cout << "Reorient " << otherFace->GetID() << " near theFace=" <<theFace->GetID()
+            //      << " \tlink( " << link.first->GetID() << " " << link.second->GetID() << endl;
+            nbReori += Reorient( otherFace );
+          }
+          startFaces.insert( otherFace );
+          if ( theFaces.size() > 1 ) // leave 1 face to prevent finding not selected faces
+            theFaces.erase( otherFace );
+        }
+      }
+      std::swap( link.first, link.second );
+    }
+    startFaces.erase( startFace );
+    startFace = startFaces.begin();
+  }
+  return nbReori;
 }
 
 //=======================================================================
@@ -6063,16 +6157,22 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
   {
   public:
 
-    ElementBndBoxTree(const SMDS_Mesh& mesh, SMDSAbs_ElementType elemType, SMDS_ElemIteratorPtr theElemIt = SMDS_ElemIteratorPtr(), double tolerance = NodeRadius );
-    void getElementsNearPoint( const gp_Pnt& point, TIDSortedElemSet& foundElems);
+    ElementBndBoxTree(const SMDS_Mesh&     mesh,
+                      SMDSAbs_ElementType  elemType,
+                      SMDS_ElemIteratorPtr theElemIt = SMDS_ElemIteratorPtr(),
+                      double               tolerance = NodeRadius );
+    void getElementsNearPoint( const gp_Pnt& point, TIDSortedElemSet& foundElems );
     void getElementsNearLine ( const gp_Ax1& line, TIDSortedElemSet& foundElems);
+    void getElementsInSphere ( const gp_XYZ& center,
+                               const double  radius, TIDSortedElemSet& foundElems);
+    size_t getSize() { return std::max( _size, _elements.size() ); }
     ~ElementBndBoxTree();
 
   protected:
-    ElementBndBoxTree() {}
+    ElementBndBoxTree():_size(0) {}
     SMESH_Octree* allocateOctreeChild() const { return new ElementBndBoxTree; }
-    void buildChildrenData();
-    Bnd_B3d* buildRootBox();
+    void          buildChildrenData();
+    Bnd_B3d*      buildRootBox();
   private:
     //!< Bounding box of element
     struct ElementBox : public Bnd_B3d
@@ -6082,6 +6182,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
       ElementBox(const SMDS_MeshElement* elem, double tolerance);
     };
     vector< ElementBox* > _elements;
+    size_t                _size;
   };
 
   //================================================================================
@@ -6100,10 +6201,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
     while ( elemIt->more() )
       _elements.push_back( new ElementBox( elemIt->next(),tolerance  ));
 
-    if ( _elements.size() > MaxNbElemsInLeaf )
-      compute();
-    else
-      myIsLeaf = true;
+    compute();
   }
 
   //================================================================================
@@ -6153,7 +6251,8 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
       }
       _elements[i]->_refCount--;
     }
-    _elements.clear();
+    _size = _elements.size();
+    SMESHUtils::FreeVector( _elements ); // = _elements.clear() + free memory
 
     for (int j = 0; j < 8; j++)
     {
@@ -6162,7 +6261,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
         child->myIsLeaf = true;
 
       if ( child->_elements.capacity() - child->_elements.size() > 1000 )
-        child->_elements.resize( child->_elements.size() ); // compact
+        SMESHUtils::CompactVector( child->_elements );
     }
   }
 
@@ -6175,7 +6274,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
   void ElementBndBoxTree::getElementsNearPoint( const gp_Pnt&     point,
                                                 TIDSortedElemSet& foundElems)
   {
-    if ( level() && getBox().IsOut( point.XYZ() ))
+    if ( getBox().IsOut( point.XYZ() ))
       return;
 
     if ( isLeaf() )
@@ -6200,7 +6299,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
   void ElementBndBoxTree::getElementsNearLine( const gp_Ax1&     line,
                                                TIDSortedElemSet& foundElems)
   {
-    if ( level() && getBox().IsOut( line ))
+    if ( getBox().IsOut( line ))
       return;
 
     if ( isLeaf() )
@@ -6218,6 +6317,32 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
 
   //================================================================================
   /*!
+   * \brief Return elements from leaves intersecting the sphere
+   */
+  //================================================================================
+
+  void ElementBndBoxTree::getElementsInSphere ( const gp_XYZ&     center,
+                                                const double      radius,
+                                                TIDSortedElemSet& foundElems)
+  {
+    if ( getBox().IsOut( center, radius ))
+      return;
+
+    if ( isLeaf() )
+    {
+      for ( int i = 0; i < _elements.size(); ++i )
+        if ( !_elements[i]->IsOut( center, radius ))
+          foundElems.insert( _elements[i]->_element );
+    }
+    else
+    {
+      for (int i = 0; i < 8; i++)
+        ((ElementBndBoxTree*) myChildren[i])->getElementsInSphere( center, radius, foundElems );
+    }
+  }
+
+  //================================================================================
+  /*!
    * \brief Construct the element box
    */
   //================================================================================
@@ -6228,7 +6353,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
     _refCount = 1;
     SMDS_ElemIteratorPtr nIt = elem->nodesIterator();
     while ( nIt->more() )
-      Add( SMESH_TNodeXYZ( cast2Node( nIt->next() )));
+      Add( SMESH_TNodeXYZ( nIt->next() ));
     Enlarge( tolerance );
   }
 
@@ -6263,6 +6388,8 @@ struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
                                   SMDSAbs_ElementType                type,
                                   vector< const SMDS_MeshElement* >& foundElements);
   virtual TopAbs_State GetPointState(const gp_Pnt& point);
+  virtual const SMDS_MeshElement* FindClosestTo( const gp_Pnt&       point,
+                                                 SMDSAbs_ElementType type );
 
   void GetElementsNearLine( const gp_Ax1&                      line,
                             SMDSAbs_ElementType                type,
@@ -6548,11 +6675,102 @@ FindElementsByPoint(const gp_Pnt&                      point,
     _ebbTree->getElementsNearPoint( point, suspectElems );
     TIDSortedElemSet::iterator elem = suspectElems.begin();
     for ( ; elem != suspectElems.end(); ++elem )
-      if ( !SMESH_MeshEditor::isOut( *elem, point, tolerance ))
+      if ( !SMESH_MeshEditor::IsOut( *elem, point, tolerance ))
         foundElements.push_back( *elem );
   }
   return foundElements.size();
 }
+
+//=======================================================================
+/*!
+ * \brief Find an element of given type most close to the given point
+ *
+ * WARNING: Only face search is implemeneted so far
+ */
+//=======================================================================
+
+const SMDS_MeshElement*
+SMESH_ElementSearcherImpl::FindClosestTo( const gp_Pnt&       point,
+                                          SMDSAbs_ElementType type )
+{
+  const SMDS_MeshElement* closestElem = 0;
+
+  if ( type == SMDSAbs_Face )
+  {
+    if ( !_ebbTree || _elementType != type )
+    {
+      if ( _ebbTree ) delete _ebbTree;
+      _ebbTree = new ElementBndBoxTree( *_mesh, _elementType = type, _meshPartIt );
+    }
+    TIDSortedElemSet suspectElems;
+    _ebbTree->getElementsNearPoint( point, suspectElems );
+    
+    if ( suspectElems.empty() && _ebbTree->maxSize() > 0 )
+    {
+      gp_Pnt boxCenter = 0.5 * ( _ebbTree->getBox().CornerMin() +
+                                 _ebbTree->getBox().CornerMax() );
+      double radius;
+      if ( _ebbTree->getBox().IsOut( point.XYZ() ))
+        radius = point.Distance( boxCenter ) - 0.5 * _ebbTree->maxSize();
+      else
+        radius = _ebbTree->maxSize() / pow( 2., _ebbTree->getHeight()) / 2;
+      while ( suspectElems.empty() )
+      {
+        _ebbTree->getElementsInSphere( point.XYZ(), radius, suspectElems );
+        radius *= 1.1;
+      }
+    }
+    double minDist = std::numeric_limits<double>::max();
+    multimap< double, const SMDS_MeshElement* > dist2face;
+    TIDSortedElemSet::iterator elem = suspectElems.begin();
+    for ( ; elem != suspectElems.end(); ++elem )
+    {
+      double dist = SMESH_MeshEditor::GetDistance( dynamic_cast<const SMDS_MeshFace*>(*elem),
+                                                   point );
+      if ( dist < minDist + 1e-10)
+      {
+        minDist = dist;
+        dist2face.insert( dist2face.begin(), make_pair( dist, *elem ));
+      }
+    }
+    if ( !dist2face.empty() )
+    {
+      multimap< double, const SMDS_MeshElement* >::iterator d2f = dist2face.begin();
+      closestElem = d2f->second;
+      // if there are several elements at the same distance, select one
+      // with GC closest to the point
+      typedef SMDS_StdIterator< SMESH_TNodeXYZ, SMDS_ElemIteratorPtr > TXyzIterator;
+      double minDistToGC = 0;
+      for ( ++d2f; d2f != dist2face.end() && fabs( d2f->first - minDist ) < 1e-10; ++d2f )
+      {
+        if ( minDistToGC == 0 )
+        {
+          gp_XYZ gc(0,0,0);
+          gc = accumulate( TXyzIterator(closestElem->nodesIterator()),
+                           TXyzIterator(), gc ) / closestElem->NbNodes();
+          minDistToGC = point.SquareDistance( gc );
+        }
+        gp_XYZ gc(0,0,0);
+        gc = accumulate( TXyzIterator( d2f->second->nodesIterator()),
+                         TXyzIterator(), gc ) / d2f->second->NbNodes();
+        double d = point.SquareDistance( gc );
+        if ( d < minDistToGC )
+        {
+          minDistToGC = d;
+          closestElem = d2f->second;
+        }
+      }
+      // cout << "FindClosestTo( " <<point.X()<<", "<<point.Y()<<", "<<point.Z()<<" ) FACE "
+      //      <<closestElem->GetID() << " DIST " << minDist << endl;
+    }
+  }
+  else
+  {
+    // NOT IMPLEMENTED SO FAR
+  }
+  return closestElem;
+}
+
 
 //================================================================================
 /*!
@@ -6607,7 +6825,7 @@ TopAbs_State SMESH_ElementSearcherImpl::GetPointState(const gp_Pnt& point)
       else if ( ! intersection.IsParallel() && intersection.NbPoints() > 0 )
       {
         gp_Pnt intersectionPoint = intersection.Point(1);
-        if ( !SMESH_MeshEditor::isOut( *face, intersectionPoint, tolerance ))
+        if ( !SMESH_MeshEditor::IsOut( *face, intersectionPoint, tolerance ))
           u2inters.insert(make_pair( intersection.ParamOnConic(1), TInters( *face, fNorm )));
       }
     }
@@ -6825,7 +7043,7 @@ SMESH_ElementSearcher* SMESH_MeshEditor::GetElementSearcher(SMDS_ElemIteratorPtr
  */
 //=======================================================================
 
-bool SMESH_MeshEditor::isOut( const SMDS_MeshElement* element, const gp_Pnt& point, double tol )
+bool SMESH_MeshEditor::IsOut( const SMDS_MeshElement* element, const gp_Pnt& point, double tol )
 {
   if ( element->GetType() == SMDSAbs_Volume)
   {
@@ -6872,7 +7090,7 @@ bool SMESH_MeshEditor::isOut( const SMDS_MeshElement* element, const gp_Pnt& poi
       for ( i = 0; i < nbNodes; ++i )
       {
         SMDS_LinearEdge edge( nodeList[i], nodeList[i+1] );
-        if ( !isOut( &edge, point, tol ))
+        if ( !IsOut( &edge, point, tol ))
           return false;
       }
       return true;
@@ -6976,6 +7194,170 @@ bool SMESH_MeshEditor::isOut( const SMDS_MeshElement* element, const gp_Pnt& poi
     return n2p.Magnitude() <= tol;
   }
   return true;
+}
+
+//=======================================================================
+
+namespace
+{
+  // Position of a point relative to a segment
+  //            .           .
+  //            .  LEFT     .
+  //            .           .
+  //  VERTEX 1  o----ON----->  VERTEX 2
+  //            .           .
+  //            .  RIGHT    .
+  //            .           .
+  enum PositionName { POS_LEFT = 1, POS_VERTEX = 2, POS_RIGHT = 4, //POS_ON = 8,
+                      POS_ALL = POS_LEFT | POS_RIGHT | POS_VERTEX };
+  struct PointPos
+  {
+    PositionName _name; 
+    int          _index; // index of vertex or segment
+
+    PointPos( PositionName n, int i=-1 ): _name(n), _index(i) {}
+    bool operator < (const PointPos& other ) const
+    {
+      if ( _name == other._name )
+        return  ( _index < 0 || other._index < 0 ) ? false : _index < other._index;
+      return _name < other._name;
+    }
+  };
+
+  //================================================================================
+  /*!
+   * \brief Return of a point relative to a segment
+   *  \param point2D      - the point to analyze position of
+   *  \param xyVec        - end points of segments
+   *  \param index0       - 0-based index of the first point of segment
+   *  \param posToFindOut - flags of positions to detect
+   *  \retval PointPos - point position
+   */
+  //================================================================================
+
+  PointPos getPointPosition( const gp_XY& point2D,
+                             const gp_XY* segEnds,
+                             const int    index0 = 0,
+                             const int    posToFindOut = POS_ALL)
+  {
+    const gp_XY& p1 = segEnds[ index0   ];
+    const gp_XY& p2 = segEnds[ index0+1 ];
+    const gp_XY grad = p2 - p1;
+
+    if ( posToFindOut & POS_VERTEX )
+    {
+      // check if the point2D is at "vertex 1" zone
+      gp_XY pp1[2] = { p1, gp_XY( p1.X() - grad.Y(),
+                                  p1.Y() + grad.X() ) };
+      if ( getPointPosition( point2D, pp1, 0, POS_LEFT|POS_RIGHT )._name == POS_LEFT )
+        return PointPos( POS_VERTEX, index0 );
+
+      // check if the point2D is at "vertex 2" zone
+      gp_XY pp2[2] = { p2, gp_XY( p2.X() - grad.Y(),
+                                  p2.Y() + grad.X() ) };
+      if ( getPointPosition( point2D, pp2, 0, POS_LEFT|POS_RIGHT )._name == POS_RIGHT )
+        return PointPos( POS_VERTEX, index0 + 1);
+    }
+    double edgeEquation =
+      ( point2D.X() - p1.X() ) * grad.Y() - ( point2D.Y() - p1.Y() ) * grad.X();
+    return PointPos( edgeEquation < 0 ? POS_LEFT : POS_RIGHT, index0 );
+  }
+}
+
+//=======================================================================
+/*!
+ * \brief Return minimal distance from a point to a face
+ *
+ * Currently we ignore non-planarity and 2nd order of face
+ */
+//=======================================================================
+
+double SMESH_MeshEditor::GetDistance( const SMDS_MeshFace* face,
+                                      const gp_Pnt&        point )
+{
+  double badDistance = -1;
+  if ( !face ) return badDistance;
+
+  // coordinates of nodes (medium nodes, if any, ignored)
+  typedef SMDS_StdIterator< SMESH_TNodeXYZ, SMDS_ElemIteratorPtr > TXyzIterator;
+  vector<gp_XYZ> xyz( TXyzIterator( face->nodesIterator()), TXyzIterator() );
+  xyz.resize( face->NbCornerNodes()+1 );
+
+  // transformation to get xyz[0] lies on the origin, xyz[1] lies on the Z axis,
+  // and xyz[2] lies in the XZ plane. This is to pass to 2D space on XZ plane.
+  gp_Trsf trsf;
+  gp_Vec OZ ( xyz[0], xyz[1] );
+  gp_Vec OX ( xyz[0], xyz[2] );
+  if ( OZ.Magnitude() < std::numeric_limits<double>::min() )
+  {
+    if ( xyz.size() < 4 ) return badDistance;
+    OZ = gp_Vec ( xyz[0], xyz[2] );
+    OX = gp_Vec ( xyz[0], xyz[3] );
+  }
+  gp_Ax3 tgtCS;
+  try {
+    tgtCS = gp_Ax3( xyz[0], OZ, OX );
+  }
+  catch ( Standard_Failure ) {
+    return badDistance;
+  }
+  trsf.SetTransformation( tgtCS );
+
+  // move all the nodes to 2D
+  vector<gp_XY> xy( xyz.size() );
+  for ( size_t i = 0;i < xyz.size()-1; ++i )
+  {
+    gp_XYZ p3d = xyz[i];
+    trsf.Transforms( p3d );
+    xy[i].SetCoord( p3d.X(), p3d.Z() );
+  }
+  xyz.back() = xyz.front();
+  xy.back() = xy.front();
+
+  // // move the point in 2D
+  gp_XYZ tmpPnt = point.XYZ();
+  trsf.Transforms( tmpPnt );
+  gp_XY point2D( tmpPnt.X(), tmpPnt.Z() );
+
+  // loop on segments of the face to analyze point position ralative to the face
+  set< PointPos > pntPosSet;
+  for ( size_t i = 1; i < xy.size(); ++i )
+  {
+    PointPos pos = getPointPosition( point2D, &xy[0], i-1 );
+    pntPosSet.insert( pos );
+  }
+
+  // compute distance
+  PointPos pos = *pntPosSet.begin();
+  // cout << "Face " << face->GetID() << " DIST: ";
+  switch ( pos._name )
+  {
+  case POS_LEFT: {
+    // point is most close to a segment
+    gp_Vec p0p1( point, xyz[ pos._index ] );
+    gp_Vec p1p2( xyz[ pos._index ], xyz[ pos._index+1 ]); // segment vector
+    p1p2.Normalize();
+    double projDist = p0p1 * p1p2; // distance projected to the segment
+    gp_Vec projVec = p1p2 * projDist;
+    gp_Vec distVec = p0p1 - projVec;
+    // cout << distVec.Magnitude()  << ", SEG " << face->GetNode(pos._index)->GetID()
+    //      << " - " << face->GetNodeWrap(pos._index+1)->GetID() << endl;
+    return distVec.Magnitude();
+  }
+  case POS_RIGHT: {
+    // point is inside the face
+    double distToFacePlane = tmpPnt.Y();
+    // cout << distToFacePlane << ", INSIDE " << endl;
+    return Abs( distToFacePlane );
+  }
+  case POS_VERTEX: {
+    // point is most close to a node
+    gp_Vec distVec( point, xyz[ pos._index ]);
+    // cout << distVec.Magnitude()  << " VERTEX " << face->GetNode(pos._index)->GetID() << endl;
+    return distVec.Magnitude();
+  }
+  }
+  return badDistance;
 }
 
 //=======================================================================
