@@ -76,6 +76,9 @@ public:
   // Return index of a child the given point is in
   inline int             getChildIndex(double x, double y, double z, const gp_XYZ& boxMiddle)const;
 
+  // Return height of the tree, full or from this level to topest leaf
+  int                    getHeight(const bool full=true) const;
+
 protected:
   // Return box of the whole tree
   virtual Bnd_B3d*       buildRootBox() = 0;

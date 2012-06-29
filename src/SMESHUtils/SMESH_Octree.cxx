@@ -175,7 +175,7 @@ bool SMESH_Octree::isLeaf() const
 
 double SMESH_Octree::maxSize() const
 {
-  if ( myBox )
+  if ( myBox && !myBox->IsVoid() )
   {
     gp_XYZ min = myBox->CornerMin();
     gp_XYZ max = myBox->CornerMax();
@@ -184,4 +184,28 @@ double SMESH_Octree::maxSize() const
     return (returnVal>Size.Z())?returnVal:Size.Z();
   }
   return 0.;
+}
+
+//================================================================================
+/*!
+ * \brief Return height of the tree, full or from this level to topest leaf
+ */
+//================================================================================
+
+int SMESH_Octree::getHeight(const bool full) const
+{
+  if ( full && myFather )
+    return myFather->getHeight( true );
+
+  if ( isLeaf() )
+    return 1;
+
+  int heigth = 0;
+  for (int i = 0; i<8; i++)
+  {
+    int h = myChildren[i]->getHeight( false );
+    if ( h > heigth )
+      heigth = h;
+  }
+  return heigth + 1;
 }
