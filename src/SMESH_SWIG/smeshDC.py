@@ -1780,7 +1780,7 @@ class Mesh:
         return self.mesh.GetMeshEditor()
 
     ## Wrap a list of IDs of elements or nodes into SMESH_IDSource which
-    #  can be passed as argument to accepting mesh, group or sub-mesh
+    #  can be passed as argument to a method accepting mesh, group or sub-mesh
     #  @return an instance of SMESH_IDSource
     #  @ingroup l1_auxiliary
     def GetIDSource(self, ids, elemType):
@@ -2541,6 +2541,41 @@ class Mesh:
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
         return self.editor.ReorientObject(theObject)
+
+    ## Reorient faces contained in \a the2DObject.
+    #  @param the2DObject is a mesh, sub-mesh, group or list of IDs of 2D elements
+    #  @param theDirection is a desired direction of normal of \a theFace.
+    #         It can be either a GEOM vector or a list of coordinates [x,y,z].
+    #  @param theFaceOrPoint defines a face of \a the2DObject whose normal will be
+    #         compared with theDirection. It can be either ID of face or a point
+    #         by which the face will be found. The point can be given as either
+    #         a GEOM vertex or a list of point coordinates.
+    #  @return number of reoriented faces
+    #  @ingroup l2_modif_changori
+    def Reorient2D(self, the2DObject, theDirection, theFaceOrPoint ):
+        # check the2DObject
+        if isinstance( the2DObject, Mesh ):
+            the2DObject = the2DObject.GetMesh()
+        if isinstance( the2DObject, list ):
+            the2DObject = self.GetIDSource( the2DObject, SMESH.FACE )
+        # check theDirection
+        if isinstance( theDirection, geompyDC.GEOM._objref_GEOM_Object):
+            theDirection = self.smeshpyD.GetDirStruct( theDirection )
+        if isinstance( theDirection, list ):
+            theDirection = self.smeshpyD.MakeDirStruct( *theDirection  )
+        # prepare theFace and thePoint
+        theFace = theFaceOrPoint
+        thePoint = PointStruct(0,0,0)
+        if isinstance( theFaceOrPoint, geompyDC.GEOM._objref_GEOM_Object):
+            thePoint = self.smeshpyD.GetPointStruct( theFaceOrPoint )
+            theFace = -1
+        if isinstance( theFaceOrPoint, list ):
+            thePoint = PointStruct( *theFaceOrPoint )
+            theFace = -1
+        if isinstance( theFaceOrPoint, PointStruct ):
+            thePoint = theFaceOrPoint
+            theFace = -1
+        return self.editor.Reorient2D( the2DObject, theDirection, theFace, thePoint )
 
     ## Fuses the neighbouring triangles into quadrangles.
     #  @param IDsOfElements The triangles to be fused,
