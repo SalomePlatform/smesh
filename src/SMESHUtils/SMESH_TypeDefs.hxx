@@ -60,6 +60,12 @@ namespace SMESHUtils
     TVECTOR v2;
     vec.swap( v2 );
   }
+  template <class TVECTOR>
+  void CompactVector(TVECTOR& vec)
+  {
+    TVECTOR v2( vec );
+    vec.swap( v2 );
+  }
 }
 
 //=======================================================================
