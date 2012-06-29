@@ -456,6 +456,13 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
   if ( objID.IsEmpty() )
     return aCommand;
 
+  // Prevent moving a command creating a sub-mesh to the end of the script
+  // if the sub-mesh is used in theCommand as argument
+  if ( _pySubMesh::CanBeArgOfMethod( aCommand->GetMethod() ))
+  {
+    PlaceSubmeshAfterItsCreation( aCommand );
+  }
+
   // Find an object to process theCommand
 
   // SMESH_Gen method?
@@ -882,6 +889,34 @@ void _pyGen::Flush()
 
   myLastCommand->SetOrderNb( ++myNbCommands );
   myCommands.push_back( myLastCommand );
+}
+
+//================================================================================
+/*!
+ * \brief Prevent moving a command creating a sub-mesh to the end of the script
+ *        if the sub-mesh is used in theCmdUsingSubmesh as argument
+ */
+//================================================================================
+
+void _pyGen::PlaceSubmeshAfterItsCreation( Handle(_pyCommand) theCmdUsingSubmesh ) const
+{
+  map< _pyID, Handle(_pyObject) >::const_iterator id_obj = myObjects.begin();
+  for ( ; id_obj != myObjects.end(); ++id_obj )
+  {
+    if ( !id_obj->second->IsKind( STANDARD_TYPE( _pySubMesh ))) continue;
+    for ( int iArg = theCmdUsingSubmesh->GetNbArgs(); iArg; --iArg )
+    {
+      const _pyID& arg = theCmdUsingSubmesh->GetArg( iArg );
+      if ( arg.IsEmpty() || arg.Value( 1 ) == '"' || arg.Value( 1 ) == '\'' )
+        continue;
+      list< _pyID > idList = theCmdUsingSubmesh->GetStudyEntries( arg );
+      list< _pyID >::iterator id = idList.begin();
+      for ( ; id != idList.end(); ++id )
+        if ( id_obj->first == *id )
+          // _pySubMesh::Process() does what we need
+          Handle(_pySubMesh)::DownCast( id_obj->second )->Process( theCmdUsingSubmesh );
+    }
+  }
 }
 
 //================================================================================
@@ -1441,12 +1476,6 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
       mySubmeshes.push_back( subMesh );
     }
   }
-  else if ( method == "RemoveSubMesh" ) { // move submesh creation before its removal
-    Handle(_pySubMesh) subMesh = theGen->FindSubMesh( theCommand->GetArg(1) );
-    if ( !subMesh.IsNull() )
-      subMesh->Process( theCommand );
-    AddMeshAccess( theCommand );
-  }
   // ----------------------------------------------------------------------
   else if ( method == "AddHypothesis" ) { // mesh.AddHypothesis(geom, HYPO )
     myAddHypCmds.push_back( theCommand );
@@ -1948,7 +1977,7 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
   if ( !isPyMeshMethod && ( method == "ExtrusionSweep0D"  ||
                             method == "ExtrusionSweepObject0D" ))
   {
-    isPyMeshMethod=true;
+    isPyMeshMethod = true;
     theCommand->SetMethod( method.SubString( 1, method.Length()-2));
     theCommand->SetArg(theCommand->GetNbArgs()+1,"False");  //sets flag "MakeGroups = False"
     theCommand->SetArg(theCommand->GetNbArgs()+1,"True");  //sets flag "IsNode = True"
@@ -1956,14 +1985,14 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
   // set "ExtrusionAlongPathX()" instead of "ExtrusionAlongPathObjX()"
   if ( !isPyMeshMethod && method == "ExtrusionAlongPathObjX")
   {
-    isPyMeshMethod=true;
+    isPyMeshMethod = true;
     theCommand->SetMethod("ExtrusionAlongPathX");
   }
 
   // set "FindCoincidentNodesOnPart()" instead of "FindCoincidentNodesOnPartBut()"
   if ( !isPyMeshMethod && method == "FindCoincidentNodesOnPartBut")
   {
-    isPyMeshMethod=true;
+    isPyMeshMethod = true;
     theCommand->SetMethod("FindCoincidentNodesOnPart");
   }
   // DoubleNode...New(...) -> DoubleNode...(...,True)
@@ -1974,7 +2003,7 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
                             method == "DoubleNodeElemGroup2New" ||
                             method == "DoubleNodeElemGroups2New"))
   {
-    isPyMeshMethod=true;
+    isPyMeshMethod = true;
     const int excessLen = 3 + int( method.Value( method.Length()-3 ) == '2' );
     theCommand->SetMethod( method.SubString( 1, method.Length()-excessLen));
     if ( excessLen == 3 )
@@ -1995,19 +2024,14 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
   if ( !isPyMeshMethod && ( method == "ConvertToQuadraticObject" ||
                             method == "ConvertFromQuadraticObject" ))
   {
-    isPyMeshMethod=true;
+    isPyMeshMethod = true;
     theCommand->SetMethod( method.SubString( 1, method.Length()-6));
-    // prevent moving creation of the converted sub-mesh to the end of the script
-    bool isFromQua = ( method.Value( 8 ) == 'F' );
-    Handle(_pySubMesh) sm = theGen->FindSubMesh( theCommand->GetArg( isFromQua ? 1 : 2 ));
-    if ( !sm.IsNull() )
-      sm->Process( theCommand );
   }
   // FindAmongElementsByPoint(meshPart, x, y, z, elementType) ->
   // FindElementsByPoint(x, y, z, elementType, meshPart)
   if ( !isPyMeshMethod && method == "FindAmongElementsByPoint" )
   {
-    isPyMeshMethod=true;
+    isPyMeshMethod = true;
     theCommand->SetMethod( "FindElementsByPoint" );
     // make the 1st arg be the last one
     _pyID partID = theCommand->GetArg( 1 );
@@ -2015,6 +2039,22 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
     for ( int i = 2; i <= nbArgs; ++i )
       theCommand->SetArg( i-1, theCommand->GetArg( i ));
     theCommand->SetArg( nbArgs, partID );
+  }
+  // Reorient2D( mesh, dir, face, point ) -> Reorient2D( mesh, dir, faceORpoint )
+  if ( !isPyMeshMethod && method == "Reorient2D" )
+  {
+    isPyMeshMethod = true;
+    _AString mesh  = theCommand->GetArg( 1 );
+    _AString dir   = theCommand->GetArg( 2 );
+    _AString face  = theCommand->GetArg( 3 );
+    _AString point = theCommand->GetArg( 4 );
+    theCommand->RemoveArgs();
+    theCommand->SetArg( 1, mesh );
+    theCommand->SetArg( 2, dir );
+    if ( face.Value(1) == '-' || face.Value(1) == '0' ) // invalid: face <= 0
+      theCommand->SetArg( 3, point );
+    else
+      theCommand->SetArg( 3, face );
   }
 
   // meshes made by *MakeMesh() methods are not wrapped by _pyMesh,
@@ -3660,6 +3700,49 @@ _pySubMesh::_pySubMesh(const Handle(_pyCommand)& theCreationCmd):
   _pyObject(theCreationCmd)
 {
   myMesh = ObjectToMesh( theGen->FindObject( theCreationCmd->GetObject() ));
+}
+
+//================================================================================
+/*!
+ * \brief Return true if a sub-mesh can be used as argument of the given method
+ */
+//================================================================================
+
+bool _pySubMesh::CanBeArgOfMethod(const _AString& theMethodName)
+{
+  // names of all methods where a sub-mesh can be used as argument
+  static TStringSet methods;
+  if ( methods.empty() ) {
+    const char * names[] = {
+      // methods of SMESH_Gen
+      "CopyMesh",
+      // methods of SMESH_Group
+      "AddFrom",
+      // methods of SMESH_Measurements
+      "MinDistance",
+      // methods of SMESH_Mesh
+      "ExportPartToMED","ExportCGNS","ExportPartToDAT","ExportPartToUNV","ExportPartToSTL",
+      "RemoveSubMesh",
+      // methods of SMESH_MeshEditor
+      "ReorientObject","Reorient2D","TriToQuadObject","QuadToTriObject","SplitQuadObject",
+      "SplitVolumesIntoTetra","SmoothObject","SmoothParametricObject","ConvertFromQuadraticObject",
+      "RotationSweepObject","RotationSweepObjectMakeGroups","RotationSweepObject1D",
+      "RotationSweepObject1DMakeGroups","RotationSweepObject2D","RotationSweepObject2DMakeGroups",
+      "ExtrusionSweepObject","ExtrusionSweepObjectMakeGroups","ExtrusionSweepObject0D",
+      "ExtrusionSweepObject0DMakeGroups","ExtrusionSweepObject1D","ExtrusionSweepObject2D",
+      "ExtrusionSweepObject1DMakeGroups","ExtrusionSweepObject2DMakeGroups",
+      "ExtrusionAlongPathObjX","ExtrusionAlongPathObject","ExtrusionAlongPathObjectMakeGroups",
+      "ExtrusionAlongPathObject1D","ExtrusionAlongPathObject1DMakeGroups",
+      "ExtrusionAlongPathObject2D","ExtrusionAlongPathObject2DMakeGroups","MirrorObject",
+      "MirrorObjectMakeGroups","MirrorObjectMakeMesh","TranslateObject","Scale",
+      "TranslateObjectMakeGroups","TranslateObjectMakeMesh","ScaleMakeGroups","ScaleMakeMesh",
+      "RotateObject","RotateObjectMakeGroups","RotateObjectMakeMesh","FindCoincidentNodesOnPart",
+      "FindCoincidentNodesOnPartBut","FindEqualElements","FindAmongElementsByPoint",
+      "MakeBoundaryMesh",
+      "" }; // <- mark of end
+    methods.Insert( names );
+  }
+  return methods.Contains( theMethodName );
 }
 
 //================================================================================

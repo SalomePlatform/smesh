@@ -230,6 +230,7 @@ public:
   void SetCommandBefore( Handle(_pyCommand) theCmd, Handle(_pyCommand) theBeforeCmd );
   Handle(_pyCommand)& GetLastCommand();
   std::list< Handle(_pyCommand) >& GetCommands() { return myCommands; }
+  void PlaceSubmeshAfterItsCreation( Handle(_pyCommand) theCmdUsingSubmesh ) const;
 
   _pyID GenerateNewID( const _pyID& theID );
   void AddObject( Handle(_pyObject)& theObj );
@@ -546,6 +547,7 @@ public:
   virtual Handle(_pyMesh) GetMesh() { return myMesh; }
   virtual void Free() { myCreator.Nullify(); myMesh.Nullify(); }
   void SetCreator( const Handle(_pyObject)& theCreator ) { myCreator = theCreator; }
+  static bool CanBeArgOfMethod(const _AString& theMethodName);
 
   DEFINE_STANDARD_RTTI (_pySubMesh)
 };
