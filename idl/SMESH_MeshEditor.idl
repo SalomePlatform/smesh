@@ -176,6 +176,19 @@ module SMESH
     boolean Reorient(in long_array IDsOfElements);
 
     boolean ReorientObject(in SMESH_IDSource theObject);
+    /*!
+     * \brief Reorient faces contained in \a the2Dgroup.
+     * \param the2Dgroup - the mesh or its part to reorient
+     * \param theDirection - desired direction of normal of \a theFace
+     * \param theFace - ID of face whose orientation is checked.
+     *        It can be < 1 then \a thePoint is used to find a face.
+     * \param thePoint - is used to find a face if \a theFace < 1.
+     * \return number of reoriented elements.
+     */
+    long Reorient2D(in SMESH_IDSource the2Dgroup,
+                    in DirStruct      theDirection,
+                    in long           theFace,
+                    in PointStruct    thePoint) raises (SALOME::SALOME_Exception);
 
     /*!
      * \brief Fuse neighbour triangles into quadrangles.
