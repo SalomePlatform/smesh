@@ -66,28 +66,37 @@ struct SMESH_NodeSearcher
 
 //=======================================================================
 /*!
- * \brief Find elements of given type where the given point is IN or ON.
- *        Returns nb of found elements and elements them-selves.
- *        Another task is to find out if the given point is out of closed 2D mesh.
- *
- * 'ALL' type means elements of any type excluding nodes and 0D elements
+ * \brief Searcher for elements
  */
 //=======================================================================
 
 struct SMESH_ElementSearcher
 {
+  /*!
+   * \brief Find elements of given type where the given point is IN or ON.
+   *        Returns nb of found elements and elements them-selves.
+   *
+   * 'ALL' type means elements of any type excluding nodes and 0D elements
+   */
   virtual int FindElementsByPoint(const gp_Pnt&                           point,
                                   SMDSAbs_ElementType                     type,
                                   std::vector< const SMDS_MeshElement* >& foundElems)=0;
-
-  virtual TopAbs_State GetPointState(const gp_Pnt& point) = 0;
-
+  /*!
+   * \brief Return an element most close to the given point
+   */
+  virtual const SMDS_MeshElement* FindClosestTo( const gp_Pnt&       point,
+                                                 SMDSAbs_ElementType type) = 0;
   /*!
    * \brief Return elements possibly intersecting the line
    */
   virtual void GetElementsNearLine( const gp_Ax1&                           line,
                                     SMDSAbs_ElementType                     type,
                                     std::vector< const SMDS_MeshElement* >& foundElems)=0;
+  /*!
+   * \brief Find out if the given point is out of closed 2D mesh.
+   */
+  virtual TopAbs_State GetPointState(const gp_Pnt& point) = 0;
+
 };
 
 // ============================================================
@@ -142,6 +151,11 @@ public:
   bool Reorient (const SMDS_MeshElement * theElement);
   // Reverse theElement orientation
 
+  int Reorient2D (TIDSortedElemSet &       theFaces,
+                  const gp_Dir&            theDirection,
+                  const SMDS_MeshElement * theFace);
+  // Reverse theFaces whose orientation to be same as that of theFace
+  // oriented according to theDirection. Return nb of reoriented faces
 
   /*!
    * \brief Fuse neighbour triangles into quadrangles.
@@ -349,8 +363,9 @@ public:
   /*!
    * \brief Return true if the point is IN or ON of the element
    */
-  static bool isOut( const SMDS_MeshElement* element, const gp_Pnt& point, double tol );
+  static bool IsOut( const SMDS_MeshElement* element, const gp_Pnt& point, double tol );
 
+  static double GetDistance( const SMDS_MeshFace* face, const gp_Pnt& point );
 
   int SimplifyFace (const std::vector<const SMDS_MeshNode *> faceNodes,
                     std::vector<const SMDS_MeshNode *>&      poly_nodes,
