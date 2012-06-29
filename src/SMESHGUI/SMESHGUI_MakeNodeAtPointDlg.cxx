@@ -379,7 +379,6 @@ void SMESHGUI_MakeNodeAtPointOp::startOperation()
   onSelectionDone(); // init myMeshActor
 
   if ( myMeshActor ) {
-//     myMeshOldDisplayMode = myMeshActor->GetRepresentation();
 //     myMeshActor->SetRepresentation( VTK_WIREFRAME );
     myMeshActor->SetPointRepresentation(true);
     SMESH::RepaintCurrentView();
@@ -398,7 +397,6 @@ void SMESHGUI_MakeNodeAtPointOp::stopOperation()
   myNoPreview = true;
   mySimulation->SetVisibility(false);
   if ( myMeshActor ) {
-//     myMeshActor->SetRepresentation( myMeshOldDisplayMode );
     myMeshActor->SetPointRepresentation(false);
     SMESH::RepaintCurrentView();
     myMeshActor = 0;
