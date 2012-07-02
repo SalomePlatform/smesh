@@ -105,13 +105,13 @@ struct SMESH_OrientedLink: public SMESH_TLink
 struct SMESH_TNodeXYZ : public gp_XYZ
 {
   const SMDS_MeshNode* _node;
+  double               _xyz[3];
   SMESH_TNodeXYZ( const SMDS_MeshElement* e):gp_XYZ(0,0,0),_node(0) {
     if (e) {
       assert( e->GetType() == SMDSAbs_Node );
       _node = static_cast<const SMDS_MeshNode*>(e);
-      double xyz[3];
-      _node->GetXYZ(xyz); // - thread safe gatting coords
-      SetCoord( xyz[0], xyz[1], xyz[2] );
+      _node->GetXYZ(_xyz); // - thread safe getting coords
+      SetCoord( _xyz[0], _xyz[1], _xyz[2] );
     }
   }
   double Distance(const SMDS_MeshNode* n)       const { return (SMESH_TNodeXYZ( n )-*this).Modulus(); }
