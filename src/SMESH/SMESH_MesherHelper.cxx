@@ -120,7 +120,14 @@ bool SMESH_MesherHelper::IsQuadraticSubMesh(const TopoDS_Shape& aSh)
   mySeamShapeIds.clear();
   myDegenShapeIds.clear();
   TopAbs_ShapeEnum subType( aSh.ShapeType()==TopAbs_FACE ? TopAbs_EDGE : TopAbs_FACE );
+  if ( aSh.ShapeType()==TopAbs_COMPOUND )
+  {
+    TopoDS_Iterator subIt( aSh );
+    if ( subIt.More() )
+      subType = ( subIt.Value().ShapeType()==TopAbs_FACE ) ? TopAbs_EDGE : TopAbs_FACE;
+  }
   SMDSAbs_ElementType elemType( subType==TopAbs_FACE ? SMDSAbs_Face : SMDSAbs_Edge );
+
 
   int nbOldLinks = myTLinkNodeMap.size();
 
