@@ -6708,7 +6708,7 @@ as they are of improper type:
     </message>
     <message>
         <source>FACES</source>
-        <translation>Faces</translation>
+        <translation>Faces source</translation>
     </message>
     <message>
         <source>ORIENTATION</source>

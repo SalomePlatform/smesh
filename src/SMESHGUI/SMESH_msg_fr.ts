@@ -408,6 +408,18 @@
         <translation>Trouver un élément par un point</translation>
     </message>
     <message>
+        <source>TOP_REORIENT_2D</source>
+        <translation>Réorienter des faces selon un vecteur</translation>
+    </message>
+    <message>
+        <source>MEN_REORIENT_2D</source>
+        <translation>Réorienter des faces selon un vecteur</translation>
+    </message>
+    <message>
+        <source>STB_REORIENT_2D</source>
+        <translation>Réorienter des faces selon un vecteur</translation>
+    </message>
+    <message>
         <source>TOP_FIND_ELEM</source>
         <translation>Trouver un élément par un point</translation>
     </message>
@@ -6663,6 +6675,64 @@ en raison de leurs types incompatibles:
     <message>
         <source>PRESELECTION_COLOR_LBL</source>
         <translation>Couleur de pré-sélection</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_ReorientFacesDlg</name>
+    <message>
+        <source>CAPTION</source>
+        <translation>Réorienter des faces selon un vector</translation>
+    </message>
+    <message>
+        <source>REORIENT_FACES</source>
+        <translation>Réorienter</translation>
+    </message>
+    <message>
+        <source>DIRECTION</source>
+        <translation>Direction</translation>
+    </message>
+    <message>
+        <source>OBJECT</source>
+        <translation>Objet</translation>
+    </message>
+    <message>
+        <source>POINT</source>
+        <translation>Point</translation>
+    </message>
+    <message>
+        <source>FACE</source>
+        <translation>Face</translation>
+    </message>
+    <message>
+        <source>FACES</source>
+        <translation>Source des faces</translation>
+    </message>
+    <message>
+        <source>ORIENTATION</source>
+        <translation>Orientation</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_ReorientFacesOp</name>
+    <message>
+        <source>NO_OBJECT_SELECTED</source>
+        <translation>Aucun objet sélectionné</translation>
+    </message>
+    <message>
+        <source>NO_FACES</source>
+        <translation>L&apos;objet ne contient pas de faces</translation>
+    </message>
+    <message>
+        <source>ZERO_SIZE_VECTOR</source>
+        <translation>Vecteur de taille nulle</translation>
+    </message>
+    <message>
+        <source>INVALID_FACE</source>
+        <translation>Face non valide</translation>
+    </message>
+    <message>
+        <source>NB_REORIENTED</source>
+        <translation>%1 face(s) inversée(s)</translation>
     </message>
 </context>
 </TS>
