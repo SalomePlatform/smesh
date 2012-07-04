@@ -31,6 +31,7 @@ class SMESH_Mesh;
 class StdMeshers_FaceSide;
 class TopoDS_Edge;
 class TopoDS_Face;
+struct _QuadFaceGrid;
 
 /*!
  * \brief Computes hexahedral mesh on a box with composite sides
@@ -55,7 +56,15 @@ public:
                                Hypothesis_Status&  aStatus);
 
 private:
-  // private fields
+
+  bool findBoxFaces( const TopoDS_Shape&    shape,
+                     list< _QuadFaceGrid >& boxFaceContainer,
+                     _QuadFaceGrid * &      fBottom,
+                     _QuadFaceGrid * &      fTop,
+                     _QuadFaceGrid * &      fFront,
+                     _QuadFaceGrid * &      fBack,
+                     _QuadFaceGrid * &      fLeft,
+                     _QuadFaceGrid * &      fRight);
 };
 
 #endif

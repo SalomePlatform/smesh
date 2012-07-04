@@ -59,8 +59,8 @@
 
 #ifdef _DEBUG_
 
-// #define DEB_FACES
-// #define DEB_GRID
+//#define DEB_FACES
+//#define DEB_GRID
 #define DUMP_VERT(msg,V) \
 // { TopoDS_Vertex v = V; gp_Pnt p = BRep_Tool::Pnt(v);\
 //   cout << msg << "( "<< p.X()<<", "<<p.Y()<<", "<<p.Z()<<" )"<<endl;}
@@ -104,11 +104,12 @@ public:
   _FaceSide(const list<TopoDS_Edge>& edges);
   _FaceSide* GetSide(const int i);
   const _FaceSide* GetSide(const int i) const;
-  int size() { return myChildren.size(); }
+  int size() const { return myChildren.size(); }
   int NbVertices() const;
   TopoDS_Vertex FirstVertex() const;
   TopoDS_Vertex LastVertex() const;
   TopoDS_Vertex Vertex(int i) const;
+  TopoDS_Edge   Edge(int i) const;
   bool Contain( const _FaceSide& side, int* which=0 ) const;
   bool Contain( const TopoDS_Vertex& vertex ) const;
   void AppendSide( const _FaceSide& side );
@@ -127,7 +128,6 @@ private:
   list< _FaceSide > myChildren;
   int               myNbChildren;
 
-  //set<const TopoDS_TShape*> myVertices;
   TopTools_MapOfShape myVertices;
 
   EQuadSides        myID; // debug
@@ -154,13 +154,15 @@ public: //** Methods to find and orient faces of 6 sides of the box **//
   //!< Try to set the side as bottom hirizontal side
   bool SetBottomSide(const _FaceSide& side, int* sideIndex=0);
 
-  //!< Return face adjacent to i-th side of this face
-  _QuadFaceGrid* FindAdjacentForSide(int i, vector<_QuadFaceGrid>& faces) const; // (0<i<4)
+  //!< Return face adjacent to zero-based i-th side of this face
+  _QuadFaceGrid* FindAdjacentForSide(int i, list<_QuadFaceGrid>& faces, EBoxSides id) const;
 
   //!< Reverse edges in order to have the bottom edge going along axes of the unit box
   void ReverseEdges(/*int e1, int e2*/);
 
   bool IsComplex() const { return !myChildren.empty(); }
+
+  int NbChildren() const { return myChildren.size(); }
 
   typedef SMDS_SetIterator< const _QuadFaceGrid&, TChildren::const_iterator > TChildIterator;
 
@@ -177,6 +179,9 @@ public: //** Loading and access to mesh **//
 
   //!< Return number of segments on the vertical sides
   int GetNbVertSegments(SMESH_Mesh& mesh, bool withBrothers=false) const;
+
+  //!< Return edge on the hirizontal bottom sides
+  int GetHoriEdges(vector<TopoDS_Edge> & edges) const;
 
   //!< Return a node by its position
   const SMDS_MeshNode* GetNode(int iHori, int iVert) const;
@@ -270,35 +275,42 @@ bool StdMeshers_CompositeHexa_3D::CheckHypothesis(SMESH_Mesh&         aMesh,
 
 //================================================================================
 /*!
- * \brief Computes hexahedral mesh on a box with composite sides
- *  \param aMesh - mesh to compute
- *  \param aShape - shape to mesh
- *  \retval bool - succes sign
+ * \brief Tries to find 6 sides of a box
  */
 //================================================================================
 
-bool StdMeshers_CompositeHexa_3D::Compute(SMESH_Mesh&         theMesh,
-                                          const TopoDS_Shape& theShape)
+bool StdMeshers_CompositeHexa_3D::findBoxFaces( const TopoDS_Shape&    shape,
+                                                list< _QuadFaceGrid >& boxFaces,
+                                                _QuadFaceGrid * &      fBottom,
+                                                _QuadFaceGrid * &      fTop,
+                                                _QuadFaceGrid * &      fFront,
+                                                _QuadFaceGrid * &      fBack,
+                                                _QuadFaceGrid * &      fLeft,
+                                                _QuadFaceGrid * &      fRight)
 {
-  SMESH_MesherHelper helper( theMesh );
-  _quadraticMesh = helper.IsQuadraticSubMesh( theShape );
-  helper.SetElementsOnShape( true );
-
-  // -------------------------
-  // Try to find 6 side faces
-  // -------------------------
-  vector< _QuadFaceGrid > boxFaces; boxFaces.reserve( 6 );
+  list< _QuadFaceGrid >::iterator boxFace;
   TopExp_Explorer exp;
-  int iFace, nbFaces = 0;
-  for ( exp.Init(theShape, TopAbs_FACE); exp.More(); exp.Next(), ++nbFaces )
+  int nbFaces = 0;
+  for ( exp.Init( shape, TopAbs_FACE); exp.More(); exp.Next(), ++nbFaces )
   {
     _QuadFaceGrid f;
     if ( !f.Init( TopoDS::Face( exp.Current() )))
       return error (COMPERR_BAD_SHAPE);
-    bool isContinuous = false;
-    for ( int i=0; i < boxFaces.size() && !isContinuous; ++i )
-      isContinuous = boxFaces[ i ].AddContinuousFace( f );
-    if ( !isContinuous )
+
+    _QuadFaceGrid* prevContinuous = 0; 
+    for ( boxFace = boxFaces.begin(); boxFace != boxFaces.end(); ++boxFace )
+    {
+      if ( prevContinuous )
+      {
+        if ( prevContinuous->AddContinuousFace( *boxFace ))
+          boxFace = --boxFaces.erase( boxFace );
+      }
+      else if ( boxFace->AddContinuousFace( f ))
+      {
+        prevContinuous = & (*boxFace);
+      }   
+    }
+    if ( !prevContinuous )
       boxFaces.push_back( f );
   }
   // Check what we have
@@ -309,29 +321,30 @@ bool StdMeshers_CompositeHexa_3D::Compute(SMESH_Mesh&         theMesh,
 
   if ( boxFaces.size() != 6 && nbFaces == 6 ) { // strange ordinary box with continuous faces
     boxFaces.resize( 6 );
-    iFace = 0;
-    for ( exp.Init(theShape, TopAbs_FACE); exp.More(); exp.Next(), ++iFace )
-      boxFaces[ iFace ].Init( TopoDS::Face( exp.Current() ) );
+    boxFace = boxFaces.begin();
+    for ( exp.Init( shape, TopAbs_FACE); exp.More(); exp.Next(), ++boxFace )
+      boxFace->Init( TopoDS::Face( exp.Current() ) );
   }
   // ----------------------------------------
   // Find out position of faces within a box
   // ----------------------------------------
-
-  _QuadFaceGrid *fBottom, *fTop, *fFront, *fBack, *fLeft, *fRight;
   // start from a bottom face
-  fBottom = &boxFaces[0];
+  fBottom = &boxFaces.front();
+  fBottom->SetID( B_BOTTOM );
   // find vertical faces
-  fFront = fBottom->FindAdjacentForSide( Q_BOTTOM, boxFaces );
-  fLeft  = fBottom->FindAdjacentForSide( Q_RIGHT, boxFaces );
-  fBack  = fBottom->FindAdjacentForSide( Q_TOP, boxFaces );
-  fRight = fBottom->FindAdjacentForSide( Q_LEFT, boxFaces );
+  fFront = fBottom->FindAdjacentForSide( Q_BOTTOM, boxFaces, B_FRONT );
+  fLeft  = fBottom->FindAdjacentForSide( Q_RIGHT,  boxFaces, B_LEFT  );
+  fBack  = fBottom->FindAdjacentForSide( Q_TOP,    boxFaces, B_BACK  );
+  fRight = fBottom->FindAdjacentForSide( Q_LEFT,   boxFaces, B_RIGHT );
   // check the found
   if ( !fFront || !fBack || !fLeft || !fRight )
     return error(COMPERR_BAD_SHAPE);
-  // top face
+  // find a top face
   fTop = 0;
-  for ( int i=1; i < boxFaces.size() && !fTop; ++i ) {
-    fTop = & boxFaces[ i ];
+  for ( boxFace = ++boxFaces.begin(); boxFace != boxFaces.end() && !fTop; ++boxFace )
+  {
+    fTop = & (*boxFace);
+    fTop->SetID( B_TOP );
     if ( fTop==fFront || fTop==fLeft || fTop==fBack || fTop==fRight )
       fTop = 0;
   }
@@ -351,17 +364,38 @@ bool StdMeshers_CompositeHexa_3D::Compute(SMESH_Mesh&         theMesh,
   if ( !fTop )
     return error(COMPERR_BAD_SHAPE);
 
-  fBottom->SetID( B_BOTTOM );
-  fBack  ->SetID( B_BACK );
-  fLeft  ->SetID( B_LEFT );
-  fFront ->SetID( B_FRONT );
-  fRight ->SetID( B_RIGHT );
-  fTop   ->SetID( B_TOP );
-
   // orient bottom egde of faces along axes of the unit box
   fBottom->ReverseEdges();
   fBack  ->ReverseEdges();
   fLeft  ->ReverseEdges();
+
+  return true;
+}
+
+//================================================================================
+/*!
+ * \brief Computes hexahedral mesh on a box with composite sides
+ *  \param aMesh - mesh to compute
+ *  \param aShape - shape to mesh
+ *  \retval bool - succes sign
+ */
+//================================================================================
+
+bool StdMeshers_CompositeHexa_3D::Compute(SMESH_Mesh&         theMesh,
+                                          const TopoDS_Shape& theShape)
+{
+  SMESH_MesherHelper helper( theMesh );
+  _quadraticMesh = helper.IsQuadraticSubMesh( theShape );
+  helper.SetElementsOnShape( true );
+
+  // -------------------------
+  // Try to find 6 side faces
+  // -------------------------
+  list< _QuadFaceGrid > boxFaceContainer;
+  _QuadFaceGrid *fBottom, *fTop, *fFront, *fBack, *fLeft, *fRight;
+  if ( ! findBoxFaces( theShape, boxFaceContainer,
+                       fBottom, fTop, fFront, fBack, fLeft, fRight))
+    return false;
 
   // ------------------------------------------
   // Fill columns of nodes with existing nodes
@@ -485,7 +519,7 @@ bool StdMeshers_CompositeHexa_3D::Compute(SMESH_Mesh&         theMesh,
     }
   }
   // faces no more needed, free memory
-  boxFaces.clear();
+  boxFaceContainer.clear();
 
   // ----------------
   // Add hexahedrons
@@ -507,208 +541,85 @@ bool StdMeshers_CompositeHexa_3D::Compute(SMESH_Mesh&         theMesh,
   return true;
 }
 
-
-//=======================================================================
-//function : GetNb2d
-//purpose  : auxilary for Evaluate
-//=======================================================================
-int GetNb2d(_QuadFaceGrid* QFG, SMESH_Mesh& theMesh,
-            MapShapeNbElems& aResMap)
-{
-  int nb2d = 0;
-  _QuadFaceGrid::TChildIterator aCI = QFG->GetChildren();
-  while( aCI.more() ) {
-    const _QuadFaceGrid& currChild = aCI.next();
-    SMESH_subMesh *sm = theMesh.GetSubMesh(currChild.GetFace());
-    if( sm ) {
-      MapShapeNbElemsItr anIt = aResMap.find(sm);
-      if( anIt == aResMap.end() ) continue;
-      std::vector<int> aVec = (*anIt).second;
-      nb2d += Max(aVec[SMDSEntity_Quadrangle],aVec[SMDSEntity_Quad_Quadrangle]);
-    }
-  }
-  return nb2d;
-}
-
-
 //================================================================================
 /*!
  *  Evaluate
  */
 //================================================================================
 
-bool StdMeshers_CompositeHexa_3D::Evaluate(SMESH_Mesh& theMesh,
+bool StdMeshers_CompositeHexa_3D::Evaluate(SMESH_Mesh&         theMesh,
                                            const TopoDS_Shape& theShape,
-                                           MapShapeNbElems& aResMap)
+                                           MapShapeNbElems&    aResMap)
 {
-  SMESH_MesherHelper aTool(theMesh);
-  bool _quadraticMesh = aTool.IsQuadraticSubMesh(theShape);
-
-
   // -------------------------
   // Try to find 6 side faces
   // -------------------------
-  vector< _QuadFaceGrid > boxFaces; boxFaces.reserve( 6 );
-  TopExp_Explorer exp;
-  int iFace, nbFaces = 0;
-  for ( exp.Init(theShape, TopAbs_FACE); exp.More(); exp.Next(), ++nbFaces )
-  {
-    _QuadFaceGrid f;
-    if ( !f.Init( TopoDS::Face( exp.Current() )))
-      //return error (COMPERR_BAD_SHAPE);
-      return false;
-    bool isContinuous = false;
-    for ( int i=0; i < boxFaces.size() && !isContinuous; ++i )
-      isContinuous = boxFaces[ i ].AddContinuousFace( f );
-    if ( !isContinuous )
-      boxFaces.push_back( f );
-  }
-  // Check what we have
-  if ( boxFaces.size() != 6 && nbFaces != 6)
-    //return error
-    //  (COMPERR_BAD_SHAPE,
-    //   SMESH_Comment("Can't find 6 sides of a box. Number of found sides - ")<<boxFaces.size());
-    return false;
-
-  if ( boxFaces.size() != 6 && nbFaces == 6 ) { // strange ordinary box with continuous faces
-    boxFaces.resize( 6 );
-    iFace = 0;
-    for ( exp.Init(theShape, TopAbs_FACE); exp.More(); exp.Next(), ++iFace )
-      boxFaces[ iFace ].Init( TopoDS::Face( exp.Current() ) );
-  }
-
-  // ----------------------------------------
-  // Find out position of faces within a box
-  // ----------------------------------------
-
+  list< _QuadFaceGrid > boxFaceContainer;
   _QuadFaceGrid *fBottom, *fTop, *fFront, *fBack, *fLeft, *fRight;
-  // start from a bottom face
-  fBottom = &boxFaces[0];
-  // find vertical faces
-  fFront = fBottom->FindAdjacentForSide( Q_BOTTOM, boxFaces );
-  fLeft  = fBottom->FindAdjacentForSide( Q_RIGHT, boxFaces );
-  fBack  = fBottom->FindAdjacentForSide( Q_TOP, boxFaces );
-  fRight = fBottom->FindAdjacentForSide( Q_LEFT, boxFaces );
-  // check the found
-  if ( !fFront || !fBack || !fLeft || !fRight )
-    //return error(COMPERR_BAD_SHAPE);
-    return false;
-  // top face
-  fTop = 0;
-  int i = 1;
-  for(; i < boxFaces.size() && !fTop; ++i ) {
-    fTop = & boxFaces[ i ];
-    if ( fTop==fFront || fTop==fLeft || fTop==fBack || fTop==fRight )
-      fTop = 0;
-  }
-  // set bottom of the top side
-  if ( !fTop->SetBottomSide( fFront->GetSide( Q_TOP ) )) {
-    if ( !fFront->IsComplex() )
-      //return error( ERR_LI("Error in StdMeshers_CompositeHexa_3D::Compute()"));
-      return false;
-    else {
-      _QuadFaceGrid::TChildIterator chIt = fFront->GetChildren();
-      while ( chIt.more() ) {
-        const _QuadFaceGrid& frontChild = chIt.next();
-        if ( fTop->SetBottomSide( frontChild.GetSide( Q_TOP )))
-          break;
-      }
-    }
-  }
-  if ( !fTop )
-    //return error(COMPERR_BAD_SHAPE);
+  if ( ! findBoxFaces( theShape, boxFaceContainer,
+                       fBottom, fTop, fFront, fBack, fLeft, fRight))
     return false;
 
+  // Find a less complex side
+  _QuadFaceGrid * lessComplexSide = & boxFaceContainer.front();
+  list< _QuadFaceGrid >::iterator face = boxFaceContainer.begin();
+  for ( ++face; face != boxFaceContainer.end() && lessComplexSide->IsComplex(); ++face )
+    if ( face->NbChildren() < lessComplexSide->NbChildren() )
+      lessComplexSide = & *face;
 
-  TopTools_SequenceOfShape BottomFaces;
-  _QuadFaceGrid::TChildIterator aCI = fBottom->GetChildren();
-  while( aCI.more() ) {
-    const _QuadFaceGrid& currChild = aCI.next();
-    BottomFaces.Append(currChild.GetFace());
+  // Get an 1D size of lessComplexSide
+  int nbSeg1 = 0;
+  vector<TopoDS_Edge> edges;
+  if ( !lessComplexSide->GetHoriEdges(edges) )
+    return false;
+  for ( size_t i = 0; i < edges.size(); ++i )
+  {
+    const vector<int>& nbElems = aResMap[ theMesh.GetSubMesh( edges[i] )];
+    if ( !nbElems.empty() )
+      nbSeg1 += Max( nbElems[ SMDSEntity_Edge ], nbElems[ SMDSEntity_Quad_Edge ]);
   }
-  // find boundary edges and internal nodes for bottom face
-  TopTools_SequenceOfShape BndEdges;
-  int nb0d_in = 0;
-  //TopTools_MapOfShape BndEdges;
-  for(i=1; i<=BottomFaces.Length(); i++) {
-    for (TopExp_Explorer exp(BottomFaces.Value(i), TopAbs_EDGE); exp.More(); exp.Next()) {
-      int nb0 = 0;
-      SMESH_subMesh *sm = theMesh.GetSubMesh(exp.Current());
-      if( sm ) {
-        MapShapeNbElemsItr anIt = aResMap.find(sm);
-        if( anIt == aResMap.end() ) continue;
-        std::vector<int> aVec = (*anIt).second;
-        nb0 = aVec[SMDSEntity_Node];
-      }
-      int j = 1;
-      for(; j<=BndEdges.Length(); j++) {
-        if( BndEdges.Value(j) == exp.Current() ) {
-          // internal edge => remove it
-          BndEdges.Remove(j);
-          nb0d_in += nb0;
-          break;
-        }
-      }
-      if( j > BndEdges.Length() ) {
-        BndEdges.Append(exp.Current());
-      }
-      //if( BndEdges.Contains(exp.Current()) ) {
-      //BndEdges.Remove( exp.Current() );
-      //}
-      //else {
-      //BndEdges.Add( exp.Current() );
-      //}
+
+  // Get an 1D size of a box side ortogonal to lessComplexSide
+  int nbSeg2 = 0;
+  _QuadFaceGrid* ortoSide =
+    lessComplexSide->FindAdjacentForSide( Q_LEFT, boxFaceContainer, B_UNDEFINED );
+  edges.clear();
+  if ( !ortoSide || !ortoSide->GetHoriEdges(edges) ) return false;
+  for ( size_t i = 0; i < edges.size(); ++i )
+  {
+    const vector<int>& nbElems = aResMap[ theMesh.GetSubMesh( edges[i] )];
+    if ( !nbElems.empty() )
+      nbSeg2 += Max( nbElems[ SMDSEntity_Edge ], nbElems[ SMDSEntity_Quad_Edge ]);
+  }
+
+  // Get an 2D size of a box side ortogonal to lessComplexSide
+  int nbFaces = 0, nbQuadFace = 0;
+  list< TopoDS_Face > sideFaces;
+  if ( ortoSide->IsComplex() )
+    for ( _QuadFaceGrid::TChildIterator child = ortoSide->GetChildren(); child.more(); )
+      sideFaces.push_back( child.next().GetFace() );
+  else
+    sideFaces.push_back( ortoSide->GetFace() );
+  //
+  list< TopoDS_Face >::iterator f = sideFaces.begin();
+  for ( ; f != sideFaces.end(); ++f )
+  {
+    const vector<int>& nbElems = aResMap[ theMesh.GetSubMesh( *f )];
+    if ( !nbElems.empty() )
+    {
+      nbFaces    = nbElems[ SMDSEntity_Quadrangle ];
+      nbQuadFace = nbElems[ SMDSEntity_Quad_Quadrangle ];
     }
   }
 
-  // find number of 1d elems for bottom face
-  int nb1d = 0;
-  for(i=1; i<=BndEdges.Length(); i++) {
-    SMESH_subMesh *sm = theMesh.GetSubMesh(BndEdges.Value(i));
-    if( sm ) {
-      MapShapeNbElemsItr anIt = aResMap.find(sm);
-      if( anIt == aResMap.end() ) continue;
-      std::vector<int> aVec = (*anIt).second;
-      nb1d += Max(aVec[SMDSEntity_Edge],aVec[SMDSEntity_Quad_Edge]);
-    }
-  }
+  // Fill nb of elements
+  vector<int> aResVec(SMDSEntity_Last,0);
+  int nbSeg3 = ( nbFaces + nbQuadFace ) / nbSeg2;
+  aResVec[SMDSEntity_Node]       = (nbSeg1-1) * (nbSeg2-1) * (nbSeg3-1);
+  aResVec[SMDSEntity_Hexa]       = nbSeg1 * nbFaces;
+  aResVec[SMDSEntity_Quad_Hexa]  = nbSeg1 * nbQuadFace;
 
-  // find number of 2d elems on side faces
-  int nb2d = 0;
-  nb2d += GetNb2d(fFront, theMesh, aResMap);
-  nb2d += GetNb2d(fRight, theMesh, aResMap);
-  nb2d += GetNb2d(fBack, theMesh, aResMap);
-  nb2d += GetNb2d(fLeft, theMesh, aResMap);
-
-  // find number of 2d elems and nodes on bottom faces
-  int nb0d=0, nb2d_3=0, nb2d_4=0;
-  for(i=1; i<=BottomFaces.Length(); i++) {
-    SMESH_subMesh *sm = theMesh.GetSubMesh(BottomFaces.Value(i));
-    if( sm ) {
-      MapShapeNbElemsItr anIt = aResMap.find(sm);
-      if( anIt == aResMap.end() ) continue;
-      std::vector<int> aVec = (*anIt).second;
-      nb0d += aVec[SMDSEntity_Node];
-      nb2d_3 += Max(aVec[SMDSEntity_Triangle],   aVec[SMDSEntity_Quad_Triangle]);
-      nb2d_4 += Max(aVec[SMDSEntity_Quadrangle], aVec[SMDSEntity_Quad_Quadrangle]);
-    }
-  }
-  nb0d += nb0d_in;
-
-  std::vector<int> aResVec(SMDSEntity_Last);
-  for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aResVec[i] = 0;
-  if(_quadraticMesh) {
-    aResVec[SMDSEntity_Quad_Penta] = nb2d_3 * ( nb2d/nb1d );
-    aResVec[SMDSEntity_Quad_Hexa]  = nb2d_4 * ( nb2d/nb1d );
-    aResVec[SMDSEntity_Node] = nb0d * ( 2*nb2d/nb1d - 1 );
-  }
-  else {
-    aResVec[SMDSEntity_Node]  = nb0d * ( nb2d/nb1d - 1 );
-    aResVec[SMDSEntity_Penta] = nb2d_3 * ( nb2d/nb1d );
-    aResVec[SMDSEntity_Hexa]  = nb2d_4 * ( nb2d/nb1d );
-  }
-  SMESH_subMesh * sm = theMesh.GetSubMesh(theShape);
-  aResMap.insert(std::make_pair(sm,aResVec));
+  aResMap.insert( make_pair( theMesh.GetSubMesh(theShape), aResVec ));
 
   return true;
 }
@@ -795,7 +706,8 @@ bool _QuadFaceGrid::Init(const TopoDS_Face& f)
 
 bool _QuadFaceGrid::AddContinuousFace( const _QuadFaceGrid& other )
 {
-  for ( int i = 0; i < 4; ++i ) {
+  for ( int i = 0; i < 4; ++i )
+  {
     const _FaceSide& otherSide = other.GetSide( i );
     int iMyCommon;
     if ( mySides.Contain( otherSide, &iMyCommon ) ) {
@@ -824,14 +736,28 @@ bool _QuadFaceGrid::AddContinuousFace( const _QuadFaceGrid& other )
           myChildren.push_back( *this );
           myFace.Nullify();
         }
-        myChildren.push_back( other );
-        int otherBottomIndex = ( 4 + i - iMyCommon + 2 ) % 4;
-        myChildren.back().SetBottomSide( other.GetSide( otherBottomIndex ));
+        if ( other.IsComplex() )
+          for ( TChildIterator children = other.GetChildren(); children.more(); )
+            myChildren.push_back( children.next() );
+        else
+          myChildren.push_back( other );
+
+        myLeftBottomChild = 0;
+        //int otherBottomIndex = ( 4 + i - iMyCommon + 2 ) % 4;
+        //myChildren.back().SetBottomSide( other.GetSide( otherBottomIndex ));
+
         // collect vertices in mySides
-        mySides.AppendSide( other.GetSide(0) );
-        mySides.AppendSide( other.GetSide(1) );
-        mySides.AppendSide( other.GetSide(2) );
-        mySides.AppendSide( other.GetSide(3) );
+        if ( other.IsComplex() )
+          for ( TChildIterator children = other.GetChildren(); children.more(); )
+          {
+            const _QuadFaceGrid& child =  children.next();
+            for ( int i = 0; i < 4; ++i )
+              mySides.AppendSide( child.GetSide(i) );
+          }
+        else
+          for ( int i = 0; i < 4; ++i )
+            mySides.AppendSide( other.GetSide(i) );
+
         return true;
       }
     }
@@ -886,12 +812,17 @@ bool _QuadFaceGrid::SetBottomSide(const _FaceSide& bottom, int* sideIndex)
  */
 //================================================================================
 
-_QuadFaceGrid* _QuadFaceGrid::FindAdjacentForSide(int i, vector<_QuadFaceGrid>& faces) const
+_QuadFaceGrid* _QuadFaceGrid::FindAdjacentForSide(int                  i,
+                                                  list<_QuadFaceGrid>& faces,
+                                                  EBoxSides            id) const
 {
-  for ( int iF = 0; iF < faces.size(); ++iF ) {
-    _QuadFaceGrid* f  = &faces[ iF ];
-    if ( f != this && f->SetBottomSide( GetSide( i )))
-      return f;
+  const _FaceSide & iSide = GetSide( i );
+  list< _QuadFaceGrid >::iterator boxFace = faces.begin();
+  for ( ; boxFace != faces.end(); ++boxFace )
+  {
+    _QuadFaceGrid* f  = & (*boxFace);
+    if ( f != this && f->SetBottomSide( iSide ))
+      return f->SetID( id ), f;
   }
   return (_QuadFaceGrid*) 0;
 }
@@ -1286,6 +1217,35 @@ int _QuadFaceGrid::GetNbVertSegments(SMESH_Mesh& mesh, bool withBrothers) const
 
 //================================================================================
 /*!
+ * \brief Return edge on the hirizontal bottom sides
+ */
+//================================================================================
+
+int _QuadFaceGrid::GetHoriEdges(vector<TopoDS_Edge> & edges) const
+{
+  if ( myLeftBottomChild )
+  {
+    return myLeftBottomChild->GetHoriEdges( edges );
+  }
+  else
+  {
+    const _FaceSide* bottom  = mySides.GetSide( Q_BOTTOM );
+    int i = 0;
+    while ( true ) {
+      TopoDS_Edge e = bottom->Edge( i++ );
+      if ( e.IsNull() )
+        break;
+      else
+        edges.push_back( e );
+    }
+    if ( myRightBrother )
+      myRightBrother->GetHoriEdges( edges );
+  }
+  return edges.size();
+}
+
+//================================================================================
+/*!
  * \brief Return a node by its position
  */
 //================================================================================
@@ -1498,7 +1458,6 @@ int _FaceSide::NbVertices() const
 {
   if ( myChildren.empty() )
     return myVertices.Extent();
-//     return myVertices.size();
 
   return myNbChildren + 1;
 }
@@ -1545,6 +1504,23 @@ TopoDS_Vertex _FaceSide::Vertex(int i) const
   return GetSide(i)->FirstVertex();
 }
 
+//================================================================================
+/*!
+ * \brief Return i-the zero-based edge of the side
+ */
+//================================================================================
+
+TopoDS_Edge _FaceSide::Edge(int i) const
+{
+  if ( i == 0 && !myEdge.IsNull() )
+    return myEdge;
+
+  if ( const _FaceSide* iSide = GetSide( i ))
+    return iSide->myEdge;
+
+  return TopoDS_Edge();
+}
+
 //=======================================================================
 //function : Contain
 //purpose  : 
@@ -1557,9 +1533,6 @@ bool _FaceSide::Contain( const _FaceSide& side, int* which ) const
     if ( which )
       *which = 0;
     int nbCommon = 0;
-//     set<const TopoDS_TShape*>::iterator v, vEnd = side.myVertices.end();
-//     for ( v = side.myVertices.begin(); v != vEnd; ++v )
-//       nbCommon += ( myVertices.find( *v ) != myVertices.end() );
     TopTools_MapIteratorOfMapOfShape vIt ( side.myVertices );
     for ( ; vIt.More(); vIt.Next() )
       nbCommon += ( myVertices.Contains( vIt.Key() ));
@@ -1583,7 +1556,6 @@ bool _FaceSide::Contain( const _FaceSide& side, int* which ) const
 bool _FaceSide::Contain( const TopoDS_Vertex& vertex ) const
 {
   return myVertices.Contains( vertex );
-//   return myVertices.find( ptr( vertex )) != myVertices.end();
 }
 
 //=======================================================================
@@ -1601,7 +1573,6 @@ void _FaceSide::AppendSide( const _FaceSide& side )
   }
   myChildren.push_back( side );
   myNbChildren++;
-  //myVertices.insert( side.myVertices.begin(), side.myVertices.end() );
   TopTools_MapIteratorOfMapOfShape vIt ( side.myVertices );
   for ( ; vIt.More(); vIt.Next() )
     myVertices.Add( vIt.Key() );
