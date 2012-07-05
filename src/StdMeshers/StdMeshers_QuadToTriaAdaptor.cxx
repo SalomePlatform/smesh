@@ -705,15 +705,17 @@ int StdMeshers_QuadToTriaAdaptor::Preparation(const SMDS_MeshElement*       face
 //purpose  : 
 //=======================================================================
 
-bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh&           aMesh,
-                                           const TopoDS_Shape&   aShape,
-                                           SMESH_ProxyMesh* aProxyMesh)
+bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh&         aMesh,
+                                           const TopoDS_Shape& aShape,
+                                           SMESH_ProxyMesh*    aProxyMesh)
 {
   SMESH_ProxyMesh::setMesh( aMesh );
 
   if ( aShape.ShapeType() != TopAbs_SOLID &&
        aShape.ShapeType() != TopAbs_SHELL )
     return false;
+
+  myShape = aShape;
 
   vector<const SMDS_MeshElement*> myPyramids;
 

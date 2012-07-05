@@ -17,7 +17,6 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : StdMeshers_QuadToTriaAdaptor.hxx
 //  Module : SMESH
 //
@@ -61,6 +60,8 @@ public:
 
   bool Compute(SMESH_Mesh& aMesh);
 
+  const TopoDS_Shape& GetShape() const { return myShape; }
+
 protected:
 
   int Preparation(const SMDS_MeshElement* face,
@@ -87,11 +88,10 @@ protected:
                      std::set<const SMDS_MeshNode*>& nodesToMove);
 
 
+  TopoDS_Shape                      myShape;
   std::set<const SMDS_MeshElement*> myRemovedTrias;
-
   std::list< const SMDS_MeshNode* > myDegNodes;
-
-  const SMESH_ElementSearcher* myElemSearcher;
+  const SMESH_ElementSearcher*      myElemSearcher;
 };
 
 #endif
