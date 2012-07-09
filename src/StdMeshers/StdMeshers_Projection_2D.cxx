@@ -1007,24 +1007,18 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
         ( u2nodesMaps[ NEW_NODES ].size() == u2nodesOnSeam.size() );
 
       if ( !mergeNewToOld )
-      {
-        // if ( u2nodesMaps[ NEW_NODES ].size() == 0         &&
-        //      sm->GetSubShape().ShapeType() == TopAbs_EDGE &&
-        //      helper.IsDegenShape( sm->GetId() )             )
-        //   // NPAL15894 (tt88bis.py) - project mesh built by NETGEN_1d_2D that
-        //   // does not make segments/nodes on degenerated edges
-        //   continue;
-
-        // if ( u2nodesMaps[ OLD_NODES ].size() == 0           &&
-        //      sm->GetSubShape().ShapeType() == TopAbs_VERTEX )
-        //   // old nodes are optional on vertices in the case of 1D-2D projection
-        //   continue;
-
-        //RETURN_BAD_RESULT
-        MESSAGE("Different nb of old and new nodes on shape #"<< sm->GetId() <<" "<<
-                u2nodesMaps[ OLD_NODES ].size() << " != " <<
-                u2nodesMaps[ NEW_NODES ].size());
-      }
+        if ( u2nodesMaps[ NEW_NODES ].size() > 0 &&
+             u2nodesMaps[ OLD_NODES ].size() > 0 )
+        {
+          u_oldNode = u2nodesMaps[ OLD_NODES ].begin(); 
+          newEnd    = u2nodesMaps[ OLD_NODES ].end();
+          for ( ; u_oldNode != newEnd; ++u_oldNode )
+            _badInputElements.push_back( u_oldNode->second );
+          return error( COMPERR_BAD_INPUT_MESH,
+                        SMESH_Comment( "Existing mesh mismatches the projected 2D mesh on " )
+                        << ( sm->GetSubShape().ShapeType() == TopAbs_EDGE ? "edge" : "vertex" )
+                        << " #" << sm->GetId() );
+        }
       if ( isSeam && !mergeSeamToNew ) {
         //RETURN_BAD_RESULT
         MESSAGE("Different nb of old and seam nodes " <<
