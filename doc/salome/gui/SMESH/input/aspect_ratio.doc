@@ -27,8 +27,10 @@ nodes is calculated by the formula:
 <li>Choose <b>Controls > Face Controls > Aspect Ratio</b> or click
 <em>"Aspect Ratio"</em> button in the toolbar.
 
+<center>
 \image html image37.png
-<center><em>"Aspect Ratio" button</em></center>
+<em>"Aspect Ratio" button</em>
+</center>
 
 Your mesh will be displayed in the viewer with its elements colored
 according to the applied mesh quality control criterion:
