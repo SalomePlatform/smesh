@@ -40,11 +40,11 @@ There also exist
 \subpage additional_hypo_page "Additional Hypotheses" used together
 with other hypotheses:
 <ul>
-<li>Propagation of 1D Hypothesis on opposite edges</li>
-<li>Non conform mesh allowed</li>
-<li>Quadratic mesh</li>
-<li>Quadrangle preference</li>
-<li>Viscous layers</li>
+<li>\ref propagation_anchor "Propagation of 1D Hypothesis on opposite edges"</li>
+<li>\ref viscous_layers_anchor "Viscous layers"</li>
+<li>\ref quadratic_mesh_anchor "Quadratic mesh"</li>
+<li>\ref non_conform_allowed_anchor "Non conform mesh allowed"</li>
+<li>\ref quadrangle_preference_anchor "Quadrangle preference"</li>
 </ul>
 
 The choice of a hypothesis depends on:

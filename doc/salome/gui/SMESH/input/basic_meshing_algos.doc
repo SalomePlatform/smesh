@@ -21,8 +21,7 @@ shape of a mesh.</li>
 <li>For meshing of 2D entities (<b>faces</b>):</li>
 
 <ul>
-<li>Triangle meshing algorithms (Mefisto) - Faces
-are split into triangular elements.</li>
+<li>Triangle meshing algorithms (Mefisto) - Faces are split into triangular elements.</li>
 <li>Quadrangle meshing algorithm (Mapping) - quadrilateral Faces are split into
 quadrangular elements.</li>
 </ul>
@@ -51,6 +50,7 @@ Some of 3D meshing algorithms also can generate 3D meshes from 2D meshes, workin
 geometrical objects. Such algorithms are
 <ul>
 <li>Hexahedron meshing algorithm (i,j,k),</li>
+<!-- <li>GHS3D meshing algorithm (commercial)</li> -->
 </ul>
 
 There is also a number of more specific algorithms:

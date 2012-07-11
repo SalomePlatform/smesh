@@ -9,18 +9,21 @@ To define an <b>Additional Hypothesis</b> simply select it in
 <b>Create Mesh</b> menu. These hypotheses are actually changes in the
 rules of mesh creation and as such don't possess adjustable values.
 
+\anchor non_conform_allowed_anchor
 <h2>Non Conform mesh allowed hypothesis</h2>
 
 <b>Non Conform mesh allowed</b> hypothesis allows to generate non-conform
 meshes (that is, meshes having some edges ending on an edge or face of
 adjacent elements).
 
+\anchor quadratic_mesh_anchor
 <h2>Quadratic Mesh</h2>
 
 Quadratic Mesh hypothesis allows to build a quadratic mesh (whose
 edges are not straight but broken lines and can be defined by three
 points: first, middle and last) instead of an ordinary one.
 
+\anchor propagation_anchor
 <h2>Propagation of 1D Hypothesis on opposite edges</h2>
 
 <b>Propagation of 1D Hypothesis on opposite edges</b> allows to propagate a
@@ -32,20 +35,22 @@ has been locally defined on the opposite edge.
 <br><b>See Also</b> a sample TUI Script of a 
 \ref tui_propagation "Propagation hypothesis" operation
 
+\anchor quadrangle_preference_anchor
 <h2>Quadrangle Preference</h2>
 
 This additional hypothesis can be used together with 2D triangulation algorithms.
 It allows 2D triangulation algorithms to build quadrangular meshes.
 
-<br>
-This hypothesis has one restriction on its work: the total quantity of
+When used with "Quadrangle (Mapping)" meshing algorithm, that is obsolete
+ since introducing \ref hypo_quad_params_anchor "Quadrangle parameters" 
+hypothesis, this hypothesis has one restriction on its work: the total quantity of 
 segments on all four sides of the face must be even (divisible by 2).
 
 \anchor viscous_layers_anchor
 <h2>Viscous Layers</h2>
 
 <b>Viscous Layers</b> additional hypothesis can be used together with
-3D algorithms, Hexahedron(i,j,k) for example. This
+some 3D algorithms, Hexahedron(i,j,k) for example. This
 hypothesis allows creation of layers of highly stretched prisms near
 mesh boundary, which is beneficial for high quality viscous
 computations. The prisms constructed on the quadrangular mesh faces are
