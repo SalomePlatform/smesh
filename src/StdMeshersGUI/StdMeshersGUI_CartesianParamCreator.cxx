@@ -19,11 +19,10 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-
 // File   : StdMeshersGUI_CartesianParamCreator.cxx
 // Author : Open CASCADE S.A.S.
+
 // SMESH includes
-//
 #include "StdMeshersGUI_CartesianParamCreator.h"
 
 #include <SMESHGUI.h>
@@ -302,11 +301,11 @@ namespace StdMeshersGUI
         }
         mySpacingTreeWdg->addTopLevelItem( setToItem( 0., 1., spacing ) );
       }
-      myCoordList->clear();
+      //myCoordList->clear();
     }
     else
     {
-      mySpacingTreeWdg->clear();
+      //mySpacingTreeWdg->clear();
       if ( myCoordList->count() == 0 )
         myCoordList->addItem( coordToItem( 0 ));
     }
