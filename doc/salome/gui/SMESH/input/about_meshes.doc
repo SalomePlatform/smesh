@@ -5,23 +5,24 @@
 \n \b MESH represents a discretization of a geometrical CAD model into
 a set of entities with a simple topology. 
 
-Meshes are stored in DAT, MED and UNV formats and can be
+Meshes are stored in DAT, MED, UNV, STL, CGNS and SAUVE formats and can be
 \subpage importing_exporting_meshes_page "imported from and exported to"
  the file in these formats.
 
-However, it is possible to \subpage constructing_meshes_page "construct meshes" 
+It is possible to \subpage constructing_meshes_page "construct meshes" 
 on the basis of geometrical shapes produced in the GEOM module.
-It is also possible to \subpage constructing_submeshes_page "create mesh on a part of the geometrical object", 
-for example, a face. 
+It is also possible to \subpage constructing_submeshes_page "mesh on a part of the geometrical object", 
+for example, a face, with different meshing parameters than the whole mesh.
 
-Several created meshes can be \subpage building_compounds_page "combined into mesh compounds".
+Several created meshes can be \subpage building_compounds_page "combined into another mesh".
 
-The whole mesh or it's part can be \subpage copy_mesh_page "copied"
-into another mesh.
+The whole mesh or it's part can be \subpage copy_mesh_page "copied" into another mesh.
 
-All created meshes and submeshes can be \subpage editing_meshes_page "edited".
+Meshing parameters of meshes and sub-meshes can be \subpage
+editing_meshes_page "edited", then only a path of mesh depending on
+changed parameters will be re-computed.
 
-Meshes can be also edited using the MESH functions destined for 
+Meshes can be edited using the MESH functions destined for 
 \ref modifying_meshes_page "modification" of generated meshes.
 
 The \b topology of a mesh is described by the relationships between its
@@ -33,28 +34,30 @@ entities including:
 <li>\b Edge &mdash; 1D element of a mesh defined by two nodes.</li>
 <li>\b Face &mdash; 2D element of a mesh defined by three or four edges (closed contour).</li>
 <li>\b Volume &mdash; 3D element of a mesh defined by several faces.</li>
+<li>\b Ball element &mdash; discrete element of a mesh defined by a node and a diameter.</li>
 </ul>
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;These entities are
 considered as topological entities and they don't
 imply any geometric representation. Only \b Nodes reference  geometric
 representations of points with definite coordinates. The node entity
-will contain  additional information about its position in the space
+contains  additional information about its position in the space
 and its relations with the meshed CAD model. Its position could be
 described in the following way:
 
 <ul>
-<li><b>2D position</b>. It is a free position defined by only two coordinates x,y.</li>
-<li><b>3D position</b>. It is a free position defined by three coordinates x,y and z. </li>
+<li><b>3D position</b>. It characterizes the position of a node in a
+  solid geometry and is defined by three coordinates x,y and z and a
+  reference to the solid geometrical entity. </li>
 <li><b>Surface position</b>. It characterizes the position of a node on a
-geometric surface and is defined by the u,v position in the parametric
-space of the corresponding surface.</li>
+  geometric surface and is defined by the u,v position in the parametric
+  space of the corresponding surface.</li>
 <li><b>Line position</b>. It characterizes the position of a node on a
-geometric curve and is defined by the u parameter and the
-corresponding curve.</li>
+  geometric curve and is defined by the u parameter and the
+  corresponding curve.</li>
 <li><b>Vertex position</b>. It characterizes the position of a node on a
-geometric point of the meshed CAD model and is defined by the x,y,z
-coordinates of the corresponding vertex.</li>
+  geometric point of the meshed CAD model and is defined by the x,y,z
+  coordinates of the corresponding vertex.</li>
 </ul>
 
 <br><h2>Connections</h2>
