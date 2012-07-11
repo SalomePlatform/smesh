@@ -4293,7 +4293,7 @@ class Mesh_Algorithm:
         hyp.SetIgnoreFaces(ignoreFaces)
         return hyp
 
-    ## Transform a list of ether edges or tuples (edge 1st_vertex_of_edge)
+    ## Transform a list of ether edges or tuples (edge, 1st_vertex_of_edge)
     #  into a list acceptable to SetReversedEdges() of some 1D hypotheses
     #  @ingroup l3_hypos_1dhyps
     def ReversedEdgeIndices(self, reverseList):
@@ -4314,19 +4314,19 @@ class Mesh_Algorithm:
                 v = i[1]
                 if not isinstance( e, geompyDC.GEOM._objref_GEOM_Object ) or \
                    not isinstance( v, geompyDC.GEOM._objref_GEOM_Object ):
-                    raise TypeError, "A list item must be a tuple (edge 1st_vertex_of_edge)"
+                    raise TypeError, "A list item must be a tuple (edge, 1st_vertex_of_edge)"
                 if v.GetShapeType() == geompyDC.GEOM.EDGE and \
                    e.GetShapeType() == geompyDC.GEOM.VERTEX:
                     v,e = e,v
                 if e.GetShapeType() != geompyDC.GEOM.EDGE or \
                    v.GetShapeType() != geompyDC.GEOM.VERTEX:
-                    raise TypeError, "A list item must be a tuple (edge 1st_vertex_of_edge)"
+                    raise TypeError, "A list item must be a tuple (edge, 1st_vertex_of_edge)"
                 vFirst = FirstVertexOnCurve( e )
                 tol    = geompy.Tolerance( vFirst )[-1]
                 if geompy.MinDistance( v, vFirst ) > 1.5*tol:
                     resList.append( geompy.GetSubShapeID(self.mesh.geom, e ))
             else:
-                raise TypeError, "Item must be either an edge or tuple (edge 1st_vertex_of_edge)"
+                raise TypeError, "Item must be either an edge or tuple (edge, 1st_vertex_of_edge)"
         return resList
 
 

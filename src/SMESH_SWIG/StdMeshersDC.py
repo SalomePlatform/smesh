@@ -109,7 +109,7 @@ class StdMeshersDC_Segment(Mesh_Algorithm):
     #  @param n for the number of segments that cut an edge
     #  @param s for the scale factor (optional)
     #  @param reversedEdges is a list of edges to mesh using reversed orientation.
-    #                       A list item can also be a tuple (edge 1st_vertex_of_edge)
+    #                       A list item can also be a tuple (edge, 1st_vertex_of_edge)
     #  @param UseExisting if ==true - searches for an existing hypothesis created with
     #                     the same parameters, else (default) - create a new one
     #  @return an instance of StdMeshers_NumberOfSegments hypothesis
@@ -154,7 +154,7 @@ class StdMeshersDC_Segment(Mesh_Algorithm):
     #  @param start defines the length of the first segment
     #  @param end   defines the length of the last  segment
     #  @param reversedEdges is a list of edges to mesh using reversed orientation.
-    #                       A list item can also be a tuple (edge 1st_vertex_of_edge)
+    #                       A list item can also be a tuple (edge, 1st_vertex_of_edge)
     #  @param UseExisting if ==true - searches for an existing hypothesis created with
     #                     the same parameters, else (default) - creates a new one
     #  @return an instance of StdMeshers_Arithmetic1D hypothesis
@@ -184,7 +184,7 @@ class StdMeshersDC_Segment(Mesh_Algorithm):
     #  @param points defines the list of parameters on curve
     #  @param nbSegs defines the list of numbers of segments
     #  @param reversedEdges is a list of edges to mesh using reversed orientation.
-    #                       A list item can also be a tuple (edge 1st_vertex_of_edge)
+    #                       A list item can also be a tuple (edge, 1st_vertex_of_edge)
     #  @param UseExisting if ==true - searches for an existing hypothesis created with
     #                     the same parameters, else (default) - creates a new one
     #  @return an instance of StdMeshers_Arithmetic1D hypothesis
@@ -210,7 +210,7 @@ class StdMeshersDC_Segment(Mesh_Algorithm):
     #  @param start defines the length of the first segment
     #  @param end   defines the length of the last  segment
     #  @param reversedEdges is a list of edges to mesh using reversed orientation.
-    #                       A list item can also be a tuple (edge 1st_vertex_of_edge)
+    #                       A list item can also be a tuple (edge, 1st_vertex_of_edge)
     #  @param UseExisting if ==true - searches for an existing hypothesis created with
     #                     the same parameters, else (default) - creates a new one
     #  @return an instance of StdMeshers_StartEndLength hypothesis
