@@ -1,41 +1,43 @@
 /*!
 
-\page constructing_submeshes_page Constructing submeshes
+\page constructing_submeshes_page Constructing sub-meshes
 
-Submesh is a mesh on a geometrical subobject created with algorithms
+Sub-mesh is a mesh on a geometrical sub-object created with algorithms
 and/or hypotheses other than the algorithms and hypotheses assigned to
 the parent mesh on the parent object.
 <br><br>
-If a geometrical subobject belongs to several geometrical objects
-having different meshes or submeshes, it will be meshed with the
-hypotheses of a submesh of a lower dimension.<br>
-For example, a face of a box is meshed with a submesh using algorithms
+If a geometrical sub-object belongs to several geometrical objects
+having different meshes or sub-meshes, it will be meshed with the
+hypotheses of a sub-mesh of a lower dimension.<br>
+For example, a face of a box is meshed with a sub-mesh using algorithms
 and hypotheses other than the parent mesh on the whole box. The face
 and the box share four edges, which will be meshed with algorithms and
-hypotheses of the submesh on the face, because the face is a 2D object
+hypotheses of the sub-mesh on the face, because the face is a 2D object
 while the box is a 3D object.  <br>
  If the dimensions are the same, an arbitrary algorithm/hypothesis
  will be used. This means that an edge shared by two faces each having
- its own different submesh, will be meshed using algorithms and
- hypotheses of any of the two, chosen randomly. <br>
+ its own different sub-mesh, will be meshed using algorithms and
+ hypotheses of any of the two, chosen randomly. This indeterminacy can
+ be fixed by defining \ref mesh_order_anchor "Sub-mesh priority".
+<br>
 
-\n Construction of a submesh consists of:
+\n Construction of a sub-mesh consists of:
 <ul>
-<li>Selecting a mesh which will encapsulate your submesh</li>
+<li>Selecting a mesh which will encapsulate your sub-mesh</li>
 <li>Selecting a geometrical object for meshing</li>
 <li>Applying one or several previously described 
 \ref about_hypo_page "hypotheses" and 
 \ref basic_meshing_algos_page "meshing algorithms" which will be used
-at computation of this submesh</li>
+at computation of this sub-mesh</li>
 </ul>
 
-<br><em>To construct a submesh:</em>
+<br><em>To construct a sub-mesh:</em>
 \par
-From the \b Mesh menu select <b>Create Submesh</b> or click <em>"Create
+From the \b Mesh menu select <b>Create Sub-mesh</b> or click <em>"Create
 Sum-mesh"</em> button in the toolbar.
 
 \image html image33.gif
-<center><em>"Create Submesh" button</em></center>
+<center><em>"Create Sub-mesh" button</em></center>
 
 \par
 The following dialog box will appear:
@@ -45,11 +47,11 @@ The following dialog box will appear:
 \par
 It allows to define the \b Name, the parent \b Mesh and the \b
 Geometry (e.g. a face if the parent mesh has been built on box) of the
-submesh. You can define algorithms and hypotheses in the same way as
+sub-mesh. You can define algorithms and hypotheses in the same way as
 in \ref constructing_meshes_page "Create mesh" menu.
 
 \par
-In the Object Browser the structure of the new submesh will be
+In the Object Browser the structure of the new sub-mesh will be
 displayed as follows:
 
 \image html image10.jpg
@@ -57,14 +59,14 @@ displayed as follows:
 \par
 It contains:
 <ul>
-<li>a reference to the geometrical object on the basis of which the submesh has been constructed;</li>
+<li>a reference to the geometrical object on the basis of which the sub-mesh has been constructed;</li>
 <li><b>Applied hypotheses</b> folder containing the references to the
-hypotheses applied to the construction of the submesh;</li>
+hypotheses applied to the construction of the sub-mesh;</li>
 <li><b>Applied algorithms</b> folder containing the references to the
-algorithms applied to the construction of the submesh.</li>
+algorithms applied to the construction of the sub-mesh.</li>
 </ul>
 
 <br><b>See Also</b> a sample TUI Script of a 
-\ref tui_construction_submesh "Construct Submesh" operation.
+\ref tui_construction_submesh "Construct Sub-mesh" operation.
 
 */
