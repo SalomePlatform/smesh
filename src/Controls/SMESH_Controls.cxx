@@ -715,6 +715,26 @@ SMDSAbs_ElementType MinimumAngle::GetType() const
   Class       : AspectRatio
   Description : Functor for calculating aspect ratio
 */
+double AspectRatio::GetValue( long theId )
+{
+  double aVal = 0;
+  myCurrElement = myMesh->FindElement( theId );
+  if ( myCurrElement && myCurrElement->GetVtkType() == VTK_QUAD )
+  {
+    // issue 21723
+    vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myCurrElement->getMeshId()]->getGrid();
+    if ( vtkCell* avtkCell = grid->GetCell( myCurrElement->getVtkId() ))
+      aVal = Round( vtkMeshQuality::QuadAspectRatio( avtkCell ));
+  }
+  else
+  {
+    TSequenceOfXYZ P;
+    if ( GetPoints( myCurrElement, P ))
+      aVal = Round( GetValue( P ));
+  }
+  return aVal;
+}
+
 double AspectRatio::GetValue( const TSequenceOfXYZ& P )
 {
   // According to "Mesh quality control" by Nadir Bouhamau referring to
