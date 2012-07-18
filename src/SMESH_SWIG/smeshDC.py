@@ -2037,7 +2037,7 @@ class Mesh:
     #  @ingroup l1_meshinfo
     def GetSubMeshNodesId(self, Shape, all):
         if ( isinstance( Shape, geompyDC.GEOM._objref_GEOM_Object)):
-            ShapeID = Shape.GetSubShapeIndices()[0]
+            ShapeID = self.geompyD.GetSubShapeID( self.geom, Shape )
         else:
             ShapeID = Shape
         return self.mesh.GetSubMeshNodesId(ShapeID, all)
