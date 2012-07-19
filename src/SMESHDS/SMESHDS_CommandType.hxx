@@ -53,11 +53,12 @@ enum SMESHDS_CommandType {
   SMESHDS_AddQuadPyramid,
   SMESHDS_AddQuadPentahedron,
   SMESHDS_AddQuadHexahedron,
-  // special type for 0D elements
+  //
   SMESHDS_Add0DElement,
   SMESHDS_AddBiQuadQuadrangle,
   SMESHDS_AddTriQuadHexa,
-  SMESHDS_AddHexagonalPrism
+  SMESHDS_AddHexagonalPrism,
+  SMESHDS_AddBall
 };
 
 
