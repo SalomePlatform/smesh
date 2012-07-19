@@ -25,6 +25,7 @@
 
 #include "SMESH_Client.hxx"
 #include "SMESH_Mesh.hxx"
+#include "SMESHDS_Script.hxx"
 
 #include "SALOME_NamingService.hxx"
 #include "SALOME_LifeCycleCORBA.hxx"
@@ -120,6 +121,32 @@ namespace
                                                              anIndexes[anIndexId]);
       if (!anElem)
         EXCEPTION(runtime_error,"SMDS_Mesh::FindElement - cannot Add0DElementWithID for ID = "<<anElemId);
+    }
+  }
+
+
+  //=======================================================================
+  //function : AddBallsWithID
+  //=======================================================================
+  inline void AddBallsWithID(SMDS_Mesh*            theMesh,
+                             SMESH::log_array_var& theSeq,
+                             CORBA::Long           theId)
+  {
+    const SMESH::double_array& aDiameter = theSeq[theId].coords;
+    const SMESH::long_array& anIndexes   = theSeq[theId].indexes;
+    CORBA::Long anElemId = 0, aNbElems   = theSeq[theId].number;
+    if (2*aNbElems != anIndexes.length() )
+      EXCEPTION(runtime_error,"AddEdgeWithID - 2*aNbElems != anIndexes.length()");
+    if (aNbElems != aDiameter.length())
+      EXCEPTION(runtime_error,"AddEdgeWithID - aNbElems != aDiameter.length()");
+    CORBA::Long anIndexId = 0;
+    for (; anElemId < aNbElems; anElemId++, anIndexId+=2)
+    {
+      SMDS_MeshElement* anElem = theMesh->AddBallWithID(anIndexes[anIndexId+1],
+                                                        aDiameter[anElemId],
+                                                        anIndexes[anIndexId]);
+      if (!anElem)
+        EXCEPTION(runtime_error,"cannot SMDS_Mesh::AddBallsWithID for ID = "<<anElemId);
     }
   }
 
@@ -835,7 +862,6 @@ SMESH_Client::Update(bool theIsClear)
         switch(aCommand)
         {
         case SMESH::ADD_NODE             : AddNodesWithID      ( mySMDSMesh, aSeq, anId ); break;
-        case SMESH::ADD_ELEM0D           : Add0DElementsWithID ( mySMDSMesh, aSeq, anId ); break;
         case SMESH::ADD_EDGE             : AddEdgesWithID      ( mySMDSMesh, aSeq, anId ); break;
         case SMESH::ADD_TRIANGLE         : AddTriasWithID      ( mySMDSMesh, aSeq, anId ); break;
         case SMESH::ADD_QUADRANGLE       : AddQuadsWithID      ( mySMDSMesh, aSeq, anId ); break;
@@ -846,6 +872,8 @@ SMESH_Client::Update(bool theIsClear)
         case SMESH::ADD_HEXAHEDRON       : AddHexasWithID      ( mySMDSMesh, aSeq, anId ); break;
         case SMESH::ADD_HEXAGONAL_PRISM  : AddHexPrismWithID   ( mySMDSMesh, aSeq, anId ); break;
         case SMESH::ADD_POLYHEDRON       : AddPolyhedronsWithID( mySMDSMesh, aSeq, anId ); break;
+        case SMESH::ADD_ELEM0D           : Add0DElementsWithID ( mySMDSMesh, aSeq, anId ); break;
+        case SMESH::ADD_BALL             : AddBallsWithID      ( mySMDSMesh, aSeq, anId ); break;
 
         case SMESH::ADD_QUADEDGE         : AddQuadEdgesWithID   ( mySMDSMesh, aSeq, anId ); break;
         case SMESH::ADD_QUADTRIANGLE     : AddQuadTriasWithID   ( mySMDSMesh, aSeq, anId ); break;
