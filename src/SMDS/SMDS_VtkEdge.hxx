@@ -17,6 +17,10 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
+//  SMESH SMDS : implementaion of Salome mesh data structure
+//  File   : SMDS_VtkEdge.hxx
+//  Module : SMESH
+
 #ifndef _SMDS_VTKEDGE_HXX_
 #define _SMDS_VTKEDGE_HXX_
 
@@ -38,9 +42,9 @@ public:
   virtual bool ChangeNodes(const SMDS_MeshNode* nodes[], const int nbNodes);
   virtual bool IsMediumNode(const SMDS_MeshNode* node) const;
 
-  void Print(std::ostream & OS) const;
-  int NbNodes() const;
-  int NbEdges() const;
+  virtual void Print(std::ostream & OS) const;
+  virtual int NbNodes() const;
+  virtual int NbEdges() const;
 
   virtual vtkIdType GetVtkType() const;
   virtual SMDSAbs_EntityType GetEntityType() const;

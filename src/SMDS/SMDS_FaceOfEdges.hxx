@@ -46,25 +46,18 @@ class SMDS_EXPORT SMDS_FaceOfEdges:public SMDS_MeshFace
                          const SMDS_MeshEdge* edge3,
                          const SMDS_MeshEdge* edge4);
                 
-        SMDSAbs_ElementType GetType() const;
+        virtual SMDSAbs_ElementType  GetType() const;
         virtual SMDSAbs_EntityType   GetEntityType() const;
-        virtual bool ChangeNodes(const SMDS_MeshNode* nodes[], const int nbNodes) {return false;};
-        int NbNodes() const;
-        int NbEdges() const;
-        int NbFaces() const;
-//      friend bool operator<(const SMDS_FaceOfEdges& e1, const SMDS_FaceOfEdges& e2);
-
-
-  /*!
-   * \brief Return node by its index
-    * \param ind - node index
-    * \retval const SMDS_MeshNode* - the node
-   */
-  virtual const SMDS_MeshNode* GetNode(const int ind) const;
+        virtual SMDSAbs_GeometryType GetGeomType() const;
+        virtual bool ChangeNodes(const SMDS_MeshNode* nodes[],
+                                 const int            nbNodes) {return false;}
+        virtual int NbNodes() const;
+        virtual int NbEdges() const;
+        virtual int NbFaces() const;
+        virtual const SMDS_MeshNode* GetNode(const int ind) const;
 
   protected:
-        SMDS_ElemIteratorPtr
-                elementsIterator(SMDSAbs_ElementType type) const;
+        virtual SMDS_ElemIteratorPtr elementsIterator(SMDSAbs_ElementType type) const;
 
   private:
         const SMDS_MeshEdge* myEdges[4];

@@ -153,3 +153,17 @@ SMDSAbs_EntityType SMDS_VolumeOfFaces::GetEntityType() const
   }
   return aType;
 }
+
+SMDSAbs_GeometryType SMDS_VolumeOfFaces::GetGeomType() const
+{
+  SMDSAbs_GeometryType aType = SMDSGeom_NONE;
+  switch(myNbFaces)
+  {
+  case 4: aType = SMDSGeom_TETRA;   break;
+  case 5: aType = SMDSGeom_PYRAMID; break;
+  case 6: aType = SMDSGeom_PENTA;   break;
+  case 8:
+  default: aType = SMDSGeom_HEXA;   break;
+  }
+  return aType;
+}

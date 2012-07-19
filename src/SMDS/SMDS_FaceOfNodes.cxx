@@ -180,5 +180,9 @@ const SMDS_MeshNode* SMDS_FaceOfNodes::GetNode(const int ind) const
 
 SMDSAbs_EntityType SMDS_FaceOfNodes::GetEntityType() const
 {
-  return myNbNodes == 3 ? SMDSEntity_Triangle : SMDSEntity_Quadrangle;
+  return NbNodes() == 3 ? SMDSEntity_Triangle : SMDSEntity_Quadrangle;
+}
+SMDSAbs_GeometryType SMDS_FaceOfNodes::GetGeomType() const
+{
+  return NbNodes() == 3 ? SMDSGeom_TRIANGLE : SMDSGeom_QUADRANGLE;
 }

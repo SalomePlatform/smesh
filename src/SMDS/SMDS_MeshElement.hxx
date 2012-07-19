@@ -80,11 +80,11 @@ public:
 
   ///Return the type of the current element
   virtual SMDSAbs_ElementType GetType() const = 0;
+  virtual SMDSAbs_EntityType GetEntityType() const = 0;
+  virtual SMDSAbs_GeometryType GetGeomType() const = 0;
   virtual vtkIdType GetVtkType() const = 0;
-  virtual bool IsPoly() const { return false; };
+  virtual bool IsPoly() const { return false; }
   virtual bool IsQuadratic() const;
-  //! Return type of entity
-  virtual SMDSAbs_EntityType  GetEntityType() const = 0;
 
   virtual bool IsMediumNode(const SMDS_MeshNode* node) const;
   virtual int  NbCornerNodes() const;
@@ -140,10 +140,32 @@ public:
    */
   int GetNodeIndex( const SMDS_MeshNode* node ) const;
 
-  inline ShortType getMeshId() const {return myMeshId; }
-  inline LongType  getshapeId() const {return myShapeId; }
-  inline int getIdInShape() const { return myIdInShape; }
-  inline int getVtkId() const { return myVtkID; }
+  inline ShortType getMeshId()  const { return myMeshId; }
+  inline LongType  getshapeId() const { return myShapeId; }
+  inline int getIdInShape()     const { return myIdInShape; }
+  inline int getVtkId()         const { return myVtkID; }
+
+  /*!
+   * \brief Filters of elements, to be used with SMDS_SetIterator
+   */
+  struct TypeFilter
+  {
+    SMDSAbs_ElementType _type;
+    TypeFilter( SMDSAbs_ElementType t = SMDSAbs_NbElementTypes ):_type(t) {}
+    bool operator()(const SMDS_MeshElement* e) const { return e && e->GetType() == _type; }
+  };
+  struct EntityFilter
+  {
+    SMDSAbs_EntityType _type;
+    EntityFilter( SMDSAbs_EntityType t = SMDSEntity_Last ):_type(t) {}
+    bool operator()(const SMDS_MeshElement* e) const { return e && e->GetEntityType() == _type; }
+  };
+  struct GeomFilter
+  {
+    SMDSAbs_GeometryType _type;
+    GeomFilter( SMDSAbs_GeometryType t = SMDSGeom_NONE ):_type(t) {}
+    bool operator()(const SMDS_MeshElement* e) const { return e && e->GetGeomType() == _type; }
+  };
 
 protected:
   inline void setId(int id) {myID = id; }

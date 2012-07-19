@@ -34,16 +34,20 @@ public:
   ~SMDS_VtkFace();
   void init(const std::vector<vtkIdType>& nodeIds, SMDS_Mesh* mesh);
   void initPoly(const std::vector<vtkIdType>& nodeIds, SMDS_Mesh* mesh);
+
   bool ChangeNodes(const SMDS_MeshNode* nodes[], const int nbNodes);
   void ChangeApex(SMDS_MeshNode* node); // to use only for tmp triangles
-  void Print(std::ostream & OS) const;
-  int NbEdges() const;
-  int NbFaces() const;
-  int NbNodes() const;
 
-  virtual vtkIdType GetVtkType() const;
-  virtual SMDSAbs_EntityType GetEntityType() const;
+  virtual void Print(std::ostream & OS) const;
+  virtual int NbEdges() const;
+  virtual int NbFaces() const;
+  virtual int NbNodes() const;
+
+  virtual vtkIdType            GetVtkType() const;
+  virtual SMDSAbs_EntityType   GetEntityType() const;
+  virtual SMDSAbs_GeometryType GetGeomType() const;
   virtual const SMDS_MeshNode* GetNode(const int ind) const;
+
   virtual bool IsQuadratic() const;
   virtual bool IsPoly() const;
   virtual bool IsMediumNode(const SMDS_MeshNode* node) const;

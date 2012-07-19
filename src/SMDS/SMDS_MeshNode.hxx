@@ -33,7 +33,7 @@
 #include "SMDS_Position.hxx"
 #include "ObjectPool.hxx"
 
-class SMDS_EXPORT SMDS_MeshNode:public SMDS_MeshElement
+class SMDS_EXPORT SMDS_MeshNode: public SMDS_MeshElement
 {
 public:
   friend class SMESHDS_Mesh;
@@ -49,12 +49,11 @@ public:
   SMDS_ElemIteratorPtr    GetInverseElementIterator(SMDSAbs_ElementType type=SMDSAbs_All) const;
   int                     NbInverseElements(SMDSAbs_ElementType type=SMDSAbs_All) const;
   const SMDS_PositionPtr& GetPosition() const;
-  SMDSAbs_ElementType     GetType() const;
-  virtual vtkIdType       GetVtkType() const;
-  SMDSAbs_EntityType      GetEntityType() const {return SMDSEntity_Node;}
-  int                     NbNodes() const;
-
-  friend bool operator<(const SMDS_MeshNode& e1, const SMDS_MeshNode& e2);
+  virtual SMDSAbs_ElementType  GetType() const;
+  virtual vtkIdType            GetVtkType() const;
+  virtual SMDSAbs_EntityType   GetEntityType() const { return SMDSEntity_Node;}
+  virtual SMDSAbs_GeometryType GetGeomType() const   { return SMDSGeom_NONE; }
+  virtual int                  NbNodes() const;
 
   void SetPosition(const SMDS_PositionPtr& aPos);
   void setXYZ(double x, double y, double z);

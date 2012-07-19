@@ -58,6 +58,7 @@ class SMDS_EXPORT SMDS_FaceOfNodes:public SMDS_MeshFace
   virtual const SMDS_MeshNode* GetNode(const int ind) const;
 
   virtual SMDSAbs_EntityType   GetEntityType() const;
+  virtual SMDSAbs_GeometryType GetGeomType() const;
 
   protected:
         SMDS_ElemIteratorPtr

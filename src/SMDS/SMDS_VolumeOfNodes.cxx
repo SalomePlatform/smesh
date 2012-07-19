@@ -254,4 +254,18 @@ SMDSAbs_EntityType SMDS_VolumeOfNodes::GetEntityType() const
   return aType;
 }
 
+SMDSAbs_GeometryType SMDS_VolumeOfNodes::GetGeomType() const
+{
+  SMDSAbs_GeometryType aType = SMDSGeom_NONE;
+  switch(myNbNodes)
+  {
+  case 4: aType = SMDSGeom_TETRA;   break;
+  case 5: aType = SMDSGeom_PYRAMID; break;
+  case 6: aType = SMDSGeom_PENTA;   break;
+  case 12: aType = SMDSGeom_HEXAGONAL_PRISM; break;
+  case 8:
+  default: aType = SMDSGeom_HEXA;    break;
+  }
+  return aType;
+}
 

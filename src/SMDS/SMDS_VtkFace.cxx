@@ -238,6 +238,25 @@ SMDSAbs_EntityType SMDS_VtkFace::GetEntityType() const
   return SMDS_MeshCell::toSmdsType( VTKCellType( aVtkType ));
 }
 
+SMDSAbs_GeometryType SMDS_VtkFace::GetGeomType() const
+{
+  vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
+  vtkIdType aVtkType = grid->GetCellType(this->myVtkID);
+  switch ( aVtkType ) {
+  case VTK_TRIANGLE:
+  case VTK_QUADRATIC_TRIANGLE:
+    return SMDSGeom_TRIANGLE;
+  case VTK_QUAD:
+  case VTK_QUADRATIC_QUAD:
+  case VTK_BIQUADRATIC_QUAD:
+    return SMDSGeom_QUADRANGLE;
+  case VTK_POLYGON:
+    return SMDSGeom_POLYGON;
+  default:;
+  }
+  return SMDSGeom_NONE;
+}
+
 vtkIdType SMDS_VtkFace::GetVtkType() const
 {
   vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();

@@ -189,3 +189,8 @@ SMDSAbs_EntityType SMDS_FaceOfEdges::GetEntityType() const
 {
   return myNbEdges == 3 ? SMDSEntity_Triangle : SMDSEntity_Quadrangle;
 }
+
+SMDSAbs_GeometryType SMDS_FaceOfEdges::GetGeomType() const
+{
+  return myNbEdges == 3 ? SMDSGeom_TRIANGLE : SMDSGeom_QUADRANGLE;
+}

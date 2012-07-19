@@ -40,10 +40,10 @@ public:
   virtual bool ChangeNodes(const SMDS_MeshNode* nodes[], const int nbNodes);
   virtual bool vtkOrder(const SMDS_MeshNode* nodes[], const int nbNodes);
 
-  void Print(std::ostream & OS) const;
-  int NbFaces() const;
-  int NbNodes() const;
-  int NbEdges() const;
+  virtual void Print(std::ostream & OS) const;
+  virtual int NbFaces() const;
+  virtual int NbNodes() const;
+  virtual int NbEdges() const;
 
   // 1 <= face_ind <= NbFaces()
   int NbFaceNodes (const int face_ind) const;
@@ -51,9 +51,10 @@ public:
   // 1 <= node_ind <= NbFaceNodes()
   const SMDS_MeshNode* GetFaceNode (const int face_ind, const int node_ind) const;
 
-  virtual SMDSAbs_ElementType GetType() const;
-  virtual vtkIdType GetVtkType() const;
-  virtual SMDSAbs_EntityType GetEntityType() const;
+  virtual SMDSAbs_ElementType  GetType() const;
+  virtual vtkIdType            GetVtkType() const;
+  virtual SMDSAbs_EntityType   GetEntityType() const;
+  virtual SMDSAbs_GeometryType GetGeomType() const;
   virtual const SMDS_MeshNode* GetNode(const int ind) const;
   virtual bool IsQuadratic() const;
   virtual bool IsPoly() const;

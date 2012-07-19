@@ -28,11 +28,12 @@
 
 #include "SMDS_MeshCell.hxx"
 
-class SMDS_EXPORT SMDS_MeshEdge:public SMDS_MeshCell
+class SMDS_EXPORT SMDS_MeshEdge: public SMDS_MeshCell
 {
         
-  public:
-        SMDSAbs_ElementType GetType() const;
-        virtual vtkIdType GetVtkType() const;
+ public:
+  virtual SMDSAbs_ElementType  GetType() const;
+  virtual vtkIdType            GetVtkType() const;
+  virtual SMDSAbs_GeometryType GetGeomType() const { return SMDSGeom_EDGE; }
 };
 #endif

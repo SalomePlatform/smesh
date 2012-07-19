@@ -19,7 +19,6 @@
 
 //  SMESH SMDS : implementaion of Salome mesh data structure
 //  File   : SMDS_Mesh0DElement.cxx
-//  Author : Jean-Michel BOULCOURT
 //  Module : SMESH
 //
 #ifdef _MSC_VER
@@ -123,18 +122,6 @@ SMDS_ElemIteratorPtr SMDS_Mesh0DElement::elementsIterator (SMDSAbs_ElementType t
       (new SMDS_IteratorOfElements
        (this,type, SMDS_ElemIteratorPtr(new SMDS_Mesh0DElement_MyNodeIterator(myNode))));
   }
-}
-
-//=======================================================================
-//function : operator<
-//purpose  :
-//=======================================================================
-bool operator< (const SMDS_Mesh0DElement & e1, const SMDS_Mesh0DElement & e2)
-{
-  int id1 = e1.myNode->getVtkId();
-  int id2 = e2.myNode->getVtkId();
-
-  return (id1 < id2);
 }
 
 /*!

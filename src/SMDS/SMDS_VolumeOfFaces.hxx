@@ -56,14 +56,15 @@ class SMDS_EXPORT SMDS_VolumeOfFaces:public SMDS_MeshVolume
                            const SMDS_MeshFace * face6);
 
         virtual SMDSAbs_EntityType GetEntityType() const;
-        virtual bool ChangeNodes(const SMDS_MeshNode* nodes[], const int nbNodes) {return false;};
-        void Print(std::ostream & OS) const;
+        virtual SMDSAbs_GeometryType GetGeomType() const;
+        virtual bool ChangeNodes(const SMDS_MeshNode* nodes[],
+                                 const int            nbNodes) {return false;}
+        virtual void Print(std::ostream & OS) const;
 
-        int NbFaces() const;
+        virtual int NbFaces() const;
 
   protected:
-        SMDS_ElemIteratorPtr
-                elementsIterator(SMDSAbs_ElementType type) const;
+        virtual SMDS_ElemIteratorPtr elementsIterator(SMDSAbs_ElementType type) const;
         const SMDS_MeshFace * myFaces[6];
         int                   myNbFaces;
 };

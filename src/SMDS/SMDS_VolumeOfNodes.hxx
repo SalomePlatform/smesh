@@ -70,8 +70,9 @@ class SMDS_EXPORT SMDS_VolumeOfNodes:public SMDS_MeshVolume
         int NbFaces() const;
         int NbNodes() const;
         int NbEdges() const;
-        virtual SMDSAbs_ElementType GetType() const;    
-        virtual SMDSAbs_EntityType GetEntityType() const;
+        virtual SMDSAbs_ElementType  GetType() const;    
+        virtual SMDSAbs_EntityType   GetEntityType() const;
+        virtual SMDSAbs_GeometryType GetGeomType() const;
 
   /*!
    * \brief Return node by its index

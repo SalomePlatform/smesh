@@ -571,6 +571,46 @@ SMDSAbs_EntityType SMDS_VtkVolume::GetEntityType() const
   return aType;
 }
 
+SMDSAbs_GeometryType SMDS_VtkVolume::GetGeomType() const
+{
+  vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
+  vtkIdType aVtkType = grid->GetCellType(this->myVtkID);
+
+  SMDSAbs_GeometryType aType = SMDSGeom_NONE;
+  switch (aVtkType)
+  {
+    case VTK_TETRA:
+    case VTK_QUADRATIC_TETRA:
+      aType = SMDSGeom_TETRA;
+      break;
+    case VTK_PYRAMID:
+    case VTK_QUADRATIC_PYRAMID:
+      aType = SMDSGeom_PYRAMID;
+      break;
+    case VTK_WEDGE:
+    case VTK_QUADRATIC_WEDGE:
+      aType = SMDSGeom_PENTA;
+      break;
+    case VTK_HEXAHEDRON:
+    case VTK_QUADRATIC_HEXAHEDRON:
+    case VTK_TRIQUADRATIC_HEXAHEDRON:
+      aType = SMDSGeom_HEXA;
+      break;
+    case VTK_HEXAGONAL_PRISM:
+      aType = SMDSGeom_HEXAGONAL_PRISM;
+      break;
+//#ifdef VTK_HAVE_POLYHEDRON
+    case VTK_POLYHEDRON:
+      aType = SMDSGeom_POLYHEDRA;
+      break;
+//#endif
+    default:
+      aType = SMDSGeom_POLYHEDRA;
+      break;
+  }
+  return aType;
+}
+
 vtkIdType SMDS_VtkVolume::GetVtkType() const
 {
   vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
