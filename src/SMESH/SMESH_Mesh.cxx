@@ -20,7 +20,6 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : SMESH_Mesh.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
@@ -1582,6 +1581,18 @@ int SMESH_Mesh::NbPolyhedrons() const throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
   return _myMeshDS->GetMeshInfo().NbPolyhedrons();
+}
+
+//================================================================================
+/*!
+ * \brief  Return number of ball elements in the mesh
+ */
+//================================================================================
+
+int SMESH_Mesh::NbBalls() const throw(SALOME_Exception)
+{
+  Unexpect aCatch(SalomeException);
+  return _myMeshDS->GetMeshInfo().NbBalls();
 }
 
 //================================================================================

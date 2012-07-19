@@ -20,7 +20,6 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : SMESH_Mesh.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
@@ -276,6 +275,8 @@ public:
   int NbHexagonalPrisms() const throw(SALOME_Exception);
   
   int NbPolyhedrons() const throw(SALOME_Exception);
+  
+  int NbBalls() const throw(SALOME_Exception);
   
   int NbSubMesh() const throw(SALOME_Exception);
   
