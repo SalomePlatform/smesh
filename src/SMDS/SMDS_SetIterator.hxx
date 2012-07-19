@@ -22,7 +22,7 @@
 
 //  SMESH SMDS : implementaion of Salome mesh data structure
 // File      : SMDS_SetIterator.hxx
-// Created   : Mon Feb 27 16:57:43 2006
+// Created   : Feb 27 2006
 // Author    : Edward AGAPOV (eap)
 //
 #ifndef SMDS_SetIterator_HeaderFile
@@ -30,11 +30,11 @@
 
 #include "SMDS_Iterator.hxx"
 
-///////////////////////////////////////////////////////////////////////////////
-/// Accessors to value pointed by iterator
-///////////////////////////////////////////////////////////////////////////////
-
 namespace SMDS {
+
+  ///////////////////////////////////////////////////////////////////////////////
+  /// Accessors to value pointed by iterator
+  ///////////////////////////////////////////////////////////////////////////////
 
   template<typename VALUE,typename VALUE_SET_ITERATOR>
   struct SimpleAccessor {
@@ -50,6 +50,22 @@ namespace SMDS {
   struct ValueAccessor {
     static VALUE value(VALUE_SET_ITERATOR it) { return (VALUE) it->second; }
   };
+
+  ///////////////////////////////////////////////////////////////////////////////
+  /// Filters of value pointed by iterator
+  ///////////////////////////////////////////////////////////////////////////////
+
+  template <typename VALUE>
+  struct PassAllValueFilter
+  {
+    bool operator()(const VALUE& t ) { return true; }
+  };
+
+  template <typename VALUE>
+  struct NonNullFilter
+  {
+    bool operator()(const VALUE& t ) { return bool( t ); }
+  };
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -61,26 +77,43 @@ namespace SMDS {
 
 template<typename VALUE,
          typename VALUE_SET_ITERATOR,
-         typename ACCESOR=SMDS::SimpleAccessor<VALUE,VALUE_SET_ITERATOR> >
+         typename ACCESOR=SMDS::SimpleAccessor<VALUE,VALUE_SET_ITERATOR>,
+         typename VALUE_FILTER=SMDS::PassAllValueFilter<VALUE> >
 class SMDS_SetIterator : public SMDS_Iterator<VALUE>
 {
 protected:
   VALUE_SET_ITERATOR _beg, _end;
+  VALUE_FILTER _filter;
 public:
   SMDS_SetIterator(const VALUE_SET_ITERATOR & begin,
-                   const VALUE_SET_ITERATOR & end)
-  { init ( begin, end ); }
+                   const VALUE_SET_ITERATOR & end,
+                   const VALUE_FILTER&        filter=VALUE_FILTER())
+  { init ( begin, end, filter ); }
 
   /// Initialization
   virtual void init(const VALUE_SET_ITERATOR & begin,
-                    const VALUE_SET_ITERATOR & end)
-  { _beg = begin; _end = end; }
-
-  /// Return true if and only if there are other object in this iterator
-  virtual bool more() { return _beg != _end; }
-
+                    const VALUE_SET_ITERATOR & end,
+                    const VALUE_FILTER&        filter=VALUE_FILTER())
+  {
+    _beg = begin;
+    _end = end;
+    _filter = filter;
+    if ( more() && !_filter( ACCESOR::value( _beg )))
+      next();
+  }
+  /// Return true iff there are other object in this iterator
+  virtual bool more()
+  {
+    return _beg != _end;
+  }
   /// Return the current object and step to the next one
-  virtual VALUE next() { return ACCESOR::value( _beg++ ); }
+  virtual VALUE next()
+  {
+    VALUE ret = ACCESOR::value( _beg++ );
+    while ( more() && !_filter( ACCESOR::value( _beg )))
+      ++_beg;
+    return ret;
+  }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
