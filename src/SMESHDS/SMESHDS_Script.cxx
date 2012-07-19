@@ -24,7 +24,6 @@
 //  File   : SMESH_Script.cxx
 //  Author : Yves FRICAUD, OCC
 //  Module : SMESH
-//  $Header: 
 //
 #include "SMESHDS_Script.hxx"
 #include <iostream>
@@ -247,7 +246,7 @@ void SMESHDS_Script::AddVolume(int NewVolID, int idnode1, int idnode2, int idnod
 //function : AddPolygonalFace
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::AddPolygonalFace (int NewFaceID, std::vector<int> nodes_ids)
+void SMESHDS_Script::AddPolygonalFace (int NewFaceID, const std::vector<int>& nodes_ids)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -260,9 +259,9 @@ void SMESHDS_Script::AddPolygonalFace (int NewFaceID, std::vector<int> nodes_ids
 //function : AddPolyhedralVolume
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::AddPolyhedralVolume (int NewID,
-                                          std::vector<int> nodes_ids,
-                                          std::vector<int> quantities)
+void SMESHDS_Script::AddPolyhedralVolume (int                     NewID,
+                                          const std::vector<int>& nodes_ids,
+                                          const std::vector<int>& quantities)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -270,6 +269,19 @@ void SMESHDS_Script::AddPolyhedralVolume (int NewID,
   }
   getCommand(SMESHDS_AddPolyhedron)->AddPolyhedralVolume
     (NewID, nodes_ids, quantities);
+}
+
+//=======================================================================
+//function : AddBall
+//purpose  : Record adding a Ball
+//=======================================================================
+
+void SMESHDS_Script::AddBall(int NewBallID, int node, double diameter)
+{
+  if ( myIsEmbeddedMode )
+    myIsModified = true;
+  else
+    getCommand(SMESHDS_AddBall)->AddBall(NewBallID, node, diameter);
 }
 
 //=======================================================================
@@ -329,9 +341,9 @@ void SMESHDS_Script::ChangeElementNodes(int ElementID, int nodes[], int nbnodes)
 //function : ChangePolyhedronNodes
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::ChangePolyhedronNodes (const int        ElementID,
-                                            std::vector<int> nodes_ids,
-                                            std::vector<int> quantities)
+void SMESHDS_Script::ChangePolyhedronNodes (const int               ElementID,
+                                            const std::vector<int>& nodes_ids,
+                                            const std::vector<int>& quantities)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;

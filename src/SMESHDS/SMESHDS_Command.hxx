@@ -43,23 +43,24 @@ class SMESHDS_EXPORT SMESHDS_Command
         void AddEdge(int NewEdgeID, int idnode1, int idnode2);
         void AddFace(int NewFaceID, int idnode1, int idnode2, int idnode3);
         void AddFace(int NewFaceID, int idnode1, int idnode2, int idnode3,
-                int idnode4);
+                     int idnode4);
         void AddVolume(int NewVolID, int idnode1, int idnode2, int idnode3,
-                int idnode4);
+                       int idnode4);
         void AddVolume(int NewVolID, int idnode1, int idnode2, int idnode3,
-                int idnode4, int idnode5);
+                       int idnode4, int idnode5);
         void AddVolume(int NewVolID, int idnode1, int idnode2, int idnode3,
-                int idnode4, int idnode5, int idnode6);
+                       int idnode4, int idnode5, int idnode6);
         void AddVolume(int NewVolID, int idnode1, int idnode2, int idnode3,
-                int idnode4, int idnode5, int idnode6, int idnode7, int idnode8);
+                       int idnode4, int idnode5, int idnode6, int idnode7, int idnode8);
         void AddVolume(int NewVolID, int idnode1, int idnode2, int idnode3,
                        int idnode4, int idnode5, int idnode6, int idnode7, int idnode8,
                        int idnode9, int idnode10, int idnode11, int idnode12);
-        void AddPolygonalFace (const int        ElementID,
-                               std::vector<int> nodes_ids);
-        void AddPolyhedralVolume (const int        ElementID,
-                                  std::vector<int> nodes_ids,
-                                  std::vector<int> quantities);
+        void AddPolygonalFace (const int               ElementID,
+                               const std::vector<int>& nodes_ids);
+        void AddPolyhedralVolume (const int               ElementID,
+                                  const std::vector<int>& nodes_ids,
+                                  const std::vector<int>& quantities);
+        void AddBall(int NewBallID, int node, double diameter);
         // special methods for quadratic elements
         void AddEdge(int NewEdgeID, int n1, int n2, int n12);
         void AddFace(int NewFaceID, int n1, int n2, int n3,
@@ -95,9 +96,9 @@ class SMESHDS_EXPORT SMESHDS_Command
         void RemoveNode(int NodeID);
         void RemoveElement(int ElementID);
         void ChangeElementNodes(int ElementID, int nodes[], int nbnodes);
-        void ChangePolyhedronNodes(const int ElementID,
-                                   std::vector<int> nodes_ids,
-                                   std::vector<int> quantities);
+        void ChangePolyhedronNodes(const int               ElementID,
+                                   const std::vector<int>& nodes_ids,
+                                   const std::vector<int>& quantities);
         void Renumber (const bool isNodes, const int startID, const int deltaID);
         SMESHDS_CommandType GetType();
         int GetNumber();

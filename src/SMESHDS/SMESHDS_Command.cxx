@@ -24,7 +24,6 @@
 //  File   : SMESH_Command.cxx
 //  Author : Yves FRICAUD, OCC
 //  Module : SMESH
-//  $Header: 
 //
 #include "SMESHDS_Command.hxx"
 
@@ -278,8 +277,8 @@ void SMESHDS_Command::AddVolume(int NewVolID,
 //function : AddPolygonalFace
 //purpose  : 
 //=======================================================================
-void SMESHDS_Command::AddPolygonalFace (const int        ElementID,
-                                        std::vector<int> nodes_ids)
+void SMESHDS_Command::AddPolygonalFace (const int               ElementID,
+                                        const std::vector<int>& nodes_ids)
 {
   if (!myType == SMESHDS_AddPolygon) {
     MESSAGE("SMESHDS_Command::AddPolygonalFace : Bad Type");
@@ -300,9 +299,9 @@ void SMESHDS_Command::AddPolygonalFace (const int        ElementID,
 //function : AddPolyhedralVolume
 //purpose  : 
 //=======================================================================
-void SMESHDS_Command::AddPolyhedralVolume (const int        ElementID,
-                                           std::vector<int> nodes_ids,
-                                           std::vector<int> quantities)
+void SMESHDS_Command::AddPolyhedralVolume (const int               ElementID,
+                                           const std::vector<int>& nodes_ids,
+                                           const std::vector<int>& quantities)
 {
   if (!myType == SMESHDS_AddPolyhedron) {
     MESSAGE("SMESHDS_Command::AddPolyhedralVolume : Bad Type");
@@ -379,9 +378,9 @@ void SMESHDS_Command::ChangeElementNodes(int ElementID, int nodes[], int nbnodes
 //function : ChangePolyhedronNodes
 //purpose  : 
 //=======================================================================
-void SMESHDS_Command::ChangePolyhedronNodes (const int ElementID,
-                                             std::vector<int> nodes_ids,
-                                             std::vector<int> quantities)
+void SMESHDS_Command::ChangePolyhedronNodes (const int               ElementID,
+                                             const std::vector<int>& nodes_ids,
+                                             const std::vector<int>& quantities)
 {
   if (myType != SMESHDS_ChangePolyhedronNodes)
   {
@@ -726,3 +725,21 @@ void SMESHDS_Command::AddVolume(int NewVolID, int n1, int n2, int n3,
   myNumber++;
 }
 
+//================================================================================
+/*!
+ * \brief Record adding a Ball
+ */
+//================================================================================
+
+void SMESHDS_Command::AddBall(int NewBallID, int node, double diameter)
+{
+  if (!myType == SMESHDS_AddBall)
+  {
+    MESSAGE("SMESHDS_Command::SMESHDS_AddBall : Bad Type");
+    return;
+  }
+  myIntegers.push_back(NewBallID);
+  myIntegers.push_back(node);
+  myReals.push_back(diameter);
+  myNumber++;
+}

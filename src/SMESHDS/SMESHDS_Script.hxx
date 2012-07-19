@@ -62,11 +62,12 @@ class SMESHDS_EXPORT SMESHDS_Script
                        int idnode4, int idnode5, int idnode6, int idnode7, int idnode8,
                        int idnode9, int idnode10, int idnode11, int idnode12);
 
-        void AddPolygonalFace (const int NewFaceID,
-                               std::vector<int> nodes_ids);
-        void AddPolyhedralVolume (const int NewVolID,
-                                  std::vector<int> nodes_ids,
-                                  std::vector<int> quantities);
+        void AddPolygonalFace (const int               NewFaceID,
+                               const std::vector<int>& nodes_ids);
+        void AddPolyhedralVolume (const int               NewVolID,
+                                  const std::vector<int>& nodes_ids,
+                                  const std::vector<int>& quantities);
+        void AddBall(int NewBallID, int node, double diameter);
 
         // special methods for quadratic elements
         void AddEdge(int NewEdgeID, int n1, int n2, int n12);
@@ -98,13 +99,13 @@ class SMESHDS_EXPORT SMESHDS_Script
                        int n15, int n26, int n37, int n48,
                        int n1234,int n1256,int n2367,int n3478,
                        int n1458,int n5678,int nCenter);
-       void MoveNode(int NewNodeID, double x, double y, double z);
+        void MoveNode(int NewNodeID, double x, double y, double z);
         void RemoveNode(int NodeID);
         void RemoveElement(int ElementID);
         void ChangeElementNodes(int ElementID, int nodes[], int nbnodes);
-        void ChangePolyhedronNodes(const int        ElementID,
-                                   std::vector<int> nodes_ids,
-                                   std::vector<int> quantities);
+        void ChangePolyhedronNodes(const int               ElementID,
+                                   const std::vector<int>& nodes_ids,
+                                   const std::vector<int>& quantities);
         void Renumber (const bool isNodes, const int startID, const int deltaID);
         void ClearMesh();
         void Clear();
