@@ -20,7 +20,6 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH : implementaion of SMESH idl descriptions
 // File      : StdMeshers_Prism_3D.cxx
 // Module    : SMESH
 // Created   : Fri Oct 20 11:37:07 2006
@@ -689,9 +688,6 @@ bool StdMeshers_Prism_3D::Evaluate(SMESH_Mesh& theMesh,
 void StdMeshers_Prism_3D::AddPrisms( vector<const TNodeColumn*> & columns,
                                      SMESH_MesherHelper*          helper)
 {
-  SMESHDS_Mesh * meshDS = helper->GetMeshDS();
-  int shapeID = helper->GetSubShapeID();
-
   int nbNodes = columns.size();
   int nbZ     = columns[0]->size();
   if ( nbZ < 2 ) return;
@@ -702,87 +698,103 @@ void StdMeshers_Prism_3D::AddPrisms( vector<const TNodeColumn*> & columns,
   int z = 1;
   switch ( nbNodes ) {
   case 3: {
-    const SMDS_MeshNode* botNodes[3] = { (*columns[0])[z-1],
-                                         (*columns[1])[z-1],
-                                         (*columns[2])[z-1] };
-    const SMDS_MeshNode* topNodes[3] = { (*columns[0])[z],
-                                         (*columns[1])[z],
-                                         (*columns[2])[z] };
-    SMDS_VolumeOfNodes tmpVol ( botNodes[0], botNodes[1], botNodes[2],
-                                topNodes[0], topNodes[1], topNodes[2]);
-    vTool.Set( &tmpVol );
+    SMDS_VolumeOfNodes tmpPenta ( (*columns[0])[z-1], // bottom
+                                  (*columns[1])[z-1],
+                                  (*columns[2])[z-1],
+                                  (*columns[0])[z],   // top
+                                  (*columns[1])[z],
+                                  (*columns[2])[z] );
+    vTool.Set( &tmpPenta );
     isForward  = vTool.IsForward();
     break;
   }
   case 4: {
-    const SMDS_MeshNode* botNodes[4] = { (*columns[0])[z-1], (*columns[1])[z-1],
-                                         (*columns[2])[z-1], (*columns[3])[z-1] };
-    const SMDS_MeshNode* topNodes[4] = { (*columns[0])[z], (*columns[1])[z],
-                                         (*columns[2])[z], (*columns[3])[z] };
-    SMDS_VolumeOfNodes tmpVol ( botNodes[0], botNodes[1], botNodes[2], botNodes[3],
-                                topNodes[0], topNodes[1], topNodes[2], topNodes[3]);
-    vTool.Set( &tmpVol );
+    SMDS_VolumeOfNodes tmpHex( (*columns[0])[z-1], (*columns[1])[z-1], // bottom
+                               (*columns[2])[z-1], (*columns[3])[z-1],
+                               (*columns[0])[z],   (*columns[1])[z],   // top
+                               (*columns[2])[z],   (*columns[3])[z] );
+    vTool.Set( &tmpHex );
     isForward  = vTool.IsForward();
     break;
   }
+  default:
+    const int di = (nbNodes+1) / 3;
+    SMDS_VolumeOfNodes tmpVol ( (*columns[0]   )[z-1],
+                                (*columns[di]  )[z-1],
+                                (*columns[2*di])[z-1],
+                                (*columns[0]   )[z],
+                                (*columns[di]  )[z],
+                                (*columns[2*di])[z] );
+    vTool.Set( &tmpVol );
+    isForward  = vTool.IsForward();
   }
 
   // vertical loop on columns
-  for ( z = 1; z < nbZ; ++z )
-  {
-    SMDS_MeshElement* vol = 0;
-    switch ( nbNodes ) {
 
-    case 3: {
-      const SMDS_MeshNode* botNodes[3] = { (*columns[0])[z-1],
-                                           (*columns[1])[z-1],
-                                           (*columns[2])[z-1] };
-      const SMDS_MeshNode* topNodes[3] = { (*columns[0])[z],
-                                           (*columns[1])[z],
-                                           (*columns[2])[z] };
-      if ( isForward )
-        vol = helper->AddVolume( botNodes[0], botNodes[1], botNodes[2],
-                                 topNodes[0], topNodes[1], topNodes[2]);
-      else
-        vol = helper->AddVolume( topNodes[0], topNodes[1], topNodes[2],
-                                 botNodes[0], botNodes[1], botNodes[2]);
-      break;
-      }
-    case 4: {
-      const SMDS_MeshNode* botNodes[4] = { (*columns[0])[z-1], (*columns[1])[z-1],
-                                           (*columns[2])[z-1], (*columns[3])[z-1] };
-      const SMDS_MeshNode* topNodes[4] = { (*columns[0])[z], (*columns[1])[z],
-                                           (*columns[2])[z], (*columns[3])[z] };
-      if ( isForward )
-        vol = helper->AddVolume( botNodes[0], botNodes[1], botNodes[2], botNodes[3],
-                                 topNodes[0], topNodes[1], topNodes[2], topNodes[3]);
-      else
-        vol = helper->AddVolume( topNodes[0], topNodes[1], topNodes[2], topNodes[3],
-                                 botNodes[0], botNodes[1], botNodes[2], botNodes[3]);
-      break;
-      }
-    default:
-      // polyhedron
-      vector<const SMDS_MeshNode*> nodes( 2*nbNodes + 4*nbNodes);
-      vector<int> quantities( 2 + nbNodes, 4 );
-      quantities[0] = quantities[1] = nbNodes;
-      columns.resize( nbNodes + 1 );
-      columns[ nbNodes ] = columns[ 0 ];
-      for ( int i = 0; i < nbNodes; ++i ) {
-        nodes[ i         ] = (*columns[ i ])[z-1]; // bottom
-        nodes[ i+nbNodes ] = (*columns[ i ])[z  ]; // top
-        // side
-        int di = 2*nbNodes + 4*i - 1;
-        nodes[ di   ] = (*columns[i  ])[z-1];
-        nodes[ di+1 ] = (*columns[i+1])[z-1];
-        nodes[ di+2 ] = (*columns[i+1])[z  ];
-        nodes[ di+3 ] = (*columns[i  ])[z  ];
-      }
-      vol = meshDS->AddPolyhedralVolume( nodes, quantities );
-    }
-    if ( vol && shapeID > 0 )
-      meshDS->SetMeshElementOnShape( vol, shapeID );
+  helper->SetElementsOnShape( true );
+
+  switch ( nbNodes ) {
+
+  case 3: { // ---------- pentahedra
+    const int i1 = isForward ? 1 : 2;
+    const int i2 = isForward ? 2 : 1;
+    for ( z = 1; z < nbZ; ++z )
+      helper->AddVolume( (*columns[0 ])[z-1], // bottom
+                         (*columns[i1])[z-1],
+                         (*columns[i2])[z-1],
+                         (*columns[0 ])[z],   // top
+                         (*columns[i1])[z],
+                         (*columns[i2])[z] );
+    break;
   }
+  case 4: { // ---------- hexahedra
+    const int i1 = isForward ? 1 : 3;
+    const int i3 = isForward ? 3 : 1;
+    for ( z = 1; z < nbZ; ++z )
+      helper->AddVolume( (*columns[0])[z-1], (*columns[i1])[z-1], // bottom
+                         (*columns[2])[z-1], (*columns[i3])[z-1],
+                         (*columns[0])[z],   (*columns[i1])[z],     // top
+                         (*columns[2])[z],   (*columns[i3])[z] );
+    break;
+  }
+  case 6: { // ---------- octahedra
+    const int iBase1 = isForward ? -1 : 0;
+    const int iBase2 = isForward ?  0 :-1;
+    for ( z = 1; z < nbZ; ++z )
+      helper->AddVolume( (*columns[0])[z+iBase1], (*columns[1])[z+iBase1], // bottom or top
+                         (*columns[2])[z+iBase1], (*columns[3])[z+iBase1],
+                         (*columns[4])[z+iBase1], (*columns[5])[z+iBase1],
+                         (*columns[0])[z+iBase2], (*columns[1])[z+iBase2], // top or bottom
+                         (*columns[2])[z+iBase2], (*columns[3])[z+iBase2],
+                         (*columns[4])[z+iBase2], (*columns[5])[z+iBase2] );
+    break;
+  }
+  default: // ---------- polyhedra
+    vector<int> quantities( 2 + nbNodes, 4 );
+    quantities[0] = quantities[1] = nbNodes;
+    columns.resize( nbNodes + 1 );
+    columns[ nbNodes ] = columns[ 0 ];
+    const int i1 = isForward ? 1 : 3;
+    const int i3 = isForward ? 3 : 1;
+    const int iBase1 = isForward ? -1 : 0;
+    const int iBase2 = isForward ?  0 :-1;
+    vector<const SMDS_MeshNode*> nodes( 2*nbNodes + 4*nbNodes);
+    for ( z = 1; z < nbZ; ++z )
+    {
+      for ( int i = 0; i < nbNodes; ++i ) {
+        nodes[ i             ] = (*columns[ i ])[z+iBase1]; // bottom or top
+        nodes[ 2*nbNodes-i-1 ] = (*columns[ i ])[z+iBase2]; // top or bottom
+        // side
+        int di = 2*nbNodes + 4*i;
+        nodes[ di+0 ] = (*columns[i  ])[z  ];
+        nodes[ di+i1] = (*columns[i+1])[z  ];
+        nodes[ di+2 ] = (*columns[i+1])[z-1];
+        nodes[ di+i3] = (*columns[i  ])[z-1];
+      }
+      helper->AddPolyhedralVolume( nodes, quantities );
+    }
+
+  } // switch ( nbNodes )
 }
 
 //================================================================================
