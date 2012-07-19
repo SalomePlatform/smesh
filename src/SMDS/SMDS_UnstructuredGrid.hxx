@@ -66,9 +66,10 @@ class SMDS_EXPORT SMDS_UnstructuredGrid: public vtkUnstructuredGrid
 {
 public:
   void setSMDS_mesh(SMDS_Mesh *mesh);
-  void compactGrid(std::vector<int>& idNodesOldToNew, int newNodeSize, std::vector<int>& idCellsOldToNew,
-                   int newCellSize);
-
+  void compactGrid(std::vector<int>& idNodesOldToNew,
+                   int               newNodeSize,
+                   std::vector<int>& idCellsOldToNew,
+                   int               newCellSize);
   virtual unsigned long GetMTime();
   virtual void Update();
   virtual void UpdateInformation();
@@ -89,7 +90,8 @@ public:
   void ModifyCellNodes(int vtkVolId, std::map<int, int> localClonedNodeIds);
   int getOrderedNodesOfFace(int vtkVolId, int& dim, std::vector<vtkIdType>& orderedNodes);
   void BuildLinks();
-  SMDS_MeshCell* extrudeVolumeFromFace(int vtkVolId, int domain1, int domain2, std::set<int>& originalNodes,
+  SMDS_MeshCell* extrudeVolumeFromFace(int vtkVolId, int domain1, int domain2,
+                                       std::set<int>&                      originalNodes,
                                        std::map<int, std::map<int, int> >& nodeDomains,
                                        std::map<int, std::map<long,int> >& nodeQuadDomains);
   vtkCellLinks* GetLinks()
@@ -100,6 +102,10 @@ public:
   {
     return _downArray[vtkType];
   }
+  void AllocateDiameters( vtkIdType maxVtkID );
+  void SetBallDiameter( vtkIdType vtkID, double diameter );
+  double GetBallDiameter( vtkIdType vtkID ) const;
+
   static SMDS_UnstructuredGrid* New();
   SMDS_Mesh *_mesh;
 protected:

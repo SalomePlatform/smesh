@@ -27,7 +27,9 @@
 #include "utilities.h"
 
 #include <vtkCellArray.h>
+#include <vtkCellData.h>
 #include <vtkCellLinks.h>
+#include <vtkDoubleArray.h>
 #include <vtkIdTypeArray.h>
 #include <vtkUnsignedCharArray.h>
 
@@ -218,10 +220,12 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
       ++i;
     int endBloc = i;
     if ( endBloc > startBloc )
-      copyBloc(newTypes, idCellsOldToNew, idNodesOldToNew, newConnectivity, newLocations, pointsCell,
-               alreadyCopied, startBloc, endBloc);
+      copyBloc(newTypes,
+               idCellsOldToNew, idNodesOldToNew,
+               newConnectivity, newLocations,
+               pointsCell, alreadyCopied,
+               startBloc, endBloc);
   }
-
   newConnectivity->Squeeze();
 
   if (1/*newNodeSize*/)
@@ -230,6 +234,19 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
       this->SetPoints(newPoints);
       MESSAGE("NumberOfPoints: " << this->GetNumberOfPoints());
     }
+
+  if (vtkDoubleArray* diameters =
+      vtkDoubleArray::SafeDownCast( vtkDataSet::CellData->GetScalars() )) // Balls
+  {
+    for (int oldCellID = 0; oldCellID < oldCellSize; oldCellID++)
+    {
+      if (this->Types->GetValue(oldCellID) == VTK_EMPTY_CELL)
+        continue;
+      int newCellId = idCellsOldToNew[ oldCellID ];
+      if (newTypes->GetValue(newCellId) == VTK_POLY_VERTEX)
+        diameters->SetValue( newCellId, diameters->GetValue( oldCellID ));
+    }
+  }
 
   if (this->FaceLocations)
     {
@@ -275,7 +292,9 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
       newFaces->Delete();
     }
   else
+  {
     this->SetCells(newTypes, newLocations, newConnectivity, FaceLocations, Faces);
+  }
 
   newPoints->Delete();
   newTypes->Delete();
@@ -299,10 +318,15 @@ void SMDS_UnstructuredGrid::copyNodes(vtkPoints *newPoints, std::vector<int>& id
     }
 }
 
-void SMDS_UnstructuredGrid::copyBloc(vtkUnsignedCharArray *newTypes, std::vector<int>& idCellsOldToNew,
-                                     std::vector<int>& idNodesOldToNew, vtkCellArray* newConnectivity,
-                                     vtkIdTypeArray* newLocations, vtkIdType* pointsCell, int& alreadyCopied,
-                                     int start, int end)
+void SMDS_UnstructuredGrid::copyBloc(vtkUnsignedCharArray *newTypes,
+                                     std::vector<int>&     idCellsOldToNew,
+                                     std::vector<int>&     idNodesOldToNew,
+                                     vtkCellArray*         newConnectivity,
+                                     vtkIdTypeArray*       newLocations,
+                                     vtkIdType*            pointsCell,
+                                     int&                  alreadyCopied,
+                                     int                   start,
+                                     int                   end)
 {
   MESSAGE("copyBloc " << alreadyCopied << " " << start << " " << end << " size: " << end - start << " total: " << alreadyCopied + end - start);
   for (int j = start; j < end; j++)
@@ -1072,3 +1096,50 @@ SMDS_MeshCell* SMDS_UnstructuredGrid::extrudeVolumeFromFace(int vtkVolId,
   // TODO update sub-shape list of elements and nodes
   return 0;
 }
+
+//================================================================================
+/*!
+ * \brief Allocates data array for ball diameters
+ *  \param MaxVtkID - max ID of a ball element
+ */
+//================================================================================
+
+void SMDS_UnstructuredGrid::AllocateDiameters( vtkIdType MaxVtkID )
+{
+  SetBallDiameter( MaxVtkID, 0 );
+}
+
+//================================================================================
+/*!
+ * \brief Sets diameter of a ball element
+ *  \param vtkID - vtk id of the ball element
+ *  \param diameter - diameter of the ball element
+ */
+//================================================================================
+
+void SMDS_UnstructuredGrid::SetBallDiameter( vtkIdType vtkID, double diameter )
+{
+  vtkDoubleArray* array = vtkDoubleArray::SafeDownCast( vtkDataSet::CellData->GetScalars() );
+  if ( !array )
+  {
+    array = vtkDoubleArray::New();
+    array->SetNumberOfComponents(1);
+    vtkDataSet::CellData->SetScalars( array );
+  }
+  array->InsertValue( vtkID, diameter );
+}
+
+//================================================================================
+/*!
+ * \brief Returns diameter of a ball element
+ *  \param vtkID - vtk id of the ball element
+ */
+//================================================================================
+
+double SMDS_UnstructuredGrid::GetBallDiameter( vtkIdType vtkID ) const
+{
+  if ( vtkDataSet::CellData )
+    return vtkDoubleArray::SafeDownCast( vtkDataSet::CellData->GetScalars() )->GetValue( vtkID );
+  return 0;
+}
+
