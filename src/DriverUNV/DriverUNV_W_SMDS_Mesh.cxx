@@ -174,52 +174,20 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
         {
           const SMDS_MeshVolume* anElem = anIter->next();
           int aNbNodes = anElem->NbNodes();
-          //MESSAGE("aNbNodes="<<aNbNodes);
-          SMDS_ElemIteratorPtr aNodesIter;
-          aNodesIter = anElem->nodesIteratorToUNV();
+          SMDS_ElemIteratorPtr aNodesIter = anElem->nodesIteratorToUNV();
           if ( anElem->IsPoly() ) {
             continue;
-            // MESSAGE("anElem->IsPoly");
-            // if ( const SMDS_VtkVolume* ph =
-            //      dynamic_cast<const SMDS_VtkVolume*> (anElem))
-            // {
-            //   aNbNodes = ph->NbUniqueNodes();
-            //   aNodesIter = ph->uniqueNodesIterator();
-            // }
           }
-
           int anId = -1;
           switch(aNbNodes) {
-          case 4: {
-            anId = 111;
-            break;
-          }
-          case 6: {
-            anId = 112;
-            break;
-          }
-          case 8: {
-            anId = 115;
-            break;
-          }
-          case 10: {
-            anId = 118;
-            break;
-          }
-          case 13: {
-            anId = 114;
-            break;
-          }
-          case 15: {
-            anId = 113;
-            break;
-          }
+          case 4:  anId = 111; break;
+          case 6:  anId = 112; break;
+          case 8:  anId = 115; break;
+          case 10: anId = 118; break;
+          case 13: anId = 114; break;
+          case 15: anId = 113; break;
           case 20:
-          case 27: {
-            anId = 116;
-            aNbNodes = 20;
-            break;
-          }
+          case 27: anId = 116; aNbNodes = 20; break;
           default:
             continue;
           }
