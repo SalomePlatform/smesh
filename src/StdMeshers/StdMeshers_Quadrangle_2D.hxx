@@ -34,11 +34,12 @@
 #include "SMESH_2D_Algo.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
+#include <TopoDS_Face.hxx>
+
 class SMESH_Mesh;
 class SMESH_MesherHelper;
 class StdMeshers_FaceSide;
 class SMDS_MeshNode;
-class TopoDS_Face;
 struct uvPtStruct;
 
 
