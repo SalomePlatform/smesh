@@ -20,7 +20,6 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-// SMESH SMESH : idl implementation based on 'SMESH' unit's classes
 // File      : SMESH_MeshEditor.cxx
 // Created   : Mon Apr 12 16:10:22 2004
 // Author    : Edward AGAPOV (eap)
@@ -78,6 +77,7 @@
 #include <TopTools_SequenceOfShape.hxx>
 #include <TopoDS.hxx>
 #include <TopoDS_Face.hxx>
+#include <TopoDS_Solid.hxx>
 #include <gp.hxx>
 #include <gp_Ax1.hxx>
 #include <gp_Dir.hxx>
@@ -130,7 +130,8 @@ SMDS_MeshElement*
 SMESH_MeshEditor::AddElement(const vector<const SMDS_MeshNode*> & node,
                              const SMDSAbs_ElementType            type,
                              const bool                           isPoly,
-                             const int                            ID)
+                             const int                            ID,
+                             const double                         ballDiameter)
 {
   //MESSAGE("AddElement " <<node.size() << " " << type << " " << isPoly << " " << ID);
   SMDS_MeshElement* e = 0;
@@ -283,6 +284,11 @@ SMESH_MeshEditor::AddElement(const vector<const SMDS_MeshNode*> & node,
   case SMDSAbs_Node:
     if ( ID >= 1 ) e = mesh->AddNodeWithID(node[0]->X(), node[0]->Y(), node[0]->Z(), ID);
     else           e = mesh->AddNode      (node[0]->X(), node[0]->Y(), node[0]->Z());
+    break;
+
+  case SMDSAbs_Ball:
+    if ( ID >= 1 ) e = mesh->AddBallWithID(node[0], ballDiameter, ID);
+    else           e = mesh->AddBall      (node[0], ballDiameter);
     break;
 
   default:;
@@ -3921,6 +3927,9 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
         }
         break;
       }
+      case SMDSEntity_Ball:
+        return;
+
       default:
         break;
       }
@@ -5694,139 +5703,154 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
   for ( itElem = theElems.begin(); itElem != theElems.end(); itElem++ )
   {
     const SMDS_MeshElement* elem = *itElem;
-    if ( !elem || elem->GetType() == SMDSAbs_Node )
-      continue;
+    if ( !elem ) continue;
 
-    int nbNodes = elem->NbNodes();
-    int elemType = elem->GetType();
+    SMDSAbs_GeometryType geomType = elem->GetGeomType();
+    int                  nbNodes  = elem->NbNodes();
+    if ( geomType == SMDSGeom_POINT ) continue; // node
 
-    if (elem->IsPoly()) {
+    switch ( geomType ) {
 
-      // polygon or polyhedral volume
-      switch ( elemType ) {
-      case SMDSAbs_Face:
-        {
-          vector<const SMDS_MeshNode*> poly_nodes (nbNodes);
-          int iNode = 0;
-          SMDS_ElemIteratorPtr itN = elem->nodesIterator();
-          while (itN->more()) {
-            const SMDS_MeshNode* node =
-              static_cast<const SMDS_MeshNode*>(itN->next());
+    case SMDSGeom_POLYGON:  // ---------------------- polygon
+      {
+        vector<const SMDS_MeshNode*> poly_nodes (nbNodes);
+        int iNode = 0;
+        SMDS_ElemIteratorPtr itN = elem->nodesIterator();
+        while (itN->more()) {
+          const SMDS_MeshNode* node =
+            static_cast<const SMDS_MeshNode*>(itN->next());
+          TNodeNodeMap::iterator nodeMapIt = nodeMap.find(node);
+          if (nodeMapIt == nodeMap.end())
+            break; // not all nodes transformed
+          if (needReverse) {
+            // reverse mirrored faces and volumes
+            poly_nodes[nbNodes - iNode - 1] = (*nodeMapIt).second;
+          } else {
+            poly_nodes[iNode] = (*nodeMapIt).second;
+          }
+          iNode++;
+        }
+        if ( iNode != nbNodes )
+          continue; // not all nodes transformed
+
+        if ( theTargetMesh ) {
+          myLastCreatedElems.Append(aTgtMesh->AddPolygonalFace(poly_nodes));
+          srcElems.Append( elem );
+        }
+        else if ( theCopy ) {
+          myLastCreatedElems.Append(aMesh->AddPolygonalFace(poly_nodes));
+          srcElems.Append( elem );
+        }
+        else {
+          aMesh->ChangePolygonNodes(elem, poly_nodes);
+        }
+      }
+      break;
+
+    case SMDSGeom_POLYHEDRA:  // ------------------ polyhedral volume
+      {
+        const SMDS_VtkVolume* aPolyedre =
+          dynamic_cast<const SMDS_VtkVolume*>( elem );
+        if (!aPolyedre) {
+          MESSAGE("Warning: bad volumic element");
+          continue;
+        }
+
+        vector<const SMDS_MeshNode*> poly_nodes; poly_nodes.reserve( nbNodes );
+        vector<int> quantities; quantities.reserve( nbNodes );
+
+        bool allTransformed = true;
+        int nbFaces = aPolyedre->NbFaces();
+        for (int iface = 1; iface <= nbFaces && allTransformed; iface++) {
+          int nbFaceNodes = aPolyedre->NbFaceNodes(iface);
+          for (int inode = 1; inode <= nbFaceNodes && allTransformed; inode++) {
+            const SMDS_MeshNode* node = aPolyedre->GetFaceNode(iface, inode);
             TNodeNodeMap::iterator nodeMapIt = nodeMap.find(node);
-            if (nodeMapIt == nodeMap.end())
-              break; // not all nodes transformed
-            if (needReverse) {
-              // reverse mirrored faces and volumes
-              poly_nodes[nbNodes - iNode - 1] = (*nodeMapIt).second;
+            if (nodeMapIt == nodeMap.end()) {
+              allTransformed = false; // not all nodes transformed
             } else {
-              poly_nodes[iNode] = (*nodeMapIt).second;
+              poly_nodes.push_back((*nodeMapIt).second);
             }
-            iNode++;
+            if ( needReverse && allTransformed )
+              std::reverse( poly_nodes.end() - nbFaceNodes, poly_nodes.end() );
           }
-          if ( iNode != nbNodes )
-            continue; // not all nodes transformed
-
-          if ( theTargetMesh ) {
-            myLastCreatedElems.Append(aTgtMesh->AddPolygonalFace(poly_nodes));
-            srcElems.Append( elem );
-          }
-          else if ( theCopy ) {
-            myLastCreatedElems.Append(aMesh->AddPolygonalFace(poly_nodes));
-            srcElems.Append( elem );
-          }
-          else {
-            aMesh->ChangePolygonNodes(elem, poly_nodes);
-          }
+          quantities.push_back(nbFaceNodes);
         }
-        break;
-      case SMDSAbs_Volume:
-        {
-          const SMDS_VtkVolume* aPolyedre =
-            dynamic_cast<const SMDS_VtkVolume*>( elem );
-          if (!aPolyedre) {
-            MESSAGE("Warning: bad volumic element");
-            continue;
-          }
+        if ( !allTransformed )
+          continue; // not all nodes transformed
 
-          vector<const SMDS_MeshNode*> poly_nodes; poly_nodes.reserve( nbNodes );
-          vector<int> quantities;
-
-          bool allTransformed = true;
-          int nbFaces = aPolyedre->NbFaces();
-          for (int iface = 1; iface <= nbFaces && allTransformed; iface++) {
-            int nbFaceNodes = aPolyedre->NbFaceNodes(iface);
-            for (int inode = 1; inode <= nbFaceNodes && allTransformed; inode++) {
-              const SMDS_MeshNode* node = aPolyedre->GetFaceNode(iface, inode);
-              TNodeNodeMap::iterator nodeMapIt = nodeMap.find(node);
-              if (nodeMapIt == nodeMap.end()) {
-                allTransformed = false; // not all nodes transformed
-              } else {
-                poly_nodes.push_back((*nodeMapIt).second);
-              }
-              if ( needReverse && allTransformed )
-                std::reverse( poly_nodes.end() - nbFaceNodes, poly_nodes.end() );
-            }
-            quantities.push_back(nbFaceNodes);
-          }
-          if ( !allTransformed )
-            continue; // not all nodes transformed
-
-          if ( theTargetMesh ) {
-            myLastCreatedElems.Append(aTgtMesh->AddPolyhedralVolume(poly_nodes, quantities));
-            srcElems.Append( elem );
-          }
-          else if ( theCopy ) {
-            myLastCreatedElems.Append(aMesh->AddPolyhedralVolume(poly_nodes, quantities));
-            srcElems.Append( elem );
-          }
-          else {
-            aMesh->ChangePolyhedronNodes(elem, poly_nodes, quantities);
-          }
+        if ( theTargetMesh ) {
+          myLastCreatedElems.Append(aTgtMesh->AddPolyhedralVolume(poly_nodes, quantities));
+          srcElems.Append( elem );
         }
-        break;
-      default:;
+        else if ( theCopy ) {
+          myLastCreatedElems.Append(aMesh->AddPolyhedralVolume(poly_nodes, quantities));
+          srcElems.Append( elem );
+        }
+        else {
+          aMesh->ChangePolyhedronNodes(elem, poly_nodes, quantities);
+        }
       }
-      continue;
+      break;
 
-    } // elem->isPoly()
+    case SMDSGeom_BALL: // -------------------- Ball
+      {
+        if ( !theCopy && !theTargetMesh ) continue;
 
-    // Regular elements
+        TNodeNodeMap::iterator nodeMapIt = nodeMap.find( elem->GetNode(0) );
+        if (nodeMapIt == nodeMap.end())
+          continue; // not all nodes transformed
 
-    while ( iForw.size() < nbNodes ) iForw.push_back( iForw.size() );
-    const std::vector<int>& iRev = SMDS_MeshCell::reverseSmdsOrder( elem->GetEntityType() );
-    const std::vector<int>& i = needReverse ? iRev : iForw;
-
-    // find transformed nodes
-    vector<const SMDS_MeshNode*> nodes(nbNodes);
-    int iNode = 0;
-    SMDS_ElemIteratorPtr itN = elem->nodesIterator();
-    while ( itN->more() ) {
-      const SMDS_MeshNode* node =
-        static_cast<const SMDS_MeshNode*>( itN->next() );
-      TNodeNodeMap::iterator nodeMapIt = nodeMap.find( node );
-      if ( nodeMapIt == nodeMap.end() )
-        break; // not all nodes transformed
-      nodes[ i [ iNode++ ]] = (*nodeMapIt).second;
-    }
-    if ( iNode != nbNodes )
-      continue; // not all nodes transformed
-
-    if ( theTargetMesh ) {
-      if ( SMDS_MeshElement* copy =
-           targetMeshEditor.AddElement( nodes, elem->GetType(), elem->IsPoly() )) {
-        myLastCreatedElems.Append( copy );
-        srcElems.Append( elem );
+        double diameter = static_cast<const SMDS_BallElement*>(elem)->GetDiameter();
+        if ( theTargetMesh ) {
+          myLastCreatedElems.Append(aTgtMesh->AddBall( nodeMapIt->second, diameter ));
+          srcElems.Append( elem );
+        }
+        else {
+          myLastCreatedElems.Append(aMesh->AddBall( nodeMapIt->second, diameter ));
+          srcElems.Append( elem );
+        }
       }
-    }
-    else if ( theCopy ) {
-      if ( AddElement( nodes, elem->GetType(), elem->IsPoly() ))
-        srcElems.Append( elem );
-    }
-    else {
-      // reverse element as it was reversed by transformation
-      if ( nbNodes > 2 )
-        aMesh->ChangeElementNodes( elem, &nodes[0], nbNodes );
-    }
+      break;
+
+    default: // ----------------------- Regular elements
+
+      while ( iForw.size() < nbNodes ) iForw.push_back( iForw.size() );
+      const std::vector<int>& iRev = SMDS_MeshCell::reverseSmdsOrder( elem->GetEntityType() );
+      const std::vector<int>& i = needReverse ? iRev : iForw;
+
+      // find transformed nodes
+      vector<const SMDS_MeshNode*> nodes(nbNodes);
+      int iNode = 0;
+      SMDS_ElemIteratorPtr itN = elem->nodesIterator();
+      while ( itN->more() ) {
+        const SMDS_MeshNode* node =
+          static_cast<const SMDS_MeshNode*>( itN->next() );
+        TNodeNodeMap::iterator nodeMapIt = nodeMap.find( node );
+        if ( nodeMapIt == nodeMap.end() )
+          break; // not all nodes transformed
+        nodes[ i [ iNode++ ]] = (*nodeMapIt).second;
+      }
+      if ( iNode != nbNodes )
+        continue; // not all nodes transformed
+
+      if ( theTargetMesh ) {
+        if ( SMDS_MeshElement* copy =
+             targetMeshEditor.AddElement( nodes, elem->GetType(), elem->IsPoly() )) {
+          myLastCreatedElems.Append( copy );
+          srcElems.Append( elem );
+        }
+      }
+      else if ( theCopy ) {
+        if ( AddElement( nodes, elem->GetType(), elem->IsPoly() ))
+          srcElems.Append( elem );
+      }
+      else {
+        // reverse element as it was reversed by transformation
+        if ( nbNodes > 2 )
+          aMesh->ChangeElementNodes( elem, &nodes[0], nbNodes );
+      }
+    } // switch ( geomType )
 
   } // loop on elements
 
@@ -6627,7 +6651,7 @@ void SMESH_ElementSearcherImpl::findOuterBoundary(const SMDS_MeshElement* outerF
  * \brief Find elements of given type where the given point is IN or ON.
  *        Returns nb of found elements and elements them-selves.
  *
- * 'ALL' type means elements of any type excluding nodes and 0D elements
+ * 'ALL' type means elements of any type excluding nodes, balls and 0D elements 
  */
 //=======================================================================
 
@@ -6641,7 +6665,7 @@ FindElementsByPoint(const gp_Pnt&                      point,
   double tolerance = getTolerance();
 
   // =================================================================================
-  if ( type == SMDSAbs_Node || type == SMDSAbs_0DElement )
+  if ( type == SMDSAbs_Node || type == SMDSAbs_0DElement || type == SMDSAbs_Ball)
   {
     if ( !_nodeSearcher )
       _nodeSearcher = new SMESH_NodeSearcherImpl( _mesh );
@@ -6658,7 +6682,7 @@ FindElementsByPoint(const gp_Pnt&                      point,
     }
     else
     {
-      SMDS_ElemIteratorPtr elemIt = closeNode->GetInverseElementIterator( SMDSAbs_0DElement );
+      SMDS_ElemIteratorPtr elemIt = closeNode->GetInverseElementIterator( type );
       while ( elemIt->more() )
         foundElements.push_back( elemIt->next() );
     }

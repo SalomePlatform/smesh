@@ -20,7 +20,6 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's classes
 // File      : SMESH_MeshEditor.hxx
 // Created   : Mon Apr 12 14:56:19 2004
 // Author    : Edward AGAPOV (eap)
@@ -117,7 +116,8 @@ public:
   SMDS_MeshElement* AddElement(const std::vector<const SMDS_MeshNode*> & nodes,
                                const SMDSAbs_ElementType                 type,
                                const bool                                isPoly,
-                               const int                                 ID = -1);
+                               const int                                 ID = -1,
+                               const double                              ballDiameter=0.);
   /*!
    * \brief Add element
    */
