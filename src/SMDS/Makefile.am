@@ -74,14 +74,15 @@ salomeinclude_HEADERS = \
 	SMDS_UnstructuredGrid.hxx \
 	SMDS_Downward.hxx \
 	SMDS_StdIterator.hxx \
-	SMDS_IteratorOnIterators.hxx
+	SMDS_IteratorOnIterators.hxx \
+	SMDS_BallElement.hxx
 
 
 # Libraries targets
 
 lib_LTLIBRARIES = libSMDS.la
 dist_libSMDS_la_SOURCES = \
-    chrono.cxx \
+	chrono.cxx \
 	SMDS_MeshObject.cxx \
 	SMDS_MeshElement.cxx \
 	SMDS_MeshCell.cxx \
@@ -117,7 +118,8 @@ dist_libSMDS_la_SOURCES = \
 	SMDS_QuadraticFaceOfNodes.cxx \
 	SMDS_QuadraticVolumeOfNodes.cxx \
 	SMDS_UnstructuredGrid.cxx \
-	SMDS_Downward.cxx
+	SMDS_Downward.cxx \
+	SMDS_BallElement.cxx
 
 # additionnal information to compil and link file
 libSMDS_la_CPPFLAGS = \
@@ -133,5 +135,3 @@ libSMDS_la_LDFLAGS  = \
 bin_PROGRAMS = SMDS_MemoryLimit
 dist_SMDS_MemoryLimit_SOURCES = \
 	SMDS_MemoryLimit.cxx
-
-#libSMDS_la_LDFLAGS += -L/data/eap/S5_MV/INSTALL/SMESH/lib/salome -lPerfmeter
