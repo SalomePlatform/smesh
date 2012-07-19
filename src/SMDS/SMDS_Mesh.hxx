@@ -45,6 +45,7 @@
 #include "SMDS_VtkVolume.hxx"
 #include "ObjectPool.hxx"
 #include "SMDS_UnstructuredGrid.hxx"
+#include "SMDS_BallElement.hxx"
 
 #include <boost/shared_ptr.hpp>
 #include <set>
@@ -54,9 +55,11 @@
 #include <cassert>
 
 #include "Utils_SALOME_Exception.hxx"
+
 #define MYASSERT(val) if (!(val)) throw SALOME_Exception(LOCALIZED("assertion not verified"));
 
-class SMDS_EXPORT SMDS_Mesh:public SMDS_MeshObject{
+class SMDS_EXPORT SMDS_Mesh:public SMDS_MeshObject
+{
 public:
   friend class SMDS_MeshIDFactory;
   friend class SMDS_MeshNodeIDFactory;
@@ -73,24 +76,29 @@ public:
   inline SMDS_UnstructuredGrid* getGrid() {return myGrid; }
   inline int getMeshId() {return myMeshId; }
 
-  virtual SMDS_NodeIteratorPtr      nodesIterator     (bool idInceasingOrder=false) const;
-  virtual SMDS_0DElementIteratorPtr elements0dIterator(bool idInceasingOrder=false) const;
-  virtual SMDS_EdgeIteratorPtr      edgesIterator     (bool idInceasingOrder=false) const;
-  virtual SMDS_FaceIteratorPtr      facesIterator     (bool idInceasingOrder=false) const;
-  virtual SMDS_VolumeIteratorPtr    volumesIterator   (bool idInceasingOrder=false) const;
+  virtual SMDS_NodeIteratorPtr   nodesIterator     (bool idInceasingOrder=false) const;
+  virtual SMDS_EdgeIteratorPtr   edgesIterator     (bool idInceasingOrder=false) const;
+  virtual SMDS_FaceIteratorPtr   facesIterator     (bool idInceasingOrder=false) const;
+  virtual SMDS_VolumeIteratorPtr volumesIterator   (bool idInceasingOrder=false) const;
 
   virtual SMDS_ElemIteratorPtr elementsIterator(SMDSAbs_ElementType type=SMDSAbs_All) const;
+  virtual SMDS_ElemIteratorPtr elementGeomIterator(SMDSAbs_GeometryType type) const;
+  virtual SMDS_ElemIteratorPtr elementEntityIterator(SMDSAbs_EntityType type) const;
 
   SMDSAbs_ElementType GetElementType( const int id, const bool iselem ) const;
 
   SMDS_Mesh *AddSubMesh();
 
   virtual SMDS_MeshNode* AddNodeWithID(double x, double y, double z, int ID);
-  virtual SMDS_MeshNode* AddNode(double x, double y, double z);
+  virtual SMDS_MeshNode* AddNode      (double x, double y, double z);
 
-  virtual SMDS_Mesh0DElement* Add0DElementWithID(int n, int ID);
+  virtual SMDS_Mesh0DElement* Add0DElementWithID(int n,                   int ID);
   virtual SMDS_Mesh0DElement* Add0DElementWithID(const SMDS_MeshNode * n, int ID);
   virtual SMDS_Mesh0DElement* Add0DElement      (const SMDS_MeshNode * n);
+
+  virtual SMDS_BallElement* AddBallWithID(int n,                   double diameter, int ID);
+  virtual SMDS_BallElement* AddBallWithID(const SMDS_MeshNode * n, double diameter, int ID);
+  virtual SMDS_BallElement* AddBall      (const SMDS_MeshNode * n, double diameter);
 
   virtual SMDS_MeshEdge* AddEdgeWithID(int n1, int n2, int ID);
   virtual SMDS_MeshEdge* AddEdgeWithID(const SMDS_MeshNode * n1,
@@ -609,6 +617,7 @@ public:
   const SMDS_MeshNode *FindNode(int idnode) const;
   const SMDS_MeshNode *FindNodeVtk(int idnode) const;
   const SMDS_Mesh0DElement* Find0DElement(int idnode) const;
+  const SMDS_BallElement* FindBall(int idnode) const;
   const SMDS_MeshEdge *FindEdge(int idnode1, int idnode2) const;
   const SMDS_MeshEdge *FindEdge(int idnode1, int idnode2, int idnode3) const;
   const SMDS_MeshFace *FindFace(int idnode1, int idnode2, int idnode3) const;
@@ -619,6 +628,7 @@ public:
                                 int idnode5, int idnode6, int idnode7, int idnode8) const;
   const SMDS_MeshElement *FindElement(int IDelem) const;
   static const SMDS_Mesh0DElement* Find0DElement(const SMDS_MeshNode * n);
+  static const SMDS_BallElement* FindBall(const SMDS_MeshNode * n);
   static const SMDS_MeshEdge* FindEdge(const SMDS_MeshNode * n1,
                                        const SMDS_MeshNode * n2);
   static const SMDS_MeshEdge* FindEdge(const SMDS_MeshNode * n1,
@@ -668,6 +678,7 @@ public:
 
   virtual int NbNodes() const;
   virtual int Nb0DElements() const;
+  virtual int NbBalls() const;
   virtual int NbEdges() const;
   virtual int NbFaces() const;
   virtual int NbVolumes() const;
@@ -730,7 +741,6 @@ protected:
                                    const SMDS_MeshNode * node3,
                                    const SMDS_MeshNode * node4,
                                    int ID);
-//  SMDS_Mesh0DElement* Find0DElementOrCreate(const SMDS_MeshNode * n);
   SMDS_MeshEdge* FindEdgeOrCreate(const SMDS_MeshNode * n1,
                                   const SMDS_MeshNode * n2);
   SMDS_MeshFace* FindFaceOrCreate(const SMDS_MeshNode *n1,
@@ -777,9 +787,10 @@ protected:
   ObjectPool<SMDS_MeshNode>* myNodePool;
 
   //! Small objects like SMDS_VtkVolume are allocated by chunks to limit memory costs of new
-  ObjectPool<SMDS_VtkVolume>* myVolumePool;
-  ObjectPool<SMDS_VtkFace>* myFacePool;
-  ObjectPool<SMDS_VtkEdge>* myEdgePool;
+  ObjectPool<SMDS_VtkVolume>*   myVolumePool;
+  ObjectPool<SMDS_VtkFace>*     myFacePool;
+  ObjectPool<SMDS_VtkEdge>*     myEdgePool;
+  ObjectPool<SMDS_BallElement>* myBallPool;
 
   //! SMDS_MeshNodes refer to vtk nodes (vtk id = index in myNodes),store reference to this mesh, and sub-shape
   SetOfNodes             myNodes;

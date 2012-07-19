@@ -26,19 +26,21 @@
 #pragma warning(disable:4786)
 #endif
 
-#include "utilities.h"
-#include "SMDS_Mesh.hxx"
-#include "SMDS_VolumeOfNodes.hxx"
-#include "SMDS_VolumeOfFaces.hxx"
-#include "SMDS_FaceOfNodes.hxx"
 #include "SMDS_FaceOfEdges.hxx"
-#include "SMDS_PolyhedralVolumeOfNodes.hxx"
+#include "SMDS_FaceOfNodes.hxx"
+#include "SMDS_Mesh.hxx"
 #include "SMDS_PolygonalFaceOfNodes.hxx"
+#include "SMDS_PolyhedralVolumeOfNodes.hxx"
 #include "SMDS_QuadraticEdge.hxx"
 #include "SMDS_QuadraticFaceOfNodes.hxx"
 #include "SMDS_QuadraticVolumeOfNodes.hxx"
+#include "SMDS_SetIterator.hxx"
 #include "SMDS_SpacePosition.hxx"
 #include "SMDS_UnstructuredGrid.hxx"
+#include "SMDS_VolumeOfFaces.hxx"
+#include "SMDS_VolumeOfNodes.hxx"
+
+#include "utilities.h"
 
 #include <vtkUnstructuredGrid.h>
 #include <vtkUnstructuredGridWriter.h>
@@ -128,7 +130,7 @@ SMDS_Mesh::SMDS_Mesh()
          myHasConstructionEdges(false), myHasConstructionFaces(false),
          myHasInverseElements(true),
          myNodeMin(0), myNodeMax(0),
-         myNodePool(0), myEdgePool(0), myFacePool(0), myVolumePool(0),
+         myNodePool(0), myEdgePool(0), myFacePool(0), myVolumePool(0),myBallPool(0),
          myModified(false), myModifTime(0), myCompactTime(0),
          xmin(0), xmax(0), ymin(0), ymax(0), zmin(0), zmax(0)
 {
@@ -147,6 +149,7 @@ SMDS_Mesh::SMDS_Mesh()
   myEdgePool = new ObjectPool<SMDS_VtkEdge>(SMDS_Mesh::chunkSize);
   myFacePool = new ObjectPool<SMDS_VtkFace>(SMDS_Mesh::chunkSize);
   myVolumePool = new ObjectPool<SMDS_VtkVolume>(SMDS_Mesh::chunkSize);
+  myBallPool = new ObjectPool<SMDS_BallElement>(SMDS_Mesh::chunkSize);
 
   myNodes.clear();
   myCells.clear();
@@ -180,7 +183,8 @@ SMDS_Mesh::SMDS_Mesh(SMDS_Mesh * parent)
          myNodePool(parent->myNodePool),
          myEdgePool(parent->myEdgePool),
          myFacePool(parent->myFacePool),
-         myVolumePool(parent->myVolumePool)
+         myVolumePool(parent->myVolumePool),
+         myBallPool(parent->myBallPool)
 {
 }
 
@@ -285,6 +289,54 @@ SMDS_Mesh0DElement* SMDS_Mesh::Add0DElementWithID(const SMDS_MeshNode * n, int I
 
   delete el0d;
   return NULL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// create a Ball and add it to the current Mesh
+/// @return : The created Ball
+///////////////////////////////////////////////////////////////////////////////
+SMDS_BallElement* SMDS_Mesh::AddBallWithID(int idnode, double diameter, int ID)
+{
+  SMDS_MeshNode * node = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode);
+  if (!node) return NULL;
+  return SMDS_Mesh::AddBallWithID(node, diameter, ID);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// create a Ball and add it to the current Mesh
+/// @return : The created Ball
+///////////////////////////////////////////////////////////////////////////////
+SMDS_BallElement* SMDS_Mesh::AddBall(const SMDS_MeshNode * node, double diameter)
+{
+  return SMDS_Mesh::AddBallWithID(node, diameter, myElementIDFactory->GetFreeID());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Create a new Ball and at it to the mesh
+/// @param idnode ID of the node
+//  @param diameter ball diameter
+/// @param ID ID of the 0D element to create
+/// @return The created 0D element or NULL if an element with this
+///         ID already exists or if input node is not found.
+///////////////////////////////////////////////////////////////////////////////
+SMDS_BallElement* SMDS_Mesh::AddBallWithID(const SMDS_MeshNode * n, double diameter, int ID)
+{
+  if (!n) return 0;
+
+  if (NbBalls() % CHECKMEMORY_INTERVAL == 0) CheckMemory();
+
+  SMDS_BallElement *ball = myBallPool->getNew();
+  ball->init(n->getVtkId(), diameter, this);
+  if (!this->registerElement(ID,ball))
+    {
+      this->myGrid->GetCellTypesArray()->SetValue(ball->getVtkId(), VTK_EMPTY_CELL);
+      myBallPool->destroy(ball);
+      return 0;
+    }
+  adjustmyCellsCapacity(ID);
+  myCells[ID] = ball;
+  myInfo.myNbBalls++;
+  return ball;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1940,6 +1992,31 @@ const SMDS_Mesh0DElement* SMDS_Mesh::Find0DElement(const SMDS_MeshNode * node)
 }
 
 //=======================================================================
+//function : FindBall
+//purpose  :
+//=======================================================================
+
+const SMDS_BallElement* SMDS_Mesh::FindBall(int idnode) const
+{
+  const SMDS_MeshNode * node = FindNode(idnode);
+  if(node == NULL) return NULL;
+  return FindBall(node);
+}
+
+const SMDS_BallElement* SMDS_Mesh::FindBall(const SMDS_MeshNode * node)
+{
+  if (!node) return 0;
+  const SMDS_BallElement* toReturn = NULL;
+  SMDS_ElemIteratorPtr it1 = node->GetInverseElementIterator(SMDSAbs_Ball);
+  while (it1->more() && (toReturn == NULL)) {
+    const SMDS_MeshElement* e = it1->next();
+    if (e->GetGeomType() == SMDSGeom_BALL)
+      toReturn = static_cast<const SMDS_BallElement*>(e);
+  }
+  return toReturn;
+}
+
+//=======================================================================
 //function : Find0DElementOrCreate
 //purpose  :
 //=======================================================================
@@ -2395,7 +2472,7 @@ void SMDS_Mesh::DumpNodes() const
 void SMDS_Mesh::Dump0DElements() const
 {
   MESSAGE("dump 0D elements of mesh : ");
-  SMDS_0DElementIteratorPtr it0d = elements0dIterator();
+  SMDS_ElemIteratorPtr it0d = elementsIterator(SMDSAbs_0DElement);
   while(it0d->more()) ; //MESSAGE(it0d->next());
 }
 
@@ -2501,7 +2578,15 @@ int SMDS_Mesh::NbNodes() const
 ///////////////////////////////////////////////////////////////////////////////
 int SMDS_Mesh::Nb0DElements() const
 {
-  return myInfo.Nb0DElements(); // -PR- a verfier
+  return myInfo.Nb0DElements();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Return the number of 0D elements
+///////////////////////////////////////////////////////////////////////////////
+int SMDS_Mesh::NbBalls() const
+{
+  return myInfo.NbBalls();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2509,7 +2594,7 @@ int SMDS_Mesh::Nb0DElements() const
 ///////////////////////////////////////////////////////////////////////////////
 int SMDS_Mesh::NbEdges() const
 {
-        return myInfo.NbEdges(); // -PR- a verfier
+  return myInfo.NbEdges();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2517,7 +2602,7 @@ int SMDS_Mesh::NbEdges() const
 ///////////////////////////////////////////////////////////////////////////////
 int SMDS_Mesh::NbFaces() const
 {
-        return myInfo.NbFaces();  // -PR- a verfier
+  return myInfo.NbFaces();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2525,17 +2610,16 @@ int SMDS_Mesh::NbFaces() const
 ///////////////////////////////////////////////////////////////////////////////
 int SMDS_Mesh::NbVolumes() const
 {
-        return myInfo.NbVolumes(); // -PR- a verfier
+  return myInfo.NbVolumes();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Return the number of child mesh of this mesh.
-/// Note that the tree structure of SMDS_Mesh seems to be unused in this version
-/// (2003-09-08) of SMESH
+/// Note that the tree structure of SMDS_Mesh is unused in SMESH
 ///////////////////////////////////////////////////////////////////////////////
 int SMDS_Mesh::NbSubMesh() const
 {
-        return myChildren.size();
+  return myChildren.size();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2572,38 +2656,6 @@ SMDS_Mesh::~SMDS_Mesh()
         myNodeIDFactory->ReleaseID(node->GetID(), node->getVtkId());
       }
   }
-
-//   SetOfNodes::Iterator itn(myNodes);
-//   for (; itn.More(); itn.Next())
-//     delete itn.Value();
-
-//   SetOf0DElements::Iterator it0d (my0DElements);
-//   for (; it0d.More(); it0d.Next())
-//   {
-//     SMDS_MeshElement* elem = it0d.Value();
-//     delete elem;
-//   }
-
-//   SetOfEdges::Iterator ite(myEdges);
-//   for (; ite.More(); ite.Next())
-//   {
-//     SMDS_MeshElement* elem = ite.Value();
-//     delete elem;
-//   }
-
-//   SetOfFaces::Iterator itf(myFaces);
-//   for (; itf.More(); itf.Next())
-//   {
-//     SMDS_MeshElement* elem = itf.Value();
-//     delete elem;
-//   }
-
-//   SetOfVolumes::Iterator itv(myVolumes);
-//   for (; itv.More(); itv.Next())
-//   {
-//     SMDS_MeshElement* elem = itv.Value();
-//     delete elem;
-//   }
 }
 
 //================================================================================
@@ -2654,6 +2706,9 @@ void SMDS_Mesh::Clear()
           break;
         case SMDSAbs_Volume:
           myVolumePool->destroy(static_cast<SMDS_VtkVolume*>(elem));
+          break;
+        case SMDSAbs_Ball:
+          myBallPool->destroy(static_cast<SMDS_BallElement*>(elem));
           break;
         default:
           break;
@@ -2756,69 +2811,6 @@ void SMDS_Mesh::setInverseElements(bool b)
 
 namespace {
 
-///////////////////////////////////////////////////////////////////////////////
-///Iterator on NCollection_Map
-///////////////////////////////////////////////////////////////////////////////
-template <class MAP, typename ELEM=const SMDS_MeshElement*, class FATHER=SMDS_ElemIterator>
-struct MYNode_Map_Iterator: public FATHER
-{
-  int _ctr;
-  const MAP& _map;
-  MYNode_Map_Iterator(const MAP& map): _map(map) // map is a std::vector<ELEM>
-  {
-      _ctr = 0;
-  }
-
-  bool more()
-  {
-      while (_ctr < _map.size())
-      {
-          if (_map[_ctr])
-              return true;
-          _ctr++;
-      }
-          return false;
-  }
-
-  ELEM next()
-  {
-    ELEM current = _map[_ctr];
-    _ctr++;
-    return current;
-  }
-};
-
-  template <class MAP, typename ELEM=const SMDS_MeshElement*, class FATHER=SMDS_ElemIterator>
-  struct MYElem_Map_Iterator: public FATHER
-  {
-    size_t _ctr;
-    int _type, _more;
-    const MAP& _map;
-    MYElem_Map_Iterator(const MAP& map, int typ): _map(map) // map is a std::vector<ELEM>
-    {
-      _ctr = 0;
-      _type = typ;
-      _more = _ctr < _map.size();
-      if ( _more && ( !_map[_ctr] || ( _type != SMDSAbs_All && _map[_ctr]->GetType() != _type)))
-        next();
-    }
-
-    bool more()
-    {
-      return _more;
-    }
-
-    ELEM next()
-    {
-      if ( !_more ) return NULL;
-      ELEM current = dynamic_cast<ELEM> (_map[_ctr]);
-      _more = 0;
-      while ( !_more && ++_ctr < _map.size() )
-        _more = ( _map[_ctr] && (_type == SMDSAbs_All || _map[_ctr]->GetType() == _type));
-      return current;
-    }
-  };
-
   //================================================================================
   /*!
    * \brief Iterator on elements in id increasing order
@@ -2862,6 +2854,20 @@ struct MYNode_Map_Iterator: public FATHER
       return current;
     }
   };
+
+  typedef SMDS::NonNullFilter<const SMDS_MeshNode*>                    NonNullNodeFilter;
+  typedef SMDS::NonNullFilter<const SMDS_MeshElement*>                 NonNullElemFilter;
+  typedef SMDS_Mesh::SetOfNodes::const_iterator                        SetOfNodesIter;
+  typedef SMDS_Mesh::SetOfCells::const_iterator                        SetOfCellsIter;
+  typedef SMDS::SimpleAccessor<const SMDS_MeshNode*,   SetOfNodesIter> NodeInSetOfNodes;
+  typedef SMDS::SimpleAccessor<const SMDS_MeshElement*,SetOfCellsIter> CellInSetOfCells;
+
+#define TypedElemIterator(elemType)                                     \
+  SMDS_SetIterator < const elemType*,                                   \
+                     SetOfCellsIter,                                    \
+                     SMDS::SimpleAccessor<const elemType*,SetOfCellsIter>, \
+                     SMDS_MeshElement::TypeFilter                       \
+                     >
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2870,34 +2876,54 @@ struct MYNode_Map_Iterator: public FATHER
 
 SMDS_NodeIteratorPtr SMDS_Mesh::nodesIterator(bool idInceasingOrder) const
 {
-  typedef MYNode_Map_Iterator
-    < SetOfNodes, const SMDS_MeshNode*, SMDS_NodeIterator > TIterator;
-  return SMDS_NodeIteratorPtr( new TIterator(myNodes)); // naturally always sorted by ID
+  typedef SMDS_SetIterator
+    <const SMDS_MeshNode*, SetOfNodesIter, NodeInSetOfNodes, NonNullNodeFilter>  TIterator;
+  // naturally always sorted by ID
+  return SMDS_NodeIteratorPtr( new TIterator(myNodes.begin(), myNodes.end()));
+}
 
-//  typedef IdSortedIterator< const SMDS_MeshNode* >          TSortedIterator;
-//  return ( idInceasingOrder ?
-//           SMDS_NodeIteratorPtr( new TSortedIterator( *myNodeIDFactory, SMDSAbs_Node, NbNodes())) :
-//           SMDS_NodeIteratorPtr( new TIterator(myNodes)));
+SMDS_ElemIteratorPtr SMDS_Mesh::elementGeomIterator(SMDSAbs_GeometryType type) const
+{
+  typedef SMDS_SetIterator
+    < const SMDS_MeshElement*, SetOfCellsIter, CellInSetOfCells, SMDS_MeshElement::GeomFilter >
+    TIterator;
+  // naturally always sorted by ID
+  return SMDS_ElemIteratorPtr
+    (new TIterator(myCells.begin(), myCells.end(), SMDS_MeshElement::GeomFilter( type )));
+}
+
+SMDS_ElemIteratorPtr SMDS_Mesh::elementEntityIterator(SMDSAbs_EntityType type) const
+{
+  typedef SMDS_SetIterator
+    < const SMDS_MeshElement*, SetOfCellsIter, CellInSetOfCells, SMDS_MeshElement::EntityFilter >
+    TIterator;
+  // naturally always sorted by ID
+  return SMDS_ElemIteratorPtr
+    (new TIterator(myCells.begin(), myCells.end(), SMDS_MeshElement::EntityFilter( type )));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-///Return an iterator on 0D elements of the current mesh.
+/// Return an iterator on elements of the current mesh factory
 ///////////////////////////////////////////////////////////////////////////////
-
-SMDS_0DElementIteratorPtr SMDS_Mesh::elements0dIterator(bool idInceasingOrder) const
+SMDS_ElemIteratorPtr SMDS_Mesh::elementsIterator(SMDSAbs_ElementType type) const
 {
-  typedef MYElem_Map_Iterator
-    < SetOfCells, const SMDS_Mesh0DElement*, SMDS_0DElementIterator > TIterator;
-  return SMDS_0DElementIteratorPtr(new TIterator(myCells, SMDSAbs_0DElement)); // naturally always sorted by ID
-
-//  typedef MYNCollection_Map_Iterator
-//    < SetOf0DElements, const SMDS_Mesh0DElement*, SMDS_0DElementIterator > TIterator;
-//  typedef IdSortedIterator< const SMDS_Mesh0DElement* >                    TSortedIterator;
-//  return ( idInceasingOrder ?
-//           SMDS_0DElementIteratorPtr( new TSortedIterator( *myElementIDFactory,
-//                                                           SMDSAbs_0DElement,
-//                                                           Nb0DElements() )) :
-//           SMDS_0DElementIteratorPtr( new TIterator(my0DElements)));
+  // naturally always sorted by ID
+  if ( type == SMDSAbs_All )
+  {
+    typedef SMDS_SetIterator
+      < const SMDS_MeshElement*, SetOfCellsIter, CellInSetOfCells, NonNullElemFilter >
+      TIterator;
+    return SMDS_ElemIteratorPtr (new TIterator(myCells.begin(), myCells.end()));
+  }
+  else
+  {
+  typedef SMDS_SetIterator
+    < const SMDS_MeshElement*, SetOfCellsIter, CellInSetOfCells, SMDS_MeshElement::TypeFilter >
+    TIterator;
+  // naturally always sorted by ID
+  return SMDS_ElemIteratorPtr
+    (new TIterator(myCells.begin(), myCells.end(), SMDS_MeshElement::TypeFilter( type )));
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2906,18 +2932,10 @@ SMDS_0DElementIteratorPtr SMDS_Mesh::elements0dIterator(bool idInceasingOrder) c
 
 SMDS_EdgeIteratorPtr SMDS_Mesh::edgesIterator(bool idInceasingOrder) const
 {
-  typedef MYElem_Map_Iterator
-    < SetOfCells, const SMDS_MeshEdge*, SMDS_EdgeIterator > TIterator;
-  return SMDS_EdgeIteratorPtr(new TIterator(myCells, SMDSAbs_Edge)); // naturally always sorted by ID
-
-//  typedef MYNCollection_Map_Iterator
-//    < SetOfEdges, const SMDS_MeshEdge*, SMDS_EdgeIterator > TIterator;
-//  typedef IdSortedIterator< const SMDS_MeshEdge* >          TSortedIterator;
-//  return ( idInceasingOrder ?
-//           SMDS_EdgeIteratorPtr( new TSortedIterator( *myElementIDFactory,
-//                                                      SMDSAbs_Edge,
-//                                                      NbEdges() )) :
-//           SMDS_EdgeIteratorPtr(new TIterator(myEdges)));
+  // naturally always sorted by ID
+  typedef TypedElemIterator( SMDS_MeshEdge ) TIterator;
+  return SMDS_EdgeIteratorPtr
+    (new TIterator(myCells.begin(), myCells.end(), SMDS_MeshElement::TypeFilter( SMDSAbs_Edge )));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2926,18 +2944,10 @@ SMDS_EdgeIteratorPtr SMDS_Mesh::edgesIterator(bool idInceasingOrder) const
 
 SMDS_FaceIteratorPtr SMDS_Mesh::facesIterator(bool idInceasingOrder) const
 {
-  typedef MYElem_Map_Iterator
-    < SetOfCells, const SMDS_MeshFace*, SMDS_FaceIterator > TIterator;
-  return SMDS_FaceIteratorPtr(new TIterator(myCells, SMDSAbs_Face)); // naturally always sorted by ID
-
-//  typedef MYNCollection_Map_Iterator
-//    < SetOfFaces, const SMDS_MeshFace*, SMDS_FaceIterator > TIterator;
-//  typedef IdSortedIterator< const SMDS_MeshFace* >          TSortedIterator;
-//  return ( idInceasingOrder ?
-//           SMDS_FaceIteratorPtr( new TSortedIterator( *myElementIDFactory,
-//                                                      SMDSAbs_Face,
-//                                                      NbFaces() )) :
-//           SMDS_FaceIteratorPtr(new TIterator(myFaces)));
+  // naturally always sorted by ID
+  typedef TypedElemIterator( SMDS_MeshFace ) TIterator;
+  return SMDS_FaceIteratorPtr
+    (new TIterator(myCells.begin(), myCells.end(), SMDS_MeshElement::TypeFilter( SMDSAbs_Face )));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2946,43 +2956,10 @@ SMDS_FaceIteratorPtr SMDS_Mesh::facesIterator(bool idInceasingOrder) const
 
 SMDS_VolumeIteratorPtr SMDS_Mesh::volumesIterator(bool idInceasingOrder) const
 {
-  typedef MYElem_Map_Iterator
-    < SetOfCells, const SMDS_MeshVolume*, SMDS_VolumeIterator > TIterator;
-  return SMDS_VolumeIteratorPtr(new TIterator(myCells, SMDSAbs_Volume)); // naturally always sorted by ID
-
-  //  typedef MYNCollection_Map_Iterator
-//    < SetOfVolumes, const SMDS_MeshVolume*, SMDS_VolumeIterator > TIterator;
-//  typedef IdSortedIterator< const SMDS_MeshVolume* >              TSortedIterator;
-//  return ( idInceasingOrder ?
-//           SMDS_VolumeIteratorPtr( new TSortedIterator( *myElementIDFactory,
-//                                                        SMDSAbs_Volume,
-//                                                        NbVolumes() )) :
-//           SMDS_VolumeIteratorPtr(new TIterator(myVolumes)));
-}
-
-///////////////////////////////////////////////////////////////////////////////
-/// Return an iterator on elements of the current mesh factory
-///////////////////////////////////////////////////////////////////////////////
-SMDS_ElemIteratorPtr SMDS_Mesh::elementsIterator(SMDSAbs_ElementType type) const
-{
-  switch (type) {
-  case SMDSAbs_All:
-    return SMDS_ElemIteratorPtr (new MYElem_Map_Iterator< SetOfCells >(myCells, SMDSAbs_All));
-    break;
-  case SMDSAbs_Volume:
-    return SMDS_ElemIteratorPtr (new MYElem_Map_Iterator< SetOfCells >(myCells, SMDSAbs_Volume));
-  case SMDSAbs_Face:
-    return SMDS_ElemIteratorPtr (new MYElem_Map_Iterator< SetOfCells >(myCells, SMDSAbs_Face));
-  case SMDSAbs_Edge:
-    return SMDS_ElemIteratorPtr (new MYElem_Map_Iterator< SetOfCells >(myCells, SMDSAbs_Edge));
-  case SMDSAbs_0DElement:
-    return SMDS_ElemIteratorPtr (new MYElem_Map_Iterator< SetOfCells >(myCells, SMDSAbs_0DElement));
-  case SMDSAbs_Node:
-    return SMDS_ElemIteratorPtr (new MYElem_Map_Iterator< SetOfNodes >(myNodes, SMDSAbs_All));
-    //return myNodeIDFactory->elementsIterator();
-  default:;
-  }
-  return myElementIDFactory->elementsIterator();
+  // naturally always sorted by ID
+  typedef TypedElemIterator( SMDS_MeshVolume ) TIterator;
+  return SMDS_VolumeIteratorPtr
+    (new TIterator(myCells.begin(), myCells.end(), SMDS_MeshElement::TypeFilter( SMDSAbs_Volume )));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3271,6 +3248,19 @@ void SMDS_Mesh::RemoveElement(const SMDS_MeshElement *        elem,
           else
             delete (*it);
           break;
+        case SMDSAbs_Ball:
+          if (IdToRemove >= 0)
+            {
+              myCells[IdToRemove] = 0;
+              myInfo.remove(*it);
+            }
+          removedElems.push_back((*it));
+          myElementIDFactory->ReleaseID(IdToRemove, vtkid);
+          if (const SMDS_BallElement* vtkElem = dynamic_cast<const SMDS_BallElement*>(*it))
+            myBallPool->destroy(const_cast<SMDS_BallElement*>( vtkElem ));
+          else
+            delete (*it);
+          break;
       }
       if (vtkid >= 0)
         {
@@ -3369,6 +3359,11 @@ void SMDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elem)
       myInfo.RemoveVolume(elem);
       myVolumePool->destroy(static_cast<SMDS_VtkVolume*>(todest));
       break;
+    case SMDSAbs_Ball:
+      myCells[elemId] = 0;
+      myInfo.remove(elem);
+      myBallPool->destroy(static_cast<SMDS_BallElement*>(todest));
+      break;
     default:
       break;
     }
@@ -3391,21 +3386,9 @@ bool SMDS_Mesh::Contains (const SMDS_MeshElement* elem) const
   while (itn->more())
     if (elem == itn->next())
       return true;
-  SMDS_0DElementIteratorPtr it0d = elements0dIterator();
-  while (it0d->more())
-    if (elem == it0d->next())
-      return true;
-  SMDS_EdgeIteratorPtr ite = edgesIterator();
+  SMDS_ElemIteratorPtr ite = elementsIterator();
   while (ite->more())
     if (elem == ite->next())
-      return true;
-  SMDS_FaceIteratorPtr itf = facesIterator();
-  while (itf->more())
-    if (elem == itf->next())
-      return true;
-  SMDS_VolumeIteratorPtr itv = volumesIterator();
-  while (itv->more())
-    if (elem == itv->next())
       return true;
   return false;
 }
