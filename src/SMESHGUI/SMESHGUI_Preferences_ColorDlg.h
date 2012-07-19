@@ -91,7 +91,9 @@ private:
   QtxColorButton*       btnWireframeColor;
   QtxColorButton*       btnOutlineColor;
   QtxColorButton*       btn0DElementsColor;
+  QtxColorButton*       btnBallElemColor;
   SalomeApp_IntSpinBox* SpinBox_0DElements_Size;
+  SalomeApp_IntSpinBox* SpinBox_BallElem_Size;
   SalomeApp_IntSpinBox* SpinBox_Width;
   SalomeApp_IntSpinBox* SpinBox_Shrink;
   QtxColorButton*       btnNodeColor;

@@ -31,6 +31,9 @@
 #include "SMESHGUI_VTKUtils.h"
 #include "SMDSAbs_ElementType.hxx"
 #include "SMDS_Mesh.hxx"
+#include "SMDS_BallElement.hxx"
+#include "SMDS_EdgePosition.hxx"
+#include "SMDS_FacePosition.hxx"
 
 #include <LightApp_SelectionMgr.h>
 #include <SUIT_OverrideCursor.h>
@@ -133,6 +136,8 @@ SMESHGUI_MeshInfo::SMESHGUI_MeshInfo( QWidget* parent )
   l->setMargin( MARGIN );
   l->setSpacing( SPACING );
 
+  int index = 0;
+
   // object
   QLabel* aNameLab     = new QLabel( tr( "NAME_LAB" ), this );
   QLabel* aName        = createField();
@@ -140,15 +145,15 @@ SMESHGUI_MeshInfo::SMESHGUI_MeshInfo( QWidget* parent )
   QLabel* aObjLab      = new QLabel( tr( "OBJECT_LAB" ), this );
   QLabel* aObj         = createField();
   aObj->setMinimumWidth( 150 );
-  myWidgets[0] << aNameLab << aName;
-  myWidgets[1] << aObjLab  << aObj;
+  myWidgets[ index++ ] << aNameLab << aName;
+  myWidgets[ index++ ] << aObjLab  << aObj;
 
   // nodes
   QWidget* aNodesLine  = createLine();
   QLabel*  aNodesLab   = new QLabel( tr( "NODES_LAB" ), this );
   QLabel*  aNodes      = createField();
-  myWidgets[2] << aNodesLine;
-  myWidgets[3] << aNodesLab << aNodes;
+  myWidgets[ index++ ] << aNodesLine;
+  myWidgets[ index++ ] << aNodesLab << aNodes;
 
   // elements
   QWidget* aElemLine   = createLine();
@@ -156,15 +161,22 @@ SMESHGUI_MeshInfo::SMESHGUI_MeshInfo( QWidget* parent )
   QLabel*  aElemTotal  = new QLabel( tr( "TOTAL_LAB" ),     this );
   QLabel*  aElemLin    = new QLabel( tr( "LINEAR_LAB" ),    this );
   QLabel*  aElemQuad   = new QLabel( tr( "QUADRATIC_LAB" ), this );
-  myWidgets[4] << aElemLine;
-  myWidgets[5] << aElemLab << aElemTotal << aElemLin << aElemQuad;
+  myWidgets[ index++ ] << aElemLine;
+  myWidgets[ index++ ] << aElemLab << aElemTotal << aElemLin << aElemQuad;
 
   // ... 0D elements
   QWidget* a0DLine     = createLine();
   QLabel*  a0DLab      = new QLabel( tr( "0D_LAB" ), this );
   QLabel*  a0DTotal    = createField();
-  myWidgets[6] << a0DLine;
-  myWidgets[7] << a0DLab << a0DTotal;
+  myWidgets[ index++ ] << a0DLine;
+  myWidgets[ index++ ] << a0DLab << a0DTotal;
+
+  // ... Ball elements
+  QWidget* aBallLine     = createLine();
+  QLabel*  aBallLab      = new QLabel( tr( "BALL_LAB" ), this );
+  QLabel*  aBallTotal    = createField();
+  myWidgets[ index++ ] << aBallLine;
+  myWidgets[ index++ ] << aBallLab << aBallTotal;
 
   // ... 1D elements
   QWidget* a1DLine     = createLine();
@@ -172,8 +184,8 @@ SMESHGUI_MeshInfo::SMESHGUI_MeshInfo( QWidget* parent )
   QLabel*  a1DTotal    = createField();
   QLabel*  a1DLin      = createField();
   QLabel*  a1DQuad     = createField();
-  myWidgets[8] << a1DLine;
-  myWidgets[9] << a1DLab << a1DTotal << a1DLin << a1DQuad;
+  myWidgets[ index++ ] << a1DLine;
+  myWidgets[ index++ ] << a1DLab << a1DTotal << a1DLin << a1DQuad;
 
   // ... 2D elements
   QWidget* a2DLine     = createLine();
@@ -191,11 +203,11 @@ SMESHGUI_MeshInfo::SMESHGUI_MeshInfo( QWidget* parent )
   QLabel*  a2DQuaQuad  = createField();
   QLabel*  a2DPolLab   = new QLabel( tr( "POLYGONS_LAB" ), this );
   QLabel*  a2DPolTotal = createField();
-  myWidgets[10] << a2DLine;
-  myWidgets[11] << a2DLab    << a2DTotal    << a2DLin    << a2DQuad;
-  myWidgets[12] << a2DTriLab << a2DTriTotal << a2DTriLin << a2DTriQuad;
-  myWidgets[13] << a2DQuaLab << a2DQuaTotal << a2DQuaLin << a2DQuaQuad;
-  myWidgets[14] << a2DPolLab << a2DPolTotal;
+  myWidgets[ index++ ] << a2DLine;
+  myWidgets[ index++ ] << a2DLab    << a2DTotal    << a2DLin    << a2DQuad;
+  myWidgets[ index++ ] << a2DTriLab << a2DTriTotal << a2DTriLin << a2DTriQuad;
+  myWidgets[ index++ ] << a2DQuaLab << a2DQuaTotal << a2DQuaLin << a2DQuaQuad;
+  myWidgets[ index++ ] << a2DPolLab << a2DPolTotal;
 
   // ... 3D elements
   QWidget* a3DLine     = createLine();
@@ -223,14 +235,14 @@ SMESHGUI_MeshInfo::SMESHGUI_MeshInfo( QWidget* parent )
   QLabel*  a3DHexPriTotal = createField();
   QLabel*  a3DPolLab   = new QLabel( tr( "POLYHEDRONS_LAB" ), this );
   QLabel*  a3DPolTotal = createField();
-  myWidgets[15] << a3DLine;
-  myWidgets[16] << a3DLab    << a3DTotal    << a3DLin    << a3DQuad;
-  myWidgets[17] << a3DTetLab << a3DTetTotal << a3DTetLin << a3DTetQuad;
-  myWidgets[18] << a3DHexLab << a3DHexTotal << a3DHexLin << a3DHexQuad;
-  myWidgets[19] << a3DPyrLab << a3DPyrTotal << a3DPyrLin << a3DPyrQuad;
-  myWidgets[20] << a3DPriLab << a3DPriTotal << a3DPriLin << a3DPriQuad;
-  myWidgets[21] << a3DHexPriLab << a3DHexPriTotal;
-  myWidgets[22] << a3DPolLab << a3DPolTotal;
+  myWidgets[ index++ ] << a3DLine;
+  myWidgets[ index++ ] << a3DLab    << a3DTotal    << a3DLin    << a3DQuad;
+  myWidgets[ index++ ] << a3DTetLab << a3DTetTotal << a3DTetLin << a3DTetQuad;
+  myWidgets[ index++ ] << a3DHexLab << a3DHexTotal << a3DHexLin << a3DHexQuad;
+  myWidgets[ index++ ] << a3DPyrLab << a3DPyrTotal << a3DPyrLin << a3DPyrQuad;
+  myWidgets[ index++ ] << a3DPriLab << a3DPriTotal << a3DPriLin << a3DPriQuad;
+  myWidgets[ index++ ] << a3DHexPriLab << a3DHexPriTotal;
+  myWidgets[ index++ ] << a3DPolLab << a3DPolTotal;
 
   myLoadBtn = new QPushButton( tr( "BUT_LOAD_MESH" ), this );
   myLoadBtn->setAutoDefault( true );
@@ -244,6 +256,7 @@ SMESHGUI_MeshInfo::SMESHGUI_MeshInfo( QWidget* parent )
   setFontAttributes( aElemLin,   Italic );
   setFontAttributes( aElemQuad,  Italic );
   setFontAttributes( a0DLab,     Bold );
+  setFontAttributes( aBallLab,     Bold );
   setFontAttributes( a1DLab,     Bold );
   setFontAttributes( a2DLab,     Bold );
   setFontAttributes( a3DLab,     Bold );
@@ -263,52 +276,55 @@ SMESHGUI_MeshInfo::SMESHGUI_MeshInfo( QWidget* parent )
   l->addWidget( a0DLine,      6, 1, 1, 3 );
   l->addWidget( a0DLab,       7, 0 );
   l->addWidget( a0DTotal,     7, 1 );
-  l->addWidget( a1DLine,      8, 1, 1, 3 );
-  l->addWidget( a1DLab,       9, 0 );
-  l->addWidget( a1DTotal,     9, 1 );
-  l->addWidget( a1DLin,       9, 2 );
-  l->addWidget( a1DQuad,      9, 3 );
-  l->addWidget( a2DLine,     10, 1, 1, 3 );
-  l->addWidget( a2DLab,      11, 0 );
-  l->addWidget( a2DTotal,    11, 1 );
-  l->addWidget( a2DLin,      11, 2 );
-  l->addWidget( a2DQuad,     11, 3 );
-  l->addWidget( a2DTriLab,   12, 0 );
-  l->addWidget( a2DTriTotal, 12, 1 );
-  l->addWidget( a2DTriLin,   12, 2 );
-  l->addWidget( a2DTriQuad,  12, 3 );
-  l->addWidget( a2DQuaLab,   13, 0 );
-  l->addWidget( a2DQuaTotal, 13, 1 );
-  l->addWidget( a2DQuaLin,   13, 2 );
-  l->addWidget( a2DQuaQuad,  13, 3 );
-  l->addWidget( a2DPolLab,   14, 0 );
-  l->addWidget( a2DPolTotal, 14, 1 );
-  l->addWidget( a3DLine,     15, 1, 1, 3 );
-  l->addWidget( a3DLab,      16, 0 );
-  l->addWidget( a3DTotal,    16, 1 );
-  l->addWidget( a3DLin,      16, 2 );
-  l->addWidget( a3DQuad,     16, 3 );
-  l->addWidget( a3DTetLab,   17, 0 );
-  l->addWidget( a3DTetTotal, 17, 1 );
-  l->addWidget( a3DTetLin,   17, 2 );
-  l->addWidget( a3DTetQuad,  17, 3 );
-  l->addWidget( a3DHexLab,   18, 0 );
-  l->addWidget( a3DHexTotal, 18, 1 );
-  l->addWidget( a3DHexLin,   18, 2 );
-  l->addWidget( a3DHexQuad,  18, 3 );
-  l->addWidget( a3DPyrLab,   19, 0 );
-  l->addWidget( a3DPyrTotal, 19, 1 );
-  l->addWidget( a3DPyrLin,   19, 2 );
-  l->addWidget( a3DPyrQuad,  19, 3 );
-  l->addWidget( a3DPriLab,   20, 0 );
-  l->addWidget( a3DPriTotal, 20, 1 );
-  l->addWidget( a3DPriLin,   20, 2 );
-  l->addWidget( a3DPriQuad,  20, 3 );
-  l->addWidget( a3DHexPriLab,   21, 0 );
-  l->addWidget( a3DHexPriTotal, 21, 1 );
-  l->addWidget( a3DPolLab,   22, 0 );
-  l->addWidget( a3DPolTotal, 22, 1 );
-  l->addWidget( myLoadBtn,   23, 1, 1, 3 );
+  l->addWidget( aBallLine,    8, 1, 1, 3 );
+  l->addWidget( aBallLab,     9, 0 );
+  l->addWidget( aBallTotal,   9, 1 );
+  l->addWidget( a1DLine,      10, 1, 1, 3 );
+  l->addWidget( a1DLab,       11, 0 );
+  l->addWidget( a1DTotal,     11, 1 );
+  l->addWidget( a1DLin,       11, 2 );
+  l->addWidget( a1DQuad,      11, 3 );
+  l->addWidget( a2DLine,     12, 1, 1, 3 );
+  l->addWidget( a2DLab,      13, 0 );
+  l->addWidget( a2DTotal,    13, 1 );
+  l->addWidget( a2DLin,      13, 2 );
+  l->addWidget( a2DQuad,     13, 3 );
+  l->addWidget( a2DTriLab,   14, 0 );
+  l->addWidget( a2DTriTotal, 14, 1 );
+  l->addWidget( a2DTriLin,   14, 2 );
+  l->addWidget( a2DTriQuad,  14, 3 );
+  l->addWidget( a2DQuaLab,   15, 0 );
+  l->addWidget( a2DQuaTotal, 15, 1 );
+  l->addWidget( a2DQuaLin,   15, 2 );
+  l->addWidget( a2DQuaQuad,  15, 3 );
+  l->addWidget( a2DPolLab,   16, 0 );
+  l->addWidget( a2DPolTotal, 16, 1 );
+  l->addWidget( a3DLine,     17, 1, 1, 3 );
+  l->addWidget( a3DLab,      18, 0 );
+  l->addWidget( a3DTotal,    18, 1 );
+  l->addWidget( a3DLin,      18, 2 );
+  l->addWidget( a3DQuad,     18, 3 );
+  l->addWidget( a3DTetLab,   19, 0 );
+  l->addWidget( a3DTetTotal, 19, 1 );
+  l->addWidget( a3DTetLin,   19, 2 );
+  l->addWidget( a3DTetQuad,  19, 3 );
+  l->addWidget( a3DHexLab,   20, 0 );
+  l->addWidget( a3DHexTotal, 20, 1 );
+  l->addWidget( a3DHexLin,   20, 2 );
+  l->addWidget( a3DHexQuad,  20, 3 );
+  l->addWidget( a3DPyrLab,   21, 0 );
+  l->addWidget( a3DPyrTotal, 21, 1 );
+  l->addWidget( a3DPyrLin,   21, 2 );
+  l->addWidget( a3DPyrQuad,  21, 3 );
+  l->addWidget( a3DPriLab,   22, 0 );
+  l->addWidget( a3DPriTotal, 22, 1 );
+  l->addWidget( a3DPriLin,   22, 2 );
+  l->addWidget( a3DPriQuad,  22, 3 );
+  l->addWidget( a3DHexPriLab,   23, 0 );
+  l->addWidget( a3DHexPriTotal, 23, 1 );
+  l->addWidget( a3DPolLab,   24, 0 );
+  l->addWidget( a3DPolTotal, 24, 1 );
+  l->addWidget( myLoadBtn,   25, 1, 1, 3 );
   l->setColumnStretch( 0, 0 );
   l->setColumnStretch( 1, 5 );
   l->setColumnStretch( 2, 5 );
@@ -363,6 +379,9 @@ void SMESHGUI_MeshInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
       case SMESH::ELEM0D:
         objType = tr( "OBJECT_GROUP_0DELEMS" );
         break;
+      case SMESH::BALL:
+        objType = tr( "OBJECT_GROUP_BALLS" );
+        break;
       default:
         objType = tr( "OBJECT_GROUP" );
         break;
@@ -372,6 +391,7 @@ void SMESHGUI_MeshInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
     SMESH::long_array_var info = obj->GetMeshInfo();
     myWidgets[iNodes][iTotal] ->setProperty( "text", QString::number( info[SMDSEntity_Node] ) );
     myWidgets[i0D][iTotal]    ->setProperty( "text", QString::number( info[SMDSEntity_0D] ) );
+    myWidgets[iBalls][iTotal] ->setProperty( "text", QString::number( info[SMDSEntity_Ball] ) );
     long nbEdges = info[SMDSEntity_Edge] + info[SMDSEntity_Quad_Edge];
     myWidgets[i1D][iTotal]    ->setProperty( "text", QString::number( nbEdges ) );
     myWidgets[i1D][iLinear]   ->setProperty( "text", QString::number( info[SMDSEntity_Edge] ) );
@@ -464,6 +484,7 @@ void SMESHGUI_MeshInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
       {
         myWidgets[iNodes][iTotal]             ->setProperty( "text", "?" );
         myWidgets[i0D][iTotal]                ->setProperty( "text", "?" );
+        myWidgets[iBalls][iTotal]             ->setProperty( "text", "?" );
         myWidgets[i1D][iTotal]                ->setProperty( "text", "?" );
         myWidgets[i1D][iLinear]               ->setProperty( "text", "?" );
         myWidgets[i1D][iQuadratic]            ->setProperty( "text", "?" );
@@ -528,40 +549,41 @@ void SMESHGUI_MeshInfo::loadMesh()
 */
 void SMESHGUI_MeshInfo::clear()
 {
-  myWidgets[iName][iSingle]->setProperty( "text", QString() );
-  myWidgets[iObject][iSingle]->setProperty( "text", QString() );
-  myWidgets[iNodes][iTotal]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i0D][iTotal]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i1D][iTotal]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i1D][iLinear]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i1D][iQuadratic]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i2D][iTotal]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i2D][iLinear]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i2D][iQuadratic]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i2DTriangles][iTotal]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i2DTriangles][iLinear]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i2DTriangles][iQuadratic]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i2DQuadrangles][iTotal]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i2DQuadrangles][iLinear]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i2DQuadrangles][iQuadratic]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i2DPolygons][iTotal]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i3D][iTotal]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i3D][iLinear]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i3D][iQuadratic]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i3DTetrahedrons][iTotal]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i3DTetrahedrons][iLinear]->setProperty( "text", QString::number( 0 ) );
+  myWidgets[iName][iSingle]             ->setProperty( "text", QString() );
+  myWidgets[iObject][iSingle]           ->setProperty( "text", QString() );
+  myWidgets[iNodes][iTotal]             ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i0D][iTotal]                ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[iBalls][iTotal]             ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i1D][iTotal]                ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i1D][iLinear]               ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i1D][iQuadratic]            ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i2D][iTotal]                ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i2D][iLinear]               ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i2D][iQuadratic]            ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i2DTriangles][iTotal]       ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i2DTriangles][iLinear]      ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i2DTriangles][iQuadratic]   ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i2DQuadrangles][iTotal]     ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i2DQuadrangles][iLinear]    ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i2DQuadrangles][iQuadratic] ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i2DPolygons][iTotal]        ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i3D][iTotal]                ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i3D][iLinear]               ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i3D][iQuadratic]            ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i3DTetrahedrons][iTotal]    ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i3DTetrahedrons][iLinear]   ->setProperty( "text", QString::number( 0 ) );
   myWidgets[i3DTetrahedrons][iQuadratic]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i3DHexahedrons][iTotal]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i3DHexahedrons][iLinear]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i3DHexahedrons][iQuadratic]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i3DPyramids][iTotal]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i3DPyramids][iLinear]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i3DPyramids][iQuadratic]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i3DPrisms][iTotal]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i3DPrisms][iLinear]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i3DPrisms][iQuadratic]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i3DHexaPrisms][iTotal]->setProperty( "text", QString::number( 0 ) );
-  myWidgets[i3DPolyhedrons][iTotal]->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i3DHexahedrons][iTotal]     ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i3DHexahedrons][iLinear]    ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i3DHexahedrons][iQuadratic] ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i3DPyramids][iTotal]        ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i3DPyramids][iLinear]       ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i3DPyramids][iQuadratic]    ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i3DPrisms][iTotal]          ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i3DPrisms][iLinear]         ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i3DPrisms][iQuadratic]      ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i3DHexaPrisms][iTotal]      ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i3DPolyhedrons][iTotal]     ->setProperty( "text", QString::number( 0 ) );
 }
 
 /*!
@@ -869,10 +891,9 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
         //
         // show node info
         //
-        const SMDS_MeshElement* e = actor()->GetObject()->GetMesh()->FindNode( id );
-        if ( !e ) return;
-        const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( e );
-        
+        const SMDS_MeshNode* node = actor()->GetObject()->GetMesh()->FindNode( id );
+        if ( !node ) return;
+
         // node ID
         myInfo->append( QString( "<b>%1 #%2</b>" ).arg( tr( "NODE" ) ).arg( id ) );
         // separator
@@ -894,6 +915,9 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
           con = formatConnectivity( connectivity, SMDSAbs_Edge );
           if ( !con.isEmpty() )
             myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "EDGES" ) ).arg( con ) );
+          con = formatConnectivity( connectivity, SMDSAbs_Ball );
+          if ( !con.isEmpty() )
+            myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "BALL_ELEMENTS" ) ).arg( con ) );
           con = formatConnectivity( connectivity, SMDSAbs_Face );
           if ( !con.isEmpty() )
             myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "FACES" ) ).arg( con ) );
@@ -917,6 +941,8 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
         switch( e->GetType() ) {
         case SMDSAbs_0DElement:
           stype = tr( "0D ELEMENT" ); break;
+        case SMDSAbs_Ball:
+          stype = tr( "BALL" ); break;
         case SMDSAbs_Edge:
           stype = tr( "EDGE" ); break;
         case SMDSAbs_Face:
@@ -967,7 +993,7 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
         if ( !gtype.isEmpty() )
           myInfo->append( QString( "<b>%1:</b> %2" ).arg( tr( "TYPE" ) ).arg( gtype ) );
         // quadratic flag and gravity center (any element except 0D)
-        if ( e->GetEntityType() > SMDSEntity_0D && e->GetEntityType() < SMDSEntity_Last ) {
+        if ( e->GetEntityType() > SMDSEntity_0D && e->GetEntityType() < SMDSEntity_Ball ) {
           // quadratic flag
           myInfo->append( QString( "<b>%1?</b> %2" ).arg( tr( "QUADRATIC" ) ).arg( e->IsQuadratic() ? tr( "YES" ) : tr( "NO" ) ) );
           // separator
@@ -975,6 +1001,10 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
           // gravity center
           XYZ gc = gravityCenter( e );
           myInfo->append( QString( "<b>%1:</b> (%2, %3, %4)" ).arg( tr( "GRAVITY_CENTER" ) ).arg( gc.x() ).arg( gc.y() ).arg( gc.z() ) );
+        }
+        if ( const SMDS_BallElement* ball = dynamic_cast<const SMDS_BallElement*>( e )) {
+          // ball diameter
+          myInfo->append( QString( "<b>%1:</b> %2" ).arg( tr( "BALL_DIAMETER" ) ).arg( ball->GetDiameter() ));
         }
         // separator
         myInfo->append( "" );
@@ -1129,6 +1159,12 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
             i->setText( 0, tr( "0D_ELEMENTS" ) );
             i->setText( 1, con );
           }
+          con = formatConnectivity( connectivity, SMDSAbs_Ball );
+          if ( !con.isEmpty() ) {
+            QTreeWidgetItem* i = createItem( conItem );
+            i->setText( 0, tr( "BALL_ELEMENTS" ) );
+            i->setText( 1, con );
+          }
           con = formatConnectivity( connectivity, SMDSAbs_Edge );
           if ( !con.isEmpty() ) {
             QTreeWidgetItem* i = createItem( conItem );
@@ -1151,6 +1187,39 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
         else {
           conItem->setText( 1, tr( "FREE_NODE" ) );
         }
+        // node position
+        int shapeID = node->getshapeId();
+        if ( shapeID > 0 )
+        {
+          SMDS_PositionPtr        pos = node->GetPosition();
+          SMDS_TypeOfPosition posType = pos->GetTypeOfPosition();
+          QString shapeType;
+          double u,v;
+          switch ( posType ) {
+          case SMDS_TOP_EDGE:   shapeType = tr( "EDGE" );
+            u = static_cast<SMDS_EdgePosition*>( pos )->GetUParameter();
+            break;
+          case SMDS_TOP_FACE:   shapeType = tr( "FACE" );
+            u = static_cast<SMDS_FacePosition*>( pos )->GetUParameter();
+            v = static_cast<SMDS_FacePosition*>( pos )->GetVParameter();
+            break;
+          case SMDS_TOP_VERTEX: shapeType = tr( "VERTEX" ); break;
+          default:              shapeType = tr( "SOLID" );
+          }
+          QTreeWidgetItem* posItem = createItem( nodeItem, Bold );
+          posItem->setText( 0, tr("NODE_POSITION") );
+          posItem->setText( 1, (shapeType + " #%1").arg( shapeID ));
+          if ( posType == SMDS_TOP_EDGE || posType == SMDS_TOP_FACE ) {
+            QTreeWidgetItem* uItem = createItem( posItem );
+            uItem->setText( 0, tr("U_POSITION") );
+            uItem->setText( 1, QString::number( u, precision > 0 ? 'f' : 'g', qAbs( precision )));
+            if ( posType == SMDS_TOP_FACE ) {
+              QTreeWidgetItem* vItem = createItem( posItem );
+              vItem->setText( 0, tr("V_POSITION") );
+              vItem->setText( 1, QString::number( v, precision > 0 ? 'f' : 'g', qAbs( precision )));
+            }
+          }
+        }
       }
       else {
         //
@@ -1164,6 +1233,8 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
         switch( e->GetType() ) {
         case SMDSAbs_0DElement:
           stype = tr( "0D ELEMENT" ); break;
+        case SMDSAbs_Ball:
+          stype = tr( "BALL" ); break;
         case SMDSAbs_Edge:
           stype = tr( "EDGE" ); break;
         case SMDSAbs_Face:
@@ -1217,7 +1288,7 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
           typeItem->setText( 1, gtype );
         }
         // quadratic flag and gravity center (any element except 0D)
-        if ( e->GetEntityType() > SMDSEntity_0D && e->GetEntityType() < SMDSEntity_Last ) {
+        if ( e->GetEntityType() > SMDSEntity_0D && e->GetEntityType() < SMDSEntity_Ball ) {
           // quadratic flag
           QTreeWidgetItem* quadItem = createItem( elemItem, Bold );
           quadItem->setText( 0, tr( "QUADRATIC" ) );
@@ -1235,6 +1306,12 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
           QTreeWidgetItem* zItem = createItem( gcItem );
           zItem->setText( 0, "Z" );
           zItem->setText( 1, QString::number( gc.z(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
+        }
+        if ( const SMDS_BallElement* ball = dynamic_cast<const SMDS_BallElement*>( e )) {
+          // ball diameter
+          QTreeWidgetItem* diamItem = createItem( elemItem, Bold );
+          diamItem->setText( 0, tr( "BALL_DIAMETER" ) );
+          diamItem->setText( 1, QString( "%1" ).arg( ball->GetDiameter() ));
         }
         // connectivity
         QTreeWidgetItem* conItem = createItem( elemItem, Bold );
@@ -1274,6 +1351,12 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
             if ( !con.isEmpty() ) {
               QTreeWidgetItem* i = createItem( nconItem );
               i->setText( 0, tr( "EDGES" ) );
+              i->setText( 1, con );
+            }
+            con = formatConnectivity( connectivity, SMDSAbs_Ball );
+            if ( !con.isEmpty() ) {
+              QTreeWidgetItem* i = createItem( nconItem );
+              i->setText( 0, tr( "BALL_ELEMENTS" ) );
               i->setText( 1, con );
             }
             con = formatConnectivity( connectivity, SMDSAbs_Face );
@@ -1580,6 +1663,9 @@ void SMESHGUI_AddInfo::groupInfo( SMESH::SMESH_GroupBase_ptr grp, QTreeWidgetIte
     case SMESH::ELEM0D:
       etype = tr( "0DELEM" );
       break;
+    case SMESH::BALL:
+      etype = tr( "BALL" );
+      break;
     default:
       break;
     }
@@ -1638,7 +1724,7 @@ void SMESHGUI_AddInfo::showGroups()
       itemGroups = parent->child( i );
       ExtraWidget* extra = dynamic_cast<ExtraWidget*>( itemWidget( itemGroups, 1 ) );
       if ( extra )
-	extra->updateControls( myGroups->length(), idx );
+        extra->updateControls( myGroups->length(), idx );
       while ( itemGroups->childCount() ) delete itemGroups->child( 0 ); // clear child items
     }
   }
@@ -1660,11 +1746,11 @@ void SMESHGUI_AddInfo::showGroups()
 
       // total number of groups > 10, show extra widgets for info browsing
       if ( myGroups->length() > MAXITEMS ) {
-	ExtraWidget* extra = new ExtraWidget( this, true );
-	connect( extra->prev, SIGNAL( clicked() ), this, SLOT( showPreviousGroups() ) );
-	connect( extra->next, SIGNAL( clicked() ), this, SLOT( showNextGroups() ) );
-	setItemWidget( itemGroups, 1, extra );
-	extra->updateControls( myGroups->length(), idx );
+        ExtraWidget* extra = new ExtraWidget( this, true );
+        connect( extra->prev, SIGNAL( clicked() ), this, SLOT( showPreviousGroups() ) );
+        connect( extra->next, SIGNAL( clicked() ), this, SLOT( showNextGroups() ) );
+        setItemWidget( itemGroups, 1, extra );
+        extra->updateControls( myGroups->length(), idx );
       }
     }
 
@@ -1696,7 +1782,7 @@ void SMESHGUI_AddInfo::showSubMeshes()
       itemSubMeshes = parent->child( i );
       ExtraWidget* extra = dynamic_cast<ExtraWidget*>( itemWidget( itemSubMeshes, 1 ) );
       if ( extra )
-	extra->updateControls( mySubMeshes->length(), idx );
+        extra->updateControls( mySubMeshes->length(), idx );
       while ( itemSubMeshes->childCount() ) delete itemSubMeshes->child( 0 ); // clear child items
     }
   }
@@ -1721,11 +1807,11 @@ void SMESHGUI_AddInfo::showSubMeshes()
 
       // total number of sub-meshes > 10, show extra widgets for info browsing
       if ( mySubMeshes->length() > MAXITEMS ) {
-	ExtraWidget* extra = new ExtraWidget( this, true );
-	connect( extra->prev, SIGNAL( clicked() ), this, SLOT( showPreviousSubMeshes() ) );
-	connect( extra->next, SIGNAL( clicked() ), this, SLOT( showNextSubMeshes() ) );
-	setItemWidget( itemSubMeshes, 1, extra );
-	extra->updateControls( mySubMeshes->length(), idx );
+        ExtraWidget* extra = new ExtraWidget( this, true );
+        connect( extra->prev, SIGNAL( clicked() ), this, SLOT( showPreviousSubMeshes() ) );
+        connect( extra->next, SIGNAL( clicked() ), this, SLOT( showNextSubMeshes() ) );
+        setItemWidget( itemSubMeshes, 1, extra );
+        extra->updateControls( mySubMeshes->length(), idx );
       }
     }
          

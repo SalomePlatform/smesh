@@ -2186,17 +2186,20 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
             int anNbEdges   = 0;
             int anNbFaces   = 0;
             int anNbVolumes = 0;
+            int aNbBalls    = 0;
 
             SMESH::long_array_var anIDsNodes   = new SMESH::long_array();
             SMESH::long_array_var anIDsEdges   = new SMESH::long_array();
             SMESH::long_array_var anIDsFaces   = new SMESH::long_array();
             SMESH::long_array_var anIDsVolumes = new SMESH::long_array();
+            SMESH::long_array_var anIDsBalls   = new SMESH::long_array();
 
             if( theCommonGroups ) {
               anIDsNodes->length(   anInitMeshDS->NbNodes()   );
               anIDsEdges->length(   anInitMeshDS->NbEdges()   );
               anIDsFaces->length(   anInitMeshDS->NbFaces()   );
               anIDsVolumes->length( anInitMeshDS->NbVolumes() );
+              anIDsBalls->length(   anInitMeshDS->NbBalls() );
             }
 
             for ( int j = 0; itElems->more(); j++) {
@@ -2224,31 +2227,44 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
               }//nodes loop
 
               // creates a corresponding element on existent nodes in new mesh
-              if ( anElem->IsPoly() && anElemType == SMDSAbs_Volume )
+              switch ( anElem->GetEntityType() ) {
+              case SMDSEntity_Polyhedra:
+                if ( const SMDS_VtkVolume* aVolume =
+                     dynamic_cast<const SMDS_VtkVolume*> (anElem))
                 {
-                  const SMDS_VtkVolume* aVolume =
-                    dynamic_cast<const SMDS_VtkVolume*> (anElem);
-                  if ( aVolume ) {
-                    aNewElem = aNewMeshDS->AddPolyhedralVolume(aNodesArray,
-                                                               aVolume->GetQuantities());
-                    elemsMap.insert(make_pair(anElem->GetID(), aNewElem->GetID()));
-                    if( theCommonGroups )
+                  aNewElem = aNewMeshDS->AddPolyhedralVolume(aNodesArray,
+                                                             aVolume->GetQuantities());
+                  elemsMap.insert(make_pair(anElem->GetID(), aNewElem->GetID()));
+                  if( theCommonGroups )
+                    anIDsVolumes[anNbVolumes++] = aNewElem->GetID();
+                }
+                break;
+              case SMDSEntity_Ball:
+                if ( const SMDS_BallElement* aBall =
+                     dynamic_cast<const SMDS_BallElement*> (anElem))
+                {
+                  aNewElem = aNewEditor.AddElement(aNodesArray, SMDSAbs_Ball,
+                                                   /*isPoly=*/false, /*id=*/0,
+                                                   aBall->GetDiameter() );
+                  elemsMap.insert(make_pair(anElem->GetID(), aNewElem->GetID()));
+                  if( theCommonGroups )
+                    anIDsBalls[aNbBalls++] = aNewElem->GetID();
+                }
+                break;
+              default:
+                {
+                  aNewElem = aNewEditor.AddElement(aNodesArray,
+                                                   anElemType,
+                                                   anElem->IsPoly());
+                  elemsMap.insert(make_pair(anElem->GetID(), aNewElem->GetID()));
+                  if( theCommonGroups ) {
+                    if( anElemType == SMDSAbs_Edge )
+                      anIDsEdges[anNbEdges++] = aNewElem->GetID();
+                    else if( anElemType == SMDSAbs_Face )
+                      anIDsFaces[anNbFaces++] = aNewElem->GetID();
+                    else if( anElemType == SMDSAbs_Volume )
                       anIDsVolumes[anNbVolumes++] = aNewElem->GetID();
                   }
-                }
-              else {
-
-                aNewElem = aNewEditor.AddElement(aNodesArray,
-                                                 anElemType,
-                                                 anElem->IsPoly());
-                elemsMap.insert(make_pair(anElem->GetID(), aNewElem->GetID()));
-                if( theCommonGroups ) {
-                  if( anElemType == SMDSAbs_Edge )
-                    anIDsEdges[anNbEdges++] = aNewElem->GetID();
-                  else if( anElemType == SMDSAbs_Face )
-                    anIDsFaces[anNbFaces++] = aNewElem->GetID();
-                  else if( anElemType == SMDSAbs_Volume )
-                    anIDsVolumes[anNbVolumes++] = aNewElem->GetID();
                 }
               }
             }//elems loop
@@ -2280,7 +2296,7 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
             SMESH::ElementType aGroupType;
             CORBA::String_var aGroupName;
             if ( theCommonGroups ) {
-              for(aGroupType=SMESH::NODE;aGroupType<=SMESH::VOLUME;aGroupType=(SMESH::ElementType)(aGroupType+1)) {
+              for(aGroupType=SMESH::NODE;aGroupType<=SMESH::BALL;aGroupType=(SMESH::ElementType)(aGroupType+1)) {
                 string str = "Gr";
                 SALOMEDS::SObject_var aMeshSObj = ObjectToSObject( myCurrentStudy, anInitMesh );
                 if(aMeshSObj)
@@ -2310,6 +2326,11 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
                   anIDsVolumes->length(anNbVolumes);
                   anLen = anNbVolumes;
                   break;
+                case SMESH::BALL:
+                  str += "Balls";
+                  anIDsBalls->length(aNbBalls);
+                  anLen = aNbBalls;
+                  break;
                 default:
                   break;
                 }
@@ -2332,6 +2353,9 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
                     break;
                   case SMESH::VOLUME:
                     aNewGroup->Add( anIDsVolumes );
+                    break;
+                  case SMESH::BALL:
+                    aNewGroup->Add( anIDsBalls );
                     break;
                   default:
                     break;
@@ -2442,13 +2466,8 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
 
   // IPAL21468 Change icon of compound because it need not be computed.
   SALOMEDS::SObject_var aMeshSObj = ObjectToSObject( myCurrentStudy, aNewMesh );
-  if( !aMeshSObj->_is_nil() ) {
-    SALOMEDS::GenericAttribute_var anAttr;
-    SALOMEDS::StudyBuilder_var aBuilder = myCurrentStudy->NewBuilder();
-    anAttr = aBuilder->FindOrCreateAttribute( aMeshSObj,"AttributePixMap" );
-    SALOMEDS::AttributePixMap_var aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
-    aPixmap->SetPixMap("ICON_SMESH_TREE_MESH");
-  }
+  SetPixMap( aMeshSObj, "ICON_SMESH_TREE_MESH" );
+
   if (aNewMeshDS)
     aNewMeshDS->Modified();
   return aNewMesh._retn();
@@ -2544,6 +2563,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CopyMesh(SMESH::SMESH_IDSource_ptr meshPart,
   while ( srcElemIt->more() )
   {
     const SMDS_MeshElement * elem = srcElemIt->next();
+    // find / add nodes
     nodes.resize( elem->NbNodes());
     SMDS_ElemIteratorPtr nIt = elem->nodesIterator();
     if ( toKeepIDs ) {
@@ -2566,22 +2586,30 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CopyMesh(SMESH::SMESH_IDSource_ptr meshPart,
         nodes[ iN ] = (const SMDS_MeshNode*) n2n->second;
       }
     }
+    // add elements
     if ( elem->GetType() != SMDSAbs_Node )
     {
       int ID = toKeepIDs ? elem->GetID() : 0;
       const SMDS_MeshElement * newElem;
-      if ( elem->GetEntityType() == SMDSEntity_Polyhedra )
+      switch ( elem->GetEntityType() ) {
+      case SMDSEntity_Polyhedra:
         newElem = editor.GetMeshDS()->
           AddPolyhedralVolumeWithID( nodes,
                                      static_cast<const SMDS_VtkVolume*>(elem)->GetQuantities(),
-                                     elem->GetID());
-      else
+                                     ID);
+        break;
+      case SMDSEntity_Ball:
+        newElem = editor.AddElement( nodes, SMDSAbs_Ball, false, ID,
+                                     static_cast<const SMDS_BallElement*>(elem)->GetDiameter());
+        break;
+      default:
         newElem = editor.AddElement( nodes,elem->GetType(),elem->IsPoly(),ID);
 
       if ( toCopyGroups && !toKeepIDs )
         e2eMapByType[ elem->GetType() ].insert( make_pair( elem, newElem ));
+      }
     }
-  }
+  } // while ( srcElemIt->more() )
 
   // 4(b). Copy free nodes
 
@@ -3368,7 +3396,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 
             // groups root sub-branch
             SALOMEDS::SObject_var myGroupsBranch;
-            for ( int i = GetNodeGroupsTag(); i <= Get0DElementsGroupsTag(); i++ ) {
+            for ( int i = GetNodeGroupsTag(); i <= GetBallElementsGroupsTag(); i++ ) {
               found = gotBranch->FindSubObject( i, myGroupsBranch );
               if ( found ) {
                 char name_group[ 30 ];
@@ -3382,6 +3410,8 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                   strcpy( name_group, "Groups of Volumes" );
                 else if ( i == Get0DElementsGroupsTag() )
                   strcpy( name_group, "Groups of 0D Elements" );
+                else if ( i == GetBallElementsGroupsTag() )
+                  strcpy( name_group, "Groups of Balls" );
 
                 aGroup = new HDFgroup( name_group, aTopGroup );
                 aGroup->CreateOnDisk();
@@ -4427,7 +4457,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
       }
 
       // try to get GROUPS
-      for ( int ii = GetNodeGroupsTag(); ii <= Get0DElementsGroupsTag(); ii++ ) {
+      for ( int ii = GetNodeGroupsTag(); ii <= GetBallElementsGroupsTag(); ii++ ) {
         char name_group[ 30 ];
         if ( ii == GetNodeGroupsTag() )
           strcpy( name_group, "Groups of Nodes" );
@@ -4439,6 +4469,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
           strcpy( name_group, "Groups of Volumes" );
         else if ( ii == Get0DElementsGroupsTag() )
           strcpy( name_group, "Groups of 0D Elements" );
+        else if ( ii == GetBallElementsGroupsTag() )
+          strcpy( name_group, "Groups of Balls" );
 
         if ( aTopGroup->ExistInternalObject( name_group ) ) {
           aGroup = new HDFgroup( name_group, aTopGroup );

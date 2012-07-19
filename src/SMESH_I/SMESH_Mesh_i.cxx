@@ -2848,13 +2848,14 @@ class SMESH_MeshPartDS : public SMESHDS_Mesh
 public:
   SMESH_MeshPartDS(SMESH::SMESH_IDSource_ptr meshPart);
 
-  virtual SMDS_NodeIteratorPtr      nodesIterator     (bool idInceasingOrder=false) const;
-  virtual SMDS_0DElementIteratorPtr elements0dIterator(bool idInceasingOrder=false) const;
-  virtual SMDS_EdgeIteratorPtr      edgesIterator     (bool idInceasingOrder=false) const;
-  virtual SMDS_FaceIteratorPtr      facesIterator     (bool idInceasingOrder=false) const;
-  virtual SMDS_VolumeIteratorPtr    volumesIterator   (bool idInceasingOrder=false) const;
+  virtual SMDS_NodeIteratorPtr   nodesIterator     (bool idInceasingOrder=false) const;
+  virtual SMDS_EdgeIteratorPtr   edgesIterator     (bool idInceasingOrder=false) const;
+  virtual SMDS_FaceIteratorPtr   facesIterator     (bool idInceasingOrder=false) const;
+  virtual SMDS_VolumeIteratorPtr volumesIterator   (bool idInceasingOrder=false) const;
 
   virtual SMDS_ElemIteratorPtr elementsIterator(SMDSAbs_ElementType type=SMDSAbs_All) const;
+  virtual SMDS_ElemIteratorPtr elementGeomIterator(SMDSAbs_GeometryType type) const;
+  virtual SMDS_ElemIteratorPtr elementEntityIterator(SMDSAbs_EntityType type) const;
 
 private:
   TIDSortedElemSet _elements[ SMDSAbs_NbElementTypes ];
@@ -3031,7 +3032,7 @@ CORBA::Long SMESH_Mesh_i::NbElements()throw (SALOME::SALOME_Exception)
   if ( _preMeshInfo )
     return _preMeshInfo->NbElements();
 
-  return Nb0DElements() + NbEdges() + NbFaces() + NbVolumes();
+  return Nb0DElements() + NbEdges() + NbFaces() + NbVolumes() + NbBalls();
 }
 
 CORBA::Long SMESH_Mesh_i::Nb0DElements()throw (SALOME::SALOME_Exception)
@@ -3041,6 +3042,15 @@ CORBA::Long SMESH_Mesh_i::Nb0DElements()throw (SALOME::SALOME_Exception)
     return _preMeshInfo->Nb0DElements();
 
   return _impl->Nb0DElements();
+}
+
+CORBA::Long SMESH_Mesh_i::NbBalls() throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  if ( _preMeshInfo )
+    return _preMeshInfo->NbBalls();
+
+  return _impl->NbBalls();
 }
 
 CORBA::Long SMESH_Mesh_i::NbEdges()throw(SALOME::SALOME_Exception)
@@ -3997,6 +4007,23 @@ CORBA::Boolean SMESH_Mesh_i::IsQuadratic(const CORBA::Long id)
   return elem->IsQuadratic();
 }
 
+//=============================================================================
+/*!
+ * Returns diameter of ball discrete element or zero in case of an invalid \a id
+ */
+//=============================================================================
+
+CORBA::Double SMESH_Mesh_i::GetBallDiameter(CORBA::Long id)
+{
+  if ( _preMeshInfo )
+    _preMeshInfo->FullLoadFromFile();
+
+  if ( const SMDS_BallElement* ball =
+       dynamic_cast<const SMDS_BallElement*>( _impl->GetMeshDS()->FindElement( id )))
+    return ball->GetDiameter();
+
+  return 0;
+}
 
 //=============================================================================
 /*!
@@ -4253,16 +4280,13 @@ SMESH::array_of_ElementType* SMESH_Mesh_i::GetTypes()
 
   SMESH::array_of_ElementType_var types = new SMESH::array_of_ElementType;
 
-  types->length( 4 );
+  types->length( 5 );
   int nbTypes = 0;
-  if (_impl->NbEdges())
-    types[nbTypes++] = SMESH::EDGE;
-  if (_impl->NbFaces())
-    types[nbTypes++] = SMESH::FACE;
-  if (_impl->NbVolumes())
-    types[nbTypes++] = SMESH::VOLUME;
-  if (_impl->Nb0DElements())
-    types[nbTypes++] = SMESH::ELEM0D;
+  if (_impl->NbEdges())      types[nbTypes++] = SMESH::EDGE;
+  if (_impl->NbFaces())      types[nbTypes++] = SMESH::FACE;
+  if (_impl->NbVolumes())    types[nbTypes++] = SMESH::VOLUME;
+  if (_impl->Nb0DElements()) types[nbTypes++] = SMESH::ELEM0D;
+  if (_impl->NbBalls())      types[nbTypes++] = SMESH::BALL;
   types->length( nbTypes );
 
   return types._retn();
@@ -4821,6 +4845,42 @@ SMESH_MeshPartDS::SMESH_MeshPartDS(SMESH::SMESH_IDSource_ptr meshPart):
   }
 }
 // -------------------------------------------------------------------------------------
+SMDS_ElemIteratorPtr SMESH_MeshPartDS::elementGeomIterator(SMDSAbs_GeometryType geomType) const
+{
+  if ( _meshDS ) return _meshDS->elementGeomIterator( geomType );
+
+  typedef SMDS_SetIterator
+    <const SMDS_MeshElement*,
+    TIDSortedElemSet::const_iterator,
+    SMDS::SimpleAccessor<const SMDS_MeshElement*, TIDSortedElemSet::const_iterator>,
+    SMDS_MeshElement::GeomFilter
+    > TIter;
+
+  SMDSAbs_ElementType type = SMDS_MeshCell::toSmdsType( geomType );
+
+  return SMDS_ElemIteratorPtr( new TIter( _elements[type].begin(),
+                                          _elements[type].end(),
+                                          SMDS_MeshElement::GeomFilter( geomType )));
+}
+// -------------------------------------------------------------------------------------
+SMDS_ElemIteratorPtr SMESH_MeshPartDS::elementEntityIterator(SMDSAbs_EntityType entity) const
+{
+  if ( _meshDS ) return _meshDS->elementEntityIterator( entity );
+
+  typedef SMDS_SetIterator
+    <const SMDS_MeshElement*,
+    TIDSortedElemSet::const_iterator,
+    SMDS::SimpleAccessor<const SMDS_MeshElement*, TIDSortedElemSet::const_iterator>,
+    SMDS_MeshElement::EntityFilter
+    > TIter;
+
+  SMDSAbs_ElementType type = SMDS_MeshCell::toSmdsType( entity );
+
+  return SMDS_ElemIteratorPtr( new TIter( _elements[type].begin(),
+                                          _elements[type].end(),
+                                          SMDS_MeshElement::EntityFilter( entity )));
+}
+// -------------------------------------------------------------------------------------
 SMDS_ElemIteratorPtr SMESH_MeshPartDS::elementsIterator(SMDSAbs_ElementType type) const
 {
   typedef SMDS_SetIterator<const SMDS_MeshElement*, TIDSortedElemSet::const_iterator > TIter;
@@ -4849,7 +4909,6 @@ SMDS_ElemIteratorPtr SMESH_MeshPartDS::elementsIterator(SMDSAbs_ElementType type
   }
 // -------------------------------------------------------------------------------------
 _GET_ITER_DEFINE( SMDS_NodeIteratorPtr, nodesIterator, SMDS_MeshNode, SMDSAbs_Node )
-_GET_ITER_DEFINE( SMDS_0DElementIteratorPtr, elements0dIterator, SMDS_Mesh0DElement, SMDSAbs_0DElement)
 _GET_ITER_DEFINE( SMDS_EdgeIteratorPtr, edgesIterator, SMDS_MeshEdge, SMDSAbs_Edge )
 _GET_ITER_DEFINE( SMDS_FaceIteratorPtr, facesIterator, SMDS_MeshFace, SMDSAbs_Face )
 _GET_ITER_DEFINE( SMDS_VolumeIteratorPtr, volumesIterator, SMDS_MeshVolume, SMDSAbs_Volume)

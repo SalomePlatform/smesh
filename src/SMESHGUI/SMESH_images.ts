@@ -96,6 +96,14 @@
             <translation>copy_mesh.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_BALL</source>
+            <translation>mesh_ball.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_BALL_ELEMENT</source>
+            <translation>mesh_ball.png</translation>
+        </message>
+        <message>
             <source>ICON_DLG_ELEM0D</source>
             <translation>mesh_vertex.png</translation>
         </message>

@@ -44,6 +44,10 @@
         <translation>All files</translation>
     </message>
     <message>
+        <source>SMESH_AND</source>
+        <translation>and</translation>
+    </message>
+    <message>
         <source>AREA_ELEMENTS</source>
         <translation>Area</translation>
     </message>
@@ -54,6 +58,18 @@
     <message>
         <source>ASPECTRATIO_ELEMENTS</source>
         <translation>Aspect Ratio</translation>
+    </message>
+    <message>
+        <source>NODE_POSITION</source>
+        <translation>Position</translation>
+    </message>
+    <message>
+        <source>U_POSITION</source>
+        <translation>U</translation>
+    </message>
+    <message>
+        <source>V_POSITION</source>
+        <translation>V</translation>
     </message>
     <message>
         <source>COL_ALGO_HEADER</source>
@@ -330,6 +346,14 @@
     <message>
         <source>MEN_ELEMS0D</source>
         <translation>0D Elements</translation>
+    </message>
+    <message>
+        <source>MEN_BALL</source>
+        <translation>Ball</translation>
+    </message>
+    <message>
+        <source>MEN_BALLS</source>
+        <translation>Balls</translation>
     </message>
     <message>
         <source>MEN_EDGE</source>
@@ -1048,6 +1072,14 @@ Please enter correct values and try again</translation>
         <translation>Add 0D Element</translation>
     </message>
     <message>
+        <source>SMESH_ADD_BALL</source>
+        <translation>Add Ball Element</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_BALL_TITLE</source>
+        <translation>Add Ball Element</translation>
+    </message>
+    <message>
         <source>SMESH_ADD_EDGE</source>
         <translation>Add Edge</translation>
     </message>
@@ -1424,8 +1456,28 @@ so that the application may crash. Do you wish to continue visualization?</trans
         <translation>0D Element</translation>
     </message>
     <message>
+        <source>SMESH_ELEMS0D</source>
+        <translation>0D Elements</translation>
+    </message>
+    <message>
+        <source>SMESH_BALL_ELEM</source>
+        <translation>Ball</translation>
+    </message>
+    <message>
+        <source>SMESH_BALL</source>
+        <translation>Ball</translation>
+    </message>
+    <message>
+        <source>SMESH_BALLS</source>
+        <translation>Balls</translation>
+    </message>
+    <message>
         <source>SMESH_EDGE</source>
         <translation>Edge</translation>
+    </message>
+    <message>
+        <source>SMESH_EDGES</source>
+        <translation>Edges</translation>
     </message>
     <message>
         <source>SMESH_EDGES_CONNECTIVITY_TITLE</source>
@@ -1511,17 +1563,10 @@ The result file may be incorrect.
 Overwrite the file?</translation>
     </message>
     <message>
-        <source>SMESH_EXPORT_STL1</source>
-        <translation>Mesh  - &quot;%1&quot; does not contain triangles</translation>
-    </message>
-    <message>
-        <source>SMESH_EXPORT_STL2</source>
-        <translation>Mesh  - &quot;%1&quot; contains another than triangles elements,     they are ignored during writing to STL</translation>
-    </message>
-    <message>
-        <source>SMESH_EXPORT_UNV</source>
-        <translation>During export mesh with name &quot;%1&quot; to UNV
-       pyramids, hexagonal prisms, polygons and polyhedra elements will be missed</translation>
+        <source>EXPORT_NOT_SUPPORTED</source>
+        <translation>During export mesh with name &quot;%1&quot; to %2
+%3 will be missed.
+Do you want to continue ?</translation>
     </message>
     <message>
         <source>SMESH_EXTRUSION</source>
@@ -1616,6 +1661,10 @@ add the exported data to its contents?</translation>
     <message>
         <source>SMESH_HEXAS</source>
         <translation>Hexahedron</translation>
+    </message>
+    <message>
+        <source>SMESH_HEXAHEDRA</source>
+        <translation>Hexahedrons</translation>
     </message>
     <message>
         <source>SMESH_HILIGHT_COLOR</source>
@@ -1995,6 +2044,10 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Hexagonal prism</translation>
     </message>
     <message>
+        <source>SMESH_OCTAHEDRA</source>
+        <translation>Hexagonal prisms</translation>
+    </message>
+    <message>
         <source>TOP_OCTA</source>
         <translation>Hexagonal prism</translation>
     </message>
@@ -2025,6 +2078,10 @@ Check algorithm documentation for supported geometry</translation>
     <message>
         <source>SMESH_PENTA</source>
         <translation>Pentahedron</translation>
+    </message>
+    <message>
+        <source>SMESH_PENTAHEDRA</source>
+        <translation>Pentahedrons</translation>
     </message>
     <message>
         <source>TOP_PENTA</source>
@@ -2067,8 +2124,32 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Polyhedron</translation>
     </message>
     <message>
+        <source>SMESH_POLYEDRONS</source>
+        <translation>Polyhedrons</translation>
+    </message>
+    <message>
+        <source>SMESH_QUADRATIC_POLYEDRON</source>
+        <translation>Quadratic Polyhedron</translation>
+    </message>
+    <message>
+        <source>SMESH_QUADRATIC_POLYEDRONS</source>
+        <translation>Quadratic Polyhedrons</translation>
+    </message>
+    <message>
         <source>SMESH_POLYGON</source>
         <translation>Polygon</translation>
+    </message>
+    <message>
+        <source>SMESH_POLYGONS</source>
+        <translation>Polygons</translation>
+    </message>
+    <message>
+        <source>SMESH_QUADRATIC_POLYGON</source>
+        <translation>Quadratic Polygon</translation>
+    </message>
+    <message>
+        <source>SMESH_QUADRATIC_POLYGONS</source>
+        <translation>Quadratic Polygons</translation>
     </message>
     <message>
         <source>SMESH_POSITION_SIZE_SCALARBAR</source>
@@ -2111,6 +2192,10 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Pyramid</translation>
     </message>
     <message>
+        <source>SMESH_PYRAMIDS</source>
+        <translation>Pyramids</translation>
+    </message>
+    <message>
         <source>MEN_PYRAMID</source>
         <translation>Pyramid</translation>
     </message>
@@ -2127,16 +2212,32 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Quadrangle</translation>
     </message>
     <message>
+        <source>SMESH_QUADRANGLES</source>
+        <translation>Quadrangles</translation>
+    </message>
+    <message>
         <source>SMESH_QUADRATIC_EDGE</source>
         <translation>Quadratic Edge</translation>
+    </message>
+    <message>
+        <source>SMESH_QUADRATIC_EDGES</source>
+        <translation>Quadratic Edges</translation>
     </message>
     <message>
         <source>SMESH_QUADRATIC_HEXAHEDRON</source>
         <translation>Quadratic Hexahedron</translation>
     </message>
     <message>
+        <source>SMESH_QUADRATIC_HEXAHEDRONS</source>
+        <translation>Quadratic Hexahedrons</translation>
+    </message>
+    <message>
         <source>SMESH_TRIQUADRATIC_HEXAHEDRON</source>
         <translation>TriQuadratic Hexahedron</translation>
+    </message>
+    <message>
+        <source>SMESH_TRIQUADRATIC_HEXAHEDRONS</source>
+        <translation>TriQuadratic Hexahedrons</translation>
     </message>
     <message>
         <source>TOP_TRIQUADRATIC_HEXAHEDRON</source>
@@ -2155,16 +2256,32 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Quadratic Pentahedron</translation>
     </message>
     <message>
+        <source>SMESH_QUADRATIC_PENTAHEDRONS</source>
+        <translation>Quadratic Pentahedrons</translation>
+    </message>
+    <message>
         <source>SMESH_QUADRATIC_PYRAMID</source>
         <translation>Quadratic Pyramid</translation>
+    </message>
+    <message>
+        <source>SMESH_QUADRATIC_PYRAMIDS</source>
+        <translation>Quadratic Pyramids</translation>
     </message>
     <message>
         <source>SMESH_QUADRATIC_QUADRANGLE</source>
         <translation>Quadratic Quadrangle</translation>
     </message>
     <message>
+        <source>SMESH_QUADRATIC_QUADRANGLES</source>
+        <translation>Quadratic Quadrangles</translation>
+    </message>
+    <message>
         <source>SMESH_BIQUADRATIC_QUADRANGLE</source>
         <translation>BiQuadratic Quadrangle</translation>
+    </message>
+    <message>
+        <source>SMESH_BIQUADRATIC_QUADRANGLES</source>
+        <translation>BiQuadratic Quadrangles</translation>
     </message>
     <message>
         <source>MEN_BIQUADRATIC_QUADRANGLE</source>
@@ -2183,8 +2300,16 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Quadratic Tetrahedron</translation>
     </message>
     <message>
+        <source>SMESH_QUADRATIC_TETRAHEDRONS</source>
+        <translation>Quadratic Tetrahedrons</translation>
+    </message>
+    <message>
         <source>SMESH_QUADRATIC_TRIANGLE</source>
         <translation>Quadratic Triangle</translation>
+    </message>
+    <message>
+        <source>SMESH_QUADRATIC_TRIANGLES</source>
+        <translation>Quadratic Triangles</translation>
     </message>
     <message>
         <source>SMESH_RANGE_MAX</source>
@@ -2300,6 +2425,10 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Tetrahedron</translation>
     </message>
     <message>
+        <source>SMESH_TETRAHEDRA</source>
+        <translation>Tetrahedrons</translation>
+    </message>
+    <message>
         <source>SMESH_TITLE</source>
         <translation>Title:</translation>
     </message>
@@ -2354,6 +2483,10 @@ Check algorithm documentation for supported geometry</translation>
     <message>
         <source>SMESH_TRIANGLE</source>
         <translation>Triangle</translation>
+    </message>
+    <message>
+        <source>SMESH_TRIANGLES</source>
+        <translation>Triangles</translation>
     </message>
     <message>
         <source>SMESH_UPDATEVIEW</source>
@@ -2654,6 +2787,14 @@ Please check preferences of Mesh module.
     <message>
         <source>STB_ELEMS0D</source>
         <translation>0D Elements</translation>
+    </message>
+    <message>
+        <source>STB_BALLS</source>
+        <translation>Ball Elements</translation>
+    </message>
+    <message>
+        <source>STB_BALL</source>
+        <translation>Ball Element</translation>
     </message>
     <message>
         <source>STB_EDGE</source>
@@ -3248,6 +3389,14 @@ Please check preferences of Mesh module.
         <translation>0D Elements</translation>
     </message>
     <message>
+        <source>TOP_BALL</source>
+        <translation>Ball</translation>
+    </message>
+    <message>
+        <source>TOP_BALLS</source>
+        <translation>Balls</translation>
+    </message>
+    <message>
         <source>TOP_EDGE</source>
         <translation>Edge</translation>
     </message>
@@ -3786,6 +3935,14 @@ Input value precision can be adjusted using
         <translation>Mesh %0 loading done</translation>
     </message>
     <message>
+        <source>BALL_DIAMETER</source>
+        <translation>Diameter</translation>
+    </message>
+    <message>
+        <source>BALL_ELEMENT</source>
+        <translation>Ball</translation>
+    </message>
+    <message>
         <source>DEP_OBJECT</source>
         <translation>Selected object has been used to create another one.
 It can&apos;t be deleted </translation>
@@ -4072,6 +4229,14 @@ Please, create VTK viewer and try again</translation>
     <message>
         <source>PREF_SIZE_0D</source>
         <translation>Size of 0D elements</translation>
+    </message>
+    <message>
+        <source>PREF_BALL_COLOR</source>
+        <translation>Balls</translation>
+    </message>
+    <message>
+        <source>PREF_BALL_SIZE</source>
+        <translation>Size of ball elements</translation>
     </message>
     <message>
         <source>PREF_WIDTH</source>
@@ -4850,6 +5015,10 @@ Please check input data and try again</translation>
         <translation>Criterion</translation>
     </message>
     <message>
+        <source>BALLS</source>
+        <translation>Balls</translation>
+    </message>
+    <message>
         <source>EDGES</source>
         <translation>Edges</translation>
     </message>
@@ -5051,6 +5220,10 @@ Please enter correct value and try again</translation>
     <message>
         <source>GEOM_TYPE_10</source>
         <translation>Polyhedra</translation>
+    </message>
+    <message>
+        <source>GEOM_TYPE_11</source>
+        <translation>Ball</translation>
     </message>
 </context>
 <context>
@@ -6094,6 +6267,10 @@ as they are of improper type:
         <translation>0D:</translation>
     </message>
     <message>
+        <source>BALL_LAB</source>
+        <translation>Balls:</translation>
+    </message>
+    <message>
         <source>1D_LAB</source>
         <translation>1D (edges):</translation>
     </message>
@@ -6174,6 +6351,10 @@ as they are of improper type:
         <translation>Group of 0D elements</translation>
     </message>
     <message>
+        <source>OBJECT_GROUP_BALLS</source>
+        <translation>Group of balls</translation>
+    </message>
+    <message>
         <source>BUT_LOAD_MESH</source>
         <translation>Load mesh from server</translation>
     </message>
@@ -6234,6 +6415,14 @@ as they are of improper type:
     <message>
         <source>0D_ELEMENTS</source>
         <translation>0D ELEMENTS</translation>
+    </message>
+    <message>
+        <source>BALL_ELEMENT</source>
+        <translation>BALL ELEMENT</translation>
+    </message>
+    <message>
+        <source>BALL_ELEMENTS</source>
+        <translation>BALL ELEMENTS</translation>
     </message>
     <message>
         <source>EDGE</source>
@@ -6355,6 +6544,10 @@ as they are of improper type:
         <translation>0D elements</translation>
     </message>
     <message>
+        <source>GROUPS_6</source>
+        <translation>Ball elements</translation>
+    </message>
+    <message>
         <source>PARENT_MESH</source>
         <translation>Parent mesh</translation>
     </message>
@@ -6397,6 +6590,10 @@ as they are of improper type:
     <message>
         <source>0DELEM</source>
         <translation>0D element</translation>
+    </message>
+    <message>
+        <source>BALL_ELEMENT</source>
+        <translation>ball</translation>
     </message>
     <message>
         <source>UNKNOWN</source>
@@ -6630,6 +6827,14 @@ as they are of improper type:
     <message>
         <source>0D_ELEMENTS_SIZE_LBL</source>
         <translation>Size of 0D elements</translation>
+    </message>
+    <message>
+        <source>BALL_ELEMENTS_COLOR_LBL</source>
+        <translation>Ball elements</translation>
+    </message>
+    <message>
+        <source>BALL_ELEMENTS_SIZE_LBL</source>
+        <translation>Size of balls</translation>
     </message>
     <message>
         <source>LINE_WIDTH_LBL</source>

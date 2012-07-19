@@ -20,7 +20,6 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 // File      : SMESH_2smeshpy.cxx
 // Created   : Fri Nov 18 13:20:10 2005
 // Author    : Edward AGAPOV (eap)
@@ -228,6 +227,11 @@ namespace {
     //   - FT_EqualEdges            = 15
     //   - FT_EqualFaces            = 16
     //   - FT_EqualVolumes          = 17
+    // v 6.6.0: FT_Undefined == 44, new items:
+    //   - FT_BallDiameter          = 37
+    //
+    // It's necessary to continue recording this history and to fill
+    // undef2newItems (see below) accordingly.
 
     typedef map< int, vector< int > > TUndef2newItems;
     static TUndef2newItems undef2newItems;
@@ -242,6 +246,8 @@ namespace {
         undef2newItems[ 39 ].assign( items, items+6 ); }
       { int items[] = { 14, 15, 16, 17 };
         undef2newItems[ 43 ].assign( items, items+4 ); }
+      { int items[] = { 37 };
+        undef2newItems[ 44 ].assign( items, items+1 ); }
     }
 
     int iType     = Type.IntegerValue();
@@ -651,10 +657,10 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
     if ( Type == "SMESH.FT_ElemGeomType" && Threshold.IsIntegerValue() )
     {
       // set SMESH.GeometryType instead of a numerical Threshold
-      const char* types[SMESH::Geom_POLYHEDRA+1] = {
+      const char* types[SMESH::Geom_BALL+1] = {
         "Geom_POINT", "Geom_EDGE", "Geom_TRIANGLE", "Geom_QUADRANGLE", "Geom_POLYGON",
         "Geom_TETRA", "Geom_PYRAMID", "Geom_HEXA", "Geom_PENTA", "Geom_HEXAGONAL_PRISM",
-        "Geom_POLYHEDRA"
+        "Geom_POLYHEDRA", "Geom_BALL"
       };
       int iGeom = Threshold.IntegerValue();
       if ( -1 < iGeom && iGeom < SMESH::Geom_POLYHEDRA+1 )
@@ -1908,7 +1914,7 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
   static TStringSet sameMethods;
   if ( sameMethods.empty() ) {
     const char * names[] = {
-      "RemoveElements","RemoveNodes","RemoveOrphanNodes","AddNode","Add0DElement","AddEdge","AddFace","AddPolygonalFace",
+      "RemoveElements","RemoveNodes","RemoveOrphanNodes","AddNode","Add0DElement","AddEdge","AddFace","AddPolygonalFace","AddBall",
       "AddVolume","AddPolyhedralVolume","AddPolyhedralVolumeByFaces","MoveNode", "MoveClosestNodeToPoint",
       "InverseDiag","DeleteDiag","Reorient","ReorientObject","TriToQuad","SplitQuad","SplitQuadObject",
       "BestSplit","Smooth","SmoothObject","SmoothParametric","SmoothParametricObject",

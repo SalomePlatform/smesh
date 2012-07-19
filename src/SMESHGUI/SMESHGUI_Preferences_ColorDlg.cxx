@@ -102,6 +102,17 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
   SpinBox_0DElements_Size->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
   SpinBox_0DElements_Size->setButtonSymbols( QSpinBox::PlusMinus );
 
+  QLabel* TextLabel_BallElem_Color = new QLabel( tr( "0D_ELEMENTS_COLOR_LBL" ), ButtonGroup1 );
+  btnBallElemColor = new QtxColorButton( ButtonGroup1 );
+
+  QLabel* TextLabel_BallElem_Size = new QLabel( tr( "BALLELEM_SIZE_LBL" ), ButtonGroup1 );
+  SpinBox_BallElem_Size = new SalomeApp_IntSpinBox( ButtonGroup1 );
+  SpinBox_BallElem_Size->setAcceptNames( false ); // No Notebook variables allowed
+  SpinBox_BallElem_Size->setRange( 1, 10 );
+  SpinBox_BallElem_Size->setSingleStep( 1 );
+  SpinBox_BallElem_Size->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
+  SpinBox_BallElem_Size->setButtonSymbols( QSpinBox::PlusMinus );
+
   QLabel* TextLabel_Width = new QLabel( tr( "LINE_WIDTH_LBL" ), ButtonGroup1 );
   SpinBox_Width = new SalomeApp_IntSpinBox( ButtonGroup1 );
   SpinBox_Width->setAcceptNames( false ); // No Notebook variables allowed
@@ -131,6 +142,12 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
 
   ButtonGroup1Layout->addWidget( TextLabel_0DElements_Size,  2, 2 );
   ButtonGroup1Layout->addWidget( SpinBox_0DElements_Size,    2, 3 );
+
+  ButtonGroup1Layout->addWidget( TextLabel_BallElem_Color, 2, 0 );
+  ButtonGroup1Layout->addWidget( btnBallElemColor,         2, 1 );
+
+  ButtonGroup1Layout->addWidget( TextLabel_BallElem_Size,  2, 2 );
+  ButtonGroup1Layout->addWidget( SpinBox_BallElem_Size,    2, 3 );
 
   ButtonGroup1Layout->addWidget( TextLabel_Width,            3, 0 );
   ButtonGroup1Layout->addWidget( SpinBox_Width,              3, 1 );
@@ -340,9 +357,10 @@ void SMESHGUI_Preferences_ColorDlg::SetColor( int type, const QColor& color )
   case 3 : btnNodeColor->setColor( color );          break; // node
   case 4 : btnOutlineColor->setColor( color );       break; // outline
   case 5 : btn0DElementsColor->setColor( color );    break; // 0d elements
-  case 6 : btnOrientationColor->setColor( color );   break; // orientation of faces
-  case 7 : btnSelectionColor->setColor( color );     break; // selection color
-  case 8 : btnPreselectionColor->setColor( color );  break; // pre-selection color
+  case 6 : btnBallElemColor->setColor( color );      break; // ball elements
+  case 7 : btnOrientationColor->setColor( color );   break; // orientation of faces
+  case 8 : btnSelectionColor->setColor( color );     break; // selection color
+  case 9 : btnPreselectionColor->setColor( color );  break; // pre-selection color
   default: break;
   }
 }
@@ -360,9 +378,10 @@ QColor SMESHGUI_Preferences_ColorDlg::GetColor( int type )
   case 3 : color = btnNodeColor->color();         break; // node
   case 4 : color = btnOutlineColor->color();      break; // node
   case 5 : color = btn0DElementsColor->color();   break; // 0d elements
-  case 6 : color = btnOrientationColor->color();  break; // orientation of faces
-  case 7 : color = btnSelectionColor->color();    break; // selection color
-  case 8 : color = btnPreselectionColor->color(); break; // pre-selection color
+  case 6 : color = btnBallElemColor->color();   break; // 0d elements
+  case 7 : color = btnOrientationColor->color();  break; // orientation of faces
+  case 8 : color = btnSelectionColor->color();    break; // selection color
+  case 9 : color = btnPreselectionColor->color(); break; // pre-selection color
 
   default: break;
   }
@@ -379,6 +398,7 @@ void SMESHGUI_Preferences_ColorDlg::SetIntValue( int type, int value )
   case 1 : SpinBox_Width->setValue( value );           break; // width
   case 2 : SpinBox_Shrink->setValue( value );          break; // shrink coeff
   case 3 : SpinBox_0DElements_Size->setValue( value ); break; // 0d elements
+  case 4 : SpinBox_BallElem_Size->setValue( value ); break; // 0d elements
   default: break;
   }
 }
@@ -394,6 +414,7 @@ int SMESHGUI_Preferences_ColorDlg::GetIntValue( int type )
   case 1 : res = SpinBox_Width->value();           break; // width
   case 2 : res = SpinBox_Shrink->value();          break; // shrink coeff
   case 3 : res = SpinBox_0DElements_Size->value(); break; // 0d elements
+  case 4 : res = SpinBox_BallElem_Size->value(); break; // 0d elements
   default: break;
   }
   return res;

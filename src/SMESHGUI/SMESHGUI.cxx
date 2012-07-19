@@ -436,25 +436,98 @@
         }
       }
     }
+    
+    // Warn the user about presence of not supported elements
+    QString format;
+    std::vector< SMESH::EntityType > notSupportedElemTypes, presentNotSupported;
+    if ( isDAT )
+    {
+      format = "DAT";
+      notSupportedElemTypes.push_back( SMESH::Entity_Quad_Quadrangle );
+      notSupportedElemTypes.push_back( SMESH::Entity_BiQuad_Quadrangle );
+      notSupportedElemTypes.push_back( SMESH::Entity_Polygon );
+      notSupportedElemTypes.push_back( SMESH::Entity_Quad_Polygon );
+      notSupportedElemTypes.push_back( SMESH::Entity_Tetra );
+      notSupportedElemTypes.push_back( SMESH::Entity_Quad_Tetra );
+      notSupportedElemTypes.push_back( SMESH::Entity_Pyramid );
+      notSupportedElemTypes.push_back( SMESH::Entity_Quad_Pyramid );
+      notSupportedElemTypes.push_back( SMESH::Entity_Quad_Hexa );
+      notSupportedElemTypes.push_back( SMESH::Entity_TriQuad_Hexa );
+      notSupportedElemTypes.push_back( SMESH::Entity_Penta );
+      notSupportedElemTypes.push_back( SMESH::Entity_Quad_Penta );
+      notSupportedElemTypes.push_back( SMESH::Entity_Hexagonal_Prism );
+      notSupportedElemTypes.push_back( SMESH::Entity_Polyhedra );
+      notSupportedElemTypes.push_back( SMESH::Entity_0D );
+      notSupportedElemTypes.push_back( SMESH::Entity_Ball );
+    }
     else if ( isUNV )
     {
-      // warn the user about presence of not supported elements
+      format = "UNV";
+      notSupportedElemTypes.push_back( SMESH::Entity_Polygon );
+      notSupportedElemTypes.push_back( SMESH::Entity_Quad_Polygon );
+      notSupportedElemTypes.push_back( SMESH::Entity_Polyhedra );
+      notSupportedElemTypes.push_back( SMESH::Entity_Quad_Polyhedra );
+      notSupportedElemTypes.push_back( SMESH::Entity_Pyramid );
+      notSupportedElemTypes.push_back( SMESH::Entity_Hexagonal_Prism );
+      notSupportedElemTypes.push_back( SMESH::Entity_0D );
+      notSupportedElemTypes.push_back( SMESH::Entity_Ball );
+    }
+    else if ( isSTL )
+    {
+      format = "STL";
+      notSupportedElemTypes.push_back( SMESH::Entity_Edge );
+      notSupportedElemTypes.push_back( SMESH::Entity_Quad_Edge );
+      notSupportedElemTypes.push_back( SMESH::Entity_0D );
+      notSupportedElemTypes.push_back( SMESH::Entity_Ball );
+    }
+    else if ( isCGNS )
+    {
+      format = "CGNS";
+      notSupportedElemTypes.push_back( SMESH::Entity_Ball );
+    }
+    else if ( isSAUV )
+    {
+      format = "SAUV";
+      notSupportedElemTypes.push_back( SMESH::Entity_Ball );
+      notSupportedElemTypes.push_back( SMESH::Entity_BiQuad_Quadrangle );
+      notSupportedElemTypes.push_back( SMESH::Entity_TriQuad_Hexa );
+      notSupportedElemTypes.push_back( SMESH::Entity_Hexagonal_Prism );
+      notSupportedElemTypes.push_back( SMESH::Entity_Polygon );
+      notSupportedElemTypes.push_back( SMESH::Entity_Polyhedra );
+    }
+    if ( ! notSupportedElemTypes.empty() )
+    {
       SMESH::long_array_var nbElems = aMeshOrGroup->GetMeshInfo();
-      int nbNotSupported = ( nbElems[ SMESH::Entity_Pyramid ] +
-                             nbElems[ SMESH::Entity_Quad_Pyramid ] +
-                             nbElems[ SMESH::Entity_Hexagonal_Prism ] +
-                             nbElems[ SMESH::Entity_Polygon ] +
-                             nbElems[ SMESH::Entity_Polyhedra ] );
-      if ( nbNotSupported > 0 ) {
-        int aRet = SUIT_MessageBox::warning
-          (SMESHGUI::desktop(),
-           QObject::tr("SMESH_WRN_WARNING"),
-           QObject::tr("SMESH_EXPORT_UNV").arg(aMeshName),
-           QObject::tr("SMESH_BUT_YES"),
-           QObject::tr("SMESH_BUT_NO"), 0, 1);
-        if (aRet != 0)
-          return;
+      for ( size_t iType = 0; iType < notSupportedElemTypes.size(); ++iType )
+        if ( nbElems[ notSupportedElemTypes[ iType ]] > 0 )
+          presentNotSupported.push_back( notSupportedElemTypes[ iType ]);
+    }
+    if ( !presentNotSupported.empty() )
+    {
+      QString typeNames;
+      const char* typeMsg[SMESH::Entity_Last] = { "SMESH_NODES",
+        "SMESH_ELEMS0D","SMESH_EDGES","SMESH_QUADRATIC_EDGES","SMESH_TRIANGLES",
+        "SMESH_QUADRATIC_TRIANGLES","SMESH_QUADRANGLES","SMESH_QUADRATIC_QUADRANGLES",
+        "SMESH_BIQUADRATIC_QUADRANGLES","SMESH_POLYGONS","SMESH_QUADRATIC_POLYGONS",
+        "SMESH_TETRAHEDRA","SMESH_QUADRATIC_TETRAHEDRONS","SMESH_PYRAMIDS",
+        "SMESH_QUADRATIC_PYRAMIDS","SMESH_HEXAHEDRA","SMESH_QUADRATIC_HEXAHEDRONS",
+        "SMESH_TRIQUADRATIC_HEXAHEDRONS","SMESH_PENTAHEDRA","SMESH_QUADRATIC_PENTAHEDRONS",
+        "SMESH_OCTAHEDRA","SMESH_POLYEDRONS","SMESH_QUADRATIC_POLYEDRONS","SMESH_BALLS"
+      };
+      QString andStr = " " + QObject::tr("SMESH_AND") + " ", comma(", ");
+      for ( size_t iType = 0; iType < presentNotSupported.size(); ++iType ) {
+        typeNames += QObject::tr( typeMsg[ presentNotSupported[ iType ]]);
+        if ( iType != presentNotSupported.size() - 1 )
+          typeNames += ( iType == presentNotSupported.size() - 2 ) ? andStr : comma;
       }
+      int aRet = SUIT_MessageBox::warning
+        (SMESHGUI::desktop(),
+         QObject::tr("SMESH_WRN_WARNING"),
+         QObject::tr("EXPORT_NOT_SUPPORTED").arg(aMeshName).arg(format).arg(typeNames),
+         QObject::tr("SMESH_BUT_YES"),
+         QObject::tr("SMESH_BUT_NO"), 0, 1);
+      if (aRet != 0)
+        return;
     }
 
     // Get parameters of export operation
@@ -663,7 +736,7 @@
 //         bool Renumber = false;
 //         // PAL 14172  : Check of we have to renumber or not from the preferences before export
 //         if (resMgr)
-//           Renumber= resMgr->booleanValue("SMESH","renumbering");
+//           Renumber= resMgr->booleanValue("renumbering");
 //         if (Renumber){
 //           SMESH::SMESH_MeshEditor_var aMeshEditor = aMesh->GetMeshEditor();
 //           aMeshEditor->RenumberNodes();
@@ -763,6 +836,9 @@
           if(SMESH_Actor *anActor = SMESH::FindActorByEntry(IObject->getEntry())){
             unsigned int aMode = anActor->GetEntityMode();
             switch(theCommandID){
+            case 222:
+              InverseEntityMode(aMode,SMESH_Actor::eBallElem);
+              break;
             case 216:
               InverseEntityMode(aMode,SMESH_Actor::e0DElements);
               break;
@@ -820,13 +896,16 @@
       _PTR(SObject) aGroupSObject = SMESH::FindSObject(aGroupObject);
       if (aGroupSObject) {
         if(SMESH_Actor *anActor = SMESH::FindActorByEntry(aGroupSObject->GetID().c_str())) {
-          if( aGroupObject->GetType() == SMESH::NODE )
-            anActor->SetNodeColor( aColor.R, aColor.G, aColor.B );
-          else if( aGroupObject->GetType() == SMESH::EDGE )
-            anActor->SetEdgeColor( aColor.R, aColor.G, aColor.B );
-          else if( aGroupObject->GetType() == SMESH::ELEM0D )
-            anActor->Set0DColor( aColor.R, aColor.G, aColor.B );
-          else {
+          switch ( aGroupObject->GetType ()) {
+          case SMESH::NODE:
+            anActor->SetNodeColor( aColor.R, aColor.G, aColor.B ); break;
+          case SMESH::EDGE:
+            anActor->SetEdgeColor( aColor.R, aColor.G, aColor.B ); break;
+          case SMESH::ELEM0D:
+            anActor->Set0DColor( aColor.R, aColor.G, aColor.B ); break;
+          case SMESH::BALL:
+            anActor->SetBallColor( aColor.R, aColor.G, aColor.B ); break;
+          default:
             QColor c;
             int delta;
             SMESH::GetColor("SMESH", "fill_color", c, delta, "0,170,255|-100");
@@ -1047,7 +1126,8 @@
     }
   }
 
-  void SetDisplayMode(int theCommandID, SMESHGUI_StudyId2MarkerMap& theMarkerMap){
+  void SetDisplayMode(int theCommandID, SMESHGUI_StudyId2MarkerMap& theMarkerMap)
+  {
     SALOME_ListIO selected;
     SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( SUIT_Session::session()->activeApplication() );
     if( !app )
@@ -1079,9 +1159,9 @@
         return;
       }
       case 1132:{
-        QColor c, e, b, n, c0D, o, outl, selection, preselection;
+        QColor c, e, b, n, c0D, cBall, o, outl, selection, preselection;
         int delta;
-        int size0D = 0;
+        int size0D = 0, ballSize = 0;
         int Edgewidth = 0;
         vtkFloatingPointType Shrink = 0.0;
         vtkFloatingPointType faces_orientation_scale = 0.0;
@@ -1124,6 +1204,13 @@
               c2 = int (color0D[2] * 255);
               c0D.setRgb(c0, c1, c2);
 
+              vtkFloatingPointType ballcolor[3];
+              anActor->GetBallColor(ballcolor[0], ballcolor[1], ballcolor[2]);
+              c0 = int (ballcolor[0] * 255);
+              c1 = int (ballcolor[1] * 255);
+              c2 = int (ballcolor[2] * 255);
+              cBall.setRgb(c0, c1, c2);
+
               vtkFloatingPointType outlineColor[3];
               anActor->GetOutlineColor(outlineColor[0], outlineColor[1], outlineColor[2]);
               c0 = int (outlineColor[0] * 255);
@@ -1148,6 +1235,9 @@
               size0D = (int)anActor->Get0DSize();
               if(size0D == 0)
                 size0D = 1;
+              ballSize = (int)anActor->GetBallSize();
+              if(ballSize == 0)
+                ballSize = 1;
               Edgewidth = (int)anActor->GetLineWidth();
               if(Edgewidth == 0)
                 Edgewidth = 1;
@@ -1176,20 +1266,22 @@
 
         SMESHGUI_Preferences_ColorDlg *aDlg =
           new SMESHGUI_Preferences_ColorDlg( SMESHGUI::GetSMESHGUI() );
+        aDlg->SetBooleanValue(1, faces_orientation_3dvectors);
         aDlg->SetColor(1, c);
         aDlg->SetColor(2, e);
         aDlg->SetColor(3, n);
         aDlg->SetColor(4, outl);
-        aDlg->SetDeltaBrightness(delta);
         aDlg->SetColor(5, c0D);
-        aDlg->SetColor(6, o);
+        aDlg->SetColor(6, cBall);
+        aDlg->SetColor(7, o);
+        aDlg->SetColor(8, selection);
+        aDlg->SetColor(9, preselection);
+        aDlg->SetDeltaBrightness(delta);
+        aDlg->SetDoubleValue(1, faces_orientation_scale);
         aDlg->SetIntValue(1, Edgewidth);
         aDlg->SetIntValue(2, int(Shrink*100.));
         aDlg->SetIntValue(3, size0D);
-        aDlg->SetDoubleValue(1, faces_orientation_scale);
-        aDlg->SetBooleanValue(1, faces_orientation_3dvectors);
-        aDlg->SetColor(7, selection);
-        aDlg->SetColor(8, preselection);
+        aDlg->SetIntValue(4, ballSize);
  
         aDlg->setCustomMarkerMap( theMarkerMap[ aStudy->StudyId() ] );
 
@@ -1199,14 +1291,15 @@
           aDlg->setCustomMarker( aMarkerTextureCurrent );
 
         if(aDlg->exec()){
-          QColor color = aDlg->GetColor(1);
-          QColor edgecolor = aDlg->GetColor(2);
-          QColor nodecolor = aDlg->GetColor(3);
-          QColor outlinecolor = aDlg->GetColor(4);
-          QColor color0D = aDlg->GetColor(5);
-          QColor faces_orientation_color = aDlg->GetColor(6);
-          QColor selectioncolor = aDlg->GetColor(7);
-          QColor preSelectioncolor = aDlg->GetColor(8);
+          QColor color                   = aDlg->GetColor(1);
+          QColor edgecolor               = aDlg->GetColor(2);
+          QColor nodecolor               = aDlg->GetColor(3);
+          QColor outlinecolor            = aDlg->GetColor(4);
+          QColor color0D                 = aDlg->GetColor(5);
+          QColor ballcolor               = aDlg->GetColor(6);
+          QColor faces_orientation_color = aDlg->GetColor(7);
+          QColor selectioncolor          = aDlg->GetColor(8);
+          QColor preSelectioncolor       = aDlg->GetColor(9);
           int delta = aDlg->GetDeltaBrightness();
 
           /* Point marker */
@@ -1255,6 +1348,12 @@
                                     vtkFloatingPointType (color0D.green()) / 255.,
                                     vtkFloatingPointType (color0D.blue()) / 255.);
                 anActor->Set0DSize(aDlg->GetIntValue(3));
+
+                /* Ball elements */
+                anActor->SetBallColor(vtkFloatingPointType (ballcolor.red()) / 255.,
+                                      vtkFloatingPointType (ballcolor.green()) / 255.,
+                                      vtkFloatingPointType (ballcolor.blue()) / 255.);
+                anActor->SetBallSize(aDlg->GetIntValue(4));
 
                 /* Faces orientation */
                 vtkFloatingPointType c[3] = {vtkFloatingPointType(faces_orientation_color.redF()),
@@ -2187,6 +2286,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 218: // Faces
   case 219: // Volumes
   case 220: // All Entity
+  case 222: // Balls
     ::SetDisplayEntity(theCommandID);
   break;
 
@@ -2830,6 +2930,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
 
+  case 4008:                                    // BALL
   case 4009:                                    // ELEM0D
   case 4010:                                    // EDGE
   case 4021:                                    // TRIANGLE
@@ -2846,24 +2947,16 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         EmitSignalDeactivateDialog();
         SMDSAbs_EntityType type = SMDSEntity_Edge;
         switch (theCommandID) {
-        case 4009:
-          type = SMDSEntity_0D; break;
-        case 4021:
-          type = SMDSEntity_Triangle; break;
-        case 4022:
-          type = SMDSEntity_Quadrangle; break;
-        case 4031:
-          type = SMDSEntity_Tetra; break;
-        case 4023:
-          type = SMDSEntity_Polygon; break;
-        case 4032:
-          type = SMDSEntity_Hexa; break;
-        case 4133:
-          type = SMDSEntity_Penta; break;
-        case 4134:
-          type = SMDSEntity_Pyramid; break;
-        case 4135:
-          type = SMDSEntity_Hexagonal_Prism; break;
+        case 4008: type = SMDSEntity_Ball;            break;
+        case 4009: type = SMDSEntity_0D;              break;
+        case 4021: type = SMDSEntity_Triangle;        break;
+        case 4022: type = SMDSEntity_Quadrangle;      break;
+        case 4031: type = SMDSEntity_Tetra;           break;
+        case 4023: type = SMDSEntity_Polygon;         break;
+        case 4032: type = SMDSEntity_Hexa;            break;
+        case 4133: type = SMDSEntity_Penta;           break;
+        case 4134: type = SMDSEntity_Pyramid;         break;
+        case 4135: type = SMDSEntity_Hexagonal_Prism; break;
         default:;
         }
         ( new SMESHGUI_AddMeshElementDlg( this, type ) )->show();
@@ -3491,6 +3584,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 6009, "VOLUME_3D",       "ICON_VOLUME_3D",     0, true );
   createSMESHAction( 4000, "NODE",            "ICON_DLG_NODE" );
   createSMESHAction( 4009, "ELEM0D",          "ICON_DLG_ELEM0D" );
+  createSMESHAction( 4008, "BALL",            "ICON_DLG_BALL" );
   createSMESHAction( 4010, "EDGE",            "ICON_DLG_EDGE" );
   createSMESHAction( 4021, "TRIANGLE",        "ICON_DLG_TRIANGLE" );
   createSMESHAction( 4022, "QUAD",            "ICON_DLG_QUADRANGLE" );
@@ -3551,6 +3645,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  213, "SHRINK",         "ICON_SHRINK", 0, true );
   createSMESHAction(  214, "UPDATE",         "ICON_UPDATE" );
   createSMESHAction(  215, "NODES",          "ICON_POINTS", 0, true );
+  createSMESHAction(  222, "BALLS",          "ICON_DLG_BALL", 0, true );
   createSMESHAction(  216, "ELEMS0D",        "ICON_DLG_ELEM0D", 0, true );
   createSMESHAction(  217, "EDGES",          "ICON_DLG_EDGE", 0, true );
   createSMESHAction(  218, "FACES",          "ICON_DLG_TRIANGLE", 0, true );
@@ -3684,6 +3779,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   createMenu( 4000, addId, -1 );
   createMenu( 4009, addId, -1 );
+  createMenu( 4008, addId, -1 );
   createMenu( 4010, addId, -1 );
   createMenu( 4021, addId, -1 );
   createMenu( 4022, addId, -1 );
@@ -3808,6 +3904,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   createTool( 4000, addRemTb );
   createTool( 4009, addRemTb );
+  createTool( 4008, addRemTb );
   createTool( 4010, addRemTb );
   createTool( 4021, addRemTb );
   createTool( 4022, addRemTb );
@@ -3898,6 +3995,7 @@ void SMESHGUI::initialize( CAM_Application* app )
     hasNodes("(numberOfNodes > 0 )"),//&& isVisible)"),
     hasElems("(count( elemTypes ) > 0)"),
     hasDifferentElems("(count( elemTypes ) > 1)"),
+    hasBalls("({'BallElem'} in elemTypes)"),
     hasElems0d("({'Elem0d'} in elemTypes)"),
     hasEdges("({'Edge'} in elemTypes)"),
     hasFaces("({'Face'} in elemTypes)"),
@@ -4033,6 +4131,10 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( action( 219 ), anId, -1 ); // VOLUMES
   popupMgr()->setRule( action( 219 ), aDiffElemsInVTK + "&& isVisible &&" + hasVolumes, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( 219 ), "{'Volume'} in entityMode", QtxPopupMgr::ToggleRule );
+
+  popupMgr()->insert( action( 222 ), anId, -1 ); // BALLS
+  popupMgr()->setRule( action( 222 ), aDiffElemsInVTK + "&& isVisible &&" + hasBalls, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 222 ), "{'BallElem'} in entityMode", QtxPopupMgr::ToggleRule );
 
   popupMgr()->insert( separator(), anId, -1 );
 
@@ -4663,7 +4765,7 @@ void SMESHGUI::createPreferences()
 
   int ColorId = addPreference( tr( "PREF_FILL"     ), elemGroup, LightApp_Preferences::BiColor, "SMESH", "fill_color" );
   addPreference( tr( "PREF_COLOR_0D" ), elemGroup, LightApp_Preferences::Color, "SMESH", "elem0d_color" );
-
+  addPreference( tr( "PREF_BALL_COLOR" ), elemGroup, LightApp_Preferences::Color, "SMESH", "ball_elem_color" );
   addPreference( tr( "PREF_OUTLINE"  ), elemGroup, LightApp_Preferences::Color, "SMESH", "outline_color" );
   addPreference( tr( "PREF_WIREFRAME"  ), elemGroup, LightApp_Preferences::Color, "SMESH", "wireframe_color" );
 
@@ -4676,6 +4778,8 @@ void SMESHGUI::createPreferences()
 
   int size0d = addPreference(tr("PREF_SIZE_0D"), elemGroup,
                              LightApp_Preferences::IntSpin, "SMESH", "elem0d_size");
+  int ballSize = addPreference(tr("PREF_BALL_SIZE"), elemGroup,
+                             LightApp_Preferences::IntSpin, "SMESH", "ball_elem_size");
   int elemW  = addPreference(tr("PREF_WIDTH"), elemGroup,
                              LightApp_Preferences::IntSpin, "SMESH", "element_width");
   int shrink = addPreference(tr("PREF_SHRINK_COEFF"), elemGroup,
@@ -4683,6 +4787,9 @@ void SMESHGUI::createPreferences()
 
   setPreferenceProperty( size0d, "min", 1 );
   setPreferenceProperty( size0d, "max", 10 );
+
+  setPreferenceProperty( ballSize, "min", 1 );
+  setPreferenceProperty( ballSize, "max", 10 );
 
   setPreferenceProperty( elemW, "min", 1 );
   setPreferenceProperty( elemW, "max", 5 );

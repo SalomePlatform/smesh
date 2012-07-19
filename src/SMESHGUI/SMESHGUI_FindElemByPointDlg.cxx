@@ -19,8 +19,9 @@
 
 // File   : SMESHGUI_FindElemByPointDlg.cxx
 // Author : Edward AGAPOV, Open CASCADE S.A.S.
-// SMESH includes
 //
+
+// SMESH includes
 #include "SMESHGUI_FindElemByPointDlg.h"
 
 #include "SMESHGUI.h"
@@ -123,6 +124,10 @@ void SMESHGUI_FindElemByPointDlg::setTypes(SMESH::array_of_ElementType_var & typ
     case SMESH::ELEM0D:
       myElemTypeCombo->addItem( tr( "MEN_ELEM0D" ));
       myElemTypeCombo->setId( nbTypes++, int( SMESH::ELEM0D  ));
+      break;
+    case SMESH::BALL:
+      myElemTypeCombo->addItem( tr( "MEN_BALL" ));
+      myElemTypeCombo->setId( nbTypes++, int( SMESH::BALL  ));
       break;
     default:;
     }

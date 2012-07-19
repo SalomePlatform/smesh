@@ -232,6 +232,17 @@ namespace
 
   //================================================================================
   /*!
+   * \brief Return EEntiteMaillage by EGeometrieElement
+   */
+  //================================================================================
+
+  MED::EEntiteMaillage entityByGeom(const MED::EGeometrieElement geom )
+  {
+    return geom == MED::eBALL ? MED::eSTRUCT_ELEMENT : MED::eMAILLE;
+  }
+
+  //================================================================================
+  /*!
    * \brief Return a map< EGeometrieElement, SMDSAbs_EntityType >
    */
   //================================================================================
@@ -263,6 +274,7 @@ namespace
       med2smeshTypes[ MED::ePOLYGONE ] = SMDSEntity_Polygon           ;
       med2smeshTypes[ MED::ePOLYEDRE ] = SMDSEntity_Polyhedra         ;
       med2smeshTypes[ MED::eNONE     ] = SMDSEntity_Node              ;
+      med2smeshTypes[ MED::eBALL     ] = SMDSEntity_Ball              ;
     }
     return med2smeshTypes;
   }
@@ -463,7 +475,6 @@ bool SMESH_PreMeshInfo::readPreInfoFromHDF()
   const bool infoAvailable = aFile->ExistInternalObject( hdfGroupName );
   if ( infoAvailable )
   {
-
     HDFgroup* infoHdfGroup = new HDFgroup( hdfGroupName, aFile );
     infoHdfGroup->OpenOnDisk();
 
@@ -530,7 +541,7 @@ bool SMESH_PreMeshInfo::readMeshInfo()
     Tmed2smeshElemTypeMap::const_iterator me2smeEnd = med2smeshElemTypeMap().end();
     for ( ; me2sme != me2smeEnd; ++me2sme )
     {
-      int nbElems = aMed->GetNbCells( medMeshInfo, MED::eMAILLE, me2sme->first );
+      int nbElems = aMed->GetNbCells( medMeshInfo, entityByGeom(me2sme->first), me2sme->first );
       if ( nbElems > 0 )
         setNb( me2sme->second, nbElems );
     }
@@ -600,7 +611,7 @@ void SMESH_PreMeshInfo::readGroupInfo()
   {
     famNums.resize( NbEntities( me2sme->second ));
     if ( famNums.empty() ) continue;
-    aMed->GetFamilies( medElemInfo, famNums.size(), MED::eMAILLE, me2sme->first );
+    aMed->GetFamilies( medElemInfo, famNums.size(), entityByGeom(me2sme->first), me2sme->first );
     // distribute elements of a type among groups
     map< int, vector< SMESH_PreMeshInfo* > >::iterator f2infos = famId2grInfo.begin();
     for ( size_t i = 0; i < famNums.size(); ++i )
@@ -1199,14 +1210,11 @@ SMESH::array_of_ElementType* SMESH_PreMeshInfo::GetTypes() const
 
   types->length( 4 );
   int nbTypes = 0;
-  if (NbEdges())
-    types[nbTypes++] = SMESH::EDGE;
-  if (NbFaces())
-    types[nbTypes++] = SMESH::FACE;
-  if (NbVolumes())
-    types[nbTypes++] = SMESH::VOLUME;
-  if (Nb0DElements())
-    types[nbTypes++] = SMESH::ELEM0D;
+  if (NbEdges())      types[nbTypes++] = SMESH::EDGE;
+  if (NbFaces())      types[nbTypes++] = SMESH::FACE;
+  if (NbVolumes())    types[nbTypes++] = SMESH::VOLUME;
+  if (Nb0DElements()) types[nbTypes++] = SMESH::ELEM0D;
+  if (NbBalls())      types[nbTypes++] = SMESH::BALL;
   types->length( nbTypes );
 
   return types._retn();

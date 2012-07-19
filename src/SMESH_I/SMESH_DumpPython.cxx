@@ -163,13 +163,14 @@ namespace SMESH
   {
     myStream<<"SMESH.";
     switch(theArg){
-    case ALL:   myStream<<"ALL";break;
-    case NODE:  myStream<<"NODE";break;
-    case EDGE:  myStream<<"EDGE";break;
-    case FACE:  myStream<<"FACE";break;
-    case VOLUME:myStream<<"VOLUME";break;
-    case ELEM0D:myStream<<"ELEM0D";break;
-    default:    myStream<<"__UNKNOWN__ElementType: " << theArg;
+    case ALL:    myStream<<"ALL";    break;
+    case NODE:   myStream<<"NODE";   break;
+    case EDGE:   myStream<<"EDGE";   break;
+    case FACE:   myStream<<"FACE";   break;
+    case VOLUME: myStream<<"VOLUME"; break;
+    case ELEM0D: myStream<<"ELEM0D"; break;
+    case BALL:   myStream<<"BALL";   break;
+    default:     myStream<<"__UNKNOWN__ElementType: " << theArg;
     }
     return *this;
   }
@@ -190,6 +191,7 @@ namespace SMESH
     case Geom_HEXA:       myStream<<"Geom_HEXA";       break;
     case Geom_PENTA:      myStream<<"Geom_PENTA";      break;
     case Geom_POLYHEDRA:  myStream<<"Geom_POLYHEDRA";  break;
+    case Geom_BALL:       myStream<<"Geom_BALL";       break;
     default:    myStream<<"__UNKNOWN__GeometryType: " << theArg;
     }
     return *this;

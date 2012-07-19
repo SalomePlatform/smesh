@@ -23,8 +23,9 @@
 // SMESH SMESHGUI_Selection
 // File   : SMESHGUI_Selection.cxx
 // Author : Alexander SOLOVYOV, Open CASCADE S.A.S.
-// SMESH includes
 //
+
+// SMESH includes
 #include "SMESHGUI_Selection.h"
 
 #include "SMESHGUI_Utils.h"
@@ -148,7 +149,7 @@ SMESH_Actor* SMESHGUI_Selection::getActor( int ind ) const
 
 //=======================================================================
 //function : elemTypes
-//purpose  : may return {'Elem0d' 'Edge' 'Face' 'Volume'} at most
+//purpose  : may return {'Elem0d' 'Edge' 'Face' 'Volume' 'BallElem'} at most
 //=======================================================================
 
 QList<QVariant> SMESHGUI_Selection::elemTypes( int ind ) const
@@ -159,6 +160,7 @@ QList<QVariant> SMESHGUI_Selection::elemTypes( int ind ) const
     TVisualObjPtr object = actor->GetObject();
     if ( object ) {
       if ( object->GetNbEntities( SMDSAbs_0DElement )) types.append( "Elem0d" );
+      if ( object->GetNbEntities( SMDSAbs_Ball )) types.append( "BallElem" );
       if ( object->GetNbEntities( SMDSAbs_Edge )) types.append( "Edge" );
       if ( object->GetNbEntities( SMDSAbs_Face )) types.append( "Face" );
       if ( object->GetNbEntities( SMDSAbs_Volume )) types.append( "Volume" );
@@ -248,7 +250,7 @@ QString SMESHGUI_Selection::shrinkMode( int ind ) const
 
 //=======================================================================
 //function : entityMode
-//purpose  : may return {'Elem0d' 'Edge' 'Face' 'Volume'} at most
+//purpose  : may return {'Elem0d' 'Edge' 'Face' 'Volume' 'BallElem' } at most
 //=======================================================================
 
 QList<QVariant> SMESHGUI_Selection::entityMode( int ind ) const
@@ -261,6 +263,7 @@ QList<QVariant> SMESHGUI_Selection::entityMode( int ind ) const
     if ( aMode & SMESH_Actor::eFaces      ) types.append( "Face"   );
     if ( aMode & SMESH_Actor::eEdges      ) types.append( "Edge"   );
     if ( aMode & SMESH_Actor::e0DElements ) types.append( "Elem0d" );
+    if ( aMode & SMESH_Actor::eBallElem ) types.append( "BallElem" );
   }
   return types;
 }
@@ -428,6 +431,7 @@ int SMESHGUI_Selection::dim( int ind ) const
           case SMESH::FACE  : dim = std::max( dim, 2 ); break;
           case SMESH::VOLUME: dim = std::max( dim, 3 ); break;
           case SMESH::ELEM0D: dim = std::max( dim, 0 ); break;
+          case SMESH::BALL  : dim = std::max( dim, 0 ); break;
           default:;
           }
       }

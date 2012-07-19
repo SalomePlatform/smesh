@@ -630,10 +630,12 @@ class smeshDC(SMESH._objref_SMESH_Gen):
 
         if CritType in [FT_BelongToGeom,     FT_BelongToPlane, FT_BelongToGenSurface,
                         FT_BelongToCylinder, FT_LyingOnGeom]:
-            # Checks the Threshold
+            # Checks that Threshold is GEOM object
             if isinstance(aThreshold, geompyDC.GEOM._objref_GEOM_Object):
                 aCriterion.ThresholdStr = GetName(aThreshold)
-                aCriterion.ThresholdID = salome.ObjectToID(aThreshold)
+                aCriterion.ThresholdID = aThreshold.GetStudyEntry()
+                if not aCriterion.ThresholdID:
+                    raise RuntimeError, "Threshold shape must be published"
             else:
                 print "Error: The Threshold should be a shape."
                 return None
@@ -642,7 +644,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
                 UnaryOp = FT_Undefined
                 pass
         elif CritType == FT_RangeOfIds:
-            # Checks the Threshold
+            # Checks that Threshold is string
             if isinstance(aThreshold, str):
                 aCriterion.ThresholdStr = aThreshold
             else:
@@ -651,7 +653,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         elif CritType == FT_CoplanarFaces:
             # Checks the Threshold
             if isinstance(aThreshold, int):
-                aCriterion.ThresholdID = "%s"%aThreshold
+                aCriterion.ThresholdID = str(aThreshold)
             elif isinstance(aThreshold, str):
                 ID = int(aThreshold)
                 if ID < 1:
@@ -1372,19 +1374,7 @@ class Mesh:
             pass
         pass
 
-    ## Deprecated, used only for compatibility! Please, use ExportToMEDX() method instead.
-    #  Exports the mesh in a file in MED format and chooses the \a version of MED format
-    ## allowing to overwrite the file if it exists or add the exported data to its contents
-    #  @param f the file name
-    #  @param version values are SMESH.MED_V2_1, SMESH.MED_V2_2
-    #  @param opt boolean parameter for creating/not creating
-    #         the groups Group_On_All_Nodes, Group_On_All_Faces, ...
-    #  @param overwrite boolean parameter for overwriting/not overwriting the file
-    #  @ingroup l2_impexp
-    def ExportToMED(self, f, version, opt=0, overwrite=1):
-        self.mesh.ExportToMEDX(f, opt, version, overwrite)
-
-    ## Exports the mesh in a file in MED format and chooses the \a version of MED format
+   ## Exports the mesh in a file in MED format and chooses the \a version of MED format
     ## allowing to overwrite the file if it exists or add the exported data to its contents
     #  @param f is the file name
     #  @param auto_groups boolean parameter for creating/not creating
@@ -1461,6 +1451,18 @@ class Mesh:
         elif not meshPart:
             meshPart = self.mesh
         self.mesh.ExportCGNS(meshPart, f, overwrite)
+
+    ## Deprecated, used only for compatibility! Please, use ExportToMEDX() method instead.
+    #  Exports the mesh in a file in MED format and chooses the \a version of MED format
+    ## allowing to overwrite the file if it exists or add the exported data to its contents
+    #  @param f the file name
+    #  @param version values are SMESH.MED_V2_1, SMESH.MED_V2_2
+    #  @param opt boolean parameter for creating/not creating
+    #         the groups Group_On_All_Nodes, Group_On_All_Faces, ...
+    #  @param overwrite boolean parameter for overwriting/not overwriting the file
+    #  @ingroup l2_impexp
+    def ExportToMED(self, f, version, opt=0, overwrite=1):
+        self.mesh.ExportToMEDX(f, opt, version, overwrite)
 
     # Operations with groups:
     # ----------------------
@@ -1605,26 +1607,6 @@ class Mesh:
         theFilter.SetMesh( self.mesh )
         group.AddFrom( theFilter )
         return group
-
-    ## Passes mesh elements through the given filter and return IDs of fitting elements
-    #  @param theFilter SMESH_Filter
-    #  @return a list of ids
-    #  @ingroup l1_controls
-    def GetIdsFromFilter(self, theFilter):
-        theFilter.SetMesh( self.mesh )
-        return theFilter.GetIDs()
-
-    ## Verifies whether a 2D mesh element has free edges (edges connected to one face only)\n
-    #  Returns a list of special structures (borders).
-    #  @return a list of SMESH.FreeEdges.Border structure: edge id and ids of two its nodes.
-    #  @ingroup l1_controls
-    def GetFreeBorders(self):
-        aFilterMgr = self.smeshpyD.CreateFilterManager()
-        aPredicate = aFilterMgr.CreateFreeEdges()
-        aPredicate.SetMesh(self.mesh)
-        aBorders = aPredicate.GetBorders()
-        aFilterMgr.UnRegister()
-        return aBorders
 
     ## Removes a group
     #  @ingroup l2_grps_delete
@@ -1820,6 +1802,12 @@ class Mesh:
     #  @ingroup l1_meshinfo
     def Nb0DElements(self):
         return self.mesh.Nb0DElements()
+
+    ## Returns the number of ball discrete elements in the mesh
+    #  @return an integer value
+    #  @ingroup l1_meshinfo
+    def NbBalls(self):
+        return self.mesh.NbBalls()
 
     ## Returns the number of edges in the mesh
     #  @return an integer value
@@ -2160,12 +2148,37 @@ class Mesh:
     def IsQuadratic(self, id):
         return self.mesh.IsQuadratic(id)
 
+    ## Returns diameter of a ball discrete element or zero in case of an invalid \a id
+    #  @ingroup l1_meshinfo
+    def GetBallDiameter(self, id):
+        return self.mesh.GetBallDiameter(id)
+
     ## Returns XYZ coordinates of the barycenter of the given element
     #  \n If there is no element for the given ID - returns an empty list
     #  @return a list of three double values
     #  @ingroup l1_meshinfo
     def BaryCenter(self, id):
         return self.mesh.BaryCenter(id)
+
+    ## Passes mesh elements through the given filter and return IDs of fitting elements
+    #  @param theFilter SMESH_Filter
+    #  @return a list of ids
+    #  @ingroup l1_controls
+    def GetIdsFromFilter(self, theFilter):
+        theFilter.SetMesh( self.mesh )
+        return theFilter.GetIDs()
+
+    ## Verifies whether a 2D mesh element has free edges (edges connected to one face only)\n
+    #  Returns a list of special structures (borders).
+    #  @return a list of SMESH.FreeEdges.Border structure: edge id and ids of two its nodes.
+    #  @ingroup l1_controls
+    def GetFreeBorders(self):
+        aFilterMgr = self.smeshpyD.CreateFilterManager()
+        aPredicate = aFilterMgr.CreateFreeEdges()
+        aPredicate.SetMesh(self.mesh)
+        aBorders = aPredicate.GetBorders()
+        aFilterMgr.UnRegister()
+        return aBorders
 
 
     # Get mesh measurements information:
@@ -2294,6 +2307,14 @@ class Mesh:
     #  @ingroup l2_modif_add
     def Add0DElement(self, IDOfNode):
         return self.editor.Add0DElement(IDOfNode)
+
+    ## Creates a ball element on a node with given ID.
+    #  @param IDOfNode the ID of node for creation of the element.
+    #  @param diameter the bal diameter.
+    #  @return the Id of the new ball element
+    #  @ingroup l2_modif_add
+    def AddBall(self, IDOfNode, diameter):
+        return self.editor.AddBall( IDOfNode, diameter )
 
     ## Creates a linear or quadratic edge (this is determined
     #  by the number of given nodes).
@@ -2481,7 +2502,7 @@ class Mesh:
     #  @param y  the Y coordinate of a point
     #  @param z  the Z coordinate of a point
     #  @param elementType type of elements to find (SMESH.ALL type
-    #         means elements of any type excluding nodes and 0D elements)
+    #         means elements of any type excluding nodes, discrete and 0D elements)
     #  @param meshPart a part of mesh (group, sub-mesh) to search within
     #  @return list of IDs of found elements
     #  @ingroup l2_modif_throughp

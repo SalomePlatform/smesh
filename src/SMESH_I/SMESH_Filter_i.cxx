@@ -849,6 +849,21 @@ FunctorType MultiConnection_i::GetFunctorType()
 }
 
 /*
+  Class       : BallDiameter_i
+  Description : Functor returning diameter of a ball element
+*/
+BallDiameter_i::BallDiameter_i()
+{
+  myNumericalFunctorPtr.reset( new Controls::BallDiameter() );
+  myFunctorPtr = myNumericalFunctorPtr;
+}
+
+FunctorType BallDiameter_i::GetFunctorType()
+{
+  return SMESH::FT_BallDiameter;
+}
+
+/*
   Class       : MultiConnection2D_i
   Description : Functor for calculating number of faces conneted to the edge
 */
@@ -2058,6 +2073,14 @@ MultiConnection2D_ptr FilterManager_i::CreateMultiConnection2D()
   return anObj._retn();
 }
 
+BallDiameter_ptr FilterManager_i::CreateBallDiameter()
+{
+  SMESH::BallDiameter_i* aServant = new SMESH::BallDiameter_i();
+  SMESH::BallDiameter_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateBallDiameter()";
+  return anObj._retn();
+}
+
 BelongToGeom_ptr FilterManager_i::CreateBelongToGeom()
 {
   SMESH::BelongToGeom_i* aServant = new SMESH::BelongToGeom_i();
@@ -2892,6 +2915,9 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
         break;
       case SMESH::FT_MaxElementLength3D:
         aFunctor = aFilterMgr->CreateMaxElementLength3D();
+        break;
+      case SMESH::FT_BallDiameter:
+        aFunctor = aFilterMgr->CreateBallDiameter();
         break;
 
       // Predicates
@@ -3840,17 +3866,51 @@ static const char** getFunctNames()
   static const char* functName[ SMESH::FT_Undefined + 1 ] = {
     // IT's necessary to update this array according to enum FunctorType (SMESH_Filter.idl)
     // The order is IMPORTANT !!!
-    "FT_AspectRatio", "FT_AspectRatio3D", "FT_Warping", "FT_MinimumAngle",
-    "FT_Taper", "FT_Skew", "FT_Area", "FT_Volume3D", "FT_MaxElementLength2D",
-    "FT_MaxElementLength3D", "FT_FreeBorders", "FT_FreeEdges", "FT_FreeNodes",
-    "FT_FreeFaces","FT_EqualNodes","FT_EqualEdges","FT_EqualFaces","FT_EqualVolumes",
-    "FT_MultiConnection", "FT_MultiConnection2D", "FT_Length",
-    "FT_Length2D", "FT_BelongToGeom", "FT_BelongToPlane", "FT_BelongToCylinder",
-    "FT_BelongToGenSurface", "FT_LyingOnGeom", "FT_RangeOfIds", "FT_BadOrientedVolume",
-    "FT_BareBorderVolume", "FT_BareBorderFace", "FT_OverConstrainedVolume",
-    "FT_OverConstrainedFace", "FT_LinearOrQuadratic", "FT_GroupColor", "FT_ElemGeomType",
-    "FT_CoplanarFaces", "FT_LessThan", "FT_MoreThan", "FT_EqualTo", "FT_LogicalNOT",
-    "FT_LogicalAND", "FT_LogicalOR", "FT_Undefined" };
+    "FT_AspectRatio",
+    "FT_AspectRatio3D",
+    "FT_Warping",
+    "FT_MinimumAngle",
+    "FT_Taper",
+    "FT_Skew",
+    "FT_Area",
+    "FT_Volume3D",
+    "FT_MaxElementLength2D",
+    "FT_MaxElementLength3D",
+    "FT_FreeBorders",
+    "FT_FreeEdges",
+    "FT_FreeNodes",
+    "FT_FreeFaces",
+    "FT_EqualNodes",
+    "FT_EqualEdges",
+    "FT_EqualFaces",
+    "FT_EqualVolumes",
+    "FT_MultiConnection",
+    "FT_MultiConnection2D",
+    "FT_Length",
+    "FT_Length2D",
+    "FT_BelongToGeom",
+    "FT_BelongToPlane",
+    "FT_BelongToCylinder",
+    "FT_BelongToGenSurface",
+    "FT_LyingOnGeom",
+    "FT_RangeOfIds",
+    "FT_BadOrientedVolume",
+    "FT_BareBorderVolume",
+    "FT_BareBorderFace",
+    "FT_OverConstrainedVolume",
+    "FT_OverConstrainedFace",
+    "FT_LinearOrQuadratic",
+    "FT_GroupColor",
+    "FT_ElemGeomType",
+    "FT_CoplanarFaces",
+    "FT_BallDiameter",
+    "FT_LessThan",
+    "FT_MoreThan",
+    "FT_EqualTo",
+    "FT_LogicalNOT",
+    "FT_LogicalAND",
+    "FT_LogicalOR",
+    "FT_Undefined" };
   return functName;
 }
 

@@ -23,8 +23,9 @@
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_FilterDlg.cxx
 // Author : Sergey LITONIN, Open CASCADE S.A.S.
-// SMESH includes
 //
+
+// SMESH includes
 #include "SMESHGUI_FilterDlg.h"
 
 #include "SMESHGUI.h"
@@ -1628,6 +1629,14 @@ static QList<int> geomTypes( const int theType )
     typeIds.append( SMESH::Geom_HEXAGONAL_PRISM );
     typeIds.append( SMESH::Geom_POLYHEDRA );
   }
+  if ( theType == SMESH::ALL || theType == SMESH::ELEM0D )
+  {
+    typeIds.append( SMESH::Geom_POINT );
+  }
+  if ( theType == SMESH::ALL || theType == SMESH::BALL )
+  {
+    typeIds.append( SMESH::Geom_BALL );
+  }
   return typeIds;
 }
 
@@ -1961,6 +1970,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getSupportedTypes() const
   if (aTypes.isEmpty())
   {
     aTypes[ SMESH::NODE   ] = tr("NODES");
+    aTypes[ SMESH::BALL   ] = tr("BALLS");
     aTypes[ SMESH::EDGE   ] = tr("EDGES");
     aTypes[ SMESH::FACE   ] = tr("FACES");
     aTypes[ SMESH::VOLUME ] = tr("VOLUMES");
@@ -2064,6 +2074,35 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_GroupColor           ] = tr("GROUP_COLOR");
       aCriteria[ SMESH::FT_ElemGeomType         ] = tr("GEOM_TYPE");
       aCriteria[ SMESH::FT_EqualVolumes         ] = tr("EQUAL_VOLUME");
+    }
+    return aCriteria;
+  }
+  else if (theType == SMESH::ELEM0D)
+  {
+    static QMap<int, QString> aCriteria;
+    if (aCriteria.isEmpty())
+    {
+      aCriteria[ SMESH::FT_RangeOfIds         ] = tr("RANGE_OF_IDS");
+      aCriteria[ SMESH::FT_BelongToGeom       ] = tr("BELONG_TO_GEOM");
+      aCriteria[ SMESH::FT_BelongToPlane      ] = tr("BELONG_TO_PLANE");
+      aCriteria[ SMESH::FT_BelongToCylinder   ] = tr("BELONG_TO_CYLINDER");
+      aCriteria[ SMESH::FT_BelongToGenSurface ] = tr("BELONG_TO_GENSURFACE");
+      aCriteria[ SMESH::FT_GroupColor         ] = tr("GROUP_COLOR");
+    }
+    return aCriteria;
+  }
+  else if (theType == SMESH::BALL)
+  {
+    static QMap<int, QString> aCriteria;
+    if (aCriteria.isEmpty())
+    {
+      aCriteria[ SMESH::FT_BallDiameter       ] = tr("BALL_DIAMETER");
+      aCriteria[ SMESH::FT_RangeOfIds         ] = tr("RANGE_OF_IDS");
+      aCriteria[ SMESH::FT_BelongToGeom       ] = tr("BELONG_TO_GEOM");
+      aCriteria[ SMESH::FT_BelongToPlane      ] = tr("BELONG_TO_PLANE");
+      aCriteria[ SMESH::FT_BelongToCylinder   ] = tr("BELONG_TO_CYLINDER");
+      aCriteria[ SMESH::FT_BelongToGenSurface ] = tr("BELONG_TO_GENSURFACE");
+      aCriteria[ SMESH::FT_GroupColor         ] = tr("GROUP_COLOR");
     }
     return aCriteria;
   }

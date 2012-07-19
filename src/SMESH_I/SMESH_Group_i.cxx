@@ -196,6 +196,7 @@ SMESH::ElementType SMESH_GroupBase_i::GetType()
     case SMDSAbs_Face:      aType = SMESH::FACE;   break;
     case SMDSAbs_Volume:    aType = SMESH::VOLUME; break;
     case SMDSAbs_0DElement: aType = SMESH::ELEM0D; break;
+    case SMDSAbs_Ball:      aType = SMESH::BALL;   break;
     default:                aType = SMESH::ALL;    break;
     }
     return aType;
@@ -464,12 +465,15 @@ SMESH::long_array* SMESH_GroupBase_i::GetListOfID()
 
   SMESH::long_array_var aRes = new SMESH::long_array();
   SMESHDS_GroupBase* aGroupDS = GetGroupDS();
-  if (aGroupDS) {
+  if (aGroupDS)
+  {
     int aSize = aGroupDS->Extent();
     aRes->length(aSize);
     for (int i = 0; i < aSize; i++)
       aRes[i] = aGroupDS->GetID(i+1);
-    return aRes._retn();
+
+    if ( 0 < aSize && aSize < 100 ) // for comfortable testing ;)
+      std::sort( &aRes[0], &aRes[0]+aSize );
   }
   MESSAGE("get list of IDs of a vague group");
   return aRes._retn();

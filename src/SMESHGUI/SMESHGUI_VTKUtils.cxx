@@ -626,6 +626,8 @@ namespace SMESH
             anActor->SetEdgeColor( aColor.R, aColor.G, aColor.B );
           else if( aGroup->GetType() == SMESH::ELEM0D )
             anActor->Set0DColor( aColor.R, aColor.G, aColor.B );
+          else if( aGroup->GetType() == SMESH::BALL )
+            anActor->SetBallColor( aColor.R, aColor.G, aColor.B );
           else
             anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B, delta );
         }
@@ -897,10 +899,12 @@ namespace SMESH
            aPreColor = mgr->colorValue( "SMESH", "highlight_color", Qt::cyan );
 
     int aElem0DSize = mgr->integerValue("SMESH", "elem0d_size", 5);
+    int aBallSize   = mgr->integerValue("SMESH", "ball_elem_size", 5);
     int aLineWidth  = mgr->integerValue("SMESH", "element_width", 1);
     int maxSize = aElem0DSize;
     if (aElem0DSize > maxSize) maxSize = aElem0DSize;
     if (aLineWidth > maxSize) maxSize = aLineWidth;
+    if (aBallSize > maxSize) maxSize = aBallSize;
 
     double SP1 = mgr->doubleValue( "SMESH", "selection_precision_node", 0.025 ),
            SP2 = mgr->doubleValue( "SMESH", "selection_precision_element", 0.001 ),

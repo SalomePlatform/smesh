@@ -271,6 +271,9 @@ public:
   CORBA::Long Nb0DElements()
     throw (SALOME::SALOME_Exception);
 
+  CORBA::Long NbBalls()
+    throw (SALOME::SALOME_Exception);
+
   CORBA::Long NbEdges()
     throw (SALOME::SALOME_Exception);
 
@@ -526,6 +529,11 @@ public:
    * Returns true if given element is quadratic
    */
   CORBA::Boolean IsQuadratic(CORBA::Long id);
+
+  /*!
+   * Returns diameter of ball discrete element or zero in case of an invalid \a id
+   */
+  CORBA::Double GetBallDiameter(CORBA::Long id);
 
   /*!
    * Returns bary center for given element

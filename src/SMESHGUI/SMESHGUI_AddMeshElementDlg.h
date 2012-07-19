@@ -50,6 +50,7 @@ class SMESHGUI;
 class SMESH_Actor;
 class SVTK_Selector;
 class LightApp_SelectionMgr;
+class SMESHGUI_SpinBox;
 
 namespace SMESH
 {
@@ -114,6 +115,7 @@ private:
   QPushButton*                SelectButtonC1A1;
   QLineEdit*                  LineEditC1A1;
   QCheckBox*                  Reverse;
+  SMESHGUI_SpinBox*           DiameterSpinBox;
   
   QString                     myHelpFileName;
   

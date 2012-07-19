@@ -38,6 +38,7 @@
 #include "Utils_ExceptHandlers.hxx"
 
 #include <TCollection_AsciiString.hxx>
+#include <TopoDS_Solid.hxx>
 
 #ifdef _DEBUG_
 static int MYDEBUG = 0;
@@ -138,6 +139,11 @@ long SMESH_Gen_i::GetVolumeGroupsTag()
 long SMESH_Gen_i::Get0DElementsGroupsTag()
 {
   return SMESH::Tag_0DElementsGroups;
+}
+
+long SMESH_Gen_i::GetBallElementsGroupsTag()
+{
+  return SMESH::Tag_BallElementsGroups;
 }
 
 //=============================================================================
@@ -683,16 +689,18 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishGroup (SALOMEDS::Study_ptr    theStudy
     int aType = (int)theGroup->GetType();
     const char* aRootNames[] = {
       "Compound Groups", "Groups of Nodes", "Groups of Edges",
-      "Groups of Faces", "Groups of Volumes", "Groups of 0D Elements" };
+      "Groups of Faces", "Groups of Volumes", "Groups of 0D Elements",
+      "Groups of Balls" };
 
     // Currently, groups with heterogenous content are not supported
-    if ( aType != SMESH::ALL ) {
+    if ( aType != SMESH::ALL )
+    {
       long aRootTag = GetNodeGroupsTag() + aType - 1;
 
       // Find or create groups root
       SALOMEDS::SObject_var aRootSO = publish (theStudy, CORBA::Object::_nil(),
                                                aMeshSO, aRootTag, 0, false );
-      if ( aType < 6 )
+      if ( aType < sizeof(aRootNames)/sizeof(char*) )
         SetName( aRootSO, aRootNames[aType] );
 
       // Add new group to corresponding sub-tree

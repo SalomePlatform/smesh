@@ -28,11 +28,12 @@
 #include "SMESHGUI_AddMeshElementDlg.h"
 
 #include "SMESHGUI.h"
-#include "SMESHGUI_Utils.h"
-#include "SMESHGUI_VTKUtils.h"
-#include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_GroupUtils.h"
 #include "SMESHGUI_IdValidator.h"
+#include "SMESHGUI_MeshUtils.h"
+#include "SMESHGUI_SpinBox.h"
+#include "SMESHGUI_Utils.h"
+#include "SMESHGUI_VTKUtils.h"
 
 #include <SMESH_Actor.h>
 #include <SMESH_ActorUtils.h>
@@ -241,6 +242,12 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI*          theMo
     elemName = "ELEM0D";
     myHelpFileName = "adding_nodes_and_elements_page.html#adding_0delems_anchor";
     break;
+  case SMDSEntity_Ball:
+    myNbNodes = 1;
+    myElementType = SMDSAbs_Ball;
+    elemName = "BALL";
+    myHelpFileName = "adding_nodes_and_elements_page.html#adding_ball_anchor";
+    break;
   case SMDSEntity_Edge:
     myNbNodes = 2;
     myElementType = SMDSAbs_Edge;
@@ -312,7 +319,7 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI*          theMo
   aTopLayout->setSpacing(SPACING);
   aTopLayout->setMargin(MARGIN);
 
-  /***************************************************************/
+  /* Constructor *************************************************/
   GroupConstructors = new QGroupBox(buttonGrTitle, this);
   QButtonGroup* ButtonGroup = new QButtonGroup(this);
   QHBoxLayout* GroupConstructorsLayout = new QHBoxLayout(GroupConstructors);
@@ -326,7 +333,7 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI*          theMo
   GroupConstructorsLayout->addWidget(Constructor1);
   ButtonGroup->addButton( Constructor1, 0 );
 
-  /***************************************************************/
+  /* Nodes & Reverse *********************************************/
   GroupC1 = new QGroupBox(grBoxTitle, this);
   QGridLayout* GroupC1Layout = new QGridLayout(GroupC1);
   GroupC1Layout->setSpacing(SPACING);
@@ -340,12 +347,23 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI*          theMo
 
   Reverse = (myElementType == SMDSAbs_Face || myElementType == SMDSAbs_Volume ) ? new QCheckBox(tr("SMESH_REVERSE"), GroupC1) : 0;
 
+  DiameterSpinBox = ( myGeomType == SMDSEntity_Ball ) ? new SMESHGUI_SpinBox(GroupC1) : 0;
+  QLabel* diameterLabel = DiameterSpinBox ? new QLabel( tr("BALL_DIAMETER"),GroupC1) : 0;
+
   GroupC1Layout->addWidget(TextLabelC1A1,    0, 0);
   GroupC1Layout->addWidget(SelectButtonC1A1, 0, 1);
   GroupC1Layout->addWidget(LineEditC1A1,     0, 2);
-  if ( Reverse ) GroupC1Layout->addWidget(Reverse, 1, 0, 1, 3);
+  if ( Reverse ) {
+    GroupC1Layout->addWidget(Reverse, 1, 0, 1, 3);
+  }
+  if ( DiameterSpinBox ) {
+    GroupC1Layout->addWidget(diameterLabel,   1, 0);
+    GroupC1Layout->addWidget(DiameterSpinBox, 1, 1, 1, 2);
 
-  /***************************************************************/
+    DiameterSpinBox->RangeStepAndValidator( 1e-7, 1e+9, 0.1 );
+    DiameterSpinBox->SetValue( 1. );
+  }
+  /* Add to group ************************************************/
   GroupGroups = new QGroupBox( tr( "SMESH_ADD_TO_GROUP" ), this );
   GroupGroups->setCheckable( true );
   QHBoxLayout* GroupGroupsLayout = new QHBoxLayout(GroupGroups);
@@ -360,7 +378,7 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI*          theMo
   GroupGroupsLayout->addWidget( TextLabel_GroupName );
   GroupGroupsLayout->addWidget( ComboBox_GroupName, 1 );
 
-  /***************************************************************/
+  /* Apply etc ***************************************************/
   GroupButtons = new QGroupBox(this);
   QHBoxLayout* GroupButtonsLayout = new QHBoxLayout(GroupButtons);
   GroupButtonsLayout->setSpacing(SPACING);
@@ -415,7 +433,7 @@ void SMESHGUI_AddMeshElementDlg::Init()
 
   /* reset "Add to group" control */
   GroupGroups->setChecked( false );
-  GroupGroups->setVisible( myElementType != SMDSAbs_0DElement );
+  //GroupGroups->setVisible( myElementType != SMDSAbs_0DElement );
 
   myNbOkNodes = 0;
   myActor = 0;
@@ -502,6 +520,10 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
     switch (myElementType) {
     case SMDSAbs_0DElement:
       anElemId = aMeshEditor->Add0DElement(anArrayOfIndices[0]); break;
+    case SMDSAbs_Ball:
+      if ( myGeomType == SMDSEntity_Ball )
+        anElemId = aMeshEditor->AddBall(anArrayOfIndices[0],
+                                        DiameterSpinBox->GetValue()); break;
     case SMDSAbs_Edge:
       anElemId = aMeshEditor->AddEdge(anArrayOfIndices.inout()); break;
     case SMDSAbs_Face:

@@ -527,7 +527,8 @@ namespace VISCOUS
     virtual SMDSAbs_ElementType  GetType() const              { return SMDSAbs_Face; }
     virtual vtkIdType GetVtkType() const                      { return -1; }
     virtual SMDSAbs_EntityType   GetEntityType() const        { return SMDSEntity_Last; }
-    virtual SMDS_ElemIteratorPtr elementsIterator(SMDSAbs_ElementType type) const
+    virtual SMDSAbs_GeometryType GetGeomType() const          { return SMDSGeom_TRIANGLE; }
+virtual SMDS_ElemIteratorPtr elementsIterator(SMDSAbs_ElementType type) const
     { return SMDS_ElemIteratorPtr( new SMDS_NodeVectorElemIterator( _nn.begin(), _nn.end()));}
   };
   //--------------------------------------------------------------------------------
