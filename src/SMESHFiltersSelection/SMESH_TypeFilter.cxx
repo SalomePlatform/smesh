@@ -199,7 +199,13 @@ bool SMESH_TypeFilter::isOk (const SUIT_DataOwner* theDataOwner) const
         }
       case GROUP_0D:
         {
-          if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_VolumeGroups+1))
+          if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_0DElementsGroups))
+            Ok = true;
+          break;
+        }
+      case GROUP_BALL:
+        {
+          if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_BallElementsGroups))
             Ok = true;
           break;
         }

@@ -56,6 +56,7 @@ enum MeshObjectType {
   GROUP_FACE,
   GROUP_VOLUME,
   GROUP_0D,
+  GROUP_BALL,
   COMPONENT,
   IDSOURCE
 };
