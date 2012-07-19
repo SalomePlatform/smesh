@@ -38,6 +38,7 @@ enum SMDSAbs_ElementType
     SMDSAbs_Face,
     SMDSAbs_Volume,
     SMDSAbs_0DElement,
+    SMDSAbs_Ball,
     SMDSAbs_NbElementTypes
   };
 
@@ -59,6 +60,10 @@ enum SMDSAbs_GeometryType
     SMDSGeom_PENTA,
     SMDSGeom_HEXAGONAL_PRISM,
     SMDSGeom_POLYHEDRA,
+    // Discrete elements
+    SMDSGeom_BALL,
+    //
+    SMDSGeom_NONE
   };
 
 
@@ -96,6 +101,7 @@ enum SMDSAbs_EntityType {
   SMDSEntity_Hexagonal_Prism,
   SMDSEntity_Polyhedra,
   SMDSEntity_Quad_Polyhedra,
+  SMDSEntity_Ball,
   SMDSEntity_Last
 };
 
