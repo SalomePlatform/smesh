@@ -1574,6 +1574,37 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
 }
 
 //=======================================================================
+//function : AddVolume
+//purpose  : Creates LINEAR!!!!!!!!! octahedron
+//=======================================================================
+
+SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
+                                               const SMDS_MeshNode* n2,
+                                               const SMDS_MeshNode* n3,
+                                               const SMDS_MeshNode* n4,
+                                               const SMDS_MeshNode* n5,
+                                               const SMDS_MeshNode* n6,
+                                               const SMDS_MeshNode* n7,
+                                               const SMDS_MeshNode* n8,
+                                               const SMDS_MeshNode* n9,
+                                               const SMDS_MeshNode* n10,
+                                               const SMDS_MeshNode* n11,
+                                               const SMDS_MeshNode* n12,
+                                               const int id, 
+                                               bool force3d)
+{
+  SMESHDS_Mesh * meshDS = GetMeshDS();
+  SMDS_MeshVolume* elem = 0;
+  if(id)
+    elem = meshDS->AddVolumeWithID(n1,n2,n3,n4,n5,n6,n7,n8,n9,n10,n11,n12,id);
+  else
+    elem = meshDS->AddVolume(n1,n2,n3,n4,n5,n6,n7,n8,n9,n10,n11,n12);
+  if ( mySetElemOnShape && myShapeID > 0 )
+    meshDS->SetMeshElementOnShape( elem, myShapeID );
+  return elem;
+}
+
+//=======================================================================
 //function : AddPolyhedralVolume
 //purpose  : Creates polyhedron. In quadratic mesh, adds medium nodes
 //=======================================================================

@@ -298,6 +298,24 @@ public:
                              bool force3d = true);
 
   /*!
+   * Creates LINEAR!!!!!!!!! octahedron
+   */
+  SMDS_MeshVolume* AddVolume(const SMDS_MeshNode* n1,
+                             const SMDS_MeshNode* n2,
+                             const SMDS_MeshNode* n3,
+                             const SMDS_MeshNode* n4,
+                             const SMDS_MeshNode* n5,
+                             const SMDS_MeshNode* n6,
+                             const SMDS_MeshNode* n7,
+                             const SMDS_MeshNode* n8,
+                             const SMDS_MeshNode* n9,
+                             const SMDS_MeshNode* n10,
+                             const SMDS_MeshNode* n11,
+                             const SMDS_MeshNode* n12,
+                             const int id = 0, 
+                             bool force3d = true);
+
+  /*!
    * Creates polyhedron. In quadratic mesh, adds medium nodes
    */
   SMDS_MeshVolume* AddPolyhedralVolume (const std::vector<const SMDS_MeshNode*>& nodes,
