@@ -46,7 +46,7 @@ VTKCellType SMDS_MeshCell::toVtkType (SMDSAbs_EntityType smdsType)
   {
     vtkTypes.resize( SMDSEntity_Last+1, VTK_EMPTY_CELL );
     vtkTypes[ SMDSEntity_Node ]              = VTK_VERTEX;
-    vtkTypes[ SMDSEntity_0D ]                = VTK_VERTEX; //VTK_POLY_VERTEX; // ??
+    vtkTypes[ SMDSEntity_0D ]                = VTK_VERTEX;
     vtkTypes[ SMDSEntity_Edge ]              = VTK_LINE;
     vtkTypes[ SMDSEntity_Quad_Edge ]         = VTK_QUADRATIC_EDGE;
     vtkTypes[ SMDSEntity_Triangle ]          = VTK_TRIANGLE;
@@ -68,6 +68,7 @@ VTKCellType SMDS_MeshCell::toVtkType (SMDSAbs_EntityType smdsType)
     vtkTypes[ SMDSEntity_Hexagonal_Prism ]   = VTK_HEXAGONAL_PRISM;
     vtkTypes[ SMDSEntity_Polyhedra ]         = VTK_POLYHEDRON;
     //vtkTypes[ SMDSEntity_Quad_Polyhedra ]    = ;
+    vtkTypes[ SMDSEntity_Ball ]              = VTK_POLY_VERTEX;
   }
   return vtkTypes[ smdsType ];
 }
@@ -179,6 +180,7 @@ const std::vector<int>& SMDS_MeshCell::reverseSmdsOrder(SMDSAbs_EntityType smdsT
       const int ids[] = {0};
       reverseInterlaces[SMDSEntity_0D].assign( &ids[0], &ids[0]+1 );
       reverseInterlaces[SMDSEntity_Node].assign( &ids[0], &ids[0]+1 );
+      reverseInterlaces[SMDSEntity_Ball].assign( &ids[0], &ids[0]+1 );
     }
     {
       const int ids[] = {1,0};
@@ -299,6 +301,82 @@ SMDSAbs_EntityType SMDS_MeshCell::toSmdsType(VTKCellType vtkType)
   }
   return smdsTypes[ vtkType ];
 }
+
+//================================================================================
+/*!
+ * \brief Return SMDSAbs_ElementType by SMDSAbs_GeometryType
+ */
+//================================================================================
+
+SMDSAbs_ElementType SMDS_MeshCell::toSmdsType(SMDSAbs_GeometryType geomType)
+{
+  switch ( geomType ) {
+  case SMDSGeom_POINT:     return SMDSAbs_0DElement;
+
+  case SMDSGeom_EDGE:      return SMDSAbs_Edge; 
+
+  case SMDSGeom_TRIANGLE:
+  case SMDSGeom_QUADRANGLE:
+  case SMDSGeom_POLYGON:   return SMDSAbs_Face;
+
+  case SMDSGeom_TETRA:
+  case SMDSGeom_PYRAMID:
+  case SMDSGeom_HEXA:
+  case SMDSGeom_PENTA:
+  case SMDSGeom_HEXAGONAL_PRISM:
+  case SMDSGeom_POLYHEDRA: return SMDSAbs_Volume;
+
+  case SMDSGeom_BALL:      return SMDSAbs_Ball;
+
+  case SMDSGeom_NONE: ;
+  }
+  return SMDSAbs_All;
+}
+
+//================================================================================
+/*!
+ * \brief Return SMDSAbs_ElementType by SMDSAbs_EntityType
+ */
+//================================================================================
+
+SMDSAbs_ElementType SMDS_MeshCell::toSmdsType(SMDSAbs_EntityType entityType)
+{
+  switch ( entityType ) {
+  case SMDSEntity_Node:           return SMDSAbs_Node;
+
+  case SMDSEntity_0D:             return SMDSAbs_0DElement;
+
+  case SMDSEntity_Edge:
+  case SMDSEntity_Quad_Edge:      return SMDSAbs_Edge;
+
+  case SMDSEntity_Triangle:
+  case SMDSEntity_Quad_Triangle:
+  case SMDSEntity_Quadrangle:
+  case SMDSEntity_Quad_Quadrangle:
+  case SMDSEntity_BiQuad_Quadrangle:
+  case SMDSEntity_Polygon:
+  case SMDSEntity_Quad_Polygon:   return SMDSAbs_Face;
+
+  case SMDSEntity_Tetra:
+  case SMDSEntity_Quad_Tetra:
+  case SMDSEntity_Pyramid:
+  case SMDSEntity_Quad_Pyramid:
+  case SMDSEntity_Hexa:
+  case SMDSEntity_Quad_Hexa:
+  case SMDSEntity_TriQuad_Hexa:
+  case SMDSEntity_Penta:
+  case SMDSEntity_Quad_Penta:
+  case SMDSEntity_Hexagonal_Prism:
+  case SMDSEntity_Polyhedra:
+  case SMDSEntity_Quad_Polyhedra: return SMDSAbs_Volume;
+
+  case SMDSEntity_Ball:           return SMDSAbs_Ball;
+
+  case SMDSEntity_Last:;
+  }
+  return SMDSAbs_All;
+}
+
 
 //================================================================================
 /*!
