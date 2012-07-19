@@ -65,6 +65,8 @@ public:
    */
   CORBA::Long AddNode(CORBA::Double x, CORBA::Double y, CORBA::Double z);
   CORBA::Long Add0DElement(CORBA::Long IDOfNode);
+  CORBA::Long AddBall(CORBA::Long IDOfNodem, CORBA::Double diameter)
+    throw (SALOME::SALOME_Exception);
   CORBA::Long AddEdge(const SMESH::long_array & IDsOfNodes);
   CORBA::Long AddFace(const SMESH::long_array & IDsOfNodes);
   CORBA::Long AddPolygonalFace(const SMESH::long_array & IDsOfNodes);
@@ -882,11 +884,9 @@ private: //!< private methods
 
 private: //!< fields
 
-  SMESH_Mesh_i*         myMesh_i;
-  SMESH_Mesh *          myMesh;
-
-  SMESH::long_array_var myLastCreatedElems;
-  SMESH::long_array_var myLastCreatedNodes;
+  SMESH_Mesh_i*      myMesh_i;
+  SMESH_Mesh *       myMesh;
+  ::SMESH_MeshEditor myEditor;
 
   SMESH::MeshPreviewStruct_var myPreviewData;
   bool                         myPreviewMode;
