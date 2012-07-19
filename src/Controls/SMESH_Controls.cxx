@@ -22,31 +22,36 @@
 
 #include "SMESH_ControlsDef.hxx"
 
-#include <set>
-#include <limits>
+#include "SMDS_BallElement.hxx"
+#include "SMDS_Iterator.hxx"
+#include "SMDS_Mesh.hxx"
+#include "SMDS_MeshElement.hxx"
+#include "SMDS_MeshNode.hxx"
+#include "SMDS_QuadraticEdge.hxx"
+#include "SMDS_QuadraticFaceOfNodes.hxx"
+#include "SMDS_VolumeTool.hxx"
+#include "SMESHDS_GroupBase.hxx"
+#include "SMESHDS_Mesh.hxx"
+#include "SMESH_OctreeNode.hxx"
 
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepClass_FaceClassifier.hxx>
 #include <BRep_Tool.hxx>
-
-#include <TopAbs.hxx>
-#include <TopoDS.hxx>
-#include <TopoDS_Edge.hxx>
-#include <TopoDS_Face.hxx>
-#include <TopoDS_Shape.hxx>
-#include <TopoDS_Vertex.hxx>
-#include <TopoDS_Iterator.hxx>
-
 #include <Geom_CylindricalSurface.hxx>
 #include <Geom_Plane.hxx>
 #include <Geom_Surface.hxx>
-
 #include <Precision.hxx>
 #include <TColStd_MapIteratorOfMapOfInteger.hxx>
 #include <TColStd_MapOfInteger.hxx>
 #include <TColStd_SequenceOfAsciiString.hxx>
 #include <TColgp_Array1OfXYZ.hxx>
-
+#include <TopAbs.hxx>
+#include <TopoDS.hxx>
+#include <TopoDS_Edge.hxx>
+#include <TopoDS_Face.hxx>
+#include <TopoDS_Iterator.hxx>
+#include <TopoDS_Shape.hxx>
+#include <TopoDS_Vertex.hxx>
 #include <gp_Ax3.hxx>
 #include <gp_Cylinder.hxx>
 #include <gp_Dir.hxx>
@@ -55,20 +60,11 @@
 #include <gp_Vec.hxx>
 #include <gp_XYZ.hxx>
 
-#include "SMDS_Mesh.hxx"
-#include "SMDS_Iterator.hxx"
-#include "SMDS_MeshElement.hxx"
-#include "SMDS_MeshNode.hxx"
-#include "SMDS_VolumeTool.hxx"
-#include "SMDS_QuadraticFaceOfNodes.hxx"
-#include "SMDS_QuadraticEdge.hxx"
-
-#include "SMESHDS_Mesh.hxx"
-#include "SMESHDS_GroupBase.hxx"
-
-#include "SMESH_OctreeNode.hxx"
-
 #include <vtkMeshQuality.h>
+
+#include <set>
+#include <limits>
+
 
 /*
                             AUXILIARY METHODS
@@ -1967,6 +1963,34 @@ void MultiConnection2D::GetValues(MValues& theValues){
 }
 
 /*
+  Class       : BallDiameter
+  Description : Functor returning diameter of a ball element
+*/
+double BallDiameter::GetValue( long theId )
+{
+  double diameter = 0;
+
+  if ( const SMDS_BallElement* ball =
+       dynamic_cast<const SMDS_BallElement*>( myMesh->FindElement( theId )))
+  {
+    diameter = ball->GetDiameter();
+  }
+  return diameter;
+}
+
+double BallDiameter::GetBadRate( double Value, int /*nbNodes*/ ) const
+{
+  // meaningless as it is not a quality control functor
+  return Value;
+}
+
+SMDSAbs_ElementType BallDiameter::GetType() const
+{
+  return SMDSAbs_Ball;
+}
+
+
+/*
                             PREDICATES
 */
 
@@ -3156,26 +3180,9 @@ void Filter::SetPredicate( PredicatePtr thePredicate )
   myPredicate = thePredicate;
 }
 
-template<class TElement, class TIterator, class TPredicate>
-inline void FillSequence(const TIterator& theIterator,
-                         TPredicate& thePredicate,
-                         Filter::TIdSequence& theSequence)
-{
-  if ( theIterator ) {
-    while( theIterator->more() ) {
-      TElement anElem = theIterator->next();
-      long anId = anElem->GetID();
-      if ( thePredicate->IsSatisfy( anId ) )
-        theSequence.push_back( anId );
-    }
-  }
-}
-
-void
-Filter::
-GetElementsId( const SMDS_Mesh* theMesh,
-               PredicatePtr thePredicate,
-               TIdSequence& theSequence )
+void Filter::GetElementsId( const SMDS_Mesh* theMesh,
+                            PredicatePtr     thePredicate,
+                            TIdSequence&     theSequence )
 {
   theSequence.clear();
 
@@ -3184,31 +3191,19 @@ GetElementsId( const SMDS_Mesh* theMesh,
 
   thePredicate->SetMesh( theMesh );
 
-  SMDSAbs_ElementType aType = thePredicate->GetType();
-  switch(aType){
-  case SMDSAbs_Node:
-    FillSequence<const SMDS_MeshNode*>(theMesh->nodesIterator(),thePredicate,theSequence);
-    break;
-  case SMDSAbs_Edge:
-    FillSequence<const SMDS_MeshElement*>(theMesh->edgesIterator(),thePredicate,theSequence);
-    break;
-  case SMDSAbs_Face:
-    FillSequence<const SMDS_MeshElement*>(theMesh->facesIterator(),thePredicate,theSequence);
-    break;
-  case SMDSAbs_Volume:
-    FillSequence<const SMDS_MeshElement*>(theMesh->volumesIterator(),thePredicate,theSequence);
-    break;
-  case SMDSAbs_All:
-    FillSequence<const SMDS_MeshElement*>(theMesh->edgesIterator(),thePredicate,theSequence);
-    FillSequence<const SMDS_MeshElement*>(theMesh->facesIterator(),thePredicate,theSequence);
-    FillSequence<const SMDS_MeshElement*>(theMesh->volumesIterator(),thePredicate,theSequence);
-    break;
+  SMDS_ElemIteratorPtr elemIt = theMesh->elementsIterator( thePredicate->GetType() );
+  if ( elemIt ) {
+    while ( elemIt->more() ) {
+      const SMDS_MeshElement* anElem = elemIt->next();
+      long anId = anElem->GetID();
+      if ( thePredicate->IsSatisfy( anId ) )
+        theSequence.push_back( anId );
+    }
   }
 }
 
-void
-Filter::GetElementsId( const SMDS_Mesh* theMesh,
-                       Filter::TIdSequence& theSequence )
+void Filter::GetElementsId( const SMDS_Mesh*     theMesh,
+                            Filter::TIdSequence& theSequence )
 {
   GetElementsId(theMesh,myPredicate,theSequence);
 }
@@ -3872,36 +3867,9 @@ void ElementsOnShape::process()
   if (myShape.IsNull() || myMesh == 0)
     return;
 
-  if (myType == SMDSAbs_Node)
-  {
-    SMDS_NodeIteratorPtr anIter = myMesh->nodesIterator();
-    while (anIter->more())
-      process(anIter->next());
-  }
-  else
-  {
-    if (myType == SMDSAbs_Edge || myType == SMDSAbs_All)
-    {
-      SMDS_EdgeIteratorPtr anIter = myMesh->edgesIterator();
-      while (anIter->more())
-        process(anIter->next());
-    }
-
-    if (myType == SMDSAbs_Face || myType == SMDSAbs_All)
-    {
-      SMDS_FaceIteratorPtr anIter = myMesh->facesIterator();
-      while (anIter->more()) {
-        process(anIter->next());
-      }
-    }
-
-    if (myType == SMDSAbs_Volume || myType == SMDSAbs_All)
-    {
-      SMDS_VolumeIteratorPtr anIter = myMesh->volumesIterator();
-      while (anIter->more())
-        process(anIter->next());
-    }
-  }
+  SMDS_ElemIteratorPtr anIter = myMesh->elementsIterator(myType);
+  while (anIter->more())
+    process(anIter->next());
 }
 
 void ElementsOnShape::process (const SMDS_MeshElement* theElemPtr)
@@ -3916,9 +3884,8 @@ void ElementsOnShape::process (const SMDS_MeshElement* theElemPtr)
 
   while (aNodeItr->more() && (isSatisfy == myAllNodesFlag))
   {
-    SMDS_MeshNode* aNode = (SMDS_MeshNode*)aNodeItr->next();
-    gp_Pnt aPnt (aNode->X(), aNode->Y(), aNode->Z());
-    centerXYZ += aPnt.XYZ();
+    SMESH_TNodeXYZ aPnt ( aNodeItr->next() );
+    centerXYZ += aPnt;
 
     switch (myCurShapeType)
     {
@@ -3951,7 +3918,7 @@ void ElementsOnShape::process (const SMDS_MeshElement* theElemPtr)
       break;
     case TopAbs_VERTEX:
       {
-        isSatisfy = (aPnt.Distance(myCurPnt) <= myToler);
+        isSatisfy = (myCurPnt.Distance(aPnt) <= myToler);
       }
       break;
     default:

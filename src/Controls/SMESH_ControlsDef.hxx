@@ -331,6 +331,19 @@ namespace SMESH{
       void GetValues(MValues& theValues);
     };
     typedef boost::shared_ptr<MultiConnection2D> MultiConnection2DPtr;
+
+    /*
+      Class       : BallDiameter
+      Description : Functor returning diameter of a ball element
+    */
+    class SMESHCONTROLS_EXPORT BallDiameter: public virtual NumericalFunctor{
+    public:
+      virtual double GetValue( long theElementId );
+      virtual double GetBadRate( double Value, int nbNodes ) const;
+      virtual SMDSAbs_ElementType GetType() const;
+    };
+    
+
     /*
       PREDICATES
     */
