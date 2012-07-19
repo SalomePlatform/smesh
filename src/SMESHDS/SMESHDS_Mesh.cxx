@@ -24,7 +24,6 @@
 //  File   : SMESH_Mesh.cxx
 //  Author : Yves FRICAUD, OCC
 //  Module : SMESH
-//  $Header: 
 //
 #include "SMESHDS_Mesh.hxx"
 
@@ -35,21 +34,22 @@
 #include "SMDS_SpacePosition.hxx"
 #include "SMDS_Downward.hxx"
 #include "SMESHDS_GroupOnGeom.hxx"
+#include "SMESHDS_Script.hxx"
 
 #include <Standard_ErrorHandler.hxx>
 #include <Standard_OutOfRange.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
+#include <TopoDS_Edge.hxx>
+#include <TopoDS_Face.hxx>
 #include <TopoDS_Iterator.hxx>
+#include <TopoDS_Shell.hxx>
+#include <TopoDS_Solid.hxx>
+#include <TopoDS_Vertex.hxx>
 
 #include "utilities.h"
 
 using namespace std;
-
-/*Standard_Boolean IsEqual( const TopoDS_Shape& S1, const TopoDS_Shape& S2 ) 
-  {
-    return S1.IsSame( S2 );
-  }*/
 
 //=======================================================================
 //function : Create
@@ -306,9 +306,39 @@ SMDS_Mesh0DElement* SMESHDS_Mesh::Add0DElement(const SMDS_MeshNode * node)
 }
 
 //=======================================================================
+//function :AddBallWithID
+//purpose  : 
+//=======================================================================
+
+SMDS_BallElement* SMESHDS_Mesh::AddBallWithID(int node, double diameter, int ID)
+{
+  SMDS_BallElement* anElem = SMDS_Mesh::AddBallWithID(node,diameter,ID);
+  if (anElem) myScript->AddBall(anElem->GetID(), node, diameter);
+  return anElem;
+}
+
+SMDS_BallElement* SMESHDS_Mesh::AddBallWithID(const SMDS_MeshNode * node,
+                                              double                diameter,
+                                              int                   ID)
+{
+  SMDS_BallElement* anElem = SMDS_Mesh::AddBallWithID(node,diameter,ID);
+  if (anElem) myScript->AddBall(anElem->GetID(), node->GetID(), diameter);
+  return anElem;
+}
+
+SMDS_BallElement* SMESHDS_Mesh::AddBall (const SMDS_MeshNode * node,
+                                         double                diameter)
+{
+  SMDS_BallElement* anElem = SMDS_Mesh::AddBall(node,diameter);
+  if (anElem) myScript->AddBall(anElem->GetID(), node->GetID(), diameter);
+  return anElem;
+}
+
+//=======================================================================
 //function :AddEdgeWithID
 //purpose  : 
 //=======================================================================
+
 SMDS_MeshEdge* SMESHDS_Mesh::AddEdgeWithID(int n1, int n2, int ID)
 {
   SMDS_MeshEdge* anElem = SMDS_Mesh::AddEdgeWithID(n1,n2,ID);

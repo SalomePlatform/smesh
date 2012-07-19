@@ -30,22 +30,25 @@
 #include "SMESH_SMESHDS.hxx"
 
 #include "SMDS_Mesh.hxx"
-#include "SMDS_MeshNode.hxx"
-#include "SMDS_Mesh0DElement.hxx"
-#include "SMDS_MeshEdge.hxx"
-#include "SMDS_MeshFace.hxx"
-#include "SMDS_MeshVolume.hxx"
-#include "SMESHDS_Hypothesis.hxx"
 #include "SMESHDS_SubMesh.hxx"
-#include "SMESHDS_Script.hxx"
 
 #include <TopTools_IndexedMapOfShape.hxx>
 #include <TopoDS_Shape.hxx>
-#include <TopoDS_Solid.hxx>
-#include <TopoDS_Shell.hxx>
-#include <TopoDS_Face.hxx>
-#include <TopoDS_Vertex.hxx>
-#include <TopoDS_Edge.hxx>
+
+class TopoDS_Solid ;
+class TopoDS_Shell ;
+class TopoDS_Face  ;
+class TopoDS_Vertex;
+class TopoDS_Edge  ;
+
+class SMESHDS_Script;
+class SMESHDS_Hypothesis;
+class SMDS_MeshNode     ;
+class SMDS_MeshEdge     ;
+class SMDS_MeshFace     ;
+class SMDS_MeshVolume   ;
+class SMDS_Mesh0DElement;
+class SMDS_BallElement;
 
 #include <NCollection_DataMap.hxx>
 #include <map>
@@ -77,6 +80,10 @@ public:
   virtual SMDS_Mesh0DElement* Add0DElementWithID(const SMDS_MeshNode * node, int ID);
   virtual SMDS_Mesh0DElement* Add0DElement      (const SMDS_MeshNode * node);
   
+  virtual SMDS_BallElement* AddBallWithID(int n,                   double diameter, int ID);
+  virtual SMDS_BallElement* AddBallWithID(const SMDS_MeshNode * n, double diameter, int ID);
+  virtual SMDS_BallElement* AddBall      (const SMDS_MeshNode * n, double diameter);
+
   virtual SMDS_MeshEdge* AddEdgeWithID(int n1, int n2, int ID);
   virtual SMDS_MeshEdge* AddEdgeWithID(const SMDS_MeshNode * n1,
                                        const SMDS_MeshNode * n2, 
