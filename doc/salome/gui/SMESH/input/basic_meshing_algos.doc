@@ -62,6 +62,9 @@ There is also a number of more specific algorithms:
 <li>\subpage prism_3d_algo_page "for meshing prismatic shapes"</li>
 <li>\subpage radial_quadrangle_1D2D_algo_page "for meshing special 2d faces (circles and part of circles)"</li>
 </ul>
+\ref use_existing_anchor "Use existing edges" and 
+\ref use_existing_anchor "Use existing faces" algorithms can be
+used to create an 1D or a 2D mesh in a python script.
 
 \ref constructing_meshes_page "Constructing meshes" page describes in
 detail how to apply meshing algorithms.

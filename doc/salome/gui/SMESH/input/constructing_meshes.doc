@@ -2,106 +2,142 @@
 
 \page constructing_meshes_page Constructing meshes
 
-\n Construction of a mesh consists of:
+\n Construction of a mesh on some geometry consists of:
 <ul>
-<li>Selecting a geometrical object for meshing</li>
-<li>Applying \subpage basic_meshing_algos_page "meshing algorithms" and
-\subpage about_hypo_page "hypotheses" which will be used at computation of
-this mesh.</li>
+  <li> \ref create_mesh_anchor "Creating of a mesh object"</li>
+  <li> \ref evaluate_anchor "Evaluating mesh size"</li>
+  <li> \ref preview_anchor "Previewing the mesh"</li>
+  <li> \ref submesh_order_anchor "Changing submesh priority"</li>
+  <li> \ref compute_anchor "Computing the mesh"</li>
 </ul>
+Mesh can be \ref use_existing_anchor "computed using your own meshing algorithms" 
+written in Python.
 
+
+\anchor create_mesh_anchor
+<h2>Creation of a mesh object</h2>
 <em>To construct a mesh:</em>
 <ol>
-<li>In the \b Mesh menu select <b>Create Mesh</b> or click <em>"Create
-Mesh"</em> button in the toolbar. 
+  <li>Select a geometrical object for meshing.</li>
+  <li>In the \b Mesh menu select <b>Create Mesh</b> or click <em>"Create
+      Mesh"</em> button in the toolbar. 
 
-\image html image32.png
-<center><em>"Create Mesh" button</em></center>
+    \image html image32.png
+    <em>"Create Mesh" button</em>
 
-The following dialog box will appear: 
+    The following dialog box will appear: 
 
-\image html createmesh-inv.png
-</li>
-<li>For example, you need to mesh a 3d object.
-\n First, type the name for your mesh in the "Name" box, by default,
-it is "Mesh_1". Then select the object you wish to mesh in the Object
-Browser and click the "Add" button (if name of the object not yet
-appeared in \b Geometry field).
+    \image html createmesh-inv.png
+    <br>
+  </li>
+  <li>Apply \subpage basic_meshing_algos_page "meshing algorithms" and
+    \subpage about_hypo_page "hypotheses" which will be used at computation of
+    this mesh.
 
-\image html image120.png
-<center><em>"Add" button</em></center>
+    For example, you need to mesh a 3D object.
 
-Now you can define 1d Algorithm and 1d Hypotheses, which will be
-applied to the edges of your object. (Note that any object has edges,
-even if their existence is not apparent, for example, a sphere has 4
-edges). Click the <em>"Add Hypothesis"</em>  button to add a
-hypothesis.
+    First, type the name for your mesh in the \b Name box, by default,
+    it is "Mesh_1". Then select the geometrical object you wish to
+    mesh in the Object Browser and click "Select" button near \b Geometry
+    field (if name of the object not yet appeared in \b Geometry field).
 
-\image html image121.png
-<center><em>"Add Hypothesis" button</em></center>
+    \image html image120.png
+    <em>"Select" button</em>
 
-Click the <em>"Edit Hypothesis"</em> button to define values for the
-current hypothesis.
+    Now you can define 3D Algorithm and 3D Hypotheses, which will be
+    applied to solids of your geometrical object. Click the <em>"Add
+      Hypothesis"</em>  button to add a hypothesis.
 
-\image html image122.png
-<center><em>"Edit Hypothesis" button</em></center>
+    \image html image121.png
+    <em>"Add Hypothesis" button</em>
 
-The use of additional hypotheses is optional (i.e. you may leave
-"None" in this box).
+    Click the <em>"Edit Hypothesis"</em> button to change values for the
+    current hypothesis.
 
-Proceed in the same way with 2d and 3d Algorithms and Hypotheses, note
-that the choice of hypotheses depends on the algorithm. There must be
-one Algorithm and zero or several Hypotheses for each dimension of your
-object (most standard 2D and 3D algorithms can work without
-hypotheses using some default parameters), 
-otherwise you will not get any mesh at all. Of course, if you
-wish to mesh a face, which is a 2d object, you don't need to define 3d
-Algorithm and Hypotheses.
-\n In the <b>Object Browser</b> the structure of the new mesh will be
-displayed as follows:
+    \image html image122.png
+    <em>"Edit Hypothesis" button</em>
 
-\image html image88.jpg
+    Most standard 2D and 3D algorithms can work without hypotheses
+    using some default parameters. The use of additional hypotheses
+    is optional (i.e. you may leave "None" in this box).
 
-It contains:
-<ul>
-<li>a reference to the geometrical object on the basis of which the mesh has been constructed;</li>
-<li><b>Applied hypotheses</b> folder containing the references to the
-hypotheses applied to the construction of the mesh;</li>
-<li><b>Applied algorithms</b> folder containing the references to the
-algorithms applied to the construction of the mesh.</li>
-</ul>
-<br>
-There is an alternative way to create a mesh on an object simply by
-clicking <b>Assign a set of hypotheses</b> button and selecting among
-pre-defined sets of hypotheses. In addition to the standard
-sets of hypotheses, it is possible to create custom sets by editing
-CustomMeshers.xml file located in the home directory. CustomMeshers.xml
-file must describe sets of hypotheses in the
-same way as ${SMESH_ROOT_DIR}/share/salome/resources/smesh/StdMeshers.xml 
-file does (sets of hypotheses are enclosed between <hypotheses-set-group>
-tags).
-\image html hypo_sets.png
-<center>List of sets of hypotheses: <em>[custom]</em> is automatically added to the sets defined
-by the user</center>
-</li>
+    Proceed in the same way with 2D and 1D Algorithms and Hypotheses that
+    will be used to mesh faces and edges of your geometry. (Note
+    that any object has edges, even if their existence is not
+    apparent, for example, a sphere has 4 edges). Note that the
+    choice of hypotheses and of an algorithm of lower dimension depends on
+    the algorithm. 
 
-\anchor preview_mesh_anchor
+    Some algorithms generate mesh of several dimensions while others, of
+    only one dimension. In the latter case there must be one Algorithm and zero or several
+    Hypotheses for each dimension of your object, otherwise you will
+    not get any mesh at all. Of course, if you wish to mesh a face,
+    which is a 2D object, you don't need to define 3D Algorithm and
+    Hypotheses.
 
-<li> After the mesh object is created and all hypotheses are assigned and
-before the mesh computation, it is possible to see the mesh preview.
+    In the <b>Object Browser</b> the structure of the new mesh will be
+    displayed as follows:
+
+      \image html image88.jpg
+
+    It contains:
+    <ul>
+      <li>a reference to the geometrical object on the basis of
+        which the mesh has been constructed;</li> 
+      <li><b>Applied hypotheses</b> folder containing the references
+        to the hypotheses applied at the construction of the mesh;</li>
+      <li><b>Applied algorithms</b> folder containing the references
+        to the algorithms applied at the construction of the mesh.</li> 
+    </ul>
+
+    There is an alternative way to assign Algorithms and Hypotheses by
+    clicking <b>Assign a set of hypotheses</b> button and selecting among
+    pre-defined sets of hypotheses. In addition to the standard
+    sets of hypotheses, it is possible to create custom sets by editing
+    CustomMeshers.xml file located in the home directory. CustomMeshers.xml
+    file must describe sets of hypotheses in the
+    same way as ${SMESH_ROOT_DIR}/share/salome/resources/smesh/StdMeshers.xml 
+    file does (sets of hypotheses are enclosed between <hypotheses-set-group>
+      tags).
+
+      \image html hypo_sets.png
+      List of sets of hypotheses: <em>[custom]</em>
+      automatically added to the sets defined by the user
+  </li>
+</ol>
+
+Consider trying a sample script for construction of a mesh from our 
+\ref tui_creating_meshes_page "TUI Scripts" section.
+
+\anchor evaluate_anchor
+<h2>Evaluating mesh size</h2>
+
+After the mesh object is created and all hypotheses are assigned and
+before \ref compute_anchor "Compute" operation, it is possible to
+calculate the eventual mesh size. For this, select the mesh in
+the <b>Object Browser</b> and from the \b Mesh menu select \b
+Evaluate. The result of evaluation will be displayed in the following
+information box: 
+
+\image html mesh_evaluation_succeed.png
+
+\anchor preview_anchor
+<h2>Previewing the mesh</h2>
+
+Before \ref compute_anchor "the mesh computation", it is also possible
+to see the mesh preview.
 
 For this, select the mesh in the Object Browser. From the \b Mesh menu
-select \b Preview or click "Preview" button in the
-toolbar or activate "Preview" item from the pop-up menu.
+select \b Preview or click "Preview" button in the toolbar or activate
+"Preview" item from the pop-up menu.
 
 \image html mesh_precompute.png
-<center><em>"Preview" button</em></center>
+<em>"Preview" button</em>
 
 Select <b>1D mesh</b> or <b>2D mesh</b> preview mode in the Preview dialog. 
 
-
 \image html preview_mesh_1D.png "1D mesh preview shows nodes computed on geometry edges"
-
+<br>
 \image html preview_mesh_2D.png "2D mesh preview shows edge mesh elements, computed on geometry faces"
 
 <b>Compute</b> button computes the whole mesh.
@@ -111,17 +147,105 @@ created mesh elements appers:
 
 \image html preview_tmp_data.png
 
-These elenents can be reused in the next mesh computation.
-</li>
+These elements can be kept in the mesh.
 
 
-<li>It is equally possible to skip the Preview and \b Compute the mesh
-after the hypotheses are assigned. For this, select your mesh in the <b>Object
-Browser</b>. From the \b Mesh menu select \b Compute or click "Compute" button of the
-toolbar. 
+\anchor submesh_order_anchor
+<h2>Changing submesh priority</h2>
+
+If the mesh contains concurrent \ref constructing_submeshes_page "submeshes", 
+it is possible to change the priority of their computation, i.e. to
+change the priority of applying algorithms to the shared sub-shapes of
+the Mesh shape.
+
+<em>To change submesh priority:</em>
+
+Choose "Change submesh priority" from the Mesh menu or a pop-up
+menu. The opened dialog shows a list of submeshes in the order of
+their priority. 
+
+There is an example of submesh order modifications of the Mesh created on a Box
+shape. The main Mesh object:
+<ul>
+  <li><i>1D</i> <b>Wire discretisation</b> with <b>Number of Segments</b>=20</li>
+  <li><i>2D</i> <b>Triangle (Mefisto)</b> with Hypothesis<b>Max Element Area</b>
+  </li>
+</ul>
+The first submesh object <b>Submesh_1</b> created on <b>Face_1</b> is:
+<ul>
+  <li><i>1D</i> <b>Wire discretisation</b> with <b>Number of Segments</b>=4</li>
+  <li><i>2D</i> <b>Triangle (Mefisto)</b> with Hypothesis<b>MaxElementArea</b>=1200</li>
+</ul>
+The second submesh object <b>Submesh_2</b> created on <b>Face_2</b> is:
+<ul>
+  <li><i>1D</i> <b>Wire discretisation</b> with <b>Number of Segments</b>=8</li>
+  <li><i>2D</i> <b>Triangle (Mefisto)</b> with Hypothesis<b>MaxElementArea</b>=1200</li>
+</ul>
+
+And the last submesh object <b>Submesh_3</b> created on <b>Face_3</b> is:
+<ul>
+  <li><i>1D</i> <b>Wire discretisation</b> with <b>Number of Segments</b>=12</li>
+  <li><i>2D</i> <b>Triangle (Mefisto)</b> with Hypothesis<b>MaxElementArea</b>=1200</li>
+</ul>
+
+The sub-meshes become concurrent if they share sub-shapes that can be
+meshed with different algorithms (or different hypothesises). In the
+example, we have three submeshes with concurrent algorithms, because
+they have different hypotheses.
+
+The first mesh computation is made with:
+<center>
+\image html mesh_order_123.png
+<em>"Mesh order SubMesh_1, SubMesh_2, SubMesh_3"</em></center>
+<center>
+\image html mesh_order_123_res.png
+<em>"Result mesh with order SubMesh_1, SubMesh_2, SubMesh_3 "</em></center>
+
+The next mesh computation is made with:
+<center>
+\image html mesh_order_213.png
+<em>"Mesh order SubMesh_2, SubMesh_1, SubMesh_3"</em></center>
+<center>
+\image html mesh_order_213_res.png
+<em>"Result mesh with order SubMesh_2, SubMesh_1, SubMesh_3 "</em></center>
+
+And the last mesh computation is made with:
+<center>
+\image html mesh_order_321.png
+<em>"Mesh order SubMesh_3, SubMesh_2, SubMesh_1"</em></center>
+<center>\image html mesh_order_321_res.png
+<em>"Result mesh with order SubMesh_3, SubMesh_2, SubMesh_1 "</em></center>
+
+As we can see, each mesh computation has a different number of result
+elements and a different mesh discretisation on the shared edges (the edges 
+that are shared between <b>Face_1</b>, <b>Face_2</b> and <b>Face_3</b>)
+
+Additionally, submesh priority (the order of applied algorithms) can
+be modified not only in a separate dialog box, but also in
+the <b>Preview</b>. This helps to preview different mesh results,
+modifying the order of submeshes. 
+<center>
+\image html mesh_order_preview.png
+<em>"Preview with submesh priority list box"</em></center>
+
+If there are no concurrent submeshes under the Mesh object, the user
+will see the following information.
+<center>
+\image html mesh_order_no_concurrent.png
+<em>"No concurrent submeshes detected"</em></center>
+
+
+\anchor compute_anchor
+<h2>Computing the mesh</h2>
+
+It is equally possible to skip  \ref evaluate_anchor "the Evaluation"
+and \ref preview_anchor "the Preview" and to \b Compute the mesh after
+the hypotheses are assigned. For this, select your mesh in
+the <b>Object Browser</b>. From the \b Mesh menu select \b Compute or
+click "Compute" button of the toolbar.
 
 \image html image28.png
-<center><em>"Compute" button</em></center>
+<em>"Compute" button</em>
 
 The Mesh Computation information box appears.
 
@@ -133,9 +257,12 @@ failure is provided.
 \image html meshcomputationfail.png
 
 After you select the error, <b>Show Sub-shape</b> button allows
-visualizing the geometrical entity that causes it.
+visualizing in magenta the geometrical entity that causes it.
 
-\image html failed_computation.png "Example of the invalid input mesh"
+\image html failed_computation.png 
+<em>3D algorithm failed to compute mesh on a box shown using <b>Show
+    Sub-shape</b> button</em>
+
 
 \note Mesh Computation Information box does not appear if you set
 "Mesh computation/Show a computation result notification" preference 
@@ -149,104 +276,38 @@ failed, in GEOM component as a child of the mesh geometry, which
 allows analyzing the problem geometry and creating a submesh on it in
 order to locally tune hypotheses.
 
-<b>NOTE</b> It is possible to define a 1D or a 2D mesh in a
-python script and then use such submeshes in the construction of a 3D
-mesh. For this, there exist two algorithms: <b>Use existing edges</b> and <b>Use
-existing faces</b>. They are not entirely usable from the GUI, so a
-mesh created using these algorithms should be exported into a python
-script, edited and then imported into the GUi. 
+If a cause of failure is an invalid input mesh and the algorithm has
+provided information on what mesh entities are bad <b>Show bad Mesh</b> 
+button appears in the dialog. Clicked, it shows bad mesh entities in
+the Viewer in magenta. Sometimes the shown mesh entities are too small
+or/and hidden by other mesh elements, to see them it can be helpful to
+switch the mesh to Wireframe visualization mode or to switch off
+visualization of faces and volumes (if any).
 
-<li>It is possible to calculate the eventual mesh size 
-before \b Compute operation. For this, select the mesh in the <b>Object
-Browser</b> and from the \b Mesh menu select \b Evaluate. The result of
-evaluation will be displayed in the following information box:
+\anchor use_existing_anchor
+<h2>"Use existing edges" and "Use existing faces" algorithms</h2>
 
-\image html mesh_evaluation_succeed.png
-
-</li>
-
-
-\anchor mesh_order_anchor
-
-<li>
-If the mesh contains concurrent submeshes, it is possible to change
-the priority of their computation, i.e. to change the priority of
-applying algorithms to the shared sub-shapes of the Mesh shape.</li>
-
-<em>To change submesh priority:</em>
-
-<li>Choose "Change submesh priority" from the Mesh menu or a popup menu. The opened dialogue
-shows a list of submeshes in the order of their priority. 
-
-There is an example of submesh order modifications of the Mesh created on a Box
-shape. The main Mesh object:
+It is possible to create an 1D or a 2D mesh in a python script
+(using <em>AddNode, AddEdge</em> and <em>AddFace</em> commands) and
+then use such sub-meshes in the construction of a 2D or a 3D mesh. For
+this, there exist two algorithms: <b>Use existing edges</b> and <b>Use
+  existing faces</b>. Scenario of their usage is following. For
+example, you want to use standard algorithms to generate 1D and 3D
+meshes and to create 2D mesh by your python code. Then you
 <ul>
-<li><i>1D</i> <b>Wire discretisation</b> with <b>Number of Segments</b>=20</li>
-<li><i>2D</i> <b>Triangle (Mefisto)</b> with Hypothesis<b>Max Element Area</b>
-</li>
-</ul>
-The first submesh object <b>Submesh_1</b> created on <b>Face_1</b>
-is:
-<ul>
-<li><i>1D</i> <b>Wire discretisation</b> with <b>Number of Segments</b>=4</li>
-<li><i>2D</i> <b>Triangle (Mefisto)</b> with Hypothesis<b>MaxElementArea</b>=1200</li>
-</ul>
-The second submesh object <b>Submesh_2</b> created on <b>Face_2</b>
-is:
-<ul>
-<li><i>1D</i> <b>Wire discretisation</b> with <b>Number of Segments</b>=8</li>
-<li><i>2D</i> <b>Triangle (Mefisto)</b> with Hypothesis<b>MaxElementArea</b>=1200</li>
+  <li> create a mesh object, assign an 1D algorithm,</li>
+  <li> invoke \b Compute command, which computes an 1D mesh,</li>
+  <li> assign <b>Use existing faces</b> and a 3D algorithm,</li>
+  <li> run your python code, which creates a 2D mesh,</li>
+  <li> invoke \b Compute command, which computes a 3D mesh.</li>
 </ul>
 
-And the last submesh object <b>Submesh_3</b> created on <b>Face_3</b>
-is:
-<ul>
-<li><i>1D</i> <b>Wire discretisation</b> with <b>Number of Segments</b>=12</li>
-<li><i>2D</i> <b>Triangle (Mefisto)</b> with Hypothesis<b>MaxElementArea</b>=1200</li>
-</ul>
+Consider trying a sample script demonstrating usage of 
+\ref tui_use_existing_faces "Use existing faces" algorithm for
+construction of a 2D mesh using Python commands.
 
-The submeshes become concurrent if they share sub-shapes that can be meshed 
-with different algorithms (or different hypothesises).
-In the example, we have three submeshes with concurrent algorithms,
-because they have different hypotheses. 
-
-The first mesh computation is made with:
-\image html mesh_order_123.png
-<center><em>"Mesh order SubMesh_1, SubMesh_2, SubMesh_3"</em></center>
-\image html mesh_order_123_res.png
-<center><em>"Result mesh with order SubMesh_1, SubMesh_2, SubMesh_3 "</em></center>
-
-The next mesh computation is made with:
-\image html mesh_order_213.png
-<center><em>"Mesh order SubMesh_2, SubMesh_1, SubMesh_3"</em></center>
-\image html mesh_order_213_res.png
-<center><em>"Result mesh with order SubMesh_2, SubMesh_1, SubMesh_3 "</em></center>
-
-And the last mesh computation is made with:
-\image html mesh_order_321.png
-<center><em>"Mesh order SubMesh_3, SubMesh_2, SubMesh_1"</em></center>
-\image html mesh_order_321_res.png
-<center><em>"Result mesh with order SubMesh_3, SubMesh_2, SubMesh_1 "</em></center>
-
-As we can see, each mesh computation has a different number of result
-elements and a different mesh discretisation on the shared edges (the edges 
-that are shared between <b>Face_1</b>, <b>Face_2</b> and <b>Face_3</b>)
-
-Additionally, submesh priority (the order of applied algorithms) can
-be modified not only in a separate dialog box, but also in the
-<b>Preview</b>. This helps to preview different mesh results,
-modifying the order of submeshes.
-\image html mesh_order_preview.png
-<center><em>"Preview with submesh priority list box"</em></center>
-
-If there are no concurrent submeshes under the Mesh object, the user will see the
-following information.
-\image html mesh_order_no_concurrent.png
-<center><em>"No concurrent submeshes detected"</em></center>
-
-</ol>
-
-Consider trying a sample script for construction of a mesh from our 
-\ref tui_creating_meshes_page "TUI Scripts" section.
+\image html use_existing_face_sample_mesh.png
+<em> Mesh computed by \ref tui_use_existing_faces "the sample script"
+  shown in a Shrink mode.</em>
 
 */
