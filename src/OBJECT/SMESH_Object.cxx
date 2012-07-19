@@ -87,8 +87,9 @@ static inline vtkIdType getCellType( const SMDSAbs_ElementType theType,
 {
   switch( theType )
   {
-    case SMDSAbs_0DElement: 
-      return VTK_VERTEX;
+    case SMDSAbs_0DElement:         return VTK_VERTEX;
+
+    case SMDSAbs_Ball:   return VTK_POLY_VERTEX;
 
     case SMDSAbs_Edge: 
       if( theNbNodes == 2 )         return VTK_LINE;
@@ -344,8 +345,8 @@ void SMESH_VisualObjDef::buildElemPrs()
 
   // Calculate cells size
 
-  static SMDSAbs_ElementType aTypes[ 4 ] =
-    { SMDSAbs_0DElement, SMDSAbs_Edge, SMDSAbs_Face, SMDSAbs_Volume };
+  static SMDSAbs_ElementType aTypes[ 5 ] =
+    { SMDSAbs_Ball, SMDSAbs_0DElement, SMDSAbs_Edge, SMDSAbs_Face, SMDSAbs_Volume };
 
   // get entity data
   map<SMDSAbs_ElementType,int> nbEnts;
@@ -359,6 +360,7 @@ void SMESH_VisualObjDef::buildElemPrs()
   SMDS_Mesh::CheckMemory(); // PAL16631
 
   vtkIdType aCellsSize =  2 * nbEnts[ SMDSAbs_0DElement ] + 3 * nbEnts[ SMDSAbs_Edge ];
+  aCellsSize += 2 * nbEnts[ SMDSAbs_Ball ];
 
   for ( int i = 2; i <= 3; i++ ) // iterate through faces and volumes
   {
@@ -387,8 +389,9 @@ void SMESH_VisualObjDef::buildElemPrs()
     }
   }
   
-  vtkIdType aNbCells = nbEnts[ SMDSAbs_0DElement ] + nbEnts[ SMDSAbs_Edge ] +
-                       nbEnts[ SMDSAbs_Face ] + nbEnts[ SMDSAbs_Volume ];
+  vtkIdType aNbCells =
+    nbEnts[ SMDSAbs_0DElement ] + nbEnts[ SMDSAbs_Ball ] + nbEnts[ SMDSAbs_Edge ] +
+    nbEnts[ SMDSAbs_Face ] + nbEnts[ SMDSAbs_Volume ];
 
   if ( MYDEBUG )
     MESSAGE( "Update - aNbCells = "<<aNbCells<<"; aCellsSize = "<<aCellsSize );
@@ -566,6 +569,7 @@ bool SMESH_VisualObjDef::IsValid() const
         //MESSAGE("SMESH_VisualObjDef::IsValid");
   return GetNbEntities(SMDSAbs_Node) > 0      || 
          GetNbEntities(SMDSAbs_0DElement) > 0 || 
+         GetNbEntities(SMDSAbs_Ball) > 0 || 
          GetNbEntities(SMDSAbs_Edge) > 0      || 
          GetNbEntities(SMDSAbs_Face) > 0      ||
          GetNbEntities(SMDSAbs_Volume) > 0 ;
@@ -585,6 +589,9 @@ void SMESH_VisualObjDef::updateEntitiesFlags() {
 
         if( myEntitiesCache[SMDSAbs_0DElement] != 0 ||  myEntitiesCache[SMDSAbs_0DElement] >= entities[SMDSAbs_0DElement] )
                 myEntitiesState &= ~SMESH_Actor::e0DElements;
+
+        if( myEntitiesCache[SMDSAbs_Ball] != 0 ||  myEntitiesCache[SMDSAbs_Ball] >= entities[SMDSAbs_Ball] )
+                myEntitiesState &= ~SMESH_Actor::eBallElem;
 
         if( myEntitiesCache[SMDSAbs_Edge] != 0 || myEntitiesCache[SMDSAbs_Edge] >= entities[SMDSAbs_Edge] )
                 myEntitiesState &= ~SMESH_Actor::eEdges; 
@@ -701,6 +708,7 @@ int SMESH_MeshObj::GetElemDimension( const int theObjId )
   switch ( aType )
   {
     case SMDSAbs_0DElement : return 0;
+    case SMDSAbs_Ball : return 0;
     case SMDSAbs_Edge  : return 1;
     case SMDSAbs_Face  : return 2;
     case SMDSAbs_Volume: return 3;
@@ -724,6 +732,10 @@ int SMESH_MeshObj::GetNbEntities( const SMDSAbs_ElementType theType) const
     case SMDSAbs_0DElement:
     {
       return myClient->Nb0DElements();
+    }
+    case SMDSAbs_Ball:
+    {
+      return myClient->NbBalls();
     }
     break;
     case SMDSAbs_Edge:
@@ -761,7 +773,13 @@ int SMESH_MeshObj::GetEntities( const SMDSAbs_ElementType theType, TEntityList& 
     break;
     case SMDSAbs_0DElement:
     {
-      SMDS_0DElementIteratorPtr anIter = myClient->elements0dIterator();
+      SMDS_ElemIteratorPtr anIter = myClient->elementsIterator(SMDSAbs_0DElement);
+      while ( anIter->more() ) theObjs.push_back( anIter->next() );
+    }
+    break;
+    case SMDSAbs_Ball:
+    {
+      SMDS_ElemIteratorPtr anIter = myClient->elementGeomIterator(SMDSGeom_BALL);
       while ( anIter->more() ) theObjs.push_back( anIter->next() );
     }
     break;
@@ -805,7 +823,7 @@ void SMESH_MeshObj::UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor
 //=================================================================================
 bool SMESH_MeshObj::IsNodePrs() const
 {
-  return myClient->Nb0DElements() == 0 && myClient->NbEdges() == 0 && myClient->NbFaces() == 0 && myClient->NbVolumes() == 0 ;
+  return myClient->Nb0DElements() + myClient->NbEdges() + myClient->NbFaces() + myClient->NbVolumes() + myClient->NbBalls() == 0 ;
 }
 
 
@@ -1031,6 +1049,7 @@ int SMESH_subMeshObj::GetNbEntities( const SMDSAbs_ElementType theType) const
       return mySubMeshServer->GetNumberOfNodes( /*all=*/true );
     }
     break;
+    case SMDSAbs_Ball:
     case SMDSAbs_0DElement:
     case SMDSAbs_Edge:
     case SMDSAbs_Face:

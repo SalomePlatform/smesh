@@ -76,6 +76,9 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
   virtual void Set0DColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b) = 0;
   virtual void Get0DColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b) = 0;
 
+  virtual void SetBallColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b) = 0;
+  virtual void GetBallColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b) = 0;
+
   virtual void SetHighlightColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b) = 0;
   virtual void GetHighlightColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b) = 0;
 
@@ -88,9 +91,12 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
   virtual void Set0DSize(vtkFloatingPointType size) = 0;
   virtual vtkFloatingPointType Get0DSize() = 0;
 
+  virtual void SetBallSize(vtkFloatingPointType size) = 0;
+  virtual vtkFloatingPointType GetBallSize() = 0;
+
   enum EReperesent { ePoint, eEdge, eSurface};
   
-  enum EEntityMode { e0DElements = 0x01, eEdges = 0x02, eFaces = 0x04, eVolumes = 0x08, eAllEntity = 0x0f};
+  enum EEntityMode { e0DElements = 0x01, eEdges = 0x02, eFaces = 0x04, eVolumes = 0x08, eBallElem = 0x10, eAllEntity = 0x1f};
 
   enum EQuadratic2DRepresentation { eLines = 0x01, eArcs = 0x02 };
 

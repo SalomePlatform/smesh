@@ -151,17 +151,21 @@ DriverMED_Family
                const bool doGroupOfNodes,
                const bool doGroupOfEdges,
                const bool doGroupOfFaces,
-               const bool doGroupOfVolumes)
+               const bool doGroupOfVolumes,
+               const bool doGroupOf0DElems,
+               const bool doGroupOfBalls)
 {
   DriverMED_FamilyPtrList aFamilies;
 
-  string anAllNodesGroupName = "Group_Of_All_Nodes";
-  string anAllEdgesGroupName = "Group_Of_All_Edges";
-  string anAllFacesGroupName = "Group_Of_All_Faces";
+  string anAllNodesGroupName   = "Group_Of_All_Nodes";
+  string anAllEdgesGroupName   = "Group_Of_All_Edges";
+  string anAllFacesGroupName   = "Group_Of_All_Faces";
   string anAllVolumesGroupName = "Group_Of_All_Volumes";
+  string anAll0DElemsGroupName = "Group_Of_All_0DElems";
+  string anAllBallsGroupName   = "Group_Of_All_Balls";
 
-  // Reserve four ids for families of free elements
-  // (1 - nodes, -1 - edges, -2 - faces, -3 - volumes).
+  // Reserve 6 ids for families of free elements
+  // (1 - nodes, -1 - edges, -2 - faces, -3 - volumes, -4 - 0D, -5 - balls).
   // 'Free' means here not belonging to any group.
   int aNodeFamId = FIRST_NODE_FAMILY;
   int aElemFamId = FIRST_ELEM_FAMILY;
@@ -263,6 +267,12 @@ DriverMED_Family
       else if (aFam->myType == SMDSAbs_Volume) {
         if (doGroupOfVolumes) aFam->myGroupNames.insert(anAllVolumesGroupName);
       }
+      else if (aFam->myType == SMDSAbs_0DElement) {
+        if (doGroupOfVolumes) aFam->myGroupNames.insert(anAll0DElemsGroupName);
+      }
+      else if (aFam->myType == SMDSAbs_Ball) {
+        if (doGroupOfVolumes) aFam->myGroupNames.insert(anAllBallsGroupName);
+      }
     }
   }
 
@@ -301,6 +311,24 @@ DriverMED_Family
     aFreeVolumesFam->myType = SMDSAbs_Volume;
     aFreeVolumesFam->myGroupNames.insert(anAllVolumesGroupName);
     aFamilies.push_back(aFreeVolumesFam);
+  }
+
+  if (doGroupOf0DElems)
+  {
+    DriverMED_FamilyPtr aFree0DFam (new DriverMED_Family);
+    aFree0DFam->SetId(REST_0DELEM_FAMILY);
+    aFree0DFam->myType = SMDSAbs_0DElement;
+    aFree0DFam->myGroupNames.insert(anAll0DElemsGroupName);
+    aFamilies.push_back(aFree0DFam);
+  }
+
+  if (doGroupOfBalls)
+  {
+    DriverMED_FamilyPtr aFreeBallsFam (new DriverMED_Family);
+    aFreeBallsFam->SetId(REST_BALL_FAMILY);
+    aFreeBallsFam->myType = SMDSAbs_Ball;
+    aFreeBallsFam->myGroupNames.insert(anAllBallsGroupName);
+    aFamilies.push_back(aFreeBallsFam);
   }
 
   DriverMED_FamilyPtr aNullFam (new DriverMED_Family);
@@ -399,9 +427,9 @@ void DriverMED_Family::Init (SMESHDS_GroupBase* theGroup)
   myGroupNames.insert(string(theGroup->GetStoreName()));
 
   Quantity_Color aColor = theGroup->GetColor();
-  double aRed = aColor.Red();
+  double aRed   = aColor.Red();
   double aGreen = aColor.Green();
-  double aBlue = aColor.Blue();
+  double aBlue  = aColor.Blue();
   int aR = int( aRed*255   );
   int aG = int( aGreen*255 );
   int aB = int( aBlue*255  );
@@ -428,6 +456,8 @@ DriverMED_Family
   DriverMED_FamilyPtr anEdgesFamily  (new DriverMED_Family);
   DriverMED_FamilyPtr aFacesFamily   (new DriverMED_Family);
   DriverMED_FamilyPtr aVolumesFamily (new DriverMED_Family);
+  // DriverMED_FamilyPtr a0DElemsFamily (new DriverMED_Family);
+  // DriverMED_FamilyPtr aBallsFamily   (new DriverMED_Family);
 
   char submeshGrpName[ 30 ];
   sprintf( submeshGrpName, "SubMesh %d", theId );
@@ -494,13 +524,14 @@ void DriverMED_Family::Split (DriverMED_FamilyPtr by,
                               DriverMED_FamilyPtr common)
 {
   // Elements
-  ElementsSet::iterator anIter = by->myElements.begin();
+  ElementsSet::iterator anIter = by->myElements.begin(), elemInMe;
   while ( anIter != by->myElements.end())
   {
-    if (myElements.find(*anIter) != myElements.end())
+    elemInMe = myElements.find(*anIter);
+    if (elemInMe != myElements.end())
     {
       common->myElements.insert(*anIter);
-      myElements.erase(*anIter);
+      myElements.erase(elemInMe);
       by->myElements.erase(anIter++);
     }
     else
@@ -511,11 +542,7 @@ void DriverMED_Family::Split (DriverMED_FamilyPtr by,
   {
     // Groups list
     common->myGroupNames = myGroupNames;
-    MED::TStringSet::iterator aGrNamesIter = by->myGroupNames.begin();
-    for (; aGrNamesIter != by->myGroupNames.end(); aGrNamesIter++)
-    {
-      common->myGroupNames.insert(*aGrNamesIter);
-    }
+    common->myGroupNames.insert( by->myGroupNames.begin(), by->myGroupNames.end() );
 
     // Type
     common->myType = myType;

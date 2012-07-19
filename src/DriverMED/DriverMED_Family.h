@@ -40,18 +40,21 @@
 #include <set>
 
 #define REST_NODES_FAMILY 1
-#define REST_EDGES_FAMILY -1
-#define REST_FACES_FAMILY -2
-#define REST_VOLUMES_FAMILY -3
 #define FIRST_NODE_FAMILY 2
-#define FIRST_ELEM_FAMILY -4
+
+#define REST_EDGES_FAMILY   -1
+#define REST_FACES_FAMILY   -2
+#define REST_VOLUMES_FAMILY -3
+#define REST_0DELEM_FAMILY  -4
+#define REST_BALL_FAMILY    -5
+#define FIRST_ELEM_FAMILY   -6
 
 class DriverMED_Family;
 typedef boost::shared_ptr<DriverMED_Family> DriverMED_FamilyPtr;
-typedef std::list<DriverMED_FamilyPtr> DriverMED_FamilyPtrList;
-typedef std::map<int,SMESHDS_SubMesh*> SMESHDS_SubMeshPtrMap;
-typedef std::list<SMESHDS_GroupBase*> SMESHDS_GroupBasePtrList;
-typedef std::set<const SMDS_MeshElement*> ElementsSet;
+typedef std::list<DriverMED_FamilyPtr     > DriverMED_FamilyPtrList;
+typedef std::map<int,SMESHDS_SubMesh*     > SMESHDS_SubMeshPtrMap;
+typedef std::list<SMESHDS_GroupBase*      > SMESHDS_GroupBasePtrList;
+typedef std::set<const SMDS_MeshElement*  > ElementsSet;
 
 class MESHDRIVERMED_EXPORT DriverMED_Family
 {
@@ -73,7 +76,9 @@ class MESHDRIVERMED_EXPORT DriverMED_Family
                 const bool doGroupOfNodes,
                 const bool doGroupOfEdges,
                 const bool doGroupOfFaces,
-                const bool doGroupOfVolumes);
+                const bool doGroupOfVolumes,
+                const bool doGroupOf0DElems,
+                const bool doGroupOfBalls);
 
   //! Create TFamilyInfo for this family
   MED::PFamilyInfo 

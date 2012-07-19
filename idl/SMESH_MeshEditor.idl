@@ -64,7 +64,7 @@ module SMESH
     long RemoveOrphanNodes();
 
     /*!
-     * \brief Add new node.
+     * \brief Add a new node.
      * \param x X coordinate of new node
      * \param y Y coordinate of new node
      * \param z Z coordinate of new node
@@ -73,14 +73,20 @@ module SMESH
     long AddNode(in double x, in double y, in double z);
 
     /*!
-     *  Create 0D element on the given node.
+     *  Create a 0D element on the given node.
      *  \param IdOfNode Node IDs for creation of element.
      */
     long Add0DElement(in long IDOfNode);
 
     /*!
-     *  Create edge, either linear and quadratic (this is determed
-     *  by number of given nodes).
+     *  Create a ball element on the given node.
+     *  \param IdOfNode Node IDs for creation of element.
+     */
+    long AddBall(in long IDOfNode, in double diameter);
+
+    /*!
+     *  Create an edge, either linear and quadratic (this is determed
+     *  by number of given nodes, two or three).
      *  \param IdsOfNodes List of node IDs for creation of element.
      *  Needed order of nodes in this list corresponds to description
      *  of MED. This description is located by the following link:

@@ -119,6 +119,9 @@ class SMESH_ActorDef : public SMESH_Actor
   virtual void Set0DColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
   virtual void Get0DColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
 
+  virtual void SetBallColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
+  virtual void GetBallColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
+
   virtual void SetHighlightColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
   virtual void GetHighlightColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
 
@@ -130,6 +133,9 @@ class SMESH_ActorDef : public SMESH_Actor
 
   virtual void Set0DSize(vtkFloatingPointType size);
   virtual vtkFloatingPointType Get0DSize();
+
+  virtual void SetBallSize(vtkFloatingPointType size);
+  virtual vtkFloatingPointType GetBallSize();
 
   virtual int GetNodeObjId(int theVtkID);
   virtual vtkFloatingPointType* GetNodeCoord(int theObjID);
@@ -259,6 +265,8 @@ class SMESH_ActorDef : public SMESH_Actor
 
   vtkProperty* my0DProp;
   SMESH_CellLabelActor* my0DActor;
+  vtkProperty* myBallProp;
+  SMESH_CellLabelActor* myBallActor;
   vtkProperty* my0DExtProp;
   SMESH_DeviceActor* my0DExtActor;
 

@@ -74,7 +74,8 @@ module SMESH
       ADD_ELEM0D,
       ADD_BIQUAD_QUADRANGLE,
       ADD_TRIQUAD_HEXA,
-      ADD_HEXAGONAL_PRISM
+      ADD_HEXAGONAL_PRISM,
+      ADD_BALL
     };
 
   struct log_block
@@ -119,7 +120,8 @@ module SMESH
     EDGE,
     FACE,
     VOLUME,
-    ELEM0D
+    ELEM0D,
+    BALL
   };
   typedef sequence<ElementType> array_of_ElementType ;
 
@@ -131,14 +133,15 @@ module SMESH
     Geom_POINT,
     Geom_EDGE,
     Geom_TRIANGLE,
-    Geom_QUADRANGLE,
-    Geom_POLYGON,
+    Geom_QUADRANGLE, // when a new GeometryType is added, please
+    Geom_POLYGON,    // update a corresponding list in SMESH_2smeshpy.cxx, ln 665
     Geom_TETRA,
     Geom_PYRAMID,
     Geom_HEXA,
     Geom_PENTA,
     Geom_HEXAGONAL_PRISM,
-    Geom_POLYHEDRA
+    Geom_POLYHEDRA,
+    Geom_BALL
   };
   
   /*!
@@ -180,6 +183,7 @@ module SMESH
     Entity_Hexagonal_Prism,
     Entity_Polyhedra,
     Entity_Quad_Polyhedra,
+    Entity_Ball,
     Entity_Last
   };
 
@@ -684,6 +688,9 @@ module SMESH
     long Nb0DElements()
       raises (SALOME::SALOME_Exception);
 
+    long NbBalls()
+      raises (SALOME::SALOME_Exception);
+
     long NbEdges()
       raises (SALOME::SALOME_Exception);
 
@@ -898,6 +905,11 @@ module SMESH
      * Returns true if given element is quadratic
      */
     boolean IsQuadratic(in long id);
+
+    /*!
+     * Returns diameter of a ball discrete element or zero in case of an invalid \a id
+     */
+    double GetBallDiameter(in long id);
 
     /*!
      * Returns XYZ coordinates of bary center for given element

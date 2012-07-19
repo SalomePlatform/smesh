@@ -7,6 +7,7 @@
 <ul>
 <li>\ref adding_nodes_anchor "Nodes"</li>
 <li>\ref adding_0delems_anchor "0D Elements"</li>
+<li>\ref adding_balls_anchor "Ball Elements"</li>
 <li>\ref adding_edges_anchor "Edges"</li>
 <li>\ref adding_triangles_anchor "Triangles"</li>
 <li>\ref adding_quadrangles_anchor "Quadrangles"</li>
@@ -75,6 +76,18 @@ selecting it in the 3D viewer and click the \b Apply or
 <b>Apply and Close</b> button. Your 0D element will be created:
 
 \image html add_0delement.png
+
+\anchor adding_balls_anchor
+<h2>Adding ball elements</h2>
+
+\image html addball.png
+
+In this dialog box specify the node which will form your ball element
+either by selecting it in the 3D viewer or by manual entering its ID,
+specify a ball diameter and click the \b Apply or <b>Apply and
+Close</b> button. Your ball element will be created:
+
+\image html add_ball.png
 
 <br>
 \anchor adding_edges_anchor

@@ -189,6 +189,70 @@ DriverMED_R_SMESHDS_Mesh
           for(; aGeom2SizeIter != aGeom2Size.end(); aGeom2SizeIter++){
             const EGeometrieElement& aGeom = aGeom2SizeIter->first;
 
+            if ( anEntity == eSTRUCT_ELEMENT ) // MED_BALL (issue 0021459)
+            {
+              PBallInfo aBallInfo = aMed->GetPBallInfo(aMeshInfo);
+              TInt      aNbBalls  = aBallInfo->GetNbElem();
+
+              EBooleen anIsElemNum = takeNumbers ? aBallInfo->IsElemNum() : eFAUX;
+              if ( anIsElemNum && aBallInfo->myElemNum->empty() )
+                anIsElemNum = eFAUX;
+
+              // get supporting nodes
+              TNodeIds aNodeIds;
+#ifdef _EDF_NODE_IDS_
+              if(anIsNodeNum) {
+                aNodeIds.resize( aNbBalls );
+                for(TInt iBall = 0; iBall < aNbBalls && anIsNodeNum; iBall++)
+                {
+                  aNodeIds[iBall] = aNodeInfo->GetElemNum(iBall);
+                  anIsNodeNum = myMesh->FindNode( aNodeIds[iBall] ) ? eVRAI : eFAUX;
+                }
+              }
+#endif
+              if ( !anIsNodeNum )
+                aNodeIds.swap( *(aBallInfo->myConn ));
+
+              // allocate array of diameters
+              vtkIdType maxID = myMesh->MaxElementID() + aNbBalls;
+              if ( anIsElemNum && !aBallInfo->myElemNum->empty() )
+                maxID = *std::max_element( aBallInfo->myElemNum->begin(),
+                                           aBallInfo->myElemNum->end() );
+              myMesh->getGrid()->AllocateDiameters( maxID ); // performance optimization
+
+              // create balls
+              SMDS_MeshElement* anElement;
+              DriverMED_FamilyPtr aFamily;
+              for ( TInt iBall = 0; iBall < aNbBalls; iBall++)
+              {
+                anElement = 0;
+                if ( anIsElemNum ) {
+                  if (!(anElement = myMesh->AddBallWithID( aNodeIds[iBall],
+                                                           aBallInfo->myDiameters[iBall],
+                                                           aBallInfo->GetElemNum(iBall))))
+                    anIsElemNum = eFAUX;
+                }
+                if ( !anElement )
+                  myMesh->AddBall( myMesh->FindNode( aNodeIds[iBall]),
+                                   aBallInfo->myDiameters[iBall] );
+
+                // Save reference to this element from its family
+                TInt aFamNum = aBallInfo->GetFamNum(iBall);
+                if ( checkFamilyID ( aFamily, aFamNum ))
+                {
+                  aFamily->AddElement(anElement);
+                  aFamily->SetType( SMDSAbs_Ball );
+                }
+              }
+
+              if ( !anIsElemNum &&
+                   ( takeNumbers && aBallInfo->IsElemNum() && !aBallInfo->myElemNum->empty() ))
+                if ( aResult < DRS_WARN_RENUMBER )
+                  aResult = DRS_WARN_RENUMBER;
+
+              continue;
+            } // MED_BALL
+
             switch(aGeom) {
 //          case ePOINT1: ## PAL16410
 //            break;
@@ -388,7 +452,7 @@ DriverMED_R_SMESHDS_Mesh
                   INFOS("Following exception was caught:\n\t"<<exc.what());
                   aResult = DRS_FAIL;
                 }catch(...){
-                  INFOS("Unknown exception was cought !!!");
+                  INFOS("Unknown exception was caught !!!");
                   aResult = DRS_FAIL;
                 }
 #endif          
