@@ -202,7 +202,8 @@ dist_salomeres_DATA = \
 	mesh_tree_hypo_viscous_layers.png \
 	mesh_min_dist.png \
 	reorient_faces_point.png \
-	reorient_faces_face.png
+	reorient_faces_face.png \
+	mesh_ball.png
 
 # VSR: little trick to avoid putting if SMESHCatalog.xml to the distribution archive
 nodist_salomeres_SCRIPTS = SMESHCatalog.xml SalomeApp.xml
