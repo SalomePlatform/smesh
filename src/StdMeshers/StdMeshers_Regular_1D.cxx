@@ -20,7 +20,6 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : StdMeshers_Regular_1D.cxx
 //           Moved here from SMESH_Regular_1D.cxx
 //  Author : Paul RASCLE, EDF
@@ -62,6 +61,7 @@
 #include <TopExp_Explorer.hxx>
 #include <TopoDS.hxx>
 #include <TopoDS_Edge.hxx>
+#include <TopoDS_Vertex.hxx>
 
 #include <string>
 #include <limits>
