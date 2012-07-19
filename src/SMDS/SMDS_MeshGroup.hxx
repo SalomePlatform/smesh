@@ -83,8 +83,8 @@ class SMDS_EXPORT SMDS_MeshGroup:public SMDS_MeshObject
 
         const SMDS_Mesh *                       myMesh;
         SMDSAbs_ElementType                     myType;
-        std::set<const SMDS_MeshElement *>      myElements;
-        SMDS_MeshGroup *                        myParent;
+        std::set<const SMDS_MeshElement*>       myElements; /* - not sorted by ID because it */
+        SMDS_MeshGroup *                        myParent;   /* can contain deleted elements */
         std::list<const SMDS_MeshGroup*>        myChildren;
         TIterator                               myIterator;
         TGroupIterator                          myGroupIterator;
