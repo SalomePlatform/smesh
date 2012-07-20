@@ -164,7 +164,11 @@ public: //** Methods to find and orient faces of 6 sides of the box **//
 
   int NbChildren() const { return myChildren.size(); }
 
-  typedef SMDS_SetIterator< const _QuadFaceGrid&, TChildren::const_iterator > TChildIterator;
+  typedef SMDS_SetIterator< const _QuadFaceGrid&,
+                            TChildren::const_iterator,
+                            SMDS::SimpleAccessor<const _QuadFaceGrid&,TChildren::const_iterator>,
+                            SMDS::PassAllValueFilter<_QuadFaceGrid> >
+    TChildIterator;
 
   TChildIterator GetChildren() const
   { return TChildIterator( myChildren.begin(), myChildren.end()); }
