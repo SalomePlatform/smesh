@@ -124,6 +124,10 @@
         <translation>Unknown error</translation>
     </message>
     <message>
+        <source>COMPERR_CANCELED</source>
+        <translation>Computation canceled</translation>
+    </message>
+    <message>
         <source>SMESH_GEOM</source>
         <translation>Geometry</translation>
     </message>
