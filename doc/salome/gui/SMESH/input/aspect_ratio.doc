@@ -9,16 +9,16 @@ its type (with all edges having the same length).
   
 
 - The <b>Aspect Ratio</b> of a \b triangle 2D element consisting of 3
-nodes is calculated by the formula:
+nodes is calculated using The Verdict Geometric Quality Library
+available within VTK. The calculation formula is:
 
 \image html formula4.png
 
 - The <b>Aspect Ratio</b> of a \b quadrangle 2D element consisting of 4
-nodes is calculated by the formula:
+nodes is calculated using The Verdict Geometric Quality Library
+available within VTK. The calculation formula is:
 
 \image html formula5.png
-
-\image html image138.gif
 
 <em>To apply the Aspect Ratio quality criterion to your mesh:</em>
 <ol>
