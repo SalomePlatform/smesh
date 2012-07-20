@@ -49,7 +49,8 @@ enum SMESH_ComputeErrorName
   COMPERR_MEMORY_PB      = -7,  //!< std::bad_alloc exception
   COMPERR_ALGO_FAILED    = -8,  //!< algo failed for some reason
   COMPERR_BAD_SHAPE      = -9,  //!< bad geometry
-  COMPERR_WARNING        = -10  //!< algo reports error but sub-mesh is computed anyway
+  COMPERR_WARNING        = -10, //!< algo reports error but sub-mesh is computed anyway
+  COMPERR_CANCELED       = -11  //!< compute canceled
 };
 
 // =============================================================
@@ -98,6 +99,7 @@ std::string SMESH_ComputeError::CommonName() const
   _case2char(COMPERR_ALGO_FAILED   );
   _case2char(COMPERR_BAD_SHAPE     );
   _case2char(COMPERR_WARNING       );
+  _case2char(COMPERR_CANCELED      );
   default:;
   }
   return "";
