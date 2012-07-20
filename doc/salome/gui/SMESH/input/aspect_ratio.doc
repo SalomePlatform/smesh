@@ -9,8 +9,7 @@ its type (with all edges having the same length).
   
 
 - The <b>Aspect Ratio</b> of a \b triangle 2D element consisting of 3
-nodes is calculated using The Verdict Geometric Quality Library
-available within VTK. The calculation formula is:
+nodes is calculated by the formula:
 
 \image html formula4.png
 
