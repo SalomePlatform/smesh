@@ -77,7 +77,6 @@ class SMESH_EXPORT SMESH_subMesh
   SMESH_Algo* GetAlgo() const;
 
   const std::map < int, SMESH_subMesh * >& DependsOn();
-  //const map < int, SMESH_subMesh * >&Dependants();
   /*!
    * \brief Return iterator on the submeshes this one depends on
    */
@@ -90,11 +89,11 @@ class SMESH_EXPORT SMESH_subMesh
   {
     NOT_READY, READY_TO_COMPUTE,
     COMPUTE_OK, FAILED_TO_COMPUTE
-    };
+  };
   enum algo_state
   {
     NO_ALGO, MISSING_HYP, HYP_OK
-    };
+  };
   enum algo_event
   {
     ADD_HYP          , ADD_ALGO,
@@ -102,16 +101,13 @@ class SMESH_EXPORT SMESH_subMesh
     ADD_FATHER_HYP   , ADD_FATHER_ALGO,
     REMOVE_FATHER_HYP, REMOVE_FATHER_ALGO,
     MODIF_HYP
-    };
+  };
   enum compute_event
   {
-    MODIF_ALGO_STATE, COMPUTE,
-#ifdef WITH_SMESH_CANCEL_COMPUTE
-    COMPUTE_CANCELED,
-#endif
+    MODIF_ALGO_STATE, COMPUTE, COMPUTE_CANCELED,
     CLEAN, SUBMESH_COMPUTED, SUBMESH_RESTORED, SUBMESH_LOADED,
     MESH_ENTITY_REMOVED, CHECK_COMPUTE_STATE
-    };
+  };
   enum event_type
   {
     ALGO_EVENT, COMPUTE_EVENT
