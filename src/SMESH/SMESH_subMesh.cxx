@@ -1609,14 +1609,12 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
       break;
     case COMPUTE:      // nothing to do
       break;
-#ifdef WITH_SMESH_CANCEL_COMPUTE
     case COMPUTE_CANCELED:
       {
         algo = GetAlgo();
         algo->CancelCompute();
       }
       break;
-#endif
     case CLEAN:
       cleanDependants(); // submeshes dependent on me should be cleaned as well
       removeSubMeshElementsAndNodes();
