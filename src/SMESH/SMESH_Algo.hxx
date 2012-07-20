@@ -134,9 +134,11 @@ public:
    */
   virtual bool Compute(SMESH_Mesh & aMesh, SMESH_MesherHelper* aHelper);
 
-#ifdef WITH_SMESH_CANCEL_COMPUTE
+  /*!
+   * \brief Sets _computeCanceled to true. It's usage depends on
+   *        implementation of a particular mesher.
+   */
   virtual void CancelCompute();
-#endif
 
   /*!
    * \brief evaluates size of prospective mesh on a shape
@@ -378,6 +380,8 @@ protected:
   int         _error;    //!< SMESH_ComputeErrorName or anything algo specific
   std::string _comment;  //!< any text explaining what is wrong in Compute()
   std::list<const SMDS_MeshElement*> _badInputElements; //!< to explain COMPERR_BAD_INPUT_MESH
+
+  volatile bool _computeCanceled; //!< is set to True while computing to stop it
 };
 
 #endif
