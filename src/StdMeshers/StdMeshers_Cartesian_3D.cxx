@@ -1610,7 +1610,7 @@ namespace
     intHexInd.resize( nbIntHex );
     tbb::parallel_for ( tbb::blocked_range<size_t>( 0, nbIntHex ),
                         ParallelHexahedron( intersectedHex, intHexInd ),
-                        tbb::simple_partitioner());
+                        tbb::simple_partitioner()); // ComputeElements() is called here
     for ( size_t i = 0; i < intHexInd.size(); ++i )
       if ( Hexahedron * hex = intersectedHex[ intHexInd[ i ]] )
         nbAdded += hex->addElements( helper );
@@ -1636,6 +1636,7 @@ namespace
    */
   int Hexahedron::addElements(SMESH_MesherHelper& helper)
   {
+    int nbAdded = 0;
     // add elements resulted from hexahedron intersection
     //for ( size_t i = 0; i < _volumeDefs.size(); ++i )
     {
@@ -1661,9 +1662,10 @@ namespace
           break;
         }
       }
+      nbAdded += int ( _volumeDefs._nodes.size() > 0 );
     }
 
-    return 1;//(int) _volumeDefs.size();
+    return nbAdded;
   }
   //================================================================================
   /*!
@@ -1915,6 +1917,9 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
   // - skip a cell, if it is too small according to the size threshold
   // - add a hexahedron in the mesh, if all nodes are inside
   // - add a polyhedron in the mesh, if some nodes are inside and some outside
+
+  _computeCanceled = false;
+
   try
   {
     Grid grid;
@@ -1960,6 +1965,7 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
 #endif
         }
     }
+    if ( _computeCanceled ) return false;
 
 #ifdef WITH_TBB
     { // copy partner faces and curves of not thread-safe types
@@ -1994,8 +2000,12 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
     helper.SetSubShape( solidExp.Current() );
     helper.SetElementsOnShape( true );
 
+    if ( _computeCanceled ) return false;
+
     // create nodes on the geometry
     grid.ComputeNodes(helper);
+
+    if ( _computeCanceled ) return false;
 
     // create volume elements
     Hexahedron hex( _hyp->GetSizeThreshold(), &grid );
