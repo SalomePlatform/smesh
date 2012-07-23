@@ -2512,7 +2512,8 @@ class Mesh:
         else:
             return self.editor.FindElementsByPoint(x, y, z, elementType)
 
-    # Return point state in a closed 2D mesh in terms of TopAbs_State enumeration.
+    # Return point state in a closed 2D mesh in terms of TopAbs_State enumeration:
+    # 0-IN, 1-OUT, 2-ON, 3-UNKNOWN
     # TopAbs_UNKNOWN state means that either mesh is wrong or the analysis fails.
 
     def GetPointState(self, x, y, z):
