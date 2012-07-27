@@ -1100,21 +1100,22 @@ void _QuadFaceGrid::setBrothers( set< _QuadFaceGrid* >& notLocatedBrothers )
     TopoDS_Vertex rightVertex = GetSide( Q_BOTTOM ).LastVertex();
     DUMP_VERT("1 right bottom Vertex: ",rightVertex );
     set< _QuadFaceGrid* >::iterator brIt, brEnd = notLocatedBrothers.end();
-    for ( brIt = notLocatedBrothers.begin(); !myRightBrother && brIt != brEnd; ++brIt )
+    for ( brIt = notLocatedBrothers.begin(); brIt != brEnd; ++brIt )
     {
       _QuadFaceGrid* brother = *brIt;
       TopoDS_Vertex brotherLeftVertex = brother->GetSide( Q_BOTTOM ).FirstVertex();
       DUMP_VERT( "brother left bottom: ", brotherLeftVertex );
       if ( rightVertex.IsSame( brotherLeftVertex )) {
         myRightBrother = brother;
-        notLocatedBrothers.erase( myRightBrother );
+        notLocatedBrothers.erase( brIt );
+        break;
       }
     }
     // find upper brother
     TopoDS_Vertex upVertex = GetSide( Q_LEFT ).FirstVertex();
     DUMP_VERT("1 left up Vertex: ",upVertex);
     brIt = notLocatedBrothers.begin(), brEnd = notLocatedBrothers.end();
-    for ( ; !myUpBrother && brIt != brEnd; ++brIt )
+    for ( ; brIt != brEnd; ++brIt )
     {
       _QuadFaceGrid* brother = *brIt;
       TopoDS_Vertex brotherLeftVertex = brother->GetSide( Q_BOTTOM ).FirstVertex();
@@ -1122,6 +1123,7 @@ void _QuadFaceGrid::setBrothers( set< _QuadFaceGrid* >& notLocatedBrothers )
       if ( upVertex.IsSame( brotherLeftVertex )) {
         myUpBrother = brother;
         notLocatedBrothers.erase( myUpBrother );
+        break;
       }
     }
     // recursive call
