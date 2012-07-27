@@ -2929,16 +2929,21 @@ SMDS_ElemIteratorPtr SMDS_Mesh::elementEntityIterator(SMDSAbs_EntityType type) c
 SMDS_ElemIteratorPtr SMDS_Mesh::elementsIterator(SMDSAbs_ElementType type) const
 {
   // naturally always sorted by ID
-  if ( type == SMDSAbs_All )
-  {
+  switch ( type ) {
+
+  case SMDSAbs_All:
     return SMDS_ElemIteratorPtr (new ElemVecIterator<const SMDS_MeshElement*>(myCells));
-  }
-  else
-  {
+
+  case SMDSAbs_Node:
+    return SMDS_ElemIteratorPtr
+      ( new ElemVecIterator<const SMDS_MeshElement*, SMDS_MeshNode*>( myNodes ));
+
+  default:
     typedef ElemVecIterator
       < const SMDS_MeshElement*, SMDS_MeshCell*, SMDS_MeshElement::TypeFilter > TIterator;
     return SMDS_ElemIteratorPtr (new TIterator(myCells, SMDS_MeshElement::TypeFilter( type )));
   }
+  return SMDS_ElemIteratorPtr();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
