@@ -2855,19 +2855,43 @@ namespace {
     }
   };
 
-  typedef SMDS::NonNullFilter<const SMDS_MeshNode*>                    NonNullNodeFilter;
-  typedef SMDS::NonNullFilter<const SMDS_MeshElement*>                 NonNullElemFilter;
-  typedef SMDS_Mesh::SetOfNodes::const_iterator                        SetOfNodesIter;
-  typedef SMDS_Mesh::SetOfCells::const_iterator                        SetOfCellsIter;
-  typedef SMDS::SimpleAccessor<const SMDS_MeshNode*,   SetOfNodesIter> NodeInSetOfNodes;
-  typedef SMDS::SimpleAccessor<const SMDS_MeshElement*,SetOfCellsIter> CellInSetOfCells;
+  //================================================================================
+  /*!
+   * \brief Iterator on vector of elements, possibly being resized while iteration
+   */
+  //================================================================================
 
-#define TypedElemIterator(elemType)                                     \
-  SMDS_SetIterator < const elemType*,                                   \
-                     SetOfCellsIter,                                    \
-                     SMDS::SimpleAccessor<const elemType*,SetOfCellsIter>, \
-                     SMDS_MeshElement::TypeFilter                       \
-                     >
+  template<typename RETURN_VALUE,
+           typename VECTOR_VALUE=SMDS_MeshCell*,
+           typename VALUE_FILTER=SMDS::NonNullFilter<VECTOR_VALUE> >
+  class ElemVecIterator: public SMDS_Iterator<RETURN_VALUE>
+  {
+    const std::vector<VECTOR_VALUE>& _vector;
+    size_t                           _index;
+    bool                             _more;
+    VALUE_FILTER                     _filter;
+  public:
+    ElemVecIterator(const std::vector<VECTOR_VALUE>& vec,
+                    const VALUE_FILTER&              filter=VALUE_FILTER() )
+      :_vector( vec ), _index(0), _more( !vec.empty() ), _filter( filter )
+    {
+      if ( _more && !_filter( _vector[ _index ]))
+        next();
+    }
+    virtual bool more()
+    {
+      return _more;
+    }
+    virtual RETURN_VALUE next()
+    {
+      if ( !_more ) return NULL;
+      VECTOR_VALUE current = _vector[ _index ];
+      _more = 0;
+      while ( !_more && ++_index < _vector.size() )
+        _more = _filter( _vector[ _index ]);
+      return (RETURN_VALUE) current;
+    }
+  };
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2876,30 +2900,27 @@ namespace {
 
 SMDS_NodeIteratorPtr SMDS_Mesh::nodesIterator(bool idInceasingOrder) const
 {
-  typedef SMDS_SetIterator
-    <const SMDS_MeshNode*, SetOfNodesIter, NodeInSetOfNodes, NonNullNodeFilter>  TIterator;
   // naturally always sorted by ID
-  return SMDS_NodeIteratorPtr( new TIterator(myNodes.begin(), myNodes.end()));
+  typedef ElemVecIterator<const SMDS_MeshNode*, SMDS_MeshNode*> TIterator;
+  return SMDS_NodeIteratorPtr( new TIterator(myNodes));
 }
 
 SMDS_ElemIteratorPtr SMDS_Mesh::elementGeomIterator(SMDSAbs_GeometryType type) const
 {
-  typedef SMDS_SetIterator
-    < const SMDS_MeshElement*, SetOfCellsIter, CellInSetOfCells, SMDS_MeshElement::GeomFilter >
-    TIterator;
   // naturally always sorted by ID
+  typedef ElemVecIterator
+    < const SMDS_MeshElement*, SMDS_MeshCell*, SMDS_MeshElement::GeomFilter > TIterator;
   return SMDS_ElemIteratorPtr
-    (new TIterator(myCells.begin(), myCells.end(), SMDS_MeshElement::GeomFilter( type )));
+    (new TIterator(myCells, SMDS_MeshElement::GeomFilter( type )));
 }
 
 SMDS_ElemIteratorPtr SMDS_Mesh::elementEntityIterator(SMDSAbs_EntityType type) const
 {
-  typedef SMDS_SetIterator
-    < const SMDS_MeshElement*, SetOfCellsIter, CellInSetOfCells, SMDS_MeshElement::EntityFilter >
-    TIterator;
   // naturally always sorted by ID
+  typedef ElemVecIterator
+    < const SMDS_MeshElement*, SMDS_MeshCell*, SMDS_MeshElement::EntityFilter > TIterator;
   return SMDS_ElemIteratorPtr
-    (new TIterator(myCells.begin(), myCells.end(), SMDS_MeshElement::EntityFilter( type )));
+    (new TIterator(myCells, SMDS_MeshElement::EntityFilter( type )));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2910,19 +2931,13 @@ SMDS_ElemIteratorPtr SMDS_Mesh::elementsIterator(SMDSAbs_ElementType type) const
   // naturally always sorted by ID
   if ( type == SMDSAbs_All )
   {
-    typedef SMDS_SetIterator
-      < const SMDS_MeshElement*, SetOfCellsIter, CellInSetOfCells, NonNullElemFilter >
-      TIterator;
-    return SMDS_ElemIteratorPtr (new TIterator(myCells.begin(), myCells.end()));
+    return SMDS_ElemIteratorPtr (new ElemVecIterator<const SMDS_MeshElement*>(myCells));
   }
   else
   {
-  typedef SMDS_SetIterator
-    < const SMDS_MeshElement*, SetOfCellsIter, CellInSetOfCells, SMDS_MeshElement::TypeFilter >
-    TIterator;
-  // naturally always sorted by ID
-  return SMDS_ElemIteratorPtr
-    (new TIterator(myCells.begin(), myCells.end(), SMDS_MeshElement::TypeFilter( type )));
+    typedef ElemVecIterator
+      < const SMDS_MeshElement*, SMDS_MeshCell*, SMDS_MeshElement::TypeFilter > TIterator;
+    return SMDS_ElemIteratorPtr (new TIterator(myCells, SMDS_MeshElement::TypeFilter( type )));
   }
 }
 
@@ -2933,9 +2948,10 @@ SMDS_ElemIteratorPtr SMDS_Mesh::elementsIterator(SMDSAbs_ElementType type) const
 SMDS_EdgeIteratorPtr SMDS_Mesh::edgesIterator(bool idInceasingOrder) const
 {
   // naturally always sorted by ID
-  typedef TypedElemIterator( SMDS_MeshEdge ) TIterator;
+  typedef ElemVecIterator
+    < const SMDS_MeshEdge*, SMDS_MeshCell*, SMDS_MeshElement::TypeFilter > TIterator;
   return SMDS_EdgeIteratorPtr
-    (new TIterator(myCells.begin(), myCells.end(), SMDS_MeshElement::TypeFilter( SMDSAbs_Edge )));
+    (new TIterator(myCells, SMDS_MeshElement::TypeFilter( SMDSAbs_Edge )));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2945,9 +2961,10 @@ SMDS_EdgeIteratorPtr SMDS_Mesh::edgesIterator(bool idInceasingOrder) const
 SMDS_FaceIteratorPtr SMDS_Mesh::facesIterator(bool idInceasingOrder) const
 {
   // naturally always sorted by ID
-  typedef TypedElemIterator( SMDS_MeshFace ) TIterator;
+  typedef ElemVecIterator
+    < const SMDS_MeshFace*, SMDS_MeshCell*, SMDS_MeshElement::TypeFilter > TIterator;
   return SMDS_FaceIteratorPtr
-    (new TIterator(myCells.begin(), myCells.end(), SMDS_MeshElement::TypeFilter( SMDSAbs_Face )));
+    (new TIterator(myCells, SMDS_MeshElement::TypeFilter( SMDSAbs_Face )));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2957,9 +2974,10 @@ SMDS_FaceIteratorPtr SMDS_Mesh::facesIterator(bool idInceasingOrder) const
 SMDS_VolumeIteratorPtr SMDS_Mesh::volumesIterator(bool idInceasingOrder) const
 {
   // naturally always sorted by ID
-  typedef TypedElemIterator( SMDS_MeshVolume ) TIterator;
+  typedef ElemVecIterator
+    < const SMDS_MeshVolume*, SMDS_MeshCell*, SMDS_MeshElement::TypeFilter > TIterator;
   return SMDS_VolumeIteratorPtr
-    (new TIterator(myCells.begin(), myCells.end(), SMDS_MeshElement::TypeFilter( SMDSAbs_Volume )));
+    (new TIterator(myCells, SMDS_MeshElement::TypeFilter( SMDSAbs_Volume )));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
