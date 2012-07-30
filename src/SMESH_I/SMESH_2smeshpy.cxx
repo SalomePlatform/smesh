@@ -1930,7 +1930,7 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       "GetLastCreatedElems",
       "MirrorMakeMesh","MirrorObjectMakeMesh","TranslateMakeMesh",
       "TranslateObjectMakeMesh","RotateMakeMesh","RotateObjectMakeMesh","MakeBoundaryMesh",
-      "MakeBoundaryElements"
+      "MakeBoundaryElements", "SplitVolumesIntoTetra"
       ,"" }; // <- mark of the end
     sameMethods.Insert( names );
   }
