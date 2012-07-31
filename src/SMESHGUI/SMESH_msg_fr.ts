@@ -44,6 +44,10 @@
         <translation>Tous les fichiers</translation>
     </message>
     <message>
+        <source>SMESH_AND</source>
+        <translation>et</translation>
+    </message>
+    <message>
         <source>AREA_ELEMENTS</source>
         <translation>Aire</translation>
     </message>
@@ -54,6 +58,18 @@
     <message>
         <source>ASPECTRATIO_ELEMENTS</source>
         <translation>Rapport de forme</translation>
+    </message>
+    <message>
+        <source>NODE_POSITION</source>
+        <translation>Position</translation>
+    </message>
+    <message>
+        <source>U_POSITION</source>
+        <translation>U</translation>
+    </message>
+    <message>
+        <source>V_POSITION</source>
+        <translation>V</translation>
     </message>
     <message>
         <source>COL_ALGO_HEADER</source>
@@ -106,6 +122,10 @@
     <message>
         <source>COMPERR_UNKNOWN</source>
         <translation>Erreur inconnue</translation>
+    </message>
+    <message>
+        <source>COMPERR_CANCELED</source>
+        <translation>Calcul annulé</translation>
     </message>
     <message>
         <source>SMESH_GEOM</source>
@@ -330,6 +350,14 @@
     <message>
         <source>MEN_ELEMS0D</source>
         <translation>Eléments 0D </translation>
+    </message>
+    <message>
+        <source>MEN_BALL</source>
+        <translation>Particulaire</translation>
+    </message>
+    <message>
+        <source>MEN_BALLS</source>
+        <translation>Particulaires</translation>
     </message>
     <message>
         <source>MEN_EDGE</source>
@@ -1048,6 +1076,14 @@ Merci de les corriger, puis essayez de nouveau</translation>
         <translation>Ajouter un élément 0D</translation>
     </message>
     <message>
+        <source>SMESH_ADD_BALL</source>
+        <translation>Ajouter un élément particulaire</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_BALL_TITLE</source>
+        <translation>Ajouter un élément particulaire</translation>
+    </message>
+    <message>
         <source>SMESH_ADD_EDGE</source>
         <translation>Ajouter une arête</translation>
     </message>
@@ -1424,8 +1460,28 @@ ce qui peut faire planter l&apos;application. Voulez-vous continuer la visualisa
         <translation>Elément 0D</translation>
     </message>
     <message>
+        <source>SMESH_ELEMS0D</source>
+        <translation>Eléments 0D</translation>
+    </message>
+    <message>
+        <source>SMESH_BALL_ELEM</source>
+        <translation>Particulaire</translation>
+    </message>
+    <message>
+        <source>SMESH_BALL</source>
+        <translation>Particulaire</translation>
+    </message>
+    <message>
+        <source>SMESH_BALLS</source>
+        <translation>Particulaires</translation>
+    </message>
+    <message>
         <source>SMESH_EDGE</source>
         <translation>Arête</translation>
+    </message>
+    <message>
+        <source>SMESH_EDGES</source>
+        <translation>Arêtes</translation>
     </message>
     <message>
         <source>SMESH_EDGES_CONNECTIVITY_TITLE</source>
@@ -1524,6 +1580,12 @@ Réécrire le fichier ?</translation>
 du maillage &quot;%1&quot; dans le fichier UNV</translation>
     </message>
     <message>
+        <source>EXPORT_NOT_SUPPORTED</source>
+        <translation>A l&apos;export du maillage avec le nom &quot;%1&quot; vers %2
+%3 sera ignoré.
+Voulez-vous continuer ?</translation>
+    </message>
+    <message>
         <source>SMESH_EXTRUSION</source>
         <translation>Extrusion</translation>
     </message>
@@ -1616,6 +1678,10 @@ les données exportées ?</translation>
     <message>
         <source>SMESH_HEXAS</source>
         <translation>Hexaèdre</translation>
+    </message>
+    <message>
+        <source>SMESH_HEXAHEDRA</source>
+        <translation>Hexaèdres</translation>
     </message>
     <message>
         <source>SMESH_HILIGHT_COLOR</source>
@@ -1827,6 +1893,10 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <translation>Eléments 0D</translation>
     </message>
     <message>
+        <source>SMESH_MESHINFO_BALLS</source>
+        <translation>Particulaires</translation>
+    </message>
+    <message>
         <source>SMESH_MESHINFO_ALL_TYPES</source>
         <translation>Hétérogène</translation>
     </message>
@@ -1869,6 +1939,10 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     <message>
         <source>SMESH_MESHINFO_ORDER2</source>
         <translation>Quadratique</translation>
+    </message>
+    <message>
+        <source>SMESH_MESHINFO_HEXAPRISM</source>
+        <translation>Prismes hexagonaux</translation>
     </message>
     <message>
         <source>SMESH_MESHINFO_POLYEDRES</source>
@@ -1992,7 +2066,11 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>SMESH_OCTA</source>
-        <translation>Prisme hexagonal</translation>
+        <translation>Prisme Octogonal</translation>
+    </message>
+    <message>
+        <source>SMESH_OCTAHEDRA</source>
+        <translation>Prismes octogonaux</translation>
     </message>
     <message>
         <source>TOP_OCTA</source>
@@ -2025,6 +2103,10 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     <message>
         <source>SMESH_PENTA</source>
         <translation>Pentaèdre</translation>
+    </message>
+    <message>
+        <source>SMESH_PENTAHEDRA</source>
+        <translation>Pentaèdres</translation>
     </message>
     <message>
         <source>TOP_PENTA</source>
@@ -2067,8 +2149,32 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <translation>Polyèdre</translation>
     </message>
     <message>
+        <source>SMESH_POLYEDRONS</source>
+        <translation>Polyèdres</translation>
+    </message>
+    <message>
+        <source>SMESH_QUADRATIC_POLYEDRON</source>
+        <translation>Polyèdre quadratique</translation>
+    </message>
+    <message>
+        <source>SMESH_QUADRATIC_POLYEDRONS</source>
+        <translation>Polyèdres quadratiques</translation>
+    </message>
+    <message>
         <source>SMESH_POLYGON</source>
         <translation>Polygone</translation>
+    </message>
+    <message>
+        <source>SMESH_POLYGONS</source>
+        <translation>Polygones</translation>
+    </message>
+    <message>
+        <source>SMESH_QUADRATIC_POLYGON</source>
+        <translation>Polygone quadratique</translation>
+    </message>
+    <message>
+        <source>SMESH_QUADRATIC_POLYGONS</source>
+        <translation>Polygones quadratiques</translation>
     </message>
     <message>
         <source>SMESH_POSITION_SIZE_SCALARBAR</source>
@@ -2111,6 +2217,10 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <translation>Pyramide</translation>
     </message>
     <message>
+        <source>SMESH_PYRAMIDS</source>
+        <translation>Pyramides</translation>
+    </message>
+    <message>
         <source>MEN_PYRAMID</source>
         <translation>Pyramide</translation>
     </message>
@@ -2127,16 +2237,32 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <translation>Quadrangle</translation>
     </message>
     <message>
+        <source>SMESH_QUADRANGLES</source>
+        <translation>Quadrangles</translation>
+    </message>
+    <message>
         <source>SMESH_QUADRATIC_EDGE</source>
         <translation>Arête quadratique</translation>
+    </message>
+    <message>
+        <source>SMESH_QUADRATIC_EDGES</source>
+        <translation>Arêtes quadratiques</translation>
     </message>
     <message>
         <source>SMESH_QUADRATIC_HEXAHEDRON</source>
         <translation>Hexaèdre quadratique</translation>
     </message>
     <message>
+        <source>SMESH_QUADRATIC_HEXAHEDRONS</source>
+        <translation>Hexaèdres quadratiques</translation>
+    </message>
+    <message>
         <source>SMESH_TRIQUADRATIC_HEXAHEDRON</source>
         <translation>Hexaèdre triquadratique</translation>
+    </message>
+    <message>
+        <source>SMESH_TRIQUADRATIC_HEXAHEDRONS</source>
+        <translation>Hexaèdres triquadratiques</translation>
     </message>
     <message>
         <source>TOP_TRIQUADRATIC_HEXAHEDRON</source>
@@ -2155,16 +2281,32 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <translation>Pentaèdre quadratique</translation>
     </message>
     <message>
+        <source>SMESH_QUADRATIC_PENTAHEDRONS</source>
+        <translation>Pentaèdres quadratiques</translation>
+    </message>
+    <message>
         <source>SMESH_QUADRATIC_PYRAMID</source>
         <translation>Pyramide quadratique</translation>
+    </message>
+    <message>
+        <source>SMESH_QUADRATIC_PYRAMIDS</source>
+        <translation>Pyramides quadratiques</translation>
     </message>
     <message>
         <source>SMESH_QUADRATIC_QUADRANGLE</source>
         <translation>Quadrangle quadratique</translation>
     </message>
     <message>
+        <source>SMESH_QUADRATIC_QUADRANGLES</source>
+        <translation>Quadrangles quadratiques</translation>
+    </message>
+    <message>
         <source>SMESH_BIQUADRATIC_QUADRANGLE</source>
         <translation>Quadrangle biquadratique</translation>
+    </message>
+    <message>
+        <source>SMESH_BIQUADRATIC_QUADRANGLES</source>
+        <translation>Quadrangles biquadratiques</translation>
     </message>
     <message>
         <source>MEN_BIQUADRATIC_QUADRANGLE</source>
@@ -2183,8 +2325,16 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <translation>Tétraèdre quadratique</translation>
     </message>
     <message>
+        <source>SMESH_QUADRATIC_TETRAHEDRONS</source>
+        <translation>Tétraèdres quadratiques</translation>
+    </message>
+    <message>
         <source>SMESH_QUADRATIC_TRIANGLE</source>
         <translation>Triangle quadratique</translation>
+    </message>
+    <message>
+        <source>SMESH_QUADRATIC_TRIANGLES</source>
+        <translation>Triangles quadratiques</translation>
     </message>
     <message>
         <source>SMESH_RANGE_MAX</source>
@@ -2300,6 +2450,10 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <translation>Tétraèdre</translation>
     </message>
     <message>
+        <source>SMESH_TETRAHEDRA</source>
+        <translation>Tétraèdres</translation>
+    </message>
+    <message>
         <source>SMESH_TITLE</source>
         <translation>Titre :</translation>
     </message>
@@ -2354,6 +2508,10 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     <message>
         <source>SMESH_TRIANGLE</source>
         <translation>Triangle</translation>
+    </message>
+    <message>
+        <source>SMESH_TRIANGLES</source>
+        <translation>Triangles</translation>
     </message>
     <message>
         <source>SMESH_UPDATEVIEW</source>
@@ -2654,6 +2812,14 @@ Vérifiez la limite dans les préférences du module Mesh.
     <message>
         <source>STB_ELEMS0D</source>
         <translation>Eléments 0D</translation>
+    </message>
+    <message>
+        <source>STB_BALLS</source>
+        <translation>Eléments particulaires</translation>
+    </message>
+    <message>
+        <source>STB_BALL</source>
+        <translation>Elément particulaire</translation>
     </message>
     <message>
         <source>STB_EDGE</source>
@@ -3248,6 +3414,14 @@ Vérifiez la limite dans les préférences du module Mesh.
         <translation>Eléments 0D</translation>
     </message>
     <message>
+        <source>TOP_BALL</source>
+        <translation>Particulaire</translation>
+    </message>
+    <message>
+        <source>TOP_BALLS</source>
+        <translation>Particulaires</translation>
+    </message>
+    <message>
         <source>TOP_EDGE</source>
         <translation>Arête</translation>
     </message>
@@ -3786,6 +3960,14 @@ avec le paramètre &apos;%1&apos; des préférences du module Mesh.</translation
         <translation>Chargement du maillage %0 terminé</translation>
     </message>
     <message>
+        <source>BALL_DIAMETER</source>
+        <translation>Diamètre</translation>
+    </message>
+    <message>
+        <source>BALL_ELEMENT</source>
+        <translation>Particulaire</translation>
+    </message>
+    <message>
         <source>DEP_OBJECT</source>
         <translation>L&apos;objet sélectionné a été utilisé pour en créer un autre.
 Il ne peut pas être supprimé.</translation>
@@ -4076,6 +4258,14 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     <message>
         <source>PREF_SIZE_0D</source>
         <translation>Taille des éléments 0D</translation>
+    </message>
+    <message>
+        <source>PREF_BALL_COLOR</source>
+        <translation>Particulaires</translation>
+    </message>
+    <message>
+        <source>PREF_BALL_SIZE</source>
+        <translation>Taille des éléments particulaires</translation>
     </message>
     <message>
         <source>PREF_WIDTH</source>
@@ -4854,6 +5044,10 @@ Vérifiez la validité des informations données</translation>
         <translation>Critère</translation>
     </message>
     <message>
+        <source>BALLS</source>
+        <translation>Particulaires</translation>
+    </message>
+    <message>
         <source>EDGES</source>
         <translation>Arêtes</translation>
     </message>
@@ -5055,6 +5249,10 @@ Entrez une valeur correcte et essayez de nouveau</translation>
     <message>
         <source>GEOM_TYPE_10</source>
         <translation>Polyèdre</translation>
+    </message>
+    <message>
+        <source>GEOM_TYPE_11</source>
+        <translation>Particulaire</translation>
     </message>
 </context>
 <context>
@@ -6091,6 +6289,10 @@ en raison de leurs types incompatibles:
         <translation>0D:</translation>
     </message>
     <message>
+        <source>BALL_LAB</source>
+        <translation>Particulaires:</translation>
+    </message>
+    <message>
         <source>1D_LAB</source>
         <translation>1D (arêtes):</translation>
     </message>
@@ -6171,6 +6373,10 @@ en raison de leurs types incompatibles:
         <translation>Groupe d&apos;éléments 0D</translation>
     </message>
     <message>
+        <source>OBJECT_GROUP_BALLS</source>
+        <translation>Groupe d&apos;éléments particulaires</translation>
+    </message>
+    <message>
         <source>BUT_LOAD_MESH</source>
         <translation>Charger un maillage depuis un serveur</translation>
     </message>
@@ -6231,6 +6437,14 @@ en raison de leurs types incompatibles:
     <message>
         <source>0D_ELEMENTS</source>
         <translation>ELÉMENTS 0D</translation>
+    </message>
+    <message>
+        <source>BALL_ELEMENT</source>
+        <translation>ELEMENT PARTICULAIRE</translation>
+    </message>
+    <message>
+        <source>BALL_ELEMENTS</source>
+        <translation>ELEMENTS PARTICULAIRES</translation>
     </message>
     <message>
         <source>EDGE</source>
@@ -6352,6 +6566,10 @@ en raison de leurs types incompatibles:
         <translation>Eléments 0D</translation>
     </message>
     <message>
+        <source>GROUPS_6</source>
+        <translation>Eléments particulaires</translation>
+    </message>
+    <message>
         <source>PARENT_MESH</source>
         <translation>Maillage parent</translation>
     </message>
@@ -6394,6 +6612,10 @@ en raison de leurs types incompatibles:
     <message>
         <source>0DELEM</source>
         <translation>Elément 0D</translation>
+    </message>
+    <message>
+        <source>BALL_ELEMENT</source>
+        <translation>Elément particulaire</translation>
     </message>
     <message>
         <source>UNKNOWN</source>
@@ -6627,6 +6849,14 @@ en raison de leurs types incompatibles:
     <message>
         <source>0D_ELEMENTS_SIZE_LBL</source>
         <translation>Taille des éléments 0D</translation>
+    </message>
+    <message>
+        <source>BALL_ELEMENTS_COLOR_LBL</source>
+        <translation>Eléments particulaires</translation>
+    </message>
+    <message>
+        <source>BALL_ELEMENTS_SIZE_LBL</source>
+        <translation>Taille des éléments particulaires</translation>
     </message>
     <message>
         <source>LINE_WIDTH_LBL</source>

@@ -2053,11 +2053,11 @@ Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>SMESH_OCTA</source>
-        <translation>Hexagonal prism</translation>
+        <translation>Octogonal prism</translation>
     </message>
     <message>
         <source>SMESH_OCTAHEDRA</source>
-        <translation>Hexagonal prisms</translation>
+        <translation>Octogonal prisms</translation>
     </message>
     <message>
         <source>TOP_OCTA</source>
