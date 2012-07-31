@@ -1880,6 +1880,10 @@ Check algorithm documentation for supported geometry</translation>
         <translation>0D Elements</translation>
     </message>
     <message>
+        <source>SMESH_MESHINFO_BALLS</source>
+        <translation>Balls</translation>
+    </message>
+    <message>
         <source>SMESH_MESHINFO_ALL_TYPES</source>
         <translation>Heterogenous</translation>
     </message>
@@ -1922,6 +1926,10 @@ Check algorithm documentation for supported geometry</translation>
     <message>
         <source>SMESH_MESHINFO_ORDER2</source>
         <translation>Quadratic</translation>
+    </message>
+    <message>
+        <source>SMESH_MESHINFO_HEXAPRISM</source>
+        <translation>Hexagonal prisms</translation>
     </message>
     <message>
         <source>SMESH_MESHINFO_POLYEDRES</source>

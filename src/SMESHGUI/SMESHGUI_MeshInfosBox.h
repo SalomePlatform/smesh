@@ -52,6 +52,7 @@ private:
   bool    myFull;
   QLabel* myNbNode;
   QLabel* my0DElem;
+  QLabel* myBall;
   QLabel* myNbEdge;
   QLabel* myNbLinEdge;
   QLabel* myNbQuadEdge;
@@ -80,6 +81,7 @@ private:
   QLabel* myNbVolum;
   QLabel* myNbLinVolum;
   QLabel* myNbQuadVolum;
+  QLabel* myNbHexaPrism;
   QLabel* myNbPolyh;
 };
 
