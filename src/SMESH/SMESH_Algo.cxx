@@ -501,13 +501,19 @@ GeomAbs_Shape SMESH_Algo::Continuity(TopoDS_Edge E1,
 {
   //E1.Orientation(TopAbs_FORWARD), E2.Orientation(TopAbs_FORWARD); // avoid pb with internal edges
   if (E1.Orientation() > TopAbs_REVERSED) // INTERNAL
-      E1.Orientation( TopAbs_FORWARD );
+    E1.Orientation( TopAbs_FORWARD );
   if (E2.Orientation() > TopAbs_REVERSED) // INTERNAL
-      E2.Orientation( TopAbs_FORWARD );
-  TopoDS_Vertex V = TopExp::LastVertex (E1, true);
-  if ( !V.IsSame( TopExp::FirstVertex(E2, true )))
-    if ( !TopExp::CommonVertex( E1, E2, V ))
-      return GeomAbs_C0;
+    E2.Orientation( TopAbs_FORWARD );
+
+  TopoDS_Vertex V, VV1[2], VV2[2];
+  TopExp::Vertices( E1, VV1[0], VV1[1], true );
+  TopExp::Vertices( E2, VV2[0], VV2[1], true );
+  if      ( VV1[1].IsSame( VV2[0] ))  { V = VV1[1]; }
+  else if ( VV1[0].IsSame( VV2[1] ))  { V = VV1[0]; }
+  else if ( VV1[1].IsSame( VV2[1] ))  { V = VV1[1]; E1.Reverse(); }
+  else if ( VV1[0].IsSame( VV2[0] ))  { V = VV1[0]; E1.Reverse(); }
+  else { return GeomAbs_C0; }
+
   Standard_Real u1 = BRep_Tool::Parameter( V, E1 );
   Standard_Real u2 = BRep_Tool::Parameter( V, E2 );
   BRepAdaptor_Curve C1( E1 ), C2( E2 );
