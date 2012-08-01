@@ -437,7 +437,7 @@ void SMESHGUI_MeshInfosBox::SetMeshInfo(const SMESH::long_array& theInfo)
     myNbQuadTrai ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Triangle] ));
     // quadrangles
     myNbQuad     ->setText( QString("%1").arg( theInfo[SMDSEntity_Quadrangle] +
-                                               theInfo[SMDSEntity_Quad_Quadrangle],
+                                               theInfo[SMDSEntity_Quad_Quadrangle] +
                                                theInfo[SMDSEntity_BiQuad_Quadrangle] ));
     myNbLinQuad  ->setText( QString("%1").arg( theInfo[SMDSEntity_Quadrangle] ));
     myNbQuadQuad ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Quadrangle] +
