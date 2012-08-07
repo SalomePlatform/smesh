@@ -3460,6 +3460,7 @@ bool _ViscousBuilder::shrink()
   }
 
   SMESH_MesherHelper helper( *_mesh );
+  helper.ToFixNodeParameters( true );
 
   // EDGE's to shrink
   map< int, _Shrinker1D > e2shrMap;

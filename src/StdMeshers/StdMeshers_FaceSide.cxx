@@ -263,7 +263,9 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
         u2nodeVec.reserve( sm->NbNodes() );
         SMDS_NodeIteratorPtr nItr = sm->GetNodes();
         double paramSize = myLast[i] - myFirst[i];
-        double r = myNormPar[i] - prevNormPar;
+        double r         = myNormPar[i] - prevNormPar;
+        helper.SetSubShape( myEdge[i] );
+        helper.ToFixNodeParameters( true );
         if ( !myIsUniform[i] )
           while ( nItr->more() )
           {
@@ -455,7 +457,9 @@ std::vector<const SMDS_MeshNode*> StdMeshers_FaceSide::GetOrderedNodes() const
       {
         SMDS_NodeIteratorPtr nItr = sm->GetNodes();
         double paramSize = myLast[i] - myFirst[i];
-        double r = myNormPar[i] - prevNormPar;
+        double r         = myNormPar[i] - prevNormPar;
+        helper.SetSubShape( myEdge[i] );
+        helper.ToFixNodeParameters( true );
         while ( nItr->more() )
         {
           const SMDS_MeshNode* node = nItr->next();

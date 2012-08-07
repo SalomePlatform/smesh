@@ -404,6 +404,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
 
     // assure correctness of node positions on baseE:
     // helper.GetNodeU() will fix positions if they are wrong
+    helper.ToFixNodeParameters( true );
     for ( int iE = 0; iE < baseQuadSide->NbEdges(); ++iE )
     {
       const TopoDS_Edge& baseE = baseQuadSide->Edge( iE );
