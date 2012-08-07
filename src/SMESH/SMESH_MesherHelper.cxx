@@ -78,7 +78,8 @@ namespace {
 //================================================================================
 
 SMESH_MesherHelper::SMESH_MesherHelper(SMESH_Mesh& theMesh)
-  : myParIndex(0), myMesh(&theMesh), myShapeID(0), myCreateQuadratic(false)
+  : myParIndex(0), myMesh(&theMesh), myShapeID(0), myCreateQuadratic(false),
+    myFixNodeParameters(false)
 {
   myPar1[0] = myPar2[0] = myPar1[1] = myPar2[1] = 0;
   mySetElemOnShape = ( ! myMesh->HasShapeToMesh() );
@@ -441,6 +442,20 @@ void SMESH_MesherHelper::setPosOnShapeValidity(int shapeID, bool ok ) const
 }
 
 //=======================================================================
+//function : ToFixNodeParameters
+//purpose  : Enables fixing node parameters on EDGEs and FACEs in 
+//           GetNodeU(...,check=true), GetNodeUV(...,check=true), CheckNodeUV() and
+//           CheckNodeU() in case if a node lies on a shape set via SetSubShape().
+//           Default is False
+//=======================================================================
+
+void SMESH_MesherHelper::ToFixNodeParameters(bool toFix)
+{
+  myFixNodeParameters = toFix;
+}
+
+
+//=======================================================================
 //function : GetUVOnSeam
 //purpose  : Select UV on either of 2 pcurves of a seam edge, closest to the given UV
 //=======================================================================
@@ -650,7 +665,7 @@ bool SMESH_MesherHelper::CheckNodeUV(const TopoDS_Face&   F,
         return false;
       }
       // store the fixed UV on the face
-      if ( myShape.IsSame(F) && shapeID == myShapeID )
+      if ( myShape.IsSame(F) && shapeID == myShapeID && myFixNodeParameters )
         const_cast<SMDS_MeshNode*>(n)->SetPosition
           ( SMDS_PositionPtr( new SMDS_FacePosition( U, V )));
     }
@@ -873,7 +888,7 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
           return false;
         }
         // store the fixed U on the edge
-        if ( myShape.IsSame(E) && shapeID == myShapeID )
+        if ( myShape.IsSame(E) && shapeID == myShapeID && myFixNodeParameters )
           const_cast<SMDS_MeshNode*>(n)->SetPosition
             ( SMDS_PositionPtr( new SMDS_EdgePosition( U )));
       }
@@ -3023,7 +3038,7 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
   if ( getenv("NO_FixQuadraticElements") )
     return;
 
-  // 0. Apply algorithm to solids or geom faces
+  // 0. Apply algorithm to SOLIDs or FACEs
   // ----------------------------------------------
   if ( myShape.IsNull() ) {
     if ( !myMesh->HasShapeToMesh() ) return;
@@ -3062,6 +3077,7 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
       SMESH_MesherHelper h(*myMesh);
       h.SetSubShape( fIt.Key() );
       h.FixQuadraticElements(true);
+      h.ToFixNodeParameters(true);
     }
     //perf_print_all_meters(1);
     return;

@@ -323,6 +323,14 @@ public:
                                         const int                                ID=0,
                                         const bool                               force3d = true);
   /*!
+   * \brief Enables fixing node parameters on EDGEs and FACEs by
+   * GetNodeU(...,check=true), GetNodeUV(...,check=true), CheckNodeUV() and
+   * CheckNodeU() in case if a node lies on a shape set via SetSubShape().
+   * Default is False
+   */
+  void ToFixNodeParameters(bool toFix);
+
+  /*!
    * \brief Return U of the given node on the edge
    */
   double GetNodeU(const TopoDS_Edge&   theEdge,
@@ -549,9 +557,9 @@ protected:
   SMESH_Mesh*     myMesh;
   int             myShapeID;
 
-  // to create quadratic elements
   bool            myCreateQuadratic;
   bool            mySetElemOnShape;
+  bool            myFixNodeParameters;
 
   std::map< int,bool > myNodePosShapesValidity;
   bool toCheckPosOnShape(int shapeID ) const;
