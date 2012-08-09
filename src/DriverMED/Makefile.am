@@ -15,15 +15,13 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-#
 
 #  SMESH DriverMED : driver to read and write 'med' files
 #  File   : Makefile.in
 #  Author : Marc Tajchman (CEA)
 #  Modified by : Alexander BORODIN (OCN) - autotools usage
 #  Module : SMESH
-#  $Header$
-#
+
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
 # header files 
@@ -62,7 +60,7 @@ libMeshDriverMED_la_CPPFLAGS = \
 libMeshDriverMED_la_LDFLAGS  = \
 	$(BOOST_LIBS) \
 	../Driver/libMeshDriver.la \
-	$(MED_LDFLAGS) -lMEDWrapper -lMEDWrapperBase -lMEDWrapper_V2_2 -lMEDWrapper_V2_1
+	$(MED_LDFLAGS) -lMEDWrapper -lMEDWrapperBase -lMEDWrapper_V2_2
 
 
 MED_Test_CPPFLAGS = \
@@ -80,6 +78,4 @@ MED_Test_LDADD = \
 	$(MED_LDFLAGS) \
 	-lMEDWrapper \
 	-lMEDWrapperBase \
-	-lMEDWrapper_V2_2 \
-	-lMEDWrapper_V2_1 
-
+	-lMEDWrapper_V2_2

@@ -15,14 +15,13 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-#
 
 #  GEOM GEOMClient : tool to transfer BREP files from GEOM server to GEOM client
 #  File   : Makefile.in
 #  Author : Pavel TELKOV (OCC)
 #  Modified by : Alexander BORODIN (OCN) - autotools usage
 #  Module : SHESM
-#
+
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
 # header files 
@@ -69,7 +68,7 @@ libSMESHClient_la_LDFLAGS  = \
 	$(KERNEL_LDFLAGS) -lSalomeLifeCycleCORBA -lSalomeNS -lOpUtil -lSALOMEBasics \
 	-lSalomeIDLKernel -lSALOMELocalTrace \
 	$(GEOM_LDFLAGS) -lNMTDS -lSalomeIDLGEOM \
-	$(MED_LDFLAGS) -lMEDWrapper_V2_2 -lMEDWrapper_V2_1 -lSalomeIDLMED -lMEDWrapper \
+	$(MED_LDFLAGS) -lMEDWrapper_V2_2 -lSalomeIDLMED -lMEDWrapper \
 	$(CAS_KERNEL)
 
 SMESHClientBin_CPPFLAGS = \
