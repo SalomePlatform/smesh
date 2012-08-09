@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // File   : StdMeshersGUI_LayerDistributionParamWdg.cxx
 // Author : Open CASCADE S.A.S.
 // SMESH includes
@@ -50,7 +51,7 @@
 
 StdMeshersGUI_LayerDistributionParamWdg
 ::StdMeshersGUI_LayerDistributionParamWdg(SMESH::SMESH_Hypothesis_ptr hyp,
-					  const QString& theName,
+                                          const QString& theName,
                                           QDialog* dlg): 
   QWidget(), myName(theName), myDlg( dlg )
 {
@@ -198,19 +199,26 @@ void StdMeshersGUI_LayerDistributionParamWdg::onEdit()
     return;
 
   CORBA::String_var hypType = myHyp->GetName();
-  SMESHGUI_GenericHypothesisCreator*
-    editor = SMESH::GetHypothesisCreator( hypType.in() );
+  // BUG 0020378
+  SMESHGUI_GenericHypothesisCreator* editor = SMESH::GetHypothesisCreator(hypType.in());
   if ( !editor ) return;
 
-  if ( myDlg ) myDlg->hide();
+  if ( myDlg )
+    myDlg->hide();
 
   try {
     QWidget* parent = this;
-    if ( myDlg ) parent = myDlg->parentWidget();
-    editor->edit( myHyp, myName, parent );
+    if ( myDlg )
+      parent = myDlg->parentWidget();
+    editor->edit( myHyp, myName, parent, this, SLOT( onEdited( int ) ) );
   }
-  catch(...) {
+  catch(...)
+  {
   }
+}
 
-  if ( myDlg ) myDlg->show();
+void StdMeshersGUI_LayerDistributionParamWdg::onEdited( int result )
+{
+  if ( myDlg )
+    myDlg->show();
 }

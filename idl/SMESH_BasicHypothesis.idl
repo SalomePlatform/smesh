@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  File   : SMESH_BasicHypothesis.idl
 //  Author : Paul RASCLE, EDF
 //
@@ -28,7 +29,6 @@
 #include "SALOME_Exception.idl"
 #include "SMESH_Hypothesis.idl"
 #include "SMESH_Mesh.idl"
-
 
 /*!
  * StdMeshers: interfaces to standard hypotheses and algorithms
@@ -209,6 +209,26 @@ module StdMeshers
      */
     long ConversionMode()
       raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Set list of edges to reverse
+     */
+    void SetReversedEdges( in SMESH::long_array list );
+    
+    /*!
+     * Returns list of edges to reverse
+     */
+    SMESH::long_array GetReversedEdges();
+    
+    /*!
+     * Set entry of the main object
+     */
+    void SetObjectEntry( in string entry );
+    
+    /*!
+     * Get the entry of the main object
+     */
+    string GetObjectEntry();
   };
 
   /*!
@@ -218,14 +238,48 @@ module StdMeshers
   {
     /*!
      * Sets <start segment length> or <end segment length> parameter value
+     * * OBSOLETE *. Avoid such a way of interface design
+     * * It is recommended to dedicate a method to each parameter.
      */
     void SetLength(in double length, in boolean isStartLength) 
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Sets <start segment length> parameter value
+     */
+    void SetStartLength(in double length) 
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Sets <end segment length> parameter value
+     */
+    void SetEndLength(in double length)
       raises (SALOME::SALOME_Exception);
 
     /*!
      * Returns <start segment length> or <end segment length> parameter value
      */
     double GetLength(in boolean isStartLength);
+    
+    /*!
+     * Set list of edges to reverse
+     */
+    void SetReversedEdges( in SMESH::long_array list );
+    
+    /*!
+     * Returns list of edges to reverse
+     */
+    SMESH::long_array GetReversedEdges();
+    
+    /*!
+     * Set entry of the main object
+     */
+    void SetObjectEntry( in string entry );
+    
+    /*!
+     * Get the entry of the main object
+     */
+    string GetObjectEntry();
   };
 
   /*!
@@ -269,14 +323,48 @@ module StdMeshers
   {
     /*!
      * Sets <start segment length> or <end segment length> parameter value
+     * * OBSOLETE *. Avoid such a way of interface design.
+     * * It is recommended to dedicate a method to each parameter.
      */
     void SetLength(in double length, in boolean isStartLength) 
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Sets <start segment length> parameter value
+     */
+    void SetStartLength(in double length) 
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Sets <end segment length> parameter value
+     */
+    void SetEndLength(in double length)
       raises (SALOME::SALOME_Exception);
 
     /*!
      * Returns <start segment length> or <end segment length> parameter value
      */
     double GetLength(in boolean isStartLength);
+
+    /*!
+     * Set list of edges to reverse
+     */
+    void SetReversedEdges( in SMESH::long_array list );
+    
+    /*!
+     * Returns list of edges to reverse
+     */
+    SMESH::long_array GetReversedEdges();
+    
+    /*!
+     * Set entry of the main object
+     */
+    void SetObjectEntry( in string entry );
+    
+    /*!
+     * Get the entry of the main object
+     */
+    string GetObjectEntry();
   };
 
 
@@ -295,6 +383,54 @@ module StdMeshers
      * Returns <deflection> parameter value
      */
     double GetDeflection();
+  };
+
+
+  /*!
+   * StdMeshers_FixedPoints1D: interface of "Fixed points 1D" hypothesis
+   */
+  interface StdMeshers_FixedPoints1D : SMESH::SMESH_Hypothesis
+  {
+    /*!
+     * Sets some points on edge using parameter on curve from 0 to 1
+     * (additionally it is neecessary to check orientation of edges and
+     * create list of reversed edges if it is needed) and sets numbers
+     * of segments between given points (default values are equals 1)
+     */
+    void SetPoints(in SMESH::double_array listParams) 
+      raises (SALOME::SALOME_Exception);
+    void SetNbSegments(in SMESH::long_array listNbSeg) 
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns list of point's parameters
+     */
+    SMESH::double_array GetPoints();
+    
+    /*!
+     * Returns list of numbers of segments
+     */
+    SMESH::long_array GetNbSegments();
+    
+    /*!
+     * Set list of edges to reverse
+     */
+    void SetReversedEdges( in SMESH::long_array list );
+    
+    /*!
+     * Returns list of edges to reverse
+     */
+    SMESH::long_array GetReversedEdges();
+    
+    /*!
+     * Set entry of the main object
+     */
+    void SetObjectEntry( in string entry );
+    
+    /*!
+     * Get the entry of the main object
+     */
+    string GetObjectEntry();
   };
 
 
@@ -341,16 +477,6 @@ module StdMeshers
    * of nodes on edges is even
    */
   interface StdMeshers_QuadranglePreference : SMESH::SMESH_Hypothesis
-  {
-  };
-
-  /*!
-   * StdMeshers_TrianglePreference: interface of "TrianglePreference" hypothesis.
-   * This hypothesis is used by StdMeshers_Quadrangle_2D algorithm.
-   * Presence of this hypothesis forces construction of triangles in the refinement 
-   * area if the number of nodes on opposite edges is not the same.
-   */
-  interface StdMeshers_TrianglePreference : SMESH::SMESH_Hypothesis
   {
   };
 
@@ -409,6 +535,26 @@ module StdMeshers
      */
     SMESH::SMESH_Hypothesis GetLayerDistribution();
 
+  };
+
+  /*!
+   * StdMeshers_NumberOfLayers2D: interface of "Nb. Layers" hypothesis.
+   * This hypothesis is used by "Radial quadrangle" algorithm.
+   * It specifies number of segments between the internal 
+   * and the external surfaces.
+   */
+  interface StdMeshers_NumberOfLayers2D : StdMeshers_NumberOfLayers
+  {
+  };
+
+  /*!
+   * StdMeshers_LayerDistribution2D: interface of "Distribution of Layers" hypothesis.
+   * This hypothesis is used by "Radial quadrangle" algorithm.
+   * It specifies 1D hypothesis defining distribution of segments between the internal 
+   * and the external surfaces.
+   */
+  interface StdMeshers_LayerDistribution2D : StdMeshers_LayerDistribution
+  {
   };
 
   /*!
@@ -595,6 +741,189 @@ module StdMeshers
   };
 
   /*!
+   * StdMeshers_QuadrangleParams: interface of "Quadrangle Params" hypothesis
+   */
+  enum QuadType
+  {
+    QUAD_STANDARD,
+    QUAD_TRIANGLE_PREF,
+    QUAD_QUADRANGLE_PREF,
+    QUAD_QUADRANGLE_PREF_REVERSED,
+    QUAD_REDUCED,
+    QUAD_NB_TYPES /* this is not a type of quadrangulation */
+  };
+
+  interface StdMeshers_QuadrangleParams : SMESH::SMESH_Hypothesis
+  {
+    /*!
+     * Set base vertex for triangles
+     */
+    void SetTriaVertex( in long vertID );
+    
+    /*!
+     * Returns base vertex for triangles
+     */
+    long GetTriaVertex();
+    
+    /*!
+     * Set entry of the main object
+     */
+    void SetObjectEntry( in string entry );
+    
+    /*!
+     * Get the entry of the main object
+     */
+    string GetObjectEntry();
+    
+    /*!
+     * Set the type of quadrangulation
+     */
+    void SetQuadType( in QuadType type );
+
+    /*!
+     * Get the type of quadrangulation
+     */
+    QuadType GetQuadType();
+  };
+
+  /*!
+   * interface of "Source edges" hypothesis.
+   * This hypothesis specifies groups of edges of other mesh to be imported
+   * in this mesh
+   */
+  interface StdMeshers_ImportSource1D : SMESH::SMESH_Hypothesis
+  {
+    /*!
+     * Set edges to import from other mesh
+     */
+    void SetSourceEdges(in SMESH::ListOfGroups groups);
+    SMESH::string_array GetSourceEdges();
+
+    /*!
+     * Set to import the whole other mesh or not, and if yes, to
+     * copy groups of not. By default the mesh is not copied.
+     */
+    void SetCopySourceMesh(in boolean toCopyMesh, in boolean toCopyGroups);
+    void GetCopySourceMesh(out boolean toCopyMesh,out boolean toCopyGroups);
+  };
+
+  /*!
+   * interface of "Source faces" hypothesis.
+   * This hypothesis specifies groups of faces of other mesh to be imported
+   * in this mesh
+   */
+  interface StdMeshers_ImportSource2D : SMESH::SMESH_Hypothesis
+  {
+    /*!
+     * Set faces to import from other mesh
+     */
+    void SetSourceFaces(in SMESH::ListOfGroups groups);
+    SMESH::string_array GetSourceFaces();
+
+    /*!
+     * Set to import the whole other mesh or not, and if yes, to
+     * copy groups of not. By default the mesh is not copied.
+     */
+    void SetCopySourceMesh(in boolean toCopyMesh,in boolean toCopyGroups);
+    void GetCopySourceMesh(out boolean toCopyMesh,out boolean toCopyGroups);
+  };
+
+  /*!
+   * interface of "Viscous Layers" hypothesis.
+   * This hypothesis specifies parameters of layers of prisms to build
+   * near mesh boundary. This hypothesis can be used by several 3D algorithms:
+   * NETGEN 3D, GHS3D, Hexahedron(i,j,k)
+   */
+  interface StdMeshers_ViscousLayers : SMESH::SMESH_Hypothesis
+  {
+    /*!
+     * Set faces to exclude from treatment
+     */
+    void SetIgnoreFaces(in SMESH::long_array faceIDs) raises (SALOME::SALOME_Exception);
+    SMESH::long_array GetIgnoreFaces();
+
+    /*!
+     * Set total thickness of layers of prisms
+     */
+    void SetTotalThickness(in double thickness) raises (SALOME::SALOME_Exception);
+    double GetTotalThickness();
+
+    /*!
+     * Set number of layers of prisms
+     */
+    void SetNumberLayers(in short nb) raises (SALOME::SALOME_Exception);
+    short GetNumberLayers();
+
+    /*!
+     * Set factor (>1.0) of growth of layer thickness towards inside of mesh
+     */
+    void SetStretchFactor(in double factor) raises (SALOME::SALOME_Exception);
+    double GetStretchFactor();
+  };
+
+  /*!
+   * interface of "Body fitting Parameters" hypothesis.
+   * This hypothesis specifies 
+   * - Definition of the Cartesian grid
+   * - Size threshold
+   */
+  interface StdMeshers_CartesianParameters3D : SMESH::SMESH_Hypothesis
+  {
+    /*!
+     * Set size threshold. A polyhedral cell got by cutting an initial
+     * hexahedron by geometry boundary is considered small and is removed if
+     * it's size is \athreshold times less than the size of the initial hexahedron. 
+     * threshold must be > 1.0
+     */
+    void SetSizeThreshold(in double threshold) raises (SALOME::SALOME_Exception);
+    double GetSizeThreshold();
+
+    /*!
+     * \brief Return true if the grid is defined by spacing functions and 
+     *        not by node coordinates in given direction (X==0,...)
+     */
+    boolean IsGridBySpacing(in short axis);
+
+    /*!
+     * Set coordinates of nodes along an axis (counterd from zero)
+     */
+    void SetGrid(in SMESH::double_array coords,
+                 in short               axis) raises (SALOME::SALOME_Exception);
+    SMESH::double_array GetGrid(in short axis) raises (SALOME::SALOME_Exception);
+
+    /*!
+     * \brief Set grid spacing along an axis
+     *  \param spaceFunctions - functions defining spacing values at given point on axis
+     *  \param internalPoints - points dividing a grid into parts along an axis
+     *  \param axis - index of an axis counterd from zero, i.e. 0==X, 1==Y, 2==Z
+     *
+     * Parameter t of spaceFunction f(t) is a position [0,1] withing bounding box of
+     * the shape to mesh or withing an interval defined by internal points
+     */
+    void SetGridSpacing(in SMESH::string_array spaceFunctions,
+                        in SMESH::double_array internalPoints,
+                        in short               axis) raises (SALOME::SALOME_Exception);
+
+    void GetGridSpacing(out SMESH::string_array spaceFunctions,
+                        out SMESH::double_array internalPoints,
+                        in short                axis) raises (SALOME::SALOME_Exception);
+
+    /*!
+     * \brief Computes node coordinates by spacing functions
+     *  \param x0 - lower coordinate
+     *  \param x1 - upper coordinate
+     *  \param spaceFuns - space functions
+     *  \param points - internal points
+     *  \param coords - the computed coordinates
+     */
+    SMESH::double_array ComputeCoordinates(in double              x0,
+                                           in double              x1,
+                                           in SMESH::string_array spaceFuns,
+                                           in SMESH::double_array points,
+                                           in string              axisName ) raises (SALOME::SALOME_Exception);
+  };
+
+  /*!
    * StdMeshers_SegmentAroundVertex_0D: interface of "SegmentAroundVertex" algorithm
    */
   interface StdMeshers_SegmentAroundVertex_0D : SMESH::SMESH_0D_Algo
@@ -665,6 +994,13 @@ module StdMeshers
   };
 
   /*!
+   * StdMeshers_Projection_1D2D: interface of "Projection 1D-2D" algorithm
+   */
+  interface StdMeshers_Projection_1D2D : SMESH::SMESH_2D_Algo
+  {
+  };
+
+  /*!
    * StdMeshers_Projection_1D: interface of "Projection 1D" algorithm
    */
   interface StdMeshers_Projection_1D : SMESH::SMESH_1D_Algo
@@ -684,6 +1020,32 @@ module StdMeshers
    * doing nothing to allow mesh generation by mesh edition functions in TUI mode
    */
   interface StdMeshers_UseExisting_1D : SMESH::SMESH_1D_Algo
+  {
+  };
+
+  /*!
+   * StdMeshers_RadialQuadrangle_1D2D: interface of "Radial quadrangle" algorithm
+   */
+  interface StdMeshers_RadialQuadrangle_1D2D : SMESH::SMESH_2D_Algo
+  {
+  };
+
+  /*!
+   * StdMeshers_Import_1D2D: interface of "Use existing 2D elements" algorithm
+   */
+  interface StdMeshers_Import_1D2D : SMESH::SMESH_2D_Algo
+  {
+  };
+  /*!
+   * StdMeshers_Import_1D: interface of "Use existing 1D elements" algorithm
+   */
+  interface StdMeshers_Import_1D : SMESH::SMESH_1D_Algo
+  {
+  };
+  /*!
+   * StdMeshers_Cartesian_3D: interface of "Body fitting" algorithm
+   */
+  interface StdMeshers_Cartesian_3D : SMESH::SMESH_3D_Algo
   {
   };
 

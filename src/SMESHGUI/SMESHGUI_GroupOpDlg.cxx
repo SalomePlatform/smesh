@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_GroupOpDlg.cxx
 // Author : Sergey LITONIN, Open CASCADE S.A.S.
@@ -43,6 +44,9 @@
 #include <SVTK_Selection.h>
 #include <SVTK_ViewWindow.h>
 #include <SALOME_ListIO.hxx>
+
+// SALOME KERNEL includes
+#include <SALOMEDSClient_SObject.hxx>
 
 // Qt includes
 #include <QHBoxLayout>
@@ -74,7 +78,8 @@
 SMESHGUI_GroupOpDlg::SMESHGUI_GroupOpDlg( SMESHGUI* theModule )
   : QDialog( SMESH::GetDesktop( theModule ) ),
     mySMESHGUI( theModule ),
-    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
+    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
+    myIsApplyAndClose( false )
 {
   setModal(false);
 
@@ -131,7 +136,7 @@ QWidget* SMESHGUI_GroupOpDlg::createMainFrame( QWidget* theParent )
   QLabel* aColorLab = new QLabel(tr( "SMESH_CHECK_COLOR" ), aColorBox );
   myColorBtn = new QtxColorButton(aColorBox);
   myColorBtn->setSizePolicy( QSizePolicy::MinimumExpanding, 
-			     myColorBtn->sizePolicy().verticalPolicy() );
+                             myColorBtn->sizePolicy().verticalPolicy() );
 
   aColorBoxLayout->addWidget(aColorLab);
   aColorBoxLayout->addWidget(myColorBtn);
@@ -242,7 +247,7 @@ bool SMESHGUI_GroupOpDlg::isValid( const QList<SMESH::SMESH_GroupBase_var>& theL
   if ( theListGrp.isEmpty() )
   {
     SUIT_MessageBox::information( this, tr("SMESH_INSUFFICIENT_DATA"),
-				  tr("INCORRECT_ARGUMENTS") );
+                                  tr("INCORRECT_ARGUMENTS") );
     return false;
   }
 
@@ -289,14 +294,14 @@ bool SMESHGUI_GroupOpDlg::isValid( const QList<SMESH::SMESH_GroupBase_var>& theL
   if ( aMeshId == -1 )
   {
     SUIT_MessageBox::information(this, tr("SMESH_INSUFFICIENT_DATA"),
-				 tr("DIFF_MESHES"));
+                                 tr("DIFF_MESHES"));
     return false;
   }
 
   if ( aGrpType == -1 ) 
   {
     SUIT_MessageBox::information(this, tr("SMESH_INSUFFICIENT_DATA"),
-				 tr("DIFF_TYPES"));
+                                 tr("DIFF_TYPES"));
     return false;
   }
 
@@ -308,8 +313,10 @@ bool SMESHGUI_GroupOpDlg::isValid( const QList<SMESH::SMESH_GroupBase_var>& theL
 */
 void SMESHGUI_GroupOpDlg::onOk()
 {
+  setIsApplyAndClose( true );
   if ( onApply() )
     onClose();
+  setIsApplyAndClose( false );
 }
 
 /*!
@@ -343,10 +350,10 @@ void SMESHGUI_GroupOpDlg::onHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser",
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser",
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 
@@ -524,6 +531,28 @@ bool SMESHGUI_GroupOpDlg::onApply()
   return false;
 }
 
+/*!
+  \brief Set value of the flag indicating that the dialog is
+  accepted by Apply & Close button
+  \param theFlag value of the flag
+  \sa isApplyAndClose()
+*/
+void SMESHGUI_GroupOpDlg::setIsApplyAndClose( const bool theFlag )
+{
+  myIsApplyAndClose = theFlag;
+}
+
+/*!
+  \brief Get value of the flag indicating that the dialog is
+  accepted by Apply & Close button
+  \return value of the flag
+  \sa setApplyAndClose()
+*/
+bool SMESHGUI_GroupOpDlg::isApplyAndClose() const
+{
+  return myIsApplyAndClose;
+}
+
 // === === === === === === === === === === === === === === === === === === === === === 
 
 /*!
@@ -585,6 +614,7 @@ bool SMESHGUI_UnionGroupsDlg::onApply()
   QString aName = getName();
   
   bool aRes = false;
+  QStringList anEntryList;
   try
   {
     SMESH::ListOfGroups_var aList = convert( myGroups );
@@ -593,6 +623,8 @@ bool SMESHGUI_UnionGroupsDlg::onApply()
     if ( !CORBA::is_nil( aNewGrp ) )
     {
       aNewGrp->SetColor(  getColor() );
+      if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( aNewGrp ) )
+        anEntryList.append( aSObject->GetID().c_str() );
       aRes = true;
     }
   }
@@ -603,14 +635,18 @@ bool SMESHGUI_UnionGroupsDlg::onApply()
 
   if ( aRes ) 
   {
+    SMESHGUI::Modified();
     getSMESHGUI()->updateObjBrowser(true);
     reset();
+    if( LightApp_Application* anApp =
+        dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ) )
+      anApp->browseObjects( anEntryList, isApplyAndClose() );
     return true;
   } 
   else 
   {
     SUIT_MessageBox::critical(this, tr("SMESH_ERROR"),
-			      tr("SMESH_OPERATION_FAILED"));
+                              tr("SMESH_OPERATION_FAILED"));
     return false;
   }
 }
@@ -687,6 +723,7 @@ bool SMESHGUI_IntersectGroupsDlg::onApply()
   QString aName = getName();
   
   bool aRes = false;
+  QStringList anEntryList;
   try
   {
     SMESH::ListOfGroups_var aList = convert( myGroups );
@@ -695,6 +732,8 @@ bool SMESHGUI_IntersectGroupsDlg::onApply()
     if ( !CORBA::is_nil( aNewGrp ) )
     {
       aNewGrp->SetColor(  getColor() );
+      if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( aNewGrp ) )
+        anEntryList.append( aSObject->GetID().c_str() );
       aRes = true;
     }
   }
@@ -705,14 +744,18 @@ bool SMESHGUI_IntersectGroupsDlg::onApply()
 
   if ( aRes ) 
   {
+    SMESHGUI::Modified();
     getSMESHGUI()->updateObjBrowser(true);
     reset();
+    if( LightApp_Application* anApp =
+        dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ) )
+      anApp->browseObjects( anEntryList, isApplyAndClose() );
     return true;
   } 
   else 
   {
     SUIT_MessageBox::critical(this, tr("SMESH_ERROR"),
-			      tr("SMESH_OPERATION_FAILED"));
+                              tr("SMESH_OPERATION_FAILED"));
     return false;
   }
 }
@@ -852,6 +895,7 @@ bool SMESHGUI_CutGroupsDlg::onApply()
   QString aName = getName();
   
   bool aRes = false;
+  QStringList anEntryList;
   try
   {
     SMESH::ListOfGroups_var aList1 = convert( myGroups1 );
@@ -861,6 +905,8 @@ bool SMESHGUI_CutGroupsDlg::onApply()
     if ( !CORBA::is_nil( aNewGrp ) )
     {
       aNewGrp->SetColor(  getColor() );
+      if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( aNewGrp ) )
+        anEntryList.append( aSObject->GetID().c_str() );
       aRes = true;
     }
   }
@@ -871,14 +917,18 @@ bool SMESHGUI_CutGroupsDlg::onApply()
 
   if ( aRes ) 
   {
+    SMESHGUI::Modified();
     getSMESHGUI()->updateObjBrowser(true);
     reset();
+    if( LightApp_Application* anApp =
+        dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ) )
+      anApp->browseObjects( anEntryList, isApplyAndClose() );
     return true;
   } 
   else 
   {
     SUIT_MessageBox::critical(this, tr("SMESH_ERROR"),
-			      tr("SMESH_OPERATION_FAILED"));
+                              tr("SMESH_OPERATION_FAILED"));
     return false;
   }
 }
@@ -913,7 +963,7 @@ SMESHGUI_DimGroupDlg::SMESHGUI_DimGroupDlg( SMESHGUI* theModule )
 : SMESHGUI_GroupOpDlg( theModule )
 {
   setWindowTitle( tr( "CREATE_GROUP_OF_UNDERLYING_ELEMS" ) );
-  setHelpFileName( "creating_groups_page.html#gui_create_dim_group" );
+  setHelpFileName( "group_of_underlying_elements_page.html" );
 
   QGroupBox* anArgGrp = getArgGrp();
 
@@ -1003,6 +1053,7 @@ bool SMESHGUI_DimGroupDlg::onApply()
   QString aName = getName();
   
   bool aRes = false;
+  QStringList anEntryList;
   try
   {
     SMESH::ListOfGroups_var aList = convert( myGroups );
@@ -1012,6 +1063,8 @@ bool SMESHGUI_DimGroupDlg::onApply()
     if ( !CORBA::is_nil( aNewGrp ) )
     {
       aNewGrp->SetColor(  getColor() );
+      if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( aNewGrp ) )
+        anEntryList.append( aSObject->GetID().c_str() );
       aRes = true;
     }
   }
@@ -1022,14 +1075,18 @@ bool SMESHGUI_DimGroupDlg::onApply()
 
   if ( aRes ) 
   {
+    SMESHGUI::Modified();
     getSMESHGUI()->updateObjBrowser(true);
     reset();
+    if( LightApp_Application* anApp =
+        dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ) )
+      anApp->browseObjects( anEntryList, isApplyAndClose() );
     return true;
   } 
   else 
   {
     SUIT_MessageBox::critical(this, tr("SMESH_ERROR"),
-			      tr("SMESH_OPERATION_FAILED"));
+                              tr("SMESH_OPERATION_FAILED"));
     return false;
   }
 }

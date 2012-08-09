@@ -1,0 +1,34 @@
+/*!
+
+\page group_of_underlying_elements_page Create Group of Underlying Elements
+
+
+To create groups of entities from existing groups of superior dimensions, in the \b Mesh menu select <b>Group of underlying entities</b>.<br>
+
+The following dialog box will appear:
+
+\image html dimgroup_dlg.png
+
+In this dialog box specify the name of the resulting group, types of entities and set of source groups.
+
+In the figure below, there are two source Volume groups:
+
+\image html dimgroup_src.png
+<center>Source groups</center>
+
+In this case the following results for Faces, Edges and Nodes are obtained: 
+
+\image html dimgroup_2d.png
+<center>Faces</center>
+
+\image html dimgroup_1d.png
+<center>Edges</center>
+
+\image html dimgroup_0d.png
+<center>Nodes</center>
+
+<b>See Also</b> a sample TUI Script of a 
+\ref tui_create_dim_group "Creating groups of entities from existing groups of superior dimensions"
+operation.
+
+*/

@@ -9,8 +9,8 @@ via <b>Tools / Selection filter library</b>.
 \image html selectionfilterlibrary.png
 
 <b>Library file name</b> shows the path and the file name where your
-filters will be stored. By clicking the <em>Browse</em> button you can load an
-existing filter library.
+filters will be stored. By clicking the <em>Browse</em> button you can
+load an existing filter library.
 \n <b>Names of filters</b> lists the filters created or uploaded for
 the current study. You can \b Add or \b Delete filters.
 \n In <b>Filter name</b> box you can specify the name for your
@@ -31,18 +31,28 @@ specify logical relations between criteria using \b Binary operators
 Or and And.
 \n Some criteria should have the additional parameter of \b Tolerance.
 
-When we create a <b>Standalone Group</b> using filters (for this click
-<b>Set Filters</b> button in the <b>Create Group</b> menu), the menu
-for setting filters looks a bit differently. Toggling <b>Insert filter
-in viewer</b> checkbox enables to preview the group selected with your
-current filter in the viewer.
-\n In the \b Source field you choose if the filter will be applied to
-the whole \b Mesh, the <b>Initial Selection</b> or the <b>Current Group</b>. 
-\n <b>Copy from...</b> button gives you a possibility to load an
+When we create a group using filters (for this click
+<b>Set Filters</b> button in the <b>Create Group</b> dialog), the menu
+for setting filters looks a bit differently (see below). Switching
+on <b>Insert filter in viewer</b> checkbox limits selection of elements
+in the Viewer using your current filter.
+<br>
+In the \b Source field you choose if the filter will be applied to
+the whole \b Mesh, the <b>Initial Selection</b> or the <b>Current
+Group</b>. If \b Mesh is chosen, the elements satisfying the filter
+will be selected in the 3D Viewer. If <b> Initial Selection</b> is
+chosen, the filter will be applied to the selected elements and the
+elements rejected by the filter will be deseleced. If <b>Current
+Group</b> is chosen, the filter will be applied to the list of
+elements in the <em>Greate Croup</em> dialog and the elements rejected
+by the filter will be removed from the list.
+<br>
+<b>Copy from...</b> button gives you a possibility to load an
 existing filter from <b>Selection filter library</b> and <b>Add
 to...</b> button gives you a possibility to save your current filter
 in the Library.
-\n <b>Note:</b> If the button <b>Apply and Close</b> is disabled, there
+<br>
+<b>Note:</b> If the button <b>Apply and Close</b> is disabled, there
 is no selected mesh in the Object Browser and the filter can not be
 created. You have to select the mesh and the button will be enabled.
 
@@ -66,20 +76,19 @@ shape, the algorithm works slower.
 IDs. 
 <b>Threshold Value</b> can be, for example: "1,2,3,50-60,63,67,70-78"
 </li><li>
-<b>Color of Group</b> allows selection of entities belonging to Group with
-specified color defined by the <b>Threshold Value</b>.
+<b>Color of Group</b> allows selection of entities belonging to the Group with
+the color defined by the <b>Threshold Value</b>.
 </li>
 </ul>
 
-Some criteria are applicable to all <b>Entity types</b>: except for
+Some criteria are applicable to all <b>Entity types</b>, except for
 <b>Nodes</b>
 <ul><li>
-<b>Linear</b> allows selection of Linear or Quadratic (in case of
-Unary set to "Not" state)
+<b>Linear</b> allows selection of Linear or Quadratic elements (if Unary is set to "Not")
 </li><li>
 <b>Geometry type</b> allows selection of elements by their geometric type
 defined by the <b>Threshold Value</b>. The list of available geometric
-types depends on element entity type defined by the <b>Threshold Value</b>.
+types depends on the element entity type defined by the <b>Threshold Value</b>.
 </li>
 </ul>
 
@@ -97,11 +106,24 @@ specified arbitrary surface within a given <b>Tolerance</b>.
 </li>
 </ul>
 
-Additional criteria to select mesh <b>Edges</b> are the following:
+The following criteria allow selecting mesh <b>Nodes</b>:
+<ul><li>
+<b>Free nodes</b> selects nodes not belonging to any mesh element.
+</li><li>
+<b>Double nodes</b> selects a node coincident with other nodes 
+(within a given <b>Tolerance</b>). 
+See also \ref tui_double_nodes_control "Double Nodes quality control".
+</li>
+</ul>
+
+The following criteria allow selecting mesh <b>Edges</b>:
 <ul><li>
 <b>Free Borders</b> selects free 1D mesh elements, i.e. edges belonging to 
 one face only. See also a
 \ref free_borders_page "Free Borders quality control".
+</li><li>
+<b>Double edges</b> selects 1D mesh elements basing on the same set of nodes.
+See also \ref filter_double_elements "Double Elements quality control".
 </li><li>
 <b>Borders at Multi-Connections</b> selects edges belonging to several faces.
 The number of faces should be more, less or equal (within a given <b>Tolerance</b>)
@@ -115,7 +137,7 @@ See also a
 </li>
 </ul>
 
-Additional criteria to select mesh <b>Faces</b> are the following:
+The following criteria allow selecting mesh <b>Faces</b>:
 <ul><li>
 <b>Aspect ratio</b> selects 2D mesh elements with an aspect ratio (see also an
 \ref aspect_ratio_page "Aspect Ratio quality control"), which is more, less or equal
@@ -145,8 +167,17 @@ Additional criteria to select mesh <b>Faces</b> are the following:
 one element of mesh only. See also a
 \ref free_edges_page "Free Edges quality control".
 </li><li>
-<b>Free faces</b> selects 3D mesh elements wich belong less than to
-two volumes.
+<b>Free faces</b> selects 2D mesh elements wich belong to less than two volumes.
+</li><li>
+<b>Double faces</b> selects 2D mesh elements basing on the same set of nodes.
+See also \ref filter_double_elements "Double Elements quality control".
+</li><li>
+<b>Faces with bare border</b> selects 2D mesh elements having a free border without an edge on it.
+See also \ref bare_border_faces_page "Bare border faces quality control".
+</li><li>
+<b>Over-constrained faces</b> selects 2D mesh elements having only one border shared 
+with other 2D elements.
+See also \ref over_constrained_faces_page "Over-constrained faces quality control".
 </li><li>
 <b>Borders at Multi-Connections 2D</b> selects cells consisting of edges belonging to
 several elements of mesh. The number of mesh elements should be more, less or equal
@@ -158,10 +189,21 @@ See also a
 length, which is more, less or equal (within a given <b>Tolerance</b>) to the predefined
 <b>Threshold Value</b>. See also a
 \ref length_2d_page "Length 2D quality control".
+</li><li>
+<b>Coplanar faces</b> selects mesh faces neighboring the one selected
+by ID in <b>Threshold Value</b> field, if the angle between the
+normal to the neighboring face and the normal to the selected face is less then the
+angular tolerance (defined in degrees). Selection continues among all neighbor faces of already 
+selected ones.<br>
+</li><li>
+<b>Element Diameter 2D</b> selects triangles and quadrangles composed of the edges and
+diagonals with a value of length, which is more, less or equal
+(within a given <b>Tolerance</b>) to the predefined <b>Threshold Value</b>. See also a
+\ref max_element_length_2d_page "Element Diameter 2D quality control".
 </li>
 </ul>
 
-Additional criteria to select mesh <b>Volumes</b> are the following:
+The following criteria allow selecting  mesh <b>Volumes</b>:
 <ul><li>
 <b>Aspect ratio 3D</b> selects 3D mesh elements with an aspect ratio (see also an
 \ref aspect_ratio_3d_page "Aspect Ratio 3D quality control"), which is more, less or equal
@@ -171,8 +213,23 @@ Additional criteria to select mesh <b>Volumes</b> are the following:
 \ref volume_page "Volume quality control"), which is more, less or equal (within a given
 <b>Tolerance</b>) to the predefined <b>Threshold Value</b>.
 </li><li>
+<b>Element Diameter 3D</b> selects 3D mesh elements composed of the edges and
+diagonals with a value of length, which is more, less or equal
+(within a given <b>Tolerance</b>) to the predefined <b>Threshold Value</b>. See also a
+\ref max_element_length_3d_page "Element Diameter 3D quality control".
+</li><li>
+<b>Double volumes</b> selects 3D mesh elements basing on the same set of nodes.
+See also \ref filter_double_elements "Double Elements quality control".
+</li><li>
 <b>Bad oriented volume</b> selects mesh volumes, which are incorrectly oriented from
 the point of view of MED convention.
+</li><li>
+<b>Over-constrained volumes</b> selects mesh volumes having only one border shared 
+with other volumes.
+See also \ref over_constrained_volumes_page "Over-constrained volumes quality control".
+</li><li>
+<b>Volumes with bare border</b> selects 3D mesh elements having a free border without a face on it.
+See also \ref bare_border_volumes_page "Bare border volumes quality control".
 </li>
 </ul>
 

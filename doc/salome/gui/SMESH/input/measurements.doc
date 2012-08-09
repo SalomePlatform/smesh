@@ -1,0 +1,70 @@
+/*!
+
+\page measurements_page Measurements
+
+Mesh module provides the possibility to perform different measurements
+of the selected mesh data.
+
+All measurement operations are available via \b Measurements
+top-level menu. Access to the measurements operations is
+implemented via a single dialog box, where each operation is represented
+as a separate tab page.
+
+\section min_distance_anchor Minimum Distance
+
+This operation allows measuring the distance between two objects.
+Currently only node-to-node and node-to-origin operations are
+available, but this operation will be extended in the future to support
+other mesh objects - elements, meshes, sub-meshes and groups.
+
+To start <b>Minimum Distance</b> operation, select <b>Minimum Distance</b>
+item from \b Measurements menu.
+
+\image html min_distance.png
+
+In the dialog box choose the first target and the second target mode by
+switching the corresponding radio buttons, then select the objects the distance
+between which is to be calculated (or input their IDs directly 
+in case of nodes/elements) and press \em Compute button.
+
+The following types of targets are supported:
+- \em Node: single mesh node;
+- \em Element: single mesh element (not available in this version);
+- \em Object: mesh, sub-mesh or group object (not available in this
+version);
+- \em Origin: origin of the global co-ordinate system.
+
+The result will
+be shown in the bottom area of the dialog box. In addition, a simple
+preview will be shown in the 3D viewer.
+
+\image html min_distance_preview.png
+
+\section bounding_box_anchor Bounding Box
+
+This operation allows to calculate the bounding box of the selected
+object(s).
+
+To start <b>Bounding Box</b> operation, select <b>Bounding Box</b>
+item from \b Measurements menu.
+
+\image html bnd_box.png
+
+In the dialog box choose the required type of the object by switching the
+corresponding radio button, select the object(s) and press \em Compute button.
+
+The following types of input are available:
+- \em Objects: select one or several mesh, sub-mesh or group objects;
+- \em Nodes: select a set of mesh nodes;
+- \em Elements: select a set of mesh elements.
+
+The result of calculation will be shown in the bottom area of the
+dialog box. In addition, a simple preview will be shown in the 3D
+viewer.
+
+\image html bnd_box_preview.png
+
+<b>See Also</b> a sample TUI Script of a 
+\ref tui_measurements_page "Measurement operations".
+
+*/

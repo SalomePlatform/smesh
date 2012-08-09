@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _SMESH_CONTROLSDEF_HXX_
 #define _SMESH_CONTROLSDEF_HXX_
 
@@ -42,18 +43,9 @@
 
 #include "SMDSAbs_ElementType.hxx"
 #include "SMDS_MeshNode.hxx"
+#include "SMESH_TypeDefs.hxx"
 
 #include "SMESH_Controls.hxx"
-
-#ifdef WNT
- #if defined SMESHCONTROLS_EXPORTS
-  #define SMESHCONTROLS_EXPORT __declspec( dllexport )
- #else
-  #define SMESHCONTROLS_EXPORT __declspec( dllimport )
- #endif
-#else
- #define SMESHCONTROLS_EXPORT
-#endif
 
 class SMDS_MeshElement;
 class SMDS_MeshFace;
@@ -68,59 +60,55 @@ class gp_Pnt;
 namespace SMESH{
   namespace Controls{
 
-    class SMESHCONTROLS_EXPORT TSequenceOfXYZ: public std::vector<gp_XYZ>
+    class SMESHCONTROLS_EXPORT TSequenceOfXYZ
     {
+      typedef std::vector<gp_XYZ>::size_type size_type;
+
     public:
-      typedef std::vector<gp_XYZ> TSuperClass;
-      TSequenceOfXYZ()
-      {}
+      TSequenceOfXYZ();
 
-      TSequenceOfXYZ(size_type n):
-	TSuperClass(n)
-      {}
+      TSequenceOfXYZ(size_type n);
 
-      TSequenceOfXYZ(size_type n, const value_type& t):
-	TSuperClass(n,t)
-      {}
+      TSequenceOfXYZ(size_type n, const gp_XYZ& t);
 
-      TSequenceOfXYZ(const TSequenceOfXYZ& theSequenceOfXYZ):
-	TSuperClass(theSequenceOfXYZ)
-      {}
+      TSequenceOfXYZ(const TSequenceOfXYZ& theSequenceOfXYZ);
 
       template <class InputIterator>
-      TSequenceOfXYZ(InputIterator theBegin, InputIterator theEnd):
-	TSuperClass(theBegin,theEnd)
-      {}
+      TSequenceOfXYZ(InputIterator theBegin, InputIterator theEnd);
 
-      TSequenceOfXYZ& operator=(const TSequenceOfXYZ& theSequenceOfXYZ){
-	TSuperClass::operator=(theSequenceOfXYZ);
-	return *this;
-      }
+      ~TSequenceOfXYZ();
 
-      reference operator()(size_type n){
-	return TSuperClass::operator[](n-1);
-      }
+      TSequenceOfXYZ& operator=(const TSequenceOfXYZ& theSequenceOfXYZ);
 
-      const_reference operator()(size_type n) const{
-	return TSuperClass::operator[](n-1);
-      }
+      gp_XYZ& operator()(size_type n);
+
+      const gp_XYZ& operator()(size_type n) const;
+
+      void clear();
+
+      void reserve(size_type n);
+
+      void push_back(const gp_XYZ& v);
+
+      size_type size() const;
 
     private:
-      reference operator[](size_type n);
-
-      const_reference operator[](size_type n) const;
+      std::vector<gp_XYZ> myArray;
     };
 
-    /*
-      Class       : Functor
-      Description : Root of all Functors
-    */
-    class SMESHCONTROLS_EXPORT Functor
+    /*!
+     * \brief Class used to detect mesh modification: IsMeshModified() returns
+     * true if a mesh has changed since last calling IsMeshModified()
+     */
+    class SMESHCONTROLS_EXPORT TMeshModifTracer
     {
+      unsigned long    myMeshModifTime;
+      const SMDS_Mesh* myMesh;
     public:
-      ~Functor(){}
-      virtual void SetMesh( const SMDS_Mesh* theMesh ) = 0;
-      virtual SMDSAbs_ElementType GetType() const = 0;
+      TMeshModifTracer();
+      void SetMesh( const SMDS_Mesh* theMesh );
+      const SMDS_Mesh* GetMesh() const { return myMesh; }
+      bool IsMeshModified();
     };
 
     /*
@@ -133,19 +121,24 @@ namespace SMESH{
       virtual void SetMesh( const SMDS_Mesh* theMesh );
       virtual double GetValue( long theElementId );
       virtual double GetValue(const TSequenceOfXYZ& thePoints) { return -1.0;};
+      void GetHistogram(int                     nbIntervals,
+                        std::vector<int>&       nbEvents,
+                        std::vector<double>&    funValues,
+                        const std::vector<int>& elements,
+                        const double*           minmax=0);
       virtual SMDSAbs_ElementType GetType() const = 0;
       virtual double GetBadRate( double Value, int nbNodes ) const = 0;
       long  GetPrecision() const;
       void  SetPrecision( const long thePrecision );
+      double Round( const double & value );
       
-      bool GetPoints(const int theId,
-		     TSequenceOfXYZ& theRes) const;
-      static bool GetPoints(const SMDS_MeshElement* theElem,
-			    TSequenceOfXYZ& theRes);
+      bool GetPoints(const int theId, TSequenceOfXYZ& theRes) const;
+      static bool GetPoints(const SMDS_MeshElement* theElem, TSequenceOfXYZ& theRes);
     protected:
-      const SMDS_Mesh* myMesh;
+      const SMDS_Mesh*        myMesh;
       const SMDS_MeshElement* myCurrElement;
-      long       myPrecision;
+      long                    myPrecision;
+      double                  myPrecisionValue;
     };
 
 
@@ -157,6 +150,30 @@ namespace SMESH{
     public:
       virtual double GetValue( long theElementId );
       //virtual double GetValue( const TSequenceOfXYZ& thePoints );
+      virtual double GetBadRate( double Value, int nbNodes ) const;
+      virtual SMDSAbs_ElementType GetType() const;
+    };
+  
+  
+    /*
+      Class       : MaxElementLength2D
+      Description : Functor calculating maximum length of 2D element
+    */
+    class SMESHCONTROLS_EXPORT MaxElementLength2D: public virtual NumericalFunctor{
+    public:
+      virtual double GetValue( long theElementId );
+      virtual double GetBadRate( double Value, int nbNodes ) const;
+      virtual SMDSAbs_ElementType GetType() const;
+    };
+  
+  
+    /*
+      Class       : MaxElementLength3D
+      Description : Functor calculating maximum length of 3D element
+    */
+    class SMESHCONTROLS_EXPORT MaxElementLength3D: public virtual NumericalFunctor{
+    public:
+      virtual double GetValue( long theElementId );
       virtual double GetBadRate( double Value, int nbNodes ) const;
       virtual SMDSAbs_ElementType GetType() const;
     };
@@ -180,6 +197,7 @@ namespace SMESH{
     */
     class SMESHCONTROLS_EXPORT AspectRatio: public virtual NumericalFunctor{
     public:
+      virtual double GetValue( long theElementId );
       virtual double GetValue( const TSequenceOfXYZ& thePoints );
       virtual double GetBadRate( double Value, int nbNodes ) const;
       virtual SMDSAbs_ElementType GetType() const;
@@ -192,6 +210,7 @@ namespace SMESH{
     */
     class SMESHCONTROLS_EXPORT AspectRatio3D: public virtual NumericalFunctor{
     public:
+      virtual double GetValue( long theElementId );
       virtual double GetValue( const TSequenceOfXYZ& thePoints );
       virtual double GetBadRate( double Value, int nbNodes ) const;
       virtual SMDSAbs_ElementType GetType() const;
@@ -270,10 +289,10 @@ namespace SMESH{
       virtual double GetBadRate( double Value, int nbNodes ) const;
       virtual SMDSAbs_ElementType GetType() const;
       struct Value{
-	double myLength;
-	long myPntId[2];
-	Value(double theLength, long thePntId1, long thePntId2);
-	bool operator<(const Value& x) const;
+        double myLength;
+        long myPntId[2];
+        Value(double theLength, long thePntId1, long thePntId2);
+        bool operator<(const Value& x) const;
       };
       typedef std::set<Value> TValues;
       void GetValues(TValues& theValues);
@@ -303,29 +322,80 @@ namespace SMESH{
       virtual double GetBadRate( double Value, int nbNodes ) const;
       virtual SMDSAbs_ElementType GetType() const;
       struct Value{
-	long myPntId[2];
-	Value(long thePntId1, long thePntId2);
-	bool operator<(const Value& x) const;
+        long myPntId[2];
+        Value(long thePntId1, long thePntId2);
+        bool operator<(const Value& x) const;
       };
       typedef std::map<Value,int> MValues;
 
       void GetValues(MValues& theValues);
     };
     typedef boost::shared_ptr<MultiConnection2D> MultiConnection2DPtr;
+
+    /*
+      Class       : BallDiameter
+      Description : Functor returning diameter of a ball element
+    */
+    class SMESHCONTROLS_EXPORT BallDiameter: public virtual NumericalFunctor{
+    public:
+      virtual double GetValue( long theElementId );
+      virtual double GetBadRate( double Value, int nbNodes ) const;
+      virtual SMDSAbs_ElementType GetType() const;
+    };
+    
+
     /*
       PREDICATES
     */
     /*
-      Class       : Predicate
-      Description : Base class for all predicates
+      Class       : CoincidentNodes
+      Description : Predicate of Coincident Nodes
+      Note        : This class is suitable only for visualization of Coincident Nodes
     */
-    class SMESHCONTROLS_EXPORT Predicate: public virtual Functor{
+    class SMESHCONTROLS_EXPORT CoincidentNodes: public Predicate {
     public:
-      virtual bool IsSatisfy( long theElementId ) = 0;
-      virtual SMDSAbs_ElementType GetType() const = 0;
+      CoincidentNodes();
+      virtual void SetMesh( const SMDS_Mesh* theMesh );
+      virtual bool IsSatisfy( long theElementId );
+      virtual SMDSAbs_ElementType GetType() const;
+
+      void SetTolerance (const double theToler)  { myToler = theToler; }
+      double GetTolerance () const { return myToler; }
+
+    private:
+      double               myToler;
+      TColStd_MapOfInteger myCoincidentIDs;
+      TMeshModifTracer     myMeshModifTracer;
     };
-  
-  
+    typedef boost::shared_ptr<CoincidentNodes> CoincidentNodesPtr;
+   
+    /*
+      Class       : CoincidentElements
+      Description : Predicate of Coincident Elements
+      Note        : This class is suitable only for visualization of Coincident Elements
+    */
+    class SMESHCONTROLS_EXPORT CoincidentElements: public Predicate {
+    public:
+      CoincidentElements();
+      virtual void SetMesh( const SMDS_Mesh* theMesh );
+      virtual bool IsSatisfy( long theElementId );
+
+    private:
+      const SMDS_Mesh* myMesh;
+    };
+    class SMESHCONTROLS_EXPORT CoincidentElements1D: public CoincidentElements {
+    public:
+      virtual SMDSAbs_ElementType GetType() const;
+    };
+    class SMESHCONTROLS_EXPORT CoincidentElements2D: public CoincidentElements {
+    public:
+      virtual SMDSAbs_ElementType GetType() const;
+    };
+    class SMESHCONTROLS_EXPORT CoincidentElements3D: public CoincidentElements {
+    public:
+      virtual SMDSAbs_ElementType GetType() const;
+    };
+
     /*
       Class       : FreeBorders
       Description : Predicate for free borders
@@ -352,11 +422,71 @@ namespace SMESH{
       virtual void SetMesh( const SMDS_Mesh* theMesh );
       virtual bool IsSatisfy( long theElementId );
       virtual SMDSAbs_ElementType GetType() const;
-            
+
     protected:
       const SMDS_Mesh* myMesh;
     };
-   
+
+    /*
+      BareBorderVolume
+    */
+    class SMESHCONTROLS_EXPORT BareBorderVolume: public Predicate
+    {
+    public:
+      BareBorderVolume():myMesh(0) {}
+      virtual void SetMesh( const SMDS_Mesh* theMesh ) { myMesh = theMesh; }
+      virtual SMDSAbs_ElementType GetType() const      { return SMDSAbs_Volume; }
+      virtual bool IsSatisfy( long theElementId );
+    protected:
+      const SMDS_Mesh* myMesh;
+    };
+    typedef boost::shared_ptr<BareBorderVolume> BareBorderVolumePtr;
+
+    /*
+      BareBorderFace
+    */
+    class SMESHCONTROLS_EXPORT BareBorderFace: public Predicate
+    {
+    public:
+      BareBorderFace():myMesh(0) {}
+      virtual void SetMesh( const SMDS_Mesh* theMesh ) { myMesh = theMesh; }
+      virtual SMDSAbs_ElementType GetType() const      { return SMDSAbs_Face; }
+      virtual bool IsSatisfy( long theElementId );
+    protected:
+      const SMDS_Mesh* myMesh;
+      std::vector< const SMDS_MeshNode* > myLinkNodes;
+    };
+    typedef boost::shared_ptr<BareBorderFace> BareBorderFacePtr;
+
+    /*
+      OverConstrainedVolume
+    */
+    class SMESHCONTROLS_EXPORT OverConstrainedVolume: public Predicate
+    {
+    public:
+      OverConstrainedVolume():myMesh(0) {}
+      virtual void SetMesh( const SMDS_Mesh* theMesh ) { myMesh = theMesh; }
+      virtual SMDSAbs_ElementType GetType() const      { return SMDSAbs_Volume; }
+      virtual bool IsSatisfy( long theElementId );
+    protected:
+      const SMDS_Mesh* myMesh;
+    };
+    typedef boost::shared_ptr<OverConstrainedVolume> OverConstrainedVolumePtr;
+
+    /*
+      OverConstrainedFace
+    */
+    class SMESHCONTROLS_EXPORT OverConstrainedFace: public Predicate
+    {
+    public:
+      OverConstrainedFace():myMesh(0) {}
+      virtual void SetMesh( const SMDS_Mesh* theMesh ) { myMesh = theMesh; }
+      virtual SMDSAbs_ElementType GetType() const      { return SMDSAbs_Face; }
+      virtual bool IsSatisfy( long theElementId );
+    protected:
+      const SMDS_Mesh* myMesh;
+    };
+    typedef boost::shared_ptr<OverConstrainedFace> OverConstrainedFacePtr;
 
     /*
       Class       : FreeEdges
@@ -371,14 +501,14 @@ namespace SMESH{
       static bool IsFreeEdge( const SMDS_MeshNode** theNodes, const int theFaceId  );
       typedef long TElemId;
       struct Border{
-	TElemId myElemId;
-	TElemId myPntId[2];
-	Border(long theElemId, long thePntId1, long thePntId2);
-	bool operator<(const Border& x) const;
+        TElemId myElemId;
+        TElemId myPntId[2];
+        Border(long theElemId, long thePntId1, long thePntId2);
+        bool operator<(const Border& x) const;
       };
       typedef std::set<Border> TBorders;
       void GetBoreders(TBorders& theBorders);
-      
+
     protected:
       const SMDS_Mesh* myMesh;
     };
@@ -694,7 +824,7 @@ namespace SMESH{
       void    process (const SMDS_MeshElement* theElem);
 
     private:
-      const SMDS_Mesh*      myMesh;
+      TMeshModifTracer      myMeshModifTracer;
       TColStd_MapOfInteger  myIds;
       SMDSAbs_ElementType   myType;
       TopoDS_Shape          myShape;
@@ -776,11 +906,11 @@ namespace SMESH{
     class SMESHCONTROLS_EXPORT ElemGeomType: public virtual Predicate{
     public:
       ElemGeomType();
-      virtual void        SetMesh( const SMDS_Mesh* theMesh );
-      virtual bool        IsSatisfy( long theElementId );
-      void                SetType( SMDSAbs_ElementType theType );
-      virtual             SMDSAbs_ElementType GetType() const;
-      void                SetGeomType( SMDSAbs_GeometryType theType );
+      virtual void         SetMesh( const SMDS_Mesh* theMesh );
+      virtual bool         IsSatisfy( long theElementId );
+      void                 SetType( SMDSAbs_ElementType theType );
+      virtual              SMDSAbs_ElementType GetType() const;
+      void                 SetGeomType( SMDSAbs_GeometryType theType );
       virtual SMDSAbs_GeometryType GetGeomType() const;
 
     private:
@@ -789,6 +919,31 @@ namespace SMESH{
       SMDSAbs_GeometryType myGeomType;
     };
     typedef boost::shared_ptr<ElemGeomType> ElemGeomTypePtr;
+
+    /*
+      Class       : CoplanarFaces
+      Description : Predicate to check angle between faces
+    */
+    class SMESHCONTROLS_EXPORT CoplanarFaces: public virtual Predicate
+    {
+    public:
+      CoplanarFaces();
+      void                 SetFace( long theID )                   { myFaceID = theID; }
+      long                 GetFace() const                         { return myFaceID; }
+      void                 SetTolerance (const double theToler)    { myToler = theToler; }
+      double               GetTolerance () const                   { return myToler; }
+      virtual              SMDSAbs_ElementType GetType() const     { return SMDSAbs_Face; }
+
+      virtual void         SetMesh( const SMDS_Mesh* theMesh );
+      virtual bool         IsSatisfy( long theElementId );
+
+    private:
+      TMeshModifTracer     myMeshModifTracer;
+      long                 myFaceID;
+      double               myToler;
+      std::set< long >     myCoplanarIDs;
+    };
+    typedef boost::shared_ptr<CoplanarFaces> CoplanarFacesPtr;
 
     /*
       FILTER
@@ -804,13 +959,13 @@ namespace SMESH{
       virtual
       void
       GetElementsId( const SMDS_Mesh* theMesh,
-		     TIdSequence& theSequence );
+                     TIdSequence& theSequence );
 
       static
       void
       GetElementsId( const SMDS_Mesh* theMesh,
-		     PredicatePtr thePredicate,
-		     TIdSequence& theSequence );
+                     PredicatePtr thePredicate,
+                     TIdSequence& theSequence );
       
     protected:
       PredicatePtr myPredicate;

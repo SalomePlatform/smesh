@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : SMESH_MEDMesh_i.hxx
 //  Module : SMESH
@@ -62,7 +63,7 @@ protected:
   int _famIdent;
   
   std::map < SALOME_MED::medGeometryElement, int >_mapIndToSeqElts;
-  SALOME_MED::long_array_var _seq_elemId[MED_NBR_GEOMETRIE_MAILLE];
+  SALOME_TYPES::ListOfLong_var _seq_elemId[MED_NBR_GEOMETRIE_MAILLE];
   
   std::map < SALOME_MED::medEntityMesh, int >_mapNbTypes;
   std::map < SALOME_MED::medEntityMesh, int >_mapIndToVectTypes;
@@ -81,13 +82,18 @@ public:
   void setProtocol(SALOME::TypeOfCommunication typ) {}
   void release() {}
   SALOME::SenderDouble_ptr getSenderForCoordinates(SALOME_MED::medModeSwitch) {return SALOME::SenderDouble::_nil();}
-  SALOME::SenderInt_ptr getSenderForConnectivity(SALOME_MED::medModeSwitch, 
-						 SALOME_MED::medConnectivity, 
-						 SALOME_MED::medEntityMesh, 
-						 SALOME_MED::medGeometryElement) 
+  SALOME::SenderInt_ptr getSenderForConnectivity(SALOME_MED::medConnectivity, 
+                                                 SALOME_MED::medEntityMesh, 
+                                                 SALOME_MED::medGeometryElement) 
   {
     return SALOME::SenderInt::_nil();
-  }
+  }  
+  SALOME::SenderInt_ptr getSenderForConnectivityIndex(SALOME_MED::medConnectivity,
+                                                      SALOME_MED::medEntityMesh,
+                                                      SALOME_MED::medGeometryElement)
+  {
+    return SALOME::SenderInt::_nil();
+  }  
   SALOME::SenderInt_ptr getSenderForPolygonsConnectivity(SALOME_MED::medConnectivity, SALOME_MED::medEntityMesh) {return SALOME::SenderInt::_nil();}
   SALOME::SenderInt_ptr getSenderForPolygonsConnectivityIndex(SALOME_MED::medConnectivity, SALOME_MED::medEntityMesh) {return SALOME::SenderInt::_nil();}
   SALOME::SenderInt_ptr getSenderForPolyhedronConnectivity(SALOME_MED::medConnectivity) {return SALOME::SenderInt::_nil();}
@@ -103,7 +109,7 @@ public:
   
   CORBA::Boolean
   existConnectivity(SALOME_MED::medConnectivity connectivityType,
-		    SALOME_MED::medEntityMesh entity)
+                    SALOME_MED::medEntityMesh entity)
     throw (SALOME::SALOME_Exception);
   
   char *getCoordinatesSystem() throw(SALOME::SALOME_Exception);
@@ -111,13 +117,13 @@ public:
   CORBA::Double getCoordinate(CORBA::Long Number, CORBA::Long Axis)
     throw (SALOME::SALOME_Exception);
   
-  SALOME_MED::double_array * getCoordinates(SALOME_MED::medModeSwitch typeSwitch)
+  SALOME_TYPES::ListOfDouble * getCoordinates(SALOME_MED::medModeSwitch typeSwitch)
     throw(SALOME::SALOME_Exception);
 
-  SALOME_MED::string_array * getCoordinatesNames()
+  SALOME_TYPES::ListOfString * getCoordinatesNames()
     throw(SALOME::SALOME_Exception);
   
-  SALOME_MED::string_array * getCoordinatesUnits()
+  SALOME_TYPES::ListOfString * getCoordinatesUnits()
     throw(SALOME::SALOME_Exception);
   
   CORBA::Long getNumberOfNodes() throw(SALOME::SALOME_Exception);
@@ -127,44 +133,43 @@ public:
   
   SALOME_MED::medGeometryElement_array *
   getTypes(SALOME_MED::medEntityMesh entity) throw(SALOME::
-						   SALOME_Exception);
+                                                   SALOME_Exception);
   
   SALOME_MED::medGeometryElement
   getElementType(SALOME_MED::medEntityMesh entity,
-		 CORBA::Long number)
+                 CORBA::Long number)
     throw   (SALOME::SALOME_Exception);
   
   CORBA::Long getNumberOfElements(SALOME_MED::medEntityMesh entity,
-				  SALOME_MED::medGeometryElement geomElement)
+                                  SALOME_MED::medGeometryElement geomElement)
     throw(SALOME::SALOME_Exception);
   
-  SALOME_MED::long_array *
-  getConnectivity(SALOME_MED::medModeSwitch typeSwitch,
-		  SALOME_MED::medConnectivity mode,
-		  SALOME_MED::medEntityMesh entity,
-		  SALOME_MED::medGeometryElement geomElement)
+  SALOME_TYPES::ListOfLong *
+  getConnectivity(SALOME_MED::medConnectivity mode,
+                  SALOME_MED::medEntityMesh entity,
+                  SALOME_MED::medGeometryElement geomElement)
     throw(SALOME::SALOME_Exception);
   
-  SALOME_MED::long_array *
+  SALOME_TYPES::ListOfLong *
   getConnectivityIndex(SALOME_MED::medConnectivity mode,
-		       SALOME_MED::medEntityMesh entity)
+                       SALOME_MED::medEntityMesh entity)
     throw(SALOME::SALOME_Exception);
   
-  SALOME_MED::long_array*
+  SALOME_TYPES::ListOfLong*
   getGlobalNumberingIndex(SALOME_MED::medEntityMesh entity)
     throw (SALOME::SALOME_Exception);
   
   CORBA::Long getElementNumber(SALOME_MED::medConnectivity mode,
-			       SALOME_MED::medEntityMesh entity,
-			       SALOME_MED::medGeometryElement type,
-			       const SALOME_MED::long_array & connectivity)
+                               SALOME_MED::medEntityMesh entity,
+                               SALOME_MED::medGeometryElement type,
+                               const SALOME_TYPES::ListOfLong & connectivity)
     throw(SALOME::SALOME_Exception);
   
-  SALOME_MED::long_array *
+  SALOME_TYPES::ListOfLong *
   getReverseConnectivity(SALOME_MED::medConnectivity mode)
     throw(SALOME::SALOME_Exception);
   
-  SALOME_MED::long_array *
+  SALOME_TYPES::ListOfLong *
   getReverseConnectivityIndex(SALOME_MED::medConnectivity mode) 
     throw(SALOME::SALOME_Exception);
   
@@ -180,14 +185,14 @@ public:
     throw(SALOME::SALOME_Exception);
   
   SALOME_MED::FAMILY_ptr getFamily(SALOME_MED::medEntityMesh entity,
-				   CORBA::Long i) 
+                                   CORBA::Long i) 
     throw(SALOME::SALOME_Exception);
   
   SALOME_MED::Group_array * getGroups(SALOME_MED::medEntityMesh entity)
     throw(SALOME::SALOME_Exception);
   
   SALOME_MED::GROUP_ptr getGroup(SALOME_MED::medEntityMesh entity,
-				 CORBA::Long i) 
+                                 CORBA::Long i) 
     throw(SALOME::SALOME_Exception);
   
   SALOME_MED::SUPPORT_ptr
@@ -221,10 +226,10 @@ public:
   
   // Others
   void addInStudy(SALOMEDS::Study_ptr myStudy,
-		  SALOME_MED::MESH_ptr myIor) 
+                  SALOME_MED::GMESH_ptr myIor) 
     throw(SALOME::SALOME_Exception);
   CORBA::Long addDriver(SALOME_MED::medDriverTypes driverType,
-			const char *fileName, const char *meshName)
+                        const char *fileName, const char *meshName)
     throw(SALOME::SALOME_Exception);
   void rmDriver(CORBA::Long i) throw(SALOME::SALOME_Exception);
   void read(CORBA::Long i) throw(SALOME::SALOME_Exception);
@@ -235,12 +240,14 @@ public:
   CORBA::Long getCorbaIndex() 
     throw(SALOME::SALOME_Exception);
   
-  SALOME_MED::MESH::meshInfos * getMeshGlobal()
+  SALOME_MED::GMESH::meshInfos * getMeshGlobal()
     throw (SALOME::SALOME_Exception);
   
-  bool areEquals(SALOME_MED::MESH_ptr other) { return false;};
+  bool areEquals(SALOME_MED::GMESH_ptr other) { return false;};
   
-  SALOME_MED::MESH::coordinateInfos * getCoordGlobal()
+  SALOME_MED::MESH_ptr convertInMESH() throw (SALOME::SALOME_Exception);
+  
+  SALOME_MED::GMESH::coordinateInfos * getCoordGlobal()
     throw (SALOME::SALOME_Exception);
   
   SALOME_MED::MESH::connectivityInfos *

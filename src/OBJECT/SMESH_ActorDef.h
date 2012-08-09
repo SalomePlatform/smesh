@@ -1,30 +1,30 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH OBJECT : interactive object for SMESH visualization
 //  File   : SMESH_ActorDef.h
 //  Author : Nicolas REJNERI
 //  Module : SMESH
 //
-
 #ifndef SMESH_ACTORDEF_H
 #define SMESH_ACTORDEF_H
 
@@ -59,23 +59,21 @@ class vtkPolyDataMapper;
 class vtkUnstructuredGrid;
 class vtkMergeFilter;
 class vtkPolyData;
-
 class vtkMapper;
 class vtkActor2D;
-class vtkMaskPoints;
-class vtkCellCenters;
-class vtkLabeledDataMapper;
-class vtkSelectVisiblePoints;
-
-class vtkScalarBarActor;
 class vtkLookupTable;
-
 class vtkPlane;
 class vtkImplicitBoolean;
-
 class vtkTimeStamp;
 
 class SMESH_DeviceActor;
+class SMESH_NodeLabelActor;
+class SMESH_CellLabelActor;
+class SMESH_ScalarBarActor;
+
+#ifndef DISABLE_PLOT2DVIEWER
+class SPlot2d_Histogram;
+#endif
 
 
 class SMESH_ActorDef : public SMESH_Actor
@@ -86,6 +84,8 @@ class SMESH_ActorDef : public SMESH_Actor
  public:
   vtkTypeMacro(SMESH_ActorDef,SMESH_Actor);
   
+  virtual void Delete();
+
   virtual void ReleaseGraphicsResources(vtkWindow *renWin);
   virtual int RenderOpaqueGeometry(vtkViewport *viewport);
   virtual int RenderTranslucentGeometry(vtkViewport *viewport);
@@ -103,17 +103,24 @@ class SMESH_ActorDef : public SMESH_Actor
   virtual void SetOpacity(vtkFloatingPointType theValue);
   virtual vtkFloatingPointType GetOpacity();
 
-  virtual void SetSufaceColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
-  virtual void GetSufaceColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
-
-  virtual void SetBackSufaceColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
-  virtual void GetBackSufaceColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
+  virtual void SetSufaceColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b, int delta );
+  virtual void GetSufaceColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b, int& delta);
 
   virtual void SetEdgeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
   virtual void GetEdgeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
 
+  virtual void SetOutlineColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
+  virtual void GetOutlineColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
+
+
   virtual void SetNodeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
   virtual void GetNodeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
+
+  virtual void Set0DColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
+  virtual void Get0DColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
+
+  virtual void SetBallColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
+  virtual void GetBallColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
 
   virtual void SetHighlightColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
   virtual void GetHighlightColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
@@ -124,8 +131,11 @@ class SMESH_ActorDef : public SMESH_Actor
   virtual vtkFloatingPointType GetLineWidth();
   virtual void SetLineWidth(vtkFloatingPointType theVal);
 
-  virtual void SetNodeSize(vtkFloatingPointType size) ;
-  virtual vtkFloatingPointType GetNodeSize() ;
+  virtual void Set0DSize(vtkFloatingPointType size);
+  virtual vtkFloatingPointType Get0DSize();
+
+  virtual void SetBallSize(vtkFloatingPointType size);
+  virtual vtkFloatingPointType GetBallSize();
 
   virtual int GetNodeObjId(int theVtkID);
   virtual vtkFloatingPointType* GetNodeCoord(int theObjID);
@@ -162,21 +172,28 @@ class SMESH_ActorDef : public SMESH_Actor
   virtual void UnShrink(); 
 
   virtual void SetPointsLabeled(bool theIsPointsLabeled);
-  virtual bool GetPointsLabeled(){ return myIsPointsLabeled;}
+  virtual bool GetPointsLabeled();
 
   virtual void SetCellsLabeled(bool theIsCellsLabeled);
-  virtual bool GetCellsLabeled(){ return myIsCellsLabeled;}
+  virtual bool GetCellsLabeled();
 
   virtual void SetFacesOriented(bool theIsFacesOriented);
   virtual bool GetFacesOriented();
 
+  virtual void SetFacesOrientationColor(vtkFloatingPointType theColor[3]);
+  virtual void GetFacesOrientationColor(vtkFloatingPointType theColor[3]);
+
+  virtual void SetFacesOrientationScale(vtkFloatingPointType theScale);
+  virtual vtkFloatingPointType GetFacesOrientationScale();
+
+  virtual void SetFacesOrientation3DVectors(bool theState);
+  virtual bool GetFacesOrientation3DVectors();
+
   virtual void SetControlMode(eControl theMode);
   virtual eControl GetControlMode(){ return myControlMode;}
+  virtual SMESH::Controls::FunctorPtr GetFunctor() { return myFunctor; }
 
-  virtual vtkScalarBarActor* GetScalarBarActor(){ return myScalarBarActor;}
-
-  virtual void SetPlaneParam(vtkFloatingPointType theDir[3], vtkFloatingPointType theDist, vtkPlane* thePlane);
-  virtual void GetPlaneParam(vtkFloatingPointType theDir[3], vtkFloatingPointType& theDist, vtkPlane* thePlane);
+  virtual SMESH_ScalarBarActor* GetScalarBarActor(){ return myScalarBarActor;}
 
   virtual void RemoveAllClippingPlanes();
   virtual vtkIdType GetNumberOfClippingPlanes();
@@ -189,7 +206,20 @@ class SMESH_ActorDef : public SMESH_Actor
   virtual long GetControlsPrecision() const { return myControlsPrecision; }
 
   virtual void UpdateScalarBar();
+  virtual void UpdateDistribution();
+
+#ifndef DISABLE_PLOT2DVIEWER
+  virtual SPlot2d_Histogram* GetPlot2Histogram() { return my2dHistogram; }
+  virtual SPlot2d_Histogram* UpdatePlot2Histogram();
+#endif
+
+
+  virtual void SetQuadratic2DRepresentation(EQuadratic2DRepresentation);
+  virtual EQuadratic2DRepresentation GetQuadratic2DRepresentation();
   
+  virtual void SetMarkerStd( VTK::MarkerType, VTK::MarkerScale );
+  virtual void SetMarkerTexture( int, VTK::MarkerTexture );
+
  protected:
   void SetControlMode(eControl theMode, bool theCheckEntityMode);
   void SetImplicitFunctionUsed(bool theIsImplicitFunctionUsed);
@@ -198,7 +228,7 @@ class SMESH_ActorDef : public SMESH_Actor
   TVisualObjPtr myVisualObj;
   vtkTimeStamp* myTimeStamp;
 
-  vtkScalarBarActor* myScalarBarActor;
+  SMESH_ScalarBarActor* myScalarBarActor;
   vtkLookupTable* myLookupTable;
 
   vtkProperty* mySurfaceProp;
@@ -207,65 +237,71 @@ class SMESH_ActorDef : public SMESH_Actor
   vtkProperty* myNodeProp;
 
   SMESH_DeviceActor* myBaseActor;
-  SMESH_DeviceActor* myNodeActor;
+  SMESH_NodeLabelActor* myNodeActor;
   SMESH_DeviceActor* myPickableActor;
 
   vtkProperty* myHighlightProp;
+  vtkProperty* myOutLineProp;
   vtkProperty* myPreselectProp;
+          
   SMESH_DeviceActor* myHighlitableActor;
 
   eControl myControlMode;
+  SMESH::Controls::FunctorPtr myFunctor;
   vtkProperty* my2DExtProp;
-  SMESH_DeviceActor* my2DActor;
+  SMESH_CellLabelActor* my2DActor;
   SMESH_DeviceActor* my2DExtActor;
-  SMESH_DeviceActor* my3DActor;
+  SMESH_CellLabelActor* my3DActor;
+  SMESH_DeviceActor* my3DExtActor;
   SMESH_DeviceActor* myControlActor;
 
   vtkProperty* myNodeExtProp;
   SMESH_DeviceActor* myNodeExtActor;
 
   vtkProperty* my1DProp;
-  SMESH_DeviceActor* my1DActor;
+  SMESH_CellLabelActor* my1DActor;
   vtkProperty* my1DExtProp;
   SMESH_DeviceActor* my1DExtActor;
 
+  vtkProperty* my0DProp;
+  SMESH_CellLabelActor* my0DActor;
+  vtkProperty* myBallProp;
+  SMESH_CellLabelActor* myBallActor;
+  vtkProperty* my0DExtProp;
+  SMESH_DeviceActor* my0DExtActor;
+
   unsigned int myEntityMode;
   unsigned int myEntityState;
+  unsigned int myEntityModeCache;
+  bool myIsEntityModeCache;
   bool myIsPointsVisible;
 
   bool myIsShrinkable;
   bool myIsShrunk;
   
-  bool myIsPointsLabeled;
-  vtkUnstructuredGrid* myPointsNumDataSet;
-  vtkActor2D *myPointLabels;
-  vtkMaskPoints* myPtsMaskPoints;
-  vtkLabeledDataMapper* myPtsLabeledDataMapper;
-  vtkSelectVisiblePoints* myPtsSelectVisiblePoints;
-
-  bool myIsCellsLabeled;
-  vtkUnstructuredGrid* myCellsNumDataSet;
-  vtkActor2D *myCellsLabels;
-  vtkMaskPoints* myClsMaskPoints;
-  vtkCellCenters* myCellCenters;
-  vtkLabeledDataMapper* myClsLabeledDataMapper;
-  vtkSelectVisiblePoints* myClsSelectVisiblePoints;
-
   vtkImplicitBoolean* myImplicitBoolean;
   typedef TVTKSmartPtr<vtkPlane> TPlanePtr;
   typedef std::vector<TPlanePtr> TCippingPlaneCont;
   TCippingPlaneCont myCippingPlaneCont;
   long myControlsPrecision;
 
+#ifndef DISABLE_PLOT2DVIEWER
+  SPlot2d_Histogram* my2dHistogram;
+#endif
+
   bool myIsFacesOriented;
+  
+  int myDeltaBrightness;
+
+  VTK::MarkerTexture myMarkerTexture;
 
   SMESH_ActorDef();
   ~SMESH_ActorDef();
 
   bool Init(TVisualObjPtr theVisualObj, 
-	    const char* theEntry, 
-	    const char* theName,
-	    int theIsClear);
+            const char* theEntry, 
+            const char* theName,
+            int theIsClear);
 
   void SetIsShrunkable(bool theShrunkable);
   void UpdateHighlight();

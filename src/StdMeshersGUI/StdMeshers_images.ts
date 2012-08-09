@@ -1,32 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<!--
-  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
-
-  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
-
-  This library is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Lesser General Public
-  License as published by the Free Software Foundation; either
-  version 2.1 of the License.
-
-  This library is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Lesser General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public
-  License along with this library; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-
-  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-
--->
-<TS version="1.1" >
+<TS version="2.0" language="en_US">
     <context>
         <name>@default</name>
         <message>
             <source>ICON_DLG_ARITHMETIC_1D</source>
+            <translation>mesh_hypo_length.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_FIXED_POINTS_1D</source>
             <translation>mesh_hypo_length.png</translation>
         </message>
         <message>
@@ -54,6 +36,14 @@
             <translation>mesh_hypo_length.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_CARTESIAN_PARAMS</source>
+            <translation>mesh_hypo_length.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_VISCOUS_LAYERS</source>
+            <translation>mesh_hypo_viscous_layers.png</translation>
+        </message>
+        <message>
             <source>ICON_DLG_MAX_ELEMENT_AREA</source>
             <translation>mesh_hypo_area.png</translation>
         </message>
@@ -69,6 +59,10 @@
             <source>ICON_DLG_NUMBER_OF_LAYERS</source>
             <translation>mesh_hypo_layer_distribution.png</translation>
         </message>
+	<message>
+            <source>ICON_DLG_NUMBER_OF_LAYERS_2D</source>
+            <translation>mesh_hypo_layer_distribution.png</translation>
+        </message>
         <message>
             <source>ICON_DLG_PROJECTION_SOURCE_1D</source>
             <translation>mesh_hypo_source_edge.png</translation>
@@ -80,6 +74,18 @@
         <message>
             <source>ICON_DLG_PROJECTION_SOURCE_3D</source>
             <translation>mesh_hypo_source_3d.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_QUADRANGLE_PARAMS</source>
+            <translation>mesh_hypo_length.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_IMPORT_SOURCE_1D</source>
+            <translation>mesh_hypo_source_edge.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_IMPORT_SOURCE_2D</source>
+            <translation>mesh_hypo_source_face.png</translation>
         </message>
         <message>
             <source>ICON_DLG_SEGMENT_LENGTH_AROUND_VERTEX</source>
@@ -95,6 +101,14 @@
         </message>
         <message>
             <source>ICON_SMESH_TREE_ALGO_CompositeSegment_1D</source>
+            <translation>mesh_tree_algo_regular.png</translation>
+        </message>
+	<message>
+            <source>ICON_SMESH_TREE_ALGO_UseExisting_2D</source>
+            <translation>mesh_tree_algo_existing_2D.png</translation>
+        </message>
+	<message>
+            <source>ICON_SMESH_TREE_ALGO_UseExisting_1D</source>
             <translation>mesh_tree_algo_regular.png</translation>
         </message>
         <message>
@@ -121,6 +135,14 @@
             <source>ICON_SMESH_TREE_ALGO_Quadrangle_2D</source>
             <translation>mesh_tree_algo_quad.png</translation>
         </message>
+	<message>
+            <source>ICON_SMESH_TREE_ALGO_RadialQuadrangle_1D2D</source>
+            <translation>mesh_tree_algo_radial_quadrangle_1D2D.png</translation>
+        </message>
+	<message>
+            <source>ICON_SMESH_TREE_ALGO_Prism_3D</source>
+            <translation>mesh_tree_algo_prism.png</translation>
+        </message>
         <message>
             <source>ICON_SMESH_TREE_ALGO_RadialPrism_3D</source>
             <translation>mesh_tree_algo_radial_prism.png</translation>
@@ -131,7 +153,7 @@
         </message>
         <message>
             <source>ICON_SMESH_TREE_ALGO_SegmentAroundVertex_0D</source>
-            <translation>mesh_tree_algo_regular.png</translation>
+            <translation>mesh_tree_algo_0D.png</translation>
         </message>
         <message>
             <source>ICON_SMESH_TREE_HYPO_Arithmetic1D</source>
@@ -182,6 +204,10 @@
             <translation>mesh_tree_hypo_segment.png</translation>
         </message>
         <message>
+            <source>ICON_SMESH_TREE_HYPO_ViscousLayers</source>
+            <translation>mesh_tree_hypo_viscous_layers.png</translation>
+        </message>
+        <message>
             <source>ICON_SMESH_TREE_HYPO_ProjectionSource1D</source>
             <translation>mesh_tree_hypo_source_edge.png</translation>
         </message>
@@ -216,6 +242,29 @@
         <message>
             <source>ICON_SMESH_TREE_HYPO_StartEndLength</source>
             <translation>mesh_tree_hypo_length.png</translation>
+        </message>
+    </context>
+    <context>
+        <name>StdMeshersGUI_QuadrangleParamWdg</name>
+        <message>
+            <source>ICON_StdMeshers_Quadrangle_Params_0</source>
+            <translation>mesh_quadrangle_standard.png</translation>
+        </message>
+        <message>
+            <source>ICON_StdMeshers_Quadrangle_Params_1</source>
+            <translation>mesh_quadrangle_triapref.png</translation>
+        </message>
+        <message>
+            <source>ICON_StdMeshers_Quadrangle_Params_2</source>
+            <translation>mesh_quadrangle_quadpref.png</translation>
+        </message>
+        <message>
+            <source>ICON_StdMeshers_Quadrangle_Params_3</source>
+            <translation>mesh_quadrangle_quadpref_reversed.png</translation>
+        </message>
+        <message>
+            <source>ICON_StdMeshers_Quadrangle_Params_4</source>
+            <translation>mesh_quadrangle_reduced.png</translation>
         </message>
     </context>
 </TS>

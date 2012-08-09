@@ -1,0 +1,770 @@
+/*!
+
+\page tui_filters_page Filters usage
+
+Filters allow picking only the mesh elements satisfying to a
+specific condition or a set of conditions. Filters can be used to create
+or edit mesh groups, remove elements from the mesh object, control
+mesh quality by different parameters, etc.
+
+Several filters can be combined together by using logical operators \a
+AND and \a OR. In addition, applied filter criterion can be reverted
+using logical operator \a NOT.
+
+Mesh filters use the functionality of mesh quality controls to filter
+mesh nodes / elements by a specific characteristic (Area, Length, etc).
+
+This page provides a short description of the existing mesh filters,
+describes required parameters and gives simple examples of usage in
+Python scripts.
+
+\sa \ref tui_quality_controls_page
+
+\section filter_aspect_ratio Aspect ratio
+
+Filter 2D mesh elements (faces) according to the aspect ratio value:
+- element type should be \a smesh.FACE
+- functor type should be \a smesh.FT_AspectRatio
+- threshold is floating point value (aspect ratio)
+
+\code
+# create mesh
+from SMESH_mechanic import *
+# get faces with aspect ratio > 6.5
+filter = smesh.GetFilter(smesh.FACE, smesh.FT_AspectRatio, smesh.FT_MoreThan, 6.5)
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of faces with aspect ratio > 6.5:", len(ids)
+\endcode
+
+\sa \ref tui_aspect_ratio
+
+\section filter_aspect_ratio_3d Aspect ratio 3D
+
+Filter 3D mesh elements (volumes) according to the aspect ratio value:
+- element type is \a smesh.VOLUME
+- functor type is \a smesh.FT_AspectRatio3D
+- threshold is floating point value (aspect ratio)
+
+\code
+# create mesh with volumes
+from SMESH_mechanic import *
+mesh.Tetrahedron()
+mesh.Compute()
+# get volumes with aspect ratio < 2.0
+filter = smesh.GetFilter(smesh.VOLUME, smesh.FT_AspectRatio3D, smesh.FT_LessThan, 2.0)
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of volumes with aspect ratio < 2.0:", len(ids)
+\endcode
+
+\sa \ref tui_aspect_ratio_3d
+
+\section filter_warping_angle Warping angle
+
+Filter 2D mesh elements (faces) according to the warping angle value:
+- element type is \a smesh.FACE
+- functor type is \a smesh.FT_Warping
+- threshold is floating point value (warping angle)
+
+\code
+# create mesh
+from SMESH_mechanic import *
+# get faces with warping angle = 2.0e-13 with tolerance 5.0e-14
+criterion = smesh.GetCriterion(smesh.FACE, smesh.FT_Warping, smesh.FT_EqualTo, 2.0e-13)
+criterion.Tolerance = 5.0e-14
+filter = smesh.CreateFilterManager().CreateFilter()
+filter.SetCriteria([criterion])
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of faces with warping angle = 2.0e-13 (tolerance 5.0e-14):", len(ids)
+\endcode
+
+\sa \ref tui_warping
+
+\section filter_minimum_angle Minimum angle
+
+Filter 2D mesh elements (faces) according to the minimum angle value:
+- element type is \a smesh.FACE
+- functor type is \a smesh.FT_MinimumAngle
+- threshold is floating point value (minimum angle)
+
+\code
+# create mesh
+from SMESH_mechanic import *
+# get faces with minimum angle > 75
+filter = smesh.GetFilter(smesh.FACE, smesh.FT_MinimumAngle,">", 75)
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of faces with minimum angle > 75:", len(ids)
+\endcode
+
+\sa \ref tui_minimum_angle
+
+\section filter_taper Taper
+
+Filter 2D mesh elements (faces) according to the taper value:
+- element type is \a smesh.FACE
+- functor type is \a smesh.FT_Taper
+- threshold is floating point value (taper)
+
+\code
+# create mesh
+from SMESH_mechanic import *
+# get faces with taper < 1.e-15
+filter = smesh.GetFilter(smesh.FACE, smesh.FT_Taper, smesh.FT_LessThan, 1.e-15)
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of faces with taper < 1.e-15:", len(ids)
+\endcode
+
+\sa \ref tui_taper
+
+\section filter_skew Skew
+
+Filter 2D mesh elements (faces) according to the skew value:
+- element type is \a smesh.FACE
+- functor type is \a smesh.FT_Skew
+- threshold is floating point value (skew)
+
+\code
+# create mesh
+from SMESH_mechanic import *
+# get faces with skew > 50
+filter = smesh.GetFilter(smesh.FACE, smesh.FT_Skew, smesh.FT_MoreThan, 50)
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of faces with skew > 50:", len(ids)
+\endcode
+
+\sa \ref tui_skew
+
+\section filter_area Area
+
+Filter 2D mesh elements (faces) according to the area value:
+- element type is \a smesh.FACE
+- functor type is \a smesh.FT_Area
+- threshold is floating point value (area)
+
+\code
+# create mesh
+from SMESH_mechanic import *
+# get faces with area > 60 and < 90
+criterion1 = smesh.GetCriterion(smesh.FACE, smesh.FT_Area, smesh.FT_MoreThan, 60,\
+                                smesh.FT_Undefined, smesh.FT_LogicalAND)
+criterion2 = smesh.GetCriterion(smesh.FACE, smesh.FT_Area, smesh.FT_LessThan, 90)
+filter = smesh.CreateFilterManager().CreateFilter()
+filter.SetCriteria([criterion1,criterion2])
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of faces with area in range (60,90):", len(ids)
+\endcode
+
+\sa \ref tui_area
+
+\section filter_volume Volume
+
+Filter 3D mesh elements (volumes) according to the volume value:
+- element type is \a smesh.VOLUME
+- functor type is \a smesh.FT_Volume3D
+- threshold is floating point value (volume)
+
+\code
+# create mesh with volumes
+from SMESH_mechanic import *
+mesh.Tetrahedron()
+mesh.Compute()
+# get volumes faces with volume > 100
+filter = smesh.GetFilter(smesh.VOLUME, smesh.FT_Volume3D, smesh.FT_MoreThan, 100)
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of volumes with volume > 100:", len(ids)
+\endcode
+
+\sa \ref tui_volume
+
+\section filter_free_borders Free borders
+
+Filter 1D mesh elements (edges) which represent free borders of a mesh:
+- element type is \a smesh.EDGE
+- functor type is \a smesh.FT_FreeBorders
+- threshold value is not required
+
+\code
+# create mesh
+import geompy, smesh, StdMeshers
+face = geompy.MakeFaceHW(100, 100, 1)
+geompy.addToStudy( face, "quadrangle" )
+mesh = smesh.Mesh(face)
+mesh.Segment().NumberOfSegments(10)
+mesh.Triangle().MaxElementArea(25)
+mesh.Compute()
+# get all free borders
+filter = smesh.GetFilter(smesh.EDGE, smesh.FT_FreeBorders)
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of edges on free borders:", len(ids)
+\endcode
+
+\sa \ref tui_free_borders
+
+\section filter_free_edges Free edges
+
+Filter 2D mesh elements (faces) consisting of edges belonging to one
+element of mesh only:
+- element type is \a smesh.FACE
+- functor type is \a smesh.FT_FreeEdges
+- threshold value is not required
+
+\code
+# create mesh
+import geompy, smesh, StdMeshers
+face = geompy.MakeFaceHW(100, 100, 1)
+geompy.addToStudy( face, "quadrangle" )
+mesh = smesh.Mesh(face)
+mesh.Segment().NumberOfSegments(10)
+mesh.Triangle().MaxElementArea(25)
+mesh.Compute()
+# get all faces with free edges
+filter = smesh.GetFilter(smesh.FACE, smesh.FT_FreeEdges)
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of faces with free edges:", len(ids)
+\endcode
+
+\sa \ref tui_free_edges
+
+\section filter_free_nodes Free nodes
+
+Filter free nodes:
+- element type is \a smesh.NODE
+- functor type is \a smesh.FT_FreeNodes
+- threshold value is not required
+
+\code
+# create mesh
+from SMESH_mechanic import *
+# add node
+mesh.AddNode(0,0,0)
+# get all free nodes
+filter = smesh.GetFilter(smesh.NODE, smesh.FT_FreeNodes)
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of free nodes:", len(ids)
+\endcode
+
+\sa \ref tui_free_nodes
+
+\section filter_free_faces Free faces
+
+Filter free faces:
+- element type is \a smesh.FACE
+- functor type is \a smesh.FT_FreeFaces
+- threshold value is not required
+
+\code
+# create mesh
+from SMESH_mechanic import *
+# get all free faces
+filter = smesh.GetFilter(smesh.FACE, smesh.FT_FreeFaces)
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of free faces:", len(ids)
+\endcode
+
+\sa \ref tui_free_faces
+
+\section filter_bare_border_faces Bare border faces
+
+Filter faces with bare borders:
+- element type is \a smesh.FACE
+- functor type is \a smesh.FT_BareBorderFace
+- threshold value is not required
+
+\code
+# create mesh
+from SMESH_mechanic import *
+# remove some faces to have faces with bare borders
+mesh.RemoveElements( mesh.GetElementsByType(FACE)[0:5] )
+# get all faces bare borders
+filter = smesh.GetFilter(smesh.FACE, smesh.FT_BareBorderFace)
+ids = mesh.GetIdsFromFilter(filter)
+print "Faces with bare borders:", ids
+\endcode
+
+\sa \ref tui_bare_border_faces
+
+\section filter_coplanar_faces Coplanar faces
+
+Filter faces with bare borders:
+- element type is \a smesh.FACE
+- functor type is \a smesh.FT_CoplanarFaces
+- threshold value is the face ID
+- tolerance is in degrees
+
+\code
+# create mesh
+from SMESH_mechanic import *
+faceID = mesh.GetElementsByType(FACE)[0]
+# get all faces co-planar to the first face with tolerance 5 degrees
+filter = smesh.GetFilter(smesh.FACE, smesh.FT_CoplanarFaces,faceID,Tolerance=5.0)
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of faces coplanar with the first one:", len(ids)
+\endcode
+
+\section filter_over_constrained_faces Over-constrained faces
+
+Filter over-constrained faces:
+- element type is \a smesh.FACE
+- functor type is \a smesh.FT_OverConstrainedFace
+- threshold value is not required
+
+\code
+# create mesh
+from SMESH_mechanic import *
+# get all over-constrained faces
+filter = smesh.GetFilter(smesh.FACE, smesh.FT_OverConstrainedFace)
+ids = mesh.GetIdsFromFilter(filter)
+print "Over-constrained faces:", ids
+\endcode
+
+\sa \ref tui_over_constrained_faces
+
+\section filter_double_elements Double edges, Double faces, Double volumes
+
+filter mesh elements basing on the same set of nodes:
+- element type is either \a smesh.EGDE, \a smesh.FACE or \a smesh.VOLUME
+- functor type is either \a smesh.FT_EqualEdges, \a
+          smesh.FT_EqualFaces or \a smesh.FT_EqualVolumes, 
+- threshold value is not required
+
+\code
+from smesh import *
+# make a mesh on a box
+box = geompy.MakeBoxDXDYDZ(100,100,100)
+mesh = Mesh( box, "Box" )
+mesh.Segment().NumberOfSegments(10)
+mesh.Quadrangle()
+mesh.Hexahedron()
+mesh.Compute()
+# copy all elements with translation and Merge nodes
+mesh.TranslateObject( mesh, MakeDirStruct( 10,0,0), Copy=True )
+mesh.MergeNodes( mesh.FindCoincidentNodes(1e-7) )
+# create filters to find equal elements
+equalEdgesFilter   = GetFilter(SMESH.EDGE, FT_EqualEdges)
+equalFacesFilter   = GetFilter(SMESH.FACE, FT_EqualFaces)
+equalVolumesFilter = GetFilter(SMESH.VOLUME, FT_EqualVolumes)
+# get equal elements
+print "Number of equal edges:",   len( mesh.GetIdsFromFilter( equalEdgesFilter ))
+print "Number of equal faces:",   len( mesh.GetIdsFromFilter( equalFacesFilter ))
+print "Number of equal volumes:", len( mesh.GetIdsFromFilter( equalVolumesFilter ))
+\endcode
+
+
+\section tui_double_nodes_control Double nodes
+
+filters mesh nodes which are coincident with other nodes (within a given tolerance):
+- element type is \a smesh.NODE
+- functor type is \a smesh.FT_EqualNodes
+- threshold value is not required
+- default tolerance is 1.0e-7
+
+\code
+from smesh import *
+# make a mesh on a box
+box = geompy.MakeBoxDXDYDZ(100,100,100)
+mesh = Mesh( box, "Box" )
+mesh.Segment().NumberOfSegments(10)
+mesh.Quadrangle()
+mesh.Hexahedron()
+mesh.Compute()
+# copy all elements with translation
+mesh.TranslateObject( mesh, MakeDirStruct( 10,0,0), Copy=True )
+# create filters to find nodes equal within tolerance of 1e-5
+filter = GetFilter(SMESH.NODE, FT_EqualNodes, Tolerance=1e-5)
+# get equal nodes
+print "Number of equal nodes:", len( mesh.GetIdsFromFilter( filter ))
+\endcode
+
+
+\section filter_borders_multiconnection Borders at multi-connection
+
+Filter border 1D mesh elements (edges) according to the specified number of
+connections (faces belonging the border edges)
+- element type is \a smesh.EDGE
+- functor type is \a smesh.FT_MultiConnection
+- threshold is integer value (number of connections)
+
+\code
+# create mesh
+from SMESH_mechanic import *
+# get border edges with number of connected faces = 5
+filter = smesh.GetFilter(smesh.EDGE, smesh.FT_MultiConnection, 5)
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of border edges with 5 faces connected:", len(ids)
+\endcode
+
+\sa \ref tui_borders_at_multiconnection
+
+\section filter_borders_multiconnection_2d Borders at multi-connection 2D
+
+Filter 2D mesh elements (faces) which consist of edges belonging
+to the specified number of mesh elements
+- element type is \a smesh.FACE
+- functor type is \a smesh.FT_MultiConnection2D
+- threshold is integer value (number of connections)
+
+\code
+# create mesh
+from SMESH_mechanic import *
+# get faces which consist of edges belonging to 2 mesh elements
+filter = smesh.GetFilter(smesh.FACE, smesh.FT_MultiConnection2D, 2)
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of faces consisting of edges belonging to 2 faces:", len(ids)
+\endcode
+
+\sa \ref tui_borders_at_multiconnection_2d
+
+\section filter_length Length
+
+Filter 1D mesh elements (edges) according to the edge length value:
+- element type should be \a smesh.EDGE
+- functor type should be \a smesh.FT_Length
+- threshold is floating point value (length)
+
+\code
+# create mesh
+from SMESH_mechanic import *
+# get edges with length > 14
+filter = smesh.GetFilter(smesh.EDGE, smesh.FT_Length, smesh.FT_MoreThan, 14)
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of edges with length > 14:", len(ids)
+\endcode
+
+\sa \ref tui_length_1d
+
+\section filter_length_2d Length 2D
+
+Filter 2D mesh elements (faces) corresponding to the maximum length.
+value of its edges:
+- element type should be \a smesh.FACE
+- functor type should be \a smesh.FT_Length2D
+- threshold is floating point value (edge length)
+
+\code
+# create mesh
+from SMESH_mechanic import *
+# get all faces that have edges with length > 14
+filter = smesh.GetFilter(smesh.FACE, smesh.FT_Length2D, smesh.FT_MoreThan, 14)
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of faces with maximum edge length > 14:", len(ids)
+\endcode
+
+\sa \ref tui_length_2d
+
+\section filter_max_element_length_2d Element Diameter 2D
+
+Filter 2D mesh elements (faces) corresponding to the maximum length
+value of its edges and diagonals:
+- element type should be \a smesh.FACE
+- functor type should be \a smesh.FT_MaxElementLength2D
+- threshold is floating point value (edge/diagonal length)
+
+\code
+# create mesh
+from SMESH_mechanic import *
+# get all faces that have elements with length > 10
+filter = smesh.GetFilter(smesh.FACE, smesh.FT_MaxElementLength2D, smesh.FT_MoreThan, 10)
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of faces with maximum element length > 10:", len(ids)
+\endcode
+
+\sa \ref tui_max_element_length_2d
+
+\section filter_max_element_length_3d Element Diameter 3D
+
+Filter 3D mesh elements (volumes) corresponding to the maximum length
+value of its edges and diagonals:
+- element type should be \a smesh.VOLUME
+- functor type should be \a smesh.FT_MaxElementLength3D
+- threshold is floating point value (edge/diagonal length)
+
+\code
+# create mesh with volumes
+from SMESH_mechanic import *
+mesh.Tetrahedron()
+mesh.Compute()
+# get all volumes that have elements with length > 10
+filter = smesh.GetFilter(smesh.VOLUME, smesh.FT_MaxElementLength3D, smesh.FT_MoreThan, 10)
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of volumes with maximum element length > 10:", len(ids)
+\endcode
+
+\sa \ref tui_max_element_length_3d
+
+\section filter_bare_border_volumes Bare border volumes
+
+Filter 3D mesh elements with bare borders:
+- element type is \a smesh.VOLUME
+- functor type is \a smesh.FT_BareBorderVolume
+- threshold value is not required
+
+\code
+# create mesh
+from SMESH_mechanic import *
+mesh.Tetrahedron()
+mesh.Compute()
+# remove some volumes to have volumes with bare borders
+mesh.RemoveElements( mesh.GetElementsByType(VOLUME)[0:5] )
+# get all volumes with bare borders
+filter = smesh.GetFilter(smesh.VOLUME, smesh.FT_BareBorderVolume)
+ids = mesh.GetIdsFromFilter(filter)
+print "Volumes with bare borders:", ids
+\endcode
+
+\sa \ref tui_bare_border_volumes
+
+\section filter_over_constrained_volumes Over-constrained volumes
+
+Filter over-constrained volumes:
+- element type is \a smesh.VOLUME
+- functor type is \a smesh.FT_OverConstrainedVolume
+- threshold value is not required
+
+\code
+# create mesh
+from SMESH_mechanic import *
+mesh.Tetrahedron()
+mesh.Compute()
+# get all over-constrained volumes
+filter = smesh.GetFilter(smesh.VOLUME, smesh.FT_OverConstrainedVolume)
+ids = mesh.GetIdsFromFilter(filter)
+print "Over-constrained volumes:", ids
+\endcode
+
+\sa \ref tui_over_constrained_faces
+
+\section filter_belong_to_geom Belong to Geom
+
+Filter mesh entities (nodes or elements) which all nodes lie on the
+shape defined by threshold value:
+- element type can be any entity type, from \a smesh.NODE to \a smesh.VOLUME
+- functor type should be \a smesh.FT_BelongToGeom
+- threshold is geometrical object
+
+\code
+# create mesh
+from SMESH_mechanic import *
+# get all faces which nodes lie on the face sub_face3
+filter = smesh.GetFilter(smesh.FACE, smesh.FT_BelongToGeom, sub_face3)
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of faces which nodes lie on sub_face3:", len(ids)
+\endcode
+
+\section filter_lying_on_geom Lying on Geom
+
+Filter mesh entities (nodes or elements) at least one node of which lies on the
+shape defined by threshold value:
+- element type can be any entity type, from \a smesh.NODE to \a smesh.VOLUME
+- functor type should be \a smesh.FT_LyingOnGeom
+- threshold is geometrical object
+
+\code
+# create mesh
+from SMESH_mechanic import *
+# get all faces at least one node of each lies on the face sub_face3
+filter = smesh.GetFilter(smesh.FACE, smesh.FT_LyingOnGeom, sub_face3)
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of faces at least one node of each lies on sub_face3:", len(ids)
+\endcode
+
+\section filter_belong_to_plane Belong to Plane
+
+Filter mesh entities (nodes or elements) which all nodes belong to the
+plane defined by threshold value with the given tolerance:
+- element type can be: \a smesh.NODE, \a smesh.EDGE, \a smesh.FACE
+- functor type should be \a smesh.FT_BelongToPlane
+- threshold is geometrical object (plane)
+- default tolerance is 1.0e-7
+
+\code
+# create mesh
+from SMESH_mechanic import *
+# create plane
+import geompy
+plane_1 = geompy.MakePlane(p3,seg1,2000)
+geompy.addToStudy(plane_1, "plane_1")
+# get all nodes which lie on the plane \a plane_1
+filter = smesh.GetFilter(smesh.NODE, smesh.FT_BelongToPlane, plane_1)
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of nodes which lie on the plane plane_1:", len(ids)
+\endcode
+
+\section filter_belong_to_cylinder Belong to Cylinder
+
+Filter mesh entities (nodes or elements) which all nodes belong to the
+cylindrical face defined by threshold value with the given tolerance:
+- element type can be: \a smesh.NODE, \a smesh.EDGE, \a smesh.FACE
+- functor type should be \a smesh.FT_BelongToCylinder
+- threshold is geometrical object (cylindrical face)
+- default tolerance is 1.0e-7
+
+\code
+# create mesh
+from SMESH_mechanic import *
+# get all faces which lie on the cylindrical face \a sub_face1
+filter = smesh.GetFilter(smesh.FACE, smesh.FT_BelongToCylinder, sub_face1)
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of faces which lie on the cylindrical surface sub_face1:", len(ids)
+\endcode
+
+\section filter_belong_to_surface Belong to Surface
+
+Filter mesh entities (nodes or elements) which all nodes belong to the
+arbitrary surface defined by threshold value with the given tolerance:
+- element type can be: \a smesh.NODE, \a smesh.EDGE, \a smesh.FACE
+- functor type should be \a smesh.FT_BelongToGenSurface
+- threshold is geometrical object (arbitrary surface)
+- default tolerance is 1.0e-7
+
+\code
+# create mesh
+from SMESH_mechanic import *
+# create b-spline
+spline_1 = geompy.MakeInterpol([p4,p6,p3,p1])
+surface_1 = geompy.MakePrismVecH( spline_1, vz, 70.0 )
+geompy.addToStudy(surface_1, "surface_1")
+# get all nodes which lie on the surface \a surface_1
+filter = smesh.GetFilter(smesh.NODE, smesh.FT_BelongToGenSurface, surface_1)
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of nodes which lie on the surface surface_1:", len(ids)
+\endcode
+
+\section filter_range_of_ids Range of IDs
+
+Filter mesh entities elements (nodes or elements) according to the
+specified identifiers range:
+- element type can be any entity type, from \a smesh.NODE to \a smesh.VOLUME
+- functor type is \a smesh.FT_RangeOfIds
+- threshold is string listing required IDs and/or ranges of IDs, e.g."1,2,3,50-60,63,67,70-78"	
+
+\code
+# create mesh
+from SMESH_mechanic import *
+# get nodes with identifiers [5-10] and [15-30]
+criterion1 = smesh.GetCriterion(smesh.NODE, smesh.FT_RangeOfIds, Treshold="5-10",\
+                                BinaryOp=smesh.FT_LogicalOR)
+criterion2 = smesh.GetCriterion(smesh.NODE, smesh.FT_RangeOfIds, Treshold="15-30")
+filter = smesh.CreateFilterManager().CreateFilter()
+filter.SetCriteria([criterion1,criterion2])
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of nodes in ranges [5-10] and [15-30]:", len(ids)
+\endcode
+
+\section filter_bad_oriented_volume Badly oriented volume
+
+Filter 3D mesh elements (volumes), which are incorrectly oriented from
+the point of view of MED convention. 
+- element type should be \a smesh.VOLUME
+- functor type is \a smesh.FT_BadOrientedVolume
+- threshold is not required
+
+\code
+# create mesh with volumes
+from SMESH_mechanic import *
+mesh.Tetrahedron()
+mesh.Compute()
+# get all badly oriented volumes
+filter = smesh.GetFilter(smesh.VOLUME, smesh.FT_BadOrientedVolume)
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of badly oriented volumes:", len(ids)
+\endcode
+
+\section filter_linear_or_quadratic Linear / quadratic
+
+Filter linear / quadratic mesh elements:
+- element type should be any element type, e.g.: \a smesh.EDGE, \a smesh.FACE, \a smesh.VOLUME
+- functor type is \a smesh.FT_LinearOrQuadratic
+- threshold is not required
+- if unary operator is set to smesh.FT_LogicalNOT, the quadratic
+elements are selected, otherwise (by default) linear elements are selected
+
+\code
+# create mesh
+from SMESH_mechanic import *
+# get number of linear and quadratic edges
+filter_linear = smesh.GetFilter(smesh.EDGE, smesh.FT_LinearOrQuadratic)
+filter_quadratic = smesh.GetFilter(smesh.EDGE, smesh.FT_LinearOrQuadratic, smesh.FT_LogicalNOT)
+ids_linear = mesh.GetIdsFromFilter(filter_linear)
+ids_quadratic = mesh.GetIdsFromFilter(filter_quadratic)
+print "Number of linear edges:", len(ids_linear), "; number of quadratic edges:", len(ids_quadratic)
+# convert mesh to quadratic
+print "Convert to quadratic..."
+mesh.ConvertToQuadratic(True)
+# get number of linear and quadratic edges
+ids_linear = mesh.GetIdsFromFilter(filter_linear)
+ids_quadratic = mesh.GetIdsFromFilter(filter_quadratic)
+print "Number of linear edges:", len(ids_linear), "; number of quadratic edges:", len(ids_quadratic)
+\endcode
+
+\section filter_group_color Group color
+
+Filter mesh entities, belonging to the group with the color defined by the threshold value.
+- element type can be any entity type, from \a smesh.NODE to \a smesh.VOLUME
+- functor type is \a smesh.FT_GroupColor
+- threshold should be of SALOMEDS.Color type
+
+\code
+# create mesh
+from SMESH_mechanic import *
+# create group of edges
+all_edges = mesh.GetElementsByType(smesh.EDGE)
+grp = mesh.MakeGroupByIds("edges group", smesh.EDGE, all_edges[:len(all_edges)/4])
+import SALOMEDS
+c = SALOMEDS.Color(0.1, 0.5, 1.0)
+grp.SetColor(c)
+# get number of the edges not belonging to the group with the given color
+filter = smesh.GetFilter(smesh.EDGE, smesh.FT_GroupColor, c, smesh.FT_LogicalNOT)
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of edges not beloging to the group with color (0.1, 0.5, 1.0):", len(ids)
+\endcode
+
+\section filter_geom_type Geometry type
+
+Filter mesh elements by the geometric type defined with the threshold
+value. The list of available geometric types depends on the element
+entity type.
+- element type should be any element type, e.g.: \a smesh.EDGE, \a smesh.FACE, \a smesh.VOLUME
+- functor type should be \a smesh.FT_ElemGeomType
+- threshold is of smesh.GeometryType value
+
+\code
+# create mesh with volumes
+from SMESH_mechanic import *
+mesh.Tetrahedron()
+mesh.Compute()
+# get all triangles, quadrangles, tetrahedrons, pyramids
+filter_tri = smesh.GetFilter(smesh.FACE, smesh.FT_ElemGeomType, smesh.Geom_TRIANGLE)
+filter_qua = smesh.GetFilter(smesh.FACE, smesh.FT_ElemGeomType, smesh.Geom_QUADRANGLE)
+filter_tet = smesh.GetFilter(smesh.VOLUME, smesh.FT_ElemGeomType, smesh.Geom_TETRA)
+filter_pyr = smesh.GetFilter(smesh.VOLUME, smesh.FT_ElemGeomType, smesh.Geom_PYRAMID)
+ids_tri = mesh.GetIdsFromFilter(filter_tri)
+ids_qua = mesh.GetIdsFromFilter(filter_qua)
+ids_tet = mesh.GetIdsFromFilter(filter_tet)
+ids_pyr = mesh.GetIdsFromFilter(filter_pyr)
+print "Number of triangles:", len(ids_tri)
+print "Number of quadrangles:", len(ids_qua)
+print "Number of tetrahedrons:", len(ids_tet)
+print "Number of pyramids:", len(ids_pyr)
+\endcode
+
+\section combining_filters How to combine filters with Criterion structures?
+
+Filters can be combined by making use of "criteria".
+
+Example :
+
+\code
+# create mesh
+from SMESH_mechanic import *
+# get all the quadrangle faces ...
+criterion1 = smesh.GetCriterion(smesh.FACE, smesh.FT_ElemGeomType, smesh.Geom_QUADRANGLE, smesh.FT_LogicalAND)
+# ... AND do NOT get those from sub_face3
+criterion2 = smesh.GetCriterion(smesh.FACE, smesh.FT_BelongToGeom, sub_face3, smesh.FT_LogicalNOT)
+filter = smesh.CreateFilterManager().CreateFilter()
+filter.SetCriteria([criterion1,criterion2])
+ids = mesh.GetIdsFromFilter(filter)
+
+myGroup = mesh.MakeGroupByIds("Quads_on_cylindrical_faces",smesh.FACE,ids)
+\endcode
+
+
+*/

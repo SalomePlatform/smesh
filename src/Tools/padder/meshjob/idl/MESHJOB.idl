@@ -1,0 +1,126 @@
+// Copyright (C) 2011-2012  CEA/DEN, EDF R&D
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+// Authors : Guillaume Boulant (EDF) - 31/01/2011
+
+#ifndef _MESHJOB_IDL_
+#define _MESHJOB_IDL_
+
+#include "SALOME_Exception.idl"
+#include "SALOME_Component.idl"
+
+//
+// This interface is used for mesh job submission from within the
+// SALOME plugin for PADDER.
+//
+module MESHJOB
+{
+
+  //
+  // Structure to transmit the parameters requiered for the job to run
+  // the executable program on the target resource. See configure
+  // service.
+  //
+  struct ConfigParameter {
+    string resname; // The name of the SALOME resource to be used
+    string binpath; // The path of the executable program on this resource
+    string envpath; // The path of the environment file on this resource
+  };
+
+  //
+  // This set of specification defines the data structure used to
+  // initialize a job on a specific resource, then supervise the job
+  // and finally retrieve the result data.
+  //
+
+  // This defines the set of temporary folders used by the jobmanager
+  // when executing a job (may depends on the job).
+  struct MeshJobPaths
+  {
+    string local_inputdir;
+    string local_resultdir;
+    string remote_workdir;
+  };
+
+  // This defines the possible types for a job parameter
+  enum FileType {MED_CONCRETE, MED_STEELBAR};
+
+  // This defines a single parameter for the job initialization (a med file)
+  struct MeshJobParameter
+  {
+    string file_name;
+    FileType file_type;
+    string group_name;
+  };
+  
+  // This defines a set of parameters for the job initialization
+  typedef sequence<MESHJOB::MeshJobParameter> MeshJobParameterList;
+
+  // This defines the result data of a job 
+  struct MeshJobResults
+  {
+    string results_dirname;
+    string outputmesh_filename;
+    string status;
+  };
+
+  // This defines the possible states of a job
+  enum MeshJobState {CREATED, IN_PROCESS, QUEUED, RUNNING, PAUSED, FINISHED, ERROR};
+
+  //
+  // This interface defines the computation services of the component
+  //
+
+  interface MeshJobManager: Engines::EngineComponent
+  {
+
+     /*! Add a resource configuration, identified by the string
+         configId and characterized by the parameters in
+         configParameter */
+    boolean configure(in string configId, in MESHJOB::ConfigParameter configParameter)
+      raises (SALOME::SALOME_Exception);
+
+    /*! Initialize a smesh computation job and return the job identifier */
+    long    initialize(in MESHJOB::MeshJobParameterList meshJobParameterList, in string configId)
+      raises (SALOME::SALOME_Exception);
+
+    /*! Submit the job execution and return true if submission is OK */
+    boolean start(in long jobId)
+      raises (SALOME::SALOME_Exception);
+
+    /*! Request the launch manager for the state of the specified job */
+    string getState(in long jobId)
+      raises (SALOME::SALOME_Exception);
+
+    /*! Request the launch manager for downloading the results */
+    MeshJobResults finalize(in long jobid)
+      raises (SALOME::SALOME_Exception);
+
+    /*! Clean all data associated to this job and remove the job from the launch manager */
+    boolean clean(in long jobId)
+      raises (SALOME::SALOME_Exception);
+
+    /*! Returns the set of temporary folders used by the job instance */
+    MeshJobPaths getPaths(in long jobId)
+      raises (SALOME::SALOME_Exception);
+
+  };
+
+};
+
+#endif // _MESHJOB_IDL_

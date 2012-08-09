@@ -1,0 +1,26 @@
+
+
+                 Cut a tetrahedron mesh by a plane
+                 ---------------------------------
+                 
+MeshCut allows to cut a mesh constituted of linear tetrahedrons by a plane.
+The tetrahedrons intersected by the plane are cut and replaced by elements of various types,
+(tetrahedron, pyramid, pentahedron).
+
+MeshCut is a standalone program, reading and producing med files.                
+                 
+Syntax:
+
+MeshCut input.med output.med resuMeshName aboveGroup belowGroup nx ny nz px py pz T
+
+where:
+  input.med    = name of the original mesh file in med format
+  output.med   = name of the result mesh file in med format
+  resuMeshName = name of the result mesh
+  aboveGroup   = name of the group of volumes above the cut plane
+  belowGroups  = name of the group of volumes below the cut plane
+  nx ny nz     = vector normal to the cut plane
+  px py pz     = a point of the cut plane
+  T            = 0 < T < 1 : vertices of a tetrahedron are considered as belonging to
+                 the cut plane if their distance to the plane is inferior to L*T
+                 where L is the mean edge size of the tetrahedron

@@ -1,34 +1,36 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : StdMeshers_Propagation.cxx
 //  Module : SMESH
-
+//
 #include "StdMeshers_Propagation.hxx"
 
 #include "utilities.h"
 
 #include "SMDS_SetIterator.hxx"
 #include "SMESH_Algo.hxx"
+#include "SMESH_Gen.hxx"
 #include "SMESH_HypoFilter.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_subMesh.hxx"
@@ -39,7 +41,7 @@
 #include <TopoDS.hxx>
 
 #define DBGMSG(txt) \
-//  cout << txt << endl;
+  //  cout << txt << endl;
 
 using namespace std;
 
@@ -266,7 +268,7 @@ namespace {
       for (; itA.More(); itA.Next())
       {
         // there are objects of different type among the ancestors of edge
-        if ( itA.Value().ShapeType() != TopAbs_WIRE || !checkedShapes.Add( itA.Value() ))
+        if ( itA.Value().ShapeType() != TopAbs_WIRE /*|| !checkedShapes.Add( itA.Value() )*/)
           continue;
 
         // Get ordered edges and find index of anE in a sequence
@@ -288,8 +290,7 @@ namespace {
           continue; // too few edges
         }
         else if ( edges.size() == 4 ) {
-          int oppIndex = edgeIndex + 2;
-          if ( oppIndex > 3 ) oppIndex -= 4;
+          int oppIndex = ( edgeIndex + 2 ) % 4;
           anOppE = edges[ oppIndex ];
         }
         else {
@@ -346,6 +347,10 @@ namespace {
             oppSM->ComputeStateEngine( SMESH_subMesh::CLEAN );
             oppData->SetState( IN_CHAIN );
             DBGMSG( "set IN_CHAIN on " << oppSM->GetId() );
+            if ( oppSM->GetAlgoState() != SMESH_subMesh::HYP_OK )
+              // make oppSM check algo state
+              if ( SMESH_Algo* algo = mesh->GetGen()->GetAlgo( *mesh, anOppE ))
+                oppSM->AlgoStateEngine(SMESH_subMesh::ADD_FATHER_ALGO,algo);
           }
           else {
             oppData->SetState( LAST_IN_CHAIN );
@@ -444,7 +449,8 @@ namespace {
   //================================================================================
 
   PropagationMgr::PropagationMgr()
-    : SMESH_subMeshEventListener( false ) // won't be deleted by submesh
+    : SMESH_subMeshEventListener( false, // won't be deleted by submesh
+                                  "StdMeshers_Propagation::PropagationMgr")
   {}
   //================================================================================
   /*!
@@ -454,6 +460,7 @@ namespace {
 
   void PropagationMgr::Set(SMESH_subMesh * submesh)
   {
+    if ( findData( submesh )) return;
     DBGMSG( "PropagationMgr::Set() on  " << submesh->GetId() );
     EventListenerData* data = new PropagationMgrData();
     submesh->SetEventListener( getListener(), data, submesh );

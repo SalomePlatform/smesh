@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  File   : SMESH_Filter.idl
 //  Author : Alexey Petrov, OCC
 //
@@ -46,10 +47,16 @@ module SMESH
     FT_Skew,         
     FT_Area,          
     FT_Volume3D,          
+    FT_MaxElementLength2D,
+    FT_MaxElementLength3D,
     FT_FreeBorders,
     FT_FreeEdges,
     FT_FreeNodes,
     FT_FreeFaces,
+    FT_EqualNodes,  // IMPORTANT: when a new item is added, please
+    FT_EqualEdges,  // 1) update getFunctNames() in SMESH_Filter_i.cxx: line 3910
+    FT_EqualFaces,  // 2) update fixFunctorType() in SMESH_2smeshpy.cxx: line 234
+    FT_EqualVolumes,
     FT_MultiConnection,
     FT_MultiConnection2D,
     FT_Length,
@@ -61,9 +68,15 @@ module SMESH
     FT_LyingOnGeom,
     FT_RangeOfIds,
     FT_BadOrientedVolume,
+    FT_BareBorderVolume,
+    FT_BareBorderFace,
+    FT_OverConstrainedVolume,
+    FT_OverConstrainedFace,
     FT_LinearOrQuadratic,
     FT_GroupColor,
     FT_ElemGeomType,
+    FT_CoplanarFaces,
+    FT_BallDiameter,
     FT_LessThan,
     FT_MoreThan,
     FT_EqualTo,
@@ -72,6 +85,18 @@ module SMESH
     FT_LogicalOR,
     FT_Undefined
   };
+
+  /*!
+  * Parameters of a reclangle of histogram
+  */
+  struct HistogramRectangle
+  {
+    long nbEvents;
+    double min;
+    double max;
+  };
+  typedef sequence<HistogramRectangle> Histogram;
+
 
   /*!
   * Base interface for all functors ( i.e. numerical functors and predicates )
@@ -83,14 +108,14 @@ module SMESH
     ElementType     GetElementType();
   };
 
-
-
   /*!
   * Numerical functors are intended for calculating value by Id of mesh entity
   */
   interface NumericalFunctor: Functor
   {
     double GetValue( in long theElementId );
+
+    Histogram GetHistogram( in short nbIntervals );
 
     /*!
     * Set precision for calculation. It is a position after point which is
@@ -107,6 +132,8 @@ module SMESH
   interface Skew            : NumericalFunctor{};
   interface Area            : NumericalFunctor{};
   interface Volume3D        : NumericalFunctor{};
+  interface MaxElementLength2D : NumericalFunctor{};
+  interface MaxElementLength3D : NumericalFunctor{};
   interface Length          : NumericalFunctor{};
   interface Length2D        : NumericalFunctor
   {
@@ -130,7 +157,9 @@ module SMESH
     typedef sequence<Value> Values;
     Values GetValues();
   };
+  interface BallDiameter    : NumericalFunctor{};
   
+
   /*!
   * Predicates are intended for verification of criteria,
   *            must return bool value by mesh id
@@ -146,6 +175,54 @@ module SMESH
    * the point of view of MED convention
    */
   interface BadOrientedVolume: Predicate {};
+
+  /*!
+   * Logical functor (predicate) "Volumes with bare border".
+   * Verify whether a mesh volume has a free facet without a mesh face on it
+   */
+  interface BareBorderVolume: Predicate {};
+  /*!
+   * Logical functor (predicate) "Faces with bare border".
+   * Verify whether a mesh face has a side not shared with another face
+   * and without a mesh edge on it
+   */
+  interface BareBorderFace: Predicate {};
+
+  /*!
+   * Logical functor (predicate) "Over-constrained Volume"
+   * Verify whether a mesh volume has only one facet shared with other volumes
+   */
+  interface OverConstrainedVolume: Predicate {};
+  /*!
+   * Logical functor (predicate) "Over-constrained Face".
+   * Verify whether a mesh face has only one border shared with other faces
+   */
+  interface OverConstrainedFace: Predicate {};
+
+  /*!
+   * Logical functor (predicate) "Equal Nodes".
+   * Verify whether there is another mesh node with same coordinates
+   */
+  interface EqualNodes: Predicate 
+  {
+    void    SetTolerance( in double theToler );
+    double  GetTolerance();
+  };
+  /*!
+   * Logical functor (predicate) "Equal Edges".
+   * Verify whether there is another mesh edge basing on the same nodes
+   */
+  interface EqualEdges: Predicate {};
+  /*!
+   * Logical functor (predicate) "Equal Faces".
+   * Verify whether there is another mesh face basing on the same nodes
+   */
+  interface EqualFaces: Predicate {};
+  /*!
+   * Logical functor (predicate) "Equal Volumes".
+   * Verify whether there is another mesh volumes basing on the same nodes
+   */
+  interface EqualVolumes: Predicate {};
 
   /*!
    * Logical functor (predicate) "Belong To Geometry".
@@ -346,6 +423,16 @@ module SMESH
   };
 
   /*!
+  * Functor "Coplanar faces"
+  * Returns true if a mesh face is a coplanar neighbour to a given one. It checks
+  * if normal of a face has angle with the threshold face less than a tolerance.
+  */
+  interface CoplanarFaces : Predicate{
+    void            SetFace ( in long theFaceID );
+    void            SetTolerance( in double theToler );
+  };
+
+  /*!
   *  Filter
   */
   interface Filter: SALOME::GenericObj, SMESH_IDSource
@@ -359,13 +446,13 @@ module SMESH
     *   BinaryOp      - binary logical operation FT_LogicalAND, FT_LogicalOR or
     *                   (FT_Undefined must be for the last criterion)
     *   ThresholdStr  - Threshold value defined as string. Used for:
-    *                   1. Diaposon of identifiers. Example: "1,2,3,5-10,12,27-29"
+    *                   1. Diapason of identifiers. Example: "1,2,3,5-10,12,27-29"
     *                   2. BelongToGeom predicate for storing name of shape
     *                   3. GroupColor predicate for storing group color "0.2;0;0.5"
     *   ThresholdID   - One more threshold value defined as string. Used for:
     *                   1. BelongToGeom predicate for storing id of shape
     *   Tolerance     - Tolerance is used for comparators (EqualTo comparision) and for
-    *                   "Belong to plane" and "Belong to cylinder" predicates
+    *                   "Belong to plane", "Belong to cylinder" etc predicates
     *   TypeOfElement - type of element SMESH::NODE, SMESH::FACE (used by BelongToGeom predicate only)
     *   Precision     - Precision of numerical functors
     */
@@ -449,10 +536,13 @@ module SMESH
     Skew              CreateSkew();
     Area              CreateArea();
     Volume3D          CreateVolume3D();
+    MaxElementLength2D CreateMaxElementLength2D();
+    MaxElementLength3D CreateMaxElementLength3D();
     Length            CreateLength();
     Length2D          CreateLength2D();
     MultiConnection   CreateMultiConnection();
     MultiConnection2D CreateMultiConnection2D();
+    BallDiameter      CreateBallDiameter();
 
     /*!
     *  Create logical functors ( predicates )
@@ -469,13 +559,23 @@ module SMESH
     FreeNodes         CreateFreeNodes();
     FreeFaces         CreateFreeFaces();
 
+    EqualNodes        CreateEqualNodes();
+    EqualEdges        CreateEqualEdges();
+    EqualFaces        CreateEqualFaces();
+    EqualVolumes      CreateEqualVolumes();
+
     RangeOfIds        CreateRangeOfIds();
 
     BadOrientedVolume CreateBadOrientedVolume();
+    BareBorderVolume  CreateBareBorderVolume();
+    BareBorderFace    CreateBareBorderFace();
+    OverConstrainedVolume CreateOverConstrainedVolume();
+    OverConstrainedFace   CreateOverConstrainedFace();
     LinearOrQuadratic CreateLinearOrQuadratic();
 
     GroupColor        CreateGroupColor();
     ElemGeomType      CreateElemGeomType();
+    CoplanarFaces     CreateCoplanarFaces();
 
     /*!
     *  Create comparators ( predicates )

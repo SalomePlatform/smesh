@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // File   : SMESHGUI_CreatePatternDlg.cxx
 // Author : Sergey LITONIN, Open CASCADE S.A.S.
 // SMESH includes
@@ -193,11 +194,11 @@ QWidget* SMESHGUI_CreatePatternDlg::createMainFrame( QWidget* theParent )
   // Connect signals and slots
 
   connect( myTypeGrp,    SIGNAL( buttonClicked( int )  ),
-	   this,         SLOT( onTypeChanged( int ) ) );
+           this,         SLOT( onTypeChanged( int ) ) );
   connect( myProjectChk, SIGNAL( toggled( bool ) ),
-	   this,         SLOT( onProject( bool ) ) );
+           this,         SLOT( onProject( bool ) ) );
   connect( aSelBtn,      SIGNAL( clicked() ),
-	   this,         SLOT( onSelBtnClicked() ) );
+           this,         SLOT( onSelBtnClicked() ) );
 
   return aMainGrp;
 }
@@ -274,11 +275,11 @@ void SMESHGUI_CreatePatternDlg::Init( const int theType )
 
   // selection and SMESHGUI
   connect( mySelectionMgr, SIGNAL( currentSelectionChanged() ),
-	   this,           SLOT( onSelectionDone() ) );
+           this,           SLOT( onSelectionDone() ) );
   connect( mySMESHGUI,     SIGNAL( SignalDeactivateActiveDialog() ),
-	   this,           SLOT( onDeactivate() ) );
+           this,           SLOT( onDeactivate() ) );
   connect( mySMESHGUI,     SIGNAL( SignalCloseAllDialogs() ),
-	   this,           SLOT( onClose() ) );
+           this,           SLOT( onClose() ) );
 
   mySwitch2d->setEnabled( theType == Type_2d );
   mySwitch3d->setEnabled( theType == Type_3d );
@@ -291,7 +292,7 @@ void SMESHGUI_CreatePatternDlg::Init( const int theType )
 
   QApplication::instance()->processEvents();
   updateGeometry();
-  resize( minimumSize() );
+  resize(100,100);
 
   activateSelection();
   onSelectionDone();
@@ -342,8 +343,8 @@ bool SMESHGUI_CreatePatternDlg::isValid()
 {
   if ( myGeomObj->_is_nil() ) {
     SUIT_MessageBox::information( this,
-				  tr( "SMESH_INSUFFICIENT_DATA" ),
-				  tr( "SMESHGUI_INVALID_PARAMETERS" ) );
+                                  tr( "SMESH_INSUFFICIENT_DATA" ),
+                                  tr( "SMESHGUI_INVALID_PARAMETERS" ) );
     return false;
   }
   return true;
@@ -406,13 +407,13 @@ void SMESHGUI_CreatePatternDlg::onSave()
 
     if ( aWritten != aLen ) {
       SUIT_MessageBox::information( this,
-				    tr( "SMESH_ERROR" ),
-				    tr( "ERROR_OF_SAVING" ) );
+                                    tr( "SMESH_ERROR" ),
+                                    tr( "ERROR_OF_SAVING" ) );
     } 
     else {
       //SUIT_Application::getDesktop()->setSelectionModes(ActorSelection);
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ) )
-	aViewWindow->SetSelectionMode( ActorSelection );
+        aViewWindow->SetSelectionMode( ActorSelection );
       disconnect( mySelectionMgr, 0, this, 0 );
       disconnect( mySMESHGUI, 0, this, 0 );
       mySMESHGUI->ResetState();
@@ -465,7 +466,7 @@ void SMESHGUI_CreatePatternDlg::onOk()
     else {
       //SUIT_Application::getDesktop()->setSelectionModes(ActorSelection);
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ) )
-	aViewWindow->SetSelectionMode( ActorSelection );
+        aViewWindow->SetSelectionMode( ActorSelection );
       disconnect( mySelectionMgr, 0, this, 0 );
       disconnect( mySMESHGUI, 0, this, 0 );
       mySMESHGUI->ResetState();
@@ -512,11 +513,11 @@ void SMESHGUI_CreatePatternDlg::onHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning( this, 
-			      tr( "WRN_WARNING" ),
-			      tr( "EXTERNAL_BROWSER_CANNOT_SHOW_PAGE" ).
-			      arg( app->resourceMgr()->stringValue( "ExternalBrowser", 
-								    platform ) ).
-			      arg( myHelpFileName ) );
+                              tr( "WRN_WARNING" ),
+                              tr( "EXTERNAL_BROWSER_CANNOT_SHOW_PAGE" ).
+                              arg( app->resourceMgr()->stringValue( "ExternalBrowser", 
+                                                                    platform ) ).
+                              arg( myHelpFileName ) );
   }
 }
 
@@ -532,7 +533,7 @@ bool SMESHGUI_CreatePatternDlg::loadFromObject( const bool theMess )
     if ( myPattern->_is_nil() )
       myPattern = SMESH::GetPattern();
 
-    if ( myMesh->_is_nil() && mySubMesh->_is_nil() || myGeomObj->_is_nil() )
+    if ( (myMesh->_is_nil() && mySubMesh->_is_nil()) || myGeomObj->_is_nil() )
       return false;
 
     SMESH::SMESH_Mesh_ptr aMesh = mySubMesh->_is_nil() ? myMesh.in() : mySubMesh->GetFather();
@@ -754,20 +755,20 @@ void SMESHGUI_CreatePatternDlg::activateSelection()
 
   if ( myType == Type_2d ) {
     mySelectionMgr->installFilter( new SMESH_NumberFilter( "SMESH",
-							   TopAbs_SHAPE,
-							   -1,
-							   TopAbs_FACE ) );
+                                                           TopAbs_SHAPE,
+                                                           -1,
+                                                           TopAbs_FACE ) );
   } 
   else {
     TColStd_MapOfInteger aTypes;
     aTypes.Add( TopAbs_SHELL );
     aTypes.Add( TopAbs_SOLID );
     mySelectionMgr->installFilter( new SMESH_NumberFilter( "SMESH",
-							   TopAbs_FACE,
-							   6,
-							   aTypes,
-							   GEOM::GEOM_Object::_nil(),
-							   true ) );
+                                                           TopAbs_FACE,
+                                                           6,
+                                                           aTypes,
+                                                           GEOM::GEOM_Object::_nil(),
+                                                           true ) );
   }
 }
 

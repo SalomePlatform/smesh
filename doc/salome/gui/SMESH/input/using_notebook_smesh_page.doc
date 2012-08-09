@@ -2,9 +2,14 @@
 
 \page using_notebook_mesh_page Using SALOME NoteBook
 
-It is possible to use variables defined through <b>SALOME NoteBook</b> for
-creation and modification of objects in the MESH module with the following
-limitations:
+<b>SALOME NoteBook</b> allows defining variables to be used for
+creation and modification of objects.
+
+\image html using_notebook_smesh.png "Setting of variables in SALOME NoteBook"
+
+\image html addnode_notebook.png "Use of variables to add a node in MESH module"
+
+The following limitations on the use of variables still exist:
 
 <ul>
 <li> \ref radial_prism_algo_page "Distribution of Layers" hypothesis -
@@ -28,6 +33,10 @@ limitations:
      values (indices of nodes) are correctly applied, but they are not restored
      after "Update study" operation.
 <li> \ref clipping_page "Clipping" dialog box.
-<li> <b>Colors / Size</b> dialog box.
+<li> <b>Properties</b> dialog box.
 </ul>
+
+Our <b>TUI Scripts</b> provide you with useful examples of 
+\ref tui_notebook_smesh "Using SALOME NoteBook".
+
 */

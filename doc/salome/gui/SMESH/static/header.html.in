@@ -1,0 +1,20 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<title>$title</title>
+<link href="$relpath$tabs.css" rel="stylesheet" type="text/css"/>
+$treeview
+$search
+$mathjax
+<script type="text/javascript">
+$(document).ready(initResizable);
+</script>
+<link href="$relpath$doxygen.css" rel="stylesheet" type="text/css"/>
+</head>
+<body onload='searchBox.OnSelectItem(0);'>
+<div id="top"><!-- do not remove this div! -->
+<div id="titlearea"><div align="right"><div class="version">Version: @VERSION@</div></div></div>
+
+</div>

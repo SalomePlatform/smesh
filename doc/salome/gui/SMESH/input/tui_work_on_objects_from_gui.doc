@@ -1,0 +1,27 @@
+/*!
+
+\page tui_work_on_objects_from_gui How to work with objects from the GUI ?
+
+It is sometimes useful to work alternatively in the GUI of SALOME and in the Python Console. To fetch an object from the TUI simply type:
+
+\code
+myMesh_ref = salome.IDToObject("ID")  
+// were ID is the number that appears in the object browser in the Entry column 
+// ( If hidden show it by right clicking and checking the checkbox Entry)
+myMesh = smesh.Mesh(myMesh_ref)
+\endcode
+or 
+\code
+myMesh_ref = salome.myStudy.FindObjectByPath("/Mesh/myMesh").GetObject() 
+// "/Mesh/myMesh" is the path to the desired object in the object browser
+myMesh = smesh.Mesh(myMesh_ref)
+\endcode
+
+All the methods documented in these pages can then be used on myMesh
+
+\note The first statement only gives you access to a reference to the object created via the GUI. 
+\n But the methods available on this reference are not exactly the same as those documented in these help pages. 
+This Python API is meant to be used on smesh.Mesh instances. 
+\n That's why you'll have to create such an instance with the second statement. 
+
+*/

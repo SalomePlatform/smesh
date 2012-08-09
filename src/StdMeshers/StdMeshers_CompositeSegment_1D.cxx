@@ -1,30 +1,28 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
-//  File   : StdMeshers_Regular_1D.cxx
-//           Moved here from SMESH_Regular_1D.cxx
-//  Author : Paul RASCLE, EDF
+//  File   : StdMeshers_CompositeSegment_1D.cxx
 //  Module : SMESH
-//  $Header$
 //
 #include "StdMeshers_CompositeSegment_1D.hxx"
 #include "StdMeshers_FaceSide.hxx"
@@ -73,15 +71,16 @@ namespace {
    */
   //================================================================================
 
-  TopoDS_Edge nextC1Edge(const TopoDS_Edge&  edge,
-                         SMESH_Mesh &        aMesh,
-                         const bool          forward)
+  TopoDS_Edge nextC1Edge(TopoDS_Edge  edge,
+                         SMESH_Mesh & aMesh,
+                         const bool   forward)
   {
+    if (edge.Orientation() > TopAbs_REVERSED) // INTERNAL
+      edge.Orientation( TopAbs_FORWARD );
     TopoDS_Edge eNext;
     TopTools_MapOfShape edgeCounter;
     edgeCounter.Add( edge );
-    TopoDS_Vertex v;
-    v = forward ? TopExp::LastVertex( edge,1 ) : TopExp::FirstVertex( edge,1 );
+    TopoDS_Vertex v = forward ? TopExp::LastVertex(edge,true) : TopExp::FirstVertex(edge,true);
     TopTools_ListIteratorOfListOfShape ancestIt = aMesh.GetAncestors( v );
     for ( ; ancestIt.More(); ancestIt.Next() )
     {
@@ -92,11 +91,11 @@ namespace {
     if ( edgeCounter.Extent() < 3 && !eNext.IsNull() ) {
       if ( SMESH_Algo::IsContinuous( edge, eNext )) {
         // care of orientation
-        bool reverse;
-        if ( forward )
-          reverse = ( !v.IsSame( TopExp::FirstVertex( eNext, true )));
-        else
-          reverse = ( !v.IsSame( TopExp::LastVertex( eNext, true )));
+        if (eNext.Orientation() > TopAbs_REVERSED) // INTERNAL
+          eNext.Orientation( TopAbs_FORWARD );
+        TopoDS_Vertex vn =
+          forward ? TopExp::FirstVertex(eNext,true) : TopExp::LastVertex(eNext,true);
+        bool reverse = (!v.IsSame(vn));
         if ( reverse )
           eNext.Reverse();
         return eNext;
@@ -151,7 +150,9 @@ namespace {
 
   struct VertexNodesRestoringListener : public SMESH_subMeshEventListener
   {
-    VertexNodesRestoringListener():SMESH_subMeshEventListener(0) // won't be deleted by submesh
+    VertexNodesRestoringListener():
+      SMESH_subMeshEventListener(0, // won't be deleted by submesh
+                                 "StdMeshers_CompositeSegment_1D::VertexNodesRestoringListener")
     {}
   /*!
    * \brief Restore nodes on internal vertices of a complex side
@@ -167,17 +168,23 @@ namespace {
                       EventListenerData* data,
                       const SMESH_Hypothesis*  /*hyp*/)
     {
-      bool hypRemoved = ( eventType == SMESH_subMesh::ALGO_EVENT &&
-                          subMesh->GetAlgoState() != SMESH_subMesh::HYP_OK );
-      if ( hypRemoved && data )
+      if ( data && eventType == SMESH_subMesh::ALGO_EVENT )
       {
-        list<SMESH_subMesh*>::iterator smIt = data->mySubMeshes.begin();
-        for ( ; smIt != data->mySubMeshes.end(); ++smIt )
+        bool hypRemoved;
+        if ( subMesh->GetAlgoState() != SMESH_subMesh::HYP_OK )
+          hypRemoved = true;
+        else {
+          SMESH_Algo* algo = subMesh->GetAlgo();
+          hypRemoved = ( string( algo->GetName() ) != StdMeshers_CompositeSegment_1D::AlgoName());
+        }
+        if ( hypRemoved )
         {
-          if ( SMESH_subMesh* sm = *smIt ) {
-            sm->SetIsAlwaysComputed( false );
-            sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
-          }
+          list<SMESH_subMesh*>::iterator smIt = data->mySubMeshes.begin();
+          for ( ; smIt != data->mySubMeshes.end(); ++smIt )
+            if ( SMESH_subMesh* sm = *smIt ) {
+              sm->SetIsAlwaysComputed( false );
+              sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+            }
         }
       }
       // at study restoration:
@@ -224,10 +231,19 @@ StdMeshers_CompositeSegment_1D::StdMeshers_CompositeSegment_1D(int         hypId
   :StdMeshers_Regular_1D(hypId, studyId, gen)
 {
   MESSAGE("StdMeshers_CompositeSegment_1D::StdMeshers_CompositeSegment_1D");
-  _name = "CompositeSegment_1D";
+  _name = AlgoName();
   _EventListener = new VertexNodesRestoringListener();
 }
 
+//=======================================================================
+//function : AlgoName
+//purpose  : Returns algo type name
+//=======================================================================
+
+std::string StdMeshers_CompositeSegment_1D::AlgoName()
+{
+  return "CompositeSegment_1D";
+}
 //=============================================================================
 /*!
  *  
@@ -251,6 +267,35 @@ StdMeshers_CompositeSegment_1D::~StdMeshers_CompositeSegment_1D()
 
 void StdMeshers_CompositeSegment_1D::SetEventListener(SMESH_subMesh* subMesh)
 {
+  // issue 0020279. Set "_alwaysComputed" flag to the submeshes of internal
+  // vertices of composite edge in order to avoid creation of vertices on
+  // them for the sake of stability.
+
+  // check if "_alwaysComputed" is not yet set
+  bool isAlwaysComputed = false;
+  SMESH_subMeshIteratorPtr smIt = subMesh->getDependsOnIterator(false,false);
+  while ( !isAlwaysComputed && smIt->more() )
+    isAlwaysComputed = smIt->next()->IsAlwaysComputed();
+
+  if ( !isAlwaysComputed )
+  {
+    // check if an edge is a part of a complex side
+    TopoDS_Face face;
+    TopoDS_Edge edge = TopoDS::Edge( subMesh->GetSubShape() );
+    auto_ptr< StdMeshers_FaceSide > side
+      ( StdMeshers_CompositeSegment_1D::GetFaceSide(*subMesh->GetFather(),edge, face, false ));
+    if ( side->NbEdges() > 1 ) { // complex
+
+      // set _alwaysComputed to vertices
+      for ( int iE = 1; iE < side->NbEdges(); ++iE )
+      {
+        TopoDS_Vertex V = side->FirstVertex( iE );
+        SMESH_subMesh* sm = side->GetMesh()->GetSubMesh( V );
+        sm->SetIsAlwaysComputed( true );
+      }
+    }
+  }
+  // set listener that will remove _alwaysComputed from submeshes at algorithm change
   subMesh->SetEventListener( _EventListener, 0, subMesh);
   StdMeshers_Regular_1D::SetEventListener( subMesh );
 }
@@ -268,14 +313,17 @@ StdMeshers_CompositeSegment_1D::GetFaceSide(SMESH_Mesh&        aMesh,
                                             const bool         ignoreMeshed)
 {
   list< TopoDS_Edge > edges;
-  edges.push_back( anEdge );
+  if ( anEdge.Orientation() <= TopAbs_REVERSED )
+    edges.push_back( anEdge );
+  else
+    edges.push_back( TopoDS::Edge( anEdge.Oriented( TopAbs_FORWARD ))); // PAL21718
 
   list <const SMESHDS_Hypothesis *> hypList;
   SMESH_Algo* theAlgo = aMesh.GetGen()->GetAlgo( aMesh, anEdge );
   if ( theAlgo ) hypList = theAlgo->GetUsedHypothesis(aMesh, anEdge, false);
   for ( int forward = 0; forward < 2; ++forward )
   {
-    TopoDS_Edge eNext = nextC1Edge( anEdge, aMesh, forward );
+    TopoDS_Edge eNext = nextC1Edge( edges.back(), aMesh, forward );
     while ( !eNext.IsNull() ) {
       if ( ignoreMeshed ) {
         // eNext must not have computed mesh
@@ -288,6 +336,8 @@ StdMeshers_CompositeSegment_1D::GetFaceSide(SMESH_Mesh&        aMesh,
       if ( !algo ||
            string(theAlgo->GetName()) != algo->GetName() ||
            hypList != algo->GetUsedHypothesis(aMesh, eNext, false))
+        break;
+      if ( std::find( edges.begin(), edges.end(), eNext ) != edges.end() )
         break;
       if ( forward )
         edges.push_back( eNext );

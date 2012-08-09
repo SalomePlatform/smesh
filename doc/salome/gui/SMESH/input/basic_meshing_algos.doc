@@ -21,9 +21,8 @@ shape of a mesh.</li>
 <li>For meshing of 2D entities (<b>faces</b>):</li>
 
 <ul>
-<li>Triangle meshing algorithms (Mefisto, Netgen 1D-2D and BLSUFR ) - Faces
-are split into triangular elements.</li>
-<li>Quadrangle meshing algorithm (Mapping) - Faces are split into
+<li>Triangle meshing algorithms (Mefisto) - Faces are split into triangular elements.</li>
+<li>Quadrangle meshing algorithm (Mapping) - quadrilateral Faces are split into
 quadrangular elements.</li>
 </ul>
 
@@ -34,10 +33,12 @@ quadrangular elements.</li>
 <li>For meshing of 3D entities (<b>volume objects</b>):</li>
 
 <ul>
-<li>Hexahedron meshing algorithm (i,j,k) - Volumes are split into
+<li>Hexahedron meshing algorithm (i,j,k) - 6-sided Volumes are split into
 hexahedral (cubic) elements.</li>
-<li>Tetrahedron (Netgen and GHS3D) meshing algorithms - Volumes are split into
-tetrahedral (pyramidal) elements.</li>
+<li>\subpage cartesian_algo_page</li>
+internal parts of Volumes are split into hexahedral elements forming a
+Cartesian grid; polyhedra and other types of elements are generated
+where the geometrical boundary intersects Cartesian cells.</li>
 </ul>
 
 \image html image125.gif "Example of a tetrahedral 3D mesh"
@@ -45,16 +46,25 @@ tetrahedral (pyramidal) elements.</li>
 \image html image126.gif "Example of a hexahedral 3D mesh"
 </ul>
 
-\Note that BLSURF and GHS3D are commercial meshers and require a
-license to be used within the Mesh module.
+Some of 3D meshing algorithms also can generate 3D meshes from 2D meshes, working without
+geometrical objects. Such algorithms are
+<ul>
+<li>Hexahedron meshing algorithm (i,j,k),</li>
+<!-- <li>GHS3D meshing algorithm (commercial)</li> -->
+</ul>
 
 There is also a number of more specific algorithms:
 <ul>
 <li>\subpage projection_algos_page "for meshing by projection of another mesh"</li>
+<li>\subpage import_algos_page "for meshing by importing elements from another mesh"</li>
 <li>\subpage radial_prism_algo_page "for meshing geometrical objects with cavities"</li>
 <li>\subpage segments_around_vertex_algo_page "for defining the local size of elements around a certain node"</li>
 <li>\subpage prism_3d_algo_page "for meshing prismatic shapes"</li>
+<li>\subpage radial_quadrangle_1D2D_algo_page "for meshing special 2d faces (circles and part of circles)"</li>
 </ul>
+\ref use_existing_anchor "Use existing edges" and 
+\ref use_existing_anchor "Use existing faces" algorithms can be
+used to create an 1D or a 2D mesh in a python script.
 
 \ref constructing_meshes_page "Constructing meshes" page describes in
 detail how to apply meshing algorithms.

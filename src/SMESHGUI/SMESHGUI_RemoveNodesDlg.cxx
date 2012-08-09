@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_RemoveNodesDlg.cxx
 // Author : Nicolas REJNERI, Open CASCADE S.A.S.
@@ -122,6 +123,7 @@ SMESHGUI_RemoveNodesDlg
   SelectButtonC1A1->setIcon(image1);
   LineEditC1A1 = new QLineEdit(GroupC1);
   LineEditC1A1->setValidator(new SMESHGUI_IdValidator(this));
+  LineEditC1A1->setMaxLength(-1);
   QPushButton* filterBtn = new QPushButton( tr( "SMESH_BUT_FILTER" ), GroupC1 );
   connect(filterBtn,   SIGNAL(clicked()), this, SLOT(setFilters()));
 
@@ -204,7 +206,7 @@ void SMESHGUI_RemoveNodesDlg::Init()
   /* to close dialog if study change */
   connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(ClickOnCancel()));
   connect(myEditCurrentArgument, SIGNAL(textChanged(const QString&)),
-	  SLOT(onTextChange(const QString&)));
+          SLOT(onTextChange(const QString&)));
   
   SMESH::SetPointRepresentation(true);
   
@@ -233,7 +235,7 @@ void SMESHGUI_RemoveNodesDlg::ClickOnApply()
     bool aResult = false;
     try {
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
-      aResult = aMeshEditor->RemoveNodes(anArrayOfIdeces.inout());
+      aResult = aMeshEditor->RemoveNodes(anArrayOfIdeces.in());
     } catch (const SALOME::SALOME_Exception& S_ex) {
       SalomeApp_Tools::QtCatchCorbaException(S_ex);
       myEditCurrentArgument->clear();
@@ -245,6 +247,7 @@ void SMESHGUI_RemoveNodesDlg::ClickOnApply()
       myEditCurrentArgument->clear();
       mySelector->ClearIndex();
       SMESH::UpdateView();
+      SMESHGUI::Modified();
     }
 
     SMESH::SetPointRepresentation(true);
@@ -297,10 +300,10 @@ void SMESHGUI_RemoveNodesDlg::ClickOnHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 
@@ -315,9 +318,6 @@ void SMESHGUI_RemoveNodesDlg::onTextChange(const QString& theNewText)
 
   myNbOkNodes = 0;
 
-  buttonOk->setEnabled(false);
-  buttonApply->setEnabled(false);
-
   // hilight entered nodes
   if(myActor){
     if(SMDS_Mesh* aMesh = myActor->GetObject()->GetMesh()){
@@ -327,24 +327,20 @@ void SMESHGUI_RemoveNodesDlg::onTextChange(const QString& theNewText)
       
       QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
       for (int i = 0; i < aListId.count(); i++) {
-	if (const SMDS_MeshNode *aNode = aMesh->FindNode(aListId[i].toInt())) {
-	  newIndices.Add(aNode->GetID());
-	  myNbOkNodes++;
-	}
+        if (const SMDS_MeshNode *aNode = aMesh->FindNode(aListId[i].toInt())) {
+          newIndices.Add(aNode->GetID());
+          myNbOkNodes++;
+        }
       }
 
       mySelector->AddOrRemoveIndex(anIO,newIndices,false);
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->highlight(anIO,true,true);
+        aViewWindow->highlight(anIO,true,true);
     }
   }
 
-  if (myNbOkNodes) {
-    buttonOk->setEnabled(true);
-    buttonApply->setEnabled(true);
-  }
-
   myBusy = false;
+  updateButtons();
 }
 
 //=================================================================================
@@ -353,56 +349,51 @@ void SMESHGUI_RemoveNodesDlg::onTextChange(const QString& theNewText)
 //=================================================================================
 void SMESHGUI_RemoveNodesDlg::SelectionIntoArgument()
 {
-  if (myBusy) return;
-
+  if (myBusy) return;                                  // busy
+  if (myFilterDlg && myFilterDlg->isVisible()) return; // filter dlg active
+  if (!GroupButtons->isEnabled()) return;              // inactive
+    
   // clear
 
-  myNbOkNodes = false;
+  myNbOkNodes = 0;
   myActor = 0;
 
   myBusy = true;
   myEditCurrentArgument->setText("");
   myBusy = false;
 
-  if (!GroupButtons->isEnabled()) // inactive
-    return;
-
-  buttonOk->setEnabled(false);
-  buttonApply->setEnabled(false);
-
   // get selected mesh
   SALOME_ListIO aList;
   mySelectionMgr->selectedObjects(aList,SVTK_Viewer::Type());
 
   int nbSel = aList.Extent();
-  if (nbSel != 1)
-    return;
+  if (nbSel == 1) {
 
-  Handle(SALOME_InteractiveObject) anIO = aList.First();
-  myMesh = SMESH::GetMeshByIO(anIO);
-  if (myMesh->_is_nil())
-    return;
+    Handle(SALOME_InteractiveObject) anIO = aList.First();
+    myMesh = SMESH::GetMeshByIO(anIO);
 
-  myActor = SMESH::FindActorByEntry(anIO->getEntry());
-  if (!myActor)
-    return;
+    if (!myMesh->_is_nil()) {
 
-  // get selected nodes
+      myActor = SMESH::FindActorByEntry(anIO->getEntry());
+      if (myActor) {
 
-  QString aString = "";
-  int nbNodes = SMESH::GetNameOfSelectedNodes(mySelector,anIO,aString);
-  if(nbNodes < 1)
-    return;
-  myBusy = true;
-  myEditCurrentArgument->setText(aString);
-  myBusy = false;
+        // get selected nodes
+        QString aString = "";
+        int nbNodes = SMESH::GetNameOfSelectedNodes(mySelector,anIO,aString);
+        if (nbNodes > 0) {
+          myBusy = true;
+          myEditCurrentArgument->setText(aString);
+          myBusy = false;
+          
+          // OK
+          
+          myNbOkNodes = nbNodes;
+        } // if (nbNodes > 0)
+      } // if (myActor)
+    } // if (!myMesh->_is_nil())
+  } // if (nbSel == 1)
 
-  // OK
-
-  myNbOkNodes = true;
-
-  buttonOk->setEnabled(true);
-  buttonApply->setEnabled(true);
+  updateButtons();        
 }
 
 //=================================================================================
@@ -416,8 +407,8 @@ void SMESHGUI_RemoveNodesDlg::SetEditCurrentArgument()
   case 0: /* default constructor */
     {
       if(send == SelectButtonC1A1) {
-	LineEditC1A1->setFocus();
-	myEditCurrentArgument = LineEditC1A1;
+        LineEditC1A1->setFocus();
+        myEditCurrentArgument = LineEditC1A1;
       }
       SelectionIntoArgument();
       break;
@@ -514,6 +505,12 @@ void SMESHGUI_RemoveNodesDlg::keyPressEvent( QKeyEvent* e )
 //=================================================================================
 void SMESHGUI_RemoveNodesDlg::setFilters()
 {
+  if(myMesh->_is_nil()) {
+    SUIT_MessageBox::critical(this,
+                              tr("SMESH_ERROR"),
+                              tr("NO_MESH_SELECTED"));
+   return;
+  }
   if ( !myFilterDlg )
     myFilterDlg = new SMESHGUI_FilterDlg( mySMESHGUI, SMESH::NODE );
 
@@ -522,4 +519,14 @@ void SMESHGUI_RemoveNodesDlg::setFilters()
   myFilterDlg->SetSourceWg( LineEditC1A1 );
 
   myFilterDlg->show();
+}
+
+//=================================================================================
+// function : updateButtons
+// purpose  : enable / disable control buttons
+//=================================================================================
+void SMESHGUI_RemoveNodesDlg::updateButtons()
+{
+  buttonOk->setEnabled(myNbOkNodes > 0);
+  buttonApply->setEnabled(myNbOkNodes > 0);
 }

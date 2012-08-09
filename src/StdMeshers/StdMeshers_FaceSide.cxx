@@ -1,25 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-//  SMESH SMESH : implementaion of SMESH idl descriptions
+
 // File      : StdMeshers_FaceSide.hxx
 // Created   : Wed Jan 31 18:41:25 2007
 // Author    : Edward AGAPOV (eap)
@@ -31,19 +31,21 @@
 #include "SMDS_MeshNode.hxx"
 #include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_SubMesh.hxx"
-//#include "SMESH_Algo.hxx"
+#include "SMESH_Algo.hxx"
 #include "SMESH_Mesh.hxx"
-#include "SMESH_MeshEditor.hxx"
+#include "SMESH_MesherHelper.hxx"
 #include "SMESH_ComputeError.hxx"
 #include "SMESH_Block.hxx"
 
 #include <Adaptor2d_Curve2d.hxx>
 #include <BRepAdaptor_CompCurve.hxx>
-#include <BRepAdaptor_Curve.hxx>
 #include <BRep_Builder.hxx>
 #include <BRep_Tool.hxx>
+#include <GCPnts_AbscissaPoint.hxx>
+#include <Geom2dAdaptor_Curve.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
+#include <TopoDS.hxx>
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <TopoDS_Wire.hxx>
@@ -85,30 +87,36 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
                                          const bool         theIgnoreMediumNodes)
 {
   int nbEdges = theEdges.size();
-  myEdge.resize( nbEdges );
-  myC2d.resize( nbEdges );
-  myFirst.resize( nbEdges );
-  myLast.resize( nbEdges );
-  myNormPar.resize( nbEdges );
-  myLength = 0;
-  myNbPonits = myNbSegments = 0;
-  myMesh = theMesh;
+  myEdge.resize      ( nbEdges );
+  myEdgeID.resize    ( nbEdges );
+  myC2d.resize       ( nbEdges );
+  myC3dAdaptor.resize( nbEdges );
+  myFirst.resize     ( nbEdges );
+  myLast.resize      ( nbEdges );
+  myNormPar.resize   ( nbEdges );
+  myEdgeLength.resize( nbEdges );
+  myIsUniform.resize ( nbEdges, true );
+  myLength             = 0;
+  myNbPonits           = myNbSegments = 0;
+  myMesh               = theMesh;
   myMissingVertexNodes = false;
-  myIgnoreMediumNodes = theIgnoreMediumNodes;
+  myIgnoreMediumNodes  = theIgnoreMediumNodes;
+  myDefaultPnt2d       = gp_Pnt2d( 1e+100, 1e+100 );
   if ( nbEdges == 0 ) return;
 
   SMESHDS_Mesh* meshDS = theMesh->GetMeshDS();
-  vector<double> len( nbEdges );
 
   int nbDegen = 0;
   list<TopoDS_Edge>::iterator edge = theEdges.begin();
+  TopoDS_Iterator vExp;
   for ( int index = 0; edge != theEdges.end(); ++index, ++edge )
   {
-    int i = theIsForward ? index : nbEdges - index - 1;
-    len[i] = SMESH_Algo::EdgeLength( *edge );
-    if ( len[i] < DBL_MIN ) nbDegen++;
-    myLength += len[i];
+    int i = theIsForward ? index : nbEdges-index-1;
+    myEdgeLength[i] = SMESH_Algo::EdgeLength( *edge );
+    if ( myEdgeLength[i] < DBL_MIN ) nbDegen++;
+    myLength += myEdgeLength[i];
     myEdge[i] = *edge;
+    myEdgeID[i] = meshDS->ShapeToIndex( *edge );
     if ( !theIsForward ) myEdge[i].Reverse();
 
     if ( theFace.IsNull() )
@@ -128,16 +136,43 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
       myNbPonits += nbN;
       myNbSegments += sm->NbElements();
     }
-    if ( SMESH_Algo::VertexNode( TopExp::FirstVertex( *edge, 1), meshDS ))
+    // TopExp::FirstVertex() and TopExp::LastVertex() return NULL from INTERNAL edge
+    vExp.Initialize( *edge );
+    if ( vExp.Value().Orientation() == TopAbs_REVERSED ) vExp.Next();
+    if ( SMESH_Algo::VertexNode( TopoDS::Vertex( vExp.Value()), meshDS ))
       myNbPonits += 1; // for the first end
     else
       myMissingVertexNodes = true;
-  }
-  if ( SMESH_Algo::VertexNode( TopExp::LastVertex( theEdges.back(), 1), meshDS ))
-    myNbPonits++; // for the last end
-  else
-    myMissingVertexNodes = true;
 
+    // check if edge has non-uniform parametrization (issue 0020705)
+    if ( !myC2d[i].IsNull() && myEdgeLength[i] > DBL_MIN)
+    {
+      Geom2dAdaptor_Curve A2dC( myC2d[i],
+                                std::min( myFirst[i], myLast[i] ),
+                                std::max( myFirst[i], myLast[i] ));
+      double p2 = myFirst[i]+(myLast[i]-myFirst[i])/2., p4 = myFirst[i]+(myLast[i]-myFirst[i])/4.;
+      double d2 = GCPnts_AbscissaPoint::Length( A2dC, myFirst[i], p2 );
+      double d4 = GCPnts_AbscissaPoint::Length( A2dC, myFirst[i], p4 );
+      //cout<<"len = "<<len<<"  d2 = "<<d2<<"  fabs(2*d2/len-1.0) = "<<fabs(2*d2/len-1.0)<<endl;
+      myIsUniform[i] = !( fabs(2*d2/myEdgeLength[i]-1.0) > 0.01 || fabs(2*d4/d2-1.0) > 0.01 );
+      if ( !myIsUniform[i] )
+      {
+        double fp,lp;
+        TopLoc_Location L;
+        Handle(Geom_Curve) C3d = BRep_Tool::Curve(myEdge[i],L,fp,lp);
+        myC3dAdaptor[i].Load( C3d, fp,lp );
+      }
+    }
+  }
+  vExp.Initialize( theEdges.back() );
+  if ( vExp.Value().Orientation() != TopAbs_REVERSED ) vExp.Next();
+  if ( vExp.More() )
+  {
+    if ( SMESH_Algo::VertexNode( TopoDS::Vertex( vExp.Value()), meshDS ))
+      myNbPonits++; // for the last end
+    else
+      myMissingVertexNodes = true;
+  }
   if ( nbEdges > 1 && myLength > DBL_MIN ) {
     const double degenNormLen = 1.e-5;
     double totLength = myLength;
@@ -145,14 +180,42 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
       totLength += myLength * degenNormLen * nbDegen;
     double prevNormPar = 0;
     for ( int i = 0; i < nbEdges; ++i ) {
-      if ( len[ i ] < DBL_MIN )
-        len[ i ] = myLength * degenNormLen;
-      myNormPar[ i ] = prevNormPar + len[i]/totLength;
+      if ( myEdgeLength[ i ] < DBL_MIN )
+        myEdgeLength[ i ] = myLength * degenNormLen;
+      myNormPar[ i ] = prevNormPar + myEdgeLength[i]/totLength;
       prevNormPar = myNormPar[ i ];
     }
   }
   myNormPar[nbEdges-1] = 1.;
   //dump();
+}
+
+//================================================================================
+/*!
+ * \brief Constructor of a side for vertex using data from other FaceSide
+  * \param theVertex - the vertex
+  * \param theSide - the side
+ */
+//================================================================================
+
+StdMeshers_FaceSide::StdMeshers_FaceSide(const SMDS_MeshNode* theNode,
+                                         const gp_Pnt2d thePnt2d,
+                                         const StdMeshers_FaceSide* theSide)
+{
+  myC2d.resize(1);
+  myLength = 0;
+  myMesh = theSide->GetMesh();
+  myDefaultPnt2d = thePnt2d;
+
+  myPoints = theSide->GetUVPtStruct();
+  myNbPonits = myNbSegments = myPoints.size();
+  std::vector<uvPtStruct>::iterator it = myPoints.begin();
+  for(; it!=myPoints.end(); it++) {
+    (*it).u = thePnt2d.X();
+    (*it).v = thePnt2d.Y();
+    (*it).y = 0.0;
+    (*it).node = theNode;
+  }
 }
 
 //================================================================================
@@ -170,6 +233,8 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
     if ( NbEdges() == 0 ) return myPoints;
 
     SMESHDS_Mesh* meshDS = myMesh->GetMeshDS();
+    SMESH_MesherHelper helper(*myMesh);
+    bool paramOK;
 
     // sort nodes of all edges putting them into a map
 
@@ -177,51 +242,72 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
     //int nbOnDegen = 0;
     for ( int i = 0; i < myEdge.size(); ++i )
     {
-      // put 1st vertex node
-      TopoDS_Vertex VFirst, VLast;
-      TopExp::Vertices( myEdge[i], VFirst, VLast, true);
-      const SMDS_MeshNode* node = SMESH_Algo::VertexNode( VFirst, meshDS );
+      // Put 1st vertex node of a current edge
+      TopoDS_Vertex VV[2]; // TopExp::FirstVertex() returns NULL for INTERNAL edge
+      VV[0] = SMESH_MesherHelper::IthVertex( 0, myEdge[i]);
+      VV[1] = SMESH_MesherHelper::IthVertex( 1, myEdge[i]);
+      const SMDS_MeshNode* node = SMESH_Algo::VertexNode( VV[0], meshDS );
       double prevNormPar = ( i == 0 ? 0 : myNormPar[ i-1 ]); // normalized param
-      if ( node ) { // internal nodes may be missing
-        u2node.insert( make_pair( prevNormPar, node ));
-      } else if ( i == 0 ) {
+      if ( node ) { // nodes on internal vertices may be missing
+        u2node.insert( u2node.end(), make_pair( prevNormPar, node ));
+      }
+      else if ( i == 0 ) {
         MESSAGE(" NO NODE on VERTEX" );
         return myPoints;
       }
 
-      // put 2nd vertex node for a last edge
+      // Put internal nodes
+      if ( SMESHDS_SubMesh* sm = meshDS->MeshElements( myEdge[i] ))
+      {
+        vector< pair< double, const SMDS_MeshNode*> > u2nodeVec;
+        u2nodeVec.reserve( sm->NbNodes() );
+        SMDS_NodeIteratorPtr nItr = sm->GetNodes();
+        double paramSize = myLast[i] - myFirst[i];
+        double r         = myNormPar[i] - prevNormPar;
+        helper.SetSubShape( myEdge[i] );
+        helper.ToFixNodeParameters( true );
+        if ( !myIsUniform[i] )
+          while ( nItr->more() )
+          {
+            const SMDS_MeshNode* node = nItr->next();
+            if ( myIgnoreMediumNodes && SMESH_MeshEditor::IsMedium( node, SMDSAbs_Edge ))
+              continue;
+            double u = helper.GetNodeU( myEdge[i], node, 0, &paramOK );
+            double aLenU = GCPnts_AbscissaPoint::Length
+              ( const_cast<GeomAdaptor_Curve&>( myC3dAdaptor[i]), myFirst[i], u );
+            if ( myEdgeLength[i] < aLenU ) // nonregression test "3D_mesh_NETGEN/G6"
+            {
+              u2nodeVec.clear();
+              break;
+            }
+            double normPar = prevNormPar + r*aLenU/myEdgeLength[i];
+            u2nodeVec.push_back( make_pair( normPar, node ));
+          }
+        nItr = sm->GetNodes();
+        if ( u2nodeVec.empty() )
+          while ( nItr->more() )
+          {
+            const SMDS_MeshNode* node = nItr->next();
+            if ( myIgnoreMediumNodes && SMESH_MeshEditor::IsMedium( node, SMDSAbs_Edge ))
+              continue;
+            double u = helper.GetNodeU( myEdge[i], node, 0, &paramOK );
+
+            // paramSize is signed so orientation is taken into account
+            double normPar = prevNormPar + r * ( u - myFirst[i] ) / paramSize;
+            u2nodeVec.push_back( make_pair( normPar, node ));
+          }
+        for ( size_t j = 0; j < u2nodeVec.size(); ++j )
+        u2node.insert( u2node.end(), u2nodeVec[j] );
+      }
+
+      // Put 2nd vertex node for a last edge
       if ( i+1 == myEdge.size() ) {
-        node = SMESH_Algo::VertexNode( VLast, meshDS );
+        node = SMESH_Algo::VertexNode( VV[1], meshDS );
         if ( !node ) {
           MESSAGE(" NO NODE on VERTEX" );
           return myPoints;
         }
-        u2node.insert( make_pair( 1., node ));
-      }
-
-      // put internal nodes
-      SMESHDS_SubMesh* sm = meshDS->MeshElements( myEdge[i] );
-      if ( !sm ) continue;
-      SMDS_NodeIteratorPtr nItr = sm->GetNodes();
-      double paramSize = myLast[i] - myFirst[i], r = myNormPar[i] - prevNormPar;
-      while ( nItr->more() ) {
-        const SMDS_MeshNode* node = nItr->next();
-        if ( myIgnoreMediumNodes && SMESH_MeshEditor::IsMedium( node, SMDSAbs_Edge ))
-          continue;
-        const SMDS_EdgePosition* epos =
-          static_cast<const SMDS_EdgePosition*>(node->GetPosition().get());
-        double u = epos->GetUParameter();
-        // paramSize is signed so orientation is taken into account
-        double normPar = prevNormPar + r * ( u - myFirst[i] ) / paramSize;
-#ifdef _DEBUG_
-        if ( normPar > 1 || normPar < 0) {
-          dump("DEBUG");
-          MESSAGE ( "WRONG normPar: "<<normPar<< " prevNormPar="<<prevNormPar
-                    << " u="<<u << " myFirst[i]="<<myFirst[i]<< " myLast[i]="<<myLast[i]
-                    << " paramSize="<<paramSize );
-        }
-#endif
-        u2node.insert( make_pair( normPar, node ));
+        u2node.insert( u2node.end(), make_pair( 1., node ));
       }
     }
     if ( u2node.size() != myNbPonits ) {
@@ -244,7 +330,11 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
       uvPt.x = uvPt.y = uvPt.normParam = u_node->first;
       if ( isXConst ) uvPt.x = constValue;
       else            uvPt.y = constValue;
-      if ( myNormPar[ EdgeIndex ] < uvPt.normParam ) {
+      const SMDS_EdgePosition* epos =
+        dynamic_cast<const SMDS_EdgePosition*>(uvPt.node->GetPosition());
+      if (( myNormPar[ EdgeIndex ] < uvPt.normParam ) ||
+          ( epos && uvPt.node->getshapeId() != myEdgeID[ EdgeIndex ])) // for myMissingVertexNodes
+      {
         prevNormPar = myNormPar[ EdgeIndex ];
         ++EdgeIndex;
 #ifdef _DEBUG_
@@ -258,8 +348,6 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
 #endif
         paramSize = myNormPar[ EdgeIndex ] - prevNormPar;
       }
-      const SMDS_EdgePosition* epos =
-        dynamic_cast<const SMDS_EdgePosition*>(uvPt.node->GetPosition().get());
       if ( epos ) {
         uvPt.param = epos->GetUParameter();
       }
@@ -328,9 +416,92 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::SimulateUVPtStruct(int    nbSeg,
   }
   return myFalsePoints;
 }
-// gp_Pnt StdMeshers_FaceSide::Value(double U) const
-// {
-// }
+
+//=======================================================================
+//function : GetOrderedNodes
+//purpose  : Return nodes in the order they encounter while walking along the side
+//=======================================================================
+
+std::vector<const SMDS_MeshNode*> StdMeshers_FaceSide::GetOrderedNodes() const
+{
+  vector<const SMDS_MeshNode*> resultNodes;
+  if ( myPoints.empty() )
+  {
+    if ( NbEdges() == 0 ) return resultNodes;
+
+    SMESHDS_Mesh* meshDS = myMesh->GetMeshDS();
+    SMESH_MesherHelper helper(*myMesh);
+    bool paramOK;
+
+    // Sort nodes of all edges putting them into a map
+
+    map< double, const SMDS_MeshNode*> u2node;
+    for ( int i = 0; i < myEdge.size(); ++i )
+    {
+      // Put 1st vertex node of a current edge
+      TopoDS_Vertex VV[2]; // TopExp::FirstVertex() returns NULL for INTERNAL edge
+      VV[0] = SMESH_MesherHelper::IthVertex( 0, myEdge[i]);
+      VV[1] = SMESH_MesherHelper::IthVertex( 1, myEdge[i]);
+      const SMDS_MeshNode* node = SMESH_Algo::VertexNode( VV[0], meshDS );
+      double prevNormPar = ( i == 0 ? 0 : myNormPar[ i-1 ]); // normalized param
+      if ( node ) { // nodes on internal vertices may be missing
+        u2node.insert( make_pair( prevNormPar, node ));
+      }
+      else if ( i == 0 ) {
+        MESSAGE(" NO NODE on VERTEX" );
+        return resultNodes;
+      }
+
+      // Put internal nodes
+      if ( SMESHDS_SubMesh* sm = meshDS->MeshElements( myEdge[i] ))
+      {
+        SMDS_NodeIteratorPtr nItr = sm->GetNodes();
+        double paramSize = myLast[i] - myFirst[i];
+        double r         = myNormPar[i] - prevNormPar;
+        helper.SetSubShape( myEdge[i] );
+        helper.ToFixNodeParameters( true );
+        while ( nItr->more() )
+        {
+          const SMDS_MeshNode* node = nItr->next();
+          if ( myIgnoreMediumNodes && SMESH_MeshEditor::IsMedium( node, SMDSAbs_Edge ))
+            continue;
+          double u = helper.GetNodeU( myEdge[i], node, 0, &paramOK );
+
+          // paramSize is signed so orientation is taken into account
+          double normPar = prevNormPar + r * ( u - myFirst[i] ) / paramSize;
+          u2node.insert( u2node.end(), make_pair( normPar, node ));
+        }
+      }
+
+      // Put 2nd vertex node for a last edge
+      if ( i+1 == myEdge.size() ) {
+        node = SMESH_Algo::VertexNode( VV[1], meshDS );
+        if ( !node ) {
+          return resultNodes;
+        }
+        u2node.insert( u2node.end(), make_pair( 1., node ));
+      }
+    }
+
+    // Fill the result vector
+
+    if ( u2node.size() == myNbPonits )
+    {
+      resultNodes.reserve( u2node.size() );
+      map< double, const SMDS_MeshNode*>::iterator u2n = u2node.begin();
+      for ( ; u2n != u2node.end(); ++u2n )
+        resultNodes.push_back( u2n->second );
+    }
+  }
+  else
+  {
+    resultNodes.resize( myPoints.size() );
+    for ( size_t i = 0; i < myPoints.size(); ++i )
+      resultNodes[i] = myPoints[i].node;
+  }
+
+  return resultNodes;
+}
 
 //================================================================================
 /*!
@@ -362,14 +533,21 @@ void StdMeshers_FaceSide::Reverse()
   }
   if ( nbEdges > 1 ) {
     reverse( myEdge );
+    reverse( myEdgeID );
     reverse( myC2d );
+    reverse( myC3dAdaptor );
     reverse( myFirst );
     reverse( myLast );
     reverse( myNormPar );
+    reverse( myEdgeLength );
+    reverse( myIsUniform );
   }
-  myNormPar[nbEdges-1]=1.;
-  myPoints.clear();
-  myFalsePoints.clear();
+  if ( nbEdges > 0 )
+  {
+    myNormPar[nbEdges-1]=1.;
+    myPoints.clear();
+    myFalsePoints.clear();
+  }
 }
 
 //================================================================================
@@ -443,16 +621,18 @@ BRepAdaptor_CompCurve* StdMeshers_FaceSide::GetCurve3d() const
   if ( myEdge.empty() )
     return 0;
 
-//   if ( myEdge.size() == 1 )
-//     return new BRepAdaptor_Curve( myEdge[0] );
-
   TopoDS_Wire aWire;
   BRep_Builder aBuilder;
   aBuilder.MakeWire(aWire);
   for ( int i=0; i<myEdge.size(); ++i )
     aBuilder.Add( aWire, myEdge[i] );
+
+  if ( myEdge.size() == 2 && FirstVertex().IsSame( LastVertex() ))
+    aWire.Closed(true); // issue 0021141
+
   return new BRepAdaptor_CompCurve( aWire );
 }
+
 
 //================================================================================
 /*!
@@ -468,9 +648,23 @@ gp_Pnt2d StdMeshers_FaceSide::Value2d(double U) const
     int i = EdgeIndex( U );
     double prevU = i ? myNormPar[ i-1 ] : 0;
     double r = ( U - prevU )/ ( myNormPar[ i ] - prevU );
-    return myC2d[ i ]->Value( myFirst[i] * ( 1 - r ) + myLast[i] * r );
+
+    double par = myFirst[i] * ( 1 - r ) + myLast[i] * r;
+    
+    // check parametrization of curve
+    if( !myIsUniform[i] )
+    {
+      double aLen3dU = r * myEdgeLength[i] * ( myFirst[i]>myLast[i] ? -1. : 1.);
+      GCPnts_AbscissaPoint AbPnt
+        ( const_cast<GeomAdaptor_Curve&>( myC3dAdaptor[i]), aLen3dU, myFirst[i] );
+      if( AbPnt.IsDone() ) {
+        par = AbPnt.Parameter();
+      }
+    }
+    return myC2d[ i ]->Value(par);
+
   }
-  return gp_Pnt2d( 1e+100, 1e+100 );
+  return myDefaultPnt2d;
 }
 
 //================================================================================
@@ -485,46 +679,97 @@ TSideVector StdMeshers_FaceSide::GetFaceWires(const TopoDS_Face& theFace,
                                               TError &           theError)
 {
   TopoDS_Vertex V1;
-  list< TopoDS_Edge > edges;
+  list< TopoDS_Edge > edges, internalEdges;
   list< int > nbEdgesInWires;
   int nbWires = SMESH_Block::GetOrderedEdges (theFace, V1, edges, nbEdgesInWires);
 
   // split list of all edges into separate wires
   TSideVector wires( nbWires );
   list< int >::iterator nbE = nbEdgesInWires.begin();
-  list< TopoDS_Edge >::iterator from, to;
-  from = to = edges.begin();
-  for ( int iW = 0; iW < nbWires; ++iW )
+  list< TopoDS_Edge >::iterator from = edges.begin(), to = from;
+  for ( int iW = 0; iW < nbWires; ++iW, ++nbE )
   {
-    std::advance( to, *nbE++ );
+    std::advance( to, *nbE );
+    if ( *nbE == 0 ) // Issue 0020676
+    {
+      --nbWires;
+      --iW;
+      wires.resize( nbWires );
+      continue;
+    }
     list< TopoDS_Edge > wireEdges( from, to );
     // assure that there is a node on the first vertex
     // as StdMeshers_FaceSide::GetUVPtStruct() requires
-    while ( !SMESH_Algo::VertexNode( TopExp::FirstVertex( wireEdges.front(), true),
-                                     theMesh.GetMeshDS()))
+    if ( wireEdges.front().Orientation() != TopAbs_INTERNAL ) // Issue 0020676
     {
-      wireEdges.splice(wireEdges.end(), wireEdges,
-                       wireEdges.begin(), ++wireEdges.begin());
-      if ( from->IsSame( wireEdges.front() )) {
-        theError = TError
-          ( new SMESH_ComputeError(COMPERR_BAD_INPUT_MESH,"No nodes on vertices"));
-        return TSideVector(0);
+      while ( !SMESH_Algo::VertexNode( TopExp::FirstVertex( wireEdges.front(), true),
+                                       theMesh.GetMeshDS()))
+      {
+        wireEdges.splice(wireEdges.end(), wireEdges,
+                         wireEdges.begin(), ++wireEdges.begin());
+        if ( from->IsSame( wireEdges.front() )) {
+          theError = TError
+            ( new SMESH_ComputeError(COMPERR_BAD_INPUT_MESH,"No nodes on vertices"));
+          return TSideVector(0);
+        }
       }
     }
-    // find out side orientation, which is important if there are several wires (PAL19080) 
-    bool isForward = true;
-    if ( nbWires > 1 ) {
-      TopExp_Explorer e( theFace, TopAbs_EDGE );
-      while ( ! e.Current().IsSame( wireEdges.back() ))
-        e.Next();
-      isForward = ( e.Current().Orientation() == wireEdges.back().Orientation() );
+    else if ( *nbE > 1 ) // Issue 0020676 (Face_pb_netgen.brep) - several internal edges in a wire
+    {
+      internalEdges.splice( internalEdges.end(), wireEdges, ++wireEdges.begin(), wireEdges.end());
     }
 
     StdMeshers_FaceSide* wire = new StdMeshers_FaceSide( theFace, wireEdges, &theMesh,
-                                                         isForward, theIgnoreMediumNodes);
+                                                         /*isForward=*/true, theIgnoreMediumNodes);
     wires[ iW ] = StdMeshers_FaceSidePtr( wire );
     from = to;
   }
+  while ( !internalEdges.empty() )
+  {
+    StdMeshers_FaceSide* wire = new StdMeshers_FaceSide( theFace, internalEdges.back(), &theMesh,
+                                                         /*isForward=*/true, theIgnoreMediumNodes);
+    wires.push_back( StdMeshers_FaceSidePtr( wire ));
+    internalEdges.pop_back();
+  }
   return wires;
+}
+
+//================================================================================
+/*!
+ * \brief Return 1st vertex of the i-the edge
+ */
+//================================================================================
+
+TopoDS_Vertex StdMeshers_FaceSide::FirstVertex(int i) const
+{
+  TopoDS_Vertex v;
+  if ( i < NbEdges() )
+  {
+    v = myEdge[i].Orientation() <= TopAbs_REVERSED ? // FORWARD || REVERSED
+        TopExp::FirstVertex( myEdge[i], 1 )        :
+        TopoDS::Vertex( TopoDS_Iterator( myEdge[i] ).Value() );
+  }
+  return v;
+}
+
+//================================================================================
+/*!
+ * \brief Return last vertex of the i-the edge
+ */
+//================================================================================
+
+TopoDS_Vertex StdMeshers_FaceSide::LastVertex(int i) const
+{
+  TopoDS_Vertex v;
+  if ( i < NbEdges() )
+  {
+    const TopoDS_Edge& edge = i<0 ? myEdge[ NbEdges() + i ] : myEdge[i];
+    if ( edge.Orientation() <= TopAbs_REVERSED ) // FORWARD || REVERSED
+      v = TopExp::LastVertex( edge, 1 );
+    else
+      for ( TopoDS_Iterator vIt( edge ); vIt.More(); vIt.Next() )
+        v = TopoDS::Vertex( vIt.Value() );
+  }
+  return v;
 }
 

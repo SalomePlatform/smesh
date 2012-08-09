@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : StdMeshers_Arithmetic1D.cxx
 //  Author : Damien COQUERET, OCC
@@ -104,9 +105,32 @@ double StdMeshers_Arithmetic1D::GetLength(bool isStartLength) const
  */
 //=============================================================================
 
+void StdMeshers_Arithmetic1D::SetReversedEdges( std::vector<int>& ids )
+{
+  if ( ids != _edgeIDs ) {
+    _edgeIDs = ids;
+
+    NotifySubMeshesHypothesisModification();
+  }
+}
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+
 ostream & StdMeshers_Arithmetic1D::SaveTo(ostream & save)
 {
-  save << _begLength << " " << _endLength;
+  int listSize = _edgeIDs.size();
+  save << _begLength << " " << _endLength << " " << listSize;
+
+  if ( listSize > 0 ) {
+    for ( int i = 0; i < listSize; i++)
+      save << " " << _edgeIDs[i];
+    save << " " << _objEntry;
+  }
+
   return save;
 }
 
@@ -119,12 +143,25 @@ ostream & StdMeshers_Arithmetic1D::SaveTo(ostream & save)
 istream & StdMeshers_Arithmetic1D::LoadFrom(istream & load)
 {
   bool isOK = true;
+  int intVal;
   isOK = (load >> _begLength);
   if (!isOK)
     load.clear(ios::badbit | load.rdstate());
   isOK = (load >> _endLength);
+
   if (!isOK)
     load.clear(ios::badbit | load.rdstate());
+
+  isOK = (load >> intVal);
+  if (isOK && intVal > 0) {
+    _edgeIDs.reserve( intVal );
+    for (int i = 0; i < _edgeIDs.capacity() && isOK; i++) {
+      isOK = (load >> intVal);
+      if ( isOK ) _edgeIDs.push_back( intVal );
+    }
+    isOK = (load >> _objEntry);
+  }
+
   return load;
 }
 
@@ -177,7 +214,7 @@ bool StdMeshers_Arithmetic1D::SetParametersByMesh(const SMESH_Mesh*   theMesh,
   {
     const TopoDS_Edge& edge = TopoDS::Edge( edgeMap( i ));
     Handle(Geom_Curve) C = BRep_Tool::Curve(edge, L, UMin, UMax);
-    GeomAdaptor_Curve AdaptCurve(C);
+    GeomAdaptor_Curve AdaptCurve(C, UMin, UMax);
 
     vector< double > params;
     SMESHDS_Mesh* aMeshDS = const_cast< SMESH_Mesh* >( theMesh )->GetMeshDS();
@@ -206,6 +243,6 @@ bool StdMeshers_Arithmetic1D::SetParametersByMesh(const SMESH_Mesh*   theMesh,
 bool StdMeshers_Arithmetic1D::SetParametersByDefaults(const TDefaults&  dflts,
                                                       const SMESH_Mesh* /*mesh*/)
 {
-  return bool( _begLength = _endLength = dflts._elemLength );
+  return ( _begLength = _endLength = dflts._elemLength );
 }
 

@@ -1,34 +1,37 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // File   : StdMeshersGUI_DistrTable.cxx
 // Author : Open CASCADE S.A.S.
 // SMESH includes
 //
 #include "StdMeshersGUI_DistrTable.h"
 
+#include <SMESHGUI_SpinBox.h>
+
 // Qt incldues
 #include <QItemDelegate>
 #include <QTableWidget>
-#include <QDoubleSpinBox>
+#include <QHeaderView>
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -84,14 +87,14 @@ public:
   ~SpinBoxDelegate();
 
   QWidget* createEditor( QWidget*,
-			 const QStyleOptionViewItem&,
-			 const QModelIndex& ) const;
+                         const QStyleOptionViewItem&,
+                         const QModelIndex& ) const;
   void     setEditorData( QWidget*, const QModelIndex&) const;
   void     setModelData( QWidget*, QAbstractItemModel*, 
-			 const QModelIndex& ) const;
+                         const QModelIndex& ) const;
   void     updateEditorGeometry( QWidget*,
-				 const QStyleOptionViewItem&, 
-				 const QModelIndex& ) const;
+                                 const QStyleOptionViewItem&, 
+                                 const QModelIndex& ) const;
 
 private:
   StdMeshersGUI_DistrTableFrame::Table* myTable;
@@ -109,7 +112,7 @@ private:
   struct EditorData
   { 
     int r, c;
-    QDoubleSpinBox* sb;
+    SMESHGUI_SpinBox* sb;
     EditorData() { reset(); }
     void reset() { r = -1; c = -1; sb = 0; }
   };
@@ -138,7 +141,7 @@ public:
   void          addRow();
   void          deleteRow();
 
-  void          setEditor( int, int, QDoubleSpinBox* );
+  void          setEditor( int, int, SMESHGUI_SpinBox* );
 
 protected:
   void          closeEditor( QWidget*, QAbstractItemDelegate::EndEditHint );
@@ -173,21 +176,25 @@ StdMeshersGUI_DistrTableFrame::SpinBoxDelegate::
 QWidget* 
 StdMeshersGUI_DistrTableFrame::SpinBoxDelegate::
 createEditor( QWidget* parent,
-	      const QStyleOptionViewItem& /*option*/,
-	      const QModelIndex& index ) const
+              const QStyleOptionViewItem& /*option*/,
+              const QModelIndex& index ) const
 {
-  QDoubleSpinBox* sb = new QDoubleSpinBox( parent );
+  SMESHGUI_SpinBox* sb = new SMESHGUI_SpinBox( parent );
+  
+  sb->setAcceptNames(false); // No Notebook variables allowed
+  double aMin = index.column() == StdMeshersGUI_DistrTableFrame::ArgColumn ? 
+                  myTable->argMinimum( index.row() ) : 
+                  myTable->funcMinimum( index.row() );
+  double aMax = index.column() == StdMeshersGUI_DistrTableFrame::ArgColumn ? 
+                  myTable->argMaximum( index.row() ) : 
+                  myTable->funcMaximum( index.row() );
+  double aStep = index.column() == StdMeshersGUI_DistrTableFrame::ArgColumn ? 
+                     myTable->argStep( index.row() ) : 
+                     myTable->funcStep( index.row() );
+  sb->RangeStepAndValidator( aMin, aMax, aStep, "parametric_precision" );
   sb->setFrame(false);
-  sb->setMinimum( index.column() == StdMeshersGUI_DistrTableFrame::ArgColumn ? 
-		  myTable->argMinimum( index.row() ) : 
-		  myTable->funcMinimum( index.row() ) );
-  sb->setMaximum( index.column() == StdMeshersGUI_DistrTableFrame::ArgColumn ? 
-		  myTable->argMaximum( index.row() ) : 
-		  myTable->funcMaximum( index.row() ) );
-  sb->setSingleStep( index.column() == StdMeshersGUI_DistrTableFrame::ArgColumn ? 
-		     myTable->argStep( index.row() ) : 
-		     myTable->funcStep( index.row() ) );
-  myTable->setEditor( index.row(), index.column(), sb );
+
+  myTable->setEditor( index.row(), index.column(), sb );  
   return sb;
 }
 
@@ -196,7 +203,7 @@ StdMeshersGUI_DistrTableFrame::SpinBoxDelegate::
 setEditorData( QWidget* editor, const QModelIndex& index ) const
 {
   QString value = index.model()->data(index, Qt::DisplayRole).toString();
-  QDoubleSpinBox* sb = static_cast<QDoubleSpinBox*>(editor);
+  SMESHGUI_SpinBox* sb = static_cast<SMESHGUI_SpinBox*>(editor);
 
   bool bOk = false;
   double v = value.toDouble( &bOk );
@@ -208,17 +215,17 @@ setEditorData( QWidget* editor, const QModelIndex& index ) const
 void
 StdMeshersGUI_DistrTableFrame::SpinBoxDelegate::
 setModelData( QWidget* editor, QAbstractItemModel* model, 
-	      const QModelIndex& index ) const
+              const QModelIndex& index ) const
 {
-  QDoubleSpinBox* sb = static_cast<QDoubleSpinBox*>(editor);
+  SMESHGUI_SpinBox* sb = static_cast<SMESHGUI_SpinBox*>(editor);
   model->setData( index, QString::number( sb->value() ), Qt::DisplayRole );
 }
 
 void 
 StdMeshersGUI_DistrTableFrame::SpinBoxDelegate::
 updateEditorGeometry( QWidget* editor,
-		      const QStyleOptionViewItem& option, 
-		      const QModelIndex& /*index*/ ) const
+                      const QStyleOptionViewItem& option, 
+                      const QModelIndex& /*index*/ ) const
 {
   editor->setGeometry( option.rect );
 }
@@ -238,6 +245,8 @@ Table( QWidget* parent, int rows )
   QStringList labs;
   labs << "t" << "f(t)";
   setHorizontalHeaderLabels( labs );
+  this->horizontalHeader()->setStretchLastSection(true);
+  this->horizontalHeader()->setDefaultSectionSize(60);
 
   while( rows-- )
     addRow();
@@ -247,7 +256,7 @@ Table( QWidget* parent, int rows )
 
 void
 StdMeshersGUI_DistrTableFrame::Table::
-setEditor( int r, int c, QDoubleSpinBox* sb )
+setEditor( int r, int c, SMESHGUI_SpinBox* sb )
 {
   myEditorData.r  = r;
   myEditorData.c  = c;
@@ -405,15 +414,15 @@ sizeHint() const
 {
   if( cachedSizeHint().isValid() )
     return cachedSizeHint();
-
-  QSize sh = QTableWidget::sizeHint();
-  if( sh.width() < 400 )
-    sh.setWidth( 400 );
-  if( sh.height() < 200 )
-    sh.setHeight( 200 );
-
-  setCachedSizeHint( sh );
-  return sh;
+  return QTableWidget::sizeHint();
+//   QSize sh = QTableWidget::sizeHint();
+//   if( sh.width() < 400 )
+//     sh.setWidth( 400 );
+//   if( sh.height() < 200 )
+//     sh.setHeight( 200 );
+// 
+//   setCachedSizeHint( sh );
+//   return sh;
 }
 
 void
@@ -501,38 +510,32 @@ StdMeshersGUI_DistrTableFrame::
 StdMeshersGUI_DistrTableFrame( QWidget* parent )
   : QWidget( parent )
 {
-  QVBoxLayout* main = new QVBoxLayout( this );
+  QGridLayout* main = new QGridLayout( this );
   main->setMargin( 0 );
   main->setSpacing( 0 );
 
   // ---
   myTable = new Table( this );
   connect( myTable, SIGNAL( valueChanged( int, int ) ), this, SIGNAL( valueChanged( int, int ) ) );
-  
-  // ---
-  QWidget* aButFrame = new QWidget( this );
-  QHBoxLayout* butLay = new QHBoxLayout( aButFrame );
-  butLay->setContentsMargins( 0, SPACING, 0, SPACING );
-  butLay->setSpacing( SPACING );
 
-  myButtons[ InsertRowBtn ] = new QPushButton( tr( "SMESH_INSERT_ROW" ), aButFrame );
-  myButtons[ RemoveRowBtn ] = new QPushButton( tr( "SMESH_REMOVE_ROW" ), aButFrame );
+  myButtons[ InsertRowBtn ] = new QPushButton( tr( "SMESH_INSERT_ROW" ), this );
+  myButtons[ RemoveRowBtn ] = new QPushButton( tr( "SMESH_REMOVE_ROW" ), this );
 
-  butLay->addWidget( myButtons[ InsertRowBtn ] );
-  butLay->addWidget( myButtons[ RemoveRowBtn ] );
-  butLay->addStretch();
 
   // ---
-  main->addWidget( myTable );
-  main->addWidget( aButFrame );
+  main->addWidget( myTable , 0, 0, 1, 3);
+  main->addWidget( myButtons[ InsertRowBtn ] , 1, 0);
+  main->addWidget( myButtons[ RemoveRowBtn ] , 1, 1);
+  main->setColumnStretch(2, 1);
+  main->setSpacing( SPACING );
   
   // ---
   connect( myButtons[ InsertRowBtn ], SIGNAL( clicked() ), this, SLOT( onInsert() ) );
   connect( myButtons[ RemoveRowBtn ], SIGNAL( clicked() ), this, SLOT( onRemove() ) );
   connect( myTable, SIGNAL( currentCellChanged( int, int, int, int ) ),
-	   this,    SIGNAL( currentChanged( int, int ) ) );
+           this,    SIGNAL( currentChanged( int, int ) ) );
   connect( myTable, SIGNAL( cellChanged( int, int ) ),
-	   this,    SIGNAL( valueChanged( int, int ) ) );
+           this,    SIGNAL( valueChanged( int, int ) ) );
 }
 
 StdMeshersGUI_DistrTableFrame::

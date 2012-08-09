@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_Hypotheses.h
 // Author : Julia DOROVSKIKH, Open CASCADE S.A.S.
@@ -28,6 +29,7 @@
 
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
+#include "SMESHGUI_HypothesesUtils.h"
 
 // Qt includes
 #include <QtxDialog.h>
@@ -51,10 +53,9 @@ public:
   virtual ~SMESHGUI_GenericHypothesisCreator();
 
   void                         create( SMESH::SMESH_Hypothesis_ptr,
-				       const QString&, QWidget* );
-  void                         create( bool, const QString&, QWidget* );
-  void                         edit( SMESH::SMESH_Hypothesis_ptr,
-				     const QString&, QWidget* );
+                                       const QString&, QWidget*, QObject*, const QString& );
+  void                         create( bool, const QString&, QWidget*, QObject*, const QString& );
+  void                         edit( SMESH::SMESH_Hypothesis_ptr, const QString&, QWidget*, QObject*, const QString& );
   void                         setInitParamsHypothesis(SMESH::SMESH_Hypothesis_ptr);
 
   virtual bool                 checkParams( QString& ) const;
@@ -64,6 +65,15 @@ public:
   QString                      hypType() const;
   QString                      hypName() const;
   bool                         isCreation() const;
+  
+  QString                      getShapeEntry() const { return myShapeEntry; }
+  void                         setShapeEntry( const QString& theEntry );
+
+  QString                      getMainShapeEntry() const { return myMainShapeEntry; }
+  void                         setMainShapeEntry( const QString& theEntry ) { myMainShapeEntry = theEntry; }
+
+signals:
+  void                         finished( int );
 
 protected:
   struct StdParam
@@ -71,9 +81,11 @@ protected:
     QString   myName;
     QVariant  myValue;
     bool      isVariable;
+    QString   myText;
     StdParam(){
       isVariable = false;
     }
+    const char* text() const { return myText.toLatin1().constData(); }
   };
 
   typedef QList<StdParam>      ListOfStdParams;
@@ -85,6 +97,7 @@ protected:
   const ListOfWidgets&         widgets() const;
   ListOfWidgets&               changeWidgets();
   QtxDialog*                   dlg() const;
+  QString                      getVariableName(const char* methodName) const;
 
   virtual QFrame*              buildFrame() = 0;
           QFrame*              buildStdFrame();
@@ -96,7 +109,7 @@ protected:
   static  QString              stdParamValues( const ListOfStdParams& );
   virtual void                 attuneStdWidget( QWidget*, const int ) const;
   virtual QWidget*             getCustomWidget( const StdParam&, 
-						QWidget*, const int ) const;
+                                                QWidget*, const int ) const;
   virtual bool                 getParamFromCustomWidget( StdParam&, QWidget* ) const;
   virtual void                 valueChanged( QWidget* );
   virtual QString              caption() const;
@@ -110,8 +123,7 @@ private slots:
   virtual void                 onDialogFinished( int );
 
 private:
-  bool                         editHypothesis( SMESH::SMESH_Hypothesis_ptr,
-					       const QString&, QWidget* );
+  void                         editHypothesis( SMESH::SMESH_Hypothesis_ptr, const QString&, QWidget*, QObject* obj, const QString& );
 
 private:
   SMESH::SMESH_Hypothesis_var  myHypo, myInitParamsHypo;
@@ -120,7 +132,8 @@ private:
   ListOfWidgets                myParamWidgets;
   bool                         myIsCreate;
   QtxDialog*                   myDlg;
-  QEventLoop*                  myEventLoop;
+  QString                      myShapeEntry;
+  QString                      myMainShapeEntry;
 };
 
 class SMESHGUI_HypothesisDlg : public QtxDialog
@@ -131,20 +144,19 @@ public:
   SMESHGUI_HypothesisDlg( SMESHGUI_GenericHypothesisCreator*, QWidget* );
   virtual ~SMESHGUI_HypothesisDlg();
 
-  void                                 setHIcon( const QPixmap& );
-  void                                 setCustomFrame( QFrame* );
-  void                                 setType( const QString& );
+  void setHIcon( const QPixmap& );
+  void setCustomFrame( QFrame* );
+  void setType( const QString& );
 
 protected slots:
-  virtual void                         accept();
-  virtual void                         reject();
-  void                                 onHelp(); 
+  virtual void accept();
+  virtual void reject();
+  void onHelp(); 
 
 private:
-  SMESHGUI_GenericHypothesisCreator*   myCreator;
-  QLabel*                              myIconLabel;
-  QLabel*                              myTypeLabel;
-  QString                              myHelpFileName;
+  SMESHGUI_GenericHypothesisCreator* myCreator;
+  QLabel *myIconLabel, *myTypeLabel;
+  QString myHelpFileName;
 };
 
 /*!
@@ -158,7 +170,7 @@ public:
                   const QList<int>&, const bool,
                   const QStringList&, const QStringList&,
                   const QStringList&, const QStringList&,
-		  const bool=true, const bool supportSub=false );
+                  const bool=true, const bool supportSub=false );
 
   QString TypeName;        //!< hypothesis type name
   QString PluginName;      //!< plugin name
@@ -189,8 +201,32 @@ public:
   HypothesesSet( const QString& );
   HypothesesSet( const QString&, const QStringList&, const QStringList& );
 
-  QString     HypoSetName;
-  QStringList HypoList, AlgoList;
+  QString name() const;
+  void set( bool, const QStringList& );
+  int count( bool ) const;
+
+  void setIsCustom( bool );
+  bool getIsCustom() const;
+  int maxDim() const;
+
+  bool isAlgo() const;
+
+  //this method sets internal index to -1, thus before any data access it is necessary to call next()
+  void init( bool );
+
+  bool more() const;
+  void next();
+  QString current() const;
+
+private:
+  QStringList* list(bool) const;
+  QStringList* list() const;
+
+private:
+  QString     myHypoSetName;
+  QStringList myHypoList, myAlgoList;
+  bool myIsAlgo, myIsCustom;
+  int myIndex;
 };
 
 #endif // SMESHGUI_HYPOTHESES_H

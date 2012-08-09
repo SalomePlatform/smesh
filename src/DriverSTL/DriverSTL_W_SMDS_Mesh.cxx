@@ -1,43 +1,48 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include <stdio.h>
+#include <limits>
 
 #include "DriverSTL_W_SMDS_Mesh.h"
 
+#include "SMDS_FaceOfNodes.hxx"
+#include "SMDS_IteratorOnIterators.hxx"
 #include "SMDS_Mesh.hxx"
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
-#include <gp_XYZ.hxx>
-#include <OSD_Path.hxx>
+#include "SMDS_SetIterator.hxx"
+#include "SMDS_VolumeTool.hxx"
+#include "SMESH_TypeDefs.hxx"
+
 #include <OSD_File.hxx>
-#include <OSD_FromWhere.hxx>
+//#include <OSD_FromWhere.hxx>
+#include <OSD_Path.hxx>
 #include <OSD_Protection.hxx>
-#include <OSD_SingleProtection.hxx>
+//#include <OSD_SingleProtection.hxx>
 #include <TCollection_AsciiString.hxx>
-#include <TColgp_Array1OfXYZ.hxx>
+#include <gp_XYZ.hxx>
 
 #include "utilities.h"
-
-//using namespace std;
 
 // definition des constantes 
 static const int LABEL_SIZE = 80;
@@ -60,6 +65,7 @@ Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::Perform()
     fprintf(stderr, ">> ERROR : Mesh is null \n");
     return DRS_FAIL;
   }
+  findVolumeTriangles();
   if ( myIsAscii )
     aResult = writeAscii();
   else
@@ -67,11 +73,73 @@ Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::Perform()
 
   return aResult;
 }
+//================================================================================
+/*!
+ * \brief Destructor deletes temporary faces
+ */
+//================================================================================
+
+DriverSTL_W_SMDS_Mesh::~DriverSTL_W_SMDS_Mesh()
+{
+  for ( unsigned i = 0; i < myVolumeTrias.size(); ++i )
+    delete myVolumeTrias[i];
+}
+
+//================================================================================
+/*!
+ * \brief Finds free facets of volumes for which faces are missing in the mesh
+ */
+//================================================================================
+
+void DriverSTL_W_SMDS_Mesh::findVolumeTriangles()
+{
+  SMDS_VolumeTool myTool;
+  SMDS_VolumeIteratorPtr vIt = myMesh->volumesIterator();
+  while ( vIt->more() )
+  {
+    myTool.Set( vIt->next() );
+    for ( int iF = 0; iF < myTool.NbFaces(); ++iF )
+      if ( myTool.IsFreeFace( iF ))
+      {
+        const SMDS_MeshNode** n = myTool.GetFaceNodes(iF);
+        int                 nbN = myTool.NbFaceNodes(iF);
+        std::vector< const SMDS_MeshNode*> nodes( n, n+nbN );
+        if ( !myMesh->FindElement( nodes, SMDSAbs_Face, /*Nomedium=*/false))
+        {
+          int nbTria = nbN - 2;
+          for ( int iT = 0; iT < nbTria; ++iT )
+          {
+            myVolumeTrias.push_back( new SMDS_FaceOfNodes( n[0], n[1+iT], n[2+iT] ));
+          }
+        }
+      }
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Return iterator on both faces in the mesh and on temporary faces
+ */
+//================================================================================
+
+SMDS_ElemIteratorPtr DriverSTL_W_SMDS_Mesh::getFaces() const
+{
+  SMDS_ElemIteratorPtr facesIter = myMesh->elementsIterator(SMDSAbs_Face);
+  SMDS_ElemIteratorPtr tmpTriaIter( new SMDS_ElementVectorIterator( myVolumeTrias.begin(),
+                                                                    myVolumeTrias.end()));
+  typedef std::vector< SMDS_ElemIteratorPtr > TElemIterVector;
+  TElemIterVector iters(2);
+  iters[0] = facesIter;
+  iters[1] = tmpTriaIter;
+  
+  typedef SMDS_IteratorOnIterators<const SMDS_MeshElement *, TElemIterVector> TItersIter;
+  return SMDS_ElemIteratorPtr( new TItersIter( iters ));
+}
 
 // static methods
 
 static void writeInteger( const Standard_Integer& theVal,
-			 OSD_File& ofile )
+                         OSD_File& ofile )
 {
   union {
     Standard_Integer i;
@@ -90,7 +158,7 @@ static void writeInteger( const Standard_Integer& theVal,
 }
 
 static void writeFloat  ( const Standard_ShortReal& theVal,
-			 OSD_File& ofile)
+                         OSD_File& ofile)
 {
   union {
     Standard_ShortReal f;
@@ -109,33 +177,43 @@ static void writeFloat  ( const Standard_ShortReal& theVal,
   ofile.Write((char *)&entier,sizeof(u.c));
 }
 
-static gp_XYZ getNormale( const SMDS_MeshFace* theFace )
+static gp_XYZ getNormale( const SMDS_MeshNode* n1,
+                          const SMDS_MeshNode* n2,
+                          const SMDS_MeshNode* n3)
 {
-  gp_XYZ n;
-  int aNbNode = theFace->NbNodes();
-  TColgp_Array1OfXYZ anArrOfXYZ(1,4);
-  gp_XYZ p1, p2, p3, p4;
-  SMDS_ElemIteratorPtr aNodeItr = theFace->nodesIterator();
-  int i = 1;
-  for ( ; aNodeItr->more() && i <= 4; i++ )
-  {
-    SMDS_MeshNode* aNode = (SMDS_MeshNode*)aNodeItr->next();
-    anArrOfXYZ.SetValue(i, gp_XYZ( aNode->X(), aNode->Y(), aNode->Z() ) );
-  }
-  
-  gp_XYZ q1 = anArrOfXYZ.Value(2) - anArrOfXYZ.Value(1);
-  gp_XYZ q2 = anArrOfXYZ.Value(3) - anArrOfXYZ.Value(1);
-  n  = q1 ^ q2;
-  if ( aNbNode > 3 )
-  {
-    gp_XYZ q3 = anArrOfXYZ.Value(4) - anArrOfXYZ.Value(1);
-    n += q2 ^ q3;
-  }
+  SMESH_TNodeXYZ xyz1( n1 );
+  SMESH_TNodeXYZ xyz2( n2 );
+  SMESH_TNodeXYZ xyz3( n3 );
+  gp_XYZ q1 = xyz2 - xyz1;
+  gp_XYZ q2 = xyz3 - xyz1;
+  gp_XYZ n  = q1 ^ q2;
   double len = n.Modulus();
-  if ( len > 0 )
+  if ( len > std::numeric_limits<double>::min() )
     n /= len;
 
   return n;
+}
+
+//================================================================================
+/*!
+ * \brief Decompose a mesh face into triangles
+ *  \retval int - number of triangles
+ */
+//================================================================================
+
+static int getTriangles( const SMDS_MeshElement* face,
+                         const SMDS_MeshNode**   nodes)
+{
+  // WARNING: implementation must be coherent with counting triangles in writeBinary()
+  int nbN = face->NbCornerNodes();
+  const int nbTria = nbN-2;
+  for ( int i = 0; nbN > 1; --nbN )
+  {
+    nodes[ i++ ] = face->GetNode( 0 );
+    nodes[ i++ ] = face->GetNode( nbN-2 );
+    nodes[ i++ ] = face->GetNode( nbN-1 );
+  }
+  return nbTria;
 }
 
 // private methods
@@ -151,17 +229,24 @@ Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::writeAscii() const
 
   OSD_File aFile = OSD_File(OSD_Path(aFileName));
   aFile.Build(OSD_WriteOnly,OSD_Protection());
+
+  char sval[16];
   TCollection_AsciiString buf = TCollection_AsciiString ("solid\n");
   aFile.Write (buf,buf.Length());buf.Clear();
-  char sval[16];
 
-  SMDS_FaceIteratorPtr itFaces = myMesh->facesIterator();
-  
-  for (; itFaces->more() ;) {
-    SMDS_MeshFace* aFace = (SMDS_MeshFace*)itFaces->next();
+  const SMDS_MeshNode* triaNodes[2048];
+
+  SMDS_ElemIteratorPtr itFaces = getFaces();
+  while ( itFaces->more() )
+  {
+    const SMDS_MeshElement* aFace = itFaces->next();
+    int nbTria = getTriangles( aFace, triaNodes );
     
-    if (aFace->NbNodes() == 3) {
-      gp_XYZ normale = getNormale( aFace );
+    for ( int iT = 0, iN = 0; iT < nbTria; ++iT )
+    {
+      gp_XYZ normale = getNormale( triaNodes[iN],
+                                   triaNodes[iN+1],
+                                   triaNodes[iN+2] );
 
       buf += " facet normal "; 
       sprintf (sval,"% 12e",normale.X());
@@ -177,9 +262,8 @@ Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::writeAscii() const
       buf += "   outer loop\n"; 
       aFile.Write (buf,buf.Length());buf.Clear();
       
-      SMDS_ElemIteratorPtr aNodeIter = aFace->nodesIterator();
-      for (; aNodeIter->more(); ) {
-	SMDS_MeshNode* node = (SMDS_MeshNode*)aNodeIter->next();
+      for ( int jN = 0; jN < 3; ++jN, ++iN ) {
+        const SMDS_MeshNode* node = triaNodes[iN];
         buf += "     vertex "; 
         sprintf (sval,"% 12e",node->X());
         buf += sval;
@@ -218,41 +302,58 @@ Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::writeBinary() const
   OSD_File aFile = OSD_File(OSD_Path(aFileName));
   aFile.Build(OSD_WriteOnly,OSD_Protection());
 
-  char sval[80];
-  Standard_Integer nbTri = 0;
-  SMDS_FaceIteratorPtr itFaces = myMesh->facesIterator();
-
   // we first count the number of triangles
-  for (;itFaces->more();) {
-    SMDS_MeshFace* aFace = (SMDS_MeshFace*)itFaces->next();
-    if (aFace->NbNodes() == 3)
-      nbTri++;
+  // WARNING: counting triangles must be coherent with getTriangles()
+  int nbTri = 0;
+  const SMDS_MeshInfo& info = myMesh->GetMeshInfo();
+  nbTri += info.NbTriangles();
+  nbTri += info.NbQuadrangles() * 2;
+  nbTri += myVolumeTrias.size();
+  if ( info.NbPolygons() > 0 )
+  {
+    SMDS_FaceIteratorPtr itFaces = myMesh->facesIterator();
+    while ( itFaces->more() )
+    {
+      const SMDS_MeshElement* aFace = itFaces->next();
+      if ( aFace->IsPoly() )
+        nbTri += aFace->NbNodes() - 2;
+    }
   }
 
+  // char sval[80]; -- avoid writing not initialized memory
+  TCollection_AsciiString sval(LABEL_SIZE-1,' ');
+  aFile.Write((Standard_Address)sval.ToCString(),LABEL_SIZE);
+
   // write number of triangles
-  //unsigned int NBT = nbTri;
-  aFile.Write((Standard_Address)sval,LABEL_SIZE);
   writeInteger(nbTri,aFile);  
 
-  // loop writing nodes. take face iterator again
-  int dum=0;
-  itFaces = myMesh->facesIterator();
-  
-  for (;itFaces->more();) {
-    SMDS_MeshFace* aFace = (SMDS_MeshFace*)itFaces->next();
-    
-    if (aFace->NbNodes() == 3) {
-      gp_XYZ aNorm = getNormale( aFace );
-      writeFloat(aNorm.X(),aFile);
-      writeFloat(aNorm.Y(),aFile);
-      writeFloat(aNorm.Z(),aFile);
+  // Loop writing nodes
 
-      SMDS_ElemIteratorPtr aNodeIter = aFace->nodesIterator();
-      for (; aNodeIter->more(); ) {
-	SMDS_MeshNode* node = (SMDS_MeshNode*)aNodeIter->next();
-	writeFloat(node->X(),aFile);
-	writeFloat(node->Y(),aFile);
-	writeFloat(node->Z(),aFile);
+  int dum=0;
+
+  const SMDS_MeshNode* triaNodes[2048];
+
+  SMDS_ElemIteratorPtr itFaces = getFaces();
+  while ( itFaces->more() )
+  {
+    const SMDS_MeshElement* aFace = itFaces->next();
+    int nbTria = getTriangles( aFace, triaNodes );
+    
+    for ( int iT = 0, iN = 0; iT < nbTria; ++iT )
+    {
+      gp_XYZ normale = getNormale( triaNodes[iN],
+                                   triaNodes[iN+1],
+                                   triaNodes[iN+2] );
+      writeFloat(normale.X(),aFile);
+      writeFloat(normale.Y(),aFile);
+      writeFloat(normale.Z(),aFile);
+
+      for ( int jN = 0; jN < 3; ++jN, ++iN )
+      {
+        const SMDS_MeshNode* node = triaNodes[iN];
+        writeFloat(node->X(),aFile);
+        writeFloat(node->Y(),aFile);
+        writeFloat(node->Z(),aFile);
       }
       aFile.Write (&dum,2);
     } 

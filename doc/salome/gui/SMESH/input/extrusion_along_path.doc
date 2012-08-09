@@ -4,13 +4,14 @@
 
 \n In principle, <b>Extrusion along a path</b> works in the same way
 as \b Extrusion, the main difference is that we define not a vector,
-but a path of extrusion which must be a meshed edge. To get an idea of
-how this algorithm works, examine several examples, starting from the
-most simple case of extrusion along a straight edge. In all examples
-the same mesh will be extruded along different paths and with
-different parameters. This sample 2D mesh has two quadrangle faces and
-seven edges. Look at the picture, where white digits are the node
-numbers and green are the element numbers:
+but a path of extrusion which must be a 1D mesh or 1D sub-mesh. 
+To get an idea of how this algorithm works, examine several examples,
+starting from the most simple case of extrusion along a straight edge.
+In the examples the sample mesh will be extruded along different
+paths and with different parameters.
+This 2D mesh has two quadrangle faces and seven edges. Look
+at the picture, where white digits are the node numbers and green
+are the element numbers:
 
 \image html mesh_for_extr_along_path.png
 
@@ -40,29 +41,17 @@ been selected as <b>Start node</b>.</center>
 \image html curvi_angles_after.png
 <center>The same, but using angles {45, 45, 45, 0, -45, -45, -45}</center>
 
-<br><center><h2>Extrusion along a sub-mesh</h2></center>
+<br><center><h2>Extrusion of a 2D face along a mesh built on a wire</h2></center>
 
-In this example the path mesh has been built on a wire (polyline with
-six edges). The first edge of the wire was used as <b>Shape (edge)</b>, node
-#1 as <b>Start node</b>. The angles have been defined as {10, 10, 10}. The
-middle edge (#4) of the initial mesh has been extruded.
+In this example the path mesh has been built on a wire containing 3
+edges. Node 1 is a start node. Linear angle variation by 180 degrees
+has also been applied.
 
-\image html edge_wire_before.png
+\image html extr_along_wire_before.png
+<center><em>Meshed wire</em></center>
 
-\image html edge_wire_after.png
-
-<br><center><h2>Extrusion of 2d elements along a sub-mesh</h2></center>
-
-This extrusion bases on the same path mesh as in the previous example
-but the third edge of the wire was set as <b>Shape (edge)</b> and node
-#4 as <b>Start node</b>. Please note, that the extrusion has been done
-in direction from node #4 to node #3, i.e. against the wire
-direction. In this example both faces of the initial mesh have been
-extruded.
-
-\image html edge_wire_3d_before.png
-
-\image html edge_wire_3d_after.png
+\image html extr_along_wire_after.png
+<center><em>The resulting extrusion</em></center>
 
 <br><center><h2>Extrusion of 2d elements along a closed path</h2></center>
 
@@ -88,36 +77,36 @@ path</b> item or click <em>"Extrusion along a path"</em> button in the toolbar.
 \image html image101.png
 <center><em>"Extrusion along a path" button</em></center>
 
-The following dialog box will appear:
+The following dialog common for line and planar elements will appear:
 
 \image html extrusion1.png
-
-\image html extrusion2.png
 </li>
 
-<li>In the dialog box you should:
+<li>In this dialog:
 <ul>
 <li>select the type of elements which will be extruded (1D or 2D),</li>
 <li>specify the <b>IDs of the elements</b> which will be extruded
+
 <ul>
-<li>Check on <b>Select the whole mesh, submesh or group</b> option
-<li>Choosing them manually with the mouse in the 3D Viewer. You can
-click on an element in the 3D viewer and it will be highlighted</li>
-<li>Applying Filters. The <b>Set filter</b> button allows to apply a
-definite filter to selection of the elements. See more
-about filters on the
-\ref selection_filter_library_page "Selection filter library" page.</li>
+<li><b>Select the whole mesh, submesh or group</b> activating this
+checkbox; or</li>
+<li>choose mesh elements with the mouse in the 3D Viewer. It is
+possible to select a whole area with a mouse frame; or</li> 
+<li>input the element IDs directly in <b>ID Elements</b> field. The selected elements will be highlighted in the
+viewer; or</li>
+<li>apply Filters. <b>Set filter</b> button allows to apply a filter to the selection of elements. See more
+about filters in the \ref selection_filter_library_page "Selection filter library" page.</li>
 </ul>
+
 </li>
 <li>define the Path along which the elements will be extruded,
 \n Path definition consists of several elements:
 <ul>
-<li>\b Mesh - containing a 1D sub-mesh on the edge, along which proceeds the extrusion</li>
-<li><b>Shape (edge)</b> - as the mesh can be complex, the edge is used to define the sub-mesh for the path</li>
-<li><b>Start node</b> - the first or the last node on the edge. It is used to define the direction of extrusion </li>
+<li><b>Mesh or submesh</b> - 1D mesh or sub-mesh, along which proceeds the extrusion</li>
+<li><b>Start node</b> - the start node. It is used to define the direction of extrusion </li>
 </ul>
 </li>
-<li> <b>Generate Groups</b> checkbox allows copying the groups of
+<li>activate  <b>Generate Groups</b> checkbox if it is necessary to  copy the groups of
 elements of the source mesh to the newly created one. </li>
 </ul>
 </li>
@@ -149,7 +138,9 @@ At each step the shape will be rotated by angle/nb. of steps.
 </ul>
 </li>
 
-<li>Click the \b Apply or \b OK button. Mesh edges will be extruded into
+
+<li>Click \b Apply or <b> Apply and Close</b>  button to confirm the operation.
+Mesh edges will be extruded into
 faces, faces into volumes. The external surface of the resulting 3d
 mesh (if faces have been extruded) is covered with faces, and corners
 with edges. If the path is closed, the resulting mesh can contain

@@ -1,24 +1,22 @@
-#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 #
-#  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License.
 #
-#  This library is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU Lesser General Public
-#  License as published by the Free Software Foundation; either
-#  version 2.1 of the License.
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
 #
-#  This library is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#  Lesser General Public License for more details.
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
-#  You should have received a copy of the GNU Lesser General Public
-#  License along with this library; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-#
+
 #  GEOM GEOMClient : tool to transfer BREP files from GEOM server to GEOM client
 #  File   : Makefile.in
 #  Author : Pavel TELKOV (OCC)
@@ -47,6 +45,7 @@ libSMESHClient_la_CPPFLAGS = \
 	$(MED_CXXFLAGS) \
 	$(GEOM_CXXFLAGS) \
 	$(BOOST_CPPFLAGS) \
+        $(VTK_INCLUDES) \
 	$(CAS_CPPFLAGS) \
 	$(CORBA_CXXFLAGS) \
 	$(CORBA_INCLUDES) \
@@ -59,8 +58,7 @@ libSMESHClient_la_CPPFLAGS = \
 	-I$(srcdir)/../SMDS \
 	-I$(srcdir)/../SMESHDS \
 	-I$(srcdir)/../SMESH \
-	-I$(top_builddir)/idl \
-	-I$(top_builddir)/salome_adm/unix
+	-I$(top_builddir)/idl
 
 libSMESHClient_la_LDFLAGS  = \
 	../../idl/libSalomeIDLSMESH.la \
@@ -68,15 +66,16 @@ libSMESHClient_la_LDFLAGS  = \
 	../SMESH/libSMESHimpl.la \
 	../SMESHDS/libSMESHDS.la \
 	../Controls/libSMESHControls.la \
-	$(KERNEL_LDFLAGS) -lSalomeLifeCycleCORBA \
-	$(GEOM_LDFLAGS) -lNMTDS \
-	$(MED_LDFLAGS) -lMEDWrapper_V2_2 -lMEDWrapper_V2_1 \
+	$(KERNEL_LDFLAGS) -lSalomeLifeCycleCORBA -lSalomeNS -lOpUtil -lSALOMEBasics \
+	-lSalomeIDLKernel -lSALOMELocalTrace \
+	$(GEOM_LDFLAGS) -lNMTDS -lSalomeIDLGEOM \
+	$(MED_LDFLAGS) -lMEDWrapper_V2_2 -lMEDWrapper_V2_1 -lSalomeIDLMED -lMEDWrapper \
 	$(CAS_KERNEL)
 
 SMESHClientBin_CPPFLAGS = \
 	$(libSMESHClient_la_CPPFLAGS)
 
 SMESHClientBin_LDADD = \
-	$(libSMESHClient_la_LDFLAGS)
+	$(libSMESHClient_la_LDFLAGS) @CORBA_LIBS@
 
 

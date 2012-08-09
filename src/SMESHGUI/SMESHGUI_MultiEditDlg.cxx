@@ -1,28 +1,29 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // File   : SMESHGUI_MultiEditDlg.cxx
 // Author : Sergey LITONIN, Open CASCADE S.A.S.
 // SMESH includes
-//
+
 #include "SMESHGUI_MultiEditDlg.h"
 
 #include "SMESHGUI.h"
@@ -39,15 +40,17 @@
 #include <SMDS_Mesh.hxx>
 
 // SALOME GUI includes
-#include <SUIT_ResourceMgr.h>
 #include <SUIT_Desktop.h>
-#include <SUIT_Session.h>
 #include <SUIT_MessageBox.h>
+#include <SUIT_OverrideCursor.h>
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_Session.h>
 
 #include <LightApp_SelectionMgr.h>
 #include <LightApp_Application.h>
 #include <SALOME_ListIO.hxx>
 #include <SALOME_ListIteratorOfListIO.hxx>
+#include <SalomeApp_Tools.h>
 
 #include <SVTK_Selector.h>
 #include <SVTK_ViewWindow.h>
@@ -100,8 +103,8 @@
 //=======================================================================
 SMESHGUI_MultiEditDlg
 ::SMESHGUI_MultiEditDlg(SMESHGUI* theModule,
-			const int theMode,
-			const bool the3d2d):
+                        const int theMode,
+                        const bool the3d2d):
   QDialog(SMESH::GetDesktop(theModule)),
   mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
   mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
@@ -192,7 +195,7 @@ QWidget* SMESHGUI_MultiEditDlg::createMainFrame (QWidget* theParent, const bool 
 
   myToAllChk = new QCheckBox(tr("TO_ALL"), mySelGrp);
   mySelGrpLayout->addWidget(myToAllChk, mySelGrpLayout->rowCount(), 0, 
-			    1, mySelGrpLayout->columnCount());
+                            1, mySelGrpLayout->columnCount());
 
   // Split/Join criterion group
   myCriterionGrp = new QGroupBox(tr("SPLIT_JOIN_CRITERION"), aMainGrp);
@@ -301,7 +304,7 @@ QWidget* SMESHGUI_MultiEditDlg::createButtonFrame (QWidget* theParent)
 bool SMESHGUI_MultiEditDlg::isValid (const bool /*theMess*/)
 {
   return (!myMesh->_is_nil() &&
-          (myListBox->count() > 0 || (myToAllChk->isChecked() && myActor)));
+          (myListBox->count() > 0 || (myToAllChk->isChecked()/* && myActor*/)));
 }
 
 //=======================================================================
@@ -423,63 +426,65 @@ void SMESHGUI_MultiEditDlg::onOk()
 
 //=======================================================================
 // name    : SMESHGUI_MultiEditDlg::getIds
-// Purpose : Retrive identifiers from list box
+// Purpose : Retrive identifiers from list box or the whole object
 //=======================================================================
-SMESH::long_array_var SMESHGUI_MultiEditDlg::getIds()
+
+SMESH::long_array_var SMESHGUI_MultiEditDlg::getIds(SMESH::SMESH_IDSource_var& obj)
 {
   SMESH::long_array_var anIds = new SMESH::long_array;
 
   if (myToAllChk->isChecked())
   {
     myIds.Clear();
-    SMESH_Actor * anActor = SMESH::FindActorByObject(myMesh);
-    if (!anActor)
-      anActor = myActor;
-    if (anActor != 0)
-    {
-      // skl 07.02.2006
-      SMDS_Mesh* aMesh = myActor->GetObject()->GetMesh();
-      if( myFilterType == SMESH::TriaFilter || 
-	  myFilterType == SMESH::QuadFilter ||
-	  myFilterType == SMESH::FaceFilter ) {
-	SMDS_FaceIteratorPtr it = aMesh->facesIterator();
-	while(it->more()) {
-	  const SMDS_MeshFace* f = it->next();
-	  if(myFilterType == SMESH::FaceFilter) {
-	    myIds.Add(f->GetID());
-	  }
-	  else if( myFilterType==SMESH::TriaFilter &&
-		   ( f->NbNodes()==3 || f->NbNodes()==6 ) ) {
-	    myIds.Add(f->GetID());
-	  }
-	  else if( myFilterType==SMESH::QuadFilter &&
-		   ( f->NbNodes()==4 || f->NbNodes()==8 ) ) {
-	    myIds.Add(f->GetID());
-	  }
-	}
-      }
-      else if(myFilterType == SMESH::VolumeFilter) {
-	SMDS_VolumeIteratorPtr it = aMesh->volumesIterator();
-	while(it->more()) {
-	  const SMDS_MeshVolume* f = it->next();
-	  myIds.Add(f->GetID());
-	}
-      }
-      /* commented by skl 07.02.2006
+    obj = SMESH::SMESH_IDSource::_narrow( myMesh );
+//     SMESH_Actor * anActor = SMESH::FindActorByObject(myMesh);
+//     if (!anActor)
+//       anActor = myActor;
+//     if (anActor != 0)
+//     {
+//       // skl 07.02.2006
+//       SMDS_Mesh* aMesh = myActor->GetObject()->GetMesh();
+//       if( myFilterType == SMESH::TriaFilter || 
+//           myFilterType == SMESH::QuadFilter ||
+//           myFilterType == SMESH::FaceFilter ) {
+//         SMDS_FaceIteratorPtr it = aMesh->facesIterator();
+//         while(it->more()) {
+//           const SMDS_MeshFace* f = it->next();
+//           if(myFilterType == SMESH::FaceFilter) {
+//             myIds.Add(f->GetID());
+//           }
+//           else if( myFilterType==SMESH::TriaFilter &&
+//                    ( f->NbNodes()==3 || f->NbNodes()==6 ) ) {
+//             myIds.Add(f->GetID());
+//           }
+//           else if( myFilterType==SMESH::QuadFilter &&
+//                    ( f->NbNodes()==4 || f->NbNodes()==8 ) ) {
+//             myIds.Add(f->GetID());
+//           }
+//         }
+//       }
+//       else if(myFilterType == SMESH::VolumeFilter) {
+//         SMDS_VolumeIteratorPtr it = aMesh->volumesIterator();
+//         while(it->more()) {
+//           const SMDS_MeshVolume* f = it->next();
+//           myIds.Add(f->GetID());
+//         }
+//       }
+      /* commented by skl 07.02.2006 - to work with quadratic elements
       TVisualObjPtr aVisualObj = anActor->GetObject();
       vtkUnstructuredGrid* aGrid = aVisualObj->GetUnstructuredGrid();
       if (aGrid != 0) {
         for (int i = 0, n = aGrid->GetNumberOfCells(); i < n; i++) {
           vtkCell* aCell = aGrid->GetCell(i);
           if (aCell != 0) {
-	    vtkTriangle* aTri = vtkTriangle::SafeDownCast(aCell);
-	    vtkQuad*     aQua = vtkQuad::SafeDownCast(aCell);
-	    vtkPolygon*  aPG  = vtkPolygon::SafeDownCast(aCell);
+            vtkTriangle* aTri = vtkTriangle::SafeDownCast(aCell);
+            vtkQuad*     aQua = vtkQuad::SafeDownCast(aCell);
+            vtkPolygon*  aPG  = vtkPolygon::SafeDownCast(aCell);
 
-	    vtkCell3D*   a3d  = vtkCell3D::SafeDownCast(aCell);
-	    vtkConvexPointSet* aPH = vtkConvexPointSet::SafeDownCast(aCell);
+            vtkCell3D*   a3d  = vtkCell3D::SafeDownCast(aCell);
+            vtkConvexPointSet* aPH = vtkConvexPointSet::SafeDownCast(aCell);
 
-	    if (aTri && myFilterType == SMESHGUI_TriaFilter ||
+            if (aTri && myFilterType == SMESHGUI_TriaFilter ||
                 aQua && myFilterType == SMESHGUI_QuadFilter ||
                 (aTri || aQua || aPG) && myFilterType == SMESHGUI_FaceFilter ||
                 (a3d || aPH) && myFilterType == SMESHGUI_VolumeFilter) {
@@ -490,7 +495,7 @@ SMESH::long_array_var SMESHGUI_MultiEditDlg::getIds()
         }
       }
       */
-    }
+    //}
   }
 
   anIds->length(myIds.Extent());
@@ -540,10 +545,10 @@ void SMESHGUI_MultiEditDlg::onHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 
@@ -594,10 +599,10 @@ void SMESHGUI_MultiEditDlg::onSelectionDone()
     if (aNbItems > 0) {
       QStringList anElements = aListStr.split(" ", QString::SkipEmptyParts);
       for (QStringList::iterator it = anElements.begin(); it != anElements.end(); ++it) {
-	QList<QListWidgetItem*> items = myListBox->findItems(*it, Qt::MatchExactly);
-	QListWidgetItem* anItem;
-	foreach(anItem, items)
-	  anItem->setSelected(true);
+        QList<QListWidgetItem*> items = myListBox->findItems(*it, Qt::MatchExactly);
+        QListWidgetItem* anItem;
+        foreach(anItem, items)
+          anItem->setSelected(true);
       }
     }
     myMesh = SMESH::GetMeshByIO(anIO);
@@ -753,9 +758,8 @@ void SMESHGUI_MultiEditDlg::onAddBtn()
     for ( ; anIter.More(); anIter.Next()) {
       SMESH::SMESH_GroupBase_var aGroup =
         SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(anIter.Value());
-      if (!aGroup->_is_nil() && (aGroup->GetType() == SMESH::FACE &&
-                                 entityType() == 0 || aGroup->GetType() == SMESH::VOLUME &&
-                                 entityType() == 1)) {
+      if (!aGroup->_is_nil() && ((aGroup->GetType() == SMESH::FACE && entityType() == 0) || 
+                                 (aGroup->GetType() == SMESH::VOLUME && entityType() == 1))) {
         if (aGroup->GetMesh()->GetId() == myMesh->GetId()) {
           SMESH::long_array_var anIds = aGroup->GetListOfID();
           for (int i = 0, n = anIds->length(); i < n; i++) {
@@ -772,12 +776,13 @@ void SMESHGUI_MultiEditDlg::onAddBtn()
   bool isGroupOrSubmesh = (mySubmeshChk->isChecked() || myGroupChk->isChecked());
   mySubmeshChk->setChecked(false);
   myGroupChk->setChecked(false);
+  QStringList items;
   for(int i = 1; i <= toBeAdded.Extent(); i++)
     if (myIds.Add(toBeAdded(i))) {
-      QListWidgetItem* item = new QListWidgetItem(QString("%1").arg(toBeAdded(i)));
-      myListBox->addItem(item);
-      item->setSelected(true);
+      items.append(QString("%1").arg(toBeAdded(i)));
     }
+  myListBox->addItems(items);
+  myListBox->selectAll();
   myBusy = false;
 
   emit ListContensChanged();
@@ -1034,9 +1039,12 @@ bool SMESHGUI_MultiEditDlg::onApply()
 
   myBusy = true;
 
-  SMESH::long_array_var anIds = getIds();
+  SUIT_OverrideCursor aWaitCursor;
 
-  bool aResult = process(aMeshEditor, anIds.inout());
+  SMESH::SMESH_IDSource_var obj;
+  SMESH::long_array_var anIds = getIds(obj);
+
+  bool aResult = process(aMeshEditor, anIds.inout(), obj);
   if (aResult) {
     if (myActor) {
       SALOME_ListIO sel;
@@ -1044,6 +1052,7 @@ bool SMESHGUI_MultiEditDlg::onApply()
       mySelector->ClearIndex();
       mySelectionMgr->setSelectedObjects( sel );
       SMESH::UpdateView();
+      SMESHGUI::Modified();
     }
 
     myListBox->clear();
@@ -1124,9 +1133,13 @@ SMESHGUI_ChangeOrientationDlg::~SMESHGUI_ChangeOrientationDlg()
 }
 
 bool SMESHGUI_ChangeOrientationDlg::process (SMESH::SMESH_MeshEditor_ptr theEditor,
-                                             const SMESH::long_array&    theIds)
+                                             const SMESH::long_array&    theIds,
+                                             SMESH::SMESH_IDSource_ptr   obj)
 {
-  return theEditor->Reorient(theIds);
+  if ( CORBA::is_nil( obj ))
+    return theEditor->Reorient(theIds);
+  else
+    return theEditor->ReorientObject( obj );
 }
 
 /*!
@@ -1152,7 +1165,7 @@ SMESHGUI_UnionOfTrianglesDlg
 
   QLabel* aLab = new QLabel (tr("MAXIMUM_ANGLE"), aMaxAngleGrp);
   myMaxAngleSpin = new SMESHGUI_SpinBox (aMaxAngleGrp);
-  myMaxAngleSpin->RangeStepAndValidator(0, 180.0, 1.0, 3);
+  myMaxAngleSpin->RangeStepAndValidator(0, 180.0, 1.0, "angle_precision");
   myMaxAngleSpin->SetValue(30.0);
 
   aMaxAngleGrpLayout->addWidget(aLab);
@@ -1180,7 +1193,7 @@ bool SMESHGUI_UnionOfTrianglesDlg::isValid (const bool theMess)
     if( theMess ) {
       QString str( tr( "SMESH_INCORRECT_INPUT" ) );
       if ( !msg.isEmpty() )
-	str += "\n" + msg;
+        str += "\n" + msg;
       SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
     }
     return false;
@@ -1190,16 +1203,21 @@ bool SMESHGUI_UnionOfTrianglesDlg::isValid (const bool theMess)
 }
 
 bool SMESHGUI_UnionOfTrianglesDlg::process (SMESH::SMESH_MeshEditor_ptr theEditor,
-                                            const SMESH::long_array&    theIds)
+                                            const SMESH::long_array&    theIds,
+                                            SMESH::SMESH_IDSource_ptr   obj)
 {
-  SMESH::NumericalFunctor_var aCriterion = getNumericalFunctor();
-  double aMaxAngle = myMaxAngleSpin->GetValue() * PI / 180.0;
-  bool ok = theEditor->TriToQuad(theIds, aCriterion, aMaxAngle);
-  if( ok ) {
+  {
     QStringList aParameters;
     aParameters << myMaxAngleSpin->text();
-    myMesh->SetParameters( SMESHGUI::JoinObjectParameters(aParameters) );
+    myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
   }
+  SMESH::NumericalFunctor_var aCriterion = getNumericalFunctor();
+  double aMaxAngle = myMaxAngleSpin->GetValue() * M_PI / 180.0;
+  bool ok;
+  if ( CORBA::is_nil( obj ))
+    ok = theEditor->TriToQuad(theIds, aCriterion, aMaxAngle);
+  else
+    ok = theEditor->TriToQuadObject(obj, aCriterion, aMaxAngle);
   return ok;
 }
 
@@ -1243,19 +1261,21 @@ void SMESHGUI_CuttingOfQuadsDlg::onClose()
 }
 
 bool SMESHGUI_CuttingOfQuadsDlg::process (SMESH::SMESH_MeshEditor_ptr theEditor,
-                                          const SMESH::long_array&    theIds)
+                                          const SMESH::long_array&    theIds,
+                                          SMESH::SMESH_IDSource_ptr   obj)
 {
+  bool hasObj = (! CORBA::is_nil( obj ));
   switch (myGroupChoice->checkedId()) {
   case 0: // use diagonal 1-3
-    return theEditor->SplitQuad(theIds, true);
+    return hasObj ? theEditor->SplitQuadObject(obj, true) : theEditor->SplitQuad(theIds, true);
   case 1: // use diagonal 2-4
-    return theEditor->SplitQuad(theIds, false);
+    return hasObj ? theEditor->SplitQuadObject(obj, false) : theEditor->SplitQuad(theIds, false);
   default: // use numeric functor
     break;
   }
 
-  SMESH::NumericalFunctor_var aCriterion = getNumericalFunctor();
-  return theEditor->QuadToTri(theIds, aCriterion);
+  SMESH::NumericalFunctor_var aCrit = getNumericalFunctor();
+  return hasObj ? theEditor->QuadToTriObject(obj, aCrit) : theEditor->QuadToTri(theIds, aCrit);
 }
 
 void SMESHGUI_CuttingOfQuadsDlg::onCriterionRB()
@@ -1295,8 +1315,9 @@ void SMESHGUI_CuttingOfQuadsDlg::displayPreview()
     erasePreview();
 
   // get Ids of elements
-  SMESH::long_array_var anElemIds = getIds();
-  if (getIds()->length() == 0)
+  SMESH::SMESH_IDSource_var obj;
+  SMESH::long_array_var anElemIds = getIds(obj);
+  if (anElemIds->length() == 0 && obj->_is_nil() )
     return;
 
   SMDS_Mesh* aMesh = myActor->GetObject()->GetMesh();
@@ -1448,4 +1469,56 @@ void SMESHGUI_CuttingOfQuadsDlg::displayPreview()
   anIdList->Delete();
   aCellTypesArray->Delete();
   aCellLocationsArray->Delete();
+}
+
+/*!
+ *  Class       : SMESHGUI_CuttingIntoTetraDlg
+ *  Description : Modification of orientation of faces
+ */
+
+SMESHGUI_CuttingIntoTetraDlg::SMESHGUI_CuttingIntoTetraDlg(SMESHGUI* theModule)
+  : SMESHGUI_MultiEditDlg(theModule, SMESH::VolumeFilter, false)
+{
+  setWindowTitle(tr("CAPTION"));
+  myHelpFileName = "split_to_tetra_page.html";
+  myEntityType = 1;
+
+  myToAllChk->setChecked( true ); //aplly to the whole mesh by default
+
+  bool hasHexa = true;//myMesh->_is_nil() ? false : myMesh->NbHexas();
+
+  if ( hasHexa )
+  {
+    myGroupChoice->button(0)->setText( tr("SPLIT_HEX_TO_5_TETRA"));
+    myGroupChoice->button(1)->setText( tr("SPLIT_HEX_TO_6_TETRA"));
+    myGroupChoice->button(2)->setText( tr("SPLIT_HEX_TO_24_TETRA"));
+
+    myCriterionGrp->setTitle( tr("SPLIT_METHOD"));
+    myCriterionGrp->show();
+    myComboBoxFunctor->hide();
+    myChoiceWidget->show();
+  }
+  setSelectionMode();
+  updateButtons();
+}
+
+SMESHGUI_CuttingIntoTetraDlg::~SMESHGUI_CuttingIntoTetraDlg()
+{
+}
+
+bool SMESHGUI_CuttingIntoTetraDlg::process (SMESH::SMESH_MeshEditor_ptr theEditor,
+                                            const SMESH::long_array&    theIds,
+                                            SMESH::SMESH_IDSource_ptr   theObj)
+{
+  SMESH::SMESH_IDSource_var obj = theObj;
+  if ( CORBA::is_nil( obj ))
+    obj = theEditor->MakeIDSource( theIds, myEntityType ? SMESH::VOLUME : SMESH::FACE );
+  try {
+    theEditor->SplitVolumesIntoTetra( obj, myGroupChoice->checkedId()+1 );
+  }
+  catch ( const SALOME::SALOME_Exception& S_ex ) {
+    SalomeApp_Tools::QtCatchCorbaException( S_ex );
+    return false;
+  }
+  return true;
 }

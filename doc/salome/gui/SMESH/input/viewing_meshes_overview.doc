@@ -17,13 +17,16 @@ right-clicking on the selected mesh.
 \image html dialog.png
 
 <ul>
+<li><b>Rename</b> - allows to rename the object in the Object browser.</li>
 <li><b>Hide all</b> - allows to hide all objects in the viewer.</li>
 <li><b>Update</b> - refreshes the presentation of your mesh in the
 Object Browser, applying all recent changes. </li>
-<li>\subpage mesh_infos_page "Mesh Infos" -  provides
+<li>\subpage mesh_infos_page "Mesh Information" -  provides
 information about the mesh.</li>
-<li>\ref mesh_element_info_anchor "Mesh Element Info" - provides basic
-information about the selected element of the mesh. </li>
+<li>\subpage find_element_by_point_page "Find Element by Point" -
+allows to find all mesh elements, to which belongs a point with the
+given coordinates.</li>
+<li><b>Auto Color</b> - switch on / off auto-assigning colors for the groups.</li>
 <li>\subpage numbering_page "Numbering"  - allows to display the ID
 numbers of all meshing elements or nodes composing your mesh in the
 viewer.</li>
@@ -31,19 +34,27 @@ viewer.</li>
 Wireframe, Shading and Nodes presentation.</li>
 <li>\subpage display_entity_page "Display Entity" - allows to display
 Faces, Edges or both.</li>
+<li><b>2D Quadratic</b> - allows to select between the representation
+of quadratic edges as broken <b>lines</b> or as <b>arcs</b></li>
 <li><b>Orientation of faces</b> - shows vectors of orientation of
-faces of the selected mesh</li> 
-<li><b>Colors / Size</b> - allows to select color and size of
-meshes.</li>
+faces of the selected mesh. The orientation vector is shown for each 2D mesh element 
+and for each free face of a 3D mesh element. the vector direction is calculated by 
+the first three nodes of the face produced by vectors n1-n2 and n1-n3.</li> 
+<li>\subpage colors_size_page "Properties" - allows to define several properties, including color of elements, shrink size, ....</li>
 <li>\subpage transparency_page "Transparency" - allows to change the
 transparency of mesh elements.</li>
-<li>\subpage clipping_page "Clipping" - allows to create cross-sections of the selected objects.</li>
-<li>\ref about_quality_controls_page "Controls" - graphically
+<li>\ref quality_page "Controls" - graphically
 presents various information about meshes.</li>
 <li><b>Hide</b> - allows to hide the selected mesh from the viewer.</li>
 <li><b>Show Only</b> -allows to display only the selected mesh, hiding all other from the viewer.</li>
+<li>\subpage clipping_page "Clipping" - allows to create cross-sections of the selected objects.</li>
 <li><b>Dump view</b> - exports an object from the viewer in bmp, png, jpg or jpeg image format.</li>
-<li><b>Change background</b> - allows to redefine the background color. By default it is black.</li>
+<li><b>Change background</b> - allows to redefine the background
+color. By default it is black.</li>
+<li><b>View Operations</b> checkbox - allows to show/hide the
+visualization toolbar in the viewer window.</li>
+<li><b>Recording Operations</b> - allows to show/hide the recording
+toolbar in the viewer window.</li>
 </ul>
 
 */

@@ -1,30 +1,30 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : StdMeshers_NumberOfSegments_i.cxx
 //           Moved here from SMESH_NumberOfSegments_i.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #include "StdMeshers_NumberOfSegments_i.hxx"
 #include "SMESH_Gen_i.hxx"
@@ -46,15 +46,15 @@ using namespace std;
 //=============================================================================
 
 StdMeshers_NumberOfSegments_i::StdMeshers_NumberOfSegments_i( PortableServer::POA_ptr thePOA,
-						    int                     theStudyId,
-						    ::SMESH_Gen*            theGenImpl )
+                                                    int                     theStudyId,
+                                                    ::SMESH_Gen*            theGenImpl )
      : SALOME::GenericObj_i( thePOA ), 
        SMESH_Hypothesis_i( thePOA )
 {
   MESSAGE( "StdMeshers_NumberOfSegments_i::StdMeshers_NumberOfSegments_i" );
   myBaseImpl = new ::StdMeshers_NumberOfSegments( theGenImpl->GetANewId(),
-					     theStudyId,
-					     theGenImpl );
+                                             theStudyId,
+                                             theGenImpl );
 }
 
 //=============================================================================
@@ -78,8 +78,8 @@ StdMeshers_NumberOfSegments_i::~StdMeshers_NumberOfSegments_i()
  */
 //=============================================================================
 SMESH::double_array* StdMeshers_NumberOfSegments_i::BuildDistributionExpr( const char* func, 
-									   CORBA::Long nbSeg, 
-									   CORBA::Long conv )
+                                                                           CORBA::Long nbSeg, 
+                                                                           CORBA::Long conv )
   throw ( SALOME::SALOME_Exception )
 {
   ASSERT( myBaseImpl );
@@ -99,8 +99,8 @@ SMESH::double_array* StdMeshers_NumberOfSegments_i::BuildDistributionExpr( const
 }
 
 SMESH::double_array* StdMeshers_NumberOfSegments_i::BuildDistributionTab( const SMESH::double_array& func,
-									  CORBA::Long nbSeg, 
-									  CORBA::Long conv )
+                                                                          CORBA::Long nbSeg, 
+                                                                          CORBA::Long conv )
   throw ( SALOME::SALOME_Exception )
 {
   ASSERT( myBaseImpl );
@@ -141,11 +141,11 @@ void StdMeshers_NumberOfSegments_i::SetNumberOfSegments( CORBA::Long theSegments
   }
   catch (SALOME_Exception& S_ex) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-				  SALOME::BAD_PARAM );
+                                  SALOME::BAD_PARAM );
   }
 
   // Update Python script
-  SMESH::TPythonDump() << _this() << ".SetNumberOfSegments( " << theSegmentsNumber << " )";
+  SMESH::TPythonDump() << _this() << ".SetNumberOfSegments( " << SMESH::TVar(theSegmentsNumber) << " )";
 }
 
 //=============================================================================
@@ -160,6 +160,101 @@ CORBA::Long StdMeshers_NumberOfSegments_i::GetNumberOfSegments()
 {
   ASSERT( myBaseImpl );
   return this->GetImpl()->GetNumberOfSegments();
+}
+
+//=============================================================================
+/*!
+ *  StdMeshers_NumberOfSegments_i::SetReversedEdges
+ *
+ *  Set edges to reverse
+ */
+//=============================================================================
+
+void StdMeshers_NumberOfSegments_i::SetReversedEdges( const SMESH::long_array& theIds )
+{
+  ASSERT( myBaseImpl );
+  try {
+    std::vector<int> ids( theIds.length() );
+    CORBA::Long iEnd = theIds.length();
+    for ( CORBA::Long i = 0; i < iEnd; i++ )
+      ids[ i ] = theIds[ i ];
+
+    this->GetImpl()->SetReversedEdges( ids );
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
+                                  SALOME::BAD_PARAM );
+  }
+
+  // Update Python script
+  SMESH::TPythonDump() << _this() << ".SetReversedEdges( " << theIds << " )";
+}
+
+//=============================================================================
+/*!
+ *  StdMeshers_NumberOfSegments_i::SetObjectEntry
+ *
+ *  Set the Entry for the Main Object
+ */
+//=============================================================================
+
+void StdMeshers_NumberOfSegments_i::SetObjectEntry( const char* theEntry )
+{
+  ASSERT( myBaseImpl );
+  string entry(theEntry); // actually needed as theEntry is spoiled by moment of dumping
+  try {
+    this->GetImpl()->SetObjectEntry( entry.c_str() );
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
+                                  SALOME::BAD_PARAM );
+  }
+  // Update Python script
+  SMESH::TPythonDump() << _this() << ".SetObjectEntry( \"" << entry.c_str() << "\" )";
+}
+
+//=============================================================================
+/*!
+ *  StdMeshers_NumberOfSegments_i::GetObjectEntry
+ *
+ *  Set the Entry for the Main Object
+ */
+//=============================================================================
+
+char* StdMeshers_NumberOfSegments_i::GetObjectEntry()
+{
+  ASSERT( myBaseImpl );
+
+  const char* entry;
+  try {
+    entry = this->GetImpl()->GetObjectEntry();
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
+                                  SALOME::BAD_PARAM );
+  }
+  return CORBA::string_dup( entry );
+}
+
+//=============================================================================
+/*!
+ *  StdMeshers_NumberOfSegments_i::GetReversedEdges
+ *
+ *  Get reversed edges
+ */
+//=============================================================================
+
+SMESH::long_array* StdMeshers_NumberOfSegments_i::GetReversedEdges()
+{
+  MESSAGE( "StdMeshers_NumberOfSegments_i::GetReversedEdges" );
+  ASSERT( myBaseImpl );
+  SMESH::long_array_var anArray = new SMESH::long_array;
+  std::vector<int> ids = this->GetImpl()->GetReversedEdges();
+  anArray->length( ids.size() );
+  for ( CORBA::Long i = 0; i < ids.size(); i++)
+    anArray [ i ] = ids [ i ];
+
+  return anArray._retn();
 }
 
 //=============================================================================
@@ -179,7 +274,7 @@ void StdMeshers_NumberOfSegments_i::SetDistrType(CORBA::Long typ)
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-				  SALOME::BAD_PARAM );
+                                  SALOME::BAD_PARAM );
   }
 }
 
@@ -209,11 +304,11 @@ void StdMeshers_NumberOfSegments_i::SetScaleFactor( CORBA::Double theScaleFactor
   try {
     this->GetImpl()->SetScaleFactor( theScaleFactor );
     // Update Python script
-    SMESH::TPythonDump() << _this() << ".SetScaleFactor( " << theScaleFactor << " )";
+    SMESH::TPythonDump() << _this() << ".SetScaleFactor( " << SMESH::TVar(theScaleFactor) << " )";
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-				  SALOME::BAD_PARAM );
+                                  SALOME::BAD_PARAM );
   }
 }
 
@@ -235,7 +330,7 @@ CORBA::Double StdMeshers_NumberOfSegments_i::GetScaleFactor()
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-				  SALOME::BAD_PARAM );
+                                  SALOME::BAD_PARAM );
   }
   return scale;
 }
@@ -259,7 +354,7 @@ void StdMeshers_NumberOfSegments_i::SetTableFunction(const SMESH::double_array& 
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-				  SALOME::BAD_PARAM );
+                                  SALOME::BAD_PARAM );
   }
 }
 
@@ -278,7 +373,7 @@ SMESH::double_array* StdMeshers_NumberOfSegments_i::GetTableFunction()
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-				  SALOME::BAD_PARAM );
+                                  SALOME::BAD_PARAM );
   }
   SMESH::double_array_var aRes = new SMESH::double_array();
   aRes->length(tbl->size());
@@ -303,7 +398,7 @@ void StdMeshers_NumberOfSegments_i::SetExpressionFunction(const char* expr)
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-				  SALOME::BAD_PARAM );
+                                  SALOME::BAD_PARAM );
   }
 }
 
@@ -322,7 +417,7 @@ char* StdMeshers_NumberOfSegments_i::GetExpressionFunction()
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-				  SALOME::BAD_PARAM );
+                                  SALOME::BAD_PARAM );
   }
   return CORBA::string_dup(expr);
 }
@@ -343,7 +438,7 @@ void StdMeshers_NumberOfSegments_i::SetConversionMode(CORBA::Long conv )
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-				  SALOME::BAD_PARAM );
+                                  SALOME::BAD_PARAM );
   }
 }
 
@@ -362,7 +457,7 @@ CORBA::Long StdMeshers_NumberOfSegments_i::ConversionMode()
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-				  SALOME::BAD_PARAM );
+                                  SALOME::BAD_PARAM );
   }
   return conv;
 }
@@ -394,3 +489,13 @@ CORBA::Boolean StdMeshers_NumberOfSegments_i::IsDimSupported( SMESH::Dimension t
   return type == SMESH::DIM_1D;
 }
 
+//================================================================================
+/*!
+ * \brief Return method name corresponding to index of variable parameter
+ */
+//================================================================================
+
+std::string StdMeshers_NumberOfSegments_i::getMethodOfParameter(const int paramIndex, int ) const
+{
+  return paramIndex == 0 ? "SetNumberOfSegments" : "SetScaleFactor";
+}

@@ -1,0 +1,29 @@
+/*!
+
+\page max_element_length_3d_page Element Diameter 3D
+
+\n This quality control criterion consists in calculation of the length of
+edges and diagonals combining 3D mesh elements
+(tetrahedrons, pyramids, pentahendrons, hexahedrons and polyhedrons).
+
+<em>To apply the Element Diameter 3D quality criterion to your mesh:</em>
+<ol>
+<li>Display your mesh in the viewer. </li>
+
+<li>Choose <b>Controls > Volume Controls > Element Diameter 3D</b> or click
+<em>"Element Diameter 3D"</em> button in the toolbar. 
+
+\image html image43.png
+<center><em>"Element Diameter 3D" button</em></center>
+
+Your mesh will be displayed in the viewer with its elements colored according to the
+applied mesh quality control criterion:
+
+\image html max_element_length_3d.png
+</li>
+</ol>
+
+<br><b>See Also</b> a sample TUI Script of a 
+\ref tui_max_element_length_3d "Element Diameter 3D quality control" operation.  
+
+*/

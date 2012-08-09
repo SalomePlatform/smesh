@@ -1,28 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<!--
-  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
-
-  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
-
-  This library is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Lesser General Public
-  License as published by the Free Software Foundation; either
-  version 2.1 of the License.
-
-  This library is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Lesser General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public
-  License along with this library; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-
-  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-
--->
-<TS version="1.1" >
+<TS version="2.0" language="fr_FR">
     <context>
         <name>@default</name>
         <message>
@@ -52,6 +30,10 @@
         <message>
             <source>ICON_BUILD_COMPOUND</source>
             <translation>mesh_build_compound.png</translation>
+        </message>
+        <message>
+            <source>ICON_COPY_MESH</source>
+            <translation>copy_mesh.png</translation>
         </message>
         <message>
             <source>ICON_COMPUTE</source>
@@ -110,6 +92,22 @@
             <translation>mesh_build_compound.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_COPY_MESH</source>
+            <translation>copy_mesh.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_BALL</source>
+            <translation>mesh_ball.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_BALL_ELEMENT</source>
+            <translation>mesh_ball.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_ELEM0D</source>
+            <translation>mesh_vertex.png</translation>
+        </message>
+        <message>
             <source>ICON_DLG_EDGE</source>
             <translation>mesh_line.png</translation>
         </message>
@@ -154,12 +152,24 @@
             <translation>mesh_vertex.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_OCTA</source>
+            <translation>mesh_octahedron.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_PENTA</source>
+            <translation>mesh_pentahedron.png</translation>
+        </message>
+        <message>
             <source>ICON_DLG_POLYGON</source>
             <translation>mesh_polygon.png</translation>
         </message>
         <message>
             <source>ICON_DLG_POLYHEDRON</source>
             <translation>mesh_polyhedron.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_PYRAMID</source>
+            <translation>mesh_pyramid.png</translation>
         </message>
         <message>
             <source>ICON_DLG_QUADRANGLE</source>
@@ -174,6 +184,10 @@
             <translation>mesh_quad_hexahedron.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_TRIQUADRATIC_HEXAHEDRON</source>
+            <translation>mesh_triquad_hexahedron.png</translation>
+        </message>
+        <message>
             <source>ICON_DLG_QUADRATIC_PENTAHEDRON</source>
             <translation>mesh_quad_pentahedron.png</translation>
         </message>
@@ -184,6 +198,10 @@
         <message>
             <source>ICON_DLG_QUADRATIC_QUADRANGLE</source>
             <translation>mesh_quad_quadrangle.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_BIQUADRATIC_QUADRANGLE</source>
+            <translation>mesh_biquad_quadrangle.png</translation>
         </message>
         <message>
             <source>ICON_DLG_QUADRATIC_TETRAHEDRON</source>
@@ -200,6 +218,10 @@
         <message>
             <source>ICON_DLG_REM_NODE</source>
             <translation>mesh_rem_node.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_REM_ORPHAN_NODES</source>
+            <translation>mesh_rem_orphan_nodes.png</translation>
         </message>
         <message>
             <source>ICON_DLG_RENUMBERING_ELEMENTS</source>
@@ -254,6 +276,10 @@
             <translation>mesh_free_faces.png</translation>
         </message>
         <message>
+            <source>ICON_FIND_ELEM</source>
+            <translation>mesh_find_elem_by_point.png</translation>
+        </message>
+        <message>
             <source>ICON_HYPO</source>
             <translation>mesh_hypo_length.png</translation>
         </message>
@@ -276,6 +302,14 @@
         <message>
             <source>ICON_MAP</source>
             <translation>mesh_pattern.png</translation>
+        </message>
+        <message>
+            <source>ICON_MAX_ELEMENT_LENGTH_2D</source>
+            <translation>mesh_max_element_length_2d.png</translation>
+        </message>
+        <message>
+            <source>ICON_MAX_ELEMENT_LENGTH_3D</source>
+            <translation>mesh_max_element_length_3d.png</translation>
         </message>
         <message>
             <source>ICON_OBJBROWSER_SMESH</source>
@@ -366,12 +400,44 @@
             <translation>mesh_translation_vector.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_MESH_SCALE</source>
+            <translation>scale.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_SCALE_ALONG_AXES</source>
+            <translation>scale_along_axes.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_REORIENT2D_POINT</source>
+            <translation>reorient_faces_point.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_REORIENT2D_FACE</source>
+            <translation>reorient_faces_face.png</translation>
+        </message>
+        <message>
+            <source>ICON_REORIENT_2D</source>
+            <translation>reorient_faces_face.png</translation>
+        </message>
+	<message>
+            <source>ICON_SMESH_DUPLICATE_NODES</source>
+            <translation>mesh_duplicate_nodes.png</translation>
+        </message>
+	<message>
+            <source>ICON_SMESH_DUPLICATE_NODES_WITH_ELEM</source>
+            <translation>mesh_duplicate_nodes_with_elem.png</translation>
+        </message>
+        <message>
             <source>ICON_SMESH_TREE_ALGO</source>
             <translation>mesh_tree_algo.png</translation>
         </message>
         <message>
             <source>ICON_SMESH_TREE_GROUP</source>
             <translation>mesh_tree_group.png</translation>
+        </message>
+        <message>
+            <source>ICON_SMESH_TREE_GROUP_ON_FILTER</source>
+            <translation>mesh_tree_group_on_filter.png</translation>
         </message>
         <message>
             <source>ICON_SMESH_TREE_HYPO</source>
@@ -422,12 +488,44 @@
             <translation>mesh_volume_3d.png</translation>
         </message>
         <message>
+            <source>ICON_BARE_BORDER_VOLUME</source>
+            <translation>bare_border_volume.png</translation>
+        </message>
+        <message>
+            <source>ICON_BARE_BORDER_FACE</source>
+            <translation>bare_border_face.png</translation>
+        </message>
+        <message>
+            <source>ICON_OVER_CONSTRAINED_VOLUME</source>
+            <translation>over_constrained_volume.png</translation>
+        </message>
+        <message>
+            <source>ICON_OVER_CONSTRAINED_FACE</source>
+            <translation>over_constrained_face.png</translation>
+        </message>
+        <message>
+            <source>ICON_EQUAL_NODE</source>
+            <translation>mesh_equal_node.png</translation>
+        </message>
+        <message>
+            <source>ICON_EQUAL_EDGE</source>
+            <translation>mesh_equal_edge.png</translation>
+        </message>
+        <message>
+            <source>ICON_EQUAL_FACE</source>
+            <translation>mesh_equal_face.png</translation>
+        </message>
+        <message>
+            <source>ICON_EQUAL_VOLUME</source>
+            <translation>mesh_equal_volume.png</translation>
+        </message>
+        <message>
             <source>ICON_WARP</source>
             <translation>mesh_wrap.png</translation>
         </message>
         <message>
             <source>ICON_WHAT_IS</source>
-            <translation>mesh_whatis.png</translation>
+            <translation>mesh_elem_info.png</translation>
         </message>
         <message>
             <source>ICON_WIRE</source>
@@ -440,6 +538,22 @@
         <message>
             <source>ICON_UNDERLYING_ELEMS</source>
             <translation>mesh_extractGroup.png</translation>
+        </message>
+        <message>
+            <source>ICON_2D_FROM_3D</source>
+            <translation>mesh_2d_from_3d.png</translation>
+        </message>
+        <message>
+            <source>ICON_SPLIT_TO_TETRA</source>
+            <translation>split_into_tetra.png</translation>
+        </message>
+        <message>
+            <source>ICON_MEASURE_MIN_DIST</source>
+            <translation>mesh_min_dist.png</translation>
+        </message>
+        <message>
+            <source>ICON_MEASURE_BND_BOX</source>
+            <translation>mesh_bounding_box.png</translation>
         </message>
     </context>
 </TS>

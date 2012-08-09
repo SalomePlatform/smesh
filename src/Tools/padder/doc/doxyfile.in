@@ -1,0 +1,77 @@
+# Copyright (C) 2007-2012  CEA/DEN, EDF R&D
+#
+# Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+# CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+#
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+#
+
+#---------------------------------------------------------------------------
+# Project related configuration options
+#---------------------------------------------------------------------------
+PROJECT_NAME      = "SALOME Mesh User's Guide"
+OUTPUT_DIRECTORY  = .
+CREATE_SUBDIRS	  = NO
+OUTPUT_LANGUAGE   = English
+TAB_SIZE          = 5
+
+#---------------------------------------------------------------------------
+# configuration options related to warning and progress messages
+#---------------------------------------------------------------------------
+QUIET             = NO
+WARNINGS          = YES
+
+#---------------------------------------------------------------------------
+#Input related options
+#---------------------------------------------------------------------------
+INPUT             = @srcdir@/input		  
+FILE_PATTERNS     = *.doc
+EXCLUDE           = 
+IMAGE_PATH        = @srcdir@/images
+EXAMPLE_PATH      = @top_srcdir@/src/SMESH_SWIG
+
+#---------------------------------------------------------------------------
+#HTML related options
+#---------------------------------------------------------------------------
+GENERATE_HTML     = YES
+HTML_OUTPUT       = .
+HTML_HEADER       = @top_builddir@/doc/salome/gui/SMESH/static/header.html
+HTML_FOOTER       = @top_srcdir@/doc/salome/gui/SMESH/static/footer.html
+HTML_STYLESHEET   = @top_srcdir@/doc/salome/gui/SMESH/static/doxygen.css
+TOC_EXPAND        = YES
+DISABLE_INDEX     = NO
+GENERATE_TREEVIEW = YES
+TREEVIEW_WIDTH    = 300
+
+#---------------------------------------------------------------------------
+#SORT related options
+#---------------------------------------------------------------------------
+SORT_GROUP_NAMES = NO
+
+
+#---------------------------------------------------------------------------
+#LaTeX related option
+#---------------------------------------------------------------------------
+GENERATE_LATEX    = NO
+EXTRA_PACKAGES    = amsmath
+
+#---------------------------------------------------------------------------
+#RTF related options
+#---------------------------------------------------------------------------
+GENERATE_RTF      = NO
+
+SEARCHENGINE      = YES

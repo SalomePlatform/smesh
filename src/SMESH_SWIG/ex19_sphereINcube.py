@@ -1,24 +1,26 @@
-#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+#  -*- coding: iso-8859-1 -*-
+# Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 #
-#  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+# Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+# CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 #
-#  This library is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU Lesser General Public
-#  License as published by the Free Software Foundation; either
-#  version 2.1 of the License.
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License.
 #
-#  This library is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#  Lesser General Public License for more details.
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
 #
-#  You should have received a copy of the GNU Lesser General Public
-#  License along with this library; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
-#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 # ==================================
 #
 from geompy import *
@@ -74,17 +76,13 @@ f4 = MakePlane(sphere_centre, MakeVectorDXDYDZ( 1, 0, -1), plan_trim)
 
 
 #sphere_decoupee = MakePartition(solids, sphere_outils, [], [], ShapeType["SOLID"])
-solids = geompy.SubShapeAll(sphere_troue,geompy.ShapeType["SOLID"])
-sphere_decoupee = MakePartition(solids, [f1], [], [], ShapeType["SOLID"])
-solids = geompy.SubShapeAll(sphere_decoupee,geompy.ShapeType["SOLID"])
-sphere_decoupee = MakePartition(solids, [f2], [], [], ShapeType["SOLID"])
-solids = geompy.SubShapeAll(sphere_decoupee,geompy.ShapeType["SOLID"])
-sphere_decoupee = MakePartition(solids, [f3], [], [], ShapeType["SOLID"])
-solids = geompy.SubShapeAll(sphere_decoupee,geompy.ShapeType["SOLID"])
-sphere_decoupee = MakePartition(solids, [f4], [], [], ShapeType["SOLID"])
-solids = geompy.SubShapeAll(sphere_decoupee,geompy.ShapeType["SOLID"])
 
-sphere_partie = geompy.MakeCompound(solids)
+sphere_decoupee = MakePartition([sphere_troue],    [f1], [], [], ShapeType["SOLID"])
+sphere_decoupee = MakePartition([sphere_decoupee], [f2], [], [], ShapeType["SOLID"])
+sphere_decoupee = MakePartition([sphere_decoupee], [f3], [], [], ShapeType["SOLID"])
+sphere_decoupee = MakePartition([sphere_decoupee], [f4], [], [], ShapeType["SOLID"])
+
+sphere_partie = geompy.MakeCompound([sphere_decoupee])
 
 sphere_partie   = GetBlockNearPoint(sphere_decoupee, MakeVertex(-sphere_rayon, 0, 0))
 sphere_bloc     = RemoveExtraEdges(sphere_partie)
@@ -111,17 +109,12 @@ cube_plein   = MakeBox(-cube_cote, -cube_cote, -cube_cote,  +cube_cote, +cube_co
 cube_trou    = MakeCut(cube_plein, sphere_pleine)
 #cube_decoupe = MakePartition([cube_trou], sphere_outils, [], [], ShapeType["SOLID"])
 
-solids = geompy.SubShapeAll(cube_trou,geompy.ShapeType["SOLID"])
-cube_decoupe = MakePartition(solids, [f1], [], [], ShapeType["SOLID"])
-solids = geompy.SubShapeAll(cube_decoupe,geompy.ShapeType["SOLID"])
-cube_decoupe = MakePartition(solids, [f2], [], [], ShapeType["SOLID"])
-solids = geompy.SubShapeAll(cube_decoupe,geompy.ShapeType["SOLID"])
-cube_decoupe = MakePartition(solids, [f3], [], [], ShapeType["SOLID"])
-solids = geompy.SubShapeAll(cube_decoupe,geompy.ShapeType["SOLID"])
-cube_decoupe = MakePartition(solids, [f4], [], [], ShapeType["SOLID"])
-solids = geompy.SubShapeAll(cube_decoupe,geompy.ShapeType["SOLID"])
+cube_decoupe = MakePartition([cube_trou],    [f1], [], [], ShapeType["SOLID"])
+cube_decoupe = MakePartition([cube_decoupe], [f2], [], [], ShapeType["SOLID"])
+cube_decoupe = MakePartition([cube_decoupe], [f3], [], [], ShapeType["SOLID"])
+cube_decoupe = MakePartition([cube_decoupe], [f4], [], [], ShapeType["SOLID"])
 
-cube_decoupe = geompy.MakeCompound(solids)
+cube_decoupe = geompy.MakeCompound([cube_decoupe])
 
 
 cube_partie  = GetBlockNearPoint(cube_decoupe, MakeVertex(-cube_cote, 0, 0))
@@ -166,6 +159,8 @@ UnionList(groupe, groupe_sphere)
 
 # Meshing
 # =======
+
+smesh.SetCurrentStudy(salome.myStudy)
 
 # Create a hexahedral mesh
 # ------------------------

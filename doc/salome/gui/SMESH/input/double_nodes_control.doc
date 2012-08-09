@@ -1,0 +1,16 @@
+/*!
+
+\page double_nodes_control_page Double nodes
+
+This mesh quality control highlights the nodes which are coincident
+with other nodes (within a given tolerance). Distance at which two
+nodes are considered coincident is defined by "Quality Controls/Double
+nodes tolerance" preference.
+
+\image html double_nodes.png
+
+In this picture some nodes are coincident after copying all elements with translation.
+
+\sa A sample TUI Script of a \ref tui_double_nodes_control "Double Nodes" filter.
+
+*/

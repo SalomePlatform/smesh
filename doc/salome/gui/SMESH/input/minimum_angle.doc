@@ -10,7 +10,8 @@ element (triangle or quadrangle).
 <ol>
 <li>Display your mesh in the viewer.</li>
 
-<li>Choose <b>Controls > Minimum angle</b> or click <em>"Minimum Angle"</em> button.
+<li>Choose <b>Controls > Face Controls > Minimum angle</b> or click
+<em>"Minimum Angle"</em> button.
 
 \image html image38.png
 <center><em>"Minimum Angle" button</em></center>

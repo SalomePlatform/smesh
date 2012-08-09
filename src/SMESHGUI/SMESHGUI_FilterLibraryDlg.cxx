@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_FilterLibraryDlg.cxx
 // Author : Sergey LITONIN, Open CASCADE S.A.S.
@@ -226,7 +227,7 @@ QWidget* SMESHGUI_FilterLibraryDlg::createMainFrame (QWidget* theParent)
   connect(myOpenBtn, SIGNAL(clicked()), this, SLOT(onBrowse()));
 
   connect(myListBox, SIGNAL(itemSelectionChanged()),
-	  this, SLOT(onFilterChanged()));
+          this, SLOT(onFilterChanged()));
 
   connect(myAddBtn, SIGNAL(clicked()), this, SLOT(onAddBtnPressed()));
   connect(myDeleteBtn, SIGNAL(clicked()), this, SLOT(onDeleteBtnPressed()));
@@ -256,7 +257,6 @@ QWidget* SMESHGUI_FilterLibraryDlg::createButtonFrame (QWidget* theParent)
   myButtons[ BTN_OK    ] = new QPushButton(tr("SMESH_BUT_APPLY_AND_CLOSE"), aGrp);
   myButtons[ BTN_Apply ] = new QPushButton(tr("SMESH_BUT_APPLY"), aGrp);
 
-  myButtons[ BTN_Cancel ] = new QPushButton(tr("SMESH_BUT_CANCEL"), aGrp);
   myButtons[ BTN_Close  ] = new QPushButton(tr("SMESH_BUT_CLOSE"),  aGrp);
   myButtons[ BTN_Help   ] = new QPushButton(tr("SMESH_BUT_HELP"),   aGrp);
 
@@ -265,12 +265,10 @@ QWidget* SMESHGUI_FilterLibraryDlg::createButtonFrame (QWidget* theParent)
   aLay->addWidget(myButtons[ BTN_Apply  ]);
   aLay->addSpacing(10);
   aLay->addStretch();
-  aLay->addWidget(myButtons[ BTN_Cancel ]);
   aLay->addWidget(myButtons[ BTN_Close  ]);
   aLay->addWidget(myButtons[ BTN_Help   ]);
 
   connect(myButtons[ BTN_OK     ], SIGNAL(clicked()), SLOT(onOk()));
-  connect(myButtons[ BTN_Cancel ], SIGNAL(clicked()), SLOT(onClose()));
   connect(myButtons[ BTN_Close  ], SIGNAL(clicked()), SLOT(onClose()));
   connect(myButtons[ BTN_Apply  ], SIGNAL(clicked()), SLOT(onApply()));
   connect(myButtons[ BTN_Help   ], SIGNAL(clicked()), SLOT(onHelp()));
@@ -290,14 +288,11 @@ QWidget* SMESHGUI_FilterLibraryDlg::createButtonFrame (QWidget* theParent)
 //=======================================================================
 void SMESHGUI_FilterLibraryDlg::updateMainButtons()
 {
+  myButtons[ BTN_Close  ]->show();
   if (myTypes.count() == 1) {
-    myButtons[ BTN_Cancel ]->show();
     myButtons[ BTN_Apply  ]->hide();
-    myButtons[ BTN_Close  ]->hide();
   } else {
-    myButtons[ BTN_Cancel ]->hide();
     myButtons[ BTN_Apply  ]->show();
-    myButtons[ BTN_Close  ]->show();
   }
 }
 
@@ -423,7 +418,7 @@ bool SMESHGUI_FilterLibraryDlg::onApply()
 
   if (myLibrary->_is_nil()) {
     SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_WRN_WARNING"),
-				 tr("LIBRARY_IS_NOT_LOADED"));
+                                 tr("LIBRARY_IS_NOT_LOADED"));
     return false;
   }
 
@@ -437,11 +432,11 @@ bool SMESHGUI_FilterLibraryDlg::onApply()
   } else if (myMode == EDIT || myMode == ADD_TO) {
     SMESH::Filter_var aFilter = createFilter();
     if (!myListBox->selectedItems().empty() && 
-	!myLibrary->Replace(myCurrFilterName.toLatin1().constData(),
-			    myName->text().toLatin1().constData(),
-			    aFilter.in())) {
+        !myLibrary->Replace(myCurrFilterName.toLatin1().constData(),
+                            myName->text().toLatin1().constData(),
+                            aFilter.in())) {
       SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
-				   tr("ERROR_OF_EDITING"));
+                                   tr("ERROR_OF_EDITING"));
       aResult = false;
     }
     else
@@ -457,7 +452,7 @@ bool SMESHGUI_FilterLibraryDlg::onApply()
     delete aFileName;
   } else if (myMode != COPY_FROM) {
     SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
-				 tr("ERROR_OF_SAVING"));
+                                 tr("ERROR_OF_SAVING"));
   } else {
   }
 
@@ -507,10 +502,10 @@ void SMESHGUI_FilterLibraryDlg::onHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 
@@ -674,7 +669,7 @@ void SMESHGUI_FilterLibraryDlg::processNewLibrary()
   if (myLibrary->_is_nil()) {
     if (myMode == COPY_FROM) {
       SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
-				   tr("ERROR_LOAD"));
+                                   tr("ERROR_LOAD"));
       return;
     } else {
       myLibrary = aFilterMgr->CreateLibrary();
@@ -730,7 +725,7 @@ bool SMESHGUI_FilterLibraryDlg::isNameValid(const bool theMess) const
     if (aCurrName.isEmpty()) {
       if (theMess)
         SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
-				     tr("EMPTY_FILTER_NAME"));
+                                     tr("EMPTY_FILTER_NAME"));
       return false;
     }
 
@@ -739,7 +734,7 @@ bool SMESHGUI_FilterLibraryDlg::isNameValid(const bool theMess) const
       if (aNames[ f ] == aCurrName && aNames[ f ] != myCurrFilterName) {
         if (theMess)
           SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
-				       tr("ERROR_FILTER_NAME"));
+                                       tr("ERROR_FILTER_NAME"));
         return false;
       }
     }
@@ -787,7 +782,7 @@ bool SMESHGUI_FilterLibraryDlg::isPermissionValid(const bool theIsExistingOnly)
 
   if (!isWritable) {
     SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_WRN_WARNING"),
-				 tr("NO_PERMISSION"));
+                                 tr("NO_PERMISSION"));
     return false;
   }
 
@@ -831,8 +826,8 @@ void SMESHGUI_FilterLibraryDlg::onFilterChanged()
 
     SMESH::Filter_var aFilter = createFilter();
     myLibrary->Replace(myCurrFilterName.toLatin1().constData(), 
-		       myName->text().toLatin1().constData(), 
-		       aFilter);
+                       myName->text().toLatin1().constData(), 
+                       aFilter);
   }
 
   // Fill table with filter parameters
@@ -938,8 +933,8 @@ void SMESHGUI_FilterLibraryDlg::onAddBtnPressed()
 
     SMESH::Filter_var aFilter = createFilter();
     myLibrary->Replace(myCurrFilterName.toLatin1().constData(), 
-		       myName->text().toLatin1().constData(), 
-		       aFilter);
+                       myName->text().toLatin1().constData(), 
+                       aFilter);
   }
   myTable->Clear(myTable->GetType());
 
@@ -955,7 +950,7 @@ void SMESHGUI_FilterLibraryDlg::addFilterToLib (const QString& theName)
 {
   if (myLibrary->_is_nil()) {
     SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_WRN_WARNING"),
-				 tr("LIBRARY_IS_NOT_LOADED"));
+                                 tr("LIBRARY_IS_NOT_LOADED"));
     return;
   }
 
@@ -979,7 +974,7 @@ void SMESHGUI_FilterLibraryDlg::addFilterToLib (const QString& theName)
 
   if (!aResult) {
     SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
-				 tr("ERROR_OF_ADDING"));
+                                 tr("ERROR_OF_ADDING"));
   }
 
   updateList();
@@ -989,7 +984,7 @@ void SMESHGUI_FilterLibraryDlg::addFilterToLib (const QString& theName)
 
   if (theName != aName)
     SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_WARNING"),
-				 tr("ASSIGN_NEW_NAME").arg(theName).arg(aName));
+                                 tr("ASSIGN_NEW_NAME").arg(theName).arg(aName));
 }
 
 //=======================================================================
@@ -1089,7 +1084,7 @@ void SMESHGUI_FilterLibraryDlg::onDeleteBtnPressed()
 {
   if (myLibrary->_is_nil()) {
     SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_WRN_WARNING"),
-				 tr("LIBRARY_IS_NOT_LOADED"));
+                                 tr("LIBRARY_IS_NOT_LOADED"));
     return;
   }
 
@@ -1097,7 +1092,7 @@ void SMESHGUI_FilterLibraryDlg::onDeleteBtnPressed()
 
   if (anIndex == -1 || !myLibrary->Delete(myCurrFilterName.toLatin1().constData())) {
     SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
-				 tr("ERROR_OF_DELETING"));
+                                 tr("ERROR_OF_DELETING"));
   } else {
     myCurrFilterName = "";
     myCurrFilter = -1;
@@ -1188,8 +1183,8 @@ void SMESHGUI_FilterLibraryDlg::onNeedValidation()
     {
       SMESH::Filter_var aFilter = createFilter(myTable->GetType());
       myLibrary->Replace(myCurrFilterName.toLatin1().constData(),
-			 myName->text().toLatin1().constData(),
-			 aFilter);
+                         myName->text().toLatin1().constData(),
+                         aFilter);
     }
   }
 }

@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : SMESH_MEDFamily_i.cxx
 //  Module : SMESH
@@ -77,7 +78,7 @@ SMESH_MEDFamily_i::~SMESH_MEDFamily_i()
  */
 //=============================================================================
 SMESH_MEDFamily_i::SMESH_MEDFamily_i(int identifier, SMESH_subMesh_i* sm,
-				     string name, string description, SALOME_MED::medEntityMesh entity): 
+                                     string name, string description, SALOME_MED::medEntityMesh entity): 
   SMESH_MEDSupport_i( sm, name, description, entity ),
   
   _subMesh_i(sm),
@@ -101,9 +102,9 @@ SMESH_MEDFamily_i::SMESH_MEDFamily_i(int identifier, SMESH_subMesh_i* sm,
 CORBA::Long SMESH_MEDFamily_i::getIdentifier()      
 throw (SALOME::SALOME_Exception)
 {
-  if (_subMeshDS==NULL)
+  if (_subMesh==NULL)
     THROW_SALOME_CORBA_EXCEPTION("No associated Family",\
-				 SALOME::INTERNAL_ERROR); 
+                                 SALOME::INTERNAL_ERROR); 
   return _identifier;
   
 }
@@ -115,9 +116,9 @@ throw (SALOME::SALOME_Exception)
 CORBA::Long SMESH_MEDFamily_i::getNumberOfAttributes() 
 throw (SALOME::SALOME_Exception)
 {
-  if (_subMeshDS==NULL)
+  if (_subMesh==NULL)
     THROW_SALOME_CORBA_EXCEPTION("No associated Family",\
-				 SALOME::INTERNAL_ERROR);
+                                 SALOME::INTERNAL_ERROR);
   return _numberOfAttribute;
 }
 //=============================================================================
@@ -125,20 +126,20 @@ throw (SALOME::SALOME_Exception)
  * CORBA: Accessor for attributes identifiers
  */
 //=============================================================================
-SALOME_MED::long_array*  SMESH_MEDFamily_i::getAttributesIdentifiers() 
+SALOME_TYPES::ListOfLong*  SMESH_MEDFamily_i::getAttributesIdentifiers() 
 throw (SALOME::SALOME_Exception)
 {
-  if (_subMeshDS==NULL)
+  if (_subMesh==NULL)
     THROW_SALOME_CORBA_EXCEPTION("No associated Family",\
-				 SALOME::INTERNAL_ERROR);
+                                 SALOME::INTERNAL_ERROR);
   if (_numberOfAttribute == 0)
     {
       MESSAGE("Les familles SMESH n ont pas d attribut");
       THROW_SALOME_CORBA_EXCEPTION("No attributes"\
-				   ,SALOME::BAD_PARAM);
+                                   ,SALOME::BAD_PARAM);
     };
   
-  SALOME_MED::long_array_var myseq= new SALOME_MED::long_array;
+  SALOME_TYPES::ListOfLong_var myseq= new SALOME_TYPES::ListOfLong;
   myseq->length(_numberOfAttribute);
   for (int i=0;i<_numberOfAttribute;i++)
     {
@@ -155,17 +156,17 @@ throw (SALOME::SALOME_Exception)
 CORBA::Long SMESH_MEDFamily_i::getAttributeIdentifier(CORBA::Long i) 
   throw (SALOME::SALOME_Exception)
 {    
-  if (_subMeshDS==NULL)
+  if (_subMesh==NULL)
     THROW_SALOME_CORBA_EXCEPTION("No associated Family",\
-				 SALOME::INTERNAL_ERROR);
+                                 SALOME::INTERNAL_ERROR);
   MESSAGE("Les familles SMESH n ont pas d attribut");
   THROW_SALOME_CORBA_EXCEPTION("No attributes"\
-			       ,SALOME::BAD_PARAM);
+                               ,SALOME::BAD_PARAM);
   if (_numberOfAttribute == 0)
     {
       MESSAGE("Les familles SMESH n ont pas d attribut");
       THROW_SALOME_CORBA_EXCEPTION("No attributes"\
-				   ,SALOME::BAD_PARAM);
+                                   ,SALOME::BAD_PARAM);
     };
   ASSERT (i <= _numberOfAttribute);
   return _attributeIdentifier[i];
@@ -175,21 +176,21 @@ CORBA::Long SMESH_MEDFamily_i::getAttributeIdentifier(CORBA::Long i)
  * CORBA: Accessor for attributes values
  */
 //=============================================================================
-SALOME_MED::long_array*  SMESH_MEDFamily_i::getAttributesValues() 
+SALOME_TYPES::ListOfLong*  SMESH_MEDFamily_i::getAttributesValues() 
   throw (SALOME::SALOME_Exception)
 {
-  if (_subMeshDS==NULL)
+  if (_subMesh==NULL)
     THROW_SALOME_CORBA_EXCEPTION("No associated Family",\
-				 SALOME::INTERNAL_ERROR);
+                                 SALOME::INTERNAL_ERROR);
 
   if (_numberOfAttribute == 0)
     {
       MESSAGE("Les familles SMESH n ont pas d attribut");
       THROW_SALOME_CORBA_EXCEPTION("No attributes"\
-				   ,SALOME::BAD_PARAM);
+                                   ,SALOME::BAD_PARAM);
     };
 
-  SALOME_MED::long_array_var myseq= new SALOME_MED::long_array;
+  SALOME_TYPES::ListOfLong_var myseq= new SALOME_TYPES::ListOfLong;
   myseq->length(_numberOfAttribute);
   for (int i=0;i<_numberOfAttribute;i++)
     {
@@ -205,14 +206,14 @@ SALOME_MED::long_array*  SMESH_MEDFamily_i::getAttributesValues()
 CORBA::Long  SMESH_MEDFamily_i::getAttributeValue(CORBA::Long i) 
   throw (SALOME::SALOME_Exception)
 {   
-  if (_subMeshDS==NULL)
+  if (_subMesh==NULL)
     THROW_SALOME_CORBA_EXCEPTION("No associated Family",\
-				 SALOME::INTERNAL_ERROR);
+                                 SALOME::INTERNAL_ERROR);
   if (_numberOfAttribute == 0)
     {
       MESSAGE("Les familles SMESH n ont pas d attribut");
       THROW_SALOME_CORBA_EXCEPTION("No attributes"\
-				   ,SALOME::BAD_PARAM);
+                                   ,SALOME::BAD_PARAM);
     }
 
   ASSERT (i <= _numberOfAttribute);
@@ -223,19 +224,19 @@ CORBA::Long  SMESH_MEDFamily_i::getAttributeValue(CORBA::Long i)
  * CORBA: Accessor for attributes desriptions
  */
 //=============================================================================
-SALOME_MED::string_array * SMESH_MEDFamily_i::getAttributesDescriptions() 
+SALOME_TYPES::ListOfString * SMESH_MEDFamily_i::getAttributesDescriptions() 
   throw (SALOME::SALOME_Exception)
 {
-  if (_subMeshDS==NULL)
+  if (_subMesh==NULL)
     THROW_SALOME_CORBA_EXCEPTION("No associated Family",\
-				 SALOME::INTERNAL_ERROR);
+                                 SALOME::INTERNAL_ERROR);
   if (_numberOfAttribute == 0)
     {
       MESSAGE("Les familles SMESH n ont pas d attribut");
       THROW_SALOME_CORBA_EXCEPTION("No attributes"\
-				   ,SALOME::BAD_PARAM);
+                                   ,SALOME::BAD_PARAM);
     }
-  SALOME_MED::string_array_var myseq = new SALOME_MED::string_array;
+  SALOME_TYPES::ListOfString_var myseq = new SALOME_TYPES::ListOfString;
   for (int i=0;i<_numberOfAttribute;i++)
     {
       myseq[i]=CORBA::string_dup(_attributeDescription[i].c_str());
@@ -250,14 +251,14 @@ SALOME_MED::string_array * SMESH_MEDFamily_i::getAttributesDescriptions()
 char *  SMESH_MEDFamily_i::getAttributeDescription( CORBA::Long i) 
   throw (SALOME::SALOME_Exception)
 {   
-  if (_subMeshDS==NULL)
+  if (_subMesh==NULL)
     THROW_SALOME_CORBA_EXCEPTION("No associated Family",\
-				 SALOME::INTERNAL_ERROR);
+                                 SALOME::INTERNAL_ERROR);
   if (_numberOfAttribute == 0)
     {
       MESSAGE("Les familles SMESH n ont pas d attribut");
       THROW_SALOME_CORBA_EXCEPTION("No attributes"\
-				   ,SALOME::BAD_PARAM);
+                                   ,SALOME::BAD_PARAM);
     }
   ASSERT (i <= _numberOfAttribute);
   return CORBA::string_dup(_attributeDescription[i].c_str());
@@ -291,7 +292,7 @@ char * SMESH_MEDFamily_i::getGroupName( CORBA::Long i)
  * CORBA: Accessor for all the groups name
  */
 //=============================================================================
-SALOME_MED::string_array* SMESH_MEDFamily_i::getGroupsNames()
+SALOME_TYPES::ListOfString* SMESH_MEDFamily_i::getGroupsNames()
   throw (SALOME::SALOME_Exception)
 {
   MESSAGE("!!! NOT YET IMPLEMENTED !!!!");

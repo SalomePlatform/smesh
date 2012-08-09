@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_MeshEditPreview.cxx
 // Author : Open CASCADE S.A.S.
@@ -72,6 +73,11 @@ SMESHGUI_MeshEditPreview::SMESHGUI_MeshEditPreview(SVTK_ViewWindow* theViewWindo
   myPreviewActor->VisibilityOn();
   myPreviewActor->PickableOff();
 
+  vtkFloatingPointType aFactor,aUnits;
+  myPreviewActor->SetResolveCoincidentTopology(true);
+  myPreviewActor->GetPolygonOffsetParameters(aFactor,aUnits);
+  myPreviewActor->SetPolygonOffsetParameters(aFactor,0.2*aUnits);
+
   vtkFloatingPointType anRGB[3];
   SMESH::GetColor( "SMESH", "selection_element_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
   SetColor( anRGB[0], anRGB[1], anRGB[2] );
@@ -122,6 +128,7 @@ vtkIdType getCellType( const SMDSAbs_ElementType theType,
     else if ( theNbNodes == 4 )   return VTK_QUAD;
     else if ( theNbNodes == 6 )   return VTK_QUADRATIC_TRIANGLE;
     else if ( theNbNodes == 8 )   return VTK_QUADRATIC_QUAD;
+    else if ( theNbNodes == 9 )   return VTK_BIQUADRATIC_QUAD;
     else return VTK_EMPTY_CELL;
 
   case SMDSAbs_Volume:
@@ -130,18 +137,11 @@ vtkIdType getCellType( const SMDSAbs_ElementType theType,
     else if ( theNbNodes == 5 )   return VTK_PYRAMID;
     else if ( theNbNodes == 6 )   return VTK_WEDGE;
     else if ( theNbNodes == 8 )   return VTK_HEXAHEDRON;
-    else if ( theNbNodes == 10 )  {
-      return VTK_QUADRATIC_TETRA;
-    }
-    else if ( theNbNodes == 20 )  {
-      return VTK_QUADRATIC_HEXAHEDRON;
-    }
-    else if ( theNbNodes==15  )  {
-      return VTK_QUADRATIC_WEDGE;
-    }
-    else if ( theNbNodes==13  )  {
-      return VTK_CONVEX_POINT_SET;
-    }
+    else if ( theNbNodes == 10 )  return VTK_QUADRATIC_TETRA;
+    else if ( theNbNodes == 20 )  return VTK_QUADRATIC_HEXAHEDRON;
+    else if ( theNbNodes == 27 )  return VTK_TRIQUADRATIC_HEXAHEDRON;
+    else if ( theNbNodes == 15  ) return VTK_QUADRATIC_WEDGE;
+    else if ( theNbNodes == 13  ) return VTK_QUADRATIC_PYRAMID;//VTK_CONVEX_POINT_SET;
     else return VTK_EMPTY_CELL;
 
   default: return VTK_EMPTY_CELL;

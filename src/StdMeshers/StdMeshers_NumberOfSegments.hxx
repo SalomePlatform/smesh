@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : StdMeshers_NumberOfSegments.hxx
 //           Moved here from SMESH_NumberOfSegments.hxx
@@ -142,6 +143,15 @@ public:
     throw (SALOME_Exception);
 
   /*!
+   * \brief Checks validity of  the expression of the function f(t), e.g. "sin(t)".
+   *        In case of validity returns a cleaned expression
+   *  \param convMode - 0 for "Exponent mode", 1 for "Cut negative mode"
+   */
+  static std::string CheckExpressionFunction( const std::string& expr,
+                                              const int          convMode)
+    throw (SALOME_Exception);
+
+  /*!
    * \brief Set conversion mode. When it is 0, it means "exponent mode":
    * the function of distribution of density is used as an exponent of 10, i,e, 10^f(t).
    * When it is 1, it means "cut negative mode". The function of distribution is used as
@@ -161,6 +171,13 @@ public:
   int ConversionMode() const
     throw (SALOME_Exception);
 
+  void SetReversedEdges( std::vector<int>& ids);
+
+  void SetObjectEntry( const char* entry ) { _objEntry = entry; }
+
+  const char* GetObjectEntry() { return _objEntry.c_str(); }
+
+  const std::vector<int>& GetReversedEdges() const { return _edgeIDs; }
 
   /*!
    * \brief Initialize number of segments by the mesh built on the geometry
@@ -188,6 +205,8 @@ protected:
   std::vector<double> _table, _distr;    //!< the table for DT_TabFunc, a sequence of pairs of numbers
   std::string         _func;             //!< the expression of the function for DT_ExprFunc
   int                 _convMode;         //!< flag of conversion mode: 0=exponent, 1=cut negative
+  std::vector<int>    _edgeIDs;          //!< list of reversed edges ids
+  std::string         _objEntry;          //!< Entry of the main object to reverse edges
 };
 
 #endif

@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  File   : SMESH_Group.idl
 //  Author : Sergey ANIKIN, OCC
 //  $Header$
@@ -35,6 +36,7 @@
 module SMESH
 {
   interface Predicate;
+  interface Filter;
 
   /*!
    * SMESH_Group: base interface of group object
@@ -82,9 +84,21 @@ module SMESH
     long_array GetListOfID();
 
     /*!
-     * Returns the mesh object this group belongs to
+     * Get the number of nodes of cells included to the group
+     * For a nodal group returns the same value as Size() function
      */
-    SMESH_Mesh GetMesh();
+    long GetNumberOfNodes();
+
+    /*!
+     * Get IDs of nodes of cells included to the group
+     * For a nodal group returns result of GetListOfID() function
+     */
+    long_array GetNodeIDs();
+
+    /*!
+     * Return true if GetNumberOfNodes() won't take a long time for computation
+     */
+    boolean IsNodeInfoAvailable();
 
     /*!
      * Sets group color
@@ -110,7 +124,7 @@ module SMESH
   }; 
 
   /*!
-   * SMESH_Group: interface of group object
+   * SMESH_Group: interface of a standalone group object
    */
   interface SMESH_Group : SMESH_GroupBase
   {
@@ -120,24 +134,44 @@ module SMESH
     void Clear();
 
     /*!
-     * Adds elements to the group
+     * Adds elements or nodes with specified identifiers to the group
      */
     long Add( in long_array elem_ids );
+    /*!
+     * Adds elements or nodes that match specified predicate to the group
+     */
     long AddByPredicate( in Predicate thePredicate );
+    /*!
+     * Add all elements or nodes from the specified source to the group
+     */
+    long AddFrom( in SMESH_IDSource theSource );
 
     /*!
-     * Removes elements from the group
+     * Removes elements or nodes with specified identifiers from the group
      */
     long Remove( in long_array elem_ids );
+    /*!
+     * Removes elements or nodes that match specified predicate from the group
+     */
     long RemoveByPredicate( in Predicate thePredicate );
 
   };
+
   /*!
-   * SMESH_Group: interface of group object linked to geometry
+   * SMESH_GroupOnGeom: interface of a group object linked to geometry
    */
   interface SMESH_GroupOnGeom : SMESH_GroupBase
   {
     GEOM::GEOM_Object GetShape();
+  };
+
+  /*!
+   * SMESH_GroupOnFilter: interface of a group object defined by filter
+   */
+  interface SMESH_GroupOnFilter : SMESH_GroupBase
+  {
+    void   SetFilter( in Filter theFilter); 
+    Filter GetFilter();
   };
 
 };

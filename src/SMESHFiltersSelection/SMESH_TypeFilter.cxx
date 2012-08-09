@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "SMESH_TypeFilter.hxx"
 
 #include <SUIT_Session.h>
@@ -80,6 +81,7 @@ bool SMESH_TypeFilter::isOk (const SUIT_DataOwner* theDataOwner) const
     // 4       |     |- Applied algorithms ( selectable in Use Case Browser )
     // 5       |          |- Regular 1D
     //         |- Group Of Nodes
+    //            |- Group 1
 
     if (aLevel <= 0)
       return false;
@@ -87,90 +89,132 @@ bool SMESH_TypeFilter::isOk (const SUIT_DataOwner* theDataOwner) const
     switch (myType)
     {
       case HYPOTHESIS:
-	{
-	  if      (aLevel == 2 && (objFather->Tag() == SMESH::Tag_HypothesisRoot))
+        {
+          if      (aLevel == 2 && (objFather->Tag() == SMESH::Tag_HypothesisRoot))
             // hypo definition
-	    Ok = true;
-	  else if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_RefOnAppliedHypothesis))
+            Ok = true;
+          else if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_RefOnAppliedHypothesis))
             // applied global hypo
-	    Ok = true;
-	  else if (aLevel == 5 && (objFather->Tag() == SMESH::Tag_RefOnAppliedHypothesis))
+            Ok = true;
+          else if (aLevel == 5 && (objFather->Tag() == SMESH::Tag_RefOnAppliedHypothesis))
             // applied local hypo
-	    Ok = true;
-	  break;
-	}
+            Ok = true;
+          break;
+        }
       case ALGORITHM:
-	{
-	  if      (aLevel == 2 && (objFather->Tag() == SMESH::Tag_AlgorithmsRoot))
+        {
+          if      (aLevel == 2 && (objFather->Tag() == SMESH::Tag_AlgorithmsRoot))
             // algo definition
-	    Ok = true;
-	  else if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_RefOnAppliedAlgorithms))
+            Ok = true;
+          else if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_RefOnAppliedAlgorithms))
             // applied global algo
-	    Ok = true;
-	  else if (aLevel == 5 && (objFather->Tag() == SMESH::Tag_RefOnAppliedAlgorithms))
+            Ok = true;
+          else if (aLevel == 5 && (objFather->Tag() == SMESH::Tag_RefOnAppliedAlgorithms))
             // applied local algo
-	    Ok = true;
-	  break;
-	}
+            Ok = true;
+          break;
+        }
       case MESH:
-	{
-	  if (aLevel == 1 && (obj->Tag() >= SMESH::Tag_FirstMeshRoot))
-	    Ok = true;
-	  break;
-	}
+        {
+          if (aLevel == 1 && (obj->Tag() >= SMESH::Tag_FirstMeshRoot))
+            Ok = true;
+          break;
+        }
       case SUBMESH:
-	{
-	  // see SMESH_Gen_i.cxx for tag numbers
-	  if (aLevel == 3 && (objFather->Tag() >= SMESH::Tag_FirstSubMesh &&
+        {
+          // see SMESH_Gen_i.cxx for tag numbers
+          if (aLevel == 3 && (objFather->Tag() >= SMESH::Tag_FirstSubMesh &&
                               objFather->Tag() <= SMESH::Tag_LastSubMesh))
-	    Ok = true;
-	  break;
-	}
+            Ok = true;
+          break;
+        }
       case MESHorSUBMESH:
-	{
-	  if (aLevel == 1 && (obj->Tag() >= SMESH::Tag_FirstMeshRoot))
-	    Ok = true; // mesh
+        {
+          if (aLevel == 1 && (obj->Tag() >= SMESH::Tag_FirstMeshRoot))
+            Ok = true; // mesh
           else if (aLevel == 3 && (objFather->Tag() >= SMESH::Tag_FirstSubMesh &&
                                    objFather->Tag() <= SMESH::Tag_LastSubMesh))
-	    Ok = true;
-	  break;
-	}
+            Ok = true;
+          break;
+        }
       case SUBMESH_VERTEX: // Label "SubMeshes on vertexes"
-	{
-	  if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnVertex))
-	    Ok = true;
-	  break;
-	}
+        {
+          if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnVertex))
+            Ok = true;
+          break;
+        }
       case SUBMESH_EDGE:
-	{
-	  if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnEdge))
-	    Ok = true;
-	  break;
-	}
+        {
+          if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnEdge))
+            Ok = true;
+          break;
+        }
       case SUBMESH_FACE:
-	{
-	  if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnFace))
-	    Ok = true;
-	  break;
-	}
+        {
+          if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnFace))
+            Ok = true;
+          break;
+        }
       case SUBMESH_SOLID:
-	{
-	  if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnSolid))
-	    Ok = true;
-	  break;
-	}
+        {
+          if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnSolid))
+            Ok = true;
+          break;
+        }
       case SUBMESH_COMPOUND:
-	{
-	  if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnCompound))
-	    Ok = true;
-	  break;
-	}
+        {
+          if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnCompound))
+            Ok = true;
+          break;
+        }
       case GROUP:
-	{
-	  if (aLevel == 3 && (objFather->Tag() >= SMESH::Tag_FirstGroup))
-	    Ok = true;
-	  break;
-	}
+        {
+          if (aLevel == 3 && (objFather->Tag() >= SMESH::Tag_FirstGroup))
+            Ok = true;
+          break;
+        }
+      case GROUP_NODE:
+        {
+          if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_NodeGroups))
+            Ok = true;
+          break;
+        }
+      case GROUP_EDGE:
+        {
+          if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_EdgeGroups))
+            Ok = true;
+          break;
+        }
+      case GROUP_FACE:
+        {
+          if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_FaceGroups))
+            Ok = true;
+          break;
+        }
+      case GROUP_VOLUME:
+        {
+          if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_VolumeGroups))
+            Ok = true;
+          break;
+        }
+      case GROUP_0D:
+        {
+          if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_0DElementsGroups))
+            Ok = true;
+          break;
+        }
+      case GROUP_BALL:
+        {
+          if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_BallElementsGroups))
+            Ok = true;
+          break;
+        }
+      case IDSOURCE:
+        {
+          Ok = ( SMESH_TypeFilter(MESHorSUBMESH).isOk( theDataOwner ) ||
+                 SMESH_TypeFilter(GROUP)        .isOk( theDataOwner ));
+          break;
+        }
     }
   }
   return Ok;

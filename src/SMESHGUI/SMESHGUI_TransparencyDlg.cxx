@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_TransparencyDlg.cxx
 // Author : Nicolas REJNERI, Open CASCADE S.A.S.
@@ -86,7 +87,7 @@ SMESHGUI_TransparencyDlg::SMESHGUI_TransparencyDlg( SMESHGUI* theModule )
   GroupC1Layout->setMargin( MARGIN );
 
   TextLabelTransparent = new QLabel( tr( "SMESH_TRANSPARENCY_TRANSPARENT" ), GroupC1 );
-  TextLabelTransparent->setAlignment( Qt::AlignLeft );
+  TextLabelTransparent->setAlignment( Qt::AlignRight );
 
   ValueLab = new QLabel( GroupC1 );
   ValueLab->setAlignment( Qt::AlignCenter );
@@ -94,7 +95,7 @@ SMESHGUI_TransparencyDlg::SMESHGUI_TransparencyDlg( SMESHGUI* theModule )
   QFont fnt = ValueLab->font(); fnt.setBold( true ); ValueLab->setFont( fnt );
 
   TextLabelOpaque = new QLabel( tr( "SMESH_TRANSPARENCY_OPAQUE" ), GroupC1 );
-  TextLabelOpaque->setAlignment( Qt::AlignRight );
+  TextLabelOpaque->setAlignment( Qt::AlignLeft );
 
   Slider1 = new QSlider( Qt::Horizontal, GroupC1 );
   Slider1->setRange( 0, 100 );
@@ -106,9 +107,9 @@ SMESHGUI_TransparencyDlg::SMESHGUI_TransparencyDlg( SMESHGUI* theModule )
   Slider1->setFocusPolicy( Qt::NoFocus );
   Slider1->setMinimumWidth( 300 );
 
-  GroupC1Layout->addWidget( TextLabelTransparent, 0, 0 );
+  GroupC1Layout->addWidget( TextLabelOpaque, 0, 0 );
   GroupC1Layout->addWidget( ValueLab, 0, 1 );
-  GroupC1Layout->addWidget( TextLabelOpaque, 0, 2 );
+  GroupC1Layout->addWidget( TextLabelTransparent, 0, 2 );
   GroupC1Layout->addWidget( Slider1, 1, 0, 1, 3 );
 
   /*************************************************************************/
@@ -172,7 +173,7 @@ void SMESHGUI_TransparencyDlg::ClickOnHelp()
   LightApp_Application* app = (LightApp_Application*)( SUIT_Session::session()->activeApplication() );
   if ( app )
     app->onHelpContextModule( mySMESHGUI ? app->moduleName( mySMESHGUI->moduleName() ) : 
-			      QString( "" ), myHelpFileName );
+                              QString( "" ), myHelpFileName );
   else {
     QString platform;
 #ifdef WIN32
@@ -181,10 +182,10 @@ void SMESHGUI_TransparencyDlg::ClickOnHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning( this, tr( "WRN_WARNING" ),
-			      tr( "EXTERNAL_BROWSER_CANNOT_SHOW_PAGE" ).
-			      arg( app->resourceMgr()->stringValue( "ExternalBrowser", 
-								    platform ) ).
-			      arg( myHelpFileName ) );
+                              tr( "EXTERNAL_BROWSER_CANNOT_SHOW_PAGE" ).
+                              arg( app->resourceMgr()->stringValue( "ExternalBrowser", 
+                                                                    platform ) ).
+                              arg( myHelpFileName ) );
   }
 }
 
@@ -197,7 +198,7 @@ void SMESHGUI_TransparencyDlg::SetTransparency()
 {
   if ( myViewWindow ) {
     SUIT_OverrideCursor wc;
-    float opacity = Slider1->value() / 100.;
+    float opacity = ( 100 - Slider1->value() ) / 100.;
 
     SALOME_ListIO aList;
     mySelectionMgr->selectedObjects( aList );
@@ -207,7 +208,7 @@ void SMESHGUI_TransparencyDlg::SetTransparency()
       Handle(SALOME_InteractiveObject) IOS = It.Value();
       SMESH_Actor* anActor = SMESH::FindActorByEntry( IOS->getEntry() );
       if ( anActor )
-	anActor->SetOpacity( opacity );
+        anActor->SetOpacity( opacity );
     }
     myViewWindow->Repaint();
   }
@@ -238,35 +239,35 @@ void SMESHGUI_TransparencyDlg::onSelectionChanged()
     if ( aList.Extent() == 1 ) {
       Handle(SALOME_InteractiveObject) FirstIOS = aList.First();
       if ( !FirstIOS.IsNull() ) {
-	SMESH_Actor* anActor = SMESH::FindActorByEntry( FirstIOS->getEntry() );
-	if ( anActor )
-	  opacity = int( anActor->GetOpacity() * 100. + 0.5 );
+        SMESH_Actor* anActor = SMESH::FindActorByEntry( FirstIOS->getEntry() );
+        if ( anActor )
+          opacity = int( anActor->GetOpacity() * 100. + 0.5 );
       }
     } 
     else if ( aList.Extent() > 1 ) {
       SALOME_ListIteratorOfListIO It( aList );
       int setOp = -1;
       for ( ; It.More(); It.Next() ) {
-	Handle(SALOME_InteractiveObject) IO = It.Value();
-	if ( !IO.IsNull() ) {
-	  SMESH_Actor* anActor = SMESH::FindActorByEntry( IO->getEntry() );
-	  if ( anActor ) {
-	    int op = int( anActor->GetOpacity() * 100. + 0.5 );
-	    if ( setOp < 0 )
-	      setOp = op;
-	    else if ( setOp != op ) {
-	      setOp = 100;
-	      break;
-	    }
-	  }
-	}
+        Handle(SALOME_InteractiveObject) IO = It.Value();
+        if ( !IO.IsNull() ) {
+          SMESH_Actor* anActor = SMESH::FindActorByEntry( IO->getEntry() );
+          if ( anActor ) {
+            int op = int( anActor->GetOpacity() * 100. + 0.5 );
+            if ( setOp < 0 )
+              setOp = op;
+            else if ( setOp != op ) {
+              setOp = 100;
+              break;
+            }
+          }
+        }
       }
       if ( setOp >= 0 )
-	opacity = setOp;
+        opacity = setOp;
     } 
     else {
     }
-    Slider1->setValue( opacity );
+    Slider1->setValue( 100 - opacity );
   }
   ValueHasChanged();
 }

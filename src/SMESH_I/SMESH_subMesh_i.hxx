@@ -1,29 +1,29 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : SMESH_subMesh_i.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #ifndef _SMESH_SUBMESH_I_HXX_
 #define _SMESH_SUBMESH_I_HXX_
@@ -40,7 +40,7 @@
 #include "SMESH_Mesh_i.hxx"
 
 class SMESH_Gen_i;
-class SMESH_Mesh_i;
+class SMESH_PreMeshInfo;
 
 class SMESH_I_EXPORT SMESH_subMesh_i:
   public virtual POA_SMESH::SMESH_subMesh,
@@ -50,8 +50,8 @@ public:
   SMESH_subMesh_i();
   SMESH_subMesh_i( PortableServer::POA_ptr thePOA,
                    SMESH_Gen_i*            gen_i,
-		   SMESH_Mesh_i*           mesh_i,
-		   int                     localId );
+                   SMESH_Mesh_i*           mesh_i,
+                   int                     localId );
   ~SMESH_subMesh_i();
 
   CORBA::Long GetNumberOfElements()
@@ -66,9 +66,6 @@ public:
   SMESH::long_array* GetElementsByType( SMESH::ElementType theElemType )
     throw (SALOME::SALOME_Exception);
   
-  //for omniORB conflict compilation
-  /*SMESH::ElementType GetElementType( const CORBA::Long id, const bool iselem )
-    throw (SALOME::SALOME_Exception);*/
   SMESH::ElementType GetElementType( CORBA::Long id, bool iselem )
     throw (SALOME::SALOME_Exception);
   
@@ -81,21 +78,53 @@ public:
   GEOM::GEOM_Object_ptr GetSubShape()
     throw (SALOME::SALOME_Exception);
 
-  CORBA::Long GetId();   
+  CORBA::Long GetId();
 
   SALOME_MED::FAMILY_ptr GetFamily()
     throw (SALOME::SALOME_Exception);
 
-  virtual SMESH::long_array* GetIDs();
 
-  SMESH_Mesh_i* _mesh_i; //NRI
+  // =========================
+  // interface SMESH_IDSource
+  // =========================
+  /*!
+   * Returns a sequence of all element IDs
+   */
+  virtual SMESH::long_array* GetIDs();
+  /*!
+   * Returns statistic of mesh elements
+   * Result array of number enityties
+   * Inherited from SMESH_IDSource
+   */
+  virtual SMESH::long_array* GetMeshInfo();
+  /*!
+   * Returns types of elements it contains
+   */
+  virtual SMESH::array_of_ElementType* GetTypes();
+  /*!
+   * Returns the mesh
+   */
+  virtual SMESH::SMESH_Mesh_ptr GetMesh();
+  /*!
+   * Returns false if GetMeshInfo() returns incorrect information that may
+   * happen if mesh data is not yet fully loaded from the file of study.
+   */
+  virtual bool IsMeshInfoCorrect();
+
 
 protected:
-  void changeLocalId(int localId) { _localId = localId; }
-  SMESH_Gen_i* _gen_i;
-  int _localId;
 
+  SMESH_Gen_i*  _gen_i;
+  int           _localId;
+  SMESH_Mesh_i* _mesh_i; //NRI
+
+  void changeLocalId(int localId) { _localId = localId; }
   friend void SMESH_Mesh_i::CheckGeomGroupModif();
+
+  SMESH_PreMeshInfo* _preMeshInfo; // mesh info before full loading from study file
+
+  SMESH_PreMeshInfo* & changePreMeshInfo() { return _preMeshInfo; }
+  friend class SMESH_PreMeshInfo;
 };
 
 #endif

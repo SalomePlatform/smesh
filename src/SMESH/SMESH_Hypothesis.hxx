@@ -1,30 +1,30 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : SMESH_Hypothesis.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
 //
-
 #ifndef _SMESH_HYPOTHESIS_HXX_
 #define _SMESH_HYPOTHESIS_HXX_
 
@@ -61,7 +61,7 @@ public:
     HYP_NOTCONFORM,   // not conform mesh is produced appling a hypothesis
     HYP_ALREADY_EXIST,// such hypothesis already exist
     HYP_BAD_DIM,      // bad dimension
-    HYP_BAD_SUBSHAPE, // shape is neither the main one, nor its subshape, nor a group
+    HYP_BAD_SUBSHAPE, // shape is neither the main one, nor its sub-shape, nor a group
     HYP_BAD_GEOMETRY, // shape geometry mismatches algorithm's expectation
     HYP_NEED_SHAPE    // algorithm can work on shape only
   };
@@ -94,8 +94,9 @@ public:
 
   struct TDefaults
   {
-    double _elemLength;
-    int    _nbSegments;
+    double        _elemLength;
+    int           _nbSegments;
+    TopoDS_Shape* _shape; // future shape of the mesh being created
   };
   /*!
    * \brief Initialize my parameter values by default parameters.
@@ -114,11 +115,16 @@ public:
   virtual bool IsAuxiliary() const
   { return GetType() == PARAM_ALGO && _param_algo_dim < 0; }
 
+  /*!
+   * \brief Find a mesh with given persistent ID
+   */
+  SMESH_Mesh* GetMeshByPersistentID(int id);
+
 protected:
   SMESH_Gen* _gen;
   int _studyId;
   int _shapeType;
-  int _param_algo_dim;
+  int _param_algo_dim; // to be set at descendant hypothesis constructor
 
 private:
   std::string _libName;

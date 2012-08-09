@@ -1,0 +1,52 @@
+/*!
+
+\page make_2dmesh_from_3d_page Generate boundary elements
+
+\n This functionality allows to generate mesh elements on the borders of
+elements of a higher dimension.
+
+<em>To generate border elements:</em>
+<ol>
+<li>Select a mesh or group in the Object Browser or in the 3D Viewer</li>
+<li>From the Modification menu choose "Create boundary elements"
+item, or click "Create boundary elements" button in the toolbar
+
+\image html 2d_from_3d_ico.png "Create boundary elements icon"
+
+The following dialog box will appear:
+\image html 2d_from_3d_dlg.png "Create boundary elements dialog box".
+</li>
+<li>Check in the dialog box one of two radio buttons corresponding to
+the type of operation you would like to perform.</li>
+<li>Fill the other fields available in the dialog box.</li>
+<li>Click the \b Apply or <b>Apply and Close</b> button to perform the operation.</li>
+</ol>
+
+\n "Create boundary elements" dialog allows creation of boundary elements
+of two types.
+<ul>
+<li><b>2D from 3D</b> creates mesh faces on free facets of volume elements</li>
+<li><b>1D from 2D</b> creates mesh edges on free edges of mesh faces</li>
+</ul>
+Here a <em>free facet</em> means a facet shared by only one volume, a <em>free edge</em>
+means an edge shared by only one mesh face.
+
+In this dialog:
+<ul>
+<li>specify the <b>Target</b> mesh, where the boundary elements will
+  be created.
+  <ul>
+  <li><b>This mesh</b> adds elements in the selected mesh.</li>
+  <li><b>New mesh</b> adds elements to a new mesh. The new mesh appears
+  in the Object Browser with the name that you can change in the adjacent box. </li>
+  </ul></li>
+<li>activate <b>Copy source mesh</b> checkbox to copy all elements of
+the selected mesh to the new mesh, else the new mesh will contain only
+boundary elements (old and created by this operation).</li>
+<li>activate <b>Create group</b> checkbox to create a group to which
+  all the boundary elements (old and new) are added. The new group appears
+  in the Object Browser with the name that you can change in the adjacent box. </li>
+</ul>
+<br><b>See Also</b> a sample TUI Script of a \ref tui_make_2dmesh_from_3d "Create boundary elements" operation.  
+
+*/

@@ -14,7 +14,8 @@ criterion can be applied to elements composed of 4 and 3 nodes
 <ol>
 <li>Display your mesh in the viewer.</li>
 
-<li>Choose <b>Controls > Skew</b> or click <em>"Skew"</em> button of the toolbar.
+<li>Choose <b>Controls > Face Controls > Skew</b> or click
+<em>"Skew"</em> button of the toolbar.
 
 \image html image40.png
 <center><em>"Skew" button </em></center>

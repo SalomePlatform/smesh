@@ -1,29 +1,29 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 // File      : SMESH_Pattern_i.cxx
 // Created   : Fri Aug 20 16:15:49 2004
 // Author    : Edward AGAPOV (eap)
-//  $Header: 
 //
 #include "SMESH_Pattern_i.hxx"
 
@@ -46,6 +46,7 @@
 #include <set>
 
 using SMESH::TPythonDump;
+using SMESH::TVar;
 
 //=======================================================================
 //function : dumpErrorCode
@@ -149,7 +150,7 @@ CORBA::Boolean SMESH_Pattern_i::LoadFromFace(SMESH::SMESH_Mesh_ptr theMesh,
     return false;
 
   // Update Python script
-  TPythonDump() << "isDone = pattern.LoadFromFace( " << theMesh << ", "
+  TPythonDump() << "isDone = pattern.LoadFromFace( " << theMesh << ".GetMesh(), "
                 << theFace << ", " << theProject << " )";
   addErrorCode( "LoadFromFace" );
 
@@ -180,7 +181,7 @@ CORBA::Boolean SMESH_Pattern_i::LoadFrom3DBlock(SMESH::SMESH_Mesh_ptr theMesh,
     return false;
 
   // Update Python script
-  TPythonDump() << "isDone = pattern.LoadFrom3DBlock( " << theMesh << ", " << theBlock << " )";
+  TPythonDump() << "isDone = pattern.LoadFrom3DBlock( " << theMesh << ".GetMesh(), " << theBlock << " )";
   addErrorCode( "LoadFrom3DBlock" );
 
   return myPattern.Load( aMesh, TopoDS::Shell( exp.Current() ));
@@ -214,7 +215,6 @@ SMESH::point_array* SMESH_Pattern_i::ApplyToFace(GEOM::GEOM_Object_ptr theFace,
       (*xyzIt)->Coord( p.x, p.y, p.z );
     }
   }
-
   // Update Python script
   TPythonDump() << "pattern.ApplyToFace( " << theFace << ", "
                 << theVertexOnKeyPoint1 << ", " << theReverse << " )";
@@ -316,9 +316,9 @@ SMESH::point_array*
   }
 
   // Update Python script
-  TPythonDump() << "pattern.ApplyToMeshFaces( " << theMesh << ", "
+  TPythonDump() << "pattern.ApplyToMeshFaces( " << theMesh << ".GetMesh(), "
                 << theFacesIDs << ", "
-                << theNodeIndexOnKeyPoint1 << ", " << theReverse << " )";
+                << TVar( theNodeIndexOnKeyPoint1 ) << ", " << theReverse << " )";
 
   return points._retn();
 }
@@ -361,9 +361,9 @@ SMESH::point_array*
   }
 
   // Update Python script
-  TPythonDump() << "pattern.ApplyToHexahedrons( " << theMesh << ", "
+  TPythonDump() << "pattern.ApplyToHexahedrons( " << theMesh << ".GetMesh(), "
                 << theVolumesIDs << ", "
-                << theNode000Index << ", " << theNode001Index << " )";
+                << TVar(theNode000Index) << ", " << TVar(theNode001Index) << " )";
 
   return points._retn();
 }
@@ -382,11 +382,20 @@ CORBA::Boolean SMESH_Pattern_i::MakeMesh (SMESH::SMESH_Mesh_ptr theMesh,
     return false;
 
   // Update Python script
-  TPythonDump() << "isDone = pattern.MakeMesh( " << theMesh << ", "
+  TPythonDump() << "isDone = pattern.MakeMesh( " << theMesh << ".GetMesh(), "
                 << CreatePolygons << ", " << CreatePolyedrs << " )";
   addErrorCode( "MakeMesh" );
 
-  return myPattern.MakeMesh( aMesh, CreatePolygons, CreatePolyedrs );
+  int nb = aMesh->NbNodes() + aMesh->NbEdges() + aMesh->NbFaces() + aMesh->NbVolumes();
+
+  bool res = myPattern.MakeMesh( aMesh, CreatePolygons, CreatePolyedrs );
+
+  if ( nb > 0 && nb != aMesh->NbNodes() + aMesh->NbEdges() + aMesh->NbFaces() + aMesh->NbVolumes())
+    {
+      aMesh->SetIsModified(true);
+      aMesh->GetMeshDS()->Modified();
+    }
+  return res;
 }
 
 //=======================================================================

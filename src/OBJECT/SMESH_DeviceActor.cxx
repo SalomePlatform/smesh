@@ -1,36 +1,38 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH OBJECT : interactive object for SMESH visualization
 //  File   : SMESH_DeviceActor.cxx
 //  Author : 
 //  Module : SMESH
 //
-
 #include "SMESH_DeviceActor.h"
+#include "SMESH_ScalarBarActor.h"
 #include "SMESH_ExtractGeometry.h"
 #include "SMESH_ControlsDef.hxx"
 #include "SMESH_ActorUtils.h"
 #include "SMESH_FaceOrientationFilter.h"
 #include "VTKViewer_CellLocationsArray.h"
+#include "VTKViewer_PolyDataMapper.h"
 
 #include <VTKViewer_Transform.h>
 #include <VTKViewer_TransformFilter.h>
@@ -47,7 +49,6 @@
 #include <vtkPolyDataMapper.h>
 #include <vtkUnstructuredGrid.h>
 
-#include <vtkScalarBarActor.h>
 #include <vtkLookupTable.h>
 #include <vtkDoubleArray.h>
 #include <vtkCellData.h>
@@ -88,10 +89,10 @@ SMESH_DeviceActor
   myRepresentation = eSurface;
 
   myProperty = vtkProperty::New();
-  myMapper = vtkPolyDataMapper::New();
+  myMapper = VTKViewer_PolyDataMapper::New();
 
   vtkMapper::GetResolveCoincidentTopologyPolygonOffsetParameters(myPolygonOffsetFactor,
-								 myPolygonOffsetUnits);
+                                                                 myPolygonOffsetUnits);
 
   myMapper->UseLookupTableScalarRangeOn();
   myMapper->SetColorModeToMapScalars();
@@ -239,17 +240,17 @@ SMESH_DeviceActor
     myPassFilter[ anId + 1]->SetInput( myPassFilter[ anId ]->GetOutput() );
     
     anId++; // 1
-    myGeomFilter->SetInput( myPassFilter[ anId ]->GetOutput() );
+    myTransformFilter->SetInput( myPassFilter[ anId ]->GetOutput() );
 
     anId++; // 2
-    myPassFilter[ anId ]->SetInput( myGeomFilter->GetOutput() ); 
+    myPassFilter[ anId ]->SetInput( myTransformFilter->GetOutput() );
     myPassFilter[ anId + 1 ]->SetInput( myPassFilter[ anId ]->GetOutput() );
 
     anId++; // 3
-    myTransformFilter->SetInput( myPassFilter[ anId ]->GetPolyDataOutput() );
+    myGeomFilter->SetInput( myPassFilter[ anId ]->GetOutput() );
 
     anId++; // 4
-    myPassFilter[ anId ]->SetInput( myTransformFilter->GetOutput() );
+    myPassFilter[ anId ]->SetInput( myGeomFilter->GetOutput() ); 
     myPassFilter[ anId + 1 ]->SetInput( myPassFilter[ anId ]->GetOutput() );
 
     anId++; // 5
@@ -281,8 +282,8 @@ SMESH_DeviceActor
 void
 SMESH_DeviceActor
 ::SetControlMode(SMESH::Controls::FunctorPtr theFunctor,
-		 vtkScalarBarActor* theScalarBarActor,
-		 vtkLookupTable* theLookupTable)
+                 SMESH_ScalarBarActor* theScalarBarActor,
+                 vtkLookupTable* theLookupTable)
 {
   bool anIsInitialized = theFunctor;
   if(anIsInitialized){
@@ -304,23 +305,23 @@ SMESH_DeviceActor
     using namespace SMESH::Controls;
     if(NumericalFunctor* aNumericalFunctor = dynamic_cast<NumericalFunctor*>(theFunctor.get())){
       for(vtkIdType i = 0; i < aNbCells; i++){
-	vtkIdType anId = myExtractUnstructuredGrid->GetInputId(i);
-	vtkIdType anObjId = myVisualObj->GetElemObjId(anId);
-	double aValue = aNumericalFunctor->GetValue(anObjId);
-	aScalars->SetValue(i,aValue);
+        vtkIdType anId = myExtractUnstructuredGrid->GetInputId(i);
+        vtkIdType anObjId = myVisualObj->GetElemObjId(anId);
+        double aValue = aNumericalFunctor->GetValue(anObjId);
+        aScalars->SetValue(i,aValue);
       }
     }else if(Predicate* aPredicate = dynamic_cast<Predicate*>(theFunctor.get())){
       for(vtkIdType i = 0; i < aNbCells; i++){
-	vtkIdType anId = myExtractUnstructuredGrid->GetInputId(i);
-	vtkIdType anObjId = myVisualObj->GetElemObjId(anId);
-	bool aValue = aPredicate->IsSatisfy(anObjId);
-	aScalars->SetValue(i,aValue);
+        vtkIdType anId = myExtractUnstructuredGrid->GetInputId(i);
+        vtkIdType anObjId = myVisualObj->GetElemObjId(anId);
+        bool aValue = aPredicate->IsSatisfy(anObjId);
+        aScalars->SetValue(i,aValue);
       }
     }
 
     aDataSet->GetCellData()->SetScalars(aScalars);
     aScalars->Delete();
-	
+        
     theLookupTable->SetRange(aScalars->GetRange());
     theLookupTable->SetNumberOfTableValues(theScalarBarActor->GetMaximumNumberOfColors());
     theLookupTable->Build();
@@ -335,8 +336,8 @@ SMESH_DeviceActor
 void
 SMESH_DeviceActor
 ::SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor,
-		    vtkScalarBarActor* theScalarBarActor,
-		    vtkLookupTable* theLookupTable)
+                    SMESH_ScalarBarActor* theScalarBarActor,
+                    vtkLookupTable* theLookupTable)
 {
   bool anIsInitialized = theFunctor;
   myExtractUnstructuredGrid->ClearRegisteredCells();
@@ -374,18 +375,18 @@ SMESH_DeviceActor
       
       Length2D::TValues::const_iterator anIter = aValues.begin();
       for(vtkIdType aVtkId = 0; anIter != aValues.end(); anIter++,aVtkId++){
-	const Length2D::Value& aValue = *anIter;
-	int aNode[2] = {
-	  myVisualObj->GetNodeVTKId(aValue.myPntId[0]),
-	  myVisualObj->GetNodeVTKId(aValue.myPntId[1])
-	};
-	if(aNode[0] >= 0 && aNode[1] >= 0){
-	  anIdList->SetId( 0, aNode[0] );
-	  anIdList->SetId( 1, aNode[1] );
-	  aConnectivity->InsertNextCell( anIdList );
-	  aCellTypesArray->InsertNextValue( VTK_LINE );
-	  aScalars->SetValue(aVtkId,aValue.myLength);
-	}
+        const Length2D::Value& aValue = *anIter;
+        int aNode[2] = {
+          myVisualObj->GetNodeVTKId(aValue.myPntId[0]),
+          myVisualObj->GetNodeVTKId(aValue.myPntId[1])
+        };
+        if(aNode[0] >= 0 && aNode[1] >= 0){
+          anIdList->SetId( 0, aNode[0] );
+          anIdList->SetId( 1, aNode[1] );
+          aConnectivity->InsertNextCell( anIdList );
+          aCellTypesArray->InsertNextValue( VTK_LINE );
+          aScalars->SetValue(aVtkId,aValue.myLength);
+        }
       }
       
       VTKViewer_CellLocationsArray* aCellLocationsArray = VTKViewer_CellLocationsArray::New();
@@ -394,7 +395,7 @@ SMESH_DeviceActor
       
       aConnectivity->InitTraversal();
       for( vtkIdType idType = 0, *pts, npts; aConnectivity->GetNextCell( npts, pts ); idType++ )
-	aCellLocationsArray->SetValue( idType, aConnectivity->GetTraversalLocation( npts ) );
+        aCellLocationsArray->SetValue( idType, aConnectivity->GetTraversalLocation( npts ) );
       
       aDataSet->SetCells( aCellTypesArray, aCellLocationsArray,aConnectivity );
       SetUnstructuredGrid(aDataSet);
@@ -434,18 +435,18 @@ SMESH_DeviceActor
       
       MultiConnection2D::MValues::const_iterator anIter = aValues.begin();
       for(vtkIdType aVtkId = 0; anIter != aValues.end(); anIter++,aVtkId++){
-	const MultiConnection2D::Value& aValue = (*anIter).first;
-	int aNode[2] = {
-	  myVisualObj->GetNodeVTKId(aValue.myPntId[0]),
-	  myVisualObj->GetNodeVTKId(aValue.myPntId[1])
-	};
-	if(aNode[0] >= 0 && aNode[1] >= 0){
-	  anIdList->SetId( 0, aNode[0] );
-	  anIdList->SetId( 1, aNode[1] );
-	  aConnectivity->InsertNextCell( anIdList );
-	  aCellTypesArray->InsertNextValue( VTK_LINE );
-	  aScalars->SetValue(aVtkId,(*anIter).second);
-	}
+        const MultiConnection2D::Value& aValue = (*anIter).first;
+        int aNode[2] = {
+          myVisualObj->GetNodeVTKId(aValue.myPntId[0]),
+          myVisualObj->GetNodeVTKId(aValue.myPntId[1])
+        };
+        if(aNode[0] >= 0 && aNode[1] >= 0){
+          anIdList->SetId( 0, aNode[0] );
+          anIdList->SetId( 1, aNode[1] );
+          aConnectivity->InsertNextCell( anIdList );
+          aCellTypesArray->InsertNextValue( VTK_LINE );
+          aScalars->SetValue(aVtkId,(*anIter).second);
+        }
       }
       
       VTKViewer_CellLocationsArray* aCellLocationsArray = VTKViewer_CellLocationsArray::New();
@@ -454,7 +455,7 @@ SMESH_DeviceActor
       
       aConnectivity->InitTraversal();
       for( vtkIdType idType = 0, *pts, npts; aConnectivity->GetNextCell( npts, pts ); idType++ )
-	aCellLocationsArray->SetValue( idType, aConnectivity->GetTraversalLocation( npts ) );
+        aCellLocationsArray->SetValue( idType, aConnectivity->GetTraversalLocation( npts ) );
       
       aDataSet->SetCells( aCellTypesArray, aCellLocationsArray,aConnectivity );
       SetUnstructuredGrid(aDataSet);
@@ -483,21 +484,31 @@ SMESH_DeviceActor
   myVisualObj->UpdateFunctor(theFunctor);
 
   using namespace SMESH::Controls;
-  if ( dynamic_cast<FreeBorders*>(theFunctor.get()) ||
-       dynamic_cast<FreeFaces*>(theFunctor.get()) ) {
-    Predicate* aFreePredicate = dynamic_cast<Predicate*>(theFunctor.get());
+  if ( dynamic_cast<FreeBorders          *>(theFunctor.get()) ||
+       dynamic_cast<FreeFaces            *>(theFunctor.get()) ||
+       dynamic_cast<BareBorderVolume     *>(theFunctor.get()) ||
+       dynamic_cast<BareBorderFace       *>(theFunctor.get()) ||
+       dynamic_cast<OverConstrainedVolume*>(theFunctor.get()) ||
+       dynamic_cast<CoincidentElements1D *>(theFunctor.get()) ||
+       dynamic_cast<CoincidentElements2D *>(theFunctor.get()) ||
+       dynamic_cast<CoincidentElements3D *>(theFunctor.get()) ||
+       dynamic_cast<OverConstrainedFace  *>(theFunctor.get()))
+  {
+    Predicate* aPredicate = dynamic_cast<Predicate*>(theFunctor.get());
     myExtractUnstructuredGrid->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
     vtkUnstructuredGrid* aGrid = myVisualObj->GetUnstructuredGrid();
     vtkIdType aNbCells = aGrid->GetNumberOfCells();
     for( vtkIdType i = 0; i < aNbCells; i++ ){
       vtkIdType anObjId = myVisualObj->GetElemObjId(i);
-      if(aFreePredicate->IsSatisfy(anObjId))
-	myExtractUnstructuredGrid->RegisterCell(i);
+      if(aPredicate->IsSatisfy(anObjId))
+        myExtractUnstructuredGrid->RegisterCell(i);
     }
     if(!myExtractUnstructuredGrid->IsCellsRegistered())
       myExtractUnstructuredGrid->RegisterCell(-1);
     SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
-  }else if(FreeEdges* aFreeEdges = dynamic_cast<FreeEdges*>(theFunctor.get())){
+  }
+  else if(FreeEdges* aFreeEdges = dynamic_cast<FreeEdges*>(theFunctor.get()))
+  {
     SMESH::Controls::FreeEdges::TBorders aBorders;
     aFreeEdges->GetBoreders(aBorders);
     vtkUnstructuredGrid* aDataSet = vtkUnstructuredGrid::New();
@@ -520,15 +531,15 @@ SMESH_DeviceActor
     for(; anIter != aBorders.end(); anIter++){
       const FreeEdges::Border& aBorder = *anIter;
       int aNode[2] = {
-	myVisualObj->GetNodeVTKId(aBorder.myPntId[0]),
-	myVisualObj->GetNodeVTKId(aBorder.myPntId[1])
+        myVisualObj->GetNodeVTKId(aBorder.myPntId[0]),
+        myVisualObj->GetNodeVTKId(aBorder.myPntId[1])
       };
       //cout<<"aNode = "<<aBorder.myPntId[0]<<"; "<<aBorder.myPntId[1]<<endl;
       if(aNode[0] >= 0 && aNode[1] >= 0){
-	anIdList->SetId( 0, aNode[0] );
-	anIdList->SetId( 1, aNode[1] );
-	aConnectivity->InsertNextCell( anIdList );
-	aCellTypesArray->InsertNextValue( VTK_LINE );
+        anIdList->SetId( 0, aNode[0] );
+        anIdList->SetId( 1, aNode[1] );
+        aConnectivity->InsertNextCell( anIdList );
+        aCellTypesArray->InsertNextValue( VTK_LINE );
       }
     }
     
@@ -544,14 +555,17 @@ SMESH_DeviceActor
 
     SetUnstructuredGrid(aDataSet);
     aDataSet->Delete();
-  }else if(FreeNodes* aFreeNodes = dynamic_cast<FreeNodes*>(theFunctor.get())){
+  }
+  else if(dynamic_cast<FreeNodes      *>(theFunctor.get()) ||
+          dynamic_cast<CoincidentNodes*>(theFunctor.get()))
+  {
+    Predicate* aPredicate = dynamic_cast<Predicate*>(theFunctor.get());
     myExtractUnstructuredGrid->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
-    vtkUnstructuredGrid* aGrid = myVisualObj->GetUnstructuredGrid();
-    vtkIdType aNbCells = aGrid->GetNumberOfCells();
-    for( vtkIdType i = 0; i < aNbCells; i++ ){
+    vtkIdType aNbNodes = myVisualObj->GetNbEntities(SMDSAbs_Node);
+    for( vtkIdType i = 0; i < aNbNodes; i++ ){
       vtkIdType anObjId = myVisualObj->GetNodeObjId(i);
-      if(aFreeNodes->IsSatisfy(anObjId))
-	myExtractUnstructuredGrid->RegisterCell(i);
+      if(aPredicate->IsSatisfy(anObjId))
+        myExtractUnstructuredGrid->RegisterCell(i);
     }
     if(!myExtractUnstructuredGrid->IsCellsRegistered())
       myExtractUnstructuredGrid->RegisterCell(-1);
@@ -617,13 +631,55 @@ void
 SMESH_DeviceActor
 ::SetFacesOriented(bool theIsFacesOriented) 
 {
-  if ( vtkDataSet* aDataSet = myPassFilter[ 1 ]->GetOutput() )
+  if ( vtkDataSet* aDataSet = myTransformFilter->GetOutput() )
   {
     myIsFacesOriented = theIsFacesOriented;
     if( theIsFacesOriented )
       myFaceOrientationFilter->SetInput( aDataSet );
     UpdateFaceOrientation();
   }
+}
+
+void
+SMESH_DeviceActor
+::SetFacesOrientationColor(vtkFloatingPointType theColor[3])
+{
+  myFaceOrientation->GetProperty()->SetColor( theColor );
+}
+
+void
+SMESH_DeviceActor
+::GetFacesOrientationColor(vtkFloatingPointType theColor[3])
+{
+  myFaceOrientation->GetProperty()->GetColor( theColor );
+}
+
+void
+SMESH_DeviceActor
+::SetFacesOrientationScale(vtkFloatingPointType theScale)
+{
+  myFaceOrientationFilter->SetOrientationScale( theScale );
+}
+
+vtkFloatingPointType
+SMESH_DeviceActor
+::GetFacesOrientationScale()
+{
+  return myFaceOrientationFilter->GetOrientationScale();
+}
+
+void
+SMESH_DeviceActor
+::SetFacesOrientation3DVectors(bool theState)
+{
+  myFaceOrientationFilter->Set3dVectors( theState );
+}
+
+bool
+SMESH_DeviceActor
+::GetFacesOrientation3DVectors()
+{
+  return myFaceOrientationFilter->Get3dVectors();
 }
 
 void
@@ -662,6 +718,7 @@ SMESH_DeviceActor
     myGeomFilter->SetWireframeMode(false);
     GetProperty()->SetRepresentation(theMode);
   }
+  SetMarkerEnabled(theMode == ePoint);
   myRepresentation = theMode;
   UpdateFaceOrientation();
   GetProperty()->Modified();
@@ -828,9 +885,98 @@ SMESH_DeviceActor
 void
 SMESH_DeviceActor
 ::SetPolygonOffsetParameters(vtkFloatingPointType factor, 
-			     vtkFloatingPointType units)
+                             vtkFloatingPointType units)
 {
   myPolygonOffsetFactor = factor;
   myPolygonOffsetUnits = units;
 }
 
+/*!
+ * On/Off representation 2D quadratic element as arked polygon
+ */
+void SMESH_DeviceActor::SetQuadraticArcMode(bool theFlag){
+  myGeomFilter->SetQuadraticArcMode(theFlag);
+}
+
+/*!
+ * Return true if 2D quadratic element displayed as arked polygon
+ */
+bool SMESH_DeviceActor::GetQuadraticArcMode(){
+  return myGeomFilter->GetQuadraticArcMode();
+}
+/*!
+ * Set Max angle for representation 2D quadratic element as arked polygon
+ */
+void SMESH_DeviceActor::SetQuadraticArcAngle(vtkFloatingPointType theMaxAngle){
+  myGeomFilter->SetQuadraticArcAngle(theMaxAngle);
+}
+
+/*!
+ * Return Max angle of the representation 2D quadratic element as arked polygon
+ */
+vtkFloatingPointType SMESH_DeviceActor::GetQuadraticArcAngle(){
+  return myGeomFilter->GetQuadraticArcAngle();
+}
+
+/*!
+ * Set point marker enabled
+ * \param theMarkerEnabled flag to enable/disable point marker
+ */
+void SMESH_DeviceActor::SetMarkerEnabled( bool theMarkerEnabled )
+{
+  myMapper->SetMarkerEnabled( theMarkerEnabled );
+}
+
+/*!
+ * Set standard point marker
+ * \param theMarkerType type of the marker
+ */
+void SMESH_DeviceActor::SetMarkerStd( VTK::MarkerType theMarkerType, VTK::MarkerScale theMarkerScale )
+{
+  myMapper->SetMarkerStd( theMarkerType, theMarkerScale );
+}
+
+/*!
+ * Set custom point marker
+ * \param theMarkerId id of the marker texture
+ * \param theMarkerTexture marker texture
+ */
+void SMESH_DeviceActor::SetMarkerTexture( int theMarkerId, VTK::MarkerTexture theMarkerTexture )
+{
+  myMapper->SetMarkerTexture( theMarkerId, theMarkerTexture );
+}
+
+/*!
+ * Get type of the point marker
+ * \return type of the point marker
+ */
+VTK::MarkerType SMESH_DeviceActor::GetMarkerType()
+{
+  return myMapper->GetMarkerType();
+}
+
+/*!
+  Get scale of the point marker
+  \return scale of the point marker
+*/
+VTK::MarkerScale SMESH_DeviceActor::GetMarkerScale()
+{
+  return myMapper->GetMarkerScale();
+}
+
+/*!
+ * Get texture identifier of the point marker
+ * \return texture identifier of the point marker
+ */
+int SMESH_DeviceActor::GetMarkerTexture()
+{
+  return myMapper->GetMarkerTexture();
+}
+
+void SMESH_DeviceActor::SetCoincident3DAllowed(bool theFlag) {
+  myGeomFilter->SetAppendCoincident3D(theFlag);
+}
+
+bool SMESH_DeviceActor::IsCoincident3DAllowed() const {
+  return myGeomFilter->GetAppendCoincident3D();
+}

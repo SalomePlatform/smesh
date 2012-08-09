@@ -1,0 +1,55 @@
+/*!
+
+\page split_to_tetra_page Splitting volumes into tetrahedra
+
+\n This operation allows to split volumic elements into tetrahedra. 
+2D mesh is modified accordingly.
+
+<em>To split volumes:</em>
+<ol>
+<li>Display a mesh or a submesh in the 3D viewer.</li>
+<li>In the \b Modification menu select the <b>Split into Tetrahedra</b> item or
+click <em>"Split into Tetrahedra"</em> button in the toolbar.
+
+\image html split_into_tetra_icon.png
+<center><em>"Split into Tetrahedra" button</em></center>
+
+The following dialog box will appear:
+
+\image html split_into_tetra.png
+
+\par
+<ul>
+<li>The main list contains the list of volumes. You can click on
+a volume in the 3D viewer and it will be highlighted (lock Shift
+keyboard button to select several volumes). Click \b Add button and
+the ID of this volume will be added to the list. To remove the
+selected element or elements from the list click \b Remove button. <b>Sort
+list</b> button allows to sort the list of IDs. \b Filter button allows to
+apply a definite filter to the selection of volumes.
+<br><b>Note:</b> If you split not all adjacent non-tetrahedral volumes, your mesh becomes 
+non-conform.</li>
+<li><b>Apply to all</b> radio button allows to split all
+volumes of the currently displayed mesh or submesh.</li>
+</ul>
+
+<ul>
+<li>\b Split hexahedron
+
+<ul>
+<li><b>Into 5 tetrahedra</b>, <b>Into 6 tetrahedra</b> and <b>Into 24 tetrahedra</b> allows to
+specify the number of tetrahedra a hexahedron will be split into. If the specified method does
+not allow to get a conform mesh, a generic solution is applied: an additional node 
+is created at the gravity center of a hexahedron, serving an apex of tetrahedra, all quadrangle sides of the hexahedron are split into two triangles each serving a base of a new tetrahedron.</li>
+</ul>
+
+</li>
+
+<li><b>Select from</b> a set of fields allows to choose a submesh or an
+existing group whose elements will be automatically added to the
+list.</li>
+</ul>
+
+<li>Click the \b Apply or <b>Apply and Close</b> button to confirm the operation.</li>
+</ol>
+*/

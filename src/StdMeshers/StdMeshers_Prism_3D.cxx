@@ -1,25 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-//  SMESH SMESH : implementaion of SMESH idl descriptions
+
 // File      : StdMeshers_Prism_3D.cxx
 // Module    : SMESH
 // Created   : Fri Oct 20 11:37:07 2006
@@ -28,7 +28,7 @@
 #include "StdMeshers_Prism_3D.hxx"
 
 #include "StdMeshers_ProjectionUtils.hxx"
-#include "SMESH_MeshEditor.hxx"
+#include "SMESH_MesherHelper.hxx"
 #include "SMDS_VolumeTool.hxx"
 #include "SMDS_VolumeOfNodes.hxx"
 #include "SMDS_EdgePosition.hxx"
@@ -37,12 +37,18 @@
 #include "utilities.h"
 
 #include <BRep_Tool.hxx>
+#include <Bnd_B3d.hxx>
 #include <Geom2dAdaptor_Curve.hxx>
 #include <Geom2d_Line.hxx>
+#include <Geom_Curve.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
+#include <TopTools_MapOfShape.hxx>
+#include <TopTools_SequenceOfShape.hxx>
 #include <TopoDS.hxx>
+#include <gp_Ax2.hxx>
+#include <gp_Ax3.hxx>
 
 using namespace std;
 
@@ -149,6 +155,152 @@ namespace {
     }
     params.push_back( parLast ); // 1.
   }
+
+  //================================================================================
+  /*!
+   * \brief Return coordinate system for z-th layer of nodes
+   */
+  //================================================================================
+
+  gp_Ax2 getLayerCoordSys(const int                           z,
+                          const vector< const TNodeColumn* >& columns,
+                          int&                                xColumn)
+  {
+    // gravity center of a layer
+    gp_XYZ O(0,0,0);
+    int vertexCol = -1;
+    for ( int i = 0; i < columns.size(); ++i )
+    {
+      O += gpXYZ( (*columns[ i ])[ z ]);
+      if ( vertexCol < 0 &&
+           columns[ i ]->front()->GetPosition()->GetTypeOfPosition() == SMDS_TOP_VERTEX )
+        vertexCol = i;
+    }
+    O /= columns.size();
+
+    // Z axis
+    gp_Vec Z(0,0,0);
+    int iPrev = columns.size()-1;
+    for ( int i = 0; i < columns.size(); ++i )
+    {
+      gp_Vec v1( O, gpXYZ( (*columns[ iPrev ])[ z ]));
+      gp_Vec v2( O, gpXYZ( (*columns[ i ]    )[ z ]));
+      Z += v1 ^ v2;
+      iPrev = i;
+    }
+
+    if ( vertexCol >= 0 )
+    {
+      O = gpXYZ( (*columns[ vertexCol ])[ z ]);
+    }
+    if ( xColumn < 0 || xColumn >= columns.size() )
+    {
+      // select a column for X dir
+      double maxDist = 0;
+      for ( int i = 0; i < columns.size(); ++i )
+      {
+        double dist = ( O - gpXYZ((*columns[ i ])[ z ])).SquareModulus();
+        if ( dist > maxDist )
+        {
+          xColumn = i;
+          maxDist = dist;
+        }
+      }
+    }
+
+    // X axis
+    gp_Vec X( O, gpXYZ( (*columns[ xColumn ])[ z ]));
+
+    return gp_Ax2( O, Z, X);
+  }
+
+  //================================================================================
+  /*!
+   * \brief Removes submeshes meshed with regular grid from given list
+   *  \retval int - nb of removed submeshes
+   */
+  //================================================================================
+
+  int removeQuasiQuads(list< SMESH_subMesh* >& notQuadSubMesh)
+  {
+    int oldNbSM = notQuadSubMesh.size();
+    SMESHDS_Mesh* mesh = notQuadSubMesh.front()->GetFather()->GetMeshDS();
+    list< SMESH_subMesh* >::iterator smIt = notQuadSubMesh.begin();
+#define __NEXT_SM { ++smIt; continue; }
+    while ( smIt != notQuadSubMesh.end() )
+    {
+      SMESH_subMesh* faceSm = *smIt;
+      SMESHDS_SubMesh* faceSmDS = faceSm->GetSubMeshDS();
+      int nbQuads = faceSmDS->NbElements();
+      if ( nbQuads == 0 ) __NEXT_SM;
+
+      // get oredered edges
+      list< TopoDS_Edge > orderedEdges;
+      list< int >         nbEdgesInWires;
+      TopoDS_Vertex       V000;
+      int nbWires = SMESH_Block::GetOrderedEdges( TopoDS::Face( faceSm->GetSubShape() ),
+                                                  V000, orderedEdges, nbEdgesInWires );
+      if ( nbWires != 1 || nbEdgesInWires.front() <= 4 )
+        __NEXT_SM;
+
+      // get nb of segements on edges
+      list<int> nbSegOnEdge;
+      list< TopoDS_Edge >::iterator edge = orderedEdges.begin();
+      for ( ; edge != orderedEdges.end(); ++edge )
+      {
+        if ( SMESHDS_SubMesh* edgeSmDS = mesh->MeshElements( *edge ))
+          nbSegOnEdge.push_back( edgeSmDS->NbElements() );
+        else
+          nbSegOnEdge.push_back(0);
+      }
+
+      // unite nbSegOnEdge of continues edges
+      int nbEdges = nbEdgesInWires.front();
+      list<int>::iterator nbSegIt = nbSegOnEdge.begin();
+      for ( edge = orderedEdges.begin(); edge != orderedEdges.end(); )
+      {
+        const TopoDS_Edge& e1 = *edge++;
+        const TopoDS_Edge& e2 = ( edge == orderedEdges.end() ? orderedEdges.front() : *edge );
+        if ( SMESH_Algo::IsContinuous( e1, e2 ))
+        {
+          // common vertex of continues edges must be shared by two 2D mesh elems of geom face
+          TopoDS_Vertex vCommon = TopExp::LastVertex( e1, true );
+          const SMDS_MeshNode* vNode = SMESH_Algo::VertexNode( vCommon, mesh );
+          int nbF = 0;
+          if ( vNode )
+          {
+            SMDS_ElemIteratorPtr fIt = vNode->GetInverseElementIterator(SMDSAbs_Face);
+            while ( fIt->more() )
+              nbF += faceSmDS->Contains( fIt->next() );
+          }
+          list<int>::iterator nbSegIt1 = nbSegIt++;
+          if ( !vNode || nbF == 2 ) // !vNode - two edges can be meshed as one
+          {
+            // unite
+            if ( nbSegIt == nbSegOnEdge.end() ) nbSegIt = nbSegOnEdge.begin();
+            *nbSegIt += *nbSegIt1;
+            nbSegOnEdge.erase( nbSegIt1 );
+            --nbEdges;
+          }
+        }
+        else
+        {
+          ++nbSegIt;
+        }
+      }
+      vector<int> nbSegVec( nbSegOnEdge.begin(), nbSegOnEdge.end());
+      if ( nbSegVec.size() == 4 &&
+           nbSegVec[0] == nbSegVec[2] &&
+           nbSegVec[1] == nbSegVec[3] &&
+           nbSegVec[0] * nbSegVec[1] == nbQuads
+           )
+        smIt = notQuadSubMesh.erase( smIt );
+      else
+        __NEXT_SM;
+    }
+
+    return oldNbSM - notQuadSubMesh.size();
+  }
 }
 
 //=======================================================================
@@ -160,7 +312,7 @@ StdMeshers_Prism_3D::StdMeshers_Prism_3D(int hypId, int studyId, SMESH_Gen* gen)
   :SMESH_3D_Algo(hypId, studyId, gen)
 {
   _name = "Prism_3D";
-  _shapeType = (1 << TopAbs_SHELL) | (1 << TopAbs_SOLID);	// 1 bit per shape type
+  _shapeType = (1 << TopAbs_SHELL) | (1 << TopAbs_SOLID);       // 1 bit per shape type
   myProjectTriangles = false;
 }
 
@@ -232,7 +384,7 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
 
   myHelper->IsQuadraticSubMesh( theShape );
 
-  // Analyse mesh and geomerty to find block subshapes and submeshes
+  // Analyse mesh and geomerty to find block sub-shapes and submeshes
   if ( !myBlock.Init( myHelper, theShape ))
     return error( myBlock.GetError());
 
@@ -255,75 +407,115 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
   // Projections on the top and bottom faces are taken from nodes existing
   // on these faces; find correspondence between bottom and top nodes
   myBotToColumnMap.clear();
-  if ( !assocOrProjBottom2Top() ) // it also fill myBotToColumnMap
+  if ( !assocOrProjBottom2Top() ) // it also fills myBotToColumnMap
     return false;
 
 
   // Create nodes inside the block
 
-  // loop on nodes inside the bottom face
-  TNode2ColumnMap::iterator bot_column = myBotToColumnMap.begin();
-  for ( ; bot_column != myBotToColumnMap.end(); ++bot_column )
+  // try to use transformation (issue 0020680)
+  vector<gp_Trsf> trsf;
+  if ( myBlock.GetLayersTransformation(trsf))
   {
-    const TNode& tBotNode = bot_column->first; // bottom TNode
-    if ( tBotNode.GetPositionType() != SMDS_TOP_FACE )
-      continue; // node is not inside face 
-
-    // column nodes; middle part of the column are zero pointers
-    TNodeColumn& column = bot_column->second;
-
-    // bottom node parameters and coords
-    myShapeXYZ[ ID_BOT_FACE ] = tBotNode.GetCoords();
-    gp_XYZ botParams          = tBotNode.GetParams();
-
-    // compute top node parameters
-    myShapeXYZ[ ID_TOP_FACE ] = gpXYZ( column.back() );
-    gp_XYZ topParams = botParams;
-    topParams.SetZ( 1 );
-    if ( column.size() > 2 ) {
-      gp_Pnt topCoords = myShapeXYZ[ ID_TOP_FACE ];
-      if ( !myBlock.ComputeParameters( topCoords, topParams, ID_TOP_FACE, topParams ))
-        return error(TCom("Can't compute normalized parameters ")
-                     << "for node " << column.back()->GetID()
-                     << " on the face #"<< column.back()->GetPosition()->GetShapeId() );
-    }
-
-    // vertical loop
-    TNodeColumn::iterator columnNodes = column.begin();
-    for ( int z = 0; columnNodes != column.end(); ++columnNodes, ++z)
+    // loop on nodes inside the bottom face
+    TNode2ColumnMap::iterator bot_column = myBotToColumnMap.begin();
+    for ( ; bot_column != myBotToColumnMap.end(); ++bot_column )
     {
-      const SMDS_MeshNode* & node = *columnNodes;
-      if ( node ) continue; // skip bottom or top node
+      const TNode& tBotNode = bot_column->first; // bottom TNode
+      if ( tBotNode.GetPositionType() != SMDS_TOP_FACE )
+        continue; // node is not inside face 
 
-      // params of a node to create
-      double rz = (double) z / (double) ( column.size() - 1 );
-      gp_XYZ params = botParams * ( 1 - rz ) + topParams * rz;
+      // column nodes; middle part of the column are zero pointers
+      TNodeColumn& column = bot_column->second;
+      TNodeColumn::iterator columnNodes = column.begin();
+      for ( int z = 0; columnNodes != column.end(); ++columnNodes, ++z)
+      {
+        const SMDS_MeshNode* & node = *columnNodes;
+        if ( node ) continue; // skip bottom or top node
 
-      // set coords on all faces and nodes
-      const int nbSideFaces = 4;
-      int sideFaceIDs[nbSideFaces] = { SMESH_Block::ID_Fx0z,
-                                       SMESH_Block::ID_Fx1z,
-                                       SMESH_Block::ID_F0yz,
-                                       SMESH_Block::ID_F1yz };
-      for ( int iF = 0; iF < nbSideFaces; ++iF )
-        if ( !setFaceAndEdgesXYZ( sideFaceIDs[ iF ], params, z ))
-          return false;
+        gp_XYZ coords = tBotNode.GetCoords();
+        trsf[z-1].Transforms( coords );
+        node = meshDS->AddNode( coords.X(), coords.Y(), coords.Z() );
+        meshDS->SetNodeInVolume( node, volumeID );
+      }
+    } // loop on bottom nodes
+  }
+  else // use block approach
+  {
+    // loop on nodes inside the bottom face
+    TNode prevBNode;
+    TNode2ColumnMap::iterator bot_column = myBotToColumnMap.begin();
+    for ( ; bot_column != myBotToColumnMap.end(); ++bot_column )
+    {
+      const TNode& tBotNode = bot_column->first; // bottom TNode
+      if ( tBotNode.GetPositionType() != SMDS_TOP_FACE )
+        continue; // node is not inside face 
 
-      // compute coords for a new node
-      gp_XYZ coords;
-      if ( !SMESH_Block::ShellPoint( params, myShapeXYZ, coords ))
-        return error("Can't compute coordinates by normalized parameters");
+      // column nodes; middle part of the column are zero pointers
+      TNodeColumn& column = bot_column->second;
 
-      SHOWYXZ("TOPFacePoint ",myShapeXYZ[ ID_TOP_FACE]);
-      SHOWYXZ("BOT Node "<< tBotNode.myNode->GetID(),gpXYZ(tBotNode.myNode));
-      SHOWYXZ("ShellPoint ",coords);
+      // compute bottom node parameters
+      gp_XYZ paramHint(-1,-1,-1);
+      if ( prevBNode.IsNeighbor( tBotNode ))
+        paramHint = prevBNode.GetParams();
+      if ( !myBlock.ComputeParameters( tBotNode.GetCoords(), tBotNode.ChangeParams(),
+                                       ID_BOT_FACE, paramHint ))
+        return error(TCom("Can't compute normalized parameters for node ")
+                     << tBotNode.myNode->GetID() << " on the face #"
+                     << myBlock.SubMesh( ID_BOT_FACE )->GetId() );
+      prevBNode = tBotNode;
 
-      // create a node
-      node = meshDS->AddNode( coords.X(), coords.Y(), coords.Z() );
-      meshDS->SetNodeInVolume( node, volumeID );
-    }
-  } // loop on bottom nodes
+      myShapeXYZ[ ID_BOT_FACE ] = tBotNode.GetCoords();
+      gp_XYZ botParams          = tBotNode.GetParams();
 
+      // compute top node parameters
+      myShapeXYZ[ ID_TOP_FACE ] = gpXYZ( column.back() );
+      gp_XYZ topParams = botParams;
+      topParams.SetZ( 1 );
+      if ( column.size() > 2 ) {
+        gp_Pnt topCoords = myShapeXYZ[ ID_TOP_FACE ];
+        if ( !myBlock.ComputeParameters( topCoords, topParams, ID_TOP_FACE, topParams ))
+          return error(TCom("Can't compute normalized parameters ")
+                       << "for node " << column.back()->GetID()
+                       << " on the face #"<< column.back()->getshapeId() );
+      }
+
+      // vertical loop
+      TNodeColumn::iterator columnNodes = column.begin();
+      for ( int z = 0; columnNodes != column.end(); ++columnNodes, ++z)
+      {
+        const SMDS_MeshNode* & node = *columnNodes;
+        if ( node ) continue; // skip bottom or top node
+
+        // params of a node to create
+        double rz = (double) z / (double) ( column.size() - 1 );
+        gp_XYZ params = botParams * ( 1 - rz ) + topParams * rz;
+
+        // set coords on all faces and nodes
+        const int nbSideFaces = 4;
+        int sideFaceIDs[nbSideFaces] = { SMESH_Block::ID_Fx0z,
+                                         SMESH_Block::ID_Fx1z,
+                                         SMESH_Block::ID_F0yz,
+                                         SMESH_Block::ID_F1yz };
+        for ( int iF = 0; iF < nbSideFaces; ++iF )
+          if ( !setFaceAndEdgesXYZ( sideFaceIDs[ iF ], params, z ))
+            return false;
+
+        // compute coords for a new node
+        gp_XYZ coords;
+        if ( !SMESH_Block::ShellPoint( params, myShapeXYZ, coords ))
+          return error("Can't compute coordinates by normalized parameters");
+
+        SHOWYXZ("TOPFacePoint ",myShapeXYZ[ ID_TOP_FACE]);
+        SHOWYXZ("BOT Node "<< tBotNode.myNode->GetID(),gpXYZ(tBotNode.myNode));
+        SHOWYXZ("ShellPoint ",coords);
+
+        // create a node
+        node = meshDS->AddNode( coords.X(), coords.Y(), coords.Z() );
+        meshDS->SetNodeInVolume( node, volumeID );
+      }
+    } // loop on bottom nodes
+  }
 
   // Create volumes
 
@@ -347,7 +539,7 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
     {
       const SMDS_MeshNode* n = face->GetNode( i );
       if ( n->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE ) {
-        bot_column = myBotToColumnMap.find( n );
+        TNode2ColumnMap::iterator bot_column = myBotToColumnMap.find( n );
         if ( bot_column == myBotToColumnMap.end() )
           return error(TCom("No nodes found above node ") << n->GetID() );
         columns[ i ] = & bot_column->second;
@@ -362,9 +554,128 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
     AddPrisms( columns, myHelper );
 
   } // loop on bottom mesh faces
+
+  // clear data
+  myBotToColumnMap.clear();
+  myBlock.Clear();
         
   return true;
 }
+
+
+//=======================================================================
+//function : Evaluate
+//purpose  : 
+//=======================================================================
+
+bool StdMeshers_Prism_3D::Evaluate(SMESH_Mesh& theMesh,
+                                   const TopoDS_Shape& theShape,
+                                   MapShapeNbElems& aResMap)
+{
+  // find face contains only triangles
+  vector < SMESH_subMesh * >meshFaces;
+  TopTools_SequenceOfShape aFaces;
+  int NumBase = 0, i = 0, NbQFs = 0;
+  for (TopExp_Explorer exp(theShape, TopAbs_FACE); exp.More(); exp.Next()) {
+    i++;
+    aFaces.Append(exp.Current());
+    SMESH_subMesh *aSubMesh = theMesh.GetSubMesh(exp.Current());
+    meshFaces.push_back(aSubMesh);
+    MapShapeNbElemsItr anIt = aResMap.find(meshFaces[i-1]);
+    if( anIt==aResMap.end() ) {
+      SMESH_ComputeErrorPtr& smError = aSubMesh->GetComputeError();
+      smError.reset( new SMESH_ComputeError(COMPERR_ALGO_FAILED,"Submesh can not be evaluated",this));
+      return false;
+    }
+    std::vector<int> aVec = (*anIt).second;
+    int nbtri = Max(aVec[SMDSEntity_Triangle],aVec[SMDSEntity_Quad_Triangle]);
+    int nbqua = Max(aVec[SMDSEntity_Quadrangle],aVec[SMDSEntity_Quad_Quadrangle]);
+    if( nbtri==0 && nbqua>0 ) {
+      NbQFs++;
+    }
+    if( nbtri>0 ) {
+      NumBase = i;
+    }
+  }
+
+  if(NbQFs<4) {
+    std::vector<int> aResVec(SMDSEntity_Last);
+    for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aResVec[i] = 0;
+    SMESH_subMesh * sm = theMesh.GetSubMesh(theShape);
+    aResMap.insert(std::make_pair(sm,aResVec));
+    SMESH_ComputeErrorPtr& smError = sm->GetComputeError();
+    smError.reset( new SMESH_ComputeError(COMPERR_ALGO_FAILED,"Submesh can not be evaluated",this));
+    return false;
+  }
+
+  if(NumBase==0) NumBase = 1; // only quads => set 1 faces as base
+
+  // find number of 1d elems for base face
+  int nb1d = 0;
+  TopTools_MapOfShape Edges1;
+  for (TopExp_Explorer exp(aFaces.Value(NumBase), TopAbs_EDGE); exp.More(); exp.Next()) {
+    Edges1.Add(exp.Current());
+    SMESH_subMesh *sm = theMesh.GetSubMesh(exp.Current());
+    if( sm ) {
+      MapShapeNbElemsItr anIt = aResMap.find(sm);
+      if( anIt == aResMap.end() ) continue;
+      std::vector<int> aVec = (*anIt).second;
+      nb1d += Max(aVec[SMDSEntity_Edge],aVec[SMDSEntity_Quad_Edge]);
+    }
+  }
+  // find face opposite to base face
+  int OppNum = 0;
+  for(i=1; i<=6; i++) {
+    if(i==NumBase) continue;
+    bool IsOpposite = true;
+    for(TopExp_Explorer exp(aFaces.Value(i), TopAbs_EDGE); exp.More(); exp.Next()) {
+      if( Edges1.Contains(exp.Current()) ) {
+        IsOpposite = false;
+        break;
+      }
+    }
+    if(IsOpposite) {
+      OppNum = i;
+      break;
+    }
+  }
+  // find number of 2d elems on side faces
+  int nb2d = 0;
+  for(i=1; i<=6; i++) {
+    if( i==OppNum || i==NumBase ) continue;
+    MapShapeNbElemsItr anIt = aResMap.find( meshFaces[i-1] );
+    if( anIt == aResMap.end() ) continue;
+    std::vector<int> aVec = (*anIt).second;
+    nb2d += Max(aVec[SMDSEntity_Quadrangle],aVec[SMDSEntity_Quad_Quadrangle]);
+  }
+  
+  MapShapeNbElemsItr anIt = aResMap.find( meshFaces[NumBase-1] );
+  std::vector<int> aVec = (*anIt).second;
+  bool IsQuadratic = (aVec[SMDSEntity_Quad_Triangle]>aVec[SMDSEntity_Triangle]) ||
+                     (aVec[SMDSEntity_Quad_Quadrangle]>aVec[SMDSEntity_Quadrangle]);
+  int nb2d_face0_3 = Max(aVec[SMDSEntity_Triangle],aVec[SMDSEntity_Quad_Triangle]);
+  int nb2d_face0_4 = Max(aVec[SMDSEntity_Quadrangle],aVec[SMDSEntity_Quad_Quadrangle]);
+  int nb0d_face0 = aVec[SMDSEntity_Node];
+  int nb1d_face0_int = ( nb2d_face0_3*3 + nb2d_face0_4*4 - nb1d ) / 2;
+
+  std::vector<int> aResVec(SMDSEntity_Last);
+  for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aResVec[i] = 0;
+  if(IsQuadratic) {
+    aResVec[SMDSEntity_Quad_Penta] = nb2d_face0_3 * ( nb2d/nb1d );
+    aResVec[SMDSEntity_Quad_Hexa] = nb2d_face0_4 * ( nb2d/nb1d );
+    aResVec[SMDSEntity_Node] = nb0d_face0 * ( 2*nb2d/nb1d - 1 ) - nb1d_face0_int * nb2d/nb1d;
+  }
+  else {
+    aResVec[SMDSEntity_Node] = nb0d_face0 * ( nb2d/nb1d - 1 );
+    aResVec[SMDSEntity_Penta] = nb2d_face0_3 * ( nb2d/nb1d );
+    aResVec[SMDSEntity_Hexa] = nb2d_face0_4 * ( nb2d/nb1d );
+  }
+  SMESH_subMesh * sm = theMesh.GetSubMesh(theShape);
+  aResMap.insert(std::make_pair(sm,aResVec));
+
+  return true;
+}
+
 
 //================================================================================
 /*!
@@ -377,9 +688,6 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
 void StdMeshers_Prism_3D::AddPrisms( vector<const TNodeColumn*> & columns,
                                      SMESH_MesherHelper*          helper)
 {
-  SMESHDS_Mesh * meshDS = helper->GetMeshDS();
-  int shapeID = helper->GetSubShapeID();
-
   int nbNodes = columns.size();
   int nbZ     = columns[0]->size();
   if ( nbZ < 2 ) return;
@@ -390,87 +698,103 @@ void StdMeshers_Prism_3D::AddPrisms( vector<const TNodeColumn*> & columns,
   int z = 1;
   switch ( nbNodes ) {
   case 3: {
-    const SMDS_MeshNode* botNodes[3] = { (*columns[0])[z-1],
-                                         (*columns[1])[z-1],
-                                         (*columns[2])[z-1] };
-    const SMDS_MeshNode* topNodes[3] = { (*columns[0])[z],
-                                         (*columns[1])[z],
-                                         (*columns[2])[z] };
-    SMDS_VolumeOfNodes tmpVol ( botNodes[0], botNodes[1], botNodes[2],
-                                topNodes[0], topNodes[1], topNodes[2]);
-    vTool.Set( &tmpVol );
+    SMDS_VolumeOfNodes tmpPenta ( (*columns[0])[z-1], // bottom
+                                  (*columns[1])[z-1],
+                                  (*columns[2])[z-1],
+                                  (*columns[0])[z],   // top
+                                  (*columns[1])[z],
+                                  (*columns[2])[z] );
+    vTool.Set( &tmpPenta );
     isForward  = vTool.IsForward();
     break;
   }
   case 4: {
-    const SMDS_MeshNode* botNodes[4] = { (*columns[0])[z-1], (*columns[1])[z-1],
-                                         (*columns[2])[z-1], (*columns[3])[z-1] };
-    const SMDS_MeshNode* topNodes[4] = { (*columns[0])[z], (*columns[1])[z],
-                                         (*columns[2])[z], (*columns[3])[z] };
-    SMDS_VolumeOfNodes tmpVol ( botNodes[0], botNodes[1], botNodes[2], botNodes[3],
-                                topNodes[0], topNodes[1], topNodes[2], topNodes[3]);
-    vTool.Set( &tmpVol );
+    SMDS_VolumeOfNodes tmpHex( (*columns[0])[z-1], (*columns[1])[z-1], // bottom
+                               (*columns[2])[z-1], (*columns[3])[z-1],
+                               (*columns[0])[z],   (*columns[1])[z],   // top
+                               (*columns[2])[z],   (*columns[3])[z] );
+    vTool.Set( &tmpHex );
     isForward  = vTool.IsForward();
     break;
   }
+  default:
+    const int di = (nbNodes+1) / 3;
+    SMDS_VolumeOfNodes tmpVol ( (*columns[0]   )[z-1],
+                                (*columns[di]  )[z-1],
+                                (*columns[2*di])[z-1],
+                                (*columns[0]   )[z],
+                                (*columns[di]  )[z],
+                                (*columns[2*di])[z] );
+    vTool.Set( &tmpVol );
+    isForward  = vTool.IsForward();
   }
 
   // vertical loop on columns
-  for ( z = 1; z < nbZ; ++z )
-  {
-    SMDS_MeshElement* vol = 0;
-    switch ( nbNodes ) {
 
-    case 3: {
-      const SMDS_MeshNode* botNodes[3] = { (*columns[0])[z-1],
-                                           (*columns[1])[z-1],
-                                           (*columns[2])[z-1] };
-      const SMDS_MeshNode* topNodes[3] = { (*columns[0])[z],
-                                           (*columns[1])[z],
-                                           (*columns[2])[z] };
-      if ( isForward )
-        vol = helper->AddVolume( botNodes[0], botNodes[1], botNodes[2],
-                                 topNodes[0], topNodes[1], topNodes[2]);
-      else
-        vol = helper->AddVolume( topNodes[0], topNodes[1], topNodes[2],
-                                 botNodes[0], botNodes[1], botNodes[2]);
-      break;
-      }
-    case 4: {
-      const SMDS_MeshNode* botNodes[4] = { (*columns[0])[z-1], (*columns[1])[z-1],
-                                           (*columns[2])[z-1], (*columns[3])[z-1] };
-      const SMDS_MeshNode* topNodes[4] = { (*columns[0])[z], (*columns[1])[z],
-                                           (*columns[2])[z], (*columns[3])[z] };
-      if ( isForward )
-        vol = helper->AddVolume( botNodes[0], botNodes[1], botNodes[2], botNodes[3],
-                                 topNodes[0], topNodes[1], topNodes[2], topNodes[3]);
-      else
-        vol = helper->AddVolume( topNodes[0], topNodes[1], topNodes[2], topNodes[3],
-                                 botNodes[0], botNodes[1], botNodes[2], botNodes[3]);
-      break;
-      }
-    default:
-      // polyhedron
-      vector<const SMDS_MeshNode*> nodes( 2*nbNodes + 4*nbNodes);
-      vector<int> quantities( 2 + nbNodes, 4 );
-      quantities[0] = quantities[1] = nbNodes;
-      columns.resize( nbNodes + 1 );
-      columns[ nbNodes ] = columns[ 0 ];
-      for ( int i = 0; i < nbNodes; ++i ) {
-        nodes[ i         ] = (*columns[ i ])[z-1]; // bottom
-        nodes[ i+nbNodes ] = (*columns[ i ])[z  ]; // top
-        // side
-        int di = 2*nbNodes + 4*i - 1;
-        nodes[ di   ] = (*columns[i  ])[z-1];
-        nodes[ di+1 ] = (*columns[i+1])[z-1];
-        nodes[ di+2 ] = (*columns[i+1])[z  ];
-        nodes[ di+3 ] = (*columns[i  ])[z  ];
-      }
-      vol = meshDS->AddPolyhedralVolume( nodes, quantities );
-    }
-    if ( vol && shapeID > 0 )
-      meshDS->SetMeshElementOnShape( vol, shapeID );
+  helper->SetElementsOnShape( true );
+
+  switch ( nbNodes ) {
+
+  case 3: { // ---------- pentahedra
+    const int i1 = isForward ? 1 : 2;
+    const int i2 = isForward ? 2 : 1;
+    for ( z = 1; z < nbZ; ++z )
+      helper->AddVolume( (*columns[0 ])[z-1], // bottom
+                         (*columns[i1])[z-1],
+                         (*columns[i2])[z-1],
+                         (*columns[0 ])[z],   // top
+                         (*columns[i1])[z],
+                         (*columns[i2])[z] );
+    break;
   }
+  case 4: { // ---------- hexahedra
+    const int i1 = isForward ? 1 : 3;
+    const int i3 = isForward ? 3 : 1;
+    for ( z = 1; z < nbZ; ++z )
+      helper->AddVolume( (*columns[0])[z-1], (*columns[i1])[z-1], // bottom
+                         (*columns[2])[z-1], (*columns[i3])[z-1],
+                         (*columns[0])[z],   (*columns[i1])[z],     // top
+                         (*columns[2])[z],   (*columns[i3])[z] );
+    break;
+  }
+  case 6: { // ---------- octahedra
+    const int iBase1 = isForward ? -1 : 0;
+    const int iBase2 = isForward ?  0 :-1;
+    for ( z = 1; z < nbZ; ++z )
+      helper->AddVolume( (*columns[0])[z+iBase1], (*columns[1])[z+iBase1], // bottom or top
+                         (*columns[2])[z+iBase1], (*columns[3])[z+iBase1],
+                         (*columns[4])[z+iBase1], (*columns[5])[z+iBase1],
+                         (*columns[0])[z+iBase2], (*columns[1])[z+iBase2], // top or bottom
+                         (*columns[2])[z+iBase2], (*columns[3])[z+iBase2],
+                         (*columns[4])[z+iBase2], (*columns[5])[z+iBase2] );
+    break;
+  }
+  default: // ---------- polyhedra
+    vector<int> quantities( 2 + nbNodes, 4 );
+    quantities[0] = quantities[1] = nbNodes;
+    columns.resize( nbNodes + 1 );
+    columns[ nbNodes ] = columns[ 0 ];
+    const int i1 = isForward ? 1 : 3;
+    const int i3 = isForward ? 3 : 1;
+    const int iBase1 = isForward ? -1 : 0;
+    const int iBase2 = isForward ?  0 :-1;
+    vector<const SMDS_MeshNode*> nodes( 2*nbNodes + 4*nbNodes);
+    for ( z = 1; z < nbZ; ++z )
+    {
+      for ( int i = 0; i < nbNodes; ++i ) {
+        nodes[ i             ] = (*columns[ i ])[z+iBase1]; // bottom or top
+        nodes[ 2*nbNodes-i-1 ] = (*columns[ i ])[z+iBase2]; // top or bottom
+        // side
+        int di = 2*nbNodes + 4*i;
+        nodes[ di+0 ] = (*columns[i  ])[z  ];
+        nodes[ di+i1] = (*columns[i+1])[z  ];
+        nodes[ di+2 ] = (*columns[i+1])[z-1];
+        nodes[ di+i3] = (*columns[i  ])[z-1];
+      }
+      helper->AddPolyhedralVolume( nodes, quantities );
+    }
+
+  } // switch ( nbNodes )
 }
 
 //================================================================================
@@ -498,6 +822,8 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top()
        botSMDS->NbElements() != topSMDS->NbElements() ||
        botSMDS->NbNodes()    != topSMDS->NbNodes())
   {
+    MESSAGE("nb elem bot " << botSMDS->NbElements() << " top " << topSMDS->NbElements());
+    MESSAGE("nb node bot " << botSMDS->NbNodes() << " top " << topSMDS->NbNodes());
     if ( myBlock.HasNotQuadElemOnTop() )
       return error(TCom("Mesh on faces #") << botSM->GetId()
                    <<" and #"<< topSM->GetId() << " seems different" );
@@ -535,7 +861,7 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top()
   // Fill myBotToColumnMap
 
   int zSize = myBlock.VerticalSize();
-  TNode prevTNode;
+  //TNode prevTNode;
   TNodeNodeMap::iterator bN_tN = n2nMap.begin();
   for ( ; bN_tN != n2nMap.end(); ++bN_tN )
   {
@@ -543,19 +869,8 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top()
     const SMDS_MeshNode* topNode = bN_tN->second;
     if ( botNode->GetPosition()->GetTypeOfPosition() != SMDS_TOP_FACE )
       continue; // wall columns are contained in myBlock
-    // compute bottom node params
-    TNode bN( botNode );
-    if ( zSize > 2 ) {
-      gp_XYZ paramHint(-1,-1,-1);
-      if ( prevTNode.IsNeighbor( bN ))
-        paramHint = prevTNode.GetParams();
-      if ( !myBlock.ComputeParameters( bN.GetCoords(), bN.ChangeParams(),
-                                       ID_BOT_FACE, paramHint ))
-        return error(TCom("Can't compute normalized parameters for node ")
-                     << botNode->GetID() << " on the face #"<< botSM->GetId() );
-      prevTNode = bN;
-    }
     // create node column
+    TNode bN( botNode );
     TNode2ColumnMap::iterator bN_col = 
       myBotToColumnMap.insert( make_pair ( bN, TNodeColumn() )).first;
     TNodeColumn & column = bN_col->second;
@@ -681,7 +996,7 @@ bool StdMeshers_Prism_3D::projectBottomToTop()
 
 //================================================================================
 /*!
- * \brief Set projection coordinates of a node to a face and it's subshapes
+ * \brief Set projection coordinates of a node to a face and it's sub-shapes
  * \param faceID - the face given by in-block ID
  * \param params - node normalized parameters
  * \retval bool - is a success
@@ -696,10 +1011,10 @@ bool StdMeshers_Prism_3D::setFaceAndEdgesXYZ( const int faceID, const gp_XYZ& pa
   SMESH_Block::GetFaceEdgesIDs( faceID, edgeVec );
 
   myBlock.EdgePoint( edgeVec[ BASE ], params, myShapeXYZ[ edgeVec[ BASE ]]);
-  myBlock.EdgePoint( edgeVec[ TOP ], params, myShapeXYZ[ edgeVec[ TOP ]]);
+  myBlock.EdgePoint( edgeVec[ TOP  ], params, myShapeXYZ[ edgeVec[ TOP ]]);
 
   SHOWYXZ("\nparams ", params);
-  SHOWYXZ("TOP is "<<edgeVec[ TOP], myShapeXYZ[ edgeVec[ TOP]]);
+  SHOWYXZ("TOP is " <<edgeVec[ TOP ], myShapeXYZ[ edgeVec[ TOP]]);
   SHOWYXZ("BASE is "<<edgeVec[ BASE], myShapeXYZ[ edgeVec[ BASE]]);
 
   if ( faceID == SMESH_Block::ID_Fx0z || faceID == SMESH_Block::ID_Fx1z )
@@ -746,9 +1061,19 @@ StdMeshers_PrismAsBlock::StdMeshers_PrismAsBlock()
 
 StdMeshers_PrismAsBlock::~StdMeshers_PrismAsBlock()
 {
+  Clear();
+}
+void StdMeshers_PrismAsBlock::Clear()
+{
+  myHelper = 0;
+  myShapeIDMap.Clear();
+  myError.reset();
+
   if ( mySide ) {
     delete mySide; mySide = 0;
   }
+  myParam2ColumnMaps.clear();
+  myShapeIndex2ColumnMap.clear();
 }
 
 //================================================================================
@@ -858,7 +1183,7 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
   }
 
   // ----------------------------------------------------------------------
-  // Analyse faces mesh and topology: choose the bottom submesh.
+  // Analyse mesh and topology of faces: choose the bottom submesh.
   // If there are not quadrangle geom faces, they are top and bottom ones.
   // Not quadrangle geom faces must be only on top and bottom.
   // ----------------------------------------------------------------------
@@ -871,14 +1196,24 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
   bool hasNotQuad = ( nbNotQuad || nbNotQuadMeshed );
 
   // detect bad cases
-  if ( nbNotQuad > 0 && nbNotQuad != 2 )
-    return error(COMPERR_BAD_SHAPE,
-                 TCom("More than 2 not quadrilateral faces: ")
-                 <<nbNotQuad);
   if ( nbNotQuadMeshed > 2 )
+  {
     return error(COMPERR_BAD_INPUT_MESH,
                  TCom("More than 2 faces with not quadrangle elements: ")
                  <<nbNotQuadMeshed);
+  }
+  int nbQuasiQuads = 0;
+  if ( nbNotQuad > 0 && nbNotQuad != 2 )
+  {
+    // Issue 0020843 - one of side faces is quasi-quadrilateral.
+    // Remove from notQuadGeomSubMesh faces meshed with regular grid
+    nbQuasiQuads = removeQuasiQuads( notQuadGeomSubMesh );
+    nbNotQuad -= nbQuasiQuads;
+    if ( nbNotQuad > 0 && nbNotQuad != 2 )
+      return error(COMPERR_BAD_SHAPE,
+                   TCom("More than 2 not quadrilateral faces: ")
+                   <<nbNotQuad);
+  }
 
   // get found submeshes
   if ( hasNotQuad )
@@ -901,6 +1236,7 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
   }
 
   myNotQuadOnTop = ( nbNotQuadMeshed > 1 );
+  MESSAGE("myNotQuadOnTop " << myNotQuadOnTop << " nbNotQuadMeshed " << nbNotQuadMeshed);
  
   // ----------------------------------------------------------
 
@@ -994,16 +1330,39 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
 
   // Get ordered bottom edges
   list< TopoDS_Edge > orderedEdges;
-  list< int >         nbVertexInWires;
+  list< int >         nbEInW;
   SMESH_Block::GetOrderedEdges( TopoDS::Face( botSM->GetSubShape().Reversed() ),
-                                V000, orderedEdges, nbVertexInWires );
-//   if ( nbVertexInWires.size() != 1 )
+                                V000, orderedEdges, nbEInW );
+//   if ( nbEInW.size() != 1 )
 //     RETURN_BAD_RESULT("Wrong prism geometry");
 
   // Get Wall faces corresponding to the ordered bottom edges
   list< TopoDS_Face > wallFaces;
-  if ( !GetWallFaces( Mesh(), shape3D, botSM->GetSubShape(), orderedEdges, wallFaces))
+  if ( !GetWallFaces( Mesh(), shape3D, botSM->GetSubShape(), orderedEdges, nbEInW, wallFaces))
     return error(COMPERR_BAD_SHAPE, "Can't find side faces");
+
+  // check that the found top and bottom faces are opposite
+  {
+    for (TopExp_Explorer edge(botSM->GetSubShape(), TopAbs_EDGE); edge.More(); edge.Next())
+      if ( helper->IsSubShape( edge.Current(), topSM->GetSubShape() ))
+        return error(notQuadGeomSubMesh.empty() ? COMPERR_BAD_INPUT_MESH : COMPERR_BAD_SHAPE,
+                     "Non-quadrilateral faces are not opposite");
+  }
+
+  // Protect from a distorted block (test 3D_mesh_HEXA3D/B7 on 32bit platform)
+  // check that all wall faces have an edge common with the top face
+  {
+    list< TopoDS_Face >::iterator faceIt = wallFaces.begin();
+    for ( ; faceIt != wallFaces.end(); ++faceIt )
+    {
+      bool hasCommon = false;
+      for (TopExp_Explorer edge(*faceIt, TopAbs_EDGE); !hasCommon && edge.More(); edge.Next())
+        if ( helper->IsSubShape( edge.Current(), topSM->GetSubShape() ))
+          hasCommon = true;
+      if ( !hasCommon )
+        return error(COMPERR_BAD_SHAPE);
+    }
+  }
 
   // Find columns of wall nodes and calculate edges' lengths
   // --------------------------------------------------------
@@ -1011,7 +1370,7 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
   myParam2ColumnMaps.clear();
   myParam2ColumnMaps.resize( orderedEdges.size() ); // total nb edges
 
-  int iE, nbEdges = nbVertexInWires.front(); // nb outer edges
+  int iE, nbEdges = nbEInW.front(); // nb outer edges
   vector< double > edgeLength( nbEdges );
   map< double, int > len2edgeMap;
 
@@ -1057,11 +1416,11 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
     // columns for vertices
     // 1
     const SMDS_MeshNode* n0 = faceColumns.begin()->second.front();
-    id = n0->GetPosition()->GetShapeId();
+    id = n0->getshapeId();
     myShapeIndex2ColumnMap[ id ] = make_pair( & faceColumns, isForward );
     // 2
     const SMDS_MeshNode* n1 = faceColumns.rbegin()->second.front();
-    id = n1->GetPosition()->GetShapeId();
+    id = n1->getshapeId();
     myShapeIndex2ColumnMap[ id ] = make_pair( & faceColumns, isForward );
 //     SHOWYXZ("\np1 F "<<iE, gpXYZ(faceColumns.begin()->second.front() ));
 //     SHOWYXZ("p2 F "<<iE, gpXYZ(faceColumns.rbegin()->second.front() ));
@@ -1113,9 +1472,12 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
         int nbSplit = i_nb->second;
         vector< double > params;
         splitParams( nbSplit, &myParam2ColumnMaps[ iE ], params );
-        bool isForward = ( edgeIt->Orientation() == TopAbs_FORWARD );
+        const bool isForward =
+          StdMeshers_PrismAsBlock::IsForwardEdge( myHelper->GetMeshDS(),
+                                                  myParam2ColumnMaps[iE],
+                                                  *edgeIt, SMESH_Block::ID_Fx0z );
         for ( int i = 0; i < nbSplit; ++i ) {
-          double f = ( isForward ? params[ i ] : params[ nbSplit - i-1 ]);
+          double f = ( isForward ? params[ i ]   : params[ nbSplit - i-1 ]);
           double l = ( isForward ? params[ i+1 ] : params[ nbSplit - i ]);
           TSideFace* comp = new TSideFace( myHelper, wallFaceIds[ iSide ],
                                            *faceIt, *edgeIt,
@@ -1236,6 +1598,7 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
         break;
       }
     }
+    //sideFace->dumpNodes( 4 ); // debug
   }
   // horizontal faces geometry
   {
@@ -1270,11 +1633,11 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
 
       // columns for vertices
       const SMDS_MeshNode* n0 = cols->begin()->second.front();
-      id = n0->GetPosition()->GetShapeId();
+      id = n0->getshapeId();
       myShapeIndex2ColumnMap[ id ] = make_pair( cols, isForward );
 
       const SMDS_MeshNode* n1 = cols->rbegin()->second.front();
-      id = n1->GetPosition()->GetShapeId();
+      id = n1->getshapeId();
       myShapeIndex2ColumnMap[ id ] = make_pair( cols, !isForward );
     }
   }
@@ -1301,7 +1664,7 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
 
 const TNodeColumn* StdMeshers_PrismAsBlock::GetNodeColumn(const SMDS_MeshNode* node) const
 {
-  int sID = node->GetPosition()->GetShapeId();
+  int sID = node->getshapeId();
 
   map<int, pair< TParam2ColumnMap*, bool > >::const_iterator col_frw =
     myShapeIndex2ColumnMap.find( sID );
@@ -1315,6 +1678,89 @@ const TNodeColumn* StdMeshers_PrismAsBlock::GetNodeColumn(const SMDS_MeshNode* n
   return 0;
 }
 
+//=======================================================================
+//function : GetLayersTransformation
+//purpose  : Return transformations to get coordinates of nodes of each layer
+//           by nodes of the bottom. Layer is a set of nodes at a certain step
+//           from bottom to top.
+//=======================================================================
+
+bool StdMeshers_PrismAsBlock::GetLayersTransformation(vector<gp_Trsf> & trsf) const
+{
+  const int zSize = VerticalSize();
+  if ( zSize < 3 ) return true;
+  trsf.resize( zSize - 2 );
+
+  // Select some node columns by which we will define coordinate system of layers
+
+  vector< const TNodeColumn* > columns;
+  {
+    const TopoDS_Shape& baseFace = Shape(ID_BOT_FACE);
+    list< TopoDS_Edge > orderedEdges;
+    list< int >         nbEdgesInWires;
+    GetOrderedEdges( TopoDS::Face( baseFace ), TopoDS_Vertex(), orderedEdges, nbEdgesInWires );
+    bool isReverse;
+    list< TopoDS_Edge >::iterator edgeIt = orderedEdges.begin();
+    for ( int iE = 0; iE < nbEdgesInWires.front(); ++iE, ++edgeIt )
+    {
+      if ( BRep_Tool::Degenerated( *edgeIt )) continue;
+      const TParam2ColumnMap* u2colMap =
+        GetParam2ColumnMap( myHelper->GetMeshDS()->ShapeToIndex( *edgeIt ), isReverse );
+      if ( !u2colMap ) return false;
+      isReverse = ( edgeIt->Orientation() == TopAbs_REVERSED );
+      double f = u2colMap->begin()->first, l = u2colMap->rbegin()->first;
+      if ( isReverse ) swap ( f, l );
+      const int nbCol = 5;
+      for ( int i = 0; i < nbCol; ++i )
+      {
+        double u = f + i/double(nbCol) * ( l - f );
+        const TNodeColumn* col = & getColumn( u2colMap, u )->second;
+        if ( columns.empty() || col != columns.back() )
+          columns.push_back( col );
+      }
+    }
+  }
+
+  // Find tolerance to check transformations
+
+  double tol2;
+  {
+    Bnd_B3d bndBox;
+    for ( int i = 0; i < columns.size(); ++i )
+      bndBox.Add( gpXYZ( columns[i]->front() ));
+    tol2 = bndBox.SquareExtent() * 1e-5;
+  }
+
+  // Compute transformations
+
+  int xCol = -1;
+  gp_Trsf fromCsZ, toCs0;
+  gp_Ax3 cs0 = getLayerCoordSys(0, columns, xCol );
+  //double dist0 = cs0.Location().Distance( gpXYZ( (*columns[0])[0]));
+  toCs0.SetTransformation( cs0 );
+  for ( int z = 1; z < zSize-1; ++z )
+  {
+    gp_Ax3 csZ = getLayerCoordSys(z, columns, xCol );
+    //double distZ = csZ.Location().Distance( gpXYZ( (*columns[0])[z]));
+    fromCsZ.SetTransformation( csZ );
+    fromCsZ.Invert();
+    gp_Trsf& t = trsf[ z-1 ];
+    t = fromCsZ * toCs0;
+    //t.SetScaleFactor( distZ/dist0 ); - it does not work properly, wrong base point
+
+    // check a transformation
+    for ( int i = 0; i < columns.size(); ++i )
+    {
+      gp_Pnt p0 = gpXYZ( (*columns[i])[0] );
+      gp_Pnt pz = gpXYZ( (*columns[i])[z] );
+      t.Transforms( p0.ChangeCoord() );
+      if ( p0.SquareDistance( pz ) > tol2 )
+        return false;
+    }
+  }
+  return true;
+}
+
 //================================================================================
 /*!
  * \brief Check curve orientation of a bootom edge
@@ -1322,7 +1768,7 @@ const TNodeColumn* StdMeshers_PrismAsBlock::GetNodeColumn(const SMDS_MeshNode* n
   * \param columnsMap - node columns map of side face
   * \param bottomEdge - the bootom edge
   * \param sideFaceID - side face in-block ID
-  * \retval bool - true if orientation coinside with in-block froward orientation
+  * \retval bool - true if orientation coinside with in-block forward orientation
  */
 //================================================================================
 
@@ -1332,7 +1778,7 @@ bool StdMeshers_PrismAsBlock::IsForwardEdge(SMESHDS_Mesh*           meshDS,
                                             const int               sideFaceID)
 {
   bool isForward = false;
-  if ( TAssocTool::IsClosedEdge( bottomEdge ))
+  if ( SMESH_MesherHelper::IsClosedEdge( bottomEdge ))
   {
     isForward = ( bottomEdge.Orientation() == TopAbs_FORWARD );
   }
@@ -1350,41 +1796,59 @@ bool StdMeshers_PrismAsBlock::IsForwardEdge(SMESHDS_Mesh*           meshDS,
 }
 
 //================================================================================
-  /*!
-   * \brief Find wall faces by bottom edges
-    * \param mesh - the mesh
-    * \param mainShape - the prism
-    * \param bottomFace - the bottom face
-    * \param bottomEdges - edges bounding the bottom face
-    * \param wallFaces - faces list to fill in
-   */
+/*!
+ * \brief Find wall faces by bottom edges
+ * \param mesh - the mesh
+ * \param mainShape - the prism
+ * \param bottomFace - the bottom face
+ * \param bottomEdges - edges bounding the bottom face
+ * \param wallFaces - faces list to fill in
+ */
 //================================================================================
 
-bool StdMeshers_PrismAsBlock::GetWallFaces( SMESH_Mesh*                     mesh,
-                                            const TopoDS_Shape &            mainShape,
-                                            const TopoDS_Shape &            bottomFace,
-                                            const std::list< TopoDS_Edge >& bottomEdges,
-                                            std::list< TopoDS_Face >&       wallFaces)
+bool StdMeshers_PrismAsBlock::GetWallFaces( SMESH_Mesh*               mesh,
+                                            const TopoDS_Shape &      mainShape,
+                                            const TopoDS_Shape &      bottomFace,
+                                            std::list< TopoDS_Edge >& bottomEdges,
+                                            std::list< int > &        nbEInW,
+                                            std::list< TopoDS_Face >& wallFaces)
 {
   wallFaces.clear();
 
   TopTools_IndexedMapOfShape faceMap;
   TopExp::MapShapes( mainShape, TopAbs_FACE, faceMap );
 
-  list< TopoDS_Edge >::const_iterator edge = bottomEdges.begin();
-  for ( ; edge != bottomEdges.end(); ++edge )
+  list< TopoDS_Edge >::iterator edge = bottomEdges.begin();
+  std::list< int >::iterator nbE = nbEInW.begin();
+  int iE = 0;
+  while ( edge != bottomEdges.end() )
   {
-    TopTools_ListIteratorOfListOfShape ancestIt = mesh->GetAncestors( *edge );
-    for ( ; ancestIt.More(); ancestIt.Next() )
+    ++iE;
+    if ( BRep_Tool::Degenerated( *edge ))
     {
-      const TopoDS_Shape& ancestor = ancestIt.Value();
-      if ( ancestor.ShapeType() == TopAbs_FACE && // face
-           !bottomFace.IsSame( ancestor ) &&      // not bottom
-           faceMap.FindIndex( ancestor ))         // belongs to the prism
+      edge = bottomEdges.erase( edge );
+      --iE;
+      --(*nbE);
+    }
+    else
+    {
+      PShapeIteratorPtr fIt = myHelper->GetAncestors( *edge, *mesh, TopAbs_FACE );
+      while ( fIt->more() )
       {
-        wallFaces.push_back( TopoDS::Face( ancestor ));
-        break;
+        const TopoDS_Shape* face = fIt->next();
+        if ( !bottomFace.IsSame( *face ) &&      // not bottom
+             faceMap.FindIndex( *face ))         // belongs to the prism
+        {
+          wallFaces.push_back( TopoDS::Face( *face ));
+          break;
+        }
       }
+      ++edge;
+    }
+    if ( iE == *nbE )
+    {
+      iE = 0;
+      ++nbE;
     }
   }
   return ( wallFaces.size() == bottomEdges.size() );
@@ -1610,8 +2074,6 @@ double StdMeshers_PrismAsBlock::TSideFace::GetColumns(const double      U,
     r = 0.5;
   }
   else {
-//     if ( !myIsForward )
-//       std::swap( col1, col2 );
     double uf = col1->first;
     double ul = col2->first;
     r = ( u - uf ) / ( ul - uf );
@@ -1631,8 +2093,8 @@ double StdMeshers_PrismAsBlock::TSideFace::GetColumns(const double      U,
 gp_Pnt StdMeshers_PrismAsBlock::TSideFace::Value(const Standard_Real U,
                                                  const Standard_Real V) const
 {
-  double u;
   if ( !myComponents.empty() ) {
+    double u;
     TSideFace * comp = GetComponent(U,u);
     return comp->Value( u, V );
   }
@@ -1644,7 +2106,41 @@ gp_Pnt StdMeshers_PrismAsBlock::TSideFace::Value(const Standard_Real U,
   const SMDS_MeshNode* n2 = 0;
   const SMDS_MeshNode* n3 = 0;
   const SMDS_MeshNode* n4 = 0;
-  gp_XYZ pnt;
+
+  // BEGIN issue 0020680: EDF 1252 SMESH: Bad cell created by Radial prism in center of torus
+  // Workaround for a wrongly located point returned by mySurface.Value() for
+  // UV located near boundary of BSpline surface.
+  // To bypass the problem, we take point from 3D curve of edge.
+  // It solves pb of the bloc_fiss_new.py
+  const double tol = 1e-3;
+  if ( V < tol || V+tol >= 1. )
+  {
+    n1 = V < tol ? u_col1->second.front() : u_col1->second.back();
+    n3 = V < tol ? u_col2->second.front() : u_col2->second.back();
+    TopoDS_Edge edge;
+    if ( V < tol )
+    {
+      edge = myBaseEdge;
+    }
+    else
+    {
+      TopoDS_Shape s = myHelper->GetSubShapeByNode( n1, myHelper->GetMeshDS() );
+      if ( s.ShapeType() != TopAbs_EDGE )
+        s = myHelper->GetSubShapeByNode( n3, myHelper->GetMeshDS() );
+      if ( s.ShapeType() == TopAbs_EDGE )
+        edge = TopoDS::Edge( s );
+    }
+    if ( !edge.IsNull() )
+    {
+      double u1 = myHelper->GetNodeU( edge, n1 );
+      double u3 = myHelper->GetNodeU( edge, n3 );
+      double u = u1 * ( 1 - hR ) + u3 * hR;
+      TopLoc_Location loc; double f,l;
+      Handle(Geom_Curve) curve = BRep_Tool::Curve( edge,loc,f,l );
+      return curve->Value( u ).Transformed( loc );
+    }
+  }
+  // END issue 0020680: EDF 1252 SMESH: Bad cell created by Radial prism in center of torus
 
   vR = getRAndNodes( & u_col1->second, V, n1, n2 );
   vR = getRAndNodes( & u_col2->second, V, n3, n4 );
@@ -1658,8 +2154,9 @@ gp_Pnt StdMeshers_PrismAsBlock::TSideFace::Value(const Standard_Real U,
   gp_XY uv34 = uv3 * ( 1 - vR ) + uv4 * vR;
 
   gp_XY uv = uv12 * ( 1 - hR ) + uv34 * hR;
-  
-  return mySurface.Value( uv.X(), uv.Y() );
+
+  gp_Pnt p = mySurface.Value( uv.X(), uv.Y() );
+  return p;
 }
 
 
@@ -1720,25 +2217,18 @@ TopoDS_Edge StdMeshers_PrismAsBlock::TSideFace::GetEdge(const int iEdge) const
   TopoDS_Shape V2 = myHelper->GetSubShapeByNode( node, meshDS );
   if ( V2.ShapeType() == TopAbs_VERTEX && !V2.IsSame( V1 ))
   {
-    TopTools_ListIteratorOfListOfShape ancestIt =
-      myHelper->GetMesh()->GetAncestors( V1 );
-    for ( ; ancestIt.More(); ancestIt.Next() )
-    {
-      const TopoDS_Shape & ancestor = ancestIt.Value();
-      if ( ancestor.ShapeType() == TopAbs_EDGE )
-        for ( TopExp_Explorer e( ancestor, TopAbs_VERTEX ); e.More(); e.Next() )
-          if ( V2.IsSame( e.Current() ))
-            return TopoDS::Edge( ancestor );
-    }
+    TopoDS_Shape ancestor = myHelper->GetCommonAncestor( V1, V2, *myHelper->GetMesh(), TopAbs_EDGE);
+    if ( !ancestor.IsNull() )
+      return TopoDS::Edge( ancestor );
   }
   return TopoDS_Edge();
 }
 
 //================================================================================
 /*!
- * \brief Fill block subshapes
+ * \brief Fill block sub-shapes
   * \param shapeMap - map to fill in
-  * \retval int - nb inserted subshapes
+  * \retval int - nb inserted sub-shapes
  */
 //================================================================================
 
@@ -1839,6 +2329,28 @@ int StdMeshers_PrismAsBlock::TSideFace::InsertSubShapes(TBlockShapes& shapeMap) 
 
 //================================================================================
 /*!
+ * \brief Dump ids of nodes of sides
+ */
+//================================================================================
+
+void StdMeshers_PrismAsBlock::TSideFace::dumpNodes(int nbNodes) const
+{
+#ifdef _DEBUG_
+  cout << endl << "NODES OF FACE "; SMESH_Block::DumpShapeID( myID, cout ) << endl;
+  THorizontalEdgeAdaptor* hSize0 = (THorizontalEdgeAdaptor*) HorizCurve(0);
+  cout << "Horiz side 0: "; hSize0->dumpNodes(nbNodes); cout << endl;
+  THorizontalEdgeAdaptor* hSize1 = (THorizontalEdgeAdaptor*) HorizCurve(1);
+  cout << "Horiz side 1: "; hSize1->dumpNodes(nbNodes); cout << endl;
+  TVerticalEdgeAdaptor* vSide0 = (TVerticalEdgeAdaptor*) VertiCurve(0);
+  cout << "Verti side 0: "; vSide0->dumpNodes(nbNodes); cout << endl;
+  TVerticalEdgeAdaptor* vSide1 = (TVerticalEdgeAdaptor*) VertiCurve(1);
+  cout << "Verti side 1: "; vSide1->dumpNodes(nbNodes); cout << endl;
+  delete hSize0; delete hSize1; delete vSide0; delete vSide1;
+#endif
+}
+
+//================================================================================
+/*!
  * \brief Creates TVerticalEdgeAdaptor 
   * \param columnsMap - node column map
   * \param parameter - normalized parameter
@@ -1869,6 +2381,22 @@ gp_Pnt StdMeshers_PrismAsBlock::TVerticalEdgeAdaptor::Value(const Standard_Real 
 
 //================================================================================
 /*!
+ * \brief Dump ids of nodes
+ */
+//================================================================================
+
+void StdMeshers_PrismAsBlock::TVerticalEdgeAdaptor::dumpNodes(int nbNodes) const
+{
+#ifdef _DEBUG_
+  for ( int i = 0; i < nbNodes && i < myNodeColumn->size(); ++i )
+    cout << (*myNodeColumn)[i]->GetID() << " ";
+  if ( nbNodes < myNodeColumn->size() )
+    cout << myNodeColumn->back()->GetID();
+#endif
+}
+
+//================================================================================
+/*!
  * \brief Return coordinates for the given normalized parameter
   * \param U - normalized parameter
   * \retval gp_Pnt - coordinates
@@ -1880,6 +2408,50 @@ gp_Pnt StdMeshers_PrismAsBlock::THorizontalEdgeAdaptor::Value(const Standard_Rea
   return mySide->TSideFace::Value( U, myV );
 }
 
+//================================================================================
+/*!
+ * \brief Dump ids of <nbNodes> first nodes and the last one
+ */
+//================================================================================
+
+void StdMeshers_PrismAsBlock::THorizontalEdgeAdaptor::dumpNodes(int nbNodes) const
+{
+#ifdef _DEBUG_
+  // Not bedugged code. Last node is sometimes incorrect
+  const TSideFace* side = mySide;
+  double u = 0;
+  if ( mySide->IsComplex() )
+    side = mySide->GetComponent(0,u);
+
+  TParam2ColumnIt col, col2;
+  TParam2ColumnMap* u2cols = side->GetColumns();
+  side->GetColumns( u , col, col2 );
+  
+  int j, i = myV ? mySide->ColumnHeight()-1 : 0;
+
+  const SMDS_MeshNode* n = 0;
+  const SMDS_MeshNode* lastN
+    = side->IsForward() ? u2cols->rbegin()->second[ i ] : u2cols->begin()->second[ i ];
+  for ( j = 0; j < nbNodes && n != lastN; ++j )
+  {
+    n = col->second[ i ];
+    cout << n->GetID() << " ";
+    if ( side->IsForward() )
+      ++col;
+    else
+      --col;
+  }
+
+  // last node
+  u = 1;
+  if ( mySide->IsComplex() )
+    side = mySide->GetComponent(1,u);
+
+  side->GetColumns( u , col, col2 );
+  if ( n != col->second[ i ] )
+    cout << col->second[ i ]->GetID();
+#endif
+}
 //================================================================================
 /*!
  * \brief Return UV on pcurve for the given normalized parameter

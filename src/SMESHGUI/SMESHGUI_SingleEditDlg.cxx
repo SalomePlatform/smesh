@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // File   : SMESHGUI_SingleEditDlg.cxx
 // Author : Sergey LITONIN, Open CASCADE S.A.S.
 // SMESH includes
@@ -278,10 +279,10 @@ void SMESHGUI_SingleEditDlg::onHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 
@@ -312,12 +313,14 @@ static bool findTriangles (const SMDS_MeshNode *    theNode1,
     const SMDS_MeshElement* elem = it->next();
     if (elem->GetType() == SMDSAbs_Face &&
          emap.find(elem) != emap.end())
+    {
       if (theTria1) {
         theTria2 = elem;
         break;
       } else {
         theTria1 = elem;
       }
+    }
   }
   return (theTria1 && theTria2);
 }
@@ -348,13 +351,13 @@ void SMESHGUI_SingleEditDlg::onTextChange (const QString& theNewText)
 
       int id1, id2;
       if ( !getNodeIds(myEdge->text(), id1, id2) )
-	return;
+        return;
 
       const SMDS_MeshNode* aNode1 = aMesh->FindNode( id1 );
       const SMDS_MeshNode* aNode2 = aMesh->FindNode( id2 );
 
       if ( !aNode1 || !aNode2 || aNode1 == aNode2 )
-	return;
+        return;
 
       // find a triangle and an edge index
       const SMDS_MeshElement* tria1;
@@ -362,23 +365,23 @@ void SMESHGUI_SingleEditDlg::onTextChange (const QString& theNewText)
 
       if ( findTriangles(aNode1,aNode2,tria1,tria2) )
       {
-	newIndices.Add(tria1->GetID());
+        newIndices.Add(tria1->GetID());
 
-	const SMDS_MeshNode* a3Nodes[3];
-	SMDS_ElemIteratorPtr it;
-	int edgeInd = 2, i;
-	for (i = 0, it = tria1->nodesIterator(); it->more(); i++) {
-	  a3Nodes[ i ] = static_cast<const SMDS_MeshNode*>(it->next());
-	  if (i > 0 && ( a3Nodes[ i ] == aNode1 && a3Nodes[ i - 1] == aNode2 ||
-			 a3Nodes[ i ] == aNode2 && a3Nodes[ i - 1] == aNode1 ) ) {
-	    edgeInd = i - 1;
-	    break;
-	  }
-	}
-	newIndices.Add(-edgeInd-1);
-	
-	myOkBtn->setEnabled(true);
-	myApplyBtn->setEnabled(true);
+        const SMDS_MeshNode* a3Nodes[3];
+        SMDS_ElemIteratorPtr it;
+        int edgeInd = 2, i;
+        for (i = 0, it = tria1->nodesIterator(); it->more(); i++) {
+          a3Nodes[ i ] = static_cast<const SMDS_MeshNode*>(it->next());
+          if (i > 0 && ( (a3Nodes[ i ] == aNode1 && a3Nodes[ i - 1] == aNode2) ||
+                         (a3Nodes[ i ] == aNode2 && a3Nodes[ i - 1] == aNode1) ) ) {
+            edgeInd = i - 1;
+            break;
+          }
+        }
+        newIndices.Add(-edgeInd-1);
+        
+        myOkBtn->setEnabled(true);
+        myApplyBtn->setEnabled(true);
       }
       mySelector->AddOrRemoveIndex(anIO,newIndices, false);
       SMESH::GetViewWindow(mySMESHGUI)->highlight( anIO, true, true );
@@ -416,17 +419,17 @@ void SMESHGUI_SingleEditDlg::onSelectionDone()
     {
       const SMDS_MeshElement* tria[2];
       if( SMESH::GetEdgeNodes( mySelector, aVisualObj, anId1, anId2 ) >= 1 &&
-	  findTriangles( aMesh->FindNode( anId1 ), aMesh->FindNode( anId2 ), tria[0],tria[1] ) )
+          findTriangles( aMesh->FindNode( anId1 ), aMesh->FindNode( anId2 ), tria[0],tria[1] ) )
       {
-	QString aText = QString("%1-%2").arg(anId1).arg(anId2);
-	myEdge->setText(aText);
-	
-	myOkBtn->setEnabled(true);
-	myApplyBtn->setEnabled(true);
+        QString aText = QString("%1-%2").arg(anId1).arg(anId2);
+        myEdge->setText(aText);
+        
+        myOkBtn->setEnabled(true);
+        myApplyBtn->setEnabled(true);
       }
       else
       {
-	myEdge->clear();
+        myEdge->clear();
       }
     }
   }
@@ -494,8 +497,8 @@ bool SMESHGUI_SingleEditDlg::onApply()
 
   if (aMesh->_is_nil()) {
     SUIT_MessageBox::information(SMESH::GetDesktop(mySMESHGUI), 
-				 tr("SMESH_ERROR"),
-				 tr("SMESHG_NO_MESH"));
+                                 tr("SMESH_ERROR"),
+                                 tr("SMESHG_NO_MESH"));
     return false;
   }
 
@@ -513,6 +516,7 @@ bool SMESHGUI_SingleEditDlg::onApply()
     mySelectionMgr->setSelectedObjects(aList, false);
     onSelectionDone();
     SMESH::UpdateView();
+    SMESHGUI::Modified();
   }
 
   return aResult;

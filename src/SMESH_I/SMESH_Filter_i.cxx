@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : SMESH_Filter_i.cxx
 //  Author : Alexey Petrov, OCC
@@ -32,6 +33,7 @@
 #include "SMDS_Mesh.hxx"
 #include "SMDS_MeshNode.hxx"
 #include "SMDS_MeshElement.hxx"
+#include "SMDS_ElemIterator.hxx"
 
 #include "SMESHDS_Mesh.hxx"
 
@@ -122,7 +124,7 @@ void Controls::BelongToGeom::init()
 {
   if (!myMeshDS || myShape.IsNull()) return;
 
-  // is subshape of main shape?
+  // is sub-shape of main shape?
   TopoDS_Shape aMainShape = myMeshDS->ShapeToMesh();
   if (aMainShape.IsNull()) {
     myIsSubshape = false;
@@ -278,7 +280,7 @@ void Controls::LyingOnGeom::init()
 {
   if (!myMeshDS || myShape.IsNull()) return;
 
-  // is subshape of main shape?
+  // is sub-shape of main shape?
   TopoDS_Shape aMainShape = myMeshDS->ShapeToMesh();
   if (aMainShape.IsNull()) {
     myIsSubshape = false;
@@ -485,21 +487,16 @@ static TopoDS_Shape getShapeByName( const char* theName )
 {
   if ( theName != 0 )
   {
-    SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-    SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
-    if (!CORBA::is_nil(aStudy))
+    SMESH_Gen_i* aSMESHGen     = SMESH_Gen_i::GetSMESHGen();
+    SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();
+    if ( !aStudy->_is_nil() )
     {
-      SALOMEDS::Study::ListOfSObject_var aList =
-        aStudy->FindObjectByName( theName, "GEOM" );
+      SALOMEDS::Study::ListOfSObject_var aList = aStudy->FindObjectByName( theName, "GEOM" );
       if ( aList->length() > 0 )
       {
-        GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow( aList[ 0 ]->GetObject() );
-        if ( !aGeomObj->_is_nil() )
-        {
-          GEOM::GEOM_Gen_ptr aGEOMGen = SMESH_Gen_i::GetGeomEngine();
-          TopoDS_Shape aLocShape = aSMESHGen->GetShapeReader()->GetShape( aGEOMGen, aGeomObj );
-          return aLocShape;
-        }
+        CORBA::Object_var        anObj = aList[ 0 ]->GetObject();
+        GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow( anObj );
+        return aSMESHGen->GeomObjectToShape( aGeomObj );
       }
     }
   }
@@ -508,48 +505,35 @@ static TopoDS_Shape getShapeByName( const char* theName )
 
 static TopoDS_Shape getShapeByID (const char* theID)
 {
-  if (theID != 0 && theID != "") {
-    SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-    SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
-    if (aStudy != 0) {
+  if ( theID && strlen( theID ) > 0 ) {
+    SMESH_Gen_i*     aSMESHGen = SMESH_Gen_i::GetSMESHGen();
+    SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();
+    if ( !aStudy->_is_nil() ) {
       SALOMEDS::SObject_var aSObj = aStudy->FindObjectID(theID);
-      SALOMEDS::GenericAttribute_var anAttr;
-      if (!aSObj->_is_nil() && aSObj->FindAttribute(anAttr, "AttributeIOR")) {
-        SALOMEDS::AttributeIOR_var anIOR = SALOMEDS::AttributeIOR::_narrow(anAttr);
-        CORBA::String_var aVal = anIOR->Value();
-        CORBA::Object_var obj = aStudy->ConvertIORToObject(aVal);
+      if ( !aSObj->_is_nil() ) {
+        CORBA::Object_var          obj = aSObj->GetObject();
         GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow(obj);
-      
-        if (!aGeomObj->_is_nil()) {
-          GEOM::GEOM_Gen_ptr aGEOMGen = SMESH_Gen_i::GetGeomEngine();
-          TopoDS_Shape aLocShape = aSMESHGen->GetShapeReader()->GetShape( aGEOMGen, aGeomObj );
-          return aLocShape;
-        }
+        return aSMESHGen->GeomObjectToShape( aGeomObj );
       }
     }
   }
   return TopoDS_Shape();
 }
 
-static char* getShapeNameByID (const char* theID)
+static std::string getShapeNameByID (const char* theID)
 {
-  char* aName = "";
-
-  if (theID != 0 && theID != "") {
-    SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-    SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
-    if (aStudy != 0) {
-      //SALOMEDS::SObject_var aSObj = aStudy->FindObjectIOR( theID );
+  if ( theID && strlen( theID ) > 0 ) {
+    SMESH_Gen_i*     aSMESHGen = SMESH_Gen_i::GetSMESHGen();
+    SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();
+    if ( !aStudy->_is_nil() ) {
       SALOMEDS::SObject_var aSObj = aStudy->FindObjectID(theID);
-      SALOMEDS::GenericAttribute_var anAttr;
-      if (!aSObj->_is_nil() && aSObj->FindAttribute(anAttr, "AttributeName")) {
-        SALOMEDS::AttributeName_var aNameAttr = SALOMEDS::AttributeName::_narrow(anAttr);
-        aName = aNameAttr->Value();
+      if ( !aSObj->_is_nil() ) {
+        CORBA::String_var name = aSObj->GetName();
+        return name.in();
       }
     }
   }
-
-  return aName;
+  return "";
 }
 
 /*
@@ -570,7 +554,7 @@ Functor_i::Functor_i():
 
 Functor_i::~Functor_i()
 {
-  //TPythonDump()<<this<<".Destroy()";
+  //TPythonDump()<<this<<".UnRegister()";
 }
 
 void Functor_i::SetMesh( SMESH_Mesh_ptr theMesh )
@@ -592,6 +576,33 @@ ElementType Functor_i::GetElementType()
 CORBA::Double NumericalFunctor_i::GetValue( CORBA::Long theId )
 {
   return myNumericalFunctorPtr->GetValue( theId );
+}
+
+SMESH::Histogram* NumericalFunctor_i::GetHistogram(CORBA::Short nbIntervals)
+{
+  std::vector<int> nbEvents;
+  std::vector<double> funValues;
+  std::vector<int> elements;
+  myNumericalFunctorPtr->GetHistogram(nbIntervals,nbEvents,funValues,elements);
+
+#ifdef WIN32
+  nbIntervals = CORBA::Short( min( nbEvents.size(), funValues.size() - 1));
+#else
+  nbIntervals = CORBA::Short( std::min( nbEvents.size(), funValues.size() - 1));
+#endif
+  SMESH::Histogram_var histogram = new SMESH::Histogram;
+  if ( nbIntervals > 0 )
+  {
+    histogram->length( nbIntervals );
+    for ( int i = 0; i < nbIntervals; ++i )
+    {
+      HistogramRectangle& rect = histogram[i];
+      rect.nbEvents = nbEvents[i];
+      rect.min = funValues[i];
+      rect.max = funValues[i+1];
+    }
+  }
+  return histogram._retn();
 }
 
 void NumericalFunctor_i::SetPrecision( CORBA::Long thePrecision )
@@ -737,6 +748,36 @@ FunctorType Volume3D_i::GetFunctorType()
 }
 
 /*
+  Class       : MaxElementLength2D_i
+  Description : Functor for calculating maximum length of 2D element
+*/
+MaxElementLength2D_i::MaxElementLength2D_i()
+{
+  myNumericalFunctorPtr.reset( new Controls::MaxElementLength2D() );
+  myFunctorPtr = myNumericalFunctorPtr;
+}
+
+FunctorType MaxElementLength2D_i::GetFunctorType()
+{
+  return SMESH::FT_MaxElementLength2D;
+}
+
+/*
+  Class       : MaxElementLength3D_i
+  Description : Functor for calculating maximum length of 3D element
+*/
+MaxElementLength3D_i::MaxElementLength3D_i()
+{
+  myNumericalFunctorPtr.reset( new Controls::MaxElementLength3D() );
+  myFunctorPtr = myNumericalFunctorPtr;
+}
+
+FunctorType MaxElementLength3D_i::GetFunctorType()
+{
+  return SMESH::FT_MaxElementLength3D;
+}
+
+/*
   Class       : Length_i
   Description : Functor for calculating length off edge
 */
@@ -770,11 +811,12 @@ SMESH::Length2D::Values* Length2D_i::GetValues()
 {
   INFOS("Length2D_i::GetValues");
   SMESH::Controls::Length2D::TValues aValues;
-  myLength2DPtr->GetValues( aValues );
+  (dynamic_cast<SMESH::Controls::Length2D*>(myFunctorPtr.get()))->GetValues( aValues );
 
   long i = 0, iEnd = aValues.size();
 
   SMESH::Length2D::Values_var aResult = new SMESH::Length2D::Values(iEnd);
+  aResult->length(iEnd);
 
   SMESH::Controls::Length2D::TValues::const_iterator anIter;
   for ( anIter = aValues.begin() ; anIter != aValues.end(); anIter++, i++ )
@@ -807,6 +849,21 @@ FunctorType MultiConnection_i::GetFunctorType()
 }
 
 /*
+  Class       : BallDiameter_i
+  Description : Functor returning diameter of a ball element
+*/
+BallDiameter_i::BallDiameter_i()
+{
+  myNumericalFunctorPtr.reset( new Controls::BallDiameter() );
+  myFunctorPtr = myNumericalFunctorPtr;
+}
+
+FunctorType BallDiameter_i::GetFunctorType()
+{
+  return SMESH::FT_BallDiameter;
+}
+
+/*
   Class       : MultiConnection2D_i
   Description : Functor for calculating number of faces conneted to the edge
 */
@@ -825,11 +882,12 @@ SMESH::MultiConnection2D::Values* MultiConnection2D_i::GetValues()
 {
   INFOS("MultiConnection2D_i::GetValues");
   SMESH::Controls::MultiConnection2D::MValues aValues;
-  myMulticonnection2DPtr->GetValues( aValues );
-
+  (dynamic_cast<SMESH::Controls::MultiConnection2D*>(myFunctorPtr.get()))->GetValues( aValues );
+  
   long i = 0, iEnd = aValues.size();
 
   SMESH::MultiConnection2D::Values_var aResult = new SMESH::MultiConnection2D::Values(iEnd);
+  aResult->length(iEnd);
 
   SMESH::Controls::MultiConnection2D::MValues::const_iterator anIter;
   for ( anIter = aValues.begin() ; anIter != aValues.end(); anIter++, i++ )
@@ -879,6 +937,66 @@ BadOrientedVolume_i::BadOrientedVolume_i()
 FunctorType BadOrientedVolume_i::GetFunctorType()
 {
   return SMESH::FT_BadOrientedVolume;
+}
+
+/*
+  Class       : BareBorderVolume_i
+  Description : Verify whether a mesh volume has a free facet without a face on it
+*/
+BareBorderVolume_i::BareBorderVolume_i()
+{
+  Controls::PredicatePtr control( new Controls::BareBorderVolume() );
+  myFunctorPtr = myPredicatePtr = control;
+};
+
+FunctorType BareBorderVolume_i::GetFunctorType()
+{
+  return SMESH::FT_BareBorderVolume;
+}
+
+/*
+  Class       : BareBorderFace_i
+  Description : Verify whether a mesh face has a free border without an edge on it
+*/
+BareBorderFace_i::BareBorderFace_i()
+{
+  Controls::PredicatePtr control( new Controls::BareBorderFace() );
+  myFunctorPtr = myPredicatePtr = control;
+};
+
+FunctorType BareBorderFace_i::GetFunctorType()
+{
+  return SMESH::FT_BareBorderFace;
+}
+
+/*
+  Class       : OverConstrainedVolume_i
+  Description : Verify whether a mesh volume has only one facet shared with other volumes
+*/
+OverConstrainedVolume_i::OverConstrainedVolume_i()
+{
+  Controls::PredicatePtr control( new Controls::OverConstrainedVolume() );
+  myFunctorPtr = myPredicatePtr = control;
+};
+
+FunctorType OverConstrainedVolume_i::GetFunctorType()
+{
+  return SMESH::FT_OverConstrainedVolume;
+}
+
+/*
+  Class       : OverConstrainedFace_i
+  Description : Verify whether a mesh face has only one border shared with other faces
+*/
+OverConstrainedFace_i::OverConstrainedFace_i()
+{
+  Controls::PredicatePtr control( new Controls::OverConstrainedFace() );
+  myFunctorPtr = myPredicatePtr = control;
+};
+
+FunctorType OverConstrainedFace_i::GetFunctorType()
+{
+  return SMESH::FT_OverConstrainedFace;
 }
 
 /*
@@ -943,7 +1061,7 @@ void BelongToGeom_i::SetShape( const char* theID, const char* theName )
   else
     myShapeID = 0;
 
-  if ( myShapeID && strcmp(myShapeName, getShapeNameByID(myShapeID)) == 0 )
+  if ( myShapeID && myShapeName == getShapeNameByID(myShapeID))
     myBelongToGeomPtr->SetGeom( getShapeByID(myShapeID) );
   else
     myBelongToGeomPtr->SetGeom( getShapeByName( myShapeName ) );
@@ -1028,7 +1146,7 @@ void BelongToSurface_i::SetShape( const char* theID,  const char* theName, Eleme
   else
     myShapeID = 0;
   
-  if ( myShapeID && strcmp(myShapeName, getShapeNameByID(myShapeID)) == 0 )
+  if ( myShapeID && myShapeName == getShapeNameByID(myShapeID))
     myElementsOnSurfacePtr->SetSurface( getShapeByID(myShapeID), (SMDSAbs_ElementType)theType );
   else
     myElementsOnSurfacePtr->SetSurface( getShapeByName( myShapeName ), (SMDSAbs_ElementType)theType );
@@ -1198,7 +1316,7 @@ void LyingOnGeom_i::SetShape( const char* theID, const char* theName )
   else
     myShapeID = 0;
   
-  if ( myShapeID && strcmp(myShapeName, getShapeNameByID(myShapeID)) == 0 )
+  if ( myShapeID && myShapeName == getShapeNameByID(myShapeID))
     myLyingOnGeomPtr->SetGeom( getShapeByID(myShapeID) );
   else
     myLyingOnGeomPtr->SetGeom( getShapeByName( myShapeName ) );
@@ -1310,6 +1428,77 @@ FunctorType FreeNodes_i::GetFunctorType()
 {
   return SMESH::FT_FreeNodes;
 }
+
+/*
+  Class       : EqualNodes_i
+  Description : Predicate for Equal nodes
+*/
+EqualNodes_i::EqualNodes_i()
+{
+  myCoincidentNodesPtr.reset(new Controls::CoincidentNodes());
+  myFunctorPtr = myPredicatePtr = myCoincidentNodesPtr;
+}
+
+FunctorType EqualNodes_i::GetFunctorType()
+{
+  return SMESH::FT_EqualNodes;
+}
+
+void EqualNodes_i::SetTolerance( double tol )
+{
+  myCoincidentNodesPtr->SetTolerance( tol );
+}
+
+double EqualNodes_i::GetTolerance()
+{
+  return myCoincidentNodesPtr->GetTolerance();
+}
+
+/*
+  Class       : EqualEdges_i
+  Description : Predicate for Equal Edges
+*/
+EqualEdges_i::EqualEdges_i()
+{
+  myPredicatePtr.reset(new Controls::CoincidentElements1D());
+  myFunctorPtr = myPredicatePtr;
+}
+
+FunctorType EqualEdges_i::GetFunctorType()
+{
+  return SMESH::FT_EqualEdges;
+}
+
+/*
+  Class       : EqualFaces_i
+  Description : Predicate for Equal Faces
+*/
+EqualFaces_i::EqualFaces_i()
+{
+  myPredicatePtr.reset(new Controls::CoincidentElements2D());
+  myFunctorPtr = myPredicatePtr;
+}
+
+FunctorType EqualFaces_i::GetFunctorType()
+{
+  return SMESH::FT_EqualFaces;
+}
+
+/*
+  Class       : EqualVolumes_i
+  Description : Predicate for Equal Volumes
+*/
+EqualVolumes_i::EqualVolumes_i()
+{
+  myPredicatePtr.reset(new Controls::CoincidentElements3D());
+  myFunctorPtr = myPredicatePtr;
+}
+
+FunctorType EqualVolumes_i::GetFunctorType()
+{
+  return SMESH::FT_EqualVolumes;
+}
+
 
 /*
   Class       : RangeOfIds_i
@@ -1439,12 +1628,55 @@ void ElemGeomType_i::SetGeometryType(GeometryType theType)
 
 GeometryType ElemGeomType_i::GetGeometryType() const
 {
-  return (GeometryType)myElemGeomTypePtr->GetGeomType();;
+  return (GeometryType)myElemGeomTypePtr->GetGeomType();
 }
 
 FunctorType ElemGeomType_i::GetFunctorType()
 {
   return SMESH::FT_ElemGeomType;
+}
+
+/*
+  Class       : CoplanarFaces_i
+  Description : Returns true if a mesh face is a coplanar neighbour to a given one
+*/
+CoplanarFaces_i::CoplanarFaces_i()
+{
+  myCoplanarFacesPtr.reset(new Controls::CoplanarFaces());
+  myFunctorPtr = myPredicatePtr = myCoplanarFacesPtr;
+}
+
+void CoplanarFaces_i::SetFace ( CORBA::Long theFaceID )
+{
+  myCoplanarFacesPtr->SetFace(theFaceID);
+  TPythonDump()<<this<<".SetFace("<<theFaceID<<")";
+}
+
+void CoplanarFaces_i::SetTolerance( CORBA::Double theToler )
+{
+  myCoplanarFacesPtr->SetTolerance(theToler);
+  TPythonDump()<<this<<".SetTolerance("<<theToler<<")";
+}
+
+CORBA::Long CoplanarFaces_i::GetFace () const
+{
+  return myCoplanarFacesPtr->GetFace();
+}
+
+char* CoplanarFaces_i::GetFaceAsString () const
+{
+  TCollection_AsciiString str(Standard_Integer(myCoplanarFacesPtr->GetFace()));
+  return CORBA::string_dup( str.ToCString() );
+}
+
+CORBA::Double CoplanarFaces_i::GetTolerance() const
+{
+  return myCoplanarFacesPtr->GetTolerance();
+}
+
+FunctorType CoplanarFaces_i::GetFunctorType()
+{
+  return SMESH::FT_CoplanarFaces;
 }
 
 /*
@@ -1458,7 +1690,7 @@ Comparator_i::Comparator_i():
 Comparator_i::~Comparator_i()
 {
   if ( myNumericalFunctor )
-    myNumericalFunctor->Destroy();
+    myNumericalFunctor->UnRegister();
 }
 
 void Comparator_i::SetMargin( CORBA::Double theValue )
@@ -1475,7 +1707,7 @@ CORBA::Double Comparator_i::GetMargin()
 void Comparator_i::SetNumFunctor( NumericalFunctor_ptr theFunct )
 {
   if ( myNumericalFunctor )
-    myNumericalFunctor->Destroy();
+    myNumericalFunctor->UnRegister();
 
   myNumericalFunctor = DownCast<NumericalFunctor_i*>(theFunct);
 
@@ -1570,13 +1802,13 @@ LogicalNOT_i::LogicalNOT_i()
 LogicalNOT_i::~LogicalNOT_i()
 {
   if ( myPredicate )
-    myPredicate->Destroy();
+    myPredicate->UnRegister();
 }
 
 void LogicalNOT_i::SetPredicate( Predicate_ptr thePredicate )
 {
   if ( myPredicate )
-    myPredicate->Destroy();
+    myPredicate->UnRegister();
 
   myPredicate = SMESH::GetPredicate(thePredicate);
 
@@ -1610,10 +1842,10 @@ LogicalBinary_i::LogicalBinary_i()
 LogicalBinary_i::~LogicalBinary_i()
 {
   if ( myPredicate1 )
-    myPredicate1->Destroy();
+    myPredicate1->UnRegister();
 
   if ( myPredicate2 )
-    myPredicate2->Destroy();
+    myPredicate2->UnRegister();
 }
 
 void LogicalBinary_i::SetMesh( SMESH_Mesh_ptr theMesh )
@@ -1628,7 +1860,7 @@ void LogicalBinary_i::SetMesh( SMESH_Mesh_ptr theMesh )
 void LogicalBinary_i::SetPredicate1( Predicate_ptr thePredicate )
 {
   if ( myPredicate1 )
-    myPredicate1->Destroy();
+    myPredicate1->UnRegister();
 
   myPredicate1 = SMESH::GetPredicate(thePredicate);
 
@@ -1642,7 +1874,7 @@ void LogicalBinary_i::SetPredicate1( Predicate_ptr thePredicate )
 void LogicalBinary_i::SetPredicate2( Predicate_ptr thePredicate )
 {
   if ( myPredicate2 )
-    myPredicate2->Destroy();
+    myPredicate2->UnRegister();
 
   myPredicate2 = SMESH::GetPredicate(thePredicate);
 
@@ -1715,7 +1947,7 @@ FilterManager_i::FilterManager_i()
 
 FilterManager_i::~FilterManager_i()
 {
-  //TPythonDump()<<this<<".Destroy()";
+  //TPythonDump()<<this<<".UnRegister()";
 }
 
 
@@ -1791,6 +2023,24 @@ Volume3D_ptr FilterManager_i::CreateVolume3D()
 }
 
 
+MaxElementLength2D_ptr FilterManager_i::CreateMaxElementLength2D()
+{
+  SMESH::MaxElementLength2D_i* aServant = new SMESH::MaxElementLength2D_i();
+  SMESH::MaxElementLength2D_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateMaxElementLength2D()";
+  return anObj._retn();
+}
+
+
+MaxElementLength3D_ptr FilterManager_i::CreateMaxElementLength3D()
+{
+  SMESH::MaxElementLength3D_i* aServant = new SMESH::MaxElementLength3D_i();
+  SMESH::MaxElementLength3D_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateMaxElementLength3D()";
+  return anObj._retn();
+}
+
+
 Length_ptr FilterManager_i::CreateLength()
 {
   SMESH::Length_i* aServant = new SMESH::Length_i();
@@ -1820,6 +2070,14 @@ MultiConnection2D_ptr FilterManager_i::CreateMultiConnection2D()
   SMESH::MultiConnection2D_i* aServant = new SMESH::MultiConnection2D_i();
   SMESH::MultiConnection2D_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateMultiConnection2D()";
+  return anObj._retn();
+}
+
+BallDiameter_ptr FilterManager_i::CreateBallDiameter()
+{
+  SMESH::BallDiameter_i* aServant = new SMESH::BallDiameter_i();
+  SMESH::BallDiameter_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateBallDiameter()";
   return anObj._retn();
 }
 
@@ -1863,6 +2121,14 @@ LyingOnGeom_ptr FilterManager_i::CreateLyingOnGeom()
   return anObj._retn();
 }
 
+CoplanarFaces_ptr FilterManager_i::CreateCoplanarFaces()
+{
+  SMESH::CoplanarFaces_i* aServant = new SMESH::CoplanarFaces_i();
+  SMESH::CoplanarFaces_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateCoplanarFaces()";
+  return anObj._retn();
+}
+
 FreeBorders_ptr FilterManager_i::CreateFreeBorders()
 {
   SMESH::FreeBorders_i* aServant = new SMESH::FreeBorders_i();
@@ -1895,6 +2161,36 @@ FreeNodes_ptr FilterManager_i::CreateFreeNodes()
   return anObj._retn();
 }
 
+EqualNodes_ptr FilterManager_i::CreateEqualNodes()
+{
+  SMESH::EqualNodes_i* aServant = new SMESH::EqualNodes_i();
+  SMESH::EqualNodes_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateEqualNodes()";
+  return anObj._retn();
+}
+
+EqualEdges_ptr FilterManager_i::CreateEqualEdges()
+{
+  SMESH::EqualEdges_i* aServant = new SMESH::EqualEdges_i();
+  SMESH::EqualEdges_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateEqualEdges()";
+  return anObj._retn();
+}
+EqualFaces_ptr FilterManager_i::CreateEqualFaces()
+{
+  SMESH::EqualFaces_i* aServant = new SMESH::EqualFaces_i();
+  SMESH::EqualFaces_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateEqualFaces()";
+  return anObj._retn();
+}
+EqualVolumes_ptr FilterManager_i::CreateEqualVolumes()
+{
+  SMESH::EqualVolumes_i* aServant = new SMESH::EqualVolumes_i();
+  SMESH::EqualVolumes_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateEqualVolumes()";
+  return anObj._retn();
+}
+
 RangeOfIds_ptr FilterManager_i::CreateRangeOfIds()
 {
   SMESH::RangeOfIds_i* aServant = new SMESH::RangeOfIds_i();
@@ -1908,6 +2204,38 @@ BadOrientedVolume_ptr FilterManager_i::CreateBadOrientedVolume()
   SMESH::BadOrientedVolume_i* aServant = new SMESH::BadOrientedVolume_i();
   SMESH::BadOrientedVolume_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateBadOrientedVolume()";
+  return anObj._retn();
+}
+
+BareBorderVolume_ptr FilterManager_i::CreateBareBorderVolume()
+{
+  SMESH::BareBorderVolume_i* aServant = new SMESH::BareBorderVolume_i();
+  SMESH::BareBorderVolume_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateBareBorderVolume()";
+  return anObj._retn();
+}
+
+BareBorderFace_ptr FilterManager_i::CreateBareBorderFace()
+{
+  SMESH::BareBorderFace_i* aServant = new SMESH::BareBorderFace_i();
+  SMESH::BareBorderFace_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateBareBorderFace()";
+  return anObj._retn();
+}
+
+OverConstrainedVolume_ptr FilterManager_i::CreateOverConstrainedVolume()
+{
+  SMESH::OverConstrainedVolume_i* aServant = new SMESH::OverConstrainedVolume_i();
+  SMESH::OverConstrainedVolume_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateOverConstrainedVolume()";
+  return anObj._retn();
+}
+
+OverConstrainedFace_ptr FilterManager_i::CreateOverConstrainedFace()
+{
+  SMESH::OverConstrainedFace_i* aServant = new SMESH::OverConstrainedFace_i();
+  SMESH::OverConstrainedFace_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateOverConstrainedFace()";
   return anObj._retn();
 }
 
@@ -1995,7 +2323,7 @@ FilterLibrary_ptr FilterManager_i::LoadLibrary( const char* aFileName )
 {
   SMESH::FilterLibrary_i* aServant = new SMESH::FilterLibrary_i( aFileName );
   SMESH::FilterLibrary_var anObj = aServant->_this();
-  TPythonDump()<<aServant<<" = "<<this<<".LoadLibrary("<<aFileName<<")";
+  TPythonDump()<<aServant<<" = "<<this<<".LoadLibrary('"<<aFileName<<"')";
   return anObj._retn();
 }
 
@@ -2048,12 +2376,12 @@ Filter_i::Filter_i()
 Filter_i::~Filter_i()
 {
   if ( myPredicate )
-    myPredicate->Destroy();
+    myPredicate->UnRegister();
 
   if(!CORBA::is_nil(myMesh))
-    myMesh->Destroy();
+    myMesh->UnRegister();
 
-  //TPythonDump()<<this<<".Destroy()";
+  //TPythonDump()<<this<<".UnRegister()";
 }
 
 //=======================================================================
@@ -2063,7 +2391,7 @@ Filter_i::~Filter_i()
 void Filter_i::SetPredicate( Predicate_ptr thePredicate )
 {
   if ( myPredicate )
-    myPredicate->Destroy();
+    myPredicate->UnRegister();
 
   myPredicate = SMESH::GetPredicate(thePredicate);
 
@@ -2071,8 +2399,13 @@ void Filter_i::SetPredicate( Predicate_ptr thePredicate )
   {
     myFilter.SetPredicate( myPredicate->GetPredicate() );
     myPredicate->Register();
+    if ( const SMDS_Mesh* aMesh = MeshPtr2SMDSMesh(myMesh))
+      myPredicate->GetPredicate()->SetMesh( aMesh );
     TPythonDump()<<this<<".SetPredicate("<<myPredicate<<")";
   }
+  std::list<TPredicateChangeWaiter*>::iterator i = myWaiters.begin();
+  for ( ; i != myWaiters.end(); ++i )
+    (*i)->PredicateChanged();
 }
 
 //=======================================================================
@@ -2096,10 +2429,14 @@ SetMesh( SMESH_Mesh_ptr theMesh )
     theMesh->Register();
 
   if(!CORBA::is_nil(myMesh))
-    myMesh->Destroy();
+    myMesh->UnRegister();
 
-  myMesh = theMesh;
+  myMesh = SMESH_Mesh::_duplicate( theMesh );
   TPythonDump()<<this<<".SetMesh("<<theMesh<<")";
+
+  if ( myPredicate )
+    if ( const SMDS_Mesh* aMesh = MeshPtr2SMDSMesh(theMesh))
+      myPredicate->GetPredicate()->SetMesh( aMesh );
 }
 
 SMESH::long_array*
@@ -2150,6 +2487,119 @@ GetElementsId( SMESH_Mesh_ptr theMesh )
   return anArray._retn();
 }
 
+template<class TElement, class TIterator, class TPredicate>
+static void collectMeshInfo(const TIterator& theItr,
+                            TPredicate& thePred,
+                            SMESH::long_array& theRes)
+{         
+  if (!theItr)
+    return;
+  while (theItr->more()) {
+    const SMDS_MeshElement* anElem = theItr->next();
+    if ( thePred->IsSatisfy( anElem->GetID() ) )
+      theRes[ anElem->GetEntityType() ]++;
+  }
+}
+
+//=============================================================================
+/*!
+ * \brief Returns statistic of mesh elements
+ */
+//=============================================================================
+SMESH::long_array* ::Filter_i::GetMeshInfo()
+{
+  SMESH::long_array_var aRes = new SMESH::long_array();
+  aRes->length(SMESH::Entity_Last);
+  for (int i = SMESH::Entity_Node; i < SMESH::Entity_Last; i++)
+    aRes[i] = 0;
+
+  if(!CORBA::is_nil(myMesh) && myPredicate) {
+    const SMDS_Mesh* aMesh = MeshPtr2SMDSMesh(myMesh);
+    SMDS_ElemIteratorPtr it;
+    switch( GetElementType() )
+    {
+    case SMDSAbs_Node:
+      collectMeshInfo<const SMDS_MeshNode*>(aMesh->nodesIterator(),myPredicate,aRes);
+      break;
+    case SMDSAbs_Edge:
+      collectMeshInfo<const SMDS_MeshElement*>(aMesh->edgesIterator(),myPredicate,aRes);
+      break;
+    case SMDSAbs_Face:
+      collectMeshInfo<const SMDS_MeshElement*>(aMesh->facesIterator(),myPredicate,aRes);
+      break;
+    case SMDSAbs_Volume:
+      collectMeshInfo<const SMDS_MeshElement*>(aMesh->volumesIterator(),myPredicate,aRes);
+      break;
+    case SMDSAbs_All:
+    default:
+      collectMeshInfo<const SMDS_MeshElement*>(aMesh->elementsIterator(),myPredicate,aRes);
+      break;
+    }
+  }
+
+  return aRes._retn();  
+}
+
+//================================================================================
+/*!
+ * \brief Return GetElementType() within an array
+ * Implement SMESH_IDSource interface
+ */
+//================================================================================
+
+SMESH::array_of_ElementType* Filter_i::GetTypes()
+{
+  SMESH::array_of_ElementType_var types = new SMESH::array_of_ElementType;
+
+  // check if any element passes through the filter
+  if ( !CORBA::is_nil(myMesh) && myPredicate )
+  {
+    const SMDS_Mesh* aMesh = MeshPtr2SMDSMesh(myMesh);
+    SMDS_ElemIteratorPtr it = aMesh->elementsIterator( SMDSAbs_ElementType( GetElementType() ));
+    bool satisfies = false;
+    while ( !satisfies && it->more() )
+      satisfies = myPredicate->IsSatisfy( it->next()->GetID() );
+    if ( satisfies ) {
+      types->length( 1 );
+      types[0] = GetElementType();
+    }
+  }
+  return types._retn();
+}
+
+//=======================================================================
+//function : GetMesh
+//purpose  : Returns mesh
+//=======================================================================
+
+SMESH::SMESH_Mesh_ptr Filter_i::GetMesh()
+{
+  return SMESH_Mesh::_duplicate( myMesh );
+}
+
+//================================================================================
+/*!
+ * \brief Stores an object to be notified on change of predicate
+ */
+//================================================================================
+
+void Filter_i::AddWaiter( TPredicateChangeWaiter* waiter )
+{
+  if ( waiter )
+    myWaiters.push_back( waiter );
+}
+
+//================================================================================
+/*!
+ * \brief Removes an object to be notified on change of predicate
+ */
+//================================================================================
+
+void Filter_i::RemoveWaiter( TPredicateChangeWaiter* waiter )
+{
+  myWaiters.remove( waiter );
+}
+
 //=======================================================================
 // name    : getCriteria
 // Purpose : Retrieve criterions from predicate
@@ -2166,6 +2616,14 @@ static inline bool getCriteria( Predicate_i*                thePred,
   case FT_FreeFaces:
   case FT_LinearOrQuadratic:
   case FT_FreeNodes:
+  case FT_EqualEdges:
+  case FT_EqualFaces:
+  case FT_EqualVolumes:
+  case FT_BadOrientedVolume:
+  case FT_BareBorderVolume:
+  case FT_BareBorderFace:
+  case FT_OverConstrainedVolume:
+  case FT_OverConstrainedFace:
     {
       CORBA::ULong i = theCriteria->length();
       theCriteria->length( i + 1 );
@@ -2189,6 +2647,7 @@ static inline bool getCriteria( Predicate_i*                thePred,
       theCriteria[ i ].ThresholdStr  = aPred->GetShapeName();
       theCriteria[ i ].ThresholdID   = aPred->GetShapeID();
       theCriteria[ i ].TypeOfElement = aPred->GetElementType();
+      theCriteria[ i ].Tolerance     = aPred->GetTolerance();
 
       return true;
     }
@@ -2224,6 +2683,37 @@ static inline bool getCriteria( Predicate_i*                thePred,
       theCriteria[ i ].ThresholdStr  = aPred->GetShapeName();
       theCriteria[ i ].ThresholdID   = aPred->GetShapeID();
       theCriteria[ i ].TypeOfElement = aPred->GetElementType();
+      theCriteria[ i ].Tolerance     = aPred->GetTolerance();
+
+      return true;
+    }
+   case FT_CoplanarFaces:
+    {
+      CoplanarFaces_i* aPred = dynamic_cast<CoplanarFaces_i*>( thePred );
+
+      CORBA::ULong i = theCriteria->length();
+      theCriteria->length( i + 1 );
+
+      theCriteria[ i ] = createCriterion();
+      CORBA::String_var faceId = aPred->GetFaceAsString();
+
+      theCriteria[ i ].Type          = FT_CoplanarFaces;
+      theCriteria[ i ].ThresholdID   = faceId;
+      theCriteria[ i ].Tolerance     = aPred->GetTolerance();
+
+      return true;
+    }
+  case FT_EqualNodes:
+    {
+      EqualNodes_i* aPred = dynamic_cast<EqualNodes_i*>( thePred );
+
+      CORBA::ULong i = theCriteria->length();
+      theCriteria->length( i + 1 );
+
+      theCriteria[ i ] = createCriterion();
+
+      theCriteria[ i ].Type          = FT_EqualNodes;
+      theCriteria[ i ].Tolerance     = aPred->GetTolerance();
 
       return true;
     }
@@ -2238,20 +2728,6 @@ static inline bool getCriteria( Predicate_i*                thePred,
 
       theCriteria[ i ].Type          = FT_RangeOfIds;
       theCriteria[ i ].ThresholdStr  = aPred->GetRangeStr();
-      theCriteria[ i ].TypeOfElement = aPred->GetElementType();
-
-      return true;
-    }
-  case FT_BadOrientedVolume:
-    {
-      BadOrientedVolume_i* aPred = dynamic_cast<BadOrientedVolume_i*>( thePred );
-
-      CORBA::ULong i = theCriteria->length();
-      theCriteria->length( i + 1 );
-
-      theCriteria[ i ] = createCriterion();
-
-      theCriteria[ i ].Type          = FT_BadOrientedVolume;
       theCriteria[ i ].TypeOfElement = aPred->GetElementType();
 
       return true;
@@ -2350,7 +2826,7 @@ CORBA::Boolean Filter_i::GetCriteria( SMESH::Filter::Criteria_out theCriteria )
 CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria )
 {
   if ( myPredicate != 0 )
-    myPredicate->Destroy();
+    myPredicate->UnRegister();
 
   SMESH::FilterManager_i* aFilter = new SMESH::FilterManager_i();
   FilterManager_ptr aFilterMgr = aFilter->_this();
@@ -2376,16 +2852,20 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
 
     {
       TPythonDump pd;
-      pd << "aCriterion = SMESH.Filter.Criterion(" << aCriterion << "," << aCompare
-         << "," << aThreshold << ",'" << aThresholdStr;
-      if (aThresholdID)
-	pd << "',salome.ObjectToID(" << aThresholdID
-	   << ")," << aUnary << "," << aBinary << "," << aTolerance
-	   << "," << aTypeOfElem << "," << aPrecision << ")";
-      else
-	pd << "',''," << aUnary << "," << aBinary << "," << aTolerance
-	   << "," << aTypeOfElem << "," << aPrecision << ")";
+      pd << "aCriterion = SMESH.Filter.Criterion("
+         << aCriterion    << ", "
+         << aCompare      << ", "
+         << aThreshold    << ", '"
+         << aThresholdStr << "', '";
+      if (aThresholdID) pd << aThresholdID;
+      pd                  << "', "
+         << aUnary        << ", "
+         << aBinary       << ", "
+         << aTolerance    << ", "
+         << aTypeOfElem   << ", "
+         << aPrecision    << ")";
     }
+    TPythonDump pd;
 
     SMESH::Predicate_ptr aPredicate = SMESH::Predicate::_nil();
     SMESH::NumericalFunctor_ptr aFunctor = SMESH::NumericalFunctor::_nil();
@@ -2430,6 +2910,15 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
       case SMESH::FT_Volume3D:
         aFunctor = aFilterMgr->CreateVolume3D();
         break;
+      case SMESH::FT_MaxElementLength2D:
+        aFunctor = aFilterMgr->CreateMaxElementLength2D();
+        break;
+      case SMESH::FT_MaxElementLength3D:
+        aFunctor = aFilterMgr->CreateMaxElementLength3D();
+        break;
+      case SMESH::FT_BallDiameter:
+        aFunctor = aFilterMgr->CreateBallDiameter();
+        break;
 
       // Predicates
 
@@ -2445,11 +2934,28 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
       case SMESH::FT_FreeNodes:
         aPredicate = aFilterMgr->CreateFreeNodes();
         break;
+      case SMESH::FT_EqualNodes:
+        {
+          SMESH::EqualNodes_ptr pred = aFilterMgr->CreateEqualNodes();
+          pred->SetTolerance( aTolerance );
+          aPredicate = pred;
+          break;
+        }
+      case SMESH::FT_EqualEdges:
+        aPredicate = aFilterMgr->CreateEqualEdges();
+        break;
+      case SMESH::FT_EqualFaces:
+        aPredicate = aFilterMgr->CreateEqualFaces();
+        break;
+      case SMESH::FT_EqualVolumes:
+        aPredicate = aFilterMgr->CreateEqualVolumes();
+        break;
       case SMESH::FT_BelongToGeom:
         {
           SMESH::BelongToGeom_ptr tmpPred = aFilterMgr->CreateBelongToGeom();
           tmpPred->SetElementType( aTypeOfElem );
           tmpPred->SetShape( aThresholdID, aThresholdStr );
+          tmpPred->SetTolerance( aTolerance );
           aPredicate = tmpPred;
         }
         break;
@@ -2475,7 +2981,8 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
         {
           SMESH::LyingOnGeom_ptr tmpPred = aFilterMgr->CreateLyingOnGeom();
           tmpPred->SetElementType( aTypeOfElem );
-	  tmpPred->SetShape( aThresholdID, aThresholdStr );
+          tmpPred->SetShape( aThresholdID, aThresholdStr );
+          tmpPred->SetTolerance( aTolerance );
           aPredicate = tmpPred;
         }
         break;
@@ -2490,6 +2997,26 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
       case SMESH::FT_BadOrientedVolume:
         {
           aPredicate = aFilterMgr->CreateBadOrientedVolume();
+        }
+        break;
+      case SMESH::FT_BareBorderVolume:
+        {
+          aPredicate = aFilterMgr->CreateBareBorderVolume();
+        }
+        break;
+      case SMESH::FT_BareBorderFace:
+        {
+          aPredicate = aFilterMgr->CreateBareBorderFace();
+        }
+        break;
+      case SMESH::FT_OverConstrainedVolume:
+        {
+          aPredicate = aFilterMgr->CreateOverConstrainedVolume();
+        }
+        break;
+      case SMESH::FT_OverConstrainedFace:
+        {
+          aPredicate = aFilterMgr->CreateOverConstrainedFace();
         }
         break;
       case SMESH::FT_LinearOrQuadratic:
@@ -2511,7 +3038,15 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
         {
           SMESH::ElemGeomType_ptr tmpPred = aFilterMgr->CreateElemGeomType();
           tmpPred->SetElementType( aTypeOfElem );
-          tmpPred->SetGeometryType( (GeometryType)(aThreshold + 0.5) );
+          tmpPred->SetGeometryType( (GeometryType)(int)(aThreshold + 0.5) );
+          aPredicate = tmpPred;
+          break;
+        }
+      case SMESH::FT_CoplanarFaces:
+        {
+          SMESH::CoplanarFaces_ptr tmpPred = aFilterMgr->CreateCoplanarFaces();
+          tmpPred->SetFace( atol (aThresholdID ));
+          tmpPred->SetTolerance( aTolerance );
           aPredicate = tmpPred;
           break;
         }
@@ -2559,10 +3094,10 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
     // logical op
     aPredicates.push_back( aPredicate );
     aBinaries.push_back( aBinary );
-    TPythonDump()<<"aCriteria.append(aCriterion)";
+    pd <<"aCriteria.append(aCriterion)";
 
   } // end of for
-  TPythonDump()<<this<<".SetCriteria(aCriteria)";
+  TPythonDump pd; pd<<this<<".SetCriteria(aCriteria)";
 
   // CREATE ONE PREDICATE FROM PREVIOUSLY CREATED MAP
 
@@ -2647,6 +3182,8 @@ Predicate_ptr Filter_i::GetPredicate()
   else
   {
     SMESH::Predicate_var anObj = myPredicate->_this();
+    // if ( SMESH::Functor_i* fun = SMESH::DownCast<SMESH::Functor_i*>( anObj ))
+    //   TPythonDump() << fun << " = " << this << ".GetPredicate()";
     return anObj._retn();
   }
 }
@@ -2717,19 +3254,29 @@ static inline LDOMString toString( CORBA::Long theType )
     case FT_Skew            : return "Skew";
     case FT_Area            : return "Area";
     case FT_Volume3D        : return "Volume3D";
+    case FT_MaxElementLength2D: return "Max element length 2D";
+    case FT_MaxElementLength3D: return "Max element length 3D";
     case FT_BelongToGeom    : return "Belong to Geom";
     case FT_BelongToPlane   : return "Belong to Plane";
     case FT_BelongToCylinder: return "Belong to Cylinder";
     case FT_BelongToGenSurface: return "Belong to Generic Surface";
     case FT_LyingOnGeom     : return "Lying on Geom";
-    case FT_BadOrientedVolume: return "Bad Oriented Volume";
+    case FT_BadOrientedVolume:return "Bad Oriented Volume";
+    case FT_BareBorderVolume: return "Volumes with bare border";
+    case FT_BareBorderFace  : return "Faces with bare border";
+    case FT_OverConstrainedVolume: return "Over-constrained Volumes";
+    case FT_OverConstrainedFace  : return "Over-constrained Faces";
     case FT_RangeOfIds      : return "Range of IDs";
     case FT_FreeBorders     : return "Free borders";
     case FT_FreeEdges       : return "Free edges";
     case FT_FreeFaces       : return "Free faces";
     case FT_FreeNodes       : return "Free nodes";
+    case FT_EqualNodes      : return "Equal nodes";
+    case FT_EqualEdges      : return "Equal edges";
+    case FT_EqualFaces      : return "Equal faces";
+    case FT_EqualVolumes    : return "Equal volumes";
     case FT_MultiConnection : return "Borders at multi-connections";
-    case FT_MultiConnection2D: return "Borders at multi-connections 2D";
+    case FT_MultiConnection2D:return "Borders at multi-connections 2D";
     case FT_Length          : return "Length";
     case FT_Length2D        : return "Length 2D";
     case FT_LessThan        : return "Less than";
@@ -2759,6 +3306,8 @@ static inline SMESH::FunctorType toFunctorType( const LDOMString& theStr )
   else if ( theStr.equals( "Skew"                         ) ) return FT_Skew;
   else if ( theStr.equals( "Area"                         ) ) return FT_Area;
   else if ( theStr.equals( "Volume3D"                     ) ) return FT_Volume3D;
+  else if ( theStr.equals( "Max element length 2D"        ) ) return FT_MaxElementLength2D;
+  else if ( theStr.equals( "Max element length 3D"        ) ) return FT_MaxElementLength3D;
   else if ( theStr.equals( "Belong to Geom"               ) ) return FT_BelongToGeom;
   else if ( theStr.equals( "Belong to Plane"              ) ) return FT_BelongToPlane;
   else if ( theStr.equals( "Belong to Cylinder"           ) ) return FT_BelongToCylinder;
@@ -2768,12 +3317,20 @@ static inline SMESH::FunctorType toFunctorType( const LDOMString& theStr )
   else if ( theStr.equals( "Free edges"                   ) ) return FT_FreeEdges;
   else if ( theStr.equals( "Free faces"                   ) ) return FT_FreeFaces;
   else if ( theStr.equals( "Free nodes"                   ) ) return FT_FreeNodes;
+  else if ( theStr.equals( "Equal nodes"                  ) ) return FT_EqualNodes;
+  else if ( theStr.equals( "Equal edges"                  ) ) return FT_EqualEdges;
+  else if ( theStr.equals( "Equal faces"                  ) ) return FT_EqualFaces;
+  else if ( theStr.equals( "Equal volumes"                ) ) return FT_EqualVolumes;
   else if ( theStr.equals( "Borders at multi-connections" ) ) return FT_MultiConnection;
   //  else if ( theStr.equals( "Borders at multi-connections 2D" ) ) return FT_MultiConnection2D;
   else if ( theStr.equals( "Length"                       ) ) return FT_Length;
   //  else if ( theStr.equals( "Length2D"                     ) ) return FT_Length2D;
   else if ( theStr.equals( "Range of IDs"                 ) ) return FT_RangeOfIds;
   else if ( theStr.equals( "Bad Oriented Volume"          ) ) return FT_BadOrientedVolume;
+  else if ( theStr.equals( "Volumes with bare border"     ) ) return FT_BareBorderVolume;
+  else if ( theStr.equals( "Faces with bare border"       ) ) return FT_BareBorderFace;
+  else if ( theStr.equals( "Over-constrained Volumes"     ) ) return FT_OverConstrainedVolume;
+  else if ( theStr.equals( "Over-constrained Faces"       ) ) return FT_OverConstrainedFace;
   else if ( theStr.equals( "Less than"                    ) ) return FT_LessThan;
   else if ( theStr.equals( "More than"                    ) ) return FT_MoreThan;
   else if ( theStr.equals( "Equal to"                     ) ) return FT_EqualTo;
@@ -3000,7 +3557,7 @@ FilterLibrary_i::FilterLibrary_i()
 FilterLibrary_i::~FilterLibrary_i()
 {
   delete myFileName;
-  //TPythonDump()<<this<<".Destroy()";
+  //TPythonDump()<<this<<".UnRegister()";
 }
 
 //=======================================================================
@@ -3192,7 +3749,7 @@ CORBA::Boolean FilterLibrary_i::Replace( const char* theFilterName,
   {
     aFilterItem.ReplaceElement( aNewItem );
     if(Filter_i* aFilter = DownCast<Filter_i*>(theFilter))
-      TPythonDump()<<this<<".Replace('"<<theFilterName<<"',"<<theNewName<<"',"<<aFilter<<")";
+      TPythonDump()<<this<<".Replace('"<<theFilterName<<"','"<<theNewName<<"',"<<aFilter<<")";
     return true;
   }
 }
@@ -3296,4 +3853,96 @@ string_array* FilterLibrary_i::GetAllNames()
   }
 
   return aResArray._retn();
+}
+
+//================================================================================
+/*!
+ * \brief Return an array of strings corresponding to items of enum FunctorType
+ */
+//================================================================================
+
+static const char** getFunctNames()
+{
+  static const char* functName[ SMESH::FT_Undefined + 1 ] = {
+    // IT's necessary to update this array according to enum FunctorType (SMESH_Filter.idl)
+    // The order is IMPORTANT !!!
+    "FT_AspectRatio",
+    "FT_AspectRatio3D",
+    "FT_Warping",
+    "FT_MinimumAngle",
+    "FT_Taper",
+    "FT_Skew",
+    "FT_Area",
+    "FT_Volume3D",
+    "FT_MaxElementLength2D",
+    "FT_MaxElementLength3D",
+    "FT_FreeBorders",
+    "FT_FreeEdges",
+    "FT_FreeNodes",
+    "FT_FreeFaces",
+    "FT_EqualNodes",
+    "FT_EqualEdges",
+    "FT_EqualFaces",
+    "FT_EqualVolumes",
+    "FT_MultiConnection",
+    "FT_MultiConnection2D",
+    "FT_Length",
+    "FT_Length2D",
+    "FT_BelongToGeom",
+    "FT_BelongToPlane",
+    "FT_BelongToCylinder",
+    "FT_BelongToGenSurface",
+    "FT_LyingOnGeom",
+    "FT_RangeOfIds",
+    "FT_BadOrientedVolume",
+    "FT_BareBorderVolume",
+    "FT_BareBorderFace",
+    "FT_OverConstrainedVolume",
+    "FT_OverConstrainedFace",
+    "FT_LinearOrQuadratic",
+    "FT_GroupColor",
+    "FT_ElemGeomType",
+    "FT_CoplanarFaces",
+    "FT_BallDiameter",
+    "FT_LessThan",
+    "FT_MoreThan",
+    "FT_EqualTo",
+    "FT_LogicalNOT",
+    "FT_LogicalAND",
+    "FT_LogicalOR",
+    "FT_Undefined" };
+  return functName;
+}
+
+//================================================================================
+/*!
+ * \brief Return a string corresponding to an item of enum FunctorType
+ */
+//================================================================================
+
+const char* SMESH::FunctorTypeToString(SMESH::FunctorType ft)
+{
+  if ( ft < 0 || ft > SMESH::FT_Undefined )
+    return "FT_Undefined";
+  return getFunctNames()[ ft ];
+}
+
+//================================================================================
+/*!
+ * \brief Converts a string to FunctorType. This is reverse of FunctorTypeToString()
+ */
+//================================================================================
+
+SMESH::FunctorType SMESH::StringToFunctorType(const char* str)
+{
+  std::string name( str + 3 ); // skip "FT_"
+  const char** functNames = getFunctNames();
+  int ft = 0;
+  for ( ; ft < SMESH::FT_Undefined; ++ft )
+    if ( name == ( functNames[ft] + 3 ))
+      break;
+
+  //ASSERT( strcmp( str, FunctorTypeToString( SMESH::FunctorType( ft ))) == 0 );
+
+  return SMESH::FunctorType( ft );
 }

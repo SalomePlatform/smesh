@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_NodesDlg.cxx
 // Author : Nicolas REJNERI, Open CASCADE S.A.S.
@@ -31,6 +32,7 @@
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_MeshUtils.h"
+#include "SMESHGUI_GroupUtils.h"
 
 #include <SMESH_Actor.h>
 #include <SMESH_ActorUtils.h>
@@ -49,7 +51,10 @@
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
 
+#include <SalomeApp_Application.h>
+
 #include <SVTK_ViewWindow.h>
+#include <VTKViewer_Algorithm.h>
 #include <VTKViewer_CellLocationsArray.h>
 
 // SALOME KERNEL includes
@@ -69,6 +74,7 @@
 #include <vtkPoints.h>
 
 // Qt includes
+#include <QComboBox>
 #include <QGroupBox>
 #include <QLabel>
 #include <QPushButton>
@@ -87,18 +93,19 @@
 
 namespace SMESH
 {
-  void AddNode( SMESH::SMESH_Mesh_ptr theMesh, float x, float y, float z, const QStringList& theParameters )
+  long AddNode( SMESH::SMESH_Mesh_ptr theMesh, float x, float y, float z, const QStringList& theParameters )
   {
+    long aNodeId = -1;
     SUIT_OverrideCursor wc;
     try {
       _PTR(SObject) aSobj = SMESH::FindSObject( theMesh );
       SMESH::SMESH_MeshEditor_var aMeshEditor = theMesh->GetMeshEditor();
-      aMeshEditor->AddNode( x, y, z );
-      theMesh->SetParameters( SMESHGUI::JoinObjectParameters(theParameters) );
+      theMesh->SetParameters( theParameters.join(":").toLatin1().constData() );
+      aNodeId = aMeshEditor->AddNode( x, y, z );
       _PTR(Study) aStudy = GetActiveStudyDocument();
       CORBA::Long anId = aStudy->StudyId();
       if (TVisualObjPtr aVisualObj = SMESH::GetVisualObj( anId, aSobj->GetID().c_str() ) ) {
-	aVisualObj->Update( true );
+        aVisualObj->Update( true );
       }
     } 
     catch ( SALOME::SALOME_Exception& exc ) {
@@ -110,6 +117,7 @@ namespace SMESH
     catch ( ... ) {
       INFOS( "Unknown exception was cought !!!" );
     }
+    return aNodeId;
   }
 
   class TNodeSimulation 
@@ -234,7 +242,7 @@ SMESHGUI_NodesDlg::SMESHGUI_NodesDlg( SMESHGUI* theModule ):
   mySimulation = new SMESH::TNodeSimulation( SMESH::GetViewWindow( mySMESHGUI ) );
   
   QPixmap image0( SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap( "SMESH", 
-								   tr( "ICON_DLG_NODE" ) ) );
+                                                                   tr( "ICON_DLG_NODE" ) ) );
   
   QVBoxLayout* SMESHGUI_NodesDlgLayout = new QVBoxLayout( this );
   SMESHGUI_NodesDlgLayout->setSpacing( SPACING );
@@ -270,11 +278,29 @@ SMESHGUI_NodesDlg::SMESHGUI_NodesDlg( SMESHGUI* theModule ):
   SpinBox_Z = new SMESHGUI_SpinBox( GroupCoordinates );
 
   GroupCoordinatesLayout->addWidget( TextLabel_X );
-  GroupCoordinatesLayout->addWidget( SpinBox_X );
+  GroupCoordinatesLayout->addWidget( SpinBox_X ); 
   GroupCoordinatesLayout->addWidget( TextLabel_Y);
   GroupCoordinatesLayout->addWidget( SpinBox_Y );
   GroupCoordinatesLayout->addWidget( TextLabel_Z );
   GroupCoordinatesLayout->addWidget( SpinBox_Z );
+  GroupCoordinatesLayout->setStretch(1, 1);
+  GroupCoordinatesLayout->setStretch(3, 1);
+  GroupCoordinatesLayout->setStretch(5, 1);
+
+  /***************************************************************/
+  GroupGroups = new QGroupBox( tr( "SMESH_ADD_TO_GROUP" ), this );
+  GroupGroups->setCheckable( true );
+  QHBoxLayout* GroupGroupsLayout = new QHBoxLayout(GroupGroups);
+  GroupGroupsLayout->setSpacing(SPACING);
+  GroupGroupsLayout->setMargin(MARGIN);
+
+  TextLabel_GroupName = new QLabel( tr( "SMESH_GROUP" ), GroupGroups );
+  ComboBox_GroupName = new QComboBox( GroupGroups );
+  ComboBox_GroupName->setEditable( true );
+  ComboBox_GroupName->setInsertPolicy( QComboBox::NoInsert );
+
+  GroupGroupsLayout->addWidget( TextLabel_GroupName );
+  GroupGroupsLayout->addWidget( ComboBox_GroupName, 1 );
 
   /***************************************************************/
   GroupButtons = new QGroupBox( this );
@@ -302,6 +328,7 @@ SMESHGUI_NodesDlg::SMESHGUI_NodesDlg( SMESHGUI* theModule ):
   /***************************************************************/
   SMESHGUI_NodesDlgLayout->addWidget( GroupConstructors );
   SMESHGUI_NodesDlgLayout->addWidget( GroupCoordinates );
+  SMESHGUI_NodesDlgLayout->addWidget( GroupGroups );
   SMESHGUI_NodesDlgLayout->addWidget( GroupButtons );
 
   myHelpFileName = "adding_nodes_and_elements_page.html#adding_nodes_anchor";
@@ -329,12 +356,15 @@ void SMESHGUI_NodesDlg::Init()
   double step = 25.0;
 
   /* min, max, step and decimals for spin boxes */
-  SpinBox_X->RangeStepAndValidator( COORD_MIN, COORD_MAX, step, DBL_DIGITS_DISPLAY );
-  SpinBox_Y->RangeStepAndValidator( COORD_MIN, COORD_MAX, step, DBL_DIGITS_DISPLAY );
-  SpinBox_Z->RangeStepAndValidator( COORD_MIN, COORD_MAX, step, DBL_DIGITS_DISPLAY );
+  SpinBox_X->RangeStepAndValidator( COORD_MIN, COORD_MAX, step, "length_precision" );
+  SpinBox_Y->RangeStepAndValidator( COORD_MIN, COORD_MAX, step, "length_precision" );
+  SpinBox_Z->RangeStepAndValidator( COORD_MIN, COORD_MAX, step, "length_precision" );
   SpinBox_X->SetValue( 0.0 );
   SpinBox_Y->SetValue( 0.0 );
   SpinBox_Z->SetValue( 0.0 );
+
+  /* reset "Add to group" control */
+  GroupGroups->setChecked( false );
 
   mySMESHGUI->SetActiveDialogBox( this );
 
@@ -352,6 +382,7 @@ void SMESHGUI_NodesDlg::Init()
   connect( mySMESHGUI,     SIGNAL( SignalDeactivateActiveDialog() ), SLOT( DeactivateActiveDialog() ) );
   /* to close dialog if study frame change */
   connect( mySMESHGUI,     SIGNAL( SignalStudyFrameChanged() ),      SLOT( ClickOnCancel() ) );
+  connect(mySMESHGUI,      SIGNAL(SignalCloseAllDialogs()),          SLOT(ClickOnCancel()));
 
   // set selection mode
   SMESH::SetPointRepresentation( true );
@@ -397,7 +428,7 @@ bool SMESHGUI_NodesDlg::ClickOnApply()
 
   if ( myMesh->_is_nil() ) {
     SUIT_MessageBox::warning( this, tr( "SMESH_WRN_WARNING" ),
-			      tr( "MESH_IS_NOT_SELECTED" ) );
+                              tr( "MESH_IS_NOT_SELECTED" ) );
     return false;
   }
 
@@ -414,16 +445,74 @@ bool SMESHGUI_NodesDlg::ClickOnApply()
   aParameters << SpinBox_Y->text();
   aParameters << SpinBox_Z->text();
 
+  bool addToGroup = GroupGroups->isChecked();
+  QString aGroupName;
+
+  SMESH::SMESH_GroupBase_var aGroup;
+  int idx = 0;
+  if( addToGroup ) {
+    aGroupName = ComboBox_GroupName->currentText();
+    for ( int i = 1; i < ComboBox_GroupName->count(); i++ ) {
+      QString aName = ComboBox_GroupName->itemText( i );
+      if ( aGroupName == aName && ( i == ComboBox_GroupName->currentIndex() || idx == 0 ) )
+        idx = i;
+    }
+    if ( idx > 0 && idx < myGroups.count() ) {
+      SMESH::SMESH_GroupOnGeom_var aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( myGroups[idx-1] );
+      if ( !aGeomGroup->_is_nil() ) {
+        int res = SUIT_MessageBox::question( this, tr( "SMESH_WRN_WARNING" ),
+                                             tr( "MESH_STANDALONE_GRP_CHOSEN" ).arg( aGroupName ),
+                                             tr( "SMESH_BUT_YES" ), tr( "SMESH_BUT_NO" ), 0, 1 );
+        if ( res == 1 ) return false;
+      }
+      aGroup = myGroups[idx-1];
+    }
+  }
+      
   mySimulation->SetVisibility( false );
-  SMESH::AddNode( myMesh, x, y, z, aParameters );
+
+  long aNodeId = SMESH::AddNode( myMesh, x, y, z, aParameters );
+
   SMESH::SetPointRepresentation( true );
+
+  if ( aNodeId != -1 && addToGroup && !aGroupName.isEmpty() ) {
+    SMESH::SMESH_Group_var aGroupUsed;
+    if ( aGroup->_is_nil() ){
+      // create new group 
+      aGroupUsed = SMESH::AddGroup( myMesh, SMESH::NODE, aGroupName );
+      if ( !aGroupUsed->_is_nil() ) {
+        myGroups.append(SMESH::SMESH_GroupBase::_duplicate(aGroupUsed));
+        ComboBox_GroupName->addItem( aGroupName );
+      }
+    }
+    else {
+      SMESH::SMESH_GroupOnGeom_var aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGroup );
+      if ( !aGeomGroup->_is_nil() ) {
+        aGroupUsed = myMesh->ConvertToStandalone( aGeomGroup );
+        if ( !aGroupUsed->_is_nil() && idx > 0 ) {
+          myGroups[idx-1] = SMESH::SMESH_GroupBase::_duplicate(aGroupUsed);
+          SMESHGUI::GetSMESHGUI()->getApp()->updateObjectBrowser();
+        }
+      }
+      else
+        aGroupUsed = SMESH::SMESH_Group::_narrow( aGroup );
+    }
+
+    if ( !aGroupUsed->_is_nil() ) {
+      SMESH::long_array_var anIdList = new SMESH::long_array;
+      anIdList->length( 1 );
+      anIdList[0] = aNodeId;
+      aGroupUsed->Add( anIdList.inout() );
+    }
+  }
 
   // select myMesh
   SALOME_ListIO aList;
   mySelectionMgr->selectedObjects( aList );
   if ( aList.Extent() != 1 ) {
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetCurrentVtkView() ) {
-      vtkActorCollection *aCollection = aViewWindow->getRenderer()->GetActors();
+      VTK::ActorCollectionCopy aCopy(aViewWindow->getRenderer()->GetActors());
+      vtkActorCollection *aCollection = aCopy.GetActors();
       aCollection->InitTraversal();
       while ( vtkActor *anAct = aCollection->GetNextActor() ) {
         if ( SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>( anAct ) ) {
@@ -441,6 +530,11 @@ bool SMESHGUI_NodesDlg::ClickOnApply()
       }
     }
   }
+
+  SMESHGUI::Modified();
+  SMESH::UpdateView();
+  mySimulation->SetVisibility(false);
+
   return true;
 }
 
@@ -470,7 +564,7 @@ void SMESHGUI_NodesDlg::ClickOnHelp()
   LightApp_Application* app = (LightApp_Application*)( SUIT_Session::session()->activeApplication() );
   if ( app ) 
     app->onHelpContextModule( mySMESHGUI ? app->moduleName( mySMESHGUI->moduleName() ) : 
-			      QString( "" ), myHelpFileName );
+                              QString( "" ), myHelpFileName );
   else {
     QString platform;
 #ifdef WIN32
@@ -479,10 +573,10 @@ void SMESHGUI_NodesDlg::ClickOnHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning( this, tr("WRN_WARNING"),
-			      tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			      arg( app->resourceMgr()->stringValue( "ExternalBrowser", 
-								    platform ) ).
-			      arg( myHelpFileName ) );
+                              tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                              arg( app->resourceMgr()->stringValue( "ExternalBrowser", 
+                                                                    platform ) ).
+                              arg( myHelpFileName ) );
   }
 }
 
@@ -498,27 +592,48 @@ void SMESHGUI_NodesDlg::SelectionIntoArgument()
   mySimulation->SetVisibility( false );
   SMESH::SetPointRepresentation( true );
 
+  QString aCurrentEntry = myEntry;
+
   const SALOME_ListIO& aList = mySelector->StoredIObjects();
   if ( aList.Extent() == 1 ) {
     Handle(SALOME_InteractiveObject) anIO = aList.First();
     if ( anIO->hasEntry() ) {
+      myEntry = anIO->getEntry();
       myMesh = SMESH::GetMeshByIO( anIO );
       if ( myMesh->_is_nil() ) return;
       QString aText;
       if ( SMESH::GetNameOfSelectedNodes( mySelector, anIO, aText ) == 1 ) {
-	if ( SMESH_Actor* anActor = SMESH::FindActorByObject( myMesh.in() ) ) {
-	  if ( SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh() ) {
-	    if ( const SMDS_MeshNode* aNode = aMesh->FindNode( aText.toInt() ) ) {
-	      SpinBox_X->SetValue( aNode->X() );
-	      SpinBox_Y->SetValue( aNode->Y() );
-	      SpinBox_Z->SetValue( aNode->Z() );
+        if ( SMESH_Actor* anActor = SMESH::FindActorByObject( myMesh.in() ) ) {
+          if ( SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh() ) {
+            if ( const SMDS_MeshNode* aNode = aMesh->FindNode( aText.toInt() ) ) {
+              SpinBox_X->SetValue( aNode->X() );
+              SpinBox_Y->SetValue( aNode->Y() );
+              SpinBox_Z->SetValue( aNode->Z() );
             }
-	  }
-	}
+          }
+        }
       }
       mySimulation->SetPosition( SpinBox_X->GetValue(),
-				 SpinBox_Y->GetValue(),
-				 SpinBox_Z->GetValue() );
+                                 SpinBox_Y->GetValue(),
+                                 SpinBox_Z->GetValue() );
+    }
+  }
+
+  // process groups
+  if ( !myMesh->_is_nil() && myEntry != aCurrentEntry ) {
+    myGroups.clear();
+    ComboBox_GroupName->clear();
+    ComboBox_GroupName->addItem( QString() );
+    SMESH::ListOfGroups aListOfGroups = *myMesh->GetGroups();
+    for( int i = 0, n = aListOfGroups.length(); i < n; i++ ) {
+      SMESH::SMESH_GroupBase_var aGroup = aListOfGroups[i];
+      if ( !aGroup->_is_nil() && aGroup->GetType() == SMESH::NODE ) {
+        QString aGroupName( aGroup->GetName() );
+        if ( !aGroupName.isEmpty() ) {
+          myGroups.append(SMESH::SMESH_GroupBase::_duplicate(aGroup));
+          ComboBox_GroupName->addItem( aGroupName );
+        }
+      }
     }
   }
 }
@@ -619,6 +734,11 @@ bool SMESHGUI_NodesDlg::isValid()
     if ( !msg.isEmpty() )
       str += "\n" + msg;
     SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
+    return false;
+  }
+
+  if( GroupGroups->isChecked() && ComboBox_GroupName->currentText().isEmpty() ) {
+    SUIT_MessageBox::warning( this, tr( "SMESH_WRN_WARNING" ), tr( "GROUP_NAME_IS_EMPTY" ) );
     return false;
   }
   return true;

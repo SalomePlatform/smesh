@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // File   : StdMeshersGUI_ObjectReferenceParamWdg.cxx
 // Author : Open CASCADE S.A.S.
 // SMESH includes
@@ -34,9 +35,11 @@
 #include <LightApp_SelectionMgr.h>
 #include <SVTK_ViewWindow.h>
 #include <SALOME_ListIO.hxx>
+#include <SALOME_ListIteratorOfListIO.hxx>
 
 // SALOME KERNEL incldues
 #include <SALOMEDSClient_SObject.hxx>
+#include <SALOMEDSClient_Study.hxx>
 
 // Qt includes
 #include <QPushButton>
@@ -53,10 +56,11 @@
 //================================================================================
 
 StdMeshersGUI_ObjectReferenceParamWdg::StdMeshersGUI_ObjectReferenceParamWdg
-( SUIT_SelectionFilter* f, QWidget* parent)
-  : QWidget( parent )
+( SUIT_SelectionFilter* f, QWidget* parent, bool multiSelection, bool stretch )
+  : QWidget( parent ), myMultiSelection( multiSelection )
 {
   myFilter = f;
+  myStretchActivated = stretch;
   init();
 }
 
@@ -68,8 +72,8 @@ StdMeshersGUI_ObjectReferenceParamWdg::StdMeshersGUI_ObjectReferenceParamWdg
 //================================================================================
 
 StdMeshersGUI_ObjectReferenceParamWdg::StdMeshersGUI_ObjectReferenceParamWdg
-( MeshObjectType objType, QWidget* parent )
-  : QWidget( parent )
+( MeshObjectType objType, QWidget* parent, bool multiSelection )
+  : QWidget( parent ), myMultiSelection( multiSelection )
 {
   myFilter = new SMESH_TypeFilter( objType );
   init();
@@ -83,7 +87,10 @@ StdMeshersGUI_ObjectReferenceParamWdg::StdMeshersGUI_ObjectReferenceParamWdg
 StdMeshersGUI_ObjectReferenceParamWdg::~StdMeshersGUI_ObjectReferenceParamWdg()
 {
   if ( myFilter )
+  {
+    mySelectionMgr->removeFilter( myFilter );
     delete myFilter;
+  }
 }
 
 
@@ -104,6 +111,8 @@ void StdMeshersGUI_ObjectReferenceParamWdg::init()
   mySelectionMgr = SMESH::GetSelectionMgr( mySMESHGUI );
   mySelectionActivated = false;
   myParamValue = "";
+  myEmptyText = "";
+  myEmptyStyleSheet ="";
 
   SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
   QPixmap iconSlct ( mgr->loadPixmap("SMESH", tr("ICON_SELECT")));
@@ -114,10 +123,13 @@ void StdMeshersGUI_ObjectReferenceParamWdg::init()
 
   myObjNameLineEdit = new QLineEdit(this);
   myObjNameLineEdit->setReadOnly(true);
+  myObjNameLineEdit->setStyleSheet(myEmptyStyleSheet);
 
   aHBox->addWidget( mySelButton );
   aHBox->addWidget( myObjNameLineEdit );
-  aHBox->addStretch();
+  if (myStretchActivated){
+    aHBox->addStretch();
+  }
 
   connect( mySelButton, SIGNAL(clicked()), SLOT(activateSelection()));
 }
@@ -141,6 +153,7 @@ void StdMeshersGUI_ObjectReferenceParamWdg::activateSelection()
     connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionDone()));
   }
   emit selectionActivated();
+  onSelectionDone();
 
   mySelButton->setChecked( mySelectionActivated );
 }
@@ -183,8 +196,9 @@ void StdMeshersGUI_ObjectReferenceParamWdg::AvoidSimultaneousSelection
 
 void StdMeshersGUI_ObjectReferenceParamWdg::SetObject(CORBA::Object_ptr obj)
 {
-  myObject = CORBA::Object::_nil();
-  myObjNameLineEdit->setText( "" );
+  myObjects.clear();
+  myObjNameLineEdit->setText( myEmptyText );
+  myObjNameLineEdit->setStyleSheet(myEmptyStyleSheet);
   myParamValue = "";
 
   _PTR(SObject) sobj;
@@ -192,10 +206,52 @@ void StdMeshersGUI_ObjectReferenceParamWdg::SetObject(CORBA::Object_ptr obj)
     sobj = SMESH::FindSObject (obj);
   if ( sobj ) {
     std::string name = sobj->GetName();
-    myObjNameLineEdit->setText( name.c_str() );
-    myObject = CORBA::Object::_duplicate( obj );
+    myObjNameLineEdit->setText( QString( name.c_str() ).trimmed() );
+    myObjNameLineEdit->setStyleSheet("");
+    myObjects.push_back( CORBA::Object::_duplicate( obj ));
     myParamValue = sobj->GetID().c_str();
+    emit contentModified();
   }
+}
+
+//================================================================================
+/*!
+ * \brief Initialize selected objects
+ * \param objects - entries of objects
+ */
+//================================================================================
+
+void StdMeshersGUI_ObjectReferenceParamWdg::SetObjects(SMESH::string_array_var& objects)
+{
+  myObjects.clear();
+  myObjNameLineEdit->setText( myEmptyText );
+  myObjNameLineEdit->setStyleSheet(myEmptyStyleSheet);
+  myParamValue = "";
+  bool selChanged = false;
+  
+  for ( unsigned i = 0; i < objects->length(); ++i )
+  {
+    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+    _PTR(SObject) aSObj = aStudy->FindObjectID(objects[i].in());
+    CORBA::Object_var anObj = SMESH::SObjectToObject(aSObj,aStudy);
+    if ( !CORBA::is_nil( anObj )) {
+      std::string name = aSObj->GetName();
+      QString text = myObjNameLineEdit->text();
+      if ( text != myEmptyText )
+        text += " ";
+      else
+        text = "";
+      text += QString( name.c_str() ).trimmed();
+      myObjNameLineEdit->setText( text );
+      myObjNameLineEdit->setStyleSheet("");
+      myObjects.push_back( anObj );
+      myParamValue += " ";
+      myParamValue += objects[i];
+      selChanged = true;
+    }
+  }
+  if (selChanged)
+    emit contentModified();
 }
 
 //================================================================================
@@ -211,7 +267,34 @@ void StdMeshersGUI_ObjectReferenceParamWdg::onSelectionDone()
     SALOME_ListIO aList;
     mySelectionMgr->selectedObjects(aList);
     if (aList.Extent() == 1)
+    {
       obj = SMESH::IObjectToObject( aList.First() );
-    SetObject( obj.in() );
+      SetObject( obj.in() );
+    }
+    else if (myMultiSelection)
+    {
+      SMESH::string_array_var objIds = new SMESH::string_array;
+      objIds->length( aList.Extent());
+      SALOME_ListIteratorOfListIO io( aList );
+      int i = 0;
+      for ( ; io.More(); io.Next(), ++i )
+      {
+        Handle(SALOME_InteractiveObject) anIO = io.Value();
+        if ( anIO->hasEntry() )
+          objIds[i] = anIO->getEntry();
+        else
+          i--;
+      }
+      objIds->length(i);
+      SetObjects( objIds );
+    }
   }
+}
+
+void StdMeshersGUI_ObjectReferenceParamWdg::SetDefaultText(QString defaultText, QString styleSheet)
+{
+  myEmptyText = defaultText;
+  myEmptyStyleSheet = styleSheet;
+  myObjNameLineEdit->setText( myEmptyText );
+  myObjNameLineEdit->setStyleSheet( myEmptyStyleSheet);
 }

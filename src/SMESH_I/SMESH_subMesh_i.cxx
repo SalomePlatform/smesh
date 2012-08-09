@@ -1,33 +1,34 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : SMESH_subMesh_i.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #include "SMESH_subMesh_i.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Mesh_i.hxx"
+#include "SMESH_PreMeshInfo.hxx"
 
 #include "Utils_CorbaException.hxx"
 #include "utilities.h"
@@ -49,7 +50,7 @@ SMESH_subMesh_i::SMESH_subMesh_i()
      : SALOME::GenericObj_i( PortableServer::POA::_nil() )
 {
   MESSAGE("SMESH_subMesh_i::SMESH_subMesh_i default, not for use");
-    ASSERT(0);
+  ASSERT(0);
 }
 
 //=============================================================================
@@ -59,16 +60,15 @@ SMESH_subMesh_i::SMESH_subMesh_i()
 //=============================================================================
 
 SMESH_subMesh_i::SMESH_subMesh_i( PortableServer::POA_ptr thePOA,
-				  SMESH_Gen_i*            gen_i,
- 				  SMESH_Mesh_i*           mesh_i,
-				  int                     localId )
+                                  SMESH_Gen_i*            gen_i,
+                                  SMESH_Mesh_i*           mesh_i,
+                                  int                     localId )
      : SALOME::GenericObj_i( thePOA )
 {
-  MESSAGE("SMESH_subMesh_i::SMESH_subMesh_i");
   _gen_i = gen_i;
   _mesh_i = mesh_i;
   _localId = localId;
-  // ****
+  _preMeshInfo = NULL;
 }
 //=============================================================================
 /*!
@@ -79,7 +79,8 @@ SMESH_subMesh_i::SMESH_subMesh_i( PortableServer::POA_ptr thePOA,
 SMESH_subMesh_i::~SMESH_subMesh_i()
 {
   MESSAGE("SMESH_subMesh_i::~SMESH_subMesh_i");
-  // ****
+  if ( _preMeshInfo ) delete _preMeshInfo;
+  _preMeshInfo = NULL;
 }
 
 //=======================================================================
@@ -161,7 +162,10 @@ CORBA::Long SMESH_subMesh_i::GetNumberOfElements()
   throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  MESSAGE("SMESH_subMesh_i::GetNumberOfElements");
+
+  if ( _preMeshInfo )
+    return _preMeshInfo->NbElements();
+
   if ( _mesh_i->_mapSubMesh.find( _localId ) == _mesh_i->_mapSubMesh.end() )
     return 0;
 
@@ -191,10 +195,15 @@ CORBA::Long SMESH_subMesh_i::GetNumberOfNodes(CORBA::Boolean all)
   throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  MESSAGE("SMESH_subMesh_i::GetNumberOfNodes");
+
   if ( _mesh_i->_mapSubMesh.find( _localId ) == _mesh_i->_mapSubMesh.end() )
     return 0;
 
+  if ( _preMeshInfo )
+  {
+    if ( all ) return _preMeshInfo->NbNodes();
+    else _preMeshInfo->FullLoadFromFile();
+  }
   ::SMESH_subMesh* aSubMesh = _mesh_i->_mapSubMesh[_localId];
   SMESHDS_SubMesh* aSubMeshDS = aSubMesh->GetSubMeshDS();
 
@@ -257,11 +266,14 @@ SMESH::long_array* SMESH_subMesh_i::GetElementsId()
   throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  MESSAGE("SMESH_subMesh_i::GetElementsId");
+
   SMESH::long_array_var aResult = new SMESH::long_array();
 
   if ( _mesh_i->_mapSubMesh.find( _localId ) == _mesh_i->_mapSubMesh.end() )
     return aResult._retn();
+
+  if ( _preMeshInfo )
+    _preMeshInfo->FullLoadFromFile();
 
   ::SMESH_subMesh* aSubMesh = _mesh_i->_mapSubMesh[_localId];
   SMESHDS_SubMesh* aSubMeshDS = aSubMesh->GetSubMeshDS();
@@ -304,11 +316,14 @@ SMESH::long_array* SMESH_subMesh_i::GetElementsByType( SMESH::ElementType theEle
     throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  MESSAGE("SMESH_subMesh_i::GetElementsByType");
+
   SMESH::long_array_var aResult = new SMESH::long_array();
 
   if ( _mesh_i->_mapSubMesh.find( _localId ) == _mesh_i->_mapSubMesh.end() )
     return aResult._retn();
+
+  if ( _preMeshInfo )
+    _preMeshInfo->FullLoadFromFile();
 
   ::SMESH_subMesh* aSubMesh = _mesh_i->_mapSubMesh[_localId];
   SMESHDS_SubMesh* aSubMeshDS = aSubMesh->GetSubMeshDS();
@@ -412,7 +427,7 @@ SMESH::long_array* SMESH_subMesh_i::GetNodesId()
   throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  MESSAGE("SMESH_subMesh_i::GetNodesId");
+
   SMESH::long_array_var aResult = GetElementsByType( SMESH::NODE );
   return aResult._retn();
 }
@@ -427,7 +442,6 @@ SMESH::SMESH_Mesh_ptr SMESH_subMesh_i::GetFather()
   throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  MESSAGE("SMESH_subMesh_i::GetFather");
   return _mesh_i->_this();
 }
 
@@ -439,7 +453,6 @@ SMESH::SMESH_Mesh_ptr SMESH_subMesh_i::GetFather()
   
 CORBA::Long SMESH_subMesh_i::GetId()
 {
-  MESSAGE("SMESH_subMesh_i::GetId");
   return _localId;
 }
 
@@ -458,11 +471,11 @@ GEOM::GEOM_Object_ptr SMESH_subMesh_i::GetSubShape()
       TopoDS_Shape S = _mesh_i->_mapSubMesh[ _localId ]->GetSubShape();
       if ( !S.IsNull() ) {
         aShapeObj = _gen_i->ShapeToGeomObject( S );
-	//mzn: N7PAL16232, N7PAL16233
-	//In some cases it's possible that GEOM_Client contains the shape same to S, but
-	//with another orientation.
-	if (aShapeObj->_is_nil())
-	  aShapeObj = _gen_i->ShapeToGeomObject( S.Reversed() );
+        //mzn: N7PAL16232, N7PAL16233
+        //In some cases it's possible that GEOM_Client contains the shape same to S, but
+        //with another orientation.
+        if (aShapeObj->_is_nil())
+          aShapeObj = _gen_i->ShapeToGeomObject( S.Reversed() );
       }
     }
   }
@@ -481,6 +494,8 @@ SALOME_MED::FAMILY_ptr SMESH_subMesh_i::GetFamily()
   throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
+  if ( _preMeshInfo )
+    _preMeshInfo->FullLoadFromFile();
   SALOME_MED::MESH_var MEDMesh = GetFather()->GetMEDMesh();
 
   SALOME_MED::Family_array_var families = 
@@ -501,8 +516,7 @@ SALOME_MED::FAMILY_ptr SMESH_subMesh_i::GetFamily()
 //=============================================================================
 SMESH::long_array* SMESH_subMesh_i::GetIDs()
 {
-  SMESH::long_array_var aResult = GetElementsId();
-  return aResult._retn();
+  return GetElementsId();
 }
 
 //=============================================================================
@@ -513,5 +527,100 @@ SMESH::long_array* SMESH_subMesh_i::GetIDs()
 SMESH::ElementType SMESH_subMesh_i::GetElementType( const CORBA::Long id, const bool iselem )
   throw (SALOME::SALOME_Exception)
 {
+  if ( _preMeshInfo )
+    _preMeshInfo->FullLoadFromFile();
   return GetFather()->GetElementType( id, iselem );
+}
+
+
+//=============================================================================
+/*!
+ * Returns statistic of mesh elements
+ * Result array of number enityties
+ * Inherited from SMESH_IDSource
+ */
+//=============================================================================
+SMESH::long_array* SMESH_subMesh_i::GetMeshInfo()
+{
+  if ( _preMeshInfo )
+    return _preMeshInfo->GetMeshInfo();
+
+  SMESH::long_array_var aRes = new SMESH::long_array();
+  aRes->length(SMESH::Entity_Last);
+  for (int i = SMESH::Entity_Node; i < SMESH::Entity_Last; i++)
+    aRes[i] = 0;
+  
+  // get number of nodes
+  aRes[ SMESH::Entity_Node ] = GetNumberOfNodes(true);
+ 
+  ::SMESH_subMesh* aSubMesh = _mesh_i->_mapSubMesh[_localId];
+
+  // get statistic from child sub-meshes
+  TListOfSubMeshes smList;
+  if ( getSubMeshes( aSubMesh, smList ) )
+    for ( TListOfSubMeshes::iterator sm = smList.begin(); sm != smList.end(); ++sm )
+      SMESH_Mesh_i::CollectMeshInfo( (*sm)->GetElements(), aRes );
+
+  return aRes._retn();
+}
+
+
+//=======================================================================
+//function : GetTypes
+//purpose  : Returns types of elements it contains
+//=======================================================================
+
+SMESH::array_of_ElementType* SMESH_subMesh_i::GetTypes()
+{
+  if ( _preMeshInfo )
+    return _preMeshInfo->GetTypes();
+
+  SMESH::array_of_ElementType_var types = new SMESH::array_of_ElementType;
+
+  ::SMESH_subMesh* aSubMesh = _mesh_i->_mapSubMesh[_localId];
+  if ( SMESHDS_SubMesh* smDS = aSubMesh->GetSubMeshDS() )
+  {
+    SMDS_ElemIteratorPtr eIt = smDS->GetElements();
+    if ( eIt->more() )
+    {
+      types->length( 1 );
+      types[0] = SMESH::ElementType( eIt->next()->GetType());
+    }
+    else if ( smDS->GetNodes()->more() )
+    {
+      TopoDS_Shape shape = aSubMesh->GetSubShape();
+      while ( !shape.IsNull() && shape.ShapeType() == TopAbs_COMPOUND )
+      {
+        TopoDS_Iterator it( shape );
+        shape = it.More() ? it.Value() : TopoDS_Shape();
+      }
+      if ( !shape.IsNull() && shape.ShapeType() == TopAbs_VERTEX )
+      {
+        types->length( 1 );
+        types[0] = SMESH::NODE;
+      }
+    }
+  }
+  return types._retn();
+}
+
+//=======================================================================
+//function : GetMesh
+//purpose  : interface SMESH_IDSource
+//=======================================================================
+
+SMESH::SMESH_Mesh_ptr SMESH_subMesh_i::GetMesh()
+{
+  return GetFather();
+}
+
+//=======================================================================
+//function : IsMeshInfoCorrect
+//purpose  : * Returns false if GetMeshInfo() returns incorrect information that may
+//           * happen if mesh data is not yet fully loaded from the file of study.
+//=======================================================================
+
+bool SMESH_subMesh_i::IsMeshInfoCorrect()
+{
+  return _preMeshInfo ? _preMeshInfo->IsMeshInfoCorrect() : true;
 }

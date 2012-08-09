@@ -1,32 +1,34 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : idl implementation based on 'SMESH' unit's classes
 //  File   : StdMeshers_ProjectionSource2D.cxx
 //  Author : Edward AGAPOV
 //  Module : SMESH
-
+//
 #include "StdMeshers_ProjectionSource2D.hxx"
 
 #include "SMESH_Mesh.hxx"
+#include "StdMeshers_ProjectionUtils.hxx"
 
 #include "utilities.h"
 
@@ -102,17 +104,27 @@ void StdMeshers_ProjectionSource2D::SetVertexAssociation(const TopoDS_Shape& sou
   throw ( SALOME_Exception )
 {
   if ( sourceVertex1.IsNull() != targetVertex1.IsNull() ||
-       sourceVertex2.IsNull() != targetVertex2.IsNull() ||
-       sourceVertex1.IsNull() != targetVertex2.IsNull() )
-    throw SALOME_Exception(LOCALIZED("Two or none pairs of vertices must be provided"));
+       sourceVertex2.IsNull() != targetVertex2.IsNull() )
+    throw SALOME_Exception(LOCALIZED("Vertices must be provided in couples"));
 
-  if ( !sourceVertex1.IsNull() ) {
+  if ( sourceVertex1.IsNull() != sourceVertex2.IsNull() )
+  {
+    // possibly there is only 1 vertex in the face
+    if ( !_sourceFace.IsNull() &&
+         StdMeshers_ProjectionUtils::Count( _sourceFace, TopAbs_VERTEX, /*ignoreSame=*/true) != 1 )
+      throw SALOME_Exception(LOCALIZED("Two or none pairs of vertices must be provided"));
+  }
+
+  if ( !sourceVertex1.IsNull() )
     if ( sourceVertex1.ShapeType() != TopAbs_VERTEX ||
-         sourceVertex2.ShapeType() != TopAbs_VERTEX ||
-         targetVertex1.ShapeType() != TopAbs_VERTEX ||
+         targetVertex1.ShapeType() != TopAbs_VERTEX )
+      throw SALOME_Exception(LOCALIZED("Wrong shape type"));
+
+  if ( !sourceVertex2.IsNull() )
+    if ( sourceVertex2.ShapeType() != TopAbs_VERTEX ||
          targetVertex2.ShapeType() != TopAbs_VERTEX )
       throw SALOME_Exception(LOCALIZED("Wrong shape type"));
-  }
+
 
   if ( !_sourceVertex1.IsSame( sourceVertex1 ) ||
        !_sourceVertex2.IsSame( sourceVertex2 ) ||
@@ -136,9 +148,10 @@ void StdMeshers_ProjectionSource2D::SetVertexAssociation(const TopoDS_Shape& sou
 
 void StdMeshers_ProjectionSource2D::SetSourceMesh(SMESH_Mesh* mesh)
 {
-  if ( _sourceMesh != mesh )
+  if ( _sourceMesh != mesh ) {
+    _sourceMesh = mesh;
     NotifySubMeshesHypothesisModification();
-  _sourceMesh = mesh;
+  }
 }
 
 //=============================================================================

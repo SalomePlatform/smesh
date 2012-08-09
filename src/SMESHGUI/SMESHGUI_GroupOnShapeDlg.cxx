@@ -1,24 +1,22 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
+
 //  SMESH SMESHGUI : GUI for SMESH component
 // File      : SMESHGUI_GroupOnShapeDlg.cxx
 // Created   : Wed Sep 17 18:36:51 2008
@@ -29,6 +27,7 @@
 #include "SMESHGUI_GroupOnShapeDlg.h"
 
 #include "SMESH_TypeFilter.hxx"
+#include "SMESHGUI.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_GEOMGenUtils.h"
 
@@ -37,6 +36,7 @@
 
 #include <SUIT_Session.h>
 #include <SUIT_OverrideCursor.h>
+#include <LightApp_Application.h>
 #include <LightApp_UpdateFlags.h>
 #include <SUIT_ResourceMgr.h>
 
@@ -178,7 +178,7 @@ SMESHGUI_GroupOnShapeOp::SMESHGUI_GroupOnShapeOp()
   : SMESHGUI_SelectionOp(ActorSelection),
     myDlg( 0 )
 {
-  myHelpFileName = "creating_groups_page.html";
+  myHelpFileName = "create_groups_from_geometry_page.html";
 }
 
 SMESHGUI_GroupOnShapeOp::~SMESHGUI_GroupOnShapeOp()
@@ -302,7 +302,7 @@ bool SMESHGUI_GroupOnShapeOp::onApply()
   if ( !aStudy ) return false;
 
   // mesh
-  _PTR(SObject)       meshSO = aStudy->FindObjectID( myMeshID.toLatin1().data() );
+  _PTR(SObject) meshSO = aStudy->FindObjectID( myMeshID.toLatin1().data() );
   SMESH::SMESH_Mesh_var mesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( meshSO );
   if ( mesh->_is_nil() ) return false;
 
@@ -319,6 +319,7 @@ bool SMESHGUI_GroupOnShapeOp::onApply()
 
   // create groups
   SMESH::SMESH_GroupOnGeom_var group;
+  QStringList anEntryList;
   for ( int isNode = 0; isNode < 2; ++isNode ) // elems and then nodes
   {
     QStringList::iterator geomID = isNode ? myNodeGeoIDs.begin() : myElemGeoIDs.begin();
@@ -347,11 +348,30 @@ bool SMESHGUI_GroupOnShapeOp::onApply()
 
       //printf( "apply() %s %s\n", (*geomID).latin1(), name.latin1() );
       group = mesh->CreateGroupFromGEOM( elemType, name.toLatin1().data(), geom );
+      if( !group->_is_nil() )
+        if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( group ) )
+          anEntryList.append( aSObject->GetID().c_str() );
     }
   }
   update( UF_ObjBrowser | UF_Model );
 
-  init();
+  SMESHGUI::Modified();
+
+  // Re-init controls to create the next group
+  myElemGeoIDs.clear();
+  myNodeGeoIDs.clear();
+  removeCustomFilters();
+  myDlg->myNodeGeomList->clear();
+  myDlg->myElemGeomList->clear();
+  myDlg->myElemGeomBtn->setChecked(false); 
+  myDlg->myNodeGeomBtn->setChecked(false);
+  myDlg->updateButtons();
+
+  update( UF_ObjBrowser | UF_Model );
+
+  if( LightApp_Application* anApp =
+      dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ) )
+    anApp->browseObjects( anEntryList, isApplyAndClose() );
 
   return !group->_is_nil();
 }
@@ -431,6 +451,7 @@ void SMESHGUI_GroupOnShapeOp::selectionDone()
     myDlg->myElemGeomBtn->setEnabled( nbSelected == 1 );
     myDlg->myNodeGeomList->clear();
     myDlg->myNodeGeomBtn->setEnabled( nbSelected == 1 );
+    myDlg->myElemGeomBtn->click();
     return;
   }
 

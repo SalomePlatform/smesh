@@ -13,8 +13,8 @@ for elements consisting of 4 nodes.
 <ol>
 <li>Display your mesh in the viewer.</li>
 
-<li>Choose <b>Controls > Taper</b> or click <em>"Taper"</em> button in
-the toolbar.
+<li>Choose <b>Controls > Face Controls > Taper</b> or click
+<em>"Taper"</em> button in the toolbar.
 
 \image html image36.png
 <center><em>"Taper" button</em></center>

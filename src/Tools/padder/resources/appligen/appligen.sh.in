@@ -1,0 +1,50 @@
+#!/bin/sh
+# Copyright (C) 2011-2012  CEA/DEN, EDF R&D
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+#
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+#
+
+# 
+# This script installs or updates a SALOME application for testing the
+# PADDER plugin for SMESH. The application is installed in the
+# directory ./appli. The configuration file is supposed to be adapted
+# to your own environment (see config_appli.xml).
+#
+# To run this script, you should have first configure your
+# shell with the SALOME environment, i.e. source the files
+# prerequis.sh and envSalome.sh (or equivalent) that fit
+# your configuration. You can alternatively customize the env.sh file
+# to fit your SALOME environment and let the script do the job (see
+# source below).
+#
+# (gboulant - 3/2/2011)
+#
+
+here=$(dirname $0)
+
+#
+# Run the appli_gen.py
+#
+APPLIDIR="./appli"
+@KERNEL_ROOT_DIR@/bin/salome/appli_gen.py --prefix=$APPLIDIR --config=$here/config_appli.xml
+
+#
+# Copy customized configuration files in the application
+#
+cp $here/SalomeApp.xml $APPLIDIR/.
+cp $here/CatalogResources.xml $APPLIDIR/.
+cp @prefix@/plugins/envPlugins.sh $APPLIDIR/env.d/.

@@ -1,12 +1,11 @@
-// Copyright (C) 2008  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License.
 //
-// This library is distributed in the hope that it will be useful
+// This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
@@ -17,12 +16,16 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // File      : SMESH_NoteBook.hxx
 // Author    : Roman NIKOLAEV ()
-
-
+//
 #ifndef SMESH_NoteBook_HeaderFile
 #define SMESH_NoteBook_HeaderFile
+
+// All this stuff is obsolete since issue 0021308:
+// "Remove hard-coded dependency of the external mesh plugins from the SMESH module"
+// is implemented (Mar 2012). It is kept for backward compatibility only.
 
 #include <TCollection_AsciiString.hxx>
 #include <Resource_DataMapOfAsciiStringAsciiString.hxx>
@@ -34,14 +37,14 @@ class _pyCommand;
 
 typedef std::vector<TCollection_AsciiString>  TState;
 typedef std::vector<TState>                   TAllStates;
-typedef TCollection_AsciiString _pyID;
+typedef TCollection_AsciiString               _pyID;
 
-class ObjectStates{
+class SMESH_ObjectStates{
   
 public:
   
-  ObjectStates(TCollection_AsciiString theType);
-  virtual ~ObjectStates();
+  SMESH_ObjectStates(TCollection_AsciiString theType);
+  virtual ~SMESH_ObjectStates();
 
   void AddState(const TState &theState);
 
@@ -58,7 +61,7 @@ private:
   int                                       _dumpstate;
 };
 
-class LayerDistributionStates : public ObjectStates
+class LayerDistributionStates : public SMESH_ObjectStates
 {
 public:
   typedef std::map<TCollection_AsciiString,TCollection_AsciiString> TDistributionMap;
@@ -81,7 +84,7 @@ private:
 class SMESH_NoteBook
 {
 public:
-  typedef std::map<TCollection_AsciiString,ObjectStates*> TVariablesMap;
+  typedef std::map<TCollection_AsciiString,SMESH_ObjectStates*> TVariablesMap;
   typedef std::map<TCollection_AsciiString,TCollection_AsciiString> TMeshEditorMap;
   SMESH_NoteBook();
   ~SMESH_NoteBook();

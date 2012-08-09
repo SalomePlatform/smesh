@@ -5,36 +5,87 @@
 <br><h2>About patterns</h2>
 
 The pattern describes a mesh to generate: positions of nodes within a
-geometrical domain and nodal connectivity of elements. As well, a
-pattern specifies the so-called key-points, i.e. nodes that will be
-located at geometrical vertices. Pattern description is stored in
+geometrical domain and nodal connectivity of elements. A
+pattern also specifies the so-called key-points, i.e. the nodes that will be
+located at geometrical vertices. The pattern description is stored in
 \<pattern_name\>.smp file.
 
 The smp file contains 4 sections:
-<ol>
-<li>The first line holds the number of nodes (N).</li>
 
-<li>The next N lines describe nodes coordinates. Each line holds 2
-coordinates of a node.</li>
+-# The first line indicates the total number of pattern nodes (N).
+-# The next N lines describe nodes coordinates. Each line contains 2
+node coordinates for a 2D pattern or 3 node cordinates for a 3D pattern.
+Note, that node coordinates of a 3D pattern can be defined only by relative values in range [0;1].
+-# The key-points line contains the indices of the nodes to be mapped on geometrical
+vertices (for a 2D pattern only). Index n refers to the node described 
+on the n-th line of section 2. The index of the first node zero. For a 3D pattern the key points are not specified.
+-# The remaining lines describe nodal connectivity of elements, one line
+for each element. Each line holds indices of nodes forming an element.
+Index n refers to the node described on the n-th line of section 2.
+The first node index is zero. There must be 3 or 4 indices on each
+line for a 2D pattern (only 2d elements are allowed) and 4, 5, 6 or 8
+indices for a 3D pattern (only 3d elements are allowed).
 
-<li>A key-points line: indices of nodes to be mapped on geometrical
-vertices. An index n refers to a node described on an n-th line of
-section 2. The first node index is zero.</li>
+A 2D pattern must contain at least one element and at least one
+key-point. All key-points must lie on boundaries.
 
-<li>The rest lines describe nodal connectivity of elements, one line
-for an element. A line holds indices of nodes forming an element. An
-index n refers to a node described on an n-th line of the section
-2. The first node index is zero. There must be 3 or 4 indices on a
-line: only 2d elements are allowed.</li>
-</ol>
+A 3D pattern must contain at least one element.
 
-The 2D pattern must contain at least one element and at least one
-key-point. All key-points must lay on boundaries.
+An example of a simple 2D pattern smp file:
 
-An example of a simple smp file and a preview of a pattern described
-in this file:
+\code
+!!! SALOME 2D mesh pattern file
+!!!
+!!! Nb of points:
+9
+        200     0       !- 0
+        100     0       !- 1
+          0     0       !- 2
+          0  -100       !- 3
+          0  -200       !- 4
+        100  -200       !- 5
+        200  -200       !- 6
+        200  -100       !- 7
+        100  -100       !- 8
+!!! Indices of 4 key-points
+ 2 0 4 6
+!!! Indices of points of 6 elements
+ 0 1 8
+ 8 5 6 7
+ 2 3 8
+ 8 3 4 5
+ 8 7 0
+ 8 1 2
+\endcode
 
-\image html image94.gif
+The image below provides a preview of the above pattern:
+
+\image html pattern2d.png
+
+An example of a simple 3D pattern smp file:
+
+\code
+!!! SALOME 3D mesh pattern file
+!!!
+!!! Nb of points:
+9
+        0        0        0   !- 0
+        1        0        0   !- 1
+        0        1        0   !- 2
+        1        1        0   !- 3
+        0        0        1   !- 4
+        1        0        1   !- 5
+        0        1        1   !- 6
+        1        1        1   !- 7
+      0.5      0.5      0.5   !- 8
+!!! Indices of points of 6 elements:
+ 0 1 5 4 8
+ 7 5 1 3 8
+ 3 2 6 7 8
+ 2 0 4 6 8
+ 0 2 3 1 8
+ 4 5 7 6 8
+\endcode
 
 <br><h2>Application of pattern mapping</h2>
 
@@ -46,90 +97,122 @@ From the \b Modification menu choose the <b>Pattern Mapping</b> item or click
 \image html image98.png
 <center><em>"Pattern mapping" button</em></center>
 
-The following dialog box shall appear:
+The following dialog box will appear:
+
+\n For a <b>2D pattern</b>
 
 \image html patternmapping1.png
 
-\image html patternmapping2.png
+In this dialog you should specify:
 
-To apply a pattern to a geometrical object, you should specify:
 <ul>
-<li>a face having the number of vertices equal to the number of
-key-points in the pattern; the number of key-points on internal
-boundaries of a pattern must also be equal to the number of vertices
-on internal boundaries of a face;</li>
-<li>a vertex to which the first key-point should be mapped;</li>
-<li>reverse or not the order of key-points. (The order of vertices of
-a face is counterclockwise looking from outside).</li>
+<li> \b Pattern, which can be loaded from .smp pattern file previously
+created manually or generated automatically from an existing mesh or submesh.</li>
+<li> \b Face with the number of vertices equal to the number of
+     key-points in the pattern; the number of key-points on internal
+     boundaries of the pattern must also be equal to the number of vertices
+     on internal boundaries of the face;</li>
+<li> \b Vertex to which the first key-point should be mapped;</li>
+Alternatively, it is possible to select <b>Refine selected mesh elements</b> 
+checkbox and apply the pattern to
+<li> <b>Mesh Face</b> instead of a geometric Face</li>
+<li> and select \b Node instead of vertex.</li>
+
+Additionally it is possible to:
+<li> <b>Reverse the order of key-points</b> By default, the vertices of
+     a face are ordered counterclockwise.<li>
+<li> Enable to <b> Create polygons near boundary</b> </li>
+<li> and <b>Create polyhedrons near boundary</b><li>  
 </ul>
 
-Then you either load a .smp pattern file previously created manually
-by clicking on the <em>"Load pattern"</em> button, or click on the \b
-New button for automatic generation.
-\n For an automatic generation you just specify a geometrical face
-having a mesh built on it. Mesh nodes lying on face vertices become
-key-points. Additionally, you may choose the way of getting nodes
-coordinates by <b>projecting nodes on the face</b> instead of using
-"positions on face" generated by mesher (if there is any). Faces
-having a seam edge can?t be used for automatic pattern creation.
+\n For a <b>3D pattern</b>
 
-When creating a pattern from an existing mesh, there are two possible
-cases:
-<ol>
-<li>A sub-mesh on face is selected. A pattern is created from the 2d
-elements bound to a face by mesher. Node coordinates are either
-"positions on face" computed by mesher, or coordinates got by node
-projection on a geometrical surface, according to your choice.</li>
-<li>A mesh where the main shape is a face, is selected. A pattern is
-created from all the 2d elements in a mesh. If all mesh elements are
-build by mesher, the user can select the way of getting nodes
-coordinates, else all nodes are projected on a face surface.</li>
-</ol>
+\image html patternmapping2.png
 
-\image html a-patterntype.png
+In this dialog you should specify:
+<ul>
+<li> \b Pattern, which can be loaded from .smp pattern file previously
+created manually or generated automatically from an existing mesh or submesh.</li>
+   <li> A 3D block (Solid) object;</li>
+   <li> Two vertices that specify the order of nodes in the resulting mesh.</li>
+Alternatively, it is possible to select <b>Refine selected mesh elements</b> 
+checkbox and apply the pattern to
+<li> One or several <b>Mesh volumes</b> instead of a geometric 3D
+object</li>
+<li> and select two /b Nodes instead of vertices.</li> 
+Additionally it is possible to:
+<li> Enable to <b> Create polygons near boundary</b> </li>
+<li> and <b>Create polyhedrons near boundary</b><li>
+</ul>
+
+\n Automatic Generation 
+
+To generate a pattern automatically from an existing mesh or submesh,
+click \b New button.
+
+The following dialog box will appear:
 
 \image html a-patterntype1.png
 
+In this dialog you should specify:
+
+<ul>
+<li> <b>Mesh or Submesh</b>, which is a meshed geometrical face (for a
+2D pattern) or a meshed solid (for a 3D pattern). Mesh nodes lying on
+the face vertices become key-points of the pattern. </li>
+<li> A custom <b>Pattern Name </b> </li>
+<li>Additionally, for a 2D pattern you may choose to 
+<b>Project nodes on the face</b> to get node coordinates instead of using
+"positions on face" generated by the mesher (if there is any). The faces
+having a seam edge cannot be used for automatic pattern creation.</li>
+</ul>
+
+When a pattern is created from an existing mesh, two cases are possible:
+
+- A sub-mesh on a face/solid is selected. The pattern is created from the 2d/3d
+elements bound to the face/solid by the mesher. For a 2D pattern, the node coordinates are either
+"positions on face" computed by the mesher, or coordinates got by node
+projection on a geometrical surface, according to the user choice. For
+a 3D pattern, the node coordinates correspond to the nodes computed by
+the mesher.
+- A mesh, where the main shape is a face/solid, is selected. The pattern is
+created from all 2d/3d elements in a mesh. In addition, if all mesh
+elements of a 2D pattern are built by the mesher, the user can select
+how to get node coordinates, otherwise all nodes are projected on
+a face surface.
+
+
 <br><h2>Mapping algorithm</h2>
 
-The mapping algorithm is as follows:
-<ol>
-<li>Key-points are set in the order that they are encountered when
-walking along a pattern boundary so that elements are on the left. The
-first key-point is preserved.
-</li>
+The mapping algorithm for a 2D case is as follows:
 
-<li>Find geometrical vertices corresponding to key-points by vertices
-order in a face boundary; here, "Reverse order of key-points" flag is
-taken into account.
-
+- The key-points are set counterclockwise in the order corresponding
+  to their location on the pattern boundary. The first key-point is preserved.
+- The geometrical vertices corresponding to the key-points are found
+  on face boundary. Here, "Reverse order of key-points" flag is set. 
 \image html image95.gif
-</li>
-
-<li>Boundary nodes of a pattern are mapped onto edges of a face: a
-node located between certain key-points on a pattern boundary is
-mapped on a geometrical edge limited by corresponding geometrical
-vertices. Node position on an edge reflects its distance from two
-key-points.
-
+- The boundary nodes of the pattern are mapped onto the edges of the face: a
+  node located between two key-points on the pattern boundary is
+  mapped on the geometrical edge limited by the corresponding geometrical
+  vertices. The node position on the edge depends on its distance from the
+  key-points. 
 \image html image96.gif
-</li>
-
-<li>Coordinates of a non-boundary node in a parametric space of a face
-are defined as following. In a parametric space of a pattern, a node
-lays at the intersection of two iso-lines, each of which intersects a
-pattern boundary at least at two points. Knowing mapped positions of
-boundary nodes, we find where isoline-boundary intersection points are
-mapped to, and hence we can find mapped isolines direction and then,
-two node positions on two mapped isolines. The eventual mapped
-position of a node is found as an average of positions on mapped
-isolines.
-
+- The cordinates of a non-boundary node in the parametric space of the face
+ are defined in the following way. In the parametric space of the
+  pattern, the  node lies at the intersection of two iso-lines. Both
+  of them intersect the pattern boundary at two
+  points at least. If the mapped positions of boundary nodes are known, it is
+  possible to find, where the points at the intersection of isolines
+  and boundaries are mapped. Then it is possible to find
+  the direction of mapped isolinesection and, filally, the poitions of
+  two nodes on two mapped isolines. The eventual mapped
+ position of the node is found as an average of the positions on mapped
+ isolines. 
 \image html image97.gif
-</li>
-</ol>
 
-<br><b>See Also</b> a sample TUI Script of a 
+The 3D algorithm is similar.
+
+<b>See Also</b> a sample TUI Script of a 
 \ref tui_pattern_mapping "Pattern Mapping" operation.
 
 */

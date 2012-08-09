@@ -1,0 +1,72 @@
+/*!
+
+\page double_nodes_page Duplicate Nodes
+
+\n This operation allows to duplicate nodes of your mesh, which can be
+useful to emulate a crack in the model.
+Duplication consists in replacement of an existing mesh element by another one.
+Lower level elements of the duplicated ones are cloned automatically. 
+
+<em>To duplicate nodes:</em>
+<ol>
+<li>From the \b Modification menu choose \b Transformation -> \b Duplicate
+\b Nodes item or click <em>"Duplicate Nodes"</em> button in the toolbar.
+<br>
+\image html duplicate_nodes.png "Duplicate Nodes button"
+</li>
+<li>Check in the dialog box one of two radio buttons corresponding to
+the type of nodes duplication operation you would like to perform.</li>
+<li>Fill the other fields available in the dialog box (depends on the chosen
+ operation mode).</li>
+<li>Click the \b Apply or <b>Apply and Close</b> button to perform the operation of nodes
+ duplication.</li>
+</ol>
+
+\n "Duplicate Nodes" dialog has two working modes:
+<ul>
+<li>\ref mode_without_elem_anchor "Without the duplication of border elements"</li>
+<li>\ref mode_with_elem_anchor "With the duplication of border elements"</li>
+</ul>
+
+<br>
+\anchor mode_without_elem_anchor
+<h2>Without duplication of border elements</h2>
+
+In this mode the dialog looks like:
+
+\image html duplicate01.png
+
+Parameters to be defined in this mode:
+<ul>
+<li><b>Group of nodes to duplicate</b> (<em>mandatory</em>): these nodes will be duplicated.</li>
+<li><b>Group of elements to replace nodes with new ones</b> (<em>optional</em>): the duplicated nodes
+ will be associated with these elements.</li>
+<li><b>Construct group with newly created nodes</b> option (<em>checked by default</em>): 
+ if checked - the group with just created nodes will be built.</li>
+</ul>
+
+<br>
+\anchor mode_with_elem_anchor
+<h2>With duplication of border elements</h2>
+
+In this mode the dialog looks like:
+
+\image html duplicate02.png
+
+Parameters to be defined in this mode:
+<ul>
+<li><b>Group of elements to duplicate</b> (<em>mandatory</em>): these elements will be duplicated.</li>
+<li><b>Group of nodes at not to duplicate</b> (<em>optional</em>): group of nodes at crack bottom
+ which will not be duplicated.</li>
+<li><b>Group of elements to replace nodes with new ones</b> (<em>mandatory</em>): the duplicated nodes
+ will be associated with these elements.</li>
+<li><b>Construct group with newly created elements</b> option (<em>checked by default</em>): 
+ if checked - the group of just created elements will be built.</li>
+<li><b>Construct group with newly created nodes</b> option (<em>checked by default</em>): 
+ if checked - the group of just created nodes will be built.</li>
+</ul>
+
+
+<br><b>See Also</b> a sample TUI Script of a \ref tui_duplicate_nodes "Duplicate nodes" operation.
+
+*/

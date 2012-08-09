@@ -1,0 +1,18 @@
+/*!
+
+\page over_constrained_volumes_page Over-constrained volumes
+
+\n This mesh quality control highlights volumes sharing only one border with other volumes.
+In other words, the volumes having all their nodes on the external border of the mesh are highlighted.
+
+\note The highlighted volumes are actually over-constrained only if, at the computation time, 
+the boundary conditions on the borders where the nodes are located are all Dirichlet boundary conditions.
+
+\image html over_constrained_volumes.png
+
+In this picture the over-constrained volume is displayed in red.
+
+<br><b>See Also</b> a sample TUI Script of a 
+\ref tui_over_constrained_volumes "Over-constrained volumes" filter.  
+
+*/

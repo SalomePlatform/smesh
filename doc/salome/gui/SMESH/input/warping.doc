@@ -24,8 +24,8 @@ projection height ?h? to the half edge length ?l?.
 <ol>
 <li>Display your mesh in the viewer.</li>
 
-<li>Choose <b>Controls > Warping Angle</b> or click <em>"Warping angle"</em>
-button of the toolbar.
+<li>Choose <b>Controls > Face Controls > Warping Angle</b> or click
+<em>"Warping angle"</em> button of the toolbar.
 
 \image html image39.png
 <center><em>"Warping angle" button</em></center>

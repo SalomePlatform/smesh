@@ -1,30 +1,30 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : SMESH_Algo.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
 //
-
 #ifndef _SMESH_ALGO_HXX_
 #define _SMESH_ALGO_HXX_
 
@@ -53,8 +53,20 @@ class SMESHDS_Mesh;
 class SMDS_MeshNode;
 class SMESH_subMesh;
 class SMESH_MesherHelper;
+class gp_XYZ;
 
+typedef std::map< SMESH_subMesh*, std::vector<int> >           MapShapeNbElems;
+typedef std::map< SMESH_subMesh*, std::vector<int> >::iterator MapShapeNbElemsItr;
 
+/*!
+ * \brief Root of all algorithms
+ *
+ *  Methods of the class are grouped into several parts:
+ *  - main lifecycle methods, like Compute()
+ *  - methods describing features of the algorithm, like NeedShape()
+ *  - methods related to dependencies between sub-meshes imposed by the algorith
+ *  - static utilities, like EdgeLength()
+ */
 class SMESH_EXPORT SMESH_Algo:public SMESH_Hypothesis
 {
 public:
@@ -74,14 +86,14 @@ public:
   /*!
    * \brief Saves nothing in a stream
     * \param save - the stream
-    * \retval virtual std::ostream & - the stream
+    * \retval std::ostream & - the stream
    */
   virtual std::ostream & SaveTo(std::ostream & save);
 
   /*!
    * \brief Loads nothing from a stream
     * \param load - the stream
-    * \retval virtual std::ostream & - the stream
+    * \retval std::ostream & - the stream
    */
   virtual std::istream & LoadFrom(std::istream & load);
 
@@ -106,9 +118,9 @@ public:
     * \param aShape - the shape
     * \retval bool - is a success
     *
-    * Algorithms that !NeedDescretBoundary() || !OnlyUnaryInput() are
+    * Algorithms that !NeedDiscreteBoundary() || !OnlyUnaryInput() are
     * to set SMESH_ComputeError returned by SMESH_submesh::GetComputeError()
-    * to report problematic subshapes
+    * to report problematic sub-shapes
    */
   virtual bool Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape) = 0;
 
@@ -121,6 +133,22 @@ public:
     * The method is called if ( !aMesh->HasShapeToMesh() )
    */
   virtual bool Compute(SMESH_Mesh & aMesh, SMESH_MesherHelper* aHelper);
+
+  /*!
+   * \brief Sets _computeCanceled to true. It's usage depends on
+   *        implementation of a particular mesher.
+   */
+  virtual void CancelCompute();
+
+  /*!
+   * \brief evaluates size of prospective mesh on a shape
+    * \param aMesh - the mesh
+    * \param aShape - the shape
+    * \param aNbElems - prospective number of elements by types
+    * \retval bool - is a success
+   */
+  virtual bool Evaluate(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape,
+                        MapShapeNbElems& aResMap) = 0;
 
   /*!
    * \brief Returns a list of compatible hypotheses used to mesh a shape
@@ -193,14 +221,14 @@ public:
   // an input temporary shape that is neither MainShape nor
   // its child.
 
-  bool NeedDescretBoundary() const { return _requireDescretBoundary; }
+  bool NeedDiscreteBoundary() const { return _requireDiscreteBoundary; }
   // 3 - is a Dim-1 mesh prerequisite
 
   bool NeedShape() const { return _requireShape; }
   // 4 - is shape existance required
 
   bool SupportSubmeshes() const { return _supportSubmeshes; }
-  // 5 - whether supports submeshes if !NeedDescretBoundary()
+  // 5 - whether supports submeshes if !NeedDiscreteBoundary()
 
 
 public:
@@ -214,7 +242,7 @@ public:
    *
    * This method is called when a submesh gets HYP_OK algo_state.
    * After being set, event listener is notified on each event of a submesh.
-   * By default non listener is set
+   * By default none listener is set
    */
   virtual void SetEventListener(SMESH_subMesh* subMesh);
   
@@ -269,12 +297,17 @@ public:
   static double EdgeLength(const TopoDS_Edge & E);
 
   /*!
+   * \brief Calculate normal of a mesh face
+   */
+  static bool FaceNormal(const SMDS_MeshElement* F, gp_XYZ& normal, bool normalized=true);
+
+  /*!
    * \brief Return continuity of two edges
     * \param E1 - the 1st edge
     * \param E2 - the 2nd edge
     * \retval GeomAbs_Shape - regularity at the junction between E1 and E2
    */
-  static GeomAbs_Shape Continuity(const TopoDS_Edge & E1, const TopoDS_Edge & E2);
+  static GeomAbs_Shape Continuity(TopoDS_Edge E1, TopoDS_Edge E2);
 
   /*!
    * \brief Return true if an edge can be considered as a continuation of another
@@ -289,10 +322,22 @@ public:
     * \param meshDS - mesh
     * \retval const SMDS_MeshNode* - found node or NULL
    */
-  static const SMDS_MeshNode* VertexNode(const TopoDS_Vertex& V,
-                                         SMESHDS_Mesh*        meshDS);
+  static const SMDS_MeshNode* VertexNode(const TopoDS_Vertex& V, const SMESHDS_Mesh* meshDS);
 
-protected:
+  /*!
+   * \brief Return nodes common to two elements
+   */
+  static std::vector< const SMDS_MeshNode*> GetCommonNodes(const SMDS_MeshElement* e1,
+                                                           const SMDS_MeshElement* e2);
+
+  enum EMeshError { MEr_OK = 0, MEr_HOLES, MEr_BAD_ORI, MEr_EMPTY };
+
+  /*!
+   * \brief Finds topological errors of a sub-mesh 
+   */
+  static EMeshError GetMeshError(SMESH_subMesh* subMesh);
+
+ protected:
 
   /*!
    * \brief store error and comment and then return ( error == COMPERR_OK )
@@ -322,11 +367,11 @@ protected:
 
   // Algo features influencing which Compute() and how is called:
   // in what turn and with what input shape.
-  // This fields must be redefined if necessary by each descendant at constructor.
+  // These fields must be redefined if necessary by each descendant at constructor.
   bool _onlyUnaryInput;         // mesh one shape of GetDim() at once. Default TRUE
-  bool _requireDescretBoundary; // GetDim()-1 mesh must be present. Default TRUE
+  bool _requireDiscreteBoundary; // GetDim()-1 mesh must be present. Default TRUE
   bool _requireShape;           // work with GetDim()-1 mesh bound to geom only. Default TRUE
-  bool _supportSubmeshes;       // if !_requireDescretBoundary. Default FALSE
+  bool _supportSubmeshes;       // if !_requireDiscreteBoundary. Default FALSE
 
   // quadratic mesh creation required,
   // is usually set trough SMESH_MesherHelper::IsQuadraticSubMesh()
@@ -335,6 +380,8 @@ protected:
   int         _error;    //!< SMESH_ComputeErrorName or anything algo specific
   std::string _comment;  //!< any text explaining what is wrong in Compute()
   std::list<const SMDS_MeshElement*> _badInputElements; //!< to explain COMPERR_BAD_INPUT_MESH
+
+  volatile bool _computeCanceled; //!< is set to True while computing to stop it
 };
 
 #endif

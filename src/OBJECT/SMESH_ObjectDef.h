@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH OBJECT : interactive object for SMESH visualization
 //  File   : SMESH_Object.h
 //  Author : Nicolas REJNERI
@@ -31,6 +32,7 @@
 #include "SMESH_Controls.hxx"
 #include "SMESH_Object.h"
 #include "SMESH_Client.hxx"
+#include "SMESH_Actor.h"
 
 // IDL Headers
 #include <SALOMEconfig.h>
@@ -43,7 +45,6 @@
 class vtkPoints;
 class SALOME_ExtractUnstructuredGrid;
 
-class SMESH_Actor;
 class SMDS_MeshNode;
 class SMDS_MeshElement;
 
@@ -61,6 +62,7 @@ public:
   virtual                   ~SMESH_VisualObjDef();
   
   virtual bool              Update( int theIsClear = true ) = 0;
+  virtual bool              NulData() {return 0; };
   virtual void              UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor ) = 0;
   virtual int               GetElemDimension( const int theObjId ) = 0;
 
@@ -69,33 +71,44 @@ public:
   virtual bool              IsNodePrs() const = 0;
   virtual SMDS_Mesh*        GetMesh() const = 0;
 
+  virtual bool              IsValid() const;
+
   virtual bool              GetEdgeNodes( const int theElemId,
                                           const int theEdgeNum,
                                           int&      theNodeId1,
                                           int&      theNodeId2 ) const;
 
-  virtual vtkUnstructuredGrid* GetUnstructuredGrid() { return myGrid; }
+  virtual vtkUnstructuredGrid* GetUnstructuredGrid();
   
   virtual vtkIdType         GetNodeObjId( int theVTKID );
   virtual vtkIdType         GetNodeVTKId( int theObjID );
   virtual vtkIdType         GetElemObjId( int theVTKID );
   virtual vtkIdType         GetElemVTKId( int theObjID );
   
+  virtual void              ClearEntitiesFlags();
+  virtual bool              GetEntitiesFlag();
+  virtual unsigned int      GetEntitiesState();
+  
 protected:
 
   void                      createPoints( vtkPoints* );
-  void                      buildPrs();
+  void                      buildPrs(bool buildGrid = false);
   void                      buildNodePrs();
   void                      buildElemPrs();
-  
-private:                                   
+  void                      updateEntitiesFlags();
+//private:
 
   TMapOfIds                 mySMDS2VTKNodes;
   TMapOfIds                 myVTK2SMDSNodes;
   TMapOfIds                 mySMDS2VTKElems;
   TMapOfIds                 myVTK2SMDSElems;
+  bool                      myLocalGrid;
+
+  bool                      myEntitiesFlag;
+  unsigned int              myEntitiesState;
 
   vtkUnstructuredGrid*      myGrid;
+  std::map<SMDSAbs_ElementType,int> myEntitiesCache;
 };
 
 
@@ -112,6 +125,7 @@ public:
   virtual                   ~SMESH_MeshObj();
   
   virtual bool              Update( int theIsClear = true );
+  virtual bool              NulData();
   
   virtual int               GetNbEntities( const SMDSAbs_ElementType) const;
   virtual int               GetEntities( const SMDSAbs_ElementType, TEntityList& ) const;
@@ -126,6 +140,7 @@ public:
 
 protected:
   SMESH_Client              myClient;
+  vtkUnstructuredGrid*      myEmptyGrid;
 };
 
 
@@ -167,6 +182,8 @@ public:
   virtual int               GetNbEntities( const SMDSAbs_ElementType) const;
   virtual int               GetEntities( const SMDSAbs_ElementType, TEntityList& ) const;
   virtual bool              IsNodePrs() const;
+
+  virtual SMDSAbs_ElementType GetElementType() const;
 
 private:
 

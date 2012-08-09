@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_HypothesesUtils.cxx
 // Author : Julia DOROVSKIKH, Open CASCADE S.A.S.
@@ -49,7 +50,9 @@
 
 // Qt includes
 #include <QMap>
+#include <QDir>
 //#include <QList>
+
 
 // Other includes
 #ifdef WNT
@@ -78,52 +81,87 @@ static int MYDEBUG = 0;
 
 namespace SMESH
 {
-  typedef QMap<QString,HypothesisData*> THypothesisDataMap;
+  typedef IMap<QString,HypothesisData*> THypothesisDataMap;
   THypothesisDataMap myHypothesesMap;
   THypothesisDataMap myAlgorithmsMap;
-
-  typedef QMap<QString,SMESHGUI_GenericHypothesisCreator*> THypCreatorMap;
-  THypCreatorMap myHypCreatorMap;
+  
+  // BUG 0020378
+  //typedef QMap<QString,SMESHGUI_GenericHypothesisCreator*> THypCreatorMap;
+  //THypCreatorMap myHypCreatorMap;
 
   QList<HypothesesSet*> myListOfHypothesesSets;
 
   void processHypothesisStatus(const int theHypStatus,
-			       SMESH::SMESH_Hypothesis_ptr theHyp,
-			       const bool theIsAddition)
+                               SMESH::SMESH_Hypothesis_ptr theHyp,
+                               const bool theIsAddition)
   {
     if (theHypStatus > SMESH::HYP_OK) {
       // get Hyp name
       QString aHypName ("NULL Hypothesis");
       if (!CORBA::is_nil(theHyp)) {
-	_PTR(SObject) Shyp = SMESH::FindSObject(theHyp);
-	if (Shyp)
-	  // name in study
-	  aHypName = Shyp->GetName().c_str();
-	else
-	  // label in xml file
-	  aHypName = GetHypothesisData(theHyp->GetName())->Label;
+        _PTR(SObject) Shyp = SMESH::FindSObject(theHyp);
+        if (Shyp)
+          // name in study
+          aHypName = Shyp->GetName().c_str();
+        else
+          // label in xml file
+          aHypName = GetHypothesisData(theHyp->GetName())->Label;
       }
 
       // message
       bool isFatal = (theHypStatus >= SMESH::HYP_UNKNOWN_FATAL);
       QString aMsg;
       if (theIsAddition)
-	aMsg = (isFatal ? "SMESH_CANT_ADD_HYP" : "SMESH_ADD_HYP_WRN");
+        aMsg = (isFatal ? "SMESH_CANT_ADD_HYP" : "SMESH_ADD_HYP_WRN");
       else
-	aMsg = (isFatal ? "SMESH_CANT_RM_HYP"  : "SMESH_RM_HYP_WRN");
+        aMsg = (isFatal ? "SMESH_CANT_RM_HYP"  : "SMESH_RM_HYP_WRN");
 
       aMsg = QObject::tr(aMsg.toLatin1().data()).arg(aHypName) +
-	QObject::tr(QString("SMESH_HYP_%1").arg(theHypStatus).toLatin1().data());
+        QObject::tr(QString("SMESH_HYP_%1").arg(theHypStatus).toLatin1().data());
 
       if ( theHypStatus == SMESH::HYP_HIDDEN_ALGO ) // PAL18501
         aMsg = aMsg.arg( GetHypothesisData(theHyp->GetName())->Dim[0] );
 
       SUIT_MessageBox::warning(SMESHGUI::desktop(),
-			       QObject::tr("SMESH_WRN_WARNING"),
-			       aMsg);
+                               QObject::tr("SMESH_WRN_WARNING"),
+                               aMsg);
     }
   }
 
+  //================================================================================
+  /*!
+   * \brief Prepends dimension and appends '[custom]' to the name of hypothesis set
+   */
+  //================================================================================
+
+  static QString mangledHypoSetName(HypothesesSet* hypSet)
+  {
+    QString name = hypSet->name();
+
+    // prepend 'xD: '
+    int dim = hypSet->maxDim();
+    if ( dim > -1 )
+      name = QString("%1D: %2").arg(dim).arg(name);
+
+    // custom
+    if ( hypSet->getIsCustom() )
+      name = QString("%1 [custom]").arg(name);
+
+    return name;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Removes dimension and '[custom]' from the name of hypothesis set
+   */
+  //================================================================================
+
+  static QString demangledHypoSetName(QString name)
+  {
+    name.remove(QRegExp("[0-3]D: "));
+    name.remove(" [custom]");
+    return name;
+  }
 
   void InitAvailableHypotheses()
   {
@@ -137,72 +175,93 @@ namespace SMESH
       QString HypsXml;
       char* cenv = getenv("SMESH_MeshersList");
       if (cenv)
-	HypsXml.sprintf("%s", cenv);
+        HypsXml.sprintf("%s", cenv);
 
       QStringList HypsXmlList = HypsXml.split(":", QString::SkipEmptyParts);
       if (HypsXmlList.count() == 0) {
-	SUIT_MessageBox::critical(SMESHGUI::desktop(),
-				  QObject::tr("SMESH_WRN_WARNING"),
-				  QObject::tr("MESHERS_FILE_NO_VARIABLE"));
-	return;
+        SUIT_MessageBox::critical(SMESHGUI::desktop(),
+                                  QObject::tr("SMESH_WRN_WARNING"),
+                                  QObject::tr("MESHERS_FILE_NO_VARIABLE"));
+        return;
       }
-
-      // loop on files in HypsXml
-      QString aNoAccessFiles;
+      // get full names of xml files from HypsXmlList
+      QStringList xmlFiles;
+      xmlFiles.append( QDir::home().filePath("CustomMeshers.xml")); // may be inexistent
       for (int i = 0; i < HypsXmlList.count(); i++) {
-	QString HypsXml = HypsXmlList[ i ];
+        QString HypsXml = HypsXmlList[ i ];
 
-	// Find full path to the resource XML file
-	QString xmlFile = resMgr->path("resources", "SMESH", HypsXml + ".xml");
+        // Find full path to the resource XML file
+        QString xmlFile = resMgr->path("resources", "SMESH", HypsXml + ".xml");
         if ( xmlFile.isEmpty() ) // try PLUGIN resources
           xmlFile = resMgr->path("resources", HypsXml, HypsXml + ".xml");
-        
-	QFile file (xmlFile);
-	if (file.exists() && file.open(QIODevice::ReadOnly)) {
-	  file.close();
+        if ( !xmlFile.isEmpty() )
+          xmlFiles.append( xmlFile );
+      }
 
-	  SMESHGUI_XmlHandler* aXmlHandler = new SMESHGUI_XmlHandler();
-	  ASSERT(aXmlHandler);
+      // loop on xmlFiles
+      QString aNoAccessFiles;
+      for (int i = 0; i < xmlFiles.count(); i++)
+      {
+        QString xmlFile = xmlFiles[ i ];
+        QFile file (xmlFile);
+        if (file.exists() && file.open(QIODevice::ReadOnly))
+        {
+          file.close();
 
-	  QXmlInputSource source (&file);
-	  QXmlSimpleReader reader;
-	  reader.setContentHandler(aXmlHandler);
-	  reader.setErrorHandler(aXmlHandler);
-	  bool ok = reader.parse(source);
-	  file.close();
-	  if (ok) {
-	    myHypothesesMap.unite( aXmlHandler->myHypothesesMap );
-            myAlgorithmsMap.unite( aXmlHandler->myAlgorithmsMap );
-	    QList<HypothesesSet*>::iterator it, pos = myListOfHypothesesSets.begin();
-	    for ( it = aXmlHandler->myListOfHypothesesSets.begin(); 
-		  it != aXmlHandler->myListOfHypothesesSets.end();
-		  ++it ) {
-	      myListOfHypothesesSets.insert( pos, *it );
-	    }
-	  }
-	  else {
-	    SUIT_MessageBox::critical(SMESHGUI::desktop(),
-				      QObject::tr("INF_PARSE_ERROR"),
-				      QObject::tr(aXmlHandler->errorProtocol().toLatin1().data()));
-	  }
-	}
-	else {
-	  if (aNoAccessFiles.isEmpty())
-	    aNoAccessFiles = xmlFile;
-	  else
-	    aNoAccessFiles += ", " + xmlFile;
-	}
-      } // end loop
+          SMESHGUI_XmlHandler* aXmlHandler = new SMESHGUI_XmlHandler();
+          ASSERT(aXmlHandler);
+
+          QXmlInputSource source (&file);
+          QXmlSimpleReader reader;
+          reader.setContentHandler(aXmlHandler);
+          reader.setErrorHandler(aXmlHandler);
+          bool ok = reader.parse(source);
+          file.close();
+          if (ok) {
+
+            THypothesisDataMap::ConstIterator it1 = aXmlHandler->myHypothesesMap.begin();
+            
+            for( ;it1 != aXmlHandler->myHypothesesMap.end(); it1++)
+              myHypothesesMap.insert( it1.key(), it1.value() );
+            
+            
+            it1 = aXmlHandler->myAlgorithmsMap.begin();
+            for( ;it1 != aXmlHandler->myAlgorithmsMap.end(); it1++)
+              myAlgorithmsMap.insert( it1.key(), it1.value() );
+            
+            QList<HypothesesSet*>::iterator it, pos = myListOfHypothesesSets.begin();
+            for ( it = aXmlHandler->myListOfHypothesesSets.begin(); 
+                  it != aXmlHandler->myListOfHypothesesSets.end();
+                  ++it )
+            {
+              (*it)->setIsCustom( i == 0 );
+              myListOfHypothesesSets.insert( pos, *it );
+            }
+          }
+          else {
+            SUIT_MessageBox::critical(SMESHGUI::desktop(),
+                                      QObject::tr("INF_PARSE_ERROR"),
+                                      QObject::tr(aXmlHandler->errorProtocol().toLatin1().data()));
+          }
+          delete aXmlHandler;
+        }
+        else if ( i > 0 ) { // 1st is ~/CustomMeshers.xml
+          if (aNoAccessFiles.isEmpty())
+            aNoAccessFiles = xmlFile;
+          else
+            aNoAccessFiles += ", " + xmlFile;
+        }
+      } // end loop on xmlFiles
 
 
       if (!aNoAccessFiles.isEmpty()) {
-	QString aMess = QObject::tr("MESHERS_FILE_CANT_OPEN") + " " + aNoAccessFiles + "\n";
-	aMess += QObject::tr("MESHERS_FILE_CHECK_VARIABLE");
-	wc.suspend();
-	SUIT_MessageBox::warning(SMESHGUI::desktop(),
-				 QObject::tr("SMESH_WRN_WARNING"),
-				 aMess);
-	wc.resume();
+        QString aMess = QObject::tr("MESHERS_FILE_CANT_OPEN") + " " + aNoAccessFiles + "\n";
+        aMess += QObject::tr("MESHERS_FILE_CHECK_VARIABLE");
+        wc.suspend();
+        SUIT_MessageBox::warning(SMESHGUI::desktop(),
+                                 QObject::tr("SMESH_WRN_WARNING"),
+                                 aMess);
+        wc.resume();
       }
     }
   }
@@ -220,24 +279,25 @@ namespace SMESH
     bool checkGeometry = ( !isNeedGeometry && isAlgo );
     // fill list of hypotheses/algorithms
     THypothesisDataMap& pMap = isAlgo ? myAlgorithmsMap : myHypothesesMap;
-    THypothesisDataMap::iterator anIter;
+    THypothesisDataMap::ConstIterator anIter;
     for ( anIter = pMap.begin(); anIter != pMap.end(); anIter++ ) {
       HypothesisData* aData = anIter.value();
+      if(!aData || aData->Label.isEmpty()) continue;
       if ( ( theDim < 0 || aData->Dim.contains( theDim ) ) && aData->IsAux == isAux) {
-	if (checkGeometry) {
-	  if (aData->IsNeedGeometry == isNeedGeometry)
-	    aHypList.append(anIter.key());
-	}
-	else {
-	  aHypList.append(anIter.key());
-	}
+        if (checkGeometry) {
+          if (aData->IsNeedGeometry == isNeedGeometry)
+            aHypList.append(anIter.key());
+        }
+        else {
+          aHypList.append(anIter.key());
+        }
       }
     }
     return aHypList;
   }
 
 
-  QStringList GetHypothesesSets()
+  QStringList GetHypothesesSets(int maxDim)
   {
     QStringList aSetNameList;
 
@@ -246,26 +306,36 @@ namespace SMESH
 
     QList<HypothesesSet*>::iterator hypoSet;
     for ( hypoSet  = myListOfHypothesesSets.begin(); 
-	  hypoSet != myListOfHypothesesSets.end();
-	  ++hypoSet ) {
+          hypoSet != myListOfHypothesesSets.end();
+          ++hypoSet ) {
       HypothesesSet* aSet = *hypoSet;
-      if ( aSet && aSet->AlgoList.count() ) {
-	aSetNameList.append( aSet->HypoSetName );
+      if ( aSet &&
+           ( aSet->count( true ) || aSet->count( false )) &&
+           aSet->maxDim() <= maxDim)
+      {
+        aSetNameList.append( mangledHypoSetName( aSet ));
       }
     }
+    aSetNameList.sort();
+
+    //  reverse order of aSetNameList
+    QStringList reversedNames;
+    for ( int i = 0; i < aSetNameList.count(); ++i )
+      reversedNames.prepend( aSetNameList[i] );
     
-    return aSetNameList;
+    return reversedNames;
   }
 
   HypothesesSet* GetHypothesesSet(const QString& theSetName)
   {
+    QString name = demangledHypoSetName( theSetName );
     QList<HypothesesSet*>::iterator hypoSet;
     for ( hypoSet  = myListOfHypothesesSets.begin(); 
-	  hypoSet != myListOfHypothesesSets.end();
-	  ++hypoSet ) {
+          hypoSet != myListOfHypothesesSets.end();
+          ++hypoSet ) {
       HypothesesSet* aSet = *hypoSet;
-      if ( aSet && aSet->HypoSetName == theSetName )
-	return aSet;
+      if ( aSet && aSet->name() == name )
+        return aSet;
     }
     return 0;
   }
@@ -277,10 +347,10 @@ namespace SMESH
     // Init list of available hypotheses, if needed
     InitAvailableHypotheses();
 
-    if (myHypothesesMap.find(aHypType) != myHypothesesMap.end()) {
+    if (myHypothesesMap.contains(aHypType)) {
       aHypData = myHypothesesMap[aHypType];
     }
-    else if (myAlgorithmsMap.find(aHypType) != myAlgorithmsMap.end()) {
+    else if (myAlgorithmsMap.contains(aHypType)) {
       aHypData = myAlgorithmsMap[aHypType];
     }
     return aHypData;
@@ -326,10 +396,12 @@ namespace SMESH
     SMESHGUI_GenericHypothesisCreator* aCreator = 0;
 
     // check, if creator for this hypothesis type already exists
-    if (myHypCreatorMap.find(aHypType) != myHypCreatorMap.end()) {
-      aCreator = myHypCreatorMap[aHypType];
-    }
-    else {
+    // BUG 0020378
+    //if (myHypCreatorMap.find(aHypType) != myHypCreatorMap.end()) {
+    //  aCreator = myHypCreatorMap[aHypType];
+    //}
+    //else
+    {
       // 1. Init list of available hypotheses, if needed
       InitAvailableHypotheses();
 
@@ -337,52 +409,60 @@ namespace SMESH
       HypothesisData* aHypData = GetHypothesisData(aHypType);
       if (!aHypData) 
         return aCreator;
+
       QString aClientLibName = aHypData->ClientLibName;
       QString aServerLibName = aHypData->ServerLibName;
 
       // 3. Load Client Plugin Library
       try {
-	// load plugin library
-	if(MYDEBUG) MESSAGE("Loading client meshers plugin library ...");
-	LibHandle libHandle = LoadLib( aClientLibName.toLatin1().data() );
-	if (!libHandle) {
-	  // report any error, if occured
-	  if ( MYDEBUG ) {
+        // load plugin library
+        if(MYDEBUG) MESSAGE("Loading client meshers plugin library ...");
+        LibHandle libHandle = LoadLib( aClientLibName.toLatin1().data() );
+        if (!libHandle) {
+          // report any error, if occured
+          if ( MYDEBUG ) {
 #ifdef WIN32
-	    const char* anError = "Can't load client meshers plugin library";
+            const char* anError = "Can't load client meshers plugin library";
 #else
-	    const char* anError = dlerror();	  
+            const char* anError = dlerror();      
 #endif
-	    MESSAGE(anError);
-	  }
-	}
-	else {
-	  // get method, returning hypothesis creator
-	  if(MYDEBUG) MESSAGE("Find GetHypothesisCreator() method ...");
-	  typedef SMESHGUI_GenericHypothesisCreator* (*GetHypothesisCreator) \
-	    ( const QString& );
-	  GetHypothesisCreator procHandle =
-	    (GetHypothesisCreator)GetProc(libHandle, "GetHypothesisCreator");
-	  if (!procHandle) {
-	    if(MYDEBUG) MESSAGE("bad hypothesis client plugin library");
-	    UnLoadLib(libHandle);
-	  }
-	  else {
-	    // get hypothesis creator
-	    if(MYDEBUG) MESSAGE("Get Hypothesis Creator for " << aHypType.toLatin1().data());
-	    aCreator = procHandle( aHypType );
-	    if (!aCreator) {
-	      if(MYDEBUG) MESSAGE("no such a hypothesis in this plugin");
-	    }
-	    else {
-	      // map hypothesis creator to a hypothesis name
-	      myHypCreatorMap[aHypType] = aCreator;
-	    }
-	  }
-	}
+            MESSAGE(anError);
+          }
+        }
+        else {
+          // get method, returning hypothesis creator
+          if(MYDEBUG) MESSAGE("Find GetHypothesisCreator() method ...");
+          typedef SMESHGUI_GenericHypothesisCreator* (*GetHypothesisCreator) \
+            ( const QString& );
+          GetHypothesisCreator procHandle =
+            (GetHypothesisCreator)GetProc(libHandle, "GetHypothesisCreator");
+          if (!procHandle) {
+            if(MYDEBUG) MESSAGE("bad hypothesis client plugin library");
+            UnLoadLib(libHandle);
+          }
+          else {
+            // get hypothesis creator
+            if(MYDEBUG) MESSAGE("Get Hypothesis Creator for " << aHypType.toLatin1().data());
+            aCreator = procHandle( aHypType );
+            if (!aCreator) {
+              if(MYDEBUG) MESSAGE("no such a hypothesis in this plugin");
+            }
+            else {
+              // map hypothesis creator to a hypothesis name
+              // BUG 0020378
+              //myHypCreatorMap[aHypType] = aCreator;
+
+	      //rnv : This dynamic property of the QObject stores the name of the plugin.
+	      //      It is used to obtain plugin root dir environment variable
+              //      in the SMESHGUI_HypothesisDlg class. Plugin root dir environment 
+	      //      variable is used to display documentation.
+	      aCreator->setProperty(PLUGIN_NAME,aHypData->PluginName);
+            }
+          }
+        }
       }
       catch (const SALOME::SALOME_Exception& S_ex) {
-	SalomeApp_Tools::QtCatchCorbaException(S_ex);
+        SalomeApp_Tools::QtCatchCorbaException(S_ex);
       }
     }
 
@@ -391,25 +471,26 @@ namespace SMESH
 
 
   SMESH::SMESH_Hypothesis_ptr CreateHypothesis(const QString& aHypType,
-					       const QString& aHypName,
-					       const bool isAlgo)
+                                               const QString& aHypName,
+                                               const bool isAlgo)
   {
     if(MYDEBUG) MESSAGE("Create " << aHypType.toLatin1().data() << 
-			" with name " << aHypName.toLatin1().data());
+                        " with name " << aHypName.toLatin1().data());
     HypothesisData* aHypData = GetHypothesisData(aHypType);
     QString aServLib = aHypData->ServerLibName;
     try {
       SMESH::SMESH_Hypothesis_var aHypothesis;
       aHypothesis = SMESHGUI::GetSMESHGen()->CreateHypothesis(aHypType.toLatin1().data(),
-							      aServLib.toLatin1().data());
+                                                              aServLib.toLatin1().data());
       if (!aHypothesis->_is_nil()) {
-	_PTR(SObject) aHypSObject = SMESH::FindSObject(aHypothesis.in());
-	if (aHypSObject) {
-	  if (!aHypName.isEmpty())
-	    SMESH::SetName(aHypSObject, aHypName);
-	  SMESHGUI::GetSMESHGUI()->updateObjBrowser();
-	  return aHypothesis._retn();
-	}
+        _PTR(SObject) aHypSObject = SMESH::FindSObject(aHypothesis.in());
+        if (aHypSObject) {
+          if (!aHypName.isEmpty())
+            SMESH::SetName(aHypSObject, aHypName);
+          SMESHGUI::Modified();
+          SMESHGUI::GetSMESHGUI()->updateObjBrowser();
+          return aHypothesis._retn();
+        }
       }
     } catch (const SALOME::SALOME_Exception & S_ex) {
       SalomeApp_Tools::QtCatchCorbaException(S_ex);
@@ -429,23 +510,23 @@ namespace SMESH
       _PTR(SObject) SM = SMESH::FindSObject(aMesh);
       GEOM::GEOM_Object_var aShapeObject = SMESH::GetShapeOnMeshOrSubMesh(SM);
       try {
-	res = aMesh->AddHypothesis(aShapeObject, aHyp);
-	if (res < SMESH::HYP_UNKNOWN_FATAL) {
-	  _PTR(SObject) aSH = SMESH::FindSObject(aHyp);
-	  if (SM && aSH) {
-	    SMESH::ModifiedMesh(SM, false, aMesh->NbNodes()==0);
-	  }
-	}
-	if (res > SMESH::HYP_OK) {
-	  wc.suspend();
-	  processHypothesisStatus(res, aHyp, true);
-	  wc.resume();
-	}
+        res = aMesh->AddHypothesis(aShapeObject, aHyp);
+        if (res < SMESH::HYP_UNKNOWN_FATAL) {
+          _PTR(SObject) aSH = SMESH::FindSObject(aHyp);
+          if (SM && aSH) {
+            SMESH::ModifiedMesh(SM, false, aMesh->NbNodes()==0);
+          }
+        }
+        if (res > SMESH::HYP_OK) {
+          wc.suspend();
+          processHypothesisStatus(res, aHyp, true);
+          wc.resume();
+        }
       }
       catch(const SALOME::SALOME_Exception& S_ex) {
-	wc.suspend();
-	SalomeApp_Tools::QtCatchCorbaException(S_ex);
-	res = SMESH::HYP_UNKNOWN_FATAL;
+        wc.suspend();
+        SalomeApp_Tools::QtCatchCorbaException(S_ex);
+        res = SMESH::HYP_UNKNOWN_FATAL;
       }
     }
     return res < SMESH::HYP_UNKNOWN_FATAL;
@@ -460,33 +541,33 @@ namespace SMESH
 
     if (!aSubMesh->_is_nil() && ! aHyp->_is_nil()) {
       try {
-	SMESH::SMESH_Mesh_var aMesh = aSubMesh->GetFather();
-	_PTR(SObject) SsubM = SMESH::FindSObject(aSubMesh);
-	GEOM::GEOM_Object_var aShapeObject = SMESH::GetShapeOnMeshOrSubMesh(SsubM);
-	if (!aMesh->_is_nil() && SsubM && !aShapeObject->_is_nil()) {
-	  res = aMesh->AddHypothesis(aShapeObject, aHyp);
-	  if (res < SMESH::HYP_UNKNOWN_FATAL)  {
+        SMESH::SMESH_Mesh_var aMesh = aSubMesh->GetFather();
+        _PTR(SObject) SsubM = SMESH::FindSObject(aSubMesh);
+        GEOM::GEOM_Object_var aShapeObject = SMESH::GetShapeOnMeshOrSubMesh(SsubM);
+        if (!aMesh->_is_nil() && SsubM && !aShapeObject->_is_nil()) {
+          res = aMesh->AddHypothesis(aShapeObject, aHyp);
+          if (res < SMESH::HYP_UNKNOWN_FATAL)  {
             _PTR(SObject) meshSO = SMESH::FindSObject(aMesh);
             if (meshSO)
               SMESH::ModifiedMesh(meshSO, false, aMesh->NbNodes()==0);
-	  }
-	  if (res > SMESH::HYP_OK) {
-	    wc.suspend();
-	    processHypothesisStatus(res, aHyp, true);
-	    wc.resume();
-	  }
-	}
-	else {
-	  SCRUTE(aHyp->_is_nil());
-	  SCRUTE(aMesh->_is_nil());
-	  SCRUTE(!SsubM);
-	  SCRUTE(aShapeObject->_is_nil());
-	}
+          }
+          if (res > SMESH::HYP_OK) {
+            wc.suspend();
+            processHypothesisStatus(res, aHyp, true);
+            wc.resume();
+          }
+        }
+        else {
+          SCRUTE(aHyp->_is_nil());
+          SCRUTE(aMesh->_is_nil());
+          SCRUTE(!SsubM);
+          SCRUTE(aShapeObject->_is_nil());
+        }
       }
       catch(const SALOME::SALOME_Exception& S_ex) {
-	wc.suspend();
-	SalomeApp_Tools::QtCatchCorbaException(S_ex);
-	res = SMESH::HYP_UNKNOWN_FATAL;
+        wc.suspend();
+        SalomeApp_Tools::QtCatchCorbaException(S_ex);
+        res = SMESH::HYP_UNKNOWN_FATAL;
       }
     }
     else {
@@ -505,28 +586,28 @@ namespace SMESH
       _PTR(Study) aStudy = GetActiveStudyDocument();
       _PTR(SObject) aHypObj = aStudy->FindObjectID( IObject->getEntry() );
       if( aHypObj )
-	{
-	  _PTR(SObject) MorSM = SMESH::GetMeshOrSubmesh( aHypObj );
-	  _PTR(SObject) aRealHypo;
-	  if( aHypObj->ReferencedObject( aRealHypo ) )
-	    {
-	      SMESH_Hypothesis_var hypo = SMESH_Hypothesis::_narrow( SObjectToObject( aRealHypo ) );
-	      RemoveHypothesisOrAlgorithmOnMesh( MorSM, hypo );
-	    }
-	  else
-	    {
-	      SMESH_Hypothesis_var hypo = SMESH_Hypothesis::_narrow( SObjectToObject( aHypObj ) );
-	      SObjectList meshList = GetMeshesUsingAlgoOrHypothesis( hypo );
-	      for( int i = 0; i < meshList.size(); i++ )
-		RemoveHypothesisOrAlgorithmOnMesh( meshList[ i ], hypo );
-	    }
-	}
+        {
+          _PTR(SObject) MorSM = SMESH::GetMeshOrSubmesh( aHypObj );
+          _PTR(SObject) aRealHypo;
+          if( aHypObj->ReferencedObject( aRealHypo ) )
+            {
+              SMESH_Hypothesis_var hypo = SMESH_Hypothesis::_narrow( SObjectToObject( aRealHypo ) );
+              RemoveHypothesisOrAlgorithmOnMesh( MorSM, hypo );
+            }
+          else
+            {
+              SMESH_Hypothesis_var hypo = SMESH_Hypothesis::_narrow( SObjectToObject( aHypObj ) );
+              SObjectList meshList = GetMeshesUsingAlgoOrHypothesis( hypo );
+              for( int i = 0; i < meshList.size(); i++ )
+                RemoveHypothesisOrAlgorithmOnMesh( meshList[ i ], hypo );
+            }
+        }
     }
     catch(const SALOME::SALOME_Exception& S_ex)
       {
-	wc.suspend();
-	SalomeApp_Tools::QtCatchCorbaException(S_ex);
-	res = SMESH::HYP_UNKNOWN_FATAL;
+        wc.suspend();
+        SalomeApp_Tools::QtCatchCorbaException(S_ex);
+        res = SMESH::HYP_UNKNOWN_FATAL;
       }
     return res < SMESH::HYP_UNKNOWN_FATAL;
   }
@@ -560,7 +641,7 @@ namespace SMESH
           }
           else if(!aMesh->HasShapeToMesh()){
             res = aMesh->RemoveHypothesis(aShapeObject, anHyp);
-	    if (res < SMESH::HYP_UNKNOWN_FATAL) {
+            if (res < SMESH::HYP_UNKNOWN_FATAL) {
               _PTR(SObject) meshSO = SMESH::FindSObject(aMesh);
               if (meshSO)
                 SMESH::ModifiedMesh(meshSO, false, aMesh->NbNodes()==0);              
@@ -573,9 +654,9 @@ namespace SMESH
           }
         }
       } catch(const SALOME::SALOME_Exception& S_ex) {
-	wc.suspend();
-	SalomeApp_Tools::QtCatchCorbaException(S_ex);
-	res = SMESH::HYP_UNKNOWN_FATAL;
+        wc.suspend();
+        SalomeApp_Tools::QtCatchCorbaException(S_ex);
+        res = SMESH::HYP_UNKNOWN_FATAL;
       }
     }
     return res < SMESH::HYP_UNKNOWN_FATAL;
@@ -590,25 +671,25 @@ namespace SMESH
     if (!AlgoOrHyp->_is_nil()) {
       _PTR(SObject) SO_Hypothesis = SMESH::FindSObject(AlgoOrHyp);
       if (SO_Hypothesis) {
-	SObjectList listSO =
-	  SMESHGUI::activeStudy()->studyDS()->FindDependances(SO_Hypothesis);
+        SObjectList listSO =
+          SMESHGUI::activeStudy()->studyDS()->FindDependances(SO_Hypothesis);
 
-	if(MYDEBUG) MESSAGE("SMESHGUI::GetMeshesUsingAlgoOrHypothesis(): dependency number ="<<listSO.size());
-	for (unsigned int i = 0; i < listSO.size(); i++) {
-	  _PTR(SObject) SO = listSO[i];
-	  if (SO) {
-	    _PTR(SObject) aFather = SO->GetFather();
-	    if (aFather) {
-	      _PTR(SObject) SOfatherFather = aFather->GetFather();
-	      if (SOfatherFather) {
-		if(MYDEBUG) MESSAGE("SMESHGUI::GetMeshesUsingAlgoOrHypothesis(): dependency added to list");
-		index++;
-		listSOmesh.resize(index);
-		listSOmesh[index - 1] = SOfatherFather;
-	      }
-	    }
-	  }
-	}
+        if(MYDEBUG) MESSAGE("SMESHGUI::GetMeshesUsingAlgoOrHypothesis(): dependency number ="<<listSO.size());
+        for (unsigned int i = 0; i < listSO.size(); i++) {
+          _PTR(SObject) SO = listSO[i];
+          if (SO) {
+            _PTR(SObject) aFather = SO->GetFather();
+            if (aFather) {
+              _PTR(SObject) SOfatherFather = aFather->GetFather();
+              if (SOfatherFather) {
+                if(MYDEBUG) MESSAGE("SMESHGUI::GetMeshesUsingAlgoOrHypothesis(): dependency added to list");
+                index++;
+                listSOmesh.resize(index);
+                listSOmesh[index - 1] = SOfatherFather;
+              }
+            }
+          }
+        }
       }
     }
     if (MYDEBUG) MESSAGE("SMESHGUI::GetMeshesUsingAlgoOrHypothesis(): completed");

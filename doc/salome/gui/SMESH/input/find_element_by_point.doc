@@ -1,0 +1,41 @@
+/*!
+
+\page find_element_by_point_page Find Element by Point
+
+\n This functionality allows you to find all mesh elements to which
+belongs a certain point.
+
+<em>To find the elements:</em>
+<ol>
+<li>Select a mesh or a group</li>
+<li>Select from the Mesh menu or from the context menu the Find
+Element by Point item.
+
+\image html findelement3.png
+<center><em>"Find Element by Point" button</em></center>
+
+The following dialog box will appear:
+
+\image html findelement2.png
+
+</li>
+<li>In this dialog box you should select:
+
+<ul>
+<li>the coordinates of the point;</li>
+<li>the type of elements to be found; it is also possible to find elements
+of all types related to the reference point. Choose type "All" to find
+elements of any type except for nodes and 0D elements.</li>
+</ul>
+
+</li>
+<li>Click the \b Find button.
+</ol>
+
+\image html findelement1.png 
+<center>The reference point and the related elements.</center>
+
+
+<br><b>See Also</b> a sample TUI Script of a \ref tui_find_element_by_point "Find Element by Point" operation.
+
+*/

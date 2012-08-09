@@ -1,24 +1,26 @@
-#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+# -*- coding: utf-8 -*-
+# Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 #
-#  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+# Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+# CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 #
-#  This library is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU Lesser General Public
-#  License as published by the Free Software Foundation; either
-#  version 2.1 of the License.
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License.
 #
-#  This library is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#  Lesser General Public License for more details.
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
 #
-#  You should have received a copy of the GNU Lesser General Public
-#  License along with this library; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
-#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 #  File   : SMESH_withHole.py
 #  Author : Lucien PIGNOLONI
 #  Module : SMESH
@@ -29,6 +31,7 @@ import salome
 import geompy
 import smesh
 
+salome.salome_init()
 # ---------------------------- GEOM --------------------------------------
 
 # ---- define contigous arcs and segment to define a closed wire
@@ -92,31 +95,32 @@ Id_mechanic = geompy.addToStudy( mechanic, "mechanic" )
 # ---- explode on faces
 SubFaceL = geompy.SubShapeAllSorted(mechanic, geompy.ShapeType["FACE"])
 
-# ---- add a face sub shape in study to be meshed different
+# ---- add a face sub-shape in study to be meshed different
 sub_face1 = SubFaceL[0]
 name      = geompy.SubShapeName( sub_face1, mechanic )
 
 Id_SubFace1 = geompy.addToStudyInFather( mechanic, sub_face1, name )
 
-# ---- add a face sub shape in study to be meshed different
+# ---- add a face sub-shape in study to be meshed different
 sub_face2 = SubFaceL[4]
 name      = geompy.SubShapeName( sub_face2, mechanic )
 
 Id_SubFace2 = geompy.addToStudyInFather( mechanic, sub_face2, name )
 
-# ---- add a face sub shape in study to be meshed different
+# ---- add a face sub-shape in study to be meshed different
 sub_face3 = SubFaceL[5]
 name      = geompy.SubShapeName( sub_face3, mechanic )
 
 Id_SubFace3 = geompy.addToStudyInFather( mechanic, sub_face3, name )
 
-# ---- add a face sub shape in study to be meshed different
+# ---- add a face sub-shape in study to be meshed different
 sub_face4 = SubFaceL[10]
 name      = geompy.SubShapeName( sub_face4, mechanic )
 
 Id_SubFace4 = geompy.addToStudyInFather( mechanic, sub_face4, name )
 
 # ---------------------------- SMESH --------------------------------------
+smesh.SetCurrentStudy(salome.myStudy)
 
 # -- Init --
 shape_mesh = salome.IDToObject( Id_mechanic )
@@ -189,9 +193,9 @@ print "Number of tetrahedrons: ", mesh.NbTetras()
 mesh.SplitQuadObject(submesh2, 1)
 
 #2 cutting of triangles of the group
-FacesTriToQuad = [2381, 2382, 2383, 2384, 2385, 2386, 2387, 2388, 2389, 2390, 2391, 2392, 2393, 2394, 2395, 2396, 2397, 2398, 2399, 2400, 2401, 2402, 2403, 2404, 2405, 2406, 2407, 2408, 2409, 2410, 2411, 2412, 2413, 2414, 2415, 2416, 2417, 2418, 2419, 2420, 2421, 2422]
+FacesTriToQuad = [ 2391, 2824, 2825, 2826, 2827, 2828, 2832, 2833, 2834, 2835, 2836, 2837, 2838, 2839, 2841, 2844, 2845, 2847, 2854, 2861, 2863, 2922, 2923, 2924, 2925, 2926, 2927, 2928, 2929, 2930, 2931, 2932, 2933, 2934, 2935, 2936, 2937, 2938, 2940, 2941, 2946, 2951, 2970, 2971, 2972, 2973, 2974, 2975, 2976, 2977, 2978, 2979, 2980, 2981, 2982, 2983, 2984, 2985 ]
 GroupTriToQuad = mesh.MakeGroupByIds("Group of faces (quad)", smesh.FACE, FacesTriToQuad)
-mesh.TriToQuadObject(GroupTriToQuad, None , 1.57)
+mesh.TriToQuadObject(GroupTriToQuad, smesh.FT_AspectRatio , 1.57)
 
 #3 extrusion of the group
 point = smesh.PointStruct(0, 0, 5)

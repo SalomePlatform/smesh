@@ -1,31 +1,29 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
-// File      : SMESH_Gen_i_1.cxx
-// Created   : Thu Oct 21 17:24:06 2004
-// Author    : Edward AGAPOV (eap)
-// Module    : SMESH
-// $Header: 
-//
+//  File      : SMESH_Gen_i_1.cxx
+//  Created   : Thu Oct 21 17:24:06 2004
+//  Author    : Edward AGAPOV (eap)
+//  Module    : SMESH
+
 #include "SMESH_Gen_i.hxx"
 
 #include "SMESH_Mesh_i.hxx"
@@ -40,13 +38,14 @@
 #include "Utils_ExceptHandlers.hxx"
 
 #include <TCollection_AsciiString.hxx>
+#include <TopoDS_Solid.hxx>
 
 #ifdef _DEBUG_
 static int MYDEBUG = 0;
-static int VARIABLE_DEBUG = 0;
+//static int VARIABLE_DEBUG = 0;
 #else
 static int MYDEBUG = 0;
-static int VARIABLE_DEBUG = 0;
+//static int VARIABLE_DEBUG = 0;
 #endif
 
 //=============================================================================
@@ -137,6 +136,16 @@ long SMESH_Gen_i::GetVolumeGroupsTag()
   return SMESH::Tag_VolumeGroups;
 }
 
+long SMESH_Gen_i::Get0DElementsGroupsTag()
+{
+  return SMESH::Tag_0DElementsGroups;
+}
+
+long SMESH_Gen_i::GetBallElementsGroupsTag()
+{
+  return SMESH::Tag_BallElementsGroups;
+}
+
 //=============================================================================
 /*!
  *  SMESH_Gen_i::CanPublishInStudy
@@ -210,8 +219,10 @@ GEOM::GEOM_Object_ptr SMESH_Gen_i::ShapeToGeomObject (const TopoDS_Shape& theSha
     GEOM_Client* aClient = GetShapeReader();
     TCollection_AsciiString IOR;
     if ( aClient && aClient->Find( theShape, IOR ))
-      aShapeObj = GEOM::GEOM_Object::_narrow
-        ( GetORB()->string_to_object( IOR.ToCString() ) );
+    {
+      CORBA::Object_var obj = GetORB()->string_to_object( IOR.ToCString() );
+      aShapeObj = GEOM::GEOM_Object::_narrow ( obj );
+    }
   }
   return aShapeObj._retn();
 }
@@ -262,7 +273,8 @@ static SALOMEDS::SObject_ptr publish(SALOMEDS::Study_ptr   theStudy,
   }
   if ( thePixMap ) {
     anAttr  = aStudyBuilder->FindOrCreateAttribute( SO, "AttributePixMap" );
-    SALOMEDS::AttributePixMap::_narrow( anAttr )->SetPixMap( thePixMap );
+    SALOMEDS::AttributePixMap_var pm = SALOMEDS::AttributePixMap::_narrow( anAttr );
+    pm->SetPixMap( thePixMap );
   }
   if ( !theSelectable ) {
     anAttr   = aStudyBuilder->FindOrCreateAttribute( SO, "AttributeSelectable" );
@@ -295,6 +307,25 @@ void SMESH_Gen_i::SetName(SALOMEDS::SObject_ptr theSObject,
         aNameAttr->SetValue( aName.ToCString() );
       }
     }
+  }
+}
+
+//=======================================================================
+//function : SetPixMap
+//purpose  : 
+//=======================================================================
+
+void SMESH_Gen_i::SetPixMap(SALOMEDS::SObject_ptr theSObject,
+                            const char*           thePixMap)
+{
+  if ( !theSObject->_is_nil() && thePixMap && strlen( thePixMap ))
+  {
+    SALOMEDS::Study_var aStudy = theSObject->GetStudy();
+    SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
+    SALOMEDS::GenericAttribute_var anAttr =
+      aStudyBuilder->FindOrCreateAttribute( theSObject, "AttributePixMap" );
+    SALOMEDS::AttributePixMap_var aPMAttr = SALOMEDS::AttributePixMap::_narrow( anAttr );
+    aPMAttr->SetPixMap( thePixMap );
   }
 }
 
@@ -349,9 +380,9 @@ static void addReference (SALOMEDS::Study_ptr   theStudy,
 //=============================================================================
 
 SALOMEDS::SObject_ptr SMESH_Gen_i::PublishInStudy(SALOMEDS::Study_ptr   theStudy,
-						  SALOMEDS::SObject_ptr theSObject,
-						  CORBA::Object_ptr     theIOR,
-						  const char*           theName)
+                                                  SALOMEDS::SObject_ptr theSObject,
+                                                  CORBA::Object_ptr     theIOR,
+                                                  const char*           theName)
      throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
@@ -446,9 +477,9 @@ static long findMaxChildTag( SALOMEDS::SObject_ptr theSObject )
     if ( !aStudy->_is_nil() ) {
       SALOMEDS::ChildIterator_var anIter = aStudy->NewChildIterator( theSObject );
       for ( ; anIter->More(); anIter->Next() ) {
-	long nTag = anIter->Value()->Tag();
-	if ( nTag > aTag )
-	  aTag = nTag;
+        long nTag = anIter->Value()->Tag();
+        if ( nTag > aTag )
+          aTag = nTag;
       }
     }
   }
@@ -499,13 +530,12 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishMesh (SALOMEDS::Study_ptr   theStudy,
 
     // Publish global hypotheses
 
-    SMESH::ListOfHypothesis * hypList = theMesh->GetHypothesisList( aShapeObject );
-    if ( hypList )
-      for ( int i = 0; i < hypList->length(); i++ ) {
-        SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( (*hypList)[ i ]);
-        PublishHypothesis( theStudy, aHyp );
-        AddHypothesisToShape( theStudy, theMesh, aShapeObject, aHyp );
-      }
+    SMESH::ListOfHypothesis_var hypList = theMesh->GetHypothesisList( aShapeObject );
+    for ( int i = 0; i < hypList->length(); i++ ) {
+      SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( hypList[ i ]);
+      PublishHypothesis( theStudy, aHyp );
+      AddHypothesisToShape( theStudy, theMesh, aShapeObject, aHyp );
+    }
   }
 
   // Publish submeshes
@@ -569,7 +599,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishSubMesh (SALOMEDS::Study_ptr      theS
     }
     // Find submesh sub-tree tag
     long aRootTag;
-    char* aRootName = "";
+    const char* aRootName = "";
     switch ( theShapeObject->GetShapeType() ) {
     case GEOM::VERTEX:
       aRootTag  = GetSubMeshOnVertexTag();
@@ -607,7 +637,10 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishSubMesh (SALOMEDS::Study_ptr      theS
     SetName( aRootSO, aRootName );
 
     // Add new submesh to corresponding sub-tree
-    aSubMeshSO = publish (theStudy, theSubMesh, aRootSO, 0, "ICON_SMESH_TREE_MESH_WARN");
+    SMESH::array_of_ElementType_var elemTypes = theSubMesh->GetTypes();
+    const int isEmpty = ( elemTypes->length() == 0 );
+    const char* pm[2] = { "ICON_SMESH_TREE_MESH", "ICON_SMESH_TREE_MESH_WARN" };
+    aSubMeshSO = publish (theStudy, theSubMesh, aRootSO, 0, pm[isEmpty] );
     if ( aSubMeshSO->_is_nil() )
       return aSubMeshSO._retn();
   }
@@ -655,21 +688,36 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishGroup (SALOMEDS::Study_ptr    theStudy
     }
     int aType = (int)theGroup->GetType();
     const char* aRootNames[] = {
-      "Compound Groups", "Groups of Nodes",
-      "Groups of Edges", "Groups of Faces", "Groups of Volumes" };
+      "Compound Groups", "Groups of Nodes", "Groups of Edges",
+      "Groups of Faces", "Groups of Volumes", "Groups of 0D Elements",
+      "Groups of Balls" };
 
     // Currently, groups with heterogenous content are not supported
-    if ( aType != SMESH::ALL ) {
+    if ( aType != SMESH::ALL )
+    {
       long aRootTag = GetNodeGroupsTag() + aType - 1;
 
       // Find or create groups root
       SALOMEDS::SObject_var aRootSO = publish (theStudy, CORBA::Object::_nil(),
                                                aMeshSO, aRootTag, 0, false );
-      if ( aType < 5 )
+      if ( aType < sizeof(aRootNames)/sizeof(char*) )
         SetName( aRootSO, aRootNames[aType] );
 
       // Add new group to corresponding sub-tree
-      aGroupSO = publish (theStudy, theGroup, aRootSO, 0, "ICON_SMESH_TREE_GROUP" );
+      SMESH::array_of_ElementType_var elemTypes = theGroup->GetTypes();
+      int isEmpty = ( elemTypes->length() == 0 );
+      std::string pm[2] = { "ICON_SMESH_TREE_GROUP", "ICON_SMESH_TREE_MESH_WARN" };
+      if ( SMESH::DownCast< SMESH_GroupOnFilter_i* > ( theGroup ))
+      {
+        pm[0] = "ICON_SMESH_TREE_GROUP_ON_FILTER";
+      }
+      else if ( SMESH::DownCast< SMESH_Group_i* > ( theGroup ))
+      {
+        SMESH::array_of_ElementType_var allElemTypes = theMesh->GetTypes();
+        for ( size_t i =0; i < allElemTypes->length() && isEmpty; ++i )
+          isEmpty = ( allElemTypes[i] != theGroup->GetType() );
+      }
+      aGroupSO = publish (theStudy, theGroup, aRootSO, 0, pm[isEmpty].c_str() );
     }
     if ( aGroupSO->_is_nil() )
       return aGroupSO._retn();
@@ -869,71 +917,146 @@ bool SMESH_Gen_i::RemoveHypothesisFromShape(SALOMEDS::Study_ptr         theStudy
 //function : UpdateParameters
 //purpose  : 
 //=======================================================================
-void SMESH_Gen_i::UpdateParameters(CORBA::Object_ptr theObject, const char* theParameters)
+void SMESH_Gen_i::UpdateParameters(/*CORBA::Object_ptr theObject,*/ const char* theParameters)
 {
-
-  if(VARIABLE_DEBUG)
-    cout<<"UpdateParameters : "<<theParameters<<endl;
   SALOMEDS::Study_ptr aStudy = GetCurrentStudy();
-  if(aStudy->_is_nil() || CORBA::is_nil(theObject)) 
+  if ( aStudy->_is_nil() )
     return;
-
-  SALOMEDS::SObject_var aSObj =  ObjectToSObject(aStudy,theObject);
-  if(aSObj->_is_nil())  
-    return;
-  
-  SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
-  
-  SALOMEDS::GenericAttribute_var aFindAttr;
-  bool hasAttr = aSObj->FindAttribute(aFindAttr, "AttributeString");
-  if(VARIABLE_DEBUG)
-    cout<<"Find Attribute "<<hasAttr<<endl;
-
-  SALOMEDS::GenericAttribute_var anAttr;
-  anAttr = aStudyBuilder->FindOrCreateAttribute( aSObj, "AttributeString");
-  SALOMEDS::AttributeString_var aStringAttr = SALOMEDS::AttributeString::_narrow(anAttr);
-
-  TCollection_AsciiString aNewParams;
-  TCollection_AsciiString aOldParameters(aStringAttr->Value());
-  TCollection_AsciiString anInputParams(ParseParameters(theParameters));
-  
-  if(!hasAttr)
-    aNewParams = anInputParams;
-  else 
-    aNewParams = aOldParameters+"|"+anInputParams;
-
-  if(VARIABLE_DEBUG)
+  myLastParameters.clear();
+  int pos = 0, prevPos = 0, len = strlen( theParameters );
+  if ( len == 0 ) return;
+  while ( pos <= len )
+  {
+    if ( pos == len || theParameters[pos] == ':' )
     {
-      cout<<"Input Parameters : "<<anInputParams<<endl;
-      cout<<"Old Parameters : "<<aOldParameters<<endl;
-      cout<<"New Parameters : "<<aNewParams<<endl;
+      if ( prevPos < pos )
+      {
+        string val(theParameters + prevPos, theParameters + pos );
+        if ( !aStudy->IsVariable( val.c_str() ))
+          val.clear();
+        myLastParameters.push_back( val );
+      }
+      else
+      {
+        myLastParameters.push_back("");
+      }
+      prevPos = pos+1;
     }
-  
-  
-  aStringAttr->SetValue( aNewParams.ToCString() );
+    ++pos;
+  }
+  return;
+
+  // OLD VARIANT
+
+  // if(VARIABLE_DEBUG)
+  //   cout<<"UpdateParameters : "<<theParameters<<endl;
+  // //SALOMEDS::Study_ptr aStudy = GetCurrentStudy();
+  // if(aStudy->_is_nil() || CORBA::is_nil(theObject)) 
+  //   return;
+
+  // SALOMEDS::SObject_var aSObj =  ObjectToSObject(aStudy,theObject);
+  // if(aSObj->_is_nil())  
+  //   return;
+
+  // SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
+
+  // SALOMEDS::GenericAttribute_var aFindAttr;
+  // bool hasAttr = aSObj->FindAttribute(aFindAttr, "AttributeString");
+  // if(VARIABLE_DEBUG)
+  //   cout<<"Find Attribute "<<hasAttr<<endl;
+
+  // SALOMEDS::GenericAttribute_var anAttr;
+  // anAttr = aStudyBuilder->FindOrCreateAttribute( aSObj, "AttributeString");
+  // SALOMEDS::AttributeString_var aStringAttr = SALOMEDS::AttributeString::_narrow(anAttr);
+
+  // CORBA::String_var oldparVar = aStringAttr->Value();
+  // CORBA::String_var inpparVar = ParseParameters(theParameters);
+  // TCollection_AsciiString aNewParams;
+  // TCollection_AsciiString aOldParameters(oldparVar.inout());
+  // TCollection_AsciiString anInputParams(inpparVar.inout());
+  // if(!hasAttr)
+  //   aNewParams = anInputParams;
+  // else 
+  //   {
+  //     int pos = aOldParameters.SearchFromEnd("|");
+  //     if(pos==-1) pos = 0;
+  //     TCollection_AsciiString previousParamFull(aOldParameters.Split(pos));
+  //     TCollection_AsciiString previousParam(previousParamFull);
+  //     TCollection_AsciiString theRepet("1");
+  //     pos = previousParam.SearchFromEnd(";*=");
+  //     if(pos >= 0)
+  //       {
+  //         theRepet = previousParam.Split(pos+2);
+  //         pos = pos-1;
+  //         if(pos==-1) pos = 0;
+  //         previousParam.Split(pos);
+  //       }
+  //     if(previousParam == anInputParams)
+  //       {
+  //         theRepet = theRepet.IntegerValue()+1;
+  //         aNewParams = aOldParameters + previousParam + ";*=" + theRepet;
+  //       }
+  //     else
+  //       {
+  //         aNewParams = aOldParameters + previousParamFull + "|" + anInputParams;
+  //       }
+  //   }
+
+  // if(VARIABLE_DEBUG)
+  // {
+  //   cout<<"Input Parameters : "<<anInputParams<<endl;
+  //   cout<<"Old Parameters : "<<aOldParameters<<endl;
+  //   cout<<"New Parameters : "<<aNewParams<<endl;
+  // }
+
+  // aStringAttr->SetValue( aNewParams.ToCString() );
 }
 
 //=======================================================================
 //function : ParseParameters
-//purpose  : 
+//purpose  : Replace variables by their values
 //=======================================================================
 char* SMESH_Gen_i::ParseParameters(const char* theParameters)
 {
-  const char* aParameters = CORBA::string_dup(theParameters);
+  //const char* aParameters = theParameters;
+//   const char* aParameters = CORBA::string_dup(theParameters);
   TCollection_AsciiString anInputParams;
-  SALOMEDS::Study_ptr aStudy = GetCurrentStudy();
+  SALOMEDS::Study_var aStudy = GetCurrentStudy();
   if( !aStudy->_is_nil() ) {
-    SALOMEDS::ListOfListOfStrings_var aSections = aStudy->ParseVariables(aParameters);
-    for(int j=0;j<aSections->length();j++) {
-      SALOMEDS::ListOfStrings aVars= aSections[j];
-      for(int i=0;i<aVars.length();i++ ) {
-        anInputParams += aStudy->IsVariable(aVars[i].in()) ? 
-          TCollection_AsciiString(aVars[i].in()) : TCollection_AsciiString("");
-        if(i != aVars.length()-1)
-          anInputParams+=":";
+//     SALOMEDS::ListOfListOfStrings_var aSections = aStudy->ParseVariables(theParameters);
+//     for(int j=0;j<aSections->length();j++) {
+//       SALOMEDS::ListOfStrings aVars= aSections[j];
+//       for(int i=0;i<aVars.length();i++ ) {
+//         anInputParams += aStudy->IsVariable(aVars[i].in()) ? 
+//           TCollection_AsciiString(aVars[i].in()) : TCollection_AsciiString("");
+//         if(i != aVars.length()-1)
+//           anInputParams+=":";
+//       }
+//       if(j!=aSections->length()-1)
+//         anInputParams+="|";
+//     }
+    TCollection_AsciiString paramStr( theParameters );
+    static TCollection_AsciiString separators(":|");
+    int beg = 0, end;
+    char sep, *pParams = (char*)paramStr.ToCString();
+    while ( beg < paramStr.Length() )
+    {
+      end = beg-1;
+      while ( ++end < paramStr.Length() )
+        if ( pParams[end] == ':' || pParams[end] == '|')
+          break;
+      if ( end < paramStr.Length())
+      {
+        sep = pParams[end];
+        pParams[end] = '\0';
       }
-      if(j!=aSections->length()-1)
-        anInputParams+="|";
+      if ( aStudy->IsVariable( pParams+beg ))
+        anInputParams += pParams+beg;
+      if ( end < paramStr.Length() )
+        anInputParams += sep;
+      else
+        break;
+      beg = end + 1;
     }
   }
   return CORBA::string_dup(anInputParams.ToCString());

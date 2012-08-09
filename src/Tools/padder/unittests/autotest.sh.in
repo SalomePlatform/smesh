@@ -1,0 +1,61 @@
+#!/bin/bash
+# Copyright (C) 2010-2012  EDF R&D
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+#
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+#
+# Author : Guillaume Boulant (EDF) 
+#
+
+
+# This script should be executed in a SALOME shell session,
+# for example the shell obtained from the command runSession
+# provided by the SALOME application.
+
+# This list contains the filenames where test suites are to be
+# executed. The path are defined relative to the PYTHON installation
+# directory of the SALOME module.
+listfiles="\
+    configreader.py \
+    unittests/usecase_meshJobManager.py \
+    gui/inputdata.py"
+
+INSTALL_DIR=@prefix@
+PYTHON_DIR=$INSTALL_DIR/lib/python@PYTHON_VERSION@/site-packages/salome
+PYTHONPATH=$PYTHON_DIR:$PYTHONPATH
+export PYTHONPATH
+
+stderr=2
+while getopts 'ql' OPTION
+do
+    case $OPTION in
+	q) stderr=1 ;;
+	l) for f in $listfiles; do echo $f; done; exit 0;;
+	?) printf "Usage: %s: [-q] [-l]\n" $(basename $0) >&2; exit 2;;
+    esac
+done
+shift $(($OPTIND - 1))
+
+here=$(pwd)
+package_path="salome/smesh/spadder"
+cd $PYTHON_DIR
+for file in $listfiles; do
+    # Uncomment this line (and comment the next one) to display
+    # the start line of a test and not only the result:
+    python $package_path/$file 2>&$stderr | grep '^\[TEST'
+    #python $package_path/$file $filter | grep '^\[TEST' | grep -v 'test in progress'
+done
+cd $here

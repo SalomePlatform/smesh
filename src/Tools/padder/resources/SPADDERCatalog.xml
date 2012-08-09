@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='us-ascii' ?>
+
+<!-- XML component catalog -->
+
+<begin-catalog>
+    <path-prefix-list></path-prefix-list>
+    <type-list></type-list>
+    <component-list>
+        <component>
+            <component-name>MeshJobManager</component-name>
+        </component>
+        <component>
+            <component-name>SPADDERPluginTester</component-name>
+        </component>
+    </component-list>
+</begin-catalog>

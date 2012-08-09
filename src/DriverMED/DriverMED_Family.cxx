@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH DriverMED : tool to split groups on families
 //  File   : DriverMED_Family.cxx
 //  Author : Julia DOROVSKIKH
@@ -28,7 +29,7 @@
 #include "DriverMED_Family.h"
 #include "MED_Factory.hxx"
 
-#include <sstream>	
+#include <sstream>      
 
 using namespace std;
 
@@ -83,7 +84,7 @@ void
 DriverMED_Family
 ::SetType(const SMDSAbs_ElementType theType) 
 { 
-  myType = theType; 
+  myTypes.insert( myType = theType );
 }
 
 SMDSAbs_ElementType
@@ -91,6 +92,13 @@ DriverMED_Family
 ::GetType()
 {
   return myType; 
+}
+
+const std::set< SMDSAbs_ElementType >&
+DriverMED_Family
+::GetTypes() const
+{
+  return myTypes;
 }
 
 bool
@@ -139,21 +147,25 @@ DriverMED_Family
 DriverMED_FamilyPtrList 
 DriverMED_Family
 ::MakeFamilies(const SMESHDS_SubMeshPtrMap& theSubMeshes,
-	       const SMESHDS_GroupBasePtrList& theGroups,
-	       const bool doGroupOfNodes,
-	       const bool doGroupOfEdges,
-	       const bool doGroupOfFaces,
-	       const bool doGroupOfVolumes)
+               const SMESHDS_GroupBasePtrList& theGroups,
+               const bool doGroupOfNodes,
+               const bool doGroupOfEdges,
+               const bool doGroupOfFaces,
+               const bool doGroupOfVolumes,
+               const bool doGroupOf0DElems,
+               const bool doGroupOfBalls)
 {
   DriverMED_FamilyPtrList aFamilies;
 
-  string anAllNodesGroupName = "Group_Of_All_Nodes";
-  string anAllEdgesGroupName = "Group_Of_All_Edges";
-  string anAllFacesGroupName = "Group_Of_All_Faces";
+  string anAllNodesGroupName   = "Group_Of_All_Nodes";
+  string anAllEdgesGroupName   = "Group_Of_All_Edges";
+  string anAllFacesGroupName   = "Group_Of_All_Faces";
   string anAllVolumesGroupName = "Group_Of_All_Volumes";
+  string anAll0DElemsGroupName = "Group_Of_All_0DElems";
+  string anAllBallsGroupName   = "Group_Of_All_Balls";
 
-  // Reserve four ids for families of free elements
-  // (1 - nodes, -1 - edges, -2 - faces, -3 - volumes).
+  // Reserve 6 ids for families of free elements
+  // (1 - nodes, -1 - edges, -2 - faces, -3 - volumes, -4 - 0D, -5 - balls).
   // 'Free' means here not belonging to any group.
   int aNodeFamId = FIRST_NODE_FAMILY;
   int aElemFamId = FIRST_ELEM_FAMILY;
@@ -189,7 +201,7 @@ DriverMED_Family
             aFamilies.erase(aCurrIter);
           }
           if (aFam2->IsEmpty()) 
-	    break;
+            break;
         }
       }
       // The rest elements of family
@@ -218,7 +230,7 @@ DriverMED_Family
         aFam1->Split(aFam2, aCommon);
         if (!aCommon->IsEmpty())
         {
-	  aCommon->SetGroupAttributVal(0);
+          aCommon->SetGroupAttributVal(0);
           aFamilies.push_back(aCommon);
         }
         if (aFam1->IsEmpty())
@@ -226,7 +238,7 @@ DriverMED_Family
           aFamilies.erase(aCurrIter);
         }
         if (aFam2->IsEmpty()) 
-	  break;
+          break;
       }
     }
     // The rest elements of group
@@ -254,6 +266,12 @@ DriverMED_Family
       }
       else if (aFam->myType == SMDSAbs_Volume) {
         if (doGroupOfVolumes) aFam->myGroupNames.insert(anAllVolumesGroupName);
+      }
+      else if (aFam->myType == SMDSAbs_0DElement) {
+        if (doGroupOfVolumes) aFam->myGroupNames.insert(anAll0DElemsGroupName);
+      }
+      else if (aFam->myType == SMDSAbs_Ball) {
+        if (doGroupOfVolumes) aFam->myGroupNames.insert(anAllBallsGroupName);
       }
     }
   }
@@ -295,6 +313,24 @@ DriverMED_Family
     aFamilies.push_back(aFreeVolumesFam);
   }
 
+  if (doGroupOf0DElems)
+  {
+    DriverMED_FamilyPtr aFree0DFam (new DriverMED_Family);
+    aFree0DFam->SetId(REST_0DELEM_FAMILY);
+    aFree0DFam->myType = SMDSAbs_0DElement;
+    aFree0DFam->myGroupNames.insert(anAll0DElemsGroupName);
+    aFamilies.push_back(aFree0DFam);
+  }
+
+  if (doGroupOfBalls)
+  {
+    DriverMED_FamilyPtr aFreeBallsFam (new DriverMED_Family);
+    aFreeBallsFam->SetId(REST_BALL_FAMILY);
+    aFreeBallsFam->myType = SMDSAbs_Ball;
+    aFreeBallsFam->myGroupNames.insert(anAllBallsGroupName);
+    aFamilies.push_back(aFreeBallsFam);
+  }
+
   DriverMED_FamilyPtr aNullFam (new DriverMED_Family);
   aNullFam->SetId(0);
   aNullFam->myType = SMDSAbs_All;
@@ -310,7 +346,7 @@ DriverMED_Family
 //=============================================================================
 MED::PFamilyInfo 
 DriverMED_Family::GetFamilyInfo(const MED::PWrapper& theWrapper, 
-				const MED::PMeshInfo& theMeshInfo) const
+                                const MED::PMeshInfo& theMeshInfo) const
 {
   ostringstream aStr;
   aStr << "FAM_" << myId;
@@ -332,20 +368,20 @@ DriverMED_Family::GetFamilyInfo(const MED::PWrapper& theWrapper,
   MED::PFamilyInfo anInfo;
   if(myId == 0 || myGroupAttributVal == 0){
     anInfo = theWrapper->CrFamilyInfo(theMeshInfo,
-				      aValue,
-				      myId,
-				      myGroupNames);
+                                      aValue,
+                                      myId,
+                                      myGroupNames);
   }else{
     MED::TStringVector anAttrDescs (1, "");  // 1 attribute with empty description,
     MED::TIntVector anAttrIds (1, myId);        // Id=0,
     MED::TIntVector anAttrVals (1, myGroupAttributVal);
     anInfo = theWrapper->CrFamilyInfo(theMeshInfo,
-				      aValue,
-				      myId,
-				      myGroupNames,
-				      anAttrDescs,
-				      anAttrIds,
-				      anAttrVals);
+                                      aValue,
+                                      myId,
+                                      myGroupNames,
+                                      anAttrDescs,
+                                      anAttrIds,
+                                      anAttrVals);
   }
 
 //  cout << endl;
@@ -391,9 +427,9 @@ void DriverMED_Family::Init (SMESHDS_GroupBase* theGroup)
   myGroupNames.insert(string(theGroup->GetStoreName()));
 
   Quantity_Color aColor = theGroup->GetColor();
-  double aRed = aColor.Red();
+  double aRed   = aColor.Red();
   double aGreen = aColor.Green();
-  double aBlue = aColor.Blue();
+  double aBlue  = aColor.Blue();
   int aR = int( aRed*255   );
   int aG = int( aGreen*255 );
   int aB = int( aBlue*255  );
@@ -413,13 +449,15 @@ void DriverMED_Family::Init (SMESHDS_GroupBase* theGroup)
 DriverMED_FamilyPtrList 
 DriverMED_Family
 ::SplitByType (SMESHDS_SubMesh* theSubMesh,
-	       const int        theId)
+               const int        theId)
 {
   DriverMED_FamilyPtrList aFamilies;
   DriverMED_FamilyPtr aNodesFamily   (new DriverMED_Family);
   DriverMED_FamilyPtr anEdgesFamily  (new DriverMED_Family);
   DriverMED_FamilyPtr aFacesFamily   (new DriverMED_Family);
   DriverMED_FamilyPtr aVolumesFamily (new DriverMED_Family);
+  // DriverMED_FamilyPtr a0DElemsFamily (new DriverMED_Family);
+  // DriverMED_FamilyPtr aBallsFamily   (new DriverMED_Family);
 
   char submeshGrpName[ 30 ];
   sprintf( submeshGrpName, "SubMesh %d", theId );
@@ -486,13 +524,14 @@ void DriverMED_Family::Split (DriverMED_FamilyPtr by,
                               DriverMED_FamilyPtr common)
 {
   // Elements
-  ElementsSet::iterator anIter = by->myElements.begin();
+  ElementsSet::iterator anIter = by->myElements.begin(), elemInMe;
   while ( anIter != by->myElements.end())
   {
-    if (myElements.find(*anIter) != myElements.end())
+    elemInMe = myElements.find(*anIter);
+    if (elemInMe != myElements.end())
     {
       common->myElements.insert(*anIter);
-      myElements.erase(*anIter);
+      myElements.erase(elemInMe);
       by->myElements.erase(anIter++);
     }
     else
@@ -503,11 +542,7 @@ void DriverMED_Family::Split (DriverMED_FamilyPtr by,
   {
     // Groups list
     common->myGroupNames = myGroupNames;
-    MED::TStringSet::iterator aGrNamesIter = by->myGroupNames.begin();
-    for (; aGrNamesIter != by->myGroupNames.end(); aGrNamesIter++)
-    {
-      common->myGroupNames.insert(*aGrNamesIter);
-    }
+    common->myGroupNames.insert( by->myGroupNames.begin(), by->myGroupNames.end() );
 
     // Type
     common->myType = myType;

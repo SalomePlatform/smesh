@@ -1,0 +1,109 @@
+<!--
+  Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
+
+  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+
+  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+
+-->
+<document>
+  <section name="SMESH">
+    <!-- Major module parameters -->
+    <parameter name="name" value="Mesh"/>
+    <parameter name="icon" value="ModuleMesh.png"/>
+    <parameter name="version" value="@VERSION@"/>
+    <!-- Other module preferences -->
+    <parameter name="node_color"                   value="255, 0,   0"/>
+    <parameter name="fill_color"                   value="0, 170, 255|-100"/>
+    <parameter name="wireframe_color"              value="0, 170, 255"/>
+    <parameter name="outline_color"                value="0,  70,   0"/>
+    <parameter name="elem0d_color"                 value="0, 255,   0"/>
+    <parameter name="ball_elem_color"              value="100, 255,   0"/>
+    <parameter name="highlight_color"              value="0, 255, 255"/>
+    <parameter name="group_name_color"             value="255, 255, 255"/>
+    <parameter name="type_of_marker"               value="1"  />
+    <parameter name="marker_scale"                 value="9"  />
+    <parameter name="elem0d_size"                  value="5" />
+    <parameter name="ball_elem_size"               value="10" />
+    <parameter name="element_width"                value="1" />
+    <parameter name="shrink_coeff"                 value="75"/>
+    <parameter name="orientation_color"            value="255, 255, 255"/>
+    <parameter name="orientation_scale"            value="0.1"/>
+    <parameter name="orientation_3d_vectors"       value="false"/>
+    <parameter name="selection_element_color"      value="255, 255,   0"/>
+    <parameter name="selection_object_color"       value="255, 255, 255"/>
+    <parameter name="selection_precision_element"  value="0.005"/>
+    <parameter name="selection_precision_node"     value="0.005"/>
+    <parameter name="selection_precision_object"   value="0.005"/>
+    <parameter name="controls_precision"           value="0"/>
+    <parameter name="equal_nodes_tolerance"        value="1e-7"/>
+    <parameter name="scalar_bar_horizontal_height" value="0.08"/>
+    <parameter name="scalar_bar_horizontal_width"  value="0.8" />
+    <parameter name="scalar_bar_horizontal_x"      value="0.1"/>
+    <parameter name="scalar_bar_horizontal_y"      value="0.01"/>
+    <parameter name="scalar_bar_label_color"       value="255, 255, 255"/>
+    <parameter name="scalar_bar_label_font"        value="Arial,12"     />
+    <parameter name="scalar_bar_num_colors"        value="64"/>
+    <parameter name="scalar_bar_num_labels"        value="5" />
+    <parameter name="scalar_bar_orientation"       value="1" />
+    <parameter name="scalar_bar_title_color"       value="255, 255, 255"/>
+    <parameter name="scalar_bar_title_font"        value="Arial,12"     />
+    <parameter name="scalar_bar_vertical_height"   value="0.8"  />
+    <parameter name="scalar_bar_vertical_width"    value="0.08" />
+    <parameter name="scalar_bar_vertical_x"        value="0.01" />
+    <parameter name="scalar_bar_vertical_y"        value="0.1" />
+    <parameter name="distribution_visibility"      value="false" />
+    <parameter name="distribution_coloring_type"   value="0" />
+    <parameter name="distribution_color"           value="0, 85, 0" />
+    <parameter name="DisplayMode"                  value="true" />
+    <parameter name="auto_update"                  value="true" />
+    <parameter name="update_limit"                 value="500000" />
+    <parameter name="display_entity"               value="true" />
+    <parameter name="display_mode"                 value="1"    />
+    <parameter name="auto_groups"                  value="false"/>
+    <parameter name="show_result_notification"     value="2"/>
+    <parameter name="mesh_elem_info"               value="1"/>
+    <parameter name="info_groups_nodes_limit"      value="100000"/>
+    <parameter name="segmentation"                 value="10"/>
+    <parameter name="nb_segments_per_edge"         value="15"/>
+    <parameter name="forget_mesh_on_hyp_modif"     value="false"/>
+    <parameter name="quadratic_mode"               value="0"/>
+    <parameter name="max_angle"                    value="2"/>
+    <parameter name="documentation"                value="smesh_help"/>
+    <parameter name="preview_actor_chunk_size"     value="100" />
+    <parameter name="historical_python_dump"       value="true" />
+    <!-- Input field precisions -->
+    <parameter name="def_precision"                value="3"  />
+    <parameter name="length_precision"             value="-6"  />
+    <parameter name="angle_precision"              value="-3"  />
+    <parameter name="len_tol_precision"            value="-7"  />
+    <parameter name="parametric_precision"         value="-6"  />
+    <parameter name="area_precision"               value="-6"  />
+    <parameter name="vol_precision"                value="-6"  />
+  </section>
+  <section name="smesh_help" >
+    <parameter name="sub_menu"          value="%1 module"/>
+    <parameter name="User's Guide"      value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/index.html"/>
+    <parameter name="Developer's Guide" value="%SMESH_ROOT_DIR%/share/doc/salome/tui/SMESH/index.html"/>
+  </section>
+  <section name="resources">
+    <!-- Module resources -->
+    <parameter name="SMESH"        value="%SMESH_ROOT_DIR%/share/salome/resources/smesh"/>
+    <parameter name="StdMeshers"   value="%SMESH_ROOT_DIR%/share/salome/resources/smesh"/>
+  </section>
+</document>

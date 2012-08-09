@@ -10,8 +10,8 @@ of your mesh.
 <ol>
 <li>Display your mesh in the viewer. </li>
 
-<li>Choose <b>Controls > Length 2D</b> or click <em>"Length 2D"</em>
-button in the toolbar. 
+<li>Choose <b>Controls > Face Controls > Length 2D</b> or click
+<em>"Length 2D"</em> button in the toolbar. 
 
 \image html image34.png
 <center><em>"Length 2D" button</em></center>

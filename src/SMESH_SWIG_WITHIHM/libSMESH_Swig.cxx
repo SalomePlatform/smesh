@@ -1,24 +1,22 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
+
 // SMESH SMESH : GUI for SMESH component
 // File   : libSMESH_Swig.cxx
 // Author : Nicolas REJNERI, Open CASCADE S.A.S.
@@ -71,10 +69,10 @@ namespace
   inline
   SALOMEDS::SObject_var
   GetDomainRoot(const SALOMEDS::SComponent_var& theSComponentMesh,
-		const SALOMEDS::StudyBuilder_var& theStudyBuilder,
-		CORBA::Long theDomainRootTag,
-		const QString& theName,
-		const QString& thePixmap)
+                const SALOMEDS::StudyBuilder_var& theStudyBuilder,
+                CORBA::Long theDomainRootTag,
+                const QString& theName,
+                const QString& thePixmap)
   {
     SALOMEDS::SObject_var aDomainRoot;
     if (!theSComponentMesh->FindSubObject(theDomainRootTag,aDomainRoot)) {
@@ -98,13 +96,13 @@ namespace
   inline
   SALOMEDS::SObject_var
   GetHypothesisRoot(const SALOMEDS::SComponent_var& theSComponentMesh,
-		    const SALOMEDS::StudyBuilder_var& theStudyBuilder)
+                    const SALOMEDS::StudyBuilder_var& theStudyBuilder)
   {
     return GetDomainRoot(theSComponentMesh,
-			 theStudyBuilder,
-			 SMESH::Tag_HypothesisRoot,
-			 QObject::tr("SMESH_MEN_HYPOTHESIS"),
-			 "ICON_SMESH_TREE_HYPO");
+                         theStudyBuilder,
+                         SMESH::Tag_HypothesisRoot,
+                         QObject::tr("SMESH_MEN_HYPOTHESIS"),
+                         "ICON_SMESH_TREE_HYPO");
   }
 
 
@@ -112,13 +110,13 @@ namespace
   inline
   SALOMEDS::SObject_var
   GetAlgorithmsRoot(const SALOMEDS::SComponent_var& theSComponentMesh,
-		    const SALOMEDS::StudyBuilder_var& theStudyBuilder)
+                    const SALOMEDS::StudyBuilder_var& theStudyBuilder)
   {
     return GetDomainRoot(theSComponentMesh,
-			 theStudyBuilder,
-			 SMESH::Tag_AlgorithmsRoot,
-			 QObject::tr("SMESH_MEN_ALGORITHMS"),
-			 "ICON_SMESH_TREE_ALGO");
+                         theStudyBuilder,
+                         SMESH::Tag_AlgorithmsRoot,
+                         QObject::tr("SMESH_MEN_ALGORITHMS"),
+                         "ICON_SMESH_TREE_ALGO");
   }
 
 
@@ -126,17 +124,17 @@ namespace
   inline
   SALOMEDS::SObject_var
   AddToDomain(const std::string& theIOR,
-	      const SALOMEDS::SComponent_var& theSComponentMesh,
-	      const SALOMEDS::StudyBuilder_var& theStudyBuilder,
-	      CORBA::Long theDomainRootTag,
-	      const QString& theDomainName,
-	      const QString& theDomainPixmap)
+              const SALOMEDS::SComponent_var& theSComponentMesh,
+              const SALOMEDS::StudyBuilder_var& theStudyBuilder,
+              CORBA::Long theDomainRootTag,
+              const QString& theDomainName,
+              const QString& theDomainPixmap)
   {
     SALOMEDS::SObject_var aDomain = GetDomainRoot(theSComponentMesh,
-						  theStudyBuilder,
-						  SMESH::Tag_AlgorithmsRoot,
-						  theDomainName,
-						  theDomainPixmap);
+                                                  theStudyBuilder,
+                                                  SMESH::Tag_AlgorithmsRoot,
+                                                  theDomainName,
+                                                  theDomainPixmap);
     // Add New Hypothesis
     SALOMEDS::SObject_var aSObject = theStudyBuilder->NewObject(aDomain);
     SALOMEDS::GenericAttribute_var anAttr = theStudyBuilder->FindOrCreateAttribute(aSObject,"AttributePixMap");
@@ -157,42 +155,42 @@ namespace
   //---------------------------------------------------------------
   SALOMEDS::SObject_var
   AddHypothesis(const std::string& theIOR,
-		const SALOMEDS::SComponent_var& theSComponentMesh,
-		const SALOMEDS::StudyBuilder_var& theStudyBuilder)
+                const SALOMEDS::SComponent_var& theSComponentMesh,
+                const SALOMEDS::StudyBuilder_var& theStudyBuilder)
   {
     return AddToDomain(theIOR,
-		       theSComponentMesh,
-		       theStudyBuilder,
-		       SMESH::Tag_HypothesisRoot,
-		       QObject::tr("SMESH_MEN_HYPOTHESIS"),
-		       "ICON_SMESH_TREE_HYPO");
+                       theSComponentMesh,
+                       theStudyBuilder,
+                       SMESH::Tag_HypothesisRoot,
+                       QObject::tr("SMESH_MEN_HYPOTHESIS"),
+                       "ICON_SMESH_TREE_HYPO");
   }
 
 
   //---------------------------------------------------------------
   SALOMEDS::SObject_var
   AddAlgorithms(const std::string& theIOR,
-		const SALOMEDS::SComponent_var& theSComponentMesh,
-		const SALOMEDS::StudyBuilder_var& theStudyBuilder)
+                const SALOMEDS::SComponent_var& theSComponentMesh,
+                const SALOMEDS::StudyBuilder_var& theStudyBuilder)
   {
     return AddToDomain(theIOR,
-		       theSComponentMesh,
-		       theStudyBuilder,
-		       SMESH::Tag_AlgorithmsRoot,
-		       QObject::tr("SMESH_MEN_ALGORITHMS"),
-		       "ICON_SMESH_TREE_ALGO");
+                       theSComponentMesh,
+                       theStudyBuilder,
+                       SMESH::Tag_AlgorithmsRoot,
+                       QObject::tr("SMESH_MEN_ALGORITHMS"),
+                       "ICON_SMESH_TREE_ALGO");
   }
 
 
   //---------------------------------------------------------------
   void
   SetDomain(const char* theMeshOrSubMeshEntry,
-	    const char* theDomainEntry,
-	    const SALOMEDS::Study_var& theStudy,
-	    const SALOMEDS::StudyBuilder_var& theStudyBuilder,
-	    long theRefOnAppliedDomainTag,
-	    const QString& theAppliedDomainMEN,
-	    const QString& theAppliedDomainICON)
+            const char* theDomainEntry,
+            const SALOMEDS::Study_var& theStudy,
+            const SALOMEDS::StudyBuilder_var& theStudyBuilder,
+            long theRefOnAppliedDomainTag,
+            const QString& theAppliedDomainMEN,
+            const QString& theAppliedDomainICON)
   {
     SALOMEDS::SObject_var aMeshOrSubMeshSO = theStudy->FindObjectID(theMeshOrSubMeshEntry);
     SALOMEDS::SObject_var aHypothesisSO = theStudy->FindObjectID(theDomainEntry);
@@ -201,17 +199,17 @@ namespace
       //Find or Create Applied Hypothesis root
       SALOMEDS::SObject_var anAppliedDomainSO;
       if(!aMeshOrSubMeshSO->FindSubObject(theRefOnAppliedDomainTag,anAppliedDomainSO)){
-	anAppliedDomainSO = theStudyBuilder->NewObjectToTag(aMeshOrSubMeshSO,theRefOnAppliedDomainTag);
-	SALOMEDS::GenericAttribute_var anAttr =
-	  theStudyBuilder->FindOrCreateAttribute(anAppliedDomainSO,"AttributeName");
-	SALOMEDS::AttributeName_var aName = SALOMEDS::AttributeName::_narrow(anAttr);
-	aName->SetValue(theAppliedDomainMEN.toLatin1().data());
-	anAttr = theStudyBuilder->FindOrCreateAttribute(anAppliedDomainSO,"AttributeSelectable");
-	SALOMEDS::AttributeSelectable_var aSelAttr = SALOMEDS::AttributeSelectable::_narrow(anAttr);
-	aSelAttr->SetSelectable(false);
-	anAttr = theStudyBuilder->FindOrCreateAttribute(anAppliedDomainSO,"AttributePixMap");
-	SALOMEDS::AttributePixMap_var aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
-	aPixmap->SetPixMap(theAppliedDomainICON.toLatin1().data());
+        anAppliedDomainSO = theStudyBuilder->NewObjectToTag(aMeshOrSubMeshSO,theRefOnAppliedDomainTag);
+        SALOMEDS::GenericAttribute_var anAttr =
+          theStudyBuilder->FindOrCreateAttribute(anAppliedDomainSO,"AttributeName");
+        SALOMEDS::AttributeName_var aName = SALOMEDS::AttributeName::_narrow(anAttr);
+        aName->SetValue(theAppliedDomainMEN.toLatin1().data());
+        anAttr = theStudyBuilder->FindOrCreateAttribute(anAppliedDomainSO,"AttributeSelectable");
+        SALOMEDS::AttributeSelectable_var aSelAttr = SALOMEDS::AttributeSelectable::_narrow(anAttr);
+        aSelAttr->SetSelectable(false);
+        anAttr = theStudyBuilder->FindOrCreateAttribute(anAppliedDomainSO,"AttributePixMap");
+        SALOMEDS::AttributePixMap_var aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
+        aPixmap->SetPixMap(theAppliedDomainICON.toLatin1().data());
       }
       SALOMEDS::SObject_var aSObject = theStudyBuilder->NewObject(anAppliedDomainSO);
       theStudyBuilder->Addreference(aSObject,aHypothesisSO);
@@ -222,34 +220,34 @@ namespace
   //---------------------------------------------------------------
   void
   SetHypothesis(const char* theMeshOrSubMeshEntry,
-		const char* theDomainEntry,
-		const SALOMEDS::Study_var& theStudy,
-		const SALOMEDS::StudyBuilder_var& theStudyBuilder)
+                const char* theDomainEntry,
+                const SALOMEDS::Study_var& theStudy,
+                const SALOMEDS::StudyBuilder_var& theStudyBuilder)
   {
     SetDomain(theMeshOrSubMeshEntry,
-	      theDomainEntry,
-	      theStudy,
-	      theStudyBuilder,
-	      SMESH::Tag_RefOnAppliedHypothesis,
-	      QObject::tr("SMESH_MEN_APPLIED_HYPOTHESIS"),
-	      "ICON_SMESH_TREE_HYPO");
+              theDomainEntry,
+              theStudy,
+              theStudyBuilder,
+              SMESH::Tag_RefOnAppliedHypothesis,
+              QObject::tr("SMESH_MEN_APPLIED_HYPOTHESIS"),
+              "ICON_SMESH_TREE_HYPO");
   }
 
 
   //---------------------------------------------------------------
   void
   SetAlgorithms(const char* theMeshOrSubMeshEntry,
-		const char* theDomainEntry,
-		const SALOMEDS::Study_var& theStudy,
-		const SALOMEDS::StudyBuilder_var& theStudyBuilder)
+                const char* theDomainEntry,
+                const SALOMEDS::Study_var& theStudy,
+                const SALOMEDS::StudyBuilder_var& theStudyBuilder)
   {
     SetDomain(theMeshOrSubMeshEntry,
-	      theDomainEntry,
-	      theStudy,
-	      theStudyBuilder,
-	      SMESH::Tag_RefOnAppliedAlgorithms,
-	      QObject::tr("SMESH_MEN_APPLIED_ALGORIHTMS"),
-	      "ICON_SMESH_TREE_ALGO");
+              theDomainEntry,
+              theStudy,
+              theStudyBuilder,
+              SMESH::Tag_RefOnAppliedAlgorithms,
+              QObject::tr("SMESH_MEN_APPLIED_ALGORIHTMS"),
+              "ICON_SMESH_TREE_ALGO");
   }
 }
 
@@ -271,11 +269,11 @@ SMESH_Swig::SMESH_Swig()
     Execute()
     {
       try {
-	ORB_INIT &anORBInit = *SINGLETON_<ORB_INIT>::Instance();
-	ASSERT(SINGLETON_<ORB_INIT>::IsAlreadyExisting());
-	myORB = anORBInit( 0, 0 );
+        ORB_INIT &anORBInit = *SINGLETON_<ORB_INIT>::Instance();
+        ASSERT(SINGLETON_<ORB_INIT>::IsAlreadyExisting());
+        myORB = anORBInit( 0, 0 );
       } catch (...) {
-	INFOS("internal error : orb not found");
+        INFOS("internal error : orb not found");
       }
     }
   };
@@ -301,9 +299,9 @@ SMESH_Swig::Init(int theStudyID)
     SALOMEDS::SComponent_var& mySComponentMesh;
   public:
     TEvent(int theStudyID,
-	   SALOMEDS::Study_var& theStudy,
-	   SALOMEDS::StudyBuilder_var& theStudyBuilder,
-	   SALOMEDS::SComponent_var& theSComponentMesh):
+           SALOMEDS::Study_var& theStudy,
+           SALOMEDS::StudyBuilder_var& theStudyBuilder,
+           SALOMEDS::SComponent_var& theSComponentMesh):
       myStudyID(theStudyID),
       myStudy(theStudy),
       myStudyBuilder(theStudyBuilder),
@@ -334,28 +332,28 @@ SMESH_Swig::Init(int theStudyID)
 
       SALOMEDS::SComponent_var aSComponent = myStudy->FindComponent("SMESH");
       if(aSComponent->_is_nil()){
-	bool aLocked = myStudy->GetProperties()->IsLocked();
-	if (aLocked)
-	  myStudy->GetProperties()->SetLocked(false);
-	
-	aSComponent = myStudyBuilder->NewComponent("SMESH");
-	anAttr = myStudyBuilder->FindOrCreateAttribute(aSComponent,"AttributeName");
-	aName = SALOMEDS::AttributeName::_narrow(anAttr);
+        bool aLocked = myStudy->GetProperties()->IsLocked();
+        if (aLocked)
+          myStudy->GetProperties()->SetLocked(false);
+        
+        aSComponent = myStudyBuilder->NewComponent("SMESH");
+        anAttr = myStudyBuilder->FindOrCreateAttribute(aSComponent,"AttributeName");
+        aName = SALOMEDS::AttributeName::_narrow(anAttr);
 
-	SMESHGUI* aSMESHGUI = SMESHGUI::GetSMESHGUI(); //SRN: BugID IPAL9186, load a SMESH gui if it hasn't been loaded
-	if (!aSMESHGUI){
-	  CAM_Module* aModule = anApp->module("Mesh");
-	  if(!aModule)
-	      aModule = anApp->loadModule("Mesh");
-	  aSMESHGUI = dynamic_cast<SMESHGUI*>(aModule);
-	} //SRN: BugID IPAL9186: end of a fix
-	aName->SetValue(aSMESHGUI->moduleName().toLatin1().data());
-	anAttr = myStudyBuilder->FindOrCreateAttribute(aSComponent,"AttributePixMap");
-	aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
-	aPixmap->SetPixMap( "ICON_OBJBROWSER_SMESH" );
-	myStudyBuilder->DefineComponentInstance(aSComponent,aSMESHGen);
-	if (aLocked)
-	  myStudy->GetProperties()->SetLocked(true);
+        SMESHGUI* aSMESHGUI = SMESHGUI::GetSMESHGUI(); //SRN: BugID IPAL9186, load a SMESH gui if it hasn't been loaded
+        if (!aSMESHGUI){
+          CAM_Module* aModule = anApp->module("Mesh");
+          if(!aModule)
+              aModule = anApp->loadModule("Mesh");
+          aSMESHGUI = dynamic_cast<SMESHGUI*>(aModule);
+        } //SRN: BugID IPAL9186: end of a fix
+        aName->SetValue(aSMESHGUI->moduleName().toLatin1().data());
+        anAttr = myStudyBuilder->FindOrCreateAttribute(aSComponent,"AttributePixMap");
+        aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
+        aPixmap->SetPixMap( "ICON_OBJBROWSER_SMESH" );
+        myStudyBuilder->DefineComponentInstance(aSComponent,aSMESHGen);
+        if (aLocked)
+          myStudy->GetProperties()->SetLocked(true);
       }
 
       mySComponentMesh = SALOMEDS::SComponent::_narrow(aSComponent);
@@ -367,9 +365,9 @@ SMESH_Swig::Init(int theStudyID)
   MESSAGE("Init");
 
   ProcessVoidEvent(new TEvent(theStudyID,
-			      myStudy,
-			      myStudyBuilder,
-			      mySComponentMesh));
+                              myStudy,
+                              myStudyBuilder,
+                              mySComponentMesh));
 }
 
 
@@ -414,8 +412,8 @@ const char* SMESH_Swig::AddNewHypothesis(const char* theIOR)
   MESSAGE("AddNewHypothesis");
 
   SALOMEDS::SObject_var aSObject = ::AddHypothesis(theIOR,
-						   mySComponentMesh,
-						   myStudyBuilder);
+                                                   mySComponentMesh,
+                                                   myStudyBuilder);
   CORBA::String_var anEntry = aSObject->GetID();
   return anEntry._retn();
 }
@@ -427,8 +425,8 @@ const char* SMESH_Swig::AddNewAlgorithms(const char* theIOR)
   MESSAGE("AddNewAlgorithms");
 
   SALOMEDS::SObject_var aSObject = ::AddAlgorithms(theIOR,
-						   mySComponentMesh,
-						   myStudyBuilder);
+                                                   mySComponentMesh,
+                                                   myStudyBuilder);
   CORBA::String_var anEntry = aSObject->GetID();
   return anEntry._retn();
 }
@@ -453,9 +451,9 @@ void SMESH_Swig::SetHypothesis(const char* theMeshOrSubMeshEntry,
                                const char* theDomainEntry)
 {
   ::SetHypothesis(theMeshOrSubMeshEntry,
-		  theDomainEntry,
-		  myStudy,
-		  myStudyBuilder);
+                  theDomainEntry,
+                  myStudy,
+                  myStudyBuilder);
 }
 
 
@@ -464,9 +462,9 @@ void SMESH_Swig::SetAlgorithms(const char* theMeshOrSubMeshEntry,
                                const char* theDomainEntry)
 {
   ::SetAlgorithms(theMeshOrSubMeshEntry,
-		  theDomainEntry,
-		  myStudy,
-		  myStudyBuilder);
+                  theDomainEntry,
+                  myStudy,
+                  myStudyBuilder);
 }
 
 
@@ -599,7 +597,7 @@ void SMESH_Swig::SetName(const char* theEntry,
 //================================================================================
 
 void SMESH_Swig::SetMeshIcon(const char* theMeshEntry,
-			     const bool theIsComputed,
+                             const bool theIsComputed,
                              const bool isEmpty)
 {
   class TEvent: public SALOME_Event
@@ -609,8 +607,8 @@ void SMESH_Swig::SetMeshIcon(const char* theMeshEntry,
     bool myIsComputed, myIsEmpty;
   public:
     TEvent(const SALOMEDS::Study_var& theStudy,
-	   const std::string& theMeshEntry,
-	   const bool theIsComputed,
+           const std::string& theMeshEntry,
+           const bool theIsComputed,
            const bool isEmpty):
       myStudy(theStudy),
       myMeshEntry(theMeshEntry),
@@ -624,13 +622,13 @@ void SMESH_Swig::SetMeshIcon(const char* theMeshEntry,
     {
       SALOMEDS::SObject_var aMeshSO = myStudy->FindObjectID(myMeshEntry.c_str());
       if(!aMeshSO->_is_nil())
-	if(_PTR(SObject) aMesh = ClientFactory::SObject(aMeshSO))
-	  SMESH::ModifiedMesh(aMesh,myIsComputed,myIsEmpty);
+        if(_PTR(SObject) aMesh = ClientFactory::SObject(aMeshSO))
+          SMESH::ModifiedMesh(aMesh,myIsComputed,myIsEmpty);
     }
   };
 
   ProcessVoidEvent(new TEvent(myStudy,
-			      theMeshEntry,
-			      theIsComputed,
+                              theMeshEntry,
+                              theIsComputed,
                               isEmpty));
 }

@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_FilterDlg.h
 // Author : Sergey LITONIN, Open CASCADE S.A.S.
@@ -71,6 +72,8 @@ class SMESHGUI_EXPORT SMESHGUI_FilterTable : public QWidget
 
   class Table;
   class ComboItem;
+  class IntSpinItem;
+  class DoubleSpinItem;
   class CheckItem;
   class AdditionalWidget;
   class ComboDelegate;
@@ -123,12 +126,12 @@ public:
                                           const int = -1 );
 
   void                      SetID( const int,
-				   const QString&,
-				   const int = -1 ); 
+                                   const QString&,
+                                   const int = -1 ); 
   
   bool                      GetID( const int,
-				   QString&,
-				   const int = -1 );
+                                   QString&,
+                                   const int = -1 );
 
   void                      Update();
 
@@ -167,6 +170,7 @@ private:
   void                      updateBtnState();
   void                      removeAdditionalWidget( QTableWidget*, const int );
   void                      updateAdditionalWidget();
+  const char*               getPrecision( const int );
 
   const QMap<int, QString>& getSupportedTypes() const;
 
@@ -211,7 +215,7 @@ class SMESHGUI_FilterDlg : public QDialog
   enum { Mesh, Selection, Dialog, None };
 
   // Buttons
-  enum { BTN_OK, BTN_Cancel, BTN_Apply, BTN_Close, BTN_Help };
+  enum { BTN_OK, BTN_Apply, BTN_Close, BTN_Help };
 
 public:
   SMESHGUI_FilterDlg( SMESHGUI*, const QList<int>& );
@@ -223,9 +227,12 @@ public:
 
   void                      SetSelection();
   void                      SetMesh (SMESH::SMESH_Mesh_var);
-  void                      SetSourceWg( QWidget* );
+  void                      SetSourceWg( QWidget*, const bool initOnApply = true );
 
   static SMESH::Filter::Criterion createCriterion();
+
+  SMESH::Filter_var         GetFilter() const;
+  void                      SetFilter(SMESH::Filter_var filter, int type);
 
 signals:
 
@@ -285,6 +292,7 @@ private:
   LightApp_SelectionMgr*    mySelectionMgr;
   SVTK_Selector*            mySelector;
   SMESH::SMESH_Mesh_var     myMesh;
+  bool                      myInitSourceWgOnApply;
   QWidget*                  mySourceWg;
 
   SALOME_DataMapOfIOMapOfInteger myIObjects;

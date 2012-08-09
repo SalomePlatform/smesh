@@ -1,25 +1,26 @@
 #!/bin/bash
-#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 #
-#  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+# Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+# CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 #
-#  This library is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU Lesser General Public
-#  License as published by the Free Software Foundation; either
-#  version 2.1 of the License.
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License.
 #
-#  This library is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#  Lesser General Public License for more details.
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
 #
-#  You should have received a copy of the GNU Lesser General Public
-#  License along with this library; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
-#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 # Tool for updating list of .in file for the SALOME project 
 # and regenerating configure script
 # Author : Marc Tajchman - CEA
@@ -29,7 +30,6 @@
 #
 ORIG_DIR=`pwd`
 CONF_DIR=`echo $0 | sed -e "s,[^/]*$,,;s,/$,,;s,^$,.,"`
-SMESH_WITH_GUI="yes"
 
 ########################################################################
 # Test if the KERNEL_ROOT_DIR is set correctly
@@ -45,28 +45,6 @@ fi
 #    echo "failed : KERNEL_SRC variable is not correct !"
 #    exit
 #fi
-
-for option
-do
-  case $option in
-      -with-gui | --with-gui)
-          SMESH_WITH_GUI="yes"
-          break;;
-      -without-gui | --without-gui | -with-gui=no | --with-gui=no)
-          SMESH_WITH_GUI="no"
-          break;;
-  esac
-done
-
-########################################################################
-# Test if the GUI_ROOT_DIR is set correctly
-
-if test ${SMESH_WITH_GUI} = yes; then
-    if test ! -d "${GUI_ROOT_DIR}"; then
-        echo "failed : GUI_ROOT_DIR variable is not correct !"
-        exit
-    fi
-fi
 
 ########################################################################
 # Test if the MED_ROOT_DIR is set correctly
@@ -89,50 +67,30 @@ cd ${CONF_DIR}
 ABS_CONF_DIR=`pwd`
 
 #######################################################################
-# Update configure.ac script: to set SMESH_WITH_GUI variable
-sed -e s/SMESH_WITH_GUI=[a-z]*/SMESH_WITH_GUI=${SMESH_WITH_GUI}/g configure.ac > configure.tmp
-mv -f configure.tmp configure.ac
-
-mkdir -p salome_adm/unix/config_files
-#cp -f ${KERNEL_ROOT_DIR}/salome_adm/unix/config_files/* salome_adm/unix/config_files
-#cp -f ${KERNEL_ROOT_DIR}/salome_adm/unix/pythonbe.py salome_adm/unix
-
-cp -f ${KERNEL_ROOT_DIR}/salome_adm/unix/SALOMEconfig.h.in salome_adm/unix
-
-#cp -f ${GUI_ROOT_DIR}/adm_local/unix/config_files/* salome_adm/unix/config_files
-#cp -f ${MED_ROOT_DIR}/adm_local/unix/config_files/* salome_adm/unix/config_files
-#cp -f ${GEOM_ROOT_DIR}/adm_local/unix/config_files/* salome_adm/unix/config_files
-
-# remove KERNEL deprecated configure files
-#for deprecated in ac_cc_warnings.m4 ac_cxx_partial_specialization.m4 \
-#  check_mico.m4 config.guess ltmain.sh ac_cxx_bool.m4 ltconfig ac_cxx_typename.m4 \
-#    check_pthreads.m4 config.sub libtool.m4 ac_cxx_mutable.m4 missing
-#    do
-#      rm -f salome_adm/unix/config_files/${deprecated}
-#      done
-      
 
 # ____________________________________________________________________
 # aclocal creates the aclocal.m4 file from the standard macro and the
-# custom macro embedded in the directory salome_adm/unix/config_files
-# and KERNEL config_files directory.
+# custom macro embedded in the directory adm_local/unix/config_files,
+# KERNEL salome_adm/unix/config_files, GEOM and MED adm_local/unix/config_files
+# directories.
 # output:
 #   aclocal.m4
 #   autom4te.cache (directory)
 echo "====================================================== aclocal"
 
-if test ${SMESH_WITH_GUI} = yes; then
+if test -d "${GUI_ROOT_DIR}"; then
   aclocal -I adm_local/unix/config_files \
           -I ${KERNEL_ROOT_DIR}/salome_adm/unix/config_files \
-	  -I ${GUI_ROOT_DIR}/adm_local/unix/config_files \
-	  -I ${MED_ROOT_DIR}/adm_local/unix/config_files \
-	  -I ${GEOM_ROOT_DIR}/adm_local/unix/config_files || exit 1
+          -I ${GUI_ROOT_DIR}/adm_local/unix/config_files \
+          -I ${MED_ROOT_DIR}/adm_local/unix/config_files \
+          -I ${GEOM_ROOT_DIR}/adm_local/unix/config_files || exit 1
 else
   aclocal -I adm_local/unix/config_files \
           -I ${KERNEL_ROOT_DIR}/salome_adm/unix/config_files \
-	  -I ${MED_ROOT_DIR}/adm_local/unix/config_files \
-	  -I ${GEOM_ROOT_DIR}/adm_local/unix/config_files || exit 1
+          -I ${MED_ROOT_DIR}/adm_local/unix/config_files \
+          -I ${GEOM_ROOT_DIR}/adm_local/unix/config_files || exit 1
 fi
+
 
 # ____________________________________________________________________
 # libtoolize creates some configuration files (ltmain.sh,
@@ -140,10 +98,10 @@ fi
 # version. The files are created in the directory specified with the
 # AC_CONFIG_AUX_DIR(<mydir>) tag (see configure.ac).
 # output:
-#   salome_adm/unix/config_files/config.guess
-#   salome_adm/unix/config_files/config.sub
-#   salome_adm/unix/config_files/ltmain.sh
-#echo "====================================================== libtoolize"
+#   adm_local/unix/config_files/config.guess
+#   adm_local/unix/config_files/config.sub
+#   adm_local/unix/config_files/ltmain.sh
+echo "==================================================== libtoolize"
 
 libtoolize --force --copy --automake || exit 1
 
@@ -163,11 +121,11 @@ autoconf
 # AC_CONFIG_AUX_DIR(<mydir>) tag (see configure.ac). This step also
 # creates the Makefile.in files from the Makefile.am files.
 # output:
-#   salome_adm/unix/config_files/compile
-#   salome_adm/unix/config_files/depcomp
-#   salome_adm/unix/config_files/install-sh
-#   salome_adm/unix/config_files/missing
-#   salome_adm/unix/config_files/py-compile
+#   adm_local/unix/config_files/compile
+#   adm_local/unix/config_files/depcomp
+#   adm_local/unix/config_files/install-sh
+#   adm_local/unix/config_files/missing
+#   adm_local/unix/config_files/py-compile
 #   Makefile.in (from Makefile.am)
 echo "====================================================== automake"
 

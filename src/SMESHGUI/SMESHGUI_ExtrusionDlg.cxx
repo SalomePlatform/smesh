@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_ExtrusionDlg.cxx
 // Author : Michael ZORIN, Open CASCADE S.A.S.
@@ -33,6 +34,7 @@
 #include "SMESHGUI_SpinBox.h"
 #include "SMESHGUI_IdValidator.h"
 #include "SMESHGUI_FilterDlg.h"
+#include "SMESHGUI_MeshEditPreview.h"
 
 #include <SMESH_Actor.h>
 #include <SMESH_TypeFilter.hxx>
@@ -87,8 +89,7 @@
 // purpose  : constructor
 //=================================================================================
 SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
-  : QDialog( SMESH::GetDesktop( theModule ) ),
-    mySMESHGUI( theModule ),
+  : SMESHGUI_PreviewDlg( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
     myFilterDlg( 0 ),
     mySelectedObject(SMESH::SMESH_IDSource::_nil())
@@ -96,6 +97,7 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_DLG_EDGE")));
   QPixmap image1 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_DLG_TRIANGLE")));
   QPixmap image2 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
+  QPixmap image3 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_DLG_NODE")));
 
   setModal( false );
   setAttribute( Qt::WA_DeleteOnClose, true );
@@ -113,16 +115,20 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   ConstructorsBoxLayout->setSpacing(SPACING);
   ConstructorsBoxLayout->setMargin(MARGIN);
 
+  RadioButton0= new QRadioButton(ConstructorsBox);
+  RadioButton0->setIcon(image3);
   RadioButton1= new QRadioButton(ConstructorsBox);
   RadioButton1->setIcon(image0);
   RadioButton2= new QRadioButton(ConstructorsBox);
   RadioButton2->setIcon(image1);
 
+  ConstructorsBoxLayout->addWidget(RadioButton0);
   ConstructorsBoxLayout->addWidget(RadioButton1);
   ConstructorsBoxLayout->addWidget(RadioButton2);
 
-  GroupConstructors->addButton(RadioButton1, 0);
-  GroupConstructors->addButton(RadioButton2, 1);
+  GroupConstructors->addButton(RadioButton0, 0);
+  GroupConstructors->addButton(RadioButton1, 1);
+  GroupConstructors->addButton(RadioButton2, 2);
 
   /***************************************************************/
   GroupButtons = new QGroupBox(this);
@@ -149,7 +155,7 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   GroupButtonsLayout->addWidget(buttonHelp);
 
   /***************************************************************/
-  GroupArguments = new QGroupBox(tr("EXTRUSION_1D"), this);
+  GroupArguments = new QGroupBox(tr("EXTRUSION_0D"), this);
   QGridLayout* GroupArgumentsLayout = new QGridLayout(GroupArguments);
   GroupArgumentsLayout->setSpacing(SPACING);
   GroupArgumentsLayout->setMargin(MARGIN);
@@ -164,16 +170,21 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
 
   LineEditElements = new QLineEdit(GroupArguments);
   LineEditElements->setValidator(myIdValidator);
-  QPushButton* filterBtn = new QPushButton( tr( "SMESH_BUT_FILTER" ), GroupArguments );
-  connect(filterBtn,   SIGNAL(clicked()), this, SLOT(setFilters()));
+  LineEditElements->setMaxLength(-1);
+  myFilterBtn = new QPushButton( tr( "SMESH_BUT_FILTER" ), GroupArguments );
+  connect(myFilterBtn,   SIGNAL(clicked()), this, SLOT(setFilters()));
 
   // Control for the whole mesh selection
   CheckBoxMesh = new QCheckBox(tr("SMESH_SELECT_WHOLE_MESH"), GroupArguments);
 
+  RadioButton3 = new QRadioButton(GroupArguments);
+  RadioButton3->setText( tr("SMESH_EXTRUSION_TO_DISTANCE") );
+  RadioButton4 = new QRadioButton(GroupArguments);
+  RadioButton4->setText( tr("SMESH_EXTRUSION_ALONG_VECTOR") );
+
   //Control for the Distance selection
   TextLabelDistance = new QLabel(tr("SMESH_DISTANCE"), GroupArguments);
   
-  TextLabelVector = new QLabel(tr("SMESH_VECTOR"), GroupArguments);
   TextLabelDx = new QLabel(tr("SMESH_X"), GroupArguments);
   SpinBox_Dx = new SMESHGUI_SpinBox(GroupArguments);
   
@@ -184,6 +195,8 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   SpinBox_Dz = new SMESHGUI_SpinBox(GroupArguments);
 
   // Controls for vector selection
+
+  TextLabelVector = new QLabel(tr("SMESH_VECTOR"), GroupArguments);
 
   SelectVectorButton = new QPushButton(GroupArguments);
   SelectVectorButton->setIcon(image2);
@@ -197,6 +210,9 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   TextLabelVz = new QLabel(tr("SMESH_DZ"), GroupArguments);
   SpinBox_Vz = new SMESHGUI_SpinBox(GroupArguments);
 
+  TextLabelDist = new QLabel(tr("SMESH_DISTANCE"), GroupArguments);
+  SpinBox_VDist = new SMESHGUI_SpinBox(GroupArguments);
+
   // Controls for nb. steps defining
   TextLabelNbSteps = new QLabel(tr("SMESH_NUMBEROFSTEPS"), GroupArguments);
   SpinBox_NbSteps = new SalomeApp_IntSpinBox(GroupArguments);
@@ -204,29 +220,39 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   // CheckBox for groups generation
   MakeGroupsCheck = new QCheckBox(tr("SMESH_MAKE_GROUPS"), GroupArguments);
 
+  //Preview check box
+  myPreviewCheckBox = new QCheckBox(tr("PREVIEW"), GroupArguments);
+
   GroupArgumentsLayout->addWidget(TextLabelElements,    0, 0);
   GroupArgumentsLayout->addWidget(SelectElementsButton, 0, 1);
   GroupArgumentsLayout->addWidget(LineEditElements,     0, 2, 1, 5);
-  GroupArgumentsLayout->addWidget(filterBtn,            0, 7);
+  GroupArgumentsLayout->addWidget(myFilterBtn,          0, 7);
   GroupArgumentsLayout->addWidget(CheckBoxMesh,         1, 0, 1, 8);
-  GroupArgumentsLayout->addWidget(TextLabelDistance,    2, 0);
-  GroupArgumentsLayout->addWidget(TextLabelDx,          2, 2);
-  GroupArgumentsLayout->addWidget(SpinBox_Dx,           2, 3);
-  GroupArgumentsLayout->addWidget(TextLabelDy,          2, 4);
-  GroupArgumentsLayout->addWidget(SpinBox_Dy,           2, 5);
-  GroupArgumentsLayout->addWidget(TextLabelDz,          2, 6);
-  GroupArgumentsLayout->addWidget(SpinBox_Dz,           2, 7);
-  GroupArgumentsLayout->addWidget(TextLabelVector,      3, 0);
-  GroupArgumentsLayout->addWidget(SelectVectorButton,   3, 1);
-  GroupArgumentsLayout->addWidget(TextLabelVx,          3, 2);
-  GroupArgumentsLayout->addWidget(SpinBox_Vx,           3, 3);
-  GroupArgumentsLayout->addWidget(TextLabelVy,          3, 4);
-  GroupArgumentsLayout->addWidget(SpinBox_Vy,           3, 5);
-  GroupArgumentsLayout->addWidget(TextLabelVz,          3, 6);
-  GroupArgumentsLayout->addWidget(SpinBox_Vz,           3, 7);
-  GroupArgumentsLayout->addWidget(TextLabelNbSteps,     4, 0);
-  GroupArgumentsLayout->addWidget(SpinBox_NbSteps,      4, 2, 1, 6);
-  GroupArgumentsLayout->addWidget(MakeGroupsCheck,      5, 0, 1, 8);
+  GroupArgumentsLayout->addWidget(RadioButton3,         2, 1, 1, 3);
+  GroupArgumentsLayout->addWidget(RadioButton4,         2, 5, 1, 3);
+  GroupArgumentsLayout->addWidget(TextLabelDistance,    3, 0);
+  GroupArgumentsLayout->addWidget(TextLabelDx,          3, 2);
+  GroupArgumentsLayout->addWidget(SpinBox_Dx,           3, 3);
+  GroupArgumentsLayout->addWidget(TextLabelDy,          3, 4);
+  GroupArgumentsLayout->addWidget(SpinBox_Dy,           3, 5);
+  GroupArgumentsLayout->addWidget(TextLabelDz,          3, 6);
+  GroupArgumentsLayout->addWidget(SpinBox_Dz,           3, 7);
+  GroupArgumentsLayout->addWidget(TextLabelVector,      4, 0);
+  GroupArgumentsLayout->addWidget(SelectVectorButton,   4, 1);
+  GroupArgumentsLayout->addWidget(TextLabelVx,          4, 2);
+  GroupArgumentsLayout->addWidget(SpinBox_Vx,           4, 3);
+  GroupArgumentsLayout->addWidget(TextLabelVy,          4, 4);
+  GroupArgumentsLayout->addWidget(SpinBox_Vy,           4, 5);
+  GroupArgumentsLayout->addWidget(TextLabelVz,          4, 6);
+  GroupArgumentsLayout->addWidget(SpinBox_Vz,           4, 7);
+  GroupArgumentsLayout->addWidget(TextLabelDist,        5, 0);
+  GroupArgumentsLayout->addWidget(SpinBox_VDist,         5, 3);
+  GroupArgumentsLayout->addWidget(TextLabelNbSteps,     6, 0, 1, 3);
+  GroupArgumentsLayout->addWidget(SpinBox_NbSteps,      6, 3);
+  GroupArgumentsLayout->addWidget(myPreviewCheckBox,    7, 0, 1, 8);
+  GroupArgumentsLayout->addWidget(MakeGroupsCheck,      8, 0, 1, 8);
+  GroupArgumentsLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding), 8, 0);
+
 
   /***************************************************************/
   SMESHGUI_ExtrusionDlgLayout->addWidget(ConstructorsBox);
@@ -234,17 +260,19 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   SMESHGUI_ExtrusionDlgLayout->addWidget(GroupButtons);
 
   /* Initialisations */
-  SpinBox_Vx->RangeStepAndValidator(-1, 1, 0.01, 3);
-  SpinBox_Vy->RangeStepAndValidator(-1, 1, 0.01, 3);
-  SpinBox_Vz->RangeStepAndValidator(-1, 1, 0.01, 3);
+  SpinBox_Vx->RangeStepAndValidator(COORD_MIN, COORD_MAX, 0.01, "length_precision");
+  SpinBox_Vy->RangeStepAndValidator(COORD_MIN, COORD_MAX, 0.01, "length_precision");
+  SpinBox_Vz->RangeStepAndValidator(COORD_MIN, COORD_MAX, 0.01, "length_precision");
 
-  SpinBox_Dx->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
-  SpinBox_Dy->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
-  SpinBox_Dz->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  SpinBox_Dx->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  SpinBox_Dy->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  SpinBox_Dz->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
   
   SpinBox_NbSteps->setRange(1, 999999);
+  SpinBox_VDist->RangeStepAndValidator(0, COORD_MAX, 10.0, "length_precision");
 
-  RadioButton1->setChecked(true);
+  RadioButton0->setChecked(true);
+  RadioButton3->setChecked(true);
   MakeGroupsCheck->setChecked(true);
 
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
@@ -273,6 +301,9 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   connect(buttonApply,  SIGNAL(clicked()), this, SLOT(ClickOnApply()));
   connect(buttonHelp,   SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
 
+  connect(RadioButton3, SIGNAL(clicked()), this, SLOT(ClickOnRadio()));
+  connect(RadioButton4, SIGNAL(clicked()), this, SLOT(ClickOnRadio()));
+
   // to update state of the Ok & Apply buttons
   connect(SpinBox_Vx, SIGNAL(valueChanged(double)), SLOT(CheckIsEnable()));
   connect(SpinBox_Vy, SIGNAL(valueChanged(double)), SLOT(CheckIsEnable()));
@@ -291,9 +322,22 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   connect(LineEditElements,     SIGNAL(textChanged(const QString&)), SLOT(onTextChange(const QString&)));
   connect(CheckBoxMesh,         SIGNAL(toggled(bool)),               SLOT(onSelectMesh(bool)));
 
+  connect(SpinBox_Dx,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(SpinBox_Dy,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(SpinBox_Dz,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(SpinBox_Vx,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(SpinBox_Vy,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(SpinBox_Vz,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(SpinBox_VDist,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(SpinBox_NbSteps,  SIGNAL(valueChanged(int)), this, SLOT(toDisplaySimulation()));
+
+  //To Connect preview check box
+  connectPreviewControl();
+
   /***************************************************************/
   
   ConstructorsClicked(0);
+  ClickOnRadio();
   SelectionIntoArgument();
 }
 
@@ -316,6 +360,7 @@ SMESHGUI_ExtrusionDlg::~SMESHGUI_ExtrusionDlg()
 void SMESHGUI_ExtrusionDlg::Init (bool ResetControls)
 {
   myBusy = false;
+  myIDs.clear();
 
   LineEditElements->clear();
   myNbOkElements = 0;
@@ -325,6 +370,7 @@ void SMESHGUI_ExtrusionDlg::Init (bool ResetControls)
 
   if (ResetControls) {
     SpinBox_NbSteps->setValue(1);
+    SpinBox_VDist->setValue(10);
     SpinBox_Dx->SetValue(0);
     SpinBox_Dy->SetValue(0);
     SpinBox_Dz->SetValue(0);
@@ -334,6 +380,8 @@ void SMESHGUI_ExtrusionDlg::Init (bool ResetControls)
 
     CheckBoxMesh->setChecked(false);
     onSelectMesh(false);
+    myPreviewCheckBox->setChecked(false);
+    onDisplaySimulation(false);
   }
 
   CheckIsEnable();
@@ -344,17 +392,31 @@ void SMESHGUI_ExtrusionDlg::Init (bool ResetControls)
 // purpose  : Check whether the Ok and Apply buttons should be enabled or not
 //=================================================================================
 void SMESHGUI_ExtrusionDlg::CheckIsEnable()
-{
-  
-  double aX = SpinBox_Vx->GetValue()*SpinBox_Dx->GetValue();
-  double aY = SpinBox_Vy->GetValue()*SpinBox_Dy->GetValue();
-  double aZ = SpinBox_Vz->GetValue()*SpinBox_Dz->GetValue();
-  double aModule = sqrt(aX*aX + aY*aY + aZ*aZ);
-  
-  bool anIsEnable = myNbOkElements > 0 && aModule > 1.0E-38;
+{  
+  bool anIsEnable = myNbOkElements > 0 && isValuesValid();
 
   buttonOk->setEnabled(anIsEnable);
   buttonApply->setEnabled(anIsEnable);
+}
+
+//=================================================================================
+// function : isValuesValid()
+// purpose  : Return true in case if values entered into dialog are valid
+//=================================================================================
+bool SMESHGUI_ExtrusionDlg::isValuesValid() {
+  double aX, aY, aZ, aModule = 0;
+  if ( RadioButton3->isChecked() ) {
+    aX = SpinBox_Dx->GetValue();
+    aY = SpinBox_Dy->GetValue();
+    aZ = SpinBox_Dz->GetValue();
+    aModule = sqrt(aX*aX + aY*aY + aZ*aZ);
+  } else   if ( RadioButton4->isChecked() ) {
+    aX = SpinBox_Vx->GetValue();
+    aY = SpinBox_Vy->GetValue();
+    aZ = SpinBox_Vz->GetValue();
+    aModule = sqrt(aX*aX + aY*aY + aZ*aZ);
+  }
+  return aModule > 1.0E-38;
 }
 
 //=================================================================================
@@ -365,25 +427,45 @@ void SMESHGUI_ExtrusionDlg::ConstructorsClicked (int constructorId)
 {
   disconnect(mySelectionMgr, 0, this, 0);
 
+  hidePreview();
+
+  TextLabelElements->setText(tr( constructorId ? "SMESH_ID_ELEMENTS" : "SMESH_ID_NODES"));
+
   switch (constructorId) {
   case 0:
     {
-      GroupArguments->setTitle(tr("EXTRUSION_1D"));
+      GroupArguments->setTitle(tr("EXTRUSION_0D"));
       if (!CheckBoxMesh->isChecked())
-	{
-	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	    aViewWindow->SetSelectionMode(EdgeSelection);
-	}
+      {
+        LineEditElements->clear();
+        myIDs.clear();
+        if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+          aViewWindow->SetSelectionMode(NodeSelection);
+      }
       break;
     }
   case 1:
     {
+      GroupArguments->setTitle(tr("EXTRUSION_1D"));
+      if (!CheckBoxMesh->isChecked())
+      {
+        LineEditElements->clear();
+        myIDs.clear();
+        if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+          aViewWindow->SetSelectionMode(EdgeSelection);
+      }
+      break;
+    }
+  case 2:
+    {
       GroupArguments->setTitle(tr("EXTRUSION_2D"));
       if (!CheckBoxMesh->isChecked())
-	{
-	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	    aViewWindow->SetSelectionMode(FaceSelection);
-	}
+      {
+        LineEditElements->clear();
+        myIDs.clear();
+        if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+          aViewWindow->SetSelectionMode(FaceSelection);
+      }
       break;
     }
   }
@@ -395,6 +477,58 @@ void SMESHGUI_ExtrusionDlg::ConstructorsClicked (int constructorId)
     onSelectMesh(true);
 
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
+}
+
+//=================================================================================
+// function : ConstructorsClicked()
+// purpose  : Radio button management
+//=================================================================================
+void SMESHGUI_ExtrusionDlg::ClickOnRadio()
+{
+  if ( RadioButton3->isChecked() ) {
+    TextLabelDistance->show();
+    TextLabelDx->show();
+    SpinBox_Dx->show();
+    TextLabelDy->show();
+    SpinBox_Dy->show();
+    TextLabelDz->show();
+    SpinBox_Dz->show();
+
+    TextLabelVector->hide();
+    TextLabelVx->hide();
+    SpinBox_Vx->hide();
+    TextLabelVy->hide();
+    SpinBox_Vy->hide();
+    TextLabelVz->hide();
+    SpinBox_Vz->hide();
+    TextLabelDist->hide();
+    SpinBox_VDist->hide();
+    SelectVectorButton->hide();
+  } else if ( RadioButton4->isChecked() ) {
+    TextLabelDistance->hide();
+    TextLabelDx->hide();
+    SpinBox_Dx->hide();
+    TextLabelDy->hide();
+    SpinBox_Dy->hide();
+    TextLabelDz->hide();
+    SpinBox_Dz->hide();
+
+    TextLabelVector->show();
+    TextLabelVx->show();
+    SpinBox_Vx->show();
+    TextLabelVy->show();
+    SpinBox_Vy->show();
+    TextLabelVz->show();
+    SpinBox_Vz->show();
+    TextLabelDist->show();
+    SpinBox_VDist->show();
+    SelectVectorButton->show();
+  }
+  onDisplaySimulation(true);
+  // AdjustSize
+  qApp->processEvents();
+  updateGeometry();
+  resize( minimumSizeHint() );
 }
 
 //=================================================================================
@@ -410,66 +544,104 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
     return false;
 
   if (myNbOkElements) {
-    
-    gp_XYZ aNormale(SpinBox_Vx->GetValue(),
-                    SpinBox_Vy->GetValue(),
-                    SpinBox_Vz->GetValue());
-    
-    aNormale /= aNormale.Modulus();
-    
+
     SMESH::DirStruct aVector;
-    aVector.PS.x = SpinBox_Dx->GetValue()*aNormale.X();
-    aVector.PS.y = SpinBox_Dy->GetValue()*aNormale.Y();
-    aVector.PS.z = SpinBox_Dz->GetValue()*aNormale.Z();
+    getExtrusionVector(aVector);
+    
+    QStringList aParameters;
+    if ( RadioButton3->isChecked() ) {
+      aParameters << SpinBox_Dx->text();
+      aParameters << SpinBox_Dy->text();
+      aParameters << SpinBox_Dz->text();
+    } else if ( RadioButton4->isChecked() ) {
+      // only 3 coords in a python dump command :(
+      // aParameters << SpinBox_Vx->text();
+      // aParameters << SpinBox_Vy->text();
+      // aParameters << SpinBox_Vz->text();
+      // aParameters << SpinBox_VDist->text();
+    }
 
     long aNbSteps = (long)SpinBox_NbSteps->value();
 
-    QStringList aParameters;
-    aParameters << SpinBox_Dx->text();
-    aParameters << SpinBox_Dy->text();
-    aParameters << SpinBox_Dz->text();
     aParameters << SpinBox_NbSteps->text();
 
     try {
       SUIT_OverrideCursor aWaitCursor;
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
 
+      myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+
       if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() ) {
-        if( CheckBoxMesh->isChecked() ) {
-	  if( GetConstructorId() == 0 )
-	    SMESH::ListOfGroups_var groups = 
-	      aMeshEditor->ExtrusionSweepObject1DMakeGroups(mySelectedObject, aVector, aNbSteps);
-	  else
-	    SMESH::ListOfGroups_var groups = 
-	      aMeshEditor->ExtrusionSweepObject2DMakeGroups(mySelectedObject, aVector, aNbSteps);
-	}
-	else
-	  SMESH::ListOfGroups_var groups = 
-	    aMeshEditor->ExtrusionSweepMakeGroups(myElementsId.inout(), aVector, aNbSteps);
+        if( CheckBoxMesh->isChecked() ) 
+          switch (GetConstructorId() ) {
+            case 0:
+              {
+                SMESH::ListOfGroups_var groups = 
+                  aMeshEditor->ExtrusionSweepObject0DMakeGroups(mySelectedObject, aVector, aNbSteps);
+                break;
+              }
+            case 1:
+              {
+                SMESH::ListOfGroups_var groups = 
+                  aMeshEditor->ExtrusionSweepObject1DMakeGroups(mySelectedObject, aVector, aNbSteps);
+                break;
+              }
+            case 2:
+              {
+                SMESH::ListOfGroups_var groups = 
+                  aMeshEditor->ExtrusionSweepObject2DMakeGroups(mySelectedObject, aVector, aNbSteps);
+                break;
+              }
+          }
+        else
+        {
+          SMESH::ListOfGroups_var groups;
+          if (GetConstructorId() == 0)
+            groups = aMeshEditor->ExtrusionSweepMakeGroups0D(myElementsId.inout(), aVector, aNbSteps);
+          else
+            groups = aMeshEditor->ExtrusionSweepMakeGroups(myElementsId.inout(), aVector, aNbSteps);
+        }
+
       }
       else {
-	if( CheckBoxMesh->isChecked() ) {
-	  if( GetConstructorId() == 0 )
-	    aMeshEditor->ExtrusionSweepObject1D(mySelectedObject, aVector, aNbSteps);
-	  else
-	    aMeshEditor->ExtrusionSweepObject2D(mySelectedObject, aVector, aNbSteps);
-	}
-	else
-	  aMeshEditor->ExtrusionSweep(myElementsId.inout(), aVector, aNbSteps);
+        if( CheckBoxMesh->isChecked() ) 
+          switch( GetConstructorId() ) {
+            case 0:
+              {
+              aMeshEditor->ExtrusionSweepObject0D(mySelectedObject, aVector, aNbSteps);
+                break;
+              }
+            case 1:
+              {
+              aMeshEditor->ExtrusionSweepObject1D(mySelectedObject, aVector, aNbSteps);
+                break;
+              }
+            case 2:
+              {
+              aMeshEditor->ExtrusionSweepObject2D(mySelectedObject, aVector, aNbSteps);
+                break;
+          }
+        }
+        else
+          if (GetConstructorId() == 0)
+            aMeshEditor->ExtrusionSweep0D(myElementsId.inout(), aVector, aNbSteps);
+          else
+            aMeshEditor->ExtrusionSweep(myElementsId.inout(), aVector, aNbSteps);
       }
-
-      myMesh->SetParameters( SMESHGUI::JoinObjectParameters(aParameters) );
 
     } catch (...) {
     }
 
-    SMESH::UpdateView();
+    SMESH::Update(myIO, SMESH::eDisplay);
     if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() )
       mySMESHGUI->updateObjBrowser(true); // new groups may appear
     Init(false);
     ConstructorsClicked(GetConstructorId());
+    mySelectionMgr->clearSelected();
     mySelectedObject = SMESH::SMESH_IDSource::_nil();
     SelectionIntoArgument();
+
+    SMESHGUI::Modified();
   }
   return true;
 }
@@ -490,17 +662,6 @@ void SMESHGUI_ExtrusionDlg::ClickOnOk()
 //=================================================================================
 void SMESHGUI_ExtrusionDlg::ClickOnCancel()
 {
-  disconnect(mySelectionMgr, 0, this, 0);
-  mySelectionMgr->clearFilters();
-  //mySelectionMgr->clearSelected();
-  if (SMESH::GetCurrentVtkView()) {
-    SMESH::RemoveFilters(); // PAL6938 -- clean all mesh entity filters
-    SMESH::SetPointRepresentation(false);
-    SMESH::SetPickable();
-  }
-  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-    aViewWindow->SetSelectionMode(ActorSelection);
-  mySMESHGUI->ResetState();
   reject();
 }
 
@@ -521,10 +682,10 @@ void SMESHGUI_ExtrusionDlg::ClickOnHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 
@@ -553,9 +714,28 @@ void SMESHGUI_ExtrusionDlg::onTextChange (const QString& theNewText)
     if (send == LineEditElements)
     {
       SMDS_Mesh* aMesh = myActor ? myActor->GetObject()->GetMesh() : 0;
-      SMESH::ElementType SMESHType = GetConstructorId() ? SMESH::FACE : SMESH::EDGE;
-      SMDSAbs_ElementType SMDSType = GetConstructorId() ? SMDSAbs_Face: SMDSAbs_Edge;
-
+      SMESH::ElementType SMESHType;
+      SMDSAbs_ElementType SMDSType;
+      switch (GetConstructorId()) {
+      case 0:
+        {
+          SMESHType = SMESH::NODE;
+          SMDSType = SMDSAbs_Node;
+          break;
+        }
+      case 1:
+        {
+          SMESHType = SMESH::EDGE;
+          SMDSType = SMDSAbs_Edge;
+          break;                  
+        }
+      case 2:
+        {
+          SMESHType = SMESH::FACE;
+          SMDSType = SMDSAbs_Face;
+          break;
+        }
+      }
       myElementsId = new SMESH::long_array;
       myElementsId->length( aListId.count() );
       TColStd_MapOfInteger newIndices;
@@ -564,7 +744,11 @@ void SMESHGUI_ExtrusionDlg::onTextChange (const QString& theNewText)
         bool validId = false;
         if ( id > 0 ) {
           if ( aMesh ) {
-            const SMDS_MeshElement * e = aMesh->FindElement( id );
+            const SMDS_MeshElement * e;
+            if (SMDSType == SMDSAbs_Node)
+              e = aMesh->FindNode( id ); 
+            else
+              e = aMesh->FindElement( id );
             validId = ( e && e->GetType() == SMDSType );
           } else {
             validId = ( myMesh->GetElementType( id, true ) == SMESHType );
@@ -576,11 +760,13 @@ void SMESHGUI_ExtrusionDlg::onTextChange (const QString& theNewText)
       myElementsId->length( myNbOkElements = newIndices.Extent() );
       mySelector->AddOrRemoveIndex(myIO, newIndices, false);
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->highlight( myIO, true, true );
+        aViewWindow->highlight( myIO, true, true );
     }
   }
 
   CheckIsEnable();
+
+  onDisplaySimulation(true);
 
   myBusy = false;
 }
@@ -598,8 +784,11 @@ void SMESHGUI_ExtrusionDlg::SelectionIntoArgument()
     return;
 
   // clear
-  myActor = 0;
-  myIO.Nullify();
+  if(myEditCurrentArgument != (QWidget*)SpinBox_Vx) {
+    myActor = 0;
+    Handle(SALOME_InteractiveObject) resIO = myIO;
+    myIO.Nullify();
+  }
 
   QString aString = "";
   // set busy flag
@@ -617,11 +806,14 @@ void SMESHGUI_ExtrusionDlg::SelectionIntoArgument()
     return;
 
   Handle(SALOME_InteractiveObject) IO = aList.First();
-  myMesh = SMESH::GetMeshByIO(IO);
-  if (myMesh->_is_nil())
-    return;
-  myIO = IO;
-  myActor = SMESH::FindActorByObject(myMesh);
+
+  if(myEditCurrentArgument != (QWidget*)SpinBox_Vx) {
+    myMesh = SMESH::GetMeshByIO(IO);
+    if (myMesh->_is_nil())
+      return;
+    myIO = IO;
+    myActor = SMESH::FindActorByObject(myMesh);
+  }
 
   if (myEditCurrentArgument == (QWidget*)LineEditElements) {    
     int aNbElements = 0;
@@ -648,7 +840,7 @@ void SMESHGUI_ExtrusionDlg::SelectionIntoArgument()
       aNbElements = aMapIndex.Extent();
 
       if (aNbElements < 1)
-	return;
+        return;
 
       myElementsId = new SMESH::long_array;
       myElementsId->length( aNbElements );
@@ -667,7 +859,9 @@ void SMESHGUI_ExtrusionDlg::SelectionIntoArgument()
     TColStd_IndexedMapOfInteger aMapIndex;
     mySelector->GetIndex(IO,aMapIndex);
     int aNbElements = aMapIndex.Extent();
-    SMDS_Mesh* aMesh =  myActor ? myActor->GetObject()->GetMesh() : 0;
+    SMESH::SMESH_Mesh_var aMesh_var = SMESH::GetMeshByIO(IO);
+    SMESH_Actor* anActor = SMESH::FindActorByObject(aMesh_var);
+    SMDS_Mesh* aMesh =  anActor ? anActor->GetObject()->GetMesh() : 0;
 
     if(aNbElements != 1 || !aMesh)
       return;
@@ -683,6 +877,8 @@ void SMESHGUI_ExtrusionDlg::SelectionIntoArgument()
     SpinBox_Vz->SetValue(aNormale.Z());
     
   }
+  
+  onDisplaySimulation(true);
   
   // OK
   CheckIsEnable();
@@ -704,20 +900,30 @@ void SMESHGUI_ExtrusionDlg::SetEditCurrentArgument()
     myEditCurrentArgument = (QWidget*)LineEditElements;
     if (CheckBoxMesh->isChecked()) {
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->SetSelectionMode(ActorSelection);
+        aViewWindow->SetSelectionMode(ActorSelection);
       mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
     } else {
       int aConstructorId = GetConstructorId();
-      if (aConstructorId == 0)
-	{
-	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	    aViewWindow->SetSelectionMode(EdgeSelection);
-	}
-      else if (aConstructorId == 1)
-	{
-	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	    aViewWindow->SetSelectionMode(FaceSelection);
-	}
+      switch(aConstructorId) {
+          case 0:
+          {   
+            if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+              aViewWindow->SetSelectionMode(NodeSelection);
+            break;
+          }
+          case 1:
+          {
+            if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+              aViewWindow->SetSelectionMode(EdgeSelection);
+            break;
+          }
+          case 2:
+          {
+            if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+            aViewWindow->SetSelectionMode(FaceSelection);
+            break;
+          }
+      }
     }
   }
   else if (send == SelectVectorButton){
@@ -775,15 +981,45 @@ void SMESHGUI_ExtrusionDlg::enterEvent (QEvent*)
 }
 
 //=================================================================================
+// function : closeEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_ExtrusionDlg::closeEvent( QCloseEvent* )
+{
+  /* same than click on cancel button */
+  disconnect(mySelectionMgr, 0, this, 0);
+  mySelectionMgr->clearFilters();
+  //mySelectionMgr->clearSelected();
+  if (SMESH::GetCurrentVtkView()) {
+    SMESH::RemoveFilters(); // PAL6938 -- clean all mesh entity filters
+    SMESH::SetPointRepresentation(false);
+    SMESH::SetPickable();
+  }
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(ActorSelection);
+  mySMESHGUI->ResetState();
+}
+
+void SMESHGUI_ExtrusionDlg::reject()
+{
+  QDialog::reject();
+  close();
+}
+
+//=================================================================================
 // function : onSelectMesh()
 // purpose  :
 //=================================================================================
 void SMESHGUI_ExtrusionDlg::onSelectMesh (bool toSelectMesh)
 {
-  if (toSelectMesh)
+  if (toSelectMesh) {
+    myIDs = LineEditElements->text();
     TextLabelElements->setText(tr("SMESH_NAME"));
+  }
   else
     TextLabelElements->setText(tr("SMESH_ID_ELEMENTS"));
+
+  myFilterBtn->setEnabled(!toSelectMesh);
 
   if (myEditCurrentArgument != LineEditElements) {
     LineEditElements->clear();
@@ -800,23 +1036,35 @@ void SMESHGUI_ExtrusionDlg::onSelectMesh (bool toSelectMesh)
     LineEditElements->setValidator(0);
   } else {
     int aConstructorId = GetConstructorId();
-    if (aConstructorId == 0)
-      {
-	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	  aViewWindow->SetSelectionMode(EdgeSelection);
-      }
-    else if (aConstructorId == 0)
-      {
-	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	  aViewWindow->SetSelectionMode(FaceSelection);
-      }
-
+    switch(aConstructorId) {
+      case 0:
+        {
+          if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+            aViewWindow->SetSelectionMode(NodeSelection);
+          break;
+        }
+      case 1:
+        {
+          if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+            aViewWindow->SetSelectionMode(EdgeSelection);
+          break;
+        }
+      case 2:
+        {
+          if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+            aViewWindow->SetSelectionMode(FaceSelection);
+          break;
+        }
+    }
     LineEditElements->setReadOnly(false);
     LineEditElements->setValidator(myIdValidator);
     onTextChange(LineEditElements->text());
   }
 
   SelectionIntoArgument();
+
+  if (!toSelectMesh)
+    LineEditElements->setText( myIDs );
 }
 
 //=================================================================================
@@ -850,14 +1098,38 @@ void SMESHGUI_ExtrusionDlg::keyPressEvent( QKeyEvent* e )
 //=================================================================================
 void SMESHGUI_ExtrusionDlg::setFilters()
 {
+  if(myMesh->_is_nil()) {
+    SUIT_MessageBox::critical(this,
+                              tr("SMESH_ERROR"),
+                              tr("NO_MESH_SELECTED"));
+   return;
+  }
   if ( !myFilterDlg )
   {
     QList<int> types;  
+    types.append( SMESH::NODE );
     types.append( SMESH::EDGE );
     types.append( SMESH::FACE );
     myFilterDlg = new SMESHGUI_FilterDlg( mySMESHGUI, types );
   }
-  myFilterDlg->Init( GetConstructorId() ? SMESH::FACE : SMESH::EDGE );
+  switch( GetConstructorId() ){
+    case 0: 
+      {
+      myFilterDlg->Init( SMESH::NODE );
+        break;
+      }
+    case 1:
+      {
+      myFilterDlg->Init( SMESH::EDGE );
+        break;
+      }
+    case 2:
+      {
+      myFilterDlg->Init( SMESH::FACE );
+        break;
+      }
+  }
+  
 
   myFilterDlg->SetSelection();
   myFilterDlg->SetMesh( myMesh );
@@ -874,9 +1146,16 @@ bool SMESHGUI_ExtrusionDlg::isValid()
 {
   QString msg;
   bool ok = true;
-  ok = SpinBox_Dx->isValid( msg, true ) && ok;
-  ok = SpinBox_Dy->isValid( msg, true ) && ok;
-  ok = SpinBox_Dz->isValid( msg, true ) && ok;
+  if ( RadioButton3->isChecked() ) {
+    ok = SpinBox_Dx->isValid( msg, true ) && ok;
+    ok = SpinBox_Dy->isValid( msg, true ) && ok;
+    ok = SpinBox_Dz->isValid( msg, true ) && ok;
+  } else if ( RadioButton4->isChecked() ) {
+    ok = SpinBox_Vx->isValid( msg, true ) && ok;
+    ok = SpinBox_Vy->isValid( msg, true ) && ok;
+    ok = SpinBox_Vz->isValid( msg, true ) && ok;
+    ok = SpinBox_VDist->isValid( msg, true ) && ok;
+  }
   ok = SpinBox_NbSteps->isValid( msg, true ) && ok;
 
   if( !ok ) {
@@ -887,4 +1166,83 @@ bool SMESHGUI_ExtrusionDlg::isValid()
     return false;
   }
   return true;
+}
+
+//=================================================================================
+// function : onDisplaySimulation
+// purpose  : Show/Hide preview
+//=================================================================================
+void SMESHGUI_ExtrusionDlg::onDisplaySimulation( bool toDisplayPreview ) {
+  if (myPreviewCheckBox->isChecked() && toDisplayPreview) {
+    if (myNbOkElements && isValid() && isValuesValid()) {
+      //Get input vector
+      SMESH::DirStruct aVector;
+      getExtrusionVector(aVector);
+
+      //Get Number of the steps 
+      long aNbSteps = (long)SpinBox_NbSteps->value();
+      
+      try {
+        SUIT_OverrideCursor aWaitCursor;
+        SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
+        if( CheckBoxMesh->isChecked() ) {
+          switch (GetConstructorId()) {
+            case 0:
+              {
+                aMeshEditor->ExtrusionSweepObject0D(mySelectedObject, aVector, aNbSteps);
+                                        break;
+              }
+            case 1:
+              {
+                aMeshEditor->ExtrusionSweepObject1D(mySelectedObject, aVector, aNbSteps);
+                                        break;
+              }
+            case 2:
+              {
+                aMeshEditor->ExtrusionSweepObject2D(mySelectedObject, aVector, aNbSteps);
+                                        break;
+              }
+          }
+        }
+        else
+          if(GetConstructorId() == 0)
+            aMeshEditor->ExtrusionSweep0D(myElementsId.inout(), aVector, aNbSteps);
+          else
+            aMeshEditor->ExtrusionSweep(myElementsId.inout(), aVector, aNbSteps);
+        
+        SMESH::MeshPreviewStruct_var aMeshPreviewStruct = aMeshEditor->GetPreviewData();
+        mySimulation->SetData(aMeshPreviewStruct._retn());
+      } catch (...) {
+        hidePreview();
+      }
+    } else {
+      hidePreview();
+    }
+  } else {
+    hidePreview();
+  }
+}
+
+//=================================================================================
+// function : getExtrusionVector()
+// purpose  : get direction of the extrusion
+//=================================================================================
+void SMESHGUI_ExtrusionDlg::getExtrusionVector(SMESH::DirStruct& aVector) {
+  if ( RadioButton3->isChecked() ) {
+    aVector.PS.x = SpinBox_Dx->GetValue();
+    aVector.PS.y = SpinBox_Dy->GetValue();
+    aVector.PS.z = SpinBox_Dz->GetValue();      
+  } else if ( RadioButton4->isChecked() ) {
+    gp_XYZ aNormale(SpinBox_Vx->GetValue(),
+                    SpinBox_Vy->GetValue(),
+                    SpinBox_Vz->GetValue());
+    
+    
+    aNormale /= aNormale.Modulus();
+    double aVDist = (double)SpinBox_VDist->value();
+    
+    aVector.PS.x = aNormale.X()*aVDist;
+    aVector.PS.y = aNormale.Y()*aVDist;
+    aVector.PS.z = aNormale.Z()*aVDist;
+  }
 }

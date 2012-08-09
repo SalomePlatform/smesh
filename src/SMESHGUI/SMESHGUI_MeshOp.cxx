@@ -1,29 +1,28 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-// SMESH SMESHGUI : GUI for SMESH component
-// File   : SMESHGUI_MeshOp.cxx
-// Author : Sergey LITONIN, Open CASCADE S.A.S.
+//  File   : SMESHGUI_MeshOp.cxx
+//  Author : Sergey LITONIN, Open CASCADE S.A.S.
+
 // SMESH includes
-//
 #include "SMESHGUI_MeshOp.h"
 
 #include "SMESHGUI.h"
@@ -45,10 +44,12 @@
 // SALOME GUI includes
 #include <SalomeApp_Tools.h>
 #include <SalomeApp_Application.h>
+#include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
 #include <LightApp_UpdateFlags.h>
 #include <SUIT_MessageBox.h>
 #include <SUIT_OverrideCursor.h>
+#include <SUIT_Session.h>
 #include <SALOME_InteractiveObject.hxx>
 #include <SALOME_ListIO.hxx>
 
@@ -71,6 +72,10 @@
 #include <SALOMEconfig.h>
 #include CORBA_CLIENT_HEADER(SMESH_Gen)
 
+//To disable automatic genericobj management, the following line should be commented.
+//Otherwise, it should be uncommented. Refer to KERNEL_SRC/src/SALOMEDSImpl/SALOMEDSImpl_AttributeIOR.cxx
+#define WITHGENERICOBJ
+
 //================================================================================
 /*!
  * \brief Constructor
@@ -85,7 +90,8 @@ SMESHGUI_MeshOp::SMESHGUI_MeshOp( const bool theToCreate, const bool theIsMesh )
   myToCreate( theToCreate ),
   myIsMesh( theIsMesh ),
   myDlg( 0 ),
-  myShapeByMeshOp( 0 )
+  myShapeByMeshOp( 0 ),
+  myHypoSet( 0 )
 {
   if ( GeometryGUI::GetGeomGen()->_is_nil() )// check that GEOM_Gen exists
     GeometryGUI::InitGeomGen();
@@ -141,14 +147,21 @@ bool SMESHGUI_MeshOp::onApply()
   aMess = "";
   try
   {
+    QStringList anEntryList;
     if ( myToCreate && myIsMesh )
-      aResult = createMesh( aMess );
+      aResult = createMesh( aMess, anEntryList );
     if ( myToCreate && !myIsMesh )
-      aResult = createSubMesh( aMess );
+      aResult = createSubMesh( aMess, anEntryList );
     else if ( !myToCreate )
       aResult = editMeshOrSubMesh( aMess );
     if ( aResult )
+    {
+      SMESHGUI::Modified();
       update( UF_ObjBrowser | UF_Model );
+      if( LightApp_Application* anApp =
+          dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ) )
+        myObjectToSelect = anApp->browseObjects( anEntryList, isApplyAndClose() );
+    }
   }
   catch ( const SALOME::SALOME_Exception& S_ex )
   {
@@ -232,14 +245,36 @@ void SMESHGUI_MeshOp::startOperation()
   else
     myDlg->activateObject( SMESHGUI_MeshDlg::Obj );
 
-  myDlg->setHypoSets( SMESH::GetHypothesesSets() );
-
   myDlg->setCurrentTab( SMESH::DIM_3D );
   myDlg->show();
-
+  myDlg->setGeomPopupEnabled(false);
   selectionDone();
 
   myIgnoreAlgoSelection = false;
+
+  myObjectToSelect.clear();
+}
+
+//=================================================================================
+/*!
+ * \brief Selects a recently created mesh or sub-mesh if necessary
+ *
+ * Virtual method redefined from base class called when operation is commited
+ * selects a recently created mesh or sub-mesh if necessary. Allows to perform
+ * selection when the custom selection filters are removed.
+ */
+//=================================================================================
+void SMESHGUI_MeshOp::commitOperation()
+{
+  SMESHGUI_SelectionOp::commitOperation();
+
+  if ( !myObjectToSelect.isEmpty() ) {
+    if ( LightApp_SelectionMgr* aSelectionMgr = selectionMgr() ) {
+      SUIT_DataOwnerPtrList aList;
+      aList.append( new LightApp_DataOwner( myObjectToSelect ) );
+      aSelectionMgr->setSelected( aList );
+    }
+  }
 }
 
 //================================================================================
@@ -271,11 +306,10 @@ SUIT_SelectionFilter* SMESHGUI_MeshOp::createFilter( const int theId ) const
 
 //================================================================================
 /*!
- * \brief check if selected shape is a subshape of the shape to mesh
+ * \brief check if selected shape is a sub-shape of the shape to mesh
   * \retval bool - check result
  */
 //================================================================================
-
 bool SMESHGUI_MeshOp::isSubshapeOk() const
 {
   if ( !myToCreate || myIsMesh ) // not submesh creation
@@ -338,11 +372,10 @@ bool SMESHGUI_MeshOp::isSubshapeOk() const
 //================================================================================
 /*!
  * \brief Return name of the algorithm that does not support submeshes and makes
- * submesh creation useless 
+ * submesh creation useless
  *  \retval char* - string is to be deleted!!!
  */
 //================================================================================
-
 char* SMESHGUI_MeshOp::isSubmeshIgnored() const
 {
   if ( myToCreate && !myIsMesh ) {
@@ -388,7 +421,6 @@ char* SMESHGUI_MeshOp::isSubmeshIgnored() const
  * \retval _PTR(SObject) - the found submesh SObject
  */
 //================================================================================
-
 _PTR(SObject) SMESHGUI_MeshOp::getSubmeshByGeom() const
 {
   QString aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
@@ -499,48 +531,52 @@ void SMESHGUI_MeshOp::selectionDone()
       }
 
       if (aSeq->length() > 0) {
-        shapeDim = 0;
+        shapeDim = -1;
         for (int iss = 0; iss < aSeq->length() && shapeDim < 3; iss++) {
           GEOM::GEOM_Object_var aGeomVar = aSeq[iss];
           switch ( aGeomVar->GetShapeType() ) {
           case GEOM::SOLID:  shapeDim = 3; break;
           case GEOM::SHELL:
-            {
-              //shapeDim = 3; // Bug 0016155: EDF PAL 447: If the shape is a Shell, disable 3D tab
-              shapeDim = (shapeDim < 2) ? 2 : shapeDim;
-              TopoDS_Shape aShape;
-              if (GEOMBase::GetShape(aGeomVar, aShape)) {
-                if (/*aShape.Closed()*/BRep_Tool::IsClosed(aShape))
-                  shapeDim = 3;
-              }
-            }
-            break;
-          case GEOM::FACE:   shapeDim = (shapeDim < 2) ? 2 : shapeDim; break;
+            // Bug 0016155: EDF PAL 447: If the shape is a Shell, disable 3D tab
+            // {
+            //   TopoDS_Shape aShape;
+            //   bool isClosed = GEOMBase::GetShape(aGeomVar, aShape) && /*aShape.Closed()*/BRep_Tool::IsClosed(aShape);
+            //   shapeDim = qMax(isClosed ? 3 : 2, shapeDim);
+            // }
+            // break;
+          case GEOM::FACE:   shapeDim = qMax(2, shapeDim); break;
           case GEOM::WIRE:
-          case GEOM::EDGE:   shapeDim = (shapeDim < 1) ? 1 : shapeDim; break;
-          case GEOM::VERTEX: break;
+          case GEOM::EDGE:   shapeDim = qMax(1, shapeDim); break;
+          case GEOM::VERTEX: shapeDim = qMax(0, shapeDim); break;
           default:
             {
               TopoDS_Shape aShape;
-              if (GEOMBase::GetShape(aGeomVar, aShape)) {
-                TopExp_Explorer exp (aShape, TopAbs_SHELL);
+              if (GEOMBase::GetShape(aGeomVar, aShape))
+              {
+                TopExp_Explorer exp (aShape, TopAbs_SOLID);
                 if (exp.More()) {
-                  //shapeDim = 3; // Bug 0016155: EDF PAL 447: If the shape is a Shell, disable 3D tab
-                  shapeDim = (shapeDim < 2) ? 2 : shapeDim;
-                  for (; exp.More() && shapeDim == 2; exp.Next()) {
-                    if (/*exp.Current().Closed()*/BRep_Tool::IsClosed(exp.Current()))
-                      shapeDim = 3;
-                  }
+                  shapeDim = 3;
                 }
+                // Bug 0016155: EDF PAL 447: If the shape is a Shell, disable 3D tab
+                // else if ( exp.Init( aShape, TopAbs_SHELL ), exp.More() )
+                // {
+                //   shapeDim = 2;
+                //   for (; exp.More() && shapeDim == 2; exp.Next()) {
+                //     if (/*exp.Current().Closed()*/BRep_Tool::IsClosed(exp.Current()))
+                //       shapeDim = 3;
+                //   }
+                // }
                 else if ( exp.Init( aShape, TopAbs_FACE ), exp.More() )
-                  shapeDim = (shapeDim < 2) ? 2 : shapeDim;
+                  shapeDim = qMax(2, shapeDim);
                 else if ( exp.Init( aShape, TopAbs_EDGE ), exp.More() )
-                  shapeDim = (shapeDim < 1) ? 1 : shapeDim;
-                else
-                  ;//shapeDim = 0;
+                  shapeDim = qMax(1, shapeDim);
+                else if ( exp.Init( aShape, TopAbs_VERTEX ), exp.More() )
+                  shapeDim = qMax(0, shapeDim);
               }
             }
           }
+          if ( shapeDim == 3 )
+            break;
         }
       }
       for (int i = SMESH::DIM_3D; i > shapeDim; i--) {
@@ -548,7 +584,7 @@ void SMESHGUI_MeshOp::selectionDone()
         onAlgoSelected(-1, i);
       }
       myDlg->setMaxHypoDim( shapeDim );
-
+      myDlg->setHypoSets( SMESH::GetHypothesesSets( shapeDim ));
 
       if (!myToCreate) // edition: read hypotheses
       {
@@ -575,11 +611,11 @@ void SMESHGUI_MeshOp::selectionDone()
             SMESH::SObjectToInterface<SMESH::SMESH_subMesh>( pSubmesh );
           bool editSubmesh = ( !sm->_is_nil() &&
                                SUIT_MessageBox::question( myDlg, tr( "SMESH_WARNING" ),
-							  tr( "EDIT_SUBMESH_QUESTION"),
-							  SUIT_MessageBox::Yes | 
-							  SUIT_MessageBox::No,
-							  SUIT_MessageBox::No )
-			       == SUIT_MessageBox::Yes );
+                                                          tr( "EDIT_SUBMESH_QUESTION"),
+                                                          SUIT_MessageBox::Yes |
+                                                          SUIT_MessageBox::No,
+                                                          SUIT_MessageBox::No )
+                               == SUIT_MessageBox::Yes );
           if ( editSubmesh )
           {
             selectionMgr()->clearFilters();
@@ -612,13 +648,19 @@ void SMESHGUI_MeshOp::selectionDone()
         QString aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
         if ( _PTR(SObject) pMesh = studyDS()->FindObjectID( aMeshEntry.toLatin1().data() )) {
           SMESH::SMESH_Mesh_var mesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( pMesh );
-          if ( !mesh->_is_nil() )
+          if ( !mesh->_is_nil() ) {
+            //rnv: issue 21056: EDF 1608 SMESH: Dialog Box "Create Sub Mesh": focus should automatically switch to geometry
+            QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
+            _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.toLatin1().data() );
+            if ( !pGeom || GEOM::GEOM_Object::_narrow( _CAST( SObject,pGeom )->GetObject() )->_is_nil() )
+              myDlg->activateObject(SMESHGUI_MeshDlg::Geom);
             enable = ( shapeDim > 1 ) && ( mesh->NbEdges() > 0 );
+          }
         }
         myDlg->setGeomPopupEnabled( enable );
       }
     }
-    else {
+    else { // no geometry defined
       myDlg->enableTab( SMESH::DIM_3D );
       QStringList hypList;
       availableHyps( SMESH::DIM_3D, Algo, hypList,
@@ -738,7 +780,6 @@ bool SMESHGUI_MeshOp::isValid( QString& theMess ) const
   * \retval bool - check result
  */
 //================================================================================
-
 static bool isCompatible(const HypothesisData* theAlgoData,
                          const HypothesisData* theHypData,
                          const int             theHypType)
@@ -856,6 +897,7 @@ void SMESHGUI_MeshOp::existingHyps( const int theDim,
           if ( !aHypVar->_is_nil() )
           {
             HypothesisData* aData = SMESH::GetHypothesisData( aHypVar->GetName() );
+            if ( !aData) continue;
             if ( ( theDim == -1 || aData->Dim.contains( theDim ) ) &&
                  ( isCompatible ( theAlgoData, aData, theHypType )) &&
                  ( isAux == aData->IsAux ))
@@ -874,14 +916,13 @@ void SMESHGUI_MeshOp::existingHyps( const int theDim,
 //================================================================================
 /*!
  * \brief If create or edit a submesh, return a hypothesis holding parameters used
- *        to mesh a subshape
+ *        to mesh a sub-shape
   * \param aHypType - The hypothesis type name
   * \param aServerLib - Server library name
   * \param hypData - The structure holding the hypothesis type etc.
   * \retval SMESH::SMESH_Hypothesis_var - the hypothesis holding parameter values
  */
 //================================================================================
-
 SMESH::SMESH_Hypothesis_var
 SMESHGUI_MeshOp::getInitParamsHypothesis( const QString& aHypType,
                                           const QString& aServerLib ) const
@@ -944,12 +985,19 @@ SMESHGUI_MeshOp::getInitParamsHypothesis( const QString& aHypType,
     }
   }
 
-  return SMESHGUI::GetSMESHGen()->GetHypothesisParameterValues( aHypType.toLatin1().data(),
-                                                                aServerLib.toLatin1().data(),
-                                                                aMeshVar,
-                                                                aGeomVar,
-                                                                /*byMesh = */isSubMesh);
-
+  SMESH::SMESH_Hypothesis_var hyp =
+    SMESHGUI::GetSMESHGen()->GetHypothesisParameterValues( aHypType.toLatin1().data(),
+                                                           aServerLib.toLatin1().data(),
+                                                           aMeshVar,
+                                                           aGeomVar,
+                                                           /*byMesh = */isSubMesh);
+  if ( hyp->_is_nil() && isSubMesh )
+    hyp = SMESHGUI::GetSMESHGen()->GetHypothesisParameterValues( aHypType.toLatin1().data(),
+                                                                 aServerLib.toLatin1().data(),
+                                                                 aMeshVar,
+                                                                 aGeomVar,
+                                                                 /*byMesh = */false);
+  return hyp;
 }
 
 //================================================================================
@@ -960,7 +1008,6 @@ SMESHGUI_MeshOp::getInitParamsHypothesis( const QString& aHypType,
   * \retval int - dimention
  */
 //================================================================================
-
 static int getTabDim (const QObject* tab, SMESHGUI_MeshDlg* dlg )
 {
   int aDim = -1;
@@ -997,14 +1044,6 @@ void SMESHGUI_MeshOp::onCreateHyp( const int theHypType, const int theIndex )
   createHypothesis(aDim, theHypType, aHypTypeName);
 }
 
-//================================================================================
-/*!
- *  Create hypothesis and update dialog.
- *  \param theDim - dimension of hypothesis to be created
- *  \param theType - hypothesis category (algorithm, hypothesis, additional hypothesis)
- *  \param theTypeName - specifies hypothesis to be created
- */
-//================================================================================
 namespace
 {
   QString GetUniqueName (const QStringList& theHypNames,
@@ -1018,18 +1057,24 @@ namespace
   }
 }
 
-void SMESHGUI_MeshOp::createHypothesis (const int theDim,
-                                        const int theType,
-                                        const QString& theTypeName)
+//================================================================================
+/*!
+ *  Create hypothesis and update dialog.
+ *  \param theDim - dimension of hypothesis to be created
+ *  \param theType - hypothesis category (algorithm, hypothesis, additional hypothesis)
+ *  \param theTypeName - specifies hypothesis to be created
+ */
+//================================================================================
+void SMESHGUI_MeshOp::createHypothesis(const int theDim,
+                                       const int theType,
+                                       const QString& theTypeName)
 {
-  // During a hypothesis creation we might need to select some objects.
-  // Main dialog must not update it's own selected objects in this case.
-  dlg()->deactivateAll();
-
   HypothesisData* aData = SMESH::GetHypothesisData(theTypeName);
   if (!aData)
     return;
 
+  myDim = theDim;
+  myType = theType;
   QStringList aHypNames;
   TDim2Type2HypList::const_iterator aDimIter = myExistingHyps.begin();
   for ( ; aDimIter != myExistingHyps.end(); aDimIter++) {
@@ -1048,14 +1093,21 @@ void SMESHGUI_MeshOp::createHypothesis (const int theDim,
   QString aHypName = GetUniqueName( aHypNames, aData->Label);
 
   // existing hypos
-  int nbHyp = myExistingHyps[theDim][theType].count();
+  bool dialog = false;
 
   QString aClientLibName = aData->ClientLibName;
   if (aClientLibName == "") {
     // Call hypothesis creation server method (without GUI)
-    SMESH::CreateHypothesis(theTypeName, aHypName, false);
+    SMESH::SMESH_Hypothesis_var aHyp =
+      SMESH::CreateHypothesis(theTypeName, aHypName, false);
+#ifdef WITHGENERICOBJ
+    if (!CORBA::is_nil(aHyp))
+      aHyp->UnRegister();
+#endif
   } else {
     // Get hypotheses creator client (GUI)
+    // BUG 0020378
+    //SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(theTypeName);
     SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(theTypeName);
 
     // Create hypothesis
@@ -1063,23 +1115,110 @@ void SMESHGUI_MeshOp::createHypothesis (const int theDim,
       // Get parameters appropriate to initialize a new hypothesis
       SMESH::SMESH_Hypothesis_var initParamHyp =
         getInitParamsHypothesis(theTypeName, aData->ServerLibName);
+
+      removeCustomFilters(); // Issue 0020170
+
+      // Get Entry of the Geom object
+      QString aGeomEntry = "";
+      QString aMeshEntry = "";
+      QString anObjEntry = "";
+      aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
+      aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
+      anObjEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Obj );
+
+      if ( myToCreate && myIsMesh )
+        aMeshEntry = aGeomEntry;
+
+      if ( aMeshEntry != aGeomEntry ) { // Get Geom object from Mesh of a sub-mesh being edited
+        _PTR(SObject) pObj = studyDS()->FindObjectID( aMeshEntry.toLatin1().data() );
+        GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj );
+        aMeshEntry = ( aGeomVar->_is_nil() ) ? "" : aMeshEntry = aGeomVar->GetStudyEntry();
+      }
+
+      if ( aMeshEntry == "" && aGeomEntry == "" ) { // get geom of an object being edited
+        _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
+        bool isMesh;
+        GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj, &isMesh );
+        if ( !aGeomVar->_is_nil() )
+        {
+          aGeomEntry = aGeomVar->GetStudyEntry();
+          if ( isMesh )
+            aMeshEntry = aGeomEntry;
+        }
+      }
+
+      if ( anObjEntry != "" && aGeomEntry != "" && aMeshEntry == "" ) {
+        // take geometry from submesh being created
+        _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
+        if ( pObj ) {
+          // if current object is sub-mesh
+          SMESH::SMESH_subMesh_var aSubMeshVar =
+            SMESH::SMESH_subMesh::_narrow( _CAST( SObject,pObj )->GetObject() );
+          if ( !aSubMeshVar->_is_nil() ) {
+            SMESH::SMESH_Mesh_var aMeshVar =  aSubMeshVar->GetFather();
+            if ( !aMeshVar->_is_nil() ) {
+              _PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshVar );
+              GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( aMeshSO );
+              if ( !aGeomVar->_is_nil() )
+                aMeshEntry = aGeomVar->GetStudyEntry();
+            }
+          }
+        }
+      }
+
+      aCreator->setShapeEntry( aGeomEntry );
+      if ( aMeshEntry != "" )
+        aCreator->setMainShapeEntry( aMeshEntry );
       myDlg->setEnabled( false );
-      aCreator->create(initParamHyp, aHypName, myDlg);
-      myDlg->setEnabled( true );
-    } else {
-      SMESH::CreateHypothesis(theTypeName, aHypName, false);
+      aCreator->create(initParamHyp, aHypName, myDlg, this, SLOT( onHypoCreated( int ) ) );
+      dialog = true;
     }
+    else {
+     SMESH::SMESH_Hypothesis_var aHyp =
+       SMESH::CreateHypothesis(theTypeName, aHypName, false);
+#ifdef WITHGENERICOBJ
+     if (!CORBA::is_nil(aHyp))
+       aHyp->UnRegister();
+#endif
+    }
+  }
+
+  if( !dialog )
+    onHypoCreated(2);
+}
+
+//================================================================================
+/*!
+ *  Necessary steps after hypothesis creation
+ *  \param result - creation result:
+ *   0 = rejected
+ *   1 = accepted
+ *   2 = additional value meaning that slot is called not from dialog box
+ */
+//================================================================================
+void SMESHGUI_MeshOp::onHypoCreated( int result )
+{
+  if( result != 2 )
+  {
+    int obj = myDlg->getActiveObject();
+    onActivateObject( obj ); // Issue 0020170. Restore filters
+    myDlg->setEnabled( true );
   }
 
   _PTR(SComponent) aFather = SMESH::GetActiveStudyDocument()->FindComponent("SMESH");
 
-  HypothesisData* algoData = hypData( theDim, Algo, currentHyp( theDim, Algo ));
+  int nbHyp = myExistingHyps[myDim][myType].count();
+  HypothesisData* algoData = hypData( myDim, Algo, currentHyp( myDim, Algo ));
   QStringList aNewHyps;
-  existingHyps(theDim, theType, aFather, aNewHyps, myExistingHyps[theDim][theType], algoData);
-  if (aNewHyps.count() > nbHyp) {
+  existingHyps(myDim, myType, aFather, aNewHyps, myExistingHyps[myDim][myType], algoData);
+  if (aNewHyps.count() > nbHyp)
+  {
     for (int i = nbHyp; i < aNewHyps.count(); i++)
-      myDlg->tab(theDim)->addHyp(theType, aNewHyps[i]);
+      myDlg->tab(myDim)->addHyp(myType, aNewHyps[i]);
   }
+
+  if( result!=2 && myHypoSet )
+    processSet();
 }
 
 //================================================================================
@@ -1107,16 +1246,84 @@ void SMESHGUI_MeshOp::onEditHyp( const int theHypType, const int theIndex )
   if ( aHyp->_is_nil() )
     return;
 
-  SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator( aHyp->GetName() );
-  if ( aCreator ) {
+  SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHyp->GetName());
+  if ( aCreator )
+  {
     // Get initial parameters
     SMESH::SMESH_Hypothesis_var initParamHyp =
       getInitParamsHypothesis( aHyp->GetName(), aHyp->GetLibName());
-    myDlg->setEnabled( false );
     aCreator->setInitParamsHypothesis( initParamHyp );
-    aCreator->edit( aHyp.in(), aHypItem.second, dlg() );
-    myDlg->setEnabled( true );
+
+    // Get Entry of the Geom object
+    QString aGeomEntry = "";
+    QString aMeshEntry = "";
+    QString anObjEntry = "";
+    aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
+    aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
+    anObjEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Obj );
+
+    if ( myToCreate && myIsMesh )
+      aMeshEntry = aGeomEntry;
+
+    if ( aMeshEntry != aGeomEntry ) { // Get Geom object from Mesh of a sub-mesh being edited
+      _PTR(SObject) pObj = studyDS()->FindObjectID( aMeshEntry.toLatin1().data() );
+      GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj );
+      aMeshEntry = ( aGeomVar->_is_nil() ) ? "" : aMeshEntry = aGeomVar->GetStudyEntry();
+    }
+
+    if ( aMeshEntry == "" && aGeomEntry == "" ) { // get geom of an object being edited
+      _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
+      bool isMesh;
+      GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj, &isMesh );
+      if ( !aGeomVar->_is_nil() )
+      {
+        aGeomEntry = aGeomVar->GetStudyEntry();
+        if ( isMesh )
+          aMeshEntry = aGeomEntry;
+      }
+    }
+
+    if ( anObjEntry != "" && aGeomEntry != "" && aMeshEntry == "" ) {
+      // take geometry from submesh being created
+      _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
+      if ( pObj ) {
+        // if current object is sub-mesh
+        SMESH::SMESH_subMesh_var aSubMeshVar =
+          SMESH::SMESH_subMesh::_narrow( _CAST( SObject,pObj )->GetObject() );
+        if ( !aSubMeshVar->_is_nil() ) {
+          SMESH::SMESH_Mesh_var aMeshVar =  aSubMeshVar->GetFather();
+          if ( !aMeshVar->_is_nil() ) {
+            _PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshVar );
+            GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( aMeshSO );
+            if ( !aGeomVar->_is_nil() )
+              aMeshEntry = aGeomVar->GetStudyEntry();
+          }
+        }
+      }
+    }
+
+    aCreator->setShapeEntry( aGeomEntry );
+    if ( aMeshEntry != "" )
+      aCreator->setMainShapeEntry( aMeshEntry );
+    removeCustomFilters(); // Issue 0020170
+    myDlg->setEnabled( false );
+    aCreator->edit( aHyp.in(), aHypItem.second, dlg(), this, SLOT( onHypoEdited( int ) ) );
   }
+}
+
+//================================================================================
+/*!
+ *  Necessary steps after hypothesis edition
+ *  \param result - creation result:
+ *   0 = rejected
+ *   1 = accepted
+ */
+//================================================================================
+void SMESHGUI_MeshOp::onHypoEdited( int result )
+{
+  int obj = myDlg->getActiveObject();
+  onActivateObject( obj ); // Issue 0020170. Restore filters
+  myDlg->setEnabled( true );
 }
 
 //================================================================================
@@ -1128,7 +1335,6 @@ void SMESHGUI_MeshOp::onEditHyp( const int theHypType, const int theIndex )
   * \retval HypothesisData* - result data, may be 0
  */
 //================================================================================
-
 HypothesisData* SMESHGUI_MeshOp::hypData( const int theDim,
                                           const int theHypType,
                                           const int theIndex)
@@ -1146,7 +1352,6 @@ HypothesisData* SMESHGUI_MeshOp::hypData( const int theDim,
   * \param theIndex - algorithm index
  */
 //================================================================================
-
 void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
                                       const int theDim )
 {
@@ -1255,7 +1460,7 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
         CORBA::String_var curHypType = curHyp->GetName();
         if ( !algoDeselectedByUser &&
              myObjHyps[ dim ][ type ].count() > 0 &&
-             curHypType == myObjHyps[ dim ][ type ].first().first->GetName())
+             !strcmp( curHypType, myObjHyps[ dim ][ type ].first().first->GetName()) )
         {
           HypothesisData* hypData = SMESH::GetHypothesisData( curHyp->GetName() );
           for (int i = 0; i < myAvailableHypData[ dim ][ Algo ].count(); ++i) {
@@ -1310,8 +1515,9 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
 //================================================================================
 void SMESHGUI_MeshOp::onHypoSet( const QString& theSetName )
 {
-  HypothesesSet* aHypoSet = SMESH::GetHypothesesSet(theSetName);
-  if (!aHypoSet) return;
+  myHypoSet = SMESH::GetHypothesesSet(theSetName);
+  if (!myHypoSet)
+    return;
 
   // clear all hyps
   for (int dim = SMESH::DIM_0D; dim <= SMESH::DIM_3D; dim++) {
@@ -1320,57 +1526,81 @@ void SMESHGUI_MeshOp::onHypoSet( const QString& theSetName )
     setCurrentHyp(dim, MainHyp, -1);
   }
 
-  for (int aHypType = Algo; aHypType < AddHyp; aHypType++) {
-    bool isAlgo = (aHypType == Algo);
+  myHypoSet->init(true); //algorithms
+  processSet();
+  myHypoSet->init(false); //hypotheses
+  processSet();
+  myHypoSet = 0;
+}
 
-    // set hyps from the set
-    QStringList* aHypoList = isAlgo ? &aHypoSet->AlgoList : &aHypoSet->HypoList;
-    for (int i = 0, n = aHypoList->count(); i < n; i++) {
-      const QString& aHypoTypeName = (*aHypoList)[ i ];
-      HypothesisData* aHypData = SMESH::GetHypothesisData(aHypoTypeName);
-      if (!aHypData)
-        continue;
+//================================================================================
+/*!
+ * \brief One step of hypothesis/algorithm list creation
+ *
+ * Creates a hypothesis or an algorithm for current item of internal list of names myHypoSet
+ */
+//================================================================================
+void SMESHGUI_MeshOp::processSet()
+{
+  myHypoSet->next();
+  if( !myHypoSet->more() )
+    return;
 
-      int aDim = aHypData->Dim[0];
-      // create or/and set
-      if (isAlgo) {
-        int index = myAvailableHypData[aDim][Algo].indexOf( aHypData );
-        if ( index < 0 ) {
-          QStringList anAvailable;
-          availableHyps( aDim, Algo, anAvailable, myAvailableHypData[aDim][Algo] );
-          myDlg->tab( aDim )->setAvailableHyps( Algo, anAvailable );
-          index = myAvailableHypData[aDim][Algo].indexOf( aHypData );
-        }
-        setCurrentHyp( aDim, Algo, index );
-        onAlgoSelected( index, aDim );
-      }
-      else {
-        bool mainHyp = true;
-        QStringList anAvailable;
-        availableHyps( aDim, MainHyp, anAvailable, myAvailableHypData[aDim][MainHyp] );
-        myDlg->tab( aDim )->setAvailableHyps( MainHyp, anAvailable );
-        int index = myAvailableHypData[aDim][MainHyp].indexOf( aHypData );
-        if ( index < 0 ) {
-          mainHyp = false;
-          index = myAvailableHypData[aDim][AddHyp].indexOf( aHypData );
-        }
-        if (index >= 0)
-          createHypothesis(aDim, mainHyp ? MainHyp : AddHyp, aHypoTypeName);
-      }
-    } // loop on hypos in the set
-  } // loop on algo/hypo
+  bool isAlgo = myHypoSet->isAlgo();
+  QString aHypoTypeName = myHypoSet->current();
+  HypothesisData* aHypData = SMESH::GetHypothesisData(aHypoTypeName);
+  if (!aHypData)
+  {
+    processSet();
+    return;
+  }
+
+  int aDim = aHypData->Dim[0];
+  // create or/and set
+  if (isAlgo)
+  {
+    int index = myAvailableHypData[aDim][Algo].indexOf( aHypData );
+    if ( index < 0 )
+    {
+      QStringList anAvailable;
+      availableHyps( aDim, Algo, anAvailable, myAvailableHypData[aDim][Algo] );
+      myDlg->tab( aDim )->setAvailableHyps( Algo, anAvailable );
+      index = myAvailableHypData[aDim][Algo].indexOf( aHypData );
+    }
+    setCurrentHyp( aDim, Algo, index );
+    onAlgoSelected( index, aDim );
+    processSet();
+  }
+  else
+  {
+    bool mainHyp = true;
+    QStringList anAvailable;
+    availableHyps( aDim, MainHyp, anAvailable, myAvailableHypData[aDim][MainHyp] );
+    myDlg->tab( aDim )->setAvailableHyps( MainHyp, anAvailable );
+    int index = myAvailableHypData[aDim][MainHyp].indexOf( aHypData );
+    if ( index < 0 )
+    {
+      mainHyp = false;
+      index = myAvailableHypData[aDim][AddHyp].indexOf( aHypData );
+    }
+    if (index >= 0)
+      createHypothesis(aDim, mainHyp ? MainHyp : AddHyp, aHypoTypeName);
+    else
+      processSet();
+  }
 }
 
 //================================================================================
 /*!
  * \brief Creates mesh
   * \param theMess - Output parameter intended for returning error message
+  * \param theEntryList - List of entries of published objects
   * \retval bool  - TRUE if mesh is created, FALSE otherwise
  *
  * Creates mesh
  */
 //================================================================================
-bool SMESHGUI_MeshOp::createMesh( QString& theMess )
+bool SMESHGUI_MeshOp::createMesh( QString& theMess, QStringList& theEntryList )
 {
   theMess = "";
 
@@ -1398,8 +1628,10 @@ bool SMESHGUI_MeshOp::createMesh( QString& theMess )
     if ( aMeshVar->_is_nil() )
       return false;
     _PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshVar.in() );
-    if ( aMeshSO )
+    if ( aMeshSO ) {
       SMESH::SetName( aMeshSO, myDlg->objectText( SMESHGUI_MeshDlg::Obj ) );
+      theEntryList.append( aMeshSO->GetID().c_str() );
+    }
 
     for ( int aDim = SMESH::DIM_0D; aDim <= SMESH::DIM_3D; aDim++ ) {
       if ( !isAccessibleDim( aDim )) continue;
@@ -1418,7 +1650,13 @@ bool SMESHGUI_MeshOp::createMesh( QString& theMess )
       if ( !anAlgoVar->_is_nil() )
         SMESH::AddHypothesisOnMesh( aMeshVar, anAlgoVar );
     }
-
+#ifdef WITHGENERICOBJ
+    // obj has been published in study. Its refcount has been incremented.
+    // It is safe to decrement its refcount
+    // so that it will be destroyed when the entry in study will be removed
+    if (aMeshSO)
+      aMeshVar->UnRegister();
+#endif
   }
   return true;
 }
@@ -1427,12 +1665,13 @@ bool SMESHGUI_MeshOp::createMesh( QString& theMess )
 /*!
  * \brief Creates sub-mesh
   * \param theMess - Output parameter intended for returning error message
+  * \param theEntryList - List of entries of published objects
   * \retval bool  - TRUE if sub-mesh is created, FALSE otherwise
  *
  * Creates sub-mesh
  */
 //================================================================================
-bool SMESHGUI_MeshOp::createSubMesh( QString& theMess )
+bool SMESHGUI_MeshOp::createSubMesh( QString& theMess, QStringList& theEntryList )
 {
   theMess = "";
 
@@ -1506,8 +1745,8 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess )
           QString aNewGeomGroupName ("Auto_group_for_");
           aNewGeomGroupName += aName;
           SALOMEDS::SObject_var aNewGroupSO =
-            geomGen->AddInStudy(aSMESHGen->GetCurrentStudy(), aGeomVar, 
-				aNewGeomGroupName.toLatin1().data(), mainGeom);
+            geomGen->AddInStudy(aSMESHGen->GetCurrentStudy(), aGeomVar,
+                                aNewGeomGroupName.toLatin1().data(), mainGeom);
         }
       }
     }
@@ -1522,8 +1761,10 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess )
   // create sub-mesh
   SMESH::SMESH_subMesh_var aSubMeshVar = aMeshVar->GetSubMesh( aGeomVar, aName.toLatin1().data() );
   _PTR(SObject) aSubMeshSO = SMESH::FindSObject( aSubMeshVar.in() );
-  if ( aSubMeshSO )
+  if ( aSubMeshSO ) {
     SMESH::SetName( aSubMeshSO, aName.toLatin1().data() );
+    theEntryList.append( aSubMeshSO->GetID().c_str() );
+  }
 
   for ( int aDim = SMESH::DIM_0D; aDim <= SMESH::DIM_3D; aDim++ )
   {
@@ -1547,7 +1788,7 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess )
     }
   }
 
-  // deselect geometry: next submesh should be created on other subshape
+  // deselect geometry: next submesh should be created on other sub-shape
   myDlg->clearSelection( SMESHGUI_MeshDlg::Geom );
   selectObject( _PTR(SObject)() );
   selectionDone();
@@ -1579,7 +1820,7 @@ int SMESHGUI_MeshOp::currentHyp( const int theDim, const int theHypType ) const
 //================================================================================
 bool SMESHGUI_MeshOp::isAccessibleDim( const int theDim ) const
 {
-  return myDlg->tab( theDim )->isEnabled();
+  return myDlg->isTabEnabled( theDim );
 }
 
 //================================================================================
@@ -1653,36 +1894,53 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
   QStringList tmp;
   existingHyps( theDim, Algo, pObj, tmp, myExistingHyps[ theDim ][ Algo ]);
 
-  // look for anexisting algo of such a type
+  // look for an existing algo of such a type
   THypList& aHypVarList = myExistingHyps[ theDim ][ Algo ];
   THypList::iterator anIter = aHypVarList.begin();
   for ( ; anIter != aHypVarList.end(); anIter++)
   {
     SMESH::SMESH_Hypothesis_var aHypVar = (*anIter).first;
     CORBA::String_var aName = aHypVar->GetName();
-    if ( !aHypVar->_is_nil() && aHypName == aName )
+    if ( !aHypVar->_is_nil() && !strcmp(aHypName.toLatin1().data(), aName) )
     {
       anAlgoVar = aHypVar;
       break;
     }
   }
 
-  if (anAlgoVar->_is_nil()) {
+  if (anAlgoVar->_is_nil())
+  {
     HypothesisData* aHypData = SMESH::GetHypothesisData( aHypName );
-    if (aHypData) {
+    if (aHypData)
+    {
       QString aClientLibName = aHypData->ClientLibName;
-      if (aClientLibName == "") {
+      if (aClientLibName == "")
+      {
         // Call hypothesis creation server method (without GUI)
-        SMESH::CreateHypothesis(aHypName, aHypData->Label, true);
-      } else {
+        SMESH::SMESH_Hypothesis_var aHyp =
+          SMESH::CreateHypothesis(aHypName, aHypName, true);
+#ifdef WITHGENERICOBJ
+        if (!CORBA::is_nil(aHyp))
+          aHyp->UnRegister();
+#endif
+      }
+      else
+      {
         // Get hypotheses creator client (GUI)
+        // BUG 0020378
         SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHypName);
 
         // Create algorithm
         if (aCreator)
-          aCreator->create(true, aHypName, myDlg);
-        else
-          SMESH::CreateHypothesis(aHypName, aHypData->Label, true);
+          aCreator->create(true, aHypName, myDlg, 0, QString::null );
+        else {
+          SMESH::SMESH_Hypothesis_var aHyp =
+            SMESH::CreateHypothesis(aHypName, aHypName, true);
+#ifdef WITHGENERICOBJ
+          if (!CORBA::is_nil(aHyp))
+            aHyp->UnRegister();
+#endif
+        }
       }
       QStringList tmpList;
       _PTR(SComponent) aFather = SMESH::GetActiveStudyDocument()->FindComponent( "SMESH" );
@@ -1694,7 +1952,7 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
     {
       SMESH::SMESH_Hypothesis_var aHypVar = (*anIter).first;
       CORBA::String_var aName = aHypVar->GetName();
-      if ( !aHypVar->_is_nil() && aHypName == aName )
+      if ( !aHypVar->_is_nil() && !strcmp(aHypName.toLatin1().data(), aName) )
       {
         anAlgoVar = aHypVar;
         break;
@@ -1983,14 +2241,14 @@ bool SMESHGUI_MeshOp::editMeshOrSubMesh( QString& theMess )
 //================================================================================
 /*!
  * \brief Verifies whether given operator is valid for this one
-  * \param theOtherOp - other operation
-  * \return Returns TRUE if the given operator is valid for this one, FALSE otherwise
-*
-* method redefined from base class verifies whether given operator is valid for
-* this one (i.e. can be started "above" this operator). In current implementation method
-* retuns false if theOtherOp operation is not intended for deleting objects or mesh
-* elements.
-*/
+ * \param theOtherOp - other operation
+ * \return Returns TRUE if the given operator is valid for this one, FALSE otherwise
+ *
+ * method redefined from base class verifies whether given operator is valid for
+ * this one (i.e. can be started "above" this operator). In current implementation method
+ * retuns false if theOtherOp operation is not intended for deleting objects or mesh
+ * elements.
+ */
 //================================================================================
 bool SMESHGUI_MeshOp::isValid( SUIT_Operation* theOp ) const
 {
@@ -2000,10 +2258,9 @@ bool SMESHGUI_MeshOp::isValid( SUIT_Operation* theOp ) const
 //================================================================================
 /*!
  * \brief SLOT. Is called when the user selects a way of geometry selection
-  * \param theByMesh - true if the user wants to find geometry by mesh element
+ * \param theByMesh - true if the user wants to find geometry by mesh element
  */
 //================================================================================
-
 void SMESHGUI_MeshOp::onGeomSelectionByMesh( bool theByMesh )
 {
   if ( theByMesh ) {
@@ -2035,7 +2292,6 @@ void SMESHGUI_MeshOp::onGeomSelectionByMesh( bool theByMesh )
  * \brief SLOT. Is called when Ok is pressed in SMESHGUI_ShapeByMeshDlg
  */
 //================================================================================
-
 void SMESHGUI_MeshOp::onPublishShapeByMeshDlg(SUIT_Operation* op)
 {
   if ( myShapeByMeshOp == op ) {
@@ -2059,7 +2315,6 @@ void SMESHGUI_MeshOp::onPublishShapeByMeshDlg(SUIT_Operation* op)
  * \brief SLOT. Is called when Close is pressed in SMESHGUI_ShapeByMeshDlg
  */
 //================================================================================
-
 void SMESHGUI_MeshOp::onCloseShapeByMeshDlg(SUIT_Operation* op)
 {
   if ( myShapeByMeshOp == op && myDlg ) {
@@ -2070,10 +2325,9 @@ void SMESHGUI_MeshOp::onCloseShapeByMeshDlg(SUIT_Operation* op)
 //================================================================================
 /*!
  * \brief Selects a SObject
-  * \param theSObj - the SObject to select
+ * \param theSObj - the SObject to select
  */
 //================================================================================
-
 void SMESHGUI_MeshOp::selectObject( _PTR(SObject) theSObj ) const
 {
   if ( LightApp_SelectionMgr* sm = selectionMgr() ) {

@@ -1,0 +1,35 @@
+# This section specify the configurations to be used respectively for
+# the local execution and the remote execution. The value for 'local'
+# and 'remote' keys must be the name of a configuration section in
+# this file. The default key must specify a value between "local" or
+# "remote" to indicate the user preference. 
+[resources]
+local   = localhost
+remote  = nepal
+
+[preferences]
+defaultres = local
+
+# The following sections defines the available configurations.
+# The name of the section can be choosen arbitrary. But the value of
+# the resname key MUST be the name of a SALOME resource defined in the
+# catalog of resources (CatalogResources.xml).
+
+# For each section:
+# - resname : the name of the SALOME resource to be used in this configuration
+# - binpath : the path to the padder executable program on this resource
+# - envpath : the path to the environment file on this resource
+[localhost]
+resname = localhost
+binpath = @PADDERHOME@/padder.exe
+envpath = @PADDERHOME@/padder.env
+
+[venus]
+resname = gboulant@venus
+binpath = /usr/local/bin/padder.exe
+envpath = /usr/local/share/envPadder.sh
+
+[nepal]
+resname = nepal@nepal
+binpath = /usr/local/bin/padder.exe
+envpath = /usr/local/share/envPadder.sh

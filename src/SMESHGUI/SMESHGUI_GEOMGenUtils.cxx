@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_GEOMGenUtils.cxx
 // Author : Open CASCADE S.A.S.
@@ -51,7 +52,8 @@ namespace SMESH
     return aGEOMGen;
   }
 
-  GEOM::GEOM_Object_var GetShapeOnMeshOrSubMesh(_PTR(SObject) theMeshOrSubmesh)
+  GEOM::GEOM_Object_var GetShapeOnMeshOrSubMesh(_PTR(SObject) theMeshOrSubmesh,
+                                                bool*         isMesh)
   {
     SALOMEDS_SObject* aMeshOrSubmesh = _CAST(SObject,theMeshOrSubmesh);
     if(aMeshOrSubmesh) {
@@ -60,11 +62,17 @@ namespace SMESH
         SMESH::SMESH_Mesh_var aMesh =
           SObjectToInterface<SMESH::SMESH_Mesh>( theMeshOrSubmesh );
         if ( !aMesh->_is_nil() )
+        {
+          if ( isMesh ) *isMesh = true;
           return aMesh->GetShapeToMesh();
+        }
         SMESH::SMESH_subMesh_var aSubmesh =
           SObjectToInterface<SMESH::SMESH_subMesh>( theMeshOrSubmesh );
         if ( !aSubmesh->_is_nil() )
-	  return aSubmesh->GetSubShape();
+        {
+          if ( isMesh ) *isMesh = false;
+          return aSubmesh->GetSubShape();
+        }
       }
     }
     return GEOM::GEOM_Object::_nil();
@@ -89,7 +97,7 @@ namespace SMESH
         SALOMEDS_SObject* aRefSO = _CAST(SObject,aRefSOClient);
         aMeshShape = GEOM::GEOM_Object::_narrow(aRefSO->GetObject());
       } else {
-	SALOMEDS_SObject* aSO = _CAST(SObject,aSObject);
+        SALOMEDS_SObject* aSO = _CAST(SObject,aSObject);
         aMeshShape = GEOM::GEOM_Object::_narrow(aSO->GetObject());
       }
 

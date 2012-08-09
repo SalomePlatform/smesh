@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // File   : StdMeshersGUI_ObjectReferenceParamWdg.h
 // Author : Open CASCADE S.A.S.
 //
@@ -36,6 +37,9 @@
 // CORBA includes
 #include <CORBA.h>
 
+#include <SALOMEconfig.h>
+#include CORBA_SERVER_HEADER(SMESH_Mesh)
+
 class SUIT_SelectionFilter;
 class SMESHGUI;
 class LightApp_SelectionMgr;
@@ -51,24 +55,34 @@ class STDMESHERSGUI_EXPORT StdMeshersGUI_ObjectReferenceParamWdg : public QWidge
 
 public:
   StdMeshersGUI_ObjectReferenceParamWdg( SUIT_SelectionFilter* filter, 
-                                         QWidget*              parent);
+                                         QWidget*              parent,
+                                         bool                  multiSelection=false,
+                                         bool                  stretch=true);
   StdMeshersGUI_ObjectReferenceParamWdg( MeshObjectType objType,
-                                         QWidget*       parent);
+                                         QWidget*       parent,
+                                         bool           multiSelection=false);
   ~StdMeshersGUI_ObjectReferenceParamWdg();
 
   void SetObject(CORBA::Object_ptr obj);
 
+  void SetObjects(SMESH::string_array_var& objEntries);
+
   template<class TInterface> 
-    typename TInterface::_var_type GetObject() const {
-    if ( IsObjectSelected() ) return TInterface::_narrow(myObject);
+    typename TInterface::_var_type GetObject(unsigned i=0) const {
+    if ( IsObjectSelected(i) ) return TInterface::_narrow(myObjects[i]);
     return TInterface::_nil();
   }
 
+  int NbObjects() const { return myObjects.size(); }
+
   QString GetValue() const { return myParamValue; }
 
-  bool IsObjectSelected() const { return !CORBA::is_nil(myObject); }
+  bool IsObjectSelected(unsigned i=0) const
+  { return i < myObjects.size() && !CORBA::is_nil(myObjects[i]); }
 
   void AvoidSimultaneousSelection( StdMeshersGUI_ObjectReferenceParamWdg* other);
+  
+  void SetDefaultText(QString defaultText="", QString styleSheet="");
 
 public slots:
   /*!
@@ -88,6 +102,7 @@ signals:
     * one is activated
    */
   void selectionActivated();
+  void contentModified();
   
 private slots:
   void onSelectionDone(); 
@@ -96,9 +111,13 @@ private:
   void init();
   
 private:
- CORBA::Object_var      myObject;
+
+  bool                                myMultiSelection;
+  std::vector<CORBA::Object_var>      myObjects;
+
  SUIT_SelectionFilter*  myFilter;
  bool                   mySelectionActivated;
+ bool                   myStretchActivated;
 
  SMESHGUI*              mySMESHGUI;
  LightApp_SelectionMgr* mySelectionMgr;
@@ -106,6 +125,8 @@ private:
  QLineEdit*             myObjNameLineEdit;
  QPushButton*           mySelButton;
  QString                myParamValue;
+ QString                myEmptyText;
+ QString                myEmptyStyleSheet;
 };
 
 #endif // STDMESHERSGUI_OBJECTREFERENCEPARAMWDG_H

@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH DriverMED : tool to split groups on families
 //  File   : DriverMED_Family.hxx
 //  Author : Julia DOROVSKIKH
@@ -39,18 +40,21 @@
 #include <set>
 
 #define REST_NODES_FAMILY 1
-#define REST_EDGES_FAMILY -1
-#define REST_FACES_FAMILY -2
-#define REST_VOLUMES_FAMILY -3
 #define FIRST_NODE_FAMILY 2
-#define FIRST_ELEM_FAMILY -4
+
+#define REST_EDGES_FAMILY   -1
+#define REST_FACES_FAMILY   -2
+#define REST_VOLUMES_FAMILY -3
+#define REST_0DELEM_FAMILY  -4
+#define REST_BALL_FAMILY    -5
+#define FIRST_ELEM_FAMILY   -6
 
 class DriverMED_Family;
 typedef boost::shared_ptr<DriverMED_Family> DriverMED_FamilyPtr;
-typedef std::list<DriverMED_FamilyPtr> DriverMED_FamilyPtrList;
-typedef std::map<int,SMESHDS_SubMesh*> SMESHDS_SubMeshPtrMap;
-typedef std::list<SMESHDS_GroupBase*> SMESHDS_GroupBasePtrList;
-typedef std::set<const SMDS_MeshElement*> ElementsSet;
+typedef std::list<DriverMED_FamilyPtr     > DriverMED_FamilyPtrList;
+typedef std::map<int,SMESHDS_SubMesh*     > SMESHDS_SubMeshPtrMap;
+typedef std::list<SMESHDS_GroupBase*      > SMESHDS_GroupBasePtrList;
+typedef std::set<const SMDS_MeshElement*  > ElementsSet;
 
 class MESHDRIVERMED_EXPORT DriverMED_Family
 {
@@ -68,16 +72,18 @@ class MESHDRIVERMED_EXPORT DriverMED_Family
   static 
   DriverMED_FamilyPtrList
   MakeFamilies (const SMESHDS_SubMeshPtrMap& theSubMeshes,
-		const SMESHDS_GroupBasePtrList& theGroups,
-		const bool doGroupOfNodes,
-		const bool doGroupOfEdges,
-		const bool doGroupOfFaces,
-		const bool doGroupOfVolumes);
+                const SMESHDS_GroupBasePtrList& theGroups,
+                const bool doGroupOfNodes,
+                const bool doGroupOfEdges,
+                const bool doGroupOfFaces,
+                const bool doGroupOfVolumes,
+                const bool doGroupOf0DElems,
+                const bool doGroupOfBalls);
 
   //! Create TFamilyInfo for this family
   MED::PFamilyInfo 
   GetFamilyInfo (const MED::PWrapper& theWrapper, 
-		 const MED::PMeshInfo& theMeshInfo) const;
+                 const MED::PMeshInfo& theMeshInfo) const;
 
   //! Returns elements of this family
   const ElementsSet& GetElements () const;
@@ -99,6 +105,7 @@ class MESHDRIVERMED_EXPORT DriverMED_Family
 
   void SetType(const SMDSAbs_ElementType theType);
   SMDSAbs_ElementType GetType();
+  const std::set< SMDSAbs_ElementType >& GetTypes() const;
 
   bool MemberOf(std::string theGroupName) const;
 
@@ -113,7 +120,7 @@ class MESHDRIVERMED_EXPORT DriverMED_Family
   static
   DriverMED_FamilyPtrList 
   SplitByType(SMESHDS_SubMesh* theSubMesh,
-	      const int        theId);
+              const int        theId);
 
 
   /*! Remove from <Elements> elements, common with <by>,
@@ -121,7 +128,7 @@ class MESHDRIVERMED_EXPORT DriverMED_Family
     Create family <common> from common elements, with combined groups list.
   */
   void Split (DriverMED_FamilyPtr by,
-	      DriverMED_FamilyPtr common);
+              DriverMED_FamilyPtr common);
 
   //! Check, if this family has empty list of elements
   bool IsEmpty () const;
@@ -133,6 +140,7 @@ class MESHDRIVERMED_EXPORT DriverMED_Family
   ElementsSet                   myElements;
   MED::TStringSet               myGroupNames;
   int                           myGroupAttributVal;
+  std::set<SMDSAbs_ElementType> myTypes; // Issue 0020576
 };
 
 #endif

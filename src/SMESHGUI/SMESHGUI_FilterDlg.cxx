@@ -1,29 +1,31 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_FilterDlg.cxx
 // Author : Sergey LITONIN, Open CASCADE S.A.S.
-// SMESH includes
 //
+
+// SMESH includes
 #include "SMESHGUI_FilterDlg.h"
 
 #include "SMESHGUI.h"
@@ -32,6 +34,7 @@
 #include "SMESHGUI_Filter.h"
 #include "SMESHGUI_FilterUtils.h"
 #include "SMESHGUI_FilterLibraryDlg.h"
+#include "SMESHGUI_SpinBox.h"
 
 #include <SMESH_Actor.h>
 #include <SMESH_NumberFilter.hxx>
@@ -53,6 +56,8 @@
 #include <LightApp_SelectionMgr.h>
 #include <SalomeApp_Tools.h>
 #include <SalomeApp_Study.h>
+#include <SalomeApp_IntSpinBox.h>
+#include <SalomeApp_DoubleSpinBox.h>
 
 #include <SALOME_ListIO.hxx>
 #include <SALOME_ListIteratorOfListIO.hxx>
@@ -159,30 +164,32 @@ public:
   virtual void            SetString(const int, const QString&);
   void                    SetEditable(const int, const bool);
   void                    SetEditable(const bool);
+  void                    SetPrecision(const int, const char* = 0);
 
 private:
-  QMap< int, QLineEdit* > myLineEdits;
+  QMap< int, QWidget* > myWidgets;
 };
 
 SMESHGUI_FilterTable::AdditionalWidget::AdditionalWidget (QWidget* theParent)
   : QWidget(theParent)
 {
   QLabel* aLabel = new QLabel(tr("SMESH_TOLERANCE"), this);
-  myLineEdits[ Tolerance ] = new QLineEdit(this);
-  QDoubleValidator* aValidator = new QDoubleValidator(myLineEdits[ Tolerance ]);
-  aValidator->setBottom(0);
-  myLineEdits[ Tolerance ]->setValidator(aValidator);
+
+  SMESHGUI_SpinBox* sb = new SMESHGUI_SpinBox(this);
+  sb->setAcceptNames( false ); // No Notebook variables allowed
+  sb->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
+  sb->RangeStepAndValidator( 0., 1.e20, 0.1, "len_tol_precision" );
+  myWidgets[ Tolerance ] = sb;
 
   QHBoxLayout* aLay = new QHBoxLayout(this);
   aLay->setSpacing(SPACING);
   aLay->setMargin(0);
 
   aLay->addWidget(aLabel);
-  aLay->addWidget(myLineEdits[ Tolerance ]);
+  aLay->addWidget(myWidgets[ Tolerance ]);
   aLay->addStretch();
 
-  QString aText = QString("%1").arg(Precision::Confusion());
-  myLineEdits[ Tolerance ]->setText(aText);
+  SetDouble( Tolerance, Precision::Confusion() );
 }
 
 SMESHGUI_FilterTable::AdditionalWidget::~AdditionalWidget()
@@ -204,13 +211,18 @@ bool SMESHGUI_FilterTable::AdditionalWidget::IsValid (const bool theMsg) const
   QList<int> aParams = GetParameters();
   QList<int>::const_iterator anIter;
   for (anIter = aParams.begin(); anIter != aParams.end(); ++anIter) {
-    const QLineEdit* aWg = myLineEdits[ *anIter ];
-    int p = 0;
-    QString aText = aWg->text();
-    if (aWg->isEnabled() && aWg->validator()->validate(aText, p) != QValidator::Acceptable) {
-      if (theMsg)
-        SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
-				     tr("SMESHGUI_INVALID_PARAMETERS"));
+    if ( !myWidgets.contains( *anIter ) ) continue;
+    bool valid = true;
+    if ( qobject_cast<QLineEdit*>( myWidgets[ *anIter ] ) ) {
+      valid = qobject_cast<QLineEdit*>( myWidgets[ *anIter ] )->hasAcceptableInput();
+    }
+    else if ( qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ *anIter ] ) ) {
+      QString foo;
+      valid = qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ *anIter ] )->isValid( foo, false );
+    }
+    if (!valid && theMsg) {
+      SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
+                                   tr("SMESHGUI_INVALID_PARAMETERS"));
       return false;
     }
   }
@@ -220,41 +232,78 @@ bool SMESHGUI_FilterTable::AdditionalWidget::IsValid (const bool theMsg) const
 
 double SMESHGUI_FilterTable::AdditionalWidget::GetDouble (const int theId) const
 {
-  return myLineEdits.contains(theId) ? myLineEdits[ theId ]->text().toDouble() : 0;
+  double retval = 0;
+  if ( myWidgets.contains( theId ) ) {
+    if ( qobject_cast<QLineEdit*>( myWidgets[ theId ] ) )
+      retval = qobject_cast<QLineEdit*>( myWidgets[ theId ] )->text().toDouble();
+    if ( qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] ) )
+      retval = qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] )->GetValue();
+  }
+  return retval;
 }
 
 int SMESHGUI_FilterTable::AdditionalWidget::GetInteger (const int theId) const
 {
-  return myLineEdits.contains(theId) ? myLineEdits[ theId ]->text().toInt() : 0;
+  int retval = 0;
+  if ( myWidgets.contains( theId ) ) {
+    if ( qobject_cast<QLineEdit*>( myWidgets[ theId ] ) )
+      retval = qobject_cast<QLineEdit*>( myWidgets[ theId ] )->text().toInt();
+    if ( qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] ) )
+      retval = (int)( qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] )->GetValue() );
+  }
+  return retval;
 }
 
 QString SMESHGUI_FilterTable::AdditionalWidget::GetString (const int theId) const
 {
-  return myLineEdits.contains(theId) ? myLineEdits[ theId ]->text() : QString("");
+  QString retval = "";
+  if ( myWidgets.contains( theId ) ) {
+    if ( qobject_cast<QLineEdit*>( myWidgets[ theId ] ) )
+      retval = qobject_cast<QLineEdit*>( myWidgets[ theId ] )->text();
+    if ( qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] ) )
+      retval = QString::number( qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] )->GetValue() );
+  }
+  return retval;
 }
 
 void SMESHGUI_FilterTable::AdditionalWidget::SetDouble (const int theId, const double theVal)
 {
-  if (myLineEdits.contains(theId))
-    myLineEdits[ theId ]->setText(QString("%1").arg(theVal));
+  if ( myWidgets.contains( theId ) ) {
+    if ( qobject_cast<QLineEdit*>( myWidgets[ theId ] ) )
+      qobject_cast<QLineEdit*>( myWidgets[ theId ] )->setText( QString::number( theVal ) );
+    if ( qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] ) )
+      qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] )->SetValue( theVal );
+  }
 }
 
 void SMESHGUI_FilterTable::AdditionalWidget::SetInteger (const int theId, const int theVal)
 {
-  if (myLineEdits.contains(theId))
-    myLineEdits[ theId ]->setText(QString("%1").arg(theVal));
+  if ( myWidgets.contains( theId ) ) {
+    if ( qobject_cast<QLineEdit*>( myWidgets[ theId ] ) )
+      qobject_cast<QLineEdit*>( myWidgets[ theId ] )->setText( QString::number( theVal ) );
+    if ( qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] ) )
+      qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] )->SetValue( (double)theVal );
+  }
 }
 
 void SMESHGUI_FilterTable::AdditionalWidget::SetString (const int theId, const QString& theVal)
 {
-  if (myLineEdits.contains(theId))
-    myLineEdits[ theId ]->setText(theVal);
+  if ( myWidgets.contains( theId ) ) {
+    if ( qobject_cast<QLineEdit*>( myWidgets[ theId ] ) )
+      qobject_cast<QLineEdit*>( myWidgets[ theId ] )->setText( theVal );
+    if ( qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] ) )
+      qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] )->SetValue( theVal.toDouble() );
+  }
 }
 
 void SMESHGUI_FilterTable::AdditionalWidget::SetEditable (const int theId, const bool isEditable)
 {
-  if (myLineEdits.contains(theId))
-    myLineEdits[ theId ]->setReadOnly(!isEditable);
+  if ( myWidgets.contains( theId ) ) {
+    if ( qobject_cast<QLineEdit*>( myWidgets[ theId ] ) )
+      qobject_cast<QLineEdit*>( myWidgets[ theId ] )->setReadOnly( !isEditable );
+    if ( qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] ) )
+      qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] )->setReadOnly( !isEditable );
+  }
 }
 
 void SMESHGUI_FilterTable::AdditionalWidget::SetEditable (const bool isEditable)
@@ -263,6 +312,19 @@ void SMESHGUI_FilterTable::AdditionalWidget::SetEditable (const bool isEditable)
   QList<int>::const_iterator anIter;
   for (anIter = aParams.begin(); anIter != aParams.end(); ++anIter)
     SetEditable( *anIter,  isEditable );
+}
+
+void SMESHGUI_FilterTable::AdditionalWidget::SetPrecision(const int theId, const char* precision)
+{
+  if ( myWidgets.contains( theId ) ) {
+    if ( qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] ) ) {
+      SMESHGUI_SpinBox* sb = qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] );
+      double val = sb->GetValue();
+      double min = pow(10.0, -(sb->decimals()));
+      sb->RangeStepAndValidator( 0., 1.e20, 0.1, precision ? precision : "len_tol_precision" );
+      sb->SetValue( qMax( val, min ) );
+    }
+  }
 }
 
 /*
@@ -412,6 +474,115 @@ bool SMESHGUI_FilterTable::CheckItem::checked() const
 }
 
 /*
+  Class       : SMESHGUI_FilterTable::IntSpinItem
+  Description : Integer spin table item.
+*/
+
+class SMESHGUI_FilterTable::IntSpinItem : public QTableWidgetItem
+{
+public:
+  static int     Type();
+
+  IntSpinItem( const int theValue );
+
+  int            value() const;
+  void           setValue( const int theValue );
+
+  void           clear();
+};
+
+int SMESHGUI_FilterTable::IntSpinItem::Type()
+{
+  return QTableWidgetItem::UserType + 3;
+}
+
+SMESHGUI_FilterTable::IntSpinItem::IntSpinItem( const int theValue )
+ : QTableWidgetItem( Type() )
+{
+  setValue( theValue );
+}
+
+int SMESHGUI_FilterTable::IntSpinItem::value() const
+{
+  bool ok = false;
+  int value = data( Qt::UserRole ).toInt( &ok );
+  return ok ? value : 0; 
+}
+
+void SMESHGUI_FilterTable::IntSpinItem::setValue( const int theValue )
+{
+  setData( Qt::UserRole, theValue );
+  setText( QString::number( theValue ) ); 
+}
+
+void SMESHGUI_FilterTable::IntSpinItem::clear()
+{
+  setText( "" );
+}
+
+/*
+  Class       : SMESHGUI_FilterTable::DoubleSpinItem
+  Description : Double spin table item.
+*/
+
+class SMESHGUI_FilterTable::DoubleSpinItem : public QTableWidgetItem
+{
+public:
+  static int     Type();
+
+  DoubleSpinItem( const double theValue );
+
+  double         value() const;
+  void           setValue( const double theValue );
+
+  int            precision() const;
+  void           setPrecision( const int thePrecision );
+
+  void           clear();
+};
+
+int SMESHGUI_FilterTable::DoubleSpinItem::Type()
+{
+  return QTableWidgetItem::UserType + 4;
+}
+
+SMESHGUI_FilterTable::DoubleSpinItem::DoubleSpinItem( const double theValue )
+ : QTableWidgetItem( Type() )
+{
+  setValue( theValue );
+}
+
+double SMESHGUI_FilterTable::DoubleSpinItem::value() const
+{
+  bool ok = false;
+  double value = data( Qt::UserRole ).toDouble( &ok );
+  return ok ? value : 0; 
+}
+
+void SMESHGUI_FilterTable::DoubleSpinItem::setValue( const double theValue )
+{
+  setData( Qt::UserRole, theValue );
+  setText( QString::number( theValue ) ); 
+}
+
+int SMESHGUI_FilterTable::DoubleSpinItem::precision() const
+{
+  bool ok = false;
+  int precision = data( Qt::UserRole + 1 ).toInt( &ok );
+  return ok ? precision : 0; 
+}
+
+void SMESHGUI_FilterTable::DoubleSpinItem::setPrecision( const int thePrecision )
+{
+  setData( Qt::UserRole + 1, thePrecision );
+}
+
+void SMESHGUI_FilterTable::DoubleSpinItem::clear()
+{
+  setText( "" );
+}
+
+/*
   Class       : SMESHGUI_FilterTable::ComboDelegate
   Description : Table used by this widget
 */
@@ -423,13 +594,13 @@ public:
   ~ComboDelegate();
   
   QWidget*      createEditor( QWidget*, const QStyleOptionViewItem&,
-			      const QModelIndex& ) const;
+                              const QModelIndex& ) const;
   
   void          setEditorData( QWidget*, const QModelIndex& ) const;
   void          setModelData( QWidget*, QAbstractItemModel*, const QModelIndex& ) const;
   
   void          updateEditorGeometry( QWidget*, const QStyleOptionViewItem&, 
-				      const QModelIndex& ) const;
+                                      const QModelIndex& ) const;
 private:
   QTableWidget* myTable;
 };
@@ -445,47 +616,86 @@ SMESHGUI_FilterTable::ComboDelegate::~ComboDelegate()
 }
 
 QWidget* SMESHGUI_FilterTable::ComboDelegate::createEditor( QWidget* parent,
-							    const QStyleOptionViewItem& option,
-							    const QModelIndex& index ) const
+                                                            const QStyleOptionViewItem& option,
+                                                            const QModelIndex& index ) const
 {
-  QStringList l = index.data( Qt::UserRole ).toStringList();
-  if ( !l.isEmpty() ) {
-    QComboBox* cb = new QComboBox( parent );
-    cb->setFrame( false );
-    cb->addItems( l );
-    return cb;
+  QVariant aData = index.data( Qt::UserRole );
+  QVariant::Type aDataType = aData.type();
+  if( aDataType == QVariant::StringList ) {
+    QStringList l = aData.toStringList();
+    if ( !l.isEmpty() ) {
+      QComboBox* cb = new QComboBox( parent );
+      cb->setFrame( false );
+      cb->addItems( l );
+      return cb;
+    }
+  }
+  else if( aDataType == QVariant::Int ) {
+    bool ok = false;
+    int aValue = aData.toInt( &ok );
+    if ( ok ) {
+      SalomeApp_IntSpinBox* intSpin = new SalomeApp_IntSpinBox( 0, 1000, 1, parent, false, true );
+      intSpin->setFrame( false );
+      intSpin->setValue( aValue );
+      return intSpin;
+    }
+  }
+  else if( aDataType == QVariant::Double ) {
+    bool ok = false;
+    double aValue = aData.toDouble( &ok );
+    if ( ok ) {
+      int aPrecision = index.data( Qt::UserRole + 1 ).toInt( &ok );
+      if ( !ok )
+        aPrecision = 0;
+
+      SalomeApp_DoubleSpinBox* dblSpin = new SalomeApp_DoubleSpinBox( -1.e20, 1.e20, 1, aPrecision, 20, parent, false, true );
+      dblSpin->setFrame( false );
+      dblSpin->setValue( aValue );
+      return dblSpin;
+    }
   }
   return QItemDelegate::createEditor( parent, option, index );
 }
 
 void SMESHGUI_FilterTable::ComboDelegate::setEditorData( QWidget* editor, 
-							 const QModelIndex& index ) const
+                                                         const QModelIndex& index ) const
 {
-  QString value = index.model()->data( index, Qt::DisplayRole ).toString();
-  QComboBox* cb = dynamic_cast<QComboBox*>( editor );
+  QVariant data = index.model()->data( index, Qt::DisplayRole );
+  QString value = data.toString();
   bool bOk = false;
-  if ( cb ) {
+  if ( QComboBox* cb = dynamic_cast<QComboBox*>( editor ) ) {
     int i = cb->findText( value );
     if ( i >= 0 ) {
       cb->setCurrentIndex( i );
       bOk = true;
     }
   }
+  else if ( SalomeApp_DoubleSpinBox* dblSpin = dynamic_cast<SalomeApp_DoubleSpinBox*>( editor ) ) {
+    if( data.type() == QVariant::Double ) {
+      double valueDouble = data.toDouble( &bOk );
+      if( bOk )
+        dblSpin->setValue( valueDouble );
+    }
+  }
   if ( !bOk ) QItemDelegate::setEditorData( editor, index );
 }
 
 void SMESHGUI_FilterTable::ComboDelegate::setModelData( QWidget* editor,
-							QAbstractItemModel* model,
-							const QModelIndex& index) const
+                                                        QAbstractItemModel* model,
+                                                        const QModelIndex& index) const
 {
-  QComboBox* cb = dynamic_cast<QComboBox*>( editor );
-  if ( cb ) model->setData( index, cb->currentText(), Qt::DisplayRole );
+  if( QComboBox* cb = dynamic_cast<QComboBox*>( editor ) )
+    model->setData( index, cb->currentText(), Qt::DisplayRole );
+  else if( SalomeApp_IntSpinBox* intSpin = dynamic_cast<SalomeApp_IntSpinBox*>( editor ) )
+    model->setData( index, intSpin->value(), Qt::DisplayRole );
+  else if( SalomeApp_DoubleSpinBox* dblSpin = dynamic_cast<SalomeApp_DoubleSpinBox*>( editor ) )
+    model->setData( index, dblSpin->value(), Qt::DisplayRole );
   else QItemDelegate::setModelData( editor, model, index );
 }
 
 void SMESHGUI_FilterTable::ComboDelegate::updateEditorGeometry( QWidget* editor,
-								const QStyleOptionViewItem& option, 
-								const QModelIndex& index ) const
+                                                                const QStyleOptionViewItem& option, 
+                                                                const QModelIndex& index ) const
 {
   editor->setGeometry( option.rect );
 }
@@ -597,8 +807,8 @@ bool SMESHGUI_FilterTable::Table::isEditable (int row, int col) const
 void SMESHGUI_FilterTable::Table::setReadOnly( bool on )
 {
   setEditTriggers( on ? 
-		   QAbstractItemView::NoEditTriggers  :
-		   QAbstractItemView::AllEditTriggers );
+                   QAbstractItemView::NoEditTriggers  :
+                   QAbstractItemView::AllEditTriggers );
 }
 
 bool SMESHGUI_FilterTable::Table::isReadOnly() const
@@ -909,13 +1119,16 @@ bool SMESHGUI_FilterTable::IsValid (const bool theMess, const int theEntityType)
       QtxColorButton* clrBtn = qobject_cast<QtxColorButton*>(aTable->cellWidget(i, 2));
       if (clrBtn && !clrBtn->color().isValid())
         errMsg = tr( "GROUPCOLOR_ERROR" );
-    } else if (aCriterion == SMESH::FT_RangeOfIds ||
-         aCriterion == SMESH::FT_BelongToGeom ||
-         aCriterion == SMESH::FT_BelongToPlane ||
-         aCriterion == SMESH::FT_BelongToCylinder ||
-         aCriterion == SMESH::FT_BelongToGenSurface ||
-         aCriterion == SMESH::FT_ElemGeomType ||
-         aCriterion == SMESH::FT_LyingOnGeom) {
+    }
+    else if (aCriterion == SMESH::FT_RangeOfIds ||
+             aCriterion == SMESH::FT_BelongToGeom ||
+             aCriterion == SMESH::FT_BelongToPlane ||
+             aCriterion == SMESH::FT_BelongToCylinder ||
+             aCriterion == SMESH::FT_BelongToGenSurface ||
+             aCriterion == SMESH::FT_ElemGeomType ||
+             aCriterion == SMESH::FT_CoplanarFaces ||
+             aCriterion == SMESH::FT_LyingOnGeom)
+    {
       if (aTable->text(i, 2).isEmpty())
         errMsg = tr( "ERROR" );
     }
@@ -929,8 +1142,8 @@ bool SMESHGUI_FilterTable::IsValid (const bool theMess, const int theEntityType)
       if (!aRes && aTable->isEditable(i, 2))
         errMsg = tr( "ERROR" );
       else if (aType == SMESH::EDGE &&
-                GetCriterionType(i, aType) == SMESH::FT_MultiConnection &&
-                aThreshold == 1)
+               GetCriterionType(i, aType) == SMESH::FT_MultiConnection &&
+               aThreshold == 1)
         errMsg = tr( "MULTIEDGES_ERROR" );
     }
 
@@ -1029,12 +1242,14 @@ void SMESHGUI_FilterTable::GetCriterion (const int                 theRow,
   }
   else if ( aCriterionType == SMESH::FT_ElemGeomType )
     theCriterion.Threshold = (double)((ComboItem*)aTable->item(theRow, 2))->value();
+  else if ( aCriterionType == SMESH::FT_CoplanarFaces )
+    theCriterion.ThresholdID = aTable->text(theRow, 2).toLatin1().constData();
   else if ( aCriterionType != SMESH::FT_RangeOfIds &&
             aCriterionType != SMESH::FT_BelongToGeom &&
-	    aCriterionType != SMESH::FT_BelongToPlane &&
-	    aCriterionType != SMESH::FT_BelongToCylinder &&
-	    aCriterionType != SMESH::FT_BelongToGenSurface &&
-	    aCriterionType != SMESH::FT_LyingOnGeom)
+            aCriterionType != SMESH::FT_BelongToPlane &&
+            aCriterionType != SMESH::FT_BelongToCylinder &&
+            aCriterionType != SMESH::FT_BelongToGenSurface &&
+            aCriterionType != SMESH::FT_LyingOnGeom )
   {
     theCriterion.Compare = ((ComboItem*)aTable->item(theRow, 1))->value();
     theCriterion.Threshold = aTable->item(theRow, 2)->text().toDouble();
@@ -1068,7 +1283,10 @@ void SMESHGUI_FilterTable::SetCriterion (const int                       theRow,
 
   ((ComboItem*)aTable->item(theRow, 0))->setValue(theCriterion.Type);
   onCriterionChanged(theRow, 0, aType);
-  ((ComboItem*)aTable->item(theRow, 1))->setValue(theCriterion.Compare);
+  if ( theCriterion.Compare == SMESH::FT_Undefined )
+    ((ComboItem*)aTable->item(theRow, 1))->setValue( SMESH::FT_EqualTo );
+  else
+    ((ComboItem*)aTable->item(theRow, 1))->setValue(theCriterion.Compare);
   ((CheckItem*)aTable->item(theRow, 3))->setChecked(theCriterion.UnaryOp == SMESH::FT_LogicalNOT);
 
   if (theCriterion.BinaryOp != SMESH::FT_Undefined)
@@ -1100,19 +1318,30 @@ void SMESHGUI_FilterTable::SetCriterion (const int                       theRow,
     ComboItem* typeBox = (ComboItem*)aTable->item(theRow, 2);
     typeBox->setValue( (int)(theCriterion.Threshold + 0.5) );
   }
+  else if (theCriterion.Type == SMESH::FT_CoplanarFaces )
+  {
+    aTable->item( theRow, 2 )->setText( QString( theCriterion.ThresholdID ) );
+  }
   else if (theCriterion.Type != SMESH::FT_RangeOfIds &&
-      theCriterion.Type != SMESH::FT_BelongToGeom &&
-      theCriterion.Type != SMESH::FT_BelongToPlane &&
-      theCriterion.Type != SMESH::FT_BelongToCylinder &&
-      theCriterion.Type != SMESH::FT_BelongToGenSurface &&
-      theCriterion.Type != SMESH::FT_LyingOnGeom &&
-      theCriterion.Type != SMESH::FT_FreeBorders &&
-      theCriterion.Type != SMESH::FT_FreeEdges &&
-      theCriterion.Type != SMESH::FT_FreeNodes &&
-      theCriterion.Type != SMESH::FT_FreeFaces &&
-      theCriterion.Type != SMESH::FT_BadOrientedVolume &&
-      theCriterion.Type != SMESH::FT_LinearOrQuadratic)
+           theCriterion.Type != SMESH::FT_BelongToGeom &&
+           theCriterion.Type != SMESH::FT_BelongToPlane &&
+           theCriterion.Type != SMESH::FT_BelongToCylinder &&
+           theCriterion.Type != SMESH::FT_BelongToGenSurface &&
+           theCriterion.Type != SMESH::FT_LyingOnGeom &&
+           theCriterion.Type != SMESH::FT_CoplanarFaces &&
+           theCriterion.Type != SMESH::FT_FreeBorders &&
+           theCriterion.Type != SMESH::FT_FreeEdges &&
+           theCriterion.Type != SMESH::FT_FreeNodes &&
+           theCriterion.Type != SMESH::FT_FreeFaces &&
+           theCriterion.Type != SMESH::FT_BadOrientedVolume &&
+           theCriterion.Type != SMESH::FT_BareBorderFace &&
+           theCriterion.Type != SMESH::FT_BareBorderVolume &&
+           theCriterion.Type != SMESH::FT_OverConstrainedFace &&
+           theCriterion.Type != SMESH::FT_OverConstrainedVolume &&
+           theCriterion.Type != SMESH::FT_LinearOrQuadratic)
+  {
     aTable->item( theRow, 2 )->setText(QString("%1").arg(theCriterion.Threshold, 0, 'g', 15));
+  }
   else
   {
     aTable->item( theRow, 2 )->setText(QString(theCriterion.ThresholdStr));
@@ -1121,21 +1350,25 @@ void SMESHGUI_FilterTable::SetCriterion (const int                       theRow,
   }
 
   if (theCriterion.Compare == SMESH::FT_EqualTo ||
-       theCriterion.Type    == SMESH::FT_BelongToPlane ||
-       theCriterion.Type    == SMESH::FT_BelongToCylinder ||
-       theCriterion.Type    == SMESH::FT_BelongToGenSurface)
+      theCriterion.Type    == SMESH::FT_BelongToPlane ||
+      theCriterion.Type    == SMESH::FT_BelongToCylinder ||
+      theCriterion.Type    == SMESH::FT_BelongToGenSurface ||
+      theCriterion.Type    == SMESH::FT_BelongToGeom ||
+      theCriterion.Type    == SMESH::FT_LyingOnGeom ||
+      theCriterion.Type    == SMESH::FT_CoplanarFaces ||
+      theCriterion.Type    == SMESH::FT_EqualNodes)
   {
     QTableWidgetItem* anItem = aTable->item(theRow, 0);
     if (!myAddWidgets.contains(anItem))
     {
       myAddWidgets[ anItem ] = new AdditionalWidget(myWgStack);
+      myAddWidgets[ anItem ]->SetPrecision( AdditionalWidget::Tolerance, getPrecision( theCriterion.Type ) );
       myWgStack->addWidget(myAddWidgets[ anItem ]);
     }
     myAddWidgets[ anItem ]->SetDouble(AdditionalWidget::Tolerance, theCriterion.Tolerance);
   }
 
   emit CriterionChanged(theRow, aType);
-
 }
 
 //=======================================================================
@@ -1263,14 +1496,18 @@ void SMESHGUI_FilterTable::updateAdditionalWidget()
 
   ComboItem* anItem = ((ComboItem*)aTable->item(aRow, 0));
   int aCriterion = GetCriterionType(aRow);
-  bool toEnable = ((ComboItem*)aTable->item(aRow, 1))->value() == SMESH::FT_EqualTo &&
-                  aCriterion != SMESH::FT_BelongToGeom &&
-                  aCriterion != SMESH::FT_LyingOnGeom &&
-                  aCriterion != SMESH::FT_RangeOfIds &&
-                  aCriterion != SMESH::FT_FreeEdges &&
-                  aCriterion != SMESH::FT_FreeFaces &&
-                  aCriterion != SMESH::FT_BadOrientedVolume;
-
+  bool toEnable = ((((ComboItem*)aTable->item(aRow, 1))->value() == SMESH::FT_EqualTo &&
+                   aCriterion != SMESH::FT_RangeOfIds &&
+                   aCriterion != SMESH::FT_FreeEdges &&
+                   aCriterion != SMESH::FT_FreeFaces &&
+                   aCriterion != SMESH::FT_BadOrientedVolume &&
+                   aCriterion != SMESH::FT_BareBorderFace &&
+                   aCriterion != SMESH::FT_BareBorderVolume &&
+                   aCriterion != SMESH::FT_OverConstrainedFace &&
+                   aCriterion != SMESH::FT_OverConstrainedVolume)
+                   ||
+                   aCriterion == SMESH::FT_CoplanarFaces);
+  
   if (!myAddWidgets.contains(anItem))
   {
     myAddWidgets[ anItem ] = new AdditionalWidget(myWgStack);
@@ -1278,7 +1515,43 @@ void SMESHGUI_FilterTable::updateAdditionalWidget()
   }
 
   myWgStack->setCurrentWidget(myAddWidgets[ anItem ]);
+  myAddWidgets[ anItem ]->SetPrecision( AdditionalWidget::Tolerance, getPrecision( aCriterion ) );
   myWgStack->setEnabled(toEnable);
+}
+
+const char* SMESHGUI_FilterTable::getPrecision( const int aType )
+{
+  const char* retval = 0;
+  switch ( aType ) {
+  case SMESH::FT_AspectRatio:
+  case SMESH::FT_AspectRatio3D:
+  case SMESH::FT_Taper:
+    retval = "parametric_precision"; break;
+  case SMESH::FT_Warping:
+  case SMESH::FT_MinimumAngle:
+  case SMESH::FT_Skew:
+  case SMESH::FT_CoplanarFaces:
+    retval = "angle_precision"; break;
+  case SMESH::FT_Area:
+    retval = "area_precision"; break;
+  case SMESH::FT_BelongToGeom:
+  case SMESH::FT_BelongToPlane:
+  case SMESH::FT_BelongToCylinder:
+  case SMESH::FT_BelongToGenSurface:
+  case SMESH::FT_LyingOnGeom:
+  case SMESH::FT_EqualNodes:
+    retval = "len_tol_precision"; break;
+  case SMESH::FT_Length:
+  case SMESH::FT_Length2D:
+  case SMESH::FT_MaxElementLength2D:
+  case SMESH::FT_MaxElementLength3D:
+    retval = "length_precision"; break;
+  case SMESH::FT_Volume3D:
+    retval = "vol_precision"; break;
+  default:
+    break;
+  }
+  return retval;
 }
 
 //=======================================================================
@@ -1353,7 +1626,16 @@ static QList<int> geomTypes( const int theType )
     typeIds.append( SMESH::Geom_PYRAMID );
     typeIds.append( SMESH::Geom_HEXA );
     typeIds.append( SMESH::Geom_PENTA );
+    typeIds.append( SMESH::Geom_HEXAGONAL_PRISM );
     typeIds.append( SMESH::Geom_POLYHEDRA );
+  }
+  if ( theType == SMESH::ALL || theType == SMESH::ELEM0D )
+  {
+    typeIds.append( SMESH::Geom_POINT );
+  }
+  if ( theType == SMESH::ALL || theType == SMESH::BALL )
+  {
+    typeIds.append( SMESH::Geom_BALL );
   }
   return typeIds;
 }
@@ -1370,10 +1652,56 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
 
   int aCriterionType = GetCriterionType(row);
   QtxColorButton* clrBtn = qobject_cast<QtxColorButton*>(aTable->cellWidget(row, 2));
-  bool isComboItem = aTable->item(row, 2)->type() == ComboItem::Type();
+  int aComboType = ComboItem::Type();
+  int aIntSpinType = IntSpinItem::Type();
+  int aDoubleSpinType = DoubleSpinItem::Type();
+  QTableWidgetItem* aTableItem = aTable->item(row, 2);
+  bool isComboItem = false;
+  bool isIntSpinItem = false;
+  bool isDoubleSpinItem = false;
+  if (aTableItem) {
+    int aTableType = aTable->item(row, 2)->type();
+    isComboItem = ( aTableType == aComboType );
+    isIntSpinItem = ( aTableType == aIntSpinType );
+    isDoubleSpinItem = ( aTableType == aDoubleSpinType );
+  }
   
+  bool anIsDoubleCriterion =
+    aCriterionType == SMESH::FT_AspectRatio ||
+    aCriterionType == SMESH::FT_AspectRatio3D ||
+    aCriterionType == SMESH::FT_Taper ||
+    aCriterionType == SMESH::FT_Warping ||
+    aCriterionType == SMESH::FT_MinimumAngle ||
+    aCriterionType == SMESH::FT_Skew ||
+    aCriterionType == SMESH::FT_Area ||
+    aCriterionType == SMESH::FT_Length ||
+    aCriterionType == SMESH::FT_Length2D ||
+    aCriterionType == SMESH::FT_MaxElementLength2D ||
+    aCriterionType == SMESH::FT_MaxElementLength3D ||
+    aCriterionType == SMESH::FT_Volume3D;
+
+  int aPrecision = 0;
+  if ( anIsDoubleCriterion ) {
+    const char* aPrecisionType = getPrecision( aCriterionType );
+    SUIT_ResourceMgr* aResourceMgr = SMESH::GetResourceMgr( mySMESHGUI );
+    if( aPrecisionType && aResourceMgr )
+      aPrecision = aResourceMgr->integerValue( "SMESH", aPrecisionType, aPrecision );
+  }
+
+  // if the precision is to be changed we should remove the existing
+  // spin item and create another one with new precision
+  bool anIsPrecisionChanged = false;
+  if ( anIsDoubleCriterion && isDoubleSpinItem ) {
+    if ( DoubleSpinItem* aDoubleSpinItem = dynamic_cast<DoubleSpinItem*>( aTable->item( row, 2 ) ) ) {
+      anIsPrecisionChanged = aDoubleSpinItem->precision() != aPrecision;
+    }
+  }
+
   if ( (aCriterionType != SMESH::FT_GroupColor && clrBtn) ||
-       (aCriterionType != SMESH::FT_ElemGeomType && isComboItem) )
+       (aCriterionType != SMESH::FT_ElemGeomType && isComboItem) ||
+       (aCriterionType != SMESH::FT_MultiConnection && isIntSpinItem) ||
+       (!anIsDoubleCriterion && isDoubleSpinItem) ||
+       anIsPrecisionChanged )
   {
     bool isSignalsBlocked = aTable->signalsBlocked();
     aTable->blockSignals( true );
@@ -1382,13 +1710,16 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
     aTable->blockSignals( isSignalsBlocked );
   }
   if ( (aCriterionType == SMESH::FT_GroupColor && !clrBtn) ||
-       (aCriterionType == SMESH::FT_ElemGeomType && !isComboItem) )
+       (aCriterionType == SMESH::FT_ElemGeomType && !isComboItem) ||
+       (aCriterionType == SMESH::FT_MultiConnection && !isIntSpinItem) ||
+       (anIsDoubleCriterion && !isDoubleSpinItem) ||
+       anIsPrecisionChanged )
   {
     bool isSignalsBlocked = aTable->signalsBlocked();
     aTable->blockSignals( true );
     if ( aCriterionType == SMESH::FT_GroupColor )
       aTable->setCellWidget( row, 2, new QtxColorButton( aTable ) );
-    else {
+    else if ( aCriterionType == SMESH::FT_ElemGeomType ) {
       QList<int> typeIds = geomTypes( aType );
       QMap<int, QString> typeNames;
       QList<int>::const_iterator anIter = typeIds.begin();
@@ -1400,17 +1731,36 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
       ComboItem* typeBox = new ComboItem( typeNames );
       aTable->setItem( row, 2, typeBox );
     }
+    else if ( aCriterionType == SMESH::FT_MultiConnection ) {
+      IntSpinItem* intSpin = new IntSpinItem( 0 );
+      aTable->setItem( row, 2, intSpin );
+    }
+    else if ( anIsDoubleCriterion ) {
+      DoubleSpinItem* dblSpin = new DoubleSpinItem( 0 );
+      dblSpin->setPrecision( aPrecision );
+      aTable->setItem( row, 2, dblSpin );
+    }
     aTable->blockSignals( isSignalsBlocked );
   }
 
-  if (aType == SMESH::NODE && aCriterionType == SMESH::FT_FreeNodes ||
-      aType == SMESH::EDGE && aCriterionType == SMESH::FT_FreeBorders ||
-      aType == SMESH::FACE && (aCriterionType == SMESH::FT_FreeEdges ||
-                               aCriterionType == SMESH::FT_FreeFaces) ||
-      aType == SMESH::VOLUME && aCriterionType == SMESH::FT_BadOrientedVolume ||
+  if ((aType == SMESH::NODE && (aCriterionType == SMESH::FT_FreeNodes               ||
+                                aCriterionType == SMESH::FT_EqualNodes ))           ||
+      (aType == SMESH::EDGE && (aCriterionType == SMESH::FT_FreeBorders             ||
+                                aCriterionType == SMESH::FT_EqualEdges ))           ||
+      (aType == SMESH::FACE && (aCriterionType == SMESH::FT_BareBorderFace          ||
+                                aCriterionType == SMESH::FT_OverConstrainedFace     ||
+                                aCriterionType == SMESH::FT_FreeEdges               ||
+                                aCriterionType == SMESH::FT_FreeFaces               ||
+                                aCriterionType == SMESH::FT_EqualFaces))            ||
+      (aType == SMESH::VOLUME && (aCriterionType == SMESH::FT_BadOrientedVolume     ||
+                                  aCriterionType == SMESH::FT_OverConstrainedVolume ||
+                                  aCriterionType == SMESH::FT_BareBorderVolume      ||
+                                  aCriterionType == SMESH::FT_EqualVolumes ))       ||
       aCriterionType == SMESH::FT_LinearOrQuadratic ||
       aCriterionType == SMESH::FT_GroupColor ||
-      aCriterionType == SMESH::FT_ElemGeomType)
+      aCriterionType == SMESH::FT_ElemGeomType ||
+      aCriterionType == SMESH::FT_CoplanarFaces
+      )
   {
     bool isSignalsBlocked = aTable->signalsBlocked();
     aTable->blockSignals( true );
@@ -1418,8 +1768,10 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
     if (aCompareItem->count() > 0)
       aCompareItem->clear();
     aTable->setEditable(false, row, 1);
+    aTable->item(row, 2)->setText( QString("") );
     aTable->setEditable(aCriterionType == SMESH::FT_GroupColor ||
-                        aCriterionType == SMESH::FT_ElemGeomType, row, 2);
+                        aCriterionType == SMESH::FT_ElemGeomType ||
+                        aCriterionType == SMESH::FT_CoplanarFaces, row, 2);
     aTable->blockSignals( isSignalsBlocked );
   }
   else if (aCriterionType == SMESH::FT_RangeOfIds ||
@@ -1445,19 +1797,21 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
   }
   else
   {
-    if (aCompareItem->count() != 3)
+    if (aCompareItem && aCompareItem->count() != 3)
     {
       aCompareItem->setItems(getCompare());
     }
 
-    QString aText = aTable->text(row, 2);
-    bool isOk = false;
-    aText.toDouble(&isOk);
-    aTable->item( row, 2 )->setText(isOk ? aText : QString(""));
-    if (!aTable->isEditable(row, 1))
-      aTable->setEditable(true, row, 1);
-    if (!aTable->isEditable(row, 2))
-      aTable->setEditable(true, row, 2);
+    if (aTable->item( row, 2 )) {
+      QString aText = aTable->text(row, 2);
+      bool isOk = false;
+      aText.toDouble(&isOk);
+      aTable->item( row, 2 )->setText(isOk ? aText : QString(""));
+      if (!aTable->isEditable(row, 1))
+        aTable->setEditable(true, row, 1);
+      if (!aTable->isEditable(row, 2))
+        aTable->setEditable(true, row, 2);
+    }
   }
 
   updateAdditionalWidget();
@@ -1472,7 +1826,8 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
 //=======================================================================
 void SMESHGUI_FilterTable::onCriterionChanged (int row, int col)
 {
-  onCriterionChanged(row, col, -1);
+  if( col == 0 )
+    onCriterionChanged(row, col, -1);
 }
 
 //=======================================================================
@@ -1615,6 +1970,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getSupportedTypes() const
   if (aTypes.isEmpty())
   {
     aTypes[ SMESH::NODE   ] = tr("NODES");
+    aTypes[ SMESH::BALL   ] = tr("BALLS");
     aTypes[ SMESH::EDGE   ] = tr("EDGES");
     aTypes[ SMESH::FACE   ] = tr("FACES");
     aTypes[ SMESH::VOLUME ] = tr("VOLUMES");
@@ -1643,6 +1999,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_LyingOnGeom        ] = tr("LYING_ON_GEOM");
       aCriteria[ SMESH::FT_FreeNodes          ] = tr("FREE_NODES");
       aCriteria[ SMESH::FT_GroupColor         ] = tr("GROUP_COLOR");
+      aCriteria[ SMESH::FT_EqualNodes         ] = tr("EQUAL_NODE");
     }
     return aCriteria;
   }
@@ -1663,6 +2020,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_LinearOrQuadratic  ] = tr("LINEAR");
       aCriteria[ SMESH::FT_GroupColor         ] = tr("GROUP_COLOR");
       aCriteria[ SMESH::FT_ElemGeomType       ] = tr("GEOM_TYPE");
+      aCriteria[ SMESH::FT_EqualEdges         ] = tr("EQUAL_EDGE");
     }
     return aCriteria;
   }
@@ -1677,6 +2035,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_Taper              ] = tr("TAPER");
       aCriteria[ SMESH::FT_Skew               ] = tr("SKEW");
       aCriteria[ SMESH::FT_Area               ] = tr("AREA");
+      aCriteria[ SMESH::FT_MaxElementLength2D ] = tr("MAX_ELEMENT_LENGTH_2D");
       aCriteria[ SMESH::FT_FreeEdges          ] = tr("FREE_EDGES");
       aCriteria[ SMESH::FT_RangeOfIds         ] = tr("RANGE_OF_IDS");
       aCriteria[ SMESH::FT_BelongToGeom       ] = tr("BELONG_TO_GEOM");
@@ -1687,9 +2046,13 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_Length2D           ] = tr("LENGTH2D");
       aCriteria[ SMESH::FT_MultiConnection2D  ] = tr("MULTI2D_BORDERS");
       aCriteria[ SMESH::FT_FreeFaces          ] = tr("FREE_FACES");
+      aCriteria[ SMESH::FT_BareBorderFace     ] = tr("BARE_BORDER_FACE");
+      aCriteria[ SMESH::FT_OverConstrainedFace] = tr("OVER_CONSTRAINED_FACE");
       aCriteria[ SMESH::FT_LinearOrQuadratic  ] = tr("LINEAR");
       aCriteria[ SMESH::FT_GroupColor         ] = tr("GROUP_COLOR");
       aCriteria[ SMESH::FT_ElemGeomType       ] = tr("GEOM_TYPE");
+      aCriteria[ SMESH::FT_CoplanarFaces      ] = tr("COPLANAR_FACES");
+      aCriteria[ SMESH::FT_EqualFaces         ] = tr("EQUAL_FACE");
     }
     return aCriteria;
   }
@@ -1698,15 +2061,48 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
     static QMap<int, QString> aCriteria;
     if (aCriteria.isEmpty())
     {
-      aCriteria[ SMESH::FT_AspectRatio3D     ] = tr("ASPECT_RATIO_3D");
-      aCriteria[ SMESH::FT_RangeOfIds        ] = tr("RANGE_OF_IDS");
-      aCriteria[ SMESH::FT_BelongToGeom      ] = tr("BELONG_TO_GEOM");
-      aCriteria[ SMESH::FT_LyingOnGeom       ] = tr("LYING_ON_GEOM");
-      aCriteria[ SMESH::FT_BadOrientedVolume ] = tr("BAD_ORIENTED_VOLUME");
-      aCriteria[ SMESH::FT_Volume3D          ] = tr("VOLUME_3D");
-      aCriteria[ SMESH::FT_LinearOrQuadratic ] = tr("LINEAR");
-      aCriteria[ SMESH::FT_GroupColor        ] = tr("GROUP_COLOR");
-      aCriteria[ SMESH::FT_ElemGeomType       ] = tr("GEOM_TYPE");
+      aCriteria[ SMESH::FT_AspectRatio3D        ] = tr("ASPECT_RATIO_3D");
+      aCriteria[ SMESH::FT_RangeOfIds           ] = tr("RANGE_OF_IDS");
+      aCriteria[ SMESH::FT_BelongToGeom         ] = tr("BELONG_TO_GEOM");
+      aCriteria[ SMESH::FT_LyingOnGeom          ] = tr("LYING_ON_GEOM");
+      aCriteria[ SMESH::FT_BadOrientedVolume    ] = tr("BAD_ORIENTED_VOLUME");
+      aCriteria[ SMESH::FT_BareBorderVolume     ] = tr("BARE_BORDER_VOLUME");
+      aCriteria[ SMESH::FT_OverConstrainedVolume] = tr("OVER_CONSTRAINED_VOLUME");
+      aCriteria[ SMESH::FT_Volume3D             ] = tr("VOLUME_3D");
+      aCriteria[ SMESH::FT_MaxElementLength3D   ] = tr("MAX_ELEMENT_LENGTH_3D");
+      aCriteria[ SMESH::FT_LinearOrQuadratic    ] = tr("LINEAR");
+      aCriteria[ SMESH::FT_GroupColor           ] = tr("GROUP_COLOR");
+      aCriteria[ SMESH::FT_ElemGeomType         ] = tr("GEOM_TYPE");
+      aCriteria[ SMESH::FT_EqualVolumes         ] = tr("EQUAL_VOLUME");
+    }
+    return aCriteria;
+  }
+  else if (theType == SMESH::ELEM0D)
+  {
+    static QMap<int, QString> aCriteria;
+    if (aCriteria.isEmpty())
+    {
+      aCriteria[ SMESH::FT_RangeOfIds         ] = tr("RANGE_OF_IDS");
+      aCriteria[ SMESH::FT_BelongToGeom       ] = tr("BELONG_TO_GEOM");
+      aCriteria[ SMESH::FT_BelongToPlane      ] = tr("BELONG_TO_PLANE");
+      aCriteria[ SMESH::FT_BelongToCylinder   ] = tr("BELONG_TO_CYLINDER");
+      aCriteria[ SMESH::FT_BelongToGenSurface ] = tr("BELONG_TO_GENSURFACE");
+      aCriteria[ SMESH::FT_GroupColor         ] = tr("GROUP_COLOR");
+    }
+    return aCriteria;
+  }
+  else if (theType == SMESH::BALL)
+  {
+    static QMap<int, QString> aCriteria;
+    if (aCriteria.isEmpty())
+    {
+      aCriteria[ SMESH::FT_BallDiameter       ] = tr("BALL_DIAMETER");
+      aCriteria[ SMESH::FT_RangeOfIds         ] = tr("RANGE_OF_IDS");
+      aCriteria[ SMESH::FT_BelongToGeom       ] = tr("BELONG_TO_GEOM");
+      aCriteria[ SMESH::FT_BelongToPlane      ] = tr("BELONG_TO_PLANE");
+      aCriteria[ SMESH::FT_BelongToCylinder   ] = tr("BELONG_TO_CYLINDER");
+      aCriteria[ SMESH::FT_BelongToGenSurface ] = tr("BELONG_TO_GENSURFACE");
+      aCriteria[ SMESH::FT_GroupColor         ] = tr("GROUP_COLOR");
     }
     return aCriteria;
   }
@@ -1773,7 +2169,7 @@ SMESHGUI_FilterTable::Table* SMESHGUI_FilterTable::createTable (QWidget*  thePar
   }
 
   static int aLenCr = qAbs( aMaxLenCr -
-			    aMetrics.width(tr("CRITERION"))) / aMetrics.width(' ') + 5;
+                            aMetrics.width(tr("CRITERION"))) / aMetrics.width(' ') + 5;
 
   QString aCrStr;
   aCrStr.fill(' ', aLenCr);
@@ -1803,10 +2199,10 @@ SMESHGUI_FilterTable::Table* SMESHGUI_FilterTable::createTable (QWidget*  thePar
   aTable->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
 
   connect(aTable, SIGNAL(cellChanged(int, int)),
-	  this,   SLOT(onCriterionChanged(int, int)));
+          this,   SLOT(onCriterionChanged(int, int)));
 
   connect(aTable, SIGNAL(currentCellChanged(int, int, int, int)),
-	  this,   SLOT(onCurrentChanged(int, int)));
+          this,   SLOT(onCurrentChanged(int, int)));
   
   return aTable;
 }
@@ -1836,15 +2232,15 @@ void SMESHGUI_FilterTable::SetEditable (const bool isEditable)
     Table* aTable = anIter.value();
     for (int i = 0, n = aTable->rowCount(); i < n; i++)
       for (int j = 0, m = aTable->columnCount(); j < m; j++)
-	{
-	  QTableWidgetItem* anItem = aTable->item(i, j);
-	  if ( dynamic_cast<SMESHGUI_FilterTable::CheckItem*>( anItem ) ) {
-	    Qt::ItemFlags f = anItem->flags();
-	    if (!isEditable) f = f & ~Qt::ItemIsUserCheckable;
-	    else f = f | Qt::ItemIsUserCheckable;
-	    anItem->setFlags( f );
-	  }
-	}
+        {
+          QTableWidgetItem* anItem = aTable->item(i, j);
+          if ( dynamic_cast<SMESHGUI_FilterTable::CheckItem*>( anItem ) ) {
+            Qt::ItemFlags f = anItem->flags();
+            if (!isEditable) f = f & ~Qt::ItemIsUserCheckable;
+            else f = f | Qt::ItemIsUserCheckable;
+            anItem->setFlags( f );
+          }
+        }
     //end of IPAL19974
 
     if (isEditable)
@@ -2017,8 +2413,8 @@ bool SMESHGUI_FilterTable::GetThreshold (const int      theRow,
 // Purpose : Set text and internal value in cell of ID value 
 //=======================================================================
 void SMESHGUI_FilterTable::SetID( const int      theRow,
-                                         const QString& theText,
-                                         const int      theEntityType )
+                                  const QString& theText,
+                                  const int      theEntityType )
 {
   Table* aTable = myTables[ theEntityType == -1 ? GetType() : theEntityType ];
   aTable->item( theRow, 5 )->setText( theText );
@@ -2029,8 +2425,8 @@ void SMESHGUI_FilterTable::SetID( const int      theRow,
 // Purpose : Get text and internal value from cell of ID value
 //=======================================================================
 bool SMESHGUI_FilterTable::GetID( const int      theRow,
-				  QString&       theText,
-				  const int      theEntityType )
+                                  QString&       theText,
+                                  const int      theEntityType )
 {
   Table* aTable = myTables[ theEntityType == -1 ? GetType() : theEntityType ];
   QTableWidgetItem* anItem = aTable->item( theRow, 5 );
@@ -2057,7 +2453,8 @@ SMESHGUI_FilterDlg::SMESHGUI_FilterDlg( SMESHGUI*         theModule,
                                         const QList<int>& theTypes )
 : QDialog( SMESH::GetDesktop( theModule ) ),
   mySMESHGUI( theModule ),
-  mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
+  mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
+  myInitSourceWgOnApply( true )
 {
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     mySelector = aViewWindow->GetSelector();
@@ -2073,7 +2470,8 @@ SMESHGUI_FilterDlg::SMESHGUI_FilterDlg( SMESHGUI*   theModule,
                                         const int   theType )
 : QDialog( SMESH::GetDesktop( theModule ) ),
   mySMESHGUI( theModule ),
-  mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
+  mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
+  myInitSourceWgOnApply( true )
 {
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     mySelector = aViewWindow->GetSelector();
@@ -2180,7 +2578,7 @@ QWidget* SMESHGUI_FilterDlg::createSourceGroup (QWidget* theParent)
   mySourceGrp->addButton(aSelBtn,  Selection);
   mySourceGrp->addButton(aDlgBtn,  Dialog);
 
-  aSelBtn->setChecked(true);
+  aMeshBtn->setChecked(true);
 
   return aBox;
 }
@@ -2191,19 +2589,15 @@ QWidget* SMESHGUI_FilterDlg::createSourceGroup (QWidget* theParent)
 //=======================================================================
 void SMESHGUI_FilterDlg::updateMainButtons()
 {
+  myButtons[ BTN_Close  ]->show();
   if (myTypes.count() == 1)
   {
-    myButtons[ BTN_Cancel ]->show();
     myButtons[ BTN_Apply  ]->hide();
-    myButtons[ BTN_Close  ]->hide();
   }
   else
   {
-    myButtons[ BTN_Cancel ]->hide();
     myButtons[ BTN_Apply  ]->show();
-    myButtons[ BTN_Close  ]->show();
   }
-
 //  updateGeometry();
 }
 
@@ -2220,7 +2614,6 @@ QWidget* SMESHGUI_FilterDlg::createButtonFrame (QWidget* theParent)
 
   myButtons[ BTN_OK     ] = new QPushButton(tr("SMESH_BUT_APPLY_AND_CLOSE"), aGrp);
   myButtons[ BTN_Apply  ] = new QPushButton(tr("SMESH_BUT_APPLY"),           aGrp);
-  myButtons[ BTN_Cancel ] = new QPushButton(tr("SMESH_BUT_CANCEL"),          aGrp);
   myButtons[ BTN_Close  ] = new QPushButton(tr("SMESH_BUT_CLOSE"),           aGrp);
   myButtons[ BTN_Help   ] = new QPushButton(tr("SMESH_BUT_HELP"),            aGrp);
 
@@ -2229,12 +2622,10 @@ QWidget* SMESHGUI_FilterDlg::createButtonFrame (QWidget* theParent)
   aLay->addWidget(myButtons[ BTN_Apply  ]);
   aLay->addSpacing(10);
   aLay->addStretch();
-  aLay->addWidget(myButtons[ BTN_Cancel ]);
   aLay->addWidget(myButtons[ BTN_Close  ]);
   aLay->addWidget(myButtons[ BTN_Help   ]);
 
   connect(myButtons[ BTN_OK     ], SIGNAL(clicked()), SLOT(onOk()));
-  connect(myButtons[ BTN_Cancel ], SIGNAL(clicked()), SLOT(onClose()));
   connect(myButtons[ BTN_Close  ], SIGNAL(clicked()), SLOT(onClose()));
   connect(myButtons[ BTN_Apply  ], SIGNAL(clicked()), SLOT(onApply()));
   connect(myButtons[ BTN_Help   ], SIGNAL(clicked()), SLOT(onHelp()));
@@ -2325,8 +2716,8 @@ void SMESHGUI_FilterDlg::Init (const QList<int>& theTypes)
     mySetInViewer->setChecked(true);
 
   mySourceGrp->button(myApplyToState.contains(theTypes.first()) ? 
-		      myApplyToState[ theTypes.first() ] :
-		      Selection)->setChecked(true);
+                      myApplyToState[ theTypes.first() ] :
+                      Mesh)->setChecked(true);
 }
 
 //=======================================================================
@@ -2400,10 +2791,10 @@ void SMESHGUI_FilterDlg::onHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 
@@ -2506,31 +2897,18 @@ void SMESHGUI_FilterDlg::setIdsToWg (QWidget* theWg, const QList<int>& theIds)
   if (theWg == 0)
     return;
 
+  QStringList aStrList;
+  foreach(int id, theIds)
+    aStrList << QString::number(id);
+
   if (theWg->inherits("QListWidget"))
   {
-    QListWidget* aListBox = qobject_cast<QListWidget*>( theWg );
-    aListBox->clear();
-
-    QStringList aStrList;
-    QList<int>::const_iterator anIter;
-    for (anIter = theIds.begin(); anIter != theIds.end(); ++anIter)
-      aStrList.append(QString("%1").arg(*anIter));
-
-    aListBox->addItems(aStrList);
+    qobject_cast<QListWidget*>(theWg)->clear();
+    qobject_cast<QListWidget*>(theWg)->addItems(aStrList);
   }
   else if (theWg->inherits("QLineEdit"))
   {
-    QLineEdit* aLineEdit = qobject_cast<QLineEdit*>( theWg );
-    QString aStr;
-    QList<int>::const_iterator anIter;
-
-    for (anIter = theIds.begin(); anIter != theIds.end(); ++ anIter)
-      aStr += QString("%1 ").arg(*anIter);
-
-    if (!aStr.isEmpty())
-      aStr.remove(aStr.length() - 1, 1);
-
-    aLineEdit->setText(aStr);
+    qobject_cast<QLineEdit*>( theWg )->setText(aStrList.join(" "));
   }
 }
 
@@ -2550,7 +2928,8 @@ bool SMESHGUI_FilterDlg::isValid() const
         aType == SMESH::FT_BelongToPlane ||
         aType == SMESH::FT_BelongToCylinder ||
         aType == SMESH::FT_BelongToGenSurface ||
-        aType == SMESH::FT_LyingOnGeom) {
+        aType == SMESH::FT_LyingOnGeom)
+    {
       QString aName;
       myTable->GetThreshold(i, aName);
 
@@ -2558,7 +2937,7 @@ bool SMESHGUI_FilterDlg::isValid() const
         SMESH::GetActiveStudyDocument()->FindObjectByName(aName.toLatin1().constData(), "GEOM");
       if (aList.size() == 0) {
         SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
-				     tr("BAD_SHAPE_NAME").arg(aName));
+                                     tr("BAD_SHAPE_NAME").arg(aName));
         return false;
       }
 
@@ -2574,29 +2953,52 @@ bool SMESHGUI_FilterDlg::isValid() const
                aFace.IsNull() ||
                aFace.ShapeType() != TopAbs_FACE) {
             SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
-					 tr("SHAPE_IS_NOT_A_FACE").arg(aName));
+                                         tr("SHAPE_IS_NOT_A_FACE").arg(aName));
             return false;
           }
 
           Handle(Geom_Surface) aSurf = BRep_Tool::Surface(TopoDS::Face(aFace));
           if (aSurf.IsNull()) {
             SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
-					 tr("SHAPE_IS_NOT_A_FACE").arg(aName));
+                                         tr("SHAPE_IS_NOT_A_FACE").arg(aName));
             return false;
           }
 
           if (aType == SMESH::FT_BelongToPlane && !aSurf->IsKind(STANDARD_TYPE(Geom_Plane))) {
             SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
-					 tr("SHAPE_IS_NOT_A_PLANE").arg(aName));
+                                         tr("SHAPE_IS_NOT_A_PLANE").arg(aName));
             return false;
           }
 
           if (aType == SMESH::FT_BelongToCylinder && !aSurf->IsKind(STANDARD_TYPE(Geom_CylindricalSurface))) {
             SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
-					 tr("SHAPE_IS_NOT_A_CYLINDER").arg(aName));
+                                         tr("SHAPE_IS_NOT_A_CYLINDER").arg(aName));
             return false;
           }
         }
+      }
+    }
+    else if (aType == SMESH::FT_CoplanarFaces)
+    {
+      QString faceID;
+      myTable->GetThreshold(i, faceID);
+      if ( faceID.isEmpty() )
+      {
+        SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
+                                     tr("FACE_ID_NOT_SELECTED"));
+        return false;
+      }
+      if ( myMesh->_is_nil() )
+      {
+        SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
+                                     tr("MESH_IS_NOT_SELECTED"));
+        return false;
+      }
+      if ( myMesh->GetElementType( faceID.toLong(), /*iselem=*/true) != SMESH::FACE )
+      {
+        SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
+                                     tr("NOT_FACE_ID").arg(faceID));
+        return false;
       }
     }
   }
@@ -2609,18 +3011,24 @@ bool SMESHGUI_FilterDlg::isValid() const
 // Purpose : Set widget of parent dialog containing idsto be filtered if
 //           user select corresponding source radio button
 //=======================================================================
-void SMESHGUI_FilterDlg::SetSourceWg (QWidget* theWg)
+void SMESHGUI_FilterDlg::SetSourceWg (QWidget* theWg,
+                                      const bool initOnApply)
 {
   mySourceWg = theWg;
+  myInitSourceWgOnApply = initOnApply;
 }
 
 //=======================================================================
-// name    : SMESHGUI_FilterDlg::SetGroupIds
+// name    : SMESHGUI_FilterDlg::SetMesh
 // Purpose : Set mesh
 //=======================================================================
 void SMESHGUI_FilterDlg::SetMesh (SMESH::SMESH_Mesh_var theMesh)
 {
-  myMesh = theMesh;
+  if ( !theMesh->_is_nil() ) {
+    myMesh = theMesh;
+    if ( !myFilter[ myTable->GetType() ]->_is_nil())
+      myFilter[ myTable->GetType() ]->SetMesh( theMesh );
+  }
   const bool isEnable = !(myMesh->_is_nil());
   myButtons[BTN_OK]->setEnabled(isEnable);
   myButtons[BTN_Apply]->setEnabled(isEnable);
@@ -2637,7 +3045,7 @@ void SMESHGUI_FilterDlg::SetSelection()
 
   if (mySelectionMgr) {
     myIObjects.Clear();
-    const SALOME_ListIO& anObjs = mySelector->StoredIObjects();
+    const SALOME_ListIO& anObjs = mySelector->StoredIObjects(); 
     SALOME_ListIteratorOfListIO anIter (anObjs);
     for ( ; anIter.More(); anIter.Next()) {
       TColStd_IndexedMapOfInteger aMap;
@@ -2674,8 +3082,10 @@ bool SMESHGUI_FilterDlg::onApply()
     if (!myFilter[ aCurrType ]->GetPredicate()->_is_nil()) {
       QList<int> aResultIds;
       filterSource(aCurrType, aResultIds);
+      // select in viewer
       selectInViewer(aCurrType, aResultIds);
     }
+
 
     myInsertState[ aCurrType ] = mySetInViewer->isChecked();
     myApplyToState[ aCurrType ] = mySourceGrp->checkedId();
@@ -2723,6 +3133,36 @@ bool SMESHGUI_FilterDlg::createFilter (const int theType)
   myFilter[ theType ]->SetCriteria(aCriteria.inout());
 
   return true;
+}
+
+//================================================================================
+/*!
+ * \brief Return the current filter
+ */
+//================================================================================
+
+SMESH::Filter_var SMESHGUI_FilterDlg::GetFilter() const
+{
+  SMESH::Filter_var filter;
+  try {
+    int aCurrType = myTable->GetType();
+    filter = myFilter[ aCurrType ];
+  }
+  catch(...)
+  {
+  }
+  return filter._retn();
+}
+
+//================================================================================
+/*!
+ * \brief Sets a filter to the table
+ */
+//================================================================================
+
+void SMESHGUI_FilterDlg::SetFilter(SMESH::Filter_var filter, int type)
+{
+  myFilter[ type ] = filter;
 }
 
 //=======================================================================
@@ -2787,15 +3227,15 @@ void SMESHGUI_FilterDlg::filterSource (const int theType,
 
     // filter ids
     SMESH::Predicate_ptr aPred = myFilter[ theType ]->GetPredicate();
-    aPred->SetMesh(myMesh);
+    myFilter[ theType ]->SetMesh(myMesh);
     QList<int>::const_iterator anIter;
     for (anIter = aDialogIds.begin(); anIter != aDialogIds.end(); ++ anIter)
       if (aPred->IsSatisfy(*anIter))
         theResIds.append(*anIter);
-
-    // set ids to the dialog
-    setIdsToWg(mySourceWg, theResIds);
   }
+  // set ids to the dialog
+  if (myInitSourceWgOnApply || aSourceId == Dialog)
+    setIdsToWg(mySourceWg, theResIds);
 }
 
 //=======================================================================
@@ -2860,7 +3300,7 @@ void SMESHGUI_FilterDlg::filterSelectionSource (const int theType,
 
   // Filter entities
   SMESH::Predicate_ptr aPred = myFilter[ theType ]->GetPredicate();
-  aPred->SetMesh(myMesh);
+  myFilter[ theType ]->SetMesh(myMesh);
   TColStd_MapIteratorOfMapOfInteger aResIter(aToBeFiltered);
   for ( ; aResIter.More(); aResIter.Next())
     if (aPred->IsSatisfy(aResIter.Key()))
@@ -2966,24 +3406,33 @@ void SMESHGUI_FilterDlg::onSelectionDone()
     }
   }
 
-  int aCriterionType = myTable->GetCriterionType(aRow);
-  if (aList.Extent() != 1 ||
-      !myTable->CurrentCell(aRow, aCol) ||
-      aCriterionType != SMESH::FT_BelongToGeom &&
-      aCriterionType != SMESH::FT_BelongToPlane &&
-      aCriterionType != SMESH::FT_BelongToCylinder &&
-      aCriterionType != SMESH::FT_BelongToGenSurface &&
-      aCriterionType != SMESH::FT_LyingOnGeom)
+  QList<int> types; 
+  types << SMESH::FT_BelongToGeom     << SMESH::FT_BelongToPlane 
+        << SMESH::FT_BelongToCylinder << SMESH::FT_BelongToGenSurface
+        << SMESH::FT_LyingOnGeom      << SMESH::FT_CoplanarFaces;
+  if (aList.Extent() != 1 || !myTable->CurrentCell(aRow, aCol) || 
+      !types.contains(myTable->GetCriterionType(aRow)))
     return;
 
-  Handle(SALOME_InteractiveObject) anIO = aList.First();
-  GEOM::GEOM_Object_var anObj = SMESH::IObjectToInterface<GEOM::GEOM_Object>(anIO);
-  if (!anObj->_is_nil())
+  if ( myTable->GetCriterionType(aRow) == SMESH::FT_CoplanarFaces )
+  {
+    QString aString;
+    int nbElems = SMESH::GetNameOfSelectedElements(mySelector,//myViewWindow->GetSelector(),
+                                                   aList.First(), aString);
+    if (nbElems == 1)
+      myTable->SetThreshold(aRow, aString);
+  }
+  else
+  {
+    Handle(SALOME_InteractiveObject) anIO = aList.First();
+    GEOM::GEOM_Object_var anObj = SMESH::IObjectToInterface<GEOM::GEOM_Object>(anIO);
+    if (!anObj->_is_nil())
     {
       myTable->SetThreshold(aRow, GEOMBase::GetName(anObj));
       //myTable->SetID( aRow, GEOMBase::GetIORFromObject(anObj));
       myTable->SetID(aRow, anIO->getEntry());
     }
+  }
 }
 
 
@@ -3014,9 +3463,9 @@ void SMESHGUI_FilterDlg::updateSelection()
   if (mySelectionMgr == 0)
     return;
 
-  TColStd_MapOfInteger allTypes;
-  for( int i=0; i<10; i++ )
-    allTypes.Add( i );
+//   TColStd_MapOfInteger allTypes;
+//   for( int i=0; i<10; i++ )
+//     allTypes.Add( i );
   SalomeApp_Study* aStudy = dynamic_cast<SalomeApp_Study*>( mySMESHGUI->application()->activeStudy() );
   if( !aStudy )
     return;
@@ -3025,15 +3474,16 @@ void SMESHGUI_FilterDlg::updateSelection()
   mySelectionMgr->clearFilters();
 
   int aRow, aCol;
-
+  
+  bool isCurrentCell = myTable->CurrentCell(aRow, aCol);
   int aCriterionType = myTable->GetCriterionType(aRow);
-  if (myTable->CurrentCell(aRow, aCol) &&
+  if ( isCurrentCell &&
       (aCriterionType == SMESH::FT_BelongToGeom ||
        aCriterionType == SMESH::FT_BelongToPlane ||
        aCriterionType == SMESH::FT_BelongToCylinder ||
        aCriterionType == SMESH::FT_BelongToGenSurface ||
-       aCriterionType == SMESH::FT_LyingOnGeom)) {
-
+       aCriterionType == SMESH::FT_LyingOnGeom))
+  {
     if (aCriterionType == SMESH::FT_BelongToGeom ||
         aCriterionType == SMESH::FT_BelongToGenSurface ||
         aCriterionType == SMESH::FT_LyingOnGeom) {
@@ -3048,9 +3498,12 @@ void SMESHGUI_FilterDlg::updateSelection()
     }
     myIsSelectionChanged = true;
 
-  } else {
+  }
+  else
+  {
     if (myIsSelectionChanged) {
-      mySelectionMgr->installFilter( new GEOM_TypeFilter( aStudy, -1 ) ); // This filter deactivates selection
+      // mySelectionMgr->installFilter( new GEOM_TypeFilter( aStudy, -1 ) ); // This filter deactivates selection
+      // Impossible to select any object in the OB on the second opening of FilterDlg
     }
   }
 }

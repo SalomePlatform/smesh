@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_ExtrusionAlongPathDlg.h
 // Author : Vadim SANDLER, Open CASCADE S.A.S.
@@ -28,9 +29,7 @@
 
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
-
-// Qt includes
-#include <QDialog>
+#include "SMESHGUI_PreviewDlg.h"
 
 // IDL includes
 #include <SALOMEconfig.h>
@@ -59,7 +58,7 @@ class SUIT_SelectionFilter;
 // class    : SMESHGUI_ExtrusionAlongPathDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_EXPORT SMESHGUI_ExtrusionAlongPathDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_ExtrusionAlongPathDlg : public SMESHGUI_PreviewDlg
 {
   Q_OBJECT
 
@@ -80,10 +79,13 @@ private:
   void                      SetEditCurrentArgument( QToolButton* );
 
   bool                      isValid();
+  bool                      isValuesValid();
+  
+  SMESH::long_array_var     getSelectedElements();
+  SMESH::double_array_var   getAngles();
 
   void                      updateLinearAngles();
   
-  SMESHGUI*                 mySMESHGUI;            /* Current SMESHGUI object */
   SMESHGUI_IdValidator*     myIdValidator;
   LightApp_SelectionMgr*    mySelectionMgr;        /* User shape selection */
   SVTK_Selector*            mySelector;
@@ -94,8 +96,9 @@ private:
   SMESH::SMESH_Mesh_var     myMesh;
   SMESH_Actor*              myMeshActor;
   SMESH::SMESH_IDSource_var myIDSource;
-  SMESH::SMESH_Mesh_var     myPathMesh;
-  GEOM::GEOM_Object_var     myPathShape;
+  //SMESH::SMESH_Mesh_var     myPathMesh;
+  SMESH::SMESH_IDSource_var myPath;
+  //GEOM::GEOM_Object_var     myPathShape;
   SUIT_SelectionFilter*     myElementsFilter;
   SUIT_SelectionFilter*     myPathMeshFilter;
   int                       myType;
@@ -115,8 +118,8 @@ private:
   QGroupBox*                PathGrp;
   QToolButton*              SelectPathMeshButton;
   QLineEdit*                PathMeshLineEdit;
-  QToolButton*              SelectPathShapeButton;
-  QLineEdit*                PathShapeLineEdit;
+  //QToolButton*              SelectPathShapeButton;
+  //QLineEdit*                PathShapeLineEdit;
   QToolButton*              SelectStartPointButton;
   QLineEdit*                StartPointLineEdit;
   QCheckBox*                LinearAnglesCheck;
@@ -140,10 +143,12 @@ private:
 
   QString                   myHelpFileName;
 
+  QPushButton*              myFilterBtn;
   SMESHGUI_FilterDlg*       myFilterDlg;
    
 protected slots:
   void                      reject();
+  virtual void              onDisplaySimulation( bool );
 
 private slots:
   void                      ConstructorsClicked( int );

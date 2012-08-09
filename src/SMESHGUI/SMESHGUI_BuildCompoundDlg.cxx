@@ -1,29 +1,28 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-// SMESH SMESHGUI : GUI for SMESH component
-// File   : SMESHGUI_BuildCompoundDlg.cxx
-// Author : Alexander KOVALEV, Open CASCADE S.A.S.
-// SMESH includes
-//
+//  File   : SMESHGUI_BuildCompoundDlg.cxx
+//  Author : Alexander KOVALEV, Open CASCADE S.A.S.
+//  SMESH includes
+
 #include "SMESHGUI_BuildCompoundDlg.h"
 
 #include "SMESHGUI.h"
@@ -66,6 +65,10 @@
 #define SPACING 6
 #define MARGIN  11
 
+//To disable automatic genericobj management, the following line should be commented.
+//Otherwise, it should be uncommented. Refer to KERNEL_SRC/src/SALOMEDSImpl/SALOMEDSImpl_AttributeIOR.cxx
+#define WITHGENERICOBJ
+
 //=================================================================================
 // name    : SMESHGUI_BuildCompoundDlg
 // Purpose :
@@ -73,7 +76,8 @@
 SMESHGUI_BuildCompoundDlg::SMESHGUI_BuildCompoundDlg( SMESHGUI* theModule )
   : QDialog(SMESH::GetDesktop(theModule)),
     mySMESHGUI(theModule),
-    mySelectionMgr(SMESH::GetSelectionMgr(theModule))
+    mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
+    myIsApplyAndClose( false )
 {
   setModal(false);
   setAttribute(Qt::WA_DeleteOnClose, true);
@@ -137,12 +141,12 @@ SMESHGUI_BuildCompoundDlg::SMESHGUI_BuildCompoundDlg( SMESHGUI* theModule )
   TextLabelTol = new QLabel(tr("SMESH_TOLERANCE"), GroupArgs);
   TextLabelTol->setAlignment(Qt::AlignCenter);
   SpinBoxTol = new SMESHGUI_SpinBox(GroupArgs);
-  SpinBoxTol->RangeStepAndValidator(0.0, COORD_MAX, 0.00001, 6);
+  SpinBoxTol->RangeStepAndValidator(0.0, COORD_MAX, 0.00001, "len_tol_precision" );
 
   GroupArgsLayout->addWidget(TextLabelMeshes, 0, 0);
   GroupArgsLayout->addWidget(SelectButton,    0, 1);
   GroupArgsLayout->addWidget(LineEditMeshes,  0, 2, 1, 2);
-  GroupArgsLayout->addWidget(TextLabelUnion,  1, 0, 1, 3); 
+  GroupArgsLayout->addWidget(TextLabelUnion,  1, 0, 1, 3);
   GroupArgsLayout->addWidget(ComboBoxUnion,   1, 3);
   GroupArgsLayout->addWidget(CheckBoxCommon,  2, 0, 1, 4);
   GroupArgsLayout->addWidget(CheckBoxMerge,   3, 0, 1, 4);
@@ -289,29 +293,37 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
   if (!isValid())
     return false;
 
-  if (!myMesh->_is_nil()) {
+  SMESH::SMESH_Mesh_var aCompoundMesh;
+
+  if (!myMesh->_is_nil())
+  {
     QStringList aParameters;
     aParameters << (CheckBoxMerge->isChecked() ? SpinBoxTol->text() : QString(" "));
-    try	{
+
+    QStringList anEntryList;
+    try {
       SUIT_OverrideCursor aWaitCursor;
+
+      myMeshArray[0]->SetParameters( aParameters.join(":").toLatin1().constData() );
 
       SMESH::SMESH_Gen_var aSMESHGen = SMESHGUI::GetSMESHGen();
       // concatenate meshes
-      SMESH::SMESH_Mesh_var aCompoundMesh;
       if(CheckBoxCommon->isChecked())
-	aCompoundMesh = aSMESHGen->ConcatenateWithGroups(myMeshArray, 
-							 !(ComboBoxUnion->currentIndex()), 
-							 CheckBoxMerge->isChecked(), 
-							 SpinBoxTol->GetValue());
+        aCompoundMesh = aSMESHGen->ConcatenateWithGroups(myMeshArray,
+                                                         !(ComboBoxUnion->currentIndex()),
+                                                         CheckBoxMerge->isChecked(),
+                                                         SpinBoxTol->GetValue());
       else
-	aCompoundMesh = aSMESHGen->Concatenate(myMeshArray, 
-					       !(ComboBoxUnion->currentIndex()), 
-					       CheckBoxMerge->isChecked(), 
-					       SpinBoxTol->GetValue());
-     
-      aCompoundMesh->SetParameters( SMESHGUI::JoinObjectParameters(aParameters) );
+        aCompoundMesh = aSMESHGen->Concatenate(myMeshArray,
+                                               !(ComboBoxUnion->currentIndex()),
+                                               CheckBoxMerge->isChecked(),
+                                               SpinBoxTol->GetValue());
 
-      SMESH::SetName( SMESH::FindSObject( aCompoundMesh ), LineEditName->text() );
+      _PTR(SObject) aSO = SMESH::FindSObject( aCompoundMesh );
+      if( aSO ) {
+        SMESH::SetName( aSO, LineEditName->text() );
+        anEntryList.append( aSO->GetID().c_str() );
+      }
       mySMESHGUI->updateObjBrowser();
     } catch(...) {
       return false;
@@ -319,8 +331,30 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
 
     LineEditName->setText(GetDefaultName(tr("COMPOUND_MESH")));
 
-    //mySelectionMgr->clearSelected();
-    SMESH::UpdateView();
+    // IPAL21468 Compound is hidden after creation.
+    if ( SMESHGUI::automaticUpdate() ) {
+      mySelectionMgr->clearSelected();
+      SMESH::UpdateView();
+
+      _PTR(SObject) aSO = SMESH::FindSObject(aCompoundMesh.in());
+      if ( SMESH_Actor* anActor = SMESH::CreateActor(aSO->GetStudy(), aSO->GetID().c_str()) )
+        SMESH::DisplayActor(SMESH::GetActiveWindow(), anActor);
+    }// end IPAL21468
+
+    if( LightApp_Application* anApp =
+        dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ) )
+      anApp->browseObjects( anEntryList, isApplyAndClose() );
+
+    SMESHGUI::Modified();
+
+#ifdef WITHGENERICOBJ
+    // obj has been published in study. Its refcount has been incremented.
+    // It is safe to decrement its refcount
+    // so that it will be destroyed when the entry in study will be removed
+    if (!CORBA::is_nil(aCompoundMesh))
+      aCompoundMesh->UnRegister();
+#endif
+
     return true;
   }
   return false;
@@ -332,6 +366,7 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
 //=================================================================================
 void SMESHGUI_BuildCompoundDlg::ClickOnOk()
 {
+  setIsApplyAndClose( true );
   if (ClickOnApply())
     ClickOnCancel();
 }
@@ -356,14 +391,14 @@ void SMESHGUI_BuildCompoundDlg::ClickOnCancel()
 void SMESHGUI_BuildCompoundDlg::ClickOnHelp()
 {
   LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
-  if (app) 
+  if (app)
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser",
-								 "application")).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser",
+                                                                 "application")).
+                             arg(myHelpFileName));
   }
 }
 
@@ -491,7 +526,6 @@ void SMESHGUI_BuildCompoundDlg::keyPressEvent( QKeyEvent* e )
 //=================================================================================
 void SMESHGUI_BuildCompoundDlg::onSelectMerge(bool toMerge)
 {
-  
   TextLabelTol->setEnabled(toMerge);
   SpinBoxTol->setEnabled(toMerge);
   if(!toMerge)
@@ -517,4 +551,24 @@ bool SMESHGUI_BuildCompoundDlg::isValid()
     return false;
   }
   return true;
+}
+
+//================================================================
+// function : setIsApplyAndClose
+// Purpose  : Set value of the flag indicating that the dialog is
+//            accepted by Apply & Close button
+//================================================================
+void SMESHGUI_BuildCompoundDlg::setIsApplyAndClose( const bool theFlag )
+{
+  myIsApplyAndClose = theFlag;
+}
+
+//================================================================
+// function : isApplyAndClose
+// Purpose  : Get value of the flag indicating that the dialog is
+//            accepted by Apply & Close button
+//================================================================
+bool SMESHGUI_BuildCompoundDlg::isApplyAndClose() const
+{
+  return myIsApplyAndClose;
 }

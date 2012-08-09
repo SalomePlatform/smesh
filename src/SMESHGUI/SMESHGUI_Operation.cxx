@@ -1,29 +1,27 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-// SMESH SMDS : implementaion of Salome mesh data structure
-// File   : SMESHGUI_Operation.cxx
-// Author : Sergey LITONIN, Open CASCADE S.A.S.
-// SMESH includes
-//
+//  File   : SMESHGUI_Operation.cxx
+//  Author : Sergey LITONIN, Open CASCADE S.A.S.
+
 #include "SMESHGUI_Operation.h"
 
 #include "SMESHGUI.h"
@@ -51,7 +49,8 @@
 // Purpose : Constructor
 //=======================================================================
 SMESHGUI_Operation::SMESHGUI_Operation()
-: LightApp_Operation()
+: LightApp_Operation(),
+  myIsApplyAndClose( false )
 {
   myHelpFileName = "";
 }
@@ -86,19 +85,19 @@ void SMESHGUI_Operation::startOperation()
     disconnect( dlg(), SIGNAL( dlgCancel() ), this, SLOT( onCancel() ) );
     disconnect( dlg(), SIGNAL( dlgClose() ), this, SLOT( onCancel() ) );
     disconnect( dlg(), SIGNAL( dlgHelp() ), this, SLOT( onHelp() ) );
-    
+
     if( dlg()->testButtonFlags( QtxDialog::OK ) )
       connect( dlg(), SIGNAL( dlgOk() ), this, SLOT( onOk() ) );
-      
+
     if( dlg()->testButtonFlags( QtxDialog::Apply ) )
       connect( dlg(), SIGNAL( dlgApply() ), this, SLOT( onApply() ) );
-      
+
     if( dlg()->testButtonFlags( QtxDialog::Cancel ) )
       connect( dlg(), SIGNAL( dlgCancel() ), this, SLOT( onCancel() ) );
 
     if( dlg()->testButtonFlags( QtxDialog::Help ) )
       connect( dlg(), SIGNAL( dlgHelp() ), this, SLOT( onHelp() ) );
-      
+
     //if( dlg()->testButtonFlags( QtxDialog::Close ) )
     //if dialog hasn't close, cancel, no and etc buttons, dlgClose will be emitted when dialog is closed not by OK
     connect( dlg(), SIGNAL( dlgClose() ), this, SLOT( onCancel() ) );
@@ -120,18 +119,18 @@ bool SMESHGUI_Operation::isReadyToStart() const
   else if ( getSMESHGUI() == 0 )
   {
     SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),
-			      tr( "NO_MODULE" ) );
+                              tr( "NO_MODULE" ) );
     return false;
   }
   else if ( isStudyLocked() )
     return false;
-  
+
   return true;
 }
 
 //=======================================================================
 // name    : setDialogActive
-// Purpose : 
+// Purpose :
 //=======================================================================
 void SMESHGUI_Operation::setDialogActive( const bool active )
 {
@@ -159,8 +158,10 @@ _PTR(Study) SMESHGUI_Operation::studyDS() const
 //=======================================================================
 void SMESHGUI_Operation::onOk()
 {
+  setIsApplyAndClose( true );
   if( onApply() )
     commit();
+  setIsApplyAndClose( false );
   //else
   //  abort();
 }
@@ -190,7 +191,7 @@ void SMESHGUI_Operation::onCancel()
 void SMESHGUI_Operation::onHelp()
 {
   LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
-  if (app) 
+  if (app)
     app->onHelpContextModule(getSMESHGUI() ? app->moduleName(getSMESHGUI()->moduleName()) : QString(""), myHelpFileName);
   else {
     QString platform;
@@ -200,10 +201,10 @@ void SMESHGUI_Operation::onHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning( desktop(), tr("WRN_WARNING"),
-			      tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			      arg(app->resourceMgr()->stringValue("ExternalBrowser", 
-								  platform)).
-			      arg(myHelpFileName) );
+                              tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                              arg(app->resourceMgr()->stringValue("ExternalBrowser",
+                                                                  platform)).
+                              arg(myHelpFileName) );
   }
 }
 
@@ -213,6 +214,26 @@ void SMESHGUI_Operation::onHelp()
 //=======================================================================
 void SMESHGUI_Operation::initDialog()
 {
+}
+
+//================================================================
+// name    : setIsApplyAndClose
+// Purpose : Set value of the flag indicating that the dialog is
+//           accepted by Apply & Close button
+//================================================================
+void SMESHGUI_Operation::setIsApplyAndClose( const bool theFlag )
+{
+  myIsApplyAndClose = theFlag;
+}
+
+//================================================================
+// name    : isApplyAndClose
+// Purpose : Get value of the flag indicating that the dialog is
+//           accepted by Apply & Close button
+//================================================================
+bool SMESHGUI_Operation::isApplyAndClose() const
+{
+  return myIsApplyAndClose;
 }
 
 /*!
@@ -231,11 +252,11 @@ bool SMESHGUI_Operation::isStudyLocked( const bool theMess ) const
     {
       if ( theMess )
         SUIT_MessageBox::warning( SMESHGUI::desktop(), tr( "WRN_WARNING" ),
-				  tr( "WRN_STUDY_LOCKED" ) );
+                                  tr( "WRN_STUDY_LOCKED" ) );
       return true;
     }
   }
-  
+
   return false;
 }
 
@@ -258,9 +279,9 @@ bool SMESHGUI_Operation::isValid( SUIT_Operation* theOtherOp ) const
     // to do add other operations here
   }
 
-  return theOtherOp && theOtherOp->inherits( "SMESHGUI_Operation" ) &&
-         ( !anOps.contains( theOtherOp->metaObject()->className() ) || 
-	   anOps.contains( metaObject()->className() ) );
+  return ( theOtherOp &&
+         ( ( theOtherOp->inherits("SMESHGUI_Operation") && ( !anOps.contains(theOtherOp->metaObject()->className() ) || anOps.contains(metaObject()->className()) ) ) ||
+           ( theOtherOp->inherits("LightApp_ShowHideOp") ) ) );
 
   return true;
 }

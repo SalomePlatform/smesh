@@ -1,28 +1,29 @@
-#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 #
-#  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+# Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+# CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 #
-#  This library is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU Lesser General Public
-#  License as published by the Free Software Foundation; either
-#  version 2.1 of the License.
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License.
 #
-#  This library is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#  Lesser General Public License for more details.
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
 #
-#  You should have received a copy of the GNU Lesser General Public
-#  License along with this library; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
-#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 #---------------------------------------------------------------------------
 # Project related configuration options
 #---------------------------------------------------------------------------
-PROJECT_NAME      = "Mesh Module Reference Manual v.@VERSION@"
+PROJECT_NAME      = "SALOME Mesh User's Guide"
 OUTPUT_DIRECTORY  = .
 CREATE_SUBDIRS	  = NO
 OUTPUT_LANGUAGE   = English
@@ -37,10 +38,10 @@ WARNINGS          = YES
 #---------------------------------------------------------------------------
 #Input related options
 #---------------------------------------------------------------------------
-INPUT             = @srcdir@/input		  
+INPUT             = @srcdir@/input @top_srcdir@/src/Tools/padder/doc/input
 FILE_PATTERNS     = *.doc
 EXCLUDE           = 
-IMAGE_PATH        = @srcdir@/images
+IMAGE_PATH        = @srcdir@/images @top_srcdir@/src/Tools/padder/doc/images
 EXAMPLE_PATH      = @top_srcdir@/src/SMESH_SWIG
 
 #---------------------------------------------------------------------------
@@ -48,18 +49,25 @@ EXAMPLE_PATH      = @top_srcdir@/src/SMESH_SWIG
 #---------------------------------------------------------------------------
 GENERATE_HTML     = YES
 HTML_OUTPUT       = .
-HTML_HEADER       = @srcdir@/static/header.html
+HTML_HEADER       = @builddir@/static/header.html
 HTML_FOOTER       = @srcdir@/static/footer.html
-#HTML_STYLESHEET  = @srcdir@/static/doxygen.css
+HTML_STYLESHEET   = @srcdir@/static/doxygen.css
 TOC_EXPAND        = YES
 DISABLE_INDEX     = NO
 GENERATE_TREEVIEW = YES
 TREEVIEW_WIDTH    = 300
 
 #---------------------------------------------------------------------------
+#SORT related options
+#---------------------------------------------------------------------------
+SORT_GROUP_NAMES = NO
+
+
+#---------------------------------------------------------------------------
 #LaTeX related option
 #---------------------------------------------------------------------------
 GENERATE_LATEX    = NO
+EXTRA_PACKAGES    = amsmath
 
 #---------------------------------------------------------------------------
 #RTF related options
@@ -69,4 +77,6 @@ GENERATE_RTF      = NO
 #---------------------------------------------------------------------------
 #External reference options
 #---------------------------------------------------------------------------
-TAGFILES          = smeshpy_doc.tag=smeshpy_doc
+TAGFILES          = smeshpy_doc.tag=../SMESH/smeshpy_doc #rnv: 07.04.2011 Workaround for the doxygen 1.7.3:
+                                                         #because it wrongly defines location of the html files for search.						      
+SEARCHENGINE      = YES

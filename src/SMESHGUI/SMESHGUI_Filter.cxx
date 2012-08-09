@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESHGUI_Filter : Filters for VTK viewer
 // File   : SMESHGUI_Filter.cxx
 // Author : Sergey LITONIN, Open CASCADE S.A.S.
@@ -106,8 +107,8 @@ bool SMESHGUI_PredicateFilter::IsObjValid( const int theObjId ) const
   if ( myActor == 0 || myPred->_is_nil() )
     return false;
 
-  SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
-  if ( anActor->GetObject() == 0 )
+  SMESH_Actor* anActor = dynamic_cast< SMESH_Actor* >( myActor );
+  if ( !anActor || anActor->GetObject() == 0 )
     return false;
 
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
@@ -210,8 +211,8 @@ bool SMESHGUI_QuadrangleFilter::IsValid( const int theCellId ) const
   if ( myActor == 0 )
     return false;
 
-  SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
-  if ( anActor->GetObject() == 0 )
+  SMESH_Actor* anActor = dynamic_cast< SMESH_Actor* >( myActor );
+  if ( !anActor || anActor->GetObject() == 0 )
     return false;
 
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
@@ -230,8 +231,8 @@ bool SMESHGUI_QuadrangleFilter::IsObjValid( const int theObjId ) const
   if ( myActor == 0 )
     return false;
 
-  SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
-  if ( anActor->GetObject() == 0 )
+  SMESH_Actor* anActor = dynamic_cast< SMESH_Actor* >( myActor );
+  if ( !anActor || anActor->GetObject() == 0 )
     return false;
 
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
@@ -289,8 +290,8 @@ bool SMESHGUI_TriangleFilter::IsValid( const int theCellId ) const
   if ( myActor == 0 )
     return false;
 
-  SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
-  if ( anActor->GetObject() == 0 )
+  SMESH_Actor* anActor = dynamic_cast< SMESH_Actor* >( myActor );
+  if ( !anActor || anActor->GetObject() == 0 )
     return false;
 
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
@@ -309,8 +310,8 @@ bool SMESHGUI_TriangleFilter::IsObjValid( const int theObjId ) const
   if ( myActor == 0 )
     return false;
 
-  SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
-  if ( anActor->GetObject() == 0 )
+  SMESH_Actor* anActor = dynamic_cast< SMESH_Actor* >( myActor );
+  if ( !anActor || anActor->GetObject() == 0 )
     return false;
 
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
@@ -367,8 +368,8 @@ bool SMESHGUI_FacesFilter::IsValid( const int theCellId ) const
   if ( myActor == 0 )
     return false;
 
-  SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
-  if ( anActor->GetObject() == 0 )
+  SMESH_Actor* anActor = dynamic_cast< SMESH_Actor* >( myActor );
+  if ( !anActor || anActor->GetObject() == 0 )
     return false;
 
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
@@ -386,8 +387,8 @@ bool SMESHGUI_FacesFilter::IsObjValid( const int theObjId ) const
   if ( myActor == 0 )
     return false;
 
-  SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
-  if ( anActor->GetObject() == 0 )
+  SMESH_Actor* anActor = dynamic_cast< SMESH_Actor* >( myActor );
+  if ( !anActor || anActor->GetObject() == 0 )
     return false;
 
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
@@ -441,11 +442,11 @@ SMESHGUI_VolumesFilter::~SMESHGUI_VolumesFilter()
 //=======================================================================
 bool SMESHGUI_VolumesFilter::IsValid( const int theCellId ) const
 {
-  if ( myActor == 0 )
+  if ( myActor == 0 || theCellId < 1 )
     return false;
 
-  SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
-  if ( anActor->GetObject() == 0 )
+  SMESH_Actor* anActor = dynamic_cast< SMESH_Actor* >( myActor );
+  if ( !anActor || anActor->GetObject() == 0 )
     return false;
 
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
@@ -463,8 +464,8 @@ bool SMESHGUI_VolumesFilter::IsObjValid( const int theObjId ) const
   if ( myActor == 0 )
     return false;
 
-  SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
-  if ( anActor->GetObject() == 0 )
+  SMESH_Actor* anActor = dynamic_cast< SMESH_Actor* >( myActor );
+  if ( !anActor || anActor->GetObject() == 0 )
     return false;
 
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();

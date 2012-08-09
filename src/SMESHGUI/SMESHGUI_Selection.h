@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI_Selection
 // File   : SMESHGUI_Selection.h
 // Author : Alexander SOLOVYOV, Open CASCADE S.A.S.
@@ -48,14 +49,20 @@ public:
 
   virtual void            init( const QString&, LightApp_SelectionMgr* );
   virtual QVariant        parameter( const int, const QString& ) const;
-  virtual void            processOwner( const LightApp_DataOwner* );
+  virtual bool            processOwner( const LightApp_DataOwner* );
 
   // got from object, not from actor
   virtual bool            isAutoColor( int ) const;
   virtual int             numberOfNodes( int ) const;
+  virtual int             dim( int ) const;
   virtual QVariant        isComputable( int ) const;
+  virtual QVariant        isPreComputable( int ) const;
   virtual QVariant        hasReference( int ) const;
   virtual QVariant        isVisible( int ) const;
+
+  virtual QString         quadratic2DMode(int ) const;
+
+  virtual bool            isDistributionVisible(int ) const;
 
   // parameters got from actor return nothing if an actor is not visible
   virtual QList<QVariant> elemTypes( int ) const;
@@ -64,6 +71,7 @@ public:
   virtual QString         shrinkMode( int ) const;
   virtual QList<QVariant> entityMode( int ) const;
   virtual QString         controlMode( int ) const;
+  virtual bool            isNumFunctor( int ) const;
   virtual QString         facesOrientationMode( int ) const;
   virtual QString         groupType( int ) const;
   

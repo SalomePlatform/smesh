@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // File   : StdMeshersGUI_DistrPreview.cxx
 // Author : Open CASCADE S.A.S.
 // SMESH includes
@@ -49,6 +50,10 @@
 #ifdef WIN32
 # include <algorithm>
 #endif
+#include <math.h>
+#include <limits>
+
+#include <Basics_Utils.hxx>
 
 StdMeshersGUI_DistrPreview::StdMeshersGUI_DistrPreview( QWidget* p, StdMeshers::StdMeshers_NumberOfSegments_ptr h )
 : QwtPlot( p ),
@@ -60,6 +65,7 @@ StdMeshersGUI_DistrPreview::StdMeshersGUI_DistrPreview( QWidget* p, StdMeshers::
   myIsDone( true ),
   myNbSeg( 1 )
 {
+  Kernel_Utils::Localizer loc;
   myHypo = StdMeshers::StdMeshers_NumberOfSegments::_duplicate( h );
   myVars.ChangeValue( 1 ) = new Expr_NamedUnknown( "t" );
   myDensity = new QwtPlotCurve( QString() );
@@ -72,7 +78,7 @@ StdMeshersGUI_DistrPreview::StdMeshersGUI_DistrPreview( QWidget* p, StdMeshers::
   QwtText mt = myMsg->label();
   mt.setBackgroundPen( QPen( Qt::red, 1 ) );
   QFont f = mt.font();
-  f.setPointSize( 14 ); f.setBold( true );
+  f.setPointSize( 14 ); //f.setBold( true );
   mt.setFont( f );
   myMsg->setLabel( mt );
   myDensity->setPen( QPen( Qt::red, 1 ) );
@@ -88,6 +94,17 @@ StdMeshersGUI_DistrPreview::StdMeshersGUI_DistrPreview( QWidget* p, StdMeshers::
   }
   insertLegend( l, QwtPlot::BottomLegend );
 
+  enableAxis(QwtPlot::yLeft, false);
+  enableAxis(QwtPlot::yRight, true);
+  
+  QFont axisFont;
+  axisFont.setPointSize( 8 );
+  setAxisFont(QwtPlot::yRight, axisFont); 
+  setAxisFont(QwtPlot::xBottom, axisFont); 
+  
+  myDensity->setYAxis(QwtPlot::yRight);
+  myDistr->setYAxis(QwtPlot::yRight);
+  myMsg->setYAxis(QwtPlot::yRight);
   myDensity->setTitle( tr( "SMESH_DENSITY_FUNC" ) );
   myDistr->setTitle( tr( "SMESH_DISTR" ) );
   
@@ -200,6 +217,7 @@ bool StdMeshersGUI_DistrPreview::createTable( SMESH::double_array& func )
 
 void StdMeshersGUI_DistrPreview::update()
 {
+  Kernel_Utils::Localizer loc;
   SMESH::double_array graph, distr;
   if( isTableFunc() )
   {
@@ -218,13 +236,13 @@ void StdMeshersGUI_DistrPreview::update()
     {
       SMESH::double_array* arr = 0;
       if( isTableFunc() )
-	arr = h->BuildDistributionTab( myTableFunc, myNbSeg, ( int )myConv );
+        arr = h->BuildDistributionTab( myTableFunc, myNbSeg, ( int )myConv );
       else
-	arr = h->BuildDistributionExpr( myFunction.toLatin1().data(), myNbSeg, ( int )myConv );
+        arr = h->BuildDistributionExpr( myFunction.toLatin1().data(), myNbSeg, ( int )myConv );
       if( arr )
       {
-	distr = *arr;
-	delete arr;
+        distr = *arr;
+        delete arr;
       }
     }
   }
@@ -257,6 +275,15 @@ void StdMeshersGUI_DistrPreview::update()
       showError();
       return;
     }
+#ifdef WIN32
+    if ( std::fabs(y[i]) >= HUGE_VAL)
+      y[i] = HUGE_VAL/100.;
+#else
+    if ( isinf(y[i]))
+      y[i] = std::numeric_limits<double>::max()/100.;
+#endif
+//     if ( y[i] > 1e3 )
+//       y[i] = 1e3;
     if( i==0 || y[i]<min_y )
       min_y = y[i];
     if( i==0 || y[i]>max_y )
@@ -333,7 +360,7 @@ bool isCorrectArg( const Handle( Expr_GeneralExpression )& expr )
     if( !name.IsNull() )
     {
       if( name->GetName()!="t" )
-	res = false;
+        res = false;
     }
     else
       res = isCorrectArg( sub );
@@ -343,6 +370,7 @@ bool isCorrectArg( const Handle( Expr_GeneralExpression )& expr )
 
 bool StdMeshersGUI_DistrPreview::init( const QString& str )
 {
+  Kernel_Utils::Localizer loc;
   bool parsed_ok = true;
   try {
 #ifdef NO_CAS_CATCH
@@ -416,15 +444,15 @@ bool StdMeshersGUI_DistrPreview::convert( double& v ) const
 #ifdef NO_CAS_CATCH
         OCC_CATCH_SIGNALS;
 #endif
-	// in StdMeshers_NumberOfSegments.cc
-	// const double PRECISION = 1e-7;
-	//
-	if(v < -7) v = -7.0;
-	v = pow( 10.0, v );
+        // in StdMeshers_NumberOfSegments.cc
+        // const double PRECISION = 1e-7;
+        //
+        if(v < -7) v = -7.0;
+        v = pow( 10.0, v );
       } catch(Standard_Failure) {
-	Handle(Standard_Failure) aFail = Standard_Failure::Caught();
-	v = 0.0;
-	ok = false;
+        Handle(Standard_Failure) aFail = Standard_Failure::Caught();
+        v = 0.0;
+        ok = false;
       }
     }
     break;

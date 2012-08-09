@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : StdMeshers_Prism_3D.hxx
 //  Module : SMESH
@@ -46,6 +47,7 @@
 #include <BRepAdaptor_Surface.hxx>
 #include <TopTools_IndexedMapOfOrientedShape.hxx>
 #include <gp_XYZ.hxx>
+#include <gp_Trsf.hxx>
 
 
 class SMESHDS_SubMesh;
@@ -58,7 +60,7 @@ typedef std::vector<const SMDS_MeshNode* > TNodeColumn;
 
 // map of bottom nodes to the column of nodes above them
 // (the column includes the bottom nodes)
-typedef std::map< TNode, TNodeColumn > TNode2ColumnMap;
+typedef std::map< TNode, TNodeColumn >  TNode2ColumnMap;
 typedef std::map< double, TNodeColumn > TParam2ColumnMap;
 typedef std::map< double, TNodeColumn >::const_iterator TParam2ColumnIt;
 
@@ -73,18 +75,18 @@ typedef TopTools_IndexedMapOfOrientedShape TBlockShapes;
 struct TNode
 {
   const SMDS_MeshNode* myNode;
-  gp_XYZ               myParams;
+  mutable gp_XYZ       myParams;
 
   gp_XYZ GetCoords() const { return gp_XYZ( myNode->X(), myNode->Y(), myNode->Z() ); }
   gp_XYZ GetParams() const { return myParams; }
-  gp_XYZ& ChangeParams() { return myParams; }
+  gp_XYZ& ChangeParams() const { return myParams; }
   bool HasParams() const { return myParams.X() >= 0.0; }
   SMDS_TypeOfPosition GetPositionType() const
   { return myNode ? myNode->GetPosition()->GetTypeOfPosition() : SMDS_TOP_UNSPEC; }
   bool IsNeighbor( const TNode& other ) const;
 
   TNode(const SMDS_MeshNode* node = 0): myNode(node), myParams(-1,-1,-1) {}
-  bool operator < (const TNode& other) const { return myNode < other.myNode; }
+  bool operator < (const TNode& other) const { return myNode->GetID() < other.myNode->GetID(); }
 };
 
 // ===============================================================
@@ -92,7 +94,7 @@ struct TNode
  * \brief Tool analyzing and giving access to a prism geometry 
  *  treating it like a block, i.e. the four side faces are
  *  emulated by division/uniting of missing/excess faces.
- *  It also manage associations between block subshapes and a mesh.
+ *  It also manage associations between block sub-shapes and a mesh.
  */
 // ===============================================================
 
@@ -123,6 +125,11 @@ public:
   SMESH_ComputeErrorPtr GetError() const { return myError; }
 
   /*!
+   * \brief Free allocated memory
+   */
+  void Clear();
+
+  /*!
    * \brief Return number of nodes on every vertical edge
     * \retval int - number of nodes including end nodes
    */
@@ -141,16 +148,26 @@ public:
    * \brief Return TParam2ColumnMap for a base edge
     * \param baseEdgeID - base edge SMESHDS Index
     * \param isReverse - columns in-block orientation
-    * \retval const TParam2ColumnMap& - map
+    * \retval const TParam2ColumnMap* - map
    */
-  const TParam2ColumnMap& GetParam2ColumnMap(const int baseEdgeID,
-                                             bool &    isReverse)
+  const TParam2ColumnMap* GetParam2ColumnMap(const int baseEdgeID,
+                                             bool &    isReverse) const
   {
-    std::pair< TParam2ColumnMap*, bool > & col_frw =
-      myShapeIndex2ColumnMap[ baseEdgeID ];
+    std::map< int, std::pair< TParam2ColumnMap*, bool > >::const_iterator i_mo =
+      myShapeIndex2ColumnMap.find( baseEdgeID );
+    if ( i_mo == myShapeIndex2ColumnMap.end() ) return 0;
+
+    const std::pair< TParam2ColumnMap*, bool >& col_frw = i_mo->second;
     isReverse = !col_frw.second;
-    return * col_frw.first;
+    return col_frw.first;
   }
+
+  /*!
+   * \brief Return transformations to get coordinates of nodes of each internal layer
+   *        by nodes of the bottom. Layer is a set of nodes at a certain step
+   *        from bottom to top.
+   */
+  bool GetLayersTransformation(std::vector<gp_Trsf> & trsf) const;
   
   /*!
    * \brief Return pointer to mesh
@@ -190,7 +207,7 @@ public:
 
   /*!
    * \brief Return in-block ID of a shape
-    * \param shape - block subshape
+    * \param shape - block sub-shape
     * \retval int - ID or zero if the shape has no ID
    */
   int ShapeID(const TopoDS_Shape& shape) const
@@ -216,11 +233,12 @@ public:
     * \param bottomEdges - edges bounding the bottom face
     * \param wallFaces - faces list to fill in
    */
-  static bool GetWallFaces( SMESH_Mesh*                     mesh,
-                            const TopoDS_Shape &            mainShape,
-                            const TopoDS_Shape &            bottomFace,
-                            const std::list< TopoDS_Edge >& bottomEdges,
-                            std::list< TopoDS_Face >&       wallFaces);
+  bool GetWallFaces( SMESH_Mesh*               mesh,
+                     const TopoDS_Shape &      mainShape,
+                     const TopoDS_Shape &      bottomFace,
+                     std::list< TopoDS_Edge >& bottomEdges,
+                     std::list< int > &        nbEInW,
+                     std::list< TopoDS_Face >& wallFaces);
 
 private:
 
@@ -284,6 +302,8 @@ private:
     int InsertSubShapes( TBlockShapes& shapeMap ) const;
     // redefine Adaptor methods
     gp_Pnt Value(const Standard_Real U,const Standard_Real V) const;
+    // debug
+    void dumpNodes(int nbNodes) const;
   };
 
   // --------------------------------------------------------------------
@@ -299,6 +319,8 @@ private:
     gp_Pnt Value(const Standard_Real U) const;
     Standard_Real FirstParameter() const { return 0; }
     Standard_Real LastParameter() const { return 1; }
+    // debug
+    void dumpNodes(int nbNodes) const;
   };
 
   // --------------------------------------------------------------------
@@ -316,6 +338,8 @@ private:
     gp_Pnt Value(const Standard_Real U) const;
     Standard_Real FirstParameter() const { return 0; }
     Standard_Real LastParameter() const { return 1; }
+    // debug
+    void dumpNodes(int nbNodes) const;
   };
 
   // --------------------------------------------------------------------
@@ -337,20 +361,19 @@ private:
     Standard_Real FirstParameter() const { return 0; }
     Standard_Real LastParameter() const { return 1; }
   };
-  // --------------------------------------------------------------------
 
-  bool myNotQuadOnTop;
-  SMESH_MesherHelper* myHelper;
-  TBlockShapes myShapeIDMap;
+  bool                  myNotQuadOnTop;
+  SMESH_MesherHelper*   myHelper;
+  TBlockShapes          myShapeIDMap;
+  SMESH_ComputeErrorPtr myError;
 
   // container of 4 side faces
-  TSideFace*                 mySide; 
+  TSideFace*            mySide; 
   // node columns for each base edge
-  std::vector< TParam2ColumnMap > myParam2ColumnMaps;
+  std::vector< TParam2ColumnMap >                       myParam2ColumnMaps;
   // to find a column for a node by edge SMESHDS Index
   std::map< int, std::pair< TParam2ColumnMap*, bool > > myShapeIndex2ColumnMap;
 
-  SMESH_ComputeErrorPtr myError;
   /*!
    * \brief store error and comment and then return ( error == COMPERR_OK )
    */
@@ -358,7 +381,6 @@ private:
     myError = SMESH_ComputeError::New(error,comment);
     return myError->IsOK();
   }
-  //std::vector< SMESH_subMesh* >           mySubMeshesVec; // submesh by in-block id
 };
 
 // =============================================
@@ -378,6 +400,9 @@ public:
                                SMESH_Hypothesis::Hypothesis_Status& aStatus);
 
   virtual bool Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aShape);
+
+  virtual bool Evaluate(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape,
+                        MapShapeNbElems& aResMap);
 
   /*!
    * \brief Enable removal of quadrangles from the bottom face and
@@ -415,7 +440,7 @@ private:
   bool projectBottomToTop();
 
   /*!
-   * \brief Set projection coordinates of a node to a face and it's subshapes
+   * \brief Set projection coordinates of a node to a face and it's sub-shapes
     * \param faceID - the face given by in-block ID
     * \param params - node normalized parameters
     * \retval bool - is a success
@@ -429,12 +454,11 @@ private:
   StdMeshers_PrismAsBlock myBlock;
   SMESH_MesherHelper*     myHelper;
 
-  std::vector<gp_XYZ>            myShapeXYZ; // point on each sub-shape
+  std::vector<gp_XYZ>     myShapeXYZ; // point on each sub-shape of the block
 
   // map of bottom nodes to the column of nodes above them
   // (the column includes the bottom node)
-  typedef std::map< TNode, TNodeColumn > TNode2ColumnMap;
-  TNode2ColumnMap  myBotToColumnMap;
+  TNode2ColumnMap         myBotToColumnMap;
 };
 
 #endif

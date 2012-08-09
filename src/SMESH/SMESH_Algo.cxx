@@ -1,41 +1,46 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : SMESH_Algo.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//
 
 #include "SMESH_Algo.hxx"
-#include "SMESH_Comment.hxx"
-#include "SMESH_Gen.hxx"
-#include "SMESH_Mesh.hxx"
-#include "SMESH_HypoFilter.hxx"
-#include "SMDS_FacePosition.hxx"
+
 #include "SMDS_EdgePosition.hxx"
+#include "SMDS_FacePosition.hxx"
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
+#include "SMDS_VolumeTool.hxx"
 #include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_SubMesh.hxx"
+#include "SMESH_Comment.hxx"
+#include "SMESH_Gen.hxx"
+#include "SMESH_HypoFilter.hxx"
+#include "SMESH_Mesh.hxx"
+#include "SMESH_TypeDefs.hxx"
+
+#include <Basics_OCCTVersion.hxx>
 
 #include <BRepAdaptor_Curve.hxx>
 #include <BRepLProp.hxx>
@@ -61,6 +66,7 @@
 #include "utilities.h"
 
 #include <algorithm>
+#include <limits>
 
 using namespace std;
 
@@ -75,8 +81,8 @@ SMESH_Algo::SMESH_Algo (int hypId, int studyId, SMESH_Gen * gen)
 {
   gen->_mapAlgo[hypId] = this;
 
-  _onlyUnaryInput = _requireDescretBoundary = _requireShape = true;
-  _quadraticMesh = false;
+  _onlyUnaryInput = _requireDiscreteBoundary = _requireShape = true;
+  _quadraticMesh = _supportSubmeshes = false;
   _error = COMPERR_OK;
 }
 
@@ -170,9 +176,40 @@ double SMESH_Algo::EdgeLength(const TopoDS_Edge & E)
     return 0;
   TopLoc_Location L;
   Handle(Geom_Curve) C = BRep_Tool::Curve(E, L, UMin, UMax);
-  GeomAdaptor_Curve AdaptCurve(C);
+  GeomAdaptor_Curve AdaptCurve(C, UMin, UMax); //range is important for periodic curves
   double length = GCPnts_AbscissaPoint::Length(AdaptCurve, UMin, UMax);
   return length;
+}
+
+//================================================================================
+/*!
+ * \brief Calculate normal of a mesh face
+ */
+//================================================================================
+
+bool SMESH_Algo::FaceNormal(const SMDS_MeshElement* F, gp_XYZ& normal, bool normalized)
+{
+  if ( !F || F->GetType() != SMDSAbs_Face )
+    return false;
+
+  normal.SetCoord(0,0,0);
+  int nbNodes = F->IsQuadratic() ? F->NbNodes()/2 : F->NbNodes();
+  for ( int i = 0; i < nbNodes-2; ++i )
+  {
+    gp_XYZ p[3];
+    for ( int n = 0; n < 3; ++n )
+    {
+      const SMDS_MeshNode* node = F->GetNode( i + n );
+      p[n].SetCoord( node->X(), node->Y(), node->Z() );
+    }
+    normal += ( p[2] - p[1] ) ^ ( p[0] - p[1] );
+  }
+  double size2 = normal.SquareModulus();
+  bool ok = ( size2 > numeric_limits<double>::min() * numeric_limits<double>::min());
+  if ( normalized && ok )
+    normal /= sqrt( size2 );
+
+  return ok;
 }
 
 //================================================================================
@@ -223,10 +260,10 @@ bool SMESH_Algo::IsReversedSubMesh (const TopoDS_Face&  theFace,
         const SMDS_PositionPtr& pos = node->GetPosition();
         if ( !pos ) continue;
         if ( pos->GetTypeOfPosition() == SMDS_TOP_FACE ) {
-          fPos = dynamic_cast< const SMDS_FacePosition* >( pos.get() );
+          fPos = dynamic_cast< const SMDS_FacePosition* >( pos );
         }
         else if ( pos->GetTypeOfPosition() == SMDS_TOP_VERTEX ) {
-          vID = pos->GetShapeId();
+          vID = node->getshapeId();
         }
       }
       if ( fPos || ( !normalOK && vID )) {
@@ -321,7 +358,7 @@ bool SMESH_Algo::GetNodeParamOnEdge(const SMESHDS_Mesh* theMesh,
   if ( !eSubMesh || !eSubMesh->GetElements()->more() )
     return false; // edge is not meshed
 
-  int nbEdgeNodes = 0;
+  //int nbEdgeNodes = 0;
   set < double > paramSet;
   if ( eSubMesh )
   {
@@ -334,17 +371,19 @@ bool SMESH_Algo::GetNodeParamOnEdge(const SMESHDS_Mesh* theMesh,
       if ( pos->GetTypeOfPosition() != SMDS_TOP_EDGE )
         return false;
       const SMDS_EdgePosition* epos =
-        static_cast<const SMDS_EdgePosition*>(node->GetPosition().get());
-      paramSet.insert( epos->GetUParameter() );
-      ++nbEdgeNodes;
+        static_cast<const SMDS_EdgePosition*>(node->GetPosition());
+      if ( !paramSet.insert( epos->GetUParameter() ).second )
+        return false; // equal parameters
     }
   }
   // add vertex nodes params
-  Standard_Real f, l;
-  BRep_Tool::Range(theEdge, f, l);
-  paramSet.insert( f );
-  paramSet.insert( l );
-  if ( paramSet.size() != nbEdgeNodes + 2 )
+  TopoDS_Vertex V1,V2;
+  TopExp::Vertices( theEdge, V1, V2);
+  if ( VertexNode( V1, theMesh ) &&
+       !paramSet.insert( BRep_Tool::Parameter(V1,theEdge) ).second )
+    return false; // there are equal parameters
+  if ( VertexNode( V2, theMesh ) &&
+       !paramSet.insert( BRep_Tool::Parameter(V2,theEdge) ).second )
     return false; // there are equal parameters
 
   // fill the vector
@@ -399,8 +438,9 @@ bool SMESH_Algo::GetSortedNodesOnEdge(const SMESHDS_Mesh*                   theM
       if ( pos->GetTypeOfPosition() != SMDS_TOP_EDGE )
         return false;
       const SMDS_EdgePosition* epos =
-        static_cast<const SMDS_EdgePosition*>(node->GetPosition().get());
-      theNodes.insert( make_pair( epos->GetUParameter(), node ));
+        static_cast<const SMDS_EdgePosition*>(node->GetPosition());
+      theNodes.insert( theNodes.end(), make_pair( epos->GetUParameter(), node ));
+      //MESSAGE("U " << epos->GetUParameter() << " ID " << node->GetID());
       ++nbNodes;
     }
   }
@@ -409,6 +449,7 @@ bool SMESH_Algo::GetSortedNodesOnEdge(const SMESHDS_Mesh*                   theM
   TopExp::Vertices(theEdge, v1, v2);
   const SMDS_MeshNode* n1 = VertexNode( v1, (SMESHDS_Mesh*) theMesh );
   const SMDS_MeshNode* n2 = VertexNode( v2, (SMESHDS_Mesh*) theMesh );
+  //MESSAGE("Vertices ID " << n1->GetID() << " " << n2->GetID());
   Standard_Real f, l;
   BRep_Tool::Range(theEdge, f, l);
   if ( v1.Orientation() != TopAbs_FORWARD )
@@ -455,20 +496,31 @@ bool SMESH_Algo::InitCompatibleHypoFilter( SMESH_HypoFilter & theFilter,
  */
 //================================================================================
 
-GeomAbs_Shape SMESH_Algo::Continuity(const TopoDS_Edge & E1,
-                                     const TopoDS_Edge & E2)
+GeomAbs_Shape SMESH_Algo::Continuity(TopoDS_Edge E1,
+                                     TopoDS_Edge E2)
 {
-  TopoDS_Vertex V = TopExp::LastVertex (E1, true);
-  if ( !V.IsSame( TopExp::FirstVertex(E2, true )))
-    if ( !TopExp::CommonVertex( E1, E2, V ))
-      return GeomAbs_C0;
+  //E1.Orientation(TopAbs_FORWARD), E2.Orientation(TopAbs_FORWARD); // avoid pb with internal edges
+  if (E1.Orientation() > TopAbs_REVERSED) // INTERNAL
+    E1.Orientation( TopAbs_FORWARD );
+  if (E2.Orientation() > TopAbs_REVERSED) // INTERNAL
+    E2.Orientation( TopAbs_FORWARD );
+
+  TopoDS_Vertex V, VV1[2], VV2[2];
+  TopExp::Vertices( E1, VV1[0], VV1[1], true );
+  TopExp::Vertices( E2, VV2[0], VV2[1], true );
+  if      ( VV1[1].IsSame( VV2[0] ))  { V = VV1[1]; }
+  else if ( VV1[0].IsSame( VV2[1] ))  { V = VV1[0]; }
+  else if ( VV1[1].IsSame( VV2[1] ))  { V = VV1[1]; E1.Reverse(); }
+  else if ( VV1[0].IsSame( VV2[0] ))  { V = VV1[0]; E1.Reverse(); }
+  else { return GeomAbs_C0; }
+
   Standard_Real u1 = BRep_Tool::Parameter( V, E1 );
   Standard_Real u2 = BRep_Tool::Parameter( V, E2 );
   BRepAdaptor_Curve C1( E1 ), C2( E2 );
   Standard_Real tol = BRep_Tool::Tolerance( V );
   Standard_Real angTol = 2e-3;
   try {
-#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
+#if OCC_VERSION_LARGE > 0x06010000
     OCC_CATCH_SIGNALS;
 #endif
     return BRepLProp::Continuity(C1, C2, u1, u2, tol, angTol);
@@ -488,7 +540,7 @@ GeomAbs_Shape SMESH_Algo::Continuity(const TopoDS_Edge & E1,
 //================================================================================
 
 const SMDS_MeshNode* SMESH_Algo::VertexNode(const TopoDS_Vertex& V,
-                                            SMESHDS_Mesh*        meshDS)
+                                            const SMESHDS_Mesh*  meshDS)
 {
   if ( SMESHDS_SubMesh* sm = meshDS->MeshElements(V) ) {
     SMDS_NodeIteratorPtr nIt= sm->GetNodes();
@@ -496,6 +548,103 @@ const SMDS_MeshNode* SMESH_Algo::VertexNode(const TopoDS_Vertex& V,
       return nIt->next();
   }
   return 0;
+}
+
+//=======================================================================
+//function : GetCommonNodes
+//purpose  : Return nodes common to two elements
+//=======================================================================
+
+vector< const SMDS_MeshNode*> SMESH_Algo::GetCommonNodes(const SMDS_MeshElement* e1,
+                                                         const SMDS_MeshElement* e2)
+{
+  vector< const SMDS_MeshNode*> common;
+  for ( int i = 0 ; i < e1->NbNodes(); ++i )
+    if ( e2->GetNodeIndex( e1->GetNode( i )) >= 0 )
+      common.push_back( e1->GetNode( i ));
+  return common;
+}
+
+//=======================================================================
+//function : GetMeshError
+//purpose  : Finds topological errors of a sub-mesh
+//WARNING  : 1D check is NOT implemented so far
+//=======================================================================
+
+SMESH_Algo::EMeshError SMESH_Algo::GetMeshError(SMESH_subMesh* subMesh)
+{
+  EMeshError err = MEr_OK;
+
+  SMESHDS_SubMesh* smDS = subMesh->GetSubMeshDS();
+  if ( !smDS )
+    return MEr_EMPTY;
+
+  switch ( subMesh->GetSubShape().ShapeType() )
+  {
+  case TopAbs_FACE: { // ====================== 2D =====================
+
+    SMDS_ElemIteratorPtr fIt = smDS->GetElements();
+    if ( !fIt->more() )
+      return MEr_EMPTY;
+
+    // We check that olny links on EDGEs encouter once, the rest links, twice
+    set< SMESH_TLink > links;
+    while ( fIt->more() )
+    {
+      const SMDS_MeshElement* f = fIt->next();
+      int nbNodes = f->NbCornerNodes(); // ignore medium nodes
+      for ( int i = 0; i < nbNodes; ++i )
+      {
+        const SMDS_MeshNode* n1 = f->GetNode( i );
+        const SMDS_MeshNode* n2 = f->GetNode(( i+1 ) % nbNodes);
+        std::pair< set< SMESH_TLink >::iterator, bool > it_added =
+          links.insert( SMESH_TLink( n1, n2 ));
+        if ( !it_added.second )
+          // As we do NOT(!) check if mesh is manifold, we believe that a link can
+          // encounter once or twice only (not three times), we erase a link as soon
+          // as it encounters twice to speed up search in the <links> map.
+          links.erase( it_added.first );
+      }
+    }
+    // the links remaining in the <links> should all be on EDGE
+    set< SMESH_TLink >::iterator linkIt = links.begin();
+    for ( ; linkIt != links.end(); ++linkIt )
+    {
+      const SMESH_TLink& link = *linkIt;
+      if ( link.node1()->GetPosition()->GetTypeOfPosition() > SMDS_TOP_EDGE ||
+           link.node2()->GetPosition()->GetTypeOfPosition() > SMDS_TOP_EDGE )
+        return MEr_HOLES;
+    }
+    // TODO: to check orientation
+    break;
+  }
+  case TopAbs_SOLID: { // ====================== 3D =====================
+
+    SMDS_ElemIteratorPtr vIt = smDS->GetElements();
+    if ( !vIt->more() )
+      return MEr_EMPTY;
+
+    SMDS_VolumeTool vTool;
+    while ( !vIt->more() )
+    {
+      if (!vTool.Set( vIt->next() ))
+        continue; // strange
+
+      for ( int iF = 0; iF < vTool.NbFaces(); ++iF )
+        if ( vTool.IsFreeFace( iF ))
+        {
+          int nbN = vTool.NbFaceNodes( iF );
+          const SMDS_MeshNode** nodes =  vTool.GetFaceNodes( iF );
+          for ( int i = 0; i < nbN; ++i )
+            if ( nodes[i]->GetPosition()->GetTypeOfPosition() > SMDS_TOP_FACE )
+              return MEr_HOLES;
+        }
+    }
+    break;
+  }
+  default:;
+  }
+  return err;
 }
 
 //================================================================================
@@ -537,6 +686,18 @@ void SMESH_Algo::SubmeshRestored(SMESH_subMesh* /*subMesh*/)
 bool SMESH_Algo::Compute(SMESH_Mesh & /*aMesh*/, SMESH_MesherHelper* /*aHelper*/)
 {
   return error( COMPERR_BAD_INPUT_MESH, "Mesh built on shape expected");
+}
+
+//=======================================================================
+//function : CancelCompute
+//purpose  : Sets _computeCanceled to true. It's usage depends on
+//  *        implementation of a particular mesher.
+//=======================================================================
+
+void SMESH_Algo::CancelCompute()
+{
+  _computeCanceled = true;
+  _error = COMPERR_CANCELED;
 }
 
 //================================================================================
@@ -599,6 +760,8 @@ void SMESH_Algo::InitComputeError()
     if ( (*elem)->GetID() < 1 )
       delete *elem;
   _badInputElements.clear();
+
+  _computeCanceled = false;
 }
 
 //================================================================================

@@ -1,0 +1,28 @@
+/*!
+
+\page max_element_length_2d_page Element Diameter 2D
+
+\n This quality control criterion consists in calculation of the length of
+edges and diagonals combining 2D mesh elements (triangles and quadrangles).
+
+<em>To apply the Element Diameter 2D quality criterion to your mesh:</em>
+<ol>
+<li>Display your mesh in the viewer. </li>
+
+<li>Choose <b>Controls > Face Controls > Element Diameter 2D</b> or click
+<em>"Element Diameter 2D"</em> button in the toolbar. 
+
+\image html image42.png
+<center><em>"Element Diameter 2D" button</em></center>
+
+Your mesh will be displayed in the viewer with its elements colored according to the
+applied mesh quality control criterion:
+
+\image html max_element_length_2d.png
+</li>
+</ol>
+
+<br><b>See Also</b> a sample TUI Script of a 
+\ref tui_max_element_length_2d "Element Diameter 2D quality control" operation.  
+
+*/

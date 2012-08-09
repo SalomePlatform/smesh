@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_RenumberingDlg.cxx
 // Author : Michael ZORIN, Open CASCADE S.A.S.
@@ -78,14 +79,14 @@ SMESHGUI_RenumberingDlg::SMESHGUI_RenumberingDlg( SMESHGUI* theModule, const int
   setModal(false);
   setAttribute(Qt::WA_DeleteOnClose, true);
   setWindowTitle(unit == 0 ? 
-		 tr("SMESH_RENUMBERING_NODES_TITLE") : 
-		 tr("SMESH_RENUMBERING_ELEMENTS_TITLE"));
+                 tr("SMESH_RENUMBERING_NODES_TITLE") : 
+                 tr("SMESH_RENUMBERING_ELEMENTS_TITLE"));
   setSizeGripEnabled(true);
 
   SUIT_ResourceMgr* resMgr = SMESH::GetResourceMgr( mySMESHGUI );
   QPixmap image0(resMgr->loadPixmap("SMESH", unit == 0 ? 
-				    tr("ICON_DLG_RENUMBERING_NODES") : 
-				    tr("ICON_DLG_RENUMBERING_ELEMENTS")));
+                                    tr("ICON_DLG_RENUMBERING_NODES") : 
+                                    tr("ICON_DLG_RENUMBERING_ELEMENTS")));
   QPixmap image1(resMgr->loadPixmap("SMESH",tr("ICON_SELECT")));
 
   QVBoxLayout* SMESHGUI_RenumberingDlgLayout = new QVBoxLayout(this);
@@ -94,9 +95,9 @@ SMESHGUI_RenumberingDlg::SMESHGUI_RenumberingDlg( SMESHGUI* theModule, const int
 
   /***************************************************************/
   GroupConstructors = new QGroupBox(unit == 0 ? 
-				    tr("SMESH_NODES") :
-				    tr("SMESH_ELEMENTS"), 
-				    this);
+                                    tr("SMESH_NODES") :
+                                    tr("SMESH_ELEMENTS"), 
+                                    this);
   myHelpFileName = unit == 0 ? 
     "renumbering_nodes_and_elements_page.html#renumbering_nodes_anchor" :
     "renumbering_nodes_and_elements_page.html#renumbering_elements_anchor";
@@ -219,22 +220,22 @@ void SMESHGUI_RenumberingDlg::ClickOnApply()
       bool isUnitsLabeled = false;
       
       if (myUnit == 0 && anActor) {
-	isUnitsLabeled = anActor->GetPointsLabeled();
-	if (isUnitsLabeled)  anActor->SetPointsLabeled(false);
+        isUnitsLabeled = anActor->GetPointsLabeled();
+        if (isUnitsLabeled)  anActor->SetPointsLabeled(false);
       }
       else if (myUnit == 1 && anActor) {
-	isUnitsLabeled = anActor->GetCellsLabeled();
-	if (isUnitsLabeled)  anActor->SetCellsLabeled(false);
+        isUnitsLabeled = anActor->GetCellsLabeled();
+        if (isUnitsLabeled)  anActor->SetCellsLabeled(false);
       }
       
       SUIT_OverrideCursor aWaitCursor;
       if (myUnit == 0) {
-	aMeshEditor->RenumberNodes();
-	if (isUnitsLabeled && anActor) anActor->SetPointsLabeled(true);
+        aMeshEditor->RenumberNodes();
+        if (isUnitsLabeled && anActor) anActor->SetPointsLabeled(true);
       }
       else if (myUnit == 1) {
-	aMeshEditor->RenumberElements();
-	if (isUnitsLabeled && anActor) anActor->SetCellsLabeled(true);
+        aMeshEditor->RenumberElements();
+        if (isUnitsLabeled && anActor) anActor->SetCellsLabeled(true);
       }
     }
     catch(...) {
@@ -242,6 +243,7 @@ void SMESHGUI_RenumberingDlg::ClickOnApply()
     
     //mySelectionMgr->clearSelected();
     SMESH::UpdateView();
+    SMESHGUI::Modified();
   }
 }
 
@@ -285,10 +287,10 @@ void SMESHGUI_RenumberingDlg::ClickOnHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 
@@ -316,7 +318,7 @@ void SMESHGUI_RenumberingDlg::SelectionIntoArgument()
       Handle(SALOME_InteractiveObject) IO = aList.First();
       myMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO);
       if (myMesh->_is_nil())
-	aString = "";
+        aString = "";
     }
   }
 
@@ -338,12 +340,12 @@ void SMESHGUI_RenumberingDlg::SetEditCurrentArgument()
     {
     case 0: /* default constructor */
       {
-	if(send == SelectButton) {
-	  LineEditMesh->setFocus();
-	  myEditCurrentArgument = LineEditMesh;
-	}
-	SelectionIntoArgument();
-	break;
+        if(send == SelectButton) {
+          LineEditMesh->setFocus();
+          myEditCurrentArgument = LineEditMesh;
+        }
+        SelectionIntoArgument();
+        break;
       }
     }
 }

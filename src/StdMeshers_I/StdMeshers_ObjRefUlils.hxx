@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 // File      : StdMeshers_ObjRefUlils.hxx
 // Created   : Wed Oct 18 15:15:27 2006
@@ -65,6 +66,18 @@ public:
   }
 
   /*!
+   * \brief Return study entry of GEOM Object
+   */
+  static std::string GeomObjectToEntry(GEOM::GEOM_Object_ptr&  theGeomObject);
+
+  /*!
+   * \brief Return GEOM Object by its study entry or TopoDS_Shape
+   */
+  static GEOM::GEOM_Object_ptr EntryOrShapeToGeomObject (const std::string&  theEntry,
+                                                         const TopoDS_Shape& theShape);
+
+
+  /*!
    * \brief Store the shape in the stream
     * \param theShape - shape to store
     * \param stream - the stream
@@ -76,14 +89,14 @@ public:
     * \param stream - the stream
     * \retval TopoDS_Shape - resulting shape
    */
-  static TopoDS_Shape LoadFromStream( std::istream & stream);
+  static TopoDS_Shape LoadFromStream( std::istream & stream );
 
   /*!
    * \brief Store the CORBA object in the stream
     * \param obj - object to store
     * \param stream - the stream
    */
-  static void SaveToStream( CORBA::Object_ptr obj, std::ostream & stream);
+  static void SaveToStream( CORBA::Object_ptr obj, std::ostream & stream );
 
   /*!
    * \brief Retrieve a CORBA object from the stream 
@@ -106,6 +119,14 @@ public:
     }
     return TInterface::_nil();
   }
+
+  /*!
+   * \brief Store the study entry of object in the stream
+    * \param studyEntry - the study entry
+    * \param stream - the stream
+   */
+  static void SaveToStream( const std::string& studyEntry, std::ostream & stream);
+
 };
 
 #endif

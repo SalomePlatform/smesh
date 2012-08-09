@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_MeshDlg.cxx
 // Author : Sergey LITONIN, Open CASCADE S.A.S.
@@ -112,9 +113,9 @@ SMESHGUI_MeshTab::SMESHGUI_MeshTab( QWidget* theParent )
   // Connect signals and slots
   for ( int i = MainHyp; i <= AddHyp; i++ )
   {
-    connect( myCreateHyp[ i ], SIGNAL( clicked() ), SLOT( onCreateHyp() ) );
-    connect( myEditHyp[ i ], SIGNAL( clicked() ), SLOT( onEditHyp() ) );
-    connect( myHyp[ i ], SIGNAL( activated( int ) ), SLOT( onHyp( int ) ) );
+    connect( myCreateHyp[ i ], SIGNAL( clicked() )       ,  SLOT( onCreateHyp() ) );
+    connect( myEditHyp[ i ]  , SIGNAL( clicked() )       ,  SLOT( onEditHyp() ) );
+    connect( myHyp[ i ]      , SIGNAL( activated( int ) ),  SLOT( onHyp( int ) ) );
   }
   connect( myHyp[ Algo ], SIGNAL( activated( int ) ), SLOT( onHyp( int ) ) );
   
@@ -381,7 +382,7 @@ SMESHGUI_MeshDlg::SMESHGUI_MeshDlg( const bool theToCreate, const bool theIsMesh
   myHypoSetButton->setText( tr( "HYPOTHESES_SETS" ) );
   myHypoSetButton->setEnabled( false );
   myHypoSetButton->setSizePolicy( QSizePolicy::MinimumExpanding, 
-				  myHypoSetButton->sizePolicy().verticalPolicy() );
+                                  myHypoSetButton->sizePolicy().verticalPolicy() );
   
   // Fill layout
   QGridLayout* aLay = new QGridLayout( mainFrame() );
@@ -478,9 +479,13 @@ void SMESHGUI_MeshDlg::setMaxHypoDim( const int maxDim )
   const int DIM = maxDim;
   for ( int dim = Dim0D; dim <= Dim3D; ++dim ) {
     bool enable = ( dim <= DIM );
-    if ( !enable )
+    if ( !enable ) {
       myTabs[ dim ]->reset();
-    myTabWg->setTabEnabled( myTabWg->indexOf( myTabs[ dim ] ), enable );
+      disableTab( dim );
+    }
+    else {
+      enableTab( dim );
+    }
   }
   // deselect desabled tab
   if ( !myTabWg->isTabEnabled( myTabWg->currentIndex() ) )
@@ -542,14 +547,14 @@ void SMESHGUI_MeshDlg::setGeomPopupEnabled( const bool enable )
         myGeomPopup->addAction( tr("DIRECT_GEOM_SELECTION") )->setData( DIRECT_GEOM_INDEX );
         myGeomPopup->addAction( tr("GEOM_BY_MESH_ELEM_SELECTION") )->setData( GEOM_BY_MESH_INDEX );
         connect( myGeomPopup, SIGNAL( triggered( QAction* ) ), SLOT( onGeomPopup( QAction* ) ) );
-	connect( selBtn, SIGNAL( toggled(bool) ), this, SLOT( onGeomSelectionButton(bool) ));
+        connect( selBtn, SIGNAL( toggled(bool) ), this, SLOT( onGeomSelectionButton(bool) ));
       }
     }
     else {
       disconnect( selBtn, SIGNAL( toggled(bool) ), this, SLOT( onGeomSelectionButton(bool) ));
       if ( myGeomPopup ) {
-	delete myGeomPopup;
-	myGeomPopup = 0;
+        delete myGeomPopup;
+        myGeomPopup = 0;
       }
     }
   }
@@ -564,6 +569,7 @@ void SMESHGUI_MeshDlg::setGeomPopupEnabled( const bool enable )
 //================================================================================
 void SMESHGUI_MeshDlg::disableTab(const int theTabId) {
   myTabWg->setTabEnabled( myTabWg->indexOf( myTabs[ theTabId ] ), false );
+  if ( theTabId == Dim3D ) myHypoSetButton->setEnabled( false );
 }
 
 //================================================================================
@@ -574,6 +580,20 @@ void SMESHGUI_MeshDlg::disableTab(const int theTabId) {
 //================================================================================
 void SMESHGUI_MeshDlg::enableTab(const int theTabId) {
   myTabWg->setTabEnabled( myTabWg->indexOf( myTabs[ theTabId ] ), true );
+  if ( theTabId == Dim3D ) {
+    QMenu* aHypoSetPopup = myHypoSetButton->menu();
+    myHypoSetButton->setEnabled( aHypoSetPopup && !aHypoSetPopup->actions().isEmpty() );
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Check if tab enabled
+ * \param int - tab ID
+ */
+//================================================================================
+bool SMESHGUI_MeshDlg::isTabEnabled(const int theTabId) const {
+  return myTabWg->isTabEnabled( myTabWg->indexOf( myTabs[ theTabId ] ) );
 }
 
 void SMESHGUI_MeshDlg::onGeomSelectionButton(bool isBtnOn)
@@ -585,4 +605,13 @@ void SMESHGUI_MeshDlg::onGeomSelectionButton(bool isBtnOn)
 void SMESHGUI_MeshDlg::onGeomPopup( QAction* a )
 {
   emit geomSelectionByMesh( a->data().toInt() == GEOM_BY_MESH_INDEX );
+}
+
+int SMESHGUI_MeshDlg::getActiveObject()
+{
+  for (int i = 0; i < 3; ++i )
+    if ( isObjectShown( i ) &&
+         (( QToolButton* )objectWg( i, Btn ))->isChecked())
+      return i;
+  return -1;
 }

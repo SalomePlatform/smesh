@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : StdMeshers_MEFISTO_2D.cxx
 //           Moved here from SMESH_MEFISTO_2D.cxx
@@ -50,8 +51,10 @@
 
 #include <BRepTools.hxx>
 #include <BRep_Tool.hxx>
+#include <Geom_Curve.hxx>
 #include <Geom2d_Curve.hxx>
 #include <Geom_Surface.hxx>
+#include <Precision.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
@@ -62,6 +65,10 @@
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Iterator.hxx>
 #include <gp_Pnt2d.hxx>
+
+#include <BRep_Tool.hxx>
+#include <GProp_GProps.hxx>
+#include <BRepGProp.hxx>
 
 using namespace std;
 
@@ -230,6 +237,8 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
   Z nutysu = 1;           // 1: il existe un fonction areteideale_()
   // Z  nutysu=0;         // 0: on utilise aretmx
   R aretmx = _edgeLength; // longueur max aretes future triangulation
+  if ( _hypMaxElementArea )
+    aretmx *= 1.5;
   
   nblf = nbWires;
   
@@ -281,6 +290,90 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
 
   return isOk;
 }
+
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+
+bool StdMeshers_MEFISTO_2D::Evaluate(SMESH_Mesh & aMesh,
+                                     const TopoDS_Shape & aShape,
+                                     MapShapeNbElems& aResMap)
+{
+  MESSAGE("StdMeshers_MEFISTO_2D::Evaluate");
+
+  TopoDS_Face F = TopoDS::Face(aShape.Oriented(TopAbs_FORWARD));
+
+  double aLen = 0.0;
+  int NbSeg = 0;
+  bool IsQuadratic = false;
+  bool IsFirst = true;
+  TopExp_Explorer exp(F,TopAbs_EDGE);
+  for(; exp.More(); exp.Next()) {
+    TopoDS_Edge E = TopoDS::Edge(exp.Current());
+    MapShapeNbElemsItr anIt = aResMap.find( aMesh.GetSubMesh(E) );
+    if( anIt == aResMap.end() ) continue;
+    std::vector<int> aVec = (*anIt).second;
+    int nbe = Max(aVec[SMDSEntity_Edge],aVec[SMDSEntity_Quad_Edge]);
+    NbSeg += nbe;
+    if(IsFirst) {
+      IsQuadratic = ( aVec[SMDSEntity_Quad_Edge] > aVec[SMDSEntity_Edge] );
+      IsFirst = false;
+    }
+    double a,b;
+    TopLoc_Location L;
+    Handle(Geom_Curve) C = BRep_Tool::Curve(E,L,a,b);
+    gp_Pnt P1;
+    C->D0(a,P1);
+    double dp = (b-a)/nbe;
+    for(int i=1; i<=nbe; i++) {
+      gp_Pnt P2;
+      C->D0(a+i*dp,P2);
+      aLen += P1.Distance(P2);
+      P1 = P2;
+    }
+  }
+  if(NbSeg<1) {
+    std::vector<int> aResVec(SMDSEntity_Last);
+    for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aResVec[i] = 0;
+    SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
+    aResMap.insert(std::make_pair(sm,aResVec));
+    SMESH_ComputeErrorPtr& smError = sm->GetComputeError();
+    smError.reset( new SMESH_ComputeError(COMPERR_ALGO_FAILED,
+                                          "Submesh can not be evaluated",this));
+    return false;
+  }
+  aLen = aLen/NbSeg; // middle length
+
+  _edgeLength = Precision::Infinite();
+  double tmpLength = Min( _edgeLength, aLen );
+
+  GProp_GProps G;
+  BRepGProp::SurfaceProperties(aShape,G);
+  double anArea = G.Mass();
+
+  int nbFaces = Precision::IsInfinite( tmpLength ) ? 0 :
+    (int)( anArea/(tmpLength*tmpLength*sqrt(3.)/4) );
+  int nbNodes = (int) ( nbFaces*3 - (NbSeg-1)*2 ) / 6;
+
+  std::vector<int> aVec(SMDSEntity_Last);
+  for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aVec[i] = 0;
+  if(IsQuadratic) {
+    aVec[SMDSEntity_Quad_Triangle] = nbFaces;
+    aVec[SMDSEntity_Node] = (int)( nbNodes + nbFaces*3 - (NbSeg-1) );
+  }
+  else {
+    aVec[SMDSEntity_Node] = nbNodes;
+    aVec[SMDSEntity_Triangle] = nbFaces;
+  }
+  SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
+  aResMap.insert(std::make_pair(sm,aVec));
+
+  return true;
+}
+
 
 //=======================================================================
 //function : fixOverlappedLinkUV
@@ -421,7 +514,7 @@ static bool fixCommonVertexUV (R2 &                 theUV,
         if ( theCreateQuadratic && SMESH_MesherHelper::IsMedium( node, SMDSAbs_Edge ))
           continue;
         const SMDS_EdgePosition* epos =
-          static_cast<const SMDS_EdgePosition*>(node->GetPosition().get());
+          static_cast<const SMDS_EdgePosition*>(node->GetPosition());
         double u = epos->GetUParameter();
         if ( u < umin )
           umin = u;
@@ -514,8 +607,31 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
       // set UV
       uvslf[m].x = uvPt->u * scalex;
       uvslf[m].y = uvPt->v * scaley;
-      if ( uvPt->node->GetPosition()->GetTypeOfPosition() == SMDS_TOP_VERTEX )
+      switch ( uvPt->node->GetPosition()->GetTypeOfPosition())
+      {
+      case SMDS_TOP_VERTEX:
         mOnVertex.push_back( m );
+        break;
+      case SMDS_TOP_EDGE:
+        // In order to detect degenerated faces easily, we replace
+        // nodes on a degenerated edge by node on the vertex of that edge
+        if ( myTool->IsDegenShape( uvPt->node->getshapeId() ))
+        {
+          int edgeID = uvPt->node->getshapeId();
+          SMESH_subMesh* edgeSM = myTool->GetMesh()->GetSubMeshContaining( edgeID );
+          SMESH_subMeshIteratorPtr smIt = edgeSM->getDependsOnIterator( /*includeSelf=*/0,
+                                                                        /*complexShapeFirst=*/0);
+          if ( smIt->more() )
+          {
+            SMESH_subMesh* vertexSM = smIt->next();
+            SMDS_NodeIteratorPtr nIt = vertexSM->GetSubMeshDS()->GetNodes();
+            if ( nIt->more() )
+              mefistoToDS[m] = nIt->next();
+          }
+        }
+        break;
+      default:;
+      }
       m++;
     }
 
@@ -526,7 +642,7 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
       int m = *mIt;
       if ( iW && !VWMap.IsEmpty()) { // except outer wire
         // avoid passing same uv point for a vertex common to 2 wires
-        int vID = mefistoToDS[m]->GetPosition()->GetShapeId();
+        int vID = mefistoToDS[m]->getshapeId();
         TopoDS_Vertex V = TopoDS::Vertex( myTool->GetMeshDS()->IndexToShape( vID ));
         if ( fixCommonVertexUV( uvslf[m], V, F, VWMap, *myTool->GetMesh(),
                                 scalex, scaley, _quadraticMesh )) {
@@ -542,6 +658,9 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
       fixOverlappedLinkUV (uvslf[ mB ], uvslf[ m ], uvslf[ mA ]);
     }
   }
+//   cout << "MEFISTO INPUT************" << endl;
+//   for ( int i =0; i < m; ++i )
+//     cout << i << ": \t" << uvslf[i].x << ", " << uvslf[i].y << " Node " << mefistoToDS[i]->GetID()<< endl;
 
   return true;
 }
@@ -688,13 +807,17 @@ void StdMeshers_MEFISTO_2D::StoreResult(Z nbst, R2 * uvst, Z nbt, Z * nust,
     const SMDS_MeshNode * n2 = mefistoToDS[ nust[m++] - 1 ];
     const SMDS_MeshNode * n3 = mefistoToDS[ nust[m++] - 1 ];
 
-    SMDS_MeshElement * elt;
-    if (triangleIsWellOriented)
-      elt = myTool->AddFace(n1, n2, n3);
-    else
-      elt = myTool->AddFace(n1, n3, n2);
-
-    meshDS->SetMeshElementOnShape(elt, faceID);
+    // avoid creating degenetrated faces
+    bool isDegen = ( myTool->HasDegeneratedEdges() && ( n1 == n2 || n1 == n3 || n2 == n3 ));
+    if ( !isDegen )
+    {
+      SMDS_MeshElement * elt;
+      if (triangleIsWellOriented)
+        elt = myTool->AddFace(n1, n2, n3);
+      else
+        elt = myTool->AddFace(n1, n3, n2);
+      meshDS->SetMeshElementOnShape(elt, faceID);
+    }
     m++;
   }
 

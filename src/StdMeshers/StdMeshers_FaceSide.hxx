@@ -1,25 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-//  SMESH SMESH : implementaion of SMESH idl descriptions
+
 // File      : StdMeshers_FaceSide.hxx
 // Created   : Wed Jan 31 18:41:25 2007
 // Author    : Edward AGAPOV (eap)
@@ -28,14 +28,13 @@
 #ifndef StdMeshers_FaceSide_HeaderFile
 #define StdMeshers_FaceSide_HeaderFile
 
-#include <gp_Pnt2d.hxx>
+#include "SMESH_StdMeshers.hxx"
+
+#include <Geom2d_Curve.hxx>
+#include <GeomAdaptor_Curve.hxx>
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Vertex.hxx>
-#include <Geom2d_Curve.hxx>
-#include <TopExp.hxx>
-
-#include "SMESH_StdMeshers.hxx"
-#include "SMESH_Algo.hxx"
+#include <gp_Pnt2d.hxx>
 
 #include <vector>
 #include <list>
@@ -47,7 +46,7 @@ class Adaptor2d_Curve2d;
 class Adaptor3d_Curve;
 class BRepAdaptor_CompCurve;
 class TopoDS_Face;
-class SMESH_ComputeError;
+struct SMESH_ComputeError;
 
 typedef struct uvPtStruct
 {
@@ -63,9 +62,8 @@ typedef struct uvPtStruct
 
 class StdMeshers_FaceSide;
 typedef boost::shared_ptr< StdMeshers_FaceSide > StdMeshers_FaceSidePtr;
-typedef boost::shared_ptr< uvPtStruct > UVPtStructPtr;
-typedef std::vector< StdMeshers_FaceSidePtr > TSideVector;
-typedef boost::shared_ptr< SMESH_ComputeError > TError;
+typedef std::vector< StdMeshers_FaceSidePtr >    TSideVector;
+typedef boost::shared_ptr< SMESH_ComputeError >  TError;
 
 //================================================================================
 /*!
@@ -88,12 +86,17 @@ public:
   /*!
    * \brief Wrap several edges. Edges must be properly ordered and oriented.
    */
-  StdMeshers_FaceSide(const TopoDS_Face& theFace,
+  StdMeshers_FaceSide(const TopoDS_Face&      theFace,
                       std::list<TopoDS_Edge>& theEdges,
-                      SMESH_Mesh*        theMesh,
-                      const bool         theIsForward,
-                      const bool         theIgnoreMediumNodes);
-
+                      SMESH_Mesh*             theMesh,
+                      const bool              theIsForward,
+                      const bool              theIgnoreMediumNodes);
+  /*!
+   * \brief Simulate a side from a vertex using data from other FaceSide
+   */
+  StdMeshers_FaceSide(const SMDS_MeshNode*       theNode,
+                      const gp_Pnt2d             thePnt2d,
+                      const StdMeshers_FaceSide* theSide);
   /*!
    * \brief Return wires of a face as StdMeshers_FaceSide's
    */
@@ -119,7 +122,7 @@ public:
    */
   SMESH_Mesh* GetMesh() const { return myMesh; }
   /*!
-   * \brief Return true if there vertices without nodes
+   * \brief Return true if there are vertices without nodes
    */
   bool MissVertexNode() const { return myMissingVertexNodes; }
   /*!
@@ -127,7 +130,8 @@ public:
     * \param isXConst - true if normalized parameter X is constant
     * \param constValue - constant parameter value
     *
-    * Missing nodes are allowed only on internal vertices
+    * Missing nodes are allowed only on internal vertices.
+    * For a closed side, the 1st point repeats at end
    */
   const std::vector<UVPtStruct>& GetUVPtStruct(bool isXConst =0, double constValue =0) const;
   /*!
@@ -136,8 +140,13 @@ public:
     * \param constValue - constant parameter value
    */
   const std::vector<UVPtStruct>& SimulateUVPtStruct(int    nbSeg,
-                                               bool   isXConst   = 0,
-                                               double constValue = 0) const;
+                                                    bool   isXConst   = 0,
+                                                    double constValue = 0) const;
+  /*!
+   * \brief Return nodes in the order they encounter while walking along the side.
+    * For a closed side, the 1st point repeats at end
+   */
+  std::vector<const SMDS_MeshNode*> GetOrderedNodes() const;
   /*!
    * \brief Return edge and parameter on edge by normalized parameter
    */
@@ -163,13 +172,17 @@ public:
    */
   const TopoDS_Edge& Edge(int i) const { return myEdge[i]; }
   /*!
+   * \brief Return all edges
+   */
+  const std::vector<TopoDS_Edge>& Edges() const { return myEdge; }
+  /*!
    * \brief Return 1st vertex of the i-the edge (count starts from zero)
    */
-  inline TopoDS_Vertex FirstVertex(int i=0) const;
+  TopoDS_Vertex FirstVertex(int i=0) const;
   /*!
    * \brief Return last vertex of the i-the edge (count starts from zero)
    */
-  inline TopoDS_Vertex LastVertex(int i=-1) const;
+  TopoDS_Vertex LastVertex(int i=-1) const;
   /*!
    * \brief Return first normalized parameter of the i-the edge (count starts from zero)
    */
@@ -193,15 +206,22 @@ public:
   
 
 protected:
+
+  // DON't FORGET to update Reverse() when adding one more vector!
   std::vector<uvPtStruct>           myPoints, myFalsePoints;
   std::vector<TopoDS_Edge>          myEdge;
+  std::vector<int>                  myEdgeID;
   std::vector<Handle(Geom2d_Curve)> myC2d;
+  std::vector<GeomAdaptor_Curve>    myC3dAdaptor;
   std::vector<double>               myFirst, myLast;
   std::vector<double>               myNormPar;
+  std::vector<double>               myEdgeLength;
+  std::vector<double>               myIsUniform;
   double                            myLength;
   int                               myNbPonits, myNbSegments;
   SMESH_Mesh*                       myMesh;
   bool                              myMissingVertexNodes, myIgnoreMediumNodes;
+  gp_Pnt2d                          myDefaultPnt2d;
 };
 
 
@@ -235,28 +255,6 @@ inline double StdMeshers_FaceSide::Parameter(double U, TopoDS_Edge & edge) const
   double prevU = i ? myNormPar[ i-1 ] : 0;
   double r = ( U - prevU )/ ( myNormPar[ i ] - prevU );
   return myFirst[i] * ( 1 - r ) + myLast[i] * r;
-}
-
-//================================================================================
-/*!
- * \brief Return 1st vertex of the i-the edge
- */
-//================================================================================
-
-inline TopoDS_Vertex StdMeshers_FaceSide::FirstVertex(int i) const
-{
-  return i < myEdge.size() ? TopExp::FirstVertex( myEdge[i], 1 ) : TopoDS_Vertex();
-}
-
-//================================================================================
-/*!
- * \brief Return last vertex of the i-the edge
- */
-//================================================================================
-
-inline TopoDS_Vertex StdMeshers_FaceSide::LastVertex(int i) const
-{
-  return i<0 ? TopExp::LastVertex( myEdge.back(), 1) : i<myEdge.size() ? TopExp::LastVertex( myEdge[i], 1 ) : TopoDS_Vertex();
 }
 
 //================================================================================

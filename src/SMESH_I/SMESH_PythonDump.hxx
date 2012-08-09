@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _SMESH_PYTHONDUMP_HXX_
 #define _SMESH_PYTHONDUMP_HXX_
 
@@ -29,6 +30,7 @@
 #include CORBA_SERVER_HEADER(SALOMEDS)
 
 #include <sstream>
+#include <vector>
 
 class SMESH_Gen_i;
 class SMESH_MeshEditor_i;
@@ -37,7 +39,7 @@ class Resource_DataMapOfAsciiStringAsciiString;
 
 // ===========================================================================================
 /*!
- * \brief Tool converting SMESH engine calls into commands defined in smesh.py
+ * \brief Tool converting SMESH engine calls into commands defined in smeshDC.py
  *
  * Implementation is in SMESH_2smeshpy.cxx
  */
@@ -51,19 +53,23 @@ public:
    * \param theScript - Input script
    * \param theEntry2AccessorMethod - The returning method names to access to
    *        objects wrapped with python class
+   * \param theHistoricalDump - true means to keep all commands, false means
+   *        to exclude commands relating to objects removed from study
    * \retval TCollection_AsciiString - Convertion result
    */
   static TCollection_AsciiString
-  ConvertScript(const TCollection_AsciiString& theScript,
+  ConvertScript(const TCollection_AsciiString&            theScript,
                 Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod,
-		Resource_DataMapOfAsciiStringAsciiString& theObjectNames);
+                Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
+                SALOMEDS::Study_ptr&                      theStudy,
+                const bool                                theHistoricalDump);
 
   /*!
    * \brief Return the name of the python file wrapping IDL API
-    * \retval TCollection_AsciiString - The file name
+    * \retval const char* - the file name
    */
   static const char* SmeshpyName() { return "smesh"; }
-  static const char* GenName() { return "smesh.smesh"; }
+  static const char* GenName() { return "smesh"; }
 };
 
 namespace SMESH
@@ -72,73 +78,113 @@ namespace SMESH
   class FilterManager_i;
   class Filter_i;
   class Functor_i;
+  class Measurements_i;
 
-// ===========================================================================================
-/*!
- * \brief Utility helping in storing SMESH engine calls as python commands
- */
-// ===========================================================================================
+  // ===========================================================================================
+  /*!
+   * \brief Object used to make TPythonDump know that its held value can be a varible
+   *
+   * TPythonDump substitute TVar with names of notebook variables if any.
+   */
+  // ===========================================================================================
+
+  struct SMESH_I_EXPORT TVar
+  {
+    std::vector< std::string > myVals;
+    TVar(CORBA::Double value);
+    TVar(CORBA::Long   value);
+    TVar(CORBA::Short  value);
+    TVar(const SMESH::double_array& value);
+    // string used to temporary quote variable names in order
+    // not to confuse variables with string arguments
+    static char Quote() { return '$'; }
+  };
+
+  // ===========================================================================================
+  /*!
+   * \brief Utility helping in storing SMESH engine calls as python commands
+   */
+  // ===========================================================================================
 
   class SMESH_I_EXPORT TPythonDump
   {
     std::ostringstream myStream;
-    static size_t myCounter;
+    static size_t      myCounter;
+    int                myVarsCounter; // counts stored TVar's
   public:
     TPythonDump();
     virtual ~TPythonDump();
-    
-    TPythonDump& 
+
+    TPythonDump&
+    operator<<(const TVar& theVariableValue);
+
+    TPythonDump&
     operator<<(long int theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(int theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(double theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(float theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(const void* theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(const char* theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(const SMESH::ElementType& theArg);
 
-    TPythonDump& 
+    TPythonDump&
+    operator<<(const SMESH::GeometryType& theArg);
+
+    TPythonDump&
     operator<<(const SMESH::long_array& theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(const SMESH::double_array& theArg);
 
-    TPythonDump& 
+    TPythonDump&
+    operator<<(const SMESH::string_array& theArg);
+
+    TPythonDump&
+    operator<<(SMESH::SMESH_Hypothesis_ptr theArg);
+
+    TPythonDump&
+    operator<<(SMESH::SMESH_IDSource_ptr theArg);
+
+    TPythonDump&
     operator<<(SALOMEDS::SObject_ptr theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(CORBA::Object_ptr theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(SMESH::FilterLibrary_i* theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(SMESH::FilterManager_i* theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(SMESH::Filter_i* theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(SMESH::Functor_i* theArg);
 
-    TPythonDump& 
+    TPythonDump&
+    operator<<(SMESH::Measurements_i* theArg);
+
+    TPythonDump&
     operator<<(SMESH_Gen_i* theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(SMESH_MeshEditor_i* theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(SMESH::MED_VERSION theArg);
 
     TPythonDump&
@@ -148,17 +194,26 @@ namespace SMESH
     operator<<(const SMESH::DirStruct & theDir);
 
     TPythonDump&
+    operator<<(const SMESH::PointStruct & P);
+
+    TPythonDump&
     operator<<(const TCollection_AsciiString & theArg);
 
     TPythonDump&
+    operator<<(const SMESH::ListOfGroups& theList);
+
+    TPythonDump&
     operator<<(const SMESH::ListOfGroups * theList);
+
+    TPythonDump&
+    operator<<(const SMESH::ListOfIDSources& theList);
 
     static const char* SMESHGenName() { return "smeshgen"; }
     static const char* MeshEditorName() { return "mesh_editor"; }
 
     /*!
      * \brief Return marker of long string literal beginning
-      * \param type - a name of functionality producing the string literal 
+      * \param type - a name of functionality producing the string literal
       * \retval TCollection_AsciiString - the marker string to be written into
       * a raw python script
      */
@@ -176,7 +231,7 @@ namespace SMESH
       * \param theLongString - the retrieved literal
       * \param theStringType - a name of functionality produced the literal
       * \retval bool - true if a string literal found
-     * 
+     *
      * The literal is removed from theText; theFrom points position right after
      * the removed literal
      */

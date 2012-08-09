@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESHDS : idl implementation based on 'SMESH' unit's classes
 //  File   : SMESHDS_Group.cxx
 //  Module : SMESH
@@ -48,7 +49,7 @@ SMESHDS_Group::SMESHDS_Group (const int                 theID,
 //purpose  : 
 //=======================================================================
 
-int SMESHDS_Group::Extent()
+int SMESHDS_Group::Extent() const
 {
   return myGroup.Extent();
 }
@@ -155,9 +156,20 @@ class MyGroupIterator: public SMDS_ElemIterator
 //purpose  : 
 //=======================================================================
 
-SMDS_ElemIteratorPtr SMESHDS_Group::GetElements()
+SMDS_ElemIteratorPtr SMESHDS_Group::GetElements() const
 {
   return SMDS_ElemIteratorPtr( new MyGroupIterator ( myGroup ));
+}
+
+//================================================================================
+/*!
+ * \brief Return a value allowing to find out if a group has changed or not
+ */
+//================================================================================
+
+int SMESHDS_Group::GetTic() const
+{
+  return myGroup.Tic();
 }
 
 //=======================================================================

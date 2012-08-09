@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_VTKUtils.h
 // Author : Open CASCADE S.A.S.
@@ -56,20 +57,22 @@ class SMESHGUI;
 class SMESH_Actor;
 class SALOME_Actor;
 
+class vtkActor;
+
 namespace SMESH
 {
   //----------------------------------------------------------------------------
   typedef std::pair<int,std::string> TKeyOfVisualObj;
   
 SMESHGUI_EXPORT
-  TVisualObjPtr GetVisualObj( int, const char* );
+  TVisualObjPtr GetVisualObj( int, const char*, bool nulData =false );
 SMESHGUI_EXPORT
   void OnVisuException(); // PAL16631
 
   //----------------------------------------------------------------------------
 SMESHGUI_EXPORT
   SVTK_ViewWindow* GetViewWindow( const SalomeApp_Module* = 0,
-				  bool = false );
+                                  bool = false );
 SMESHGUI_EXPORT
   SVTK_ViewWindow* FindVtkViewWindow( SUIT_ViewManager*, SUIT_ViewWindow* );
 SMESHGUI_EXPORT
@@ -112,14 +115,17 @@ SMESHGUI_EXPORT
 
 SMESHGUI_EXPORT
   bool UpdateView( SUIT_ViewWindow*, EDisplaing, const char* = "" );
-SMESHGUI_EXPORT		   
+SMESHGUI_EXPORT            
   bool UpdateView( EDisplaing, const char* = "" );
 
 SMESHGUI_EXPORT
   void UpdateView();
 
 SMESHGUI_EXPORT
-  bool Update( const Handle(SALOME_InteractiveObject)&, bool );
+  bool UpdateNulData( const Handle(SALOME_InteractiveObject)& theIO, bool theDisplay);
+
+SMESHGUI_EXPORT
+  bool Update( const Handle(SALOME_InteractiveObject)& theIO, bool theDisplay);
 
   //----------------------------------------------------------------------------
 SMESHGUI_EXPORT  
@@ -153,37 +159,52 @@ SMESHGUI_EXPORT
   //----------------------------------------------------------------------------
 SMESHGUI_EXPORT  
   int GetNameOfSelectedNodes( SVTK_Selector*,
-			      const Handle(SALOME_InteractiveObject)&,
-			      QString& );
+                              const Handle(SALOME_InteractiveObject)&,
+                              QString& );
 SMESHGUI_EXPORT
   int GetNameOfSelectedElements( SVTK_Selector*,
-				 const Handle(SALOME_InteractiveObject)&,
-				 QString& );
+                                 const Handle(SALOME_InteractiveObject)&,
+                                 QString& );
 SMESHGUI_EXPORT
   int GetEdgeNodes( SVTK_Selector*, const TVisualObjPtr&, int&, int& );
 
   //----------------------------------------------------------------------------
 SMESHGUI_EXPORT  
   int GetNameOfSelectedNodes( LightApp_SelectionMgr*,
-			      const Handle(SALOME_InteractiveObject)&,
-			      QString& );
+                              const Handle(SALOME_InteractiveObject)&,
+                              QString& );
 SMESHGUI_EXPORT
   int GetNameOfSelectedNodes( LightApp_SelectionMgr*, QString& );
 SMESHGUI_EXPORT
   int GetNameOfSelectedElements( LightApp_SelectionMgr*,
-				 const Handle(SALOME_InteractiveObject)&,
-				 QString& );
+                                 const Handle(SALOME_InteractiveObject)&,
+                                 QString& );
 SMESHGUI_EXPORT
   int GetNameOfSelectedElements( LightApp_SelectionMgr*, QString& );
 SMESHGUI_EXPORT
   int GetSelected( LightApp_SelectionMgr*, TColStd_IndexedMapOfInteger&, 
-		   const bool = true );
+                   const bool = true );
 
 SMESHGUI_EXPORT
   int GetEdgeNodes( LightApp_SelectionMgr*, int&, int& );
 
 SMESHGUI_EXPORT
   void SetControlsPrecision( const long );
+
+#ifndef DISABLE_PLOT2DVIEWER
+SMESHGUI_EXPORT
+  void ClearPlot2Viewers( SUIT_ViewWindow* theWindow );
+#endif
+
+  //----------------------------------------------------------------------------
+SMESHGUI_EXPORT
+  bool ComputeClippingPlaneParameters( std::list<vtkActor*> theActorList,
+                                       vtkFloatingPointType theNormal[3],
+                                       vtkFloatingPointType theDist,
+                                       vtkFloatingPointType theBounds[6],
+                                       vtkFloatingPointType theOrigin[3] );
+ SMESHGUI_EXPORT
+   void RemoveVisualObjectWithActors( const char* theEntry, bool fromAllViews = false );
 };
 
 #endif // SMESHGUI_VTKUTILS_H

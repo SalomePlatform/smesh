@@ -1,24 +1,22 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
+
 // File   : SMESHGUI_ComputeDlg.h
 // Author : Edward AGAPOV, Open CASCADE S.A.S.
 //
@@ -36,8 +34,10 @@
 
 // Qt includes
 #include <QMap>
+#include <QList>
 #include <QPointer>
 #include <QGroupBox>
+#include <QThread>
 
 // IDL includes
 #include <SALOMEconfig.h>
@@ -50,10 +50,9 @@ class QTableWidget;
 class QLabel;
 class QtxComboBox;
 class SMESHGUI_ComputeDlg;
+class SMESHGUI_MeshInfosBox;
 class SMESHGUI_PrecomputeDlg;
 class SMESHGUI_MeshEditPreview;
-
-class SMESH::compute_error_array;
 
 namespace SMESH
 {
@@ -71,6 +70,8 @@ public:
   SMESHGUI_BaseComputeOp();
   virtual ~SMESHGUI_BaseComputeOp();
 
+  SMESH::SMESH_Mesh_ptr          getMesh();
+
 protected:
   virtual void                   startOperation();
   virtual void                   stopOperation();
@@ -78,12 +79,23 @@ protected:
   SMESHGUI_ComputeDlg*           computeDlg() const;
   void                           computeMesh();
   void                           showComputeResult( const bool,
-						    const bool,
-						    SMESH::compute_error_array_var&,
-						    const bool,
-						    const QString& );
+                                                    const bool,
+                                                    SMESH::compute_error_array_var&,
+                                                    const bool,
+                                                    const QString& );
+  SMESHGUI_ComputeDlg*           evaluateDlg() const;
+  void                           evaluateMesh();
+  void                           showEvaluateResult(const SMESH::long_array& theRes,
+                                                    const bool,
+                                                    const bool,
+                                                    SMESH::compute_error_array_var&,
+                                                    const bool,
+                                                    const QString&);
+
+  virtual bool                   isValid( SUIT_Operation* theOp ) const;
     
 protected slots:
+  virtual bool                   onApply();
   void                           onPreviewShape();
   void                           onPublishShape();
   void                           onShowBadMesh();
@@ -120,8 +132,9 @@ protected:
   virtual void                   startOperation();
 
 protected slots:
-  virtual bool                   onApply();
 };
+
+class SMESHGUI_MeshOrderMgr;
 
 /*!
  * \brief Operation to preview and compute a mesh and show computation errors
@@ -136,6 +149,12 @@ public:
 
   virtual LightApp_Dialog*       dlg() const;
 
+  /**
+   * \brief returns map of assigned algorithms modes
+   */
+  static void                    getAssignedAlgos(_PTR(SObject) theMesh,
+                                                  QMap<int,int>& theModeMap);
+
 protected:
   virtual void                   startOperation();
   virtual void                   stopOperation();
@@ -144,64 +163,42 @@ protected:
   virtual void                   initDialog();
 
 protected slots:
-  virtual bool                   onApply();
   virtual void                   onCancel();
 
 private slots:
   void                           onPreview();
+  void                           onCompute();
 
 private:
+  //! private fields
   QMap< int, int >               myMapShapeId;
   QPointer<LightApp_Dialog>      myActiveDlg;
   QPointer<SMESHGUI_PrecomputeDlg> myDlg;
   SMESHGUI_MeshEditPreview*      myPreviewDisplayer;
+  //! fields for mesh order
+  typedef QList<int>             TListOfInt;
+  typedef QList<TListOfInt>      TListOfListOfInt;
+  TListOfListOfInt               myPrevOrder;
+  SMESHGUI_MeshOrderMgr*         myOrderMgr;
 };
 
 /*!
- * \brief Box showing mesh info
+ * \brief Operation to evaluate a mesh and show result
  */
-
-class SMESHGUI_EXPORT SMESHGUI_MeshInfosBox : public QGroupBox
+class SMESHGUI_EXPORT SMESHGUI_EvaluateOp: public SMESHGUI_BaseComputeOp
 {
   Q_OBJECT
 
 public:
-  SMESHGUI_MeshInfosBox( const bool, QWidget* );
+  SMESHGUI_EvaluateOp();
+  virtual ~SMESHGUI_EvaluateOp();
 
-  void    SetInfoByMesh( SMESH::SMESH_Mesh_var );
+  virtual LightApp_Dialog*       dlg() const;
 
-private:
-  bool    myFull;
-  QLabel* myNbNode;
-  QLabel* myNbEdge;
-  QLabel* myNbLinEdge;
-  QLabel* myNbQuadEdge;
-  QLabel* myNbTrai;
-  QLabel* myNbLinTrai;
-  QLabel* myNbQuadTrai;
-  QLabel* myNbQuad;
-  QLabel* myNbLinQuad;
-  QLabel* myNbQuadQuad;
-  QLabel* myNbFace;
-  QLabel* myNbLinFace;
-  QLabel* myNbQuadFace;
-  QLabel* myNbPolyg;
-  QLabel* myNbHexa;
-  QLabel* myNbLinHexa;
-  QLabel* myNbQuadHexa;
-  QLabel* myNbTetra;
-  QLabel* myNbLinTetra;
-  QLabel* myNbQuadTetra;
-  QLabel* myNbPyra;
-  QLabel* myNbLinPyra;
-  QLabel* myNbQuadPyra;
-  QLabel* myNbPrism;
-  QLabel* myNbLinPrism;
-  QLabel* myNbQuadPrism;
-  QLabel* myNbVolum;
-  QLabel* myNbLinVolum;
-  QLabel* myNbQuadVolum;
-  QLabel* myNbPolyh;
+protected:
+  virtual void                   startOperation();
+
+protected slots:
 };
 
 /*!
@@ -213,17 +210,18 @@ class SMESHGUI_EXPORT SMESHGUI_ComputeDlg : public SMESHGUI_Dialog
   Q_OBJECT
 
 public:
-  SMESHGUI_ComputeDlg( QWidget* );
+  SMESHGUI_ComputeDlg( QWidget*, bool );
   virtual ~SMESHGUI_ComputeDlg();
 
 protected:
-  QFrame*                      createMainFrame( QWidget* );
+  QFrame*                      createMainFrame( QWidget*, bool );
 
   QLabel*                      myMeshName;
   QGroupBox*                   myMemoryLackGroup;
   QGroupBox*                   myCompErrorGroup;
   QGroupBox*                   myHypErrorGroup;
   QLabel*                      myHypErrorLabel;
+  QLabel*                      myWarningLabel;
   QTableWidget*                myTable;
   QPushButton*                 myShowBtn;
   QPushButton*                 myPublishBtn;
@@ -235,6 +233,8 @@ protected:
   friend class SMESHGUI_BaseComputeOp;
   friend class SMESHGUI_PrecomputeOp;
 };
+
+class SMESHGUI_MeshOrderBox;
 
 /*!
  * \brief Dialog to preview and compute a mesh and show computation errors
@@ -250,14 +250,69 @@ public:
   
   void                         setPreviewModes( const QList<int>& );
   int                          getPreviewMode() const;
+  
+  SMESHGUI_MeshOrderBox*       getMeshOrderBox() const;
 
 signals:
   void                         preview();
 
 private:
+  SMESHGUI_MeshOrderBox*       myOrderBox;
   QPushButton*                 myPreviewBtn;
   QtxComboBox*                 myPreviewMode;
 };
 
+/*!
+ * \brief Thread to launch computation
+ */
+
+class SMESHGUI_EXPORT SMESHGUI_ComputeDlg_QThread : public QThread
+{
+  Q_OBJECT
+    
+public:
+  SMESHGUI_ComputeDlg_QThread(SMESH::SMESH_Gen_var gen,
+                              SMESH::SMESH_Mesh_var mesh,
+                              GEOM::GEOM_Object_var mainShape);
+  bool result();
+  void cancel();
+  
+protected:
+  void run();
+  
+private:
+  SMESH::SMESH_Gen_var myGen;
+  SMESH::SMESH_Mesh_var myMesh;
+  GEOM::GEOM_Object_var myMainShape;
+  bool myResult;
+};
+
+/*!
+ * \brief Dialog to display Cancel button
+ */
+
+class SMESHGUI_EXPORT SMESHGUI_ComputeDlg_QThreadQDialog : public QDialog
+{
+  Q_OBJECT
+    
+public:
+  SMESHGUI_ComputeDlg_QThreadQDialog(QWidget *parent,
+                                     SMESH::SMESH_Gen_var gen,
+                                     SMESH::SMESH_Mesh_var mesh,
+                                     GEOM::GEOM_Object_var mainShape);
+  bool result();
+  
+protected:
+  void timerEvent(QTimerEvent *timer);
+  void closeEvent(QCloseEvent *event);
+  
+private slots:
+  void onCancel();
+  
+private:
+  SMESHGUI_ComputeDlg_QThread qthread;
+  QPushButton *cancelButton;
+  
+};
 
 #endif // SMESHGUI_COMPUTEDLG_H

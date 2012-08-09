@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "SMESH_ExtractGeometry.h"
 
 #include <vtkCell.h>
@@ -34,11 +35,11 @@
 
 using namespace std;
 
-#ifdef _DEBUG_
-static int MYDEBUG = 0;
-#else
-static int MYDEBUG = 0;
-#endif
+//#ifdef _DEBUG_
+//static int MYDEBUG = 0;
+//#else
+//static int MYDEBUG = 0;
+//#endif
 
 #if defined __GNUC__
   #if __GNUC__ == 2
@@ -58,22 +59,14 @@ SMESH_ExtractGeometry::~SMESH_ExtractGeometry(){}
 
 
 vtkIdType SMESH_ExtractGeometry::GetElemObjId(int theVtkID){
-  if(myElemVTK2ObjIds.empty() || theVtkID > myElemVTK2ObjIds.size()) return -1;
-#if defined __GNUC_2__
+  if( theVtkID < 0 || theVtkID >= myElemVTK2ObjIds.size()) return -1;
   return myElemVTK2ObjIds[theVtkID];
-#else
-  return myElemVTK2ObjIds.at(theVtkID);
-#endif
 }
 
 
 vtkIdType SMESH_ExtractGeometry::GetNodeObjId(int theVtkID){
-  if(myNodeVTK2ObjIds.empty() || theVtkID > myNodeVTK2ObjIds.size()) return -1;
-#if defined __GNUC_2__
+  if ( theVtkID < 0 || theVtkID >= myNodeVTK2ObjIds.size()) return -1;
   return myNodeVTK2ObjIds[theVtkID];
-#else
-  return myNodeVTK2ObjIds.at(theVtkID);
-#endif
 }
 
 
@@ -160,7 +153,7 @@ int SMESH_ExtractGeometry::RequestData(
         {
         newId = newPts->InsertNextPoint(x);
         pointMap[ptId] = newId;
-	myNodeVTK2ObjIds.push_back(ptId);
+        myNodeVTK2ObjIds.push_back(ptId);
         outputPD->CopyData(pd,ptId,newId);
         }
       }
@@ -183,7 +176,7 @@ int SMESH_ExtractGeometry::RequestData(
           {
           newId = newPts->InsertNextPoint(x);
           pointMap[ptId] = newId;
-	  myNodeVTK2ObjIds.push_back(ptId);
+          myNodeVTK2ObjIds.push_back(ptId);
           outputPD->CopyData(pd,ptId,newId);
           }
         }
@@ -236,7 +229,7 @@ int SMESH_ExtractGeometry::RequestData(
             x = input->GetPoint(ptId);
             newId = newPts->InsertNextPoint(x);
             pointMap[ptId] = newId;
-	    myNodeVTK2ObjIds.push_back(ptId);
+            myNodeVTK2ObjIds.push_back(ptId);
             outputPD->CopyData(pd,ptId,newId);
             }
           newCellPts->InsertId(i,pointMap[ptId]);
@@ -246,9 +239,14 @@ int SMESH_ExtractGeometry::RequestData(
       
     if ( npts >= numCellPts || (this->ExtractBoundaryCells && npts > 0) )
       {
-      newCellId = output->InsertNextCell(cell->GetCellType(),newCellPts);
-      myElemVTK2ObjIds.push_back(cellId);
-      outputCD->CopyData(cd,cellId,newCellId);
+        if(cell->GetCellType() == VTK_POLYHEDRON) {
+          newCellPts->Reset();
+          vtkUnstructuredGrid::SafeDownCast(input)->GetFaceStream( cellId ,newCellPts );        
+          vtkUnstructuredGrid::ConvertFaceStreamPointIds(newCellPts, pointMap);
+        }
+          newCellId = output->InsertNextCell(cell->GetCellType(),newCellPts);
+          myElemVTK2ObjIds.push_back(cellId);
+          outputCD->CopyData(cd,cellId,newCellId);
       }
     }//for all cells
 

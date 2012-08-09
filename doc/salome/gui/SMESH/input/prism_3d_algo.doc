@@ -4,9 +4,9 @@
 
 3D extrusion algorithm can be used for meshing prisms, i.e. <b>3D Shapes</b>
 defined by two opposing faces having the same number of vertices and
-edges and meshed using the \ref projection_algos_page "2D Projection"
-algorithm. These two faces should be connected by quadrangle "side"
-faces.
+edges and meshed using, for example,  the \ref projection_algos_page
+"2D Projection" algorithm. These two faces should be connected by
+quadrangle "side" faces.
 
 The opposing faces can be meshed with either quadrangles or triangles,
 while the side faces should be meshed with quadrangles only.
@@ -16,5 +16,9 @@ while the side faces should be meshed with quadrangles only.
 As you can see, the <b>3D extrusion</b> algorithm permits to build and to
 have in the same 3D mesh such elements as hexahedrons, prisms and
 polyhedrons.
+
+\note This algorithm works correctly only if the opposing faces have
+the same (or similar) meshing topography. Otherwise, 3D extrusion
+algorithm can fail to build mesh volumes.
 
 */

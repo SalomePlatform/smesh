@@ -23,6 +23,26 @@ else:           print "New Node has been added with ID ", new_id
 \endcode
 
 <br>
+\anchor tui_add_0DElement
+<h3>Add 0D Element</h3>
+
+\code
+import SMESH_mechanic
+
+mesh = SMESH_mechanic.mesh
+
+# add node
+node_id = mesh.AddNode(50, 10, 0)
+
+# add 0D Element
+new_id = mesh.Add0DElement(node_id)
+
+print ""
+if new_id == 0: print "KO node addition."
+else:           print "New 0D Element has been added with ID ", new_id
+\endcode
+
+<br>
 \anchor tui_add_edge
 <h3>Add Edge</h3>
 
@@ -262,6 +282,24 @@ else:        print "KO Elements removing."
 \endcode
 
 <br>
+\anchor tui_removing_orphan_nodes
+<h3>Removing Orphan Nodes</h3>
+
+\code
+import SMESH_mechanic
+
+mesh = SMESH_mechanic.mesh
+
+# add orphan nodes
+mesh.AddNode(0,0,0)
+mesh.AddNode(1,1,1)
+# remove just created orphan nodes
+res = mesh.RemoveOrphanNodes()
+if res == 1: print "Removed %d nodes!" % res
+else:        print "KO nodes removing."
+\endcode
+
+<br>
 \anchor tui_renumbering_nodes_and_elements
 <h2>Renumbering Nodes and Elements</h2>
 
@@ -278,19 +316,6 @@ mesh.RenumberElements()
 <br>
 \anchor tui_moving_nodes
 <h2>Moving Nodes</h2>
-
-\code
-import SMESH_mechanic
-
-mesh = SMESH_mechanic.mesh
-
-# move node #38
-mesh.MoveNode(38, 20., 10., 0.)
-\endcode
-
-<br>
-\anchor tui_mesh_through_point
-<h2>Mesh through point</h2>
 
 \code
 from geompy import *
@@ -324,16 +349,11 @@ n = mesh.FindNodeClosestTo( -1,-1,-1 )
 if not n == node000:
     raise "FindNodeClosestTo() returns " + str( n ) + " != " + str( node000 )
 
-# check if any node will be found for a point inside a box
-n = mesh.FindNodeClosestTo( 100, 100, 100 )
-if not n > 0:
-    raise "FindNodeClosestTo( 100, 100, 100 ) fails"
-
 # move node000 to a new location
 x,y,z = -10, -10, -10
-n = mesh.MeshToPassThroughAPoint( x,y,z )
-if not n == node000:
-    raise "FindNodeClosestTo() returns " + str( n ) + " != " + str( node000 )
+n = mesh.MoveNode( n,x,y,z )
+if not n:
+    raise "MoveNode() returns " + n
 
 # check the coordinates of the node000
 xyz = mesh.GetNodeXYZ( node000 )
@@ -768,7 +788,6 @@ mesh.RotationSweepObject(GroupRotate, axisXYZ, angle45, 4, 1e-5)
 
 \code
 import geompy
-
 import smesh
 
 # define the geometry
@@ -802,17 +821,151 @@ algo2D.MaxElementArea(240)
 isDone = Mesh_2.Compute()
 if not isDone: print 'Mesh Mesh_2 : computation failed'
 
-# create a pattern
+# create a 2d pattern
 pattern = smesh.GetPattern()
 
 isDone = pattern.LoadFromFace(Mesh_2.GetMesh(), Face_2, 0)
 if (isDone != 1): print 'LoadFromFace :', pattern.GetErrorCode()
 
 # apply the pattern to a face of the first mesh
-pattern.ApplyToMeshFaces(Mesh_1.GetMesh(), [17], 0, 0)
-
+facesToSplit = Mesh_1.GetElementsByType(smesh.SMESH.FACE)
+print "Splitting %d rectangular face(s) to %d triangles..."%(len(facesToSplit), 2*len(facesToSplit))
+pattern.ApplyToMeshFaces(Mesh_1.GetMesh(), facesToSplit, 0, 0)
 isDone = pattern.MakeMesh(Mesh_1.GetMesh(), 0, 0)
 if (isDone != 1): print 'MakeMesh :', pattern.GetErrorCode()  
+
+# create quadrangle mesh
+Mesh_3 = smesh.Mesh(Box_1)
+Mesh_3.Segment().NumberOfSegments(1)
+Mesh_3.Quadrangle()
+Mesh_3.Hexahedron()
+isDone = Mesh_3.Compute()
+if not isDone: print 'Mesh Mesh_3 : computation failed'
+
+# create a 3d pattern (hexahedrons)
+pattern_hexa = smesh.GetPattern()
+
+smp_hexa = """!!! Nb of points:
+15
+      0        0        0   !- 0
+      1        0        0   !- 1
+      0        1        0   !- 2
+      1        1        0   !- 3
+      0        0        1   !- 4
+      1        0        1   !- 5
+      0        1        1   !- 6
+      1        1        1   !- 7
+    0.5        0      0.5   !- 8
+    0.5        0        1   !- 9
+    0.5      0.5      0.5   !- 10
+    0.5      0.5        1   !- 11
+      1        0      0.5   !- 12
+      1      0.5      0.5   !- 13
+      1      0.5        1   !- 14
+  !!! Indices of points of 4 elements:
+  8 12 5 9 10 13 14 11
+  0 8 9 4 2 10 11 6
+  2 10 11 6 3 13 14 7
+  0 1 12 8 2 3 13 10"""
+
+pattern_hexa.LoadFromFile(smp_hexa)
+
+# apply the pattern to a mesh
+volsToSplit = Mesh_3.GetElementsByType(smesh.SMESH.VOLUME)
+print "Splitting %d hexa volume(s) to %d hexas..."%(len(volsToSplit), 4*len(volsToSplit))
+pattern_hexa.ApplyToHexahedrons(Mesh_3.GetMesh(), volsToSplit,0,3)
+isDone = pattern_hexa.MakeMesh(Mesh_3.GetMesh(), True, True)
+if (isDone != 1): print 'MakeMesh :', pattern_hexa.GetErrorCode()  
+
+# create one more quadrangle mesh
+Mesh_4 = smesh.Mesh(Box_1)
+Mesh_4.Segment().NumberOfSegments(1)
+Mesh_4.Quadrangle()
+Mesh_4.Hexahedron()
+isDone = Mesh_4.Compute()
+if not isDone: print 'Mesh Mesh_4 : computation failed'
+
+# create another 3d pattern (pyramids)
+pattern_pyra = smesh.GetPattern()
+
+smp_pyra = """!!! Nb of points:
+9
+        0        0        0   !- 0
+        1        0        0   !- 1
+        0        1        0   !- 2
+        1        1        0   !- 3
+        0        0        1   !- 4
+        1        0        1   !- 5
+        0        1        1   !- 6
+        1        1        1   !- 7
+      0.5      0.5      0.5   !- 8
+  !!! Indices of points of 6 elements:
+  0 1 5 4 8
+  7 5 1 3 8
+  3 2 6 7 8
+  2 0 4 6 8
+  0 2 3 1 8
+  4 5 7 6 8"""
+
+pattern_pyra.LoadFromFile(smp_pyra)
+
+# apply the pattern to a face mesh
+volsToSplit = Mesh_4.GetElementsByType(smesh.SMESH.VOLUME)
+print "Splitting %d hexa volume(s) to %d hexas..."%(len(volsToSplit), 6*len(volsToSplit))
+pattern_pyra.ApplyToHexahedrons(Mesh_4.GetMesh(), volsToSplit,1,0)
+isDone = pattern_pyra.MakeMesh(Mesh_4.GetMesh(), True, True)
+if (isDone != 1): print 'MakeMesh :', pattern_pyra.GetErrorCode()  
+\endcode
+
+<br>
+\anchor tui_quadratic
+<h2>Convert mesh to/from quadratic</h2>
+
+\code
+import geompy
+import smesh
+
+# create sphere of radius 100
+
+Sphere = geompy.MakeSphereR( 100 )
+geompy.addToStudy( Sphere, "Sphere" )
+
+# create simple trihedral mesh
+
+Mesh = smesh.Mesh(Sphere)
+Regular_1D = Mesh.Segment()
+Nb_Segments = Regular_1D.NumberOfSegments(5)
+MEFISTO_2D = Mesh.Triangle()
+Tetrahedron = Mesh.Tetrahedron()
+
+# compute mesh
+
+isDone = Mesh.Compute()
+
+# convert to quadratic
+# theForce3d = 1; this results in the medium node lying at the
+# middle of the line segments connecting start and end node of a mesh
+# element
+
+Mesh.ConvertToQuadratic( theForce3d=1 )
+
+# revert back to the non-quadratic mesh
+
+Mesh.ConvertFromQuadratic()
+
+# convert to quadratic
+# theForce3d = 0; this results in the medium node lying at the
+# geometrical edge from which the mesh element is built
+
+Mesh.ConvertToQuadratic( theForce3d=0 )
+
+# to convert not the whole mesh but a sub-mesh, provide it as 
+# an additional argument to the functions:
+# Mesh.ConvertToQuadratic( 0, subMesh )
+# Mesh.ConvertFromQuadratic( subMesh )
+#
+# Note that the mesh becomes non-conformal at conversion of sub-mesh.
+
 \endcode
 
 */

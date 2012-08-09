@@ -1,0 +1,134 @@
+/*!
+
+\page scale_page Scale
+
+\n This geometrical operation allows to scale in space your mesh
+or some of its elements.
+
+<em>To scale a mesh:</em>
+
+<ol>
+<li>From the \b Modification menu choose \b Transformation -> \b Scale
+\b Transform item.
+
+One of the following dialogs will appear:
+
+With one scale factor:
+\image html scale01.png
+
+Or with different scale factors for axes:
+\image html scale02.png
+
+</li>
+
+<li>
+In the dialog:
+<ul>
+<li>specify the IDs of the translated elements:
+
+<ul>
+<li><b>Select the whole mesh, submesh or group</b> activating this
+checkbox; or</li>
+<li>choose mesh elements with the mouse in the 3D Viewer. It is
+possible to select a whole area with a mouse frame; or</li> 
+<li>input the element IDs directly in <b>ID Elements</b> field. The selected elements will be highlighted in the
+viewer; or</li>
+<li>apply Filters. <b>Set filter</b> button allows to apply a filter to the selection of elements. See more
+about filters in the \ref selection_filter_library_page "Selection filter library" page.</li>
+</ul>
+</li>
+
+<li>specify the base point for scale</li>
+
+<li>specify the scale factor</li>
+
+<li>specify the conditions of scale:
+<ul>
+<li>activate <b>Move elements</b> radio button to scale the selected
+mesh (or elements) without creating a copy;</li>
+<li>activate <b>Copy elements</b> radio button to duplicate the selected
+mesh (or elements) and to apply scaling to the copy within the same mesh;</li>
+<li>activate <b>Create as new mesh</b> radio button to leave the
+selected mesh (or elements) at its previous location and create a new
+mesh of the scaled copy of the selected elements; the new mesh appears in the Object Browser
+with the default name MeshName_scaled (it is possible to change this
+name in the adjacent box);</li>
+<li>activate <b> Copy groups </b> checkbox to copy the groups of
+elements existing in the source mesh to the newly created mesh.</li>
+</ul>
+</li>
+
+</li>
+
+<li>activate <b>Preview</b> checkbox to show the result of transformation in the viewer </li>
+<li>click \b Apply or <b> Apply and Close</b> button to confirm the operation.</li>
+</ul>
+</ol>
+
+
+
+<b>Example of using:</b>
+
+1. Create quandrangle mesh 3x3 on a simple planar face (200x200)
+
+\image html scaleinit01.png
+
+and union 3 faces (along axis Z) to group "gr_faces"
+
+\image html scaleinit02.png
+
+
+
+2. Perform scale operation for the whole mesh and create a new mesh:
+
+\image html scale03.png
+
+result after operation:
+
+\image html scaleres03.png
+
+
+
+3. Perform scale operation for the whole mesh and copy elements:
+
+\image html scale04.png
+
+result after operation:
+
+\image html scaleres04.png
+
+
+
+4. Perform scale operation for a group of faces and copy elements:
+
+\image html scale06.png
+
+result after operation:
+
+\image html scaleres06.png
+
+
+
+5. Perform scale operation for two edges and move elements:
+
+\image html scale07.png
+
+result after operation:
+
+\image html scaleres07.png
+
+
+
+6. Perform scale operation for one face and move elements:
+
+\image html scale09.png
+
+result after operation:
+
+\image html scaleres09.png
+
+
+<br><b>See Also</b> a sample TUI Script of a \ref tui_scale "Scale" operation.  
+
+
+*/

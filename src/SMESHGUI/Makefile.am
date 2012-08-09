@@ -1,24 +1,22 @@
-#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 #
-#  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License.
 #
-#  This library is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU Lesser General Public
-#  License as published by the Free Software Foundation; either
-#  version 2.1 of the License.
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
 #
-#  This library is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#  Lesser General Public License for more details.
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
-#  You should have received a copy of the GNU Lesser General Public
-#  License along with this library; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-#
+
 # SMESH SMESHGUI : GUI for SMESH component
 # File   : Makefile.am
 # Author : Alexander BORODIN, Open CASCADE S.A.S.
@@ -49,12 +47,10 @@ salomeinclude_HEADERS = \
 	SMESHGUI_GroupDlg.h \
 	SMESHGUI_RemoveNodesDlg.h \
 	SMESHGUI_RemoveElementsDlg.h \
-	SMESHGUI_MeshInfosDlg.h \
-	SMESHGUI_StandardMeshInfosDlg.h \
-	SMESHGUI_WhatIsDlg.h \
+	SMESHGUI_MeshInfo.h \
+	SMESHGUI_Measurements.h \
 	SMESHGUI_Preferences_ColorDlg.h \
 	SMESHGUI_Preferences_ScalarBarDlg.h \
-	SMESHGUI_MoveNodesDlg.h \
 	SMESHGUI_AddMeshElementDlg.h \
 	SMESHGUI_XmlHandler.h \
 	SMESHGUI_Filter.h \
@@ -71,9 +67,11 @@ salomeinclude_HEADERS = \
 	SMESHGUI_RevolutionDlg.h \
 	SMESHGUI_RotationDlg.h \
 	SMESHGUI_TranslationDlg.h \
+	SMESHGUI_ScaleDlg.h \
 	SMESHGUI_SymmetryDlg.h \
 	SMESHGUI_SewingDlg.h \
-	SMESHGUI_EditMeshDlg.h \
+	SMESHGUI_DuplicateNodesDlg.h \
+	SMESHGUI_MergeDlg.h \
 	SMESHGUI_MeshUtils.h \
 	SMESHGUI_CreatePolyhedralVolumeDlg.h \
 	SMESHGUI_Operation.h \
@@ -90,6 +88,15 @@ salomeinclude_HEADERS = \
 	SMESHGUI_MakeNodeAtPointDlg.h \
 	SMESHGUI_MeshEditPreview.h \
 	SMESHGUI_IdValidator.h \
+	SMESHGUI_MeshInfosBox.h \
+	SMESHGUI_Make2DFrom3DOp.h \
+	SMESHGUI_FindElemByPointDlg.h \
+	SMESHGUI_MeshOrderDlg.h \
+	SMESHGUI_MeshOrderOp.h \
+	SMESHGUI_FileValidator.h \
+	SMESHGUI_CopyMeshDlg.h \
+	SMESHGUI_PreviewDlg.h  \
+	SMESHGUI_ReorientFacesDlg.h \
 	SMESH_SMESHGUI.hxx
 
 # Libraries targets
@@ -106,12 +113,10 @@ dist_libSMESH_la_SOURCES = \
 	SMESHGUI_GroupDlg.cxx \
 	SMESHGUI_RemoveNodesDlg.cxx \
 	SMESHGUI_RemoveElementsDlg.cxx \
-	SMESHGUI_MeshInfosDlg.cxx \
-	SMESHGUI_StandardMeshInfosDlg.cxx \
-	SMESHGUI_WhatIsDlg.cxx \
+	SMESHGUI_MeshInfo.cxx \
+	SMESHGUI_Measurements.cxx \
 	SMESHGUI_Preferences_ColorDlg.cxx \
 	SMESHGUI_Preferences_ScalarBarDlg.cxx \
-	SMESHGUI_MoveNodesDlg.cxx \
 	SMESHGUI_AddMeshElementDlg.cxx \
 	SMESHGUI_XmlHandler.cxx \
 	SMESHGUI_Filter.cxx \
@@ -128,9 +133,11 @@ dist_libSMESH_la_SOURCES = \
 	SMESHGUI_RevolutionDlg.cxx \
 	SMESHGUI_RotationDlg.cxx \
 	SMESHGUI_TranslationDlg.cxx \
+	SMESHGUI_ScaleDlg.cxx \
 	SMESHGUI_SymmetryDlg.cxx \
 	SMESHGUI_SewingDlg.cxx \
-	SMESHGUI_EditMeshDlg.cxx \
+	SMESHGUI_DuplicateNodesDlg.cxx \
+	SMESHGUI_MergeDlg.cxx \
 	SMESHGUI_Utils.cxx \
 	SMESHGUI_GEOMGenUtils.cxx \
 	SMESHGUI_MeshUtils.cxx \
@@ -157,7 +164,16 @@ dist_libSMESH_la_SOURCES = \
 	SMESHGUI_MakeNodeAtPointDlg.cxx \
 	SMESHGUI_MeshEditPreview.cxx \
 	SMESHGUI_GroupOnShapeDlg.cxx \
-	SMESHGUI_FileInfoDlg.cxx
+	SMESHGUI_FileInfoDlg.cxx \
+	SMESHGUI_MeshInfosBox.cxx \
+	SMESHGUI_Make2DFrom3DOp.cxx \
+	SMESHGUI_FindElemByPointDlg.cxx \
+	SMESHGUI_MeshOrderDlg.cxx \
+	SMESHGUI_MeshOrderOp.cxx \
+	SMESHGUI_CopyMeshDlg.cxx \
+	SMESHGUI_FileValidator.cxx \
+	SMESHGUI_PreviewDlg.cxx  \
+	SMESHGUI_ReorientFacesDlg.cxx
 
 MOC_FILES = \
 	SMESHGUI_moc.cxx \
@@ -171,12 +187,10 @@ MOC_FILES = \
 	SMESHGUI_GroupDlg_moc.cxx \
 	SMESHGUI_RemoveNodesDlg_moc.cxx \
 	SMESHGUI_RemoveElementsDlg_moc.cxx \
-	SMESHGUI_MeshInfosDlg_moc.cxx \
-	SMESHGUI_StandardMeshInfosDlg_moc.cxx \
-	SMESHGUI_WhatIsDlg_moc.cxx \
+	SMESHGUI_MeshInfo_moc.cxx \
+	SMESHGUI_Measurements_moc.cxx \
 	SMESHGUI_Preferences_ColorDlg_moc.cxx \
 	SMESHGUI_Preferences_ScalarBarDlg_moc.cxx \
-	SMESHGUI_MoveNodesDlg_moc.cxx \
 	SMESHGUI_AddMeshElementDlg_moc.cxx \
 	SMESHGUI_FilterDlg_moc.cxx \
 	SMESHGUI_FilterLibraryDlg_moc.cxx \
@@ -191,9 +205,11 @@ MOC_FILES = \
 	SMESHGUI_RevolutionDlg_moc.cxx \
 	SMESHGUI_RotationDlg_moc.cxx \
 	SMESHGUI_TranslationDlg_moc.cxx \
+	SMESHGUI_ScaleDlg_moc.cxx \
 	SMESHGUI_SymmetryDlg_moc.cxx \
 	SMESHGUI_SewingDlg_moc.cxx \
-	SMESHGUI_EditMeshDlg_moc.cxx \
+	SMESHGUI_DuplicateNodesDlg_moc.cxx \
+	SMESHGUI_MergeDlg_moc.cxx \
 	SMESHGUI_CreatePolyhedralVolumeDlg_moc.cxx \
 	SMESHGUI_Operation_moc.cxx \
 	SMESHGUI_SelectionOp_moc.cxx \
@@ -209,7 +225,15 @@ MOC_FILES = \
 	SMESHGUI_ComputeDlg_moc.cxx \
 	SMESHGUI_MakeNodeAtPointDlg_moc.cxx \
 	SMESHGUI_GroupOnShapeDlg_moc.cxx \
-	SMESHGUI_FileInfoDlg_moc.cxx
+	SMESHGUI_FileInfoDlg_moc.cxx \
+	SMESHGUI_MeshInfosBox_moc.cxx \
+	SMESHGUI_Make2DFrom3DOp_moc.cxx \
+	SMESHGUI_FindElemByPointDlg_moc.cxx \
+	SMESHGUI_MeshOrderDlg_moc.cxx \
+	SMESHGUI_CopyMeshDlg_moc.cxx \
+	SMESHGUI_MeshOrderOp_moc.cxx \
+	SMESHGUI_PreviewDlg_moc.cxx \
+	SMESHGUI_ReorientFacesDlg_moc.cxx
 
 nodist_libSMESH_la_SOURCES= \
 	$(MOC_FILES)
@@ -223,33 +247,38 @@ libSMESH_la_CPPFLAGS = \
 	$(PYTHON_INCLUDES) \
 	$(KERNEL_CXXFLAGS)  \
 	$(GUI_CXXFLAGS) \
+	$(QWT_INCLUDES) \
 	$(GEOM_CXXFLAGS) \
 	$(MED_CXXFLAGS) \
 	$(BOOST_CPPFLAGS) \
 	$(CORBA_CXXFLAGS) \
 	$(CORBA_INCLUDES) \
-	$(MED2_INCLUDES) \
+	$(MED3_INCLUDES) \
 	$(HDF5_INCLUDES) \
 	-I$(srcdir)/../OBJECT \
 	-I$(srcdir)/../SMESHFiltersSelection \
 	-I$(srcdir)/../SMDS \
+	-I$(srcdir)/../SMESHDS \
 	-I$(srcdir)/../SMESH \
+	-I$(srcdir)/../SMESHUtils \
 	-I$(srcdir)/../SMESH_I \
 	-I$(srcdir)/../Controls \
 	-I$(srcdir)/../SMESHClient \
-	-I$(top_builddir)/idl \
-	-I$(top_builddir)/salome_adm/unix
-
+	-I$(top_builddir) \
+	-I$(top_builddir)/idl
 
 libSMESH_la_LDFLAGS  = \
 	../SMESHFiltersSelection/libSMESHFiltersSelection.la \
 	../SMDS/libSMDS.la \
 	../Controls/libSMESHControls.la \
 	../OBJECT/libSMESHObject.la \
-	$(GEOM_LDFLAGS) \
-	-lGEOMBase
+	$(CAS_LDFLAGS) -lTKV3d \
+	$(GUI_LDFLAGS) -lSalomePrs -lsuit -lSUITApp -lCAM -lstd \
+	$(GEOM_LDFLAGS) -lGEOMBase -lGEOMFiltersSelection -lGEOMObject \
+	$(PYTHON_LIBS)
 
 # resources files
 nodist_salomeres_DATA= \
 	SMESH_images.qm \
-	SMESH_msg_en.qm
+	SMESH_msg_en.qm \
+	SMESH_msg_fr.qm

@@ -1,29 +1,28 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-//  SMESH SMESH : implementaion of SMESH idl descriptions
+
 //  File   : SMESH_subMesh.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #ifndef _SMESH_SUBMESH_HXX_
 #define _SMESH_SUBMESH_HXX_
@@ -34,6 +33,7 @@
 #include "SMESHDS_SubMesh.hxx"
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_ComputeError.hxx"
+#include "SMESH_Algo.hxx"
 
 #include "Utils_SALOME_Exception.hxx"
 
@@ -60,7 +60,7 @@ class SMESH_EXPORT SMESH_subMesh
 {
  public:
   SMESH_subMesh(int Id, SMESH_Mesh * father, SMESHDS_Mesh * meshDS,
-		const TopoDS_Shape & aSubShape);
+                const TopoDS_Shape & aSubShape);
   virtual ~ SMESH_subMesh();
 
   int GetId() const;
@@ -74,8 +74,9 @@ class SMESH_EXPORT SMESH_subMesh
 
   SMESH_subMesh *GetFirstToCompute();
 
+  SMESH_Algo* GetAlgo() const;
+
   const std::map < int, SMESH_subMesh * >& DependsOn();
-  //const map < int, SMESH_subMesh * >&Dependants();
   /*!
    * \brief Return iterator on the submeshes this one depends on
    */
@@ -88,11 +89,11 @@ class SMESH_EXPORT SMESH_subMesh
   {
     NOT_READY, READY_TO_COMPUTE,
     COMPUTE_OK, FAILED_TO_COMPUTE
-    };
+  };
   enum algo_state
   {
     NO_ALGO, MISSING_HYP, HYP_OK
-    };
+  };
   enum algo_event
   {
     ADD_HYP          , ADD_ALGO,
@@ -100,13 +101,13 @@ class SMESH_EXPORT SMESH_subMesh
     ADD_FATHER_HYP   , ADD_FATHER_ALGO,
     REMOVE_FATHER_HYP, REMOVE_FATHER_ALGO,
     MODIF_HYP
-    };
+  };
   enum compute_event
   {
-    MODIF_ALGO_STATE, COMPUTE,
-    CLEAN, SUBMESH_COMPUTED, SUBMESH_RESTORED,
+    MODIF_ALGO_STATE, COMPUTE, COMPUTE_CANCELED,
+    CLEAN, SUBMESH_COMPUTED, SUBMESH_RESTORED, SUBMESH_LOADED,
     MESH_ENTITY_REMOVED, CHECK_COMPUTE_STATE
-    };
+  };
   enum event_type
   {
     ALGO_EVENT, COMPUTE_EVENT
@@ -123,7 +124,7 @@ class SMESH_EXPORT SMESH_subMesh
     * \param where - the submesh to store the listener and it's data
    * 
    * The method remembers the submesh \awhere it puts the listener in order to delete
-   * them when HYP_OK algo_state is lost
+   * it when HYP_OK algo_state is lost
    * After being set, event listener is notified on each event of \awhere submesh.
    */
   void SetEventListener(EventListener*     listener,
@@ -146,9 +147,17 @@ class SMESH_EXPORT SMESH_subMesh
 protected:
 
   //!< event listeners to notify
-  std::map< EventListener*, EventListenerData* >           myEventListeners;
+  std::map< EventListener*, EventListenerData* > _eventListeners;
+
   //!< event listeners to delete when HYP_OK algo_state is lost
-  std::list< std::pair< SMESH_subMesh*, EventListener* > > myOwnListeners;
+  struct OwnListenerData {
+    SMESH_subMesh* mySubMesh;
+    int            myMeshID; // id of mySubMesh->GetFather()
+    int            mySubMeshID;
+    EventListener* myListener;
+    OwnListenerData( SMESH_subMesh* sm=0, EventListener* el=0);
+  };
+  std::list< OwnListenerData >                    _ownListeners;
 
   /*!
    * \brief Sets an event listener and its data to a submesh
@@ -157,7 +166,7 @@ protected:
    * 
    * After being set, event listener is notified on each event of a submesh.
    */
-  void SetEventListener(EventListener* listener, EventListenerData* data);
+  void setEventListener(EventListener* listener, EventListenerData* data);
 
   /*!
    * \brief Notify stored event listeners on the occured event
@@ -165,16 +174,22 @@ protected:
    * \param eventType - algo_event or compute_event
    * \param hyp - hypothesis, if eventType is algo_event
    */
-  void NotifyListenersOnEvent( const int         event,
+  void notifyListenersOnEvent( const int         event,
                                const event_type  eventType,
                                SMESH_Hypothesis* hyp = 0);
 
   /*!
    * \brief Delete event listeners depending on algo of this submesh
    */
-  void DeleteOwnListeners();
+  void deleteOwnListeners();
 
-  // ==================================================================
+  /*!
+   * \brief loads dependent meshes on SUBMESH_LOADED event
+   */
+  void loadDependentMeshes();
+
+  // END: Members to track non hierarchical dependencies between submeshes
+  // =====================================================================
 
 public:
 
@@ -191,6 +206,9 @@ public:
   void DumpAlgoState(bool isMain);
 
   bool ComputeStateEngine(int event);
+  void ComputeSubMeshStateEngine(int event, const bool includeSelf=false);
+
+  bool Evaluate(MapShapeNbElems& aResMap);
 
   bool IsConform(const SMESH_Algo* theAlgo);
   // check if a conform mesh will be produced by the Algo
@@ -223,43 +241,44 @@ public:
    *        none mesh entity is bound to it
    */
   void SetIsAlwaysComputed(bool isAlCo);
+  bool IsAlwaysComputed() { return _alwaysComputed; }
 
+  
+  /*!
+   * \brief  Find common submeshes (based on shared subshapes with other
+   * \param theOther submesh to check
+   * \param theCommonIds set of common submesh IDs
+   * NOTE: this method does not cleat set before collect common IDs
+   */
+  bool FindIntersection( const SMESH_subMesh *           theOther,
+                         std::set<const SMESH_subMesh*>& theSetOfCommon ) const;
 
 protected:
   // ==================================================================
-  void InsertDependence(const TopoDS_Shape aSubShape);
+  void insertDependence(const TopoDS_Shape aSubShape);
 
-  bool SubMeshesComputed();
+  bool subMeshesComputed();
+  //bool SubMeshesReady();
 
-  bool SubMeshesReady();
-
-  void RemoveSubMeshElementsAndNodes();
-  void UpdateDependantsState(const compute_event theEvent);
-  void UpdateSubMeshState(const compute_state theState);
-  void ComputeSubMeshStateEngine(int event);
-  void CleanDependants();
-  void CleanDependsOn();
-  void SetAlgoState(int state);
+  void removeSubMeshElementsAndNodes();
+  void updateDependantsState(const compute_event theEvent);
+  void updateSubMeshState(const compute_state theState);
+  void cleanDependants();
+  void cleanDependsOn();
+  void setAlgoState(int state);
 
   /*!
    * \brief Return a shape containing all sub-shapes of the MainShape that can be
    * meshed at once along with _subShape
    */
-  TopoDS_Shape GetCollection(SMESH_Gen * theGen,
+  TopoDS_Shape getCollection(SMESH_Gen * theGen,
                              SMESH_Algo* theAlgo,
                              bool &      theSubComputed);
-
-  /*!
-   * \brief Apply theAlgo to all subshapes in theCollection
-   */
-  bool ApplyToCollection (SMESH_Algo*         theAlgo,
-                          const TopoDS_Shape& theCollection);
-
   /*!
    * \brief Update compute_state by _computeError
     * \retval bool - false if there are errors
    */
-  bool CheckComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& theShape=TopoDS_Shape());
+  bool checkComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& theShape=TopoDS_Shape());
 
   /*!
    * \brief Return a hypothesis attached to theShape.
@@ -268,7 +287,7 @@ protected:
    * is returned; else an applicable ones having theHypType
    * is returned
    */
-  const SMESH_Hypothesis* GetSimilarAttached(const TopoDS_Shape&      theShape,
+  const SMESH_Hypothesis* getSimilarAttached(const TopoDS_Shape&      theShape,
                                              const SMESH_Hypothesis * theHyp,
                                              const int                theHypType = 0);
   // 

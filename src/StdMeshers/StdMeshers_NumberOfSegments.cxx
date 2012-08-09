@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : StdMeshers_NumberOfSegments.cxx
 //           Moved here from SMESH_NumberOfSegments.cxx
@@ -30,6 +31,7 @@
 #include "StdMeshers_Distribution.hxx"
 #include "SMESHDS_SubMesh.hxx"
 #include "SMESH_Mesh.hxx"
+#include "SMESH_Comment.hxx"
 
 #include <ExprIntrp_GenExp.hxx>
 #include <Expr_Array1OfNamedUnknown.hxx>
@@ -48,6 +50,8 @@
 #ifdef NO_CAS_CATCH
 #include <Standard_ErrorHandler.hxx>
 #endif
+
+#include <Basics_Utils.hxx>
 
 using namespace std;
 
@@ -233,11 +237,11 @@ void StdMeshers_NumberOfSegments::SetTableFunction(const vector<double>& table)
 #ifdef NO_CAS_CATCH
         OCC_CATCH_SIGNALS;
 #endif
-	val = pow( 10.0, val );
+        val = pow( 10.0, val );
       } catch(Standard_Failure) {
-	Handle(Standard_Failure) aFail = Standard_Failure::Caught();
-	throw SALOME_Exception( LOCALIZED( "invalid value"));
-	return;
+        Handle(Standard_Failure) aFail = Standard_Failure::Caught();
+        throw SALOME_Exception( LOCALIZED( "invalid value"));
+        return;
       }
     }
     else if( _convMode==1 && val<0.0 )
@@ -303,7 +307,7 @@ bool isCorrectArg( const Handle( Expr_GeneralExpression )& expr )
     if( !name.IsNull() )
     {
       if( name->GetName()!="t" )
-	res = false;
+        res = false;
     }
     else
       res = isCorrectArg( sub );
@@ -317,10 +321,12 @@ bool isCorrectArg( const Handle( Expr_GeneralExpression )& expr )
  */
 //================================================================================
 bool process( const TCollection_AsciiString& str, int convMode,
-	      bool& syntax, bool& args,
-	      bool& non_neg, bool& non_zero,
- 	      bool& singulars, double& sing_point )
+              bool& syntax, bool& args,
+              bool& non_neg, bool& non_zero,
+              bool& singulars, double& sing_point )
 {
+  Kernel_Utils::Localizer loc;
+
   bool parsed_ok = true;
   Handle( ExprIntrp_GenExp ) myExpr;
   try {
@@ -359,19 +365,20 @@ bool process( const TCollection_AsciiString& str, int convMode,
       double t = double(i)/double(max), val;
       if( !f.value( t, val ) )
       {
-	sing_point = t;
-	singulars = true;
-	break;
+        sing_point = t;
+        singulars = true;
+        break;
       }
       if( val<0 )
       {
-	non_neg = false;
-	break;
+        non_neg = false;
+        break;
       }
       if( val>PRECISION )
-	non_zero = true;
+        non_zero = true;
     }
   }
+
   return res && non_neg && non_zero && ( !singulars );
 }
 
@@ -388,8 +395,27 @@ void StdMeshers_NumberOfSegments::SetExpressionFunction(const char* expr)
     _distrType = DT_ExprFunc;
     //throw SALOME_Exception(LOCALIZED("not an expression function distribution"));
 
+  string func = CheckExpressionFunction( expr, _convMode );
+  if( _func != func )
+  {
+    _func = func;
+    NotifySubMeshesHypothesisModification();
+  }
+}
+
+//=======================================================================
+//function : CheckExpressionFunction
+//purpose  : Checks validity of  the expression of the function f(t), e.g. "sin(t)".
+//           In case of validity returns a cleaned expression
+//=======================================================================
+
+std::string
+StdMeshers_NumberOfSegments::CheckExpressionFunction( const std::string& expr,
+                                                      const int          convMode)
+    throw (SALOME_Exception)
+{
   // remove white spaces
-  TCollection_AsciiString str((Standard_CString)expr);
+  TCollection_AsciiString str((Standard_CString)expr.c_str());
   str.RemoveAll(' ');
   str.RemoveAll('\t');
   str.RemoveAll('\r');
@@ -397,15 +423,15 @@ void StdMeshers_NumberOfSegments::SetExpressionFunction(const char* expr)
 
   bool syntax, args, non_neg, singulars, non_zero;
   double sing_point;
-  bool res = process( str, _convMode, syntax, args, non_neg, non_zero, singulars, sing_point );
+  bool res = process( str, convMode, syntax, args, non_neg, non_zero, singulars, sing_point );
   if( !res )
   {
     if( !syntax )
-      throw SALOME_Exception(LOCALIZED("invalid expression syntax"));
+      throw SALOME_Exception(SMESH_Comment("invalid expression syntax: ") << str );
     if( !args )
       throw SALOME_Exception(LOCALIZED("only 't' may be used as function argument"));
     if( !non_neg )
-      throw SALOME_Exception(LOCALIZED("only non-negative function can be used as density"));
+      throw SALOME_Exception(LOCALIZED("only non-negative function can be used"));
     if( singulars )
     {
       char buf[1024];
@@ -413,17 +439,10 @@ void StdMeshers_NumberOfSegments::SetExpressionFunction(const char* expr)
       throw SALOME_Exception( buf );
     }
     if( !non_zero )
-      throw SALOME_Exception(LOCALIZED("f(t)=0 cannot be used as density"));
-
-    return;
+      throw SALOME_Exception(LOCALIZED("f(t)=0 cannot be used"));
   }
-  
-  string func = expr;
-  if( _func != func )
-  {
-    _func = func;
-    NotifySubMeshesHypothesisModification();
-  }
+ 
+  return str.ToCString();
 }
 
 //================================================================================
@@ -481,6 +500,7 @@ int StdMeshers_NumberOfSegments::ConversionMode() const
 
 ostream & StdMeshers_NumberOfSegments::SaveTo(ostream & save)
 {
+  int listSize = _edgeIDs.size();
   save << _numberOfSegments << " " << (int)_distrType;
   switch (_distrType)
   {
@@ -503,6 +523,13 @@ ostream & StdMeshers_NumberOfSegments::SaveTo(ostream & save)
 
   if (_distrType == DT_TabFunc || _distrType == DT_ExprFunc)
     save << " " << _convMode;
+
+  if ( _distrType != DT_Regular && listSize > 0 ) {
+    save << " " << listSize;
+    for ( int i = 0; i < listSize; i++ )
+      save << " " << _edgeIDs[i];
+    save << " " << _objEntry;
+  }
   
   return save;
 }
@@ -619,6 +646,18 @@ istream & StdMeshers_NumberOfSegments::LoadFrom(istream & load)
       load.clear(ios::badbit | load.rdstate());
   }
 
+  // load reversed edges IDs
+  int intVal;
+  isOK = (load >> intVal);
+  if ( isOK && _distrType != DT_Regular && intVal > 0 ) {
+    _edgeIDs.reserve( intVal );
+    for (int i = 0; i < _edgeIDs.capacity() && isOK; i++) {
+      isOK = (load >> intVal);
+      if ( isOK ) _edgeIDs.push_back( intVal );
+    }
+    isOK = (load >> _objEntry);
+  }
+
   return load;
 }
 
@@ -692,6 +731,21 @@ bool StdMeshers_NumberOfSegments::SetParametersByMesh(const SMESH_Mesh*   theMes
 bool StdMeshers_NumberOfSegments::SetParametersByDefaults(const TDefaults&  dflts,
                                                           const SMESH_Mesh* /*theMesh*/)
 {
-  return bool(_numberOfSegments = dflts._nbSegments );
+  return (_numberOfSegments = dflts._nbSegments );
+}
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+
+void StdMeshers_NumberOfSegments::SetReversedEdges( std::vector<int>& ids )
+{
+  if ( ids != _edgeIDs ) {
+    _edgeIDs = ids;
+
+    NotifySubMeshesHypothesisModification();
+  }
 }
 

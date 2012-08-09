@@ -1,0 +1,40 @@
+/*!
+
+\page scalar_bar_dlg Scalar Bar properties
+
+In this dialog you can specify the properties of the scalar bar
+
+\image html scalar_bar_dlg.png
+
+<ul>
+<li><b>Scalar Range</b> in this menu you can specify 
+<b>Min value</b> and <b>Max value</b> of the <b>Scalar Bar</b> </li>
+
+<li><b>Font</b> - in this menu you can set type, face and color for
+the font of <b>Title</b> and <b>Labels</b> of the <b>Scalar
+Bar</b></li>
+
+<li><b>Colors & Labels</b> - in this menu you can set the <b>number of
+colors</b> and the <b>number of labels</b> of the <b>Scalar
+Bar</b></li>
+
+<li><b>Orientation</b> - allows choosing between vertical and
+horizontal orientation of the <b>Scalar Bar</b></li>.
+
+<li><b>Origin & Size Vertical & Horizontal</b> - allows defining the
+location (<b>X</b> and <b>Y</b>) and size (<b>Width</b> and
+<b>Height</b>) of <b>Scalar Bar</b></li>
+<ul>
+<li><b>X</b>: abscissa of the origin (from the left
+side)</li>
+<li><b>Y</b>: ordinate of the origin (from the bottom)</li>
+</ul>
+<li><b>Distribution</b> in this menu you can Show/Hide distribution histogram of the values of the <b>Scalar Bar</b> and specify histogram properties</li>
+<ul>
+<li><b>Multicolor</b> the histogram is colored as <b>Scalar Bar</b></li>
+<li><b>Monocolor</b> the histogram is colored as selected with <b>Distribution color</b> selector</li>
+</ul>
+</ul>
+
+
+*/

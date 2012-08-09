@@ -1,24 +1,23 @@
-#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+#  -*- coding: iso-8859-1 -*-
+# Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 #
-#  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License.
 #
-#  This library is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU Lesser General Public
-#  License as published by the Free Software Foundation; either
-#  version 2.1 of the License.
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
 #
-#  This library is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#  Lesser General Public License for more details.
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
-#  You should have received a copy of the GNU Lesser General Public
-#  License along with this library; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-#
+
 #  File   : SMESH_BuildCompound.py
 #  Author : Alexander KOVALEV
 #  Module : SMESH
@@ -28,6 +27,7 @@
 # ! as some sequences of symbols from this example are used during
 # ! documentation generation to identify certain places of this file
 #
+import salome
 import geompy
 import smesh
 
@@ -59,6 +59,8 @@ geompy.addToStudyInFather(Box_inf, Finf1, "Finf")
 geompy.addToStudy(Box_sup, "Box_sup")
 geompy.addToStudyInFather(Box_sup, Fsup2, "Fsup")
 geompy.addToStudyInFather(Box_sup, Finf2, "Finf")
+
+smesh.SetCurrentStudy(salome.myStudy)
 
 ## create a bottom mesh
 Mesh_inf = smesh.Mesh(Box_inf, "Mesh_inf")
@@ -93,6 +95,6 @@ Compound1 = smesh.smesh.Concatenate([Mesh_inf.GetMesh(), Mesh_sup.GetMesh()], 0,
 smesh.SetName(Compound1, 'Compound_with_RenamedGrps_and_MergeElems')
 # create a compound of two meshes with uniting groups with the same names and
 # creating groups of all elements
-Compound2 = smesh.smesh.ConcatenateWithGroups([Mesh_inf.GetMesh(), Mesh_sup.GetMesh()], 1, 0, 1e-05)
+Compound2 = smesh.smesh.Concatenate([Mesh_inf.GetMesh(), Mesh_sup.GetMesh()], 1, 0, 1e-05, True)
 smesh.SetName(Compound2, 'Compound_with_UniteGrps_and_GrpsOfAllElems')
 #end

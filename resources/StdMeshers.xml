@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='us-ascii'?>
 <!DOCTYPE meshers PUBLIC "" "desktop.dtd">
 <!--
-  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+  Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 
   Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
   CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -40,7 +40,7 @@
                 dim="0"/>
 
     <hypothesis type="LocalLength"
-                label-id="Average length"
+                label-id="Local Length"
                 icon-id="mesh_hypo_length.png"
                 dim="1"/>
 
@@ -51,6 +51,11 @@
 
     <hypothesis type="Arithmetic1D"
                 label-id="Arithmetic 1D"
+                icon-id="mesh_hypo_length.png"
+                dim="1"/>
+
+    <hypothesis type="FixedPoints1D"
+                label-id="Fixed points 1D"
                 icon-id="mesh_hypo_length.png"
                 dim="1"/>
 
@@ -91,12 +96,6 @@
                 auxiliary="true"
                 dim="2"/>
 
-    <hypothesis	type="TrianglePreference"
-		label-id="Triangle Preference"
-                icon-id="mesh_algo_mefisto.png"
-		auxiliary="true"
-		dim="2"/>
-		
     <hypothesis type="QuadraticMesh"
                 label-id="Quadratic Mesh"
                 icon-id="mesh_algo_quad.png"
@@ -117,7 +116,6 @@
     <hypothesis type="MaxElementVolume"
                 label-id="Max. Element Volume"
                 icon-id="mesh_hypo_volume.png"
-		need-geom = "false"
                 dim="3"/>
 
     <hypothesis type="ProjectionSource3D"
@@ -135,6 +133,16 @@
                 icon-id="mesh_hypo_length.png"
                 dim="1"/>
 
+    <hypothesis type="ImportSource2D"
+                label-id="Source Faces"
+                icon-id="mesh_hypo_area.png"
+                dim="2"/>
+
+    <hypothesis type="ImportSource1D"
+                label-id="Source Edges"
+                icon-id="mesh_hypo_length.png"
+                dim="1"/>
+
     <hypothesis type="NumberOfLayers"
                 label-id="Number of Layers"
                 icon-id="mesh_hypo_length.png"
@@ -144,6 +152,33 @@
                 label-id="Distribution of Layers"
                 icon-id="mesh_hypo_length.png"
                 dim="3"/>
+
+    <hypothesis type="ViscousLayers"
+                label-id="Viscous Layers"
+                icon-id="mesh_algo_quad.png"
+                auxiliary="true"
+                dim="3"/>
+
+    <hypothesis type="NumberOfLayers2D"
+                label-id="Number of Layers"
+                icon-id="mesh_hypo_length.png"
+                dim="2"/>
+
+    <hypothesis type="LayerDistribution2D"
+                label-id="Distribution of Layers"
+                icon-id="mesh_hypo_length.png"
+                dim="2"/>
+
+    <hypothesis type="QuadrangleParams"
+                label-id="Quadrangle Parameters"
+                icon-id="mesh_hypo_length.png"
+                dim="2"/>
+
+    <hypothesis type="CartesianParameters3D"
+                label-id="Body Fitting Parameters"
+                icon-id="mesh_hypo_length.png"
+                dim="3"/>
+
   </hypotheses>
 
   <algorithms>
@@ -158,20 +193,55 @@
     <algorithm type="Regular_1D"
 	       label-id="Wire discretisation"
 	       icon-id="mesh_algo_regular.png"
-               hypos="LocalLength,MaxLength,Arithmetic1D,StartEndLength,NumberOfSegments,Deflection1D,AutomaticLength"
+               hypos="LocalLength,MaxLength,Arithmetic1D,StartEndLength,NumberOfSegments,Deflection1D,AutomaticLength,FixedPoints1D"
                opt-hypos="Propagation,QuadraticMesh"
                input="VERTEX"
                output="EDGE"
-               dim="1"/>
+               dim="1">
+      <python-wrap>
+        <algo>Regular_1D=Segment()</algo>
+        <hypo>LocalLength=LocalLength(SetLength(1),,SetPrecision(1))</hypo>
+        <hypo>MaxLength=MaxSize(SetLength(1))</hypo>
+        <hypo>Arithmetic1D=Arithmetic1D(SetStartLength(),SetEndLength(),SetReversedEdges())</hypo>
+        <hypo>StartEndLength=StartEndLength(SetStartLength(),SetEndLength(),SetReversedEdges())</hypo>
+        <hypo>Deflection1D=Deflection1D(SetDeflection())</hypo>
+        <hypo>AutomaticLength=AutomaticLength(SetFineness())</hypo>
+        <hypo>FixedPoints1D=FixedPoints1D(SetPoints(),SetNbSegments(),SetReversedEdges())</hypo>
+        <hypo>Propagation=Propagation()</hypo>
+        <hypo>QuadraticMesh=QuadraticMesh()</hypo>
+      </python-wrap>
+    </algorithm>
 
     <algorithm type="CompositeSegment_1D"
 	       label-id="Composite side discretisation"
 	       icon-id="mesh_algo_regular.png"
-               hypos="LocalLength,MaxLength,Arithmetic1D,StartEndLength,NumberOfSegments,Deflection1D,AutomaticLength"
+               hypos="LocalLength,MaxLength,Arithmetic1D,StartEndLength,NumberOfSegments,Deflection1D,AutomaticLength,FixedPoints1D"
                opt-hypos="Propagation,QuadraticMesh"
                input="VERTEX"
                output="EDGE"
-               dim="1"/>
+               dim="1">
+      <python-wrap>
+        <algo>CompositeSegment_1D=Segment(algo=smesh.COMPOSITE)</algo>
+        <hypo>LocalLength=LocalLength(SetLength(), ,SetPrecision())</hypo>
+        <hypo>MaxLength=MaxSize(SetLength())</hypo>
+        <hypo>Arithmetic1D=Arithmetic1D(SetStartLength(),SetEndLength(),SetReversedEdges())</hypo>
+        <hypo>StartEndLength=StartEndLength(SetStartLength(),SetEndLength(),SetReversedEdges())</hypo>
+        <hypo>Deflection1D=Deflection1D(SetDeflection())</hypo>
+        <hypo>AutomaticLength=AutomaticLength(SetFineness())</hypo>
+        <hypo>FixedPoints1D=FixedPoints1D(SetPoints(),SetNbSegments(),SetReversedEdges())</hypo>
+        <hypo>Propagation=Propagation()</hypo>
+        <hypo>QuadraticMesh=QuadraticMesh()</hypo>
+      </python-wrap>
+    </algorithm>
+
+    <algorithm type="Python_1D"
+               output="EDGE"
+               dim="1">
+      <python-wrap>
+        <algo>Python_1D=Segment(algo=smesh.PYTHON)</algo>
+        <hypo>PythonSplit1D=PythonSplit1D(SetNumberOfSegments(),SetPythonLog10RatioFunction())</hypo>
+      </python-wrap>
+    </algorithm>
 
     <algorithm type="MEFISTO_2D"
 	       label-id="Triangle (Mefisto)"
@@ -179,28 +249,51 @@
                hypos="LengthFromEdges,MaxElementArea"
                input="EDGE"
                output="TRIA"
-               dim="2"/>
+               dim="2">
+      <python-wrap>
+        <algo>MEFISTO_2D=Triangle(algo=smesh.MEFISTO)</algo>
+        <hypo>LengthFromEdges=LengthFromEdges()</hypo>
+        <hypo>MaxElementArea=MaxElementArea(SetMaxElementArea())</hypo>
+      </python-wrap>
+    </algorithm>
 
     <algorithm type="Quadrangle_2D"
                label-id="Quadrangle (Mapping)"
                icon-id="mesh_algo_quad.png"
-               opt-hypos="QuadranglePreference,TrianglePreference"
+               hypos="QuadrangleParams"
                input="EDGE"
                output="QUAD"
-               dim="2"/>
+               dim="2">
+      <python-wrap>
+        <algo>Quadrangle_2D=Quadrangle(algo=smesh.QUADRANGLE)</algo>
+        <hypo>QuadrangleParams=QuadrangleParameters(SetQuadType(),SetTriaVertex())</hypo>
+      </python-wrap>
+    </algorithm>
 
     <algorithm type="Hexa_3D"
                label-id="Hexahedron (i,j,k)"
                icon-id="mesh_algo_hexa.png"
                input="QUAD"
-               dim="3"/>
+	       need-geom="false"
+               opt-hypos="ViscousLayers"
+               dim="3">
+      <python-wrap>
+        <algo>Hexa_3D=Hexahedron(algo=smesh.Hexa)</algo>
+        <hypo>ViscousLayers=ViscousLayers(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetIgnoreFaces())</hypo>
+      </python-wrap>
+    </algorithm>
 
     <algorithm type="Projection_1D"
                label-id="Projection 1D"
                icon-id="mesh_algo_regular.png"
                hypos="ProjectionSource1D"
                output="EDGE"
-               dim="1"/>
+               dim="1">
+      <python-wrap>
+        <algo>Projection_1D=Projection1D()</algo>
+        <hypo>ProjectionSource1D=SourceEdge(SetSourceEdge(),SetSourceMesh(),SetVertexAssociation(1),SetVertexAssociation(2))</hypo>
+      </python-wrap>
+    </algorithm>
 
     <algorithm type="Projection_2D"
                label-id="Projection 2D"
@@ -208,41 +301,130 @@
                input="EDGE"
                hypos="ProjectionSource2D"
                output="QUAD,TRIA"
-               dim="2"/>
+               dim="2">
+      <python-wrap>
+        <algo>Projection_2D=Projection2D()</algo>
+        <hypo>ProjectionSource2D=SourceFace(SetSourceFace(),SetSourceMesh(),SetVertexAssociation(1),SetVertexAssociation(2),SetVertexAssociation(3),SetVertexAssociation(4))</hypo>
+      </python-wrap>
+    </algorithm>
+
+    <algorithm type="Projection_1D2D"
+               label-id="Projection 1D-2D"
+               icon-id="mesh_algo_quad.png"
+               input=""
+               hypos="ProjectionSource2D"
+               output="QUAD,TRIA"
+               dim="2">
+      <python-wrap>
+        <algo>Projection_1D2D=Projection1D2D()</algo>
+        <hypo>ProjectionSource2D=SourceFace(SetSourceFace(),SetSourceMesh(),SetVertexAssociation(1),SetVertexAssociation(2),SetVertexAssociation(3),SetVertexAssociation(4))</hypo>
+      </python-wrap>
+    </algorithm>
 
     <algorithm type="Projection_3D"
                label-id="Projection 3D"
                icon-id="mesh_algo_hexa.png"
                hypos="ProjectionSource3D"
                input="QUAD,TRIA"
-               dim="3"/>
+               dim="3">
+      <python-wrap>
+        <algo>Projection_3D=Projection3D()</algo>
+        <hypo>ProjectionSource3D=SourceShape3D(SetSource3DShape(),SetSourceMesh(),SetVertexAssociation(1),SetVertexAssociation(2),SetVertexAssociation(3),SetVertexAssociation(4))</hypo>
+      </python-wrap>
+    </algorithm>
+
+    <algorithm type="Import_1D"
+               label-id="Use existing 1D elements"
+               icon-id="mesh_algo_regular.png"
+               hypos="ImportSource1D"
+               output="EDGE"
+               dim="1">
+      <python-wrap>
+        <algo>Import_1D=UseExisting1DElements()</algo>
+        <hypo>ImportSource1D=SourceEdges(SetSourceEdges(),SetCopySourceMesh(1),SetCopySourceMesh(2))</hypo>
+      </python-wrap>
+    </algorithm>
+
+    <algorithm type="Import_1D2D"
+               label-id="Use existing 2D elements"
+               icon-id="mesh_algo_quad.png"
+               hypos="ImportSource2D"
+               output="QUAD,TRIA"
+               support-submeshes="false"
+               dim="2">
+      <python-wrap>
+        <algo>Import_1D2D=UseExisting2DElements()</algo>
+        <hypo>ImportSource2D=SourceFaces(SetSourceFaces(),SetCopySourceMesh(1),SetCopySourceMesh(2))</hypo>
+      </python-wrap>
+    </algorithm>
 
     <algorithm type="Prism_3D"
                label-id="3D extrusion"
                icon-id="mesh_algo_hexa.png"
                input="QUAD,TRIA"
-               dim="3"/>
+               dim="3">
+      <python-wrap>
+        <algo>Prism_3D=Prism()</algo>
+      </python-wrap>
+    </algorithm>
 
     <algorithm type="RadialPrism_3D"
                label-id="Radial Prism 3D"
                icon-id="mesh_algo_hexa.png"
                hypos="NumberOfLayers, LayerDistribution"
                input="QUAD,TRIA"
-               dim="3"/>
+               dim="3">
+      <python-wrap>
+        <algo>RadialPrism_3D=Prism('RadialPrism_3D')</algo>
+        <hypo>NumberOfLayers=NumberOfLayers(SetNumberOfLayers())</hypo>
+      </python-wrap>
+    </algorithm>
 
     <algorithm type="UseExisting_1D"
                label-id="Use existing edges"
                icon-id="mesh_algo_regular.png"
                input="VERTEX"
                output="EDGE"
-               dim="1"/>
+               dim="1">
+      <python-wrap>
+        <algo>UseExisting_1D=UseExistingSegments()</algo>
+      </python-wrap>
+    </algorithm>
 
     <algorithm type="UseExisting_2D"
                label-id="Use existing faces"
                icon-id="mesh_algo_quad.png"
                input="EDGE"
                output="QUAD,TRIA"
-               dim="2"/>
+               dim="2">
+      <python-wrap>
+        <algo>UseExisting_2D=UseExistingFaces()</algo>
+      </python-wrap>
+    </algorithm>
+
+    <algorithm type="RadialQuadrangle_1D2D"
+               label-id="Radial quadrangle 1D2D"
+               icon-id="mesh_algo_quad.png"
+               hypos="NumberOfLayers2D, LayerDistribution2D"
+               input="EDGE"
+               output="QUAD,TRIA"
+               dim="2">
+      <python-wrap>
+        <algo>RadialQuadrangle_1D2D=Quadrangle(algo=smesh.RADIAL_QUAD)</algo>
+        <hypo>NumberOfLayers2D=NumberOfLayers(SetNumberOfLayers())</hypo>
+      </python-wrap>
+    </algorithm>
+
+    <algorithm type="Cartesian_3D"
+               label-id="Body Fitting"
+               icon-id="mesh_algo_hexa.png"
+               hypos="CartesianParameters3D"
+               support-submeshes="false"
+               dim="3">
+      <python-wrap>
+        <algo>Cartesian_3D=BodyFitted()</algo>
+      </python-wrap>
+    </algorithm>
 
   </algorithms>
 </meshers-group>
@@ -276,6 +458,14 @@
     <hypotheses-set name="Automatic Hexahedralization"
                     hypos="NumberOfSegments"
                     algos="Regular_1D, Quadrangle_2D, Hexa_3D"/>
+
+    <hypotheses-set name="Automatic Triangulation"
+                    hypos="MaxLength"
+                    algos="Regular_1D, MEFISTO_2D"/>
+
+    <hypotheses-set name="Automatic Quadrangulation"
+                    hypos="NumberOfSegments"
+                    algos="Regular_1D, Quadrangle_2D"/>
 
 </hypotheses-set-group>
 

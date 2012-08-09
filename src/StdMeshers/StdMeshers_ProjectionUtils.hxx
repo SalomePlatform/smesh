@@ -1,24 +1,25 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : idl implementation based on 'SMESH' unit's calsses
 // File      : StdMeshers_ProjectionUtils.hxx
 // Created   : Thu Oct 26 15:37:24 2006
@@ -45,18 +46,41 @@ class SMESH_subMesh;
 class TopTools_IndexedDataMapOfShapeListOfShape;
 
 /*!
+ * \brief Struct used instead of a sole TopTools_DataMapOfShapeShape to avoid
+ *        problems with bidirectional bindings
+ */
+struct StdMeshers_ShapeShapeBiDirectionMap
+{
+  TopTools_DataMapOfShapeShape _map1to2, _map2to1;
+
+  // convension: s1 - target, s2 - source
+  bool Bind( const TopoDS_Shape& s1, const TopoDS_Shape& s2 )
+  { _map1to2.Bind( s1, s2 ); return _map2to1.Bind( s2, s1 ); }
+  bool IsBound( const TopoDS_Shape& s, const bool isShape2=false ) const 
+  { return (isShape2 ? _map2to1 : _map1to2).IsBound( s ); }
+  bool IsEmpty() const { return _map1to2.IsEmpty(); }
+  int Extent() const { return _map1to2.Extent(); }
+  void Clear() { _map1to2.Clear(); _map2to1.Clear(); }
+  const TopoDS_Shape& operator()( const TopoDS_Shape& s, const bool isShape2=false ) const
+  { // if we get a Standard_NoSuchObject here, it means that the calling code
+    // passes incorrect isShape2
+    return (isShape2 ? _map2to1 : _map1to2)( s );
+  }
+};
+
+/*!
  * \brief Class encapsulating methods common to Projection algorithms
  */
 class StdMeshers_ProjectionUtils
 {
  public:
 
-  typedef TopTools_DataMapOfShapeShape                         TShapeShapeMap;
+  typedef StdMeshers_ShapeShapeBiDirectionMap                  TShapeShapeMap;
   typedef TopTools_IndexedDataMapOfShapeListOfShape            TAncestorMap;
   typedef std::map<const SMDS_MeshNode*, const SMDS_MeshNode*> TNodeNodeMap;
 
   /*!
-   * \brief Looks for association of all subshapes of two shapes
+   * \brief Looks for association of all sub-shapes of two shapes
     * \param theShape1 - shape 1
     * \param theMesh1 - mesh built on shape 1
     * \param theShape2 - shape 2
@@ -81,10 +105,10 @@ class StdMeshers_ProjectionUtils
     * \param edges2 - out list of edges of face 2
     * \retval int - nb of edges in an outer wire in a success case, else zero
    */
-  static int FindFaceAssociation(const TopoDS_Face&    face1,
-                                 TopoDS_Vertex         VV1[2],
-                                 const TopoDS_Face&    face2,
-                                 TopoDS_Vertex         VV2[2],
+  static int FindFaceAssociation(const TopoDS_Face&         face1,
+                                 TopoDS_Vertex              VV1[2],
+                                 const TopoDS_Face&         face2,
+                                 TopoDS_Vertex              VV2[2],
                                  std::list< TopoDS_Edge > & edges1,
                                  std::list< TopoDS_Edge > & edges2);
 
@@ -95,25 +119,19 @@ class StdMeshers_ProjectionUtils
     * \param theTargetShape - the shape theHyp assigned to
    */
   static void InitVertexAssociation( const SMESH_Hypothesis* theHyp,
-                                     TShapeShapeMap &        theAssociationMap,
-                                     const TopoDS_Shape&     theTargetShape);
+                                     TShapeShapeMap &        theAssociationMap);
 
   /*!
    * \brief Inserts association theShape1 <-> theShape2 to TShapeShapeMap
-    * \param theShape1 - shape 1
-    * \param theShape2 - shape 2
+    * \param theShape1 - target shape
+    * \param theShape2 - source shape
     * \param theAssociationMap - association map 
     * \param theBidirectional - if false, inserts theShape1 -> theShape2 association
     * \retval bool - true if there was no association for these shapes before
    */
-  static bool InsertAssociation( const TopoDS_Shape& theShape1,
-                                 const TopoDS_Shape& theShape2,
-                                 TShapeShapeMap &    theAssociationMap,
-                                 const bool          theBidirectional=true);
-
-  static bool IsSubShape( const TopoDS_Shape& shape, SMESH_Mesh* aMesh );
-
-  static bool IsSubShape( const TopoDS_Shape& shape, const TopoDS_Shape& mainShape );
+  static bool InsertAssociation( const TopoDS_Shape& theShape1, // target
+                                 const TopoDS_Shape& theShape2, // source
+                                 TShapeShapeMap &    theAssociationMap);
 
   /*!
    * \brief Finds an edge by its vertices in a main shape of the mesh
@@ -151,7 +169,7 @@ class StdMeshers_ProjectionUtils
     * \param mesh1 - mesh containing elements on the first face
     * \param face2 - the second face
     * \param mesh2 - mesh containing elements on the second face
-    * \param assocMap - map associating subshapes of the faces
+    * \param assocMap - map associating sub-shapes of the faces
     * \param nodeIn2OutMap - map containing found matching nodes
     * \retval bool - is a success
    */
@@ -162,17 +180,10 @@ class StdMeshers_ProjectionUtils
                                         const TShapeShapeMap & assocMap,
                                         TNodeNodeMap &         nodeIn2OutMap);
   /*!
-   * \brief Check if the first and last vertices of an edge are the same
-    * \param anEdge - the edge to check
-    * \retval bool - true if same
-   */
-  static bool IsClosedEdge( const TopoDS_Edge& anEdge );
-
-  /*!
-   * \brief Return any subshape of a face belonging to the outer wire
+   * \brief Return any sub-shape of a face belonging to the outer wire
     * \param face - the face
-    * \param type - type of subshape to return
-    * \retval TopoDS_Shape - the found subshape
+    * \param type - type of sub-shape to return
+    * \retval TopoDS_Shape - the found sub-shape
    */
   static TopoDS_Shape OuterShape( const TopoDS_Face& face,
                                   TopAbs_ShapeEnum   type);
@@ -186,9 +197,9 @@ class StdMeshers_ProjectionUtils
   static bool MakeComputed(SMESH_subMesh * sm, const int iterationNb = 0);
 
   /*!
-   * \brief Count nb of subshapes
+   * \brief Count nb of sub-shapes
     * \param shape - the shape
-    * \param type - the type of subshapes to count
+    * \param type - the type of sub-shapes to count
     * \param ignoreSame - if true, use map not to count same shapes, esle use explorer
     * \retval int - the calculated number
    */
@@ -206,6 +217,11 @@ class StdMeshers_ProjectionUtils
                                TopoDS_Shape   srcShape,
                                SMESH_Mesh*    srcMesh);
 
+  /*!
+   * \brief Return a boundary EDGE of edgeContainer
+   */
+  static TopoDS_Edge GetBoundaryEdge(const TopoDS_Shape& edgeContainer,
+                                     const SMESH_Mesh&   mesh);
 };
 
 #endif

@@ -1,0 +1,75 @@
+/*!
+
+\page cartesian_algo_page Body Fitting 3D meshing algorithm
+
+Body Fitting algorithm generates hexahedrons of a Cartesian grid in
+the internal part of geometry and polyhedrons and other types of
+elements at the intersection of Cartesian cells with the geometrical
+boundary.
+
+\image html cartesian3D_sphere.png "A shpere meshed by Body Fitting algorithm"
+
+The meshing algorithm is as follows.
+<ol>
+<li> Lines of a Cartesian structured grid defined by
+\ref cartesian_hyp_anchor "Body Fitting Parameters" hypothesis are
+intersected with the geometry boundary, thus nodes lying on the
+boundary are found. This step also allows finding out for each node of
+the Cartesian grid if it is inside or outside the geometry. </li>
+<li> For each cell of the grid, check how many of its nodes are outside
+of the geometry boundary. Depending on a result of this check
+<ul>
+<li> skip a cell, if all its nodes are outside </li>
+<li> skip a cell, if it is too small according to <b> Size
+    Threshold </b> parameter</li>
+<li> add a hexahedron in the mesh, if all nodes are inside </li>
+<li> add a polyhedron or another cell type in the mesh, if some
+nodes are inside and some outside. </li> 
+</ul>
+</li>
+</ol>
+To apply this algorithm when you define your mesh, select <b>Body
+  Fitting</b> in the list of 3D algorithms and click <em> "Add
+  Hypothesis" </em> button and <em>"Body Fitting Parameters"</em>" menu
+  item. Dialog of <b>Body Fitting Parameters
+  hypothesis</b> will appear.
+
+<br>
+\anchor cartesian_hyp_anchor
+<h2>Body Fitting Parameters hypothesis</h2>
+
+\image html cartesian3D_hyp.png "Body Fitting Parameters hypothesis dialog"
+
+This dialog allows to define
+<ul>
+<li>\b Name of the algorithm </li>
+<li> Minimal size of a cell truncated by the geometry boundary. If the
+  size of a truncated grid cell is \b Threshold times less than a
+  initial cell size, then a mesh element is not created. </li>
+<li> Cartesian structured grid. Each grid axis is defined
+  individually. <b> Definition mode </b> chooses a way of grid
+  definition: <ul> 
+  <li> You can specify the \b Coordinates of grid nodes. \b Insert button
+    inserts a node at distance \b Step (negative or positive) from a
+    selected node. \b Delete button removes a selected node. Double
+    click on a coordinate in the list enables its edition. A grid
+    defined by \b Coordinates should enclose the geometry, else the
+    algorithm will fail. </li>
+  <li> You can define the \b Spacing of a grid as an algebraic formula 
+    <em>f(t)</em> where \a t is a position along a grid axis
+    normalized at [0.0,1.0]. The whole range of geometry can be
+    divided into sub-ranges with their own spacing formulas to apply;
+    \a t varies between 0.0 and 1.0 within each sub-range. \b Insert button
+    divides a selected range into two ones. \b Delete button adds the
+    selected sub-range to the previous one. Double click on a range in
+    the list enables edition of its right boundary. Double click on a
+    function in the list enables its edition. 
+  </li> </ul>
+</li>
+</ul>
+
+<br>
+<b>See Also</b> a sample TUI Script of a 
+\ref tui_cartesian_algo "Usage of Body Fitting algorithm".  
+
+*/
