@@ -464,21 +464,25 @@ SMESH::MeshPreviewStruct* SMESH_MeshEditor_i::GetPreviewData()
     typedef map<int, int> TNodesMap;
     TNodesMap nodesMap;
 
-    TPreviewMesh * aPreviewMesh = dynamic_cast< TPreviewMesh* >( myEditor.GetMesh() );
-    SMDSAbs_ElementType previewType = aPreviewMesh->myPreviewType;
-
     SMESHDS_Mesh* aMeshDS = myEditor.GetMeshDS();
     int nbEdges = aMeshDS->NbEdges();
     int nbFaces = aMeshDS->NbFaces();
     int nbVolum = aMeshDS->NbVolumes();
-    switch ( previewType ) {
-    case SMDSAbs_Edge  : nbFaces = nbVolum = 0; break;
-    case SMDSAbs_Face  : nbEdges = nbVolum = 0; break;
-    case SMDSAbs_Volume: nbEdges = nbFaces = 0; break;
-    default:;
-    }
     myPreviewData = new SMESH::MeshPreviewStruct();
     myPreviewData->nodesXYZ.length(aMeshDS->NbNodes());
+
+    TPreviewMesh * aPreviewMesh = dynamic_cast< TPreviewMesh* >( myEditor.GetMesh() );
+    SMDSAbs_ElementType previewType = SMDSAbs_All;
+    if (aPreviewMesh) {
+      previewType = aPreviewMesh->myPreviewType;
+      switch ( previewType ) {
+      case SMDSAbs_Edge  : nbFaces = nbVolum = 0; break;
+      case SMDSAbs_Face  : nbEdges = nbVolum = 0; break;
+      case SMDSAbs_Volume: nbEdges = nbFaces = 0; break;
+      default:;
+      }
+    }
+
     myPreviewData->elementTypes.length(nbEdges + nbFaces + nbVolum);
     int i = 0, j = 0;
     SMDS_ElemIteratorPtr itMeshElems = aMeshDS->elementsIterator();
