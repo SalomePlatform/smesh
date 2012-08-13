@@ -353,9 +353,13 @@ void SMESH_VisualObjDef::buildElemPrs()
   map<SMDSAbs_ElementType,int> nbEnts;
   map<SMDSAbs_ElementType,TEntityList> anEnts;
 
-  for ( int i = 0; i < nbTypes; i++ )
-    nbEnts[ aTypes[ i ] ] = GetEntities( aTypes[ i ], anEnts[ aTypes[ i ] ] );
+  vtkIdType aNbCells = 0;
 
+  for ( int i = 0; i < nbTypes; i++ )
+  {
+    nbEnts[ aTypes[ i ] ] = GetEntities( aTypes[ i ], anEnts[ aTypes[ i ] ] );
+    aNbCells += nbEnts[ aTypes [ i ]];
+  }
   // PAL16631: without swap, bad_alloc is not thrown but hung up and crash instead,
   // so check remaining memory size for safety
   SMDS_Mesh::CheckMemory(); // PAL16631
@@ -363,12 +367,8 @@ void SMESH_VisualObjDef::buildElemPrs()
   vtkIdType aCellsSize =  2 * nbEnts[ SMDSAbs_0DElement ] + 3 * nbEnts[ SMDSAbs_Edge ];
   aCellsSize += 2 * nbEnts[ SMDSAbs_Ball ];
 
-  vtkIdType aNbCells = 0;
-
   for ( int i = 1; i <= 2; i++ ) // iterate through faces and volumes
   {
-    aNbCells += nbEnts[ aTypes[ i ]];
-
     if ( nbEnts[ aTypes[ i ] ] )
     {
       const TEntityList& aList = anEnts[ aTypes[ i ] ];
