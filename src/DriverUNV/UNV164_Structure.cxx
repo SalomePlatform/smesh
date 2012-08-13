@@ -62,7 +62,7 @@ void UNV164::Write(std::ofstream& out_stream)
     EXCEPTION(runtime_error,"ERROR: Output file not good.");
   
   out_stream<<"    -1" << endl;
-  out_stream<<"  "<<_label_dataset << endl;
+  out_stream<<"   "<<_label_dataset << endl;
 
   out_stream<<"         1  SI: Meter (newton)         2"                                    << endl;
   out_stream<<"    1.0000000000000000E+0    1.0000000000000000E+0    1.0000000000000000E+0" << endl;
