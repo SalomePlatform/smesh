@@ -44,11 +44,11 @@ def main(plugin, dummymeshhelp = True, output_file = "smesh.py"):
             pass
         if methods:
             output = []
+            output.append( "## This class allows defining and managing a mesh." )
+            output.append( "#" )
             if dummymeshhelp:
                 # Add dummy Mesh help
                 # This is supposed to be done when generating documentation for meshing plug-ins
-                output.append( "## This class allows defining and managing a mesh." )
-                output.append( "#" )
                 output.append( "#  @note The documentation below does not provide complete description of class @b %Mesh" )
                 output.append( "#  from @b %smesh.py package. This documentation provides only information about" )
                 output.append( "#  the methods dynamically added to the %Mesh class by the " + plugin + " plugin" )
@@ -58,8 +58,6 @@ def main(plugin, dummymeshhelp = True, output_file = "smesh.py"):
             else:
                 # Extend documentation for Mesh class with information about dynamically added methods.
                 # This is supposed to be done only when building documentation for SMESH module
-                output.append( "## This class allows defining and managing a mesh." )
-                output.append( "#" )
                 output.append( "#  @note Some methods are dynamically added to the @b %Mesh class in runtime by meshing " )
                 output.append( "#  plug-in modules. If you fail to find help on some methods in the documentation of SMESH module, " )
                 output.append( "#  try to look into the documentation for the meshing plug-ins." )
@@ -72,14 +70,14 @@ def main(plugin, dummymeshhelp = True, output_file = "smesh.py"):
                     if docHelper: break
                     pass
                 if not docHelper: docHelper = "Creates new algorithm."
-                output.append( " ## %s." % docHelper )
+                output.append( " ## %s" % docHelper )
                 output.append( " #  This method is dynamically added to %Mesh class by the meshing plug-in(s). " )
                 output.append( " #" )
                 output.append( " #  If the optional @a geom_shape parameter is not set, this algorithm is global (applied to whole mesh)." )
                 output.append( " #  Otherwise, this algorithm defines a submesh based on @a geom_shape subshape." )
                 output.append( " #  @param algo_type type of algorithm to be created; allowed values are specified by classes implemented by plug-in (see below)" )
                 output.append( " #  @param geom_shape if defined, the subshape to be meshed (GEOM_Object)" )
-                output.append( " #  @return An instance of Mesh_Algorithm sub-class according to the specified @a algo_type:" )
+                output.append( " #  @return An instance of Mesh_Algorithm sub-class according to the specified @a algo_type, see " )
                 output.append( " #  %s" % ", ".join( [ "%s.%s" % ( plugin_module, algo.__name__ ) for algo in methods[ method ] ] ) )
                 output.append( " def %s(algo_type, geom_shape=0):" % method )
                 output.append( "   pass" )
