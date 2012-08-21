@@ -26,25 +26,26 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
 EXTRA_DIST += images input static/footer.html static/doxygen.css
 
+dist_salomescript_DATA = collect_mesh_methods.py
+
 guidocdir = $(docdir)/gui/SMESH
 guidoc_DATA = images/head.png
 
+DOC_PYTHONPATH=$(prefix)/bin/salome:$(prefix)/lib/python$(PYTHON_VERSION)/site-packages/salome:$(MED_ROOT_DIR)/lib/python$(PYTHON_VERSION)/site-packages/salome:$(GEOM_ROOT_DIR)/bin/salome:$(GEOM_ROOT_DIR)/lib/python$(PYTHON_VERSION)/site-packages/salome:$(KERNEL_ROOT_DIR)/bin/salome:$(KERNEL_ROOT_DIR)/lib/python$(PYTHON_VERSION)/site-packages/salome:$(OMNIORB_ROOT)/lib/python$(PYTHON_VERSION)/site-packages:$(OMNIORB_ROOT)/lib64/python$(PYTHON_VERSION)/site-packages
+DOC_SMESH_MeshersList=StdMeshers
 
-usr_docs: doxyfile_py doxyfile 
-	echo "===========================================" ;			\
-	echo "Replacing smeshDC by smesh" ;					\
-	echo "===========================================" ;			\
-	awk '/^class Mesh:/ { mesh_found=1 } // { if (mesh_found) {print $$0; next} } /^ +(def|#)/ { match( $$0, /^ +/); print substr( $$0, 1+RLENGTH ); next } /^class smeshDC/ { next } //' \
-	  $(top_srcdir)/src/SMESH_SWIG/smeshDC.py > ./smesh.py ;		\
-	echo "===========================================" ;			\
-	echo "Generating Python interface documentation";			\
-	echo "===========================================" ;			\
-	$(DOXYGEN) doxyfile_py ;						\
-	echo "===========================================" ;			\
-	echo "Generating GUI documentation" ;					\
-	echo "===========================================" ;			\
-	$(DOXYGEN) doxyfile ;                        				\
-	rm -f ./smesh.py
+# to have smesh.py in the documentation instead of smeshDC.py
+# we create dummy smesh.py from the smeshDC.py
+smesh.py: ../../../../src/SMESH_SWIG/smeshDC.py
+	@awk '/^class Mesh:/ { mesh_found=1 } // { if (mesh_found) {print $$0; next} } /^ +(def|#)/ { match( $$0, /^ +/); print substr( $$0, 1+RLENGTH ); next } /^class smeshDC/ { next } //' \
+	  $< > $@
+
+tmp/smesh.py: $(top_srcdir)/src/SMESH_SWIG/StdMeshersDC.py $(srcdir)/collect_mesh_methods.py
+	@$(MKDIR_P) tmp && PYTHONPATH=$(DOC_PYTHONPATH):${PYTHONPATH} SMESH_MeshersList=$(DOC_SMESH_MeshersList) $(PYTHON) $(srcdir)/collect_mesh_methods.py -o $@ StdMeshers
+
+usr_docs: doxyfile_py doxyfile smesh.py tmp/smesh.py
+	@$(DOXYGEN) doxyfile_py ;						\
+	$(DOXYGEN) doxyfile
 
 docs: usr_docs
 

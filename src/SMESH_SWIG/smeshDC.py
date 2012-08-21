@@ -20,10 +20,8 @@
 #  Author : Francis KLOSS, OCC
 #  Module : SMESH
 
-"""
- \namespace smesh
- \brief Module smesh
-"""
+## @package smesh
+#  Python API for SALOME %Mesh module
 
 ## @defgroup l1_auxiliary Auxiliary methods and structures
 ## @defgroup l1_creating  Creating meshes
