@@ -85,10 +85,8 @@ namespace SMESH
   TPythonDump::
   operator<<(const TVar& theVarValue)
   {
-    if ( theVarValue.myVals.empty() ) return *this;
-
     const std::vector< std::string >& varNames = SMESH_Gen_i::GetSMESHGen()->GetLastParameters();
-    if ( theVarValue.myVals.size() > 1 )
+    if ( theVarValue.myVals.size() != 1 )
     {
       myStream << "[ ";
       for ( size_t i = 1; i <= theVarValue.myVals.size(); ++i )
