@@ -4031,6 +4031,8 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
   {
     const SMDS_MeshNode* node =
       static_cast<const SMDS_MeshNode*>( nList->first );
+    if ( newElemsMap.count( node ))
+      continue; // node was extruded into edge
     SMDS_ElemIteratorPtr eIt = node->GetInverseElementIterator();
     int nbInitElems = 0;
     const SMDS_MeshElement* el = 0;
@@ -5884,26 +5886,32 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
   // Sort existing groups by types and collect their names
 
   // to store an old group and a generated new one
-  typedef pair< SMESHDS_GroupBase*, SMDS_MeshGroup* > TOldNewGroup;
+  typedef pair< SMESHDS_GroupBase*, SMESHDS_Group* > TOldNewGroup;
   vector< list< TOldNewGroup > > groupsByType( SMDSAbs_NbElementTypes );
+  vector< TOldNewGroup* > orderedOldNewGroups; // in order of old groups
   // group names
   set< string > groupNames;
-  //
-  SMDS_MeshGroup* nullNewGroup = (SMDS_MeshGroup*) 0;
+  
   SMESH_Mesh::GroupIteratorPtr groupIt = GetMesh()->GetGroups();
-  while ( groupIt->more() ) {
+  if ( !groupIt->more() ) return newGroupIDs;
+
+  int newGroupID = mesh->GetGroupIds().back()+1;
+  while ( groupIt->more() )
+  {
     SMESH_Group * group = groupIt->next();
     if ( !group ) continue;
     SMESHDS_GroupBase* groupDS = group->GetGroupDS();
     if ( !groupDS || groupDS->IsEmpty() ) continue;
     groupNames.insert( group->GetName() );
     groupDS->SetStoreName( group->GetName() );
-    groupsByType[ groupDS->GetType() ].push_back( make_pair( groupDS, nullNewGroup ));
+    SMESHDS_Group* newGroup = new SMESHDS_Group( newGroupID++, mesh->GetMeshDS(),
+                                                 groupDS->GetType() );
+    groupsByType[ groupDS->GetType() ].push_back( make_pair( groupDS, newGroup ));
+    orderedOldNewGroups.push_back( & groupsByType[ groupDS->GetType() ].back() );
   }
 
-  // Groups creation
+  // Loop on nodes and elements to add them in new groups
 
-  // loop on nodes and elements
   for ( int isNodes = 0; isNodes < 2; ++isNodes )
   {
     const SMESH_SequenceOfElemPtr& gens  = isNodes ? nodeGens : elemGens;
@@ -5920,7 +5928,7 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
         continue;
       }
       list< TOldNewGroup > & groupsOldNew = groupsByType[ sourceElem->GetType() ];
-      if ( groupsOldNew.empty() ) {
+      if ( groupsOldNew.empty() ) { // no groups of this type at all
         while ( iElem < gens.Length() && gens( iElem+1 ) == sourceElem )
           ++iElem; // skip all elements made by sourceElem
         continue;
@@ -5934,57 +5942,52 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
         if ( const SMDS_MeshElement* resElem = elems( ++iElem ))
           if ( resElem != sourceElem )
             resultElems.push_back( resElem );
-      // do not generate element groups from node ones
-//      if ( sourceElem->GetType() == SMDSAbs_Node &&
-//           elems( iElem )->GetType() != SMDSAbs_Node )
-//        continue;
 
       // add resultElems to groups made by ones the sourceElem belongs to
       list< TOldNewGroup >::iterator gOldNew, gLast = groupsOldNew.end();
       for ( gOldNew = groupsOldNew.begin(); gOldNew != gLast; ++gOldNew )
       {
         SMESHDS_GroupBase* oldGroup = gOldNew->first;
-        if ( oldGroup->Contains( sourceElem )) // sourceElem in oldGroup
+        if ( oldGroup->Contains( sourceElem )) // sourceElem is in oldGroup
         {
-          SMDS_MeshGroup* & newGroup = gOldNew->second;
-          if ( !newGroup )// create a new group
-          {
-            // make a name
-            string name = oldGroup->GetStoreName();
-            if ( !targetMesh ) {
-              name += "_";
-              name += postfix;
-              int nb = 0;
-              while ( !groupNames.insert( name ).second ) // name exists
-              {
-                if ( nb == 0 ) {
-                  name += "_1";
-                }
-                else {
-                  TCollection_AsciiString nbStr(nb+1);
-                  name.resize( name.rfind('_')+1 );
-                  name += nbStr.ToCString();
-                }
-                ++nb;
-              }
-            }
-            // make a group
-            int id;
-            SMESH_Group* group = mesh->AddGroup( resultElems.back()->GetType(),
-                                                 name.c_str(), id );
-            SMESHDS_Group* groupDS = static_cast<SMESHDS_Group*>(group->GetGroupDS());
-            newGroup = & groupDS->SMDSGroup();
-            newGroupIDs->push_back( id );
-          }
-
           // fill in a new group
+          SMDS_MeshGroup & newGroup = gOldNew->second->SMDSGroup();
           list< const SMDS_MeshElement* >::iterator resLast = resultElems.end(), resElemIt;
           for ( resElemIt = resultElems.begin(); resElemIt != resLast; ++resElemIt )
-            newGroup->Add( *resElemIt );
+            newGroup.Add( *resElemIt );
         }
       }
     } // loop on created elements
   }// loop on nodes and elements
+
+  // Create new SMESH_Groups from SMESHDS_Groups and remove empty SMESHDS_Groups
+
+  for ( size_t i = 0; i < orderedOldNewGroups.size(); ++i )
+  {
+    SMESHDS_GroupBase* oldGroupDS = orderedOldNewGroups[i]->first;
+    SMESHDS_Group*     newGroupDS = orderedOldNewGroups[i]->second;
+    if ( newGroupDS->IsEmpty() )
+    {
+      mesh->GetMeshDS()->RemoveGroup( newGroupDS );
+    }
+    else
+    {
+      // make a name
+      string name = oldGroupDS->GetStoreName();
+      if ( !targetMesh ) {
+        name += "_";
+        name += postfix;
+        int nb = 1;
+        while ( !groupNames.insert( name ).second ) // name exists
+          name = SMESH_Comment( oldGroupDS->GetStoreName() ) << "_" << postfix << "_" << nb++;
+      }
+      newGroupDS->SetStoreName( name.c_str() );
+
+      // make a SMESH_Groups
+      mesh->AddGroup( newGroupDS );
+      newGroupIDs->push_back( newGroupDS->GetID() );
+    }
+  }
 
   return newGroupIDs;
 }
