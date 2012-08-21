@@ -94,7 +94,9 @@ private:
   SMESH::long_array_var            myElementsId;
   SMESH_Actor*                     myActor;
   Handle(SALOME_InteractiveObject) myIO;
-  SUIT_SelectionFilter*            myMeshOrSubMeshOrGroupFilter;
+  SUIT_SelectionFilter*            myMeshOrSubMeshOrGroupFilter0D;
+  SUIT_SelectionFilter*            myMeshOrSubMeshOrGroupFilter1D;
+  SUIT_SelectionFilter*            myMeshOrSubMeshOrGroupFilter2D;
 
   // widgets
   QGroupBox*                       ConstructorsBox;
