@@ -5986,6 +5986,9 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
       // make a SMESH_Groups
       mesh->AddGroup( newGroupDS );
       newGroupIDs->push_back( newGroupDS->GetID() );
+
+      // set group type
+      newGroupDS->SetType( newGroupDS->GetElements()->next()->GetType() );
     }
   }
 
