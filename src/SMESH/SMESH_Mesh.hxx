@@ -287,7 +287,9 @@ public:
                          int&                      theId,
                          const TopoDS_Shape&       theShape=TopoDS_Shape(),
                          const SMESH_PredicatePtr& thePredicate=SMESH_PredicatePtr());
-  
+
+  SMESH_Group* AddGroup (SMESHDS_GroupBase* groupDS) throw(SALOME_Exception);
+
   typedef boost::shared_ptr< SMDS_Iterator<SMESH_Group*> > GroupIteratorPtr;
   GroupIteratorPtr GetGroups() const;
   

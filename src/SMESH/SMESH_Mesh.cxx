@@ -1653,6 +1653,35 @@ SMESH_Group* SMESH_Mesh::AddGroup (const SMDSAbs_ElementType theType,
 
 //================================================================================
 /*!
+ * \brief Creates a group based on an existing SMESHDS group. Group ID should be unique
+ */
+//================================================================================
+
+SMESH_Group* SMESH_Mesh::AddGroup (SMESHDS_GroupBase* groupDS) throw(SALOME_Exception)
+{
+  if ( !groupDS ) 
+    throw SALOME_Exception(LOCALIZED ("SMESH_Mesh::AddGroup(): NULL SMESHDS_GroupBase"));
+
+  map <int, SMESH_Group*>::iterator i_g = _mapGroup.find( groupDS->GetID() );
+  if ( i_g != _mapGroup.end() && i_g->second )
+  {
+    if ( i_g->second->GetGroupDS() == groupDS )
+      return i_g->second;
+    else
+      throw SALOME_Exception(LOCALIZED ("SMESH_Mesh::AddGroup() wrong ID of SMESHDS_GroupBase"));
+  }
+  SMESH_Group* aGroup = new SMESH_Group (groupDS);
+  _mapGroup[ groupDS->GetID() ] = aGroup;
+  GetMeshDS()->AddGroup( aGroup->GetGroupDS() );
+
+  _groupId = 1 + _mapGroup.rbegin()->first;
+
+  return aGroup;
+}
+
+
+//================================================================================
+/*!
  * \brief Creates SMESH_Groups for not wrapped SMESHDS_Groups
  *  \retval bool - true if new SMESH_Groups have been created
  * 
