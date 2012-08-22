@@ -71,6 +71,7 @@ def main(plugin, dummymeshhelp = True, output_file = "smesh.py"):
                     pass
                 if not docHelper: docHelper = "Creates new algorithm."
                 output.append( " ## %s" % docHelper )
+                output.append( " #" )
                 output.append( " #  This method is dynamically added to %Mesh class by the meshing plug-in(s). " )
                 output.append( " #" )
                 output.append( " #  If the optional @a geom_shape parameter is not set, this algorithm is global (applied to whole mesh)." )
