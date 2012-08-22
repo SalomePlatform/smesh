@@ -46,7 +46,7 @@ def main(plugin, dummymeshhelp = True, output_file = "smesh.py"):
             output = []
             if dummymeshhelp:
                 output.append( "## @package smesh" )
-                output.append( "#  Documentation of the methods dynamically added by the GHS3D meshing plug-in to the Mesh class." )
+                output.append( "#  Documentation of the methods dynamically added by the " + plugin + " meshing plug-in to the Mesh class." )
                 output.append( "" )
                 pass
             output.append( "## This class allows defining and managing a mesh." )
