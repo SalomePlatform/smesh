@@ -26,7 +26,7 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
 EXTRA_DIST += images input static/footer.html static/doxygen.css
 
-dist_salomescript_DATA = collect_mesh_methods.py
+dist_salomescript_PYTHON = collect_mesh_methods.py
 
 guidocdir = $(docdir)/gui/SMESH
 guidoc_DATA = images/head.png
