@@ -41,7 +41,7 @@ smesh.py: ../../../../src/SMESH_SWIG/smeshDC.py
 	  $< > $@
 
 tmp/smesh.py: $(top_srcdir)/src/SMESH_SWIG/StdMeshersDC.py $(srcdir)/collect_mesh_methods.py
-	@$(MKDIR_P) tmp && PYTHONPATH=$(DOC_PYTHONPATH):${PYTHONPATH} SMESH_MeshersList=$(DOC_SMESH_MeshersList) $(PYTHON) $(srcdir)/collect_mesh_methods.py -o $@ StdMeshers
+	@mkdir -p tmp && PYTHONPATH=$(DOC_PYTHONPATH):${PYTHONPATH} SMESH_MeshersList=$(DOC_SMESH_MeshersList) $(PYTHON) $(srcdir)/collect_mesh_methods.py -o $@ StdMeshers
 
 usr_docs: doxyfile_py doxyfile smesh.py tmp/smesh.py
 	@$(DOXYGEN) doxyfile_py ;						\
