@@ -14,8 +14,10 @@ parameters:
 generated on base of the <b>Surface color</b> by changing its brightness and saturation.</li>
 <li><b>Outline color</b> - color of element borders.</li>
 <li><b>Wireframe color</b> - color of element borders in wireframe mode.</li>
-<li><b>0D slements</b> - color of 0D elements.</li>
-<li><b>Size of 0D slements</b> - size of 0D elements.</li>
+<li><b>0D elements</b> - color of 0D elements.</li>
+<li><b>Size of 0D elements</b> - size of 0D elements.</li>
+<li><b>Ball elements</b> - color of MED_BALL elements.</li>
+<li><b>Size of Ball elements</b> - size of MED_BALL elements.</li>
 <li><b>Line width</b> - width of lines (edges and borders of elements).</li>
 <li><b>Shrink coef.</b> - relative space of elements compared to gaps between
        them in shrink mode.</li>

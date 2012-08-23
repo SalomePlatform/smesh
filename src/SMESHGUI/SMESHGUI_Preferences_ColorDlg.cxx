@@ -102,10 +102,10 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
   SpinBox_0DElements_Size->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
   SpinBox_0DElements_Size->setButtonSymbols( QSpinBox::PlusMinus );
 
-  QLabel* TextLabel_BallElem_Color = new QLabel( tr( "0D_ELEMENTS_COLOR_LBL" ), ButtonGroup1 );
+  QLabel* TextLabel_BallElem_Color = new QLabel( tr( "BALL_ELEMENTS_COLOR_LBL" ), ButtonGroup1 );
   btnBallElemColor = new QtxColorButton( ButtonGroup1 );
 
-  QLabel* TextLabel_BallElem_Size = new QLabel( tr( "BALLELEM_SIZE_LBL" ), ButtonGroup1 );
+  QLabel* TextLabel_BallElem_Size = new QLabel( tr( "BALL_ELEMENTS_SIZE_LBL" ), ButtonGroup1 );
   SpinBox_BallElem_Size = new SalomeApp_IntSpinBox( ButtonGroup1 );
   SpinBox_BallElem_Size->setAcceptNames( false ); // No Notebook variables allowed
   SpinBox_BallElem_Size->setRange( 1, 10 );
@@ -129,30 +129,31 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
   SpinBox_Shrink->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
   SpinBox_Shrink->setButtonSymbols( QSpinBox::PlusMinus );
 
-  ButtonGroup1Layout->addWidget( TextLabel_Fill,             0, 0 );
-  ButtonGroup1Layout->addWidget( toolSurfColor,              0, 1, 1, 3 );
+  int row = 0;
+  ButtonGroup1Layout->addWidget( TextLabel_Fill,             row, 0 );
+  ButtonGroup1Layout->addWidget( toolSurfColor,              row++, 1, 1, 3 );
 
-  ButtonGroup1Layout->addWidget( TextLabel_Outline,          1, 0 );
-  ButtonGroup1Layout->addWidget( btnOutlineColor,            1, 1 );
-  ButtonGroup1Layout->addWidget( TextLabel_Wireframe,        1, 2 );
-  ButtonGroup1Layout->addWidget( btnWireframeColor,         1, 3 );
+  ButtonGroup1Layout->addWidget( TextLabel_Outline,          row, 0 );
+  ButtonGroup1Layout->addWidget( btnOutlineColor,            row, 1 );
+  ButtonGroup1Layout->addWidget( TextLabel_Wireframe,        row, 2 );
+  ButtonGroup1Layout->addWidget( btnWireframeColor,          row++, 3 );
 
-  ButtonGroup1Layout->addWidget( TextLabel_0DElements_Color, 2, 0 );
-  ButtonGroup1Layout->addWidget( btn0DElementsColor,         2, 1 );
+  ButtonGroup1Layout->addWidget( TextLabel_0DElements_Color, row, 0 );
+  ButtonGroup1Layout->addWidget( btn0DElementsColor,         row, 1 );
 
-  ButtonGroup1Layout->addWidget( TextLabel_0DElements_Size,  2, 2 );
-  ButtonGroup1Layout->addWidget( SpinBox_0DElements_Size,    2, 3 );
+  ButtonGroup1Layout->addWidget( TextLabel_0DElements_Size,  row, 2 );
+  ButtonGroup1Layout->addWidget( SpinBox_0DElements_Size,    row++, 3 );
 
-  ButtonGroup1Layout->addWidget( TextLabel_BallElem_Color, 2, 0 );
-  ButtonGroup1Layout->addWidget( btnBallElemColor,         2, 1 );
+  ButtonGroup1Layout->addWidget( TextLabel_BallElem_Color,   row, 0 );
+  ButtonGroup1Layout->addWidget( btnBallElemColor,           row, 1 );
 
-  ButtonGroup1Layout->addWidget( TextLabel_BallElem_Size,  2, 2 );
-  ButtonGroup1Layout->addWidget( SpinBox_BallElem_Size,    2, 3 );
+  ButtonGroup1Layout->addWidget( TextLabel_BallElem_Size,    row, 2 );
+  ButtonGroup1Layout->addWidget( SpinBox_BallElem_Size,      row++, 3 );
 
-  ButtonGroup1Layout->addWidget( TextLabel_Width,            3, 0 );
-  ButtonGroup1Layout->addWidget( SpinBox_Width,              3, 1 );
-  ButtonGroup1Layout->addWidget( TextLabel_ShrinkCoeff,      3, 2 );
-  ButtonGroup1Layout->addWidget( SpinBox_Shrink,             3, 3 );
+  ButtonGroup1Layout->addWidget( TextLabel_Width,            row, 0 );
+  ButtonGroup1Layout->addWidget( SpinBox_Width,              row, 1 );
+  ButtonGroup1Layout->addWidget( TextLabel_ShrinkCoeff,      row, 2 );
+  ButtonGroup1Layout->addWidget( SpinBox_Shrink,             row, 3 );
 
   // -------------------------------
   QGroupBox* ButtonGroup2 = new QGroupBox( tr( "GRP_NODES" ), this );
@@ -172,10 +173,11 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
 
   MarkerGroupLayout->addWidget( MarkerWidget );
 
-  ButtonGroup2Layout->addWidget( TextLabel_Nodes_Color, 0, 0 );
-  ButtonGroup2Layout->addWidget( btnNodeColor,          0, 1 );
-  ButtonGroup2Layout->addWidget( MarkerGroup,           1, 0, 1, 3 );
-  ButtonGroup2Layout->setColumnStretch( 2, 1 );
+  row = 0;
+  ButtonGroup2Layout->addWidget( TextLabel_Nodes_Color, row, 0 );
+  ButtonGroup2Layout->addWidget( btnNodeColor,          row++, 1 );
+  ButtonGroup2Layout->addWidget( MarkerGroup,           row++, 0, 1, 3 );
+  ButtonGroup2Layout->setColumnStretch( row, 1 );
 
   // -------------------------------
   QGroupBox* ButtonGroup3 = new QGroupBox( tr( "GRP_ORIENTATION" ), this );
@@ -195,11 +197,12 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
 
   CheckBox_Orientation_3DVectors = new QCheckBox( tr( "3D_VECTORS_LBL" ), ButtonGroup3 );
 
-  ButtonGroup3Layout->addWidget( TextLabel_Orientation_Color,    0, 0 );
-  ButtonGroup3Layout->addWidget( btnOrientationColor,            0, 1 );
-  ButtonGroup3Layout->addWidget( TextLabel_Orientation_Scale,    0, 2 );
-  ButtonGroup3Layout->addWidget( SpinBox_Orientation_Scale,      0, 3 );
-  ButtonGroup3Layout->addWidget( CheckBox_Orientation_3DVectors, 1, 0, 1, 4 );
+  row = 0;
+  ButtonGroup3Layout->addWidget( TextLabel_Orientation_Color,    row, 0 );
+  ButtonGroup3Layout->addWidget( btnOrientationColor,            row, 1 );
+  ButtonGroup3Layout->addWidget( TextLabel_Orientation_Scale,    row, 2 );
+  ButtonGroup3Layout->addWidget( SpinBox_Orientation_Scale,      row++, 3 );
+  ButtonGroup3Layout->addWidget( CheckBox_Orientation_3DVectors, row, 0, 1, 4 );
 
   // -------------------------------
   QGroupBox* ButtonGroup4 = new QGroupBox( tr( "GRP_SELECTION" ), this );
@@ -213,10 +216,11 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
   QLabel* TextLabel_Preselection_Color = new QLabel( tr( "PRESELECTION_COLOR_LBL" ), ButtonGroup4 );
   btnPreselectionColor = new QtxColorButton( ButtonGroup4 );
   
-  ButtonGroup4Layout->addWidget( TextLabel_Selection_Color,      0, 0 );
-  ButtonGroup4Layout->addWidget( btnSelectionColor,              0, 1 );
-  ButtonGroup4Layout->addWidget( TextLabel_Preselection_Color,   0, 2 );
-  ButtonGroup4Layout->addWidget( btnPreselectionColor,           0, 3 );
+  row = 0;
+  ButtonGroup4Layout->addWidget( TextLabel_Selection_Color,      row, 0 );
+  ButtonGroup4Layout->addWidget( btnSelectionColor,              row, 1 );
+  ButtonGroup4Layout->addWidget( TextLabel_Preselection_Color,   row, 2 );
+  ButtonGroup4Layout->addWidget( btnPreselectionColor,           row, 3 );
 
   // -------------------------------
   QGroupBox* GroupButtons = new QGroupBox( this );
