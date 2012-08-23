@@ -360,6 +360,9 @@ class StdMeshersDC_CompositeSegment(StdMeshersDC_Segment):
     #  of smesh.Mesh class
     #  @internal
     isDefault  = False
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates segment 1D algorithm for edges"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to
@@ -387,6 +390,9 @@ class StdMeshersDC_Segment_Python(Mesh_Algorithm):
     ## doc string of the method
     #  @internal
     docHelper  = "Creates tetrahedron 3D algorithm for solids"
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates segment 1D algorithm for edges"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to
@@ -430,6 +436,9 @@ class StdMeshersDC_Triangle_MEFISTO(Mesh_Algorithm):
     #  of smesh.Mesh class
     #  @internal
     isDefault  = True
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates triangle 2D algorithm for faces"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to
@@ -480,6 +489,9 @@ class StdMeshersDC_Quadrangle(Mesh_Algorithm):
     #  of smesh.Mesh class
     #  @internal
     isDefault  = True
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates quadrangle 2D algorithm for faces"
     ## hypothesis associated with algorithm
     #  @internal
     params     = 0
@@ -596,6 +608,9 @@ class StdMeshersDC_Hexahedron(Mesh_Algorithm):
     #  of smesh.Mesh class
     #  @internal
     isDefault  = True
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates hexahedron 3D algorithm for volumes"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to
@@ -625,6 +640,9 @@ class StdMeshersDC_Projection1D(Mesh_Algorithm):
     #  of smesh.Mesh class
     #  @internal
     isDefault  = True
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates projection 1D algorithm for edges"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to
@@ -679,6 +697,9 @@ class StdMeshersDC_Projection2D(Mesh_Algorithm):
     #  of smesh.Mesh class
     #  @internal
     isDefault  = True
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates projection 2D algorithm for faces"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to
@@ -735,6 +756,9 @@ class StdMeshersDC_Projection1D2D(StdMeshersDC_Projection2D):
     ## type of algorithm used with helper function in smesh.Mesh class
     #  @internal
     algoType   = "Projection_1D2D"
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates projection 1D-2D algorithm for edges and faces"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to
@@ -759,6 +783,9 @@ class StdMeshersDC_Projection3D(Mesh_Algorithm):
     ## type of algorithm used with helper function in smesh.Mesh class
     #  @internal
     algoType   = "Projection_3D"
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates projection 3D algorithm for volumes"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to
@@ -819,6 +846,9 @@ class StdMeshersDC_Prism3D(Mesh_Algorithm):
     ## type of algorithm used with helper function in smesh.Mesh class
     #  @internal
     algoType   = "Prism_3D"
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates prism 3D algorithm for volumes"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to
@@ -952,7 +982,7 @@ class StdMeshersDC_Prism3D(Mesh_Algorithm):
 
     pass # end of StdMeshersDC_Prism3D class
 
-## Defines a Radial Quadrangle 1D2D algorithm
+## Defines a Radial Quadrangle 1D-2D algorithm
 # 
 #  It is created by calling smesh.Mesh.Quadrangle(smesh.RADIAL_QUAD,geom=0)
 #
@@ -965,6 +995,9 @@ class StdMeshersDC_RadialQuadrangle1D2D(Mesh_Algorithm):
     ## type of algorithm used with helper function in smesh.Mesh class
     #  @internal
     algoType   = RADIAL_QUAD
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates quadrangle 1D-2D algorithm for triangular faces"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to
@@ -1081,6 +1114,9 @@ class StdMeshersDC_UseExistingElements_1D(Mesh_Algorithm):
     #  of smesh.Mesh class
     #  @internal
     isDefault  = True
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates 1D algorithm for edges with reusing of existing mesh elements"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to
@@ -1127,6 +1163,9 @@ class StdMeshersDC_UseExistingElements_1D2D(Mesh_Algorithm):
     #  of smesh.Mesh class
     #  @internal
     isDefault  = True
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates 1D-2D algorithm for edges/faces with reusing of existing mesh elements"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to
@@ -1173,6 +1212,9 @@ class StdMeshersDC_Cartesian_3D(Mesh_Algorithm):
     #  of smesh.Mesh class
     #  @internal
     isDefault  = True
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates body fitting 3D algorithm for volumes"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to
@@ -1240,6 +1282,9 @@ class StdMeshersDC_UseExisting_1D(Mesh_Algorithm):
     ## type of algorithm used with helper function in smesh.Mesh class
     #  @internal
     algoType   = "UseExisting_1D"
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates 1D algorithm for edges with reusing of existing mesh elements"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to
@@ -1265,6 +1310,9 @@ class StdMeshersDC_UseExisting_2D(Mesh_Algorithm):
     ## type of algorithm used with helper function in smesh.Mesh class
     #  @internal
     algoType   = "UseExisting_2D"
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates 2D algorithm for faces with reusing of existing mesh elements"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to
