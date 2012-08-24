@@ -24,7 +24,6 @@
 //  File   : SMESHDS_Hypothesis.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #ifndef _SMESHDS_HYPOTHESIS_HXX_
 #define _SMESHDS_HYPOTHESIS_HXX_
@@ -36,7 +35,7 @@
 
 class SMESHDS_EXPORT SMESHDS_Hypothesis
 {
-public:
+ public:
   SMESHDS_Hypothesis(int hypId);
   virtual ~SMESHDS_Hypothesis();
 
@@ -50,12 +49,12 @@ public:
   virtual bool operator==(const SMESHDS_Hypothesis& other) const;
   bool operator!=(const SMESHDS_Hypothesis& other) const { return !(*this==other); }
 
-enum hypothesis_type {PARAM_ALGO, ALGO_0D, ALGO_1D, ALGO_2D, ALGO_3D};
+  enum hypothesis_type { PARAM_ALGO, ALGO_0D, ALGO_1D, ALGO_2D, ALGO_3D };
 
-protected:
-  std::string _name;
-  int _hypId;
-  int _type;
+ protected:
+  std::string _name;  // identifier if hypothesis type
+  int         _hypId; // ID unique within application session
+  int         _type;  // enum hypothesis_type
 };
 
 #endif

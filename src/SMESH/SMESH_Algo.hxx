@@ -373,8 +373,8 @@ protected:
   bool _requireShape;           // work with GetDim()-1 mesh bound to geom only. Default TRUE
   bool _supportSubmeshes;       // if !_requireDiscreteBoundary. Default FALSE
 
-  // quadratic mesh creation required,
-  // is usually set trough SMESH_MesherHelper::IsQuadraticSubMesh()
+  // indicates if quadratic mesh creation is required,
+  // is usually set like this: _quadraticMesh = SMESH_MesherHelper::IsQuadraticSubMesh(shape)
   bool _quadraticMesh;
 
   int         _error;    //!< SMESH_ComputeErrorName or anything algo specific
