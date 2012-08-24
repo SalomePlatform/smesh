@@ -37,6 +37,7 @@
 #include <list>
 #include <map>
 #include <vector>
+#include <set>
 
 #include <SALOMEconfig.h>
 #include CORBA_CLIENT_HEADER(SALOMEDS)
@@ -360,7 +361,7 @@ protected:
   _pyID   myGeom,   myMesh;
   struct CreationMethod {
     _AString              myMethod; // method of algo or mesh creating a hyp
-    // myArgNb(i)-th arg of myArgMethods(i) of hyp becomes an i-th arg of myAlgoMethod
+    // myArgNb(i)-th arg of myArgMethods(i) of hyp becomes an i-th arg of myMethod
     std::vector<_AString> myArgMethods;
     std::vector<int>      myArgNb; // arg nb countered from 1
     std::vector<_AString> myArgs; // creation arguments
@@ -369,6 +370,7 @@ protected:
   // a hypothesis can be created by different algos by different methods
   typedef std::map<_AString, CreationMethod > TType2CrMethod;
   TType2CrMethod                myAlgoType2CreationMethod;
+  std::set< _AString >          myAccumulativeMethods;
   CreationMethod*               myCurCrMethod; // used for adding to myAlgoType2CreationMethod
   std::list<Handle(_pyCommand)> myArgCommands;
   std::list<Handle(_pyCommand)> myUnusedCommands;
@@ -389,6 +391,8 @@ public:
   void AddArgMethod(const _AString& method, const int argNb = 1)
   { myCurCrMethod->myArgMethods.push_back( method );
     myCurCrMethod->myArgNb.push_back( argNb ); }
+  void AddAccumulativeMethod( const _AString& method)
+  { myAccumulativeMethods.insert( method ); }
   //const TColStd_SequenceOfAsciiString& GetArgs() const { return myArgs; }
   const std::list<Handle(_pyCommand)>& GetArgCommands() const { return myArgCommands; }
   void ClearAllCommands();
