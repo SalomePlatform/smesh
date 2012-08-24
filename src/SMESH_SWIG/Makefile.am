@@ -29,6 +29,7 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 dist_salomescript_PYTHON = \
 	smesh.py \
 	smeshDC.py \
+	smesh_algorithm.py \
 	StdMeshersDC.py \
 	batchmode_smesh.py \
 	batchmode_mefisto.py \
