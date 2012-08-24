@@ -21,7 +21,8 @@
 # @package StdMeshersDC
 # Python API for the standard meshing plug-in module.
 
-from smesh import Mesh_Algorithm, AssureGeomPublished, IsEqual, ParseParameters
+from smesh_algorithm import Mesh_Algorithm
+from smesh import AssureGeomPublished, IsEqual, ParseParameters
 from smesh import GetName, TreatHypoStatus
 from smeshDC import Mesh
 
