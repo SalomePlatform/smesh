@@ -51,7 +51,7 @@ public:
   {
     HYP_OK = 0,
     HYP_MISSING,      // algo misses a hypothesis
-    HYP_CONCURENT,    // several applicable hypotheses
+    HYP_CONCURENT,    // several applicable hypotheses assigned to father shapes
     HYP_BAD_PARAMETER,// hypothesis has a bad parameter value
     HYP_HIDDEN_ALGO,  // an algo is hidden by an upper dim algo generating all-dim elements
     HYP_HIDING_ALGO,  // an algo hides lower dim algos by generating all-dim elements
@@ -59,7 +59,7 @@ public:
                       //      for Add/RemoveHypothesis operations
     HYP_INCOMPATIBLE, // hypothesis does not fit algo
     HYP_NOTCONFORM,   // not conform mesh is produced appling a hypothesis
-    HYP_ALREADY_EXIST,// such hypothesis already exist
+    HYP_ALREADY_EXIST,// several applicable hypothesis of same priority assigned
     HYP_BAD_DIM,      // bad dimension
     HYP_BAD_SUBSHAPE, // shape is neither the main one, nor its sub-shape, nor a group
     HYP_BAD_GEOMETRY, // shape geometry mismatches algorithm's expectation
