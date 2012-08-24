@@ -2356,7 +2356,7 @@ void _pyHypothesis::Assign( const Handle(_pyHypothesis)& theOther,
   myGeom                    = theOther->myGeom;
   myMesh                    = theMesh;
   myAlgoType2CreationMethod = theOther->myAlgoType2CreationMethod;
-  //myArgCommands             = theOther->myArgCommands;
+  myAccumulativeMethods     = theOther->myAccumulativeMethods;
   //myUnusedCommands          = theOther->myUnusedCommands;
   // init myCurCrMethod
   GetCreationMethod( theOther->GetAlgoType() );
@@ -2485,7 +2485,9 @@ bool _pyHypothesis::GetReferredMeshesAndGeom( list< Handle(_pyMesh) >& meshes )
 void _pyHypothesis::rememberCmdOfParameter( const Handle(_pyCommand) & theCommand )
 {
   // parameters are discriminated by method name
-  TCollection_AsciiString method = theCommand->GetMethod();
+  _AString method = theCommand->GetMethod();
+  if ( myAccumulativeMethods.count( method ))
+    return; // this method adds values and not override the previus value
 
   // discriminate commands setting different parameters via one method
   // by passing parameter names like e.g. SetOption("size", "0.2")
@@ -2503,7 +2505,7 @@ void _pyHypothesis::rememberCmdOfParameter( const Handle(_pyCommand) & theComman
     }
   }
   // parameters are discriminated by method name
-  list< Handle(_pyCommand)>& cmds = myMeth2Commands[ theCommand->GetMethod() ];
+  list< Handle(_pyCommand)>& cmds = myMeth2Commands[ method /*theCommand->GetMethod()*/ ];
   if ( !cmds.empty() && !isCmdUsedForCompute( cmds.back() ))
   {
     cmds.back()->Clear(); // previous parameter value has not been used
@@ -3304,10 +3306,10 @@ static inline bool isWord(const char c, const bool dotIsWord)
  */
 //================================================================================
 
-TCollection_AsciiString _pyCommand::GetWord( const TCollection_AsciiString & theString,
-                                            int &      theStartPos,
-                                            const bool theForward,
-                                            const bool dotIsWord )
+TCollection_AsciiString _pyCommand::GetWord( const _AString & theString,
+                                             int &            theStartPos,
+                                             const bool       theForward,
+                                             const bool       dotIsWord )
 {
   int beg = theStartPos, end = theStartPos;
   theStartPos = EMPTY;
@@ -4111,7 +4113,7 @@ _pyHypothesisReader::_pyHypothesisReader()
     LDOM_NodeList algoNodeList = xmlDoc.getElementsByTagName( "algorithm" );
     for ( int i = 0; i < algoNodeList.getLength(); ++i )
     {
-      LDOM_Node algoNode = algoNodeList.item( i );
+      LDOM_Node     algoNode = algoNodeList.item( i );
       LDOM_Element& algoElem = (LDOM_Element&) algoNode;
       LDOM_NodeList pyAlgoNodeList = algoElem.getElementsByTagName( "algo" );
       if ( pyAlgoNodeList.getLength() < 1 ) continue;
@@ -4173,7 +4175,43 @@ _pyHypothesisReader::_pyHypothesisReader()
         }
       }
     }
-  }
+    // <hypothesis type="BLSURF_Parameters"
+    //          ...
+    //          dim="2">
+    //   <python-wrap>
+    //     <accumulative-methods> 
+    //       SetEnforcedVertex,
+    //       SetEnforcedVertexNamed
+    //     </accumulative-methods>
+    //   </python-wrap>
+    // </hypothesis>
+    //
+    LDOM_NodeList hypNodeList = xmlDoc.getElementsByTagName( "hypothesis" );
+    for ( int i = 0; i < hypNodeList.getLength(); ++i )
+    {
+      LDOM_Node     hypNode      = hypNodeList.item( i );
+      LDOM_Element& hypElem      = (LDOM_Element&) hypNode;
+      _AString      hypType      = hypElem.getAttribute("type");
+      LDOM_NodeList methNodeList = hypElem.getElementsByTagName( "accumulative-methods" );
+      if ( methNodeList.getLength() != 1 || hypType.IsEmpty() ) continue;
+
+      map<_AString, Handle(_pyHypothesis)>::const_iterator type2hyp = myType2Hyp.find( hypType );
+      if ( type2hyp == myType2Hyp.end() ) continue;
+
+      LDOM_Node methNode = methNodeList.item( 0 );
+      LDOM_Node textNode = methNode.getFirstChild();
+      _AString      text = textNode.getNodeValue();
+      _AString method;
+      int pos = 1;
+      do {
+        method = _pyCommand::GetWord( text, pos, /*forward= */true );
+        pos += method.Length();
+        type2hyp->second->AddAccumulativeMethod( method );
+      }
+      while ( !method.IsEmpty() );
+    }
+
+  } // loop on xmlPaths
 }
 
 //================================================================================
