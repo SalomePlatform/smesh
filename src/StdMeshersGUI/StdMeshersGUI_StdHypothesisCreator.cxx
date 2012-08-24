@@ -747,7 +747,7 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
   }
 
   SMESH::SMESH_Hypothesis_var hyp = initParamsHypothesis();
-  SMESH::ListOfParameters_var aParameters = hyp->GetLastParameters();
+  //SMESH::ListOfParameters_var aParameters = hyp->GetLastParameters();
 
   if( hypType()=="LocalLength" )
   {

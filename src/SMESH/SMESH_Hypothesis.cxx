@@ -43,7 +43,6 @@ SMESH_Hypothesis::SMESH_Hypothesis(int hypId,
                                    int studyId,
                                    SMESH_Gen* gen) : SMESHDS_Hypothesis(hypId)
 {
-  //MESSAGE("SMESH_Hypothesis::SMESH_Hypothesis");
   _gen = gen;
   _studyId = studyId;
   StudyContextStruct* myStudyContext = _gen->GetStudyContext(_studyId);
@@ -51,9 +50,8 @@ SMESH_Hypothesis::SMESH_Hypothesis(int hypId,
   _type = PARAM_ALGO;
   _shapeType = 0; // to be set by algo with TopAbs_Enum
   _param_algo_dim = -1; // to be set by algo parameter
-  _parameters = string();
-  _lastParameters = string();
-  _libName = string();
+  //_parameters = string();
+  //_lastParameters = string();
 }
 
 //=============================================================================
@@ -177,53 +175,53 @@ SMESH_Mesh* SMESH_Hypothesis::GetMeshByPersistentID(int id)
  * 
  */
 //=============================================================================
-void SMESH_Hypothesis::SetParameters(const char *theParameters)
-{
-  string aNewParameters(theParameters);
-  if(aNewParameters.size()==0 && _parameters.size()==0)
-    aNewParameters = " ";
-  if(_parameters.size()>0)
-    _parameters +="|";
-  _parameters +=aNewParameters;
-  SetLastParameters(theParameters);
-}
+// void SMESH_Hypothesis::SetParameters(const char *theParameters)
+// {
+//   string aNewParameters(theParameters);
+//   if(aNewParameters.size()==0 && _parameters.size()==0)
+//     aNewParameters = " ";
+//   if(_parameters.size()>0)
+//     _parameters +="|";
+//   _parameters +=aNewParameters;
+//   SetLastParameters(theParameters);
+// }
 
-//=============================================================================
-/*!
- * 
- */
-//=============================================================================
-void SMESH_Hypothesis::ClearParameters()
-{
-  _parameters = string();
-}
+// //=============================================================================
+// /*!
+//  * 
+//  */
+// //=============================================================================
+// void SMESH_Hypothesis::ClearParameters()
+// {
+//   _parameters = string();
+// }
 
-//=============================================================================
-/*!
- * 
- */
-//=============================================================================
-char* SMESH_Hypothesis::GetParameters() const
-{
-  return (char*)_parameters.c_str();
-}
+// //=============================================================================
+// /*!
+//  * 
+//  */
+// //=============================================================================
+// char* SMESH_Hypothesis::GetParameters() const
+// {
+//   return (char*)_parameters.c_str();
+// }
 
-//=============================================================================
-/*!
- * 
- */
-//=============================================================================
-char* SMESH_Hypothesis::GetLastParameters() const
-{
-  return (char*)_lastParameters.c_str();
-}
+// //=============================================================================
+// /*!
+//  * 
+//  */
+// //=============================================================================
+// char* SMESH_Hypothesis::GetLastParameters() const
+// {
+//   return (char*)_lastParameters.c_str();
+// }
 
-//=============================================================================
-/*!
- * 
- */
-//=============================================================================
-void SMESH_Hypothesis::SetLastParameters(const char* theParameters)
-{
-  _lastParameters = string(theParameters);
-}
+// //=============================================================================
+// /*!
+//  * 
+//  */
+// //=============================================================================
+// void SMESH_Hypothesis::SetLastParameters(const char* theParameters)
+// {
+//   _lastParameters = string(theParameters);
+// }

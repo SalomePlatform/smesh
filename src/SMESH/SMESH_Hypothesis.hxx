@@ -77,12 +77,12 @@ public:
   virtual const char* GetLibName() const;
   void  SetLibName(const char* theLibName);
 
-  void  SetParameters(const char *theParameters);
-  char* GetParameters() const;
+  //void  SetParameters(const char *theParameters);
+  //char* GetParameters() const;
 
-  void SetLastParameters(const char* theParameters);
-  char* GetLastParameters() const;
-  void ClearParameters();
+  // void SetLastParameters(const char* theParameters);
+  // char* GetLastParameters() const;
+  // void ClearParameters();
   
   /*!
    * \brief Initialize my parameter values by the mesh built on the geometry
@@ -122,14 +122,14 @@ public:
 
 protected:
   SMESH_Gen* _gen;
-  int _studyId;
-  int _shapeType;
-  int _param_algo_dim; // to be set at descendant hypothesis constructor
+  int        _studyId;
+  int        _shapeType;
+  int        _param_algo_dim; // to be set at descendant hypothesis constructor
 
 private:
-  std::string _libName;
-  std::string _parameters;
-  std::string _lastParameters;
+  std::string _libName; // name of library of plug-in Engine
+  //std::string _parameters;
+  //std::string _lastParameters;
 };
 
 #endif
