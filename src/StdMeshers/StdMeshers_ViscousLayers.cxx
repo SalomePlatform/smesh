@@ -4439,6 +4439,8 @@ bool _ViscousBuilder::addBoundaryElements()
         F = e2f->second.Oriented( TopAbs_FORWARD );
         reverse = ( helper.GetSubShapeOri( F, E ) == TopAbs_REVERSED );
         if ( helper.GetSubShapeOri( data._solid, F ) == TopAbs_REVERSED )
+          reverse = !reverse, F.Reverse();
+        if ( SMESH_Algo::IsReversedSubMesh( TopoDS::Face(F), getMeshDS() ))
           reverse = !reverse;
       }
       else
@@ -4470,11 +4472,27 @@ bool _ViscousBuilder::addBoundaryElements()
         vector< const SMDS_MeshNode*>&  nn1 = ledges[j-dj1]->_nodes;
         vector< const SMDS_MeshNode*>&  nn2 = ledges[j-dj2]->_nodes;
         if ( isOnFace )
-          for ( unsigned z = 1; z < nn1.size(); ++z )
+          for ( size_t z = 1; z < nn1.size(); ++z )
             sm->AddElement( getMeshDS()->AddFace( nn1[z-1], nn2[z-1], nn2[z], nn1[z] ));
         else
-          for ( unsigned z = 1; z < nn1.size(); ++z )
+          for ( size_t z = 1; z < nn1.size(); ++z )
             sm->AddElement( new SMDS_FaceOfNodes( nn1[z-1], nn2[z-1], nn2[z], nn1[z]));
+      }
+
+      // Make edges
+      for ( int isFirst = 0; isFirst < 2; ++isFirst )
+      {
+        _LayerEdge* edge = isFirst ? ledges.front() : ledges.back();
+        if ( !edge->_sWOL.IsNull() && edge->_sWOL.ShapeType() == TopAbs_EDGE )
+        {
+          vector< const SMDS_MeshNode*>&  nn = edge->_nodes;
+          if ( nn[1]->GetInverseElementIterator( SMDSAbs_Edge )->more() )
+            continue;
+          helper.SetSubShape( edge->_sWOL );
+          helper.SetElementsOnShape( true );
+          for ( size_t z = 1; z < nn.size(); ++z )
+            helper.AddEdge( nn[z-1], nn[z] );
+        }
       }
     }
   }
