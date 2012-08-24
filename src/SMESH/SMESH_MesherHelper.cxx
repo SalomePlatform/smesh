@@ -1675,6 +1675,24 @@ SMESH_MesherHelper::AddPolyhedralVolume (const std::vector<const SMDS_MeshNode*>
   return elem;
 }
 
+namespace
+{
+  //================================================================================
+  /*!
+   * \brief Check if a node belongs to any face of sub-mesh
+   */
+  //================================================================================
+
+  bool isNodeInSubMesh( const SMDS_MeshNode* n, const SMESHDS_SubMesh* sm )
+  {
+    SMDS_ElemIteratorPtr fIt = n->GetInverseElementIterator( SMDSAbs_Face );
+    while ( fIt->more() )
+      if ( sm->Contains( fIt->next() ))
+        return true;
+    return false;
+  }
+}
+
 //=======================================================================
 //function : LoadNodeColumns
 //purpose  : Load nodes bound to face into a map of node columns
@@ -1746,13 +1764,36 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap &            theParam2
     SMESH_Algo::GetSortedNodesOnEdge( theMesh, *edge,/*noMedium=*/true, sortedBaseNodes);
     if ( sortedBaseNodes.empty() ) continue;
 
+    map< double, const SMDS_MeshNode*>::iterator u_n = sortedBaseNodes.begin();
+    if ( theProxyMesh ) // from sortedBaseNodes remove nodes not shared by faces of faceSubMesh
+    {
+      const SMDS_MeshNode* n1 = sortedBaseNodes.begin()->second;
+      const SMDS_MeshNode* n2 = sortedBaseNodes.rbegin()->second;
+      bool allNodesAreProxy = ( n1 != theProxyMesh->GetProxyNode( n1 ) &&
+                                n2 != theProxyMesh->GetProxyNode( n2 ));
+      if ( allNodesAreProxy )
+        for ( u_n = sortedBaseNodes.begin(); u_n != sortedBaseNodes.end(); u_n++ )
+          u_n->second = theProxyMesh->GetProxyNode( u_n->second );
+
+      if ( u_n = sortedBaseNodes.begin(), !isNodeInSubMesh( u_n->second, faceSubMesh ))
+      {
+        while ( ++u_n != sortedBaseNodes.end() && !isNodeInSubMesh( u_n->second, faceSubMesh ));
+        sortedBaseNodes.erase( sortedBaseNodes.begin(), u_n );
+      }
+      else if ( u_n = --sortedBaseNodes.end(), !isNodeInSubMesh( u_n->second, faceSubMesh ))
+      {
+        while ( u_n != sortedBaseNodes.begin() && !isNodeInSubMesh( (--u_n)->second, faceSubMesh ));
+        sortedBaseNodes.erase( ++u_n, sortedBaseNodes.end() );
+      }
+      if ( sortedBaseNodes.empty() ) continue;
+    }
+
     double f, l;
     BRep_Tool::Range( *edge, f, l );
     if ( edge->Orientation() == TopAbs_REVERSED ) std::swap( f, l );
     const double coeff = 1. / ( l - f ) * length[iE] / fullLen;
     const double prevPar = theParam2ColumnMap.empty() ? 0 : theParam2ColumnMap.rbegin()->first;
-    map< double, const SMDS_MeshNode*>::iterator u_n = sortedBaseNodes.begin();
-    for ( ; u_n != sortedBaseNodes.end(); u_n++ )
+    for ( u_n = sortedBaseNodes.begin(); u_n != sortedBaseNodes.end(); u_n++ )
     {
       double par = prevPar + coeff * ( u_n->first - f );
       TParam2ColumnMap::iterator u2nn =
@@ -1760,21 +1801,16 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap &            theParam2
       u2nn->second.push_back( u_n->second );
     }
   }
-  TParam2ColumnMap::iterator par_nVec_2, par_nVec_1 = theParam2ColumnMap.begin();
-  if ( theProxyMesh )
-  {
-    for ( ; par_nVec_1 != theParam2ColumnMap.end(); ++par_nVec_1 )
-    {
-      const SMDS_MeshNode* & n = par_nVec_1->second[0];
-      n = theProxyMesh->GetProxyNode( n );
-    }
-  }
+  if ( theParam2ColumnMap.empty() )
+    return false;
+
 
   int nbRows = 1 + faceSubMesh->NbElements() / ( theParam2ColumnMap.size()-1 );
 
   // fill theParam2ColumnMap column by column by passing from nodes on
   // theBaseEdge up via mesh faces on theFace
 
+  TParam2ColumnMap::iterator par_nVec_1, par_nVec_2;
   par_nVec_2 = theParam2ColumnMap.begin();
   par_nVec_1 = par_nVec_2++;
   TIDSortedElemSet emptySet, avoidSet;
