@@ -406,6 +406,10 @@ const map < int, SMESH_subMesh * >& SMESH_subMesh::DependsOn()
       {
         insertDependence(exp.Current());
       }
+      for (TopExp_Explorer exp(_subShape, TopAbs_VERTEX, TopAbs_EDGE); exp.More();exp.Next())
+      {
+        insertDependence(exp.Current());
+      }
       break;
     }
   case TopAbs_COMPSOLID:
