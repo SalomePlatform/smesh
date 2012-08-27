@@ -550,6 +550,9 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent, bool ForEval)
   myTable->hideColumn( COL_SHAPEID );
   myTable->hideColumn( COL_BAD_MESH );
   myTable->horizontalHeader()->setResizeMode( COL_ERROR, QHeaderView::Interactive );
+  myTable->setWordWrap( true );
+  myTable->horizontalHeader()->setStretchLastSection( true );
+  myTable->setMinimumWidth( 500 );
 
   QStringList headers;
   headers << tr( "COL_ALGO_HEADER" );
@@ -564,12 +567,12 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent, bool ForEval)
   QGridLayout* grpLayout = new QGridLayout(myCompErrorGroup);
   grpLayout->setSpacing(SPACING);
   grpLayout->setMargin(MARGIN);
-  grpLayout->addWidget( myWarningLabel, 0, 0 );
-  grpLayout->addWidget( myTable,        1, 0, 4, 1 );
-  grpLayout->addWidget( myShowBtn,      1, 1 );
+  grpLayout->addWidget( myWarningLabel, 0, 0, 1, 4 );
+  grpLayout->addWidget( myTable,        1, 0, 1, 4 );
+  grpLayout->addWidget( myShowBtn,      2, 0 );
   grpLayout->addWidget( myPublishBtn,   2, 1 );
-  grpLayout->addWidget( myBadMeshBtn,   3, 1 );
-  grpLayout->setRowStretch( 4, 1 );
+  grpLayout->addWidget( myBadMeshBtn,   2, 2 );
+  grpLayout->setColumnStretch( 3, 1 );
 
   // Hypothesis definition errors
 
@@ -1035,6 +1038,7 @@ void SMESHGUI_BaseComputeOp::showComputeResult( const bool theMemoryLack,
       }
       tbl->resizeColumnToContents( COL_ALGO );
       tbl->resizeColumnToContents( COL_SHAPE );
+      tbl->setWordWrap( true );
 
       if ( hasBadMesh )
         aCompDlg->myBadMeshBtn->show();
@@ -2084,6 +2088,7 @@ void SMESHGUI_BaseComputeOp::showEvaluateResult(const SMESH::long_array& theRes,
       }
       tbl->resizeColumnToContents( COL_ALGO );
       tbl->resizeColumnToContents( COL_SHAPE );
+      tbl->setWordWrap( true );
 
       if ( hasBadMesh )
         aCompDlg->myBadMeshBtn->show();
