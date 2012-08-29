@@ -35,10 +35,6 @@
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_ComputeError.hxx"
 #include "SMESH_Algo.hxx"
-#include "SMESH_0D_Algo.hxx"
-#include "SMESH_1D_Algo.hxx"
-#include "SMESH_2D_Algo.hxx"
-#include "SMESH_3D_Algo.hxx"
 #include "SMESH_Mesh.hxx"
 
 #include "chrono.hxx"

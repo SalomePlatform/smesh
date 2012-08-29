@@ -47,6 +47,7 @@ class SMESH_Gen;
 class SMESH_Mesh;
 class SMESH_HypoFilter;
 class TopoDS_Vertex;
+class TopoDS_Wire;
 class TopoDS_Face;
 class TopoDS_Shape;
 class SMESHDS_Mesh;
@@ -301,6 +302,9 @@ public:
    */
   static bool FaceNormal(const SMDS_MeshElement* F, gp_XYZ& normal, bool normalized=true);
 
+  static int NumberOfWires(const TopoDS_Shape& S);
+  int NumberOfPoints(SMESH_Mesh& aMesh,const TopoDS_Wire& W);
+
   /*!
    * \brief Return continuity of two edges
     * \param E1 - the 1st edge
@@ -382,6 +386,30 @@ protected:
   std::list<const SMDS_MeshElement*> _badInputElements; //!< to explain COMPERR_BAD_INPUT_MESH
 
   volatile bool _computeCanceled; //!< is set to True while computing to stop it
+};
+
+class SMESH_EXPORT SMESH_0D_Algo: public SMESH_Algo
+{
+public:
+  SMESH_0D_Algo(int hypId, int studyId,  SMESH_Gen* gen);
+};
+
+class SMESH_EXPORT SMESH_1D_Algo: public SMESH_Algo
+{
+public:
+  SMESH_1D_Algo(int hypId, int studyId,  SMESH_Gen* gen);
+};
+
+class SMESH_EXPORT SMESH_2D_Algo: public SMESH_Algo
+{
+public:
+  SMESH_2D_Algo(int hypId, int studyId, SMESH_Gen* gen);
+};
+
+class SMESH_EXPORT SMESH_3D_Algo: public SMESH_Algo
+{
+public:
+  SMESH_3D_Algo(int hypId, int studyId, SMESH_Gen* gen);
 };
 
 #endif
