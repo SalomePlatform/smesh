@@ -36,17 +36,17 @@
 //  class StdMeshers_SMESHBlock
 //
 ////////////////////////////////////////////////////////////////////////
+#include <TColStd_MapOfInteger.hxx>
+#include <TopTools_IndexedMapOfOrientedShape.hxx>
+#include <TopoDS_Shell.hxx>
+#include <TopoDS_Vertex.hxx>
 #include <gp_Pnt.hxx>
 #include <gp_XYZ.hxx>
-#include <TopoDS_Vertex.hxx>
-#include <TopoDS_Shell.hxx>
-#include <TopTools_IndexedMapOfOrientedShape.hxx>
-#include <TColStd_MapOfInteger.hxx>
 
+#include "SMESH_Algo.hxx"
 #include "SMESH_Block.hxx"
 #include "SMESH_ComputeError.hxx"
 #include "SMESH_MesherHelper.hxx"
-#include "SMESH_3D_Algo.hxx"
 
 typedef std::map< double, std::vector<const SMDS_MeshNode*> > StdMeshers_IJNodeMap;
 

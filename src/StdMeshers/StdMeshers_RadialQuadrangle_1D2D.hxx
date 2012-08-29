@@ -26,7 +26,7 @@
 
 #include "SMESH_StdMeshers.hxx"
 
-#include "SMESH_2D_Algo.hxx"
+#include "SMESH_Algo.hxx"
 
 #include <TopoDS_Edge.hxx>
 

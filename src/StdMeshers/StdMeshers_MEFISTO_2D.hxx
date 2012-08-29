@@ -25,14 +25,13 @@
 //           Moved here from SMESH_MEFISTO_2D.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #ifndef _StdMeshers_MEFISTO_2D_HXX_
 #define _StdMeshers_MEFISTO_2D_HXX_
 
 #include "SMESH_StdMeshers.hxx"
 
-#include "SMESH_2D_Algo.hxx"
+#include "SMESH_Algo.hxx"
 
 class TopoDS_Face;
 class StdMeshers_MaxElementArea;

@@ -29,7 +29,7 @@
 
 #include "SMESH_StdMeshers.hxx"
 
-#include "SMESH_0D_Algo.hxx"
+#include "SMESH_Algo.hxx"
 
 /*!
  * \brief Algorithm existing in order just to enable assignation of

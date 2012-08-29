@@ -28,7 +28,7 @@
 
 #include "SMESH_StdMeshers.hxx"
 
-#include "SMESH_3D_Algo.hxx"
+#include "SMESH_Algo.hxx"
 
 /*!
  * \brief A 3D algorithm generating 3D structured Cartesian mesh in the

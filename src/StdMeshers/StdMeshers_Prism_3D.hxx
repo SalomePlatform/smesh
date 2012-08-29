@@ -29,25 +29,25 @@
 
 #include "SMESH_StdMeshers.hxx"
 
-#include "SMESH_3D_Algo.hxx"
-#include "SMDS_TypeOfPosition.hxx"
 #include "SMDS_MeshNode.hxx"
-#include "SMESH_Block.hxx"
-#include "SMESH_Mesh.hxx"
+#include "SMDS_TypeOfPosition.hxx"
 #include "SMESHDS_Mesh.hxx"
-#include "SMESH_subMesh.hxx"
-#include "SMESH_MesherHelper.hxx"
+#include "SMESH_Algo.hxx"
+#include "SMESH_Block.hxx"
 #include "SMESH_Comment.hxx"
+#include "SMESH_Mesh.hxx"
+#include "SMESH_MesherHelper.hxx"
+#include "SMESH_subMesh.hxx"
 
 #include <vector>
 
+#include <Adaptor2d_Curve2d.hxx>
 #include <Adaptor3d_Curve.hxx>
 #include <Adaptor3d_Surface.hxx>
-#include <Adaptor2d_Curve2d.hxx>
 #include <BRepAdaptor_Surface.hxx>
 #include <TopTools_IndexedMapOfOrientedShape.hxx>
-#include <gp_XYZ.hxx>
 #include <gp_Trsf.hxx>
+#include <gp_XYZ.hxx>
 
 
 class SMESHDS_SubMesh;
@@ -55,7 +55,6 @@ class TopoDS_Edge;
 class TopoDS_Faces;
 struct TNode;
 
-//typedef std::map<const SMDS_MeshNode*, const SMDS_MeshNode*> TNodeNodeMap;
 typedef std::vector<const SMDS_MeshNode* > TNodeColumn;
 
 // map of bottom nodes to the column of nodes above them
