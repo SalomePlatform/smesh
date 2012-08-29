@@ -653,10 +653,10 @@ void SMESHGUI_HypothesisDlg::onHelp()
     if(myCreator) {
       QVariant pluginName = myCreator->property( PLUGIN_NAME );
       if( pluginName.isValid() ) {
-	QString rootDir = pluginName.toString() + "PLUGIN_ROOT_DIR";
-	QString varValue = QString( getenv(rootDir.toLatin1().constData()));
-	if(!varValue.isEmpty())
-	  name = pluginName.toString() + "PLUGIN";
+        QString rootDir = pluginName.toString() + "PLUGIN_ROOT_DIR";
+        QString varValue = QString( getenv(rootDir.toLatin1().constData()));
+        if(!varValue.isEmpty())
+          name = pluginName.toString() + "PLUGIN";
       }
     }    
     app->onHelpContextModule(name, myHelpFileName);
