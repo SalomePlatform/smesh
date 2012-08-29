@@ -3509,7 +3509,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   // ----- create actions --------------
 
-  createSMESHAction(  111, "IMPORT_DAT", "", (Qt::CTRL+Qt::Key_B) );
+  //createSMESHAction(  111, "IMPORT_DAT", "", (Qt::CTRL+Qt::Key_B) );
   createSMESHAction(  112, "IMPORT_UNV", "", (Qt::CTRL+Qt::Key_U) );
   createSMESHAction(  113, "IMPORT_MED", "", (Qt::CTRL+Qt::Key_M) );
   createSMESHAction(  114, "NUM" );
@@ -3699,7 +3699,7 @@ void SMESHGUI::initialize( CAM_Application* app )
       renumId  = createMenu( tr( "MEN_RENUM" ),  modifyId, 404 ),
       transfId = createMenu( tr( "MEN_TRANSF" ), modifyId, 405 );
 
-  createMenu( 111, importId, -1 );
+  //createMenu( 111, importId, -1 );
   createMenu( 112, importId, -1 );
   createMenu( 113, importId, -1 );
   createMenu( 115, importId, -1 );
@@ -4407,7 +4407,7 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
   // end of GEOM plugins loading
 
   // Reset actions accelerator keys
-  action(111)->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_B)); // Import DAT
+  //action(111)->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_B)); // Import DAT
   action(112)->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_U)); // Import UNV
   action(113)->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_M)); // Import MED
 
@@ -4442,7 +4442,7 @@ bool SMESHGUI::deactivateModule( SUIT_Study* study )
   EmitSignalCloseAllDialogs();
 
   // Unset actions accelerator keys
-  action(111)->setShortcut(QKeySequence()); // Import DAT
+  //action(111)->setShortcut(QKeySequence()); // Import DAT
   action(112)->setShortcut(QKeySequence()); // Import UNV
   action(113)->setShortcut(QKeySequence()); // Import MED
 
