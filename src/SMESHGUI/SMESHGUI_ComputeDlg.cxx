@@ -337,15 +337,16 @@ namespace SMESH
   {
     QString text;
     switch ( errCode ) {
-      CASE2TEXT( COMPERR_OK            );
-      CASE2TEXT( COMPERR_BAD_INPUT_MESH);
-      CASE2TEXT( COMPERR_STD_EXCEPTION );
-      CASE2TEXT( COMPERR_OCC_EXCEPTION );
+      CASE2TEXT( COMPERR_OK               );
+      CASE2TEXT( COMPERR_BAD_INPUT_MESH   );
+      CASE2TEXT( COMPERR_STD_EXCEPTION    );
+      CASE2TEXT( COMPERR_OCC_EXCEPTION    );
     case SMESH::COMPERR_SLM_EXCEPTION: break; // avoid double "Salome exception"
-      CASE2TEXT( COMPERR_EXCEPTION     );
-      CASE2TEXT( COMPERR_MEMORY_PB     );
-      CASE2TEXT( COMPERR_BAD_SHAPE     );
-      CASE2TEXT( COMPERR_CANCELED      );
+      CASE2TEXT( COMPERR_EXCEPTION        );
+      CASE2TEXT( COMPERR_MEMORY_PB        );
+      CASE2TEXT( COMPERR_BAD_SHAPE        );
+      CASE2TEXT( COMPERR_CANCELED         );
+      CASE2TEXT( COMPERR_NO_MESH_ON_SHAPE );
     case SMESH::COMPERR_ALGO_FAILED:
       if ( strlen(comment) == 0 )
         text = QObject::tr("COMPERR_ALGO_FAILED");
@@ -951,7 +952,8 @@ void SMESHGUI_BaseComputeOp::showComputeResult( const bool theMemoryLack,
   {
     bool onlyWarnings = !theNoCompError; // == valid mesh computed but there are errors reported
     for ( int i = 0; i < theCompErrors->length() && onlyWarnings; ++i )
-      onlyWarnings = ( theCompErrors[ i ].code == SMESH::COMPERR_WARNING );
+      onlyWarnings = ( theCompErrors[ i ].code == SMESH::COMPERR_WARNING ||
+                       theCompErrors[ i ].code == SMESH::COMPERR_NO_MESH_ON_SHAPE );
 
     // full or brief mesh info
     SMESH::long_array_var aRes = myMesh->GetMeshInfo();

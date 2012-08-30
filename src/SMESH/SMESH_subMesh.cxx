@@ -1758,13 +1758,25 @@ bool SMESH_subMesh::checkComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& t
     }
   }
   {
-    // Check my state
+
+    // Set my _computeState
+
+    _computeState = FAILED_TO_COMPUTE;
     if ( !_computeError || _computeError->IsOK() )
     {
       // no error description is set to this sub-mesh, check if any mesh is computed
       _computeState = IsMeshComputed() ? COMPUTE_OK : FAILED_TO_COMPUTE;
+      if ( _computeState != COMPUTE_OK )
+      {
+        if ( _subShape.ShapeType() == TopAbs_EDGE &&
+             BRep_Tool::Degenerated( TopoDS::Edge( _subShape )) )
+          _computeState = COMPUTE_OK;
+        else
+          _computeError = SMESH_ComputeError::New(COMPERR_NO_MESH_ON_SHAPE,"",theAlgo);
+      }
+      noErrors = ( _computeState == COMPUTE_OK );
     }
-    else
+    if ( !noErrors )
     {
       if ( !_computeError->myAlgo )
         _computeError->myAlgo = theAlgo;
@@ -1783,7 +1795,6 @@ bool SMESH_subMesh::checkComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& t
 
       _computeState = _computeError->IsKO() ? FAILED_TO_COMPUTE : COMPUTE_OK;
 
-      noErrors = false;
     }
   }
   return noErrors;
