@@ -1168,15 +1168,18 @@ class Mesh:
                     except:
                         shapeText = " on subshape #%s" % (err.subShapeID)
                 errText = ""
-                stdErrors = ["OK",                 #COMPERR_OK
-                             "Invalid input mesh", #COMPERR_BAD_INPUT_MESH
-                             "std::exception",     #COMPERR_STD_EXCEPTION
-                             "OCC exception",      #COMPERR_OCC_EXCEPTION
-                             "SALOME exception",   #COMPERR_SLM_EXCEPTION
-                             "Unknown exception",  #COMPERR_EXCEPTION
+                stdErrors = ["OK",                   #COMPERR_OK
+                             "Invalid input mesh",   #COMPERR_BAD_INPUT_MESH
+                             "std::exception",       #COMPERR_STD_EXCEPTION
+                             "OCC exception",        #COMPERR_OCC_EXCEPTION
+                             "SALOME exception",     #COMPERR_SLM_EXCEPTION
+                             "Unknown exception",    #COMPERR_EXCEPTION
                              "Memory allocation problem", #COMPERR_MEMORY_PB
-                             "Algorithm failed",   #COMPERR_ALGO_FAILED
-                             "Unexpected geometry"]#COMPERR_BAD_SHAPE
+                             "Algorithm failed",     #COMPERR_ALGO_FAILED
+                             "Unexpected geometry",  #COMPERR_BAD_SHAPE
+                             "Warning",              #COMPERR_WARNING
+                             "Computation cancelled",#COMPERR_CANCELED
+                             "No mesh on sub-shape"] #COMPERR_NO_MESH_ON_SHAPE
                 if err.code > 0:
                     if err.code < len(stdErrors): errText = stdErrors[err.code]
                 else:
