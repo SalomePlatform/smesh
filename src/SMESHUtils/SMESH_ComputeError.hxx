@@ -40,17 +40,18 @@ enum SMESH_ComputeErrorName
 {
   // If you modify it, pls update SMESH_ComputeError::CommonName() below.
   // Positive values are for algo specific errors
-  COMPERR_OK             = -1,
-  COMPERR_BAD_INPUT_MESH = -2,  //!< wrong mesh on lower submesh
-  COMPERR_STD_EXCEPTION  = -3,  //!< some std exception raised
-  COMPERR_OCC_EXCEPTION  = -4,  //!< OCC exception raised
-  COMPERR_SLM_EXCEPTION  = -5,  //!< SALOME exception raised
-  COMPERR_EXCEPTION      = -6,  //!< other exception raised
-  COMPERR_MEMORY_PB      = -7,  //!< std::bad_alloc exception
-  COMPERR_ALGO_FAILED    = -8,  //!< algo failed for some reason
-  COMPERR_BAD_SHAPE      = -9,  //!< bad geometry
-  COMPERR_WARNING        = -10, //!< algo reports error but sub-mesh is computed anyway
-  COMPERR_CANCELED       = -11  //!< compute canceled
+  COMPERR_OK               = -1,
+  COMPERR_BAD_INPUT_MESH   = -2,  //!< wrong mesh on lower submesh
+  COMPERR_STD_EXCEPTION    = -3,  //!< some std exception raised
+  COMPERR_OCC_EXCEPTION    = -4,  //!< OCC exception raised
+  COMPERR_SLM_EXCEPTION    = -5,  //!< SALOME exception raised
+  COMPERR_EXCEPTION        = -6,  //!< other exception raised
+  COMPERR_MEMORY_PB        = -7,  //!< std::bad_alloc exception
+  COMPERR_ALGO_FAILED      = -8,  //!< algo failed for some reason
+  COMPERR_BAD_SHAPE        = -9,  //!< bad geometry
+  COMPERR_WARNING          = -10, //!< algo reports error but sub-mesh is computed anyway
+  COMPERR_CANCELED         = -11, //!< compute canceled
+  COMPERR_NO_MESH_ON_SHAPE = -12  //!< no mesh elements assigned to sub-shape
 };
 
 // =============================================================
