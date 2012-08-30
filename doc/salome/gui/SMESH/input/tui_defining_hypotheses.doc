@@ -2,11 +2,48 @@
 
 \page tui_defining_hypotheses_page Defining Hypotheses and Algorithms
 
+This page provides example codes of \ref tui_defining_meshing_algos
+"defining algorithms" and hypotheses. 
+<ul>
+<li>Wire discretisation ( smesh.REGULAR ) 1D algorithm
+  <ul>
+    <li>\ref tui_1d_arithmetic "Arithmetic 1D" hypothesis</li>
+    <li>\ref tui_deflection_1d "Deflection 1D and Number of Segments" hypotheses</li>
+    <li>\ref tui_start_and_end_length "Start and End Length" hypotheses</li>
+    <li>\ref tui_average_length "Local Length"</li>
+    <li>\ref tui_propagation "Propagation" additional hypothesis </li>
+    <li>\ref tui_fixed_points "Fixed Points 1D" hypothesis</li>
+  </ul>
+</li>
+<li>Triangle (Mefisto) 2D algorithm
+  <ul>
+    <li>\ref tui_max_element_area "Max Element Area" hypothesis </li>
+    <li>\ref tui_length_from_edges "Length from Edges"
+    hypothesis </li>
+  </ul>
+</li>
+<li>Tetrahedron (Netgen) 3D algorithm
+  <ul>
+    <li> \ref tui_max_element_volume "Max. Element Volume"hypothesis </li>
+    <li> \ref tui_viscous_layers "Viscous layers"</li>
+  </ul>
+</li>
+<li>\ref tui_projection "Projection Algorithms"</li>
+<li>\ref tui_radial_quadrangle "Radial Quadrangle 1D2D"</li>
+<li>Quadrangle (Mapping) 2D algorithm
+  <ul>
+    <li> \ref tui_quadrangle_parameters "Quadrangle Parameters" hypothesis </li>
+  </ul>
+</li>
+<li>\ref tui_import "Use Existing Elements"</li>
+</ul>
+<br>
+
 <h2>Defining 1D Hypotheses</h2>
 
 <br>
 \anchor tui_1d_arithmetic
-<h3>1D Arithmetic</h3>
+<h3>Arithmetic 1D</h3>
 
 \code
 import geompy
