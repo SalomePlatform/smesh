@@ -128,6 +128,10 @@
         <translation>Computation canceled</translation>
     </message>
     <message>
+        <source>COMPERR_NO_MESH_ON_SHAPE</source>
+        <translation>No mesh elements assigned to a Sub-shape</translation>
+    </message>
+    <message>
         <source>SMESH_GEOM</source>
         <translation>Geometry</translation>
     </message>
