@@ -296,12 +296,12 @@ bool StdMeshers_Projection_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aS
       SMESH_Block::GetFaceEdgesIDs( fId, edgeIdVec );
       for ( int i = 0; i < edgeIdVec.size(); ++i ) {
         int eID = edgeIdVec[ i ];
-        shape2ShapeMap.Bind( tgtShapes( eID ), scrShapes( eID ));
+        shape2ShapeMap.Bind( scrShapes( eID ), tgtShapes( eID ));
         if ( i < 2 ) {
           vector< int > vertexIdVec;
           SMESH_Block::GetEdgeVertexIDs( eID, vertexIdVec );
-          shape2ShapeMap.Bind( tgtShapes( vertexIdVec[0] ), scrShapes( vertexIdVec[0] ));
-          shape2ShapeMap.Bind( tgtShapes( vertexIdVec[1] ), scrShapes( vertexIdVec[1] ));
+          shape2ShapeMap.Bind( scrShapes( vertexIdVec[0]), tgtShapes( vertexIdVec[0]) );
+          shape2ShapeMap.Bind( scrShapes( vertexIdVec[1]), tgtShapes( vertexIdVec[1]) );
         }
       }
     }
