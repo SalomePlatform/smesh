@@ -1466,16 +1466,18 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           else
             ret = false;
         }
+        // check if an error reported on any sub-shape
+        bool isComputeErrorSet = !checkComputeError( algo, ret, shape );
+        // check if anything was built
         TopExp_Explorer subS(shape, _subShape.ShapeType());
-        if (ret) // check if anything was built
+        if (ret)
         {
           for (; ret && subS.More(); subS.Next())
             ret = _father->GetSubMesh( subS.Current() )->IsMeshComputed();
         }
-        bool isComputeErrorSet = !checkComputeError( algo, shape );
+        // Set _computeError
         if (!ret && !isComputeErrorSet)
         {
-          // Set _computeError
           for (subS.ReInit(); subS.More(); subS.Next())
           {
             SMESH_subMesh* sm = _father->GetSubMesh( subS.Current() );
@@ -1727,7 +1729,9 @@ bool SMESH_subMesh::Evaluate(MapShapeNbElems& aResMap)
  */
 //=======================================================================
 
-bool SMESH_subMesh::checkComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& theShape)
+bool SMESH_subMesh::checkComputeError(SMESH_Algo*         theAlgo,
+                                      const bool          theComputeOK,
+                                      const TopoDS_Shape& theShape)
 {
   bool noErrors = true;
 
@@ -1738,7 +1742,7 @@ bool SMESH_subMesh::checkComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& t
     {
       SMESH_subMeshIteratorPtr smIt = getDependsOnIterator(false,false);
       while ( smIt->more() )
-        if ( !smIt->next()->checkComputeError( theAlgo ))
+        if ( !smIt->next()->checkComputeError( theAlgo, theComputeOK ))
           noErrors = false;
     }
 
@@ -1750,7 +1754,7 @@ bool SMESH_subMesh::checkComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& t
       for (TopoDS_Iterator subIt( theShape ); subIt.More(); subIt.Next()) {
         SMESH_subMesh* sm = _father->GetSubMesh( subIt.Value() );
         if ( sm != this ) {
-          if ( !sm->checkComputeError( theAlgo, sm->GetSubShape() ))
+          if ( !sm->checkComputeError( theAlgo, theComputeOK, sm->GetSubShape() ))
             noErrors = false;
           updateDependantsState( SUBMESH_COMPUTED ); // send event SUBMESH_COMPUTED
         }
@@ -1761,7 +1765,6 @@ bool SMESH_subMesh::checkComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& t
 
     // Set my _computeState
 
-    _computeState = FAILED_TO_COMPUTE;
     if ( !_computeError || _computeError->IsOK() )
     {
       // no error description is set to this sub-mesh, check if any mesh is computed
@@ -1771,12 +1774,12 @@ bool SMESH_subMesh::checkComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& t
         if ( _subShape.ShapeType() == TopAbs_EDGE &&
              BRep_Tool::Degenerated( TopoDS::Edge( _subShape )) )
           _computeState = COMPUTE_OK;
-        else
+        else if ( theComputeOK )
           _computeError = SMESH_ComputeError::New(COMPERR_NO_MESH_ON_SHAPE,"",theAlgo);
       }
-      noErrors = ( _computeState == COMPUTE_OK );
     }
-    if ( !noErrors )
+
+    if ( _computeError && !_computeError->IsOK() )
     {
       if ( !_computeError->myAlgo )
         _computeError->myAlgo = theAlgo;
@@ -1795,6 +1798,7 @@ bool SMESH_subMesh::checkComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& t
 
       _computeState = _computeError->IsKO() ? FAILED_TO_COMPUTE : COMPUTE_OK;
 
+      noErrors = false;
     }
   }
   return noErrors;
