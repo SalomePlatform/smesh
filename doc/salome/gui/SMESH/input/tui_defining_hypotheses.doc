@@ -5,7 +5,7 @@
 This page provides example codes of \ref tui_defining_meshing_algos
 "defining algorithms" and hypotheses. 
 <ul>
-<li>Wire discretisation ( smesh.REGULAR ) 1D algorithm
+<li>Wire discretisation 1D algorithm
   <ul>
     <li>\ref tui_1d_arithmetic "Arithmetic 1D" hypothesis</li>
     <li>\ref tui_deflection_1d "Deflection 1D and Number of Segments" hypotheses</li>
@@ -29,13 +29,13 @@ This page provides example codes of \ref tui_defining_meshing_algos
   </ul>
 </li>
 <li>\ref tui_projection "Projection Algorithms"</li>
-<li>\ref tui_radial_quadrangle "Radial Quadrangle 1D2D"</li>
+<li>\ref tui_radial_quadrangle "Radial Quadrangle 1D2D" algorithm</li>
 <li>Quadrangle (Mapping) 2D algorithm
   <ul>
     <li> \ref tui_quadrangle_parameters "Quadrangle Parameters" hypothesis </li>
   </ul>
 </li>
-<li>\ref tui_import "Use Existing Elements"</li>
+<li>\ref tui_import "Use Existing Elements" algorithm</li>
 </ul>
 <br>
 
