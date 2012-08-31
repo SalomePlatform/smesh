@@ -304,7 +304,7 @@
                dim="2">
       <python-wrap>
         <algo>Projection_2D=Projection2D()</algo>
-        <hypo>ProjectionSource2D=SourceFace(SetSourceFace(),SetSourceMesh(),SetVertexAssociation(1),SetVertexAssociation(2),SetVertexAssociation(3),SetVertexAssociation(4))</hypo>
+        <hypo>ProjectionSource2D=SourceFace(SetSourceFace(),SetSourceMesh(),SetVertexAssociation(1),SetVertexAssociation(3),SetVertexAssociation(2),SetVertexAssociation(4))</hypo>
       </python-wrap>
     </algorithm>
 
@@ -329,7 +329,7 @@
                dim="3">
       <python-wrap>
         <algo>Projection_3D=Projection3D()</algo>
-        <hypo>ProjectionSource3D=SourceShape3D(SetSource3DShape(),SetSourceMesh(),SetVertexAssociation(1),SetVertexAssociation(2),SetVertexAssociation(3),SetVertexAssociation(4))</hypo>
+        <hypo>ProjectionSource3D=SourceShape3D(SetSource3DShape(),SetSourceMesh(),SetVertexAssociation(1),SetVertexAssociation(3),SetVertexAssociation(2),SetVertexAssociation(4))</hypo>
       </python-wrap>
     </algorithm>
 
