@@ -2004,8 +2004,9 @@ bool StdMeshers_ProjectionUtils::MakeComputed(SMESH_subMesh * sm, const int iter
   if ( !srcMesh )
     srcMesh = mesh;
 
-  if ( MakeComputed( srcMesh->GetSubMesh( srcShape ), iterationNb + 1 ))
-    return gen->Compute( *mesh, sm->GetSubShape() );
+  if ( MakeComputed( srcMesh->GetSubMesh( srcShape ), iterationNb + 1 ) &&
+       gen->Compute( *mesh, sm->GetSubShape() ))
+    return sm->IsMeshComputed();
 
   return false;
 }
