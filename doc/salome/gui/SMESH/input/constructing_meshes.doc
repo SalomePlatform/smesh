@@ -305,6 +305,11 @@ or/and hidden by other mesh elements, to see them it can be helpful to
 switch the mesh to Wireframe visualization mode or to switch off
 visualization of faces and volumes (if any).
 
+\image html show_bad_mesh.png
+<em>Too close nodes causing meshing failure are shown in magenta using <b>Show
+    bad Mesh</b> button</em>
+<br><br>
+
 \anchor use_existing_anchor
 <h2>"Use existing edges" and "Use existing faces" algorithms</h2>
 
