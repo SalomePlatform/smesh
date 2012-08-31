@@ -278,7 +278,9 @@ protected:
    * \brief Update compute_state by _computeError
     * \retval bool - false if there are errors
    */
-  bool checkComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& theShape=TopoDS_Shape());
+  bool checkComputeError(SMESH_Algo*         theAlgo,
+                         const bool          theComputeOK,
+                         const TopoDS_Shape& theShape=TopoDS_Shape());
 
   /*!
    * \brief Return a hypothesis attached to theShape.
