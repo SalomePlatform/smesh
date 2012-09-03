@@ -249,7 +249,7 @@ void StdMeshersGUI_SubShapeSelectorWdg::SelectionIntoArgument()
     for ( ; anIt.More(); anIt.Next()) { // Loop on selected objects
       Handle(SALOME_InteractiveObject) IO = anIt.Value();
       
-      GEOM::GEOM_Object_var aGeomObj = GetGeomObjectByEntry( IO->getEntry() );  
+      GEOM::GEOM_Object_var aGeomObj = GetGeomObjectByEntry( IO->getEntry() );
       if ( !CORBA::is_nil( aGeomObj ) ) { // Selected Object From Study
         GEOM::GEOM_Object_ptr aGeomFatherObj = aGeomObj->GetMainShape();
         QString aFatherEntry = "";
@@ -303,7 +303,9 @@ void StdMeshersGUI_SubShapeSelectorWdg::SelectionIntoArgument()
     }
   }
   // update add button
-  myAddButton->setEnabled( ( myListWidget->count() < myMaxSize || myMaxSize == -1 ) && mySelectedIDs.size() > 0 && ( mySelectedIDs.size() <= myMaxSize || myMaxSize == -1 ) );
+  myAddButton->setEnabled( ( myListWidget->count() < myMaxSize || myMaxSize == -1 ) &&
+                           mySelectedIDs.size() > 0 &&
+                           ( mySelectedIDs.size() <= myMaxSize || myMaxSize == -1 ) );
 
   //Connect Selected Ids in viewer and dialog's Ids list
   bool signalsBlocked = myListWidget->blockSignals( true );
