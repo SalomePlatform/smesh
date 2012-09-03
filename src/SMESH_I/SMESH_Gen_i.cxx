@@ -4158,18 +4158,6 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
             }
           }
 
-          // issue 0020693. Restore _isModified flag
-          if( aTopGroup->ExistInternalObject( "_isModified" ) )
-          {
-            aDataset = new HDFdataset( "_isModified", aTopGroup );
-            aDataset->OpenOnDisk();
-            size = aDataset->GetSize();
-            int* isModified = new int[ size ];
-            aDataset->ReadFromDisk( isModified );
-            aDataset->CloseOnDisk();
-            myNewMeshImpl->GetImpl().SetIsModified( bool(*isModified));
-          }
-
           // issue 20918. Restore Persistent Id of SMESHDS_Mesh
           if( aTopGroup->ExistInternalObject( "meshPersistentId" ) )
           {
