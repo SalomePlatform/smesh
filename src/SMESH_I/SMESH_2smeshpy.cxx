@@ -1539,7 +1539,8 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
   // ----------------------------------------------------------------------
   else if ( method == "RemoveHypothesis" ) // (geom, hyp)
   {
-    _pyID hypID = theCommand->GetArg( 2 );
+    _pyID hypID  = theCommand->GetArg( 2 );
+    _pyID geomID = theCommand->GetArg( 1 );
 
     // check if this mesh still has corresponding addition command
     bool hasAddCmd = false;
@@ -1547,7 +1548,8 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
     while ( cmd != myAddHypCmds.end() )
     {
       // AddHypothesis(geom, hyp)
-      if ( hypID == (*cmd)->GetArg( 2 )) { // erase both (add and remove) commands
+      if ( hypID  == (*cmd)->GetArg( 2 ) &&
+           geomID == (*cmd)->GetArg( 1 )) { // erase both (add and remove) commands
         theCommand->Clear();
         (*cmd)->Clear();
         cmd = myAddHypCmds.erase( cmd );
