@@ -354,7 +354,7 @@ static void compensateError(double a1, double an,
                             bool              adjustNeighbors2an = false)
 {
   int i, nPar = theParams.size();
-  if ( a1 + an < length && nPar > 1 )
+  if ( a1 + an <= length && nPar > 1 )
   {
     bool reverse = ( U1 > Un );
     GCPnts_AbscissaPoint Discret(C3d, reverse ? an : -an, Un);
@@ -375,10 +375,9 @@ static void compensateError(double a1, double an,
       dUn = Utgt - theParams.back();
     }
 
-    double q  = dUn / ( nPar - 1 );
     if ( !adjustNeighbors2an )
     {
-      q = dUn / ( Utgt - Un ); // (signed) factor of segment length change
+      double q = dUn / ( Utgt - Un ); // (signed) factor of segment length change
       for ( itU = theParams.rbegin(), i = 1; i < nPar; i++ ) {
         double prevU = *itU;
         (*itU) += dUn;
@@ -386,7 +385,13 @@ static void compensateError(double a1, double an,
         dUn = q * (*itU - prevU) * (prevU-U1)/(Un-U1);
       }
     }
-    else {
+    else if ( nPar == 1 )
+    {
+      theParams.back() += dUn;
+    }
+    else
+    {
+      double q  = dUn / ( nPar - 1 );
       theParams.back() += dUn;
       double sign = reverse ? -1 : 1;
       double prevU = theParams.back();
@@ -725,13 +730,13 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     if ( !Discret.IsDone() )
       return error( "GCPnts_UniformAbscissa failed");
 
-    int NbPoints = Discret.NbPoints();
-    for ( int i = 2; i < NbPoints; i++ )
+    int NbPoints = Min( Discret.NbPoints(), _ivalue[ NB_SEGMENTS_IND ]+1 );
+    for ( int i = 2; i < NbPoints; i++ ) // skip 1st and last points
     {
       double param = Discret.Parameter(i);
       theParams.push_back( param );
     }
-    compensateError( eltSize, eltSize, f, l, theLength, theC3d, theParams ); // for PAL9899
+    compensateError( eltSize, eltSize, f, l, theLength, theC3d, theParams, true ); // for PAL9899
     return true;
   }
 
