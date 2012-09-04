@@ -613,12 +613,14 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
   case NB_SEGMENTS: {
 
     double eltSize = 1;
+    int nbSegments;
     if ( _hypType == MAX_LENGTH )
     {
       double nbseg = ceil(theLength / _value[ BEG_LENGTH_IND ]); // integer sup
       if (nbseg <= 0)
         nbseg = 1;                        // degenerated edge
       eltSize = theLength / nbseg;
+      nbSegments = (int) nbseg;
     }
     else if ( _hypType == LOCAL_LENGTH )
     {
@@ -659,13 +661,14 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
       if (nbseg <= 0)
         nbseg = 1;                        // degenerated edge
       eltSize = theLength / nbseg;
+      nbSegments = (int) nbseg;
     }
     else
     {
       // Number Of Segments hypothesis
-      int NbSegm = _ivalue[ NB_SEGMENTS_IND ];
-      if ( NbSegm < 1 )  return false;
-      if ( NbSegm == 1 ) return true;
+      nbSegments = _ivalue[ NB_SEGMENTS_IND ];
+      if ( nbSegments < 1 )  return false;
+      if ( nbSegments == 1 ) return true;
 
       switch (_ivalue[ DISTR_TYPE_IND ])
       {
@@ -675,8 +678,8 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
 
           if (fabs(scale - 1.0) < Precision::Confusion()) {
             // special case to avoid division by zero
-            for (int i = 1; i < NbSegm; i++) {
-              double param = f + (l - f) * i / NbSegm;
+            for (int i = 1; i < nbSegments; i++) {
+              double param = f + (l - f) * i / nbSegments;
               theParams.push_back( param );
             }
           } else {
@@ -684,10 +687,10 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
             if ( theReverse )
               scale = 1.0 / scale;
 
-            double alpha = pow(scale, 1.0 / (NbSegm - 1));
-            double factor = (l - f) / (1.0 - pow(alpha, NbSegm));
+            double alpha = pow(scale, 1.0 / (nbSegments - 1));
+            double factor = (l - f) / (1.0 - pow(alpha, nbSegments));
 
-            for (int i = 1; i < NbSegm; i++) {
+            for (int i = 1; i < nbSegments; i++) {
               double param = f + factor * (1.0 - pow(alpha, i));
               theParams.push_back( param );
             }
@@ -720,7 +723,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
         }
         break;
       case StdMeshers_NumberOfSegments::DT_Regular:
-        eltSize = theLength / _ivalue[ NB_SEGMENTS_IND ];
+        eltSize = theLength / nbSegments;
         break;
       default:
         return false;
@@ -730,7 +733,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     if ( !Discret.IsDone() )
       return error( "GCPnts_UniformAbscissa failed");
 
-    int NbPoints = Min( Discret.NbPoints(), _ivalue[ NB_SEGMENTS_IND ]+1 );
+    int NbPoints = Min( Discret.NbPoints(), nbSegments + 1 );
     for ( int i = 2; i < NbPoints; i++ ) // skip 1st and last points
     {
       double param = Discret.Parameter(i);
