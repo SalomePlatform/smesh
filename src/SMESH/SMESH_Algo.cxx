@@ -347,7 +347,14 @@ bool SMESH_Algo::IsReversedSubMesh (const TopoDS_Face&  theFace,
   // face normal at node position
   TopLoc_Location loc;
   Handle(Geom_Surface) surf = BRep_Tool::Surface( theFace, loc );
-  if ( surf.IsNull() || surf->Continuity() < GeomAbs_C1 ) return isReversed;
+  // if ( surf.IsNull() || surf->Continuity() < GeomAbs_C1 )
+  // some surfaces not detected as GeomAbs_C1 are nevertheless correct for meshing
+  if ( surf.IsNull() || surf->Continuity() < GeomAbs_C0 )
+    {
+      if (!surf.IsNull())
+        MESSAGE("surf->Continuity() < GeomAbs_C1 " << (surf->Continuity() < GeomAbs_C1));
+      return isReversed;
+    }
   gp_Vec d1u, d1v;
   surf->D1( u, v, nPnt[0], d1u, d1v );
   gp_Vec Nf = (d1u ^ d1v).Transformed( loc );
