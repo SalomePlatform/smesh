@@ -763,7 +763,7 @@ void SMDS_UnstructuredGrid::BuildDownwardConnectivity(bool withEdges)
  * @param vtkId the vtk id of the cell
  * @return number of neighbors
  */
-int SMDS_UnstructuredGrid::GetNeighbors(int* neighborsVtkIds, int* downIds, unsigned char* downTypes, int vtkId)
+int SMDS_UnstructuredGrid::GetNeighbors(int* neighborsVtkIds, int* downIds, unsigned char* downTypes, int vtkId, bool getSkin)
 {
   int vtkType = this->GetCellType(vtkId);
   int cellDim = SMDS_Downward::getCellDimension(vtkType);
@@ -798,9 +798,27 @@ int SMDS_UnstructuredGrid::GetNeighbors(int* neighborsVtkIds, int* downIds, unsi
           downIds[nb] = downId;
           downTypes[nb] = cellType;
           nb++;
+          if (nb >= NBMAXNEIGHBORS)
+            {
+              INFOS("SMDS_UnstructuredGrid::GetNeighbors problem: NBMAXNEIGHBORS=" <<NBMAXNEIGHBORS << " not enough");
+              return nb;
+            }
         }
-      if (nb >= NBMAXNEIGHBORS)
-        assert(0);
+      if (getSkin)
+        {
+          if (cellDim == 3 && nbUp == 1) // this face is on the skin of the volume
+            {
+              neighborsVtkIds[nb] = _downArray[cellType]->getVtkCellId(downId); // OK if skin present
+              downIds[nb] = downId;
+              downTypes[nb] = cellType;
+              nb++;
+              if (nb >= NBMAXNEIGHBORS)
+                {
+                  INFOS("SMDS_UnstructuredGrid::GetNeighbors problem: NBMAXNEIGHBORS=" <<NBMAXNEIGHBORS << " not enough");
+                  return nb;
+                }
+            }
+        }
     }
   return nb;
 }

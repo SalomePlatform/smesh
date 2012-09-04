@@ -83,7 +83,7 @@ public:
   void setCellIdToDownId(int vtkCellId, int downId);
   void CleanDownwardConnectivity();
   void BuildDownwardConnectivity(bool withEdges);
-  int GetNeighbors(int* neighborsVtkIds, int* downIds, unsigned char* downTypes, int vtkId);
+  int GetNeighbors(int* neighborsVtkIds, int* downIds, unsigned char* downTypes, int vtkId, bool getSkin=false);
   int GetParentVolumes(int* volVtkIds, int vtkId);
   int GetParentVolumes(int* volVtkIds, int downId, unsigned char downType);
   void GetNodeIds(std::set<int>& nodeSet, int downId, unsigned char downType);
