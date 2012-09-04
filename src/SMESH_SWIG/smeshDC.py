@@ -3976,6 +3976,18 @@ class Mesh:
     def DoubleNodeElemGroupsInRegion(self, theElems, theNodesNot, theShape):
         return self.editor.DoubleNodeElemGroupsInRegion(theElems, theNodesNot, theShape)
 
+    ## Identify the elements that will be affected by node duplication (actual duplication is not performed.
+    #  This method is the first step of DoubleNodeElemGroupsInRegion.
+    #  @param theElems - list of groups of elements (edges or faces) to be replicated
+    #  @param theNodesNot - list of groups of nodes not to replicated
+    #  @param theShape - shape to detect affected elements (element which geometric center
+    #         located on or inside shape).
+    #         The replicated nodes should be associated to affected elements.
+    #  @return groups of affected elements
+    #  @ingroup l2_modif_edit
+    def AffectedElemGroupsInRegion(self, theElems, theNodesNot, theShape):
+        return self.editor.AffectedElemGroupsInRegion(theElems, theNodesNot, theShape)
+
     ## Double nodes on shared faces between groups of volumes and create flat elements on demand.
     # The list of groups must describe a partition of the mesh volumes.
     # The nodes of the internal faces at the boundaries of the groups are doubled.
@@ -3996,6 +4008,11 @@ class Mesh:
     # @return TRUE if operation has been completed successfully, FALSE otherwise
     def CreateFlatElementsOnFacesGroups(self, theGroupsOfFaces ):
         return self.editor.CreateFlatElementsOnFacesGroups( theGroupsOfFaces )
+    
+    ## identify all the elements around a geom shape, get the faces delimiting the hole
+    #
+    def CreateHoleSkin(self, radius, theShape, groupName, theNodesCoords):
+        return self.editor.CreateHoleSkin( radius, theShape, groupName, theNodesCoords )
 
     def _valueFromFunctor(self, funcType, elemId):
         fn = self.smeshpyD.GetFunctor(funcType)

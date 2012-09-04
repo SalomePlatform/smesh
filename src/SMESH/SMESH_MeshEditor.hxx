@@ -576,6 +576,11 @@ public:
                     const TIDSortedElemSet& theNodesNot,
                     const TIDSortedElemSet& theAffectedElems );
 
+  bool AffectedElemGroupsInRegion( const TIDSortedElemSet& theElems,
+                                   const TIDSortedElemSet& theNodesNot,
+                                   const TopoDS_Shape&     theShape,
+                                   TIDSortedElemSet& theAffectedElems);
+
   bool DoubleNodesInRegion( const TIDSortedElemSet& theElems, 
                             const TIDSortedElemSet& theNodesNot,
                             const TopoDS_Shape&     theShape );
@@ -586,6 +591,13 @@ public:
                                      bool createJointElems);
 
   bool CreateFlatElementsOnFacesGroups( const std::vector<TIDSortedElemSet>& theElems );
+
+  void CreateHoleSkin(double radius,
+                      const TopoDS_Shape& theShape,
+                      SMESH_NodeSearcher* theNodeSearcher,
+                      const char* groupName,
+                      std::vector<double>&   nodesCoords,
+                      std::vector<std::vector<int> >& listOfListOfNodes);
 
   /*!
    * \brief Generated skin mesh (containing 2D cells) from 3D mesh
