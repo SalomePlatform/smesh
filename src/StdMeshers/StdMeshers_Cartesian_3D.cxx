@@ -35,6 +35,7 @@
 
 #include "utilities.h"
 #include "Utils_ExceptHandlers.hxx"
+#include <Basics_OCCTVersion.hxx>
 
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepBndLib.hxx>
@@ -85,7 +86,10 @@ using namespace std;
 
 //#define _MY_DEBUG_
 
-#define ELLIPSOLID_WORKAROUND // remove it as soon as http://tracker.dev.opencascade.org/view.php?id=22809 is solved
+#if OCC_VERSION_LARGE <= 0x06050300
+// workaround it required only for OCCT6.5.3 and older (see OCC22809)
+#define ELLIPSOLID_WORKAROUND
+#endif
 
 #ifdef ELLIPSOLID_WORKAROUND
 #include <BRepIntCurveSurface_Inter.hxx>
