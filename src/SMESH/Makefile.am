@@ -94,4 +94,4 @@ libSMESHimpl_la_LDFLAGS = \
 	../SMESHUtils/libSMESHUtils.la \
 	$(BOOST_LIB_THREAD)  \
 	$(GEOM_LDFLAGS) -lNMTTools \
-	$(CAS_LDPATH) -lTKShHealing -lTKPrim -lTKG2d
+	$(CAS_LDPATH) -lTKShHealing -lTKPrim -lTKG2d -lTKCDF
