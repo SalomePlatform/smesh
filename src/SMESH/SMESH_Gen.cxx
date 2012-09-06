@@ -43,6 +43,7 @@
 #include "Utils_ExceptHandlers.hxx"
 
 #include <TopoDS_Iterator.hxx>
+#include <LDOMParser.hxx>
 
 #include "memoire.h"
 
@@ -896,6 +897,176 @@ bool SMESH_Gen::IsGlobalHypothesis(const SMESH_Hypothesis* theHyp, SMESH_Mesh& a
   return aMesh.GetHypothesis( aMesh.GetMeshDS()->ShapeToMesh(), filter, false );
 }
 
+//================================================================================
+/*!
+ * \brief Return paths to xml files of plugins
+ */
+//================================================================================
+
+std::vector< std::string > SMESH_Gen::GetPluginXMLPaths()
+{
+  // Get paths to xml files of plugins
+  vector< string > xmlPaths;
+  string sep;
+  if ( const char* meshersList = getenv("SMESH_MeshersList") )
+  {
+    string meshers = meshersList, plugin;
+    string::size_type from = 0, pos;
+    while ( from < meshers.size() )
+    {
+      // cut off plugin name
+      pos = meshers.find( ':', from );
+      if ( pos != string::npos )
+        plugin = meshers.substr( from, pos-from );
+      else
+        plugin = meshers.substr( from ), pos = meshers.size();
+      from = pos + 1;
+
+      // get PLUGIN_ROOT_DIR path
+      string rootDirVar, pluginSubDir = plugin;
+      if ( plugin == "StdMeshers" )
+        rootDirVar = "SMESH", pluginSubDir = "smesh";
+      else
+        for ( pos = 0; pos < plugin.size(); ++pos )
+          rootDirVar += toupper( plugin[pos] );
+      rootDirVar += "_ROOT_DIR";
+
+      const char* rootDir = getenv( rootDirVar.c_str() );
+      if ( !rootDir || strlen(rootDir) == 0 )
+      {
+        rootDirVar = plugin + "_ROOT_DIR"; // HexoticPLUGIN_ROOT_DIR
+        rootDir = getenv( rootDirVar.c_str() );
+        if ( !rootDir || strlen(rootDir) == 0 ) continue;
+      }
+
+      // get a separator from rootDir
+      for ( pos = strlen( rootDir )-1; pos >= 0 && sep.empty(); --pos )
+        if ( rootDir[pos] == '/' || rootDir[pos] == '\\' )
+        {
+          sep = rootDir[pos];
+          break;
+        }
+#ifdef WNT
+      if (sep.empty() ) sep = "\\";
+#else
+      if (sep.empty() ) sep = "/";
+#endif
+
+      // get a path to resource file
+      string xmlPath = rootDir;
+      if ( xmlPath[ xmlPath.size()-1 ] != sep[0] )
+        xmlPath += sep;
+      xmlPath += "share" + sep + "salome" + sep + "resources" + sep;
+      for ( pos = 0; pos < pluginSubDir.size(); ++pos )
+        xmlPath += tolower( pluginSubDir[pos] );
+      xmlPath += sep + plugin + ".xml";
+      bool fileOK;
+#ifdef WNT
+      fileOK = (GetFileAttributes(xmlPath.c_str()) != INVALID_FILE_ATTRIBUTES);
+#else
+      fileOK = (access(xmlPath.c_str(), F_OK) == 0);
+#endif
+      if ( fileOK )
+        xmlPaths.push_back( xmlPath );
+    }
+  }
+
+  return xmlPaths;
+}
+
+//=======================================================================
+namespace // Access to type of input and output of an algorithm
+//=======================================================================
+{
+  struct AlgoData
+  {
+    int                       _dim;
+    set<SMDSAbs_GeometryType> _inElemTypes; // acceptable types of input mesh element
+    set<SMDSAbs_GeometryType> _outElemTypes; // produced types of mesh elements
+
+    bool IsCompatible( const AlgoData& algo2 ) const
+    {
+      if ( _dim > algo2._dim ) return algo2.IsCompatible( *this );
+      // algo2 is of highter dimension
+      if ( _outElemTypes.empty() || algo2._inElemTypes.empty() )
+        return false;
+      bool compatible = true;
+      set<SMDSAbs_GeometryType>::const_iterator myOutType = _outElemTypes.begin();
+      for ( ; myOutType != _outElemTypes.end() && compatible; ++myOutType )
+        compatible = algo2._inElemTypes.count( *myOutType );
+      return compatible;
+    }
+  };
+
+  //================================================================================
+  /*!
+   * \brief Return AlgoData of the algorithm
+   */
+  //================================================================================
+
+  const AlgoData& getAlgoData( const SMESH_Algo* algo )
+  {
+    static map< string, AlgoData > theDataByName;
+    if ( theDataByName.empty() )
+    {
+      // Read Plugin.xml files
+      vector< string > xmlPaths = SMESH_Gen::GetPluginXMLPaths();
+      LDOMParser xmlParser;
+      for ( size_t i = 0; i < xmlPaths.size(); ++i )
+      {
+        bool error = xmlParser.parse( xmlPaths[i].c_str() );
+        if ( error )
+        {
+          TCollection_AsciiString data;
+          INFOS( xmlParser.GetError(data) );
+          continue;
+        }
+        // <algorithm type="Regular_1D"
+        //            ...
+        //            input="EDGE"
+        //            output="QUAD,TRIA">
+        //
+        LDOM_Document xmlDoc = xmlParser.getDocument();
+        LDOM_NodeList algoNodeList = xmlDoc.getElementsByTagName( "algorithm" );
+        for ( int i = 0; i < algoNodeList.getLength(); ++i )
+        {
+          LDOM_Node     algoNode           = algoNodeList.item( i );
+          LDOM_Element& algoElem           = (LDOM_Element&) algoNode;
+          TCollection_AsciiString algoType = algoElem.getAttribute("type");
+          TCollection_AsciiString input    = algoElem.getAttribute("input");
+          TCollection_AsciiString output   = algoElem.getAttribute("output");
+          TCollection_AsciiString dim      = algoElem.getAttribute("dim");
+          AlgoData & data                  = theDataByName[ algoType.ToCString() ];
+          data._dim = dim.IntegerValue();
+          for ( int isInput = 0; isInput < 2; ++isInput )
+          {
+            TCollection_AsciiString&   typeStr = isInput ? input : output;
+            set<SMDSAbs_GeometryType>& typeSet = isInput ? data._inElemTypes : data._outElemTypes;
+            int beg = 1, end;
+            while ( beg <= typeStr.Length() )
+            {
+              while ( beg < typeStr.Length() && !isalpha( typeStr.Value( beg ) ))
+                ++beg;
+              end = beg;
+              while ( end < typeStr.Length() && isalpha( typeStr.Value( end + 1 ) ))
+                ++end;
+              if ( end > beg )
+              {
+                TCollection_AsciiString typeName = typeStr.SubString( beg, end );
+                if      ( typeName == "EDGE" ) typeSet.insert( SMDSGeom_EDGE );
+                else if ( typeName == "TRIA" ) typeSet.insert( SMDSGeom_TRIANGLE );
+                else if ( typeName == "QUAD" ) typeSet.insert( SMDSGeom_QUADRANGLE );
+              }
+              beg = end + 1;
+            }
+          }
+        }
+      }
+    }
+    return theDataByName[ algo->GetName() ];
+  }
+}
+
 //=============================================================================
 /*!
  * Finds algo to mesh a shape. Optionally returns a shape the found algo is bound to
@@ -909,7 +1080,61 @@ SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_Mesh &         aMesh,
   SMESH_HypoFilter filter( SMESH_HypoFilter::IsAlgo() );
   filter.And( filter.IsApplicableTo( aShape ));
 
-  return (SMESH_Algo*) aMesh.GetHypothesis( aShape, filter, true, assignedTo );
+  TopoDS_Shape assignedToShape;
+  SMESH_Algo* algo =
+    (SMESH_Algo*) aMesh.GetHypothesis( aShape, filter, true, &assignedToShape );
+
+  if ( algo &&
+       aShape.ShapeType() == TopAbs_FACE &&
+       !aShape.IsSame( assignedToShape ) &&
+       SMESH_MesherHelper::NbAncestors( aShape, aMesh, TopAbs_SOLID ) > 1 )
+  {
+    // Issue 0021559. If there is another 2D algo with different types of output
+    // elements that can be used to mesh aShape, and 3D algos on adjacent SOLIDs
+    // have different types of input elements, we choose a most appropriate 2D algo.
+
+    // try to find a concurrent 2D algo
+    filter.AndNot( filter.Is( algo ));
+    TopoDS_Shape assignedToShape2;
+    SMESH_Algo* algo2 =
+      (SMESH_Algo*) aMesh.GetHypothesis( aShape, filter, true, &assignedToShape2 );
+    if ( algo2 &&
+         assignedToShape2.ShapeType() == assignedToShape.ShapeType() &&
+         aMesh.IsOrderOK( aMesh.GetSubMesh( assignedToShape2 ),
+                          aMesh.GetSubMesh( assignedToShape  )))
+    {
+      // get algos on the adjacent SOLIDs
+      filter.Init( filter.IsAlgo() ).And( filter.HasDim( 3 ));
+      vector< SMESH_Algo* > algos3D;
+      PShapeIteratorPtr solidIt = SMESH_MesherHelper::GetAncestors( aShape, aMesh,
+                                                                    TopAbs_SOLID );
+      while ( const TopoDS_Shape* solid = solidIt->next() )
+        if ( SMESH_Algo* algo3D = (SMESH_Algo*) aMesh.GetHypothesis( *solid, filter, true ))
+        {
+          algos3D.push_back( algo3D );
+          filter.AndNot( filter.Is( algo3D ));
+        }
+      // check compatibility of algos
+      if ( algos3D.size() > 1 )
+      {
+        const AlgoData& algoData    = getAlgoData( algo );
+        const AlgoData& algoData2   = getAlgoData( algo2 );
+        const AlgoData& algoData3d0 = getAlgoData( algos3D[0] );
+        const AlgoData& algoData3d1 = getAlgoData( algos3D[1] );
+        if (( algoData2.IsCompatible( algoData3d0 ) &&
+              algoData2.IsCompatible( algoData3d1 ))
+            &&
+            !(algoData.IsCompatible( algoData3d0 ) &&
+              algoData.IsCompatible( algoData3d1 )))
+          algo = algo2;
+      }
+    }
+  }
+
+  if ( assignedTo && algo )
+    * assignedTo = assignedToShape;
+
+  return algo;
 }
 
 //=============================================================================
