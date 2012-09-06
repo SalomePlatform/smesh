@@ -319,15 +319,13 @@ public:
   void SetMeshOrder(const TListOfListOfInt& theOrder );
   const TListOfListOfInt& GetMeshOrder() const;
 
-  /*!
-   * \brief sort submeshes according to stored mesh order
-   * \param theListToSort in out list to be sorted
-   * \return FALSE if nothing sorted
-   */
+  // sort submeshes according to stored mesh order
   bool SortByMeshOrder(std::list<SMESH_subMesh*>& theListToSort) const;
 
-  //
-  
+  // return true if given order of sub-meshes is OK
+  bool IsOrderOK( const SMESH_subMesh* smBefore,
+                  const SMESH_subMesh* smAfter ) const;
+
   ostream& Dump(ostream & save);
   
 private:

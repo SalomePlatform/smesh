@@ -2006,9 +2006,9 @@ bool SMESH_Mesh::SortByMeshOrder(list<SMESH_subMesh*>& theListToSort) const
   typedef list<SMESH_subMesh*>::iterator TPosInList;
   map< int, TPosInList > sortedPos;
   TPosInList smBeg = theListToSort.begin(), smEnd = theListToSort.end();
-  TListOfListOfInt::const_iterator listIddIt = _mySubMeshOrder.begin();
-  for( ; listIddIt != _mySubMeshOrder.end(); listIddIt++) {
-    const TListOfInt& listOfId = *listIddIt;
+  TListOfListOfInt::const_iterator listIdsIt = _mySubMeshOrder.begin();
+  for( ; listIdsIt != _mySubMeshOrder.end(); listIdsIt++) {
+    const TListOfInt& listOfId = *listIdsIt;
     TListOfInt::const_iterator idIt = listOfId.begin();
     for ( ; idIt != listOfId.end(); idIt++ ) {
       if ( SMESH_subMesh * sm = GetSubMeshContaining( *idIt )) {
@@ -2035,6 +2035,30 @@ bool SMESH_Mesh::SortByMeshOrder(list<SMESH_subMesh*>& theListToSort) const
   return res;
 }
 
+//================================================================================
+/*!
+ * \brief Return true if given order of sub-meshes is OK
+ */
+//================================================================================
+
+bool SMESH_Mesh::IsOrderOK( const SMESH_subMesh* smBefore,
+                            const SMESH_subMesh* smAfter ) const
+{
+  TListOfListOfInt::const_iterator listIdsIt = _mySubMeshOrder.begin();
+  TListOfInt::const_iterator idBef, idAft;
+  for( ; listIdsIt != _mySubMeshOrder.end(); listIdsIt++)
+  {
+    const TListOfInt& listOfId = *listIdsIt;
+    idBef = std::find( listOfId.begin(), listOfId.end(), smBefore->GetId() );
+    if ( idBef != listOfId.end() )
+      idAft = std::find( listOfId.begin(), listOfId.end(), smAfter->GetId() );
+    if ( idAft != listOfId.end () )
+      return ( std::distance( listOfId.begin(), idBef ) <
+               std::distance( listOfId.begin(), idAft )   );
+  }
+  return true; // no order imposed to given submeshes
+} 
+
 //=============================================================================
 /*!
  * \brief sort submeshes according to stored mesh order
@@ -2043,8 +2067,8 @@ bool SMESH_Mesh::SortByMeshOrder(list<SMESH_subMesh*>& theListToSort) const
  */
 //=============================================================================
 
-list<SMESH_subMesh*> SMESH_Mesh::getAncestorsSubMeshes
-  (const TopoDS_Shape& theSubShape) const
+list<SMESH_subMesh*>
+SMESH_Mesh::getAncestorsSubMeshes (const TopoDS_Shape& theSubShape) const
 {
   list<SMESH_subMesh*> listOfSubMesh;
   TopTools_ListIteratorOfListOfShape it( GetAncestors( theSubShape ));
