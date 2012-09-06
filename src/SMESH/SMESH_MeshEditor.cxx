@@ -11088,7 +11088,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
       // --- build a map (face to duplicate --> volume to modify)
       //     with all the faces shared by 2 domains (group of elements)
       //     and corresponding volume of this domain, for each shared face.
-      //     a volume has a face shared by 2 domains if it has a neighbor which is not in is domain.
+      //     a volume has a face shared by 2 domains if it has a neighbor which is not in his domain.
 
       //MESSAGE("Domain " << idom);
       const TIDSortedElemSet& domain = theElems[idom];
@@ -11204,7 +11204,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
           std::set<int> oldNodes;
           oldNodes.clear();
           grid->GetNodeIds(oldNodes, face.cellId, face.cellType);
-          bool isMultipleDetected = false;
+//          bool isMultipleDetected = false;
           std::set<int>::iterator itn = oldNodes.begin();
           for (; itn != oldNodes.end(); ++itn)
             {
@@ -11225,7 +11225,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
                         {
                           vector<int> orderedDoms;
                           //MESSAGE("multiple node " << oldId);
-                          isMultipleDetected =true;
+//                          isMultipleDetected =true;
                           if (mutipleNodes.count(oldId))
                             orderedDoms = mutipleNodes[oldId];
                           else
@@ -11247,14 +11247,38 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
                       nodeDomains[oldId][idom] = newId; // cloned node for other domains
                       //MESSAGE("   newNode " << newId << " oldNode " << oldId << " size=" <<nodeDomains[oldId].size());
                     }
-                  if (nodeDomains[oldId].size() >= 3)
-                    {
-                      //MESSAGE("confirm multiple node " << oldId);
-                      isMultipleDetected =true;
-                    }
+//                  if (nodeDomains[oldId].size() >= 3)
+//                    {
+//                      //MESSAGE("confirm multiple node " << oldId);
+//                      isMultipleDetected =true;
+//                    }
                 }
             }
-          if (isMultipleDetected) // check if an edge of the face is shared between 3 or more domains
+        }
+    }
+
+  for (int idomain = 0; idomain < theElems.size(); idomain++)
+    {
+      itface = faceDomains.begin();
+      for (; itface != faceDomains.end(); ++itface)
+        {
+          std::map<int, int> domvol = itface->second;
+          if (!domvol.count(idomain))
+            continue;
+          DownIdType face = itface->first;
+          //MESSAGE(" --- face " << face.cellId);
+          std::set<int> oldNodes;
+          oldNodes.clear();
+          grid->GetNodeIds(oldNodes, face.cellId, face.cellType);
+          int nbMultipleNodes = 0;
+          std::set<int>::iterator itn = oldNodes.begin();
+          for (; itn != oldNodes.end(); ++itn)
+            {
+              int oldId = *itn;
+              if (mutipleNodes.count(oldId))
+                nbMultipleNodes++;
+            }
+          if (nbMultipleNodes > 1) // check if an edge of the face is shared between 3 or more domains
             {
               //MESSAGE("multiple Nodes detected on a shared face");
               int downId = itface->first.cellId;
@@ -11268,7 +11292,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
                     if (mutipleNodes.count(nodes[i]))
                       if (!mutipleNodesToFace.count(nodes[i]))
                         mutipleNodesToFace[nodes[i]] = mutipleNodes[nodes[i]];
-               }
+                }
               else // shared face (between two volumes)
                 {
                   int nbEdges = grid->getDownArray(cellType)->getNumberOfDownCells(downId);
@@ -11282,9 +11306,12 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
                         {
                           vector<int> vn0 = mutipleNodes[nodes[0]];
                           vector<int> vn1 = mutipleNodes[nodes[nbNodes - 1]];
-                          sort( vn0.begin(), vn0.end() );
-                          sort( vn1.begin(), vn1.end() );
-                          if (vn0 == vn1)
+                          vector<int> doms;
+                          for (int i0 = 0; i0 < vn0.size(); i0++)
+                            for (int i1 = 0; i1 < vn1.size(); i1++)
+                              if (vn0[i0] == vn1[i1])
+                                doms.push_back(vn0[i0]);
+                          if (doms.size() >2)
                             {
                               //MESSAGE(" detect edgesMultiDomains " << nodes[0] << " " << nodes[nbNodes - 1]);
                               double *coords = grid->GetPoint(nodes[0]);
@@ -11296,9 +11323,9 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
                               map<int, SMDS_VtkVolume*> domvol; // domain --> a volume with the edge
                               map<int, double> angleDom; // oriented angles between planes defined by edge and volume centers
                               int nbvol = grid->GetParentVolumes(vtkVolIds, downEdgeIds[ie], edgeType[ie]);
-                              for (int id=0; id < vn0.size(); id++)
+                              for (int id=0; id < doms.size(); id++)
                                 {
-                                  int idom = vn0[id];
+                                  int idom = doms[id];
                                   for (int ivol=0; ivol<nbvol; ivol++)
                                     {
                                       int smdsId = meshDS->fromVtkToSmds(vtkVolIds[ivol]);
