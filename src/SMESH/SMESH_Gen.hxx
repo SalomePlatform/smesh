@@ -43,6 +43,8 @@
 
 #include <map>
 #include <list>
+#include <vector>
+#include <string>
 
 class SMESHDS_Document;
 
@@ -140,8 +142,12 @@ public:
   static int GetShapeDim(const TopAbs_ShapeEnum & aShapeType);
   static int GetShapeDim(const TopoDS_Shape & aShape)
   { return GetShapeDim( aShape.ShapeType() ); }
+
   SMESH_Algo* GetAlgo(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape, TopoDS_Shape* assignedTo=0);
+
   static bool IsGlobalHypothesis(const SMESH_Hypothesis* theHyp, SMESH_Mesh& aMesh);
+
+  static std::vector< std::string > GetPluginXMLPaths();
 
   int GetANewId();
 
