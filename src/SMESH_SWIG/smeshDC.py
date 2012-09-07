@@ -975,7 +975,10 @@ class Mesh:
                     if studyID != geompyD.myStudyId:
                         geompyD.init_geom( smeshpyD.GetCurrentStudy())
                         pass
-                    geo_name = "%s_%s_for_meshing"%(self.geom.GetShapeType(), id(self.geom)%100)
+                    if name:
+                        geo_name = name
+                    else:
+                        geo_name = "%s_%s_for_meshing"%(self.geom.GetShapeType(), id(self.geom)%100)
                     geompyD.addToStudy( self.geom, geo_name )
                 self.mesh = self.smeshpyD.CreateMesh(self.geom)
 
