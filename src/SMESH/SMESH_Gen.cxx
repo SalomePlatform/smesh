@@ -646,7 +646,8 @@ static bool checkMissing(SMESH_Gen*                aGen,
                          set<SMESH_subMesh*>&      aCheckedMap,
                          list< SMESH_Gen::TAlgoStateError > & theErrors)
 {
-  if ( aSubMesh->GetSubShape().ShapeType() == TopAbs_VERTEX)
+  if ( aSubMesh->GetSubShape().ShapeType() == TopAbs_VERTEX ||
+       aCheckedMap.count( aSubMesh ))
     return true;
 
   //MESSAGE("=====checkMissing");
@@ -702,8 +703,15 @@ static bool checkMissing(SMESH_Gen*                aGen,
     break;
   }
   case SMESH_subMesh::HYP_OK:
-    algo = aGen->GetAlgo( aMesh, aSubMesh->GetSubShape() );
+    algo = aSubMesh->GetAlgo();
     ret = true;
+    if (!algo->NeedDiscreteBoundary())
+    {
+      SMESH_subMeshIteratorPtr itsub = aSubMesh->getDependsOnIterator( /*includeSelf=*/false,
+                                                                       /*complexShapeFirst=*/false);
+      while ( itsub->more() )
+        aCheckedMap.insert( itsub->next() );
+    }
     break;
   default: ASSERT(0);
   }
@@ -722,7 +730,6 @@ static bool checkMissing(SMESH_Gen*                aGen,
     {
       // sub-meshes should not be checked further more
       SMESH_subMesh* sm = itsub->next();
-      aCheckedMap.insert( sm );
 
       if (isTopLocalAlgo)
       {
@@ -736,6 +743,7 @@ static bool checkMissing(SMESH_Gen*                aGen,
             checkNoAlgo2 = false;
         }
       }
+      aCheckedMap.insert( sm );
     }
   }
   return ret;
@@ -769,9 +777,9 @@ bool SMESH_Gen::GetAlgoState(SMESH_Mesh&               theMesh,
   bool ret = true;
   bool hasAlgo = false;
 
-  SMESH_subMesh* sm = theMesh.GetSubMesh(theShape);
+  SMESH_subMesh*          sm = theMesh.GetSubMesh(theShape);
   const SMESHDS_Mesh* meshDS = theMesh.GetMeshDS();
-  TopoDS_Shape mainShape = meshDS->ShapeToMesh();
+  TopoDS_Shape     mainShape = meshDS->ShapeToMesh();
 
   // -----------------
   // get global algos
