@@ -1984,6 +1984,13 @@ void SMESH_Mesh::fillAncestorsMap(const TopoDS_Shape& theShape)
                                         (TopAbs_ShapeEnum) ancType,
                                         _mapAncestors );
   }
+  // visit COMPOUNDs inside a COMPOUND that are not reachable by TopExp_Explorer
+  if ( theShape.ShapeType() == TopAbs_COMPOUND )
+  {
+    for ( TopoDS_Iterator sIt(theShape); sIt.More(); sIt.Next() )
+      if ( sIt.Value().ShapeType() == TopAbs_COMPOUND )
+        fillAncestorsMap( sIt.Value() );
+  }
 }
 
 //=============================================================================
