@@ -11151,8 +11151,6 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
             {
               int oldId = *itn;
               //MESSAGE("     node " << oldId);
-              std::set<int> cells;
-              cells.clear();
               vtkCellLinks::Link l = grid->GetCellLinks()->GetLink(oldId);
               for (int i=0; i<l.ncells; i++)
                 {
@@ -11169,8 +11167,8 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
                                 //no cells created after BuildDownWardConnectivity
                     }
                   DownIdType aCell(downId, vtkType);
-                  if (celldom.count(vtkId))
-                    continue;
+                  if (!cellDomains.count(aCell))
+                    cellDomains[aCell] = emptyMap; // create an empty entry for cell
                   cellDomains[aCell][idomain] = vtkId;
                   celldom[vtkId] = idomain;
                   //MESSAGE("       cell " << vtkId << " domain " << idomain);
@@ -11204,16 +11202,18 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
           std::set<int> oldNodes;
           oldNodes.clear();
           grid->GetNodeIds(oldNodes, face.cellId, face.cellType);
-//          bool isMultipleDetected = false;
           std::set<int>::iterator itn = oldNodes.begin();
           for (; itn != oldNodes.end(); ++itn)
             {
               int oldId = *itn;
-              //MESSAGE("     node " << oldId);
+              //MESSAGE("-+-+-a node " << oldId);
               if (!nodeDomains.count(oldId))
                 nodeDomains[oldId] = emptyMap; // create an empty entry for node
               if (nodeDomains[oldId].empty())
-                nodeDomains[oldId][idomain] = oldId; // keep the old node in the first domain
+                {
+                  nodeDomains[oldId][idomain] = oldId; // keep the old node in the first domain
+                  //MESSAGE("-+-+-b     oldNode " << oldId << " domain " << idomain);
+                }
               std::map<int, int>::iterator itdom = domvol.begin();
               for (; itdom != domvol.end(); ++itdom)
                 {
@@ -11225,7 +11225,6 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
                         {
                           vector<int> orderedDoms;
                           //MESSAGE("multiple node " << oldId);
-//                          isMultipleDetected =true;
                           if (mutipleNodes.count(oldId))
                             orderedDoms = mutipleNodes[oldId];
                           else
@@ -11245,13 +11244,8 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
                       SMDS_MeshNode *newNode = meshDS->AddNode(coords[0], coords[1], coords[2]);
                       int newId = newNode->getVtkId();
                       nodeDomains[oldId][idom] = newId; // cloned node for other domains
-                      //MESSAGE("   newNode " << newId << " oldNode " << oldId << " size=" <<nodeDomains[oldId].size());
+                      //MESSAGE("-+-+-c     oldNode " << oldId << " domain " << idomain << " newNode " << newId << " domain " << idom << " size=" <<nodeDomains[oldId].size());
                     }
-//                  if (nodeDomains[oldId].size() >= 3)
-//                    {
-//                      //MESSAGE("confirm multiple node " << oldId);
-//                      isMultipleDetected =true;
-//                    }
                 }
             }
         }
