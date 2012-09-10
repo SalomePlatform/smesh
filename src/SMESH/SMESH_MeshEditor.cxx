@@ -11382,6 +11382,14 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
 
   if (createJointElems)
     {
+      int idg;
+      string joints2DName = "joints2D";
+      mapOfJunctionGroups[joints2DName] = this->myMesh->AddGroup(SMDSAbs_Face, joints2DName.c_str(), idg);
+      SMESHDS_Group *joints2DGrp = dynamic_cast<SMESHDS_Group*>(mapOfJunctionGroups[joints2DName]->GetGroupDS());
+      string joints3DName = "joints3D";
+      mapOfJunctionGroups[joints3DName] = this->myMesh->AddGroup(SMDSAbs_Volume, joints3DName.c_str(), idg);
+      SMESHDS_Group *joints3DGrp = dynamic_cast<SMESHDS_Group*>(mapOfJunctionGroups[joints3DName]->GetGroupDS());
+
       itface = faceDomains.begin();
       for (; itface != faceDomains.end(); ++itface)
         {
@@ -11405,13 +11413,16 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
             grpname << dom1 << "_" << dom2;
           else
             grpname << dom2 << "_" << dom1;
-          int idg;
           string namegrp = grpname.str();
           if (!mapOfJunctionGroups.count(namegrp))
             mapOfJunctionGroups[namegrp] = this->myMesh->AddGroup(vol->GetType(), namegrp.c_str(), idg);
           SMESHDS_Group *sgrp = dynamic_cast<SMESHDS_Group*>(mapOfJunctionGroups[namegrp]->GetGroupDS());
           if (sgrp)
             sgrp->Add(vol->GetID());
+          if (vol->GetType() == SMDSAbs_Volume)
+            joints3DGrp->Add(vol->GetID());
+          else if (vol->GetType() == SMDSAbs_Face)
+            joints2DGrp->Add(vol->GetID());
         }
     }
 
@@ -11465,11 +11476,8 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
                     orderedNodes.push_back( nodeDomains[nodes[ino]][orderDom[idom]] );
               SMDS_MeshVolume* vol = this->GetMeshDS()->AddVolumeFromVtkIds(orderedNodes);
 
-              stringstream grpname;
-              grpname << "mj_";
-              grpname << 0 << "_" << 0;
               int idg;
-              string namegrp = grpname.str();
+              string namegrp = "jointsMultiples";
               if (!mapOfJunctionGroups.count(namegrp))
                 mapOfJunctionGroups[namegrp] = this->myMesh->AddGroup(SMDSAbs_Volume, namegrp.c_str(), idg);
               SMESHDS_Group *sgrp = dynamic_cast<SMESHDS_Group*>(mapOfJunctionGroups[namegrp]->GetGroupDS());
@@ -11478,7 +11486,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
             }
           else
             {
-              MESSAGE("Quadratic multiple joints not implemented");
+              INFOS("Quadratic multiple joints not implemented");
               // TODO quadratic nodes
             }
         }
