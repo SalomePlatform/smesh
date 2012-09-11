@@ -1123,7 +1123,7 @@ SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_Mesh &         aMesh,
         if ( SMESH_Algo* algo3D = (SMESH_Algo*) aMesh.GetHypothesis( *solid, filter, true ))
         {
           algos3D.push_back( algo3D );
-          filter.AndNot( filter.Is( algo3D ));
+          filter.AndNot( filter.HasName( algo3D->GetName() ));
         }
       // check compatibility of algos
       if ( algos3D.size() > 1 )
