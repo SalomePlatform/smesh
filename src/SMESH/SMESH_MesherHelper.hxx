@@ -164,6 +164,9 @@ public:
 
   static TopoDS_Vertex IthVertex( const bool is2nd, TopoDS_Edge anEdge, const bool CumOri=true );
 
+  static TopAbs_ShapeEnum GetGroupType(const TopoDS_Shape& group,
+                                       const bool          avoidCompound=false);
+
 
 public:
   // ---------- PUBLIC INSTANCE METHODS ----------

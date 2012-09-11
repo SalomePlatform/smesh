@@ -1983,6 +1983,30 @@ TopoDS_Vertex SMESH_MesherHelper::IthVertex( const bool  is2nd,
   return ( vIt.More() ? TopoDS::Vertex(vIt.Value()) : TopoDS_Vertex() );
 }
 
+//================================================================================
+/*!
+ * \brief Return type of shape contained in a group 
+ *  \param group - a shape of type TopAbs_COMPOUND
+ *  \param avoidCompound - not to return TopAbs_COMPOUND
+ */
+//================================================================================
+
+TopAbs_ShapeEnum SMESH_MesherHelper::GetGroupType(const TopoDS_Shape& group,
+                                                  const bool          avoidCompound)
+{
+  if ( !group.IsNull() )
+  {
+    if ( group.ShapeType() != TopAbs_COMPOUND )
+      return group.ShapeType();
+
+    // iterate on a compound
+    TopoDS_Iterator it( group );
+    if ( it.More() )
+      return avoidCompound ? GetGroupType( it.Value() ) : it.Value().ShapeType();
+  }
+  return TopAbs_SHAPE;
+}
+
 //=======================================================================
 //function : IsQuadraticMesh
 //purpose  : Check mesh without geometry for: if all elements on this shape are quadratic,
