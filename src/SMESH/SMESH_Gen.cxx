@@ -1020,9 +1020,9 @@ namespace // Access to type of input and output of an algorithm
       // Read Plugin.xml files
       vector< string > xmlPaths = SMESH_Gen::GetPluginXMLPaths();
       LDOMParser xmlParser;
-      for ( size_t i = 0; i < xmlPaths.size(); ++i )
+      for ( size_t iXML = 0; iXML < xmlPaths.size(); ++iXML )
       {
-        bool error = xmlParser.parse( xmlPaths[i].c_str() );
+        bool error = xmlParser.parse( xmlPaths[iXML].c_str() );
         if ( error )
         {
           TCollection_AsciiString data;
@@ -1044,6 +1044,7 @@ namespace // Access to type of input and output of an algorithm
           TCollection_AsciiString input    = algoElem.getAttribute("input");
           TCollection_AsciiString output   = algoElem.getAttribute("output");
           TCollection_AsciiString dim      = algoElem.getAttribute("dim");
+          if ( algoType.IsEmpty() ) continue;
           AlgoData & data                  = theDataByName[ algoType.ToCString() ];
           data._dim = dim.IntegerValue();
           for ( int isInput = 0; isInput < 2; ++isInput )
@@ -1106,9 +1107,11 @@ SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_Mesh &         aMesh,
     TopoDS_Shape assignedToShape2;
     SMESH_Algo* algo2 =
       (SMESH_Algo*) aMesh.GetHypothesis( aShape, filter, true, &assignedToShape2 );
-    if ( algo2 &&
-         assignedToShape2.ShapeType() == assignedToShape.ShapeType() &&
-         aMesh.IsOrderOK( aMesh.GetSubMesh( assignedToShape2 ),
+    if ( algo2 &&                                                  // algo found
+         !assignedToShape2.IsSame( aMesh.GetShapeToMesh() ) &&     // algo is local
+         ( SMESH_MesherHelper::GetGroupType( assignedToShape2 ) == // algo of the same level
+           SMESH_MesherHelper::GetGroupType( assignedToShape )) &&
+         aMesh.IsOrderOK( aMesh.GetSubMesh( assignedToShape2 ),    // no forced order
                           aMesh.GetSubMesh( assignedToShape  )))
     {
       // get algos on the adjacent SOLIDs
