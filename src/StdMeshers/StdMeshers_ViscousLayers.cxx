@@ -976,6 +976,9 @@ SMESH_ComputeErrorPtr _ViscousBuilder::Compute(SMESH_Mesh&         theMesh,
   {
     if ( ! makeLayer(_sdVec[i]) )
       return _error;
+
+    if ( _sdVec[i]._edges.size() == 0 )
+      continue;
     
     if ( ! inflate(_sdVec[i]) )
       return _error;
@@ -2504,22 +2507,21 @@ bool _ViscousBuilder::smoothAnalyticEdge( _SolidData&           data,
     else // 2D
     {
       const gp_XY center( center3D.X(), center3D.Y() );
-      
+
       gp_XY uv0 = helper.GetNodeUV( F, data._edges[iFrom]->_2neibors->_nodes[0]);
       gp_XY uvM = helper.GetNodeUV( F, data._edges[iFrom]->_nodes.back());
       gp_XY uv1 = helper.GetNodeUV( F, data._edges[iTo-1]->_2neibors->_nodes[1]);
       gp_Vec2d vec0( center, uv0 );
-      gp_Vec2d vecM( center, uvM);
+      gp_Vec2d vecM( center, uvM );
       gp_Vec2d vec1( center, uv1 );
       double uLast = vec0.Angle( vec1 ); // -PI - +PI
       double uMidl = vec0.Angle( vecM );
-      if ( uLast < 0 ) uLast += 2.*M_PI; // 0.0 - 2*PI
-      if ( uMidl < 0 ) uMidl += 2.*M_PI;
-      const bool sense = ( uMidl < uLast );
+      if ( uLast * uMidl < 0. )
+        uLast += ( uMidl > 0 ? +2. : -2. ) * M_PI;
       const double radius = 0.5 * ( vec0.Magnitude() + vec1.Magnitude() );
 
-      gp_Ax2d axis( center, vec0 );
-      gp_Circ2d circ ( axis, radius, sense );
+      gp_Ax2d   axis( center, vec0 );
+      gp_Circ2d circ( axis, radius );
       for ( int i = iFrom; i < iTo; ++i )
       {
         double    newU = uLast * len[i-iFrom] / len.back();
@@ -4227,7 +4229,7 @@ void _Shrinker1D::AddEdge( const _LayerEdge* e, SMESH_MesherHelper& helper )
     GeomAdaptor_Curve aCurve(C, f,l);
     const double totLen = GCPnts_AbscissaPoint::Length(aCurve, f, l);
 
-    int nbExpectNodes = eSubMesh->NbNodes() - e->_nodes.size();
+    int nbExpectNodes = eSubMesh->NbNodes();
     _initU  .reserve( nbExpectNodes );
     _normPar.reserve( nbExpectNodes );
     _nodes  .reserve( nbExpectNodes );
