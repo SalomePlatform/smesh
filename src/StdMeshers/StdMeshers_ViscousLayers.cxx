@@ -3377,6 +3377,15 @@ bool _ViscousBuilder::refine(_SolidData& data)
     }
   }
 
+  if ( !getMeshDS()->IsEmbeddedMode() )
+    // Log node movement
+    for ( unsigned i = 0; i < data._edges.size(); ++i )
+    {
+      _LayerEdge& edge = *data._edges[i];
+      SMESH_TNodeXYZ p ( edge._nodes.back() );
+      getMeshDS()->MoveNode( p._node, p.X(), p.Y(), p.Z() );
+    }
+
   // TODO: make quadratic prisms and polyhedrons(?)
 
   helper.SetElementsOnShape(true);
@@ -3465,7 +3474,7 @@ bool _ViscousBuilder::shrink()
   helper.ToFixNodeParameters( true );
 
   // EDGE's to shrink
-  map< int, _Shrinker1D > e2shrMap;
+  map< TGeomID, _Shrinker1D > e2shrMap;
 
   // loop on FACES to srink mesh on
   map< TGeomID, _SolidData* >::iterator f2sd = f2sdMap.begin();
@@ -3635,7 +3644,8 @@ bool _ViscousBuilder::shrink()
         for ( unsigned i = 0; i < nodesToSmooth.size(); ++i )
         {
           moved |= nodesToSmooth[i].Smooth( badNb,surface,helper,refSign,
-                                            /*isCentroidal=*/isConcaveFace,/*set3D=*/false );
+                                            /*isCentroidal=*/isConcaveFace,
+                                            /*set3D=*/isConcaveFace);
         }
         if ( badNb < oldBadNb )
           nbNoImpSteps = 0;
@@ -3652,12 +3662,10 @@ bool _ViscousBuilder::shrink()
     bool highQuality;
     {
       const bool hasTria = _mesh->NbTriangles(), hasQuad = _mesh->NbQuadrangles();
-      if ( hasTria != hasQuad )
-      {
+      if ( hasTria != hasQuad ) {
         highQuality = hasQuad;
       }
-      else
-      {
+      else {
         set<int> nbNodesSet;
         SMDS_ElemIteratorPtr fIt = smDS->GetElements();
         while ( fIt->more() && nbNodesSet.size() < 2 )
@@ -3677,6 +3685,14 @@ bool _ViscousBuilder::shrink()
     }
     // Set an event listener to clear FACE sub-mesh together with SOLID sub-mesh
     _SrinkShapeListener::ToClearSubMeshWithSolid( sm, data._solid );
+
+    if ( !getMeshDS()->IsEmbeddedMode() )
+      // Log node movement
+      for ( unsigned i = 0; i < nodesToSmooth.size(); ++i )
+      {
+        SMESH_TNodeXYZ p ( nodesToSmooth[i]._node );
+        getMeshDS()->MoveNode( nodesToSmooth[i]._node, p.X(), p.Y(), p.Z() );
+      }
 
   } // loop on FACES to srink mesh on
 
