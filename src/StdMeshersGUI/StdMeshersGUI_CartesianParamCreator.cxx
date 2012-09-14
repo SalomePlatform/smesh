@@ -606,7 +606,7 @@ QFrame* StdMeshersGUI_CartesianParamCreator::buildFrame()
   argGroupLayout->addWidget( new QLabel( tr( "THRESHOLD" ), GroupC1 ), row, 0 );
   myThreshold = new SMESHGUI_SpinBox( GroupC1 );
   myThreshold->setAcceptNames( false ); // No Notebook variables allowed
-  myThreshold->RangeStepAndValidator( 1.1, 1e+10, 1., "length_precision" );
+  myThreshold->RangeStepAndValidator( 1.00001, 1e+10, 1., "length_precision" );
   argGroupLayout->addWidget( myThreshold, row, 1 );
   row++;
   
