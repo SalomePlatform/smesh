@@ -38,7 +38,6 @@
 #include "SMESH_MeshEditor.hxx"
 #include <list>
 
-class SMESH_MeshEditor;
 class SMESH_Mesh_i;
 
 class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
@@ -47,8 +46,34 @@ public:
   SMESH_MeshEditor_i(SMESH_Mesh_i * theMesh, bool isPreview);
 
   virtual ~ SMESH_MeshEditor_i();
+  /*!
+   * \brief Return edited mesh ID
+   * \retval int - mesh ID
+   */
+  int GetMeshId() const { return myMesh->GetId(); }
 
   // --- CORBA
+
+  /*!
+   * Return data of mesh edition preview
+   */
+  SMESH::MeshPreviewStruct* GetPreviewData();
+  /*!
+   * If during last operation of MeshEditor some nodes were
+   * created this method returns list of their IDs, if new nodes
+   * not created - returns an empty list
+   */
+  SMESH::long_array* GetLastCreatedNodes();
+  /*!
+   * If during last operation of MeshEditor some elements were
+   * created this method returns list of their IDs, if new elements
+   * not created - returns an empty list
+   */
+  SMESH::long_array* GetLastCreatedElems();
+  /*!
+   * \brief Returns description of an error/warning occured during the last operation
+   */
+  SMESH::ComputeError* GetLastError();
 
   /*!
    * \brief Wrap a sequence of ids in a SMESH_IDSource
@@ -567,31 +592,6 @@ public:
    * element - returns false
    */
   CORBA::Boolean ChangeElemNodes(CORBA::Long ide, const SMESH::long_array& newIDs);
-
-  /*!
-   * Return data of mesh edition preview
-   */
-  SMESH::MeshPreviewStruct* GetPreviewData();
-
-  /*!
-   * If during last operation of MeshEditor some nodes were
-   * created this method returns list of it's IDs, if new nodes
-   * not creared - returns empty list
-   */
-  SMESH::long_array* GetLastCreatedNodes();
-
-  /*!
-   * If during last operation of MeshEditor some elements were
-   * created this method returns list of it's IDs, if new elements
-   * not creared - returns empty list
-   */
-  SMESH::long_array* GetLastCreatedElems();
-
-  /*!
-   * \brief Return edited mesh ID
-   * \retval int - mesh ID
-   */
-  int GetMeshId() const { return myMesh->GetId(); }
 
   CORBA::Boolean DoubleNodes( const SMESH::long_array& theNodes,
                               const SMESH::long_array& theModifiedElems );

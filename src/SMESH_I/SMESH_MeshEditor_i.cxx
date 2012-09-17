@@ -29,19 +29,41 @@
 
 #include "SMESH_MeshEditor_i.hxx"
 
+#include "DriverMED_R_SMESHDS_Mesh.h"
+#include "DriverMED_W_SMESHDS_Mesh.h"
+#include "SMDS_EdgePosition.hxx"
+#include "SMDS_ElemIterator.hxx"
+#include "SMDS_FacePosition.hxx"
+#include "SMDS_IteratorOnIterators.hxx"
 #include "SMDS_LinearEdge.hxx"
 #include "SMDS_Mesh0DElement.hxx"
 #include "SMDS_MeshFace.hxx"
 #include "SMDS_MeshVolume.hxx"
 #include "SMDS_PolyhedralVolumeOfNodes.hxx"
 #include "SMDS_SetIterator.hxx"
+#include "SMDS_SetIterator.hxx"
+#include "SMDS_VolumeTool.hxx"
+#include "SMESHDS_Command.hxx"
+#include "SMESHDS_CommandType.hxx"
 #include "SMESHDS_Group.hxx"
+#include "SMESHDS_GroupOnGeom.hxx"
 #include "SMESH_ControlsDef.hxx"
 #include "SMESH_Filter_i.hxx"
+#include "SMESH_Filter_i.hxx"
 #include "SMESH_Gen_i.hxx"
+#include "SMESH_Gen_i.hxx"
+#include "SMESH_Group.hxx"
 #include "SMESH_Group_i.hxx"
+#include "SMESH_Group_i.hxx"
+#include "SMESH_MEDMesh_i.hxx"
+#include "SMESH_MeshEditor.hxx"
+#include "SMESH_MeshPartDS.hxx"
+#include "SMESH_MesherHelper.hxx"
+#include "SMESH_PreMeshInfo.hxx"
+#include "SMESH_PythonDump.hxx"
 #include "SMESH_PythonDump.hxx"
 #include "SMESH_subMeshEventListener.hxx"
+#include "SMESH_subMesh_i.hxx"
 #include "SMESH_subMesh_i.hxx"
 
 #include "utilities.h"
@@ -438,6 +460,7 @@ void SMESH_MeshEditor_i::initData(bool deleteSearchers)
     if ( deleteSearchers )
       TSearchersDeleter::Delete();
   }
+  myEditor.GetError().reset();
 }
 
 //================================================================================
@@ -458,30 +481,41 @@ void SMESH_MeshEditor_i::storeResult(::SMESH_MeshEditor& )
 
 SMESH::MeshPreviewStruct* SMESH_MeshEditor_i::GetPreviewData()
 {
-  if ( myPreviewMode ) { // --- MeshPreviewStruct filling ---
+  const bool hasBadElems = ( myEditor.GetError() && myEditor.GetError()->HasBadElems() );
+
+  if ( myPreviewMode || hasBadElems ) { // --- MeshPreviewStruct filling ---
 
     list<int> aNodesConnectivity;
     typedef map<int, int> TNodesMap;
     TNodesMap nodesMap;
 
-    SMESHDS_Mesh* aMeshDS = myEditor.GetMeshDS();
+    SMESHDS_Mesh* aMeshDS;
+    std::auto_ptr< SMESH_MeshPartDS > aMeshPartDS;
+    if ( hasBadElems ) {
+      aMeshPartDS.reset( new SMESH_MeshPartDS( myEditor.GetError()->myBadElements ));
+      aMeshDS = aMeshPartDS.get();
+    }
+    else {
+      aMeshDS = myEditor.GetMeshDS();
+    }
     int nbEdges = aMeshDS->NbEdges();
     int nbFaces = aMeshDS->NbFaces();
     int nbVolum = aMeshDS->NbVolumes();
     myPreviewData = new SMESH::MeshPreviewStruct();
     myPreviewData->nodesXYZ.length(aMeshDS->NbNodes());
 
-    TPreviewMesh * aPreviewMesh = dynamic_cast< TPreviewMesh* >( myEditor.GetMesh() );
+    
     SMDSAbs_ElementType previewType = SMDSAbs_All;
-    if (aPreviewMesh) {
-      previewType = aPreviewMesh->myPreviewType;
-      switch ( previewType ) {
-      case SMDSAbs_Edge  : nbFaces = nbVolum = 0; break;
-      case SMDSAbs_Face  : nbEdges = nbVolum = 0; break;
-      case SMDSAbs_Volume: nbEdges = nbFaces = 0; break;
-      default:;
+    if ( !hasBadElems )
+      if (TPreviewMesh * aPreviewMesh = dynamic_cast< TPreviewMesh* >( myEditor.GetMesh() )) {
+        previewType = aPreviewMesh->myPreviewType;
+        switch ( previewType ) {
+        case SMDSAbs_Edge  : nbFaces = nbVolum = 0; break;
+        case SMDSAbs_Face  : nbEdges = nbVolum = 0; break;
+        case SMDSAbs_Volume: nbEdges = nbFaces = 0; break;
+        default:;
+        }
       }
-    }
 
     myPreviewData->elementTypes.length(nbEdges + nbFaces + nbVolum);
     int i = 0, j = 0;
@@ -563,6 +597,26 @@ SMESH::long_array* SMESH_MeshEditor_i::GetLastCreatedElems()
   for ( int i = 1; i <= aSeq.Length(); i++ )
     myLastCreatedElems[i-1] = aSeq.Value(i)->GetID();
   return myLastCreatedElems._retn();
+}
+
+//=======================================================================
+/*
+ * Returns description of an error/warning occured during the last operation
+ */
+//=======================================================================
+
+SMESH::ComputeError* SMESH_MeshEditor_i::GetLastError()
+{
+  SMESH::ComputeError*   errOut = new SMESH::ComputeError;
+  SMESH_ComputeErrorPtr& errIn  = myEditor.GetError();
+  if ( errIn && !errIn->IsOK() )
+  {
+    errOut->code       = -( errIn->myName < 0 ? errIn->myName + 1: errIn->myName ); // -1 -> 0
+    errOut->comment    = errIn->myComment.c_str();
+    errOut->subShapeID = -1;
+    errOut->hasBadMesh = !errIn->myBadElements.empty();
+  }
+  return errOut;
 }
 
 //=======================================================================
