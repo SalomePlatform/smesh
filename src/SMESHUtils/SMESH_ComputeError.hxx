@@ -51,7 +51,13 @@ enum SMESH_ComputeErrorName
   COMPERR_BAD_SHAPE        = -9,  //!< bad geometry
   COMPERR_WARNING          = -10, //!< algo reports error but sub-mesh is computed anyway
   COMPERR_CANCELED         = -11, //!< compute canceled
-  COMPERR_NO_MESH_ON_SHAPE = -12  //!< no mesh elements assigned to sub-shape
+  COMPERR_NO_MESH_ON_SHAPE = -12, //!< no mesh elements assigned to sub-shape
+  COMPERR_LAST_ALGO_ERROR  = -100,//!< terminator of mesh computation errors
+  // Errors of SMESH_MeshEditor follow
+  EDITERR_NO_MEDIUM_ON_GEOM= -101 /* during conversion to quadratic,
+                                     some medium nodes not placed on geometry
+                                     to avoid distorting elements, which are
+                                     stored in SMESH_ComputeError::myBadElements */
 };
 
 // =============================================================
@@ -78,29 +84,32 @@ struct SMESH_ComputeError
                      const SMESH_Algo* algo    = 0)
     :myName(error),myComment(comment),myAlgo(algo) {}
 
-  bool IsOK()     { return myName == COMPERR_OK; }
-  bool IsKO()     { return myName != COMPERR_OK && myName != COMPERR_WARNING; }
-  bool IsCommon() { return myName < 0; }
+  bool IsOK()        const { return myName == COMPERR_OK; }
+  bool IsKO()        const { return myName != COMPERR_OK && myName != COMPERR_WARNING; }
+  bool IsCommon()    const { return myName < 0 && myName > COMPERR_LAST_ALGO_ERROR; }
+  bool HasBadElems() const { return !myBadElements.empty(); }
   inline std::string CommonName() const;
 
 };
 
 #define _case2char(err) case err: return #err;
 
+// Return myName as text, to be used to dump errors in terminal
 std::string SMESH_ComputeError::CommonName() const
 {
   switch( myName ) {
-  _case2char(COMPERR_OK            );
-  _case2char(COMPERR_BAD_INPUT_MESH);
-  _case2char(COMPERR_STD_EXCEPTION );
-  _case2char(COMPERR_OCC_EXCEPTION );
-  _case2char(COMPERR_SLM_EXCEPTION );
-  _case2char(COMPERR_EXCEPTION     );
-  _case2char(COMPERR_MEMORY_PB     );
-  _case2char(COMPERR_ALGO_FAILED   );
-  _case2char(COMPERR_BAD_SHAPE     );
-  _case2char(COMPERR_WARNING       );
-  _case2char(COMPERR_CANCELED      );
+  _case2char(COMPERR_OK              );
+  _case2char(COMPERR_BAD_INPUT_MESH  );
+  _case2char(COMPERR_STD_EXCEPTION   );
+  _case2char(COMPERR_OCC_EXCEPTION   );
+  _case2char(COMPERR_SLM_EXCEPTION   );
+  _case2char(COMPERR_EXCEPTION       );
+  _case2char(COMPERR_MEMORY_PB       );
+  _case2char(COMPERR_ALGO_FAILED     );
+  _case2char(COMPERR_BAD_SHAPE       );
+  _case2char(COMPERR_WARNING         );
+  _case2char(COMPERR_CANCELED        );
+  _case2char(COMPERR_NO_MESH_ON_SHAPE);
   default:;
   }
   return "";
