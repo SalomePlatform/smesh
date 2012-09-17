@@ -1148,13 +1148,13 @@ void SMESHGUI_BaseComputeOp::onShowBadMesh()
       SMESH::MeshPreviewStruct_var aMeshData = gen->GetBadInputElements(myMesh,curSub);
       vtkFloatingPointType aPointSize = SMESH::GetFloat("SMESH:node_size",3);
       vtkFloatingPointType aLineWidth = SMESH::GetFloat("SMESH:element_width",1);
-      // delete property !!!!!!!!!!
       vtkProperty* prop = vtkProperty::New();
       prop->SetLineWidth( aLineWidth * 3 );
       prop->SetPointSize( aPointSize * 3 );
       prop->SetColor( 250, 0, 250 );
       myBadMeshDisplayer->GetActor()->SetProperty( prop );
       myBadMeshDisplayer->SetData( aMeshData._retn() );
+      prop->Delete();
     }
   }
 }
