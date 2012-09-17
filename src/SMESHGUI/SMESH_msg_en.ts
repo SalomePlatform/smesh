@@ -132,6 +132,11 @@
         <translation>No mesh elements assigned to a Sub-shape</translation>
     </message>
     <message>
+        <source>EDITERR_NO_MEDIUM_ON_GEOM</source>
+        <translation>Some medium nodes not placed on geometry to avoid
+        distorting elements shown in magenta</translation>
+    </message>
+    <message>
         <source>SMESH_GEOM</source>
         <translation>Geometry</translation>
     </message>

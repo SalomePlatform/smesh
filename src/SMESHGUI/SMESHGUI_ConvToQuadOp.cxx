@@ -29,20 +29,25 @@
 
 #include "SMESHGUI.h"
 #include "SMESHGUI_ConvToQuadDlg.h"
+#include "SMESHGUI_MeshEditPreview.h"
 #include "SMESHGUI_Utils.h"
-#include "SMDSAbs_ElementType.hxx"
-
+#include "SMESH_ActorUtils.h"
 #include "SMESH_TypeFilter.hxx"
+#include "SMDSAbs_ElementType.hxx"
 
 // SALOME GUI includes
 #include <LightApp_UpdateFlags.h>
 #include <SUIT_MessageBox.h>
 #include <SUIT_OverrideCursor.h>
 #include <SalomeApp_Tools.h>
+#include <SALOME_Actor.h>
 
 // IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
+
+// VTK includes
+#include <vtkProperty.h>
 
 //================================================================================
 /*!
@@ -53,7 +58,8 @@
 //================================================================================
 SMESHGUI_ConvToQuadOp::SMESHGUI_ConvToQuadOp()
   : SMESHGUI_SelectionOp(), 
-    myDlg( 0 )
+    myDlg( 0 ),
+    myBadElemsPreview(0)
 {
 }
 
@@ -64,8 +70,8 @@ SMESHGUI_ConvToQuadOp::SMESHGUI_ConvToQuadOp()
 //================================================================================
 SMESHGUI_ConvToQuadOp::~SMESHGUI_ConvToQuadOp()
 {
-  if ( myDlg )
-    delete myDlg;
+  if ( myDlg ) delete myDlg;
+  if ( myBadElemsPreview ) delete myBadElemsPreview;
 }
 
 //================================================================================
@@ -237,14 +243,47 @@ bool SMESHGUI_ConvToQuadOp::onApply()
     SMESH::SMESH_Mesh_var sourceMesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( pObj );  
     if( !myDlg->CurrentRB() )
     {
-      bool aParam = true;
+      bool force3d = true;
       if( myDlg->IsEnabledCheck() )
-        aParam = myDlg->IsMediumNdsOnGeom();
+        force3d = myDlg->IsMediumNdsOnGeom();
 
       if ( sourceMesh->_is_nil() )
-        aEditor->ConvertToQuadraticObject( aParam, idSource );
+        aEditor->ConvertToQuadraticObject( force3d, idSource );
       else
-        aEditor->ConvertToQuadratic( aParam );
+        aEditor->ConvertToQuadratic( force3d );
+
+      if ( !force3d )
+      {
+        SMESH::ComputeError_var error = aEditor->GetLastError();
+        if ( error->hasBadMesh )
+        {
+          if ( myBadElemsPreview ) delete myBadElemsPreview; // viewWindow may change
+          myBadElemsPreview = new SMESHGUI_MeshEditPreview( viewWindow() );
+          
+          vtkFloatingPointType aPointSize = SMESH::GetFloat("SMESH:node_size",3);
+          vtkFloatingPointType aLineWidth = SMESH::GetFloat("SMESH:element_width",1);
+          vtkProperty* prop = vtkProperty::New();
+          prop->SetLineWidth( aLineWidth * 3 );
+          prop->SetPointSize( aPointSize * 3 );
+          prop->SetColor( 250, 0, 250 );
+          myBadElemsPreview->GetActor()->SetProperty( prop );
+          prop->Delete();
+
+          SMESH::MeshPreviewStruct_var previewData = aEditor->GetPreviewData();
+          myBadElemsPreview->SetData( & previewData.in() );
+          myBadElemsPreview->SetVisibility(true);
+
+          SUIT_MessageBox* mb = new SUIT_MessageBox(SUIT_MessageBox::Warning,
+                                                    tr( "SMESH_WRN_WARNING" ),
+                                                    tr("EDITERR_NO_MEDIUM_ON_GEOM"),
+                                                    SUIT_MessageBox::Ok, myDlg);
+          mb->setWindowModality( Qt::NonModal );
+          mb->setAttribute( Qt::WA_DeleteOnClose );
+          mb->show();
+          connect ( mb, SIGNAL( finished(int) ), this, SLOT( onWarningWinFinished() ));
+          //connect ( mb, SIGNAL( rejected() ), this, SLOT( onWarningWinFinished() ));
+        }
+      }
     }
     else
     {
@@ -270,6 +309,18 @@ bool SMESHGUI_ConvToQuadOp::onApply()
     selectionDone();
   }
   return aResult;
+}
+
+//================================================================================
+/*!
+ * \brief SLOT called when a warning window is closed
+ */
+//================================================================================
+
+void SMESHGUI_ConvToQuadOp::onWarningWinFinished()
+{
+  if ( myBadElemsPreview )
+    myBadElemsPreview->SetVisibility(false);
 }
 
 //================================================================================
