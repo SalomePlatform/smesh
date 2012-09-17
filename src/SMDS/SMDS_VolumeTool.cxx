@@ -1454,6 +1454,45 @@ double SMDS_VolumeTool::MinLinearSize2() const
 
 //================================================================================
 /*!
+ * \brief Return maximal square distance between connected corner nodes
+ */
+//================================================================================
+
+double SMDS_VolumeTool::MaxLinearSize2() const
+{
+  double maxSize = -1e+100;
+  int iQ = myVolume->IsQuadratic() ? 2 : 1;
+
+  // store current face data
+  int curFace = myCurFace, nbN = myFaceNbNodes;
+  int* ind = myFaceNodeIndices;
+  myFaceNodeIndices = NULL;
+  const SMDS_MeshNode** nodes = myFaceNodes;
+  myFaceNodes = NULL;
+  
+  // it seems that compute distance twice is faster than organization of a sole computing
+  myCurFace = -1;
+  for ( int iF = 0; iF < myNbFaces; ++iF )
+  {
+    setFace( iF );
+    for ( int iN = 0; iN < myFaceNbNodes; iN += iQ )
+    {
+      XYZ n1( myFaceNodes[ iN ]);
+      XYZ n2( myFaceNodes[(iN + iQ) % myFaceNbNodes]);
+      maxSize = std::max( maxSize, (n1 - n2).SquareMagnitude());
+    }
+  }
+  // restore current face data
+  myCurFace         = curFace;
+  myFaceNbNodes     = nbN;
+  myFaceNodeIndices = ind;
+  delete [] myFaceNodes; myFaceNodes = nodes;
+
+  return maxSize;
+}
+
+//================================================================================
+/*!
  * \brief check that only one volume is build on the face nodes
  *
  * If a face is shared by one of <ignoreVolumes>, it is considered free
