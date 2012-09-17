@@ -1764,14 +1764,14 @@ class Mesh:
     #  @return an instance of SMESH_MeshEditor
     #  @ingroup l1_modifying
     def GetMeshEditor(self):
-        return self.mesh.GetMeshEditor()
+        return self.editor
 
     ## Wrap a list of IDs of elements or nodes into SMESH_IDSource which
     #  can be passed as argument to a method accepting mesh, group or sub-mesh
     #  @return an instance of SMESH_IDSource
     #  @ingroup l1_auxiliary
     def GetIDSource(self, ids, elemType):
-        return self.GetMeshEditor().MakeIDSource(ids, elemType)
+        return self.editor.MakeIDSource(ids, elemType)
 
     ## Gets MED Mesh
     #  @return an instance of SALOME_MED::MESH
