@@ -195,9 +195,10 @@ public:
 
   /*!
    * \brief Move medium nodes of faces and volumes to fix distorted elements
+   * \param error - container of fixed distorted elements
    * \param volumeOnly - fix nodes on geom faces or not if the shape is solid
    */
-  void FixQuadraticElements(bool volumeOnly=true);
+  void FixQuadraticElements(SMESH_ComputeErrorPtr& error, bool volumeOnly=true);
 
   /*!
    * \brief To set created elements on the shape set by IsQuadraticSubMesh()

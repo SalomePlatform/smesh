@@ -375,7 +375,9 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
   {
     SMESH_MesherHelper aHelper( aMesh );
     if ( aHelper.IsQuadraticMesh() != SMESH_MesherHelper::LINEAR )
-      aHelper.FixQuadraticElements();
+    {
+      aHelper.FixQuadraticElements( sm->GetComputeError() );
+    }
   }
   return ret;
 }

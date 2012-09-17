@@ -9635,7 +9635,7 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d)
   if ( !theForce3d )
   { // setenv NO_FixQuadraticElements to know if FixQuadraticElements() is guilty of bad conversion
     aHelper.SetSubShape(0); // apply FixQuadraticElements() to the whole mesh
-    aHelper.FixQuadraticElements();
+    aHelper.FixQuadraticElements(myError);
   }
 }
 
@@ -9775,7 +9775,7 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool        theForce3d,
   if ( !theForce3d  && !getenv("NO_FixQuadraticElements"))
   { // setenv NO_FixQuadraticElements to know if FixQuadraticElements() is guilty of bad conversion
     helper.SetSubShape(0); // apply FixQuadraticElements() to the whole mesh
-    helper.FixQuadraticElements();
+    helper.FixQuadraticElements( myError );
   }
 }
 
