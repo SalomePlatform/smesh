@@ -43,6 +43,7 @@
 #include "SMESH_MEDMesh_i.hxx"
 #include "SMESH_MeshEditor.hxx"
 #include "SMESH_MeshEditor_i.hxx"
+#include "SMESH_MeshPartDS.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_PreMeshInfo.hxx"
 #include "SMESH_PythonDump.hxx"
@@ -2838,37 +2839,6 @@ void SMESH_Mesh_i::ExportSTL (const char *file, const bool isascii)
   _impl->ExportSTL(file, isascii);
 }
 
-//=============================================================================
-/*!
- * \brief Class providing SMESHDS_Mesh API to SMESH_IDSource. 
- *        It is used to export a part of mesh as a whole mesh.
- */
-class SMESH_MeshPartDS : public SMESHDS_Mesh
-{
-public:
-  SMESH_MeshPartDS(SMESH::SMESH_IDSource_ptr meshPart);
-
-  virtual SMDS_NodeIteratorPtr   nodesIterator     (bool idInceasingOrder=false) const;
-  virtual SMDS_EdgeIteratorPtr   edgesIterator     (bool idInceasingOrder=false) const;
-  virtual SMDS_FaceIteratorPtr   facesIterator     (bool idInceasingOrder=false) const;
-  virtual SMDS_VolumeIteratorPtr volumesIterator   (bool idInceasingOrder=false) const;
-
-  virtual SMDS_ElemIteratorPtr elementsIterator(SMDSAbs_ElementType type=SMDSAbs_All) const;
-  virtual SMDS_ElemIteratorPtr elementGeomIterator(SMDSAbs_GeometryType type) const;
-  virtual SMDS_ElemIteratorPtr elementEntityIterator(SMDSAbs_EntityType type) const;
-
-private:
-  TIDSortedElemSet _elements[ SMDSAbs_NbElementTypes ];
-  SMESHDS_Mesh*    _meshDS;
-  /*!
-   * \brief Class used to access to protected data of SMDS_MeshInfo
-   */
-  struct TMeshInfo : public SMDS_MeshInfo
-  {
-    void Add(const SMDS_MeshElement* e) { SMDS_MeshInfo::addWithPoly( e ); }
-  };
-};
-
 //================================================================================
 /*!
  * \brief Export a part of mesh to a med file
@@ -4899,6 +4869,27 @@ SMESH_MeshPartDS::SMESH_MeshPartDS(SMESH::SMESH_IDSource_ptr meshPart):
 
     _meshDS = 0; // to enforce iteration on _elements and _nodes
   }
+}
+// -------------------------------------------------------------------------------------
+SMESH_MeshPartDS::SMESH_MeshPartDS(const std::list< const SMDS_MeshElement* > & meshPart):
+  SMESHDS_Mesh( /*meshID=*/-1, /*isEmbeddedMode=*/true), _meshDS(0)
+{
+  TMeshInfo tmpInfo;
+  list< const SMDS_MeshElement* >::const_iterator partIt = meshPart.begin();
+  for ( ; partIt != meshPart.end(); ++partIt )
+    if ( const SMDS_MeshElement * e = *partIt )
+      if ( _elements[ e->GetType() ].insert( e ).second )
+      {
+        tmpInfo.Add( e );
+        SMDS_ElemIteratorPtr nIt = e->nodesIterator();
+        while ( nIt->more() )
+        {
+          const SMDS_MeshNode * n = (const SMDS_MeshNode*) nIt->next();
+          if ( _elements[ SMDSAbs_Node ].insert( n ).second )
+            tmpInfo.Add( n );
+        }
+      }
+  myInfo = tmpInfo;
 }
 // -------------------------------------------------------------------------------------
 SMDS_ElemIteratorPtr SMESH_MeshPartDS::elementGeomIterator(SMDSAbs_GeometryType geomType) const

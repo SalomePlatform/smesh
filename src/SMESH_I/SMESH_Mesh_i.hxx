@@ -37,7 +37,6 @@
 
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_Mesh.hxx"
-//#include "SMESH_subMesh_i.hxx"
 #include "SMESH_subMesh.hxx"
 
 #include "SALOME_GenericObj_i.hh"
