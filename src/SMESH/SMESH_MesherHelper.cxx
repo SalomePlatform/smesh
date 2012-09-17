@@ -26,13 +26,17 @@
 //
 #include "SMESH_MesherHelper.hxx"
 
-#include "SMDS_FacePosition.hxx" 
 #include "SMDS_EdgePosition.hxx"
+#include "SMDS_FaceOfNodes.hxx"
+#include "SMDS_FacePosition.hxx" 
+#include "SMDS_IteratorOnIterators.hxx"
 #include "SMDS_VolumeTool.hxx"
-#include "SMESH_subMesh.hxx"
 #include "SMESH_ProxyMesh.hxx"
+#include "SMESH_subMesh.hxx"
 
+#include <BRepAdaptor_Curve.hxx>
 #include <BRepAdaptor_Surface.hxx>
+#include <BRepClass3d_SolidClassifier.hxx>
 #include <BRepTools.hxx>
 #include <BRepTools_WireExplorer.hxx>
 #include <BRep_Tool.hxx>
@@ -403,7 +407,7 @@ void SMESH_MesherHelper::AddTLinks(const SMDS_MeshVolume* volume)
       {
         int iN1  = iNodes[i++];
         int iN12 = iNodes[i++];
-        int iN2  = iNodes[i++];
+        int iN2  = iNodes[i];
         if ( iN1 > iN2 ) std::swap( iN1, iN2 );
         int linkID = iN1 * vTool.NbNodes() + iN2;
         pair< set<int>::iterator, bool > it_isNew = addedLinks.insert( linkID );
@@ -3081,18 +3085,349 @@ namespace { // Structures used by FixQuadraticElements()
 
     return _OK;
   }
+
+  //================================================================================
+  /*!
+   * \brief Place medium nodes at the link middle for elements whose corner nodes
+   *        are out of geometrical boundary to prevent distorting elements.
+   *        Issue 0020982, note 0013990
+   */
+  //================================================================================
+
+  void force3DOutOfBoundary( SMESH_MesherHelper&    theHelper,
+                             SMESH_ComputeErrorPtr& theError)
+  {
+    SMESHDS_Mesh* meshDS = theHelper.GetMeshDS();
+    TopoDS_Shape  shape = theHelper.GetSubShape().Oriented( TopAbs_FORWARD );
+    if ( shape.IsNull() ) return;
+
+    if ( !theError ) theError = SMESH_ComputeError::New();
+
+    gp_XYZ faceNorm;
+
+    if ( shape.ShapeType() == TopAbs_FACE ) // 2D
+    {
+      if ( theHelper.GetMesh()->NbTriangles( ORDER_QUADRATIC ) < 1 ) return;
+
+      SMESHDS_SubMesh* faceSM = meshDS->MeshElements( shape );
+      if ( !faceSM ) return;
+
+      const TopoDS_Face&      face = TopoDS::Face( shape );
+      Handle(Geom_Surface) surface = BRep_Tool::Surface( face );
+
+      TopExp_Explorer edgeIt( face, TopAbs_EDGE );
+      for ( ; edgeIt.More(); edgeIt.Next() ) // loop on EDGEs of a FACE
+      {
+        // check if the EDGE needs checking
+        const TopoDS_Edge& edge = TopoDS::Edge( edgeIt.Current() );
+        if ( BRep_Tool::Degenerated( edge ) )
+          continue;
+        if ( theHelper.IsRealSeam( edge ) &&
+             edge.Orientation() == TopAbs_REVERSED )
+          continue;
+
+        SMESHDS_SubMesh* edgeSM = meshDS->MeshElements( edge );
+        if ( !edgeSM ) continue;
+
+        double f,l;
+        Handle(Geom2d_Curve) pcurve  = BRep_Tool::CurveOnSurface( edge, face, f, l );
+        BRepAdaptor_Curve    curve3D( edge );
+        switch ( curve3D.GetType() ) {
+        case GeomAbs_Line: continue;
+        case GeomAbs_Circle:
+        case GeomAbs_Ellipse:
+        case GeomAbs_Hyperbola:
+        case GeomAbs_Parabola:
+          try
+          {
+            gp_Vec D1, D2, Du1, Dv1; gp_Pnt p;
+            curve3D.D2( 0.5 * ( f + l ), p, D1, D2 );
+            gp_Pnt2d uv = pcurve->Value( 0.5 * ( f + l ) );
+            surface->D1( uv.X(), uv.Y(), p, Du1, Dv1 );
+            gp_Vec fNorm = Du1 ^ Dv1;
+            if ( fNorm.IsParallel( D2, M_PI * 25./180. ))
+              continue; // face is normal to the curve3D
+
+            gp_Vec curvNorm = fNorm ^ D1;
+            if ( edge.Orientation() == TopAbs_REVERSED ) curvNorm.Reverse();
+            if ( curvNorm * D2 > 0 )
+              continue; // convex edge
+          }
+          catch ( Standard_Failure )
+          {
+            continue;
+          }
+        }
+        // get nodes shared by faces that may be distorted
+        SMDS_NodeIteratorPtr nodeIt;
+        if ( edgeSM->NbNodes() > 0 ) {
+          nodeIt = edgeSM->GetNodes();
+        }
+        else {
+          SMESHDS_SubMesh* vertexSM = meshDS->MeshElements( theHelper.IthVertex( 0, edge ));
+          if ( !vertexSM )
+            vertexSM = meshDS->MeshElements( theHelper.IthVertex( 1, edge ));
+          if ( !vertexSM ) continue;
+          nodeIt = vertexSM->GetNodes();
+        }
+
+        // find suspicious faces
+        TIDSortedElemSet checkedFaces;
+        vector< const SMDS_MeshNode* > nOnEdge( 2 );
+        const SMDS_MeshNode*           nOnFace;
+        while ( nodeIt->more() )
+        {
+          const SMDS_MeshNode* n      = nodeIt->next();
+          SMDS_ElemIteratorPtr faceIt = n->GetInverseElementIterator( SMDSAbs_Face );
+          while ( faceIt->more() )
+          {
+            const SMDS_MeshElement* f = faceIt->next();
+            if ( !faceSM->Contains( f ) ||
+                 f->NbNodes() != 6      || // check quadratic triangles only
+                 !checkedFaces.insert( f ).second )
+              continue;
+
+            // get nodes on EDGE and on FACE of a suspicious face
+            nOnEdge.clear(); nOnFace = 0;
+            SMDS_MeshElement::iterator triNode = f->begin_nodes();
+            for ( int nbN = 0; nbN < 3; ++triNode, ++nbN )
+            {
+              n = *triNode;
+              if ( n->GetPosition()->GetDim() == 2 )
+                nOnFace = n;
+              else
+                nOnEdge.push_back( n );
+            }
+
+            // check if nOnFace is inside the FACE
+            if ( nOnFace && nOnEdge.size() == 2 )
+            {
+              theHelper.AddTLinks( static_cast< const SMDS_MeshFace* > ( f ));
+              if ( !SMESH_Algo::FaceNormal( f, faceNorm, /*normalized=*/false ))
+                continue;
+              gp_XYZ edgeDir  = SMESH_TNodeXYZ( nOnEdge[0] ) - SMESH_TNodeXYZ( nOnEdge[1] );
+              gp_XYZ edgeNorm = faceNorm ^ edgeDir;
+              n = theHelper.GetMediumNode( nOnEdge[0], nOnEdge[1], true );
+              gp_XYZ pN0     = SMESH_TNodeXYZ( nOnEdge[0] );
+              gp_XYZ pMedium = SMESH_TNodeXYZ( n );                   // on-edge node location
+              gp_XYZ pFaceN  = SMESH_TNodeXYZ( nOnFace );             // on-face node location
+              double hMedium = edgeNorm * gp_Vec( pN0, pMedium ).XYZ();
+              double hFace   = edgeNorm * gp_Vec( pN0, pFaceN ).XYZ();
+              if ( Abs( hMedium ) > Abs( hFace * 0.6 ))
+              {
+                // nOnFace is out of FACE, move a medium on-edge node to the middle
+                gp_XYZ pMid3D = 0.5 * ( pN0 + SMESH_TNodeXYZ( nOnEdge[1] ));
+                meshDS->MoveNode( n, pMid3D.X(), pMid3D.Y(), pMid3D.Z() );
+                MSG( "move OUT of face " << n );
+                theError->myBadElements.push_back( f );
+              }
+            }
+          }
+        }
+      }
+      if ( !theError->myBadElements.empty() )
+        theError->myName = EDITERR_NO_MEDIUM_ON_GEOM;
+      return;
+
+    } // 2D ==============================================================================
+
+    if ( shape.ShapeType() == TopAbs_SOLID ) // 3D
+    {
+      if ( theHelper.GetMesh()->NbTetras  ( ORDER_QUADRATIC ) < 1 &&
+           theHelper.GetMesh()->NbPyramids( ORDER_QUADRATIC ) < 1 ) return;
+
+      SMESHDS_SubMesh* solidSM = meshDS->MeshElements( shape );
+      if ( !solidSM ) return;
+
+      // check if the SOLID is bound by concave FACEs
+      vector< TopoDS_Face > concaveFaces;
+      TopExp_Explorer faceIt( shape, TopAbs_FACE );
+      for ( ; faceIt.More(); faceIt.Next() ) // loop on FACEs of a SOLID
+      {
+        const TopoDS_Face&  face = TopoDS::Face( faceIt.Current() );
+        if ( !meshDS->MeshElements( face )) continue;
+
+        BRepAdaptor_Surface surface( face );
+        switch ( surface.GetType() ) {
+        case GeomAbs_Plane: continue;
+        case GeomAbs_Cylinder:
+        case GeomAbs_Cone:
+        case GeomAbs_Sphere:
+          try
+          {
+            double u = 0.5 * ( surface.FirstUParameter() + surface.LastUParameter() );
+            double v = 0.5 * ( surface.FirstVParameter() + surface.LastVParameter() );
+            gp_Vec Du1, Dv1, Du2, Dv2, Duv2; gp_Pnt p;
+            surface.D2( u,v, p, Du1, Dv1, Du2, Dv2, Duv2 );
+            gp_Vec fNorm = Du1 ^ Dv1;
+            if ( face.Orientation() == TopAbs_REVERSED ) fNorm.Reverse();
+            bool concaveU = ( fNorm * Du2 > 1e-100 );
+            bool concaveV = ( fNorm * Dv2 > 1e-100 );
+            if ( concaveU || concaveV )
+              concaveFaces.push_back( face );
+          }
+          catch ( Standard_Failure )
+          {
+            concaveFaces.push_back( face );
+          }
+        }
+      }
+      if ( concaveFaces.empty() )
+        return;
+
+      // fix 2D mesh on the SOLID
+      for ( faceIt.ReInit(); faceIt.More(); faceIt.Next() ) // loop on FACEs of a SOLID
+      {
+        SMESH_MesherHelper faceHelper( *theHelper.GetMesh() );
+        faceHelper.SetSubShape( faceIt.Current() );
+        force3DOutOfBoundary( faceHelper, theError );
+      }
+
+      // get an iterator over faces on concaveFaces
+      vector< SMDS_ElemIteratorPtr > faceIterVec( concaveFaces.size() );
+      for ( size_t i = 0; i < concaveFaces.size(); ++i )
+        faceIterVec[i] = meshDS->MeshElements( concaveFaces[i] )->GetElements();
+      typedef SMDS_IteratorOnIterators
+        < const SMDS_MeshElement*, vector< SMDS_ElemIteratorPtr > > TIterOnIter;
+      SMDS_ElemIteratorPtr faceIter( new TIterOnIter( faceIterVec ));
+
+      // a seacher to check if a volume is close to a concave face
+      std::auto_ptr< SMESH_ElementSearcher > faceSearcher
+        ( SMESH_MeshEditor( theHelper.GetMesh() ).GetElementSearcher( faceIter ));
+
+      // classifier
+      //BRepClass3d_SolidClassifier solidClassifier( shape );
+
+      TIDSortedElemSet checkedVols, movedNodes;
+      for ( faceIt.ReInit(); faceIt.More(); faceIt.Next() ) // loop on FACEs of a SOLID
+      {
+        const TopoDS_Shape& face = faceIt.Current();
+        SMESHDS_SubMesh*  faceSM = meshDS->MeshElements( face );
+        if ( !faceSM ) continue;
+
+        // get nodes shared by volumes (tet and pyra) on the FACE that may be distorted
+        SMDS_NodeIteratorPtr nodeIt;
+        if ( faceSM->NbNodes() > 0 ) {
+          nodeIt = faceSM->GetNodes();
+        }
+        else {
+          TopExp_Explorer vertex( face, TopAbs_VERTEX );
+          SMESHDS_SubMesh* vertexSM = meshDS->MeshElements( vertex.Current() );
+          if ( !vertexSM ) continue;
+          nodeIt = vertexSM->GetNodes();
+        }
+
+        // find suspicious volumes adjacent to the FACE
+        vector< const SMDS_MeshNode* >    nOnFace( 4 );
+        const SMDS_MeshNode*              nInSolid;
+        //vector< const SMDS_MeshElement* > intersectedFaces;
+        while ( nodeIt->more() )
+        {
+          const SMDS_MeshNode* n     = nodeIt->next();
+          SMDS_ElemIteratorPtr volIt = n->GetInverseElementIterator( SMDSAbs_Volume );
+          while ( volIt->more() )
+          {
+            const SMDS_MeshElement* vol = volIt->next();
+            int nbN = vol->NbCornerNodes();
+            if ( ( nbN != 4 && nbN != 5 )  ||
+                 !solidSM->Contains( vol ) ||
+                 !checkedVols.insert( vol ).second )
+              continue;
+
+            // get nodes on FACE and in SOLID of a suspicious volume
+            nOnFace.clear(); nInSolid = 0;
+            SMDS_MeshElement::iterator volNode = vol->begin_nodes();
+            for ( int nb = nbN; nb > 0; ++volNode, --nb )
+            {
+              n = *volNode;
+              if ( n->GetPosition()->GetDim() == 3 )
+                nInSolid = n;
+              else
+                nOnFace.push_back( n );
+            }
+            if ( !nInSolid || nOnFace.size() != nbN - 1 )
+              continue;
+
+            // get size of the vol
+            SMESH_TNodeXYZ pInSolid( nInSolid ), pOnFace0( nOnFace[0] );
+            double volLength = pInSolid.SquareDistance( nOnFace[0] );
+            for ( size_t i = 1; i < nOnFace.size(); ++i )
+            {
+              volLength = Max( volLength, pOnFace0.SquareDistance( nOnFace[i] ));
+            }
+
+            // check if vol is close to concaveFaces
+            const SMDS_MeshElement* closeFace =
+              faceSearcher->FindClosestTo( pInSolid, SMDSAbs_Face );
+            if ( !closeFace ||
+                 pInSolid.SquareDistance( closeFace->GetNode(0) ) > 4 * volLength )
+              continue;
+
+            // check if vol is distorted, i.e. a medium node is much closer
+            // to nInSolid than the link middle
+            bool isDistorted = false;
+            SMDS_FaceOfNodes onFaceTria( nOnFace[0], nOnFace[1], nOnFace[2] );
+            if ( !SMESH_Algo::FaceNormal( &onFaceTria, faceNorm, /*normalized=*/false ))
+              continue;
+            theHelper.AddTLinks( static_cast< const SMDS_MeshVolume* > ( vol ));
+            vector< pair< SMESH_TLink, const SMDS_MeshNode* > > links;
+            for ( size_t i = 0; i < nOnFace.size(); ++i ) // loop on links between nOnFace
+              for ( size_t j = i+1; j < nOnFace.size(); ++j )
+              {
+                SMESH_TLink link( nOnFace[i], nOnFace[j] );
+                TLinkNodeMap::const_iterator linkIt =
+                  theHelper.GetTLinkNodeMap().find( link );
+                if ( linkIt != theHelper.GetTLinkNodeMap().end() )
+                {
+                  links.push_back( make_pair( linkIt->first, linkIt->second  ));
+                  if ( !isDistorted ) {
+                    // compare projections of nInSolid and nMedium to face normal
+                    gp_Pnt pMedium = SMESH_TNodeXYZ( linkIt->second );
+                    double hMedium = faceNorm * gp_Vec( pOnFace0, pMedium ).XYZ();
+                    double hVol    = faceNorm * gp_Vec( pOnFace0, pInSolid ).XYZ();
+                    isDistorted = ( Abs( hMedium ) > Abs( hVol * 0.5 ));
+                  }
+                }
+              }
+            // move medium nodes to link middle
+            if ( isDistorted )
+            {
+              for ( size_t i = 0; i < links.size(); ++i )
+              {
+                const SMDS_MeshNode* nMedium = links[i].second;
+                if ( movedNodes.insert( nMedium ).second )
+                {
+                  gp_Pnt pMid3D = 0.5 * ( SMESH_TNodeXYZ( links[i].first.node1() ) +
+                                          SMESH_TNodeXYZ( links[i].first.node2() ));
+                  meshDS->MoveNode( nMedium, pMid3D.X(), pMid3D.Y(), pMid3D.Z() );
+                  MSG( "move OUT of solid " << nMedium );
+                }
+              }
+              theError->myBadElements.push_back( vol );
+            }
+          } // loop on volumes sharing a node on FACE
+        } // loop on nodes on FACE
+      }  // loop on FACEs of a SOLID
+
+      if ( !theError->myBadElements.empty() )
+        theError->myName = EDITERR_NO_MEDIUM_ON_GEOM;
+    } // 3D case
+  }
+
 } //namespace
 
 //=======================================================================
 /*!
  * \brief Move medium nodes of faces and volumes to fix distorted elements
+ * \param error - container of fixed distorted elements
  * \param volumeOnly - to fix nodes on faces or not, if the shape is solid
  * 
  * Issue 0020307: EDF 992 SMESH : Linea/Quadratic with Medium Node on Geometry
  */
 //=======================================================================
 
-void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
+void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& error,
+                                              bool                   volumeOnly)
 {
   // setenv NO_FixQuadraticElements to know if FixQuadraticElements() is guilty of bad conversion
   if ( getenv("NO_FixQuadraticElements") )
@@ -3125,7 +3460,7 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
 #endif
         SMESH_MesherHelper h(*myMesh);
         h.SetSubShape( s.Current() );
-        h.FixQuadraticElements(false);
+        h.FixQuadraticElements( error, false );
       }
     }
     // fix nodes on geom faces
@@ -3136,10 +3471,13 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
       MSG("FIX FACE " << nbfaces-- << " #" << GetMeshDS()->ShapeToIndex(fIt.Key()));
       SMESH_MesherHelper h(*myMesh);
       h.SetSubShape( fIt.Key() );
-      h.FixQuadraticElements(true);
+      h.FixQuadraticElements( error, true);
       h.ToFixNodeParameters(true);
     }
     //perf_print_all_meters(1);
+    if ( error->myName == EDITERR_NO_MEDIUM_ON_GEOM )
+      error->myComment = "during conversion to quadratic, "
+        "some medium nodes were not placed on geometry to avoid distorting elements";
     return;
   }
 
@@ -3177,6 +3515,11 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
 
   TIDSortedNodeSet apexOfPyramid;
   const int apexIndex = 4;
+
+  // Issue 0020982
+  // Move medium nodes to the link middle for elements whose corner nodes
+  // are out of geometrical boundary to fix distorted elements.
+  force3DOutOfBoundary( *this, error );
 
   if ( elemType == SMDSAbs_Volume )
   {
@@ -3452,109 +3795,73 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
         } // loop on chains of links
       } // loop on 2 directions of propagation from quadrangle
     } // loop on faces
-  }
+  } // fix faces and/or volumes
 
   // 4. Move nodes
   // -------------
 
-//   vector<const SMDS_MeshElement*> vols( 100 );
-//   vector<double>                  volSize( 100 );
-//   int nbVols;
-//   bool ok;
   for ( pLink = links.begin(); pLink != links.end(); ++pLink ) {
     if ( pLink->IsMoved() ) {
       gp_Pnt p = pLink->MiddlePnt() + pLink->Move();
       GetMeshDS()->MoveNode( pLink->_mediumNode, p.X(), p.Y(), p.Z());
-      //
-//       gp_Pnt pNew = pLink->MiddlePnt() + pLink->Move();
-//       if ( pLink->MediumPos() != SMDS_TOP_3DSPACE )
-//       {
-//         // avoid making distorted volumes near boundary
-//         SMDS_ElemIteratorPtr volIt =
-//           (*pLink)._mediumNode->GetInverseElementIterator( SMDSAbs_Volume );
-//         for ( nbVols = 0; volIt->more() && volTool.Set( volIt->next() ); ++nbVols )
-//         {
-//           vols   [ nbVols ] = volTool.Element();
-//           volSize[ nbVols ] = volTool.GetSize();
-//         }
-//         gp_Pnt pOld = pLink->MediumPnt();
-//         const_cast<SMDS_MeshNode*>( pLink->_mediumNode )->setXYZ( pNew.X(), pNew.Y(), pNew.Z() );
-//         ok = true;
-//         while ( nbVols-- && ok )
-//         {
-//           volTool.Set( vols[ nbVols ]);
-//           ok = ( volSize[ nbVols ] * volTool.GetSize() > 1e-20 ); 
-//         }
-//         if ( !ok )
-//         {
-//           const_cast<SMDS_MeshNode*>( pLink->_mediumNode )->setXYZ( pOld.X(), pOld.Y(), pOld.Z() );
-//           MSG( "Do NOT move \t" << pLink->_mediumNode->GetID()
-//                << " because of distortion of volume " << vols[ nbVols+1 ]->GetID());
-//           continue;
-//         }
-//       }
-//       GetMeshDS()->MoveNode( pLink->_mediumNode, pNew.X(), pNew.Y(), pNew.Z() );
     }
   }
 
-  //return;
+  // Issue 0020982
+  // Move the apex of pyramid together with the most curved link.
+  // TIDSortedNodeSet::iterator apexIt = apexOfPyramid.begin();
+  // for ( ; apexIt != apexOfPyramid.end(); ++apexIt )
+  // {
+  //   SMESH_TNodeXYZ apex = *apexIt;
 
-  // issue 0020982
-  // Move the apex of pyramid together with the most curved link
+  //   gp_Vec maxMove( 0,0,0 );
+  //   double maxMoveSize2 = 0;
 
-  TIDSortedNodeSet::iterator apexIt = apexOfPyramid.begin();
-  for ( ; apexIt != apexOfPyramid.end(); ++apexIt )
-  {
-    SMESH_TNodeXYZ apex = *apexIt;
+  //   // shift of node index to get medium nodes between the base nodes
+  //   const int base2MediumShift = 5;
 
-    gp_Vec maxMove( 0,0,0 );
-    double maxMoveSize2 = 0;
+  //   // find maximal movement of medium node
+  //   SMDS_ElemIteratorPtr volIt = apex._node->GetInverseElementIterator( SMDSAbs_Volume );
+  //   vector< const SMDS_MeshElement* > pyramids;
+  //   while ( volIt->more() )
+  //   {
+  //     const SMDS_MeshElement* pyram = volIt->next();
+  //     if ( pyram->GetEntityType() != SMDSEntity_Quad_Pyramid ) continue;
+  //     pyramids.push_back( pyram );
 
-    // shift of node index to get medium nodes between the base nodes
-    const int base2MediumShift = 5;
+  //     for ( int iBase = 0; iBase < apexIndex; ++iBase )
+  //     {
+  //       SMESH_TNodeXYZ medium = pyram->GetNode( iBase + base2MediumShift );
+  //       if ( medium._node->GetPosition()->GetTypeOfPosition() != SMDS_TOP_3DSPACE )
+  //       {
+  //         SMESH_TNodeXYZ n1 = pyram->GetNode( iBase );
+  //         SMESH_TNodeXYZ n2 = pyram->GetNode( ( iBase+1 ) % 4 );
+  //         gp_Pnt middle = 0.5 * ( n1 + n2 );
+  //         gp_Vec move( middle, medium );
+  //         double moveSize2 = move.SquareMagnitude();
+  //         if ( moveSize2 > maxMoveSize2 )
+  //           maxMove = move, maxMoveSize2 = moveSize2;
+  //       }
+  //     }
+  //   }
 
-    // find maximal movement of medium node
-    SMDS_ElemIteratorPtr volIt = apex._node->GetInverseElementIterator( SMDSAbs_Volume );
-    vector< const SMDS_MeshElement* > pyramids;
-    while ( volIt->more() )
-    {
-      const SMDS_MeshElement* pyram = volIt->next();
-      if ( pyram->GetEntityType() != SMDSEntity_Quad_Pyramid ) continue;
-      pyramids.push_back( pyram );
+  //   // move the apex
+  //   if ( maxMoveSize2 > 1e-20 )
+  //   {
+  //     apex += maxMove.XYZ();
+  //     GetMeshDS()->MoveNode( apex._node, apex.X(), apex.Y(), apex.Z());
 
-      for ( int iBase = 0; iBase < apexIndex; ++iBase )
-      {
-        SMESH_TNodeXYZ medium = pyram->GetNode( iBase + base2MediumShift );
-        if ( medium._node->GetPosition()->GetTypeOfPosition() != SMDS_TOP_3DSPACE )
-        {
-          SMESH_TNodeXYZ n1 = pyram->GetNode( iBase );
-          SMESH_TNodeXYZ n2 = pyram->GetNode( ( iBase+1 ) % 4 );
-          gp_Pnt middle = 0.5 * ( n1 + n2 );
-          gp_Vec move( middle, medium );
-          double moveSize2 = move.SquareMagnitude();
-          if ( moveSize2 > maxMoveSize2 )
-            maxMove = move, maxMoveSize2 = moveSize2;
-        }
-      }
-    }
-
-    // move the apex
-    if ( maxMoveSize2 > 1e-20 )
-    {
-      apex += maxMove.XYZ();
-      GetMeshDS()->MoveNode( apex._node, apex.X(), apex.Y(), apex.Z());
-
-      // move medium nodes neighboring the apex to the middle
-      const int base2MediumShift_2 = 9;
-      for ( unsigned i = 0; i < pyramids.size(); ++i )
-        for ( int iBase = 0; iBase < apexIndex; ++iBase )
-        {
-          SMESH_TNodeXYZ         base = pyramids[i]->GetNode( iBase );
-          const SMDS_MeshNode* medium = pyramids[i]->GetNode( iBase + base2MediumShift_2 );
-          gp_XYZ middle = 0.5 * ( apex + base );
-          GetMeshDS()->MoveNode( medium, middle.X(), middle.Y(), middle.Z());
-        }
-    }
-  }
+  //     // move medium nodes neighboring the apex to the middle
+  //     const int base2MediumShift_2 = 9;
+  //     for ( unsigned i = 0; i < pyramids.size(); ++i )
+  //       for ( int iBase = 0; iBase < apexIndex; ++iBase )
+  //       {
+  //         SMESH_TNodeXYZ         base = pyramids[i]->GetNode( iBase );
+  //         const SMDS_MeshNode* medium = pyramids[i]->GetNode( iBase + base2MediumShift_2 );
+  //         gp_XYZ middle = 0.5 * ( apex + base );
+  //         GetMeshDS()->MoveNode( medium, middle.X(), middle.Y(), middle.Z());
+  //       }
+  //   }
+  // }
 }
 
