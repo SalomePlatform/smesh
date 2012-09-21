@@ -36,12 +36,15 @@ at computation of this sub-mesh</li>
 From the \b Mesh menu select <b>Create Sub-mesh</b> or click <em>"Create
 Sum-mesh"</em> button in the toolbar.
 
-\image html image33.gif
-<center><em>"Create Sub-mesh" button</em></center>
+<center>
+  \image html image33.gif
+  <em>"Create Sub-mesh" button</em>
+</center>
 
 \par
 The following dialog box will appear:
 
+\par
 \image html createmesh-inv2.png
 
 \par
@@ -49,6 +52,33 @@ It allows to define the \b Name, the parent \b Mesh and the \b
 Geometry (e.g. a face if the parent mesh has been built on box) of the
 sub-mesh. You can define algorithms and hypotheses in the same way as
 in \ref constructing_meshes_page "Create mesh" menu.
+
+\par
+If the parent mesh is already computed, then you can define 
+\b Geometry by picking mesh elements computed on a sub-shape of interest
+in the 3D Viewer, i.e. you don't have to extract this sub-shape
+previously in Geometry module. To start element selection, press \a
+Selection button to the right of \b Geometry label. If this button is
+already down, then click it to release and then click it again. The
+following pop-up menu to choose a way of geometry definition will
+appear.
+
+\par
+\image html choose_geom_selection_way.png
+
+\par
+There the first item enables selecting the sub-shape in the Object
+Browser, the second one makes appear the following dialog.
+
+\par
+\image html find_geom_by_mesh_elem.png
+
+\par
+In this dialog, <b> Element Type </b> defines kind of element to pick in the
+Viewer. Instead of picking an element in the Viewer, you can type its
+ID in <b> Element ID</b> field. <b> Geometry name </b> allow you
+define a name of the sub-shape with which it will be published in the Study.
+
 
 \par
 In the Object Browser the structure of the new sub-mesh will be
