@@ -5,7 +5,7 @@
 \n \b MESH represents a discretization of a geometrical CAD model into
 a set of entities with a simple topology. 
 
-Meshes are stored in DAT, MED, UNV, STL, CGNS and SAUVE formats and can be
+Meshes are stored in DAT, MED, UNV, STL, CGNS, GMF and SAUVE formats and can be
 \subpage importing_exporting_meshes_page "imported from and exported to"
  the file in these formats.
 
