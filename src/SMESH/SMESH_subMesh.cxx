@@ -2099,6 +2099,23 @@ EventListenerData* SMESH_subMesh::GetEventListenerData(EventListener* listener) 
 
 //================================================================================
 /*!
+ * \brief Return an event listener data
+ * \param listenerName - the listener name
+ * \retval EventListenerData* - found data, maybe NULL
+ */
+//================================================================================
+
+EventListenerData* SMESH_subMesh::GetEventListenerData(const string& listenerName) const
+{
+  map< EventListener*, EventListenerData* >::const_iterator l_d = _eventListeners.begin();
+  for ( ; l_d != _eventListeners.end(); ++l_d )
+    if ( listenerName == l_d->first->GetName() )
+      return l_d->second;
+  return 0;
+}
+
+//================================================================================
+/*!
  * \brief Notify stored event listeners on the occured event
  * \param event - algo_event or compute_event itself
  * \param eventType - algo_event or compute_event
@@ -2137,8 +2154,15 @@ void SMESH_subMesh::DeleteEventListener(EventListener* listener)
   map< EventListener*, EventListenerData* >::iterator l_d =
     _eventListeners.find( listener );
   if ( l_d != _eventListeners.end() ) {
-    if ( l_d->first  && l_d->first->IsDeletable() )  delete l_d->first;
-    if ( l_d->second && l_d->second->IsDeletable() ) delete l_d->second;
+    if ( l_d->first && l_d->first->IsDeletable() )
+    {
+      l_d->first->BeforeDelete( this, l_d->second );
+      delete l_d->first;
+    }
+    if ( l_d->second && l_d->second->IsDeletable() )
+    {
+      delete l_d->second;
+    }
     _eventListeners.erase( l_d );
   }
 }
