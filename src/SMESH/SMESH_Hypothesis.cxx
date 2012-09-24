@@ -63,6 +63,8 @@ SMESH_Hypothesis::SMESH_Hypothesis(int hypId,
 SMESH_Hypothesis::~SMESH_Hypothesis()
 {
   MESSAGE("SMESH_Hypothesis::~SMESH_Hypothesis");
+  StudyContextStruct* myStudyContext = _gen->GetStudyContext(_studyId);
+  myStudyContext->mapHypothesis[_hypId] = 0;
 }
 
 //=============================================================================
