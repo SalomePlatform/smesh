@@ -239,6 +239,13 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
 
     /*!
+     * Create Mesh object importing data from given GMF file
+     */
+    SMESH_Mesh CreateMeshesFromGMF( in string               theFileName,
+                                    out SMESH::ComputeError theError)
+      raises ( SALOME::SALOME_Exception );
+
+    /*!
      * Create a mesh by copying a part of another mesh
      *  \param meshPart - a part of mesh to copy
      *  \param meshName - a name of the new mesh
