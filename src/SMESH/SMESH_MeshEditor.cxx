@@ -5709,7 +5709,7 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
 
     SMDSAbs_GeometryType geomType = elem->GetGeomType();
     int                  nbNodes  = elem->NbNodes();
-    if ( geomType == SMDSGeom_POINT ) continue; // node
+    if ( geomType == SMDSGeom_NONE ) continue; // node
 
     switch ( geomType ) {
 
