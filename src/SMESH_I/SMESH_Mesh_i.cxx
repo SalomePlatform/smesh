@@ -63,15 +63,16 @@
 #include <OSD_File.hxx>
 #include <OSD_Path.hxx>
 #include <OSD_Protection.hxx>
+#include <Standard_OutOfMemory.hxx>
 #include <TColStd_MapIteratorOfMapOfInteger.hxx>
 #include <TColStd_MapOfInteger.hxx>
 #include <TColStd_SequenceOfInteger.hxx>
 #include <TCollection_AsciiString.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
-#include <TopoDS_Compound.hxx>
-#include <TopTools_MapOfShape.hxx>
 #include <TopTools_MapIteratorOfMapOfShape.hxx>
+#include <TopTools_MapOfShape.hxx>
+#include <TopoDS_Compound.hxx>
 
 // STL Includes
 #include <algorithm>
@@ -305,7 +306,7 @@ void SMESH_Mesh_i::ClearSubMesh(CORBA::Long ShapeID)
 
 //=============================================================================
 /*!
- *
+ * Convert enum Driver_Mesh::Status to SMESH::DriverMED_ReadStatus
  */
 //=============================================================================
 
@@ -327,6 +328,30 @@ static SMESH::DriverMED_ReadStatus ConvertDriverMEDReadStatus (int theStatus)
     res = SMESH::DRS_FAIL; break;
   }
   return res;
+}
+
+//=============================================================================
+/*!
+ * Convert ::SMESH_ComputeError to SMESH::ComputeError
+ */
+//=============================================================================
+
+static SMESH::ComputeError* ConvertComputeError( SMESH_ComputeErrorPtr errorPtr )
+{
+  SMESH::ComputeError_var errVar = new SMESH::ComputeError();
+  errVar->subShapeID = -1;
+  errVar->hasBadMesh = false;
+
+  if ( !errorPtr || errorPtr->IsOK() )
+  {
+    errVar->code = SMESH::COMPERR_OK;
+  }
+  else
+  {
+    errVar->code = ConvertDriverMEDReadStatus( errorPtr->myName );
+    errVar->comment = errorPtr->myComment.c_str();
+  }
+  return errVar._retn();
 }
 
 //=============================================================================
@@ -450,6 +475,45 @@ int SMESH_Mesh_i::ImportSTLFile( const char* theFileName )
   _impl->STLToMesh( theFileName );
 
   return 1;
+}
+
+//================================================================================
+/*!
+ * \brief Imports data from a GMF file and returns an error description
+ */
+//================================================================================
+
+SMESH::ComputeError* SMESH_Mesh_i::ImportGMFFile( const char* theFileName )
+  throw (SALOME::SALOME_Exception)
+{
+  SMESH_ComputeErrorPtr error;
+  try {
+    error = _impl->GMFToMesh( theFileName );
+  }
+  catch ( std::bad_alloc& exc ) {
+    error = SMESH_ComputeError::New( Driver_Mesh::DRS_FAIL, "std::bad_alloc raised" );
+  }
+  catch ( Standard_OutOfMemory& exc ) {
+    error = SMESH_ComputeError::New( Driver_Mesh::DRS_FAIL, "Standard_OutOfMemory raised" );
+  }
+  catch (Standard_Failure& ex) {
+    error = SMESH_ComputeError::New( Driver_Mesh::DRS_FAIL, ex.DynamicType()->Name() );
+    if ( ex.GetMessageString() && strlen( ex.GetMessageString() ))
+      error->myComment += string(": ") + ex.GetMessageString();
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    error = SMESH_ComputeError::New( Driver_Mesh::DRS_FAIL, S_ex.what() );
+  }
+  catch ( std::exception& exc ) {
+    error = SMESH_ComputeError::New( Driver_Mesh::DRS_FAIL, exc.what() );
+  }
+  catch (...) {
+    error = SMESH_ComputeError::New( Driver_Mesh::DRS_FAIL, "Unknown exception" );
+  }
+
+  CreateGroupServants();
+
+  return ConvertComputeError( error );
 }
 
 //=============================================================================
@@ -2968,6 +3032,28 @@ void SMESH_Mesh_i::ExportCGNS(::SMESH::SMESH_IDSource_ptr meshPart,
 #endif
 }
 
+//================================================================================
+/*!
+ * \brief Export a part of mesh to a GMF file
+ */
+//================================================================================
+
+void SMESH_Mesh_i::ExportGMF(::SMESH::SMESH_IDSource_ptr meshPart,
+                             const char*                 file)
+  throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  if ( _preMeshInfo )
+    _preMeshInfo->FullLoadFromFile();
+
+  PrepareForWriting(file,/*overwrite=*/true);
+
+  SMESH_MeshPartDS partDS( meshPart );
+  _impl->ExportGMF(file, &partDS);
+
+  TPythonDump() << _this() << ".ExportGMF( " << meshPart<< ", r'" << file << "')";
+}
+
 //=============================================================================
 /*!
  * Return implementation of SALOME_MED::MESH interfaces
@@ -4053,7 +4139,7 @@ SMESH::double_array* SMESH_Mesh_i::BaryCenter(const CORBA::Long id)
  */
 //=============================================================================
 
-void SMESH_Mesh_i::CreateGroupServants() 
+void SMESH_Mesh_i::CreateGroupServants()
 {
   SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
 
