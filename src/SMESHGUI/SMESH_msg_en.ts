@@ -36,6 +36,14 @@
         <translation>CGNS files</translation>
     </message>
     <message>
+        <source>GMF_ASCII_FILES_FILTER</source>
+        <translation>GMF ASCII files</translation>
+    </message>
+    <message>
+        <source>GMF_BINARY_FILES_FILTER</source>
+        <translation>GMF binary files</translation>
+    </message>
+    <message>
         <source>STL_BIN_FILES_FILTER</source>
         <translation>STL binary files</translation>
     </message>
@@ -413,6 +421,10 @@
         <translation>Export to CGNS File</translation>
     </message>
     <message>
+        <source>MEN_EXPORT_GMF</source>
+        <translation>Export to GMF File</translation>
+    </message>
+    <message>
         <source>MEN_EXPORT_SAUV</source>
         <translation>Export to SAUV file</translation>
     </message>
@@ -623,6 +635,14 @@
     <message>
         <source>MEN_CGNS</source>
         <translation>CGNS file</translation>
+    </message>
+    <message>
+        <source>MEN_IMPORT_GMF</source>
+        <translation>GMF file</translation>
+    </message>
+    <message>
+        <source>MEN_GMF</source>
+        <translation>GMF file</translation>
     </message>
     <message>
         <source>MEN_IMPORT_SAUV</source>
@@ -2854,6 +2874,10 @@ Please check preferences of Mesh module.
         <translation>Export to CGNS file</translation>
     </message>
     <message>
+        <source>STB_EXPORT_GMF</source>
+        <translation>Export to GMF file</translation>
+    </message>
+    <message>
         <source>STB_EXPORT_SAUV</source>
         <translation>Export to SAUV file</translation>
     </message>
@@ -2972,6 +2996,14 @@ Please check preferences of Mesh module.
     <message>
         <source>STB_CGNS</source>
         <translation>Export CGNS file</translation>
+    </message>
+    <message>
+        <source>STB_IMPORT_GMF</source>
+        <translation>Import GMF file</translation>
+    </message>
+    <message>
+        <source>STB_GMF</source>
+        <translation>Export GMF file</translation>
     </message>
     <message>
         <source>STB_IMPORT_SAUV</source>
@@ -3568,6 +3600,14 @@ Please check preferences of Mesh module.
     <message>
         <source>TOP_CGNS</source>
         <translation>Export CGNS file</translation>
+    </message>
+    <message>
+        <source>TOP_IMPORT_GMF</source>
+        <translation>Import GMF file</translation>
+    </message>
+    <message>
+        <source>TOP_GMF</source>
+        <translation>Export GMF file</translation>
     </message>
     <message>
         <source>TOP_IMPORT_SAUV</source>

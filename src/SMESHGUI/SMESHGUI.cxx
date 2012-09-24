@@ -212,6 +212,10 @@
       filter.append( QObject::tr( "SAUV files (*.sauv*)" ) );
       filter.append( QObject::tr( "All files (*)" ) );
     }
+    else if ( theCommandID == 118 ) {
+      filter.append( QObject::tr( "GMF_ASCII_FILES_FILTER" ) + " (*.mesh)"  );
+      filter.append( QObject::tr( "GMF_BINARY_FILES_FILTER") + " (*.meshb)" );
+    }
 
     QString anInitialPath = "";
     if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
@@ -294,6 +298,22 @@
               }
               break;
             }
+          case 118:
+            {
+              // GMF format
+              SMESH::ComputeError_var res;
+              aMeshes->length( 1 );
+              aMeshes[0] = theComponentMesh->CreateMeshesFromGMF( filename.toLatin1().constData(), res.out() );
+              if ( res->code != SMESH::DRS_OK ) {
+                errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
+                               arg( QObject::tr( QString( "SMESH_DRS_%1" ).arg( res->code ).toLatin1().data() ) ) );
+                if ( strlen( res->comment.in() ) > 0 ) {
+                  errors.back() += ": ";
+                  errors.back() += res->comment.in();
+                }
+              }
+              break;
+            }
           }
         }
         catch ( const SALOME::SALOME_Exception& S_ex ) {
@@ -368,6 +388,7 @@
     const bool isSTL = ( theCommandID == 140 || theCommandID == 141 );
     const bool isCGNS= ( theCommandID == 142 || theCommandID == 143 );
     const bool isSAUV= ( theCommandID == 144 || theCommandID == 145 );
+    const bool isGMF = ( theCommandID == 146 || theCommandID == 147 );
 
     // actually, the following condition can't be met (added for insurance)
     if( selected.Extent() == 0 ||
@@ -416,10 +437,10 @@
 
     aMeshIter = aMeshList.begin();
     SMESH::SMESH_IDSource_var aMeshOrGroup = (*aMeshIter).first;
-    SMESH::SMESH_Mesh_var aMesh = aMeshOrGroup->GetMesh();
-    QString aMeshName = (*aMeshIter).second;
+    SMESH::SMESH_Mesh_var            aMesh = aMeshOrGroup->GetMesh();
+    QString                      aMeshName = (*aMeshIter).second;
 
-    if ( isMED || isCGNS || isSAUV )
+    if ( isMED || isCGNS || isSAUV ) // formats where group names must be unique
     {
       // check for equal group names within each mesh
       for( aMeshIter = aMeshList.begin(); aMeshIter != aMeshList.end(); aMeshIter++ ) {
@@ -495,6 +516,21 @@
       notSupportedElemTypes.push_back( SMESH::Entity_Polygon );
       notSupportedElemTypes.push_back( SMESH::Entity_Polyhedra );
     }
+    else if ( isGMF )
+    {
+      format = "GMF";
+      notSupportedElemTypes.push_back( SMESH::Entity_0D );
+      notSupportedElemTypes.push_back( SMESH::Entity_Quad_Quadrangle );
+      notSupportedElemTypes.push_back( SMESH::Entity_Polygon );
+      notSupportedElemTypes.push_back( SMESH::Entity_Quad_Polygon );
+      notSupportedElemTypes.push_back( SMESH::Entity_Quad_Pyramid );
+      notSupportedElemTypes.push_back( SMESH::Entity_Quad_Hexa );
+      notSupportedElemTypes.push_back( SMESH::Entity_Quad_Penta );
+      notSupportedElemTypes.push_back( SMESH::Entity_Hexagonal_Prism );
+      notSupportedElemTypes.push_back( SMESH::Entity_Polyhedra );
+      notSupportedElemTypes.push_back( SMESH::Entity_Quad_Polyhedra );
+      notSupportedElemTypes.push_back( SMESH::Entity_Ball );
+    }
     if ( ! notSupportedElemTypes.empty() )
     {
       SMESH::long_array_var nbElems = aMeshOrGroup->GetMeshInfo();
@@ -532,10 +568,10 @@
 
     // Get parameters of export operation
 
-    QString aFilename;
+    QString            aFilename;
     SMESH::MED_VERSION aFormat;
     // Init the parameters with the default values
-    bool aIsASCII_STL = true;
+    bool aIsASCII_STL   = true;
     bool toCreateGroups = false;
     SUIT_ResourceMgr* resMgr = SUIT_Session::session()->resourceMgr();
     if ( resMgr )
@@ -547,12 +583,16 @@
     if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
       anInitialPath = QDir::currentPath();
 
-    if ( isUNV || isDAT )
+    // Get a file name to write in and additional otions
+    if ( isUNV || isDAT || isGMF ) // Export w/o options
     {
       if ( isUNV )
         aFilter = QObject::tr( "IDEAS_FILES_FILTER" ) + " (*.unv)";
-      else
+      else if ( isDAT )
         aFilter = QObject::tr( "DAT_FILES_FILTER" ) + " (*.dat)";
+      else if ( isGMF )
+        aFilter = QObject::tr( "GMF_ASCII_FILES_FILTER" ) + " (*.mesh)" +
+          ";;" +  QObject::tr( "GMF_BINARY_FILES_FILTER" )  + " (*.meshb)";
       if ( anInitialPath.isEmpty() ) anInitialPath = SUIT_FileDlg::getLastVisitedPath();
       aFilename = SUIT_FileDlg::getFileName(SMESHGUI::desktop(),
                                             anInitialPath + QString("/") + aMeshName,
@@ -800,6 +840,10 @@
                                    aFilename.toLatin1().data(),
                                    toOverwrite && aMeshIndex == 0 );
           }
+        }
+        else if ( isGMF )
+        {
+          aMesh->ExportGMF( aMeshOrGroup, aFilename.toLatin1().data() );
         }
       }
       catch (const SALOME::SALOME_Exception& S_ex){
@@ -2160,6 +2204,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 116:
   case 115:
   case 117:
+  case 118:
   case 113:
   case 112:
   case 111:                                     // IMPORT
@@ -2200,6 +2245,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 143:
   case 144:
   case 145:
+  case 146:
+  case 147:
     {
       ::ExportMeshToFile(theCommandID);
       break;
@@ -3513,21 +3560,24 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  112, "IMPORT_UNV", "", (Qt::CTRL+Qt::Key_U) );
   createSMESHAction(  113, "IMPORT_MED", "", (Qt::CTRL+Qt::Key_M) );
   createSMESHAction(  114, "NUM" );
-  createSMESHAction(  115, "IMPORT_STL" );
+  createSMESHAction(  115, "IMPORT_STL"  );
   createSMESHAction(  116, "IMPORT_CGNS" );
   createSMESHAction(  117, "IMPORT_SAUV" );
+  createSMESHAction(  118, "IMPORT_GMF"  );
   createSMESHAction(  121, "DAT" );
   createSMESHAction(  122, "MED" );
   createSMESHAction(  123, "UNV" );
   createSMESHAction(  140, "STL" );
-  createSMESHAction(  142, "CGNS" );
-  createSMESHAction(  144, "SAUV" );
+  createSMESHAction(  142, "CGNS");
+  createSMESHAction(  144, "SAUV");
+  createSMESHAction(  146, "GMF" );
   createSMESHAction(  124, "EXPORT_DAT" );
   createSMESHAction(  125, "EXPORT_MED" );
   createSMESHAction(  126, "EXPORT_UNV" );
   createSMESHAction(  141, "EXPORT_STL" );
-  createSMESHAction(  143, "EXPORT_CGNS" );
-  createSMESHAction(  145, "EXPORT_SAUV" );
+  createSMESHAction(  143, "EXPORT_CGNS");
+  createSMESHAction(  145, "EXPORT_SAUV");
+  createSMESHAction(  147, "EXPORT_GMF" );
   createSMESHAction(  150, "FILE_INFO" );
   createSMESHAction(   33, "DELETE",          "ICON_DELETE", Qt::Key_Delete );
   createSMESHAction( 5105, "SEL_FILTER_LIB" );
@@ -3707,6 +3757,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 116, importId, -1 );
 #endif
   createMenu( 117, importId, -1 );
+  createMenu( 118, importId, -1 );
   createMenu( 121, exportId, -1 );
   createMenu( 122, exportId, -1 );
   createMenu( 123, exportId, -1 );
@@ -3715,6 +3766,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 142, exportId, -1 ); // export to CGNS
 #endif
   createMenu( 144, exportId, -1 ); // export to SAUV
+  createMenu( 146, exportId, -1 ); // export to GMF
   createMenu( separator(), fileId, 10 );
 
   createMenu( 33, editId, -1 );
