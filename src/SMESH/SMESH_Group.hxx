@@ -52,7 +52,7 @@ class SMESH_EXPORT  SMESH_Group
   SMESH_Group (SMESHDS_GroupBase* groupDS);
   ~SMESH_Group ();
 
-  void SetName (const char* theName) { myName = theName; }
+  void SetName (const char* theName);
 
   const char* GetName () const { return myName.c_str(); }
 
