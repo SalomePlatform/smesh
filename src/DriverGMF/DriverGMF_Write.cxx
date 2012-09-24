@@ -312,7 +312,7 @@ Driver_Mesh::Status DriverGMF_Write::Perform()
   } // loop on groups
 
   if ( !badGroups.empty() )
-    addMessage( SMESH_Comment("Groups including elements of inappropriate geometry:")
+    addMessage( SMESH_Comment("Groups of elements of inappropriate geometry:")
                 << badGroups, /*fatal=*/false );
 
   return DRS_OK;
