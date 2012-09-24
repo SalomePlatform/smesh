@@ -38,27 +38,27 @@ class SMESHDS_EXPORT SMESHDS_Document
 {
   public:
         SMESHDS_Document(int UserID);
-        int NewMesh(bool theIsEmbeddedMode);
-        void RemoveMesh(int MeshID);
-        SMESHDS_Mesh * GetMesh(int MeshID);
-        void AddHypothesis(SMESHDS_Hypothesis * H);
-        void RemoveHypothesis(int HypID);
-        SMESHDS_Hypothesis * GetHypothesis(int HypID);
-        int NbMeshes();
-        int NbHypothesis();
-        void InitMeshesIterator();
-        SMESHDS_Mesh * NextMesh();
-        bool MoreMesh();        
-        void InitHypothesisIterator();
-        SMESHDS_Hypothesis * NextHypothesis();
-        bool MoreHypothesis();  
          ~SMESHDS_Document();
+        int                  NewMesh(bool theIsEmbeddedMode);
+        void                 RemoveMesh(int MeshID);
+        SMESHDS_Mesh *       GetMesh(int MeshID);
+        void                 AddHypothesis(SMESHDS_Hypothesis * H);
+        void                 RemoveHypothesis(int HypID);
+        SMESHDS_Hypothesis * GetHypothesis(int HypID);
+        int                  NbMeshes();
+        int                  NbHypothesis();
+        void                 InitMeshesIterator();
+        SMESHDS_Mesh *       NextMesh();
+        bool                 MoreMesh();        
+        void                 InitHypothesisIterator();
+        SMESHDS_Hypothesis * NextHypothesis();
+        bool                 MoreHypothesis();  
 
   private:
-        int myUserID;
-        std::map<int,SMESHDS_Mesh*> myMeshes;
-        std::map<int,SMESHDS_Hypothesis*> myHypothesis;
-        std::map<int,SMESHDS_Mesh*>::iterator myMeshesIt;
+        int                                         myUserID;
+        std::map<int,SMESHDS_Mesh*>                 myMeshes;
+        std::map<int,SMESHDS_Hypothesis*>           myHypothesis;
+        std::map<int,SMESHDS_Mesh*>::iterator       myMeshesIt;
         std::map<int,SMESHDS_Hypothesis*>::iterator myHypothesisIt;
 };
 
