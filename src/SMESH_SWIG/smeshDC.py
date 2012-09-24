@@ -505,6 +505,14 @@ class smeshDC(SMESH._objref_SMESH_Gen):
             aMeshes.append(aMesh)
         return aMeshes, aStatus
 
+    ## Creates a Mesh object importing data from the given GMF file
+    #  @return [ an instance of Mesh class, SMESH::ComputeError ]
+    #  @ingroup l2_impexp
+    def CreateMeshesFromGMF( self, theFileName ):
+        aSmeshMesh, error = SMESH._objref_SMESH_Gen.CreateMeshesFromGMF(self,theFileName)
+        if error.comment: print "*** CreateMeshesFromGMF() errors:\n", error.comment
+        return Mesh(self, self.geompyD, aSmeshMesh), error
+
     ## Concatenate the given meshes into one mesh.
     #  @return an instance of Mesh class
     #  @param meshes the meshes to combine into one mesh
@@ -1456,6 +1464,19 @@ class Mesh:
         elif not meshPart:
             meshPart = self.mesh
         self.mesh.ExportCGNS(meshPart, f, overwrite)
+
+    ## Exports the mesh in a file in GMF format
+    #  @param f is the file name
+    #  @param meshPart a part of mesh (group, sub-mesh) to export instead of the mesh
+    #  @ingroup l2_impexp
+    def ExportGMF(self, f, meshPart=None):
+        if isinstance( meshPart, list ):
+            meshPart = self.GetIDSource( meshPart, SMESH.ALL )
+        if isinstance( meshPart, Mesh ):
+            meshPart = meshPart.mesh
+        elif not meshPart:
+            meshPart = self.mesh
+        self.mesh.ExportGMF(meshPart, f)
 
     ## Deprecated, used only for compatibility! Please, use ExportToMEDX() method instead.
     #  Exports the mesh in a file in MED format and chooses the \a version of MED format
