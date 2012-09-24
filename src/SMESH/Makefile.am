@@ -75,6 +75,7 @@ libSMESHimpl_la_CPPFLAGS = \
 	-I$(srcdir)/../DriverUNV \
 	-I$(srcdir)/../DriverSTL \
 	-I$(srcdir)/../DriverCGNS \
+	-I$(srcdir)/../DriverGMF \
 	-I$(srcdir)/../SMDS \
 	-I$(srcdir)/../SMESHDS \
 	-I$(srcdir)/../SMESHUtils
@@ -90,6 +91,7 @@ libSMESHimpl_la_LDFLAGS = \
 	../DriverSTL/libMeshDriverSTL.la \
 	../DriverMED/libMeshDriverMED.la \
 	../DriverUNV/libMeshDriverUNV.la \
+	../DriverGMF/libMeshDriverGMF.la \
 	$(DriverCGNS_LIB) \
 	../SMESHUtils/libSMESHUtils.la \
 	$(BOOST_LIB_THREAD)  \
