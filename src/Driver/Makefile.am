@@ -46,6 +46,7 @@ dist_libMeshDriver_la_SOURCES = \
 libMeshDriver_la_CPPFLAGS = \
 	$(CAS_CPPFLAGS) \
 	$(KERNEL_CXXFLAGS) \
+	-I$(srcdir)/../SMESHUtils \
 	-I$(srcdir)/../SMESHDS	
 
 libMeshDriver_la_LDFLAGS  = \

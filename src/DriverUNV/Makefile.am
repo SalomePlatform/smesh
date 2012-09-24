@@ -67,6 +67,7 @@ libMeshDriverUNV_la_CPPFLAGS = \
 	$(BOOST_CPPFLAGS) \
 	-I$(srcdir)/../Driver \
 	-I$(srcdir)/../SMDS \
+	-I$(srcdir)/../SMESHUtils \
 	-I$(srcdir)/../SMESHDS
 
 libMeshDriverUNV_la_LDFLAGS  = \
