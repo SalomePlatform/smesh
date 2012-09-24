@@ -26,13 +26,16 @@
 //
 #include "Driver_Mesh.h"
 
+#include "SMESH_Comment.hxx"
+
 #include <utilities.h>
 
 using namespace std;
 
 Driver_Mesh::Driver_Mesh():
   myFile(""),
-  myMeshId(-1)
+  myMeshId(-1),
+  myStatus( DRS_OK )
 {}
 
 
@@ -78,5 +81,23 @@ Driver_Mesh::Status Driver_Mesh::addMessage(const std::string& msg,
 #ifdef _DEBUG_
   cout << msg << endl;
 #endif
-  return isFatal ? DRS_FAIL : DRS_WARN_SKIP_ELEM;
+  return ( myStatus = isFatal ? DRS_FAIL : DRS_WARN_SKIP_ELEM );
+}
+
+//================================================================================
+/*!
+ * \brief Return a structure containing description of errors
+ */
+//================================================================================
+
+SMESH_ComputeErrorPtr Driver_Mesh::GetError()
+{
+  SMESH_Comment msg;
+  for ( size_t i = 0; i < myErrorMessages.size(); ++i )
+  {
+    msg << myErrorMessages[i];
+    if ( i+1 < myErrorMessages.size() )
+      msg << "\n";
+  }
+  return SMESH_ComputeError::New( myStatus == DRS_OK ? int(COMPERR_OK) : int(myStatus), msg );
 }
