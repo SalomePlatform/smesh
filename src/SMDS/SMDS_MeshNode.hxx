@@ -45,7 +45,7 @@ public:
   double X() const; // ! NOT thread safe methods !
   double Y() const;
   double Z() const;
-  void   GetXYZ(double xyx[3]) const; // thread safe getting coords
+  void   GetXYZ(double xyz[3]) const; // thread safe getting coords
   SMDS_ElemIteratorPtr    GetInverseElementIterator(SMDSAbs_ElementType type=SMDSAbs_All) const;
   int                     NbInverseElements(SMDSAbs_ElementType type=SMDSAbs_All) const;
   const SMDS_PositionPtr& GetPosition() const;
