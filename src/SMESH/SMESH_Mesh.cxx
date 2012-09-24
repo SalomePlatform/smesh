@@ -40,14 +40,15 @@
 
 #include "utilities.h"
 
-#include "DriverMED_W_SMESHDS_Mesh.h"
 #include "DriverDAT_W_SMDS_Mesh.h"
-#include "DriverUNV_W_SMDS_Mesh.h"
-#include "DriverSTL_W_SMDS_Mesh.h"
-
+#include "DriverGMF_Read.hxx"
+#include "DriverGMF_Write.hxx"
 #include "DriverMED_R_SMESHDS_Mesh.h"
-#include "DriverUNV_R_SMDS_Mesh.h"
+#include "DriverMED_W_SMESHDS_Mesh.h"
 #include "DriverSTL_R_SMDS_Mesh.h"
+#include "DriverSTL_W_SMDS_Mesh.h"
+#include "DriverUNV_R_SMDS_Mesh.h"
+#include "DriverUNV_W_SMDS_Mesh.h"
 #ifdef WITH_CGNS
 #include "DriverCGNS_Read.hxx"
 #include "DriverCGNS_Write.hxx"
@@ -536,6 +537,26 @@ int SMESH_Mesh::CGNSToMesh(const char*  theFileName,
 
 #endif
   return res;
+}
+
+//================================================================================
+/*!
+ * \brief Fill its data by reading a GMF file
+ */
+//================================================================================
+
+SMESH_ComputeErrorPtr SMESH_Mesh::GMFToMesh(const char* theFileName)
+{
+  DriverGMF_Read myReader;
+  myReader.SetMesh(_myMeshDS);
+  myReader.SetFile(theFileName);
+  myReader.Perform();
+  //theMeshName = myReader.GetMeshName();
+
+  // create groups
+  SynchronizeGroups();
+
+  return myReader.GetError();
 }
 
 //=============================================================================
@@ -1389,6 +1410,21 @@ void SMESH_Mesh::ExportCGNS(const char *        file,
 #endif
   if ( res != Driver_Mesh::DRS_OK )
     throw SALOME_Exception("Export failed");
+}
+
+//================================================================================
+/*!
+ * \brief Export the mesh to a GMF file
+ */
+//================================================================================
+
+void SMESH_Mesh::ExportGMF(const char *        file,
+                           const SMESHDS_Mesh* meshDS)
+{
+  DriverGMF_Write myWriter;
+  myWriter.SetFile( file );
+  myWriter.SetMesh( const_cast<SMESHDS_Mesh*>( meshDS ));
+  myWriter.Perform();
 }
 
 //================================================================================
