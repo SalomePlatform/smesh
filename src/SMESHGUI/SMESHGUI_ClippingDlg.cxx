@@ -370,7 +370,7 @@ SMESHGUI_ClippingDlg::SMESHGUI_ClippingDlg( SMESHGUI* theModule, SVTK_ViewWindow
 
   ActorList = new QListWidget(GroupPlanes);
   ActorList->setSelectionMode(QAbstractItemView::SingleSelection);
-
+  
   SelectAllCheckBox = new QCheckBox(tr("SELECT_ALL"), GroupPlanes);
 
   GroupPlanesLayout->addWidget(ComboBoxPlanes,    0, 0);
@@ -477,7 +477,7 @@ SMESHGUI_ClippingDlg::SMESHGUI_ClippingDlg( SMESHGUI* theModule, SVTK_ViewWindow
   connect(SpinBoxRot1, SIGNAL(valueChanged(double)), this, SLOT(SetCurrentPlaneParam()));
   connect(SpinBoxRot2, SIGNAL(valueChanged(double)), this, SLOT(SetCurrentPlaneParam()));
   connect(PreviewCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnPreviewToggle(bool)));
-  connect(AutoApplyCheckBox, SIGNAL(toggled(bool)), this, SLOT(ClickOnApply()));
+  connect(AutoApplyCheckBox, SIGNAL(toggled(bool)), this, SLOT(onAutoApply(bool)));
   connect(buttonOk, SIGNAL(clicked()), this, SLOT(ClickOnOk()));
   connect(buttonCancel, SIGNAL(clicked()), this, SLOT(ClickOnCancel()));
   connect(buttonApply, SIGNAL(clicked()), this, SLOT(ClickOnApply()));
@@ -1063,7 +1063,9 @@ void SMESHGUI_ClippingDlg::initializePlaneData()
     SMESHGUI_ClippingPlaneInfoList::const_iterator anIter2 = aClippingPlaneInfoList.begin();
     for( ; anIter2 != aClippingPlaneInfoList.end(); anIter2++ ) {
       const SMESH::ClippingPlaneInfo& aClippingPlaneInfo = *anIter2;
-      SMESH::TPlane aTPlane( aClippingPlaneInfo.Plane );
+      SMESH::OrientedPlane* anOrientedPlane = SMESH::OrientedPlane::New(myViewWindow);
+      anOrientedPlane->ShallowCopy(aClippingPlaneInfo.Plane);
+      SMESH::TPlane aTPlane( anOrientedPlane );
       SMESH::TPlaneData aPlaneData( aTPlane, aClippingPlaneInfo.ActorList );
       myPlanes.push_back( aPlaneData );
     }
@@ -1169,4 +1171,9 @@ void SMESHGUI_ClippingDlg::dumpPlaneData() const
     }
   }
   printf( "----------------------------------\n" );
+}
+
+void SMESHGUI_ClippingDlg::onAutoApply(bool toggled)
+{
+  if ( toggled ) ClickOnApply();
 }
