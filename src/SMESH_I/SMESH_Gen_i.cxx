@@ -118,6 +118,7 @@
 #include <map>
 #include <fstream>
 #include <cstdio>
+#include <stdlib.h>
 
 using namespace std;
 using SMESH::TPythonDump;
@@ -1236,7 +1237,13 @@ SMESH_Gen_i::CreateMeshesFromGMF( const char*             theFileName,
   Unexpect aCatch(SALOME_SalomeException);
 
   SMESH::SMESH_Mesh_var aMesh = createMesh();
+#ifdef WIN32
+  char bname[ _MAX_FNAME ];
+  _splitpath( theFileName, NULL, NULL, bname, NULL );
+  string aFileName = bname;
+#else
   string aFileName = basename( theFileName );
+#endif
   // publish mesh in the study
   if ( CanPublishInStudy( aMesh ) ) {
     SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder();
