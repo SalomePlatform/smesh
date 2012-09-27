@@ -2438,7 +2438,7 @@ void SMESHGUI_GroupDlg::setDefaultGroupColor()
   if( !isAutoColor )
   {
     int r = 0, g = 0, b = 0;
-    SMESH::GetColor( "SMESH", "fill_color", r, g, b, QColor( 0, 170, 255 ) );
+    SMESH::GetColor( "SMESH", "default_grp_color", r, g, b, QColor( 255, 170, 0 ) );
     aQColor.setRgb( r, g, b );
   }
   else

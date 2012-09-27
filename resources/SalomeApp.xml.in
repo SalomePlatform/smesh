@@ -28,6 +28,7 @@
     <parameter name="icon" value="ModuleMesh.png"/>
     <parameter name="version" value="@VERSION@"/>
     <!-- Other module preferences -->
+    <parameter name="default_grp_color"            value="255, 170, 0"/>
     <parameter name="node_color"                   value="255, 0,   0"/>
     <parameter name="fill_color"                   value="0, 170, 255|-100"/>
     <parameter name="wireframe_color"              value="0, 170, 255"/>

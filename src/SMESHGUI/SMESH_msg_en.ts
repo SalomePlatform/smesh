@@ -4188,6 +4188,10 @@ Please, create VTK viewer and try again</translation>
         <translation>Names color</translation>
     </message>
     <message>
+        <source>PREF_GRP_DEF_COLOR</source>
+        <translation>Default color</translation>
+    </message>
+    <message>
         <source>PREF_GROUP_PRECISION</source>
         <translation>Precision</translation>
     </message>

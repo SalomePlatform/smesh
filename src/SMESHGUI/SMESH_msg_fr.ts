@@ -4156,6 +4156,10 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
         <translation>Couleur des noms</translation>
     </message>
     <message>
+        <source>PREF_GRP_DEF_COLOR</source>
+        <translation>Couleur par défaut</translation>
+    </message>
+    <message>
         <source>PREF_GROUP_PRECISION</source>
         <translation>Précision</translation>
     </message>

@@ -4827,6 +4827,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( grpGroup, "columns", 2 );
 
   addPreference( tr( "PREF_GRP_NAMES" ), grpGroup, LightApp_Preferences::Color, "SMESH", "group_name_color" );
+  addPreference( tr( "PREF_GRP_DEF_COLOR" ), grpGroup, LightApp_Preferences::Color, "SMESH", "default_grp_color" );
 
   int size0d = addPreference(tr("PREF_SIZE_0D"), elemGroup,
                              LightApp_Preferences::IntSpin, "SMESH", "elem0d_size");
