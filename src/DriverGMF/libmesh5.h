@@ -18,6 +18,8 @@
 /* Defines													*/
 /*----------------------------------------------------------*/
 
+#include "SMESH_DriverGMF.hxx"
+
 #define GmfStrSiz 1024
 #define GmfMaxTyp 1000
 #define GmfMaxKwd 80
@@ -121,13 +123,13 @@ enum GmfKwdCod
 /* External procedures										*/
 /*----------------------------------------------------------*/
 
-extern int GmfOpenMesh(const char *, int, ...);
-extern int GmfCloseMesh(int);
-extern int GmfStatKwd(int, int, ...);
-extern int GmfGotoKwd(int, int);
-extern int GmfSetKwd(int, int, ...);
-extern void GmfGetLin(int, int, ...);
-extern void GmfSetLin(int, int, ...);
+MESHDriverGMF_EXPORT extern int GmfOpenMesh(const char *, int, ...);
+MESHDriverGMF_EXPORT extern int GmfCloseMesh(int);
+MESHDriverGMF_EXPORT extern int GmfStatKwd(int, int, ...);
+MESHDriverGMF_EXPORT extern int GmfGotoKwd(int, int);
+MESHDriverGMF_EXPORT extern int GmfSetKwd(int, int, ...);
+MESHDriverGMF_EXPORT extern void GmfGetLin(int, int, ...);
+MESHDriverGMF_EXPORT extern void GmfSetLin(int, int, ...);
 
 
 /*----------------------------------------------------------*/
@@ -147,7 +149,7 @@ extern void GmfSetLin(int, int, ...);
 
 #ifdef TRANSMESH
 
-extern char *GmfKwdFmt[ GmfMaxKwd + 1 ][4];
-extern int GmfCpyLin(int, int, int);
+MESHDriverGMF_EXPORT extern char *GmfKwdFmt[ GmfMaxKwd + 1 ][4];
+MESHDriverGMF_EXPORT extern int GmfCpyLin(int, int, int);
 
 #endif
