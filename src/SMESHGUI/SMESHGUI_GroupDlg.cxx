@@ -805,7 +805,7 @@ void SMESHGUI_GroupDlg::setSelectionMode (int theMode)
       if ( aViewWindow ) aViewWindow->SetSelectionMode(isSelectAll ? ActorSelection : EdgeSelection);
       break;
     case grpBallSelection:
-      //if ( aViewWindow ) aViewWindow->SetSelectionMode(isSelectAll ? ActorSelection : BallSelection);
+      if ( aViewWindow ) aViewWindow->SetSelectionMode(isSelectAll ? ActorSelection : CellSelection);
       break;
     case grpFaceSelection:
       if ( aViewWindow ) aViewWindow->SetSelectionMode(isSelectAll ? ActorSelection : FaceSelection);
@@ -1759,7 +1759,7 @@ void SMESHGUI_GroupDlg::onAdd()
     break;
   case grpBallSelection:
     aType = SMESH::BALL;
-    //mySelector->SetSelectionMode(BallSelection);
+    mySelector->SetSelectionMode(CellSelection);
     break;
   case grpEdgeSelection:
     aType = SMESH::EDGE;

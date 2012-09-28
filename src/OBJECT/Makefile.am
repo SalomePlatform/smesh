@@ -37,7 +37,9 @@ salomeinclude_HEADERS = \
 	SMESH_FaceOrientationFilter.h \
 	SMESH_ScalarBarActor.h \
 	SMESH_NodeLabelActor.h \
-	SMESH_CellLabelActor.h
+	SMESH_CellLabelActor.h \
+	SMESH_SVTKActor.h 
+
 
 # Libraries targets
 
@@ -52,7 +54,8 @@ dist_libSMESHObject_la_SOURCES = \
 	SMESH_FaceOrientationFilter.cxx \
 	SMESH_ScalarBarActor.cxx \
 	SMESH_NodeLabelActor.cxx \
-	SMESH_CellLabelActor.cxx 
+	SMESH_CellLabelActor.cxx \
+	SMESH_SVTKActor.cxx 
 
 libSMESHObject_la_CPPFLAGS = \
         $(QT_INCLUDES) \

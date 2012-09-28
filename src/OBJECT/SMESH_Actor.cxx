@@ -37,6 +37,7 @@
 #include "VTKViewer_ExtractUnstructuredGrid.h"
 #include "VTKViewer_FramedTextActor.h"
 #include "SALOME_InteractiveObject.hxx"
+#include "SMESH_SVTKActor.h"
 
 #include "SUIT_Session.h"
 #include "SUIT_ResourceMgr.h"
@@ -126,6 +127,12 @@ SMESH_ActorDef::SMESH_ActorDef()
 
   myIsPointsVisible = false;
   myIsEntityModeCache = false;
+
+  myHighlightActor = SMESH_SVTKActor::New();
+  myHighlightActor->Initialize();
+
+  myPreHighlightActor = SMESH_SVTKActor::New();
+  myPreHighlightActor->Initialize();
 
   myIsShrinkable = false;
   myIsShrunk = false;
@@ -318,7 +325,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   //Definition 0D device of the actor (ball elements)
   //-----------------------------------------------
   myBallProp = vtkProperty::New();
-  SMESH::GetColor( "SMESH", "ball_elem_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 255, 0 ) );
+  SMESH::GetColor( "SMESH", "ball_elem_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 85, 255 ) );
   myBallProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
   myBallProp->SetPointSize(aBallElemSize);
 
@@ -330,9 +337,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   myBallActor->SetProperty(myBallProp);
   myBallActor->SetRepresentation(SMESH_DeviceActor::eSurface);
   aFilter = myBallActor->GetExtractUnstructuredGrid();
-  //aFilter->SetModeOfExtraction(VTKViewer_ExtractUnstructuredGrid::ePoints);
   aFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
-  aFilter->RegisterCellsWithType(VTK_VERTEX);
   aFilter->RegisterCellsWithType(VTK_POLY_VERTEX);
   
   //my0DExtProp = vtkProperty::New();
@@ -410,13 +415,17 @@ SMESH_ActorDef::SMESH_ActorDef()
   myHighlightProp->SetLineWidth(aLineWidth);
   myHighlightProp->SetRepresentation(1);
 
+  myBallHighlightProp = vtkProperty::New();
+  myBallHighlightProp->DeepCopy(myHighlightProp);
+  myBallHighlightProp->SetPointSize(aBallElemSize);
+  
+
   myOutLineProp = vtkProperty::New();
   myOutLineProp->SetAmbient(1.0);
   myOutLineProp->SetDiffuse(0.0);
   myOutLineProp->SetSpecular(0.0);
   SMESH::GetColor( "SMESH", "outline_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 70, 0 ) );
   myOutLineProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
-  myOutLineProp->SetPointSize(aElem0DSize); // ??
   myOutLineProp->SetLineWidth(aLineWidth);
   myOutLineProp->SetRepresentation(1);
 
@@ -429,6 +438,10 @@ SMESH_ActorDef::SMESH_ActorDef()
   myPreselectProp->SetPointSize(aElem0DSize); // ??
   myPreselectProp->SetLineWidth(aLineWidth);
   myPreselectProp->SetRepresentation(1);
+
+  myBallPreselectProp = vtkProperty::New();
+  myBallPreselectProp->DeepCopy(myPreselectProp);
+  myBallPreselectProp->SetPointSize(aBallElemSize);
 
   myHighlitableActor = SMESH_DeviceActor::New();
   myHighlitableActor->SetUserMatrix(aMatrix);
@@ -499,6 +512,8 @@ SMESH_ActorDef::SMESH_ActorDef()
   my2dHistogram = 0;
 #endif
 
+  SetBallSize(aBallElemSize);
+  Set0DSize(aElem0DSize);
 }
 
 
@@ -555,6 +570,9 @@ SMESH_ActorDef::~SMESH_ActorDef()
   myImplicitBoolean->Delete();
 
   myTimeStamp->Delete();
+  myBallHighlightProp->Delete();
+  myBallPreselectProp->Delete();
+          
 }
 
 void SMESH_ActorDef::Delete()
@@ -957,6 +975,9 @@ SetControlMode(eControl theMode,
 
 
 void SMESH_ActorDef::AddToRender(vtkRenderer* theRenderer){
+  
+  //myHighlightActor->AddToRender(theRenderer);
+
   theRenderer->AddActor(myBaseActor);  
   theRenderer->AddActor(myNodeExtActor);
   theRenderer->AddActor(my1DExtActor);
@@ -1307,10 +1328,10 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation){
       myNodeActor->VisibilityOn();
     }
 
-    if(myEntityMode & e0DElements){
+    if(myEntityMode & e0DElements && GetRepresentation() != ePoint ){
       my0DActor->VisibilityOn();
     }
-    if(myEntityMode & eBallElem){
+    if(myEntityMode & eBallElem && GetRepresentation() != ePoint ){
       myBallActor->VisibilityOn();
     }
 
@@ -1492,6 +1513,8 @@ void SMESH_ActorDef::SetRepresentation (int theMode)
   int aNbEdges = myVisualObj->GetNbEntities(SMDSAbs_Edge);
   int aNbFaces = myVisualObj->GetNbEntities(SMDSAbs_Face);
   int aNbVolumes = myVisualObj->GetNbEntities(SMDSAbs_Volume);
+  int aNb0Ds       = myVisualObj->GetNbEntities(SMDSAbs_0DElement);
+  int aNbBalls       = myVisualObj->GetNbEntities(SMDSAbs_Ball);
 
   if (theMode < 0) {
     myRepresentation = eSurface;
@@ -1503,10 +1526,10 @@ void SMESH_ActorDef::SetRepresentation (int theMode)
   } else {
     switch (theMode) {
     case eEdge:
-      if (!aNbFaces && !aNbVolumes && !aNbEdges) return;
+      if (!aNbFaces && !aNbVolumes && !aNbEdges && !aNb0Ds && !aNbBalls) return;
       break;
     case eSurface:
-      if (!aNbFaces && !aNbVolumes) return;
+      if (!aNbFaces && !aNbVolumes && !aNb0Ds && !aNbBalls) return;
       break;
     }    
     myRepresentation = theMode;
@@ -1633,9 +1656,12 @@ void SMESH_ActorDef::UpdateHighlight(){
     {
       if(myIsHighlighted) {
         myHighlitableActor->SetProperty(myHighlightProp);
+	myBallActor->SetProperty(myBallHighlightProp);
       }else if(myIsPreselected){
         myHighlitableActor->SetProperty(myPreselectProp);
+	myBallActor->SetProperty(myBallPreselectProp);
       } else if(anIsVisible){
+	myBallActor->SetProperty(myBallProp);
         (myRepresentation == eSurface) ? 
           myHighlitableActor->SetProperty(myOutLineProp) : myHighlitableActor->SetProperty(myEdgeProp);
       }
@@ -1781,6 +1807,8 @@ void SMESH_ActorDef::SetOpacity(vtkFloatingPointType theValue){
   myNodeProp->SetOpacity(theValue);
 
   my1DProp->SetOpacity(theValue);
+  my0DProp->SetOpacity(theValue);
+  myBallProp->SetOpacity(theValue);
 }
 
 
@@ -1871,6 +1899,7 @@ void SMESH_ActorDef::GetBallColor(vtkFloatingPointType& r,vtkFloatingPointType& 
 
 void SMESH_ActorDef::SetHighlightColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){ 
   myHighlightProp->SetColor(r,g,b);
+  myBallHighlightProp->SetColor(r,g,b);
   Modified();
 }
 
@@ -1880,6 +1909,7 @@ void SMESH_ActorDef::GetHighlightColor(vtkFloatingPointType& r,vtkFloatingPointT
 
 void SMESH_ActorDef::SetPreHighlightColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){ 
   myPreselectProp->SetColor(r,g,b);
+  myBallPreselectProp->SetColor(r,g,b);
   Modified();
 }
 
@@ -1908,6 +1938,16 @@ void SMESH_ActorDef::SetLineWidth(vtkFloatingPointType theVal){
 
 void SMESH_ActorDef::Set0DSize(vtkFloatingPointType theVal){
   my0DProp->SetPointSize(theVal);
+  myHighlightProp->SetPointSize(theVal);
+  myPreselectProp->SetPointSize(theVal);
+
+  if(SMESH_SVTKActor* aCustom = SMESH_SVTKActor::SafeDownCast( myHighlightActor )) {
+    aCustom->Set0DSize(theVal);
+  }
+  if(SMESH_SVTKActor* aCustom = SMESH_SVTKActor::SafeDownCast( myPreHighlightActor )) {
+    aCustom->Set0DSize(theVal);
+  }
+
   Modified();
 }
 
@@ -1917,6 +1957,15 @@ vtkFloatingPointType SMESH_ActorDef::Get0DSize(){
 
 void SMESH_ActorDef::SetBallSize(vtkFloatingPointType theVal){
   myBallProp->SetPointSize(theVal);
+  myBallHighlightProp->SetPointSize(theVal);
+  myBallPreselectProp->SetPointSize(theVal);
+  if(SMESH_SVTKActor* aCustom = SMESH_SVTKActor::SafeDownCast( myHighlightActor )) {
+    aCustom->SetBallSize(theVal);
+  }
+  if(SMESH_SVTKActor* aCustom = SMESH_SVTKActor::SafeDownCast( myPreHighlightActor )) {
+    aCustom->SetBallSize(theVal);
+  }
+
   Modified();
 }
 
