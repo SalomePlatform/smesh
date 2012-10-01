@@ -2025,6 +2025,8 @@ SMESH_MesherHelper:: MType SMESH_MesherHelper::IsQuadraticMesh()
   int NbFacesAndEdges=0;
   //All faces and edges
   NbAllEdgsAndFaces = myMesh->NbEdges() + myMesh->NbFaces();
+  if ( NbAllEdgsAndFaces == 0 )
+    return SMESH_MesherHelper::LINEAR;
   
   //Quadratic faces and edges
   NbQuadFacesAndEdgs = myMesh->NbEdges(ORDER_QUADRATIC) + myMesh->NbFaces(ORDER_QUADRATIC);
