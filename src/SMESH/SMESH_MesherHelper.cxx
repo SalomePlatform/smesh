@@ -3475,7 +3475,7 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& error,
       h.ToFixNodeParameters(true);
     }
     //perf_print_all_meters(1);
-    if ( error->myName == EDITERR_NO_MEDIUM_ON_GEOM )
+    if ( error && error->myName == EDITERR_NO_MEDIUM_ON_GEOM )
       error->myComment = "during conversion to quadratic, "
         "some medium nodes were not placed on geometry to avoid distorting elements";
     return;
