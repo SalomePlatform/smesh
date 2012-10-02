@@ -75,4 +75,5 @@ class SMESH_Swig
   void SetMeshIcon(const char* Mesh_Entry, const bool isComputed, const bool isEmpty);
 
   void CreateAndDisplayActor( const char* Mesh_Entry );
+  void EraseActor( const char* Mesh_Entry, const bool allViewers = false );
 };

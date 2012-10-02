@@ -65,6 +65,8 @@ public:
 
   void                       SetName( const char*, const char* );
 
+  void                       EraseActor( const char*, const bool allViewers = false );
+
   /*!
    * \brief Set mesh icon according to compute status
     * \param Mesh_Entry - entry of a mesh

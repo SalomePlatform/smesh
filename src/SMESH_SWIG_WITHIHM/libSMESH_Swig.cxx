@@ -37,6 +37,9 @@
 
 // SALOME GUI includes
 #include <SUIT_Session.h>
+#include <SUIT_ViewManager.h>
+#include <SALOME_Prs.h>
+#include <SUIT_ViewWindow.h>
 #include <VTKViewer_ViewModel.h>
 #include <SALOME_Event.h>
 #include <SalomeApp_Application.h>
@@ -573,6 +576,44 @@ void SMESH_Swig::CreateAndDisplayActor( const char* Mesh_Entry )
   };
 
   ProcessVoidEvent(new TEvent(Mesh_Entry));
+}
+
+void SMESH_Swig::EraseActor( const char* Mesh_Entry, const bool allViewers )
+{
+  class TEvent: public SALOME_Event
+  {
+  private:
+    const char* _entry;
+    bool _allViewers;
+  public:
+    TEvent(const char* Mesh_Entry, const bool allViewers ) {
+      _entry = Mesh_Entry;
+      _allViewers = allViewers;
+    }
+    virtual void Execute() {
+      SUIT_Session* aSession = SUIT_Session::session();
+      SUIT_Application* anApplication = aSession->activeApplication();
+      SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>(anApplication);
+      SMESHGUI_Displayer* aDisp = new SMESHGUI_Displayer(anApp);
+      ViewManagerList aManagers;
+      if ( !_allViewers ) {
+	aManagers << anApp->activeViewManager();
+      }
+      else {
+	aManagers = anApp->viewManagers();
+      }
+      foreach( SUIT_ViewManager* aMgr, aManagers ) {
+	if ( aMgr && aMgr->getType() == VTKViewer_Viewer::Type() ) {
+	  SALOME_View* aSalomeView = dynamic_cast<SALOME_View*>(aMgr->getViewModel());
+	  if (aSalomeView) {
+	    aDisp->Erase(_entry,true, true, aSalomeView);
+	  }
+	}
+      }
+    }
+  };
+
+  ProcessVoidEvent(new TEvent(Mesh_Entry, allViewers));
 }
 
 void SMESH_Swig::SetName(const char* theEntry,
