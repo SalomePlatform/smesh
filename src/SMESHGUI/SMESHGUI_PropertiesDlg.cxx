@@ -35,6 +35,8 @@
 #include <QtxColorButton.h>
 #include <QtxIntSpinBox.h>
 #include <VTKViewer_MarkerWidget.h>
+#include <SUIT_Session.h>
+#include <LightApp_Application.h>
 
 const int MARGIN  = 9;
 const int SPACING = 6;
@@ -247,6 +249,8 @@ SMESHGUI_PropertiesDlg::SMESHGUI_PropertiesDlg( const VTK::MarkerMap& customMark
   myOrientationSize->setRange( 5, 100 );
 
   button( OK )->setText( tr( "SMESH_BUT_OK" ) );
+
+  connect( this, SIGNAL( dlgHelp() ), this, SLOT( onHelp() ) );
 }
 
 /*
@@ -633,4 +637,13 @@ void SMESHGUI_PropertiesDlg::showControls( int elements, bool nodes )
   myOrientationGrp->setVisible( elements & ( SMESH_Actor::eFaces | SMESH_Actor::eVolumes ) );
   // shrink factor is shown if there are edges and/or faces and/or volumes
   myExtraGrp->setVisible( elements & ( SMESH_Actor::eEdges | SMESH_Actor::eFaces | SMESH_Actor::eVolumes ) );
+}
+
+/*!
+  \brief Show online help on dialog box
+*/
+void SMESHGUI_PropertiesDlg::onHelp()
+{
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+  app->onHelpContextModule( "SMESH", "colors_size_page.html" );
 }

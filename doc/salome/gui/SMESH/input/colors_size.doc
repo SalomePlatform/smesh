@@ -4,36 +4,48 @@
 
 \image html colors_size.png
 
-Using this dialog you can define the following set of mesh visualization
-parameters:
-<ul>
-<li><b>Elements</b></li>
-<ul>
-<li><b>Surface color</b> - surface color of elements (seen in Shading mode).</li>
-<li><b>Back surface color</b> - interior surface color of elements. Use slider to select this color 
-generated on base of the <b>Surface color</b> by changing its brightness and saturation.</li>
-<li><b>Outline color</b> - color of element borders.</li>
-<li><b>Wireframe color</b> - color of element borders in wireframe mode.</li>
-<li><b>0D elements</b> - color of 0D elements.</li>
-<li><b>Size of 0D elements</b> - size of 0D elements.</li>
-<li><b>Ball elements</b> - color of MED_BALL elements.</li>
-<li><b>Size of Ball elements</b> - size of MED_BALL elements.</li>
-<li><b>Line width</b> - width of lines (edges and borders of elements).</li>
-<li><b>Shrink coef.</b> - relative space of elements compared to gaps between
-       them in shrink mode.</li>
-</ul>
-<li><b>Nodes</b></li>
-<ul>
-<li><b>Color</b> - color of nodes.</li>
-<li><b>Marker</b> - group of options allowing to change the representation of
-       points (see \subpage point_marker_page "Point Marker" page).</li>
-</ul>
-<li><b>Orientation of faces</b></li>
-<ul>
-<li><b>Color</b> - color of orientation vertors.</li>
-<li><b>Scale</b> - size of orientation vectors.</li>
-<li><b>3D vectors</b> - allows to choose between 2D planar and 3D vectors.</li>
-</ul>
-</ul>
+Using this dialog you can customize different properties of the mesh visualization
+parameters.
+
+The GUI elements in the "Properties" dialog box are grouped according
+to the entity types of mesh data. If some data entities are not
+present in the mesh object, the corresponding GUI elements are not
+shown.
+
+- \b Nodes:
+  - \b Color - color of nodes.
+  - \b Type and \b Scale - these options allow changing of the nodes
+    representation (see \subpage point_marker_page "Point Marker" page
+    for more details).
+- <b>Edges / wireframe</b>:
+  - \b Color - color of element borders in wireframe mode.
+  - \b Width - width of lines (edges and borders of elements
+    in wireframe mode).
+- \b Faces:
+  - \b Front - surface color of face elements (seen in shading mode).
+  - \b Back - backside surface color of face elements. Use slider to
+    select this color generated on base of the \b Face color by
+    changing its brightness and saturation. 
+- \b Volumes:
+  - \b Normal - surface color of normal volume elements (seen in shading mode).
+  - \b Reversed - surface color of volume elements. Use slider to
+    select this color generated on base of the \b Normal color by
+    changing its brightness and saturation. 
+- \b Outlines:
+  - \b Color - color of element borders in shading mode.
+  - \b Width - width of outlines (borders of elements
+    in shading mode).
+- <b>0D elements</b>:
+  - \b Color - color of 0D elements.
+  - \b Size - size of 0D elements.
+- \b Balls:
+  - \b Color - color of discrete ball elements.
+  - \b Size - size of discrete ball elements.
+- <b>Orientation vectors</b>:
+  - \b Color - color of orientation vectors.
+  - \b Scale - size of orientation vectors.
+  - <b>3D vectors</b> - allows to choose between 2D planar and 3D vectors.
+- <b>Shrink coef.</b> - relative space of elements compared to gaps between
+  them in shrink mode.
 
 */

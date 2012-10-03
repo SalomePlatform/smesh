@@ -33,14 +33,14 @@ lines in the file. Note that missing symbols are replaced by "0".
 Here is a texture file sample:
 
 <pre>
-00111100
-00111100
 11111111
+10000001
+10011001
+10111101
+10111101
+10011001
+10000001
 11111111
-11111111
-11111111
-00111100
-00111100
 </pre>
 
 \image html point_marker_widget2.png

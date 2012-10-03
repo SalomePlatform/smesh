@@ -98,6 +98,9 @@ public:
 
   void              showControls( int, bool );
 
+private slots:
+  void              onHelp();
+
 private:
   // group boxes
   QGroupBox*              myNodeGrp;
