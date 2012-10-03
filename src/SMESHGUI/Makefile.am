@@ -49,7 +49,6 @@ salomeinclude_HEADERS = \
 	SMESHGUI_RemoveElementsDlg.h \
 	SMESHGUI_MeshInfo.h \
 	SMESHGUI_Measurements.h \
-	SMESHGUI_Preferences_ColorDlg.h \
 	SMESHGUI_Preferences_ScalarBarDlg.h \
 	SMESHGUI_AddMeshElementDlg.h \
 	SMESHGUI_XmlHandler.h \
@@ -97,6 +96,7 @@ salomeinclude_HEADERS = \
 	SMESHGUI_CopyMeshDlg.h \
 	SMESHGUI_PreviewDlg.h  \
 	SMESHGUI_ReorientFacesDlg.h \
+	SMESHGUI_PropertiesDlg.h \
 	SMESH_SMESHGUI.hxx
 
 # Libraries targets
@@ -115,7 +115,6 @@ dist_libSMESH_la_SOURCES = \
 	SMESHGUI_RemoveElementsDlg.cxx \
 	SMESHGUI_MeshInfo.cxx \
 	SMESHGUI_Measurements.cxx \
-	SMESHGUI_Preferences_ColorDlg.cxx \
 	SMESHGUI_Preferences_ScalarBarDlg.cxx \
 	SMESHGUI_AddMeshElementDlg.cxx \
 	SMESHGUI_XmlHandler.cxx \
@@ -173,7 +172,8 @@ dist_libSMESH_la_SOURCES = \
 	SMESHGUI_CopyMeshDlg.cxx \
 	SMESHGUI_FileValidator.cxx \
 	SMESHGUI_PreviewDlg.cxx  \
-	SMESHGUI_ReorientFacesDlg.cxx
+	SMESHGUI_ReorientFacesDlg.cxx \
+	SMESHGUI_PropertiesDlg.cxx
 
 MOC_FILES = \
 	SMESHGUI_moc.cxx \
@@ -189,7 +189,6 @@ MOC_FILES = \
 	SMESHGUI_RemoveElementsDlg_moc.cxx \
 	SMESHGUI_MeshInfo_moc.cxx \
 	SMESHGUI_Measurements_moc.cxx \
-	SMESHGUI_Preferences_ColorDlg_moc.cxx \
 	SMESHGUI_Preferences_ScalarBarDlg_moc.cxx \
 	SMESHGUI_AddMeshElementDlg_moc.cxx \
 	SMESHGUI_FilterDlg_moc.cxx \
@@ -233,7 +232,8 @@ MOC_FILES = \
 	SMESHGUI_CopyMeshDlg_moc.cxx \
 	SMESHGUI_MeshOrderOp_moc.cxx \
 	SMESHGUI_PreviewDlg_moc.cxx \
-	SMESHGUI_ReorientFacesDlg_moc.cxx
+	SMESHGUI_ReorientFacesDlg_moc.cxx \
+	SMESHGUI_PropertiesDlg_moc.cxx
 
 nodist_libSMESH_la_SOURCES= \
 	$(MOC_FILES)

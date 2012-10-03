@@ -59,8 +59,8 @@
 #include "SMESHGUI_MeshPatternDlg.h"
 #include "SMESHGUI_MultiEditDlg.h"
 #include "SMESHGUI_NodesDlg.h"
-#include "SMESHGUI_Preferences_ColorDlg.h"
 #include "SMESHGUI_Preferences_ScalarBarDlg.h"
+#include "SMESHGUI_PropertiesDlg.h"
 #include "SMESHGUI_RemoveElementsDlg.h"
 #include "SMESHGUI_RemoveNodesDlg.h"
 #include "SMESHGUI_RenumberingDlg.h"
@@ -939,6 +939,8 @@
       SALOMEDS::Color aColor = aGroupObject->GetColor();
       _PTR(SObject) aGroupSObject = SMESH::FindSObject(aGroupObject);
       if (aGroupSObject) {
+	QColor c;
+	int delta;
         if(SMESH_Actor *anActor = SMESH::FindActorByEntry(aGroupSObject->GetID().c_str())) {
           switch ( aGroupObject->GetType ()) {
           case SMESH::NODE:
@@ -949,9 +951,11 @@
             anActor->Set0DColor( aColor.R, aColor.G, aColor.B ); break;
           case SMESH::BALL:
             anActor->SetBallColor( aColor.R, aColor.G, aColor.B ); break;
+          case SMESH::VOLUME:
+            SMESH::GetColor("SMESH", "volume_color", c, delta, "255,0,170|-100");
+            anActor->SetVolumeColor( aColor.R, aColor.G, aColor.B, delta ); break;
+          case SMESH::FACE:
           default:
-            QColor c;
-            int delta;
             SMESH::GetColor("SMESH", "fill_color", c, delta, "0,170,255|-100");
             anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B, delta );
           }
@@ -1202,250 +1206,224 @@
         (new SMESHGUI_TransparencyDlg( SMESHGUI::GetSMESHGUI() ))->show();
         return;
       }
-      case 1132:{
-        QColor c, e, b, n, c0D, cBall, o, outl, selection, preselection;
-        int delta;
-        int size0D = 0, ballSize = 0;
-        int Edgewidth = 0;
-        vtkFloatingPointType Shrink = 0.0;
-        vtkFloatingPointType faces_orientation_scale = 0.0;
-        bool faces_orientation_3dvectors = false;
-
-        VTK::MarkerType aMarkerTypeCurrent = VTK::MT_NONE;
-        VTK::MarkerScale aMarkerScaleCurrent = VTK::MS_NONE;
-        int aMarkerTextureCurrent = 0;
+      case 1132: {
+	vtkFloatingPointType color[3];
+        QColor faceColor, edgeColor, nodeColor, elem0dColor, ballColor;
+	QColor orientationColor, outlineColor, volumeColor;
+        int deltaF = 0, deltaV = 0;
+        int elem0dSize   = 1;
+	int ballSize     = 1;
+        int edgeWidth    = 1;
+	int outlineWidth = 1;
+        vtkFloatingPointType shrinkCoef = 0.0;
+        vtkFloatingPointType orientationScale = 0.0;
+        bool orientation3d = false;
+        VTK::MarkerType markerType = VTK::MT_NONE;
+        VTK::MarkerScale markerScale = VTK::MS_NONE;
+        int markerId = 0;
+	bool hasNodes = false;
+	int presentEntities = 0;
+	bool firstTime  = true;
 
         SALOME_ListIteratorOfListIO It( selected );
-        for( ; It.More(); It.Next()){
+        for ( ; It.More(); It.Next() ) {
           Handle(SALOME_InteractiveObject) IObject = It.Value();
-          if(IObject->hasEntry()){
-            if(SMESH_Actor *anActor = SMESH::FindActorByEntry(IObject->getEntry())){
-              vtkFloatingPointType color[3];
-              anActor->GetSufaceColor(color[0], color[1], color[2],delta);
-              int c0 = int (color[0] * 255);
-              int c1 = int (color[1] * 255);
-              int c2 = int (color[2] * 255);
-              c.setRgb(c0, c1, c2);
+          if ( !IObject->hasEntry() ) continue;
+	  SMESH_Actor* anActor = SMESH::FindActorByEntry( IObject->getEntry() );
+	  if ( !anActor || !anActor->GetObject() ) continue;
 
-              vtkFloatingPointType edgecolor[3];
-              anActor->GetEdgeColor(edgecolor[0], edgecolor[1], edgecolor[2]);
-              c0 = int (edgecolor[0] * 255);
-              c1 = int (edgecolor[1] * 255);
-              c2 = int (edgecolor[2] * 255);
-              e.setRgb(c0, c1, c2);
+	  if ( firstTime ) {
+	    // nodes: color, marker
+	    anActor->GetNodeColor( color[0], color[1], color[2] );
+	    nodeColor.setRgbF( color[0], color[1], color[2] );
+	    markerType  = anActor->GetMarkerType();
+	    markerScale = anActor->GetMarkerScale();
+	    markerId    = anActor->GetMarkerTexture();
+	    // edges: color, width
+	    anActor->GetEdgeColor( color[0], color[1], color[2] );
+	    edgeColor.setRgbF( color[0], color[1], color[2] );
+	    edgeWidth = qMax( (int)anActor->GetLineWidth(), 1 ); // minimum allowed width is 1
+	    // faces: front color, back color (delta)
+	    anActor->GetSufaceColor( color[0], color[1], color[2], deltaF );
+	    faceColor.setRgbF( color[0], color[1], color[2] );
+	    // faces: front color, back color (delta)
+	    anActor->GetVolumeColor( color[0], color[1], color[2], deltaV );
+	    volumeColor.setRgbF( color[0], color[1], color[2] );
+	    // 0d elements: color, size
+	    anActor->Get0DColor( color[0], color[1], color[2] );
+	    elem0dColor.setRgbF( color[0], color[1], color[2] );
+	    elem0dSize = qMax( (int)anActor->Get0DSize(), 1 ); // minimum allowed size is 1
+	    // balls: color, size
+	    anActor->GetBallColor( color[0], color[1], color[2] );
+	    ballColor.setRgbF( color[0], color[1], color[2] );
+	    ballSize = qMax( (int)anActor->GetBallSize(), 1 ); // minimum allowed size is 1
+	    // outlines: color
+	    anActor->GetOutlineColor( color[0], color[1], color[2] );
+	    outlineColor.setRgbF( color[0], color[1], color[2] );
+	    outlineWidth = qMax( (int)anActor->GetOutlineWidth(), 1 ); // minimum allowed width is 1
+	    // orientation vectors: color, scale, 3d flag
+	    anActor->GetFacesOrientationColor( color[0], color[1], color[2] );
+	    orientationColor.setRgbF( color[0], color[1], color[2] );
+	    orientationScale = anActor->GetFacesOrientationScale();
+	    orientation3d = anActor->GetFacesOrientation3DVectors();
+	    // shrink factor
+	    shrinkCoef = anActor->GetShrinkFactor();
+	  }
 
-              vtkFloatingPointType nodecolor[3];
-              anActor->GetNodeColor(nodecolor[0], nodecolor[1], nodecolor[2]);
-              c0 = int (nodecolor[0] * 255);
-              c1 = int (nodecolor[1] * 255);
-              c2 = int (nodecolor[2] * 255);
-              n.setRgb(c0, c1, c2);
+	  firstTime = false; // we only take properties from first object (for performance reasons)
 
-              vtkFloatingPointType color0D[3];
-              anActor->Get0DColor(color0D[0], color0D[1], color0D[2]);
-              c0 = int (color0D[0] * 255);
-              c1 = int (color0D[1] * 255);
-              c2 = int (color0D[2] * 255);
-              c0D.setRgb(c0, c1, c2);
+	  if ( !hasNodes )
+	    hasNodes = anActor->GetObject()->GetNbEntities( SMDSAbs_Node );
+	  if ( !(presentEntities & SMESH_Actor::eEdges) && anActor->GetObject()->GetNbEntities( SMDSAbs_Edge ) )
+	    presentEntities = presentEntities | SMESH_Actor::eEdges;
+	  if ( !(presentEntities & SMESH_Actor::eFaces) && anActor->GetObject()->GetNbEntities( SMDSAbs_Face ) )
+	    presentEntities = presentEntities | SMESH_Actor::eFaces;
+	  if ( !(presentEntities & SMESH_Actor::eVolumes) && anActor->GetObject()->GetNbEntities( SMDSAbs_Volume ) )
+	    presentEntities = presentEntities | SMESH_Actor::eVolumes;
+	  if ( !(presentEntities & SMESH_Actor::e0DElements) && anActor->GetObject()->GetNbEntities( SMDSAbs_0DElement ) )
+	    presentEntities = presentEntities | SMESH_Actor::e0DElements;
+	  if ( !(presentEntities & SMESH_Actor::eBallElem) && anActor->GetObject()->GetNbEntities( SMDSAbs_Ball ) )
+	    presentEntities = presentEntities | SMESH_Actor::eBallElem;
+	  
+	  // as we know that all types of elements are present, we can exit the loop
+	  if ( presentEntities == SMESH_Actor::eAllEntity )
+	    break;
+	}
 
-              vtkFloatingPointType ballcolor[3];
-              anActor->GetBallColor(ballcolor[0], ballcolor[1], ballcolor[2]);
-              c0 = int (ballcolor[0] * 255);
-              c1 = int (ballcolor[1] * 255);
-              c2 = int (ballcolor[2] * 255);
-              cBall.setRgb(c0, c1, c2);
-
-              vtkFloatingPointType outlineColor[3];
-              anActor->GetOutlineColor(outlineColor[0], outlineColor[1], outlineColor[2]);
-              c0 = int (outlineColor[0] * 255);
-              c1 = int (outlineColor[1] * 255);
-              c2 = int (outlineColor[2] * 255);
-              outl.setRgb(c0, c1, c2);
-
-              vtkFloatingPointType hColor[3];
-              anActor->GetHighlightColor(hColor[0], hColor[1], hColor[2]);
-              c0 = int (hColor[0] * 255);
-              c1 = int (hColor[1] * 255);
-              c2 = int (hColor[2] * 255);
-              selection.setRgb(c0, c1, c2);
-
-              vtkFloatingPointType phColor[3];
-              anActor->GetPreHighlightColor(phColor[0], phColor[1], phColor[2]);
-              c0 = int (phColor[0] * 255);
-              c1 = int (phColor[1] * 255);
-              c2 = int (phColor[2] * 255);
-              preselection.setRgb(c0, c1, c2);
-
-              size0D = (int)anActor->Get0DSize();
-              if(size0D == 0)
-                size0D = 1;
-              ballSize = (int)anActor->GetBallSize();
-              if(ballSize == 0)
-                ballSize = 1;
-              Edgewidth = (int)anActor->GetLineWidth();
-              if(Edgewidth == 0)
-                Edgewidth = 1;
-              Shrink = anActor->GetShrinkFactor();
-
-              vtkFloatingPointType faces_orientation_color[3];
-              anActor->GetFacesOrientationColor(faces_orientation_color);
-              c0 = int (faces_orientation_color[0] * 255);
-              c1 = int (faces_orientation_color[1] * 255);
-              c2 = int (faces_orientation_color[2] * 255);
-              o.setRgb(c0, c1, c2);
-
-              faces_orientation_scale = anActor->GetFacesOrientationScale();
-              faces_orientation_3dvectors = anActor->GetFacesOrientation3DVectors();
-
-              aMarkerTypeCurrent = anActor->GetMarkerType();
-              aMarkerScaleCurrent = anActor->GetMarkerScale();
-              aMarkerTextureCurrent = anActor->GetMarkerTexture();
-
-              // even if there are multiple objects in the selection,
-              // we need only the first one to get values for the dialog
-              break;
-            }
-          }
-        }
-
-        SMESHGUI_Preferences_ColorDlg *aDlg =
-          new SMESHGUI_Preferences_ColorDlg( SMESHGUI::GetSMESHGUI() );
-        aDlg->SetBooleanValue(1, faces_orientation_3dvectors);
-        aDlg->SetColor(1, c);
-        aDlg->SetColor(2, e);
-        aDlg->SetColor(3, n);
-        aDlg->SetColor(4, outl);
-        aDlg->SetColor(5, c0D);
-        aDlg->SetColor(6, cBall);
-        aDlg->SetColor(7, o);
-        aDlg->SetColor(8, selection);
-        aDlg->SetColor(9, preselection);
-        aDlg->SetDeltaBrightness(delta);
-        aDlg->SetDoubleValue(1, faces_orientation_scale);
-        aDlg->SetIntValue(1, Edgewidth);
-        aDlg->SetIntValue(2, int(Shrink*100.));
-        aDlg->SetIntValue(3, size0D);
-        aDlg->SetIntValue(4, ballSize);
- 
-        aDlg->setCustomMarkerMap( theMarkerMap[ aStudy->StudyId() ] );
-
-        if( aMarkerTypeCurrent != VTK::MT_USER )
-          aDlg->setStandardMarker( aMarkerTypeCurrent, aMarkerScaleCurrent );
+	SMESHGUI_PropertiesDlg dlg( theMarkerMap[ aStudy->StudyId() ], SMESHGUI::desktop() );
+	// nodes: color, marker
+	dlg.setNodeColor( nodeColor );
+        if( markerType != VTK::MT_USER )
+          dlg.setNodeMarker( markerType, markerScale );
         else
-          aDlg->setCustomMarker( aMarkerTextureCurrent );
+          dlg.setNodeCustomMarker( markerId );
+	// edges: color, line width
+	dlg.setEdgeColor( edgeColor );
+	dlg.setEdgeWidth( edgeWidth );
+	// faces: front color, back color
+	dlg.setFaceColor( faceColor, deltaF );
+	// volumes: normal color, reversed color
+	dlg.setVolumeColor( volumeColor, deltaV );
+	// outlines: color, line width
+	dlg.setOutlineColor( outlineColor );
+	dlg.setOutlineWidth( outlineWidth );
+	// 0d elements: color, size
+	dlg.setElem0dColor( elem0dColor );
+	dlg.setElem0dSize( elem0dSize );
+	// balls: color, size
+	dlg.setBallColor( ballColor );
+	dlg.setBallSize( ballSize );
+	// orientation: color, scale, 3d flag
+	dlg.setOrientationColor( orientationColor );
+	dlg.setOrientationSize( int( orientationScale * 100. ) );
+	dlg.setOrientation3d( orientation3d );
+	// shrink: scale factor
+	dlg.setShrinkCoef( int( shrinkCoef * 100. ) );
+	// hide unused controls
+	dlg.showControls( presentEntities, hasNodes );
+	
+	if ( dlg.exec() ) {
+          nodeColor        = dlg.nodeColor();
+	  markerType       = dlg.nodeMarkerType();
+	  markerScale      = dlg.nodeMarkerScale();
+	  markerId         = dlg.nodeMarkerId();
+          edgeColor        = dlg.edgeColor();
+	  edgeWidth        = dlg.edgeWidth();
+          faceColor        = dlg.faceColor();
+          deltaF           = dlg.faceColorDelta();
+	  volumeColor      = dlg.volumeColor();
+	  deltaV           = dlg.volumeColorDelta();
+          outlineColor     = dlg.outlineColor();
+	  outlineWidth     = dlg.outlineWidth();
+          elem0dColor      = dlg.elem0dColor();
+	  elem0dSize       = dlg.elem0dSize();
+          ballColor        = dlg.ballColor();
+	  ballSize         = dlg.ballSize();
+          orientationColor = dlg.orientationColor();
+	  orientationScale = dlg.orientationSize() / 100.;
+	  orientation3d    = dlg.orientation3d();
+	  shrinkCoef       = dlg.shrinkCoef() / 100.;
 
-        if(aDlg->exec()){
-          QColor color                   = aDlg->GetColor(1);
-          QColor edgecolor               = aDlg->GetColor(2);
-          QColor nodecolor               = aDlg->GetColor(3);
-          QColor outlinecolor            = aDlg->GetColor(4);
-          QColor color0D                 = aDlg->GetColor(5);
-          QColor ballcolor               = aDlg->GetColor(6);
-          QColor faces_orientation_color = aDlg->GetColor(7);
-          QColor selectioncolor          = aDlg->GetColor(8);
-          QColor preSelectioncolor       = aDlg->GetColor(9);
-          int delta = aDlg->GetDeltaBrightness();
+          // store point markers map that might be changed by the user
+          theMarkerMap[ aStudy->StudyId() ] = dlg.customMarkers();
 
-          /* Point marker */
-          theMarkerMap[ aStudy->StudyId() ] = aDlg->getCustomMarkerMap();
-
+	  // set properties from dialog box to the presentations
           SALOME_ListIteratorOfListIO It( selected );
-          for( ; It.More(); It.Next()){
+          for ( ; It.More(); It.Next() ) {
             Handle(SALOME_InteractiveObject) IObject = It.Value();
-            if(IObject->hasEntry()){
-              if(SMESH_Actor *anActor = SMESH::FindActorByEntry(IObject->getEntry())){
-                /* actor color and backface color */
-                anActor->SetSufaceColor(vtkFloatingPointType (color.red()) / 255.,
-                                        vtkFloatingPointType (color.green()) / 255.,
-                                        vtkFloatingPointType (color.blue()) / 255.,
-                                        delta);
-                /* edge color */
-                anActor->SetEdgeColor(vtkFloatingPointType (edgecolor.red()) / 255.,
-                                      vtkFloatingPointType (edgecolor.green()) / 255.,
-                                      vtkFloatingPointType (edgecolor.blue()) / 255.);
-                /* edge outline */
-                anActor->SetOutlineColor(vtkFloatingPointType (outlinecolor.red()) / 255.,
-                                         vtkFloatingPointType (outlinecolor.green()) / 255.,
-                                         vtkFloatingPointType (outlinecolor.blue()) / 255.);
+            if ( !IObject->hasEntry() ) continue;
+	    SMESH_Actor* anActor = SMESH::FindActorByEntry( IObject->getEntry() );
+	    if ( !anActor ) continue;
+	    
+	    // nodes: color, marker
+	    anActor->SetNodeColor( nodeColor.redF(), nodeColor.greenF(), nodeColor.blueF() );
+	    if ( markerType != VTK::MT_USER ) {
+	      anActor->SetMarkerStd( markerType, markerScale );
+	    }
+	    else {
+	      const VTK::MarkerMap& markerMap = theMarkerMap[ aStudy->StudyId() ];
+	      VTK::MarkerMap::const_iterator iter = markerMap.find( markerId );
+	      if ( iter != markerMap.end() )
+		anActor->SetMarkerTexture( markerId, iter->second.second );
+	    }
+	    // volumes: normal color, reversed color (delta)
+	    anActor->SetVolumeColor( volumeColor.redF(), volumeColor.greenF(), volumeColor.blueF(), deltaV );
+	    // faces: front color, back color (delta)
+	    anActor->SetSufaceColor( faceColor.redF(), faceColor.greenF(), faceColor.blueF(), deltaF );
+	    // edges: color, width
+	    anActor->SetEdgeColor( edgeColor.redF(), edgeColor.greenF(), edgeColor.blueF() );
+	    anActor->SetLineWidth( edgeWidth );
+	    // outlines: color
+	    anActor->SetOutlineColor( outlineColor.redF(), outlineColor.greenF(), outlineColor.blueF() );
+	    anActor->SetOutlineWidth( outlineWidth );
+	    // 0D elements: color, size
+	    anActor->Set0DColor( elem0dColor.redF(), elem0dColor.greenF(), elem0dColor.blueF() );
+	    anActor->Set0DSize( elem0dSize );
+	    // balls: color, size
+	    anActor->SetBallColor( ballColor.redF(), ballColor.greenF(), ballColor.blueF() );
+	    anActor->SetBallSize( ballSize );
+	    // orientation: color, scale, 3d flag
+	    anActor->SetFacesOrientationColor( orientationColor.redF(), orientationColor.greenF(), orientationColor.blueF() );
+	    anActor->SetFacesOrientationScale( orientationScale );
+	    anActor->SetFacesOrientation3DVectors( orientation3d );
+	    // shrink factor
+	    anActor->SetShrinkFactor( shrinkCoef );
 
-                /* selection */
-                anActor->SetHighlightColor(vtkFloatingPointType (selectioncolor.red()) / 255.,
-                                           vtkFloatingPointType (selectioncolor.green()) / 255.,
-                                           vtkFloatingPointType (selectioncolor.blue()) / 255.);
-                /* pre-selection */
-                anActor->SetPreHighlightColor(vtkFloatingPointType (preSelectioncolor.red()) / 255.,
-                                              vtkFloatingPointType (preSelectioncolor.green()) / 255.,
-                                              vtkFloatingPointType (preSelectioncolor.blue()) / 255.);
-                
-
-                /* Shrink factor and size edges */
-                anActor->SetShrinkFactor(aDlg->GetIntValue(2) / 100.);
-                anActor->SetLineWidth(aDlg->GetIntValue(1));
-
-                /* Nodes color and size */
-                anActor->SetNodeColor(vtkFloatingPointType (nodecolor.red()) / 255.,
-                                      vtkFloatingPointType (nodecolor.green()) / 255.,
-                                      vtkFloatingPointType (nodecolor.blue()) / 255.);
-
-                /* 0D elements */
-                anActor->Set0DColor(vtkFloatingPointType (color0D.red()) / 255.,
-                                    vtkFloatingPointType (color0D.green()) / 255.,
-                                    vtkFloatingPointType (color0D.blue()) / 255.);
-                anActor->Set0DSize(aDlg->GetIntValue(3));
-
-                /* Ball elements */
-                anActor->SetBallColor(vtkFloatingPointType (ballcolor.red()) / 255.,
-                                      vtkFloatingPointType (ballcolor.green()) / 255.,
-                                      vtkFloatingPointType (ballcolor.blue()) / 255.);
-                anActor->SetBallSize(aDlg->GetIntValue(4));
-
-                /* Faces orientation */
-                vtkFloatingPointType c[3] = {vtkFloatingPointType(faces_orientation_color.redF()),
-                                             vtkFloatingPointType(faces_orientation_color.greenF()),
-                                             vtkFloatingPointType(faces_orientation_color.blueF())};
-                anActor->SetFacesOrientationColor(c);
-                anActor->SetFacesOrientationScale(aDlg->GetDoubleValue(1));
-                anActor->SetFacesOrientation3DVectors(aDlg->GetBooleanValue(1));
-
-                VTK::MarkerType aMarkerTypeNew = aDlg->getMarkerType();
-                VTK::MarkerScale aMarkerScaleNew = aDlg->getStandardMarkerScale();
-                int aMarkerTextureNew = aDlg->getCustomMarkerID();
-                if( aMarkerTypeNew != VTK::MT_USER )
-                  anActor->SetMarkerStd( aMarkerTypeNew, aMarkerScaleNew );
-                else {
-                  const VTK::MarkerMap& aMarkerMap = theMarkerMap[ aStudy->StudyId() ];
-                  VTK::MarkerMap::const_iterator anIter = aMarkerMap.find( aMarkerTextureNew );
-                  if( anIter != aMarkerMap.end() )
-                    anActor->SetMarkerTexture( aMarkerTextureNew, anIter->second.second );
-                }
-
-                SMESH::SMESH_GroupBase_var aGroupObject = SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IObject);
-                if( !aGroupObject->_is_nil() )
-                {
-                  SMESH::ElementType anElementType = aGroupObject->GetType();
-                  QColor aColor;
-                  switch( anElementType )
-                  {
-                    case SMESH::NODE: aColor = nodecolor; break;
-                    case SMESH::EDGE: aColor = edgecolor; break;
-                    default: aColor = color; break;
-                  }
-
-                  SALOMEDS::Color aGroupColor;
-                  aGroupColor.R = (float)aColor.red() / 255.0;
-                  aGroupColor.G = (float)aColor.green() / 255.0;
-                  aGroupColor.B = (float)aColor.blue() / 255.0;
-                  aGroupObject->SetColor( aGroupColor );
-                }
-              }
-            }
-          }
-          SMESH::RepaintCurrentView();
-        }
-        delete aDlg;
+	    // for groups, set also proper color
+	    SMESH::SMESH_GroupBase_var aGroupObject = SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IObject);
+	    if ( !aGroupObject->_is_nil() ) {
+	      SMESH::ElementType anElementType = aGroupObject->GetType();
+	      QColor aColor;
+	      switch( anElementType ) {
+	      case SMESH::NODE:
+		aColor = nodeColor; break;
+	      case SMESH::EDGE:
+		aColor = edgeColor; break;
+	      case SMESH::FACE: 
+		aColor = faceColor; break;
+	      case SMESH::VOLUME:
+		aColor = volumeColor; break;
+	      case SMESH::ELEM0D: 
+		aColor = elem0dColor; break;
+	      case SMESH::BALL: 
+		aColor = ballColor; break;
+	      default: break;
+	      }
+	      
+	      if ( aColor.isValid() ) {
+		SALOMEDS::Color aGroupColor;
+		aGroupColor.R = aColor.redF();
+		aGroupColor.G = aColor.greenF();
+		aGroupColor.B = aColor.blueF();
+		aGroupObject->SetColor( aGroupColor );
+	      }
+	    } // if ( !aGroupObject->_is_nil() )
+	  } // for ( ; It.More(); It.Next() )
+	  SMESH::RepaintCurrentView();
+	} // if ( dlg.exec() )
         return;
-      }
-      }
+      } // case 1132:
+      } // switch(theCommandID)
       SALOME_ListIteratorOfListIO It( selected );
       for( ; It.More(); It.Next()){
         Handle(SALOME_InteractiveObject) IObject = It.Value();
@@ -4813,15 +4791,17 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( markerScale, "indexes", aMarkerScaleIndicesList );
 
   int elemGroup = addPreference( tr( "PREF_GROUP_ELEMENTS" ), meshTab );
-  setPreferenceProperty( elemGroup, "columns", 2 );
+  //setPreferenceProperty( elemGroup, "columns", 2 );
 
-  int ColorId = addPreference( tr( "PREF_FILL"     ), elemGroup, LightApp_Preferences::BiColor, "SMESH", "fill_color" );
+  int ColorId = addPreference( tr( "PREF_FILL" ), elemGroup, LightApp_Preferences::BiColor, "SMESH", "fill_color" );
+  setPreferenceProperty( ColorId, "text", tr("PREF_BACKFACE") );
+  ColorId = addPreference( tr( "PREF_VOLUME" ), elemGroup, LightApp_Preferences::BiColor, "SMESH", "volume_color" );
+  setPreferenceProperty( ColorId, "text", tr("PREF_REVERSEDVOLUME") );
   addPreference( tr( "PREF_COLOR_0D" ), elemGroup, LightApp_Preferences::Color, "SMESH", "elem0d_color" );
   addPreference( tr( "PREF_BALL_COLOR" ), elemGroup, LightApp_Preferences::Color, "SMESH", "ball_elem_color" );
   addPreference( tr( "PREF_OUTLINE"  ), elemGroup, LightApp_Preferences::Color, "SMESH", "outline_color" );
   addPreference( tr( "PREF_WIREFRAME"  ), elemGroup, LightApp_Preferences::Color, "SMESH", "wireframe_color" );
 
-  setPreferenceProperty( ColorId, "text", tr("PREF_BACKFACE") );
 
   int grpGroup = addPreference( tr( "PREF_GROUP_GROUPS" ), meshTab );
   setPreferenceProperty( grpGroup, "columns", 2 );
@@ -4835,6 +4815,8 @@ void SMESHGUI::createPreferences()
                              LightApp_Preferences::IntSpin, "SMESH", "ball_elem_size");
   int elemW  = addPreference(tr("PREF_WIDTH"), elemGroup,
                              LightApp_Preferences::IntSpin, "SMESH", "element_width");
+  int outW  = addPreference(tr("PREF_OUTLINE_WIDTH"), elemGroup,
+                             LightApp_Preferences::IntSpin, "SMESH", "outline_width");
   int shrink = addPreference(tr("PREF_SHRINK_COEFF"), elemGroup,
                              LightApp_Preferences::IntSpin, "SMESH", "shrink_coeff");
 
@@ -4846,6 +4828,9 @@ void SMESHGUI::createPreferences()
 
   setPreferenceProperty( elemW, "min", 1 );
   setPreferenceProperty( elemW, "max", 5 );
+
+  setPreferenceProperty( outW, "min", 1 );
+  setPreferenceProperty( outW, "max", 5 );
 
   setPreferenceProperty( shrink, "min", 0 );
   setPreferenceProperty( shrink, "max", 100 );
@@ -5222,9 +5207,9 @@ SALOMEDS::Color SMESHGUI::getUniqueColor( const QList<SALOMEDS::Color>& theReser
   aColor.setHsv( aHue, 255, 255 );
 
   SALOMEDS::Color aSColor;
-  aSColor.R = (double)aColor.red() / 255.0;
-  aSColor.G = (double)aColor.green() / 255.0;
-  aSColor.B = (double)aColor.blue() / 255.0;
+  aSColor.R = aColor.redF();
+  aSColor.G = aColor.greenF();
+  aSColor.B = aColor.blueF();
 
   return aSColor;
 }

@@ -1126,17 +1126,21 @@ bool SMESHGUI_GroupDlg::onApply()
       if ( aMeshGroupSO )
         if(SMESH_Actor *anActor = SMESH::FindActorByEntry(aMeshGroupSO->GetID().c_str())) {
           anActor->setName(myName->text().toLatin1().data());
+	  QColor c;
+	  int delta;
           switch ( myTypeId ) {
           case grpNodeSelection:   anActor->SetNodeColor( aColor.R, aColor.G, aColor.B ); break;
           case grpBallSelection:   anActor->SetBallColor( aColor.R, aColor.G, aColor.B ); break;
           case grpEdgeSelection:   anActor->SetEdgeColor( aColor.R, aColor.G, aColor.B ); break;
-          case grpFaceSelection:   
           case grpVolumeSelection: 
+              SMESH::GetColor("SMESH", "volume_color", c , delta, "255,0,170|-100");
+              anActor->SetVolumeColor( aColor.R, aColor.G, aColor.B, delta ); break;          
+	      break;
+          case grpFaceSelection:   
           default:
-              QColor c;
-              int delta;
               SMESH::GetColor("SMESH", "fill_color", c , delta, "0,170,255|-100");
               anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B, delta ); break;          
+	      break;
           }
         }
     }
