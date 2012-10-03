@@ -106,6 +106,9 @@ class SMESH_ActorDef : public SMESH_Actor
   virtual void SetSufaceColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b, int delta );
   virtual void GetSufaceColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b, int& delta);
 
+  virtual void SetVolumeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b, int delta );
+  virtual void GetVolumeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b, int& delta);
+
   virtual void SetEdgeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
   virtual void GetEdgeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
 
@@ -130,6 +133,9 @@ class SMESH_ActorDef : public SMESH_Actor
  
   virtual vtkFloatingPointType GetLineWidth();
   virtual void SetLineWidth(vtkFloatingPointType theVal);
+
+  virtual vtkFloatingPointType GetOutlineWidth();
+  virtual void SetOutlineWidth(vtkFloatingPointType theVal);
 
   virtual void Set0DSize(vtkFloatingPointType size);
   virtual vtkFloatingPointType Get0DSize();
@@ -180,8 +186,8 @@ class SMESH_ActorDef : public SMESH_Actor
   virtual void SetFacesOriented(bool theIsFacesOriented);
   virtual bool GetFacesOriented();
 
-  virtual void SetFacesOrientationColor(vtkFloatingPointType theColor[3]);
-  virtual void GetFacesOrientationColor(vtkFloatingPointType theColor[3]);
+  virtual void SetFacesOrientationColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
+  virtual void GetFacesOrientationColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
 
   virtual void SetFacesOrientationScale(vtkFloatingPointType theScale);
   virtual vtkFloatingPointType GetFacesOrientationScale();
@@ -233,6 +239,8 @@ class SMESH_ActorDef : public SMESH_Actor
 
   vtkProperty* mySurfaceProp;
   vtkProperty* myBackSurfaceProp;
+  vtkProperty* myNormalVProp;
+  vtkProperty* myReversedVProp;
   vtkProperty* myEdgeProp;
   vtkProperty* myNodeProp;
 
@@ -252,6 +260,7 @@ class SMESH_ActorDef : public SMESH_Actor
   eControl myControlMode;
   SMESH::Controls::FunctorPtr myFunctor;
   vtkProperty* my2DExtProp;
+  vtkProperty* my3DExtProp;
   SMESH_CellLabelActor* my2DActor;
   SMESH_DeviceActor* my2DExtActor;
   SMESH_CellLabelActor* my3DActor;
@@ -295,6 +304,7 @@ class SMESH_ActorDef : public SMESH_Actor
   bool myIsFacesOriented;
   
   int myDeltaBrightness;
+  int myDeltaVBrightness;
 
   VTK::MarkerTexture myMarkerTexture;
 

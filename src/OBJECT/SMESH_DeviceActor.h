@@ -79,8 +79,8 @@ class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
   virtual void SetFacesOriented(bool theIsFacesOriented);
   virtual bool GetFacesOriented() { return myIsFacesOriented; }
 
-  virtual void SetFacesOrientationColor(vtkFloatingPointType theColor[3]);
-  virtual void GetFacesOrientationColor(vtkFloatingPointType theColor[3]);
+  virtual void SetFacesOrientationColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
+  virtual void GetFacesOrientationColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
 
   virtual void SetFacesOrientationScale(vtkFloatingPointType theScale);
   virtual vtkFloatingPointType GetFacesOrientationScale();

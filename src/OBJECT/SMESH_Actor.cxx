@@ -148,6 +148,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   vtkFloatingPointType aElem0DSize   = SMESH::GetFloat("SMESH:elem0d_size",5);
   vtkFloatingPointType aBallElemSize = SMESH::GetFloat("SMESH:ball_elem_size",10);
   vtkFloatingPointType aLineWidth    = SMESH::GetFloat("SMESH:element_width",1);
+  vtkFloatingPointType aOutlineWidth = SMESH::GetFloat("SMESH:outline_width",1);
 
   vtkMatrix4x4 *aMatrix = vtkMatrix4x4::New();
   VTKViewer_ExtractUnstructuredGrid* aFilter = NULL;
@@ -165,6 +166,15 @@ SMESH_ActorDef::SMESH_ActorDef()
   myBackSurfaceProp = vtkProperty::New();
   bfc = Qtx::mainColorToSecondary(ffc, delta);
   myBackSurfaceProp->SetColor( bfc.red() / 255. , bfc.green() / 255. , bfc.blue() / 255. );
+
+  myNormalVProp = vtkProperty::New();
+  SMESH::GetColor( "SMESH", "volume_color", ffc, delta, "255,0,170|-100" );
+  myNormalVProp->SetColor( ffc.redF(), ffc.greenF(), ffc.blueF() );
+  myDeltaVBrightness = delta;
+
+  myReversedVProp = vtkProperty::New();
+  bfc = Qtx::mainColorToSecondary(ffc, delta);
+  myReversedVProp->SetColor( bfc.red() / 255. , bfc.green() / 255. , bfc.blue() / 255. );
 
   my2DActor = SMESH_CellLabelActor::New();
   my2DActor->SetStoreGemetryMapping(true);
@@ -208,8 +218,8 @@ SMESH_ActorDef::SMESH_ActorDef()
   my3DActor->SetStoreGemetryMapping(true);
   my3DActor->SetUserMatrix(aMatrix);
   my3DActor->PickableOff();
-  my3DActor->SetProperty(mySurfaceProp);
-  my3DActor->SetBackfaceProperty(myBackSurfaceProp);
+  my3DActor->SetProperty(myNormalVProp);
+  my3DActor->SetBackfaceProperty(myReversedVProp);
   my3DActor->SetRepresentation(SMESH_DeviceActor::eSurface);
   my3DActor->SetCoincident3DAllowed(true);
   aFilter = my3DActor->GetExtractUnstructuredGrid();
@@ -231,11 +241,19 @@ SMESH_ActorDef::SMESH_ActorDef()
   aFilter->RegisterCellsWithType(VTK_POLYHEDRON);
 //#endif
 
+  my3DExtProp = vtkProperty::New();
+  my3DExtProp->DeepCopy(myNormalVProp);
+  SMESH::GetColor( "SMESH", "volume_color", anRGB[0], anRGB[1], anRGB[2], QColor( 255, 0, 170 ) );
+  anRGB[0] = 1 - anRGB[0];
+  anRGB[1] = 1 - anRGB[1];
+  anRGB[2] = 1 - anRGB[2];
+  my3DExtProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
+
   my3DExtActor = SMESH_DeviceActor::New();
   my3DExtActor->SetUserMatrix(aMatrix);
   my3DExtActor->PickableOff();
-  my3DExtActor->SetProperty(my2DExtProp);
-  my3DExtActor->SetBackfaceProperty(my2DExtProp);
+  my3DExtActor->SetProperty(my3DExtProp);
+  my3DExtActor->SetBackfaceProperty(my3DExtProp);
   my3DExtActor->SetRepresentation(SMESH_DeviceActor::eSurface);
   my3DExtActor->SetCoincident3DAllowed(true);
   aFilter = my3DExtActor->GetExtractUnstructuredGrid();
@@ -426,7 +444,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   myOutLineProp->SetSpecular(0.0);
   SMESH::GetColor( "SMESH", "outline_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 70, 0 ) );
   myOutLineProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
-  myOutLineProp->SetLineWidth(aLineWidth);
+  myOutLineProp->SetLineWidth(aOutlineWidth);
   myOutLineProp->SetRepresentation(1);
 
   myPreselectProp = vtkProperty::New();
@@ -503,7 +521,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   my2DActor->SetQuadraticArcAngle(aQuadraticAngle);
   
   // Set colors of the name actor
-  SMESH::GetColor( "SMESH", "fill_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
+  SMESH::GetColor( "SMESH", "default_grp_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
   myNameActor->SetBackgroundColor(anRGB[0], anRGB[1], anRGB[2]);
   SMESH::GetColor( "SMESH", "group_name_color", anRGB[0], anRGB[1], anRGB[2], QColor( 255, 255, 255 ) );
   myNameActor->SetForegroundColor(anRGB[0], anRGB[1], anRGB[2]);
@@ -533,6 +551,8 @@ SMESH_ActorDef::~SMESH_ActorDef()
 
   mySurfaceProp->Delete();
   myBackSurfaceProp->Delete();
+  myNormalVProp->Delete();
+  myReversedVProp->Delete();
   myOutLineProp->Delete();
 
   myEdgeProp->Delete();
@@ -559,6 +579,7 @@ SMESH_ActorDef::~SMESH_ActorDef()
   my2DExtProp->Delete();
   my2DExtActor->Delete();
   my3DActor->Delete();
+  my3DExtProp->Delete();
   my3DExtActor->Delete();
 
   myNodeActor->Delete();
@@ -657,15 +678,15 @@ bool SMESH_ActorDef::GetFacesOriented()
   return myIsFacesOriented;
 }
 
-void SMESH_ActorDef::SetFacesOrientationColor(vtkFloatingPointType theColor[3])
+void SMESH_ActorDef::SetFacesOrientationColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b)
 {
-  my2DActor->SetFacesOrientationColor( theColor );
-  my3DActor->SetFacesOrientationColor( theColor );
+  my2DActor->SetFacesOrientationColor( r, g, b );
+  my3DActor->SetFacesOrientationColor( r, g, b );
 }
 
-void SMESH_ActorDef::GetFacesOrientationColor(vtkFloatingPointType theColor[3])
+void SMESH_ActorDef::GetFacesOrientationColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b)
 {
-  my3DActor->GetFacesOrientationColor( theColor );
+  my3DActor->GetFacesOrientationColor( r, g, b );
 }
 
 void SMESH_ActorDef::SetFacesOrientationScale(vtkFloatingPointType theScale)
@@ -1074,6 +1095,7 @@ bool SMESH_ActorDef::Init(TVisualObjPtr theVisualObj,
   my2DActor->GetPolygonOffsetParameters(aFactor,aUnits);
   my2DActor->SetPolygonOffsetParameters(aFactor,aUnits*0.75);
   my2DExtActor->SetPolygonOffsetParameters(aFactor,aUnits*0.5);
+  my3DActor->SetPolygonOffsetParameters(2*aFactor,aUnits);
 
   SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();
   if( !mgr )
@@ -1551,6 +1573,7 @@ void SMESH_ActorDef::SetRepresentation (int theMode)
   myNodeActor->SetVisibility(false);
   myNodeExtActor->SetVisibility(false);
   vtkProperty *aProp = NULL, *aBackProp = NULL;
+  vtkProperty *aPropVN = NULL, *aPropVR = NULL;
   SMESH_DeviceActor::EReperesent aReperesent = SMESH_DeviceActor::EReperesent(-1);
   SMESH_Actor::EQuadratic2DRepresentation aQuadraticMode = GetQuadratic2DRepresentation();
   switch (myRepresentation) {
@@ -1558,16 +1581,18 @@ void SMESH_ActorDef::SetRepresentation (int theMode)
     myPickableActor = myNodeActor;
     myNodeActor->SetVisibility(true);
     aQuadraticMode = SMESH_Actor::eLines;
-    aProp = aBackProp = myNodeProp;
+    aProp = aBackProp = aPropVN = aPropVR = myNodeProp;
     aReperesent = SMESH_DeviceActor::ePoint;
     break;
   case eEdge:
-    aProp = aBackProp = myEdgeProp;
+    aProp = aBackProp = aPropVN = aPropVR = myEdgeProp;
     aReperesent = SMESH_DeviceActor::eInsideframe;
     break;
   case eSurface:
     aProp = mySurfaceProp;
     aBackProp = myBackSurfaceProp;
+    aPropVN = myNormalVProp;
+    aPropVR = myReversedVProp;
     aReperesent = SMESH_DeviceActor::eSurface;
     break;
   }
@@ -1583,8 +1608,8 @@ void SMESH_ActorDef::SetRepresentation (int theMode)
 
   my2DExtActor->SetRepresentation(aReperesent);
   
-  my3DActor->SetProperty(aProp);
-  my3DActor->SetBackfaceProperty(aBackProp);
+  my3DActor->SetProperty(aPropVN);
+  my3DActor->SetBackfaceProperty(aPropVR);
   my3DActor->SetRepresentation(aReperesent);
 
   //my0DExtActor->SetVisibility(false);
@@ -1803,7 +1828,10 @@ static void GetColor(vtkProperty *theProperty, vtkFloatingPointType& r,vtkFloati
 void SMESH_ActorDef::SetOpacity(vtkFloatingPointType theValue){
   mySurfaceProp->SetOpacity(theValue);
   myBackSurfaceProp->SetOpacity(theValue);
+  myNormalVProp->SetOpacity(theValue);
+  myReversedVProp->SetOpacity(theValue);
   myEdgeProp->SetOpacity(theValue);
+  myOutLineProp->SetOpacity(theValue);
   myNodeProp->SetOpacity(theValue);
 
   my1DProp->SetOpacity(theValue);
@@ -1819,9 +1847,9 @@ vtkFloatingPointType SMESH_ActorDef::GetOpacity(){
 
 void SMESH_ActorDef::SetSufaceColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b, int delta){
   mySurfaceProp->SetColor(r,g,b);
+  my2DExtProp->SetColor(1.0-r,1.0-g,1.0-b);
   if( SMESH_GroupObj* aGroupObj = dynamic_cast<SMESH_GroupObj*>( myVisualObj.get() ) )
-    if( aGroupObj->GetElementType() == SMDSAbs_Face ||
-        aGroupObj->GetElementType() == SMDSAbs_Volume )
+    if( aGroupObj->GetElementType() == SMDSAbs_Face )
       myNameActor->SetBackgroundColor(r,g,b);
   
   myDeltaBrightness = delta;
@@ -1832,8 +1860,25 @@ void SMESH_ActorDef::SetSufaceColor(vtkFloatingPointType r,vtkFloatingPointType 
 
 void SMESH_ActorDef::GetSufaceColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b, int& delta){
   ::GetColor(mySurfaceProp,r,g,b);
-  my2DExtProp->SetColor(1.0-r,1.0-g,1.0-b);
   delta = myDeltaBrightness;
+}
+
+void SMESH_ActorDef::SetVolumeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b, int delta){
+  myNormalVProp->SetColor(r,g,b);
+  my3DExtProp->SetColor(1.0-r,1.0-g,1.0-b);
+  if( SMESH_GroupObj* aGroupObj = dynamic_cast<SMESH_GroupObj*>( myVisualObj.get() ) )
+    if( aGroupObj->GetElementType() == SMDSAbs_Volume )
+      myNameActor->SetBackgroundColor(r,g,b);
+  
+  myDeltaVBrightness = delta;
+  QColor bfc = Qtx::mainColorToSecondary(QColor(int(r*255),int(g*255),int(b*255)), delta);
+  myReversedVProp->SetColor( bfc.red() / 255. , bfc.green() / 255. , bfc.blue() / 255. );
+  Modified();
+}
+
+void SMESH_ActorDef::GetVolumeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b, int& delta){
+  ::GetColor(myNormalVProp,r,g,b);
+  delta = myDeltaVBrightness;
 }
 
 void SMESH_ActorDef::SetEdgeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){
@@ -1929,12 +1974,23 @@ void SMESH_ActorDef::SetLineWidth(vtkFloatingPointType theVal){
   my1DProp->SetLineWidth(theVal + aLineWidthInc);
   my1DExtProp->SetLineWidth(theVal + aLineWidthInc);    
   my2DExtProp->SetLineWidth(theVal + aLineWidthInc);
+  my3DExtProp->SetLineWidth(theVal + aLineWidthInc);
   myOutLineProp->SetLineWidth(theVal);
   myHighlightProp->SetLineWidth(theVal);
   myPreselectProp->SetLineWidth(theVal);
   Modified();
 }
 
+vtkFloatingPointType SMESH_ActorDef::GetOutlineWidth()
+{
+  return myOutLineProp->GetLineWidth();
+}
+
+void SMESH_ActorDef::SetOutlineWidth(vtkFloatingPointType theVal)
+{
+  myOutLineProp->SetLineWidth(theVal);
+  Modified();
+}
 
 void SMESH_ActorDef::Set0DSize(vtkFloatingPointType theVal){
   my0DProp->SetPointSize(theVal);

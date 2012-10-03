@@ -642,16 +642,16 @@ SMESH_DeviceActor
 
 void
 SMESH_DeviceActor
-::SetFacesOrientationColor(vtkFloatingPointType theColor[3])
+::SetFacesOrientationColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b)
 {
-  myFaceOrientation->GetProperty()->SetColor( theColor );
+  myFaceOrientation->GetProperty()->SetColor( r, g, b );
 }
 
 void
 SMESH_DeviceActor
-::GetFacesOrientationColor(vtkFloatingPointType theColor[3])
+::GetFacesOrientationColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b)
 {
-  myFaceOrientation->GetProperty()->GetColor( theColor );
+  myFaceOrientation->GetProperty()->GetColor( r, g, b );
 }
 
 void
