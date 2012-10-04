@@ -939,8 +939,8 @@
       SALOMEDS::Color aColor = aGroupObject->GetColor();
       _PTR(SObject) aGroupSObject = SMESH::FindSObject(aGroupObject);
       if (aGroupSObject) {
-	QColor c;
-	int delta;
+        QColor c;
+        int delta;
         if(SMESH_Actor *anActor = SMESH::FindActorByEntry(aGroupSObject->GetID().c_str())) {
           switch ( aGroupObject->GetType ()) {
           case SMESH::NODE:
@@ -1207,220 +1207,220 @@
         return;
       }
       case 1132: {
-	vtkFloatingPointType color[3];
+        vtkFloatingPointType color[3];
         QColor faceColor, edgeColor, nodeColor, elem0dColor, ballColor;
-	QColor orientationColor, outlineColor, volumeColor;
+        QColor orientationColor, outlineColor, volumeColor;
         int deltaF = 0, deltaV = 0;
         int elem0dSize   = 1;
-	int ballSize     = 1;
+        int ballSize     = 1;
         int edgeWidth    = 1;
-	int outlineWidth = 1;
+        int outlineWidth = 1;
         vtkFloatingPointType shrinkCoef = 0.0;
         vtkFloatingPointType orientationScale = 0.0;
         bool orientation3d = false;
         VTK::MarkerType markerType = VTK::MT_NONE;
         VTK::MarkerScale markerScale = VTK::MS_NONE;
         int markerId = 0;
-	bool hasNodes = false;
-	int presentEntities = 0;
-	bool firstTime  = true;
+        bool hasNodes = false;
+        int presentEntities = 0;
+        bool firstTime  = true;
 
         SALOME_ListIteratorOfListIO It( selected );
         for ( ; It.More(); It.Next() ) {
           Handle(SALOME_InteractiveObject) IObject = It.Value();
           if ( !IObject->hasEntry() ) continue;
-	  SMESH_Actor* anActor = SMESH::FindActorByEntry( IObject->getEntry() );
-	  if ( !anActor || !anActor->GetObject() ) continue;
+          SMESH_Actor* anActor = SMESH::FindActorByEntry( IObject->getEntry() );
+          if ( !anActor || !anActor->GetObject() ) continue;
 
-	  if ( firstTime ) {
-	    // nodes: color, marker
-	    anActor->GetNodeColor( color[0], color[1], color[2] );
-	    nodeColor.setRgbF( color[0], color[1], color[2] );
-	    markerType  = anActor->GetMarkerType();
-	    markerScale = anActor->GetMarkerScale();
-	    markerId    = anActor->GetMarkerTexture();
-	    // edges: color, width
-	    anActor->GetEdgeColor( color[0], color[1], color[2] );
-	    edgeColor.setRgbF( color[0], color[1], color[2] );
-	    edgeWidth = qMax( (int)anActor->GetLineWidth(), 1 ); // minimum allowed width is 1
-	    // faces: front color, back color (delta)
-	    anActor->GetSufaceColor( color[0], color[1], color[2], deltaF );
-	    faceColor.setRgbF( color[0], color[1], color[2] );
-	    // faces: front color, back color (delta)
-	    anActor->GetVolumeColor( color[0], color[1], color[2], deltaV );
-	    volumeColor.setRgbF( color[0], color[1], color[2] );
-	    // 0d elements: color, size
-	    anActor->Get0DColor( color[0], color[1], color[2] );
-	    elem0dColor.setRgbF( color[0], color[1], color[2] );
-	    elem0dSize = qMax( (int)anActor->Get0DSize(), 1 ); // minimum allowed size is 1
-	    // balls: color, size
-	    anActor->GetBallColor( color[0], color[1], color[2] );
-	    ballColor.setRgbF( color[0], color[1], color[2] );
-	    ballSize = qMax( (int)anActor->GetBallSize(), 1 ); // minimum allowed size is 1
-	    // outlines: color
-	    anActor->GetOutlineColor( color[0], color[1], color[2] );
-	    outlineColor.setRgbF( color[0], color[1], color[2] );
-	    outlineWidth = qMax( (int)anActor->GetOutlineWidth(), 1 ); // minimum allowed width is 1
-	    // orientation vectors: color, scale, 3d flag
-	    anActor->GetFacesOrientationColor( color[0], color[1], color[2] );
-	    orientationColor.setRgbF( color[0], color[1], color[2] );
-	    orientationScale = anActor->GetFacesOrientationScale();
-	    orientation3d = anActor->GetFacesOrientation3DVectors();
-	    // shrink factor
-	    shrinkCoef = anActor->GetShrinkFactor();
-	  }
+          if ( firstTime ) {
+            // nodes: color, marker
+            anActor->GetNodeColor( color[0], color[1], color[2] );
+            nodeColor.setRgbF( color[0], color[1], color[2] );
+            markerType  = anActor->GetMarkerType();
+            markerScale = anActor->GetMarkerScale();
+            markerId    = anActor->GetMarkerTexture();
+            // edges: color, width
+            anActor->GetEdgeColor( color[0], color[1], color[2] );
+            edgeColor.setRgbF( color[0], color[1], color[2] );
+            edgeWidth = qMax( (int)anActor->GetLineWidth(), 1 ); // minimum allowed width is 1
+            // faces: front color, back color (delta)
+            anActor->GetSufaceColor( color[0], color[1], color[2], deltaF );
+            faceColor.setRgbF( color[0], color[1], color[2] );
+            // faces: front color, back color (delta)
+            anActor->GetVolumeColor( color[0], color[1], color[2], deltaV );
+            volumeColor.setRgbF( color[0], color[1], color[2] );
+            // 0d elements: color, size
+            anActor->Get0DColor( color[0], color[1], color[2] );
+            elem0dColor.setRgbF( color[0], color[1], color[2] );
+            elem0dSize = qMax( (int)anActor->Get0DSize(), 1 ); // minimum allowed size is 1
+            // balls: color, size
+            anActor->GetBallColor( color[0], color[1], color[2] );
+            ballColor.setRgbF( color[0], color[1], color[2] );
+            ballSize = qMax( (int)anActor->GetBallSize(), 1 ); // minimum allowed size is 1
+            // outlines: color
+            anActor->GetOutlineColor( color[0], color[1], color[2] );
+            outlineColor.setRgbF( color[0], color[1], color[2] );
+            outlineWidth = qMax( (int)anActor->GetOutlineWidth(), 1 ); // minimum allowed width is 1
+            // orientation vectors: color, scale, 3d flag
+            anActor->GetFacesOrientationColor( color[0], color[1], color[2] );
+            orientationColor.setRgbF( color[0], color[1], color[2] );
+            orientationScale = anActor->GetFacesOrientationScale();
+            orientation3d = anActor->GetFacesOrientation3DVectors();
+            // shrink factor
+            shrinkCoef = anActor->GetShrinkFactor();
+          }
 
-	  firstTime = false; // we only take properties from first object (for performance reasons)
+          firstTime = false; // we only take properties from first object (for performance reasons)
 
-	  if ( !hasNodes )
-	    hasNodes = anActor->GetObject()->GetNbEntities( SMDSAbs_Node );
-	  if ( !(presentEntities & SMESH_Actor::eEdges) && anActor->GetObject()->GetNbEntities( SMDSAbs_Edge ) )
-	    presentEntities = presentEntities | SMESH_Actor::eEdges;
-	  if ( !(presentEntities & SMESH_Actor::eFaces) && anActor->GetObject()->GetNbEntities( SMDSAbs_Face ) )
-	    presentEntities = presentEntities | SMESH_Actor::eFaces;
-	  if ( !(presentEntities & SMESH_Actor::eVolumes) && anActor->GetObject()->GetNbEntities( SMDSAbs_Volume ) )
-	    presentEntities = presentEntities | SMESH_Actor::eVolumes;
-	  if ( !(presentEntities & SMESH_Actor::e0DElements) && anActor->GetObject()->GetNbEntities( SMDSAbs_0DElement ) )
-	    presentEntities = presentEntities | SMESH_Actor::e0DElements;
-	  if ( !(presentEntities & SMESH_Actor::eBallElem) && anActor->GetObject()->GetNbEntities( SMDSAbs_Ball ) )
-	    presentEntities = presentEntities | SMESH_Actor::eBallElem;
-	  
-	  // as we know that all types of elements are present, we can exit the loop
-	  if ( presentEntities == SMESH_Actor::eAllEntity )
-	    break;
-	}
+          if ( !hasNodes )
+            hasNodes = anActor->GetObject()->GetNbEntities( SMDSAbs_Node );
+          if ( !(presentEntities & SMESH_Actor::eEdges) && anActor->GetObject()->GetNbEntities( SMDSAbs_Edge ) )
+            presentEntities = presentEntities | SMESH_Actor::eEdges;
+          if ( !(presentEntities & SMESH_Actor::eFaces) && anActor->GetObject()->GetNbEntities( SMDSAbs_Face ) )
+            presentEntities = presentEntities | SMESH_Actor::eFaces;
+          if ( !(presentEntities & SMESH_Actor::eVolumes) && anActor->GetObject()->GetNbEntities( SMDSAbs_Volume ) )
+            presentEntities = presentEntities | SMESH_Actor::eVolumes;
+          if ( !(presentEntities & SMESH_Actor::e0DElements) && anActor->GetObject()->GetNbEntities( SMDSAbs_0DElement ) )
+            presentEntities = presentEntities | SMESH_Actor::e0DElements;
+          if ( !(presentEntities & SMESH_Actor::eBallElem) && anActor->GetObject()->GetNbEntities( SMDSAbs_Ball ) )
+            presentEntities = presentEntities | SMESH_Actor::eBallElem;
+          
+          // as we know that all types of elements are present, we can exit the loop
+          if ( presentEntities == SMESH_Actor::eAllEntity )
+            break;
+        }
 
-	SMESHGUI_PropertiesDlg dlg( theMarkerMap[ aStudy->StudyId() ], SMESHGUI::desktop() );
-	// nodes: color, marker
-	dlg.setNodeColor( nodeColor );
+        SMESHGUI_PropertiesDlg dlg( theMarkerMap[ aStudy->StudyId() ], SMESHGUI::desktop() );
+        // nodes: color, marker
+        dlg.setNodeColor( nodeColor );
         if( markerType != VTK::MT_USER )
           dlg.setNodeMarker( markerType, markerScale );
         else
           dlg.setNodeCustomMarker( markerId );
-	// edges: color, line width
-	dlg.setEdgeColor( edgeColor );
-	dlg.setEdgeWidth( edgeWidth );
-	// faces: front color, back color
-	dlg.setFaceColor( faceColor, deltaF );
-	// volumes: normal color, reversed color
-	dlg.setVolumeColor( volumeColor, deltaV );
-	// outlines: color, line width
-	dlg.setOutlineColor( outlineColor );
-	dlg.setOutlineWidth( outlineWidth );
-	// 0d elements: color, size
-	dlg.setElem0dColor( elem0dColor );
-	dlg.setElem0dSize( elem0dSize );
-	// balls: color, size
-	dlg.setBallColor( ballColor );
-	dlg.setBallSize( ballSize );
-	// orientation: color, scale, 3d flag
-	dlg.setOrientationColor( orientationColor );
-	dlg.setOrientationSize( int( orientationScale * 100. ) );
-	dlg.setOrientation3d( orientation3d );
-	// shrink: scale factor
-	dlg.setShrinkCoef( int( shrinkCoef * 100. ) );
-	// hide unused controls
-	dlg.showControls( presentEntities, hasNodes );
-	
-	if ( dlg.exec() ) {
+        // edges: color, line width
+        dlg.setEdgeColor( edgeColor );
+        dlg.setEdgeWidth( edgeWidth );
+        // faces: front color, back color
+        dlg.setFaceColor( faceColor, deltaF );
+        // volumes: normal color, reversed color
+        dlg.setVolumeColor( volumeColor, deltaV );
+        // outlines: color, line width
+        dlg.setOutlineColor( outlineColor );
+        dlg.setOutlineWidth( outlineWidth );
+        // 0d elements: color, size
+        dlg.setElem0dColor( elem0dColor );
+        dlg.setElem0dSize( elem0dSize );
+        // balls: color, size
+        dlg.setBallColor( ballColor );
+        dlg.setBallSize( ballSize );
+        // orientation: color, scale, 3d flag
+        dlg.setOrientationColor( orientationColor );
+        dlg.setOrientationSize( int( orientationScale * 100. ) );
+        dlg.setOrientation3d( orientation3d );
+        // shrink: scale factor
+        dlg.setShrinkCoef( int( shrinkCoef * 100. ) );
+        // hide unused controls
+        dlg.showControls( presentEntities, hasNodes );
+        
+        if ( dlg.exec() ) {
           nodeColor        = dlg.nodeColor();
-	  markerType       = dlg.nodeMarkerType();
-	  markerScale      = dlg.nodeMarkerScale();
-	  markerId         = dlg.nodeMarkerId();
+          markerType       = dlg.nodeMarkerType();
+          markerScale      = dlg.nodeMarkerScale();
+          markerId         = dlg.nodeMarkerId();
           edgeColor        = dlg.edgeColor();
-	  edgeWidth        = dlg.edgeWidth();
+          edgeWidth        = dlg.edgeWidth();
           faceColor        = dlg.faceColor();
           deltaF           = dlg.faceColorDelta();
-	  volumeColor      = dlg.volumeColor();
-	  deltaV           = dlg.volumeColorDelta();
+          volumeColor      = dlg.volumeColor();
+          deltaV           = dlg.volumeColorDelta();
           outlineColor     = dlg.outlineColor();
-	  outlineWidth     = dlg.outlineWidth();
+          outlineWidth     = dlg.outlineWidth();
           elem0dColor      = dlg.elem0dColor();
-	  elem0dSize       = dlg.elem0dSize();
+          elem0dSize       = dlg.elem0dSize();
           ballColor        = dlg.ballColor();
-	  ballSize         = dlg.ballSize();
+          ballSize         = dlg.ballSize();
           orientationColor = dlg.orientationColor();
-	  orientationScale = dlg.orientationSize() / 100.;
-	  orientation3d    = dlg.orientation3d();
-	  shrinkCoef       = dlg.shrinkCoef() / 100.;
+          orientationScale = dlg.orientationSize() / 100.;
+          orientation3d    = dlg.orientation3d();
+          shrinkCoef       = dlg.shrinkCoef() / 100.;
 
           // store point markers map that might be changed by the user
           theMarkerMap[ aStudy->StudyId() ] = dlg.customMarkers();
 
-	  // set properties from dialog box to the presentations
+          // set properties from dialog box to the presentations
           SALOME_ListIteratorOfListIO It( selected );
           for ( ; It.More(); It.Next() ) {
             Handle(SALOME_InteractiveObject) IObject = It.Value();
             if ( !IObject->hasEntry() ) continue;
-	    SMESH_Actor* anActor = SMESH::FindActorByEntry( IObject->getEntry() );
-	    if ( !anActor ) continue;
-	    
-	    // nodes: color, marker
-	    anActor->SetNodeColor( nodeColor.redF(), nodeColor.greenF(), nodeColor.blueF() );
-	    if ( markerType != VTK::MT_USER ) {
-	      anActor->SetMarkerStd( markerType, markerScale );
-	    }
-	    else {
-	      const VTK::MarkerMap& markerMap = theMarkerMap[ aStudy->StudyId() ];
-	      VTK::MarkerMap::const_iterator iter = markerMap.find( markerId );
-	      if ( iter != markerMap.end() )
-		anActor->SetMarkerTexture( markerId, iter->second.second );
-	    }
-	    // volumes: normal color, reversed color (delta)
-	    anActor->SetVolumeColor( volumeColor.redF(), volumeColor.greenF(), volumeColor.blueF(), deltaV );
-	    // faces: front color, back color (delta)
-	    anActor->SetSufaceColor( faceColor.redF(), faceColor.greenF(), faceColor.blueF(), deltaF );
-	    // edges: color, width
-	    anActor->SetEdgeColor( edgeColor.redF(), edgeColor.greenF(), edgeColor.blueF() );
-	    anActor->SetLineWidth( edgeWidth );
-	    // outlines: color
-	    anActor->SetOutlineColor( outlineColor.redF(), outlineColor.greenF(), outlineColor.blueF() );
-	    anActor->SetOutlineWidth( outlineWidth );
-	    // 0D elements: color, size
-	    anActor->Set0DColor( elem0dColor.redF(), elem0dColor.greenF(), elem0dColor.blueF() );
-	    anActor->Set0DSize( elem0dSize );
-	    // balls: color, size
-	    anActor->SetBallColor( ballColor.redF(), ballColor.greenF(), ballColor.blueF() );
-	    anActor->SetBallSize( ballSize );
-	    // orientation: color, scale, 3d flag
-	    anActor->SetFacesOrientationColor( orientationColor.redF(), orientationColor.greenF(), orientationColor.blueF() );
-	    anActor->SetFacesOrientationScale( orientationScale );
-	    anActor->SetFacesOrientation3DVectors( orientation3d );
-	    // shrink factor
-	    anActor->SetShrinkFactor( shrinkCoef );
+            SMESH_Actor* anActor = SMESH::FindActorByEntry( IObject->getEntry() );
+            if ( !anActor ) continue;
+            
+            // nodes: color, marker
+            anActor->SetNodeColor( nodeColor.redF(), nodeColor.greenF(), nodeColor.blueF() );
+            if ( markerType != VTK::MT_USER ) {
+              anActor->SetMarkerStd( markerType, markerScale );
+            }
+            else {
+              const VTK::MarkerMap& markerMap = theMarkerMap[ aStudy->StudyId() ];
+              VTK::MarkerMap::const_iterator iter = markerMap.find( markerId );
+              if ( iter != markerMap.end() )
+                anActor->SetMarkerTexture( markerId, iter->second.second );
+            }
+            // volumes: normal color, reversed color (delta)
+            anActor->SetVolumeColor( volumeColor.redF(), volumeColor.greenF(), volumeColor.blueF(), deltaV );
+            // faces: front color, back color (delta)
+            anActor->SetSufaceColor( faceColor.redF(), faceColor.greenF(), faceColor.blueF(), deltaF );
+            // edges: color, width
+            anActor->SetEdgeColor( edgeColor.redF(), edgeColor.greenF(), edgeColor.blueF() );
+            anActor->SetLineWidth( edgeWidth );
+            // outlines: color
+            anActor->SetOutlineColor( outlineColor.redF(), outlineColor.greenF(), outlineColor.blueF() );
+            anActor->SetOutlineWidth( outlineWidth );
+            // 0D elements: color, size
+            anActor->Set0DColor( elem0dColor.redF(), elem0dColor.greenF(), elem0dColor.blueF() );
+            anActor->Set0DSize( elem0dSize );
+            // balls: color, size
+            anActor->SetBallColor( ballColor.redF(), ballColor.greenF(), ballColor.blueF() );
+            anActor->SetBallSize( ballSize );
+            // orientation: color, scale, 3d flag
+            anActor->SetFacesOrientationColor( orientationColor.redF(), orientationColor.greenF(), orientationColor.blueF() );
+            anActor->SetFacesOrientationScale( orientationScale );
+            anActor->SetFacesOrientation3DVectors( orientation3d );
+            // shrink factor
+            anActor->SetShrinkFactor( shrinkCoef );
 
-	    // for groups, set also proper color
-	    SMESH::SMESH_GroupBase_var aGroupObject = SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IObject);
-	    if ( !aGroupObject->_is_nil() ) {
-	      SMESH::ElementType anElementType = aGroupObject->GetType();
-	      QColor aColor;
-	      switch( anElementType ) {
-	      case SMESH::NODE:
-		aColor = nodeColor; break;
-	      case SMESH::EDGE:
-		aColor = edgeColor; break;
-	      case SMESH::FACE: 
-		aColor = faceColor; break;
-	      case SMESH::VOLUME:
-		aColor = volumeColor; break;
-	      case SMESH::ELEM0D: 
-		aColor = elem0dColor; break;
-	      case SMESH::BALL: 
-		aColor = ballColor; break;
-	      default: break;
-	      }
-	      
-	      if ( aColor.isValid() ) {
-		SALOMEDS::Color aGroupColor;
-		aGroupColor.R = aColor.redF();
-		aGroupColor.G = aColor.greenF();
-		aGroupColor.B = aColor.blueF();
-		aGroupObject->SetColor( aGroupColor );
-	      }
-	    } // if ( !aGroupObject->_is_nil() )
-	  } // for ( ; It.More(); It.Next() )
-	  SMESH::RepaintCurrentView();
-	} // if ( dlg.exec() )
+            // for groups, set also proper color
+            SMESH::SMESH_GroupBase_var aGroupObject = SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IObject);
+            if ( !aGroupObject->_is_nil() ) {
+              SMESH::ElementType anElementType = aGroupObject->GetType();
+              QColor aColor;
+              switch( anElementType ) {
+              case SMESH::NODE:
+                aColor = nodeColor; break;
+              case SMESH::EDGE:
+                aColor = edgeColor; break;
+              case SMESH::FACE: 
+                aColor = faceColor; break;
+              case SMESH::VOLUME:
+                aColor = volumeColor; break;
+              case SMESH::ELEM0D: 
+                aColor = elem0dColor; break;
+              case SMESH::BALL: 
+                aColor = ballColor; break;
+              default: break;
+              }
+              
+              if ( aColor.isValid() ) {
+                SALOMEDS::Color aGroupColor;
+                aGroupColor.R = aColor.redF();
+                aGroupColor.G = aColor.greenF();
+                aGroupColor.B = aColor.blueF();
+                aGroupObject->SetColor( aGroupColor );
+              }
+            } // if ( !aGroupObject->_is_nil() )
+          } // for ( ; It.More(); It.Next() )
+          SMESH::RepaintCurrentView();
+        } // if ( dlg.exec() )
         return;
       } // case 1132:
       } // switch(theCommandID)
@@ -4072,6 +4072,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( 143, OB, mesh_group, multiple_non_empty );   // EXPORT_CGNS
 #endif
   createPopupItem( 145, OB, mesh_group, multiple_non_empty );   // EXPORT_SAUV
+  createPopupItem( 147, OB, mesh_group, multiple_non_empty );   // EXPORT_GMF
   createPopupItem(  33, OB, mesh_part + " " + hyp_alg );        // DELETE
   createPopupItem( 813, OB, group );                            // DEL_GROUP with contents
   popupMgr()->insert( separator(), -1, 0 );
