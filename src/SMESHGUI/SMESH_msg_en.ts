@@ -326,11 +326,11 @@
     </message>
     <message>
         <source>MEN_IMPORT_DAT</source>
-        <translation>DAT File</translation>
+        <translation>DAT file</translation>
     </message>
     <message>
         <source>MEN_DAT</source>
-        <translation>DAT File</translation>
+        <translation>DAT file</translation>
     </message>
     <message>
         <source>MEN_DELETE</source>
@@ -410,19 +410,19 @@
     </message>
     <message>
         <source>MEN_EXPORT_DAT</source>
-        <translation>Export to DAT File</translation>
+        <translation>Export to DAT file</translation>
     </message>
     <message>
         <source>MEN_EXPORT_MED</source>
-        <translation>Export to MED File</translation>
+        <translation>Export to MED file</translation>
     </message>
     <message>
         <source>MEN_EXPORT_CGNS</source>
-        <translation>Export to CGNS File</translation>
+        <translation>Export to CGNS file</translation>
     </message>
     <message>
         <source>MEN_EXPORT_GMF</source>
-        <translation>Export to GMF File</translation>
+        <translation>Export to GMF file</translation>
     </message>
     <message>
         <source>MEN_EXPORT_SAUV</source>
@@ -430,11 +430,11 @@
     </message>
     <message>
         <source>MEN_EXPORT_STL</source>
-        <translation>Export to STL File</translation>
+        <translation>Export to STL file</translation>
     </message>
     <message>
         <source>MEN_EXPORT_UNV</source>
-        <translation>Export to UNV File</translation>
+        <translation>Export to UNV file</translation>
     </message>
     <message>
         <source>MEN_EXTRUSION</source>
@@ -906,11 +906,11 @@
     </message>
     <message>
         <source>MEN_IMPORT_STL</source>
-        <translation>STL File</translation>
+        <translation>STL file</translation>
     </message>
     <message>
         <source>MEN_STL</source>
-        <translation>STL File</translation>
+        <translation>STL file</translation>
     </message>
     <message>
         <source>MEN_SYM</source>
@@ -966,11 +966,11 @@
     </message>
     <message>
         <source>MEN_IMPORT_UNV</source>
-        <translation>UNV File</translation>
+        <translation>UNV file</translation>
     </message>
     <message>
         <source>MEN_UNV</source>
-        <translation>UNV File</translation>
+        <translation>UNV file</translation>
     </message>
     <message>
         <source>MEN_UN_GROUP</source>

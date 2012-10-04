@@ -3495,12 +3495,8 @@ void SMESHGUI::createPopupItem( const int id,
                                 const QString& theRule,
                                 const int pId )
 {
-  int parentId = pId;
-  if( pId!=-1 )
-    parentId = popupMgr()->actionId( action( pId ) );
-
   if( !popupMgr()->contains( popupMgr()->actionId( action( id ) ) ) )
-    popupMgr()->insert( action( id ), parentId, 0 );
+    popupMgr()->insert( action( id ), pId, 0 );
 
   QString lc = "$";        // VSR : instead of QtxPopupSelection::defEquality();
   QString dc = "selcount"; // VSR : insetad of QtxPopupSelection::defSelCountParam()
@@ -3551,13 +3547,13 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  142, "CGNS");
   createSMESHAction(  144, "SAUV");
   createSMESHAction(  146, "GMF" );
-  createSMESHAction(  124, "EXPORT_DAT" );
-  createSMESHAction(  125, "EXPORT_MED" );
-  createSMESHAction(  126, "EXPORT_UNV" );
-  createSMESHAction(  141, "EXPORT_STL" );
-  createSMESHAction(  143, "EXPORT_CGNS");
-  createSMESHAction(  145, "EXPORT_SAUV");
-  createSMESHAction(  147, "EXPORT_GMF" );
+  createSMESHAction(  124, "DAT" );
+  createSMESHAction(  125, "MED" );
+  createSMESHAction(  126, "UNV" );
+  createSMESHAction(  141, "STL" );
+  createSMESHAction(  143, "CGNS");
+  createSMESHAction(  145, "SAUV");
+  createSMESHAction(  147, "GMF" );
   createSMESHAction(  150, "FILE_INFO" );
   createSMESHAction(   33, "DELETE",          "ICON_DELETE", Qt::Key_Delete );
   createSMESHAction( 5105, "SEL_FILTER_LIB" );
@@ -4067,14 +4063,16 @@ void SMESHGUI::initialize( CAM_Application* app )
   QString multiple_non_empty = QString( " && %1>0 && numberOfNodes>0" ).arg( dc );
   QString only_one_2D        = only_one_non_empty + " && dim>1";
 
-  createPopupItem( 125, OB, mesh_group, multiple_non_empty );   // EXPORT_MED
-  createPopupItem( 126, OB, mesh_group, only_one_non_empty );   // EXPORT_UNV
-  createPopupItem( 141, OB, mesh_group, only_one_2D );          // EXPORT_STL
+  int anId = popupMgr()->insert( tr( "MEN_EXPORT" ), -1, -1 );        // EXPORT submenu
+  createPopupItem( 125, OB, mesh_group, multiple_non_empty, anId );   // EXPORT_MED
+  createPopupItem( 126, OB, mesh_group, only_one_non_empty, anId );   // EXPORT_UNV
+  createPopupItem( 141, OB, mesh_group, only_one_2D, anId );          // EXPORT_STL
 #ifdef WITH_CGNS
-  createPopupItem( 143, OB, mesh_group, multiple_non_empty );   // EXPORT_CGNS
+  createPopupItem( 143, OB, mesh_group, multiple_non_empty, anId );   // EXPORT_CGNS
 #endif
-  createPopupItem( 145, OB, mesh_group, multiple_non_empty );   // EXPORT_SAUV
-  createPopupItem( 147, OB, mesh_group, multiple_non_empty );   // EXPORT_GMF
+  createPopupItem( 145, OB, mesh_group, multiple_non_empty, anId );   // EXPORT_SAUV
+  createPopupItem( 147, OB, mesh_group, multiple_non_empty, anId );   // EXPORT_GMF
+  createPopupItem( 124, OB, mesh_group, multiple_non_empty, anId );   // EXPORT_DAT
   createPopupItem(  33, OB, mesh_part + " " + hyp_alg );        // DELETE
   createPopupItem( 813, OB, group );                            // DEL_GROUP with contents
   popupMgr()->insert( separator(), -1, 0 );
@@ -4094,7 +4092,6 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( 1137, OB + " " + View, mesh, "&& isAutoColor" );       // DISABLE_AUTO_COLOR
   popupMgr()->insert( separator(), -1, 0 );
 
-  int anId;
   QString aClient = QString( "%1client in {%2}" ).arg( lc ).arg( "'VTKViewer'" );
   QString aType = QString( "%1type in {%2}" ).arg( lc );
   aType = aType.arg( mesh_part );
