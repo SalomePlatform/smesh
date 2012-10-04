@@ -165,6 +165,8 @@
 #include <Standard_ErrorHandler.hxx>
 #include <NCollection_DataMap.hxx>
 
+#include <Basics_Utils.hxx>
+
 //To disable automatic genericobj management, the following line should be commented.
 //Otherwise, it should be uncommented. Refer to KERNEL_SRC/src/SALOMEDSImpl/SALOMEDSImpl_AttributeIOR.cxx
 #define WITHGENERICOBJ
@@ -5215,9 +5217,9 @@ SALOMEDS::Color SMESHGUI::getUniqueColor( const QList<SALOMEDS::Color>& theReser
   return aSColor;
 }
 
-const char gSeparator = '_'; // character used to separate parameter names
-const char gDigitsSep = ':'; // character used to separate numeric parameter values (color = r:g:b)
-const char gPathSep   = '|'; // character used to separate paths
+const char* gSeparator = "_"; // character used to separate parameter names
+const char* gDigitsSep = ":"; // character used to separate numeric parameter values (color = r:g:b)
+const char* gPathSep   = "|"; // character used to separate paths
 
 /*!
  * \brief Store visual parameters
@@ -5227,6 +5229,9 @@ const char gPathSep   = '|'; // character used to separate paths
  */
 void SMESHGUI::storeVisualParameters (int savePoint)
 {
+  // localizing
+  Kernel_Utils::Localizer loc;
+
   SalomeApp_Study* appStudy = dynamic_cast<SalomeApp_Study*>(application()->activeStudy());
   if (!appStudy || !appStudy->studyDS())
     return;
@@ -5367,9 +5372,11 @@ void SMESHGUI::storeVisualParameters (int savePoint)
 
                   // Displayed entities
                   unsigned int aMode = aSmeshActor->GetEntityMode();
-                  bool isE = aMode & SMESH_Actor::eEdges;
-                  bool isF = aMode & SMESH_Actor::eFaces;
-                  bool isV = aMode & SMESH_Actor::eVolumes;
+                  bool isE  = aMode & SMESH_Actor::eEdges;
+                  bool isF  = aMode & SMESH_Actor::eFaces;
+                  bool isV  = aMode & SMESH_Actor::eVolumes;
+		  bool is0d = aMode & SMESH_Actor::e0DElements;
+		  bool isB  = aMode & SMESH_Actor::eBallElem;
 
                   QString modeStr ("e");
                   modeStr += gDigitsSep; modeStr += QString::number(isE);
@@ -5377,53 +5384,92 @@ void SMESHGUI::storeVisualParameters (int savePoint)
                   modeStr += gDigitsSep; modeStr += QString::number(isF);
                   modeStr += gDigitsSep; modeStr += "v";
                   modeStr += gDigitsSep; modeStr += QString::number(isV);
+                  modeStr += gDigitsSep; modeStr += "0d";
+                  modeStr += gDigitsSep; modeStr += QString::number(is0d);
+                  modeStr += gDigitsSep; modeStr += "b";
+                  modeStr += gDigitsSep; modeStr += QString::number(isB);
 
                   param = vtkParam + "Entities";
                   ip->setParameter(entry, param, modeStr.toLatin1().data());
 
-                  // Colors (surface:edge:)
+                  // Colors
                   vtkFloatingPointType r, g, b;
                   int delta;
 
                   aSmeshActor->GetSufaceColor(r, g, b, delta);
-                  QString colorStr ("surface");
-                  colorStr += gDigitsSep; colorStr += QString::number(r);
-                  colorStr += gDigitsSep; colorStr += QString::number(g);
-                  colorStr += gDigitsSep; colorStr += QString::number(b);
+                  QStringList colorStr;
+		  colorStr << "surface";
+                  colorStr << QString::number(r);
+                  colorStr << QString::number(g);
+                  colorStr << QString::number(b);
 
-                  colorStr += gDigitsSep; colorStr += "backsurface";
-                  colorStr += gDigitsSep; colorStr += QString::number(delta);
+                  colorStr << "backsurface";
+                  colorStr << QString::number(delta);
 
+                  aSmeshActor->GetVolumeColor(r, g, b, delta);
+                  colorStr << "volume";
+                  colorStr << QString::number(r);
+                  colorStr << QString::number(g);
+                  colorStr << QString::number(b);
+                  colorStr << QString::number(delta);
 
                   aSmeshActor->GetEdgeColor(r, g, b);
-                  colorStr += gDigitsSep; colorStr += "edge";
-                  colorStr += gDigitsSep; colorStr += QString::number(r);
-                  colorStr += gDigitsSep; colorStr += QString::number(g);
-                  colorStr += gDigitsSep; colorStr += QString::number(b);
+                  colorStr << "edge";
+                  colorStr << QString::number(r);
+                  colorStr << QString::number(g);
+                  colorStr << QString::number(b);
 
                   aSmeshActor->GetNodeColor(r, g, b);
-                  colorStr += gDigitsSep; colorStr += "node";
-                  colorStr += gDigitsSep; colorStr += QString::number(r);
-                  colorStr += gDigitsSep; colorStr += QString::number(g);
-                  colorStr += gDigitsSep; colorStr += QString::number(b);
+                  colorStr << "node";
+                  colorStr << QString::number(r);
+                  colorStr << QString::number(g);
+                  colorStr << QString::number(b);
 
                   aSmeshActor->GetOutlineColor(r, g, b);
-                  colorStr += gDigitsSep; colorStr += "outline";
-                  colorStr += gDigitsSep; colorStr += QString::number(r);
-                  colorStr += gDigitsSep; colorStr += QString::number(g);
-                  colorStr += gDigitsSep; colorStr += QString::number(b);
+                  colorStr << "outline";
+                  colorStr << QString::number(r);
+                  colorStr << QString::number(g);
+                  colorStr << QString::number(b);
+
+                  aSmeshActor->Get0DColor(r, g, b);
+                  colorStr << "elem0d";
+                  colorStr << QString::number(r);
+                  colorStr << QString::number(g);
+                  colorStr << QString::number(b);
+
+                  aSmeshActor->GetBallColor(r, g, b);
+                  colorStr << "ball";
+                  colorStr << QString::number(r);
+                  colorStr << QString::number(g);
+                  colorStr << QString::number(b);
+
+                  aSmeshActor->GetFacesOrientationColor(r, g, b);
+                  colorStr << "orientation";
+                  colorStr << QString::number(r);
+                  colorStr << QString::number(g);
+                  colorStr << QString::number(b);
 
                   param = vtkParam + "Colors";
-                  ip->setParameter(entry, param, colorStr.toLatin1().data());
+                  ip->setParameter(entry, param, qPrintable(colorStr.join(gDigitsSep)));
 
-                  // Sizes of lines and points
-                  QString sizeStr ("line");
-                  sizeStr += gDigitsSep; sizeStr += QString::number((int)aSmeshActor->GetLineWidth());
-                  sizeStr += gDigitsSep; sizeStr += "shrink";
-                  sizeStr += gDigitsSep; sizeStr += QString::number(aSmeshActor->GetShrinkFactor());
+                  // Sizes
+		  QStringList sizeStr;
+		  sizeStr << "line";
+                  sizeStr << QString::number((int)aSmeshActor->GetLineWidth());
+                  sizeStr << "outline";
+                  sizeStr << QString::number((int)aSmeshActor->GetOutlineWidth());
+                  sizeStr << "elem0d";
+                  sizeStr << QString::number((int)aSmeshActor->Get0DSize());
+                  sizeStr << "ball";
+                  sizeStr << QString::number((int)aSmeshActor->GetBallSize());
+                  sizeStr << "shrink";
+                  sizeStr << QString::number(aSmeshActor->GetShrinkFactor());
+                  sizeStr << "orientation";
+                  sizeStr << QString::number(aSmeshActor->GetFacesOrientationScale());
+                  sizeStr << QString::number(aSmeshActor->GetFacesOrientation3DVectors());
 
                   param = vtkParam + "Sizes";
-                  ip->setParameter(entry, param, sizeStr.toLatin1().data());
+                  ip->setParameter(entry, param, qPrintable(sizeStr.join(gDigitsSep)));
 
                   // Point marker
                   QString markerStr;
@@ -5509,6 +5555,9 @@ typedef std::map<int, TPlaneInfoList> TPlaneInfoMap;
  */
 void SMESHGUI::restoreVisualParameters (int savePoint)
 {
+  // localizing
+  Kernel_Utils::Localizer loc;
+
   SalomeApp_Study* appStudy = dynamic_cast<SalomeApp_Study*>(application()->activeStudy());
   if (!appStudy || !appStudy->studyDS())
     return;
@@ -5745,96 +5794,280 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
             // Displayed entities
             else if (paramNameStr == "Entities") {
               QStringList mode = val.split(gDigitsSep, QString::SkipEmptyParts);
-              if (mode.count() == 6) {
-                if (mode[0] != "e" || mode[2]  != "f" || mode[4] != "v") {
-                  MESSAGE("Invalid order of data in Entities, must be: "
-                          "e:0/1:f:0/1:v:0/1");
-                }
-                else {
-                  unsigned int aMode = aSmeshActor->GetEntityMode();
-                  unsigned int aNewMode =
-                    (int(SMESH_Actor::eEdges  ) * mode[1].toInt()) |
-                    (int(SMESH_Actor::eFaces  ) * mode[3].toInt()) |
-                    (int(SMESH_Actor::eVolumes) * mode[5].toInt());
-                  if (aNewMode != aMode)
-                    aSmeshActor->SetEntityMode(aNewMode);
-                }
-              }
+	      int aEntityMode = SMESH_Actor::eAllEntity;
+	      for ( int i = 0; i < mode.count(); i+=2 ) {
+		if ( i < mode.count()-1 ) {
+		  QString type = mode[i];
+		  bool val = mode[i+1].toInt();
+		  if      ( type == "e" && !val )
+		    aEntityMode = aEntityMode & ~SMESH_Actor::eEdges;
+		  else if ( type == "f" && !val )
+		    aEntityMode = aEntityMode & ~SMESH_Actor::eFaces;
+		  else if ( type == "v" && !val )
+		    aEntityMode = aEntityMode & ~SMESH_Actor::eVolumes;
+		  else if ( type == "0d" && !val )
+		    aEntityMode = aEntityMode & ~SMESH_Actor::e0DElements;
+		  else if ( type == "b" && !val )
+		    aEntityMode = aEntityMode & ~SMESH_Actor::eBallElem;
+		}
+	      }
+	      aSmeshActor->SetEntityMode( aEntityMode );
             }
             // Colors
             else if (paramNameStr == "Colors") {
               QStringList colors = val.split(gDigitsSep, QString::SkipEmptyParts);
-              if (colors.count() == 16 || colors.count() == 18 ) {
-                if (colors[0] != "surface" || colors[4]  != "backsurface" ||
-                    (colors[8] != "edge" && colors[6] != "edge" ) || (colors[12] != "node" && colors[10] != "node") ||
-                    (colors.count() == 18 && colors[14] != "outline")) {
-                  MESSAGE("Invalid order of data in Colors, must be: "
-                          "surface:r:g:b:backsurface:r:g:b:edge:r:g:b:node:r:g:b or surface:r:g:b:backsurface:delta:edge:r:g:b:node:r:g:b:outline:r:g:b");
-                }
-                else {
-                  int delta = 0;
-                  float er,eg,eb;
-                  float nr,ng,nb;
-                  vtkFloatingPointType otr,otg,otb;
-                  //Old case backsurface color is independent
-                  if( colors.count() == 16 ) {
-                    QColor ffc;
-                    SMESH::GetColor( "SMESH", "fill_color", ffc, delta, "0,170,255|-100" ) ;
-                    er = colors[9].toFloat();
-                    eg = colors[10].toFloat();
-                    eb = colors[11].toFloat();
-
-                    nr = colors[13].toFloat();
-                    ng = colors[14].toFloat();
-                    nb = colors[15].toFloat();
-                    SMESH::GetColor("SMESH", "outline_color", otr, otg, otb, QColor( 0, 70, 0 ) );
-                  } else {
-                    //New case backsurface color depends on surface color
-                    delta = colors[5].toInt();
-
-                    er = colors[7].toFloat();
-                    eg = colors[8].toFloat();
-                    eb = colors[9].toFloat();
-
-                    nr = colors[11].toFloat();
-                    ng = colors[12].toFloat();
-                    nb = colors[13].toFloat();
-
-                    otr = colors[15].toFloat();
-                    otg = colors[16].toFloat();
-                    otb = colors[17].toFloat();
-                  }
-                  aSmeshActor->SetSufaceColor(colors[1].toFloat(), colors[2].toFloat(), colors[3].toFloat(), delta);
-                  aSmeshActor->SetEdgeColor(er,eg,eb);
-                  aSmeshActor->SetNodeColor(nr,ng,nb);
-                  aSmeshActor->SetOutlineColor(otr,otg,otb);
-                }
-              }
+	      QColor nodeColor;
+	      QColor edgeColor;
+	      QColor faceColor;
+	      QColor volumeColor;
+	      QColor elem0dColor;
+	      QColor ballColor;
+	      QColor outlineColor;
+	      QColor orientationColor;
+	      int deltaF;
+	      int deltaV;
+	      QColor c;
+	      double r, g, b;
+	      bool bOk;
+	      // below lines are required to get default values for delta coefficients
+	      // of backface color for faces and color of reversed volumes
+	      SMESH::GetColor( "SMESH", "fill_color",   c, deltaF, "0,170,255|-100" );
+	      SMESH::GetColor( "SMESH", "volume_color", c, deltaV, "255,0,170|-100" );
+	      for ( int i = 0; i < colors.count(); i++ ) {
+		QString type = colors[i];
+		if ( type == "surface" ) {
+		  // face color is set by 3 values r:g:b, where
+		  // - r,g,b - is rgb color components
+		  if ( i+1 >= colors.count() ) break;                  // format error
+		  r = colors[i+1].toDouble( &bOk ); if ( !bOk ) break; // format error
+		  if ( i+2 >= colors.count() ) break;                  // format error
+		  g = colors[i+2].toDouble( &bOk ); if ( !bOk ) break; // format error
+		  if ( i+3 >= colors.count() ) break;                  // format error
+		  b = colors[i+3].toDouble( &bOk ); if ( !bOk ) break; // format error
+		  faceColor.setRgbF( r, g, b );
+		  i += 3;
+		}
+		else if ( type == "backsurface" ) {
+		  // backface color can be defined in several ways
+		  // - in old versions, it is set as rgb triple r:g:b - this was is unsupported now
+		  // - in latest versions, it is set as delta coefficient
+		  bool rgbOk = false, deltaOk;
+		  if ( i+1 >= colors.count() ) break;                  // format error
+		  r = colors[i+1].toDouble( &bOk ); if ( !bOk ) break; // format error
+		  int delta = colors[i+1].toInt( &deltaOk );
+		  i++;                                 // shift index
+		  if ( i+1 < colors.count() )          // index is shifted to 1
+		    g = colors[i+1].toDouble( &rgbOk );
+		  if ( rgbOk ) i++;                    // shift index
+		  if ( rgbOk && i+1 < colors.count() ) // index is shifted to 2
+		    b = colors[i+1].toDouble( &rgbOk );
+		  if ( rgbOk ) i++;
+		  // - as currently there's no way to set directly backsurface color as it was before,
+		  // we ignore old dump where r,g,b triple was set
+		  // - also we check that delta parameter is set properly
+		  if ( !rgbOk && deltaOk )
+		    deltaF = delta;
+		}
+		else if ( type == "volume" ) {
+		  // volume color is set by 4 values r:g:b:delta, where
+		  // - r,g,b - is a normal volume rgb color components
+		  // - delta - is a reversed volume color delta coefficient
+		  if ( i+1 >= colors.count() ) break;                  // format error
+		  r = colors[i+1].toDouble( &bOk ); if ( !bOk ) break; // format error
+		  if ( i+2 >= colors.count() ) break;                  // format error
+		  g = colors[i+2].toDouble( &bOk ); if ( !bOk ) break; // format error
+		  if ( i+3 >= colors.count() ) break;                  // format error
+		  b = colors[i+3].toDouble( &bOk ); if ( !bOk ) break; // format error
+		  if ( i+4 >= colors.count() ) break;                  // format error
+		  int delta = colors[i+4].toInt( &bOk );
+                  if ( !bOk ) break;                                   // format error
+		  volumeColor.setRgbF( r, g, b );
+		  deltaV = delta;
+		  i += 4;
+		}
+		else if ( type == "edge" ) {
+		  // edge color is set by 3 values r:g:b, where
+		  // - r,g,b - is rgb color components
+		  if ( i+1 >= colors.count() ) break;                  // format error
+		  r = colors[i+1].toDouble( &bOk ); if ( !bOk ) break; // format error
+		  if ( i+2 >= colors.count() ) break;                  // format error
+		  g = colors[i+2].toDouble( &bOk ); if ( !bOk ) break; // format error
+		  if ( i+3 >= colors.count() ) break;                  // format error
+		  b = colors[i+3].toDouble( &bOk ); if ( !bOk ) break; // format error
+		  edgeColor.setRgbF( r, g, b );
+		  i += 3;
+		}
+		else if ( type == "node" ) {
+		  // node color is set by 3 values r:g:b, where
+		  // - r,g,b - is rgb color components
+		  if ( i+1 >= colors.count() ) break;                  // format error
+		  r = colors[i+1].toDouble( &bOk ); if ( !bOk ) break; // format error
+		  if ( i+2 >= colors.count() ) break;                  // format error
+		  g = colors[i+2].toDouble( &bOk ); if ( !bOk ) break; // format error
+		  if ( i+3 >= colors.count() ) break;                  // format error
+		  b = colors[i+3].toDouble( &bOk ); if ( !bOk ) break; // format error
+		  nodeColor.setRgbF( r, g, b );
+		  i += 3;
+		}
+		else if ( type == "elem0d" ) {
+		  // 0d element color is set by 3 values r:g:b, where
+		  // - r,g,b - is rgb color components
+		  if ( i+1 >= colors.count() ) break;                  // format error
+		  r = colors[i+1].toDouble( &bOk ); if ( !bOk ) break; // format error
+		  if ( i+2 >= colors.count() ) break;                  // format error
+		  g = colors[i+2].toDouble( &bOk ); if ( !bOk ) break; // format error
+		  if ( i+3 >= colors.count() ) break;                  // format error
+		  b = colors[i+3].toDouble( &bOk ); if ( !bOk ) break; // format error
+		  elem0dColor.setRgbF( r, g, b );
+		  i += 3;
+		}
+		else if ( type == "ball" ) {
+		  // ball color is set by 3 values r:g:b, where
+		  // - r,g,b - is rgb color components
+		  if ( i+1 >= colors.count() ) break;                  // format error
+		  r = colors[i+1].toDouble( &bOk ); if ( !bOk ) break; // format error
+		  if ( i+2 >= colors.count() ) break;                  // format error
+		  g = colors[i+2].toDouble( &bOk ); if ( !bOk ) break; // format error
+		  if ( i+3 >= colors.count() ) break;                  // format error
+		  b = colors[i+3].toDouble( &bOk ); if ( !bOk ) break; // format error
+		  ballColor.setRgbF( r, g, b );
+		  i += 3;
+		}
+		else if ( type == "outline" ) {
+		  // outline color is set by 3 values r:g:b, where
+		  // - r,g,b - is rgb color components
+		  if ( i+1 >= colors.count() ) break;                  // format error
+		  r = colors[i+1].toDouble( &bOk ); if ( !bOk ) break; // format error
+		  if ( i+2 >= colors.count() ) break;                  // format error
+		  g = colors[i+2].toDouble( &bOk ); if ( !bOk ) break; // format error
+		  if ( i+3 >= colors.count() ) break;                  // format error
+		  b = colors[i+3].toDouble( &bOk ); if ( !bOk ) break; // format error
+		  outlineColor.setRgbF( r, g, b );
+		  i += 3;
+		}
+		else if ( type == "orientation" ) {
+		  // orientation color is set by 3 values r:g:b, where
+		  // - r,g,b - is rgb color components
+		  if ( i+1 >= colors.count() ) break;                  // format error
+		  r = colors[i+1].toDouble( &bOk ); if ( !bOk ) break; // format error
+		  if ( i+2 >= colors.count() ) break;                  // format error
+		  g = colors[i+2].toDouble( &bOk ); if ( !bOk ) break; // format error
+		  if ( i+3 >= colors.count() ) break;                  // format error
+		  b = colors[i+3].toDouble( &bOk ); if ( !bOk ) break; // format error
+		  orientationColor.setRgbF( r, g, b );
+		  i += 3;
+		}
+	      }
+	      // node color
+	      if ( nodeColor.isValid() )
+		aSmeshActor->SetNodeColor( nodeColor.redF(), nodeColor.greenF(), nodeColor.blueF() );
+	      // edge color
+	      if ( edgeColor.isValid() )
+		aSmeshActor->SetEdgeColor( edgeColor.redF(), edgeColor.greenF(), edgeColor.blueF() );
+	      // face color
+	      if ( faceColor.isValid() )
+		aSmeshActor->SetSufaceColor( faceColor.redF(), faceColor.greenF(), faceColor.blueF(), deltaF );
+	      // volume color
+	      if ( volumeColor.isValid() )
+		aSmeshActor->SetVolumeColor( volumeColor.redF(), volumeColor.greenF(), volumeColor.blueF(), deltaV );
+	      else if ( faceColor.isValid() ) // backward compatibility (no separate color for volumes)
+		aSmeshActor->SetVolumeColor( faceColor.redF(), faceColor.greenF(), faceColor.blueF(), deltaF );
+	      // 0d element color
+	      if ( elem0dColor.isValid() )
+		aSmeshActor->Set0DColor( elem0dColor.redF(), elem0dColor.greenF(), elem0dColor.blueF() );
+	      // ball color
+	      if ( ballColor.isValid() )
+		aSmeshActor->SetBallColor( ballColor.redF(), ballColor.greenF(), ballColor.blueF() );
+	      // outline color
+	      if ( outlineColor.isValid() )
+		aSmeshActor->SetOutlineColor( outlineColor.redF(), outlineColor.greenF(), outlineColor.blueF() );
+	      // orientation color
+	      if ( orientationColor.isValid() )
+		aSmeshActor->SetFacesOrientationColor( orientationColor.redF(), orientationColor.greenF(), orientationColor.blueF() );
             }
-            // Sizes of lines and points
+            // Sizes
             else if (paramNameStr == "Sizes") {
               QStringList sizes = val.split(gDigitsSep, QString::SkipEmptyParts);
-              if (sizes.count() == 4) {
-                if (sizes[0] != "line" || sizes[2] != "shrink") {
-                  MESSAGE("Invalid order of data in Sizes, must be: "
-                          "line:int:shrink:float");
-                }
-                else {
-                  aSmeshActor->SetLineWidth(sizes[1].toInt());
-                  aSmeshActor->SetShrinkFactor(sizes[3].toFloat());
-                }
-              }
-              else if (sizes.count() == 6) { // just to support old format
-                if (sizes[0] != "line" || sizes[2]  != "node" || sizes[4] != "shrink") {
-                  MESSAGE("Invalid order of data in Sizes, must be: "
-                          "line:int:node:int:shrink:float");
-                }
-                else {
-                  aSmeshActor->SetLineWidth(sizes[1].toInt());
-                  //aSmeshActor->SetNodeSize(sizes[3].toInt()); // made obsolete
-                  aSmeshActor->SetShrinkFactor(sizes[5].toFloat());
-                }
-              }
+	      bool bOk;
+	      int lineWidth = -1;
+	      int outlineWidth = -1;
+	      int elem0dSize = -1;
+	      int ballSize = -1;
+	      double shrinkSize = -1;
+	      double orientationSize = -1;
+	      bool orientation3d = false;
+	      for ( int i = 0; i < sizes.count(); i++ ) {
+		QString type = sizes[i];
+		if ( type == "line" ) {
+		  // line (wireframe) width is given as single integer value
+		  if ( i+1 >= sizes.count() ) break;                    // format error
+		  int v = sizes[i+1].toInt( &bOk ); if ( !bOk ) break;  // format error
+		  lineWidth = v;
+		  i++;
+		}
+		if ( type == "outline" ) {
+		  // outline width is given as single integer value
+		  if ( i+1 >= sizes.count() ) break;                    // format error
+		  int v = sizes[i+1].toInt( &bOk ); if ( !bOk ) break;  // format error
+		  outlineWidth = v;
+		  i++;
+		}
+		else if ( type == "elem0d" ) {
+		  // 0d element size is given as single integer value
+		  if ( i+1 >= sizes.count() ) break;                    // format error
+		  int v = sizes[i+1].toInt( &bOk ); if ( !bOk ) break;  // format error
+		  elem0dSize = v;
+		  i++;
+		}
+		else if ( type == "ball" ) {
+		  // ball size is given as single integer value
+		  if ( i+1 >= sizes.count() ) break;                    // format error
+		  int v = sizes[i+1].toInt( &bOk ); if ( !bOk ) break;  // format error
+		  ballSize = v;
+		  i++;
+		}
+		else if ( type == "shrink" ) {
+		  // shrink factor is given as single floating point value
+		  if ( i+1 >= sizes.count() ) break;                          // format error
+		  double v = sizes[i+1].toDouble( &bOk ); if ( !bOk ) break;  // format error
+		  shrinkSize = v;
+		  i++;
+		}
+		else if ( type == "orientation" ) {
+		  // orientation vectors are specified by two values size:3d, where
+		  // - size - is a floating point value specifying scale factor
+		  // - 3d - is a boolean
+		  if ( i+1 >= sizes.count() ) break;                          // format error
+		  double v1 = sizes[i+1].toDouble( &bOk ); if ( !bOk ) break; // format error
+		  if ( i+2 >= sizes.count() ) break;                          // format error
+		  int v2 = sizes[i+2].toInt( &bOk ); if ( !bOk ) break;       // format error
+		  orientationSize = v1;
+		  orientation3d = (bool)v2;
+		  i += 2;
+		}
+	      }
+	      // line (wireframe) width
+	      if ( lineWidth > 0 )
+		aSmeshActor->SetLineWidth( lineWidth );
+	      // outline width
+	      if ( outlineWidth > 0 )
+		aSmeshActor->SetOutlineWidth( outlineWidth );
+	      else if ( lineWidth > 0 ) // backward compatibility (no separate width for outlines)
+		aSmeshActor->SetOutlineWidth( lineWidth );
+	      // 0d element size
+	      if ( elem0dSize > 0 )
+		aSmeshActor->Set0DSize( elem0dSize );
+	      // ball size
+	      if ( ballSize > 0 )
+		aSmeshActor->SetBallSize( ballSize );
+	      // shrink factor
+	      if ( shrinkSize > 0 )
+		aSmeshActor->SetShrinkFactor( shrinkSize );
+	      // orientation vectors
+	      if ( orientationSize > 0 ) {
+		aSmeshActor->SetFacesOrientationScale( orientationSize );
+		aSmeshActor->SetFacesOrientation3DVectors( orientation3d );
+	      }
             }
             // Point marker
             else if (paramNameStr == "PointMarker") {
