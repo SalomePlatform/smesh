@@ -294,19 +294,20 @@ Driver_Mesh::Status DriverGMF_Write::Perform()
 
     // write the group
     GmfSetKwd( meshID, gmfKwd, nbOkElems );
+    elemIt = group->GetElements();
     if ( elem2IDMap )
-      for ( elemIt = group->GetElements(); elemIt->more(); )
+      for ( ; elemIt->more(); )
       {
         const SMDS_MeshElement* elem = elemIt->next();
         if ( elem->GetEntityType() == smdsEntity )
           GmfSetLin( meshID, gmfKwd, (*elem2IDMap)[ elem ] );
       }
     else
-      for ( elemIt = group->GetElements(); elemIt->more(); )
+      for ( int gmfID = 1; elemIt->more(); ++gmfID)
       {
         const SMDS_MeshElement* elem = elemIt->next();
         if ( elem->GetEntityType() == smdsEntity )
-          GmfSetLin( meshID, gmfKwd, elem->GetID() );
+          GmfSetLin( meshID, gmfKwd, gmfID );
       }
 
   } // loop on groups
