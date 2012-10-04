@@ -282,14 +282,11 @@ Driver_Mesh::Status DriverGMF_Write::Perform()
 
     // choose a TElem2IDMap
     TElem2IDMap* elem2IDMap = 0;
-    if ( smdsEntity == SMDSEntity_Quadrangle &&
-         myMesh->GetMeshInfo().NbEntities( smdsEntity ) != myMesh->NbFaces() )
+    if ( smdsEntity == SMDSEntity_Quadrangle && nbOkElems != myMesh->NbFaces() )
       elem2IDMap = & quad2IDMap;
-    else if ( smdsEntity == SMDSEntity_Triangle &&
-              myMesh->GetMeshInfo().NbEntities( smdsEntity ) != myMesh->NbFaces() )
+    else if ( smdsEntity == SMDSEntity_Triangle && nbOkElems != myMesh->NbFaces() )
       elem2IDMap = & tria2IDMap;
-    else if ( smdsEntity == SMDSEntity_Edge &&
-              myMesh->GetMeshInfo().NbEntities( smdsEntity ) != myMesh->NbEdges() )
+    else if ( smdsEntity == SMDSEntity_Edge && nbOkElems != myMesh->NbEdges() )
       elem2IDMap = & edge2IDMap;
 
     // write the group
