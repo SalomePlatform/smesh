@@ -961,7 +961,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromUNV( const char* theFileName 
     aStudyBuilder->CommitCommand();
     if ( !aSO->_is_nil() ) {
       // Update Python script
-      TPythonDump() << aSO << " = smeshgen.CreateMeshesFromUNV(r'" << theFileName << "')";
+      TPythonDump() << aSO << " = " << this << ".CreateMeshesFromUNV(r'" << theFileName << "')";
     }
   }
 
@@ -1253,7 +1253,7 @@ SMESH_Gen_i::CreateMeshesFromGMF( const char*             theFileName,
     aStudyBuilder->CommitCommand();
     if ( !aSO->_is_nil() ) {
       // Update Python script
-      TPythonDump() << aSO << " = " << this << ".CreateMeshesFromGMF(r'" << theFileName << "')";
+      TPythonDump() << "("<< aSO << ", error) = " << this << ".CreateMeshesFromGMF(r'" << theFileName << "')";
     }
   }
   SMESH_Mesh_i* aServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( aMesh ).in() );

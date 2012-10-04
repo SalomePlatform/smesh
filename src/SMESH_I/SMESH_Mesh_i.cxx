@@ -3025,8 +3025,8 @@ void SMESH_Mesh_i::ExportCGNS(::SMESH::SMESH_IDSource_ptr meshPart,
   SMESH_MeshPartDS partDS( meshPart );
   _impl->ExportCGNS(file, &partDS);
 
-  TPythonDump() << _this() << ".ExportCGNS( "
-                << meshPart<< ", r'" << file << "', " << overwrite << ")";
+  TPythonDump() << _this() << ".ExportCGNS( r'"
+                << file << "', " << overwrite << ", "<< meshPart<< ")";
 #else
   THROW_SALOME_CORBA_EXCEPTION("CGNS library is unavailable", SALOME::INTERNAL_ERROR);
 #endif
@@ -3051,7 +3051,8 @@ void SMESH_Mesh_i::ExportGMF(::SMESH::SMESH_IDSource_ptr meshPart,
   SMESH_MeshPartDS partDS( meshPart );
   _impl->ExportGMF(file, &partDS);
 
-  TPythonDump() << _this() << ".ExportGMF( " << meshPart<< ", r'" << file << "')";
+  TPythonDump() << _this() << ".ExportGMF( r'"
+                << file << "', "<< meshPart<< ")";
 }
 
 //=============================================================================
