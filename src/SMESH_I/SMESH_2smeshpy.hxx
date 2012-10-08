@@ -296,7 +296,7 @@ private:
 class _pyMesh: public _pyObject
 {
   std::list< Handle(_pyHypothesis) > myHypos;
-  std::list< Handle(_pyCommand) >    myAddHypCmds;
+  std::list< Handle(_pyCommand) >    myAddHypCmds, myNotConvertedAddHypCmds;
   std::list< Handle(_pySubMesh) >    mySubmeshes;
   std::list< Handle(_pyGroup) >      myGroups;
   std::list< Handle(_pyMeshEditor)>  myEditors;

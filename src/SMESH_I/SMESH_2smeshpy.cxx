@@ -1541,26 +1541,40 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
   {
     _pyID hypID  = theCommand->GetArg( 2 );
     _pyID geomID = theCommand->GetArg( 1 );
+    bool isLocal = ( geomID != GetGeom() );
 
     // check if this mesh still has corresponding addition command
-    bool hasAddCmd = false;
-    list< Handle(_pyCommand) >::iterator cmd = myAddHypCmds.begin();
-    while ( cmd != myAddHypCmds.end() )
+    Handle(_pyCommand) addCmd;
+    list< Handle(_pyCommand) >::iterator cmd;
+    list< Handle(_pyCommand) >* addCmds[2] = { &myAddHypCmds, &myNotConvertedAddHypCmds };
+    for ( int i = 0; i < 2; ++i )
     {
-      // AddHypothesis(geom, hyp)
-      if ( hypID  == (*cmd)->GetArg( 2 ) &&
-           geomID == (*cmd)->GetArg( 1 )) { // erase both (add and remove) commands
-        theCommand->Clear();
-        (*cmd)->Clear();
-        cmd = myAddHypCmds.erase( cmd );
-        hasAddCmd = true;
-      }
-      else {
-        ++cmd;
+      list< Handle(_pyCommand )> & addHypCmds = *(addCmds[i]);
+      for ( cmd = addHypCmds.begin(); cmd != addHypCmds.end(); )
+      {
+        bool sameHyp = true;
+        if ( hypID != (*cmd)->GetArg( 1 ) && hypID != (*cmd)->GetArg( 2 ))
+          sameHyp = false; // other hyp
+        if ( (*cmd)->GetNbArgs() == 2 &&
+             geomID != (*cmd)->GetArg( 1 ) && geomID != (*cmd)->GetArg( 2 ))
+          sameHyp = false; // other geom
+        if ( (*cmd)->GetNbArgs() == 1 && isLocal )
+          sameHyp = false; // other geom
+        if ( sameHyp )
+        {
+          addCmd = *cmd;
+          addCmd->Clear();
+          theCommand->Clear();
+          cmd = addHypCmds.erase( cmd );
+        }
+        else
+        {
+          ++cmd;
+        }
       }
     }
     Handle(_pyHypothesis) hyp = theGen->FindHyp( hypID );
-    if ( ! hasAddCmd && hypID.Length() != 0 ) { // hypo addition already wrapped
+    if ( addCmd.IsNull() && !hypID.IsEmpty() ) { // hypo addition already wrapped
       // RemoveHypothesis(geom, hyp) --> RemoveHypothesis( hyp, geom=0 )
       _pyID geom = theCommand->GetArg( 1 );
       theCommand->RemoveArgs();
@@ -1742,6 +1756,7 @@ void _pyMesh::Flush()
       addCmd->SetArg( 1, algoID );
       if ( isLocalAlgo )
         addCmd->SetArg( 2, geom );
+      myNotConvertedAddHypCmds.push_back( addCmd );
     }
   }
 
@@ -1762,6 +1777,7 @@ void _pyMesh::Flush()
       addCmd->SetArg( 1, hypID );
       if ( geom != GetGeom() )
         addCmd->SetArg( 2, geom );
+      myNotConvertedAddHypCmds.push_back( addCmd );
     }
   }
 
