@@ -26,8 +26,7 @@
 
 #include "SMESH_StdMeshers.hxx"
 
-#include "SMESH_1D_Algo.hxx"
-#include "SMESH_2D_Algo.hxx"
+#include "SMESH_Algo.hxx"
 
 /*!
  * \brief 1D and 2D algorithms doing nothing to allow mesh generation

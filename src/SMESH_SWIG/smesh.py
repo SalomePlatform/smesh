@@ -36,34 +36,48 @@ import geompy
 import smeshDC
 from smeshDC import *
 
-# get instance of class smeshDC
-smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
-smesh.init_smesh(salome.myStudy,geompy.geom)
+# retrieve SMESH engine in try/except block
+# to avoid problems in some cases, e.g. when generating documentation
+try:
+    # get instance of class smeshDC
+    smesh = salome.lcc.FindOrLoadComponent( "FactoryServer", "SMESH" )
+    smesh.init_smesh( salome.myStudy, geompy.geom )
+except:
+    smesh = None
+    pass
 
-# load plugins
+# load plugins and add dynamically generated methods to Mesh class,
+# the same for for global variables declared by plug-ins
 from smeshDC import Mesh, algoCreator
-for pluginName in os.environ["SMESH_MeshersList"].split(":"):
+for pluginName in os.environ[ "SMESH_MeshersList" ].split( ":" ):
+    #
+    pluginName += "DC"
+    try:
+        exec( "from %s import *" % pluginName )
+    except Exception, e:
+        print "Exception while loading %s: %s" % ( pluginName, e )
+        continue
+    exec( "import %s" % pluginName )
+    plugin = eval( pluginName )
 
-  pluginName += "DC"
-  try:
-    exec("from %s import *" % pluginName )
-  except Exception, e:
-    print "Exception while loading %s: %s" % ( pluginName, e )
-    continue
-  exec("import %s" % pluginName )
-  plugin = eval(pluginName)
+    # add methods creating algorithms to Mesh
+    for k in dir( plugin ):
+        if k[0] == '_': continue
+        algo = getattr( plugin, k )
+        if type( algo ).__name__ == 'classobj' and hasattr( algo, "meshMethod" ):
+            if not hasattr( Mesh, algo.meshMethod ):
+                setattr( Mesh, algo.meshMethod, algoCreator() )
+                pass
+            getattr( Mesh, algo.meshMethod ).add( algo )
+            pass
+        pass
+    pass
+del pluginName
 
-  # add methods creating algorithms to Mesh
-  for k in dir(plugin):
-    if k[0] == '_':continue
-    algo = getattr(plugin,k)
-    if type( algo ).__name__ == 'classobj' and hasattr( algo, "meshMethod"):
-      if not hasattr( Mesh, algo.meshMethod ):
-        setattr( Mesh, algo.meshMethod, algoCreator())
-      getattr( Mesh, algo.meshMethod ).add( algo )
-
-# Export the methods of smeshDC
-for k in dir(smesh):
-  if k[0] == '_':continue
-  globals()[k]=getattr(smesh,k)
-del k
+# export the methods of smeshDC
+if smesh:
+    for k in dir( smesh ):
+	if k[0] == '_': continue
+	globals()[k] = getattr( smesh, k )
+    del k
+    pass

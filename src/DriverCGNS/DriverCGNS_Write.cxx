@@ -139,7 +139,7 @@ namespace
       }
       {
         static int ids[] = { 0,3,2,1,4,7,6,5,11,10,9,8,12,15,14,13,19,18,17,16,
-                             20, 24,23,22,21, 25};
+                             20, 24,23,22,21, 25, 26};
         interlaces[SMDSEntity_TriQuad_Hexa] = ids;
         cgTypes   [SMDSEntity_TriQuad_Hexa] = CGNS_ENUMV( HEXA_27 );
       }

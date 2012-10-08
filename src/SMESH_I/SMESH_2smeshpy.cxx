@@ -1539,7 +1539,8 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
   // ----------------------------------------------------------------------
   else if ( method == "RemoveHypothesis" ) // (geom, hyp)
   {
-    _pyID hypID = theCommand->GetArg( 2 );
+    _pyID hypID  = theCommand->GetArg( 2 );
+    _pyID geomID = theCommand->GetArg( 1 );
 
     // check if this mesh still has corresponding addition command
     bool hasAddCmd = false;
@@ -1547,7 +1548,8 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
     while ( cmd != myAddHypCmds.end() )
     {
       // AddHypothesis(geom, hyp)
-      if ( hypID == (*cmd)->GetArg( 2 )) { // erase both (add and remove) commands
+      if ( hypID  == (*cmd)->GetArg( 2 ) &&
+           geomID == (*cmd)->GetArg( 1 )) { // erase both (add and remove) commands
         theCommand->Clear();
         (*cmd)->Clear();
         cmd = myAddHypCmds.erase( cmd );
@@ -2356,7 +2358,7 @@ void _pyHypothesis::Assign( const Handle(_pyHypothesis)& theOther,
   myGeom                    = theOther->myGeom;
   myMesh                    = theMesh;
   myAlgoType2CreationMethod = theOther->myAlgoType2CreationMethod;
-  //myArgCommands             = theOther->myArgCommands;
+  myAccumulativeMethods     = theOther->myAccumulativeMethods;
   //myUnusedCommands          = theOther->myUnusedCommands;
   // init myCurCrMethod
   GetCreationMethod( theOther->GetAlgoType() );
@@ -2485,7 +2487,9 @@ bool _pyHypothesis::GetReferredMeshesAndGeom( list< Handle(_pyMesh) >& meshes )
 void _pyHypothesis::rememberCmdOfParameter( const Handle(_pyCommand) & theCommand )
 {
   // parameters are discriminated by method name
-  TCollection_AsciiString method = theCommand->GetMethod();
+  _AString method = theCommand->GetMethod();
+  if ( myAccumulativeMethods.count( method ))
+    return; // this method adds values and not override the previus value
 
   // discriminate commands setting different parameters via one method
   // by passing parameter names like e.g. SetOption("size", "0.2")
@@ -2503,7 +2507,7 @@ void _pyHypothesis::rememberCmdOfParameter( const Handle(_pyCommand) & theComman
     }
   }
   // parameters are discriminated by method name
-  list< Handle(_pyCommand)>& cmds = myMeth2Commands[ theCommand->GetMethod() ];
+  list< Handle(_pyCommand)>& cmds = myMeth2Commands[ method /*theCommand->GetMethod()*/ ];
   if ( !cmds.empty() && !isCmdUsedForCompute( cmds.back() ))
   {
     cmds.back()->Clear(); // previous parameter value has not been used
@@ -3304,10 +3308,10 @@ static inline bool isWord(const char c, const bool dotIsWord)
  */
 //================================================================================
 
-TCollection_AsciiString _pyCommand::GetWord( const TCollection_AsciiString & theString,
-                                            int &      theStartPos,
-                                            const bool theForward,
-                                            const bool dotIsWord )
+TCollection_AsciiString _pyCommand::GetWord( const _AString & theString,
+                                             int &            theStartPos,
+                                             const bool       theForward,
+                                             const bool       dotIsWord )
 {
   int beg = theStartPos, end = theStartPos;
   theStartPos = EMPTY;
@@ -4023,73 +4027,8 @@ bool _pyFilter::CanClear()
 
 _pyHypothesisReader::_pyHypothesisReader()
 {
-  // Get paths to xml files of plugins
-  vector< string > xmlPaths;
-  string sep;
-  if ( const char* meshersList = getenv("SMESH_MeshersList") )
-  {
-    string meshers = meshersList, plugin;
-    string::size_type from = 0, pos;
-    while ( from < meshers.size() )
-    {
-      // cut off plugin name
-      pos = meshers.find( ':', from );
-      if ( pos != string::npos )
-        plugin = meshers.substr( from, pos-from );
-      else
-        plugin = meshers.substr( from ), pos = meshers.size();
-      from = pos + 1;
-
-      // get PLUGIN_ROOT_DIR path
-      string rootDirVar, pluginSubDir = plugin;
-      if ( plugin == "StdMeshers" )
-        rootDirVar = "SMESH", pluginSubDir = "smesh";
-      else
-        for ( pos = 0; pos < plugin.size(); ++pos )
-          rootDirVar += toupper( plugin[pos] );
-      rootDirVar += "_ROOT_DIR";
-
-      const char* rootDir = getenv( rootDirVar.c_str() );
-      if ( !rootDir || strlen(rootDir) == 0 )
-      {
-        rootDirVar = plugin + "_ROOT_DIR"; // HexoticPLUGIN_ROOT_DIR
-        rootDir = getenv( rootDirVar.c_str() );
-        if ( !rootDir || strlen(rootDir) == 0 ) continue;
-      }
-
-      // get a separator from rootDir
-      for ( pos = strlen( rootDir )-1; pos >= 0 && sep.empty(); --pos )
-        if ( rootDir[pos] == '/' || rootDir[pos] == '\\' )
-        {
-          sep = rootDir[pos];
-          break;
-        }
-#ifdef WNT
-      if (sep.empty() ) sep = "\\";
-#else
-      if (sep.empty() ) sep = "/";
-#endif
-
-      // get a path to resource file
-      string xmlPath = rootDir;
-      if ( xmlPath[ xmlPath.size()-1 ] != sep[0] )
-        xmlPath += sep;
-      xmlPath += "share" + sep + "salome" + sep + "resources" + sep;
-      for ( pos = 0; pos < pluginSubDir.size(); ++pos )
-        xmlPath += tolower( pluginSubDir[pos] );
-      xmlPath += sep + plugin + ".xml";
-      bool fileOK;
-#ifdef WNT
-      fileOK = (GetFileAttributes(xmlPath.c_str()) != INVALID_FILE_ATTRIBUTES);
-#else
-      fileOK = (access(xmlPath.c_str(), F_OK) == 0);
-#endif
-      if ( fileOK )
-        xmlPaths.push_back( xmlPath );
-    }
-  }
-
   // Read xml files
+  vector< string > xmlPaths = SMESH_Gen::GetPluginXMLPaths();
   LDOMParser xmlParser;
   for ( size_t i = 0; i < xmlPaths.size(); ++i )
   {
@@ -4111,7 +4050,7 @@ _pyHypothesisReader::_pyHypothesisReader()
     LDOM_NodeList algoNodeList = xmlDoc.getElementsByTagName( "algorithm" );
     for ( int i = 0; i < algoNodeList.getLength(); ++i )
     {
-      LDOM_Node algoNode = algoNodeList.item( i );
+      LDOM_Node     algoNode = algoNodeList.item( i );
       LDOM_Element& algoElem = (LDOM_Element&) algoNode;
       LDOM_NodeList pyAlgoNodeList = algoElem.getElementsByTagName( "algo" );
       if ( pyAlgoNodeList.getLength() < 1 ) continue;
@@ -4173,7 +4112,43 @@ _pyHypothesisReader::_pyHypothesisReader()
         }
       }
     }
-  }
+    // <hypothesis type="BLSURF_Parameters"
+    //          ...
+    //          dim="2">
+    //   <python-wrap>
+    //     <accumulative-methods> 
+    //       SetEnforcedVertex,
+    //       SetEnforcedVertexNamed
+    //     </accumulative-methods>
+    //   </python-wrap>
+    // </hypothesis>
+    //
+    LDOM_NodeList hypNodeList = xmlDoc.getElementsByTagName( "hypothesis" );
+    for ( int i = 0; i < hypNodeList.getLength(); ++i )
+    {
+      LDOM_Node     hypNode      = hypNodeList.item( i );
+      LDOM_Element& hypElem      = (LDOM_Element&) hypNode;
+      _AString      hypType      = hypElem.getAttribute("type");
+      LDOM_NodeList methNodeList = hypElem.getElementsByTagName( "accumulative-methods" );
+      if ( methNodeList.getLength() != 1 || hypType.IsEmpty() ) continue;
+
+      map<_AString, Handle(_pyHypothesis)>::const_iterator type2hyp = myType2Hyp.find( hypType );
+      if ( type2hyp == myType2Hyp.end() ) continue;
+
+      LDOM_Node methNode = methNodeList.item( 0 );
+      LDOM_Node textNode = methNode.getFirstChild();
+      _AString      text = textNode.getNodeValue();
+      _AString method;
+      int pos = 1;
+      do {
+        method = _pyCommand::GetWord( text, pos, /*forward= */true );
+        pos += method.Length();
+        type2hyp->second->AddAccumulativeMethod( method );
+      }
+      while ( !method.IsEmpty() );
+    }
+
+  } // loop on xmlPaths
 }
 
 //================================================================================

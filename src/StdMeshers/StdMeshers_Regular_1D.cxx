@@ -354,7 +354,7 @@ static void compensateError(double a1, double an,
                             bool              adjustNeighbors2an = false)
 {
   int i, nPar = theParams.size();
-  if ( a1 + an < length && nPar > 1 )
+  if ( a1 + an <= length && nPar > 1 )
   {
     bool reverse = ( U1 > Un );
     GCPnts_AbscissaPoint Discret(C3d, reverse ? an : -an, Un);
@@ -375,10 +375,9 @@ static void compensateError(double a1, double an,
       dUn = Utgt - theParams.back();
     }
 
-    double q  = dUn / ( nPar - 1 );
     if ( !adjustNeighbors2an )
     {
-      q = dUn / ( Utgt - Un ); // (signed) factor of segment length change
+      double q = dUn / ( Utgt - Un ); // (signed) factor of segment length change
       for ( itU = theParams.rbegin(), i = 1; i < nPar; i++ ) {
         double prevU = *itU;
         (*itU) += dUn;
@@ -386,7 +385,13 @@ static void compensateError(double a1, double an,
         dUn = q * (*itU - prevU) * (prevU-U1)/(Un-U1);
       }
     }
-    else {
+    else if ( nPar == 1 )
+    {
+      theParams.back() += dUn;
+    }
+    else
+    {
+      double q  = dUn / ( nPar - 1 );
       theParams.back() += dUn;
       double sign = reverse ? -1 : 1;
       double prevU = theParams.back();
@@ -608,12 +613,14 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
   case NB_SEGMENTS: {
 
     double eltSize = 1;
+    int nbSegments;
     if ( _hypType == MAX_LENGTH )
     {
       double nbseg = ceil(theLength / _value[ BEG_LENGTH_IND ]); // integer sup
       if (nbseg <= 0)
         nbseg = 1;                        // degenerated edge
       eltSize = theLength / nbseg;
+      nbSegments = (int) nbseg;
     }
     else if ( _hypType == LOCAL_LENGTH )
     {
@@ -654,13 +661,14 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
       if (nbseg <= 0)
         nbseg = 1;                        // degenerated edge
       eltSize = theLength / nbseg;
+      nbSegments = (int) nbseg;
     }
     else
     {
       // Number Of Segments hypothesis
-      int NbSegm = _ivalue[ NB_SEGMENTS_IND ];
-      if ( NbSegm < 1 )  return false;
-      if ( NbSegm == 1 ) return true;
+      nbSegments = _ivalue[ NB_SEGMENTS_IND ];
+      if ( nbSegments < 1 )  return false;
+      if ( nbSegments == 1 ) return true;
 
       switch (_ivalue[ DISTR_TYPE_IND ])
       {
@@ -670,8 +678,8 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
 
           if (fabs(scale - 1.0) < Precision::Confusion()) {
             // special case to avoid division by zero
-            for (int i = 1; i < NbSegm; i++) {
-              double param = f + (l - f) * i / NbSegm;
+            for (int i = 1; i < nbSegments; i++) {
+              double param = f + (l - f) * i / nbSegments;
               theParams.push_back( param );
             }
           } else {
@@ -679,10 +687,10 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
             if ( theReverse )
               scale = 1.0 / scale;
 
-            double alpha = pow(scale, 1.0 / (NbSegm - 1));
-            double factor = (l - f) / (1.0 - pow(alpha, NbSegm));
+            double alpha = pow(scale, 1.0 / (nbSegments - 1));
+            double factor = (l - f) / (1.0 - pow(alpha, nbSegments));
 
-            for (int i = 1; i < NbSegm; i++) {
+            for (int i = 1; i < nbSegments; i++) {
               double param = f + factor * (1.0 - pow(alpha, i));
               theParams.push_back( param );
             }
@@ -715,7 +723,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
         }
         break;
       case StdMeshers_NumberOfSegments::DT_Regular:
-        eltSize = theLength / _ivalue[ NB_SEGMENTS_IND ];
+        eltSize = theLength / nbSegments;
         break;
       default:
         return false;
@@ -725,13 +733,13 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     if ( !Discret.IsDone() )
       return error( "GCPnts_UniformAbscissa failed");
 
-    int NbPoints = Discret.NbPoints();
-    for ( int i = 2; i < NbPoints; i++ )
+    int NbPoints = Min( Discret.NbPoints(), nbSegments + 1 );
+    for ( int i = 2; i < NbPoints; i++ ) // skip 1st and last points
     {
       double param = Discret.Parameter(i);
       theParams.push_back( param );
     }
-    compensateError( eltSize, eltSize, f, l, theLength, theC3d, theParams ); // for PAL9899
+    compensateError( eltSize, eltSize, f, l, theLength, theC3d, theParams, true ); // for PAL9899
     return true;
   }
 

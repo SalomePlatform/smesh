@@ -29,7 +29,7 @@
 
 #include "SMESH_StdMeshers.hxx"
 
-#include "SMESH_3D_Algo.hxx"
+#include "SMESH_Algo.hxx"
 
 class StdMeshers_ProjectionSource3D;
 

@@ -711,12 +711,12 @@ void SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
   int idx = 0;
   if( addToGroup ) {
     aGroupName = ComboBox_GroupName->currentText();
-    for ( int i = 1; i < ComboBox_GroupName->count(); i++ ) {
+    for ( int i = 1; i <= ComboBox_GroupName->count(); i++ ) {
       QString aName = ComboBox_GroupName->itemText( i );
       if ( aGroupName == aName && ( i == ComboBox_GroupName->currentIndex() || idx == 0 ) )
         idx = i;
     }
-    if ( idx > 0 && idx < myGroups.count() ) {
+    if ( idx > 0 && idx <= myGroups.count() ) {
       SMESH::SMESH_GroupOnGeom_var aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( myGroups[idx-1] );
       if ( !aGeomGroup->_is_nil() ) {
         int res = SUIT_MessageBox::question( this, tr( "SMESH_WRN_WARNING" ),

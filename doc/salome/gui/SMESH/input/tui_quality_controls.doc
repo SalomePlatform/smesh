@@ -164,8 +164,8 @@ mesh.RemoveElements(anIds)
 aBorders = mesh.GetFreeBorders() 
 
 # create groups
-aGroupF = mesh.CreateGroup(SMESH.FACE, "Faces with free edges")
-aGroupN = mesh.CreateGroup(SMESH.NODE, "Nodes on free edges")
+aGroupF = mesh.CreateEmptyGroup(smesh.FACE, "Faces with free edges")
+aGroupN = mesh.CreateEmptyGroup(smesh.NODE, "Nodes on free edges")
 
 # fill groups with elements, corresponding to the criterion
 print ""

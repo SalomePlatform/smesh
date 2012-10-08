@@ -4032,6 +4032,14 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
         <translation>Face arrière</translation>
     </message>
     <message>
+        <source>PREF_VOLUME</source>
+        <translation type="unfinished">Volume color</translation>
+    </message>
+    <message>
+        <source>PREF_REVERSEDVOLUME</source>
+        <translation type="unfinished">Reversed volume color</translation>
+    </message>
+    <message>
         <source>PREF_WIREFRAME</source>
         <translation>Couleur de contour</translation>
     </message>
@@ -4156,6 +4164,10 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
         <translation>Couleur des noms</translation>
     </message>
     <message>
+        <source>PREF_GRP_DEF_COLOR</source>
+        <translation>Couleur par défaut</translation>
+    </message>
+    <message>
         <source>PREF_GROUP_PRECISION</source>
         <translation>Précision</translation>
     </message>
@@ -4269,7 +4281,11 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_WIDTH</source>
-        <translation>Epaisseur</translation>
+        <translation type="unfinished">Line width</translation>
+    </message>
+    <message>
+        <source>PREF_OUTLINE_WIDTH</source>
+        <translation type="unfinished">Outline width</translation>
     </message>
     <message>
         <source>PREF_PREVIEW_CHUNK_SIZE</source>
@@ -6817,97 +6833,6 @@ en raison de leurs types incompatibles:
     </message>
 </context>
 <context>
-    <name>SMESHGUI_Preferences_ColorDlg</name>
-    <message>
-        <source>DIALOG_TITLE</source>
-        <translation>Propriétés (couleur, épaisseur des traits, taille des éléments réduits, ...)</translation>
-    </message>
-    <message>
-        <source>GRP_ELEMENTS</source>
-        <translation>Eléments</translation>
-    </message>
-    <message>
-        <source>SURFACE_COLOR_LBL</source>
-        <translation>Couleur de surface</translation>
-    </message>
-    <message>
-        <source>BACKSURFACE_COLOR_LBL</source>
-        <translation>Couleur arrière</translation>
-    </message>
-    <message>
-        <source>OUTLINE_COLOR_LBL</source>
-        <translation>Couleur de contour</translation>
-    </message>
-    <message>
-        <source>WIREFRAME_COLOR_LBL</source>
-        <translation>Couleur en mode fil de fer</translation>
-    </message>
-    <message>
-        <source>0D_ELEMENTS_COLOR_LBL</source>
-        <translation>Eléments 0D</translation>
-    </message>
-    <message>
-        <source>0D_ELEMENTS_SIZE_LBL</source>
-        <translation>Taille des éléments 0D</translation>
-    </message>
-    <message>
-        <source>BALL_ELEMENTS_COLOR_LBL</source>
-        <translation>Eléments particulaires</translation>
-    </message>
-    <message>
-        <source>BALL_ELEMENTS_SIZE_LBL</source>
-        <translation>Taille des éléments particulaires</translation>
-    </message>
-    <message>
-        <source>LINE_WIDTH_LBL</source>
-        <translation>Epaisseur des traits</translation>
-    </message>
-    <message>
-        <source>SHRINK_COEF_LBL</source>
-        <translation>Coef. de contraction</translation>
-    </message>
-    <message>
-        <source>GRP_NODES</source>
-        <translation>Nœuds</translation>
-    </message>
-    <message>
-        <source>NODES_COLOR_LBL</source>
-        <translation>Couleur</translation>
-    </message>
-    <message>
-        <source>NODES_MARKER_LBL</source>
-        <translation>Marqueur</translation>
-    </message>
-    <message>
-        <source>GRP_ORIENTATION</source>
-        <translation>Orientation des faces</translation>
-    </message>
-    <message>
-        <source>ORIENTATION_COLOR_LBL</source>
-        <translation>Couleur</translation>
-    </message>
-    <message>
-        <source>ORIENTATION_SCALE_LBL</source>
-        <translation>Facteur d&apos;échelle</translation>
-    </message>
-    <message>
-        <source>3D_VECTORS_LBL</source>
-        <translation>Vecteurs 3D</translation>
-    </message>
-    <message>
-        <source>GRP_SELECTION</source>
-        <translation>Sélection</translation>
-    </message>
-    <message>
-        <source>SELECTION_COLOR_LBL</source>
-        <translation>Couleur de sélection</translation>
-    </message>
-    <message>
-        <source>PRESELECTION_COLOR_LBL</source>
-        <translation>Couleur de pré-sélection</translation>
-    </message>
-</context>
-<context>
     <name>SMESHGUI_ReorientFacesDlg</name>
     <message>
         <source>CAPTION</source>
@@ -6963,6 +6888,85 @@ en raison de leurs types incompatibles:
     <message>
         <source>NB_REORIENTED</source>
         <translation>%1 face(s) inversée(s)</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_PropertiesDlg</name>
+    <message>
+        <source>TITLE</source>
+        <translation type="unfinished">Properties</translation>
+    </message>
+    <message>
+        <source>NODES</source>
+        <translation type="unfinished">Nodes</translation>
+    </message>
+    <message>
+        <source>EDGES</source>
+        <translation type="unfinished">Edges / wireframe</translation>
+    </message>
+    <message>
+        <source>FACES</source>
+        <translation type="unfinished">Faces</translation>
+    </message>
+    <message>
+        <source>VOLUMES</source>
+        <translation type="unfinished">Volumes</translation>
+    </message>
+    <message>
+        <source>OUTLINES</source>
+        <translation type="unfinished">Outlines</translation>
+    </message>
+    <message>
+        <source>0D_ELEMENTS</source>
+        <translation type="unfinished">0D elements</translation>
+    </message>
+    <message>
+        <source>BALLS</source>
+        <translation type="unfinished">Balls</translation>
+    </message>
+    <message>
+        <source>ORIENTATIONS</source>
+        <translation type="unfinished">Orientation vectors</translation>
+    </message>
+    <message>
+        <source>COLOR</source>
+        <translation type="unfinished">Color:</translation>
+    </message>
+    <message>
+        <source>WIDTH</source>
+        <translation type="unfinished">Width:</translation>
+    </message>
+    <message>
+        <source>FACE_FRONT</source>
+        <translation type="unfinished">Front:</translation>
+    </message>
+    <message>
+        <source>FACE_BACK</source>
+        <translation type="unfinished">Back:</translation>
+    </message>
+    <message>
+        <source>VOLUME_NORMAL</source>
+        <translation type="unfinished">Normal:</translation>
+    </message>
+    <message>
+        <source>VOLUME_REVERSED</source>
+        <translation type="unfinished">Reversed:</translation>
+    </message>
+    <message>
+        <source>SIZE</source>
+        <translation type="unfinished">Size:</translation>
+    </message>
+    <message>
+        <source>ORIENTATION_SCALE</source>
+        <translation type="unfinished">Scale:</translation>
+    </message>
+    <message>
+        <source>ORIENTATION_3D</source>
+        <translation type="unfinished">3D vectors</translation>
+    </message>
+    <message>
+        <source>SHRINK</source>
+        <translation type="unfinished">Shrink coef:</translation>
     </message>
 </context>
 </TS>

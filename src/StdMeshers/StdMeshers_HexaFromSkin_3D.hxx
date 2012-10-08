@@ -25,7 +25,7 @@
 #define __StdMeshers_HexaFromSkin_3D_HXX__
 
 #include "SMESH_StdMeshers.hxx"
-#include "SMESH_3D_Algo.hxx"
+#include "SMESH_Algo.hxx"
 
 /*!
  * \brief Alorithm generating hexahedral mesh from 2D skin of block

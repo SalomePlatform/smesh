@@ -25,7 +25,7 @@
 #define _SMESH_CompositeSegment_1D_HXX_
 
 #include "SMESH_StdMeshers.hxx"
-#include "SMESH_3D_Algo.hxx"
+#include "SMESH_Algo.hxx"
 
 class SMESH_Mesh;
 class StdMeshers_FaceSide;

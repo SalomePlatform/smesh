@@ -38,7 +38,6 @@
 #include "SMESH_MeshEditor.hxx"
 #include <list>
 
-class SMESH_MeshEditor;
 class SMESH_Mesh_i;
 
 class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
@@ -47,8 +46,34 @@ public:
   SMESH_MeshEditor_i(SMESH_Mesh_i * theMesh, bool isPreview);
 
   virtual ~ SMESH_MeshEditor_i();
+  /*!
+   * \brief Return edited mesh ID
+   * \retval int - mesh ID
+   */
+  int GetMeshId() const { return myMesh->GetId(); }
 
   // --- CORBA
+
+  /*!
+   * Return data of mesh edition preview
+   */
+  SMESH::MeshPreviewStruct* GetPreviewData();
+  /*!
+   * If during last operation of MeshEditor some nodes were
+   * created this method returns list of their IDs, if new nodes
+   * not created - returns an empty list
+   */
+  SMESH::long_array* GetLastCreatedNodes();
+  /*!
+   * If during last operation of MeshEditor some elements were
+   * created this method returns list of their IDs, if new elements
+   * not created - returns an empty list
+   */
+  SMESH::long_array* GetLastCreatedElems();
+  /*!
+   * \brief Returns description of an error/warning occured during the last operation
+   */
+  SMESH::ComputeError* GetLastError();
 
   /*!
    * \brief Wrap a sequence of ids in a SMESH_IDSource
@@ -568,31 +593,6 @@ public:
    */
   CORBA::Boolean ChangeElemNodes(CORBA::Long ide, const SMESH::long_array& newIDs);
 
-  /*!
-   * Return data of mesh edition preview
-   */
-  SMESH::MeshPreviewStruct* GetPreviewData();
-
-  /*!
-   * If during last operation of MeshEditor some nodes were
-   * created this method returns list of it's IDs, if new nodes
-   * not creared - returns empty list
-   */
-  SMESH::long_array* GetLastCreatedNodes();
-
-  /*!
-   * If during last operation of MeshEditor some elements were
-   * created this method returns list of it's IDs, if new elements
-   * not creared - returns empty list
-   */
-  SMESH::long_array* GetLastCreatedElems();
-
-  /*!
-   * \brief Return edited mesh ID
-   * \retval int - mesh ID
-   */
-  int GetMeshId() const { return myMesh->GetId(); }
-
   CORBA::Boolean DoubleNodes( const SMESH::long_array& theNodes,
                               const SMESH::long_array& theModifiedElems );
 
@@ -743,6 +743,22 @@ public:
   CORBA::Boolean DoubleNodeElemGroupsInRegion( const SMESH::ListOfGroups& theElems,
                                                const SMESH::ListOfGroups& theNodesNot,
                                                GEOM::GEOM_Object_ptr      theShape );
+
+  /*!
+   * \brief Identify the elements that will be affected by node duplication (actual duplication is not performed.
+   * This method is the first step of DoubleNodeElemGroupsInRegion.
+   * \param theElems - list of groups of elements (edges or faces) to be replicated
+   * \param theNodesNot - list of groups of nodes not to replicated
+   * \param theShape - shape to detect affected elements (element which geometric center
+   *        located on or inside shape).
+   *        The replicated nodes should be associated to affected elements.
+   * \return groups of affected elements
+   * \sa DoubleNodeElemGroupsInRegion()
+   */
+  SMESH::ListOfGroups* AffectedElemGroupsInRegion( const SMESH::ListOfGroups& theElems,
+                                                   const SMESH::ListOfGroups& theNodesNot,
+                                                   GEOM::GEOM_Object_ptr      theShape );
+
   /*!
    * \brief Double nodes on shared faces between groups of volumes and create flat elements on demand.
    * The list of groups must describe a partition of the mesh volumes.
@@ -766,6 +782,19 @@ public:
    * @return TRUE if operation has been completed successfully, FALSE otherwise
    */
   CORBA::Boolean CreateFlatElementsOnFacesGroups( const SMESH::ListOfGroups& theGroupsOfFaces );
+
+  /*!
+   *  \brief identify all the elements around a geom shape, get the faces delimiting the hole
+   *  Build groups of volume to remove, groups of faces to replace on the skin of the object,
+   *  groups of faces to remove insidethe object, (idem edges).
+   *  Build ordered list of nodes at the border of each group of faces to replace (to be used to build a geom subshape)
+   */
+  void CreateHoleSkin(CORBA::Double radius,
+                      GEOM::GEOM_Object_ptr theShape,
+                      const char* groupName,
+                      const SMESH::double_array& theNodesCoords,
+                      SMESH::array_of_long_array_out GroupsOfNodes)
+  throw (SALOME::SALOME_Exception);
 
   /*!
    * \brief Generated skin mesh (containing 2D cells) from 3D mesh

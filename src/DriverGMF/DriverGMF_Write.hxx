@@ -19,40 +19,41 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File      : DriverGMF_Write.hxx
+// Created   : Mon Sep 17 15:36:47 2012
+// Author    : Edward AGAPOV (eap)
 
-//  SMESH SMESH : implementaion of SMESH idl descriptions
-//  File   : SMESH_1D_Algo.cxx
-//  Author : Paul RASCLE, EDF
-//  Module : SMESH
-//  $Header$
-//
-#include "SMESH_1D_Algo.hxx"
-#include "SMESH_Gen.hxx"
-#include "SMESH_subMesh.hxx"
 
-using namespace std;
+#ifndef __DriverGMF_Write_HXX__
+#define __DriverGMF_Write_HXX__
 
-//=============================================================================
+#include "SMESH_DriverGMF.hxx"
+
+#include "Driver_SMESHDS_Mesh.h"
+#include "SMDSAbs_ElementType.hxx"
+
 /*!
- *  
+ * \brief Driver Writing a mesh into a GMF file.
  */
-//=============================================================================
-
-SMESH_1D_Algo::SMESH_1D_Algo(int hypId, int studyId, SMESH_Gen* gen)
-  : SMESH_Algo(hypId, studyId, gen)
+class MESHDriverGMF_EXPORT DriverGMF_Write : public Driver_SMESHDS_Mesh
 {
-//   _compatibleHypothesis.push_back("hypothese_1D_bidon");
-  _type = ALGO_1D;
-  gen->_map1D_Algo[hypId] = this;
-}
+public:
 
-//=============================================================================
+  DriverGMF_Write();
+  ~DriverGMF_Write();
+
+  virtual Status Perform();
+};
+
 /*!
- *  
+ * \brief An object closing GMF mesh at destruction
  */
-//=============================================================================
-
-SMESH_1D_Algo::~SMESH_1D_Algo()
+struct DriverGMF_MeshCloser
 {
-}
+  int _gmfMeshID;
+  DriverGMF_MeshCloser( const int gmfMeshID ): _gmfMeshID(gmfMeshID) {}
+  ~DriverGMF_MeshCloser();
+};
 
+
+#endif

@@ -2,11 +2,48 @@
 
 \page tui_defining_hypotheses_page Defining Hypotheses and Algorithms
 
+This page provides example codes of \ref tui_defining_meshing_algos
+"defining algorithms" and hypotheses. 
+<ul>
+<li>Wire discretisation 1D algorithm
+  <ul>
+    <li>\ref tui_1d_arithmetic "Arithmetic 1D" hypothesis</li>
+    <li>\ref tui_deflection_1d "Deflection 1D and Number of Segments" hypotheses</li>
+    <li>\ref tui_start_and_end_length "Start and End Length" hypotheses</li>
+    <li>\ref tui_average_length "Local Length"</li>
+    <li>\ref tui_propagation "Propagation" additional hypothesis </li>
+    <li>\ref tui_fixed_points "Fixed Points 1D" hypothesis</li>
+  </ul>
+</li>
+<li>Triangle (Mefisto) 2D algorithm
+  <ul>
+    <li>\ref tui_max_element_area "Max Element Area" hypothesis </li>
+    <li>\ref tui_length_from_edges "Length from Edges"
+    hypothesis </li>
+  </ul>
+</li>
+<li>Tetrahedron (Netgen) 3D algorithm
+  <ul>
+    <li> \ref tui_max_element_volume "Max. Element Volume"hypothesis </li>
+    <li> \ref tui_viscous_layers "Viscous layers"</li>
+  </ul>
+</li>
+<li>\ref tui_projection "Projection Algorithms"</li>
+<li>\ref tui_radial_quadrangle "Radial Quadrangle 1D2D" algorithm</li>
+<li>Quadrangle (Mapping) 2D algorithm
+  <ul>
+    <li> \ref tui_quadrangle_parameters "Quadrangle Parameters" hypothesis </li>
+  </ul>
+</li>
+<li>\ref tui_import "Use Existing Elements" algorithm</li>
+</ul>
+<br>
+
 <h2>Defining 1D Hypotheses</h2>
 
 <br>
 \anchor tui_1d_arithmetic
-<h3>1D Arithmetic</h3>
+<h3>Arithmetic 1D</h3>
 
 \code
 import geompy
@@ -455,6 +492,40 @@ tgt_mesh.Compute()
 # Move the source mesh to visualy compare the two meshes
 src_mesh.TranslateObject( src_mesh, MakeDirStruct( 210, 0, 0 ), Copy=False)
 
+\endcode
+
+<h3>Projection 1D2D</h3>
+
+\code
+# Project triangles from one meshed face to another mesh on the same box
+
+from smesh import *
+
+# Prepare geometry
+
+# Create a box
+box = geompy.MakeBoxDXDYDZ(100, 100, 100)
+
+# Get geom faces to mesh with triangles in the 1ts and 2nd meshes
+faces = geompy.SubShapeAll(box, geompy.ShapeType["FACE"])
+# 2 adjacent faces of the box
+Face_1 = faces[2]
+Face_2 = faces[0]
+
+geompy.addToStudy( box, 'box' )
+geompy.addToStudyInFather( box, Face_1, 'Face_1' )
+geompy.addToStudyInFather( box, Face_2, 'Face_2' )
+
+# Make the source mesh with Netgem2D
+src_mesh = Mesh(Face_1, "Source mesh")
+src_mesh.Segment().NumberOfSegments(15)
+src_mesh.Triangle()
+src_mesh.Compute()
+
+# Mesh the target mesh using the algoritm Projection1D2D
+tgt_mesh = smesh.Mesh(Face_2, "Target mesh")
+tgt_mesh.Projection1D2D().SourceFace(Face_1,src_mesh)
+tgt_mesh.Compute()
 \endcode
 
 <br>

@@ -452,11 +452,11 @@ namespace SMESH
               // BUG 0020378
               //myHypCreatorMap[aHypType] = aCreator;
 
-	      //rnv : This dynamic property of the QObject stores the name of the plugin.
-	      //      It is used to obtain plugin root dir environment variable
+              //rnv : This dynamic property of the QObject stores the name of the plugin.
+              //      It is used to obtain plugin root dir environment variable
               //      in the SMESHGUI_HypothesisDlg class. Plugin root dir environment 
-	      //      variable is used to display documentation.
-	      aCreator->setProperty(PLUGIN_NAME,aHypData->PluginName);
+              //      variable is used to display documentation.
+              aCreator->setProperty(PLUGIN_NAME,aHypData->PluginName);
             }
           }
         }

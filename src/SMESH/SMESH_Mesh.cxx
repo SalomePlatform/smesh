@@ -40,14 +40,15 @@
 
 #include "utilities.h"
 
-#include "DriverMED_W_SMESHDS_Mesh.h"
 #include "DriverDAT_W_SMDS_Mesh.h"
-#include "DriverUNV_W_SMDS_Mesh.h"
-#include "DriverSTL_W_SMDS_Mesh.h"
-
+#include "DriverGMF_Read.hxx"
+#include "DriverGMF_Write.hxx"
 #include "DriverMED_R_SMESHDS_Mesh.h"
-#include "DriverUNV_R_SMDS_Mesh.h"
+#include "DriverMED_W_SMESHDS_Mesh.h"
 #include "DriverSTL_R_SMDS_Mesh.h"
+#include "DriverSTL_W_SMDS_Mesh.h"
+#include "DriverUNV_R_SMDS_Mesh.h"
+#include "DriverUNV_W_SMDS_Mesh.h"
 #ifdef WITH_CGNS
 #include "DriverCGNS_Read.hxx"
 #include "DriverCGNS_Write.hxx"
@@ -536,6 +537,26 @@ int SMESH_Mesh::CGNSToMesh(const char*  theFileName,
 
 #endif
   return res;
+}
+
+//================================================================================
+/*!
+ * \brief Fill its data by reading a GMF file
+ */
+//================================================================================
+
+SMESH_ComputeErrorPtr SMESH_Mesh::GMFToMesh(const char* theFileName)
+{
+  DriverGMF_Read myReader;
+  myReader.SetMesh(_myMeshDS);
+  myReader.SetFile(theFileName);
+  myReader.Perform();
+  //theMeshName = myReader.GetMeshName();
+
+  // create groups
+  SynchronizeGroups();
+
+  return myReader.GetError();
 }
 
 //=============================================================================
@@ -1393,6 +1414,21 @@ void SMESH_Mesh::ExportCGNS(const char *        file,
 
 //================================================================================
 /*!
+ * \brief Export the mesh to a GMF file
+ */
+//================================================================================
+
+void SMESH_Mesh::ExportGMF(const char *        file,
+                           const SMESHDS_Mesh* meshDS)
+{
+  DriverGMF_Write myWriter;
+  myWriter.SetFile( file );
+  myWriter.SetMesh( const_cast<SMESHDS_Mesh*>( meshDS ));
+  myWriter.Perform();
+}
+
+//================================================================================
+/*!
  * \brief Return number of nodes in the mesh
  */
 //================================================================================
@@ -1650,6 +1686,35 @@ SMESH_Group* SMESH_Mesh::AddGroup (const SMDSAbs_ElementType theType,
   _mapGroup[_groupId++] = aGroup;
   return aGroup;
 }
+
+//================================================================================
+/*!
+ * \brief Creates a group based on an existing SMESHDS group. Group ID should be unique
+ */
+//================================================================================
+
+SMESH_Group* SMESH_Mesh::AddGroup (SMESHDS_GroupBase* groupDS) throw(SALOME_Exception)
+{
+  if ( !groupDS ) 
+    throw SALOME_Exception(LOCALIZED ("SMESH_Mesh::AddGroup(): NULL SMESHDS_GroupBase"));
+
+  map <int, SMESH_Group*>::iterator i_g = _mapGroup.find( groupDS->GetID() );
+  if ( i_g != _mapGroup.end() && i_g->second )
+  {
+    if ( i_g->second->GetGroupDS() == groupDS )
+      return i_g->second;
+    else
+      throw SALOME_Exception(LOCALIZED ("SMESH_Mesh::AddGroup() wrong ID of SMESHDS_GroupBase"));
+  }
+  SMESH_Group* aGroup = new SMESH_Group (groupDS);
+  _mapGroup[ groupDS->GetID() ] = aGroup;
+  GetMeshDS()->AddGroup( aGroup->GetGroupDS() );
+
+  _groupId = 1 + _mapGroup.rbegin()->first;
+
+  return aGroup;
+}
+
 
 //================================================================================
 /*!
@@ -1955,6 +2020,13 @@ void SMESH_Mesh::fillAncestorsMap(const TopoDS_Shape& theShape)
                                         (TopAbs_ShapeEnum) ancType,
                                         _mapAncestors );
   }
+  // visit COMPOUNDs inside a COMPOUND that are not reachable by TopExp_Explorer
+  if ( theShape.ShapeType() == TopAbs_COMPOUND )
+  {
+    for ( TopoDS_Iterator sIt(theShape); sIt.More(); sIt.Next() )
+      if ( sIt.Value().ShapeType() == TopAbs_COMPOUND )
+        fillAncestorsMap( sIt.Value() );
+  }
 }
 
 //=============================================================================
@@ -1977,9 +2049,9 @@ bool SMESH_Mesh::SortByMeshOrder(list<SMESH_subMesh*>& theListToSort) const
   typedef list<SMESH_subMesh*>::iterator TPosInList;
   map< int, TPosInList > sortedPos;
   TPosInList smBeg = theListToSort.begin(), smEnd = theListToSort.end();
-  TListOfListOfInt::const_iterator listIddIt = _mySubMeshOrder.begin();
-  for( ; listIddIt != _mySubMeshOrder.end(); listIddIt++) {
-    const TListOfInt& listOfId = *listIddIt;
+  TListOfListOfInt::const_iterator listIdsIt = _mySubMeshOrder.begin();
+  for( ; listIdsIt != _mySubMeshOrder.end(); listIdsIt++) {
+    const TListOfInt& listOfId = *listIdsIt;
     TListOfInt::const_iterator idIt = listOfId.begin();
     for ( ; idIt != listOfId.end(); idIt++ ) {
       if ( SMESH_subMesh * sm = GetSubMeshContaining( *idIt )) {
@@ -2006,6 +2078,30 @@ bool SMESH_Mesh::SortByMeshOrder(list<SMESH_subMesh*>& theListToSort) const
   return res;
 }
 
+//================================================================================
+/*!
+ * \brief Return true if given order of sub-meshes is OK
+ */
+//================================================================================
+
+bool SMESH_Mesh::IsOrderOK( const SMESH_subMesh* smBefore,
+                            const SMESH_subMesh* smAfter ) const
+{
+  TListOfListOfInt::const_iterator listIdsIt = _mySubMeshOrder.begin();
+  TListOfInt::const_iterator idBef, idAft;
+  for( ; listIdsIt != _mySubMeshOrder.end(); listIdsIt++)
+  {
+    const TListOfInt& listOfId = *listIdsIt;
+    idBef = std::find( listOfId.begin(), listOfId.end(), smBefore->GetId() );
+    if ( idBef != listOfId.end() )
+      idAft = std::find( listOfId.begin(), listOfId.end(), smAfter->GetId() );
+    if ( idAft != listOfId.end () )
+      return ( std::distance( listOfId.begin(), idBef ) <
+               std::distance( listOfId.begin(), idAft )   );
+  }
+  return true; // no order imposed to given submeshes
+} 
+
 //=============================================================================
 /*!
  * \brief sort submeshes according to stored mesh order
@@ -2014,8 +2110,8 @@ bool SMESH_Mesh::SortByMeshOrder(list<SMESH_subMesh*>& theListToSort) const
  */
 //=============================================================================
 
-list<SMESH_subMesh*> SMESH_Mesh::getAncestorsSubMeshes
-  (const TopoDS_Shape& theSubShape) const
+list<SMESH_subMesh*>
+SMESH_Mesh::getAncestorsSubMeshes (const TopoDS_Shape& theSubShape) const
 {
   list<SMESH_subMesh*> listOfSubMesh;
   TopTools_ListIteratorOfListOfShape it( GetAncestors( theSubShape ));

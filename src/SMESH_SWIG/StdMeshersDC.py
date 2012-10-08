@@ -17,45 +17,72 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-from smesh import Mesh_Algorithm, AssureGeomPublished, IsEqual, ParseParameters
+##
+# @package StdMeshersDC
+# Python API for the standard meshing plug-in module.
+
+from smesh_algorithm import Mesh_Algorithm
+from smesh import AssureGeomPublished, IsEqual, ParseParameters
 from smesh import GetName, TreatHypoStatus
 from smeshDC import Mesh
 
 import StdMeshers
 
-# Types of algorithms
-REGULAR     = "Regular_1D"
-PYTHON      = "Python_1D"
-COMPOSITE   = "CompositeSegment_1D"
-MEFISTO     = "MEFISTO_2D"
-Hexa        = "Hexa_3D"
-QUADRANGLE  = "Quadrangle_2D"
-RADIAL_QUAD = "RadialQuadrangle_1D2D"
+#----------------------------
+# Mesh algo type identifiers
+#----------------------------
 
+## Algorithm type: Regular 1D algorithm, see StdMeshersDC_Segment
+REGULAR     = "Regular_1D"
+## Algorithm type: Python 1D algorithm, see StdMeshersDC_Segment_Python
+PYTHON      = "Python_1D"
+## Algorithm type: Composite segment 1D algorithm, see StdMeshersDC_CompositeSegment
+COMPOSITE   = "CompositeSegment_1D"
+## Algorithm type: Triangle MEFISTO 2D algorithm, see StdMeshersDC_Triangle_MEFISTO
+MEFISTO     = "MEFISTO_2D"
+## Algorithm type: Hexahedron 3D (i-j-k) algorithm, see StdMeshersDC_Hexahedron
+Hexa        = "Hexa_3D"
+## Algorithm type: Quadrangle 2D algorithm, see StdMeshersDC_Quadrangle
+QUADRANGLE  = "Quadrangle_2D"
+## Algorithm type: Radial Quadrangle 1D-2D algorithm, see StdMeshersDC_RadialQuadrangle1D2D
+RADIAL_QUAD = "RadialQuadrangle_1D2D"
 
 # import items of enum QuadType
 for e in StdMeshers.QuadType._items: exec('%s = StdMeshers.%s'%(e,e))
 
+#----------------------
+# Algorithms
+#----------------------
 
-# Public class: Mesh_Segment
-# --------------------------
-
-## Class to define a REGULAR 1D algorithm for discretization. It is created by
-#  calling Mesh.Segment(geom=0)
+## Defines segment 1D algorithm for edges discretization.
+#
+#  It can be created by calling smesh.Mesh.Segment(geom=0)
 #
 #  @ingroup l3_algos_basic
 class StdMeshersDC_Segment(Mesh_Algorithm):
 
-    ## Name of method of class Mesh creating an instance of this class
+    ## name of the dynamic method in smesh.Mesh class
+    #  @internal
     meshMethod = "Segment"
-    ## Name of algorithm type
+    ## type of algorithm used with helper function in smesh.Mesh class
+    #  @internal
     algoType   = REGULAR
+    ## flag pointing either this algorithm should be used by default in dynamic method
+    #  of smesh.Mesh class
+    #  @internal
     isDefault  = True
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates segment 1D algorithm for edges"
 
     ## Private constructor.
+    #  @param mesh parent mesh object algorithm is assigned to
+    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
+    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, self.algoType)
+        pass
 
     ## Defines "LocalLength" hypothesis to cut an edge in several segments with the same length
     #  @param l for the length of segments that cut an edge
@@ -135,7 +162,8 @@ class StdMeshersDC_Segment(Mesh_Algorithm):
         return hyp
 
     ## Private method
-    ## Checks if the given "NumberOfSegments" hypothesis has the same parameters as the given arguments
+    #  
+    #  Checks if the given "NumberOfSegments" hypothesis has the same parameters as the given arguments
     def _compareNumberOfSegments(self, hyp, args):
         if hyp.GetNumberOfSegments() == args[0]:
             if len(args) == 3:
@@ -282,7 +310,7 @@ class StdMeshersDC_Segment(Mesh_Algorithm):
         else:
             self.geom = vertex
             pass
-        ### 0D algorithm
+        # 0D algorithm
         if self.geom is None:
             raise RuntimeError, "Attemp to create SegmentAroundVertex_0D algoritm on None shape"
         AssureGeomPublished( self.mesh, self.geom )
@@ -294,7 +322,7 @@ class StdMeshersDC_Segment(Mesh_Algorithm):
             pass
         status = self.mesh.mesh.AddHypothesis(self.geom, algo)
         TreatHypoStatus(status, "SegmentAroundVertex_0D", name, True)
-        ###
+        #
         comFun = lambda hyp, args: IsEqual(hyp.GetLength(), args[0])
         hyp = self.Hypothesis("SegmentLengthAroundVertex", [length], UseExisting=UseExisting,
                               CompareMethod=comFun)
@@ -314,44 +342,67 @@ class StdMeshersDC_Segment(Mesh_Algorithm):
         hyp = self.Hypothesis("QuadraticMesh", UseExisting=1, CompareMethod=self.CompareEqualHyp)
         return hyp
 
-# Public class: Mesh_CompositeSegment
-# --------------------------
+    pass # end of StdMeshersDC_Segment class
 
-## A regular 1D algorithm for discretization of a set of adjacent edges as one.
-#  It is created by calling Mesh.Segment(COMPOSITE,geom=0)
+## Segment 1D algorithm for discretization of a set of adjacent edges as one edge.
+#
+#  It is created by calling smesh.Mesh.Segment(smesh.COMPOSITE,geom=0)
 #
 #  @ingroup l3_algos_basic
 class StdMeshersDC_CompositeSegment(StdMeshersDC_Segment):
 
-    ## Name of method of class Mesh creating an instance of this class
+    ## name of the dynamic method in smesh.Mesh class
+    #  @internal
     meshMethod = "Segment"
-    ## Name of algorithm type
+    ## type of algorithm used with helper function in smesh.Mesh class
+    #  @internal
     algoType   = COMPOSITE
+    ## flag pointing either this algorithm should be used by default in dynamic method
+    #  of smesh.Mesh class
+    #  @internal
     isDefault  = False
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates segment 1D algorithm for edges"
 
     ## Private constructor.
+    #  @param mesh parent mesh object algorithm is assigned to
+    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
+    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
         self.Create(mesh, geom, self.algoType)
+        pass
 
+    pass # end of StdMeshersDC_CompositeSegment class
 
-# Public class: Mesh_Segment_Python
-# ---------------------------------
-
-## Defines a segment 1D algorithm for discretization with python function
-#  It is created by calling Mesh.Segment(PYTHON,geom=0)
+## Defines a segment 1D algorithm for discretization of edges with Python function
+#
+#  It is created by calling smesh.Mesh.Segment(smesh.PYTHON,geom=0)
 #
 #  @ingroup l3_algos_basic
 class StdMeshersDC_Segment_Python(Mesh_Algorithm):
 
-    ## Name of method of class Mesh creating an instance of this class
+    ## name of the dynamic method in smesh.Mesh class
+    #  @internal
     meshMethod = "Segment"
-    ## Name of algorithm type
+    ## type of algorithm used with helper function in smesh.Mesh class
+    #  @internal
     algoType   = PYTHON
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates tetrahedron 3D algorithm for solids"
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates segment 1D algorithm for edges"
 
     ## Private constructor.
+    #  @param mesh parent mesh object algorithm is assigned to
+    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
+    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
         import Python1dPlugin
         self.Create(mesh, geom, self.algoType, "libPython1dEngine.so")
+        pass
 
     ## Defines "PythonSplit1D" hypothesis
     #  @param n for the number of segments that cut an edge
@@ -367,25 +418,37 @@ class StdMeshersDC_Segment_Python(Mesh_Algorithm):
         hyp.SetPythonLog10RatioFunction(func)
         return hyp
 
-# Public class: Mesh_Triangle_MEFISTO
-# -----------------------------------
+    pass # end of StdMeshersDC_Segment_Python class
 
 ## Triangle MEFISTO 2D algorithm
-#  It is created by calling Mesh.Triangle(MEFISTO,geom=0)
+#
+#  It is created by calling smesh.Mesh.Triangle(smesh.MEFISTO,geom=0)
 #
 #  @ingroup l3_algos_basic
 class StdMeshersDC_Triangle_MEFISTO(Mesh_Algorithm):
 
-    ## Name of method of class Mesh creating an instance of this class
+    ## name of the dynamic method in smesh.Mesh class
+    #  @internal
     meshMethod = "Triangle"
-    ## Name of algorithm type
+    ## type of algorithm used with helper function in smesh.Mesh class
+    #  @internal
     algoType   = MEFISTO
+    ## flag pointing either this algorithm should be used by default in dynamic method
+    #  of smesh.Mesh class
+    #  @internal
     isDefault  = True
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates triangle 2D algorithm for faces"
 
     ## Private constructor.
+    #  @param mesh parent mesh object algorithm is assigned to
+    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
+    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, self.algoType)
+        pass
 
     ## Defines "MaxElementArea" hypothesis basing on the definition of the maximum area of each triangle
     #  @param area for the maximum area of each triangle
@@ -408,28 +471,40 @@ class StdMeshersDC_Triangle_MEFISTO(Mesh_Algorithm):
         hyp = self.Hypothesis("LengthFromEdges", UseExisting=1, CompareMethod=self.CompareEqualHyp)
         return hyp
 
-# Public class: Mesh_Quadrangle
-# -----------------------------
+    pass # end of StdMeshersDC_Triangle_MEFISTO class
 
 ## Defines a quadrangle 2D algorithm
-#  It is created by calling Mesh.Quadrangle(geom=0)
+# 
+#  It is created by calling smesh.Mesh.Quadrangle(geom=0)
 #
 #  @ingroup l3_algos_basic
 class StdMeshersDC_Quadrangle(Mesh_Algorithm):
 
-    ## Name of method of class Mesh creating an instance of this class
+    ## name of the dynamic method in smesh.Mesh class
+    #  @internal
     meshMethod = "Quadrangle"
-    ## Name of algorithm type
+    ## type of algorithm used with helper function in smesh.Mesh class
+    #  @internal
     algoType   = QUADRANGLE
+    ## flag pointing either this algorithm should be used by default in dynamic method
+    #  of smesh.Mesh class
+    #  @internal
     isDefault  = True
-
-    params=0
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates quadrangle 2D algorithm for faces"
+    ## hypothesis associated with algorithm
+    #  @internal
+    params     = 0
 
     ## Private constructor.
+    #  @param mesh parent mesh object algorithm is assigned to
+    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
+    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, self.algoType)
-        return
+        pass
 
     ## Defines "QuadrangleParameters" hypothesis
     #  @param quadType defines the algorithm of transition between differently descretized
@@ -515,47 +590,69 @@ class StdMeshersDC_Quadrangle(Mesh_Algorithm):
     def TriangleVertex(self, vertex, UseExisting=0):
         return self.QuadrangleParameters(QUAD_STANDARD,vertex,UseExisting)
 
-
-# Public class: Mesh_Hexahedron
-# ------------------------------
+    pass # end of StdMeshersDC_Quadrangle class
 
 ## Defines a hexahedron 3D algorithm
-#  It is created by calling Mesh.Hexahedron(geom=0)
+# 
+#  It is created by calling smesh.Mesh.Hexahedron(geom=0)
 #
 #  @ingroup l3_algos_basic
 class StdMeshersDC_Hexahedron(Mesh_Algorithm):
 
-    ## Name of method of class Mesh creating an instance of this class
+    ## name of the dynamic method in smesh.Mesh class
+    #  @internal
     meshMethod = "Hexahedron"
-    ## Name of algorithm type
+    ## type of algorithm used with helper function in smesh.Mesh class
+    #  @internal
     algoType   = Hexa
+    ## flag pointing either this algorithm should be used by default in dynamic method
+    #  of smesh.Mesh class
+    #  @internal
     isDefault  = True
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates hexahedron 3D algorithm for volumes"
 
     ## Private constructor.
+    #  @param mesh parent mesh object algorithm is assigned to
+    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
+    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, Hexa)
         pass
 
-# Public class: Mesh_Projection1D
-# -------------------------------
+    pass # end of StdMeshersDC_Hexahedron class
 
 ## Defines a projection 1D algorithm
-#  It is created by calling Mesh.Projection1D(geom=0)
-#  @ingroup l3_algos_proj
+#  
+#  It is created by calling smesh.Mesh.Projection1D(geom=0)
 #
+#  @ingroup l3_algos_proj
 class StdMeshersDC_Projection1D(Mesh_Algorithm):
 
-    ## Name of method of class Mesh creating an instance of this class
+    ## name of the dynamic method in smesh.Mesh class
+    #  @internal
     meshMethod = "Projection1D"
-    ## Name of algorithm type
+    ## type of algorithm used with helper function in smesh.Mesh class
+    #  @internal
     algoType   = "Projection_1D"
+    ## flag pointing either this algorithm should be used by default in dynamic method
+    #  of smesh.Mesh class
+    #  @internal
     isDefault  = True
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates projection 1D algorithm for edges"
 
     ## Private constructor.
+    #  @param mesh parent mesh object algorithm is assigned to
+    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
+    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, self.algoType)
+        pass
 
     ## Defines "Source Edge" hypothesis, specifying a meshed edge, from where
     #  a mesh pattern is taken, and, optionally, the association of vertices
@@ -582,26 +679,37 @@ class StdMeshersDC_Projection1D(Mesh_Algorithm):
         hyp.SetVertexAssociation( srcV, tgtV )
         return hyp
 
-
-# Public class: Mesh_Projection2D
-# ------------------------------
+    pass # end of StdMeshersDC_Projection1D class
 
 ## Defines a projection 2D algorithm
-#  It is created by calling Mesh.Projection2D(geom=0)
-#  @ingroup l3_algos_proj
+#  
+#  It is created by calling smesh.Mesh.Projection2D(geom=0)
 #
+#  @ingroup l3_algos_proj
 class StdMeshersDC_Projection2D(Mesh_Algorithm):
 
-    ## Name of method of class Mesh creating an instance of this class
+    ## name of the dynamic method in smesh.Mesh class
+    #  @internal
     meshMethod = "Projection2D"
-    ## Name of algorithm type
+    ## type of algorithm used with helper function in smesh.Mesh class
+    #  @internal
     algoType   = "Projection_2D"
+    ## flag pointing either this algorithm should be used by default in dynamic method
+    #  of smesh.Mesh class
+    #  @internal
     isDefault  = True
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates projection 2D algorithm for faces"
 
     ## Private constructor.
+    #  @param mesh parent mesh object algorithm is assigned to
+    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
+    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, self.algoType)
+        pass
 
     ## Defines "Source Face" hypothesis, specifying a meshed face, from where
     #  a mesh pattern is taken, and, optionally, the association of vertices
@@ -634,44 +742,60 @@ class StdMeshersDC_Projection2D(Mesh_Algorithm):
         hyp.SetVertexAssociation( srcV1, srcV2, tgtV1, tgtV2 )
         return hyp
 
-# Public class: Mesh_Projection1D2D
-# ---------------------------------
+    pass # end of StdMeshersDC_Projection2D class
 
 ## Defines a projection 1D-2D algorithm
-#  It is created by calling Mesh.Projection1D2D(geom=0)
+#  
+#  It is created by calling smesh.Mesh.Projection1D2D(geom=0)
 #
 #  @ingroup l3_algos_proj
-
 class StdMeshersDC_Projection1D2D(StdMeshersDC_Projection2D):
 
-    ## Name of method of class Mesh creating an instance of this class
+    ## name of the dynamic method in smesh.Mesh class
+    #  @internal
     meshMethod = "Projection1D2D"
-    ## Name of algorithm type
+    ## type of algorithm used with helper function in smesh.Mesh class
+    #  @internal
     algoType   = "Projection_1D2D"
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates projection 1D-2D algorithm for edges and faces"
 
     ## Private constructor.
+    #  @param mesh parent mesh object algorithm is assigned to
+    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
+    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
         StdMeshersDC_Projection2D.__init__(self, mesh, geom)
+        pass
 
-# Public class: Mesh_Projection3D
-# ------------------------------
+    pass # end of StdMeshersDC_Projection1D2D class
 
 ## Defines a projection 3D algorithm
-#  It is created by calling Mesh.Projection3D(COMPOSITE)
+# 
+#  It is created by calling smesh.Mesh.Projection3D(geom=0)
 #
 #  @ingroup l3_algos_proj
-#
 class StdMeshersDC_Projection3D(Mesh_Algorithm):
 
-    ## Name of method of class Mesh creating an instance of this class
+    ## name of the dynamic method in smesh.Mesh class
+    #  @internal
     meshMethod = "Projection3D"
-    ## Name of algorithm type
+    ## type of algorithm used with helper function in smesh.Mesh class
+    #  @internal
     algoType   = "Projection_3D"
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates projection 3D algorithm for volumes"
 
     ## Private constructor.
+    #  @param mesh parent mesh object algorithm is assigned to
+    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
+    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, self.algoType)
+        pass
 
     ## Defines the "Source Shape 3D" hypothesis, specifying a meshed solid, from where
     #  the mesh pattern is taken, and, optionally, the  association of vertices
@@ -707,23 +831,30 @@ class StdMeshersDC_Projection3D(Mesh_Algorithm):
         #elif srcV1 or srcV2 or tgtV1 or tgtV2:
         return hyp
 
-# Public class: Mesh_Prism
-# ------------------------
+    pass # end of StdMeshersDC_Projection3D class
 
 ## Defines a Prism 3D algorithm, which is either "Extrusion 3D" or "Radial Prism"
 #  depending on geometry
-#  It is created by calling Mesh.Prism(geom=0)
+# 
+#  It is created by calling smesh.Mesh.Prism(geom=0)
 #
 #  @ingroup l3_algos_3dextr
-#
 class StdMeshersDC_Prism3D(Mesh_Algorithm):
 
-    ## Name of method of class Mesh creating an instance of this class
+    ## name of the dynamic method in smesh.Mesh class
+    #  @internal
     meshMethod = "Prism"
-    ## Name of algorithm type
+    ## type of algorithm used with helper function in smesh.Mesh class
+    #  @internal
     algoType   = "Prism_3D"
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates prism 3D algorithm for volumes"
 
     ## Private constructor.
+    #  @param mesh parent mesh object algorithm is assigned to
+    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
+    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
         
@@ -735,11 +866,14 @@ class StdMeshersDC_Prism3D(Mesh_Algorithm):
         nbShells = len( SubShapeAll( shape, ShapeType["SHELL"] ))
         if nbSolids == 0 or nbSolids == nbShells:
             self.Create(mesh, geom, "Prism_3D")
+            pass
         else:
             self.algoType = "RadialPrism_3D"
             self.Create(mesh, geom, "RadialPrism_3D")
             self.distribHyp = self.Hypothesis("LayerDistribution", UseExisting=0)
             self.nbLayers = None
+            pass
+        pass
 
     ## Return 3D hypothesis holding the 1D one
     def Get3DHypothesis(self):
@@ -847,28 +981,36 @@ class StdMeshersDC_Prism3D(Mesh_Algorithm):
         hyp.SetFineness( fineness )
         return hyp
 
+    pass # end of StdMeshersDC_Prism3D class
 
-# Public class: Mesh_RadialQuadrangle1D2D
-# -------------------------------
-
-## Defines a Radial Quadrangle 1D2D algorithm
-#  It is created by calling Mesh.Quadrangle(RADIAL_QUAD,geom=0)
+## Defines a Radial Quadrangle 1D-2D algorithm
+# 
+#  It is created by calling smesh.Mesh.Quadrangle(smesh.RADIAL_QUAD,geom=0)
 #
 #  @ingroup l2_algos_radialq
 class StdMeshersDC_RadialQuadrangle1D2D(Mesh_Algorithm):
 
-    ## Name of method of class Mesh creating an instance of this class
+    ## name of the dynamic method in smesh.Mesh class
+    #  @internal
     meshMethod = "Quadrangle"
-    ## Name of algorithm type
+    ## type of algorithm used with helper function in smesh.Mesh class
+    #  @internal
     algoType   = RADIAL_QUAD
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates quadrangle 1D-2D algorithm for triangular faces"
 
     ## Private constructor.
+    #  @param mesh parent mesh object algorithm is assigned to
+    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
+    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, self.algoType)
 
         self.distribHyp = None #self.Hypothesis("LayerDistribution2D", UseExisting=0)
         self.nbLayers = None
+        pass
 
     ## Return 2D hypothesis holding the 1D one
     def Get2DHypothesis(self):
@@ -954,25 +1096,37 @@ class StdMeshersDC_RadialQuadrangle1D2D(Mesh_Algorithm):
         hyp.SetFineness( fineness )
         return hyp
 
+    pass # end of StdMeshersDC_RadialQuadrangle1D2D class
 
-# Public class: Mesh_UseExistingElements
-# --------------------------------------
-## Defines a Radial Quadrangle 1D2D algorithm
-#  It is created by calling Mesh.UseExisting1DElements(geom=0)
+## Defines a Use Existing Elements 1D algorithm
+#
+#  It is created by calling smesh.Mesh.UseExisting1DElements(geom=0)
 #
 #  @ingroup l3_algos_basic
 class StdMeshersDC_UseExistingElements_1D(Mesh_Algorithm):
 
-    ## Name of method of class Mesh creating an instance of this class
+    ## name of the dynamic method in smesh.Mesh class
+    #  @internal
     meshMethod = "UseExisting1DElements"
-    ## Name of algorithm type
+    ## type of algorithm used with helper function in smesh.Mesh class
+    #  @internal
     algoType   = "Import_1D"
+    ## flag pointing either this algorithm should be used by default in dynamic method
+    #  of smesh.Mesh class
+    #  @internal
     isDefault  = True
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates 1D algorithm for edges with reusing of existing mesh elements"
 
+    ## Private constructor.
+    #  @param mesh parent mesh object algorithm is assigned to
+    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
+    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, self.algoType)
-        return
+        pass
 
     ## Defines "Source edges" hypothesis, specifying groups of edges to import
     #  @param groups list of groups of edges
@@ -991,24 +1145,37 @@ class StdMeshersDC_UseExistingElements_1D(Mesh_Algorithm):
         hyp.SetCopySourceMesh(toCopyMesh, toCopyGroups)
         return hyp
 
-# Public class: Mesh_UseExistingElements
-# --------------------------------------
-## Defines a Radial Quadrangle 1D2D algorithm
-#  It is created by calling Mesh.UseExisting2DElements(geom=0)
+    pass # end of StdMeshersDC_UseExistingElements_1D class
+
+## Defines a Use Existing Elements 1D-2D algorithm
+#
+#  It is created by calling smesh.Mesh.UseExisting2DElements(geom=0)
 #
 #  @ingroup l3_algos_basic
 class StdMeshersDC_UseExistingElements_1D2D(Mesh_Algorithm):
 
-    ## Name of method of class Mesh creating an instance of this class
+    ## name of the dynamic method in smesh.Mesh class
+    #  @internal
     meshMethod = "UseExisting2DElements"
-    ## Name of algorithm type
+    ## type of algorithm used with helper function in smesh.Mesh class
+    #  @internal
     algoType   = "Import_1D2D"
+    ## flag pointing either this algorithm should be used by default in dynamic method
+    #  of smesh.Mesh class
+    #  @internal
     isDefault  = True
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates 1D-2D algorithm for edges/faces with reusing of existing mesh elements"
 
+    ## Private constructor.
+    #  @param mesh parent mesh object algorithm is assigned to
+    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
+    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, self.algoType)
-        return
+        pass
 
     ## Defines "Source faces" hypothesis, specifying groups of faces to import
     #  @param groups list of groups of faces
@@ -1027,25 +1194,37 @@ class StdMeshersDC_UseExistingElements_1D2D(Mesh_Algorithm):
         hyp.SetCopySourceMesh(toCopyMesh, toCopyGroups)
         return hyp
 
+    pass # end of StdMeshersDC_UseExistingElements_1D2D class
 
-# Public class: Mesh_Cartesian_3D
-# --------------------------------------
 ## Defines a Body Fitting 3D algorithm
-#  It is created by calling Mesh.BodyFitted(geom=0)
+#
+#  It is created by calling smesh.Mesh.BodyFitted(geom=0)
 #
 #  @ingroup l3_algos_basic
 class StdMeshersDC_Cartesian_3D(Mesh_Algorithm):
 
-    ## Name of method of class Mesh creating an instance of this class
+    ## name of the dynamic method in smesh.Mesh class
+    #  @internal
     meshMethod = "BodyFitted"
-    ## Name of algorithm type
+    ## type of algorithm used with helper function in smesh.Mesh class
+    #  @internal
     algoType   = "Cartesian_3D"
+    ## flag pointing either this algorithm should be used by default in dynamic method
+    #  of smesh.Mesh class
+    #  @internal
     isDefault  = True
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates body fitting 3D algorithm for volumes"
 
+    ## Private constructor.
+    #  @param mesh parent mesh object algorithm is assigned to
+    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
+    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
         self.Create(mesh, geom, self.algoType)
         self.hyp = None
-        return
+        pass
 
     ## Defines "Body Fitting parameters" hypothesis
     #  @param xGridDef is definition of the grid along the X asix.
@@ -1088,39 +1267,60 @@ class StdMeshersDC_Cartesian_3D(Mesh_Algorithm):
         self.hyp.SetSizeThreshold( sizeThreshold )
         return self.hyp
 
-# Public class: Mesh_UseExisting_1D
-# ---------------------------------
+    pass # end of StdMeshersDC_Cartesian_3D class
+
 ## Defines a stub 1D algorithm, which enables "manual" creation of nodes and
 #  segments usable by 2D algoritms
-#  It is created by calling Mesh.UseExistingSegments(geom=0)
+#
+#  It is created by calling smesh.Mesh.UseExistingSegments(geom=0)
 #
 #  @ingroup l3_algos_basic
-
 class StdMeshersDC_UseExisting_1D(Mesh_Algorithm):
 
-    ## Name of method of class Mesh creating an instance of this class
+    ## name of the dynamic method in smesh.Mesh class
+    #  @internal
     meshMethod = "UseExistingSegments"
-    ## Name of algorithm type
+    ## type of algorithm used with helper function in smesh.Mesh class
+    #  @internal
     algoType   = "UseExisting_1D"
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates 1D algorithm for edges with reusing of existing mesh elements"
 
+    ## Private constructor.
+    #  @param mesh parent mesh object algorithm is assigned to
+    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
+    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
         self.Create(mesh, geom, self.algoType)
+        pass
 
+    pass # end of StdMeshersDC_UseExisting_1D class
 
-# Public class: Mesh_UseExisting
-# -------------------------------
 ## Defines a stub 2D algorithm, which enables "manual" creation of nodes and
 #  faces usable by 3D algoritms
-#  It is created by calling Mesh.UseExistingFaces(geom=0)
+#
+#  It is created by calling smesh.Mesh.UseExistingFaces(geom=0)
 #
 #  @ingroup l3_algos_basic
-
 class StdMeshersDC_UseExisting_2D(Mesh_Algorithm):
 
-    ## Name of method of class Mesh creating an instance of this class
+    ## name of the dynamic method in smesh.Mesh class
+    #  @internal
     meshMethod = "UseExistingFaces"
-    ## Name of algorithm type
+    ## type of algorithm used with helper function in smesh.Mesh class
+    #  @internal
     algoType   = "UseExisting_2D"
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates 2D algorithm for faces with reusing of existing mesh elements"
 
+    ## Private constructor.
+    #  @param mesh parent mesh object algorithm is assigned to
+    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
+    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
         self.Create(mesh, geom, self.algoType)
+        pass
+
+    pass # end of StdMeshersDC_UseExisting_2D class

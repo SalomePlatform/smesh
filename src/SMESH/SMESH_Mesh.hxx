@@ -29,12 +29,12 @@
 
 #include "SMESH_SMESH.hxx"
 
-#include "SMESH_Hypothesis.hxx"
-#include "SMESH_Controls.hxx"
-
-#include "SMESHDS_Mesh.hxx"
-#include "SMESHDS_Command.hxx"
 #include "SMDSAbs_ElementType.hxx"
+#include "SMESHDS_Command.hxx"
+#include "SMESHDS_Mesh.hxx"
+#include "SMESH_ComputeError.hxx"
+#include "SMESH_Controls.hxx"
+#include "SMESH_Hypothesis.hxx"
 
 #include "Utils_SALOME_Exception.hxx"
 
@@ -43,6 +43,7 @@
 
 #include <map>
 #include <list>
+
 
 #ifdef WNT
 #pragma warning(disable:4251) // Warning DLL Interface ...
@@ -121,6 +122,8 @@ public:
 
   int CGNSToMesh(const char* theFileName, const int theMeshIndex, std::string& theMeshName);
   
+  SMESH_ComputeErrorPtr GMFToMesh(const char* theFileName);
+
   SMESH_Hypothesis::Hypothesis_Status
   AddHypothesis(const TopoDS_Shape & aSubShape, int anHypId)
     throw(SALOME_Exception);
@@ -240,6 +243,8 @@ public:
                  const SMESHDS_Mesh* meshPart = 0) throw(SALOME_Exception);
   void ExportCGNS(const char *        file,
                   const SMESHDS_Mesh* mesh);
+  void ExportGMF(const char *        file,
+                 const SMESHDS_Mesh* mesh);
   void ExportSAUV(const char *file, 
                   const char* theMeshName = NULL, 
                   bool theAutoGroups = true) throw(SALOME_Exception);
@@ -287,7 +292,9 @@ public:
                          int&                      theId,
                          const TopoDS_Shape&       theShape=TopoDS_Shape(),
                          const SMESH_PredicatePtr& thePredicate=SMESH_PredicatePtr());
-  
+
+  SMESH_Group* AddGroup (SMESHDS_GroupBase* groupDS) throw(SALOME_Exception);
+
   typedef boost::shared_ptr< SMDS_Iterator<SMESH_Group*> > GroupIteratorPtr;
   GroupIteratorPtr GetGroups() const;
   
@@ -317,15 +324,13 @@ public:
   void SetMeshOrder(const TListOfListOfInt& theOrder );
   const TListOfListOfInt& GetMeshOrder() const;
 
-  /*!
-   * \brief sort submeshes according to stored mesh order
-   * \param theListToSort in out list to be sorted
-   * \return FALSE if nothing sorted
-   */
+  // sort submeshes according to stored mesh order
   bool SortByMeshOrder(std::list<SMESH_subMesh*>& theListToSort) const;
 
-  //
-  
+  // return true if given order of sub-meshes is OK
+  bool IsOrderOK( const SMESH_subMesh* smBefore,
+                  const SMESH_subMesh* smAfter ) const;
+
   ostream& Dump(ostream & save);
   
 private:

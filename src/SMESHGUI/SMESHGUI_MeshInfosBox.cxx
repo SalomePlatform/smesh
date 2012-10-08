@@ -319,6 +319,15 @@ SMESHGUI_MeshInfosBox::SMESHGUI_MeshInfosBox(const bool full, QWidget* theParent
     my0DElem = new QLabel( this );
     l->addWidget( my0DElem,      row, 1 );
 
+    // balls
+    row = l->rowCount();         // retrieve current row count
+    // --
+    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_BALLS")), this );
+    l->addWidget( lab,           row, 0 );
+    // --
+    myBall = new QLabel( this );
+    l->addWidget( myBall,        row, 1 );
+
     addSeparator(this);          // add separator
 
     // edges

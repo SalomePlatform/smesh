@@ -82,14 +82,14 @@ static int MYDEBUGWITHFILES = 0;
 // purpose  : Get type of VTK cell
 //=================================================================================
 static inline vtkIdType getCellType( const SMDSAbs_ElementType theType,
-                                     const bool thePoly,
-                                     const int theNbNodes )
+                                     const bool                thePoly,
+                                     const int                 theNbNodes )
 {
   switch( theType )
   {
     case SMDSAbs_0DElement:         return VTK_VERTEX;
 
-    case SMDSAbs_Ball:   return VTK_POLY_VERTEX;
+    case SMDSAbs_Ball:              return VTK_POLY_VERTEX;
 
     case SMDSAbs_Edge: 
       if( theNbNodes == 2 )         return VTK_LINE;
@@ -345,16 +345,21 @@ void SMESH_VisualObjDef::buildElemPrs()
 
   // Calculate cells size
 
-  static SMDSAbs_ElementType aTypes[ 5 ] =
-    { SMDSAbs_Ball, SMDSAbs_0DElement, SMDSAbs_Edge, SMDSAbs_Face, SMDSAbs_Volume };
+  const int nbTypes = 5;
+  static SMDSAbs_ElementType aTypes[ nbTypes ] =
+    { SMDSAbs_Edge, SMDSAbs_Face, SMDSAbs_Volume, SMDSAbs_Ball, SMDSAbs_0DElement };
 
   // get entity data
   map<SMDSAbs_ElementType,int> nbEnts;
   map<SMDSAbs_ElementType,TEntityList> anEnts;
 
-  for ( int i = 0; i <= 3; i++ )
-    nbEnts[ aTypes[ i ] ] = GetEntities( aTypes[ i ], anEnts[ aTypes[ i ] ] );
+  vtkIdType aNbCells = 0;
 
+  for ( int i = 0; i < nbTypes; i++ )
+  {
+    nbEnts[ aTypes[ i ] ] = GetEntities( aTypes[ i ], anEnts[ aTypes[ i ] ] );
+    aNbCells += nbEnts[ aTypes [ i ]];
+  }
   // PAL16631: without swap, bad_alloc is not thrown but hung up and crash instead,
   // so check remaining memory size for safety
   SMDS_Mesh::CheckMemory(); // PAL16631
@@ -362,7 +367,7 @@ void SMESH_VisualObjDef::buildElemPrs()
   vtkIdType aCellsSize =  2 * nbEnts[ SMDSAbs_0DElement ] + 3 * nbEnts[ SMDSAbs_Edge ];
   aCellsSize += 2 * nbEnts[ SMDSAbs_Ball ];
 
-  for ( int i = 2; i <= 3; i++ ) // iterate through faces and volumes
+  for ( int i = 1; i <= 2; i++ ) // iterate through faces and volumes
   {
     if ( nbEnts[ aTypes[ i ] ] )
     {
@@ -388,11 +393,6 @@ void SMESH_VisualObjDef::buildElemPrs()
       }
     }
   }
-  
-  vtkIdType aNbCells =
-    nbEnts[ SMDSAbs_0DElement ] + nbEnts[ SMDSAbs_Ball ] + nbEnts[ SMDSAbs_Edge ] +
-    nbEnts[ SMDSAbs_Face ] + nbEnts[ SMDSAbs_Volume ];
-
   if ( MYDEBUG )
     MESSAGE( "Update - aNbCells = "<<aNbCells<<"; aCellsSize = "<<aCellsSize );
 
@@ -417,7 +417,7 @@ void SMESH_VisualObjDef::buildElemPrs()
 
   SMDS_Mesh::CheckMemory(); // PAL16631
 
-  for ( int i = 0; i <= 3; i++ ) // iterate through 0d elements, edges, faces and volumes
+  for ( int i = 0; i < nbTypes; i++ ) // iterate through all types of elements
   {
     if ( nbEnts[ aTypes[ i ] ] > 0 ) {
       

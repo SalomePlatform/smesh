@@ -2647,18 +2647,18 @@ SMESHGUI_FilterDlg::~SMESHGUI_FilterDlg()
 // name    : SMESHGUI_FilterDlg::Init
 // Purpose : Init dialog fields, connect signals and slots, show dialog
 //=======================================================================
-void SMESHGUI_FilterDlg::Init (const int type)
+void SMESHGUI_FilterDlg::Init (const int type, const bool setInViewer)
 {
   QList<int> aTypes;
   aTypes.append(type);
-  Init(aTypes);
+  Init(aTypes,setInViewer);
 }
 
 //=======================================================================
 // name    : SMESHGUI_FilterDlg::Init
 // Purpose : Init dialog fields, connect signals and slots, show dialog
 //=======================================================================
-void SMESHGUI_FilterDlg::Init (const QList<int>& theTypes)
+void SMESHGUI_FilterDlg::Init (const QList<int>& theTypes, const bool setInViewer)
 {
   mySourceWg  = 0;
   myTypes     = theTypes;
@@ -2713,7 +2713,7 @@ void SMESHGUI_FilterDlg::Init (const QList<int>& theTypes)
   if (myInsertState.contains(theTypes.first()))
     mySetInViewer->setChecked(myInsertState[ theTypes.first() ]);
   else
-    mySetInViewer->setChecked(true);
+    mySetInViewer->setChecked(setInViewer);
 
   mySourceGrp->button(myApplyToState.contains(theTypes.first()) ? 
                       myApplyToState[ theTypes.first() ] :
@@ -3008,7 +3008,7 @@ bool SMESHGUI_FilterDlg::isValid() const
 
 //=======================================================================
 // name    : SMESHGUI_FilterDlg::SetSourceWg
-// Purpose : Set widget of parent dialog containing idsto be filtered if
+// Purpose : Set widget of parent dialog containing ids to be filtered if
 //           user select corresponding source radio button
 //=======================================================================
 void SMESHGUI_FilterDlg::SetSourceWg (QWidget* theWg,
@@ -3501,6 +3501,8 @@ void SMESHGUI_FilterDlg::updateSelection()
   }
   else
   {
+    mySelector->SetSelectionMode( getSelMode( myTable->GetType() ));
+
     if (myIsSelectionChanged) {
       // mySelectionMgr->installFilter( new GEOM_TypeFilter( aStudy, -1 ) ); // This filter deactivates selection
       // Impossible to select any object in the OB on the second opening of FilterDlg

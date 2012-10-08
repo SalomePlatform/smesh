@@ -805,7 +805,7 @@ void SMESHGUI_GroupDlg::setSelectionMode (int theMode)
       if ( aViewWindow ) aViewWindow->SetSelectionMode(isSelectAll ? ActorSelection : EdgeSelection);
       break;
     case grpBallSelection:
-      //if ( aViewWindow ) aViewWindow->SetSelectionMode(isSelectAll ? ActorSelection : BallSelection);
+      if ( aViewWindow ) aViewWindow->SetSelectionMode(isSelectAll ? ActorSelection : BallSelection);
       break;
     case grpFaceSelection:
       if ( aViewWindow ) aViewWindow->SetSelectionMode(isSelectAll ? ActorSelection : FaceSelection);
@@ -1126,17 +1126,21 @@ bool SMESHGUI_GroupDlg::onApply()
       if ( aMeshGroupSO )
         if(SMESH_Actor *anActor = SMESH::FindActorByEntry(aMeshGroupSO->GetID().c_str())) {
           anActor->setName(myName->text().toLatin1().data());
+	  QColor c;
+	  int delta;
           switch ( myTypeId ) {
           case grpNodeSelection:   anActor->SetNodeColor( aColor.R, aColor.G, aColor.B ); break;
           case grpBallSelection:   anActor->SetBallColor( aColor.R, aColor.G, aColor.B ); break;
           case grpEdgeSelection:   anActor->SetEdgeColor( aColor.R, aColor.G, aColor.B ); break;
-          case grpFaceSelection:   
           case grpVolumeSelection: 
+              SMESH::GetColor("SMESH", "volume_color", c , delta, "255,0,170|-100");
+              anActor->SetVolumeColor( aColor.R, aColor.G, aColor.B, delta ); break;          
+	      break;
+          case grpFaceSelection:   
           default:
-              QColor c;
-              int delta;
               SMESH::GetColor("SMESH", "fill_color", c , delta, "0,170,255|-100");
               anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B, delta ); break;          
+	      break;
           }
         }
     }
@@ -1759,7 +1763,7 @@ void SMESHGUI_GroupDlg::onAdd()
     break;
   case grpBallSelection:
     aType = SMESH::BALL;
-    //mySelector->SetSelectionMode(BallSelection);
+    mySelector->SetSelectionMode(BallSelection);
     break;
   case grpEdgeSelection:
     aType = SMESH::EDGE;
@@ -2438,7 +2442,7 @@ void SMESHGUI_GroupDlg::setDefaultGroupColor()
   if( !isAutoColor )
   {
     int r = 0, g = 0, b = 0;
-    SMESH::GetColor( "SMESH", "fill_color", r, g, b, QColor( 0, 170, 255 ) );
+    SMESH::GetColor( "SMESH", "default_grp_color", r, g, b, QColor( 255, 170, 0 ) );
     aQColor.setRgb( r, g, b );
   }
   else

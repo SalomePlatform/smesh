@@ -858,7 +858,7 @@ void SMESH_PreMeshInfo::FullLoadFromFile() const
   SMESH_PreMeshInfo* meshInfo = _mesh->changePreMeshInfo();
   _mesh->changePreMeshInfo() = NULL; // to allow GUI accessing to real info
 
-  ::SMESH_Mesh& mesh = _mesh->GetImpl();
+  ::SMESH_Mesh&   mesh = _mesh->GetImpl();
   SMESHDS_Mesh* meshDS = mesh.GetMeshDS();
 
   PreMeshInfo_TRY;
@@ -918,6 +918,18 @@ void SMESH_PreMeshInfo::readSubMeshes(DriverMED_R_SMESHDS_Mesh* reader) const
     aTopGroup->OpenOnDisk();
 
     SMESHDS_Mesh* meshDS = _mesh->GetImpl().GetMeshDS();
+
+    // issue 0020693. Restore _isModified flag
+    if ( aTopGroup->ExistInternalObject( "_isModified" ))
+    {
+      HDFdataset* aDataset = new HDFdataset( "_isModified", aTopGroup );
+      aDataset->OpenOnDisk();
+      hdf_size size = aDataset->GetSize();
+      int* isModified = new int[ size ];
+      aDataset->ReadFromDisk( isModified );
+      aDataset->CloseOnDisk();
+      _mesh->GetImpl().SetIsModified( bool(*isModified));
+    }
 
     bool submeshesInFamilies = ( ! aTopGroup->ExistInternalObject( "Submeshes" ));
     if ( submeshesInFamilies ) // from MED

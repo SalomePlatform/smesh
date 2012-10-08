@@ -37,6 +37,7 @@
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
 class SMESHGUI_ConvToQuadDlg;
+class SMESHGUI_MeshEditPreview;
 
 class SMESHGUI_EXPORT SMESHGUI_ConvToQuadOp : public SMESHGUI_SelectionOp
 { 
@@ -60,9 +61,11 @@ protected:
 protected slots:
   virtual bool                   onApply();
   void                           ConnectRadioButtons( int );
+  void                           onWarningWinFinished();
 
 private:
   SMESHGUI_ConvToQuadDlg*        myDlg;
+  SMESHGUI_MeshEditPreview*      myBadElemsPreview;
 };
 
 #endif // SMESHGUI_CONVTOQUADOP_H

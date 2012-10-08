@@ -24,7 +24,6 @@
 //  File   : SMESH_Group.cxx
 //  Author : Michael Sazonov (OCC)
 //  Module : SMESH
-//  $Header$
 //
 #include "SMESH_Group.hxx"
 #include "SMESH_Mesh.hxx"
@@ -60,6 +59,7 @@ SMESH_Group::SMESH_Group (int                       theID,
     myGroupDS = new SMESHDS_Group (theID,
                                    const_cast<SMESH_Mesh*>(theMesh)->GetMeshDS(),
                                    theType);
+  myGroupDS->SetStoreName( theName );
 }
 
 //================================================================================
@@ -76,11 +76,23 @@ SMESH_Group::SMESH_Group (SMESHDS_GroupBase* groupDS): myGroupDS( groupDS )
 
 //=============================================================================
 /*!
- *  
+ *  Destructor deletes myGroupDS
  */
 //=============================================================================
 
 SMESH_Group::~SMESH_Group ()
 {
   delete myGroupDS; myGroupDS=0;
+}
+
+//================================================================================
+/*!
+ * \brief Sets a new name
+ */
+//================================================================================
+
+void SMESH_Group::SetName (const char* theName)
+{
+  myName = theName;
+  myGroupDS->SetStoreName( theName );
 }

@@ -3,15 +3,15 @@
 \page importing_exporting_meshes_page Importing and exporting meshes
 
 \n In MESH there is a functionality allowing importation/exportation
-of meshes from/to \b MED, \b UNV (I-DEAS 10), \b DAT (Nastran), \b STL
-and \b CGNS format files. You can also export a group as a whole mesh.
+of meshes from/to \b MED, \b UNV (I-DEAS 10), \b DAT (simple ascii format), \b STL,
+\b GMF and \b CGNS format files. You can also export a group as a whole mesh.
 
 
 <em>To import a mesh:</em>
 
 <ol>
 <li>From the \b File menu choose the \b Import item, from its sub-menu
-select the corresponding format (MED, UNV, DAT, STL and CGNS) of the file containing
+select the corresponding format (MED, UNV, STL, GMF and CGNS) of the file containing
 your mesh.</li>
 <li>In the standard <b>Search File</b> dialog box find the file for
 importation. It is possible to select multiple files to be imported all at once. </li>
@@ -26,7 +26,7 @@ importation. It is possible to select multiple files to be imported all at once.
 <ol>
 <li>Select the object you wish to export.</li>
 <li>From the \b File menu choose the \b Export item, from its sub-menu
-select the format (MED, UNV, DAT, STL and CGNS) of the file which will
+select the format (MED, UNV, DAT, STL, GMF and CGNS) of the file which will
 contain your exported mesh.</li>
 <li>In the standard <b>Search File</b> select a location for the
 exported file and enter its name.</li>

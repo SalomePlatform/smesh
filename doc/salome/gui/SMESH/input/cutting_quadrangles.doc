@@ -8,7 +8,7 @@ corners.
 
 <em>To cut quadrangles:</em>
 <ol>
-<li>Display a mesh or a submesh in the 3D viewer.</li>
+<li>Display a mesh or a sub-mesh in the 3D viewer.</li>
 <li>In the \b Modification menu select the <b>Cutting of quadrangles</b> item or
 click <em>"Cutting of quadrangles"</em> button in the toolbar.
 
@@ -29,7 +29,7 @@ selected element or elements from the list click \b Remove button. <b>Sort
 list</b> button allows to sort the list of IDs. \b Filter button allows to
 apply a definite filter to the selection of quadrangles.</li>
 <li><b>Apply to all</b> radio button allows to modify the orientation of all
-quadrangles of the currently displayed mesh or submesh.</li>
+quadrangles of the currently displayed mesh or sub-mesh.</li>
 <li>\b Preview - provides a preview of cutting in the viewer.</li>
 </ul>
 
@@ -39,12 +39,11 @@ quadrangles of the currently displayed mesh or submesh.</li>
 <li><b>Use diagonal 1-3</b> and <b>Use diagonal 2-4</b> allows to
 specify the opposite corners which will be connected by the cutting
 edge.</li>
-<li><b>Use numeric factor</b> - allows to apply the operation only to
-those objects which meet the chosen criterion (from the list of
-Quality Controls, i.e. Skew, Warping, Minimum Angle, etc.)</li>
+<li><b>Use numeric factor</b> - allows to chose a quality criterion
+  optimization of which will be used to select the cutting edge.</li>
 </ul>
 </li>
-<li><b>Select from</b> - allows to choose a submesh or an existing
+<li><b>Select from</b> - allows to choose a sub-mesh or an existing
 group whose quadrangle elements will be automatically added to the
 list.</li>
 </ul>

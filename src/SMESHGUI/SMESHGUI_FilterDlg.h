@@ -222,8 +222,8 @@ public:
   SMESHGUI_FilterDlg( SMESHGUI*, const int );
   virtual ~SMESHGUI_FilterDlg();
 
-  void                      Init( const QList<int>& );
-  void                      Init( const int );
+  void                      Init( const QList<int>&, const bool setInViewer=true );
+  void                      Init( const int, const bool setInViewer=true );
 
   void                      SetSelection();
   void                      SetMesh (SMESH::SMESH_Mesh_var);

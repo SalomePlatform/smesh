@@ -205,7 +205,7 @@ DriverMED_R_SMESHDS_Mesh
                 aNodeIds.resize( aNbBalls );
                 for(TInt iBall = 0; iBall < aNbBalls && anIsNodeNum; iBall++)
                 {
-                  aNodeIds[iBall] = aNodeInfo->GetElemNum(iBall);
+                  aNodeIds[iBall] = aNodeInfo->GetElemNum( (*aBallInfo->myConn)[ iBall ]-1 );
                   anIsNodeNum = myMesh->FindNode( aNodeIds[iBall] ) ? eVRAI : eFAUX;
                 }
               }

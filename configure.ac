@@ -553,6 +553,7 @@ AC_OUTPUT([ \
   src/DriverMED/Makefile \
   src/DriverSTL/Makefile \
   src/DriverUNV/Makefile \
+  src/DriverGMF/Makefile \
   src/DriverCGNS/Makefile \
   src/MEFISTO2/Makefile \
   src/OBJECT/Makefile \

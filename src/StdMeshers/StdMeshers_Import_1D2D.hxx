@@ -28,7 +28,7 @@
 
 #include "SMESH_StdMeshers.hxx"
 
-#include "SMESH_2D_Algo.hxx"
+#include "SMESH_Algo.hxx"
 #include "SMDS_MeshElement.hxx"
 
 class StdMeshers_ImportSource1D;

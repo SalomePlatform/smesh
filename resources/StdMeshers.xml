@@ -55,7 +55,7 @@
                 dim="1"/>
 
     <hypothesis type="FixedPoints1D"
-                label-id="Fixed points 1D"
+                label-id="Fixed Points 1D"
                 icon-id="mesh_hypo_length.png"
                 dim="1"/>
 
@@ -75,18 +75,18 @@
                 dim="1"/>
 
     <hypothesis type="Propagation"
-                label-id="Propagation of 1D Hyp. on opposite edges"
+                label-id="Propagation of 1D Hyp. on Opposite Edges"
                 icon-id="mesh_hypo_length.png"
                 dim="1"
                 auxiliary="true"/>
 
     <hypothesis type="AutomaticLength"
-                label-id="Automatic length"
+                label-id="Automatic Length"
                 icon-id="mesh_hypo_length.png"
                 dim="1"/>
 
     <hypothesis type="LengthFromEdges"
-                label-id="Length From Edges (2D Hyp. for Triangulator)"
+                label-id="Length From Edges"
                 icon-id="mesh_hypo_length.png"
                 dim="2"/>
 
@@ -184,14 +184,14 @@
   <algorithms>
 
     <algorithm type="SegmentAroundVertex_0D"
-	       label-id="Segments around vertex"
+	       label-id="Segments around Vertex"
 	       icon-id="mesh_algo_regular.png"
                hypos="SegmentLengthAroundVertex"
                output="VERTEX"
                dim="0"/>
 
     <algorithm type="Regular_1D"
-	       label-id="Wire discretisation"
+	       label-id="Wire Discretisation"
 	       icon-id="mesh_algo_regular.png"
                hypos="LocalLength,MaxLength,Arithmetic1D,StartEndLength,NumberOfSegments,Deflection1D,AutomaticLength,FixedPoints1D"
                opt-hypos="Propagation,QuadraticMesh"
@@ -213,7 +213,7 @@
     </algorithm>
 
     <algorithm type="CompositeSegment_1D"
-	       label-id="Composite side discretisation"
+	       label-id="Composite Side Discretisation"
 	       icon-id="mesh_algo_regular.png"
                hypos="LocalLength,MaxLength,Arithmetic1D,StartEndLength,NumberOfSegments,Deflection1D,AutomaticLength,FixedPoints1D"
                opt-hypos="Propagation,QuadraticMesh"
@@ -304,7 +304,7 @@
                dim="2">
       <python-wrap>
         <algo>Projection_2D=Projection2D()</algo>
-        <hypo>ProjectionSource2D=SourceFace(SetSourceFace(),SetSourceMesh(),SetVertexAssociation(1),SetVertexAssociation(2),SetVertexAssociation(3),SetVertexAssociation(4))</hypo>
+        <hypo>ProjectionSource2D=SourceFace(SetSourceFace(),SetSourceMesh(),SetVertexAssociation(1),SetVertexAssociation(3),SetVertexAssociation(2),SetVertexAssociation(4))</hypo>
       </python-wrap>
     </algorithm>
 
@@ -329,12 +329,12 @@
                dim="3">
       <python-wrap>
         <algo>Projection_3D=Projection3D()</algo>
-        <hypo>ProjectionSource3D=SourceShape3D(SetSource3DShape(),SetSourceMesh(),SetVertexAssociation(1),SetVertexAssociation(2),SetVertexAssociation(3),SetVertexAssociation(4))</hypo>
+        <hypo>ProjectionSource3D=SourceShape3D(SetSource3DShape(),SetSourceMesh(),SetVertexAssociation(1),SetVertexAssociation(3),SetVertexAssociation(2),SetVertexAssociation(4))</hypo>
       </python-wrap>
     </algorithm>
 
     <algorithm type="Import_1D"
-               label-id="Use existing 1D elements"
+               label-id="Use Existing 1D Elements"
                icon-id="mesh_algo_regular.png"
                hypos="ImportSource1D"
                output="EDGE"
@@ -346,7 +346,7 @@
     </algorithm>
 
     <algorithm type="Import_1D2D"
-               label-id="Use existing 2D elements"
+               label-id="Use Existing 2D Elements"
                icon-id="mesh_algo_quad.png"
                hypos="ImportSource2D"
                output="QUAD,TRIA"
@@ -359,7 +359,7 @@
     </algorithm>
 
     <algorithm type="Prism_3D"
-               label-id="3D extrusion"
+               label-id="3D Extrusion"
                icon-id="mesh_algo_hexa.png"
                input="QUAD,TRIA"
                dim="3">
@@ -381,7 +381,7 @@
     </algorithm>
 
     <algorithm type="UseExisting_1D"
-               label-id="Use existing edges"
+               label-id="Use Existing Edges"
                icon-id="mesh_algo_regular.png"
                input="VERTEX"
                output="EDGE"
@@ -392,7 +392,7 @@
     </algorithm>
 
     <algorithm type="UseExisting_2D"
-               label-id="Use existing faces"
+               label-id="Use Existing Faces"
                icon-id="mesh_algo_quad.png"
                input="EDGE"
                output="QUAD,TRIA"
@@ -403,7 +403,7 @@
     </algorithm>
 
     <algorithm type="RadialQuadrangle_1D2D"
-               label-id="Radial quadrangle 1D2D"
+               label-id="Radial Quadrangle 1D2D"
                icon-id="mesh_algo_quad.png"
                hypos="NumberOfLayers2D, LayerDistribution2D"
                input="EDGE"

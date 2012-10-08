@@ -57,6 +57,7 @@ libSMESHClient_la_CPPFLAGS = \
 	-I$(srcdir)/../SMDS \
 	-I$(srcdir)/../SMESHDS \
 	-I$(srcdir)/../SMESH \
+	-I$(srcdir)/../SMESHUtils \
 	-I$(top_builddir)/idl
 
 libSMESHClient_la_LDFLAGS  = \

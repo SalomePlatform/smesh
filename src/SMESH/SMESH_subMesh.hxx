@@ -139,6 +139,13 @@ class SMESH_EXPORT SMESH_subMesh
   EventListenerData* GetEventListenerData(EventListener* listener) const;
 
   /*!
+   * \brief Return an event listener data
+    * \param listenerName - the listener name
+    * \retval EventListenerData* - found data, maybe NULL
+   */
+  EventListenerData* GetEventListenerData(const std::string& listenerName) const;
+
+  /*!
    * \brief Unregister the listener and delete it and it's data
     * \param listener - the event listener to delete
    */
@@ -278,7 +285,9 @@ protected:
    * \brief Update compute_state by _computeError
     * \retval bool - false if there are errors
    */
-  bool checkComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& theShape=TopoDS_Shape());
+  bool checkComputeError(SMESH_Algo*         theAlgo,
+                         const bool          theComputeOK,
+                         const TopoDS_Shape& theShape=TopoDS_Shape());
 
   /*!
    * \brief Return a hypothesis attached to theShape.

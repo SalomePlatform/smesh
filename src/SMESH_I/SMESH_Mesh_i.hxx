@@ -29,6 +29,7 @@
 #include "SMESH.hxx"
 
 #include <SALOMEconfig.h>
+#include CORBA_SERVER_HEADER(SMESH_Gen)
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_Group)
 #include CORBA_SERVER_HEADER(SMESH_Hypothesis)
@@ -37,7 +38,6 @@
 
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_Mesh.hxx"
-//#include "SMESH_subMesh_i.hxx"
 #include "SMESH_subMesh.hxx"
 
 #include "SALOME_GenericObj_i.hh"
@@ -198,6 +198,9 @@ public:
   int ImportSTLFile( const char* theFileName )
     throw (SALOME::SALOME_Exception);
 
+  SMESH::ComputeError* ImportGMFFile( const char* theFileName )
+    throw (SALOME::SALOME_Exception);
+
   /*!
    * consult DriverMED_R_SMESHDS_Mesh::ReadStatus for returned value
    */
@@ -245,6 +248,8 @@ public:
   void ExportCGNS(SMESH::SMESH_IDSource_ptr meshPart,
                   const char*               file,
                   CORBA::Boolean            overwrite) throw (SALOME::SALOME_Exception);
+  void ExportGMF(SMESH::SMESH_IDSource_ptr meshPart,
+                 const char*               file) throw (SALOME::SALOME_Exception);
 
   void ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
                        const char*               file,

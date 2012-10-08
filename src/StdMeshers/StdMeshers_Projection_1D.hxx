@@ -30,7 +30,7 @@
 #include "SMESH_StdMeshers.hxx"
 
 
-#include "SMESH_1D_Algo.hxx"
+#include "SMESH_Algo.hxx"
 
 
 class StdMeshers_ProjectionSource1D;

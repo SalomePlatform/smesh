@@ -48,6 +48,7 @@ salomeinclude_HEADERS = \
 	SMESH_NoteBook.hxx \
 	SMESH_Measurements_i.hxx \
 	SMESH_PreMeshInfo.hxx \
+	SMESH_MeshPartDS.hxx \
 	SMESH.hxx
 
 # Scripts to be installed.

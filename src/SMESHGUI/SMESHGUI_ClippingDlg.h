@@ -201,6 +201,7 @@ public slots:
   void                    onSelectOrientation( int );
   void                    SetCurrentPlaneParam();
   void                    OnPreviewToggle( bool );
+  void                    onAutoApply(bool);
   void                    ClickOnOk();
   void                    ClickOnCancel();
   void                    ClickOnApply();

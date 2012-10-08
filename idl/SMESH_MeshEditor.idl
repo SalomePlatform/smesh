@@ -25,6 +25,7 @@
 #define _SMESH_MESHEDITOR_IDL_
 
 #include "SMESH_Mesh.idl"
+#include "SMESH_Gen.idl"
 
 module SMESH
 {
@@ -34,8 +35,34 @@ module SMESH
    * This interface makes modifications on the Mesh - removing elements and nodes etc.
    */
   interface NumericalFunctor;
+
   interface SMESH_MeshEditor
   {
+   /*!
+    * Return data of mesh edition preview which is computed provided
+    * that the editor was obtained trough SMESH_Mesh::GetMeshEditPreviewer()
+    */
+    MeshPreviewStruct GetPreviewData();
+
+   /*!
+    * If during last operation of MeshEditor some nodes were
+    * created this method returns list of their IDs, if new nodes
+    * not created - returns empty list
+    */
+    long_array GetLastCreatedNodes();
+
+   /*!
+    * If during last operation of MeshEditor some elements were
+    * created this method returns list of their IDs, if new elements
+    * not created - returns empty list
+    */
+    long_array GetLastCreatedElems();
+
+    /*!
+     * \brief Returns description of an error/warning occured during the last operation
+     */
+    ComputeError GetLastError();
+
     /*!
      * \brief Wrap a sequence of ids in a SMESH_IDSource
      * \param IDsOfElements list of mesh elements identifiers
@@ -802,26 +829,6 @@ module SMESH
     */
     boolean ChangeElemNodes(in long ide, in long_array newIDs);
 
-   /*!
-    * Return data of mesh edition preview which is computed provided
-    * that the editor was obtained trough SMESH_Mesh::GetMeshEditPreviewer()
-    */
-    MeshPreviewStruct GetPreviewData();
-
-   /*!
-    * If during last operation of MeshEditor some nodes were
-    * created this method returns list of it's IDs, if new nodes
-    * not creared - returns empty list
-    */
-    long_array GetLastCreatedNodes();
-
-   /*!
-    * If during last operation of MeshEditor some elements were
-    * created this method returns list of it's IDs, if new elements
-    * not creared - returns empty list
-    */
-    long_array GetLastCreatedElems();
-
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
      * \param theNodes - identifiers of nodes to be doubled
@@ -1039,6 +1046,21 @@ module SMESH
                                           in GEOM::GEOM_Object theShape );
 
     /*!
+     * \brief Identify the elements that will be affected by node duplication (actual duplication is not performed).
+     * This method is the first step of DoubleNodeElemGroupsInRegion.
+     * \param theElems - list of groups of elements (edges or faces) to be replicated
+     * \param theNodesNot - list of groups of nodes not to replicated
+     * \param theShape - shape to detect affected elements (element which geometric center
+     *        located on or inside shape).
+     *        The replicated nodes should be associated to affected elements.
+     * \return groups of affected elements
+     * \sa DoubleNodeElemGroupsInRegion()
+     */
+    ListOfGroups AffectedElemGroupsInRegion( in ListOfGroups theElems,
+                                             in ListOfGroups theNodesNot,
+                                             in GEOM::GEOM_Object theShape );
+
+    /*!
      * \brief Generates skin mesh (containing 2D cells) from 3D mesh
      * The created 2D mesh elements based on nodes of free faces of boundary volumes
      * \return TRUE if operation has been completed successfully, FALSE otherwise
@@ -1117,6 +1139,18 @@ module SMESH
      * \return TRUE if operation has been completed successfully, FALSE otherwise
      */
     boolean CreateFlatElementsOnFacesGroups( in ListOfGroups theGroupsOfFaces ); 
+
+    /*!
+     *  \brief identify all the elements around a geom shape, get the faces delimiting the hole
+     *  Build groups of volume to remove, groups of faces to replace on the skin of the object,
+     *  groups of faces to remove insidethe object, (idem edges).
+     *  Build ordered list of nodes at the border of each group of faces to replace (to be used to build a geom subshape)
+     */
+    void CreateHoleSkin(in double radius,
+                        in GEOM::GEOM_Object theShape,
+                        in string groupName,
+                        in double_array theNodesCoords,
+                        out array_of_long_array GroupsOfNodes) raises (SALOME::SALOME_Exception);
   };
 };
 

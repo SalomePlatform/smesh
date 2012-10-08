@@ -25,7 +25,7 @@ print "nb tetrahedra",mesh.NbTetras()
 print "nb polyhedra",mesh.NbPolyhedrons()
 print
 
-# define the grid by sitting constant spacing
+# define the grid by setting constant spacing
 cartHyp = cartAlgo.SetGrid( "10","10","10", 1000000)
 
 mesh.Compute()
@@ -34,9 +34,9 @@ print "nb tetrahedra",mesh.NbTetras()
 print "nb polyhedra",mesh.NbPolyhedrons()
 
 
-# define the grid by sitting different spacing in 2 sub-ranges of geometry
+# define the grid by setting different spacing in 2 sub-ranges of geometry
 spaceFuns = ["5","10+10*t"]
-cartAlgo.SetGrid( [spaceFuns, [0.5]], [spaceFuns, [0.5]], [spaceFuns, [0.25]], 2 )
+cartAlgo.SetGrid( [spaceFuns, [0.5]], [spaceFuns, [0.5]], [spaceFuns, [0.25]], 10 )
 
 mesh.Compute()
 print "nb hexahedra",mesh.NbHexas()

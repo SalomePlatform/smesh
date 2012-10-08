@@ -128,6 +128,9 @@ class SMDS_EXPORT SMDS_VolumeTool
   double MinLinearSize2() const;
   // Return minimal square distance between connected corner nodes
 
+  double MaxLinearSize2() const;
+  // Return maximal square distance between connected corner nodes
+
   // -------------
   // info on faces
   // -------------

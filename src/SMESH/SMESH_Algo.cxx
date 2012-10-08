@@ -39,6 +39,7 @@
 #include "SMESH_HypoFilter.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_TypeDefs.hxx"
+#include "SMESH_subMesh.hxx"
 
 #include <Basics_OCCTVersion.hxx>
 
@@ -49,6 +50,7 @@
 #include <GeomAdaptor_Curve.hxx>
 #include <Geom_Surface.hxx>
 #include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
 #include <TopLoc_Location.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <TopTools_ListOfShape.hxx>
@@ -56,6 +58,7 @@
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Vertex.hxx>
+#include <TopoDS_Wire.hxx>
 #include <gp_Pnt.hxx>
 #include <gp_Pnt2d.hxx>
 #include <gp_Vec.hxx>
@@ -94,6 +97,41 @@ SMESH_Algo::SMESH_Algo (int hypId, int studyId, SMESH_Gen * gen)
 
 SMESH_Algo::~SMESH_Algo()
 {
+}
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+
+SMESH_0D_Algo::SMESH_0D_Algo(int hypId, int studyId, SMESH_Gen* gen)
+  : SMESH_Algo(hypId, studyId, gen)
+{
+  _shapeType = (1 << TopAbs_VERTEX);
+  _type = ALGO_0D;
+  gen->_map0D_Algo[hypId] = this;
+}
+SMESH_1D_Algo::SMESH_1D_Algo(int hypId, int studyId, SMESH_Gen* gen)
+  : SMESH_Algo(hypId, studyId, gen)
+{
+  _shapeType = (1 << TopAbs_EDGE);
+  _type = ALGO_1D;
+  gen->_map1D_Algo[hypId] = this;
+}
+SMESH_2D_Algo::SMESH_2D_Algo(int hypId, int studyId, SMESH_Gen* gen)
+  : SMESH_Algo(hypId, studyId, gen)
+{
+  _shapeType = (1 << TopAbs_FACE);
+  _type = ALGO_2D;
+  gen->_map2D_Algo[hypId] = this;
+}
+SMESH_3D_Algo::SMESH_3D_Algo(int hypId, int studyId, SMESH_Gen* gen)
+  : SMESH_Algo(hypId, studyId, gen)
+{
+  _shapeType = (1 << TopAbs_SOLID);
+  _type = ALGO_3D;
+  gen->_map3D_Algo[hypId] = this;
 }
 
 //=============================================================================
@@ -309,7 +347,14 @@ bool SMESH_Algo::IsReversedSubMesh (const TopoDS_Face&  theFace,
   // face normal at node position
   TopLoc_Location loc;
   Handle(Geom_Surface) surf = BRep_Tool::Surface( theFace, loc );
-  if ( surf.IsNull() || surf->Continuity() < GeomAbs_C1 ) return isReversed;
+  // if ( surf.IsNull() || surf->Continuity() < GeomAbs_C1 )
+  // some surfaces not detected as GeomAbs_C1 are nevertheless correct for meshing
+  if ( surf.IsNull() || surf->Continuity() < GeomAbs_C0 )
+    {
+      if (!surf.IsNull())
+        MESSAGE("surf->Continuity() < GeomAbs_C1 " << (surf->Continuity() < GeomAbs_C1));
+      return isReversed;
+    }
   gp_Vec d1u, d1v;
   surf->D1( u, v, nPnt[0], d1u, d1v );
   gp_Vec Nf = (d1u ^ d1v).Transformed( loc );
@@ -777,3 +822,38 @@ void SMESH_Algo::addBadInputElement(const SMDS_MeshElement* elem)
   if ( elem )
     _badInputElements.push_back( elem );
 }
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+
+int SMESH_Algo::NumberOfWires(const TopoDS_Shape& S)
+{
+  int i = 0;
+  for (TopExp_Explorer exp(S,TopAbs_WIRE); exp.More(); exp.Next())
+    i++;
+  return i;
+}
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+
+int SMESH_Algo::NumberOfPoints(SMESH_Mesh& aMesh, const TopoDS_Wire& W)
+{
+  int nbPoints = 0;
+  for (TopExp_Explorer exp(W,TopAbs_EDGE); exp.More(); exp.Next()) {
+    const TopoDS_Edge& E = TopoDS::Edge(exp.Current());
+    int nb = aMesh.GetSubMesh(E)->GetSubMeshDS()->NbNodes();
+    if(_quadraticMesh)
+      nb = nb/2;
+    nbPoints += nb + 1; // internal points plus 1 vertex of 2 (last point ?)
+  }
+  return nbPoints;
+}
+
+

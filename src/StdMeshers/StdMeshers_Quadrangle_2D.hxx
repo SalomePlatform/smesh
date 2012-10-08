@@ -31,7 +31,7 @@
 
 #include "StdMeshers_QuadrangleParams.hxx"
 
-#include "SMESH_2D_Algo.hxx"
+#include "SMESH_Algo.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
 #include <TopoDS_Face.hxx>

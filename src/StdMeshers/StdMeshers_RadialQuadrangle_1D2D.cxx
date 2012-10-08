@@ -20,8 +20,6 @@
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 // File      : StdMeshers_RadialQuadrangle_1D2D.cxx
 // Module    : SMESH
-// Created   : Fri Oct 20 11:37:07 2006
-// Author    : Edward AGAPOV (eap)
 
 #include "StdMeshers_RadialQuadrangle_1D2D.hxx"
 
@@ -878,6 +876,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
 
   // orientation
   bool IsForward = ( CircEdge.Orientation()==TopAbs_FORWARD );
+  const double angleSign = ( F.Orientation() == TopAbs_REVERSED ? -1.0 : 1.0 );
 
   // create nodes and mesh elements on face
   // find axis of rotation
@@ -896,7 +895,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
     gp_Ax1 theAxis(P0,gp_Dir(Axis));
     aTrsf.SetRotation( theAxis, Angles.Value(i) );
     gp_Trsf2d aTrsf2d;
-    aTrsf2d.SetRotation( PC, Angles.Value(i) );
+    aTrsf2d.SetRotation( PC, Angles.Value(i) * angleSign );
     // create nodes
     int j = 1;
     for(; j<=Points.Length(); j++) {

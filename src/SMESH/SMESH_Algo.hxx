@@ -47,6 +47,7 @@ class SMESH_Gen;
 class SMESH_Mesh;
 class SMESH_HypoFilter;
 class TopoDS_Vertex;
+class TopoDS_Wire;
 class TopoDS_Face;
 class TopoDS_Shape;
 class SMESHDS_Mesh;
@@ -301,6 +302,9 @@ public:
    */
   static bool FaceNormal(const SMDS_MeshElement* F, gp_XYZ& normal, bool normalized=true);
 
+  static int NumberOfWires(const TopoDS_Shape& S);
+  int NumberOfPoints(SMESH_Mesh& aMesh,const TopoDS_Wire& W);
+
   /*!
    * \brief Return continuity of two edges
     * \param E1 - the 1st edge
@@ -373,8 +377,8 @@ protected:
   bool _requireShape;           // work with GetDim()-1 mesh bound to geom only. Default TRUE
   bool _supportSubmeshes;       // if !_requireDiscreteBoundary. Default FALSE
 
-  // quadratic mesh creation required,
-  // is usually set trough SMESH_MesherHelper::IsQuadraticSubMesh()
+  // indicates if quadratic mesh creation is required,
+  // is usually set like this: _quadraticMesh = SMESH_MesherHelper::IsQuadraticSubMesh(shape)
   bool _quadraticMesh;
 
   int         _error;    //!< SMESH_ComputeErrorName or anything algo specific
@@ -382,6 +386,30 @@ protected:
   std::list<const SMDS_MeshElement*> _badInputElements; //!< to explain COMPERR_BAD_INPUT_MESH
 
   volatile bool _computeCanceled; //!< is set to True while computing to stop it
+};
+
+class SMESH_EXPORT SMESH_0D_Algo: public SMESH_Algo
+{
+public:
+  SMESH_0D_Algo(int hypId, int studyId,  SMESH_Gen* gen);
+};
+
+class SMESH_EXPORT SMESH_1D_Algo: public SMESH_Algo
+{
+public:
+  SMESH_1D_Algo(int hypId, int studyId,  SMESH_Gen* gen);
+};
+
+class SMESH_EXPORT SMESH_2D_Algo: public SMESH_Algo
+{
+public:
+  SMESH_2D_Algo(int hypId, int studyId, SMESH_Gen* gen);
+};
+
+class SMESH_EXPORT SMESH_3D_Algo: public SMESH_Algo
+{
+public:
+  SMESH_3D_Algo(int hypId, int studyId, SMESH_Gen* gen);
 };
 
 #endif

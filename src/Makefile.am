@@ -21,7 +21,6 @@
 #  Author : Patrick GOLDBRONN (CEA)
 #  Modified by : Alexander BORODIN (OCN) - autotools usage
 #  Module : SMESH
-#  $Header$
 #
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
@@ -39,6 +38,7 @@ SUBDIRS = \
 	DriverDAT \
 	DriverUNV \
 	DriverSTL \
+	DriverGMF \
 	$(DriverCGNS_SUDIR) \
 	SMESH \
 	SMESH_I \
@@ -61,5 +61,6 @@ if SMESH_ENABLE_GUI
 endif
 
 DIST_SUBDIRS = 	SMDS SMESHDS Controls Driver DriverMED DriverDAT DriverUNV DriverSTL DriverCGNS	\
+		DriverGMF \
 		SMESHUtils SMESH SMESH_I SMESHClient SMESH_SWIG MEFISTO2 StdMeshers StdMeshers_I OBJECT 	\
 		SMESHFiltersSelection SMESHGUI PluginUtils SMESH_SWIG_WITHIHM StdMeshersGUI SMESH_PY Tools

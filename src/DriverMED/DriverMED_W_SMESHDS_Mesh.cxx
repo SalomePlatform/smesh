@@ -411,7 +411,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     if (myDoGroupOfFaces && nbFaces) myFacesDefaultFamilyId = REST_FACES_FAMILY;
     if (myDoGroupOfVolumes && nbVolumes) myVolumesDefaultFamilyId = REST_VOLUMES_FAMILY;
     if (myDoGroupOf0DElems && nb0DElements) my0DElementsDefaultFamilyId = REST_0DELEM_FAMILY;
-    if (myDoGroupOfVolumes && nbVolumes) myBallsDefaultFamilyId = REST_BALL_FAMILY;
+    if (myDoGroupOfBalls && nbBalls) myBallsDefaultFamilyId = REST_BALL_FAMILY;
 
     MESSAGE("Perform - aFamilyInfo");
     //cout << " DriverMED_Family::MakeFamilies() " << endl;

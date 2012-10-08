@@ -406,6 +406,10 @@ const map < int, SMESH_subMesh * >& SMESH_subMesh::DependsOn()
       {
         insertDependence(exp.Current());
       }
+      for (TopExp_Explorer exp(_subShape, TopAbs_VERTEX, TopAbs_EDGE); exp.More();exp.Next())
+      {
+        insertDependence(exp.Current());
+      }
       break;
     }
   case TopAbs_COMPSOLID:
@@ -1462,16 +1466,18 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           else
             ret = false;
         }
+        // check if an error reported on any sub-shape
+        bool isComputeErrorSet = !checkComputeError( algo, ret, shape );
+        // check if anything was built
         TopExp_Explorer subS(shape, _subShape.ShapeType());
-        if (ret) // check if anything was built
+        if (ret)
         {
           for (; ret && subS.More(); subS.Next())
             ret = _father->GetSubMesh( subS.Current() )->IsMeshComputed();
         }
-        bool isComputeErrorSet = !checkComputeError( algo, shape );
+        // Set _computeError
         if (!ret && !isComputeErrorSet)
         {
-          // Set _computeError
           for (subS.ReInit(); subS.More(); subS.Next())
           {
             SMESH_subMesh* sm = _father->GetSubMesh( subS.Current() );
@@ -1723,7 +1729,9 @@ bool SMESH_subMesh::Evaluate(MapShapeNbElems& aResMap)
  */
 //=======================================================================
 
-bool SMESH_subMesh::checkComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& theShape)
+bool SMESH_subMesh::checkComputeError(SMESH_Algo*         theAlgo,
+                                      const bool          theComputeOK,
+                                      const TopoDS_Shape& theShape)
 {
   bool noErrors = true;
 
@@ -1734,7 +1742,7 @@ bool SMESH_subMesh::checkComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& t
     {
       SMESH_subMeshIteratorPtr smIt = getDependsOnIterator(false,false);
       while ( smIt->more() )
-        if ( !smIt->next()->checkComputeError( theAlgo ))
+        if ( !smIt->next()->checkComputeError( theAlgo, theComputeOK ))
           noErrors = false;
     }
 
@@ -1746,7 +1754,7 @@ bool SMESH_subMesh::checkComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& t
       for (TopoDS_Iterator subIt( theShape ); subIt.More(); subIt.Next()) {
         SMESH_subMesh* sm = _father->GetSubMesh( subIt.Value() );
         if ( sm != this ) {
-          if ( !sm->checkComputeError( theAlgo, sm->GetSubShape() ))
+          if ( !sm->checkComputeError( theAlgo, theComputeOK, sm->GetSubShape() ))
             noErrors = false;
           updateDependantsState( SUBMESH_COMPUTED ); // send event SUBMESH_COMPUTED
         }
@@ -1754,13 +1762,24 @@ bool SMESH_subMesh::checkComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& t
     }
   }
   {
-    // Check my state
+
+    // Set my _computeState
+
     if ( !_computeError || _computeError->IsOK() )
     {
       // no error description is set to this sub-mesh, check if any mesh is computed
       _computeState = IsMeshComputed() ? COMPUTE_OK : FAILED_TO_COMPUTE;
+      if ( _computeState != COMPUTE_OK )
+      {
+        if ( _subShape.ShapeType() == TopAbs_EDGE &&
+             BRep_Tool::Degenerated( TopoDS::Edge( _subShape )) )
+          _computeState = COMPUTE_OK;
+        else if ( theComputeOK )
+          _computeError = SMESH_ComputeError::New(COMPERR_NO_MESH_ON_SHAPE,"",theAlgo);
+      }
     }
-    else
+
+    if ( _computeError && !_computeError->IsOK() )
     {
       if ( !_computeError->myAlgo )
         _computeError->myAlgo = theAlgo;
@@ -2080,6 +2099,23 @@ EventListenerData* SMESH_subMesh::GetEventListenerData(EventListener* listener) 
 
 //================================================================================
 /*!
+ * \brief Return an event listener data
+ * \param listenerName - the listener name
+ * \retval EventListenerData* - found data, maybe NULL
+ */
+//================================================================================
+
+EventListenerData* SMESH_subMesh::GetEventListenerData(const string& listenerName) const
+{
+  map< EventListener*, EventListenerData* >::const_iterator l_d = _eventListeners.begin();
+  for ( ; l_d != _eventListeners.end(); ++l_d )
+    if ( listenerName == l_d->first->GetName() )
+      return l_d->second;
+  return 0;
+}
+
+//================================================================================
+/*!
  * \brief Notify stored event listeners on the occured event
  * \param event - algo_event or compute_event itself
  * \param eventType - algo_event or compute_event
@@ -2118,8 +2154,15 @@ void SMESH_subMesh::DeleteEventListener(EventListener* listener)
   map< EventListener*, EventListenerData* >::iterator l_d =
     _eventListeners.find( listener );
   if ( l_d != _eventListeners.end() ) {
-    if ( l_d->first  && l_d->first->IsDeletable() )  delete l_d->first;
-    if ( l_d->second && l_d->second->IsDeletable() ) delete l_d->second;
+    if ( l_d->first && l_d->first->IsDeletable() )
+    {
+      l_d->first->BeforeDelete( this, l_d->second );
+      delete l_d->first;
+    }
+    if ( l_d->second && l_d->second->IsDeletable() )
+    {
+      delete l_d->second;
+    }
     _eventListeners.erase( l_d );
   }
 }

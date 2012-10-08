@@ -238,7 +238,7 @@ public:
   SMESH::SMESH_Mesh_ptr CreateEmptyMesh()
     throw ( SALOME::SALOME_Exception );
 
-  //  Create mesh(es) and import data from UNV fileter
+  //  Create a mesh and import data from an UNV file
   SMESH::SMESH_Mesh_ptr CreateMeshesFromUNV( const char* theFileName )
     throw ( SALOME::SALOME_Exception );
 
@@ -252,13 +252,18 @@ public:
                                            SMESH::DriverMED_ReadStatus& theStatus )
     throw ( SALOME::SALOME_Exception );
 
-  //  Create mesh(es) and import data from STL file
+  //  Create a mesh and import data from a STL file
   SMESH::SMESH_Mesh_ptr CreateMeshesFromSTL( const char* theFileName )
     throw ( SALOME::SALOME_Exception );
 
   //  Create mesh(es) and import data from CGNS file
   SMESH::mesh_array* CreateMeshesFromCGNS( const char* theFileName,
                                            SMESH::DriverMED_ReadStatus& theStatus )
+    throw ( SALOME::SALOME_Exception );
+
+  //  Create a mesh and import data from a GMF file
+  SMESH::SMESH_Mesh_ptr CreateMeshesFromGMF( const char*             theFileName,
+                                             SMESH::ComputeError_out theError)
     throw ( SALOME::SALOME_Exception );
 
   // Copy a part of mesh

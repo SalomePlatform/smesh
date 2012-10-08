@@ -280,15 +280,22 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   mySMESHGUI->SetActiveDialogBox(this);
 
   // Costruction of the logical filter for the elements: mesh/sub-mesh/group
-  SMESH_TypeFilter* aMeshOrSubMeshFilter = new SMESH_TypeFilter (MESHorSUBMESH);
-  SMESH_TypeFilter* aSmeshGroupFilter    = new SMESH_TypeFilter (GROUP);
-
   QList<SUIT_SelectionFilter*> aListOfFilters;
-  if (aMeshOrSubMeshFilter) aListOfFilters.append(aMeshOrSubMeshFilter);
-  if (aSmeshGroupFilter)    aListOfFilters.append(aSmeshGroupFilter);
-
-  myMeshOrSubMeshOrGroupFilter =
-    new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR);
+  aListOfFilters.append(new SMESH_TypeFilter (MESH));
+  aListOfFilters.append(new SMESH_TypeFilter (SUBMESH_VERTEX));
+  aListOfFilters.append(new SMESH_TypeFilter (GROUP_NODE));
+  myMeshOrSubMeshOrGroupFilter0D =
+    new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR, /*takeOwnership=*/true);
+  aListOfFilters[0] = new SMESH_TypeFilter (MESH);
+  aListOfFilters[1] = new SMESH_TypeFilter (SUBMESH_EDGE);
+  aListOfFilters[2] = new SMESH_TypeFilter (GROUP_EDGE);
+  myMeshOrSubMeshOrGroupFilter1D =
+    new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR, /*takeOwnership=*/true);
+  aListOfFilters[0] = new SMESH_TypeFilter (MESH);
+  aListOfFilters[1] = new SMESH_TypeFilter (SUBMESH_FACE);
+  aListOfFilters[2] = new SMESH_TypeFilter (GROUP_FACE);
+  myMeshOrSubMeshOrGroupFilter2D =
+    new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR, /*takeOwnership=*/true);
 
   myHelpFileName = "extrusion_page.html";
 
@@ -351,6 +358,9 @@ SMESHGUI_ExtrusionDlg::~SMESHGUI_ExtrusionDlg()
     myFilterDlg->setParent( 0 );
     delete myFilterDlg;
   }
+  if ( myMeshOrSubMeshOrGroupFilter0D ) delete myMeshOrSubMeshOrGroupFilter0D;
+  if ( myMeshOrSubMeshOrGroupFilter1D ) delete myMeshOrSubMeshOrGroupFilter1D;
+  if ( myMeshOrSubMeshOrGroupFilter2D ) delete myMeshOrSubMeshOrGroupFilter2D;
 }
 
 //=================================================================================
@@ -898,31 +908,38 @@ void SMESHGUI_ExtrusionDlg::SetEditCurrentArgument()
 
   if (send == SelectElementsButton) {
     myEditCurrentArgument = (QWidget*)LineEditElements;
-    if (CheckBoxMesh->isChecked()) {
+    if (CheckBoxMesh->isChecked())
+    {
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
         aViewWindow->SetSelectionMode(ActorSelection);
-      mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
-    } else {
+      switch( GetConstructorId() ) {
+      case 0: mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter0D); break;
+      case 1: mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter1D); break;
+      case 2: mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter2D); break;
+      }
+    }
+    else
+    {
       int aConstructorId = GetConstructorId();
       switch(aConstructorId) {
-          case 0:
-          {   
-            if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-              aViewWindow->SetSelectionMode(NodeSelection);
-            break;
-          }
-          case 1:
-          {
-            if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-              aViewWindow->SetSelectionMode(EdgeSelection);
-            break;
-          }
-          case 2:
-          {
-            if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      case 0:
+        {
+          if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+            aViewWindow->SetSelectionMode(NodeSelection);
+          break;
+        }
+      case 1:
+        {
+          if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+            aViewWindow->SetSelectionMode(EdgeSelection);
+          break;
+        }
+      case 2:
+        {
+          if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
             aViewWindow->SetSelectionMode(FaceSelection);
-            break;
-          }
+          break;
+        }
       }
     }
   }
@@ -1028,13 +1045,20 @@ void SMESHGUI_ExtrusionDlg::onSelectMesh (bool toSelectMesh)
 
   mySelectionMgr->clearFilters();
 
-  if (toSelectMesh) {
+  if (toSelectMesh)
+  {
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
       aViewWindow->SetSelectionMode(ActorSelection);
-    mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
+    switch( GetConstructorId() ) {
+    case 0: mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter0D); break;
+    case 1: mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter1D); break;
+    case 2: mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter2D); break;
+    }
     LineEditElements->setReadOnly(true);
     LineEditElements->setValidator(0);
-  } else {
+  }
+  else
+  {
     int aConstructorId = GetConstructorId();
     switch(aConstructorId) {
       case 0:

@@ -34,10 +34,6 @@ salomeinclude_HEADERS = \
 	SMESH_Hypothesis.hxx \
 	SMESH_HypoFilter.hxx \
 	SMESH_Algo.hxx \
-	SMESH_0D_Algo.hxx \
-	SMESH_1D_Algo.hxx \
-	SMESH_2D_Algo.hxx \
-	SMESH_3D_Algo.hxx \
 	SMESH_Group.hxx \
 	SMESH_MeshEditor.hxx \
 	SMESH_Pattern.hxx \
@@ -56,10 +52,6 @@ dist_libSMESHimpl_la_SOURCES = \
 	SMESH_subMesh.cxx \
 	SMESH_Hypothesis.cxx \
 	SMESH_Algo.cxx \
-	SMESH_0D_Algo.cxx \
-	SMESH_1D_Algo.cxx \
-	SMESH_2D_Algo.cxx \
-	SMESH_3D_Algo.cxx \
 	SMESH_Group.cxx \
 	SMESH_MeshEditor.cxx \
 	SMESH_Pattern.cxx \
@@ -83,6 +75,7 @@ libSMESHimpl_la_CPPFLAGS = \
 	-I$(srcdir)/../DriverUNV \
 	-I$(srcdir)/../DriverSTL \
 	-I$(srcdir)/../DriverCGNS \
+	-I$(srcdir)/../DriverGMF \
 	-I$(srcdir)/../SMDS \
 	-I$(srcdir)/../SMESHDS \
 	-I$(srcdir)/../SMESHUtils
@@ -98,8 +91,9 @@ libSMESHimpl_la_LDFLAGS = \
 	../DriverSTL/libMeshDriverSTL.la \
 	../DriverMED/libMeshDriverMED.la \
 	../DriverUNV/libMeshDriverUNV.la \
+	../DriverGMF/libMeshDriverGMF.la \
 	$(DriverCGNS_LIB) \
 	../SMESHUtils/libSMESHUtils.la \
 	$(BOOST_LIB_THREAD)  \
 	$(GEOM_LDFLAGS) -lNMTTools \
-	$(CAS_LDPATH) -lTKShHealing -lTKPrim -lTKG2d
+	$(CAS_LDPATH) -lTKShHealing -lTKPrim -lTKG2d -lTKCDF

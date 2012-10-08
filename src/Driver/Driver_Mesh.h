@@ -27,6 +27,8 @@
 #ifndef _INCLUDE_DRIVER_MESH
 #define _INCLUDE_DRIVER_MESH
 
+#include "SMESH_ComputeError.hxx"
+
 #include <string>
 #include <vector>
 
@@ -55,19 +57,26 @@ class MESHDRIVER_EXPORT Driver_Mesh
     DRS_FAIL            // general failure (exception etc.)
   };
 
-  virtual Status Perform() = 0;
-  void SetMeshId(int theMeshId);
-  void SetFile(const std::string& theFileName);
-  virtual void SetMeshName(const std::string& theMeshName);
+  void                SetMeshId(int theMeshId);
+  void                SetFile(const std::string& theFileName);
+  virtual void        SetMeshName(const std::string& theMeshName);
   virtual std::string GetMeshName() const;
+
+  virtual void        SetOption(const std::string& optionName,
+                                const std::string& optionValue) {}
+
+  virtual Status Perform() = 0;
+
+  virtual SMESH_ComputeErrorPtr GetError();
 
  protected:
   std::string myFile;
   std::string myMeshName;
-  int myMeshId;
+  int         myMeshId;
 
   Status addMessage(const std::string& msg, const bool isFatal=false);
   std::vector< std::string > myErrorMessages;
+  Status                     myStatus;
 };
 
 #endif

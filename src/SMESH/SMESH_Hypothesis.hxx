@@ -51,7 +51,7 @@ public:
   {
     HYP_OK = 0,
     HYP_MISSING,      // algo misses a hypothesis
-    HYP_CONCURENT,    // several applicable hypotheses
+    HYP_CONCURENT,    // several applicable hypotheses assigned to father shapes
     HYP_BAD_PARAMETER,// hypothesis has a bad parameter value
     HYP_HIDDEN_ALGO,  // an algo is hidden by an upper dim algo generating all-dim elements
     HYP_HIDING_ALGO,  // an algo hides lower dim algos by generating all-dim elements
@@ -59,7 +59,7 @@ public:
                       //      for Add/RemoveHypothesis operations
     HYP_INCOMPATIBLE, // hypothesis does not fit algo
     HYP_NOTCONFORM,   // not conform mesh is produced appling a hypothesis
-    HYP_ALREADY_EXIST,// such hypothesis already exist
+    HYP_ALREADY_EXIST,// several applicable hypothesis of same priority assigned
     HYP_BAD_DIM,      // bad dimension
     HYP_BAD_SUBSHAPE, // shape is neither the main one, nor its sub-shape, nor a group
     HYP_BAD_GEOMETRY, // shape geometry mismatches algorithm's expectation
@@ -77,12 +77,12 @@ public:
   virtual const char* GetLibName() const;
   void  SetLibName(const char* theLibName);
 
-  void  SetParameters(const char *theParameters);
-  char* GetParameters() const;
+  //void  SetParameters(const char *theParameters);
+  //char* GetParameters() const;
 
-  void SetLastParameters(const char* theParameters);
-  char* GetLastParameters() const;
-  void ClearParameters();
+  // void SetLastParameters(const char* theParameters);
+  // char* GetLastParameters() const;
+  // void ClearParameters();
   
   /*!
    * \brief Initialize my parameter values by the mesh built on the geometry
@@ -122,14 +122,14 @@ public:
 
 protected:
   SMESH_Gen* _gen;
-  int _studyId;
-  int _shapeType;
-  int _param_algo_dim; // to be set at descendant hypothesis constructor
+  int        _studyId;
+  int        _shapeType;
+  int        _param_algo_dim; // to be set at descendant hypothesis constructor
 
 private:
-  std::string _libName;
-  std::string _parameters;
-  std::string _lastParameters;
+  std::string _libName; // name of library of plug-in Engine
+  //std::string _parameters;
+  //std::string _lastParameters;
 };
 
 #endif

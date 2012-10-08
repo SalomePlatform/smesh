@@ -34,6 +34,27 @@ written in Python.
     \subpage about_hypo_page "hypotheses" which will be used at computation of
     this mesh.
 
+    "Create mesh" dialog box contains several tab pages titled \b 3D,
+    \b 2D, \b 1D and \b 0D. The title of each page reflects the
+    dimension of the CAD model (geometry) the algorithms listed on
+    this page affect to. For example, \b 3D page lists algorithms
+    that affect 3D geometrical objects (solids).
+
+    \note
+    - Some page(s) can be disabled - if the source geometrical
+    object does not include shapes (sub-shapes) of the corresponding
+    dimension(s). For example, if input object is a geometrical face,
+    \b 3D page is disabled.
+    - Some algorithms affect on geometry of several dimensions,
+    i.e. "1D-2D" or "1D-2D-3D". If such algorithm is selected by the
+    user, dialog box pages related to the corresponding lower level
+    dimensions are disabled.
+    - \b 0D page does not refer to the 0D elements, but to 0D
+    geometry (vertices). Mesh module does not provide algorithms that
+    produce 0D elements. Currently \b 0D page provides only one
+    algorithm "Segments around vertex" that allows specyfing required
+    size of mesh edges about some selected vertex(vertices).
+
     For example, you need to mesh a 3D object.
 
     First, type the name for your mesh in the \b Name box, by default,
@@ -283,6 +304,11 @@ the Viewer in magenta. Sometimes the shown mesh entities are too small
 or/and hidden by other mesh elements, to see them it can be helpful to
 switch the mesh to Wireframe visualization mode or to switch off
 visualization of faces and volumes (if any).
+
+\image html show_bad_mesh.png
+<em>Too close nodes causing meshing failure are shown in magenta using <b>Show
+    bad Mesh</b> button</em>
+<br><br>
 
 \anchor use_existing_anchor
 <h2>"Use existing edges" and "Use existing faces" algorithms</h2>

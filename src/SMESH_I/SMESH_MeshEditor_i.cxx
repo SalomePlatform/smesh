@@ -29,19 +29,41 @@
 
 #include "SMESH_MeshEditor_i.hxx"
 
+#include "DriverMED_R_SMESHDS_Mesh.h"
+#include "DriverMED_W_SMESHDS_Mesh.h"
+#include "SMDS_EdgePosition.hxx"
+#include "SMDS_ElemIterator.hxx"
+#include "SMDS_FacePosition.hxx"
+#include "SMDS_IteratorOnIterators.hxx"
 #include "SMDS_LinearEdge.hxx"
 #include "SMDS_Mesh0DElement.hxx"
 #include "SMDS_MeshFace.hxx"
 #include "SMDS_MeshVolume.hxx"
 #include "SMDS_PolyhedralVolumeOfNodes.hxx"
 #include "SMDS_SetIterator.hxx"
+#include "SMDS_SetIterator.hxx"
+#include "SMDS_VolumeTool.hxx"
+#include "SMESHDS_Command.hxx"
+#include "SMESHDS_CommandType.hxx"
 #include "SMESHDS_Group.hxx"
+#include "SMESHDS_GroupOnGeom.hxx"
 #include "SMESH_ControlsDef.hxx"
 #include "SMESH_Filter_i.hxx"
+#include "SMESH_Filter_i.hxx"
 #include "SMESH_Gen_i.hxx"
+#include "SMESH_Gen_i.hxx"
+#include "SMESH_Group.hxx"
 #include "SMESH_Group_i.hxx"
+#include "SMESH_Group_i.hxx"
+#include "SMESH_MEDMesh_i.hxx"
+#include "SMESH_MeshEditor.hxx"
+#include "SMESH_MeshPartDS.hxx"
+#include "SMESH_MesherHelper.hxx"
+#include "SMESH_PreMeshInfo.hxx"
+#include "SMESH_PythonDump.hxx"
 #include "SMESH_PythonDump.hxx"
 #include "SMESH_subMeshEventListener.hxx"
+#include "SMESH_subMesh_i.hxx"
 #include "SMESH_subMesh_i.hxx"
 
 #include "utilities.h"
@@ -438,6 +460,7 @@ void SMESH_MeshEditor_i::initData(bool deleteSearchers)
     if ( deleteSearchers )
       TSearchersDeleter::Delete();
   }
+  myEditor.GetError().reset();
 }
 
 //================================================================================
@@ -458,27 +481,42 @@ void SMESH_MeshEditor_i::storeResult(::SMESH_MeshEditor& )
 
 SMESH::MeshPreviewStruct* SMESH_MeshEditor_i::GetPreviewData()
 {
-  if ( myPreviewMode ) { // --- MeshPreviewStruct filling ---
+  const bool hasBadElems = ( myEditor.GetError() && myEditor.GetError()->HasBadElems() );
+
+  if ( myPreviewMode || hasBadElems ) { // --- MeshPreviewStruct filling ---
 
     list<int> aNodesConnectivity;
     typedef map<int, int> TNodesMap;
     TNodesMap nodesMap;
 
-    TPreviewMesh * aPreviewMesh = dynamic_cast< TPreviewMesh* >( myEditor.GetMesh() );
-    SMDSAbs_ElementType previewType = aPreviewMesh->myPreviewType;
-
-    SMESHDS_Mesh* aMeshDS = myEditor.GetMeshDS();
+    SMESHDS_Mesh* aMeshDS;
+    std::auto_ptr< SMESH_MeshPartDS > aMeshPartDS;
+    if ( hasBadElems ) {
+      aMeshPartDS.reset( new SMESH_MeshPartDS( myEditor.GetError()->myBadElements ));
+      aMeshDS = aMeshPartDS.get();
+    }
+    else {
+      aMeshDS = myEditor.GetMeshDS();
+    }
     int nbEdges = aMeshDS->NbEdges();
     int nbFaces = aMeshDS->NbFaces();
     int nbVolum = aMeshDS->NbVolumes();
-    switch ( previewType ) {
-    case SMDSAbs_Edge  : nbFaces = nbVolum = 0; break;
-    case SMDSAbs_Face  : nbEdges = nbVolum = 0; break;
-    case SMDSAbs_Volume: nbEdges = nbFaces = 0; break;
-    default:;
-    }
     myPreviewData = new SMESH::MeshPreviewStruct();
     myPreviewData->nodesXYZ.length(aMeshDS->NbNodes());
+
+    
+    SMDSAbs_ElementType previewType = SMDSAbs_All;
+    if ( !hasBadElems )
+      if (TPreviewMesh * aPreviewMesh = dynamic_cast< TPreviewMesh* >( myEditor.GetMesh() )) {
+        previewType = aPreviewMesh->myPreviewType;
+        switch ( previewType ) {
+        case SMDSAbs_Edge  : nbFaces = nbVolum = 0; break;
+        case SMDSAbs_Face  : nbEdges = nbVolum = 0; break;
+        case SMDSAbs_Volume: nbEdges = nbFaces = 0; break;
+        default:;
+        }
+      }
+
     myPreviewData->elementTypes.length(nbEdges + nbFaces + nbVolum);
     int i = 0, j = 0;
     SMDS_ElemIteratorPtr itMeshElems = aMeshDS->elementsIterator();
@@ -559,6 +597,26 @@ SMESH::long_array* SMESH_MeshEditor_i::GetLastCreatedElems()
   for ( int i = 1; i <= aSeq.Length(); i++ )
     myLastCreatedElems[i-1] = aSeq.Value(i)->GetID();
   return myLastCreatedElems._retn();
+}
+
+//=======================================================================
+/*
+ * Returns description of an error/warning occured during the last operation
+ */
+//=======================================================================
+
+SMESH::ComputeError* SMESH_MeshEditor_i::GetLastError()
+{
+  SMESH::ComputeError*   errOut = new SMESH::ComputeError;
+  SMESH_ComputeErrorPtr& errIn  = myEditor.GetError();
+  if ( errIn && !errIn->IsOK() )
+  {
+    errOut->code       = -( errIn->myName < 0 ? errIn->myName + 1: errIn->myName ); // -1 -> 0
+    errOut->comment    = errIn->myComment.c_str();
+    errOut->subShapeID = -1;
+    errOut->hasBadMesh = !errIn->myBadElements.empty();
+  }
+  return errOut;
 }
 
 //=======================================================================
@@ -5939,6 +5997,124 @@ SMESH_MeshEditor_i::DoubleNodeElemGroupsInRegion(const SMESH::ListOfGroups& theE
 
 //================================================================================
 /*!
+  \brief Identify the elements that will be affected by node duplication (actual duplication is not performed.
+  This method is the first step of DoubleNodeElemGroupsInRegion.
+  \param theElems - list of groups of elements (edges or faces) to be replicated
+  \param theNodesNot - list of groups of nodes not to replicated
+  \param theShape - shape to detect affected elements (element which geometric center
+         located on or inside shape).
+         The replicated nodes should be associated to affected elements.
+  \return groups of affected elements
+  \sa DoubleNodeElemGroupsInRegion()
+ */
+//================================================================================
+SMESH::ListOfGroups*
+SMESH_MeshEditor_i::AffectedElemGroupsInRegion( const SMESH::ListOfGroups& theElems,
+                                                const SMESH::ListOfGroups& theNodesNot,
+                                                GEOM::GEOM_Object_ptr      theShape )
+{
+  MESSAGE("AffectedElemGroupsInRegion");
+  SMESH::ListOfGroups_var aListOfGroups = new SMESH::ListOfGroups();
+  bool isEdgeGroup = false;
+  bool isFaceGroup = false;
+  bool isVolumeGroup = false;
+  SMESH::SMESH_Group_var aNewEdgeGroup = myMesh_i->CreateGroup(SMESH::EDGE, "affectedEdges");
+  SMESH::SMESH_Group_var aNewFaceGroup = myMesh_i->CreateGroup(SMESH::FACE, "affectedFaces");
+  SMESH::SMESH_Group_var aNewVolumeGroup = myMesh_i->CreateGroup(SMESH::VOLUME, "affectedVolumes");
+
+  initData();
+
+  ::SMESH_MeshEditor aMeshEditor(myMesh);
+
+  SMESHDS_Mesh* aMeshDS = GetMeshDS();
+  TIDSortedElemSet anElems, aNodes;
+  listOfGroupToSet(theElems, aMeshDS, anElems, false);
+  listOfGroupToSet(theNodesNot, aMeshDS, aNodes, true);
+
+  TopoDS_Shape aShape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape(theShape);
+  TIDSortedElemSet anAffected;
+  bool aResult = aMeshEditor.AffectedElemGroupsInRegion(anElems, aNodes, aShape, anAffected);
+
+  storeResult(aMeshEditor);
+
+  myMesh->GetMeshDS()->Modified();
+  TPythonDump pyDump;
+  if (aResult)
+    {
+      myMesh->SetIsModified(true);
+
+      int lg = anAffected.size();
+      MESSAGE("lg="<< lg);
+      SMESH::long_array_var volumeIds = new SMESH::long_array;
+      volumeIds->length(lg);
+      SMESH::long_array_var faceIds = new SMESH::long_array;
+      faceIds->length(lg);
+      SMESH::long_array_var edgeIds = new SMESH::long_array;
+      edgeIds->length(lg);
+      int ivol = 0;
+      int iface = 0;
+      int iedge = 0;
+
+      TIDSortedElemSet::const_iterator eIt = anAffected.begin();
+      for (; eIt != anAffected.end(); ++eIt)
+        {
+          const SMDS_MeshElement* anElem = *eIt;
+          if (!anElem)
+            continue;
+          int elemId = anElem->GetID();
+          if (myMesh->GetElementType(elemId, true) == SMDSAbs_Volume)
+            volumeIds[ivol++] = elemId;
+          else if (myMesh->GetElementType(elemId, true) == SMDSAbs_Face)
+            faceIds[iface++] = elemId;
+          else if (myMesh->GetElementType(elemId, true) == SMDSAbs_Edge)
+            edgeIds[iedge++] = elemId;
+        }
+      volumeIds->length(ivol);
+      faceIds->length(iface);
+      edgeIds->length(iedge);
+
+      aNewVolumeGroup->Add(volumeIds);
+      aNewFaceGroup->Add(faceIds);
+      aNewEdgeGroup->Add(edgeIds);
+      isVolumeGroup = (aNewVolumeGroup->Size() > 0);
+      isFaceGroup = (aNewFaceGroup->Size() > 0);
+      isEdgeGroup = (aNewEdgeGroup->Size() > 0);
+    }
+
+  int nbGroups = 0;
+  if (isEdgeGroup)
+    nbGroups++;
+  if (isFaceGroup)
+    nbGroups++;
+  if (isVolumeGroup)
+    nbGroups++;
+  aListOfGroups->length(nbGroups);
+
+  int i = 0;
+  if (isEdgeGroup)
+    aListOfGroups[i++] = aNewEdgeGroup._retn();
+  if (isFaceGroup)
+    aListOfGroups[i++] = aNewFaceGroup._retn();
+  if (isVolumeGroup)
+    aListOfGroups[i++] = aNewVolumeGroup._retn();
+
+  // Update Python script
+
+  pyDump << "[ ";
+  if (isEdgeGroup)
+    pyDump << aNewEdgeGroup << ", ";
+  if (isFaceGroup)
+    pyDump << aNewFaceGroup << ", ";
+  if (isVolumeGroup)
+    pyDump << aNewVolumeGroup << ", ";
+  pyDump << "] = ";
+  pyDump << this << ".AffectedElemGroupsInRegion( " << &theElems << ", " << &theNodesNot << ", " << theShape << " )";
+
+  return aListOfGroups._retn();
+}
+
+//================================================================================
+/*!
   \brief Generated skin mesh (containing 2D cells) from 3D mesh
    The created 2D mesh elements based on nodes of free faces of boundary volumes
   \return TRUE if operation has been completed successfully, FALSE otherwise
@@ -6054,6 +6230,53 @@ CORBA::Boolean SMESH_MeshEditor_i::CreateFlatElementsOnFacesGroups( const SMESH:
   TPythonDump() << "isDone = " << this << ".CreateFlatElementsOnFacesGroups( " << &theGroupsOfFaces << " )";
   return aResult;
 }
+
+/*!
+ *  \brief identify all the elements around a geom shape, get the faces delimiting the hole
+ *  Build groups of volume to remove, groups of faces to replace on the skin of the object,
+ *  groups of faces to remove inside the object, (idem edges).
+ *  Build ordered list of nodes at the border of each group of faces to replace (to be used to build a geom subshape)
+ */
+void SMESH_MeshEditor_i::CreateHoleSkin(CORBA::Double radius,
+                                        GEOM::GEOM_Object_ptr theShape,
+                                        const char* groupName,
+                                        const SMESH::double_array& theNodesCoords,
+                                        SMESH::array_of_long_array_out GroupsOfNodes)
+throw (SALOME::SALOME_Exception)
+{
+  initData();
+  std::vector<std::vector<int> > aListOfListOfNodes;
+  ::SMESH_MeshEditor aMeshEditor( myMesh );
+
+  theSearchersDeleter.Set( myMesh ); // remove theNodeSearcher if mesh is other
+  if ( !theNodeSearcher )
+    theNodeSearcher = aMeshEditor.GetNodeSearcher();
+
+  vector<double> nodesCoords;
+  for (int i = 0; i < theNodesCoords.length(); i++)
+    {
+      nodesCoords.push_back( theNodesCoords[i] );
+  }
+
+  TopoDS_Shape aShape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape( theShape );
+  aMeshEditor.CreateHoleSkin(radius, aShape, theNodeSearcher, groupName, nodesCoords, aListOfListOfNodes);
+
+  GroupsOfNodes = new SMESH::array_of_long_array;
+  GroupsOfNodes->length( aListOfListOfNodes.size() );
+  std::vector<std::vector<int> >::iterator llIt = aListOfListOfNodes.begin();
+  for ( CORBA::Long i = 0; llIt != aListOfListOfNodes.end(); llIt++, i++ )
+    {
+      vector<int>& aListOfNodes = *llIt;
+      vector<int>::iterator lIt = aListOfNodes.begin();;
+      SMESH::long_array& aGroup = (*GroupsOfNodes)[ i ];
+      aGroup.length( aListOfNodes.size() );
+      for ( int j = 0; lIt != aListOfNodes.end(); lIt++, j++ )
+        aGroup[ j ] = (*lIt);
+    }
+  TPythonDump() << "lists_nodes = " << this << ".CreateHoleSkin( "
+      << radius << ", " << theShape << ", " << ", " << groupName << ", " << theNodesCoords << " )";
+}
+
 
 // issue 20749 ===================================================================
 /*!

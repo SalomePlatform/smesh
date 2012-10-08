@@ -64,6 +64,9 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
   virtual void SetSufaceColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b, int delta ) = 0;
   virtual void GetSufaceColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b, int& delta ) = 0;
     
+  virtual void SetVolumeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b, int delta ) = 0;
+  virtual void GetVolumeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b, int& delta) = 0;
+
   virtual void SetEdgeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b) = 0;
   virtual void GetEdgeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b) = 0;
 
@@ -87,6 +90,9 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
  
   virtual vtkFloatingPointType GetLineWidth() = 0;
   virtual void SetLineWidth(vtkFloatingPointType theVal) = 0;
+
+  virtual vtkFloatingPointType GetOutlineWidth() = 0;
+  virtual void SetOutlineWidth(vtkFloatingPointType theVal) = 0;
 
   virtual void Set0DSize(vtkFloatingPointType size) = 0;
   virtual vtkFloatingPointType Get0DSize() = 0;
@@ -122,8 +128,8 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
   virtual void SetFacesOriented(bool theIsFacesOriented) = 0;
   virtual bool GetFacesOriented() = 0;
 
-  virtual void SetFacesOrientationColor(vtkFloatingPointType theColor[3]) = 0;
-  virtual void GetFacesOrientationColor(vtkFloatingPointType theColor[3]) = 0;
+  virtual void SetFacesOrientationColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b) = 0;
+  virtual void GetFacesOrientationColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b) = 0;
 
   virtual void SetFacesOrientationScale(vtkFloatingPointType theScale) = 0;
   virtual vtkFloatingPointType GetFacesOrientationScale() = 0;

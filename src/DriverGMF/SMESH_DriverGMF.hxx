@@ -20,26 +20,21 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH : implementaion of SMESH idl descriptions
-//  File   : SMESH_3D_Algo.hxx
-//  Author : Paul RASCLE, EDF
+//  File   : SMESH_DriverGMF.hxx
+//  Author : Alexander A. BORODIN
 //  Module : SMESH
-//  $Header$
 //
-#ifndef _SMESH_3D_ALGO_HXX_
-#define _SMESH_3D_ALGO_HXX_
+#ifndef _SMESH_DriverGMF_HXX_
+#define _SMESH_DriverGMF_HXX_
 
-#include "SMESH_SMESH.hxx"
-
-#include "SMESH_Algo.hxx"
-
-class SMESH_EXPORT SMESH_3D_Algo:
-  public SMESH_Algo
-{
-public:
-  SMESH_3D_Algo(int hypId, int studyId, SMESH_Gen* gen);
-  virtual ~SMESH_3D_Algo();
-
-};
+#ifdef WNT
+ #if defined MESHDriverGMF_EXPORTS || defined MeshDriverGMF_EXPORTS
+  #define MESHDriverGMF_EXPORT __declspec( dllexport )
+ #else
+  #define MESHDriverGMF_EXPORT __declspec( dllimport )
+ #endif
+#else
+ #define MESHDriverGMF_EXPORT
+#endif
 
 #endif

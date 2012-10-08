@@ -34,6 +34,7 @@
 #include "SMESH_Controls.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_TypeDefs.hxx"
+#include "SMESH_ComputeError.hxx"
 
 #include <utilities.h>
 
@@ -109,6 +110,14 @@ class SMESH_EXPORT SMESH_MeshEditor
 public:
 
   SMESH_MeshEditor( SMESH_Mesh* theMesh );
+
+  SMESH_Mesh   *                 GetMesh()   { return myMesh; }
+  SMESHDS_Mesh *                 GetMeshDS() { return myMesh->GetMeshDS(); }
+
+  const SMESH_SequenceOfElemPtr& GetLastCreatedNodes() const { return myLastCreatedNodes; }
+  const SMESH_SequenceOfElemPtr& GetLastCreatedElems() const { return myLastCreatedElems; }
+
+  SMESH_ComputeErrorPtr &        GetError() { return myError; }
 
   /*!
    * \brief Add element
@@ -561,20 +570,17 @@ public:
   // Return an index of the shape theElem is on
   // or zero if a shape not found
 
-  SMESH_Mesh * GetMesh() { return myMesh; }
-
-  SMESHDS_Mesh * GetMeshDS() { return myMesh->GetMeshDS(); }
-
-  const SMESH_SequenceOfElemPtr& GetLastCreatedNodes() const { return myLastCreatedNodes; }
-
-  const SMESH_SequenceOfElemPtr& GetLastCreatedElems() const { return myLastCreatedElems; }
-
   bool DoubleNodes( const std::list< int >& theListOfNodes, 
                     const std::list< int >& theListOfModifiedElems );
   
   bool DoubleNodes( const TIDSortedElemSet& theElems, 
                     const TIDSortedElemSet& theNodesNot,
                     const TIDSortedElemSet& theAffectedElems );
+
+  bool AffectedElemGroupsInRegion( const TIDSortedElemSet& theElems,
+                                   const TIDSortedElemSet& theNodesNot,
+                                   const TopoDS_Shape&     theShape,
+                                   TIDSortedElemSet& theAffectedElems);
 
   bool DoubleNodesInRegion( const TIDSortedElemSet& theElems, 
                             const TIDSortedElemSet& theNodesNot,
@@ -586,6 +592,13 @@ public:
                                      bool createJointElems);
 
   bool CreateFlatElementsOnFacesGroups( const std::vector<TIDSortedElemSet>& theElems );
+
+  void CreateHoleSkin(double radius,
+                      const TopoDS_Shape& theShape,
+                      SMESH_NodeSearcher* theNodeSearcher,
+                      const char* groupName,
+                      std::vector<double>&   nodesCoords,
+                      std::vector<std::vector<int> >& listOfListOfNodes);
 
   /*!
    * \brief Generated skin mesh (containing 2D cells) from 3D mesh
@@ -709,18 +722,13 @@ public:
 
 private:
 
-  SMESH_Mesh * myMesh;
+  SMESH_Mesh *            myMesh;
 
-  /*!
-   * Sequence for keeping nodes created during last operation
-   */
-  SMESH_SequenceOfElemPtr myLastCreatedNodes;
+  // Nodes and elements created during last operation
+  SMESH_SequenceOfElemPtr myLastCreatedNodes, myLastCreatedElems;
 
-  /*!
-   * Sequence for keeping elements created during last operation
-   */
-  SMESH_SequenceOfElemPtr myLastCreatedElems;
-
+  // Description of error/warning occured during last operation
+  SMESH_ComputeErrorPtr   myError;
 };
 
 #endif

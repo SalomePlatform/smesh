@@ -20,10 +20,8 @@
 #  Author : Francis KLOSS, OCC
 #  Module : SMESH
 
-"""
- \namespace smesh
- \brief Module smesh
-"""
+## @package smesh
+#  Python API for SALOME %Mesh module
 
 ## @defgroup l1_auxiliary Auxiliary methods and structures
 ## @defgroup l1_creating  Creating meshes
@@ -89,6 +87,7 @@ import geompyDC
 
 import SMESH # This is necessary for back compatibility
 from   SMESH import *
+from   smesh_algorithm import Mesh_Algorithm
 
 import SALOME
 import SALOMEDS
@@ -505,6 +504,14 @@ class smeshDC(SMESH._objref_SMESH_Gen):
             aMesh = Mesh(self, self.geompyD, aSmeshMeshes[iMesh])
             aMeshes.append(aMesh)
         return aMeshes, aStatus
+
+    ## Creates a Mesh object importing data from the given GMF file
+    #  @return [ an instance of Mesh class, SMESH::ComputeError ]
+    #  @ingroup l2_impexp
+    def CreateMeshesFromGMF( self, theFileName ):
+        aSmeshMesh, error = SMESH._objref_SMESH_Gen.CreateMeshesFromGMF(self,theFileName)
+        if error.comment: print "*** CreateMeshesFromGMF() errors:\n", error.comment
+        return Mesh(self, self.geompyD, aSmeshMesh), error
 
     ## Concatenate the given meshes into one mesh.
     #  @return an instance of Mesh class
@@ -976,7 +983,10 @@ class Mesh:
                     if studyID != geompyD.myStudyId:
                         geompyD.init_geom( smeshpyD.GetCurrentStudy())
                         pass
-                    geo_name = "%s_%s_for_meshing"%(self.geom.GetShapeType(), id(self.geom)%100)
+                    if name:
+                        geo_name = name
+                    else:
+                        geo_name = "%s_%s_for_meshing"%(self.geom.GetShapeType(), id(self.geom)%100)
                     geompyD.addToStudy( self.geom, geo_name )
                 self.mesh = self.smeshpyD.CreateMesh(self.geom)
 
@@ -1169,15 +1179,18 @@ class Mesh:
                     except:
                         shapeText = " on subshape #%s" % (err.subShapeID)
                 errText = ""
-                stdErrors = ["OK",                 #COMPERR_OK
-                             "Invalid input mesh", #COMPERR_BAD_INPUT_MESH
-                             "std::exception",     #COMPERR_STD_EXCEPTION
-                             "OCC exception",      #COMPERR_OCC_EXCEPTION
-                             "SALOME exception",   #COMPERR_SLM_EXCEPTION
-                             "Unknown exception",  #COMPERR_EXCEPTION
+                stdErrors = ["OK",                   #COMPERR_OK
+                             "Invalid input mesh",   #COMPERR_BAD_INPUT_MESH
+                             "std::exception",       #COMPERR_STD_EXCEPTION
+                             "OCC exception",        #COMPERR_OCC_EXCEPTION
+                             "SALOME exception",     #COMPERR_SLM_EXCEPTION
+                             "Unknown exception",    #COMPERR_EXCEPTION
                              "Memory allocation problem", #COMPERR_MEMORY_PB
-                             "Algorithm failed",   #COMPERR_ALGO_FAILED
-                             "Unexpected geometry"]#COMPERR_BAD_SHAPE
+                             "Algorithm failed",     #COMPERR_ALGO_FAILED
+                             "Unexpected geometry",  #COMPERR_BAD_SHAPE
+                             "Warning",              #COMPERR_WARNING
+                             "Computation cancelled",#COMPERR_CANCELED
+                             "No mesh on sub-shape"] #COMPERR_NO_MESH_ON_SHAPE
                 if err.code > 0:
                     if err.code < len(stdErrors): errText = stdErrors[err.code]
                 else:
@@ -1451,6 +1464,19 @@ class Mesh:
         elif not meshPart:
             meshPart = self.mesh
         self.mesh.ExportCGNS(meshPart, f, overwrite)
+
+    ## Exports the mesh in a file in GMF format
+    #  @param f is the file name
+    #  @param meshPart a part of mesh (group, sub-mesh) to export instead of the mesh
+    #  @ingroup l2_impexp
+    def ExportGMF(self, f, meshPart=None):
+        if isinstance( meshPart, list ):
+            meshPart = self.GetIDSource( meshPart, SMESH.ALL )
+        if isinstance( meshPart, Mesh ):
+            meshPart = meshPart.mesh
+        elif not meshPart:
+            meshPart = self.mesh
+        self.mesh.ExportGMF(meshPart, f)
 
     ## Deprecated, used only for compatibility! Please, use ExportToMEDX() method instead.
     #  Exports the mesh in a file in MED format and chooses the \a version of MED format
@@ -1759,14 +1785,14 @@ class Mesh:
     #  @return an instance of SMESH_MeshEditor
     #  @ingroup l1_modifying
     def GetMeshEditor(self):
-        return self.mesh.GetMeshEditor()
+        return self.editor
 
     ## Wrap a list of IDs of elements or nodes into SMESH_IDSource which
     #  can be passed as argument to a method accepting mesh, group or sub-mesh
     #  @return an instance of SMESH_IDSource
     #  @ingroup l1_auxiliary
     def GetIDSource(self, ids, elemType):
-        return self.GetMeshEditor().MakeIDSource(ids, elemType)
+        return self.editor.MakeIDSource(ids, elemType)
 
     ## Gets MED Mesh
     #  @return an instance of SALOME_MED::MESH
@@ -3974,6 +4000,18 @@ class Mesh:
     def DoubleNodeElemGroupsInRegion(self, theElems, theNodesNot, theShape):
         return self.editor.DoubleNodeElemGroupsInRegion(theElems, theNodesNot, theShape)
 
+    ## Identify the elements that will be affected by node duplication (actual duplication is not performed.
+    #  This method is the first step of DoubleNodeElemGroupsInRegion.
+    #  @param theElems - list of groups of elements (edges or faces) to be replicated
+    #  @param theNodesNot - list of groups of nodes not to replicated
+    #  @param theShape - shape to detect affected elements (element which geometric center
+    #         located on or inside shape).
+    #         The replicated nodes should be associated to affected elements.
+    #  @return groups of affected elements
+    #  @ingroup l2_modif_edit
+    def AffectedElemGroupsInRegion(self, theElems, theNodesNot, theShape):
+        return self.editor.AffectedElemGroupsInRegion(theElems, theNodesNot, theShape)
+
     ## Double nodes on shared faces between groups of volumes and create flat elements on demand.
     # The list of groups must describe a partition of the mesh volumes.
     # The nodes of the internal faces at the boundaries of the groups are doubled.
@@ -3994,6 +4032,11 @@ class Mesh:
     # @return TRUE if operation has been completed successfully, FALSE otherwise
     def CreateFlatElementsOnFacesGroups(self, theGroupsOfFaces ):
         return self.editor.CreateFlatElementsOnFacesGroups( theGroupsOfFaces )
+    
+    ## identify all the elements around a geom shape, get the faces delimiting the hole
+    #
+    def CreateHoleSkin(self, radius, theShape, groupName, theNodesCoords):
+        return self.editor.CreateHoleSkin( radius, theShape, groupName, theNodesCoords )
 
     def _valueFromFunctor(self, funcType, elemId):
         fn = self.smeshpyD.GetFunctor(funcType)
@@ -4075,283 +4118,10 @@ class Mesh:
     def GetSkew(self, elemId):
         return self._valueFromFunctor(SMESH.FT_Skew, elemId)
 
-## The mother class to define algorithm, it is not recommended to use it directly.
+    pass # end of Mesh class
+    
+## Helper class for wrapping of SMESH.SMESH_Pattern CORBA class
 #
-#  For each meshing algorithm, a python class inheriting from class Mesh_Algorithm
-#  should be defined. This descendant class sould have two attributes defining the way
-# it is created by class Mesh (see e.g. class StdMeshersDC_Segment in StdMeshersDC.py).
-# - meshMethod attribute defines name of method of class Mesh by calling which the
-#   python class of algorithm is created. E.g. if in class MyPlugin_Algorithm
-#   meshMethod = "MyAlgorithm", then an instance of MyPlugin_Algorithm is created
-#   by the following code: my_algo = mesh.MyAlgorithm()
-# - algoType defines name of algorithm type and is used mostly to discriminate
-#   algorithms that are created by the same method of class Mesh. E.g. if
-#   MyPlugin_Algorithm.algoType = "MyPLUGIN" then it's creation code can be:
-#   my_algo = mesh.MyAlgorithm(algo="MyPLUGIN")
-#  @ingroup l2_algorithms
-class Mesh_Algorithm:
-    #  @class Mesh_Algorithm
-    #  @brief Class Mesh_Algorithm
-
-    #def __init__(self,smesh):
-    #    self.smesh=smesh
-    def __init__(self):
-        self.mesh = None
-        self.geom = None
-        self.subm = None
-        self.algo = None
-
-    ## Finds a hypothesis in the study by its type name and parameters.
-    #  Finds only the hypotheses created in smeshpyD engine.
-    #  @return SMESH.SMESH_Hypothesis
-    def FindHypothesis (self, hypname, args, CompareMethod, smeshpyD):
-        study = smeshpyD.GetCurrentStudy()
-        #to do: find component by smeshpyD object, not by its data type
-        scomp = study.FindComponent(smeshpyD.ComponentDataType())
-        if scomp is not None:
-            res,hypRoot = scomp.FindSubObject(SMESH.Tag_HypothesisRoot)
-            # Check if the root label of the hypotheses exists
-            if res and hypRoot is not None:
-                iter = study.NewChildIterator(hypRoot)
-                # Check all published hypotheses
-                while iter.More():
-                    hypo_so_i = iter.Value()
-                    attr = hypo_so_i.FindAttribute("AttributeIOR")[1]
-                    if attr is not None:
-                        anIOR = attr.Value()
-                        hypo_o_i = salome.orb.string_to_object(anIOR)
-                        if hypo_o_i is not None:
-                            # Check if this is a hypothesis
-                            hypo_i = hypo_o_i._narrow(SMESH.SMESH_Hypothesis)
-                            if hypo_i is not None:
-                                # Check if the hypothesis belongs to current engine
-                                if smeshpyD.GetObjectId(hypo_i) > 0:
-                                    # Check if this is the required hypothesis
-                                    if hypo_i.GetName() == hypname:
-                                        # Check arguments
-                                        if CompareMethod(hypo_i, args):
-                                            # found!!!
-                                            return hypo_i
-                                        pass
-                                    pass
-                                pass
-                            pass
-                        pass
-                    iter.Next()
-                    pass
-                pass
-            pass
-        return None
-
-    ## Finds the algorithm in the study by its type name.
-    #  Finds only the algorithms, which have been created in smeshpyD engine.
-    #  @return SMESH.SMESH_Algo
-    def FindAlgorithm (self, algoname, smeshpyD):
-        study = smeshpyD.GetCurrentStudy()
-        if not study: return None
-        #to do: find component by smeshpyD object, not by its data type
-        scomp = study.FindComponent(smeshpyD.ComponentDataType())
-        if scomp is not None:
-            res,hypRoot = scomp.FindSubObject(SMESH.Tag_AlgorithmsRoot)
-            # Check if the root label of the algorithms exists
-            if res and hypRoot is not None:
-                iter = study.NewChildIterator(hypRoot)
-                # Check all published algorithms
-                while iter.More():
-                    algo_so_i = iter.Value()
-                    attr = algo_so_i.FindAttribute("AttributeIOR")[1]
-                    if attr is not None:
-                        anIOR = attr.Value()
-                        algo_o_i = salome.orb.string_to_object(anIOR)
-                        if algo_o_i is not None:
-                            # Check if this is an algorithm
-                            algo_i = algo_o_i._narrow(SMESH.SMESH_Algo)
-                            if algo_i is not None:
-                                # Checks if the algorithm belongs to the current engine
-                                if smeshpyD.GetObjectId(algo_i) > 0:
-                                    # Check if this is the required algorithm
-                                    if algo_i.GetName() == algoname:
-                                        # found!!!
-                                        return algo_i
-                                    pass
-                                pass
-                            pass
-                        pass
-                    iter.Next()
-                    pass
-                pass
-            pass
-        return None
-
-    ## If the algorithm is global, returns 0; \n
-    #  else returns the submesh associated to this algorithm.
-    def GetSubMesh(self):
-        return self.subm
-
-    ## Returns the wrapped mesher.
-    def GetAlgorithm(self):
-        return self.algo
-
-    ## Gets the list of hypothesis that can be used with this algorithm
-    def GetCompatibleHypothesis(self):
-        mylist = []
-        if self.algo:
-            mylist = self.algo.GetCompatibleHypothesis()
-        return mylist
-
-    ## Gets the name of the algorithm
-    def GetName(self):
-        GetName(self.algo)
-
-    ## Sets the name to the algorithm
-    def SetName(self, name):
-        self.mesh.smeshpyD.SetName(self.algo, name)
-
-    ## Gets the id of the algorithm
-    def GetId(self):
-        return self.algo.GetId()
-
-    ## Private method.
-    def Create(self, mesh, geom, hypo, so="libStdMeshersEngine.so"):
-        if geom is None:
-            raise RuntimeError, "Attemp to create " + hypo + " algoritm on None shape"
-        algo = self.FindAlgorithm(hypo, mesh.smeshpyD)
-        if algo is None:
-            algo = mesh.smeshpyD.CreateHypothesis(hypo, so)
-            pass
-        self.Assign(algo, mesh, geom)
-        return self.algo
-
-    ## Private method
-    def Assign(self, algo, mesh, geom):
-        if geom is None:
-            raise RuntimeError, "Attemp to create " + algo + " algoritm on None shape"
-        self.mesh = mesh
-        name = ""
-        if not geom:
-            self.geom = mesh.geom
-        else:
-            self.geom = geom
-            AssureGeomPublished( mesh, geom )
-            try:
-                name = GetName(geom)
-                pass
-            except:
-                pass
-            self.subm = mesh.mesh.GetSubMesh(geom, algo.GetName())
-        self.algo = algo
-        status = mesh.mesh.AddHypothesis(self.geom, self.algo)
-        TreatHypoStatus( status, algo.GetName(), name, True )
-        return
-
-    def CompareHyp (self, hyp, args):
-        print "CompareHyp is not implemented for ", self.__class__.__name__, ":", hyp.GetName()
-        return False
-
-    def CompareEqualHyp (self, hyp, args):
-        return True
-
-    ## Private method
-    def Hypothesis (self, hyp, args=[], so="libStdMeshersEngine.so",
-                    UseExisting=0, CompareMethod=""):
-        hypo = None
-        if UseExisting:
-            if CompareMethod == "": CompareMethod = self.CompareHyp
-            hypo = self.FindHypothesis(hyp, args, CompareMethod, self.mesh.smeshpyD)
-            pass
-        if hypo is None:
-            hypo = self.mesh.smeshpyD.CreateHypothesis(hyp, so)
-            a = ""
-            s = "="
-            for arg in args:
-                argStr = str(arg)
-                if isinstance( arg, geompyDC.GEOM._objref_GEOM_Object ):
-                    argStr = arg.GetStudyEntry()
-                    if not argStr: argStr = "GEOM_Obj_%s", arg.GetEntry()
-                if len( argStr ) > 10:
-                    argStr = argStr[:7]+"..."
-                    if argStr[0] == '[': argStr += ']'
-                a = a + s + argStr
-                s = ","
-                pass
-            if len(a) > 50:
-                a = a[:47]+"..."
-            self.mesh.smeshpyD.SetName(hypo, hyp + a)
-            pass
-        geomName=""
-        if self.geom:
-            geomName = GetName(self.geom)
-        status = self.mesh.mesh.AddHypothesis(self.geom, hypo)
-        TreatHypoStatus( status, GetName(hypo), geomName, 0 )
-        return hypo
-
-    ## Returns entry of the shape to mesh in the study
-    def MainShapeEntry(self):
-        if not self.mesh or not self.mesh.GetMesh(): return ""
-        if not self.mesh.GetMesh().HasShapeToMesh(): return ""
-        shape = self.mesh.GetShape()
-        return shape.GetStudyEntry()
-
-    ## Defines "ViscousLayers" hypothesis to give parameters of layers of prisms to build
-    #  near mesh boundary. This hypothesis can be used by several 3D algorithms:
-    #  NETGEN 3D, GHS3D, Hexahedron(i,j,k)
-    #  @param thickness total thickness of layers of prisms
-    #  @param numberOfLayers number of layers of prisms
-    #  @param stretchFactor factor (>1.0) of growth of layer thickness towards inside of mesh
-    #  @param ignoreFaces list of geometrical faces (or their ids) not to generate layers on
-    #  @ingroup l3_hypos_additi
-    def ViscousLayers(self, thickness, numberOfLayers, stretchFactor, ignoreFaces=[]):
-        if not isinstance(self.algo, SMESH._objref_SMESH_3D_Algo):
-            raise TypeError, "ViscousLayers are supported by 3D algorithms only"
-        if not "ViscousLayers" in self.GetCompatibleHypothesis():
-            raise TypeError, "ViscousLayers are not supported by %s"%self.algo.GetName()
-        if ignoreFaces and isinstance( ignoreFaces[0], geompyDC.GEOM._objref_GEOM_Object ):
-            ignoreFaces = [ self.mesh.geompyD.GetSubShapeID(self.mesh.geom, f) for f in ignoreFaces ]
-        hyp = self.Hypothesis("ViscousLayers",
-                              [thickness, numberOfLayers, stretchFactor, ignoreFaces])
-        hyp.SetTotalThickness(thickness)
-        hyp.SetNumberLayers(numberOfLayers)
-        hyp.SetStretchFactor(stretchFactor)
-        hyp.SetIgnoreFaces(ignoreFaces)
-        return hyp
-
-    ## Transform a list of ether edges or tuples (edge, 1st_vertex_of_edge)
-    #  into a list acceptable to SetReversedEdges() of some 1D hypotheses
-    #  @ingroup l3_hypos_1dhyps
-    def ReversedEdgeIndices(self, reverseList):
-        resList = []
-        geompy = self.mesh.geompyD
-        for i in reverseList:
-            if isinstance( i, int ):
-                s = geompy.SubShapes(self.mesh.geom, [i])[0]
-                if s.GetShapeType() != geompyDC.GEOM.EDGE:
-                    raise TypeError, "Not EDGE index given"
-                resList.append( i )
-            elif isinstance( i, geompyDC.GEOM._objref_GEOM_Object ):
-                if i.GetShapeType() != geompyDC.GEOM.EDGE:
-                    raise TypeError, "Not an EDGE given"
-                resList.append( geompy.GetSubShapeID(self.mesh.geom, i ))
-            elif len( i ) > 1:
-                e = i[0]
-                v = i[1]
-                if not isinstance( e, geompyDC.GEOM._objref_GEOM_Object ) or \
-                   not isinstance( v, geompyDC.GEOM._objref_GEOM_Object ):
-                    raise TypeError, "A list item must be a tuple (edge, 1st_vertex_of_edge)"
-                if v.GetShapeType() == geompyDC.GEOM.EDGE and \
-                   e.GetShapeType() == geompyDC.GEOM.VERTEX:
-                    v,e = e,v
-                if e.GetShapeType() != geompyDC.GEOM.EDGE or \
-                   v.GetShapeType() != geompyDC.GEOM.VERTEX:
-                    raise TypeError, "A list item must be a tuple (edge, 1st_vertex_of_edge)"
-                vFirst = FirstVertexOnCurve( e )
-                tol    = geompy.Tolerance( vFirst )[-1]
-                if geompy.MinDistance( v, vFirst ) > 1.5*tol:
-                    resList.append( geompy.GetSubShapeID(self.mesh.geom, e ))
-            else:
-                raise TypeError, "Item must be either an edge or tuple (edge, 1st_vertex_of_edge)"
-        return resList
-
-
 class Pattern(SMESH._objref_SMESH_Pattern):
 
     def ApplyToMeshFaces(self, theMesh, theFacesIDs, theNodeIndexOnKeyPoint1, theReverse):
@@ -4366,12 +4136,8 @@ class Pattern(SMESH._objref_SMESH_Pattern):
         theMesh.SetParameters(Parameters)
         return SMESH._objref_SMESH_Pattern.ApplyToHexahedrons( self, theMesh, theVolumesIDs, theNode000Index, theNode001Index )
 
-#Registering the new proxy for Pattern
+# Registering the new proxy for Pattern
 omniORB.registerObjref(SMESH._objref_SMESH_Pattern._NP_RepositoryId, Pattern)
-
-
-
-
 
 ## Private class used to bind methods creating algorithms to the class Mesh
 #
@@ -4416,6 +4182,7 @@ class algoCreator:
         return None
 
 # Private class used to substitute and store variable parameters of hypotheses.
+#
 class hypMethodWrapper:
     def __init__(self, hyp, method):
         self.hyp    = hyp

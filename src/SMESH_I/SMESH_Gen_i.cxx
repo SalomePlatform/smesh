@@ -118,6 +118,7 @@
 #include <map>
 #include <fstream>
 #include <cstdio>
+#include <stdlib.h>
 
 using namespace std;
 using SMESH::TPythonDump;
@@ -960,7 +961,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromUNV( const char* theFileName 
     aStudyBuilder->CommitCommand();
     if ( !aSO->_is_nil() ) {
       // Update Python script
-      TPythonDump() << aSO << " = smeshgen.CreateMeshesFromUNV(r'" << theFileName << "')";
+      TPythonDump() << aSO << " = " << this << ".CreateMeshesFromUNV(r'" << theFileName << "')";
     }
   }
 
@@ -1221,6 +1222,47 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromCGNS( const char* theFileName,
 
   return aResult._retn();
 }
+
+//================================================================================
+/*!
+ * \brief Create a mesh and import data from a GMF file
+ */
+//================================================================================
+
+SMESH::SMESH_Mesh_ptr
+SMESH_Gen_i::CreateMeshesFromGMF( const char*             theFileName,
+                                  SMESH::ComputeError_out theError)
+    throw ( SALOME::SALOME_Exception )
+{
+  Unexpect aCatch(SALOME_SalomeException);
+
+  SMESH::SMESH_Mesh_var aMesh = createMesh();
+#ifdef WIN32
+  char bname[ _MAX_FNAME ];
+  _splitpath( theFileName, NULL, NULL, bname, NULL );
+  string aFileName = bname;
+#else
+  string aFileName = basename( theFileName );
+#endif
+  // publish mesh in the study
+  if ( CanPublishInStudy( aMesh ) ) {
+    SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder();
+    aStudyBuilder->NewCommand();  // There is a transaction
+    SALOMEDS::SObject_var aSO = PublishInStudy
+      ( myCurrentStudy, SALOMEDS::SObject::_nil(), aMesh.in(), aFileName.c_str() );
+    aStudyBuilder->CommitCommand();
+    if ( !aSO->_is_nil() ) {
+      // Update Python script
+      TPythonDump() << "("<< aSO << ", error) = " << this << ".CreateMeshesFromGMF(r'" << theFileName << "')";
+    }
+  }
+  SMESH_Mesh_i* aServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( aMesh ).in() );
+  ASSERT( aServant );
+  theError = aServant->ImportGMFFile( theFileName );
+  aServant->GetImpl().GetMeshDS()->Modified();
+  return aMesh._retn();
+}
+
 
 //=============================================================================
 /*!
@@ -4156,18 +4198,6 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                   myNewMeshImpl->SetShape( aShapeObject );
               }
             }
-          }
-
-          // issue 0020693. Restore _isModified flag
-          if( aTopGroup->ExistInternalObject( "_isModified" ) )
-          {
-            aDataset = new HDFdataset( "_isModified", aTopGroup );
-            aDataset->OpenOnDisk();
-            size = aDataset->GetSize();
-            int* isModified = new int[ size ];
-            aDataset->ReadFromDisk( isModified );
-            aDataset->CloseOnDisk();
-            myNewMeshImpl->GetImpl().SetIsModified( bool(*isModified));
           }
 
           // issue 20918. Restore Persistent Id of SMESHDS_Mesh

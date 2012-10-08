@@ -14,37 +14,44 @@
 // Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
+// License along with this library; if not, Read to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File      : DriverGMF_Read.hxx
+// Created   : Mon Sep 17 15:36:47 2012
+// Author    : Edward AGAPOV (eap)
 
-//  SMESH SMESH : implementaion of SMESH idl descriptions
-//  File   : SMESH_2D_Algo.hxx
-//  Author : Paul RASCLE, EDF
-//  Module : SMESH
-//  $Header$
-//
-#ifndef _SMESH_2D_ALGO_HXX_
-#define _SMESH_2D_ALGO_HXX_
 
-#include "SMESH_SMESH.hxx"
+#ifndef __DriverGMF_Read_HXX__
+#define __DriverGMF_Read_HXX__
 
-#include "SMESH_Algo.hxx"
-#include "SMESH_subMesh.hxx"
-#include "TopoDS_Wire.hxx"
+#include "SMESH_DriverGMF.hxx"
 
-class SMESH_EXPORT SMESH_2D_Algo:
-  public SMESH_Algo
+#include "Driver_SMESHDS_Mesh.h"
+
+#include <vector>
+#include <string>
+
+/*!
+ * \brief Driver reading a mesh from the GMF file. The mesh to read is selected by 
+ *  an index (counted form 0) set via SetMeshId()
+ */
+class MESHDriverGMF_EXPORT DriverGMF_Read : public Driver_SMESHDS_Mesh
 {
 public:
-  SMESH_2D_Algo(int hypId, int studyId, SMESH_Gen* gen);
-  virtual ~SMESH_2D_Algo();
 
-  int NumberOfWires(const TopoDS_Shape& S);
-  int NumberOfPoints(SMESH_Mesh& aMesh,const TopoDS_Wire& W);
+  DriverGMF_Read();
+  ~DriverGMF_Read();
+
+  virtual Status Perform();
+
+ private:
+
+  Status storeBadNodeIds(const char* gmfKwd, int elemNb, int nb, ...);
 
 };
+
 
 #endif

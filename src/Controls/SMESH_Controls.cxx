@@ -2737,30 +2737,37 @@ void CoplanarFaces::SetMesh( const SMDS_Mesh* theMesh )
       return;
 
     const double radianTol = myToler * M_PI / 180.;
-    typedef SMDS_StdIterator< const SMDS_MeshElement*, SMDS_ElemIteratorPtr > TFaceIt;
-    std::set<const SMDS_MeshElement*> checkedFaces, checkedNodes;
-    std::list<const SMDS_MeshElement*> faceQueue( 1, face );
+    std::set< SMESH_TLink > checkedLinks;
+
+    std::list< pair< const SMDS_MeshElement*, gp_Vec > > faceQueue;
+    faceQueue.push_back( make_pair( face, myNorm ));
     while ( !faceQueue.empty() )
     {
-      face = faceQueue.front();
-      if ( checkedFaces.insert( face ).second )
+      face   = faceQueue.front().first;
+      myNorm = faceQueue.front().second;
+      faceQueue.pop_front();
+
+      for ( int i = 0, nbN = face->NbCornerNodes(); i < nbN; ++i )
       {
-        gp_Vec norm = getNormale( static_cast<const SMDS_MeshFace*>(face), &normOK );
-        if (!normOK || myNorm.Angle( norm ) <= radianTol)
+        const SMDS_MeshNode*  n1 = face->GetNode( i );
+        const SMDS_MeshNode*  n2 = face->GetNode(( i+1 )%nbN);
+        if ( !checkedLinks.insert( SMESH_TLink( n1, n2 )).second )
+          continue;
+        SMDS_ElemIteratorPtr fIt = n1->GetInverseElementIterator(SMDSAbs_Face);
+        while ( fIt->more() )
         {
-          myCoplanarIDs.insert( face->GetID() );
-          std::set<const SMDS_MeshElement*> neighborFaces;
-          for ( int i = 0; i < face->NbCornerNodes(); ++i )
+          const SMDS_MeshElement* f = fIt->next();
+          if ( f->GetNodeIndex( n2 ) > -1 )
           {
-            const SMDS_MeshNode* n = face->GetNode( i );
-            if ( checkedNodes.insert( n ).second )
-              neighborFaces.insert( TFaceIt( n->GetInverseElementIterator(SMDSAbs_Face)),
-                                    TFaceIt());
+            gp_Vec norm = getNormale( static_cast<const SMDS_MeshFace*>(f), &normOK );
+            if (!normOK || myNorm.Angle( norm ) <= radianTol)
+            {
+              myCoplanarIDs.insert( f->GetID() );
+              faceQueue.push_back( make_pair( f, norm ));
+            }
           }
-          faceQueue.insert( faceQueue.end(), neighborFaces.begin(), neighborFaces.end() );
         }
       }
-      faceQueue.pop_front();
     }
   }
 }
@@ -2770,7 +2777,7 @@ bool CoplanarFaces::IsSatisfy( long theElementId )
 }
 
 /*
-  *Class       : RangeOfIds
+ *Class       : RangeOfIds
   *Description : Predicate for Range of Ids.
   *              Range may be specified with two ways.
   *              1. Using AddToRange method

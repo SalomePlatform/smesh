@@ -28,6 +28,8 @@
 
 #include "SMESH_Algo.hxx"
 #include "SMESH_MesherHelper.hxx"
+#include "SMESH_Group.hxx"
+#include "SMESHDS_GroupBase.hxx"
 
 #include <IntAna_IntConicQuad.hxx>
 #include <IntAna_Quadric.hxx>
@@ -38,7 +40,9 @@
 #include <TopoDS.hxx>
 #include <gp_Lin.hxx>
 #include <gp_Pln.hxx>
+#include "utilities.h"
 
+#include <string>
 #include <numeric>
 #include <limits>
 
@@ -224,7 +228,7 @@ namespace
           }
         }
 
-      // Within pyramids, replace nodes to remove by nodes to keep  
+      // Within pyramids, replace nodes to remove by nodes to keep
 
       for ( unsigned i = 0; i < pyrams.size(); ++i )
       {
@@ -281,7 +285,7 @@ void StdMeshers_QuadToTriaAdaptor::MergePiramids( const SMDS_MeshElement*     Pr
 
   // find and remove coincided faces of merged pyramids
   vector< const SMDS_MeshElement* > inverseElems
-    // copy inverse elements to avoid iteration on changing container 
+    // copy inverse elements to avoid iteration on changing container
     ( TStdElemIterator( CommonNode->GetInverseElementIterator(SMDSAbs_Face)), itEnd);
   for ( unsigned i = 0; i < inverseElems.size(); ++i )
   {
@@ -550,13 +554,13 @@ bool StdMeshers_QuadToTriaAdaptor::CheckIntersection (const gp_Pnt&       P,
   gp_Ax1 line( P, gp_Vec(P,PC));
   vector< const SMDS_MeshElement* > suspectElems;
   searcher->GetElementsNearLine( line, SMDSAbs_Face, suspectElems);
-  
+
   for ( int i = 0; i < suspectElems.size(); ++i )
   {
     const SMDS_MeshElement* face = suspectElems[i];
     if ( face == NotCheckedFace ) continue;
     Handle(TColgp_HSequenceOfPnt) aContour = new TColgp_HSequenceOfPnt;
-    for ( int i = 0; i < face->NbCornerNodes(); ++i ) 
+    for ( int i = 0; i < face->NbCornerNodes(); ++i )
       aContour->Append( SMESH_TNodeXYZ( face->GetNode(i) ));
     if( HasIntersection(P, PC, Pres, aContour) ) {
       res = true;
@@ -702,7 +706,7 @@ int StdMeshers_QuadToTriaAdaptor::Preparation(const SMDS_MeshElement*       face
 
 //=======================================================================
 //function : Compute
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh&         aMesh,
@@ -898,6 +902,36 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
   if ( aMesh.NbQuadrangles() < 1 )
     return false;
 
+  // find if there is a group of faces identified as skin faces, with normal going outside the volume
+  std::string groupName = "skinFaces";
+  SMESHDS_GroupBase* groupDS = 0;
+  SMESH_Mesh::GroupIteratorPtr groupIt = aMesh.GetGroups();
+  while ( groupIt->more() )
+    {
+      groupDS = 0;
+      SMESH_Group * group = groupIt->next();
+      if ( !group ) continue;
+      groupDS = group->GetGroupDS();
+      if ( !groupDS || groupDS->IsEmpty() )
+      {
+        groupDS = 0;
+        continue;
+      }
+      if (groupDS->GetType() != SMDSAbs_Face)
+      {
+        groupDS = 0;
+        continue;
+      }
+      std::string grpName = group->GetName();
+      if (grpName == groupName)
+      {
+        MESSAGE("group skinFaces provided");
+        break;
+      }
+      else
+        groupDS = 0;
+    }
+
   vector<const SMDS_MeshElement*> myPyramids;
   SMESH_MesherHelper helper(aMesh);
   helper.IsQuadraticSubMesh(aMesh.GetShapeToMesh());
@@ -911,7 +945,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
   SMESH_ProxyMesh::SubMesh* prxSubMesh = getProxySubMesh();
 
   SMDS_FaceIteratorPtr fIt = meshDS->facesIterator(/*idInceasingOrder=*/true);
-  while( fIt->more()) 
+  while( fIt->more())
   {
     const SMDS_MeshElement* face = fIt->next();
     if ( !face ) continue;
@@ -1003,7 +1037,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
       continue;
     }
 
-    // Case of non-degenerated quadrangle 
+    // Case of non-degenerated quadrangle
 
     // Find pyramid peak
 
@@ -1061,6 +1095,10 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
         }
       }
     }
+
+    // if the face belong to the group of skinFaces, do not build a pyramid outside
+    if (groupDS && groupDS->Contains(face))
+      intersected[0] = false;
 
     // Create one or two pyramids
 
@@ -1176,7 +1214,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh&                   
         for(k=0; k<4 && !hasInt; k++) {
           gp_Vec Vtmp(PsI[k],PsI[4]);
           gp_Pnt Pshift = PsI[k].XYZ() + Vtmp.XYZ() * 0.01; // base node moved a bit to apex
-          hasInt = 
+          hasInt =
           ( HasIntersection3( Pshift, PsI[4], Pint, PsJ[0], PsJ[1], PsJ[4]) ||
             HasIntersection3( Pshift, PsI[4], Pint, PsJ[1], PsJ[2], PsJ[4]) ||
             HasIntersection3( Pshift, PsI[4], Pint, PsJ[2], PsJ[3], PsJ[4]) ||
@@ -1185,7 +1223,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh&                   
         for(k=0; k<4 && !hasInt; k++) {
           gp_Vec Vtmp(PsJ[k],PsJ[4]);
           gp_Pnt Pshift = PsJ[k].XYZ() + Vtmp.XYZ() * 0.01;
-          hasInt = 
+          hasInt =
             ( HasIntersection3( Pshift, PsJ[4], Pint, PsI[0], PsI[1], PsI[4]) ||
               HasIntersection3( Pshift, PsJ[4], Pint, PsI[1], PsI[2], PsI[4]) ||
               HasIntersection3( Pshift, PsJ[4], Pint, PsI[2], PsI[3], PsI[4]) ||
@@ -1215,7 +1253,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh&                   
               PCi += PsI[k].XYZ();
               PCj += PsJ[k].XYZ();
             }
-            PCi /= 4; PCj /= 4; 
+            PCi /= 4; PCj /= 4;
             gp_Vec VN1(PCi,PsI[4]);
             gp_Vec VN2(PCj,PsJ[4]);
             gp_Vec VI1(PCi,Pint);

@@ -337,15 +337,16 @@ namespace SMESH
   {
     QString text;
     switch ( errCode ) {
-      CASE2TEXT( COMPERR_OK            );
-      CASE2TEXT( COMPERR_BAD_INPUT_MESH);
-      CASE2TEXT( COMPERR_STD_EXCEPTION );
-      CASE2TEXT( COMPERR_OCC_EXCEPTION );
+      CASE2TEXT( COMPERR_OK               );
+      CASE2TEXT( COMPERR_BAD_INPUT_MESH   );
+      CASE2TEXT( COMPERR_STD_EXCEPTION    );
+      CASE2TEXT( COMPERR_OCC_EXCEPTION    );
     case SMESH::COMPERR_SLM_EXCEPTION: break; // avoid double "Salome exception"
-      CASE2TEXT( COMPERR_EXCEPTION     );
-      CASE2TEXT( COMPERR_MEMORY_PB     );
-      CASE2TEXT( COMPERR_BAD_SHAPE     );
-      CASE2TEXT( COMPERR_CANCELED      );
+      CASE2TEXT( COMPERR_EXCEPTION        );
+      CASE2TEXT( COMPERR_MEMORY_PB        );
+      CASE2TEXT( COMPERR_BAD_SHAPE        );
+      CASE2TEXT( COMPERR_CANCELED         );
+      CASE2TEXT( COMPERR_NO_MESH_ON_SHAPE );
     case SMESH::COMPERR_ALGO_FAILED:
       if ( strlen(comment) == 0 )
         text = QObject::tr("COMPERR_ALGO_FAILED");
@@ -550,6 +551,9 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent, bool ForEval)
   myTable->hideColumn( COL_SHAPEID );
   myTable->hideColumn( COL_BAD_MESH );
   myTable->horizontalHeader()->setResizeMode( COL_ERROR, QHeaderView::Interactive );
+  myTable->setWordWrap( true );
+  myTable->horizontalHeader()->setStretchLastSection( true );
+  myTable->setMinimumWidth( 500 );
 
   QStringList headers;
   headers << tr( "COL_ALGO_HEADER" );
@@ -564,12 +568,12 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent, bool ForEval)
   QGridLayout* grpLayout = new QGridLayout(myCompErrorGroup);
   grpLayout->setSpacing(SPACING);
   grpLayout->setMargin(MARGIN);
-  grpLayout->addWidget( myWarningLabel, 0, 0 );
-  grpLayout->addWidget( myTable,        1, 0, 4, 1 );
-  grpLayout->addWidget( myShowBtn,      1, 1 );
+  grpLayout->addWidget( myWarningLabel, 0, 0, 1, 4 );
+  grpLayout->addWidget( myTable,        1, 0, 1, 4 );
+  grpLayout->addWidget( myShowBtn,      2, 0 );
   grpLayout->addWidget( myPublishBtn,   2, 1 );
-  grpLayout->addWidget( myBadMeshBtn,   3, 1 );
-  grpLayout->setRowStretch( 4, 1 );
+  grpLayout->addWidget( myBadMeshBtn,   2, 2 );
+  grpLayout->setColumnStretch( 3, 1 );
 
   // Hypothesis definition errors
 
@@ -948,7 +952,8 @@ void SMESHGUI_BaseComputeOp::showComputeResult( const bool theMemoryLack,
   {
     bool onlyWarnings = !theNoCompError; // == valid mesh computed but there are errors reported
     for ( int i = 0; i < theCompErrors->length() && onlyWarnings; ++i )
-      onlyWarnings = ( theCompErrors[ i ].code == SMESH::COMPERR_WARNING );
+      onlyWarnings = ( theCompErrors[ i ].code == SMESH::COMPERR_WARNING ||
+                       theCompErrors[ i ].code == SMESH::COMPERR_NO_MESH_ON_SHAPE );
 
     // full or brief mesh info
     SMESH::long_array_var aRes = myMesh->GetMeshInfo();
@@ -1035,6 +1040,7 @@ void SMESHGUI_BaseComputeOp::showComputeResult( const bool theMemoryLack,
       }
       tbl->resizeColumnToContents( COL_ALGO );
       tbl->resizeColumnToContents( COL_SHAPE );
+      tbl->setWordWrap( true );
 
       if ( hasBadMesh )
         aCompDlg->myBadMeshBtn->show();
@@ -1142,13 +1148,13 @@ void SMESHGUI_BaseComputeOp::onShowBadMesh()
       SMESH::MeshPreviewStruct_var aMeshData = gen->GetBadInputElements(myMesh,curSub);
       vtkFloatingPointType aPointSize = SMESH::GetFloat("SMESH:node_size",3);
       vtkFloatingPointType aLineWidth = SMESH::GetFloat("SMESH:element_width",1);
-      // delete property !!!!!!!!!!
       vtkProperty* prop = vtkProperty::New();
       prop->SetLineWidth( aLineWidth * 3 );
       prop->SetPointSize( aPointSize * 3 );
       prop->SetColor( 250, 0, 250 );
       myBadMeshDisplayer->GetActor()->SetProperty( prop );
       myBadMeshDisplayer->SetData( aMeshData._retn() );
+      prop->Delete();
     }
   }
 }
@@ -2084,6 +2090,7 @@ void SMESHGUI_BaseComputeOp::showEvaluateResult(const SMESH::long_array& theRes,
       }
       tbl->resizeColumnToContents( COL_ALGO );
       tbl->resizeColumnToContents( COL_SHAPE );
+      tbl->setWordWrap( true );
 
       if ( hasBadMesh )
         aCompDlg->myBadMeshBtn->show();

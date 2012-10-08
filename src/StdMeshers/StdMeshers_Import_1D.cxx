@@ -134,7 +134,7 @@ namespace // INTERNAL STUFF
     _ListenerData(const StdMeshers_ImportSource1D* h, _ListenerDataType type=SRC_HYP):
       SMESH_subMeshEventListenerData(/*isDeletable=*/true), _srcHyp(h)
     {
-      myType = type; 
+      myType = type;
     }
   };
   //================================================================================
@@ -613,7 +613,7 @@ namespace // INTERNAL STUFF
 
 //=============================================================================
 /*!
- * Import elements from the other mesh 
+ * Import elements from the other mesh
  */
 //=============================================================================
 
@@ -637,8 +637,8 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
   subShapeIDs.insert( shapeID );
 
   // get nodes on vertices
-  list < SMESH_TNodeXYZ > vertexNodes; 
- list < SMESH_TNodeXYZ >::iterator vNIt;
+  list < SMESH_TNodeXYZ > vertexNodes;
+  list < SMESH_TNodeXYZ >::iterator vNIt;
   TopExp_Explorer vExp( theShape, TopAbs_VERTEX );
   for ( ; vExp.More(); vExp.Next() )
   {
@@ -670,7 +670,7 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
     SMDS_ElemIteratorPtr srcElems = srcGroup->GetElements();
     vector<const SMDS_MeshNode*> newNodes;
     SMDS_MeshNode *tmpNode = helper.AddNode(0,0,0);
-    double u;
+    double u = 0;
     while ( srcElems->more() ) // loop on group contents
     {
       const SMDS_MeshElement* edge = srcElems->next();
@@ -678,6 +678,10 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
       newNodes.resize( edge->NbNodes() );
       newNodes.back() = 0;
       SMDS_MeshElement::iterator node = edge->begin_nodes();
+      SMESH_TNodeXYZ a(edge->GetNode(0));
+      // --- define a tolerance relative to the length of an edge
+      double mytol = a.Distance(edge->GetNode(edge->NbNodes()-1))/25;
+      //MESSAGE("mytol = " << mytol);
       for ( unsigned i = 0; i < newNodes.size(); ++i, ++node )
       {
         TNodeNodeMap::iterator n2nIt = n2n->insert( make_pair( *node, (SMDS_MeshNode*)0 )).first;
@@ -701,7 +705,7 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
         {
           // find out if node lies on theShape
           tmpNode->setXYZ( (*node)->X(), (*node)->Y(), (*node)->Z());
-          if ( helper.CheckNodeU( geomEdge, tmpNode, u, 10 * edgeTol, /*force=*/true ))
+          if ( helper.CheckNodeU( geomEdge, tmpNode, u, mytol, /*force=*/true ))
           {
             SMDS_MeshNode* newNode = tgtMesh->AddNode( (*node)->X(), (*node)->Y(), (*node)->Z());
             n2nIt->second = newNode;
@@ -906,7 +910,7 @@ void StdMeshers_Import_1D::importMesh(const SMESH_Mesh*          srcMesh,
  */
 //=============================================================================
 
-void StdMeshers_Import_1D::setEventListener(SMESH_subMesh*             subMesh, 
+void StdMeshers_Import_1D::setEventListener(SMESH_subMesh*             subMesh,
                                             StdMeshers_ImportSource1D* sourceHyp)
 {
   if ( sourceHyp )

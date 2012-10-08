@@ -42,7 +42,7 @@ typedef struct
   int nbElems;
 } ListElemByNodesType; // TODO resize for polyhedrons
 
-class DownIdType
+class SMDS_EXPORT DownIdType
 {
 public:
   DownIdType(int a, unsigned char b) :
@@ -64,7 +64,7 @@ struct DownIdCompare
   }
 };
 
-class SMDS_Downward
+class SMDS_EXPORT SMDS_Downward
 {
   friend class SMDS_UnstructuredGrid;
   friend class SMDS_Down2D;
@@ -109,7 +109,7 @@ protected:
   static std::vector<int> _cellDimension; //!< conversion table: type --> dimension
 };
 
-class SMDS_Down1D: public SMDS_Downward
+class SMDS_EXPORT SMDS_Down1D: public SMDS_Downward
 {
   friend class SMDS_UnstructuredGrid;
 public:
@@ -140,7 +140,7 @@ protected:
   std::vector<int> _upCellIndex; //!< compacted storage after connectivity calculation
 };
 
-class SMDS_Down2D: public SMDS_Downward
+class SMDS_EXPORT SMDS_Down2D: public SMDS_Downward
 {
   friend class SMDS_UnstructuredGrid;
   friend class SMDS_Down1D;
@@ -171,7 +171,7 @@ protected:
   int _nbNodes; //!< number of nodes in a face
 };
 
-class SMDS_Down3D: public SMDS_Downward
+class SMDS_EXPORT SMDS_Down3D: public SMDS_Downward
 {
   friend class SMDS_UnstructuredGrid;
 public:
@@ -188,7 +188,7 @@ protected:
   int FindFaceByNodes(int cellId, ElemByNodesType& faceByNodes);
 };
 
-class SMDS_DownEdge: public SMDS_Down1D
+class SMDS_EXPORT SMDS_DownEdge: public SMDS_Down1D
 {
   friend class SMDS_UnstructuredGrid;
 public:
@@ -197,7 +197,7 @@ protected:
   ~SMDS_DownEdge();
 };
 
-class SMDS_DownQuadEdge: public SMDS_Down1D
+class SMDS_EXPORT SMDS_DownQuadEdge: public SMDS_Down1D
 {
   friend class SMDS_UnstructuredGrid;
 public:
@@ -206,7 +206,7 @@ protected:
   ~SMDS_DownQuadEdge();
 };
 
-class SMDS_DownTriangle: public SMDS_Down2D
+class SMDS_EXPORT SMDS_DownTriangle: public SMDS_Down2D
 {
   friend class SMDS_UnstructuredGrid;
 public:
@@ -217,7 +217,7 @@ protected:
   virtual void addDownCell(int cellId, int lowCellId, unsigned char aType); //!< Id's are downward connectivity id's
 };
 
-class SMDS_DownQuadTriangle: public SMDS_Down2D
+class SMDS_EXPORT SMDS_DownQuadTriangle: public SMDS_Down2D
 {
   friend class SMDS_UnstructuredGrid;
 public:
@@ -228,7 +228,7 @@ protected:
   virtual void addDownCell(int cellId, int lowCellId, unsigned char aType); //!< Id's are downward connectivity id's
 };
 
-class SMDS_DownQuadrangle: public SMDS_Down2D
+class SMDS_EXPORT SMDS_DownQuadrangle: public SMDS_Down2D
 {
   friend class SMDS_UnstructuredGrid;
 public:
@@ -239,7 +239,7 @@ protected:
   virtual void addDownCell(int cellId, int lowCellId, unsigned char aType); //!< Id's are downward connectivity id's
 };
 
-class SMDS_DownQuadQuadrangle: public SMDS_Down2D
+class SMDS_EXPORT SMDS_DownQuadQuadrangle: public SMDS_Down2D
 {
   friend class SMDS_UnstructuredGrid;
 public:
@@ -266,7 +266,7 @@ protected:
 //protected:
 //};
 
-class SMDS_DownTetra: public SMDS_Down3D
+class SMDS_EXPORT SMDS_DownTetra: public SMDS_Down3D
 {
   friend class SMDS_UnstructuredGrid;
 public:
@@ -278,7 +278,7 @@ protected:
   virtual void computeFacesWithNodes(int cellId, ListElemByNodesType& facesWithNodes);
 };
 
-class SMDS_DownQuadTetra: public SMDS_Down3D
+class SMDS_EXPORT SMDS_DownQuadTetra: public SMDS_Down3D
 {
   friend class SMDS_UnstructuredGrid;
 public:
@@ -290,7 +290,7 @@ protected:
   virtual void computeFacesWithNodes(int cellId, ListElemByNodesType& facesWithNodes);
 };
 
-class SMDS_DownPyramid: public SMDS_Down3D
+class SMDS_EXPORT SMDS_DownPyramid: public SMDS_Down3D
 {
   friend class SMDS_UnstructuredGrid;
 public:
@@ -302,7 +302,7 @@ protected:
   virtual void computeFacesWithNodes(int cellId, ListElemByNodesType& facesWithNodes);
 };
 
-class SMDS_DownQuadPyramid: public SMDS_Down3D
+class SMDS_EXPORT SMDS_DownQuadPyramid: public SMDS_Down3D
 {
   friend class SMDS_UnstructuredGrid;
 public:
@@ -314,7 +314,7 @@ protected:
   virtual void computeFacesWithNodes(int cellId, ListElemByNodesType& facesWithNodes);
 };
 
-class SMDS_DownPenta: public SMDS_Down3D
+class SMDS_EXPORT SMDS_DownPenta: public SMDS_Down3D
 {
   friend class SMDS_UnstructuredGrid;
 public:
@@ -326,7 +326,7 @@ protected:
   virtual void computeFacesWithNodes(int cellId, ListElemByNodesType& facesWithNodes);
 };
 
-class SMDS_DownQuadPenta: public SMDS_Down3D
+class SMDS_EXPORT SMDS_DownQuadPenta: public SMDS_Down3D
 {
   friend class SMDS_UnstructuredGrid;
 public:
@@ -338,7 +338,7 @@ protected:
   virtual void computeFacesWithNodes(int cellId, ListElemByNodesType& facesWithNodes);
 };
 
-class SMDS_DownHexa: public SMDS_Down3D
+class SMDS_EXPORT SMDS_DownHexa: public SMDS_Down3D
 {
   friend class SMDS_UnstructuredGrid;
 public:
@@ -350,7 +350,7 @@ protected:
   virtual void computeFacesWithNodes(int cellId, ListElemByNodesType& facesWithNodes);
 };
 
-class SMDS_DownQuadHexa: public SMDS_Down3D
+class SMDS_EXPORT SMDS_DownQuadHexa: public SMDS_Down3D
 {
   friend class SMDS_UnstructuredGrid;
 public:
