@@ -2213,6 +2213,7 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
           SMESH_Mesh_i* anInitImpl = dynamic_cast<SMESH_Mesh_i*>( GetServant( anInitMesh ).in() );
           if ( anInitImpl ) {
             ::SMESH_Mesh& aInitLocMesh = anInitImpl->GetImpl();
+            aInitLocMesh.Load();
             SMESHDS_Mesh* anInitMeshDS = aInitLocMesh.GetMeshDS();
 
             TIDsMap nodesMap;
@@ -2309,7 +2310,7 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
                   }
                 }
               }
-            }//elems loop
+            } //elems loop
 
             // copy orphan nodes
             SMDS_NodeIteratorPtr  itNodes = anInitMeshDS->nodesIterator();
@@ -2411,8 +2412,8 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
             }
 
             // check that current group name and type don't have identical ones in union mesh
-            for (int i = 0; i < aListOfGroups->length(); i++) {
-              aGroup = aListOfGroups[i];
+            for (int iG = 0; iG < aListOfGroups->length(); iG++) {
+              aGroup = aListOfGroups[iG];
               aListOfNewGroups.clear();
               aGroupType = aGroup->GetType();
               aGroupName = aGroup->GetName();
