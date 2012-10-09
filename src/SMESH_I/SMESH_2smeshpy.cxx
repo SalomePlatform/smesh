@@ -1563,9 +1563,11 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
         if ( sameHyp )
         {
           addCmd = *cmd;
-          addCmd->Clear();
-          theCommand->Clear();
-          cmd = addHypCmds.erase( cmd );
+          cmd    = addHypCmds.erase( cmd );
+          if ( !theGen->IsToKeepAllCommands() ) {
+            addCmd->Clear();
+            theCommand->Clear();
+          }
         }
         else
         {
@@ -1574,7 +1576,7 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
       }
     }
     Handle(_pyHypothesis) hyp = theGen->FindHyp( hypID );
-    if ( addCmd.IsNull() && !hypID.IsEmpty() ) { // hypo addition already wrapped
+    if ( !theCommand->IsEmpty() && !hypID.IsEmpty() ) {
       // RemoveHypothesis(geom, hyp) --> RemoveHypothesis( hyp, geom=0 )
       _pyID geom = theCommand->GetArg( 1 );
       theCommand->RemoveArgs();
