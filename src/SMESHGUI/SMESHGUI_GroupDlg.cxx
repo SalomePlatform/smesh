@@ -521,6 +521,22 @@ QString SMESHGUI_GroupDlg::GetDefaultName(const QString& theOperation)
   return aName;
 }
 
+void  SMESHGUI_GroupDlg::setDefaultName() const
+{
+  QString aResName;
+  _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+  int i=1;
+  QString aPrefix ="Group_";
+  _PTR(SObject) anObj;
+  do
+  {
+    aResName = aPrefix + QString::number( i++ );
+    anObj = aStudy->FindObject( aResName.toLatin1().data() );
+  }
+  while ( anObj );
+  myName->setText(aResName); 
+}
+
 //=================================================================================
 // function : Init()
 // purpose  :
@@ -543,6 +559,8 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_Mesh_ptr theMesh)
   SetAppropriateActor();
 
   setDefaultGroupColor();
+  setDefaultName();
+
 
   SALOME_ListIO aList;
   mySelectionMgr->selectedObjects( aList );
@@ -1112,7 +1130,7 @@ bool SMESHGUI_GroupDlg::onApply()
       SMESH::setFileType ( aMeshGroupSO, "COULEURGROUP" );
 
       /* init for the next operation */
-      myName->setText( "" );
+      setDefaultName();
       myElements->clear();
       myGroup         = SMESH::SMESH_Group::_nil();
       myGroupOnGeom   = SMESH::SMESH_GroupOnGeom::_nil();

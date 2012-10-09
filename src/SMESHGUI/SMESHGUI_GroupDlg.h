@@ -141,7 +141,7 @@ private:
   
   void                          setGroupQColor( const QColor& );
   QColor                        getGroupQColor() const;
-  
+  void                          setDefaultName() const;
   void                          setDefaultGroupColor();
 
   void                          setIsApplyAndClose( const bool theFlag );
