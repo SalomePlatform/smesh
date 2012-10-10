@@ -329,7 +329,7 @@ bool SMESH_MesherHelper::IsMedium(const SMDS_MeshNode*      node,
 TopoDS_Shape SMESH_MesherHelper::GetSubShapeByNode(const SMDS_MeshNode* node,
                                                    const SMESHDS_Mesh*  meshDS)
 {
-  int shapeID = node->getshapeId();
+  int shapeID = node ? node->getshapeId() : 0;
   if ( 0 < shapeID && shapeID <= meshDS->MaxShapeIndex() )
     return meshDS->IndexToShape( shapeID );
   else
