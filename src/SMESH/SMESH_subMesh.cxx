@@ -1258,7 +1258,19 @@ static void cleanSubMesh( SMESH_subMesh * subMesh )
 
 bool SMESH_subMesh::ComputeStateEngine(int event)
 {
-  _computeError.reset();
+  switch ( event ) {
+  case MODIF_ALGO_STATE:
+  case COMPUTE:
+    //case COMPUTE_CANCELED:
+  case CLEAN:
+    //case SUBMESH_COMPUTED:
+    //case SUBMESH_RESTORED:
+    //case SUBMESH_LOADED:
+    //case MESH_ENTITY_REMOVED:
+    //case CHECK_COMPUTE_STATE:
+    _computeError.reset(); break;
+  default:;
+  }
 
   //MESSAGE("SMESH_subMesh::ComputeStateEngine");
   //SCRUTE(_computeState);
