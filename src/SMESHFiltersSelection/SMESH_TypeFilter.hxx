@@ -34,14 +34,14 @@ class SUIT_DataOwner;
 class SMESHFILTERSSELECTION_EXPORT SMESH_TypeFilter : public SUIT_SelectionFilter
 {
 public:
-  SMESH_TypeFilter (MeshObjectType theType);
+  SMESH_TypeFilter (SMESH::MeshObjectType theType);
   ~SMESH_TypeFilter();
 
   virtual bool isOk (const SUIT_DataOwner*) const;
-  MeshObjectType type() const;
+  SMESH::MeshObjectType type() const;
 
 protected:
-  MeshObjectType myType;
+  SMESH::MeshObjectType myType;
 };
 
 #endif

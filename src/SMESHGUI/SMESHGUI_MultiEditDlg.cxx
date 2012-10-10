@@ -998,12 +998,12 @@ void SMESHGUI_MultiEditDlg::setSelectionMode()
   if (mySubmeshChk->isChecked()) {
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
       aViewWindow->SetSelectionMode(ActorSelection);
-    mySelectionMgr->installFilter(new SMESH_TypeFilter(SUBMESH));
+    mySelectionMgr->installFilter(new SMESH_TypeFilter(SMESH::SUBMESH));
   }
   else if (myGroupChk->isChecked()) {
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
       aViewWindow->SetSelectionMode(ActorSelection);
-    mySelectionMgr->installFilter(new SMESH_TypeFilter(GROUP));
+    mySelectionMgr->installFilter(new SMESH_TypeFilter(SMESH::GROUP));
   }
 
   if (entityType()) {

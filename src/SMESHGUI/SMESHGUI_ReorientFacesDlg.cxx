@@ -401,22 +401,22 @@ SUIT_SelectionFilter* SMESHGUI_ReorientFacesOp::createFilter( const int what ) c
   case EObject:
     {
       QList<SUIT_SelectionFilter*> filters;
-      filters.append( new SMESH_TypeFilter( MESH ));
-      filters.append( new SMESH_TypeFilter( SUBMESH_FACE ));
-      filters.append( new SMESH_TypeFilter( GROUP_FACE ));
+      filters.append( new SMESH_TypeFilter( SMESH::MESH ));
+      filters.append( new SMESH_TypeFilter( SMESH::SUBMESH_FACE ));
+      filters.append( new SMESH_TypeFilter( SMESH::GROUP_FACE ));
       return new SMESH_LogicalFilter( filters, SMESH_LogicalFilter::LO_OR );
     }
   case EPoint:
     {
       QList<SUIT_SelectionFilter*> filters;
-      filters.append( new SMESH_TypeFilter( IDSOURCE ));
+      filters.append( new SMESH_TypeFilter( SMESH::IDSOURCE ));
       filters.append( new SMESH_NumberFilter( "GEOM",TopAbs_VERTEX, 1, TopAbs_VERTEX ));
       return new SMESH_LogicalFilter( filters, SMESH_LogicalFilter::LO_OR );
     }
   case EFace:
   case EDirection:
     {
-      return new SMESH_TypeFilter( IDSOURCE );
+      return new SMESH_TypeFilter( SMESH::IDSOURCE );
     }
   }
   return NULL;

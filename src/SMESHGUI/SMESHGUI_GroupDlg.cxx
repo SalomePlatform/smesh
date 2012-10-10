@@ -444,7 +444,7 @@ void SMESHGUI_GroupDlg::initDialog( bool create)
   mySMESHGUI->SetState(800);
 
   mySelectionMode = grpNoSelection;
-  myMeshFilter = new SMESH_TypeFilter(MESH);
+  myMeshFilter = new SMESH_TypeFilter(SMESH::MESH);
   mySubMeshFilter = new SMESH_LogicalFilter(QList<SUIT_SelectionFilter*>(),
                                             SMESH_LogicalFilter::LO_OR,
                                             /*takeOwnership=*/true);
@@ -835,15 +835,15 @@ void SMESHGUI_GroupDlg::setSelectionMode (int theMode)
 
       SMESH_TypeFilter* f = 0;
       switch (myTypeId) {
-      case grpNodeSelection:   f = new SMESH_TypeFilter(SUBMESH); break;
-      case grpEdgeSelection:   f = new SMESH_TypeFilter(SUBMESH_EDGE); break;
-      case grpFaceSelection:   f = new SMESH_TypeFilter(SUBMESH_FACE); break;
-      case grpVolumeSelection: f = new SMESH_TypeFilter(SUBMESH_SOLID); break;
-      default:                 f = new SMESH_TypeFilter(SUBMESH);
+      case grpNodeSelection:   f = new SMESH_TypeFilter(SMESH::SUBMESH); break;
+      case grpEdgeSelection:   f = new SMESH_TypeFilter(SMESH::SUBMESH_EDGE); break;
+      case grpFaceSelection:   f = new SMESH_TypeFilter(SMESH::SUBMESH_FACE); break;
+      case grpVolumeSelection: f = new SMESH_TypeFilter(SMESH::SUBMESH_SOLID); break;
+      default:                 f = new SMESH_TypeFilter(SMESH::SUBMESH);
       }
       QList<SUIT_SelectionFilter*> filtList;
       filtList.append( f );
-      filtList.append( new SMESH_TypeFilter(SUBMESH_COMPOUND));
+      filtList.append( new SMESH_TypeFilter(SMESH::SUBMESH_COMPOUND));
       mySubMeshFilter->setFilters( filtList );
 
       mySelectionMgr->installFilter( mySubMeshFilter );
@@ -855,12 +855,12 @@ void SMESHGUI_GroupDlg::setSelectionMode (int theMode)
 
       SMESH_TypeFilter* f = 0;
       switch (myTypeId) {
-      case grpNodeSelection:   f = new SMESH_TypeFilter(GROUP_NODE); break;
-      case grpBallSelection:   f = new SMESH_TypeFilter(GROUP_BALL); break;
-      case grpEdgeSelection:   f = new SMESH_TypeFilter(GROUP_EDGE); break;
-      case grpFaceSelection:   f = new SMESH_TypeFilter(GROUP_FACE); break;
-      case grpVolumeSelection: f = new SMESH_TypeFilter(GROUP_VOLUME); break;
-      default:                 f = new SMESH_TypeFilter(GROUP);
+      case grpNodeSelection:   f = new SMESH_TypeFilter(SMESH::GROUP_NODE); break;
+      case grpBallSelection:   f = new SMESH_TypeFilter(SMESH::GROUP_BALL); break;
+      case grpEdgeSelection:   f = new SMESH_TypeFilter(SMESH::GROUP_EDGE); break;
+      case grpFaceSelection:   f = new SMESH_TypeFilter(SMESH::GROUP_FACE); break;
+      case grpVolumeSelection: f = new SMESH_TypeFilter(SMESH::GROUP_VOLUME); break;
+      default:                 f = new SMESH_TypeFilter(SMESH::GROUP);
       }
       QList<SUIT_SelectionFilter*> filtList;
       filtList.append( f );

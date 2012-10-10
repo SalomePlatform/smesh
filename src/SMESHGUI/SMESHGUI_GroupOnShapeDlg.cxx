@@ -419,7 +419,7 @@ SUIT_SelectionFilter* SMESHGUI_GroupOnShapeOp::createFilter( const int theId ) c
   if ( theId == _ELEM_GEOM || theId == _NODE_GEOM )
     return new GEOM_SelectionFilter( (SalomeApp_Study*)study(), true );
   else if ( theId == _MESH )
-    return new SMESH_TypeFilter( MESH );
+    return new SMESH_TypeFilter( SMESH::MESH );
   else
     return ( SUIT_SelectionFilter*) 0;
 }

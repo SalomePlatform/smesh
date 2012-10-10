@@ -176,7 +176,7 @@ void SMESHGUI_DeleteGroupDlg::Init ()
   connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(onClose()));
 
   // set selection mode
-  mySelectionMgr->installFilter(new SMESH_TypeFilter(GROUP));
+  mySelectionMgr->installFilter(new SMESH_TypeFilter(SMESH::GROUP));
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);
   onSelectionDone();
@@ -323,7 +323,7 @@ void SMESHGUI_DeleteGroupDlg::enterEvent (QEvent*)
   setEnabled(true);
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);
-  mySelectionMgr->installFilter(new SMESH_TypeFilter (GROUP));
+  mySelectionMgr->installFilter(new SMESH_TypeFilter (SMESH::GROUP));
 }
 
 //=================================================================================

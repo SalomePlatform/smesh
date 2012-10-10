@@ -30,7 +30,7 @@
 #include <SALOMEconfig.h>
 #include CORBA_CLIENT_HEADER(SMESH_Gen)
 
-SMESH_TypeFilter::SMESH_TypeFilter (MeshObjectType theType)
+SMESH_TypeFilter::SMESH_TypeFilter (SMESH::MeshObjectType theType)
 {
   myType = theType;
 }
@@ -88,7 +88,7 @@ bool SMESH_TypeFilter::isOk (const SUIT_DataOwner* theDataOwner) const
 
     switch (myType)
     {
-      case HYPOTHESIS:
+      case SMESH::HYPOTHESIS:
         {
           if      (aLevel == 2 && (objFather->Tag() == SMESH::Tag_HypothesisRoot))
             // hypo definition
@@ -101,7 +101,7 @@ bool SMESH_TypeFilter::isOk (const SUIT_DataOwner* theDataOwner) const
             Ok = true;
           break;
         }
-      case ALGORITHM:
+      case SMESH::ALGORITHM:
         {
           if      (aLevel == 2 && (objFather->Tag() == SMESH::Tag_AlgorithmsRoot))
             // algo definition
@@ -114,13 +114,13 @@ bool SMESH_TypeFilter::isOk (const SUIT_DataOwner* theDataOwner) const
             Ok = true;
           break;
         }
-      case MESH:
+      case SMESH::MESH:
         {
           if (aLevel == 1 && (obj->Tag() >= SMESH::Tag_FirstMeshRoot))
             Ok = true;
           break;
         }
-      case SUBMESH:
+      case SMESH::SUBMESH:
         {
           // see SMESH_Gen_i.cxx for tag numbers
           if (aLevel == 3 && (objFather->Tag() >= SMESH::Tag_FirstSubMesh &&
@@ -128,7 +128,7 @@ bool SMESH_TypeFilter::isOk (const SUIT_DataOwner* theDataOwner) const
             Ok = true;
           break;
         }
-      case MESHorSUBMESH:
+      case SMESH::MESHorSUBMESH:
         {
           if (aLevel == 1 && (obj->Tag() >= SMESH::Tag_FirstMeshRoot))
             Ok = true; // mesh
@@ -137,82 +137,82 @@ bool SMESH_TypeFilter::isOk (const SUIT_DataOwner* theDataOwner) const
             Ok = true;
           break;
         }
-      case SUBMESH_VERTEX: // Label "SubMeshes on vertexes"
+      case SMESH::SUBMESH_VERTEX: // Label "SubMeshes on vertexes"
         {
           if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnVertex))
             Ok = true;
           break;
         }
-      case SUBMESH_EDGE:
+      case SMESH::SUBMESH_EDGE:
         {
           if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnEdge))
             Ok = true;
           break;
         }
-      case SUBMESH_FACE:
+      case SMESH::SUBMESH_FACE:
         {
           if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnFace))
             Ok = true;
           break;
         }
-      case SUBMESH_SOLID:
+      case SMESH::SUBMESH_SOLID:
         {
           if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnSolid))
             Ok = true;
           break;
         }
-      case SUBMESH_COMPOUND:
+      case SMESH::SUBMESH_COMPOUND:
         {
           if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnCompound))
             Ok = true;
           break;
         }
-      case GROUP:
+      case SMESH::GROUP:
         {
           if (aLevel == 3 && (objFather->Tag() >= SMESH::Tag_FirstGroup))
             Ok = true;
           break;
         }
-      case GROUP_NODE:
+      case SMESH::GROUP_NODE:
         {
           if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_NodeGroups))
             Ok = true;
           break;
         }
-      case GROUP_EDGE:
+      case SMESH::GROUP_EDGE:
         {
           if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_EdgeGroups))
             Ok = true;
           break;
         }
-      case GROUP_FACE:
+      case SMESH::GROUP_FACE:
         {
           if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_FaceGroups))
             Ok = true;
           break;
         }
-      case GROUP_VOLUME:
+      case SMESH::GROUP_VOLUME:
         {
           if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_VolumeGroups))
             Ok = true;
           break;
         }
-      case GROUP_0D:
+      case SMESH::GROUP_0D:
         {
           if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_0DElementsGroups))
             Ok = true;
           break;
         }
-      case GROUP_BALL:
+      case SMESH::GROUP_BALL:
         {
           if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_BallElementsGroups))
             Ok = true;
           break;
         }
-      case IDSOURCE:
+      case SMESH::IDSOURCE:
         {
-          Ok = ( SMESH_TypeFilter(MESHorSUBMESH).isOk( theDataOwner ) ||
-                 SMESH_TypeFilter(GROUP)        .isOk( theDataOwner ));
+          Ok = ( SMESH_TypeFilter(SMESH::MESHorSUBMESH).isOk( theDataOwner ) ||
+                 SMESH_TypeFilter(SMESH::GROUP)        .isOk( theDataOwner ));
           break;
         }
     }
@@ -220,7 +220,7 @@ bool SMESH_TypeFilter::isOk (const SUIT_DataOwner* theDataOwner) const
   return Ok;
 }
 
-MeshObjectType SMESH_TypeFilter::type() const
+SMESH::MeshObjectType SMESH_TypeFilter::type() const
 {
   return myType;
 }

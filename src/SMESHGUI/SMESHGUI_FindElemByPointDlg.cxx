@@ -242,8 +242,8 @@ SMESHGUI_FindElemByPointOp::SMESHGUI_FindElemByPointOp()
   myHelpFileName = "find_element_by_point_page.html";
 
   QList<SUIT_SelectionFilter*> filters;
-  filters.append( new SMESH_TypeFilter( MESH ) );
-  filters.append( new SMESH_TypeFilter( GROUP ) );
+  filters.append( new SMESH_TypeFilter( SMESH::MESH ) );
+  filters.append( new SMESH_TypeFilter( SMESH::GROUP ) );
   myFilter = new SMESH_LogicalFilter( filters, SMESH_LogicalFilter::LO_OR );
 
   myPreview = new SMESH::MeshPreviewStruct();

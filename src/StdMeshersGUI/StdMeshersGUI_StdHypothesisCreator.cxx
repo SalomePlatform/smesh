@@ -1006,7 +1006,7 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     customWidgets()->append( newObjRefParamWdg( filterForShapeOfDim( 1 ),
                                                h->GetSourceEdge()));
     item.myName = tr( "SMESH_SOURCE_MESH" ); p.append( item );
-    customWidgets()->append( newObjRefParamWdg( new SMESH_TypeFilter( MESH ),
+    customWidgets()->append( newObjRefParamWdg( new SMESH_TypeFilter( SMESH::MESH ),
                                                h->GetSourceMesh()));
     item.myName = tr( "SMESH_SOURCE_VERTEX" ); p.append( item );
     customWidgets()->append( newObjRefParamWdg( filterForShapeOfDim( 0 ),
@@ -1024,7 +1024,7 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     customWidgets()->append( newObjRefParamWdg( filterForShapeOfDim( 2 ),
                                                h->GetSourceFace()));
     item.myName = tr( "SMESH_SOURCE_MESH" ); p.append( item );
-    customWidgets()->append( newObjRefParamWdg( new SMESH_TypeFilter( MESH ),
+    customWidgets()->append( newObjRefParamWdg( new SMESH_TypeFilter( SMESH::MESH ),
                                                h->GetSourceMesh()));
     item.myName = tr( "SMESH_SOURCE_VERTEX1" ); p.append( item );
     customWidgets()->append( newObjRefParamWdg( filterForShapeOfDim( 0 ),
@@ -1048,7 +1048,7 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     customWidgets()->append( newObjRefParamWdg( filterForShapeOfDim( 3, TopAbs_FACE, 6, true ),
                                                h->GetSource3DShape()));
     item.myName = tr( "SMESH_SOURCE_MESH" ); p.append( item );
-    customWidgets()->append( newObjRefParamWdg( new SMESH_TypeFilter( MESH ),
+    customWidgets()->append( newObjRefParamWdg( new SMESH_TypeFilter( SMESH::MESH ),
                                                h->GetSourceMesh()));
     item.myName = tr( "SMESH_SOURCE_VERTEX1" ); p.append( item );
     customWidgets()->append( newObjRefParamWdg( filterForShapeOfDim( 0 ),
@@ -1073,7 +1073,7 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     h->GetCopySourceMesh(toCopyMesh, toCopyGroups);
 
     item.myName = tr( "SMESH_SOURCE_EDGES" ); p.append( item );
-    customWidgets()->append( newObjRefParamWdg( new SMESH_TypeFilter( GROUP_EDGE ), 
+    customWidgets()->append( newObjRefParamWdg( new SMESH_TypeFilter( SMESH::GROUP_EDGE ), 
                                                 groupEntries));
 
     item.myName = tr( "SMESH_COPY_MESH" ); p.append( item );
@@ -1098,7 +1098,7 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     h->GetCopySourceMesh(toCopyMesh, toCopyGroups);
 
     item.myName = tr( "SMESH_SOURCE_FACES" ); p.append( item );
-    customWidgets()->append( newObjRefParamWdg( new SMESH_TypeFilter( GROUP_FACE ), 
+    customWidgets()->append( newObjRefParamWdg( new SMESH_TypeFilter( SMESH::GROUP_FACE ), 
                                                 groupEntries));
 
     item.myName = tr( "SMESH_COPY_MESH" ); p.append( item );

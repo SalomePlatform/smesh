@@ -206,7 +206,7 @@ void SMESHGUI_BuildCompoundDlg::Init()
 
   myMesh = SMESH::SMESH_Mesh::_nil();
 
-  myMeshFilter = new SMESH_TypeFilter (MESH);
+  myMeshFilter = new SMESH_TypeFilter (SMESH::MESH);
 
   myMeshArray = new SMESH::mesh_array();
 

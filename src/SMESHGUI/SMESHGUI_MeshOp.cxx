@@ -297,9 +297,9 @@ SUIT_SelectionFilter* SMESHGUI_MeshOp::createFilter( const int theId ) const
     return new GEOM_SelectionFilter( (SalomeApp_Study*)study(), true );
   }
   else if ( theId == SMESHGUI_MeshDlg::Obj && !myToCreate )
-    return new SMESH_TypeFilter( MESHorSUBMESH );
+    return new SMESH_TypeFilter( SMESH::MESHorSUBMESH );
   else if ( theId == SMESHGUI_MeshDlg::Mesh )
-    return new SMESH_TypeFilter( MESH );
+    return new SMESH_TypeFilter( SMESH::MESH );
   else
     return 0;
 }

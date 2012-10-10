@@ -1577,7 +1577,7 @@
 
 
   bool CheckOIType(const Handle(SALOME_InteractiveObject) & theIO,
-                   MeshObjectType                           theType,
+                   SMESH::MeshObjectType                           theType,
                    const QString                            theInTypeName,
                    QString &                                theOutTypeName)
   {
@@ -1609,11 +1609,11 @@
 
     QString aTypeName;
     if (
-        CheckOIType ( theIO, HYPOTHESIS,    "Hypothesis", aTypeName ) ||
-        CheckOIType ( theIO, ALGORITHM,     "Algorithm",  aTypeName ) ||
-        CheckOIType ( theIO, MESH,          "Mesh",       aTypeName ) ||
-        CheckOIType ( theIO, SUBMESH,       "SubMesh",    aTypeName ) ||
-        CheckOIType ( theIO, GROUP,         "Group",      aTypeName )
+        CheckOIType ( theIO, SMESH::HYPOTHESIS,    "Hypothesis", aTypeName ) ||
+        CheckOIType ( theIO, SMESH::ALGORITHM,     "Algorithm",  aTypeName ) ||
+        CheckOIType ( theIO, SMESH::MESH,          "Mesh",       aTypeName ) ||
+        CheckOIType ( theIO, SMESH::SUBMESH,       "SubMesh",    aTypeName ) ||
+        CheckOIType ( theIO, SMESH::GROUP,         "Group",      aTypeName )
         )
       return aTypeName;
 
@@ -3997,17 +3997,17 @@ void SMESHGUI::initialize( CAM_Application* app )
   QString OB = "'ObjectBrowser'",
           View = "'" + SVTK_Viewer::Type() + "'",
           pat = "'%1'",
-          mesh    = pat.arg( SMESHGUI_Selection::typeName( MESH ) ),
-          group   = pat.arg( SMESHGUI_Selection::typeName( GROUP ) ),
-          hypo    = pat.arg( SMESHGUI_Selection::typeName( HYPOTHESIS ) ),
-          algo    = pat.arg( SMESHGUI_Selection::typeName( ALGORITHM ) ),
+          mesh    = pat.arg( SMESHGUI_Selection::typeName( SMESH::MESH ) ),
+          group   = pat.arg( SMESHGUI_Selection::typeName( SMESH::GROUP ) ),
+          hypo    = pat.arg( SMESHGUI_Selection::typeName( SMESH::HYPOTHESIS ) ),
+          algo    = pat.arg( SMESHGUI_Selection::typeName( SMESH::ALGORITHM ) ),
           elems   = QString( "'%1' '%2' '%3' '%4' '%5' '%6'" ).
-                       arg( SMESHGUI_Selection::typeName( SUBMESH_VERTEX ) ).
-                       arg( SMESHGUI_Selection::typeName( SUBMESH_EDGE ) ).
-                       arg( SMESHGUI_Selection::typeName( SUBMESH_FACE ) ).
-                       arg( SMESHGUI_Selection::typeName( SUBMESH_SOLID ) ).
-                       arg( SMESHGUI_Selection::typeName( SUBMESH_COMPOUND ) ).
-                       arg( SMESHGUI_Selection::typeName( SUBMESH ) ),
+                       arg( SMESHGUI_Selection::typeName( SMESH::SUBMESH_VERTEX ) ).
+                       arg( SMESHGUI_Selection::typeName( SMESH::SUBMESH_EDGE ) ).
+                       arg( SMESHGUI_Selection::typeName( SMESH::SUBMESH_FACE ) ).
+                       arg( SMESHGUI_Selection::typeName( SMESH::SUBMESH_SOLID ) ).
+                       arg( SMESHGUI_Selection::typeName( SMESH::SUBMESH_COMPOUND ) ).
+                       arg( SMESHGUI_Selection::typeName( SMESH::SUBMESH ) ),
           subMesh = elems,
           mesh_part = mesh + " " + subMesh + " " + group,
           mesh_group = mesh + " " + group,
@@ -6396,11 +6396,11 @@ bool SMESHGUI::renameAllowed( const QString& entry) const {
 
   // check type to prevent renaming of inappropriate objects
   int aType = SMESHGUI_Selection::type(qPrintable(entry), SMESH::GetActiveStudyDocument());
-  if (aType == MESH || aType == GROUP ||
-      aType == SUBMESH || aType == SUBMESH_COMPOUND ||
-      aType == SUBMESH_SOLID || aType == SUBMESH_FACE ||
-      aType == SUBMESH_EDGE || aType == SUBMESH_VERTEX ||
-      aType == HYPOTHESIS || aType == ALGORITHM)
+  if (aType == SMESH::MESH || aType == SMESH::GROUP ||
+      aType == SMESH::SUBMESH || aType == SMESH::SUBMESH_COMPOUND ||
+      aType == SMESH::SUBMESH_SOLID || aType == SMESH::SUBMESH_FACE ||
+      aType == SMESH::SUBMESH_EDGE || aType == SMESH::SUBMESH_VERTEX ||
+      aType == SMESH::HYPOTHESIS || aType == SMESH::ALGORITHM)
     return true;
 
   return false;
@@ -6443,11 +6443,11 @@ bool SMESHGUI::renameObject( const QString& entry, const QString& name) {
       aName = anAttr;
       // check type to prevent renaming of inappropriate objects
       int aType = SMESHGUI_Selection::type( qPrintable(entry), SMESH::GetActiveStudyDocument() );
-      if (aType == MESH || aType == GROUP ||
-          aType == SUBMESH || aType == SUBMESH_COMPOUND ||
-          aType == SUBMESH_SOLID || aType == SUBMESH_FACE ||
-          aType == SUBMESH_EDGE || aType == SUBMESH_VERTEX ||
-          aType == HYPOTHESIS || aType == ALGORITHM) {
+      if (aType == SMESH::MESH || aType == SMESH::GROUP ||
+          aType == SMESH::SUBMESH || aType == SMESH::SUBMESH_COMPOUND ||
+          aType == SMESH::SUBMESH_SOLID || aType == SMESH::SUBMESH_FACE ||
+          aType == SMESH::SUBMESH_EDGE || aType == SMESH::SUBMESH_VERTEX ||
+          aType == SMESH::HYPOTHESIS || aType == SMESH::ALGORITHM) {
         if ( !name.isEmpty() ) {
           SMESHGUI::GetSMESHGen()->SetName(obj->GetIOR().c_str(), qPrintable(name) );
 
