@@ -1237,6 +1237,7 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face&    face1,
 {
   bool OK = false;
   list< int > nbEInW1, nbEInW2;
+  list< TopoDS_Edge >::iterator edgeIt;
   int i_ok_wire_algo = -1;
   for ( int outer_wire_algo = 0; outer_wire_algo < 2 && !OK; ++outer_wire_algo )
   {
@@ -1257,7 +1258,6 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face&    face1,
 
     bool reverse = false;
 
-    list< TopoDS_Edge >::iterator edgeIt;
     if ( !VV1[1].IsSame( TopExp::LastVertex( edges1.front(), true ))) {
       reverse = true;
       edgeIt = --edges1.end();
@@ -1363,6 +1363,27 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face&    face1,
         }
         // prepare to the next wire loop
         edge1Beg = edge1End, edge2Beg = edge2End;
+      }
+    }
+  }
+
+  const int nbEdges = nbEInW1.front();
+  if ( OK && nbEdges == 2 )
+  {
+    // if a wire includes 2 edges, it's impossible to associate them using
+    // topological information only. Try to use length of edges for association.
+    double l1[2], l2[2];
+    edgeIt = edges1.begin();
+    l1[0] = SMESH_Algo::EdgeLength( *edgeIt++ );
+    l1[1] = SMESH_Algo::EdgeLength( *edgeIt++ );
+    if ( Abs( l1[0] - l1[1] ) > 0.1 * Max( l1[0], l1[1] ) )
+    {
+      edgeIt = edges2.begin();
+      l2[0] = SMESH_Algo::EdgeLength( *edgeIt++ );
+      l2[1] = SMESH_Algo::EdgeLength( *edgeIt++ );
+      if (( l1[0] < l1[1] ) != ( l2[0] < l2[1] ))
+      {
+        Reverse( edges2, nbEdges );
       }
     }
   }
