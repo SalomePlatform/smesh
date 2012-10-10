@@ -2215,7 +2215,7 @@ TopoDS_Edge StdMeshers_PrismAsBlock::TSideFace::GetEdge(const int iEdge) const
   // find edge by 2 vertices
   TopoDS_Shape V1 = edge;
   TopoDS_Shape V2 = myHelper->GetSubShapeByNode( node, meshDS );
-  if ( V2.ShapeType() == TopAbs_VERTEX && !V2.IsSame( V1 ))
+  if ( !V2.IsNull() && V2.ShapeType() == TopAbs_VERTEX && !V2.IsSame( V1 ))
   {
     TopoDS_Shape ancestor = myHelper->GetCommonAncestor( V1, V2, *myHelper->GetMesh(), TopAbs_EDGE);
     if ( !ancestor.IsNull() )
