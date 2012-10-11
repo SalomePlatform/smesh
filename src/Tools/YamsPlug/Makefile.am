@@ -1,4 +1,4 @@
-# Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2007-2012  EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,15 +17,25 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-#  File   : Makefile.in
-#  Author : Patrick GOLDBRONN (CEA)
-#  Modified by : Alexander BORODIN (OCN) - autotools usage
-#  Module : SMESH
-#  $Header$
-#
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
-SUBDIRS = MeshCut padder YamsPlug
 
 salomeplugins_PYTHON = \
-	smesh_plugins.py
+	YamsPlugDialog.py\
+	monYamsPlugDialog.py\
+        ViewText.py\
+        monViewText.py\
+	yamsplug_plugin.py 
+
+UIPY_FILES = YamsPlugDialog.py  ViewText.py 
+
+if SMESH_ENABLE_GUI
+  nodist_salomescript_SCRIPTS = $(UIPY_FILES)
+endif
+
+CLEANFILES = $(UIPY_FILES)
+
+EXTRA_DIST += $(UIPY_FILES:%.py=%.ui)
+
+%.py : %.ui
+	$(PYUIC) $< -o $@

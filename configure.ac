@@ -574,6 +574,7 @@ AC_OUTPUT([ \
   src/SMESH_PY/Makefile \
   src/Tools/Makefile \
   src/Tools/MeshCut/Makefile \
+  src/Tools/YamsPlug/Makefile \
   src/Tools/padder/Makefile \
   src/Tools/padder/meshjob/Makefile \
   src/Tools/padder/meshjob/idl/Makefile \
