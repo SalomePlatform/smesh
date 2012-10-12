@@ -26,7 +26,7 @@ salomeplugins_PYTHON = \
 	monViewText.py\
 	yamsplug_plugin.py 
 
-nodist_salomeplugins_PYTHON += $(UIPY_FILES)
+nodist_salomeplugins_PYTHON = $(UIPY_FILES)
 
 CLEANFILES = $(UIPY_FILES)
 
