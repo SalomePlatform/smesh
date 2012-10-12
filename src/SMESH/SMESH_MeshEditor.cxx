@@ -5891,7 +5891,7 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
   vector< TOldNewGroup* > orderedOldNewGroups; // in order of old groups
   // group names
   set< string > groupNames;
-  
+
   SMESH_Mesh::GroupIteratorPtr groupIt = GetMesh()->GetGroups();
   if ( !groupIt->more() ) return newGroupIDs;
 
@@ -6657,7 +6657,7 @@ void SMESH_ElementSearcherImpl::findOuterBoundary(const SMDS_MeshElement* outerF
  * \brief Find elements of given type where the given point is IN or ON.
  *        Returns nb of found elements and elements them-selves.
  *
- * 'ALL' type means elements of any type excluding nodes, balls and 0D elements 
+ * 'ALL' type means elements of any type excluding nodes, balls and 0D elements
  */
 //=======================================================================
 
@@ -6734,7 +6734,7 @@ SMESH_ElementSearcherImpl::FindClosestTo( const gp_Pnt&       point,
     }
     TIDSortedElemSet suspectElems;
     _ebbTree->getElementsNearPoint( point, suspectElems );
-    
+
     if ( suspectElems.empty() && _ebbTree->maxSize() > 0 )
     {
       gp_Pnt boxCenter = 0.5 * ( _ebbTree->getBox().CornerMin() +
@@ -7242,7 +7242,7 @@ namespace
                       POS_ALL = POS_LEFT | POS_RIGHT | POS_VERTEX };
   struct PointPos
   {
-    PositionName _name; 
+    PositionName _name;
     int          _index; // index of vertex or segment
 
     PointPos( PositionName n, int i=-1 ): _name(n), _index(i) {}
@@ -11779,8 +11779,11 @@ void SMESH_MeshEditor::CreateHoleSkin(double radius,
       groupDS = group->GetGroupDS();
       if ( !groupDS || groupDS->IsEmpty() ) continue;
       std::string grpName = group->GetName();
+      //MESSAGE("grpName=" << grpName);
       if (grpName == groupName)
         break;
+      else
+        groupDS = 0;
     }
 
   bool isNodeGroup = false;
@@ -11794,6 +11797,7 @@ void SMESH_MeshEditor::CreateHoleSkin(double radius,
 
   if (nodesCoords.size() > 0)
     isNodeCoords = true; // a list o nodes given by their coordinates
+  //MESSAGE("---" << isNodeGroup << " " << isNodeCoords);
 
   // --- define groups to build
 
