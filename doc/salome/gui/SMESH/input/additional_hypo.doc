@@ -66,8 +66,14 @@ actually the hexahedrons.
 <li><b>Stretch factor</b> - defines the growth factor of prism height
 from the mesh boundary inwards.</li>
 <li><b>Faces without layers</b> - defines geometrical faces on which
-prism layers should not be constructed. By default the prism layers
-are not constructed on geometrical faces shared by solids.</li>
+  prism layers should not be constructed. By default the prism layers
+  are not constructed on geometrical faces shared by solids.
+  \note A mesh shown in the 3D Viewer can prevent selection of faces,
+  in this case just hide the mesh. To prevent a long waiting when a
+  geometry with many faces is displayed, a number of faces shown at a time
+  is limited by the value of "Sub-shapes preview chunk size" preference
+  (in Preferences/Mesh/General tab).
+</li>
 </ul>
 
 \image html viscous_layers_mesh.png A group containing viscous layer prisms.
