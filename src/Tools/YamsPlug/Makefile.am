@@ -19,18 +19,14 @@
 
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
+UIPY_FILES = YamsPlugDialog.py  ViewText.py 
 
 salomeplugins_PYTHON = \
 	monYamsPlugDialog.py\
 	monViewText.py\
 	yamsplug_plugin.py 
 
-UIPY_FILES = YamsPlugDialog.py  ViewText.py 
-
-if SMESH_ENABLE_GUI
-  nodist_salomescript_SCRIPTS = $(UIPY_FILES)
-  salomeplugins_PYTHON += $(UIPY_FILES)
-endif
+nodist_salomeplugins_PYTHON += $(UIPY_FILES)
 
 CLEANFILES = $(UIPY_FILES)
 
