@@ -98,6 +98,12 @@ number of segments on each edge</li>
 <li><b>Area precision</b> - allows to adjust input precision of mesh element area.</li>
 <li><b>Volume precision</b> - allows to adjust input precision of mesh element volume.</li>
 </ul>
+<li><b>Preview</b></li>
+<ul>
+<li><b>Sub-shapes preview chunk size</b> - allows to limit the number
+of preview sub-shapes shown in the hypotheses creation dialog boxes,
+for example "Reverse Edges" parameter of \ref number_of_segments_anchor "Number of segments" hypothesis. 
+</ul>
 <li><b>Python Dump</b></li>
 <ul>
 <li><b>Historical python dump</b> checkbox allows switching between 

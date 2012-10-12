@@ -77,7 +77,7 @@ bool SMESH_PreviewActorsCollection::Init( const TopoDS_Shape& theShape,
   myMapOfShapes.Clear();
   myIndices.clear();
   myCurrentChunk = 0;
-  myChunkSize = mgr->integerValue( "SMESH", "preview_actor_chunk_size", 100 );
+  myChunkSize = qMax(1, mgr->integerValue( "SMESH", "preview_actor_chunk_size", 100 ) );
 
   if ( theShape.IsNull() )
     return false;
