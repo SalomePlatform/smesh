@@ -59,7 +59,9 @@ typedef boost::shared_ptr< SMDS_Iterator<SMESH_subMesh*> > SMESH_subMeshIterator
 class SMESH_EXPORT SMESH_subMesh
 {
  public:
-  SMESH_subMesh(int Id, SMESH_Mesh * father, SMESHDS_Mesh * meshDS,
+  SMESH_subMesh(int                  Id,
+                SMESH_Mesh *         father,
+                SMESHDS_Mesh *       meshDS,
                 const TopoDS_Shape & aSubShape);
   virtual ~ SMESH_subMesh();
 
@@ -67,7 +69,8 @@ class SMESH_EXPORT SMESH_subMesh
 
   SMESH_Mesh* GetFather() { return _father; }
   
-  SMESHDS_SubMesh * GetSubMeshDS();
+  SMESHDS_SubMesh *       GetSubMeshDS();
+  const SMESHDS_SubMesh * GetSubMeshDS() const;
 
   SMESHDS_SubMesh* CreateSubMeshDS();
   // Explicit SMESHDS_SubMesh creation method, required for persistence mechanism
