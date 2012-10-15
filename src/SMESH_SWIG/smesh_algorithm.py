@@ -283,6 +283,29 @@ class Mesh_Algorithm:
         hyp.SetIgnoreFaces(ignoreFaces)
         return hyp
 
+    ## Defines "ViscousLayers2D" hypothesis to give parameters of layers of quadrilateral
+    #  elements to build near mesh boundary. This hypothesis can be used by several 2D algorithms:
+    #  NETGEN 2D, NETGEN 1D-2D, Quadrangle (mapping), MEFISTO, BLSURF
+    #  @param thickness total thickness of layers of quadrilaterals
+    #  @param numberOfLayers number of layers
+    #  @param stretchFactor factor (>1.0) of growth of layer thickness towards inside of mesh
+    #  @param ignoreEdges list of geometrical edge (or their ids) not to generate layers on
+    #  @ingroup l3_hypos_additi
+    def ViscousLayers2D(self, thickness, numberOfLayers, stretchFactor, ignoreEdges=[]):
+        if not isinstance(self.algo, SMESH._objref_SMESH_2D_Algo):
+            raise TypeError, "ViscousLayers2D are supported by 2D algorithms only"
+        if not "ViscousLayers2D" in self.GetCompatibleHypothesis():
+            raise TypeError, "ViscousLayers2D are not supported by %s"%self.algo.GetName()
+        if ignoreEdges and isinstance( ignoreEdges[0], geompyDC.GEOM._objref_GEOM_Object ):
+            ignoreEdges = [ self.mesh.geompyD.GetSubShapeID(self.mesh.geom, f) for f in ignoreEdges ]
+        hyp = self.Hypothesis("ViscousLayers2D",
+                              [thickness, numberOfLayers, stretchFactor, ignoreEdges])
+        hyp.SetTotalThickness(thickness)
+        hyp.SetNumberLayers(numberOfLayers)
+        hyp.SetStretchFactor(stretchFactor)
+        hyp.SetIgnoreEdges(ignoreEdges)
+        return hyp
+
     ## Transform a list of ether edges or tuples (edge, 1st_vertex_of_edge)
     #  into a list acceptable to SetReversedEdges() of some 1D hypotheses
     #  @ingroup l3_hypos_1dhyps
