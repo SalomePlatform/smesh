@@ -6103,7 +6103,7 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
         }
         else if ( tree->NbNodes() ) // put a tree to the treeMap
         {
-          const Bnd_B3d& box = tree->getBox();
+          const Bnd_B3d& box = *tree->getBox();
           double sqDist = thePnt.SquareDistance( 0.5 * ( box.CornerMin() + box.CornerMax() ));
           pair<TDistTreeMap::iterator,bool> it_in = treeMap.insert( make_pair( sqDist, tree ));
           if ( !it_in.second ) // not unique distance to box center
@@ -6115,7 +6115,7 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
       TDistTreeMap::iterator sqDist_tree = treeMap.begin();
       if ( treeMap.size() > 5 ) {
         SMESH_OctreeNode* closestTree = sqDist_tree->second;
-        const Bnd_B3d& box = closestTree->getBox();
+        const Bnd_B3d& box = *closestTree->getBox();
         double limit = sqrt( sqDist_tree->first ) + sqrt ( box.SquareExtent() );
         sqLimit = limit * limit;
       }
@@ -6200,7 +6200,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
 
   protected:
     ElementBndBoxTree():_size(0) {}
-    SMESH_Octree* allocateOctreeChild() const { return new ElementBndBoxTree; }
+    SMESH_Octree* newChild() const { return new ElementBndBoxTree; }
     void          buildChildrenData();
     Bnd_B3d*      buildRootBox();
   private:
@@ -6222,7 +6222,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
   //================================================================================
 
   ElementBndBoxTree::ElementBndBoxTree(const SMDS_Mesh& mesh, SMDSAbs_ElementType elemType, SMDS_ElemIteratorPtr theElemIt, double tolerance)
-    :SMESH_Octree( new SMESH_Octree::Limit( MaxLevel, /*minSize=*/0. ))
+    :SMESH_Octree( new SMESH_TreeLimit( MaxLevel, /*minSize=*/0. ))
   {
     int nbElems = mesh.GetMeshInfo().NbElements( elemType );
     _elements.reserve( nbElems );
@@ -6273,7 +6273,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
     {
       for (int j = 0; j < 8; j++)
       {
-        if ( !_elements[i]->IsOut( myChildren[j]->getBox() ))
+        if ( !_elements[i]->IsOut( *myChildren[j]->getBox() ))
         {
           _elements[i]->_refCount++;
           ((ElementBndBoxTree*)myChildren[j])->_elements.push_back( _elements[i]);
@@ -6304,7 +6304,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
   void ElementBndBoxTree::getElementsNearPoint( const gp_Pnt&     point,
                                                 TIDSortedElemSet& foundElems)
   {
-    if ( getBox().IsOut( point.XYZ() ))
+    if ( getBox()->IsOut( point.XYZ() ))
       return;
 
     if ( isLeaf() )
@@ -6329,7 +6329,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
   void ElementBndBoxTree::getElementsNearLine( const gp_Ax1&     line,
                                                TIDSortedElemSet& foundElems)
   {
-    if ( getBox().IsOut( line ))
+    if ( getBox()->IsOut( line ))
       return;
 
     if ( isLeaf() )
@@ -6355,7 +6355,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
                                                 const double      radius,
                                                 TIDSortedElemSet& foundElems)
   {
-    if ( getBox().IsOut( center, radius ))
+    if ( getBox()->IsOut( center, radius ))
       return;
 
     if ( isLeaf() )
@@ -6737,10 +6737,10 @@ SMESH_ElementSearcherImpl::FindClosestTo( const gp_Pnt&       point,
 
     if ( suspectElems.empty() && _ebbTree->maxSize() > 0 )
     {
-      gp_Pnt boxCenter = 0.5 * ( _ebbTree->getBox().CornerMin() +
-                                 _ebbTree->getBox().CornerMax() );
+      gp_Pnt boxCenter = 0.5 * ( _ebbTree->getBox()->CornerMin() +
+                                 _ebbTree->getBox()->CornerMax() );
       double radius;
-      if ( _ebbTree->getBox().IsOut( point.XYZ() ))
+      if ( _ebbTree->getBox()->IsOut( point.XYZ() ))
         radius = point.Distance( boxCenter ) - 0.5 * _ebbTree->maxSize();
       else
         radius = _ebbTree->maxSize() / pow( 2., _ebbTree->getHeight()) / 2;
@@ -8156,32 +8156,28 @@ private:
 //purpose  : Return list of group of elements built on the same nodes.
 //           Search among theElements or in the whole mesh if theElements is empty
 //=======================================================================
-void SMESH_MeshEditor::FindEqualElements(set<const SMDS_MeshElement*> & theElements,
-                                         TListOfListOfElementsID &      theGroupsOfElementsID)
+void SMESH_MeshEditor::FindEqualElements(TIDSortedElemSet &        theElements,
+                                         TListOfListOfElementsID & theGroupsOfElementsID)
 {
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();
 
-  typedef set<const SMDS_MeshElement*> TElemsSet;
   typedef map< SortableElement, int > TMapOfNodeSet;
   typedef list<int> TGroupOfElems;
 
-  TElemsSet elems;
   if ( theElements.empty() )
   { // get all elements in the mesh
     SMDS_ElemIteratorPtr eIt = GetMeshDS()->elementsIterator();
     while ( eIt->more() )
-      elems.insert( elems.end(), eIt->next());
+      theElements.insert( theElements.end(), eIt->next());
   }
-  else
-    elems = theElements;
 
   vector< TGroupOfElems > arrayOfGroups;
   TGroupOfElems groupOfElems;
   TMapOfNodeSet mapOfNodeSet;
 
-  TElemsSet::iterator elemIt = elems.begin();
-  for ( int i = 0, j=0; elemIt != elems.end(); ++elemIt, ++j ) {
+  TIDSortedElemSet::iterator elemIt = theElements.begin();
+  for ( int i = 0, j=0; elemIt != theElements.end(); ++elemIt, ++j ) {
     const SMDS_MeshElement* curElem = *elemIt;
     SortableElement SE(curElem);
     int ind = -1;
@@ -8254,8 +8250,8 @@ void SMESH_MeshEditor::MergeElements(TListOfListOfElementsID & theGroupsOfElemen
 
 void SMESH_MeshEditor::MergeEqualElements()
 {
-  set<const SMDS_MeshElement*> aMeshElements; /* empty input -
-                                                 to merge equal elements in the whole mesh */
+  TIDSortedElemSet aMeshElements; /* empty input ==
+                                     to merge equal elements in the whole mesh */
   TListOfListOfElementsID aGroupsOfElementsID;
   FindEqualElements(aMeshElements, aGroupsOfElementsID);
   MergeElements(aGroupsOfElementsID);

@@ -350,15 +350,6 @@ public:
                        SMESH_Mesh*        theTargetMesh=0);
   // Move or copy theElements applying theTrsf to their nodes
 
-
-  typedef std::list< std::list< const SMDS_MeshNode* > > TListOfListOfNodes;
-
-  void FindCoincidentNodes (TIDSortedNodeSet &   theNodes,
-                            const double         theTolerance,
-                            TListOfListOfNodes & theGroupsOfNodes);
-  // Return list of group of nodes close to each other within theTolerance.
-  // Search among theNodes or in the whole mesh if theNodes is empty.
-
   /*!
    * \brief Return SMESH_NodeSearcher. The caller is responsible for deleteing it
    */
@@ -369,6 +360,33 @@ public:
    */
   SMESH_ElementSearcher* GetElementSearcher();
   SMESH_ElementSearcher* GetElementSearcher( SMDS_ElemIteratorPtr elemIt );
+
+  typedef std::list< std::list< const SMDS_MeshNode* > > TListOfListOfNodes;
+
+  void FindCoincidentNodes (TIDSortedNodeSet &   theNodes,
+                            const double         theTolerance,
+                            TListOfListOfNodes & theGroupsOfNodes);
+  // Return list of group of nodes close to each other within theTolerance.
+  // Search among theNodes or in the whole mesh if theNodes is empty.
+
+  void MergeNodes (TListOfListOfNodes & theNodeGroups);
+  // In each group, the cdr of nodes are substituted by the first one
+  // in all elements.
+
+  typedef std::list< std::list< int > > TListOfListOfElementsID;
+
+  void FindEqualElements(TIDSortedElemSet &        theElements,
+                         TListOfListOfElementsID & theGroupsOfElementsID);
+  // Return list of group of elements build on the same nodes.
+  // Search among theElements or in the whole mesh if theElements is empty.
+
+  void MergeElements(TListOfListOfElementsID & theGroupsOfElementsID);
+  // In each group remove all but first of elements.
+
+  void MergeEqualElements();
+  // Remove all but one of elements built on the same nodes.
+  // Return nb of successfully merged groups.
+
   /*!
    * \brief Return true if the point is IN or ON of the element
    */
@@ -381,24 +399,6 @@ public:
                     std::vector<int>&                        quantities) const;
   // Split face, defined by <faceNodes>, into several faces by repeating nodes.
   // Is used by MergeNodes()
-
-  void MergeNodes (TListOfListOfNodes & theNodeGroups);
-  // In each group, the cdr of nodes are substituted by the first one
-  // in all elements.
-
-  typedef std::list< std::list< int > > TListOfListOfElementsID;
-
-  void FindEqualElements(std::set<const SMDS_MeshElement*> & theElements,
-                         TListOfListOfElementsID &           theGroupsOfElementsID);
-  // Return list of group of elements build on the same nodes.
-  // Search among theElements or in the whole mesh if theElements is empty.
-
-  void MergeElements(TListOfListOfElementsID & theGroupsOfElementsID);
-  // In each group remove all but first of elements.
-
-  void MergeEqualElements();
-  // Remove all but one of elements built on the same nodes.
-  // Return nb of successfully merged groups.
 
   static bool CheckFreeBorderNodes(const SMDS_MeshNode* theNode1,
                                    const SMDS_MeshNode* theNode2,
