@@ -149,6 +149,17 @@ SMESHDS_SubMesh * SMESH_subMesh::GetSubMeshDS()
  */
 //=============================================================================
 
+const SMESHDS_SubMesh * SMESH_subMesh::GetSubMeshDS() const
+{
+  return ((SMESH_subMesh*) this )->GetSubMeshDS();
+}
+
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
+
 SMESHDS_SubMesh* SMESH_subMesh::CreateSubMeshDS()
 {
   if ( !GetSubMeshDS() ) {
@@ -2078,7 +2089,8 @@ void SMESH_subMesh::SetEventListener(EventListener*     listener,
  */
 //================================================================================
 
-void SMESH_subMesh::setEventListener(EventListener* listener, EventListenerData* data)
+void SMESH_subMesh::setEventListener(EventListener*     listener,
+                                     EventListenerData* data)
 {
   map< EventListener*, EventListenerData* >::iterator l_d =
     _eventListeners.find( listener );
@@ -2088,8 +2100,20 @@ void SMESH_subMesh::setEventListener(EventListener* listener, EventListenerData*
       delete curData;
     l_d->second = data;
   }
-  else 
+  else
+  {
+    for ( l_d = _eventListeners.begin(); l_d != _eventListeners.end(); ++l_d )
+      if ( listener->GetName() == l_d->first->GetName() )
+      {
+        EventListenerData* curData = l_d->second;
+        if ( curData && curData != data && curData->IsDeletable() )
+          delete curData;
+        if ( l_d->first->IsDeletable() )
+          delete l_d->first;
+        _eventListeners.erase( l_d );
+      }
     _eventListeners.insert( make_pair( listener, data ));
+  }
 }
 
 //================================================================================
@@ -2140,16 +2164,18 @@ void SMESH_subMesh::notifyListenersOnEvent( const int         event,
                                             SMESH_Hypothesis* hyp)
 {
   map< EventListener*, EventListenerData* >::iterator l_d = _eventListeners.begin();
-  for ( ; l_d != _eventListeners.end(); ++l_d )
+  for ( ; l_d != _eventListeners.end();  )
   {
-    std::pair< EventListener*, EventListenerData* > li_da = *l_d; /* copy to enable removal
-                                                                     of a listener from
-                                                                     _eventListeners by
-                                                                     its ProcessEvent() */
+    std::pair< EventListener*, EventListenerData* > li_da = *l_d++; /* copy to enable removal
+                                                                       of a listener from
+                                                                       _eventListeners by
+                                                                       its ProcessEvent() */
     if ( li_da.first->myBusySM.insert( this ).second )
     {
+      const size_t nbListenersBefore = _eventListeners.size();
       li_da.first->ProcessEvent( event, eventType, this, li_da.second, hyp );
-      li_da.first->myBusySM.erase( this );
+      if ( nbListenersBefore == _eventListeners.size() )
+        li_da.first->myBusySM.erase( this ); // a listener hopefully not removed
     }
   }
 }
