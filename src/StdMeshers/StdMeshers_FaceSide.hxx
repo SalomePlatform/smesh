@@ -30,6 +30,8 @@
 
 #include "SMESH_StdMeshers.hxx"
 
+#include "SMESH_ProxyMesh.hxx"
+
 #include <Geom2d_Curve.hxx>
 #include <GeomAdaptor_Curve.hxx>
 #include <TopoDS_Edge.hxx>
@@ -47,23 +49,11 @@ class Adaptor3d_Curve;
 class BRepAdaptor_CompCurve;
 class TopoDS_Face;
 struct SMESH_ComputeError;
-
-typedef struct uvPtStruct
-{
-  double param;
-  //int    curvIndex;
-  double normParam;
-  double u; // original 2d parameter
-  double v;
-  double x; // 2d parameter, normalized [0,1]
-  double y;
-  const SMDS_MeshNode * node;
-} UVPtStruct;
-
 class StdMeshers_FaceSide;
+
+typedef boost::shared_ptr< SMESH_ComputeError >  TError;
 typedef boost::shared_ptr< StdMeshers_FaceSide > StdMeshers_FaceSidePtr;
 typedef std::vector< StdMeshers_FaceSidePtr >    TSideVector;
-typedef boost::shared_ptr< SMESH_ComputeError >  TError;
 
 //================================================================================
 /*!
@@ -78,11 +68,12 @@ public:
   /*!
    * \brief Wrap one edge
    */
-  StdMeshers_FaceSide(const TopoDS_Face& theFace,
-                      const TopoDS_Edge& theEdge,
-                      SMESH_Mesh*        theMesh,
-                      const bool         theIsForward,
-                      const bool         theIgnoreMediumNodes);
+  StdMeshers_FaceSide(const TopoDS_Face&   theFace,
+                      const TopoDS_Edge&   theEdge,
+                      SMESH_Mesh*          theMesh,
+                      const bool           theIsForward,
+                      const bool           theIgnoreMediumNodes,
+                      SMESH_ProxyMesh::Ptr theProxyMesh = SMESH_ProxyMesh::Ptr());
   /*!
    * \brief Wrap several edges. Edges must be properly ordered and oriented.
    */
@@ -90,7 +81,8 @@ public:
                       std::list<TopoDS_Edge>& theEdges,
                       SMESH_Mesh*             theMesh,
                       const bool              theIsForward,
-                      const bool              theIgnoreMediumNodes);
+                      const bool              theIgnoreMediumNodes,
+                      SMESH_ProxyMesh::Ptr    theProxyMesh = SMESH_ProxyMesh::Ptr());
   /*!
    * \brief Simulate a side from a vertex using data from other FaceSide
    */
@@ -100,11 +92,11 @@ public:
   /*!
    * \brief Return wires of a face as StdMeshers_FaceSide's
    */
-  static TSideVector GetFaceWires(const TopoDS_Face& theFace,
-                                  SMESH_Mesh &       theMesh,
-                                  const bool         theIgnoreMediumNodes,
-                                  TError &           theError);  
-
+  static TSideVector GetFaceWires(const TopoDS_Face&   theFace,
+                                  SMESH_Mesh &         theMesh,
+                                  const bool           theIgnoreMediumNodes,
+                                  TError &             theError,
+                                  SMESH_ProxyMesh::Ptr theProxyMesh = SMESH_ProxyMesh::Ptr());
   /*!
    * \brief Change orientation of side geometry
    */
@@ -120,7 +112,7 @@ public:
   /*!
    * \brief Return mesh
    */
-  SMESH_Mesh* GetMesh() const { return myMesh; }
+  SMESH_Mesh* GetMesh() const { return myProxyMesh->GetMesh(); }
   /*!
    * \brief Return true if there are vertices without nodes
    */
@@ -133,15 +125,15 @@ public:
     * Missing nodes are allowed only on internal vertices.
     * For a closed side, the 1st point repeats at end
    */
-  const std::vector<UVPtStruct>& GetUVPtStruct(bool isXConst =0, double constValue =0) const;
+  const UVPtStructVec& GetUVPtStruct(bool isXConst =0, double constValue =0) const;
   /*!
    * \brief Simulates detailed data on nodes
     * \param isXConst - true if normalized parameter X is constant
     * \param constValue - constant parameter value
    */
-  const std::vector<UVPtStruct>& SimulateUVPtStruct(int    nbSeg,
-                                                    bool   isXConst   = 0,
-                                                    double constValue = 0) const;
+  const UVPtStructVec& SimulateUVPtStruct(int    nbSeg,
+                                          bool   isXConst   = 0,
+                                          double constValue = 0) const;
   /*!
    * \brief Return nodes in the order they encounter while walking along the side.
     * For a closed side, the 1st point repeats at end
@@ -184,14 +176,6 @@ public:
    */
   TopoDS_Vertex LastVertex(int i=-1) const;
   /*!
-   * \brief Return first normalized parameter of the i-the edge (count starts from zero)
-   */
-  inline double FirstParameter(int i) const;
-  /*!
-   * \brief Return ast normalized parameter of the i-the edge (count starts from zero)
-   */
-  inline double LastParameter(int i) const;
-  /*!
    * \brief Return side length
    */
   double Length() const { return myLength; }
@@ -204,8 +188,44 @@ public:
   
   void dump(const char* msg=0) const;
   
+  /*!
+   * \brief Return ID of i-th wrapped edge (count starts from zero)
+   */
+  inline int EdgeID(int i) const;
+  /*!
+   * \brief Return p-curve of i-th wrapped edge (count starts from zero)
+   */
+  inline Handle(Geom2d_Curve) Curve2d(int i) const;
+  /*!
+   * \brief Return first normalized parameter of the i-the edge (count starts from zero)
+   */
+  inline double FirstParameter(int i) const;
+  /*!
+   * \brief Return last normalized parameter of the i-the edge (count starts from zero)
+   */
+  inline double LastParameter(int i) const;
+  /*!
+   * \brief Return first parameter of the i-the edge (count starts from zero).
+   *        EDGE orientation is taken into account
+   */
+  inline double FirstU(int i) const;
+  /*!
+   * \brief Return last parameter of the i-the edge (count starts from zero).
+   *        EDGE orientation is taken into account
+   */
+  inline double LastU(int i) const;
+  /*!
+   * \brief Return length of i-th wrapped edge (count starts from zero)
+   */
+  inline double EdgeLength(int i) const;
+  /*!
+   * \brief Return orientation of i-th wrapped edge (count starts from zero)
+   */
+  inline bool IsReversed(int i) const;
 
 protected:
+
+  void reverseProxySubmesh( const TopoDS_Edge& E );
 
   // DON't FORGET to update Reverse() when adding one more vector!
   std::vector<uvPtStruct>           myPoints, myFalsePoints;
@@ -219,7 +239,7 @@ protected:
   std::vector<double>               myIsUniform;
   double                            myLength;
   int                               myNbPonits, myNbSegments;
-  SMESH_Mesh*                       myMesh;
+  SMESH_ProxyMesh::Ptr              myProxyMesh;
   bool                              myMissingVertexNodes, myIgnoreMediumNodes;
   gp_Pnt2d                          myDefaultPnt2d;
 };
@@ -265,7 +285,7 @@ inline double StdMeshers_FaceSide::Parameter(double U, TopoDS_Edge & edge) const
 
 inline double StdMeshers_FaceSide::FirstParameter(int i) const
 {
-  return i==0 ? 0. : i<myNormPar.size() ? myNormPar[i-1] : 1.;
+  return i==0 ? 0. : i<(int)myNormPar.size() ? myNormPar[i-1] : 1.;
 }
 
 //================================================================================
@@ -276,7 +296,73 @@ inline double StdMeshers_FaceSide::FirstParameter(int i) const
 
 inline double StdMeshers_FaceSide::LastParameter(int i) const
 {
-  return i<myNormPar.size() ? myNormPar[i] : 1;
+  return i < (int)myNormPar.size() ? myNormPar[i] : 1;
+}
+
+//================================================================================
+/*!
+ * \brief Return first parameter of the i-the edge
+ */
+//================================================================================
+
+inline double StdMeshers_FaceSide::FirstU(int i) const
+{
+  return myFirst[ i % myFirst.size() ];
+}
+
+//================================================================================
+/*!
+ * \brief Return last parameter of the i-the edge
+ */
+//================================================================================
+
+inline double StdMeshers_FaceSide::LastU(int i) const
+{
+  return myLast[ i % myLast.size() ];
+}
+
+//================================================================================
+  /*!
+   * \brief Return ID of i-th wrapped edge (count starts from zero)
+   */
+//================================================================================
+
+inline int StdMeshers_FaceSide::EdgeID(int i) const
+{
+  return myEdgeID[ i % myEdgeID.size() ];
+}
+
+//================================================================================
+/*!
+   * \brief Return p-curve of i-th wrapped edge (count starts from zero)
+   */
+//================================================================================
+
+inline Handle(Geom2d_Curve) StdMeshers_FaceSide::Curve2d(int i) const
+{
+  return myC2d[ i % myC2d.size() ];
+}
+
+//================================================================================
+/*!
+ * \brief Return length of i-th wrapped edge (count starts from zero)
+ */
+ //================================================================================
+
+inline double StdMeshers_FaceSide::EdgeLength(int i) const
+{
+  return myEdgeLength[ i % myEdgeLength.size() ];
+}
+
+//================================================================================
+/*!
+ * \brief Return orientation of i-th wrapped edge (count starts from zero)
+ */
+ //================================================================================
+
+inline bool StdMeshers_FaceSide::IsReversed(int i) const
+{
+  return myFirst[i] > myLast[i];
 }
 
 #endif
