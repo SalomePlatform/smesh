@@ -4450,18 +4450,8 @@ void SMESH_MeshEditor_i::FindEqualElements(SMESH::SMESH_IDSource_ptr      theObj
   SMESH::SMESH_GroupBase_var group = SMESH::SMESH_GroupBase::_narrow(theObject);
   if ( !(!group->_is_nil() && group->GetType() == SMESH::NODE) )
   {
-    typedef list<int> TListOfIDs;
-    set<const SMDS_MeshElement*> elems;
-    SMESH::long_array_var aElementsId = theObject->GetIDs();
-    SMESHDS_Mesh* aMesh = GetMeshDS();
-
-    for(int i = 0; i < aElementsId->length(); i++) {
-      CORBA::Long anID = aElementsId[i];
-      const SMDS_MeshElement * elem = aMesh->FindElement(anID);
-      if (elem) {
-        elems.insert(elem);
-      }
-    }
+    TIDSortedElemSet elems;
+    idSourceToSet( theObject, GetMeshDS(), elems, SMDSAbs_All, /*emptyIfIsMesh=*/true);
 
     ::SMESH_MeshEditor::TListOfListOfElementsID aListOfListOfElementsID;
     myEditor.FindEqualElements( elems, aListOfListOfElementsID );
@@ -4469,15 +4459,16 @@ void SMESH_MeshEditor_i::FindEqualElements(SMESH::SMESH_IDSource_ptr      theObj
     GroupsOfElementsID = new SMESH::array_of_long_array;
     GroupsOfElementsID->length( aListOfListOfElementsID.size() );
 
-    ::SMESH_MeshEditor::TListOfListOfElementsID::iterator arraysIt = aListOfListOfElementsID.begin();
-    for (CORBA::Long j = 0; arraysIt != aListOfListOfElementsID.end(); ++arraysIt, ++j) {
+    ::SMESH_MeshEditor::TListOfListOfElementsID::iterator arraysIt =
+        aListOfListOfElementsID.begin();
+    for (CORBA::Long j = 0; arraysIt != aListOfListOfElementsID.end(); ++arraysIt, ++j)
+    {
       SMESH::long_array& aGroup = (*GroupsOfElementsID)[ j ];
-      TListOfIDs& listOfIDs = *arraysIt;
+      list<int>&      listOfIDs = *arraysIt;
       aGroup.length( listOfIDs.size() );
-      TListOfIDs::iterator idIt = listOfIDs.begin();
-      for (int k = 0; idIt != listOfIDs.end(); ++idIt, ++k ) {
+      list<int>::iterator idIt = listOfIDs.begin();
+      for (int k = 0; idIt != listOfIDs.end(); ++idIt, ++k )
         aGroup[ k ] = *idIt;
-      }
     }
 
     TPythonDump() << "equal_elements = " << this << ".FindEqualElements( "
