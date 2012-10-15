@@ -27,19 +27,18 @@
 #ifndef _SMESH_QUADRANGLE_2D_HXX_
 #define _SMESH_QUADRANGLE_2D_HXX_
 
-#include "SMESH_StdMeshers.hxx"
-
-#include "StdMeshers_QuadrangleParams.hxx"
-
 #include "SMESH_Algo.hxx"
-#include "Utils_SALOME_Exception.hxx"
+#include "SMESH_ProxyMesh.hxx"
+#include "SMESH_StdMeshers.hxx"
+#include "StdMeshers_QuadrangleParams.hxx"
 
 #include <TopoDS_Face.hxx>
 
+class SMDS_MeshNode;
 class SMESH_Mesh;
 class SMESH_MesherHelper;
+class SMESH_ProxyMesh;
 class StdMeshers_FaceSide;
-class SMDS_MeshNode;
 struct uvPtStruct;
 
 
@@ -124,13 +123,15 @@ protected:
 
   bool myTrianglePreference;
 
-  int myTriaVertexID;
-
-  StdMeshers_QuadType myQuadType;
-
-  SMESH_MesherHelper* myHelper; // tool for working with quadratic elements
+  int  myTriaVertexID;
 
   bool myNeedSmooth;
+
+  StdMeshers_QuadType  myQuadType;
+
+  SMESH_MesherHelper*  myHelper; // tool for working with quadratic elements
+
+  SMESH_ProxyMesh::Ptr myProxyMesh;
 };
 
 #endif

@@ -20,11 +20,10 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
-//  File   : StdMeshers_ViscousLayers_i.cxx
+//  File   : StdMeshers_ViscousLayers2D_i.cxx
 //  Module : SMESH
 //
-#include "StdMeshers_ViscousLayers_i.hxx"
+#include "StdMeshers_ViscousLayers2D_i.hxx"
 
 #include "SMESH_Gen.hxx"
 #include "SMESH_Gen_i.hxx"
@@ -41,35 +40,35 @@ using namespace std;
 
 //=============================================================================
 /*!
- *  StdMeshers_ViscousLayers_i::StdMeshers_ViscousLayers_i
+ *  StdMeshers_ViscousLayers2D_i::StdMeshers_ViscousLayers2D_i
  *
  *  Constructor
  */
 //=============================================================================
 
-StdMeshers_ViscousLayers_i::StdMeshers_ViscousLayers_i( PortableServer::POA_ptr thePOA,
-                                                        int                     theStudyId,
-                                                        ::SMESH_Gen*            theGenImpl )
-  : SALOME::GenericObj_i( thePOA ), 
+StdMeshers_ViscousLayers2D_i::StdMeshers_ViscousLayers2D_i( PortableServer::POA_ptr thePOA,
+                                                            int                     theStudyId,
+                                                            ::SMESH_Gen*            theGenImpl )
+  : SALOME::GenericObj_i( thePOA ),
     SMESH_Hypothesis_i( thePOA )
 {
-  MESSAGE( "StdMeshers_ViscousLayers_i::StdMeshers_ViscousLayers_i" );
-  myBaseImpl = new ::StdMeshers_ViscousLayers( theGenImpl->GetANewId(),
-                                               theStudyId,
-                                               theGenImpl );
+  MESSAGE( "StdMeshers_ViscousLayers2D_i::StdMeshers_ViscousLayers2D_i" );
+  myBaseImpl = new ::StdMeshers_ViscousLayers2D( theGenImpl->GetANewId(),
+                                                 theStudyId,
+                                                 theGenImpl );
 }
 
 //=============================================================================
 /*!
- *  StdMeshers_ViscousLayers_i::~StdMeshers_ViscousLayers_i
+ *  StdMeshers_ViscousLayers2D_i::~StdMeshers_ViscousLayers2D_i
  *
  *  Destructor
  */
 //=============================================================================
 
-StdMeshers_ViscousLayers_i::~StdMeshers_ViscousLayers_i()
+StdMeshers_ViscousLayers2D_i::~StdMeshers_ViscousLayers2D_i()
 {
-  MESSAGE( "StdMeshers_ViscousLayers_i::~StdMeshers_ViscousLayers_i" );
+  MESSAGE( "StdMeshers_ViscousLayers2D_i::~StdMeshers_ViscousLayers2D_i" );
 }
 
 //================================================================================
@@ -78,15 +77,15 @@ StdMeshers_ViscousLayers_i::~StdMeshers_ViscousLayers_i()
  */
 //================================================================================
 
-void StdMeshers_ViscousLayers_i::SetIgnoreFaces(const ::SMESH::long_array& faceIDs)
+void StdMeshers_ViscousLayers2D_i::SetIgnoreEdges(const ::SMESH::long_array& edgeIDs)
 throw ( SALOME::SALOME_Exception )
 {
-  vector<int> ids( faceIDs.length() );
+  vector<int> ids( edgeIDs.length() );
   for ( unsigned i = 0; i < ids.size(); ++i )
-    if (( ids[i] = faceIDs[i] ) < 1 )
-      THROW_SALOME_CORBA_EXCEPTION( "Invalid face id", SALOME::BAD_PARAM );
+    if (( ids[i] = edgeIDs[i] ) < 1 )
+      THROW_SALOME_CORBA_EXCEPTION( "Invalid edge id", SALOME::BAD_PARAM );
   GetImpl()->SetBndShapesToIgnore( ids );
-  SMESH::TPythonDump() << _this() << ".SetIgnoreFaces( " << faceIDs << " )";
+  SMESH::TPythonDump() << _this() << ".SetIgnoreEdges( " << edgeIDs << " )";
 }
 
 //================================================================================
@@ -95,7 +94,7 @@ throw ( SALOME::SALOME_Exception )
  */
 //================================================================================
 
-SMESH::long_array* StdMeshers_ViscousLayers_i::GetIgnoreFaces()
+SMESH::long_array* StdMeshers_ViscousLayers2D_i::GetIgnoreEdges()
 {
   vector<int> idsVec = GetImpl()->GetBndShapesToIgnore();
   SMESH::long_array_var ids = new SMESH::long_array;
@@ -111,7 +110,7 @@ SMESH::long_array* StdMeshers_ViscousLayers_i::GetIgnoreFaces()
  */
 //================================================================================
 
-void StdMeshers_ViscousLayers_i::SetTotalThickness(::CORBA::Double thickness)
+void StdMeshers_ViscousLayers2D_i::SetTotalThickness(::CORBA::Double thickness)
 throw ( SALOME::SALOME_Exception )
 {
   if ( thickness < 1e-100 )
@@ -126,7 +125,7 @@ throw ( SALOME::SALOME_Exception )
  */
 //================================================================================
 
-::CORBA::Double StdMeshers_ViscousLayers_i::GetTotalThickness()
+::CORBA::Double StdMeshers_ViscousLayers2D_i::GetTotalThickness()
 {
   return GetImpl()->GetTotalThickness();
 }
@@ -138,7 +137,7 @@ throw ( SALOME::SALOME_Exception )
  */
 //================================================================================
 
-void StdMeshers_ViscousLayers_i::SetNumberLayers(::CORBA::Short nb)
+void StdMeshers_ViscousLayers2D_i::SetNumberLayers(::CORBA::Short nb)
 throw ( SALOME::SALOME_Exception )
 {
   if ( nb < 1 )
@@ -153,7 +152,7 @@ throw ( SALOME::SALOME_Exception )
  */
 //================================================================================
 
-::CORBA::Short StdMeshers_ViscousLayers_i::GetNumberLayers()
+::CORBA::Short StdMeshers_ViscousLayers2D_i::GetNumberLayers()
 {
   return CORBA::Short( GetImpl()->GetNumberLayers() );
 }
@@ -165,7 +164,7 @@ throw ( SALOME::SALOME_Exception )
  */
 //================================================================================
 
-void StdMeshers_ViscousLayers_i::SetStretchFactor(::CORBA::Double factor)
+void StdMeshers_ViscousLayers2D_i::SetStretchFactor(::CORBA::Double factor)
 throw ( SALOME::SALOME_Exception )
 {
   if ( factor < 1 )
@@ -181,7 +180,7 @@ throw ( SALOME::SALOME_Exception )
  */
 //================================================================================
 
-::CORBA::Double StdMeshers_ViscousLayers_i::GetStretchFactor()
+::CORBA::Double StdMeshers_ViscousLayers2D_i::GetStretchFactor()
 {
   return GetImpl()->GetStretchFactor();
 }
@@ -192,10 +191,10 @@ throw ( SALOME::SALOME_Exception )
  */
 //=============================================================================
 
-::StdMeshers_ViscousLayers* StdMeshers_ViscousLayers_i::GetImpl()
+::StdMeshers_ViscousLayers2D* StdMeshers_ViscousLayers2D_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_ViscousLayers_i::GetImpl" );
-  return ( ::StdMeshers_ViscousLayers* )myBaseImpl;
+  MESSAGE( "StdMeshers_ViscousLayers2D_i::GetImpl" );
+  return ( ::StdMeshers_ViscousLayers2D* )myBaseImpl;
 }
 
 //================================================================================
@@ -207,25 +206,20 @@ throw ( SALOME::SALOME_Exception )
  * Verify whether hypothesis supports given entity type (see SMESH::Dimension enumeration)
  */
 //================================================================================  
-CORBA::Boolean StdMeshers_ViscousLayers_i::IsDimSupported( SMESH::Dimension type )
+
+CORBA::Boolean StdMeshers_ViscousLayers2D_i::IsDimSupported( SMESH::Dimension type )
 {
-  return type == SMESH::DIM_3D;
+  return type == SMESH::DIM_2D;
 }
 
 //================================================================================
 /*!
- * \brief Return method name corresponding to index of variable parameter
+ * \brief Sets sub-mesh event listeners to clear sub-meshes of edges
+ * shrinked by viscous layers
  */
 //================================================================================
 
-std::string StdMeshers_ViscousLayers_i::getMethodOfParameter(const int paramIndex, int ) const
+void StdMeshers_ViscousLayers2D_i::UpdateAsMeshesRestored()
 {
-  // order of methods was defined by StdMeshersGUI_StdHypothesisCreator::storeParams()
-  switch ( paramIndex )
-  {
-  case 0: return "SetTotalThickness";
-  case 1: return "SetNumberLayers";
-  case 2: return "SetStretchFactor";
-  }
-  return "";
+  GetImpl()->RestoreListeners();
 }

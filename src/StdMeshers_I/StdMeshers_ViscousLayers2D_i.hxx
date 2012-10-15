@@ -20,36 +20,36 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  File   : StdMeshers_ViscousLayers_i.hxx
+//  File   : StdMeshers_ViscousLayers2D_i.hxx
 //  Module : SMESH
 //
-#ifndef _SMESH_ViscousLayers_I_HXX_
-#define _SMESH_ViscousLayers_I_HXX_
+#ifndef _SMESH_ViscousLayers2D_I_HXX_
+#define _SMESH_ViscousLayers2D_I_HXX_
 
 #include "SMESH_StdMeshers_I.hxx"
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
 
-#include "SMESH_Hypothesis_i.hxx"
-#include "StdMeshers_ViscousLayers.hxx"
+#include "StdMeshers_ViscousLayers_i.hxx"
+#include "StdMeshers_ViscousLayers2D.hxx"
 
 class SMESH_Gen;
 
-class STDMESHERS_I_EXPORT StdMeshers_ViscousLayers_i:
-  public virtual POA_StdMeshers::StdMeshers_ViscousLayers,
+class STDMESHERS_I_EXPORT StdMeshers_ViscousLayers2D_i:
+  public virtual POA_StdMeshers::StdMeshers_ViscousLayers2D,
   public virtual SMESH_Hypothesis_i
 {
  public:
   // Constructor
-  StdMeshers_ViscousLayers_i( PortableServer::POA_ptr thePOA,
+  StdMeshers_ViscousLayers2D_i( PortableServer::POA_ptr thePOA,
                               int                     theStudyId,
                               ::SMESH_Gen*            theGenImpl );
   // Destructor
-  virtual ~StdMeshers_ViscousLayers_i();
+  virtual ~StdMeshers_ViscousLayers2D_i();
 
-  void SetIgnoreFaces(const ::SMESH::long_array& faceIDs) throw ( SALOME::SALOME_Exception );
-  SMESH::long_array* GetIgnoreFaces();
+  void SetIgnoreEdges(const ::SMESH::long_array& edgeIDs) throw ( SALOME::SALOME_Exception );
+  SMESH::long_array* GetIgnoreEdges();
 
   void SetTotalThickness(::CORBA::Double thickness) throw ( SALOME::SALOME_Exception );
   ::CORBA::Double GetTotalThickness();
@@ -61,13 +61,14 @@ class STDMESHERS_I_EXPORT StdMeshers_ViscousLayers_i:
   ::CORBA::Double GetStretchFactor();
 
   // Get implementation
-  ::StdMeshers_ViscousLayers* GetImpl();
+  ::StdMeshers_ViscousLayers2D* GetImpl();
 
   // Verify whether hypothesis supports given entity type 
   CORBA::Boolean IsDimSupported( SMESH::Dimension type );
 
- protected:
-  virtual std::string getMethodOfParameter(const int paramIndex, int nbVars) const;
+  // Sets sub-mesh event listeners to clear sub-meshes of edges
+  // shrinked by viscous layers
+  virtual void  UpdateAsMeshesRestored();
 };
 
 #endif

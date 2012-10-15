@@ -39,9 +39,10 @@ class STDMESHERS_EXPORT StdMeshers_ViscousLayers : public SMESH_Hypothesis
 public:
   StdMeshers_ViscousLayers(int hypId, int studyId, SMESH_Gen* gen);
 
-  // Set faces to exclude from treatment
-  void SetIgnoreFaces(const std::vector<int>& faceIds);
-  std::vector<int> GetIgnoreFaces() const { return _ignoreFaceIds; }
+  // Set boundary shapes to exclude from treatment, faces in 3D, edges in 2D
+  void SetBndShapesToIgnore(const std::vector<int>& shapeIds);
+  std::vector<int> GetBndShapesToIgnore() const { return _ignoreBndShapeIds; }
+  bool IsIgnoredShape(const int shapeID) const;
 
   // Set total thickness of layers of prisms
   void SetTotalThickness(double thickness);
@@ -85,10 +86,20 @@ public:
 
  private:
 
-  std::vector<int> _ignoreFaceIds;
+  std::vector<int> _ignoreBndShapeIds;
   int              _nbLayers;
   double           _thickness;
   double           _stretchFactor;
 };
+
+class SMESH_subMesh;
+namespace VISCOUS_3D
+{
+  // sets a sub-mesh event listener to clear sub-meshes of sub-shapes of
+  // the main shape when sub-mesh of the main shape is cleared,
+  // for example to clear sub-meshes of FACEs when sub-mesh of a SOLID
+  // is cleared
+  void ToClearSubWithMain( SMESH_subMesh* sub, const TopoDS_Shape& main);
+}
 
 #endif

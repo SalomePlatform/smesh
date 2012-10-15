@@ -694,6 +694,24 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
         h->SetIgnoreFaces( idsWg->GetListOfIDs() );
       }
     }
+    else if( hypType()=="ViscousLayers2D" )
+    {
+      StdMeshers::StdMeshers_ViscousLayers2D_var h =
+        StdMeshers::StdMeshers_ViscousLayers2D::_narrow( hypothesis() );
+
+      h->SetVarParameter( params[0].text(), "SetTotalThickness" );
+      h->SetTotalThickness( params[0].myValue.toDouble() );
+      h->SetVarParameter( params[1].text(), "SetNumberLayers" );
+      h->SetNumberLayers  ( params[1].myValue.toInt() );
+      h->SetVarParameter( params[2].text(), "SetStretchFactor" );
+      h->SetStretchFactor ( params[2].myValue.toDouble() );
+
+      if ( StdMeshersGUI_SubShapeSelectorWdg* idsWg = 
+           widget< StdMeshersGUI_SubShapeSelectorWdg >( 3 ))
+      {
+        h->SetIgnoreEdges( idsWg->GetListOfIDs() );
+      }
+    }
     else if( hypType()=="QuadrangleParams" )
     {
       StdMeshers::StdMeshers_QuadrangleParams_var h =
@@ -1152,6 +1170,45 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       customWidgets()->append ( idsWg );
     }
   }
+  else if( hypType()=="ViscousLayers2D" )
+  {
+    StdMeshers::StdMeshers_ViscousLayers2D_var h =
+      StdMeshers::StdMeshers_ViscousLayers2D::_narrow( hyp );
+
+    item.myName = tr( "SMESH_TOTAL_THICKNESS" );
+    if(!initVariableName( hyp, item, "SetTotalThickness" ))
+      item.myValue = h->GetTotalThickness();
+    p.append( item );
+    customWidgets()->append (0);
+
+    item.myName = tr( "SMESH_NUMBER_OF_LAYERS" );
+    if(!initVariableName( hyp, item, "SetNumberLayers" ))
+      item.myValue = h->GetNumberLayers();
+    p.append( item );
+    customWidgets()->append (0);
+
+    item.myName = tr( "SMESH_STRETCH_FACTOR" );
+    if(!initVariableName( hyp, item, "SetStretchFactor" ))
+      item.myValue = h->GetStretchFactor();
+    p.append( item );
+    customWidgets()->append (0);
+
+    QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
+    if ( !aMainEntry.isEmpty() )
+    {
+      item.myName = tr( "SMESH_EDGES_WO_LAYERS" );
+      p.append( item );
+
+      StdMeshersGUI_SubShapeSelectorWdg* idsWg =
+        new StdMeshersGUI_SubShapeSelectorWdg(0,TopAbs_EDGE);
+
+      idsWg->SetGeomShapeEntry( aMainEntry );
+      idsWg->SetMainShapeEntry( aMainEntry );
+      idsWg->SetListOfIDs( h->GetIgnoreEdges() );
+      idsWg->showPreview( true );
+      customWidgets()->append ( idsWg );
+    }
+  }
   else if (hypType() == "QuadrangleParams")
   {
     StdMeshers::StdMeshers_QuadrangleParams_var h =
@@ -1242,7 +1299,7 @@ void StdMeshersGUI_StdHypothesisCreator::attuneStdWidget (QWidget* w, const int)
     {
       sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "parametric_precision" );
     }
-    else if( hypType()=="ViscousLayers" )
+    else if( hypType().startsWith( "ViscousLayers" ))
     {
       if (sb->objectName() == tr("SMESH_STRETCH_FACTOR"))
         sb->RangeStepAndValidator( 1.0, VALUE_MAX, 0.1, "parametric_precision" );
@@ -1254,12 +1311,6 @@ void StdMeshersGUI_StdHypothesisCreator::attuneStdWidget (QWidget* w, const int)
       sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "length_precision" );
     }
   }
-//   else if ( QtxIntSpinBox* ib = w->inherits( "QtxIntSpinBox" ) ? ( QtxIntSpinBox* )w : 0)
-//   {
-//     if( hypType()=="ViscousLayers" )
-//     {
-//     }
-//   }
 }
 
 //================================================================================
@@ -1334,6 +1385,7 @@ QString StdMeshersGUI_StdHypothesisCreator::hypTypeName( const QString& t ) cons
     types.insert( "SegmentLengthAroundVertex", "SEGMENT_LENGTH_AROUND_VERTEX" );
     types.insert( "MaxLength", "MAX_LENGTH" );
     types.insert( "ViscousLayers", "VISCOUS_LAYERS" );
+    types.insert( "ViscousLayers2D", "VISCOUS_LAYERS" );
     types.insert( "QuadrangleParams", "QUADRANGLE_PARAMS" );
     types.insert( "CartesianParameters3D", "CARTESIAN_PARAMS" );
   }

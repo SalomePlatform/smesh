@@ -68,6 +68,7 @@ salomeinclude_HEADERS = \
 	StdMeshers_Import_1D_i.hxx \
 	StdMeshers_Import_1D2D_i.hxx \
 	StdMeshers_ViscousLayers_i.hxx \
+	StdMeshers_ViscousLayers2D_i.hxx \
 	StdMeshers_CartesianParameters3D_i.hxx \
 	StdMeshers_Cartesian_3D_i.hxx
 
@@ -116,6 +117,7 @@ dist_libStdMeshersEngine_la_SOURCES = \
 	StdMeshers_Import_1D_i.cxx \
 	StdMeshers_Import_1D2D_i.cxx \
 	StdMeshers_ViscousLayers_i.cxx \
+	StdMeshers_ViscousLayers2D_i.cxx \
 	StdMeshers_CartesianParameters3D_i.cxx \
 	StdMeshers_Cartesian_3D_i.cxx
 
