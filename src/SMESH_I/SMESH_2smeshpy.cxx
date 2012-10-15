@@ -1510,7 +1510,7 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
          method == "ExportToMEDX" ) { // ExportToMEDX() --> ExportMED()
       theCommand->SetMethod( "ExportMED" );
     }
-    else if ( method == "ExportCGNS" )
+    else if ( method == "ExportCGNS" || method == "ExportGMF" )
     { // ExportCGNS(part, ...) -> ExportCGNS(..., part)
       _pyID partID = theCommand->GetArg( 1 );
       int nbArgs = theCommand->GetNbArgs();
