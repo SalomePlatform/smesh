@@ -862,6 +862,39 @@ module StdMeshers
   };
 
   /*!
+   * interface of "Viscous Layers 2D" hypothesis.
+   * This hypothesis specifies parameters of layers of quadrilaterals to build
+   * near mesh boundary. This hypothesis can be used by several 2D algorithms:
+   * Mefisto, Quadrangle (mapping), NETGEN, BLSURF
+   */
+  interface StdMeshers_ViscousLayers2D : SMESH::SMESH_Hypothesis
+  {
+    /*!
+     * Set edges to exclude from treatment
+     */
+    void SetIgnoreEdges(in SMESH::long_array edgeIDs) raises (SALOME::SALOME_Exception);
+    SMESH::long_array GetIgnoreEdges();
+
+    /*!
+     * Set total thickness of layers of prisms
+     */
+    void SetTotalThickness(in double thickness) raises (SALOME::SALOME_Exception);
+    double GetTotalThickness();
+
+    /*!
+     * Set number of layers of prisms
+     */
+    void SetNumberLayers(in short nb) raises (SALOME::SALOME_Exception);
+    short GetNumberLayers();
+
+    /*!
+     * Set factor (>1.0) of growth of layer thickness towards inside of mesh
+     */
+    void SetStretchFactor(in double factor) raises (SALOME::SALOME_Exception);
+    double GetStretchFactor();
+  };
+
+  /*!
    * interface of "Body fitting Parameters" hypothesis.
    * This hypothesis specifies 
    * - Definition of the Cartesian grid
