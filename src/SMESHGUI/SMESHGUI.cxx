@@ -195,7 +195,7 @@
     std::string myExtension;
 
     if ( theCommandID == 113 ) {
-      filter.append( QObject::tr( "MED_FILES_FILTER" ) + " (*.med)" );
+      filter.append( QObject::tr( "MED_FILES_FILTER" ) + " (*.*med)" );
       filter.append( QObject::tr( "ALL_FILES_FILTER" ) + " (*)" );
     }
     else if ( theCommandID == 112 ) {
