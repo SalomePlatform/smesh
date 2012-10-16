@@ -65,6 +65,7 @@
 #endif
 
 #include "SMESH_Gen_i.hxx"
+#include "SMESH_version.h"
 
 #include "SMDS_EdgePosition.hxx"
 #include "SMDS_FacePosition.hxx"
@@ -4912,6 +4913,16 @@ void SMESH_Gen_i::SetName(const char* theIOR,
 int SMESH_Gen_i::GetCurrentStudyID()
 {
   return myCurrentStudy->_is_nil() || myCurrentStudy->_non_existent() ? -1 : myCurrentStudy->StudyId();
+}
+
+// Version information
+char* SMESH_Gen_i::getVersion()
+{
+#if SMESH_DEVELOPMENT
+  return CORBA::string_dup(SMESH_VERSION_STR"dev");
+#else
+  return CORBA::string_dup(SMESH_VERSION_STR);
+#endif
 }
 
 //=============================================================================

@@ -442,6 +442,12 @@ public:
   }
 
   // ============
+  // Version information
+  // ============
+
+  virtual char* getVersion();
+
+  // ============
   // Dump python
   // ============
 

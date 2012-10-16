@@ -109,7 +109,8 @@ libSMESHEngine_la_CPPFLAGS = \
 	-I$(srcdir)/../DriverCGNS \
 	-I$(srcdir)/../SMESH \
 	-I$(srcdir)/../SMESHUtils \
-	-I$(top_builddir)/idl
+	-I$(top_builddir)/idl \
+	-I$(top_builddir)
 
 libSMESHEngine_la_LDFLAGS  = \
 	../../idl/libSalomeIDLSMESH.la \
