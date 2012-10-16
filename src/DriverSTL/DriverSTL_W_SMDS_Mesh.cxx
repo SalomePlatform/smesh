@@ -35,12 +35,11 @@
 #include "SMESH_TypeDefs.hxx"
 
 #include <OSD_File.hxx>
-//#include <OSD_FromWhere.hxx>
 #include <OSD_Path.hxx>
 #include <OSD_Protection.hxx>
-//#include <OSD_SingleProtection.hxx>
 #include <TCollection_AsciiString.hxx>
 #include <gp_XYZ.hxx>
+#include <Basics_Utils.hxx>
 
 #include "utilities.h"
 
@@ -59,6 +58,8 @@ void DriverSTL_W_SMDS_Mesh::SetIsAscii( const bool theIsAscii )
 
 Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::Perform()
 {
+  Kernel_Utils::Localizer loc;
+
   Status aResult = DRS_OK;
 
   if ( !myMesh ) {
