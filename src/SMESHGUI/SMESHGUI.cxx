@@ -205,7 +205,7 @@
       filter.append( QObject::tr( "DAT_FILES_FILTER" ) + " (*.dat)" );
     }
     else if ( theCommandID == 115 ) {
-      filter.append( QObject::tr( "STL_ASCII_FILES_FILTER" ) + " (*.stl)" );
+      filter.append( QObject::tr( "STL_FILES_FILTER" ) + " (*.stl)" );
     }
     else if ( theCommandID == 116 ) {
       filter.append( QObject::tr( "CGNS_FILES_FILTER" ) + " (*.cgns)" );

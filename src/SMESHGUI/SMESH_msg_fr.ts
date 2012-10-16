@@ -28,6 +28,10 @@
         <translation>Fichiers MED %1</translation>
     </message>
     <message>
+        <source>STL_FILES_FILTER</source>
+        <translation>Fichiers STL</translation>
+    </message>
+    <message>
         <source>STL_ASCII_FILES_FILTER</source>
         <translation>Fichiers STL ASCII</translation>
     </message>
