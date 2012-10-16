@@ -2111,6 +2111,7 @@ void SMESH_subMesh::setEventListener(EventListener*     listener,
         if ( l_d->first->IsDeletable() )
           delete l_d->first;
         _eventListeners.erase( l_d );
+        break;
       }
     _eventListeners.insert( make_pair( listener, data ));
   }
