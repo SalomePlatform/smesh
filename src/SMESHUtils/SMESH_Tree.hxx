@@ -54,7 +54,7 @@ struct SMESH_TreeLimit {
 
 template< class BND_BOX,
           int   NB_CHILDREN>
-class SMESHUtils_EXPORT SMESH_Tree
+class SMESH_Tree
 {
  public:
 
