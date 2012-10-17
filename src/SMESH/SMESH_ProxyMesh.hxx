@@ -56,7 +56,7 @@ public:
   /*!
    * \brief Proxy sub-mesh
    */
-  class SubMesh : public SMESHDS_SubMesh
+  class SMESH_EXPORT SubMesh : public SMESHDS_SubMesh
   {
   public:
 
