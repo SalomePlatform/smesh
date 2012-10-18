@@ -1743,6 +1743,7 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
     aTable->blockSignals( isSignalsBlocked );
   }
 
+  // set Compare and enable/desable Threshold
   if ((aType == SMESH::NODE && (aCriterionType == SMESH::FT_FreeNodes               ||
                                 aCriterionType == SMESH::FT_EqualNodes ))           ||
       (aType == SMESH::EDGE && (aCriterionType == SMESH::FT_FreeBorders             ||
@@ -1970,6 +1971,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getSupportedTypes() const
   if (aTypes.isEmpty())
   {
     aTypes[ SMESH::NODE   ] = tr("NODES");
+    aTypes[ SMESH::ELEM0D ] = tr("ELEM0D");
     aTypes[ SMESH::BALL   ] = tr("BALLS");
     aTypes[ SMESH::EDGE   ] = tr("EDGES");
     aTypes[ SMESH::FACE   ] = tr("FACES");
@@ -2097,6 +2099,20 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
     if (aCriteria.isEmpty())
     {
       aCriteria[ SMESH::FT_BallDiameter       ] = tr("BALL_DIAMETER");
+      aCriteria[ SMESH::FT_RangeOfIds         ] = tr("RANGE_OF_IDS");
+      aCriteria[ SMESH::FT_BelongToGeom       ] = tr("BELONG_TO_GEOM");
+      aCriteria[ SMESH::FT_BelongToPlane      ] = tr("BELONG_TO_PLANE");
+      aCriteria[ SMESH::FT_BelongToCylinder   ] = tr("BELONG_TO_CYLINDER");
+      aCriteria[ SMESH::FT_BelongToGenSurface ] = tr("BELONG_TO_GENSURFACE");
+      aCriteria[ SMESH::FT_GroupColor         ] = tr("GROUP_COLOR");
+    }
+    return aCriteria;
+  }
+  else if (theType == SMESH::ELEM0D)
+  {
+    static QMap<int, QString> aCriteria;
+    if (aCriteria.isEmpty())
+    {
       aCriteria[ SMESH::FT_RangeOfIds         ] = tr("RANGE_OF_IDS");
       aCriteria[ SMESH::FT_BelongToGeom       ] = tr("BELONG_TO_GEOM");
       aCriteria[ SMESH::FT_BelongToPlane      ] = tr("BELONG_TO_PLANE");
@@ -2673,6 +2689,8 @@ void SMESHGUI_FilterDlg::Init (const QList<int>& theTypes, const bool setInViewe
   {
     int aType = theTypes.first();
     if      (aType == SMESH::NODE  ) setWindowTitle(tr("NODES_TLT"));
+    else if (aType == SMESH::ELEM0D) setWindowTitle(tr("ELEM0D_TLT"));
+    else if (aType == SMESH::BALL  ) setWindowTitle(tr("BALL_TLT"));
     else if (aType == SMESH::EDGE  ) setWindowTitle(tr("EDGES_TLT"));
     else if (aType == SMESH::FACE  ) setWindowTitle(tr("FACES_TLT"));
     else if (aType == SMESH::VOLUME) setWindowTitle(tr("VOLUMES_TLT"));
@@ -2879,6 +2897,8 @@ Selection_Mode SMESHGUI_FilterDlg::getSelMode (const int theType) const
   switch (theType)
   {
     case SMESH::NODE   : return NodeSelection;
+    case SMESH::ELEM0D : return Elem0DSelection;
+    case SMESH::BALL   : return BallSelection;
     case SMESH::EDGE   : return EdgeSelection;
     case SMESH::FACE   : return FaceSelection;
     case SMESH::VOLUME : return VolumeSelection;
