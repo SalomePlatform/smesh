@@ -343,7 +343,8 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI*          theMo
   SelectButtonC1A1 = new QPushButton(GroupC1);
   SelectButtonC1A1->setIcon(image1);
   LineEditC1A1 = new QLineEdit(GroupC1);
-  LineEditC1A1->setValidator(new SMESHGUI_IdValidator(this, myIsPoly ? 1000 : myNbNodes));
+  LineEditC1A1->setValidator
+    (new SMESHGUI_IdValidator(this, ( myIsPoly || myNbNodes == 1 ) ? 1000 : myNbNodes));
 
   Reverse = (myElementType == SMDSAbs_Face || myElementType == SMDSAbs_Volume ) ? new QCheckBox(tr("SMESH_REVERSE"), GroupC1) : 0;
 
@@ -439,21 +440,21 @@ void SMESHGUI_AddMeshElementDlg::Init()
   myActor = 0;
 
   /* signals and slots connections */
-  connect(buttonOk, SIGNAL(clicked()),     SLOT(ClickOnOk()));
-  connect(buttonCancel, SIGNAL(clicked()), SLOT(ClickOnCancel()));
-  connect(buttonApply, SIGNAL(clicked()),  SLOT(ClickOnApply()));
-  connect(buttonHelp, SIGNAL(clicked()),   SLOT(ClickOnHelp()));
+  connect(buttonOk,        SIGNAL(clicked()),                     SLOT(ClickOnOk()));
+  connect(buttonCancel,    SIGNAL(clicked()),                     SLOT(ClickOnCancel()));
+  connect(buttonApply,     SIGNAL(clicked()),                     SLOT(ClickOnApply()));
+  connect(buttonHelp,      SIGNAL(clicked()),                     SLOT(ClickOnHelp()));
 
-  connect(SelectButtonC1A1, SIGNAL(clicked()), SLOT(SetEditCurrentArgument()));
-  connect(LineEditC1A1, SIGNAL(textChanged(const QString&)), SLOT(onTextChange(const QString&)));
-  connect(mySMESHGUI, SIGNAL (SignalDeactivateActiveDialog()), SLOT(DeactivateActiveDialog()));
-  connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(SelectionIntoArgument()));
+  connect(SelectButtonC1A1,SIGNAL(clicked()),                     SLOT(SetEditCurrentArgument()));
+  connect(LineEditC1A1,    SIGNAL(textChanged(const QString&)),   SLOT(onTextChange(const QString&)));
+  connect(mySMESHGUI,      SIGNAL(SignalDeactivateActiveDialog()),SLOT(DeactivateActiveDialog()));
+  connect(mySelectionMgr,  SIGNAL(currentSelectionChanged()),     SLOT(SelectionIntoArgument()));
   /* to close dialog if study frame change */
-  connect(mySMESHGUI, SIGNAL (SignalStudyFrameChanged()), SLOT(ClickOnCancel()));
-  connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), SLOT(ClickOnCancel()));    
+  connect(mySMESHGUI,      SIGNAL(SignalStudyFrameChanged()),     SLOT(ClickOnCancel()));
+  connect(mySMESHGUI,      SIGNAL(SignalCloseAllDialogs()),       SLOT(ClickOnCancel()));    
 
   if (Reverse)
-    connect(Reverse, SIGNAL(stateChanged(int)), SLOT(CheckBox(int)));
+    connect(Reverse,       SIGNAL(stateChanged(int)),             SLOT(CheckBox(int)));
 
   // set selection mode
   SMESH::SetPointRepresentation(true);
@@ -477,9 +478,9 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
 
   if (myNbOkNodes && !mySMESHGUI->isActiveStudyLocked()) {
     myBusy = true;
-    SMESH::long_array_var anArrayOfIndices = new SMESH::long_array;
-    anArrayOfIndices->length(myNbNodes);
     QStringList aListId = myEditCurrentArgument->text().split(" ", QString::SkipEmptyParts);
+    SMESH::long_array_var anArrayOfIndices = new SMESH::long_array;
+    anArrayOfIndices->length(aListId.count());
     const std::vector<int>& revIndex = SMDS_MeshCell::reverseSmdsOrder( myGeomType );
     if ( Reverse && Reverse->isChecked() && !revIndex.empty() )
       for (int i = 0; i < aListId.count(); i++)
@@ -515,28 +516,38 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
       }
     }
 
-    long anElemId = -1;
     SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
+    SMESH::long_array_var anIdList = new SMESH::long_array;
+    anIdList->length( 1 );
+    anIdList[0] = -1;
+
     switch (myElementType) {
     case SMDSAbs_0DElement:
-      anElemId = aMeshEditor->Add0DElement(anArrayOfIndices[0]); break;
+      anIdList->length( anArrayOfIndices->length() );
+      for ( size_t i = 0; i < anArrayOfIndices->length(); ++i )
+        anIdList[i] = aMeshEditor->Add0DElement(anArrayOfIndices[i]);
+      break;
     case SMDSAbs_Ball:
-      if ( myGeomType == SMDSEntity_Ball )
-        anElemId = aMeshEditor->AddBall(anArrayOfIndices[0],
-                                        DiameterSpinBox->GetValue()); break;
+      if ( myGeomType == SMDSEntity_Ball ) {
+        anIdList->length( anArrayOfIndices->length() );
+        for ( size_t i = 0; i < anArrayOfIndices->length(); ++i )
+          anIdList[i] = aMeshEditor->AddBall(anArrayOfIndices[i],
+                                             DiameterSpinBox->GetValue());
+      }
+      break;
     case SMDSAbs_Edge:
-      anElemId = aMeshEditor->AddEdge(anArrayOfIndices.inout()); break;
+      anIdList[0] = aMeshEditor->AddEdge(anArrayOfIndices.inout()); break;
     case SMDSAbs_Face:
       if ( myIsPoly )
-        anElemId = aMeshEditor->AddPolygonalFace(anArrayOfIndices.inout());
+        anIdList[0] = aMeshEditor->AddPolygonalFace(anArrayOfIndices.inout());
       else
-        anElemId = aMeshEditor->AddFace(anArrayOfIndices.inout());
+        anIdList[0] = aMeshEditor->AddFace(anArrayOfIndices.inout());
       break;
     default:
-      anElemId = aMeshEditor->AddVolume(anArrayOfIndices.inout()); break;
+      anIdList[0] = aMeshEditor->AddVolume(anArrayOfIndices.inout()); break;
     }
 
-    if ( anElemId != -1 && addToGroup && !aGroupName.isEmpty() ) {
+    if ( anIdList[0] > 0 && addToGroup && !aGroupName.isEmpty() ) {
       SMESH::SMESH_Group_var aGroupUsed;
       if ( aGroup->_is_nil() ) {
         // create new group 
@@ -559,12 +570,8 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
           aGroupUsed = SMESH::SMESH_Group::_narrow( aGroup );
       }
 
-      if ( !aGroupUsed->_is_nil() ) {
-        SMESH::long_array_var anIdList = new SMESH::long_array;
-        anIdList->length( 1 );
-        anIdList[0] = anElemId;
+      if ( !aGroupUsed->_is_nil() )
         aGroupUsed->Add( anIdList.inout() );
-      }
     }
 
     SALOME_ListIO aList; aList.Append( myActor->getIO() );
@@ -676,7 +683,7 @@ void SMESHGUI_AddMeshElementDlg::onTextChange (const QString& theNewText)
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
       aViewWindow->highlight( myActor->getIO(), true, true );
 
-    myNbOkNodes = ( allOk && myNbNodes == aListId.count() );
+    myNbOkNodes = ( allOk && ( myNbNodes == aListId.count() || myNbNodes == 1 ));
 
     if (myIsPoly)
       {
@@ -766,7 +773,7 @@ void SMESHGUI_AddMeshElementDlg::SelectionIntoArgument()
   myBusy = false;
   if (myIsPoly && myElementType == SMDSAbs_Face && nbNodes >= 3 ) {
     myNbNodes = nbNodes;
-  } else if (myNbNodes != nbNodes) {
+  } else if (myNbNodes != nbNodes && myNbNodes != 1) {
     return;
   }
 
