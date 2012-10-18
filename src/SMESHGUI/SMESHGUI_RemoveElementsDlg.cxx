@@ -372,16 +372,16 @@ void SMESHGUI_RemoveElementsDlg::SelectionIntoArgument()
       myActor = SMESH::FindActorByEntry(anIO->getEntry());
       if (myActor) {
         
-        // get selected nodes
+        // get selected elements
         QString aString = "";
         int nbElems = SMESH::GetNameOfSelectedElements(mySelector,anIO,aString);
         if (nbElems > 0) {
           myBusy = true;
           myEditCurrentArgument->setText(aString);
           myBusy = false;
-          
+
           // OK
-          
+
           myNbOkElements = nbElems;
         } // if (nbElems > 0)
       } // if (myActor)
