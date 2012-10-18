@@ -4828,6 +4828,14 @@ Please select valid object and try again</translation>
         <translation>Filter for Nodes</translation>
     </message>
     <message>
+        <source>ELEM0D_TLT</source>
+        <translation>Filter for 0D Elements</translation>
+    </message>
+    <message>
+        <source>BALL_TLT</source>
+        <translation>Filter for Balls</translation>
+    </message>
+    <message>
         <source>SELECTION</source>
         <translation>Initial Selection</translation>
     </message>
@@ -5098,6 +5106,10 @@ Please check input data and try again</translation>
     <message>
         <source>BALLS</source>
         <translation>Balls</translation>
+    </message>
+    <message>
+        <source>ELEM0D</source>
+        <translation>0D Elements</translation>
     </message>
     <message>
         <source>EDGES</source>
