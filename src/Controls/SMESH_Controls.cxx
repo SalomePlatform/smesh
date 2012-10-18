@@ -2645,43 +2645,7 @@ bool ElemGeomType::IsSatisfy( long theId )
   const SMDSAbs_ElementType anElemType = anElem->GetType();
   if ( myType != SMDSAbs_All && anElemType != myType )
     return false;
-  const int aNbNode = anElem->NbNodes();
-  bool isOk = false;
-  switch( anElemType )
-  {
-  case SMDSAbs_Node:
-    isOk = (myGeomType == SMDSGeom_POINT);
-    break;
-
-  case SMDSAbs_Edge:
-    isOk = (myGeomType == SMDSGeom_EDGE);
-    break;
-
-  case SMDSAbs_Face:
-    if ( myGeomType == SMDSGeom_TRIANGLE )
-      isOk = (!anElem->IsPoly() && (anElem->IsQuadratic() ? aNbNode == 6 : aNbNode == 3));
-    else if ( myGeomType == SMDSGeom_QUADRANGLE )
-      isOk = (!anElem->IsPoly() && (anElem->IsQuadratic() ? ( aNbNode == 8 || aNbNode == 9 ) : aNbNode == 4));
-    else if ( myGeomType == SMDSGeom_POLYGON )
-      isOk = anElem->IsPoly();
-    break;
-
-  case SMDSAbs_Volume:
-    if ( myGeomType == SMDSGeom_TETRA )
-      isOk = (!anElem->IsPoly() && (anElem->IsQuadratic() ? aNbNode == 10 : aNbNode == 4));
-    else if ( myGeomType == SMDSGeom_PYRAMID )
-      isOk = (!anElem->IsPoly() && (anElem->IsQuadratic() ? aNbNode == 13 : aNbNode == 5));
-    else if ( myGeomType == SMDSGeom_PENTA )
-      isOk = (!anElem->IsPoly() && (anElem->IsQuadratic() ? aNbNode == 15 : aNbNode == 6));
-    else if ( myGeomType == SMDSGeom_HEXA )
-      isOk = (!anElem->IsPoly() && (anElem->IsQuadratic() ? ( aNbNode == 20 || aNbNode == 27 ): aNbNode == 8));
-    else if ( myGeomType == SMDSGeom_HEXAGONAL_PRISM )
-      isOk = (anElem->GetEntityType() == SMDSEntity_Hexagonal_Prism );
-     else if ( myGeomType == SMDSGeom_POLYHEDRA )
-      isOk = anElem->IsPoly();
-    break;
-    default: break;
-  }
+  bool isOk = ( anElem->GetGeomType() == myGeomType );
   return isOk;
 }
 
