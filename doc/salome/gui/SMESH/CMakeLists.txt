@@ -57,7 +57,7 @@ IF(WINDOWS)
   SET(EXT "bat")
   SET(CALL_STR "call")
 ELSE(WINDOWS)
-  SET(DOC_PYTHONPATH "${CMAKE_INSTALL_PREFIX}/bin/salome:${CMAKE_INSTALL_PREFIX}/lib/python${PYTHON_VERSION}/site-packages/salome:${MED_ROOT_DIR}/lib/python${PYTHON_VERSION}/site-packages/salome:${GEOM_ROOT_DIR}/bin/salome:${GEOM_ROOT_DIR}/lib/python${PYTHON_VERSION}/site-packages/salome:${KERNEL_ROOT_DIR}/bin/salome:${KERNEL_ROOT_DIR}/lib/python${PYTHON_VERSION}/site-packages/salome:${OMNIORB_ROOT}/lib/python${PYTHON_VERSION}/site-packages:${OMNIORB_ROOT}/lib64/python${PYTHON_VERSION}/site-packages")
+  SET(DOC_PYTHONPATH "${CMAKE_INSTALL_PREFIX}/bin/salome:${CMAKE_INSTALL_PREFIX}/lib/python${PYTHON_VERSION}/site-packages/salome:${MED_ROOT_DIR}/lib/python${PYTHON_VERSION}/site-packages/salome:${GEOM_ROOT_DIR}/bin/salome:${GEOM_ROOT_DIR}/lib/python${PYTHON_VERSION}/site-packages/salome:${KERNEL_ROOT_DIR}/bin/salome:${KERNEL_ROOT_DIR}/lib/python${PYTHON_VERSION}/site-packages/salome:${OMNIORB_ROOT_USER}/lib/python${PYTHON_VERSION}/site-packages:${OMNIORB_ROOT_USER}/lib64/python${PYTHON_VERSION}/site-packages")
   SET(SCR "export PYTHONPATH=${DOC_PYTHONPATH}:${PYTHONPATH}
   export SMESH_MeshersList=${DOC_SMESH_MeshersList}
   ")
