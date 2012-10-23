@@ -1064,11 +1064,11 @@ void SMESH_Mesh_i::RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup 
   else
     aMeshEditor->RemoveElements( anIds );
 
+  // Update Python script (theGroup must be alive for this)
+  pyDump << _this() << ".RemoveGroupWithContents( " << theGroup << " )";
+
   // Remove group
   RemoveGroup( theGroup );
-
-  // Update Python script
-  pyDump << _this() << ".RemoveGroupWithContents( " << theGroup << " )";
 }
 
 //================================================================================
