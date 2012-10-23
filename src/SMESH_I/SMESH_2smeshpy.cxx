@@ -126,6 +126,31 @@ namespace {
 
   //================================================================================
   /*!
+   * \brief Map of TCollection_AsciiString initialized by C array of C strings.
+   *        Odd items of the C array are map keys, and even items are values
+   */
+  //================================================================================
+
+  struct TStringMap: public map<TCollection_AsciiString,TCollection_AsciiString>
+  {
+    /*!
+     * \brief Filling. The last string must be ""
+     */
+    void Insert(const char* names_values[]) {
+      for ( int i = 0; names_values[i][0] ; i += 2 )
+        insert( make_pair( (char*) names_values[i], names_values[i+1] ));
+    }
+    /*!
+     * \brief Check if a string is in
+     */
+    TCollection_AsciiString Value(const TCollection_AsciiString& name ) {
+      map< _AString, _AString >::iterator it = find( name );
+      return it == end() ? "" : it->second;
+    }
+  };
+
+  //================================================================================
+  /*!
    * \brief Returns a mesh by object
    */
   //================================================================================
@@ -533,10 +558,14 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
       groups = aCommand->GetResultValue(2);
     else if ( method == "MakeBoundaryElements")
       groups = aCommand->GetResultValue(3);
+    else if ( method == "Create0DElementsOnAllNodes" &&
+              aCommand->GetArg(2).Length() > 2 ) // group name != ''
+      groups = aCommand->GetResultValue();
 
     id_editor->second->Process( aCommand );
     id_editor->second->AddProcessedCmd( aCommand );
 
+    // create meshes
     if ( !meshID.IsEmpty() &&
          !myMeshes.count( meshID ) &&
          aCommand->IsStudyEntry( meshID ))
@@ -547,6 +576,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
       aCommand->Clear();
       aCommand->GetString() = processedCommand; // discard changes made by _pyMesh
     }
+    // create groups
     if ( !groups.IsEmpty() )
     {
       if ( !aCommand->IsStudyEntry( meshID ))
@@ -1503,6 +1533,33 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
     myGroups.push_back( group );
     theGen->AddObject( group );
   }
+  // update list of groups
+  else if ( method == "GetGroups" )
+  {
+    TCollection_AsciiString grIDs = theCommand->GetResultValue();
+    list< _pyID > idList = theCommand->GetStudyEntries( grIDs );
+    list< _pyID >::iterator grID = idList.begin();
+    for ( ; grID != idList.end(); ++grID )
+    {
+      Handle(_pyObject) obj = theGen->FindObject( *grID );
+      if ( obj.IsNull() )
+      {
+        Handle(_pyGroup) group = new _pyGroup( theCommand, *grID );
+        theGen->AddObject( group );
+        myGroups.push_back( group );
+      }
+    }
+  }
+  // notify a group about full removal
+  else if ( method == "RemoveGroupWithContents" )
+  {
+    if ( !theGen->IsToKeepAllCommands() ) { // snapshot mode
+      const _pyID groupID = theCommand->GetArg( 1 );
+      Handle(_pyGroup) grp = Handle(_pyGroup)::DownCast( theGen->FindObject( groupID ));
+      if ( !grp.IsNull() )
+        grp->RemovedWithContents();
+    }
+  }
   // ----------------------------------------------------------------------
   else if ( theCommand->MethodStartsFrom( "Export" ))
   {
@@ -1602,23 +1659,6 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
       Handle(_pySubMesh) subMesh = theGen->FindSubMesh( *subID );
       if ( !subMesh.IsNull() )
         subMesh->Process( theCommand ); // it moves GetSubMesh() before theCommand
-    }
-  }
-  // update list of groups
-  else if ( method == "GetGroups" )
-  {
-    TCollection_AsciiString grIDs = theCommand->GetResultValue();
-    list< _pyID > idList = theCommand->GetStudyEntries( grIDs );
-    list< _pyID >::iterator grID = idList.begin();
-    for ( ; grID != idList.end(); ++grID )
-    {
-      Handle(_pyObject) obj = theGen->FindObject( *grID );
-      if ( obj.IsNull() )
-      {
-        Handle(_pyGroup) group = new _pyGroup( theCommand, *grID );
-        theGen->AddObject( group );
-        myGroups.push_back( group );
-      }
     }
   }
   // add accessor method if necessary
@@ -1929,8 +1969,8 @@ _pyMeshEditor::_pyMeshEditor(const Handle(_pyCommand)& theCreationCmd):
 
 void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
 {
-  // names of SMESH_MeshEditor methods fully equal to methods of python class Mesh, so
-  // commands calling this methods are converted to calls of methods of Mesh
+  // names of SMESH_MeshEditor methods fully equal to methods of the python class Mesh, so
+  // commands calling this methods are converted to calls of Mesh methods
   static TStringSet sameMethods;
   if ( sameMethods.empty() ) {
     const char * names[] = {
@@ -1955,7 +1995,21 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
     sameMethods.Insert( names );
   }
 
-  // names of SMESH_MeshEditor methods which differ from methods of class Mesh
+  // names of SMESH_MeshEditor commands in which only a method name must be replaced
+  TStringMap diffMethods;
+  if ( diffMethods.empty() ) {
+    const char * orig2newName[] = {
+      // original name --------------> new name
+      "ExtrusionAlongPathObjX"      , "ExtrusionAlongPathX",
+      "FindCoincidentNodesOnPartBut", "FindCoincidentNodesOnPart",
+      "ConvertToQuadraticObject"    , "ConvertToQuadratic",
+      "ConvertFromQuadraticObject"  , "ConvertFromQuadratic",
+      "Create0DElementsOnAllNodes"  , "Add0DElementsToAllNodes",
+      ""};// <- mark of the end
+    diffMethods.Insert( orig2newName );
+  }
+
+  // names of SMESH_MeshEditor methods which differ from methods of Mesh class
   // only by last two arguments
   static TStringSet diffLastTwoArgsMethods;
   if (diffLastTwoArgsMethods.empty() ) {
@@ -1967,13 +2021,21 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
     diffLastTwoArgsMethods.Insert( names );
   }
 
+  // only a method name is to change?
   const TCollection_AsciiString & method = theCommand->GetMethod();
   bool isPyMeshMethod = sameMethods.Contains( method );
   if ( !isPyMeshMethod )
   {
-    //Replace SMESH_MeshEditor "MakeGroups" functions by the Mesh
-    //functions with the flag "theMakeGroups = True" like:
-    //SMESH_MeshEditor.CmdMakeGroups => Mesh.Cmd(...,True)
+    TCollection_AsciiString newMethod = diffMethods.Value( method );
+    if (( isPyMeshMethod = ( newMethod.Length() > 0 )))
+      theCommand->SetMethod( newMethod );
+  }
+
+  if ( !isPyMeshMethod )
+  {
+    // Replace SMESH_MeshEditor "*MakeGroups" functions by the Mesh
+    // functions with the flag "theMakeGroups = True" like:
+    // SMESH_MeshEditor.CmdMakeGroups => Mesh.Cmd(...,True)
     int pos = method.Search("MakeGroups");
     if( pos != -1)
     {
@@ -1998,7 +2060,7 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
     }
   }
 
-  // ExtrusionSweep0D() -> ExtrusionSweep()
+  // ExtrusionSweep0D()       -> ExtrusionSweep()
   // ExtrusionSweepObject0D() -> ExtrusionSweepObject()
   if ( !isPyMeshMethod && ( method == "ExtrusionSweep0D"  ||
                             method == "ExtrusionSweepObject0D" ))
@@ -2008,19 +2070,7 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
     theCommand->SetArg(theCommand->GetNbArgs()+1,"False");  //sets flag "MakeGroups = False"
     theCommand->SetArg(theCommand->GetNbArgs()+1,"True");  //sets flag "IsNode = True"
   }
-  // set "ExtrusionAlongPathX()" instead of "ExtrusionAlongPathObjX()"
-  if ( !isPyMeshMethod && method == "ExtrusionAlongPathObjX")
-  {
-    isPyMeshMethod = true;
-    theCommand->SetMethod("ExtrusionAlongPathX");
-  }
 
-  // set "FindCoincidentNodesOnPart()" instead of "FindCoincidentNodesOnPartBut()"
-  if ( !isPyMeshMethod && method == "FindCoincidentNodesOnPartBut")
-  {
-    isPyMeshMethod = true;
-    theCommand->SetMethod("FindCoincidentNodesOnPart");
-  }
   // DoubleNode...New(...) -> DoubleNode...(...,True)
   if ( !isPyMeshMethod && ( method == "DoubleNodeElemGroupNew"  ||
                             method == "DoubleNodeElemGroupsNew" ||
@@ -2044,14 +2094,6 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       _pyID groupID = theCommand->GetResultValue( 1 + int( theCommand->GetArg(4) == "0"));
       theCommand->SetResultValue( groupID );
     }
-  }
-  // ConvertToQuadraticObject(bool,obj) -> ConvertToQuadratic(bool,obj)
-  // ConvertFromQuadraticObject(obj) -> ConvertFromQuadratic(obj)
-  if ( !isPyMeshMethod && ( method == "ConvertToQuadraticObject" ||
-                            method == "ConvertFromQuadraticObject" ))
-  {
-    isPyMeshMethod = true;
-    theCommand->SetMethod( method.SubString( 1, method.Length()-6));
   }
   // FindAmongElementsByPoint(meshPart, x, y, z, elementType) ->
   // FindElementsByPoint(x, y, z, elementType, meshPart)
@@ -2083,10 +2125,6 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       theCommand->SetArg( 3, face );
   }
 
-  // meshes made by *MakeMesh() methods are not wrapped by _pyMesh,
-  // so let _pyMesh care of it (TMP?)
-  //     if ( theCommand->GetMethod().Search("MakeMesh") != -1 )
-  //       _pyMesh( new _pyCommand( theCommand->GetString(), 0 )); // for theGen->SetAccessorMethod()
   if ( isPyMeshMethod )
   {
     theCommand->SetObject( myMesh );
@@ -2094,7 +2132,7 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
   else
   {
     // editor creation command is needed only if any editor function is called
-    theGen->AddMeshAccessorMethod( theCommand ); // for *Object()
+    theGen->AddMeshAccessorMethod( theCommand ); // for *Object() methods
     if ( !myCreationCmdStr.IsEmpty() ) {
       GetCreationCmd()->GetString() = myCreationCmdStr;
       myCreationCmdStr.Clear();
@@ -3766,7 +3804,7 @@ bool _pySubMesh::CanBeArgOfMethod(const _AString& theMethodName)
       "TranslateObjectMakeGroups","TranslateObjectMakeMesh","ScaleMakeGroups","ScaleMakeMesh",
       "RotateObject","RotateObjectMakeGroups","RotateObjectMakeMesh","FindCoincidentNodesOnPart",
       "FindCoincidentNodesOnPartBut","FindEqualElements","FindAmongElementsByPoint",
-      "MakeBoundaryMesh",
+      "MakeBoundaryMesh","Create0DElementsOnAllNodes",
       "" }; // <- mark of end
     methods.Insert( names );
   }
@@ -3866,6 +3904,21 @@ _pyGroup::_pyGroup(const Handle(_pyCommand)& theCreationCmd, const _pyID & id)
 
 //================================================================================
 /*!
+ * \brief set myCanClearCreationCmd = true if the main action of the creation
+ *        command is discarded
+ */
+//================================================================================
+
+void _pyGroup::RemovedWithContents()
+{
+  // this code would be appropriate if Add0DElementsToAllNodes() returned only new nodes
+  // via a created group
+  //if ( GetCreationCmd()->GetMethod() == "Add0DElementsToAllNodes")
+  // myCanClearCreationCmd = true;
+}
+
+//================================================================================
+/*!
  * \brief To convert creation of a group by filter
  */
 //================================================================================
@@ -3941,8 +3994,6 @@ void _pyGroup::Process( const Handle(_pyCommand)& theCommand)
 //================================================================================
 /*!
  * \brief Prevent clearing "DoubleNode...() command if a group created by it is removed
- * 
- * 
  */
 //================================================================================
 
