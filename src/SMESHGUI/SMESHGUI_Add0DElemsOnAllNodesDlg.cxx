@@ -98,12 +98,6 @@ SMESHGUI_Add0DElemsOnAllNodesDlg::SMESHGUI_Add0DElemsOnAllNodesDlg()
 
   // Label, Select Btn, LineEdit, Filter Btn
 
-  // myLabel = new QLabel(tr("SMESH_NAME"), mainFrame() );
-  // QPushButton* selBtn = new QPushButton( mainFrame() );
-  // QPixmap imageSelect( resourceMgr()->loadPixmap("SMESH", tr("ICON_SELECT")) );
-  // selBtn->setIcon(image2);
-  // myLineEdit = new QLineEdit( mainFrame() );
-
   setObjectPixmap( "SMESH", tr( "ICON_SELECT" ) );
   createObject( tr( "SMESH_NAME" ), mainFrame(), 0 );
 
@@ -224,7 +218,7 @@ SMESHGUI_Add0DElemsOnAllNodesOp::SMESHGUI_Add0DElemsOnAllNodesOp()
    myDlg( new SMESHGUI_Add0DElemsOnAllNodesDlg ),
    myFilterDlg( 0 )
 {
-  myHelpFileName = "adding_nodes_and_elements_page#adding_0delems_anchor.html";
+  myHelpFileName = "adding_nodes_and_elements_page.html#adding_0delems_on_all_nodes_anchor";
 
   connect( myDlg,              SIGNAL( selTypeChanged(int) ), SLOT( onSelTypeChange(int)));
   connect( myDlg->myFilterBtn, SIGNAL( clicked()),            SLOT( onSetFilter() ));
