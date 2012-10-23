@@ -7,6 +7,7 @@
 <ul>
 <li>\ref adding_nodes_anchor "Nodes"</li>
 <li>\ref adding_0delems_anchor "0D Elements"</li>
+<li>\ref adding_0delems_on_all_nodes_anchor "0D elements on Element Nodes"</li>
 <li>\ref adding_balls_anchor "Ball Elements"</li>
 <li>\ref adding_edges_anchor "Edges"</li>
 <li>\ref adding_triangles_anchor "Triangles"</li>
@@ -76,6 +77,40 @@ selecting them in the 3D viewer and click the \b Apply or
 <b>Apply and Close</b> button. Your 0D elements will be created:
 
 \image html add_0delement.png
+
+\anchor adding_0delems_on_all_nodes_anchor
+<h2>Making 0D elements on Element Nodes</h2>
+
+There is another dialog which lets you create 0D elements. It creates 
+0D elements on all nodes of selected elements or nodes, where no 0D
+elements are yet present.
+
+\image html dlg_0D_on_all_nodes.png
+
+In this dialog 
+<ul>
+  <li> Click a radio-button to choose a type of object on whose nodes you
+    want to create 0D elements.
+    <ul>
+      <li><b> Mesh, sub-mesh, group </b> This button allows you selecting either
+        a mesh, sub-mesh or group to create 0D elements on nodes of their
+        elements. A name of selected object is shown in the dialog. </li>
+      <li><b> Elements </b> This button allows you selecting elements either in the
+        VTK viewer or typing their IDs in a field of dialog.</li>
+      <li><b> Nodes </b> This button allows you selecting nodes to create
+        0D elements on them either in the VTK viewer or typing their IDs
+        in a field of dialog.</li>
+  </ul></li>
+  <li><b> Set Filter </b> button allows you selecting elements or nodes 
+by filtering elements or nodes of the mesh with different criteria
+(see \ref filtering_elements "Filter usage" on how to set up selection
+criteria).</li>
+<li> Switching on <b>Add to group</b> check-box allows you specifying a
+  name of a group to add all 0D element created or found on the
+  selected element nodes. You can either select an existing group from
+  a drop-down list, or enter a name of a group to create.</li>
+</ul>
+
 
 \anchor adding_balls_anchor
 <h2>Adding ball elements</h2>

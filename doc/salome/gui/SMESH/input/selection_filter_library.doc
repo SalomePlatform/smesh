@@ -15,7 +15,14 @@ load an existing filter library.
 the current study. You can \b Add or \b Delete filters.
 \n In <b>Filter name</b> box you can specify the name for your
 filter. By default it is prefixed with the corresponding entity type.
-\n Each filter can be applicable to \b Nodes, \b Edges, \b Faces or \b
+
+\anchor filtering_elements
+
+When we use filters while creating a group or other operation (for
+this click <b>Set Filters</b> button in a corresponding dialog), the
+menu for setting filters looks a bit differently (see an image below).
+
+Each filter can be applicable to \b Nodes, \b Edges, \b Faces or \b
 Volumes. You can combine many criteria in one filter, but they all
 must be of the same <b>Entity type</b>.
 \n The \b Add button creates a new criterion at the end of the list of
@@ -30,12 +37,9 @@ sense of a criterion using \b Unary operator Not and you should
 specify logical relations between criteria using \b Binary operators
 Or and And.
 \n Some criteria should have the additional parameter of \b Tolerance.
-
-When we create a group using filters (for this click
-<b>Set Filters</b> button in the <b>Create Group</b> dialog), the menu
-for setting filters looks a bit differently (see below). Switching
-on <b>Insert filter in viewer</b> checkbox limits selection of elements
-in the Viewer using your current filter.
+<br> 
+Switching on <b>Insert filter in viewer</b> checkbox limits
+selection of elements in the Viewer using your current filter.
 <br>
 In the \b Source field you choose if the filter will be applied to
 the whole \b Mesh, the <b>Initial Selection</b> or the <b>Current
@@ -44,7 +48,7 @@ will be selected in the 3D Viewer. If <b> Initial Selection</b> is
 chosen, the filter will be applied to the selected elements and the
 elements rejected by the filter will be deseleced. If <b>Current
 Group</b> is chosen, the filter will be applied to the list of
-elements in the <em>Greate Croup</em> dialog and the elements rejected
+elements in the current dialog and the elements rejected
 by the filter will be removed from the list.
 <br>
 <b>Copy from...</b> button gives you a possibility to load an
