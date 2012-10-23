@@ -283,7 +283,7 @@ namespace {
       const SMDS_MeshElement * elem =
         (aType == SMDSAbs_Node ? aMesh->FindNode(ind) : aMesh->FindElement(ind));
       if ( elem && ( aType == SMDSAbs_All || elem->GetType() == aType ))
-        aMap.insert( elem );
+        aMap.insert( aMap.end(), elem );
     }
   }
   //================================================================================
@@ -443,6 +443,7 @@ SMESH_MeshEditor_i::SMESH_MeshEditor_i(SMESH_Mesh_i* theMesh, bool isPreview):
 
 SMESH_MeshEditor_i::~SMESH_MeshEditor_i()
 {
+  deleteAuxIDSources();
 }
 
 //================================================================================
@@ -461,6 +462,7 @@ void SMESH_MeshEditor_i::initData(bool deleteSearchers)
       TSearchersDeleter::Delete();
   }
   myEditor.GetError().reset();
+  myEditor.CrearLastCreated();
 }
 
 //================================================================================
@@ -624,7 +626,7 @@ SMESH::ComputeError* SMESH_MeshEditor_i::GetLastError()
 //purpose  : Wrap a sequence of ids in a SMESH_IDSource
 //=======================================================================
 
-struct _IDSource : public POA_SMESH::SMESH_IDSource
+struct SMESH_MeshEditor_i::_IDSource : public POA_SMESH::SMESH_IDSource
 {
   SMESH::long_array     _ids;
   SMESH::ElementType    _type;
@@ -647,13 +649,26 @@ struct _IDSource : public POA_SMESH::SMESH_IDSource
 SMESH::SMESH_IDSource_ptr SMESH_MeshEditor_i::MakeIDSource(const SMESH::long_array& ids,
                                                            SMESH::ElementType       type)
 {
-  _IDSource* anIDSource = new _IDSource;
-  anIDSource->_ids = ids;
-  anIDSource->_type = type;
-  anIDSource->_mesh = myMesh_i->_this();
-  SMESH::SMESH_IDSource_var anIDSourceVar = anIDSource->_this();
+  if ( myAuxIDSources.size() > 10 )
+    deleteAuxIDSources();
+
+  _IDSource* idSrc = new _IDSource;
+  idSrc->_mesh = myMesh_i->_this();
+  idSrc->_ids  = ids;
+  idSrc->_type = type;
+  myAuxIDSources.push_back( idSrc );
+
+  SMESH::SMESH_IDSource_var anIDSourceVar = idSrc->_this();
 
   return anIDSourceVar._retn();
+}
+
+void SMESH_MeshEditor_i::deleteAuxIDSources()
+{
+  std::list< _IDSource* >::iterator idSrcIt = myAuxIDSources.begin();
+  for ( ; idSrcIt != myAuxIDSources.end(); ++idSrcIt )
+    delete *idSrcIt;
+  myAuxIDSources.clear();
 }
 
 //=============================================================================
@@ -1031,6 +1046,7 @@ CORBA::Long SMESH_MeshEditor_i::AddPolyhedralVolume (const SMESH::long_array & I
  *  AddPolyhedralVolumeByFaces
  */
 //=============================================================================
+
 CORBA::Long SMESH_MeshEditor_i::AddPolyhedralVolumeByFaces (const SMESH::long_array & IdsOfFaces)
 {
   initData();
@@ -1057,6 +1073,77 @@ CORBA::Long SMESH_MeshEditor_i::AddPolyhedralVolumeByFaces (const SMESH::long_ar
   myMesh->GetMeshDS()->Modified();
 
   return elem ? ( myMesh->SetIsModified( true ), elem->GetID()) : 0;
+}
+
+//=============================================================================
+//
+// \brief Create 0D elements on all nodes of the given object except those 
+//        nodes on which a 0D element already exists.
+//  \param theObject object on whose nodes 0D elements will be created.
+//  \param theGroupName optional name of a group to add 0D elements created
+//         and/or found on nodes of \a theObject.
+//  \return an object (a new group or a temporary SMESH_IDSource) holding
+//          ids of new and/or found 0D elements.
+//
+//=============================================================================
+
+SMESH::SMESH_IDSource_ptr
+SMESH_MeshEditor_i::Create0DElementsOnAllNodes(SMESH::SMESH_IDSource_ptr theObject,
+                                               const char*               theGroupName)
+  throw (SALOME::SALOME_Exception)
+{
+  initData();
+
+  SMESH::SMESH_IDSource_var result;
+  TPythonDump pyDump;
+
+  TIDSortedElemSet elements, elems0D;
+  if ( idSourceToSet( theObject, GetMeshDS(), elements, SMDSAbs_All, /*emptyIfIsMesh=*/1))
+    myEditor.Create0DElementsOnAllNodes( elements, elems0D );
+
+  SMESH::long_array_var newElems = new SMESH::long_array;
+  newElems->length( elems0D.size() );
+  TIDSortedElemSet::iterator eIt = elems0D.begin();
+  for ( size_t i = 0; i < elems0D.size(); ++i, ++eIt )
+    newElems[ i ] = (*eIt)->GetID();
+
+  SMESH::SMESH_GroupBase_var groupToFill;
+  if ( theGroupName && strlen( theGroupName ))
+  {
+    // Get existing group named theGroupName
+    SMESH::ListOfGroups_var groups = myMesh_i->GetGroups();
+    for (int i = 0, nbGroups = groups->length(); i < nbGroups; i++ ) {
+      SMESH::SMESH_GroupBase_var group = groups[i];
+      if ( !group->_is_nil() ) {
+        CORBA::String_var name = group->GetName();
+        if ( strcmp( name.in(), theGroupName ) == 0 && group->GetType() == SMESH::ELEM0D ) {
+          groupToFill = group;
+          break;
+        }
+      }
+    }
+    if ( groupToFill->_is_nil() )
+      groupToFill = myMesh_i->CreateGroup( SMESH::ELEM0D, theGroupName );
+    else if ( !SMESH::DownCast< SMESH_Group_i* > ( groupToFill ))
+      groupToFill = myMesh_i->ConvertToStandalone( groupToFill );
+  }
+
+  if ( SMESH_Group_i* group_i = SMESH::DownCast< SMESH_Group_i* > ( groupToFill ))
+  {
+    group_i->Add( newElems );
+    result = SMESH::SMESH_IDSource::_narrow( groupToFill );
+    pyDump << groupToFill;
+  }
+  else
+  {
+    result = MakeIDSource( newElems, SMESH::ELEM0D );
+    pyDump << "elem0DIDs";
+  }
+
+  pyDump << " = " << this << ".Create0DElementsOnAllNodes( "
+         << theObject << ", '" << theGroupName << "' )";
+
+  return result._retn();
 }
 
 //=============================================================================
@@ -5244,24 +5331,16 @@ string SMESH_MeshEditor_i::generateGroupName(const string& thePrefix)
     if (CORBA::is_nil(aGroup))
       continue;
 
-    groupNames.insert(aGroup->GetName());
+    CORBA::String_var name = aGroup->GetName();
+    groupNames.insert( name.in() );
   }
 
   // Find new name
   string name = thePrefix;
   int index = 0;
 
-  while (!groupNames.insert(name).second) {
-    if (index == 0) {
-      name += "_1";
-    }
-    else {
-      TCollection_AsciiString nbStr(index+1);
-      name.resize( name.rfind('_')+1 );
-      name += nbStr.ToCString();
-    }
-    ++index;
-  }
+  while (!groupNames.insert(name).second)
+    name = SMESH_Comment( thePrefix ) << "_" << index;
 
   return name;
 }

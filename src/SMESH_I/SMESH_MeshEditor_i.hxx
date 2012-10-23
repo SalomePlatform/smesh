@@ -101,6 +101,19 @@ public:
   CORBA::Long AddPolyhedralVolumeByFaces(const SMESH::long_array & IdsOfFaces);
 
   /*!
+   * \brief Create 0D elements on all nodes of the given object except those 
+   *        nodes on which a 0D element already exists.
+   *  \param theObject object on whose nodes 0D elements will be created.
+   *  \param theGroupName optional name of a group to add 0D elements created
+   *         and/or found on nodes of \a theObject.
+   *  \return an object (a new group or a temporary SMESH_IDSource) holding
+   *          ids of new and/or found 0D elements.
+   */
+  SMESH::SMESH_IDSource_ptr Create0DElementsOnAllNodes(SMESH::SMESH_IDSource_ptr theObject,
+                                                       const char*               theGroupName)
+    throw (SALOME::SALOME_Exception);
+
+  /*!
    * \brief Bind a node to a vertex
    * \param NodeID - node ID
    * \param VertexID - vertex ID available through GEOM_Object.GetSubShapeIndices()[0]
@@ -919,6 +932,11 @@ private: //!< fields
 
   SMESH::MeshPreviewStruct_var myPreviewData;
   bool                         myPreviewMode;
+
+  // temporary IDSources
+  struct _IDSource;
+  std::list< _IDSource* >      myAuxIDSources;
+  void                         deleteAuxIDSources();
 };
 
 #endif
