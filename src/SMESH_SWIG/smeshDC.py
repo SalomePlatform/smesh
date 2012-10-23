@@ -2334,6 +2334,24 @@ class Mesh:
     def Add0DElement(self, IDOfNode):
         return self.editor.Add0DElement(IDOfNode)
 
+    ## Create 0D elements on all nodes of the given elements except those 
+    #  nodes on which a 0D element already exists.
+    #  @param theObject an object on whose nodes 0D elements will be created.
+    #         It can be mesh, sub-mesh, group, list of element IDs or a holder
+    #         of nodes IDs created by calling mesh.GetIDSource( nodes, SMESH.NODE )
+    #  @param theGroupName optional name of a group to add 0D elements created
+    #         and/or found on nodes of \a theObject.
+    #  @return an object (a new group or a temporary SMESH_IDSource) holding
+    #          IDs of new and/or found 0D elements. IDs of 0D elements 
+    #          can be retrieved from the returned object by calling GetIDs()
+    #  @ingroup l2_modif_add
+    def Add0DElementsToAllNodes(self, theObject, theGroupName=""):
+        if isinstance( theObject, Mesh ):
+            theObject = theObject.GetMesh()
+        if isinstance( theObject, list ):
+            theObject = self.GetIDSource( theObject, SMESH.ALL )
+        return self.editor.Create0DElementsOnAllNodes( theObject, theGroupName )
+
     ## Creates a ball element on a node with given ID.
     #  @param IDOfNode the ID of node for creation of the element.
     #  @param diameter the bal diameter.
