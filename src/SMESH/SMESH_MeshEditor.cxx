@@ -120,6 +120,19 @@ SMESH_MeshEditor::SMESH_MeshEditor( SMESH_Mesh* theMesh )
 {
 }
 
+//================================================================================
+/*!
+ * \brief Clears myLastCreatedNodes and myLastCreatedElems
+ */
+//================================================================================
+
+void SMESH_MeshEditor::CrearLastCreated()
+{
+  myLastCreatedNodes.Clear();
+  myLastCreatedElems.Clear();
+}
+
+
 //=======================================================================
 /*!
  * \brief Add element
@@ -387,6 +400,44 @@ int SMESH_MeshEditor::Remove (const list< int >& theIDs,
   //     sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
 
   return removed;
+}
+
+//================================================================================
+/*!
+ * \brief Create 0D elements on all nodes of the given object except those
+ *        nodes on which a 0D element already exists.
+ *  \param elements - Elements on whose nodes to create 0D elements; if empty, 
+ *                    the all mesh is treated
+ *  \param all0DElems - returns all 0D elements found or created on nodes of \a elements
+ */
+//================================================================================
+
+void SMESH_MeshEditor::Create0DElementsOnAllNodes( const TIDSortedElemSet& elements,
+                                                   TIDSortedElemSet&       all0DElems )
+{
+  typedef SMDS_SetIterator<const SMDS_MeshElement*, TIDSortedElemSet::iterator> TSetIterator;
+  SMDS_ElemIteratorPtr elemIt;
+  if ( elements.empty() )
+    elemIt = GetMeshDS()->elementsIterator( SMDSAbs_Node );
+  else
+    elemIt = SMDS_ElemIteratorPtr( new TSetIterator( elements.begin(), elements.end() ));
+
+  while ( elemIt->more() )
+  {
+    const SMDS_MeshElement* e = elemIt->next();
+    SMDS_ElemIteratorPtr nodeIt = e->nodesIterator();
+    while ( nodeIt->more() )
+    {
+      const SMDS_MeshNode* n = cast2Node( nodeIt->next() );
+      SMDS_ElemIteratorPtr it0D = n->GetInverseElementIterator( SMDSAbs_0DElement );
+      if ( it0D->more() )
+        all0DElems.insert( it0D->next() );
+      else {
+        myLastCreatedElems.Append( GetMeshDS()->Add0DElement( n ));
+        all0DElems.insert( myLastCreatedElems.Last() );
+      }
+    }
+  }
 }
 
 //=======================================================================
@@ -8156,6 +8207,7 @@ private:
 //purpose  : Return list of group of elements built on the same nodes.
 //           Search among theElements or in the whole mesh if theElements is empty
 //=======================================================================
+
 void SMESH_MeshEditor::FindEqualElements(TIDSortedElemSet &        theElements,
                                          TListOfListOfElementsID & theGroupsOfElementsID)
 {

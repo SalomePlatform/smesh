@@ -116,6 +116,7 @@ public:
 
   const SMESH_SequenceOfElemPtr& GetLastCreatedNodes() const { return myLastCreatedNodes; }
   const SMESH_SequenceOfElemPtr& GetLastCreatedElems() const { return myLastCreatedElems; }
+  void                           CrearLastCreated();
 
   SMESH_ComputeErrorPtr &        GetError() { return myError; }
 
@@ -138,6 +139,12 @@ public:
   int Remove (const std::list< int >& theElemIDs, const bool isNodes);
   // Remove a node or an element.
   // Modify a compute state of sub-meshes which become empty
+
+  void Create0DElementsOnAllNodes( const TIDSortedElemSet& elements,
+                                   TIDSortedElemSet&       all0DElems);
+  // Create 0D elements on all nodes of the given object except those
+  // nodes on which a 0D element already exists. \a all0DElems returns
+  // all 0D elements found or created on nodes of \a elements
 
   bool InverseDiag (const SMDS_MeshElement * theTria1,
                     const SMDS_MeshElement * theTria2 );
