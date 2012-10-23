@@ -1002,6 +1002,17 @@ void SMESHGUI_FilterTable::Init (const QList<int>& theTypes)
 
     myLibDlg = 0;
   }
+  else
+  {
+    QList<int>::const_iterator typeIt = theTypes.begin();
+    for ( ; typeIt != theTypes.end(); ++typeIt ) {
+      if ( !myTables[ *typeIt ] ) {
+        Table* aTable = createTable(mySwitchTableGrp, *typeIt);
+        myTables[ *typeIt ] = aTable;
+        ((QVBoxLayout*)mySwitchTableGrp->layout())->addWidget(myTables[ *typeIt ]);
+      }
+    }
+  }
 
   // Hide buttons of entity types if necessary
   const QMap<int, QString>& aSupportedTypes = getSupportedTypes();
