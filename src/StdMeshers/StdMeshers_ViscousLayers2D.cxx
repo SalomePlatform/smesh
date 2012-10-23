@@ -1188,8 +1188,12 @@ bool _ViscousBuilder2D::shrink()
 
     // Get length of existing segments (from edge start to node) and their nodes
     const vector<UVPtStruct>& points = L._wire->GetUVPtStruct();
-    UVPtStructVec   nodeDataVec( & points[ L._firstPntInd ],
-                                 & points[ L._lastPntInd + 1 ]);
+    UVPtStructVec nodeDataVec( & points[ L._firstPntInd ],
+                               & points[ L._lastPntInd + 1 ]);
+    nodeDataVec.front().param = u1; // U on vertex is correct on only one of shared edges
+    nodeDataVec.back ().param = u2;
+    nodeDataVec.front().normParam = 0;
+    nodeDataVec.back ().normParam = 1;
     vector< double > segLengths( nodeDataVec.size() - 1 );
     BRepAdaptor_Curve curve( E );
     for ( size_t iP = 1; iP < nodeDataVec.size(); ++iP )
@@ -1493,13 +1497,15 @@ void _ViscousBuilder2D::removeMeshFaces(const TopoDS_Shape& face)
 {
   // we don't use SMESH_subMesh::ComputeStateEngine() because of a listener
   // which clears EDGEs together with _face.
-  if ( SMESHDS_SubMesh* sm = getMeshDS()->MeshElements( face ))
+  SMESH_subMesh* sm = _mesh->GetSubMesh( face );
+  if ( SMESHDS_SubMesh* smDS = sm->GetSubMeshDS() )
   {
-    SMDS_ElemIteratorPtr eIt = sm->GetElements();
-    while ( eIt->more() ) getMeshDS()->RemoveFreeElement( eIt->next(), sm );
-    SMDS_NodeIteratorPtr nIt = sm->GetNodes();
-    while ( nIt->more() ) getMeshDS()->RemoveFreeNode( nIt->next(), sm );
+    SMDS_ElemIteratorPtr eIt = smDS->GetElements();
+    while ( eIt->more() ) getMeshDS()->RemoveFreeElement( eIt->next(), smDS );
+    SMDS_NodeIteratorPtr nIt = smDS->GetNodes();
+    while ( nIt->more() ) getMeshDS()->RemoveFreeNode( nIt->next(), smDS );
   }
+  sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
 }
 
 //================================================================================
