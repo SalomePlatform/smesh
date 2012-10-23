@@ -105,7 +105,11 @@
         </message>
         <message>
             <source>ICON_DLG_ELEM0D</source>
-            <translation>mesh_vertex.png</translation>
+            <translation>mesh_0D_elem.png</translation>
+        </message>
+        <message>
+            <source>ICON_0D_ON_ALL_NODES</source>
+            <translation>mesh_0D_on_all_nodes.png</translation>
         </message>
         <message>
             <source>ICON_DLG_EDGE</source>

@@ -97,6 +97,7 @@ salomeinclude_HEADERS = \
 	SMESHGUI_PreviewDlg.h  \
 	SMESHGUI_ReorientFacesDlg.h \
 	SMESHGUI_PropertiesDlg.h \
+	SMESHGUI_Add0DElemsOnAllNodesDlg.h \
 	SMESH_SMESHGUI.hxx
 
 # Libraries targets
@@ -173,7 +174,8 @@ dist_libSMESH_la_SOURCES = \
 	SMESHGUI_FileValidator.cxx \
 	SMESHGUI_PreviewDlg.cxx  \
 	SMESHGUI_ReorientFacesDlg.cxx \
-	SMESHGUI_PropertiesDlg.cxx
+	SMESHGUI_PropertiesDlg.cxx \
+	SMESHGUI_Add0DElemsOnAllNodesDlg.cxx
 
 MOC_FILES = \
 	SMESHGUI_moc.cxx \
@@ -233,7 +235,8 @@ MOC_FILES = \
 	SMESHGUI_MeshOrderOp_moc.cxx \
 	SMESHGUI_PreviewDlg_moc.cxx \
 	SMESHGUI_ReorientFacesDlg_moc.cxx \
-	SMESHGUI_PropertiesDlg_moc.cxx
+	SMESHGUI_PropertiesDlg_moc.cxx \
+	SMESHGUI_Add0DElemsOnAllNodesDlg_moc.cxx
 
 nodist_libSMESH_la_SOURCES= \
 	$(MOC_FILES)
