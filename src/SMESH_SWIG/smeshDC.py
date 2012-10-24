@@ -957,6 +957,7 @@ class Mesh:
     geom = 0
     mesh = 0
     editor = 0
+    functors = [None] * SMESH.FT_Undefined._v
 
     ## Constructor
     #
@@ -4056,9 +4057,16 @@ class Mesh:
     def CreateHoleSkin(self, radius, theShape, groupName, theNodesCoords):
         return self.editor.CreateHoleSkin( radius, theShape, groupName, theNodesCoords )
 
+    def _getFunctor(self, funcType ):
+        fn = self.functors[ funcType._v ]
+        if not fn:
+            fn = self.smeshpyD.GetFunctor(funcType)
+            fn.SetMesh(self.mesh)
+            self.functors[ funcType._v ] = fn
+        return fn
+
     def _valueFromFunctor(self, funcType, elemId):
-        fn = self.smeshpyD.GetFunctor(funcType)
-        fn.SetMesh(self.mesh)
+        fn = self._getFunctor( funcType )
         if fn.GetElementType() == self.GetElementType(elemId, True):
             val = fn.GetValue(elemId)
         else:
