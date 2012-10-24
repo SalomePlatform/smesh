@@ -3,18 +3,28 @@
 \page extrusion_page Extrusion
 
 \n Extrusion is used to build mesh elements of plus one
-dimension than the input ones. Any line or planar element can be
-extruded. Line elements will extrude into quadrilateral plane elements.
-Triangular and Quadrilateral plane elements extrude into Pentahedron
-and Hexahedron solids respectively.
+dimension than the input ones. Any node, segment or 2D element can be
+extruded. Element of each type extrude into elements of a certain type
+as follows:
+<table>
+<tr><td><b>Extruded element</b></td><td><b> Result elements </b></td></tr>
+<tr><td>Node              </td><td> Segments </td></tr>
+<tr><td>Segment           </td><td> Quadrilaterals </td></tr>
+<tr><td>Triangle          </td><td> Pentahedrons </td></tr>
+<tr><td>Quadrilateral     </td><td> Hexahedrons </td></tr>
+<tr><td>Polygon           </td><td> Polyhedrons </td></tr>
+<tr><td>Hexagonal polygon </td><td> Hexagonal prism </td></tr>
+</table>
 
 <em>To use extrusion:</em>
 <ol>
 <li>From the \b Modification menu choose the \b Extrusion item or click
 <em>"Extrusion"</em> button in the toolbar. 
 
+<center>
 \image html image91.png
-<center><em>"Extrusion" button</em></center>
+<em>"Extrusion" button</em>
+</center>
 
 The following dialog common for line and planar elements will appear:
 
