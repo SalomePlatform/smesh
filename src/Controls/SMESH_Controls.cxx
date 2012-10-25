@@ -3529,7 +3529,6 @@ void ManifoldPart::getFacesByLink( const ManifoldPart::Link& theLink,
 
 ElementsOnSurface::ElementsOnSurface()
 {
-  myMesh = 0;
   myIds.Clear();
   myType = SMDSAbs_All;
   mySurf.Nullify();
@@ -3539,15 +3538,13 @@ ElementsOnSurface::ElementsOnSurface()
 
 ElementsOnSurface::~ElementsOnSurface()
 {
-  myMesh = 0;
 }
 
 void ElementsOnSurface::SetMesh( const SMDS_Mesh* theMesh )
 {
-  if ( myMesh == theMesh )
-    return;
-  myMesh = theMesh;
-  process();
+  myMeshModifTracer.SetMesh( theMesh );
+  if ( myMeshModifTracer.IsMeshModified())
+    process();
 }
 
 bool ElementsOnSurface::IsSatisfy( long theElementId )
@@ -3602,32 +3599,14 @@ void ElementsOnSurface::process()
   if ( mySurf.IsNull() )
     return;
 
-  if ( myMesh == 0 )
+  if ( !myMeshModifTracer.GetMesh() )
     return;
 
-  if ( myType == SMDSAbs_Face || myType == SMDSAbs_All )
-  {
-    myIds.ReSize( myMesh->NbFaces() );
-    SMDS_FaceIteratorPtr anIter = myMesh->facesIterator();
-    for(; anIter->more(); )
-      process( anIter->next() );
-  }
+  myIds.ReSize( myMeshModifTracer.GetMesh()->GetMeshInfo().NbElements( myType ));
 
-  if ( myType == SMDSAbs_Edge || myType == SMDSAbs_All )
-  {
-    myIds.ReSize( myIds.Extent() + myMesh->NbEdges() );
-    SMDS_EdgeIteratorPtr anIter = myMesh->edgesIterator();
-    for(; anIter->more(); )
-      process( anIter->next() );
-  }
-
-  if ( myType == SMDSAbs_Node )
-  {
-    myIds.ReSize( myMesh->NbNodes() );
-    SMDS_NodeIteratorPtr anIter = myMesh->nodesIterator();
-    for(; anIter->more(); )
-      process( anIter->next() );
-  }
+  SMDS_ElemIteratorPtr anIter = myMeshModifTracer.GetMesh()->elementsIterator( myType );
+  for(; anIter->more(); )
+    process( anIter->next() );
 }
 
 void ElementsOnSurface::process( const SMDS_MeshElement* theElemPtr )

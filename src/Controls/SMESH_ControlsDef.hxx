@@ -783,7 +783,7 @@ namespace SMESH{
       bool    isOnSurface( const SMDS_MeshNode* theNode );
 
     private:
-      const SMDS_Mesh*      myMesh;
+      TMeshModifTracer      myMeshModifTracer;
       TColStd_MapOfInteger  myIds;
       SMDSAbs_ElementType   myType;
       //Handle(Geom_Surface)  mySurf;
