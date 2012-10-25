@@ -3725,26 +3725,7 @@ void ElementsOnShape::SetShape (const TopoDS_Shape&       theShape,
   
   if ( !myMesh ) return;
 
-  switch (myType)
-  {
-  case SMDSAbs_All:
-    myIds.ReSize(myMesh->NbEdges() + myMesh->NbFaces() + myMesh->NbVolumes());
-    break;
-  case SMDSAbs_Node:
-    myIds.ReSize(myMesh->NbNodes());
-    break;
-  case SMDSAbs_Edge:
-    myIds.ReSize(myMesh->NbEdges());
-    break;
-  case SMDSAbs_Face:
-    myIds.ReSize(myMesh->NbFaces());
-    break;
-  case SMDSAbs_Volume:
-    myIds.ReSize(myMesh->NbVolumes());
-    break;
-  default:
-    break;
-  }
+  myIds.ReSize( myMeshModifTracer.GetMesh()->GetMeshInfo().NbElements( myType ));
 
   myShapesMap.Clear();
   addShape(myShape);
