@@ -415,7 +415,8 @@ bool SMESHGUI_Add0DElemsOnAllNodesOp::onApply()
 
   if ( myDlg->getSelectionType() == SEL_OBJECT )
   {
-    selectionMgr()->setSelectedObjects( SALOME_ListIO(), /*append=*/false );
+    SALOME_ListIO aList;
+    selectionMgr()->setSelectedObjects( aList, /*append=*/false );
   }
   else
   {
