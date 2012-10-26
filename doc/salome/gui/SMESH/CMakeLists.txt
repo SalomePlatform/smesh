@@ -23,7 +23,7 @@ SET(top_builddir ${CMAKE_BINARY_DIR})
 SET(top_srcdir ${CMAKE_SOURCE_DIR})
 SET(srcdir ${CMAKE_CURRENT_SOURCE_DIR})
 SET(builddir ${CMAKE_CURRENT_BINARY_DIR})
-SET(datadir${CMAKE_INSTALL_PREFIX}/share)
+SET(datadir ${CMAKE_INSTALL_PREFIX}/share)
 SET(docdir ${datadir}/doc/salome)
 SET(guidocdir ${docdir}/gui/SMESH)
 
@@ -32,7 +32,7 @@ SALOME_CONFIGURE_FILE(doxyfile_py.in doxyfile_py)
 SALOME_CONFIGURE_FILE(static/header.html.in ${builddir}/static/header.html)
 SALOME_CONFIGURE_FILE(static/header_py.html.in ${builddir}/static/header_py.html)
 
-SALOME_INSTALL_SCRIPTS(collect_mesh_methods.py ${CMAKE_INSTALL_PREFIX}/bin/salome)
+SALOME_INSTALL_SCRIPTS(collect_mesh_methods.py bin/salome)
             
 SET(DOC_SMESH_MeshersList StdMeshers)
 SET(f1 "${srcdir}/collect_mesh_methods.py")
