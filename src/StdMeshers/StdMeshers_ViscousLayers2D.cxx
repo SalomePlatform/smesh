@@ -326,6 +326,9 @@ namespace VISCOUS_2D
     double fixCollisions( const int stepNb );
     bool refine();
     bool shrink();
+    bool toShrinkForAdjacent( const TopoDS_Face& adjFace,
+                              const TopoDS_Edge& E,
+                              const TopoDS_Vertex& V);
     void setLenRatio( _LayerEdge& LE, const gp_Pnt& pOut );
     void adjustCommonEdge( _PolyLine& LL, _PolyLine& LR );
     void calcLayersHeight(const double    totalThick,
@@ -369,6 +372,20 @@ namespace VISCOUS_2D
     
   };
 
+  //================================================================================
+  /*!
+   * \brief Returns StdMeshers_ViscousLayers2D for the FACE
+   */
+  const StdMeshers_ViscousLayers2D* findHyp(SMESH_Mesh&        theMesh,
+                                            const TopoDS_Face& theFace)
+  {
+    SMESH_HypoFilter hypFilter
+      ( SMESH_HypoFilter::HasName( StdMeshers_ViscousLayers2D::GetHypType() ));
+    const SMESH_Hypothesis * hyp =
+      theMesh.GetHypothesis( theFace, hypFilter, /*ancestors=*/true );
+    return dynamic_cast< const StdMeshers_ViscousLayers2D* > ( hyp );
+  }
+
 } // namespace VISCOUS_2D
 
 //================================================================================
@@ -394,10 +411,7 @@ StdMeshers_ViscousLayers2D::Compute(SMESH_Mesh&        theMesh,
 {
   SMESH_ProxyMesh::Ptr pm;
 
-  SMESH_HypoFilter hypFilter( SMESH_HypoFilter::HasName( GetHypType() ));
-  const SMESH_Hypothesis * hyp = theMesh.GetHypothesis( theFace, hypFilter, /*ancestors=*/true );
-  const StdMeshers_ViscousLayers2D* vlHyp =
-    dynamic_cast< const StdMeshers_ViscousLayers2D* > ( hyp );
+  const StdMeshers_ViscousLayers2D* vlHyp = VISCOUS_2D::findHyp( theMesh, theFace );
   if ( vlHyp )
   {
     VISCOUS_2D::_ViscousBuilder2D builder( theMesh, theFace, vlHyp );
@@ -979,7 +993,6 @@ bool _ViscousBuilder2D::inflate()
     {
       _PolyLine& L = _polyLineVec[ iL ];
       if ( !L._advancable ) continue;
-      //dumpFunction(SMESH_Comment("inflate")<<data._index<<"_step"<<nbSteps); // debug
       for ( size_t iLE = L.FirstLEdge(); iLE < L._lEdges.size(); ++iLE )
         L._lEdges[iLE].SetNewLength( curThick );
       // for ( int k=0; k<L._segments.size(); ++k)
@@ -987,7 +1000,6 @@ bool _ViscousBuilder2D::inflate()
       //        << "( " << L._segments[k].p2().X() << ", " <<L._segments[k].p2().Y() << " ) "
       //        << endl;
       L._segTree.reset( new _SegmentTree( L._segments ));
-      //dumpFunctionEnd();
     }
 
     // Avoid intersection of _Segment's
@@ -1116,15 +1128,17 @@ bool _ViscousBuilder2D::shrink()
 
     // Check a FACE adjacent to _face by E
     bool existingNodesFound = false;
+    TopoDS_Face adjFace;
     PShapeIteratorPtr faceIt = _helper.GetAncestors( E, *_mesh, TopAbs_FACE );
     while ( const TopoDS_Shape* f = faceIt->next() )
       if ( !_face.IsSame( *f ))
       {
-        SMESH_ProxyMesh::Ptr pm = _ProxyMeshHolder::FindProxyMeshOfFace( *f, *_mesh );
+        adjFace = TopoDS::Face( *f );
+        SMESH_ProxyMesh::Ptr pm = _ProxyMeshHolder::FindProxyMeshOfFace( adjFace, *_mesh );
         if ( !pm || pm->NbProxySubMeshes() == 0 )
         {
           // There are no viscous layers on an adjacent FACE, clear it's 2D mesh
-          removeMeshFaces( *f );
+          removeMeshFaces( adjFace );
         }
         else
         {
@@ -1214,10 +1228,14 @@ bool _ViscousBuilder2D::shrink()
 
     // Move first and last parameters on EDGE (U of n1) according to layers' thickness
     // and create nodes of layers on EDGE ( -x-x-x )
+    int isRShrinkedForAdjacent;
+    UVPtStructVec nodeDataForAdjacent;
     for ( int isR = 0; isR < 2; ++isR )
     {
       _PolyLine* L2 = isR ? L._rightLine : L._leftLine; // line with layers
-      if ( !L2->_advancable ) continue;
+      if ( !L2->_advancable &&
+           !toShrinkForAdjacent( adjFace, E, L._wire->FirstVertex( L._edgeInd + isR )))
+        continue;
 
       double & u = isR ? u2 : u1; // param to move
       double  u0 = isR ? ul : uf; // init value of the param to move
@@ -1230,30 +1248,36 @@ bool _ViscousBuilder2D::shrink()
       sign = ( isR ^ edgeReversed ) ? -1. : 1.;
       pcurve->D1( u, uv, tangent );
 
-      gp_Ax2d      edgeRay( uv, tangent * sign );
-      const _Segment& seg2( isR ? L2->_segments.front() : L2->_segments.back() );
-      // make an elongated seg2
-      gp_XY seg2Vec( seg2.p2() - seg2.p1() );
-      gp_XY longSeg2p1 = seg2.p1() - 1000 * seg2Vec;
-      gp_XY longSeg2p2 = seg2.p2() + 1000 * seg2Vec;
-      _Segment longSeg2( longSeg2p1, longSeg2p2 );
-      if ( intersection.Compute( longSeg2, edgeRay )) // convex VERTEX
+      if ( L2->_advancable )
       {
-        length2D = intersection._param2; // |L  seg2     
-                                         // |  o---o--- 
-                                         // | /    |    
-                                         // |/     |  L2
-                                         // x------x--- 
+        gp_Ax2d      edgeRay( uv, tangent * sign );
+        const _Segment& seg2( isR ? L2->_segments.front() : L2->_segments.back() );
+        // make an elongated seg2
+        gp_XY seg2Vec( seg2.p2() - seg2.p1() );
+        gp_XY longSeg2p1 = seg2.p1() - 1000 * seg2Vec;
+        gp_XY longSeg2p2 = seg2.p2() + 1000 * seg2Vec;
+        _Segment longSeg2( longSeg2p1, longSeg2p2 );
+        if ( intersection.Compute( longSeg2, edgeRay )) // convex VERTEX
+        {
+          length2D = intersection._param2; /*  |L  seg2     
+                                            *  |  o---o--- 
+                                            *  | /    |    
+                                            *  |/     |  L2
+                                            *  x------x---      */
+        }
+        else  /* concave VERTEX */         /*  o-----o--- 
+                                            *   \    |    
+                                            *    \   |  L2
+                                            *     x--x--- 
+                                            *    /        
+                                            * L /               */
+          length2D = ( isR ? L2->_lEdges.front() : L2->_lEdges.back() )._length2D;
       }
-      else  // concave VERTEX            //  o-----o--- 
-      {                                  //   \    |    
-                                         //    \   |  L2
-                                         //     x--x--- 
-                                         //    /        
-                                         // L /         
-        length2D = ( isR ? L2->_lEdges.front() : L2->_lEdges.back() )._length2D;
+      else // L2 is advancable but in the face adjacent by L
+      {
+        length2D = ( isR ? L._leftLine->_lEdges.back() : L._rightLine->_lEdges.front() )._length2D;
       }
-       // move u to the internal boundary of layers
+      // move u to the internal boundary of layers
       u += length2D * sign;
       nodeDataVec[ iPEnd ].param = u;
 
@@ -1285,6 +1309,24 @@ bool _ViscousBuilder2D::shrink()
         prevNode = layersNode[ i ];
       }
 
+      // store data of layer nodes made for adjacent FACE
+      if ( !L2->_advancable )
+      {
+        isRShrinkedForAdjacent = isR;
+        nodeDataForAdjacent.resize( _hyp->GetNumberLayers() );
+
+        size_t iFrw = 0, iRev = nodeDataForAdjacent.size()-1, *i = isR ? &iRev : &iFrw;
+        nodeDataForAdjacent[ *i ] = points[ isR ? L._lastPntInd : L._firstPntInd ];
+        nodeDataForAdjacent[ *i ].param     = u0;
+        nodeDataForAdjacent[ *i ].normParam = isR;
+        for ( ++iFrw, --iRev; iFrw < layersNode.size(); ++iFrw, --iRev )
+        {
+          nodeDataForAdjacent[ *i ].node  = layersNode[ iFrw - 1 ];
+          nodeDataForAdjacent[ *i ].u     = nodeUV    [ iFrw - 1 ].X();
+          nodeDataForAdjacent[ *i ].v     = nodeUV    [ iFrw - 1 ].Y();
+          nodeDataForAdjacent[ *i ].param = params    [ iFrw - 1 ];
+        }
+      }   
       // replace a node on vertex by a node of last (most internal) layer
       // in a segment on E
       SMDS_ElemIteratorPtr segIt = vertexNode->GetInverseElementIterator( SMDSAbs_Edge );
@@ -1309,8 +1351,8 @@ bool _ViscousBuilder2D::shrink()
 
     // Shrink edges to fit in between the layers at EDGE ends
 
-    const double newLength = GCPnts_AbscissaPoint::Length( curve, u1, u2 );
-    const double lenRatio  = newLength / edgeLen * ( edgeReversed ? -1. : 1. );
+    double newLength = GCPnts_AbscissaPoint::Length( curve, u1, u2 );
+    double lenRatio  = newLength / edgeLen * ( edgeReversed ? -1. : 1. );
     for ( size_t iP = 1; iP < nodeDataVec.size()-1; ++iP )
     {
       const SMDS_MeshNode* oldNode = nodeDataVec[iP].node;
@@ -1334,8 +1376,28 @@ bool _ViscousBuilder2D::shrink()
       nodeDataVec[iP].u         = newUV.X();
       nodeDataVec[iP].v         = newUV.Y();
       nodeDataVec[iP].normParam = segLengths[iP-1] / edgeLen;
-      nodeDataVec[iP].x         = segLengths[iP-1] / edgeLen;
-      nodeDataVec[iP].y         = segLengths[iP-1] / edgeLen;
+      // nodeDataVec[iP].x         = segLengths[iP-1] / edgeLen;
+      // nodeDataVec[iP].y         = segLengths[iP-1] / edgeLen;
+    }
+
+    // add nodeDataForAdjacent to nodeDataVec
+    if ( !nodeDataForAdjacent.empty() )
+    {
+      double lenDelta = GCPnts_AbscissaPoint::Length( curve,
+                                                      nodeDataForAdjacent.front().param,
+                                                      nodeDataForAdjacent.back().param );
+      lenRatio = newLength / ( newLength + lenDelta );
+      for ( size_t iP = 0; iP < nodeDataVec.size(); ++iP )
+        nodeDataVec[iP].normParam *= lenRatio;
+
+      newLength = newLength + lenDelta;
+      for ( size_t iP = 1; iP < nodeDataForAdjacent.size(); ++iP )
+        nodeDataForAdjacent[iP].normParam =
+          GCPnts_AbscissaPoint::Length( curve, u1, 
+                                        nodeDataForAdjacent[iP].param ) / newLength;
+
+      nodeDataVec.insert( isRShrinkedForAdjacent ? nodeDataVec.end() : nodeDataVec.begin(),
+                          nodeDataForAdjacent.begin(), nodeDataForAdjacent.end() );
     }
 
     // create a proxy sub-mesh containing the moved nodes
@@ -1351,6 +1413,36 @@ bool _ViscousBuilder2D::shrink()
   return true;
 }
 
+//================================================================================
+/*!
+ * \brief Returns true if there will be a shrinked mesh on EDGE E of FACE adjFace
+ *        near VERTEX V
+ */
+//================================================================================
+
+bool _ViscousBuilder2D::toShrinkForAdjacent( const TopoDS_Face&   adjFace,
+                                             const TopoDS_Edge&   E,
+                                             const TopoDS_Vertex& V)
+{
+  if ( const StdMeshers_ViscousLayers2D* vlHyp = findHyp( *_mesh, adjFace ))
+  {
+    VISCOUS_2D::_ViscousBuilder2D builder( *_mesh, adjFace, vlHyp );
+    builder.findEdgesWithLayers();
+
+    PShapeIteratorPtr edgeIt = _helper.GetAncestors( V, *_mesh, TopAbs_EDGE );
+    while ( const TopoDS_Shape* edgeAtV = edgeIt->next() )
+    {
+      if ( !edgeAtV->IsSame( E ) &&
+           _helper.IsSubShape( *edgeAtV, adjFace ) &&
+           !builder._ignoreShapeIds.count( getMeshDS()->ShapeToIndex( *edgeAtV )))
+      {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+  
 //================================================================================
 /*!
  * \brief Make faces
