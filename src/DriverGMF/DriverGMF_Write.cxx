@@ -66,7 +66,7 @@ DriverGMF_Write::~DriverGMF_Write()
 
 Driver_Mesh::Status DriverGMF_Write::Perform()
 {
-  const int dim = 3, version = 3;
+  const int dim = 3, version = sizeof(long) == 4 ? 2 : 3;
 
   int meshID = GmfOpenMesh( myFile.c_str(), GmfWrite, version, dim );
   if ( !meshID )
