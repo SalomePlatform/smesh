@@ -1105,6 +1105,7 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
           afunctor->SetMesh( actor()->GetObject()->GetMesh() );
           myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "MAX_ELEMENT_LENGTH_3D" ) ).arg( afunctor->GetValue( id ) ) );
         }
+	/*
         if( e->GetType() >= SMDSAbs_Edge && e->GetType() <= SMDSAbs_Volume ) {
           // separator
           myInfo->append( "" );
@@ -1121,6 +1122,7 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
             myInfo->append( QString( "<b>%1:</b> %2 #%3" ).arg( tr( "Position" ) ).arg( shapeType ).arg( shapeID ) );
           }
         }
+	*/
       }
       // separator
       if ( ids.count() > 1 ) {
@@ -1539,6 +1541,7 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
           diam3Item->setText( 0, tr( "MAX_ELEMENT_LENGTH_3D" ) );
           diam3Item->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );     
         }
+	/*
         if( e->GetType() >= SMDSAbs_Edge && e->GetType() <= SMDSAbs_Volume ) {
           //shapeID
           int shapeID = e->getshapeId();
@@ -1555,6 +1558,7 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
             shItem->setText( 1, QString( "%1 #%2" ).arg(shapeType).arg( shapeID ) );
           }
         }
+	*/
       }
     }
   }
