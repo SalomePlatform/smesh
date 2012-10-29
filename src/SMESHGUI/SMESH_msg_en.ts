@@ -4038,6 +4038,21 @@ It can&apos;t be deleted </translation>
     </message>
 </context>
 <context>
+    <name>SMESHGUI_Dialog</name>
+    <message>
+        <source>DLG_MESH</source>
+        <translation>meshes</translation>
+    </message>
+    <message>
+        <source>DLG_HYPO</source>
+        <translation>hypotheses</translation>
+    </message>
+    <message>
+        <source>DLG_ALGO</source>
+        <translation>algorithms</translation>
+    </message>
+</context>
+<context>
     <name>SMESHGUI</name>
     <message>
         <source>NOT_A_VTK_VIEWER</source>

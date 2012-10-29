@@ -3994,6 +3994,21 @@ Il ne peut pas être supprimé.</translation>
     </message>
 </context>
 <context>
+    <name>SMESHGUI_Dialog</name>
+    <message>
+        <source>DLG_MESH</source>
+        <translation>maillages</translation>
+    </message>
+    <message>
+        <source>DLG_HYPO</source>
+        <translation>hypothèses</translation>
+    </message>
+    <message>
+        <source>DLG_ALGO</source>
+        <translation>algorithmes</translation>
+    </message>
+</context>
+<context>
     <name>SMESHGUI_GroupDlg</name>
     <message>
         <source>ALLOW_ELEM_LIST_MODIF</source>
