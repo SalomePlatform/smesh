@@ -633,6 +633,8 @@ bool _ViscousBuilder2D::makePolyLines()
   {
     StdMeshers_FaceSidePtr      wire = _faceSideVec[ iWire ];
     const vector<UVPtStruct>& points = wire->GetUVPtStruct();
+    if ( points.empty() && wire->NbPoints() > 0 )
+      return error("Invalid node parameters on some EDGE");
     int iPnt = 0;
     for ( int iE = 0; iE < wire->NbEdges(); ++iE )
     {
@@ -1142,55 +1144,52 @@ bool _ViscousBuilder2D::shrink()
         }
         else
         {
-          // There are viscous layers on the adjacent FACE;
-          // look for already shrinked segments on E
-          const SMESH_ProxyMesh::SubMesh* adjEdgeSM = pm->GetProxySubMesh( E );
-          if ( adjEdgeSM && adjEdgeSM->NbElements() > 0 )
+          // There are viscous layers on the adjacent FACE; shrink must be already done;
+          //
+          // copy layer nodes
+          //
+          const vector<UVPtStruct>& points = L._wire->GetUVPtStruct();
+          int iPFrom = L._firstPntInd, iPTo = L._lastPntInd;
+          if ( L._leftLine->_advancable )
           {
-            existingNodesFound = true;
-
-            // copy data of moved nodes to my _ProxyMeshOfFace
-            const UVPtStructVec& adjNodeData = adjEdgeSM->GetUVPtStructVec();
-            UVPtStructVec nodeDataVec( adjNodeData.size() );
-            for ( size_t iP = 0, iAdj = adjNodeData.size(); iP < nodeDataVec.size(); ++iP )
-            {
-              nodeDataVec[ iP ] = adjNodeData[ --iAdj ];
-              gp_Pnt2d uv = pcurve->Value( nodeDataVec[ iP ].param );
-              nodeDataVec[iP].u = uv.X();
-              nodeDataVec[iP].v = uv.Y();
-              nodeDataVec[iP].normParam = 1 - nodeDataVec[iP].normParam;
-            }
-            _ProxyMeshOfFace::_EdgeSubMesh* myEdgeSM = getProxyMesh()->GetEdgeSubMesh( edgeID );
-            myEdgeSM->SetUVPtStructVec( nodeDataVec );
-
-            // copy layer nodes
-            map< double, const SMDS_MeshNode* > u2layerNodes;
-            SMESH_Algo::GetSortedNodesOnEdge( getMeshDS(), E, /*skipMedium=*/true, u2layerNodes );
-            // u2layerNodes includes nodes on vertices, layer nodes and shrinked nodes
-            vector< std::pair< double, const SMDS_MeshNode* > > layerUNodes;
-            layerUNodes.resize( u2layerNodes.size() - 2 ); // skip vertex nodes
-            map< double, const SMDS_MeshNode* >::iterator u2n = u2layerNodes.begin();
-            size_t iBeg = 0, iEnd = layerUNodes.size() - 1, *pIndex = edgeReversed ? &iEnd : &iBeg;
-            for ( ++u2n; iBeg < u2layerNodes.size()-2; ++u2n, ++iBeg, --iEnd ) {
-              layerUNodes[ *pIndex ] = *u2n;
-            }
-            if ( L._leftLine->_advancable && layerUNodes.size() >= _hyp->GetNumberLayers() )
-            {
-              vector<gp_XY>& uvVec = L._lEdges.front()._uvRefined;
-              for ( int i = 0; i < _hyp->GetNumberLayers(); ++i ) {
-                L._leftNodes.push_back( layerUNodes[i].second );
-                uvVec.push_back ( pcurve->Value( layerUNodes[i].first ).XY() );
-              }
-            }
-            if ( L._rightLine->_advancable && layerUNodes.size() >= 2*_hyp->GetNumberLayers() )
-            {
-              vector<gp_XY>& uvVec = L._lEdges.back()._uvRefined;
-              for ( int i = 0, j = layerUNodes.size()-1; i < _hyp->GetNumberLayers(); ++i, --j ) {
-                L._rightNodes.push_back( layerUNodes[j].second );
-                uvVec.push_back ( pcurve->Value( layerUNodes[j].first ).XY() );
-              }
+            vector<gp_XY>& uvVec = L._lEdges.front()._uvRefined;
+            for ( int i = 0; i < _hyp->GetNumberLayers(); ++i ) {
+              const UVPtStruct& uvPt = points[ iPFrom + i + 1 ];
+              L._leftNodes.push_back( uvPt.node );
+              uvVec.push_back ( pcurve->Value( uvPt.param ).XY() );
             }
           }
+          if ( L._rightLine->_advancable )
+          {
+            vector<gp_XY>& uvVec = L._lEdges.back()._uvRefined;
+            for ( int i = 0; i < _hyp->GetNumberLayers(); ++i ) {
+              const UVPtStruct& uvPt = points[ iPTo - i - 1 ];
+              L._rightNodes.push_back( uvPt.node );
+              uvVec.push_back ( pcurve->Value( uvPt.param ).XY() );
+            }
+          }
+          // make proxy sub-mesh data of present nodes
+          //
+          if ( L._leftLine->_advancable )  iPFrom += _hyp->GetNumberLayers();
+          if ( L._rightLine->_advancable ) iPTo   -= _hyp->GetNumberLayers();
+          UVPtStructVec nodeDataVec( & points[ iPFrom ], & points[ iPTo + 1 ]);
+
+          double normSize = nodeDataVec.back().normParam - nodeDataVec.front().normParam;
+          for ( size_t iP = 0; iP < nodeDataVec.size(); ++iP )
+            nodeDataVec[iP].normParam =
+              ( nodeDataVec[iP].normParam - nodeDataVec[0].normParam ) / normSize;
+
+          const SMDS_MeshNode* n = nodeDataVec.front().node;
+          if ( n->GetPosition()->GetTypeOfPosition() == SMDS_TOP_VERTEX )
+            nodeDataVec.front().param = L._wire->FirstU( L._edgeInd );
+          n = nodeDataVec.back().node;
+          if ( n->GetPosition()->GetTypeOfPosition() == SMDS_TOP_VERTEX )
+            nodeDataVec.back().param = L._wire->LastU( L._edgeInd );
+
+          _ProxyMeshOfFace::_EdgeSubMesh* myEdgeSM = getProxyMesh()->GetEdgeSubMesh( edgeID );
+          myEdgeSM->SetUVPtStructVec( nodeDataVec );
+
+          existingNodesFound = true;
         }
       } // loop on FACEs sharing E
 
