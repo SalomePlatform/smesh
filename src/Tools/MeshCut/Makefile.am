@@ -40,7 +40,7 @@ MeshCut_SOURCES = \
 
 MeshCut_CPPFLAGS =  $(MED3_INCLUDES)
 
-MeshCut_LDFLAGS =  $(MED3_LIBS) $(HDF5_LIBS)
+MeshCut_LDFLAGS =  $(MED3_LIBS_C_ONLY) $(HDF5_LIBS)
 
 salomeplugins_PYTHON = \
 	meshcut_plugin.py
