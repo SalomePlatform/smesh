@@ -1175,7 +1175,7 @@ bool _ViscousBuilder2D::shrink()
           UVPtStructVec nodeDataVec( & points[ iPFrom ], & points[ iPTo + 1 ]);
 
           double normSize = nodeDataVec.back().normParam - nodeDataVec.front().normParam;
-          for ( size_t iP = 0; iP < nodeDataVec.size(); ++iP )
+          for ( int iP = nodeDataVec.size()-1; iP >= 0 ; --iP )
             nodeDataVec[iP].normParam =
               ( nodeDataVec[iP].normParam - nodeDataVec[0].normParam ) / normSize;
 
@@ -1325,7 +1325,7 @@ bool _ViscousBuilder2D::shrink()
           nodeDataForAdjacent[ *i ].v     = nodeUV    [ iFrw - 1 ].Y();
           nodeDataForAdjacent[ *i ].param = params    [ iFrw - 1 ];
         }
-      }   
+      }
       // replace a node on vertex by a node of last (most internal) layer
       // in a segment on E
       SMDS_ElemIteratorPtr segIt = vertexNode->GetInverseElementIterator( SMDSAbs_Edge );
@@ -1350,8 +1350,8 @@ bool _ViscousBuilder2D::shrink()
 
     // Shrink edges to fit in between the layers at EDGE ends
 
-    double newLength = GCPnts_AbscissaPoint::Length( curve, u1, u2 );
-    double lenRatio  = newLength / edgeLen * ( edgeReversed ? -1. : 1. );
+    const double newLength = GCPnts_AbscissaPoint::Length( curve, u1, u2 );
+    const double lenRatio  = newLength / edgeLen * ( edgeReversed ? -1. : 1. );
     for ( size_t iP = 1; iP < nodeDataVec.size()-1; ++iP )
     {
       const SMDS_MeshNode* oldNode = nodeDataVec[iP].node;
@@ -1382,19 +1382,27 @@ bool _ViscousBuilder2D::shrink()
     // add nodeDataForAdjacent to nodeDataVec
     if ( !nodeDataForAdjacent.empty() )
     {
-      double lenDelta = GCPnts_AbscissaPoint::Length( curve,
-                                                      nodeDataForAdjacent.front().param,
-                                                      nodeDataForAdjacent.back().param );
-      lenRatio = newLength / ( newLength + lenDelta );
-      for ( size_t iP = 0; iP < nodeDataVec.size(); ++iP )
-        nodeDataVec[iP].normParam *= lenRatio;
+      const double par1      = isRShrinkedForAdjacent ? u2 : uf;
+      const double par2      = isRShrinkedForAdjacent ? ul : u1;
+      const double shrinkLen = GCPnts_AbscissaPoint::Length( curve, par1, par2 );
 
-      newLength = newLength + lenDelta;
-      for ( size_t iP = 1; iP < nodeDataForAdjacent.size(); ++iP )
-        nodeDataForAdjacent[iP].normParam =
-          GCPnts_AbscissaPoint::Length( curve, u1, 
-                                        nodeDataForAdjacent[iP].param ) / newLength;
+      // compute new normParam for nodeDataVec
+      for ( size_t iP = 0; iP < nodeDataVec.size()-1; ++iP )
+        nodeDataVec[iP+1].normParam = segLengths[iP] / ( edgeLen + shrinkLen );
+      double normDelta = 1 - nodeDataVec.back().normParam;
+      if ( !isRShrinkedForAdjacent )
+        for ( size_t iP = 0; iP < nodeDataVec.size(); ++iP )
+          nodeDataVec[iP+1].normParam += normDelta;
 
+      // compute new normParam for nodeDataForAdjacent
+      const double deltaR = isRShrinkedForAdjacent ? nodeDataVec.back().normParam : 0;
+      for ( size_t iP = !isRShrinkedForAdjacent; iP < nodeDataForAdjacent.size(); ++iP )
+      {
+        double lenFromPar1 =
+          GCPnts_AbscissaPoint::Length( curve, par1, nodeDataForAdjacent[iP].param );
+        nodeDataForAdjacent[iP].normParam = deltaR + normDelta * lenFromPar1 / shrinkLen;
+      }
+      // concatenate nodeDataVec and nodeDataForAdjacent
       nodeDataVec.insert( isRShrinkedForAdjacent ? nodeDataVec.end() : nodeDataVec.begin(),
                           nodeDataForAdjacent.begin(), nodeDataForAdjacent.end() );
     }
@@ -1825,3 +1833,5 @@ bool _SegmentTree::_SegBox::IsOut( const gp_Ax2d& ray ) const
 
   return Abs( distBoxCenter2Ray ) > 0.5 * boxSectionDiam;
 }
+
+
