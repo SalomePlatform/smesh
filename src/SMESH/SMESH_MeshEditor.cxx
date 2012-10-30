@@ -415,7 +415,7 @@ int SMESH_MeshEditor::Remove (const list< int >& theIDs,
 void SMESH_MeshEditor::Create0DElementsOnAllNodes( const TIDSortedElemSet& elements,
                                                    TIDSortedElemSet&       all0DElems )
 {
-  typedef SMDS_SetIterator<const SMDS_MeshElement*, TIDSortedElemSet::iterator> TSetIterator;
+  typedef SMDS_SetIterator<const SMDS_MeshElement*, TIDSortedElemSet::const_iterator> TSetIterator;
   SMDS_ElemIteratorPtr elemIt;
   if ( elements.empty() )
     elemIt = GetMeshDS()->elementsIterator( SMDSAbs_Node );
