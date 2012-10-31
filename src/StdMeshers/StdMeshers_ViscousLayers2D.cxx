@@ -226,7 +226,7 @@ namespace VISCOUS_2D
 
     vector<gp_XY> _uvRefined; // divisions by layers
 
-    void SetNewLength( const double length );
+    bool SetNewLength( const double length );
   };
   //--------------------------------------------------------------------------------
   /*!
@@ -323,7 +323,7 @@ namespace VISCOUS_2D
     bool findEdgesWithLayers();
     bool makePolyLines();
     bool inflate();
-    double fixCollisions( const int stepNb );
+    bool fixCollisions();
     bool refine();
     bool shrink();
     bool toShrinkForAdjacent( const TopoDS_Face& adjFace,
@@ -333,7 +333,7 @@ namespace VISCOUS_2D
     void adjustCommonEdge( _PolyLine& LL, _PolyLine& LR );
     void calcLayersHeight(const double    totalThick,
                           vector<double>& heights);
-    void removeMeshFaces(const TopoDS_Shape& face);
+    bool removeMeshFaces(const TopoDS_Shape& face);
 
     bool              error( const string& text );
     SMESHDS_Mesh*     getMeshDS() { return _mesh->GetMeshDS(); }
@@ -533,6 +533,9 @@ SMESH_ProxyMesh::Ptr _ViscousBuilder2D::Compute()
   if ( ! refine() ) // make faces
     return _proxyMesh;
 
+  // for ( size_t i = 0; i < _facesToRecompute.size(); ++i )
+  //   _mesh->GetSubMesh( _facesToRecompute[i] )->ComputeStateEngine( SMESH_subMesh::COMPUTE );
+
   //makeGroupOfLE(); // debug
   //debugDump.Finish();
 
@@ -548,12 +551,15 @@ SMESH_ProxyMesh::Ptr _ViscousBuilder2D::Compute()
 bool _ViscousBuilder2D::findEdgesWithLayers()
 {
   // collect all EDGEs to ignore defined by hyp
+  int nbMyEdgesIgnored = 0;
   vector<TGeomID> ids = _hyp->GetBndShapesToIgnore();
   for ( size_t i = 0; i < ids.size(); ++i )
   {
     const TopoDS_Shape& s = getMeshDS()->IndexToShape( ids[i] );
-    if ( !s.IsNull() && s.ShapeType() == TopAbs_EDGE )
+    if ( !s.IsNull() && s.ShapeType() == TopAbs_EDGE ) {
       _ignoreShapeIds.insert( ids[i] );
+      nbMyEdgesIgnored += ( _helper.IsSubShape( s, _face ));
+    }
   }
 
   // check all EDGEs of the _face
@@ -606,7 +612,7 @@ bool _ViscousBuilder2D::findEdgesWithLayers()
         }
       }
   }
-  return ( totalNbEdges > _ignoreShapeIds.size() );
+  return ( nbMyEdgesIgnored < totalNbEdges );
 }
 
 //================================================================================
@@ -953,7 +959,7 @@ bool _ViscousBuilder2D::inflate()
 {
   // Limit size of inflation step by geometry size found by
   // itersecting _LayerEdge's with _Segment's
-  double minStepSize = _thickness;
+  double minSize = _thickness, maxSize = 0;
   vector< const _Segment* > foundSegs;
   _SegmentIntersection intersection;
   for ( size_t iL1 = 0; iL1 < _polyLineVec.size(); ++iL1 )
@@ -971,20 +977,26 @@ bool _ViscousBuilder2D::inflate()
                intersection.Compute( *foundSegs[i], L1._lEdges[iLE]._ray ))
           {
             double distToL2 = intersection._param2 / L1._lEdges[iLE]._len2dTo3dRatio;
-            double     step = distToL2 / ( 1 + L1._advancable + L2._advancable );
-            if ( step < minStepSize )
-              minStepSize = step;
+            double     size = distToL2 / ( 1 + L1._advancable + L2._advancable );
+            if ( size < minSize )
+              minSize = size;
+            if ( size > maxSize )
+              maxSize = size;
           }
       }
     }
   }
+  if ( minSize > maxSize ) // no collisions possible
+    maxSize = _thickness;
 #ifdef __myDEBUG
-  cout << "-- minStepSize = " << minStepSize << endl;
+  cout << "-- minSize = " << minSize << ", maxSize = " << maxSize << endl;
 #endif
 
-  double curThick = 0, stepSize = minStepSize;
+  double curThick = 0, stepSize = minSize;
   int nbSteps = 0;
-  while ( curThick < _thickness )
+  if ( maxSize > _thickness )
+    maxSize = _thickness;
+  while ( curThick < maxSize )
   {
     curThick += stepSize * 1.25;
     if ( curThick > _thickness )
@@ -995,31 +1007,29 @@ bool _ViscousBuilder2D::inflate()
     {
       _PolyLine& L = _polyLineVec[ iL ];
       if ( !L._advancable ) continue;
+      bool lenChange = false;
       for ( size_t iLE = L.FirstLEdge(); iLE < L._lEdges.size(); ++iLE )
-        L._lEdges[iLE].SetNewLength( curThick );
+        lenChange |= L._lEdges[iLE].SetNewLength( curThick );
       // for ( int k=0; k<L._segments.size(); ++k)
       //   cout << "( " << L._segments[k].p1().X() << ", " <<L._segments[k].p1().Y() << " ) "
       //        << "( " << L._segments[k].p2().X() << ", " <<L._segments[k].p2().Y() << " ) "
       //        << endl;
-      L._segTree.reset( new _SegmentTree( L._segments ));
+      if ( lenChange )
+        L._segTree.reset( new _SegmentTree( L._segments ));
     }
 
     // Avoid intersection of _Segment's
-    minStepSize = fixCollisions( nbSteps );
-
-#ifdef __myDEBUG
-  cout << "-- minStepSize = " << minStepSize << endl;
-#endif
-    if ( minStepSize <= 0 )
+    bool allBlocked = fixCollisions();
+    if ( allBlocked )
     {
       break; // no more inflating possible
     }
-    stepSize = minStepSize;
+    stepSize = Max( stepSize , _thickness / 10. );
     nbSteps++;
   }
 
-  if (nbSteps == 0 )
-    return error("failed at the very first inflation step");
+  // if (nbSteps == 0 )
+  //   return error("failed at the very first inflation step");
 
   return true;
 }
@@ -1027,18 +1037,19 @@ bool _ViscousBuilder2D::inflate()
 //================================================================================
 /*!
  * \brief Remove intersection of _PolyLine's
- *  \param stepNb - current step nb
- *  \retval double - next step size
  */
 //================================================================================
 
-double _ViscousBuilder2D::fixCollisions( const int stepNb )
+bool _ViscousBuilder2D::fixCollisions()
 {
   // look for intersections of _Segment's by intersecting _LayerEdge's with
   // _Segment's
-  double newStep = 1e+100;
+  //double maxStep = 0, minStep = 1e+100;
   vector< const _Segment* > foundSegs;
   _SegmentIntersection intersection;
+
+  list< pair< _LayerEdge*, double > > edgeLenLimitList;
+
   for ( size_t iL1 = 0; iL1 < _polyLineVec.size(); ++iL1 )
   {
     _PolyLine& L1 = _polyLineVec[ iL1 ];
@@ -1046,12 +1057,15 @@ double _ViscousBuilder2D::fixCollisions( const int stepNb )
     for ( size_t iL2 = 0; iL2 < L1._reachableLines.size(); ++iL2 )
     {
       _PolyLine& L2 = * L1._reachableLines[ iL2 ];
-      for ( size_t iLE = L1.FirstLEdge(); iLE < L1._lEdges.size(); ++iLE )
+      //for ( size_t iLE = L1.FirstLEdge(); iLE < L1._lEdges.size(); ++iLE )
+      for ( size_t iLE = 1; iLE < L1._lEdges.size()-1; ++iLE )
       {
         _LayerEdge& LE1 = L1._lEdges[iLE];
+        if ( LE1._isBlocked ) continue;
         foundSegs.clear();
         L2._segTree->GetSegmentsNear( LE1._ray, foundSegs );
         for ( size_t i = 0; i < foundSegs.size(); ++i )
+        {
           if ( ! L1.IsAdjacent( *foundSegs[i] ) &&
                intersection.Compute( *foundSegs[i], LE1._ray ))
           {
@@ -1063,7 +1077,7 @@ double _ViscousBuilder2D::fixCollisions( const int stepNb )
               {
                 if ( L1._advancable )
                 {
-                  LE1.SetNewLength( newLen2D / LE1._len2dTo3dRatio );
+                  edgeLenLimitList.push_back( make_pair( &LE1, newLen2D ));
                   L2._lEdges[ foundSegs[i]->_indexInLine     ]._isBlocked = true;
                   L2._lEdges[ foundSegs[i]->_indexInLine + 1 ]._isBlocked = true;
                 }
@@ -1075,26 +1089,47 @@ double _ViscousBuilder2D::fixCollisions( const int stepNb )
                   intersection.Compute( outSeg2, LE1._ray );
                   newLen2D = intersection._param2 / 2;
 
-                  LE2[0].SetNewLength( newLen2D / LE2[0]._len2dTo3dRatio );
+                  edgeLenLimitList.push_back( make_pair( &LE2[0], newLen2D ));
+                  edgeLenLimitList.push_back( make_pair( &LE2[1], newLen2D ));
                   LE2[0]._isBlocked = true;
-                  LE2[1].SetNewLength( newLen2D / LE2[1]._len2dTo3dRatio );
                   LE2[1]._isBlocked = true;
                 }
               }
               LE1._isBlocked = true; // !! after SetNewLength()
             }
-            else
-            {
-              double step2D = newLen2D - LE1._length2D;
-              double step   = step2D / LE1._len2dTo3dRatio;
-              if ( step < newStep )
-                newStep = step;
-            }
+            // else
+            // {
+            //   double step2D = newLen2D - LE1._length2D;
+            //   double step   = step2D / LE1._len2dTo3dRatio;
+            //   if ( step > maxStep )
+            //     maxStep = step;
+            //   if ( step < minStep )
+            //     minStep = step;
+            // }
           }
+        }
       }
     }
   }
-  return newStep;
+
+  // set limited length to _LayerEdge's
+  list< pair< _LayerEdge*, double > >::iterator edge2Len = edgeLenLimitList.begin();
+  for ( ; edge2Len != edgeLenLimitList.end(); ++edge2Len )
+  {
+    _LayerEdge* LE = edge2Len->first;
+    LE->SetNewLength( edge2Len->second / LE->_len2dTo3dRatio );
+  }
+
+  for ( size_t iL = 0; iL < _polyLineVec.size(); ++iL )
+  {
+    _PolyLine& L = _polyLineVec[ iL ];
+    if ( !L._advancable ) continue;
+    for ( size_t iLE = L.FirstLEdge(); iLE < L._lEdges.size(); ++iLE )
+      if ( !L._lEdges[ iLE ]._isBlocked )
+        return false;
+  }
+
+  return true;
 }
 
 //================================================================================
@@ -1243,7 +1278,7 @@ bool _ViscousBuilder2D::shrink()
       // try to find length of advancement along L by intersecting L with
       // an adjacent _Segment of L2
 
-      double length2D;
+      double & length2D = ( isR ? L._lEdges.back() : L._lEdges.front() )._length2D;
       sign = ( isR ^ edgeReversed ) ? -1. : 1.;
       pcurve->D1( u, uv, tangent );
 
@@ -1256,25 +1291,28 @@ bool _ViscousBuilder2D::shrink()
         gp_XY longSeg2p1 = seg2.p1() - 1000 * seg2Vec;
         gp_XY longSeg2p2 = seg2.p2() + 1000 * seg2Vec;
         _Segment longSeg2( longSeg2p1, longSeg2p2 );
-        if ( intersection.Compute( longSeg2, edgeRay )) // convex VERTEX
-        {
+        if ( intersection.Compute( longSeg2, edgeRay )) { // convex VERTEX
+
           length2D = intersection._param2; /*  |L  seg2     
                                             *  |  o---o--- 
                                             *  | /    |    
                                             *  |/     |  L2
                                             *  x------x---      */
         }
-        else  /* concave VERTEX */         /*  o-----o--- 
+        else { /* concave VERTEX */        /*  o-----o--- 
                                             *   \    |    
                                             *    \   |  L2
                                             *     x--x--- 
                                             *    /        
                                             * L /               */
           length2D = ( isR ? L2->_lEdges.front() : L2->_lEdges.back() )._length2D;
+        }
       }
       else // L2 is advancable but in the face adjacent by L
       {
-        length2D = ( isR ? L._leftLine->_lEdges.back() : L._rightLine->_lEdges.front() )._length2D;
+        length2D = ( isR ? L._lEdges.front() : L._lEdges.back() )._length2D;
+        if ( length2D == 0 )
+          length2D = ( isR ? L._leftLine->_lEdges.back() : L._rightLine->_lEdges.front() )._length2D;
       }
       // move u to the internal boundary of layers
       u += length2D * sign;
@@ -1392,7 +1430,7 @@ bool _ViscousBuilder2D::shrink()
       double normDelta = 1 - nodeDataVec.back().normParam;
       if ( !isRShrinkedForAdjacent )
         for ( size_t iP = 0; iP < nodeDataVec.size(); ++iP )
-          nodeDataVec[iP+1].normParam += normDelta;
+          nodeDataVec[iP].normParam += normDelta;
 
       // compute new normParam for nodeDataForAdjacent
       const double deltaR = isRShrinkedForAdjacent ? nodeDataVec.back().normParam : 0;
@@ -1592,19 +1630,23 @@ bool _ViscousBuilder2D::refine()
  */
 //================================================================================
 
-void _ViscousBuilder2D::removeMeshFaces(const TopoDS_Shape& face)
+bool _ViscousBuilder2D::removeMeshFaces(const TopoDS_Shape& face)
 {
   // we don't use SMESH_subMesh::ComputeStateEngine() because of a listener
   // which clears EDGEs together with _face.
+  bool thereWereElems = false;
   SMESH_subMesh* sm = _mesh->GetSubMesh( face );
   if ( SMESHDS_SubMesh* smDS = sm->GetSubMeshDS() )
   {
     SMDS_ElemIteratorPtr eIt = smDS->GetElements();
+    thereWereElems = eIt->more();
     while ( eIt->more() ) getMeshDS()->RemoveFreeElement( eIt->next(), smDS );
     SMDS_NodeIteratorPtr nIt = smDS->GetNodes();
     while ( nIt->more() ) getMeshDS()->RemoveFreeNode( nIt->next(), smDS );
   }
   sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+
+  return thereWereElems;
 }
 
 //================================================================================
@@ -1657,13 +1699,14 @@ void _ViscousBuilder2D::calcLayersHeight(const double    totalThick,
  */
 //================================================================================
 
-void _LayerEdge::SetNewLength( const double length3D )
+bool _LayerEdge::SetNewLength( const double length3D )
 {
-  if ( _isBlocked ) return;
+  if ( _isBlocked ) return false;
 
   //_uvInPrev = _uvIn;
   _length2D = length3D * _len2dTo3dRatio;
   _uvIn     = _uvOut + _normal2D * _length2D;
+  return true;
 }
 
 //================================================================================
@@ -1833,5 +1876,3 @@ bool _SegmentTree::_SegBox::IsOut( const gp_Ax2d& ray ) const
 
   return Abs( distBoxCenter2Ray ) > 0.5 * boxSectionDiam;
 }
-
-
