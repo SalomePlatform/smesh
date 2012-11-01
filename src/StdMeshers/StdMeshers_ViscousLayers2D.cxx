@@ -53,6 +53,8 @@
 #include <Bnd_B3d.hxx>
 #include <ElCLib.hxx>
 #include <GCPnts_AbscissaPoint.hxx>
+#include <Geom2dAdaptor_Curve.hxx>
+#include <Geom2dInt_GInter.hxx>
 #include <Geom2d_Circle.hxx>
 #include <Geom2d_Line.hxx>
 #include <Geom2d_TrimmedCurve.hxx>
@@ -61,6 +63,7 @@
 #include <Geom_Curve.hxx>
 #include <Geom_Line.hxx>
 #include <Geom_TrimmedCurve.hxx>
+#include <IntRes2d_IntersectionPoint.hxx>
 #include <Precision.hxx>
 #include <Standard_ErrorHandler.hxx>
 #include <TColStd_Array1OfReal.hxx>
@@ -258,9 +261,16 @@ namespace VISCOUS_2D
     typedef vector< _LayerEdge >::iterator TEdgeIterator;
 
     bool IsCommonEdgeShared( const _PolyLine& other );
-    size_t FirstLEdge() const { return _leftLine->_advancable ? 1 : 0; }
-    bool IsAdjacent( const _Segment& seg ) const
+    size_t FirstLEdge() const
     {
+      return ( _leftLine->_advancable && _lEdges.size() > 2 ) ? 1 : 0;
+    }
+    bool IsAdjacent( const _Segment& seg, const _LayerEdge* LE=0 ) const
+    {
+      if ( LE && seg._indexInLine < _lEdges.size() &&
+           ( seg._uv[0] == & LE->_uvIn ||
+             seg._uv[1] == & LE->_uvIn ))
+        return true;
       return ( & seg == &_leftLine->_segments.back() ||
                & seg == &_rightLine->_segments[0] );
     }
@@ -421,6 +431,7 @@ StdMeshers_ViscousLayers2D::Compute(SMESH_Mesh&        theMesh,
       theMesh.GetSubMesh( theFace )->GetComputeError() = error;
     else if ( !pm )
       pm.reset( new SMESH_ProxyMesh( theMesh ));
+    //pm.reset();
   }
   else
   {
@@ -710,8 +721,8 @@ bool _ViscousBuilder2D::makePolyLines()
     L._segTree.reset( new _SegmentTree( L._segments ));
   }
 
-  // Evaluate possible _thickness if required layers thickness seems too high
-  // -------------------------------------------------------------------------
+  // Evaluate max possible _thickness if required layers thickness seems too high
+  // ----------------------------------------------------------------------------
 
   _thickness = _hyp->GetTotalThickness();
   _SegmentTree::box_type faceBndBox2D;
@@ -726,9 +737,12 @@ bool _ViscousBuilder2D::makePolyLines()
     for ( size_t iL1 = 0; iL1 < _polyLineVec.size(); ++iL1 )
     {
       _PolyLine& L1 = _polyLineVec[ iL1 ];
+      const _SegmentTree::box_type* boxL1 = L1._segTree->getBox();
       for ( size_t iL2 = iL1+1; iL2 < _polyLineVec.size(); ++iL2 )
       {
         _PolyLine& L2 = _polyLineVec[ iL2 ];
+        if ( boxL1->IsOut( *L2._segTree->getBox() ))
+          continue;
         for ( size_t iLE = 1; iLE < L1._lEdges.size(); ++iLE )
         {
           foundSegs.clear();
@@ -790,16 +804,16 @@ bool _ViscousBuilder2D::makePolyLines()
   {
     lineBoxes[ iPoLine ] = *_polyLineVec[ iPoLine ]._segTree->getBox();
     if ( _polyLineVec[ iPoLine ]._advancable )
-      lineBoxes[ iPoLine ].Enlarge( maxLen2dTo3dRatio * _thickness );
+      lineBoxes[ iPoLine ].Enlarge( maxLen2dTo3dRatio * _thickness * 2 );
   }
   // _reachableLines
   for ( iPoLine = 0; iPoLine < _polyLineVec.size(); ++iPoLine )
   {
     _PolyLine& L1 = _polyLineVec[ iPoLine ];
-    for ( size_t i = 0; i < _polyLineVec.size(); ++i )
+    for ( size_t iL2 = 0; iL2 < _polyLineVec.size(); ++iL2 )
     {
-      _PolyLine& L2 = _polyLineVec[ i ];
-      if ( iPoLine == i || lineBoxes[ iPoLine ].IsOut( lineBoxes[ i ]))
+      _PolyLine& L2 = _polyLineVec[ iL2 ];
+      if ( iPoLine == iL2 || lineBoxes[ iPoLine ].IsOut( lineBoxes[ iL2 ]))
         continue;
       if ( !L1._advancable && ( L1._leftLine == &L2 || L1._rightLine == &L2 ))
         continue;
@@ -808,10 +822,8 @@ bool _ViscousBuilder2D::makePolyLines()
       for ( size_t iLE = 1; iLE < L1._lEdges.size(); iLE += iDelta )
       {
         _LayerEdge& LE = L1._lEdges[iLE];
-        if ( !lineBoxes[ i ].IsOut ( LE._uvOut,
-                                     LE._uvOut + LE._normal2D * _thickness * LE._len2dTo3dRatio )
-             &&
-             !L1.IsAdjacent( L2._segments[0] ))
+        if ( !lineBoxes[ iL2 ].IsOut ( LE._uvOut,
+                                       LE._uvOut + LE._normal2D *_thickness * LE._len2dTo3dRatio ))
         {
           L1._reachableLines.push_back( & L2 );
           break;
@@ -849,14 +861,17 @@ void _ViscousBuilder2D::adjustCommonEdge( _PolyLine& LL, _PolyLine& LR )
   gp_XY normL    = EL._normal2D;
   gp_XY normR    = ER._normal2D;
   gp_XY tangL ( normL.Y(), -normL.X() );
-  //gp_XY tangR ( normR.Y(), -normR.X() );
 
-  gp_XY normCommon = ( normL + normR ).Normalized(); // average normal at VERTEX
-
+  // set common direction to a VERTEX _LayerEdge shared by two _PolyLine's
+  gp_XY normCommon = ( normL * int( LL._advancable ) +
+                       normR * int( LR._advancable )).Normalized();
   EL._normal2D = normCommon;
   EL._ray.SetLocation ( EL._uvOut );
   EL._ray.SetDirection( EL._normal2D );
-
+  if ( nbAdvancableL == 1 ) {
+    EL._isBlocked = true;
+    EL._length2D  = 0;
+  }
   // update _LayerEdge::_len2dTo3dRatio according to a new direction
   const vector<UVPtStruct>& points = LL._wire->GetUVPtStruct();
   setLenRatio( EL, SMESH_TNodeXYZ( points[ LL._lastPntInd ].node ));
@@ -865,48 +880,85 @@ void _ViscousBuilder2D::adjustCommonEdge( _PolyLine& LL, _PolyLine& LR )
 
   const double dotNormTang = normR * tangL;
   const bool    largeAngle = Abs( dotNormTang ) > 0.2;
-  if ( largeAngle )
+  if ( largeAngle ) // not 180 degrees
   {
     // recompute _len2dTo3dRatio to take into account angle between EDGEs
     gp_Vec2d oldNorm( LL._advancable ? normL : normR );
-    double fact = 1. / Max( 0.3, Cos( oldNorm.Angle(  normCommon )));
-    EL._len2dTo3dRatio *= fact;
+    double angleFactor  = 1. / Max( 0.3, Cos( oldNorm.Angle( normCommon )));
+    EL._len2dTo3dRatio *= angleFactor;
     ER._len2dTo3dRatio  = EL._len2dTo3dRatio;
+
+    gp_XY normAvg = ( normL + normR ).Normalized(); // average normal at VERTEX
 
     if ( dotNormTang < 0. ) // ---------------------------- CONVEX ANGLE
     {
-      // Remove _LayerEdge's intersecting the normCommon
+      // Remove _LayerEdge's intersecting the normAvg to avoid collisions
+      // during inflate().
       //
+      // find max length of the VERTEX based _LayerEdge whose direction is normAvg
+      double maxLen2D       = _thickness * EL._len2dTo3dRatio;
       const gp_XY& pCommOut = ER._uvOut;
-      gp_XY pCommIn( pCommOut + normCommon * _thickness * EL._len2dTo3dRatio );
+      gp_XY        pCommIn  = pCommOut + normAvg * maxLen2D;
       _Segment segCommon( pCommOut, pCommIn );
       _SegmentIntersection intersection;
+      vector< const _Segment* > foundSegs;
+      for ( size_t iL1 = 0; iL1 < _polyLineVec.size(); ++iL1 )
+      {
+        _PolyLine& L1 = _polyLineVec[ iL1 ];
+        const _SegmentTree::box_type* boxL1 = L1._segTree->getBox();
+        if ( boxL1->IsOut ( pCommOut, pCommIn ))
+          continue;
+        for ( size_t iLE = 1; iLE < L1._lEdges.size(); ++iLE )
+        {
+          foundSegs.clear();
+          L1._segTree->GetSegmentsNear( segCommon, foundSegs );
+          for ( size_t i = 0; i < foundSegs.size(); ++i )
+            if ( intersection.Compute( *foundSegs[i], segCommon ) &&
+                 intersection._param2 > 1e-10 )
+            {
+              double len2D = intersection._param2 * maxLen2D / ( 2 + L1._advancable );
+              if ( len2D < maxLen2D ) {
+                maxLen2D = len2D;
+                pCommIn  = pCommOut + normAvg * maxLen2D; // here length of segCommon changes
+              }
+            }
+        }
+      }
+
+      // remove _LayerEdge's intersecting segCommon
       for ( int isR = 0; isR < 2; ++isR ) // loop on [ LL, LR ]
       {
         _PolyLine&                 L = isR ? LR : LL;
         _PolyLine::TEdgeIterator eIt = isR ? L._lEdges.begin()+1 : L._lEdges.end()-2;
         int                      dIt = isR ? +1 : -1;
-        // at least 2 _LayerEdge's should remain in a _PolyLine (if _advancable)
-        if ( L._lEdges.size() < 3 ) continue;
+        if ( nbAdvancableL == 1 && L._advancable && normL * normR > -0.01 )
+          continue;  // obtuse internal angle
+        // at least 3 _LayerEdge's should remain in a _PolyLine
+        if ( L._lEdges.size() < 4 ) continue;
         size_t iLE = 1;
+        _SegmentIntersection lastIntersection;
         for ( ; iLE < L._lEdges.size(); ++iLE, eIt += dIt )
         {
           gp_XY uvIn = eIt->_uvOut + eIt->_normal2D * _thickness * eIt->_len2dTo3dRatio;
           _Segment segOfEdge( eIt->_uvOut, uvIn );
           if ( !intersection.Compute( segCommon, segOfEdge ))
             break;
+          lastIntersection._param1 = intersection._param1;
+          lastIntersection._param2 = intersection._param2;
         }
         if ( iLE >= L._lEdges.size () - 1 )
         {
           // all _LayerEdge's intersect the segCommon, limit inflation
           // of remaining 2 _LayerEdge's
-          vector< _LayerEdge > newEdgeVec( 2 );
+          vector< _LayerEdge > newEdgeVec( Min( 3, L._lEdges.size() ));
           newEdgeVec.front() = L._lEdges.front();
           newEdgeVec.back()  = L._lEdges.back();
+          if ( newEdgeVec.size() == 3 )
+            newEdgeVec[1] = L._lEdges[ L._lEdges.size() / 2 ];
           L._lEdges.swap( newEdgeVec );
-          if ( !isR ) std::swap( intersection._param1 , intersection._param2 );
-          L._lEdges.front()._len2dTo3dRatio *= intersection._param1;
-          L._lEdges.back ()._len2dTo3dRatio *= intersection._param2;
+          if ( !isR ) std::swap( lastIntersection._param1 , lastIntersection._param2 );
+          L._lEdges.front()._len2dTo3dRatio *= lastIntersection._param1; // ??
+          L._lEdges.back ()._len2dTo3dRatio *= lastIntersection._param2;
         }
         else if ( iLE != 1 )
         {
@@ -924,7 +976,11 @@ void _ViscousBuilder2D::adjustCommonEdge( _PolyLine& LL, _PolyLine& LR )
       {
         // make that the _LayerEdge at VERTEX is not shared by LL and LR
         _LayerEdge& notSharedEdge = LL._advancable ? LR._lEdges[0] : LL._lEdges.back();
+        _LayerEdge&    sharedEdge = LR._advancable ? LR._lEdges[0] : LL._lEdges.back();
+
         notSharedEdge._normal2D.SetCoord( 0.,0. );
+        sharedEdge._normal2D  = normAvg;
+        sharedEdge._isBlocked = false;
       }
     }
   }
@@ -973,7 +1029,7 @@ bool _ViscousBuilder2D::inflate()
         foundSegs.clear();
         L2._segTree->GetSegmentsNear( L1._lEdges[iLE]._ray, foundSegs );
         for ( size_t i = 0; i < foundSegs.size(); ++i )
-          if ( ! L1.IsAdjacent( *foundSegs[i] ) &&
+          if ( ! L1.IsAdjacent( *foundSegs[i], & L1._lEdges[iLE] ) &&
                intersection.Compute( *foundSegs[i], L1._lEdges[iLE]._ray ))
           {
             double distToL2 = intersection._param2 / L1._lEdges[iLE]._len2dTo3dRatio;
@@ -1049,6 +1105,7 @@ bool _ViscousBuilder2D::fixCollisions()
   _SegmentIntersection intersection;
 
   list< pair< _LayerEdge*, double > > edgeLenLimitList;
+  list< _LayerEdge* >                 blockedEdgesList;
 
   for ( size_t iL1 = 0; iL1 < _polyLineVec.size(); ++iL1 )
   {
@@ -1057,16 +1114,15 @@ bool _ViscousBuilder2D::fixCollisions()
     for ( size_t iL2 = 0; iL2 < L1._reachableLines.size(); ++iL2 )
     {
       _PolyLine& L2 = * L1._reachableLines[ iL2 ];
-      //for ( size_t iLE = L1.FirstLEdge(); iLE < L1._lEdges.size(); ++iLE )
-      for ( size_t iLE = 1; iLE < L1._lEdges.size()-1; ++iLE )
+      for ( size_t iLE = L1.FirstLEdge(); iLE < L1._lEdges.size(); ++iLE )
       {
         _LayerEdge& LE1 = L1._lEdges[iLE];
-        if ( LE1._isBlocked ) continue;
+        //if ( LE1._isBlocked ) continue;
         foundSegs.clear();
         L2._segTree->GetSegmentsNear( LE1._ray, foundSegs );
         for ( size_t i = 0; i < foundSegs.size(); ++i )
         {
-          if ( ! L1.IsAdjacent( *foundSegs[i] ) &&
+          if ( ! L1.IsAdjacent( *foundSegs[i], &LE1 ) &&
                intersection.Compute( *foundSegs[i], LE1._ray ))
           {
             const double dist2DToL2 = intersection._param2;
@@ -1075,11 +1131,12 @@ bool _ViscousBuilder2D::fixCollisions()
             {
               if ( newLen2D < LE1._length2D )
               {
+                blockedEdgesList.push_back( &LE1 );
                 if ( L1._advancable )
                 {
                   edgeLenLimitList.push_back( make_pair( &LE1, newLen2D ));
-                  L2._lEdges[ foundSegs[i]->_indexInLine     ]._isBlocked = true;
-                  L2._lEdges[ foundSegs[i]->_indexInLine + 1 ]._isBlocked = true;
+                  blockedEdgesList.push_back( &L2._lEdges[ foundSegs[i]->_indexInLine     ]);
+                  blockedEdgesList.push_back( &L2._lEdges[ foundSegs[i]->_indexInLine + 1 ]);
                 }
                 else // here dist2DToL2 < 0 and LE1._length2D == 0
                 {
@@ -1091,21 +1148,9 @@ bool _ViscousBuilder2D::fixCollisions()
 
                   edgeLenLimitList.push_back( make_pair( &LE2[0], newLen2D ));
                   edgeLenLimitList.push_back( make_pair( &LE2[1], newLen2D ));
-                  LE2[0]._isBlocked = true;
-                  LE2[1]._isBlocked = true;
                 }
               }
-              LE1._isBlocked = true; // !! after SetNewLength()
             }
-            // else
-            // {
-            //   double step2D = newLen2D - LE1._length2D;
-            //   double step   = step2D / LE1._len2dTo3dRatio;
-            //   if ( step > maxStep )
-            //     maxStep = step;
-            //   if ( step < minStep )
-            //     minStep = step;
-            // }
           }
         }
       }
@@ -1118,8 +1163,15 @@ bool _ViscousBuilder2D::fixCollisions()
   {
     _LayerEdge* LE = edge2Len->first;
     LE->SetNewLength( edge2Len->second / LE->_len2dTo3dRatio );
+    LE->_isBlocked = true;
   }
 
+  // block inflation of _LayerEdge's
+  list< _LayerEdge* >::iterator edge = blockedEdgesList.begin();
+  for ( ; edge != blockedEdgesList.end(); ++edge )
+    (*edge)->_isBlocked = true;
+
+  // find a not blocked _LayerEdge
   for ( size_t iL = 0; iL < _polyLineVec.size(); ++iL )
   {
     _PolyLine& L = _polyLineVec[ iL ];
@@ -1150,7 +1202,8 @@ bool _ViscousBuilder2D::shrink()
     _PolyLine& L = _polyLineVec[ iL1 ]; // line with no layers
     if ( L._advancable )
       continue;
-    if ( !L._rightLine->_advancable && !L._leftLine->_advancable )
+    const int nbAdvancable = ( L._rightLine->_advancable + L._leftLine->_advancable );
+    if ( nbAdvancable == 0 )
       continue;
 
     const TopoDS_Edge&        E = L._wire->Edge      ( L._edgeInd );
@@ -1275,47 +1328,62 @@ bool _ViscousBuilder2D::shrink()
       double  u0 = isR ? ul : uf; // init value of the param to move
       int  iPEnd = isR ? nodeDataVec.size() - 1 : 0;
 
+      _LayerEdge& nearLE = isR ? L._lEdges.back() : L._lEdges.front();
+      _LayerEdge&  farLE = isR ? L._lEdges.front() : L._lEdges.back();
+
       // try to find length of advancement along L by intersecting L with
       // an adjacent _Segment of L2
 
-      double & length2D = ( isR ? L._lEdges.back() : L._lEdges.front() )._length2D;
+      double & length2D = nearLE._length2D;
       sign = ( isR ^ edgeReversed ) ? -1. : 1.;
       pcurve->D1( u, uv, tangent );
 
       if ( L2->_advancable )
       {
-        gp_Ax2d      edgeRay( uv, tangent * sign );
-        const _Segment& seg2( isR ? L2->_segments.front() : L2->_segments.back() );
-        // make an elongated seg2
-        gp_XY seg2Vec( seg2.p2() - seg2.p1() );
-        gp_XY longSeg2p1 = seg2.p1() - 1000 * seg2Vec;
-        gp_XY longSeg2p2 = seg2.p2() + 1000 * seg2Vec;
-        _Segment longSeg2( longSeg2p1, longSeg2p2 );
-        if ( intersection.Compute( longSeg2, edgeRay )) { // convex VERTEX
+        int iFSeg2 = isR ? 0 : L2->_segments.size() - 1;
+        int iLSeg2 = isR ? 1 : L2->_segments.size() - 2;
+        gp_XY uvLSeg2In  = L2->_lEdges[ iLSeg2 ]._uvIn;
+        gp_XY uvLSeg2Out = L2->_lEdges[ iLSeg2 ]._uvOut;
+        gp_XY uvFSeg2Out = L2->_lEdges[ iFSeg2 ]._uvOut;
+        Handle(Geom2d_Line) seg2Line = new Geom2d_Line( uvLSeg2In, uvFSeg2Out - uvLSeg2Out );
 
-          length2D = intersection._param2; /*  |L  seg2     
-                                            *  |  o---o--- 
-                                            *  | /    |    
-                                            *  |/     |  L2
-                                            *  x------x---      */
+        Geom2dAdaptor_Curve edgeCurve( pcurve, Min( uf, ul ), Max( uf, ul ));
+        Geom2dAdaptor_Curve seg2Curve( seg2Line );
+        Geom2dInt_GInter     curveInt( edgeCurve, seg2Curve, 1e-7, 1e-7 );
+        double maxDist2d = 2 * L2->_lEdges[ iLSeg2 ]._length2D;
+        if ( curveInt.IsDone() &&
+             !curveInt.IsEmpty() &&
+             curveInt.Point( 1 ).Value().Distance( uvFSeg2Out ) <= maxDist2d )
+        {     /* convex VERTEX */
+          u = curveInt.Point( 1 ).ParamOnFirst(); /*  |L  seg2     
+                                                   *  |  o---o--- 
+                                                   *  | /    |    
+                                                   *  |/     |  L2
+                                                   *  x------x---      */
         }
-        else { /* concave VERTEX */        /*  o-----o--- 
-                                            *   \    |    
-                                            *    \   |  L2
-                                            *     x--x--- 
-                                            *    /        
-                                            * L /               */
-          length2D = ( isR ? L2->_lEdges.front() : L2->_lEdges.back() )._length2D;
+        else { /* concave VERTEX */               /*  o-----o--- 
+                                                   *   \    |    
+                                                   *    \   |  L2
+                                                   *     x--x--- 
+                                                   *    /        
+                                                   * L /               */
+          length2D = sign * L2->_lEdges[ iFSeg2 ]._length2D;
         }
       }
       else // L2 is advancable but in the face adjacent by L
       {
-        length2D = ( isR ? L._lEdges.front() : L._lEdges.back() )._length2D;
+        length2D = farLE._length2D;
         if ( length2D == 0 )
           length2D = ( isR ? L._leftLine->_lEdges.back() : L._rightLine->_lEdges.front() )._length2D;
       }
-      // move u to the internal boundary of layers
-      u += length2D * sign;
+      if ( length2D > 0 ) {
+        // move u to the internal boundary of layers
+        double maxLen3D = Min( _thickness, edgeLen / ( 1 + nbAdvancable ));
+        double maxLen2D = maxLen3D * nearLE._len2dTo3dRatio;
+        if ( length2D > maxLen2D )
+          length2D = maxLen2D;
+        u += length2D * sign;
+      }
       nodeDataVec[ iPEnd ].param = u;
 
       gp_Pnt2d newUV = pcurve->Value( u );
@@ -1510,7 +1578,7 @@ bool _ViscousBuilder2D::refine()
 
     //if ( L._leftLine->_advancable ) L._lEdges[0] = L._leftLine->_lEdges.back();
 
-    // calculate intermediate UV on _LayerEdge's ( _LayerEdge::_uvRefined )
+    // replace an inactive _LayerEdge with an active one of a neighbour _PolyLine
     size_t iLE = 0, nbLE = L._lEdges.size();
     if ( /*!L._leftLine->_advancable &&*/ L.IsCommonEdgeShared( *L._leftLine ))
     {
@@ -1522,6 +1590,34 @@ bool _ViscousBuilder2D::refine()
       L._lEdges.back() = L._rightLine->_lEdges[0];
       --nbLE;
     }
+
+    // remove intersecting _LayerEdge's
+    _SegmentIntersection intersection;
+    for ( int isR = 0; ( isR < 2 && L._lEdges.size() > 2 ); ++isR )
+    {
+      int nbRemove = 0, deltaIt = isR ? -1 : +1;
+      _PolyLine::TEdgeIterator eIt = isR ? L._lEdges.end()-1 : L._lEdges.begin();
+      // HEURISTICS !!! elongate the first _LayerEdge
+      gp_XY newIn = eIt->_uvOut + eIt->_normal2D * eIt->_length2D/* * 2*/;
+      _Segment seg1( eIt->_uvOut, newIn );
+      for ( eIt += deltaIt; nbRemove < L._lEdges.size()-2; eIt += deltaIt )
+      {
+        _Segment seg2( eIt->_uvOut, eIt->_uvIn );
+        if ( !intersection.Compute( seg1, seg2 ))
+          break;
+        ++nbRemove;
+      }
+      if ( nbRemove > 0 ) {
+        if ( isR )
+          L._lEdges.erase( L._lEdges.end()-nbRemove-1,
+                           L._lEdges.end()-nbRemove );
+        else
+          L._lEdges.erase( L._lEdges.begin()+2,
+                           L._lEdges.begin()+2+nbRemove );
+      }
+    }
+
+    // calculate intermediate UV on _LayerEdge's ( _LayerEdge::_uvRefined )
     for ( ; iLE < nbLE; ++iLE )
     {
       _LayerEdge& LE = L._lEdges[iLE];
