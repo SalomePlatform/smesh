@@ -64,6 +64,10 @@
         <translation>Area</translation>
     </message>
     <message>
+        <source>MIN_DIAG_ELEMENTS</source>
+        <translation>Minimum diagonal</translation>
+    </message>
+    <message>
         <source>ASPECTRATIO_3D_ELEMENTS</source>
         <translation>Aspect Ratio 3D</translation>
     </message>

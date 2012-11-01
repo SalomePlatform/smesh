@@ -162,6 +162,7 @@ namespace SMESH{
     class SMESHCONTROLS_EXPORT MaxElementLength2D: public virtual NumericalFunctor{
     public:
       virtual double GetValue( long theElementId );
+      virtual double GetValue( const TSequenceOfXYZ& P );
       virtual double GetBadRate( double Value, int nbNodes ) const;
       virtual SMDSAbs_ElementType GetType() const;
     };

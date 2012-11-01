@@ -2125,6 +2125,17 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       theCommand->SetArg( 3, face );
   }
 
+  if(method == "QuadToTri" || method == "QuadToTriObject")
+  {
+    int crit_arg = theCommand->GetNbArgs();
+    _AString crit = theCommand->GetArg(crit_arg);
+    if(crit.Search("MaxElementLength2D") != -1)
+    {
+      theCommand->SetArg(crit_arg, "");
+      isPyMeshMethod = true;
+    }
+  }
+
   if ( isPyMeshMethod )
   {
     theCommand->SetObject( myMesh );

@@ -2682,23 +2682,33 @@ class Mesh:
         return self.editor.TriToQuadObject(theObject, self.smeshpyD.GetFunctor(theCriterion), MaxAngle)
 
     ## Splits quadrangles into triangles.
+    #
+    #  If @a theCriterion is None, quadrangles will be split by the smallest diagonal.
+    #
     #  @param IDsOfElements the faces to be splitted.
     #  @param theCriterion   FT_...; used to choose a diagonal for splitting.
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_cutquadr
-    def QuadToTri (self, IDsOfElements, theCriterion):
+    def QuadToTri (self, IDsOfElements, theCriterion = None):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
+        if theCriterion is None:
+            theCriterion = FT_MaxElementLength2D
         return self.editor.QuadToTri(IDsOfElements, self.smeshpyD.GetFunctor(theCriterion))
 
     ## Splits quadrangles into triangles.
+    #
+    #  If @a theCriterion is None, quadrangles will be split by the smallest diagonal.
+    #
     #  @param theObject  the object from which the list of elements is taken, this is mesh, submesh or group
     #  @param theCriterion   FT_...; used to choose a diagonal for splitting.
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_cutquadr
-    def QuadToTriObject (self, theObject, theCriterion):
+    def QuadToTriObject (self, theObject, theCriterion = None):
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
+        if theCriterion is None:
+            theCriterion = FT_MaxElementLength2D
         return self.editor.QuadToTriObject(theObject, self.smeshpyD.GetFunctor(theCriterion))
 
     ## Splits quadrangles into triangles.

@@ -1546,7 +1546,7 @@ CORBA::Boolean SMESH_MeshEditor_i::TriToQuad (const SMESH::long_array &   IDsOfE
     dynamic_cast<SMESH::NumericalFunctor_i*>( SMESH_Gen_i::GetServant( Criterion ).in() );
   SMESH::Controls::NumericalFunctorPtr aCrit;
   if ( !aNumericalFunctor )
-    aCrit.reset( new SMESH::Controls::AspectRatio() );
+    aCrit.reset( new SMESH::Controls::MaxElementLength2D() );
   else
     aCrit = aNumericalFunctor->GetNumericalFunctor();
 

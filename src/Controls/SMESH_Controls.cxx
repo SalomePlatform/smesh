@@ -429,59 +429,56 @@ SMDSAbs_ElementType Volume::GetType() const
   Class       : MaxElementLength2D
   Description : Functor calculating maximum length of 2D element
 */
+double MaxElementLength2D::GetValue( const TSequenceOfXYZ& P )
+{
+  if(P.size() == 0)
+    return 0.;
+  double aVal = 0;
+  int len = P.size();
+  if( len == 3 ) { // triangles
+    double L1 = getDistance(P( 1 ),P( 2 ));
+    double L2 = getDistance(P( 2 ),P( 3 ));
+    double L3 = getDistance(P( 3 ),P( 1 ));
+    aVal = Max(L1,Max(L2,L3));
+  }
+  else if( len == 4 ) { // quadrangles
+    double L1 = getDistance(P( 1 ),P( 2 ));
+    double L2 = getDistance(P( 2 ),P( 3 ));
+    double L3 = getDistance(P( 3 ),P( 4 ));
+    double L4 = getDistance(P( 4 ),P( 1 ));
+    double D1 = getDistance(P( 1 ),P( 3 ));
+    double D2 = getDistance(P( 2 ),P( 4 ));
+    aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(D1,D2));
+  }
+  else if( len == 6 ) { // quadratic triangles
+    double L1 = getDistance(P( 1 ),P( 2 )) + getDistance(P( 2 ),P( 3 ));
+    double L2 = getDistance(P( 3 ),P( 4 )) + getDistance(P( 4 ),P( 5 ));
+    double L3 = getDistance(P( 5 ),P( 6 )) + getDistance(P( 6 ),P( 1 ));
+    aVal = Max(L1,Max(L2,L3));
+  }
+  else if( len == 8 || len == 9 ) { // quadratic quadrangles
+    double L1 = getDistance(P( 1 ),P( 2 )) + getDistance(P( 2 ),P( 3 ));
+    double L2 = getDistance(P( 3 ),P( 4 )) + getDistance(P( 4 ),P( 5 ));
+    double L3 = getDistance(P( 5 ),P( 6 )) + getDistance(P( 6 ),P( 7 ));
+    double L4 = getDistance(P( 7 ),P( 8 )) + getDistance(P( 8 ),P( 1 ));
+    double D1 = getDistance(P( 1 ),P( 5 ));
+    double D2 = getDistance(P( 3 ),P( 7 ));
+    aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(D1,D2));
+  }
+
+  if( myPrecision >= 0 )
+  {
+    double prec = pow( 10., (double)myPrecision );
+    aVal = floor( aVal * prec + 0.5 ) / prec;
+  }
+  return aVal;
+}
 
 double MaxElementLength2D::GetValue( long theElementId )
 {
   TSequenceOfXYZ P;
-  if( GetPoints( theElementId, P ) ) {
-    double aVal = 0;
-    const SMDS_MeshElement* aElem = myMesh->FindElement( theElementId );
-    SMDSAbs_ElementType aType = aElem->GetType();
-    int len = P.size();
-    switch( aType ) {
-    case SMDSAbs_Face:
-      if( len == 3 ) { // triangles
-        double L1 = getDistance(P( 1 ),P( 2 ));
-        double L2 = getDistance(P( 2 ),P( 3 ));
-        double L3 = getDistance(P( 3 ),P( 1 ));
-        aVal = Max(L1,Max(L2,L3));
-        break;
-      }
-      else if( len == 4 ) { // quadrangles
-        double L1 = getDistance(P( 1 ),P( 2 ));
-        double L2 = getDistance(P( 2 ),P( 3 ));
-        double L3 = getDistance(P( 3 ),P( 4 ));
-        double L4 = getDistance(P( 4 ),P( 1 ));
-        double D1 = getDistance(P( 1 ),P( 3 ));
-        double D2 = getDistance(P( 2 ),P( 4 ));
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(D1,D2));
-        break;
-      }
-      else if( len == 6 ) { // quadratic triangles
-        double L1 = getDistance(P( 1 ),P( 2 )) + getDistance(P( 2 ),P( 3 ));
-        double L2 = getDistance(P( 3 ),P( 4 )) + getDistance(P( 4 ),P( 5 ));
-        double L3 = getDistance(P( 5 ),P( 6 )) + getDistance(P( 6 ),P( 1 ));
-        aVal = Max(L1,Max(L2,L3));
-        break;
-      }
-      else if( len == 8 || len == 9 ) { // quadratic quadrangles
-        double L1 = getDistance(P( 1 ),P( 2 )) + getDistance(P( 2 ),P( 3 ));
-        double L2 = getDistance(P( 3 ),P( 4 )) + getDistance(P( 4 ),P( 5 ));
-        double L3 = getDistance(P( 5 ),P( 6 )) + getDistance(P( 6 ),P( 7 ));
-        double L4 = getDistance(P( 7 ),P( 8 )) + getDistance(P( 8 ),P( 1 ));
-        double D1 = getDistance(P( 1 ),P( 5 ));
-        double D2 = getDistance(P( 3 ),P( 7 ));
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(D1,D2));
-        break;
-      }
-    }
-
-    if( myPrecision >= 0 )
-    {
-      double prec = pow( 10., (double)myPrecision );
-      aVal = floor( aVal * prec + 0.5 ) / prec;
-    }
-    return aVal;
+  if( GetPoints( theElementId, P ) && myMesh->FindElement( theElementId )->GetType() == SMDSAbs_Face) {
+    GetValue(P);
   }
   return 0.;
 }

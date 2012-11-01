@@ -225,7 +225,7 @@ QWidget* SMESHGUI_MultiEditDlg::createMainFrame (QWidget* theParent, const bool 
   myComboBoxFunctor->addItem(tr("ASPECTRATIO_ELEMENTS"));
   myComboBoxFunctor->addItem(tr("MINIMUMANGLE_ELEMENTS"));
   myComboBoxFunctor->addItem(tr("SKEW_ELEMENTS"));
-  myComboBoxFunctor->addItem(tr("AREA_ELEMENTS"));
+  //myComboBoxFunctor->addItem(tr("AREA_ELEMENTS"));
   //myComboBoxFunctor->addItem(tr("LENGTH2D_EDGES")); // for existing elements only
   //myComboBoxFunctor->addItem(tr("MULTI2D_BORDERS")); // for existing elements only
   myComboBoxFunctor->setCurrentIndex(0);
@@ -362,6 +362,8 @@ SMESH::NumericalFunctor_ptr SMESHGUI_MultiEditDlg::getNumericalFunctor()
     aNF = aFilterMgr->CreateLength2D();
   else if (myComboBoxFunctor->currentText() == tr("MULTI2D_BORDERS"))
     aNF = aFilterMgr->CreateMultiConnection2D();
+  else if (myComboBoxFunctor->currentText() == tr("MIN_DIAG_ELEMENTS"))
+    aNF = aFilterMgr->CreateMaxElementLength2D();
   else;
 
   return aNF._retn();
@@ -1153,7 +1155,8 @@ SMESHGUI_UnionOfTrianglesDlg
 {
   setWindowTitle(tr("CAPTION"));
 
-  myComboBoxFunctor->setEnabled(true);
+  myComboBoxFunctor->setEnabled(true);  
+  myComboBoxFunctor->addItem(tr("AREA_ELEMENTS"));
   myComboBoxFunctor->addItem(tr("WARP_ELEMENTS")); // for quadrangles only
   myComboBoxFunctor->addItem(tr("TAPER_ELEMENTS")); // for quadrangles only
 
@@ -1240,6 +1243,8 @@ SMESHGUI_CuttingOfQuadsDlg
 
   myCriterionGrp->show();
   myChoiceWidget->show();
+  myComboBoxFunctor->insertItem(0, tr("MIN_DIAG_ELEMENTS"));
+  myComboBoxFunctor->setCurrentIndex(0);
   myComboBoxFunctor->setEnabled(false);
 
   connect(myPreviewChk,      SIGNAL(stateChanged(int)),    this, SLOT(onPreviewChk()));
