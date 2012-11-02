@@ -336,6 +336,7 @@ namespace VISCOUS_2D
     bool fixCollisions();
     bool refine();
     bool shrink();
+    bool improve();
     bool toShrinkForAdjacent( const TopoDS_Face& adjFace,
                               const TopoDS_Edge& E,
                               const TopoDS_Vertex& V);
@@ -429,9 +430,9 @@ StdMeshers_ViscousLayers2D::Compute(SMESH_Mesh&        theMesh,
     SMESH_ComputeErrorPtr error = builder.GetError();
     if ( error && !error->IsOK() )
       theMesh.GetSubMesh( theFace )->GetComputeError() = error;
-    else if ( !pm )
-      pm.reset( new SMESH_ProxyMesh( theMesh ));
-    //pm.reset();
+    // else if ( !pm )
+    //   pm.reset( new SMESH_ProxyMesh( theMesh ));
+    pm.reset();
   }
   else
   {
@@ -527,8 +528,6 @@ SMESH_ProxyMesh::Ptr _ViscousBuilder2D::Compute()
   if ( !_error->IsOK() )
     return _proxyMesh;
 
-  //PyDump debugDump;
-
   if ( !findEdgesWithLayers() ) // analysis of a shape
     return _proxyMesh;
 
@@ -544,11 +543,7 @@ SMESH_ProxyMesh::Ptr _ViscousBuilder2D::Compute()
   if ( ! refine() ) // make faces
     return _proxyMesh;
 
-  // for ( size_t i = 0; i < _facesToRecompute.size(); ++i )
-  //   _mesh->GetSubMesh( _facesToRecompute[i] )->ComputeStateEngine( SMESH_subMesh::COMPUTE );
-
-  //makeGroupOfLE(); // debug
-  //debugDump.Finish();
+  improve();
 
   return _proxyMesh;
 }
@@ -1117,7 +1112,7 @@ bool _ViscousBuilder2D::fixCollisions()
       for ( size_t iLE = L1.FirstLEdge(); iLE < L1._lEdges.size(); ++iLE )
       {
         _LayerEdge& LE1 = L1._lEdges[iLE];
-        //if ( LE1._isBlocked ) continue;
+        if ( LE1._isBlocked ) continue;
         foundSegs.clear();
         L2._segTree->GetSegmentsNear( LE1._ray, foundSegs );
         for ( size_t i = 0; i < foundSegs.size(); ++i )
@@ -1355,7 +1350,8 @@ bool _ViscousBuilder2D::shrink()
              !curveInt.IsEmpty() &&
              curveInt.Point( 1 ).Value().Distance( uvFSeg2Out ) <= maxDist2d )
         {     /* convex VERTEX */
-          u = curveInt.Point( 1 ).ParamOnFirst(); /*  |L  seg2     
+          length2D = Abs( u - curveInt.Point( 1 ).ParamOnFirst() );
+                                                  /*  |L  seg2     
                                                    *  |  o---o--- 
                                                    *  | /    |    
                                                    *  |/     |  L2
@@ -1376,14 +1372,14 @@ bool _ViscousBuilder2D::shrink()
         if ( length2D == 0 )
           length2D = ( isR ? L._leftLine->_lEdges.back() : L._rightLine->_lEdges.front() )._length2D;
       }
-      if ( length2D > 0 ) {
-        // move u to the internal boundary of layers
-        double maxLen3D = Min( _thickness, edgeLen / ( 1 + nbAdvancable ));
-        double maxLen2D = maxLen3D * nearLE._len2dTo3dRatio;
-        if ( length2D > maxLen2D )
-          length2D = maxLen2D;
-        u += length2D * sign;
-      }
+      // move u to the internal boundary of layers
+      double maxLen3D = Min( _thickness, edgeLen / ( 1 + nbAdvancable ));
+      double maxLen2D = maxLen3D * nearLE._len2dTo3dRatio;
+      if ( length2D > maxLen2D )
+        length2D = maxLen2D;
+      nearLE._uvIn = nearLE._uvOut + nearLE._normal2D * length2D;
+
+      u += length2D * sign;
       nodeDataVec[ iPEnd ].param = u;
 
       gp_Pnt2d newUV = pcurve->Value( u );
@@ -1578,7 +1574,7 @@ bool _ViscousBuilder2D::refine()
 
     //if ( L._leftLine->_advancable ) L._lEdges[0] = L._leftLine->_lEdges.back();
 
-    // replace an inactive _LayerEdge with an active one of a neighbour _PolyLine
+    // replace an inactive (1st) _LayerEdge with an active one of a neighbour _PolyLine
     size_t iLE = 0, nbLE = L._lEdges.size();
     if ( /*!L._leftLine->_advancable &&*/ L.IsCommonEdgeShared( *L._leftLine ))
     {
@@ -1597,9 +1593,7 @@ bool _ViscousBuilder2D::refine()
     {
       int nbRemove = 0, deltaIt = isR ? -1 : +1;
       _PolyLine::TEdgeIterator eIt = isR ? L._lEdges.end()-1 : L._lEdges.begin();
-      // HEURISTICS !!! elongate the first _LayerEdge
-      gp_XY newIn = eIt->_uvOut + eIt->_normal2D * eIt->_length2D/* * 2*/;
-      _Segment seg1( eIt->_uvOut, newIn );
+      _Segment seg1( eIt->_uvOut, eIt->_uvIn );
       for ( eIt += deltaIt; nbRemove < L._lEdges.size()-2; eIt += deltaIt )
       {
         _Segment seg2( eIt->_uvOut, eIt->_uvIn );
@@ -1614,6 +1608,36 @@ bool _ViscousBuilder2D::refine()
         else
           L._lEdges.erase( L._lEdges.begin()+2,
                            L._lEdges.begin()+2+nbRemove );
+      }
+    }
+
+    // limit length of neighbour _LayerEdge's to avoid sharp change of layers thickness
+    vector< double > segLen( L._lEdges.size() );
+    segLen[0] = 0.0;
+    for ( size_t i = 1; i < segLen.size(); ++i )
+    {
+      // accumulate length of segments
+      double sLen = (L._lEdges[i-1]._uvOut - L._lEdges[i]._uvOut ).Modulus();
+      segLen[i] = segLen[i-1] + sLen;
+    }
+    for ( int isR = 0; isR < 2; ++isR )
+    {
+      size_t iF = 0, iL = L._lEdges.size()-1;
+      size_t *i = isR ? &iL : &iF;
+      //size_t iRef = *i;
+      gp_XY uvInPrev = L._lEdges[ *i ]._uvIn;
+      double weight = 0;
+      for ( ++iF, --iL; iF < L._lEdges.size()-1; ++iF, --iL )
+      {
+        _LayerEdge& LE = L._lEdges[*i];
+        gp_XY tangent ( LE._normal2D.Y(), -LE._normal2D.X() );
+        weight += Abs( tangent * ( uvInPrev - LE._uvIn )) / segLen.back();
+        double proj = LE._normal2D * ( uvInPrev - LE._uvOut );
+        if ( LE._length2D < proj )
+          weight += 0.75 * ( 1 - weight ); // length decrease is more preferable
+        LE._length2D  = weight * LE._length2D + ( 1 - weight ) * proj;
+        LE._uvIn = LE._uvOut + LE._normal2D * LE._length2D;
+        uvInPrev = LE._uvIn;
       }
     }
 
@@ -1655,8 +1679,6 @@ bool _ViscousBuilder2D::refine()
     size_t iS, iN0 = hasLeftNode, nbN = innerNodes.size() - hasRightNode;
     L._leftNodes .resize( _hyp->GetNumberLayers() );
     L._rightNodes.resize( _hyp->GetNumberLayers() );
-    vector< double > segLen( L._lEdges.size() );
-    segLen[0] = 0.0;
     for ( int iF = 0; iF < _hyp->GetNumberLayers(); ++iF ) // loop on layers of faces
     {
       // get accumulated length of intermediate segments
@@ -1716,6 +1738,59 @@ bool _ViscousBuilder2D::refine()
     edgeSM->SetUVPtStructVec( nodeDataVec );
 
   } // loop on _PolyLine's
+
+  return true;
+}
+
+//================================================================================
+/*!
+ * \brief Improve quality of the created mesh elements
+ */
+//================================================================================
+
+bool _ViscousBuilder2D::improve()
+{
+  if ( !_proxyMesh )
+    return false;
+
+  // faces to smooth
+  TIDSortedElemSet facesToSmooth;
+  if ( SMESHDS_SubMesh* sm = getMeshDS()->MeshElements( _face ))
+  {
+    SMDS_ElemIteratorPtr fIt = sm->GetElements();
+    while ( fIt->more() )
+      facesToSmooth.insert( facesToSmooth.end(), fIt->next() );
+  }
+
+  // fixed nodes on EDGE's
+  std::set<const SMDS_MeshNode*> fixedNodes;
+  for ( size_t iWire = 0; iWire < _faceSideVec.size(); ++iWire )
+  {
+    StdMeshers_FaceSidePtr      wire = _faceSideVec[ iWire ];
+    const vector<UVPtStruct>& points = wire->GetUVPtStruct();
+    for ( size_t i = 0; i < points.size(); ++i )
+      fixedNodes.insert( fixedNodes.end(), points[i].node );
+  }
+  // fixed proxy nodes
+  for ( size_t iL = 0; iL < _polyLineVec.size(); ++iL )
+  {
+    _PolyLine&         L = _polyLineVec[ iL ];
+    const TopoDS_Edge& E = L._wire->Edge( L._edgeInd );
+    if ( const SMESH_ProxyMesh::SubMesh* sm = _proxyMesh->GetProxySubMesh( E ))
+    {
+      const UVPtStructVec& points = sm->GetUVPtStructVec();
+      for ( size_t i = 0; i < points.size(); ++i )
+        fixedNodes.insert( fixedNodes.end(), points[i].node );
+    }
+    for ( size_t i = 0; i < L._rightNodes.size(); ++i )
+      fixedNodes.insert( fixedNodes.end(), L._rightNodes[i] );
+  }
+
+  // smoothing
+  SMESH_MeshEditor editor( _mesh );
+  editor.Smooth( facesToSmooth, fixedNodes, SMESH_MeshEditor::CENTROIDAL, /*nbIt = */3 );
+  //editor.Smooth( facesToSmooth, fixedNodes, SMESH_MeshEditor::LAPLACIAN, /*nbIt = */1 );
+  //editor.Smooth( facesToSmooth, fixedNodes, SMESH_MeshEditor::CENTROIDAL, /*nbIt = */1 );
 
   return true;
 }
