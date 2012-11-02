@@ -28,7 +28,7 @@ the ID of this quadrangle will be added to the list. To remove a
 selected element or elements from the list click \b Remove button. <b>Sort
 list</b> button allows to sort the list of IDs. \b Filter button allows to
 apply a definite filter to the selection of quadrangles.</li>
-<li><b>Apply to all</b> radio button allows to modify the orientation of all
+<li><b>Apply to all</b> check box allows to modify the orientation of all
 quadrangles of the currently displayed mesh or sub-mesh.</li>
 <li>\b Preview - provides a preview of cutting in the viewer.</li>
 </ul>
@@ -40,7 +40,19 @@ quadrangles of the currently displayed mesh or sub-mesh.</li>
 specify the opposite corners which will be connected by the cutting
 edge.</li>
 <li><b>Use numeric factor</b> - allows to chose a quality criterion
-  optimization of which will be used to select the cutting edge.</li>
+  optimization of which will be used to select the cutting edge.
+<ul>
+<li><b>Minimum diagonal</b> - will be used the edge with the smallest length.</li>
+<li><b>Aspect Ratio</b> - will be used the edge which splits a quadrangle 
+in order to optimize an Aspect Ratio quality criterion. The reference value is 1.</li>
+<li><b>Minimum Angle</b> - will be used the edge which splits a quadrangle 
+in order to optimize a Minimum Angle quality criterion. The reference value 
+is 60 degrees.</li>
+<li><b>Skew</b> - will be used the edge which splits a quadrangle 
+in order to optimize a Skew quality criterion. The reference value 
+is 0.0 degrees.</li>
+</ul>
+</li>
 </ul>
 </li>
 <li><b>Select from</b> - allows to choose a sub-mesh or an existing
