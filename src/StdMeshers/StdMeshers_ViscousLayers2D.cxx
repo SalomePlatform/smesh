@@ -242,6 +242,7 @@ namespace VISCOUS_2D
     StdMeshers_FaceSide* _wire;
     int                  _edgeInd;     // index of my EDGE in _wire
     bool                 _advancable;  // true if there is a viscous layer on my EDGE
+    bool                 _isStraight2D;// pcurve type
     _PolyLine*           _leftLine;    // lines of neighbour EDGE's
     _PolyLine*           _rightLine;
     int                  _firstPntInd; // index in vector<UVPtStruct> of _wire
@@ -259,6 +260,8 @@ namespace VISCOUS_2D
 
     typedef vector< _Segment >::iterator   TSegIterator;
     typedef vector< _LayerEdge >::iterator TEdgeIterator;
+
+    TIDSortedElemSet     _newFaces; // faces generated from this line
 
     bool IsCommonEdgeShared( const _PolyLine& other );
     size_t FirstLEdge() const
@@ -430,9 +433,9 @@ StdMeshers_ViscousLayers2D::Compute(SMESH_Mesh&        theMesh,
     SMESH_ComputeErrorPtr error = builder.GetError();
     if ( error && !error->IsOK() )
       theMesh.GetSubMesh( theFace )->GetComputeError() = error;
-    // else if ( !pm )
-    //   pm.reset( new SMESH_ProxyMesh( theMesh ));
-    pm.reset();
+    else if ( !pm )
+      pm.reset( new SMESH_ProxyMesh( theMesh ));
+    //pm.reset();
   }
   else
   {
@@ -543,7 +546,7 @@ SMESH_ProxyMesh::Ptr _ViscousBuilder2D::Compute()
   if ( ! refine() ) // make faces
     return _proxyMesh;
 
-  improve();
+  //improve();
 
   return _proxyMesh;
 }
@@ -827,7 +830,8 @@ bool _ViscousBuilder2D::makePolyLines()
     }
     // add self to _reachableLines
     Geom2dAdaptor_Curve pcurve( L1._wire->Curve2d( L1._edgeInd ));
-    if ( pcurve.GetType() != GeomAbs_Line )
+    L1._isStraight2D = ( pcurve.GetType() == GeomAbs_Line );
+    if ( !L1._isStraight2D )
     {
       // TODO: check carefully
       L1._reachableLines.push_back( & L1 );
@@ -863,8 +867,8 @@ void _ViscousBuilder2D::adjustCommonEdge( _PolyLine& LL, _PolyLine& LR )
   EL._normal2D = normCommon;
   EL._ray.SetLocation ( EL._uvOut );
   EL._ray.SetDirection( EL._normal2D );
-  if ( nbAdvancableL == 1 ) {
-    EL._isBlocked = true;
+  if ( nbAdvancableL == 1 ) { // _normal2D is true normal (not average)
+    EL._isBlocked = true; // prevent intersecting with _Segments of _advancable line
     EL._length2D  = 0;
   }
   // update _LayerEdge::_len2dTo3dRatio according to a new direction
@@ -969,13 +973,15 @@ void _ViscousBuilder2D::adjustCommonEdge( _PolyLine& LL, _PolyLine& LR )
     {
       if ( nbAdvancableL == 1 )
       {
-        // make that the _LayerEdge at VERTEX is not shared by LL and LR
+        // make that the _LayerEdge at VERTEX is not shared by LL and LR:
+        // different normals is a sign that they are not shared
         _LayerEdge& notSharedEdge = LL._advancable ? LR._lEdges[0] : LL._lEdges.back();
         _LayerEdge&    sharedEdge = LR._advancable ? LR._lEdges[0] : LL._lEdges.back();
 
         notSharedEdge._normal2D.SetCoord( 0.,0. );
-        sharedEdge._normal2D  = normAvg;
-        sharedEdge._isBlocked = false;
+        sharedEdge._normal2D     = normAvg;
+        sharedEdge._isBlocked    = false;
+        notSharedEdge._isBlocked = true;
       }
     }
   }
@@ -1188,7 +1194,7 @@ bool _ViscousBuilder2D::fixCollisions()
 
 bool _ViscousBuilder2D::shrink()
 {
-  gp_Pnt2d uv; gp_Vec2d tangent;
+  gp_Pnt2d uv; //gp_Vec2d tangent;
   _SegmentIntersection intersection;
   double sign;
 
@@ -1282,7 +1288,12 @@ bool _ViscousBuilder2D::shrink()
     double u1 = L._wire->FirstU( L._edgeInd ), uf = u1;
     double u2 = L._wire->LastU ( L._edgeInd ), ul = u2;
 
-    // Get length of existing segments (from edge start to node) and their nodes
+    // a ratio to pass 2D <--> 1D
+    const double len1D = 1e-3;
+    const double len2D = pcurve->Value(uf).Distance( pcurve->Value(uf+len1D));
+    double len1dTo2dRatio = len1D / len2D;
+
+    // Get length of existing segments (from edge start to a node) and their nodes
     const vector<UVPtStruct>& points = L._wire->GetUVPtStruct();
     UVPtStructVec nodeDataVec( & points[ L._firstPntInd ],
                                & points[ L._lastPntInd + 1 ]);
@@ -1329,10 +1340,11 @@ bool _ViscousBuilder2D::shrink()
       // try to find length of advancement along L by intersecting L with
       // an adjacent _Segment of L2
 
-      double & length2D = nearLE._length2D;
+      double length1D = 0, length2D = 0; //nearLE._length2D;
       sign = ( isR ^ edgeReversed ) ? -1. : 1.;
-      pcurve->D1( u, uv, tangent );
+      //pcurve->D1( u, uv, tangent );
 
+      bool isConvex = false;
       if ( L2->_advancable )
       {
         int iFSeg2 = isR ? 0 : L2->_segments.size() - 1;
@@ -1345,41 +1357,46 @@ bool _ViscousBuilder2D::shrink()
         Geom2dAdaptor_Curve edgeCurve( pcurve, Min( uf, ul ), Max( uf, ul ));
         Geom2dAdaptor_Curve seg2Curve( seg2Line );
         Geom2dInt_GInter     curveInt( edgeCurve, seg2Curve, 1e-7, 1e-7 );
-        double maxDist2d = 2 * L2->_lEdges[ iLSeg2 ]._length2D;
-        if ( curveInt.IsDone() &&
-             !curveInt.IsEmpty() &&
-             curveInt.Point( 1 ).Value().Distance( uvFSeg2Out ) <= maxDist2d )
-        {     /* convex VERTEX */
-          length2D = Abs( u - curveInt.Point( 1 ).ParamOnFirst() );
+        isConvex = ( curveInt.IsDone() && !curveInt.IsEmpty() );
+        if ( isConvex ) {
+          /*                   convex VERTEX */
+          length1D = Abs( u - curveInt.Point( 1 ).ParamOnFirst() );
+          double maxDist2d = 2 * L2->_lEdges[ iLSeg2 ]._length2D;
+          isConvex = ( length1D < maxDist2d * len1dTo2dRatio );
                                                   /*  |L  seg2     
                                                    *  |  o---o--- 
                                                    *  | /    |    
                                                    *  |/     |  L2
                                                    *  x------x---      */
         }
-        else { /* concave VERTEX */               /*  o-----o--- 
+        if ( !isConvex ) { /* concave VERTEX */   /*  o-----o--- 
                                                    *   \    |    
                                                    *    \   |  L2
                                                    *     x--x--- 
                                                    *    /        
                                                    * L /               */
-          length2D = sign * L2->_lEdges[ iFSeg2 ]._length2D;
+          length2D = L2->_lEdges[ iFSeg2 ]._length2D;
         }
       }
       else // L2 is advancable but in the face adjacent by L
       {
         length2D = farLE._length2D;
-        if ( length2D == 0 )
-          length2D = ( isR ? L._leftLine->_lEdges.back() : L._rightLine->_lEdges.front() )._length2D;
+        if ( length2D == 0 ) {
+          _LayerEdge& neighborLE =
+            ( isR ? L._leftLine->_lEdges.back() : L._rightLine->_lEdges.front() );
+          length2D = neighborLE._length2D;
+        }
       }
+
       // move u to the internal boundary of layers
       double maxLen3D = Min( _thickness, edgeLen / ( 1 + nbAdvancable ));
       double maxLen2D = maxLen3D * nearLE._len2dTo3dRatio;
-      if ( length2D > maxLen2D )
-        length2D = maxLen2D;
+      if ( !length2D ) length2D = length1D / len1dTo2dRatio;
+      if ( Abs( length2D ) > maxLen2D )
+        length2D = maxLen2D * sign;
       nearLE._uvIn = nearLE._uvOut + nearLE._normal2D * length2D;
 
-      u += length2D * sign;
+      u += length2D * len1dTo2dRatio * sign;
       nodeDataVec[ iPEnd ].param = u;
 
       gp_Pnt2d newUV = pcurve->Value( u );
@@ -1576,12 +1593,14 @@ bool _ViscousBuilder2D::refine()
 
     // replace an inactive (1st) _LayerEdge with an active one of a neighbour _PolyLine
     size_t iLE = 0, nbLE = L._lEdges.size();
-    if ( /*!L._leftLine->_advancable &&*/ L.IsCommonEdgeShared( *L._leftLine ))
+    const bool leftEdgeShared  = L.IsCommonEdgeShared( *L._leftLine );
+    const bool rightEdgeShared = L.IsCommonEdgeShared( *L._rightLine );
+    if ( /*!L._leftLine->_advancable &&*/ leftEdgeShared )
     {
       L._lEdges[0] = L._leftLine->_lEdges.back();
       iLE += int( !L._leftLine->_advancable );
     }
-    if ( !L._rightLine->_advancable && L.IsCommonEdgeShared( *L._rightLine ))
+    if ( !L._rightLine->_advancable && rightEdgeShared )
     {
       L._lEdges.back() = L._rightLine->_lEdges[0];
       --nbLE;
@@ -1674,8 +1693,8 @@ bool _ViscousBuilder2D::refine()
 
     // Create layers of faces
 
-    int hasLeftNode  = ( !L._leftLine->_rightNodes.empty() );
-    int hasRightNode = ( !L._rightLine->_leftNodes.empty() );
+    int hasLeftNode  = ( !L._leftLine->_rightNodes.empty() && leftEdgeShared );
+    int hasRightNode = ( !L._rightLine->_leftNodes.empty() && rightEdgeShared );
     size_t iS, iN0 = hasLeftNode, nbN = innerNodes.size() - hasRightNode;
     L._leftNodes .resize( _hyp->GetNumberLayers() );
     L._rightNodes.resize( _hyp->GetNumberLayers() );
@@ -1710,10 +1729,29 @@ bool _ViscousBuilder2D::refine()
       // create faces
       // TODO care of orientation
       for ( size_t i = 1; i < innerNodes.size(); ++i )
-        _helper.AddFace( outerNodes[ i-1 ], outerNodes[ i ],
-                         innerNodes[ i ],   innerNodes[ i-1 ]);
+        if ( SMDS_MeshElement* f = _helper.AddFace( outerNodes[ i-1 ], outerNodes[ i ],
+                                                    innerNodes[ i ],   innerNodes[ i-1 ]))
+          L._newFaces.insert( L._newFaces.end(), f );
 
       outerNodes.swap( innerNodes );
+    }
+    // faces between not shared _LayerEdge's
+    for ( int isR = 0; isR < 2; ++isR )
+    {
+      if ( isR ? rightEdgeShared : leftEdgeShared)
+        continue;
+      vector< const SMDS_MeshNode* > &
+        lNodes = (isR ? L._rightNodes : L._leftLine->_rightNodes ),
+        rNodes = (isR ? L._rightLine->_leftNodes : L._leftNodes );
+      if ( lNodes.empty() || rNodes.empty() || lNodes.size() != rNodes.size() )
+        continue;
+
+      for ( size_t i = 1; i < lNodes.size(); ++i )
+        _helper.AddFace( lNodes[ i-1 ], rNodes[ i-1 ],
+                         rNodes[ i ],   lNodes[ i ]);
+
+      const UVPtStruct& ptOnVertex = points[ isR ? L._lastPntInd : L._firstPntInd ];
+      _helper.AddFace( ptOnVertex.node, rNodes[ 0 ], lNodes[ 0 ]);
     }
 
     // Fill the _ProxyMeshOfFace
@@ -1753,15 +1791,6 @@ bool _ViscousBuilder2D::improve()
   if ( !_proxyMesh )
     return false;
 
-  // faces to smooth
-  TIDSortedElemSet facesToSmooth;
-  if ( SMESHDS_SubMesh* sm = getMeshDS()->MeshElements( _face ))
-  {
-    SMDS_ElemIteratorPtr fIt = sm->GetElements();
-    while ( fIt->more() )
-      facesToSmooth.insert( facesToSmooth.end(), fIt->next() );
-  }
-
   // fixed nodes on EDGE's
   std::set<const SMDS_MeshNode*> fixedNodes;
   for ( size_t iWire = 0; iWire < _faceSideVec.size(); ++iWire )
@@ -1788,10 +1817,16 @@ bool _ViscousBuilder2D::improve()
 
   // smoothing
   SMESH_MeshEditor editor( _mesh );
-  editor.Smooth( facesToSmooth, fixedNodes, SMESH_MeshEditor::CENTROIDAL, /*nbIt = */3 );
-  //editor.Smooth( facesToSmooth, fixedNodes, SMESH_MeshEditor::LAPLACIAN, /*nbIt = */1 );
-  //editor.Smooth( facesToSmooth, fixedNodes, SMESH_MeshEditor::CENTROIDAL, /*nbIt = */1 );
-
+  for ( size_t iL = 0; iL < _polyLineVec.size(); ++iL )
+  {
+    _PolyLine& L = _polyLineVec[ iL ];
+    if ( L._isStraight2D ) continue;
+    // SMESH_MeshEditor::SmoothMethod how =
+    //   L._isStraight2D ? SMESH_MeshEditor::LAPLACIAN : SMESH_MeshEditor::CENTROIDAL;
+    //editor.Smooth( L._newFaces, fixedNodes, how, /*nbIt = */3 );
+    //editor.Smooth( L._newFaces, fixedNodes, SMESH_MeshEditor::LAPLACIAN, /*nbIt = */1 );
+    editor.Smooth( L._newFaces, fixedNodes, SMESH_MeshEditor::CENTROIDAL, /*nbIt = */3 );
+  }
   return true;
 }
 
