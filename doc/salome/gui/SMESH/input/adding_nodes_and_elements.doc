@@ -106,7 +106,7 @@ by filtering elements or nodes of the mesh with different criteria
 (see \ref filtering_elements "Filter usage" on how to set up selection
 criteria).</li>
 <li> Switching on <b>Add to group</b> check-box allows you specifying a
-  name of a group to add all 0D element created or found on the
+  name of a group to add all 0D elements created or found on the
   selected element nodes. You can either select an existing group from
   a drop-down list, or enter a name of a group to create.</li>
 </ul>
