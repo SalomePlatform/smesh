@@ -3115,7 +3115,7 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
     SMDS_FaceIteratorPtr fIt = aMesh->facesIterator();
     while ( fIt->more() ) {
       const SMDS_MeshElement* face = fIt->next();
-      theElems.insert( face );
+      theElems.insert( theElems.end(), face );
     }
   }
   // get all face ids theElems are on
