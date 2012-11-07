@@ -831,10 +831,6 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
         }
         if (!E1.IsNull() && !E2.IsNull() && !E3.IsNull())
         {
-          if ( myProxyMesh->GetProxySubMesh( E1 ) ||
-               myProxyMesh->GetProxySubMesh( E2 ) ||
-               myProxyMesh->GetProxySubMesh( E3 ) )
-            
           quad->side.push_back(new StdMeshers_FaceSide(F, E1, &aMesh, true,
                                                        ignoreMediumNodes, myProxyMesh));
           quad->side.push_back(new StdMeshers_FaceSide(F, E2, &aMesh, true,
