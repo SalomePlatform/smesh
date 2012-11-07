@@ -1965,10 +1965,9 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
 
 //================================================================================
 /*!
- * \brief Reads parameters of edited mesh and assigns them to the dialog
+ * \brief Reads parameters of an edited mesh and assigns them to the dialog
  *
- * Reads parameters of edited mesh and assigns them to the dialog (called when
- * mesh is edited only)
+ * Called when mesh is edited only.
  */
 //================================================================================
 void SMESHGUI_MeshOp::readMesh()
@@ -2005,8 +2004,8 @@ void SMESHGUI_MeshOp::readMesh()
 
   // Get hypotheses and algorithms assigned to the mesh/sub-mesh
   QStringList anExisting;
-  const int aDim = ( myIsOnGeometry ) ? SMESH::DIM_0D : SMESH::DIM_3D;
-  for ( int dim = aDim; dim <= SMESH::DIM_3D; dim++ )
+  const int lastDim = ( myIsOnGeometry ) ? SMESH::DIM_0D : SMESH::DIM_3D;
+  for ( int dim = SMESH::DIM_3D; dim >= lastDim; --dim )
   {
     // get algorithm
     existingHyps( dim, Algo, pObj, anExisting, myObjHyps[ dim ][ Algo ] );
@@ -2030,7 +2029,7 @@ void SMESHGUI_MeshOp::readMesh()
 
   // get hypotheses
   bool hypWithoutAlgo = false;
-  for ( int dim = aDim; dim <= SMESH::DIM_3D; dim++ )
+  for ( int dim = SMESH::DIM_3D; dim >= lastDim; --dim )
   {
     for ( int hypType = MainHyp; hypType <= AddHyp; hypType++ )
     {
