@@ -1225,9 +1225,13 @@ class Mesh:
                 elif err.state == HYP_BAD_GEOMETRY:
                     reason = ('%s %sD algorithm "%s" is assigned to mismatching'
                               'geometry' % ( glob, dim, name ))
+                elif err.state == HYP_HIDDEN_ALGO:
+                    reason = ('%s %sD algorithm "%s" is ignored due to presence of a %s '
+                              'algorithm of upper dimension generating %sD mesh'
+                              % ( glob, dim, name, glob, dim ))
                 else:
-                    reason = "For unknown reason."+\
-                             " Revise Mesh.Compute() implementation in smeshDC.py!"
+                    reason = ("For unknown reason. "
+                              "Developer, revise Mesh.Compute() implementation in smeshDC.py!")
                     pass
                 if allReasons != "":allReasons += "\n"
                 allReasons += "-  " + reason
