@@ -760,7 +760,9 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
     myMeshes.insert( make_pair( mesh->GetID(), mesh ));
     return;
   }
-  if( method == "CreateMeshesFromMED" || method == "CreateMeshesFromSAUV")
+  if( method == "CreateMeshesFromMED" ||
+      method == "CreateMeshesFromSAUV"||
+      method == "CreateMeshesFromGMF" )
   {
     for(int ind = 0;ind<theCommand->GetNbResultValues();ind++)
     {
