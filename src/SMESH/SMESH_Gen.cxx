@@ -589,6 +589,8 @@ static bool checkConformIgnoredAlgos(SMESH_Mesh&               aMesh,
 
     if ( aLocIgnoAlgo ) // algo is hidden by a local algo of upper dim
     {
+      theErrors.push_back( SMESH_Gen::TAlgoStateError() );
+      theErrors.back().Set( SMESH_Hypothesis::HYP_HIDDEN_ALGO, algo, false );
       INFOS( "Local <" << algo->GetName() << "> is hidden by local <"
             << aLocIgnoAlgo->GetName() << ">");
     }
@@ -601,6 +603,8 @@ static bool checkConformIgnoredAlgos(SMESH_Mesh&               aMesh,
       if ( dim < aMaxGlobIgnoDim )
       {
         // algo is hidden by a global algo
+        theErrors.push_back( SMESH_Gen::TAlgoStateError() );
+        theErrors.back().Set( SMESH_Hypothesis::HYP_HIDDEN_ALGO, algo, true );
         INFOS( ( isGlobal ? "Global" : "Local" )
               << " <" << algo->GetName() << "> is hidden by global <"
               << aGlobIgnoAlgo->GetName() << ">");
