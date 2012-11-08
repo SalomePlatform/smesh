@@ -818,7 +818,7 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
     }
   }
 
-  // objects erasing creation command if no more it's commands invoked:
+  // objects erasing creation command if no more its commands invoked:
   // SMESH_Pattern, FilterManager
   if ( method == "GetPattern" ||
        method == "CreateFilterManager" ||
@@ -1978,7 +1978,8 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
     const char * names[] = {
       "RemoveElements","RemoveNodes","RemoveOrphanNodes","AddNode","Add0DElement","AddEdge","AddFace","AddPolygonalFace","AddBall",
       "AddVolume","AddPolyhedralVolume","AddPolyhedralVolumeByFaces","MoveNode", "MoveClosestNodeToPoint",
-      "InverseDiag","DeleteDiag","Reorient","ReorientObject","TriToQuad","SplitQuad","SplitQuadObject",
+      "InverseDiag","DeleteDiag","Reorient","ReorientObject",
+      "TriToQuad","TriToQuadObject", "SplitQuad","SplitQuadObject",
       "BestSplit","Smooth","SmoothObject","SmoothParametric","SmoothParametricObject",
       "ConvertToQuadratic","ConvertFromQuadratic","RenumberNodes","RenumberElements",
       "RotationSweep","RotationSweepObject","RotationSweepObject1D","RotationSweepObject2D",
@@ -2127,15 +2128,13 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       theCommand->SetArg( 3, face );
   }
 
-  if(method == "QuadToTri" || method == "QuadToTriObject")
+  if ( method == "QuadToTri" || method == "QuadToTriObject" )
   {
+    isPyMeshMethod = true;
     int crit_arg = theCommand->GetNbArgs();
-    _AString crit = theCommand->GetArg(crit_arg);
-    if(crit.Search("MaxElementLength2D") != -1)
-    {
+    const _AString& crit = theCommand->GetArg(crit_arg);
+    if (crit.Search("MaxElementLength2D") != -1)
       theCommand->SetArg(crit_arg, "");
-      isPyMeshMethod = true;
-    }
   }
 
   if ( isPyMeshMethod )
