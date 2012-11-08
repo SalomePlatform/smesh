@@ -742,14 +742,8 @@ void SMESHGUI_ClippingDlg::updateActorItem( QListWidgetItem* theItem,
         if( anItem->checkState() == Qt::Checked )
           aNbChecked++;
 
-    Qt::CheckState aCheckState = Qt::Unchecked;
-    if( aNbChecked == aNbItems )
-      aCheckState = Qt::Checked;
-    else if( aNbChecked > 0 )
-      aCheckState = Qt::PartiallyChecked;
-
     bool anIsBlocked = SelectAllCheckBox->blockSignals( true );
-    SelectAllCheckBox->setCheckState( aCheckState );
+    SelectAllCheckBox->setCheckState( aNbChecked == aNbItems ? Qt::Checked : Qt::Unchecked);
     SelectAllCheckBox->blockSignals( anIsBlocked );
   }
 
