@@ -1999,7 +1999,9 @@ void SMESH_Mesh::fillAncestorsMap(const TopoDS_Shape& theShape)
   {
     // a geom group is added. Insert it into lists of ancestors before
     // the first ancestor more complex than group members
-    int memberType = TopoDS_Iterator( theShape ).Value().ShapeType();
+    TopoDS_Iterator subIt( theShape );
+    if ( !subIt.More() ) return;
+    int memberType = subIt.Value().ShapeType();
     for ( desType = TopAbs_VERTEX; desType >= memberType; desType-- )
       for (TopExp_Explorer des( theShape, TopAbs_ShapeEnum( desType )); des.More(); des.Next())
       {
