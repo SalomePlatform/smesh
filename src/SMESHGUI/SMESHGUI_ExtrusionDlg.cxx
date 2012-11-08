@@ -91,6 +91,7 @@
 SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   : SMESHGUI_PreviewDlg( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
+    myEditCurrentArgument(0),
     myFilterDlg( 0 ),
     mySelectedObject(SMESH::SMESH_IDSource::_nil())
 {
