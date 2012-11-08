@@ -330,7 +330,6 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         return Mesh(self,self.geompyD,obj,name)
 
     ## Returns a long value from enumeration
-    #  Should be used for SMESH.FunctorType enumeration
     #  @ingroup l1_controls
     def EnumToLong(self,theItem):
         return theItem._v
@@ -768,6 +767,8 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     #  @return SMESH_NumericalFunctor
     #  @ingroup l1_controls
     def GetFunctor(self,theCriterion):
+        if isinstance( theCriterion, SMESH._objref_NumericalFunctor ):
+            return theCriterion
         aFilterMgr = self.CreateFilterManager()
         if theCriterion == FT_AspectRatio:
             return aFilterMgr.CreateAspectRatio()
@@ -2650,30 +2651,25 @@ class Mesh:
 
     ## Fuses the neighbouring triangles into quadrangles.
     #  @param IDsOfElements The triangles to be fused,
-    #  @param theCriterion  is FT_...; used to choose a neighbour to fuse with.
+    #  @param theCriterion  is a numerical functor, in terms of enum SMESH.FunctorType, used to
+    #                       choose a neighbour to fuse with.
     #  @param MaxAngle      is the maximum angle between element normals at which the fusion
     #                       is still performed; theMaxAngle is mesured in radians.
     #                       Also it could be a name of variable which defines angle in degrees.
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_unitetri
     def TriToQuad(self, IDsOfElements, theCriterion, MaxAngle):
-        flag = False
-        if isinstance(MaxAngle,str):
-            flag = True
         MaxAngle,Parameters,hasVars = ParseAngles(MaxAngle)
         self.mesh.SetParameters(Parameters)
         if not IDsOfElements:
             IDsOfElements = self.GetElementsId()
-        Functor = 0
-        if ( isinstance( theCriterion, SMESH._objref_NumericalFunctor ) ):
-            Functor = theCriterion
-        else:
-            Functor = self.smeshpyD.GetFunctor(theCriterion)
+        Functor = self.smeshpyD.GetFunctor(theCriterion)
         return self.editor.TriToQuad(IDsOfElements, Functor, MaxAngle)
 
     ## Fuses the neighbouring triangles of the object into quadrangles
     #  @param theObject is mesh, submesh or group
-    #  @param theCriterion is FT_...; used to choose a neighbour to fuse with.
+    #  @param theCriterion is a numerical functor, in terms of enum SMESH.FunctorType, used to
+    #         choose a neighbour to fuse with.
     #  @param MaxAngle   a max angle between element normals at which the fusion
     #                   is still performed; theMaxAngle is mesured in radians.
     #  @return TRUE in case of success, FALSE otherwise.
@@ -2681,16 +2677,17 @@ class Mesh:
     def TriToQuadObject (self, theObject, theCriterion, MaxAngle):
         MaxAngle,Parameters,hasVars = ParseAngles(MaxAngle)
         self.mesh.SetParameters(Parameters)
-        if ( isinstance( theObject, Mesh )):
+        if isinstance( theObject, Mesh ):
             theObject = theObject.GetMesh()
-        return self.editor.TriToQuadObject(theObject, self.smeshpyD.GetFunctor(theCriterion), MaxAngle)
+        Functor = self.smeshpyD.GetFunctor(theCriterion)
+        return self.editor.TriToQuadObject(theObject, Functor, MaxAngle)
 
     ## Splits quadrangles into triangles.
     #
-    #  If @a theCriterion is None, quadrangles will be split by the smallest diagonal.
-    #
     #  @param IDsOfElements the faces to be splitted.
-    #  @param theCriterion   FT_...; used to choose a diagonal for splitting.
+    #  @param theCriterion   is a numerical functor, in terms of enum SMESH.FunctorType, used to
+    #         choose a diagonal for splitting. If @a theCriterion is None, which is a default
+    #         value, then quadrangles will be split by the smallest diagonal.
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_cutquadr
     def QuadToTri (self, IDsOfElements, theCriterion = None):
@@ -2698,14 +2695,15 @@ class Mesh:
             IDsOfElements = self.GetElementsId()
         if theCriterion is None:
             theCriterion = FT_MaxElementLength2D
-        return self.editor.QuadToTri(IDsOfElements, self.smeshpyD.GetFunctor(theCriterion))
+        Functor = self.smeshpyD.GetFunctor(theCriterion)
+        return self.editor.QuadToTri(IDsOfElements, Functor)
 
     ## Splits quadrangles into triangles.
-    #
-    #  If @a theCriterion is None, quadrangles will be split by the smallest diagonal.
-    #
-    #  @param theObject  the object from which the list of elements is taken, this is mesh, submesh or group
-    #  @param theCriterion   FT_...; used to choose a diagonal for splitting.
+    #  @param theObject the object from which the list of elements is taken,
+    #         this is mesh, submesh or group
+    #  @param theCriterion is a numerical functor, in terms of enum SMESH.FunctorType, used to
+    #         choose a diagonal for splitting. If @a theCriterion is None, which is a default
+    #         value, then quadrangles will be split by the smallest diagonal.
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_cutquadr
     def QuadToTriObject (self, theObject, theCriterion = None):
@@ -2713,7 +2711,8 @@ class Mesh:
             theObject = theObject.GetMesh()
         if theCriterion is None:
             theCriterion = FT_MaxElementLength2D
-        return self.editor.QuadToTriObject(theObject, self.smeshpyD.GetFunctor(theCriterion))
+        Functor = self.smeshpyD.GetFunctor(theCriterion)
+        return self.editor.QuadToTriObject(theObject, Functor)
 
     ## Splits quadrangles into triangles.
     #  @param IDsOfElements the faces to be splitted
@@ -2726,7 +2725,8 @@ class Mesh:
         return self.editor.SplitQuad(IDsOfElements, Diag13)
 
     ## Splits quadrangles into triangles.
-    #  @param theObject the object from which the list of elements is taken, this is mesh, submesh or group
+    #  @param theObject the object from which the list of elements is taken,
+    #         this is mesh, submesh or group
     #  @param Diag13    is used to choose a diagonal for splitting.
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_cutquadr
@@ -2737,7 +2737,8 @@ class Mesh:
 
     ## Finds a better splitting of the given quadrangle.
     #  @param IDOfQuad   the ID of the quadrangle to be splitted.
-    #  @param theCriterion  FT_...; a criterion to choose a diagonal for splitting.
+    #  @param theCriterion  is a numerical functor, in terms of enum SMESH.FunctorType, used to
+    #         choose a diagonal for splitting.
     #  @return 1 if 1-3 diagonal is better, 2 if 2-4
     #          diagonal is better, 0 if error occurs.
     #  @ingroup l2_modif_cutquadr
