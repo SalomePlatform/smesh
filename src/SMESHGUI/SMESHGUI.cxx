@@ -3023,7 +3023,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if(checkLock(aStudy)) break;
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
-        SMDSAbs_EntityType type;
+        SMDSAbs_EntityType type = SMDSEntity_Last;
 
         switch (theCommandID) {
         case 4034:
@@ -3041,13 +3041,13 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         case 4039:
           type = SMDSEntity_Quad_Penta; break;
         case 4040:
-          type = SMDSEntity_Quad_Hexa;
+          type = SMDSEntity_Quad_Hexa; break;
         case 4140:
-          type = SMDSEntity_TriQuad_Hexa;
-          break;
-        default:;
+          type = SMDSEntity_TriQuad_Hexa; break;
+        default: break;
         }
-         ( new SMESHGUI_AddQuadraticElementDlg( this, type ) )->show();
+	if ( type != SMDSEntity_Last )
+	( new SMESHGUI_AddQuadraticElementDlg( this, type ) )->show();
       }
       else {
         SUIT_MessageBox::warning(SMESHGUI::desktop(),
