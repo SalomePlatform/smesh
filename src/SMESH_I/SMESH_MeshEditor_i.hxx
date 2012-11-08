@@ -40,6 +40,10 @@
 
 class SMESH_Mesh_i;
 
+namespace MeshEditor_I {
+  struct TPreviewMesh;
+}
+
 class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
 {
 public:
@@ -835,13 +839,17 @@ public:
 
 private: //!< private methods
 
-  SMESHDS_Mesh * GetMeshDS() { return myMesh->GetMeshDS(); }
+  ::SMESH_MeshEditor& getEditor();
+
+  SMESHDS_Mesh * getMeshDS() { return myMesh->GetMeshDS(); }
+
+  MeshEditor_I::TPreviewMesh * getPreviewMesh( SMDSAbs_ElementType previewType = SMDSAbs_All );
 
   /*!
    * \brief Update myLastCreated* or myPreviewData
    * \param anEditor - it contains edition results
    */
-  void storeResult(::SMESH_MeshEditor& anEditor);
+  //void storeResult(::SMESH_MeshEditor& anEditor);
   /*!
    * \brief Clear myLastCreated* or myPreviewData
    */
@@ -926,12 +934,14 @@ private: //!< private methods
 
 private: //!< fields
 
-  SMESH_Mesh_i*      myMesh_i;
-  SMESH_Mesh *       myMesh;
-  ::SMESH_MeshEditor myEditor;
+  SMESH_Mesh_i*                myMesh_i;
+  SMESH_Mesh *                 myMesh;
+  ::SMESH_MeshEditor           myEditor;
 
+  bool                         myIsPreviewMode;
+  MeshEditor_I::TPreviewMesh * myPreviewMesh;
+  ::SMESH_MeshEditor *         myPreviewEditor;
   SMESH::MeshPreviewStruct_var myPreviewData;
-  bool                         myPreviewMode;
 
   // temporary IDSources
   struct _IDSource;
