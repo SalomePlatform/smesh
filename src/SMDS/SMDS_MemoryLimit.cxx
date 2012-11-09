@@ -22,8 +22,8 @@
 // Author    : Edward AGAPOV (eap)
 // Executable to find out a lower RAM limit (MB), i.e. at what size of freeRAM
 // reported by sysinfo, no more memory can be allocated.
-// This is not done inside a function of SALOME because allocated memory is not returned
-// to the system. (PAL16631)
+// This is not done inside a function of SALOME because allocated memory is not always
+// returned to the system. (PAL16631)
 //
 #ifndef WIN32
 #include <sys/sysinfo.h>
