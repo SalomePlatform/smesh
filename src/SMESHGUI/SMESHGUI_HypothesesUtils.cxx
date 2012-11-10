@@ -74,7 +74,7 @@
 #endif
 
 #ifdef _DEBUG_
-static int MYDEBUG = 0;
+static int MYDEBUG = 1;
 #else
 static int MYDEBUG = 0;
 #endif
@@ -420,13 +420,13 @@ namespace SMESH
         LibHandle libHandle = LoadLib( aClientLibName.toLatin1().data() );
         if (!libHandle) {
           // report any error, if occured
-          if ( MYDEBUG ) {
+          {
 #ifdef WIN32
             const char* anError = "Can't load client meshers plugin library";
 #else
             const char* anError = dlerror();      
 #endif
-            MESSAGE(anError);
+            INFOS(anError); // always display this kind of error !
           }
         }
         else {
