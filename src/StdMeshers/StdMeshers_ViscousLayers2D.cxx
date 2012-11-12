@@ -546,6 +546,9 @@ SMESH_ProxyMesh::Ptr _ViscousBuilder2D::Compute()
   if ( ! inflate() ) // advance fronts
     return _proxyMesh;
 
+  // remove elements and nodes from _face
+  removeMeshFaces( _face );
+
   if ( !shrink() ) // shrink segments on edges w/o layers
     return _proxyMesh;
 
@@ -951,6 +954,8 @@ void _ViscousBuilder2D::adjustCommonEdge( _PolyLine& LL, _PolyLine& LR )
           _Segment segOfEdge( eIt->_uvOut, uvIn );
           if ( !intersection.Compute( segCommon, segOfEdge ))
             break;
+          // eIt->_isBlocked = true;
+          // eIt->_length2D  = _thickness * eIt->_len2dTo3dRatio * intersection._param2;
           lastIntersection._param1 = intersection._param1;
           lastIntersection._param2 = intersection._param2;
         }
@@ -975,6 +980,12 @@ void _ViscousBuilder2D::adjustCommonEdge( _PolyLine& LL, _PolyLine& LR )
             LR._lEdges.erase( LR._lEdges.begin()+1, eIt );
           else
             LL._lEdges.erase( eIt, --LL._lEdges.end() );
+          eIt = isR ? L._lEdges.begin()+1 : L._lEdges.end()-2;
+          // for ( size_t i = 1; i < iLE; ++i, eIt += dIt )
+          // {
+          //   eIt->_isBlocked = true;
+          //   eIt->_length2D  = 
+          // }
         }
       }
     }
@@ -1377,7 +1388,7 @@ bool _ViscousBuilder2D::shrink()
     const double len2D = pcurve->Value(uf).Distance( pcurve->Value(uf+len1D));
     double len1dTo2dRatio = len1D / len2D;
 
-    // Get length of existing segments (from an edge start to a node) and their nodes
+    // create a vector of proxy nodes
     const vector<UVPtStruct>& points = L._wire->GetUVPtStruct();
     UVPtStructVec nodeDataVec( & points[ L._firstPntInd ],
                                & points[ L._lastPntInd + 1 ]);
@@ -1385,6 +1396,8 @@ bool _ViscousBuilder2D::shrink()
     nodeDataVec.back ().param = u2;
     nodeDataVec.front().normParam = 0;
     nodeDataVec.back ().normParam = 1;
+
+    // Get length of existing segments (from an edge start to a node) and their nodes
     vector< double > segLengths( nodeDataVec.size() - 1 );
     BRepAdaptor_Curve curve( E );
     for ( size_t iP = 1; iP < nodeDataVec.size(); ++iP )
@@ -1392,6 +1405,9 @@ bool _ViscousBuilder2D::shrink()
       const double len = GCPnts_AbscissaPoint::Length( curve, uf, nodeDataVec[iP].param );
       segLengths[ iP-1 ] = len;
     }
+
+    // Move first and last parameters on EDGE (U of n1) according to layers' thickness
+    // and create nodes of layers on EDGE ( -x-x-x )
 
     // Before
     //  n1    n2    n3    n4
@@ -1403,8 +1419,6 @@ bool _ViscousBuilder2D::shrink()
     //  x-x-x-x-----x-----x----
     //  | | | |  e1    e2    e3
 
-    // Move first and last parameters on EDGE (U of n1) according to layers' thickness
-    // and create nodes of layers on EDGE ( -x-x-x )
     int isRShrinkedForAdjacent;
     UVPtStructVec nodeDataForAdjacent;
     for ( int isR = 0; isR < 2; ++isR )
@@ -1427,7 +1441,6 @@ bool _ViscousBuilder2D::shrink()
       double& length2D = nearLE._length2D;
       double  length1D = 0;
       sign = ( isR ^ edgeReversed ) ? -1. : 1.;
-      //pcurve->D1( u, uv, tangent );
 
       bool isConvex = false;
       if ( L2->_advancable )
@@ -1477,6 +1490,8 @@ bool _ViscousBuilder2D::shrink()
       }
 
       // move u to the internal boundary of layers
+      //  u --> u
+      //  x-x-x-x-----x-----x----
       double maxLen3D = Min( _thickness, edgeLen / ( 1 + nbAdvancable ));
       double maxLen2D = maxLen3D * nearLE._len2dTo3dRatio;
       if ( !length2D ) length2D = length1D / len1dTo2dRatio;
@@ -1500,6 +1515,7 @@ bool _ViscousBuilder2D::shrink()
         params[ i ] = u0 + heights[ i ];
 
       // create nodes of layers and edges between them
+      //  x-x-x-x---
       vector< const SMDS_MeshNode* >& layersNode = isR ? L._rightNodes : L._leftNodes;
       vector<gp_XY>& nodeUV = ( isR ? L._lEdges.back() : L._lEdges[0] )._uvRefined;
       nodeUV.resize    ( _hyp->GetNumberLayers() );
@@ -1557,8 +1573,8 @@ bool _ViscousBuilder2D::shrink()
 
     // Shrink edges to fit in between the layers at EDGE ends
 
-    const double newLength = GCPnts_AbscissaPoint::Length( curve, u1, u2 );
-    const double lenRatio  = newLength / edgeLen * ( edgeReversed ? -1. : 1. );
+    double newLength = GCPnts_AbscissaPoint::Length( curve, u1, u2 );
+    double lenRatio  = newLength / edgeLen * ( edgeReversed ? -1. : 1. );
     for ( size_t iP = 1; iP < nodeDataVec.size()-1; ++iP )
     {
       const SMDS_MeshNode* oldNode = nodeDataVec[iP].node;
@@ -1586,7 +1602,8 @@ bool _ViscousBuilder2D::shrink()
       // nodeDataVec[iP].y         = segLengths[iP-1] / edgeLen;
     }
 
-    // add nodeDataForAdjacent to nodeDataVec
+    // Add nodeDataForAdjacent to nodeDataVec
+
     if ( !nodeDataForAdjacent.empty() )
     {
       const double par1      = isRShrinkedForAdjacent ? u2 : uf;
@@ -1610,8 +1627,64 @@ bool _ViscousBuilder2D::shrink()
         nodeDataForAdjacent[iP].normParam = deltaR + normDelta * lenFromPar1 / shrinkLen;
       }
       // concatenate nodeDataVec and nodeDataForAdjacent
-      nodeDataVec.insert( isRShrinkedForAdjacent ? nodeDataVec.end() : nodeDataVec.begin(),
+      nodeDataVec.insert(( isRShrinkedForAdjacent ? nodeDataVec.end() : nodeDataVec.begin() ),
                           nodeDataForAdjacent.begin(), nodeDataForAdjacent.end() );
+    }
+
+    // Extend nodeDataVec by a node located at the end of not shared _LayerEdge
+    /*      n - to add to nodeDataVec
+     *      o-----o--- 
+     *      |\    |    
+     *      | o---o---
+     *      | |x--x--- L2
+     *      | /        
+     *      |/ L
+     *      x
+     *     /    */
+    for ( int isR = 0; isR < 2; ++isR )
+    {
+      _PolyLine& L2 = *( isR ? L._rightLine : L._leftLine ); // line with layers
+      if ( ! L2._advancable || L.IsCommonEdgeShared( L2 ) )
+        continue;
+      vector< const SMDS_MeshNode* >& layerNodes2 = isR ? L2._leftNodes : L2._rightNodes;
+      _LayerEdge& LE2 = isR ? L2._lEdges.front() : L2._lEdges.back();
+      if ( layerNodes2.empty() )
+      {
+        // refine the not shared _LayerEdge
+        vector<double> layersHeight;
+        calcLayersHeight( LE2._length2D, layersHeight );
+
+        vector<gp_XY>& nodeUV2 = LE2._uvRefined;
+        nodeUV2.resize    ( _hyp->GetNumberLayers() );
+        layerNodes2.resize( _hyp->GetNumberLayers() );
+        for ( size_t i = 0; i < layersHeight.size(); ++i )
+        {
+          gp_XY uv = LE2._uvOut + LE2._normal2D * layersHeight[i];
+          gp_Pnt p = _surface->Value( uv.X(), uv.Y() );
+          nodeUV2    [ i ] = uv;
+          layerNodes2[ i ] = _helper.AddNode( p.X(), p.Y(), p.Z(), /*id=*/0, uv.X(), uv.Y() );
+        }
+      }
+      UVPtStruct ptOfNode;
+      ptOfNode.u         = LE2._uvRefined.back().X();
+      ptOfNode.v         = LE2._uvRefined.back().Y();
+      ptOfNode.node      = layerNodes2.back();
+      ptOfNode.param     = isR ? ul : uf;
+      ptOfNode.normParam = isR ? 1 : 0;
+
+      nodeDataVec.insert(( isR ? nodeDataVec.end() : nodeDataVec.begin() ), ptOfNode );
+
+      // recompute normParam of nodes in nodeDataVec
+      newLength = GCPnts_AbscissaPoint::Length( curve, 
+                                                nodeDataVec.front().param,
+                                                nodeDataVec.back().param);
+      for ( size_t iP = 1; iP < nodeDataVec.size(); ++iP )
+      {
+        const double len = GCPnts_AbscissaPoint::Length( curve,
+                                                         nodeDataVec.front().param,
+                                                         nodeDataVec[iP].param );
+        nodeDataVec[iP].normParam = len / newLength;
+      }
     }
 
     // create a proxy sub-mesh containing the moved nodes
@@ -1665,9 +1738,6 @@ bool _ViscousBuilder2D::toShrinkForAdjacent( const TopoDS_Face&   adjFace,
 
 bool _ViscousBuilder2D::refine()
 {
-  // remove elements and nodes from _face
-  removeMeshFaces( _face );
-
   // store a proxyMesh in a sub-mesh
   // make faces on each _PolyLine
   vector< double > layersHeight;
@@ -1762,11 +1832,15 @@ bool _ViscousBuilder2D::refine()
 
     // Create layers of faces
 
-    int hasLeftNode  = ( !L._leftLine->_rightNodes.empty() && leftEdgeShared );
-    int hasRightNode = ( !L._rightLine->_leftNodes.empty() && rightEdgeShared );
-    size_t iS, iN0 = hasLeftNode, nbN = innerNodes.size() - hasRightNode;
-    L._leftNodes .resize( _hyp->GetNumberLayers() );
-    L._rightNodes.resize( _hyp->GetNumberLayers() );
+    bool hasLeftNode  = ( !L._leftLine->_rightNodes.empty() && leftEdgeShared  );
+    bool hasRightNode = ( !L._rightLine->_leftNodes.empty() && rightEdgeShared );
+    bool hasOwnLeftNode  = ( !L._leftNodes.empty() );
+    bool hasOwnRightNode = ( !L._rightNodes.empty() );
+    size_t iS,
+      iN0 = ( hasLeftNode || hasOwnLeftNode || _polyLineVec.size() == 1 ),
+      nbN = innerNodes.size() - ( hasRightNode || hasOwnRightNode );
+    L._leftNodes .reserve( _hyp->GetNumberLayers() );
+    L._rightNodes.reserve( _hyp->GetNumberLayers() );
     for ( int iF = 0; iF < _hyp->GetNumberLayers(); ++iF ) // loop on layers of faces
     {
       // get accumulated length of intermediate segments
@@ -1790,10 +1864,14 @@ bool _ViscousBuilder2D::refine()
         gp_Pnt p = _surface->Value( uv.X(), uv.Y() );
         innerNodes[i] = _helper.AddNode( p.X(), p.Y(), p.Z(), /*id=*/0, uv.X(), uv.Y() );
       }
-      if ( hasLeftNode ) innerNodes.front() = L._leftLine->_rightNodes[ iF ];
-      if ( hasRightNode ) innerNodes.back() = L._rightLine->_leftNodes[ iF ];
-      L._rightNodes[ iF ] = innerNodes.back();
-      L._leftNodes [ iF ] = innerNodes.front();
+      // use nodes created for adjacent _PolyLine's
+      if ( hasOwnLeftNode )    innerNodes.front() = L._leftNodes [ iF ];
+      else if ( hasLeftNode )  innerNodes.front() = L._leftLine->_rightNodes[ iF ];
+      if ( hasOwnRightNode )   innerNodes.back()  = L._rightNodes[ iF ];
+      else if ( hasRightNode ) innerNodes.back()  = L._rightLine->_leftNodes[ iF ];
+      if ( _polyLineVec.size() == 1 ) innerNodes.front() = innerNodes.back(); // circle
+      if ( !hasOwnLeftNode )  L._leftNodes.push_back( innerNodes.front() );
+      if ( !hasOwnRightNode ) L._rightNodes.push_back( innerNodes.back() );
 
       // create faces
       // TODO care of orientation
@@ -1807,7 +1885,7 @@ bool _ViscousBuilder2D::refine()
     // faces between not shared _LayerEdge's (at concave VERTEX)
     for ( int isR = 0; isR < 2; ++isR )
     {
-      if ( isR ? rightEdgeShared : leftEdgeShared)
+      if ( isR ? rightEdgeShared : leftEdgeShared )
         continue;
       vector< const SMDS_MeshNode* > &
         lNodes = (isR ? L._rightNodes : L._leftLine->_rightNodes ),
