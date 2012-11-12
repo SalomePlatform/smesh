@@ -105,7 +105,7 @@
       </font>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="simple">
       <attribute name="title">
@@ -349,17 +349,10 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;This parameter enables the user to bound the maximal chordal deviation allowed,&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;that is, the maximal distance allowed between the detected curve and the plane P&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;of the corresponding mesh face.&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;il faut mettre ici le png&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Definitions: chordal deviation epsilon; curvature r; bounding box s; angles alpha and beta&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;In other words, it avoids having faces too far away from the curve &lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;they represent (or should represent).&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;This parameter enables the user to specify the maximal chordal deviation epsilon max.&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Following that criterion:&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;- if the chordal deviation epsilon is smaller than epsilon max, it is acceptable &lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;  to remove the considered point.&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;- if the chordal deviation epsilon is greater than epsilon max, the considered mesh face should be &lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;  redifined by adding a point on the curve.&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="title">
@@ -388,13 +381,13 @@ If the Units parameter is absolute, the tolerance parameter is expressed in mode
 if P=2 and point coordinaters are givin in millimetre, it menas that the maximal chordal deviation is 2 mm </string>
         </property>
         <property name="maximum">
-         <double>10000.000000000000000</double>
+         <double>100000.000000000000000</double>
         </property>
         <property name="singleStep">
          <double>1.000000000000000</double>
         </property>
         <property name="value">
-         <double>1.000000000000000</double>
+         <double>0.100000000000000</double>
         </property>
        </widget>
       </widget>
@@ -664,7 +657,7 @@ p, li { white-space: pre-wrap; }
 &lt;tr&gt;
 &lt;td style=&quot;border: none;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Geometrical approximation :  Maximum angle allowed between a face and a curve &lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;(not separated by a ridge). &lt;/span&gt;0.04 corresponds to 16.26 degrees  (arccos(1-0.04))&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;(not separated by a ridge).&lt;/span&gt;)&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
        </widget>
@@ -794,13 +787,16 @@ p, li { white-space: pre-wrap; }
          </rect>
         </property>
         <property name="minimum">
-         <double>-100.000000000000000</double>
-        </property>
-        <property name="singleStep">
          <double>0.010000000000000</double>
         </property>
+        <property name="maximum">
+         <double>100.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.100000000000000</double>
+        </property>
         <property name="value">
-         <double>-2.000000000000000</double>
+         <double>100.000000000000000</double>
         </property>
        </widget>
        <widget class="QLabel" name="label_9">
@@ -843,13 +839,16 @@ p, li { white-space: pre-wrap; }
          </rect>
         </property>
         <property name="minimum">
-         <double>-100.000000000000000</double>
+         <double>0.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>100.000000000000000</double>
         </property>
         <property name="singleStep">
-         <double>0.010000000000000</double>
+         <double>0.100000000000000</double>
         </property>
         <property name="value">
-         <double>-2.000000000000000</double>
+         <double>5.000000000000000</double>
         </property>
        </widget>
       </widget>
@@ -892,68 +891,80 @@ New created vertices  are saved in the .mesh file under keyword section Vertices
       <attribute name="title">
        <string>Generic Options</string>
       </attribute>
-      <widget class="QWidget" name="layoutWidget">
+      <widget class="QGroupBox" name="groupBox_4">
        <property name="geometry">
         <rect>
-         <x>40</x>
-         <y>160</y>
-         <width>441</width>
-         <height>27</height>
+         <x>10</x>
+         <y>30</y>
+         <width>741</width>
+         <height>131</height>
         </rect>
        </property>
-       <layout class="QHBoxLayout" name="horizontalLayout_3">
-        <item>
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>Verbosity Level</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>28</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QSpinBox" name="SP_Verbosity">
-          <property name="maximum">
-           <number>10</number>
-          </property>
-          <property name="value">
-           <number>3</number>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="layoutWidget_2">
-       <property name="geometry">
-        <rect>
-         <x>40</x>
-         <y>210</y>
-         <width>441</width>
-         <height>27</height>
-        </rect>
+       <property name="title">
+        <string>Yams Generic Options</string>
        </property>
-       <layout class="QHBoxLayout" name="horizontalLayout_4">
-        <item>
-         <widget class="QLabel" name="label_6">
-          <property name="minimumSize">
-           <size>
-            <width>225</width>
-            <height>25</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+       <widget class="QWidget" name="layoutWidget">
+        <property name="geometry">
+         <rect>
+          <x>40</x>
+          <y>30</y>
+          <width>441</width>
+          <height>27</height>
+         </rect>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Verbosity Level</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>28</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="SP_Verbosity">
+           <property name="maximum">
+            <number>10</number>
+           </property>
+           <property name="value">
+            <number>7</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="layoutWidget_2">
+        <property name="geometry">
+         <rect>
+          <x>40</x>
+          <y>70</y>
+          <width>441</width>
+          <height>27</height>
+         </rect>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <widget class="QLabel" name="label_6">
+           <property name="minimumSize">
+            <size>
+             <width>225</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans Serif'; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
@@ -961,26 +972,26 @@ p, li { white-space: pre-wrap; }
 &lt;tr&gt;
 &lt;td style=&quot;border: none;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Memory size (in Mbytes)&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer_3">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>28</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QSpinBox" name="SP_Memory">
-          <property name="toolTip">
-           <string>The program requires roughly about 370 bytes per point. It is thus possible to estimate a priori 
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>28</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="SP_Memory">
+           <property name="toolTip">
+            <string>The program requires roughly about 370 bytes per point. It is thus possible to estimate a priori 
 the required memory size to complete a job. As an example of memory space needed, a mesh 
 of 543,652 points (1,087,716 triangles) requires 182 Mbytes (about 351 bytes per point). Conversely, 
 a workstation having 512 Mbytes of memory can handle a mesh of about 2,750,000 points.
@@ -993,56 +1004,70 @@ Specify the memory if:
 - you want to limit the amount of memory used by the program.
 If the input mesh size requires more memory than requested or if the allocated memory (user defined or not)
 exceeds the machine capabilities, the tool will stop because of insufficient memory.</string>
-          </property>
-          <property name="maximum">
-           <number>100000</number>
-          </property>
-          <property name="value">
-           <number>0</number>
-          </property>
-         </widget>
-        </item>
-       </layout>
+           </property>
+           <property name="maximum">
+            <number>100000</number>
+           </property>
+           <property name="value">
+            <number>0</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
       </widget>
-      <widget class="QPushButton" name="PB_ParamsFileExplorer">
+      <widget class="QGroupBox" name="groupBox_6">
        <property name="geometry">
         <rect>
-         <x>40</x>
-         <y>40</y>
-         <width>30</width>
-         <height>31</height>
+         <x>10</x>
+         <y>230</y>
+         <width>741</width>
+         <height>141</height>
         </rect>
        </property>
-       <property name="text">
-        <string/>
+       <property name="title">
+        <string>Plug-In Generic Options</string>
        </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>../../../../../../../../SalomeSrc/SMESH_V6_main/src/Tools/YamsPlug/open.png</normaloff>../../../../../../../../SalomeSrc/SMESH_V6_main/src/Tools/YamsPlug/open.png</iconset>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="LE_ParamsFile">
-       <property name="geometry">
-        <rect>
-         <x>80</x>
-         <y>40</y>
-         <width>661</width>
-         <height>31</height>
-        </rect>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_10">
-       <property name="geometry">
-        <rect>
-         <x>40</x>
-         <y>10</y>
-         <width>391</width>
-         <height>18</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>File used to save Yams Params :</string>
-       </property>
+       <widget class="QLabel" name="label_10">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>40</y>
+          <width>391</width>
+          <height>18</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>File used to save Yams Params :</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="PB_ParamsFileExplorer">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>70</y>
+          <width>30</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>../../../../../../../../SalomeSrc/SMESH_V6_main/src/Tools/YamsPlug/open.png</normaloff>../../../../../../../../SalomeSrc/SMESH_V6_main/src/Tools/YamsPlug/open.png</iconset>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="LE_ParamsFile">
+        <property name="geometry">
+         <rect>
+          <x>60</x>
+          <y>70</y>
+          <width>661</width>
+          <height>31</height>
+         </rect>
+        </property>
+       </widget>
       </widget>
      </widget>
     </widget>

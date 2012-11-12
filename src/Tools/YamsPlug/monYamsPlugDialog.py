@@ -268,8 +268,8 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
       if self.CB_Point.isChecked()==False : self.commande+=',ns'
       if self.SP_Geomapp.value()!=0.04 : self.commande+=',geomapp=%f'%self.SP_Geomapp.value()
       if self.SP_Ridge.value()!=45.0 : self.commande+=',ridge=%f'%self.SP_Ridge.value()
-      if self.SP_MaxSize.value()!=-2 : self.commande+=',maxsize=%f'%self.SP_MaxSize.value()
-      if self.SP_MinSize.value()!=-2 : self.commande+=',minsize=%f'%self.SP_MinSize.value()
+      if self.SP_MaxSize.value()!=100 : self.commande+=',maxsize=%f'%self.SP_MaxSize.value()
+      if self.SP_MinSize.value()!=5 : self.commande+=',minsize=%f'%self.SP_MinSize.value()
       if self.SP_Gradation.value()!=1.3 : self.commande+=',gradation=%f'%self.SP_MaxSize.value()
       if self.CB_SplitEdge.isChecked()==True : self.commande+=',splitedge=1'
 
@@ -285,12 +285,10 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
         self.RB_U.setChecked(False)
         self.RB_S.setChecked(False)
         self.RB_2.setChecked(False)
-        self.RB__2.setChecked(False)
         self.RB_1.setChecked(False)
-        self.RB__1.setChecked(False)
         self.RB_Absolute.setChecked(False)
         self.RB_Relative.setChecked(True)
-        self.SP_Tolerance.setProperty("value", 1.0)
+        self.SP_Tolerance.setProperty("value", 0.1)
         self.SP_Geomapp.setProperty("value", 0.04)
         self.SP_Ridge.setProperty("value", 45.0)
         self.SP_Gradation.setProperty("value", 1.3)
