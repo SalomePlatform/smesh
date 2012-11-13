@@ -283,6 +283,18 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
             myDegenShapeIds.insert( meshDS->ShapeToIndex( v.Current() ));
         }
       }
+      if ( !myDegenShapeIds.empty() && !myParIndex ) {
+        if ( surface->IsUPeriodic() || surface->IsUClosed() ) {
+          myParIndex |= U_periodic;
+          myPar1[0] = surf.FirstUParameter();
+          myPar2[0] = surf.LastUParameter();
+        }
+        else if ( surface->IsVPeriodic() || surface->IsVClosed() ) {
+          myParIndex |= V_periodic;
+          myPar1[1] = surf.FirstVParameter();
+          myPar2[1] = surf.LastVParameter();
+        }
+      }
     }
   }
 }
@@ -3428,7 +3440,7 @@ namespace { // Structures used by FixQuadraticElements()
  */
 //=======================================================================
 
-void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& error,
+void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
                                               bool                   volumeOnly)
 {
   // setenv NO_FixQuadraticElements to know if FixQuadraticElements() is guilty of bad conversion
@@ -3462,7 +3474,8 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& error,
 #endif
         SMESH_MesherHelper h(*myMesh);
         h.SetSubShape( s.Current() );
-        h.FixQuadraticElements( error, false );
+        h.ToFixNodeParameters(true);
+        h.FixQuadraticElements( compError, false );
       }
     }
     // fix nodes on geom faces
@@ -3473,12 +3486,12 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& error,
       MSG("FIX FACE " << nbfaces-- << " #" << GetMeshDS()->ShapeToIndex(fIt.Key()));
       SMESH_MesherHelper h(*myMesh);
       h.SetSubShape( fIt.Key() );
-      h.FixQuadraticElements( error, true);
       h.ToFixNodeParameters(true);
+      h.FixQuadraticElements( compError, true);
     }
     //perf_print_all_meters(1);
-    if ( error && error->myName == EDITERR_NO_MEDIUM_ON_GEOM )
-      error->myComment = "during conversion to quadratic, "
+    if ( compError && compError->myName == EDITERR_NO_MEDIUM_ON_GEOM )
+      compError->myComment = "during conversion to quadratic, "
         "some medium nodes were not placed on geometry to avoid distorting elements";
     return;
   }
@@ -3521,7 +3534,7 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& error,
   // Issue 0020982
   // Move medium nodes to the link middle for elements whose corner nodes
   // are out of geometrical boundary to fix distorted elements.
-  force3DOutOfBoundary( *this, error );
+  force3DOutOfBoundary( *this, compError );
 
   if ( elemType == SMDSAbs_Volume )
   {
@@ -3595,7 +3608,9 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& error,
         QLink link( face->GetNode(iN), face->GetNode((iN+1)%nbN), face->GetNode(iN+nbN) );
         pLink = links.insert( link ).first;
         faceLinks[ iN ] = & *pLink;
-        if ( !isCurved )
+        if ( !isCurved &&
+             link.node1()->GetPosition()->GetTypeOfPosition() < 2 &&
+             link.node2()->GetPosition()->GetTypeOfPosition() < 2 )
           isCurved = !link.IsStraight();
       }
       // store QFace
