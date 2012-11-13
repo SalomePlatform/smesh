@@ -572,6 +572,8 @@ QString SMESHGUI_GenericHypothesisCreator::helpPage() const
     aHelpFileName = "a2d_meshing_hypo_page.html#hypo_quad_params_anchor";
   else if ( aHypType == "ViscousLayers")
     aHelpFileName = "additional_hypo_page.html#viscous_layers_anchor";
+  else if ( aHypType == "ViscousLayers2D")
+    aHelpFileName = "additional_hypo_page.html#viscous_layers_anchor";
   else if ( aHypType == "ImportSource1D" || aHypType == "ImportSource2D")
     aHelpFileName = "import_algos_page.html";
   return aHelpFileName;
