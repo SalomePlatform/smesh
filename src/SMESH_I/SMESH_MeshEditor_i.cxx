@@ -649,8 +649,8 @@ SMESH::long_array* SMESH_MeshEditor_i::GetLastCreatedElems()
 
 SMESH::ComputeError* SMESH_MeshEditor_i::GetLastError()
 {
-  SMESH::ComputeError*   errOut = new SMESH::ComputeError;
-  SMESH_ComputeErrorPtr& errIn  = getEditor().GetError();
+  SMESH::ComputeError_var errOut = new SMESH::ComputeError;
+  SMESH_ComputeErrorPtr&  errIn  = getEditor().GetError();
   if ( errIn && !errIn->IsOK() )
   {
     errOut->code       = -( errIn->myName < 0 ? errIn->myName + 1: errIn->myName ); // -1 -> 0
@@ -658,7 +658,7 @@ SMESH::ComputeError* SMESH_MeshEditor_i::GetLastError()
     errOut->subShapeID = -1;
     errOut->hasBadMesh = !errIn->myBadElements.empty();
   }
-  return errOut;
+  return errOut._retn();
 }
 
 //=======================================================================
