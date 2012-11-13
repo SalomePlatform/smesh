@@ -84,7 +84,9 @@
 #include <cmath>
 #include <limits>
 
-#define __myDEBUG
+#ifdef _DEBUG_
+//#define __myDEBUG
+#endif
 
 using namespace std;
 
@@ -954,8 +956,6 @@ void _ViscousBuilder2D::adjustCommonEdge( _PolyLine& LL, _PolyLine& LR )
           _Segment segOfEdge( eIt->_uvOut, uvIn );
           if ( !intersection.Compute( segCommon, segOfEdge ))
             break;
-          // eIt->_isBlocked = true;
-          // eIt->_length2D  = _thickness * eIt->_len2dTo3dRatio * intersection._param2;
           lastIntersection._param1 = intersection._param1;
           lastIntersection._param2 = intersection._param2;
         }
@@ -980,12 +980,9 @@ void _ViscousBuilder2D::adjustCommonEdge( _PolyLine& LL, _PolyLine& LR )
             LR._lEdges.erase( LR._lEdges.begin()+1, eIt );
           else
             LL._lEdges.erase( eIt, --LL._lEdges.end() );
-          eIt = isR ? L._lEdges.begin()+1 : L._lEdges.end()-2;
+          // eIt = isR ? L._lEdges.begin()+1 : L._lEdges.end()-2;
           // for ( size_t i = 1; i < iLE; ++i, eIt += dIt )
-          // {
           //   eIt->_isBlocked = true;
-          //   eIt->_length2D  = 
-          // }
         }
       }
     }
@@ -1853,7 +1850,7 @@ bool _ViscousBuilder2D::refine()
       for ( iS = 1; iS < segLen.size(); ++iS )
         segLen[iS] /= segLen.back();
 
-      // create innerNodes
+      // create innerNodes of a current layer
       iS = 0;
       for ( size_t i = iN0; i < nbN; ++i )
       {
@@ -1899,31 +1896,6 @@ bool _ViscousBuilder2D::refine()
 
       const UVPtStruct& ptOnVertex = points[ isR ? L._lastPntInd : L._firstPntInd ];
       _helper.AddFace( ptOnVertex.node, rNodes[ 0 ], lNodes[ 0 ]);
-
-      // update nodeDataVec of an adjacent _PolyLine
-      // int iAdjEdge = isR ? L._rightLine->_edgeInd : L._leftLine->_edgeInd;
-      // _ProxyMeshOfFace::_EdgeSubMesh* adjEdgeSM
-      //   = getProxyMesh()->GetEdgeSubMesh( L._wire->EdgeID( iAdjEdge ));
-      // const UVPtStructVec& nodeDataVec = adjEdgeSM->GetUVPtStructVec();
-      // if ( !nodeDataVec.empty() )
-      // {
-      //   UVPtStruct ptOnVertex;
-      //   _LayerEdge& LE = isR ? L._lEdges.back() : L._lEdges.front();
-      //   ptOnVertex.u         = LE._uvRefined.back().X();
-      //   ptOnVertex.v         = LE._uvRefined.back().Y();
-      //   ptOnVertex.node      = isR ? L._rightNodes.back() : L._leftNodes.back();
-      //   ptOnVertex.param     = isR ? L._wire->FirstU( iAdjEdge ) :L._wire->LastU( iAdjEdge );
-      //   ptOnVertex.normParam = isR ? 1 : 0;
-      //   ptOnVertex.x         = ptOnVertex.normParam;
-      //   ptOnVertex.y         = ptOnVertex.normParam;
-
-      //   int iN  = isR ? _hyp->GetNumberLayers() : 0;
-      //   int nbN = nodeDataVec.size() - ( isR ? 0 : _hyp->GetNumberLayers() );
-      //   UVPtStructVec newNodeData( nodeDataVec.begin() + iN,
-      //                              nodeDataVec.begin() + nbN );
-      //   newNodeData.insert( isR ? newNodeData.begin() : newNodeData.end(), ptOnVertex );
-      //   adjEdgeSM->SetUVPtStructVec( newNodeData );
-      // }
     }
 
     // Fill the _ProxyMeshOfFace
