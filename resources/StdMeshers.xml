@@ -261,6 +261,7 @@
         <algo>MEFISTO_2D=Triangle(algo=smesh.MEFISTO)</algo>
         <hypo>LengthFromEdges=LengthFromEdges()</hypo>
         <hypo>MaxElementArea=MaxElementArea(SetMaxElementArea())</hypo>
+        <hypo>ViscousLayers2D=ViscousLayers2D(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetIgnoreEdges())</hypo>
       </python-wrap>
     </algorithm>
 
@@ -275,6 +276,7 @@
       <python-wrap>
         <algo>Quadrangle_2D=Quadrangle(algo=smesh.QUADRANGLE)</algo>
         <hypo>QuadrangleParams=QuadrangleParameters(SetQuadType(),SetTriaVertex())</hypo>
+        <hypo>ViscousLayers2D=ViscousLayers2D(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetIgnoreEdges())</hypo>
       </python-wrap>
     </algorithm>
 
