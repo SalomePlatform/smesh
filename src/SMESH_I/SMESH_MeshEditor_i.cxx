@@ -658,6 +658,12 @@ SMESH::ComputeError* SMESH_MeshEditor_i::GetLastError()
     errOut->subShapeID = -1;
     errOut->hasBadMesh = !errIn->myBadElements.empty();
   }
+  else
+  {
+    errOut->code       = 0;
+    errOut->subShapeID = -1;
+    errOut->hasBadMesh = false;
+  }
   return errOut._retn();
 }
 
