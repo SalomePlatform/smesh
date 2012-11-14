@@ -29,6 +29,8 @@
 #include "SMESHDS_Mesh.hxx"
 #include "SMESH_Comment.hxx"
 
+#include <Basics_Utils.hxx>
+
 extern "C"
 {
 #include "libmesh5.h"
@@ -66,6 +68,8 @@ DriverGMF_Write::~DriverGMF_Write()
 
 Driver_Mesh::Status DriverGMF_Write::Perform()
 {
+  Kernel_Utils::Localizer loc;
+
   const int dim = 3, version = sizeof(long) == 4 ? 2 : 3;
 
   int meshID = GmfOpenMesh( myFile.c_str(), GmfWrite, version, dim );

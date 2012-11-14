@@ -30,6 +30,8 @@
 #include "SMESHDS_Mesh.hxx"
 #include "SMESH_Comment.hxx"
 
+#include <Basics_Utils.hxx>
+
 extern "C"
 {
 #include "libmesh5.h"
@@ -63,6 +65,8 @@ DriverGMF_Read::~DriverGMF_Read()
 
 Driver_Mesh::Status DriverGMF_Read::Perform()
 {
+  Kernel_Utils::Localizer loc;
+
   Status status = DRS_OK;
 
   int dim, version;
