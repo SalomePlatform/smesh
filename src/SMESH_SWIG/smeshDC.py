@@ -640,9 +640,13 @@ class smeshDC(SMESH._objref_SMESH_Gen):
             # Checks that Threshold is GEOM object
             if isinstance(aThreshold, geompyDC.GEOM._objref_GEOM_Object):
                 aCriterion.ThresholdStr = GetName(aThreshold)
-                aCriterion.ThresholdID = aThreshold.GetStudyEntry()
+                aCriterion.ThresholdID  = aThreshold.GetStudyEntry()
                 if not aCriterion.ThresholdID:
-                    raise RuntimeError, "Threshold shape must be published"
+                    name = aCriterion.ThresholdStr
+                    if not name:
+                        name = "%s_%s"%(aThreshold.GetShapeType(), id(aThreshold)%10000)
+                    aCriterion.ThresholdID = self.geompyD.addToStudy( aThreshold, name )
+                    #raise RuntimeError, "Threshold shape must be published"
             else:
                 print "Error: The Threshold should be a shape."
                 return None
