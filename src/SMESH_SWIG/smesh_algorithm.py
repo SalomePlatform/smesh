@@ -195,7 +195,7 @@ class Mesh_Algorithm:
             raise RuntimeError, "Attemp to create " + algo + " algoritm on None shape"
         self.mesh = mesh
         name = ""
-        if not geom:
+        if not geom or geom.IsSame( mesh.geom ):
             self.geom = mesh.geom
         else:
             self.geom = geom
