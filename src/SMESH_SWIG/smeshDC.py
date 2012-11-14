@@ -255,8 +255,7 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo):
 def AssureGeomPublished(mesh, geom, name=''):
     if not isinstance( geom, geompyDC.GEOM._objref_GEOM_Object ):
         return
-    if not geom.IsSame( mesh.geom ) and \
-           not geom.GetStudyEntry() and \
+    if not geom.GetStudyEntry() and \
            mesh.smeshpyD.GetCurrentStudy():
         ## set the study
         studyID = mesh.smeshpyD.GetCurrentStudy()._get_StudyId()
@@ -508,7 +507,9 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     #  @return [ an instance of Mesh class, SMESH::ComputeError ]
     #  @ingroup l2_impexp
     def CreateMeshesFromGMF( self, theFileName ):
-        aSmeshMesh, error = SMESH._objref_SMESH_Gen.CreateMeshesFromGMF(self,theFileName)
+        aSmeshMesh, error = SMESH._objref_SMESH_Gen.CreateMeshesFromGMF(self,
+                                                                        theFileName,
+                                                                        True)
         if error.comment: print "*** CreateMeshesFromGMF() errors:\n", error.comment
         return Mesh(self, self.geompyD, aSmeshMesh), error
 
@@ -1482,7 +1483,7 @@ class Mesh:
             meshPart = meshPart.mesh
         elif not meshPart:
             meshPart = self.mesh
-        self.mesh.ExportGMF(meshPart, f)
+        self.mesh.ExportGMF(meshPart, f, True)
 
     ## Deprecated, used only for compatibility! Please, use ExportToMEDX() method instead.
     #  Exports the mesh in a file in MED format and chooses the \a version of MED format

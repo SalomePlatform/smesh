@@ -42,7 +42,16 @@ public:
   DriverGMF_Write();
   ~DriverGMF_Write();
 
+  void SetExportRequiredGroups( bool toExport )
+  {
+    _exportRequiredGroups = toExport;
+  }
+
   virtual Status Perform();
+
+ private:
+
+  bool _exportRequiredGroups;
 };
 
 /*!

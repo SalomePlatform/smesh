@@ -45,11 +45,18 @@ public:
   DriverGMF_Read();
   ~DriverGMF_Read();
 
+  void SetMakeRequiredGroups( bool theMakeRequiredGroups )
+  {
+    _makeRequiredGroups = theMakeRequiredGroups;
+  }
+
   virtual Status Perform();
 
  private:
 
   Status storeBadNodeIds(const char* gmfKwd, int elemNb, int nb, ...);
+
+  bool _makeRequiredGroups;
 
 };
 

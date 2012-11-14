@@ -1232,6 +1232,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromCGNS( const char* theFileName,
 
 SMESH::SMESH_Mesh_ptr
 SMESH_Gen_i::CreateMeshesFromGMF( const char*             theFileName,
+                                  CORBA::Boolean          theMakeRequiredGroups,
                                   SMESH::ComputeError_out theError)
     throw ( SALOME::SALOME_Exception )
 {
@@ -1254,12 +1255,14 @@ SMESH_Gen_i::CreateMeshesFromGMF( const char*             theFileName,
     aStudyBuilder->CommitCommand();
     if ( !aSO->_is_nil() ) {
       // Update Python script
-      TPythonDump() << "("<< aSO << ", error) = " << this << ".CreateMeshesFromGMF(r'" << theFileName << "')";
+      TPythonDump() << "("<< aSO << ", error) = " << this << ".CreateMeshesFromGMF(r'"
+                    << theFileName << "', "
+                    << theMakeRequiredGroups << " )";
     }
   }
   SMESH_Mesh_i* aServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( aMesh ).in() );
   ASSERT( aServant );
-  theError = aServant->ImportGMFFile( theFileName );
+  theError = aServant->ImportGMFFile( theFileName, theMakeRequiredGroups );
   aServant->GetImpl().GetMeshDS()->Modified();
   return aMesh._retn();
 }

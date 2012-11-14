@@ -226,10 +226,28 @@
     if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
       anInitialPath = QDir::currentPath();
 
-    QStringList filenames = SUIT_FileDlg::getOpenFileNames( SMESHGUI::desktop(),
-                                                            anInitialPath,
-                                                            filter,
-                                                            QObject::tr( "SMESH_IMPORT_MESH" ) );
+    QStringList filenames;
+    bool toCreateGroups = true;
+
+    // if ( theCommandID == 118 ) { // GMF
+    //   SalomeApp_CheckFileDlg* fd = new SalomeApp_CheckFileDlg
+    //     ( SMESHGUI::desktop(), true, QObject::tr("SMESH_REQUIRED_GROUPS"), true, true );
+    //   fd->setWindowTitle( QObject::tr( "SMESH_IMPORT_MESH" ) );
+    //   fd->setNameFilters( filter );
+    //   fd->SetChecked( true );
+    //   if ( fd->exec() )
+    //     filenames << fd->selectedFile();
+    //   toCreateGroups = fd->IsChecked();
+
+    //   delete fd;
+    // }
+    // else
+    {
+      filenames = SUIT_FileDlg::getOpenFileNames( SMESHGUI::desktop(),
+                                                  anInitialPath,
+                                                  filter,
+                                                  QObject::tr( "SMESH_IMPORT_MESH" ) );
+    }
     if ( filenames.count() > 0 ) {
       SUIT_OverrideCursor wc;
       _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
@@ -308,7 +326,9 @@
               // GMF format
               SMESH::ComputeError_var res;
               aMeshes->length( 1 );
-              aMeshes[0] = theComponentMesh->CreateMeshesFromGMF( filename.toLatin1().constData(), res.out() );
+              aMeshes[0] = theComponentMesh->CreateMeshesFromGMF( filename.toLatin1().constData(),
+                                                                  toCreateGroups,
+                                                                  res.out() );
               if ( res->code != SMESH::DRS_OK ) {
                 errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
                                arg( QObject::tr( QString( "SMESH_DRS_%1" ).arg( res->code ).toLatin1().data() ) ) );
@@ -598,11 +618,37 @@
       else if ( isGMF )
         aFilter = QObject::tr( "GMF_ASCII_FILES_FILTER" ) + " (*.mesh)" +
           ";;" +  QObject::tr( "GMF_BINARY_FILES_FILTER" )  + " (*.meshb)";
-      if ( anInitialPath.isEmpty() ) anInitialPath = SUIT_FileDlg::getLastVisitedPath();
+     if ( anInitialPath.isEmpty() ) anInitialPath = SUIT_FileDlg::getLastVisitedPath();
       aFilename = SUIT_FileDlg::getFileName(SMESHGUI::desktop(),
                                             anInitialPath + QString("/") + aMeshName,
                                             aFilter, aTitle, false);
     }
+    // else if ( isGMF )// Export to GMF
+    // {
+      // SalomeApp_CheckFileDlg* fd = new SalomeApp_CheckFileDlg
+      //   ( SMESHGUI::desktop(), false, QObject::tr("SMESH_REQUIRED_GROUPS"), true, true );
+      // QStringList filters;
+      // filters << QObject::tr( "GMF_ASCII_FILES_FILTER" ) + " (*.mesh)"
+      //         << QObject::tr( "GMF_BINARY_FILES_FILTER" )  + " (*.meshb)";
+      // fd->setWindowTitle( aTitle );
+      // fd->setNameFilters( filters );
+
+      // if ( !aMeshOrGroup->_is_equivalent( aMesh ))
+      //   toCreateGroups = false;
+      // else
+      //   toCreateGroups = ( aMesh->NbGroups() > 0 );
+
+      // fd->SetChecked( true );
+      // if ( !anInitialPath.isEmpty() )
+      //   fd->setDirectory( anInitialPath );
+      // fd->selectFile(aMeshName);
+
+      // if ( fd->exec() )
+      //   aFilename = fd->selectedFile();
+      // toCreateGroups = fd->IsChecked();
+
+      // delete fd;
+    // }
     else if ( isCGNS )// Export to CGNS
     {
       SUIT_FileDlg* fd = new SUIT_FileDlg( SMESHGUI::desktop(), false, true, true );
@@ -848,7 +894,8 @@
         }
         else if ( isGMF )
         {
-          aMesh->ExportGMF( aMeshOrGroup, aFilename.toLatin1().data() );
+          toCreateGroups = true;
+          aMesh->ExportGMF( aMeshOrGroup, aFilename.toLatin1().data(), toCreateGroups );
         }
       }
       catch (const SALOME::SALOME_Exception& S_ex){
@@ -3046,8 +3093,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
           type = SMDSEntity_TriQuad_Hexa; break;
         default: break;
         }
-	if ( type != SMDSEntity_Last )
-	( new SMESHGUI_AddQuadraticElementDlg( this, type ) )->show();
+        if ( type != SMDSEntity_Last )
+          ( new SMESHGUI_AddQuadraticElementDlg( this, type ) )->show();
       }
       else {
         SUIT_MessageBox::warning(SMESHGUI::desktop(),

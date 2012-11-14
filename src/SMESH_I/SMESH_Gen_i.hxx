@@ -263,6 +263,7 @@ public:
 
   //  Create a mesh and import data from a GMF file
   SMESH::SMESH_Mesh_ptr CreateMeshesFromGMF( const char*             theFileName,
+                                             CORBA::Boolean          theMakeRequiredGroups,
                                              SMESH::ComputeError_out theError)
     throw ( SALOME::SALOME_Exception );
 

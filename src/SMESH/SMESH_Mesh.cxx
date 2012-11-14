@@ -545,11 +545,13 @@ int SMESH_Mesh::CGNSToMesh(const char*  theFileName,
  */
 //================================================================================
 
-SMESH_ComputeErrorPtr SMESH_Mesh::GMFToMesh(const char* theFileName)
+SMESH_ComputeErrorPtr SMESH_Mesh::GMFToMesh(const char* theFileName,
+                                            bool        theMakeRequiredGroups)
 {
   DriverGMF_Read myReader;
   myReader.SetMesh(_myMeshDS);
   myReader.SetFile(theFileName);
+  myReader.SetMakeRequiredGroups( theMakeRequiredGroups );
   myReader.Perform();
   //theMeshName = myReader.GetMeshName();
 
@@ -1419,11 +1421,14 @@ void SMESH_Mesh::ExportCGNS(const char *        file,
 //================================================================================
 
 void SMESH_Mesh::ExportGMF(const char *        file,
-                           const SMESHDS_Mesh* meshDS)
+                           const SMESHDS_Mesh* meshDS,
+                           bool                withRequiredGroups)
 {
   DriverGMF_Write myWriter;
   myWriter.SetFile( file );
   myWriter.SetMesh( const_cast<SMESHDS_Mesh*>( meshDS ));
+  myWriter.SetExportRequiredGroups( withRequiredGroups );
+
   myWriter.Perform();
 }
 

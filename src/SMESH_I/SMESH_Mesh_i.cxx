@@ -483,12 +483,13 @@ int SMESH_Mesh_i::ImportSTLFile( const char* theFileName )
  */
 //================================================================================
 
-SMESH::ComputeError* SMESH_Mesh_i::ImportGMFFile( const char* theFileName )
+SMESH::ComputeError* SMESH_Mesh_i::ImportGMFFile( const char* theFileName,
+                                                  bool        theMakeRequiredGroups )
   throw (SALOME::SALOME_Exception)
 {
   SMESH_ComputeErrorPtr error;
   try {
-    error = _impl->GMFToMesh( theFileName );
+    error = _impl->GMFToMesh( theFileName, theMakeRequiredGroups );
   }
   catch ( std::bad_alloc& exc ) {
     error = SMESH_ComputeError::New( Driver_Mesh::DRS_FAIL, "std::bad_alloc raised" );
@@ -3039,7 +3040,8 @@ void SMESH_Mesh_i::ExportCGNS(::SMESH::SMESH_IDSource_ptr meshPart,
 //================================================================================
 
 void SMESH_Mesh_i::ExportGMF(::SMESH::SMESH_IDSource_ptr meshPart,
-                             const char*                 file)
+                             const char*                 file,
+                             bool                        withRequiredGroups)
   throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
@@ -3049,9 +3051,12 @@ void SMESH_Mesh_i::ExportGMF(::SMESH::SMESH_IDSource_ptr meshPart,
   PrepareForWriting(file,/*overwrite=*/true);
 
   SMESH_MeshPartDS partDS( meshPart );
-  _impl->ExportGMF(file, &partDS);
+  _impl->ExportGMF(file, &partDS, withRequiredGroups);
 
-  TPythonDump() << _this() << ".ExportGMF( " << meshPart<< ", r'" << file << "')";
+  TPythonDump() << _this() << ".ExportGMF( "
+                << meshPart<< ", r'"
+                << file << "', "
+                << withRequiredGroups << ")";
 }
 
 //=============================================================================

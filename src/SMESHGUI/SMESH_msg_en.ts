@@ -1274,6 +1274,10 @@ Please enter correct values and try again</translation>
         <translation>Automatically create groups</translation>
     </message>
     <message>
+        <source>SMESH_REQUIRED_GROUPS</source>
+        <translation>Create groups of required entities</translation>
+    </message>
+    <message>
         <source>SMESH_AVAILABLE</source>
         <translation>Available</translation>
     </message>
