@@ -39,7 +39,7 @@ dist_libMeshDriverGMF_la_SOURCES = \
 libMeshDriverGMF_la_CPPFLAGS = \
 	$(KERNEL_CXXFLAGS) \
 	$(CAS_CPPFLAGS) \
-        $(VTK_INCLUDES) \
+	$(VTK_INCLUDES) \
 	$(BOOST_CPPFLAGS) -DBOOST_SYSTEM_NO_DEPRECATED \
 	-I$(srcdir)/../Driver \
 	-I$(srcdir)/../SMESHUtils \
@@ -50,4 +50,4 @@ libMeshDriverGMF_la_LDFLAGS  = \
 	$(BOOST_LIBS) -lboost_filesystem \
 	../Driver/libMeshDriver.la \
 	../SMESHUtils/libSMESHUtils.la \
-	-lSALOMEBasics
+	$(KERNEL_LDFLAGS) -lSALOMEBasics
