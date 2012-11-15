@@ -47,4 +47,5 @@ libMeshDriverGMF_la_CPPFLAGS = \
 libMeshDriverGMF_la_LDFLAGS  = \
 	$(BOOST_LIBS) \
 	../Driver/libMeshDriver.la \
-	../SMESHUtils/libSMESHUtils.la
+	../SMESHUtils/libSMESHUtils.la \
+	-lSALOMEBasics
