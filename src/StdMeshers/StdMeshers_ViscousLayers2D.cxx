@@ -497,7 +497,8 @@ _ViscousBuilder2D::_ViscousBuilder2D(SMESH_Mesh&                       theMesh,
   _helper.SetSubShape( _face );
   _helper.SetElementsOnShape(true);
 
-  _surface = BRep_Tool::Surface( theFace );
+  //_face.Orientation( TopAbs_FORWARD );
+  _surface = BRep_Tool::Surface( _face );
 
   if ( _hyp )
     _fPowN = pow( _hyp->GetStretchFactor(), _hyp->GetNumberLayers() );
@@ -684,7 +685,8 @@ bool _ViscousBuilder2D::makePolyLines()
       // in order not to miss collisions
 
       Handle(Geom2d_Curve) pcurve = L._wire->Curve2d( L._edgeInd );
-      const bool reverse = ( L._wire->Edge( iE ).Orientation() == TopAbs_REVERSED );
+      const bool reverse = (( L._wire->Edge( iE ).Orientation() == TopAbs_REVERSED ) ^
+                            (_face.Orientation()                == TopAbs_REVERSED ));
       for ( int i = L._firstPntInd; i <= L._lastPntInd; ++i )
       {
         _LayerEdge& lEdge = L._lEdges[ i - L._firstPntInd ];
