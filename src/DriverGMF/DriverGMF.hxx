@@ -19,39 +19,28 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-// File      : DriverGMF_Write.hxx
-// Created   : Mon Sep 17 15:36:47 2012
+// File      : DriverGMF.hxx
+// Created   : Thu Nov 15 16:45:58 2012
 // Author    : Edward AGAPOV (eap)
 
+#ifndef __DriverGMF_HXX__
+#define __DriverGMF_HXX__
 
-#ifndef __DriverGMF_Write_HXX__
-#define __DriverGMF_Write_HXX__
+#include <string>
 
-#include "SMESH_DriverGMF.hxx"
-
-#include "Driver_SMESHDS_Mesh.h"
-#include "SMDSAbs_ElementType.hxx"
-
-/*!
- * \brief Driver Writing a mesh into a GMF file.
- */
-class MESHDriverGMF_EXPORT DriverGMF_Write : public Driver_SMESHDS_Mesh
+namespace DriverGMF
 {
-public:
-
-  DriverGMF_Write();
-  ~DriverGMF_Write();
-
-  void SetExportRequiredGroups( bool toExport )
+  /*!
+   * \brief An object closing GMF mesh at destruction
+   */
+  struct MeshCloser
   {
-    _exportRequiredGroups = toExport;
-  }
+    int _gmfMeshID;
+    MeshCloser( const int gmfMeshID ): _gmfMeshID(gmfMeshID) {}
+    ~MeshCloser();
+  };
 
-  virtual Status Perform();
-
- private:
-
-  bool _exportRequiredGroups;
-};
+  bool isExtensionCorrect( const std::string& fileName );
+}
 
 #endif
