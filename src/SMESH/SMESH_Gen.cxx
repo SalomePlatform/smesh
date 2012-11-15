@@ -355,23 +355,8 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
   MEMOSTAT;
 
   SMESHDS_Mesh *myMesh = aMesh.GetMeshDS();
-  myMesh->adjustStructure();
   MESSAGE("*** compactMesh after compute");
   myMesh->compactMesh();
-  //myMesh->adjustStructure();
-  list<int> listind = myMesh->SubMeshIndices();
-  list<int>::iterator it = listind.begin();
-  int total = 0;
-  for(; it != listind.end(); ++it)
-    {
-      ::SMESHDS_SubMesh *subMesh = myMesh->MeshElements(*it);
-      total +=  subMesh->getSize();
-    }
-  MESSAGE("total elements and nodes in submesh sets:" << total);
-  MESSAGE("Number of node objects " << SMDS_MeshNode::nbNodes);
-  MESSAGE("Number of cell objects " << SMDS_MeshCell::nbCells);
-  //myMesh->dumpGrid();
-  //aMesh.GetMeshDS()->Modified();
 
   // fix quadratic mesh by bending iternal links near concave boundary
   if ( aShape.IsSame( aMesh.GetShapeToMesh() ) &&
