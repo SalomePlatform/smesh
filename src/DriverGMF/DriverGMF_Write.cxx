@@ -24,6 +24,7 @@
 // Author    : Edward AGAPOV (eap)
 
 #include "DriverGMF_Write.hxx"
+#include "DriverGMF.hxx"
 
 #include "SMESHDS_GroupBase.hxx"
 #include "SMESHDS_Mesh.hxx"
@@ -74,9 +75,14 @@ Driver_Mesh::Status DriverGMF_Write::Perform()
 
   int meshID = GmfOpenMesh( myFile.c_str(), GmfWrite, version, dim );
   if ( !meshID )
-    return addMessage( SMESH_Comment("Can't open for writing ") << myFile, /*fatal=*/true );
+  {
+    if ( DriverGMF::isExtensionCorrect( myFile ))
+      return addMessage( SMESH_Comment("Can't open for writing ") << myFile, /*fatal=*/true );
+    else
+      return addMessage( SMESH_Comment("Not '.mesh' or '.meshb' extension of file ") << myFile, /*fatal=*/true );
+  }
 
-  DriverGMF_MeshCloser aMeshCloser( meshID ); // An object closing GMF mesh at destruction
+  DriverGMF::MeshCloser aMeshCloser( meshID ); // An object closing GMF mesh at destruction
 
   // nodes
   std::map< const SMDS_MeshNode* , int > node2IdMap;

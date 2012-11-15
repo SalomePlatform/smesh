@@ -24,7 +24,7 @@
 // Author    : Edward AGAPOV (eap)
 
 #include "DriverGMF_Read.hxx"
-#include "DriverGMF_Write.hxx"
+#include "DriverGMF.hxx"
 
 #include "SMESHDS_Group.hxx"
 #include "SMESHDS_Mesh.hxx"
@@ -39,13 +39,6 @@ extern "C"
 
 #include <stdarg.h>
 
-// --------------------------------------------------------------------------------
-// Closing GMF mesh at destruction
-DriverGMF_MeshCloser::~DriverGMF_MeshCloser()
-{
-  if ( _gmfMeshID )
-    GmfCloseMesh( _gmfMeshID );
-}
 // --------------------------------------------------------------------------------
 DriverGMF_Read::DriverGMF_Read():
   Driver_SMESHDS_Mesh(),
@@ -74,9 +67,13 @@ Driver_Mesh::Status DriverGMF_Read::Perform()
   // open the file
   int meshID = GmfOpenMesh( myFile.c_str(), GmfRead, &version, &dim );
   if ( !meshID )
-    return addMessage( SMESH_Comment("Can't open for reading ") << myFile, /*fatal=*/true );
-
-  DriverGMF_MeshCloser aMeshCloser( meshID ); // An object closing GMF mesh at destruction
+  {
+    if ( DriverGMF::isExtensionCorrect( myFile ))
+      return addMessage( SMESH_Comment("Can't open for reading ") << myFile, /*fatal=*/true );
+    else
+      return addMessage( SMESH_Comment("Not '.mesh' or '.meshb' extension of file ") << myFile, /*fatal=*/true );
+  }
+  DriverGMF::MeshCloser aMeshCloser( meshID ); // An object closing GMF mesh at destruction
 
   // Read nodes
 
