@@ -1248,8 +1248,13 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face&    face1,
          SMESH_Block::GetOrderedEdges( face2, VV2[0], edges2, nbEInW2, outer_wire_algo) )
       CONT_BAD_RESULT("Different number of wires in faces ");
 
-    if ( nbEInW1 != nbEInW2 )
-      CONT_BAD_RESULT("Different number of edges in faces: " <<
+    if ( nbEInW1 != nbEInW2 && outer_wire_algo == 0 &&
+         ( std::accumulate( nbEInW1.begin(), nbEInW1.end(), 0) !=
+           std::accumulate( nbEInW2.begin(), nbEInW2.end(), 0)))
+      RETURN_BAD_RESULT("Different number of edges in faces");
+
+    if ( nbEInW1.front() != nbEInW2.front() )
+      CONT_BAD_RESULT("Different number of edges in the outer wire: " <<
                       nbEInW1.front() << " != " << nbEInW2.front());
 
     i_ok_wire_algo = outer_wire_algo;
@@ -1300,6 +1305,7 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face&    face1,
   } // loop algos getting an outer wire
   
   // Try to orient all (if !OK) or only internal wires (issue 0020996) by UV similarity
+
   if (( !OK || nbEInW1.size() > 1 ) && i_ok_wire_algo > -1 )
   {
     // Check that Vec(VV1[0],VV1[1]) in 2D on face1 is the same
@@ -1325,44 +1331,66 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face&    face1,
         SMESH_Block::GetOrderedEdges( face2, VV2[0], edges2, nbEInW2, i_ok_wire_algo);
       }
       gp_XY dUV = v0f2UV.XY() - v0f1UV.XY(); // UV shift between 2 faces
+      //
       // skip edges of the outer wire (if the outer wire is OK)
-      list< int >::iterator nbEInW = nbEInW1.begin();
-      list< TopoDS_Edge >::iterator edge1Beg = edges1.begin(), edge2Beg = edges2.begin();
-      if ( OK )
+      list< int >::iterator nbE2, nbE1 = nbEInW1.begin();
+      list< TopoDS_Edge >::iterator edge2Beg, edge1Beg = edges1.begin();
+      if ( OK ) std::advance( edge1Beg, *nbE1++ );
+      // reach an end of edges of a current wire1
+      list< TopoDS_Edge >::iterator edge2End, edge1End;
+      //
+      // find corresponding wires of face2
+      for ( int iW1 = OK; nbE1 != nbEInW1.end(); ++nbE1, ++iW1 ) // loop on wires of face1
       {
-        for ( int i = 0; i < *nbEInW; ++i )
-          ++edge1Beg, ++edge2Beg;
-        ++nbEInW;
-      }
-      for ( ; nbEInW != nbEInW1.end(); ++nbEInW ) // loop on wires
-      {
-        // reach an end of edges of a current wire
-        list< TopoDS_Edge >::iterator edge1End = edge1Beg, edge2End = edge2Beg;
-        for ( int i = 0; i < *nbEInW; ++i )
-          ++edge1End, ++edge2End;
-        // rotate edges2 untill coincident with edges1 in 2D
+        // reach an end of edges of a current wire1
+        edge1End = edge1Beg;
+        std::advance( edge1End, *nbE1 );
+        // UV on face1 to find on face2
         v0f1UV = BRep_Tool::Parameters( TopExp::FirstVertex(*edge1Beg,true), face1 );
         v1f1UV = BRep_Tool::Parameters( TopExp::LastVertex (*edge1Beg,true), face1 );
         v0f1UV.ChangeCoord() += dUV;
         v1f1UV.ChangeCoord() += dUV;
-        int i = *nbEInW;
-        while ( --i > 0 && !sameVertexUV( *edge2Beg, face2, 0, v0f1UV, vTolUV ))
-          edges2.splice( edge2End, edges2, edge2Beg++ ); // move edge2Beg to place before edge2End
-        if ( sameVertexUV( *edge2Beg, face2, 0, v0f1UV, vTolUV ))
+        //
+        // look through wires of face2
+        edge2Beg = edges2.begin();
+        nbE2     = nbEInW2.begin();
+        if ( OK ) std::advance( edge2Beg, *nbE2++ );
+        for ( int iW2 = OK; nbE2 != nbEInW2.end(); ++nbE2, ++iW2 ) // loop on wires of face2
         {
-          if ( nbEInW == nbEInW1.begin() )
-            OK = true; // OK is for the first wire
-          // reverse edges2 if needed
-          if ( !sameVertexUV( *edge2Beg, face2, 1, v1f1UV, vTolUV ))
+          // reach an end of edges of a current wire2
+          edge2End = edge2Beg;
+          std::advance( edge2End, *nbE2 );
+          if ( *nbE1 == *nbE2 && iW2 >= iW1 )
           {
-            Reverse( edges2 , *nbEInW, distance( edges2.begin(),edge2Beg ));
-            // set correct edge2End
-            edge2End = edges2.begin();
-            std::advance( edge2End, std::accumulate( nbEInW1.begin(), nbEInW, *nbEInW));
+            // rotate edge2 untill coincidence with edge1 in 2D
+            int i = *nbE2;
+            while ( i-- > 0 && !sameVertexUV( *edge2Beg, face2, 0, v0f1UV, vTolUV ))
+              // move edge2Beg to place before edge2End
+              edges2.splice( edge2End, edges2, edge2Beg++ );
+
+            if ( sameVertexUV( *edge2Beg, face2, 0, v0f1UV, vTolUV ))
+            {
+              if ( iW1 == 0 ) OK = true; // OK is for the first wire
+              // reverse edges2 if needed
+              if ( !sameVertexUV( *edge2Beg, face2, 1, v1f1UV, vTolUV ))
+                Reverse( edges2 , *nbE2, std::distance( edges2.begin(),edge2Beg ));
+              // put wire2 at a right place within edges2
+              if ( iW1 != iW2 ) {
+                list< TopoDS_Edge >::iterator place2 = edges2.begin();
+                std::advance( place2, std::distance( edges1.begin(), edge1Beg ));
+                edges2.splice( place2, edges2, edge2Beg, edge2End );
+                // move nbE2 as well
+                list< int >::iterator placeNbE2 = nbEInW2.begin();
+                std::advance( placeNbE2, iW1 );
+                nbEInW2.splice( placeNbE2, nbEInW2, nbE2 );
+              }
+              break;
+            }
           }
+          // prepare to the next wire loop
+          edge2Beg = edge2End;
         }
-        // prepare to the next wire loop
-        edge1Beg = edge1End, edge2Beg = edge2End;
+        edge1Beg = edge1End;
       }
     }
   }
@@ -1370,7 +1398,7 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face&    face1,
   const int nbEdges = nbEInW1.front();
   if ( OK && nbEdges == 2 )
   {
-    // if a wire includes 2 edges, it's impossible to associate them using
+    // if wires include 2 edges, it's impossible to associate them using
     // topological information only. Try to use length of edges for association.
     double l1[2], l2[2];
     edgeIt = edges1.begin();
