@@ -1116,7 +1116,7 @@ bool SMESH_MeshEditor::Reorient (const SMDS_MeshElement * theElem)
  * \brief Reorient faces.
  * \param theFaces - the faces to reorient. If empty the whole mesh is meant
  * \param theDirection - desired direction of normal of \a theFace
- * \param theFace - one of \a theFaces that sould be orientated according to
+ * \param theFace - one of \a theFaces that sould be oriented according to
  *        \a theDirection and whose orientation defines orientation of other faces
  * \return number of reoriented faces.
  */
@@ -1153,6 +1153,11 @@ int SMESH_MeshEditor::Reorient2D (TIDSortedElemSet &       theFaces,
     theFaces.erase( theFace );
   startFaces.insert( theFace );
 
+  int nodeInd1, nodeInd2;
+  const SMDS_MeshElement*           otherFace;
+  vector< const SMDS_MeshElement* > facesNearLink;
+  vector< std::pair< int, int > >   nodeIndsOfFace;
+
   set< const SMDS_MeshElement* >::iterator startFace = startFaces.begin();
   while ( startFace != startFaces.end() )
   {
@@ -1175,13 +1180,36 @@ int SMESH_MeshEditor::Reorient2D (TIDSortedElemSet &       theFaces,
       }
       else
       {
-        int nodeInd1, nodeInd2;
-        const SMDS_MeshElement* otherFace = FindFaceInSet( link.first, link.second,
-                                                           theFaces, avoidSet,
-                                                           & nodeInd1, & nodeInd2);
+        facesNearLink.clear();
+        nodeIndsOfFace.clear();
+        while (( otherFace = FindFaceInSet( link.first, link.second,
+                                            theFaces, avoidSet, &nodeInd1, &nodeInd2 )))
+          if ( otherFace != theFace)
+          {
+            facesNearLink.push_back( otherFace );
+            nodeIndsOfFace.push_back( make_pair( nodeInd1, nodeInd2 ));
+            avoidSet.insert( otherFace );
+          }
+        if ( facesNearLink.size() > 1 )
+        {
+          // select a face most co-directed with theFace,
+          // other faces won't be visited this time
+          gp_XYZ NF, NOF;
+          SMESH_Algo::FaceNormal( theFace, NF, /*normalized=*/false );
+          double proj, maxProj = 0;
+          for ( size_t i = 0; i < facesNearLink.size(); ++i ) {
+            SMESH_Algo::FaceNormal( facesNearLink[i], NOF, /*normalized=*/false );
+            if (( proj = Abs( NF * NOF )) > maxProj ) {
+              maxProj = proj;
+              otherFace = facesNearLink[i];
+              nodeInd1  = nodeIndsOfFace[i].first;
+              nodeInd2  = nodeIndsOfFace[i].second;
+            }
+          }
+        }
         if ( otherFace && otherFace != theFace)
         {
-          // link must be reversed in otherFace if orientation ot otherFace
+          // link must be reverse in otherFace if orientation ot otherFace
           // is same as that of theFace
           if ( abs(nodeInd2-nodeInd1) == 1 ? nodeInd2 > nodeInd1 : nodeInd1 > nodeInd2 )
           {
@@ -1194,7 +1222,7 @@ int SMESH_MeshEditor::Reorient2D (TIDSortedElemSet &       theFaces,
             theFaces.erase( otherFace );
         }
       }
-      std::swap( link.first, link.second );
+      std::swap( link.first, link.second ); // reverse the link
     }
     startFaces.erase( startFace );
     startFace = startFaces.begin();
