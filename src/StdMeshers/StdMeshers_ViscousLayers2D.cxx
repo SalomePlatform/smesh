@@ -750,7 +750,8 @@ bool _ViscousBuilder2D::makePolyLines()
       _PolyLine& L1 = _polyLineVec[ iL1 ];
       _SegmentTree::box_type boxL1 = * L1._segTree->getBox();
       boxL1.Enlarge( boxTol );
-      for ( size_t iL2 = iL1+1; iL2 < _polyLineVec.size(); ++iL2 )
+      // consider case of a circle as well!
+      for ( size_t iL2 = iL1; iL2 < _polyLineVec.size(); ++iL2 )
       {
         _PolyLine& L2 = _polyLineVec[ iL2 ];
         _SegmentTree::box_type boxL2 = * L2._segTree->getBox();
