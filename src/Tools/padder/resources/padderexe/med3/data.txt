@@ -1,4 +1,0 @@
-concrete.med concrete
-nbSteelbarMesh= 1
-ferraill.med ferraill
-FinalEDMesh.med

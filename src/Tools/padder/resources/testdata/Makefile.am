@@ -19,24 +19,11 @@
 
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
-mysalomeresdir=$(salomeresdir)/padderexe
+mysalomeresdir=$(salomeresdir)/padderdata
 
-version=med3
-notinstall_version=med2
-
-# We install the padder.exe program and the files required for testing
-# the execution from within the installation directory
-dist_mysalomeres_SCRIPTS =    \
-	$(version)/padder.exe \
-	padder.sh
-
-nodist_mysalomeres_SCRIPTS =         \
-	envPadder.sh
-
-dist_mysalomeres_DATA =         \
-	$(version)/data.txt     \
-	$(version)/concrete.med \
-	$(version)/ferraill.med
+dist_mysalomeres_DATA =  \
+	concrete.med     \
+	ferraill.med
 
 NOT_USED_FILES = buildparticules.py particules.png
-EXTRA_DIST += $(notinstall_version) $(NOT_USED_FILES)
+EXTRA_DIST += $(NOT_USED_FILES)

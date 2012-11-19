@@ -17,7 +17,7 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-SUBDIRS = appligen padderexe
+SUBDIRS = appligen testdata
 
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
