@@ -347,16 +347,32 @@ void SMESH_Mesh::Load()
 
 void SMESH_Mesh::Clear()
 {
-  // clear mesh data
-  _myMeshDS->ClearMesh();
-
-  // update compute state of submeshes
-  if ( SMESH_subMesh *sm = GetSubMeshContaining( GetShapeToMesh() ) )
+  if ( HasShapeToMesh() ) // remove all nodes and elements
   {
-    sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
-    sm->ComputeSubMeshStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
-    sm->ComputeStateEngine( SMESH_subMesh::CLEAN ); // for event listeners (issue 0020918)
-    sm->ComputeSubMeshStateEngine( SMESH_subMesh::CLEAN );
+    // clear mesh data
+    _myMeshDS->ClearMesh();
+
+    // update compute state of submeshes
+    if ( SMESH_subMesh *sm = GetSubMeshContaining( GetShapeToMesh() ) )
+    {
+      sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+      sm->ComputeSubMeshStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+      sm->ComputeStateEngine( SMESH_subMesh::CLEAN ); // for event listeners (issue 0020918)
+      sm->ComputeSubMeshStateEngine( SMESH_subMesh::CLEAN );
+    }
+  }
+  else // remove only nodes/elements computed by algorithms
+  {
+    if ( SMESH_subMesh *sm = GetSubMeshContaining( GetShapeToMesh() ) )
+    {
+      SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(/*includeSelf=*/true,
+                                                               /*complexShapeFirst=*/true);
+      while ( smIt->more() )
+      {
+        sm = smIt->next();
+        sm->ComputeStateEngine( SMESH_subMesh::CLEAN );
+      }
+    }
   }
   _isModified = false;
 }
