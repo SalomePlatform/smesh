@@ -51,6 +51,8 @@ public:
   MESHJOB::MeshJobPaths *   getPaths(CORBA::Long jobId);
   bool           clean      (CORBA::Long jobId);
 
+  char*          getLastErrorMessage();
+
   static long JOBID_UNDEFINED;
 
 private:
@@ -74,6 +76,8 @@ private:
   const char* _writeScriptFile (const char * dataFileName, const char * configId);
 
   std::vector<std::string> * _getResourceNames();
+
+  std::string _lastErrorMessage;
 
 };
 

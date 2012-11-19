@@ -94,6 +94,8 @@ MeshJobManager_i::MeshJobManager_i(CORBA::ORB_ptr orb,
     LOG("The SALOME resource manager can't be reached ==> STOP");
     throw KERNEL::createSalomeException("The SALOME resource manager can't be reached");
   }
+
+  _lastErrorMessage = "";
 }
 
 MeshJobManager_i::~MeshJobManager_i() {
@@ -383,7 +385,17 @@ CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobParameterList & m
   //const char * resourceName = "boulant@claui2p1";
   //const char * resourceName = "nepal@nepal";
   const char * resourceName = _configMap[configId].resname;
-  Engines::ResourceDefinition * resourceDefinition = _resourcesManager->GetResourceDefinition(resourceName);
+  
+  Engines::ResourceDefinition * resourceDefinition;
+  try {
+    resourceDefinition = _resourcesManager->GetResourceDefinition(resourceName);
+  }
+  catch (const CORBA::SystemException& ex) {
+    _lastErrorMessage = std::string("We can not access to the ressource ") + std::string(resourceName);
+    _lastErrorMessage+= std::string("(check the file CatalogResource.xml)");
+    LOG(_lastErrorMessage);
+    return JOBID_UNDEFINED;
+  }
   // CAUTION: This resource should have been defined in the
   // CatalogResource.xml associated to the SALOME application.
   //
@@ -413,29 +425,22 @@ CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobParameterList & m
   //
   // So, even in the case of a simple test shell script, you should
   // set this value at least to a standard threshold as 500MB
-
   int jobId = JOBID_UNDEFINED;
   try {
-    std::cerr << "#####################################" << std::endl;
-    std::cerr << "#####################################" << std::endl;
-    std::cerr << "jobUndef = " << JOBID_UNDEFINED << std::endl;
     jobId = _salomeLauncher->createJob(jobParameters);
-    std::cerr << "#####################################" << std::endl;
-    std::cerr << "#####################################" << std::endl;
-    std::cerr << "#####################################" << std::endl;
-    std::cerr << "jobId = " << jobId << std::endl;
     // We register the datetime tag of this job
     _jobDateTimeMap[jobId]=jobDatetimeTag;
     _jobPathsMap[jobId] = jobPaths;
   }
   catch (const SALOME::SALOME_Exception & ex) {
-    LOG("SALOME Exception in createJob !" <<ex.details.text.in());
-    //LOG(ex.details.text.in());
+    LOG("SALOME Exception at initialization step !" <<ex.details.text.in());
+    _lastErrorMessage = ex.details.text.in();
     return JOBID_UNDEFINED;
   }
   catch (const CORBA::SystemException& ex) {
     LOG("Receive SALOME System Exception: "<<ex);
     LOG("Check SALOME servers...");
+    _lastErrorMessage = "Check the SALOME servers (or try to restart SALOME)";
     return JOBID_UNDEFINED;
   }
   
@@ -452,12 +457,13 @@ bool MeshJobManager_i::start(CORBA::Long jobId) {
   }
   catch (const SALOME::SALOME_Exception & ex) {
     LOG("SALOME Exception in launchjob !" <<ex.details.text.in());
-    //LOG(ex.details.text.in());
+    _lastErrorMessage = ex.details.text.in();
     return false;
   }
   catch (const CORBA::SystemException& ex) {
     LOG("Receive SALOME System Exception: "<<ex);
     LOG("Check SALOME servers...");
+    _lastErrorMessage = "Check the SALOME servers (or try to restart SALOME)";
     return false;
   }
 
@@ -477,6 +483,7 @@ char* MeshJobManager_i::getState(CORBA::Long jobId) {
   catch (const SALOME::SALOME_Exception & ex)
   {
     LOG("SALOME Exception in getJobState !");
+    _lastErrorMessage = ex.details.text.in();
     state = ex.details.text;
   }
   catch (const CORBA::SystemException& ex)
@@ -525,6 +532,7 @@ MESHJOB::MeshJobResults * MeshJobManager_i::finalize(CORBA::Long jobId) {
   {
     LOG("SALOME Exception in getResults !");
     result->status = "SALOME Exception in getResults !";
+    _lastErrorMessage = ex.details.text.in();
   }
   catch (const CORBA::SystemException& ex)
   {
@@ -610,6 +618,11 @@ std::vector<std::string> * MeshJobManager_i::_getResourceNames() {
   return resourceNames;
 }
 
+char* MeshJobManager_i::getLastErrorMessage() {
+  beginService("MeshJobManager_i::getState");
+  endService("MeshJobManager_i::getState");
+  return CORBA::string_dup(_lastErrorMessage.c_str());
+}
 
 //
 // ==========================================================================

@@ -23,7 +23,8 @@ mysalomeresdir=$(salomeresdir)/padderdata
 
 dist_mysalomeres_DATA =  \
 	concrete.med     \
-	ferraill.med
+	ferraill.med     \
+	teststudy.hdf
 
 NOT_USED_FILES = buildparticules.py particules.png
 EXTRA_DIST += $(NOT_USED_FILES)

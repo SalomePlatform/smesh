@@ -287,12 +287,14 @@ class PluginDialog(QDialog):
         self.__jobid = jobManager.initialize(meshJobParameterList, self.__configId)
         if self.__jobid < 0:
             self.__log("ERR: the job can't be initialized")
+            self.__log("ERR: %s"%jobManager.getLastErrorMessage())
             return
         self.__log("INF: the job has been initialized with jobid = "+str(self.__jobid))
         
         startOk = jobManager.start(self.__jobid)
         if not startOk:
             self.__log("ERR: the job with jobid = "+str(self.__jobid)+" can't be started")
+            self.__log("ERR: %s"%jobManager.getLastErrorMessage())
             return
         self.__log("INF: the job "+str(self.__jobid)+" has been started")
         self.__ui.lblStatusBar.setText("Submission OK")
@@ -334,11 +336,13 @@ class PluginDialog(QDialog):
 
         if state not in end_states:
             self.__log("ERR: jobid = "+str(self.__jobid)+" ended abnormally with state="+str(state))
+            self.__log("ERR: %s"%jobManager.getLastErrorMessage())
             return
 
         meshJobResults = jobManager.finalize(self.__jobid)
         if state == "ERROR":
             self.__log("ERR: jobid = "+str(self.__jobid)+" ended with error: "+meshJobResults.status)
+            self.__log("ERR: %s"%jobManager.getLastErrorMessage())
             return
 
         logsdirname = os.path.join(meshJobResults.results_dirname, "logs")
