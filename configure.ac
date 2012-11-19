@@ -588,8 +588,7 @@ AC_OUTPUT([ \
   src/Tools/padder/resources/appligen/Makefile \
   src/Tools/padder/resources/appligen/appligen.sh \
   src/Tools/padder/resources/appligen/config_appli.xml \
-  src/Tools/padder/resources/padderexe/Makefile \
-  src/Tools/padder/resources/padderexe/envPadder.sh \
+  src/Tools/padder/resources/testdata/Makefile \
   src/Tools/padder/unittests/Makefile \
   src/Tools/padder/unittests/autotest.sh \
   src/Tools/padder/doc/Makefile \
