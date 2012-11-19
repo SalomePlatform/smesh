@@ -1207,6 +1207,10 @@ int SMESH_MeshEditor::Reorient2D (TIDSortedElemSet &       theFaces,
             }
           }
         }
+        else if ( facesNearLink.size() == 1 )
+        {
+          otherFace = facesNearLink[0];
+        }
         if ( otherFace && otherFace != theFace)
         {
           // link must be reverse in otherFace if orientation ot otherFace
