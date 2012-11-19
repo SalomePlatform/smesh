@@ -585,7 +585,8 @@ static bool checkConformIgnoredAlgos(SMESH_Mesh&               aMesh,
       int dim = algo->GetDim();
       int aMaxGlobIgnoDim = ( aGlobIgnoAlgo ? aGlobIgnoAlgo->GetDim() : -1 );
 
-      if ( dim < aMaxGlobIgnoDim )
+      if ( dim < aMaxGlobIgnoDim &&
+           ( isGlobal || !aGlobIgnoAlgo->SupportSubmeshes() ))
       {
         // algo is hidden by a global algo
         theErrors.push_back( SMESH_Gen::TAlgoStateError() );
@@ -812,7 +813,8 @@ bool SMESH_Gen::GetAlgoState(SMESH_Mesh&               theMesh,
   for (dim = 3; dim > 0; dim--)
   {
     if (aGlobAlgoArr[ dim ] &&
-        !aGlobAlgoArr[ dim ]->NeedDiscreteBoundary())
+        !aGlobAlgoArr[ dim ]->NeedDiscreteBoundary() /*&&
+        !aGlobAlgoArr[ dim ]->SupportSubmeshes()*/ )
     {
       aGlobIgnoAlgo = aGlobAlgoArr[ dim ];
       break;
