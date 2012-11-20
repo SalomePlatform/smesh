@@ -871,14 +871,13 @@ bool SMESH_Gen::GetAlgoState(SMESH_Mesh&               theMesh,
     if ( smToCheck->GetSubShape().ShapeType() == TopAbs_VERTEX)
       break;
 
-    if ( aCheckedSubs.insert( smToCheck ).second ) // not yet checked
-      if (!checkMissing (this, theMesh, smToCheck, aTopAlgoDim,
-                         globalChecked, checkNoAlgo, aCheckedSubs, theErrors))
-      {
-        ret = false;
-        if (smToCheck->GetAlgoState() == SMESH_subMesh::NO_ALGO )
-          checkNoAlgo = false;
-      }
+    if (!checkMissing (this, theMesh, smToCheck, aTopAlgoDim,
+                       globalChecked, checkNoAlgo, aCheckedSubs, theErrors))
+    {
+      ret = false;
+      if (smToCheck->GetAlgoState() == SMESH_subMesh::NO_ALGO )
+        checkNoAlgo = false;
+    }
   }
 
   if ( !hasAlgo ) {
