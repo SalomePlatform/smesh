@@ -24,7 +24,6 @@
 //  File   : SMESH_Hypothesis.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_Gen.hxx"
@@ -50,8 +49,6 @@ SMESH_Hypothesis::SMESH_Hypothesis(int hypId,
   _type = PARAM_ALGO;
   _shapeType = 0; // to be set by algo with TopAbs_Enum
   _param_algo_dim = -1; // to be set by algo parameter
-  //_parameters = string();
-  //_lastParameters = string();
 }
 
 //=============================================================================
@@ -171,59 +168,3 @@ SMESH_Mesh* SMESH_Hypothesis::GetMeshByPersistentID(int id)
   }
   return 0;
 }
-
-//=============================================================================
-/*!
- * 
- */
-//=============================================================================
-// void SMESH_Hypothesis::SetParameters(const char *theParameters)
-// {
-//   string aNewParameters(theParameters);
-//   if(aNewParameters.size()==0 && _parameters.size()==0)
-//     aNewParameters = " ";
-//   if(_parameters.size()>0)
-//     _parameters +="|";
-//   _parameters +=aNewParameters;
-//   SetLastParameters(theParameters);
-// }
-
-// //=============================================================================
-// /*!
-//  * 
-//  */
-// //=============================================================================
-// void SMESH_Hypothesis::ClearParameters()
-// {
-//   _parameters = string();
-// }
-
-// //=============================================================================
-// /*!
-//  * 
-//  */
-// //=============================================================================
-// char* SMESH_Hypothesis::GetParameters() const
-// {
-//   return (char*)_parameters.c_str();
-// }
-
-// //=============================================================================
-// /*!
-//  * 
-//  */
-// //=============================================================================
-// char* SMESH_Hypothesis::GetLastParameters() const
-// {
-//   return (char*)_lastParameters.c_str();
-// }
-
-// //=============================================================================
-// /*!
-//  * 
-//  */
-// //=============================================================================
-// void SMESH_Hypothesis::SetLastParameters(const char* theParameters)
-// {
-//   _lastParameters = string(theParameters);
-// }
