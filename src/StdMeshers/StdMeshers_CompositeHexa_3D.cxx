@@ -58,17 +58,15 @@
 
 
 #ifdef _DEBUG_
+// #define DEB_FACES
+// #define DEB_GRID
+// #define DUMP_VERT(msg,V) \
+//   { TopoDS_Vertex v = V; gp_Pnt p = BRep_Tool::Pnt(v);                  \
+//     cout << msg << "( "<< p.X()<<", "<<p.Y()<<", "<<p.Z()<<" )"<<endl;}
+#endif
 
-//#define DEB_FACES
-//#define DEB_GRID
-#define DUMP_VERT(msg,V) \
-// { TopoDS_Vertex v = V; gp_Pnt p = BRep_Tool::Pnt(v);\
-//   cout << msg << "( "<< p.X()<<", "<<p.Y()<<", "<<p.Z()<<" )"<<endl;}
-
-#else
-
+#ifndef DUMP_VERT
 #define DUMP_VERT(msg,v)
-
 #endif
 
 //================================================================================
@@ -715,7 +713,7 @@ bool _QuadFaceGrid::AddContinuousFace( const _QuadFaceGrid& other )
     const _FaceSide& otherSide = other.GetSide( i );
     int iMyCommon;
     if ( mySides.Contain( otherSide, &iMyCommon ) ) {
-      // check if normals of two faces are collinear at all vertices of a otherSide
+      // check if normals of two faces are collinear at all vertices of an otherSide
       const double angleTol = M_PI / 180. / 2.;
       int iV, nbV = otherSide.NbVertices(), nbCollinear = 0;
       for ( iV = 0; iV < nbV; ++iV )
@@ -740,15 +738,20 @@ bool _QuadFaceGrid::AddContinuousFace( const _QuadFaceGrid& other )
           myChildren.push_back( *this );
           myFace.Nullify();
         }
+
+        // orient new children equally
+        int otherBottomIndex = ( 4 + i - iMyCommon + 2 ) % 4;
         if ( other.IsComplex() )
-          for ( TChildIterator children = other.GetChildren(); children.more(); )
+          for ( TChildIterator children = other.GetChildren(); children.more(); ) {
             myChildren.push_back( children.next() );
-        else
+            myChildren.back().SetBottomSide( myChildren.back().GetSide( otherBottomIndex ));
+          }
+        else {
           myChildren.push_back( other );
+          myChildren.back().SetBottomSide( myChildren.back().GetSide( otherBottomIndex ));
+        }
 
         myLeftBottomChild = 0;
-        //int otherBottomIndex = ( 4 + i - iMyCommon + 2 ) % 4;
-        //myChildren.back().SetBottomSide( other.GetSide( otherBottomIndex ));
 
         // collect vertices in mySides
         if ( other.IsComplex() )
