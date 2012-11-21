@@ -670,7 +670,7 @@ static bool checkMissing(SMESH_Gen*                aGen,
   }
   case SMESH_subMesh::MISSING_HYP: {
     // notify if an algo missing hyp is attached to aSubMesh
-    algo = aGen->GetAlgo( aMesh, aSubMesh->GetSubShape() );
+    algo = aSubMesh->GetAlgo();
     ASSERT( algo );
     bool IsGlobalHypothesis = aGen->IsGlobalHypothesis( algo, aMesh );
     if (!IsGlobalHypothesis || !globalChecked[ algo->GetDim() ])
@@ -721,7 +721,7 @@ static bool checkMissing(SMESH_Gen*                aGen,
   {
     bool checkNoAlgo2 = ( algo->NeedDiscreteBoundary() );
     SMESH_subMeshIteratorPtr itsub = aSubMesh->getDependsOnIterator( /*includeSelf=*/false,
-                                                                     /*complexShapeFirst=*/false);
+                                                                     /*complexShapeFirst=*/true);
     while ( itsub->more() )
     {
       // sub-meshes should not be checked further more
