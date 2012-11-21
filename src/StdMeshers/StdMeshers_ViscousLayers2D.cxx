@@ -1714,6 +1714,7 @@ bool _ViscousBuilder2D::toShrinkForAdjacent( const TopoDS_Face&   adjFace,
   if ( const StdMeshers_ViscousLayers2D* vlHyp = findHyp( *_mesh, adjFace ))
   {
     VISCOUS_2D::_ViscousBuilder2D builder( *_mesh, adjFace, vlHyp );
+    builder._faceSideVec = StdMeshers_FaceSide::GetFaceWires( adjFace, *_mesh, true, _error );
     builder.findEdgesWithLayers();
 
     PShapeIteratorPtr edgeIt = _helper.GetAncestors( V, *_mesh, TopAbs_EDGE );
