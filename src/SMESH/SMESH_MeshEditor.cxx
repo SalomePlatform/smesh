@@ -1144,7 +1144,7 @@ int SMESH_MeshEditor::Reorient2D (TIDSortedElemSet &       theFaces,
 
   // Orient other faces
 
-  set< const SMDS_MeshElement* > startFaces;
+  set< const SMDS_MeshElement* > startFaces, visitedFaces;
   TIDSortedElemSet avoidSet;
   set< SMESH_TLink > checkedLinks;
   pair< set< SMESH_TLink >::iterator, bool > linkIt_isNew;
@@ -1159,15 +1159,20 @@ int SMESH_MeshEditor::Reorient2D (TIDSortedElemSet &       theFaces,
   vector< std::pair< int, int > >   nodeIndsOfFace;
 
   set< const SMDS_MeshElement* >::iterator startFace = startFaces.begin();
-  while ( startFace != startFaces.end() )
+  while ( !startFaces.empty() )
   {
+    startFace = startFaces.begin();
     theFace = *startFace;
-    const int nbNodes = theFace->NbCornerNodes();
+    startFaces.erase( startFace );
+    if ( !visitedFaces.insert( theFace ).second )
+      continue;
 
     avoidSet.clear();
     avoidSet.insert(theFace);
 
     NLink link( theFace->GetNode( 0 ), 0 );
+
+    const int nbNodes = theFace->NbCornerNodes();
     for ( int i = 0; i < nbNodes; ++i ) // loop on links of theFace
     {
       link.second = theFace->GetNode(( i+1 ) % nbNodes );
@@ -1176,7 +1181,7 @@ int SMESH_MeshEditor::Reorient2D (TIDSortedElemSet &       theFaces,
       {
         // link has already been checked and won't be encountered more
         // if the group (theFaces) is manifold
-        checkedLinks.erase( linkIt_isNew.first );
+        //checkedLinks.erase( linkIt_isNew.first );
       }
       else
       {
@@ -1192,11 +1197,12 @@ int SMESH_MeshEditor::Reorient2D (TIDSortedElemSet &       theFaces,
           }
         if ( facesNearLink.size() > 1 )
         {
+          // NON-MANIFOLD mesh shell !
           // select a face most co-directed with theFace,
           // other faces won't be visited this time
           gp_XYZ NF, NOF;
           SMESH_Algo::FaceNormal( theFace, NF, /*normalized=*/false );
-          double proj, maxProj = 0;
+          double proj, maxProj = -1;
           for ( size_t i = 0; i < facesNearLink.size(); ++i ) {
             SMESH_Algo::FaceNormal( facesNearLink[i], NOF, /*normalized=*/false );
             if (( proj = Abs( NF * NOF )) > maxProj ) {
@@ -1206,10 +1212,16 @@ int SMESH_MeshEditor::Reorient2D (TIDSortedElemSet &       theFaces,
               nodeInd2  = nodeIndsOfFace[i].second;
             }
           }
+          // not to visit rejected faces
+          for ( size_t i = 0; i < facesNearLink.size(); ++i )
+            if ( facesNearLink[i] != otherFace && theFaces.size() > 1 )
+              visitedFaces.insert( facesNearLink[i] );
         }
         else if ( facesNearLink.size() == 1 )
         {
           otherFace = facesNearLink[0];
+          nodeInd1  = nodeIndsOfFace.back().first;
+          nodeInd2  = nodeIndsOfFace.back().second;
         }
         if ( otherFace && otherFace != theFace)
         {
@@ -1217,19 +1229,13 @@ int SMESH_MeshEditor::Reorient2D (TIDSortedElemSet &       theFaces,
           // is same as that of theFace
           if ( abs(nodeInd2-nodeInd1) == 1 ? nodeInd2 > nodeInd1 : nodeInd1 > nodeInd2 )
           {
-            // cout << "Reorient " << otherFace->GetID() << " near theFace=" <<theFace->GetID()
-            //      << " \tlink( " << link.first->GetID() << " " << link.second->GetID() << endl;
             nbReori += Reorient( otherFace );
           }
           startFaces.insert( otherFace );
-          if ( theFaces.size() > 1 ) // leave 1 face to prevent finding not selected faces
-            theFaces.erase( otherFace );
         }
       }
       std::swap( link.first, link.second ); // reverse the link
     }
-    startFaces.erase( startFace );
-    startFace = startFaces.begin();
   }
   return nbReori;
 }
