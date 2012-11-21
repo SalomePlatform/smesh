@@ -231,7 +231,11 @@ bool NumericalFunctor::GetPoints(const int theId,
   if ( myMesh == 0 )
     return false;
 
-  return GetPoints( myMesh->FindElement( theId ), theRes );
+  const SMDS_MeshElement* anElem = myMesh->FindElement( theId );
+  if ( !anElem || anElem->GetType() != this->GetType() )
+    return false;
+
+  return GetPoints( anElem, theRes );
 }
 
 bool NumericalFunctor::GetPoints(const SMDS_MeshElement* anElem,
@@ -239,7 +243,7 @@ bool NumericalFunctor::GetPoints(const SMDS_MeshElement* anElem,
 {
   theRes.clear();
 
-  if ( anElem == 0)
+  if ( anElem == 0 )
     return false;
 
   theRes.reserve( anElem->NbNodes() );
@@ -424,7 +428,7 @@ SMDSAbs_ElementType Volume::GetType() const
   return SMDSAbs_Volume;
 }
 
-
+//=======================================================================
 /*
   Class       : MaxElementLength2D
   Description : Functor calculating maximum length of 2D element
@@ -477,10 +481,7 @@ double MaxElementLength2D::GetValue( const TSequenceOfXYZ& P )
 double MaxElementLength2D::GetValue( long theElementId )
 {
   TSequenceOfXYZ P;
-  if( GetPoints( theElementId, P ) && myMesh->FindElement( theElementId )->GetType() == SMDSAbs_Face) {
-    GetValue(P);
-  }
-  return 0.;
+  return GetPoints( theElementId, P ) ? GetValue(P) : 0.0;
 }
 
 double MaxElementLength2D::GetBadRate( double Value, int /*nbNodes*/ ) const
@@ -493,6 +494,7 @@ SMDSAbs_ElementType MaxElementLength2D::GetType() const
   return SMDSAbs_Face;
 }
 
+//=======================================================================
 /*
   Class       : MaxElementLength3D
   Description : Functor calculating maximum length of 3D element
@@ -667,7 +669,7 @@ SMDSAbs_ElementType MaxElementLength3D::GetType() const
   return SMDSAbs_Volume;
 }
 
-
+//=======================================================================
 /*
   Class       : MinimumAngle
   Description : Functor for calculation of minimum angle
