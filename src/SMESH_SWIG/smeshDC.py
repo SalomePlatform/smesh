@@ -3680,6 +3680,10 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( theObject, list )):
             theObject = self.GetIDSource(theObject, SMESH.ALL)
+        if ( isinstance( theScaleFact, float )):
+             theScaleFact = [theScaleFact]
+        if ( isinstance( theScaleFact, int )):
+             theScaleFact = [ float(theScaleFact)]
 
         self.mesh.SetParameters(thePoint.parameters)
 
@@ -3700,6 +3704,10 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( theObject, list )):
             theObject = self.GetIDSource(theObject,SMESH.ALL)
+        if ( isinstance( theScaleFact, float )):
+             theScaleFact = [theScaleFact]
+        if ( isinstance( theScaleFact, int )):
+             theScaleFact = [ float(theScaleFact)]
 
         self.mesh.SetParameters(thePoint.parameters)
         mesh = self.editor.ScaleMakeMesh(theObject, thePoint, theScaleFact,
