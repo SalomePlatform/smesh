@@ -66,6 +66,7 @@
 #include <gp_Vec.hxx>
 
 #include <numeric>
+#include <limits>
 
 using namespace std;
 
@@ -307,7 +308,7 @@ namespace {
     if ( gr1It.Value().ShapeType() == TopAbs_FACE )
     {
       // find a boundary edge of group1 to start from
-      TopoDS_Shape bndEdge = StdMeshers_ProjectionUtils::GetBoundaryEdge( theGroup1, theMesh );
+      TopoDS_Shape bndEdge = HERE::GetBoundaryEdge( theGroup1, theMesh );
       if ( bndEdge.IsNull() )
         return false;
 
@@ -377,40 +378,41 @@ namespace {
    */
   //================================================================================
 
-  TopoDS_Shape getOuterEdge( const TopoDS_Shape theShape1, SMESH_Mesh& mesh )
+  bool getOuterEdges( const TopoDS_Shape        shape,
+                      SMESH_Mesh&               mesh,
+                      std::list< TopoDS_Edge >& allBndEdges )
   {
-    TopoDS_Shape edge;
-    if ( theShape1.ShapeType() == TopAbs_COMPOUND )
+    if ( shape.ShapeType() == TopAbs_COMPOUND )
     {
-      TopoDS_Iterator it( theShape1 );
-      if ( it.Value().ShapeType() == TopAbs_FACE ) // group of FACEs
+      TopoDS_Iterator it( shape );
+      if ( it.More() && it.Value().ShapeType() == TopAbs_FACE ) // group of FACEs
       {
         // look for a boundary EDGE of a group
-        edge = StdMeshers_ProjectionUtils::GetBoundaryEdge( theShape1, mesh );
-        if ( !edge.IsNull() )
-          return edge;
+        StdMeshers_ProjectionUtils::GetBoundaryEdge( shape, mesh, &allBndEdges );
+        if ( !allBndEdges.empty() )
+          return true;
       }
     }
-    edge = theShape1;
-    TopExp_Explorer expF( theShape1, TopAbs_FACE ), expE;
+    TopExp_Explorer expF( shape, TopAbs_FACE ), expE;
     if ( expF.More() ) {
       for ( ; expF.More(); expF.Next() ) {
-        edge.Nullify();
         TopoDS_Shape wire =
           StdMeshers_ProjectionUtils::OuterShape( TopoDS::Face( expF.Current() ), TopAbs_WIRE );
-        for ( expE.Init( wire, TopAbs_EDGE ); edge.IsNull() && expE.More(); expE.Next() )
+        for ( expE.Init( wire, TopAbs_EDGE ); expE.More(); expE.Next() )
           if ( !SMESH_MesherHelper::IsClosedEdge( TopoDS::Edge( expE.Current() )))
-            edge = expE.Current();
-        if ( !edge.IsNull() )
-          break;
+            allBndEdges.push_back( TopoDS::Edge( expE.Current() ));
       }
-    } else if (edge.ShapeType() != TopAbs_EDGE) { // no faces
-      edge.Nullify();
-      for ( expE.Init( theShape1, TopAbs_EDGE ); edge.IsNull() && expE.More(); expE.Next() )
-        if ( !SMESH_MesherHelper::IsClosedEdge( TopoDS::Edge( expE.Current() )))
-          edge = expE.Current();
     }
-    return edge;
+    else if ( shape.ShapeType() != TopAbs_EDGE) { // no faces
+      for ( expE.Init( shape, TopAbs_EDGE ); expE.More(); expE.Next() )
+        if ( !SMESH_MesherHelper::IsClosedEdge( TopoDS::Edge( expE.Current() )))
+          allBndEdges.push_back( TopoDS::Edge( expE.Current() ));
+    }
+    else if ( shape.ShapeType() == TopAbs_EDGE ) {
+      if ( !SMESH_MesherHelper::IsClosedEdge( TopoDS::Edge( shape )))
+        allBndEdges.push_back( TopoDS::Edge( shape ));
+    }
+    return !allBndEdges.empty();
   }
 
 } // namespace
@@ -1175,29 +1177,62 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
   // Find 2 closest vertices
 
   // get 2 linked vertices of shape 1 not belonging to an inner wire of a face
-  TopoDS_Shape edge = getOuterEdge( theShape1, *theMesh1 );
-  if ( edge.IsNull() || edge.ShapeType() != TopAbs_EDGE )
+  std::list< TopoDS_Edge > allBndEdges1;
+  if ( !getOuterEdges( theShape1, *theMesh1, allBndEdges1 ))
     RETURN_BAD_RESULT("Edge not found");
 
-  TopExp::Vertices( TopoDS::Edge( edge.Oriented(TopAbs_FORWARD)), VV1[0], VV1[1]);
-  if ( VV1[0].IsSame( VV1[1] ))
-    RETURN_BAD_RESULT("Only closed edges");
-
-  // find vertices closest to 2 linked vertices of shape 1
-  for ( int i1 = 0; i1 < 2; ++i1 )
+  std::list< TopoDS_Edge >::iterator edge1 = allBndEdges1.begin();
+  double minDist = std::numeric_limits<double>::max();
+  for ( int nbChecked=0; edge1 != allBndEdges1.end() && nbChecked++ < 10; ++edge1 )
   {
-    double dist2 = DBL_MAX;
-    gp_Pnt p1 = BRep_Tool::Pnt( VV1[ i1 ]);
-    p1.Translate( vec01 );
-    p1.Scale( gc[1], scale );
-    for ( int i2 = 1; i2 <= vMap2.Extent(); ++i2 )
+    TopExp::Vertices( TopoDS::Edge( edge1->Oriented(TopAbs_FORWARD)), VV1[0], VV1[1]);
+    if ( VV1[0].IsSame( VV1[1] ))
+      continue;//RETURN_BAD_RESULT("Only closed edges");
+
+    // find vertices closest to 2 linked vertices of shape 1
+    double dist2[2] = { std::numeric_limits<double>::max(),
+                        std::numeric_limits<double>::max() };
+    TopoDS_Vertex edge2VV[2];
+    for ( int i1 = 0; i1 < 2; ++i1 )
     {
-      TopoDS_Vertex V2 = TopoDS::Vertex( vMap2( i2 ));
-      gp_Pnt p2 = BRep_Tool::Pnt ( V2 );
-      double d2 = p1.SquareDistance( p2 );
-      if ( d2 < dist2 && !V2.IsSame( VV2[ 0 ])) {
-        VV2[ i1 ] = V2; dist2 = d2;
+      gp_Pnt p1 = BRep_Tool::Pnt( VV1[ i1 ]);
+      p1.Scale( gc[0], scale );
+      p1.Translate( vec01 );
+      if ( !i1 ) {
+        // select a closest vertex among all ones in vMap2
+        for ( int i2 = 1; i2 <= vMap2.Extent(); ++i2 )
+        {
+          TopoDS_Vertex V2 = TopoDS::Vertex( vMap2( i2 ));
+          gp_Pnt        p2 = BRep_Tool::Pnt ( V2 );
+          double        d2 = p1.SquareDistance( p2 );
+          if ( d2 < dist2[ 0 ] && d2 < minDist ) {
+            edge2VV[ 0 ] = V2;
+            dist2  [ 0 ] = d2;
+          }
+        }
       }
+      else if ( !edge2VV[0].IsNull() ) {
+        // select a closest vertex among ends of edges meeteing at edge2VV[0]
+        PShapeIteratorPtr edgeIt = SMESH_MesherHelper::GetAncestors( edge2VV[0],
+                                                                     *theMesh2, TopAbs_EDGE);
+        while ( const TopoDS_Shape* edge2 = edgeIt->next() )
+          for ( TopoDS_Iterator itV2( *edge2 ); itV2.More(); itV2.Next() )
+          {
+            if ( itV2.Value().IsSame( edge2VV[ 0 ])) continue;
+            TopoDS_Vertex V2 = TopoDS::Vertex( itV2.Value() );
+            gp_Pnt        p2 = BRep_Tool::Pnt ( V2 );
+            double        d2 = p1.SquareDistance( p2 );
+            if ( d2 < dist2[1] && d2 < minDist ) {
+              edge2VV[ 1 ] = V2;
+              dist2  [ 1 ] = d2;
+            }
+          }
+      }
+    }
+    if ( dist2[0] + dist2[1] < minDist ) {
+      VV2[0] = edge2VV[0];
+      VV2[1] = edge2VV[1];
+      minDist = dist2[0] + dist2[1];
     }
   }
 
@@ -2092,8 +2127,9 @@ int StdMeshers_ProjectionUtils::Count(const TopoDS_Shape&    shape,
  */
 //================================================================================
 
-TopoDS_Edge StdMeshers_ProjectionUtils::GetBoundaryEdge(const TopoDS_Shape& edgeContainer,
-                                                        const SMESH_Mesh&   mesh)
+TopoDS_Edge StdMeshers_ProjectionUtils::GetBoundaryEdge(const TopoDS_Shape&       edgeContainer,
+                                                        const SMESH_Mesh&         mesh,
+                                                        std::list< TopoDS_Edge >* allBndEdges)
 {
   TopTools_IndexedMapOfShape facesOfEdgeContainer, facesNearEdge;
   TopExp::MapShapes( edgeContainer, TopAbs_FACE, facesOfEdgeContainer );
@@ -2108,8 +2144,12 @@ TopoDS_Edge StdMeshers_ProjectionUtils::GetBoundaryEdge(const TopoDS_Shape& edge
         if ( facesOfEdgeContainer.Contains( *face ))
           if ( facesNearEdge.Add( *face ) && facesNearEdge.Extent() > 1 )
             break;
-      if ( facesNearEdge.Extent() == 1 )
-        return edge;
+      if ( facesNearEdge.Extent() == 1 ) {
+        if ( allBndEdges )
+          allBndEdges->push_back( edge );
+        else
+          return edge;
+      }
     }
 
   return TopoDS_Edge();
