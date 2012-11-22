@@ -2203,6 +2203,9 @@ void SMESH_subMesh::DeleteEventListener(EventListener* listener)
       delete l_d->second;
     }
     _eventListeners.erase( l_d );
+
+    if ( l_d->first && !l_d->first->IsDeletable() )
+      l_d->first->myBusySM.erase( this );
   }
 }
 
