@@ -1445,12 +1445,14 @@ bool _ViscousBuilder2D::shrink()
       bool isConvex = false;
       if ( L2->_advancable )
       {
+        const uvPtStruct& tang2P1 = points[ isR ? L2->_firstPntInd   : L2->_lastPntInd ];
+        const uvPtStruct& tang2P2 = points[ isR ? L2->_firstPntInd+1 : L2->_lastPntInd-1 ];
+        gp_XY seg2Dir( tang2P2.u - tang2P1.u,
+                       tang2P2.v - tang2P1.v );
         int iFSeg2 = isR ? 0 : L2->_segments.size() - 1;
         int iLSeg2 = isR ? 1 : L2->_segments.size() - 2;
         gp_XY uvLSeg2In  = L2->_lEdges[ iLSeg2 ]._uvIn;
-        gp_XY uvLSeg2Out = L2->_lEdges[ iLSeg2 ]._uvOut;
-        gp_XY uvFSeg2Out = L2->_lEdges[ iFSeg2 ]._uvOut;
-        Handle(Geom2d_Line) seg2Line = new Geom2d_Line( uvLSeg2In, uvFSeg2Out - uvLSeg2Out );
+        Handle(Geom2d_Line) seg2Line = new Geom2d_Line( uvLSeg2In, seg2Dir );
 
         Geom2dAdaptor_Curve edgeCurve( pcurve, Min( uf, ul ), Max( uf, ul ));
         Geom2dAdaptor_Curve seg2Curve( seg2Line );
