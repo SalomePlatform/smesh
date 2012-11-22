@@ -396,6 +396,15 @@ bool StdMeshers_CompositeSegment_1D::Compute(SMESH_Mesh &         aMesh,
 
   // Create mesh
 
+  // compute and get nodes on extremity VERTEX'es
+  SMESH_subMesh* smVFirst = aMesh.GetSubMesh( VFirst );
+  smVFirst->SetIsAlwaysComputed( false );
+  smVFirst->ComputeStateEngine( SMESH_subMesh::COMPUTE );
+  //
+  SMESH_subMesh* smVLast = aMesh.GetSubMesh( VLast );
+  smVLast->SetIsAlwaysComputed( false );
+  smVLast->ComputeStateEngine( SMESH_subMesh::COMPUTE );
+  //
   const SMDS_MeshNode * nFirst = SMESH_Algo::VertexNode( VFirst, meshDS );
   const SMDS_MeshNode * nLast  = SMESH_Algo::VertexNode( VLast, meshDS );
   if (!nFirst)
