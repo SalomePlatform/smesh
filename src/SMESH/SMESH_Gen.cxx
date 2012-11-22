@@ -155,7 +155,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
       // check for preview dimension limitations
       if ( aShapesId && GetShapeDim( aShType ) > (int)aDim )
       {
-        // clear compute state to not show previous compute errors
+        // clear compute state not to show previous compute errors
         //  if preview invoked less dimension less than previous
         smToCompute->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
         continue;
