@@ -963,7 +963,6 @@ class Mesh:
     geom = 0
     mesh = 0
     editor = 0
-    functors = [None] * SMESH.FT_Undefined._v
 
     ## Constructor
     #
@@ -1009,7 +1008,8 @@ class Mesh:
         if not self.geom:
             self.geom = self.mesh.GetShapeToMesh()
 
-        self.editor = self.mesh.GetMeshEditor()
+        self.editor   = self.mesh.GetMeshEditor()
+        self.functors = [None] * SMESH.FT_Undefined._v
 
         # set self to algoCreator's
         for attrName in dir(self):
