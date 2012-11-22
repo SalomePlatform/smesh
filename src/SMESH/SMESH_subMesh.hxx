@@ -65,7 +65,7 @@ class SMESH_EXPORT SMESH_subMesh
                 const TopoDS_Shape & aSubShape);
   virtual ~ SMESH_subMesh();
 
-  int GetId() const;
+  int GetId() const; // == meshDS->ShapeToIndex( aSubShape )
 
   SMESH_Mesh* GetFather() { return _father; }
   
@@ -209,9 +209,9 @@ public:
   SMESH_Hypothesis::Hypothesis_Status
     SubMeshesAlgoStateEngine(int event, SMESH_Hypothesis * anHyp);
 
-  int GetAlgoState() const { return _algoState; }
-  int GetComputeState() const { return _computeState; };
-  SMESH_ComputeErrorPtr& GetComputeError() { return _computeError; }
+  algo_state             GetAlgoState() const    { return _algoState; }
+  compute_state          GetComputeState() const { return _computeState; };
+  SMESH_ComputeErrorPtr& GetComputeError()       { return _computeError; }
 
   void DumpAlgoState(bool isMain);
 
@@ -275,7 +275,7 @@ protected:
   void updateSubMeshState(const compute_state theState);
   void cleanDependants();
   void cleanDependsOn();
-  void setAlgoState(int state);
+  void setAlgoState(algo_state state);
 
   /*!
    * \brief Return a shape containing all sub-shapes of the MainShape that can be
@@ -314,8 +314,8 @@ protected:
   std::map < int, SMESH_subMesh * >_mapDepend;
   bool                  _dependenceAnalysed;
 
-  int                   _algoState;
-  int                   _computeState;
+  algo_state            _algoState;
+  compute_state         _computeState;
   SMESH_ComputeErrorPtr _computeError;
 
   // allow algo->Compute() if a subshape of lower dim is meshed but

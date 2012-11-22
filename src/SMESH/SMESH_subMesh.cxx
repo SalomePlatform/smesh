@@ -1133,7 +1133,7 @@ bool SMESH_subMesh::IsConform(const SMESH_Algo* theAlgo)
  */
 //=============================================================================
 
-void SMESH_subMesh::setAlgoState(int state)
+void SMESH_subMesh::setAlgoState(algo_state state)
 {
   _algoState = state;
 }
