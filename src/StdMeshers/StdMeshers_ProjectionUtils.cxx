@@ -1190,8 +1190,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       continue;//RETURN_BAD_RESULT("Only closed edges");
 
     // find vertices closest to 2 linked vertices of shape 1
-    double dist2[2] = { std::numeric_limits<double>::max(),
-                        std::numeric_limits<double>::max() };
+    double dist2[2] = { 1e+100, 1e+100 };
     TopoDS_Vertex edge2VV[2];
     for ( int i1 = 0; i1 < 2; ++i1 )
     {
@@ -1212,13 +1211,14 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
         }
       }
       else if ( !edge2VV[0].IsNull() ) {
-        // select a closest vertex among ends of edges meeteing at edge2VV[0]
+        // select a closest vertex among ends of edges meeting at edge2VV[0]
         PShapeIteratorPtr edgeIt = SMESH_MesherHelper::GetAncestors( edge2VV[0],
                                                                      *theMesh2, TopAbs_EDGE);
         while ( const TopoDS_Shape* edge2 = edgeIt->next() )
           for ( TopoDS_Iterator itV2( *edge2 ); itV2.More(); itV2.Next() )
           {
             if ( itV2.Value().IsSame( edge2VV[ 0 ])) continue;
+            if ( !vMap2.Contains( itV2.Value()    )) continue;
             TopoDS_Vertex V2 = TopoDS::Vertex( itV2.Value() );
             gp_Pnt        p2 = BRep_Tool::Pnt ( V2 );
             double        d2 = p1.SquareDistance( p2 );
@@ -1233,6 +1233,8 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       VV2[0] = edge2VV[0];
       VV2[1] = edge2VV[1];
       minDist = dist2[0] + dist2[1];
+      if ( minDist < 1e-10 )
+        break;
     }
   }
 
