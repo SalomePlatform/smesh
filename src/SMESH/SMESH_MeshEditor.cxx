@@ -5226,37 +5226,37 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
         SMESH_subMesh* locTrack = *itLSM;
         SMESHDS_SubMesh* locMeshDS = locTrack->GetSubMeshDS();
         TopExp::Vertices( aTrackEdge, aV1, aV2 );
-	bool aN1isOK = false, aN2isOK = false;
-	if ( aVprev.IsNull() ) {
-	  // if previous vertex is not yet defined, it means that we in the beginning of wire
-	  // and we have to find initial vertex corresponding to starting node theN1
-	  const SMDS_MeshNode* aN1 = 0;
-	  const SMDS_MeshNode* aN2 = 0;
-	  
-	  if ( locTrack->GetFather()->GetSubMesh(aV1) && locTrack->GetFather()->GetSubMesh(aV1)->GetSubMeshDS() ) {
-	    aItN = locTrack->GetFather()->GetSubMesh(aV1)->GetSubMeshDS()->GetNodes();
-	    aN1 = aItN->next();
-	  }
-	  if ( locTrack->GetFather()->GetSubMesh(aV2) && locTrack->GetFather()->GetSubMesh(aV2)->GetSubMeshDS() ) {
-	    aItN = locTrack->GetFather()->GetSubMesh(aV2)->GetSubMeshDS()->GetNodes();
-	    aN2 = aItN->next();
-	  }
-	  // starting node must be aN1 or aN2
-	  aN1isOK = aN1 && aN1->GetID() == theN1->GetID();
-	  aN2isOK = aN2 && aN2->GetID() == theN1->GetID();
-	}
-	else {
-	  // we have specified ending vertex of the previous edge on the previous iteration
-	  // and we have just to check that it corresponds to any vertex in current segment
-	  aN1isOK = aVprev.IsSame( aV1 );
-	  aN2isOK = aVprev.IsSame( aV2 );
-	}
-	if ( !aN1isOK && !aN2isOK ) continue;
-	// 2. Collect parameters on the track edge
+        bool aN1isOK = false, aN2isOK = false;
+        if ( aVprev.IsNull() ) {
+          // if previous vertex is not yet defined, it means that we in the beginning of wire
+          // and we have to find initial vertex corresponding to starting node theN1
+          const SMDS_MeshNode* aN1 = 0;
+          const SMDS_MeshNode* aN2 = 0;
+
+          if ( locTrack->GetFather()->GetSubMesh(aV1) && locTrack->GetFather()->GetSubMesh(aV1)->GetSubMeshDS() ) {
+            aItN = locTrack->GetFather()->GetSubMesh(aV1)->GetSubMeshDS()->GetNodes();
+            aN1 = aItN->next();
+          }
+          if ( locTrack->GetFather()->GetSubMesh(aV2) && locTrack->GetFather()->GetSubMesh(aV2)->GetSubMeshDS() ) {
+            aItN = locTrack->GetFather()->GetSubMesh(aV2)->GetSubMeshDS()->GetNodes();
+            aN2 = aItN->next();
+          }
+          // starting node must be aN1 or aN2
+          aN1isOK = ( aN1 && aN1 == theN1 );
+          aN2isOK = ( aN2 && aN2 == theN1 );
+        }
+        else {
+          // we have specified ending vertex of the previous edge on the previous iteration
+          // and we have just to check that it corresponds to any vertex in current segment
+          aN1isOK = aVprev.IsSame( aV1 );
+          aN2isOK = aVprev.IsSame( aV2 );
+        }
+        if ( !aN1isOK && !aN2isOK ) continue;
+        // 2. Collect parameters on the track edge
         aPrms.clear();
         aItN = locMeshDS->GetNodes();
         while ( aItN->more() ) {
-          const SMDS_MeshNode* pNode = aItN->next();
+          const SMDS_MeshNode*     pNode = aItN->next();
           const SMDS_EdgePosition* pEPos =
             static_cast<const SMDS_EdgePosition*>( pNode->GetPosition() );
           double aT = pEPos->GetUParameter();
@@ -5269,7 +5269,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
         UsedNums.Add(k);
         // update startN for search following egde
         if ( aN1isOK ) aVprev = aV2;
-        else aVprev = aV1;
+        else           aVprev = aV1;
         break;
       }
     }
@@ -5288,8 +5288,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
       SMESH_MeshEditor_PathPoint PP2 = currList.front();
       gp_Dir D1 = PP1.Tangent();
       gp_Dir D2 = PP2.Tangent();
-      gp_Dir Dnew( gp_Vec( (D1.X()+D2.X())/2, (D1.Y()+D2.Y())/2,
-                           (D1.Z()+D2.Z())/2 ) );
+      gp_Dir Dnew( ( D1.XYZ() + D2.XYZ() ) / 2 );
       PP1.SetTangent(Dnew);
       fullList.push_back(PP1);
       itPP++;
