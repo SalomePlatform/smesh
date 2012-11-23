@@ -64,15 +64,12 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
           maDoc=os.environ['DISTENE_YAMS_DOC_PDF']
         except Exception:
           QMessageBox.warning( self, "Help unavailable", str(maDoc) + " not found")
-        try :  
-          commande='kpdf '+maDoc
-          os.system (commande)
-        except Exception:
-          old_ld=os.getenv("LD_LIBRARY_PATH")
-          command="unset LD_LIBRARY_PATH;"
-          command+="okular "+maDoc+";"
-          command+="export LD_LIBRARY_PATH=%s"%old_ld
-          os.system(command)
+        old_ld=os.getenv("LD_LIBRARY_PATH")
+        command="unset LD_LIBRARY_PATH;"
+        command+="xdg-open "+maDoc+";"
+        command+="export LD_LIBRARY_PATH=%s"%old_ld
+        os.system(command)
+
 
   def PBOKPressed(self):
         if not(self.PrepareLigneCommande()) : return
