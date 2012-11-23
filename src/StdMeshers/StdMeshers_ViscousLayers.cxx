@@ -2858,7 +2858,7 @@ bool _LayerEdge::FindIntersection( SMESH_ElementSearcher&   searcher,
     }
     if ( intFound )
     {
-      if ( dist < segLen*(1.01))
+      if ( dist < segLen*(1.01) && dist > -(_len-segLen) )
         segmentIntersected = true;
       if ( distance > dist )
         distance = dist, iFace = j;
