@@ -62,11 +62,17 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
   def PBHelpPressed(self):
         try :
           maDoc=os.environ['DISTENE_YAMS_DOC_PDF']
+        except Exception:
+          QMessageBox.warning( self, "Help unavailable", str(maDoc) + " not found")
+        try :  
           commande='kpdf '+maDoc
           os.system (commande)
-        except:
-          QMessageBox.warning( self, "Help unavailable", str(maDoc) + " not found")
-
+        except Exception:
+          old_ld=os.getenv("LD_LIBRARY_PATH")
+          command="unset LD_LIBRARY_PATH;"
+          command+="okular "+maDoc+";"
+          command+="export LD_LIBRARY_PATH=%s"%old_ld
+          os.system(command)
 
   def PBOKPressed(self):
         if not(self.PrepareLigneCommande()) : return
@@ -233,7 +239,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
   def prepareFichier(self):
       self.fichierIn="/tmp/PourYam_"+str(self.num)+".mesh"
       import SMESH
-      self.__selectedMesh.ExportGMF(self.__selectedMesh,self.fichierIn)
+      self.__selectedMesh.ExportGMF(self.__selectedMesh,self.fichierIn, True)
 
   def PrepareLigneCommande(self):
       self.commande="yams "
