@@ -270,14 +270,21 @@ CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobParameterList & m
       listSteelBarMesh.push_back(currentMesh);
       break;
     default:
-      LOG("The type of the file is not recognized");
+      _lastErrorMessage =
+	std::string("The type of the file ")+
+	std::string(currentMesh.file_name)+
+	std::string(" is not recognized");
+      LOG(_lastErrorMessage);
       return JOBID_UNDEFINED;
     }
   }
   
-  if ( listConcreteMesh.size() != 1 ) {
+  // It is not possible to specify more than one concrete
+  // file. Converselly, it is possible to specify no concrete file.
+  if ( listConcreteMesh.size() > 1 ) {
     // Not consistent with the specification
-    LOG("You specify more than one concrete mesh");
+    _lastErrorMessage = std::string("You specify more than one concrete mesh (not authorized)");
+    LOG(_lastErrorMessage);
     return JOBID_UNDEFINED;
   }
   
