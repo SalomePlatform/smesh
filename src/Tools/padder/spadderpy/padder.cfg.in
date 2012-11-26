@@ -33,3 +33,9 @@ envpath = /usr/local/share/envPadder.sh
 resname = nepal@nepal
 binpath = /usr/local/bin/padder.exe
 envpath = /usr/local/share/envPadder.sh
+
+[devel]
+resname = localhost
+binpath = /opt/programs/padder/subversion/trunk/padder.exe
+envpath = /opt/programs/padder/subversion/trunk/padder.env
+

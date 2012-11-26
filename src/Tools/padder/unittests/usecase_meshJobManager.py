@@ -21,10 +21,13 @@
 #
 
 # This script illustrates the standard use case of the component
-# MeshJobManager from within a SALOME script.
+# MeshJobManager from within a SALOME script. It could be used as a
+# unit test of the component.
 
 #
+# =======================================================================
 # Preparing the configuration parameters
+# =======================================================================
 #
 import sys
 import os
@@ -58,8 +61,16 @@ component.configure(configId,config)
 
 
 #
-# Prepare the job parameters and initialize the job
+# =======================================================================
+# Define several datasets for the different use cases
+# =======================================================================
 #
+
+# We define several functions that create each a dataset of med files
+# for testing the component. The test function number corresponds to
+# the number of the test defined in the SpherePadder installation
+# directory.
+
 def test00_parameters():
     """Test using a concrete mesh and a single steelbar mesh""" 
     file_concrete=os.path.join(spadder.getTestDataDir(),"concrete.med")
@@ -127,13 +138,16 @@ def test03_parameters():
     return meshJobParameterList
 
 #
-# Choose here the use case
+# =======================================================================
+# Prepare the job parameters and initialize the job
+# =======================================================================
 #
 
+# Choose here the use case
 #meshJobParameterList = test00_parameters()
 #meshJobParameterList = test01_parameters()
-meshJobParameterList = test02_parameters()
-#meshJobParameterList = test03_parameters()
+#meshJobParameterList = test02_parameters()
+meshJobParameterList = test03_parameters()
 
 #
 # Prepare, start and follow-up the job
@@ -154,6 +168,11 @@ while not created:
     time.sleep(0.5)
     nbiter+=1
 
+
+#
+# =======================================================================
+# Submit the job and start the supervision
+# =======================================================================
 #
 # Start the execution of the job identified by its job id.
 #

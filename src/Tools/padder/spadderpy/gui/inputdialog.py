@@ -312,8 +312,8 @@ class InputDialog(GenericDialog):
         This function checks if the data are valid, from the dialog
         window point of view.
         """
-        if self.__nbConcreteMesh < 1:
-            self.checkDataMessage = "You must define at least one CONCRETE mesh"
+        if self.__nbConcreteMesh == 0 and self.__nbSteelbarMesh == 0:
+            self.checkDataMessage = "You must define at least one mesh (CONCRETE or STEELBAR)"
             return False        
         if self.__nbConcreteMesh > 1:
             self.checkDataMessage  = "You define multiple CONCRETE meshes."
@@ -321,9 +321,7 @@ class InputDialog(GenericDialog):
             # just warn the user, but don't block
             QMessageBox.information(self, "Info", self.checkDataMessage)
             return True
-        if self.__nbSteelbarMesh < 1:
-            self.checkDataMessage = "You must define at least one STEELBAR mesh"
-            return False
+
         return True
 
 
