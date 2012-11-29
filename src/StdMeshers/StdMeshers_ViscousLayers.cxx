@@ -265,6 +265,7 @@ namespace VISCOUS_3D
   {
     double _r; // radius
     double _k; // factor to correct node smoothed position
+    double _h2lenRatio; // avgNormProj / (2*avgDist)
   public:
     static _Curvature* New( double avgNormProj, double avgDist )
     {
@@ -275,10 +276,12 @@ namespace VISCOUS_3D
         c->_r = avgDist * avgDist / avgNormProj;
         c->_k = avgDist * avgDist / c->_r / c->_r;
         c->_k *= ( c->_r < 0 ? 1/1.1 : 1.1 ); // not to be too restrictive
+        c->_h2lenRatio = avgNormProj / ( avgDist + avgDist );
       }
       return c;
     }
     double lenDelta(double len) const { return _k * ( _r + len ); }
+    double lenDeltaByDist(double dist) const { return dist * _h2lenRatio; }
   };
   struct _LayerEdge;
   //--------------------------------------------------------------------------------
@@ -730,27 +733,30 @@ namespace
     gp_XYZ dir(0,0,0);
     if ( !( ok = ( edges.size() > 0 ))) return dir;
     // get average dir of edges going fromV
-    gp_Vec edgeDir;
-    for ( unsigned i = 0; i < edges.size(); ++i )
-    {
-      edgeDir = getEdgeDir( edges[i], fromV );
-      double size2 = edgeDir.SquareMagnitude();
-      if ( size2 > numeric_limits<double>::min() )
-        edgeDir /= sqrt( size2 );
-      else
-        ok = false;
-      dir += edgeDir.XYZ();
-    }
+    gp_XYZ edgeDir;
+    //if ( edges.size() > 1 )
+      for ( unsigned i = 0; i < edges.size(); ++i )
+      {
+        edgeDir = getEdgeDir( edges[i], fromV );
+        double size2 = edgeDir.SquareModulus();
+        if ( size2 > numeric_limits<double>::min() )
+          edgeDir /= sqrt( size2 );
+        else
+          ok = false;
+        dir += edgeDir;
+      }
     gp_XYZ fromEdgeDir = getFaceDir( F, edges[0], node, helper, ok );
-    if ( edges.size() == 1 || dir.SquareModulus() < 1e-10)
+    if ( edges.size() == 1 )
       dir = fromEdgeDir;
+    else if ( dir.SquareModulus() < 0.1 ) // ~< 20 degrees
+      dir = fromEdgeDir + getFaceDir( F, edges[1], node, helper, ok );
     else if ( dir * fromEdgeDir < 0 )
       dir *= -1;
     if ( ok )
     {
       //dir /= edges.size();
       if ( cosin ) {
-        double angle = edgeDir.Angle( dir );
+        double angle = gp_Vec( edgeDir ).Angle( dir );
         *cosin = cos( angle );
       }
     }
@@ -1385,7 +1391,7 @@ bool _ViscousBuilder::makeLayer(_SolidData& data)
   if ( data._stepSize < 1. )
     data._epsilon *= data._stepSize;
 
-  // Put _LayerEdge's into a vector
+  // Put _LayerEdge's into the vector data._edges
 
   if ( !sortEdges( data, edgesByGeom ))
     return false;
@@ -1709,8 +1715,8 @@ bool _ViscousBuilder::setEdgeData(_LayerEdge&         edge,
     }
     case SMDS_TOP_VERTEX: {
       TopoDS_Vertex V = TopoDS::Vertex( helper.GetSubShapeByNode( node, getMeshDS()));
-      gp_Vec inFaceDir = getFaceDir( F, V, node, helper, normOK);
-      double angle = inFaceDir.Angle( edge._normal ); // [0,PI]
+      gp_XYZ inFaceDir = getFaceDir( F, V, node, helper, normOK);
+      double angle = gp_Vec( inFaceDir).Angle( edge._normal ); // [0,PI]
       edge._cosin = cos( angle );
       //cout << "Cosin on VERTEX " << edge._cosin << " node " << node->GetID() << endl;
       break;
@@ -3061,7 +3067,8 @@ bool _LayerEdge::SmoothOnEdge(Handle(Geom_Surface)& surface,
   double lenDelta = 0;
   if ( _curvature )
   {
-    lenDelta = _curvature->lenDelta( _len );
+    //lenDelta = _curvature->lenDelta( _len );
+    lenDelta = _curvature->lenDeltaByDist( dist01 );
     newPos.ChangeCoord() += _normal * lenDelta;
   }
 
