@@ -4,8 +4,7 @@
 
 \n Extrusion is used to build mesh elements of plus one
 dimension than the input ones. Any node, segment or 2D element can be
-extruded. Element of each type extrude into elements of a certain type
-as follows:
+extruded. Each type of elements has a corresponding type of extruded elements:
 <table>
 <tr><td><b>Extruded element</b></td><td><b> Result elements </b></td></tr>
 <tr><td>Node              </td><td> Segments </td></tr>
@@ -63,7 +62,7 @@ The following dialog common for line and planar elements will appear:
     <li>specify the distance of extrusion along the vector.</li>
   </ul>
   <li>Specify the number of steps.</li>
-  <li>If you activate <b>Generate Groups</b> check-box then the created
+  <li>If you activate <b>Generate Groups</b> check-box, the created
     elements contained in groups will be included into new groups named
     by pattern "<old group name>_extruded". </li>
 </ul>

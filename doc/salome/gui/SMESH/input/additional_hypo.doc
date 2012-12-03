@@ -50,8 +50,8 @@ segments on all four sides of the face must be even (divisible by 2).
 <h2>Viscous Layers and Viscous Layers 2D</h2>
 
 <b>Viscous Layers</b> and <b>Viscous Layers 2D </b> additional
-hypotheses can be used together with some 3D algorithms,
-Hexahedron(i,j,k) for example, and 2D algorithm, for example Triangle
+hypotheses can be used together with some 3D algorithms, for example,
+Hexahedron(i,j,k) or 2D algorithms, for example, Triangle
 (MEFISTO), correspondingly. These hypotheses allow creation of layers
 of highly stretched elements, prisms in 3D and quadrilaterals in 2D,
 near mesh boundary, which is beneficial for high quality viscous
@@ -61,7 +61,7 @@ computations.
 
 <ul>
 <li><b>Name</b> - allows to define the name of the hypothesis.</li>
-<li><b>Total thicknes</b> - gives the total thickness of element layers.</li>
+<li><b>Total thickness</b> - gives the total thickness of element layers.</li>
 <li><b>Number of layers</b> - defines the number of element layers.</li>
 <li><b>Stretch factor</b> - defines the growth factor of element height
 from the mesh boundary inwards.</li>
@@ -70,8 +70,8 @@ from the mesh boundary inwards.</li>
   constructed. By default the element layers are not constructed on
   geometrical faces shared by solids (and edges shared by faces in 2D). 
   \note A mesh shown in the 3D Viewer can prevent selection of faces
-  and edges, in this case just hide the mesh. To prevent a long waiting when a
-  geometry with many faces (or edges) is displayed, a number of faces
+  and edges, in this case just hide the mesh. To avoid a long wait when a
+  geometry with many faces (or edges) is displayed, the number of faces
   (edges) shown at a time is limited by the value of "Sub-shapes
   preview chunk size" preference (in Preferences/Mesh/General tab).
 </li>

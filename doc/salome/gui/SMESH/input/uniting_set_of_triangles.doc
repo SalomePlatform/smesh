@@ -28,8 +28,8 @@ to sort the list of IDs. The <b>Set filter</b> button allows to apply a
 definite filter to selection of triangles.</li>
 <li><b>Apply to all</b> radio button allows to modify connectivity and
 type of all triangles of the currently displayed mesh or sub-mesh.</li>
-<li>\b Criterion menu allows to chose a quality criterion
-  optimization of which will be used to select triangles to unite.</li>
+<li>\b Criterion menu allows to choose a quality criterion,
+ which will be optimized to select triangles to unite.</li>
 <li><b>Select from</b> set of fields allows to choose a sub-mesh or an
 existing group whose triangle elements will be automatically added to
 the list.</li>

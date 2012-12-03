@@ -64,7 +64,7 @@ There is also a number of more specific algorithms:
 </ul>
 \ref use_existing_anchor "Use existing edges" and 
 \ref use_existing_anchor "Use existing faces" algorithms can be
-used to create an 1D or a 2D mesh in a python script.
+used to create a 1D or a 2D mesh in a python script.
 
 \ref constructing_meshes_page "Constructing meshes" page describes in
 detail how to apply meshing algorithms.

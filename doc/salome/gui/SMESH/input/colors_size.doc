@@ -14,7 +14,7 @@ shown.
 
 - \b Nodes:
   - \b Color - color of nodes.
-  - \b Type and \b Scale - these options allow changing of the nodes
+  - \b Type and \b Scale - these options allow changing the nodes
     representation (see \subpage point_marker_page "Point Marker" page
     for more details).
 - <b>Edges / wireframe</b>:
@@ -23,13 +23,13 @@ shown.
     in wireframe mode).
 - \b Faces:
   - \b Front - surface color of face elements (seen in shading mode).
-  - \b Back - backside surface color of face elements. Use slider to
-    select this color generated on base of the \b Face color by
+  - \b Back - backside surface color of face elements. Use the slider to
+    select this color generated on the base of the \b Face color by
     changing its brightness and saturation. 
 - \b Volumes:
   - \b Normal - surface color of normal volume elements (seen in shading mode).
-  - \b Reversed - surface color of volume elements. Use slider to
-    select this color generated on base of the \b Normal color by
+  - \b Reversed - surface color of volume elements. Use the slider to
+    select this color generated on the base of the \b Normal color by
     changing its brightness and saturation. 
 - \b Outlines:
   - \b Color - color of element borders in shading mode.

@@ -37,42 +37,42 @@ written in Python.
     "Create mesh" dialog box contains several tab pages titled \b 3D,
     \b 2D, \b 1D and \b 0D. The title of each page reflects the
     dimension of the CAD model (geometry) the algorithms listed on
-    this page affect to. For example, \b 3D page lists algorithms
+    this page affect. For example, \b 3D page lists the algorithms
     that affect 3D geometrical objects (solids).
 
     \note
-    - Some page(s) can be disabled - if the source geometrical
+    - Some page(s) can be disabled if the source geometrical
     object does not include shapes (sub-shapes) of the corresponding
-    dimension(s). For example, if input object is a geometrical face,
+    dimension(s). For example, if the input object is a geometrical face,
     \b 3D page is disabled.
-    - Some algorithms affect on geometry of several dimensions,
-    i.e. "1D-2D" or "1D-2D-3D". If such algorithm is selected by the
-    user, dialog box pages related to the corresponding lower level
+    - Some algorithms affect the geometry of several dimensions,
+    i.e. "1D-2D" or "1D-2D-3D". If such an algorithm is selected by the
+    user, the dialog box pages related to the corresponding lower level
     dimensions are disabled.
     - \b 0D page does not refer to the 0D elements, but to 0D
     geometry (vertices). Mesh module does not provide algorithms that
     produce 0D elements. Currently \b 0D page provides only one
-    algorithm "Segments around vertex" that allows specyfing required
-    size of mesh edges about some selected vertex(vertices).
+    algorithm "Segments around vertex" that allows specyfying the required
+    size of mesh edges about the selected vertex (or vertices).
 
     For example, you need to mesh a 3D object.
 
-    First, type the name for your mesh in the \b Name box, by default,
+    First, type the name of your mesh in the \b Name box, by default,
     it is "Mesh_1". Then select the geometrical object you wish to
     mesh in the Object Browser and click "Select" button near \b Geometry
-    field (if name of the object not yet appeared in \b Geometry field).
+    field (if the name of the object has not yet appeared in \b Geometry field).
 
     \image html image120.png
     <em>"Select" button</em>
 
     Now you can define 3D Algorithm and 3D Hypotheses, which will be
-    applied to solids of your geometrical object. Click the <em>"Add
+    applied to the solids of your geometrical object. Click the <em>"Add
       Hypothesis"</em>  button to add a hypothesis.
 
     \image html image121.png
     <em>"Add Hypothesis" button</em>
 
-    Click the <em>"Edit Hypothesis"</em> button to change values for the
+    Click the <em>"Edit Hypothesis"</em> button to change the values for the
     current hypothesis.
 
     \image html image122.png
@@ -86,14 +86,14 @@ written in Python.
     will be used to mesh faces and edges of your geometry. (Note
     that any object has edges, even if their existence is not
     apparent, for example, a sphere has 4 edges). Note that the
-    choice of hypotheses and of an algorithm of lower dimension depends on
-    the algorithm. 
+    choice of hypotheses and lower dimension algorithms depends on
+    the higher dimension algorithm. 
 
-    Some algorithms generate mesh of several dimensions while others, of
-    only one dimension. In the latter case there must be one Algorithm and zero or several
+    Some algorithms generate mesh of several dimensions, while others
+    produce mesh of only one dimension. In the latter case there must be one Algorithm and zero or several
     Hypotheses for each dimension of your object, otherwise you will
     not get any mesh at all. Of course, if you wish to mesh a face,
-    which is a 2D object, you don't need to define 3D Algorithm and
+    which is a 2D object, you do not need to define a 3D Algorithm and
     Hypotheses.
 
     In the <b>Object Browser</b> the structure of the new mesh will be
@@ -122,7 +122,7 @@ written in Python.
       tags).
 
       \image html hypo_sets.png
-      List of sets of hypotheses: <em>[custom]</em>
+      List of sets of hypotheses. Tag <em>[custom]</em> is
       automatically added to the sets defined by the user
   </li>
 </ol>
@@ -164,7 +164,7 @@ Select <b>1D mesh</b> or <b>2D mesh</b> preview mode in the Preview dialog.
 <b>Compute</b> button computes the whole mesh.
 
 When the Preview dialog is closed, the question about the storage of temporarily
-created mesh elements appers:
+created mesh elements appears:
 
 \image html preview_tmp_data.png
 
@@ -185,7 +185,7 @@ Choose "Change submesh priority" from the Mesh menu or a pop-up
 menu. The opened dialog shows a list of submeshes in the order of
 their priority. 
 
-There is an example of submesh order modifications of the Mesh created on a Box
+There is an example of submesh order modifications taking a Mesh created on a Box
 shape. The main Mesh object:
 <ul>
   <li><i>1D</i> <b>Wire discretisation</b> with <b>Number of Segments</b>=20</li>
@@ -195,22 +195,22 @@ shape. The main Mesh object:
 The first submesh object <b>Submesh_1</b> created on <b>Face_1</b> is:
 <ul>
   <li><i>1D</i> <b>Wire discretisation</b> with <b>Number of Segments</b>=4</li>
-  <li><i>2D</i> <b>Triangle (Mefisto)</b> with Hypothesis<b>MaxElementArea</b>=1200</li>
+  <li><i>2D</i> <b>Triangle (Mefisto)</b> with Hypothesis <b>MaxElementArea</b>=1200</li>
 </ul>
 The second submesh object <b>Submesh_2</b> created on <b>Face_2</b> is:
 <ul>
   <li><i>1D</i> <b>Wire discretisation</b> with <b>Number of Segments</b>=8</li>
-  <li><i>2D</i> <b>Triangle (Mefisto)</b> with Hypothesis<b>MaxElementArea</b>=1200</li>
+  <li><i>2D</i> <b>Triangle (Mefisto)</b> with Hypothesis <b>MaxElementArea</b>=1200</li>
 </ul>
 
 And the last submesh object <b>Submesh_3</b> created on <b>Face_3</b> is:
 <ul>
   <li><i>1D</i> <b>Wire discretisation</b> with <b>Number of Segments</b>=12</li>
-  <li><i>2D</i> <b>Triangle (Mefisto)</b> with Hypothesis<b>MaxElementArea</b>=1200</li>
+  <li><i>2D</i> <b>Triangle (Mefisto)</b> with Hypothesis <b>MaxElementArea</b>=1200</li>
 </ul>
 
 The sub-meshes become concurrent if they share sub-shapes that can be
-meshed with different algorithms (or different hypothesises). In the
+meshed with different algorithms (or different hypotheses). In the
 example, we have three submeshes with concurrent algorithms, because
 they have different hypotheses.
 
@@ -289,21 +289,21 @@ visualizing in magenta the geometrical entity that causes it.
 "Mesh computation/Show a computation result notification" preference 
 to the "Never" value. This option gives the possibility to control mesh
 computation reporting. There are the following possibilities: always
-show information box, only if an error occurs or never. 
+show the information box, show only if an error occurs or never. 
 By default, the information box is always shown after mesh computation operation.
 
 <b>Publish Sub-shape</b> button publishes the sub-shape, whose meshing
-failed, in GEOM component as a child of the mesh geometry, which
+has failed, in GEOM component as a child of the mesh geometry, which
 allows analyzing the problem geometry and creating a submesh on it in
-order to locally tune hypotheses.
+order to locally tune the hypotheses.
 
-If a cause of failure is an invalid input mesh and the algorithm has
-provided information on what mesh entities are bad <b>Show bad Mesh</b> 
-button appears in the dialog. Clicked, it shows bad mesh entities in
+If the failure is caused by an invalid input mesh and the algorithm has
+found which mesh entities are bad, <b>Show bad Mesh</b> 
+button appears in the dialog. Clicked, it shows the bad mesh entities in
 the Viewer in magenta. Sometimes the shown mesh entities are too small
-or/and hidden by other mesh elements, to see them it can be helpful to
-switch the mesh to Wireframe visualization mode or to switch off
-visualization of faces and volumes (if any).
+or/and hidden by other mesh elements. They can be seen after
+switching the mesh to Wireframe visualization mode or switching off
+the visualization of faces and volumes (if any).
 
 \image html show_bad_mesh.png
 <em>Too close nodes causing meshing failure are shown in magenta using <b>Show
@@ -313,22 +313,22 @@ visualization of faces and volumes (if any).
 \anchor use_existing_anchor
 <h2>"Use existing edges" and "Use existing faces" algorithms</h2>
 
-It is possible to create an 1D or a 2D mesh in a python script
+It is possible to create a 1D or a 2D mesh in a python script
 (using <em>AddNode, AddEdge</em> and <em>AddFace</em> commands) and
 then use such sub-meshes in the construction of a 2D or a 3D mesh. For
 this, there exist two algorithms: <b>Use existing edges</b> and <b>Use
-  existing faces</b>. Scenario of their usage is following. For
-example, you want to use standard algorithms to generate 1D and 3D
+  existing faces</b>.
+For example, you want to use standard algorithms to generate 1D and 3D
 meshes and to create 2D mesh by your python code. Then you
 <ul>
-  <li> create a mesh object, assign an 1D algorithm,</li>
-  <li> invoke \b Compute command, which computes an 1D mesh,</li>
+  <li> create a mesh object, assign a 1D algorithm,</li>
+  <li> invoke \b Compute command, which computes a 1D mesh,</li>
   <li> assign <b>Use existing faces</b> and a 3D algorithm,</li>
   <li> run your python code, which creates a 2D mesh,</li>
   <li> invoke \b Compute command, which computes a 3D mesh.</li>
 </ul>
 
-Consider trying a sample script demonstrating usage of 
+Consider trying a sample script demonstrating the usage of 
 \ref tui_use_existing_faces "Use existing faces" algorithm for
 construction of a 2D mesh using Python commands.
 

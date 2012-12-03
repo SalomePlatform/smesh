@@ -126,13 +126,12 @@ Object Browser and select Clear Mesh Data in the pop-up menu.</li>
 \image html mesh_clear.png
 <em>"Clear Mesh Data" button</em></center>
 
-\note This command works different in following situations: <ul>
-  <li> if a mesh is computed on geometry, then "Clear Mesh Data" removes
+\note This command works in a different way in different situations: <ul>
+  <li> if the mesh is computed on a geometry, then "Clear Mesh Data" removes
     all elements and nodes.</li>
-  <li> if mesh is not based on geometry (imported, compound, created from
-    scratch etc), then "Clear Mesh Data" removes only elements and
-    nodes computed by algorithms, i.e. it can remove nothing.</li></ul>
-
+  <li> if the mesh is not based on a geometry (imported, compound, created from
+    scratch etc), then "Clear Mesh Data" removes only the elements and
+    nodes computed by algorithms. If no such elements or nodes have been created, can remove nothing.</li></ul>
 
 <br><b>See Also</b> a sample TUI Script of a 
 \ref tui_removing_nodes_and_elements "Removing Nodes and Elements" operation.  

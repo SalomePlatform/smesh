@@ -3,17 +3,17 @@
 \page reorient_faces_page Reorient faces by vector
 
 \n This operation allows changing orientation of a set of neighboring
-faces. The desired orientation is defined by a vector. Since direction
+faces. The desired orientation is defined by a vector. Since the direction
 of face normals in the set can be even opposite, it is necessary to
 specify a control face whose normal will be compared with the vector. This
-face can be specified either explicitly or can be found by closeness to
+face can be either specified explicitly or found by proximity to
 a given point.
 
 Orientation of a face is changed by reverting the order of its nodes.
 
 <em>To change orientation of faces:</em>
 <ol>
-<li>In the \b Modification menu select the <b>Reorient faces by
+<li>In the \b Modification menu select <b>Reorient faces by
     vector</b> item or click <em>Reorient faces by
     vector</em> button in the toolbar.
 
@@ -31,24 +31,19 @@ The following dialog box will appear:
 
 <li>In this dialog
 <ul>
-<li>Specify a way of selection of the control face: by point or
-  explicitely.</li>
-<li>Select an \b Object containing faces to reorient, either in the Object
-  Browser or in the 3D Viewer; it can be either <ul>
-    <li>group of faces,</li>
-    <li>sub-mesh of faces or</li>
-    <li>mesh.</li>
-    </ul></li>
-<li>Specify either coordinates of a \b Point by which the control face
-  will be found or the control \b Face it-self. You can easy specify the \b
-  Point by either picking a node in the 3D Viewer or by selecting a vertex
-  in the Object Browser. The \b Face can be either picked by mouse in
-  the 3D Viewer or its ID can be entered by typing.</li>
-<li>Set up a \b Direction to be compared with the normal of the
-  control face. You can either pick a node in the 3D Viewer then a \b Direction
-  from the coordinate system origin to the selected node will be set,
-  or you can pick two nodes (holding Shift button) then a \b Direction
-  from the first to the second node will be set.</li>
+<li>Specify the way of selection of the control face: by point or
+  explicitly.</li>
+<li>Select the \b Object (mesh, sub-mesh or a group of faces) containing faces to reorient in the Object Browser or in the 3D Viewer.</li>
+<li>Specify the coordinates of the \b Point by which the control face
+  will be found or of the control \b Face itself. You can easy specify the \b
+  Point by either picking a node in the 3D Viewer or selecting a vertex
+  in the Object Browser. It is possible to pick the  \b Face by mouse in
+  the 3D Viewer or enter its ID.</li>
+<li>Set up the \b Direction vector to be compared with the normal of the
+  control face. If you pick a node in the 3D Viewer then the \b Direction
+  vector will go from the coordinate system origin to the selected node.
+  If you pick two nodes (holding Shift button) then the \b Direction vector
+  will go from the first to the second node.</li>
 </ul>
 </li>
 
