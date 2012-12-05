@@ -4,7 +4,7 @@
 
 \n In MESH there is a functionality allowing importation/exportation
 of meshes from/to \b MED, \b UNV (I-DEAS 10), \b DAT (simple ascii format), \b STL,
-\b GMF and \b CGNS format files. You can also export a group as a whole mesh.
+\b GMF (internal format of DISTENE products, namely BLSurf, GHS3D and Hexotic algorithms) and \b CGNS format files. You can also export a group as a whole mesh.
 
 
 <em>To import a mesh:</em>
