@@ -28,6 +28,10 @@
         <translation>MED %1 files</translation>
     </message>
     <message>
+        <source>STL_FILES_FILTER</source>
+        <translation>STL files</translation>
+    </message>
+    <message>
         <source>STL_ASCII_FILES_FILTER</source>
         <translation>STL ASCII files</translation>
     </message>
@@ -58,6 +62,10 @@
     <message>
         <source>AREA_ELEMENTS</source>
         <translation>Area</translation>
+    </message>
+    <message>
+        <source>MIN_DIAG_ELEMENTS</source>
+        <translation>Minimum diagonal</translation>
     </message>
     <message>
         <source>ASPECTRATIO_3D_ELEMENTS</source>
@@ -155,6 +163,10 @@
     <message>
         <source>ELEMENT_ID</source>
         <translation>Element ID</translation>
+    </message>
+    <message>
+        <source>ELEMENT_IDS</source>
+        <translation>Element IDs</translation>
     </message>
     <message>
         <source>FREE_BORDERS</source>
@@ -326,11 +338,11 @@
     </message>
     <message>
         <source>MEN_IMPORT_DAT</source>
-        <translation>DAT File</translation>
+        <translation>DAT file</translation>
     </message>
     <message>
         <source>MEN_DAT</source>
-        <translation>DAT File</translation>
+        <translation>DAT file</translation>
     </message>
     <message>
         <source>MEN_DELETE</source>
@@ -367,6 +379,10 @@
     <message>
         <source>MEN_ELEMS0D</source>
         <translation>0D Elements</translation>
+    </message>
+    <message>
+        <source>MEN_0D_ON_ALL_NODES</source>
+        <translation>0D Elements on Element Nodes</translation>
     </message>
     <message>
         <source>MEN_BALL</source>
@@ -410,19 +426,19 @@
     </message>
     <message>
         <source>MEN_EXPORT_DAT</source>
-        <translation>Export to DAT File</translation>
+        <translation>Export to DAT file</translation>
     </message>
     <message>
         <source>MEN_EXPORT_MED</source>
-        <translation>Export to MED File</translation>
+        <translation>Export to MED file</translation>
     </message>
     <message>
         <source>MEN_EXPORT_CGNS</source>
-        <translation>Export to CGNS File</translation>
+        <translation>Export to CGNS file</translation>
     </message>
     <message>
         <source>MEN_EXPORT_GMF</source>
-        <translation>Export to GMF File</translation>
+        <translation>Export to GMF file</translation>
     </message>
     <message>
         <source>MEN_EXPORT_SAUV</source>
@@ -430,11 +446,11 @@
     </message>
     <message>
         <source>MEN_EXPORT_STL</source>
-        <translation>Export to STL File</translation>
+        <translation>Export to STL file</translation>
     </message>
     <message>
         <source>MEN_EXPORT_UNV</source>
-        <translation>Export to UNV File</translation>
+        <translation>Export to UNV file</translation>
     </message>
     <message>
         <source>MEN_EXTRUSION</source>
@@ -906,11 +922,11 @@
     </message>
     <message>
         <source>MEN_IMPORT_STL</source>
-        <translation>STL File</translation>
+        <translation>STL file</translation>
     </message>
     <message>
         <source>MEN_STL</source>
-        <translation>STL File</translation>
+        <translation>STL file</translation>
     </message>
     <message>
         <source>MEN_SYM</source>
@@ -966,11 +982,11 @@
     </message>
     <message>
         <source>MEN_IMPORT_UNV</source>
-        <translation>UNV File</translation>
+        <translation>UNV file</translation>
     </message>
     <message>
         <source>MEN_UNV</source>
-        <translation>UNV File</translation>
+        <translation>UNV file</translation>
     </message>
     <message>
         <source>MEN_UN_GROUP</source>
@@ -1070,6 +1086,10 @@ Do you want to convert it to the standalone group?</translation>
     <message>
         <source>NODE_ID</source>
         <translation>Node ID</translation>
+    </message>
+    <message>
+        <source>NODE_IDS</source>
+        <translation>Node IDs</translation>
     </message>
     <message>
         <source>NON_SMESH_OBJECTS_SELECTED</source>
@@ -1252,6 +1272,10 @@ Please enter correct values and try again</translation>
     <message>
         <source>SMESH_AUTO_GROUPS</source>
         <translation>Automatically create groups</translation>
+    </message>
+    <message>
+        <source>SMESH_REQUIRED_GROUPS</source>
+        <translation>Create groups of required entities</translation>
     </message>
     <message>
         <source>SMESH_AVAILABLE</source>
@@ -2431,7 +2455,11 @@ Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>SMESH_SELECT_WHOLE_MESH</source>
-        <translation>Select whole mesh, submesh or group</translation>
+        <translation>Select whole mesh, sub-mesh or group</translation>
+    </message>
+    <message>
+        <source>SMESH_SUBMESH_GROUP</source>
+        <translation>Mesh, sub-mesh, group</translation>
     </message>
     <message>
         <source>SMESH_SET_COLOR</source>
@@ -2824,6 +2852,10 @@ Please check preferences of Mesh module.
     <message>
         <source>STB_ELEM0D</source>
         <translation>0D Element</translation>
+    </message>
+    <message>
+        <source>STB_0D_ON_ALL_NODES</source>
+        <translation>Make 0D Elements on Element Nodes</translation>
     </message>
     <message>
         <source>STB_ELEMS0D</source>
@@ -3434,6 +3466,10 @@ Please check preferences of Mesh module.
         <translation>Display entity</translation>
     </message>
     <message>
+        <source>TOP_0D_ON_ALL_NODES</source>
+        <translation>Make 0D Elements on Element Nodes</translation>
+    </message>
+    <message>
         <source>TOP_ELEM0D</source>
         <translation>0D Element</translation>
     </message>
@@ -4010,10 +4046,18 @@ It can&apos;t be deleted </translation>
     </message>
 </context>
 <context>
-    <name>SMESHGUI_GroupDlg</name>
+    <name>SMESHGUI_Dialog</name>
     <message>
-        <source>ALLOW_ELEM_LIST_MODIF</source>
-        <translation>Enable manual edition</translation>
+        <source>DLG_MESH</source>
+        <translation>meshes</translation>
+    </message>
+    <message>
+        <source>DLG_HYPO</source>
+        <translation>hypotheses</translation>
+    </message>
+    <message>
+        <source>DLG_ALGO</source>
+        <translation>algorithms</translation>
     </message>
 </context>
 <context>
@@ -4322,6 +4366,35 @@ Please, create VTK viewer and try again</translation>
     <message>
         <source>PREF_PREVIEW_CHUNK_SIZE</source>
         <translation>Sub-shapes preview chunk size</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_GroupDlg</name>
+    <message>
+        <source>ALLOW_ELEM_LIST_MODIF</source>
+        <translation>Enable manual edition</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_Add0DElemsOnAllNodesDlg</name>
+    <message>
+        <source>CAPTION</source>
+        <translation>Make 0D Elements on Element Nodes</translation>
+    </message>
+    <message>
+        <source>OBJ_BTN</source>
+        <translation>Mesh, sub-mesh, group</translation>
+    </message>
+    <message>
+        <source>NB_NEW_0D</source>
+        <translation>%1 0D elements created</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_Add0DElemsOnAllNodesOp</name>
+    <message>
+        <source>NB_NEW_0D</source>
+        <translation>%1 0D elements created</translation>
     </message>
 </context>
 <context>
@@ -4824,6 +4897,14 @@ Please select valid object and try again</translation>
         <translation>Filter for Nodes</translation>
     </message>
     <message>
+        <source>ELEM0D_TLT</source>
+        <translation>Filter for 0D Elements</translation>
+    </message>
+    <message>
+        <source>BALL_TLT</source>
+        <translation>Filter for Balls</translation>
+    </message>
+    <message>
         <source>SELECTION</source>
         <translation>Initial Selection</translation>
     </message>
@@ -5094,6 +5175,10 @@ Please check input data and try again</translation>
     <message>
         <source>BALLS</source>
         <translation>Balls</translation>
+    </message>
+    <message>
+        <source>ELEM0D</source>
+        <translation>0D Elements</translation>
     </message>
     <message>
         <source>EDGES</source>

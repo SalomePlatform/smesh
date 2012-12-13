@@ -21,7 +21,7 @@
 //
 
 //  SMESH SMESH_OctreeNode : Octree with Nodes set
-//  inherites global class SMESH_Octree
+//  inherites class SMESH_Octree
 //  File      : SMESH_OctreeNode.cxx
 //  Created   : Tue Jan 16 16:00:00 2007
 //  Author    : Nicolas Geimer & Aurelien Motteux (OCC)
@@ -43,11 +43,11 @@ using namespace std;
  * \param minBoxSize - Minimal size of the Octree Box
  */
 //================================================================
+
 SMESH_OctreeNode::SMESH_OctreeNode (const TIDSortedNodeSet & theNodes, const int maxLevel,
                                     const int maxNbNodes , const double minBoxSize )
-  :SMESH_Octree( new SMESH_Octree::Limit( maxLevel,minBoxSize)),
-  myMaxNbNodes(maxNbNodes),
-  myNodes(theNodes)
+  :SMESH_Octree( new Limit( maxLevel,minBoxSize,maxNbNodes)),
+   myNodes(theNodes)
 {
   compute();
 }
@@ -58,9 +58,19 @@ SMESH_OctreeNode::SMESH_OctreeNode (const TIDSortedNodeSet & theNodes, const int
  */
 //================================================================================
 
-SMESH_OctreeNode::SMESH_OctreeNode (int maxNbNodes):
-  SMESH_Octree(), myMaxNbNodes(maxNbNodes)
+SMESH_OctreeNode::SMESH_OctreeNode ():SMESH_Octree()
 {
+}
+
+//================================================================================
+/*!
+ * \brief Return max number of nodes in a tree leaf
+ */
+//================================================================================
+
+int SMESH_OctreeNode::getMaxNbNodes() const
+{
+  return ((Limit*)myLimit)->myMaxNbNodes;
 }
 
 //==================================================================================
@@ -69,9 +79,9 @@ SMESH_OctreeNode::SMESH_OctreeNode (int maxNbNodes):
  */
 //==================================================================================
 
-SMESH_Octree* SMESH_OctreeNode::allocateOctreeChild() const
+SMESH_Octree* SMESH_OctreeNode::newChild() const
 {
-  return new SMESH_OctreeNode(myMaxNbNodes);
+  return new SMESH_OctreeNode();
 }
 
 //======================================
@@ -91,7 +101,7 @@ Bnd_B3d* SMESH_OctreeNode::buildRootBox()
     gp_XYZ p1( n1->X(), n1->Y(), n1->Z() );
     box->Add(p1);
   }
-  if ( myNodes.size() <= myMaxNbNodes )
+  if ( myNodes.size() <= getMaxNbNodes() )
     myIsLeaf = true;
 
   return box;
@@ -109,8 +119,8 @@ Bnd_B3d* SMESH_OctreeNode::buildRootBox()
 const bool SMESH_OctreeNode::isInside (const gp_XYZ& p, const double precision)
 {
   if (precision <= 0.)
-    return !(getBox().IsOut(p));
-  Bnd_B3d BoxWithPrecision = getBox();
+    return !(getBox()->IsOut(p));
+  Bnd_B3d BoxWithPrecision = *getBox();
   BoxWithPrecision.Enlarge(precision);
   return ! BoxWithPrecision.IsOut(p);
 }
@@ -123,8 +133,8 @@ const bool SMESH_OctreeNode::isInside (const gp_XYZ& p, const double precision)
 //================================================
 void SMESH_OctreeNode::buildChildrenData()
 {
-  gp_XYZ min = getBox().CornerMin();
-  gp_XYZ max = getBox().CornerMax();
+  gp_XYZ min = getBox()->CornerMin();
+  gp_XYZ max = getBox()->CornerMax();
   gp_XYZ mid = (min + max)/2.;
 
   TIDSortedNodeSet::iterator it = myNodes.begin();
@@ -140,7 +150,7 @@ void SMESH_OctreeNode::buildChildrenData()
   for (int i = 0; i < 8; i++)
   {
     SMESH_OctreeNode* myChild = dynamic_cast<SMESH_OctreeNode*> (myChildren[i]);
-    if ( myChild->myNodes.size() <= myMaxNbNodes )
+    if ( myChild->myNodes.size() <= getMaxNbNodes() )
       myChild->myIsLeaf = true;
   }
 }
@@ -200,7 +210,7 @@ bool SMESH_OctreeNode::NodesAround(const gp_XYZ &node,
     if (!isLeaf())
     {
       // first check a child containing node
-      gp_XYZ mid = (getBox().CornerMin() + getBox().CornerMax()) / 2.;
+      gp_XYZ mid = (getBox()->CornerMin() + getBox()->CornerMax()) / 2.;
       int nodeChild  = getChildIndex( node.X(), node.Y(), node.Z(), mid );
       if ( ((SMESH_OctreeNode*) myChildren[nodeChild])->NodesAround(node, dist2Nodes, precision))
         return true;
@@ -401,7 +411,7 @@ void SMESH_OctreeNode::UpdateByMoveNode( const SMDS_MeshNode* node, const gp_Pnt
   }
   else if ( myChildren )
   {
-    gp_XYZ mid = (getBox().CornerMin() + getBox().CornerMax()) / 2.;
+    gp_XYZ mid = (getBox()->CornerMin() + getBox()->CornerMax()) / 2.;
     int nodeChild  = getChildIndex( node->X(), node->Y(), node->Z(), mid );
     int pointChild = getChildIndex( toPnt.X(), toPnt.Y(), toPnt.Z(), mid );
     if ( nodeChild != pointChild )
@@ -420,7 +430,7 @@ void SMESH_OctreeNode::UpdateByMoveNode( const SMDS_MeshNode* node, const gp_Pnt
 SMESH_OctreeNodeIteratorPtr SMESH_OctreeNode::GetChildrenIterator()
 {
   return SMESH_OctreeNodeIteratorPtr
-    ( new SMDS_SetIterator< SMESH_OctreeNode*, SMESH_Octree** >
+    ( new SMDS_SetIterator< SMESH_OctreeNode*, TBaseTree** >
       ( myChildren, (( isLeaf() || !myChildren ) ? myChildren : &myChildren[ 8 ] )));
 }
 

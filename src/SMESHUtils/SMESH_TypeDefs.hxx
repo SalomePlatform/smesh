@@ -119,6 +119,28 @@ struct SMESH_TNodeXYZ : public gp_XYZ
   bool operator==(const SMESH_TNodeXYZ& other) const { return _node == other._node; }
 };
 
+//--------------------------------------------------
+/*!
+ * \brief Data of a node generated on FACE boundary
+ */
+//--------------------------------------------------
+typedef struct uvPtStruct
+{
+  double param;
+  double normParam;
+  double u, v; // original 2d parameter
+  double x, y; // 2d parameter, normalized [0,1]
+  const SMDS_MeshNode * node;
+
+  struct NodeAccessor // accessor to iterate on nodes in UVPtStructVec
+  {
+    static const SMDS_MeshNode* value(std::vector< uvPtStruct >::const_iterator it)
+    { return it->node; }
+  };
+} UVPtStruct;
+
+typedef std::vector< UVPtStruct > UVPtStructVec;
+
 // --------------------------------------------------------------------------------
 // class SMESH_SequenceOfElemPtr
 #include <NCollection_DefineSequence.hxx>

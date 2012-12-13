@@ -176,7 +176,7 @@ void SMESHGUI_DeleteGroupDlg::Init ()
   connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(onClose()));
 
   // set selection mode
-  mySelectionMgr->installFilter(new SMESH_TypeFilter(GROUP));
+  mySelectionMgr->installFilter(new SMESH_TypeFilter(SMESH::GROUP));
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);
   onSelectionDone();
@@ -210,7 +210,7 @@ bool SMESHGUI_DeleteGroupDlg::onApply()
 
   QList<SMESH::SMESH_GroupBase_var>::iterator anIter;
   for (anIter = myListGrp.begin(); anIter != myListGrp.end(); ++anIter) {
-    SMESH::SMESH_Mesh_ptr aMesh = (*anIter)->GetMesh();
+    SMESH::SMESH_Mesh_var aMesh = (*anIter)->GetMesh();
     if (!aMesh->_is_nil())
       aMesh->RemoveGroupWithContents(*anIter);
   }
@@ -218,6 +218,12 @@ bool SMESHGUI_DeleteGroupDlg::onApply()
   myListBox->clear();
   myListGrp.clear();
   mySelectionMgr->clearSelected();
+
+  /** Erase graphical objects **/
+  SALOME_ListIteratorOfListIO anIterIO (myListGrpIO);
+  for ( ; anIterIO.More(); anIterIO.Next())
+    SMESH::RemoveVisualObjectWithActors( anIterIO.Value()->getEntry(), /*fromAllViews=*/true );
+
   SMESH::UpdateView();
   SMESHGUI::Modified();
   mySMESHGUI->updateObjBrowser(true);
@@ -285,6 +291,7 @@ void SMESHGUI_DeleteGroupDlg::onSelectionDone()
     return;
 
   myListGrp.clear();
+  myListGrpIO.Clear();
   QStringList aNames;
 
   SALOME_ListIO aListIO;
@@ -296,6 +303,7 @@ void SMESHGUI_DeleteGroupDlg::onSelectionDone()
     if (!aGroup->_is_nil()) {
       aNames.append(aGroup->GetName());
       myListGrp.append(aGroup);
+      myListGrpIO.Append( anIter.Value() );
     }
   }
 
@@ -323,7 +331,7 @@ void SMESHGUI_DeleteGroupDlg::enterEvent (QEvent*)
   setEnabled(true);
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);
-  mySelectionMgr->installFilter(new SMESH_TypeFilter (GROUP));
+  mySelectionMgr->installFilter(new SMESH_TypeFilter (SMESH::GROUP));
 }
 
 //=================================================================================

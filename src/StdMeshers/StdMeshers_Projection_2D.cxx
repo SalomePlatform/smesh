@@ -794,8 +794,18 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   if ( !TAssocTool::FindSubShapeAssociation( tgtFace, tgtMesh, srcShape, srcMesh,
                                              shape2ShapeMap)  ||
        !shape2ShapeMap.IsBound( tgtFace ))
+  {
+    if ( srcShape.ShapeType() == TopAbs_FACE )
+    {
+      int nbE1 = TAssocTool::Count( tgtFace, TopAbs_EDGE, /*ignoreSame=*/true );
+      int nbE2 = TAssocTool::Count( srcShape, TopAbs_EDGE, /*ignoreSame=*/true );
+      if ( nbE1 != nbE2 )
+        return error(COMPERR_BAD_SHAPE,
+                     SMESH_Comment("Different number of edges in source and target faces: ")
+                     << nbE2 << " and " << nbE1 );
+    }
     return error(COMPERR_BAD_SHAPE,"Topology of source and target faces seems different" );
-
+  }
   TopoDS_Face srcFace = TopoDS::Face( shape2ShapeMap( tgtFace ).Oriented(TopAbs_FORWARD));
 
   // ----------------------------------------------

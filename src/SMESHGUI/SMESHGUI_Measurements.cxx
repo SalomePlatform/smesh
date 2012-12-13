@@ -190,8 +190,8 @@ SMESHGUI_MinDistance::SMESHGUI_MinDistance( QWidget* parent )
   connect( mySecondTgt, SIGNAL( textEdited( QString ) ), this, SLOT( secondEdited() ) );
 
   QList<SUIT_SelectionFilter*> filters;
-  filters.append( new SMESH_TypeFilter( MESHorSUBMESH ) );
-  filters.append( new SMESH_TypeFilter( GROUP ) );
+  filters.append( new SMESH_TypeFilter( SMESH::MESHorSUBMESH ) );
+  filters.append( new SMESH_TypeFilter( SMESH::GROUP ) );
   myFilter = new SMESH_LogicalFilter( filters, SMESH_LogicalFilter::LO_OR );
 
   mySecondTgt->setEnabled( mySecond->checkedId() != OriginTgt );
@@ -706,8 +706,8 @@ SMESHGUI_BoundingBox::SMESHGUI_BoundingBox( QWidget* parent )
   connect( mySource,     SIGNAL( textEdited( QString ) ), this, SLOT( sourceEdited() ) );
 
   QList<SUIT_SelectionFilter*> filters;
-  filters.append( new SMESH_TypeFilter( MESHorSUBMESH ) );
-  filters.append( new SMESH_TypeFilter( GROUP ) );
+  filters.append( new SMESH_TypeFilter( SMESH::MESHorSUBMESH ) );
+  filters.append( new SMESH_TypeFilter( SMESH::GROUP ) );
   myFilter = new SMESH_LogicalFilter( filters, SMESH_LogicalFilter::LO_OR );
 
   clear();

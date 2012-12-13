@@ -551,7 +551,7 @@ int SMESHGUI_Selection::type( const QString& entry, _PTR(Study) study )
     return -1;
 
   if( objComponent->GetIOR()==obj->GetIOR() )
-    return COMPONENT;
+    return SMESH::COMPONENT;
 
   int aLevel = obj->Depth() - objComponent->Depth(),
       aFTag = objFather->Tag(),
@@ -562,16 +562,16 @@ int SMESHGUI_Selection::type( const QString& entry, _PTR(Study) study )
   {
   case 1:
     if (anOTag >= SMESH::Tag_FirstMeshRoot)
-      res = MESH;
+      res = SMESH::MESH;
     break;
   case 2:
     switch (aFTag)
     {
     case SMESH::Tag_HypothesisRoot:
-      res = HYPOTHESIS;
+      res = SMESH::HYPOTHESIS;
       break;
     case SMESH::Tag_AlgorithmsRoot:
-      res = ALGORITHM;
+      res = SMESH::ALGORITHM;
       break;
     }
     break;
@@ -579,25 +579,25 @@ int SMESHGUI_Selection::type( const QString& entry, _PTR(Study) study )
     switch (aFTag)
     {
     case SMESH::Tag_SubMeshOnVertex:
-      res = SUBMESH_VERTEX;
+      res = SMESH::SUBMESH_VERTEX;
       break;
     case SMESH::Tag_SubMeshOnEdge:
-      res = SUBMESH_EDGE;
+      res = SMESH::SUBMESH_EDGE;
       break;
     case SMESH::Tag_SubMeshOnFace:
-      res = SUBMESH_FACE;
+      res = SMESH::SUBMESH_FACE;
       break;
     case SMESH::Tag_SubMeshOnSolid:
-      res = SUBMESH_SOLID;
+      res = SMESH::SUBMESH_SOLID;
       break;
     case SMESH::Tag_SubMeshOnCompound:
-      res = SUBMESH_COMPOUND;
+      res = SMESH::SUBMESH_COMPOUND;
       break;
     default:
       if (aFTag >= SMESH::Tag_FirstGroup)
-        res = GROUP;
+        res = SMESH::GROUP;
       else
-        res = SUBMESH;
+        res = SMESH::SUBMESH;
     }
     break;
   }
@@ -614,29 +614,29 @@ QString SMESHGUI_Selection::typeName( const int t )
 {
   switch( t )
   {
-  case HYPOTHESIS:
+  case SMESH::HYPOTHESIS:
     return "Hypothesis";
-  case ALGORITHM:
+  case SMESH::ALGORITHM:
     return "Algorithm";
-  case MESH:
+  case SMESH::MESH:
     return "Mesh";
-  case SUBMESH:
+  case SMESH::SUBMESH:
     return "SubMesh";
-  case MESHorSUBMESH:
+  case SMESH::MESHorSUBMESH:
     return "Mesh or submesh";
-  case SUBMESH_VERTEX:
+  case SMESH::SUBMESH_VERTEX:
     return "Mesh vertex";
-  case SUBMESH_EDGE:
+  case SMESH::SUBMESH_EDGE:
     return "Mesh edge";
-  case SUBMESH_FACE:
+  case SMESH::SUBMESH_FACE:
     return "Mesh face";
-  case SUBMESH_SOLID:
+  case SMESH::SUBMESH_SOLID:
     return "Mesh solid";
-  case SUBMESH_COMPOUND:
+  case SMESH::SUBMESH_COMPOUND:
     return "Mesh compound";
-  case GROUP:
+  case SMESH::GROUP:
     return "Group";
-  case COMPONENT:
+  case SMESH::COMPONENT:
     return "Component";
   default:
     return "Unknown";

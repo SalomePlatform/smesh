@@ -198,7 +198,8 @@ public:
   int ImportSTLFile( const char* theFileName )
     throw (SALOME::SALOME_Exception);
 
-  SMESH::ComputeError* ImportGMFFile( const char* theFileName )
+  SMESH::ComputeError* ImportGMFFile( const char* theFileName,
+                                      bool        theMakeRequiredGroups)
     throw (SALOME::SALOME_Exception);
 
   /*!
@@ -249,7 +250,8 @@ public:
                   const char*               file,
                   CORBA::Boolean            overwrite) throw (SALOME::SALOME_Exception);
   void ExportGMF(SMESH::SMESH_IDSource_ptr meshPart,
-                 const char*               file) throw (SALOME::SALOME_Exception);
+                 const char*               file,
+                 CORBA::Boolean            withRequiredGroups) throw (SALOME::SALOME_Exception);
 
   void ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
                        const char*               file,

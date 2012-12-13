@@ -18,11 +18,11 @@ different meshing parameters than the whole mesh.
 
 Several created meshes can be \subpage building_compounds_page "combined into another mesh".
 
-The whole mesh or it's part can be \subpage copy_mesh_page "copied" into another mesh.
+The whole mesh or its part can be \subpage copy_mesh_page "copied" into another mesh.
 
 Meshing parameters of meshes and sub-meshes can be 
-\subpage editing_meshes_page "edited", then only a path of mesh
-depending on changed parameters will be re-computed.
+\subpage editing_meshes_page "edited", then only the mesh part
+depending on the changed parameters will be re-computed.
 
 Meshes can be edited using the MESH functions destined for 
 \ref modifying_meshes_page "modification" of generated meshes.

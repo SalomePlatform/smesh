@@ -149,6 +149,17 @@ SMESHDS_SubMesh * SMESH_subMesh::GetSubMeshDS()
  */
 //=============================================================================
 
+const SMESHDS_SubMesh * SMESH_subMesh::GetSubMeshDS() const
+{
+  return ((SMESH_subMesh*) this )->GetSubMeshDS();
+}
+
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
+
 SMESHDS_SubMesh* SMESH_subMesh::CreateSubMeshDS()
 {
   if ( !GetSubMeshDS() ) {
@@ -1122,7 +1133,7 @@ bool SMESH_subMesh::IsConform(const SMESH_Algo* theAlgo)
  */
 //=============================================================================
 
-void SMESH_subMesh::setAlgoState(int state)
+void SMESH_subMesh::setAlgoState(algo_state state)
 {
   _algoState = state;
 }
@@ -1258,7 +1269,19 @@ static void cleanSubMesh( SMESH_subMesh * subMesh )
 
 bool SMESH_subMesh::ComputeStateEngine(int event)
 {
-  _computeError.reset();
+  switch ( event ) {
+  case MODIF_ALGO_STATE:
+  case COMPUTE:
+    //case COMPUTE_CANCELED:
+  case CLEAN:
+    //case SUBMESH_COMPUTED:
+    //case SUBMESH_RESTORED:
+    //case SUBMESH_LOADED:
+    //case MESH_ENTITY_REMOVED:
+    //case CHECK_COMPUTE_STATE:
+    _computeError.reset(); break;
+  default:;
+  }
 
   //MESSAGE("SMESH_subMesh::ComputeStateEngine");
   //SCRUTE(_computeState);
@@ -2066,7 +2089,8 @@ void SMESH_subMesh::SetEventListener(EventListener*     listener,
  */
 //================================================================================
 
-void SMESH_subMesh::setEventListener(EventListener* listener, EventListenerData* data)
+void SMESH_subMesh::setEventListener(EventListener*     listener,
+                                     EventListenerData* data)
 {
   map< EventListener*, EventListenerData* >::iterator l_d =
     _eventListeners.find( listener );
@@ -2076,8 +2100,21 @@ void SMESH_subMesh::setEventListener(EventListener* listener, EventListenerData*
       delete curData;
     l_d->second = data;
   }
-  else 
+  else
+  {
+    for ( l_d = _eventListeners.begin(); l_d != _eventListeners.end(); ++l_d )
+      if ( listener->GetName() == l_d->first->GetName() )
+      {
+        EventListenerData* curData = l_d->second;
+        if ( curData && curData != data && curData->IsDeletable() )
+          delete curData;
+        if ( l_d->first->IsDeletable() )
+          delete l_d->first;
+        _eventListeners.erase( l_d );
+        break;
+      }
     _eventListeners.insert( make_pair( listener, data ));
+  }
 }
 
 //================================================================================
@@ -2128,16 +2165,18 @@ void SMESH_subMesh::notifyListenersOnEvent( const int         event,
                                             SMESH_Hypothesis* hyp)
 {
   map< EventListener*, EventListenerData* >::iterator l_d = _eventListeners.begin();
-  for ( ; l_d != _eventListeners.end(); ++l_d )
+  for ( ; l_d != _eventListeners.end();  )
   {
-    std::pair< EventListener*, EventListenerData* > li_da = *l_d; /* copy to enable removal
-                                                                     of a listener from
-                                                                     _eventListeners by
-                                                                     its ProcessEvent() */
+    std::pair< EventListener*, EventListenerData* > li_da = *l_d++; /* copy to enable removal
+                                                                       of a listener from
+                                                                       _eventListeners by
+                                                                       its ProcessEvent() */
     if ( li_da.first->myBusySM.insert( this ).second )
     {
+      const size_t nbListenersBefore = _eventListeners.size();
       li_da.first->ProcessEvent( event, eventType, this, li_da.second, hyp );
-      li_da.first->myBusySM.erase( this );
+      if ( nbListenersBefore == _eventListeners.size() )
+        li_da.first->myBusySM.erase( this ); // a listener hopefully not removed
     }
   }
 }
@@ -2164,6 +2203,9 @@ void SMESH_subMesh::DeleteEventListener(EventListener* listener)
       delete l_d->second;
     }
     _eventListeners.erase( l_d );
+
+    if ( l_d->first && !l_d->first->IsDeletable() )
+      l_d->first->myBusySM.erase( this );
   }
 }
 

@@ -26,7 +26,9 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 salomeinclude_HEADERS = \
 	SMESH_Block.hxx \
 	SMESH_TypeDefs.hxx \
+	SMESH_Tree.hxx \
 	SMESH_Octree.hxx \
+	SMESH_Quadtree.hxx \
 	SMESH_OctreeNode.hxx \
 	SMESH_Comment.hxx \
 	SMESH_ComputeError.hxx \
@@ -39,6 +41,7 @@ lib_LTLIBRARIES = libSMESHUtils.la
 
 dist_libSMESHUtils_la_SOURCES = \
 	SMESH_Block.cxx \
+	SMESH_Quadtree.cxx \
 	SMESH_Octree.cxx \
 	SMESH_OctreeNode.cxx \
 	SMESH_File.cxx

@@ -249,7 +249,7 @@ void SMESHGUI_DuplicateNodesDlg::Init()
   myGroups3.clear();
   
   // Set selection mode
-  mySelectionMgr->installFilter(new SMESH_TypeFilter(GROUP));
+  mySelectionMgr->installFilter(new SMESH_TypeFilter(SMESH::GROUP));
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);
   
@@ -571,7 +571,7 @@ void SMESHGUI_DuplicateNodesDlg::enterEvent (QEvent*)
     // Set selection mode
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
       aViewWindow->SetSelectionMode(ActorSelection);
-    mySelectionMgr->installFilter(new SMESH_TypeFilter (GROUP));
+    mySelectionMgr->installFilter(new SMESH_TypeFilter (SMESH::GROUP));
   }
 }
 

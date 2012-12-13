@@ -31,10 +31,24 @@ def getRootDir():
 
 def getTestDataDir():
     '''
-    This function gives the absolute path to the directory containing
-    the data files for test (realistic med files).
+    This function gives the absolute path to the SMESH directory
+    containing the data files for the padder plugin test (realistic
+    med files).
     '''
-    datadir=os.path.join(getRootDir(),"share/salome/resources/smesh/padderexe")
+    datadir = os.path.join(getRootDir(),"share/salome/resources/smesh/padderdata")
+    return datadir
+
+def getTestPadderDataDir():
+    """
+    This function gives the absolute path to the PADDER directory
+    containing the data files for the padder plugin test. WARNING:
+    this directory is a directory of the external program SpherePadder
+    that is wrapped by the padder plugin. We use the shell variable
+    PADDERHOME (defined by the SALOME environment) to localize this
+    folder. 
+    """
+    PADDERHOME = os.environ['PADDERHOME']
+    datadir = os.path.join(PADDERHOME,"tests")
     return datadir
 
 import MESHJOB # to get the enum constant values

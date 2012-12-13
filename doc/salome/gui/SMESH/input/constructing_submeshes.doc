@@ -18,7 +18,9 @@ while the box is a 3D object.  <br>
  will be used. This means that an edge shared by two faces each having
  its own different sub-mesh, will be meshed using algorithms and
  hypotheses of any of the two, chosen randomly. This indeterminacy can
- be fixed by defining \ref submesh_order_anchor "Sub-mesh priority".
+ be fixed by defining \ref submesh_order_anchor "Sub-mesh priority". The
+ default sub-meshes priority is such that multi-dimensional algorithms
+ are processed first.
 <br>
 
 \n Construction of a sub-mesh consists of:
@@ -54,30 +56,32 @@ sub-mesh. You can define algorithms and hypotheses in the same way as
 in \ref constructing_meshes_page "Create mesh" menu.
 
 \par
-If the parent mesh is already computed, then you can define 
+If the parent mesh is already computed, then you can define the
 \b Geometry by picking mesh elements computed on a sub-shape of interest
-in the 3D Viewer, i.e. you don't have to extract this sub-shape
-previously in Geometry module. To start element selection, press \a
+in the 3D Viewer, i.e. you do not have to extract this sub-shape
+in Geometry module beforehand. To start element selection, press \a
 Selection button to the right of \b Geometry label. If this button is
 already down, then click it to release and then click it again. The
-following pop-up menu to choose a way of geometry definition will
+following pop-up menu allowing to choose a way of geometry definition will
 appear.
 
 \par
 \image html choose_geom_selection_way.png
 
 \par
-There the first item enables selecting the sub-shape in the Object
-Browser, the second one makes appear the following dialog.
+<b>Direct geometry selection</b> enables selecting the sub-shape in the Object
+Browser.
+<b>Find geometry by mesh element selection</b> activates the following dialog.
 
 \par
 \image html find_geom_by_mesh_elem.png
 
 \par
 In this dialog, <b> Element Type </b> defines kind of element to pick in the
-Viewer. Instead of picking an element in the Viewer, you can type its
-ID in <b> Element ID</b> field. <b> Geometry name </b> allow you
-define a name of the sub-shape with which it will be published in the Study.
+Viewer. 
+Instead of picking an element in the Viewer, you can type its
+ID in <b> Element ID</b> field. 
+<b> Geometry name </b> field allows defining a name of the sub-shape.
 
 
 \par

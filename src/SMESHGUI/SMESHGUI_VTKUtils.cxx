@@ -610,16 +610,16 @@ namespace SMESH
         SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SMESH::SObjectToObject( aSObj ));
         if(!CORBA::is_nil(aGroup) && anActor)
         {
-	  QColor c;
-	  int deltaF, deltaV;
-	  SMESH::GetColor( "SMESH", "fill_color", c, deltaF, "0,170,255|-100"  );
-	  SMESH::GetColor( "SMESH", "volume_color", c, deltaV, "255,0,170|-100"  );
-	  SMESH::GetColor( "SMESH", "default_grp_color", c );
+          QColor c;
+          int deltaF, deltaV;
+          SMESH::GetColor( "SMESH", "fill_color", c, deltaF, "0,170,255|-100"  );
+          SMESH::GetColor( "SMESH", "volume_color", c, deltaV, "255,0,170|-100"  );
+          SMESH::GetColor( "SMESH", "default_grp_color", c );
           SALOMEDS::Color aColor = aGroup->GetColor();
           if( !( aColor.R > 0 || aColor.G > 0 || aColor.B > 0 ))
           {
-	    aColor.R = c.redF();
-	    aColor.G = c.greenF();
+            aColor.R = c.redF();
+            aColor.G = c.greenF();
             aColor.B = c.blueF();
             aGroup->SetColor( aColor );
           }

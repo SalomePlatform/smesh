@@ -72,7 +72,7 @@ StdMeshersGUI_ObjectReferenceParamWdg::StdMeshersGUI_ObjectReferenceParamWdg
 //================================================================================
 
 StdMeshersGUI_ObjectReferenceParamWdg::StdMeshersGUI_ObjectReferenceParamWdg
-( MeshObjectType objType, QWidget* parent, bool multiSelection )
+( SMESH::MeshObjectType objType, QWidget* parent, bool multiSelection )
   : QWidget( parent ), myMultiSelection( multiSelection )
 {
   myFilter = new SMESH_TypeFilter( objType );

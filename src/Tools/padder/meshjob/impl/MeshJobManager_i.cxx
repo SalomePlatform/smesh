@@ -67,6 +67,21 @@ static bool myStartsWith(const std::string& text,const std::string& token){
   return (text.compare(0, token.length(), token) == 0);
 }
 
+/*!
+ * This function returns true if the file exists on the local file
+ * system.
+ */
+#include <iostream>
+#include <fstream>
+static bool fexists(const char *filename)
+{
+  std::ifstream ifile(filename);
+  if ((bool)ifile && ifile.good()) {
+    return true;
+  }
+  return false;
+}
+
 //
 // ====================================================================
 // Constructor/Destructor
@@ -94,6 +109,8 @@ MeshJobManager_i::MeshJobManager_i(CORBA::ORB_ptr orb,
     LOG("The SALOME resource manager can't be reached ==> STOP");
     throw KERNEL::createSalomeException("The SALOME resource manager can't be reached");
   }
+
+  _lastErrorMessage = "";
 }
 
 MeshJobManager_i::~MeshJobManager_i() {
@@ -132,7 +149,16 @@ static std::string REMOTE_WORKDIR("/tmp/spadder.remote.workdir."+USER);
  * input data (list of filenames and groupnames) and returns the path
  * of the created file. This function is the one that knows the format
  * of the padder input file. If the input file format changes, then
- * this function (and only this one) should be updated.
+ * this function (and only this one) should be updated. The file
+ * format is the following ([] means that the variable is optional):
+ *
+ * [<concreteMeshFile>   <concreteGroupName>]
+ * nbSteelBarMeshes <N>
+ * <steelBarMeshFile_1>   <steelBarGroupName_1>
+ * <steelBarMeshFile_2>   <steelBarGroupName_2>
+ * ...
+ * <steelBarMeshFile_N>   <steelBarGroupName_N>
+ * <outputMedFile>
  */
 const char * MeshJobManager_i::_writeDataFile(std::vector<MESHJOB::MeshJobParameter> listConcreteMesh,
                                               std::vector<MESHJOB::MeshJobParameter> listSteelBarMesh) {
@@ -145,27 +171,29 @@ const char * MeshJobManager_i::_writeDataFile(std::vector<MESHJOB::MeshJobParame
   // Make it static so that it's allocated once (constant name)
   static std::string * dataFilename = new std::string(LOCAL_INPUTDIR+"/"+DATAFILE);
   std::ofstream dataFile(dataFilename->c_str());
-  
-  // We first specify the concrete mesh data (filename and groupname)
+
+  // Note that we use here the basename of the files because the files
+  // are supposed to be copied in the REMOTE_WORKDIR for execution.
   std::string line;
+
+  // We first specify the concrete mesh data (filename and groupname)
+  if ( listConcreteMesh.size() > 0 ) {
 #ifdef WIN32
-  char fname[ _MAX_FNAME ];
-  _splitpath( listConcreteMesh[0].file_name, NULL, NULL, fname, NULL );
-  char* bname = &fname[0];
+    char fname[ _MAX_FNAME ];
+    _splitpath( listConcreteMesh[0].file_name, NULL, NULL, fname, NULL );
+    char* bname = &fname[0];
 #else
-  char* bname = basename(listConcreteMesh[0].file_name);
+    char* bname = basename(listConcreteMesh[0].file_name);
 #endif
-  line = std::string(bname) + " " + std::string(listConcreteMesh[0].group_name);
-  dataFile << line.c_str() << std::endl;
-  // Note that we use here the basename because the files are supposed
-  // to be copied in the REMOTE_WORKDIR for execution.
-  
-  // The, we can specify the steelbar mesh data, starting by the
+    line = std::string(bname) + " " + std::string(listConcreteMesh[0].group_name);
+    dataFile << line.c_str() << std::endl;
+  }
+  // Then, we can specify the steelbar mesh data, starting by the
   // number of meshes
-  int nbSteelBarMesh=listSteelBarMesh.size();
-  line = std::string("nbSteelbarMesh") + SEPARATOR + ToString(nbSteelBarMesh);
+  int nbSteelBarMeshes=listSteelBarMesh.size();
+  line = std::string("nbSteelBarMeshes") + SEPARATOR + ToString(nbSteelBarMeshes);
   dataFile << line.c_str() << std::endl;
-  for (int i=0; i<nbSteelBarMesh; i++) {
+  for (int i=0; i<nbSteelBarMeshes; i++) {
 #ifdef WIN32
         char fname[ _MAX_FNAME ];
         _splitpath( listSteelBarMesh[i].file_name, NULL, NULL, fname, NULL );
@@ -250,9 +278,6 @@ CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobParameterList & m
                                          const char * configId)
 {
   beginService("MeshJobManager_i::initialize");
-  std::cerr << "##################################### initialize" << std::endl;
-  std::cerr << "#####################################" << std::endl;
-
   //
   // We first analyse the CORBA sequence to store data in C++ vectors
   //
@@ -268,14 +293,21 @@ CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobParameterList & m
       listSteelBarMesh.push_back(currentMesh);
       break;
     default:
-      LOG("The type of the file is not recognized");
+      _lastErrorMessage =
+	std::string("The type of the file ")+
+	std::string(currentMesh.file_name)+
+	std::string(" is not recognized");
+      LOG(_lastErrorMessage);
       return JOBID_UNDEFINED;
     }
   }
   
-  if ( listConcreteMesh.size() != 1 ) {
+  // It is not possible to specify more than one concrete
+  // file. Converselly, it is possible to specify no concrete file.
+  if ( listConcreteMesh.size() > 1 ) {
     // Not consistent with the specification
-    LOG("You specify more than one concrete mesh");
+    _lastErrorMessage = std::string("You specify more than one concrete mesh (not authorized)");
+    LOG(_lastErrorMessage);
     return JOBID_UNDEFINED;
   }
   
@@ -341,24 +373,37 @@ CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobParameterList & m
   // We specify the input files that are required to execute the
   // job_file. If basenames are specified, then the files are supposed
   // to be located in local_directory.
-  int nbFiles = listSteelBarMesh.size()+2;
+  int nbcmesh = listConcreteMesh.size();
+  int nbsmesh = listSteelBarMesh.size();
+  int nbFiles = nbsmesh+nbcmesh+1;
   // The number of input file is: 
   //   (nb. of steelbar meshfile)
-  // + (1 concrete meshfile)
+  // + (1 or 0 concrete meshfile)
   // + (1 padder input file)
-  // = nb steelbar meshfile + 2
   jobParameters->in_files.length(nbFiles);
-  jobParameters->in_files[0] = CORBA::string_dup(listConcreteMesh[0].file_name);
-  for (int i=0; i<listSteelBarMesh.size(); i++) {
-    jobParameters->in_files[1+i] = CORBA::string_dup(listSteelBarMesh[i].file_name);
+  for (int i=0; i<nbcmesh; i++) {
+    jobParameters->in_files[i] = CORBA::string_dup(listConcreteMesh[i].file_name);
   }
-  jobParameters->in_files[1+listSteelBarMesh.size()] = CORBA::string_dup(dataFilename);
+  for (int i=0; i<nbsmesh; i++) {
+    jobParameters->in_files[nbcmesh+i] = CORBA::string_dup(listSteelBarMesh[i].file_name);
+  }
+  jobParameters->in_files[nbcmesh+nbsmesh] = CORBA::string_dup(dataFilename);
   // Note that all these input files will be copied in the
-  // REMOTE_WORKDIR on the remote host
-  
-  // Then, we have to specify the existance of an output
-  // filenames. The path is supposed to be a path on the remote
-  // resource, i.e. where the job is executed.
+  // REMOTE_WORKDIR on the remote host. At this step, they should
+  // all exist, so we can check their presence on the local
+  // filesystem.
+  for (int i=0; i<nbFiles; i++) {
+    if ( fexists(jobParameters->in_files[i]) != true ) {
+      _lastErrorMessage = std::string("The input file ") + std::string(jobParameters->in_files[i]);
+      _lastErrorMessage+= std::string(" does not exists. Can't initialize the job");
+      LOG(_lastErrorMessage);
+      return JOBID_UNDEFINED;      
+    }
+  }
+
+  // Then, we have to specify the existance of an output filename. The
+  // path is supposed to be a path on the remote resource, i.e. where
+  // the job is executed.
   jobParameters->out_files.length(1);
   std::string outputfile_name = std::string(jobPaths->remote_workdir)+"/"+OUTPUTFILE;
   jobParameters->out_files[0] = CORBA::string_dup(outputfile_name.c_str());
@@ -383,7 +428,17 @@ CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobParameterList & m
   //const char * resourceName = "boulant@claui2p1";
   //const char * resourceName = "nepal@nepal";
   const char * resourceName = _configMap[configId].resname;
-  Engines::ResourceDefinition * resourceDefinition = _resourcesManager->GetResourceDefinition(resourceName);
+  
+  Engines::ResourceDefinition * resourceDefinition;
+  try {
+    resourceDefinition = _resourcesManager->GetResourceDefinition(resourceName);
+  }
+  catch (const CORBA::SystemException& ex) {
+    _lastErrorMessage = std::string("We can not access to the ressource ") + std::string(resourceName);
+    _lastErrorMessage+= std::string("(check the file CatalogResource.xml)");
+    LOG(_lastErrorMessage);
+    return JOBID_UNDEFINED;
+  }
   // CAUTION: This resource should have been defined in the
   // CatalogResource.xml associated to the SALOME application.
   //
@@ -413,29 +468,22 @@ CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobParameterList & m
   //
   // So, even in the case of a simple test shell script, you should
   // set this value at least to a standard threshold as 500MB
-
   int jobId = JOBID_UNDEFINED;
   try {
-    std::cerr << "#####################################" << std::endl;
-    std::cerr << "#####################################" << std::endl;
-    std::cerr << "jobUndef = " << JOBID_UNDEFINED << std::endl;
     jobId = _salomeLauncher->createJob(jobParameters);
-    std::cerr << "#####################################" << std::endl;
-    std::cerr << "#####################################" << std::endl;
-    std::cerr << "#####################################" << std::endl;
-    std::cerr << "jobId = " << jobId << std::endl;
     // We register the datetime tag of this job
     _jobDateTimeMap[jobId]=jobDatetimeTag;
     _jobPathsMap[jobId] = jobPaths;
   }
   catch (const SALOME::SALOME_Exception & ex) {
-    LOG("SALOME Exception in createJob !" <<ex.details.text.in());
-    //LOG(ex.details.text.in());
+    LOG("SALOME Exception at initialization step !" <<ex.details.text.in());
+    _lastErrorMessage = ex.details.text.in();
     return JOBID_UNDEFINED;
   }
   catch (const CORBA::SystemException& ex) {
     LOG("Receive SALOME System Exception: "<<ex);
     LOG("Check SALOME servers...");
+    _lastErrorMessage = "Check the SALOME servers (or try to restart SALOME)";
     return JOBID_UNDEFINED;
   }
   
@@ -452,12 +500,13 @@ bool MeshJobManager_i::start(CORBA::Long jobId) {
   }
   catch (const SALOME::SALOME_Exception & ex) {
     LOG("SALOME Exception in launchjob !" <<ex.details.text.in());
-    //LOG(ex.details.text.in());
+    _lastErrorMessage = ex.details.text.in();
     return false;
   }
   catch (const CORBA::SystemException& ex) {
     LOG("Receive SALOME System Exception: "<<ex);
     LOG("Check SALOME servers...");
+    _lastErrorMessage = "Check the SALOME servers (or try to restart SALOME)";
     return false;
   }
 
@@ -477,6 +526,7 @@ char* MeshJobManager_i::getState(CORBA::Long jobId) {
   catch (const SALOME::SALOME_Exception & ex)
   {
     LOG("SALOME Exception in getJobState !");
+    _lastErrorMessage = ex.details.text.in();
     state = ex.details.text;
   }
   catch (const CORBA::SystemException& ex)
@@ -525,6 +575,7 @@ MESHJOB::MeshJobResults * MeshJobManager_i::finalize(CORBA::Long jobId) {
   {
     LOG("SALOME Exception in getResults !");
     result->status = "SALOME Exception in getResults !";
+    _lastErrorMessage = ex.details.text.in();
   }
   catch (const CORBA::SystemException& ex)
   {
@@ -610,6 +661,11 @@ std::vector<std::string> * MeshJobManager_i::_getResourceNames() {
   return resourceNames;
 }
 
+char* MeshJobManager_i::getLastErrorMessage() {
+  beginService("MeshJobManager_i::getState");
+  endService("MeshJobManager_i::getState");
+  return CORBA::string_dup(_lastErrorMessage.c_str());
+}
 
 //
 // ==========================================================================

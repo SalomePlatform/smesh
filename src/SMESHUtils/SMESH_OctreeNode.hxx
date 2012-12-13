@@ -109,7 +109,16 @@ public:
 
 protected:
 
-  SMESH_OctreeNode (int maxNbNodes );
+  struct Limit : public SMESH_TreeLimit
+  {
+    int myMaxNbNodes;
+    Limit(int maxLevel, double minSize, int maxNbNodes)
+      :SMESH_TreeLimit(maxLevel, minSize), myMaxNbNodes(maxNbNodes) {}
+  };
+
+  int                   getMaxNbNodes() const;
+
+  SMESH_OctreeNode();
 
   // Compute the bounding box of the whole set of nodes myNodes
   virtual Bnd_B3d*      buildRootBox();
@@ -118,16 +127,13 @@ protected:
   virtual void          buildChildrenData();
 
   // Construct an empty SMESH_OctreeNode used by SMESH_Octree::buildChildren()
-  virtual SMESH_Octree* allocateOctreeChild() const;
+  virtual SMESH_Octree* newChild() const;
 
   // Return in result a list of nodes closed to Node and remove it from SetOfNodes
   void                  FindCoincidentNodes( const SMDS_MeshNode *            Node,
                                              TIDSortedNodeSet*                SetOfNodes,
                                              std::list<const SMDS_MeshNode*>* Result,
                                              const double                     precision);
-
-  // The max number of nodes a leaf box can contain
-  int                myMaxNbNodes;
 
   // The set of nodes inside the box of the Octree (Empty if Octree is not a leaf)
   TIDSortedNodeSet   myNodes;

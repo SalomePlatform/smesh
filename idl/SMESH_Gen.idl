@@ -240,8 +240,11 @@ module SMESH
 
     /*!
      * Create Mesh object importing data from given GMF file
+     *  \param theFileName - a name of file to import
+     *  \param theMakeRequiredGroups - if true, groups of required entities will be created
      */
     SMESH_Mesh CreateMeshesFromGMF( in string               theFileName,
+                                    in boolean              theMakeRequiredGroups,
                                     out SMESH::ComputeError theError)
       raises ( SALOME::SALOME_Exception );
 

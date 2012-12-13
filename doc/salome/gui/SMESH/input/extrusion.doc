@@ -3,18 +3,27 @@
 \page extrusion_page Extrusion
 
 \n Extrusion is used to build mesh elements of plus one
-dimension than the input ones. Any line or planar element can be
-extruded. Line elements will extrude into quadrilateral plane elements.
-Triangular and Quadrilateral plane elements extrude into Pentahedron
-and Hexahedron solids respectively.
+dimension than the input ones. Any node, segment or 2D element can be
+extruded. Each type of elements has a corresponding type of extruded elements:
+<table>
+<tr><td><b>Extruded element</b></td><td><b> Result elements </b></td></tr>
+<tr><td>Node              </td><td> Segments </td></tr>
+<tr><td>Segment           </td><td> Quadrilaterals </td></tr>
+<tr><td>Triangle          </td><td> Pentahedrons </td></tr>
+<tr><td>Quadrilateral     </td><td> Hexahedrons </td></tr>
+<tr><td>Polygon           </td><td> Polyhedrons </td></tr>
+<tr><td>Hexagonal polygon </td><td> Hexagonal prism </td></tr>
+</table>
 
 <em>To use extrusion:</em>
 <ol>
 <li>From the \b Modification menu choose the \b Extrusion item or click
 <em>"Extrusion"</em> button in the toolbar. 
 
+<center>
 \image html image91.png
-<center><em>"Extrusion" button</em></center>
+<em>"Extrusion" button</em>
+</center>
 
 The following dialog common for line and planar elements will appear:
 
@@ -26,32 +35,36 @@ The following dialog common for line and planar elements will appear:
 
 <li>In this dialog:
 <ul>
-<li>select the type of elements which will be extruded (0D, 1D or 2D),</li>
-<li>specify the IDs of the elements which will be extruded:
-<ul>
-<li><b>Select the whole mesh, submesh or group</b> activating this
-checkbox; or</li>
-<li>choose mesh elements with the mouse in the 3D Viewer. It is
-possible to select a whole area with a mouse frame; or</li> 
-<li>input the element IDs directly in <b>ID Elements</b> field. The selected elements will be highlighted in the
-viewer; or</li>
-<li>apply Filters. <b>Set filter</b> button allows to apply a filter to the selection of elements. See more
-about filters in the \ref selection_filter_library_page "Selection filter library" page.</li>
-</ul>
-</li>
-<li>If the <b>Extrude to Distance</b> radio button is selected</li>
-<ul>
-<li>specify the distance at which the elements will be extruded,</li>
-</ul>
-<li>If the <b>Extrude Along Vector</b> radio button is selected</li>
-<ul>
-<li>specify the coordinates of the vector along which the elements will be extruded, or select the face (the normal to the face will define the vector)</li>
-<li>specify the distance of extrusion along the vector,</li>
-</ul>
-<li>specify the number of steps;</li>
-<li>activate  <b>Generate Groups</b> checkbox if it is necessary to copy the groups of
-elements of the source mesh to the newly created one. </li>
-</li>
+  <li>Select the type of elements which will be extruded (0D, 1D or 2D).</li>
+  <li>Specify the IDs of the elements which will be extruded by one
+    following means:
+    <ul>
+      <li><b>Select the whole mesh, submesh or group</b> activating this
+        checkbox.</li>
+      <li>Choose mesh elements with the mouse in the 3D Viewer. It is
+        possible to select a whole area with a mouse frame.</li> 
+      <li>Input the element IDs directly in <b>ID Elements</b>
+        field. The selected elements will be highlighted in the viewer.</li> 
+      <li>Apply Filters. <b>Set filter</b> button allows to apply a
+        filter to the selection of elements. See more about filters in
+        the \ref filtering_elements "Selection filters" page.</li> 
+    </ul>
+  </li>
+  <li>If the <b>Extrude to Distance</b> radio button is selected</li>
+  <ul>
+    <li>specify the distance at which the elements will be extruded.</li>
+  </ul>
+  <li>If the <b>Extrude Along Vector</b> radio button is selected</li>
+  <ul>
+    <li>specify the coordinates of the vector along which the elements
+      will be extruded, or select the face (the normal to the face will
+      define the vector),</li>
+    <li>specify the distance of extrusion along the vector.</li>
+  </ul>
+  <li>Specify the number of steps.</li>
+  <li>If you activate <b>Generate Groups</b> check-box, the created
+    elements contained in groups will be included into new groups named
+    by pattern "<old group name>_extruded". </li>
 </ul>
 
 <li>Click \b Apply or <b> Apply and Close</b>  button to confirm the operation.</li>

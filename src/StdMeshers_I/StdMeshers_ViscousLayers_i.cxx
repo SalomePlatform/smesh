@@ -85,7 +85,7 @@ throw ( SALOME::SALOME_Exception )
   for ( unsigned i = 0; i < ids.size(); ++i )
     if (( ids[i] = faceIDs[i] ) < 1 )
       THROW_SALOME_CORBA_EXCEPTION( "Invalid face id", SALOME::BAD_PARAM );
-  GetImpl()->SetIgnoreFaces( ids );
+  GetImpl()->SetBndShapesToIgnore( ids );
   SMESH::TPythonDump() << _this() << ".SetIgnoreFaces( " << faceIDs << " )";
 }
 
@@ -97,7 +97,7 @@ throw ( SALOME::SALOME_Exception )
 
 SMESH::long_array* StdMeshers_ViscousLayers_i::GetIgnoreFaces()
 {
-  vector<int> idsVec = GetImpl()->GetIgnoreFaces();
+  vector<int> idsVec = GetImpl()->GetBndShapesToIgnore();
   SMESH::long_array_var ids = new SMESH::long_array;
   ids->length( idsVec.size() );
   for ( unsigned i = 0; i < idsVec.size(); ++i )

@@ -82,7 +82,7 @@
 using namespace std;
 
 //================================================================================
-namespace VISCOUS
+namespace VISCOUS_3D
 {
   typedef int TGeomID;
 
@@ -121,13 +121,13 @@ namespace VISCOUS
    * \brief Listener of events of 3D sub-meshes computed with viscous layers.
    * It is used to clear an inferior dim sub-meshes modified by viscous layers
    */
-  class _SrinkShapeListener : SMESH_subMeshEventListener
+  class _ShrinkShapeListener : SMESH_subMeshEventListener
   {
-    _SrinkShapeListener()
+    _ShrinkShapeListener()
       : SMESH_subMeshEventListener(/*isDeletable=*/false,
-                                   "StdMeshers_ViscousLayers::_SrinkShapeListener") {}
-    static SMESH_subMeshEventListener* Get() { static _SrinkShapeListener l; return &l; }
+                                   "StdMeshers_ViscousLayers::_ShrinkShapeListener") {}
   public:
+    static SMESH_subMeshEventListener* Get() { static _ShrinkShapeListener l; return &l; }
     virtual void ProcessEvent(const int                       event,
                               const int                       eventType,
                               SMESH_subMesh*                  solidSM,
@@ -137,23 +137,6 @@ namespace VISCOUS
       if ( SMESH_subMesh::COMPUTE_EVENT == eventType && solidSM->IsEmpty() && data )
       {
         SMESH_subMeshEventListener::ProcessEvent(event,eventType,solidSM,data,hyp);
-      }
-    }
-    static void ToClearSubMeshWithSolid( SMESH_subMesh*      sm,
-                                         const TopoDS_Shape& solid)
-    {
-      SMESH_subMesh* solidSM = sm->GetFather()->GetSubMesh( solid );
-      SMESH_subMeshEventListenerData* data = solidSM->GetEventListenerData( Get());
-      if ( data )
-      {
-        if ( find( data->mySubMeshes.begin(), data->mySubMeshes.end(), sm ) ==
-             data->mySubMeshes.end())
-          data->mySubMeshes.push_back( sm );
-      }
-      else
-      {
-        data = SMESH_subMeshEventListenerData::MakeData( /*dependent=*/sm );
-        sm->SetEventListener( Get(), data, /*whereToListenTo=*/solidSM );
       }
     }
   };
@@ -205,6 +188,32 @@ namespace VISCOUS
     }
   };
   
+  //================================================================================
+  /*!
+   * \brief sets a sub-mesh event listener to clear sub-meshes of sub-shapes of
+   * the main shape when sub-mesh of the main shape is cleared,
+   * for example to clear sub-meshes of FACEs when sub-mesh of a SOLID
+   * is cleared
+   */
+  //================================================================================
+
+  void ToClearSubWithMain( SMESH_subMesh* sub, const TopoDS_Shape& main)
+  {
+    SMESH_subMesh* mainSM = sub->GetFather()->GetSubMesh( main );
+    SMESH_subMeshEventListenerData* data =
+      mainSM->GetEventListenerData( _ShrinkShapeListener::Get());
+    if ( data )
+    {
+      if ( find( data->mySubMeshes.begin(), data->mySubMeshes.end(), sub ) ==
+           data->mySubMeshes.end())
+        data->mySubMeshes.push_back( sub );
+    }
+    else
+    {
+      data = SMESH_subMeshEventListenerData::MakeData( /*dependent=*/sub );
+      sub->SetEventListener( _ShrinkShapeListener::Get(), data, /*whereToListenTo=*/mainSM );
+    }
+  }
   //--------------------------------------------------------------------------------
   /*!
    * \brief Simplex (triangle or tetrahedron) based on 1 (tria) or 2 (tet) nodes of
@@ -256,6 +265,7 @@ namespace VISCOUS
   {
     double _r; // radius
     double _k; // factor to correct node smoothed position
+    double _h2lenRatio; // avgNormProj / (2*avgDist)
   public:
     static _Curvature* New( double avgNormProj, double avgDist )
     {
@@ -266,10 +276,12 @@ namespace VISCOUS
         c->_r = avgDist * avgDist / avgNormProj;
         c->_k = avgDist * avgDist / c->_r / c->_r;
         c->_k *= ( c->_r < 0 ? 1/1.1 : 1.1 ); // not to be too restrictive
+        c->_h2lenRatio = avgNormProj / ( avgDist + avgDist );
       }
       return c;
     }
     double lenDelta(double len) const { return _k * ( _r + len ); }
+    double lenDeltaByDist(double dist) const { return dist * _h2lenRatio; }
   };
   struct _LayerEdge;
   //--------------------------------------------------------------------------------
@@ -547,7 +559,7 @@ virtual SMDS_ElemIteratorPtr elementsIterator(SMDSAbs_ElementType type) const
       _nn[3]=_le2->_nodes[0];
     }
   };
-} // namespace VISCOUS
+} // namespace VISCOUS_3D
 
 //================================================================================
 // StdMeshers_ViscousLayers hypothesis
@@ -559,10 +571,15 @@ StdMeshers_ViscousLayers::StdMeshers_ViscousLayers(int hypId, int studyId, SMESH
   _name = StdMeshers_ViscousLayers::GetHypType();
   _param_algo_dim = -3; // auxiliary hyp used by 3D algos
 } // --------------------------------------------------------------------------------
-void StdMeshers_ViscousLayers::SetIgnoreFaces(const std::vector<int>& faceIds)
+void StdMeshers_ViscousLayers::SetBndShapesToIgnore(const std::vector<int>& faceIds)
 {
-  if ( faceIds != _ignoreFaceIds )
-    _ignoreFaceIds = faceIds, NotifySubMeshesHypothesisModification();
+  if ( faceIds != _ignoreBndShapeIds )
+    _ignoreBndShapeIds = faceIds, NotifySubMeshesHypothesisModification();
+} // --------------------------------------------------------------------------------
+bool StdMeshers_ViscousLayers::IsIgnoredShape(const int shapeID) const
+{
+  return ( find( _ignoreBndShapeIds.begin(), _ignoreBndShapeIds.end(), shapeID )
+           != _ignoreBndShapeIds.end() );
 } // --------------------------------------------------------------------------------
 void StdMeshers_ViscousLayers::SetTotalThickness(double thickness)
 {
@@ -584,7 +601,7 @@ StdMeshers_ViscousLayers::Compute(SMESH_Mesh&         theMesh,
                                   const TopoDS_Shape& theShape,
                                   const bool          toMakeN2NMap) const
 {
-  using namespace VISCOUS;
+  using namespace VISCOUS_3D;
   _ViscousBuilder bulder;
   SMESH_ComputeErrorPtr err = bulder.Compute( theMesh, theShape );
   if ( err && !err->IsOK() )
@@ -620,17 +637,17 @@ std::ostream & StdMeshers_ViscousLayers::SaveTo(std::ostream & save)
   save << " " << _nbLayers
        << " " << _thickness
        << " " << _stretchFactor
-       << " " << _ignoreFaceIds.size();
-  for ( unsigned i = 0; i < _ignoreFaceIds.size(); ++i )
-    save << " " << _ignoreFaceIds[i];
+       << " " << _ignoreBndShapeIds.size();
+  for ( unsigned i = 0; i < _ignoreBndShapeIds.size(); ++i )
+    save << " " << _ignoreBndShapeIds[i];
   return save;
 } // --------------------------------------------------------------------------------
 std::istream & StdMeshers_ViscousLayers::LoadFrom(std::istream & load)
 {
   int nbFaces, faceID;
   load >> _nbLayers >> _thickness >> _stretchFactor >> nbFaces;
-  while ( _ignoreFaceIds.size() < nbFaces && load >> faceID )
-    _ignoreFaceIds.push_back( faceID );
+  while ( _ignoreBndShapeIds.size() < nbFaces && load >> faceID )
+    _ignoreBndShapeIds.push_back( faceID );
   return load;
 } // --------------------------------------------------------------------------------
 bool StdMeshers_ViscousLayers::SetParametersByMesh(const SMESH_Mesh*   theMesh,
@@ -716,27 +733,30 @@ namespace
     gp_XYZ dir(0,0,0);
     if ( !( ok = ( edges.size() > 0 ))) return dir;
     // get average dir of edges going fromV
-    gp_Vec edgeDir;
-    for ( unsigned i = 0; i < edges.size(); ++i )
-    {
-      edgeDir = getEdgeDir( edges[i], fromV );
-      double size2 = edgeDir.SquareMagnitude();
-      if ( size2 > numeric_limits<double>::min() )
-        edgeDir /= sqrt( size2 );
-      else
-        ok = false;
-      dir += edgeDir.XYZ();
-    }
+    gp_XYZ edgeDir;
+    //if ( edges.size() > 1 )
+      for ( unsigned i = 0; i < edges.size(); ++i )
+      {
+        edgeDir = getEdgeDir( edges[i], fromV );
+        double size2 = edgeDir.SquareModulus();
+        if ( size2 > numeric_limits<double>::min() )
+          edgeDir /= sqrt( size2 );
+        else
+          ok = false;
+        dir += edgeDir;
+      }
     gp_XYZ fromEdgeDir = getFaceDir( F, edges[0], node, helper, ok );
-    if ( edges.size() == 1 || dir.SquareModulus() < 1e-10)
+    if ( edges.size() == 1 )
       dir = fromEdgeDir;
+    else if ( dir.SquareModulus() < 0.1 ) // ~< 20 degrees
+      dir = fromEdgeDir + getFaceDir( F, edges[1], node, helper, ok );
     else if ( dir * fromEdgeDir < 0 )
       dir *= -1;
     if ( ok )
     {
       //dir /= edges.size();
       if ( cosin ) {
-        double angle = edgeDir.Angle( dir );
+        double angle = gp_Vec( edgeDir ).Angle( dir );
         *cosin = cos( angle );
       }
     }
@@ -849,7 +869,7 @@ namespace
 #endif
 }
 
-using namespace VISCOUS;
+using namespace VISCOUS_3D;
 
 //================================================================================
 /*!
@@ -1051,7 +1071,7 @@ bool _ViscousBuilder::findFacesWithLayers()
   vector<TopoDS_Shape> ignoreFaces;
   for ( unsigned i = 0; i < _sdVec.size(); ++i )
   {
-    vector<TGeomID> ids = _sdVec[i]._hyp->GetIgnoreFaces();
+    vector<TGeomID> ids = _sdVec[i]._hyp->GetBndShapesToIgnore();
     for ( unsigned i = 0; i < ids.size(); ++i )
     {
       const TopoDS_Shape& s = getMeshDS()->IndexToShape( ids[i] );
@@ -1371,7 +1391,7 @@ bool _ViscousBuilder::makeLayer(_SolidData& data)
   if ( data._stepSize < 1. )
     data._epsilon *= data._stepSize;
 
-  // Put _LayerEdge's into a vector
+  // Put _LayerEdge's into the vector data._edges
 
   if ( !sortEdges( data, edgesByGeom ))
     return false;
@@ -1695,8 +1715,8 @@ bool _ViscousBuilder::setEdgeData(_LayerEdge&         edge,
     }
     case SMDS_TOP_VERTEX: {
       TopoDS_Vertex V = TopoDS::Vertex( helper.GetSubShapeByNode( node, getMeshDS()));
-      gp_Vec inFaceDir = getFaceDir( F, V, node, helper, normOK);
-      double angle = inFaceDir.Angle( edge._normal ); // [0,PI]
+      gp_XYZ inFaceDir = getFaceDir( F, V, node, helper, normOK);
+      double angle = gp_Vec( inFaceDir).Angle( edge._normal ); // [0,PI]
       edge._cosin = cos( angle );
       //cout << "Cosin on VERTEX " << edge._cosin << " node " << node->GetID() << endl;
       break;
@@ -2844,7 +2864,7 @@ bool _LayerEdge::FindIntersection( SMESH_ElementSearcher&   searcher,
     }
     if ( intFound )
     {
-      if ( dist < segLen*(1.01))
+      if ( dist < segLen*(1.01) && dist > -(_len-segLen) )
         segmentIntersected = true;
       if ( distance > dist )
         distance = dist, iFace = j;
@@ -3047,7 +3067,8 @@ bool _LayerEdge::SmoothOnEdge(Handle(Geom_Surface)& surface,
   double lenDelta = 0;
   if ( _curvature )
   {
-    lenDelta = _curvature->lenDelta( _len );
+    //lenDelta = _curvature->lenDelta( _len );
+    lenDelta = _curvature->lenDeltaByDist( dist01 );
     newPos.ChangeCoord() += _normal * lenDelta;
   }
 
@@ -3599,6 +3620,7 @@ bool _ViscousBuilder::shrink()
           _Shrinker1D& srinker = e2shrMap[ edgeIndex ];
           eShri1D.insert( & srinker );
           srinker.AddEdge( edge, helper );
+          VISCOUS_3D::ToClearSubWithMain( _mesh->GetSubMesh( edge->_sWOL ), data._solid );
           // restore params of nodes on EGDE if the EDGE has been already
           // srinked while srinking another FACE
           srinker.RestoreParams();
@@ -3684,7 +3706,7 @@ bool _ViscousBuilder::shrink()
       dumpFunctionEnd();
     }
     // Set an event listener to clear FACE sub-mesh together with SOLID sub-mesh
-    _SrinkShapeListener::ToClearSubMeshWithSolid( sm, data._solid );
+    VISCOUS_3D::ToClearSubWithMain( sm, data._solid );
 
     if ( !getMeshDS()->IsEmbeddedMode() )
       // Log node movement

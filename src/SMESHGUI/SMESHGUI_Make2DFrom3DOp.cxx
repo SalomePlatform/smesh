@@ -217,8 +217,8 @@ void SMESHGUI_Make2DFrom3DDlg::onGroupChecked()
 
 SMESHGUI_Make2DFrom3DOp::SMESHGUI_Make2DFrom3DOp()
   : SMESHGUI_SelectionOp(),
-    myMeshFilter(MESH),
-    myGroupFilter(GROUP)
+    myMeshFilter(SMESH::MESH),
+    myGroupFilter(SMESH::GROUP)
 {
 }
 

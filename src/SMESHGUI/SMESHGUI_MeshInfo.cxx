@@ -34,6 +34,7 @@
 #include "SMDS_BallElement.hxx"
 #include "SMDS_EdgePosition.hxx"
 #include "SMDS_FacePosition.hxx"
+#include "SMESH_ControlsDef.hxx"
 
 #include <LightApp_SelectionMgr.h>
 #include <SUIT_OverrideCursor.h>
@@ -886,6 +887,9 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
   
   if ( actor() ) {
     int precision = SMESHGUI::resourceMgr()->integerValue( "SMESH", "length_precision", 6 );
+    int cprecision = -1;
+    if ( SMESHGUI::resourceMgr()->booleanValue( "SMESH", "use_precision", false ) ) 
+      cprecision = SMESHGUI::resourceMgr()->integerValue( "SMESH", "controls_precision", -1 );
     foreach ( long id, ids ) {
       if ( !isElements() ) {
         //
@@ -934,6 +938,7 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
         // show element info
         // 
         const SMDS_MeshElement* e = actor()->GetObject()->GetMesh()->FindElement( id );
+        SMESH::Controls::NumericalFunctorPtr afunctor;
         if ( !e ) return;
         
         // element ID && type
@@ -1040,6 +1045,84 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
             myInfo->append( QString( "<b>%1</b>" ).arg( tr( "FREE_NODE" ) ).arg( id ) );
           }
         }
+        // separator
+        myInfo->append( "" );
+        //controls
+        myInfo->append( QString( "<b>%1:</b>" ).arg( tr( "MEN_CTRL" ) ) );
+        //Length
+        if ( e->GetType() == SMDSAbs_Edge ) {    
+          afunctor.reset( new SMESH::Controls::Length() );
+          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+          afunctor->SetPrecision( cprecision );
+          myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "LENGTH_EDGES" ) ).arg( afunctor->GetValue( id ) ) );  
+        }
+        if( e->GetType() == SMDSAbs_Face ) {
+          //Area                         
+          afunctor.reset(  new SMESH::Controls::Area() );
+          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+          afunctor->SetPrecision( cprecision );  
+          myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "AREA_ELEMENTS" ) ).arg( afunctor->GetValue( id ) ) );
+          //Taper        
+          afunctor.reset( new SMESH::Controls::Taper() );
+          afunctor->SetMesh( actor()->GetObject()->GetMesh() );  
+          afunctor->SetPrecision( cprecision );
+          myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "MEN_TAPER" ) ).arg( afunctor->GetValue( id ) ) );
+          //AspectRatio2D        
+          afunctor.reset( new SMESH::Controls::AspectRatio() );
+          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+          myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "ASPECTRATIO_ELEMENTS" ) ).arg( afunctor->GetValue( id ) ) );
+          //Minimum angle         
+          afunctor.reset( new SMESH::Controls::MinimumAngle() );
+          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+          afunctor->SetPrecision( cprecision );
+          myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "MINIMUMANGLE_ELEMENTS" ) ).arg( afunctor->GetValue( id ) ) );
+          //Wraping angle        
+          afunctor.reset( new SMESH::Controls::Warping() );
+          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+          afunctor->SetPrecision( cprecision );
+          myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "STB_WARP" ) ).arg( afunctor->GetValue( id ) ) );
+          //Skew         
+          afunctor.reset( new SMESH::Controls::Skew() );
+          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+          afunctor->SetPrecision( cprecision );
+          myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "TOP_SKEW" ) ).arg( afunctor->GetValue( id ) ) );
+          //ElemDiam2D   
+          afunctor.reset( new SMESH::Controls::MaxElementLength2D() );
+          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+          myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "MAX_ELEMENT_LENGTH_2D" ) ).arg( afunctor->GetValue( id ) ) );
+        }
+        if( e->GetType() == SMDSAbs_Volume ) {
+          //AspectRatio3D
+          afunctor.reset(  new SMESH::Controls::AspectRatio3D() );
+          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+          myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "ASPECTRATIO_3D_ELEMENTS" ) ).arg( afunctor->GetValue( id ) ) );
+          //Volume      
+          afunctor.reset(  new SMESH::Controls::Volume() );
+          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+          myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "MEN_VOLUME_3D" ) ).arg( afunctor->GetValue( id ) ) );
+          //ElementDiameter3D    
+          afunctor.reset(  new SMESH::Controls::Volume() );
+          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+          myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "MAX_ELEMENT_LENGTH_3D" ) ).arg( afunctor->GetValue( id ) ) );
+        }
+	/*
+        if( e->GetType() >= SMDSAbs_Edge && e->GetType() <= SMDSAbs_Volume ) {
+          // separator
+          myInfo->append( "" );
+          //shapeID
+          int shapeID = e->getshapeId();
+          if ( shapeID > 0 ) {     
+            QString shapeType;
+            switch ( actor()->GetObject()->GetMesh()->FindElement( shapeID )->GetType() ) {
+            case SMDS_TOP_EDGE:   shapeType = tr( "EDGE" ); break;
+            case SMDS_TOP_FACE:   shapeType = tr( "FACE" ); break;
+            case SMDS_TOP_VERTEX: shapeType = tr( "VERTEX" ); break;
+            default:              shapeType = tr( "SOLID" );
+            }     
+            myInfo->append( QString( "<b>%1:</b> %2 #%3" ).arg( tr( "Position" ) ).arg( shapeType ).arg( shapeID ) );
+          }
+        }
+	*/
       }
       // separator
       if ( ids.count() > 1 ) {
@@ -1123,6 +1206,9 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
 
   if ( actor() ) {
     int precision = SMESHGUI::resourceMgr()->integerValue( "SMESH", "length_precision", 6 );
+    int cprecision = -1;
+    if ( SMESHGUI::resourceMgr()->booleanValue( "SMESH", "use_precision", false ) ) 
+      cprecision = SMESHGUI::resourceMgr()->integerValue( "SMESH", "controls_precision", -1 );
     foreach ( long id, ids ) {
       if ( !isElements() ) {
         //
@@ -1226,6 +1312,7 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
         // show element info
         // 
         const SMDS_MeshElement* e = actor()->GetObject()->GetMesh()->FindElement( id );
+        SMESH::Controls::NumericalFunctorPtr afunctor;
         if ( !e ) return;
         
         // element ID && type
@@ -1373,6 +1460,105 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
             }
           }
         }
+        //Controls
+        QTreeWidgetItem* cntrItem = createItem( elemItem, Bold );
+        cntrItem->setText( 0, tr( "MEN_CTRL" ) );
+        //Length
+        if( e->GetType()==SMDSAbs_Edge){         
+          afunctor.reset( new SMESH::Controls::Length() );
+          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+          afunctor->SetPrecision( cprecision );
+          QTreeWidgetItem* lenItem = createItem( cntrItem, Bold );
+          lenItem->setText( 0, tr( "LENGTH_EDGES" ) );
+          lenItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );         
+        }
+        if( e->GetType() == SMDSAbs_Face ) {
+          //Area         
+          afunctor.reset( new SMESH::Controls::Area() );        
+          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+          afunctor->SetPrecision( cprecision );
+          QTreeWidgetItem* areaItem = createItem( cntrItem, Bold );
+          areaItem->setText( 0, tr( "AREA_ELEMENTS" ) );
+          areaItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue(id) ) );         
+          //Taper
+          afunctor.reset( new SMESH::Controls::Taper() );
+          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+          afunctor->SetPrecision( cprecision );
+          QTreeWidgetItem* taperlItem = createItem( cntrItem, Bold );
+          taperlItem->setText( 0, tr( "MEN_TAPER" ) );
+          taperlItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );    
+          //AspectRatio2D
+          afunctor.reset( new SMESH::Controls::AspectRatio() );
+          afunctor->SetMesh( actor()->GetObject()->GetMesh() );  
+          QTreeWidgetItem* ratlItem = createItem( cntrItem, Bold );
+          ratlItem->setText( 0, tr( "ASPECTRATIO_ELEMENTS" ));
+          ratlItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );      
+          //Minimum angle
+          afunctor.reset( new SMESH::Controls::MinimumAngle() );
+          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+          afunctor->SetPrecision( cprecision );
+          QTreeWidgetItem* minanglItem = createItem( cntrItem, Bold );
+          minanglItem->setText( 0, tr( "MINIMUMANGLE_ELEMENTS" ) );
+          minanglItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );    
+          //Wraping angle       
+          afunctor.reset( new SMESH::Controls::Warping() );
+          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+          afunctor->SetPrecision( cprecision );
+          QTreeWidgetItem* warpItem = createItem( cntrItem, Bold );
+          warpItem->setText( 0, tr( "STB_WARP" ));
+          warpItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );        
+          //Skew          
+          afunctor.reset( new SMESH::Controls::Skew() );
+          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+          afunctor->SetPrecision( cprecision );
+          QTreeWidgetItem* skewItem = createItem( cntrItem, Bold );
+          skewItem->setText( 0, tr( "TOP_SKEW" ) );
+          skewItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );       
+          //ElemDiam2D    
+          afunctor.reset( new SMESH::Controls::MaxElementLength2D() );
+          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+          QTreeWidgetItem* diamItem = createItem( cntrItem, Bold );
+          diamItem->setText( 0, tr( "MAX_ELEMENT_LENGTH_2D" ));
+          diamItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );       
+        }
+        if( e->GetType() == SMDSAbs_Volume ) {
+          //AspectRatio3D       
+          afunctor.reset( new SMESH::Controls::AspectRatio3D() );
+          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+          QTreeWidgetItem* ratlItem3 = createItem( cntrItem, Bold );
+          ratlItem3->setText( 0, tr( "ASPECTRATIO_3D_ELEMENTS" ) );
+          ratlItem3->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );      
+          //Volume
+          afunctor.reset( new SMESH::Controls::Volume() );
+          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+          QTreeWidgetItem* volItem = createItem( cntrItem, Bold );
+          volItem->setText( 0, tr( "MEN_VOLUME_3D" ) );
+          volItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );
+          //ElementDiameter3D   
+          afunctor.reset( new SMESH::Controls::MaxElementLength3D() );
+          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+          QTreeWidgetItem* diam3Item = createItem( cntrItem, Bold );
+          diam3Item->setText( 0, tr( "MAX_ELEMENT_LENGTH_3D" ) );
+          diam3Item->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );     
+        }
+	/*
+        if( e->GetType() >= SMDSAbs_Edge && e->GetType() <= SMDSAbs_Volume ) {
+          //shapeID
+          int shapeID = e->getshapeId();
+          if ( shapeID > 0 ) {
+            QTreeWidgetItem* shItem = createItem( elemItem, Bold );
+            QString shapeType;
+            switch ( actor()->GetObject()->GetMesh()->FindElement( shapeID )->GetType() ) {
+            case SMDS_TOP_EDGE:   shapeType = tr( "EDGE" ); break;
+            case SMDS_TOP_FACE:   shapeType = tr( "FACE" ); break;
+            case SMDS_TOP_VERTEX: shapeType = tr( "VERTEX" ); break;
+            default:              shapeType = tr( "SOLID" );
+            }
+            shItem->setText( 0, tr( "Position" ) );
+            shItem->setText( 1, QString( "%1 #%2" ).arg(shapeType).arg( shapeID ) );
+          }
+        }
+	*/
       }
     }
   }

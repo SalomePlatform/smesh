@@ -58,7 +58,7 @@ public:
                                          QWidget*              parent,
                                          bool                  multiSelection=false,
                                          bool                  stretch=true);
-  StdMeshersGUI_ObjectReferenceParamWdg( MeshObjectType objType,
+  StdMeshersGUI_ObjectReferenceParamWdg( SMESH::MeshObjectType objType,
                                          QWidget*       parent,
                                          bool           multiSelection=false);
   ~StdMeshersGUI_ObjectReferenceParamWdg();

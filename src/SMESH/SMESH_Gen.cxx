@@ -155,7 +155,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
       // check for preview dimension limitations
       if ( aShapesId && GetShapeDim( aShType ) > (int)aDim )
       {
-        // clear compute state to not show previous compute errors
+        // clear compute state not to show previous compute errors
         //  if preview invoked less dimension less than previous
         smToCompute->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
         continue;
@@ -355,23 +355,8 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
   MEMOSTAT;
 
   SMESHDS_Mesh *myMesh = aMesh.GetMeshDS();
-  myMesh->adjustStructure();
   MESSAGE("*** compactMesh after compute");
   myMesh->compactMesh();
-  //myMesh->adjustStructure();
-  list<int> listind = myMesh->SubMeshIndices();
-  list<int>::iterator it = listind.begin();
-  int total = 0;
-  for(; it != listind.end(); ++it)
-    {
-      ::SMESHDS_SubMesh *subMesh = myMesh->MeshElements(*it);
-      total +=  subMesh->getSize();
-    }
-  MESSAGE("total elements and nodes in submesh sets:" << total);
-  MESSAGE("Number of node objects " << SMDS_MeshNode::nbNodes);
-  MESSAGE("Number of cell objects " << SMDS_MeshCell::nbCells);
-  //myMesh->dumpGrid();
-  //aMesh.GetMeshDS()->Modified();
 
   // fix quadratic mesh by bending iternal links near concave boundary
   if ( aShape.IsSame( aMesh.GetShapeToMesh() ) &&
@@ -589,6 +574,8 @@ static bool checkConformIgnoredAlgos(SMESH_Mesh&               aMesh,
 
     if ( aLocIgnoAlgo ) // algo is hidden by a local algo of upper dim
     {
+      theErrors.push_back( SMESH_Gen::TAlgoStateError() );
+      theErrors.back().Set( SMESH_Hypothesis::HYP_HIDDEN_ALGO, algo, false );
       INFOS( "Local <" << algo->GetName() << "> is hidden by local <"
             << aLocIgnoAlgo->GetName() << ">");
     }
@@ -598,9 +585,12 @@ static bool checkConformIgnoredAlgos(SMESH_Mesh&               aMesh,
       int dim = algo->GetDim();
       int aMaxGlobIgnoDim = ( aGlobIgnoAlgo ? aGlobIgnoAlgo->GetDim() : -1 );
 
-      if ( dim < aMaxGlobIgnoDim )
+      if ( dim < aMaxGlobIgnoDim &&
+           ( isGlobal || !aGlobIgnoAlgo->SupportSubmeshes() ))
       {
         // algo is hidden by a global algo
+        theErrors.push_back( SMESH_Gen::TAlgoStateError() );
+        theErrors.back().Set( SMESH_Hypothesis::HYP_HIDDEN_ALGO, algo, true );
         INFOS( ( isGlobal ? "Global" : "Local" )
               << " <" << algo->GetName() << "> is hidden by global <"
               << aGlobIgnoAlgo->GetName() << ">");
@@ -680,7 +670,7 @@ static bool checkMissing(SMESH_Gen*                aGen,
   }
   case SMESH_subMesh::MISSING_HYP: {
     // notify if an algo missing hyp is attached to aSubMesh
-    algo = aGen->GetAlgo( aMesh, aSubMesh->GetSubShape() );
+    algo = aSubMesh->GetAlgo();
     ASSERT( algo );
     bool IsGlobalHypothesis = aGen->IsGlobalHypothesis( algo, aMesh );
     if (!IsGlobalHypothesis || !globalChecked[ algo->GetDim() ])
@@ -731,7 +721,7 @@ static bool checkMissing(SMESH_Gen*                aGen,
   {
     bool checkNoAlgo2 = ( algo->NeedDiscreteBoundary() );
     SMESH_subMeshIteratorPtr itsub = aSubMesh->getDependsOnIterator( /*includeSelf=*/false,
-                                                                     /*complexShapeFirst=*/false);
+                                                                     /*complexShapeFirst=*/true);
     while ( itsub->more() )
     {
       // sub-meshes should not be checked further more
@@ -823,7 +813,8 @@ bool SMESH_Gen::GetAlgoState(SMESH_Mesh&               theMesh,
   for (dim = 3; dim > 0; dim--)
   {
     if (aGlobAlgoArr[ dim ] &&
-        !aGlobAlgoArr[ dim ]->NeedDiscreteBoundary())
+        !aGlobAlgoArr[ dim ]->NeedDiscreteBoundary() /*&&
+        !aGlobAlgoArr[ dim ]->SupportSubmeshes()*/ )
     {
       aGlobIgnoAlgo = aGlobAlgoArr[ dim ];
       break;
@@ -880,14 +871,13 @@ bool SMESH_Gen::GetAlgoState(SMESH_Mesh&               theMesh,
     if ( smToCheck->GetSubShape().ShapeType() == TopAbs_VERTEX)
       break;
 
-    if ( aCheckedSubs.insert( smToCheck ).second ) // not yet checked
-      if (!checkMissing (this, theMesh, smToCheck, aTopAlgoDim,
-                         globalChecked, checkNoAlgo, aCheckedSubs, theErrors))
-      {
-        ret = false;
-        if (smToCheck->GetAlgoState() == SMESH_subMesh::NO_ALGO )
-          checkNoAlgo = false;
-      }
+    if (!checkMissing (this, theMesh, smToCheck, aTopAlgoDim,
+                       globalChecked, checkNoAlgo, aCheckedSubs, theErrors))
+    {
+      ret = false;
+      if (smToCheck->GetAlgoState() == SMESH_subMesh::NO_ALGO )
+        checkNoAlgo = false;
+    }
   }
 
   if ( !hasAlgo ) {

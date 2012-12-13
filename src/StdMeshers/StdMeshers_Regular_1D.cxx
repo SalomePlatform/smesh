@@ -560,17 +560,20 @@ void StdMeshers_Regular_1D::redistributeNearVertices (SMESH_Mesh &          theM
         double Um = *itU++;
         double Lm = GCPnts_AbscissaPoint::Length( theC3d, Um, *itU);
         double L = GCPnts_AbscissaPoint::Length( theC3d, *itU, l);
-        StdMeshers_Regular_1D algo( *this );
-        algo._hypType = BEG_END_LENGTH;
-        algo._value[ BEG_LENGTH_IND ] = Lm;
-        algo._value[ END_LENGTH_IND ] = vertexLength;
+        static StdMeshers_Regular_1D* auxAlgo = 0;
+        if ( !auxAlgo ) {
+          auxAlgo = new StdMeshers_Regular_1D( _gen->GetANewId(), _studyId, _gen );
+          auxAlgo->_hypType = BEG_END_LENGTH;
+        }
+        auxAlgo->_value[ BEG_LENGTH_IND ] = Lm;
+        auxAlgo->_value[ END_LENGTH_IND ] = vertexLength;
         double from = *itU, to = l;
         if ( isEnd1 ) {
           std::swap( from, to );
-          std::swap( algo._value[ BEG_LENGTH_IND ], algo._value[ END_LENGTH_IND ]);
+          std::swap( auxAlgo->_value[ BEG_LENGTH_IND ], auxAlgo->_value[ END_LENGTH_IND ]);
         }
         list<double> params;
-        if ( algo.computeInternalParameters( theMesh, theC3d, L, from, to, params, false ))
+        if ( auxAlgo->computeInternalParameters( theMesh, theC3d, L, from, to, params, false ))
         {
           if ( isEnd1 ) params.reverse();
           while ( 1 + nHalf-- )

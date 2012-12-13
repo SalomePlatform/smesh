@@ -220,8 +220,9 @@ class StdMeshers_ProjectionUtils
   /*!
    * \brief Return a boundary EDGE of edgeContainer
    */
-  static TopoDS_Edge GetBoundaryEdge(const TopoDS_Shape& edgeContainer,
-                                     const SMESH_Mesh&   mesh);
+  static TopoDS_Edge GetBoundaryEdge(const TopoDS_Shape&       edgeContainer,
+                                     const SMESH_Mesh&         mesh,
+                                     std::list< TopoDS_Edge >* allBndEdges = 0 );
 };
 
 #endif

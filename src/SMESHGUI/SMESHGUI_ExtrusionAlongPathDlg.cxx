@@ -323,16 +323,16 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   mySMESHGUI->SetActiveDialogBox(this);
 
   // Costruction of the logical filter for the elements: mesh/sub-mesh/group
-  SMESH_TypeFilter* aMeshOrSubMeshFilter = new SMESH_TypeFilter (MESHorSUBMESH);
-  SMESH_TypeFilter* aSmeshGroupFilter    = new SMESH_TypeFilter (GROUP);
+  SMESH_TypeFilter* aMeshOrSubMeshFilter = new SMESH_TypeFilter (SMESH::MESHorSUBMESH);
+  SMESH_TypeFilter* aSmeshGroupFilter    = new SMESH_TypeFilter (SMESH::GROUP);
 
   QList<SUIT_SelectionFilter*> aListOfFilters;
   if (aMeshOrSubMeshFilter) aListOfFilters.append(aMeshOrSubMeshFilter);
   if (aSmeshGroupFilter)    aListOfFilters.append(aSmeshGroupFilter);
 
   myElementsFilter = new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR);
-  //myPathMeshFilter = new SMESH_TypeFilter (MESH);
-  myPathMeshFilter = new SMESH_TypeFilter(MESHorSUBMESH);
+  //myPathMeshFilter = new SMESH_TypeFilter (SMESH::MESH);
+  myPathMeshFilter = new SMESH_TypeFilter(SMESH::MESHorSUBMESH);
 
   myHelpFileName = "extrusion_along_path_page.html";
 
@@ -978,8 +978,8 @@ void SMESHGUI_ExtrusionAlongPathDlg::SetEditCurrentArgument (QToolButton* button
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
       aViewWindow->SetSelectionMode(NodeSelection);
 
-    SMESH_TypeFilter* aMeshOrSubMeshFilter = new SMESH_TypeFilter(MESHorSUBMESH);
-    SMESH_TypeFilter* aSmeshGroupFilter    = new SMESH_TypeFilter(GROUP);
+    SMESH_TypeFilter* aMeshOrSubMeshFilter = new SMESH_TypeFilter(SMESH::MESHorSUBMESH);
+    SMESH_TypeFilter* aSmeshGroupFilter    = new SMESH_TypeFilter(SMESH::GROUP);
     SMESH_NumberFilter* aVertexFilter      = new SMESH_NumberFilter ("GEOM", TopAbs_SHAPE,
                                                                      -1, TopAbs_VERTEX);
     QList<SUIT_SelectionFilter*> aListOfFilters;

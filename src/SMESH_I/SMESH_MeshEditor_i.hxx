@@ -40,6 +40,10 @@
 
 class SMESH_Mesh_i;
 
+namespace MeshEditor_I {
+  struct TPreviewMesh;
+}
+
 class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
 {
 public:
@@ -99,6 +103,19 @@ public:
   CORBA::Long AddPolyhedralVolume(const SMESH::long_array & IDsOfNodes,
                                   const SMESH::long_array & Quantities);
   CORBA::Long AddPolyhedralVolumeByFaces(const SMESH::long_array & IdsOfFaces);
+
+  /*!
+   * \brief Create 0D elements on all nodes of the given object except those 
+   *        nodes on which a 0D element already exists.
+   *  \param theObject object on whose nodes 0D elements will be created.
+   *  \param theGroupName optional name of a group to add 0D elements created
+   *         and/or found on nodes of \a theObject.
+   *  \return an object (a new group or a temporary SMESH_IDSource) holding
+   *          ids of new and/or found 0D elements.
+   */
+  SMESH::SMESH_IDSource_ptr Create0DElementsOnAllNodes(SMESH::SMESH_IDSource_ptr theObject,
+                                                       const char*               theGroupName)
+    throw (SALOME::SALOME_Exception);
 
   /*!
    * \brief Bind a node to a vertex
@@ -822,13 +839,17 @@ public:
 
 private: //!< private methods
 
-  SMESHDS_Mesh * GetMeshDS() { return myMesh->GetMeshDS(); }
+  ::SMESH_MeshEditor& getEditor();
+
+  SMESHDS_Mesh * getMeshDS() { return myMesh->GetMeshDS(); }
+
+  MeshEditor_I::TPreviewMesh * getPreviewMesh( SMDSAbs_ElementType previewType = SMDSAbs_All );
 
   /*!
    * \brief Update myLastCreated* or myPreviewData
    * \param anEditor - it contains edition results
    */
-  void storeResult(::SMESH_MeshEditor& anEditor);
+  //void storeResult(::SMESH_MeshEditor& anEditor);
   /*!
    * \brief Clear myLastCreated* or myPreviewData
    */
@@ -913,12 +934,19 @@ private: //!< private methods
 
 private: //!< fields
 
-  SMESH_Mesh_i*      myMesh_i;
-  SMESH_Mesh *       myMesh;
-  ::SMESH_MeshEditor myEditor;
+  SMESH_Mesh_i*                myMesh_i;
+  SMESH_Mesh *                 myMesh;
+  ::SMESH_MeshEditor           myEditor;
 
+  bool                         myIsPreviewMode;
+  MeshEditor_I::TPreviewMesh * myPreviewMesh;
+  ::SMESH_MeshEditor *         myPreviewEditor;
   SMESH::MeshPreviewStruct_var myPreviewData;
-  bool                         myPreviewMode;
+
+  // temporary IDSources
+  struct _IDSource;
+  std::list< _IDSource* >      myAuxIDSources;
+  void                         deleteAuxIDSources();
 };
 
 #endif

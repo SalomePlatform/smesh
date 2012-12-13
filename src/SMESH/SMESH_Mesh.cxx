@@ -347,16 +347,32 @@ void SMESH_Mesh::Load()
 
 void SMESH_Mesh::Clear()
 {
-  // clear mesh data
-  _myMeshDS->ClearMesh();
-
-  // update compute state of submeshes
-  if ( SMESH_subMesh *sm = GetSubMeshContaining( GetShapeToMesh() ) )
+  if ( HasShapeToMesh() ) // remove all nodes and elements
   {
-    sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
-    sm->ComputeSubMeshStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
-    sm->ComputeStateEngine( SMESH_subMesh::CLEAN ); // for event listeners (issue 0020918)
-    sm->ComputeSubMeshStateEngine( SMESH_subMesh::CLEAN );
+    // clear mesh data
+    _myMeshDS->ClearMesh();
+
+    // update compute state of submeshes
+    if ( SMESH_subMesh *sm = GetSubMeshContaining( GetShapeToMesh() ) )
+    {
+      sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+      sm->ComputeSubMeshStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+      sm->ComputeStateEngine( SMESH_subMesh::CLEAN ); // for event listeners (issue 0020918)
+      sm->ComputeSubMeshStateEngine( SMESH_subMesh::CLEAN );
+    }
+  }
+  else // remove only nodes/elements computed by algorithms
+  {
+    if ( SMESH_subMesh *sm = GetSubMeshContaining( GetShapeToMesh() ) )
+    {
+      SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(/*includeSelf=*/true,
+                                                               /*complexShapeFirst=*/true);
+      while ( smIt->more() )
+      {
+        sm = smIt->next();
+        sm->ComputeStateEngine( SMESH_subMesh::CLEAN );
+      }
+    }
   }
   _isModified = false;
 }
@@ -545,11 +561,13 @@ int SMESH_Mesh::CGNSToMesh(const char*  theFileName,
  */
 //================================================================================
 
-SMESH_ComputeErrorPtr SMESH_Mesh::GMFToMesh(const char* theFileName)
+SMESH_ComputeErrorPtr SMESH_Mesh::GMFToMesh(const char* theFileName,
+                                            bool        theMakeRequiredGroups)
 {
   DriverGMF_Read myReader;
   myReader.SetMesh(_myMeshDS);
   myReader.SetFile(theFileName);
+  myReader.SetMakeRequiredGroups( theMakeRequiredGroups );
   myReader.Perform();
   //theMeshName = myReader.GetMeshName();
 
@@ -1419,11 +1437,14 @@ void SMESH_Mesh::ExportCGNS(const char *        file,
 //================================================================================
 
 void SMESH_Mesh::ExportGMF(const char *        file,
-                           const SMESHDS_Mesh* meshDS)
+                           const SMESHDS_Mesh* meshDS,
+                           bool                withRequiredGroups)
 {
   DriverGMF_Write myWriter;
   myWriter.SetFile( file );
   myWriter.SetMesh( const_cast<SMESHDS_Mesh*>( meshDS ));
+  myWriter.SetExportRequiredGroups( withRequiredGroups );
+
   myWriter.Perform();
 }
 
@@ -1999,7 +2020,9 @@ void SMESH_Mesh::fillAncestorsMap(const TopoDS_Shape& theShape)
   {
     // a geom group is added. Insert it into lists of ancestors before
     // the first ancestor more complex than group members
-    int memberType = TopoDS_Iterator( theShape ).Value().ShapeType();
+    TopoDS_Iterator subIt( theShape );
+    if ( !subIt.More() ) return;
+    int memberType = subIt.Value().ShapeType();
     for ( desType = TopAbs_VERTEX; desType >= memberType; desType-- )
       for (TopExp_Explorer des( theShape, TopAbs_ShapeEnum( desType )); des.More(); des.Next())
       {

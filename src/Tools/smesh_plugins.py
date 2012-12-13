@@ -23,6 +23,7 @@ import salome_pluginsmanager
 
 from spadderPlugin import runSpadderPlugin
 from meshcut_plugin import MeshCut
+from yamsplug_plugin import YamsLct
 
 salome_pluginsmanager.AddFunction('PADDER mesher',
                                   'Create a mesh with PADDER',
@@ -31,3 +32,7 @@ salome_pluginsmanager.AddFunction('PADDER mesher',
 salome_pluginsmanager.AddFunction('MeshCut',
                                   'Cut a tetrahedron mesh by a plane',
                                   MeshCut)
+
+salome_pluginsmanager.AddFunction('ReMesh with Yams',
+                                  'Run Yams',
+                                  YamsLct)

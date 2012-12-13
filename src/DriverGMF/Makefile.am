@@ -23,6 +23,7 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 salomeinclude_HEADERS = \
 	DriverGMF_Read.hxx \
 	DriverGMF_Write.hxx \
+	DriverGMF.hxx \
 	SMESH_DriverGMF.hxx \
 	libmesh5.h
 
@@ -31,20 +32,22 @@ lib_LTLIBRARIES = libMeshDriverGMF.la
 dist_libMeshDriverGMF_la_SOURCES = \
 	DriverGMF_Read.cxx \
 	DriverGMF_Write.cxx \
+	DriverGMF.cxx \
 	libmesh5.c
 
 # additionnal information to compil and link file
 libMeshDriverGMF_la_CPPFLAGS = \
 	$(KERNEL_CXXFLAGS) \
 	$(CAS_CPPFLAGS) \
-        $(VTK_INCLUDES) \
-	$(BOOST_CPPFLAGS) \
+	$(VTK_INCLUDES) \
+	$(BOOST_CPPFLAGS) -DBOOST_SYSTEM_NO_DEPRECATED \
 	-I$(srcdir)/../Driver \
 	-I$(srcdir)/../SMESHUtils \
 	-I$(srcdir)/../SMDS \
 	-I$(srcdir)/../SMESHDS
 
 libMeshDriverGMF_la_LDFLAGS  = \
-	$(BOOST_LIBS) \
+	$(BOOST_LIBS) -lboost_filesystem \
 	../Driver/libMeshDriver.la \
-	../SMESHUtils/libSMESHUtils.la
+	../SMESHUtils/libSMESHUtils.la \
+	$(KERNEL_LDFLAGS) -lSALOMEBasics

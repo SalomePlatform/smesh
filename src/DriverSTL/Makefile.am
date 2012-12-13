@@ -60,6 +60,7 @@ libMeshDriverSTL_la_CPPFLAGS = \
 libMeshDriverSTL_la_LDFLAGS  = \
 	../Driver/libMeshDriver.la \
 	../SMDS/libSMDS.la \
+	$(KERNEL_LDFLAGS) -lSALOMEBasics \
 	$(CAS_LDPATH) -lTKernel -lTKSTL -lTKTopAlgo -lTKMesh
 
 STL_Test_CPPFLAGS = \

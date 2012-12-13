@@ -91,6 +91,7 @@
 SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   : SMESHGUI_PreviewDlg( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
+    myEditCurrentArgument(0),
     myFilterDlg( 0 ),
     mySelectedObject(SMESH::SMESH_IDSource::_nil())
 {
@@ -281,19 +282,19 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
 
   // Costruction of the logical filter for the elements: mesh/sub-mesh/group
   QList<SUIT_SelectionFilter*> aListOfFilters;
-  aListOfFilters.append(new SMESH_TypeFilter (MESH));
-  aListOfFilters.append(new SMESH_TypeFilter (SUBMESH_VERTEX));
-  aListOfFilters.append(new SMESH_TypeFilter (GROUP_NODE));
+  aListOfFilters.append(new SMESH_TypeFilter (SMESH::MESH));
+  aListOfFilters.append(new SMESH_TypeFilter (SMESH::SUBMESH_VERTEX));
+  aListOfFilters.append(new SMESH_TypeFilter (SMESH::GROUP_NODE));
   myMeshOrSubMeshOrGroupFilter0D =
     new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR, /*takeOwnership=*/true);
-  aListOfFilters[0] = new SMESH_TypeFilter (MESH);
-  aListOfFilters[1] = new SMESH_TypeFilter (SUBMESH_EDGE);
-  aListOfFilters[2] = new SMESH_TypeFilter (GROUP_EDGE);
+  aListOfFilters[0] = new SMESH_TypeFilter (SMESH::MESH);
+  aListOfFilters[1] = new SMESH_TypeFilter (SMESH::SUBMESH_EDGE);
+  aListOfFilters[2] = new SMESH_TypeFilter (SMESH::GROUP_EDGE);
   myMeshOrSubMeshOrGroupFilter1D =
     new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR, /*takeOwnership=*/true);
-  aListOfFilters[0] = new SMESH_TypeFilter (MESH);
-  aListOfFilters[1] = new SMESH_TypeFilter (SUBMESH_FACE);
-  aListOfFilters[2] = new SMESH_TypeFilter (GROUP_FACE);
+  aListOfFilters[0] = new SMESH_TypeFilter (SMESH::MESH);
+  aListOfFilters[1] = new SMESH_TypeFilter (SMESH::SUBMESH_FACE);
+  aListOfFilters[2] = new SMESH_TypeFilter (SMESH::GROUP_FACE);
   myMeshOrSubMeshOrGroupFilter2D =
     new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR, /*takeOwnership=*/true);
 

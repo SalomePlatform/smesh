@@ -169,6 +169,11 @@
 (inlets and oulets)</translation>
     </message>
     <message>
+        <source>SMESH_EDGES_WO_LAYERS</source>
+        <translation>Edges without layers
+(inlets and oulets)</translation>
+    </message>
+    <message>
         <source>SMESH_MAX_LENGTH_TITLE</source>
         <translation>Hypothesis Construction</translation>
     </message>

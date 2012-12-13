@@ -169,6 +169,11 @@
 (entrées et sorties)</translation>
     </message>
     <message>
+        <source>SMESH_EDGES_WO_LAYERS</source>
+        <translation>Arêtes sans couche limite
+(entrées et sorties)</translation>
+    </message>
+    <message>
         <source>SMESH_MAX_LENGTH_TITLE</source>
         <translation>Construction de l&apos;hypothèse</translation>
     </message>

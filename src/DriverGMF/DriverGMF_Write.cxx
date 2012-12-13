@@ -24,10 +24,13 @@
 // Author    : Edward AGAPOV (eap)
 
 #include "DriverGMF_Write.hxx"
+#include "DriverGMF.hxx"
 
 #include "SMESHDS_GroupBase.hxx"
 #include "SMESHDS_Mesh.hxx"
 #include "SMESH_Comment.hxx"
+
+#include <Basics_Utils.hxx>
 
 extern "C"
 {
@@ -57,7 +60,7 @@ extern "C"
 
 
 DriverGMF_Write::DriverGMF_Write():
-  Driver_SMESHDS_Mesh()
+  Driver_SMESHDS_Mesh(), _exportRequiredGroups( true )
 {
 }
 DriverGMF_Write::~DriverGMF_Write()
@@ -66,13 +69,20 @@ DriverGMF_Write::~DriverGMF_Write()
 
 Driver_Mesh::Status DriverGMF_Write::Perform()
 {
-  const int dim = 3, version = 3;
+  Kernel_Utils::Localizer loc;
+
+  const int dim = 3, version = sizeof(long) == 4 ? 2 : 3;
 
   int meshID = GmfOpenMesh( myFile.c_str(), GmfWrite, version, dim );
   if ( !meshID )
-    return addMessage( SMESH_Comment("Can't open for writing ") << myFile, /*fatal=*/true );
+  {
+    if ( DriverGMF::isExtensionCorrect( myFile ))
+      return addMessage( SMESH_Comment("Can't open for writing ") << myFile, /*fatal=*/true );
+    else
+      return addMessage( SMESH_Comment("Not '.mesh' or '.meshb' extension of file ") << myFile, /*fatal=*/true );
+  }
 
-  DriverGMF_MeshCloser aMeshCloser( meshID ); // An object closing GMF mesh at destruction
+  DriverGMF::MeshCloser aMeshCloser( meshID ); // An object closing GMF mesh at destruction
 
   // nodes
   std::map< const SMDS_MeshNode* , int > node2IdMap;
@@ -233,85 +243,88 @@ Driver_Mesh::Status DriverGMF_Write::Perform()
     END_ELEM_WRITE( prism );
 
 
-  // required entities
-  SMESH_Comment badGroups;
-  const std::set<SMESHDS_GroupBase*>&      groupSet = myMesh->GetGroups();
-  std::set<SMESHDS_GroupBase*>::const_iterator grIt = groupSet.begin();
-  for ( ; grIt != groupSet.end(); ++grIt )
+  if ( _exportRequiredGroups )
   {
-    const SMESHDS_GroupBase* group = *grIt;
-    std::string          groupName = group->GetStoreName();
-    std::string::size_type     pos = groupName.find( "_required_" );
-    if ( pos == std::string::npos ) continue;
-
-    int                    gmfKwd;
-    SMDSAbs_EntityType smdsEntity;
-    std::string entity = groupName.substr( pos + strlen("_required_"));
-    if      ( entity == "Vertices" ) {
-      gmfKwd   = GmfRequiredVertices;
-      smdsEntity = SMDSEntity_Node;
-    }
-    else if ( entity == "Edges" ) {
-      gmfKwd   = GmfRequiredEdges;
-      smdsEntity = SMDSEntity_Edge;
-    }
-    else if ( entity == "Triangles" ) {
-      gmfKwd   = GmfRequiredTriangles;
-      smdsEntity = SMDSEntity_Triangle;
-    }
-    else if ( entity == "Quadrilaterals" ) {
-      gmfKwd   = GmfRequiredQuadrilaterals;
-      smdsEntity = SMDSEntity_Quadrangle;
-    }
-    else {
-      addMessage( SMESH_Comment("Invalig gmf entity name: ") << entity, /*fatal=*/false );
-      continue;
-    }
-
-    // check elem type in the group
-    int nbOkElems = 0;
-    SMDS_ElemIteratorPtr elemIt = group->GetElements();
-    while ( elemIt->more() )
-      nbOkElems += ( elemIt->next()->GetEntityType() == smdsEntity );
-
-    if ( nbOkElems != group->Extent() && nbOkElems == 0 )
+    // required entities
+    SMESH_Comment badGroups;
+    const std::set<SMESHDS_GroupBase*>&      groupSet = myMesh->GetGroups();
+    std::set<SMESHDS_GroupBase*>::const_iterator grIt = groupSet.begin();
+    for ( ; grIt != groupSet.end(); ++grIt )
     {
-      badGroups << " " << groupName;
-      continue;
-    }
+      const SMESHDS_GroupBase* group = *grIt;
+      std::string          groupName = group->GetStoreName();
+      std::string::size_type     pos = groupName.find( "_required_" );
+      if ( pos == std::string::npos ) continue;
 
-    // choose a TElem2IDMap
-    TElem2IDMap* elem2IDMap = 0;
-    if ( smdsEntity == SMDSEntity_Quadrangle && nbOkElems != myMesh->NbFaces() )
-      elem2IDMap = & quad2IDMap;
-    else if ( smdsEntity == SMDSEntity_Triangle && nbOkElems != myMesh->NbFaces() )
-      elem2IDMap = & tria2IDMap;
-    else if ( smdsEntity == SMDSEntity_Edge && nbOkElems != myMesh->NbEdges() )
-      elem2IDMap = & edge2IDMap;
-
-    // write the group
-    GmfSetKwd( meshID, gmfKwd, nbOkElems );
-    elemIt = group->GetElements();
-    if ( elem2IDMap )
-      for ( ; elemIt->more(); )
-      {
-        const SMDS_MeshElement* elem = elemIt->next();
-        if ( elem->GetEntityType() == smdsEntity )
-          GmfSetLin( meshID, gmfKwd, (*elem2IDMap)[ elem ] );
+      int                    gmfKwd;
+      SMDSAbs_EntityType smdsEntity;
+      std::string entity = groupName.substr( pos + strlen("_required_"));
+      if      ( entity == "Vertices" ) {
+        gmfKwd   = GmfRequiredVertices;
+        smdsEntity = SMDSEntity_Node;
       }
-    else
-      for ( int gmfID = 1; elemIt->more(); ++gmfID)
-      {
-        const SMDS_MeshElement* elem = elemIt->next();
-        if ( elem->GetEntityType() == smdsEntity )
-          GmfSetLin( meshID, gmfKwd, gmfID );
+      else if ( entity == "Edges" ) {
+        gmfKwd   = GmfRequiredEdges;
+        smdsEntity = SMDSEntity_Edge;
+      }
+      else if ( entity == "Triangles" ) {
+        gmfKwd   = GmfRequiredTriangles;
+        smdsEntity = SMDSEntity_Triangle;
+      }
+      else if ( entity == "Quadrilaterals" ) {
+        gmfKwd   = GmfRequiredQuadrilaterals;
+        smdsEntity = SMDSEntity_Quadrangle;
+      }
+      else {
+        addMessage( SMESH_Comment("Invalig gmf entity name: ") << entity, /*fatal=*/false );
+        continue;
       }
 
-  } // loop on groups
+      // check elem type in the group
+      int nbOkElems = 0;
+      SMDS_ElemIteratorPtr elemIt = group->GetElements();
+      while ( elemIt->more() )
+        nbOkElems += ( elemIt->next()->GetEntityType() == smdsEntity );
 
-  if ( !badGroups.empty() )
-    addMessage( SMESH_Comment("Groups of elements of inappropriate geometry:")
-                << badGroups, /*fatal=*/false );
+      if ( nbOkElems != group->Extent() && nbOkElems == 0 )
+      {
+        badGroups << " " << groupName;
+        continue;
+      }
+
+      // choose a TElem2IDMap
+      TElem2IDMap* elem2IDMap = 0;
+      if ( smdsEntity == SMDSEntity_Quadrangle && nbOkElems != myMesh->NbFaces() )
+        elem2IDMap = & quad2IDMap;
+      else if ( smdsEntity == SMDSEntity_Triangle && nbOkElems != myMesh->NbFaces() )
+        elem2IDMap = & tria2IDMap;
+      else if ( smdsEntity == SMDSEntity_Edge && nbOkElems != myMesh->NbEdges() )
+        elem2IDMap = & edge2IDMap;
+
+      // write the group
+      GmfSetKwd( meshID, gmfKwd, nbOkElems );
+      elemIt = group->GetElements();
+      if ( elem2IDMap )
+        for ( ; elemIt->more(); )
+        {
+          const SMDS_MeshElement* elem = elemIt->next();
+          if ( elem->GetEntityType() == smdsEntity )
+            GmfSetLin( meshID, gmfKwd, (*elem2IDMap)[ elem ] );
+        }
+      else
+        for ( int gmfID = 1; elemIt->more(); ++gmfID)
+        {
+          const SMDS_MeshElement* elem = elemIt->next();
+          if ( elem->GetEntityType() == smdsEntity )
+            GmfSetLin( meshID, gmfKwd, gmfID );
+        }
+
+    } // loop on groups
+
+    if ( !badGroups.empty() )
+      addMessage( SMESH_Comment("Groups of elements of inappropriate geometry:")
+                  << badGroups, /*fatal=*/false );
+  }
 
   return DRS_OK;
 }

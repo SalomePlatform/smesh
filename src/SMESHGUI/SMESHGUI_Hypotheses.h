@@ -78,14 +78,17 @@ signals:
 protected:
   struct StdParam
   {
-    QString   myName;
-    QVariant  myValue;
-    bool      isVariable;
-    QString   myText;
-    StdParam(){
+    QString    myName;
+    QVariant   myValue;
+    bool       isVariable;
+    QString    myText;
+    QByteArray myTextAsBytes;
+    StdParam() {
       isVariable = false;
     }
-    const char* text() const { return myText.toLatin1().constData(); }
+    const char* text() const {
+      ((QByteArray&) myTextAsBytes) = myText.toLatin1(); return myTextAsBytes.constData();
+    }
   };
 
   typedef QList<StdParam>      ListOfStdParams;

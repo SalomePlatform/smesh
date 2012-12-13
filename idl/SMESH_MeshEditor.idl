@@ -151,7 +151,6 @@ module SMESH
      */
     long AddPolyhedralVolume (in long_array IdsOfNodes,
                               in long_array Quantities);
-
     /*!
      *  Create volume of many faces, giving IDs of existing faces.
      *  \param IdsOfFaces List of face IDs for volume creation.
@@ -159,6 +158,19 @@ module SMESH
      *        of the given faces, not to the faces itself.
      */
     long AddPolyhedralVolumeByFaces (in long_array IdsOfFaces);
+
+    /*!
+     * Create 0D elements on all nodes of the given object except those 
+     * nodes on which a 0D element already exists.
+     *  \param theObject object on whose nodes 0D elements will be created.
+     *  \param theGroupName optional name of a group to add 0D elements created
+     *         and/or found on nodes of \a theObject.
+     *  \return an object (a new group or a temporary SMESH_IDSource) holding
+     *          ids of new and/or found 0D elements.
+     */
+    SMESH_IDSource Create0DElementsOnAllNodes(in SMESH_IDSource theObject,
+                                              in string         theGroupName)
+      raises (SALOME::SALOME_Exception);
 
     /*!
      * \brief Bind a node to a vertex

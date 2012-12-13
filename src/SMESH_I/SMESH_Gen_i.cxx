@@ -65,6 +65,7 @@
 #endif
 
 #include "SMESH_Gen_i.hxx"
+#include "SMESH_version.h"
 
 #include "SMDS_EdgePosition.hxx"
 #include "SMDS_FacePosition.hxx"
@@ -1231,6 +1232,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromCGNS( const char* theFileName,
 
 SMESH::SMESH_Mesh_ptr
 SMESH_Gen_i::CreateMeshesFromGMF( const char*             theFileName,
+                                  CORBA::Boolean          theMakeRequiredGroups,
                                   SMESH::ComputeError_out theError)
     throw ( SALOME::SALOME_Exception )
 {
@@ -1253,12 +1255,14 @@ SMESH_Gen_i::CreateMeshesFromGMF( const char*             theFileName,
     aStudyBuilder->CommitCommand();
     if ( !aSO->_is_nil() ) {
       // Update Python script
-      TPythonDump() << "("<< aSO << ", error) = " << this << ".CreateMeshesFromGMF(r'" << theFileName << "')";
+      TPythonDump() << "("<< aSO << ", error) = " << this << ".CreateMeshesFromGMF(r'"
+                    << theFileName << "', "
+                    << theMakeRequiredGroups << " )";
     }
   }
   SMESH_Mesh_i* aServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( aMesh ).in() );
   ASSERT( aServant );
-  theError = aServant->ImportGMFFile( theFileName );
+  theError = aServant->ImportGMFFile( theFileName, theMakeRequiredGroups );
   aServant->GetImpl().GetMeshDS()->Modified();
   return aMesh._retn();
 }
@@ -1383,8 +1387,8 @@ SMESH::compute_error_array* SMESH_Gen_i::GetComputeErrors( SMESH::SMESH_Mesh_ptr
       while ( smIt->more() )
       {
         sm = smIt->next();
-        if ( sm->GetSubShape().ShapeType() == TopAbs_VERTEX )
-          break;
+        // if ( sm->GetSubShape().ShapeType() == TopAbs_VERTEX )
+        //   break;
         SMESH_ComputeErrorPtr error = sm->GetComputeError();
         if ( error && !error->IsOK() && error->myAlgo )
         {
@@ -2213,6 +2217,7 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
           SMESH_Mesh_i* anInitImpl = dynamic_cast<SMESH_Mesh_i*>( GetServant( anInitMesh ).in() );
           if ( anInitImpl ) {
             ::SMESH_Mesh& aInitLocMesh = anInitImpl->GetImpl();
+            aInitLocMesh.Load();
             SMESHDS_Mesh* anInitMeshDS = aInitLocMesh.GetMeshDS();
 
             TIDsMap nodesMap;
@@ -2309,7 +2314,7 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
                   }
                 }
               }
-            }//elems loop
+            } //elems loop
 
             // copy orphan nodes
             SMDS_NodeIteratorPtr  itNodes = anInitMeshDS->nodesIterator();
@@ -2411,8 +2416,8 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
             }
 
             // check that current group name and type don't have identical ones in union mesh
-            for (int i = 0; i < aListOfGroups->length(); i++) {
-              aGroup = aListOfGroups[i];
+            for (int iG = 0; iG < aListOfGroups->length(); iG++) {
+              aGroup = aListOfGroups[iG];
               aListOfNewGroups.clear();
               aGroupType = aGroup->GetType();
               aGroupName = aGroup->GetName();
@@ -4911,6 +4916,16 @@ void SMESH_Gen_i::SetName(const char* theIOR,
 int SMESH_Gen_i::GetCurrentStudyID()
 {
   return myCurrentStudy->_is_nil() || myCurrentStudy->_non_existent() ? -1 : myCurrentStudy->StudyId();
+}
+
+// Version information
+char* SMESH_Gen_i::getVersion()
+{
+#if SMESH_DEVELOPMENT
+  return CORBA::string_dup(SMESH_VERSION_STR"dev");
+#else
+  return CORBA::string_dup(SMESH_VERSION_STR);
+#endif
 }
 
 //=============================================================================

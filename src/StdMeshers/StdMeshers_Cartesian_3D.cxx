@@ -84,10 +84,12 @@
 
 using namespace std;
 
+#ifdef _DEBUG_
 //#define _MY_DEBUG_
+#endif
 
 #if OCC_VERSION_LARGE <= 0x06050300
-// workaround it required only for OCCT6.5.3 and older (see OCC22809)
+// workaround is required only for OCCT6.5.3 and older (see OCC22809)
 #define ELLIPSOLID_WORKAROUND
 #endif
 

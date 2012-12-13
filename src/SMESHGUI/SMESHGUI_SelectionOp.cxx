@@ -491,9 +491,16 @@ void SMESHGUI_SelectionOp::onTextChanged( int, const QStringList& list )
     IdList ids; extractIds( list, ids, '\0' );
     IdList::const_iterator anIt = ids.begin(),
                            aLast = ids.end();
-    for( ; anIt!=aLast; anIt++ )
-      if( const SMDS_MeshNode * n = aMesh->FindNode( *anIt ) )
-        newIndices.Add( n->GetID() );
+    if ( selectionMode() == NodeSelection )
+      for( ; anIt!=aLast; anIt++ ) {
+        if( const SMDS_MeshNode * n = aMesh->FindNode( *anIt ) )
+          newIndices.Add( n->GetID() );
+      }
+    else 
+      for( ; anIt!=aLast; anIt++ ) {
+        if( const SMDS_MeshElement* e = aMesh->FindElement( *anIt ) )
+          newIndices.Add( e->GetID() );
+      }
 
     selector()->AddOrRemoveIndex( sel.First(), newIndices, false );
     highlight( sel.First(), true, true );

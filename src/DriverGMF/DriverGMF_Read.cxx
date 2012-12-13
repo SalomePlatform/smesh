@@ -24,11 +24,13 @@
 // Author    : Edward AGAPOV (eap)
 
 #include "DriverGMF_Read.hxx"
-#include "DriverGMF_Write.hxx"
+#include "DriverGMF.hxx"
 
 #include "SMESHDS_Group.hxx"
 #include "SMESHDS_Mesh.hxx"
 #include "SMESH_Comment.hxx"
+
+#include <Basics_Utils.hxx>
 
 extern "C"
 {
@@ -38,15 +40,9 @@ extern "C"
 #include <stdarg.h>
 
 // --------------------------------------------------------------------------------
-// Closing GMF mesh at destruction
-DriverGMF_MeshCloser::~DriverGMF_MeshCloser()
-{
-  if ( _gmfMeshID )
-    GmfCloseMesh( _gmfMeshID );
-}
-// --------------------------------------------------------------------------------
 DriverGMF_Read::DriverGMF_Read():
-  Driver_SMESHDS_Mesh()
+  Driver_SMESHDS_Mesh(),
+  _makeRequiredGroups( true )
 {
 }
 // --------------------------------------------------------------------------------
@@ -62,6 +58,8 @@ DriverGMF_Read::~DriverGMF_Read()
 
 Driver_Mesh::Status DriverGMF_Read::Perform()
 {
+  Kernel_Utils::Localizer loc;
+
   Status status = DRS_OK;
 
   int dim, version;
@@ -69,9 +67,13 @@ Driver_Mesh::Status DriverGMF_Read::Perform()
   // open the file
   int meshID = GmfOpenMesh( myFile.c_str(), GmfRead, &version, &dim );
   if ( !meshID )
-    return addMessage( SMESH_Comment("Can't open for reading ") << myFile, /*fatal=*/true );
-
-  DriverGMF_MeshCloser aMeshCloser( meshID ); // An object closing GMF mesh at destruction
+  {
+    if ( DriverGMF::isExtensionCorrect( myFile ))
+      return addMessage( SMESH_Comment("Can't open for reading ") << myFile, /*fatal=*/true );
+    else
+      return addMessage( SMESH_Comment("Not '.mesh' or '.meshb' extension of file ") << myFile, /*fatal=*/true );
+  }
+  DriverGMF::MeshCloser aMeshCloser( meshID ); // An object closing GMF mesh at destruction
 
   // Read nodes
 
@@ -277,40 +279,43 @@ Driver_Mesh::Status DriverGMF_Read::Perform()
 
   // Read required entities into groups
 
-  // get ids of existing groups
-  std::set< int > groupIDs;
-  const std::set<SMESHDS_GroupBase*>& groups = myMesh->GetGroups();
-  std::set<SMESHDS_GroupBase*>::const_iterator grIter = groups.begin();
-  for ( ; grIter != groups.end(); ++grIter )
-    groupIDs.insert( (*grIter)->GetID() );
-  if ( groupIDs.empty() ) groupIDs.insert( 0 );
-
-  const int kes[4][3] = { { GmfRequiredVertices,      SMDSAbs_Node, nodeIDShift },
-                          { GmfRequiredEdges,         SMDSAbs_Edge, edgeIDShift },
-                          { GmfRequiredTriangles,     SMDSAbs_Face, triaIDShift },
-                          { GmfRequiredQuadrilaterals,SMDSAbs_Face, quadIDShift }};
-  const char* names[4] = { "_required_Vertices"      ,
-                           "_required_Edges"         ,
-                           "_required_Triangles"     ,
-                           "_required_Quadrilaterals" };
-  for ( int i = 0; i < 4; ++i )
+  if ( _makeRequiredGroups )
   {
-    int                 gmfKwd = kes[i][0];
-    SMDSAbs_ElementType entity = (SMDSAbs_ElementType) kes[i][1];
-    int                 shift  = kes[i][2];
-    if ( int nb = GmfStatKwd(meshID, gmfKwd))
-    {
-      const int newID = *groupIDs.rbegin() + 1;
-      groupIDs.insert( newID );
-      SMESHDS_Group* group = new SMESHDS_Group( newID, myMesh, entity );
-      group->SetStoreName( names[i] );
-      myMesh->AddGroup( group );
+    // get ids of existing groups
+    std::set< int > groupIDs;
+    const std::set<SMESHDS_GroupBase*>& groups = myMesh->GetGroups();
+    std::set<SMESHDS_GroupBase*>::const_iterator grIter = groups.begin();
+    for ( ; grIter != groups.end(); ++grIter )
+      groupIDs.insert( (*grIter)->GetID() );
+    if ( groupIDs.empty() ) groupIDs.insert( 0 );
 
-      GmfGotoKwd(meshID, gmfKwd);
-      for ( int i = 0; i < nb; ++i )
+    const int kes[4][3] = { { GmfRequiredVertices,      SMDSAbs_Node, nodeIDShift },
+                            { GmfRequiredEdges,         SMDSAbs_Edge, edgeIDShift },
+                            { GmfRequiredTriangles,     SMDSAbs_Face, triaIDShift },
+                            { GmfRequiredQuadrilaterals,SMDSAbs_Face, quadIDShift }};
+    const char* names[4] = { "_required_Vertices"      ,
+                             "_required_Edges"         ,
+                             "_required_Triangles"     ,
+                             "_required_Quadrilaterals" };
+    for ( int i = 0; i < 4; ++i )
+    {
+      int                 gmfKwd = kes[i][0];
+      SMDSAbs_ElementType entity = (SMDSAbs_ElementType) kes[i][1];
+      int                 shift  = kes[i][2];
+      if ( int nb = GmfStatKwd(meshID, gmfKwd))
       {
-        GmfGetLin(meshID, gmfKwd, &iN[0] );
-        group->Add( shift + iN[0] );
+        const int newID = *groupIDs.rbegin() + 1;
+        groupIDs.insert( newID );
+        SMESHDS_Group* group = new SMESHDS_Group( newID, myMesh, entity );
+        group->SetStoreName( names[i] );
+        myMesh->AddGroup( group );
+
+        GmfGotoKwd(meshID, gmfKwd);
+        for ( int i = 0; i < nb; ++i )
+        {
+          GmfGetLin(meshID, gmfKwd, &iN[0] );
+          group->Add( shift + iN[0] );
+        }
       }
     }
   }

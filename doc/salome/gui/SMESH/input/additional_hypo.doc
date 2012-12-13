@@ -20,8 +20,8 @@ adjacent elements).
 <h2>Quadratic Mesh</h2>
 
 Quadratic Mesh hypothesis allows to build a quadratic mesh (whose
-edges are not straight but broken lines and can be defined by three
-points: first, middle and last) instead of an ordinary one.
+edges are not straight but curved lines and can be defined by three
+points: first, middle and last instead of an ordinary two).
 
 \anchor propagation_anchor
 <h2>Propagation of 1D Hypothesis on opposite edges</h2>
@@ -47,27 +47,34 @@ hypothesis, this hypothesis has one restriction on its work: the total quantity 
 segments on all four sides of the face must be even (divisible by 2).
 
 \anchor viscous_layers_anchor
-<h2>Viscous Layers</h2>
+<h2>Viscous Layers and Viscous Layers 2D</h2>
 
-<b>Viscous Layers</b> additional hypothesis can be used together with
-some 3D algorithms, Hexahedron(i,j,k) for example. This
-hypothesis allows creation of layers of highly stretched prisms near
-mesh boundary, which is beneficial for high quality viscous
-computations. The prisms constructed on the quadrangular mesh faces are
-actually the hexahedrons.
-
+<b>Viscous Layers</b> and <b>Viscous Layers 2D </b> additional
+hypotheses can be used together with some 3D algorithms, for example,
+Hexahedron(i,j,k) or 2D algorithms, for example, Triangle
+(MEFISTO), correspondingly. These hypotheses allow creation of layers
+of highly stretched elements, prisms in 3D and quadrilaterals in 2D,
+near mesh boundary, which is beneficial for high quality viscous
+computations.
 
 \image html viscous_layers_hyp.png
 
 <ul>
 <li><b>Name</b> - allows to define the name of the hypothesis.</li>
-<li><b>Total thicknes</b> - gives the total thickness of prism layers.</li>
-<li><b>Number of layers</b> - defines the number of prism layers.</li>
-<li><b>Stretch factor</b> - defines the growth factor of prism height
+<li><b>Total thickness</b> - gives the total thickness of element layers.</li>
+<li><b>Number of layers</b> - defines the number of element layers.</li>
+<li><b>Stretch factor</b> - defines the growth factor of element height
 from the mesh boundary inwards.</li>
-<li><b>Faces without layers</b> - defines geometrical faces on which
-prism layers should not be constructed. By default the prism layers
-are not constructed on geometrical faces shared by solids.</li>
+<li><b>Faces (Edges) without layers</b> - defines geometrical faces
+  (or edges in 2D) on which element layers should not be
+  constructed. By default the element layers are not constructed on
+  geometrical faces shared by solids (and edges shared by faces in 2D). 
+  \note A mesh shown in the 3D Viewer can prevent selection of faces
+  and edges, in this case just hide the mesh. To avoid a long wait when a
+  geometry with many faces (or edges) is displayed, the number of faces
+  (edges) shown at a time is limited by the value of "Sub-shapes
+  preview chunk size" preference (in Preferences/Mesh/General tab).
+</li>
 </ul>
 
 \image html viscous_layers_mesh.png A group containing viscous layer prisms.

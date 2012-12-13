@@ -193,7 +193,7 @@ void SMESHGUI_ConvToQuadOp::selectionDone()
 SUIT_SelectionFilter* SMESHGUI_ConvToQuadOp::createFilter( const int theId ) const
 {
   if ( theId == 0 )
-    return new SMESH_TypeFilter( MESHorSUBMESH );
+    return new SMESH_TypeFilter( SMESH::MESHorSUBMESH );
   else
     return 0;
 }

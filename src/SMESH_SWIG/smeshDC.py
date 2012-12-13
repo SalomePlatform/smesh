@@ -255,8 +255,7 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo):
 def AssureGeomPublished(mesh, geom, name=''):
     if not isinstance( geom, geompyDC.GEOM._objref_GEOM_Object ):
         return
-    if not geom.IsSame( mesh.geom ) and \
-           not geom.GetStudyEntry() and \
+    if not geom.GetStudyEntry() and \
            mesh.smeshpyD.GetCurrentStudy():
         ## set the study
         studyID = mesh.smeshpyD.GetCurrentStudy()._get_StudyId()
@@ -330,7 +329,6 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         return Mesh(self,self.geompyD,obj,name)
 
     ## Returns a long value from enumeration
-    #  Should be used for SMESH.FunctorType enumeration
     #  @ingroup l1_controls
     def EnumToLong(self,theItem):
         return theItem._v
@@ -509,7 +507,9 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     #  @return [ an instance of Mesh class, SMESH::ComputeError ]
     #  @ingroup l2_impexp
     def CreateMeshesFromGMF( self, theFileName ):
-        aSmeshMesh, error = SMESH._objref_SMESH_Gen.CreateMeshesFromGMF(self,theFileName)
+        aSmeshMesh, error = SMESH._objref_SMESH_Gen.CreateMeshesFromGMF(self,
+                                                                        theFileName,
+                                                                        True)
         if error.comment: print "*** CreateMeshesFromGMF() errors:\n", error.comment
         return Mesh(self, self.geompyD, aSmeshMesh), error
 
@@ -640,9 +640,13 @@ class smeshDC(SMESH._objref_SMESH_Gen):
             # Checks that Threshold is GEOM object
             if isinstance(aThreshold, geompyDC.GEOM._objref_GEOM_Object):
                 aCriterion.ThresholdStr = GetName(aThreshold)
-                aCriterion.ThresholdID = aThreshold.GetStudyEntry()
+                aCriterion.ThresholdID  = aThreshold.GetStudyEntry()
                 if not aCriterion.ThresholdID:
-                    raise RuntimeError, "Threshold shape must be published"
+                    name = aCriterion.ThresholdStr
+                    if not name:
+                        name = "%s_%s"%(aThreshold.GetShapeType(), id(aThreshold)%10000)
+                    aCriterion.ThresholdID = self.geompyD.addToStudy( aThreshold, name )
+                    #raise RuntimeError, "Threshold shape must be published"
             else:
                 print "Error: The Threshold should be a shape."
                 return None
@@ -768,6 +772,8 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     #  @return SMESH_NumericalFunctor
     #  @ingroup l1_controls
     def GetFunctor(self,theCriterion):
+        if isinstance( theCriterion, SMESH._objref_NumericalFunctor ):
+            return theCriterion
         aFilterMgr = self.CreateFilterManager()
         if theCriterion == FT_AspectRatio:
             return aFilterMgr.CreateAspectRatio()
@@ -1002,7 +1008,8 @@ class Mesh:
         if not self.geom:
             self.geom = self.mesh.GetShapeToMesh()
 
-        self.editor = self.mesh.GetMeshEditor()
+        self.editor   = self.mesh.GetMeshEditor()
+        self.functors = [None] * SMESH.FT_Undefined._v
 
         # set self to algoCreator's
         for attrName in dir(self):
@@ -1224,9 +1231,13 @@ class Mesh:
                 elif err.state == HYP_BAD_GEOMETRY:
                     reason = ('%s %sD algorithm "%s" is assigned to mismatching'
                               'geometry' % ( glob, dim, name ))
+                elif err.state == HYP_HIDDEN_ALGO:
+                    reason = ('%s %sD algorithm "%s" is ignored due to presence of a %s '
+                              'algorithm of upper dimension generating %sD mesh'
+                              % ( glob, dim, name, glob, dim ))
                 else:
-                    reason = "For unknown reason."+\
-                             " Revise Mesh.Compute() implementation in smeshDC.py!"
+                    reason = ("For unknown reason. "
+                              "Developer, revise Mesh.Compute() implementation in smeshDC.py!")
                     pass
                 if allReasons != "":allReasons += "\n"
                 allReasons += "-  " + reason
@@ -1476,7 +1487,7 @@ class Mesh:
             meshPart = meshPart.mesh
         elif not meshPart:
             meshPart = self.mesh
-        self.mesh.ExportGMF(meshPart, f)
+        self.mesh.ExportGMF(meshPart, f, True)
 
     ## Deprecated, used only for compatibility! Please, use ExportToMEDX() method instead.
     #  Exports the mesh in a file in MED format and chooses the \a version of MED format
@@ -2334,6 +2345,24 @@ class Mesh:
     def Add0DElement(self, IDOfNode):
         return self.editor.Add0DElement(IDOfNode)
 
+    ## Create 0D elements on all nodes of the given elements except those 
+    #  nodes on which a 0D element already exists.
+    #  @param theObject an object on whose nodes 0D elements will be created.
+    #         It can be mesh, sub-mesh, group, list of element IDs or a holder
+    #         of nodes IDs created by calling mesh.GetIDSource( nodes, SMESH.NODE )
+    #  @param theGroupName optional name of a group to add 0D elements created
+    #         and/or found on nodes of \a theObject.
+    #  @return an object (a new group or a temporary SMESH_IDSource) holding
+    #          IDs of new and/or found 0D elements. IDs of 0D elements 
+    #          can be retrieved from the returned object by calling GetIDs()
+    #  @ingroup l2_modif_add
+    def Add0DElementsToAllNodes(self, theObject, theGroupName=""):
+        if isinstance( theObject, Mesh ):
+            theObject = theObject.GetMesh()
+        if isinstance( theObject, list ):
+            theObject = self.GetIDSource( theObject, SMESH.ALL )
+        return self.editor.Create0DElementsOnAllNodes( theObject, theGroupName )
+
     ## Creates a ball element on a node with given ID.
     #  @param IDOfNode the ID of node for creation of the element.
     #  @param diameter the bal diameter.
@@ -2627,30 +2656,25 @@ class Mesh:
 
     ## Fuses the neighbouring triangles into quadrangles.
     #  @param IDsOfElements The triangles to be fused,
-    #  @param theCriterion  is FT_...; used to choose a neighbour to fuse with.
+    #  @param theCriterion  is a numerical functor, in terms of enum SMESH.FunctorType, used to
+    #                       choose a neighbour to fuse with.
     #  @param MaxAngle      is the maximum angle between element normals at which the fusion
     #                       is still performed; theMaxAngle is mesured in radians.
     #                       Also it could be a name of variable which defines angle in degrees.
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_unitetri
     def TriToQuad(self, IDsOfElements, theCriterion, MaxAngle):
-        flag = False
-        if isinstance(MaxAngle,str):
-            flag = True
         MaxAngle,Parameters,hasVars = ParseAngles(MaxAngle)
         self.mesh.SetParameters(Parameters)
         if not IDsOfElements:
             IDsOfElements = self.GetElementsId()
-        Functor = 0
-        if ( isinstance( theCriterion, SMESH._objref_NumericalFunctor ) ):
-            Functor = theCriterion
-        else:
-            Functor = self.smeshpyD.GetFunctor(theCriterion)
+        Functor = self.smeshpyD.GetFunctor(theCriterion)
         return self.editor.TriToQuad(IDsOfElements, Functor, MaxAngle)
 
     ## Fuses the neighbouring triangles of the object into quadrangles
     #  @param theObject is mesh, submesh or group
-    #  @param theCriterion is FT_...; used to choose a neighbour to fuse with.
+    #  @param theCriterion is a numerical functor, in terms of enum SMESH.FunctorType, used to
+    #         choose a neighbour to fuse with.
     #  @param MaxAngle   a max angle between element normals at which the fusion
     #                   is still performed; theMaxAngle is mesured in radians.
     #  @return TRUE in case of success, FALSE otherwise.
@@ -2658,29 +2682,42 @@ class Mesh:
     def TriToQuadObject (self, theObject, theCriterion, MaxAngle):
         MaxAngle,Parameters,hasVars = ParseAngles(MaxAngle)
         self.mesh.SetParameters(Parameters)
-        if ( isinstance( theObject, Mesh )):
+        if isinstance( theObject, Mesh ):
             theObject = theObject.GetMesh()
-        return self.editor.TriToQuadObject(theObject, self.smeshpyD.GetFunctor(theCriterion), MaxAngle)
+        Functor = self.smeshpyD.GetFunctor(theCriterion)
+        return self.editor.TriToQuadObject(theObject, Functor, MaxAngle)
 
     ## Splits quadrangles into triangles.
+    #
     #  @param IDsOfElements the faces to be splitted.
-    #  @param theCriterion   FT_...; used to choose a diagonal for splitting.
+    #  @param theCriterion   is a numerical functor, in terms of enum SMESH.FunctorType, used to
+    #         choose a diagonal for splitting. If @a theCriterion is None, which is a default
+    #         value, then quadrangles will be split by the smallest diagonal.
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_cutquadr
-    def QuadToTri (self, IDsOfElements, theCriterion):
+    def QuadToTri (self, IDsOfElements, theCriterion = None):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
-        return self.editor.QuadToTri(IDsOfElements, self.smeshpyD.GetFunctor(theCriterion))
+        if theCriterion is None:
+            theCriterion = FT_MaxElementLength2D
+        Functor = self.smeshpyD.GetFunctor(theCriterion)
+        return self.editor.QuadToTri(IDsOfElements, Functor)
 
     ## Splits quadrangles into triangles.
-    #  @param theObject  the object from which the list of elements is taken, this is mesh, submesh or group
-    #  @param theCriterion   FT_...; used to choose a diagonal for splitting.
+    #  @param theObject the object from which the list of elements is taken,
+    #         this is mesh, submesh or group
+    #  @param theCriterion is a numerical functor, in terms of enum SMESH.FunctorType, used to
+    #         choose a diagonal for splitting. If @a theCriterion is None, which is a default
+    #         value, then quadrangles will be split by the smallest diagonal.
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_cutquadr
-    def QuadToTriObject (self, theObject, theCriterion):
+    def QuadToTriObject (self, theObject, theCriterion = None):
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
-        return self.editor.QuadToTriObject(theObject, self.smeshpyD.GetFunctor(theCriterion))
+        if theCriterion is None:
+            theCriterion = FT_MaxElementLength2D
+        Functor = self.smeshpyD.GetFunctor(theCriterion)
+        return self.editor.QuadToTriObject(theObject, Functor)
 
     ## Splits quadrangles into triangles.
     #  @param IDsOfElements the faces to be splitted
@@ -2693,7 +2730,8 @@ class Mesh:
         return self.editor.SplitQuad(IDsOfElements, Diag13)
 
     ## Splits quadrangles into triangles.
-    #  @param theObject the object from which the list of elements is taken, this is mesh, submesh or group
+    #  @param theObject the object from which the list of elements is taken,
+    #         this is mesh, submesh or group
     #  @param Diag13    is used to choose a diagonal for splitting.
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_cutquadr
@@ -2704,7 +2742,8 @@ class Mesh:
 
     ## Finds a better splitting of the given quadrangle.
     #  @param IDOfQuad   the ID of the quadrangle to be splitted.
-    #  @param theCriterion  FT_...; a criterion to choose a diagonal for splitting.
+    #  @param theCriterion  is a numerical functor, in terms of enum SMESH.FunctorType, used to
+    #         choose a diagonal for splitting.
     #  @return 1 if 1-3 diagonal is better, 2 if 2-4
     #          diagonal is better, 0 if error occurs.
     #  @ingroup l2_modif_cutquadr
@@ -3641,6 +3680,10 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( theObject, list )):
             theObject = self.GetIDSource(theObject, SMESH.ALL)
+        if ( isinstance( theScaleFact, float )):
+             theScaleFact = [theScaleFact]
+        if ( isinstance( theScaleFact, int )):
+             theScaleFact = [ float(theScaleFact)]
 
         self.mesh.SetParameters(thePoint.parameters)
 
@@ -3661,6 +3704,10 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( theObject, list )):
             theObject = self.GetIDSource(theObject,SMESH.ALL)
+        if ( isinstance( theScaleFact, float )):
+             theScaleFact = [theScaleFact]
+        if ( isinstance( theScaleFact, int )):
+             theScaleFact = [ float(theScaleFact)]
 
         self.mesh.SetParameters(thePoint.parameters)
         mesh = self.editor.ScaleMakeMesh(theObject, thePoint, theScaleFact,
@@ -4038,9 +4085,16 @@ class Mesh:
     def CreateHoleSkin(self, radius, theShape, groupName, theNodesCoords):
         return self.editor.CreateHoleSkin( radius, theShape, groupName, theNodesCoords )
 
+    def _getFunctor(self, funcType ):
+        fn = self.functors[ funcType._v ]
+        if not fn:
+            fn = self.smeshpyD.GetFunctor(funcType)
+            fn.SetMesh(self.mesh)
+            self.functors[ funcType._v ] = fn
+        return fn
+
     def _valueFromFunctor(self, funcType, elemId):
-        fn = self.smeshpyD.GetFunctor(funcType)
-        fn.SetMesh(self.mesh)
+        fn = self._getFunctor( funcType )
         if fn.GetElementType() == self.GetElementType(elemId, True):
             val = fn.GetValue(elemId)
         else:

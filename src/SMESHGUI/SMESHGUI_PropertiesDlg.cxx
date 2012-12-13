@@ -621,8 +621,8 @@ void SMESHGUI_PropertiesDlg::showControls( int elements, bool nodes )
   // node controls are supposed to be shown if at least any element type is present
   // or if there are only nodes
   myNodeGrp->setVisible( nodes || elements & SMESH_Actor::eAllEntity );
-  // edge controls are shown only if there are edges
-  myEdgeGrp->setVisible( elements & SMESH_Actor::eEdges );
+  // edge/wireframe controls are needed for edges, faces and volumes
+  myEdgeGrp->setVisible( elements & ( SMESH_Actor::eEdges | SMESH_Actor::eFaces | SMESH_Actor::eVolumes ) );
   // face controls are shown only if there are faces
   myFaceGrp->setVisible( elements & SMESH_Actor::eFaces );
   // volume controls are shown only if there are volumes

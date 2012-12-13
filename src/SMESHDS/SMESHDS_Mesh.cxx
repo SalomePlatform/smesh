@@ -823,7 +823,7 @@ static void removeFromContainers (map<int,SMESHDS_SubMesh*>&     theSubMeshes,
   // Element should belong to only one sub-mesh
   if ( !theSubMeshes.empty() )
   {
-    SMESHDS_Mesh* mesh = theSubMeshes.begin()->second->getParent();
+    SMESHDS_Mesh* mesh = theSubMeshes.begin()->second->GetParent();
     list<const SMDS_MeshElement *>::iterator elIt = theElems.begin();
     if ( isNode ) {
       for ( ; elIt != theElems.end(); ++elIt )

@@ -233,7 +233,7 @@ void SMESHGUI_GroupOpDlg::Init()
   // set selection mode
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);
-  mySelectionMgr->installFilter(new SMESH_TypeFilter (GROUP));
+  mySelectionMgr->installFilter(new SMESH_TypeFilter (SMESH::GROUP));
 }
 
 /*!
@@ -464,7 +464,7 @@ void SMESHGUI_GroupOpDlg::enterEvent(QEvent*)
   setEnabled(true);
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);
-  mySelectionMgr->installFilter(new SMESH_TypeFilter (GROUP));
+  mySelectionMgr->installFilter(new SMESH_TypeFilter (SMESH::GROUP));
 }
 
 /*!

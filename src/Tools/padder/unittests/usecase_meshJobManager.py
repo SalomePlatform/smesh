@@ -21,13 +21,17 @@
 #
 
 # This script illustrates the standard use case of the component
-# MeshJobManager from within a SALOME script.
-
+# MeshJobManager from within a SALOME script. It could be used as a
+# unit test of the component.
 
 #
+# =======================================================================
 # Preparing the configuration parameters
+# =======================================================================
 #
+import sys
 import os
+import time
 from salome.smesh.spadder.configreader import ConfigReader, printConfig
 
 configReader = ConfigReader()
@@ -35,15 +39,13 @@ defaultConfig = configReader.getDefaultConfig()
 printConfig(defaultConfig)
 
 from salome.smesh import spadder
-file_concrete=os.path.join(spadder.getTestDataDir(),"concrete.med")
-file_steelbar=os.path.join(spadder.getTestDataDir(),"ferraill.med")
 
 import salome
 import MESHJOB
 
 #
-# Setup the configuration in the component. When first have to load
-# the catalog of SPADDER components, then load the component
+# Setup the configuration in the component. We first have to load the
+# catalog of SPADDER components, then load the component
 # MeshJobManager, and finally configure this component.
 #
 spadder.loadSpadderCatalog()
@@ -53,27 +55,134 @@ component = salome.lcc.FindOrLoadComponent("FactoryServer","MeshJobManager")
 config = MESHJOB.ConfigParameter(resname=defaultConfig.resname,
                                  binpath=defaultConfig.binpath,
                                  envpath=defaultConfig.envpath)
-component.configure("localhost",config)
+
+configId = "localhost"
+component.configure(configId,config)
+
 
 #
+# =======================================================================
+# Define several datasets for the different use cases
+# =======================================================================
+#
+
+# We define several functions that create each a dataset of med files
+# for testing the component. The test function number corresponds to
+# the number of the test defined in the SpherePadder installation
+# directory.
+
+def test00_parameters():
+    """Test using a concrete mesh and a single steelbar mesh""" 
+    file_concrete=os.path.join(spadder.getTestDataDir(),"concrete.med")
+    file_steelbar=os.path.join(spadder.getTestDataDir(),"ferraill.med")
+
+    meshJobParameterList = []
+    param = MESHJOB.MeshJobParameter(file_name=file_concrete,
+                                     file_type=MESHJOB.MED_CONCRETE,
+                                     group_name="concrete")
+    meshJobParameterList.append(param)
+
+    param = MESHJOB.MeshJobParameter(file_name=file_steelbar,
+                                     file_type=MESHJOB.MED_STEELBAR,
+                                     group_name="steelbar")
+    meshJobParameterList.append(param)
+    return meshJobParameterList
+
+def test01_parameters():
+    """One concrete mesh and two steelbar meshes"""
+    datadir = os.path.join(spadder.getTestPadderDataDir(),"test01")
+    meshJobParameterList = []
+
+    medfile = os.path.join(datadir,"concrete.med")
+    param = MESHJOB.MeshJobParameter(file_name=medfile,
+                                     file_type=MESHJOB.MED_CONCRETE,
+                                     group_name="concrete")
+    meshJobParameterList.append(param)
+    
+    medfile = os.path.join(datadir,"ferraill.med")
+    param = MESHJOB.MeshJobParameter(file_name=medfile,
+                                     file_type=MESHJOB.MED_STEELBAR,
+                                     group_name="ferraill")
+    meshJobParameterList.append(param)
+
+    medfile = os.path.join(datadir,"ferrtran.med")
+    param = MESHJOB.MeshJobParameter(file_name=medfile,
+                                     file_type=MESHJOB.MED_STEELBAR,
+                                     group_name="ferrtran")
+    meshJobParameterList.append(param)
+    
+    return meshJobParameterList
+
+def test02_parameters():
+    """One steelbar mesh only, without a concrete mesh"""
+    datadir = os.path.join(spadder.getTestPadderDataDir(),"test02")
+    meshJobParameterList = []
+
+    medfile = os.path.join(datadir,"cadreef.med")
+    param = MESHJOB.MeshJobParameter(file_name=medfile,
+                                     file_type=MESHJOB.MED_STEELBAR,
+                                     group_name="cadre")
+    meshJobParameterList.append(param)
+    return meshJobParameterList
+
+def test03_parameters():
+    """One concrete mesh only, without a steelbar mesh"""
+    datadir = os.path.join(spadder.getTestPadderDataDir(),"test03")
+    meshJobParameterList = []
+
+    medfile = os.path.join(datadir,"concrete.med")
+    param = MESHJOB.MeshJobParameter(file_name=medfile,
+                                     file_type=MESHJOB.MED_CONCRETE,
+                                     group_name="concrete")
+    meshJobParameterList.append(param)
+    return meshJobParameterList
+
+#
+# =======================================================================
 # Prepare the job parameters and initialize the job
+# =======================================================================
 #
-meshJobParameterList = []
-param = MESHJOB.MeshJobParameter(file_name=file_concrete,
-                                 file_type=MESHJOB.MED_CONCRETE,
-                                 group_name="concrete")
-meshJobParameterList.append(param)
 
-param = MESHJOB.MeshJobParameter(file_name=file_steelbar,
-                                 file_type=MESHJOB.MED_STEELBAR,
-                                 group_name="steelbar")
-meshJobParameterList.append(param)
-jobid = component.initialize(meshJobParameterList, "localhost")
+# Choose here the use case
+#meshJobParameterList = test00_parameters()
+#meshJobParameterList = test01_parameters()
+#meshJobParameterList = test02_parameters()
+meshJobParameterList = test03_parameters()
 
+#
+# Prepare, start and follow-up the job
+#
+jobid = component.initialize(meshJobParameterList, configId)
+if jobid<0:
+    msg = component.getLastErrorMessage()
+    print "ERR: %s"%msg
+    sys.exit(1)
+    
+created = False
+nbiter  = 0
+while not created:
+    state = component.getState(jobid)
+    print "MeshJobManager ["+str(nbiter)+"] : state = "+str(state)
+    if state == "CREATED":
+        created = True
+    time.sleep(0.5)
+    nbiter+=1
+
+
+#
+# =======================================================================
+# Submit the job and start the supervision
+# =======================================================================
 #
 # Start the execution of the job identified by its job id.
 #
 ok=component.start(jobid)
+if not ok:
+    msg = component.getLastErrorMessage()
+    print "ERR: %s"%msg
+    sys.exit(1)
+
+print "job started: %s"%ok
 
 #
 # This part illustrates how you can follow the execution of the job.
@@ -84,7 +193,6 @@ all_states = run_states+end_states;
 
 ended  = False
 nbiter = 0
-import time
 while not ended:
     state = component.getState(jobid)
     print "MeshJobManager ["+str(nbiter)+"] : state = "+str(state)
@@ -95,6 +203,8 @@ while not ended:
         
 if state not in end_states:
     print "ERR: jobid = "+str(jobid)+" ended abnormally with state="+str(state)
+    msg = component.getLastErrorMessage()
+    print "ERR: %s"%msg    
 else:
     print "OK:  jobid = "+str(jobid)+" ended with state="+str(state)
     meshJobResults = component.finalize(jobid)

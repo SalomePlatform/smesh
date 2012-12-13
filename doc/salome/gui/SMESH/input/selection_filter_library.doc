@@ -15,7 +15,14 @@ load an existing filter library.
 the current study. You can \b Add or \b Delete filters.
 \n In <b>Filter name</b> box you can specify the name for your
 filter. By default it is prefixed with the corresponding entity type.
-\n Each filter can be applicable to \b Nodes, \b Edges, \b Faces or \b
+
+\anchor filtering_elements
+
+When we use filters during a group creation or another operation (by 
+clicking <b>Set Filters</b> button in the corresponding dialog), the
+menu for setting filters looks a bit differently (see the image below).
+
+Each filter can be applicable to \b Nodes, \b Edges, \b Faces or \b
 Volumes. You can combine many criteria in one filter, but they all
 must be of the same <b>Entity type</b>.
 \n The \b Add button creates a new criterion at the end of the list of
@@ -30,21 +37,18 @@ sense of a criterion using \b Unary operator Not and you should
 specify logical relations between criteria using \b Binary operators
 Or and And.
 \n Some criteria should have the additional parameter of \b Tolerance.
-
-When we create a group using filters (for this click
-<b>Set Filters</b> button in the <b>Create Group</b> dialog), the menu
-for setting filters looks a bit differently (see below). Switching
-on <b>Insert filter in viewer</b> checkbox limits selection of elements
-in the Viewer using your current filter.
+<br> 
+Switching on <b>Insert filter in viewer</b> checkbox limits
+selection of elements in the Viewer to the current filter.
 <br>
 In the \b Source field you choose if the filter will be applied to
 the whole \b Mesh, the <b>Initial Selection</b> or the <b>Current
 Group</b>. If \b Mesh is chosen, the elements satisfying the filter
 will be selected in the 3D Viewer. If <b> Initial Selection</b> is
 chosen, the filter will be applied to the selected elements and the
-elements rejected by the filter will be deseleced. If <b>Current
+elements rejected by the filter will be deselected. If <b>Current
 Group</b> is chosen, the filter will be applied to the list of
-elements in the <em>Greate Croup</em> dialog and the elements rejected
+elements in the current dialog and the elements rejected
 by the filter will be removed from the list.
 <br>
 <b>Copy from...</b> button gives you a possibility to load an
@@ -68,7 +72,7 @@ shape the algorithm works slower.
 </li><li>
 <b>Lying on Geom</b> selects entities whose at least one node
 lies on the shape defined by the <b>Threshold Value</b>.
-If the hreshold shape is a sub-shape of the main shape of the mesh the
+If the threshold shape is a sub-shape of the main shape of the mesh the
 algorithm works faster, if this is any other
 shape, the algorithm works slower.
 </li><li>
@@ -167,7 +171,7 @@ The following criteria allow selecting mesh <b>Faces</b>:
 one element of mesh only. See also a
 \ref free_edges_page "Free Edges quality control".
 </li><li>
-<b>Free faces</b> selects 2D mesh elements wich belong to less than two volumes.
+<b>Free faces</b> selects 2D mesh elements, which belong to less than two volumes.
 </li><li>
 <b>Double faces</b> selects 2D mesh elements basing on the same set of nodes.
 See also \ref filter_double_elements "Double Elements quality control".

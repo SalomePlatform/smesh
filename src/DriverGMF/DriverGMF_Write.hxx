@@ -42,18 +42,16 @@ public:
   DriverGMF_Write();
   ~DriverGMF_Write();
 
+  void SetExportRequiredGroups( bool toExport )
+  {
+    _exportRequiredGroups = toExport;
+  }
+
   virtual Status Perform();
-};
 
-/*!
- * \brief An object closing GMF mesh at destruction
- */
-struct DriverGMF_MeshCloser
-{
-  int _gmfMeshID;
-  DriverGMF_MeshCloser( const int gmfMeshID ): _gmfMeshID(gmfMeshID) {}
-  ~DriverGMF_MeshCloser();
-};
+ private:
 
+  bool _exportRequiredGroups;
+};
 
 #endif

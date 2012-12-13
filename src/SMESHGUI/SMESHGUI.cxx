@@ -27,18 +27,21 @@
 #undef HAVE_FINITE            // VSR: avoid compilation warning on Linux : "HAVE_FINITE" redefined
 #endif
 #include "Python.h"
+
 //  SMESH includes
 #include "SMESHGUI.h"
+#include "SMESHGUI_Add0DElemsOnAllNodesDlg.h"
 #include "SMESHGUI_AddMeshElementDlg.h"
 #include "SMESHGUI_AddQuadraticElementDlg.h"
 #include "SMESHGUI_BuildCompoundDlg.h"
 #include "SMESHGUI_ClippingDlg.h"
 #include "SMESHGUI_ComputeDlg.h"
 #include "SMESHGUI_ConvToQuadOp.h"
+#include "SMESHGUI_CopyMeshDlg.h"
 #include "SMESHGUI_CreatePolyhedralVolumeDlg.h"
 #include "SMESHGUI_DeleteGroupDlg.h"
 #include "SMESHGUI_Displayer.h"
-#include "SMESHGUI_MergeDlg.h"
+#include "SMESHGUI_DuplicateNodesDlg.h"
 #include "SMESHGUI_ExtrusionAlongPathDlg.h"
 #include "SMESHGUI_ExtrusionDlg.h"
 #include "SMESHGUI_FileInfoDlg.h"
@@ -53,6 +56,7 @@
 #include "SMESHGUI_Make2DFrom3DOp.h"
 #include "SMESHGUI_MakeNodeAtPointDlg.h"
 #include "SMESHGUI_Measurements.h"
+#include "SMESHGUI_MergeDlg.h"
 #include "SMESHGUI_MeshInfo.h"
 #include "SMESHGUI_MeshOp.h"
 #include "SMESHGUI_MeshOrderOp.h"
@@ -64,61 +68,59 @@
 #include "SMESHGUI_RemoveElementsDlg.h"
 #include "SMESHGUI_RemoveNodesDlg.h"
 #include "SMESHGUI_RenumberingDlg.h"
+#include "SMESHGUI_ReorientFacesDlg.h"
 #include "SMESHGUI_RevolutionDlg.h"
 #include "SMESHGUI_RotationDlg.h"
+#include "SMESHGUI_ScaleDlg.h"
 #include "SMESHGUI_Selection.h"
 #include "SMESHGUI_SewingDlg.h"
 #include "SMESHGUI_SingleEditDlg.h"
 #include "SMESHGUI_SmoothingDlg.h"
 #include "SMESHGUI_SymmetryDlg.h"
 #include "SMESHGUI_TranslationDlg.h"
-#include "SMESHGUI_ScaleDlg.h"
 #include "SMESHGUI_TransparencyDlg.h"
-#include "SMESHGUI_DuplicateNodesDlg.h"
-#include "SMESHGUI_CopyMeshDlg.h"
-#include "SMESHGUI_ReorientFacesDlg.h"
 
-#include "SMESHGUI_Utils.h"
-#include "SMESHGUI_MeshUtils.h"
-#include "SMESHGUI_GroupUtils.h"
 #include "SMESHGUI_FilterUtils.h"
-#include "SMESHGUI_PatternUtils.h"
-#include "SMESHGUI_VTKUtils.h"
+#include "SMESHGUI_GroupUtils.h"
 #include "SMESHGUI_HypothesesUtils.h"
+#include "SMESHGUI_MeshUtils.h"
+#include "SMESHGUI_PatternUtils.h"
+#include "SMESHGUI_Utils.h"
+#include "SMESHGUI_VTKUtils.h"
 
 #include <SMESH_version.h>
 
-#include <SMESH_Client.hxx>
-#include <SMESH_Actor.h>
-#include <SMESH_ScalarBarActor.h>
-#include <SMESH_ActorUtils.h>
-#include <SMESH_TypeFilter.hxx>
 #include "SMESH_ControlsDef.hxx"
+#include <SMESH_Actor.h>
+#include <SMESH_ActorUtils.h>
+#include <SMESH_Client.hxx>
+#include <SMESH_ScalarBarActor.h>
+#include <SMESH_TypeFilter.hxx>
 
 // SALOME GUI includes
-#include <SalomeApp_Tools.h>
-#include <SalomeApp_Study.h>
 #include <SalomeApp_Application.h>
 #include <SalomeApp_CheckFileDlg.h>
 #include <SalomeApp_DataObject.h>
+#include <SalomeApp_Study.h>
+#include <SalomeApp_Tools.h>
 
 #include <LightApp_DataOwner.h>
+#include <LightApp_NameDlg.h>
 #include <LightApp_Preferences.h>
 #include <LightApp_SelectionMgr.h>
 #include <LightApp_UpdateFlags.h>
-#include <LightApp_NameDlg.h>
 
-#include <SVTK_ViewWindow.h>
-#include <SVTK_ViewModel.h>
 #include <SVTK_ViewManager.h>
+#include <SVTK_ViewModel.h>
+#include <SVTK_ViewWindow.h>
 
 #include <VTKViewer_Algorithm.h>
 
-#include <SUIT_MessageBox.h>
-#include <SUIT_ResourceMgr.h>
-#include <SUIT_FileDlg.h>
 #include <SUIT_Desktop.h>
+#include <SUIT_FileDlg.h>
+#include <SUIT_MessageBox.h>
 #include <SUIT_OverrideCursor.h>
+#include <SUIT_ResourceMgr.h>
 #include <SUIT_Session.h>
 
 #include <QtxPopupMgr.h>
@@ -148,25 +150,28 @@
 #include <boost/shared_ptr.hpp>
 
 // VTK includes
-#include <vtkCamera.h>
-#include <vtkRenderer.h>
-#include <vtkPlane.h>
 #include <vtkCallbackCommand.h>
+#include <vtkCamera.h>
 #include <vtkLookupTable.h>
+#include <vtkPlane.h>
+#include <vtkRenderer.h>
 
 // SALOME KERNEL includes
-#include <SALOMEDS_Study.hxx>
-#include <SALOMEDSClient_StudyBuilder.hxx>
-#include <SALOMEDSClient_SComponent.hxx>
 #include <SALOMEDSClient_ClientFactory.hxx>
 #include <SALOMEDSClient_IParameters.hxx>
+#include <SALOMEDSClient_SComponent.hxx>
+#include <SALOMEDSClient_StudyBuilder.hxx>
+#include <SALOMEDS_Study.hxx>
 
 // OCCT includes
 #include <Standard_ErrorHandler.hxx>
 #include <NCollection_DataMap.hxx>
 
+#include <Basics_Utils.hxx>
+
 //To disable automatic genericobj management, the following line should be commented.
-//Otherwise, it should be uncommented. Refer to KERNEL_SRC/src/SALOMEDSImpl/SALOMEDSImpl_AttributeIOR.cxx
+//Otherwise, it should be uncommented.
+//Refer to KERNEL_SRC/src/SALOMEDSImpl/SALOMEDSImpl_AttributeIOR.cxx
 #define WITHGENERICOBJ
 
 //namespace{
@@ -193,7 +198,7 @@
     std::string myExtension;
 
     if ( theCommandID == 113 ) {
-      filter.append( QObject::tr( "MED_FILES_FILTER" ) + " (*.med)" );
+      filter.append( QObject::tr( "MED_FILES_FILTER" ) + " (*.*med)" );
       filter.append( QObject::tr( "ALL_FILES_FILTER" ) + " (*)" );
     }
     else if ( theCommandID == 112 ) {
@@ -203,7 +208,7 @@
       filter.append( QObject::tr( "DAT_FILES_FILTER" ) + " (*.dat)" );
     }
     else if ( theCommandID == 115 ) {
-      filter.append( QObject::tr( "STL_ASCII_FILES_FILTER" ) + " (*.stl)" );
+      filter.append( QObject::tr( "STL_FILES_FILTER" ) + " (*.stl)" );
     }
     else if ( theCommandID == 116 ) {
       filter.append( QObject::tr( "CGNS_FILES_FILTER" ) + " (*.cgns)" );
@@ -221,10 +226,28 @@
     if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
       anInitialPath = QDir::currentPath();
 
-    QStringList filenames = SUIT_FileDlg::getOpenFileNames( SMESHGUI::desktop(),
-                                                            anInitialPath,
-                                                            filter,
-                                                            QObject::tr( "SMESH_IMPORT_MESH" ) );
+    QStringList filenames;
+    bool toCreateGroups = true;
+
+    // if ( theCommandID == 118 ) { // GMF
+    //   SalomeApp_CheckFileDlg* fd = new SalomeApp_CheckFileDlg
+    //     ( SMESHGUI::desktop(), true, QObject::tr("SMESH_REQUIRED_GROUPS"), true, true );
+    //   fd->setWindowTitle( QObject::tr( "SMESH_IMPORT_MESH" ) );
+    //   fd->setNameFilters( filter );
+    //   fd->SetChecked( true );
+    //   if ( fd->exec() )
+    //     filenames << fd->selectedFile();
+    //   toCreateGroups = fd->IsChecked();
+
+    //   delete fd;
+    // }
+    // else
+    {
+      filenames = SUIT_FileDlg::getOpenFileNames( SMESHGUI::desktop(),
+                                                  anInitialPath,
+                                                  filter,
+                                                  QObject::tr( "SMESH_IMPORT_MESH" ) );
+    }
     if ( filenames.count() > 0 ) {
       SUIT_OverrideCursor wc;
       _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
@@ -303,7 +326,9 @@
               // GMF format
               SMESH::ComputeError_var res;
               aMeshes->length( 1 );
-              aMeshes[0] = theComponentMesh->CreateMeshesFromGMF( filename.toLatin1().constData(), res.out() );
+              aMeshes[0] = theComponentMesh->CreateMeshesFromGMF( filename.toLatin1().constData(),
+                                                                  toCreateGroups,
+                                                                  res.out() );
               if ( res->code != SMESH::DRS_OK ) {
                 errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
                                arg( QObject::tr( QString( "SMESH_DRS_%1" ).arg( res->code ).toLatin1().data() ) ) );
@@ -593,11 +618,37 @@
       else if ( isGMF )
         aFilter = QObject::tr( "GMF_ASCII_FILES_FILTER" ) + " (*.mesh)" +
           ";;" +  QObject::tr( "GMF_BINARY_FILES_FILTER" )  + " (*.meshb)";
-      if ( anInitialPath.isEmpty() ) anInitialPath = SUIT_FileDlg::getLastVisitedPath();
+     if ( anInitialPath.isEmpty() ) anInitialPath = SUIT_FileDlg::getLastVisitedPath();
       aFilename = SUIT_FileDlg::getFileName(SMESHGUI::desktop(),
                                             anInitialPath + QString("/") + aMeshName,
                                             aFilter, aTitle, false);
     }
+    // else if ( isGMF )// Export to GMF
+    // {
+      // SalomeApp_CheckFileDlg* fd = new SalomeApp_CheckFileDlg
+      //   ( SMESHGUI::desktop(), false, QObject::tr("SMESH_REQUIRED_GROUPS"), true, true );
+      // QStringList filters;
+      // filters << QObject::tr( "GMF_ASCII_FILES_FILTER" ) + " (*.mesh)"
+      //         << QObject::tr( "GMF_BINARY_FILES_FILTER" )  + " (*.meshb)";
+      // fd->setWindowTitle( aTitle );
+      // fd->setNameFilters( filters );
+
+      // if ( !aMeshOrGroup->_is_equivalent( aMesh ))
+      //   toCreateGroups = false;
+      // else
+      //   toCreateGroups = ( aMesh->NbGroups() > 0 );
+
+      // fd->SetChecked( true );
+      // if ( !anInitialPath.isEmpty() )
+      //   fd->setDirectory( anInitialPath );
+      // fd->selectFile(aMeshName);
+
+      // if ( fd->exec() )
+      //   aFilename = fd->selectedFile();
+      // toCreateGroups = fd->IsChecked();
+
+      // delete fd;
+    // }
     else if ( isCGNS )// Export to CGNS
     {
       SUIT_FileDlg* fd = new SUIT_FileDlg( SMESHGUI::desktop(), false, true, true );
@@ -843,7 +894,8 @@
         }
         else if ( isGMF )
         {
-          aMesh->ExportGMF( aMeshOrGroup, aFilename.toLatin1().data() );
+          toCreateGroups = true;
+          aMesh->ExportGMF( aMeshOrGroup, aFilename.toLatin1().data(), toCreateGroups );
         }
       }
       catch (const SALOME::SALOME_Exception& S_ex){
@@ -1575,7 +1627,7 @@
 
 
   bool CheckOIType(const Handle(SALOME_InteractiveObject) & theIO,
-                   MeshObjectType                           theType,
+                   SMESH::MeshObjectType                           theType,
                    const QString                            theInTypeName,
                    QString &                                theOutTypeName)
   {
@@ -1607,11 +1659,11 @@
 
     QString aTypeName;
     if (
-        CheckOIType ( theIO, HYPOTHESIS,    "Hypothesis", aTypeName ) ||
-        CheckOIType ( theIO, ALGORITHM,     "Algorithm",  aTypeName ) ||
-        CheckOIType ( theIO, MESH,          "Mesh",       aTypeName ) ||
-        CheckOIType ( theIO, SUBMESH,       "SubMesh",    aTypeName ) ||
-        CheckOIType ( theIO, GROUP,         "Group",      aTypeName )
+        CheckOIType ( theIO, SMESH::HYPOTHESIS,    "Hypothesis", aTypeName ) ||
+        CheckOIType ( theIO, SMESH::ALGORITHM,     "Algorithm",  aTypeName ) ||
+        CheckOIType ( theIO, SMESH::MESH,          "Mesh",       aTypeName ) ||
+        CheckOIType ( theIO, SMESH::SUBMESH,       "SubMesh",    aTypeName ) ||
+        CheckOIType ( theIO, SMESH::GROUP,         "Group",      aTypeName )
         )
       return aTypeName;
 
@@ -3018,7 +3070,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if(checkLock(aStudy)) break;
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
-        SMDSAbs_EntityType type;
+        SMDSAbs_EntityType type = SMDSEntity_Last;
 
         switch (theCommandID) {
         case 4034:
@@ -3036,13 +3088,13 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         case 4039:
           type = SMDSEntity_Quad_Penta; break;
         case 4040:
-          type = SMDSEntity_Quad_Hexa;
+          type = SMDSEntity_Quad_Hexa; break;
         case 4140:
-          type = SMDSEntity_TriQuad_Hexa;
-          break;
-        default:;
+          type = SMDSEntity_TriQuad_Hexa; break;
+        default: break;
         }
-         ( new SMESHGUI_AddQuadraticElementDlg( this, type ) )->show();
+        if ( type != SMDSEntity_Last )
+          ( new SMESHGUI_AddQuadraticElementDlg( this, type ) )->show();
       }
       else {
         SUIT_MessageBox::warning(SMESHGUI::desktop(),
@@ -3293,6 +3345,10 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
 
+  case 4070: // 0D_ON_ALL_NODES
+    startOperation( 4070 );
+    break;
+
   case 5105: // Library of selection filters
   {
     static QList<int> aTypes;
@@ -3493,12 +3549,8 @@ void SMESHGUI::createPopupItem( const int id,
                                 const QString& theRule,
                                 const int pId )
 {
-  int parentId = pId;
-  if( pId!=-1 )
-    parentId = popupMgr()->actionId( action( pId ) );
-
   if( !popupMgr()->contains( popupMgr()->actionId( action( id ) ) ) )
-    popupMgr()->insert( action( id ), parentId, 0 );
+    popupMgr()->insert( action( id ), pId, 0 );
 
   QString lc = "$";        // VSR : instead of QtxPopupSelection::defEquality();
   QString dc = "selcount"; // VSR : insetad of QtxPopupSelection::defSelCountParam()
@@ -3549,13 +3601,13 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  142, "CGNS");
   createSMESHAction(  144, "SAUV");
   createSMESHAction(  146, "GMF" );
-  createSMESHAction(  124, "EXPORT_DAT" );
-  createSMESHAction(  125, "EXPORT_MED" );
-  createSMESHAction(  126, "EXPORT_UNV" );
-  createSMESHAction(  141, "EXPORT_STL" );
-  createSMESHAction(  143, "EXPORT_CGNS");
-  createSMESHAction(  145, "EXPORT_SAUV");
-  createSMESHAction(  147, "EXPORT_GMF" );
+  createSMESHAction(  124, "DAT" );
+  createSMESHAction(  125, "MED" );
+  createSMESHAction(  126, "UNV" );
+  createSMESHAction(  141, "STL" );
+  createSMESHAction(  143, "CGNS");
+  createSMESHAction(  145, "SAUV");
+  createSMESHAction(  147, "GMF" );
   createSMESHAction(  150, "FILE_INFO" );
   createSMESHAction(   33, "DELETE",          "ICON_DELETE", Qt::Key_Delete );
   createSMESHAction( 5105, "SEL_FILTER_LIB" );
@@ -3647,6 +3699,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 4067, "MESH_THROU_POINT","ICON_DLG_MOVE_NODE" );
   createSMESHAction( 4068, "SCALE",           "ICON_DLG_MESH_SCALE" );
   createSMESHAction( 4069, "DUPLICATE_NODES", "ICON_SMESH_DUPLICATE_NODES" );
+  createSMESHAction( 4070, "0D_ON_ALL_NODES", "ICON_0D_ON_ALL_NODES" );
   createSMESHAction(  407, "INV",             "ICON_DLG_MESH_DIAGONAL" );
   createSMESHAction(  408, "UNION2",          "ICON_UNION2TRI" );
   createSMESHAction(  409, "ORIENT",          "ICON_DLG_MESH_ORIENTATION" );
@@ -3809,6 +3862,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   createMenu( 4000, addId, -1 );
   createMenu( 4009, addId, -1 );
+  createMenu( 4070, addId, -1 );
   createMenu( 4008, addId, -1 );
   createMenu( 4010, addId, -1 );
   createMenu( 4021, addId, -1 );
@@ -3934,6 +3988,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   createTool( 4000, addRemTb );
   createTool( 4009, addRemTb );
+  createTool( 4070, addRemTb );
   createTool( 4008, addRemTb );
   createTool( 4010, addRemTb );
   createTool( 4021, addRemTb );
@@ -3999,17 +4054,17 @@ void SMESHGUI::initialize( CAM_Application* app )
   QString OB = "'ObjectBrowser'",
           View = "'" + SVTK_Viewer::Type() + "'",
           pat = "'%1'",
-          mesh    = pat.arg( SMESHGUI_Selection::typeName( MESH ) ),
-          group   = pat.arg( SMESHGUI_Selection::typeName( GROUP ) ),
-          hypo    = pat.arg( SMESHGUI_Selection::typeName( HYPOTHESIS ) ),
-          algo    = pat.arg( SMESHGUI_Selection::typeName( ALGORITHM ) ),
+          mesh    = pat.arg( SMESHGUI_Selection::typeName( SMESH::MESH ) ),
+          group   = pat.arg( SMESHGUI_Selection::typeName( SMESH::GROUP ) ),
+          hypo    = pat.arg( SMESHGUI_Selection::typeName( SMESH::HYPOTHESIS ) ),
+          algo    = pat.arg( SMESHGUI_Selection::typeName( SMESH::ALGORITHM ) ),
           elems   = QString( "'%1' '%2' '%3' '%4' '%5' '%6'" ).
-                       arg( SMESHGUI_Selection::typeName( SUBMESH_VERTEX ) ).
-                       arg( SMESHGUI_Selection::typeName( SUBMESH_EDGE ) ).
-                       arg( SMESHGUI_Selection::typeName( SUBMESH_FACE ) ).
-                       arg( SMESHGUI_Selection::typeName( SUBMESH_SOLID ) ).
-                       arg( SMESHGUI_Selection::typeName( SUBMESH_COMPOUND ) ).
-                       arg( SMESHGUI_Selection::typeName( SUBMESH ) ),
+                       arg( SMESHGUI_Selection::typeName( SMESH::SUBMESH_VERTEX ) ).
+                       arg( SMESHGUI_Selection::typeName( SMESH::SUBMESH_EDGE ) ).
+                       arg( SMESHGUI_Selection::typeName( SMESH::SUBMESH_FACE ) ).
+                       arg( SMESHGUI_Selection::typeName( SMESH::SUBMESH_SOLID ) ).
+                       arg( SMESHGUI_Selection::typeName( SMESH::SUBMESH_COMPOUND ) ).
+                       arg( SMESHGUI_Selection::typeName( SMESH::SUBMESH ) ),
           subMesh = elems,
           mesh_part = mesh + " " + subMesh + " " + group,
           mesh_group = mesh + " " + group,
@@ -4065,14 +4120,16 @@ void SMESHGUI::initialize( CAM_Application* app )
   QString multiple_non_empty = QString( " && %1>0 && numberOfNodes>0" ).arg( dc );
   QString only_one_2D        = only_one_non_empty + " && dim>1";
 
-  createPopupItem( 125, OB, mesh_group, multiple_non_empty );   // EXPORT_MED
-  createPopupItem( 126, OB, mesh_group, only_one_non_empty );   // EXPORT_UNV
-  createPopupItem( 141, OB, mesh_group, only_one_2D );          // EXPORT_STL
+  int anId = popupMgr()->insert( tr( "MEN_EXPORT" ), -1, -1 );        // EXPORT submenu
+  createPopupItem( 125, OB, mesh_group, multiple_non_empty, anId );   // EXPORT_MED
+  createPopupItem( 126, OB, mesh_group, only_one_non_empty, anId );   // EXPORT_UNV
+  createPopupItem( 141, OB, mesh_group, only_one_2D, anId );          // EXPORT_STL
 #ifdef WITH_CGNS
-  createPopupItem( 143, OB, mesh_group, multiple_non_empty );   // EXPORT_CGNS
+  createPopupItem( 143, OB, mesh_group, multiple_non_empty, anId );   // EXPORT_CGNS
 #endif
-  createPopupItem( 145, OB, mesh_group, multiple_non_empty );   // EXPORT_SAUV
-  createPopupItem( 147, OB, mesh_group, multiple_non_empty );   // EXPORT_GMF
+  createPopupItem( 145, OB, mesh_group, multiple_non_empty, anId );   // EXPORT_SAUV
+  createPopupItem( 147, OB, mesh_group, multiple_non_empty, anId );   // EXPORT_GMF
+  createPopupItem( 124, OB, mesh_group, multiple_non_empty, anId );   // EXPORT_DAT
   createPopupItem(  33, OB, mesh_part + " " + hyp_alg );        // DELETE
   createPopupItem( 813, OB, group );                            // DEL_GROUP with contents
   popupMgr()->insert( separator(), -1, 0 );
@@ -4092,7 +4149,6 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( 1137, OB + " " + View, mesh, "&& isAutoColor" );       // DISABLE_AUTO_COLOR
   popupMgr()->insert( separator(), -1, 0 );
 
-  int anId;
   QString aClient = QString( "%1client in {%2}" ).arg( lc ).arg( "'VTKViewer'" );
   QString aType = QString( "%1type in {%2}" ).arg( lc );
   aType = aType.arg( mesh_part );
@@ -4752,7 +4808,7 @@ void SMESHGUI::createPreferences()
   int previewGroup = addPreference( tr( "SMESH_PREF_GROUP_PREVIEW" ), genTab );
   setPreferenceProperty( previewGroup, "columns", 2 );
   int chunkSize = addPreference( tr( "PREF_PREVIEW_CHUNK_SIZE" ), previewGroup, LightApp_Preferences::IntSpin, "SMESH", "preview_actor_chunk_size" );
-  setPreferenceProperty( chunkSize, "min",  0 );
+  setPreferenceProperty( chunkSize, "min",  1 );
   setPreferenceProperty( chunkSize, "max",  1000 );
   setPreferenceProperty( chunkSize, "step", 50 );
 
@@ -5131,8 +5187,11 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
     case 904: // Find element
       op = new SMESHGUI_FindElemByPointOp();
       break;
-    case 4067: // make mesh pass through point
+    case 4067: // Make mesh pass through point
       op = new SMESHGUI_MakeNodeAtPointOp();
+      break;
+    case 4070: // Create 0D elements on all nodes
+      op = new SMESHGUI_Add0DElemsOnAllNodesOp();
       break;
     default:
     break;
@@ -5215,9 +5274,9 @@ SALOMEDS::Color SMESHGUI::getUniqueColor( const QList<SALOMEDS::Color>& theReser
   return aSColor;
 }
 
-const char gSeparator = '_'; // character used to separate parameter names
-const char gDigitsSep = ':'; // character used to separate numeric parameter values (color = r:g:b)
-const char gPathSep   = '|'; // character used to separate paths
+const char* gSeparator = "_"; // character used to separate parameter names
+const char* gDigitsSep = ":"; // character used to separate numeric parameter values (color = r:g:b)
+const char* gPathSep   = "|"; // character used to separate paths
 
 /*!
  * \brief Store visual parameters
@@ -5227,6 +5286,9 @@ const char gPathSep   = '|'; // character used to separate paths
  */
 void SMESHGUI::storeVisualParameters (int savePoint)
 {
+  // localizing
+  Kernel_Utils::Localizer loc;
+
   SalomeApp_Study* appStudy = dynamic_cast<SalomeApp_Study*>(application()->activeStudy());
   if (!appStudy || !appStudy->studyDS())
     return;
@@ -5367,9 +5429,11 @@ void SMESHGUI::storeVisualParameters (int savePoint)
 
                   // Displayed entities
                   unsigned int aMode = aSmeshActor->GetEntityMode();
-                  bool isE = aMode & SMESH_Actor::eEdges;
-                  bool isF = aMode & SMESH_Actor::eFaces;
-                  bool isV = aMode & SMESH_Actor::eVolumes;
+                  bool isE  = aMode & SMESH_Actor::eEdges;
+                  bool isF  = aMode & SMESH_Actor::eFaces;
+                  bool isV  = aMode & SMESH_Actor::eVolumes;
+                  bool is0d = aMode & SMESH_Actor::e0DElements;
+                  bool isB  = aMode & SMESH_Actor::eBallElem;
 
                   QString modeStr ("e");
                   modeStr += gDigitsSep; modeStr += QString::number(isE);
@@ -5377,53 +5441,92 @@ void SMESHGUI::storeVisualParameters (int savePoint)
                   modeStr += gDigitsSep; modeStr += QString::number(isF);
                   modeStr += gDigitsSep; modeStr += "v";
                   modeStr += gDigitsSep; modeStr += QString::number(isV);
+                  modeStr += gDigitsSep; modeStr += "0d";
+                  modeStr += gDigitsSep; modeStr += QString::number(is0d);
+                  modeStr += gDigitsSep; modeStr += "b";
+                  modeStr += gDigitsSep; modeStr += QString::number(isB);
 
                   param = vtkParam + "Entities";
                   ip->setParameter(entry, param, modeStr.toLatin1().data());
 
-                  // Colors (surface:edge:)
+                  // Colors
                   vtkFloatingPointType r, g, b;
                   int delta;
 
                   aSmeshActor->GetSufaceColor(r, g, b, delta);
-                  QString colorStr ("surface");
-                  colorStr += gDigitsSep; colorStr += QString::number(r);
-                  colorStr += gDigitsSep; colorStr += QString::number(g);
-                  colorStr += gDigitsSep; colorStr += QString::number(b);
+                  QStringList colorStr;
+                  colorStr << "surface";
+                  colorStr << QString::number(r);
+                  colorStr << QString::number(g);
+                  colorStr << QString::number(b);
 
-                  colorStr += gDigitsSep; colorStr += "backsurface";
-                  colorStr += gDigitsSep; colorStr += QString::number(delta);
+                  colorStr << "backsurface";
+                  colorStr << QString::number(delta);
 
+                  aSmeshActor->GetVolumeColor(r, g, b, delta);
+                  colorStr << "volume";
+                  colorStr << QString::number(r);
+                  colorStr << QString::number(g);
+                  colorStr << QString::number(b);
+                  colorStr << QString::number(delta);
 
                   aSmeshActor->GetEdgeColor(r, g, b);
-                  colorStr += gDigitsSep; colorStr += "edge";
-                  colorStr += gDigitsSep; colorStr += QString::number(r);
-                  colorStr += gDigitsSep; colorStr += QString::number(g);
-                  colorStr += gDigitsSep; colorStr += QString::number(b);
+                  colorStr << "edge";
+                  colorStr << QString::number(r);
+                  colorStr << QString::number(g);
+                  colorStr << QString::number(b);
 
                   aSmeshActor->GetNodeColor(r, g, b);
-                  colorStr += gDigitsSep; colorStr += "node";
-                  colorStr += gDigitsSep; colorStr += QString::number(r);
-                  colorStr += gDigitsSep; colorStr += QString::number(g);
-                  colorStr += gDigitsSep; colorStr += QString::number(b);
+                  colorStr << "node";
+                  colorStr << QString::number(r);
+                  colorStr << QString::number(g);
+                  colorStr << QString::number(b);
 
                   aSmeshActor->GetOutlineColor(r, g, b);
-                  colorStr += gDigitsSep; colorStr += "outline";
-                  colorStr += gDigitsSep; colorStr += QString::number(r);
-                  colorStr += gDigitsSep; colorStr += QString::number(g);
-                  colorStr += gDigitsSep; colorStr += QString::number(b);
+                  colorStr << "outline";
+                  colorStr << QString::number(r);
+                  colorStr << QString::number(g);
+                  colorStr << QString::number(b);
+
+                  aSmeshActor->Get0DColor(r, g, b);
+                  colorStr << "elem0d";
+                  colorStr << QString::number(r);
+                  colorStr << QString::number(g);
+                  colorStr << QString::number(b);
+
+                  aSmeshActor->GetBallColor(r, g, b);
+                  colorStr << "ball";
+                  colorStr << QString::number(r);
+                  colorStr << QString::number(g);
+                  colorStr << QString::number(b);
+
+                  aSmeshActor->GetFacesOrientationColor(r, g, b);
+                  colorStr << "orientation";
+                  colorStr << QString::number(r);
+                  colorStr << QString::number(g);
+                  colorStr << QString::number(b);
 
                   param = vtkParam + "Colors";
-                  ip->setParameter(entry, param, colorStr.toLatin1().data());
+                  ip->setParameter(entry, param, qPrintable(colorStr.join(gDigitsSep)));
 
-                  // Sizes of lines and points
-                  QString sizeStr ("line");
-                  sizeStr += gDigitsSep; sizeStr += QString::number((int)aSmeshActor->GetLineWidth());
-                  sizeStr += gDigitsSep; sizeStr += "shrink";
-                  sizeStr += gDigitsSep; sizeStr += QString::number(aSmeshActor->GetShrinkFactor());
+                  // Sizes
+                  QStringList sizeStr;
+                  sizeStr << "line";
+                  sizeStr << QString::number((int)aSmeshActor->GetLineWidth());
+                  sizeStr << "outline";
+                  sizeStr << QString::number((int)aSmeshActor->GetOutlineWidth());
+                  sizeStr << "elem0d";
+                  sizeStr << QString::number((int)aSmeshActor->Get0DSize());
+                  sizeStr << "ball";
+                  sizeStr << QString::number((int)aSmeshActor->GetBallSize());
+                  sizeStr << "shrink";
+                  sizeStr << QString::number(aSmeshActor->GetShrinkFactor());
+                  sizeStr << "orientation";
+                  sizeStr << QString::number(aSmeshActor->GetFacesOrientationScale());
+                  sizeStr << QString::number(aSmeshActor->GetFacesOrientation3DVectors());
 
                   param = vtkParam + "Sizes";
-                  ip->setParameter(entry, param, sizeStr.toLatin1().data());
+                  ip->setParameter(entry, param, qPrintable(sizeStr.join(gDigitsSep)));
 
                   // Point marker
                   QString markerStr;
@@ -5509,6 +5612,9 @@ typedef std::map<int, TPlaneInfoList> TPlaneInfoMap;
  */
 void SMESHGUI::restoreVisualParameters (int savePoint)
 {
+  // localizing
+  Kernel_Utils::Localizer loc;
+
   SalomeApp_Study* appStudy = dynamic_cast<SalomeApp_Study*>(application()->activeStudy());
   if (!appStudy || !appStudy->studyDS())
     return;
@@ -5745,95 +5851,279 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
             // Displayed entities
             else if (paramNameStr == "Entities") {
               QStringList mode = val.split(gDigitsSep, QString::SkipEmptyParts);
-              if (mode.count() == 6) {
-                if (mode[0] != "e" || mode[2]  != "f" || mode[4] != "v") {
-                  MESSAGE("Invalid order of data in Entities, must be: "
-                          "e:0/1:f:0/1:v:0/1");
-                }
-                else {
-                  unsigned int aMode = aSmeshActor->GetEntityMode();
-                  unsigned int aNewMode =
-                    (int(SMESH_Actor::eEdges  ) * mode[1].toInt()) |
-                    (int(SMESH_Actor::eFaces  ) * mode[3].toInt()) |
-                    (int(SMESH_Actor::eVolumes) * mode[5].toInt());
-                  if (aNewMode != aMode)
-                    aSmeshActor->SetEntityMode(aNewMode);
+              int aEntityMode = SMESH_Actor::eAllEntity;
+              for ( int i = 0; i < mode.count(); i+=2 ) {
+                if ( i < mode.count()-1 ) {
+                  QString type = mode[i];
+                  bool val = mode[i+1].toInt();
+                  if      ( type == "e" && !val )
+                    aEntityMode = aEntityMode & ~SMESH_Actor::eEdges;
+                  else if ( type == "f" && !val )
+                    aEntityMode = aEntityMode & ~SMESH_Actor::eFaces;
+                  else if ( type == "v" && !val )
+                    aEntityMode = aEntityMode & ~SMESH_Actor::eVolumes;
+                  else if ( type == "0d" && !val )
+                    aEntityMode = aEntityMode & ~SMESH_Actor::e0DElements;
+                  else if ( type == "b" && !val )
+                    aEntityMode = aEntityMode & ~SMESH_Actor::eBallElem;
                 }
               }
+              aSmeshActor->SetEntityMode( aEntityMode );
             }
             // Colors
             else if (paramNameStr == "Colors") {
               QStringList colors = val.split(gDigitsSep, QString::SkipEmptyParts);
-              if (colors.count() == 16 || colors.count() == 18 ) {
-                if (colors[0] != "surface" || colors[4]  != "backsurface" ||
-                    (colors[8] != "edge" && colors[6] != "edge" ) || (colors[12] != "node" && colors[10] != "node") ||
-                    (colors.count() == 18 && colors[14] != "outline")) {
-                  MESSAGE("Invalid order of data in Colors, must be: "
-                          "surface:r:g:b:backsurface:r:g:b:edge:r:g:b:node:r:g:b or surface:r:g:b:backsurface:delta:edge:r:g:b:node:r:g:b:outline:r:g:b");
+              QColor nodeColor;
+              QColor edgeColor;
+              QColor faceColor;
+              QColor volumeColor;
+              QColor elem0dColor;
+              QColor ballColor;
+              QColor outlineColor;
+              QColor orientationColor;
+              int deltaF;
+              int deltaV;
+              QColor c;
+              double r, g, b;
+              bool bOk;
+              // below lines are required to get default values for delta coefficients
+              // of backface color for faces and color of reversed volumes
+              SMESH::GetColor( "SMESH", "fill_color",   c, deltaF, "0,170,255|-100" );
+              SMESH::GetColor( "SMESH", "volume_color", c, deltaV, "255,0,170|-100" );
+              for ( int i = 0; i < colors.count(); i++ ) {
+                QString type = colors[i];
+                if ( type == "surface" ) {
+                  // face color is set by 3 values r:g:b, where
+                  // - r,g,b - is rgb color components
+                  if ( i+1 >= colors.count() ) break;                  // format error
+                  r = colors[i+1].toDouble( &bOk ); if ( !bOk ) break; // format error
+                  if ( i+2 >= colors.count() ) break;                  // format error
+                  g = colors[i+2].toDouble( &bOk ); if ( !bOk ) break; // format error
+                  if ( i+3 >= colors.count() ) break;                  // format error
+                  b = colors[i+3].toDouble( &bOk ); if ( !bOk ) break; // format error
+                  faceColor.setRgbF( r, g, b );
+                  i += 3;
                 }
-                else {
-                  int delta = 0;
-                  float er,eg,eb;
-                  float nr,ng,nb;
-                  vtkFloatingPointType otr,otg,otb;
-                  //Old case backsurface color is independent
-                  if( colors.count() == 16 ) {
-                    QColor ffc;
-                    SMESH::GetColor( "SMESH", "fill_color", ffc, delta, "0,170,255|-100" ) ;
-                    er = colors[9].toFloat();
-                    eg = colors[10].toFloat();
-                    eb = colors[11].toFloat();
-
-                    nr = colors[13].toFloat();
-                    ng = colors[14].toFloat();
-                    nb = colors[15].toFloat();
-                    SMESH::GetColor("SMESH", "outline_color", otr, otg, otb, QColor( 0, 70, 0 ) );
-                  } else {
-                    //New case backsurface color depends on surface color
-                    delta = colors[5].toInt();
-
-                    er = colors[7].toFloat();
-                    eg = colors[8].toFloat();
-                    eb = colors[9].toFloat();
-
-                    nr = colors[11].toFloat();
-                    ng = colors[12].toFloat();
-                    nb = colors[13].toFloat();
-
-                    otr = colors[15].toFloat();
-                    otg = colors[16].toFloat();
-                    otb = colors[17].toFloat();
-                  }
-                  aSmeshActor->SetSufaceColor(colors[1].toFloat(), colors[2].toFloat(), colors[3].toFloat(), delta);
-                  aSmeshActor->SetEdgeColor(er,eg,eb);
-                  aSmeshActor->SetNodeColor(nr,ng,nb);
-                  aSmeshActor->SetOutlineColor(otr,otg,otb);
+                else if ( type == "backsurface" ) {
+                  // backface color can be defined in several ways
+                  // - in old versions, it is set as rgb triple r:g:b - this was is unsupported now
+                  // - in latest versions, it is set as delta coefficient
+                  bool rgbOk = false, deltaOk;
+                  if ( i+1 >= colors.count() ) break;                  // format error
+                  r = colors[i+1].toDouble( &bOk ); if ( !bOk ) break; // format error
+                  int delta = colors[i+1].toInt( &deltaOk );
+                  i++;                                 // shift index
+                  if ( i+1 < colors.count() )          // index is shifted to 1
+                    g = colors[i+1].toDouble( &rgbOk );
+                  if ( rgbOk ) i++;                    // shift index
+                  if ( rgbOk && i+1 < colors.count() ) // index is shifted to 2
+                    b = colors[i+1].toDouble( &rgbOk );
+                  if ( rgbOk ) i++;
+                  // - as currently there's no way to set directly backsurface color as it was before,
+                  // we ignore old dump where r,g,b triple was set
+                  // - also we check that delta parameter is set properly
+                  if ( !rgbOk && deltaOk )
+                    deltaF = delta;
+                }
+                else if ( type == "volume" ) {
+                  // volume color is set by 4 values r:g:b:delta, where
+                  // - r,g,b - is a normal volume rgb color components
+                  // - delta - is a reversed volume color delta coefficient
+                  if ( i+1 >= colors.count() ) break;                  // format error
+                  r = colors[i+1].toDouble( &bOk ); if ( !bOk ) break; // format error
+                  if ( i+2 >= colors.count() ) break;                  // format error
+                  g = colors[i+2].toDouble( &bOk ); if ( !bOk ) break; // format error
+                  if ( i+3 >= colors.count() ) break;                  // format error
+                  b = colors[i+3].toDouble( &bOk ); if ( !bOk ) break; // format error
+                  if ( i+4 >= colors.count() ) break;                  // format error
+                  int delta = colors[i+4].toInt( &bOk );
+                  if ( !bOk ) break;                                   // format error
+                  volumeColor.setRgbF( r, g, b );
+                  deltaV = delta;
+                  i += 4;
+                }
+                else if ( type == "edge" ) {
+                  // edge color is set by 3 values r:g:b, where
+                  // - r,g,b - is rgb color components
+                  if ( i+1 >= colors.count() ) break;                  // format error
+                  r = colors[i+1].toDouble( &bOk ); if ( !bOk ) break; // format error
+                  if ( i+2 >= colors.count() ) break;                  // format error
+                  g = colors[i+2].toDouble( &bOk ); if ( !bOk ) break; // format error
+                  if ( i+3 >= colors.count() ) break;                  // format error
+                  b = colors[i+3].toDouble( &bOk ); if ( !bOk ) break; // format error
+                  edgeColor.setRgbF( r, g, b );
+                  i += 3;
+                }
+                else if ( type == "node" ) {
+                  // node color is set by 3 values r:g:b, where
+                  // - r,g,b - is rgb color components
+                  if ( i+1 >= colors.count() ) break;                  // format error
+                  r = colors[i+1].toDouble( &bOk ); if ( !bOk ) break; // format error
+                  if ( i+2 >= colors.count() ) break;                  // format error
+                  g = colors[i+2].toDouble( &bOk ); if ( !bOk ) break; // format error
+                  if ( i+3 >= colors.count() ) break;                  // format error
+                  b = colors[i+3].toDouble( &bOk ); if ( !bOk ) break; // format error
+                  nodeColor.setRgbF( r, g, b );
+                  i += 3;
+                }
+                else if ( type == "elem0d" ) {
+                  // 0d element color is set by 3 values r:g:b, where
+                  // - r,g,b - is rgb color components
+                  if ( i+1 >= colors.count() ) break;                  // format error
+                  r = colors[i+1].toDouble( &bOk ); if ( !bOk ) break; // format error
+                  if ( i+2 >= colors.count() ) break;                  // format error
+                  g = colors[i+2].toDouble( &bOk ); if ( !bOk ) break; // format error
+                  if ( i+3 >= colors.count() ) break;                  // format error
+                  b = colors[i+3].toDouble( &bOk ); if ( !bOk ) break; // format error
+                  elem0dColor.setRgbF( r, g, b );
+                  i += 3;
+                }
+                else if ( type == "ball" ) {
+                  // ball color is set by 3 values r:g:b, where
+                  // - r,g,b - is rgb color components
+                  if ( i+1 >= colors.count() ) break;                  // format error
+                  r = colors[i+1].toDouble( &bOk ); if ( !bOk ) break; // format error
+                  if ( i+2 >= colors.count() ) break;                  // format error
+                  g = colors[i+2].toDouble( &bOk ); if ( !bOk ) break; // format error
+                  if ( i+3 >= colors.count() ) break;                  // format error
+                  b = colors[i+3].toDouble( &bOk ); if ( !bOk ) break; // format error
+                  ballColor.setRgbF( r, g, b );
+                  i += 3;
+                }
+                else if ( type == "outline" ) {
+                  // outline color is set by 3 values r:g:b, where
+                  // - r,g,b - is rgb color components
+                  if ( i+1 >= colors.count() ) break;                  // format error
+                  r = colors[i+1].toDouble( &bOk ); if ( !bOk ) break; // format error
+                  if ( i+2 >= colors.count() ) break;                  // format error
+                  g = colors[i+2].toDouble( &bOk ); if ( !bOk ) break; // format error
+                  if ( i+3 >= colors.count() ) break;                  // format error
+                  b = colors[i+3].toDouble( &bOk ); if ( !bOk ) break; // format error
+                  outlineColor.setRgbF( r, g, b );
+                  i += 3;
+                }
+                else if ( type == "orientation" ) {
+                  // orientation color is set by 3 values r:g:b, where
+                  // - r,g,b - is rgb color components
+                  if ( i+1 >= colors.count() ) break;                  // format error
+                  r = colors[i+1].toDouble( &bOk ); if ( !bOk ) break; // format error
+                  if ( i+2 >= colors.count() ) break;                  // format error
+                  g = colors[i+2].toDouble( &bOk ); if ( !bOk ) break; // format error
+                  if ( i+3 >= colors.count() ) break;                  // format error
+                  b = colors[i+3].toDouble( &bOk ); if ( !bOk ) break; // format error
+                  orientationColor.setRgbF( r, g, b );
+                  i += 3;
                 }
               }
+              // node color
+              if ( nodeColor.isValid() )
+                aSmeshActor->SetNodeColor( nodeColor.redF(), nodeColor.greenF(), nodeColor.blueF() );
+              // edge color
+              if ( edgeColor.isValid() )
+                aSmeshActor->SetEdgeColor( edgeColor.redF(), edgeColor.greenF(), edgeColor.blueF() );
+              // face color
+              if ( faceColor.isValid() )
+                aSmeshActor->SetSufaceColor( faceColor.redF(), faceColor.greenF(), faceColor.blueF(), deltaF );
+              // volume color
+              if ( volumeColor.isValid() )
+                aSmeshActor->SetVolumeColor( volumeColor.redF(), volumeColor.greenF(), volumeColor.blueF(), deltaV );
+              else if ( faceColor.isValid() ) // backward compatibility (no separate color for volumes)
+                aSmeshActor->SetVolumeColor( faceColor.redF(), faceColor.greenF(), faceColor.blueF(), deltaF );
+              // 0d element color
+              if ( elem0dColor.isValid() )
+                aSmeshActor->Set0DColor( elem0dColor.redF(), elem0dColor.greenF(), elem0dColor.blueF() );
+              // ball color
+              if ( ballColor.isValid() )
+                aSmeshActor->SetBallColor( ballColor.redF(), ballColor.greenF(), ballColor.blueF() );
+              // outline color
+              if ( outlineColor.isValid() )
+                aSmeshActor->SetOutlineColor( outlineColor.redF(), outlineColor.greenF(), outlineColor.blueF() );
+              // orientation color
+              if ( orientationColor.isValid() )
+                aSmeshActor->SetFacesOrientationColor( orientationColor.redF(), orientationColor.greenF(), orientationColor.blueF() );
             }
-            // Sizes of lines and points
+            // Sizes
             else if (paramNameStr == "Sizes") {
               QStringList sizes = val.split(gDigitsSep, QString::SkipEmptyParts);
-              if (sizes.count() == 4) {
-                if (sizes[0] != "line" || sizes[2] != "shrink") {
-                  MESSAGE("Invalid order of data in Sizes, must be: "
-                          "line:int:shrink:float");
+              bool bOk;
+              int lineWidth = -1;
+              int outlineWidth = -1;
+              int elem0dSize = -1;
+              int ballSize = -1;
+              double shrinkSize = -1;
+              double orientationSize = -1;
+              bool orientation3d = false;
+              for ( int i = 0; i < sizes.count(); i++ ) {
+                QString type = sizes[i];
+                if ( type == "line" ) {
+                  // line (wireframe) width is given as single integer value
+                  if ( i+1 >= sizes.count() ) break;                    // format error
+                  int v = sizes[i+1].toInt( &bOk ); if ( !bOk ) break;  // format error
+                  lineWidth = v;
+                  i++;
                 }
-                else {
-                  aSmeshActor->SetLineWidth(sizes[1].toInt());
-                  aSmeshActor->SetShrinkFactor(sizes[3].toFloat());
+                if ( type == "outline" ) {
+                  // outline width is given as single integer value
+                  if ( i+1 >= sizes.count() ) break;                    // format error
+                  int v = sizes[i+1].toInt( &bOk ); if ( !bOk ) break;  // format error
+                  outlineWidth = v;
+                  i++;
+                }
+                else if ( type == "elem0d" ) {
+                  // 0d element size is given as single integer value
+                  if ( i+1 >= sizes.count() ) break;                    // format error
+                  int v = sizes[i+1].toInt( &bOk ); if ( !bOk ) break;  // format error
+                  elem0dSize = v;
+                  i++;
+                }
+                else if ( type == "ball" ) {
+                  // ball size is given as single integer value
+                  if ( i+1 >= sizes.count() ) break;                    // format error
+                  int v = sizes[i+1].toInt( &bOk ); if ( !bOk ) break;  // format error
+                  ballSize = v;
+                  i++;
+                }
+                else if ( type == "shrink" ) {
+                  // shrink factor is given as single floating point value
+                  if ( i+1 >= sizes.count() ) break;                          // format error
+                  double v = sizes[i+1].toDouble( &bOk ); if ( !bOk ) break;  // format error
+                  shrinkSize = v;
+                  i++;
+                }
+                else if ( type == "orientation" ) {
+                  // orientation vectors are specified by two values size:3d, where
+                  // - size - is a floating point value specifying scale factor
+                  // - 3d - is a boolean
+                  if ( i+1 >= sizes.count() ) break;                          // format error
+                  double v1 = sizes[i+1].toDouble( &bOk ); if ( !bOk ) break; // format error
+                  if ( i+2 >= sizes.count() ) break;                          // format error
+                  int v2 = sizes[i+2].toInt( &bOk ); if ( !bOk ) break;       // format error
+                  orientationSize = v1;
+                  orientation3d = (bool)v2;
+                  i += 2;
                 }
               }
-              else if (sizes.count() == 6) { // just to support old format
-                if (sizes[0] != "line" || sizes[2]  != "node" || sizes[4] != "shrink") {
-                  MESSAGE("Invalid order of data in Sizes, must be: "
-                          "line:int:node:int:shrink:float");
-                }
-                else {
-                  aSmeshActor->SetLineWidth(sizes[1].toInt());
-                  //aSmeshActor->SetNodeSize(sizes[3].toInt()); // made obsolete
-                  aSmeshActor->SetShrinkFactor(sizes[5].toFloat());
-                }
+              // line (wireframe) width
+              if ( lineWidth > 0 )
+                aSmeshActor->SetLineWidth( lineWidth );
+              // outline width
+              if ( outlineWidth > 0 )
+                aSmeshActor->SetOutlineWidth( outlineWidth );
+              else if ( lineWidth > 0 ) // backward compatibility (no separate width for outlines)
+                aSmeshActor->SetOutlineWidth( lineWidth );
+              // 0d element size
+              if ( elem0dSize > 0 )
+                aSmeshActor->Set0DSize( elem0dSize );
+              // ball size
+              if ( ballSize > 0 )
+                aSmeshActor->SetBallSize( ballSize );
+              // shrink factor
+              if ( shrinkSize > 0 )
+                aSmeshActor->SetShrinkFactor( shrinkSize );
+              // orientation vectors
+              if ( orientationSize > 0 ) {
+                aSmeshActor->SetFacesOrientationScale( orientationSize );
+                aSmeshActor->SetFacesOrientation3DVectors( orientation3d );
               }
             }
             // Point marker
@@ -6166,11 +6456,11 @@ bool SMESHGUI::renameAllowed( const QString& entry) const {
 
   // check type to prevent renaming of inappropriate objects
   int aType = SMESHGUI_Selection::type(qPrintable(entry), SMESH::GetActiveStudyDocument());
-  if (aType == MESH || aType == GROUP ||
-      aType == SUBMESH || aType == SUBMESH_COMPOUND ||
-      aType == SUBMESH_SOLID || aType == SUBMESH_FACE ||
-      aType == SUBMESH_EDGE || aType == SUBMESH_VERTEX ||
-      aType == HYPOTHESIS || aType == ALGORITHM)
+  if (aType == SMESH::MESH || aType == SMESH::GROUP ||
+      aType == SMESH::SUBMESH || aType == SMESH::SUBMESH_COMPOUND ||
+      aType == SMESH::SUBMESH_SOLID || aType == SMESH::SUBMESH_FACE ||
+      aType == SMESH::SUBMESH_EDGE || aType == SMESH::SUBMESH_VERTEX ||
+      aType == SMESH::HYPOTHESIS || aType == SMESH::ALGORITHM)
     return true;
 
   return false;
@@ -6213,11 +6503,11 @@ bool SMESHGUI::renameObject( const QString& entry, const QString& name) {
       aName = anAttr;
       // check type to prevent renaming of inappropriate objects
       int aType = SMESHGUI_Selection::type( qPrintable(entry), SMESH::GetActiveStudyDocument() );
-      if (aType == MESH || aType == GROUP ||
-          aType == SUBMESH || aType == SUBMESH_COMPOUND ||
-          aType == SUBMESH_SOLID || aType == SUBMESH_FACE ||
-          aType == SUBMESH_EDGE || aType == SUBMESH_VERTEX ||
-          aType == HYPOTHESIS || aType == ALGORITHM) {
+      if (aType == SMESH::MESH || aType == SMESH::GROUP ||
+          aType == SMESH::SUBMESH || aType == SMESH::SUBMESH_COMPOUND ||
+          aType == SMESH::SUBMESH_SOLID || aType == SMESH::SUBMESH_FACE ||
+          aType == SMESH::SUBMESH_EDGE || aType == SMESH::SUBMESH_VERTEX ||
+          aType == SMESH::HYPOTHESIS || aType == SMESH::ALGORITHM) {
         if ( !name.isEmpty() ) {
           SMESHGUI::GetSMESHGen()->SetName(obj->GetIOR().c_str(), qPrintable(name) );
 

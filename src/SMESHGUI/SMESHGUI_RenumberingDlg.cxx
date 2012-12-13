@@ -182,7 +182,7 @@ void SMESHGUI_RenumberingDlg::Init()
 
   myMesh = SMESH::SMESH_Mesh::_nil();
 
-  myMeshFilter = new SMESH_TypeFilter (MESH);
+  myMeshFilter = new SMESH_TypeFilter (SMESH::MESH);
 
   /* signals and slots connections */
   connect(buttonOk,     SIGNAL(clicked()), this, SLOT(ClickOnOk()));

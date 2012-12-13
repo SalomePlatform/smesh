@@ -50,7 +50,9 @@ DriverMED_W_SMESHDS_Mesh::DriverMED_W_SMESHDS_Mesh():
   myDoGroupOfNodes (false),
   myDoGroupOfEdges (false),
   myDoGroupOfFaces (false),
-  myDoGroupOfVolumes (false)
+  myDoGroupOfVolumes (false),
+  myDoGroupOf0DElems(false),
+  myDoGroupOfBalls(false)
 {}
 
 void DriverMED_W_SMESHDS_Mesh::SetFile(const std::string& theFileName, 

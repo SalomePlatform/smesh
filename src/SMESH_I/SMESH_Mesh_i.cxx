@@ -483,12 +483,13 @@ int SMESH_Mesh_i::ImportSTLFile( const char* theFileName )
  */
 //================================================================================
 
-SMESH::ComputeError* SMESH_Mesh_i::ImportGMFFile( const char* theFileName )
+SMESH::ComputeError* SMESH_Mesh_i::ImportGMFFile( const char* theFileName,
+                                                  bool        theMakeRequiredGroups )
   throw (SALOME::SALOME_Exception)
 {
   SMESH_ComputeErrorPtr error;
   try {
-    error = _impl->GMFToMesh( theFileName );
+    error = _impl->GMFToMesh( theFileName, theMakeRequiredGroups );
   }
   catch ( std::bad_alloc& exc ) {
     error = SMESH_ComputeError::New( Driver_Mesh::DRS_FAIL, "std::bad_alloc raised" );
@@ -1064,11 +1065,11 @@ void SMESH_Mesh_i::RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup 
   else
     aMeshEditor->RemoveElements( anIds );
 
+  // Update Python script (theGroup must be alive for this)
+  pyDump << _this() << ".RemoveGroupWithContents( " << theGroup << " )";
+
   // Remove group
   RemoveGroup( theGroup );
-
-  // Update Python script
-  pyDump << _this() << ".RemoveGroupWithContents( " << theGroup << " )";
 }
 
 //================================================================================
@@ -3025,8 +3026,8 @@ void SMESH_Mesh_i::ExportCGNS(::SMESH::SMESH_IDSource_ptr meshPart,
   SMESH_MeshPartDS partDS( meshPart );
   _impl->ExportCGNS(file, &partDS);
 
-  TPythonDump() << _this() << ".ExportCGNS( r'"
-                << file << "', " << overwrite << ", "<< meshPart<< ")";
+  TPythonDump() << _this() << ".ExportCGNS( "
+                << meshPart<< ", r'" << file << "', " << overwrite << ")";
 #else
   THROW_SALOME_CORBA_EXCEPTION("CGNS library is unavailable", SALOME::INTERNAL_ERROR);
 #endif
@@ -3039,7 +3040,8 @@ void SMESH_Mesh_i::ExportCGNS(::SMESH::SMESH_IDSource_ptr meshPart,
 //================================================================================
 
 void SMESH_Mesh_i::ExportGMF(::SMESH::SMESH_IDSource_ptr meshPart,
-                             const char*                 file)
+                             const char*                 file,
+                             bool                        withRequiredGroups)
   throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
@@ -3049,10 +3051,12 @@ void SMESH_Mesh_i::ExportGMF(::SMESH::SMESH_IDSource_ptr meshPart,
   PrepareForWriting(file,/*overwrite=*/true);
 
   SMESH_MeshPartDS partDS( meshPart );
-  _impl->ExportGMF(file, &partDS);
+  _impl->ExportGMF(file, &partDS, withRequiredGroups);
 
-  TPythonDump() << _this() << ".ExportGMF( r'"
-                << file << "', "<< meshPart<< ")";
+  TPythonDump() << _this() << ".ExportGMF( "
+                << meshPart<< ", r'"
+                << file << "', "
+                << withRequiredGroups << ")";
 }
 
 //=============================================================================
@@ -5051,3 +5055,5 @@ _GET_ITER_DEFINE( SMDS_VolumeIteratorPtr, volumesIterator, SMDS_MeshVolume, SMDS
 // END Implementation of SMESH_MeshPartDS
 //
 //================================================================================
+
+

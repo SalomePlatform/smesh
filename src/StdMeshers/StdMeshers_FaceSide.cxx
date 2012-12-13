@@ -62,14 +62,16 @@
  */
 //================================================================================
 
-StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
-                                         const TopoDS_Edge& theEdge,
-                                         SMESH_Mesh*        theMesh,
-                                         const bool         theIsForward,
-                                         const bool         theIgnoreMediumNodes)
+StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face&   theFace,
+                                         const TopoDS_Edge&   theEdge,
+                                         SMESH_Mesh*          theMesh,
+                                         const bool           theIsForward,
+                                         const bool           theIgnoreMediumNodes,
+                                         SMESH_ProxyMesh::Ptr theProxyMesh)
 {
   list<TopoDS_Edge> edges(1,theEdge);
-  *this = StdMeshers_FaceSide( theFace, edges, theMesh, theIsForward, theIgnoreMediumNodes );
+  *this = StdMeshers_FaceSide( theFace, edges, theMesh, theIsForward,
+                               theIgnoreMediumNodes, theProxyMesh );
 }
 
 //================================================================================
@@ -80,11 +82,12 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
  */
 //================================================================================
 
-StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
-                                         list<TopoDS_Edge>& theEdges,
-                                         SMESH_Mesh*        theMesh,
-                                         const bool         theIsForward,
-                                         const bool         theIgnoreMediumNodes)
+StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face&   theFace,
+                                         list<TopoDS_Edge>&   theEdges,
+                                         SMESH_Mesh*          theMesh,
+                                         const bool           theIsForward,
+                                         const bool           theIgnoreMediumNodes,
+                                         SMESH_ProxyMesh::Ptr theProxyMesh)
 {
   int nbEdges = theEdges.size();
   myEdge.resize      ( nbEdges );
@@ -98,13 +101,14 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
   myIsUniform.resize ( nbEdges, true );
   myLength             = 0;
   myNbPonits           = myNbSegments = 0;
-  myMesh               = theMesh;
+  myProxyMesh          = theProxyMesh;
   myMissingVertexNodes = false;
   myIgnoreMediumNodes  = theIgnoreMediumNodes;
   myDefaultPnt2d       = gp_Pnt2d( 1e+100, 1e+100 );
+  if ( !myProxyMesh ) myProxyMesh.reset( new SMESH_ProxyMesh( *theMesh ));
   if ( nbEdges == 0 ) return;
 
-  SMESHDS_Mesh* meshDS = theMesh->GetMeshDS();
+  SMESHDS_Mesh* meshDS = myProxyMesh->GetMeshDS();
 
   int nbDegen = 0;
   list<TopoDS_Edge>::iterator edge = theEdges.begin();
@@ -126,7 +130,7 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
     if ( myEdge[i].Orientation() == TopAbs_REVERSED )
       std::swap( myFirst[i], myLast[i] );
 
-    if ( SMESHDS_SubMesh* sm = meshDS->MeshElements( *edge )) {
+    if ( const SMESHDS_SubMesh* sm = myProxyMesh->GetSubMesh( *edge )) {
       int nbN = sm->NbNodes();
       if ( theIgnoreMediumNodes ) {
         SMDS_ElemIteratorPtr elemIt = sm->GetElements();
@@ -136,6 +140,7 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
       myNbPonits += nbN;
       myNbSegments += sm->NbElements();
     }
+
     // TopExp::FirstVertex() and TopExp::LastVertex() return NULL from INTERNAL edge
     vExp.Initialize( *edge );
     if ( vExp.Value().Orientation() == TopAbs_REVERSED ) vExp.Next();
@@ -144,7 +149,7 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
     else
       myMissingVertexNodes = true;
 
-    // check if edge has non-uniform parametrization (issue 0020705)
+    // check if the edge has a non-uniform parametrization (issue 0020705)
     if ( !myC2d[i].IsNull() && myEdgeLength[i] > DBL_MIN)
     {
       Geom2dAdaptor_Curve A2dC( myC2d[i],
@@ -163,7 +168,12 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
         myC3dAdaptor[i].Load( C3d, fp,lp );
       }
     }
-  }
+    // reverse a proxy submesh
+    if ( !theIsForward )
+      reverseProxySubmesh( myEdge[i] );
+
+  } // loop on edges
+
   vExp.Initialize( theEdges.back() );
   if ( vExp.Value().Orientation() != TopAbs_REVERSED ) vExp.Next();
   if ( vExp.More() )
@@ -203,8 +213,8 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const SMDS_MeshNode* theNode,
                                          const StdMeshers_FaceSide* theSide)
 {
   myC2d.resize(1);
-  myLength = 0;
-  myMesh = theSide->GetMesh();
+  myLength       = 0;
+  myProxyMesh    = theSide->myProxyMesh;
   myDefaultPnt2d = thePnt2d;
 
   myPoints = theSide->GetUVPtStruct();
@@ -232,55 +242,70 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
 
     if ( NbEdges() == 0 ) return myPoints;
 
-    SMESHDS_Mesh* meshDS = myMesh->GetMeshDS();
-    SMESH_MesherHelper helper(*myMesh);
+    SMESHDS_Mesh* meshDS = myProxyMesh->GetMeshDS();
+    SMESH_MesherHelper helper(*myProxyMesh->GetMesh());
     bool paramOK;
+    double eps = 1e-100;
 
     // sort nodes of all edges putting them into a map
 
     map< double, const SMDS_MeshNode*> u2node;
-    //int nbOnDegen = 0;
-    for ( int i = 0; i < myEdge.size(); ++i )
+    vector< const SMESH_ProxyMesh::SubMesh* > proxySubMesh( myEdge.size());
+    int nbProxyNodes = 0;
+    for ( size_t iE = 0; iE < myEdge.size(); ++iE )
     {
+      proxySubMesh[iE] = myProxyMesh->GetProxySubMesh( myEdge[iE] );
+      if ( proxySubMesh[iE] )
+      {
+        if ( proxySubMesh[iE]->GetUVPtStructVec().empty() ) {
+          proxySubMesh[iE] = 0;
+        }
+        else {
+          nbProxyNodes += proxySubMesh[iE]->GetUVPtStructVec().size() - 1;
+          if ( iE+1 == myEdge.size() )
+            ++nbProxyNodes;
+          continue;
+        }
+      }
       // Put 1st vertex node of a current edge
       TopoDS_Vertex VV[2]; // TopExp::FirstVertex() returns NULL for INTERNAL edge
-      VV[0] = SMESH_MesherHelper::IthVertex( 0, myEdge[i]);
-      VV[1] = SMESH_MesherHelper::IthVertex( 1, myEdge[i]);
+      VV[0] = SMESH_MesherHelper::IthVertex( 0, myEdge[iE]);
+      VV[1] = SMESH_MesherHelper::IthVertex( 1, myEdge[iE]);
       const SMDS_MeshNode* node = SMESH_Algo::VertexNode( VV[0], meshDS );
-      double prevNormPar = ( i == 0 ? 0 : myNormPar[ i-1 ]); // normalized param
+      double prevNormPar = ( iE == 0 ? 0 : myNormPar[ iE-1 ]); // normalized param
       if ( node ) { // nodes on internal vertices may be missing
         u2node.insert( u2node.end(), make_pair( prevNormPar, node ));
       }
-      else if ( i == 0 ) {
+      else if ( iE == 0 ) {
         MESSAGE(" NO NODE on VERTEX" );
         return myPoints;
       }
 
       // Put internal nodes
-      if ( SMESHDS_SubMesh* sm = meshDS->MeshElements( myEdge[i] ))
+      if ( const SMESHDS_SubMesh* sm = myProxyMesh->GetSubMesh( myEdge[iE] ))
       {
         vector< pair< double, const SMDS_MeshNode*> > u2nodeVec;
         u2nodeVec.reserve( sm->NbNodes() );
         SMDS_NodeIteratorPtr nItr = sm->GetNodes();
-        double paramSize = myLast[i] - myFirst[i];
-        double r         = myNormPar[i] - prevNormPar;
-        helper.SetSubShape( myEdge[i] );
+        double paramSize = myLast[iE] - myFirst[iE];
+        double r         = myNormPar[iE] - prevNormPar;
+        helper.SetSubShape( myEdge[iE] );
         helper.ToFixNodeParameters( true );
-        if ( !myIsUniform[i] )
+        if ( !myIsUniform[iE] )
           while ( nItr->more() )
           {
             const SMDS_MeshNode* node = nItr->next();
             if ( myIgnoreMediumNodes && SMESH_MeshEditor::IsMedium( node, SMDSAbs_Edge ))
               continue;
-            double u = helper.GetNodeU( myEdge[i], node, 0, &paramOK );
+            double u = helper.GetNodeU( myEdge[iE], node, 0, &paramOK );
             double aLenU = GCPnts_AbscissaPoint::Length
-              ( const_cast<GeomAdaptor_Curve&>( myC3dAdaptor[i]), myFirst[i], u );
-            if ( myEdgeLength[i] < aLenU ) // nonregression test "3D_mesh_NETGEN/G6"
+              ( const_cast<GeomAdaptor_Curve&>( myC3dAdaptor[iE]), myFirst[iE], u );
+            if ( myEdgeLength[iE] < aLenU ) // nonregression test "3D_mesh_NETGEN/G6"
             {
               u2nodeVec.clear();
               break;
             }
-            double normPar = prevNormPar + r*aLenU/myEdgeLength[i];
+            double normPar = prevNormPar + r*aLenU/myEdgeLength[iE];
             u2nodeVec.push_back( make_pair( normPar, node ));
           }
         nItr = sm->GetNodes();
@@ -290,18 +315,18 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
             const SMDS_MeshNode* node = nItr->next();
             if ( myIgnoreMediumNodes && SMESH_MeshEditor::IsMedium( node, SMDSAbs_Edge ))
               continue;
-            double u = helper.GetNodeU( myEdge[i], node, 0, &paramOK );
+            double u = helper.GetNodeU( myEdge[iE], node, 0, &paramOK );
 
             // paramSize is signed so orientation is taken into account
-            double normPar = prevNormPar + r * ( u - myFirst[i] ) / paramSize;
+            double normPar = prevNormPar + r * ( u - myFirst[iE] ) / paramSize;
             u2nodeVec.push_back( make_pair( normPar, node ));
           }
         for ( size_t j = 0; j < u2nodeVec.size(); ++j )
-        u2node.insert( u2node.end(), u2nodeVec[j] );
+          u2node.insert( u2node.end(), u2nodeVec[j] );
       }
 
       // Put 2nd vertex node for a last edge
-      if ( i+1 == myEdge.size() ) {
+      if ( iE+1 == myEdge.size() ) {
         node = SMESH_Algo::VertexNode( VV[1], meshDS );
         if ( !node ) {
           MESSAGE(" NO NODE on VERTEX" );
@@ -309,8 +334,10 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
         }
         u2node.insert( u2node.end(), make_pair( 1., node ));
       }
-    }
-    if ( u2node.size() != myNbPonits ) {
+    } // loop on myEdge's
+
+    if ( u2node.size() + nbProxyNodes != myNbPonits )
+    {
       MESSAGE("Wrong node parameters on edges, u2node.size():"
               <<u2node.size()<<" !=  myNbPonits:"<<myNbPonits);
       return myPoints;
@@ -318,62 +345,86 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
 
     // fill array of UVPtStruct
 
-    vector<uvPtStruct>* points = const_cast<vector<uvPtStruct>*>( &myPoints );
-    points->resize( myNbPonits );
+    UVPtStructVec& points = const_cast< UVPtStructVec& >( myPoints );
+    points.resize( myNbPonits );
 
-    int EdgeIndex = 0;
-    double prevNormPar = 0, paramSize = myNormPar[ EdgeIndex ];
+    int iPt = 0;
+    double prevNormPar = 0, paramSize = myNormPar[ 0 ];
     map< double, const SMDS_MeshNode*>::iterator u_node = u2node.begin();
-    for (int i = 0 ; u_node != u2node.end(); ++u_node, ++i ) {
-      UVPtStruct & uvPt = (*points)[i];
-      uvPt.node = u_node->second;
-      uvPt.x = uvPt.y = uvPt.normParam = u_node->first;
-      if ( isXConst ) uvPt.x = constValue;
-      else            uvPt.y = constValue;
-      const SMDS_EdgePosition* epos =
-        dynamic_cast<const SMDS_EdgePosition*>(uvPt.node->GetPosition());
-      if (( myNormPar[ EdgeIndex ] < uvPt.normParam ) ||
-          ( epos && uvPt.node->getshapeId() != myEdgeID[ EdgeIndex ])) // for myMissingVertexNodes
+    for ( size_t iE = 0; iE < myEdge.size(); ++iE )
+    {
+      if ( proxySubMesh[ iE ] ) // copy data from a proxy sub-mesh
       {
-        prevNormPar = myNormPar[ EdgeIndex ];
-        ++EdgeIndex;
-#ifdef _DEBUG_
-        if ( EdgeIndex >= myEdge.size() ) {
-          dump("DEBUG");
-          MESSAGE ( "WRONg EdgeIndex " << 1+EdgeIndex
-                    << " myNormPar.size()="<<myNormPar.size()
-                    << " myNormPar["<< EdgeIndex<<"]="<< myNormPar[ EdgeIndex ]
-                    << " uvPt.normParam="<<uvPt.normParam );
+        const UVPtStructVec& edgeUVPtStruct = proxySubMesh[iE]->GetUVPtStructVec();
+        std::copy( edgeUVPtStruct.begin(), edgeUVPtStruct.end(), & points[iPt] );
+        // update normalized params
+        if ( myEdge.size() > 1 ) {
+          for ( size_t i = 0; i < edgeUVPtStruct.size(); ++i, ++iPt )
+          {
+            UVPtStruct & uvPt = points[iPt];
+            uvPt.normParam = prevNormPar + uvPt.normParam * paramSize;
+            uvPt.x = uvPt.y = uvPt.normParam;
+          }
+          --iPt; // to point to the 1st VERTEX of the next EDGE
         }
-#endif
-        paramSize = myNormPar[ EdgeIndex ] - prevNormPar;
       }
-      if ( epos ) {
-        uvPt.param = epos->GetUParameter();
+      else
+      {
+        for ( ; u_node != u2node.end(); ++u_node, ++iPt )
+        {
+          if ( myNormPar[ iE ]-eps < u_node->first )
+            break; // u_node is at VERTEX of the next EDGE 
+
+          UVPtStruct & uvPt = points[iPt];
+          uvPt.node       = u_node->second;
+          // -- normParam, x, y --------------------------------
+          uvPt.normParam  = u_node->first;
+          uvPt.x = uvPt.y = uvPt.normParam;
+          // -- U ----------------------------------------------
+          const SMDS_EdgePosition* epos =
+            dynamic_cast<const SMDS_EdgePosition*>(uvPt.node->GetPosition());
+          if ( epos ) {
+            uvPt.param = epos->GetUParameter();
+          }
+          else {
+            double r = ( uvPt.normParam - prevNormPar )/ paramSize;
+            uvPt.param = ( r > 0.5 ? myLast[iE] : myFirst[iE] );
+          }
+          // -- UV ---------------------------------------------
+          if ( !myC2d[ iE ].IsNull() ) {
+            gp_Pnt2d p = myC2d[ iE ]->Value( uvPt.param );
+            uvPt.u = p.X();
+            uvPt.v = p.Y();
+          }
+          else {
+            uvPt.u = uvPt.v = 1e+100;
+          }
+        }
       }
-      else {
-        double r = ( uvPt.normParam - prevNormPar )/ paramSize;
-//         uvPt.param = myFirst[EdgeIndex] * ( 1 - r ) + myLast[EdgeIndex] * r;
-        uvPt.param = ( r > 0.5 ? myLast[EdgeIndex] : myFirst[EdgeIndex] );
+      // prepare for the next EDGE
+      if ( iE+1 < myEdge.size() )
+      {
+        prevNormPar = myNormPar[ iE ];
+        paramSize   = myNormPar[ iE+1 ] - prevNormPar;
       }
-      if ( !myC2d[ EdgeIndex ].IsNull() ) {
-        gp_Pnt2d p = myC2d[ EdgeIndex ]->Value( uvPt.param );
-        uvPt.u = p.X();
-        uvPt.v = p.Y();
-      }
-      else {
-        uvPt.u = uvPt.v = 1e+100;
-      }
-    }
-  }
+    } // loop on myEdge's
+
+    // set <constValue>
+    if ( isXConst )
+      for ( iPt = 0; iPt < points.size(); ++iPt ) points[ iPt ].x = constValue;
+    else
+      for ( iPt = 0; iPt < points.size(); ++iPt ) points[ iPt ].y = constValue;
+
+  } // if ( myPoints.empty())
+
   return myPoints;
 }
 
 //================================================================================
 /*!
  * \brief Falsificate info on nodes
-  * \param nbSeg - nb of segments on the side
-  * \retval UVPtStruct* - array of data structures
+ * \param nbSeg - nb of segments on the side
+ * \retval UVPtStruct* - array of data structures
  */
 //================================================================================
 
@@ -429,8 +480,8 @@ std::vector<const SMDS_MeshNode*> StdMeshers_FaceSide::GetOrderedNodes() const
   {
     if ( NbEdges() == 0 ) return resultNodes;
 
-    SMESHDS_Mesh* meshDS = myMesh->GetMeshDS();
-    SMESH_MesherHelper helper(*myMesh);
+    SMESHDS_Mesh* meshDS = myProxyMesh->GetMeshDS();
+    SMESH_MesherHelper helper(*myProxyMesh->GetMesh());
     bool paramOK;
 
     // Sort nodes of all edges putting them into a map
@@ -547,6 +598,31 @@ void StdMeshers_FaceSide::Reverse()
     myNormPar[nbEdges-1]=1.;
     myPoints.clear();
     myFalsePoints.clear();
+    for ( size_t i = 0; i < myEdge.size(); ++i )
+      reverseProxySubmesh( myEdge[i] );
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Reverse UVPtStructVec if a proxy sub-mesh of E
+ */
+//================================================================================
+
+void StdMeshers_FaceSide::reverseProxySubmesh( const TopoDS_Edge& E )
+{
+  if ( !myProxyMesh ) return;
+  if ( const SMESH_ProxyMesh::SubMesh* sm = myProxyMesh->GetProxySubMesh( E ))
+  {
+    UVPtStructVec& edgeUVPtStruct = (UVPtStructVec& ) sm->GetUVPtStructVec();
+    for ( size_t i = 0; i < edgeUVPtStruct.size(); ++i )
+    {
+      UVPtStruct & uvPt = edgeUVPtStruct[i];
+      uvPt.normParam = 1 - uvPt.normParam;
+      uvPt.x         = 1 - uvPt.x;
+      uvPt.y         = 1 - uvPt.y;
+    }
+    reverse( edgeUVPtStruct );
   }
 }
 
@@ -673,10 +749,11 @@ gp_Pnt2d StdMeshers_FaceSide::Value2d(double U) const
  */
 //================================================================================
 
-TSideVector StdMeshers_FaceSide::GetFaceWires(const TopoDS_Face& theFace,
-                                              SMESH_Mesh &       theMesh,
-                                              const bool         theIgnoreMediumNodes,
-                                              TError &           theError)
+TSideVector StdMeshers_FaceSide::GetFaceWires(const TopoDS_Face&   theFace,
+                                              SMESH_Mesh &         theMesh,
+                                              const bool           theIgnoreMediumNodes,
+                                              TError &             theError,
+                                              SMESH_ProxyMesh::Ptr theProxyMesh)
 {
   TopoDS_Vertex V1;
   list< TopoDS_Edge > edges, internalEdges;
@@ -720,14 +797,16 @@ TSideVector StdMeshers_FaceSide::GetFaceWires(const TopoDS_Face& theFace,
     }
 
     StdMeshers_FaceSide* wire = new StdMeshers_FaceSide( theFace, wireEdges, &theMesh,
-                                                         /*isForward=*/true, theIgnoreMediumNodes);
+                                                         /*isForward=*/true, theIgnoreMediumNodes,
+                                                         theProxyMesh );
     wires[ iW ] = StdMeshers_FaceSidePtr( wire );
     from = to;
   }
   while ( !internalEdges.empty() )
   {
     StdMeshers_FaceSide* wire = new StdMeshers_FaceSide( theFace, internalEdges.back(), &theMesh,
-                                                         /*isForward=*/true, theIgnoreMediumNodes);
+                                                         /*isForward=*/true, theIgnoreMediumNodes,
+                                                         theProxyMesh );
     wires.push_back( StdMeshers_FaceSidePtr( wire ));
     internalEdges.pop_back();
   }

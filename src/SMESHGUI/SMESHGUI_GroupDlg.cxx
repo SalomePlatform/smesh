@@ -103,15 +103,16 @@
 enum grpSelectionMode {
   grpNoSelection       = -1,
   grpNodeSelection     = 0,
-  grpBallSelection     = 1,
-  grpEdgeSelection     = 2,
-  grpFaceSelection     = 3,
-  grpVolumeSelection   = 4,
-  grpSubMeshSelection  = 5,
-  grpGroupSelection    = 6,
-  grpMeshSelection     = 7,
-  grpGeomSelection     = 8,
-  grpAllSelection      = 9,
+  grp0DSelection       = 1,
+  grpBallSelection     = 2,
+  grpEdgeSelection     = 3,
+  grpFaceSelection     = 4,
+  grpVolumeSelection   = 5,
+  grpSubMeshSelection  = 6,
+  grpGroupSelection    = 7,
+  grpMeshSelection     = 8,
+  grpGeomSelection     = 9,
+  grpAllSelection      = 10,
 };
 
 //=================================================================================
@@ -214,6 +215,7 @@ void SMESHGUI_GroupDlg::initDialog( bool create)
 
   QStringList types;
   types.append( tr( "MESH_NODE" ) );
+  types.append( tr( "SMESH_ELEM0D" ) );
   types.append( tr( "SMESH_BALL_ELEM" ) );
   types.append( tr( "SMESH_EDGE" ) );
   types.append( tr( "SMESH_FACE" ) );
@@ -444,7 +446,7 @@ void SMESHGUI_GroupDlg::initDialog( bool create)
   mySMESHGUI->SetState(800);
 
   mySelectionMode = grpNoSelection;
-  myMeshFilter = new SMESH_TypeFilter(MESH);
+  myMeshFilter = new SMESH_TypeFilter(SMESH::MESH);
   mySubMeshFilter = new SMESH_LogicalFilter(QList<SUIT_SelectionFilter*>(),
                                             SMESH_LogicalFilter::LO_OR,
                                             /*takeOwnership=*/true);
@@ -521,6 +523,22 @@ QString SMESHGUI_GroupDlg::GetDefaultName(const QString& theOperation)
   return aName;
 }
 
+void  SMESHGUI_GroupDlg::setDefaultName() const
+{
+  QString aResName;
+  _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+  int i=1;
+  QString aPrefix ="Group_";
+  _PTR(SObject) anObj;
+  do
+  {
+    aResName = aPrefix + QString::number( i++ );
+    anObj = aStudy->FindObject( aResName.toLatin1().data() );
+  }
+  while ( anObj );
+  myName->setText(aResName); 
+}
+
 //=================================================================================
 // function : Init()
 // purpose  :
@@ -543,6 +561,8 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_Mesh_ptr theMesh)
   SetAppropriateActor();
 
   setDefaultGroupColor();
+  setDefaultName();
+
 
   SALOME_ListIO aList;
   mySelectionMgr->selectedObjects( aList );
@@ -583,11 +603,12 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup,
 
   int aType = 0;
   switch(theGroup->GetType()) {
-  case SMESH::NODE:   aType = 0; break;
-  case SMESH::BALL:   aType = 1; break;
-  case SMESH::EDGE:   aType = 2; break;
-  case SMESH::FACE:   aType = 3; break;
-  case SMESH::VOLUME: aType = 4; break;
+  case SMESH::NODE:   aType = grpNodeSelection;   break;
+  case SMESH::ELEM0D: aType = grp0DSelection;     break;
+  case SMESH::BALL:   aType = grpBallSelection;   break;
+  case SMESH::EDGE:   aType = grpEdgeSelection;   break;
+  case SMESH::FACE:   aType = grpFaceSelection;   break;
+  case SMESH::VOLUME: aType = grpVolumeSelection; break;
   }
   myTypeGroup->button(aType)->setChecked(true);
 
@@ -807,6 +828,9 @@ void SMESHGUI_GroupDlg::setSelectionMode (int theMode)
     case grpBallSelection:
       if ( aViewWindow ) aViewWindow->SetSelectionMode(isSelectAll ? ActorSelection : BallSelection);
       break;
+    case grp0DSelection:
+      if ( aViewWindow ) aViewWindow->SetSelectionMode(isSelectAll ? ActorSelection : Elem0DSelection);
+      break;
     case grpFaceSelection:
       if ( aViewWindow ) aViewWindow->SetSelectionMode(isSelectAll ? ActorSelection : FaceSelection);
       break;
@@ -817,15 +841,15 @@ void SMESHGUI_GroupDlg::setSelectionMode (int theMode)
 
       SMESH_TypeFilter* f = 0;
       switch (myTypeId) {
-      case grpNodeSelection:   f = new SMESH_TypeFilter(SUBMESH); break;
-      case grpEdgeSelection:   f = new SMESH_TypeFilter(SUBMESH_EDGE); break;
-      case grpFaceSelection:   f = new SMESH_TypeFilter(SUBMESH_FACE); break;
-      case grpVolumeSelection: f = new SMESH_TypeFilter(SUBMESH_SOLID); break;
-      default:                 f = new SMESH_TypeFilter(SUBMESH);
+      case grpNodeSelection:   f = new SMESH_TypeFilter(SMESH::SUBMESH); break;
+      case grpEdgeSelection:   f = new SMESH_TypeFilter(SMESH::SUBMESH_EDGE); break;
+      case grpFaceSelection:   f = new SMESH_TypeFilter(SMESH::SUBMESH_FACE); break;
+      case grpVolumeSelection: f = new SMESH_TypeFilter(SMESH::SUBMESH_SOLID); break;
+      default:                 f = new SMESH_TypeFilter(SMESH::SUBMESH);
       }
       QList<SUIT_SelectionFilter*> filtList;
       filtList.append( f );
-      filtList.append( new SMESH_TypeFilter(SUBMESH_COMPOUND));
+      filtList.append( new SMESH_TypeFilter(SMESH::SUBMESH_COMPOUND));
       mySubMeshFilter->setFilters( filtList );
 
       mySelectionMgr->installFilter( mySubMeshFilter );
@@ -837,12 +861,13 @@ void SMESHGUI_GroupDlg::setSelectionMode (int theMode)
 
       SMESH_TypeFilter* f = 0;
       switch (myTypeId) {
-      case grpNodeSelection:   f = new SMESH_TypeFilter(GROUP_NODE); break;
-      case grpBallSelection:   f = new SMESH_TypeFilter(GROUP_BALL); break;
-      case grpEdgeSelection:   f = new SMESH_TypeFilter(GROUP_EDGE); break;
-      case grpFaceSelection:   f = new SMESH_TypeFilter(GROUP_FACE); break;
-      case grpVolumeSelection: f = new SMESH_TypeFilter(GROUP_VOLUME); break;
-      default:                 f = new SMESH_TypeFilter(GROUP);
+      case grpNodeSelection:   f = new SMESH_TypeFilter(SMESH::GROUP_NODE);   break;
+      case grp0DSelection:     f = new SMESH_TypeFilter(SMESH::GROUP_0D);     break;
+      case grpBallSelection:   f = new SMESH_TypeFilter(SMESH::GROUP_BALL);   break;
+      case grpEdgeSelection:   f = new SMESH_TypeFilter(SMESH::GROUP_EDGE);   break;
+      case grpFaceSelection:   f = new SMESH_TypeFilter(SMESH::GROUP_FACE);   break;
+      case grpVolumeSelection: f = new SMESH_TypeFilter(SMESH::GROUP_VOLUME); break;
+      default:                 f = new SMESH_TypeFilter(SMESH::GROUP);
       }
       QList<SUIT_SelectionFilter*> filtList;
       filtList.append( f );
@@ -883,10 +908,11 @@ bool SMESHGUI_GroupDlg::onApply()
 
   SMESH::ElementType aType = SMESH::ALL;
   switch (myTypeId) {
-  case grpNodeSelection:   aType = SMESH::NODE; break;
-  case grpBallSelection:   aType = SMESH::BALL; break;
-  case grpEdgeSelection:   aType = SMESH::EDGE; break;
-  case grpFaceSelection:   aType = SMESH::FACE; break;
+  case grpNodeSelection:   aType = SMESH::NODE;   break;
+  case grp0DSelection:     aType = SMESH::ELEM0D; break;
+  case grpBallSelection:   aType = SMESH::BALL;   break;
+  case grpEdgeSelection:   aType = SMESH::EDGE;   break;
+  case grpFaceSelection:   aType = SMESH::FACE;   break;
   case grpVolumeSelection: aType = SMESH::VOLUME; break;
   }
 
@@ -1112,7 +1138,7 @@ bool SMESHGUI_GroupDlg::onApply()
       SMESH::setFileType ( aMeshGroupSO, "COULEURGROUP" );
 
       /* init for the next operation */
-      myName->setText( "" );
+      setDefaultName();
       myElements->clear();
       myGroup         = SMESH::SMESH_Group::_nil();
       myGroupOnGeom   = SMESH::SMESH_GroupOnGeom::_nil();
@@ -1126,21 +1152,22 @@ bool SMESHGUI_GroupDlg::onApply()
       if ( aMeshGroupSO )
         if(SMESH_Actor *anActor = SMESH::FindActorByEntry(aMeshGroupSO->GetID().c_str())) {
           anActor->setName(myName->text().toLatin1().data());
-	  QColor c;
-	  int delta;
+          QColor c;
+          int delta;
           switch ( myTypeId ) {
           case grpNodeSelection:   anActor->SetNodeColor( aColor.R, aColor.G, aColor.B ); break;
+          case grp0DSelection:     anActor->Set0DColor  ( aColor.R, aColor.G, aColor.B ); break;
           case grpBallSelection:   anActor->SetBallColor( aColor.R, aColor.G, aColor.B ); break;
           case grpEdgeSelection:   anActor->SetEdgeColor( aColor.R, aColor.G, aColor.B ); break;
           case grpVolumeSelection: 
               SMESH::GetColor("SMESH", "volume_color", c , delta, "255,0,170|-100");
               anActor->SetVolumeColor( aColor.R, aColor.G, aColor.B, delta ); break;          
-	      break;
+              break;
           case grpFaceSelection:   
           default:
               SMESH::GetColor("SMESH", "fill_color", c , delta, "0,170,255|-100");
               anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B, delta ); break;          
-	      break;
+              break;
           }
         }
     }
@@ -1673,10 +1700,11 @@ void SMESHGUI_GroupDlg::setFilters()
   SMESH::ElementType aType = SMESH::ALL;
   switch ( myTypeId )
   {
-    case grpNodeSelection:   aType = SMESH::NODE; break;
-    case grpBallSelection:   aType = SMESH::BALL; break;
-    case grpEdgeSelection:   aType = SMESH::EDGE; break;
-    case grpFaceSelection:   aType = SMESH::FACE; break;
+    case grpNodeSelection:   aType = SMESH::NODE;   break;
+    case grp0DSelection:     aType = SMESH::ELEM0D; break;
+    case grpBallSelection:   aType = SMESH::BALL;   break;
+    case grpEdgeSelection:   aType = SMESH::EDGE;   break;
+    case grpFaceSelection:   aType = SMESH::FACE;   break;
     case grpVolumeSelection: aType = SMESH::VOLUME; break;
     default:                 return;
   }
@@ -1764,6 +1792,10 @@ void SMESHGUI_GroupDlg::onAdd()
   case grpBallSelection:
     aType = SMESH::BALL;
     mySelector->SetSelectionMode(BallSelection);
+    break;
+  case grp0DSelection:
+    aType = SMESH::ELEM0D;
+    mySelector->SetSelectionMode(Elem0DSelection);
     break;
   case grpEdgeSelection:
     aType = SMESH::EDGE;
@@ -2004,10 +2036,11 @@ void SMESHGUI_GroupDlg::onRemove()
 
     SMESH::ElementType aType = SMESH::ALL;
     switch(myTypeId) {
-    case grpNodeSelection:   aType = SMESH::NODE; break;
-    case grpBallSelection:   aType = SMESH::BALL; break;
-    case grpEdgeSelection:   aType = SMESH::EDGE; break;
-    case grpFaceSelection:   aType = SMESH::FACE; break;
+    case grpNodeSelection:   aType = SMESH::NODE;   break;
+    case grp0DSelection:     aType = SMESH::ELEM0D; break;
+    case grpBallSelection:   aType = SMESH::BALL;   break;
+    case grpEdgeSelection:   aType = SMESH::EDGE;   break;
+    case grpFaceSelection:   aType = SMESH::FACE;   break;
     case grpVolumeSelection: aType = SMESH::VOLUME; break;
     }
 
@@ -2565,11 +2598,12 @@ void SMESHGUI_GroupDlg::setShowEntityMode()
       if (!myStoredShownEntity)
         myStoredShownEntity = actor->GetEntityMode();
       switch ( myTypeId ) {
-      case grpNodeSelection:   restoreShowEntityMode(); break;
-      case grpBallSelection:   actor->SetEntityMode( SMESH_Actor::eBallElem ); break;
-      case grpEdgeSelection:   actor->SetEntityMode( SMESH_Actor::eEdges ); break;
-      case grpFaceSelection:   actor->SetEntityMode( SMESH_Actor::eFaces ); break;
-      case grpVolumeSelection: actor->SetEntityMode( SMESH_Actor::eVolumes ); break;
+      case grpNodeSelection:   restoreShowEntityMode();                          break;
+      case grp0DSelection:     actor->SetEntityMode( SMESH_Actor::e0DElements ); break;
+      case grpBallSelection:   actor->SetEntityMode( SMESH_Actor::eBallElem );   break;
+      case grpEdgeSelection:   actor->SetEntityMode( SMESH_Actor::eEdges );      break;
+      case grpFaceSelection:   actor->SetEntityMode( SMESH_Actor::eFaces );      break;
+      case grpVolumeSelection: actor->SetEntityMode( SMESH_Actor::eVolumes );    break;
       }
     }
   }

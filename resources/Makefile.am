@@ -113,6 +113,8 @@ dist_salomeres_DATA = \
 	mesh_update.png \
 	mesh_vertex_n.png \
 	mesh_vertex.png \
+	mesh_0D_elem.png \
+	mesh_0D_on_all_nodes.png \
 	mesh_volume_3d.png \
 	bare_border_volume.png \
 	bare_border_face.png \

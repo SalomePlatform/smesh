@@ -15,6 +15,8 @@ viewer.</li>
 elements which will form your group:</li>
 <ul>
 <li><b>Nodes</b></li>
+<li><b>0D Element</b></li>
+<li><b>Ball</b></li>
 <li><b>Edges</b></li>
 <li><b>Faces</b></li>
 <li><b>Volumes</b></li>

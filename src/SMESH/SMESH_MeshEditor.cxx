@@ -120,6 +120,19 @@ SMESH_MeshEditor::SMESH_MeshEditor( SMESH_Mesh* theMesh )
 {
 }
 
+//================================================================================
+/*!
+ * \brief Clears myLastCreatedNodes and myLastCreatedElems
+ */
+//================================================================================
+
+void SMESH_MeshEditor::CrearLastCreated()
+{
+  myLastCreatedNodes.Clear();
+  myLastCreatedElems.Clear();
+}
+
+
 //=======================================================================
 /*!
  * \brief Add element
@@ -387,6 +400,44 @@ int SMESH_MeshEditor::Remove (const list< int >& theIDs,
   //     sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
 
   return removed;
+}
+
+//================================================================================
+/*!
+ * \brief Create 0D elements on all nodes of the given object except those
+ *        nodes on which a 0D element already exists.
+ *  \param elements - Elements on whose nodes to create 0D elements; if empty, 
+ *                    the all mesh is treated
+ *  \param all0DElems - returns all 0D elements found or created on nodes of \a elements
+ */
+//================================================================================
+
+void SMESH_MeshEditor::Create0DElementsOnAllNodes( const TIDSortedElemSet& elements,
+                                                   TIDSortedElemSet&       all0DElems )
+{
+  typedef SMDS_SetIterator<const SMDS_MeshElement*, TIDSortedElemSet::const_iterator> TSetIterator;
+  SMDS_ElemIteratorPtr elemIt;
+  if ( elements.empty() )
+    elemIt = GetMeshDS()->elementsIterator( SMDSAbs_Node );
+  else
+    elemIt = SMDS_ElemIteratorPtr( new TSetIterator( elements.begin(), elements.end() ));
+
+  while ( elemIt->more() )
+  {
+    const SMDS_MeshElement* e = elemIt->next();
+    SMDS_ElemIteratorPtr nodeIt = e->nodesIterator();
+    while ( nodeIt->more() )
+    {
+      const SMDS_MeshNode* n = cast2Node( nodeIt->next() );
+      SMDS_ElemIteratorPtr it0D = n->GetInverseElementIterator( SMDSAbs_0DElement );
+      if ( it0D->more() )
+        all0DElems.insert( it0D->next() );
+      else {
+        myLastCreatedElems.Append( GetMeshDS()->Add0DElement( n ));
+        all0DElems.insert( myLastCreatedElems.Last() );
+      }
+    }
+  }
 }
 
 //=======================================================================
@@ -1065,7 +1116,7 @@ bool SMESH_MeshEditor::Reorient (const SMDS_MeshElement * theElem)
  * \brief Reorient faces.
  * \param theFaces - the faces to reorient. If empty the whole mesh is meant
  * \param theDirection - desired direction of normal of \a theFace
- * \param theFace - one of \a theFaces that sould be orientated according to
+ * \param theFace - one of \a theFaces that sould be oriented according to
  *        \a theDirection and whose orientation defines orientation of other faces
  * \return number of reoriented faces.
  */
@@ -1093,7 +1144,7 @@ int SMESH_MeshEditor::Reorient2D (TIDSortedElemSet &       theFaces,
 
   // Orient other faces
 
-  set< const SMDS_MeshElement* > startFaces;
+  set< const SMDS_MeshElement* > startFaces, visitedFaces;
   TIDSortedElemSet avoidSet;
   set< SMESH_TLink > checkedLinks;
   pair< set< SMESH_TLink >::iterator, bool > linkIt_isNew;
@@ -1102,16 +1153,26 @@ int SMESH_MeshEditor::Reorient2D (TIDSortedElemSet &       theFaces,
     theFaces.erase( theFace );
   startFaces.insert( theFace );
 
+  int nodeInd1, nodeInd2;
+  const SMDS_MeshElement*           otherFace;
+  vector< const SMDS_MeshElement* > facesNearLink;
+  vector< std::pair< int, int > >   nodeIndsOfFace;
+
   set< const SMDS_MeshElement* >::iterator startFace = startFaces.begin();
-  while ( startFace != startFaces.end() )
+  while ( !startFaces.empty() )
   {
+    startFace = startFaces.begin();
     theFace = *startFace;
-    const int nbNodes = theFace->NbCornerNodes();
+    startFaces.erase( startFace );
+    if ( !visitedFaces.insert( theFace ).second )
+      continue;
 
     avoidSet.clear();
     avoidSet.insert(theFace);
 
     NLink link( theFace->GetNode( 0 ), 0 );
+
+    const int nbNodes = theFace->NbCornerNodes();
     for ( int i = 0; i < nbNodes; ++i ) // loop on links of theFace
     {
       link.second = theFace->GetNode(( i+1 ) % nbNodes );
@@ -1120,33 +1181,61 @@ int SMESH_MeshEditor::Reorient2D (TIDSortedElemSet &       theFaces,
       {
         // link has already been checked and won't be encountered more
         // if the group (theFaces) is manifold
-        checkedLinks.erase( linkIt_isNew.first );
+        //checkedLinks.erase( linkIt_isNew.first );
       }
       else
       {
-        int nodeInd1, nodeInd2;
-        const SMDS_MeshElement* otherFace = FindFaceInSet( link.first, link.second,
-                                                           theFaces, avoidSet,
-                                                           & nodeInd1, & nodeInd2);
+        facesNearLink.clear();
+        nodeIndsOfFace.clear();
+        while (( otherFace = FindFaceInSet( link.first, link.second,
+                                            theFaces, avoidSet, &nodeInd1, &nodeInd2 )))
+          if ( otherFace != theFace)
+          {
+            facesNearLink.push_back( otherFace );
+            nodeIndsOfFace.push_back( make_pair( nodeInd1, nodeInd2 ));
+            avoidSet.insert( otherFace );
+          }
+        if ( facesNearLink.size() > 1 )
+        {
+          // NON-MANIFOLD mesh shell !
+          // select a face most co-directed with theFace,
+          // other faces won't be visited this time
+          gp_XYZ NF, NOF;
+          SMESH_Algo::FaceNormal( theFace, NF, /*normalized=*/false );
+          double proj, maxProj = -1;
+          for ( size_t i = 0; i < facesNearLink.size(); ++i ) {
+            SMESH_Algo::FaceNormal( facesNearLink[i], NOF, /*normalized=*/false );
+            if (( proj = Abs( NF * NOF )) > maxProj ) {
+              maxProj = proj;
+              otherFace = facesNearLink[i];
+              nodeInd1  = nodeIndsOfFace[i].first;
+              nodeInd2  = nodeIndsOfFace[i].second;
+            }
+          }
+          // not to visit rejected faces
+          for ( size_t i = 0; i < facesNearLink.size(); ++i )
+            if ( facesNearLink[i] != otherFace && theFaces.size() > 1 )
+              visitedFaces.insert( facesNearLink[i] );
+        }
+        else if ( facesNearLink.size() == 1 )
+        {
+          otherFace = facesNearLink[0];
+          nodeInd1  = nodeIndsOfFace.back().first;
+          nodeInd2  = nodeIndsOfFace.back().second;
+        }
         if ( otherFace && otherFace != theFace)
         {
-          // link must be reversed in otherFace if orientation ot otherFace
+          // link must be reverse in otherFace if orientation ot otherFace
           // is same as that of theFace
           if ( abs(nodeInd2-nodeInd1) == 1 ? nodeInd2 > nodeInd1 : nodeInd1 > nodeInd2 )
           {
-            // cout << "Reorient " << otherFace->GetID() << " near theFace=" <<theFace->GetID()
-            //      << " \tlink( " << link.first->GetID() << " " << link.second->GetID() << endl;
             nbReori += Reorient( otherFace );
           }
           startFaces.insert( otherFace );
-          if ( theFaces.size() > 1 ) // leave 1 face to prevent finding not selected faces
-            theFaces.erase( otherFace );
         }
       }
-      std::swap( link.first, link.second );
+      std::swap( link.first, link.second ); // reverse the link
     }
-    startFaces.erase( startFace );
-    startFace = startFaces.begin();
   }
   return nbReori;
 }
@@ -1216,7 +1305,8 @@ bool SMESH_MeshEditor::QuadToTri (TIDSortedElemSet &                   theElems,
     if( !elem->IsQuadratic() ) {
 
       // split liner quadrangle
-
+      // for MaxElementLength2D functor we return minimum diagonal for splitting,
+      // because aBadRate1=2*len(diagonal 1-3); aBadRate2=2*len(diagonal 2-4)
       if ( aBadRate1 <= aBadRate2 ) {
         // tr1 + tr2 is better
         newElem1 = aMesh->AddFace( aNodes[2], aNodes[3], aNodes[0] );
@@ -1350,7 +1440,8 @@ int SMESH_MeshEditor::BestSplit (const SMDS_MeshElement*              theQuad,
     SMDS_FaceOfNodes tr3 ( aNodes[1], aNodes[2], aNodes[3] );
     SMDS_FaceOfNodes tr4 ( aNodes[3], aNodes[0], aNodes[1] );
     aBadRate2 = getBadRate( &tr3, theCrit ) + getBadRate( &tr4, theCrit );
-
+    // for MaxElementLength2D functor we return minimum diagonal for splitting,
+    // because aBadRate1=2*len(diagonal 1-3); aBadRate2=2*len(diagonal 2-4)
     if (aBadRate1 <= aBadRate2) // tr1 + tr2 is better
       return 1; // diagonal 1-3
 
@@ -3062,7 +3153,7 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
     SMDS_FaceIteratorPtr fIt = aMesh->facesIterator();
     while ( fIt->more() ) {
       const SMDS_MeshElement* face = fIt->next();
-      theElems.insert( face );
+      theElems.insert( theElems.end(), face );
     }
   }
   // get all face ids theElems are on
@@ -5082,10 +5173,16 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
     if ( BRep_Tool::Degenerated( aTrackEdge ) )
       return EXTR_BAD_PATH_SHAPE;
     TopExp::Vertices( aTrackEdge, aV1, aV2 );
-    aItN = theTrack->GetSubMesh( aV1 )->GetSubMeshDS()->GetNodes();
-    const SMDS_MeshNode* aN1 = aItN->next();
-    aItN = theTrack->GetSubMesh( aV2 )->GetSubMeshDS()->GetNodes();
-    const SMDS_MeshNode* aN2 = aItN->next();
+    const SMDS_MeshNode* aN1 = 0;
+    const SMDS_MeshNode* aN2 = 0;
+    if ( theTrack->GetSubMesh( aV1 ) && theTrack->GetSubMesh( aV1 )->GetSubMeshDS() ) {
+      aItN = theTrack->GetSubMesh( aV1 )->GetSubMeshDS()->GetNodes();
+      aN1 = aItN->next();
+    }
+    if ( theTrack->GetSubMesh( aV2 ) && theTrack->GetSubMesh( aV2 )->GetSubMeshDS() ) {
+      aItN = theTrack->GetSubMesh( aV2 )->GetSubMeshDS()->GetNodes();
+      aN2 = aItN->next();
+    }
     // starting node must be aN1 or aN2
     if ( !( aN1 == theN1 || aN2 == theN1 ) )
       return EXTR_BAD_STARTING_NODE;
@@ -5115,7 +5212,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
       }
     }
     list< list<SMESH_MeshEditor_PathPoint> > LLPPs;
-    int startNid = theN1->GetID();
+    TopoDS_Vertex aVprev;
     TColStd_MapOfInteger UsedNums;
     int NbEdges = Edges.Length();
     int i = 1;
@@ -5129,17 +5226,37 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
         SMESH_subMesh* locTrack = *itLSM;
         SMESHDS_SubMesh* locMeshDS = locTrack->GetSubMeshDS();
         TopExp::Vertices( aTrackEdge, aV1, aV2 );
-        aItN = locTrack->GetFather()->GetSubMesh(aV1)->GetSubMeshDS()->GetNodes();
-        const SMDS_MeshNode* aN1 = aItN->next();
-        aItN = locTrack->GetFather()->GetSubMesh(aV2)->GetSubMeshDS()->GetNodes();
-        const SMDS_MeshNode* aN2 = aItN->next();
-        // starting node must be aN1 or aN2
-        if ( !( aN1->GetID() == startNid || aN2->GetID() == startNid ) ) continue;
+        bool aN1isOK = false, aN2isOK = false;
+        if ( aVprev.IsNull() ) {
+          // if previous vertex is not yet defined, it means that we in the beginning of wire
+          // and we have to find initial vertex corresponding to starting node theN1
+          const SMDS_MeshNode* aN1 = 0;
+          const SMDS_MeshNode* aN2 = 0;
+
+          if ( locTrack->GetFather()->GetSubMesh(aV1) && locTrack->GetFather()->GetSubMesh(aV1)->GetSubMeshDS() ) {
+            aItN = locTrack->GetFather()->GetSubMesh(aV1)->GetSubMeshDS()->GetNodes();
+            aN1 = aItN->next();
+          }
+          if ( locTrack->GetFather()->GetSubMesh(aV2) && locTrack->GetFather()->GetSubMesh(aV2)->GetSubMeshDS() ) {
+            aItN = locTrack->GetFather()->GetSubMesh(aV2)->GetSubMeshDS()->GetNodes();
+            aN2 = aItN->next();
+          }
+          // starting node must be aN1 or aN2
+          aN1isOK = ( aN1 && aN1 == theN1 );
+          aN2isOK = ( aN2 && aN2 == theN1 );
+        }
+        else {
+          // we have specified ending vertex of the previous edge on the previous iteration
+          // and we have just to check that it corresponds to any vertex in current segment
+          aN1isOK = aVprev.IsSame( aV1 );
+          aN2isOK = aVprev.IsSame( aV2 );
+        }
+        if ( !aN1isOK && !aN2isOK ) continue;
         // 2. Collect parameters on the track edge
         aPrms.clear();
         aItN = locMeshDS->GetNodes();
         while ( aItN->more() ) {
-          const SMDS_MeshNode* pNode = aItN->next();
+          const SMDS_MeshNode*     pNode = aItN->next();
           const SMDS_EdgePosition* pEPos =
             static_cast<const SMDS_EdgePosition*>( pNode->GetPosition() );
           double aT = pEPos->GetUParameter();
@@ -5147,12 +5264,12 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
         }
         list<SMESH_MeshEditor_PathPoint> LPP;
         //Extrusion_Error err =
-        MakeEdgePathPoints(aPrms, aTrackEdge,(aN1->GetID()==startNid), LPP);
+        MakeEdgePathPoints(aPrms, aTrackEdge, aN1isOK, LPP);
         LLPPs.push_back(LPP);
         UsedNums.Add(k);
         // update startN for search following egde
-        if( aN1->GetID() == startNid ) startNid = aN2->GetID();
-        else startNid = aN1->GetID();
+        if ( aN1isOK ) aVprev = aV2;
+        else           aVprev = aV1;
         break;
       }
     }
@@ -5171,8 +5288,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
       SMESH_MeshEditor_PathPoint PP2 = currList.front();
       gp_Dir D1 = PP1.Tangent();
       gp_Dir D2 = PP2.Tangent();
-      gp_Dir Dnew( gp_Vec( (D1.X()+D2.X())/2, (D1.Y()+D2.Y())/2,
-                           (D1.Z()+D2.Z())/2 ) );
+      gp_Dir Dnew( ( D1.XYZ() + D2.XYZ() ) / 2 );
       PP1.SetTangent(Dnew);
       fullList.push_back(PP1);
       itPP++;
@@ -5891,7 +6007,7 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
   vector< TOldNewGroup* > orderedOldNewGroups; // in order of old groups
   // group names
   set< string > groupNames;
-  
+
   SMESH_Mesh::GroupIteratorPtr groupIt = GetMesh()->GetGroups();
   if ( !groupIt->more() ) return newGroupIDs;
 
@@ -6103,7 +6219,7 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
         }
         else if ( tree->NbNodes() ) // put a tree to the treeMap
         {
-          const Bnd_B3d& box = tree->getBox();
+          const Bnd_B3d& box = *tree->getBox();
           double sqDist = thePnt.SquareDistance( 0.5 * ( box.CornerMin() + box.CornerMax() ));
           pair<TDistTreeMap::iterator,bool> it_in = treeMap.insert( make_pair( sqDist, tree ));
           if ( !it_in.second ) // not unique distance to box center
@@ -6115,7 +6231,7 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
       TDistTreeMap::iterator sqDist_tree = treeMap.begin();
       if ( treeMap.size() > 5 ) {
         SMESH_OctreeNode* closestTree = sqDist_tree->second;
-        const Bnd_B3d& box = closestTree->getBox();
+        const Bnd_B3d& box = *closestTree->getBox();
         double limit = sqrt( sqDist_tree->first ) + sqrt ( box.SquareExtent() );
         sqLimit = limit * limit;
       }
@@ -6200,7 +6316,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
 
   protected:
     ElementBndBoxTree():_size(0) {}
-    SMESH_Octree* allocateOctreeChild() const { return new ElementBndBoxTree; }
+    SMESH_Octree* newChild() const { return new ElementBndBoxTree; }
     void          buildChildrenData();
     Bnd_B3d*      buildRootBox();
   private:
@@ -6222,7 +6338,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
   //================================================================================
 
   ElementBndBoxTree::ElementBndBoxTree(const SMDS_Mesh& mesh, SMDSAbs_ElementType elemType, SMDS_ElemIteratorPtr theElemIt, double tolerance)
-    :SMESH_Octree( new SMESH_Octree::Limit( MaxLevel, /*minSize=*/0. ))
+    :SMESH_Octree( new SMESH_TreeLimit( MaxLevel, /*minSize=*/0. ))
   {
     int nbElems = mesh.GetMeshInfo().NbElements( elemType );
     _elements.reserve( nbElems );
@@ -6273,7 +6389,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
     {
       for (int j = 0; j < 8; j++)
       {
-        if ( !_elements[i]->IsOut( myChildren[j]->getBox() ))
+        if ( !_elements[i]->IsOut( *myChildren[j]->getBox() ))
         {
           _elements[i]->_refCount++;
           ((ElementBndBoxTree*)myChildren[j])->_elements.push_back( _elements[i]);
@@ -6304,7 +6420,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
   void ElementBndBoxTree::getElementsNearPoint( const gp_Pnt&     point,
                                                 TIDSortedElemSet& foundElems)
   {
-    if ( getBox().IsOut( point.XYZ() ))
+    if ( getBox()->IsOut( point.XYZ() ))
       return;
 
     if ( isLeaf() )
@@ -6329,7 +6445,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
   void ElementBndBoxTree::getElementsNearLine( const gp_Ax1&     line,
                                                TIDSortedElemSet& foundElems)
   {
-    if ( getBox().IsOut( line ))
+    if ( getBox()->IsOut( line ))
       return;
 
     if ( isLeaf() )
@@ -6355,7 +6471,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
                                                 const double      radius,
                                                 TIDSortedElemSet& foundElems)
   {
-    if ( getBox().IsOut( center, radius ))
+    if ( getBox()->IsOut( center, radius ))
       return;
 
     if ( isLeaf() )
@@ -6657,7 +6773,7 @@ void SMESH_ElementSearcherImpl::findOuterBoundary(const SMDS_MeshElement* outerF
  * \brief Find elements of given type where the given point is IN or ON.
  *        Returns nb of found elements and elements them-selves.
  *
- * 'ALL' type means elements of any type excluding nodes, balls and 0D elements 
+ * 'ALL' type means elements of any type excluding nodes, balls and 0D elements
  */
 //=======================================================================
 
@@ -6734,13 +6850,13 @@ SMESH_ElementSearcherImpl::FindClosestTo( const gp_Pnt&       point,
     }
     TIDSortedElemSet suspectElems;
     _ebbTree->getElementsNearPoint( point, suspectElems );
-    
+
     if ( suspectElems.empty() && _ebbTree->maxSize() > 0 )
     {
-      gp_Pnt boxCenter = 0.5 * ( _ebbTree->getBox().CornerMin() +
-                                 _ebbTree->getBox().CornerMax() );
+      gp_Pnt boxCenter = 0.5 * ( _ebbTree->getBox()->CornerMin() +
+                                 _ebbTree->getBox()->CornerMax() );
       double radius;
-      if ( _ebbTree->getBox().IsOut( point.XYZ() ))
+      if ( _ebbTree->getBox()->IsOut( point.XYZ() ))
         radius = point.Distance( boxCenter ) - 0.5 * _ebbTree->maxSize();
       else
         radius = _ebbTree->maxSize() / pow( 2., _ebbTree->getHeight()) / 2;
@@ -7242,7 +7358,7 @@ namespace
                       POS_ALL = POS_LEFT | POS_RIGHT | POS_VERTEX };
   struct PointPos
   {
-    PositionName _name; 
+    PositionName _name;
     int          _index; // index of vertex or segment
 
     PointPos( PositionName n, int i=-1 ): _name(n), _index(i) {}
@@ -8156,32 +8272,29 @@ private:
 //purpose  : Return list of group of elements built on the same nodes.
 //           Search among theElements or in the whole mesh if theElements is empty
 //=======================================================================
-void SMESH_MeshEditor::FindEqualElements(set<const SMDS_MeshElement*> & theElements,
-                                         TListOfListOfElementsID &      theGroupsOfElementsID)
+
+void SMESH_MeshEditor::FindEqualElements(TIDSortedElemSet &        theElements,
+                                         TListOfListOfElementsID & theGroupsOfElementsID)
 {
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();
 
-  typedef set<const SMDS_MeshElement*> TElemsSet;
   typedef map< SortableElement, int > TMapOfNodeSet;
   typedef list<int> TGroupOfElems;
 
-  TElemsSet elems;
   if ( theElements.empty() )
   { // get all elements in the mesh
     SMDS_ElemIteratorPtr eIt = GetMeshDS()->elementsIterator();
     while ( eIt->more() )
-      elems.insert( elems.end(), eIt->next());
+      theElements.insert( theElements.end(), eIt->next());
   }
-  else
-    elems = theElements;
 
   vector< TGroupOfElems > arrayOfGroups;
   TGroupOfElems groupOfElems;
   TMapOfNodeSet mapOfNodeSet;
 
-  TElemsSet::iterator elemIt = elems.begin();
-  for ( int i = 0, j=0; elemIt != elems.end(); ++elemIt, ++j ) {
+  TIDSortedElemSet::iterator elemIt = theElements.begin();
+  for ( int i = 0, j=0; elemIt != theElements.end(); ++elemIt, ++j ) {
     const SMDS_MeshElement* curElem = *elemIt;
     SortableElement SE(curElem);
     int ind = -1;
@@ -8254,8 +8367,8 @@ void SMESH_MeshEditor::MergeElements(TListOfListOfElementsID & theGroupsOfElemen
 
 void SMESH_MeshEditor::MergeEqualElements()
 {
-  set<const SMDS_MeshElement*> aMeshElements; /* empty input -
-                                                 to merge equal elements in the whole mesh */
+  TIDSortedElemSet aMeshElements; /* empty input ==
+                                     to merge equal elements in the whole mesh */
   TListOfListOfElementsID aGroupsOfElementsID;
   FindEqualElements(aMeshElements, aGroupsOfElementsID);
   MergeElements(aGroupsOfElementsID);
@@ -11779,8 +11892,11 @@ void SMESH_MeshEditor::CreateHoleSkin(double radius,
       groupDS = group->GetGroupDS();
       if ( !groupDS || groupDS->IsEmpty() ) continue;
       std::string grpName = group->GetName();
+      //MESSAGE("grpName=" << grpName);
       if (grpName == groupName)
         break;
+      else
+        groupDS = 0;
     }
 
   bool isNodeGroup = false;
@@ -11794,6 +11910,7 @@ void SMESH_MeshEditor::CreateHoleSkin(double radius,
 
   if (nodesCoords.size() > 0)
     isNodeCoords = true; // a list o nodes given by their coordinates
+  //MESSAGE("---" << isNodeGroup << " " << isNodeCoords);
 
   // --- define groups to build
 

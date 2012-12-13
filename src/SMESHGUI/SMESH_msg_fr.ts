@@ -28,6 +28,10 @@
         <translation>Fichiers MED %1</translation>
     </message>
     <message>
+        <source>STL_FILES_FILTER</source>
+        <translation>Fichiers STL</translation>
+    </message>
+    <message>
         <source>STL_ASCII_FILES_FILTER</source>
         <translation>Fichiers STL ASCII</translation>
     </message>
@@ -126,6 +130,15 @@
     <message>
         <source>COMPERR_CANCELED</source>
         <translation>Calcul annulé</translation>
+    </message>
+    <message>
+        <source>COMPERR_NO_MESH_ON_SHAPE</source>
+        <translation>Aucun élément n'est associé à une sous-shape</translation>
+    </message>
+    <message>
+        <source>EDITERR_NO_MEDIUM_ON_GEOM</source>
+        <translation>Certain noeuds milieux (affichés en magenta) ne sont pas placés
+        sur la géométrie pour éviter d&apos;obtenir des élements distordus.</translation>
     </message>
     <message>
         <source>SMESH_GEOM</source>
@@ -404,6 +417,10 @@
         <translation>Exporter au format CGNS</translation>
     </message>
     <message>
+        <source>MEN_EXPORT_GMF</source>
+        <translation>Exporter au format GMF</translation>
+    </message>
+    <message>
         <source>MEN_EXPORT_SAUV</source>
         <translation>Exporter au format SAUV (ASCII)</translation>
     </message>
@@ -614,6 +631,14 @@
     <message>
         <source>MEN_CGNS</source>
         <translation>Fichier CGNS</translation>
+    </message>
+    <message>
+        <source>MEN_IMPORT_GMF</source>
+        <translation>Fichier GMF</translation>
+    </message>
+    <message>
+        <source>MEN_GMF</source>
+        <translation>Fichier GMF</translation>
     </message>
     <message>
         <source>MEN_IMPORT_SAUV</source>
@@ -1557,27 +1582,14 @@ Voulez-vous effectuer l&apos;exportation à MED 2.1 ?</translation>
         <source>SMESH_EXPORT_MED_VERSION_COLLISION</source>
         <translation>La version MED du fichier &quot;%1&quot; n&apos;est pas connue 
 ou ne correspond pas à la version choisie.
-Réécrire le fichier ?</translation>
+Ecraser le fichier ?</translation>
     </message>
     <message>
         <source>SMESH_EXPORT_MED_MESH_NAMES_COLLISION</source>
-        <translation>Le fichier choisi contient déjà
-les maillages avec les noms suivants: %1
-Il est possible que le fichier résultant ne soit pas correct.
-Réécrire le fichier ?</translation>
-    </message>
-    <message>
-        <source>SMESH_EXPORT_STL1</source>
-        <translation>Le maillage  - &quot;%1&quot; ne contient pas de triangles</translation>
-    </message>
-    <message>
-        <source>SMESH_EXPORT_STL2</source>
-        <translation>Le maillage - &quot;%1&quot; contient d&apos;autres éléments que les triangles, ils ne seront donc pas enregistrés dans le fichier STL</translation>
-    </message>
-    <message>
-        <source>SMESH_EXPORT_UNV</source>
-        <translation>Les éléments pyramides seront omis au cours de l&apos;exportation 
-du maillage &quot;%1&quot; dans le fichier UNV</translation>
+        <translation>Le fichier sélectionné contient déjà
+des maillages avec les noms suivants: %1
+Le fichier obtenu pourrait être incorrect.
+Ecraser le fichier ?</translation>
     </message>
     <message>
         <source>EXPORT_NOT_SUPPORTED</source>
@@ -2774,12 +2786,12 @@ Vérifiez la limite dans les préférences du module Mesh.
         <translation>Découper les groupes</translation>
     </message>
     <message>
-        <source>STB_IMPORT_DAT</source>
-        <translation>Importer un fichier DAT</translation>
-    </message>
-    <message>
         <source>STB_DAT</source>
         <translation>Exporter un fichier DAT</translation>
+    </message>
+    <message>
+        <source>STB_IMPORT_DAT</source>
+        <translation>Importer un fichier DAT</translation>
     </message>
     <message>
         <source>STB_DELETE</source>
@@ -2976,6 +2988,14 @@ Vérifiez la limite dans les préférences du module Mesh.
     <message>
         <source>STB_CGNS</source>
         <translation>Exporter un fichier CGNS</translation>
+    </message>
+    <message>
+        <source>STB_IMPORT_GMF</source>
+        <translation>Importer un ficher GMF</translation>
+    </message>
+    <message>
+        <source>STB_GMF</source>
+        <translation>Exporter un fichier GMF</translation>
     </message>
     <message>
         <source>STB_IMPORT_SAUV</source>
@@ -3974,14 +3994,25 @@ Il ne peut pas être supprimé.</translation>
     </message>
 </context>
 <context>
+    <name>SMESHGUI_Dialog</name>
+    <message>
+        <source>DLG_MESH</source>
+        <translation>maillages</translation>
+    </message>
+    <message>
+        <source>DLG_HYPO</source>
+        <translation>hypothèses</translation>
+    </message>
+    <message>
+        <source>DLG_ALGO</source>
+        <translation>algorithmes</translation>
+    </message>
+</context>
+<context>
     <name>SMESHGUI_GroupDlg</name>
     <message>
         <source>ALLOW_ELEM_LIST_MODIF</source>
         <translation>Edition manuelle</translation>
-    </message>
-    <message>
-        <source>SELECT_ALL</source>
-        <translation>Sélectionner tout</translation>
     </message>
 </context>
 <context>
@@ -4792,6 +4823,14 @@ Sélectionnez un objet valide et essayez de nouveau</translation>
         <translation>Filtre de nœuds</translation>
     </message>
     <message>
+        <source>ELEM0D_TLT</source>
+        <translation>Filtre d&apos;éléments 0D</translation>
+    </message>
+    <message>
+        <source>BALL_TLT</source>
+        <translation>Filtre d&apos;éléments particulaires</translation>
+    </message>
+    <message>
         <source>SELECTION</source>
         <translation>Sélection initiale</translation>
     </message>
@@ -5062,6 +5101,10 @@ Vérifiez la validité des informations données</translation>
     <message>
         <source>BALLS</source>
         <translation>Particulaires</translation>
+    </message>
+    <message>
+        <source>ELEM0D</source>
+        <translation>Eléments 0D</translation>
     </message>
     <message>
         <source>EDGES</source>

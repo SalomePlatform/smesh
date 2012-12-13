@@ -70,7 +70,10 @@
                             AUXILIARY METHODS
 */
 
-namespace{
+namespace {
+
+  const double theEps = 1e-100;
+  const double theInf = 1e+100;
 
   inline gp_XYZ gpXYZ(const SMDS_MeshNode* aNode )
   {
@@ -231,7 +234,11 @@ bool NumericalFunctor::GetPoints(const int theId,
   if ( myMesh == 0 )
     return false;
 
-  return GetPoints( myMesh->FindElement( theId ), theRes );
+  const SMDS_MeshElement* anElem = myMesh->FindElement( theId );
+  if ( !anElem || anElem->GetType() != this->GetType() )
+    return false;
+
+  return GetPoints( anElem, theRes );
 }
 
 bool NumericalFunctor::GetPoints(const SMDS_MeshElement* anElem,
@@ -239,7 +246,7 @@ bool NumericalFunctor::GetPoints(const SMDS_MeshElement* anElem,
 {
   theRes.clear();
 
-  if ( anElem == 0)
+  if ( anElem == 0 )
     return false;
 
   theRes.reserve( anElem->NbNodes() );
@@ -424,66 +431,60 @@ SMDSAbs_ElementType Volume::GetType() const
   return SMDSAbs_Volume;
 }
 
-
+//=======================================================================
 /*
   Class       : MaxElementLength2D
   Description : Functor calculating maximum length of 2D element
 */
+double MaxElementLength2D::GetValue( const TSequenceOfXYZ& P )
+{
+  if(P.size() == 0)
+    return 0.;
+  double aVal = 0;
+  int len = P.size();
+  if( len == 3 ) { // triangles
+    double L1 = getDistance(P( 1 ),P( 2 ));
+    double L2 = getDistance(P( 2 ),P( 3 ));
+    double L3 = getDistance(P( 3 ),P( 1 ));
+    aVal = Max(L1,Max(L2,L3));
+  }
+  else if( len == 4 ) { // quadrangles
+    double L1 = getDistance(P( 1 ),P( 2 ));
+    double L2 = getDistance(P( 2 ),P( 3 ));
+    double L3 = getDistance(P( 3 ),P( 4 ));
+    double L4 = getDistance(P( 4 ),P( 1 ));
+    double D1 = getDistance(P( 1 ),P( 3 ));
+    double D2 = getDistance(P( 2 ),P( 4 ));
+    aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(D1,D2));
+  }
+  else if( len == 6 ) { // quadratic triangles
+    double L1 = getDistance(P( 1 ),P( 2 )) + getDistance(P( 2 ),P( 3 ));
+    double L2 = getDistance(P( 3 ),P( 4 )) + getDistance(P( 4 ),P( 5 ));
+    double L3 = getDistance(P( 5 ),P( 6 )) + getDistance(P( 6 ),P( 1 ));
+    aVal = Max(L1,Max(L2,L3));
+  }
+  else if( len == 8 || len == 9 ) { // quadratic quadrangles
+    double L1 = getDistance(P( 1 ),P( 2 )) + getDistance(P( 2 ),P( 3 ));
+    double L2 = getDistance(P( 3 ),P( 4 )) + getDistance(P( 4 ),P( 5 ));
+    double L3 = getDistance(P( 5 ),P( 6 )) + getDistance(P( 6 ),P( 7 ));
+    double L4 = getDistance(P( 7 ),P( 8 )) + getDistance(P( 8 ),P( 1 ));
+    double D1 = getDistance(P( 1 ),P( 5 ));
+    double D2 = getDistance(P( 3 ),P( 7 ));
+    aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(D1,D2));
+  }
+
+  if( myPrecision >= 0 )
+  {
+    double prec = pow( 10., (double)myPrecision );
+    aVal = floor( aVal * prec + 0.5 ) / prec;
+  }
+  return aVal;
+}
 
 double MaxElementLength2D::GetValue( long theElementId )
 {
   TSequenceOfXYZ P;
-  if( GetPoints( theElementId, P ) ) {
-    double aVal = 0;
-    const SMDS_MeshElement* aElem = myMesh->FindElement( theElementId );
-    SMDSAbs_ElementType aType = aElem->GetType();
-    int len = P.size();
-    switch( aType ) {
-    case SMDSAbs_Face:
-      if( len == 3 ) { // triangles
-        double L1 = getDistance(P( 1 ),P( 2 ));
-        double L2 = getDistance(P( 2 ),P( 3 ));
-        double L3 = getDistance(P( 3 ),P( 1 ));
-        aVal = Max(L1,Max(L2,L3));
-        break;
-      }
-      else if( len == 4 ) { // quadrangles
-        double L1 = getDistance(P( 1 ),P( 2 ));
-        double L2 = getDistance(P( 2 ),P( 3 ));
-        double L3 = getDistance(P( 3 ),P( 4 ));
-        double L4 = getDistance(P( 4 ),P( 1 ));
-        double D1 = getDistance(P( 1 ),P( 3 ));
-        double D2 = getDistance(P( 2 ),P( 4 ));
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(D1,D2));
-        break;
-      }
-      else if( len == 6 ) { // quadratic triangles
-        double L1 = getDistance(P( 1 ),P( 2 )) + getDistance(P( 2 ),P( 3 ));
-        double L2 = getDistance(P( 3 ),P( 4 )) + getDistance(P( 4 ),P( 5 ));
-        double L3 = getDistance(P( 5 ),P( 6 )) + getDistance(P( 6 ),P( 1 ));
-        aVal = Max(L1,Max(L2,L3));
-        break;
-      }
-      else if( len == 8 || len == 9 ) { // quadratic quadrangles
-        double L1 = getDistance(P( 1 ),P( 2 )) + getDistance(P( 2 ),P( 3 ));
-        double L2 = getDistance(P( 3 ),P( 4 )) + getDistance(P( 4 ),P( 5 ));
-        double L3 = getDistance(P( 5 ),P( 6 )) + getDistance(P( 6 ),P( 7 ));
-        double L4 = getDistance(P( 7 ),P( 8 )) + getDistance(P( 8 ),P( 1 ));
-        double D1 = getDistance(P( 1 ),P( 5 ));
-        double D2 = getDistance(P( 3 ),P( 7 ));
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(D1,D2));
-        break;
-      }
-    }
-
-    if( myPrecision >= 0 )
-    {
-      double prec = pow( 10., (double)myPrecision );
-      aVal = floor( aVal * prec + 0.5 ) / prec;
-    }
-    return aVal;
-  }
-  return 0.;
+  return GetPoints( theElementId, P ) ? GetValue(P) : 0.0;
 }
 
 double MaxElementLength2D::GetBadRate( double Value, int /*nbNodes*/ ) const
@@ -496,6 +497,7 @@ SMDSAbs_ElementType MaxElementLength2D::GetType() const
   return SMDSAbs_Face;
 }
 
+//=======================================================================
 /*
   Class       : MaxElementLength3D
   Description : Functor calculating maximum length of 3D element
@@ -670,7 +672,7 @@ SMDSAbs_ElementType MaxElementLength3D::GetType() const
   return SMDSAbs_Volume;
 }
 
-
+//=======================================================================
 /*
   Class       : MinimumAngle
   Description : Functor for calculation of minimum angle
@@ -761,8 +763,8 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
     double maxLen = Max( aLen[ 0 ], Max( aLen[ 1 ], aLen[ 2 ] ) );
     double half_perimeter = ( aLen[0] + aLen[1] + aLen[2] ) / 2.;
     double anArea = getArea( P( 1 ), P( 2 ), P( 3 ) );
-    if ( anArea <= Precision::Confusion() )
-      return 0.;
+    if ( anArea <= theEps  )
+      return theInf;
     return alfa * maxLen * half_perimeter / anArea;
   }
   else if ( nbNodes == 6 ) { // quadratic triangles
@@ -781,8 +783,8 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
     double maxLen = Max( aLen[ 0 ], Max( aLen[ 1 ], aLen[ 2 ] ) );
     double half_perimeter = ( aLen[0] + aLen[1] + aLen[2] ) / 2.;
     double anArea = getArea( P(1), P(3), P(5) );
-    if ( anArea <= Precision::Confusion() )
-      return 0.;
+    if ( anArea <= theEps )
+      return theInf;
     return alfa * maxLen * half_perimeter / anArea;
   }
   else if( nbNodes == 4 ) { // quadrangle
@@ -825,8 +827,8 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
     double C2 = Min( anArea[ 0 ],
                   Min( anArea[ 1 ],
                     Min( anArea[ 2 ], anArea[ 3 ] ) ) );
-    if ( C2 <= Precision::Confusion() )
-      return 0.;
+    if ( C2 <= theEps )
+      return theInf;
     return alpha * L * C1 / C2;
   }
   else if( nbNodes == 8 || nbNodes == 9 ) { // nbNodes==8 - quadratic quadrangle
@@ -869,8 +871,8 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
     double C2 = Min( anArea[ 0 ],
                   Min( anArea[ 1 ],
                     Min( anArea[ 2 ], anArea[ 3 ] ) ) );
-    if ( C2 <= Precision::Confusion() )
-      return 0.;
+    if ( C2 <= theEps )
+      return theInf;
     return alpha * L * C1 / C2;
   }
   return 0;
@@ -1288,8 +1290,8 @@ double Warping::ComputeA( const gp_XYZ& thePnt1,
   double aLen1 = gp_Pnt( thePnt1 ).Distance( gp_Pnt( thePnt2 ) );
   double aLen2 = gp_Pnt( thePnt2 ).Distance( gp_Pnt( thePnt3 ) );
   double L = Min( aLen1, aLen2 ) * 0.5;
-  if ( L < Precision::Confusion())
-    return 0.;
+  if ( L < theEps )
+    return theInf;
 
   gp_XYZ GI = ( thePnt2 + thePnt1 ) / 2. - theG;
   gp_XYZ GJ = ( thePnt3 + thePnt2 ) / 2. - theG;
@@ -1334,8 +1336,8 @@ double Taper::GetValue( const TSequenceOfXYZ& P )
   double J4 = getArea( P( 3 ), P( 4 ), P( 1 ) ) / 2.;
 
   double JA = 0.25 * ( J1 + J2 + J3 + J4 );
-  if ( JA <= Precision::Confusion() )
-    return 0.;
+  if ( JA <= theEps )
+    return theInf;
 
   double T1 = fabs( ( J1 - JA ) / JA );
   double T2 = fabs( ( J2 - JA ) / JA );
@@ -1401,8 +1403,8 @@ double Skew::GetValue( const TSequenceOfXYZ& P )
       ? 0. : fabs( PI2 - v1.Angle( v2 ) );
 
     //BUG SWP12743
-    if ( A < Precision::Angular() )
-      return 0.;
+    if ( A < theEps )
+      return theInf;
 
     return A * 180. / M_PI;
   }
@@ -2645,43 +2647,7 @@ bool ElemGeomType::IsSatisfy( long theId )
   const SMDSAbs_ElementType anElemType = anElem->GetType();
   if ( myType != SMDSAbs_All && anElemType != myType )
     return false;
-  const int aNbNode = anElem->NbNodes();
-  bool isOk = false;
-  switch( anElemType )
-  {
-  case SMDSAbs_Node:
-    isOk = (myGeomType == SMDSGeom_POINT);
-    break;
-
-  case SMDSAbs_Edge:
-    isOk = (myGeomType == SMDSGeom_EDGE);
-    break;
-
-  case SMDSAbs_Face:
-    if ( myGeomType == SMDSGeom_TRIANGLE )
-      isOk = (!anElem->IsPoly() && (anElem->IsQuadratic() ? aNbNode == 6 : aNbNode == 3));
-    else if ( myGeomType == SMDSGeom_QUADRANGLE )
-      isOk = (!anElem->IsPoly() && (anElem->IsQuadratic() ? ( aNbNode == 8 || aNbNode == 9 ) : aNbNode == 4));
-    else if ( myGeomType == SMDSGeom_POLYGON )
-      isOk = anElem->IsPoly();
-    break;
-
-  case SMDSAbs_Volume:
-    if ( myGeomType == SMDSGeom_TETRA )
-      isOk = (!anElem->IsPoly() && (anElem->IsQuadratic() ? aNbNode == 10 : aNbNode == 4));
-    else if ( myGeomType == SMDSGeom_PYRAMID )
-      isOk = (!anElem->IsPoly() && (anElem->IsQuadratic() ? aNbNode == 13 : aNbNode == 5));
-    else if ( myGeomType == SMDSGeom_PENTA )
-      isOk = (!anElem->IsPoly() && (anElem->IsQuadratic() ? aNbNode == 15 : aNbNode == 6));
-    else if ( myGeomType == SMDSGeom_HEXA )
-      isOk = (!anElem->IsPoly() && (anElem->IsQuadratic() ? ( aNbNode == 20 || aNbNode == 27 ): aNbNode == 8));
-    else if ( myGeomType == SMDSGeom_HEXAGONAL_PRISM )
-      isOk = (anElem->GetEntityType() == SMDSEntity_Hexagonal_Prism );
-     else if ( myGeomType == SMDSGeom_POLYHEDRA )
-      isOk = anElem->IsPoly();
-    break;
-    default: break;
-  }
+  bool isOk = ( anElem->GetGeomType() == myGeomType );
   return isOk;
 }
 
@@ -3565,7 +3531,6 @@ void ManifoldPart::getFacesByLink( const ManifoldPart::Link& theLink,
 
 ElementsOnSurface::ElementsOnSurface()
 {
-  myMesh = 0;
   myIds.Clear();
   myType = SMDSAbs_All;
   mySurf.Nullify();
@@ -3575,15 +3540,13 @@ ElementsOnSurface::ElementsOnSurface()
 
 ElementsOnSurface::~ElementsOnSurface()
 {
-  myMesh = 0;
 }
 
 void ElementsOnSurface::SetMesh( const SMDS_Mesh* theMesh )
 {
-  if ( myMesh == theMesh )
-    return;
-  myMesh = theMesh;
-  process();
+  myMeshModifTracer.SetMesh( theMesh );
+  if ( myMeshModifTracer.IsMeshModified())
+    process();
 }
 
 bool ElementsOnSurface::IsSatisfy( long theElementId )
@@ -3638,32 +3601,14 @@ void ElementsOnSurface::process()
   if ( mySurf.IsNull() )
     return;
 
-  if ( myMesh == 0 )
+  if ( !myMeshModifTracer.GetMesh() )
     return;
 
-  if ( myType == SMDSAbs_Face || myType == SMDSAbs_All )
-  {
-    myIds.ReSize( myMesh->NbFaces() );
-    SMDS_FaceIteratorPtr anIter = myMesh->facesIterator();
-    for(; anIter->more(); )
-      process( anIter->next() );
-  }
+  myIds.ReSize( myMeshModifTracer.GetMesh()->GetMeshInfo().NbElements( myType ));
 
-  if ( myType == SMDSAbs_Edge || myType == SMDSAbs_All )
-  {
-    myIds.ReSize( myIds.Extent() + myMesh->NbEdges() );
-    SMDS_EdgeIteratorPtr anIter = myMesh->edgesIterator();
-    for(; anIter->more(); )
-      process( anIter->next() );
-  }
-
-  if ( myType == SMDSAbs_Node )
-  {
-    myIds.ReSize( myMesh->NbNodes() );
-    SMDS_NodeIteratorPtr anIter = myMesh->nodesIterator();
-    for(; anIter->more(); )
-      process( anIter->next() );
-  }
+  SMDS_ElemIteratorPtr anIter = myMeshModifTracer.GetMesh()->elementsIterator( myType );
+  for(; anIter->more(); )
+    process( anIter->next() );
 }
 
 void ElementsOnSurface::process( const SMDS_MeshElement* theElemPtr )
@@ -3782,26 +3727,7 @@ void ElementsOnShape::SetShape (const TopoDS_Shape&       theShape,
   
   if ( !myMesh ) return;
 
-  switch (myType)
-  {
-  case SMDSAbs_All:
-    myIds.ReSize(myMesh->NbEdges() + myMesh->NbFaces() + myMesh->NbVolumes());
-    break;
-  case SMDSAbs_Node:
-    myIds.ReSize(myMesh->NbNodes());
-    break;
-  case SMDSAbs_Edge:
-    myIds.ReSize(myMesh->NbEdges());
-    break;
-  case SMDSAbs_Face:
-    myIds.ReSize(myMesh->NbFaces());
-    break;
-  case SMDSAbs_Volume:
-    myIds.ReSize(myMesh->NbVolumes());
-    break;
-  default:
-    break;
-  }
+  myIds.ReSize( myMeshModifTracer.GetMesh()->GetMeshInfo().NbElements( myType ));
 
   myShapesMap.Clear();
   addShape(myShape);

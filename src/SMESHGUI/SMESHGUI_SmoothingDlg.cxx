@@ -263,7 +263,7 @@ SMESHGUI_SmoothingDlg::SMESHGUI_SmoothingDlg( SMESHGUI* theModule )
 
   // Costruction of the logical filter for the elements: mesh/sub-mesh/group
   QList<SUIT_SelectionFilter*> aListOfFilters;
-  aListOfFilters << new SMESH_TypeFilter(MESHorSUBMESH) << new SMESH_TypeFilter(GROUP);
+  aListOfFilters << new SMESH_TypeFilter(SMESH::MESHorSUBMESH) << new SMESH_TypeFilter(SMESH::GROUP);
 
   myMeshOrSubMeshOrGroupFilter =
     new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR);

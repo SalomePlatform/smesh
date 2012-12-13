@@ -296,7 +296,7 @@ private:
 class _pyMesh: public _pyObject
 {
   std::list< Handle(_pyHypothesis) > myHypos;
-  std::list< Handle(_pyCommand) >    myAddHypCmds;
+  std::list< Handle(_pyCommand) >    myAddHypCmds, myNotConvertedAddHypCmds;
   std::list< Handle(_pySubMesh) >    mySubmeshes;
   std::list< Handle(_pyGroup) >      myGroups;
   std::list< Handle(_pyMeshEditor)>  myEditors;
@@ -591,6 +591,7 @@ public:
   virtual void Process( const Handle(_pyCommand)& theCommand);
   virtual void Flush();
   virtual void Free() { myFilter.Nullify(); }
+  void RemovedWithContents();
 
   DEFINE_STANDARD_RTTI (_pyGroup)
 };

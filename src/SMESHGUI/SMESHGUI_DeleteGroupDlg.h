@@ -29,6 +29,8 @@
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 
+#include <SALOME_ListIO.hxx>
+
 // Qt includes
 #include <QDialog>
 
@@ -86,6 +88,7 @@ private:
   SMESHGUI*               mySMESHGUI;
   LightApp_SelectionMgr*  mySelectionMgr;
 
+  SALOME_ListIO           myListGrpIO;
   QList<SMESH::SMESH_GroupBase_var> myListGrp;
   bool                    myBlockSelection;
 

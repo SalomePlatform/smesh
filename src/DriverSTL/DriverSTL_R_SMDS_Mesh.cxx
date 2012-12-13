@@ -22,6 +22,8 @@
 
 #include <stdio.h>
 #include <gp_Pnt.hxx>
+#include <Basics_Utils.hxx>
+
 //=======================================================================
 //function : HashCode
 //purpose  : 
@@ -104,6 +106,8 @@ void DriverSTL_R_SMDS_Mesh::SetIsCreateFaces( const bool theIsCreate )
 
 Driver_Mesh::Status DriverSTL_R_SMDS_Mesh::Perform()
 {
+  Kernel_Utils::Localizer loc;
+
   Status aResult = DRS_OK;
 
   TCollection_AsciiString aFileName( (char *)myFile.c_str() );

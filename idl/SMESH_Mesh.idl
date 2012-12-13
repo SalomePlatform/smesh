@@ -663,7 +663,8 @@ module SMESH
                      in string         file,
                      in boolean        overwrite ) raises (SALOME::SALOME_Exception);
     void ExportGMF( in SMESH_IDSource  meshPart, 
-                    in string          file ) raises (SALOME::SALOME_Exception);
+                    in string          file,
+                    in boolean         withRequiredGroups) raises (SALOME::SALOME_Exception);
     void ExportPartToDAT( in SMESH_IDSource meshPart, 
                           in string         file ) raises (SALOME::SALOME_Exception);
     void ExportPartToUNV( in SMESH_IDSource meshPart, 

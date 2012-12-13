@@ -219,7 +219,7 @@ SMESHGUI_CopyMeshDlg::SMESHGUI_CopyMeshDlg( SMESHGUI* theModule )
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
 
   // Selection filter
-  myIdSourceFilter = new SMESH_TypeFilter( IDSOURCE );
+  myIdSourceFilter = new SMESH_TypeFilter( SMESH::IDSOURCE );
 
   myHelpFileName = "copy_mesh_page.html";
 

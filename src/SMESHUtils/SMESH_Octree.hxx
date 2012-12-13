@@ -20,7 +20,7 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH_Octree : global Octree implementation
+//  SMESH SMESH_Octree : Octree implementation
 //  File      : SMESH_Octree.hxx
 //  Created   : Tue Jan 16 16:00:00 2007
 //  Author    : Nicolas Geimer & Aurélien Motteux (OCC)
@@ -30,45 +30,25 @@
 #define _SMESH_OCTREE_HXX_
 
 #include "SMESH_Utils.hxx"
+#include "SMESH_Tree.hxx"
 #include <Bnd_B3d.hxx>
 
-class SMESHUtils_EXPORT SMESH_Octree {
-
+//================================================================================
+/*!
+ * \brief 3D tree of anything.
+ * Methods to implement in a descendant are:
+ * - Bnd_B3d*       buildRootBox(); // box of the whole tree
+ * - descendant*    newChild() const; // a new child instance
+ * - void           buildChildrenData(); // Fill in data of the children
+ */
+class SMESHUtils_EXPORT SMESH_Octree : public SMESH_Tree< Bnd_B3d, 8 >
+{
 public:
-
-  // Data limiting the tree height
-  struct Limit {
-    // MaxLevel of the Octree
-    int    myMaxLevel;
-    // Minimal size of the Box
-    double myMinBoxSize;
-
-    // Default:
-    // maxLevel-> 8^8 = 16777216 terminal trees
-    // minSize -> box size not checked
-    Limit(int maxLevel=8, double minSize=0.):myMaxLevel(maxLevel),myMinBoxSize(minSize) {}
-    virtual ~Limit() {} // it can be inherited
-  };
+  typedef SMESH_Tree< Bnd_B3d, 8> TBaseTree;
 
   // Constructor. limit must be provided at tree root construction.
   // limit will be deleted by SMESH_Octree
-  SMESH_Octree (Limit* limit=0);
-
-  // Destructor
-  virtual ~SMESH_Octree ();
-
-  // Compute the Octree. Must be called by constructor of inheriting class
-  void                   compute();
-
-  // Tell if Octree is a leaf or not.
-  // An inheriting class can influence it via myIsLeaf protected field
-  bool                   isLeaf() const;
-
-  // Return its level
-  int                    level() const { return myLevel; }
-
-  // Get box to the 3d Bounding Box of the Octree
-  const Bnd_B3d&         getBox() const { return *myBox; }
+  SMESH_Octree (SMESH_TreeLimit* limit=0);
 
   // Compute the bigger dimension of my box
   double                 maxSize() const;
@@ -76,49 +56,16 @@ public:
   // Return index of a child the given point is in
   inline int             getChildIndex(double x, double y, double z, const gp_XYZ& boxMiddle)const;
 
-  // Return height of the tree, full or from this level to topest leaf
-  int                    getHeight(const bool full=true) const;
+ protected:
 
-protected:
-  // Return box of the whole tree
-  virtual Bnd_B3d*       buildRootBox() = 0;
-
-  // Constructor for children
-  virtual SMESH_Octree*  allocateOctreeChild() const = 0;
-
-  // Build the data in the 8 children
-  virtual void           buildChildrenData() = 0;
-
-  // members
-
-  // Array of 8 Octree children
-  SMESH_Octree** myChildren;
-
-  // Point the father, set to NULL for the level 0
-  SMESH_Octree*  myFather;
-
-  // Tell us if the Octree is a leaf or not
-  bool           myIsLeaf;
-
-  // Tree limit
-  const Limit*   myLimit;
-
-private:
-  // Build the 8 children boxes recursively
-  void                   buildChildren();
-
-  // Level of the Octree
-  int            myLevel;
-
-  Bnd_B3d*       myBox;
+  // Allocate a bndbox according to childIndex. childIndex is zero based
+  virtual Bnd_B3d*       newChildBox(int childIndex) const;
 };
 
 //================================================================================
 /*!
  * \brief Return index of a child the given point is in
  */
-//================================================================================
-
 inline int SMESH_Octree::getChildIndex(double x, double y, double z, const gp_XYZ& mid) const
 {
   return (x > mid.X()) + ( y > mid.Y())*2 + (z > mid.Z())*4;

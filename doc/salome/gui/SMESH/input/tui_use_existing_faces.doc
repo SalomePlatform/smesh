@@ -1,6 +1,6 @@
 /*!
 
-\page tui_use_existing_faces Use existing faces
+\page tui_use_existing_faces Use existing faces algorithm
 
 This sample demonstrates how to use <b>Use existing faces</b> algorithm,
 which is actulally just a stub allowing to use your own 2D algoritm

@@ -28,29 +28,28 @@
 //
 #include "StdMeshers_MEFISTO_2D.hxx"
 
+#include "SMDS_EdgePosition.hxx"
+#include "SMDS_MeshElement.hxx"
+#include "SMDS_MeshNode.hxx"
+#include "SMESH_Comment.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_Mesh.hxx"
-#include "SMESH_subMesh.hxx"
-#include "SMESH_Block.hxx"
 #include "SMESH_MesherHelper.hxx"
-#include "SMESH_Comment.hxx"
-
+#include "SMESH_subMesh.hxx"
 #include "StdMeshers_FaceSide.hxx"
-#include "StdMeshers_MaxElementArea.hxx"
 #include "StdMeshers_LengthFromEdges.hxx"
+#include "StdMeshers_MaxElementArea.hxx"
+#include "StdMeshers_ViscousLayers2D.hxx"
+
+#include "utilities.h"
 
 #include "Rn.h"
 #include "aptrte.h"
 
-#include "SMDS_MeshElement.hxx"
-#include "SMDS_MeshNode.hxx"
-#include "SMDS_EdgePosition.hxx"
-#include "SMDS_FacePosition.hxx"
-
-#include "utilities.h"
-
+#include <BRepGProp.hxx>
 #include <BRepTools.hxx>
 #include <BRep_Tool.hxx>
+#include <GProp_GProps.hxx>
 #include <Geom2d_Curve.hxx>
 #include <Geom_Curve.hxx>
 #include <Geom_Surface.hxx>
@@ -67,11 +66,11 @@
 #include <TopoDS_Wire.hxx>
 #include <gp_Pnt2d.hxx>
 
-#include <BRep_Tool.hxx>
-#include <GProp_GProps.hxx>
-#include <BRepGProp.hxx>
-
 using namespace std;
+
+#ifdef _DEBUG_
+//#define DUMP_POINTS // to print coordinates of MEFISTO input
+#endif
 
 //=============================================================================
 /*!
@@ -87,12 +86,13 @@ StdMeshers_MEFISTO_2D::StdMeshers_MEFISTO_2D(int hypId, int studyId, SMESH_Gen *
   _shapeType = (1 << TopAbs_FACE);
   _compatibleHypothesis.push_back("MaxElementArea");
   _compatibleHypothesis.push_back("LengthFromEdges");
+  _compatibleHypothesis.push_back("ViscousLayers2D");
 
   _edgeLength = 0;
   _maxElementArea = 0;
   _hypMaxElementArea = NULL;
   _hypLengthFromEdges = NULL;
-  myTool = 0;
+  _helper = 0;
 }
 
 //=============================================================================
@@ -191,13 +191,19 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
 
   // helper builds quadratic mesh if necessary
   SMESH_MesherHelper helper(aMesh);
-  myTool = &helper;
-  _quadraticMesh = myTool->IsQuadraticSubMesh(aShape);
-  const bool ignoreMediumNodes = _quadraticMesh;
+  _helper = &helper;
+  _quadraticMesh = _helper->IsQuadraticSubMesh(aShape);
+  const bool skipMediumNodes = _quadraticMesh;
+
+  // build viscous layers if required
+  SMESH_ProxyMesh::Ptr proxyMesh = StdMeshers_ViscousLayers2D::Compute( aMesh, F );
+  if ( !proxyMesh )
+    return false;
 
   // get all edges of a face
   TError problem;
-  TWireVector wires = StdMeshers_FaceSide::GetFaceWires( F, aMesh, ignoreMediumNodes, problem );
+  TWireVector wires =
+    StdMeshers_FaceSide::GetFaceWires( F, aMesh, skipMediumNodes, problem, proxyMesh );
   int nbWires = wires.size();
   if ( problem && !problem->IsOK() ) return error( problem );
   if ( nbWires == 0 ) return error( "Problem in StdMeshers_FaceSide::GetFaceWires()");
@@ -575,7 +581,7 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
   TopTools_IndexedDataMapOfShapeListOfShape VWMap;
   if ( wires.size() > 1 )
   {
-    F = TopoDS::Face( myTool->GetSubShape() );
+    F = TopoDS::Face( _helper->GetSubShape() );
     TopExp::MapShapesAndAncestors( F, TopAbs_VERTEX, TopAbs_WIRE, VWMap );
     int nbVertices = 0;
     for ( int iW = 0; iW < wires.size(); ++iW )
@@ -616,10 +622,10 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
       case SMDS_TOP_EDGE:
         // In order to detect degenerated faces easily, we replace
         // nodes on a degenerated edge by node on the vertex of that edge
-        if ( myTool->IsDegenShape( uvPt->node->getshapeId() ))
+        if ( _helper->IsDegenShape( uvPt->node->getshapeId() ))
         {
           int edgeID = uvPt->node->getshapeId();
-          SMESH_subMesh* edgeSM = myTool->GetMesh()->GetSubMeshContaining( edgeID );
+          SMESH_subMesh* edgeSM = _helper->GetMesh()->GetSubMeshContaining( edgeID );
           SMESH_subMeshIteratorPtr smIt = edgeSM->getDependsOnIterator( /*includeSelf=*/0,
                                                                         /*complexShapeFirst=*/0);
           if ( smIt->more() )
@@ -644,8 +650,8 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
       if ( iW && !VWMap.IsEmpty()) { // except outer wire
         // avoid passing same uv point for a vertex common to 2 wires
         int vID = mefistoToDS[m]->getshapeId();
-        TopoDS_Vertex V = TopoDS::Vertex( myTool->GetMeshDS()->IndexToShape( vID ));
-        if ( fixCommonVertexUV( uvslf[m], V, F, VWMap, *myTool->GetMesh(),
+        TopoDS_Vertex V = TopoDS::Vertex( _helper->GetMeshDS()->IndexToShape( vID ));
+        if ( fixCommonVertexUV( uvslf[m], V, F, VWMap, *_helper->GetMesh(),
                                 scalex, scaley, _quadraticMesh )) {
           myNodesOnCommonV.push_back( mefistoToDS[m] );
           continue;
@@ -659,9 +665,13 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
       fixOverlappedLinkUV (uvslf[ mB ], uvslf[ m ], uvslf[ mA ]);
     }
   }
-//   cout << "MEFISTO INPUT************" << endl;
-//   for ( int i =0; i < m; ++i )
-//     cout << i << ": \t" << uvslf[i].x << ", " << uvslf[i].y << " Node " << mefistoToDS[i]->GetID()<< endl;
+
+#ifdef DUMP_POINTS
+  cout << "MEFISTO INPUT************" << endl;
+  for ( int i =0; i < m; ++i )
+    cout << i << ": \t" << uvslf[i].x << ", " << uvslf[i].y
+         << " Node " << mefistoToDS[i]->GetID()<< endl;
+#endif
 
   return true;
 }
@@ -770,10 +780,10 @@ void StdMeshers_MEFISTO_2D::StoreResult(Z nbst, R2 * uvst, Z nbt, Z * nust,
                                         vector< const SMDS_MeshNode*>&mefistoToDS,
                                         double scalex, double scaley)
 {
-  SMESHDS_Mesh * meshDS = myTool->GetMeshDS();
-  int faceID = myTool->GetSubShapeID();
+  SMESHDS_Mesh * meshDS = _helper->GetMeshDS();
+  int faceID = _helper->GetSubShapeID();
 
-  TopoDS_Face F = TopoDS::Face( myTool->GetSubShape() );
+  TopoDS_Face F = TopoDS::Face( _helper->GetSubShape() );
   Handle(Geom_Surface) S = BRep_Tool::Surface( F );
 
   Z n = mefistoToDS.size(); // nb input points
@@ -809,14 +819,14 @@ void StdMeshers_MEFISTO_2D::StoreResult(Z nbst, R2 * uvst, Z nbt, Z * nust,
     const SMDS_MeshNode * n3 = mefistoToDS[ nust[m++] - 1 ];
 
     // avoid creating degenetrated faces
-    bool isDegen = ( myTool->HasDegeneratedEdges() && ( n1 == n2 || n1 == n3 || n2 == n3 ));
+    bool isDegen = ( _helper->HasDegeneratedEdges() && ( n1 == n2 || n1 == n3 || n2 == n3 ));
     if ( !isDegen )
     {
       SMDS_MeshElement * elt;
       if (triangleIsWellOriented)
-        elt = myTool->AddFace(n1, n2, n3);
+        elt = _helper->AddFace(n1, n2, n3);
       else
-        elt = myTool->AddFace(n1, n3, n2);
+        elt = _helper->AddFace(n1, n3, n2);
       meshDS->SetMeshElementOnShape(elt, faceID);
     }
     m++;

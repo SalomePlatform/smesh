@@ -122,7 +122,8 @@ public:
 
   int CGNSToMesh(const char* theFileName, const int theMeshIndex, std::string& theMeshName);
   
-  SMESH_ComputeErrorPtr GMFToMesh(const char* theFileName);
+  SMESH_ComputeErrorPtr GMFToMesh(const char* theFileName,
+                                  bool        theMakeRequiredGroups = true );
 
   SMESH_Hypothesis::Hypothesis_Status
   AddHypothesis(const TopoDS_Shape & aSubShape, int anHypId)
@@ -244,7 +245,8 @@ public:
   void ExportCGNS(const char *        file,
                   const SMESHDS_Mesh* mesh);
   void ExportGMF(const char *        file,
-                 const SMESHDS_Mesh* mesh);
+                 const SMESHDS_Mesh* mesh,
+                 bool                withRequiredGroups = true );
   void ExportSAUV(const char *file, 
                   const char* theMeshName = NULL, 
                   bool theAutoGroups = true) throw(SALOME_Exception);

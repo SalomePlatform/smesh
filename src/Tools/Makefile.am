@@ -27,5 +27,11 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
 SUBDIRS = MeshCut padder
 
+if SMESH_ENABLE_GUI
+  SUBDIRS += YamsPlug
+endif
+
 salomeplugins_PYTHON = \
 	smesh_plugins.py
+
+DIST_SUBDIRS = MeshCut padder YamsPlug
