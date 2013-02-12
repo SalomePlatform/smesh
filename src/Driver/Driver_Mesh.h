@@ -54,6 +54,7 @@ class MESHDRIVER_EXPORT Driver_Mesh
     DRS_WARN_RENUMBER,  // a file has overlapped ranges of element numbers,
                         // so the numbers from the file are ignored
     DRS_WARN_SKIP_ELEM, // some elements were skipped due to incorrect file data
+    DRS_WARN_DESCENDING, // some elements were skipped due to descending connectivity
     DRS_FAIL            // general failure (exception etc.)
   };
 

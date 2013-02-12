@@ -3,822 +3,91 @@
 \page tui_quality_controls_page Quality Controls
 
 \section tui_free_borders Free Borders
-
-\code
-import salome
-import geompy
-
-import smesh
-
-# create open shell: a box without one plane
-box = geompy.MakeBox(0., 0., 0., 20., 20., 15.)
-FaceList = geompy.SubShapeAll(box, geompy.ShapeType["FACE"])
-FaceList.remove(FaceList[5])
-box = geompy.MakeShell(FaceList)
-idbox = geompy.addToStudy(box, "box")
-
-# create a mesh
-mesh = smesh.Mesh(box, "Mesh_free_borders")
-algo = mesh.Segment()
-algo.NumberOfSegments(5)
-algo = mesh.Triangle()
-algo.MaxElementArea(20.)
-mesh.Compute() 
-
-# criterion : free borders
-aFilter = smesh.GetFilter(smesh.EDGE, smesh.FT_FreeBorders) 
-anIds = mesh.GetIdsFromFilter(aFilter)
-
-# print the result
-print "Criterion: Free borders Nb = ", len(anIds)
-j = 1
-for i in range(len(anIds)):
-  if j > 20: j = 1; print ""
-  print anIds[i],
-  j = j + 1
-  pass
-print ""
-
-# create a group
-aGroup = mesh.CreateGroup(SMESH.EDGE, "Free borders")
-aGroup.Add(anIds)
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include quality_controls_ex01.py
+<a href="../../examples/SMESH/quality_controls_ex01.py">Download this script</a>
 
 \section tui_borders_at_multiconnection Borders at Multiconnection
-
-\code
-import salome
-import geompy
-
-import smesh
-import SMESH
-
-# create open shell: a box without one plane
-box = geompy.MakeBox(0., 0., 0., 20., 20., 15.)
-FaceList = geompy.SubShapeAll(box, geompy.ShapeType["FACE"])
-FaceList.remove(FaceList[5])
-box = geompy.MakeShell(FaceList)
-idbox = geompy.addToStudy(box, "box")
-
-# create a mesh
-mesh = smesh.Mesh(box, "Mesh_borders_at_multi-connections")
-algo = mesh.Segment()
-algo.NumberOfSegments(5)
-algo = mesh.Triangle()
-algo.MaxElementArea(20.)
-mesh.Compute() 
-
-# Criterion : Borders at multi-connection
-nb_conn = 2
-
-aFilter = smesh.GetFilter(smesh.EDGE, smesh.FT_MultiConnection, smesh.FT_EqualTo, nb_conn)
-anIds = mesh.GetIdsFromFilter(aFilter)
-
-# print the result
-print "Criterion: Borders at multi-connections Nb = ", len(anIds)
-j = 1
-for i in range(len(anIds)):
-  if j > 20: j = 1; print ""
-  print anIds[i],
-  j = j + 1
-  pass
-print ""
-
-# create a group
-aGroup = mesh.CreateGroup(SMESH.EDGE, "Borders at multi-connections")
-aGroup.Add(anIds)
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include quality_controls_ex02.py
+<a href="../../examples/SMESH/quality_controls_ex02.py">Download this script</a>
 
 \section tui_length_1d Length 1D
-
-\code
-import salome
-import geompy
-
-import smesh
-
-# create open shell: a box without one plane
-box = geompy.MakeBox(0., 0., 0., 20., 20., 15.)
-FaceList = geompy.SubShapeAll(box, geompy.ShapeType["FACE"])
-FaceList.remove(FaceList[5])
-box = geompy.MakeShell(FaceList)
-idbox = geompy.addToStudy(box, "box")
-
-# create a mesh
-mesh = smesh.Mesh(box, "Mesh_Length_1D")
-algo = mesh.Segment()
-algo.NumberOfSegments(5)
-algo = mesh.Triangle()
-algo.MaxElementArea(20.)
-mesh.Compute() 
-
-# Criterion : Length > 3.
-length_margin = 3.
-
-aFilter = smesh.GetFilter(smesh.EDGE, smesh.FT_Length, smesh.FT_MoreThan, length_margin)
-anIds = mesh.GetIdsFromFilter(aFilter) 
-
-# print the result
-print "Criterion: Edges length > ", length_margin, " Nb = ", len(anIds)
-j = 1
-for i in range(len(anIds)):
-  if j > 20: j = 1; print ""
-  print anIds[i],
-  j = j + 1
-  pass
-print ""
-
-# create a group
-aGroup = mesh.CreateGroup(SMESH.EDGE, "Edges with length > " + `length_margin`)
-aGroup.Add(anIds)
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include quality_controls_ex03.py
+<a href="../../examples/SMESH/quality_controls_ex03.py">Download this script</a>
 
 \section tui_free_edges Free Edges
-
-\code
-import SMESH_mechanic
-
-smesh  = SMESH_mechanic.smesh
-mesh   = SMESH_mechanic.mesh
-salome = SMESH_mechanic.salome
-
-aFilterMgr = smesh.CreateFilterManager()
-
-# Remove some elements to obtain free edges
-# Criterion : AREA > 95.
-area_margin = 95.
-
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Area, smesh.FT_MoreThan, area_margin)
-
-anIds = mesh.GetIdsFromFilter(aFilter)
-
-mesh.RemoveElements(anIds)
-
-# Criterion : Free Edges
-aBorders = mesh.GetFreeBorders() 
-
-# create groups
-aGroupF = mesh.CreateEmptyGroup(smesh.FACE, "Faces with free edges")
-aGroupN = mesh.CreateEmptyGroup(smesh.NODE, "Nodes on free edges")
-
-# fill groups with elements, corresponding to the criterion
-print ""
-print "Criterion: Free edges Nb = ", len(aBorders)
-for i in range(len(aBorders)):
-  aBorder = aBorders[i]
-  print "Face # ", aBorder.myElemId, " : Edge between nodes (",
-  print aBorder.myPnt1, ", ", aBorder.myPnt2, ")"
-
-  aGroupF.Add([aBorder.myElemId])
-  aGroupN.Add([aBorder.myPnt1, aBorder.myPnt2])
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include quality_controls_ex04.py
+<a href="../../examples/SMESH/quality_controls_ex04.py">Download this script</a>
 
 \section tui_free_nodes Free Nodes
-
-\code
-import salome
-import geompy
-
-import smesh
-
-# create box
-box = geompy.MakeBox(0., 0., 0., 100., 200., 300.)
-idbox = geompy.addToStudy(box, "box")
-
-# create a mesh
-mesh = smesh.Mesh(box, "Mesh_free_nodes")
-algo = mesh.Segment()
-algo.NumberOfSegments(10)
-algo = mesh.Triangle(smesh.MEFISTO)
-algo.MaxElementArea(150.)
-mesh.Compute() 
-
-# Remove some elements to obtain free nodes
-# Criterion : AREA < 80.
-area_margin = 80.
-
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Area, smesh.FT_LessThan, area_margin)
-
-anIds = mesh.GetIdsFromFilter(aFilter)
-
-mesh.RemoveElements(anIds)
-
-# criterion : free nodes
-aFilter = smesh.GetFilter(smesh.NODE, smesh.FT_FreeNodes) 
-anNodeIds = mesh.GetIdsFromFilter(aFilter)
-
-# create a group
-aGroup = mesh.CreateEmptyGroup(smesh.NODE, "Free_nodes")
-aGroup.Add(anNodeIds)
-
-# print the result
-print "Criterion: Free nodes Nb = ", len(anNodeIds)
-j = 1
-for i in range(len(anNodeIds)):
-  if j > 20: j = 1; print ""
-  print anNodeIds[i],
-  j = j + 1
-  pass
-print ""
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include quality_controls_ex05.py
+<a href="../../examples/SMESH/quality_controls_ex05.py">Download this script</a>
 
 \section tui_free_faces Free Faces
-
-\code
-import salome
-import geompy
-
-####### GEOM part ########
-
-Box_1 = geompy.MakeBoxDXDYDZ(200, 200, 200)
-Box_1_vertex_6 = geompy.GetSubShape(Box_1, [6])
-Box_1 = geompy.GetMainShape(Box_1_vertex_6)
-Box_1_vertex_16 = geompy.GetSubShape(Box_1, [16])
-Box_1 = geompy.GetMainShape(Box_1_vertex_16)
-Box_1_vertex_11 = geompy.GetSubShape(Box_1, [11])
-Box_1 = geompy.GetMainShape(Box_1_vertex_11)
-Plane_1 = geompy.MakePlaneThreePnt(Box_1_vertex_6, Box_1_vertex_16, Box_1_vertex_11, 2000)
-Partition_1 = geompy.MakePartition([Box_1], [Plane_1], [], [], geompy.ShapeType["SOLID"], 0, [], 0)
-
-Box_1_vertex_19 = geompy.GetSubShape(Box_1, [19])
-Box_1_vertex_21 = geompy.GetSubShape(Box_1, [21])
-Plane_2 = geompy.MakePlaneThreePnt(Box_1_vertex_16, Box_1_vertex_19, Box_1_vertex_21, 2000)
-
-geompy.addToStudy( Box_1, "Box_1" )
-geompy.addToStudyInFather( Box_1, Box_1_vertex_6, "Box_1:vertex_6" )
-geompy.addToStudyInFather( Box_1, Box_1_vertex_16, "Box_1:vertex_16" )
-geompy.addToStudyInFather( Box_1, Box_1_vertex_11, "Box_1:vertex_11" )
-geompy.addToStudy( Plane_1, "Plane_1" )
-geompy.addToStudy( Partition_1, "Partition_1" )
-geompy.addToStudyInFather( Box_1, Box_1_vertex_19, "Box_1:vertex_19" )
-geompy.addToStudyInFather( Box_1, Box_1_vertex_21, "Box_1:vertex_21" )
-geompy.addToStudy( Plane_2, "Plane_2" )
-
-###### SMESH part ######
-import smesh
-
-import StdMeshers
-
-Mesh_1 = smesh.Mesh(Partition_1)
-Regular_1D = Mesh_1.Segment()
-Max_Size_1 = Regular_1D.MaxSize(34.641)
-MEFISTO_2D = Mesh_1.Triangle()
-Tetrahedronn = Mesh_1.Tetrahedron()
-isDone = Mesh_1.Compute()
-
-# create a group of free faces
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_FreeFaces )
-aFaceIds = Mesh_1.GetIdsFromFilter(aFilter)
-
-aGroup = Mesh_1.CreateEmptyGroup(smesh.FACE, "Free_faces")
-aGroup.Add(aFaceIds)
-
-# print the result
-print "Criterion: Free faces Nb = ", len(aFaceIds)
-j = 1
-for i in range(len(aFaceIds)):
-  if j > 20: j = 1; print ""
-  print aFaceIds[i],
-  j = j + 1
-  pass
-print ""
-
-#filter faces from plane 2
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_BelongToPlane, Plane_2)
-aFaceIds = Mesh_1.GetIdsFromFilter(aFilter)
-aGroup.Remove(aFaceIds)
-
-# create a group of shared faces (located on partition boundary inside box)
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_BelongToPlane, Plane_1)
-aFaceIds = Mesh_1.GetIdsFromFilter(aFilter)
-
-aGroup = Mesh_1.CreateEmptyGroup(smesh.FACE, "Shared_faces")
-aGroup.Add(aFaceIds)
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include quality_controls_ex06.py
+<a href="../../examples/SMESH/quality_controls_ex06.py">Download this script</a>
 
 \section tui_bare_border_faces Bare border faces
-
-\code
-from smesh import *
-SetCurrentStudy(salome.myStudy)
-
-box = geompy.MakeBoxDXDYDZ(100, 100, 100)
-geompy.addToStudy( box, "box" )
-
-mesh = smesh.Mesh(box)
-mesh.Segment().NumberOfSegments(3)
-mesh.Quadrangle()
-mesh.Compute()
-
-# remove 2 faces
-allFaces = mesh.GetElementsByType(FACE)
-mesh.RemoveElements( allFaces[0:2])
-
-bareGroup = mesh.MakeGroup("bare faces", FACE, FT_BareBorderFace)
-assert(bareGroup.Size() == 3)
-\endcode
+\include quality_controls_ex07.py
+<a href="../../examples/SMESH/quality_controls_ex07.py">Download this script</a>
 
 \section tui_bare_border_volumes Bare border volumes
-
-\code
-from smesh import *
-SetCurrentStudy(salome.myStudy)
-
-box = geompy.MakeBoxDXDYDZ(100, 30, 10)
-# the smallest face of the box
-face = geompy.SubShapeAllSorted( box, geompy.ShapeType["FACE"])[0]
-
-geompy.addToStudy( box, "box" )
-geompy.addToStudyInFather( box, face, "face" )
-
-mesh = Mesh(box)
-mesh.AutomaticHexahedralization();
-
-# remove half of mesh faces from the smallest face
-faceFaces = mesh.GetSubMeshElementsId(face)
-faceToRemove = faceFaces[: len(faceFaces)/2]
-mesh.RemoveElements( faceToRemove )
-
-# make a group of volumes missing the removed faces
-bareGroup = mesh.MakeGroup("bare volumes", VOLUME, FT_BareBorderVolume)
-assert(bareGroup.Size() == len( faceToRemove))
-\endcode
+\include quality_controls_ex08.py
+<a href="../../examples/SMESH/quality_controls_ex08.py">Download this script</a>
 
 \section tui_over_constrained_faces Over-constrained faces
-\code
-from smesh import *
-SetCurrentStudy(salome.myStudy)
-
-mesh = Mesh()
-faceFilter = GetFilter(FACE,FT_OverConstrainedFace)
-
-#make an edge
-n1 = mesh.AddNode(0,0,0)
-n2 = mesh.AddNode(10,0,0)
-edge = mesh.AddEdge([n1,n2])
-assert( not mesh.GetIdsFromFilter( faceFilter ))
-
-# make faces 
-mesh.ExtrusionSweep([edge], MakeDirStruct(0,7,0), 5)
-assert( 2 == len( mesh.GetIdsFromFilter( faceFilter )))
-\endcode
+\include quality_controls_ex09.py
+<a href="../../examples/SMESH/quality_controls_ex09.py">Download this script</a>
 
 \section tui_over_constrained_volumes Over-constrained volumes
-\code
-from smesh import *
-SetCurrentStudy(salome.myStudy)
-
-mesh = Mesh()
-volumeFilter = GetFilter(VOLUME,FT_OverConstrainedVolume)
-
-# make volumes by extrusion of one face
-n1 = mesh.AddNode(0,0,0)
-n2 = mesh.AddNode(10,0,0)
-edge = mesh.AddEdge([n1,n2])
-mesh.ExtrusionSweep([edge], MakeDirStruct(0,7,0), 1)
-mesh.ExtrusionSweep( mesh.GetElementsByType(FACE), MakeDirStruct(0,0,5), 7)
-assert( 2 == len( mesh.GetIdsFromFilter( volumeFilter )))
-\endcode
+\include quality_controls_ex10.py
+<a href="../../examples/SMESH/quality_controls_ex10.py">Download this script</a>
 
 \section tui_length_2d Length 2D
-
-\code
-import salome
-import geompy
-
-import smesh
-
-# create open shell: a box without one plane
-box = geompy.MakeBox(0., 0., 0., 20., 20., 15.)
-FaceList = geompy.SubShapeAll(box, geompy.ShapeType["FACE"])
-FaceList.remove(FaceList[5])
-box = geompy.MakeShell(FaceList)
-idbox = geompy.addToStudy(box, "box")
-
-# create a mesh
-mesh = smesh.Mesh(box, "Mesh_Length_2D")
-algo = mesh.Segment()
-algo.NumberOfSegments(5)
-algo = mesh.Triangle()
-algo.MaxElementArea(20.)
-mesh.Compute()
-
-# Criterion : Length 2D > 5.7
-length_margin = 5.7
-
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Length2D, smesh.FT_MoreThan, length_margin)
-
-anIds = mesh.GetIdsFromFilter(aFilter)
-
-# print the result
-print "Criterion: Edges length 2D > ", length_margin, " Nb = ", len(anIds)
-j = 1
-for i in range(len(anIds)):
-  if j > 20: j = 1; print ""
-  print anIds[i],
-  j = j + 1
-  pass
-print ""
-
-# create a group
-aGroup = mesh.CreateEmptyGroup(smesh.FACE, "Faces with length 2D > " + `length_margin`)
-aGroup.Add(anIds)
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include quality_controls_ex11.py
+<a href="../../examples/SMESH/quality_controls_ex11.py">Download this script</a>
 
 \section tui_borders_at_multiconnection_2d Borders at Multiconnection 2D
-
-\code
-import salome
-import geompy
-
-import smesh
-
-# create a compound of two glued boxes
-box1 = geompy.MakeBox(0., 0., 0., 20., 20., 15.)
-box2 = geompy.MakeTranslation(box1, 0., 20., 0)
-comp = geompy.MakeCompound([box1, box2])
-box = geompy.MakeGlueFaces(comp, 0.000001)
-idbox = geompy.addToStudy(box, "box")
-
-# create a mesh
-mesh = smesh.Mesh(box, "Box compound : 2D triangle mesh")
-algo = mesh.Segment()
-algo.NumberOfSegments(5)
-algo = mesh.Triangle()
-algo.MaxElementArea(20.)
-mesh.Compute() 
-
-# Criterion : MULTI-CONNECTION 2D = 3
-nb_conn = 3
-
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_MultiConnection2D, smesh.FT_EqualTo, nb_conn)
-
-anIds = mesh.GetIdsFromFilter(aFilter) 
-
-# print the result
-print "Criterion: Borders at multi-connection 2D = ", nb_conn, " Nb = ", len(anIds)
-j = 1
-for i in range(len(anIds)):
-  if j > 20: j = 1; print ""
-  print anIds[i],
-  j = j + 1
-  pass
-print ""
-
-# create a group
-aGroup = mesh.CreateEmptyGroup(smesh.FACE, "Borders at multi-connection 2D = " + `nb_conn`)
-aGroup.Add(anIds)
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include quality_controls_ex12.py
+<a href="../../examples/SMESH/quality_controls_ex12.py">Download this script</a>
 
 \section tui_area Area
-
-\code
-import SMESH_mechanic
-
-smesh  = SMESH_mechanic.smesh
-mesh   = SMESH_mechanic.mesh
-salome = SMESH_mechanic.salome
-
-# Criterion : AREA > 100.
-area_margin = 100.
-
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Area, smesh.FT_MoreThan, area_margin)
-
-anIds = mesh.GetIdsFromFilter(aFilter) 
-
-# print the result
-print "Criterion: Area > ", area_margin, " Nb = ", len(anIds)
-j = 1
-for i in range(len(anIds)):
-  if j > 20: j = 1; print ""
-  print anIds[i],
-  j = j + 1
-  pass
-print ""
-
-# create a group
-aGroup = mesh.CreateEmptyGroup(smesh.FACE, "Area > " + `area_margin`)
-aGroup.Add(anIds)
-
-salome.sg.updateObjBrowser(1)  
-\endcode
+\include quality_controls_ex13.py
+<a href="../../examples/SMESH/quality_controls_ex13.py">Download this script</a>
 
 \section tui_taper Taper
-
-\code
-import SMESH_mechanic
-
-smesh  = SMESH_mechanic.smesh
-mesh   = SMESH_mechanic.mesh
-salome = SMESH_mechanic.salome
-
-# Criterion : Taper > 3e-20
-taper_margin = 3e-20
-
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Taper, smesh.FT_MoreThan, taper_margin)
-
-anIds = mesh.GetIdsFromFilter(aFilter) 
-
-# print the result
-print "Criterion: Taper > ", taper_margin, " Nb = ", len(anIds)
-j = 1
-for i in range(len(anIds)):
-  if j > 20: j = 1; print ""
-  print anIds[i],
-  j = j + 1
-  pass
-print ""
-
-# create a group
-aGroup = mesh.CreateEmptyGroup(smesh.FACE, "Taper > " + `taper_margin`)
-aGroup.Add(anIds)
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include quality_controls_ex14.py
+<a href="../../examples/SMESH/quality_controls_ex14.py">Download this script</a>
 
 \section tui_aspect_ratio Aspect Ratio
-
-\code
-import SMESH_mechanic
-
-smesh  = SMESH_mechanic.smesh
-mesh   = SMESH_mechanic.mesh
-salome = SMESH_mechanic.salome
-
-# Criterion : ASPECT RATIO > 1.8
-ar_margin = 1.8
-
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_AspectRatio, smesh.FT_MoreThan, ar_margin)
-
-anIds = mesh.GetIdsFromFilter(aFilter) 
-
-# print the result
-print "Criterion: Aspect Ratio > ", ar_margin, " Nb = ", len(anIds)
-j = 1
-for i in range(len(anIds)):
-  if j > 20: j = 1; print ""
-  print anIds[i],
-  j = j + 1
-  pass
-print ""
-
-# create a group
-aGroup = mesh.CreateEmptyGroup(smesh.FACE, "Aspect Ratio > " + `ar_margin`)
-aGroup.Add(anIds)
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include quality_controls_ex15.py
+<a href="../../examples/SMESH/quality_controls_ex15.py">Download this script</a>
 
 \section tui_minimum_angle Minimum Angle
-
-\code
-import SMESH_mechanic
-
-smesh  = SMESH_mechanic.smesh
-mesh   = SMESH_mechanic.mesh
-salome = SMESH_mechanic.salome
-
-# Criterion : MINIMUM ANGLE < 35.
-min_angle = 35.
-
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_MinimumAngle, smesh.FT_LessThan, min_angle)
-
-anIds = mesh.GetIdsFromFilter(aFilter) 
-
-# print the result
-print "Criterion: Minimum Angle < ", min_angle, " Nb = ", len(anIds)
-j = 1
-for i in range(len(anIds)):
-  if j > 20: j = 1; print ""
-  print anIds[i],
-  j = j + 1
-  pass
-print ""
-
-# create a group
-aGroup = mesh.CreateEmptyGroup(smesh.FACE, "Minimum Angle < " + `min_angle`)
-
-aGroup.Add(anIds)
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include quality_controls_ex16.py
+<a href="../../examples/SMESH/quality_controls_ex16.py">Download this script</a>
 
 \section tui_warping Warping
-
-\code
-import SMESH_mechanic
-
-smesh  = SMESH_mechanic.smesh
-mesh   = SMESH_mechanic.mesh
-salome = SMESH_mechanic.salome
-
-# Criterion : WARP ANGLE > 1e-15
-wa_margin = 1e-15
-
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Warping, smesh.FT_MoreThan, wa_margin)
-
-anIds = mesh.GetIdsFromFilter(aFilter) 
-
-# print the result
-print "Criterion: Warp > ", wa_margin, " Nb = ", len(anIds)
-j = 1
-for i in range(len(anIds)):
-  if j > 20: j = 1; print ""
-  print anIds[i],
-  j = j + 1
-  pass
-print ""
-
-# create a group
-aGroup = mesh.CreateEmptyGroup(smesh.FACE, "Warp > " + `wa_margin`)
-
-aGroup.Add(anIds)
-
-salome.sg.updateObjBrowser(1) 
-\endcode
+\include quality_controls_ex17.py
+<a href="../../examples/SMESH/quality_controls_ex17.py">Download this script</a>
 
 \section tui_skew Skew
-
-\code
-import SMESH_mechanic
-
-smesh  = SMESH_mechanic.smesh
-mesh   = SMESH_mechanic.mesh
-salome = SMESH_mechanic.salome
-
-# Criterion : Skew > 38.
-skew_margin = 38.
-
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Skew, smesh.FT_MoreThan, skew_margin)
-
-anIds = mesh.GetIdsFromFilter(aFilter)
-
-# print the result
-print "Criterion: Skew > ", skew_margin, " Nb = ", len(anIds)
-j = 1
-for i in range(len(anIds)):
-  if j > 20: j = 1; print ""
-  print anIds[i],
-  j = j + 1
-  pass
-print ""
-
-# create a group
-aGroup = mesh.CreateEmptyGroup(smesh.FACE, "Skew > " + `skew_margin`)
-aGroup.Add(anIds)
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include quality_controls_ex18.py
+<a href="../../examples/SMESH/quality_controls_ex18.py">Download this script</a>
 
 \section tui_max_element_length_2d Element Diameter 2D
-
-\code
-import SMESH_mechanic
-
-smesh  = SMESH_mechanic.smesh
-mesh   = SMESH_mechanic.mesh
-salome = SMESH_mechanic.salome
-
-# Criterion : ELEMENT DIAMETER 2D > 10
-mel_2d_margin = 10
-
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_MaxElementLength2D, smesh.FT_MoreThan, mel_2d_margin)
-
-anIds = mesh.GetIdsFromFilter(aFilter) 
-
-# print the result
-print "Criterion: Element Diameter 2D Ratio > ", mel_2d_margin, " Nb = ", len(anIds)
-j = 1
-for i in range(len(anIds)):
-  if j > 20: j = 1; print ""
-  print anIds[i],
-  j = j + 1
-  pass
-print ""
-
-# create a group
-aGroup = mesh.CreateEmptyGroup(smesh.FACE, "Element Diameter 2D > " + `mel_2d_margin`)
-aGroup.Add(anIds)
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include quality_controls_ex19.py
+<a href="../../examples/SMESH/quality_controls_ex19.py">Download this script</a>
 
 \section tui_aspect_ratio_3d Aspect Ratio 3D
-
-\code
-import SMESH_mechanic_tetra 
-
-smesh  = SMESH_mechanic_tetra.smesh
-mesh   = SMESH_mechanic_tetra.mesh
-salome = SMESH_mechanic_tetra.salome
-
-# Criterion : ASPECT RATIO 3D > 4.5
-ar_margin = 4.5
-
-aFilter = smesh.GetFilter(smesh.VOLUME, smesh.FT_AspectRatio3D, smesh.FT_MoreThan, ar_margin)
-
-anIds = mesh.GetIdsFromFilter(aFilter) 
-
-# print the result
-print "Criterion: Aspect Ratio 3D > ", ar_margin, " Nb = ", len(anIds)
-j = 1
-for i in range(len(anIds)):
-  if j > 20: j = 1; print ""
-  print anIds[i],
-  j = j + 1
-  pass
-print ""
-
-# create a group
-aGroup = mesh.CreateEmptyGroup(smesh.VOLUME, "Aspect Ratio 3D > " + `ar_margin`)
-
-aGroup.Add(anIds)
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include quality_controls_ex20.py
+<a href="../../examples/SMESH/quality_controls_ex20.py">Download this script</a>
 
 \section tui_volume Volume
-
-\code
-import SMESH_mechanic_tetra
-
-smesh  = SMESH_mechanic_tetra.smesh
-mesh   = SMESH_mechanic_tetra.mesh
-salome = SMESH_mechanic_tetra.salome
-
-# Criterion : VOLUME < 7.
-volume_margin = 7.
-
-aFilter = smesh.GetFilter(smesh.VOLUME, smesh.FT_Volume3D, smesh.FT_LessThan, volume_margin)
-
-anIds = mesh.GetIdsFromFilter(aFilter) 
-
-# print the result
-print ""
-print "Criterion: Volume < ", volume_margin, " Nb = ", len(anIds)
-j = 1
-for i in range(len(anIds)):
-  if j > 20: j = 1; print ""
-  print anIds[i],
-  j = j + 1
-  pass
-print ""
-
-# create a group
-aGroup = mesh.CreateEmptyGroup(smesh.VOLUME, "Volume < " + `volume_margin`)
-
-aGroup.Add(anIds)
-
-salome.sg.updateObjBrowser(1) 
-\endcode
+\include quality_controls_ex21.py
+<a href="../../examples/SMESH/quality_controls_ex21.py">Download this script</a>
 
 \section tui_max_element_length_3d Element Diameter 3D
-
-\code
-import SMESH_mechanic_tetra
-
-smesh  = SMESH_mechanic_tetra.smesh
-mesh   = SMESH_mechanic_tetra.mesh
-salome = SMESH_mechanic_tetra.salome
-
-# Criterion : ELEMENT DIAMETER 3D > 10
-mel_3d_margin = 10
-
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_MaxElementLength3D, smesh.FT_MoreThan, mel_3d_margin)
-
-anIds = mesh.GetIdsFromFilter(aFilter) 
-
-# print the result
-print "Criterion: Element Diameter 3D Ratio > ", mel_3d_margin, " Nb = ", len(anIds)
-j = 1
-for i in range(len(anIds)):
-  if j > 20: j = 1; print ""
-  print anIds[i],
-  j = j + 1
-  pass
-print ""
-
-# create a group
-aGroup = mesh.CreateEmptyGroup(smesh.FACE, "Element Diameter 3D > " + `mel_3d_margin`)
-aGroup.Add(anIds)
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include quality_controls_ex22.py
+<a href="../../examples/SMESH/quality_controls_ex22.py">Download this script</a>
 
 */

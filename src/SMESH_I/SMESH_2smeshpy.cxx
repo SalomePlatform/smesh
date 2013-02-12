@@ -26,10 +26,12 @@
 //
 #include "SMESH_2smeshpy.hxx"
 
-#include "utilities.h"
 #include "SMESH_PythonDump.hxx"
 #include "SMESH_NoteBook.hxx"
 #include "SMESH_Filter_i.hxx"
+
+#include <SALOMEDS_wrap.hxx>
+#include <utilities.h>
 
 #include <Resource_DataMapOfAsciiStringAsciiString.hxx>
 #include <Resource_DataMapIteratorOfDataMapOfAsciiStringAsciiString.hxx>
@@ -431,7 +433,7 @@ _pyGen::_pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod
   {
     // find a GEOM entry
     _pyID geomID;
-    SALOMEDS::SComponent_var geomComp = theStudy->FindComponent("GEOM");
+    SALOMEDS::SComponent_wrap geomComp = theStudy->FindComponent("GEOM");
     if ( geomComp->_is_nil() ) return;
     CORBA::String_var entry = geomComp->GetID();
     geomID = entry.in();
@@ -1329,7 +1331,7 @@ bool _pyGen::IsNotPublished(const _pyID& theObjID) const
   // either the SMESH object is not in study or it is a GEOM object
   if ( IsGeomObject( theObjID ))
   {
-    SALOMEDS::SObject_var so = myStudy->FindObjectID( theObjID.ToCString() );
+    SALOMEDS::SObject_wrap so = myStudy->FindObjectID( theObjID.ToCString() );
     if ( so->_is_nil() ) return true;
     CORBA::Object_var obj = so->GetObject();
     return CORBA::is_nil( obj );

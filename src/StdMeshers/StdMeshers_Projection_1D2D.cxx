@@ -70,7 +70,7 @@ namespace
    * \brief Structure used to temporary remove EventProparatorToEdges from faceSubMesh
    *  in order to prevent propagation of CLEAN event from FACE to EDGEs during 
    *  StdMeshers_Projection_1D2D::Compute(). The CLEAN event is emmited by Pattern mapper
-   * and causes removal of faces generated on adjacent FACEs.
+   *  and causes removal of faces generated on adjacent FACEs.
    */
   struct UnsetterOfEventProparatorToEdges
   {
@@ -108,8 +108,12 @@ bool StdMeshers_Projection_1D2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape
 {
   UnsetterOfEventProparatorToEdges eventBarrier( theMesh.GetSubMesh( theShape ));
 
+  // 1) Project faces
+
   if ( !StdMeshers_Projection_2D::Compute(theMesh, theShape))
     return false;
+
+  // 2) Create segments
 
   SMESHDS_Mesh * meshDS = theMesh.GetMeshDS();
 
@@ -173,7 +177,7 @@ bool StdMeshers_Projection_1D2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape
         meshDS->SetMeshElementOnShape( e, edgeID );
       }
     }
-  }   
+  }
 
   return true;
 }

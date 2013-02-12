@@ -18,13 +18,12 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_Preferences_ScalarBarDlg.cxx
 // Author : Nicolas REJNERI, Open CASCADE S.A.S.
 // SMESH includes
-//
+
 #include "SMESHGUI_Preferences_ScalarBarDlg.h"
 
 #include "SMESHGUI.h"
@@ -130,22 +129,28 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
   /******************************************************************************/
   // Scalar range
   myRangeGrp = new QGroupBox ( tr( "SMESH_RANGE_SCALARBAR" ), this );
-  QHBoxLayout* myRangeGrpLayout = new QHBoxLayout( myRangeGrp );
+  //QHBoxLayout* myRangeGrpLayout = new QHBoxLayout( myRangeGrp );
+  QGridLayout* myRangeGrpLayout = new QGridLayout( myRangeGrp );
   myRangeGrpLayout->setSpacing( SPACING_SIZE ); myRangeGrpLayout->setMargin( MARGIN_SIZE );
-  
+
   myMinEdit = new QLineEdit( myRangeGrp );
   myMinEdit->setMinimumWidth( MINIMUM_WIDTH );
   myMinEdit->setValidator( new QDoubleValidator( this ) );
-  
+
   myMaxEdit = new QLineEdit( myRangeGrp );
   myMaxEdit->setMinimumWidth( MINIMUM_WIDTH );
   myMaxEdit->setValidator( new QDoubleValidator( this ) );
-  
-  myRangeGrpLayout->addWidget( new QLabel( tr( "SMESH_RANGE_MIN" ), myRangeGrp ) );
-  myRangeGrpLayout->addWidget( myMinEdit );
-  myRangeGrpLayout->addWidget( new QLabel( tr( "SMESH_RANGE_MAX" ), myRangeGrp ) );
-  myRangeGrpLayout->addWidget( myMaxEdit );
-  
+
+  myLogarithmicCheck = new QCheckBox (myRangeGrp);
+  myLogarithmicCheck->setText(tr("SMESH_LOGARITHMIC_SCALARBAR"));
+  myLogarithmicCheck->setChecked(false);
+
+  myRangeGrpLayout->addWidget( new QLabel( tr( "SMESH_RANGE_MIN" ), myRangeGrp ), 0, 0, 1, 1 );
+  myRangeGrpLayout->addWidget( myMinEdit, 0, 1, 1, 1 );
+  myRangeGrpLayout->addWidget( new QLabel( tr( "SMESH_RANGE_MAX" ), myRangeGrp ), 0, 2, 1, 1 );
+  myRangeGrpLayout->addWidget( myMaxEdit, 0, 3, 1, 1 );
+  myRangeGrpLayout->addWidget( myLogarithmicCheck, 1, 0, 1, 4 );
+
   aTopLayout->addWidget( myRangeGrp );
 
   /******************************************************************************/
@@ -255,19 +260,19 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
 
   myYSpin = new SMESHGUI_SpinBox(myOriginDimGrp);
   myYSpin->setAcceptNames( false );
-  myYSpin->RangeStepAndValidator( 0.0, 1.0, 0.1, "parametric_precision" );  
+  myYSpin->RangeStepAndValidator( 0.0, 1.0, 0.1, "parametric_precision" );
   myYSpin->setMinimumWidth( MINIMUM_WIDTH );
   myYSpin->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
 
   myWidthSpin = new SMESHGUI_SpinBox(myOriginDimGrp);
   myWidthSpin->setAcceptNames( false );
-  myWidthSpin->RangeStepAndValidator( 0.0, 1.0, 0.1, "parametric_precision" );    
+  myWidthSpin->RangeStepAndValidator( 0.0, 1.0, 0.1, "parametric_precision" );
   myWidthSpin->setMinimumWidth( MINIMUM_WIDTH );
   myWidthSpin->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
 
   myHeightSpin = new SMESHGUI_SpinBox(myOriginDimGrp);
   myHeightSpin->setAcceptNames( false );
-  myHeightSpin->RangeStepAndValidator( 0.0, 1.0, 0.1, "parametric_precision" );    
+  myHeightSpin->RangeStepAndValidator( 0.0, 1.0, 0.1, "parametric_precision" );
   myHeightSpin->setMinimumWidth( MINIMUM_WIDTH );
   myHeightSpin->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
 
@@ -297,18 +302,18 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
 
   myDistribColorGrp->addButton(myDMonoColor);myDistribColorGrp->setId(myDMonoColor,1);
   myDistribColorGrp->addButton(myDMultiColor);myDistribColorGrp->setId(myDMultiColor,2);
-  
+
   aDistributionGrpLayout->addWidget( myDMultiColor );
   aDistributionGrpLayout->addWidget( myDMonoColor );
-  
+
   //Color of the Distribution in monocolor case:
   myDistributionColorLbl = new QLabel( tr( "SMESH_DISTRIBUTION_COLOR" ), myDistributionGrp );
   aDistributionGrpLayout->addWidget( myDistributionColorLbl );
   myMonoColorBtn = new QtxColorButton( myDistributionGrp  );
   aDistributionGrpLayout->addWidget(myMonoColorBtn);
-  
+
   aTopLayout->addWidget(myDistributionGrp);
-  
+
   /******************************************************************************/
   // Common buttons
   myButtonGrp = new QGroupBox( this );
@@ -351,13 +356,13 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
       myTitleFontCombo->setCurrentIndex(1);
     if( f.family()=="Times")
       myTitleFontCombo->setCurrentIndex(2);
-    
+
     myTitleBoldCheck->setChecked  ( f.bold() );
     myTitleItalicCheck->setChecked( f.italic() );
     myTitleShadowCheck->setChecked( f.overline() );
   }
-                                      
-  QColor labelColor = mgr->colorValue("SMESH", "scalar_bar_label_color", 
+
+  QColor labelColor = mgr->colorValue("SMESH", "scalar_bar_label_color",
                                       QColor(255, 255, 255));
   myLabelsColorBtn->setColor(labelColor);
   myLabelsFontCombo->setCurrentIndex(0);
@@ -369,7 +374,7 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
       myLabelsFontCombo->setCurrentIndex(1);
     if (f.family() == "Times")
       myLabelsFontCombo->setCurrentIndex(2);
-      
+
     myLabelsBoldCheck  ->setChecked( f.bold() );
     myLabelsItalicCheck->setChecked( f.italic() );
     myLabelsShadowCheck->setChecked( f.overline() );
@@ -391,7 +396,7 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
 
   QString name = isHoriz ? "scalar_bar_horizontal_%1" : "scalar_bar_vertical_%1";
 
-  myIniX = mgr->doubleValue("SMESH", name.arg( "x" ), 
+  myIniX = mgr->doubleValue("SMESH", name.arg( "x" ),
                             myHorizRadioBtn->isChecked() ? DEF_HOR_X : DEF_VER_X);
 
   myIniY = mgr->doubleValue("SMESH", name.arg( "y" ),
@@ -412,18 +417,16 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
   int coloringType = mgr->integerValue("SMESH", "distribution_coloring_type", 0);
   if( coloringType == SMESH_MONOCOLOR_TYPE ) {
     myDMonoColor->setChecked(true);
-    onDistributionChanged(myDistribColorGrp->id(myDMonoColor));    
+    onDistributionChanged(myDistribColorGrp->id(myDMonoColor));
   } else {
     myDMultiColor->setChecked(true);
     onDistributionChanged(myDistribColorGrp->id(myDMultiColor));
 
   }
-  
+
   QColor distributionColor = mgr->colorValue("SMESH", "distribution_color",
                                              QColor(255, 255, 255));
   myMonoColorBtn->setColor(distributionColor);
-  
-  
 
   // --> then init from selection if necessary
   onSelectionChanged();
@@ -434,6 +437,8 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
   connect( myApplyBtn,          SIGNAL( clicked() ), this, SLOT( onApply() ) );
   connect( myCancelBtn,         SIGNAL( clicked() ), this, SLOT( onCancel() ) );
   connect( myHelpBtn,           SIGNAL(clicked()),   this, SLOT( onHelp() ) );
+  connect( myMinEdit,           SIGNAL( textChanged(const QString &) ), this, SLOT( onMinMaxChanged() ) );
+  connect( myMaxEdit,           SIGNAL( textChanged(const QString &) ), this, SLOT( onMinMaxChanged() ) );
   connect( myXSpin,             SIGNAL( valueChanged( double ) ), this, SLOT( onXYChanged() ) );
   connect( myYSpin,             SIGNAL( valueChanged( double ) ), this, SLOT( onXYChanged() ) );
   connect( aOrientationGrp,     SIGNAL( buttonClicked( int ) ),   this, SLOT( onOrientationChanged() ) );
@@ -528,9 +533,9 @@ bool SMESHGUI_Preferences_ScalarBarDlg::onApply()
   if( myDistributionGrp->isChecked() ) {
     int ColoringType = myDMultiColor->isChecked() ? SMESH_MULTICOLOR_TYPE : SMESH_MONOCOLOR_TYPE;
     distributionTypeChanged = (ColoringType != myScalarBarActor->GetDistributionColoringType());
-    if(distributionTypeChanged)      
+    if (distributionTypeChanged)
       myScalarBarActor->SetDistributionColoringType(ColoringType);
-    
+
     if( !myDMultiColor->isChecked() ) {
       QColor aTColor = myMonoColorBtn->color();
       double rgb[3], oldRgb[3];;
@@ -551,29 +556,31 @@ bool SMESHGUI_Preferences_ScalarBarDlg::onApply()
   double oldMinMax[2] = { myLookupTable->GetRange()[0], myLookupTable->GetRange()[1] };
   bool rangeChanges = ( fabs( oldMinMax[0] - aMin ) + fabs( oldMinMax[1] - aMax ) >
                         0.001 * ( aMax-aMin + oldMinMax[1]-oldMinMax[0] ));
-  
+
   bool nbColorsChanged = (myColorsSpin->value() != myScalarBarActor->GetMaximumNumberOfColors());
   if(nbColorsChanged)
     myScalarBarActor->SetMaximumNumberOfColors(myColorsSpin->value());
-  
 
   myLookupTable->SetRange( aMin, aMax );
   myLookupTable->SetNumberOfTableValues(myColorsSpin->value());
+
+  bool scaleChanged = (myLogarithmicCheck->isChecked() != (myLookupTable->GetScale() == VTK_SCALE_LOG10));
+  if (scaleChanged)
+    myLookupTable->SetScale(myLogarithmicCheck->isChecked() ? VTK_SCALE_LOG10 : VTK_SCALE_LINEAR);
+
   myLookupTable->Build();
 
-  if( nbColorsChanged || rangeChanges)
+  if (nbColorsChanged || rangeChanges || scaleChanged)
     myActor->UpdateDistribution();
-  
+
 #ifndef DISABLE_PLOT2DVIEWER
-  if( myActor->GetPlot2Histogram() && 
-      (nbColorsChanged || 
+  if( myActor->GetPlot2Histogram() &&
+      (nbColorsChanged ||
        rangeChanges ||
-       distributionTypeChanged || 
+       distributionTypeChanged ||
        colorChanged ))
     SMESH::ProcessIn2DViewers(myActor);
 #endif
-    
-    
 
   SMESH::RepaintCurrentView();
   return true;
@@ -601,7 +608,7 @@ void SMESHGUI_Preferences_ScalarBarDlg::onCancel()
 void SMESHGUI_Preferences_ScalarBarDlg::onHelp()
 {
   LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
-  if (app) 
+  if (app)
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
     QString platform;
@@ -612,7 +619,7 @@ void SMESHGUI_Preferences_ScalarBarDlg::onHelp()
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
                              tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser",
                                                                  platform)).
                              arg(myHelpFileName));
   }
@@ -639,9 +646,13 @@ void SMESHGUI_Preferences_ScalarBarDlg::onSelectionChanged()
         SMESH_ScalarBarActor* myScalarBarActor = myActor->GetScalarBarActor();
 
         if ( myScalarBarActor->GetLookupTable() ) {
-          vtkFloatingPointType *range = myScalarBarActor->GetLookupTable()->GetRange();
+          vtkLookupTable* aLookupTable = static_cast<vtkLookupTable*>(myScalarBarActor->GetLookupTable());
+
+          vtkFloatingPointType *range = aLookupTable->GetRange();
           myMinEdit->setText( QString::number( range[0],'g',12 ) );
           myMaxEdit->setText( QString::number( range[1],'g',12 ) );
+          myLogarithmicCheck->setChecked(aLookupTable->GetScale() == VTK_SCALE_LOG10);
+          myLogarithmicCheck->setEnabled(range[0] > 1e-07 && range[1] > 1e-07);
         }
 
         vtkTextProperty* aTitleTextPrp = myScalarBarActor->GetTitleTextProperty();
@@ -682,15 +693,14 @@ void SMESHGUI_Preferences_ScalarBarDlg::onSelectionChanged()
         myMonoColorBtn->setColor( QColor( (int)( aTColor[0]*255 ), (int)( aTColor[1]*255 ), (int)( aTColor[2]*255 ) ) );
         if ( coloringType == SMESH_MONOCOLOR_TYPE ) {
           myDMonoColor->setChecked(true);
-          onDistributionChanged(myDistribColorGrp->id(myDMonoColor));    
+          onDistributionChanged(myDistribColorGrp->id(myDMonoColor));
         } else {
           myDMultiColor->setChecked(true);
           onDistributionChanged(myDistribColorGrp->id(myDMultiColor));
         }
         myDistributionGrp->setChecked((bool)myScalarBarActor->GetDistributionVisibility());
         onDistributionActivated(myScalarBarActor->GetDistributionVisibility());
-        
-        
+
         myRangeGrp->setEnabled( true );
         myFontGrp->setEnabled( true );
         myLabColorGrp->setEnabled( true );
@@ -725,6 +735,22 @@ void SMESHGUI_Preferences_ScalarBarDlg::closeEvent( QCloseEvent* e )
 {
   myDlg = 0;
   QDialog::closeEvent( e );
+}
+
+//=================================================================================================
+/*!
+ *  SMESHGUI_Preferences_ScalarBarDlg::onMinMaxChanged
+ *
+ *  Called when Scalar Range values are changed
+ */
+//=================================================================================================
+void SMESHGUI_Preferences_ScalarBarDlg::onMinMaxChanged()
+{
+  double aMin = myMinEdit->text().toDouble();
+  double aMax = myMaxEdit->text().toDouble();
+  bool isLogarithmicEnabled = (aMin > 1e-07 && aMax > 1e-07);
+  myLogarithmicCheck->setChecked(isLogarithmicEnabled);
+  myLogarithmicCheck->setEnabled(isLogarithmicEnabled);
 }
 
 //=================================================================================================
@@ -833,7 +859,7 @@ void SMESHGUI_Preferences_ScalarBarDlg::initScalarBarFromResources()
   QString name;
   if (mgr){
     // initialize from resoources
-    
+
     // horizontal
     name = QString("scalar_bar_horizontal_%1");
     if (mgr->hasValue("SMESH", name.arg( "x" )))

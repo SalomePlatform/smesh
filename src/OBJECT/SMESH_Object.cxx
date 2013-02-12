@@ -567,12 +567,12 @@ vtkUnstructuredGrid* SMESH_VisualObjDef::GetUnstructuredGrid()
 bool SMESH_VisualObjDef::IsValid() const
 {
         //MESSAGE("SMESH_VisualObjDef::IsValid");
-  return GetNbEntities(SMDSAbs_Node) > 0      || 
-         GetNbEntities(SMDSAbs_0DElement) > 0 || 
-         GetNbEntities(SMDSAbs_Ball) > 0 || 
-         GetNbEntities(SMDSAbs_Edge) > 0      || 
-         GetNbEntities(SMDSAbs_Face) > 0      ||
-         GetNbEntities(SMDSAbs_Volume) > 0 ;
+  return ( GetNbEntities(SMDSAbs_0DElement) > 0 || 
+           GetNbEntities(SMDSAbs_Ball     ) > 0 || 
+           GetNbEntities(SMDSAbs_Edge     ) > 0 || 
+           GetNbEntities(SMDSAbs_Face     ) > 0 ||
+           GetNbEntities(SMDSAbs_Volume   ) > 0 ||
+           GetNbEntities(SMDSAbs_Node     ) > 0 );
 }
 
 //=================================================================================
@@ -659,6 +659,8 @@ SMESH_MeshObj::~SMESH_MeshObj()
 {
   if ( MYDEBUG ) 
     MESSAGE("SMESH_MeshObj - this = "<<this<<"\n");
+  if ( myEmptyGrid )
+    myEmptyGrid->Delete();
 }
 
 //=================================================================================
@@ -995,11 +997,16 @@ int SMESH_GroupObj::GetEntities( const SMDSAbs_ElementType theType, TEntityList&
   theResList.clear();
   SMDS_Mesh* aMesh = myMeshObj->GetMesh();
   
-  if ( myGroupServer->Size() == 0 || aMesh == 0 )
+  if ( aMesh == 0 )
     return 0;
 
   SMDSAbs_ElementType aGrpType = SMDSAbs_ElementType(myGroupServer->GetType());
+  if ( aGrpType != theType && theType != SMDSAbs_Node )
+    return 0;
+
   SMESH::long_array_var anIds = myGroupServer->GetListOfID();
+  if ( anIds->length() == 0 )
+    return 0;
 
   if ( aGrpType == theType )
     return getPointers( theType, anIds, aMesh, theResList );
@@ -1007,7 +1014,7 @@ int SMESH_GroupObj::GetEntities( const SMDSAbs_ElementType theType, TEntityList&
     return getNodesFromElems( anIds, aMesh, theResList );
   else
     return 0;
-}    
+}
 
 
 

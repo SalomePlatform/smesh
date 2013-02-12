@@ -30,6 +30,9 @@
 #include <TColStd_SequenceOfAsciiString.hxx>
 #include <TColStd_HSequenceOfInteger.hxx>
 
+#include <SALOMEDS_wrap.hxx>
+#include <SALOMEDS_Attributes_wrap.hxx>
+
 #include <vector>
 #include <string>
 
@@ -642,14 +645,14 @@ void SMESH_NoteBook::ReplaceVariables()
         // this (and above) code can work wrong since nb of states can differ from nb of
         // dumped calls due to the fix of
         // issue 0021364:: Dump of netgen parameters has duplicate lines
-        SMESH_Gen_i *aGen = SMESH_Gen_i::GetSMESHGen();
-        SALOMEDS::Study_ptr aStudy = aGen->GetCurrentStudy();
-        SALOMEDS::SObject_var sobj = aStudy->FindObjectID( (*it).first.ToCString() );
-        CORBA::Object_var      obj = aGen->SObjectToObject( sobj );
+        SMESH_Gen_i *          aGen = SMESH_Gen_i::GetSMESHGen();
+        SALOMEDS::Study_var  aStudy = aGen->GetCurrentStudy();
+        SALOMEDS::SObject_wrap sobj = aStudy->FindObjectID( (*it).first.ToCString() );
+        CORBA::Object_var       obj = aGen->SObjectToObject( sobj );
         if ( SMESH_Hypothesis_i* h = SMESH::DownCast< SMESH_Hypothesis_i*>( obj ))
         {
           TState aCurrentState = aStates->GetCurrectState();
-          int argIndex = h->getParamIndex( aMethod, aCurrentState.size() );
+          int         argIndex = h->getParamIndex( aMethod, aCurrentState.size() );
           if ( 0 <= argIndex && argIndex < aCurrentState.size() &&
                !aCurrentState[argIndex].IsEmpty() )
             aCmd->SetArg( 1, aCurrentState[argIndex] );
@@ -681,22 +684,26 @@ void SMESH_NoteBook::InitObjectMap()
   if(!aGen)
     return;
   
-  SALOMEDS::Study_ptr aStudy = aGen->GetCurrentStudy();
+  SALOMEDS::Study_var aStudy = aGen->GetCurrentStudy();
   if(aStudy->_is_nil())
     return;
   
-  SALOMEDS::SObject_var aSO = aStudy->FindComponent(aGen->ComponentDataType());
+  CORBA::String_var compDataType = aGen->ComponentDataType();
+  SALOMEDS::SObject_wrap     aSO = aStudy->FindComponent( compDataType.in() );
   if(CORBA::is_nil(aSO))
     return;
   
-  SALOMEDS::ChildIterator_var Itr = aStudy->NewChildIterator(aSO);
-  char* aParameters;
-  for(Itr->InitEx(true); Itr->More(); Itr->Next()) {
-    SALOMEDS::SObject_var aSObject = Itr->Value();
-    SALOMEDS::GenericAttribute_var anAttr;
-    if ( aSObject->FindAttribute(anAttr, "AttributeString")) {
-      aParameters = SALOMEDS::AttributeString::_narrow(anAttr)->Value();
-      SALOMEDS::ListOfListOfStrings_var aSections = aStudy->ParseVariables(aParameters);
+  SALOMEDS::ChildIterator_wrap Itr = aStudy->NewChildIterator(aSO);
+  CORBA::String_var aParameters;
+  for( Itr->InitEx(true); Itr->More(); Itr->Next())
+  {
+    SALOMEDS::SObject_wrap aSObject = Itr->Value();
+    SALOMEDS::GenericAttribute_wrap anAttr;
+    if ( aSObject->FindAttribute( anAttr.inout(), "AttributeString"))
+    {
+      SALOMEDS::AttributeString_wrap strAttr = anAttr;
+      aParameters = strAttr->Value();
+      SALOMEDS::ListOfListOfStrings_var aSections = aStudy->ParseVariables(aParameters.in());
       if(MYDEBUG) {
         cout<<"Entry : "<< aSObject->GetID()<<endl;
         cout<<"aParameters : "<<aParameters<<endl;
@@ -718,12 +725,13 @@ void SMESH_NoteBook::InitObjectMap()
       if(anObjType == "LayerDistribution")
         aState = new LayerDistributionStates();
       else
-        aState = new  SMESH_ObjectStates(anObjType);
+        aState = new SMESH_ObjectStates(anObjType);
 
       for(int i = 0; i < aSections->length(); i++) {
         TState aVars;
         SALOMEDS::ListOfStrings aListOfVars = aSections[i];
-        for(int j = 0;j<aListOfVars.length();j++) {
+        for ( int j = 0; j<aListOfVars.length(); j++)
+        {
           TCollection_AsciiString aVar(aListOfVars[j].in());
           if(!aVar.IsEmpty() && aStudy->IsVariable(aVar.ToCString())) {
             aVar.InsertBefore(1,            SMESH::TVar::Quote() );
@@ -888,7 +896,7 @@ bool SMESH_NoteBook::GetReal(const TCollection_AsciiString& theVarName, double& 
 
   const char* aName = aVarName.ToCString();
   if(aStudy->IsVariable(aName) && (aStudy->IsReal(aName) || aStudy->IsInteger(aName))) {
-    theValue = aStudy->GetReal(aVarName.ToCString());
+    theValue = aStudy->GetReal(aName);
     ok = true;
   }
 

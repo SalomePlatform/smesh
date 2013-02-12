@@ -271,20 +271,21 @@ class SMESHGUI_EXPORT SMESHGUI_ComputeDlg_QThread : public QThread
   Q_OBJECT
     
 public:
-  SMESHGUI_ComputeDlg_QThread(SMESH::SMESH_Gen_var gen,
+  SMESHGUI_ComputeDlg_QThread(SMESH::SMESH_Gen_var  gen,
                               SMESH::SMESH_Mesh_var mesh,
                               GEOM::GEOM_Object_var mainShape);
-  bool result();
-  void cancel();
-  
+  bool                   result();
+  void                   cancel();
+  SMESH::SMESH_Mesh_var& getMesh() { return myMesh; }
+
 protected:
   void run();
   
 private:
-  SMESH::SMESH_Gen_var myGen;
+  SMESH::SMESH_Gen_var  myGen;
   SMESH::SMESH_Mesh_var myMesh;
   GEOM::GEOM_Object_var myMainShape;
-  bool myResult;
+  bool                  myResult;
 };
 
 /*!
@@ -296,8 +297,8 @@ class SMESHGUI_EXPORT SMESHGUI_ComputeDlg_QThreadQDialog : public QDialog
   Q_OBJECT
     
 public:
-  SMESHGUI_ComputeDlg_QThreadQDialog(QWidget *parent,
-                                     SMESH::SMESH_Gen_var gen,
+  SMESHGUI_ComputeDlg_QThreadQDialog(QWidget *             parent,
+                                     SMESH::SMESH_Gen_var  gen,
                                      SMESH::SMESH_Mesh_var mesh,
                                      GEOM::GEOM_Object_var mainShape);
   bool result();
@@ -311,8 +312,9 @@ private slots:
   
 private:
   SMESHGUI_ComputeDlg_QThread qthread;
-  QPushButton *cancelButton;
-  
+  QPushButton *               cancelButton;
+  QLabel *                    nbNodesLabel;
+  QLabel *                    nbElemsLabel;
 };
 
 #endif // SMESHGUI_COMPUTEDLG_H

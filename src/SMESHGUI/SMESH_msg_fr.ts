@@ -64,18 +64,6 @@
         <translation>Rapport de forme</translation>
     </message>
     <message>
-        <source>NODE_POSITION</source>
-        <translation>Position</translation>
-    </message>
-    <message>
-        <source>U_POSITION</source>
-        <translation>U</translation>
-    </message>
-    <message>
-        <source>V_POSITION</source>
-        <translation>V</translation>
-    </message>
-    <message>
         <source>COL_ALGO_HEADER</source>
         <translation>Algorithme</translation>
     </message>
@@ -1462,6 +1450,10 @@ ce qui peut faire planter l&apos;application. Voulez-vous continuer la visualisa
     </message>
     <message>
         <source>SMESH_DRS_4</source>
+        <translation type="unfinished">MED file contains some elements in descending connectivity. They were not read.</translation>
+    </message>
+    <message>
+        <source>SMESH_DRS_5</source>
         <translation>Le fichier n&apos;est pas correct, des données sont manquantes</translation>
     </message>
     <message>
@@ -1807,6 +1799,10 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     <message>
         <source>SMESH_LENGTH</source>
         <translation>Longueur</translation>
+    </message>
+    <message>
+        <source>SMESH_LOGARITHMIC_SCALARBAR</source>
+        <translation type="unfinished">Logarithmic</translation>
     </message>
     <message>
         <source>SMESH_MAKE_GROUPS</source>
@@ -2203,6 +2199,22 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     <message>
         <source>SMESH_PRECISION</source>
         <translation>Précision</translation>
+    </message>
+    <message>
+        <source>PREF_GROUP_NUMBERING</source>
+        <translation type="unfinished">Numbering</translation>
+    </message>
+    <message>
+        <source>PREF_NUMBERING_NODE</source>
+        <translation type="unfinished">Nodes: Color</translation>
+    </message>
+     <message>
+        <source>PREF_NUMBERING_ELEM</source>
+        <translation type="unfinished">Edges: Color</translation>
+    </message>
+    <message>
+        <source>PREF_NUMBERING_FONT</source>
+        <translation>Police</translation>
     </message>
     <message>
         <source>SMESH_PREFERENCES_SCALARBAR</source>
@@ -4153,6 +4165,22 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     <message>
         <source>PREF_ELEM_INFO_TREE</source>
         <translation>Arbre</translation>
+    </message>
+    <message>
+        <source>PREF_ELEM_INFO_GRP_DETAILS</source>
+        <translation type="unfinished">Show details on groups in element information tab</translation>
+    </message>
+    <message>
+        <source>PREF_DUMP_BASE_INFO</source>
+        <translation type="unfinished">Dump base information</translation>
+    </message>
+    <message>
+        <source>PREF_DUMP_ELEM_INFO</source>
+        <translation type="unfinished">Dump element information</translation>
+    </message>
+    <message>
+        <source>PREF_DUMP_ADD_INFO</source>
+        <translation type="unfinished">Dump additional information</translation>
     </message>
     <message>
         <source>PREF_GPP_NODES_LIMIT</source>
@@ -6316,6 +6344,10 @@ en raison de leurs types incompatibles:
 <context>
     <name>SMESHGUI_MeshInfo</name>
     <message>
+        <source>BASE_INFO</source>
+        <translation>Informations de base</translation>
+    </message>
+    <message>
         <source>NAME_LAB</source>
         <translation>Nom:</translation>
     </message>
@@ -6467,12 +6499,28 @@ en raison de leurs types incompatibles:
         <translation>Elément</translation>
     </message>
     <message>
+        <source>BUT_DUMP_MESH</source>
+        <translation>&amp;Dump</translation>
+    </message>
+    <message>
+        <source>TEXT_FILES</source>
+        <translation type="unfinished">Text files (*.txt)</translation>
+    </message>
+    <message>
+        <source>SAVE_INFO</source>
+        <translation type="unfinished">Save info</translation>
+    </message>
+    <message>
         <source>X_FROM_Y_ITEMS_SHOWN</source>
         <translation>%1-%2 sur %3 éléments affichés</translation>
     </message>
 </context>
 <context>
     <name>SMESHGUI_ElemInfo</name>
+    <message>
+        <source>ELEM_INFO</source>
+        <translation>Infos sur les éléments</translation>
+    </message>
     <message>
         <source>COORDINATES</source>
         <translation>COORDONNÉES</translation>
@@ -6586,6 +6634,57 @@ en raison de leurs types incompatibles:
         <translation>Non</translation>
     </message>
     <message>
+        <source>BALL_DIAMETER</source>
+        <translation>Diamètre</translation>
+    </message>
+    <message>
+        <source>GEOM_VERTEX</source>
+        <translation>Sommet</translation>
+    </message>
+    <message>
+        <source>GEOM_EDGE</source>
+        <translation>Arête</translation>
+    </message>
+    <message>
+        <source>GEOM_FACE</source>
+        <translation>Face</translation>
+    </message>
+    <message>
+        <source>GEOM_SOLID</source>
+        <translation>Solide</translation>
+    </message>
+    <message>
+        <source>GEOM_SHELL</source>
+        <translation>Coque</translation>
+    </message>
+    <message>
+        <source>GEOM_SHAPE</source>
+        <translation>Forme</translation>
+    </message>
+    <message>
+        <source>POSITION</source>
+        <translation>Position</translation>
+    </message>
+    <message>
+        <source>U_POSITION</source>
+        <translation>U</translation>
+    </message>
+    <message>
+        <source>V_POSITION</source>
+        <translation>V</translation>
+    </message>
+    <message>
+        <source>CONTROLS</source>
+        <translation>Quality Controls</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_TreeElemInfo</name>
+    <message>
+      <source>SHOW_ITEM_INFO</source>
+      <translation>Show info</translation>
+    </message>
+    <message>
         <source>PROPERTY</source>
         <translation>Propriété</translation>
     </message>
@@ -6596,6 +6695,10 @@ en raison de leurs types incompatibles:
 </context>
 <context>
     <name>SMESHGUI_AddInfo</name>
+    <message>
+        <source>ADDITIONAL_INFO</source>
+        <translation>Infos détaillées</translation>
+    </message>
     <message>
         <source>NAME</source>
         <translation>Nom</translation>

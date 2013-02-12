@@ -69,21 +69,19 @@ SMESH_CellLabelActor::SMESH_CellLabelActor() {
   myClsLabeledDataMapper->SetLabelFormat("%d");
   myClsLabeledDataMapper->SetLabelModeToLabelScalars();
     
-  vtkTextProperty* aClsTextProp = vtkTextProperty::New();
-  aClsTextProp->SetFontFamilyToTimes();
-  static int aCellsFontSize = 12;
-  aClsTextProp->SetFontSize(aCellsFontSize);
-  aClsTextProp->SetBold(1);
-  aClsTextProp->SetItalic(0);
-  aClsTextProp->SetShadow(0);
-  myClsLabeledDataMapper->SetLabelTextProperty(aClsTextProp);
-  aClsTextProp->Delete();
+  myClsTextProp = vtkTextProperty::New();
+  myClsTextProp->SetFontFamilyToTimes();
+  myClsTextProp->SetFontSize(12);
+  myClsTextProp->SetBold(1);
+  myClsTextProp->SetItalic(0);
+  myClsTextProp->SetShadow(0);
+  myClsTextProp->SetColor( 0, 1, 0 );
+  myClsLabeledDataMapper->SetLabelTextProperty(myClsTextProp);
     
   myIsCellsLabeled = false;
 
   myCellsLabels = vtkActor2D::New();
   myCellsLabels->SetMapper(myClsLabeledDataMapper);
-  myCellsLabels->GetProperty()->SetColor(0,1,0);
   myCellsLabels->SetVisibility(myIsCellsLabeled);
 
   vtkCallbackCommand* callBackCommand = vtkCallbackCommand::New();
@@ -91,7 +89,7 @@ SMESH_CellLabelActor::SMESH_CellLabelActor() {
   callBackCommand->SetCallback(SMESH_CellLabelActor::ProcessEvents);
 
   myTransformFilter->AddObserver("VTKViewer_TransformFilter::TransformationFinished",
-				 callBackCommand);
+                                 callBackCommand);
   callBackCommand->Delete();
 }
 
@@ -103,25 +101,42 @@ SMESH_CellLabelActor::~SMESH_CellLabelActor() {
   //Deleting of cells numbering pipeline
   //---------------------------------------
   myCellsNumDataSet->Delete();
-
-  myClsLabeledDataMapper->RemoveAllInputs();
-  myClsLabeledDataMapper->Delete();
-  
-  // commented: porting to vtk 5.0
-  //  myClsSelectVisiblePoints->UnRegisterAllOutputs();
-  myClsSelectVisiblePoints->Delete();
-  
+  myCellsLabels->Delete();
   // commented: porting to vtk 5.0
   //  myClsMaskPoints->UnRegisterAllOutputs();
   myClsMaskPoints->Delete();
-  
   // commented: porting to vtk 5.0
   //  myCellCenters->UnRegisterAllOutputs();
   myCellCenters->Delete();
-  
-  myCellsLabels->Delete();
+
+  myClsLabeledDataMapper->RemoveAllInputs();
+  myClsLabeledDataMapper->Delete();
+  // commented: porting to vtk 5.0
+  //  myClsSelectVisiblePoints->UnRegisterAllOutputs();
+  myClsSelectVisiblePoints->Delete();
+  myClsTextProp->Delete();
 }
 
+
+void SMESH_CellLabelActor::SetFontProperties( SMESH::LabelFont family, int size,
+                                              bool bold, bool italic, bool shadow,
+                                              vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b  )
+{
+  switch ( family ) {
+  case SMESH::FntArial:
+    myClsTextProp->SetFontFamilyToArial(); break;
+  case SMESH::FntCourier:
+    myClsTextProp->SetFontFamilyToCourier(); break;
+  case SMESH::FntTimes:
+  default:
+    myClsTextProp->SetFontFamilyToTimes(); break;
+  }    
+  myClsTextProp->SetFontSize( size );
+  myClsTextProp->SetBold( bold );
+  myClsTextProp->SetItalic( italic );
+  myClsTextProp->SetShadow( shadow );
+  myClsTextProp->SetColor( r, g, b ); 
+}
 
 void SMESH_CellLabelActor::SetCellsLabeled(bool theIsCellsLabeled) {
   myTransformFilter->Update();
@@ -176,9 +191,9 @@ void SMESH_CellLabelActor::UpdateLabels() {
 
 
 void SMESH_CellLabelActor::ProcessEvents(vtkObject* vtkNotUsed(theObject),
-					 unsigned long theEvent,
-					 void* theClientData,
-					 void* vtkNotUsed(theCallData)) {
+                                         unsigned long theEvent,
+                                         void* theClientData,
+                                         void* vtkNotUsed(theCallData)) {
   SMESH_CellLabelActor* self = reinterpret_cast<SMESH_CellLabelActor*>(theClientData);
   if(self)
     self->UpdateLabels();

@@ -10,8 +10,8 @@ group in the <b>Object Browser</b> and invoke <b>Mesh Information</b>
 item from the \b Mesh menu or click <em>"Mesh Information"</em> button
 in the toolbar. 
 
-\image html image49.png
-<center><em>"Mesh Information" button</em></center>
+<center>\image html image49.png
+<em>"Mesh Information" button</em></center>
 
 The <b>Mesh Information</b> dialog box provides three tab pages:
 - <b>\ref advanced_mesh_infos_anchor "Base Info"</b> - to show base
@@ -27,27 +27,49 @@ for the selected mesh, sub-mesh or group object.
 The <b>Base Info</b> tab page of the dialog box provides general
 information on the selected object - mesh, sub-mesh or mesh group:
 name, type, total number of nodes and elements separately for each
-type: 0D elements, edges, faces and volumes.
+type: 0D elements, edges, faces, volumes, balls.
 
-\image html advanced_mesh_infos.png
-<center><em>"Base Info" page</em></center>
+<center>\image html advanced_mesh_infos.png
+<em>"Base Info" page</em></center>
 
 \anchor mesh_element_info_anchor
 <h2>Mesh Element Information</h2> 
 
-The <b>Element Info</b> tab page of the dialog box gives basic
-information about the type, coordinates and connectivity of the
-selected mesh node or element.
+The <b>Element Info</b> tab page of the dialog box gives detail
+information about selected mesh node(s) or element(s), namely:
 
-\image html eleminfo1.png
-<center><em>"Element Info" page, node information</em></center>
+- For node:
+  - Node ID
+  - Coordinates (X, Y, Z)
+  - Connectivity information (connected elements)
+  - Position on a shape (for meshes built on geometry)
+  - Groups information (names of groups the node belongs to)
+
+<center>\image html eleminfo1.png
+<em>"Element Info" page, node information</em></center>
 <br>
-\image html eleminfo2.png 
-<center><em>"Element Info" page, element information</em></center>
+
+- For element:
+  - Element ID
+  - Type (triangle, quadrangle, etc...)
+  - Gravity center (X, Y, Z coordinates)
+  - Connectivity information (connected nodes)
+  - Quality controls (area, aspect ration, volume, etc)
+  - Position on a shape (for meshes built on geometry)
+  - Groups information (names of groups the element belongs to)
+
+<center>\image html eleminfo2.png 
+<em>"Element Info" page, element information</em></center>
 
 The use can either input the ID of a node or element he wants to
-analyze directly in the dialog box or select the node or element in
+analyze directly in the dialog box or select the node(s) or element(s) in
 the 3D viewer.
+
+\note The information about the groups, the node or element belongs
+to, can be shown in short or detail form. By default, for performance
+reasons, this information is show in short form (group names
+only). Detail information on groups can be switched on via the user
+preferences, see \ref mesh_preferences_page.
 
 \anchor mesh_addition_info_anchor
 <h2>Additional Information</h2> 
@@ -64,8 +86,8 @@ For a mesh object, the following information is shown:
 - Groups
 - Sub-meshes
 
-\image html addinfo_mesh.png
-<center><em>"Additional Info" page, mesh information</em></center>
+<center>\image html addinfo_mesh.png
+<em>"Additional Info" page, mesh information</em></center>
 <br>
 
 For a sub-mesh object, the following information is shown:
@@ -73,8 +95,8 @@ For a sub-mesh object, the following information is shown:
 - Parent mesh
 - Shape
 
-\image html addinfo_submesh.png
-<center><em>"Additional Info" page, sub-mesh information</em></center>
+<center>\image html addinfo_submesh.png
+<em>"Additional Info" page, sub-mesh information</em></center>
 <br>
 
 For a group object, the following information is shown:
@@ -86,8 +108,8 @@ For a group object, the following information is shown:
 - Color
 - Number of underlying nodes (for non-nodal groups)
 
-\image html addinfo_group.png
-<center><em>"Additional Info" page, group information</em></center>
+<center>\image html addinfo_group.png
+<em>"Additional Info" page, group information</em></center>
 <br>
 
 \note For the performance reasons, the number of underlying nodes is
@@ -96,6 +118,9 @@ button (see picture). Also, the number of underlying nodes is
 automatically calculated if the size of the group does not exceed
 the "Automatic nodes compute limit" set via the  "Mesh information"
 preferences (zero value means no limit).
+
+The button \b "Dump" allows printing the information displayed in the
+dialog box to the txt file.
 
 In case you get <b>Mesh Information</b> via a TUI script, the information is
 displayed in the Python Console. 

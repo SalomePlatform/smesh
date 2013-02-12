@@ -41,6 +41,7 @@
 #include CORBA_SERVER_HEADER(SMESH_Group)
 
 class QButtonGroup;
+class QContextMenuEvent;
 class QLabel;
 class QLineEdit;
 class QPushButton;
@@ -64,7 +65,10 @@ class SMESHGUI_EXPORT SMESHGUI_MeshInfo : public QFrame
     iNodesEnd,
     iElementsStart = iNodesEnd, 
     iElements,
-    i0DStart,
+    iNbStart,
+    iNb,
+    iNbEnd,
+    i0DStart = iNbEnd,
     i0D,
     i0DEnd,
     iBallsStart = i0DEnd,
@@ -107,6 +111,7 @@ public:
 
   void     showInfo( SMESH::SMESH_IDSource_ptr );
   void     clear();
+  void     saveInfo( QTextStream &out );
 
 private:
   enum { Bold = 0x01, Italic = 0x02 };
@@ -136,6 +141,7 @@ public:
   void         showInfo( long, bool );
   void         showInfo( QSet<long>, bool );
   void         clear();
+  virtual void saveInfo( QTextStream &out ) = 0;
 
 protected:
   struct XYZ
@@ -161,6 +167,10 @@ protected:
   QString      formatConnectivity( Connectivity, int );
   XYZ          gravityCenter( const SMDS_MeshElement* );
 
+signals:
+  void         itemInfo( int );
+  void         itemInfo( const QString& );
+
 private slots:
   void         showPrevious();
   void         showNext();
@@ -177,8 +187,11 @@ private:
 
 class SMESHGUI_EXPORT SMESHGUI_SimpleElemInfo : public SMESHGUI_ElemInfo
 {
+  Q_OBJECT
+
 public:
   SMESHGUI_SimpleElemInfo( QWidget* = 0 );
+  void          saveInfo( QTextStream &out );
 
 protected:
   void          information( const QList<long>& );
@@ -190,17 +203,24 @@ private:
 
 class SMESHGUI_EXPORT SMESHGUI_TreeElemInfo : public SMESHGUI_ElemInfo
 {
+  Q_OBJECT;
+
   class ItemDelegate;
 
   enum { Bold = 0x01, All = 0x80 };
 
 public:
   SMESHGUI_TreeElemInfo( QWidget* = 0 );
+  void             saveInfo( QTextStream &out );
 
 protected:
+  void             contextMenuEvent( QContextMenuEvent* e );
   void             information( const QList<long>& );
   void             clearInternal();
 
+private slots:
+  void             itemDoubleClicked( QTreeWidgetItem*, int );
+  
 private:
   QTreeWidgetItem* createItem( QTreeWidgetItem* = 0, int = 0 );
   
@@ -236,6 +256,7 @@ public:
 
   void             showInfo( SMESH::SMESH_IDSource_ptr );
   //  void             clear();
+  void             saveInfo( QTextStream &out );
 
 private slots:
   void             changeLoadToCompute();
@@ -291,6 +312,9 @@ private slots:
   void deactivate();
   void modeChanged();
   void idChanged();
+  void showItemInfo( int );
+  void showItemInfo( const QString& );
+  void dump();
 
 private:
   QTabWidget*        myTabWidget;

@@ -30,6 +30,7 @@
 
 // SALOME GEOM includes
 #include <GeometryGUI.h>
+#include <GEOM_wrap.hxx>
 
 // SALOME KERNEL includes
 #include <SALOMEDS_SObject.hxx>
@@ -114,10 +115,11 @@ namespace SMESH
     _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
     if (!aStudy || geomGen->_is_nil())
       return GEOM::GEOM_Object::_nil();
-    GEOM::GEOM_IShapesOperations_var aShapesOp = geomGen->GetIShapesOperations(aStudy->StudyId());
+    GEOM::GEOM_IShapesOperations_wrap aShapesOp =
+      geomGen->GetIShapesOperations(aStudy->StudyId());
     if (aShapesOp->_is_nil())
       return GEOM::GEOM_Object::_nil();
-    GEOM::GEOM_Object_var subShape = aShapesOp->GetSubShape (theMainShape,theID);
+    GEOM::GEOM_Object_wrap subShape = aShapesOp->GetSubShape (theMainShape,theID);
     return subShape._retn();
   }
 } // end of namespace SMESH

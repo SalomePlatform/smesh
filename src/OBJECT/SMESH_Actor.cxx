@@ -18,13 +18,12 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
 //  SMESH OBJECT : interactive object for SMESH visualization
 //  File   : SMESH_Actor.cxx
 //  Author : Nicolas REJNERI
 //  Module : SMESH
-//
+
 #include "SMESH_ActorDef.h"
 #include "SMESH_ActorUtils.h"
 #include "SMESH_DeviceActor.h"
@@ -99,8 +98,8 @@ SMESH_ActorDef* SMESH_ActorDef::New(){
 }
 
 
-SMESH_Actor* SMESH_Actor::New(TVisualObjPtr theVisualObj, 
-                              const char* theEntry, 
+SMESH_Actor* SMESH_Actor::New(TVisualObjPtr theVisualObj,
+                              const char* theEntry,
                               const char* theName,
                               int theIsClear)
 {
@@ -120,7 +119,7 @@ SMESH_Actor* SMESH_Actor::New(TVisualObjPtr theVisualObj,
 
 SMESH_ActorDef::SMESH_ActorDef()
 {
-  if(MYDEBUG) MESSAGE("SMESH_ActorDef - "<<this);  
+  if(MYDEBUG) MESSAGE("SMESH_ActorDef - "<<this);
   myBaseActor = SMESH_DeviceActor::New();
 
   myTimeStamp = vtkTimeStamp::New();
@@ -129,9 +128,11 @@ SMESH_ActorDef::SMESH_ActorDef()
   myIsEntityModeCache = false;
 
   myHighlightActor = SMESH_SVTKActor::New();
+  myHighlightActor->Delete(); // vtkSmartPointer!
   myHighlightActor->Initialize();
 
   myPreHighlightActor = SMESH_SVTKActor::New();
+  myPreHighlightActor->Delete();
   myPreHighlightActor->Initialize();
 
   myIsShrinkable = false;
@@ -149,6 +150,42 @@ SMESH_ActorDef::SMESH_ActorDef()
   vtkFloatingPointType aBallElemSize = SMESH::GetFloat("SMESH:ball_elem_size",10);
   vtkFloatingPointType aLineWidth    = SMESH::GetFloat("SMESH:element_width",1);
   vtkFloatingPointType aOutlineWidth = SMESH::GetFloat("SMESH:outline_width",1);
+
+  SMESH::LabelFont aFamilyNd = SMESH::FntTimes;
+  bool aBoldNd    = true;
+  bool anItalicNd = false;
+  bool aShadowNd  = false;
+  int  aSizeNd    = 10;
+  if ( mgr->hasValue( "SMESH", "numbering_node_font" ) ) {
+    QFont f = mgr->fontValue( "SMESH", "numbering_node_font" );
+    if ( f.family()      == "Arial" )   aFamilyNd = SMESH::FntArial;
+    else if ( f.family() == "Courier" ) aFamilyNd = SMESH::FntCourier;
+    else if ( f.family() == "Times" )   aFamilyNd = SMESH::FntTimes;
+    aBoldNd    = f.bold();
+    anItalicNd = f.italic();
+    aShadowNd  = f.overline();
+    aSizeNd    = f.pointSize();
+  }
+  vtkFloatingPointType anRGBNd[3] = {1,1,1};
+  SMESH::GetColor( "SMESH", "numbering_node_color", anRGBNd[0], anRGBNd[1], anRGBNd[2], QColor( 255, 255, 255 ) );
+
+  SMESH::LabelFont aFamilyEl = SMESH::FntTimes;
+  bool aBoldEl    = true;
+  bool anItalicEl = false;
+  bool aShadowEl  = false;
+  int  aSizeEl    = 12;
+  if ( mgr->hasValue( "SMESH", "numbering_elem_font" ) ) {
+    QFont f = mgr->fontValue( "SMESH", "numbering_elem_font" );
+    if ( f.family()      == "Arial" )   aFamilyEl = SMESH::FntArial;
+    else if ( f.family() == "Courier" ) aFamilyEl = SMESH::FntCourier;
+    else if ( f.family() == "Times" )   aFamilyEl = SMESH::FntTimes;
+    aBoldEl    = f.bold();
+    anItalicEl = f.italic();
+    aShadowEl  = f.overline();
+    aSizeEl    = f.pointSize();
+  }
+  vtkFloatingPointType anRGBEl[3] = {0,1,0};
+  SMESH::GetColor( "SMESH", "numbering_elem_color", anRGBEl[0], anRGBEl[1], anRGBEl[2], QColor( 0, 255, 0 ) );
 
   vtkMatrix4x4 *aMatrix = vtkMatrix4x4::New();
   VTKViewer_ExtractUnstructuredGrid* aFilter = NULL;
@@ -180,6 +217,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   my2DActor->SetStoreGemetryMapping(true);
   my2DActor->SetUserMatrix(aMatrix);
   my2DActor->PickableOff();
+  my2DActor->SetFontProperties( aFamilyEl, aSizeEl, aBoldEl, anItalicEl, aShadowEl, anRGBEl[0], anRGBEl[1], anRGBEl[2] );
   my2DActor->SetProperty(mySurfaceProp);
   my2DActor->SetBackfaceProperty(myBackSurfaceProp);
   my2DActor->SetRepresentation(SMESH_DeviceActor::eSurface);
@@ -218,6 +256,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   my3DActor->SetStoreGemetryMapping(true);
   my3DActor->SetUserMatrix(aMatrix);
   my3DActor->PickableOff();
+  my3DActor->SetFontProperties( aFamilyEl, aSizeEl, aBoldEl, anItalicEl, aShadowEl, anRGBEl[0], anRGBEl[1], anRGBEl[2] );
   my3DActor->SetProperty(myNormalVProp);
   my3DActor->SetBackfaceProperty(myReversedVProp);
   my3DActor->SetRepresentation(SMESH_DeviceActor::eSurface);
@@ -287,6 +326,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   my1DActor->SetUserMatrix(aMatrix);
   my1DActor->PickableOff();
   my1DActor->SetHighlited(true);
+  my1DActor->SetFontProperties( aFamilyEl, aSizeEl, aBoldEl, anItalicEl, aShadowEl, anRGBEl[0], anRGBEl[1], anRGBEl[2] );
   my1DActor->SetProperty(myEdgeProp);
   my1DActor->SetRepresentation(SMESH_DeviceActor::eSurface);
   aFilter = my1DActor->GetExtractUnstructuredGrid();
@@ -298,7 +338,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   my1DProp->DeepCopy(myEdgeProp);
   my1DProp->SetLineWidth(aLineWidth + aLineWidthInc);
   my1DProp->SetPointSize(aElem0DSize);
-  
+
   my1DExtProp = vtkProperty::New();
   my1DExtProp->DeepCopy(myEdgeProp);
   anRGB[0] = 1 - anRGB[0];
@@ -332,6 +372,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   my0DActor->SetUserMatrix(aMatrix);
   my0DActor->SetStoreGemetryMapping(true);
   my0DActor->PickableOff();
+  my0DActor->SetFontProperties( aFamilyEl, aSizeEl, aBoldEl, anItalicEl, aShadowEl, anRGBEl[0], anRGBEl[1], anRGBEl[2] );
   my0DActor->SetVisibility(false);
   my0DActor->SetProperty(my0DProp);
   my0DActor->SetRepresentation(SMESH_DeviceActor::eSurface);
@@ -339,7 +380,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   //aFilter->SetModeOfExtraction(VTKViewer_ExtractUnstructuredGrid::ePoints);
   aFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
   aFilter->RegisterCellsWithType(VTK_VERTEX);
-  
+
   //Definition 0D device of the actor (ball elements)
   //-----------------------------------------------
   myBallProp = vtkProperty::New();
@@ -351,13 +392,14 @@ SMESH_ActorDef::SMESH_ActorDef()
   myBallActor->SetUserMatrix(aMatrix);
   myBallActor->SetStoreGemetryMapping(true);
   myBallActor->PickableOff();
+  myBallActor->SetFontProperties( aFamilyEl, aSizeEl, aBoldEl, anItalicEl, aShadowEl, anRGBEl[0], anRGBEl[1], anRGBEl[2] );
   myBallActor->SetVisibility(false);
   myBallActor->SetProperty(myBallProp);
   myBallActor->SetRepresentation(SMESH_DeviceActor::eSurface);
   aFilter = myBallActor->GetExtractUnstructuredGrid();
   aFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
   aFilter->RegisterCellsWithType(VTK_POLY_VERTEX);
-  
+
   //my0DExtProp = vtkProperty::New();
   //my0DExtProp->DeepCopy(my0DProp);
   //anRGB[0] = 1 - anRGB[0];
@@ -391,11 +433,12 @@ SMESH_ActorDef::SMESH_ActorDef()
   myNodeActor->SetStoreClippingMapping(true);
   myNodeActor->PickableOff();
   myNodeActor->SetVisibility(false);
+  myNodeActor->SetFontProperties( aFamilyNd, aSizeNd, aBoldNd, anItalicNd, aShadowNd, anRGBNd[0], anRGBNd[1], anRGBNd[2] );
   myNodeActor->SetProperty(myNodeProp);
   myNodeActor->SetRepresentation(SMESH_DeviceActor::ePoint);
   aFilter = myNodeActor->GetExtractUnstructuredGrid();
   aFilter->SetModeOfExtraction(VTKViewer_ExtractUnstructuredGrid::ePoints);
-  
+
   myNodeExtProp = vtkProperty::New();
   myNodeExtProp->DeepCopy(myNodeProp);
   anRGB[0] = 1 - anRGB[0];
@@ -422,7 +465,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   myBaseActor->SetStoreGemetryMapping(true);
   myBaseActor->GetProperty()->SetOpacity(0.0);
   myPickableActor = myBaseActor;
-  
+
   myHighlightProp = vtkProperty::New();
   myHighlightProp->SetAmbient(1.0);
   myHighlightProp->SetDiffuse(0.0);
@@ -436,7 +479,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   myBallHighlightProp = vtkProperty::New();
   myBallHighlightProp->DeepCopy(myHighlightProp);
   myBallHighlightProp->SetPointSize(aBallElemSize);
-  
+
 
   myOutLineProp = vtkProperty::New();
   myOutLineProp->SetAmbient(1.0);
@@ -478,7 +521,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   //Definition of myScalarBarActor
   //------------------------------
   myLookupTable = vtkLookupTable::New();
-  //Fix for Bug PAL5195 - SMESH764: 
+  //Fix for Bug PAL5195 - SMESH764:
   //Controls - Aspect Ratio: incorrect colors of the best and worst values
   myLookupTable->SetHueRange(0.667,0.0);
 
@@ -497,11 +540,11 @@ SMESH_ActorDef::SMESH_ActorDef()
 
   myEntityMode = eAllEntity;
   myEntityModeCache = eAllEntity;
-  
+
   // Clipping planes
   myImplicitBoolean = vtkImplicitBoolean::New();
   myImplicitBoolean->SetOperationTypeToIntersection();
-  
+
   //Quadratic 2D elements representation
   //-----------------------------------------------------------------------------
   int aQuadratic2DMode = mgr->integerValue( "SMESH", "quadratic_mode", 0);
@@ -515,11 +558,11 @@ SMESH_ActorDef::SMESH_ActorDef()
     my2DActor->SetQuadraticArcMode(true);
     my1DActor->SetQuadraticArcMode(true);
   }
-  
+
   int aQuadraticAngle = mgr->integerValue( "SMESH", "max_angle", 2);
   myHighlitableActor->SetQuadraticArcAngle(aQuadraticAngle);
   my2DActor->SetQuadraticArcAngle(aQuadraticAngle);
-  
+
   // Set colors of the name actor
   SMESH::GetColor( "SMESH", "default_grp_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
   myNameActor->SetBackgroundColor(anRGB[0], anRGB[1], anRGB[2]);
@@ -539,12 +582,9 @@ SMESH_ActorDef::~SMESH_ActorDef()
 {
   if(MYDEBUG) MESSAGE("~SMESH_ActorDef - "<<this);
 
-#ifndef DISABLE_PLOT2DVIEWER
-  if(my2dHistogram) {
-    SMESH::ProcessIn2DViewers(this,SMESH::RemoveFrom2dViewer);
-    delete my2dHistogram;
-  }
-#endif
+  // Please keep the order same as one in the header file
+
+  myTimeStamp->Delete();
 
   myScalarBarActor->Delete();
   myLookupTable->Delete();
@@ -553,47 +593,53 @@ SMESH_ActorDef::~SMESH_ActorDef()
   myBackSurfaceProp->Delete();
   myNormalVProp->Delete();
   myReversedVProp->Delete();
-  myOutLineProp->Delete();
-
   myEdgeProp->Delete();
-  myHighlightProp->Delete();
-  myPreselectProp->Delete();
-
   myNodeProp->Delete();
-  myNodeExtProp->Delete();
- 
-  my0DProp->Delete();
-  my0DActor->Delete();
-  myBallActor->Delete();
-
-  //my0DExtProp->Delete();
-  //my0DExtActor->Delete();
- 
-  my1DProp->Delete();
-  my1DActor->Delete();
-
-  my1DExtProp->Delete();
-  my1DExtActor->Delete();
-
-  my2DActor->Delete();
-  my2DExtProp->Delete();
-  my2DExtActor->Delete();
-  my3DActor->Delete();
-  my3DExtProp->Delete();
-  my3DExtActor->Delete();
 
   myNodeActor->Delete();
   myBaseActor->Delete();
+  //myPickableActor->Delete(); myPickableActor == myBaseActor
 
-  myNodeExtActor->Delete();  
+  myHighlightProp->Delete();
+  myOutLineProp->Delete();
+  myPreselectProp->Delete();
+
+  myBallHighlightProp->Delete();
+  myBallPreselectProp->Delete();
+
   myHighlitableActor->Delete();
+
+  my2DExtProp->Delete();
+  my3DExtProp->Delete();
+  my2DActor->Delete();
+  my2DExtActor->Delete();
+  my3DActor->Delete();
+  my3DExtActor->Delete();
+  // myControlActor->Delete(); myControlActor == my2DActor
+
+  myNodeExtProp->Delete();
+  myNodeExtActor->Delete();
+
+  my1DProp->Delete();
+  my1DActor->Delete();
+  my1DExtProp->Delete();
+  my1DExtActor->Delete();
+
+  my0DProp->Delete();
+  my0DActor->Delete();
+  myBallProp->Delete();
+  myBallActor->Delete();
+  //my0DExtProp->Delete();
+  //my0DExtActor->Delete();
 
   myImplicitBoolean->Delete();
 
-  myTimeStamp->Delete();
-  myBallHighlightProp->Delete();
-  myBallPreselectProp->Delete();
-          
+#ifndef DISABLE_PLOT2DVIEWER
+  if(my2dHistogram) {
+    SMESH::ProcessIn2DViewers(this,SMESH::RemoveFrom2dViewer);
+    delete my2dHistogram;
+  }
+#endif
 }
 
 void SMESH_ActorDef::Delete()
@@ -609,10 +655,52 @@ void SMESH_ActorDef::Delete()
 }
 
 void SMESH_ActorDef::SetPointsLabeled( bool theIsPointsLabeled )
-{    
+{
   if(myNodeActor) {
     myNodeActor->SetPointsLabeled(theIsPointsLabeled);
     SetRepresentation(GetRepresentation());
+    myTimeStamp->Modified();
+  }
+}
+
+void SMESH_ActorDef::SetPointsFontProperties( SMESH::LabelFont theFamily, int theSize,
+                                              bool theBold, bool theItalic, bool theShadow,
+                                              vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b )
+{
+  if(myNodeActor) {
+    myNodeActor->SetFontProperties( theFamily, theSize, theBold, theItalic, theShadow, r, g, b );
+    SetRepresentation( GetRepresentation() );
+    myTimeStamp->Modified();
+  }
+}
+
+void SMESH_ActorDef::SetCellsFontProperties( SMESH::LabelFont theFamily, int theSize,
+                                             bool theBold, bool theItalic, bool theShadow,
+                                             vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b )
+{
+  if(my3DActor) {
+    my3DActor->SetFontProperties( theFamily, theSize, theBold, theItalic, theShadow, r, g, b );
+    SetRepresentation( GetRepresentation() );
+    myTimeStamp->Modified();
+  }
+  if(my2DActor) {
+    my2DActor->SetFontProperties( theFamily, theSize, theBold, theItalic, theShadow, r, g, b );
+    SetRepresentation( GetRepresentation() );
+    myTimeStamp->Modified();
+  }
+  if(my1DActor) {
+    my1DActor->SetFontProperties( theFamily, theSize, theBold, theItalic, theShadow, r, g, b );
+    SetRepresentation( GetRepresentation() );
+    myTimeStamp->Modified();
+  }
+  if(my0DActor) {
+    my0DActor->SetFontProperties( theFamily, theSize, theBold, theItalic, theShadow, r, g, b );
+    SetRepresentation( GetRepresentation() );
+    myTimeStamp->Modified();
+  }
+  if(myBallActor) {
+    myBallActor->SetFontProperties( theFamily, theSize, theBold, theItalic, theShadow, r, g, b );
+    SetRepresentation( GetRepresentation() );
     myTimeStamp->Modified();
   }
 }
@@ -634,10 +722,10 @@ void SMESH_ActorDef::SetCellsLabeled(bool theIsCellsLabeled)
 
   if(my0DActor)
     my0DActor->SetCellsLabeled(theIsCellsLabeled);
-  
+
   if(myBallActor)
     myBallActor->SetCellsLabeled(theIsCellsLabeled);
-  
+
   myTimeStamp->Modified();
 }
 
@@ -712,7 +800,7 @@ bool SMESH_ActorDef::GetFacesOrientation3DVectors()
 }
 
 
-void 
+void
 SMESH_ActorDef::
 SetControlMode(eControl theMode)
 {
@@ -720,12 +808,16 @@ SetControlMode(eControl theMode)
 }
 
 
-void 
+void
 SMESH_ActorDef::
 SetControlMode(eControl theMode,
                bool theCheckEntityMode)
 {
-  SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();  
+  vtkLookupTable* lookupTable = static_cast<vtkLookupTable*>(myScalarBarActor->GetLookupTable());
+  bool isLogarithmic = lookupTable->GetScale() == VTK_SCALE_LOG10;
+  lookupTable->SetScale(VTK_SCALE_LINEAR);
+
+  SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();
   if( !mgr )
     return;
 
@@ -947,7 +1039,7 @@ SetControlMode(eControl theMode,
         if (!myIsEntityModeCache){
           myEntityModeCache = GetEntityMode();
           myIsEntityModeCache=true;
-        } 
+        }
         SetEntityMode(eEdges);
       }
       else if(myControlActor == my2DActor) {
@@ -959,7 +1051,7 @@ SetControlMode(eControl theMode,
           if (!myIsEntityModeCache){
             myEntityModeCache = GetEntityMode();
             myIsEntityModeCache=true;
-          } 
+          }
           SetEntityMode(eFaces);
           break;
         default:
@@ -973,7 +1065,7 @@ SetControlMode(eControl theMode,
         if (!myIsEntityModeCache){
             myEntityModeCache = GetEntityMode();
             myIsEntityModeCache=true;
-        } 
+        }
         SetEntityMode(eVolumes);
     }
     }
@@ -991,15 +1083,22 @@ SetControlMode(eControl theMode,
 
   myTimeStamp->Modified();
   Modified();
+
+  lookupTable = static_cast<vtkLookupTable*>(myScalarBarActor->GetLookupTable());
+  double * range = lookupTable->GetRange();
+
+  if (isLogarithmic && range[0] > 1e-07 && range[1] > 1e-07)
+    lookupTable->SetScale(VTK_SCALE_LOG10);
+
   Update();
 }
 
 
 void SMESH_ActorDef::AddToRender(vtkRenderer* theRenderer){
-  
+
   //myHighlightActor->AddToRender(theRenderer);
 
-  theRenderer->AddActor(myBaseActor);  
+  theRenderer->AddActor(myBaseActor);
   theRenderer->AddActor(myNodeExtActor);
   theRenderer->AddActor(my1DExtActor);
 
@@ -1014,7 +1113,7 @@ void SMESH_ActorDef::AddToRender(vtkRenderer* theRenderer){
   //theRenderer->AddActor(my0DExtActor);
 
   theRenderer->AddActor(myHighlitableActor);
-  
+
   theRenderer->AddActor2D(myScalarBarActor);
 
   // the superclass' method should be called at the end
@@ -1048,8 +1147,8 @@ void SMESH_ActorDef::RemoveFromRender(vtkRenderer* theRenderer){
 }
 
 
-bool SMESH_ActorDef::Init(TVisualObjPtr theVisualObj, 
-                          const char* theEntry, 
+bool SMESH_ActorDef::Init(TVisualObjPtr theVisualObj,
+                          const char* theEntry,
                           const char* theName,
                           int theIsClear)
 {
@@ -1066,23 +1165,23 @@ bool SMESH_ActorDef::Init(TVisualObjPtr theVisualObj,
   myHighlitableActor->Init(myVisualObj,myImplicitBoolean);
 
   myNodeExtActor->Init(myVisualObj,myImplicitBoolean);
-  
+
   my0DActor->Init(myVisualObj,myImplicitBoolean);
   myBallActor->Init(myVisualObj,myImplicitBoolean);
   //my0DExtActor->Init(myVisualObj,myImplicitBoolean);
-  
+
   my1DActor->Init(myVisualObj,myImplicitBoolean);
   my1DExtActor->Init(myVisualObj,myImplicitBoolean);
-  
+
   my2DActor->Init(myVisualObj,myImplicitBoolean);
   my2DExtActor->Init(myVisualObj,myImplicitBoolean);
   my3DActor->Init(myVisualObj,myImplicitBoolean);
   my3DExtActor->Init(myVisualObj,myImplicitBoolean);
-  
+
   my0DActor->GetMapper()->SetLookupTable(myLookupTable);
   myBallActor->GetMapper()->SetLookupTable(myLookupTable);
   //my0DExtActor->GetMapper()->SetLookupTable(myLookupTable);
-  
+
   my1DActor->GetMapper()->SetLookupTable(myLookupTable);
   my1DExtActor->GetMapper()->SetLookupTable(myLookupTable);
 
@@ -1090,7 +1189,7 @@ bool SMESH_ActorDef::Init(TVisualObjPtr theVisualObj,
   my2DExtActor->GetMapper()->SetLookupTable(myLookupTable);
   my3DActor->GetMapper()->SetLookupTable(myLookupTable);
   my3DExtActor->GetMapper()->SetLookupTable(myLookupTable);
-    
+
   vtkFloatingPointType aFactor, aUnits;
   my2DActor->GetPolygonOffsetParameters(aFactor,aUnits);
   my2DActor->SetPolygonOffsetParameters(aFactor,aUnits*0.75);
@@ -1108,7 +1207,7 @@ bool SMESH_ActorDef::Init(TVisualObjPtr theVisualObj,
 
   int aMode = mgr->integerValue( "SMESH", "display_mode" );
   SetRepresentation(-1);
-  
+
   if(aMode == 0){
     SetRepresentation(eEdge);
   }else if(aMode == 1){
@@ -1116,7 +1215,7 @@ bool SMESH_ActorDef::Init(TVisualObjPtr theVisualObj,
   }else if(aMode == 2){
     SetRepresentation(ePoint);
   }
-  
+
   if(aMode == 3){
     SetShrink();
   }
@@ -1149,7 +1248,7 @@ void SMESH_ActorDef::SetTransform(VTKViewer_Transform* theTransform){
 
   myNodeActor->SetTransform(theTransform);
   myBaseActor->SetTransform(theTransform);
-  
+
   myHighlitableActor->SetTransform(theTransform);
 
   myNodeExtActor->SetTransform(theTransform);
@@ -1185,7 +1284,7 @@ vtkMapper* SMESH_ActorDef::GetMapper(){
 }
 
 
-vtkUnstructuredGrid* SMESH_ActorDef::GetUnstructuredGrid(){ 
+vtkUnstructuredGrid* SMESH_ActorDef::GetUnstructuredGrid(){
   return myVisualObj->GetUnstructuredGrid();
 }
 
@@ -1194,7 +1293,7 @@ bool SMESH_ActorDef::IsInfinitive(){
   vtkDataSet *aDataSet = myPickableActor->GetUnstructuredGrid();
   aDataSet->Update();
   myIsInfinite = aDataSet->GetNumberOfCells() == 0 ||
-    ( aDataSet->GetNumberOfCells() == 1 && 
+    ( aDataSet->GetNumberOfCells() == 1 &&
     aDataSet->GetCell(0)->GetCellType() == VTK_VERTEX );
   return SALOME_Actor::IsInfinitive();
 }
@@ -1292,7 +1391,7 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation){
 
   myNodeActor->VisibilityOff();
   myBaseActor->VisibilityOff();
-  
+
   myNodeExtActor->VisibilityOff();
 
   my0DActor->VisibilityOff();
@@ -1301,18 +1400,18 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation){
 
   my1DActor->VisibilityOff();
   my1DExtActor->VisibilityOff();
-  
+
   my2DActor->VisibilityOff();
   my2DExtActor->VisibilityOff();
   my3DActor->VisibilityOff();
   my3DExtActor->VisibilityOff();
-  
+
   myScalarBarActor->VisibilityOff();
-  
+
   if(GetVisibility()){
     if(theIsUpdateRepersentation)
       SetRepresentation(GetRepresentation());
-    
+
     if(myControlMode != eNone){
       switch(myControlMode){
       case eFreeNodes:
@@ -1360,34 +1459,34 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation){
     if(myEntityMode & eEdges && GetRepresentation() != ePoint){
       my1DActor->VisibilityOn();
     }
-    
+
     if(myEntityMode & eFaces && GetRepresentation() != ePoint){
       my2DActor->VisibilityOn();
     }
-    
+
     if(myEntityMode & eVolumes && GetRepresentation() != ePoint){
       my3DActor->VisibilityOn();
     }
-    
-    if(myNodeActor->GetPointsLabeled()){ 
+
+    if(myNodeActor->GetPointsLabeled()){
       myNodeActor->VisibilityOn();
     }
 
     if(my0DActor)
       my0DActor->UpdateLabels();
-    
+
     if(myBallActor)
       myBallActor->UpdateLabels();
-    
+
     if(my1DActor)
       my1DActor->UpdateLabels();
-    
+
     if(my2DActor)
       my2DActor->UpdateLabels();
-    
+
     if(my3DActor)
-      my3DActor->UpdateLabels();    
-  } 
+      my3DActor->UpdateLabels();
+  }
 #ifndef DISABLE_PLOT2DVIEWER
   else
     SMESH::ProcessIn2DViewers(this,SMESH::RemoveFrom2dViewer);
@@ -1508,7 +1607,7 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode)
 //#ifdef VTK_HAVE_POLYHEDRON
     aFilter->RegisterCellsWithType(VTK_POLYHEDRON);
 //#endif
-    
+
     aHightFilter->RegisterCellsWithType(VTK_TETRA);
     aHightFilter->RegisterCellsWithType(VTK_VOXEL);
     aHightFilter->RegisterCellsWithType(VTK_HEXAHEDRON);
@@ -1531,7 +1630,7 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode)
 }
 
 void SMESH_ActorDef::SetRepresentation (int theMode)
-{ 
+{
   int aNbEdges = myVisualObj->GetNbEntities(SMDSAbs_Edge);
   int aNbFaces = myVisualObj->GetNbEntities(SMDSAbs_Face);
   int aNbVolumes = myVisualObj->GetNbEntities(SMDSAbs_Volume);
@@ -1553,7 +1652,7 @@ void SMESH_ActorDef::SetRepresentation (int theMode)
     case eSurface:
       if (!aNbFaces && !aNbVolumes && !aNb0Ds && !aNbBalls) return;
       break;
-    }    
+    }
     myRepresentation = theMode;
   }
 
@@ -1566,7 +1665,7 @@ void SMESH_ActorDef::SetRepresentation (int theMode)
       myIsShrunk = true;
     } else {
       SetShrink();
-    }      
+    }
   }
 
   myPickableActor = myBaseActor;
@@ -1607,7 +1706,7 @@ void SMESH_ActorDef::SetRepresentation (int theMode)
     my2DActor->SetQuadraticArcMode(true);
 
   my2DExtActor->SetRepresentation(aReperesent);
-  
+
   my3DActor->SetProperty(aPropVN);
   my3DActor->SetBackfaceProperty(aPropVR);
   my3DActor->SetRepresentation(aReperesent);
@@ -1632,7 +1731,7 @@ void SMESH_ActorDef::SetRepresentation (int theMode)
       aReperesent = SMESH_DeviceActor::eInsideframe;
     break;
   }
-  
+
   if(aQuadraticMode == SMESH_Actor::eLines)
     my1DActor->SetQuadraticArcMode(false);
   else if(aQuadraticMode == SMESH_Actor::eArcs)
@@ -1664,7 +1763,7 @@ void SMESH_ActorDef::SetPointRepresentation(bool theIsPointsVisible){
   SetRepresentation(GetRepresentation());
 }
 
-bool SMESH_ActorDef::GetPointRepresentation(){ 
+bool SMESH_ActorDef::GetPointRepresentation(){
   return myIsPointsVisible || myNodeActor->GetPointsLabeled();
 }
 
@@ -1681,13 +1780,13 @@ void SMESH_ActorDef::UpdateHighlight(){
     {
       if(myIsHighlighted) {
         myHighlitableActor->SetProperty(myHighlightProp);
-	myBallActor->SetProperty(myBallHighlightProp);
+        myBallActor->SetProperty(myBallHighlightProp);
       }else if(myIsPreselected){
         myHighlitableActor->SetProperty(myPreselectProp);
-	myBallActor->SetProperty(myBallPreselectProp);
+        myBallActor->SetProperty(myBallPreselectProp);
       } else if(anIsVisible){
-	myBallActor->SetProperty(myBallProp);
-        (myRepresentation == eSurface) ? 
+        myBallActor->SetProperty(myBallProp);
+        (myRepresentation == eSurface) ?
           myHighlitableActor->SetProperty(myOutLineProp) : myHighlitableActor->SetProperty(myEdgeProp);
       }
       if(GetUnstructuredGrid()->GetNumberOfCells()) {
@@ -1724,10 +1823,10 @@ void SMESH_ActorDef::highlight(bool theHighlight){
 }
 
 
-void SMESH_ActorDef::SetPreSelected(bool thePreselect){ 
+void SMESH_ActorDef::SetPreSelected(bool thePreselect){
   if ( myIsPreselected == thePreselect )
     return;
-  myIsPreselected = thePreselect; 
+  myIsPreselected = thePreselect;
   UpdateHighlight();
 }
 
@@ -1781,30 +1880,30 @@ void SMESH_ActorDef::Update(){
 
   if(my0DActor)
     my0DActor->UpdateLabels();
-  
+
   if(myBallActor)
     myBallActor->UpdateLabels();
-  
+
   if(my1DActor)
     my1DActor->UpdateLabels();
-  
+
   if(my2DActor)
     my2DActor->UpdateLabels();
 
   if(my3DActor)
     my3DActor->UpdateLabels();
-  
+
   if(myIsFacesOriented){
     SetFacesOriented(myIsFacesOriented);
   }
-    
+
   if(myVisualObj->GetEntitiesFlag()) {
     myEntityMode |= myVisualObj->GetEntitiesState();
   }
-  
+
   SetEntityMode(GetEntityMode());
   SetVisibility(GetVisibility());
-  
+
   myTimeStamp->Modified();
   Modified();
 }
@@ -1851,7 +1950,7 @@ void SMESH_ActorDef::SetSufaceColor(vtkFloatingPointType r,vtkFloatingPointType 
   if( SMESH_GroupObj* aGroupObj = dynamic_cast<SMESH_GroupObj*>( myVisualObj.get() ) )
     if( aGroupObj->GetElementType() == SMDSAbs_Face )
       myNameActor->SetBackgroundColor(r,g,b);
-  
+
   myDeltaBrightness = delta;
   QColor bfc = Qtx::mainColorToSecondary(QColor(int(r*255),int(g*255),int(b*255)), delta);
   myBackSurfaceProp->SetColor( bfc.red() / 255. , bfc.green() / 255. , bfc.blue() / 255. );
@@ -1869,7 +1968,7 @@ void SMESH_ActorDef::SetVolumeColor(vtkFloatingPointType r,vtkFloatingPointType 
   if( SMESH_GroupObj* aGroupObj = dynamic_cast<SMESH_GroupObj*>( myVisualObj.get() ) )
     if( aGroupObj->GetElementType() == SMDSAbs_Volume )
       myNameActor->SetBackgroundColor(r,g,b);
-  
+
   myDeltaVBrightness = delta;
   QColor bfc = Qtx::mainColorToSecondary(QColor(int(r*255),int(g*255),int(b*255)), delta);
   myReversedVProp->SetColor( bfc.red() / 255. , bfc.green() / 255. , bfc.blue() / 255. );
@@ -1905,7 +2004,7 @@ void SMESH_ActorDef::GetOutlineColor(vtkFloatingPointType& r,vtkFloatingPointTyp
 }
 
 
-void SMESH_ActorDef::SetNodeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){ 
+void SMESH_ActorDef::SetNodeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){
   myNodeProp->SetColor(r,g,b);
   myNodeExtProp->SetColor(1.0-r,1.0-g,1.0-b);
   if( SMESH_GroupObj* aGroupObj = dynamic_cast<SMESH_GroupObj*>( myVisualObj.get() ) )
@@ -1914,11 +2013,11 @@ void SMESH_ActorDef::SetNodeColor(vtkFloatingPointType r,vtkFloatingPointType g,
   Modified();
 }
 
-void SMESH_ActorDef::GetNodeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b){ 
+void SMESH_ActorDef::GetNodeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b){
   ::GetColor(myNodeProp,r,g,b);
 }
 
-void SMESH_ActorDef::Set0DColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){ 
+void SMESH_ActorDef::Set0DColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){
   my0DProp->SetColor(r,g,b);
   if( SMESH_GroupObj* aGroupObj = dynamic_cast<SMESH_GroupObj*>( myVisualObj.get() ) )
     if( aGroupObj->GetElementType() == SMDSAbs_0DElement )
@@ -1926,11 +2025,11 @@ void SMESH_ActorDef::Set0DColor(vtkFloatingPointType r,vtkFloatingPointType g,vt
   Modified();
 }
 
-void SMESH_ActorDef::Get0DColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b){ 
+void SMESH_ActorDef::Get0DColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b){
   ::GetColor(my0DProp,r,g,b);
 }
 
-void SMESH_ActorDef::SetBallColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){ 
+void SMESH_ActorDef::SetBallColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){
   myBallProp->SetColor(r,g,b);
   if( SMESH_GroupObj* aGroupObj = dynamic_cast<SMESH_GroupObj*>( myVisualObj.get() ) )
     if( aGroupObj->GetElementType() == SMDSAbs_Ball )
@@ -1938,27 +2037,27 @@ void SMESH_ActorDef::SetBallColor(vtkFloatingPointType r,vtkFloatingPointType g,
   Modified();
 }
 
-void SMESH_ActorDef::GetBallColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b){ 
+void SMESH_ActorDef::GetBallColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b){
   ::GetColor(myBallProp,r,g,b);
 }
 
-void SMESH_ActorDef::SetHighlightColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){ 
+void SMESH_ActorDef::SetHighlightColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){
   myHighlightProp->SetColor(r,g,b);
   myBallHighlightProp->SetColor(r,g,b);
   Modified();
 }
 
-void SMESH_ActorDef::GetHighlightColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b){ 
+void SMESH_ActorDef::GetHighlightColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b){
   ::GetColor(myHighlightProp,r,g,b);
 }
 
-void SMESH_ActorDef::SetPreHighlightColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){ 
+void SMESH_ActorDef::SetPreHighlightColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){
   myPreselectProp->SetColor(r,g,b);
   myBallPreselectProp->SetColor(r,g,b);
   Modified();
 }
 
-void SMESH_ActorDef::GetPreHighlightColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b){ 
+void SMESH_ActorDef::GetPreHighlightColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b){
   ::GetColor(myPreselectProp,r,g,b);
 }
 
@@ -1972,7 +2071,7 @@ void SMESH_ActorDef::SetLineWidth(vtkFloatingPointType theVal){
   myEdgeProp->SetLineWidth(theVal);
 
   my1DProp->SetLineWidth(theVal + aLineWidthInc);
-  my1DExtProp->SetLineWidth(theVal + aLineWidthInc);    
+  my1DExtProp->SetLineWidth(theVal + aLineWidthInc);
   my2DExtProp->SetLineWidth(theVal + aLineWidthInc);
   my3DExtProp->SetLineWidth(theVal + aLineWidthInc);
   myOutLineProp->SetLineWidth(theVal);
@@ -2064,7 +2163,7 @@ SMESH_ActorDef::SetImplicitFunctionUsed(bool theIsImplicitFunctionUsed)
   my3DExtActor->SetImplicitFunctionUsed(theIsImplicitFunctionUsed);
 }
 
-vtkIdType 
+vtkIdType
 SMESH_ActorDef::AddClippingPlane(vtkPlane* thePlane)
 {
   if(thePlane){
@@ -2095,7 +2194,7 @@ GetNumberOfClippingPlanes()
   return myCippingPlaneCont.size();
 }
 
-vtkPlane* 
+vtkPlane*
 SMESH_ActorDef::
 GetClippingPlane(vtkIdType theID)
 {
@@ -2223,7 +2322,7 @@ void SMESH_ActorDef::UpdateScalarBar()
 
   int coloringType = mgr->integerValue("SMESH", "distribution_coloring_type", 0);
   myScalarBarActor->SetDistributionColoringType(coloringType);
-  
+
   QColor distributionColor = mgr->colorValue("SMESH", "distribution_color",
                                              QColor(255, 255, 255));
   double rgb[3];
@@ -2232,7 +2331,7 @@ void SMESH_ActorDef::UpdateScalarBar()
   rgb[2]= distributionColor.blue()/255.;
   myScalarBarActor->SetDistributionColor(rgb);
 
-  
+
 }
 
 void SMESH_ActorDef::UpdateDistribution()
@@ -2251,7 +2350,8 @@ void SMESH_ActorDef::UpdateDistribution()
       elemIds.push_back( (*e)->GetID());
     vtkLookupTable* lookupTable = static_cast<vtkLookupTable*>(myScalarBarActor->GetLookupTable());
     double * range = lookupTable->GetRange();
-    fun->GetHistogram(nbIntervals, nbEvents, funValues, elemIds, range);
+    bool isLogarithmic = lookupTable->GetScale() == VTK_SCALE_LOG10;
+    fun->GetHistogram(nbIntervals, nbEvents, funValues, elemIds, range, isLogarithmic);
     myScalarBarActor->SetDistribution(nbEvents);
   }
 }
@@ -2305,17 +2405,17 @@ SPlot2d_Histogram* SMESH_ActorDef::UpdatePlot2Histogram() {
 
   if(my2dHistogram)
     my2dHistogram->clearAllPoints();
-  
+
   if(SMESH::Controls::NumericalFunctor* fun =
      dynamic_cast<SMESH::Controls::NumericalFunctor*>(myFunctor.get()))
   {
-    
+
     if(!my2dHistogram) {
       my2dHistogram = new SPlot2d_Histogram();
       Handle(SALOME_InteractiveObject) anIO = new SALOME_InteractiveObject(getIO()->getEntry(),"SMESH",getName());
       my2dHistogram->setIO(anIO);
     }
-    
+
     int nbIntervals = myScalarBarActor->GetMaximumNumberOfColors();
     std::vector<int> nbEvents;
     std::vector<double> funValues;
@@ -2323,22 +2423,23 @@ SPlot2d_Histogram* SMESH_ActorDef::UpdatePlot2Histogram() {
     if ( ! dynamic_cast<SMESH_MeshObj*>(myVisualObj.get()))
       dynamic_cast<SMESH_VisualObjDef*>(myVisualObj.get())->GetEntities( fun->GetType(), elems );
     std::vector<int> elemIds;
-    
+
     for ( SMESH_VisualObjDef::TEntityList::iterator e = elems.begin(); e != elems.end(); ++e)
       elemIds.push_back( (*e)->GetID());
 
     vtkLookupTable* lookupTable = static_cast<vtkLookupTable*>(myScalarBarActor->GetLookupTable());
     double * range = lookupTable->GetRange();
-    fun->GetHistogram(nbIntervals, nbEvents, funValues, elemIds, range);
+    bool isLogarithmic = lookupTable->GetScale() == VTK_SCALE_LOG10;
+    fun->GetHistogram(nbIntervals, nbEvents, funValues, elemIds, range, isLogarithmic);
 
-    for ( int i = 0; i < std::min( nbEvents.size(), funValues.size() -1 ); i++ ) 
+    for ( int i = 0; i < std::min( nbEvents.size(), funValues.size() -1 ); i++ )
       my2dHistogram->addPoint(funValues[i] + (funValues[i+1] - funValues[i])/2.0, static_cast<double>(nbEvents[i]));
 
     if(funValues.size() >= 2)
       my2dHistogram->setWidth((funValues[1] - funValues[0]) * 0.8) ;
 
   }
-  
+
   //Color of the histogram
   if(myScalarBarActor->GetDistributionColoringType() == SMESH_MULTICOLOR_TYPE)
     my2dHistogram->setAutoAssign(true);
@@ -2349,7 +2450,7 @@ SPlot2d_Histogram* SMESH_ActorDef::UpdatePlot2Histogram() {
     my2dHistogram->setColor(aColor);
 
   }
-      
+
   return my2dHistogram;
 }
 #endif

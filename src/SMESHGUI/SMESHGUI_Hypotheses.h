@@ -130,6 +130,7 @@ private:
 
 private:
   SMESH::SMESH_Hypothesis_var  myHypo, myInitParamsHypo;
+  bool                         myToDeleteInitParamsHypo;
   QString                      myHypName;
   QString                      myHypType;
   ListOfWidgets                myParamWidgets;

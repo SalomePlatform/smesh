@@ -42,7 +42,7 @@ INPUT             = @srcdir@/input @top_srcdir@/src/Tools/padder/doc/input
 FILE_PATTERNS     = *.doc
 EXCLUDE           = 
 IMAGE_PATH        = @srcdir@/images @top_srcdir@/src/Tools/padder/doc/images
-EXAMPLE_PATH      = @top_srcdir@/src/SMESH_SWIG
+EXAMPLE_PATH      = @top_srcdir@/src/SMESH_SWIG @top_srcdir@/doc/salome/examples
 
 #---------------------------------------------------------------------------
 #HTML related options

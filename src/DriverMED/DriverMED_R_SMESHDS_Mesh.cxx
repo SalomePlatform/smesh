@@ -71,6 +71,7 @@ DriverMED_R_SMESHDS_Mesh
 ::Perform()
 {
   Status aResult = DRS_FAIL;
+  bool isDescConn = false;
 #ifndef _DEXCEPT_
   try{
 #endif
@@ -173,15 +174,26 @@ DriverMED_R_SMESHDS_Mesh
           }
         }
 
+        // Are there any MED cells in descending connectivity
+        //---------------------------------------------------
+        if (!isDescConn) {
+          MED::TEntityInfo aEntityInfoDesc = aMed->GetEntityInfo(aMeshInfo, eDESC);
+          MED::TEntityInfo::iterator anEntityIterDesc = aEntityInfoDesc.begin();
+          for (; anEntityIterDesc != aEntityInfoDesc.end() && !isDescConn; anEntityIterDesc++) {
+            const EEntiteMaillage& anEntity = anEntityIterDesc->first;
+            if (anEntity != eNOEUD) isDescConn = true;
+          }
+        }
+
         // Reading pre information about all MED cells
         //--------------------------------------------
         typedef MED::TVector<int> TNodeIds;
         bool takeNumbers = true;  // initially we trust the numbers from file
-        MED::TEntityInfo aEntityInfo = aMed->GetEntityInfo(aMeshInfo);
+        MED::TEntityInfo aEntityInfo = aMed->GetEntityInfo(aMeshInfo, eNOD);
         MED::TEntityInfo::iterator anEntityIter = aEntityInfo.begin();
-        for(; anEntityIter != aEntityInfo.end(); anEntityIter++){
+        for (; anEntityIter != aEntityInfo.end(); anEntityIter++) {
           const EEntiteMaillage& anEntity = anEntityIter->first;
-          if(anEntity == eNOEUD) continue;
+          if (anEntity == eNOEUD) continue;
           // Reading MED cells to the corresponding SMDS structure
           //------------------------------------------------------
           const MED::TGeom2Size& aGeom2Size = anEntityIter->second;
@@ -905,6 +917,12 @@ DriverMED_R_SMESHDS_Mesh
 #endif
   if (myMesh)
     myMesh->compactMesh();
+
+  if (aResult == DRS_OK && isDescConn) {
+    INFOS("There are some elements in descending connectivity in med file. They were not read !!!");
+    aResult = DRS_WARN_DESCENDING;
+  }
+
   if(MYDEBUG) MESSAGE("Perform - aResult status = "<<aResult);
   return aResult;
 }

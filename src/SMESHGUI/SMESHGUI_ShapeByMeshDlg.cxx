@@ -40,6 +40,7 @@
 // SALOME GEOM includes
 #include <GEOMBase.h>
 #include <GeometryGUI.h>
+#include <GEOM_wrap.hxx>
 
 // SALOME GUI includes
 #include <LightApp_DataOwner.h>
@@ -53,6 +54,8 @@
 
 // SALOME KERNEL includes
 #include <SALOMEDSClient_SObject.hxx>
+#include <SALOMEDS_Study.hxx>
+#include <SALOMEDS_wrap.hxx>
 
 // OCCT includes
 #include <TColStd_MapOfInteger.hxx>
@@ -80,8 +83,9 @@ enum { EDGE = 0, FACE, VOLUME };
  * \brief Dialog to publish a sub-shape of the mesh main shape
  *        by selecting mesh elements
  */
-SMESHGUI_ShapeByMeshDlg::SMESHGUI_ShapeByMeshDlg()
-  : SMESHGUI_Dialog( 0, false, true, OK | Close )
+SMESHGUI_ShapeByMeshDlg::SMESHGUI_ShapeByMeshDlg(bool isMultipleAllowed)
+  : SMESHGUI_Dialog( 0, false, true, OK | Close ),
+    myIsMultipleAllowed( isMultipleAllowed )
 {
   setWindowTitle(tr("CAPTION"));
 
@@ -169,8 +173,7 @@ SMESHGUI_ShapeByMeshOp::SMESHGUI_ShapeByMeshOp(bool isMultipleAllowed):
   if ( GeometryGUI::GetGeomGen()->_is_nil() )// check that GEOM_Gen exists
     GeometryGUI::InitGeomGen();
 
-  myDlg = new SMESHGUI_ShapeByMeshDlg;
-  myDlg->setMultipleAllowed(myIsMultipleAllowed);
+  myDlg = new SMESHGUI_ShapeByMeshDlg(myIsMultipleAllowed);
 
   connect(myDlg->myElemTypeGroup, SIGNAL(buttonClicked(int)), SLOT(onTypeChanged(int)));
   connect(myDlg->myElementId, SIGNAL(textChanged(const QString&)), SLOT(onElemIdChanged(const QString&)));
@@ -223,7 +226,7 @@ SMESH::SMESH_Mesh_ptr SMESHGUI_ShapeByMeshOp::GetMesh()
 
 //=======================================================================
 // function : GetShape()
-// purpose  : Get published sub-shape
+// purpose  : Return published sub-shape, it must be UnRegister()ed!
 //=======================================================================
 GEOM::GEOM_Object_ptr SMESHGUI_ShapeByMeshOp::GetShape()
 {
@@ -306,85 +309,92 @@ void SMESHGUI_ShapeByMeshOp::commitOperation()
   try {
     QStringList aListId = myDlg->myElementId->text().split( " ", QString::SkipEmptyParts);
     if (aListId.count() == 1)
-      {
-        int elemID = (aListId.first()).toInt();
-        myGeomObj = GEOM::GEOM_Object::_duplicate(
-            SMESHGUI::GetSMESHGen()->GetGeometryByMeshElement
-          ( myMesh.in(), elemID, myDlg->myGeomName->text().toLatin1().constData()) );
-      }
+    {
+      int elemID = (aListId.first()).toInt();
+      // GEOM_Object is published -> no need to UnRegister()
+      myGeomObj = GEOM::GEOM_Object::_duplicate
+        (SMESHGUI::GetSMESHGen()->GetGeometryByMeshElement
+         ( myMesh.in(), elemID, myDlg->myGeomName->text().toLatin1().constData()) );
+    }
     else
+    {
+      GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
+      _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+
+      if (geomGen->_is_nil() || !aStudy)
+        return;
+
+      GEOM::GEOM_IShapesOperations_wrap aShapesOp =
+        geomGen->GetIShapesOperations(aStudy->StudyId());
+      if (aShapesOp->_is_nil() )
+        return;
+
+      TopAbs_ShapeEnum aGroupType = TopAbs_SHAPE;
+
+      std::map<double, GEOM::GEOM_Object_wrap> aGeomObjectsMap;
+      GEOM::GEOM_Object_wrap aGeomObject;
+
+      GEOM::GEOM_Object_var aMeshShape = myMesh->GetShapeToMesh();
+
+      for ( int i = 0; i < aListId.count(); i++ )
       {
-        GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
-        _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-        
-        if (geomGen->_is_nil() || !aStudy)
-          return;
-        
-        GEOM::GEOM_IShapesOperations_var aShapesOp =
-          geomGen->GetIShapesOperations(aStudy->StudyId());
-        if (aShapesOp->_is_nil() )
-          return;
-        
-        TopAbs_ShapeEnum aGroupType = TopAbs_SHAPE;
-        
-        std::map<double, GEOM::GEOM_Object_var> aGeomObjectsMap;
-        GEOM::GEOM_Object_var aGeomObject;
+        aGeomObject = // received object need UnRegister()!
+          SMESHGUI::GetSMESHGen()->FindGeometryByMeshElement(myMesh.in(), aListId[i].toInt());
 
-        GEOM::GEOM_Object_var aMeshShape = myMesh->GetShapeToMesh();
-        
-        for ( int i = 0; i < aListId.count(); i++ )
-          {
-            aGeomObject =
-              SMESHGUI::GetSMESHGen()->FindGeometryByMeshElement(myMesh.in(), aListId[i].toInt());
+        if (aGeomObject->_is_nil()) continue;
 
-            if (aGeomObject->_is_nil()) continue;
-            
-            double anId = aShapesOp->GetSubShapeIndex(aMeshShape, aGeomObject);
-            if (aShapesOp->IsDone() && aGeomObjectsMap.find(anId) == aGeomObjectsMap.end())
-              {
-                aGeomObjectsMap[anId] = aGeomObject;
+        double anId = aShapesOp->GetSubShapeIndex(aMeshShape, aGeomObject);
+        if (aShapesOp->IsDone() && !aGeomObjectsMap.count(anId) )
+        {
+          aGeomObjectsMap[anId] = aGeomObject;
 
-                TopAbs_ShapeEnum aSubShapeType = (TopAbs_ShapeEnum)aGeomObject->GetShapeType();
-                if (i == 0)
-                  aGroupType = aSubShapeType;
-                else if (aSubShapeType != aGroupType)
-                  aGroupType = TopAbs_SHAPE;
-              }
-          }
-        
-        int aNumberOfGO = aGeomObjectsMap.size();
-        if (aNumberOfGO == 1)
-          myGeomObj = (*aGeomObjectsMap.begin()).second;
-        else if (aNumberOfGO > 1)
-          {
-            GEOM::GEOM_IGroupOperations_var aGroupOp =
-              geomGen->GetIGroupOperations(aStudy->StudyId());
-            if(aGroupOp->_is_nil())
-              return;
-            
-            GEOM::ListOfGO_var aGeomObjects = new GEOM::ListOfGO();
-            aGeomObjects->length( aNumberOfGO );
-
-            int i = 0;
-            std::map<double, GEOM::GEOM_Object_var>::iterator anIter;
-            for (anIter = aGeomObjectsMap.begin(); anIter!=aGeomObjectsMap.end(); anIter++)
-              aGeomObjects[i++] = (*anIter).second;
-          
-            //create geometry group
-            myGeomObj = aGroupOp->CreateGroup(aMeshShape, aGroupType);
-            aGroupOp->UnionList(myGeomObj, aGeomObjects);
-
-            if (!aGroupOp->IsDone())
-              return;
-          }
-        
-        // publish the GEOM object in study
-        QString aNewGeomGroupName ( myDlg->myGeomName->text() );
-          
-        SALOMEDS::SObject_var aNewGroupSO =
-          geomGen->AddInStudy(SMESHGUI::GetSMESHGen()->GetCurrentStudy(), myGeomObj, 
-                              aNewGeomGroupName.toLatin1().data(), aMeshShape);
+          TopAbs_ShapeEnum aSubShapeType = (TopAbs_ShapeEnum)aGeomObject->GetShapeType();
+          if (i == 0)
+            aGroupType = aSubShapeType;
+          else if (aSubShapeType != aGroupType)
+            aGroupType = TopAbs_SHAPE;
+        }
       }
+
+      int aNumberOfGO = aGeomObjectsMap.size();
+      if (aNumberOfGO == 1)
+      {
+        aGeomObject = (*aGeomObjectsMap.begin()).second;
+      }
+      else if (aNumberOfGO > 1)
+      {
+        GEOM::GEOM_IGroupOperations_wrap aGroupOp =
+          geomGen->GetIGroupOperations(aStudy->StudyId());
+        if(aGroupOp->_is_nil())
+          return;
+
+        GEOM::ListOfGO_var aGeomObjects = new GEOM::ListOfGO();
+        aGeomObjects->length( aNumberOfGO );
+
+        int i = 0;
+        std::map<double, GEOM::GEOM_Object_wrap>::iterator anIter;
+        for (anIter = aGeomObjectsMap.begin(); anIter!=aGeomObjectsMap.end(); anIter++)
+          aGeomObjects[i++] = (*anIter).second.in();
+
+        //create geometry group
+        aGeomObject = aGroupOp->CreateGroup(aMeshShape, aGroupType);
+        aGroupOp->UnionList(myGeomObj, aGeomObjects);
+
+        if (!aGroupOp->IsDone())
+          return;
+      }
+
+      // publish the GEOM object in study
+      QString aNewGeomGroupName ( myDlg->myGeomName->text() );
+      SALOMEDS::Study_var aStudyVar = _CAST(Study,aStudy)->GetStudy();
+      SALOMEDS::SObject_wrap aNewGroupSO =
+        geomGen->AddInStudy( aStudyVar, aGeomObject, 
+                             aNewGeomGroupName.toLatin1().data(), aMeshShape);
+
+      // get a GEOM_Object already published, which doesn't need UnRegister()
+      CORBA::Object_var obj = aNewGroupSO->GetObject();
+      myGeomObj = GEOM::GEOM_Object::_narrow( obj );
+    }
   }
   catch (const SALOME::SALOME_Exception& S_ex) {
     SalomeApp_Tools::QtCatchCorbaException(S_ex);

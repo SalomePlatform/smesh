@@ -116,6 +116,11 @@
 #include CORBA_CLIENT_HEADER(SALOME_ModuleCatalog)
 #include CORBA_CLIENT_HEADER(SALOME_Session)
 
+// helpers about SALOME::GenericObj
+#include <SALOMEDS_wrap.hxx>
+#include <SALOMEDS_Attributes_wrap.hxx>
+#include <GEOM_wrap.hxx>
+
 #include <map>
 #include <fstream>
 #include <cstdio>
@@ -176,16 +181,16 @@ PortableServer::ServantBase_var SMESH_Gen_i::GetServant( CORBA::Object_ptr theOb
 
 CORBA::Object_var SMESH_Gen_i::SObjectToObject( SALOMEDS::SObject_ptr theSObject )
 {
-  SALOMEDS::GenericAttribute_var anAttr;
+  SALOMEDS::GenericAttribute_wrap anAttr;
   CORBA::Object_var anObj;
   if ( !theSObject->_is_nil() ) {
     try {
-      if( theSObject->FindAttribute( anAttr, "AttributeIOR" ) ) {
-        SALOMEDS::AttributeIOR_var anIOR  = SALOMEDS::AttributeIOR::_narrow( anAttr );
+      if( theSObject->FindAttribute( anAttr.inout(), "AttributeIOR" ) ) {
+        SALOMEDS::AttributeIOR_wrap anIOR  = anAttr;
         CORBA::String_var aValue = anIOR->Value();
         if( strcmp( aValue, "" ) != 0 )
           anObj = GetORB()->string_to_object( aValue );
-        }
+      }
     }
     catch( ... ) {
       INFOS( "SObjectToObject - Unknown exception was caught!!!" );
@@ -234,7 +239,7 @@ SALOME_LifeCycleCORBA*  SMESH_Gen_i::GetLCC() {
  *  Get GEOM::GEOM_Gen reference
  */
 //=============================================================================
-GEOM::GEOM_Gen_ptr SMESH_Gen_i::GetGeomEngine() {
+GEOM::GEOM_Gen_var SMESH_Gen_i::GetGeomEngine() {
   //CCRT GEOM::GEOM_Gen_var aGeomEngine =
   //CCRT   GEOM::GEOM_Gen::_narrow( GetLCC()->FindOrLoad_Component("FactoryServer","GEOM") );
   //CCRT return aGeomEngine._retn();
@@ -341,7 +346,7 @@ SMESH_Gen_i::~SMESH_Gen_i()
   }
   myStudyContextMap.clear();
   // delete shape reader
-  if ( !myShapeReader )
+  if ( myShapeReader )
     delete myShapeReader;
 }
 
@@ -604,29 +609,27 @@ void SMESH_Gen_i::setCurrentStudy( SALOMEDS::Study_ptr theStudy,
   myCurrentStudy = SALOMEDS::Study::_duplicate( theStudy );
   // create study context, if it doesn't exist and set current study
   int studyId = GetCurrentStudyID();
-  if ( myStudyContextMap.find( studyId ) == myStudyContextMap.end() ) {
+  if ( myStudyContextMap.find( studyId ) == myStudyContextMap.end() )
     myStudyContextMap[ studyId ] = new StudyContext;
-  }
 
   // myCurrentStudy may be nil
   if ( !theStudyIsBeingClosed && !CORBA::is_nil( myCurrentStudy ) ) {
     SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder();
-    if( !myCurrentStudy->FindComponent( "GEOM" )->_is_nil() )
-      aStudyBuilder->LoadWith( myCurrentStudy->FindComponent( "GEOM" ), GetGeomEngine() );
-
+    SALOMEDS::SComponent_wrap GEOM_var = myCurrentStudy->FindComponent( "GEOM" );
+    if( !GEOM_var->_is_nil() )
+      aStudyBuilder->LoadWith( GEOM_var, GetGeomEngine() );
     // NPAL16168, issue 0020210
     // Let meshes update their data depending on GEOM groups that could change
     if ( curStudyId != studyId )
     {
-      //SALOMEDS::SComponent_var me =  PublishComponent( myCurrentStudy );
-      SALOMEDS::SComponent_var me = SALOMEDS::SComponent::_narrow
-        ( myCurrentStudy->FindComponent( ComponentDataType() ) );
+      CORBA::String_var compDataType = ComponentDataType();
+      SALOMEDS::SComponent_wrap me = myCurrentStudy->FindComponent( compDataType.in() );
       if ( !me->_is_nil() ) {
-        SALOMEDS::ChildIterator_var anIter = myCurrentStudy->NewChildIterator( me );
+        SALOMEDS::ChildIterator_wrap anIter = myCurrentStudy->NewChildIterator( me );
         for ( ; anIter->More(); anIter->Next() ) {
-          SALOMEDS::SObject_var so = anIter->Value();
-          CORBA::Object_var    ior = SObjectToObject( so );
-          if ( SMESH_Mesh_i*  mesh = SMESH::DownCast<SMESH_Mesh_i*>( ior ))
+          SALOMEDS::SObject_wrap so = anIter->Value();
+          CORBA::Object_var     ior = SObjectToObject( so );
+          if ( SMESH_Mesh_i*   mesh = SMESH::DownCast<SMESH_Mesh_i*>( ior ))
             mesh->CheckGeomGroupModif();
         }
       }
@@ -682,7 +685,7 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::CreateHypothesis( const char* theHypNam
 
   // Publish hypothesis/algorithm in the study
   if ( CanPublishInStudy( hyp ) ) {
-    SALOMEDS::SObject_var aSO = PublishHypothesis( myCurrentStudy, hyp );
+    SALOMEDS::SObject_wrap aSO = PublishHypothesis( myCurrentStudy, hyp );
     if ( !aSO->_is_nil() ) {
       // Update Python script
       TPythonDump() << aSO << " = " << this << ".CreateHypothesis('"
@@ -746,9 +749,11 @@ SMESH_Gen_i::GetHypothesisParameterValues (const char*           theHypType,
       // check local shape
       SMESH::ListOfHypothesis_var aHypList = theMesh->GetHypothesisList( theGeom );
       int nbLocalHyps = aHypList->length();
-      for ( int i = 0; i < nbLocalHyps; i++ )
-        if ( strcmp( theHypType, aHypList[i]->GetName() ) == 0 ) // FOUND local!
+      for ( int i = 0; i < nbLocalHyps; i++ ) {
+        CORBA::String_var hypName = aHypList[i]->GetName();
+        if ( strcmp( theHypType, hypName.in() ) == 0 ) // FOUND local!
           return SMESH::SMESH_Hypothesis::_duplicate( aHypList[i] );
+      }
       // check super shapes
       TopTools_ListIteratorOfListOfShape itShape( mesh->GetAncestors( shape ));
       while ( nbLocalHyps == 0 && itShape.More() ) {
@@ -896,7 +901,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMesh( GEOM::GEOM_Object_ptr theShapeObj
   if ( CanPublishInStudy( mesh ) ) {
     SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder();
     aStudyBuilder->NewCommand();  // There is a transaction
-    SALOMEDS::SObject_var aSO = PublishMesh( myCurrentStudy, mesh.in() );
+    SALOMEDS::SObject_wrap aSO = PublishMesh( myCurrentStudy, mesh.in() );
     aStudyBuilder->CommitCommand();
     if ( !aSO->_is_nil() ) {
       // Update Python script
@@ -927,7 +932,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateEmptyMesh()
   if ( CanPublishInStudy( mesh ) ) {
     SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder();
     aStudyBuilder->NewCommand();  // There is a transaction
-    SALOMEDS::SObject_var aSO = PublishMesh( myCurrentStudy, mesh.in() );
+    SALOMEDS::SObject_wrap aSO = PublishMesh( myCurrentStudy, mesh.in() );
     aStudyBuilder->CommitCommand();
     if ( !aSO->_is_nil() ) {
       // Update Python script
@@ -958,7 +963,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromUNV( const char* theFileName 
   if ( CanPublishInStudy( aMesh ) ) {
     SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder();
     aStudyBuilder->NewCommand();  // There is a transaction
-    SALOMEDS::SObject_var aSO = PublishMesh( myCurrentStudy, aMesh.in(), aFileName.c_str() );
+    SALOMEDS::SObject_wrap aSO = PublishMesh( myCurrentStudy, aMesh.in(), aFileName.c_str() );
     aStudyBuilder->CommitCommand();
     if ( !aSO->_is_nil() ) {
       // Update Python script
@@ -990,6 +995,13 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMEDorSAUV( const char* theFileNa
                                                            const char* theCommandNameForPython,
                                                            const char* theFileNameForPython)
 {
+#ifdef WIN32
+  char bname[ _MAX_FNAME ];
+  _splitpath( theFileNameForPython, NULL, NULL, bname, NULL );
+  string aFileName = bname;
+#else
+  string aFileName = basename( theFileNameForPython );
+#endif
   // Retrieve mesh names from the file
   DriverMED_R_SMESHDS_Mesh myReader;
   myReader.SetFile( theFileName );
@@ -1020,9 +1032,12 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMEDorSAUV( const char* theFileNa
       SMESH::SMESH_Mesh_var mesh = createMesh();
 
       // publish mesh in the study
-      SALOMEDS::SObject_var aSO;
+      SALOMEDS::SObject_wrap aSO;
       if ( CanPublishInStudy( mesh ) )
-        aSO = PublishMesh( myCurrentStudy, mesh.in(), (*it).c_str() );
+        // little trick: for MED file theFileName and theFileNameForPython are the same, but they are different for SAUV
+        // - as names of meshes are stored in MED file, we use them for data publishing
+        // - as mesh name is not stored in UNV file, we use file name as name of mesh when publishing data
+        aSO = PublishMesh( myCurrentStudy, mesh.in(), ( theFileName == theFileNameForPython ) ? (*it).c_str() : aFileName.c_str() );
       if ( !aSO->_is_nil() ) {
         // Python Dump
         aPythonDump << aSO;
@@ -1120,12 +1135,19 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromSTL( const char* theFileName 
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::CreateMeshesFromSTL" );
 
   SMESH::SMESH_Mesh_var aMesh = createMesh();
-  string aFileName;
+  //string aFileName;
+#ifdef WIN32
+  char bname[ _MAX_FNAME ];
+  _splitpath( theFileName, NULL, NULL, bname, NULL );
+  string aFileName = bname;
+#else
+  string aFileName = basename( theFileName );
+#endif
   // publish mesh in the study
   if ( CanPublishInStudy( aMesh ) ) {
     SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder();
     aStudyBuilder->NewCommand();  // There is a transaction
-    SALOMEDS::SObject_var aSO = PublishInStudy
+    SALOMEDS::SObject_wrap aSO = PublishInStudy
       ( myCurrentStudy, SALOMEDS::SObject::_nil(), aMesh.in(), aFileName.c_str() );
     aStudyBuilder->CommitCommand();
     if ( !aSO->_is_nil() ) {
@@ -1199,15 +1221,17 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromCGNS( const char* theFileName,
 
         meshServant->GetImpl().GetMeshDS()->Modified();
         // publish mesh in the study
-        SALOMEDS::SObject_var aSO;
+        SALOMEDS::SObject_wrap aSO;
         if ( CanPublishInStudy( mesh ) )
           aSO = PublishMesh( myCurrentStudy, mesh.in(), meshName.c_str() );
 
         // Python Dump
-        if ( !aSO->_is_nil() )
+        if ( !aSO->_is_nil() ) {
           aPythonDump << aSO;
-        else
+        }
+        else {
           aPythonDump << "mesh_" << i;
+        }
       }
       aStudyBuilder->CommitCommand();
     }
@@ -1250,7 +1274,7 @@ SMESH_Gen_i::CreateMeshesFromGMF( const char*             theFileName,
   if ( CanPublishInStudy( aMesh ) ) {
     SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder();
     aStudyBuilder->NewCommand();  // There is a transaction
-    SALOMEDS::SObject_var aSO = PublishInStudy
+    SALOMEDS::SObject_wrap aSO = PublishInStudy
       ( myCurrentStudy, SALOMEDS::SObject::_nil(), aMesh.in(), aFileName.c_str() );
     aStudyBuilder->CommitCommand();
     if ( !aSO->_is_nil() ) {
@@ -1320,16 +1344,16 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::GetAlgoSO(const ::SMESH_Algo* algo)
   if ( algo ) {
     if ( !myCurrentStudy->_is_nil() ) {
       // find algo in the study
-      SALOMEDS::SComponent_var father = SALOMEDS::SComponent::_narrow
-        ( myCurrentStudy->FindComponent( ComponentDataType() ) );
+      CORBA::String_var compDataType  = ComponentDataType();
+      SALOMEDS::SComponent_wrap father = myCurrentStudy->FindComponent( compDataType.in() );
       if ( !father->_is_nil() ) {
-        SALOMEDS::ChildIterator_var itBig = myCurrentStudy->NewChildIterator( father );
+        SALOMEDS::ChildIterator_wrap itBig = myCurrentStudy->NewChildIterator( father );
         for ( ; itBig->More(); itBig->Next() ) {
-          SALOMEDS::SObject_var gotBranch = itBig->Value();
+          SALOMEDS::SObject_wrap gotBranch = itBig->Value();
           if ( gotBranch->Tag() == GetAlgorithmsRootTag() ) {
-            SALOMEDS::ChildIterator_var algoIt = myCurrentStudy->NewChildIterator( gotBranch );
+            SALOMEDS::ChildIterator_wrap algoIt = myCurrentStudy->NewChildIterator( gotBranch );
             for ( ; algoIt->More(); algoIt->Next() ) {
-              SALOMEDS::SObject_var algoSO = algoIt->Value();
+              SALOMEDS::SObject_wrap algoSO = algoIt->Value();
               CORBA::Object_var     algoIOR = SObjectToObject( algoSO );
               if ( !CORBA::is_nil( algoIOR )) {
                 SMESH_Hypothesis_i* impl = SMESH::DownCast<SMESH_Hypothesis_i*>( algoIOR );
@@ -1396,11 +1420,14 @@ SMESH::compute_error_array* SMESH_Gen_i::GetComputeErrors( SMESH::SMESH_Mesh_ptr
           errStruct.code       = -( error->myName < 0 ? error->myName + 1: error->myName ); // -1 -> 0
           errStruct.comment    = error->myComment.c_str();
           errStruct.subShapeID = sm->GetId();
-          SALOMEDS::SObject_var algoSO = GetAlgoSO( error->myAlgo );
-          if ( !algoSO->_is_nil() )
-            errStruct.algoName = algoSO->GetName();
-          else
+          SALOMEDS::SObject_wrap algoSO = GetAlgoSO( error->myAlgo );
+          if ( !algoSO->_is_nil() ) {
+            CORBA::String_var algoName = algoSO->GetName();
+            errStruct.algoName = algoName;
+          }
+          else {
             errStruct.algoName = error->myAlgo->GetName();
+          }
           errStruct.hasBadMesh = !error->myBadElements.empty();
         }
       }
@@ -1548,9 +1575,11 @@ SMESH::algo_error_array* SMESH_Gen_i::GetAlgoState( SMESH::SMESH_Mesh_ptr theMes
         errStruct.algoDim      = error->_algoDim;
         errStruct.isGlobalAlgo = error->_isGlobalAlgo;
         errStruct.algoName     = "";
-        SALOMEDS::SObject_var algoSO = GetAlgoSO( error->_algo );
-        if ( !algoSO->_is_nil() )
-          errStruct.algoName   = algoSO->GetName();
+        SALOMEDS::SObject_wrap algoSO = GetAlgoSO( error->_algo );
+        if ( !algoSO->_is_nil() ) {
+          CORBA::String_var algoName = algoSO->GetName();
+          errStruct.algoName = algoName.in();
+        }
       }
     }
   }
@@ -2004,7 +2033,7 @@ SMESH::long_array* SMESH_Gen_i::Evaluate(SMESH::SMESH_Mesh_ptr theMesh,
  *  \param theMesh - the mesh the element is in
  *  \param theElementID - the element ID
  *  \param theGeomName - the name of the result geom object if it is not yet published
- *  \retval GEOM::GEOM_Object_ptr - the found or just published geom object
+ *  \retval GEOM::GEOM_Object_ptr - the found or just published geom object (no need to UnRegister())
  */
 //================================================================================
 
@@ -2016,31 +2045,34 @@ SMESH_Gen_i::GetGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
 {
   Unexpect aCatch(SALOME_SalomeException);
 
-  GEOM::GEOM_Object_var geom = FindGeometryByMeshElement(theMesh, theElementID);
+  GEOM::GEOM_Object_wrap geom = FindGeometryByMeshElement(theMesh, theElementID);
   if ( !geom->_is_nil() ) {
     GEOM::GEOM_Object_var mainShape = theMesh->GetShapeToMesh();
     GEOM::GEOM_Gen_ptr    geomGen   = GetGeomEngine();
 
     // try to find the corresponding SObject
-    SALOMEDS::SObject_var SObj = ObjectToSObject( myCurrentStudy, geom.in() );
+    SALOMEDS::SObject_wrap SObj = ObjectToSObject( myCurrentStudy, geom.in() );
     if ( SObj->_is_nil() ) // submesh can be not found even if published
     {
       // try to find published submesh
       GEOM::ListOfLong_var list = geom->GetSubShapeIndices();
       if ( !geom->IsMainShape() && list->length() == 1 ) {
-        SALOMEDS::SObject_var mainSO = ObjectToSObject( myCurrentStudy, mainShape );
-        SALOMEDS::ChildIterator_var it;
-        if ( !mainSO->_is_nil() )
+        SALOMEDS::SObject_wrap mainSO = ObjectToSObject( myCurrentStudy, mainShape );
+        SALOMEDS::ChildIterator_wrap it;
+        if ( !mainSO->_is_nil() ) {
           it = myCurrentStudy->NewChildIterator( mainSO );
+        }
         if ( !it->_is_nil() ) {
-          for ( it->InitEx(true); SObj->_is_nil() && it->More(); it->Next() ) {
-            GEOM::GEOM_Object_var subGeom =
-              GEOM::GEOM_Object::_narrow( SObjectToObject( it->Value() ));
+          for ( it->InitEx(true); it->More(); it->Next() ) {
+            SALOMEDS::SObject_wrap      so = it->Value();
+            CORBA::Object_var         obj = SObjectToObject( so );
+            GEOM::GEOM_Object_var subGeom = GEOM::GEOM_Object::_narrow( obj );
             if ( !subGeom->_is_nil() ) {
               GEOM::ListOfLong_var subList = subGeom->GetSubShapeIndices();
               if ( subList->length() == 1 && list[0] == subList[0] ) {
-                SObj = it->Value();
+                SObj = so;
                 geom = subGeom;
+                break;
               }
             }
           }
@@ -2051,8 +2083,12 @@ SMESH_Gen_i::GetGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
       SObj = geomGen->AddInStudy( myCurrentStudy, geom, theGeomName, mainShape );
 
     // return only published geometry
-    if ( !SObj->_is_nil() )
-      return geom._retn();
+    if ( !SObj->_is_nil() ) {
+      //return geom._retn(); -- servant of geom must be UnRegister()ed;
+      CORBA::Object_var    obj = SObjectToObject( SObj );
+      GEOM::GEOM_Object_var go = GEOM::GEOM_Object::_narrow( obj );
+      return go._retn();
+    }
   }
   return GEOM::GEOM_Object::_nil();
 }
@@ -2062,7 +2098,7 @@ SMESH_Gen_i::GetGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
  * \brief Return geometrical object the given element is built on.
  *  \param theMesh - the mesh the element is in
  *  \param theElementID - the element ID
- *  \retval GEOM::GEOM_Object_ptr - the found geom object
+ *  \retval GEOM::GEOM_Object_ptr - the found or created (UnRegister()!) geom object
  */
 //================================================================================
 
@@ -2092,14 +2128,16 @@ SMESH_Gen_i::FindGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
         GEOM::GEOM_Object_var geom = ShapeToGeomObject( meshDS->IndexToShape( shapeID ));
         if ( geom->_is_nil() ) {
           // try to find a published sub-shape
-          SALOMEDS::SObject_var mainSO = ObjectToSObject( myCurrentStudy, mainShape );
-          SALOMEDS::ChildIterator_var it;
-          if ( !mainSO->_is_nil() )
+          SALOMEDS::SObject_wrap mainSO = ObjectToSObject( myCurrentStudy, mainShape );
+          SALOMEDS::ChildIterator_wrap it;
+          if ( !mainSO->_is_nil() ) {
             it = myCurrentStudy->NewChildIterator( mainSO );
+          }
           if ( !it->_is_nil() ) {
             for ( it->InitEx(true); it->More(); it->Next() ) {
-              GEOM::GEOM_Object_var subGeom =
-                GEOM::GEOM_Object::_narrow( SObjectToObject( it->Value() ));
+              SALOMEDS::SObject_wrap      so = it->Value();
+              CORBA::Object_var         obj = SObjectToObject( so );
+              GEOM::GEOM_Object_var subGeom = GEOM::GEOM_Object::_narrow( obj );
               if ( !subGeom->_is_nil() ) {
                 GEOM::ListOfLong_var subList = subGeom->GetSubShapeIndices();
                 if ( subList->length() == 1 && shapeID == subList[0] ) {
@@ -2112,10 +2150,13 @@ SMESH_Gen_i::FindGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
         }
         if ( geom->_is_nil() ) {
           // explode
-          GEOM::GEOM_IShapesOperations_var op =
+          GEOM::GEOM_IShapesOperations_wrap op =
             geomGen->GetIShapesOperations( GetCurrentStudyID() );
           if ( !op->_is_nil() )
             geom = op->GetSubShape( mainShape, shapeID );
+        }
+        else {
+          geom->Register();
         }
         if ( !geom->_is_nil() ) {
           GeomObjectToShape( geom ); // let geom client remember the found shape
@@ -2345,7 +2386,7 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
             if ( theCommonGroups ) {
               for(aGroupType=SMESH::NODE;aGroupType<=SMESH::BALL;aGroupType=(SMESH::ElementType)(aGroupType+1)) {
                 string str = "Gr";
-                SALOMEDS::SObject_var aMeshSObj = ObjectToSObject( myCurrentStudy, anInitMesh );
+                SALOMEDS::SObject_wrap aMeshSObj = ObjectToSObject( myCurrentStudy, anInitMesh );
                 if(aMeshSObj)
                   str += aMeshSObj->GetName();
                 str += "_";
@@ -2512,7 +2553,7 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
   }
 
   // IPAL21468 Change icon of compound because it need not be computed.
-  SALOMEDS::SObject_var aMeshSObj = ObjectToSObject( myCurrentStudy, aNewMesh );
+  SALOMEDS::SObject_wrap aMeshSObj = ObjectToSObject( myCurrentStudy, aNewMesh );
   SetPixMap( aMeshSObj, "ICON_SMESH_TREE_MESH" );
 
   if (aNewMeshDS)
@@ -2558,7 +2599,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CopyMesh(SMESH::SMESH_IDSource_ptr meshPart,
   SMESH_Mesh_i*       newMesh_i = SMESH::DownCast<SMESH_Mesh_i*>( newMesh );
   if ( !newMesh_i )
     THROW_SALOME_CORBA_EXCEPTION( "can't create a mesh", SALOME::INTERNAL_ERROR );
-  SALOMEDS::SObject_var meshSO = ObjectToSObject(myCurrentStudy, newMesh );
+  SALOMEDS::SObject_wrap meshSO = ObjectToSObject(myCurrentStudy, newMesh );
   if ( !meshSO->_is_nil() )
   {
     SetName( meshSO, meshName, "Mesh" );
@@ -2883,9 +2924,9 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
   // SetStoreName() to groups before storing hypotheses to let them refer to
   // groups using "store name", which is "Group <group_persistent_id>"
   {
-    SALOMEDS::ChildIterator_var itBig = myCurrentStudy->NewChildIterator( theComponent );
+    SALOMEDS::ChildIterator_wrap itBig = myCurrentStudy->NewChildIterator( theComponent );
     for ( ; itBig->More(); itBig->Next() ) {
-      SALOMEDS::SObject_var gotBranch = itBig->Value();
+      SALOMEDS::SObject_wrap gotBranch = itBig->Value();
       if ( gotBranch->Tag() > GetAlgorithmsRootTag() ) {
         CORBA::Object_var anObject = SObjectToObject( gotBranch );
         if ( !CORBA::is_nil( anObject ) ) {
@@ -2920,9 +2961,9 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
   aFile->CreateOnDisk();
 
   // --> iterator for top-level objects
-  SALOMEDS::ChildIterator_var itBig = myCurrentStudy->NewChildIterator( theComponent );
+  SALOMEDS::ChildIterator_wrap itBig = myCurrentStudy->NewChildIterator( theComponent );
   for ( ; itBig->More(); itBig->Next() ) {
-    SALOMEDS::SObject_var gotBranch = itBig->Value();
+    SALOMEDS::SObject_wrap gotBranch = itBig->Value();
 
     // --> hypotheses root branch (only one for the study)
     if ( gotBranch->Tag() == GetHypothesisRootTag() ) {
@@ -2931,9 +2972,9 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
       aTopGroup->CreateOnDisk();
 
       // iterator for all hypotheses
-      SALOMEDS::ChildIterator_var it = myCurrentStudy->NewChildIterator( gotBranch );
+      SALOMEDS::ChildIterator_wrap it = myCurrentStudy->NewChildIterator( gotBranch );
       for ( ; it->More(); it->Next() ) {
-        SALOMEDS::SObject_var mySObject = it->Value();
+        SALOMEDS::SObject_wrap mySObject = it->Value();
         CORBA::Object_var anObject = SObjectToObject( mySObject );
         if ( !CORBA::is_nil( anObject ) ) {
           SMESH::SMESH_Hypothesis_var myHyp = SMESH::SMESH_Hypothesis::_narrow( anObject );
@@ -3000,9 +3041,9 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
       aTopGroup->CreateOnDisk();
 
       // iterator for all algorithms
-      SALOMEDS::ChildIterator_var it = myCurrentStudy->NewChildIterator( gotBranch );
+      SALOMEDS::ChildIterator_wrap it = myCurrentStudy->NewChildIterator( gotBranch );
       for ( ; it->More(); it->Next() ) {
-        SALOMEDS::SObject_var mySObject = it->Value();
+        SALOMEDS::SObject_wrap mySObject = it->Value();
         CORBA::Object_var anObject = SObjectToObject( mySObject );
         if ( !CORBA::is_nil( anObject ) ) {
           SMESH::SMESH_Hypothesis_var myHyp = SMESH::SMESH_Hypothesis::_narrow( anObject );
@@ -3126,12 +3167,12 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
             aDataset->CloseOnDisk();
 
             // write reference on a shape if exists
-            SALOMEDS::SObject_var myRef;
+            SALOMEDS::SObject_wrap myRef;
             bool shapeRefFound = false;
-            bool found = gotBranch->FindSubObject( GetRefOnShapeTag(), myRef );
+            bool found = gotBranch->FindSubObject( GetRefOnShapeTag(), myRef.inout() );
             if ( found ) {
-              SALOMEDS::SObject_var myShape;
-              bool ok = myRef->ReferencedObject( myShape );
+              SALOMEDS::SObject_wrap myShape;
+              bool ok = myRef->ReferencedObject( myShape.inout() );
               if ( ok ) {
                 shapeRefFound = (! CORBA::is_nil( myShape->GetObject() ));
                 string myRefOnObject = myShape->GetID();
@@ -3146,8 +3187,8 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
             }
 
             // write applied hypotheses if exist
-            SALOMEDS::SObject_var myHypBranch;
-            found = gotBranch->FindSubObject( GetRefOnAppliedHypothesisTag(), myHypBranch );
+            SALOMEDS::SObject_wrap myHypBranch;
+            found = gotBranch->FindSubObject( GetRefOnAppliedHypothesisTag(), myHypBranch.inout() );
             if ( found && !shapeRefFound && hasShape) { // remove applied hyps
               myCurrentStudy->NewBuilder()->RemoveObjectWithChildren( myHypBranch );
             }
@@ -3155,12 +3196,12 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
               aGroup = new HDFgroup( "Applied Hypotheses", aTopGroup );
               aGroup->CreateOnDisk();
 
-              SALOMEDS::ChildIterator_var it = myCurrentStudy->NewChildIterator( myHypBranch );
+              SALOMEDS::ChildIterator_wrap it = myCurrentStudy->NewChildIterator( myHypBranch );
               int hypNb = 0;
               for ( ; it->More(); it->Next() ) {
-                SALOMEDS::SObject_var mySObject = it->Value();
-                SALOMEDS::SObject_var myRefOnHyp;
-                bool ok = mySObject->ReferencedObject( myRefOnHyp );
+                SALOMEDS::SObject_wrap mySObject = it->Value();
+                SALOMEDS::SObject_wrap myRefOnHyp;
+                bool ok = mySObject->ReferencedObject( myRefOnHyp.inout() );
                 if ( ok ) {
                   // san - it is impossible to recover applied hypotheses
                   //       using their entries within Load() method,
@@ -3189,8 +3230,9 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
             }
 
             // write applied algorithms if exist
-            SALOMEDS::SObject_var myAlgoBranch;
-            found = gotBranch->FindSubObject( GetRefOnAppliedAlgorithmsTag(), myAlgoBranch );
+            SALOMEDS::SObject_wrap myAlgoBranch;
+            found = gotBranch->FindSubObject( GetRefOnAppliedAlgorithmsTag(),
+                                              myAlgoBranch.inout() );
             if ( found && !shapeRefFound && hasShape) { // remove applied algos
               myCurrentStudy->NewBuilder()->RemoveObjectWithChildren( myAlgoBranch );
             }
@@ -3198,12 +3240,12 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
               aGroup = new HDFgroup( "Applied Algorithms", aTopGroup );
               aGroup->CreateOnDisk();
 
-              SALOMEDS::ChildIterator_var it = myCurrentStudy->NewChildIterator( myAlgoBranch );
+              SALOMEDS::ChildIterator_wrap it = myCurrentStudy->NewChildIterator( myAlgoBranch );
               int algoNb = 0;
               for ( ; it->More(); it->Next() ) {
-                SALOMEDS::SObject_var mySObject = it->Value();
-                SALOMEDS::SObject_var myRefOnAlgo;
-                bool ok = mySObject->ReferencedObject( myRefOnAlgo );
+                SALOMEDS::SObject_wrap mySObject = it->Value();
+                SALOMEDS::SObject_wrap myRefOnAlgo;
+                bool ok = mySObject->ReferencedObject( myRefOnAlgo.inout() );
                 if ( ok ) {
                   // san - it is impossible to recover applied algorithms
                   //       using their entries within Load() method,
@@ -3234,18 +3276,18 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
             // --> submesh objects sub-branches
 
             for ( int i = GetSubMeshOnVertexTag(); i <= GetSubMeshOnCompoundTag(); i++ ) {
-              SALOMEDS::SObject_var mySubmeshBranch;
-              found = gotBranch->FindSubObject( i, mySubmeshBranch );
+              SALOMEDS::SObject_wrap mySubmeshBranch;
+              found = gotBranch->FindSubObject( i, mySubmeshBranch.inout() );
 
               if ( found ) // check if there is shape reference in submeshes
               {
                 bool hasShapeRef = false;
-                SALOMEDS::ChildIterator_var itSM =
+                SALOMEDS::ChildIterator_wrap itSM =
                   myCurrentStudy->NewChildIterator( mySubmeshBranch );
                 for ( ; itSM->More(); itSM->Next() ) {
-                  SALOMEDS::SObject_var mySubRef, myShape, mySObject = itSM->Value();
-                  if ( mySObject->FindSubObject( GetRefOnShapeTag(), mySubRef ))
-                    mySubRef->ReferencedObject( myShape );
+                  SALOMEDS::SObject_wrap mySubRef, myShape, mySObject = itSM->Value();
+                  if ( mySObject->FindSubObject( GetRefOnShapeTag(), mySubRef.inout() ))
+                    mySubRef->ReferencedObject( myShape.inout() );
                   if ( !CORBA::is_nil( myShape ) && !CORBA::is_nil( myShape->GetObject() ))
                     hasShapeRef = true;
                   else
@@ -3296,9 +3338,9 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                 aGroup->CreateOnDisk();
 
                 // iterator for all submeshes of given type
-                SALOMEDS::ChildIterator_var itSM = myCurrentStudy->NewChildIterator( mySubmeshBranch );
+                SALOMEDS::ChildIterator_wrap itSM = myCurrentStudy->NewChildIterator( mySubmeshBranch );
                 for ( ; itSM->More(); itSM->Next() ) {
-                  SALOMEDS::SObject_var mySObject = itSM->Value();
+                  SALOMEDS::SObject_wrap mySObject = itSM->Value();
                   CORBA::Object_var anSubObject = SObjectToObject( mySObject );
                   if ( !CORBA::is_nil( anSubObject ))
                   {
@@ -3313,9 +3355,9 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                     aSubGroup->CreateOnDisk();
 
                     // write reference on a shape, already checked if it exists
-                    SALOMEDS::SObject_var mySubRef, myShape;
-                    if ( mySObject->FindSubObject( GetRefOnShapeTag(), mySubRef ))
-                      mySubRef->ReferencedObject( myShape );
+                    SALOMEDS::SObject_wrap mySubRef, myShape;
+                    if ( mySObject->FindSubObject( GetRefOnShapeTag(), mySubRef.inout() ))
+                      mySubRef->ReferencedObject( myShape.inout() );
                     string myRefOnObject = myShape->GetID();
                     if ( myRefOnObject.length() > 0 ) {
                       aSize[ 0 ] = myRefOnObject.length() + 1;
@@ -3326,18 +3368,19 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                     }
 
                     // write applied hypotheses if exist
-                    SALOMEDS::SObject_var mySubHypBranch;
-                    found = mySObject->FindSubObject( GetRefOnAppliedHypothesisTag(), mySubHypBranch );
+                    SALOMEDS::SObject_wrap mySubHypBranch;
+                    found = mySObject->FindSubObject( GetRefOnAppliedHypothesisTag(),
+                                                      mySubHypBranch.inout() );
                     if ( found ) {
                       aSubSubGroup = new HDFgroup( "Applied Hypotheses", aSubGroup );
                       aSubSubGroup->CreateOnDisk();
 
-                      SALOMEDS::ChildIterator_var it = myCurrentStudy->NewChildIterator( mySubHypBranch );
+                      SALOMEDS::ChildIterator_wrap it = myCurrentStudy->NewChildIterator( mySubHypBranch );
                       int hypNb = 0;
                       for ( ; it->More(); it->Next() ) {
-                        SALOMEDS::SObject_var mySubSObject = it->Value();
-                        SALOMEDS::SObject_var myRefOnHyp;
-                        bool ok = mySubSObject->ReferencedObject( myRefOnHyp );
+                        SALOMEDS::SObject_wrap mySubSObject = it->Value();
+                        SALOMEDS::SObject_wrap myRefOnHyp;
+                        bool ok = mySubSObject->ReferencedObject( myRefOnHyp.inout() );
                         if ( ok ) {
                           //string myRefOnObject = myRefOnHyp->GetID();
                           CORBA::Object_var anObject = SObjectToObject( myRefOnHyp );
@@ -3361,18 +3404,20 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                     }
 
                     // write applied algorithms if exist
-                    SALOMEDS::SObject_var mySubAlgoBranch;
-                    found = mySObject->FindSubObject( GetRefOnAppliedAlgorithmsTag(), mySubAlgoBranch );
+                    SALOMEDS::SObject_wrap mySubAlgoBranch;
+                    found = mySObject->FindSubObject( GetRefOnAppliedAlgorithmsTag(),
+                                                      mySubAlgoBranch.inout() );
                     if ( found ) {
                       aSubSubGroup = new HDFgroup( "Applied Algorithms", aSubGroup );
                       aSubSubGroup->CreateOnDisk();
 
-                      SALOMEDS::ChildIterator_var it = myCurrentStudy->NewChildIterator( mySubAlgoBranch );
+                      SALOMEDS::ChildIterator_wrap it =
+                        myCurrentStudy->NewChildIterator( mySubAlgoBranch );
                       int algoNb = 0;
                       for ( ; it->More(); it->Next() ) {
-                        SALOMEDS::SObject_var mySubSObject = it->Value();
-                        SALOMEDS::SObject_var myRefOnAlgo;
-                        bool ok = mySubSObject->ReferencedObject( myRefOnAlgo );
+                        SALOMEDS::SObject_wrap mySubSObject = it->Value();
+                        SALOMEDS::SObject_wrap myRefOnAlgo;
+                        bool ok = mySubSObject->ReferencedObject( myRefOnAlgo.inout() );
                         if ( ok ) {
                           //string myRefOnObject = myRefOnAlgo->GetID();
                           CORBA::Object_var anObject = SObjectToObject( myRefOnAlgo );
@@ -3442,9 +3487,9 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
             }
 
             // groups root sub-branch
-            SALOMEDS::SObject_var myGroupsBranch;
+            SALOMEDS::SObject_wrap myGroupsBranch;
             for ( int i = GetNodeGroupsTag(); i <= GetBallElementsGroupsTag(); i++ ) {
-              found = gotBranch->FindSubObject( i, myGroupsBranch );
+              found = gotBranch->FindSubObject( i, myGroupsBranch.inout() );
               if ( found ) {
                 char name_group[ 30 ];
                 if ( i == GetNodeGroupsTag() )
@@ -3463,9 +3508,9 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                 aGroup = new HDFgroup( name_group, aTopGroup );
                 aGroup->CreateOnDisk();
 
-                SALOMEDS::ChildIterator_var it = myCurrentStudy->NewChildIterator( myGroupsBranch );
+                SALOMEDS::ChildIterator_wrap it = myCurrentStudy->NewChildIterator( myGroupsBranch );
                 for ( ; it->More(); it->Next() ) {
-                  SALOMEDS::SObject_var mySObject = it->Value();
+                  SALOMEDS::SObject_wrap mySObject = it->Value();
                   CORBA::Object_var aSubObject = SObjectToObject( mySObject );
                   if ( !CORBA::is_nil( aSubObject ) ) {
                     SMESH_GroupBase_i* myGroupImpl =
@@ -3515,9 +3560,9 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                     SMESHDS_GroupOnGeom* aGeomGrp =
                       dynamic_cast<SMESHDS_GroupOnGeom*>( aGrpBaseDS );
                     if ( aGeomGrp ) {
-                      SALOMEDS::SObject_var mySubRef, myShape;
-                      if (mySObject->FindSubObject( GetRefOnShapeTag(), mySubRef ) &&
-                          mySubRef->ReferencedObject( myShape ) &&
+                      SALOMEDS::SObject_wrap mySubRef, myShape;
+                      if (mySObject->FindSubObject( GetRefOnShapeTag(), mySubRef.inout() ) &&
+                          mySubRef->ReferencedObject( myShape.inout() ) &&
                           !CORBA::is_nil( myShape->GetObject() ))
                       {
                         string myRefOnObject = myShape->GetID();
@@ -3878,10 +3923,10 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
   TCollection_AsciiString tmpDir =
     isMultiFile ? TCollection_AsciiString( ( char* )theURL ) : ( char* )SALOMEDS_Tool::GetTmpDir().c_str();
 
-    INFOS( "THE URL++++++++++++++" )
-    INFOS( theURL );
-    INFOS( "THE TMP PATH+++++++++" );
-    INFOS( tmpDir );
+  INFOS( "THE URL++++++++++++++" );
+  INFOS( theURL );
+  INFOS( "THE TMP PATH+++++++++" );
+  INFOS( tmpDir );
 
   // Convert the stream into sequence of files to process
   SALOMEDS::ListOfFileNames_var aFileSeq = SALOMEDS_Tool::PutStreamToFiles( theStream,
@@ -4020,8 +4065,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
             if ( myImpl ) {
               // myImpl->LoadFrom( hypdata.c_str() );
               hypDataList.push_back( make_pair( myImpl, hypdata ));
-              string iorString = GetORB()->object_to_string( myHyp );
-              int newId = myStudyContext->findId( iorString );
+              CORBA::String_var iorString = GetORB()->object_to_string( myHyp );
+              int newId = myStudyContext->findId( iorString.in() );
               myStudyContext->mapOldToNew( id, newId );
             }
             else
@@ -4120,8 +4165,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
             if ( myImpl ) {
               //myImpl->LoadFrom( hypdata.c_str() );
               hypDataList.push_back( make_pair( myImpl, hypdata ));
-              string iorString = GetORB()->object_to_string( myHyp );
-              int newId = myStudyContext->findId( iorString );
+              CORBA::String_var iorString = GetORB()->object_to_string( myHyp );
+              int newId = myStudyContext->findId( iorString.in() );
               myStudyContext->mapOldToNew( id, newId );
             }
             else
@@ -4161,8 +4206,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
             continue;
           meshGroupList.push_back( make_pair( myNewMeshImpl, aTopGroup ));
 
-          string iorString = GetORB()->object_to_string( myNewMesh );
-          int newId = myStudyContext->findId( iorString );
+          CORBA::String_var iorString = GetORB()->object_to_string( myNewMesh );
+          int newId = myStudyContext->findId( iorString.in() );
           myStudyContext->mapOldToNew( id, newId );
 
           // ouv : NPAL12872
@@ -4178,6 +4223,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
             aDataset->ReadFromDisk( anAutoColor );
             aDataset->CloseOnDisk();
             myNewMeshImpl->GetImpl().SetAutoColor( (bool)anAutoColor[0] );
+            delete [] anAutoColor;
           }
 
           // try to read and set reference to shape
@@ -4191,7 +4237,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
             aDataset->ReadFromDisk( refFromFile );
             aDataset->CloseOnDisk();
             if ( strlen( refFromFile ) > 0 ) {
-              SALOMEDS::SObject_var shapeSO = myCurrentStudy->FindObjectID( refFromFile );
+              SALOMEDS::SObject_wrap shapeSO = myCurrentStudy->FindObjectID( refFromFile );
 
               // Make sure GEOM data are loaded first
               //loadGeomData( shapeSO->GetFatherComponent() );
@@ -4203,6 +4249,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                   myNewMeshImpl->SetShape( aShapeObject );
               }
             }
+            delete [] refFromFile;
           }
 
           // issue 20918. Restore Persistent Id of SMESHDS_Mesh
@@ -4215,6 +4262,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
             aDataset->ReadFromDisk( meshPersistentId );
             aDataset->CloseOnDisk();
             myNewMeshImpl->GetImpl().GetMeshDS()->SetPersistentId( *meshPersistentId );
+            delete [] meshPersistentId;
           }
         }
       }
@@ -4245,8 +4293,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
       bool hasData = false;
 
       // get mesh old id
-      string iorString = GetORB()->object_to_string( myNewMeshImpl->_this() );
-      int newId = myStudyContext->findId( iorString );
+      CORBA::String_var iorString = GetORB()->object_to_string( myNewMeshImpl->_this() );
+      int newId = myStudyContext->findId( iorString.in() );
       int id = myStudyContext->getOldId( newId );
 
       // try to find mesh data dataset
@@ -4265,6 +4313,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
           // myReader.Perform();
           hasData = true;
         }
+        delete [] strHasData;
       }
 
       // Try to get applied ALGORITHMS (mesh is not cleared by algo addition because
@@ -4287,9 +4336,10 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
             aDataset->ReadFromDisk( refFromFile );
             aDataset->CloseOnDisk();
             // san - it is impossible to recover applied algorithms using their entries within Load() method
-            //SALOMEDS::SObject_var hypSO = myCurrentStudy->FindObjectID( refFromFile );
+            //SALOMEDS::SObject_wrap hypSO = myCurrentStudy->FindObjectID( refFromFile );
             //CORBA::Object_var hypObject = SObjectToObject( hypSO );
             int id = atoi( refFromFile );
+            delete [] refFromFile;
             string anIOR = myStudyContext->getIORbyOldId( id );
             if ( !anIOR.empty() ) {
               CORBA::Object_var hypObject = GetORB()->string_to_object( anIOR.c_str() );
@@ -4323,9 +4373,10 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
             aDataset->ReadFromDisk( refFromFile );
             aDataset->CloseOnDisk();
             // san - it is impossible to recover applied hypotheses using their entries within Load() method
-            //SALOMEDS::SObject_var hypSO = myCurrentStudy->FindObjectID( refFromFile );
+            //SALOMEDS::SObject_wrap hypSO = myCurrentStudy->FindObjectID( refFromFile );
             //CORBA::Object_var hypObject = SObjectToObject( hypSO );
             int id = atoi( refFromFile );
+            delete [] refFromFile;
             string anIOR = myStudyContext->getIORbyOldId( id );
             if ( !anIOR.empty() ) {
               CORBA::Object_var hypObject = GetORB()->string_to_object( anIOR.c_str() );
@@ -4393,7 +4444,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                 aDataset->ReadFromDisk( refFromFile );
                 aDataset->CloseOnDisk();
                 if ( strlen( refFromFile ) > 0 ) {
-                  SALOMEDS::SObject_var subShapeSO = myCurrentStudy->FindObjectID( refFromFile );
+                  SALOMEDS::SObject_wrap subShapeSO = myCurrentStudy->FindObjectID( refFromFile );
                   CORBA::Object_var subShapeObject = SObjectToObject( subShapeSO );
                   if ( !CORBA::is_nil( subShapeObject ) ) {
                     aSubShapeObject = GEOM::GEOM_Object::_narrow( subShapeObject );
@@ -4543,7 +4594,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                 aDataset->ReadFromDisk( refFromFile );
                 aDataset->CloseOnDisk();
                 if ( strlen( refFromFile ) > 0 ) {
-                  SALOMEDS::SObject_var shapeSO = myCurrentStudy->FindObjectID( refFromFile );
+                  SALOMEDS::SObject_wrap shapeSO = myCurrentStudy->FindObjectID( refFromFile );
                   CORBA::Object_var shapeObject = SObjectToObject( shapeSO );
                   if ( !CORBA::is_nil( shapeObject ) ) {
                     aShapeObject = GEOM::GEOM_Object::_narrow( shapeObject );
@@ -4579,7 +4630,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                 continue;
 
               string iorSubString = GetORB()->object_to_string( aNewGroup );
-              int newSubId = myStudyContext->findId( iorSubString );
+              int        newSubId = myStudyContext->findId( iorSubString );
               myStudyContext->mapOldToNew( subid, newSubId );
 
               SMESH_GroupBase_i* aGroupImpl = SMESH::DownCast< SMESH_GroupBase_i*>( aNewGroup );
@@ -4770,24 +4821,6 @@ void SMESH_Gen_i::Close( SALOMEDS::SComponent_ptr theComponent )
     myStudyContextMap.erase( studyId );
   }
 
-  // delete SMESH_Mesh's
-//   See bug IPAL19437.
-//
-//   StudyContextStruct* context = myGen.GetStudyContext( studyId );
-//   map< int, SMESH_Mesh* >::iterator i_mesh = context->mapMesh.begin();
-//   for ( ; i_mesh != context->mapMesh.end(); ++i_mesh ) {
-//     printf( "--------------------------- SMESH_Gen_i::Close, delete aGroup = %p \n", i_mesh->second );
-//     delete i_mesh->second;
-//   }
-
-
-  // delete SMESHDS_Mesh's
-  // it's too long on big meshes
-//   if ( context->myDocument ) {
-//     delete context->myDocument;
-//     context->myDocument = 0;
-//   }
-
   // remove the tmp files meshes are loaded from
   SMESH_PreMeshInfo::RemoveStudyFiles_TMP_METHOD( theComponent );
 
@@ -4906,7 +4939,7 @@ void SMESH_Gen_i::SetName(const char* theIOR,
 {
   if ( theIOR && strcmp( theIOR, "" ) ) {
     CORBA::Object_var anObject = GetORB()->string_to_object( theIOR );
-    SALOMEDS::SObject_var aSO = ObjectToSObject( myCurrentStudy, anObject );
+    SALOMEDS::SObject_wrap aSO = ObjectToSObject( myCurrentStudy, anObject );
     if ( !aSO->_is_nil() ) {
       SetName( aSO, theName );
     }

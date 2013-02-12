@@ -23,6 +23,9 @@
 #ifndef _SMESH_CONTROLS_HXX_
 #define _SMESH_CONTROLS_HXX_
 
+// This file is named incosistently with others, i.e. not SMESHDS_Controls.hxx,
+// because it was moved from ../Controls/SMESH_Controls.hxx
+
 #include "SMDSAbs_ElementType.hxx"
 
 #include <boost/shared_ptr.hpp>

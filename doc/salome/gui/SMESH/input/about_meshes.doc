@@ -11,10 +11,9 @@ Meshes are stored in DAT, MED, UNV, STL, CGNS, GMF and SAUVE formats and can be
 
 It is possible to \subpage constructing_meshes_page "construct meshes" 
 on the basis of geometrical shapes produced in the GEOM module.
-It is also possible to \subpage constructing_submeshes_page "construct
-mesh on a part of the geometrical object", for example, a face, with
-different meshing parameters than the whole mesh.
-
+It is also possible to 
+\subpage constructing_submeshes_page "construct mesh on a part of the geometrical object", 
+for example, a face, with different meshing parameters than the whole mesh.
 
 Several created meshes can be \subpage building_compounds_page "combined into another mesh".
 

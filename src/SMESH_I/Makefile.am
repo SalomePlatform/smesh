@@ -51,10 +51,6 @@ salomeinclude_HEADERS = \
 	SMESH_MeshPartDS.hxx \
 	SMESH.hxx
 
-# Scripts to be installed.
-dist_salomescript_DATA= \
-	smeshpy.py
-
 # Libraries targets
 
 lib_LTLIBRARIES = libSMESHEngine.la

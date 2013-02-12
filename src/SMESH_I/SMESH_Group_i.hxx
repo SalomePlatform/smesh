@@ -110,14 +110,14 @@ protected:
   SMESH_PreMeshInfo* myPreMeshInfo; // mesh info before full loading from study file
   friend class SMESH_PreMeshInfo;
 
+  int myNbNodes, myGroupDSTic;
+
 private:
   SMESH_Mesh_i* myMeshServant;
   int myLocalID;
 
   void changeLocalId(int localId) { myLocalID = localId; }
   friend class SMESH_Mesh_i;
-
-  int myNbNodes, myGroupDSTic;
 };
 
 // ======
@@ -183,6 +183,8 @@ class SMESH_I_EXPORT SMESH_GroupOnFilter_i:
   // CORBA interface implementation
   void SetFilter(SMESH::Filter_ptr theFilter);
   SMESH::Filter_ptr GetFilter();
+  virtual SMESH::long_array* GetListOfID();
+  virtual SMESH::long_array* GetMeshInfo();
 
   // method of SMESH::Filter_i::TPredicateChangeWaiter
   virtual void PredicateChanged();

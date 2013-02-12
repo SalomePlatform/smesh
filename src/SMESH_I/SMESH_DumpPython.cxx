@@ -25,15 +25,17 @@
 //  Module  : SMESH
 
 #include "SMESH_PythonDump.hxx"
-#include "SMESH_Gen_i.hxx"
-#include "SMESH_Filter_i.hxx"
-#include "SMESH_MeshEditor_i.hxx"
+
 #include "SMESH_2smeshpy.hxx"
+#include "SMESH_Comment.hxx"
+#include "SMESH_Filter_i.hxx"
+#include "SMESH_Gen_i.hxx"
+#include "SMESH_MeshEditor_i.hxx"
+
+#include <SALOMEDS_wrap.hxx>
 
 #include <TColStd_HSequenceOfInteger.hxx>
 #include <TCollection_AsciiString.hxx>
-#include <SMESH_Comment.hxx>
-
 
 #ifdef _DEBUG_
 static int MYDEBUG = 0;
@@ -72,7 +74,7 @@ namespace SMESH
       SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
       std::string aString = myStream.str();
       TCollection_AsciiString aCollection(Standard_CString(aString.c_str()));
-      SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
+      SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();
       if(!aStudy->_is_nil() && !aCollection.IsEmpty()){
         aSMESHGen->AddToPythonScript(aStudy->StudyId(),aCollection);
         if(MYDEBUG) MESSAGE(aString);
@@ -238,10 +240,13 @@ namespace SMESH
   TPythonDump::
   operator<<(SALOMEDS::SObject_ptr aSObject)
   {
-    if ( !aSObject->_is_nil() )
-      myStream << aSObject->GetID();
-    else
+    if ( !aSObject->_is_nil() ) {
+      CORBA::String_var entry = aSObject->GetID();
+      myStream << entry.in();
+    }
+    else {
       myStream << NotPublishedObjectName();
+    }
     return *this;
   }
 
@@ -249,9 +254,9 @@ namespace SMESH
   TPythonDump::
   operator<<(CORBA::Object_ptr theArg)
   {
-    SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-    SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();
-    SALOMEDS::SObject_var aSObject = SMESH_Gen_i::ObjectToSObject(aStudy,theArg);
+    SMESH_Gen_i*          aSMESHGen = SMESH_Gen_i::GetSMESHGen();
+    SALOMEDS::Study_var      aStudy = aSMESHGen->GetCurrentStudy();
+    SALOMEDS::SObject_wrap aSObject = SMESH_Gen_i::ObjectToSObject(aStudy,theArg);
     if(!aSObject->_is_nil()) {
       CORBA::String_var id = aSObject->GetID();
       myStream << id;
@@ -270,8 +275,8 @@ namespace SMESH
   TPythonDump::
   operator<<(SMESH::SMESH_Hypothesis_ptr theArg)
   {
-    SALOMEDS::Study_var aStudy = SMESH_Gen_i::GetSMESHGen()->GetCurrentStudy();
-    SALOMEDS::SObject_var aSObject = SMESH_Gen_i::ObjectToSObject(aStudy,theArg);
+    SALOMEDS::Study_var     aStudy = SMESH_Gen_i::GetSMESHGen()->GetCurrentStudy();
+    SALOMEDS::SObject_wrap aSObject = SMESH_Gen_i::ObjectToSObject(aStudy,theArg);
     if(aSObject->_is_nil() && !CORBA::is_nil(theArg))
       myStream << "hyp_" << theArg->GetId();
     else
@@ -285,18 +290,22 @@ namespace SMESH
   {
     if ( CORBA::is_nil( theArg ) )
       return *this << "None";
-    SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-    SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();
-    SALOMEDS::SObject_var aSObject = SMESH_Gen_i::ObjectToSObject(aStudy,theArg);
+    SMESH_Gen_i*          aSMESHGen = SMESH_Gen_i::GetSMESHGen();
+    SALOMEDS::Study_var      aStudy = aSMESHGen->GetCurrentStudy();
+    SALOMEDS::SObject_wrap aSObject = SMESH_Gen_i::ObjectToSObject(aStudy,theArg);
     if(!aSObject->_is_nil())
-      return *this << aSObject;
-    if ( SMESH::Filter_i* filter = SMESH::DownCast<SMESH::Filter_i*>( theArg ))
-      return *this << filter;
-    SMESH::SMESH_Mesh_var mesh = theArg->GetMesh();
-    if ( !theArg->_is_equivalent( mesh ))
     {
-      SMESH::long_array_var anElementsId = theArg->GetIDs();
-      SMESH::array_of_ElementType_var types =  theArg->GetTypes();
+      return *this << aSObject;
+    }
+    if ( SMESH::Filter_i* filter = SMESH::DownCast<SMESH::Filter_i*>( theArg ))
+    {
+      return *this << filter;
+    }
+    if ( SMESH_MeshEditor_i::IsTemporaryIDSource( theArg ))
+    {
+      SMESH::SMESH_Mesh_var            mesh = theArg->GetMesh();
+      SMESH::long_array_var    anElementsId = theArg->GetIDs();
+      SMESH::array_of_ElementType_var types = theArg->GetTypes();
       SMESH::ElementType type = types->length() ? types[0] : SMESH::ALL;
       return *this << mesh << ".GetIDSource(" << anElementsId << ", " << type << ")";
     }
@@ -590,7 +599,8 @@ Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Object_ptr theStudy,
   if (CORBA::is_nil(aStudy))
     return new Engines::TMPFile(0);
 
-  SALOMEDS::SObject_var aSO = aStudy->FindComponent(ComponentDataType());
+  CORBA::String_var compDataType = ComponentDataType();
+  SALOMEDS::SObject_wrap aSO = aStudy->FindComponent( compDataType.in() );
   if (CORBA::is_nil(aSO))
     return new Engines::TMPFile(0);
 
@@ -599,9 +609,9 @@ Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Object_ptr theStudy,
   Resource_DataMapOfAsciiStringAsciiString aMapNames;
   //TCollection_AsciiString s ("qwertyuioplkjhgfdsazxcvbnmQWERTYUIOPLKJHGFDSAZXCVBNM0987654321_");
 
-  SALOMEDS::ChildIterator_var Itr = aStudy->NewChildIterator(aSO);
+  SALOMEDS::ChildIterator_wrap Itr = aStudy->NewChildIterator(aSO);
   for (Itr->InitEx(true); Itr->More(); Itr->Next()) {
-    SALOMEDS::SObject_var aValue = Itr->Value();
+    SALOMEDS::SObject_wrap aValue = Itr->Value();
     CORBA::String_var anID = aValue->GetID();
     CORBA::String_var aName = aValue->GetName();
     TCollection_AsciiString aGUIName ( (char*) aName.in() );
@@ -613,13 +623,15 @@ Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Object_ptr theStudy,
   }
 
   // Get trace of restored study
-  //SALOMEDS::SObject_var aSO = SMESH_Gen_i::ObjectToSObject(theStudy, _this());
+  //SALOMEDS::SObject_wrap aSO = SMESH_Gen_i::ObjectToSObject(theStudy, _this());
   SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
-  SALOMEDS::GenericAttribute_var anAttr =
+  SALOMEDS::GenericAttribute_wrap anAttr =
     aStudyBuilder->FindOrCreateAttribute(aSO, "AttributePythonObject");
 
-  char* oldValue = SALOMEDS::AttributePythonObject::_narrow(anAttr)->GetObject();
-  TCollection_AsciiString aSavedTrace (oldValue);
+  SALOMEDS::AttributePythonObject_var pyAttr =
+    SALOMEDS::AttributePythonObject::_narrow(anAttr);
+  CORBA::String_var oldValue = pyAttr->GetObject();
+  TCollection_AsciiString aSavedTrace (oldValue.in());
 
   // Add trace of API methods calls and replace study entries by names
   TCollection_AsciiString aScript;
@@ -675,14 +687,16 @@ void SMESH_Gen_i::SavePython (SALOMEDS::Study_ptr theStudy)
   TCollection_AsciiString aScript = GetNewPythonLines(theStudy->StudyId());
 
   // Check contents of PythonObject attribute
-  SALOMEDS::SObject_var aSO = theStudy->FindComponent(ComponentDataType());
-  //SALOMEDS::SObject_var aSO = SMESH_Gen_i::ObjectToSObject(theStudy, _this());
+  CORBA::String_var compDataType = ComponentDataType();
+  SALOMEDS::SObject_wrap aSO = theStudy->FindComponent( compDataType.in() );
   SALOMEDS::StudyBuilder_var aStudyBuilder = theStudy->NewBuilder();
-  SALOMEDS::GenericAttribute_var anAttr =
+  SALOMEDS::GenericAttribute_wrap anAttr =
     aStudyBuilder->FindOrCreateAttribute(aSO, "AttributePythonObject");
 
-  char* oldValue = SALOMEDS::AttributePythonObject::_narrow(anAttr)->GetObject();
-  TCollection_AsciiString oldScript (oldValue);
+  SALOMEDS::AttributePythonObject_var pyAttr =
+    SALOMEDS::AttributePythonObject::_narrow(anAttr);
+  CORBA::String_var oldValue = pyAttr->GetObject();
+  TCollection_AsciiString oldScript (oldValue.in());
 
   if (oldScript.Length() > 0) {
     oldScript += "\n";
@@ -692,7 +706,7 @@ void SMESH_Gen_i::SavePython (SALOMEDS::Study_ptr theStudy)
   }
 
   // Store in PythonObject attribute
-  SALOMEDS::AttributePythonObject::_narrow(anAttr)->SetObject(oldScript.ToCString(), 1);
+  pyAttr->SetObject(oldScript.ToCString(), 1);
 
   // Clean trace of API methods calls
   CleanPythonTrace(theStudy->StudyId());
@@ -776,7 +790,9 @@ namespace {
       isValidName = false;
     }
     // shorten names like CartesianParameters3D_400_400_400_1000000_1
-    if ( aName.Length() > 20 && nbUnderscore > 2 )
+    const int nbAllowedUnderscore = 3; /* changed from 2 to 3 by an user request
+                                          posted to SALOME Forum */
+    if ( aName.Length() > 20 && nbUnderscore > nbAllowedUnderscore )
     {
       p = aName.Location( "_", 20, aName.Length());
       if ( p > 1 )
@@ -792,14 +808,14 @@ namespace {
  */
 //=============================================================================
 TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
-                        (SALOMEDS::Study_ptr theStudy,
+                        (SALOMEDS::Study_ptr                       theStudy,
                          Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
                          Resource_DataMapOfAsciiStringAsciiString& theNames,
-                         bool isPublished,
-                         bool isMultiFile,
-                         bool isHistoricalDump,
-                         bool& aValidScript,
-                         const TCollection_AsciiString& theSavedTrace)
+                         bool                                      isPublished,
+                         bool                                      isMultiFile,
+                         bool                                      isHistoricalDump,
+                         bool&                                     aValidScript,
+                         const TCollection_AsciiString&            theSavedTrace)
 {
   int aStudyID = theStudy->StudyId();
 
@@ -1014,7 +1030,8 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   if (isPublished)
   {
     //Output the script that sets up the visual parameters.
-    char* script = theStudy->GetDefaultScript(ComponentDataType(), "\t");
+    CORBA::String_var compDataType = ComponentDataType();
+    char* script = theStudy->GetDefaultScript( compDataType.in(), "\t");
     if (script && strlen(script) > 0) {
       anUpdatedScript += "\n\n\t### Store presentation parameters of displayed objects\n";
       anUpdatedScript += script;

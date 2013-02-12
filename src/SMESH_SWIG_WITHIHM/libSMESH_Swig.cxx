@@ -83,12 +83,15 @@ namespace
       SALOMEDS::GenericAttribute_var anAttr = theStudyBuilder->FindOrCreateAttribute(aDomainRoot,"AttributeName");
       SALOMEDS::AttributeName_var aName = SALOMEDS::AttributeName::_narrow(anAttr);
       aName->SetValue(theName.toLatin1().data());
+      aName->UnRegister();
       anAttr = theStudyBuilder->FindOrCreateAttribute(aDomainRoot,"AttributePixMap");
       SALOMEDS::AttributePixMap_var aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
       aPixmap->SetPixMap(thePixmap.toLatin1().data());
+      aPixmap->UnRegister();
       anAttr = theStudyBuilder->FindOrCreateAttribute(aDomainRoot,"AttributeSelectable");
       SALOMEDS::AttributeSelectable_var aSelAttr = SALOMEDS::AttributeSelectable::_narrow(anAttr);
       aSelAttr->SetSelectable(false);
+      aSelAttr->UnRegister();
     }
 
     return aDomainRoot;
@@ -126,12 +129,12 @@ namespace
   //---------------------------------------------------------------
   inline
   SALOMEDS::SObject_var
-  AddToDomain(const std::string& theIOR,
-              const SALOMEDS::SComponent_var& theSComponentMesh,
+  AddToDomain(const std::string&                theIOR,
+              const SALOMEDS::SComponent_var&   theSComponentMesh,
               const SALOMEDS::StudyBuilder_var& theStudyBuilder,
-              CORBA::Long theDomainRootTag,
-              const QString& theDomainName,
-              const QString& theDomainPixmap)
+              CORBA::Long                       theDomainRootTag,
+              const QString&                    theDomainName,
+              const QString&                    theDomainPixmap)
   {
     SALOMEDS::SObject_var aDomain = GetDomainRoot(theSComponentMesh,
                                                   theStudyBuilder,
@@ -140,6 +143,7 @@ namespace
                                                   theDomainPixmap);
     // Add New Hypothesis
     SALOMEDS::SObject_var aSObject = theStudyBuilder->NewObject(aDomain);
+    aDomain->UnRegister();
     SALOMEDS::GenericAttribute_var anAttr = theStudyBuilder->FindOrCreateAttribute(aSObject,"AttributePixMap");
     SALOMEDS::AttributePixMap_var aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
     CORBA::Object_var anObject = StringToObject(theIOR);
@@ -147,9 +151,11 @@ namespace
     CORBA::String_var aType = aDomainItem->GetName();
     QString aPixmapName = theDomainPixmap + "_" + aType.in();
     aPixmap->SetPixMap(aPixmapName.toLatin1().data());
+    aPixmap->UnRegister();
     anAttr = theStudyBuilder->FindOrCreateAttribute(aSObject,"AttributeIOR");
     SALOMEDS::AttributeIOR_var anIOR = SALOMEDS::AttributeIOR::_narrow(anAttr);
     anIOR->SetValue(theIOR.c_str());
+    anIOR->UnRegister();
 
     return aSObject;
   }
@@ -187,44 +193,52 @@ namespace
 
   //---------------------------------------------------------------
   void
-  SetDomain(const char* theMeshOrSubMeshEntry,
-            const char* theDomainEntry,
-            const SALOMEDS::Study_var& theStudy,
+  SetDomain(const char*                       theMeshOrSubMeshEntry,
+            const char*                       theDomainEntry,
+            const SALOMEDS::Study_var&        theStudy,
             const SALOMEDS::StudyBuilder_var& theStudyBuilder,
-            long theRefOnAppliedDomainTag,
-            const QString& theAppliedDomainMEN,
-            const QString& theAppliedDomainICON)
+            long                              theRefOnAppliedDomainTag,
+            const QString&                    theAppliedDomainMEN,
+            const QString&                    theAppliedDomainICON)
   {
     SALOMEDS::SObject_var aMeshOrSubMeshSO = theStudy->FindObjectID(theMeshOrSubMeshEntry);
-    SALOMEDS::SObject_var aHypothesisSO = theStudy->FindObjectID(theDomainEntry);
+    SALOMEDS::SObject_var    aHypothesisSO = theStudy->FindObjectID(theDomainEntry);
 
     if(!aMeshOrSubMeshSO->_is_nil() && !aHypothesisSO->_is_nil()){
       //Find or Create Applied Hypothesis root
       SALOMEDS::SObject_var anAppliedDomainSO;
-      if(!aMeshOrSubMeshSO->FindSubObject(theRefOnAppliedDomainTag,anAppliedDomainSO)){
+      if( !aMeshOrSubMeshSO->FindSubObject( theRefOnAppliedDomainTag, anAppliedDomainSO ))
+      {
         anAppliedDomainSO = theStudyBuilder->NewObjectToTag(aMeshOrSubMeshSO,theRefOnAppliedDomainTag);
         SALOMEDS::GenericAttribute_var anAttr =
           theStudyBuilder->FindOrCreateAttribute(anAppliedDomainSO,"AttributeName");
         SALOMEDS::AttributeName_var aName = SALOMEDS::AttributeName::_narrow(anAttr);
         aName->SetValue(theAppliedDomainMEN.toLatin1().data());
+        aName->UnRegister();
         anAttr = theStudyBuilder->FindOrCreateAttribute(anAppliedDomainSO,"AttributeSelectable");
         SALOMEDS::AttributeSelectable_var aSelAttr = SALOMEDS::AttributeSelectable::_narrow(anAttr);
         aSelAttr->SetSelectable(false);
+        aSelAttr->UnRegister();
         anAttr = theStudyBuilder->FindOrCreateAttribute(anAppliedDomainSO,"AttributePixMap");
         SALOMEDS::AttributePixMap_var aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
         aPixmap->SetPixMap(theAppliedDomainICON.toLatin1().data());
+        aPixmap->UnRegister();
       }
       SALOMEDS::SObject_var aSObject = theStudyBuilder->NewObject(anAppliedDomainSO);
       theStudyBuilder->Addreference(aSObject,aHypothesisSO);
+      aSObject->UnRegister();
+      anAppliedDomainSO->UnRegister();
     }
+    if ( !aMeshOrSubMeshSO->_is_nil() ) aMeshOrSubMeshSO->UnRegister();
+    if ( !aHypothesisSO->_is_nil())     aHypothesisSO->UnRegister();
   }
 
 
   //---------------------------------------------------------------
   void
-  SetHypothesis(const char* theMeshOrSubMeshEntry,
-                const char* theDomainEntry,
-                const SALOMEDS::Study_var& theStudy,
+  SetHypothesis(const char*                       theMeshOrSubMeshEntry,
+                const char*                       theDomainEntry,
+                const SALOMEDS::Study_var&        theStudy,
                 const SALOMEDS::StudyBuilder_var& theStudyBuilder)
   {
     SetDomain(theMeshOrSubMeshEntry,
@@ -239,9 +253,9 @@ namespace
 
   //---------------------------------------------------------------
   void
-  SetAlgorithms(const char* theMeshOrSubMeshEntry,
-                const char* theDomainEntry,
-                const SALOMEDS::Study_var& theStudy,
+  SetAlgorithms(const char*                       theMeshOrSubMeshEntry,
+                const char*                       theDomainEntry,
+                const SALOMEDS::Study_var&        theStudy,
                 const SALOMEDS::StudyBuilder_var& theStudyBuilder)
   {
     SetDomain(theMeshOrSubMeshEntry,
@@ -296,31 +310,36 @@ SMESH_Swig::Init(int theStudyID)
 {
   class TEvent: public SALOME_Event
   {
-    int myStudyID;
-    SALOMEDS::Study_var& myStudy;
+    int                         myStudyID;
+    SALOMEDS::Study_var&        myStudy;
     SALOMEDS::StudyBuilder_var& myStudyBuilder;
-    SALOMEDS::SComponent_var& mySComponentMesh;
+    SALOMEDS::SComponent_var&   mySComponentMesh;
   public:
-    TEvent(int theStudyID,
-           SALOMEDS::Study_var& theStudy,
+    TEvent(int                         theStudyID,
+           SALOMEDS::Study_var&        theStudy,
            SALOMEDS::StudyBuilder_var& theStudyBuilder,
-           SALOMEDS::SComponent_var& theSComponentMesh):
-      myStudyID(theStudyID),
-      myStudy(theStudy),
-      myStudyBuilder(theStudyBuilder),
+           SALOMEDS::SComponent_var&   theSComponentMesh):
+      myStudyID       (theStudyID),
+      myStudy         (theStudy),
+      myStudyBuilder  (theStudyBuilder),
       mySComponentMesh(theSComponentMesh)
     {}
+
+    ~TEvent()
+    {
+      if ( !mySComponentMesh->_is_nil() ) mySComponentMesh->UnRegister();
+    }
 
     virtual
     void
     Execute()
     {
-      SUIT_Session* aSession = SUIT_Session::session();
+      SUIT_Session* aSession          = SUIT_Session::session();
       SUIT_Application* anApplication = aSession->activeApplication();
-      SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>(anApplication);
+      SalomeApp_Application* anApp    = dynamic_cast<SalomeApp_Application*>(anApplication);
 
       SALOME_NamingService* aNamingService = anApp->namingService();
-      CORBA::Object_var anObject = aNamingService->Resolve("/myStudyManager");
+      CORBA::Object_var anObject           = aNamingService->Resolve("/myStudyManager");
       SALOMEDS::StudyManager_var aStudyMgr = SALOMEDS::StudyManager::_narrow(anObject);
       myStudy = aStudyMgr->GetStudyByID(myStudyID);
 
@@ -334,26 +353,33 @@ SMESH_Swig::Init(int theStudyID)
       SALOMEDS::AttributePixMap_var  aPixmap;
 
       SALOMEDS::SComponent_var aSComponent = myStudy->FindComponent("SMESH");
-      if(aSComponent->_is_nil()){
+      if ( aSComponent->_is_nil() )
+      {
         bool aLocked = myStudy->GetProperties()->IsLocked();
         if (aLocked)
           myStudy->GetProperties()->SetLocked(false);
-        
-        aSComponent = myStudyBuilder->NewComponent("SMESH");
-        anAttr = myStudyBuilder->FindOrCreateAttribute(aSComponent,"AttributeName");
-        aName = SALOMEDS::AttributeName::_narrow(anAttr);
 
-        SMESHGUI* aSMESHGUI = SMESHGUI::GetSMESHGUI(); //SRN: BugID IPAL9186, load a SMESH gui if it hasn't been loaded
-        if (!aSMESHGUI){
+        SMESHGUI* aSMESHGUI = SMESHGUI::GetSMESHGUI();
+        //SRN: BugID IPAL9186, load a SMESH gui if it hasn't been loaded
+        if (!aSMESHGUI) {
           CAM_Module* aModule = anApp->module("Mesh");
           if(!aModule)
-              aModule = anApp->loadModule("Mesh");
+            aModule = anApp->loadModule("Mesh");
           aSMESHGUI = dynamic_cast<SMESHGUI*>(aModule);
         } //SRN: BugID IPAL9186: end of a fix
+
+        aSComponent = myStudyBuilder->NewComponent("SMESH");
+
+        anAttr = myStudyBuilder->FindOrCreateAttribute(aSComponent,"AttributeName");
+        aName  = SALOMEDS::AttributeName::_narrow(anAttr);
         aName->SetValue(aSMESHGUI->moduleName().toLatin1().data());
+        aName->UnRegister();
+
         anAttr = myStudyBuilder->FindOrCreateAttribute(aSComponent,"AttributePixMap");
         aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
         aPixmap->SetPixMap( "ICON_OBJBROWSER_SMESH" );
+        aPixmap->UnRegister();
+
         myStudyBuilder->DefineComponentInstance(aSComponent,aSMESHGen);
         if (aLocked)
           myStudy->GetProperties()->SetLocked(true);
@@ -388,22 +414,29 @@ const char* SMESH_Swig::AddNewMesh(const char* theIOR)
 
   // VSR: added temporarily - to be removed - objects are published automatically by engine
   SALOMEDS::SObject_var aSObject = myStudy->FindObjectIOR(theIOR);
-  if (aSObject->_is_nil()){
+  if (aSObject->_is_nil())
+  {
     //Find or Create Hypothesis root
-    GetHypothesisRoot(mySComponentMesh,myStudyBuilder);
-    GetAlgorithmsRoot(mySComponentMesh,myStudyBuilder);
+    SALOMEDS::SObject_var hroot = GetHypothesisRoot(mySComponentMesh,myStudyBuilder);
+    SALOMEDS::SObject_var aroot = GetAlgorithmsRoot(mySComponentMesh,myStudyBuilder);
+    hroot->UnRegister();
+    aroot->UnRegister();
 
     // Add New Mesh
     aSObject = myStudyBuilder->NewObject(mySComponentMesh);
     SALOMEDS::GenericAttribute_var anAttr = myStudyBuilder->FindOrCreateAttribute(aSObject,"AttributePixMap");
     SALOMEDS::AttributePixMap_var aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
     aPixmap->SetPixMap( "ICON_SMESH_TREE_MESH" );
+    aPixmap->UnRegister();
+
     anAttr = myStudyBuilder->FindOrCreateAttribute(aSObject, "AttributeIOR");
     SALOMEDS::AttributeIOR_var anIOR = SALOMEDS::AttributeIOR::_narrow(anAttr);
     anIOR->SetValue(theIOR);
+    anIOR->UnRegister();
   }
 
   CORBA::String_var anEntry = aSObject->GetID();
+  aSObject->UnRegister();
 
   return anEntry._retn();
 }
@@ -418,6 +451,8 @@ const char* SMESH_Swig::AddNewHypothesis(const char* theIOR)
                                                    mySComponentMesh,
                                                    myStudyBuilder);
   CORBA::String_var anEntry = aSObject->GetID();
+  aSObject->UnRegister();
+
   return anEntry._retn();
 }
 
@@ -431,6 +466,8 @@ const char* SMESH_Swig::AddNewAlgorithms(const char* theIOR)
                                                    mySComponentMesh,
                                                    myStudyBuilder);
   CORBA::String_var anEntry = aSObject->GetID();
+  aSObject->UnRegister();
+
   return anEntry._retn();
 }
 
@@ -439,13 +476,16 @@ const char* SMESH_Swig::AddNewAlgorithms(const char* theIOR)
 void SMESH_Swig::SetShape(const char* theShapeEntry,
                           const char* theMeshEntry)
 {
-  SALOMEDS::SObject_var aMeshSO = myStudy->FindObjectID( theMeshEntry );
   SALOMEDS::SObject_var aGeomShapeSO = myStudy->FindObjectID( theShapeEntry );
+  SALOMEDS::SObject_var      aMeshSO = myStudy->FindObjectID( theMeshEntry );
 
   if(!aMeshSO->_is_nil() && !aGeomShapeSO->_is_nil()){
     SALOMEDS::SObject_var aSObject = myStudyBuilder->NewObjectToTag(aMeshSO, SMESH::Tag_RefOnShape);
     myStudyBuilder->Addreference(aSObject,aGeomShapeSO);
+    aSObject->UnRegister();
   }
+  if ( !aMeshSO->_is_nil() )      aMeshSO->UnRegister();
+  if ( !aGeomShapeSO->_is_nil() ) aGeomShapeSO->UnRegister();
 }
 
 
@@ -485,49 +525,57 @@ const char* SMESH_Swig::AddSubMesh(const char* theMeshEntry,
                                    int theShapeType)
 {
   SALOMEDS::SObject_var aMeshSO = myStudy->FindObjectID(theMeshEntry);
-  if(!aMeshSO->_is_nil()){
+  if(!aMeshSO->_is_nil()) {
     long aShapeTag;
     QString aSubMeshName;
-    switch(theShapeType){
+    switch(theShapeType) {
     case TopAbs_SOLID:
-      aShapeTag = SMESH::Tag_SubMeshOnSolid;
+      aShapeTag    = SMESH::Tag_SubMeshOnSolid;
       aSubMeshName = QObject::tr("SMESH_MEN_SubMeshesOnSolid");
       break;
     case TopAbs_FACE:
-      aShapeTag = SMESH::Tag_SubMeshOnFace;
+      aShapeTag    = SMESH::Tag_SubMeshOnFace;
       aSubMeshName = QObject::tr("SMESH_MEN_SubMeshesOnFace");
       break;
     case TopAbs_EDGE:
-      aShapeTag = SMESH::Tag_SubMeshOnEdge;
+      aShapeTag    = SMESH::Tag_SubMeshOnEdge;
       aSubMeshName = QObject::tr("SMESH_MEN_SubMeshesOnEdge");
       break;
     case TopAbs_VERTEX:
-      aShapeTag = SMESH::Tag_SubMeshOnVertex;
+      aShapeTag    = SMESH::Tag_SubMeshOnVertex;
       aSubMeshName = QObject::tr("SMESH_MEN_SubMeshesOnVertex");
       break;
     default:
-      aShapeTag = SMESH::Tag_SubMeshOnCompound;
+      aShapeTag    = SMESH::Tag_SubMeshOnCompound;
       aSubMeshName = QObject::tr("SMESH_MEN_SubMeshesOnCompound");
     }
 
-    SALOMEDS::SObject_var aSubMeshesRoot;
     SALOMEDS::GenericAttribute_var anAttr;
-    if(!aMeshSO->FindSubObject(aShapeTag,aSubMeshesRoot)){
+    SALOMEDS::SObject_var aSubMeshesRoot;
+    if ( !aMeshSO->FindSubObject( aShapeTag, aSubMeshesRoot ) )
+    {
       aSubMeshesRoot = myStudyBuilder->NewObjectToTag(aMeshSO,aShapeTag);
       anAttr = myStudyBuilder->FindOrCreateAttribute(aSubMeshesRoot,"AttributeName");
       SALOMEDS::AttributeName_var aName = SALOMEDS::AttributeName::_narrow(anAttr);
       aName->SetValue(aSubMeshName.toLatin1().data());
+      aName->UnRegister();
       anAttr = myStudyBuilder->FindOrCreateAttribute(aSubMeshesRoot,"AttributeSelectable");
       SALOMEDS::AttributeSelectable_var aSelAttr = SALOMEDS::AttributeSelectable::_narrow(anAttr);
       aSelAttr->SetSelectable(false);
+      aSelAttr->UnRegister();
     }
+    aSubMeshesRoot->UnRegister();
+    aMeshSO->UnRegister();
 
     SALOMEDS::SObject_var aSObject = myStudyBuilder->NewObject(aSubMeshesRoot);
     anAttr = myStudyBuilder->FindOrCreateAttribute(aSObject,"AttributeIOR");
     SALOMEDS::AttributeIOR_var anIOR = SALOMEDS::AttributeIOR::_narrow(anAttr);
     anIOR->SetValue(theSubMeshIOR);
+    anIOR->UnRegister();
 
     CORBA::String_var aString = aSObject->GetID();
+    aSObject->UnRegister();
+
     return aString._retn();
   }
 
@@ -537,17 +585,20 @@ const char* SMESH_Swig::AddSubMesh(const char* theMeshEntry,
 const char* SMESH_Swig::AddSubMeshOnShape(const char* theMeshEntry,
                                           const char* theGeomShapeEntry,
                                           const char* theSubMeshIOR,
-                                          int ShapeType)
+                                          int         ShapeType)
 {
   SALOMEDS::SObject_var aGeomShapeSO = myStudy->FindObjectID(theGeomShapeEntry);
-  if(!aGeomShapeSO->_is_nil()){
-    const char * aSubMeshEntry = AddSubMesh(theMeshEntry,theSubMeshIOR,ShapeType);
+  if(!aGeomShapeSO->_is_nil())
+  {
+    const char *       aSubMeshEntry = AddSubMesh(theMeshEntry,theSubMeshIOR,ShapeType);
     SALOMEDS::SObject_var aSubMeshSO = myStudy->FindObjectID(aSubMeshEntry);
-    if(!aSubMeshSO->_is_nil()){
-      SetShape(theGeomShapeEntry,aSubMeshEntry);
+    if ( !aSubMeshSO->_is_nil()) {
+      SetShape( theGeomShapeEntry, aSubMeshEntry );
       CORBA::String_var aString = aSubMeshSO->GetID();
+      aSubMeshSO->UnRegister();
       return aString._retn();
     }
+    aGeomShapeSO->UnRegister();
   }
 
   return "";
@@ -566,11 +617,11 @@ void SMESH_Swig::CreateAndDisplayActor( const char* Mesh_Entry )
     }
     virtual void Execute() {
       //SMESH::UpdateView(SMESH::eDisplay, _entry);
-      SUIT_Session* aSession = SUIT_Session::session();
+      SUIT_Session* aSession          = SUIT_Session::session();
       SUIT_Application* anApplication = aSession->activeApplication();
-      SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>(anApplication);
-      /*SUIT_ViewManager* vman = */anApp->getViewManager(VTKViewer_Viewer::Type(),true);
-      SMESHGUI_Displayer* aDisp = new SMESHGUI_Displayer(anApp);
+      SalomeApp_Application* anApp    = dynamic_cast<SalomeApp_Application*>(anApplication);
+      /*SUIT_ViewManager* vman        = */anApp->getViewManager(VTKViewer_Viewer::Type(),true);
+      SMESHGUI_Displayer* aDisp       = new SMESHGUI_Displayer(anApp);
       aDisp->Display(_entry,1);
     }
   };
@@ -584,31 +635,31 @@ void SMESH_Swig::EraseActor( const char* Mesh_Entry, const bool allViewers )
   {
   private:
     const char* _entry;
-    bool _allViewers;
+    bool        _allViewers;
   public:
     TEvent(const char* Mesh_Entry, const bool allViewers ) {
       _entry = Mesh_Entry;
       _allViewers = allViewers;
     }
     virtual void Execute() {
-      SUIT_Session* aSession = SUIT_Session::session();
+      SUIT_Session* aSession          = SUIT_Session::session();
       SUIT_Application* anApplication = aSession->activeApplication();
-      SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>(anApplication);
-      SMESHGUI_Displayer* aDisp = new SMESHGUI_Displayer(anApp);
+      SalomeApp_Application* anApp    = dynamic_cast<SalomeApp_Application*>(anApplication);
+      SMESHGUI_Displayer* aDisp       = new SMESHGUI_Displayer(anApp);
       ViewManagerList aManagers;
       if ( !_allViewers ) {
-	aManagers << anApp->activeViewManager();
+        aManagers << anApp->activeViewManager();
       }
       else {
-	aManagers = anApp->viewManagers();
+        aManagers = anApp->viewManagers();
       }
       foreach( SUIT_ViewManager* aMgr, aManagers ) {
-	if ( aMgr && aMgr->getType() == VTKViewer_Viewer::Type() ) {
-	  SALOME_View* aSalomeView = dynamic_cast<SALOME_View*>(aMgr->getViewModel());
-	  if (aSalomeView) {
-	    aDisp->Erase(_entry,true, true, aSalomeView);
-	  }
-	}
+        if ( aMgr && aMgr->getType() == VTKViewer_Viewer::Type() ) {
+          SALOME_View* aSalomeView = dynamic_cast<SALOME_View*>(aMgr->getViewModel());
+          if (aSalomeView) {
+            aDisp->Erase(_entry,true, true, aSalomeView);
+          }
+        }
       }
     }
   };
@@ -626,6 +677,8 @@ void SMESH_Swig::SetName(const char* theEntry,
     anAttr = myStudyBuilder->FindOrCreateAttribute(aSObject,"AttributeName");
     aName = SALOMEDS::AttributeName::_narrow(anAttr);
     aName->SetValue(theName);
+    aName->UnRegister();
+    aSObject->UnRegister();
   }
 }
 
@@ -638,33 +691,33 @@ void SMESH_Swig::SetName(const char* theEntry,
 //================================================================================
 
 void SMESH_Swig::SetMeshIcon(const char* theMeshEntry,
-                             const bool theIsComputed,
-                             const bool isEmpty)
+                             const bool  theIsComputed,
+                             const bool  isEmpty)
 {
   class TEvent: public SALOME_Event
   {
     SALOMEDS::Study_var myStudy;
-    std::string myMeshEntry;
-    bool myIsComputed, myIsEmpty;
+    std::string         myMeshEntry;
+    bool                myIsComputed, myIsEmpty;
   public:
     TEvent(const SALOMEDS::Study_var& theStudy,
-           const std::string& theMeshEntry,
-           const bool theIsComputed,
-           const bool isEmpty):
-      myStudy(theStudy),
-      myMeshEntry(theMeshEntry),
+           const std::string&         theMeshEntry,
+           const bool                 theIsComputed,
+           const bool                 isEmpty):
+      myStudy     (theStudy),
+      myMeshEntry (theMeshEntry),
       myIsComputed(theIsComputed),
-      myIsEmpty(isEmpty)
+      myIsEmpty   (isEmpty)
     {}
 
     virtual
     void
     Execute()
     {
-      SALOMEDS::SObject_var aMeshSO = myStudy->FindObjectID(myMeshEntry.c_str());
-      if(!aMeshSO->_is_nil())
-        if(_PTR(SObject) aMesh = ClientFactory::SObject(aMeshSO))
-          SMESH::ModifiedMesh(aMesh,myIsComputed,myIsEmpty);
+      SALOMEDS::SObject_ptr aMeshSO = myStudy->FindObjectID(myMeshEntry.c_str());
+      if(_PTR(SObject) aMesh = ClientFactory::SObject(aMeshSO))
+        SMESH::ModifiedMesh(aMesh,myIsComputed,myIsEmpty);
+      // aMeshSO->UnRegister();  ~aMesh() already called UnRegister()!
     }
   };
 

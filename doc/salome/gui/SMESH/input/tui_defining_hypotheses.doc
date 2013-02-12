@@ -44,738 +44,102 @@ This page provides example codes of \ref tui_defining_meshing_algos
 <br>
 \anchor tui_1d_arithmetic
 <h3>Arithmetic 1D</h3>
-
-\code
-import geompy
-import smesh
-
-# create a box
-box = geompy.MakeBoxDXDYDZ(10., 10., 10.)
-geompy.addToStudy(box, "Box")
-
-# create a hexahedral mesh on the box
-hexa = smesh.Mesh(box, "Box : hexahedrical mesh")
-
-# create a Regular 1D algorithm for edges
-algo1D = hexa.Segment()
-
-# optionally reverse node distribution on certain edges
-allEdges = geompy.SubShapeAllSortedIDs( box, geompy.ShapeType["EDGE"])
-reversedEdges = [ allEdges[0], allEdges[4] ]
-
-# define "Arithmetic1D" hypothesis to cut all edges in several segments with increasing arithmetic length 
-algo1D.Arithmetic1D(1, 4, reversedEdges)
-
-# create a quadrangle 2D algorithm for faces
-hexa.Quadrangle()
-
-# create a hexahedron 3D algorithm for solids
-hexa.Hexahedron()
-
-# compute the mesh
-hexa.Compute()
-\endcode
+\include defining_hypotheses_ex01.py
+<a href="../../examples/SMESH/defining_hypotheses_ex01.py">Download this script</a>
 
 <br>
 \anchor tui_deflection_1d
 <h3>Deflection 1D and Number of Segments</h3>
-
-\code
-import geompy
-import smesh
-
-# create a face from arc and straight segment
-px = geompy.MakeVertex(100., 0.  , 0.  )
-py = geompy.MakeVertex(0.  , 100., 0.  )
-pz = geompy.MakeVertex(0.  , 0.  , 100.)
-
-exy = geompy.MakeEdge(px, py)
-arc = geompy.MakeArc(py, pz, px)
-
-wire = geompy.MakeWire([exy, arc])
-
-isPlanarFace = 1
-face1 = geompy.MakeFace(wire, isPlanarFace)
-geompy.addToStudy(face1,"Face1")
-
-# get edges from the face
-e_straight,e_arc = geompy.SubShapeAll(face1, geompy.ShapeType["EDGE"])
-geompy.addToStudyInFather(face1, e_arc, "Arc Edge")
-
-# create hexahedral mesh
-hexa = smesh.Mesh(face1, "Face : triangle mesh")
-
-# define "NumberOfSegments" hypothesis to cut a straight edge in a fixed number of segments
-algo1D = hexa.Segment()
-algo1D.NumberOfSegments(6)
-
-# define "MaxElementArea" hypothesis
-algo2D = hexa.Triangle()
-algo2D.MaxElementArea(70.0)
-
-# define a local "Deflection1D" hypothesis on the arc
-algo_local = hexa.Segment(e_arc)
-algo_local.Deflection1D(1.0)
-
-# compute the mesh
-hexa.Compute()
-\endcode
+\include defining_hypotheses_ex02.py
+<a href="../../examples/SMESH/defining_hypotheses_ex02.py">Download this script</a>
 
 <br>
 \anchor tui_start_and_end_length
 <h3>Start and End Length</h3>
-
-\code
-from geompy import *
-import smesh
-
-# create a box
-box = MakeBoxDXDYDZ(10., 10., 10.)
-addToStudy(box, "Box")
-
-# get one edge of the box to put local hypothesis on
-p5 = MakeVertex(5., 0., 0.)
-EdgeX = GetEdgeNearPoint(box, p5)
-addToStudyInFather(box, EdgeX, "Edge [0,0,0 - 10,0,0]")
-
-# create a hexahedral mesh on the box
-hexa = smesh.Mesh(box, "Box : hexahedrical mesh")
-
-# set algorithms
-algo1D = hexa.Segment()
-hexa.Quadrangle()
-hexa.Hexahedron()
-
-# define "NumberOfSegments" hypothesis to cut an edge in a fixed number of segments
-algo1D.NumberOfSegments(4)
-
-# create a local hypothesis
-algo_local = hexa.Segment(EdgeX)
-
-# define "StartEndLength" hypothesis to cut an edge in several segments with increasing geometric length
-algo_local.StartEndLength(1, 6)
-
-# define "Propagation" hypothesis that propagates all other hypothesis
-# on all edges on the opposite side in case of quadrangular faces
-algo_local.Propagation()
-
-# compute the mesh
-hexa.Compute()
-\endcode
+\include defining_hypotheses_ex03.py
+<a href="../../examples/SMESH/defining_hypotheses_ex03.py">Download this script</a>
 
 <br>
 \anchor tui_average_length
 <h3>Local Length</h3>
-
-\code
-from geompy import *
-import smesh
-
-# create a box
-box = MakeBoxDXDYDZ(10., 10., 10.)
-addToStudy(box, "Box")
-
-# get one edge of the box to put local hypothesis on
-p5 = MakeVertex(5., 0., 0.)
-EdgeX = GetEdgeNearPoint(box, p5)
-addToStudyInFather(box, EdgeX, "Edge [0,0,0 - 10,0,0]")
-
-# create a hexahedral mesh on the box
-hexa = smesh.Mesh(box, "Box : hexahedrical mesh")
-
-# set algorithms
-algo1D = hexa.Segment()
-hexa.Quadrangle()
-hexa.Hexahedron()
-
-# define "NumberOfSegments" hypothesis to cut all edges in a fixed number of segments
-algo1D.NumberOfSegments(4)
-
-# create a sub-mesh
-algo_local = hexa.Segment(EdgeX)
-
-# define "LocalLength" hypothesis to cut an edge in several segments with the same length
-algo_local.LocalLength(2.)
-
-# define "Propagation" hypothesis that propagates all other hypothesis
-# on all edges on the opposite side in case of quadrangular faces
-algo_local.Propagation()
-
-# compute the mesh
-hexa.Compute()
-\endcode
+\include defining_hypotheses_ex04.py
+<a href="../../examples/SMESH/defining_hypotheses_ex04.py">Download this script</a>
 
 <br><h2>Defining 2D and 3D hypotheses</h2>
 
 <br>
 \anchor tui_max_element_area
 <h3>Maximum Element Area</h3>
-
-\code
-import geompy
-import smesh
-import salome 
-
-# create a face
-px   = geompy.MakeVertex(100., 0.  , 0.  )
-py   = geompy.MakeVertex(0.  , 100., 0.  )
-pz   = geompy.MakeVertex(0.  , 0.  , 100.)
-
-vxy = geompy.MakeVector(px, py)
-arc = geompy.MakeArc(py, pz, px)
-wire = geompy.MakeWire([vxy, arc])
-
-isPlanarFace = 1
-face = geompy.MakeFace(wire, isPlanarFace)
-
-# add the face in the study
-id_face = geompy.addToStudy(face, "Face to be meshed")
-
-# create a mesh
-tria_mesh = smesh.Mesh(face, "Face : triangulation")
-
-# define 1D meshing:
-algo = tria_mesh.Segment()
-algo.NumberOfSegments(20)
-
-# define 2D meshing:
-
-# assign triangulation algorithm
-algo = tria_mesh.Triangle()
-
-# apply "Max Element Area" hypothesis to each triangle
-algo.MaxElementArea(100)
-
-# compute the mesh
-tria_mesh.Compute()
-\endcode
+\include defining_hypotheses_ex05.py
+<a href="../../examples/SMESH/defining_hypotheses_ex05.py">Download this script</a>
 
 <br>
 \anchor tui_max_element_volume
 <h3>Maximum Element Volume</h3>
-
-\code
-import geompy
-import smesh
-
-# create a cylinder
-cyl = geompy.MakeCylinderRH(30., 50.)
-geompy.addToStudy(cyl, "cyl")
-
-# create a mesh on the cylinder
-tetra = smesh.Mesh(cyl, "Cylinder : tetrahedrical mesh")
-
-# assign algorithms
-algo1D = tetra.Segment()
-algo2D = tetra.Triangle()
-algo3D = tetra.Tetrahedron()
-
-# assign 1D and 2D hypotheses
-algo1D.NumberOfSegments(7)
-algo2D.MaxElementArea(150.)
-
-# assign Max Element Volume hypothesis
-algo3D.MaxElementVolume(200.)
-
-# compute the mesh
-ret = tetra.Compute()
-if ret == 0:
-    print "probleme when computing the mesh"
-else:
-    print "Computation succeded"
-\endcode
+\include defining_hypotheses_ex06.py
+<a href="../../examples/SMESH/defining_hypotheses_ex06.py">Download this script</a>
 
 <br>
 \anchor tui_length_from_edges
 <h3>Length from Edges</h3>
-
-\code
-import geompy
-import smesh
-
-# create sketchers
-sketcher1 = geompy.MakeSketcher("Sketcher:F 0 0:TT 70 0:TT 70 70:TT 0 70:WW")
-sketcher2 = geompy.MakeSketcher("Sketcher:F 20 20:TT 50 20:TT 50 50:TT 20 50:WW")
-
-# create a face from two wires
-isPlanarFace = 1
-face1 = geompy.MakeFaces([sketcher1, sketcher2], isPlanarFace)
-geompy.addToStudy(face1, "Face1")
-
-# create a mesh
-tria = smesh.Mesh(face1, "Face : triangle 2D mesh")
-
-# Define 1D meshing
-algo1D = tria.Segment()
-algo1D.NumberOfSegments(2)
-
-# create and assign the algorithm for 2D meshing with triangles
-algo2D = tria.Triangle()
-
-# create and assign "LengthFromEdges" hypothesis to build triangles based on the length of the edges taken from the wire
-algo2D.LengthFromEdges()
-
-# compute the mesh
-tria.Compute()
-\endcode
+\include defining_hypotheses_ex07.py
+<a href="../../examples/SMESH/defining_hypotheses_ex07.py">Download this script</a>
 
 <br><h2>Defining Additional Hypotheses</h2>
 
 <br>
 \anchor tui_propagation
 <h3>Propagation</h3>
-
-\code
-from geompy import *
-import smesh
-
-# create a box
-box = MakeBoxDXDYDZ(10., 10., 10.)
-addToStudy(box, "Box")
-
-# get one edge of the box to put local hypothesis on
-p5 = MakeVertex(5., 0., 0.)
-EdgeX = GetEdgeNearPoint(box, p5)
-addToStudyInFather(box, EdgeX, "Edge [0,0,0 - 10,0,0]")
-
-# create a hexahedral mesh on the box
-hexa = smesh.Mesh(box, "Box : hexahedrical mesh")
-
-# set global algorithms and hypotheses
-algo1D = hexa.Segment()
-hexa.Quadrangle()
-hexa.Hexahedron()
-algo1D.NumberOfSegments(4)
-
-# create a sub-mesh with local 1D hypothesis and propagation
-algo_local = hexa.Segment(EdgeX)
-
-# define "Arithmetic1D" hypothesis to cut an edge in several segments with increasing length
-algo_local.Arithmetic1D(1, 4)
-
-# define "Propagation" hypothesis that propagates all other 1D hypotheses
-# from all edges on the opposite side of a face in case of quadrangular faces
-algo_local.Propagation()
-
-# compute the mesh
-hexa.Compute()
-\endcode
+\include defining_hypotheses_ex08.py
+<a href="../../examples/SMESH/defining_hypotheses_ex08.py">Download this script</a>
 
 <br>
 \anchor tui_defining_meshing_algos
 <h2>Defining Meshing Algorithms</h2>
-
-\code
-import geompy
-import smesh
-
-# create a box
-box = geompy.MakeBoxDXDYDZ(10., 10., 10.)
-geompy.addToStudy(box, "Box")
-
-# 1. Create a hexahedral mesh on the box
-hexa = smesh.Mesh(box, "Box : hexahedrical mesh")
-
-# create a Regular 1D algorithm for edges
-algo1D = hexa.Segment()
-
-# create a quadrangle 2D algorithm for faces
-algo2D = hexa.Quadrangle()
-
-# create a hexahedron 3D algorithm for solids
-algo3D = hexa.Hexahedron()
-
-# define hypotheses
-algo1D.Arithmetic1D(1, 4)
-
-# compute the mesh
-hexa.Compute()
-
-# 2. Create a tetrahedral mesh on the box
-tetra = smesh.Mesh(box, "Box : tetrahedrical mesh")
-
-# create a Regular 1D algorithm for edges
-algo1D = tetra.Segment()
-
-# create a Mefisto 2D algorithm for faces
-algo2D = tetra.Triangle()
-
-# create a 3D algorithm for solids
-algo3D = tetra.Tetrahedron()
-
-# define hypotheses
-algo1D.Arithmetic1D(1, 4)
-algo2D.LengthFromEdges()
-
-# compute the mesh
-tetra.Compute()
-
-\endcode
+\include defining_hypotheses_ex09.py
+<a href="../../examples/SMESH/defining_hypotheses_ex09.py">Download this script</a>
 
 <br>
 \anchor tui_projection
 <h3>Projection Algorithms</h3>
-
-\code
-# Project prisms from one meshed box to another mesh on the same box
-
-from smesh import *
-
-# Prepare geometry
-
-# Create a parallelepiped
-box = geompy.MakeBoxDXDYDZ(200, 100, 70)
-geompy.addToStudy( box, "box" )
-
-# Get geom faces to mesh with triangles in the 1ts and 2nd meshes
-faces = geompy.SubShapeAll(box, geompy.ShapeType["FACE"])
-# 2 adjacent faces of the box
-f1 = faces[2]
-f2 = faces[0]
-# face opposite to f2
-f2opp = faces[1]
-
-# Get vertices used to specify how to associate sides of faces at projection
-[v1F1, v2F1] = geompy.SubShapeAll(f1, geompy.ShapeType["VERTEX"])[:2]
-[v1F2, v2F2] = geompy.SubShapeAll(f2, geompy.ShapeType["VERTEX"])[:2]
-geompy.addToStudyInFather( box, v1F1, "v1F1" )
-geompy.addToStudyInFather( box, v2F1, "v2F1" )
-geompy.addToStudyInFather( box, v1F2, "v1F2" )
-geompy.addToStudyInFather( box, v2F2, "v2F2" )
-
-# Make group of 3 edges of f1 and f2
-edgesF1 = geompy.CreateGroup(f1, geompy.ShapeType["EDGE"])
-geompy.UnionList( edgesF1, geompy.SubShapeAll(f1, geompy.ShapeType["EDGE"])[:3])
-edgesF2 = geompy.CreateGroup(f2, geompy.ShapeType["EDGE"])
-geompy.UnionList( edgesF2, geompy.SubShapeAll(f2, geompy.ShapeType["EDGE"])[:3])
-geompy.addToStudyInFather( box, edgesF1, "edgesF1" )
-geompy.addToStudyInFather( box, edgesF2, "edgesF2" )
-
-
-# Make the source mesh with prisms
-src_mesh = Mesh(box, "Source mesh")
-src_mesh.Segment().NumberOfSegments(9,10)
-src_mesh.Quadrangle()
-src_mesh.Hexahedron()
-src_mesh.Triangle(f1) # triangular sumbesh 
-src_mesh.Compute()
-
-
-# Mesh the box using projection algoritms
-
-# Define the same global 1D and 2D hypotheses
-tgt_mesh = Mesh(box, "Target mesh")
-tgt_mesh.Segment().NumberOfSegments(9,10,UseExisting=True)
-tgt_mesh.Quadrangle()
-
-# Define Projection 1D algorithm to project 1d mesh elements from group edgesF2 to edgesF1
-# It is actually not needed, just a demonstration
-proj1D = tgt_mesh.Projection1D( edgesF1 )
-# each vertex must be at the end of a connected group of edges (or a sole edge)
-proj1D.SourceEdge( edgesF2, src_mesh, v2F1, v2F2 )
-
-# Define 2D hypotheses to project triangles from f1 face of the source mesh to
-# f2 face in the target mesh. Vertices specify how to associate sides of faces
-proj2D = tgt_mesh.Projection2D( f2 )
-proj2D.SourceFace( f1, src_mesh, v1F1, v1F2, v2F1, v2F2 )
-
-# 2D hypotheses to project triangles from f2 of target mesh to the face opposite to f2.
-# Association of face sides is default
-proj2D = tgt_mesh.Projection2D( f2opp )
-proj2D.SourceFace( f2 )
-
-# 3D hypotheses to project prisms from the source to the target mesh
-proj3D = tgt_mesh.Projection3D()
-proj3D.SourceShape3D( box, src_mesh, v1F1, v1F2, v2F1, v2F2 )
-tgt_mesh.Compute()
-
-# Move the source mesh to visualy compare the two meshes
-src_mesh.TranslateObject( src_mesh, MakeDirStruct( 210, 0, 0 ), Copy=False)
-
-\endcode
+\include defining_hypotheses_ex10.py
+<a href="../../examples/SMESH/defining_hypotheses_ex10.py">Download this script</a>
 
 <h3>Projection 1D2D</h3>
-
-\code
-# Project triangles from one meshed face to another mesh on the same box
-
-from smesh import *
-
-# Prepare geometry
-
-# Create a box
-box = geompy.MakeBoxDXDYDZ(100, 100, 100)
-
-# Get geom faces to mesh with triangles in the 1ts and 2nd meshes
-faces = geompy.SubShapeAll(box, geompy.ShapeType["FACE"])
-# 2 adjacent faces of the box
-Face_1 = faces[2]
-Face_2 = faces[0]
-
-geompy.addToStudy( box, 'box' )
-geompy.addToStudyInFather( box, Face_1, 'Face_1' )
-geompy.addToStudyInFather( box, Face_2, 'Face_2' )
-
-# Make the source mesh with Netgem2D
-src_mesh = Mesh(Face_1, "Source mesh")
-src_mesh.Segment().NumberOfSegments(15)
-src_mesh.Triangle()
-src_mesh.Compute()
-
-# Mesh the target mesh using the algoritm Projection1D2D
-tgt_mesh = smesh.Mesh(Face_2, "Target mesh")
-tgt_mesh.Projection1D2D().SourceFace(Face_1,src_mesh)
-tgt_mesh.Compute()
-\endcode
+\include defining_hypotheses_ex11.py
+<a href="../../examples/SMESH/defining_hypotheses_ex11.py">Download this script</a>
 
 <br>
 
 \anchor tui_fixed_points
 
 <h2>1D Mesh with Fixed Points example</h2>
-
-\code
-import salome
-import geompy
-import smesh
-import StdMeshers
-
-# Create face and explode it on edges
-face = geompy.MakeFaceHW(100, 100, 1)
-edges = geompy.SubShapeAllSorted(face, geompy.ShapeType["EDGE"])
-geompy.addToStudy( face, "Face" )
-
-# get the first edge from exploded result
-edge1 = geompy.GetSubShapeID(face, edges[0])
-
-# Define Mesh on previously created face
-Mesh_1 = smesh.Mesh(face)
-
-# Create Fixed Point 1D hypothesis and define parameters.
-# Note: values greater than 1.0 and less than 0.0 are not taken into account;
-# duplicated values are removed. Also, if not specified explicitly, values 0.0 and 1.0
-# add added automatically.
-# The number of segments should correspond to the number of points (NbSeg = NbPnt-1);
-# extra values of segments splitting parameter are not taken into account,
-# while missing values are considered to be equal to 1.
-Fixed_points_1D_1 = smesh.CreateHypothesis('FixedPoints1D')
-Fixed_points_1D_1.SetPoints( [ 1.1, 0.9, 0.5, 0.0, 0.5, -0.3 ] )
-Fixed_points_1D_1.SetNbSegments( [ 3, 1, 2 ] )
-Fixed_points_1D_1.SetReversedEdges( [edge1] )
-
-# Add hypothesis to mesh and define 2D parameters
-Mesh_1.AddHypothesis(Fixed_points_1D_1)
-Regular_1D = Mesh_1.Segment()
-Quadrangle_2D = Mesh_1.Quadrangle()
-# Compute mesh
-Mesh_1.Compute()
-\endcode
+\include defining_hypotheses_ex12.py
+<a href="../../examples/SMESH/defining_hypotheses_ex12.py">Download this script</a>
 
 \anchor tui_radial_quadrangle
 <h2> Radial Quadrangle 1D2D example </h2>
-\code
-from smesh import *
-
-SetCurrentStudy(salome.myStudy)
-
-# Create face from the wire and add to study
-Face = geompy.MakeSketcher("Sketcher:F 0 0:TT 20 0:R 90:C 20 90:WF", [0, 0, 0, 1, 0, 0, 0, 0, 1])
-geompy.addToStudy(Face,"Face")
-edges = geompy.SubShapeAllSorted(Face, geompy.ShapeType["EDGE"])
-circle, radius1, radius2 = edges
-geompy.addToStudyInFather(Face, radius1,"radius1")
-geompy.addToStudyInFather(Face, radius2,"radius2")
-geompy.addToStudyInFather(Face, circle,"circle")
-
-
-# Define geometry for mesh, and Radial Quadrange algorithm
-mesh = smesh.Mesh(Face)
-radial_Quad_algo = mesh.Quadrangle(algo=RADIAL_QUAD)
-
-# The Radial Quadrange algorithm can work without any hypothesis
-# In this case it uses "Default Nb of Segments" preferences parameter to discretize edges
-mesh.Compute()
-
-# The Radial Quadrange uses global or local 1d hypotheses if it does
-# not have its own hypotheses.
-# Define global hypotheses to discretize radial edges and a local one for circular edge
-global_Nb_Segments = mesh.Segment().NumberOfSegments(5)
-local_Nb_Segments  = mesh.Segment(circle).NumberOfSegments(10)
-mesh.Compute()
-
-# Define own parameters of Radial Quadrange algorithm
-radial_Quad_algo.NumberOfLayers( 4 )
-mesh.Compute()
-\endcode
+\include defining_hypotheses_ex13.py
+<a href="../../examples/SMESH/defining_hypotheses_ex13.py">Download this script</a>
 
 \anchor tui_quadrangle_parameters
 <h2>Quadrangle Parameters example 1 (meshing a face with 3 edges) </h2>
-\code
-from smesh import *
-SetCurrentStudy(salome.myStudy)
-
-# Get 1/4 part from the disk face.
-Box_1 = geompy.MakeBoxDXDYDZ(100, 100, 100)
-Disk_1 = geompy.MakeDiskR(100, 1)
-Common_1 = geompy.MakeCommon(Disk_1, Box_1)
-geompy.addToStudy( Disk_1, "Disk_1" )
-geompy.addToStudy( Box_1, "Box_1" )
-geompy.addToStudy( Common_1, "Common_1" )
-
-# Set the Geometry for meshing
-Mesh_1 = smesh.Mesh(Common_1)
-
-
-# Define 1D hypothesis and compute the mesh
-Regular_1D = Mesh_1.Segment()
-Nb_Segments_1 = Regular_1D.NumberOfSegments(10)
-Nb_Segments_1.SetDistrType( 0 )
-
-# Create Quadrangle parameters and define the Base Vertex.
-Quadrangle_2D = Mesh_1.Quadrangle().TriangleVertex( 8 )
-
-Mesh_1.Compute()
-\endcode
+\include defining_hypotheses_ex14.py
+<a href="../../examples/SMESH/defining_hypotheses_ex14.py">Download this script</a>
 
 <h2>Quadrangle Parameters example 2 (using different types) </h2>
-\code
-import geompy
-import smesh
-import StdMeshers
-
-# Make quadrangle face and explode it on edges.
-Vertex_1 = geompy.MakeVertex(0, 0, 0)
-Vertex_2 = geompy.MakeVertex(40, 0, 0)
-Vertex_3 = geompy.MakeVertex(40, 30, 0)
-Vertex_4 = geompy.MakeVertex(0, 30, 0)
-Quadrangle_Face_1 = geompy.MakeQuad4Vertices(Vertex_1, Vertex_4, Vertex_3, Vertex_2)
-[Edge_1,Edge_2,Edge_3,Edge_4] = geompy.SubShapeAllSorted(Quadrangle_Face_1, geompy.ShapeType["EDGE"])
-geompy.addToStudy( Vertex_1, "Vertex_1" )
-geompy.addToStudy( Vertex_2, "Vertex_2" )
-geompy.addToStudy( Vertex_3, "Vertex_3" )
-geompy.addToStudy( Vertex_4, "Vertex_4" )
-geompy.addToStudy( Quadrangle_Face_1, "Quadrangle Face_1" )
-geompy.addToStudyInFather( Quadrangle_Face_1, Edge_2, "Edge_2" )
-
-# Set the Geometry for meshing
-Mesh_1 = smesh.Mesh(Quadrangle_Face_1)
-
-# Create Quadrangle parameters and
-# define the Type as Quadrangle Preference
-Quadrangle_Parameters_1 = smesh.CreateHypothesis('QuadrangleParams')
-Quadrangle_Parameters_1.SetQuadType( StdMeshers.QUAD_QUADRANGLE_PREF )
-
-# Define other hypotheses and algorithms
-Regular_1D = Mesh_1.Segment()
-Nb_Segments_1 = Regular_1D.NumberOfSegments(4)
-Nb_Segments_1.SetDistrType( 0 )
-status = Mesh_1.AddHypothesis(Quadrangle_Parameters_1)
-Quadrangle_2D = Mesh_1.Quadrangle()
-
-# Define submesh on one edge to provide different number of segments
-Regular_1D_1 = Mesh_1.Segment(geom=Edge_2)
-Nb_Segments_2 = Regular_1D_1.NumberOfSegments(10)
-Nb_Segments_2.SetDistrType( 0 )
-SubMesh_1 = Regular_1D_1.GetSubMesh()
-
-# Compute mesh (with Quadrangle Preference type)
-isDone = Mesh_1.Compute()
-
-# Change type to Reduced and compute again
-Quadrangle_Parameters_1.SetQuadType( StdMeshers.QUAD_REDUCED )
-isDone = Mesh_1.Compute()
-\endcode
+\include defining_hypotheses_ex15.py
+<a href="../../examples/SMESH/defining_hypotheses_ex15.py">Download this script</a>
 
 \anchor tui_import
 <h2>"Use Existing Elements" example </h2>
-\code
-
-from smesh import *
-SetCurrentStudy(salome.myStudy)
-
-# Make a patritioned box
-
-box = geompy.MakeBoxDXDYDZ(100,100,100)
-
-N = geompy.MakeVectorDXDYDZ( 1,0,0 )
-O = geompy.MakeVertex( 50,0,0 )
-plane = geompy.MakePlane( O, N, 200 ) # plane YOZ
-
-shape2boxes = geompy.MakeHalfPartition( box, plane )
-boxes = geompy.SubShapeAllSorted(shape2boxes, geompy.ShapeType["SOLID"])
-
-geompy.addToStudy( boxes[0], "boxes[0]")
-geompy.addToStudy( boxes[1], "boxes[1]")
-midFace0 = geompy.SubShapeAllSorted(boxes[0], geompy.ShapeType["FACE"])[5]
-geompy.addToStudyInFather( boxes[0], midFace0, "middle Face")
-midFace1 = geompy.SubShapeAllSorted(boxes[1], geompy.ShapeType["FACE"])[0]
-geompy.addToStudyInFather( boxes[1], midFace1, "middle Face")
-
-# Mesh one of boxes with quadrangles. It is a source mesh
-
-srcMesh = Mesh(boxes[0], "source mesh") # box coloser to CS origin
-nSeg1 = srcMesh.Segment().NumberOfSegments(4)
-srcMesh.Quadrangle()
-srcMesh.Compute()
-srcFaceGroup = srcMesh.GroupOnGeom( midFace0, "src faces", FACE )
-
-# Import faces from midFace0 to the target mesh
-
-tgtMesh = Mesh(boxes[1], "target mesh")
-importAlgo = tgtMesh.UseExisting2DElements(midFace1)
-import2hyp = importAlgo.SourceFaces( [srcFaceGroup] )
-tgtMesh.Segment().NumberOfSegments(3)
-tgtMesh.Quadrangle()
-tgtMesh.Compute()
-
-# Import the whole source mesh with groups
-import2hyp.SetCopySourceMesh(True,True)
-tgtMesh.Compute()
-\endcode
+\include defining_hypotheses_ex16.py
+<a href="../../examples/SMESH/defining_hypotheses_ex16.py">Download this script</a>
 
 \anchor tui_viscous_layers
 <h2>Viscous layers construction</h2>
 
-\code
-from smesh import *
-SetCurrentStudy(salome.myStudy)
-
-X = geompy.MakeVectorDXDYDZ( 1,0,0 )
-O = geompy.MakeVertex( 100,50,50 )
-plane = geompy.MakePlane( O, X, 200 ) # plane YZ
-
-box = geompy.MakeBoxDXDYDZ(200,100,100)
-
-shape = geompy.MakeHalfPartition( box, plane )
-
-faces = geompy.SubShapeAllSorted(shape, geompy.ShapeType["FACE"])
-face1 = faces[1]
-ignoreFaces = [ faces[0], faces[-1]]
-
-geompy.addToStudy( shape, "shape" )
-geompy.addToStudyInFather( shape, face1, "face1")
-
-
-mesh = Mesh(shape, "CFD")
-
-mesh.Segment().NumberOfSegments( 4 )
-
-mesh.Triangle()
-mesh.Quadrangle(face1)
-mesh.Compute()
-algo3D = mesh.Tetrahedron()
-
-thickness = 20
-numberOfLayers = 10
-stretchFactor = 1.5
-layersHyp = algo3D.ViscousLayers(thickness,numberOfLayers,stretchFactor,ignoreFaces)
-
-mesh.Compute()
-
-mesh.MakeGroup("Tetras",VOLUME,FT_ElemGeomType,"=",Geom_TETRA)
-mesh.MakeGroup("Pyras",VOLUME,FT_ElemGeomType,"=",Geom_PYRAMID)
-mesh.MakeGroup("Prims",VOLUME,FT_ElemGeomType,"=",Geom_PENTA)
-
-\endcode
+\include defining_hypotheses_ex17.py
+<a href="../../examples/SMESH/defining_hypotheses_ex17.py">Download this script</a>
 
 */

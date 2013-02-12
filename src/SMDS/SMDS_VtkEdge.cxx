@@ -33,7 +33,7 @@ SMDS_VtkEdge::SMDS_VtkEdge()
 {
 }
 
-SMDS_VtkEdge::SMDS_VtkEdge(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
+SMDS_VtkEdge::SMDS_VtkEdge(std::vector<vtkIdType>& nodeIds, SMDS_Mesh* mesh)
 {
   init(nodeIds, mesh);
 }
@@ -42,7 +42,7 @@ SMDS_VtkEdge::~SMDS_VtkEdge()
 {
 }
 
-void SMDS_VtkEdge::init(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
+void SMDS_VtkEdge::init(std::vector<vtkIdType>& nodeIds, SMDS_Mesh* mesh)
 {
   SMDS_MeshEdge::init();
   vtkUnstructuredGrid* grid = mesh->getGrid();

@@ -294,9 +294,9 @@ CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobParameterList & m
       break;
     default:
       _lastErrorMessage =
-	std::string("The type of the file ")+
-	std::string(currentMesh.file_name)+
-	std::string(" is not recognized");
+        std::string("The type of the file ")+
+        std::string(currentMesh.file_name)+
+        std::string(" is not recognized");
       LOG(_lastErrorMessage);
       return JOBID_UNDEFINED;
     }

@@ -653,7 +653,7 @@ bool SMESHGUI_Selection::isImported( const int ind ) const
     SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow( SMESH::SObjectToObject( SO ) );
     if( !aMesh->_is_nil() )
     {
-      SALOME_MED::MedFileInfo* inf = aMesh->GetMEDFileInfo();
+      SALOME_MED::MedFileInfo_var inf = aMesh->GetMEDFileInfo();
       res = strlen( (char*)inf->fileName ) > 0;
     }
   }

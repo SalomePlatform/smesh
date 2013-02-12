@@ -18,13 +18,12 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : SMESH_Filter_i.hxx
 //  Author : Alexey Petrov, OCC
 //  Module : SMESH
-//
+
 #ifndef _SMESH_FILTER_I_HXX_
 #define _SMESH_FILTER_I_HXX_
 
@@ -162,7 +161,7 @@ namespace SMESH
   {
   public:
     CORBA::Double                   GetValue( CORBA::Long theElementId );
-    SMESH::Histogram*               GetHistogram(CORBA::Short nbIntervals);
+    SMESH::Histogram*               GetHistogram(CORBA::Short nbIntervals, CORBA::Boolean isLogarithmic);
     void                            SetPrecision( CORBA::Long thePrecision );
     CORBA::Long                     GetPrecision();
     Controls::NumericalFunctorPtr   GetNumericalFunctor();

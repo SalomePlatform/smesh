@@ -52,7 +52,7 @@ class SMESH_Mesh_i;
 class SMESH_PreMeshInfo : public SMDS_MeshInfo
 {
 public:
-  // fills SMESH_PreMeshInfo field of all objects of mesh
+  // fills SMESH_PreMeshInfo* field of all objects of mesh
   static void LoadFromFile( SMESH_Mesh_i*      mesh,
                             const int          meshID,
                             const std::string& medFile,
@@ -63,6 +63,9 @@ public:
   static void SaveToFile( SMESH_Mesh_i* mesh,
                           const int     meshID,
                           HDFfile*      hdfFile);
+
+  // remove all SMESH_PreMeshInfo fields from mesh and its child objects w/o data loading
+  static void ForgetAllData( SMESH_Mesh_i* mesh );
 
   // reads all data and remove all SMESH_PreMeshInfo fields from objects
   void FullLoadFromFile() const;

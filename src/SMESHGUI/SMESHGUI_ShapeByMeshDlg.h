@@ -51,7 +51,7 @@ class SMESHGUI_EXPORT SMESHGUI_ShapeByMeshDlg : public SMESHGUI_Dialog
   Q_OBJECT
 
 public:
-  SMESHGUI_ShapeByMeshDlg();
+  SMESHGUI_ShapeByMeshDlg(bool isMultipleAllowed);
   virtual ~SMESHGUI_ShapeByMeshDlg();
 
 private:

@@ -347,13 +347,11 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
 
     SMESHGUI::Modified();
 
-#ifdef WITHGENERICOBJ
     // obj has been published in study. Its refcount has been incremented.
     // It is safe to decrement its refcount
     // so that it will be destroyed when the entry in study will be removed
     if (!CORBA::is_nil(aCompoundMesh))
       aCompoundMesh->UnRegister();
-#endif
 
     return true;
   }

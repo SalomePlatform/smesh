@@ -124,29 +124,32 @@ SMESH_SVTKActor
   for(int ind = 1; ind <= aNbOfParts; ind++){
     int aPartId = theMapIndex( ind );
     if(vtkCell* aCell = theMapActor->GetElemCell(aPartId))
-      {
+    {
 #if VTK_XVERSION > 50700
       if (aCell->GetCellType() != VTK_POLYHEDRON)
 #endif
-      if(aCell->GetCellType() == VTK_VERTEX ) {
-	my0DGrid->InsertNextCell(aCell->GetCellType(),aCell->GetPointIds());
-      } else if(aCell->GetCellType() == VTK_POLY_VERTEX ) {
-	myBallGrid->InsertNextCell(aCell->GetCellType(),aCell->GetPointIds());
-      } else {
-        myUnstructuredGrid->InsertNextCell(aCell->GetCellType(),aCell->GetPointIds());
+      {
+        if(aCell->GetCellType() == VTK_VERTEX ) {
+          my0DGrid->InsertNextCell(aCell->GetCellType(),aCell->GetPointIds());
+        } else if(aCell->GetCellType() == VTK_POLY_VERTEX ) {
+          myBallGrid->InsertNextCell(aCell->GetCellType(),aCell->GetPointIds());
+        } else {
+          myUnstructuredGrid->InsertNextCell(aCell->GetCellType(),aCell->GetPointIds());
+        }
       }
 #if VTK_XVERSION > 50700
       else
-        {
-          vtkPolyhedron *polyhedron = dynamic_cast<vtkPolyhedron*>(aCell);
-          if (!polyhedron)
-            throw SALOME_Exception(LOCALIZED ("not a polyhedron"));
-          vtkIdType *pts = polyhedron->GetFaces();
-          myUnstructuredGrid->InsertNextCell(aCell->GetCellType(),pts[0], pts+1);
-        }
-#endif
+      {
+        vtkPolyhedron *polyhedron = dynamic_cast<vtkPolyhedron*>(aCell);
+        if (!polyhedron)
+          throw SALOME_Exception(LOCALIZED ("not a polyhedron"));
+        vtkIdType *pts = polyhedron->GetFaces();
+        myUnstructuredGrid->InsertNextCell(aCell->GetCellType(),pts[0], pts+1);
       }
-    
+#endif
+    }
+  }
+
   UnShrink();
   if(theMapActor->IsShrunk()){
     SetShrinkFactor(theMapActor->GetShrinkFactor());
@@ -154,9 +157,8 @@ SMESH_SVTKActor
   }
 
   myMapIndex = theMapIndex;
-  }
 }
-  
+
 void
 SMESH_SVTKActor
 ::Initialize()

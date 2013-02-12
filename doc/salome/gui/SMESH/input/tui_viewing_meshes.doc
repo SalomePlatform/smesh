@@ -5,135 +5,13 @@
 <br>
 \anchor tui_viewing_mesh_infos
 <h2>Viewing Mesh Infos</h2>
-
-\code
-import geompy
-import smesh
-import SMESH
-
-# create a box
-box = geompy.MakeBox(0., 0., 0., 20., 20., 20.)
-geompy.addToStudy(box, "box")
-[Face_1,Face_2,Face_3,Face_4,Face_5,Face_5] = geompy.SubShapeAll(box, geompy.ShapeType["FACE"])
-
-# create a mesh
-tetra = smesh.Mesh(box, "MeshBox")
-
-algo1D = tetra.Segment()
-algo1D.NumberOfSegments(3)
-
-algo2D = tetra.Triangle()
-algo2D.MaxElementArea(10.)
-
-algo3D = tetra.Tetrahedron()
-algo3D.MaxElementVolume(900.)
-
-# Creation of SubMesh
-Regular_1D_1_1 = tetra.Segment(geom=Face_1)
-Nb_Segments_1 = Regular_1D_1_1.NumberOfSegments(5)
-Nb_Segments_1.SetDistrType( 0 )
-Quadrangle_2D = tetra.Quadrangle(geom=Face_1)
-isDone = tetra.Compute()
-submesh = Regular_1D_1_1.GetSubMesh()
-
-# compute the mesh
-tetra.Compute()
-
-# Creation of group
-group = tetra.CreateEmptyGroup( SMESH.FACE, 'Group' )
-nbAdd = group.Add( [ 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76 ] )
-
-# Print information about the mesh
-print "Information about mesh:" 
-print "Number of nodes       : ", tetra.NbNodes()
-print "Number of edges       : ", tetra.NbEdges()
-print "Number of faces       : ", tetra.NbFaces()
-print "          triangles   : ", tetra.NbTriangles()
-print "          quadrangles : ", tetra.NbQuadrangles()
-print "          polygons    : ", tetra.NbPolygons()
-print "Number of volumes     : ", tetra.NbVolumes()
-print "          tetrahedrons: ", tetra.NbTetras()
-print "          hexahedrons : ", tetra.NbHexas()
-print "          prisms      : ", tetra.NbPrisms()
-print "          pyramids    : ", tetra.NbPyramids()
-print "          polyhedrons : ", tetra.NbPolyhedrons() 
-
-# Get Information About Mesh by GetMeshInfo
-print "\nInformation about mesh by GetMeshInfo:"
-info = smesh.GetMeshInfo(tetra)
-keys = info.keys(); keys.sort()
-for i in keys:
-  print "  %s   :  %d" % ( i, info[i] )
-  pass
-
-# Get Information About Group by GetMeshInfo
-print "\nInformation about group by GetMeshInfo:"
-info = smesh.GetMeshInfo(group)
-keys = info.keys(); keys.sort()
-for i in keys:
-  print "  %s  :  %d" % ( i, info[i] )
-  pass
-
-# Get Information About SubMesh by GetMeshInfo
-print "\nInformation about Submesh by GetMeshInfo:"
-info = smesh.GetMeshInfo(submesh)
-keys = info.keys(); keys.sort()
-for i in keys:
-  print "  %s  :  %d" % ( i, info[i] )
-  pass
-\endcode
-
-
+\include viewing_meshes_ex01.py
+<a href="../../examples/SMESH/viewing_meshes_ex01.py">Download this script</a>
 
 <br>
 \anchor tui_find_element_by_point
 <h2>Find Element by Point</h2>
-
-\code
-import geompy
-import smesh
-import SMESH
-
-# Create a geometry to mesh
-box = geompy.MakeBoxDXDYDZ(100,100,100)
-
-# Create a mesh
-mesh = Mesh(box,"Mesh")
-mesh.AutomaticHexahedralization()
-mesh.Compute()
-
-# Create a point
-x,y,z = 0, 0, 1
-
-# Find all elements (except 0D ones) located at the point
-all_elems_except_0D = mesh.FindElementsByPoint(x,y,z)
-assert( len(all_elems_except_0D) == 4)
-
-# Find nodes at the point
-nodes = mesh.FindElementsByPoint(x,y,z, SMESH.NODE )
-assert( len(nodes) == 0)
-assert( len( mesh.FindElementsByPoint(x,y,0, SMESH.NODE)) == 1)
-
-# Find an edge at the point
-edges = mesh.FindElementsByPoint(x,y,z, SMESH.EDGE )
-assert( len(edges) == 1)
-
-# Find faces at the point
-edges = mesh.FindElementsByPoint(x,y,z, SMESH.FACE )
-assert( len(edges) == 2)
-
-# Find a volume at the point
-vols = mesh.FindElementsByPoint(x,y,z, SMESH.VOLUME )
-assert( len(vols) == 1)
-
-# Find 0D elements at the point
-elems0d = mesh.FindElementsByPoint(x,y,z, SMESH.ELEM0D )
-assert( len(elems0d) == 0)
-
-# Find edges within a group
-group1D = mesh.MakeGroupByIds("1D", SMESH.EDGE, [1,2] )
-edges = mesh.FindElementsByPoint(x,y,z, SMESH.EDGE, group1D )
-
-\endcode
+\include viewing_meshes_ex02.py
+<a href="../../examples/SMESH/viewing_meshes_ex02.py">Download this script</a>
 
 */

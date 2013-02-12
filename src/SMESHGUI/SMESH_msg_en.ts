@@ -76,18 +76,6 @@
         <translation>Aspect Ratio</translation>
     </message>
     <message>
-        <source>NODE_POSITION</source>
-        <translation>Position</translation>
-    </message>
-    <message>
-        <source>U_POSITION</source>
-        <translation>U</translation>
-    </message>
-    <message>
-        <source>V_POSITION</source>
-        <translation>V</translation>
-    </message>
-    <message>
         <source>COL_ALGO_HEADER</source>
         <translation>Algorithm</translation>
     </message>
@@ -1490,6 +1478,10 @@ so that the application may crash. Do you wish to continue visualization?</trans
     </message>
     <message>
         <source>SMESH_DRS_4</source>
+        <translation type="unfinished">MED file contains some elements in descending connectivity. They were not read.</translation>
+    </message>
+    <message>
+        <source>SMESH_DRS_5</source>
         <translation>The file is incorrect, some data is missed</translation>
     </message>
     <message>
@@ -1837,6 +1829,10 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Length</translation>
     </message>
     <message>
+        <source>SMESH_LOGARITHMIC_SCALARBAR</source>
+        <translation>Logarithmic</translation>
+    </message>
+    <message>
         <source>SMESH_MAKE_GROUPS</source>
         <translation>Generate groups</translation>
     </message>
@@ -1910,7 +1906,7 @@ Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>SMESH_MERGED_NODES</source>
-        <translation>%1 nodes successfully merged.</translation>
+        <translation>%1 groups of nodes successfully merged.</translation>
     </message>
     <message>
         <source>SMESH_NO_ELEMENTS_DETECTED</source>
@@ -2231,6 +2227,22 @@ Check algorithm documentation for supported geometry</translation>
     <message>
         <source>SMESH_PRECISION</source>
         <translation>Precision</translation>
+    </message>
+    <message>
+        <source>PREF_GROUP_NUMBERING</source>
+        <translation>Numbering</translation>
+    </message>
+    <message>
+        <source>PREF_NUMBERING_NODE</source>
+        <translation>Nodes: Color</translation>
+    </message>
+     <message>
+        <source>PREF_NUMBERING_ELEM</source>
+        <translation>Edges: Color</translation>
+    </message>
+    <message>
+        <source>PREF_NUMBERING_FONT</source>
+        <translation>Font</translation>
     </message>
     <message>
         <source>SMESH_PREFERENCES_SCALARBAR</source>
@@ -2591,6 +2603,10 @@ Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>SMESH_VISU_PROBLEM</source>
+        <translation>Mesh visualization failed</translation>
+    </message>
+    <message>
+        <source>SMESH_VISU_PROBLEM_MEMORY</source>
         <translation>Mesh visualization failed, probably due to lack of memory</translation>
     </message>
     <message>
@@ -4198,6 +4214,22 @@ Please, create VTK viewer and try again</translation>
     <message>
         <source>PREF_ELEM_INFO_TREE</source>
         <translation>Tree</translation>
+    </message>
+    <message>
+        <source>PREF_ELEM_INFO_GRP_DETAILS</source>
+        <translation>Show details on groups in element information tab</translation>
+    </message>
+    <message>
+        <source>PREF_DUMP_BASE_INFO</source>
+        <translation>Dump base information</translation>
+    </message>
+    <message>
+        <source>PREF_DUMP_ELEM_INFO</source>
+        <translation>Dump element information</translation>
+    </message>
+    <message>
+        <source>PREF_DUMP_ADD_INFO</source>
+        <translation>Dump additional information</translation>
     </message>
     <message>
         <source>PREF_GPP_NODES_LIMIT</source>
@@ -6397,6 +6429,10 @@ as they are of improper type:
 <context>
     <name>SMESHGUI_MeshInfo</name>
     <message>
+        <source>BASE_INFO</source>
+        <translation>Base information</translation>
+    </message>
+    <message>
         <source>NAME_LAB</source>
         <translation>Name:</translation>
     </message>
@@ -6548,6 +6584,18 @@ as they are of improper type:
         <translation>Element</translation>
     </message>
     <message>
+        <source>BUT_DUMP_MESH</source>
+        <translation>&amp;Dump</translation>
+    </message>
+    <message>
+        <source>TEXT_FILES</source>
+        <translation>Text files (*.txt)</translation>
+    </message>
+    <message>
+        <source>SAVE_INFO</source>
+        <translation>Save info</translation>
+    </message>
+    <message>
         <source>X_FROM_Y_ITEMS_SHOWN</source>
         <translation>%1-%2 from %3 items shown</translation>
     </message>
@@ -6555,60 +6603,64 @@ as they are of improper type:
 <context>
     <name>SMESHGUI_ElemInfo</name>
     <message>
+        <source>ELEM_INFO</source>
+        <translation>Element information</translation>
+    </message>
+    <message>
         <source>COORDINATES</source>
-        <translation>COORDINATES</translation>
+        <translation>Coordinates</translation>
     </message>
     <message>
         <source>CONNECTIVITY</source>
-        <translation>CONNECTIVITY</translation>
+        <translation>Connectivity</translation>
     </message>
     <message>
         <source>GRAVITY_CENTER</source>
-        <translation>GRAVITY CENTER</translation>
+        <translation>Gravity Center</translation>
     </message>
     <message>
         <source>NODE</source>
-        <translation>NODE</translation>
+        <translation>Node</translation>
     </message>
     <message>
         <source>0D_ELEMENT</source>
-        <translation>0D ELEMENT</translation>
+        <translation>0D Element</translation>
     </message>
     <message>
         <source>0D_ELEMENTS</source>
-        <translation>0D ELEMENTS</translation>
+        <translation>0D Elements</translation>
     </message>
     <message>
         <source>BALL_ELEMENT</source>
-        <translation>BALL ELEMENT</translation>
+        <translation>Ball Element</translation>
     </message>
     <message>
         <source>BALL_ELEMENTS</source>
-        <translation>BALL ELEMENTS</translation>
+        <translation>Ball Elements</translation>
     </message>
     <message>
         <source>EDGE</source>
-        <translation>EDGE</translation>
+        <translation>Edge</translation>
     </message>
     <message>
         <source>EDGES</source>
-        <translation>EDGES</translation>
+        <translation>Edges</translation>
     </message>
     <message>
         <source>FACE</source>
-        <translation>FACE</translation>
+        <translation>Face</translation>
     </message>
     <message>
         <source>FACES</source>
-        <translation>FACES</translation>
+        <translation>Faces</translation>
     </message>
     <message>
         <source>VOLUME</source>
-        <translation>VOLUME</translation>
+        <translation>Volume</translation>
     </message>
     <message>
         <source>VOLUMES</source>
-        <translation>VOLUMES</translation>
+        <translation>Volumes</translation>
     </message>
     <message>
         <source>FREE_NODE</source>
@@ -6616,7 +6668,7 @@ as they are of improper type:
     </message>
     <message>
         <source>TYPE</source>
-        <translation>TYPE</translation>
+        <translation>Type</translation>
     </message>
     <message>
         <source>TRIANGLE</source>
@@ -6656,7 +6708,7 @@ as they are of improper type:
     </message>
     <message>
         <source>QUADRATIC</source>
-        <translation>QUADRATIC</translation>
+        <translation>Quadratic</translation>
     </message>
     <message>
         <source>YES</source>
@@ -6665,6 +6717,57 @@ as they are of improper type:
     <message>
         <source>NO</source>
         <translation>No</translation>
+    </message>
+    <message>
+        <source>BALL_DIAMETER</source>
+        <translation>Diameter</translation>
+    </message>
+    <message>
+        <source>GEOM_VERTEX</source>
+        <translation>Vertex</translation>
+    </message>
+    <message>
+        <source>GEOM_EDGE</source>
+        <translation>Edge</translation>
+    </message>
+    <message>
+        <source>GEOM_FACE</source>
+        <translation>Face</translation>
+    </message>
+    <message>
+        <source>GEOM_SOLID</source>
+        <translation>Solid</translation>
+    </message>
+    <message>
+        <source>GEOM_SHELL</source>
+        <translation>Shell</translation>
+    </message>
+    <message>
+        <source>GEOM_SHAPE</source>
+        <translation>Shape</translation>
+    </message>
+    <message>
+        <source>POSITION</source>
+        <translation>Position</translation>
+    </message>
+    <message>
+        <source>U_POSITION</source>
+        <translation>U</translation>
+    </message>
+    <message>
+        <source>V_POSITION</source>
+        <translation>V</translation>
+    </message>
+    <message>
+        <source>CONTROLS</source>
+        <translation>Quality Controls</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_TreeElemInfo</name>
+    <message>
+      <source>SHOW_ITEM_INFO</source>
+      <translation>Show info</translation>
     </message>
     <message>
         <source>PROPERTY</source>
@@ -6677,6 +6780,10 @@ as they are of improper type:
 </context>
 <context>
     <name>SMESHGUI_AddInfo</name>
+    <message>
+        <source>ADDITIONAL_INFO</source>
+        <translation>Additional information</translation>
+    </message>
     <message>
         <source>NAME</source>
         <translation>Name</translation>

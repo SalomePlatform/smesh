@@ -957,10 +957,10 @@ int SMESH_Block::GetShapeIDByParams ( const gp_XYZ& theCoord )
 /*!
  * \brief Return number of wires and a list of oredered edges.
  *  \param theFace - the face to process
- *  \param theFirstVertex - the vertex of the outer wire to set first in the returned
- *         list ( theFirstVertex may be NULL )
  *  \param theEdges - all ordered edges of theFace (outer edges goes first).
  *  \param theNbEdgesInWires - nb of edges (== nb of vertices in closed wire) in each wire
+ *  \param theFirstVertex - the vertex of the outer wire to set first in the returned
+ *         list ( theFirstVertex may be NULL )
  *  \param theShapeAnalysisAlgo - if true, ShapeAnalysis::OuterWire() is used to find
  *         the outer wire else BRepTools::OuterWire() is used.
  *  \retval int - nb of wires
@@ -972,9 +972,9 @@ int SMESH_Block::GetShapeIDByParams ( const gp_XYZ& theCoord )
 //================================================================================
 
 int SMESH_Block::GetOrderedEdges (const TopoDS_Face&   theFace,
-                                  TopoDS_Vertex        theFirstVertex,
                                   list< TopoDS_Edge >& theEdges,
                                   list< int >  &       theNbEdgesInWires,
+                                  TopoDS_Vertex        theFirstVertex,
                                   const bool           theShapeAnalysisAlgo)
 {
   // put wires in a list, so that an outer wire comes first
@@ -1352,7 +1352,7 @@ bool SMESH_Block::FindBlockShapes(const TopoDS_Shell&         theShell,
   // find bottom edges and veritices
   list< TopoDS_Edge > eList;
   list< int >         nbVertexInWires;
-  GetOrderedEdges( TopoDS::Face( Fxy0 ), TopoDS::Vertex( V000 ), eList, nbVertexInWires );
+  GetOrderedEdges( TopoDS::Face( Fxy0 ), eList, nbVertexInWires, TopoDS::Vertex( V000 ) );
   if ( nbVertexInWires.size() != 1 || nbVertexInWires.front() != 4 ) {
     MESSAGE(" LoadBlockShapes() error ");
     return false;
@@ -1374,7 +1374,7 @@ bool SMESH_Block::FindBlockShapes(const TopoDS_Shell&         theShell,
 
   // find top edges and veritices
   eList.clear();
-  GetOrderedEdges( TopoDS::Face( Fxy1 ), TopoDS::Vertex( V001 ), eList, nbVertexInWires );
+  GetOrderedEdges( TopoDS::Face( Fxy1 ), eList, nbVertexInWires, TopoDS::Vertex( V001 ) );
   if ( nbVertexInWires.size() != 1 || nbVertexInWires.front() != 4 ) {
     MESSAGE(" LoadBlockShapes() error ");
     return false;

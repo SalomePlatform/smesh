@@ -514,7 +514,8 @@ static bool isMeshBoundToShape(SMESHDS_Mesh *     aMeshDS,
 
 bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
                           const TopoDS_Face& theFace,
-                          bool               theProject)
+                          bool               theProject,
+                          TopoDS_Vertex      the1stVertex)
 {
   MESSAGE(" ::Load(face) " );
   Clear();
@@ -538,10 +539,9 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
 
   // check if face is closed
   bool isClosed = helper.HasSeam();
-  TopoDS_Vertex bidon;
   list<TopoDS_Edge> eList;
   list<TopoDS_Edge>::iterator elIt;
-  SMESH_Block::GetOrderedEdges( face, bidon, eList, myNbKeyPntInBoundary );
+  SMESH_Block::GetOrderedEdges( face, eList, myNbKeyPntInBoundary, the1stVertex );
 
   // check that requested or needed projection is possible
   bool isMainShape = theMesh->IsMainShape( face );
@@ -2370,7 +2370,7 @@ bool SMESH_Pattern::Apply (const TopoDS_Face&   theFace,
 
   list< TopoDS_Edge > eList;
   list< int >         nbVertexInWires;
-  int nbWires = SMESH_Block::GetOrderedEdges( face, theVertexOnKeyPoint1, eList, nbVertexInWires);
+  int nbWires = SMESH_Block::GetOrderedEdges( face, eList, nbVertexInWires, theVertexOnKeyPoint1);
   if ( !theVertexOnKeyPoint1.IsSame( TopExp::FirstVertex( eList.front(), true )))
   {
     MESSAGE( " theVertexOnKeyPoint1 not found in the outer wire ");

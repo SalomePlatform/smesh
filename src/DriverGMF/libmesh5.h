@@ -1,21 +1,21 @@
 
 
 /*----------------------------------------------------------*/
-/*															*/
-/*						LIBMESH V 5.46						*/
-/*															*/
+/*                                                                                                                      */
+/*                                              LIBMESH V 5.46                                          */
+/*                                                                                                                      */
 /*----------------------------------------------------------*/
-/*															*/
-/*	Description:		handle .meshb file format I/O		*/
-/*	Author:				Loic MARECHAL						*/
-/*	Creation date:		feb 16 2007							*/
-/*	Last modification:	dec 09 2011							*/
-/*															*/
+/*                                                                                                                      */
+/*      Description:            handle .meshb file format I/O           */
+/*      Author:                         Loic MARECHAL                                           */
+/*      Creation date:          feb 16 2007                                                     */
+/*      Last modification:      dec 09 2011                                                     */
+/*                                                                                                                      */
 /*----------------------------------------------------------*/
 
 
 /*----------------------------------------------------------*/
-/* Defines													*/
+/* Defines                                                                                                      */
 /*----------------------------------------------------------*/
 
 #include "SMESH_DriverGMF.hxx"
@@ -35,92 +35,92 @@
 
 enum GmfKwdCod
 {
-	GmfReserved1, \
-	GmfVersionFormatted, \
-	GmfReserved2, \
-	GmfDimension, \
-	GmfVertices, \
-	GmfEdges, \
-	GmfTriangles, \
-	GmfQuadrilaterals, \
-	GmfTetrahedra, \
-	GmfPrisms, \
-	GmfHexahedra, \
-	GmfIterationsAll, \
-	GmfTimesAll, \
-	GmfCorners, \
-	GmfRidges, \
-	GmfRequiredVertices, \
-	GmfRequiredEdges, \
-	GmfRequiredTriangles, \
-	GmfRequiredQuadrilaterals, \
-	GmfTangentAtEdgeVertices, \
-	GmfNormalAtVertices, \
-	GmfNormalAtTriangleVertices, \
-	GmfNormalAtQuadrilateralVertices, \
-	GmfAngleOfCornerBound, \
-	GmfTrianglesP2, \
-	GmfEdgesP2, \
-	GmfSolAtPyramids, \
-	GmfQuadrilateralsQ2, \
-	GmfISolAtPyramids, \
-	GmfSubDomainFromGeom, \
-	GmfTetrahedraP2, \
-	GmfFault_NearTri, \
-	GmfFault_Inter, \
-	GmfHexahedraQ2, \
-	GmfExtraVerticesAtEdges, \
-	GmfExtraVerticesAtTriangles, \
-	GmfExtraVerticesAtQuadrilaterals, \
-	GmfExtraVerticesAtTetrahedra, \
-	GmfExtraVerticesAtPrisms, \
-	GmfExtraVerticesAtHexahedra, \
-	GmfVerticesOnGeometricVertices, \
-	GmfVerticesOnGeometricEdges, \
-	GmfVerticesOnGeometricTriangles, \
-	GmfVerticesOnGeometricQuadrilaterals, \
-	GmfEdgesOnGeometricEdges, \
-	GmfFault_FreeEdge, \
-	GmfPolyhedra, \
-	GmfPolygons, \
-	GmfFault_Overlap, \
-	GmfPyramids, \
-	GmfBoundingBox, \
-	GmfBody, \
-	GmfPrivateTable, \
-	GmfFault_BadShape, \
-	GmfEnd, \
-	GmfTrianglesOnGeometricTriangles, \
-	GmfTrianglesOnGeometricQuadrilaterals, \
-	GmfQuadrilateralsOnGeometricTriangles, \
-	GmfQuadrilateralsOnGeometricQuadrilaterals, \
-	GmfTangents, \
-	GmfNormals, \
-	GmfTangentAtVertices, \
-	GmfSolAtVertices, \
-	GmfSolAtEdges, \
-	GmfSolAtTriangles, \
-	GmfSolAtQuadrilaterals, \
-	GmfSolAtTetrahedra, \
-	GmfSolAtPrisms, \
-	GmfSolAtHexahedra, \
-	GmfDSolAtVertices, \
-	GmfISolAtVertices, \
-	GmfISolAtEdges, \
-	GmfISolAtTriangles, \
-	GmfISolAtQuadrilaterals, \
-	GmfISolAtTetrahedra, \
-	GmfISolAtPrisms, \
-	GmfISolAtHexahedra, \
-	GmfIterations, \
-	GmfTime, \
-	GmfFault_SmallTri, \
-	GmfCoarseHexahedra
+        GmfReserved1, \
+        GmfVersionFormatted, \
+        GmfReserved2, \
+        GmfDimension, \
+        GmfVertices, \
+        GmfEdges, \
+        GmfTriangles, \
+        GmfQuadrilaterals, \
+        GmfTetrahedra, \
+        GmfPrisms, \
+        GmfHexahedra, \
+        GmfIterationsAll, \
+        GmfTimesAll, \
+        GmfCorners, \
+        GmfRidges, \
+        GmfRequiredVertices, \
+        GmfRequiredEdges, \
+        GmfRequiredTriangles, \
+        GmfRequiredQuadrilaterals, \
+        GmfTangentAtEdgeVertices, \
+        GmfNormalAtVertices, \
+        GmfNormalAtTriangleVertices, \
+        GmfNormalAtQuadrilateralVertices, \
+        GmfAngleOfCornerBound, \
+        GmfTrianglesP2, \
+        GmfEdgesP2, \
+        GmfSolAtPyramids, \
+        GmfQuadrilateralsQ2, \
+        GmfISolAtPyramids, \
+        GmfSubDomainFromGeom, \
+        GmfTetrahedraP2, \
+        GmfFault_NearTri, \
+        GmfFault_Inter, \
+        GmfHexahedraQ2, \
+        GmfExtraVerticesAtEdges, \
+        GmfExtraVerticesAtTriangles, \
+        GmfExtraVerticesAtQuadrilaterals, \
+        GmfExtraVerticesAtTetrahedra, \
+        GmfExtraVerticesAtPrisms, \
+        GmfExtraVerticesAtHexahedra, \
+        GmfVerticesOnGeometricVertices, \
+        GmfVerticesOnGeometricEdges, \
+        GmfVerticesOnGeometricTriangles, \
+        GmfVerticesOnGeometricQuadrilaterals, \
+        GmfEdgesOnGeometricEdges, \
+        GmfFault_FreeEdge, \
+        GmfPolyhedra, \
+        GmfPolygons, \
+        GmfFault_Overlap, \
+        GmfPyramids, \
+        GmfBoundingBox, \
+        GmfBody, \
+        GmfPrivateTable, \
+        GmfFault_BadShape, \
+        GmfEnd, \
+        GmfTrianglesOnGeometricTriangles, \
+        GmfTrianglesOnGeometricQuadrilaterals, \
+        GmfQuadrilateralsOnGeometricTriangles, \
+        GmfQuadrilateralsOnGeometricQuadrilaterals, \
+        GmfTangents, \
+        GmfNormals, \
+        GmfTangentAtVertices, \
+        GmfSolAtVertices, \
+        GmfSolAtEdges, \
+        GmfSolAtTriangles, \
+        GmfSolAtQuadrilaterals, \
+        GmfSolAtTetrahedra, \
+        GmfSolAtPrisms, \
+        GmfSolAtHexahedra, \
+        GmfDSolAtVertices, \
+        GmfISolAtVertices, \
+        GmfISolAtEdges, \
+        GmfISolAtTriangles, \
+        GmfISolAtQuadrilaterals, \
+        GmfISolAtTetrahedra, \
+        GmfISolAtPrisms, \
+        GmfISolAtHexahedra, \
+        GmfIterations, \
+        GmfTime, \
+        GmfFault_SmallTri, \
+        GmfCoarseHexahedra
 };
 
 
 /*----------------------------------------------------------*/
-/* External procedures										*/
+/* External procedures                                                                          */
 /*----------------------------------------------------------*/
 
 MESHDriverGMF_EXPORT extern int GmfOpenMesh(const char *, int, ...);
@@ -133,7 +133,7 @@ MESHDriverGMF_EXPORT extern void GmfSetLin(int, int, ...);
 
 
 /*----------------------------------------------------------*/
-/* Fortran 77 API											*/
+/* Fortran 77 API                                                                                       */
 /*----------------------------------------------------------*/
 
 #if defined(F77_NO_UNDER_SCORE)
@@ -144,7 +144,7 @@ MESHDriverGMF_EXPORT extern void GmfSetLin(int, int, ...);
 
 
 /*----------------------------------------------------------*/
-/* Transmesh private API									*/
+/* Transmesh private API                                                                        */
 /*----------------------------------------------------------*/
 
 #ifdef TRANSMESH

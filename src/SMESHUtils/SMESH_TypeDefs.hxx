@@ -48,6 +48,9 @@ typedef std::set< const SMDS_MeshNode*,    TIDCompare >      TIDSortedNodeSet;
 
 typedef std::pair< const SMDS_MeshNode*, const SMDS_MeshNode* >   NLink;
 
+struct faceQuadStruct; // defined in StdMeshers_Quadrangle_2D.hxx
+typedef boost::shared_ptr<faceQuadStruct> TFaceQuadStructPtr;
+
 
 namespace SMESHUtils
 {

@@ -43,17 +43,18 @@
 #include <list>
 #include <map>
 
+class SMDS_MeshNode;
+class SMESHDS_Mesh;
+class SMESHDS_SubMesh;
 class SMESH_Gen;
-class SMESH_Mesh;
 class SMESH_HypoFilter;
-class TopoDS_Vertex;
-class TopoDS_Wire;
+class SMESH_Mesh;
+class SMESH_MesherHelper;
+class SMESH_subMesh;
 class TopoDS_Face;
 class TopoDS_Shape;
-class SMESHDS_Mesh;
-class SMDS_MeshNode;
-class SMESH_subMesh;
-class SMESH_MesherHelper;
+class TopoDS_Vertex;
+class TopoDS_Wire;
 class gp_XYZ;
 
 typedef std::map< SMESH_subMesh*, std::vector<int> >           MapShapeNbElems;
@@ -231,6 +232,10 @@ public:
   bool SupportSubmeshes() const { return _supportSubmeshes; }
   // 5 - whether supports submeshes if !NeedDiscreteBoundary()
 
+  bool NeedLowerHyps(int dim) const { return _neededLowerHyps[ dim ]; }
+  // 6 - if algo !NeedDiscreteBoundary() but requires presence of
+  // hypotheses of dimension <dim> to generate all-dimensional mesh.
+  // This info is used not to issue warnings on hiding of lower global algos.
 
 public:
   // ==================================================================
@@ -302,7 +307,7 @@ public:
    */
   static bool FaceNormal(const SMDS_MeshElement* F, gp_XYZ& normal, bool normalized=true);
 
-  static int NumberOfWires(const TopoDS_Shape& S);
+  //static int NumberOfWires(const TopoDS_Shape& S);
   int NumberOfPoints(SMESH_Mesh& aMesh,const TopoDS_Wire& W);
 
   /*!
@@ -363,6 +368,9 @@ public:
    */
   void addBadInputElement(const SMDS_MeshElement* elem);
 
+  void addBadInputElements(const SMESHDS_SubMesh* sm,
+                           const bool             addNodes=false);
+
 protected:
 
   std::vector<std::string>              _compatibleHypothesis;
@@ -373,9 +381,10 @@ protected:
   // in what turn and with what input shape.
   // These fields must be redefined if necessary by each descendant at constructor.
   bool _onlyUnaryInput;         // mesh one shape of GetDim() at once. Default TRUE
-  bool _requireDiscreteBoundary; // GetDim()-1 mesh must be present. Default TRUE
+  bool _requireDiscreteBoundary;// GetDim()-1 mesh must be present. Default TRUE
   bool _requireShape;           // work with GetDim()-1 mesh bound to geom only. Default TRUE
   bool _supportSubmeshes;       // if !_requireDiscreteBoundary. Default FALSE
+  bool _neededLowerHyps[4];     // hyp dims needed by algo that !NeedDiscreteBoundary(). Df. FALSE
 
   // indicates if quadratic mesh creation is required,
   // is usually set like this: _quadraticMesh = SMESH_MesherHelper::IsQuadraticSubMesh(shape)

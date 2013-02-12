@@ -111,6 +111,14 @@ module SMESH
   };
 
   /*!
+   * Element location on a shape
+   */
+  struct ElementPosition {
+    long             shapeID;
+    GEOM::shape_type shapeType;
+  };
+
+  /*!
    * Enumeration for element type, like in SMDS
    */
   enum ElementType
@@ -220,6 +228,7 @@ module SMESH
     DRS_WARN_RENUMBER,  // a MED file has overlapped ranges of element numbers,
                         // so the numbers from the file are ignored
     DRS_WARN_SKIP_ELEM, // some elements were skipped due to incorrect file data
+    DRS_WARN_DESCENDING, // some elements were skipped due to descending connectivity
     DRS_FAIL            // general failure (exception etc.)
   };
 
@@ -505,8 +514,6 @@ module SMESH
     Hypothesis_Status AddHypothesis(in GEOM::GEOM_Object aSubObject,
 				    in SMESH_Hypothesis anHyp)
       raises (SALOME::SALOME_Exception);
-//     boolean AddHypothesis(in SMESH_subMesh aSubMesh, in SMESH_Hypothesis anHyp)
-//       raises (SALOME::SALOME_Exception);
 
     /*!
      * Remove an hypothesis previouly added with AddHypothesis.
@@ -514,17 +521,12 @@ module SMESH
     Hypothesis_Status RemoveHypothesis(in GEOM::GEOM_Object aSubObject,
 				       in SMESH_Hypothesis anHyp)
       raises (SALOME::SALOME_Exception);
-//     boolean RemoveHypothesis(in SMESH_subMesh aSubMesh,
-// 			     in SMESH_Hypothesis anHyp)
-//       raises (SALOME::SALOME_Exception);
 
     /*!
      * Get the list of hypothesis added on a sub-shape
      */
     ListOfHypothesis GetHypothesisList(in GEOM::GEOM_Object aSubObject)
       raises (SALOME::SALOME_Exception);
-//     ListOfHypothesis GetHypothesisList(in SMESH_subMesh aSubMesh)
-//       raises (SALOME::SALOME_Exception);
 
     /*!
      * Get the log of nodes and elements added or removed since previous
@@ -532,8 +534,6 @@ module SMESH
      * @params
      * - clearAfterGet : log is emptied after Get (safe if concurrents access)
      */
-    //    string_array GetLog(in boolean clearAfterGet)
-    //      raises (SALOME::SALOME_Exception);
     log_array GetLog(in boolean clearAfterGet)
       raises (SALOME::SALOME_Exception);
 
@@ -835,6 +835,11 @@ module SMESH
      * \brief Return position of a node on shape
      */
     NodePosition GetNodePosition(in long NodeID);
+
+    /*!
+     * \brief Return position of an element on shape
+     */
+    ElementPosition GetElementPosition(in long ElemID);
 
     /*!
      * If given element is node returns IDs of shape from position

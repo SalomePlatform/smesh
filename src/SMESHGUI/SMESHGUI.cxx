@@ -357,12 +357,10 @@
 
             anEntryList.append( aMeshSO->GetID().c_str() );
 
-#ifdef WITHGENERICOBJ
             // obj has been published in study. Its refcount has been incremented.
             // It is safe to decrement its refcount
             // so that it will be destroyed when the entry in study will be removed
             aMeshes[i]->UnRegister();
-#endif
           }
           else {
             isEmpty = true;
@@ -1110,9 +1108,10 @@
               vtkLookupTable* lookupTable =
                 static_cast<vtkLookupTable*>(aScalarBarActor->GetLookupTable());
               double * minmax = lookupTable->GetRange();
+              bool isLogarithmic = lookupTable->GetScale() == VTK_SCALE_LOG10;
               std::vector<int>    nbEvents;
               std::vector<double> funValues;
-              aNumFun->GetHistogram( nbIntervals, nbEvents, funValues, elements, minmax );
+              aNumFun->GetHistogram( nbIntervals, nbEvents, funValues, elements, minmax, isLogarithmic );
               QString anInitialPath = "";
               if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
                 anInitialPath = QDir::currentPath();
@@ -1605,7 +1604,7 @@
             aControl = SMESH_Actor::eCoincidentElems3D;
             break;
           }
-            
+
           anActor->SetControlMode(aControl);
           anActor->GetScalarBarActor()->SetTitle( functorToString( anActor->GetFunctor() ).toLatin1().constData() );
           SMESH::RepaintCurrentView();
@@ -1812,22 +1811,23 @@
       std::string anEntry = SO->GetID();
 
       /** Erase graphical object **/
-      if(SO->FindAttribute(anAttr, "AttributeIOR")){
-        ViewManagerList aViewMenegers = anApp->viewManagers();
-        ViewManagerList::const_iterator it = aViewMenegers.begin();
-        for( ; it != aViewMenegers.end(); it++) {         
-          SUIT_ViewManager* vm = *it;
-          int nbSf = vm ? vm->getViewsCount() : 0;
-          if(vm) {
-            QVector<SUIT_ViewWindow*> aViews = vm->getViews();
-            for(int i = 0; i < nbSf; i++){
-              SUIT_ViewWindow *sf = aViews[i];
-              if(SMESH_Actor* anActor = SMESH::FindActorByEntry(sf,anEntry.c_str())){
-                SMESH::RemoveActor(sf,anActor);
-              }
-            }
-          }
-        }
+      if(SO->FindAttribute(anAttr, "AttributeIOR")) {
+        SMESH::RemoveVisualObjectWithActors( anEntry.c_str(), true);
+        // ViewManagerList aViewMenegers = anApp->viewManagers();
+        // ViewManagerList::const_iterator it = aViewMenegers.begin();
+        // for( ; it != aViewMenegers.end(); it++) {         
+        //   SUIT_ViewManager* vm = *it;
+        //   int nbSf = vm ? vm->getViewsCount() : 0;
+        //   if(vm) {
+        //     QVector<SUIT_ViewWindow*> aViews = vm->getViews();
+        //     for(int i = 0; i < nbSf; i++){
+        //       SUIT_ViewWindow *sf = aViews[i];
+        //       if(SMESH_Actor* anActor = SMESH::FindActorByEntry(sf,anEntry.c_str())){
+        //         SMESH::RemoveActor(sf,anActor);
+        //       }
+        //     }
+        //   }
+        // }
       }
       /** Remove an object from data structures **/
       SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SMESH::SObjectToObject( SO ));
@@ -1891,8 +1891,7 @@ SMESH::SMESH_Gen_var SMESHGUI::myComponentSMESH = SMESH::SMESH_Gen::_nil();
  */
 //=============================================================================
 SMESHGUI::SMESHGUI() :
-SalomeApp_Module( "SMESH" ),
-LightApp_Module( "SMESH" )
+SalomeApp_Module( "SMESH" )
 {
   if ( CORBA::is_nil( myComponentSMESH ) )
   {
@@ -1927,10 +1926,6 @@ LightApp_Module( "SMESH" )
   myEventCallbackCommand->SetCallback( SMESHGUI::ProcessEvents );
   myPriority = 0.0;
 
-  SMESH::GetFilterManager();
-  SMESH::GetPattern();
-  SMESH::GetMeasurements();
-
   /* load resources for all available meshers */
   SMESH::InitAvailableHypotheses();
 }
@@ -1942,12 +1937,6 @@ LightApp_Module( "SMESH" )
 //=============================================================================
 SMESHGUI::~SMESHGUI()
 {
-#ifdef WITHGENERICOBJ
-  SMESH::GetFilterManager()->UnRegister();
-  SMESH::GetMeasurements()->UnRegister();
-#endif
-  SMESH::GetFilterManager() = SMESH::FilterManager::_nil();
-  SMESH::GetMeasurements() = SMESH::Measurements::_nil();
 }
 
 //=============================================================================
@@ -4747,7 +4736,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( notifyMode, "indexes", indices );
 
   int infoGroup = addPreference( tr( "PREF_GROUP_INFO" ), genTab );
-  setPreferenceProperty( infoGroup, "columns", 4 );
+  setPreferenceProperty( infoGroup, "columns", 2 );
   int elemInfo = addPreference( tr( "PREF_ELEM_INFO" ), infoGroup, LightApp_Preferences::Selector, "SMESH", "mesh_elem_info" );
   modes.clear();
   modes.append( tr( "PREF_ELEM_INFO_SIMPLE" ) );
@@ -4762,6 +4751,10 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( nodesLim, "max", 10000000 );
   setPreferenceProperty( nodesLim, "step", 10000 );
   setPreferenceProperty( nodesLim, "special", tr( "PREF_UPDATE_LIMIT_NOLIMIT" ) );
+  addPreference( tr( "PREF_ELEM_INFO_GRP_DETAILS" ), infoGroup, LightApp_Preferences::Bool, "SMESH", "elem_info_grp_details" );
+  addPreference( tr( "PREF_DUMP_BASE_INFO" ), infoGroup, LightApp_Preferences::Bool, "SMESH", "info_dump_base" );
+  addPreference( tr( "PREF_DUMP_ELEM_INFO" ), infoGroup, LightApp_Preferences::Bool, "SMESH", "info_dump_elem" );
+  addPreference( tr( "PREF_DUMP_ADD_INFO"  ), infoGroup, LightApp_Preferences::Bool, "SMESH", "info_dump_add" );
 
   int segGroup = addPreference( tr( "PREF_GROUP_SEGMENT_LENGTH" ), genTab );
   setPreferenceProperty( segGroup, "columns", 2 );
@@ -4891,6 +4884,15 @@ void SMESHGUI::createPreferences()
 
   setPreferenceProperty( shrink, "min", 0 );
   setPreferenceProperty( shrink, "max", 100 );
+
+  int numGroup = addPreference( tr( "PREF_GROUP_NUMBERING" ), meshTab );
+  setPreferenceProperty( numGroup, "columns", 2 );
+  
+  addPreference( tr( "PREF_NUMBERING_NODE" ), numGroup, LightApp_Preferences::Color, "SMESH", "numbering_node_color" );
+  addVtkFontPref( tr( "PREF_NUMBERING_FONT" ), numGroup, "numbering_node_font", true );
+
+  addPreference( tr( "PREF_NUMBERING_ELEM" ), numGroup, LightApp_Preferences::Color, "SMESH", "numbering_elem_color" );
+  addVtkFontPref( tr( "PREF_NUMBERING_FONT" ), numGroup, "numbering_elem_font", true );
 
   int orientGroup = addPreference( tr( "PREF_GROUP_FACES_ORIENTATION" ), meshTab );
   setPreferenceProperty( orientGroup, "columns", 1 );
@@ -5077,6 +5079,12 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
               name == "forget_mesh_on_hyp_modif") {
       QString val = aResourceMgr->stringValue( "SMESH", name );
       myComponentSMESH->SetOption( name.toLatin1().constData(), val.toLatin1().constData() );
+    }
+    else if ( name == QString( "numbering_node_color" ) || name == QString( "numbering_node_font" ) ) {
+      SMESH::UpdateFontProp( this );    
+    }
+    else if ( name == QString( "numbering_elem_color" ) || name == QString( "numbering_elem_font" ) ) {
+      SMESH::UpdateFontProp( this );
     }
 
     if(aWarning.size() != 0){
@@ -6345,7 +6353,7 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
   \param param parameter
   \return identifier of preferences
 */
-int SMESHGUI::addVtkFontPref( const QString& label, const int pId, const QString& param )
+int SMESHGUI::addVtkFontPref( const QString& label, const int pId, const QString& param, const bool needSize )
 {
   int tfont = addPreference( label, pId, LightApp_Preferences::Font, "SMESH", param );
 
@@ -6359,6 +6367,7 @@ int SMESHGUI::addVtkFontPref( const QString& label, const int pId, const QString
   setPreferenceProperty( tfont, "fonts", fam );
 
   int f = QtxFontEdit::Family | QtxFontEdit::Bold | QtxFontEdit::Italic | QtxFontEdit::Shadow;
+  if ( needSize ) f = f | QtxFontEdit::Size;
   setPreferenceProperty( tfont, "features", f );
 
   return tfont;

@@ -31,6 +31,9 @@
 #include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_SubMesh.hxx"
 
+#include "SMESH_MEDSupport_i.hxx"
+#include "SMESH_MEDFamily_i.hxx"
+
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopoDS.hxx>
@@ -46,15 +49,13 @@
 #include <TopoDS_Shape.hxx>
 #include <TopTools_MapOfShape.hxx>
 
-#include "utilities.h"
-#include "Utils_CorbaException.hxx"
+#include <utilities.h>
+#include <Utils_CorbaException.hxx>
 
-#include "SMESH_MEDSupport_i.hxx"
-#include "SMESH_MEDFamily_i.hxx"
-
-# include "Utils_ORB_INIT.hxx"
-# include "Utils_SINGLETON.hxx"
-# include "Utils_ExceptHandlers.hxx"
+#include <Utils_ORB_INIT.hxx>
+#include <Utils_SINGLETON.hxx>
+#include <Utils_ExceptHandlers.hxx>
+#include <SALOMEDS_wrap.hxx>
 
 extern "C"
 {
@@ -119,11 +120,12 @@ char *SMESH_MEDMesh_i::getName() throw(SALOME::SALOME_Exception)
   {
     SMESH_Gen_i*             gen = SMESH_Gen_i::GetSMESHGen();
     SALOMEDS::Study_var    study = gen->GetCurrentStudy();
-    SALOMEDS::SObject_var meshSO = gen->ObjectToSObject( study, _mesh_i->_this());
+    SALOMEDS::SObject_wrap meshSO = gen->ObjectToSObject( study, _mesh_i->_this());
     if ( meshSO->_is_nil() )
       return CORBA::string_dup("toto");
 
     CORBA::String_var name = meshSO->GetName();
+
     return CORBA::string_dup( name.in() );
   }
   catch(...)
@@ -856,50 +858,8 @@ void SMESH_MEDMesh_i::addInStudy(SALOMEDS::Study_ptr myStudy,
   if (_meshId != "")
   {
     MESSAGE("Mesh already in Study");
-    THROW_SALOME_CORBA_EXCEPTION("Mesh already in Study",
-                                 SALOME::BAD_PARAM);
-  };
-
-  /*
-   * SALOMEDS::StudyBuilder_var myBuilder = myStudy->NewBuilder();
-   * 
-   * // Create SComponent labelled 'MED' if it doesn't already exit
-   * SALOMEDS::SComponent_var medfather = myStudy->FindComponent("MED");
-   * if ( CORBA::is_nil(medfather) ) 
-   * {
-   * MESSAGE("Add Component MED");
-   * medfather = myBuilder->NewComponent("MED");
-   * //myBuilder->AddAttribute (medfather,SALOMEDS::Name,"MED");
-   * SALOMEDS::AttributeName_var aName = SALOMEDS::AttributeName::_narrow(
-   * myBuilder->FindOrCreateAttribute(medfather, "AttributeName"));
-   * aName->SetValue("MED");
-   * 
-   * myBuilder->DefineComponentInstance(medfather,myIor);
-   * 
-   * } ;
-   * 
-   * MESSAGE("Add a mesh Object under MED");
-   * myBuilder->NewCommand();
-   * SALOMEDS::SObject_var newObj = myBuilder->NewObject(medfather);
-   * 
-   * ORB_INIT &init = *SINGLETON_<ORB_INIT>::Instance() ;
-   * ASSERT(SINGLETON_<ORB_INIT>::IsAlreadyExisting()) ;
-   * CORBA::ORB_var &orb = init(0,0);
-   * CORBA::String_var iorStr = orb->object_to_string(myIor);
-   * //myBuilder->AddAttribute(newObj,SALOMEDS::IOR,iorStr.in());
-   * SALOMEDS::AttributeIOR_var aIOR = SALOMEDS::AttributeIOR::_narrow(
-   * myBuilder->FindOrCreateAttribute(newObj, "AttributeIOR"));
-   * aIOR->SetValue(iorStr.c_str());
-   * 
-   * //myBuilder->AddAttribute(newObj,SALOMEDS::Name,_mesh_i->getName().c_str());
-   * SALOMEDS::AttributeName_var aName = SALOMEDS::AttributeName::_narrow(
-   * myBuilder->FindOrCreateAttribute(newObj, "AttributeName"));
-   * aName->SetValue(_mesh_i->getName().c_str());
-   * 
-   * _meshId = newObj->GetID();
-   * myBuilder->CommitCommand();
-   * 
-   */
+    THROW_SALOME_CORBA_EXCEPTION("Mesh already in Study", SALOME::BAD_PARAM);
+  }
   END_OF("Mesh_i::addInStudy(SALOMEDS::Study_ptr myStudy)");
 }
 

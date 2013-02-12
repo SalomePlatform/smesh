@@ -68,9 +68,6 @@
 #include <TopExp_Explorer.hxx>
 #include <StdSelect_TypeOfEdge.hxx>
 
-// SALOME KERNEL includes
-#include <SALOMEDS_SObject.hxx>
-
 
 #define SPACING 6
 #define MARGIN 0
@@ -251,7 +248,7 @@ void StdMeshersGUI_SubShapeSelectorWdg::SelectionIntoArgument()
       
       GEOM::GEOM_Object_var aGeomObj = GetGeomObjectByEntry( IO->getEntry() );
       if ( !CORBA::is_nil( aGeomObj ) ) { // Selected Object From Study
-        GEOM::GEOM_Object_ptr aGeomFatherObj = aGeomObj->GetMainShape();
+        GEOM::GEOM_Object_var aGeomFatherObj = aGeomObj->GetMainShape();
         QString aFatherEntry = "";
         QString aMainFatherEntry = "";
         TopoDS_Shape shape;
@@ -259,13 +256,13 @@ void StdMeshersGUI_SubShapeSelectorWdg::SelectionIntoArgument()
           // Get Main Shape
           GEOM::GEOM_Object_var aGeomMain = GetGeomObjectByEntry( myEntry );
           if ( !CORBA::is_nil( aGeomMain ) && aGeomMain->GetType() == 37 ) {  // Main Shape is a Group
-            GEOM::GEOM_Object_ptr aMainFatherObj = aGeomMain->GetMainShape();
+            GEOM::GEOM_Object_var aMainFatherObj = aGeomMain->GetMainShape();
             if ( !CORBA::is_nil( aMainFatherObj ) )
               aMainFatherEntry = aMainFatherObj->GetStudyEntry();
           }
           aFatherEntry = aGeomFatherObj->GetStudyEntry();
         }
-        
+
         if ( aFatherEntry != "" && ( aFatherEntry == myEntry || aFatherEntry == aMainFatherEntry ) )
         {
           if ( aGeomObj->GetType() == 37 /*GEOM_GROUP*/ ) { // Selected Group that belongs the main object
@@ -470,18 +467,17 @@ GEOM::GEOM_Object_var StdMeshersGUI_SubShapeSelectorWdg::GetGeomObjectByEntry( c
 {
   GEOM::GEOM_Object_var aGeomObj;
   SALOMEDS::Study_var aStudy = SMESHGUI::GetSMESHGen()->GetCurrentStudy();
-  if (aStudy != 0) {
+  if ( !aStudy->_is_nil() )
+  {
     SALOMEDS::SObject_var aSObj = aStudy->FindObjectID( theEntry.toLatin1().data() );
-    SALOMEDS::GenericAttribute_var anAttr;
-
-    if (!aSObj->_is_nil() && aSObj->FindAttribute(anAttr, "AttributeIOR")) {
-      SALOMEDS::AttributeIOR_var anIOR = SALOMEDS::AttributeIOR::_narrow(anAttr);
-      CORBA::String_var aVal = anIOR->Value();
-      CORBA::Object_var obj = aStudy->ConvertIORToObject(aVal);
+    if (!aSObj->_is_nil() )
+    {
+      CORBA::Object_var obj = aSObj->GetObject();
       aGeomObj = GEOM::GEOM_Object::_narrow(obj);
+      aSObj->UnRegister();
     }
   }
-  return aGeomObj;
+  return aGeomObj._retn();
 }
 
 //=================================================================================

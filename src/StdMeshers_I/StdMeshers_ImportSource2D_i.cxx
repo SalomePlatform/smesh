@@ -97,11 +97,12 @@ void StdMeshers_ImportSource2D_i::SetSourceFaces(const SMESH::ListOfGroups& grou
           THROW_SALOME_CORBA_EXCEPTION("Wrong group type", SALOME::BAD_PARAM);
         smesh_groups.push_back( gp_i->GetSmeshGroup() );
 
-        SALOMEDS::SObject_var so = SMESH_Gen_i::GetSMESHGen()->ObjectToSObject(study, groups[i]);
+        SALOMEDS::SObject_var so = SMESH_Gen_i::ObjectToSObject(study, groups[i]);
         if ( !so->_is_nil())
         {
           CORBA::String_var entry = so->GetID();
           entries.push_back( entry.in() );
+          so->UnRegister();
         }
       }
     this->GetImpl()->SetGroups( smesh_groups );
@@ -179,9 +180,11 @@ char* StdMeshers_ImportSource2D_i::SaveTo()
 
     // id
     SALOMEDS::SObject_var groupSO = study->FindObjectID( _groupEntries[i] );
-    CORBA::Object_var groupObj;
-    if ( !groupSO->_is_nil() )
+    CORBA::Object_var    groupObj;
+    if ( !groupSO->_is_nil() ) {
       groupObj = groupSO->GetObject();
+      groupSO->UnRegister();
+    }
     StdMeshers_ObjRefUlils::SaveToStream( groupObj, os );
   }
 

@@ -115,7 +115,7 @@ module SMESH
   {
     double GetValue( in long theElementId );
 
-    Histogram GetHistogram( in short nbIntervals );
+    Histogram GetHistogram( in short nbIntervals, in boolean isLogarithmic );
 
     /*!
     * Set precision for calculation. It is a position after point which is

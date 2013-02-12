@@ -125,7 +125,8 @@ namespace SMESH{
                         std::vector<int>&       nbEvents,
                         std::vector<double>&    funValues,
                         const std::vector<int>& elements,
-                        const double*           minmax=0);
+                        const double*           minmax=0,
+                        const bool              isLogarithmic = false);
       virtual SMDSAbs_ElementType GetType() const = 0;
       virtual double GetBadRate( double Value, int nbNodes ) const = 0;
       long  GetPrecision() const;
@@ -820,25 +821,36 @@ namespace SMESH{
                         const SMDSAbs_ElementType theType);
 
     private:
-      void    addShape (const TopoDS_Shape& theShape);
-      void    process();
-      void    process (const SMDS_MeshElement* theElem);
 
-    private:
-      TMeshModifTracer      myMeshModifTracer;
-      TColStd_MapOfInteger  myIds;
-      SMDSAbs_ElementType   myType;
-      TopoDS_Shape          myShape;
-      double                myToler;
-      bool                  myAllNodesFlag;
+      struct TClassifier
+      {
+        TClassifier(const TopoDS_Shape& s, double tol) { Init(s,tol); }
+        void Init(const TopoDS_Shape& s, double tol);
+        bool IsOut(const gp_Pnt& p);
+        TopAbs_ShapeEnum ShapeType() const;
+      private:
+        bool isOutOfSolid (const gp_Pnt& p);
+        bool isOutOfFace  (const gp_Pnt& p);
+        bool isOutOfEdge  (const gp_Pnt& p);
+        bool isOutOfVertex(const gp_Pnt& p);
 
-      TopTools_MapOfShape         myShapesMap;
-      TopAbs_ShapeEnum            myCurShapeType; // type of current sub-shape
-      BRepClass3d_SolidClassifier myCurSC;        // current SOLID
-      GeomAPI_ProjectPointOnSurf  myCurProjFace;  // current FACE
-      TopoDS_Face                 myCurFace;      // current FACE
-      GeomAPI_ProjectPointOnCurve myCurProjEdge;  // current EDGE
-      gp_Pnt                      myCurPnt;       // current VERTEX
+        bool (TClassifier::* myIsOutFun)(const gp_Pnt& p);
+        BRepClass3d_SolidClassifier mySolidClfr;
+        GeomAPI_ProjectPointOnSurf  myProjFace;
+        GeomAPI_ProjectPointOnCurve myProjEdge;
+        gp_Pnt                      myVertexXYZ;
+        TopoDS_Shape                myShape;
+        double                      myTol;
+      };
+      void clearClassifiers();
+
+      std::vector< TClassifier* > myClassifiers;
+      const SMDS_Mesh*            myMesh;
+      SMDSAbs_ElementType         myType;
+      TopoDS_Shape                myShape;
+      double                      myToler;
+      bool                        myAllNodesFlag;
+
     };
 
     typedef boost::shared_ptr<ElementsOnShape> ElementsOnShapePtr;

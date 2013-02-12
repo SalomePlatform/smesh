@@ -26,7 +26,10 @@
 // Created   : Fri Oct 20 11:37:07 2006
 // Author    : Edward AGAPOV (eap)
 //
+
 #include "StdMeshers_RadialPrism_3D.hxx"
+
+#include <Basics_OCCTVersion.hxx>
 
 #include "StdMeshers_ProjectionUtils.hxx"
 #include "StdMeshers_NumberOfLayers.hxx"
@@ -45,7 +48,11 @@
 
 #include <BRepAdaptor_Curve.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>
+#if OCC_VERSION_LARGE > 0x06050400
+#include <BRepClass3d.hxx>
+#else
 #include <BRepTools.hxx>
+#endif
 #include <BRep_Tool.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopoDS.hxx>
@@ -54,7 +61,6 @@
 #include <TopTools_MapOfShape.hxx>
 #include <gp.hxx>
 #include <gp_Pnt.hxx>
-
 
 using namespace std;
 
@@ -162,7 +168,11 @@ bool StdMeshers_RadialPrism_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& a
 
   // get 2 shells
   TopoDS_Solid solid = TopoDS::Solid( aShape );
+#if OCC_VERSION_LARGE > 0x06050400
+  TopoDS_Shell outerShell = BRepClass3d::OuterShell( solid );
+#else
   TopoDS_Shell outerShell = BRepTools::OuterShell( solid );
+#endif
   TopoDS_Shape innerShell;
   int nbShells = 0;
   for ( TopoDS_Iterator It (solid); It.More(); It.Next(), ++nbShells )
@@ -402,7 +412,11 @@ bool StdMeshers_RadialPrism_3D::Evaluate(SMESH_Mesh& aMesh,
 {
   // get 2 shells
   TopoDS_Solid solid = TopoDS::Solid( aShape );
+#if OCC_VERSION_LARGE > 0x06050400
+  TopoDS_Shell outerShell = BRepClass3d::OuterShell( solid );
+#else
   TopoDS_Shell outerShell = BRepTools::OuterShell( solid );
+#endif
   TopoDS_Shape innerShell;
   int nbShells = 0;
   for ( TopoDS_Iterator It (solid); It.More(); It.Next(), ++nbShells )

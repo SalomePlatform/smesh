@@ -219,13 +219,13 @@ bool StdMeshers_Projection_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aS
                  SMESH_Comment("Target shape must have 1 shell but not ") << nbShell);
 
   // Check that shapes are blocks
-  if ( TAssocTool::Count( tgtShell, TopAbs_FACE , 1 ) != 6 ||
-       TAssocTool::Count( tgtShell, TopAbs_EDGE , 1 ) != 12 ||
-       TAssocTool::Count( tgtShell, TopAbs_WIRE , 1 ) != 6 )
+  if ( SMESH_MesherHelper::Count( tgtShell, TopAbs_FACE , 1 ) != 6 ||
+       SMESH_MesherHelper::Count( tgtShell, TopAbs_EDGE , 1 ) != 12 ||
+       SMESH_MesherHelper::Count( tgtShell, TopAbs_WIRE , 1 ) != 6 )
     return error(COMPERR_BAD_SHAPE, "Target shape is not a block");
-  if ( TAssocTool::Count( srcShell, TopAbs_FACE , 1 ) != 6 ||
-       TAssocTool::Count( srcShell, TopAbs_EDGE , 1 ) != 12 ||
-       TAssocTool::Count( srcShell, TopAbs_WIRE , 1 ) != 6 )
+  if ( SMESH_MesherHelper::Count( srcShell, TopAbs_FACE , 1 ) != 6 ||
+       SMESH_MesherHelper::Count( srcShell, TopAbs_EDGE , 1 ) != 12 ||
+       SMESH_MesherHelper::Count( srcShell, TopAbs_WIRE , 1 ) != 6 )
     return error(COMPERR_BAD_SHAPE, "Source shape is not a block");
 
   // Assure that mesh on a source shape is computed
@@ -459,13 +459,13 @@ bool StdMeshers_Projection_3D::Evaluate(SMESH_Mesh& aMesh,
                  SMESH_Comment("Target shape must have 1 shell but not ") << nbShell);
 
   // Check that shapes are blocks
-  if ( TAssocTool::Count( tgtShell, TopAbs_FACE , 1 ) != 6 ||
-       TAssocTool::Count( tgtShell, TopAbs_EDGE , 1 ) != 12 ||
-       TAssocTool::Count( tgtShell, TopAbs_WIRE , 1 ) != 6 )
+  if ( SMESH_MesherHelper::Count( tgtShell, TopAbs_FACE , 1 ) != 6 ||
+       SMESH_MesherHelper::Count( tgtShell, TopAbs_EDGE , 1 ) != 12 ||
+       SMESH_MesherHelper::Count( tgtShell, TopAbs_WIRE , 1 ) != 6 )
     return error(COMPERR_BAD_SHAPE, "Target shape is not a block");
-  if ( TAssocTool::Count( srcShell, TopAbs_FACE , 1 ) != 6 ||
-       TAssocTool::Count( srcShell, TopAbs_EDGE , 1 ) != 12 ||
-       TAssocTool::Count( srcShell, TopAbs_WIRE , 1 ) != 6 )
+  if ( SMESH_MesherHelper::Count( srcShell, TopAbs_FACE , 1 ) != 6 ||
+       SMESH_MesherHelper::Count( srcShell, TopAbs_EDGE , 1 ) != 12 ||
+       SMESH_MesherHelper::Count( srcShell, TopAbs_WIRE , 1 ) != 6 )
     return error(COMPERR_BAD_SHAPE, "Source shape is not a block");
 
   // Assure that mesh on a source shape is computed

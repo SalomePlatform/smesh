@@ -88,11 +88,16 @@ void StdMeshers_LayerDistribution_i::SetLayerDistribution(SMESH::SMESH_Hypothesi
     this->GetImpl()->SetLayerDistribution( hyp_i->GetImpl() );
     myHyp = SMESH::SMESH_Hypothesis::_duplicate( hyp1D );
     // Remove SO of 1D hypothesis if it was published
-    if (SMESH_Gen_i* gen = SMESH_Gen_i::GetSMESHGen()) {
+    if (SMESH_Gen_i* gen = SMESH_Gen_i::GetSMESHGen())
+    {
       SALOMEDS::Study_var study = gen->GetCurrentStudy();
-      SALOMEDS::SObject_var SO = gen->ObjectToSObject( study, hyp1D );
+      SALOMEDS::SObject_var  SO = gen->ObjectToSObject( study, hyp1D );
       if ( ! SO->_is_nil() )
-        study->NewBuilder()->RemoveObjectWithChildren( SO );
+      {
+        SALOMEDS::StudyBuilder_var builder = study->NewBuilder();
+        builder->RemoveObjectWithChildren( SO );
+        SO->UnRegister();
+      }
     }
     // Update Python script: write creation of 1D hyp as it is not published and
     // for this, SMESH_Gen does not write it's creation

@@ -144,10 +144,10 @@ namespace SMESH
 
   void
   GetColor(  const QString& theSect, 
-	     const QString& theName, 
-	     QColor& color,
-	     int& delta,
-	     QString def) 
+             const QString& theName, 
+             QColor& color,
+             int& delta,
+             QString def) 
   {
     
     SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();
@@ -160,15 +160,15 @@ namespace SMESH
   std::map<SMDSAbs_ElementType,int> GetEntitiesFromObject(SMESH_VisualObj *theObject) {
     std::map<SMDSAbs_ElementType,int> entities;
     entities.insert(std::pair<SMDSAbs_ElementType,int>(SMDSAbs_0DElement,
-		theObject ? theObject->GetNbEntities(SMDSAbs_0DElement) : 0));
+                theObject ? theObject->GetNbEntities(SMDSAbs_0DElement) : 0));
     entities.insert(std::pair<SMDSAbs_ElementType,int>(SMDSAbs_Ball,
-		theObject ? theObject->GetNbEntities(SMDSAbs_Ball) : 0));
+                theObject ? theObject->GetNbEntities(SMDSAbs_Ball) : 0));
     entities.insert(std::pair<SMDSAbs_ElementType,int>(SMDSAbs_Edge,
-		theObject ? theObject->GetNbEntities(SMDSAbs_Edge) : 0));
+                theObject ? theObject->GetNbEntities(SMDSAbs_Edge) : 0));
     entities.insert(std::pair<SMDSAbs_ElementType,int>(SMDSAbs_Face,
-		theObject ? theObject->GetNbEntities(SMDSAbs_Face) : 0));
+                theObject ? theObject->GetNbEntities(SMDSAbs_Face) : 0));
     entities.insert(std::pair<SMDSAbs_ElementType,int>(SMDSAbs_Volume,
-		theObject ? theObject->GetNbEntities(SMDSAbs_Volume) : 0));
+                theObject ? theObject->GetNbEntities(SMDSAbs_Volume) : 0));
     return entities;
   }
   

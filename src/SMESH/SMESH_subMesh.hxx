@@ -84,7 +84,7 @@ class SMESH_EXPORT SMESH_subMesh
    * \brief Return iterator on the submeshes this one depends on
    */
   SMESH_subMeshIteratorPtr getDependsOnIterator(const bool includeSelf,
-                                                const bool complexShapeFirst);
+                                                const bool complexShapeFirst) const;
 
   const TopoDS_Shape & GetSubShape() const;
 
@@ -253,6 +253,8 @@ public:
   void SetIsAlwaysComputed(bool isAlCo);
   bool IsAlwaysComputed() { return _alwaysComputed; }
 
+  bool SubMeshesComputed() const;
+
   
   /*!
    * \brief  Find common submeshes (based on shared subshapes with other
@@ -266,9 +268,6 @@ public:
 protected:
   // ==================================================================
   void insertDependence(const TopoDS_Shape aSubShape);
-
-  bool subMeshesComputed();
-  //bool SubMeshesReady();
 
   void removeSubMeshElementsAndNodes();
   void updateDependantsState(const compute_event theEvent);

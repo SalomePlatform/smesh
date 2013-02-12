@@ -2,23 +2,73 @@
 
 \page prism_3d_algo_page 3D extrusion meshing algorithm
 
-3D extrusion algorithm can be used for meshing prisms, i.e. <b>3D Shapes</b>
+3D extrusion algorithm can be used for meshing prisms, i.e. 3D shapes
 defined by two opposing faces having the same number of vertices and
-edges and meshed using, for example,  the \ref projection_algos_page
-"2D Projection" algorithm. These two faces should be connected by
-quadrangle "side" faces.
+edges. These two faces should be connected by quadrangle "side" faces.
 
-The opposing faces can be meshed with either quadrangles or triangles,
-while the side faces should be meshed with quadrangles only.
+The prism is allowed to have sides composed of several faces. (A prism
+side is a row of faces (or one face) connecting corresponding edges of
+the top and base faces). But there is a limitation that a prism 
+side is allowed to be split only vertically as indicated in the
+picture below. 
 
-\image html image157.gif "Prism with 3D extrusion meshing".
+\image html prism_ok_ko.png
+In this picture, the left prism is suitable for meshing with 3D
+extrusion algorithm; it has six sides two of which are split
+vertically. And the right prism can't be meshed with this
+algorithm because one of the prism sides is split horizontally (a
+splitting edge is highlighted).
 
-As you can see, the <b>3D extrusion</b> algorithm permits to build and to
-have in the same 3D mesh such elements as hexahedrons, prisms and
-polyhedrons.
+The algorithm can propagate 2D mesh not only between horizontal
+(i.e. base and top) faces of one prism but also between faces of prisms
+organized in a stack and between stacks sharing prism sides.
 
-\note This algorithm works correctly only if the opposing faces have
-the same (or similar) meshing topography. Otherwise, 3D extrusion
-algorithm can fail to build mesh volumes.
+\image html prism_stack.png
+In this picture, four neighboring prism stacks, each comprising two prisms,
+are shown. The shown sub-mesh is used by the algorithm to mesh
+all the eight prisms in the stacks.
+
+To use <em>3D extrusion</em> algorithm you need to assign algorithms
+and hypotheses of lower dimension as follows.
+(A sample picture below shows algorithms and hypotheses used to
+mesh a cylinder with prismatic volumes).
+
+\image html prism_needs_hyps.png
+
+\b Global algorithms and hypotheses to be chosen at 
+\ref create_mesh_anchor "Creation of a mesh object" are:
+<ul>
+<li> 1D algorithm and hypothesis that will be applied for meshing
+  (logically) vertical edges of the prism (these edges connect the top and
+  base faces of prism). In the sample picture above these are
+  "Regular_1D" algorithm and "Nb. Segments_1" hypothesis.</li>
+</ul>
+
+\b Local algorithms and hypotheses to be chosen at 
+\ref constructing_submeshes_page "Constructing sub-meshes" are:
+<ul>
+  <li> 1D and 2D algorithms and hypotheses that will be applied for
+    meshing the top and base prism faces. These faces can be meshed
+    with any type of 2D elements: quadrangles, triangles, polygons or
+    their mix. It's enough to define a sub-mesh on either top or base
+    face. In the sample picture above, "BLSURF" algorithm meshes
+    "Face_1" base surface with triangles. (1D algorithm is not
+    assigned as "BLSURF" does not require divided edges to create 2D mesh.)
+  </li>
+  <li> Optionally you can define an 1D sub-mesh on some vertical edges
+    of stacked prisms, which will override the global 1D hypothesis mentioned
+    above. In the picture above the picture of Object Browser, the
+    vertical division is not equidistant on all the length because of
+    a "Number Of Segments" hypothesis with Scale Factor=3 assigned to
+    the highlighted edge. 
+</li></ul>
+
+\image html image157.gif 
+
+Prism with 3D extrusion meshing. "Vertical" division is different on
+neighbor edges due to local 1D hypotheses assigned.
+
+\sa a sample TUI Script of
+\ref tui_prism_3d_algo "Use 3D extrusion meshing algorithm".
 
 */

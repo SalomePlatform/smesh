@@ -23,7 +23,7 @@
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_Preferences_ScalarBarDlg.h
 // Author : Nicolas REJNERI, Open CASCADE S.A.S.
-//
+
 #ifndef SMESHGUI_PREFERENCES_SCALARBARDLG_H
 #define SMESHGUI_PREFERENCES_SCALARBARDLG_H
 
@@ -78,6 +78,7 @@ protected slots:
   void                     onHelp();
   void                     onSelectionChanged();
   void                     onXYChanged();
+  void                     onMinMaxChanged();
   void                     onOrientationChanged();
   void                     onDistributionChanged( int );
   void                     onDistributionActivated( bool );
@@ -94,6 +95,7 @@ private:
   QGroupBox*               myRangeGrp;
   QLineEdit*               myMinEdit;
   QLineEdit*               myMaxEdit;
+  QCheckBox*               myLogarithmicCheck;
 
   QGroupBox*               myFontGrp;
   QtxColorButton*          myTitleColorBtn;

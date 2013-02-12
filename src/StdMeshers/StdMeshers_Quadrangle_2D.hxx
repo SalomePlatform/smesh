@@ -42,16 +42,18 @@ class StdMeshers_FaceSide;
 struct uvPtStruct;
 
 
-enum TSideID { BOTTOM_SIDE=0, RIGHT_SIDE, TOP_SIDE, LEFT_SIDE, NB_SIDES };
+enum TSideID { QUAD_BOTTOM_SIDE=0, QUAD_RIGHT_SIDE, QUAD_TOP_SIDE, QUAD_LEFT_SIDE, NB_QUAD_SIDES };
 
 typedef uvPtStruct UVPtStruct;
 typedef struct faceQuadStruct
 {
   std::vector< StdMeshers_FaceSide*> side;
-  bool isEdgeOut[4]; // true, if an edge has more nodes, than the opposite
+  bool isEdgeOut[4]; // true, if an EDGE has more nodes, than an opposite one
   UVPtStruct* uv_grid;
   TopoDS_Face face;
   ~faceQuadStruct();
+  void shift( size_t nb, bool keepUnitOri );
+  typedef boost::shared_ptr<faceQuadStruct> Ptr;
 } FaceQuadStruct;
 
 class STDMESHERS_EXPORT StdMeshers_Quadrangle_2D: public SMESH_2D_Algo
@@ -70,12 +72,12 @@ public:
   virtual bool Evaluate(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape,
                         MapShapeNbElems& aResMap);
 
-  FaceQuadStruct* CheckAnd2Dcompute(SMESH_Mesh& aMesh,
-                                    const TopoDS_Shape& aShape,
-                                    const bool CreateQuadratic);
+  FaceQuadStruct::Ptr CheckAnd2Dcompute(SMESH_Mesh& aMesh,
+                                        const TopoDS_Shape& aShape,
+                                        const bool CreateQuadratic);
 
-  FaceQuadStruct* CheckNbEdges(SMESH_Mesh& aMesh,
-                               const TopoDS_Shape& aShape);
+  FaceQuadStruct::Ptr CheckNbEdges(SMESH_Mesh& aMesh,
+                                   const TopoDS_Shape& aShape);
 
 protected:
 
@@ -85,9 +87,9 @@ protected:
                                std::vector<int>& aNbNodes,
                                bool& IsQuadratic);
 
-  bool SetNormalizedGrid(SMESH_Mesh& aMesh,
-                         const TopoDS_Shape& aShape,
-                         FaceQuadStruct*& quad);
+  bool SetNormalizedGrid(SMESH_Mesh&          aMesh,
+                         const TopoDS_Shape&  aShape,
+                         FaceQuadStruct::Ptr& quad);
   
   void SplitQuad(SMESHDS_Mesh *theMeshDS,
                  const int theFaceID,
@@ -96,23 +98,23 @@ protected:
                  const SMDS_MeshNode* theNode3,
                  const SMDS_MeshNode* theNode4);
 
-  bool ComputeQuadPref(SMESH_Mesh& aMesh,
+  bool ComputeQuadPref(SMESH_Mesh&         aMesh,
                        const TopoDS_Shape& aShape,
-                       FaceQuadStruct* quad);
+                       FaceQuadStruct::Ptr quad);
 
-  bool EvaluateQuadPref(SMESH_Mesh& aMesh,
+  bool EvaluateQuadPref(SMESH_Mesh&         aMesh,
                         const TopoDS_Shape& aShape,
-                        std::vector<int>& aNbNodes,
-                        MapShapeNbElems& aResMap,
-                        bool IsQuadratic);
+                        std::vector<int>&   aNbNodes,
+                        MapShapeNbElems&    aResMap,
+                        bool                isQuadratic);
 
-  bool ComputeReduced (SMESH_Mesh& aMesh,
+  bool ComputeReduced (SMESH_Mesh&         aMesh,
                        const TopoDS_Shape& aShape,
-                       FaceQuadStruct* quad);
+                       FaceQuadStruct::Ptr quad);
 
-  void UpdateDegenUV(FaceQuadStruct* quad);
+  void UpdateDegenUV(FaceQuadStruct::Ptr quad);
 
-  void Smooth (FaceQuadStruct* quad);
+  void Smooth (FaceQuadStruct::Ptr quad);
 
 
   // true if QuadranglePreference hypothesis is assigned that forces
@@ -132,6 +134,8 @@ protected:
   SMESH_MesherHelper*  myHelper; // tool for working with quadratic elements
 
   SMESH_ProxyMesh::Ptr myProxyMesh;
+
+  FaceQuadStruct::Ptr  myQuadStruct;
 };
 
 #endif

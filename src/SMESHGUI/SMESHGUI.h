@@ -200,9 +200,10 @@ protected:
 
 private:
   void                            OnEditDelete();
-  int                             addVtkFontPref( const QString& label, 
-                                                  const int pId, 
-                                                  const QString& param );
+  int                             addVtkFontPref( const QString&, 
+                                                  const int, 
+                                                  const QString&,
+						  const bool = false);
 
   void                            connectView( const SUIT_ViewWindow* );
  

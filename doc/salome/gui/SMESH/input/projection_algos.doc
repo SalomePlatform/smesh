@@ -16,44 +16,51 @@ The following dialog box will appear:
 
 \image html projection_1d.png
 
-In this menu you can define the \b Name of the algorithm, the already
-meshed source \b Edge and the \b Mesh  (It can be omitted only when 
-projecting a submesh on another one from the same global Mesh). 
-It could also be necessary to define the orientation of edges, 
-which is done by indicating the <b>Source Vertex</b> being the first point 
-of the Source Edge and the <b>Target Vertex</b> being the first point of 
-the created \b Edge. 
+In this dialog you can define
+<ul>
+  <li> the \b Name of the algorithm,</li>
+  <li> the already meshed <b> Source Edge</b> and </li>
+  <li> the <b>Source Mesh </b> (It can be omitted only when projecting
+    a sub-mesh on another one of the same Mesh).</li>
+  <li> It could also be necessary to define the orientation of edges, 
+    which is done by indicating the <b>Source Vertex</b> being the
+    first point of the <b>Source Edge </b>and the <b>Target Vertex</b> being
+    the first point of the edge being meshed.</li>
+</ul>
 <br>
 For a group of edges, <b>Source</b> and <b>Target</b> vertices should be
-shared by one edge of the group. If <b>Source</b> and <b>Target</b>
-vertices are specified, the elements of the group must be adjacent.
+shared by only one edge of the group. If <b>Source</b> and <b>Target</b>
+vertices are specified, the edges in the group must be connected.
 The source and target groups must contain equal number of edges
 and they must form topologically equal structures.
 
 \n <b>Projection 2D</b> algorithm allows to define the mesh of a face
-(or group of faces) by the
-projection of another already meshed face (or group of faces). This
-algorithm works only
-if all edges of the target face have been meshed as 1D Projections of
-the edges of the source face.
+(or group of faces) by the projection of another already meshed face
+(or group of faces). This algorithm works only if all edges of the
+target face have been discretized into the same number of
+segments as corresponding edges of the source face.
 
 To apply this algorithm select the face to be meshed (indicated in the
 field \b Geometry of <b>Create mesh</b> dialog box), <b>Projection
-2D</b> in the list
-of 2D algorithms and click the <em>"Add Hypothesis"</em> button. The
-following dialog box will appear:
+2D</b> in the list of 2D algorithms and click the <em> "Add
+Hypothesis"</em> button. The following dialog box will appear:
 
 \image html projection_2d.png
 
-In this menu you can define the \b Name of the algorithm, the already
-meshed source \b Face and the \b Mesh (It can be omitted only when 
-projecting a submesh on another one from the same global Mesh). 
-It could also be necessary to define the orientation of mesh on the
-face, which is done by indicating two <b>Source Vertices</b>, which
-belong to the same edge of the source face, and two <b>Target
-Vertices</b>, which belong to the same edge of the created \b Face.
-For groups of face, they must contain equal number of faces
-and they must form topologically equal structures.
+In this dialog you can define 
+<ul>
+  <li> the \b Name of the algorithm, </li>
+  <li> the already meshed <b> Source Face </b> and </li>
+  <li> the <b> Source Mesh </b> (It can be omitted only when 
+    projecting a submesh on another one of the same Mesh). </li>
+  <li> It could also be necessary to define the orientation of mesh on
+    the face, which is done by indicating two <b>Source Vertices</b>,
+    which belong to the same edge of the <b>Source Face</b>, and
+    two <b>Target Vertices</b>, which belong to the same edge of the
+    face being meshed.</li>
+</ul>
+For groups of face, the groups must contain equal number of faces and
+they must form topologically equal structures. 
 
 \n <b>Projection 1D-2D</b> algorithm differs from <b>Projection 2D</b>
 algorithm in one aspect: it generates mesh segments on edges of

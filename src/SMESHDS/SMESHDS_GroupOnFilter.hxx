@@ -46,7 +46,18 @@ class SMESHDS_EXPORT SMESHDS_GroupOnFilter: public SMESHDS_GroupBase
 
   SMESH_PredicatePtr GetPredicate() const { return myPredicate; }
 
-  virtual int Extent() const;
+  std::vector< int > GetMeshInfo() const;
+
+  template< typename IDTYPE >
+    int        GetElementIds( IDTYPE* ids ) const
+  {
+    return getElementIds( (void*)ids, sizeof(IDTYPE));
+  }
+
+
+  virtual int  Extent() const;
+
+  virtual bool IsEmpty();
 
   virtual bool Contains (const int theID);
 
@@ -54,21 +65,22 @@ class SMESHDS_EXPORT SMESHDS_GroupOnFilter: public SMESHDS_GroupBase
 
   virtual SMDS_ElemIteratorPtr GetElements() const;
 
-  virtual int GetID (const int theIndex);
+  virtual int  GetTic() const;
 
-  virtual int GetTic() const;
-
-  bool IsUpToDate() const;
+  bool         IsUpToDate() const;
 
  private:
 
   void update() const;
   void setChanged(bool changed=true);
+  const SMDS_MeshElement* setNbElemToSkip( SMDS_ElemIteratorPtr& elIt );
+  int getElementIds( void* ids, size_t idSize ) const;
 
   SMESH_PredicatePtr                    myPredicate;
-  std::vector< const SMDS_MeshElement*> myElements;
-  unsigned long                         myMeshModifTime; // when myElements was filled
+  std::vector< int >                    myMeshInfo;
+  size_t                                myMeshModifTime; // when myMeshInfo was updated
   int                                   myPredicateTic;
+  size_t                                myNbElemToSkip;
 };
 
 #endif

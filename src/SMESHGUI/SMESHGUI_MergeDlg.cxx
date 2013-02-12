@@ -670,7 +670,7 @@ bool SMESHGUI_MergeDlg::ClickOnApply()
       aMeshEditor->MergeElements (aGroupsOfElements.inout());
 
     if ( myTypeId == 0 ) {
-      if (myAction ==0)
+      if (myAction == 0 )
         SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_INFORMATION"),
                                      tr("SMESH_MERGED_NODES").arg(QString::number(ListCoincident->count()).toLatin1().data()));
       else

@@ -42,6 +42,8 @@
 
 #include <SALOMEDSClient_Study.hxx>
 
+#include <GEOM_wrap.hxx>
+
 // SALOME GUI includes
 #include <SUIT_ResourceMgr.h>
 
@@ -418,7 +420,7 @@ bool StdMeshersGUI_StdHypothesisCreator::checkParams( QString& msg ) const
 
       GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
       _PTR(Study)         aStudy = SMESH::GetActiveStudyDocument();
-      GEOM::GEOM_IShapesOperations_var shapeOp;
+      GEOM::GEOM_IShapesOperations_wrap shapeOp;
       if ( !geomGen->_is_nil() && aStudy )
         shapeOp = geomGen->GetIShapesOperations( aStudy->StudyId() );
       if ( !shapeOp->_is_nil() )

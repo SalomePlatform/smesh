@@ -55,13 +55,15 @@ SMESHDS_Document::~SMESHDS_Document()
 //function : NewMesh
 //purpose  : 
 //=======================================================================
-int SMESHDS_Document::NewMesh(bool theIsEmbeddedMode)
+SMESHDS_Mesh * SMESHDS_Document::NewMesh(bool theIsEmbeddedMode, int MeshID)
 {
-  static int aNewMeshID = 0;
-  aNewMeshID++;
-  SMESHDS_Mesh *aNewMesh = new SMESHDS_Mesh(aNewMeshID,theIsEmbeddedMode);
-  myMeshes[aNewMeshID] = aNewMesh;
-  return aNewMeshID;
+  std::map<int,SMESHDS_Mesh*>::iterator i_m =
+    myMeshes.insert( make_pair( MeshID, (SMESHDS_Mesh*)0 )).first;
+  if ( i_m->second )
+    throw SALOME_Exception("SMESHDS_Document::NewMesh(): ID of existing mesh given");
+  SMESHDS_Mesh *aNewMesh = new SMESHDS_Mesh(MeshID,theIsEmbeddedMode);
+  i_m->second = aNewMesh;
+  return aNewMesh;
 }
 
 //=======================================================================

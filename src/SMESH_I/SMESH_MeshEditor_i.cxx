@@ -29,8 +29,6 @@
 
 #include "SMESH_MeshEditor_i.hxx"
 
-#include "DriverMED_R_SMESHDS_Mesh.h"
-#include "DriverMED_W_SMESHDS_Mesh.h"
 #include "SMDS_EdgePosition.hxx"
 #include "SMDS_ElemIterator.hxx"
 #include "SMDS_FacePosition.hxx"
@@ -41,34 +39,24 @@
 #include "SMDS_MeshVolume.hxx"
 #include "SMDS_PolyhedralVolumeOfNodes.hxx"
 #include "SMDS_SetIterator.hxx"
-#include "SMDS_SetIterator.hxx"
 #include "SMDS_VolumeTool.hxx"
-#include "SMESHDS_Command.hxx"
-#include "SMESHDS_CommandType.hxx"
 #include "SMESHDS_Group.hxx"
 #include "SMESHDS_GroupOnGeom.hxx"
 #include "SMESH_ControlsDef.hxx"
 #include "SMESH_Filter_i.hxx"
-#include "SMESH_Filter_i.hxx"
-#include "SMESH_Gen_i.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Group.hxx"
 #include "SMESH_Group_i.hxx"
-#include "SMESH_Group_i.hxx"
-#include "SMESH_MEDMesh_i.hxx"
-#include "SMESH_MeshEditor.hxx"
 #include "SMESH_MeshPartDS.hxx"
 #include "SMESH_MesherHelper.hxx"
-#include "SMESH_PreMeshInfo.hxx"
-#include "SMESH_PythonDump.hxx"
 #include "SMESH_PythonDump.hxx"
 #include "SMESH_subMeshEventListener.hxx"
 #include "SMESH_subMesh_i.hxx"
-#include "SMESH_subMesh_i.hxx"
 
-#include "utilities.h"
-#include "Utils_ExceptHandlers.hxx"
-#include "Utils_CorbaException.hxx"
+#include <utilities.h>
+#include <Utils_ExceptHandlers.hxx>
+#include <Utils_CorbaException.hxx>
+#include <SALOMEDS_wrap.hxx>
 
 #include <BRepAdaptor_Surface.hxx>
 #include <BRep_Tool.hxx>
@@ -93,6 +81,8 @@
 #include <sstream>
 #include <limits>
 
+#include "SMESH_TryCatch.hxx" // include after OCCT headers!
+
 #define cast2Node(elem) static_cast<const SMDS_MeshNode*>( elem )
 
 using namespace std;
@@ -112,7 +102,7 @@ namespace MeshEditor_I {
     SMDSAbs_ElementType myPreviewType; // type to show
     //!< Constructor
     TPreviewMesh(SMDSAbs_ElementType previewElements = SMDSAbs_All) {
-      _isShapeToMesh = (_id =_studyId =_idDoc = 0);
+      _isShapeToMesh = (_id =_studyId = 0);
       _myMeshDS  = new SMESHDS_Mesh( _id, true );
       myPreviewType = previewElements;
     }
@@ -543,9 +533,6 @@ SMESH::MeshPreviewStruct* SMESH_MeshEditor_i::GetPreviewData()
     else {
       aMeshDS = getEditor().GetMeshDS();
     }
-    int nbEdges = aMeshDS->NbEdges();
-    int nbFaces = aMeshDS->NbFaces();
-    int nbVolum = aMeshDS->NbVolumes();
     myPreviewData = new SMESH::MeshPreviewStruct();
     myPreviewData->nodesXYZ.length(aMeshDS->NbNodes());
 
@@ -555,14 +542,15 @@ SMESH::MeshPreviewStruct* SMESH_MeshEditor_i::GetPreviewData()
       if (TPreviewMesh * aPreviewMesh = dynamic_cast< TPreviewMesh* >( getEditor().GetMesh() )) {
         previewType = aPreviewMesh->myPreviewType;
         switch ( previewType ) {
-        case SMDSAbs_Edge  : nbFaces = nbVolum = 0; break;
-        case SMDSAbs_Face  : nbEdges = nbVolum = 0; break;
-        case SMDSAbs_Volume: nbEdges = nbFaces = 0; break;
+        case SMDSAbs_Edge  : break;
+        case SMDSAbs_Face  : break;
+        case SMDSAbs_Volume: break;
         default:;
+          if ( aMeshDS->GetMeshInfo().NbElements() == 0 ) previewType = SMDSAbs_Node;
         }
       }
 
-    myPreviewData->elementTypes.length(nbEdges + nbFaces + nbVolum);
+    myPreviewData->elementTypes.length( aMeshDS->GetMeshInfo().NbElements( previewType ));
     int i = 0, j = 0;
     SMDS_ElemIteratorPtr itMeshElems = aMeshDS->elementsIterator(previewType);
 
@@ -707,6 +695,11 @@ SMESH::SMESH_IDSource_ptr SMESH_MeshEditor_i::MakeIDSource(const SMESH::long_arr
   SMESH::SMESH_IDSource_var anIDSourceVar = idSrc->_this();
 
   return anIDSourceVar._retn();
+}
+
+bool SMESH_MeshEditor_i::IsTemporaryIDSource( SMESH::SMESH_IDSource_ptr& idSource )
+{
+  return SMESH::DownCast<SMESH_MeshEditor_i::_IDSource*>( idSource );
 }
 
 void SMESH_MeshEditor_i::deleteAuxIDSources()
@@ -863,6 +856,8 @@ CORBA::Long SMESH_MeshEditor_i::AddBall(CORBA::Long IDOfNode, CORBA::Double diam
   if ( diameter < std::numeric_limits<double>::min() )
     THROW_SALOME_CORBA_EXCEPTION("Invalid diameter", SALOME::BAD_PARAM);
 
+  SMESH_TRY;
+
   const SMDS_MeshNode* aNode = getMeshDS()->FindNode(IDOfNode);
   SMDS_MeshElement* elem = getMeshDS()->AddBall(aNode, diameter);
 
@@ -875,6 +870,8 @@ CORBA::Long SMESH_MeshEditor_i::AddBall(CORBA::Long IDOfNode, CORBA::Double diam
 
   if (elem)
     return elem->GetID();
+
+  SMESH_CATCH( SMESH::throwCorbaException );
 
   return 0;
 }
@@ -1144,6 +1141,8 @@ SMESH_MeshEditor_i::Create0DElementsOnAllNodes(SMESH::SMESH_IDSource_ptr theObje
   SMESH::SMESH_IDSource_var result;
   TPythonDump pyDump;
 
+  SMESH_TRY;
+
   TIDSortedElemSet elements, elems0D;
   if ( idSourceToSet( theObject, getMeshDS(), elements, SMDSAbs_All, /*emptyIfIsMesh=*/1))
     getEditor().Create0DElementsOnAllNodes( elements, elems0D );
@@ -1189,6 +1188,8 @@ SMESH_MeshEditor_i::Create0DElementsOnAllNodes(SMESH::SMESH_IDSource_ptr theObje
 
   pyDump << " = " << this << ".Create0DElementsOnAllNodes( "
          << theObject << ", '" << theGroupName << "' )";
+
+  SMESH_CATCH( SMESH::throwCorbaException );
 
   return result._retn();
 }
@@ -5281,10 +5282,10 @@ void SMESH_MeshEditor_i::ConvertFromQuadraticObject(SMESH::SMESH_IDSource_ptr th
 
 SMESH::SMESH_Mesh_ptr SMESH_MeshEditor_i::makeMesh(const char* theMeshName)
 {
-  SMESH_Gen_i* gen = SMESH_Gen_i::GetSMESHGen();
-  SMESH::SMESH_Mesh_var mesh = gen->CreateEmptyMesh();
-  SALOMEDS::Study_var study = gen->GetCurrentStudy();
-  SALOMEDS::SObject_var meshSO = gen->ObjectToSObject( study, mesh );
+  SMESH_Gen_i*              gen = SMESH_Gen_i::GetSMESHGen();
+  SMESH::SMESH_Mesh_var    mesh = gen->CreateEmptyMesh();
+  SALOMEDS::Study_var     study = gen->GetCurrentStudy();
+  SALOMEDS::SObject_wrap meshSO = gen->ObjectToSObject( study, mesh );
   gen->SetName( meshSO, theMeshName, "Mesh" );
   gen->SetPixMap( meshSO, "ICON_SMESH_TREE_MESH_IMPORTED");
 
@@ -6199,8 +6200,10 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodesOnGroupBoundaries( const SMESH::Li
                                                                  CORBA::Boolean createJointElems )
   throw (SALOME::SALOME_Exception)
 {
-  initData();
+  bool aResult = false;
 
+  SMESH_TRY;
+  initData();
 
   SMESHDS_Mesh* aMeshDS = getMeshDS();
 
@@ -6222,7 +6225,7 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodesOnGroupBoundaries( const SMESH::Li
     }
   }
 
-  bool aResult = getEditor().DoubleNodesOnGroupBoundaries( domains, createJointElems );
+  aResult = getEditor().DoubleNodesOnGroupBoundaries( domains, createJointElems );
   // TODO publish the groups of flat elements in study
 
   myMesh->GetMeshDS()->Modified();
@@ -6230,6 +6233,9 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodesOnGroupBoundaries( const SMESH::Li
   // Update Python script
   TPythonDump() << "isDone = " << this << ".DoubleNodesOnGroupBoundaries( " << &theDomains
       << ", " << createJointElems << " )";
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+
   return aResult;
 }
 
@@ -6289,8 +6295,10 @@ void SMESH_MeshEditor_i::CreateHoleSkin(CORBA::Double radius,
                                         const char* groupName,
                                         const SMESH::double_array& theNodesCoords,
                                         SMESH::array_of_long_array_out GroupsOfNodes)
-throw (SALOME::SALOME_Exception)
+  throw (SALOME::SALOME_Exception)
 {
+  SMESH_TRY;
+
   initData();
   std::vector<std::vector<int> > aListOfListOfNodes;
   ::SMESH_MeshEditor aMeshEditor( myMesh );
@@ -6301,27 +6309,33 @@ throw (SALOME::SALOME_Exception)
 
   vector<double> nodesCoords;
   for (int i = 0; i < theNodesCoords.length(); i++)
-    {
-      nodesCoords.push_back( theNodesCoords[i] );
+  {
+    nodesCoords.push_back( theNodesCoords[i] );
   }
 
   TopoDS_Shape aShape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape( theShape );
-  aMeshEditor.CreateHoleSkin(radius, aShape, theNodeSearcher, groupName, nodesCoords, aListOfListOfNodes);
+  aMeshEditor.CreateHoleSkin(radius, aShape, theNodeSearcher, groupName,
+                             nodesCoords, aListOfListOfNodes);
 
   GroupsOfNodes = new SMESH::array_of_long_array;
   GroupsOfNodes->length( aListOfListOfNodes.size() );
   std::vector<std::vector<int> >::iterator llIt = aListOfListOfNodes.begin();
   for ( CORBA::Long i = 0; llIt != aListOfListOfNodes.end(); llIt++, i++ )
-    {
-      vector<int>& aListOfNodes = *llIt;
-      vector<int>::iterator lIt = aListOfNodes.begin();;
-      SMESH::long_array& aGroup = (*GroupsOfNodes)[ i ];
-      aGroup.length( aListOfNodes.size() );
-      for ( int j = 0; lIt != aListOfNodes.end(); lIt++, j++ )
-        aGroup[ j ] = (*lIt);
-    }
+  {
+    vector<int>& aListOfNodes = *llIt;
+    vector<int>::iterator lIt = aListOfNodes.begin();;
+    SMESH::long_array& aGroup = (*GroupsOfNodes)[ i ];
+    aGroup.length( aListOfNodes.size() );
+    for ( int j = 0; lIt != aListOfNodes.end(); lIt++, j++ )
+      aGroup[ j ] = (*lIt);
+  }
   TPythonDump() << "lists_nodes = " << this << ".CreateHoleSkin( "
-      << radius << ", " << theShape << ", " << ", " << groupName << ", " << theNodesCoords << " )";
+                << radius << ", "
+                << theShape
+                << ", '" << groupName << "', "
+                << theNodesCoords << " )";
+
+  SMESH_CATCH( SMESH::throwCorbaException );
 }
 
 

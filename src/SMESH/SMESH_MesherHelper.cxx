@@ -31,14 +31,13 @@
 #include "SMDS_FacePosition.hxx" 
 #include "SMDS_IteratorOnIterators.hxx"
 #include "SMDS_VolumeTool.hxx"
+#include "SMESH_Block.hxx"
 #include "SMESH_ProxyMesh.hxx"
 #include "SMESH_subMesh.hxx"
 
 #include <BRepAdaptor_Curve.hxx>
 #include <BRepAdaptor_Surface.hxx>
-#include <BRepClass3d_SolidClassifier.hxx>
 #include <BRepTools.hxx>
-#include <BRepTools_WireExplorer.hxx>
 #include <BRep_Tool.hxx>
 #include <Geom2d_Curve.hxx>
 #include <GeomAPI_ProjectPointOnCurve.hxx>
@@ -199,7 +198,7 @@ bool SMESH_MesherHelper::IsQuadraticSubMesh(const TopoDS_Shape& aSh)
 
 //=======================================================================
 //function : SetSubShape
-//purpose  : Set geomerty to make elements on
+//purpose  : Set geometry to make elements on
 //=======================================================================
 
 void SMESH_MesherHelper::SetSubShape(const int aShID)
@@ -214,7 +213,7 @@ void SMESH_MesherHelper::SetSubShape(const int aShID)
 
 //=======================================================================
 //function : SetSubShape
-//purpose  : Set geomerty to create elements on
+//purpose  : Set geometry to create elements on
 //=======================================================================
 
 void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
@@ -1710,6 +1709,25 @@ namespace
 }
 
 //=======================================================================
+//function : IsSameElemGeometry
+//purpose  : Returns true if all elements of a sub-mesh are of same shape
+//=======================================================================
+
+bool SMESH_MesherHelper::IsSameElemGeometry(const SMESHDS_SubMesh* smDS,
+                                            SMDSAbs_GeometryType   shape,
+                                            const bool             nullSubMeshRes)
+{
+  if ( !smDS ) return nullSubMeshRes;
+
+  SMDS_ElemIteratorPtr elemIt = smDS->GetElements();
+  while ( elemIt->more() )
+    if ( elemIt->next()->GetGeomType() != shape )
+      return false;
+
+  return true;
+}
+
+//=======================================================================
 //function : LoadNodeColumns
 //purpose  : Load nodes bound to face into a map of node columns
 //=======================================================================
@@ -1738,7 +1756,7 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap &            theParam2
                                          SMESHDS_Mesh*                 theMesh,
                                          SMESH_ProxyMesh*              theProxyMesh)
 {
-  // get a right submesh of theFace
+  // get a right sub-mesh of theFace
 
   const SMESHDS_SubMesh* faceSubMesh = 0;
   if ( theProxyMesh )
@@ -1758,70 +1776,74 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap &            theParam2
   if ( !faceSubMesh || faceSubMesh->NbElements() == 0 )
     return false;
 
-  // get data of edges for normalization of params
-
-  vector< double > length;
-  double fullLen = 0;
-  list<TopoDS_Edge>::const_iterator edge;
-  {
-    for ( edge = theBaseSide.begin(); edge != theBaseSide.end(); ++edge )
-    {
-      double len = std::max( 1e-10, SMESH_Algo::EdgeLength( *edge ));
-      fullLen += len;
-      length.push_back( len );
-    }
-  }
-
-  // get nodes on theBaseEdge sorted by param on edge and initialize theParam2ColumnMap with them
-  edge = theBaseSide.begin();
-  for ( int iE = 0; edge != theBaseSide.end(); ++edge, ++iE )
-  {
-    map< double, const SMDS_MeshNode*> sortedBaseNodes;
-    SMESH_Algo::GetSortedNodesOnEdge( theMesh, *edge,/*noMedium=*/true, sortedBaseNodes);
-    if ( sortedBaseNodes.empty() ) continue;
-
-    map< double, const SMDS_MeshNode*>::iterator u_n = sortedBaseNodes.begin();
-    if ( theProxyMesh ) // from sortedBaseNodes remove nodes not shared by faces of faceSubMesh
-    {
-      const SMDS_MeshNode* n1 = sortedBaseNodes.begin()->second;
-      const SMDS_MeshNode* n2 = sortedBaseNodes.rbegin()->second;
-      bool allNodesAreProxy = ( n1 != theProxyMesh->GetProxyNode( n1 ) &&
-                                n2 != theProxyMesh->GetProxyNode( n2 ));
-      if ( allNodesAreProxy )
-        for ( u_n = sortedBaseNodes.begin(); u_n != sortedBaseNodes.end(); u_n++ )
-          u_n->second = theProxyMesh->GetProxyNode( u_n->second );
-
-      if ( u_n = sortedBaseNodes.begin(), !isNodeInSubMesh( u_n->second, faceSubMesh ))
-      {
-        while ( ++u_n != sortedBaseNodes.end() && !isNodeInSubMesh( u_n->second, faceSubMesh ));
-        sortedBaseNodes.erase( sortedBaseNodes.begin(), u_n );
-      }
-      else if ( u_n = --sortedBaseNodes.end(), !isNodeInSubMesh( u_n->second, faceSubMesh ))
-      {
-        while ( u_n != sortedBaseNodes.begin() && !isNodeInSubMesh( (--u_n)->second, faceSubMesh ));
-        sortedBaseNodes.erase( ++u_n, sortedBaseNodes.end() );
-      }
-      if ( sortedBaseNodes.empty() ) continue;
-    }
-
-    double f, l;
-    BRep_Tool::Range( *edge, f, l );
-    if ( edge->Orientation() == TopAbs_REVERSED ) std::swap( f, l );
-    const double coeff = 1. / ( l - f ) * length[iE] / fullLen;
-    const double prevPar = theParam2ColumnMap.empty() ? 0 : theParam2ColumnMap.rbegin()->first;
-    for ( u_n = sortedBaseNodes.begin(); u_n != sortedBaseNodes.end(); u_n++ )
-    {
-      double par = prevPar + coeff * ( u_n->first - f );
-      TParam2ColumnMap::iterator u2nn =
-        theParam2ColumnMap.insert( theParam2ColumnMap.end(), make_pair( par, TNodeColumn()));
-      u2nn->second.push_back( u_n->second );
-    }
-  }
   if ( theParam2ColumnMap.empty() )
-    return false;
+  {
+    // get data of edges for normalization of params
 
+    vector< double > length;
+    double fullLen = 0;
+    list<TopoDS_Edge>::const_iterator edge;
+    {
+      for ( edge = theBaseSide.begin(); edge != theBaseSide.end(); ++edge )
+      {
+        double len = std::max( 1e-10, SMESH_Algo::EdgeLength( *edge ));
+        fullLen += len;
+        length.push_back( len );
+      }
+    }
 
-  int nbRows = 1 + faceSubMesh->NbElements() / ( theParam2ColumnMap.size()-1 );
+    // get nodes on theBaseEdge sorted by param on edge and initialize theParam2ColumnMap with them
+    edge = theBaseSide.begin();
+    for ( int iE = 0; edge != theBaseSide.end(); ++edge, ++iE )
+    {
+      map< double, const SMDS_MeshNode*> sortedBaseNN;
+      SMESH_Algo::GetSortedNodesOnEdge( theMesh, *edge,/*noMedium=*/true, sortedBaseNN);
+      if ( sortedBaseNN.empty() ) continue;
+
+      map< double, const SMDS_MeshNode*>::iterator u_n = sortedBaseNN.begin();
+      if ( theProxyMesh ) // from sortedBaseNN remove nodes not shared by faces of faceSubMesh
+      {
+        const SMDS_MeshNode* n1 = sortedBaseNN.begin()->second;
+        const SMDS_MeshNode* n2 = sortedBaseNN.rbegin()->second;
+        bool allNodesAreProxy = ( n1 != theProxyMesh->GetProxyNode( n1 ) &&
+                                  n2 != theProxyMesh->GetProxyNode( n2 ));
+        if ( allNodesAreProxy )
+          for ( u_n = sortedBaseNN.begin(); u_n != sortedBaseNN.end(); u_n++ )
+            u_n->second = theProxyMesh->GetProxyNode( u_n->second );
+
+        if ( u_n = sortedBaseNN.begin(), !isNodeInSubMesh( u_n->second, faceSubMesh ))
+        {
+          while ( ++u_n != sortedBaseNN.end() && !isNodeInSubMesh( u_n->second, faceSubMesh ));
+          sortedBaseNN.erase( sortedBaseNN.begin(), u_n );
+        }
+        else if ( u_n = --sortedBaseNN.end(), !isNodeInSubMesh( u_n->second, faceSubMesh ))
+        {
+          while ( u_n != sortedBaseNN.begin() && !isNodeInSubMesh( (--u_n)->second, faceSubMesh ));
+          sortedBaseNN.erase( ++u_n, sortedBaseNN.end() );
+        }
+        if ( sortedBaseNN.empty() ) continue;
+      }
+
+      double f, l;
+      BRep_Tool::Range( *edge, f, l );
+      if ( edge->Orientation() == TopAbs_REVERSED ) std::swap( f, l );
+      const double coeff = 1. / ( l - f ) * length[iE] / fullLen;
+      const double prevPar = theParam2ColumnMap.empty() ? 0 : theParam2ColumnMap.rbegin()->first;
+      for ( u_n = sortedBaseNN.begin(); u_n != sortedBaseNN.end(); u_n++ )
+      {
+        double par = prevPar + coeff * ( u_n->first - f );
+        TParam2ColumnMap::iterator u2nn =
+          theParam2ColumnMap.insert( theParam2ColumnMap.end(), make_pair( par, TNodeColumn()));
+        u2nn->second.push_back( u_n->second );
+      }
+    }
+    if ( theParam2ColumnMap.empty() )
+      return false;
+  }
+
+  // nb rows of nodes
+  int prevNbRows     = theParam2ColumnMap.begin()->second.size(); // current, at least 1 here
+  int expectedNbRows = faceSubMesh->NbElements() / ( theParam2ColumnMap.size()-1 ); // to be added
 
   // fill theParam2ColumnMap column by column by passing from nodes on
   // theBaseEdge up via mesh faces on theFace
@@ -1834,35 +1856,172 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap &            theParam2
   {
     vector<const SMDS_MeshNode*>& nCol1 = par_nVec_1->second;
     vector<const SMDS_MeshNode*>& nCol2 = par_nVec_2->second;
-    nCol1.resize( nbRows );
-    nCol2.resize( nbRows );
+    nCol1.resize( prevNbRows + expectedNbRows );
+    nCol2.resize( prevNbRows + expectedNbRows );
 
-    int i1, i2, iRow = 0;
-    const SMDS_MeshNode *n1 = nCol1[0], *n2 = nCol2[0];
+    int i1, i2, foundNbRows = 0;
+    const SMDS_MeshNode *n1 = nCol1[ prevNbRows-1 ];
+    const SMDS_MeshNode *n2 = nCol2[ prevNbRows-1 ];
     // find face sharing node n1 and n2 and belonging to faceSubMesh
     while ( const SMDS_MeshElement* face =
             SMESH_MeshEditor::FindFaceInSet( n1, n2, emptySet, avoidSet, &i1, &i2))
     {
       if ( faceSubMesh->Contains( face ))
       {
-        int nbNodes = face->IsQuadratic() ? face->NbNodes()/2 : face->NbNodes();
+        int nbNodes = face->NbCornerNodes();
         if ( nbNodes != 4 )
+          return false;
+        if ( foundNbRows + 1 > expectedNbRows )
           return false;
         n1 = face->GetNode( (i2+2) % 4 ); // opposite corner of quadrangle face
         n2 = face->GetNode( (i1+2) % 4 );
-        if ( ++iRow >= nbRows )
-          return false;
-        nCol1[ iRow ] = n1;
-        nCol2[ iRow ] = n2;
-        avoidSet.clear();
+        nCol1[ prevNbRows + foundNbRows] = n1;
+        nCol2[ prevNbRows + foundNbRows] = n2;
+        ++foundNbRows;
       }
       avoidSet.insert( face );
     }
-    // set a real height
-    nCol1.resize( iRow + 1 );
-    nCol2.resize( iRow + 1 );
+    if ( foundNbRows != expectedNbRows )
+      return false;
+    avoidSet.clear();
   }
-  return theParam2ColumnMap.size() > 1 && theParam2ColumnMap.begin()->second.size() > 1;
+  return ( theParam2ColumnMap.size() > 1 &&
+           theParam2ColumnMap.begin()->second.size() == prevNbRows + expectedNbRows );
+}
+
+namespace
+{
+  //================================================================================
+  /*!
+   * \brief Return true if a node is at a corner of a 2D structured mesh of FACE
+   */
+  //================================================================================
+
+  bool isCornerOfStructure( const SMDS_MeshNode*   n,
+                            const SMESHDS_SubMesh* faceSM )
+  {
+    int nbFacesInSM = 0;
+    if ( n ) {
+      SMDS_ElemIteratorPtr fIt = n->GetInverseElementIterator( SMDSAbs_Face );
+      while ( fIt->more() )
+        nbFacesInSM += faceSM->Contains( fIt->next() );
+    }
+    return ( nbFacesInSM == 1 );
+  }
+}
+
+//=======================================================================
+//function : IsStructured
+//purpose  : Return true if 2D mesh on FACE is structured
+//=======================================================================
+
+bool SMESH_MesherHelper::IsStructured( SMESH_subMesh* faceSM )
+{
+  SMESHDS_SubMesh* fSM = faceSM->GetSubMeshDS();
+  if ( !fSM || fSM->NbElements() == 0 )
+    return false;
+
+  list< TopoDS_Edge > edges;
+  list< int > nbEdgesInWires;
+  int nbWires = SMESH_Block::GetOrderedEdges( TopoDS::Face( faceSM->GetSubShape() ),
+                                              edges, nbEdgesInWires );
+  if ( nbWires != 1 )
+    return false;
+
+  // algo: find corners of a structure and then analyze nb of faces and
+  // length of structure sides
+
+  SMESHDS_Mesh* meshDS = faceSM->GetFather()->GetMeshDS();
+
+  // rotate edges to get the first node being at corner
+  // (in principle it's not necessary but so far none SALOME algo can make
+  //  such a structured mesh that all corner nodes are not on VERTEXes)
+  bool isCorner     = false;
+  int nbRemainEdges = nbEdgesInWires.front();
+  do {
+    TopoDS_Vertex V = IthVertex( 0, edges.front() );
+    isCorner = isCornerOfStructure( SMESH_Algo::VertexNode( V, meshDS ), fSM);
+    if ( !isCorner ) {
+      edges.splice( edges.end(), edges, edges.begin() );
+      --nbRemainEdges;
+    }
+  }
+  while ( !isCorner && nbRemainEdges > 0 );
+
+  if ( !isCorner )
+    return false;
+
+  // get all nodes from EDGEs
+  list< const SMDS_MeshNode* > nodes;
+  list< TopoDS_Edge >::iterator edge = edges.begin();
+  for ( ; edge != edges.end(); ++edge )
+  {
+    map< double, const SMDS_MeshNode* > u2Nodes;
+    if ( !SMESH_Algo::GetSortedNodesOnEdge( meshDS, *edge,
+                                            /*skipMedium=*/true, u2Nodes ))
+      return false;
+
+    list< const SMDS_MeshNode* > edgeNodes;
+    map< double, const SMDS_MeshNode* >::iterator u2n = u2Nodes.begin();
+    if ( !nodes.empty() && nodes.back() == u2n->second )
+      ++u2n;
+    map< double, const SMDS_MeshNode* >::iterator u2nEnd = --u2Nodes.end();
+    if ( nodes.empty() || nodes.back() != u2nEnd->second )
+      ++u2nEnd;
+    for ( ; u2n != u2nEnd; ++u2n )
+      edgeNodes.push_back( u2n->second );
+
+    if ( edge->Orientation() == TopAbs_REVERSED )
+      edgeNodes.reverse();
+    nodes.splice( nodes.end(), edgeNodes, edgeNodes.begin(), edgeNodes.end() );
+  }
+
+  // get length of structured sides
+  vector<int> nbEdgesInSide;
+  int nbEdges = 0;
+  list< const SMDS_MeshNode* >::iterator n = ++nodes.begin();
+  for ( ; n != nodes.end(); ++n )
+  {
+    ++nbEdges;
+    if ( isCornerOfStructure( *n, fSM )) {
+      nbEdgesInSide.push_back( nbEdges );
+      nbEdges = 0;
+    }
+  }
+
+  // checks
+  if ( nbEdgesInSide.size() != 4 )
+    return false;
+  if ( nbEdgesInSide[0] != nbEdgesInSide[2] )
+    return false;
+  if ( nbEdgesInSide[1] != nbEdgesInSide[3] )
+    return false;
+  if ( nbEdgesInSide[0] * nbEdgesInSide[1] != fSM->NbElements() )
+    return false;
+
+  return true;
+}
+
+//=======================================================================
+//function : Count
+//purpose  : Count nb of sub-shapes
+//=======================================================================
+
+int SMESH_MesherHelper::Count(const TopoDS_Shape&    shape,
+                              const TopAbs_ShapeEnum type,
+                              const bool             ignoreSame)
+{
+  if ( ignoreSame ) {
+    TopTools_IndexedMapOfShape map;
+    TopExp::MapShapes( shape, type, map );
+    return map.Extent();
+  }
+  else {
+    int nb = 0;
+    for ( TopExp_Explorer exp( shape, type ); exp.More(); exp.Next() )
+      ++nb;
+    return nb;
+  }
 }
 
 //=======================================================================

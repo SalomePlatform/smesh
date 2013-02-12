@@ -537,6 +537,7 @@ AC_OUTPUT([ \
   doc/docutils/Makefile \
   doc/docutils/conf.py \
   doc/salome/Makefile \
+  doc/salome/examples/Makefile \
   doc/salome/gui/Makefile \
   doc/salome/gui/SMESH/Makefile \
   doc/salome/gui/SMESH/doxyfile \

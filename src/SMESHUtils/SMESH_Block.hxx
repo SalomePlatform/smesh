@@ -256,7 +256,7 @@ public:
 
  public:
   // ---------------
-  // Block geomerty
+  // Block geometry
   // ---------------
 
   
@@ -275,9 +275,9 @@ public:
   // Return true if an in-block parameter increases along theEdge curve
 
   static int GetOrderedEdges (const TopoDS_Face&        theFace,
-                              TopoDS_Vertex             theFirstVertex,
                               std::list< TopoDS_Edge >& theEdges,
                               std::list< int >  &       theNbEdgesInWires,
+                              TopoDS_Vertex             theFirstVertex=TopoDS_Vertex(),
                               const bool                theShapeAnalysisAlgo=false);
   // Return nb wires and a list of oredered edges.
   // It is used to assign indices to subshapes.

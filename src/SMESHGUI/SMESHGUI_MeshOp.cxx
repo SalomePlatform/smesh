@@ -40,6 +40,7 @@
 #include <GEOM_SelectionFilter.h>
 #include <GEOMBase.h>
 #include <GeometryGUI.h>
+#include <GEOM_wrap.hxx>
 
 // SALOME GUI includes
 #include <SalomeApp_Tools.h>
@@ -56,6 +57,8 @@
 // SALOME KERNEL includes
 #include <SALOMEDS_SComponent.hxx>
 #include <SALOMEDS_SObject.hxx>
+#include <SALOMEDS_Study.hxx>
+#include <SALOMEDS_wrap.hxx>
 
 // Qt includes
 #include <QStringList>
@@ -336,8 +339,7 @@ bool SMESHGUI_MeshOp::isSubshapeOk() const
     _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
     if (geomGen->_is_nil() || !aStudy) return false;
 
-    GEOM::GEOM_IGroupOperations_var op =
-        geomGen->GetIGroupOperations(aStudy->StudyId());
+    GEOM::GEOM_IGroupOperations_wrap op = geomGen->GetIGroupOperations(aStudy->StudyId());
     if (op->_is_nil()) return false;
 
     // check all selected shapes
@@ -352,18 +354,18 @@ bool SMESHGUI_MeshOp::isSubshapeOk() const
       if (aSubGeomVar->_is_nil()) return false;
 
       // skl for NPAL14695 - implementation of searching of mainObj
-      GEOM::GEOM_Object_var mainObj = op->GetMainShape(aSubGeomVar);
-      //if (mainObj->_is_nil() ||
-      //    string(mainObj->GetEntry()) != string(mainGeom->GetEntry())) return false;
+      GEOM::GEOM_Object_var mainObj = op->GetMainShape(aSubGeomVar); /* _var not _wrap as
+                                                                        mainObj already exists! */
       while(1) {
         if (mainObj->_is_nil())
           return false;
-        if (std::string(mainObj->GetEntry()) == std::string(mainGeom->GetEntry()))
+        CORBA::String_var entry1 = mainObj->GetEntry();
+        CORBA::String_var entry2 = mainGeom->GetEntry();
+        if (std::string( entry1.in() ) == entry2.in() )
           return true;
         mainObj = op->GetMainShape(mainObj);
       }
     }
-    //return true;
   }
 
   return false;
@@ -896,7 +898,8 @@ void SMESHGUI_MeshOp::existingHyps( const int theDim,
           SMESH::SMESH_Hypothesis_var aHypVar = SMESH::SMESH_Hypothesis::_narrow( aVar );
           if ( !aHypVar->_is_nil() )
           {
-            HypothesisData* aData = SMESH::GetHypothesisData( aHypVar->GetName() );
+            CORBA::String_var hypType = aHypVar->GetName();
+            HypothesisData* aData = SMESH::GetHypothesisData( hypType.in() );
             if ( !aData) continue;
             if ( ( theDim == -1 || aData->Dim.contains( theDim ) ) &&
                  ( isCompatible ( theAlgoData, aData, theHypType )) &&
@@ -1710,7 +1713,7 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess, QStringList& theEntryList
     GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
     _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
     if (!geomGen->_is_nil() && aStudy) {
-      GEOM::GEOM_IGroupOperations_var op =
+      GEOM::GEOM_IGroupOperations_wrap op =
         geomGen->GetIGroupOperations(aStudy->StudyId());
       if (!op->_is_nil()) {
         // check and add all selected GEOM objects: they must be
@@ -1735,18 +1738,19 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess, QStringList& theEntryList
           aSeq[iSubSh] = aSubGeomVar;
         }
         // create a group
-        GEOM::GEOM_Object_var aGroupVar = op->CreateGroup(mainGeom, aGroupType);
+        GEOM::GEOM_Object_wrap aGroupVar = op->CreateGroup(mainGeom, aGroupType);
         op->UnionList(aGroupVar, aSeq);
 
         if (op->IsDone()) {
-          aGeomVar = aGroupVar;
+          aGeomVar = aGroupVar.in();
 
           // publish the GEOM group in study
           QString aNewGeomGroupName ("Auto_group_for_");
           aNewGeomGroupName += aName;
-          SALOMEDS::SObject_var aNewGroupSO =
-            geomGen->AddInStudy(aSMESHGen->GetCurrentStudy(), aGeomVar,
-                                aNewGeomGroupName.toLatin1().data(), mainGeom);
+          SALOMEDS::Study_var aStudyVar = _CAST(Study, aStudy)->GetStudy();
+          SALOMEDS::SObject_wrap aNewGroupSO =
+            geomGen->AddInStudy( aStudyVar, aGeomVar,
+                                 aNewGeomGroupName.toLatin1().data(), mainGeom);
         }
       }
     }

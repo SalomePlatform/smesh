@@ -9,291 +9,62 @@
 <br>
 \anchor tui_add_node
 <h3>Add Node</h3>
-
-\code
-import smesh
-
-mesh = smesh.Mesh()
-
-# add node
-new_id = mesh.AddNode(50, 10, 0)
-print ""
-if new_id == 0: print "KO node addition."
-else:           print "New Node has been added with ID ", new_id
-\endcode
+\include modifying_meshes_ex01.py
+<a href="../../examples/SMESH/modifying_meshes_ex01.py">Download this script</a>
 
 <br>
 \anchor tui_add_0DElement
 <h3>Add 0D Element</h3>
-
-\code
-import smesh
-
-mesh = smesh.Mesh()
-
-# add node
-node_id = mesh.AddNode(50, 10, 0)
-
-# add 0D Element
-new_id = mesh.Add0DElement(node_id)
-
-print ""
-if new_id == 0: print "KO node addition."
-else:           print "New 0D Element has been added with ID ", new_id
-\endcode
+\include modifying_meshes_ex02.py
+<a href="../../examples/SMESH/modifying_meshes_ex02.py">Download this script</a>
 
 <br>
 \anchor tui_add_0DElement_on_all_nodes
 <h3>Add 0D Element on Element Nodes</h3>
-
-\code
-import smesh, SMESH, geompy
-
-# create a geometry
-box = geompy.MakeBoxDXDYDZ( 10, 10, 10 )
-face = geompy.SubShapeAll( box, geompy.ShapeType["FACE"])[0]
-
-# make 3D mesh
-mesh = smesh.Mesh( box )
-mesh.AutomaticHexahedralization(0)
-
-# create 0D elements on all nodes of the mesh
-res = mesh.Add0DElementsToAllNodes( mesh )
-
-# find 0D elements on all nodes of the mesh, all found nodes are added to a new group
-groupName = "0Dmesh"
-res = mesh.Add0DElementsToAllNodes( mesh, groupName )
-mesh.RemoveGroupWithContents( res ) # remove all found 0D elements
-
-# create 0D elements on all nodes of a sub-mesh, with group creation
-groupName = "0Dsubmesh"
-submesh = mesh.GetSubMesh( face, "faceSM")
-res = mesh.Add0DElementsToAllNodes( submesh, groupName )
-
-# create 0D elements on all nodes of a group
-group = mesh.Group( face, "faceGroup" )
-res = mesh.Add0DElementsToAllNodes( group )
-
-# remove all 0D elements
-mesh.RemoveElements( mesh.GetIdsFromFilter( smesh.GetFilter( SMESH.ELEM0D,
-                                                             SMESH.FT_ElemGeomType,
-                                                             "=",SMESH.Geom_POINT )))
-
-# create 0D elements on all nodes of some elements
-res = mesh.Add0DElementsToAllNodes( mesh.GetElementsId() )
-
-mesh.RemoveElements( mesh.GetElementsByType( SMESH.ELEM0D ))
-
-# create 0D elements on some nodes
-nodes = range(1,10)
-res = mesh.Add0DElementsToAllNodes( mesh.GetIDSource( nodes, SMESH.NODE ))
-
-\endcode
+\include modifying_meshes_ex03.py
+<a href="../../examples/SMESH/modifying_meshes_ex03.py">Download this script</a>
 
 <br>
 \anchor tui_add_edge
 <h3>Add Edge</h3>
-
-\code
-import SMESH_mechanic
-
-mesh = SMESH_mechanic.mesh
-print ""
-
-# add node
-n1 = mesh.AddNode(50, 10, 0)
-if n1 == 0: print "KO node addition." 
-
-# add edge
-e1 = mesh.AddEdge([n1, 38])
-if e1 == 0: print "KO edge addition."
-else:       print "New Edge has been added with ID ", e1
-\endcode
+\include modifying_meshes_ex04.py
+<a href="../../examples/SMESH/modifying_meshes_ex04.py">Download this script</a>
 
 <br>
 \anchor tui_add_triangle
 <h3>Add Triangle</h3>
-
-\code
-import SMESH_mechanic
-
-mesh = SMESH_mechanic.mesh
-print ""
-
-# add node
-n1 = mesh.AddNode(50, 10, 0)
-if n1 == 0: print "KO node addition."
-
-# add triangle
-t1 = mesh.AddFace([n1, 38, 39])
-if t1 == 0: print "KO triangle addition."
-else:       print "New Triangle has been added with ID ", t1
-\endcode
+\include modifying_meshes_ex05.py
+<a href="../../examples/SMESH/modifying_meshes_ex05.py">Download this script</a>
 
 <br>
 \anchor tui_add_quadrangle
 <h3>Add Quadrangle</h3>
-
-\code
-import SMESH_mechanic
-
-mesh = SMESH_mechanic.mesh
-print ""
-
-# add node
-n1 = mesh.AddNode(50, 10, 0)
-if n1 == 0: print "KO node addition."
-
-n2 = mesh.AddNode(40, 20, 0)
-if n2 == 0: print "KO node addition."
-
-# add quadrangle
-q1 = mesh.AddFace([n2, n1, 38, 39])
-if q1 == 0: print "KO quadrangle addition."
-else:       print "New Quadrangle has been added with ID ", q1
-\endcode
+\include modifying_meshes_ex06.py
+<a href="../../examples/SMESH/modifying_meshes_ex06.py">Download this script</a>
 
 <br>
 \anchor tui_add_tetrahedron
 <h3>Add Tetrahedron</h3>
-
-\code
-import SMESH_mechanic
-
-mesh = SMESH_mechanic.mesh
-print ""
-
-# add node
-n1 = mesh.AddNode(50, 10, 0)
-if n1 == 0: print "KO node addition."
-
-# add tetrahedron
-t1 = mesh.AddVolume([n1, 38, 39, 246])
-if t1 == 0: print "KO tetrahedron addition."
-else:       print "New Tetrahedron has been added with ID ", t1
-\endcode
+\include modifying_meshes_ex07.py
+<a href="../../examples/SMESH/modifying_meshes_ex07.py">Download this script</a>
 
 <br>
 \anchor tui_add_hexahedron
 <h3>Add Hexahedron</h3>
-
-\code
-import SMESH_mechanic
-
-mesh = SMESH_mechanic.mesh
-print ""
-
-# add nodes
-nId1 = mesh.AddNode(50, 10, 0)
-nId2 = mesh.AddNode(47, 12, 0)
-nId3 = mesh.AddNode(50, 10, 10)
-nId4 = mesh.AddNode(47, 12, 10)
-
-if nId1 == 0 or nId2 == 0 or nId3 == 0 or nId4 == 0: print "KO node addition."
-
-# add hexahedron
-vId = mesh.AddVolume([nId2, nId1, 38, 39, nId4, nId3, 245, 246])
-if vId == 0: print "KO Hexahedron addition."
-else:        print "New Hexahedron has been added with ID ", vId
-\endcode
+\include modifying_meshes_ex08.py
+<a href="../../examples/SMESH/modifying_meshes_ex08.py">Download this script</a>
 
 <br>
 \anchor tui_add_polygon
 <h3>Add Polygon</h3>
-
-\code
-import math
-import salome
-
-import smesh
-
-# create an empty mesh structure
-mesh = smesh.Mesh() 
-
-# a method to build a polygonal mesh element with <nb_vert> angles:
-def MakePolygon (a_mesh, x0, y0, z0, radius, nb_vert):
-    al = 2.0 * math.pi / nb_vert
-    node_ids = []
-
-    # Create nodes for a polygon
-    for ii in range(nb_vert):
-        nid = mesh.AddNode(x0 + radius * math.cos(ii*al),
-                           y0 + radius * math.sin(ii*al),
-                                                     z0)
-        node_ids.append(nid)
-        pass
-
-    # Create a polygon
-    return mesh.AddPolygonalFace(node_ids)
-
-# Create three polygons
-f1 = MakePolygon(mesh, 0, 0,  0, 30, 13)
-f2 = MakePolygon(mesh, 0, 0, 10, 21,  9)
-f3 = MakePolygon(mesh, 0, 0, 20, 13,  6)
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include modifying_meshes_ex09.py
+<a href="../../examples/SMESH/modifying_meshes_ex09.py">Download this script</a>
 
 <br>
 \anchor tui_add_polyhedron
 <h3>Add Polyhedron</h3>
-
-\code
-import salome
-import math
-
-# create an empty mesh structure
-mesh = smesh.Mesh()  
-
-# Create nodes for 12-hedron with pentagonal faces
-al = 2 * math.pi / 5.0
-cosal = math.cos(al)
-aa = 13
-rr = aa / (2.0 * math.sin(al/2.0))
-dr = 2.0 * rr * cosal
-r1 = rr + dr
-dh = rr * math.sqrt(2.0 * (1.0 - cosal * (1.0 + 2.0 * cosal)))
-hh = 2.0 * dh - dr * (rr*(cosal - 1) + (rr + dr)*(math.cos(al/2) - 1)) / dh
-
-dd = [] # top
-cc = [] # below top
-bb = [] # above bottom
-aa = [] # bottom
-
-for i in range(5):
-    cos_bot = math.cos(i*al)
-    sin_bot = math.sin(i*al)
-
-    cos_top = math.cos(i*al + al/2.0)
-    sin_top = math.sin(i*al + al/2.0)
-
-    nd = mesh.AddNode(rr * cos_top, rr * sin_top, hh     ) # top
-    nc = mesh.AddNode(r1 * cos_top, r1 * sin_top, hh - dh) # below top
-    nb = mesh.AddNode(r1 * cos_bot, r1 * sin_bot,      dh) # above bottom
-    na = mesh.AddNode(rr * cos_bot, rr * sin_bot,       0) # bottom
-    dd.append(nd) # top
-    cc.append(nc) # below top
-    bb.append(nb) # above bottom
-    aa.append(na) # bottom
-    pass
-
-# Create a polyhedral volume (12-hedron with pentagonal faces)
-MeshEditor.AddPolyhedralVolume([dd[0], dd[1], dd[2], dd[3], dd[4],  # top
-                                dd[0], cc[0], bb[1], cc[1], dd[1],  # -
-                                dd[1], cc[1], bb[2], cc[2], dd[2],  # -
-                                dd[2], cc[2], bb[3], cc[3], dd[3],  # - below top
-                                dd[3], cc[3], bb[4], cc[4], dd[4],  # -
-                                dd[4], cc[4], bb[0], cc[0], dd[0],  # -
-                                aa[4], bb[4], cc[4], bb[0], aa[0],  # .
-                                aa[3], bb[3], cc[3], bb[4], aa[4],  # .
-                                aa[2], bb[2], cc[2], bb[3], aa[3],  # . above bottom
-                                aa[1], bb[1], cc[1], bb[2], aa[2],  # .
-                                aa[0], bb[0], cc[0], bb[1], aa[1],  # .
-                                aa[0], aa[1], aa[2], aa[3], aa[4]], # bottom
-                               [5,5,5,5,5,5,5,5,5,5,5,5])
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include modifying_meshes_ex10.py
+<a href="../../examples/SMESH/modifying_meshes_ex10.py">Download this script</a>
 
 <br>
 \anchor tui_removing_nodes_and_elements
@@ -302,718 +73,97 @@ salome.sg.updateObjBrowser(1)
 <br>
 \anchor tui_removing_nodes
 <h3>Removing Nodes</h3>
-
-\code
-import SMESH_mechanic
-
-mesh = SMESH_mechanic.mesh
-
-# remove nodes #246 and #255
-res = mesh.RemoveNodes([246, 255])
-if res == 1: print "Nodes removing is OK!"
-else:        print "KO nodes removing."
-\endcode
+\include modifying_meshes_ex11.py
+<a href="../../examples/SMESH/modifying_meshes_ex11.py">Download this script</a>
 
 <br>
 \anchor tui_removing_elements
 <h3>Removing Elements</h3>
-
-\code
-import SMESH_mechanic
-
-mesh = SMESH_mechanic.mesh
-
-# remove three elements: #850, #859 and #814
-res = mesh.RemoveElements([850, 859, 814])
-if res == 1: print "Elements removing is OK!"
-else:        print "KO Elements removing."
-\endcode
+\include modifying_meshes_ex12.py
+<a href="../../examples/SMESH/modifying_meshes_ex12.py">Download this script</a>
 
 <br>
 \anchor tui_removing_orphan_nodes
 <h3>Removing Orphan Nodes</h3>
-
-\code
-import SMESH_mechanic
-
-mesh = SMESH_mechanic.mesh
-
-# add orphan nodes
-mesh.AddNode(0,0,0)
-mesh.AddNode(1,1,1)
-# remove just created orphan nodes
-res = mesh.RemoveOrphanNodes()
-if res == 1: print "Removed %d nodes!" % res
-else:        print "KO nodes removing."
-\endcode
+\include modifying_meshes_ex13.py
+<a href="../../examples/SMESH/modifying_meshes_ex13.py">Download this script</a>
 
 <br>
 \anchor tui_renumbering_nodes_and_elements
 <h2>Renumbering Nodes and Elements</h2>
-
-\code
-import SMESH_mechanic
-
-mesh = SMESH_mechanic.mesh
-
-mesh.RenumberNodes()
-
-mesh.RenumberElements()
-\endcode
+\include modifying_meshes_ex14.py
+<a href="../../examples/SMESH/modifying_meshes_ex14.py">Download this script</a>
 
 <br>
 \anchor tui_moving_nodes
 <h2>Moving Nodes</h2>
-
-\code
-from geompy import *
-from smesh import *
-
-box = MakeBoxDXDYDZ(200, 200, 200)
-
-mesh = Mesh( box )
-mesh.Segment().AutomaticLength(0.1)
-mesh.Quadrangle()
-mesh.Compute()
-
-# find node at (0,0,0)
-node000 = None
-for vId in SubShapeAllIDs( box, ShapeType["VERTEX"]):
-    if node000: break
-    nodeIds = mesh.GetSubMeshNodesId( vId, True )
-    for node in nodeIds:
-        xyz = mesh.GetNodeXYZ( node )
-        if xyz[0] == 0 and xyz[1] == 0 and xyz[2] == 0 :
-            node000 = node
-            pass
-        pass
-    pass
-
-if not node000:
-    raise "node000 not found"
-
-# find node000 using the tested function 
-n = mesh.FindNodeClosestTo( -1,-1,-1 )
-if not n == node000:
-    raise "FindNodeClosestTo() returns " + str( n ) + " != " + str( node000 )
-
-# move node000 to a new location
-x,y,z = -10, -10, -10
-n = mesh.MoveNode( n,x,y,z )
-if not n:
-    raise "MoveNode() returns " + n
-
-# check the coordinates of the node000
-xyz = mesh.GetNodeXYZ( node000 )
-if not ( xyz[0] == x and xyz[1] == y and xyz[2] == z) :
-    raise "Wrong coordinates: " + str( xyz ) + " != " + str( [x,y,z] )
-\endcode
+\include modifying_meshes_ex15.py
+<a href="../../examples/SMESH/modifying_meshes_ex15.py">Download this script</a>
 
 <br>
 \anchor tui_diagonal_inversion
 <h2>Diagonal Inversion</h2>
-
-\code
-import salome
-import smesh
-
-# create an empty mesh structure
-mesh = smesh.Mesh() 
-
-# create the following mesh:
-# .----.----.----.
-# |   /|   /|   /|
-# |  / |  / |  / |
-# | /  | /  | /  |
-# |/   |/   |/   |
-# .----.----.----.
-
-bb = [0, 0, 0, 0]
-tt = [0, 0, 0, 0]
-ff = [0, 0, 0, 0, 0, 0]
-
-bb[0] = mesh.AddNode( 0., 0., 0.)
-bb[1] = mesh.AddNode(10., 0., 0.)
-bb[2] = mesh.AddNode(20., 0., 0.)
-bb[3] = mesh.AddNode(30., 0., 0.)
-
-tt[0] = mesh.AddNode( 0., 15., 0.)
-tt[1] = mesh.AddNode(10., 15., 0.)
-tt[2] = mesh.AddNode(20., 15., 0.)
-tt[3] = mesh.AddNode(30., 15., 0.)
-
-ff[0] = mesh.AddFace([bb[0], bb[1], tt[1]])
-ff[1] = mesh.AddFace([bb[0], tt[1], tt[0]])
-ff[2] = mesh.AddFace([bb[1], bb[2], tt[2]])
-ff[3] = mesh.AddFace([bb[1], tt[2], tt[1]])
-ff[4] = mesh.AddFace([bb[2], bb[3], tt[3]])
-ff[5] = mesh.AddFace([bb[2], tt[3], tt[2]])
-
-# inverse the diagonal bb[1] - tt[2]
-print "\nDiagonal inversion ... ",
-res = mesh.InverseDiag(bb[1], tt[2])
-if not res: print "failed!"
-else:       print "done."
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include modifying_meshes_ex16.py
+<a href="../../examples/SMESH/modifying_meshes_ex16.py">Download this script</a>
 
 <br>
 \anchor tui_uniting_two_triangles
 <h2>Uniting two Triangles</h2>
-
-\code
-import salome
-import smesh
-
-# create an empty mesh structure
-mesh = smesh.Mesh() 
-
-# create the following mesh:
-# .----.----.----.
-# |   /|   /|   /|
-# |  / |  / |  / |
-# | /  | /  | /  |
-# |/   |/   |/   |
-# .----.----.----.
-
-bb = [0, 0, 0, 0]
-tt = [0, 0, 0, 0]
-ff = [0, 0, 0, 0, 0, 0]
-
-bb[0] = mesh.AddNode( 0., 0., 0.)
-bb[1] = mesh.AddNode(10., 0., 0.)
-bb[2] = mesh.AddNode(20., 0., 0.)
-bb[3] = mesh.AddNode(30., 0., 0.)
-
-tt[0] = mesh.AddNode( 0., 15., 0.)
-tt[1] = mesh.AddNode(10., 15., 0.)
-tt[2] = mesh.AddNode(20., 15., 0.)
-tt[3] = mesh.AddNode(30., 15., 0.)
-
-ff[0] = mesh.AddFace([bb[0], bb[1], tt[1]])
-ff[1] = mesh.AddFace([bb[0], tt[1], tt[0]])
-ff[2] = mesh.AddFace([bb[1], bb[2], tt[2]])
-ff[3] = mesh.AddFace([bb[1], tt[2], tt[1]])
-ff[4] = mesh.AddFace([bb[2], bb[3], tt[3]])
-ff[5] = mesh.AddFace([bb[2], tt[3], tt[2]]) 
-
-# delete the diagonal bb[1] - tt[2]
-print "\nUnite two triangles ... ",
-res = mesh.DeleteDiag(bb[1], tt[2])
-if not res: print "failed!"
-else:       print "done."
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include modifying_meshes_ex17.py
+<a href="../../examples/SMESH/modifying_meshes_ex17.py">Download this script</a>
 
 <br>
 \anchor tui_uniting_set_of_triangles
 <h2>Uniting a Set of Triangles</h2>
-
-\code
-import salome
-import smesh
-
-# create an empty mesh structure
-mesh = smesh.Mesh() 
-
-# create the following mesh:
-# .----.----.----.
-# |   /|   /|   /|
-# |  / |  / |  / |
-# | /  | /  | /  |
-# |/   |/   |/   |
-# .----.----.----.
-
-bb = [0, 0, 0, 0]
-tt = [0, 0, 0, 0]
-ff = [0, 0, 0, 0, 0, 0]
-
-bb[0] = mesh.AddNode( 0., 0., 0.)
-bb[1] = mesh.AddNode(10., 0., 0.)
-bb[2] = mesh.AddNode(20., 0., 0.)
-bb[3] = mesh.AddNode(30., 0., 0.)
-
-tt[0] = mesh.AddNode( 0., 15., 0.)
-tt[1] = mesh.AddNode(10., 15., 0.)
-tt[2] = mesh.AddNode(20., 15., 0.)
-tt[3] = mesh.AddNode(30., 15., 0.)
-
-ff[0] = mesh.AddFace([bb[0], bb[1], tt[1]])
-ff[1] = mesh.AddFace([bb[0], tt[1], tt[0]])
-ff[2] = mesh.AddFace([bb[1], bb[2], tt[2]])
-ff[3] = mesh.AddFace([bb[1], tt[2], tt[1]])
-ff[4] = mesh.AddFace([bb[2], bb[3], tt[3]])
-ff[5] = mesh.AddFace([bb[2], tt[3], tt[2]])
-
-# unite a set of triangles
-print "\nUnite a set of triangles ... ",
-res = mesh.TriToQuad([ff[2], ff[3], ff[4], ff[5]], smesh.FT_MinimumAngle, 60.)
-if not res: print "failed!"
-else:       print "done."
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include modifying_meshes_ex18.py
+<a href="../../examples/SMESH/modifying_meshes_ex18.py">Download this script</a>
 
 <br>
 \anchor tui_orientation
 <h2>Orientation</h2>
-
-\code
-import salome
-import smesh
-
-# create an empty mesh structure
-mesh = smesh.Mesh() 
-
-# build five quadrangles:
-dx = 10
-dy = 20
-
-n1  = mesh.AddNode(0.0 * dx, 0, 0)
-n2  = mesh.AddNode(1.0 * dx, 0, 0)
-n3  = mesh.AddNode(2.0 * dx, 0, 0)
-n4  = mesh.AddNode(3.0 * dx, 0, 0)
-n5  = mesh.AddNode(4.0 * dx, 0, 0)
-n6  = mesh.AddNode(5.0 * dx, 0, 0)
-n7  = mesh.AddNode(0.0 * dx, dy, 0)
-n8  = mesh.AddNode(1.0 * dx, dy, 0)
-n9  = mesh.AddNode(2.0 * dx, dy, 0)
-n10 = mesh.AddNode(3.0 * dx, dy, 0)
-n11 = mesh.AddNode(4.0 * dx, dy, 0)
-n12 = mesh.AddNode(5.0 * dx, dy, 0)
-
-f1 = mesh.AddFace([n1, n2, n8 , n7 ])
-f2 = mesh.AddFace([n2, n3, n9 , n8 ])
-f3 = mesh.AddFace([n3, n4, n10, n9 ])
-f4 = mesh.AddFace([n4, n5, n11, n10])
-f5 = mesh.AddFace([n5, n6, n12, n11]) 
-
-# Change the orientation of the second and the fourth faces.
-mesh.Reorient([2, 4])
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include modifying_meshes_ex19.py
+<a href="../../examples/SMESH/modifying_meshes_ex19.py">Download this script</a>
 
 <br>
 \anchor tui_cutting_quadrangles
 <h2>Cutting Quadrangles</h2>
-
-\code
-import SMESH_mechanic
-
-smesh = SMESH_mechanic.smesh
-mesh  = SMESH_mechanic.mesh
-
-# cut two quadrangles: 405 and 406
-mesh.QuadToTri([405, 406], smesh.FT_MinimumAngle)
-\endcode
+\include modifying_meshes_ex20.py
+<a href="../../examples/SMESH/modifying_meshes_ex20.py">Download this script</a>
 
 <br>
 \anchor tui_smoothing
 <h2>Smoothing</h2>
-
-\code
-import salome
-import geompy
-
-import SMESH_mechanic
-
-smesh = SMESH_mechanic.smesh
-mesh = SMESH_mechanic.mesh
-
-# select the top face
-faces = geompy.SubShapeAllSorted(SMESH_mechanic.shape_mesh, geompy.ShapeType["FACE"])
-face = faces[3]
-geompy.addToStudyInFather(SMESH_mechanic.shape_mesh, face, "face planar with hole")
-
-# create a group of faces to be smoothed
-GroupSmooth = mesh.GroupOnGeom(face, "Group of faces (smooth)", smesh.FACE)
-
-# perform smoothing
-
-# boolean SmoothObject(Object, IDsOfFixedNodes, MaxNbOfIterations, MaxAspectRatio, Method)
-res = mesh.SmoothObject(GroupSmooth, [], 20, 2., smesh.CENTROIDAL_SMOOTH)
-print "\nSmoothing ... ",
-if not res: print "failed!"
-else:       print "done."
-
-salome.sg.updateObjBrowser(1) 
-\endcode
+\include modifying_meshes_ex21.py
+<a href="../../examples/SMESH/modifying_meshes_ex21.py">Download this script</a>
 
 <br>
 \anchor tui_extrusion
 <h2>Extrusion</h2>
-
-\code
-import salome
-import geompy
-
-import SMESH_mechanic
-
-smesh = SMESH_mechanic.smesh
-mesh = SMESH_mechanic.mesh 
-
-# select the top face
-faces = geompy.SubShapeAllSorted(SMESH_mechanic.shape_mesh, geompy.ShapeType["FACE"])
-face = faces[7]
-geompy.addToStudyInFather(SMESH_mechanic.shape_mesh, face, "face circular top")
-
-# create a vector for extrusion
-point = smesh.PointStruct(0., 0., 5.)
-vector = smesh.DirStruct(point)
-
-# create a group to be extruded
-GroupTri = mesh.GroupOnGeom(face, "Group of faces (extrusion)", smesh.FACE)
-
-# perform extrusion of the group
-mesh.ExtrusionSweepObject(GroupTri, vector, 5)
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include modifying_meshes_ex22.py
+<a href="../../examples/SMESH/modifying_meshes_ex22.py">Download this script</a>
 
 <br>
 \anchor tui_extrusion_along_path
 <h2>Extrusion along a Path</h2>
-
-\code
-import math
-import salome
-
-# Geometry
-import geompy
-
-# 1. Create points
-points = [[0, 0], [50, 30], [50, 110], [0, 150], [-80, 150], [-130, 70], [-130, -20]]
-
-iv = 1
-vertices = []
-for point in points:
-    vert = geompy.MakeVertex(point[0], point[1], 0)
-    geompy.addToStudy(vert, "Vertex_" + `iv`)
-    vertices.append(vert)
-    iv += 1
-    pass
-
-# 2. Create edges and wires
-Edge_straight = geompy.MakeEdge(vertices[0], vertices[4])
-Edge_bezierrr = geompy.MakeBezier(vertices)
-Wire_polyline = geompy.MakePolyline(vertices)
-Edge_Circle   = geompy.MakeCircleThreePnt(vertices[0], vertices[1], vertices[2])
-
-geompy.addToStudy(Edge_straight, "Edge_straight")
-geompy.addToStudy(Edge_bezierrr, "Edge_bezierrr")
-geompy.addToStudy(Wire_polyline, "Wire_polyline")
-geompy.addToStudy(Edge_Circle  , "Edge_Circle")
-
-# 3. Explode wire on edges, as they will be used for mesh extrusion
-Wire_polyline_edges = geompy.SubShapeAll(Wire_polyline, geompy.ShapeType["EDGE"])
-for ii in range(len(Wire_polyline_edges)):
-    geompy.addToStudyInFather(Wire_polyline, Wire_polyline_edges[ii], "Edge_" + `ii + 1`)
-    pass
-
-# Mesh
-import smesh
-
-# Mesh the given shape with the given 1d hypothesis
-def Mesh1D(shape1d, nbSeg, name):
-  mesh1d_tool = smesh.Mesh(shape1d, name)
-  algo = mesh1d_tool.Segment()
-  hyp  = algo.NumberOfSegments(nbSeg)
-  isDone = mesh1d_tool.Compute()
-  if not isDone: print 'Mesh ', name, ': computation failed'
-  return mesh1d_tool
-
-# Create a mesh with six nodes, seven edges and two quadrangle faces
-def MakeQuadMesh2(mesh_name):
-  quad_1 = smesh.Mesh(name = mesh_name)
-  
-  # six nodes
-  n1 = quad_1.AddNode(0, 20, 10)
-  n2 = quad_1.AddNode(0, 40, 10)
-  n3 = quad_1.AddNode(0, 40, 30)
-  n4 = quad_1.AddNode(0, 20, 30)
-  n5 = quad_1.AddNode(0,  0, 30)
-  n6 = quad_1.AddNode(0,  0, 10)
-
-  # seven edges
-  quad_1.AddEdge([n1, n2]) # 1
-  quad_1.AddEdge([n2, n3]) # 2
-  quad_1.AddEdge([n3, n4]) # 3
-  quad_1.AddEdge([n4, n1]) # 4
-  quad_1.AddEdge([n4, n5]) # 5
-  quad_1.AddEdge([n5, n6]) # 6
-  quad_1.AddEdge([n6, n1]) # 7
-
-  # two quadrangle faces
-  quad_1.AddFace([n1, n2, n3, n4]) # 8
-  quad_1.AddFace([n1, n4, n5, n6]) # 9
-  return [quad_1, [1,2,3,4,5,6,7], [8,9]]
-
-# Path meshes
-Edge_straight_mesh = Mesh1D(Edge_straight, 7, "Edge_straight")
-Edge_bezierrr_mesh = Mesh1D(Edge_bezierrr, 7, "Edge_bezierrr")
-Wire_polyline_mesh = Mesh1D(Wire_polyline, 3, "Wire_polyline")
-Edge_Circle_mesh   = Mesh1D(Edge_Circle  , 8, "Edge_Circle")
-
-# Initial meshes (to be extruded)
-[quad_1, ee_1, ff_1] = MakeQuadMesh2("quad_1")
-[quad_2, ee_2, ff_2] = MakeQuadMesh2("quad_2")
-[quad_3, ee_3, ff_3] = MakeQuadMesh2("quad_3")
-[quad_4, ee_4, ff_4] = MakeQuadMesh2("quad_4")
-[quad_5, ee_5, ff_5] = MakeQuadMesh2("quad_5")
-[quad_6, ee_6, ff_6] = MakeQuadMesh2("quad_6")
-[quad_7, ee_7, ff_7] = MakeQuadMesh2("quad_7")
-
-# ExtrusionAlongPath
-# IDsOfElements, PathMesh, PathShape, NodeStart,
-# HasAngles, Angles, HasRefPoint, RefPoint
-refPoint = smesh.PointStruct(0, 0, 0)
-a10 = 10.0*math.pi/180.0
-a45 = 45.0*math.pi/180.0
-
-# 1. Extrusion of two mesh edges along a straight path
-error = quad_1.ExtrusionAlongPath([1,2], Edge_straight_mesh, Edge_straight, 1,
-                                  0, [], 0, refPoint)
-
-# 2. Extrusion of one mesh edge along a curved path
-error = quad_2.ExtrusionAlongPath([2], Edge_bezierrr_mesh, Edge_bezierrr, 1,
-                                  0, [], 0, refPoint)
-
-# 3. Extrusion of one mesh edge along a curved path with usage of angles
-error = quad_3.ExtrusionAlongPath([2], Edge_bezierrr_mesh, Edge_bezierrr, 1,
-                                  1, [a45, a45, a45, 0, -a45, -a45, -a45], 0, refPoint)
-
-# 4. Extrusion of one mesh edge along the path, which is a part of a meshed wire
-error = quad_4.ExtrusionAlongPath([4], Wire_polyline_mesh, Wire_polyline_edges[0], 1,
-                                  1, [a10, a10, a10], 0, refPoint)
-
-# 5. Extrusion of two mesh faces along the path, which is a part of a meshed wire
-error = quad_5.ExtrusionAlongPath(ff_5 , Wire_polyline_mesh, Wire_polyline_edges[2], 4,
-                                  0, [], 0, refPoint)
-
-# 6. Extrusion of two mesh faces along a closed path
-error = quad_6.ExtrusionAlongPath(ff_6 , Edge_Circle_mesh, Edge_Circle, 1,
-                                  0, [], 0, refPoint)
-
-# 7. Extrusion of two mesh faces along a closed path with usage of angles
-error = quad_7.ExtrusionAlongPath(ff_7, Edge_Circle_mesh, Edge_Circle, 1,
-                                  1, [a45, -a45, a45, -a45, a45, -a45, a45, -a45], 0, refPoint)
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include modifying_meshes_ex23.py
+<a href="../../examples/SMESH/modifying_meshes_ex23.py">Download this script</a>
 
 <br>
 \anchor tui_revolution
 <h2>Revolution</h2>
-
-\code
-import math
-import SMESH
-
-import SMESH_mechanic
-
-mesh  = SMESH_mechanic.mesh
-smesh = SMESH_mechanic.smesh
-
-# create a group of faces to be revolved
-FacesRotate = [492, 493, 502, 503]
-GroupRotate = mesh.CreateEmptyGroup(SMESH.FACE,"Group of faces (rotate)")
-GroupRotate.Add(FacesRotate)
-
-# define revolution angle and axis
-angle45 = 45 * math.pi / 180
-axisXYZ = SMESH.AxisStruct(-38.3128, -73.3658, -23.321, -13.3402, -13.3265, 6.66632)
-
-# perform revolution of an object
-mesh.RotationSweepObject(GroupRotate, axisXYZ, angle45, 4, 1e-5) 
-\endcode
+\include modifying_meshes_ex24.py
+<a href="../../examples/SMESH/modifying_meshes_ex24.py">Download this script</a>
 
 <br>
 \anchor tui_pattern_mapping
 <h2>Pattern Mapping</h2>
-
-\code
-import geompy
-import smesh
-
-# define the geometry
-Box_1 = geompy.MakeBoxDXDYDZ(200., 200., 200.)
-geompy.addToStudy(Box_1, "Box_1")
-
-faces = geompy.SubShapeAll(Box_1, geompy.ShapeType["FACE"])
-Face_1 = faces[0]
-Face_2 = faces[1]
-
-geompy.addToStudyInFather(Box_1, Face_1, "Face_1")
-geompy.addToStudyInFather(Box_1, Face_2, "Face_2")
-
-# build a quadrangle mesh 3x3 on Face_1
-Mesh_1 = smesh.Mesh(Face_1)
-algo1D = Mesh_1.Segment()
-algo1D.NumberOfSegments(3)
-Mesh_1.Quadrangle()
-
-isDone = Mesh_1.Compute()
-if not isDone: print 'Mesh Mesh_1 : computation failed'
-
-# build a triangle mesh on Face_2
-Mesh_2 = smesh.Mesh(Face_2)
-
-algo1D = Mesh_2.Segment()
-algo1D.NumberOfSegments(1)
-algo2D = Mesh_2.Triangle()
-algo2D.MaxElementArea(240)
-
-isDone = Mesh_2.Compute()
-if not isDone: print 'Mesh Mesh_2 : computation failed'
-
-# create a 2d pattern
-pattern = smesh.GetPattern()
-
-isDone = pattern.LoadFromFace(Mesh_2.GetMesh(), Face_2, 0)
-if (isDone != 1): print 'LoadFromFace :', pattern.GetErrorCode()
-
-# apply the pattern to a face of the first mesh
-facesToSplit = Mesh_1.GetElementsByType(smesh.SMESH.FACE)
-print "Splitting %d rectangular face(s) to %d triangles..."%(len(facesToSplit), 2*len(facesToSplit))
-pattern.ApplyToMeshFaces(Mesh_1.GetMesh(), facesToSplit, 0, 0)
-isDone = pattern.MakeMesh(Mesh_1.GetMesh(), 0, 0)
-if (isDone != 1): print 'MakeMesh :', pattern.GetErrorCode()  
-
-# create quadrangle mesh
-Mesh_3 = smesh.Mesh(Box_1)
-Mesh_3.Segment().NumberOfSegments(1)
-Mesh_3.Quadrangle()
-Mesh_3.Hexahedron()
-isDone = Mesh_3.Compute()
-if not isDone: print 'Mesh Mesh_3 : computation failed'
-
-# create a 3d pattern (hexahedrons)
-pattern_hexa = smesh.GetPattern()
-
-smp_hexa = """!!! Nb of points:
-15
-      0        0        0   !- 0
-      1        0        0   !- 1
-      0        1        0   !- 2
-      1        1        0   !- 3
-      0        0        1   !- 4
-      1        0        1   !- 5
-      0        1        1   !- 6
-      1        1        1   !- 7
-    0.5        0      0.5   !- 8
-    0.5        0        1   !- 9
-    0.5      0.5      0.5   !- 10
-    0.5      0.5        1   !- 11
-      1        0      0.5   !- 12
-      1      0.5      0.5   !- 13
-      1      0.5        1   !- 14
-  !!! Indices of points of 4 elements:
-  8 12 5 9 10 13 14 11
-  0 8 9 4 2 10 11 6
-  2 10 11 6 3 13 14 7
-  0 1 12 8 2 3 13 10"""
-
-pattern_hexa.LoadFromFile(smp_hexa)
-
-# apply the pattern to a mesh
-volsToSplit = Mesh_3.GetElementsByType(smesh.SMESH.VOLUME)
-print "Splitting %d hexa volume(s) to %d hexas..."%(len(volsToSplit), 4*len(volsToSplit))
-pattern_hexa.ApplyToHexahedrons(Mesh_3.GetMesh(), volsToSplit,0,3)
-isDone = pattern_hexa.MakeMesh(Mesh_3.GetMesh(), True, True)
-if (isDone != 1): print 'MakeMesh :', pattern_hexa.GetErrorCode()  
-
-# create one more quadrangle mesh
-Mesh_4 = smesh.Mesh(Box_1)
-Mesh_4.Segment().NumberOfSegments(1)
-Mesh_4.Quadrangle()
-Mesh_4.Hexahedron()
-isDone = Mesh_4.Compute()
-if not isDone: print 'Mesh Mesh_4 : computation failed'
-
-# create another 3d pattern (pyramids)
-pattern_pyra = smesh.GetPattern()
-
-smp_pyra = """!!! Nb of points:
-9
-        0        0        0   !- 0
-        1        0        0   !- 1
-        0        1        0   !- 2
-        1        1        0   !- 3
-        0        0        1   !- 4
-        1        0        1   !- 5
-        0        1        1   !- 6
-        1        1        1   !- 7
-      0.5      0.5      0.5   !- 8
-  !!! Indices of points of 6 elements:
-  0 1 5 4 8
-  7 5 1 3 8
-  3 2 6 7 8
-  2 0 4 6 8
-  0 2 3 1 8
-  4 5 7 6 8"""
-
-pattern_pyra.LoadFromFile(smp_pyra)
-
-# apply the pattern to a face mesh
-volsToSplit = Mesh_4.GetElementsByType(smesh.SMESH.VOLUME)
-print "Splitting %d hexa volume(s) to %d hexas..."%(len(volsToSplit), 6*len(volsToSplit))
-pattern_pyra.ApplyToHexahedrons(Mesh_4.GetMesh(), volsToSplit,1,0)
-isDone = pattern_pyra.MakeMesh(Mesh_4.GetMesh(), True, True)
-if (isDone != 1): print 'MakeMesh :', pattern_pyra.GetErrorCode()  
-\endcode
+\include modifying_meshes_ex25.py
+<a href="../../examples/SMESH/modifying_meshes_ex25.py">Download this script</a>
 
 <br>
 \anchor tui_quadratic
 <h2>Convert mesh to/from quadratic</h2>
-
-\code
-import geompy
-import smesh
-
-# create sphere of radius 100
-
-Sphere = geompy.MakeSphereR( 100 )
-geompy.addToStudy( Sphere, "Sphere" )
-
-# create simple trihedral mesh
-
-Mesh = smesh.Mesh(Sphere)
-Regular_1D = Mesh.Segment()
-Nb_Segments = Regular_1D.NumberOfSegments(5)
-MEFISTO_2D = Mesh.Triangle()
-Tetrahedron = Mesh.Tetrahedron()
-
-# compute mesh
-
-isDone = Mesh.Compute()
-
-# convert to quadratic
-# theForce3d = 1; this results in the medium node lying at the
-# middle of the line segments connecting start and end node of a mesh
-# element
-
-Mesh.ConvertToQuadratic( theForce3d=1 )
-
-# revert back to the non-quadratic mesh
-
-Mesh.ConvertFromQuadratic()
-
-# convert to quadratic
-# theForce3d = 0; this results in the medium node lying at the
-# geometrical edge from which the mesh element is built
-
-Mesh.ConvertToQuadratic( theForce3d=0 )
-
-# to convert not the whole mesh but a sub-mesh, provide it as 
-# an additional argument to the functions:
-# Mesh.ConvertToQuadratic( 0, subMesh )
-# Mesh.ConvertFromQuadratic( subMesh )
-#
-# Note that the mesh becomes non-conformal at conversion of sub-mesh.
-
-\endcode
+\include modifying_meshes_ex26.py
+<a href="../../examples/SMESH/modifying_meshes_ex26.py">Download this script</a>
 
 */

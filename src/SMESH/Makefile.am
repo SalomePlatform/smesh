@@ -95,5 +95,6 @@ libSMESHimpl_la_LDFLAGS = \
 	$(DriverCGNS_LIB) \
 	../SMESHUtils/libSMESHUtils.la \
 	$(BOOST_LIB_THREAD)  \
+	$(BOOST_LIB_SYSTEM)  \
 	$(GEOM_LDFLAGS) -lNMTTools \
 	$(CAS_LDPATH) -lTKShHealing -lTKPrim -lTKG2d -lTKCDF

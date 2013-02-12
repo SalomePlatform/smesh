@@ -28,6 +28,9 @@
 #include "SMESHDS_Mesh.hxx"
 #include "SMDS_SetIterator.hxx"
 
+#include <numeric>
+#include <limits>
+
 using namespace std;
 
 //=============================================================================
@@ -40,9 +43,12 @@ SMESHDS_GroupOnFilter::SMESHDS_GroupOnFilter (const int                 theID,
                                               const SMESHDS_Mesh*       theMesh,
                                               const SMDSAbs_ElementType theType,
                                               const SMESH_PredicatePtr& thePredicate)
-  : SMESHDS_GroupBase(theID,theMesh,theType), myMeshModifTime(0), myPredicateTic(0)
+  : SMESHDS_GroupBase(theID,theMesh,theType),
+    myMeshInfo( SMDSEntity_Last, 0 ),
+    myMeshModifTime(0),
+    myPredicateTic(0),
+    myNbElemToSkip(0)
 {
-  setChanged();
   SetPredicate( thePredicate );
 }
 
@@ -52,7 +58,7 @@ SMESHDS_GroupOnFilter::SMESHDS_GroupOnFilter (const int                 theID,
  */
 //================================================================================
 
-void SMESHDS_GroupOnFilter::SetPredicate( const SMESH_PredicatePtr& thePredicate)
+void SMESHDS_GroupOnFilter::SetPredicate( const SMESH_PredicatePtr& thePredicate )
 {
   myPredicate = thePredicate;
   ++myPredicateTic;
@@ -70,7 +76,36 @@ void SMESHDS_GroupOnFilter::SetPredicate( const SMESH_PredicatePtr& thePredicate
 int SMESHDS_GroupOnFilter::Extent() const
 {
   update();
-  return myElements.size();
+  return std::accumulate( myMeshInfo.begin(), myMeshInfo.end(), 0 );
+}
+
+//================================================================================
+/*!
+ * \brief Checks emptyness
+ */
+//================================================================================
+
+bool SMESHDS_GroupOnFilter::IsEmpty()
+{
+  if ( IsUpToDate() )
+  {
+    return ( Extent() == 0 );
+  }
+  else // not up-to-date
+  {
+    setChanged();
+    SMDS_ElemIteratorPtr okElemIt = GetElements();
+    if ( !okElemIt->more() )
+    {
+      // no satisfying elements
+      setChanged( false );
+    }
+    else
+    {
+      return false;
+    }
+  }
+  return true;
 }
 
 //================================================================================
@@ -96,6 +131,53 @@ bool SMESHDS_GroupOnFilter::Contains (const SMDS_MeshElement* elem)
 }
 
 //================================================================================
+namespace // Iterator
+{
+  struct TIterator : public SMDS_ElemIterator
+  {
+    SMESH_PredicatePtr      myPredicate;
+    SMDS_ElemIteratorPtr    myElemIt;
+    const SMDS_MeshElement* myNextElem;
+    size_t                  myNbToFind, myNbFound;
+    TIterator( const SMESH_PredicatePtr& filter,
+               SMDS_ElemIteratorPtr&     elems,
+               size_t                    nbToFind):
+      myPredicate( filter ),
+      myElemIt( elems ),
+      myNextElem( 0 ),
+      myNbToFind( nbToFind ),
+      myNbFound( 0 )
+    {
+      next();
+    }
+    virtual bool more()
+    {
+      return myNextElem;
+    }
+    virtual const SMDS_MeshElement* next()
+    {
+      const SMDS_MeshElement* res = myNextElem;
+      myNbFound += bool( res );
+      myNextElem = 0;
+      if ( myNbFound < myNbToFind )
+        while ( myElemIt->more() && !myNextElem )
+        {
+          myNextElem = myElemIt->next();
+          if ( !myPredicate->IsSatisfy( myNextElem->GetID() ))
+            myNextElem = 0;
+        }
+      return res;
+    }
+  };
+
+  struct TEmptyIterator : public SMDS_ElemIterator
+  {
+    virtual bool more()                    { return false; }
+    virtual const SMDS_MeshElement* next() { return 0; }
+  };
+}
+
+//================================================================================
 /*!
  * \brief Return iterator on all elements
  */
@@ -103,25 +185,84 @@ bool SMESHDS_GroupOnFilter::Contains (const SMDS_MeshElement* elem)
 
 SMDS_ElemIteratorPtr SMESHDS_GroupOnFilter::GetElements() const
 {
-  update();
-  return SMDS_ElemIteratorPtr
-    ( new SMDS_ElementVectorIterator( myElements.begin(), myElements.end() ));
+  size_t nbToFind = std::numeric_limits<size_t>::max();
+
+  SMDS_ElemIteratorPtr elemIt;
+  if ( myPredicate )
+  {
+    myPredicate->SetMesh( GetMesh() ); // hope myPredicate updates self here if necessary
+
+    elemIt = GetMesh()->elementsIterator( GetType() );
+    if ( IsUpToDate() )
+    {
+      nbToFind = Extent();
+      if ( nbToFind == GetMesh()->GetMeshInfo().NbElements( GetType() ))
+        return elemIt; // all elements are OK
+      for ( size_t i = 0; i < myNbElemToSkip; ++i )
+        elemIt->next(); // skip w/o check
+    }
+  }
+  else
+  {
+    elemIt = SMDS_ElemIteratorPtr( new TEmptyIterator );
+  }
+  return SMDS_ElemIteratorPtr ( new TIterator( myPredicate, elemIt, nbToFind ));
 }
 
 //================================================================================
 /*!
- * \brief return ID of theIndex-th element
- *  \param theIndex - index countered from 1
- *  \retval int - element ID
+ * \brief Return info on sub-types of elements
  */
 //================================================================================
 
-int SMESHDS_GroupOnFilter::GetID (const int theIndex)
+std::vector< int > SMESHDS_GroupOnFilter::GetMeshInfo() const
 {
   update();
-  if ( theIndex < 1 || theIndex > myElements.size() )
-    return -1;
-  return myElements[ theIndex-1 ]->GetID();
+  return myMeshInfo;
+}
+
+//================================================================================
+/*!
+ * \brief Fill ids of elements. And return their number.
+ *       \a ids must be pre-allocated using nb of elements of type == GetType()
+ */
+//================================================================================
+
+int SMESHDS_GroupOnFilter::getElementIds( void* ids, size_t idSize ) const
+{
+  SMESHDS_GroupOnFilter* me = const_cast<SMESHDS_GroupOnFilter*>( this );
+
+  char* curID = (char*) ids;
+  SMDS_ElemIteratorPtr elIt = GetElements();
+  if ( elIt->more() )
+  {
+    if ( IsUpToDate() )
+    {
+      for ( ; elIt->more(); curID += idSize )
+        (*(int*) curID) = elIt->next()->GetID();
+    }
+    else
+    {
+      me->setChanged();
+
+      // find out nb of elements to skip w/o check before the 1st OK element
+      const SMDS_MeshElement* firstOkElem = me->setNbElemToSkip( elIt );
+
+      me->myMeshInfo.assign( SMDSEntity_Last, 0 );
+      me->myMeshInfo[ firstOkElem->GetEntityType() ]++;
+
+      (*(int*) curID) = firstOkElem->GetID();
+      for ( curID += idSize; elIt->more(); curID += idSize )
+      {
+        const SMDS_MeshElement* e = elIt->next();
+        (*(int*) curID) = e->GetID();
+        me->myMeshInfo[ e->GetEntityType() ]++;
+      }
+    }
+  }
+  me->setChanged( false );
+
+  return ( curID - (char*)ids ) / idSize;
 }
 
 //================================================================================
@@ -154,23 +295,17 @@ bool SMESHDS_GroupOnFilter::IsUpToDate() const
 
 void SMESHDS_GroupOnFilter::update() const
 {
+  SMESHDS_GroupOnFilter* me = const_cast<SMESHDS_GroupOnFilter*>( this );
   if ( !IsUpToDate() )
   {
-    SMESHDS_GroupOnFilter* me = const_cast<SMESHDS_GroupOnFilter*>( this );
-    me->myElements.clear();
-    if ( myPredicate )
-    {
-      myPredicate->SetMesh( GetMesh() ); // hope myPredicate updates self here if necessary
-      me->myElements.reserve( GetMesh()->GetMeshInfo().NbElements(GetType()));
-      SMDS_ElemIteratorPtr elIt = GetMesh()->elementsIterator(GetType());
+    me->setChanged();
+    SMDS_ElemIteratorPtr elIt = GetElements();
+    if ( elIt->more() ) {
+      // find out nb of elements to skip w/o check before the 1st OK element
+      const SMDS_MeshElement* e = me->setNbElemToSkip( elIt );
+      ++me->myMeshInfo[ e->GetEntityType() ];
       while ( elIt->more() )
-      {
-        const SMDS_MeshElement* e = elIt->next();
-        if ( myPredicate->IsSatisfy( e->GetID() ))
-          me->myElements.push_back( e );
-      }
-      vector< const SMDS_MeshElement*> elems( me->myElements.begin(), me->myElements.end() );
-      me->myElements.swap( elems );
+        ++me->myMeshInfo[ elIt->next()->GetEntityType() ];
     }
     me->setChanged( false );
   }
@@ -178,7 +313,7 @@ void SMESHDS_GroupOnFilter::update() const
 
 //================================================================================
 /*!
- * \brief Sets myMeshModifTime according to modification state
+ * \brief Sets myMeshModifTime and clear fields according to modification state
  */
 //================================================================================
 
@@ -187,4 +322,31 @@ void SMESHDS_GroupOnFilter::setChanged(bool changed)
   myMeshModifTime = GetMesh()->GetMTime();
   if ( changed && myMeshModifTime != 0 )
     --myMeshModifTime;
+  if ( changed ) {
+    myNbElemToSkip = 0;
+    myMeshInfo.assign( SMDSEntity_Last, 0 );
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Sets myNbElemToSkip
+ *  \param okElemIt - iterator on OK elements
+ *  \retval const SMDS_MeshElement* - the first OK element
+ */
+//================================================================================
+
+const SMDS_MeshElement*
+SMESHDS_GroupOnFilter::setNbElemToSkip( SMDS_ElemIteratorPtr& okElemIt )
+{
+  // find out nb of elements to skip w/o check before the 1st OK element
+  const SMDS_MeshElement* firstOkElem = okElemIt->next();
+  if ( myNbElemToSkip == 0 )
+  {
+    SMDS_ElemIteratorPtr elemIt = GetMesh()->elementsIterator( GetType() );
+    myNbElemToSkip = 0;
+    while ( elemIt->next() != firstOkElem )
+      ++myNbElemToSkip;
+  }
+  return firstOkElem;
 }

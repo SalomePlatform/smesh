@@ -84,6 +84,7 @@ public:
    */
   SMESH::SMESH_IDSource_ptr MakeIDSource(const SMESH::long_array& IDsOfElements,
                                          SMESH::ElementType       type);
+  static bool               IsTemporaryIDSource( SMESH::SMESH_IDSource_ptr& idSource );
   CORBA::Boolean RemoveElements(const SMESH::long_array & IDsOfElements);
   CORBA::Boolean RemoveNodes(const SMESH::long_array & IDsOfNodes);
   CORBA::Long    RemoveOrphanNodes();

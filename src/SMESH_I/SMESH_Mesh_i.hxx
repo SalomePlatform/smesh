@@ -155,36 +155,31 @@ public:
   SMESH::SMESH_Group_ptr CutListOfGroups( const SMESH::ListOfGroups& theMainGroups,
                                           const SMESH::ListOfGroups& theToolGroups,
                                           const char* theName )
-  throw (SALOME::SALOME_Exception);
+    throw (SALOME::SALOME_Exception);
 
   SMESH::SMESH_Group_ptr CreateDimGroup( const SMESH::ListOfGroups& theGroups,
                                          SMESH::ElementType theElemType,
                                          const char* theName )
-  throw (SALOME::SALOME_Exception);
+    throw (SALOME::SALOME_Exception);
 
 
-  SMESH::SMESH_Group_ptr ConvertToStandalone( SMESH::SMESH_GroupBase_ptr theGroupOn );
-
-//    SMESH::string_array* GetLog(CORBA::Boolean clearAfterGet)
-//      throw (SALOME::SALOME_Exception);
+  SMESH::SMESH_Group_ptr ConvertToStandalone( SMESH::SMESH_GroupBase_ptr theGroupOn )
+    throw (SALOME::SALOME_Exception);
 
   SMESH::log_array* GetLog(CORBA::Boolean clearAfterGet)
     throw (SALOME::SALOME_Exception);
 
-  SMESH::SMESH_MeshEditor_ptr GetMeshEditor();
+  SMESH::SMESH_MeshEditor_ptr GetMeshEditor() throw (SALOME::SALOME_Exception);
 
-  SMESH::SMESH_MeshEditor_ptr GetMeshEditPreviewer();
+  SMESH::SMESH_MeshEditor_ptr GetMeshEditPreviewer() throw (SALOME::SALOME_Exception);
 
   CORBA::Boolean HasModificationsToDiscard() throw (SALOME::SALOME_Exception);
 
-  void ClearLog()
-    throw (SALOME::SALOME_Exception);
+  void ClearLog() throw (SALOME::SALOME_Exception);
 
-  CORBA::Long GetId()
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long GetId() throw (SALOME::SALOME_Exception);
 
-  CORBA::Long GetStudyId()
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long GetStudyId() throw (SALOME::SALOME_Exception);
 
   // --- C++ interface
   void SetImpl(::SMESH_Mesh* impl);
@@ -463,6 +458,11 @@ public:
    * \brief Return position of a node on shape
    */
   SMESH::NodePosition* GetNodePosition(CORBA::Long NodeID);
+
+  /*!
+   * \brief Return position of an element on shape
+   */
+  SMESH::ElementPosition GetElementPosition(CORBA::Long ElemID);
 
   /*!
    * If given element is node returns IDs of shape from position

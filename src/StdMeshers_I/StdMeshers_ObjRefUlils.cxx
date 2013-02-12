@@ -27,6 +27,7 @@
 //
 #include "StdMeshers_ObjRefUlils.hxx"
 
+#include <SALOMEDS_wrap.hxx>
 #include <TopoDS_Shape.hxx>
 
 using namespace std;
@@ -60,8 +61,8 @@ StdMeshers_ObjRefUlils::EntryOrShapeToGeomObject (const std::string&  theEntry,
   if (SMESH_Gen_i* gen = SMESH_Gen_i::GetSMESHGen()) {
     SALOMEDS::Study_var study = gen->GetCurrentStudy();
     if ( ! theEntry.empty() && ! study->_is_nil() ) {
-      SALOMEDS::SObject_var sobj= study->FindObjectID( theEntry.c_str() );
-      CORBA::Object_var obj = gen->SObjectToObject( sobj );
+      SALOMEDS::SObject_wrap sobj = study->FindObjectID( theEntry.c_str() );
+      CORBA::Object_var       obj = gen->SObjectToObject( sobj );
       geom = GEOM::GEOM_Object::_narrow( obj );
     }
   }
@@ -87,9 +88,10 @@ void StdMeshers_ObjRefUlils::SaveToStream( const TopoDS_Shape& theShape, ostream
     if (SMESH_Gen_i* gen = SMESH_Gen_i::GetSMESHGen()) {
       GEOM::GEOM_Object_var geom = gen->ShapeToGeomObject( theShape );
       if ( ! geom->_is_nil() ) {
-        SALOMEDS::SObject_var sobj = gen->ObjectToSObject( gen->GetCurrentStudy(), geom );
+        SALOMEDS::SObject_wrap sobj = gen->ObjectToSObject( gen->GetCurrentStudy(), geom );
         if ( !sobj->_is_nil() ) {
-          stream << " " << sobj->GetID();
+          CORBA::String_var entry = sobj->GetID();
+          stream << " " << entry.in();
           ok = true;
         }
       }
@@ -114,9 +116,9 @@ TopoDS_Shape StdMeshers_ObjRefUlils::LoadFromStream( istream & stream)
     if ( ! study->_is_nil() ) {
       string str;
       if (stream >> str) {
-        SALOMEDS::SObject_var sobj= study->FindObjectID( str.c_str() );
-        CORBA::Object_var obj = gen->SObjectToObject( sobj );
-        GEOM::GEOM_Object_var geom = GEOM::GEOM_Object::_narrow( obj );
+        SALOMEDS::SObject_wrap sobj = study->FindObjectID( str.c_str() );
+        CORBA::Object_var       obj = gen->SObjectToObject( sobj );
+        GEOM::GEOM_Object_var  geom = GEOM::GEOM_Object::_narrow( obj );
         return gen->GeomObjectToShape( geom.in() );
       }
     }

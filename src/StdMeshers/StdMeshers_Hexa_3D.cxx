@@ -295,7 +295,7 @@ namespace
 //=============================================================================
 
 bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
-                                 const TopoDS_Shape & aShape)// throw(SALOME_Exception)
+                                 const TopoDS_Shape & aShape)
 {
   // PAL14921. Enable catching std::bad_alloc and Standard_OutOfMemory outside
   //Unexpect aCatch(SalomeException);
@@ -371,20 +371,12 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
     for ( int i = 0; i < 6; ++i )
     {
       const TopoDS_Face& sideF = aCubeSide[i]._quad->face;
-      if ( SMESHDS_SubMesh* smDS = meshDS->MeshElements( sideF ))
+      if ( !SMESH_MesherHelper::IsSameElemGeometry( meshDS->MeshElements( sideF ),
+                                                    SMDSGeom_QUADRANGLE,
+                                                    /*nullSubMeshRes=*/false ))
       {
-        bool isAllQuad = true;
-        SMDS_ElemIteratorPtr fIt = smDS->GetElements();
-        while ( fIt->more() && isAllQuad )
-        {
-          const SMDS_MeshElement* f = fIt->next();
-          isAllQuad = ( f->NbCornerNodes() == 4 );
-        }
-        if ( !isAllQuad )
-        {
-          SMESH_ComputeErrorPtr err = ComputePentahedralMesh(aMesh, aShape, proxymesh.get());
-          return error( err );
-        }
+        SMESH_ComputeErrorPtr err = ComputePentahedralMesh(aMesh, aShape, proxymesh.get());
+        return error( err );
       }
     }
   }

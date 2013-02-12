@@ -40,7 +40,10 @@ the same groups as in the imported source mesh.</li>
 
 <b>Use Existing 2D Elements</b> algorithm allows to define the mesh of
 a geometrical face (or group of faces)
-by importing mesh faces contained in a group (or groups) from another mesh.
+by importing mesh faces contained in a group (or groups) from another
+(or this) mesh. 1D elements on the boundary of the geometrical face
+(if not yet present) are also created by the algorithm according to be conformal
+with the created 2D elements.
 \n To apply this algorithm select the geometrical face to be meshed (indicated in
 the field \b Geometry of <b>Create mesh</b> dialog box),
 <b>Use existing 2D elements</b> in the list of 2D algorithms and click the

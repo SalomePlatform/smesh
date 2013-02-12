@@ -27,22 +27,23 @@
 #define SMESH_NODE_LABEL_ACTOR_H
 
 #include "SMESH_DeviceActor.h"
+#include "SMESH_ActorUtils.h"
 
 class vtkSelectVisiblePoints;
 class vtkLabeledDataMapper;
 class vtkActor2D;
 class vtkMaskPoints;
 class vtkUnstructuredGrid;
-
+class vtkTextProperty;
 
 class SMESHOBJECT_EXPORT SMESH_NodeLabelActor : public SMESH_DeviceActor {
 public:
   static SMESH_NodeLabelActor* New();
 
   static void ProcessEvents(vtkObject* theObject,
-			    unsigned long theEvent,
-			    void* theClientData,
-			    void* theCallData);
+                            unsigned long theEvent,
+                            void* theClientData,
+                            void* theCallData);
 
 
   vtkTypeMacro(SMESH_NodeLabelActor, SMESH_DeviceActor);
@@ -55,6 +56,10 @@ public:
 
   virtual void AddToRender(vtkRenderer* theRenderer); 
   virtual void RemoveFromRender(vtkRenderer* theRenderer);
+  
+  virtual void SetFontProperties( SMESH::LabelFont family, int size,
+                                  bool bold, bool italic, bool shadow,
+                                  vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b );
 
   void UpdateLabels();
   
@@ -68,6 +73,7 @@ protected:
   vtkMaskPoints* myPtsMaskPoints;
   vtkLabeledDataMapper* myPtsLabeledDataMapper;
   vtkSelectVisiblePoints* myPtsSelectVisiblePoints;
+  vtkTextProperty* myPtsTextProp;
 
 protected:
   // Not implemented.

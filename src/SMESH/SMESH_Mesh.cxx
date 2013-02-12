@@ -103,13 +103,12 @@ SMESH_Mesh::SMESH_Mesh(int               theLocalId,
   _studyId       = theStudyId;
   _gen           = theGen;
   _myDocument    = theDocument;
-  _idDoc         = theDocument->NewMesh(theIsEmbeddedMode);
-  _myMeshDS      = theDocument->GetMesh(_idDoc);
+  _myMeshDS      = theDocument->NewMesh(theIsEmbeddedMode,theLocalId);
   _isShapeToMesh = false;
   _isAutoColor   = false;
   _isModified    = false;
   _shapeDiagonal = 0.0;
-  _callUp = 0;
+  _callUp        = NULL;
   _myMeshDS->ShapeToMesh( PseudoShape() );
 }
 
@@ -122,7 +121,6 @@ SMESH_Mesh::SMESH_Mesh(int               theLocalId,
 SMESH_Mesh::SMESH_Mesh():
   _id(-1),
   _studyId(-1),
-  _idDoc(-1),
   _groupId( 0 ),
   _nbSubShapes( 0 ),
   _isShapeToMesh( false ),
@@ -660,8 +658,6 @@ SMESH_Hypothesis::Hypothesis_Status
   }
   HasModificationsToDiscard(); // to reset _isModified flag if a mesh becomes empty
 
-  GetMeshDS()->Modified();
-
   if(MYDEBUG) subMesh->DumpAlgoState(true);
   if(MYDEBUG) SCRUTE(ret);
   return ret;
@@ -734,8 +730,6 @@ SMESH_Hypothesis::Hypothesis_Status
   }
 
   HasModificationsToDiscard(); // to reset _isModified flag if mesh become empty
-
-  GetMeshDS()->Modified();
 
   if(MYDEBUG) subMesh->DumpAlgoState(true);
   if(MYDEBUG) SCRUTE(ret);
@@ -1262,7 +1256,7 @@ void SMESH_Mesh::ExportMED(const char *        file,
   myWriter.SetFile    ( file, MED::EVersion(theVersion) );
   myWriter.SetMesh    ( meshPart ? (SMESHDS_Mesh*) meshPart : _myMeshDS   );
   if ( !theMeshName ) 
-    myWriter.SetMeshId  ( _idDoc      );
+    myWriter.SetMeshId  ( _id         );
   else {
     myWriter.SetMeshId  ( -1          );
     myWriter.SetMeshName( theMeshName );
@@ -1355,7 +1349,7 @@ void SMESH_Mesh::ExportDAT(const char *        file,
   DriverDAT_W_SMDS_Mesh myWriter;
   myWriter.SetFile( file );
   myWriter.SetMesh( meshPart ? (SMESHDS_Mesh*) meshPart : _myMeshDS );
-  myWriter.SetMeshId(_idDoc);
+  myWriter.SetMeshId(_id);
   myWriter.Perform();
 }
 
@@ -1372,7 +1366,7 @@ void SMESH_Mesh::ExportUNV(const char *        file,
   DriverUNV_W_SMDS_Mesh myWriter;
   myWriter.SetFile( file );
   myWriter.SetMesh( meshPart ? (SMESHDS_Mesh*) meshPart : _myMeshDS );
-  myWriter.SetMeshId(_idDoc);
+  myWriter.SetMeshId(_id);
   //  myWriter.SetGroups(_mapGroup);
 
   if ( !meshPart )
@@ -1405,7 +1399,7 @@ void SMESH_Mesh::ExportSTL(const char *        file,
   myWriter.SetFile( file );
   myWriter.SetIsAscii( isascii );
   myWriter.SetMesh( meshPart ? (SMESHDS_Mesh*) meshPart : _myMeshDS);
-  myWriter.SetMeshId(_idDoc);
+  myWriter.SetMeshId(_id);
   myWriter.Perform();
 }
 

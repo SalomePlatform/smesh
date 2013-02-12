@@ -53,6 +53,9 @@
 
 using namespace std;
 
+//#include <vtkDebugLeaks.h>
+
+
 //=============================================================================
 /*!
  *  Constructor
@@ -67,11 +70,12 @@ SMESH_Gen::SMESH_Gen()
         _segmentation = _nbSegments = 10;
         SMDS_Mesh::_meshList.clear();
         MESSAGE(SMDS_Mesh::_meshList.size());
-        _counters = new counters(100);
+        //_counters = new counters(100);
 #ifdef WITH_SMESH_CANCEL_COMPUTE
         _compute_canceled = false;
         _sm_current = NULL;
 #endif
+        //vtkDebugLeaks::SetExitError(0);
 }
 
 //=============================================================================
@@ -83,6 +87,12 @@ SMESH_Gen::SMESH_Gen()
 SMESH_Gen::~SMESH_Gen()
 {
   MESSAGE("SMESH_Gen::~SMESH_Gen");
+  std::map < int, StudyContextStruct * >::iterator i_sc = _mapStudyContext.begin();
+  for ( ; i_sc != _mapStudyContext.end(); ++i_sc )
+  {
+    delete i_sc->second->myDocument;
+    delete i_sc->second;
+  }  
 }
 
 //=============================================================================
@@ -312,6 +322,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
           .And( SMESH_HypoFilter::IsMoreLocalThan( algoShape, aMesh ));
 
         if ( SMESH_Algo* subAlgo = (SMESH_Algo*) aMesh.GetHypothesis( aSubShape, filter, true )) {
+          if ( ! subAlgo->NeedDiscreteBoundary() ) continue;
           SMESH_Hypothesis::Hypothesis_Status status;
           if ( subAlgo->CheckHypothesis( aMesh, aSubShape, status ))
             // mesh a lower smToCompute starting from vertices
@@ -360,7 +371,8 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
 
   // fix quadratic mesh by bending iternal links near concave boundary
   if ( aShape.IsSame( aMesh.GetShapeToMesh() ) &&
-       !aShapesId ) // not preview
+       !aShapesId && // not preview
+       ret ) // everything is OK
   {
     SMESH_MesherHelper aHelper( aMesh );
     if ( aHelper.IsQuadraticMesh() != SMESH_MesherHelper::LINEAR )
@@ -581,12 +593,13 @@ static bool checkConformIgnoredAlgos(SMESH_Mesh&               aMesh,
     }
     else
     {
-      bool isGlobal = (aMesh.IsMainShape( aSubMesh->GetSubShape() ));
-      int dim = algo->GetDim();
+      bool       isGlobal = (aMesh.IsMainShape( aSubMesh->GetSubShape() ));
+      int             dim = algo->GetDim();
       int aMaxGlobIgnoDim = ( aGlobIgnoAlgo ? aGlobIgnoAlgo->GetDim() : -1 );
+      bool    isNeededDim = ( aGlobIgnoAlgo ? aGlobIgnoAlgo->NeedLowerHyps( dim ) : false );
 
-      if ( dim < aMaxGlobIgnoDim &&
-           ( isGlobal || !aGlobIgnoAlgo->SupportSubmeshes() ))
+      if (( dim < aMaxGlobIgnoDim && !isNeededDim ) &&
+          ( isGlobal || !aGlobIgnoAlgo->SupportSubmeshes() ))
       {
         // algo is hidden by a global algo
         theErrors.push_back( SMESH_Gen::TAlgoStateError() );
@@ -642,8 +655,15 @@ static bool checkMissing(SMESH_Gen*                aGen,
                          set<SMESH_subMesh*>&      aCheckedMap,
                          list< SMESH_Gen::TAlgoStateError > & theErrors)
 {
-  if ( aSubMesh->GetSubShape().ShapeType() == TopAbs_VERTEX ||
-       aCheckedMap.count( aSubMesh ))
+  switch ( aSubMesh->GetSubShape().ShapeType() )
+  {
+  case TopAbs_EDGE:
+  case TopAbs_FACE:
+  case TopAbs_SOLID: break; // check this submesh, it can be meshed
+  default:
+    return true; // not meshable submesh
+  }
+  if ( aCheckedMap.count( aSubMesh ))
     return true;
 
   //MESSAGE("=====checkMissing");

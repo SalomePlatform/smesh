@@ -2656,6 +2656,13 @@ SMDS_Mesh::~SMDS_Mesh()
         myNodeIDFactory->ReleaseID(node->GetID(), node->getVtkId());
       }
   }
+  myGrid->Delete();
+
+  delete myNodePool;
+  delete myVolumePool;
+  delete myFacePool;
+  delete myEdgePool;
+  delete myBallPool;
 }
 
 //================================================================================
@@ -2688,50 +2695,56 @@ void SMDS_Mesh::Clear()
     myElementIDFactory->Clear();
     }
 
-  SMDS_ElemIteratorPtr itv = elementsIterator();
-  while (itv->more())
-    {
-      SMDS_MeshElement* elem = (SMDS_MeshElement*)(itv->next());
-      SMDSAbs_ElementType aType = elem->GetType();
-      switch (aType)
-      {
-        case SMDSAbs_0DElement:
-          delete elem;
-          break;
-        case SMDSAbs_Edge:
-           myEdgePool->destroy(static_cast<SMDS_VtkEdge*>(elem));
-          break;
-        case SMDSAbs_Face:
-          myFacePool->destroy(static_cast<SMDS_VtkFace*>(elem));
-          break;
-        case SMDSAbs_Volume:
-          myVolumePool->destroy(static_cast<SMDS_VtkVolume*>(elem));
-          break;
-        case SMDSAbs_Ball:
-          myBallPool->destroy(static_cast<SMDS_BallElement*>(elem));
-          break;
-        default:
-          break;
-      }
-    }
-  myCells.clear();
-  myCellIdVtkToSmds.clear();
-  //myCellIdSmdsToVtk.clear();
+  // SMDS_ElemIteratorPtr itv = elementsIterator();
+  // while (itv->more())
+  //   {
+  //     SMDS_MeshElement* elem = (SMDS_MeshElement*)(itv->next());
+  //     SMDSAbs_ElementType aType = elem->GetType();
+  //     switch (aType)
+  //     {
+  //       case SMDSAbs_0DElement:
+  //         delete elem;
+  //         break;
+  //       case SMDSAbs_Edge:
+  //          myEdgePool->destroy(static_cast<SMDS_VtkEdge*>(elem));
+  //         break;
+  //       case SMDSAbs_Face:
+  //         myFacePool->destroy(static_cast<SMDS_VtkFace*>(elem));
+  //         break;
+  //       case SMDSAbs_Volume:
+  //         myVolumePool->destroy(static_cast<SMDS_VtkVolume*>(elem));
+  //         break;
+  //       case SMDSAbs_Ball:
+  //         myBallPool->destroy(static_cast<SMDS_BallElement*>(elem));
+  //         break;
+  //       default:
+  //         break;
+  //     }
+  //   }
+  myVolumePool->clear();
+  myFacePool->clear();
+  myEdgePool->clear();
+  myBallPool->clear();
+
+  clearVector( myCells );
+  clearVector( myCellIdVtkToSmds );
 
   SMDS_NodeIteratorPtr itn = nodesIterator();
   while (itn->more())
     {
       SMDS_MeshNode *node = (SMDS_MeshNode*)(itn->next());
       node->SetPosition(SMDS_SpacePosition::originSpacePosition());
-      myNodePool->destroy(node);
+      //myNodePool->destroy(node);
     }
-  myNodes.clear();
+  myNodePool->clear();
+  clearVector( myNodes );
 
   list<SMDS_Mesh*>::iterator itc=myChildren.begin();
   while(itc!=myChildren.end())
     (*itc)->Clear();
 
   myModified = false;
+  myModifTime++;
   xmin = 0; xmax = 0;
   ymin = 0; ymax = 0;
   zmin = 0; zmax = 0;

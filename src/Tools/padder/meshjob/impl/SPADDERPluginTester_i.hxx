@@ -33,8 +33,8 @@ class SPADDERPluginTester_i:
 {
 public:
   SPADDERPluginTester_i(CORBA::ORB_ptr orb, PortableServer::POA_ptr poa,
-			PortableServer::ObjectId * contId,
-			const char *instanceName, const char *interfaceName);
+                        PortableServer::ObjectId * contId,
+                        const char *instanceName, const char *interfaceName);
   virtual ~SPADDERPluginTester_i();
   
   void demo(CORBA::Double a,CORBA::Double b,CORBA::Double& c);

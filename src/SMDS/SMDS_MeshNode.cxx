@@ -71,8 +71,7 @@ void SMDS_MeshNode::init(int id, int meshId, int shapeId, double x, double y, do
   points->InsertPoint(myVtkID, x, y, z);
   SMDS_CellLinks *cellLinks = dynamic_cast<SMDS_CellLinks*>(grid->GetCellLinks());
   assert(cellLinks);
-  if (myVtkID >= cellLinks->GetLinksSize())
-          cellLinks->ResizeL(myVtkID+SMDS_Mesh::chunkSize);
+  cellLinks->ResizeForPoint( myVtkID );
 }
 
 SMDS_MeshNode::~SMDS_MeshNode()

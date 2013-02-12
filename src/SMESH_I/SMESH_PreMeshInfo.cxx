@@ -38,37 +38,24 @@
 #include "SMESH_Mesh_i.hxx"
 #include "SMESH_subMesh_i.hxx"
 
+#include <MED_Factory.hxx>
+
 #include <HDFarray.hxx>
 #include <HDFdataset.hxx>
 #include <HDFfile.hxx>
 #include <HDFgroup.hxx>
-#include <MED_Factory.hxx>
 #include <SALOMEDS_Tool.hxx>
+#include <SALOMEDS_wrap.hxx>
 
-#include <Standard_ErrorHandler.hxx>
-#include <Standard_Failure.hxx>
 #include <TopoDS_Iterator.hxx>
 #include <TopoDS_Shape.hxx>
 
+#include "SMESH_TryCatch.hxx"
+
 #include CORBA_SERVER_HEADER(SALOME_Session)
 
-#define MYDEBUGOUT(msg) //std::cout << msg << std::endl;
 
-//================================================================================
-#define PreMeshInfo_TRY \
-  try { OCC_CATCH_SIGNALS
-//================================================================================
-#define PreMeshInfo_CATCH }                                             \
-  catch (Standard_Failure& ex) {                                        \
-    onExceptionCaught(SMESH_Comment("OCC Exception caught: \t")<<ex.GetMessageString()); \
-  }                                                                     \
-  catch ( const std::exception& ex) {                                   \
-    onExceptionCaught(SMESH_Comment("Exception caught: \t")<<ex.what()); \
-  }                                                                     \
-  catch (...) {                                                         \
-    onExceptionCaught("Unknown Exception caught");                      \
-  }
-//================================================================================
+#define MYDEBUGOUT(msg) //std::cout << msg << std::endl;
 
 namespace
 {
@@ -114,18 +101,6 @@ namespace
     }
   }
 
-  //================================================================================
-  /*!
-   * \brief Method useful only to set a breakpoint to debug in case of exception
-   */
-  //================================================================================
-
-  void onExceptionCaught(const string& msg)
-  {
-    INFOS( msg );
-    MYDEBUGOUT( msg );
-  }
-
   //=============================================================================
   /*!
    * \brief Class sending signals on start and finish of loading
@@ -143,8 +118,8 @@ namespace
       SALOMEDS::Study_var study = gen->GetCurrentStudy();
       if ( !study->_is_nil() && study->StudyId() == mesh->GetStudyId() )
       {
-        SALOMEDS::SObject_var meshSO = gen->ObjectToSObject(study, mesh->_this() );
-        CORBA::Object_var obj = gen->GetNS()->Resolve( "/Kernel/Session" );
+        SALOMEDS::SObject_wrap meshSO = gen->ObjectToSObject(study, mesh->_this() );
+        CORBA::Object_var        obj = gen->GetNS()->Resolve( "/Kernel/Session" );
         _session = SALOME::Session::_narrow( obj );
         if ( !meshSO->_is_nil() && !_session->_is_nil() )
         {
@@ -430,7 +405,7 @@ void SMESH_PreMeshInfo::LoadFromFile( SMESH_Mesh_i*      mesh,
                                       const std::string& hdfFile,
                                       const bool         toRemoveFiles)
 {
-  PreMeshInfo_TRY;
+  SMESH_TRY;
 
   SMESH_PreMeshInfo* meshPreInfo = new SMESH_PreMeshInfo( mesh,meshID,medFile,hdfFile );
   mesh->changePreMeshInfo() = meshPreInfo;
@@ -454,7 +429,7 @@ void SMESH_PreMeshInfo::LoadFromFile( SMESH_Mesh_i*      mesh,
   {
     meshPreInfo->FullLoadFromFile();
   }
-  PreMeshInfo_CATCH;
+  SMESH_CATCH( SMESH::doNothing );
 }
 
 //================================================================================
@@ -797,7 +772,7 @@ void SMESH_PreMeshInfo::SaveToFile( SMESH_Mesh_i* mesh,
   HDFgroup* infoHdfGroup = new HDFgroup( hdfGroupName, hdfFile );
   infoHdfGroup->CreateOnDisk();
 
-  PreMeshInfo_TRY;
+  SMESH_TRY;
 
   // info of mesh
   meshInfo2hdf( mesh->GetMeshInfo(), "Mesh", infoHdfGroup );
@@ -840,7 +815,7 @@ void SMESH_PreMeshInfo::SaveToFile( SMESH_Mesh_i* mesh,
     }
   }
 
-  PreMeshInfo_CATCH;
+  SMESH_CATCH( SMESH::doNothing );
 
   infoHdfGroup->CloseOnDisk();
 }
@@ -861,7 +836,7 @@ void SMESH_PreMeshInfo::FullLoadFromFile() const
   ::SMESH_Mesh&   mesh = _mesh->GetImpl();
   SMESHDS_Mesh* meshDS = mesh.GetMeshDS();
 
-  PreMeshInfo_TRY;
+  SMESH_TRY;
 
   MYDEBUGOUT( "BEG FullLoadFromFile() " << _meshID );
 
@@ -882,7 +857,7 @@ void SMESH_PreMeshInfo::FullLoadFromFile() const
   // load sub-meshes
   readSubMeshes( &myReader );
 
-  PreMeshInfo_CATCH;
+  SMESH_CATCH( SMESH::doNothing );
 
   _mesh->changePreMeshInfo() = meshInfo;
 
@@ -929,6 +904,7 @@ void SMESH_PreMeshInfo::readSubMeshes(DriverMED_R_SMESHDS_Mesh* reader) const
       aDataset->ReadFromDisk( isModified );
       aDataset->CloseOnDisk();
       _mesh->GetImpl().SetIsModified( bool(*isModified));
+      delete [] isModified;
     }
 
     bool submeshesInFamilies = ( ! aTopGroup->ExistInternalObject( "Submeshes" ));
@@ -1144,7 +1120,7 @@ void SMESH_PreMeshInfo::readSubMeshes(DriverMED_R_SMESHDS_Mesh* reader) const
 
 void SMESH_PreMeshInfo::ForgetAllData() const
 {
-  PreMeshInfo_TRY;
+  SMESH_TRY;
 
   if ( _mesh->changePreMeshInfo() != this )
     return _mesh->changePreMeshInfo()->ForgetAllData();
@@ -1165,9 +1141,9 @@ void SMESH_PreMeshInfo::ForgetAllData() const
   map<int, SMESH::SMESH_subMesh_ptr>::iterator id2sm = _mesh->_mapSubMeshIor.begin();
   for ( ; id2sm != _mesh->_mapSubMeshIor.end(); ++id2sm )
   {
-    if ( SMESH_subMesh_i* sm = SMESH::DownCast<SMESH_subMesh_i*>( id2sm->second ))
+    if ( SMESH_subMesh_i* sm_i = SMESH::DownCast<SMESH_subMesh_i*>( id2sm->second ))
     {
-      SMESH_PreMeshInfo* & info = sm->changePreMeshInfo();
+      SMESH_PreMeshInfo* & info = sm_i->changePreMeshInfo();
       delete info;
       info = NULL;
     }
@@ -1176,12 +1152,12 @@ void SMESH_PreMeshInfo::ForgetAllData() const
   _mesh->changePreMeshInfo() = NULL;
   delete this;
 
-  PreMeshInfo_CATCH;
+  SMESH_CATCH( SMESH::doNothing );
 
 
   // Finalize loading
 
-  // PreMeshInfo_TRY;
+  // SMESH_TRY;
 
   // ::SMESH_Mesh& mesh = _mesh->GetImpl();
 
@@ -1192,7 +1168,19 @@ void SMESH_PreMeshInfo::ForgetAllData() const
   // //     hyp->UpdateAsMeshesRestored();
 
 
-  // PreMeshInfo_CATCH;
+  // SMESH_CATCH( SMESH::doNothing );
+}
+
+//================================================================================
+/*!
+ * \brief remove all SMESH_PreMeshInfo fields from mesh and its child objects w/o data loading
+ */
+//================================================================================
+
+void SMESH_PreMeshInfo::ForgetAllData( SMESH_Mesh_i* mesh )
+{
+  if ( mesh && mesh->changePreMeshInfo() )
+    mesh->changePreMeshInfo()->ForgetAllData();
 }
 
 //================================================================================
@@ -1274,10 +1262,10 @@ void SMESH_PreMeshInfo::RemoveStudyFiles_TMP_METHOD(SALOMEDS::SComponent_ptr sme
   SALOMEDS::Study_var study = smeshComp->GetStudy();
   if ( theStudyIDToMeshCounter[ (int) study->StudyId() ] > 0 )
   {
-    SALOMEDS::ChildIterator_var itBig = study->NewChildIterator( smeshComp );
+    SALOMEDS::ChildIterator_wrap itBig = study->NewChildIterator( smeshComp );
     for ( ; itBig->More(); itBig->Next() ) {
-      SALOMEDS::SObject_var gotBranch = itBig->Value();
-      CORBA::Object_var anObject = SMESH_Gen_i::SObjectToObject( gotBranch );
+      SALOMEDS::SObject_wrap gotBranch = itBig->Value();
+      CORBA::Object_var       anObject = SMESH_Gen_i::SObjectToObject( gotBranch );
       if ( SMESH_Mesh_i* mesh = SMESH::DownCast<SMESH_Mesh_i*>( anObject ))
       {
         if ( mesh->changePreMeshInfo() )

@@ -138,33 +138,29 @@ SMESH_DeviceActor
 {
   if(MYDEBUG) MESSAGE("~SMESH_DeviceActor - "<<this);
 
-  myProperty->Delete();
-
   myMapper->Delete();
 
-  myShrinkFilter->Delete();
-
-  myExtractUnstructuredGrid->Delete();
-
-  myMergeFilter->Delete();
-
-  myGeomFilter->Delete();
+  myProperty->Delete();
 
   myExtractGeometry->Delete();
 
-  myTransformFilter->Delete();
-
-  for(int i = 0, iEnd = myPassFilter.size(); i < iEnd; i++){
-    myPassFilter[i]->Delete();
-  }
+  myMergeFilter->Delete();
+  myExtractUnstructuredGrid->Delete();
 
   // Orientation of faces
   myFaceOrientationFilter->Delete();
-
   myFaceOrientationDataMapper->RemoveAllInputs();
   myFaceOrientationDataMapper->Delete();
-
   myFaceOrientation->Delete();
+
+  myGeomFilter->Delete();
+
+  myTransformFilter->Delete();
+
+  for(int i = 0, iEnd = myPassFilter.size(); i < iEnd; i++)
+    myPassFilter[i]->Delete();
+
+  myShrinkFilter->Delete();
 }
 
 

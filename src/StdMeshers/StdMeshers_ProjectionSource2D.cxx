@@ -28,6 +28,7 @@
 #include "StdMeshers_ProjectionSource2D.hxx"
 
 #include "SMESH_Mesh.hxx"
+#include "SMESH_MesherHelper.hxx"
 #include "StdMeshers_ProjectionUtils.hxx"
 
 #include "utilities.h"
@@ -111,7 +112,7 @@ void StdMeshers_ProjectionSource2D::SetVertexAssociation(const TopoDS_Shape& sou
   {
     // possibly there is only 1 vertex in the face
     if ( !_sourceFace.IsNull() &&
-         StdMeshers_ProjectionUtils::Count( _sourceFace, TopAbs_VERTEX, /*ignoreSame=*/true) != 1 )
+         SMESH_MesherHelper::Count( _sourceFace, TopAbs_VERTEX, /*ignoreSame=*/true) != 1 )
       throw SALOME_Exception(LOCALIZED("Two or none pairs of vertices must be provided"));
   }
 

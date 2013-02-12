@@ -81,7 +81,11 @@
     <parameter name="auto_groups"                  value="false"/>
     <parameter name="show_result_notification"     value="2"/>
     <parameter name="mesh_elem_info"               value="1"/>
+    <parameter name="elem_info_grp_details"        value="false"/>
     <parameter name="info_groups_nodes_limit"      value="100000"/>
+    <parameter name="info_dump_base"               value="true" />
+    <parameter name="info_dump_elem"               value="true" />
+    <parameter name="info_dump_add"                value="true" />
     <parameter name="segmentation"                 value="10"/>
     <parameter name="nb_segments_per_edge"         value="15"/>
     <parameter name="forget_mesh_on_hyp_modif"     value="false"/>
@@ -90,6 +94,10 @@
     <parameter name="documentation"                value="smesh_help"/>
     <parameter name="preview_actor_chunk_size"     value="100" />
     <parameter name="historical_python_dump"       value="true" />
+    <parameter name="numbering_node_color"         value="255, 255, 255" />
+    <parameter name="numbering_node_font"          value="Times,Bold,10" />
+    <parameter name="numbering_elem_color"         value="0, 255, 0" />
+    <parameter name="numbering_elem_font"          value="Times,Bold,12" />
     <!-- Input field precisions -->
     <parameter name="def_precision"                value="3"  />
     <parameter name="length_precision"             value="-6"  />

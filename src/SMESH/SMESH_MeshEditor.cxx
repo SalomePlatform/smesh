@@ -97,6 +97,8 @@
 #include <algorithm>
 #include <sstream>
 
+#include <boost/tuple/tuple.hpp>
+
 #include <Standard_Failure.hxx>
 #include <Standard_ErrorHandler.hxx>
 
@@ -4169,7 +4171,7 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
                                vecNewNodes[ 1 ]->second.back())) {
           myLastCreatedElems.Append(aMesh->AddEdge(vecNewNodes[ 0 ]->second.back(),
                                                    vecNewNodes[ 1 ]->second.back()));
-          srcElements.Append( myLastCreatedElems.Last() );
+          srcElements.Append( elem );
         }
       }
       else {
@@ -4179,7 +4181,7 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
           myLastCreatedElems.Append(aMesh->AddEdge(vecNewNodes[ 0 ]->second.back(),
                                                    vecNewNodes[ 1 ]->second.back(),
                                                    vecNewNodes[ 2 ]->second.back()));
-          srcElements.Append( myLastCreatedElems.Last() );
+          srcElements.Append( elem );
         }
       }
     }
@@ -4201,19 +4203,20 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
         int iNext = ( iNode + 1 == nbNodes ) ? 0 : iNode + 1;
         const SMDS_MeshNode* n1 = vecNewNodes[ iNode ]->first;
         const SMDS_MeshNode* n2 = vecNewNodes[ iNext ]->first;
-        // check if a link is free
+        // check if a link n1-n2 is free
         if ( ! SMESH_MeshEditor::FindFaceInSet ( n1, n2, elemSet, avoidSet )) {
           hasFreeLinks = true;
-          // make an edge and a ceiling for a new edge
-          if ( !aMesh->FindEdge( n1, n2 )) {
-            myLastCreatedElems.Append(aMesh->AddEdge( n1, n2 )); // free link edge
+          // make a new edge and a ceiling for a new edge
+          const SMDS_MeshElement* edge;
+          if ( ! ( edge = aMesh->FindEdge( n1, n2 ))) {
+            myLastCreatedElems.Append( edge = aMesh->AddEdge( n1, n2 )); // free link edge
             srcElements.Append( myLastCreatedElems.Last() );
           }
           n1 = vecNewNodes[ iNode ]->second.back();
           n2 = vecNewNodes[ iNext ]->second.back();
           if ( !aMesh->FindEdge( n1, n2 )) {
-            myLastCreatedElems.Append(aMesh->AddEdge( n1, n2 )); // ceiling edge
-            srcElements.Append( myLastCreatedElems.Last() );
+            myLastCreatedElems.Append(aMesh->AddEdge( n1, n2 )); // new edge ceiling
+            srcElements.Append( edge );
           }
         }
       }
@@ -4235,14 +4238,14 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
           // find medium node
           if ( !aMesh->FindEdge( n1, n2, n3 )) {
             myLastCreatedElems.Append(aMesh->AddEdge( n1, n2, n3 )); // free link edge
-            srcElements.Append( myLastCreatedElems.Last() );
+            srcElements.Append( elem );
           }
           n1 = vecNewNodes[ iNode ]->second.back();
           n2 = vecNewNodes[ iNext ]->second.back();
           n3 = vecNewNodes[ iNode+nbn ]->second.back();
           if ( !aMesh->FindEdge( n1, n2, n3 )) {
             myLastCreatedElems.Append(aMesh->AddEdge( n1, n2, n3 )); // ceiling edge
-            srcElements.Append( myLastCreatedElems.Last() );
+            srcElements.Append( elem );
           }
         }
       }
@@ -4498,7 +4501,7 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
       }
 
       while ( srcElements.Length() < myLastCreatedElems.Length() )
-        srcElements.Append( myLastCreatedElems.Last() );
+        srcElements.Append( elem );
     }
   } // loop on swept elements
 }
@@ -6001,8 +6004,10 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
 
   // Sort existing groups by types and collect their names
 
-  // to store an old group and a generated new one
-  typedef pair< SMESHDS_GroupBase*, SMESHDS_Group* > TOldNewGroup;
+  // to store an old group and a generated new ones
+  using boost::tuple;
+  using boost::make_tuple;
+  typedef tuple< SMESHDS_GroupBase*, SMESHDS_Group*, SMESHDS_Group* > TOldNewGroup;
   vector< list< TOldNewGroup > > groupsByType( SMDSAbs_NbElementTypes );
   vector< TOldNewGroup* > orderedOldNewGroups; // in order of old groups
   // group names
@@ -6018,11 +6023,12 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
     if ( !group ) continue;
     SMESHDS_GroupBase* groupDS = group->GetGroupDS();
     if ( !groupDS || groupDS->IsEmpty() ) continue;
-    groupNames.insert( group->GetName() );
+    groupNames.insert    ( group->GetName() );
     groupDS->SetStoreName( group->GetName() );
-    SMESHDS_Group* newGroup = new SMESHDS_Group( newGroupID++, mesh->GetMeshDS(),
-                                                 groupDS->GetType() );
-    groupsByType[ groupDS->GetType() ].push_back( make_pair( groupDS, newGroup ));
+    const SMDSAbs_ElementType type = groupDS->GetType();
+    SMESHDS_Group* newGroup    = new SMESHDS_Group( newGroupID++, mesh->GetMeshDS(), type );
+    SMESHDS_Group* newTopGroup = new SMESHDS_Group( newGroupID++, mesh->GetMeshDS(), type );
+    groupsByType[ groupDS->GetType() ].push_back( make_tuple( groupDS, newGroup, newTopGroup ));
     orderedOldNewGroups.push_back( & groupsByType[ groupDS->GetType() ].back() );
   }
 
@@ -6033,7 +6039,7 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
     const SMESH_SequenceOfElemPtr& gens  = isNodes ? nodeGens : elemGens;
     const SMESH_SequenceOfElemPtr& elems = isNodes ? myLastCreatedNodes : myLastCreatedElems;
     if ( gens.Length() != elems.Length() )
-      throw SALOME_Exception(LOCALIZED("invalid args"));
+      throw SALOME_Exception("SMESH_MeshEditor::generateGroups(): invalid args");
 
     // loop on created elements
     for (int iElem = 1; iElem <= elems.Length(); ++iElem )
@@ -6049,7 +6055,7 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
           ++iElem; // skip all elements made by sourceElem
         continue;
       }
-      // collect all elements made by sourceElem
+      // collect all elements made by the iElem-th sourceElem
       list< const SMDS_MeshElement* > resultElems;
       if ( const SMDS_MeshElement* resElem = elems( iElem ))
         if ( resElem != sourceElem )
@@ -6063,14 +6069,25 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
       list< TOldNewGroup >::iterator gOldNew, gLast = groupsOldNew.end();
       for ( gOldNew = groupsOldNew.begin(); gOldNew != gLast; ++gOldNew )
       {
-        SMESHDS_GroupBase* oldGroup = gOldNew->first;
+        SMESHDS_GroupBase* oldGroup = gOldNew->get<0>();
         if ( oldGroup->Contains( sourceElem )) // sourceElem is in oldGroup
         {
           // fill in a new group
-          SMDS_MeshGroup & newGroup = gOldNew->second->SMDSGroup();
+          SMDS_MeshGroup & newGroup = gOldNew->get<1>()->SMDSGroup();
+          list< const SMDS_MeshElement* > rejectedElems; // elements of other type
           list< const SMDS_MeshElement* >::iterator resLast = resultElems.end(), resElemIt;
           for ( resElemIt = resultElems.begin(); resElemIt != resLast; ++resElemIt )
-            newGroup.Add( *resElemIt );
+            if ( !newGroup.Add( *resElemIt ))
+              rejectedElems.push_back( *resElemIt );
+
+          // fill "top" group
+          if ( !rejectedElems.empty() )
+          {
+            SMDS_MeshGroup & newTopGroup = gOldNew->get<2>()->SMDSGroup();
+            resLast = rejectedElems.end();
+            for ( resElemIt = rejectedElems.begin(); resElemIt != resLast; ++resElemIt )
+              !newTopGroup.Add( *resElemIt );
+          }
         }
       }
     } // loop on created elements
@@ -6078,35 +6095,52 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
 
   // Create new SMESH_Groups from SMESHDS_Groups and remove empty SMESHDS_Groups
 
+  list<int> topGrouIds;
   for ( size_t i = 0; i < orderedOldNewGroups.size(); ++i )
   {
-    SMESHDS_GroupBase* oldGroupDS = orderedOldNewGroups[i]->first;
-    SMESHDS_Group*     newGroupDS = orderedOldNewGroups[i]->second;
-    if ( newGroupDS->IsEmpty() )
+    SMESHDS_GroupBase* oldGroupDS =   orderedOldNewGroups[i]->get<0>();
+    SMESHDS_Group*   newGroups[2] = { orderedOldNewGroups[i]->get<1>(),
+                                      orderedOldNewGroups[i]->get<2>() };
+    const int nbNewGroups = !newGroups[0]->IsEmpty() + !newGroups[1]->IsEmpty();
+    for ( int is2nd = 0; is2nd < 2; ++is2nd )
     {
-      mesh->GetMeshDS()->RemoveGroup( newGroupDS );
-    }
-    else
-    {
-      // make a name
-      string name = oldGroupDS->GetStoreName();
-      if ( !targetMesh ) {
-        name += "_";
-        name += postfix;
-        int nb = 1;
-        while ( !groupNames.insert( name ).second ) // name exists
-          name = SMESH_Comment( oldGroupDS->GetStoreName() ) << "_" << postfix << "_" << nb++;
+      SMESHDS_Group* newGroupDS = newGroups[ is2nd ];
+      if ( newGroupDS->IsEmpty() )
+      {
+        mesh->GetMeshDS()->RemoveGroup( newGroupDS );
       }
-      newGroupDS->SetStoreName( name.c_str() );
+      else
+      {
+        // set group type
+        newGroupDS->SetType( newGroupDS->GetElements()->next()->GetType() );
 
-      // make a SMESH_Groups
-      mesh->AddGroup( newGroupDS );
-      newGroupIDs->push_back( newGroupDS->GetID() );
+        // make a name
+        const bool isTop = ( nbNewGroups == 2 &&
+                             newGroupDS->GetType() == oldGroupDS->GetType() );
+        string name = oldGroupDS->GetStoreName();
+        if ( !targetMesh ) {
+          string suffix = ( isTop ? "top": postfix.c_str() );
+          name += "_";
+          name += suffix;
+          int nb = 1;
+          while ( !groupNames.insert( name ).second ) // name exists
+            name = SMESH_Comment( oldGroupDS->GetStoreName() ) << "_" << suffix << "_" << nb++;
+        }
+        else if ( isTop ) {
+          name += "_top";
+        }
+        newGroupDS->SetStoreName( name.c_str() );
 
-      // set group type
-      newGroupDS->SetType( newGroupDS->GetElements()->next()->GetType() );
+        // make a SMESH_Groups
+        mesh->AddGroup( newGroupDS );
+        if ( isTop )
+          topGrouIds.push_back( newGroupDS->GetID() );
+        else
+          newGroupIDs->push_back( newGroupDS->GetID() );
+      }
     }
   }
+  newGroupIDs->splice( newGroupIDs->end(), topGrouIds );
 
   return newGroupIDs;
 }

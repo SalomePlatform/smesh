@@ -35,7 +35,7 @@
 #include <set>
 #include <iostream>
 
-#include <TopoDS_Shape.hxx>
+#include <TopoDS_Vertex.hxx>
 #include <TopTools_IndexedMapOfOrientedShape.hxx>
 #include <gp_XYZ.hxx>
 #include <gp_XY.hxx>
@@ -48,7 +48,6 @@ class SMDS_MeshNode;
 class SMESH_Mesh;
 class SMESHDS_SubMesh;
 class TopoDS_Shell;
-class TopoDS_Vertex;
 class TopoDS_Face;
 class TopoDS_Edge;
 
@@ -71,7 +70,8 @@ class SMESH_EXPORT SMESH_Pattern {
 
   bool Load (SMESH_Mesh*        theMesh,
              const TopoDS_Face& theFace,
-             bool               theProject = false);
+             bool               theProject = false,
+             TopoDS_Vertex      the1stVertex=TopoDS_Vertex());
   // Create a pattern from the mesh built on <theFace>.
   // <theProject>==true makes override nodes positions
   // on <theFace> computed by mesher

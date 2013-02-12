@@ -32,8 +32,9 @@
 #include "SMESH_PythonDump.hxx"
 #include "StdMeshers_ObjRefUlils.hxx"
 
-#include "Utils_CorbaException.hxx"
-#include "utilities.h"
+#include <Utils_CorbaException.hxx>
+#include <utilities.h>
+#include <SALOMEDS_wrap.hxx>
 
 #include <TCollection_AsciiString.hxx>
 
@@ -97,7 +98,7 @@ void StdMeshers_ImportSource1D_i::SetSourceEdges(const SMESH::ListOfGroups& grou
           THROW_SALOME_CORBA_EXCEPTION("Wrong group type", SALOME::BAD_PARAM);
         smesh_groups.push_back( gp_i->GetSmeshGroup() );
 
-        SALOMEDS::SObject_var so = SMESH_Gen_i::GetSMESHGen()->ObjectToSObject(study, groups[i]);
+        SALOMEDS::SObject_wrap so = SMESH_Gen_i::ObjectToSObject(study, groups[i]);
         if ( !so->_is_nil())
         {
           CORBA::String_var entry = so->GetID();
@@ -178,8 +179,8 @@ char* StdMeshers_ImportSource1D_i::SaveTo()
     os << " " << _groupEntries[i];
 
     // id
-    SALOMEDS::SObject_var groupSO = study->FindObjectID( _groupEntries[i] );
-    CORBA::Object_var groupObj;
+    SALOMEDS::SObject_wrap groupSO = study->FindObjectID( _groupEntries[i] );
+    CORBA::Object_var     groupObj;
     if ( !groupSO->_is_nil() )
       groupObj = groupSO->GetObject();
     StdMeshers_ObjRefUlils::SaveToStream( groupObj, os );

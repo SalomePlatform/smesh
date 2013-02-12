@@ -53,13 +53,13 @@ struct StdMeshers_ShapeShapeBiDirectionMap
 {
   TopTools_DataMapOfShapeShape _map1to2, _map2to1;
 
-  // convension: s1 - target, s2 - source
+  // convention: s1 - target, s2 - source
   bool Bind( const TopoDS_Shape& s1, const TopoDS_Shape& s2 )
   { _map1to2.Bind( s1, s2 ); return _map2to1.Bind( s2, s1 ); }
   bool IsBound( const TopoDS_Shape& s, const bool isShape2=false ) const 
   { return (isShape2 ? _map2to1 : _map1to2).IsBound( s ); }
   bool IsEmpty() const { return _map1to2.IsEmpty(); }
-  int Extent() const { return _map1to2.Extent(); }
+  int  Extent()  const { return _map1to2.Extent(); }
   void Clear() { _map1to2.Clear(); _map2to1.Clear(); }
   const TopoDS_Shape& operator()( const TopoDS_Shape& s, const bool isShape2=false ) const
   { // if we get a Standard_NoSuchObject here, it means that the calling code
@@ -197,17 +197,6 @@ class StdMeshers_ProjectionUtils
   static bool MakeComputed(SMESH_subMesh * sm, const int iterationNb = 0);
 
   /*!
-   * \brief Count nb of sub-shapes
-    * \param shape - the shape
-    * \param type - the type of sub-shapes to count
-    * \param ignoreSame - if true, use map not to count same shapes, esle use explorer
-    * \retval int - the calculated number
-   */
-  static int Count(const TopoDS_Shape&    shape,
-                   const TopAbs_ShapeEnum type,
-                   const bool             ignoreSame);
-
-  /*!
    * \brief Set event listeners to submesh with projection algo
     * \param subMesh - submesh with projection algo
     * \param srcShape - source shape
@@ -218,7 +207,7 @@ class StdMeshers_ProjectionUtils
                                SMESH_Mesh*    srcMesh);
 
   /*!
-   * \brief Return a boundary EDGE of edgeContainer
+   * \brief Return a boundary EDGE (or all boundary EDGEs) of edgeContainer
    */
   static TopoDS_Edge GetBoundaryEdge(const TopoDS_Shape&       edgeContainer,
                                      const SMESH_Mesh&         mesh,

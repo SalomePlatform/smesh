@@ -87,6 +87,8 @@ SMESH_Algo::SMESH_Algo (int hypId, int studyId, SMESH_Gen * gen)
   _onlyUnaryInput = _requireDiscreteBoundary = _requireShape = true;
   _quadraticMesh = _supportSubmeshes = false;
   _error = COMPERR_OK;
+  for ( int i = 0; i < 4; ++i )
+    _neededLowerHyps[ i ] = false;
 }
 
 //=============================================================================
@@ -823,19 +825,42 @@ void SMESH_Algo::addBadInputElement(const SMDS_MeshElement* elem)
     _badInputElements.push_back( elem );
 }
 
+//=======================================================================
+//function : addBadInputElements
+//purpose  : store a bad input elements or nodes preventing computation
+//=======================================================================
+
+void SMESH_Algo::addBadInputElements(const SMESHDS_SubMesh* sm,
+                                     const bool             addNodes)
+{
+  if ( sm )
+  {
+    if ( addNodes )
+    {
+      SMDS_NodeIteratorPtr nIt = sm->GetNodes();
+      while ( nIt->more() ) addBadInputElement( nIt->next() );
+    }
+    else
+    {
+      SMDS_ElemIteratorPtr eIt = sm->GetElements();
+      while ( eIt->more() ) addBadInputElement( eIt->next() );
+    }
+  }
+}
+
 //=============================================================================
 /*!
  *  
  */
 //=============================================================================
 
-int SMESH_Algo::NumberOfWires(const TopoDS_Shape& S)
-{
-  int i = 0;
-  for (TopExp_Explorer exp(S,TopAbs_WIRE); exp.More(); exp.Next())
-    i++;
-  return i;
-}
+// int SMESH_Algo::NumberOfWires(const TopoDS_Shape& S)
+// {
+//   int i = 0;
+//   for (TopExp_Explorer exp(S,TopAbs_WIRE); exp.More(); exp.Next())
+//     i++;
+//   return i;
+// }
 
 //=============================================================================
 /*!

@@ -42,9 +42,9 @@ public:
   ~MeshJobManager_i();
 
   bool           configure  (const char *configId,
-			     const MESHJOB::ConfigParameter & configParameter);
+                             const MESHJOB::ConfigParameter & configParameter);
   CORBA::Long    initialize (const MESHJOB::MeshJobParameterList & meshJobParameterList,
-			     const char *configId);
+                             const char *configId);
   bool           start      (CORBA::Long jobId);
   char*          getState   (CORBA::Long jobId);
   MESHJOB::MeshJobResults * finalize(CORBA::Long jobId);

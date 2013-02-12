@@ -156,11 +156,16 @@ void SMESH_GroupBase_i::SetName( const char* theName )
   aGroup->SetName(theName);
 
   // Update group name in a study
-  SMESH_Gen_i* aGen = myMeshServant->GetGen();
-  aGen->SetName( aGen->ObjectToSObject( aGen->GetCurrentStudy(), _this() ), theName );
-  
-  // Update Python script
-  TPythonDump() <<  _this() << ".SetName( '" << theName << "' )";
+  SMESH_Gen_i*          aGen = myMeshServant->GetGen();
+  SALOMEDS::Study_var aStudy = aGen->GetCurrentStudy();
+  SALOMEDS::SObject_var anSO = aGen->ObjectToSObject( aStudy, _this() );
+  if ( !anSO->_is_nil() )
+  {
+    aGen->SetName( anSO, theName );
+
+    // Update Python script
+    TPythonDump() <<  _this() << ".SetName( '" << theName << "' )";
+  }
 }
 
 //=============================================================================
@@ -678,6 +683,7 @@ void SMESH_GroupBase_i::SetColorNumber(CORBA::Long color)
  * Inherited from SMESH_IDSource
  */
 //=============================================================================
+
 SMESH::long_array* SMESH_GroupBase_i::GetMeshInfo()
 {
   if ( myPreMeshInfo )
@@ -777,6 +783,7 @@ void SMESH_GroupOnFilter_i::SetFilter(SMESH::Filter_ptr theFilter)
 
   if ( myFilter )
   {
+    myFilter->SetMesh( SMESH::SMESH_Mesh::_nil() ); // to UnRegister() the mesh
     myFilter->Register();
     SMESH::DownCast< SMESH::Filter_i* >( myFilter )->AddWaiter( this );
   }
@@ -793,6 +800,67 @@ SMESH::Filter_ptr SMESH_GroupOnFilter_i::GetFilter()
   SMESH::Filter_var f = myFilter;
   TPythonDump() << f << " = " << _this() << ".GetFilter()";
   return f._retn();
+}
+
+//=======================================================================
+//function : GetIDs
+//purpose  : Returns ids of members
+//=======================================================================
+
+SMESH::long_array* SMESH_GroupOnFilter_i::GetListOfID()
+{
+  if ( myPreMeshInfo )
+    myPreMeshInfo->FullLoadFromFile();
+
+  SMESH::long_array_var aRes = new SMESH::long_array();
+  SMESHDS_GroupBase* aGroupDS = GetGroupDS();
+  if ( SMESHDS_GroupOnFilter* grDS = dynamic_cast< SMESHDS_GroupOnFilter*>( GetGroupDS() ))
+  {
+    const SMDS_MeshInfo& meshInfo = aGroupDS->GetMesh()->GetMeshInfo();
+    aRes->length( meshInfo.NbElements( aGroupDS->GetType() ));
+    if ( aRes->length() ) // else aRes[0] -> SIGSEGV
+      aRes->length( grDS->GetElementIds( &aRes[0] ));
+
+    if ( 0 < aRes->length() && aRes->length() < 100 ) // for comfortable testing ;)
+      std::sort( &aRes[0], &aRes[0] + aRes->length() );
+  }
+  MESSAGE("get list of IDs of a vague group");
+  return aRes._retn();
+}
+
+//=============================================================================
+/*!
+ * Returns statistic of mesh elements
+ * Result array of number enityties
+ * Inherited from SMESH_IDSource
+ */
+//=============================================================================
+
+SMESH::long_array* SMESH_GroupOnFilter_i::GetMeshInfo()
+{
+  if ( myPreMeshInfo )
+    return myPreMeshInfo->GetMeshInfo();
+
+  SMESH::long_array_var aRes = new SMESH::long_array();
+  aRes->length(SMESH::Entity_Last);
+  for (int i = SMESH::Entity_Node; i < SMESH::Entity_Last; i++)
+    aRes[i] = 0;
+
+  if ( SMESHDS_GroupBase* g = GetGroupDS())
+  {
+    if ( g->GetType() == SMDSAbs_Node || ( myNbNodes > -1 && g->GetTic() == myGroupDSTic))
+      aRes[ SMDSEntity_Node ] = GetNumberOfNodes();
+
+    if ( g->GetType() != SMDSAbs_Node )
+    {
+      vector< int > nbElems = static_cast< SMESHDS_GroupOnFilter* >( g )->GetMeshInfo();
+      for ( size_t i = SMESH::Entity_Node; i < SMESH::Entity_Last; i++)
+        if ( i < nbElems.size() )
+          aRes[i] = nbElems[ i ];
+    }
+  }
+
+  return aRes._retn();
 }
 
 #define SEPAR '^'

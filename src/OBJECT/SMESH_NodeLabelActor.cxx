@@ -63,21 +63,19 @@ SMESH_NodeLabelActor::SMESH_NodeLabelActor() {
   myPtsLabeledDataMapper->SetLabelFormat("%d");
   myPtsLabeledDataMapper->SetLabelModeToLabelScalars();
     
-  vtkTextProperty* aPtsTextProp = vtkTextProperty::New();
-  aPtsTextProp->SetFontFamilyToTimes();
-  static int aPointsFontSize = 10;
-  aPtsTextProp->SetFontSize(aPointsFontSize);
-  aPtsTextProp->SetBold(1);
-  aPtsTextProp->SetItalic(0);
-  aPtsTextProp->SetShadow(0);
-  myPtsLabeledDataMapper->SetLabelTextProperty(aPtsTextProp);
-  aPtsTextProp->Delete();
+  myPtsTextProp = vtkTextProperty::New();
+  myPtsTextProp->SetFontFamilyToTimes();
+  myPtsTextProp->SetFontSize(10);
+  myPtsTextProp->SetBold(1);
+  myPtsTextProp->SetItalic(0);
+  myPtsTextProp->SetShadow(0);
+  myPtsTextProp->SetColor( 1, 1, 1 );
+  myPtsLabeledDataMapper->SetLabelTextProperty(myPtsTextProp);
 
   myIsPointsLabeled = false;
 
   myPointLabels = vtkActor2D::New();
   myPointLabels->SetMapper(myPtsLabeledDataMapper);
-  myPointLabels->GetProperty()->SetColor(1,1,1);
   myPointLabels->SetVisibility(myIsPointsLabeled);
 
   vtkCallbackCommand* callBackCommand = vtkCallbackCommand::New();
@@ -85,7 +83,7 @@ SMESH_NodeLabelActor::SMESH_NodeLabelActor() {
   callBackCommand->SetCallback(SMESH_NodeLabelActor::ProcessEvents);
 
   myTransformFilter->AddObserver("VTKViewer_TransformFilter::TransformationFinished",
-				 callBackCommand);
+                                 callBackCommand);
   callBackCommand->Delete();
 }
 
@@ -109,7 +107,27 @@ SMESH_NodeLabelActor::~SMESH_NodeLabelActor() {
   //  myPtsMaskPoints->UnRegisterAllOutputs();
   myPtsMaskPoints->Delete();
   myPointLabels->Delete();
+  myPtsTextProp->Delete();
+}
 
+void SMESH_NodeLabelActor::SetFontProperties( SMESH::LabelFont family, int size, 
+                                              bool bold, bool italic, bool shadow,
+                                              vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b )
+{
+  switch ( family ) {
+  case SMESH::FntArial:
+    myPtsTextProp->SetFontFamilyToArial(); break;
+  case SMESH::FntCourier:
+    myPtsTextProp->SetFontFamilyToCourier(); break;
+  case SMESH::FntTimes:
+  default:
+    myPtsTextProp->SetFontFamilyToTimes(); break;
+  }
+  myPtsTextProp->SetFontSize( size );
+  myPtsTextProp->SetBold( bold );
+  myPtsTextProp->SetItalic( italic );
+  myPtsTextProp->SetShadow( shadow ); 
+  myPtsTextProp->SetColor( r, g, b ); 
 }
 
 void SMESH_NodeLabelActor::SetPointsLabeled(bool theIsPointsLabeled) {
@@ -178,9 +196,9 @@ void SMESH_NodeLabelActor::UpdateLabels() {
 
 
 void SMESH_NodeLabelActor::ProcessEvents(vtkObject* vtkNotUsed(theObject),
-					 unsigned long theEvent,
-					 void* theClientData,
-					 void* vtkNotUsed(theCallData)) {
+                                         unsigned long theEvent,
+                                         void* theClientData,
+                                         void* vtkNotUsed(theCallData)) {
   SMESH_NodeLabelActor* self = reinterpret_cast<SMESH_NodeLabelActor*>(theClientData);    
   if(self)
     self->UpdateLabels();

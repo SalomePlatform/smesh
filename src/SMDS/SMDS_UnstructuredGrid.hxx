@@ -54,8 +54,7 @@ class SMDS_MeshVolume;
 class SMDS_EXPORT SMDS_CellLinks: public vtkCellLinks
 {
 public:
-  vtkCellLinks::Link* ResizeL(vtkIdType sz);
-  vtkIdType GetLinksSize();
+  void ResizeForPoint(vtkIdType vtkID);
   static SMDS_CellLinks* New();
 protected:
   SMDS_CellLinks();
@@ -108,6 +107,7 @@ public:
 
   static SMDS_UnstructuredGrid* New();
   SMDS_Mesh *_mesh;
+
 protected:
   SMDS_UnstructuredGrid();
   ~SMDS_UnstructuredGrid();

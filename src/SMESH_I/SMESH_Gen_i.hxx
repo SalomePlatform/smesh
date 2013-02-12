@@ -36,13 +36,15 @@
 #include CORBA_CLIENT_HEADER(SALOMEDS)
 #include CORBA_CLIENT_HEADER(SALOMEDS_Attributes)
 
+#include "SMESH_Gen.hxx"
 #include "SMESH_Mesh_i.hxx"
 #include "SMESH_Hypothesis_i.hxx"
-#include "SALOME_Component_i.hxx"
-#include "SALOME_NamingService.hxx"
 
-#include "SMESH_Gen.hxx"
-#include "GEOM_Client.hxx"
+#include <SALOME_Component_i.hxx>
+#include <SALOME_NamingService.hxx>
+#include <Utils_CorbaException.hxx>
+
+#include <GEOM_Client.hxx>
 
 #include <TCollection_AsciiString.hxx>
 #include <Resource_DataMapOfAsciiStringAsciiString.hxx>
@@ -146,7 +148,7 @@ public:
   // Get SALOME_LifeCycleCORBA object
   static SALOME_LifeCycleCORBA* GetLCC();
   // Retrieve and get GEOM engine reference
-  static GEOM::GEOM_Gen_ptr GetGeomEngine();
+  static GEOM::GEOM_Gen_var GetGeomEngine();
   // Get object of the CORBA reference
   static PortableServer::ServantBase_var GetServant( CORBA::Object_ptr theObject );
   // Get CORBA object corresponding to the SALOMEDS::SObject
@@ -629,6 +631,15 @@ namespace SMESH
   DownCast(CORBA::Object_ptr theArg)
   {
     return dynamic_cast<T>(SMESH_Gen_i::GetServant(theArg).in());
+  }
+
+  /*!
+   * \brief Function used in SMESH_CATCH to convert a caught exception to
+   * SALOME::SALOME_Exception
+   */
+  inline void throwCorbaException(const char* excText)
+  {
+    THROW_SALOME_CORBA_EXCEPTION( excText, SALOME::INTERNAL_ERROR );
   }
 }
 

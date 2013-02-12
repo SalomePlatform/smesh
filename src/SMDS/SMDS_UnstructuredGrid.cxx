@@ -17,7 +17,6 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-#define CHRONODEF
 #include "SMDS_UnstructuredGrid.hxx"
 #include "SMDS_Mesh.hxx"
 #include "SMDS_MeshInfo.hxx"
@@ -44,14 +43,14 @@ SMDS_CellLinks* SMDS_CellLinks::New()
   return new SMDS_CellLinks();
 }
 
-vtkCellLinks::Link* SMDS_CellLinks::ResizeL(vtkIdType sz)
+void SMDS_CellLinks::ResizeForPoint(vtkIdType vtkID)
 {
-  return vtkCellLinks::Resize(sz);
-}
-
-vtkIdType SMDS_CellLinks::GetLinksSize()
-{
-  return this->Size;
+  if ( vtkID > this->MaxId )
+  {
+    this->MaxId = vtkID;
+    if ( vtkID >= this->Size ) 
+      vtkCellLinks::Resize( vtkID+SMDS_Mesh::chunkSize );
+  }
 }
 
 SMDS_CellLinks::SMDS_CellLinks() :
@@ -154,7 +153,7 @@ void SMDS_UnstructuredGrid::setSMDS_mesh(SMDS_Mesh *mesh)
 void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int newNodeSize,
                                         std::vector<int>& idCellsOldToNew, int newCellSize)
 {
-  MESSAGE("------------------------- SMDS_UnstructuredGrid::compactGrid " << newNodeSize << " " << newCellSize);CHRONO(1);
+  MESSAGE("------------------------- SMDS_UnstructuredGrid::compactGrid " << newNodeSize << " " << newCellSize);//CHRONO(1);
   int alreadyCopied = 0;
 
   // --- if newNodeSize, create a new compacted vtkPoints

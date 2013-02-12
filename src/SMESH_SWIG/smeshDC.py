@@ -186,7 +186,10 @@ def GetName(obj):
         if isinstance(obj, SALOMEDS._objref_SObject):
             # study object
             return obj.GetName()
-        ior  = salome.orb.object_to_string(obj)
+        try:
+            ior  = salome.orb.object_to_string(obj)
+        except:
+            ior = None
         if ior:
             # CORBA object
             studies = salome.myStudyManager.GetOpenStudies()
@@ -520,8 +523,10 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     #  @param mergeNodesAndElements if true, equal nodes and elements aremerged
     #  @param mergeTolerance tolerance for merging nodes
     #  @param allGroups forces creation of groups of all elements
+    #  @param name name of a new mesh
     def Concatenate( self, meshes, uniteIdenticalGroups,
-                     mergeNodesAndElements = False, mergeTolerance = 1e-5, allGroups = False):
+                     mergeNodesAndElements = False, mergeTolerance = 1e-5, allGroups = False,
+                     name = ""):
         if not meshes: return None
         for i,m in enumerate(meshes):
             if isinstance(m, Mesh):
@@ -534,7 +539,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         else:
             aSmeshMesh = SMESH._objref_SMESH_Gen.Concatenate(
                 self,meshes,uniteIdenticalGroups,mergeNodesAndElements,mergeTolerance)
-        aMesh = Mesh(self, self.geompyD, aSmeshMesh)
+        aMesh = Mesh(self, self.geompyD, aSmeshMesh, name=name)
         return aMesh
 
     ## Create a mesh by copying a part of another mesh.
@@ -775,36 +780,39 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         if isinstance( theCriterion, SMESH._objref_NumericalFunctor ):
             return theCriterion
         aFilterMgr = self.CreateFilterManager()
+        functor = None
         if theCriterion == FT_AspectRatio:
-            return aFilterMgr.CreateAspectRatio()
+            functor = aFilterMgr.CreateAspectRatio()
         elif theCriterion == FT_AspectRatio3D:
-            return aFilterMgr.CreateAspectRatio3D()
+            functor = aFilterMgr.CreateAspectRatio3D()
         elif theCriterion == FT_Warping:
-            return aFilterMgr.CreateWarping()
+            functor = aFilterMgr.CreateWarping()
         elif theCriterion == FT_MinimumAngle:
-            return aFilterMgr.CreateMinimumAngle()
+            functor = aFilterMgr.CreateMinimumAngle()
         elif theCriterion == FT_Taper:
-            return aFilterMgr.CreateTaper()
+            functor = aFilterMgr.CreateTaper()
         elif theCriterion == FT_Skew:
-            return aFilterMgr.CreateSkew()
+            functor = aFilterMgr.CreateSkew()
         elif theCriterion == FT_Area:
-            return aFilterMgr.CreateArea()
+            functor = aFilterMgr.CreateArea()
         elif theCriterion == FT_Volume3D:
-            return aFilterMgr.CreateVolume3D()
+            functor = aFilterMgr.CreateVolume3D()
         elif theCriterion == FT_MaxElementLength2D:
-            return aFilterMgr.CreateMaxElementLength2D()
+            functor = aFilterMgr.CreateMaxElementLength2D()
         elif theCriterion == FT_MaxElementLength3D:
-            return aFilterMgr.CreateMaxElementLength3D()
+            functor = aFilterMgr.CreateMaxElementLength3D()
         elif theCriterion == FT_MultiConnection:
-            return aFilterMgr.CreateMultiConnection()
+            functor = aFilterMgr.CreateMultiConnection()
         elif theCriterion == FT_MultiConnection2D:
-            return aFilterMgr.CreateMultiConnection2D()
+            functor = aFilterMgr.CreateMultiConnection2D()
         elif theCriterion == FT_Length:
-            return aFilterMgr.CreateLength()
+            functor = aFilterMgr.CreateLength()
         elif theCriterion == FT_Length2D:
-            return aFilterMgr.CreateLength2D()
+            functor = aFilterMgr.CreateLength2D()
         else:
             print "Error: given parameter is not numerical functor type."
+        aFilterMgr.UnRegister()
+        return functor
 
     ## Creates hypothesis
     #  @param theHType mesh hypothesis type (string)
@@ -978,10 +986,11 @@ class Mesh:
         self.geompyD=geompyD
         if obj is None:
             obj = 0
+        objHasName = False
         if obj != 0:
-            objHasName = True
             if isinstance(obj, geompyDC.GEOM._objref_GEOM_Object):
                 self.geom = obj
+                objHasName = True
                 # publish geom of mesh (issue 0021122)
                 if not self.geom.GetStudyEntry() and smeshpyD.GetCurrentStudy():
                     objHasName = False
@@ -990,9 +999,9 @@ class Mesh:
                         geompyD.init_geom( smeshpyD.GetCurrentStudy())
                         pass
                     if name:
-                        geo_name = name
+                        geo_name = name + " shape"
                     else:
-                        geo_name = "%s_%s_for_meshing"%(self.geom.GetShapeType(), id(self.geom)%100)
+                        geo_name = "%s_%s to mesh"%(self.geom.GetShapeType(), id(self.geom)%100)
                     geompyD.addToStudy( self.geom, geo_name )
                 self.mesh = self.smeshpyD.CreateMesh(self.geom)
 
@@ -1000,10 +1009,10 @@ class Mesh:
                 self.SetMesh(obj)
         else:
             self.mesh = self.smeshpyD.CreateEmptyMesh()
-        if name != 0:
+        if name:
             self.smeshpyD.SetName(self.mesh, name)
-        elif obj != 0 and objHasName:
-            self.smeshpyD.SetName(self.mesh, GetName(obj))
+        elif objHasName:
+            self.smeshpyD.SetName(self.mesh, GetName(obj)) # + " mesh"
 
         if not self.geom:
             self.geom = self.mesh.GetShapeToMesh()
@@ -1021,8 +1030,11 @@ class Mesh:
     #  @param theMesh a SMESH_Mesh object
     #  @ingroup l2_construct
     def SetMesh(self, theMesh):
+        if self.mesh: self.mesh.UnRegister()
         self.mesh = theMesh
-        self.geom = self.mesh.GetShapeToMesh()
+        if self.mesh:
+            self.mesh.Register()
+            self.geom = self.mesh.GetShapeToMesh()
 
     ## Returns the mesh, that is an instance of SMESH_Mesh interface
     #  @return a SMESH_Mesh object
@@ -1096,19 +1108,25 @@ class Mesh:
         return self.smeshpyD.GetGeometryByMeshElement( self.mesh, theElementID, theGeomName )
 
     ## Returns the mesh dimension depending on the dimension of the underlying shape
+    #  or, if the mesh is not based on any shape, basing on deimension of elements
     #  @return mesh dimension as an integer value [0,3]
     #  @ingroup l1_auxiliary
     def MeshDimension(self):
-        shells = self.geompyD.SubShapeAllIDs( self.geom, geompyDC.ShapeType["SHELL"] )
-        if len( shells ) > 0 :
-            return 3
-        elif self.geompyD.NumberOfFaces( self.geom ) > 0 :
-            return 2
-        elif self.geompyD.NumberOfEdges( self.geom ) > 0 :
-            return 1
+        if self.mesh.HasShapeToMesh():
+            shells = self.geompyD.SubShapeAllIDs( self.geom, geompyDC.ShapeType["SOLID"] )
+            if len( shells ) > 0 :
+                return 3
+            elif self.geompyD.NumberOfFaces( self.geom ) > 0 :
+                return 2
+            elif self.geompyD.NumberOfEdges( self.geom ) > 0 :
+                return 1
+            else:
+                return 0;
         else:
-            return 0;
-        pass
+            if self.NbVolumes() > 0: return 3
+            if self.NbFaces()   > 0: return 2
+            if self.NbEdges()   > 0: return 1
+        return 0
 
     ## Evaluates size of prospective mesh on a shape
     #  @return a list where i-th element is a number of elements of i-th SMESH.EntityType
@@ -1190,7 +1208,7 @@ class Mesh:
                              "Invalid input mesh",   #COMPERR_BAD_INPUT_MESH
                              "std::exception",       #COMPERR_STD_EXCEPTION
                              "OCC exception",        #COMPERR_OCC_EXCEPTION
-                             "SALOME exception",     #COMPERR_SLM_EXCEPTION
+                             "..",                   #COMPERR_SLM_EXCEPTION
                              "Unknown exception",    #COMPERR_EXCEPTION
                              "Memory allocation problem", #COMPERR_MEMORY_PB
                              "Algorithm failed",     #COMPERR_ALGO_FAILED
@@ -1275,7 +1293,8 @@ class Mesh:
     #  @ingroup l2_construct
     def Clear(self):
         self.mesh.Clear()
-        if salome.sg.hasDesktop():
+        if ( salome.sg.hasDesktop() and 
+             salome.myStudyManager.GetStudyByID( self.mesh.GetStudyId() )):
             smeshgui = salome.ImportComponentGUI("SMESH")
             smeshgui.Init(self.mesh.GetStudyId())
             smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), False, True )
@@ -1356,7 +1375,7 @@ class Mesh:
     #  @return True of False
     #  @ingroup l2_hypotheses
     def IsUsedHypothesis(self, hyp, geom):
-        if not hyp or not geom:
+        if not hyp: # or not geom
             return False
         if isinstance( hyp, Mesh_Algorithm ):
             hyp = hyp.GetAlgorithm()
@@ -1376,11 +1395,16 @@ class Mesh:
         if isinstance( hyp, Mesh_Algorithm ):
             hyp = hyp.GetAlgorithm()
             pass
-        if not geom:
-            geom = self.geom
+        shape = geom
+        if not shape:
+            shape = self.geom
             pass
-        status = self.mesh.RemoveHypothesis(geom, hyp)
-        return status
+        if self.IsUsedHypothesis( hyp, shape ):
+            return self.mesh.RemoveHypothesis( shape, hyp )
+        hypName = GetName( hyp )
+        geoName = GetName( shape )
+        print "WARNING: RemoveHypothesis() failed as '%s' is not assigned to '%s' shape" % ( hypName, geoName )
+        return None
 
     ## Gets the list of hypotheses added on a geometry
     #  @param geom a sub-shape of mesh geometry
@@ -2108,6 +2132,12 @@ class Mesh:
     #  @ingroup l1_meshinfo
     def GetNodePosition(self,NodeID):
         return self.mesh.GetNodePosition(NodeID)
+
+    ## @brief Returns the position of an element on the shape
+    #  @return SMESH::ElementPosition
+    #  @ingroup l1_meshinfo
+    def GetElementPosition(self,ElemID):
+        return self.mesh.GetElementPosition(ElemID)
 
     ## If the given element is a node, returns the ID of shape
     #  \n If there is no node for the given ID - returns -1
@@ -3186,7 +3216,9 @@ class Mesh:
 
     ## Generates new elements by extrusion of the elements with given ids
     #  @param IDsOfElements the list of elements ids for extrusion
-    #  @param StepVector vector or DirStruct, defining the direction and value of extrusion for one step (the total extrusion length will be NbOfSteps * ||StepVector||)
+    #  @param StepVector vector or DirStruct or 3 vector components, defining
+    #         the direction and value of extrusion for one step (the total extrusion
+    #         length will be NbOfSteps * ||StepVector||)
     #  @param NbOfSteps the number of steps
     #  @param MakeGroups forces the generation of new groups from existing ones
     #  @param IsNodes is True if elements with given ids are nodes
@@ -3195,8 +3227,10 @@ class Mesh:
     def ExtrusionSweep(self, IDsOfElements, StepVector, NbOfSteps, MakeGroups=False, IsNodes = False):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
-        if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
+        if isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
+        if isinstance( StepVector, list ):
+            StepVector = self.smeshpyD.MakeDirStruct(*StepVector)
         NbOfSteps,Parameters,hasVars = ParseParameters(NbOfSteps)
         Parameters = StepVector.PS.parameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
@@ -3213,7 +3247,9 @@ class Mesh:
 
     ## Generates new elements by extrusion of the elements with given ids
     #  @param IDsOfElements is ids of elements
-    #  @param StepVector vector, defining the direction and value of extrusion
+    #  @param StepVector vector or DirStruct or 3 vector components, defining
+    #         the direction and value of extrusion for one step (the total extrusion
+    #         length will be NbOfSteps * ||StepVector||)
     #  @param NbOfSteps the number of steps
     #  @param ExtrFlags sets flags for extrusion
     #  @param SewTolerance uses for comparing locations of nodes if flag
@@ -3225,6 +3261,8 @@ class Mesh:
                           ExtrFlags, SewTolerance, MakeGroups=False):
         if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
+        if isinstance( StepVector, list ):
+            StepVector = self.smeshpyD.MakeDirStruct(*StepVector)
         if MakeGroups:
             return self.editor.AdvancedExtrusionMakeGroups(IDsOfElements, StepVector, NbOfSteps,
                                                            ExtrFlags, SewTolerance)
@@ -3235,7 +3273,9 @@ class Mesh:
     ## Generates new elements by extrusion of the elements which belong to the object
     #  @param theObject the object which elements should be processed.
     #                   It can be a mesh, a sub mesh or a group.
-    #  @param StepVector vector, defining the direction and value of extrusion for one step (the total extrusion length will be NbOfSteps * ||StepVector||)
+    #  @param StepVector vector or DirStruct or 3 vector components, defining
+    #         the direction and value of extrusion for one step (the total extrusion
+    #         length will be NbOfSteps * ||StepVector||)
     #  @param NbOfSteps the number of steps
     #  @param MakeGroups forces the generation of new groups from existing ones
     #  @param  IsNodes is True if elements which belong to the object are nodes
@@ -3246,6 +3286,8 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
+        if isinstance( StepVector, list ):
+            StepVector = self.smeshpyD.MakeDirStruct(*StepVector)
         NbOfSteps,Parameters,hasVars = ParseParameters(NbOfSteps)
         Parameters = StepVector.PS.parameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
@@ -3263,7 +3305,9 @@ class Mesh:
     ## Generates new elements by extrusion of the elements which belong to the object
     #  @param theObject object which elements should be processed.
     #                   It can be a mesh, a sub mesh or a group.
-    #  @param StepVector vector, defining the direction and value of extrusion for one step (the total extrusion length will be NbOfSteps * ||StepVector||)
+    #  @param StepVector vector or DirStruct or 3 vector components, defining
+    #         the direction and value of extrusion for one step (the total extrusion
+    #         length will be NbOfSteps * ||StepVector||)
     #  @param NbOfSteps the number of steps
     #  @param MakeGroups to generate new groups from existing ones
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
@@ -3273,6 +3317,8 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
+        if isinstance( StepVector, list ):
+            StepVector = self.smeshpyD.MakeDirStruct(*StepVector)
         NbOfSteps,Parameters,hasVars = ParseParameters(NbOfSteps)
         Parameters = StepVector.PS.parameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
@@ -3284,7 +3330,9 @@ class Mesh:
     ## Generates new elements by extrusion of the elements which belong to the object
     #  @param theObject object which elements should be processed.
     #                   It can be a mesh, a sub mesh or a group.
-    #  @param StepVector vector, defining the direction and value of extrusion for one step (the total extrusion length will be NbOfSteps * ||StepVector||)
+    #  @param StepVector vector or DirStruct or 3 vector components, defining
+    #         the direction and value of extrusion for one step (the total extrusion
+    #         length will be NbOfSteps * ||StepVector||)
     #  @param NbOfSteps the number of steps
     #  @param MakeGroups forces the generation of new groups from existing ones
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
@@ -3294,6 +3342,8 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
+        if isinstance( StepVector, list ):
+            StepVector = self.smeshpyD.MakeDirStruct(*StepVector)
         NbOfSteps,Parameters,hasVars = ParseParameters(NbOfSteps)
         Parameters = StepVector.PS.parameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)

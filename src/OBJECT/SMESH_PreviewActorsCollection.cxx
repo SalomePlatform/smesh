@@ -65,8 +65,8 @@ SMESH_PreviewActorsCollection::~SMESH_PreviewActorsCollection()
 }
 
 bool SMESH_PreviewActorsCollection::Init( const TopoDS_Shape& theShape,
-					  TopAbs_ShapeEnum theType,
-					  const QString& theEntry )
+                                          TopAbs_ShapeEnum theType,
+                                          const QString& theEntry )
 {
   SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();
 

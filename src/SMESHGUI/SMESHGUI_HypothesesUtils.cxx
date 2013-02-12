@@ -612,23 +612,21 @@ namespace SMESH
     return res < SMESH::HYP_UNKNOWN_FATAL;
   }
 
-  bool RemoveHypothesisOrAlgorithmOnMesh (_PTR(SObject) MorSM,
+  bool RemoveHypothesisOrAlgorithmOnMesh (_PTR(SObject)               MorSM,
                                           SMESH::SMESH_Hypothesis_ptr anHyp)
   {
-    SALOMEDS::GenericAttribute_var anAttr;
-    SALOMEDS::AttributeIOR_var anIOR;
     int res = SMESH::HYP_UNKNOWN_FATAL;
     SUIT_OverrideCursor wc;
 
     if (MorSM) {
       try {
         GEOM::GEOM_Object_var aShapeObject = SMESH::GetShapeOnMeshOrSubMesh(MorSM);
-        SMESH::SMESH_Mesh_var aMesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>(MorSM);
-        SMESH::SMESH_subMesh_var aSubMesh = SMESH::SObjectToInterface<SMESH::SMESH_subMesh>(MorSM);
-        
+        SMESH::SMESH_Mesh_var aMesh        = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>(MorSM);
+        SMESH::SMESH_subMesh_var aSubMesh  = SMESH::SObjectToInterface<SMESH::SMESH_subMesh>(MorSM);
+
         if (!aSubMesh->_is_nil())
           aMesh = aSubMesh->GetFather();
-        
+
         if (!aMesh->_is_nil()) {    
           if (aMesh->HasShapeToMesh() && !aShapeObject->_is_nil()) {
             res = aMesh->RemoveHypothesis(aShapeObject, anHyp);

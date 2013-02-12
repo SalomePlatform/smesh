@@ -38,8 +38,8 @@ class SMESHDS_EXPORT SMESHDS_Document
 {
   public:
         SMESHDS_Document(int UserID);
-         ~SMESHDS_Document();
-        int                  NewMesh(bool theIsEmbeddedMode);
+        ~SMESHDS_Document();
+        SMESHDS_Mesh *       NewMesh(bool theIsEmbeddedMode, int MeshID);
         void                 RemoveMesh(int MeshID);
         SMESHDS_Mesh *       GetMesh(int MeshID);
         void                 AddHypothesis(SMESHDS_Hypothesis * H);

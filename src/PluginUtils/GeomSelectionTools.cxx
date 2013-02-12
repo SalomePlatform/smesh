@@ -33,6 +33,7 @@
 #include <SMESHGUI_Utils.h>
 #include <boost/shared_ptr.hpp>
 #include <GEOMImpl_Types.hxx>
+#include <GEOM_wrap.hxx>
 
 #include <TopoDS.hxx>
 #include <BRep_Tool.hxx>
@@ -225,7 +226,8 @@ TopAbs_ShapeEnum GeomSelectionTools::entryToShapeType(std::string entry){
         // if the Geom Object is a group
         if (aShape->GetType() == GEOM_GROUP){
 //           MESSAGE("It's a group");
-          GEOM::GEOM_IGroupOperations_var aGroupOp = _geomEngine->GetIGroupOperations(myStudy->StudyId());
+          GEOM::GEOM_IGroupOperations_wrap aGroupOp =
+            _geomEngine->GetIGroupOperations(myStudy->StudyId());
           ShapeType= (TopAbs_ShapeEnum)aGroupOp->GetType(aShape);
         }
         // if not

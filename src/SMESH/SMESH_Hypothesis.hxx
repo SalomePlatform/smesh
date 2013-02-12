@@ -71,10 +71,11 @@ public:
   SMESH_Hypothesis(int hypId, int studyId, SMESH_Gen* gen);
   virtual ~SMESH_Hypothesis();
   virtual int GetDim() const;
-  int GetStudyId() const;
-  virtual void NotifySubMeshesHypothesisModification();
+  int         GetStudyId() const;
+  SMESH_Gen*  GetGen() const { return (SMESH_Gen*) _gen; }
   virtual int GetShapeType() const;
   virtual const char* GetLibName() const;
+  virtual void NotifySubMeshesHypothesisModification();
   void  SetLibName(const char* theLibName);
 
   //void  SetParameters(const char *theParameters);

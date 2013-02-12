@@ -18,24 +18,23 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : SMESH_Filter_i.cxx
 //  Author : Alexey Petrov, OCC
 //  Module : SMESH
-//
+
 #include "SMESH_Filter_i.hxx"
 
+#include "SMDS_ElemIterator.hxx"
+#include "SMDS_Mesh.hxx"
+#include "SMDS_MeshElement.hxx"
+#include "SMDS_MeshNode.hxx"
+#include "SMESHDS_Mesh.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_PythonDump.hxx"
 
-#include "SMDS_Mesh.hxx"
-#include "SMDS_MeshNode.hxx"
-#include "SMDS_MeshElement.hxx"
-#include "SMDS_ElemIterator.hxx"
-
-#include "SMESHDS_Mesh.hxx"
+#include <SALOMEDS_wrap.hxx>
 
 #include <BRep_Tool.hxx>
 #include <Geom_CylindricalSurface.hxx>
@@ -496,7 +495,9 @@ static TopoDS_Shape getShapeByName( const char* theName )
       {
         CORBA::Object_var        anObj = aList[ 0 ]->GetObject();
         GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow( anObj );
-        return aSMESHGen->GeomObjectToShape( aGeomObj );
+        TopoDS_Shape             shape = aSMESHGen->GeomObjectToShape( aGeomObj );
+        SALOME::UnRegister( aList ); // UnRegister() objects in aList
+        return shape;
       }
     }
   }
@@ -509,7 +510,7 @@ static TopoDS_Shape getShapeByID (const char* theID)
     SMESH_Gen_i*     aSMESHGen = SMESH_Gen_i::GetSMESHGen();
     SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();
     if ( !aStudy->_is_nil() ) {
-      SALOMEDS::SObject_var aSObj = aStudy->FindObjectID(theID);
+      SALOMEDS::SObject_wrap aSObj = aStudy->FindObjectID(theID);
       if ( !aSObj->_is_nil() ) {
         CORBA::Object_var          obj = aSObj->GetObject();
         GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow(obj);
@@ -526,7 +527,7 @@ static std::string getShapeNameByID (const char* theID)
     SMESH_Gen_i*     aSMESHGen = SMESH_Gen_i::GetSMESHGen();
     SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();
     if ( !aStudy->_is_nil() ) {
-      SALOMEDS::SObject_var aSObj = aStudy->FindObjectID(theID);
+      SALOMEDS::SObject_wrap aSObj = aStudy->FindObjectID(theID);
       if ( !aSObj->_is_nil() ) {
         CORBA::String_var name = aSObj->GetName();
         return name.in();
@@ -578,12 +579,12 @@ CORBA::Double NumericalFunctor_i::GetValue( CORBA::Long theId )
   return myNumericalFunctorPtr->GetValue( theId );
 }
 
-SMESH::Histogram* NumericalFunctor_i::GetHistogram(CORBA::Short nbIntervals)
+SMESH::Histogram* NumericalFunctor_i::GetHistogram(CORBA::Short nbIntervals, CORBA::Boolean isLogarithmic)
 {
   std::vector<int> nbEvents;
   std::vector<double> funValues;
   std::vector<int> elements;
-  myNumericalFunctorPtr->GetHistogram(nbIntervals,nbEvents,funValues,elements);
+  myNumericalFunctorPtr->GetHistogram(nbIntervals,nbEvents,funValues,elements,0,isLogarithmic);
 
 #ifdef WIN32
   nbIntervals = CORBA::Short( min( nbEvents.size(), funValues.size() - 1));

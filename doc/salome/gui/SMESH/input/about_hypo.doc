@@ -2,13 +2,13 @@
 
 \page about_hypo_page About Hypotheses
 
-\n \b Hypotheses represent boundary conditions which will be taken into
-account at calculations of meshes or submeshes basing on geometrical
+\b Hypotheses represent boundary conditions which will be taken into
+account at calculations of meshes or sub-meshes basing on geometrical
 objects. These hypotheses allow you to manage the level of detail of
 the resulting meshes or submeshes: when applying different hypotheses
 with different parameters you can preset the quantity of meshing
 elements which will compose your mesh. So, it will be possible to
-generate a rough or a more refined mesh or submesh.
+generate a coarse or a more refined mesh or sub-mesh.
 
 In \b MESH there are the following Basic Hypotheses (to introduce
 them, you operate numerical values):

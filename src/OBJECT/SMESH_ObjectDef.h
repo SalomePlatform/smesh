@@ -70,6 +70,7 @@ public:
   virtual int               GetEntities( const SMDSAbs_ElementType, TEntityList& ) const = 0;
   virtual bool              IsNodePrs() const = 0;
   virtual SMDS_Mesh*        GetMesh() const = 0;
+  virtual SMESH::SMESH_Mesh_ptr GetMeshServer() = 0;
 
   virtual bool              IsValid() const;
 
@@ -135,10 +136,11 @@ public:
 
   virtual void              UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor );
   
-  SMESH::SMESH_Mesh_ptr     GetMeshServer() { return myClient.GetMeshServer(); }
-  SMDS_Mesh*                GetMesh() const { return myClient.GetMesh(); }
+  virtual SMESH::SMESH_Mesh_ptr GetMeshServer() { return myClient.GetMeshServer(); }
+  virtual SMDS_Mesh*        GetMesh() const { return myClient.GetMesh(); }
 
 protected:
+
   SMESH_Client              myClient;
   vtkUnstructuredGrid*      myEmptyGrid;
 };
@@ -161,6 +163,7 @@ public:
   virtual void              UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor );
   virtual int               GetElemDimension( const int theObjId );
   virtual SMDS_Mesh*        GetMesh() const { return myMeshObj->GetMesh(); }
+  virtual SMESH::SMESH_Mesh_ptr GetMeshServer() { return myMeshObj->GetMeshServer(); }
   
 protected:
 

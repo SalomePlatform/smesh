@@ -645,7 +645,7 @@ namespace
    */
   void Grid::ComputeNodes(SMESH_MesherHelper& helper)
   {
-    // state of each node of the grid relative to the geomerty
+    // state of each node of the grid relative to the geometry
     const size_t nbGridNodes = _coords[0].size() * _coords[1].size() * _coords[2].size();
     vector< bool > isNodeOut( nbGridNodes, false );
     _nodes.resize( nbGridNodes, 0 );

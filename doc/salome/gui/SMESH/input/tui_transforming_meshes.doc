@@ -7,580 +7,81 @@
 <br>
 \anchor tui_translation
 <h3>Translation</h3>
-
-\code
-import SMESH_mechanic
-
-smesh = SMESH_mechanic.smesh 
-mesh = SMESH_mechanic.mesh 
-
-# define translation vector
-point = smesh.PointStruct(-150., -150., 0.)
-vector =smesh.DirStruct(point) 
-
-# translate a mesh
-doCopy = 1
-
-mesh.Translate([], vector, doCopy)
-\endcode
+\include transforming_meshes_ex01.py
+<a href="../../examples/SMESH/transforming_meshes_ex01.py">Download this script</a>
 
 <br>
 \anchor tui_rotation
 <h3>Rotation</h3>
-
-\code
-import math
-
-import SMESH_mechanic
-
-smesh = SMESH_mechanic.smesh
-mesh = SMESH_mechanic.mesh 
-
-# define rotation axis and angle
-axisXYZ = smesh.AxisStruct(0., 0., 0., 5., 5., 20.)
-angle270 = 1.5 * math.pi
-
-# rotate a mesh
-mesh.Rotate([], axisXYZ, angle270, 1)  
-\endcode
+\include transforming_meshes_ex02.py
+<a href="../../examples/SMESH/transforming_meshes_ex02.py">Download this script</a>
 
 <br>
 \anchor tui_scale
 <h3>Scale</h3>
-
-\code
-import geompy
-Box = geompy.MakeBoxDXDYDZ(200, 200, 200)
-f = geompy.SubShapeAllSorted(Box, geompy.ShapeType["FACE"])
-
-import smesh,SMESH
-import StdMeshers
-Mesh1 = smesh.Mesh(f[0])
-Regular_1D = Mesh1.Segment()
-Nb_Segments_1 = Regular_1D.NumberOfSegments(3)
-Nb_Segments_1.SetDistrType( 0 )
-Quadrangle_2D = Mesh1.Quadrangle()
-isDone = Mesh1.Compute()
-
-#Perform scale opration for the whole mesh and creation of a new mesh
-newMesh = Mesh1.ScaleMakeMesh(Mesh1,SMESH.PointStruct(100,100,200),[0.5,0.3,0.7],True,"ScaledMesh")
-
-#Perform scale operation for the whole mesh and copy elements
-Mesh1.Scale(Mesh1,SMESH.PointStruct(200,100,100),[0.5,0.5,0.5],True,True)
-
-#Perform scale opration for two edges and move elements
-Mesh1.Scale([1,2],SMESH.PointStruct(-100,100,100),[0.8,1.0,0.7],False)
-
-#Perform scale opration for one face and move elements
-Mesh1.Scale([21],SMESH.PointStruct(0,200,200),[0.7,0.7,0.7],False)
-\endcode
+\include transforming_meshes_ex03.py
+<a href="../../examples/SMESH/transforming_meshes_ex03.py">Download this script</a>
 
 <br>
 \anchor tui_symmetry
 <h3>Symmetry</h3>
-
-\code
-import math
-
-import SMESH_mechanic
-
-smesh = SMESH_mechanic.smesh
-mesh = SMESH_mechanic.mesh 
-
-# create a symmetrical copy of the mesh mirrored through a point
-axis = SMESH.AxisStruct(0, 0, 0, 0, 0, 0)
-
-mesh.Mirror([], axis, smesh.POINT, 1)
-\endcode
+\include transforming_meshes_ex04.py
+<a href="../../examples/SMESH/transforming_meshes_ex04.py">Download this script</a>
 
 <br>
 \anchor tui_merging_nodes
 <h3>Merging Nodes</h3>
-
-\code
-import SMESH_mechanic
-mesh = SMESH_mechanic.mesh
-
-# merge nodes
-Tolerance = 25.0
-
-GroupsOfNodes =  mesh.FindCoincidentNodes(Tolerance)
-mesh.MergeNodes(GroupsOfNodes)  
-\endcode
+\include transforming_meshes_ex05.py
+<a href="../../examples/SMESH/transforming_meshes_ex05.py">Download this script</a>
 
 <br>
 \anchor tui_merging_elements
 <h3>Merging Elements</h3>
-
-\code
-import salome
-import geompy
-import smesh
-
-# create a face to be meshed
-px = geompy.MakeVertex(100., 0.  , 0.  )
-py = geompy.MakeVertex(0.  , 100., 0.  )
-pz = geompy.MakeVertex(0.  , 0.  , 100.)
-
-vxy = geompy.MakeVector(px, py)
-arc = geompy.MakeArc(py, pz, px)
-
-wire = geompy.MakeWire([vxy, arc])
-isPlanarFace = 1
-
-face1 = geompy.MakeFace(wire, isPlanarFace)
-id_face1 = geompy.addToStudy(face1, "Face1")
-
-# create a circle to be an extrusion path
-px1 = geompy.MakeVertex( 100.,  100.,  0.)
-py1 = geompy.MakeVertex(-100., -100.,  0.)
-pz1 = geompy.MakeVertex(   0.,    0., 50.)
-
-circle = geompy.MakeCircleThreePnt(py1, pz1, px1)
-id_circle = geompy.addToStudy(circle, "Path")
- 
-# create a 2D mesh on the face
-trias = smesh.Mesh(face1, "Face : 2D mesh")
-
-algo1D = trias.Segment()
-algo1D.NumberOfSegments(6)
-algo2D = trias.Triangle()
-algo2D.LengthFromEdges()
-
-trias.Compute()
-
-# create a path mesh
-circlemesh = smesh.Mesh(circle, "Path mesh")
-algo = circlemesh.Segment()
-algo.NumberOfSegments(10)
-circlemesh.Compute()
-
-# extrusion of the mesh
-trias.ExtrusionAlongPath([], circlemesh, circle,
-                         1, 0, [], 0, smesh.PointStruct(0, 0, 0))
-
-# merge nodes
-print "Number of nodes before MergeNodes:", 
-trias.NbNodes()
-tolerance = 0.001
-array_of_nodes_groups = trias.FindCoincidentNodes(tolerance)
-
-trias.MergeNodes(array_of_nodes_groups)
-
-print "Number of nodes after MergeNodes:", trias.NbNodes()
-print ""
-print "Number of elements before MergeEqualElements:"
-print "Edges      : ", trias.NbEdges()
-print "Triangles  : ", trias.NbTriangles()
-print "Quadrangles: ", trias.NbQuadrangles()
-print "Volumes    : ", trias.NbVolumes()
-
-# merge elements
-trias.MergeEqualElements()
-print "Number of elements after MergeEqualElements:"
-print "Edges      : ", trias.NbEdges()
-print "Triangles  : ", trias.NbTriangles()
-print "Quadrangles: ", trias.NbQuadrangles()
-print "Volumes    : ", trias.NbVolumes()
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include transforming_meshes_ex06.py
+<a href="../../examples/SMESH/transforming_meshes_ex06.py">Download this script</a>
 
 <br><h2>Sewing Meshes</h2>
 
 <br>
 \anchor tui_sew_meshes_border_to_side
 <h3>Sew Meshes Border to Side</h3>
-
-\code
-import geompy
-import smesh
-
-# create two faces of a box
-box1 = geompy.MakeBox(0., 0., -10., 30., 20., 25.)
-facesList1 = geompy.SubShapeAll(box1, geompy.ShapeType["FACE"])
-face1 = facesList1[2]
-
-box2 = geompy.MakeBox(0., 5., 0., 20., 20., 15.)
-facesList2 = geompy.SubShapeAll(box2, geompy.ShapeType["FACE"])
-face2 = facesList2[1]
-
-edgesList = geompy.SubShapeAll(face2, geompy.ShapeType["EDGE"])
-edge1 = edgesList[2]
-
-aComp = geompy.MakeCompound([face1, face2])
-geompy.addToStudy(aComp, "Two faces")
-
-# create a mesh on two faces
-mesh = smesh.Mesh(aComp, "Two faces : quadrangle mesh")
-
-algo1D = mesh.Segment()
-algo1D.NumberOfSegments(9)
-algo2D = mesh.Quadrangle()
-
-algo_local = mesh.Segment(edge1)
-algo_local.Arithmetic1D(1, 4)
-algo_local.Propagation()
-
-mesh.Compute()
-
-# sew border to side
-# FirstNodeIDOnFreeBorder, SecondNodeIDOnFreeBorder, LastNodeIDOnFreeBorder,
-# FirstNodeIDOnSide, LastNodeIDOnSide,
-# CreatePolygons, CreatePolyedrs
-mesh.SewBorderToSide(5, 45, 6, 113, 109, 0, 0)
-\endcode
+\include transforming_meshes_ex07.py
+<a href="../../examples/SMESH/transforming_meshes_ex07.py">Download this script</a>
 
 <br>
 \anchor tui_sew_conform_free_borders
 <h3>Sew Conform Free Borders</h3>
-
-\code
-import geompy
-import smesh
-
-# create two faces of the box
-box1 = geompy.MakeBox(0., 0., -10., 20., 20., 15.)
-facesList1 = geompy.SubShapeAll(box1, geompy.ShapeType["FACE"])
-face1 = facesList1[2]
-
-box2 = geompy.MakeBox(0., 5., 0., 20., 20., 15.)
-facesList2 = geompy.SubShapeAll(box2, geompy.ShapeType["FACE"])
-face2 = facesList2[1]
-
-edgesList = geompy.SubShapeAll(face2, geompy.ShapeType["EDGE"])
-edge1 = edgesList[2]
-
-aComp = geompy.MakeCompound([face1, face2])
-geompy.addToStudy(aComp, "Two faces")
-
-# create a mesh on two faces
-mesh = smesh.Mesh(aComp, "Two faces : quadrangle mesh")
-
-algo1D = mesh.Segment()
-algo1D.NumberOfSegments(9)
-algo2D = mesh.Quadrangle()
-
-algo_local = mesh.Segment(edge1)
-algo_local.Arithmetic1D(1, 4)
-algo_local.Propagation()
-
-mesh.Compute()
-
-# sew conform free borders
-# FirstNodeID1, SecondNodeID1, LastNodeID1, FirstNodeID2, SecondNodeID2
-mesh.SewConformFreeBorders(5, 45, 6, 3, 24) 
-\endcode
+\include transforming_meshes_ex08.py
+<a href="../../examples/SMESH/transforming_meshes_ex08.py">Download this script</a>
 
 <br>
 \anchor tui_sew_free_borders
 <h3>Sew Free Borders</h3>
-
-\code
-import geompy
-import smesh
-
-# create two faces of the box
-box1 = geompy.MakeBox(0., 0., 0., 20., 20., 15.)
-facesList1 = geompy.SubShapeAll(box1, geompy.ShapeType["FACE"])
-face1 = facesList1[2]
-
-box2 = geompy.MakeBox(0., 5., 0., 20., 20., 15.)
-facesList2 = geompy.SubShapeAll(box2, geompy.ShapeType["FACE"])
-face2 = facesList2[1]
-
-edgesList = geompy.SubShapeAll(face2, geompy.ShapeType["EDGE"])
-edge1 = edgesList[2]
-
-aComp = geompy.MakeCompound([face1, face2])
-geompy.addToStudy(aComp, "Two faces")
-
-# create a mesh on two faces
-mesh = smesh.Mesh(aComp, "Two faces : quadrangle mesh")
-
-algo1D = mesh.Segment()
-algo1D.NumberOfSegments(4)
-algo2D = mesh.Quadrangle()
-
-algo_local = mesh.Segment(edge1)
-algo_local.Arithmetic1D(1, 4)
-algo_local.Propagation()
-
-mesh.Compute()
-
-# sew free borders
-# FirstNodeID1, SecondNodeID1, LastNodeID1,
-# FirstNodeID2, SecondNodeID2, LastNodeID2, CreatePolygons, CreatePolyedrs
-mesh.SewFreeBorders(6, 21, 5, 1, 12, 3, 0, 0)
-\endcode
+\include transforming_meshes_ex09.py
+<a href="../../examples/SMESH/transforming_meshes_ex09.py">Download this script</a>
 
 <br>
 \anchor tui_sew_side_elements
 <h3>Sew Side Elements</h3>
-
-\code
-import geompy
-import smesh
-
-# create two boxes
-box1 = geompy.MakeBox(0.,  0., 0., 10., 10., 10.)
-box2 = geompy.MakeBox(0., 15., 0., 20., 25., 10.)
-
-EdgesList = geompy.SubShapeAll(box2, geompy.ShapeType["EDGE"])
-
-aComp = geompy.MakeCompound([box1, box2])
-geompy.addToStudy(aComp, "Two boxes")
-
-# create a mesh on two boxes
-mesh = smesh.Mesh(aComp, "Two faces : quadrangle mesh")
-
-algo1D = mesh.Segment()
-algo1D.NumberOfSegments(2)
-algo2D = mesh.Quadrangle()
-
-algo_local = mesh.Segment(EdgesList[8])
-algo_local.NumberOfSegments(4)
-algo_local.Propagation()
-
-mesh.Compute()
-
-# sew side elements
-# IDsOfSide1Elements, IDsOfSide2Elements,
-# NodeID1OfSide1ToMerge, NodeID1OfSide2ToMerge, NodeID2OfSide1ToMerge, NodeID2OfSide2ToMerge
-mesh.SewSideElements([69, 70, 71, 72], [91, 92, 89, 90], 8, 38, 23, 58)
-\endcode
+\include transforming_meshes_ex10.py
+<a href="../../examples/SMESH/transforming_meshes_ex10.py">Download this script</a>
 
 <br>
 \anchor tui_duplicate_nodes
 <h3>Duplicate nodes</h3>
-
-\code
-import salome
-import smesh
-import SMESH_test1
-
-mesh = SMESH_test1.mesh
-
-# Compute mesh
-mesh.Compute()
-
-# Without the duplication of border elements
-
-# Nodes to duplicate
-nodes1 = mesh.CreateEmptyGroup( smesh.NODE, 'nodes1' )
-nodes1.Add( [ 289, 278, 302, 285 ] )
-
-# Group of faces to replace nodes with new ones 
-faces1 = mesh.CreateEmptyGroup( smesh.FACE, 'faces1' )
-faces1.Add( [ 519, 556, 557 ] )
-
-# Duplicate nodes
-print "\nMesh before the first nodes duplication:"
-print "Nodes      : ", mesh.NbNodes()
-print "Edges      : ", mesh.NbEdges()
-print "Triangles  : ", mesh.NbTriangles()
-
-groupOfCreatedNodes = mesh.DoubleNodeGroup(nodes1, faces1, theMakeGroup=True)
-print "New nodes:", groupOfCreatedNodes.GetIDs()
-
-print "\nMesh after the first nodes duplication:"
-print "Nodes      : ", mesh.NbNodes()
-print "Edges      : ", mesh.NbEdges()
-print "Triangles  : ", mesh.NbTriangles()
-
-# With the duplication of border elements
-
-# Edges to duplicate
-edges = mesh.CreateEmptyGroup( smesh.EDGE, 'edges' )
-edges.Add( [ 29, 30, 31 ] )
-
-# Nodes not to duplicate
-nodes2 = mesh.CreateEmptyGroup( smesh.NODE, 'nodes2' )
-nodes2.Add( [ 32, 5 ] )
-
-# Group of faces to replace nodes with new ones 
-faces2 = mesh.CreateEmptyGroup( smesh.FACE, 'faces2' )
-faces2.Add( [ 576, 578, 580 ] )
-
-# Duplicate nodes
-print "\nMesh before the second nodes duplication:"
-print "Nodes      : ", mesh.NbNodes()
-print "Edges      : ", mesh.NbEdges()
-print "Triangles  : ", mesh.NbTriangles()
-
-groupOfNewEdges = mesh.DoubleNodeElemGroup( edges, nodes2, faces2, theMakeGroup=True )
-print "New edges:", groupOfNewEdges.GetIDs()
-
-print "\nMesh after the second nodes duplication:"
-print "Nodes      : ", mesh.NbNodes()
-print "Edges      : ", mesh.NbEdges()
-print "Triangles  : ", mesh.NbTriangles()
-
-# Update object browser
-if salome.sg.hasDesktop():
-    salome.sg.updateObjBrowser(0)
-\endcode
+\include transforming_meshes_ex11.py
+<a href="../../examples/SMESH/transforming_meshes_ex11.py">Download this script</a>
 
 <br>
 \anchor tui_make_2dmesh_from_3d
 <h3>Create boundary elements</h3>
-
-\code
-from smesh import *
-SetCurrentStudy(salome.myStudy)
-
-box = geompy.MakeBoxDXDYDZ(100, 100, 100)
-gFaces = geompy.SubShapeAllSorted(box, geompy.ShapeType["FACE"])
-f1,f2 = gFaces[0],gFaces[1]
-geompy.addToStudy(box,"box")
-geompy.addToStudyInFather(box,f1,"face1")
-geompy.addToStudyInFather(box,f2,"face2")
-
-twoFaces = geompy.MakeCompound([f1,f2])
-
-## -----------
-##
-## 2D from 3D
-##
-## -----------
-dim = SMESH.BND_2DFROM3D
-
-init_mesh = Mesh(box, "box")
-init_mesh.AutomaticHexahedralization() # it makes 3 x 3 x 3 hexahedrons
-
-# remove some faces
-faces = init_mesh.GetElementsByType( SMESH.FACE )
-nb_faces = len( faces )
-rm_face = faces[ : nb_faces/2]
-init_mesh.RemoveElements( rm_face )
-
-# restore boundary in this mesh
-mesh = CopyMesh( init_mesh, "2D from 3D")
-groupName = "bnd 2D"
-nb, new_mesh, new_group = mesh.MakeBoundaryElements(dim, groupName)
-
-# restore boundary (only) in other mesh
-meshName = "2D boundary of " + init_mesh.GetName()
-nb, new_mesh, new_group = init_mesh.MakeBoundaryElements(dim, groupName, meshName)
-
-# restore boundary in mesh copy
-meshName = init_mesh.GetName() + " + boundary"
-nb, new_mesh, new_group = init_mesh.MakeBoundaryElements(dim, groupName, meshName, toCopyAll=True)
-
-
-## -----------
-##
-## 1D from 2D
-##
-## -----------
-dim = SMESH.BND_1DFROM2D
-
-init_mesh = Mesh(f1, "2D mesh")
-init_mesh.AutomaticHexahedralization()
-
-# remove some edges
-edges = init_mesh.GetElementsByType( SMESH.EDGE )
-nb_edges = len( edges )
-rm_edge = edges[ : nb_edges/2]
-init_mesh.RemoveElements( rm_edge )
-
-
-# restore boundary edges in this mesh
-mesh = CopyMesh( init_mesh, "1D from 2D")
-groupName = "bnd 1D"
-nb, new_mesh, new_group = mesh.MakeBoundaryElements(dim, groupName)
-
-# restore boundary edges (only) in other mesh
-meshName = "1D boundary of " + init_mesh.GetName()
-nb, new_mesh, new_group = init_mesh.MakeBoundaryElements(dim, groupName, meshName)
-
-# restore boundary edges in mesh copy
-meshName = init_mesh.GetName() + " + boundary"
-nb, new_mesh, new_group = init_mesh.MakeBoundaryElements(dim, groupName, meshName, toCopyAll=True)
-
-
-
-## ------------------
-##
-## 1D from 2D GROUPS
-##
-## ------------------
-dim = SMESH.BND_1DFROM3D
-
-init_mesh = Mesh(box, "box")
-init_mesh.AutomaticHexahedralization() # it makes 3 x 3 x 3 hexahedrons
-# remove all edges
-rm_edges = init_mesh.GetElementsByType( SMESH.EDGE )
-init_mesh.RemoveElements( rm_edges )
-
-# make groups of faces
-fGroup1 = init_mesh.Group( f1, "f1" )
-fGroup2 = init_mesh.Group( f2, "f2" )
-
-# make 1D boundary around groups in this mesh
-mesh = CopyMesh( init_mesh, "1D from 2D groups", toCopyGroups=True)
-groups = mesh.GetGroups()
-nb, new_mesh, new_group = mesh.MakeBoundaryElements(dim, groupName,groups=groups)
-
-# make 1D boundary (only) in other mesh
-meshName =  "boundary from groups of " + init_mesh.GetName()
-groups = init_mesh.GetGroups()
-nb, new_mesh, new_group = init_mesh.MakeBoundaryElements(dim, groupName, meshName,groups=groups)
-
-# make 1D boundary in mesh copy
-meshName = init_mesh.GetName() + " + boundary from groups"
-nb, new_mesh, new_group = init_mesh.MakeBoundaryElements(dim, groupName, meshName,
-                                                         groups=groups, toCopyAll=True)
-
-\endcode
+\include transforming_meshes_ex12.py
+<a href="../../examples/SMESH/transforming_meshes_ex12.py">Download this script</a>
 
 <br>
 \anchor tui_reorient_faces
 <h3>Reorient faces by vector</h3>
-
-\code
-import smesh, geompy, SMESH
-
-# create a geometry consisting of two faces
-box = geompy.MakeBoxDXDYDZ( 10, 10, 10 )
-faces = geompy.SubShapeAllSorted( box, geompy.ShapeType["FACE"])
-
-shape = geompy.MakeCompound( faces[:2] )
-faces = geompy.SubShapeAll( shape, geompy.ShapeType["FACE"] )
-geompy.addToStudy( shape, "shape")
-geompy.addToStudyInFather( shape, faces[0], "faces[0]")
-geompy.addToStudyInFather( shape, faces[1], "faces[1]")
-
-# create a 2D mesh
-mesh = smesh.Mesh( shape, "test_Reorient2D")
-mesh.AutomaticHexahedralization(0.5)
-localAlgo = mesh.Segment(faces[0])
-localAlgo.NumberOfSegments( 11 )
-mesh.Compute()
-group = mesh.Group( faces[1] )
-
-vec = geompy.MakeVectorDXDYDZ( 1, 1, 1 )
-
-# Each of arguments of Reorient2D() function can be of different types:
-#
-# 2DObject    - the whole mesh
-# Direction   - a GEOM object (vector)
-# FaceOrPoint - an ID of face
-mesh.Reorient2D( mesh, vec, mesh.NbElements() )
-#
-# 2DObject    - a sub-mesh
-# Direction   - components of a vector
-# FaceOrPoint - a GEOM object (vertex)
-mesh.Reorient2D( localAlgo.GetSubMesh(), [ 1, -1, 1 ], geompy.GetFirstVertex( vec ))
-#
-# 2DObject    - a group of faces
-# Direction   - a SMESH.DirStruct structure
-# FaceOrPoint - coordinates of a point
-mesh.Reorient2D( group, smesh.MakeDirStruct( -10, 1, 10 ), [0,0,0])
-#
-# FaceOrPoint - a SMESH.PointStruct structure
-mesh.Reorient2D( localAlgo.GetSubMesh().GetIDs(), [10,1,0], SMESH.PointStruct(0,0,0))
-
-\endcode
+\include transforming_meshes_ex13.py
+<a href="../../examples/SMESH/transforming_meshes_ex13.py">Download this script</a>
 
 */

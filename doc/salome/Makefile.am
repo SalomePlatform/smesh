@@ -23,7 +23,7 @@
 #  Modified by : Alexander BORODIN (OCN) - autotools usage
 # $Header:
 #
-SUBDIRS = tui gui
+SUBDIRS = tui gui examples
 SUBDIRSTUI = tui
 SUBDIRSGUI = gui
 

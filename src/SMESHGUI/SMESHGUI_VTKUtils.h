@@ -137,6 +137,9 @@ SMESHGUI_EXPORT
 SMESHGUI_EXPORT
   void UpdateSelectionProp( SMESHGUI* );
 
+SMESHGUI_EXPORT
+  void UpdateFontProp( SMESHGUI* );
+
   //----------------------------------------------------------------------------
 SMESHGUI_EXPORT
   SVTK_Selector* GetSelector( SUIT_ViewWindow* = GetActiveWindow() );

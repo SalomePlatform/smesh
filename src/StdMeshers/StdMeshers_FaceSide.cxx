@@ -160,11 +160,10 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face&   theFace,
       double d4 = GCPnts_AbscissaPoint::Length( A2dC, myFirst[i], p4 );
       //cout<<"len = "<<len<<"  d2 = "<<d2<<"  fabs(2*d2/len-1.0) = "<<fabs(2*d2/len-1.0)<<endl;
       myIsUniform[i] = !( fabs(2*d2/myEdgeLength[i]-1.0) > 0.01 || fabs(2*d4/d2-1.0) > 0.01 );
-      if ( !myIsUniform[i] )
+      //if ( !myIsUniform[i] ) to implement Value3d(u)
       {
         double fp,lp;
-        TopLoc_Location L;
-        Handle(Geom_Curve) C3d = BRep_Tool::Curve(myEdge[i],L,fp,lp);
+        Handle(Geom_Curve) C3d = BRep_Tool::Curve(myEdge[i],fp,lp);
         myC3dAdaptor[i].Load( C3d, fp,lp );
       }
     }
@@ -208,8 +207,8 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face&   theFace,
  */
 //================================================================================
 
-StdMeshers_FaceSide::StdMeshers_FaceSide(const SMDS_MeshNode* theNode,
-                                         const gp_Pnt2d thePnt2d,
+StdMeshers_FaceSide::StdMeshers_FaceSide(const SMDS_MeshNode*       theNode,
+                                         const gp_Pnt2d             thePnt2d,
                                          const StdMeshers_FaceSide* theSide)
 {
   myC2d.resize(1);
@@ -218,7 +217,8 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const SMDS_MeshNode* theNode,
   myDefaultPnt2d = thePnt2d;
 
   myPoints = theSide->GetUVPtStruct();
-  myNbPonits = myNbSegments = myPoints.size();
+  myNbPonits = myPoints.size();
+  myNbSegments = theSide->myNbSegments;
   std::vector<uvPtStruct>::iterator it = myPoints.begin();
   for(; it!=myPoints.end(); it++) {
     (*it).u = thePnt2d.X();
@@ -336,7 +336,8 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
       }
     } // loop on myEdge's
 
-    if ( u2node.size() + nbProxyNodes != myNbPonits )
+    if ( u2node.size() + nbProxyNodes != myNbPonits &&
+         u2node.size() + nbProxyNodes != NbPoints( /*update=*/true ))
     {
       MESSAGE("Wrong node parameters on edges, u2node.size():"
               <<u2node.size()<<" !=  myNbPonits:"<<myNbPonits);
@@ -586,7 +587,7 @@ void StdMeshers_FaceSide::Reverse()
     reverse( myEdge );
     reverse( myEdgeID );
     reverse( myC2d );
-    reverse( myC3dAdaptor );
+    //reverse( myC3dAdaptor );
     reverse( myFirst );
     reverse( myLast );
     reverse( myNormPar );
@@ -601,6 +602,102 @@ void StdMeshers_FaceSide::Reverse()
     for ( size_t i = 0; i < myEdge.size(); ++i )
       reverseProxySubmesh( myEdge[i] );
   }
+  for ( size_t i = 0; i < myEdge.size(); ++i )
+  {
+    double fp,lp;
+    Handle(Geom_Curve) C3d = BRep_Tool::Curve(myEdge[i],fp,lp);
+    if ( !C3d.IsNull() )
+      myC3dAdaptor[i].Load( C3d, fp,lp );
+  }
+}
+
+//=======================================================================
+//function : SetIgnoreMediumNodes
+//purpose  : Make ignore medium nodes
+//=======================================================================
+
+void StdMeshers_FaceSide::SetIgnoreMediumNodes(bool toIgnore)
+{
+  if ( myIgnoreMediumNodes != toIgnore )
+  {
+    myIgnoreMediumNodes = toIgnore;
+
+    if ( !myPoints.empty() )
+    {
+      UVPtStructVec newPoints;
+      newPoints.reserve( myPoints.size()/2 + 1 );
+      for ( size_t i = 0; i < myPoints.size(); i += 2 )
+        newPoints.push_back( myPoints[i] );
+
+      myPoints.swap( newPoints );
+    }
+    else
+    {
+      NbPoints( /*update=*/true );
+    }
+  }
+}
+
+//=======================================================================
+//function : NbPoints
+//purpose  : Return nb nodes on edges and vertices (+1 to be == GetUVPtStruct().size() )
+//           Call it with update == true if mesh of this side can be recomputed
+//           since creation of this side
+//=======================================================================
+
+int StdMeshers_FaceSide::NbPoints(const bool update) const
+{
+  if ( !myPoints.empty() )
+    return myPoints.size();
+
+  // if ( !myFalsePoints.empty() )
+  //   return myFalsePoints.size();
+
+  if ( update && myEdge.size() > 0 )
+  {
+    StdMeshers_FaceSide* me = (StdMeshers_FaceSide*) this;
+    me->myNbPonits = 0;
+    me->myNbSegments = 0;
+    me->myMissingVertexNodes = false;
+
+    for ( int i = 0; i < NbEdges(); ++i )
+    {
+      TopoDS_Vertex v1 = SMESH_MesherHelper::IthVertex( 0, myEdge[i] );
+      if ( SMESH_Algo::VertexNode( v1, myProxyMesh->GetMeshDS() ))
+        me->myNbPonits += 1; // for the first end
+      else
+        me->myMissingVertexNodes = true;
+    
+      if ( const SMESHDS_SubMesh* sm = myProxyMesh->GetSubMesh( Edge(i) )) {
+        int nbN = sm->NbNodes();
+        if ( myIgnoreMediumNodes ) {
+          SMDS_ElemIteratorPtr elemIt = sm->GetElements();
+          if ( elemIt->more() && elemIt->next()->IsQuadratic() )
+            nbN -= sm->NbElements();
+        }
+        me->myNbPonits   += nbN;
+        me->myNbSegments += sm->NbElements();
+      }
+    }
+    TopoDS_Vertex v1 = SMESH_MesherHelper::IthVertex( 1, Edge( NbEdges()-1 ));
+    if ( SMESH_Algo::VertexNode( v1, myProxyMesh->GetMeshDS() ))
+      me->myNbPonits++; // for the last end
+    else
+      me->myMissingVertexNodes = true;
+  }
+  return myNbPonits;
+}
+
+//=======================================================================
+//function : NbSegments
+//purpose  : Return nb edges
+//           Call it with update == true if mesh of this side can be recomputed
+//           since creation of this side
+//=======================================================================
+
+int StdMeshers_FaceSide::NbSegments(const bool update) const
+{
+  return NbPoints( update ), myNbSegments;
 }
 
 //================================================================================
@@ -709,7 +806,6 @@ BRepAdaptor_CompCurve* StdMeshers_FaceSide::GetCurve3d() const
   return new BRepAdaptor_CompCurve( aWire );
 }
 
-
 //================================================================================
 /*!
  * \brief Return 2D point by normalized parameter
@@ -745,6 +841,35 @@ gp_Pnt2d StdMeshers_FaceSide::Value2d(double U) const
 
 //================================================================================
 /*!
+ * \brief Return XYZ by normalized parameter
+  * \param U - normalized parameter value
+  * \retval gp_Pnt - point
+ */
+//================================================================================
+
+gp_Pnt StdMeshers_FaceSide::Value3d(double U) const
+{
+  int        i = EdgeIndex( U );
+  double prevU = i ? myNormPar[ i-1 ] : 0;
+  double     r = ( U - prevU )/ ( myNormPar[ i ] - prevU );
+
+  double par = myFirst[i] * ( 1 - r ) + myLast[i] * r;
+    
+  // check parametrization of curve
+  if( !myIsUniform[i] )
+  {
+    double aLen3dU = r * myEdgeLength[i] * ( myFirst[i]>myLast[i] ? -1. : 1.);
+    GCPnts_AbscissaPoint AbPnt
+      ( const_cast<GeomAdaptor_Curve&>( myC3dAdaptor[i]), aLen3dU, myFirst[i] );
+    if( AbPnt.IsDone() ) {
+      par = AbPnt.Parameter();
+    }
+  }
+  return myC3dAdaptor[ i ].Value(par);
+}
+
+//================================================================================
+/*!
  * \brief Return wires of a face as StdMeshers_FaceSide's
  */
 //================================================================================
@@ -755,10 +880,9 @@ TSideVector StdMeshers_FaceSide::GetFaceWires(const TopoDS_Face&   theFace,
                                               TError &             theError,
                                               SMESH_ProxyMesh::Ptr theProxyMesh)
 {
-  TopoDS_Vertex V1;
   list< TopoDS_Edge > edges, internalEdges;
   list< int > nbEdgesInWires;
-  int nbWires = SMESH_Block::GetOrderedEdges (theFace, V1, edges, nbEdgesInWires);
+  int nbWires = SMESH_Block::GetOrderedEdges (theFace, edges, nbEdgesInWires);
 
   // split list of all edges into separate wires
   TSideVector wires( nbWires );

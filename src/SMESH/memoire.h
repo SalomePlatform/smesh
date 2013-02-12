@@ -28,7 +28,7 @@ void memostat(const char* f, int l);
 void memostat(const char* f, int l)
 {
 #ifdef WIN32
-	//rnv: TODO: find alternative of the malloc_stats() on windows platform
+        //rnv: TODO: find alternative of the malloc_stats() on windows platform
 #else
   /*  struct mallinfo mem = mallinfo(); */
   /*  std::cerr << f << ":"<< l << " " << mem.arena << " " << mem.ordblks << " " << mem.hblks << " " << mem.hblkhd << " "  << mem.uordblks << " "  << mem.fordblks << " " << mem.keepcost << std::endl; */

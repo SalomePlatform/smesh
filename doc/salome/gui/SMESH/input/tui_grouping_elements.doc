@@ -5,167 +5,29 @@
 <br>
 \anchor tui_create_standalone_group
 <h2>Create a Standalone Group</h2>
-
-\code
-import SMESH_mechanic
-
-smesh  = SMESH_mechanic.smesh
-mesh   = SMESH_mechanic.mesh
-salome = SMESH_mechanic.salome
-
-# Get ids of all faces with area > 100 
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Area, smesh.FT_MoreThan, 100.)
-
-anIds = mesh.GetIdsFromFilter(aFilter) 
-
-# create a group consisting of faces with area > 100
-aGroup1 = mesh.MakeGroupByIds("Area > 100", smesh.FACE, anIds)
-
-# create a group that contains all nodes from the mesh
-aGroup2 = mesh.CreateEmptyGroup(smesh.NODE, "all nodes")
-aGroup2.AddFrom(mesh.mesh)
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include grouping_elements_ex01.py
+<a href="../../examples/SMESH/grouping_elements_ex01.py">Download this script</a>
 
 \image html create_group.png
 
 <br>
 \anchor tui_create_group_on_geometry
 <h2>Create a Group on Geometry</h2>
-
-\code
-import salome
-import geompy
-import smesh
-
-# create a box
-box = geompy.MakeBox(0., 0., 0., 100., 100., 100.)
-geompy.addToStudy(box, "box")
-
-# add the first face of the box to the study
-subShapeList = geompy.SubShapeAll(box, geompy.ShapeType["FACE"])
-face = subShapeList[0]
-geompy.addToStudyInFather(box, face, "face 1") 
-
-# create group of edges on the face
-aGeomGroupE = geompy.CreateGroup(face, geompy.ShapeType["EDGE"])
-geompy.AddObject(aGeomGroupE, 3)
-geompy.AddObject(aGeomGroupE, 6)
-geompy.AddObject(aGeomGroupE, 8)
-geompy.AddObject(aGeomGroupE, 10)
-geompy.addToStudyInFather(face, aGeomGroupE, "Group of Edges")
-
-# create quadrangle 2D mesh on the box
-quadra = smesh.Mesh(box, "Box : quadrangle 2D mesh")
-algo1D = quadra.Segment()
-quadra.Quadrangle()
-algo1D.NumberOfSegments(7) 
-
-# compute the mesh
-quadra.Compute()
-
-# create SMESH group on the face with name "SMESHGroup1"
-aSmeshGroup1 = quadra.GroupOnGeom(face, "SMESHGroup1")
-
-# create SMESH group on <aGeomGroupE> with default name
-aSmeshGroup2 = quadra.GroupOnGeom(aGeomGroupE) 
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include grouping_elements_ex02.py
+<a href="../../examples/SMESH/grouping_elements_ex02.py">Download this script</a>
 
 <br>
 \anchor tui_create_group_on_filter
 
 <h2>Create a Group on Filter</h2>
-
-\code
-from smesh import *
-SetCurrentStudy(salome.myStudy)
-
-box = geompy.MakeBoxDXDYDZ(10,10,10)
-
-# make a mesh with quadrangles of different area in range [1,16]
-mesh = Mesh(box,"Quad mesh")
-hyp1D = mesh.Segment().StartEndLength( 1, 4 )
-mesh.Quadrangle()
-mesh.Compute()
-
-# create a group on filter selecting faces of medium size
-critaria = [ \
-    GetCriterion(FACE, FT_Area, ">", 1.1, BinaryOp=FT_LogicalAND ),
-    GetCriterion(FACE, FT_Area, "<", 15.0 )
-    ]
-filt = GetFilterFromCriteria( critaria )
-filtGroup = mesh.GroupOnFilter( FACE, "group on filter", filt )
-print "Group on filter contains %s elemens" % filtGroup.Size()
-
-# group on filter is updated if the mesh is modified
-hyp1D.SetStartLength( 2.5 )
-hyp1D.SetEndLength( 2.5 )
-mesh.Compute()
-print "After mesh change, group on filter contains %s elemens" % filtGroup.Size()
-
-# set a new filter defining the group
-filt2 = GetFilter( FACE, FT_RangeOfIds, "1-50" )
-filtGroup.SetFilter( filt2 )
-print "With a new filter, group on filter contains %s elemens" % filtGroup.Size()
-
-# group is updated at modification of the filter
-filt2.SetCriteria( [ GetCriterion( FACE, FT_RangeOfIds, "1-70" )])
-filtIDs3 = filtGroup.GetIDs()
-print "After filter modification, group on filter contains %s elemens" % filtGroup.Size()
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include grouping_elements_ex03.py
+<a href="../../examples/SMESH/grouping_elements_ex03.py">Download this script</a>
 
 <br>
 \anchor tui_edit_group
 <h2>Edit a Group</h2>
-
-\code
-import SMESH_mechanic
-
-smesh  = SMESH_mechanic.smesh
-mesh   = SMESH_mechanic.mesh
-salome = SMESH_mechanic.salome
-
-# Get ids of all faces with area > 35
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Area, smesh.FT_MoreThan, 35.)
-
-anIds = mesh.GetIdsFromFilter(aFilter) 
-
-print "Criterion: Area > 35, Nb = ", len(anIds)
-
-# create a group by adding elements with area > 35
-aGroup = mesh.CreateEmptyGroup(smesh.FACE, "Area > 35")
-aGroup.Add(anIds) 
-
-# Get ids of all faces with area > 40
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Area, smesh.FT_MoreThan, 40.)
-
-anIds = mesh.GetIdsFromFilter(aFilter)
-
-print "Criterion: Area > 40, Nb = ", len(anIds) 
-
-# create a group of elements with area [35; 40] by removing elements with area > 40 from group aGroup
-aGroup.Remove(anIds) 
-
-# print the result
-aGroupElemIDs = aGroup.GetListOfID()
-
-print "Criterion: 35 < Area < 40, Nb = ", len(aGroupElemIDs)
-
-j = 1
-for i in range(len(aGroupElemIDs)):
-  if j > 20: j = 1; print ""
-  print aGroupElemIDs[i],
-  j = j + 1
-  pass
-print ""
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include grouping_elements_ex04.py
+<a href="../../examples/SMESH/grouping_elements_ex04.py">Download this script</a>
 
 \image html editing_groups1.png
 
@@ -174,59 +36,8 @@ salome.sg.updateObjBrowser(1)
 <br>
 \anchor tui_union_of_groups
 <h2>Union of groups</h2>
-
-\code
-import SMESH_mechanic
-
-smesh  = SMESH_mechanic.smesh
-mesh   = SMESH_mechanic.mesh
-salome = SMESH_mechanic.salome
-
-# Criterion : AREA > 20
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Area, smesh.FT_MoreThan, 20.)
-
-anIds = mesh.GetIdsFromFilter(aFilter)
-
-print "Criterion: Area > 20, Nb = ", len( anIds ) 
-
-# create a group by adding elements with area > 20
-aGroup1 = mesh.CreateEmptyGroup(smesh.FACE, "Area > 20")
-aGroup1.Add(anIds)
-
-# Criterion : AREA = 20
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Area, smesh.FT_EqualTo, 20.)
-
-anIds = mesh.GetIdsFromFilter(aFilter)
-
-print "Criterion: Area = 20, Nb = ", len( anIds ) 
-
-# create a group by adding elements with area = 20
-aGroup2 = mesh.CreateEmptyGroup( smesh.FACE, "Area = 20" )
-
-aGroup2.Add(anIds)
-
-# create union group : area >= 20
-aGroup3 = mesh.UnionListOfGroups([aGroup1, aGroup2], "Area >= 20")
-print "Criterion: Area >= 20, Nb = ", len(aGroup3.GetListOfID())
-# Please note that also there is UnionGroups() method which works with two groups only
-
-# Criterion : AREA < 20
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Area, smesh.FT_LessThan, 20.)
-
-anIds = mesh.GetIdsFromFilter(aFilter)
-
-print "Criterion: Area < 20, Nb = ", len(anIds)
-
-# create a group by adding elements with area < 20
-aGroup4 = mesh.CreateEmptyGroup(smesh.FACE, "Area < 20")
-aGroup4.Add(anIds)
-
-# create union group : area >= 20 and area < 20
-aGroup5 = mesh.UnionListOfGroups([aGroup3, aGroup4], "Any Area")
-print "Criterion: Any Area, Nb = ", len(aGroup5.GetListOfID())
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include grouping_elements_ex05.py
+<a href="../../examples/SMESH/grouping_elements_ex05.py">Download this script</a>
 
 \image html union_groups1.png
 
@@ -237,43 +48,8 @@ salome.sg.updateObjBrowser(1)
 <br>
 \anchor tui_intersection_of_groups
 <h2>Intersection of groups</h2>
-
-\code
-import SMESH_mechanic
-
-smesh  = SMESH_mechanic.smesh
-mesh   = SMESH_mechanic.mesh
-salome = SMESH_mechanic.salome
-
-# Criterion : AREA > 20
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Area, smesh.FT_MoreThan, 20.)
-
-anIds = mesh.GetIdsFromFilter(aFilter)
-
-print "Criterion: Area > 20, Nb = ", len(anIds) 
-
-# create a group by adding elements with area > 20
-aGroup1 = mesh.CreateEmptyGroup(smesh.FACE, "Area > 20")
-aGroup1.Add(anIds)
-
-# Criterion : AREA < 60
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Area, smesh.FT_LessThan, 60.)
-
-anIds = mesh.GetIdsFromFilter(aFilter)
-
-print "Criterion: Area < 60, Nb = ", len(anIds) 
-
-# create a group by adding elements with area < 60
-aGroup2 = mesh.CreateEmptyGroup(smesh.FACE, "Area < 60")
-aGroup2.Add(anIds)
-
-# create an intersection of groups : 20 < area < 60
-aGroup3 = mesh.IntersectListOfGroups([aGroup1, aGroup2], "20 < Area < 60")
-print "Criterion: 20 < Area < 60, Nb = ", len(aGroup3.GetListOfID())
-# Please note that also there is IntersectGroups() method which works with two groups only
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include grouping_elements_ex06.py
+<a href="../../examples/SMESH/grouping_elements_ex06.py">Download this script</a>
 
 \image html intersect_groups1.png
 
@@ -284,41 +60,8 @@ salome.sg.updateObjBrowser(1)
 <br>
 \anchor tui_cut_of_groups
 <h2>Cut of groups</h2>
-
-\code
-import SMESH_mechanic
-
-smesh  = SMESH_mechanic.smesh
-mesh   = SMESH_mechanic.mesh
-salome = SMESH_mechanic.salome
-
-# Criterion : AREA > 20
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Area, smesh.FT_MoreThan, 20.)
-
-anIds = mesh.GetIdsFromFilter(aFilter)
-
-print "Criterion: Area > 20, Nb = ", len(anIds) 
-
-# create a group by adding elements with area > 20
-aGroupMain = mesh.MakeGroupByIds("Area > 20", smesh.FACE, anIds)
-
-# Criterion : AREA < 60
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Area, smesh.FT_LessThan, 60.)
-
-anIds = mesh.GetIdsFromFilter(aFilter)
-
-print "Criterion: Area < 60, Nb = ", len(anIds) 
-
-# create a group by adding elements with area < 60
-aGroupTool = mesh.MakeGroupByIds("Area < 60", smesh.FACE, anIds)
- 
-# create a cut of groups : area >= 60
-aGroupRes = mesh.CutGroups(aGroupMain, aGroupTool, "Area >= 60")
-print "Criterion: Area >= 60, Nb = ", len(aGroupRes.GetListOfID())
-# Please note that also there is CutListOfGroups() method which works with lists of groups of any lengths
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include grouping_elements_ex07.py
+<a href="../../examples/SMESH/grouping_elements_ex07.py">Download this script</a>
 
 \image html cut_groups1.png
 
@@ -329,42 +72,8 @@ salome.sg.updateObjBrowser(1)
 <br>
 \anchor tui_create_dim_group
 <h2>Creating groups of entities from existing groups of superior dimensions</h2>
-
-\code
-import SMESH_mechanic
-
-smesh  = SMESH_mechanic.smesh
-mesh   = SMESH_mechanic.mesh
-salome = SMESH_mechanic.salome
-
-# Criterion : AREA > 100
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Area, smesh.FT_MoreThan, 100.)
-
-anIds = mesh.GetIdsFromFilter(aFilter)
-
-print "Criterion: Area > 100, Nb = ", len(anIds) 
-
-# create a group by adding elements with area > 100
-aSrcGroup1 = mesh.MakeGroupByIds("Area > 100", smesh.FACE, anIds)
-
-# Criterion : AREA < 30
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Area, smesh.FT_LessThan, 30.)
-
-anIds = mesh.GetIdsFromFilter(aFilter)
-
-print "Criterion: Area < 30, Nb = ", len(anIds) 
-
-# create a group by adding elements with area < 30
-aSrcGroup2 = mesh.MakeGroupByIds("Area < 30", smesh.FACE, anIds)
-
-# Create group of edges using source groups of faces
-aGrp = mesh.CreateDimGroup( [aSrcGroup1, aSrcGroup2], smesh.EDGE, "Edges" )
-
-# Create group of nodes using source groups of faces
-aGrp = mesh.CreateDimGroup( [aSrcGroup1, aSrcGroup2], smesh.NODE, "Nodes" )
-
-salome.sg.updateObjBrowser(1)
-\endcode
+\include grouping_elements_ex08.py
+<a href="../../examples/SMESH/grouping_elements_ex08.py">Download this script</a>
 
 \image html dimgroup_tui1.png
 <center>Source groups of faces</center>

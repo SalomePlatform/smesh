@@ -4,8 +4,8 @@
 
 Sub-mesh is a mesh on a geometrical sub-object created with algorithms
 and/or hypotheses other than the algorithms and hypotheses assigned to
-the parent mesh on the parent object.
-<br><br>
+the parent mesh on the parent geometrical object.
+
 If a geometrical sub-object belongs to several geometrical objects
 having different meshes or sub-meshes, it will be meshed with the
 hypotheses of a sub-mesh of a lower dimension.<br>

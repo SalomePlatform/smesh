@@ -1121,8 +1121,8 @@ void Maillage::outputMED(std::string fichierMED)
           // Création de la famille
           if (MEDfamilyCr(fid, maa, nomfam, numfam, 0, MED_NO_GROUP) < 0)
             ERREUR("Error MEDfamilyCr");
-	  delete gro;
-	}
+          delete gro;
+        }
 
     }
 
@@ -1437,7 +1437,7 @@ void Maillage::outputMED(std::string fichierMED)
           if (MEDfamilyCr(fid, maa, nomfam, numfam, 1, gro) < 0)
             ERREUR("Error MEDfamilyCr");
 
-	  delete gro;
+          delete gro;
         }
     }
 

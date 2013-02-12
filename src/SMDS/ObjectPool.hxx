@@ -21,8 +21,17 @@
 #define _OBJECTPOOL_HXX_
 
 #include <vector>
-#include <stack>
+//#include <stack>
 #include <iostream>
+
+namespace
+{
+  // assure deallocation of memory of a vector
+  template<class Y> void clearVector(std::vector<Y>& v )
+  {
+    std::vector<Y> emptyVec; v.swap( emptyVec );
+  }
+}
 
 template<class X> class ObjectPool
 {
@@ -70,7 +79,7 @@ public:
 
   virtual ~ObjectPool()
   {
-    for (int i = 0; i < _chunkList.size(); i++)
+    for (size_t i = 0; i < _chunkList.size(); i++)
       delete[] _chunkList[i];
   }
 
@@ -101,7 +110,7 @@ public:
   void destroy(X* obj)
   {
     long adrobj = (long) (obj);
-    for (int i = 0; i < _chunkList.size(); i++)
+    for (size_t i = 0; i < _chunkList.size(); i++)
       {
         X* chunk = _chunkList[i];
         long adrmin = (long) (chunk);
@@ -119,6 +128,16 @@ public:
         //checkDelete(i); compactage non fait
         break;
       }
+  }
+
+  void clear()
+  {
+    _nextFree = 0;
+    _maxAvail = 0;
+    for (size_t i = 0; i < _chunkList.size(); i++)
+      delete[] _chunkList[i];
+    clearVector( _chunkList );
+    clearVector( _freeList );
   }
 
   //  void destroy(int toFree)

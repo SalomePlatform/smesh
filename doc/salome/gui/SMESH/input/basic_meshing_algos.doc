@@ -36,7 +36,7 @@ quadrangular elements.</li>
 <li>Hexahedron meshing algorithm (i,j,k) - 6-sided Volumes are split into
 hexahedral (cubic) elements.</li>
 <li>\subpage cartesian_algo_page</li>
-internal parts of Volumes are split into hexahedral elements forming a
+- internal parts of Volumes are split into hexahedral elements forming a
 Cartesian grid; polyhedra and other types of elements are generated
 where the geometrical boundary intersects Cartesian cells.</li>
 </ul>
@@ -47,7 +47,7 @@ where the geometrical boundary intersects Cartesian cells.</li>
 </ul>
 
 Some of 3D meshing algorithms also can generate 3D meshes from 2D meshes, working without
-geometrical objects. Such algorithms are
+geometrical objects. Such algorithms is
 <ul>
 <li>Hexahedron meshing algorithm (i,j,k),</li>
 <!-- <li>GHS3D meshing algorithm (commercial)</li> -->

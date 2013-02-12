@@ -102,13 +102,22 @@ public:
    */
   void Reverse();
   /*!
-   * \brief Return nb nodes on edges and vertices (+1 to be == GetUVPtStruct().size() )
+   * \brief Make ignore medium nodes
    */
-  int NbPoints() const { return myNbPonits; }
+  void SetIgnoreMediumNodes(bool toIgnore);
+
+  /*!
+   * \brief Return nb nodes on edges and vertices (+1 to be == GetUVPtStruct().size() ).
+   *        Call it with update == true if mesh of this side can be recomputed
+   *        since creation of this side
+   */
+  int NbPoints(const bool update = false) const;
   /*!
    * \brief Return nb edges
+   *        Call it with update == true if mesh of this side can be recomputed
+   *        since creation of this side
    */
-  int NbSegments() const { return myNbSegments; }
+  int NbSegments(const bool update = false) const;
   /*!
    * \brief Return mesh
    */
@@ -117,6 +126,7 @@ public:
    * \brief Return true if there are vertices without nodes
    */
   bool MissVertexNode() const { return myMissingVertexNodes; }
+
   /*!
    * \brief Return detailed data on nodes
     * \param isXConst - true if normalized parameter X is constant
@@ -139,6 +149,7 @@ public:
     * For a closed side, the 1st point repeats at end
    */
   std::vector<const SMDS_MeshNode*> GetOrderedNodes() const;
+
   /*!
    * \brief Return edge and parameter on edge by normalized parameter
    */
@@ -147,6 +158,10 @@ public:
    * \brief Return UV by normalized parameter
    */
   gp_Pnt2d Value2d(double U) const;
+  /*!
+   * \brief Return XYZ by normalized parameter
+   */
+  gp_Pnt   Value3d(double U) const;
   /*!
    * \brief Creates a Adaptor2d_Curve2d to be used in SMESH_Block
    */

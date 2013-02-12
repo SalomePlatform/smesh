@@ -7,8 +7,12 @@ In this dialog you can specify the properties of the scalar bar
 \image html scalar_bar_dlg.png
 
 <ul>
-<li><b>Scalar Range</b> in this menu you can specify 
-<b>Min value</b> and <b>Max value</b> of the <b>Scalar Bar</b> </li>
+<li><b>Scalar Range</b> - in this menu you can specify 
+<b>Min value</b> and <b>Max value</b> of the <b>Scalar Bar</b>, and
+also you can turn on/off <b>Logarithmic</b> scaling of the scalar bar.</li>
+
+\note <b>Logarithmic scale</b> is not applicable in case of
+negative and zero values in the range. In such cases it is disabled.
 
 <li><b>Font</b> - in this menu you can set type, face and color for
 the font of <b>Title</b> and <b>Labels</b> of the <b>Scalar
@@ -29,7 +33,7 @@ location (<b>X</b> and <b>Y</b>) and size (<b>Width</b> and
 side)</li>
 <li><b>Y</b>: ordinate of the origin (from the bottom)</li>
 </ul>
-<li><b>Distribution</b> in this menu you can Show/Hide distribution histogram of the values of the <b>Scalar Bar</b> and specify histogram properties</li>
+<li><b>Distribution</b> - in this menu you can Show/Hide distribution histogram of the values of the <b>Scalar Bar</b> and specify histogram properties</li>
 <ul>
 <li><b>Multicolor</b> the histogram is colored as <b>Scalar Bar</b></li>
 <li><b>Monocolor</b> the histogram is colored as selected with <b>Distribution color</b> selector</li>

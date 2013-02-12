@@ -655,10 +655,9 @@ bool _QuadFaceGrid::Init(const TopoDS_Face& f)
   //if ( myFace.Orientation() != TopAbs_FORWARD )
     //myFace.Reverse();
 
-  TopoDS_Vertex V;
   list< TopoDS_Edge > edges;
   list< int > nbEdgesInWire;
-  int nbWire = SMESH_Block::GetOrderedEdges (myFace, V, edges, nbEdgesInWire);
+  int nbWire = SMESH_Block::GetOrderedEdges (myFace, edges, nbEdgesInWire);
   if ( nbWire != 1 )
     return false;
 

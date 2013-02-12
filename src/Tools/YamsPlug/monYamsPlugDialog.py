@@ -20,7 +20,7 @@
 # Modules Python
 # Modules Eficas
 
-import os
+import os, subprocess
 from YamsPlugDialog import Ui_YamsPlugDialog
 from monViewText import MonViewText
 from PyQt4.QtGui import *
@@ -64,11 +64,8 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
           maDoc=os.environ['DISTENE_YAMS_DOC_PDF']
         except Exception:
           QMessageBox.warning( self, "Help unavailable", str(maDoc) + " not found")
-        old_ld=os.getenv("LD_LIBRARY_PATH")
-        command="unset LD_LIBRARY_PATH;"
-        command+="xdg-open "+maDoc+";"
-        command+="export LD_LIBRARY_PATH=%s"%old_ld
-        os.system(command)
+        command="xdg-open "+maDoc+";"
+	subprocess.call(command, shell=True)
 
 
   def PBOKPressed(self):

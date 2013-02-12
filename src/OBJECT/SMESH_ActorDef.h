@@ -180,6 +180,13 @@ class SMESH_ActorDef : public SMESH_Actor
   virtual void SetPointsLabeled(bool theIsPointsLabeled);
   virtual bool GetPointsLabeled();
 
+  virtual void SetPointsFontProperties( SMESH::LabelFont family, int size, 
+                                        bool bold, bool italic, bool shadow,
+                                        vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b );
+  virtual void SetCellsFontProperties( SMESH::LabelFont family, int size, 
+                                       bool bold, bool italic, bool shadow,
+                                       vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b );
+  
   virtual void SetCellsLabeled(bool theIsCellsLabeled);
   virtual bool GetCellsLabeled();
 

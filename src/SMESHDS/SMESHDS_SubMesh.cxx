@@ -469,8 +469,8 @@ SMESHDS_SubMeshIteratorPtr SMESHDS_SubMesh::GetSubMeshIterator() const
 
 void SMESHDS_SubMesh::Clear()
 {
-  myElements.clear();
-  myNodes.clear();
+  clearVector( myElements );
+  clearVector( myNodes );
   myUnusedIdNodes = 0;
   myUnusedIdElements = 0;
   SMESHDS_SubMeshIteratorPtr sub = GetSubMeshIterator();

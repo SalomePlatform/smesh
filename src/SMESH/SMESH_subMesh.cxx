@@ -264,11 +264,11 @@ bool SMESH_subMesh::IsMeshComputed() const
 
 //=============================================================================
 /*!
- *
+ * Return true if all sub-meshes have been meshed
  */
 //=============================================================================
 
-bool SMESH_subMesh::subMeshesComputed()
+bool SMESH_subMesh::SubMeshesComputed() const
 {
   int myDim = SMESH_Gen::GetShapeDim( _subShape );
   int dimToCheck = myDim - 1;
@@ -1398,7 +1398,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           if (!algo->OnlyUnaryInput())
             shape = getCollection( gen, algo, subComputed );
           else
-            subComputed = subMeshesComputed();
+            subComputed = SubMeshesComputed();
           ret = ( algo->NeedDiscreteBoundary() ? subComputed :
                   algo->SupportSubmeshes() ? true :
                   ( !subComputed || _father->IsNotConformAllowed() ));
@@ -1474,9 +1474,12 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           }
         }
         catch ( SALOME_Exception& S_ex ) {
+          const int skipSalomeShift = 7; /* to skip "Salome " of
+                                            "Salome Exception" prefix returned
+                                            by SALOME_Exception::what() */
           if ( !_computeError ) _computeError = SMESH_ComputeError::New();
           _computeError->myName    = COMPERR_SLM_EXCEPTION;
-          _computeError->myComment = S_ex.what();
+          _computeError->myComment = S_ex.what() + skipSalomeShift;
         }
         catch ( std::exception& exc ) {
           if ( !_computeError ) _computeError = SMESH_ComputeError::New();
@@ -1519,7 +1522,26 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
         {
           _computeError.reset();
         }
-        updateDependantsState( SUBMESH_COMPUTED ); // send event SUBMESH_COMPUTED
+
+        // send event SUBMESH_COMPUTED
+        if ( ret ) {
+          if ( !algo->NeedDiscreteBoundary() )
+            // send SUBMESH_COMPUTED to dependants of all sub-meshes of shape
+            for (subS.ReInit(); subS.More(); subS.Next())
+            {
+              SMESH_subMesh* sm = _father->GetSubMesh( subS.Current() );
+              SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(false,false);
+              while ( smIt->more() ) {
+                sm = smIt->next();
+                if ( sm->GetSubShape().ShapeType() == TopAbs_VERTEX )
+                  sm->updateDependantsState( SUBMESH_COMPUTED );
+                else
+                  break;
+              }
+            }
+          else
+            updateDependantsState( SUBMESH_COMPUTED );
+        }
       }
       break;
 #ifdef WITH_SMESH_CANCEL_COMPUTE
@@ -1862,9 +1884,7 @@ void SMESH_subMesh::updateDependantsState(const compute_event theEvent)
   for (; it.More(); it.Next())
   {
     const TopoDS_Shape& ancestor = it.Value();
-    SMESH_subMesh *aSubMesh =
-      _father->GetSubMeshContaining(ancestor);
-    if (aSubMesh)
+    if ( SMESH_subMesh *aSubMesh = _father->GetSubMeshContaining(ancestor))
       aSubMesh->ComputeStateEngine( theEvent );
   }
 }
@@ -1933,7 +1953,7 @@ TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * theGen,
                                           SMESH_Algo* theAlgo,
                                           bool &      theSubComputed)
 {
-  theSubComputed = subMeshesComputed();
+  theSubComputed = SubMeshesComputed();
 
   TopoDS_Shape mainShape = _father->GetMeshDS()->ShapeToMesh();
 
@@ -1966,7 +1986,7 @@ TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * theGen,
       if (strcmp( anAlgo->GetName(), theAlgo->GetName()) == 0 && // same algo
           anAlgo->GetUsedHypothesis( *_father, S, ignoreAuxiliaryHyps ) == aUsedHyp) // same hyps
         aBuilder.Add( aCompound, S );
-      if ( !subMesh->subMeshesComputed() )
+      if ( !subMesh->SubMeshesComputed() )
         theSubComputed = false;
     }
   }
@@ -2192,20 +2212,19 @@ void SMESH_subMesh::DeleteEventListener(EventListener* listener)
 {
   map< EventListener*, EventListenerData* >::iterator l_d =
     _eventListeners.find( listener );
-  if ( l_d != _eventListeners.end() ) {
-    if ( l_d->first && l_d->first->IsDeletable() )
-    {
-      l_d->first->BeforeDelete( this, l_d->second );
-      delete l_d->first;
-    }
+  if ( l_d != _eventListeners.end() && l_d->first )
+  {
     if ( l_d->second && l_d->second->IsDeletable() )
     {
       delete l_d->second;
     }
+    l_d->first->myBusySM.erase( this );
+    if ( l_d->first->IsDeletable() )
+    {
+      l_d->first->BeforeDelete( this, l_d->second );
+      delete l_d->first;
+    }
     _eventListeners.erase( l_d );
-
-    if ( l_d->first && !l_d->first->IsDeletable() )
-      l_d->first->myBusySM.erase( this );
   }
 }
 
@@ -2343,22 +2362,23 @@ namespace {
 //================================================================================
 
 SMESH_subMeshIteratorPtr SMESH_subMesh::getDependsOnIterator(const bool includeSelf,
-                                                             const bool reverse)
+                                                             const bool reverse) const
 {
+  SMESH_subMesh *me = (SMESH_subMesh*) this;
   SMESH_subMesh *prepend=0, *append=0;
   if ( includeSelf ) {
-    if ( reverse ) prepend = this;
-    else            append = this;
+    if ( reverse ) prepend = me;
+    else            append = me;
   }
   typedef map < int, SMESH_subMesh * > TMap;
   if ( reverse )
   {
     return SMESH_subMeshIteratorPtr
-      ( new _Iterator( new SMDS_mapReverseIterator<TMap>( DependsOn() ), prepend, append ));
+      ( new _Iterator( new SMDS_mapReverseIterator<TMap>( me->DependsOn() ), prepend, append ));
   }
   {
     return SMESH_subMeshIteratorPtr
-      ( new _Iterator( new SMDS_mapIterator<TMap>( DependsOn() ), prepend, append ));
+      ( new _Iterator( new SMDS_mapIterator<TMap>( me->DependsOn() ), prepend, append ));
   }
 }
 

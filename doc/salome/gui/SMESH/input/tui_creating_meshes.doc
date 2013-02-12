@@ -7,296 +7,52 @@
 
 <br>
 <h2>Construction of a Mesh</h2>
-
-\code
-import geompy
-import smesh
-
-# create a box
-box = geompy.MakeBox(0., 0., 0., 100., 200., 300.)
-idbox = geompy.addToStudy(box, "box")
-
-# create a mesh
-tetra = smesh.Mesh(box, "MeshBox")
-
-algo1D = tetra.Segment()
-algo1D.NumberOfSegments(7)
-
-algo2D = tetra.Triangle()
-algo2D.MaxElementArea(800.)
-
-algo3D = tetra.Tetrahedron()
-algo3D.MaxElementVolume(900.)
-
-# compute the mesh
-ret = tetra.Compute()
-if ret == 0:
-    print "problem when computing the mesh"
-else:
-    print "mesh computed"
-    pass
-\endcode
+\include creating_meshes_ex01.py
+<a href="../../examples/SMESH/creating_meshes_ex01.py">Download this script</a>
 
 <br>
 \anchor tui_construction_submesh
 <h2>Construction of a Submesh</h2>
-
-\code
-from geompy import *
-import smesh
-
-# create a box
-box = MakeBoxDXDYDZ(10., 10., 10.)
-addToStudy(box, "Box")
-
-# select one edge of the box for definition of a local hypothesis
-p5 = MakeVertex(5., 0., 0.)
-EdgeX = GetEdgeNearPoint(box, p5)
-addToStudyInFather(box, EdgeX, "Edge [0,0,0 - 10,0,0]")
-
-# create a hexahedral mesh on the box
-quadra = smesh.Mesh(box, "Box : quadrangle 2D mesh")
-
-# create a regular 1D algorithm for the faces
-algo1D = quadra.Segment()
-
-# define "NumberOfSegments" hypothesis to cut
-# all the edges in a fixed number of segments
-algo1D.NumberOfSegments(4)
-
-# create a quadrangle 2D algorithm for the faces
-quadra.Quadrangle()
-
-# construct a submesh on the edge with a local hypothesis
-algo_local = quadra.Segment(EdgeX)
-
-# define "Arithmetic1D" hypothesis to cut the edge in several segments with increasing arithmetic length
-algo_local.Arithmetic1D(1, 4)
-
-# define "Propagation" hypothesis that propagates all other hypotheses
-# on all edges of the opposite side in case of quadrangular faces
-algo_local.Propagation()
-
-# compute the mesh
-quadra.Compute()
-
-\endcode
+\include creating_meshes_ex02.py
+<a href="../../examples/SMESH/creating_meshes_ex02.py">Download this script</a>
 
 <br>
 <h2>Change priority of submeshes in Mesh</h2>
-
-\code
-import salome
-import geompy
-import smesh
-import SMESH
-
-Box_1 = geompy.MakeBoxDXDYDZ(200, 200, 200)
-[Face_1,Face_2,Face_3,Face_4,Face_5,Face_6] = geompy.SubShapeAllSorted(Box_1, geompy.ShapeType["FACE"])
-
-# create Mesh object on Box shape
-Mesh_1 = smesh.Mesh(Box_1)
-
-# assign mesh algorithms
-Regular_1D = Mesh_1.Segment()
-Nb_Segments_1 = Regular_1D.NumberOfSegments(20)
-Nb_Segments_1.SetDistrType( 0 )
-MEFISTO_2D = Mesh_1.Triangle()
-Max_Element_Area_1 = MEFISTO_2D.MaxElementArea(1200)
-Tetrahedron = Mesh_1.Tetrahedron()
-Max_Element_Volume_1 = Tetrahedron.MaxElementVolume(40000)
-
-# create submesh and assign algorithms on Face_1
-Regular_1D_1 = Mesh_1.Segment(geom=Face_1)
-Nb_Segments_2 = Regular_1D_1.NumberOfSegments(4)
-Nb_Segments_2.SetDistrType( 0 )
-MEFISTO_2D_1 = Mesh_1.Triangle(algo=smesh.MEFISTO,geom=Face_1)
-Length_From_Edges_2D = MEFISTO_2D_1.LengthFromEdges()
-SubMesh_1 = MEFISTO_2D_1.GetSubMesh()
-
-# create submesh and assign algorithms on Face_2
-Regular_1D_2 = Mesh_1.Segment(geom=Face_2)
-Nb_Segments_3 = Regular_1D_2.NumberOfSegments(8)
-Nb_Segments_3.SetDistrType( 0 )
-MEFISTO_2D_2 = Mesh_1.Triangle(algo=smesh.MEFISTO,geom=Face_2)
-Length_From_Edges_2D_1 = MEFISTO_2D_2.LengthFromEdges()
-SubMesh_2 = MEFISTO_2D_2.GetSubMesh()
-
-# create submesh and assign algorithms on Face_3
-Regular_1D_3 = Mesh_1.Segment(geom=Face_3)
-Nb_Segments_4 = Regular_1D_3.NumberOfSegments(12)
-Nb_Segments_4.SetDistrType( 0 )
-MEFISTO_2D_3 = Mesh_1.Triangle(algo=smesh.MEFISTO,geom=Face_3)
-Length_From_Edges_2D_2 = MEFISTO_2D_3.LengthFromEdges()
-SubMesh_3 = MEFISTO_2D_3.GetSubMesh()
-
-# check exisiting submesh priority order
-[ [ SubMesh_1, SubMesh_3, SubMesh_2 ] ] = Mesh_1.GetMeshOrder()
-# set new submesh order
-isDone = Mesh_1.SetMeshOrder( [ [ SubMesh_1, SubMesh_2, SubMesh_3 ] ])
-# compute mesh
-isDone = Mesh_1.Compute()
-
-# clear mesh result and compute with other submesh order
-Mesh_1.Clear()
-isDone = Mesh_1.SetMeshOrder( [ [ SubMesh_2, SubMesh_1, SubMesh_3 ] ])
-isDone = Mesh_1.Compute()
-
-\endcode
+\include creating_meshes_ex03.py
+<a href="../../examples/SMESH/creating_meshes_ex03.py">Download this script</a>
 
 <br>
 \anchor tui_editing_mesh
 <h2>Editing of a mesh</h2>
-
-\code
-import geompy
-import smesh
-
-def PrintMeshInfo(theMesh):
-    aMesh = theMesh.GetMesh()
-    print "Information about mesh:"
-    print "Number of nodes       : ", aMesh.NbNodes()
-    print "Number of edges       : ", aMesh.NbEdges()
-    print "Number of faces       : ", aMesh.NbFaces()
-    print "Number of volumes     : ", aMesh.NbVolumes()
-    pass
-
-# create a box
-box = geompy.MakeBox(0., 0., 0., 20., 20., 20.)
-geompy.addToStudy(box, "box")
-
-# select one edge of the box for definition of a local hypothesis
-subShapeList = geompy.SubShapeAll(box, geompy.ShapeType["EDGE"])
-edge = subShapeList[0]
-name = geompy.SubShapeName(edge, box)
-geompy.addToStudyInFather(box, edge, name)
-
-# create a mesh
-tria = smesh.Mesh(box, "Mesh 2D")
-algo1D = tria.Segment()
-hyp1 = algo1D.NumberOfSegments(3)
-algo2D = tria.Triangle()
-hyp2 = algo2D.MaxElementArea(10.)
-
-# create a sub-mesh
-algo_local = tria.Segment(edge)
-hyp3 = algo_local.Arithmetic1D(1, 6)
-hyp4 = algo_local.Propagation()
-
-# compute the mesh
-tria.Compute()
-PrintMeshInfo(tria)
-
-# remove a local hypothesis
-mesh = tria.GetMesh()
-mesh.RemoveHypothesis(edge, hyp4)
-
-# compute the mesh
-tria.Compute()
-PrintMeshInfo(tria)
-
-# change the value of the 2D hypothesis
-hyp2.SetMaxElementArea(2.)
-
-# compute the mesh
-tria.Compute()
-PrintMeshInfo(tria)
-\endcode
+\include creating_meshes_ex04.py
+<a href="../../examples/SMESH/creating_meshes_ex04.py">Download this script</a>
 
 <br>
 \anchor tui_export_mesh
 <h2>Export of a Mesh</h2>
-
-\code
-import geompy
-import smesh
-
-# create a box
-box = geompy.MakeBox(0., 0., 0., 100., 200., 300.)
-idbox = geompy.addToStudy(box, "box")
-
-# create a mesh
-tetra = smesh.Mesh(box, "MeshBox")
-
-algo1D = tetra.Segment()
-algo1D.NumberOfSegments(7)
-
-algo2D = tetra.Triangle()
-algo2D.MaxElementArea(800.)
-
-algo3D = tetra.Tetrahedron()
-algo3D.MaxElementVolume(900.)
-
-# compute the mesh
-tetra.Compute()
-
-# export the mesh in a MED file
-tetra.ExportMED("/tmp/meshMED.med", 0)
-
-# export a group in a MED file
-face = geompy.SubShapeAll( box, geompy.ShapeType["FACE"])[0] # a box side
-group = tetra.GroupOnGeom( face, "face group" ) # group of 2D elements on the <face>
-tetra.ExportMED("/tmp/groupMED.med", meshPart=group)
-\endcode
+\include creating_meshes_ex05.py
+<a href="../../examples/SMESH/creating_meshes_ex05.py">Download this script</a>
 
 <br>
 <h2>How to mesh a cylinder with hexahedrons?</h2>
 Here you can see an example of python script, creating a hexahedral
 mesh on a cylinder. And a picture below the source code of the script,
 demonstrating the resulting mesh.
-\include ex24_cylinder.py
+\include creating_meshes_ex06.py
+<a href="../../examples/SMESH/creating_meshes_ex06.py">Download this script</a>
 
 \image html mesh_cylinder_hexa.png
 
 <br>
 \anchor tui_building_compound
 <h2>Building a compound of meshes</h2>
-\dontinclude SMESH_BuildCompound.py
-\skipline import geompy
-\until #end
+\include creating_meshes_ex07.py
+<a href="../../examples/SMESH/creating_meshes_ex07.py">Download this script</a>
 
 <br>
 \anchor tui_copy_mesh
 <h2>Mesh Copying</h2>
-\code
-from smesh import *
-SetCurrentStudy(salome.myStudy)
-
-# make geometry of a box
-box = geompy.MakeBoxDXDYDZ(100,100,100)
-face = geompy.SubShapeAllSorted(box, geompy.ShapeType["FACE"])[0]
-
-# generate 3D mesh
-mesh = Mesh(box)
-localAlgo = mesh.Triangle(face)
-mesh.AutomaticHexahedralization()
-
-# objects to copy
-fGroup = mesh.GroupOnGeom( face, "2D on face")
-nGroup = mesh.GroupOnGeom( face, "nodes on face", NODE)
-subMesh = localAlgo.GetSubMesh()
-
-# make a new mesh by copying different parts of the mesh
-
-# 1. copy the whole mesh
-newMesh = CopyMesh( mesh, "whole mesh copy")
-
-# 2. copy a group of 2D elements along with groups
-newMesh = CopyMesh( fGroup,  "face group copy with groups",toCopyGroups=True)
-
-# 3. copy a group of nodes with preseving their ids
-newMesh = CopyMesh( nGroup, "node group copy", toKeepIDs=True)
-
-# 4. copy some faces
-faceIds = fGroup.GetIDs()[-10:]
-newMesh = CopyMesh( mesh.GetIDSource( faceIds, FACE ), "some faces copy")
-
-# 5. copy some nodes
-nodeIds = nGroup.GetIDs()[-10:]
-newMesh = CopyMesh( mesh.GetIDSource( nodeIds, NODE), "some nodes copy")
-
-# 6. copy a sub-mesh
-newMesh = CopyMesh( subMesh, "submesh copy" )
-\endcode
+\include creating_meshes_ex08.py
+<a href="../../examples/SMESH/creating_meshes_ex08.py">Download this script</a>
 
 */

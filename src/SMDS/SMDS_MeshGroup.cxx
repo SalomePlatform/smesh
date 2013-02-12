@@ -122,17 +122,21 @@ void SMDS_MeshGroup::Clear()
 //purpose  : 
 //=======================================================================
 
-void SMDS_MeshGroup::Add(const SMDS_MeshElement * theElem)
+bool SMDS_MeshGroup::Add(const SMDS_MeshElement * theElem)
 {
   // the type of the group is determined by the first element added
-  if (myElements.empty()) myType = theElem->GetType();
+  if (myElements.empty()) {
+    myType = theElem->GetType();
+  }
   else if (theElem->GetType() != myType) {
     MESSAGE("SMDS_MeshGroup::Add : Type Mismatch "<<theElem->GetType()<<"!="<<myType);
-    return;
+    return false;
   }
         
   myElements.insert(myElements.end(), theElem);
   ++myTic;
+
+  return true;
 }
 
 //=======================================================================

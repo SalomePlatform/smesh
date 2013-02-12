@@ -73,7 +73,19 @@ mesh groups for which the number of underlying nodes is calculated
 automatically. If the group size exceeds the value set in the preferences,
 the user will have to press \em Compute button explicitly. Zero value
 means "no limit". By default the value is set to 100 000 mesh elements.
-</li></ul>
+</li>
+<li><b>Show details on groups in element information tab</b> - when
+this option is switched off (default), only names of groups, the node
+or element belongs to, are shown in the \ref mesh_element_info_anchor "Info Tab"
+tab of "Mesh Information" dialog box. If this option is
+switched on, the detail information on groups is shown.</li>
+<li><b>Dump base information</b> - Dump base mesh information to the
+file, see \ref mesh_infos_page.</li>
+<li><b>Dump element information</b> - Dump element information to the
+file, see \ref mesh_infos_page.</li>
+<li><b>Dump additional information</b> - Dump additional mesh
+information to the file, see \ref mesh_infos_page.</li>
+</ul>
 <li><b>Automatic Parameters</b></li>
 <ul>
 <li><b>Ratio Bounding Box Diagonal / Max Size</b> - this parameter is

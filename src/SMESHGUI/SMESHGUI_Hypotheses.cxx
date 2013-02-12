@@ -51,23 +51,32 @@
 #define SPACING 6
 #define MARGIN  11
 
-//To disable automatic genericobj management, the following line should be commented.
-//Otherwise, it should be uncommented. Refer to KERNEL_SRC/src/SALOMEDSImpl/SALOMEDSImpl_AttributeIOR.cxx
-#define WITHGENERICOBJ
-
 SMESHGUI_GenericHypothesisCreator::SMESHGUI_GenericHypothesisCreator( const QString& theHypType )
-  : myHypType( theHypType ), myIsCreate( false ), myDlg( 0 )
+  : myToDeleteInitParamsHypo( false ),
+    myHypType( theHypType ),
+    myIsCreate( false ),
+    myDlg( 0 )
 {
 }
 
 SMESHGUI_GenericHypothesisCreator::~SMESHGUI_GenericHypothesisCreator()
 {
+  if ( myToDeleteInitParamsHypo && !myInitParamsHypo->_is_nil() )
+    myInitParamsHypo->UnRegister();
 }
 
 void SMESHGUI_GenericHypothesisCreator::setInitParamsHypothesis(SMESH::SMESH_Hypothesis_ptr hyp)
 {
-  if ( !CORBA::is_nil( hyp ) && hypType() == hyp->GetName() )
-    myInitParamsHypo = SMESH::SMESH_Hypothesis::_duplicate( hyp );
+  if ( !CORBA::is_nil( hyp ) ) {
+    if ( myToDeleteInitParamsHypo && !myInitParamsHypo->_is_nil() )
+      myInitParamsHypo->UnRegister();
+    CORBA::String_var hypName = hyp->GetName();
+    if ( hypType() == hypName.in() )
+    {
+      myInitParamsHypo         = SMESH::SMESH_Hypothesis::_duplicate( hyp );
+      myToDeleteInitParamsHypo = !SMESH::FindSObject( myInitParamsHypo );
+    }
+  }
 }
 
 void SMESHGUI_GenericHypothesisCreator::create( SMESH::SMESH_Hypothesis_ptr initParamsHyp,
@@ -91,19 +100,15 @@ void SMESHGUI_GenericHypothesisCreator::create( bool isAlgo,
   if (isAlgo) {
     SMESH::SMESH_Hypothesis_var anAlgo =
       SMESH::CreateHypothesis( hypType(), theHypName, isAlgo );
-#ifdef WITHGENERICOBJ
     if (!CORBA::is_nil(anAlgo))
       anAlgo->UnRegister();
-#endif
   }
   else {
     SMESH::SMESH_Hypothesis_var aHypothesis =
       SMESH::CreateHypothesis( hypType(), theHypName, false );
     editHypothesis( aHypothesis.in(), theHypName, theParent, obj, slot );
-#ifdef WITHGENERICOBJ
     if (!CORBA::is_nil(aHypothesis))
       aHypothesis->UnRegister();
-#endif
   }
 }
 
@@ -128,9 +133,7 @@ void SMESHGUI_GenericHypothesisCreator::editHypothesis( SMESH::SMESH_Hypothesis_
 {
   myHypName = theHypName;
   myHypo = SMESH::SMESH_Hypothesis::_duplicate( h );
-#ifdef WITHGENERICOBJ
   myHypo->Register();
-#endif
 
   SMESHGUI_HypothesisDlg* Dlg = new SMESHGUI_HypothesisDlg( this, theParent );
   connect( Dlg, SIGNAL( finished( int ) ), this, SLOT( onDialogFinished( int ) ) );
@@ -302,9 +305,7 @@ void SMESHGUI_GenericHypothesisCreator::onDialogFinished( int result )
       }
   }
   SMESHGUI::GetSMESHGUI()->updateObjBrowser( true, 0 );
-#ifdef WITHGENERICOBJ
   myHypo->UnRegister();
-#endif
   myHypo = SMESH::SMESH_Hypothesis::_nil();
   myInitParamsHypo = SMESH::SMESH_Hypothesis::_nil();
 

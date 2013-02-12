@@ -41,6 +41,7 @@
 // SALOME GEOM includes
 #include <GEOMBase.h>
 #include <GEOM_Actor.h>
+#include <GEOM_wrap.hxx>
 
 // SALOME GUI includes
 #include <LightApp_SelectionMgr.h>
@@ -58,6 +59,7 @@
 // SALOME KERNEL includes
 #include <SALOMEDS_SObject.hxx>
 #include <SALOMEDSClient_SObject.hxx>
+#include <SALOMEDS_wrap.hxx>
 
 // OCCT includes
 #include <BRep_Tool.hxx>
@@ -386,17 +388,23 @@ namespace SMESH
   }
   // -----------------------------------------------------------------------
   /*!
-   * \brief Return sub-shape by ID
+   * \brief Return sub-shape by ID. WARNING: UnRegister() must be called on a result
    */
   GEOM::GEOM_Object_ptr getSubShape( int subShapeID, GEOM::GEOM_Object_var aMainShape)
   {
     GEOM::GEOM_Object_var aSubShape;
-    if ( subShapeID == 1 )
+    if ( subShapeID == 1 ) {
       aSubShape = aMainShape;
-    else if ( _PTR(SObject) so = getSubShapeSO( subShapeID, aMainShape ))
+      aSubShape->Register();
+    }
+    else if ( _PTR(SObject) so = getSubShapeSO( subShapeID, aMainShape )) {
       aSubShape = SMESH::SObjectToInterface<GEOM::GEOM_Object>( so );
-    else
+      aSubShape->Register();
+    }
+    else {
       aSubShape = SMESH::GetSubShape( aMainShape, subShapeID );
+      // future call of UnRegister() will delete a servant of this new object
+    }
     return aSubShape._retn();
   }
   // -----------------------------------------------------------------------
@@ -433,7 +441,8 @@ namespace SMESH
       text = aSO->GetName().c_str();
     else {
       text = QString("#%1").arg( subShapeID );
-      QString typeName = shapeTypeName( getSubShape( subShapeID, aMainShape ));
+      GEOM::GEOM_Object_wrap shape = getSubShape( subShapeID, aMainShape );
+      QString typeName = shapeTypeName( shape );
       if ( typeName.length() )
         text += QString(" (%1)").arg(typeName);
     }
@@ -712,24 +721,43 @@ void SMESHGUI_ComputeDlg_QThread::cancel()
 //================================================================================
 //================================================================================
 
-SMESHGUI_ComputeDlg_QThreadQDialog::SMESHGUI_ComputeDlg_QThreadQDialog(QWidget *parent,
-                                                                       SMESH::SMESH_Gen_var gen,
+SMESHGUI_ComputeDlg_QThreadQDialog::SMESHGUI_ComputeDlg_QThreadQDialog(QWidget             * parent,
+                                                                       SMESH::SMESH_Gen_var  gen,
                                                                        SMESH::SMESH_Mesh_var mesh,
                                                                        GEOM::GEOM_Object_var mainShape)
-  : QDialog(parent),
+  : QDialog(parent,
+            Qt::WindowSystemMenuHint |
+            Qt::WindowCloseButtonHint |
+            Qt::Dialog |
+            Qt::WindowMaximizeButtonHint),
     qthread(gen, mesh, mainShape)
 {
   // --
   setWindowTitle(tr("Compute"));
+  setMinimumWidth( 200 );
+
   cancelButton = new QPushButton(tr("Cancel"));
   cancelButton->setDefault(true);
+
+  QLabel * nbNodesName = new QLabel(tr("SMESH_MESHINFO_NODES"), this );
+  QLabel * nbElemsName = new QLabel(tr("SMESH_MESHINFO_ELEMENTS"), this );
+  nbNodesLabel = new QLabel("0", this );
+  nbElemsLabel = new QLabel("0", this );
+
+  QGridLayout* layout = new QGridLayout(this);
+  layout->setMargin( MARGIN );
+  layout->setSpacing( SPACING );
+  layout->addWidget(nbNodesName,  0, 0);
+  layout->addWidget(nbNodesLabel, 0, 1);
+  layout->addWidget(nbElemsName,  1, 0);
+  layout->addWidget(nbElemsLabel, 1, 1);
+  layout->addWidget(cancelButton, 2, 0, 1, 2);
+  adjustSize();
+  update();
+
   connect(cancelButton, SIGNAL(clicked()), this, SLOT(onCancel()));
-  QHBoxLayout *layout = new QHBoxLayout;
-  layout->addWidget(cancelButton);
-  setLayout(layout);
-  resize(200, 50);
   // --
-  startTimer(30); // 30 millisecs
+  startTimer(300); // millisecs
   qthread.start();
 }
 
@@ -749,6 +777,8 @@ void SMESHGUI_ComputeDlg_QThreadQDialog::timerEvent(QTimerEvent *event)
     {
       close();
     }
+  nbNodesLabel->setText( QString("%1").arg( qthread.getMesh()->NbNodes() ));
+  nbElemsLabel->setText( QString("%1").arg( qthread.getMesh()->NbElements() ));
   event->accept();
 }
 
@@ -1094,20 +1124,22 @@ void SMESHGUI_BaseComputeOp::onPublishShape()
   foreach ( row, rows )
   {
     int curSub = table()->item(row, COL_SHAPEID)->text().toInt();
-    GEOM::GEOM_Object_var shape = SMESH::getSubShape( curSub, myMainShape );
+    GEOM::GEOM_Object_wrap shape = SMESH::getSubShape( curSub, myMainShape );
     if ( !shape->_is_nil() && ! SMESH::getSubShapeSO( curSub, myMainShape ))
     {
       if ( !SMESH::getSubShapeSO( 1, myMainShape )) // the main shape not published
       {
         QString name = GEOMBase::GetDefaultName( SMESH::shapeTypeName( myMainShape, "MAIN_SHAPE" ));
-        SALOMEDS::SObject_var so =
+        SALOMEDS::SObject_wrap so =
           geomGen->AddInStudy( study, myMainShape, name.toLatin1().data(), GEOM::GEOM_Object::_nil());
         // look for myMainShape in the table
         for ( int r = 0, nr = table()->rowCount(); r < nr; ++r ) {
           if ( table()->item( r, COL_SHAPEID )->text() == "1" ) {
             if ( so->_is_nil() ) {
-              table()->item( r, COL_SHAPE )->setText( so->GetName() );
-              table()->item( r, COL_PUBLISHED )->setText( so->GetID() );
+              CORBA::String_var name  = so->GetName();
+              CORBA::String_var entry = so->GetID();
+              table()->item( r, COL_SHAPE     )->setText( name.in() );
+              table()->item( r, COL_PUBLISHED )->setText( entry.in() );
             }
             break;
           }
@@ -1115,10 +1147,12 @@ void SMESHGUI_BaseComputeOp::onPublishShape()
         if ( curSub == 1 ) continue;
       }
       QString name = GEOMBase::GetDefaultName( SMESH::shapeTypeName( shape, "ERROR_SHAPE" ));
-      SALOMEDS::SObject_var so = geomGen->AddInStudy( study, shape, name.toLatin1().data(), myMainShape);
+      SALOMEDS::SObject_wrap so = geomGen->AddInStudy( study, shape, name.toLatin1().data(), myMainShape);
       if ( !so->_is_nil() ) {
-        table()->item( row, COL_SHAPE )->setText( so->GetName() );
-        table()->item( row, COL_PUBLISHED )->setText( so->GetID() );
+        CORBA::String_var name  = so->GetName();
+        CORBA::String_var entry = so->GetID();
+        table()->item( row, COL_SHAPE     )->setText( name.in() );
+        table()->item( row, COL_PUBLISHED )->setText( entry.in() );
       }
     }
   }

@@ -42,13 +42,13 @@ SMESH_Hypothesis::SMESH_Hypothesis(int hypId,
                                    int studyId,
                                    SMESH_Gen* gen) : SMESHDS_Hypothesis(hypId)
 {
-  _gen = gen;
-  _studyId = studyId;
-  StudyContextStruct* myStudyContext = _gen->GetStudyContext(_studyId);
-  myStudyContext->mapHypothesis[_hypId] = this;
-  _type = PARAM_ALGO;
-  _shapeType = 0; // to be set by algo with TopAbs_Enum
+  _gen            = gen;
+  _studyId        = studyId;
+  _type           = PARAM_ALGO;
+  _shapeType      = 0;  // to be set by algo with TopAbs_Enum
   _param_algo_dim = -1; // to be set by algo parameter
+  StudyContextStruct* myStudyContext = gen->GetStudyContext(_studyId);
+  myStudyContext->mapHypothesis[hypId] = this;
 }
 
 //=============================================================================

@@ -44,6 +44,7 @@
 // SALOME GEOM includes
 #include <GEOMBase.h>
 #include <GEOM_SelectionFilter.h>
+#include <GEOM_wrap.hxx>
 
 // SALOME GUI includes
 #include <QtxColorButton.h>
@@ -1033,8 +1034,6 @@ bool SMESHGUI_GroupDlg::onApply()
         return false;
 
       _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-      GEOM::GEOM_IGroupOperations_var aGroupOp =
-        SMESH::GetGEOMGen()->GetIGroupOperations(aStudy->StudyId());
 
       if (myGeomObjects->length() == 1) {
         myGroupOnGeom = myMesh->CreateGroupFromGEOM(aType,
@@ -1053,8 +1052,7 @@ bool SMESHGUI_GroupDlg::onApply()
         if (geomGen->_is_nil() || !aStudy)
           return false;
 
-        GEOM::GEOM_IGroupOperations_var op =
-          geomGen->GetIGroupOperations(aStudy->StudyId());
+        GEOM::GEOM_IGroupOperations_wrap op = geomGen->GetIGroupOperations(aStudy->StudyId());
         if (op->_is_nil())
           return false;
 
@@ -1071,8 +1069,8 @@ bool SMESHGUI_GroupDlg::onApply()
           }
         }
 
-        GEOM::GEOM_Object_var aMeshShape = myMesh->GetShapeToMesh();
-        GEOM::GEOM_Object_var aGroupVar = op->CreateGroup(aMeshShape, aGroupType);
+        GEOM::GEOM_Object_var  aMeshShape = myMesh->GetShapeToMesh();
+        GEOM::GEOM_Object_wrap aGroupVar = op->CreateGroup(aMeshShape, aGroupType);
         op->UnionList(aGroupVar, myGeomObjects);
 
         if (op->IsDone()) {
@@ -1373,15 +1371,19 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
 
         // Check if group constructed on the same shape as a mesh or on its child
         _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-        GEOM::GEOM_IGroupOperations_var anOp =
-          SMESH::GetGEOMGen()->GetIGroupOperations(aStudy->StudyId());
 
         // The main shape of the group
         GEOM::GEOM_Object_var aGroupMainShape;
-        if (aGeomGroup->GetType() == 37)
+        if (aGeomGroup->GetType() == 37) {
+          GEOM::GEOM_IGroupOperations_wrap anOp =
+            SMESH::GetGEOMGen()->GetIGroupOperations(aStudy->StudyId());
           aGroupMainShape = anOp->GetMainShape(aGeomGroup);
-        else
-          aGroupMainShape = GEOM::GEOM_Object::_duplicate(aGeomGroup);
+          // aGroupMainShape is an existing servant => GEOM_Object_var not GEOM_Object_wrap
+        }
+        else {
+          aGroupMainShape = aGeomGroup;
+          aGroupMainShape->Register();
+        }
         _PTR(SObject) aGroupMainShapeSO =
           aStudy->FindObjectID(aGroupMainShape->GetStudyEntry());
 
@@ -1951,7 +1953,7 @@ void SMESHGUI_GroupDlg::onAdd()
 
   } else if (myCurrentLineEdit == myGeomGroupLine && myGeomObjects->length() == 1) {
     _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-    GEOM::GEOM_IGroupOperations_var aGroupOp =
+    GEOM::GEOM_IGroupOperations_wrap aGroupOp =
       SMESH::GetGEOMGen()->GetIGroupOperations(aStudy->StudyId());
 
     SMESH::ElementType aGroupType = SMESH::ALL;
