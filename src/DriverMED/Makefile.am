@@ -72,6 +72,7 @@ MED_Test_LDADD = \
 	../Driver/libMeshDriver.la \
 	../SMDS/libSMDS.la \
 	../SMESHDS/libSMESHDS.la \
+	${BOOST_LIB_SYSTEM} \
 	$(KERNEL_LDFLAGS) \
 	-lOpUtil \
 	-lSALOMELocalTrace \
