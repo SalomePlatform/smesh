@@ -5,13 +5,11 @@
 <br>
 \anchor tui_viewing_mesh_infos
 <h2>Viewing Mesh Infos</h2>
-\include viewing_meshes_ex01.py
-<a href="../../examples/SMESH/viewing_meshes_ex01.py">Download this script</a>
+\tui_script{viewing_meshes_ex01.py}
 
 <br>
 \anchor tui_find_element_by_point
 <h2>Find Element by Point</h2>
-\include viewing_meshes_ex02.py
-<a href="../../examples/SMESH/viewing_meshes_ex02.py">Download this script</a>
+\tui_script{viewing_meshes_ex02.py}
 
 */

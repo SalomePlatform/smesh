@@ -77,14 +77,15 @@ public:
   void                        SetTable( const SMESHGUI_FilterTable* );
 
 private:
-  void                        closeEvent( QCloseEvent* );
   void                        enterEvent( QEvent* );            
   void                        keyPressEvent( QKeyEvent* );
   
+protected slots:
+  virtual void                reject();
+
 private slots:
   void                        onOk();
   bool                        onApply();
-  void                        onClose();
   void                        onHelp();
 
   void                        onDeactivate();

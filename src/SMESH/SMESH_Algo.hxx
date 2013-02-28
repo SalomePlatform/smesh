@@ -30,9 +30,10 @@
 
 #include "SMESH_SMESH.hxx"
 
-#include "SMESH_Hypothesis.hxx"
-#include "SMESH_ComputeError.hxx"
+#include "SMDSAbs_ElementType.hxx"
 #include "SMESH_Comment.hxx"
+#include "SMESH_ComputeError.hxx"
+#include "SMESH_Hypothesis.hxx"
 
 #include <TopoDS_Shape.hxx>
 #include <TopoDS_Edge.hxx>
@@ -42,6 +43,7 @@
 #include <vector>
 #include <list>
 #include <map>
+#include <set>
 
 class SMDS_MeshNode;
 class SMESHDS_Mesh;
@@ -60,6 +62,7 @@ class gp_XYZ;
 typedef std::map< SMESH_subMesh*, std::vector<int> >           MapShapeNbElems;
 typedef std::map< SMESH_subMesh*, std::vector<int> >::iterator MapShapeNbElemsItr;
 
+// ==================================================================================
 /*!
  * \brief Root of all algorithms
  *
@@ -69,9 +72,33 @@ typedef std::map< SMESH_subMesh*, std::vector<int> >::iterator MapShapeNbElemsIt
  *  - methods related to dependencies between sub-meshes imposed by the algorith
  *  - static utilities, like EdgeLength()
  */
-class SMESH_EXPORT SMESH_Algo:public SMESH_Hypothesis
+// ==================================================================================
+
+class SMESH_EXPORT SMESH_Algo : public SMESH_Hypothesis
 {
-public:
+ public:
+  //==================================================================================
+  /*!
+   * \brief Structure describing algorithm features
+   */
+  // --------------------------------------------------------------------------------
+  struct Features
+  {
+    int                            _dim;
+    std::set<SMDSAbs_GeometryType> _inElemTypes;  // acceptable types of input mesh element
+    std::set<SMDSAbs_GeometryType> _outElemTypes; // produced types of mesh elements
+    std::string                    _label;        // GUI type name
+
+    bool IsCompatible( const Features& algo2 ) const;
+  };
+  /*!
+   * \brief Returns a structure describing algorithm features
+   */
+  static const Features& GetFeatures( const std::string& algoType );
+  const Features&        GetFeatures() const { return GetFeatures( _name ); }
+
+ public:
+  //==================================================================================
   /*!
    * \brief Creates algorithm
     * \param hypId - algorithm ID
@@ -287,14 +314,10 @@ public:
                                    const bool                                 ignoreMediumNodes,
                                    std::map< double, const SMDS_MeshNode* > & theNodes);
   /*!
-   * \brief Find out elements orientation on a geometrical face
-   * \param theFace - The face correctly oriented in the shape being meshed
-   * \param theMeshDS - The mesh data structure
-   * \retval bool - true if the face normal and the normal of first element
-   *                in the correspoding submesh point in different directions
+   * Moved to SMESH_MesherHelper
    */
-  static bool IsReversedSubMesh (const TopoDS_Face&  theFace,
-                                 SMESHDS_Mesh*       theMeshDS);
+  // static bool IsReversedSubMesh (const TopoDS_Face&  theFace,
+  //                                SMESHDS_Mesh*       theMeshDS);
   /*!
    * \brief Compute length of an edge
     * \param E - the edge

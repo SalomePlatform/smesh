@@ -65,9 +65,7 @@ public:
 
 private:
   void                   Init( bool = true );
-  void                   closeEvent( QCloseEvent* );
   void                   enterEvent( QEvent* );           /* mouse enter the QWidget */
-  void                   hideEvent( QHideEvent* );        /* ESC key */
   void                   keyPressEvent( QKeyEvent* );
   int                    GetConstructorId();
   void                   setNewMeshName();
@@ -132,12 +130,12 @@ private:
   SMESHGUI_FilterDlg*    myFilterDlg;
 
 protected slots:
-  virtual void              onDisplaySimulation( bool );
+  virtual void           onDisplaySimulation( bool );
+  virtual void           reject();
    
 private slots:
   void                   ConstructorsClicked( int );
   void                   ClickOnOk();
-  void                   ClickOnCancel();
   bool                   ClickOnApply();
   void                   ClickOnHelp();
   void                   SetEditCurrentArgument();

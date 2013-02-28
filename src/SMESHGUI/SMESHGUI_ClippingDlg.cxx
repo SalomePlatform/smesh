@@ -479,12 +479,12 @@ SMESHGUI_ClippingDlg::SMESHGUI_ClippingDlg( SMESHGUI* theModule, SVTK_ViewWindow
   connect(PreviewCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnPreviewToggle(bool)));
   connect(AutoApplyCheckBox, SIGNAL(toggled(bool)), this, SLOT(onAutoApply(bool)));
   connect(buttonOk, SIGNAL(clicked()), this, SLOT(ClickOnOk()));
-  connect(buttonCancel, SIGNAL(clicked()), this, SLOT(ClickOnCancel()));
+  connect(buttonCancel, SIGNAL(clicked()), this, SLOT(reject()));
   connect(buttonApply, SIGNAL(clicked()), this, SLOT(ClickOnApply()));
   connect(buttonHelp, SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
-  connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(ClickOnCancel()));
+  connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(reject()));
   /* to close dialog if study frame change */
-  connect(mySMESHGUI, SIGNAL (SignalStudyFrameChanged()), this, SLOT(ClickOnCancel()));
+  connect(mySMESHGUI, SIGNAL (SignalStudyFrameChanged()), this, SLOT(reject()));
 
   this->show();
 }
@@ -589,16 +589,17 @@ void SMESHGUI_ClippingDlg::ClickOnApply()
 void SMESHGUI_ClippingDlg::ClickOnOk()
 {
   ClickOnApply();
-  ClickOnCancel();
+  reject();
 }
 
 //=======================================================================
-// function : ClickOnCancel()
+// function : reject()
 // purpose  :
 //=======================================================================
-void SMESHGUI_ClippingDlg::ClickOnCancel()
+void SMESHGUI_ClippingDlg::reject()
 {
-  close();
+  //here we can insert actions to do at close.
+  QDialog::reject();
 }
 
 //=================================================================================

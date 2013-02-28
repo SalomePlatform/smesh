@@ -92,13 +92,14 @@ protected:
   bool                      isApplyAndClose() const;
 
 private:
-  void                      closeEvent( QCloseEvent* );
   void                      enterEvent( QEvent* );            
   void                      keyPressEvent( QKeyEvent* );
   
+protected slots:
+  virtual void              reject();
+
 private slots:
   void                      onOk();
-  void                      onClose();
   void                      onHelp();
 
   void                      onDeactivate();

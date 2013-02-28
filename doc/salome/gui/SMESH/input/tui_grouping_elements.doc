@@ -5,29 +5,25 @@
 <br>
 \anchor tui_create_standalone_group
 <h2>Create a Standalone Group</h2>
-\include grouping_elements_ex01.py
-<a href="../../examples/SMESH/grouping_elements_ex01.py">Download this script</a>
+\tui_script{grouping_elements_ex01.py}
 
 \image html create_group.png
 
 <br>
 \anchor tui_create_group_on_geometry
 <h2>Create a Group on Geometry</h2>
-\include grouping_elements_ex02.py
-<a href="../../examples/SMESH/grouping_elements_ex02.py">Download this script</a>
+\tui_script{grouping_elements_ex02.py}
 
 <br>
 \anchor tui_create_group_on_filter
 
 <h2>Create a Group on Filter</h2>
-\include grouping_elements_ex03.py
-<a href="../../examples/SMESH/grouping_elements_ex03.py">Download this script</a>
+\tui_script{grouping_elements_ex03.py}
 
 <br>
 \anchor tui_edit_group
 <h2>Edit a Group</h2>
-\include grouping_elements_ex04.py
-<a href="../../examples/SMESH/grouping_elements_ex04.py">Download this script</a>
+\tui_script{grouping_elements_ex04.py}
 
 \image html editing_groups1.png
 
@@ -36,8 +32,7 @@
 <br>
 \anchor tui_union_of_groups
 <h2>Union of groups</h2>
-\include grouping_elements_ex05.py
-<a href="../../examples/SMESH/grouping_elements_ex05.py">Download this script</a>
+\tui_script{grouping_elements_ex05.py}
 
 \image html union_groups1.png
 
@@ -48,8 +43,7 @@
 <br>
 \anchor tui_intersection_of_groups
 <h2>Intersection of groups</h2>
-\include grouping_elements_ex06.py
-<a href="../../examples/SMESH/grouping_elements_ex06.py">Download this script</a>
+\tui_script{grouping_elements_ex06.py}
 
 \image html intersect_groups1.png
 
@@ -60,8 +54,7 @@
 <br>
 \anchor tui_cut_of_groups
 <h2>Cut of groups</h2>
-\include grouping_elements_ex07.py
-<a href="../../examples/SMESH/grouping_elements_ex07.py">Download this script</a>
+\tui_script{grouping_elements_ex07.py}
 
 \image html cut_groups1.png
 
@@ -72,8 +65,7 @@
 <br>
 \anchor tui_create_dim_group
 <h2>Creating groups of entities from existing groups of superior dimensions</h2>
-\include grouping_elements_ex08.py
-<a href="../../examples/SMESH/grouping_elements_ex08.py">Download this script</a>
+\tui_script{grouping_elements_ex08.py}
 
 \image html dimgroup_tui1.png
 <center>Source groups of faces</center>

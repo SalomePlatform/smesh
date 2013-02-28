@@ -7,52 +7,44 @@
 
 <br>
 <h2>Construction of a Mesh</h2>
-\include creating_meshes_ex01.py
-<a href="../../examples/SMESH/creating_meshes_ex01.py">Download this script</a>
+\tui_script{creating_meshes_ex01.py}
 
 <br>
 \anchor tui_construction_submesh
 <h2>Construction of a Submesh</h2>
-\include creating_meshes_ex02.py
-<a href="../../examples/SMESH/creating_meshes_ex02.py">Download this script</a>
+\tui_script{creating_meshes_ex02.py}
 
 <br>
 <h2>Change priority of submeshes in Mesh</h2>
-\include creating_meshes_ex03.py
-<a href="../../examples/SMESH/creating_meshes_ex03.py">Download this script</a>
+\tui_script{creating_meshes_ex03.py}
 
 <br>
 \anchor tui_editing_mesh
 <h2>Editing of a mesh</h2>
-\include creating_meshes_ex04.py
-<a href="../../examples/SMESH/creating_meshes_ex04.py">Download this script</a>
+\tui_script{creating_meshes_ex04.py}
 
 <br>
 \anchor tui_export_mesh
 <h2>Export of a Mesh</h2>
-\include creating_meshes_ex05.py
-<a href="../../examples/SMESH/creating_meshes_ex05.py">Download this script</a>
+\tui_script{creating_meshes_ex05.py}
 
 <br>
 <h2>How to mesh a cylinder with hexahedrons?</h2>
 Here you can see an example of python script, creating a hexahedral
 mesh on a cylinder. And a picture below the source code of the script,
 demonstrating the resulting mesh.
-\include creating_meshes_ex06.py
-<a href="../../examples/SMESH/creating_meshes_ex06.py">Download this script</a>
+\tui_script{creating_meshes_ex06.py}
 
 \image html mesh_cylinder_hexa.png
 
 <br>
 \anchor tui_building_compound
 <h2>Building a compound of meshes</h2>
-\include creating_meshes_ex07.py
-<a href="../../examples/SMESH/creating_meshes_ex07.py">Download this script</a>
+\tui_script{creating_meshes_ex07.py}
 
 <br>
 \anchor tui_copy_mesh
 <h2>Mesh Copying</h2>
-\include creating_meshes_ex08.py
-<a href="../../examples/SMESH/creating_meshes_ex08.py">Download this script</a>
+\tui_script{creating_meshes_ex08.py}
 
 */

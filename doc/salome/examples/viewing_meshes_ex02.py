@@ -8,7 +8,7 @@ import SMESH
 box = geompy.MakeBoxDXDYDZ(100,100,100)
 
 # Create a mesh
-mesh = Mesh(box,"Mesh")
+mesh = smesh.Mesh(box,"Mesh")
 mesh.AutomaticHexahedralization()
 mesh.Compute()
 

@@ -196,7 +196,7 @@ void SMESHGUI_RemoveElementsDlg::Init()
 
   /* signals and slots connections */
   connect(buttonOk,     SIGNAL(clicked()), this, SLOT(ClickOnOk()));
-  connect(buttonCancel, SIGNAL(clicked()), this, SLOT(ClickOnCancel()));
+  connect(buttonCancel, SIGNAL(clicked()), this, SLOT(reject()));
   connect(buttonApply,  SIGNAL(clicked()), this, SLOT(ClickOnApply()));
   connect(buttonHelp,   SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
 
@@ -204,7 +204,7 @@ void SMESHGUI_RemoveElementsDlg::Init()
   connect(mySMESHGUI, SIGNAL (SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
   /* to close dialog if study change */
-  connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(ClickOnCancel()));
+  connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(reject()));
   connect(myEditCurrentArgument, SIGNAL(textChanged(const QString&)),
           SLOT(onTextChange(const QString&)));
 
@@ -257,14 +257,14 @@ void SMESHGUI_RemoveElementsDlg::ClickOnApply()
 void SMESHGUI_RemoveElementsDlg::ClickOnOk()
 {
   ClickOnApply();
-  ClickOnCancel();
+  reject();
 }
 
 //=================================================================================
-// function : ClickOnCancel()
+// function : reject()
 // purpose  :
 //=================================================================================
-void SMESHGUI_RemoveElementsDlg::ClickOnCancel()
+void SMESHGUI_RemoveElementsDlg::reject()
 {
   if (SMESH::GetCurrentVtkView())
     SMESH::RemoveFilters(); // PAL6938 -- clean all mesh entity filters
@@ -274,7 +274,7 @@ void SMESHGUI_RemoveElementsDlg::ClickOnCancel()
   disconnect(mySelectionMgr, 0, this, 0);
   mySelectionMgr->clearFilters();
   mySMESHGUI->ResetState();
-  reject();
+  QDialog::reject();
 }
 
 //=================================================================================
@@ -455,26 +455,6 @@ void SMESHGUI_RemoveElementsDlg::enterEvent(QEvent*)
 {
   if (!GroupConstructors->isEnabled())
     ActivateThisDialog();
-}
-
-//=================================================================================
-// function : closeEvent()
-// purpose  :
-//=================================================================================
-void SMESHGUI_RemoveElementsDlg::closeEvent(QCloseEvent*)
-{
-  /* same than click on cancel button */
-  ClickOnCancel();
-}
-
-//=======================================================================
-//function : hideEvent
-//purpose  : caused by ESC key
-//=======================================================================
-void SMESHGUI_RemoveElementsDlg::hideEvent( QHideEvent* )
-{
-  if (!isMinimized())
-    ClickOnCancel();
 }
 
 //=================================================================================

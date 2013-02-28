@@ -439,7 +439,7 @@ void SMESHGUI_GroupDlg::initDialog( bool create)
 
   connect(myOKBtn,         SIGNAL(clicked()), this, SLOT(onOK()));
   connect(myApplyBtn,      SIGNAL(clicked()), this, SLOT(onApply()));
-  connect(myCloseBtn,      SIGNAL(clicked()), this, SLOT(onClose()));
+  connect(myCloseBtn,      SIGNAL(clicked()), this, SLOT(reject()));
   connect(myHelpBtn,       SIGNAL(clicked()), this, SLOT(onHelp()));
 
   /* Init selection */
@@ -458,7 +458,7 @@ void SMESHGUI_GroupDlg::initDialog( bool create)
   myGeomFilter = new GEOM_SelectionFilter( aStudy, true );
 
   connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), this, SLOT(onDeactivate()));
-  connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()),        this, SLOT(onClose()));
+  connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()),        this, SLOT(reject()));
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()),  this, SLOT(onObjectSelectionChanged()));
   connect(mySMESHGUI, SIGNAL(SignalVisibilityChanged()),      this, SLOT(onVisibilityChanged()));
 
@@ -1189,7 +1189,7 @@ void SMESHGUI_GroupDlg::onOK()
 {
   setIsApplyAndClose( true );
   if ( onApply() )
-    onClose();
+    reject();
   setIsApplyAndClose( false );
 }
 
@@ -2166,15 +2166,6 @@ void SMESHGUI_GroupDlg::onSort()
 }
 
 //=================================================================================
-// function : closeEvent()
-// purpose  :
-//=================================================================================
-void SMESHGUI_GroupDlg::closeEvent (QCloseEvent*)
-{
-  onClose();
-}
-
-//=================================================================================
 // function : onVisibilityChanged()
 // purpose  :
 //=================================================================================
@@ -2184,10 +2175,10 @@ void SMESHGUI_GroupDlg::onVisibilityChanged()
 }
 
 //=================================================================================
-// function : SMESHGUI_GroupDlg::onClose
+// function : SMESHGUI_GroupDlg::reject
 // purpose  : SLOT called when "Close" button pressed. Close dialog
 //=================================================================================
-void SMESHGUI_GroupDlg::onClose()
+void SMESHGUI_GroupDlg::reject()
 {
   if (SMESH::GetCurrentVtkView()) {
     SMESH::RemoveFilters(); // PAL6938 -- clean all mesh entity filters
@@ -2208,7 +2199,7 @@ void SMESHGUI_GroupDlg::onClose()
   mySelectionMgr->clearFilters();
   mySMESHGUI->ResetState();
 
-  reject();
+  QDialog::reject();
 }
 
 //=================================================================================
@@ -2260,16 +2251,6 @@ void SMESHGUI_GroupDlg::enterEvent (QEvent*)
     mySMESHGUI->SetActiveDialogBox(this);
     mySMESHGUI->SetState(800);
   }
-}
-
-//=================================================================================
-// function : hideEvent
-// purpose  : caused by ESC key
-//=================================================================================
-void SMESHGUI_GroupDlg::hideEvent (QHideEvent*)
-{
-  if (!isMinimized() && !myIsBusy)
-    onClose();
 }
 
 //=================================================================================

@@ -215,14 +215,14 @@ void SMESHGUI_SingleEditDlg::Init()
 
   // main buttons
   connect(myOkBtn,    SIGNAL(clicked()), SLOT(onOk()));
-  connect(myCloseBtn, SIGNAL(clicked()), SLOT(onClose()));
+  connect(myCloseBtn, SIGNAL(clicked()), SLOT(reject()));
   connect(myApplyBtn, SIGNAL(clicked()), SLOT(onApply()));
   connect(myHelpBtn,  SIGNAL(clicked()), SLOT(onHelp()));
 
   // selection and SMESHGUI
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionDone()));
   connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), SLOT(onDeactivate()));
-  connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(onClose()));
+  connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(reject()));
   connect(myEdge, SIGNAL(textChanged(const QString&)), SLOT(onTextChange(const QString&)));
 
   myOkBtn->setEnabled(false);
@@ -244,14 +244,14 @@ void SMESHGUI_SingleEditDlg::Init()
 void SMESHGUI_SingleEditDlg::onOk()
 {
   if (onApply())
-    onClose();
+    reject();
 }
 
 //=======================================================================
-// name    : onClose()
+// name    : reject()
 // Purpose : SLOT called when "Close" button pressed. Close dialog
 //=======================================================================
-void SMESHGUI_SingleEditDlg::onClose()
+void SMESHGUI_SingleEditDlg::reject()
 {
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);
@@ -259,7 +259,7 @@ void SMESHGUI_SingleEditDlg::onClose()
   disconnect(mySelectionMgr, 0, this, 0);
   disconnect(mySMESHGUI, 0, this, 0);
   mySMESHGUI->ResetState();
-  reject();
+  QDialog::reject();
 }
 
 //=================================================================================
@@ -456,25 +456,6 @@ void SMESHGUI_SingleEditDlg::enterEvent (QEvent*)
       aViewWindow->SetSelectionMode(EdgeOfCellSelection);
     setEnabled(true);
   }
-}
-
-//=================================================================================
-// function : closeEvent()
-// purpose  :
-//=================================================================================
-void SMESHGUI_SingleEditDlg::closeEvent (QCloseEvent*)
-{
-  onClose();
-}
-
-//=======================================================================
-//function : hideEvent()
-//purpose  : caused by ESC key
-//=======================================================================
-void SMESHGUI_SingleEditDlg::hideEvent (QHideEvent*)
-{
-  if (!isMinimized())
-    onClose();
 }
 
 //=================================================================================

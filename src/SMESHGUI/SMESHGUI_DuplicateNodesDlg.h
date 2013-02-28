@@ -65,15 +65,16 @@ private:
 
   bool                    isValid();
   
-  void                    closeEvent( QCloseEvent* );
   void                    enterEvent( QEvent* );
   void                    keyPressEvent( QKeyEvent* );
   
+protected slots:
+  virtual void            reject();
+
 private slots:
   void                    onConstructorsClicked( int );
  
   void                    onOk();
-  void                    onClose();
   bool                    onApply();
   void                    onHelp();
 

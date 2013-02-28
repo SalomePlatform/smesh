@@ -204,7 +204,7 @@ QWidget* SMESHGUI_GroupOpDlg::createButtonFrame (QWidget* theParent)
 
   // connect signals and slots
   connect(myOkBtn,    SIGNAL(clicked()), SLOT(onOk()));
-  connect(myCloseBtn, SIGNAL(clicked()), SLOT(onClose()));
+  connect(myCloseBtn, SIGNAL(clicked()), SLOT(reject()));
   connect(myApplyBtn, SIGNAL(clicked()), SLOT(onApply()));
   connect(myHelpBtn,  SIGNAL(clicked()), SLOT(onHelp()));
 
@@ -228,7 +228,7 @@ void SMESHGUI_GroupOpDlg::Init()
   // selection and SMESHGUI
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionDone()));
   connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), SLOT(onDeactivate()));
-  connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(ClickOnClose()));
+  connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(reject()));
 
   // set selection mode
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
@@ -315,14 +315,14 @@ void SMESHGUI_GroupOpDlg::onOk()
 {
   setIsApplyAndClose( true );
   if ( onApply() )
-    onClose();
+    reject();
   setIsApplyAndClose( false );
 }
 
 /*!
-  \brief SLOT called when "Close" button pressed closes dialog
+  \brief SLOT called when dialog is closed
 */
-void SMESHGUI_GroupOpDlg::onClose()
+void SMESHGUI_GroupOpDlg::reject()
 {
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);
@@ -331,7 +331,7 @@ void SMESHGUI_GroupOpDlg::onClose()
   mySMESHGUI->ResetState();
   mySelectionMgr->clearFilters();
   reset();
-  reject();
+  QDialog::reject();
 }
 
 /*!
@@ -465,14 +465,6 @@ void SMESHGUI_GroupOpDlg::enterEvent(QEvent*)
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);
   mySelectionMgr->installFilter(new SMESH_TypeFilter (SMESH::GROUP));
-}
-
-/*!
-  \brief Provides reaction on close event, closes the dialog box
-*/
-void SMESHGUI_GroupOpDlg::closeEvent(QCloseEvent*)
-{
-  onClose();
 }
 
 /*!

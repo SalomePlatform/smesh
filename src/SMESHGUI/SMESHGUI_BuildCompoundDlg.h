@@ -68,9 +68,7 @@ public:
 
 private:
   void                    Init();
-  void                    closeEvent( QCloseEvent* );
   void                    enterEvent( QEvent* );             /* mouse enter the QWidget */
-  void                    hideEvent( QHideEvent* );          /* ESC key */
   void                    keyPressEvent( QKeyEvent* );
 
   bool                    isValid();
@@ -115,9 +113,11 @@ private:
 
   bool                    myIsApplyAndClose;
 
+protected slots:
+  virtual void            reject();
+
 private slots:
   void                    ClickOnOk();
-  void                    ClickOnCancel();
   bool                    ClickOnApply();
   void                    ClickOnHelp();
   void                    SelectionIntoArgument();

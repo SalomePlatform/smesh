@@ -31,15 +31,16 @@
 #include "StdMeshers_ProjectionSource2D.hxx"
 #include "StdMeshers_ProjectionSource3D.hxx"
 
+#include "SMDS_EdgePosition.hxx"
 #include "SMESH_Algo.hxx"
 #include "SMESH_Block.hxx"
 #include "SMESH_Gen.hxx"
+#include "SMESH_HypoFilter.hxx"
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_subMesh.hxx"
 #include "SMESH_subMeshEventListener.hxx"
-#include "SMDS_EdgePosition.hxx"
 
 #include "utilities.h"
 
@@ -417,15 +418,15 @@ namespace {
 } // namespace
 
 //=======================================================================
-/*!
- * \brief Looks for association of all sub-shapes of two shapes
- * \param theShape1 - target shape
- * \param theMesh1 - mesh built on shape 1
- * \param theShape2 - source shape
- * \param theMesh2 - mesh built on shape 2
- * \param theAssociation - association map to be filled that may
- *                         contain association of one or two pairs of vertices
- * \retval bool - true if association found
+/*
+ * Looks for association of all sub-shapes of two shapes
+ *  \param theShape1 - target shape
+ *  \param theMesh1 - mesh built on shape 1
+ *  \param theShape2 - source shape
+ *  \param theMesh2 - mesh built on shape 2
+ *  \param theAssociation - association map to be filled that may
+ *                          contain association of one or two pairs of vertices
+ *  \retval bool - true if association found
  */
 //=======================================================================
 
@@ -1263,15 +1264,15 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
 }
 
 //================================================================================
-/*!
- * \brief Find association of edges of faces
- * \param face1 - face 1
- * \param VV1 - vertices of face 1
- * \param face2 - face 2
- * \param VV2 - vertices of face 2 associated with ones of face 1
- * \param edges1 - out list of edges of face 1
- * \param edges2 - out list of edges of face 2
- * \retval int - nb of edges in an outer wire in a success case, else zero
+/*
+ * Find association of edges of faces
+ *  \param face1 - face 1
+ *  \param VV1 - vertices of face 1
+ *  \param face2 - face 2
+ *  \param VV2 - vertices of face 2 associated with ones of face 1
+ *  \param edges1 - out list of edges of face 1
+ *  \param edges2 - out list of edges of face 2
+ *  \retval int - nb of edges in an outer wire in a success case, else zero
  */
 //================================================================================
 
@@ -1500,12 +1501,12 @@ void StdMeshers_ProjectionUtils::InitVertexAssociation( const SMESH_Hypothesis* 
 }
 
 //=======================================================================
-/*!
- * \brief Inserts association theShape1 <-> theShape2 to TShapeShapeMap
- * \param theShape1 - target shape
- * \param theShape2 - source shape
- * \param theAssociationMap - association map 
- * \retval bool - true if there was no association for these shapes before
+/*
+ * Inserts association theShape1 <-> theShape2 to TShapeShapeMap
+ *  \param theShape1 - target shape
+ *  \param theShape2 - source shape
+ *  \param theAssociationMap - association map 
+ *  \retval bool - true if there was no association for these shapes before
  */
 //=======================================================================
 
@@ -1526,12 +1527,12 @@ bool StdMeshers_ProjectionUtils::InsertAssociation( const TopoDS_Shape& theShape
 }
 
 //=======================================================================
-/*!
- * \brief Finds an edge by its vertices in a main shape of the mesh
- * \param aMesh - the mesh
- * \param V1 - vertex 1
- * \param V2 - vertex 2
- * \retval TopoDS_Edge - found edge
+/*
+ * Finds an edge by its vertices in a main shape of the mesh
+ *  \param aMesh - the mesh
+ *  \param V1 - vertex 1
+ *  \param V2 - vertex 2
+ *  \retval TopoDS_Edge - found edge
  */
 //=======================================================================
 
@@ -1554,12 +1555,12 @@ TopoDS_Edge StdMeshers_ProjectionUtils::GetEdgeByVertices( SMESH_Mesh*          
 }
 
 //================================================================================
-/*!
- * \brief Return another face sharing an edge
- * \param edgeToFaces - data map of descendants to ancestors
- * \param edge - edge
- * \param face - face
- * \retval TopoDS_Face - found face
+/*
+ * Return another face sharing an edge
+ *  \param edgeToFaces - data map of descendants to ancestors
+ *  \param edge - edge
+ *  \param face - face
+ *  \retval TopoDS_Face - found face
  */
 //================================================================================
 
@@ -1580,8 +1581,8 @@ TopoDS_Face StdMeshers_ProjectionUtils::GetNextFace( const TAncestorMap& edgeToF
 }
 
 //================================================================================
-/*!
- * \brief Return other vertex of an edge
+/*
+ * Return other vertex of an edge
  */
 //================================================================================
 
@@ -1596,12 +1597,12 @@ TopoDS_Vertex StdMeshers_ProjectionUtils::GetNextVertex(const TopoDS_Edge&   edg
 }
 
 //================================================================================
-/*!
- * \brief Return a propagation edge
- * \param aMesh - mesh
- * \param theEdge - edge to find by propagation
- * \param fromEdge - start edge for propagation
- * \retval pair<int,TopoDS_Edge> - propagation step and found edge
+/*
+ * Return a propagation edge
+ *  \param aMesh - mesh
+ *  \param theEdge - edge to find by propagation
+ *  \param fromEdge - start edge for propagation
+ *  \retval pair<int,TopoDS_Edge> - propagation step and found edge
  */
 //================================================================================
 
@@ -1680,16 +1681,16 @@ StdMeshers_ProjectionUtils::GetPropagationEdge( SMESH_Mesh*        aMesh,
 }
 
 //================================================================================
-  /*!
-   * \brief Find corresponding nodes on two faces
-    * \param face1 - the first face
-    * \param mesh1 - mesh containing elements on the first face
-    * \param face2 - the second face
-    * \param mesh2 - mesh containing elements on the second face
-    * \param assocMap - map associating sub-shapes of the faces
-    * \param node1To2Map - map containing found matching nodes
-    * \retval bool - is a success
-   */
+/*
+ * Find corresponding nodes on two faces
+ *  \param face1 - the first face
+ *  \param mesh1 - mesh containing elements on the first face
+ *  \param face2 - the second face
+ *  \param mesh2 - mesh containing elements on the second face
+ *  \param assocMap - map associating sub-shapes of the faces
+ *  \param node1To2Map - map containing found matching nodes
+ *  \retval bool - is a success
+ */
 //================================================================================
 
 bool StdMeshers_ProjectionUtils::
@@ -1702,7 +1703,7 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
 {
   SMESHDS_Mesh* meshDS1 = mesh1->GetMeshDS();
   SMESHDS_Mesh* meshDS2 = mesh2->GetMeshDS();
-  
+
   SMESH_MesherHelper helper1( *mesh1 );
   SMESH_MesherHelper helper2( *mesh2 );
 
@@ -1996,23 +1997,23 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
     node1To2Map.insert( make_pair( vNode1, vNode2 ));
   }
 
-// don't know why this condition is usually true :(
-//   if ( node1To2Map.size() * quadFactor < SM1->NbNodes() )
-//     MESSAGE("FindMatchingNodes() found too few node pairs starting from nodes ("
-//             << vNode1->GetID() << " - " << eNode1[0]->GetID() << ") ("
-//             << vNode2->GetID() << " - " << eNode2[0]->GetID() << "):"
-//             << node1To2Map.size() * quadFactor << " < " << SM1->NbNodes());
-  
+  // don't know why this condition is usually true :(
+  //   if ( node1To2Map.size() * quadFactor < SM1->NbNodes() )
+  //     MESSAGE("FindMatchingNodes() found too few node pairs starting from nodes ("
+  //             << vNode1->GetID() << " - " << eNode1[0]->GetID() << ") ("
+  //             << vNode2->GetID() << " - " << eNode2[0]->GetID() << "):"
+  //             << node1To2Map.size() * quadFactor << " < " << SM1->NbNodes());
+
   return true;
 }
 
 //================================================================================
-  /*!
-   * \brief Return any sub-shape of a face belonging to the outer wire
-    * \param face - the face
-    * \param type - type of sub-shape to return
-    * \retval TopoDS_Shape - the found sub-shape
-   */
+/*
+ * Return any sub-shape of a face belonging to the outer wire
+ *  \param face - the face
+ *  \param type - type of sub-shape to return
+ *  \retval TopoDS_Shape - the found sub-shape
+ */
 //================================================================================
 
 TopoDS_Shape StdMeshers_ProjectionUtils::OuterShape( const TopoDS_Face& face,
@@ -2025,12 +2026,12 @@ TopoDS_Shape StdMeshers_ProjectionUtils::OuterShape( const TopoDS_Face& face,
 }
 
 //================================================================================
-  /*!
-   * \brief Check that submesh is computed and try to compute it if is not
-    * \param sm - submesh to compute
-    * \param iterationNb - int used to stop infinite recursive call
-    * \retval bool - true if computed
-   */
+/*
+ * Check that submesh is computed and try to compute it if is not
+ *  \param sm - submesh to compute
+ *  \param iterationNb - int used to stop infinite recursive call
+ *  \retval bool - true if computed
+ */
 //================================================================================
 
 bool StdMeshers_ProjectionUtils::MakeComputed(SMESH_subMesh * sm, const int iterationNb)
@@ -2107,9 +2108,45 @@ bool StdMeshers_ProjectionUtils::MakeComputed(SMESH_subMesh * sm, const int iter
   return false;
 }
 
+
 //================================================================================
-/*!
- * \brief Return a boundary EDGE (or all boundary EDGEs) of edgeContainer
+/*
+ * Returns an error message to show in case if MakeComputed( sm ) fails.
+ */
+//================================================================================
+
+std::string StdMeshers_ProjectionUtils::SourceNotComputedError( SMESH_subMesh * sm,
+                                                                SMESH_Algo*     projAlgo )
+{
+  const char usualMessage [] = "Source mesh not computed";
+  if ( !projAlgo )
+    return usualMessage;
+  if ( !sm || sm->GetAlgoState() != SMESH_subMesh::NO_ALGO )
+    return usualMessage; // algo is OK, anything else is KO.
+
+  // Try to find a type of all-dimentional algorithm that would compute the
+  // given sub-mesh if it could be launched before projection
+  const TopoDS_Shape shape = sm->GetSubShape();
+  const int       shapeDim = SMESH_Gen::GetShapeDim( shape );
+
+  for ( int dimIncrement = 1; shapeDim + dimIncrement < 4; ++dimIncrement )
+  {
+    SMESH_HypoFilter filter( SMESH_HypoFilter::IsAlgo() );
+    filter.And( filter.HasDim( shapeDim + dimIncrement ));
+
+    SMESH_Algo* algo = (SMESH_Algo*) sm->GetFather()->GetHypothesis( shape, filter, true );
+    if ( algo && !algo->NeedDiscreteBoundary() )
+      return SMESH_Comment("\"")
+        << algo->GetFeatures()._label << "\""
+        << " can't be used to compute the source mesh for \""
+        << projAlgo->GetFeatures()._label << "\" in this case";
+  }
+  return usualMessage;
+}
+
+//================================================================================
+/*
+ * Return a boundary EDGE (or all boundary EDGEs) of edgeContainer
  */
 //================================================================================
 
@@ -2195,11 +2232,11 @@ namespace { // Definition of event listeners
 }
 
 //================================================================================
-/*!
- * \brief Set event listeners to submesh with projection algo
- * \param subMesh - submesh with projection algo
- * \param srcShape - source shape
- * \param srcMesh - source mesh
+/*
+ * Set event listeners to submesh with projection algo
+ *  \param subMesh - submesh with projection algo
+ *  \param srcShape - source shape
+ *  \param srcMesh - source mesh
  */
 //================================================================================
 

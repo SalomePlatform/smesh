@@ -435,7 +435,7 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
   // Connect section
   connect( myOkBtn,             SIGNAL( clicked() ), this, SLOT( onOk() ) );
   connect( myApplyBtn,          SIGNAL( clicked() ), this, SLOT( onApply() ) );
-  connect( myCancelBtn,         SIGNAL( clicked() ), this, SLOT( onCancel() ) );
+  connect( myCancelBtn,         SIGNAL( clicked() ), this, SLOT( reject() ) );
   connect( myHelpBtn,           SIGNAL(clicked()),   this, SLOT( onHelp() ) );
   connect( myMinEdit,           SIGNAL( textChanged(const QString &) ), this, SLOT( onMinMaxChanged() ) );
   connect( myMaxEdit,           SIGNAL( textChanged(const QString &) ), this, SLOT( onMinMaxChanged() ) );
@@ -445,7 +445,7 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
   connect( myDistributionGrp,   SIGNAL( toggled(bool) ), this, SLOT(onDistributionActivated(bool)) );
   connect( myDistribColorGrp,   SIGNAL( buttonClicked( int ) ),   this, SLOT( onDistributionChanged( int ) ) );
   connect( mySelectionMgr,      SIGNAL( currentSelectionChanged() ), this, SLOT( onSelectionChanged() ) );
-  connect( mySMESHGUI,          SIGNAL( SignalCloseAllDialogs() ),   this, SLOT( onCancel() ) );
+  connect( mySMESHGUI,          SIGNAL( SignalCloseAllDialogs() ),   this, SLOT( reject() ) );
 
   myHelpFileName = "quality_page.html";
 }
@@ -471,7 +471,7 @@ SMESHGUI_Preferences_ScalarBarDlg::~SMESHGUI_Preferences_ScalarBarDlg()
 void SMESHGUI_Preferences_ScalarBarDlg::onOk()
 {
   if ( onApply() )
-    onCancel();
+    reject();
 }
 
 //=================================================================================================
@@ -588,14 +588,15 @@ bool SMESHGUI_Preferences_ScalarBarDlg::onApply()
 
 //=================================================================================================
 /*!
- *  SMESHGUI_Preferences_ScalarBarDlg::onCancel
+ *  SMESHGUI_Preferences_ScalarBarDlg::reject
  *
  *  Cancel button slot
  */
 //=================================================================================================
-void SMESHGUI_Preferences_ScalarBarDlg::onCancel()
+void SMESHGUI_Preferences_ScalarBarDlg::reject()
 {
-  close();
+  myDlg = 0;
+  QDialog::reject();
 }
 
 //=================================================================================================
@@ -722,19 +723,6 @@ void SMESHGUI_Preferences_ScalarBarDlg::onSelectionChanged()
   myOkBtn->setEnabled( false );
   myApplyBtn->setEnabled( false );
   myDistributionGrp->setEnabled( false );
-}
-
-//=================================================================================================
-/*!
- *  SMESHGUI_Preferences_ScalarBarDlg::closeEvent
- *
- *  Close event handler
- */
-//=================================================================================================
-void SMESHGUI_Preferences_ScalarBarDlg::closeEvent( QCloseEvent* e )
-{
-  myDlg = 0;
-  QDialog::closeEvent( e );
 }
 
 //=================================================================================================

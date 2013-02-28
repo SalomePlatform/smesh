@@ -1,7 +1,6 @@
 /*!
 
 \page tui_cartesian_algo Usage of Body Fitting algorithm
-\include cartesian_algo.py
-<a href="../../examples/SMESH/cartesian_algo.py">Download this script</a>
+\tui_script{cartesian_algo.py}
 
 */

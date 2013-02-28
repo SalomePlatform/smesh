@@ -146,7 +146,7 @@ QWidget* SMESHGUI_DeleteGroupDlg::createButtonFrame (QWidget* theParent)
 
   // connect signals and slots
   connect(myOkBtn,    SIGNAL(clicked()), SLOT(onOk()));
-  connect(myCloseBtn, SIGNAL(clicked()), SLOT(onClose()));
+  connect(myCloseBtn, SIGNAL(clicked()), SLOT(reject()));
   connect(myApplyBtn, SIGNAL(clicked()), SLOT(onApply()));
   connect(myHelpBtn,  SIGNAL(clicked()), SLOT(onHelp()));
 
@@ -173,7 +173,7 @@ void SMESHGUI_DeleteGroupDlg::Init ()
   // selection and SMESHGUI
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionDone()));
   connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), SLOT(onDeactivate()));
-  connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(onClose()));
+  connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(reject()));
 
   // set selection mode
   mySelectionMgr->installFilter(new SMESH_TypeFilter(SMESH::GROUP));
@@ -239,14 +239,14 @@ bool SMESHGUI_DeleteGroupDlg::onApply()
 void SMESHGUI_DeleteGroupDlg::onOk()
 {
   if (onApply())
-    onClose();
+    reject();
 }
 
 //=================================================================================
-// function : onClose()
+// function : reject()
 // purpose  : SLOT called when "Close" button pressed. Close dialog
 //=================================================================================
-void SMESHGUI_DeleteGroupDlg::onClose()
+void SMESHGUI_DeleteGroupDlg::reject()
 {
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);
@@ -254,7 +254,7 @@ void SMESHGUI_DeleteGroupDlg::onClose()
   disconnect(mySMESHGUI, 0, this, 0);
   mySMESHGUI->ResetState();
   mySelectionMgr->clearFilters();
-  reject();
+  QDialog::reject();
 }
 
 //=================================================================================
@@ -332,15 +332,6 @@ void SMESHGUI_DeleteGroupDlg::enterEvent (QEvent*)
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);
   mySelectionMgr->installFilter(new SMESH_TypeFilter (SMESH::GROUP));
-}
-
-//=================================================================================
-// function : closeEvent()
-// purpose  :
-//=================================================================================
-void SMESHGUI_DeleteGroupDlg::closeEvent (QCloseEvent*)
-{
-  onClose();
 }
 
 //=================================================================================

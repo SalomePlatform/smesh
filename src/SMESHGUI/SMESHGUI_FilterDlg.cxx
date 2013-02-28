@@ -2653,7 +2653,7 @@ QWidget* SMESHGUI_FilterDlg::createButtonFrame (QWidget* theParent)
   aLay->addWidget(myButtons[ BTN_Help   ]);
 
   connect(myButtons[ BTN_OK     ], SIGNAL(clicked()), SLOT(onOk()));
-  connect(myButtons[ BTN_Close  ], SIGNAL(clicked()), SLOT(onClose()));
+  connect(myButtons[ BTN_Close  ], SIGNAL(clicked()), SLOT(reject()));
   connect(myButtons[ BTN_Apply  ], SIGNAL(clicked()), SLOT(onApply()));
   connect(myButtons[ BTN_Help   ], SIGNAL(clicked()), SLOT(onHelp()));
 
@@ -2718,7 +2718,7 @@ void SMESHGUI_FilterDlg::Init (const QList<int>& theTypes, const bool setInViewe
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
 
   connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), SLOT(onDeactivate()));
-  connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(onClose()));
+  connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(reject()));
   
   updateMainButtons();
   updateSelection();
@@ -2768,10 +2768,10 @@ void SMESHGUI_FilterDlg::onOk()
 }
 
 //=======================================================================
-// name    : SMESHGUI_FilterDlg::onClose
+// name    : SMESHGUI_FilterDlg::reject
 // Purpose : SLOT called when "Close" button pressed. Close dialog
 //=======================================================================
-void SMESHGUI_FilterDlg::onClose()
+void SMESHGUI_FilterDlg::reject()
 {
   // Restore previously selected object
   if (mySelectionMgr)
@@ -2799,8 +2799,7 @@ void SMESHGUI_FilterDlg::onClose()
   disconnect(mySMESHGUI, 0, this, 0);
   disconnect(mySelectionMgr, 0, this, 0);
   mySMESHGUI->ResetState();
-  reject();
-  return;
+  QDialog::reject();
 }
 
 //=================================================================================
@@ -2846,15 +2845,6 @@ void SMESHGUI_FilterDlg::enterEvent (QEvent*)
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
   mySMESHGUI->ResetState();
   setEnabled(true);
-}
-
-//=======================================================================
-// name    : closeEvent()
-// Purpose :
-//=======================================================================
-void SMESHGUI_FilterDlg::closeEvent (QCloseEvent*)
-{
-  onClose();
 }
 
 //=======================================================================

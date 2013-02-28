@@ -199,7 +199,7 @@ bool StdMeshers_Projection_1D2D::Evaluate(SMESH_Mesh&         theMesh,
   if ( !srcMesh ) srcMesh = & theMesh;
   SMESH_subMesh* srcFaceSM = srcMesh->GetSubMesh( srcFace );
 
-  typedef StdMeshers_ProjectionUtils SPU;
+  namespace SPU = StdMeshers_ProjectionUtils;
   SPU::TShapeShapeMap shape2ShapeMap;
   SPU::InitVertexAssociation( _sourceHypo, shape2ShapeMap );
   if ( !SPU::FindSubShapeAssociation( theShape, &theMesh, srcFace, srcMesh, shape2ShapeMap))

@@ -221,6 +221,11 @@ public:
    */
   bool GetIsQuadratic() const { return myCreateQuadratic; }
 
+  /*
+   * \brief Find out elements orientation on a geometrical face
+   */
+  bool IsReversedSubMesh (const TopoDS_Face& theFace);
+
   /*!
    * \brief Move medium nodes of faces and volumes to fix distorted elements
    * \param error - container of fixed distorted elements
@@ -373,6 +378,7 @@ public:
   /*!
    * \brief Return node UV on face
    *  \param inFaceNode - a node of element being created located inside a face
+   *  \param check - if provided, returns result of UV check that it enforces
    */
   gp_XY GetNodeUV(const TopoDS_Face&   F,
                   const SMDS_MeshNode* n,

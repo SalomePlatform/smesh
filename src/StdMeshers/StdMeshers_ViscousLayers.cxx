@@ -1096,7 +1096,7 @@ bool _ViscousBuilder::findFacesWithLayers()
       {     
         _ignoreShapeIds.insert( faceInd );
         ignoreFaces.push_back( exp.Current() );
-        if ( SMESH_Algo::IsReversedSubMesh( TopoDS::Face( exp.Current() ), getMeshDS()))
+        if ( helper.IsReversedSubMesh( TopoDS::Face( exp.Current() )))
           _sdVec[i]._reversedFaceIds.insert( faceInd );
       }
     }
@@ -2074,7 +2074,7 @@ bool _ViscousBuilder::inflate(_SolidData& data)
   {
     if ( data._edges[i]->IsOnEdge() ) continue;
     data._edges[i]->FindIntersection( *searcher, intersecDist, data._epsilon );
-    if ( geomSize > intersecDist )
+    if ( geomSize > intersecDist && intersecDist > 0 )
       geomSize = intersecDist;
   }
   if ( data._stepSize > 0.3 * geomSize )
@@ -4480,7 +4480,7 @@ bool _ViscousBuilder::addBoundaryElements()
         reverse = ( helper.GetSubShapeOri( F, E ) == TopAbs_REVERSED );
         if ( helper.GetSubShapeOri( data._solid, F ) == TopAbs_REVERSED )
           reverse = !reverse, F.Reverse();
-        if ( SMESH_Algo::IsReversedSubMesh( TopoDS::Face(F), getMeshDS() ))
+        if ( helper.IsReversedSubMesh( TopoDS::Face(F) ))
           reverse = !reverse;
       }
       else

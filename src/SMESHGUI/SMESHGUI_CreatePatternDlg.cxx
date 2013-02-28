@@ -230,7 +230,7 @@ QWidget* SMESHGUI_CreatePatternDlg::createButtonFrame( QWidget* theParent )
   aLay->addWidget( myHelpBtn );
 
   connect( myOkBtn,    SIGNAL( clicked() ), this, SLOT( onOk() ) );
-  connect( myCloseBtn, SIGNAL( clicked() ), this, SLOT( onClose() ) );
+  connect( myCloseBtn, SIGNAL( clicked() ), this, SLOT( reject() ) );
   connect( mySaveBtn,  SIGNAL( clicked() ), this, SLOT( onSave() ) );
   connect( myHelpBtn,  SIGNAL( clicked() ), this, SLOT( onHelp() ) );
 
@@ -279,7 +279,7 @@ void SMESHGUI_CreatePatternDlg::Init( const int theType )
   connect( mySMESHGUI,     SIGNAL( SignalDeactivateActiveDialog() ),
            this,           SLOT( onDeactivate() ) );
   connect( mySMESHGUI,     SIGNAL( SignalCloseAllDialogs() ),
-           this,           SLOT( onClose() ) );
+           this,           SLOT( reject() ) );
 
   mySwitch2d->setEnabled( theType == Type_2d );
   mySwitch3d->setEnabled( theType == Type_3d );
@@ -482,17 +482,17 @@ void SMESHGUI_CreatePatternDlg::onOk()
 }
 
 //=======================================================================
-// function : onClose()
+// function : reject()
 // purpose  : SLOT called when "Close" button pressed. Close dialog
 //=======================================================================
-void SMESHGUI_CreatePatternDlg::onClose()
+void SMESHGUI_CreatePatternDlg::reject()
 {
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ) )
     aViewWindow->SetSelectionMode( ActorSelection );
   disconnect( mySelectionMgr, 0, this, 0 );
   disconnect( mySMESHGUI, 0, this, 0 );
   mySMESHGUI->ResetState();
-  reject();
+  QDialog::reject();
   emit Close();
 }
 
@@ -646,15 +646,6 @@ void SMESHGUI_CreatePatternDlg::enterEvent( QEvent* )
     activateSelection();
     connect( mySelectionMgr, SIGNAL( currentSelectionChanged() ), SLOT( onSelectionDone() ) );
   }
-}
-
-//=================================================================================
-// function : closeEvent()
-// purpose  : Close dialog box
-//=================================================================================
-void SMESHGUI_CreatePatternDlg::closeEvent( QCloseEvent* )
-{
-  onClose();
 }
 
 //=======================================================================

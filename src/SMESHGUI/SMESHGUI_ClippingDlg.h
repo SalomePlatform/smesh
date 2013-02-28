@@ -192,6 +192,9 @@ private:
   bool                    myIsSelectPlane;
   QString                 myHelpFileName;
 
+protected slots:
+  virtual void            reject();
+
 public slots:
   void                    onSelectPlane( int );
   void                    ClickOnNew();
@@ -203,7 +206,6 @@ public slots:
   void                    OnPreviewToggle( bool );
   void                    onAutoApply(bool);
   void                    ClickOnOk();
-  void                    ClickOnCancel();
   void                    ClickOnApply();
   void                    ClickOnHelp();
 };

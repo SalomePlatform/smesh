@@ -1,8 +1,7 @@
 /*!
 
 \page tui_prism_3d_algo Use 3D extrusion meshing algorithm
-\include prism_3d_algo.py
-<a href="../../examples/SMESH/prism_3d_algo.py">Download this script</a>
+\tui_script{prism_3d_algo.py}
 
 The result geometry and mesh is shown below
 \image html prism_tui_sample.png

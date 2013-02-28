@@ -35,7 +35,7 @@ for i in range(len(anIds)):
 print ""
 
 # create a group
-aGroup = mesh.CreateGroup(SMESH.EDGE, "Free borders")
+aGroup = mesh.GetMesh().CreateGroup(smesh.EDGE, "Free borders")
 aGroup.Add(anIds)
 
 salome.sg.updateObjBrowser(1)

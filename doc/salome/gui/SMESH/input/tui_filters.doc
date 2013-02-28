@@ -27,8 +27,7 @@ Filter 2D mesh elements (faces) according to the aspect ratio value:
 - functor type should be \a smesh.FT_AspectRatio
 - threshold is floating point value (aspect ratio)
 
-\include filters_ex01.py
-<a href="../../examples/SMESH/filters_ex01.py">Download this script</a>
+\tui_script{filters_ex01.py}
 
 \sa \ref tui_aspect_ratio
 
@@ -39,8 +38,7 @@ Filter 3D mesh elements (volumes) according to the aspect ratio value:
 - functor type is \a smesh.FT_AspectRatio3D
 - threshold is floating point value (aspect ratio)
 
-\include filters_ex02.py
-<a href="../../examples/SMESH/filters_ex02.py">Download this script</a>
+\tui_script{filters_ex02.py}
 
 \sa \ref tui_aspect_ratio_3d
 
@@ -51,8 +49,7 @@ Filter 2D mesh elements (faces) according to the warping angle value:
 - functor type is \a smesh.FT_Warping
 - threshold is floating point value (warping angle)
 
-\include filters_ex03.py
-<a href="../../examples/SMESH/filters_ex03.py">Download this script</a>
+\tui_script{filters_ex03.py}
 
 \sa \ref tui_warping
 
@@ -63,8 +60,7 @@ Filter 2D mesh elements (faces) according to the minimum angle value:
 - functor type is \a smesh.FT_MinimumAngle
 - threshold is floating point value (minimum angle)
 
-\include filters_ex04.py
-<a href="../../examples/SMESH/filters_ex04.py">Download this script</a>
+\tui_script{filters_ex04.py}
 
 \sa \ref tui_minimum_angle
 
@@ -75,8 +71,7 @@ Filter 2D mesh elements (faces) according to the taper value:
 - functor type is \a smesh.FT_Taper
 - threshold is floating point value (taper)
 
-\include filters_ex05.py
-<a href="../../examples/SMESH/filters_ex05.py">Download this script</a>
+\tui_script{filters_ex05.py}
 
 \sa \ref tui_taper
 
@@ -87,8 +82,7 @@ Filter 2D mesh elements (faces) according to the skew value:
 - functor type is \a smesh.FT_Skew
 - threshold is floating point value (skew)
 
-\include filters_ex06.py
-<a href="../../examples/SMESH/filters_ex06.py">Download this script</a>
+\tui_script{filters_ex06.py}
 
 \sa \ref tui_skew
 
@@ -99,8 +93,7 @@ Filter 2D mesh elements (faces) according to the area value:
 - functor type is \a smesh.FT_Area
 - threshold is floating point value (area)
 
-\include filters_ex07.py
-<a href="../../examples/SMESH/filters_ex07.py">Download this script</a>
+\tui_script{filters_ex07.py}
 
 \sa \ref tui_area
 
@@ -111,8 +104,7 @@ Filter 3D mesh elements (volumes) according to the volume value:
 - functor type is \a smesh.FT_Volume3D
 - threshold is floating point value (volume)
 
-\include filters_ex08.py
-<a href="../../examples/SMESH/filters_ex08.py">Download this script</a>
+\tui_script{filters_ex08.py}
 
 \sa \ref tui_volume
 
@@ -123,8 +115,7 @@ Filter 1D mesh elements (edges) which represent free borders of a mesh:
 - functor type is \a smesh.FT_FreeBorders
 - threshold value is not required
 
-\include filters_ex09.py
-<a href="../../examples/SMESH/filters_ex09.py">Download this script</a>
+\tui_script{filters_ex09.py}
 
 \sa \ref tui_free_borders
 
@@ -136,8 +127,7 @@ element of mesh only:
 - functor type is \a smesh.FT_FreeEdges
 - threshold value is not required
 
-\include filters_ex10.py
-<a href="../../examples/SMESH/filters_ex10.py">Download this script</a>
+\tui_script{filters_ex10.py}
 
 \sa \ref tui_free_edges
 
@@ -148,8 +138,7 @@ Filter free nodes:
 - functor type is \a smesh.FT_FreeNodes
 - threshold value is not required
 
-\include filters_ex11.py
-<a href="../../examples/SMESH/filters_ex11.py">Download this script</a>
+\tui_script{filters_ex11.py}
 
 \sa \ref tui_free_nodes
 
@@ -160,8 +149,7 @@ Filter free faces:
 - functor type is \a smesh.FT_FreeFaces
 - threshold value is not required
 
-\include filters_ex12.py
-<a href="../../examples/SMESH/filters_ex12.py">Download this script</a>
+\tui_script{filters_ex12.py}
 
 \sa \ref tui_free_faces
 
@@ -172,8 +160,7 @@ Filter faces with bare borders:
 - functor type is \a smesh.FT_BareBorderFace
 - threshold value is not required
 
-\include filters_ex13.py
-<a href="../../examples/SMESH/filters_ex13.py">Download this script</a>
+\tui_script{filters_ex13.py}
 
 \sa \ref tui_bare_border_faces
 
@@ -185,8 +172,7 @@ Filter faces with bare borders:
 - threshold value is the face ID
 - tolerance is in degrees
 
-\include filters_ex14.py
-<a href="../../examples/SMESH/filters_ex14.py">Download this script</a>
+\tui_script{filters_ex14.py}
 
 \section filter_over_constrained_faces Over-constrained faces
 
@@ -195,8 +181,7 @@ Filter over-constrained faces:
 - functor type is \a smesh.FT_OverConstrainedFace
 - threshold value is not required
 
-\include filters_ex15.py
-<a href="../../examples/SMESH/filters_ex15.py">Download this script</a>
+\tui_script{filters_ex15.py}
 
 \sa \ref tui_over_constrained_faces
 
@@ -208,8 +193,7 @@ filter mesh elements basing on the same set of nodes:
           smesh.FT_EqualFaces or \a smesh.FT_EqualVolumes, 
 - threshold value is not required
 
-\include filters_ex16.py
-<a href="../../examples/SMESH/filters_ex16.py">Download this script</a>
+\tui_script{filters_ex16.py}
 
 
 \section tui_double_nodes_control Double nodes
@@ -220,8 +204,7 @@ filters mesh nodes which are coincident with other nodes (within a given toleran
 - threshold value is not required
 - default tolerance is 1.0e-7
 
-\include filters_ex17.py
-<a href="../../examples/SMESH/filters_ex17.py">Download this script</a>
+\tui_script{filters_ex17.py}
 
 
 \section filter_borders_multiconnection Borders at multi-connection
@@ -232,8 +215,7 @@ connections (faces belonging the border edges)
 - functor type is \a smesh.FT_MultiConnection
 - threshold is integer value (number of connections)
 
-\include filters_ex18.py
-<a href="../../examples/SMESH/filters_ex18.py">Download this script</a>
+\tui_script{filters_ex18.py}
 
 \sa \ref tui_borders_at_multiconnection
 
@@ -245,8 +227,7 @@ to the specified number of mesh elements
 - functor type is \a smesh.FT_MultiConnection2D
 - threshold is integer value (number of connections)
 
-\include filters_ex19.py
-<a href="../../examples/SMESH/filters_ex19.py">Download this script</a>
+\tui_script{filters_ex19.py}
 
 \sa \ref tui_borders_at_multiconnection_2d
 
@@ -257,8 +238,7 @@ Filter 1D mesh elements (edges) according to the edge length value:
 - functor type should be \a smesh.FT_Length
 - threshold is floating point value (length)
 
-\include filters_ex20.py
-<a href="../../examples/SMESH/filters_ex20.py">Download this script</a>
+\tui_script{filters_ex20.py}
 
 \sa \ref tui_length_1d
 
@@ -270,8 +250,7 @@ value of its edges:
 - functor type should be \a smesh.FT_Length2D
 - threshold is floating point value (edge length)
 
-\include filters_ex21.py
-<a href="../../examples/SMESH/filters_ex21.py">Download this script</a>
+\tui_script{filters_ex21.py}
 
 \sa \ref tui_length_2d
 
@@ -283,8 +262,7 @@ value of its edges and diagonals:
 - functor type should be \a smesh.FT_MaxElementLength2D
 - threshold is floating point value (edge/diagonal length)
 
-\include filters_ex22.py
-<a href="../../examples/SMESH/filters_ex22.py">Download this script</a>
+\tui_script{filters_ex22.py}
 
 \sa \ref tui_max_element_length_2d
 
@@ -296,8 +274,7 @@ value of its edges and diagonals:
 - functor type should be \a smesh.FT_MaxElementLength3D
 - threshold is floating point value (edge/diagonal length)
 
-\include filters_ex23.py
-<a href="../../examples/SMESH/filters_ex23.py">Download this script</a>
+\tui_script{filters_ex23.py}
 
 \sa \ref tui_max_element_length_3d
 
@@ -308,8 +285,7 @@ Filter 3D mesh elements with bare borders:
 - functor type is \a smesh.FT_BareBorderVolume
 - threshold value is not required
 
-\include filters_ex24.py
-<a href="../../examples/SMESH/filters_ex24.py">Download this script</a>
+\tui_script{filters_ex24.py}
 
 \sa \ref tui_bare_border_volumes
 
@@ -320,8 +296,7 @@ Filter over-constrained volumes:
 - functor type is \a smesh.FT_OverConstrainedVolume
 - threshold value is not required
 
-\include filters_ex25.py
-<a href="../../examples/SMESH/filters_ex25.py">Download this script</a>
+\tui_script{filters_ex25.py}
 
 \sa \ref tui_over_constrained_faces
 
@@ -333,8 +308,7 @@ shape defined by threshold value:
 - functor type should be \a smesh.FT_BelongToGeom
 - threshold is geometrical object
 
-\include filters_ex26.py
-<a href="../../examples/SMESH/filters_ex26.py">Download this script</a>
+\tui_script{filters_ex26.py}
 
 \section filter_lying_on_geom Lying on Geom
 
@@ -344,8 +318,7 @@ shape defined by threshold value:
 - functor type should be \a smesh.FT_LyingOnGeom
 - threshold is geometrical object
 
-\include filters_ex27.py
-<a href="../../examples/SMESH/filters_ex27.py">Download this script</a>
+\tui_script{filters_ex27.py}
 
 \section filter_belong_to_plane Belong to Plane
 
@@ -356,8 +329,7 @@ plane defined by threshold value with the given tolerance:
 - threshold is geometrical object (plane)
 - default tolerance is 1.0e-7
 
-\include filters_ex28.py
-<a href="../../examples/SMESH/filters_ex28.py">Download this script</a>
+\tui_script{filters_ex28.py}
 
 \section filter_belong_to_cylinder Belong to Cylinder
 
@@ -368,8 +340,7 @@ cylindrical face defined by threshold value with the given tolerance:
 - threshold is geometrical object (cylindrical face)
 - default tolerance is 1.0e-7
 
-\include filters_ex29.py
-<a href="../../examples/SMESH/filters_ex29.py">Download this script</a>
+\tui_script{filters_ex29.py}
 
 \section filter_belong_to_surface Belong to Surface
 
@@ -380,8 +351,7 @@ arbitrary surface defined by threshold value with the given tolerance:
 - threshold is geometrical object (arbitrary surface)
 - default tolerance is 1.0e-7
 
-\include filters_ex30.py
-<a href="../../examples/SMESH/filters_ex30.py">Download this script</a>
+\tui_script{filters_ex30.py}
 
 \section filter_range_of_ids Range of IDs
 
@@ -391,8 +361,7 @@ specified identifiers range:
 - functor type is \a smesh.FT_RangeOfIds
 - threshold is string listing required IDs and/or ranges of IDs, e.g."1,2,3,50-60,63,67,70-78"	
 
-\include filters_ex31.py
-<a href="../../examples/SMESH/filters_ex31.py">Download this script</a>
+\tui_script{filters_ex31.py}
 
 \section filter_bad_oriented_volume Badly oriented volume
 
@@ -402,8 +371,7 @@ the point of view of MED convention.
 - functor type is \a smesh.FT_BadOrientedVolume
 - threshold is not required
 
-\include filters_ex32.py
-<a href="../../examples/SMESH/filters_ex32.py">Download this script</a>
+\tui_script{filters_ex32.py}
 
 \section filter_linear_or_quadratic Linear / quadratic
 
@@ -414,8 +382,7 @@ Filter linear / quadratic mesh elements:
 - if unary operator is set to smesh.FT_LogicalNOT, the quadratic
 elements are selected, otherwise (by default) linear elements are selected
 
-\include filters_ex33.py
-<a href="../../examples/SMESH/filters_ex33.py">Download this script</a>
+\tui_script{filters_ex33.py}
 
 \section filter_group_color Group color
 
@@ -424,8 +391,7 @@ Filter mesh entities, belonging to the group with the color defined by the thres
 - functor type is \a smesh.FT_GroupColor
 - threshold should be of SALOMEDS.Color type
 
-\include filters_ex34.py
-<a href="../../examples/SMESH/filters_ex34.py">Download this script</a>
+\tui_script{filters_ex34.py}
 
 \section filter_geom_type Geometry type
 
@@ -436,8 +402,7 @@ entity type.
 - functor type should be \a smesh.FT_ElemGeomType
 - threshold is of smesh.GeometryType value
 
-\include filters_ex35.py
-<a href="../../examples/SMESH/filters_ex35.py">Download this script</a>
+\tui_script{filters_ex35.py}
 
 \section combining_filters How to combine filters with Criterion structures?
 
@@ -445,8 +410,7 @@ Filters can be combined by making use of "criteria".
 
 Example :
 
-\include filters_ex36.py
-<a href="../../examples/SMESH/filters_ex36.py">Download this script</a>
+\tui_script{filters_ex36.py}
 
 
 */

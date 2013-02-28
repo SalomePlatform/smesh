@@ -109,7 +109,7 @@ struct SMESH_TNodeXYZ : public gp_XYZ
 {
   const SMDS_MeshNode* _node;
   double               _xyz[3];
-  SMESH_TNodeXYZ( const SMDS_MeshElement* e):gp_XYZ(0,0,0),_node(0) {
+  SMESH_TNodeXYZ( const SMDS_MeshElement* e=0):gp_XYZ(0,0,0),_node(0) {
     if (e) {
       assert( e->GetType() == SMDSAbs_Node );
       _node = static_cast<const SMDS_MeshNode*>(e);

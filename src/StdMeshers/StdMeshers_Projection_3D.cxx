@@ -57,7 +57,7 @@
 // cout << msg << " ("<< p.X() << "; " <<p.Y() << "; " <<p.Z() << ") " <<endl;\
 // }
 
-typedef StdMeshers_ProjectionUtils TAssocTool;
+namespace TAssocTool = StdMeshers_ProjectionUtils;
 
 
 //=======================================================================
@@ -233,13 +233,14 @@ bool StdMeshers_Projection_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aS
   SMESH_subMesh* srcSubMesh = srcMesh->GetSubMesh( _sourceHypo->GetSource3DShape() );
   //SMESH_subMesh* tgtSubMesh = tgtMesh->GetSubMesh( aShape );
 
-  if ( tgtMesh == srcMesh && !aShape.IsSame( _sourceHypo->GetSource3DShape() )) {
+  string srcMeshError;
+  if ( tgtMesh == srcMesh  && !aShape.IsSame( _sourceHypo->GetSource3DShape() )) {
     if ( !TAssocTool::MakeComputed( srcSubMesh ))
-      return error(COMPERR_BAD_INPUT_MESH,"Source mesh not computed");
+      srcMeshError = TAssocTool::SourceNotComputedError( srcSubMesh, this );
   }
   else {
     if ( !srcSubMesh->IsMeshComputed() )
-      return error(COMPERR_BAD_INPUT_MESH,"Source mesh not computed");
+      srcMeshError = TAssocTool::SourceNotComputedError();
   }
 
   // Find 2 pairs of corresponding vertices

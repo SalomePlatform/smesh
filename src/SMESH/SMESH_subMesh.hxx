@@ -253,7 +253,7 @@ public:
   void SetIsAlwaysComputed(bool isAlCo);
   bool IsAlwaysComputed() { return _alwaysComputed; }
 
-  bool SubMeshesComputed() const;
+  bool SubMeshesComputed(bool * isFailedToCompute=0) const;
 
   
   /*!
@@ -273,7 +273,7 @@ protected:
   void updateDependantsState(const compute_event theEvent);
   void updateSubMeshState(const compute_state theState);
   void cleanDependants();
-  void cleanDependsOn();
+  void cleanDependsOn( bool keepSupportedsubMeshes = false );
   void setAlgoState(algo_state state);
 
   /*!
@@ -282,7 +282,8 @@ protected:
    */
   TopoDS_Shape getCollection(SMESH_Gen * theGen,
                              SMESH_Algo* theAlgo,
-                             bool &      theSubComputed);
+                             bool &      theSubComputed,
+                             bool &      theSubFailed);
   /*!
    * \brief Update compute_state by _computeError
     * \retval bool - false if there are errors
@@ -313,11 +314,12 @@ protected:
   std::map < int, SMESH_subMesh * >_mapDepend;
   bool                  _dependenceAnalysed;
 
+  SMESH_Algo *          _algo; // the algorithm found by last *StateEngine() call
   algo_state            _algoState;
   compute_state         _computeState;
   SMESH_ComputeErrorPtr _computeError;
 
-  // allow algo->Compute() if a subshape of lower dim is meshed but
+  // allow algo->Compute() if a sub-shape of lower dim is meshed but
   // none mesh entity is bound to it. Eg StdMeshers_CompositeSegment_1D can
   // mesh several edges as a whole and leave some of them  without mesh entities
   bool                  _alwaysComputed;

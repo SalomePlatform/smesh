@@ -72,9 +72,7 @@ private:
   typedef QList<SMESH::SMESH_GroupBase_var> GrpList;
 
   void                     Init();
-  void                     closeEvent( QCloseEvent* );
   void                     enterEvent( QEvent* );          /* mouse enter the QWidget */
-  void                     hideEvent( QHideEvent* );       /* ESC key */
   void                     keyPressEvent( QKeyEvent* );
   int                      GetConstructorId();
   void                     displaySimulation();
@@ -125,11 +123,13 @@ public slots:
   void                     onAdd();
   void                     onRemove();
 
+protected slots:
+  virtual void             reject();
+
 private slots:
   void                     ConstructorsClicked( int );
   void                     ClickOnPreview( bool );
   void                     ClickOnOk();
-  void                     ClickOnCancel();
   void                     ClickOnApply();
   void                     ClickOnHelp();
   void                     SetEditCurrentArgument();

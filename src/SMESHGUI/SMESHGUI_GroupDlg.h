@@ -85,13 +85,15 @@ public slots:
   void onAdd();
   void onRemove();
 
+protected slots:
+  virtual void                  reject();
+
 private slots:
   void                          onTypeChanged( int );
   void                          onGrpTypeChanged( int );
   void                          onColorChanged( QColor );
   
   void                          onOK();
-  void                          onClose();
   bool                          onApply();
   void                          onHelp();
   void                          onDeactivate();
@@ -123,9 +125,7 @@ private:
   void                          init( SMESH::SMESH_Mesh_ptr );
   void                          init( SMESH::SMESH_GroupBase_ptr,
                                       const bool theIsConvert = false );
-  void                          closeEvent( QCloseEvent* );
   void                          enterEvent( QEvent* );
-  void                          hideEvent( QHideEvent* );   /* ESC key */
   void                          keyPressEvent( QKeyEvent* );
   void                          setSelectionMode( int );
   void                          updateButtons();

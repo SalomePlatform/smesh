@@ -74,13 +74,10 @@ public:
   SMESHGUI_RevolutionDlg( SMESHGUI* );
   ~SMESHGUI_RevolutionDlg();
 
-  void                      reject();
-
 private:
   enum {NONE_SELECT, POINT_SELECT, FACE_SELECT};
   
   void                      Init( bool = true);
-  void                      closeEvent( QCloseEvent* );
   void                      enterEvent( QEvent* );           /* mouse enter the QWidget */
   void                      keyPressEvent( QKeyEvent* );
   int                       GetConstructorId();
@@ -163,11 +160,11 @@ private:
 
 protected slots:
   virtual void              onDisplaySimulation( bool );
+  virtual void                      reject();
    
 private slots:
   void                      ConstructorsClicked( int );
   void                      ClickOnOk();
-  void                      ClickOnCancel();
   bool                      ClickOnApply();
   void                      ClickOnHelp();
   void                      SetEditCurrentArgument();

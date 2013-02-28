@@ -214,14 +214,14 @@ SMESHGUI_DuplicateNodesDlg::SMESHGUI_DuplicateNodesDlg( SMESHGUI* theModule )
   connect(mySelectButton3, SIGNAL (clicked()), this, SLOT(onEditCurrentArgument()));
 
   connect(myButtonOk,     SIGNAL(clicked()), this, SLOT(onOk()));
-  connect(myButtonClose,  SIGNAL(clicked()), this, SLOT(onClose()));
+  connect(myButtonClose,  SIGNAL(clicked()), this, SLOT(reject()));
   connect(myButtonApply,  SIGNAL(clicked()), this, SLOT(onApply()));
   connect(myButtonHelp,   SIGNAL(clicked()), this, SLOT(onHelp()));
   
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionChanged()));
 
   connect(mySMESHGUI, SIGNAL (SignalDeactivateActiveDialog()), this, SLOT(onDeactivate()));
-  connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(onClose()));
+  connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(reject()));
 }
 
 /*!
@@ -425,19 +425,19 @@ bool SMESHGUI_DuplicateNodesDlg::onApply()
 void SMESHGUI_DuplicateNodesDlg::onOk()
 {
   if (onApply())
-    onClose();
+    reject();
 }
 
 /*!
   \brief SLOT called to close the dialog.
 */
-void SMESHGUI_DuplicateNodesDlg::onClose()
+void SMESHGUI_DuplicateNodesDlg::reject()
 {
   disconnect(mySelectionMgr, 0, this, 0);
   disconnect(mySMESHGUI, 0, this, 0);
   mySMESHGUI->ResetState();
   mySelectionMgr->clearFilters();
-  reject();
+  QDialog::reject();
 }
 
 /*!
@@ -573,15 +573,6 @@ void SMESHGUI_DuplicateNodesDlg::enterEvent (QEvent*)
       aViewWindow->SetSelectionMode(ActorSelection);
     mySelectionMgr->installFilter(new SMESH_TypeFilter (SMESH::GROUP));
   }
-}
-
-/*!
-  \brief Receive close events.
-  Reimplemented from QWidget class.
-*/
-void SMESHGUI_DuplicateNodesDlg::closeEvent (QCloseEvent*)
-{
-  onClose();
 }
 
 /*!

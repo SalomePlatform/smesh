@@ -1362,6 +1362,7 @@ void SMDS_DownPyramid::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>&
   set<int> tofind;
   int ids[16] = { 0, 1, 2, 3,   0, 3, 4,   3, 2, 4,   2, 1, 4,   1, 0, 4 };
 
+  // Quadrangular face
   tofind.clear();
   for (int i = 0; i < 4; i++)
     tofind.insert(nodes[ids[i]]);
@@ -1371,6 +1372,7 @@ void SMDS_DownPyramid::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>&
         orderedNodes[i] = nodes[ids[i]];
       return;
     }
+  // Triangular faces
   for (int k = 0; k < 4; k++)
     {
       tofind.clear();
@@ -1489,6 +1491,7 @@ SMDS_DownQuadPyramid::~SMDS_DownQuadPyramid()
 
 void SMDS_DownQuadPyramid::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& orderedNodes)
 {
+//   MESSAGE("SMDS_DownQuadPyramid::getOrderedNodesOfFace cellId = " << cellId);
   set<int> setNodes;
   setNodes.clear();
   for (int i = 0; i < orderedNodes.size(); i++)
@@ -1503,8 +1506,9 @@ void SMDS_DownQuadPyramid::getOrderedNodesOfFace(int cellId, std::vector<vtkIdTy
   int ids[32] = { 0, 1, 2, 3, 5, 6, 7, 8,
                   0, 3, 4, 8, 12, 9,   3, 2, 4, 7 , 11, 12,   2, 1, 4, 6, 10, 11,   1, 0, 4, 5, 9, 10 };
 
+  // Quadrangular face
   tofind.clear();
-  for (int i = 0; i < 4; i++)
+  for (int i = 0; i < 8; i++)
     tofind.insert(nodes[ids[i]]);
   if (setNodes == tofind)
     {
@@ -1512,6 +1516,7 @@ void SMDS_DownQuadPyramid::getOrderedNodesOfFace(int cellId, std::vector<vtkIdTy
         orderedNodes[i] = nodes[ids[i]];
       return;
     }
+  // Triangular faces
   for (int k = 0; k < 4; k++)
     {
       tofind.clear();
@@ -1525,7 +1530,7 @@ void SMDS_DownQuadPyramid::getOrderedNodesOfFace(int cellId, std::vector<vtkIdTy
         }
     }
   MESSAGE("=== Problem volume " << _vtkCellIds[cellId] << " " << _grid->_mesh->fromVtkToSmds(_vtkCellIds[cellId]));
-  MESSAGE(orderedNodes[0] << " " << orderedNodes[1] << " " << orderedNodes[2]);
+  MESSAGE(orderedNodes[0] << " " << orderedNodes[1] << " " << orderedNodes[2] << " " << orderedNodes[3]);
   MESSAGE(nodes[0] << " " << nodes[1] << " " << nodes[2] << " " << nodes[3]);
 }
 
@@ -1661,6 +1666,7 @@ void SMDS_DownPenta::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& o
 //int ids[18] = { 0, 2, 1,  3, 4, 5,   0, 1, 4, 3,   1, 2, 5, 4,   2, 0, 3, 5 };
   int ids[18] = { 0, 1, 2,  3, 5, 4,   0, 3, 4, 1,   1, 4, 5, 2,   2, 5, 3, 0 };
 
+  // Triangular faces
   for (int k = 0; k < 2; k++)
     {
       tofind.clear();
@@ -1673,6 +1679,7 @@ void SMDS_DownPenta::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& o
           return;
         }
     }
+  // Quadrangular faces
   for (int k = 0; k < 3; k++)
     {
       tofind.clear();
@@ -1810,6 +1817,7 @@ void SMDS_DownQuadPenta::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType
   int ids[36] = { 0, 1, 2, 6, 7, 8,  3, 5, 4, 11, 10, 9,
                   0, 3, 4, 1, 12, 9, 13, 6,   1, 4, 5, 2, 13, 10, 14, 7,   2, 5, 3, 0, 14, 11, 12, 8 };
 
+  // Triangular faces
   for (int k = 0; k < 2; k++)
     {
       tofind.clear();
@@ -1822,6 +1830,7 @@ void SMDS_DownQuadPenta::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType
           return;
         }
     }
+  // Quadrangular faces
   for (int k = 0; k < 3; k++)
     {
       tofind.clear();

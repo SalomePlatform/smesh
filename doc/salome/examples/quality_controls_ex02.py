@@ -38,7 +38,7 @@ for i in range(len(anIds)):
 print ""
 
 # create a group
-aGroup = mesh.CreateGroup(SMESH.EDGE, "Borders at multi-connections")
+aGroup = mesh.GetMesh().CreateGroup(smesh.EDGE, "Borders at multi-connections")
 aGroup.Add(anIds)
 
 salome.sg.updateObjBrowser(1)

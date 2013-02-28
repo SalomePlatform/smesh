@@ -69,8 +69,9 @@ using namespace std;
 // cout << msg << " ("<< p.X() << "; " <<p.Y() << "; " <<p.Z() << ") " <<endl;\
 // }
 
-typedef StdMeshers_ProjectionUtils TAssocTool;
-typedef SMESH_Comment              TCom;
+namespace TAssocTool = StdMeshers_ProjectionUtils;
+
+typedef SMESH_Comment TCom;
 
 enum { ID_BOT_FACE = SMESH_Block::ID_Fxy0,
        ID_TOP_FACE = SMESH_Block::ID_Fxy1,
@@ -457,19 +458,11 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
   if ( nbSolids < 1 )
     return true;
 
-  Prism_3D::TPrismTopo prism;
-
-  if ( nbSolids == 1 )
-  {
-    return ( initPrism( prism, TopExp_Explorer( theShape, TopAbs_SOLID ).Current() ) &&
-             compute( prism ));
-  }
-
   TopTools_IndexedDataMapOfShapeListOfShape faceToSolids;
   TopExp::MapShapesAndAncestors( theShape, TopAbs_FACE, TopAbs_SOLID, faceToSolids );
 
   // look for meshed FACEs ("source" FACEs) that must be prism bottoms
-  list< TopoDS_Face > meshedFaces;//, notQuadMeshedFaces, notQuadFaces;
+  list< TopoDS_Face > meshedFaces, notQuadMeshedFaces, notQuadFaces;
   const bool meshHasQuads = ( theMesh.NbQuadrangles() > 0 );
   for ( int iF = 1; iF < faceToSolids.Extent(); ++iF )
   {
@@ -479,17 +472,33 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
     {
       if ( !meshHasQuads ||
            !helper.IsSameElemGeometry( faceSM->GetSubMeshDS(), SMDSGeom_QUADRANGLE ) ||
-           !helper.IsStructured( faceSM ))
-        // notQuadMeshedFaces are of higher priority
+           !helper.IsStructured( faceSM )
+           )
+        notQuadMeshedFaces.push_front( face );
+      else if ( myHelper->Count( face, TopAbs_EDGE, /*ignoreSame=*/false ) != 4 )
         meshedFaces.push_front( face );
       else
         meshedFaces.push_back( face );
     }
+    else if ( myHelper->Count( face, TopAbs_EDGE, /*ignoreSame=*/false ) != 4 )
+    {
+      notQuadFaces.push_back( face );
+    }
   }
-  //meshedFaces.splice( meshedFaces.begin(), notQuadMeshedFaces );
+  // notQuadFaces are of medium priority, put them before ordinary meshed faces
+  meshedFaces.splice( meshedFaces.begin(), notQuadFaces );
+  // notQuadMeshedFaces are of highest priority, put them before notQuadFaces
+  meshedFaces.splice( meshedFaces.begin(), notQuadMeshedFaces );
 
-  // if ( meshedFaces.empty() )
-  //   return error( COMPERR_BAD_INPUT_MESH, "No meshed source faces found" );
+  Prism_3D::TPrismTopo prism;
+
+  if ( nbSolids == 1 )
+  {
+    if ( !meshedFaces.empty() )
+      prism.myBottom = meshedFaces.front();
+    return ( initPrism( prism, TopExp_Explorer( theShape, TopAbs_SOLID ).Current() ) &&
+             compute( prism ));
+  }
 
   TopTools_MapOfShape meshedSolids;
   list< Prism_3D::TPrismTopo > meshedPrism;
@@ -619,6 +628,27 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
     // TODO. there are other ways to find out the source FACE:
     // propagation, topological similarity, ect.
 
+    // simply try to mesh all not meshed SOLIDs
+    if ( meshedFaces.empty() )
+    {
+      for ( TopExp_Explorer solid( theShape, TopAbs_SOLID ); solid.More(); solid.Next() )
+      {
+        mySetErrorToSM = false;
+        prism.Clear();
+        if ( !meshedSolids.Contains( solid.Current() ) &&
+             initPrism( prism, solid.Current() ))
+        {
+          mySetErrorToSM = true;
+          if ( !compute( prism ))
+            return false;
+          meshedFaces.push_front( prism.myTop );
+          meshedFaces.push_front( prism.myBottom );
+          meshedPrism.push_back( prism );
+          meshedSolids.Add( solid.Current() );
+        }
+        mySetErrorToSM = true;
+      }
+    }
 
     if ( meshedFaces.empty() ) // set same error to 10 not-computed solids
     {
@@ -633,7 +663,7 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
           SMESH_subMesh* sm = theMesh.GetSubMesh( solid.Current() );
           sm->GetComputeError() = err;
         }
-      return false;
+      return error( err );
     }
   }
   return true;
@@ -708,7 +738,7 @@ bool StdMeshers_Prism_3D::getWallFaces( Prism_3D::TPrismTopo & thePrism,
   // -------------------------
 
   // Compose a vector of indixes of right neighbour FACE for each wall FACE
-  // that is not so evident in case of several WIREs
+  // that is not so evident in case of several WIREs in the bottom FACE
   thePrism.myRightQuadIndex.clear();
   for ( size_t i = 0; i < thePrism.myWallQuads.size(); ++i )
     thePrism.myRightQuadIndex.push_back( i+1 );
@@ -1511,7 +1541,12 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top()
   SMESHDS_SubMesh * topSMDS = topSM->GetSubMeshDS();
 
   if ( !botSMDS || botSMDS->NbElements() == 0 )
-    return toSM( error(TCom("No elememts on face #") << botSM->GetId() ));
+  {
+    _gen->Compute( *myHelper->GetMesh(), botSM->GetSubShape() );
+    botSMDS = botSM->GetSubMeshDS();
+    if ( !botSMDS || botSMDS->NbElements() == 0 )
+      return toSM( error(TCom("No elememts on face #") << botSM->GetId() ));
+  }
 
   bool needProject = !topSM->IsMeshComputed();
   if ( !needProject && 
@@ -1646,7 +1681,7 @@ bool StdMeshers_Prism_3D::projectBottomToTop()
   // if the bottom faces is orienetd OK then top faces must be reversed
   bool reverseTop = true;
   if ( myHelper->NbAncestors( botFace, *myBlock.Mesh(), TopAbs_SOLID ) > 1 )
-    reverseTop = ! SMESH_Algo::IsReversedSubMesh( TopoDS::Face( botFace ), meshDS );
+    reverseTop = ! myHelper->IsReversedSubMesh( TopoDS::Face( botFace ));
   int iFrw, iRev, *iPtr = &( reverseTop ? iRev : iFrw );
 
   // loop on bottom mesh faces

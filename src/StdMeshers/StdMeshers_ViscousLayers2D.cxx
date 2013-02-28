@@ -442,7 +442,7 @@ StdMeshers_ViscousLayers2D::Compute(SMESH_Mesh&        theMesh,
       theMesh.GetSubMesh( theFace )->GetComputeError() = error;
     else if ( !pm )
       pm.reset( new SMESH_ProxyMesh( theMesh ));
-    if ( getenv("ONLY_VL2D"))
+    if ( getenv("__ONLY__VL2D__"))
       pm.reset();
   }
   else
@@ -1834,13 +1834,14 @@ bool _ViscousBuilder2D::refine()
       normPar[ i - L._firstPntInd ] = ( points[i].normParam - normF ) / normDist;
 
     // Create layers of faces
-
+    
     bool hasLeftNode  = ( !L._leftLine->_rightNodes.empty() && leftEdgeShared  );
     bool hasRightNode = ( !L._rightLine->_leftNodes.empty() && rightEdgeShared );
     bool hasOwnLeftNode  = ( !L._leftNodes.empty() );
     bool hasOwnRightNode = ( !L._rightNodes.empty() );
+    bool isClosedEdge = ( outerNodes.front() == outerNodes.back() );
     size_t iS,
-      iN0 = ( hasLeftNode || hasOwnLeftNode || _polyLineVec.size() == 1 ),
+      iN0 = ( hasLeftNode || hasOwnLeftNode || isClosedEdge ),
       nbN = innerNodes.size() - ( hasRightNode || hasOwnRightNode );
     L._leftNodes .reserve( _hyp->GetNumberLayers() );
     L._rightNodes.reserve( _hyp->GetNumberLayers() );
@@ -1872,7 +1873,7 @@ bool _ViscousBuilder2D::refine()
       else if ( hasLeftNode )  innerNodes.front() = L._leftLine->_rightNodes[ iF ];
       if ( hasOwnRightNode )   innerNodes.back()  = L._rightNodes[ iF ];
       else if ( hasRightNode ) innerNodes.back()  = L._rightLine->_leftNodes[ iF ];
-      if ( _polyLineVec.size() == 1 ) innerNodes.front() = innerNodes.back(); // circle
+      if ( isClosedEdge )      innerNodes.front() = innerNodes.back(); // circle
       if ( !hasOwnLeftNode )  L._leftNodes.push_back( innerNodes.front() );
       if ( !hasOwnRightNode ) L._rightNodes.push_back( innerNodes.back() );
 

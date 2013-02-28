@@ -60,9 +60,7 @@ public:
 
 private:
   void                          Init();
-  void                          closeEvent( QCloseEvent* );
   void                          enterEvent( QEvent* );         /* mouse enter the QWidget */
-  void                          hideEvent( QHideEvent* );       /* ESC key */
   void                          keyPressEvent( QKeyEvent* );
   
   SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
@@ -89,9 +87,11 @@ private:
   
   QString                       myHelpFileName;
 
+protected slots:
+  virtual void                  reject();
+
 private slots:
   void                          ClickOnOk();
-  void                          ClickOnCancel();
   void                          ClickOnApply();
   void                          ClickOnHelp();
   void                          SetEditCurrentArgument();

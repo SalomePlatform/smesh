@@ -257,7 +257,7 @@ SMESHGUI_SewingDlg::SMESHGUI_SewingDlg( SMESHGUI* theModule )
 
   /* signals and slots connections */
   connect(buttonOk,     SIGNAL(clicked()), this, SLOT(ClickOnOk()));
-  connect(buttonCancel, SIGNAL(clicked()), this, SLOT(ClickOnCancel()));
+  connect(buttonCancel, SIGNAL(clicked()), this, SLOT(reject()));
   connect(buttonApply,  SIGNAL(clicked()), this, SLOT(ClickOnApply()));
   connect(buttonHelp,   SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
   connect(GroupConstructors, SIGNAL(buttonClicked(int)), SLOT(ConstructorsClicked(int)));
@@ -272,7 +272,7 @@ SMESHGUI_SewingDlg::SMESHGUI_SewingDlg( SMESHGUI* theModule )
   connect(mySMESHGUI, SIGNAL (SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
   /* to close dialog if study change */
-  connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(ClickOnCancel()));
+  connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(reject()));
 
   connect(LineEdit1, SIGNAL(textChanged(const QString&)), SLOT(onTextChange(const QString&)));
   connect(LineEdit2, SIGNAL(textChanged(const QString&)), SLOT(onTextChange(const QString&)));
@@ -548,14 +548,14 @@ bool SMESHGUI_SewingDlg::ClickOnApply()
 void SMESHGUI_SewingDlg::ClickOnOk()
 {
   if (ClickOnApply())
-    ClickOnCancel();
+    reject();
 }
 
 //=================================================================================
-// function : ClickOnCancel()
+// function : reject()
 // purpose  :
 //=================================================================================
-void SMESHGUI_SewingDlg::ClickOnCancel()
+void SMESHGUI_SewingDlg::reject()
 {
   //mySelectionMgr->clearSelected();
   SMESH::SetPointRepresentation(false);
@@ -563,7 +563,7 @@ void SMESHGUI_SewingDlg::ClickOnCancel()
     aViewWindow->SetSelectionMode(ActorSelection);
   disconnect(mySelectionMgr, 0, this, 0);
   mySMESHGUI->ResetState();
-  reject();
+  QDialog::reject();
 }
 
 //=================================================================================
@@ -871,26 +871,6 @@ void SMESHGUI_SewingDlg::enterEvent (QEvent* e)
 {
   if (!ConstructorsBox->isEnabled())
     ActivateThisDialog();
-}
-
-//=================================================================================
-// function : closeEvent()
-// purpose  :
-//=================================================================================
-void SMESHGUI_SewingDlg::closeEvent (QCloseEvent*)
-{
-  /* same than click on cancel button */
-  ClickOnCancel();
-}
-
-//=======================================================================
-//function : hideEvent
-//purpose  : caused by ESC key
-//=======================================================================
-void SMESHGUI_SewingDlg::hideEvent (QHideEvent*)
-{
-  if (!isMinimized())
-    ClickOnCancel();
 }
 
 //=================================================================================

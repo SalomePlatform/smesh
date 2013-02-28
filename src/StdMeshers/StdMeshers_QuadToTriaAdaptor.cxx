@@ -756,7 +756,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh&         aMesh,
     {
       bool isRev = false;
       if ( helper.NbAncestors( aShapeFace, aMesh, aShape.ShapeType() ) > 1 )
-        isRev = SMESH_Algo::IsReversedSubMesh( TopoDS::Face(aShapeFace), meshDS );
+        isRev = helper.IsReversedSubMesh( TopoDS::Face(aShapeFace) );
 
       SMDS_ElemIteratorPtr iteratorElem = aSubMeshDSFace->GetElements();
       while ( iteratorElem->more() ) // loop on elements on a geometrical face

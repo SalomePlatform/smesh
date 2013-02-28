@@ -2002,6 +2002,79 @@ bool SMESH_MesherHelper::IsStructured( SMESH_subMesh* faceSM )
   return true;
 }
 
+//================================================================================
+/*!
+ * \brief Find out elements orientation on a geometrical face
+ * \param theFace - The face correctly oriented in the shape being meshed
+ * \retval bool - true if the face normal and the normal of first element
+ *                in the correspoding submesh point in different directions
+ */
+//================================================================================
+
+bool SMESH_MesherHelper::IsReversedSubMesh (const TopoDS_Face& theFace)
+{
+  if ( theFace.IsNull() )
+    return false;
+
+  // find out orientation of a meshed face
+  int faceID = GetMeshDS()->ShapeToIndex( theFace );
+  TopoDS_Shape aMeshedFace = GetMeshDS()->IndexToShape( faceID );
+  bool isReversed = ( theFace.Orientation() != aMeshedFace.Orientation() );
+
+  const SMESHDS_SubMesh * aSubMeshDSFace = GetMeshDS()->MeshElements( faceID );
+  if ( !aSubMeshDSFace )
+    return isReversed;
+
+  // find an element with a good normal
+  gp_Vec Ne;
+  bool normalOK = false;
+  gp_XY uv;
+  SMDS_ElemIteratorPtr iteratorElem = aSubMeshDSFace->GetElements();
+  while ( !normalOK && iteratorElem->more() ) // loop on elements on theFace
+  {
+    const SMDS_MeshElement* elem = iteratorElem->next();
+    if ( elem && elem->NbCornerNodes() > 2 )
+    {
+      SMESH_TNodeXYZ nPnt[3];
+      SMDS_ElemIteratorPtr nodesIt = elem->nodesIterator();
+      for ( int iN = 0; nodesIt->more() && iN < 3; ++iN) // loop on nodes
+        nPnt[ iN ] = nodesIt->next();
+
+      // compute normal
+      gp_Vec v01( nPnt[0], nPnt[1] ), v02( nPnt[0], nPnt[2] );
+      if ( v01.SquareMagnitude() > RealSmall() &&
+           v02.SquareMagnitude() > RealSmall() )
+      {
+        Ne = v01 ^ v02;
+        if (( normalOK = ( Ne.SquareMagnitude() > RealSmall() )))
+          uv = GetNodeUV( theFace, nPnt[0]._node, nPnt[2]._node, &normalOK );
+      }
+    }
+  }
+  if ( !normalOK )
+    return isReversed;
+
+  // face normal at node position
+  TopLoc_Location loc;
+  Handle(Geom_Surface) surf = BRep_Tool::Surface( theFace, loc );
+  // if ( surf.IsNull() || surf->Continuity() < GeomAbs_C1 )
+  // some surfaces not detected as GeomAbs_C1 are nevertheless correct for meshing
+  if ( surf.IsNull() || surf->Continuity() < GeomAbs_C0 )
+    {
+      if (!surf.IsNull())
+        MESSAGE("surf->Continuity() < GeomAbs_C1 " << (surf->Continuity() < GeomAbs_C1));
+      return isReversed;
+    }
+  gp_Vec d1u, d1v; gp_Pnt p;
+  surf->D1( uv.X(), uv.Y(), p, d1u, d1v );
+  gp_Vec Nf = (d1u ^ d1v).Transformed( loc );
+
+  if ( theFace.Orientation() == TopAbs_REVERSED )
+    Nf.Reverse();
+
+  return Ne * Nf < 0.;
+}
+
 //=======================================================================
 //function : Count
 //purpose  : Count nb of sub-shapes

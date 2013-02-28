@@ -78,9 +78,7 @@ public:
 
 private:
   void                      Init();
-  void                      closeEvent( QCloseEvent* );
   void                      enterEvent( QEvent* );              /* mouse enter the QWidget */
-  void                      hideEvent( QHideEvent* );           /* ESC key */
   void                      keyPressEvent( QKeyEvent* );
   void                      onEditGroup();
 
@@ -150,9 +148,11 @@ private:
   QString                   myEntry;
   GrpList                   myGroups;
 
+protected slots:
+  virtual void              reject();
+
  private slots:
   void                      ClickOnOk();
-  void                      ClickOnCancel();
   bool                      ClickOnApply();
   void                      ClickOnHelp();
   void                      updateControls();

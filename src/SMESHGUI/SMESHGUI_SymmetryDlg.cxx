@@ -300,7 +300,7 @@ SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule )
 
   /* signals and slots connections */
   connect(buttonOk,     SIGNAL(clicked()), this, SLOT(ClickOnOk()));
-  connect(buttonCancel, SIGNAL(clicked()), this, SLOT(ClickOnCancel()));
+  connect(buttonCancel, SIGNAL(clicked()), this, SLOT(reject()));
   connect(buttonApply,  SIGNAL(clicked()), this, SLOT(ClickOnApply()));
   connect(buttonHelp,   SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
   connect(GroupConstructors, SIGNAL(buttonClicked(int)), SLOT(ConstructorsClicked(int)));
@@ -316,7 +316,7 @@ SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule )
   connect(mySMESHGUI,     SIGNAL(SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()),      this, SLOT(SelectionIntoArgument()));
   /* to close dialog if study change */
-  connect(mySMESHGUI,       SIGNAL(SignalCloseAllDialogs()), this, SLOT(ClickOnCancel()));
+  connect(mySMESHGUI,       SIGNAL(SignalCloseAllDialogs()), this, SLOT(reject()));
   connect(LineEditElements, SIGNAL(textChanged(const QString&)),   SLOT(onTextChange(const QString&)));
   connect(CheckBoxMesh,     SIGNAL(toggled(bool)),                 SLOT(onSelectMesh(bool)));
   connect(ActionGroup,      SIGNAL(buttonClicked(int)),            SLOT(onActionClicked(int)));
@@ -573,14 +573,14 @@ void SMESHGUI_SymmetryDlg::ClickOnOk()
 {
   setIsApplyAndClose( true );
   if( ClickOnApply() )
-    ClickOnCancel();
+    reject();
 }
 
 //=================================================================================
-// function : ClickOnCancel()
+// function : reject()
 // purpose  :
 //=================================================================================
-void SMESHGUI_SymmetryDlg::ClickOnCancel()
+void SMESHGUI_SymmetryDlg::reject()
 {
   disconnect(mySelectionMgr, 0, this, 0);
   mySelectionMgr->clearFilters();
@@ -592,7 +592,7 @@ void SMESHGUI_SymmetryDlg::ClickOnCancel()
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);
   mySMESHGUI->ResetState();
-  reject();
+  QDialog::reject();
 }
 
 //=================================================================================
@@ -915,26 +915,6 @@ void SMESHGUI_SymmetryDlg::enterEvent (QEvent*)
 {
   if (!ConstructorsBox->isEnabled())
     ActivateThisDialog();
-}
-
-//=================================================================================
-// function : closeEvent()
-// purpose  :
-//=================================================================================
-void SMESHGUI_SymmetryDlg::closeEvent (QCloseEvent*)
-{
-  /* same than click on cancel button */
-  ClickOnCancel();
-}
-
-//=======================================================================
-// function : hideEvent()
-// purpose  : caused by ESC key
-//=======================================================================
-void SMESHGUI_SymmetryDlg::hideEvent (QHideEvent*)
-{
-  if (!isMinimized())
-    ClickOnCancel();
 }
 
 //=======================================================================

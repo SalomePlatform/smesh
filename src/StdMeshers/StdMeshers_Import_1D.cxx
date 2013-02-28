@@ -521,7 +521,7 @@ namespace // INTERNAL STUFF
     TopExp::MapShapes( SMESH_Mesh::PseudoShape(), pseudoSubShapes );
 
     // index of pseudoSubShapes corresponding to srcMeshDS
-    int subIndex = srcMeshDS->GetPersistentId() % pseudoSubShapes.Extent();
+    int    subIndex = 1 + srcMeshDS->GetPersistentId() % pseudoSubShapes.Extent();
     int nbSubShapes = 1 + srcMeshDS->GetPersistentId() / pseudoSubShapes.Extent();
 
     // try to find already present shapeForSrcMesh

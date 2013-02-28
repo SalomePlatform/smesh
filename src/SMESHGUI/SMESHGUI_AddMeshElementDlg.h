@@ -71,8 +71,6 @@ public:
   
 private:
   void                        Init();
-  void                        closeEvent( QCloseEvent* );
-  void                        hideEvent( QHideEvent* );     /* ESC key */
   void                        enterEvent( QEvent* );        /* mouse enter the QWidget */
   void                        keyPressEvent( QKeyEvent* );
   void                        displaySimulation();
@@ -119,9 +117,11 @@ private:
   
   QString                     myHelpFileName;
   
+protected slots:
+  virtual void                reject();
+
 private slots:
   void                        ClickOnOk();
-  void                        ClickOnCancel();
   void                        ClickOnApply();
   void                        ClickOnHelp();
   void                        SetEditCurrentArgument();

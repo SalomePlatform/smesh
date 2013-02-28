@@ -17,4 +17,4 @@
 @REM See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 @REM
 
-%PYTHONBIN% %KERNEL_ROOT_DIR%\salome_adm\cmake_files\am2cmake.py --smesh
+%PYTHONBIN% %KERNEL_ROOT_DIR%\salome_adm\cmake_files\deprecated\am2cmake.py --smesh

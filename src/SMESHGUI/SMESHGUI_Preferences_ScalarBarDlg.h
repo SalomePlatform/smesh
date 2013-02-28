@@ -64,7 +64,6 @@ public:
 
   static void              ScalarBarProperties( SMESHGUI* );
 
-  void                     closeEvent( QCloseEvent* );
   void                     setOriginAndSize( const double,
                                              const double,
                                              const double,
@@ -72,9 +71,11 @@ public:
   void                     initScalarBarFromResources();
 
 protected slots:
+  virtual void             reject();
+
+protected slots:
   void                     onOk();
   bool                     onApply();
-  void                     onCancel();
   void                     onHelp();
   void                     onSelectionChanged();
   void                     onXYChanged();

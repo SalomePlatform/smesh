@@ -3,11 +3,9 @@
 \page tui_measurements_page Measurements
 
 \section tui_min_distance Minimum Distance
-\include measurements_ex01.py
-<a href="../../examples/SMESH/measurements_ex01.py">Download this script</a>
+\tui_script{measurements_ex01.py}
 
 \section tui_bounding_box Bounding Box
-\include measurements_ex02.py
-<a href="../../examples/SMESH/measurements_ex02.py">Download this script</a>
+\tui_script{measurements_ex02.py}
 
 */

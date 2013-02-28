@@ -79,8 +79,6 @@ private:
 
   void                    Init();
   void                    enterEvent( QEvent* );
-  void                    closeEvent( QCloseEvent* );
-  void                    hideEvent ( QHideEvent* );
   void                    keyPressEvent( QKeyEvent* );
   
   bool                    isValid();
@@ -108,9 +106,11 @@ private:
 
   QString                 myHelpFileName;
 
+protected slots:
+  virtual void            reject();
+
 private slots:
   void                    ClickOnOk();
-  void                    ClickOnCancel();
   bool                    ClickOnApply();
   void                    ClickOnHelp();
   void                    DeactivateActiveDialog();

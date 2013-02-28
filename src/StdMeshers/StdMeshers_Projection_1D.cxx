@@ -57,7 +57,8 @@ using namespace std;
 
 #define RETURN_BAD_RESULT(msg) { MESSAGE(")-: Error: " << msg); return false; }
 
-typedef StdMeshers_ProjectionUtils TAssocTool;
+//typedef StdMeshers_ProjectionUtils TAssocTool;
+namespace TAssocTool = StdMeshers_ProjectionUtils;
 
 //=======================================================================
 //function : StdMeshers_Projection_1D
@@ -238,14 +239,18 @@ bool StdMeshers_Projection_1D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   SMESH_subMesh* srcSubMesh = srcMesh->GetSubMesh( srcEdge );
   //SMESH_subMesh* tgtSubMesh = tgtMesh->GetSubMesh( tgtEdge );
 
+  string srcMeshError;
   if ( tgtMesh == srcMesh ) {
     if ( !TAssocTool::MakeComputed( srcSubMesh ))
-      return error(COMPERR_BAD_INPUT_MESH,"Source mesh not computed");
+      srcMeshError = TAssocTool::SourceNotComputedError( srcSubMesh, this );
   }
   else {
     if ( !srcSubMesh->IsMeshComputed() )
-      return error(COMPERR_BAD_INPUT_MESH,"Source mesh not computed");
+      srcMeshError = TAssocTool::SourceNotComputedError();
   }
+  if ( !srcMeshError.empty() )
+    return error(COMPERR_BAD_INPUT_MESH, srcMeshError );
+
   // -----------------------------------------------
   // Find out nodes distribution on the source edge
   // -----------------------------------------------

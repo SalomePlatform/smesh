@@ -370,7 +370,7 @@ void SMESHGUI_NodesDlg::Init()
 
   /* signals and slots connections */
   connect( buttonOk,     SIGNAL( clicked() ), this, SLOT( ClickOnOk() ) );
-  connect( buttonCancel, SIGNAL( clicked() ), this, SLOT( ClickOnCancel() ) );
+  connect( buttonCancel, SIGNAL( clicked() ), this, SLOT( reject() ) );
   connect( buttonApply,  SIGNAL( clicked() ), this, SLOT( ClickOnApply() ) );
   connect( buttonHelp,   SIGNAL( clicked() ), this, SLOT( ClickOnHelp() ) );
 
@@ -381,8 +381,8 @@ void SMESHGUI_NodesDlg::Init()
   connect( mySelectionMgr, SIGNAL( currentSelectionChanged() ),      SLOT( SelectionIntoArgument() ) );
   connect( mySMESHGUI,     SIGNAL( SignalDeactivateActiveDialog() ), SLOT( DeactivateActiveDialog() ) );
   /* to close dialog if study frame change */
-  connect( mySMESHGUI,     SIGNAL( SignalStudyFrameChanged() ),      SLOT( ClickOnCancel() ) );
-  connect(mySMESHGUI,      SIGNAL(SignalCloseAllDialogs()),          SLOT(ClickOnCancel()));
+  connect( mySMESHGUI,     SIGNAL( SignalStudyFrameChanged() ),      SLOT( reject() ) );
+  connect(mySMESHGUI,      SIGNAL(SignalCloseAllDialogs()),          SLOT(reject()));
 
   // set selection mode
   SMESH::SetPointRepresentation( true );
@@ -414,7 +414,7 @@ void SMESHGUI_NodesDlg::ValueChangedInSpinBox( double newValue )
 void SMESHGUI_NodesDlg::ClickOnOk()
 {
   if ( ClickOnApply() )
-    ClickOnCancel();
+    reject();
 }
 
 //=================================================================================
@@ -539,10 +539,10 @@ bool SMESHGUI_NodesDlg::ClickOnApply()
 }
 
 //=================================================================================
-// function : ClickOnCancel()
+// function : reject()
 // purpose  :
 //=================================================================================
-void SMESHGUI_NodesDlg::ClickOnCancel()
+void SMESHGUI_NodesDlg::reject()
 {
   disconnect( mySelectionMgr, 0, this, 0 );
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ) )
@@ -552,7 +552,7 @@ void SMESHGUI_NodesDlg::ClickOnCancel()
   SMESH::SetPointRepresentation( false );
   mySMESHGUI->ResetState();
 
-  reject();
+  QDialog::reject();
 }
 
 //=================================================================================
@@ -636,25 +636,6 @@ void SMESHGUI_NodesDlg::SelectionIntoArgument()
       }
     }
   }
-}
-
-//=================================================================================
-// function : closeEvent()
-// purpose  :
-//=================================================================================
-void SMESHGUI_NodesDlg::closeEvent( QCloseEvent* )
-{
-  this->ClickOnCancel(); /* same than click on cancel button */
-}
-
-//=================================================================================
-// function : hideEvent()
-// purpose  : caused by ESC key
-//=================================================================================
-void SMESHGUI_NodesDlg::hideEvent( QHideEvent* )
-{
-  if ( !isMinimized() )
-    ClickOnCancel();
 }
 
 //=================================================================================

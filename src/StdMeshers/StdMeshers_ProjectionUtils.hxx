@@ -38,12 +38,13 @@
 #include <list>
 #include <map>
 
-class TopoDS_Shape;
 class SMDS_MeshNode;
-class SMESH_Mesh;
+class SMESH_Algo;
 class SMESH_Hypothesis;
+class SMESH_Mesh;
 class SMESH_subMesh;
 class TopTools_IndexedDataMapOfShapeListOfShape;
+class TopoDS_Shape;
 
 /*!
  * \brief Struct used instead of a sole TopTools_DataMapOfShapeShape to avoid
@@ -69,149 +70,153 @@ struct StdMeshers_ShapeShapeBiDirectionMap
 };
 
 /*!
- * \brief Class encapsulating methods common to Projection algorithms
+ * \brief Methods common to Projection algorithms
  */
-class StdMeshers_ProjectionUtils
+namespace StdMeshers_ProjectionUtils
 {
- public:
-
   typedef StdMeshers_ShapeShapeBiDirectionMap                  TShapeShapeMap;
   typedef TopTools_IndexedDataMapOfShapeListOfShape            TAncestorMap;
   typedef std::map<const SMDS_MeshNode*, const SMDS_MeshNode*> TNodeNodeMap;
 
   /*!
    * \brief Looks for association of all sub-shapes of two shapes
-    * \param theShape1 - shape 1
-    * \param theMesh1 - mesh built on shape 1
-    * \param theShape2 - shape 2
-    * \param theMesh2 - mesh built on shape 2
-    * \param theAssociation - association map to be filled that may
-    *                         contain association of one or two pairs of vertices
-    * \retval bool - true if association found
+   * \param theShape1 - shape 1
+   * \param theMesh1 - mesh built on shape 1
+   * \param theShape2 - shape 2
+   * \param theMesh2 - mesh built on shape 2
+   * \param theAssociation - association map to be filled that may
+   *                         contain association of one or two pairs of vertices
+   * \retval bool - true if association found
    */
-  static bool FindSubShapeAssociation(const TopoDS_Shape& theShape1,
-                                      SMESH_Mesh*         theMesh1,
-                                      const TopoDS_Shape& theShape2,
-                                      SMESH_Mesh*         theMesh2,
-                                      TShapeShapeMap &    theAssociationMap);
+  bool FindSubShapeAssociation(const TopoDS_Shape& theShape1,
+                               SMESH_Mesh*         theMesh1,
+                               const TopoDS_Shape& theShape2,
+                               SMESH_Mesh*         theMesh2,
+                               TShapeShapeMap &    theAssociationMap);
 
   /*!
    * \brief Find association of edges of faces
-    * \param face1 - face 1
-    * \param VV1 - vertices of face 1
-    * \param face2 - face 2
-    * \param VV2 - vertices of face 2 associated with oned of face 1
-    * \param edges1 - out list of edges of face 1
-    * \param edges2 - out list of edges of face 2
-    * \retval int - nb of edges in an outer wire in a success case, else zero
+   * \param face1 - face 1
+   * \param VV1 - vertices of face 1
+   * \param face2 - face 2
+   * \param VV2 - vertices of face 2 associated with oned of face 1
+   * \param edges1 - out list of edges of face 1
+   * \param edges2 - out list of edges of face 2
+   * \retval int - nb of edges in an outer wire in a success case, else zero
    */
-  static int FindFaceAssociation(const TopoDS_Face&         face1,
-                                 TopoDS_Vertex              VV1[2],
-                                 const TopoDS_Face&         face2,
-                                 TopoDS_Vertex              VV2[2],
-                                 std::list< TopoDS_Edge > & edges1,
-                                 std::list< TopoDS_Edge > & edges2);
+  int FindFaceAssociation(const TopoDS_Face&         face1,
+                          TopoDS_Vertex              VV1[2],
+                          const TopoDS_Face&         face2,
+                          TopoDS_Vertex              VV2[2],
+                          std::list< TopoDS_Edge > & edges1,
+                          std::list< TopoDS_Edge > & edges2);
 
   /*!
    * \brief Insert vertex association defined by a hypothesis into a map
-    * \param theHyp - hypothesis
-    * \param theAssociationMap - association map
-    * \param theTargetShape - the shape theHyp assigned to
+   * \param theHyp - hypothesis
+   * \param theAssociationMap - association map
+   * \param theTargetShape - the shape theHyp assigned to
    */
-  static void InitVertexAssociation( const SMESH_Hypothesis* theHyp,
-                                     TShapeShapeMap &        theAssociationMap);
+  void InitVertexAssociation( const SMESH_Hypothesis* theHyp,
+                              TShapeShapeMap &        theAssociationMap);
 
   /*!
    * \brief Inserts association theShape1 <-> theShape2 to TShapeShapeMap
-    * \param theShape1 - target shape
-    * \param theShape2 - source shape
-    * \param theAssociationMap - association map 
-    * \param theBidirectional - if false, inserts theShape1 -> theShape2 association
-    * \retval bool - true if there was no association for these shapes before
+   * \param theShape1 - target shape
+   * \param theShape2 - source shape
+   * \param theAssociationMap - association map 
+   * \param theBidirectional - if false, inserts theShape1 -> theShape2 association
+   * \retval bool - true if there was no association for these shapes before
    */
-  static bool InsertAssociation( const TopoDS_Shape& theShape1, // target
-                                 const TopoDS_Shape& theShape2, // source
-                                 TShapeShapeMap &    theAssociationMap);
+  bool InsertAssociation( const TopoDS_Shape& theShape1, // target
+                          const TopoDS_Shape& theShape2, // source
+                          TShapeShapeMap &    theAssociationMap);
 
   /*!
    * \brief Finds an edge by its vertices in a main shape of the mesh
    */
-  static TopoDS_Edge GetEdgeByVertices( SMESH_Mesh*          aMesh,
-                                        const TopoDS_Vertex& V1,
-                                        const TopoDS_Vertex& V2);
-                                        
+  TopoDS_Edge GetEdgeByVertices( SMESH_Mesh*          aMesh,
+                                 const TopoDS_Vertex& V1,
+                                 const TopoDS_Vertex& V2);
+
   /*!
    * \brief Return another face sharing an edge
    * \param edgeToFaces - data map of descendants to ancestors
    */
-  static TopoDS_Face GetNextFace( const TAncestorMap& edgeToFaces,
-                                  const TopoDS_Edge&  edge,
-                                  const TopoDS_Face&  face);
+  TopoDS_Face GetNextFace( const TAncestorMap& edgeToFaces,
+                           const TopoDS_Edge&  edge,
+                           const TopoDS_Face&  face);
   /*!
    * \brief Return other vertex of an edge
    */
-  static TopoDS_Vertex GetNextVertex(const TopoDS_Edge&   edge,
-                                     const TopoDS_Vertex& vertex);
+  TopoDS_Vertex GetNextVertex(const TopoDS_Edge&   edge,
+                              const TopoDS_Vertex& vertex);
 
   /*!
    * \brief Return an oriented propagation edge
-    * \param aMesh - mesh
-    * \param fromEdge - start edge for propagation
-    * \retval pair<int,TopoDS_Edge> - propagation step and found edge
+   * \param aMesh - mesh
+   * \param fromEdge - start edge for propagation
+   * \retval pair<int,TopoDS_Edge> - propagation step and found edge
    */
-  static std::pair<int,TopoDS_Edge> GetPropagationEdge( SMESH_Mesh*        aMesh,
-                                                        const TopoDS_Edge& anEdge,
-                                                        const TopoDS_Edge& fromEdge);
+  std::pair<int,TopoDS_Edge> GetPropagationEdge( SMESH_Mesh*        aMesh,
+                                                 const TopoDS_Edge& anEdge,
+                                                 const TopoDS_Edge& fromEdge);
 
   /*!
    * \brief Find corresponding nodes on two faces
-    * \param face1 - the first face
-    * \param mesh1 - mesh containing elements on the first face
-    * \param face2 - the second face
-    * \param mesh2 - mesh containing elements on the second face
-    * \param assocMap - map associating sub-shapes of the faces
-    * \param nodeIn2OutMap - map containing found matching nodes
-    * \retval bool - is a success
+   * \param face1 - the first face
+   * \param mesh1 - mesh containing elements on the first face
+   * \param face2 - the second face
+   * \param mesh2 - mesh containing elements on the second face
+   * \param assocMap - map associating sub-shapes of the faces
+   * \param nodeIn2OutMap - map containing found matching nodes
+   * \retval bool - is a success
    */
-  static bool FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
-                                        SMESH_Mesh*            mesh1,
-                                        const TopoDS_Face&     face2,
-                                        SMESH_Mesh*            mesh2,
-                                        const TShapeShapeMap & assocMap,
-                                        TNodeNodeMap &         nodeIn2OutMap);
+  bool FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
+                                 SMESH_Mesh*            mesh1,
+                                 const TopoDS_Face&     face2,
+                                 SMESH_Mesh*            mesh2,
+                                 const TShapeShapeMap & assocMap,
+                                 TNodeNodeMap &         nodeIn2OutMap);
   /*!
    * \brief Return any sub-shape of a face belonging to the outer wire
-    * \param face - the face
-    * \param type - type of sub-shape to return
-    * \retval TopoDS_Shape - the found sub-shape
+   * \param face - the face
+   * \param type - type of sub-shape to return
+   * \retval TopoDS_Shape - the found sub-shape
    */
-  static TopoDS_Shape OuterShape( const TopoDS_Face& face,
-                                  TopAbs_ShapeEnum   type);
+  TopoDS_Shape OuterShape( const TopoDS_Face& face,
+                           TopAbs_ShapeEnum   type);
 
   /*!
    * \brief Check that submeshis is computed and try to compute it if is not
-    * \param sm - submesh to compute
-    * \param iterationNb - int used to stop infinite recursive call
-    * \retval bool - true if computed
+   * \param sm - submesh to compute
+   * \param iterationNb - int used to stop infinite recursive call
+   * \retval bool - true if computed
    */
-  static bool MakeComputed(SMESH_subMesh * sm, const int iterationNb = 0);
+  bool MakeComputed(SMESH_subMesh * sm, const int iterationNb = 0);
+
+  /*!
+   * \brief Returns an error message to show in case if MakeComputed( sm ) fails.
+   */
+  std::string SourceNotComputedError( SMESH_subMesh * sm = 0,
+                                      SMESH_Algo*     projAlgo=0);
 
   /*!
    * \brief Set event listeners to submesh with projection algo
-    * \param subMesh - submesh with projection algo
-    * \param srcShape - source shape
-    * \param srcMesh - source mesh
+   * \param subMesh - submesh with projection algo
+   * \param srcShape - source shape
+   * \param srcMesh - source mesh
    */
-  static void SetEventListener(SMESH_subMesh* subMesh,
-                               TopoDS_Shape   srcShape,
-                               SMESH_Mesh*    srcMesh);
+  void SetEventListener(SMESH_subMesh* subMesh,
+                        TopoDS_Shape   srcShape,
+                        SMESH_Mesh*    srcMesh);
 
   /*!
    * \brief Return a boundary EDGE (or all boundary EDGEs) of edgeContainer
    */
-  static TopoDS_Edge GetBoundaryEdge(const TopoDS_Shape&       edgeContainer,
-                                     const SMESH_Mesh&         mesh,
-                                     std::list< TopoDS_Edge >* allBndEdges = 0 );
+  TopoDS_Edge GetBoundaryEdge(const TopoDS_Shape&       edgeContainer,
+                              const SMESH_Mesh&         mesh,
+                              std::list< TopoDS_Edge >* allBndEdges = 0 );
 };
 
 #endif

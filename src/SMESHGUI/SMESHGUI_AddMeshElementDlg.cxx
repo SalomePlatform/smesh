@@ -441,7 +441,7 @@ void SMESHGUI_AddMeshElementDlg::Init()
 
   /* signals and slots connections */
   connect(buttonOk,        SIGNAL(clicked()),                     SLOT(ClickOnOk()));
-  connect(buttonCancel,    SIGNAL(clicked()),                     SLOT(ClickOnCancel()));
+  connect(buttonCancel,    SIGNAL(clicked()),                     SLOT(reject()));
   connect(buttonApply,     SIGNAL(clicked()),                     SLOT(ClickOnApply()));
   connect(buttonHelp,      SIGNAL(clicked()),                     SLOT(ClickOnHelp()));
 
@@ -450,8 +450,8 @@ void SMESHGUI_AddMeshElementDlg::Init()
   connect(mySMESHGUI,      SIGNAL(SignalDeactivateActiveDialog()),SLOT(DeactivateActiveDialog()));
   connect(mySelectionMgr,  SIGNAL(currentSelectionChanged()),     SLOT(SelectionIntoArgument()));
   /* to close dialog if study frame change */
-  connect(mySMESHGUI,      SIGNAL(SignalStudyFrameChanged()),     SLOT(ClickOnCancel()));
-  connect(mySMESHGUI,      SIGNAL(SignalCloseAllDialogs()),       SLOT(ClickOnCancel()));    
+  connect(mySMESHGUI,      SIGNAL(SignalStudyFrameChanged()),     SLOT(reject()));
+  connect(mySMESHGUI,      SIGNAL(SignalCloseAllDialogs()),       SLOT(reject()));    
 
   if (Reverse)
     connect(Reverse,       SIGNAL(stateChanged(int)),             SLOT(CheckBox(int)));
@@ -599,14 +599,14 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
 void SMESHGUI_AddMeshElementDlg::ClickOnOk()
 {
   ClickOnApply();
-  ClickOnCancel();
+  reject();
 }
 
 //=================================================================================
-// function : ClickOnCancel()
+// function : reject()
 // purpose  :
 //=================================================================================
-void SMESHGUI_AddMeshElementDlg::ClickOnCancel()
+void SMESHGUI_AddMeshElementDlg::reject()
 {
   //mySelectionMgr->clearSelected();
   mySimulation->SetVisibility(false);
@@ -615,7 +615,7 @@ void SMESHGUI_AddMeshElementDlg::ClickOnCancel()
     aViewWindow->SetSelectionMode( ActorSelection );
   disconnect(mySelectionMgr, 0, this, 0);
   mySMESHGUI->ResetState();
-  reject();
+  QDialog::reject();
 }
 
 //=================================================================================
@@ -872,26 +872,6 @@ void SMESHGUI_AddMeshElementDlg::enterEvent (QEvent*)
   if (GroupConstructors->isEnabled())
     return;
   ActivateThisDialog();
-}
-
-//=================================================================================
-// function : closeEvent()
-// purpose  :
-//=================================================================================
-void SMESHGUI_AddMeshElementDlg::closeEvent (QCloseEvent*)
-{
-  /* same than click on cancel button */
-  ClickOnCancel();
-}
-
-//=================================================================================
-// function : hideEvent()
-// purpose  : caused by ESC key
-//=================================================================================
-void SMESHGUI_AddMeshElementDlg::hideEvent (QHideEvent*)
-{
-  if (!isMinimized())
-    ClickOnCancel();
 }
 
 //=================================================================================

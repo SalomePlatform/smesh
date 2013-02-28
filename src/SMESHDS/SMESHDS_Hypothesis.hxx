@@ -39,9 +39,11 @@ class SMESHDS_EXPORT SMESHDS_Hypothesis
   SMESHDS_Hypothesis(int hypId);
   virtual ~SMESHDS_Hypothesis();
 
+  enum hypothesis_type { PARAM_ALGO, ALGO_0D, ALGO_1D, ALGO_2D, ALGO_3D };
+
   const char* GetName() const;
-  int GetID() const;
-  int GetType() const;
+  int         GetID()   const;
+  int         GetType() const;
 
   virtual std::ostream & SaveTo(std::ostream & save)=0;
   virtual std::istream & LoadFrom(std::istream & load)=0;
@@ -49,12 +51,10 @@ class SMESHDS_EXPORT SMESHDS_Hypothesis
   virtual bool operator==(const SMESHDS_Hypothesis& other) const;
   bool operator!=(const SMESHDS_Hypothesis& other) const { return !(*this==other); }
 
-  enum hypothesis_type { PARAM_ALGO, ALGO_0D, ALGO_1D, ALGO_2D, ALGO_3D };
-
  protected:
-  std::string _name;  // identifier if hypothesis type
-  int         _hypId; // ID unique within application session
-  int         _type;  // enum hypothesis_type
+  std::string     _name;  // identifier of hypothesis type
+  int             _hypId; // ID unique within application session
+  hypothesis_type _type;  // enum hypothesis_type
 };
 
 #endif

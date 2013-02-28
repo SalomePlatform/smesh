@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import unittest, sys
+import unittest, sys, os
 
 class SalomeSession(object):
     def __init__(self, script):
@@ -10,11 +10,10 @@ class SalomeSession(object):
         sys.argv += ["--modules=GEOM,MED,SMESH"]
         sys.argv += ["--execute=%s" % script]
         clt, d = runSalome.main()
-        self.port = d['port']
         return
 
     def __del__(self):
-        port = self.port
+        port = os.getenv('NSPORT')
         import killSalomeWithPort
         killSalomeWithPort.killMyPort(port)
         return

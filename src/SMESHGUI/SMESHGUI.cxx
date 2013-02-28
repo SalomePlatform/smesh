@@ -543,11 +543,9 @@
     {
       format = "GMF";
       notSupportedElemTypes.push_back( SMESH::Entity_0D );
-      notSupportedElemTypes.push_back( SMESH::Entity_Quad_Quadrangle );
       notSupportedElemTypes.push_back( SMESH::Entity_Polygon );
       notSupportedElemTypes.push_back( SMESH::Entity_Quad_Polygon );
       notSupportedElemTypes.push_back( SMESH::Entity_Quad_Pyramid );
-      notSupportedElemTypes.push_back( SMESH::Entity_Quad_Hexa );
       notSupportedElemTypes.push_back( SMESH::Entity_Quad_Penta );
       notSupportedElemTypes.push_back( SMESH::Entity_Hexagonal_Prism );
       notSupportedElemTypes.push_back( SMESH::Entity_Polyhedra );

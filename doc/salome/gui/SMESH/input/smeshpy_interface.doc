@@ -36,8 +36,7 @@ An example below demonstrates usage of the Python API for 3d mesh generation.
 
 \anchor example_3d_mesh
 <h2>Example of 3d mesh generation:</h2>
-\include 3dmesh.py
-<a href="../../examples/SMESH/3dmesh.py">Download this script</a>
+\tui_script{3dmesh.py}
 
 Examples of Python scripts for Mesh operations are available by
 the following links:

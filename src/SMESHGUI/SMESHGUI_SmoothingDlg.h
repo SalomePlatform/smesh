@@ -71,9 +71,7 @@ public:
 
 private:
   void                   Init();
-  void                   closeEvent( QCloseEvent* );
   void                   enterEvent( QEvent* );        /* mouse enter the QWidget */
-  void                   hideEvent( QHideEvent* );     /* ESC key */
   void                   keyPressEvent( QKeyEvent* );
   void                   setFilters( const bool theIsElem );
 
@@ -124,9 +122,11 @@ private:
   QPushButton*           myElemFilterBtn;
   SMESHGUI_FilterDlg*    myFilterDlg;
    
+protected slots:
+  virtual void           reject();
+
 private slots:
   void                   ClickOnOk();
-  void                   ClickOnCancel();
   bool                   ClickOnApply();
   void                   ClickOnHelp();
   void                   SetEditCurrentArgument();

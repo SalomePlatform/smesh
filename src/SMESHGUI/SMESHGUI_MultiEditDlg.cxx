@@ -384,14 +384,14 @@ void SMESHGUI_MultiEditDlg::Init()
 
   // main buttons
   connect(myOkBtn,    SIGNAL(clicked()), SLOT(onOk()));
-  connect(myCloseBtn, SIGNAL(clicked()), SLOT(onClose()));
+  connect(myCloseBtn, SIGNAL(clicked()), SLOT(reject()));
   connect(myApplyBtn, SIGNAL(clicked()), SLOT(onApply()));
   connect(myHelpBtn,  SIGNAL(clicked()), SLOT(onHelp()));
 
   // selection and SMESHGUI
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionDone()));
   connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), SLOT(onDeactivate()));
-  connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(onClose()));
+  connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(reject()));
 
   // dialog controls
   connect(myFilterBtn, SIGNAL(clicked()), SLOT(onFilterBtn()  ));
@@ -423,7 +423,7 @@ void SMESHGUI_MultiEditDlg::Init()
 void SMESHGUI_MultiEditDlg::onOk()
 {
   if (onApply())
-    onClose();
+    reject();
 }
 
 //=======================================================================
@@ -510,10 +510,10 @@ SMESH::long_array_var SMESHGUI_MultiEditDlg::getIds(SMESH::SMESH_IDSource_var& o
 }
 
 //=======================================================================
-// name    : SMESHGUI_MultiEditDlg::onClose
+// name    : SMESHGUI_MultiEditDlg::reject
 // Purpose : SLOT called when "Close" button pressed. Close dialog
 //=======================================================================
-void SMESHGUI_MultiEditDlg::onClose()
+void SMESHGUI_MultiEditDlg::reject()
 {
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);
@@ -527,7 +527,7 @@ void SMESHGUI_MultiEditDlg::onClose()
   //mySelectionMgr->clearSelected();
   mySelectionMgr->clearFilters();
 
-  reject();
+  QDialog::reject();
 }
 
 //=================================================================================
@@ -644,24 +644,6 @@ void SMESHGUI_MultiEditDlg::enterEvent (QEvent*)
     setEnabled(true);
     setSelectionMode();
   }
-}
-
-//=======================================================================
-// name    : SMESHGUI_MultiEditDlg::closeEvent
-// Purpose :
-//=======================================================================
-void SMESHGUI_MultiEditDlg::closeEvent (QCloseEvent*)
-{
-  onClose();
-}
-//=======================================================================
-// name    : SMESHGUI_MultiEditDlg::hideEvent
-// Purpose : caused by ESC key
-//=======================================================================
-void SMESHGUI_MultiEditDlg::hideEvent (QHideEvent*)
-{
-  if (!isMinimized())
-    onClose();
 }
 
 //=======================================================================
@@ -1259,10 +1241,10 @@ SMESHGUI_CuttingOfQuadsDlg::~SMESHGUI_CuttingOfQuadsDlg()
 {
 }
 
-void SMESHGUI_CuttingOfQuadsDlg::onClose()
+void SMESHGUI_CuttingOfQuadsDlg::reject()
 {
   erasePreview();
-  SMESHGUI_MultiEditDlg::onClose();
+  SMESHGUI_MultiEditDlg::reject();
 }
 
 bool SMESHGUI_CuttingOfQuadsDlg::process (SMESH::SMESH_MeshEditor_ptr theEditor,

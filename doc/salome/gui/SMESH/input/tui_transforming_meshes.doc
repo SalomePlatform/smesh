@@ -7,81 +7,68 @@
 <br>
 \anchor tui_translation
 <h3>Translation</h3>
-\include transforming_meshes_ex01.py
-<a href="../../examples/SMESH/transforming_meshes_ex01.py">Download this script</a>
+\tui_script{transforming_meshes_ex01.py}
 
 <br>
 \anchor tui_rotation
 <h3>Rotation</h3>
-\include transforming_meshes_ex02.py
-<a href="../../examples/SMESH/transforming_meshes_ex02.py">Download this script</a>
+\tui_script{transforming_meshes_ex02.py}
 
 <br>
 \anchor tui_scale
 <h3>Scale</h3>
-\include transforming_meshes_ex03.py
-<a href="../../examples/SMESH/transforming_meshes_ex03.py">Download this script</a>
+\tui_script{transforming_meshes_ex03.py}
 
 <br>
 \anchor tui_symmetry
 <h3>Symmetry</h3>
-\include transforming_meshes_ex04.py
-<a href="../../examples/SMESH/transforming_meshes_ex04.py">Download this script</a>
+\tui_script{transforming_meshes_ex04.py}
 
 <br>
 \anchor tui_merging_nodes
 <h3>Merging Nodes</h3>
-\include transforming_meshes_ex05.py
-<a href="../../examples/SMESH/transforming_meshes_ex05.py">Download this script</a>
+\tui_script{transforming_meshes_ex05.py}
 
 <br>
 \anchor tui_merging_elements
 <h3>Merging Elements</h3>
-\include transforming_meshes_ex06.py
-<a href="../../examples/SMESH/transforming_meshes_ex06.py">Download this script</a>
+\tui_script{transforming_meshes_ex06.py}
 
 <br><h2>Sewing Meshes</h2>
 
 <br>
 \anchor tui_sew_meshes_border_to_side
 <h3>Sew Meshes Border to Side</h3>
-\include transforming_meshes_ex07.py
-<a href="../../examples/SMESH/transforming_meshes_ex07.py">Download this script</a>
+\tui_script{transforming_meshes_ex07.py}
 
 <br>
 \anchor tui_sew_conform_free_borders
 <h3>Sew Conform Free Borders</h3>
-\include transforming_meshes_ex08.py
-<a href="../../examples/SMESH/transforming_meshes_ex08.py">Download this script</a>
+\tui_script{transforming_meshes_ex08.py}
 
 <br>
 \anchor tui_sew_free_borders
 <h3>Sew Free Borders</h3>
-\include transforming_meshes_ex09.py
-<a href="../../examples/SMESH/transforming_meshes_ex09.py">Download this script</a>
+\tui_script{transforming_meshes_ex09.py}
 
 <br>
 \anchor tui_sew_side_elements
 <h3>Sew Side Elements</h3>
-\include transforming_meshes_ex10.py
-<a href="../../examples/SMESH/transforming_meshes_ex10.py">Download this script</a>
+\tui_script{transforming_meshes_ex10.py}
 
 <br>
 \anchor tui_duplicate_nodes
 <h3>Duplicate nodes</h3>
-\include transforming_meshes_ex11.py
-<a href="../../examples/SMESH/transforming_meshes_ex11.py">Download this script</a>
+\tui_script{transforming_meshes_ex11.py}
 
 <br>
 \anchor tui_make_2dmesh_from_3d
 <h3>Create boundary elements</h3>
-\include transforming_meshes_ex12.py
-<a href="../../examples/SMESH/transforming_meshes_ex12.py">Download this script</a>
+\tui_script{transforming_meshes_ex12.py}
 
 <br>
 \anchor tui_reorient_faces
 <h3>Reorient faces by vector</h3>
-\include transforming_meshes_ex13.py
-<a href="../../examples/SMESH/transforming_meshes_ex13.py">Download this script</a>
+\tui_script{transforming_meshes_ex13.py}
 
 */

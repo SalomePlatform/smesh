@@ -74,14 +74,13 @@ signals:
   void                     Close();
 
 private:
-  void                     closeEvent( QCloseEvent* );
   void                     enterEvent( QEvent* );
   void                     keyPressEvent( QKeyEvent* );
  
 private slots:
   void                     onOk();
   void                     onSave();
-  void                     onClose();
+  void                     reject();
   void                     onHelp();
 
   void                     onDeactivate();

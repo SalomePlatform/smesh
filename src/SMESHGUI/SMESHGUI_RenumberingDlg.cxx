@@ -186,7 +186,7 @@ void SMESHGUI_RenumberingDlg::Init()
 
   /* signals and slots connections */
   connect(buttonOk,     SIGNAL(clicked()), this, SLOT(ClickOnOk()));
-  connect(buttonCancel, SIGNAL(clicked()), this, SLOT(ClickOnCancel()));
+  connect(buttonCancel, SIGNAL(clicked()), this, SLOT(reject()));
   connect(buttonApply,  SIGNAL(clicked()), this, SLOT(ClickOnApply()));
   connect(buttonHelp,   SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
 
@@ -194,7 +194,7 @@ void SMESHGUI_RenumberingDlg::Init()
   connect(mySMESHGUI, SIGNAL (SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
   /* to close dialog if study change */
-  connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(ClickOnCancel()));
+  connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(reject()));
 
   myEditCurrentArgument = LineEditMesh;
   LineEditMesh->setFocus();
@@ -254,20 +254,20 @@ void SMESHGUI_RenumberingDlg::ClickOnApply()
 void SMESHGUI_RenumberingDlg::ClickOnOk()
 {
   ClickOnApply();
-  ClickOnCancel();
+  reject();
 }
 
 //=================================================================================
-// function : ClickOnCancel()
+// function : reject()
 // purpose  :
 //=================================================================================
-void SMESHGUI_RenumberingDlg::ClickOnCancel()
+void SMESHGUI_RenumberingDlg::reject()
 {
   //mySelectionMgr->clearSelected();
   mySelectionMgr->clearFilters();
   disconnect(mySelectionMgr, 0, this, 0);
   mySMESHGUI->ResetState();
-  reject();
+  QDialog::reject();
 }
 
 //=================================================================================
@@ -390,26 +390,6 @@ void SMESHGUI_RenumberingDlg::enterEvent(QEvent* e)
   if (GroupConstructors->isEnabled())
     return;
   ActivateThisDialog();
-}
-
-//=================================================================================
-// function : closeEvent()
-// purpose  :
-//=================================================================================
-void SMESHGUI_RenumberingDlg::closeEvent(QCloseEvent* e)
-{
-  /* same than click on cancel button */
-  ClickOnCancel();
-}
-
-//=======================================================================
-//function : hideEvent
-//purpose  : caused by ESC key
-//=======================================================================
-void SMESHGUI_RenumberingDlg::hideEvent (QHideEvent * e)
-{
-  if (!isMinimized())
-    ClickOnCancel();
 }
 
 //=================================================================================

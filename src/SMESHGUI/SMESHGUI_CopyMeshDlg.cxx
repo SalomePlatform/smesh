@@ -227,7 +227,7 @@ SMESHGUI_CopyMeshDlg::SMESHGUI_CopyMeshDlg( SMESHGUI* theModule )
 
   /* signals and slots connections */
   connect(buttonOk,     SIGNAL(clicked()), this, SLOT(ClickOnOk()));
-  connect(buttonCancel, SIGNAL(clicked()), this, SLOT(ClickOnCancel()));
+  connect(buttonCancel, SIGNAL(clicked()), this, SLOT(reject()));
   connect(buttonApply,  SIGNAL(clicked()), this, SLOT(ClickOnApply()));
   connect(buttonHelp,   SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
 
@@ -236,7 +236,7 @@ SMESHGUI_CopyMeshDlg::SMESHGUI_CopyMeshDlg( SMESHGUI* theModule )
   connect(mySelectionMgr, SIGNAL (currentSelectionChanged()),
           this,           SLOT   (SelectionIntoArgument()));
   connect(mySMESHGUI,     SIGNAL (SignalCloseAllDialogs()),/* to close dialog if study change */
-          this,           SLOT   (ClickOnCancel()));
+          this,           SLOT   (reject()));
 
   connect(myLineEditElements, SIGNAL(textChanged(const QString&)),
           this,               SLOT  (onTextChange(const QString&)));
@@ -369,14 +369,14 @@ void SMESHGUI_CopyMeshDlg::ClickOnOk()
 {
   setIsApplyAndClose( true );
   if( ClickOnApply() )
-    ClickOnCancel();
+    reject();
 }
 
 //=================================================================================
-// function : ClickOnCancel()
+// function : reject()
 // purpose  :
 //=================================================================================
-void SMESHGUI_CopyMeshDlg::ClickOnCancel()
+void SMESHGUI_CopyMeshDlg::reject()
 {
   disconnect(mySelectionMgr, 0, this, 0);
   if ( mySelectionMgr )
@@ -384,7 +384,7 @@ void SMESHGUI_CopyMeshDlg::ClickOnCancel()
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode( ActorSelection );
   mySMESHGUI->ResetState();
-  reject();
+  QDialog::reject();
 }
 
 //=================================================================================
@@ -616,26 +616,6 @@ void SMESHGUI_CopyMeshDlg::enterEvent (QEvent*)
 {
   if (!ConstructorsBox->isEnabled())
     ActivateThisDialog();
-}
-
-//=================================================================================
-// function : closeEvent()
-// purpose  :
-//=================================================================================
-void SMESHGUI_CopyMeshDlg::closeEvent (QCloseEvent*)
-{
-  /* same than click on cancel button */
-  ClickOnCancel();
-}
-
-//=======================================================================
-//function : hideEvent
-//purpose  : caused by ESC key
-//=======================================================================
-void SMESHGUI_CopyMeshDlg::hideEvent (QHideEvent*)
-{
-  if (!isMinimized())
-    ClickOnCancel();
 }
 
 //=================================================================================

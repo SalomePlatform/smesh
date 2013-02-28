@@ -3,7 +3,6 @@
 \page tui_notebook_smesh_page Using SALOME NoteBook
 
 \anchor tui_notebook_smesh
-\include notebook_smesh.py
-<a href="../../examples/SMESH/notebook_smesh.py">Download this script</a>
+\tui_script{notebook_smesh.py}
 
 */

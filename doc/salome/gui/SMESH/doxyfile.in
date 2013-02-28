@@ -42,7 +42,7 @@ INPUT             = @srcdir@/input @top_srcdir@/src/Tools/padder/doc/input
 FILE_PATTERNS     = *.doc
 EXCLUDE           = 
 IMAGE_PATH        = @srcdir@/images @top_srcdir@/src/Tools/padder/doc/images
-EXAMPLE_PATH      = @top_srcdir@/src/SMESH_SWIG @top_srcdir@/doc/salome/examples
+EXAMPLE_PATH      = @top_srcdir@/doc/salome/examples @top_srcdir@/src/SMESH_SWIG
 
 #---------------------------------------------------------------------------
 #HTML related options
@@ -80,3 +80,8 @@ GENERATE_RTF      = NO
 TAGFILES          = smeshpy_doc.tag=../SMESH/smeshpy_doc #rnv: 07.04.2011 Workaround for the doxygen 1.7.3:
                                                          #because it wrongly defines location of the html files for search.						      
 SEARCHENGINE      = YES
+
+#---------------------------------------------------------------------------
+#Custom commands
+#---------------------------------------------------------------------------
+ALIASES += tui_script{1}="\include \1 <a href=\"../../examples/SMESH/\1\">Download this script</a>"

@@ -3,91 +3,69 @@
 \page tui_quality_controls_page Quality Controls
 
 \section tui_free_borders Free Borders
-\include quality_controls_ex01.py
-<a href="../../examples/SMESH/quality_controls_ex01.py">Download this script</a>
+\tui_script{quality_controls_ex01.py}
 
 \section tui_borders_at_multiconnection Borders at Multiconnection
-\include quality_controls_ex02.py
-<a href="../../examples/SMESH/quality_controls_ex02.py">Download this script</a>
+\tui_script{quality_controls_ex02.py}
 
 \section tui_length_1d Length 1D
-\include quality_controls_ex03.py
-<a href="../../examples/SMESH/quality_controls_ex03.py">Download this script</a>
+\tui_script{quality_controls_ex03.py}
 
 \section tui_free_edges Free Edges
-\include quality_controls_ex04.py
-<a href="../../examples/SMESH/quality_controls_ex04.py">Download this script</a>
+\tui_script{quality_controls_ex04.py}
 
 \section tui_free_nodes Free Nodes
-\include quality_controls_ex05.py
-<a href="../../examples/SMESH/quality_controls_ex05.py">Download this script</a>
+\tui_script{quality_controls_ex05.py}
 
 \section tui_free_faces Free Faces
-\include quality_controls_ex06.py
-<a href="../../examples/SMESH/quality_controls_ex06.py">Download this script</a>
+\tui_script{quality_controls_ex06.py}
 
 \section tui_bare_border_faces Bare border faces
-\include quality_controls_ex07.py
-<a href="../../examples/SMESH/quality_controls_ex07.py">Download this script</a>
+\tui_script{quality_controls_ex07.py}
 
 \section tui_bare_border_volumes Bare border volumes
-\include quality_controls_ex08.py
-<a href="../../examples/SMESH/quality_controls_ex08.py">Download this script</a>
+\tui_script{quality_controls_ex08.py}
 
 \section tui_over_constrained_faces Over-constrained faces
-\include quality_controls_ex09.py
-<a href="../../examples/SMESH/quality_controls_ex09.py">Download this script</a>
+\tui_script{quality_controls_ex09.py}
 
 \section tui_over_constrained_volumes Over-constrained volumes
-\include quality_controls_ex10.py
-<a href="../../examples/SMESH/quality_controls_ex10.py">Download this script</a>
+\tui_script{quality_controls_ex10.py}
 
 \section tui_length_2d Length 2D
-\include quality_controls_ex11.py
-<a href="../../examples/SMESH/quality_controls_ex11.py">Download this script</a>
+\tui_script{quality_controls_ex11.py}
 
 \section tui_borders_at_multiconnection_2d Borders at Multiconnection 2D
-\include quality_controls_ex12.py
-<a href="../../examples/SMESH/quality_controls_ex12.py">Download this script</a>
+\tui_script{quality_controls_ex12.py}
 
 \section tui_area Area
-\include quality_controls_ex13.py
-<a href="../../examples/SMESH/quality_controls_ex13.py">Download this script</a>
+\tui_script{quality_controls_ex13.py}
 
 \section tui_taper Taper
-\include quality_controls_ex14.py
-<a href="../../examples/SMESH/quality_controls_ex14.py">Download this script</a>
+\tui_script{quality_controls_ex14.py}
 
 \section tui_aspect_ratio Aspect Ratio
-\include quality_controls_ex15.py
-<a href="../../examples/SMESH/quality_controls_ex15.py">Download this script</a>
+\tui_script{quality_controls_ex15.py}
 
 \section tui_minimum_angle Minimum Angle
-\include quality_controls_ex16.py
-<a href="../../examples/SMESH/quality_controls_ex16.py">Download this script</a>
+\tui_script{quality_controls_ex16.py}
 
 \section tui_warping Warping
-\include quality_controls_ex17.py
-<a href="../../examples/SMESH/quality_controls_ex17.py">Download this script</a>
+\tui_script{quality_controls_ex17.py}
 
 \section tui_skew Skew
-\include quality_controls_ex18.py
-<a href="../../examples/SMESH/quality_controls_ex18.py">Download this script</a>
+\tui_script{quality_controls_ex18.py}
 
 \section tui_max_element_length_2d Element Diameter 2D
-\include quality_controls_ex19.py
-<a href="../../examples/SMESH/quality_controls_ex19.py">Download this script</a>
+\tui_script{quality_controls_ex19.py}
 
 \section tui_aspect_ratio_3d Aspect Ratio 3D
-\include quality_controls_ex20.py
-<a href="../../examples/SMESH/quality_controls_ex20.py">Download this script</a>
+\tui_script{quality_controls_ex20.py}
 
 \section tui_volume Volume
-\include quality_controls_ex21.py
-<a href="../../examples/SMESH/quality_controls_ex21.py">Download this script</a>
+\tui_script{quality_controls_ex21.py}
 
 \section tui_max_element_length_3d Element Diameter 3D
-\include quality_controls_ex22.py
-<a href="../../examples/SMESH/quality_controls_ex22.py">Download this script</a>
+\tui_script{quality_controls_ex22.py}
 
 */

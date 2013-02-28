@@ -6,8 +6,7 @@ This sample demonstrates how to use <b>Use existing faces</b> algorithm,
 which is actulally just a stub allowing to use your own 2D algoritm
 implemented in Python.
 
-\include use_existing_faces.py
-<a href="../../examples/SMESH/use_existing_faces.py">Download this script</a>
+\tui_script{use_existing_faces.py}
 
 Resulting mesh:
 \image html use_existing_face_sample_mesh.png

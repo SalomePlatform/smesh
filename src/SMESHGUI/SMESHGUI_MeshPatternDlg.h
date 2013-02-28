@@ -75,10 +75,12 @@ public:
 
   void                                Init();
   
+protected slots:
+  virtual void                        reject();
+
 private slots:
   void                                onOk();
   bool                                onApply();
-  void                                onClose();
   void                                onHelp();
 
   void                                onDeactivate();
@@ -108,7 +110,6 @@ private:
   void                                activateSelection();
   QStringList                         prepareFilters() const;
   QString                             autoExtension( const QString& ) const;
-  void                                closeEvent( QCloseEvent* );
   void                                enterEvent( QEvent* );
   void                                keyPressEvent( QKeyEvent* );
   bool                                isValid( const bool = true );

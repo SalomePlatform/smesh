@@ -62,7 +62,7 @@ public:
 protected slots:
   void                    onOk();
   virtual bool            onApply();
-  void                    onClose();
+  virtual void            reject();
   void                    onHelp();
 
   void                    onDeactivate();
@@ -71,9 +71,7 @@ protected slots:
   void                    onTextChange( const QString& );
 
 protected:
-  void                    closeEvent( QCloseEvent* );
   void                    enterEvent( QEvent* );
-  void                    hideEvent( QHideEvent* );                        /* ESC key */
   void                    keyPressEvent( QKeyEvent* );
   QWidget*                createButtonFrame( QWidget* );
   QWidget*                createMainFrame( QWidget* );

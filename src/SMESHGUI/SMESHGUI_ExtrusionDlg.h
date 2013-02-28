@@ -68,12 +68,9 @@ public:
   SMESHGUI_ExtrusionDlg( SMESHGUI* );
   ~SMESHGUI_ExtrusionDlg();
 
-  void                             reject();
-
 private:
   void                             Init( bool = true );
   void                             enterEvent( QEvent* );       /* mouse enter the QWidget */
-  void                             closeEvent( QCloseEvent* );
   void                             keyPressEvent( QKeyEvent* );
   int                              GetConstructorId();
   void                             getExtrusionVector(SMESH::DirStruct& aVector);
@@ -147,14 +144,14 @@ private:
   SMESHGUI_FilterDlg*              myFilterDlg;
 
 protected slots:
-  virtual void              onDisplaySimulation( bool );
+  virtual void                    onDisplaySimulation( bool );
+  virtual void                    reject();
    
 private slots:
   void                            ConstructorsClicked( int );
   void                            CheckIsEnable();
   void                            ClickOnOk();
   bool                            ClickOnApply();
-  void                            ClickOnCancel();
   void                            ClickOnHelp();
   void                            ClickOnRadio();
   void                            SetEditCurrentArgument();

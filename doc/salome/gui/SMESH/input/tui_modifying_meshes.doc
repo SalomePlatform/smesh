@@ -9,62 +9,52 @@
 <br>
 \anchor tui_add_node
 <h3>Add Node</h3>
-\include modifying_meshes_ex01.py
-<a href="../../examples/SMESH/modifying_meshes_ex01.py">Download this script</a>
+\tui_script{modifying_meshes_ex01.py}
 
 <br>
 \anchor tui_add_0DElement
 <h3>Add 0D Element</h3>
-\include modifying_meshes_ex02.py
-<a href="../../examples/SMESH/modifying_meshes_ex02.py">Download this script</a>
+\tui_script{modifying_meshes_ex02.py}
 
 <br>
 \anchor tui_add_0DElement_on_all_nodes
 <h3>Add 0D Element on Element Nodes</h3>
-\include modifying_meshes_ex03.py
-<a href="../../examples/SMESH/modifying_meshes_ex03.py">Download this script</a>
+\tui_script{modifying_meshes_ex03.py}
 
 <br>
 \anchor tui_add_edge
 <h3>Add Edge</h3>
-\include modifying_meshes_ex04.py
-<a href="../../examples/SMESH/modifying_meshes_ex04.py">Download this script</a>
+\tui_script{modifying_meshes_ex04.py}
 
 <br>
 \anchor tui_add_triangle
 <h3>Add Triangle</h3>
-\include modifying_meshes_ex05.py
-<a href="../../examples/SMESH/modifying_meshes_ex05.py">Download this script</a>
+\tui_script{modifying_meshes_ex05.py}
 
 <br>
 \anchor tui_add_quadrangle
 <h3>Add Quadrangle</h3>
-\include modifying_meshes_ex06.py
-<a href="../../examples/SMESH/modifying_meshes_ex06.py">Download this script</a>
+\tui_script{modifying_meshes_ex06.py}
 
 <br>
 \anchor tui_add_tetrahedron
 <h3>Add Tetrahedron</h3>
-\include modifying_meshes_ex07.py
-<a href="../../examples/SMESH/modifying_meshes_ex07.py">Download this script</a>
+\tui_script{modifying_meshes_ex07.py}
 
 <br>
 \anchor tui_add_hexahedron
 <h3>Add Hexahedron</h3>
-\include modifying_meshes_ex08.py
-<a href="../../examples/SMESH/modifying_meshes_ex08.py">Download this script</a>
+\tui_script{modifying_meshes_ex08.py}
 
 <br>
 \anchor tui_add_polygon
 <h3>Add Polygon</h3>
-\include modifying_meshes_ex09.py
-<a href="../../examples/SMESH/modifying_meshes_ex09.py">Download this script</a>
+\tui_script{modifying_meshes_ex09.py}
 
 <br>
 \anchor tui_add_polyhedron
 <h3>Add Polyhedron</h3>
-\include modifying_meshes_ex10.py
-<a href="../../examples/SMESH/modifying_meshes_ex10.py">Download this script</a>
+\tui_script{modifying_meshes_ex10.py}
 
 <br>
 \anchor tui_removing_nodes_and_elements
@@ -73,97 +63,81 @@
 <br>
 \anchor tui_removing_nodes
 <h3>Removing Nodes</h3>
-\include modifying_meshes_ex11.py
-<a href="../../examples/SMESH/modifying_meshes_ex11.py">Download this script</a>
+\tui_script{modifying_meshes_ex11.py}
 
 <br>
 \anchor tui_removing_elements
 <h3>Removing Elements</h3>
-\include modifying_meshes_ex12.py
-<a href="../../examples/SMESH/modifying_meshes_ex12.py">Download this script</a>
+\tui_script{modifying_meshes_ex12.py}
 
 <br>
 \anchor tui_removing_orphan_nodes
 <h3>Removing Orphan Nodes</h3>
-\include modifying_meshes_ex13.py
-<a href="../../examples/SMESH/modifying_meshes_ex13.py">Download this script</a>
+\tui_script{modifying_meshes_ex13.py}
 
 <br>
 \anchor tui_renumbering_nodes_and_elements
 <h2>Renumbering Nodes and Elements</h2>
-\include modifying_meshes_ex14.py
-<a href="../../examples/SMESH/modifying_meshes_ex14.py">Download this script</a>
+\tui_script{modifying_meshes_ex14.py}
 
 <br>
 \anchor tui_moving_nodes
 <h2>Moving Nodes</h2>
-\include modifying_meshes_ex15.py
-<a href="../../examples/SMESH/modifying_meshes_ex15.py">Download this script</a>
+\tui_script{modifying_meshes_ex15.py}
 
 <br>
 \anchor tui_diagonal_inversion
 <h2>Diagonal Inversion</h2>
-\include modifying_meshes_ex16.py
-<a href="../../examples/SMESH/modifying_meshes_ex16.py">Download this script</a>
+\tui_script{modifying_meshes_ex16.py}
 
 <br>
 \anchor tui_uniting_two_triangles
 <h2>Uniting two Triangles</h2>
-\include modifying_meshes_ex17.py
-<a href="../../examples/SMESH/modifying_meshes_ex17.py">Download this script</a>
+\tui_script{modifying_meshes_ex17.py}
 
 <br>
 \anchor tui_uniting_set_of_triangles
 <h2>Uniting a Set of Triangles</h2>
-\include modifying_meshes_ex18.py
-<a href="../../examples/SMESH/modifying_meshes_ex18.py">Download this script</a>
+\tui_script{modifying_meshes_ex18.py}
 
 <br>
 \anchor tui_orientation
 <h2>Orientation</h2>
-\include modifying_meshes_ex19.py
-<a href="../../examples/SMESH/modifying_meshes_ex19.py">Download this script</a>
+\tui_script{modifying_meshes_ex19.py}
 
 <br>
 \anchor tui_cutting_quadrangles
 <h2>Cutting Quadrangles</h2>
-\include modifying_meshes_ex20.py
-<a href="../../examples/SMESH/modifying_meshes_ex20.py">Download this script</a>
+\tui_script{modifying_meshes_ex20.py}
 
 <br>
 \anchor tui_smoothing
 <h2>Smoothing</h2>
-\include modifying_meshes_ex21.py
-<a href="../../examples/SMESH/modifying_meshes_ex21.py">Download this script</a>
+\tui_script{modifying_meshes_ex21.py}
 
 <br>
 \anchor tui_extrusion
 <h2>Extrusion</h2>
-\include modifying_meshes_ex22.py
-<a href="../../examples/SMESH/modifying_meshes_ex22.py">Download this script</a>
+\tui_script{modifying_meshes_ex22.py}
 
 <br>
 \anchor tui_extrusion_along_path
 <h2>Extrusion along a Path</h2>
-\include modifying_meshes_ex23.py
-<a href="../../examples/SMESH/modifying_meshes_ex23.py">Download this script</a>
+\tui_script{modifying_meshes_ex23.py}
 
 <br>
 \anchor tui_revolution
 <h2>Revolution</h2>
-\include modifying_meshes_ex24.py
-<a href="../../examples/SMESH/modifying_meshes_ex24.py">Download this script</a>
+\tui_script{modifying_meshes_ex24.py}
 
 <br>
 \anchor tui_pattern_mapping
 <h2>Pattern Mapping</h2>
-\include modifying_meshes_ex25.py
-<a href="../../examples/SMESH/modifying_meshes_ex25.py">Download this script</a>
+\tui_script{modifying_meshes_ex25.py}
 
 <br>
 \anchor tui_quadratic
 <h2>Convert mesh to/from quadratic</h2>
-\include modifying_meshes_ex26.py
-<a href="../../examples/SMESH/modifying_meshes_ex26.py">Download this script</a>
+\tui_script{modifying_meshes_ex26.py}
 
 */

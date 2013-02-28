@@ -73,8 +73,6 @@ private:
   typedef QList<SMESH::SMESH_GroupBase_var> GrpList;
 
   void                        Init();
-  void                        closeEvent( QCloseEvent* );
-  void                        hideEvent( QHideEvent* );    /* ESC key */
   void                        enterEvent( QEvent* );       /* mouse enter the QWidget */
   void                        keyPressEvent( QKeyEvent* );
   void                        displaySimulation();
@@ -128,6 +126,9 @@ private:
   
   QString                     myHelpFileName;
   
+protected slots:
+  virtual void                reject();
+
 private slots:
   void                        onTextChange( const QString& );
   void                        onCellTextChange( int, int );
@@ -135,7 +136,6 @@ private slots:
   void                        onCellDoubleClicked( int, int );
   
   void                        ClickOnOk();
-  void                        ClickOnCancel();
   void                        ClickOnApply();
   void                        ClickOnHelp();
   void                        SetCurrentSelection();

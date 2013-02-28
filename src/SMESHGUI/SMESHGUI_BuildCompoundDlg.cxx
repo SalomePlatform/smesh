@@ -212,7 +212,7 @@ void SMESHGUI_BuildCompoundDlg::Init()
 
   // signals and slots connections
   connect(buttonOk,     SIGNAL(clicked()), this, SLOT(ClickOnOk()));
-  connect(buttonCancel, SIGNAL(clicked()), this, SLOT(ClickOnCancel()));
+  connect(buttonCancel, SIGNAL(clicked()), this, SLOT(reject()));
   connect(buttonApply,  SIGNAL(clicked()), this, SLOT(ClickOnApply()));
   connect(buttonHelp,   SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
 
@@ -223,7 +223,7 @@ void SMESHGUI_BuildCompoundDlg::Init()
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
 
   connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
-  connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()),        this, SLOT(ClickOnCancel()));
+  connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()),        this, SLOT(reject()));
 
   LineEditName->setText(GetDefaultName(tr("COMPOUND_MESH")));
   LineEditMeshes->setFocus();
@@ -366,20 +366,20 @@ void SMESHGUI_BuildCompoundDlg::ClickOnOk()
 {
   setIsApplyAndClose( true );
   if (ClickOnApply())
-    ClickOnCancel();
+    reject();
 }
 
 //=================================================================================
-// function : ClickOnCancel()
+// function : reject()
 // purpose  :
 //=================================================================================
-void SMESHGUI_BuildCompoundDlg::ClickOnCancel()
+void SMESHGUI_BuildCompoundDlg::reject()
 {
   //mySelectionMgr->clearSelected();
   mySelectionMgr->clearFilters();
   disconnect(mySelectionMgr, 0, this, 0);
   mySMESHGUI->ResetState();
-  reject();
+  QDialog::reject();
 }
 
 //=================================================================================
@@ -479,27 +479,6 @@ void SMESHGUI_BuildCompoundDlg::enterEvent( QEvent* )
     return;
   ActivateThisDialog();
 }
-
-//=================================================================================
-// function : closeEvent()
-// purpose  :
-//=================================================================================
-void SMESHGUI_BuildCompoundDlg::closeEvent( QCloseEvent* )
-{
-  /* same than click on cancel button */
-  ClickOnCancel();
-}
-
-//=======================================================================
-//function : hideEvent
-//purpose  : caused by ESC key
-//=======================================================================
-void SMESHGUI_BuildCompoundDlg::hideEvent( QHideEvent* )
-{
-  if (!isMinimized())
-    ClickOnCancel();
-}
-
 
 //=================================================================================
 // function : keyPressEvent()

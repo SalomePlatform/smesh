@@ -44,102 +44,84 @@ This page provides example codes of \ref tui_defining_meshing_algos
 <br>
 \anchor tui_1d_arithmetic
 <h3>Arithmetic 1D</h3>
-\include defining_hypotheses_ex01.py
-<a href="../../examples/SMESH/defining_hypotheses_ex01.py">Download this script</a>
+\tui_script{defining_hypotheses_ex01.py}
 
 <br>
 \anchor tui_deflection_1d
 <h3>Deflection 1D and Number of Segments</h3>
-\include defining_hypotheses_ex02.py
-<a href="../../examples/SMESH/defining_hypotheses_ex02.py">Download this script</a>
+\tui_script{defining_hypotheses_ex02.py}
 
 <br>
 \anchor tui_start_and_end_length
 <h3>Start and End Length</h3>
-\include defining_hypotheses_ex03.py
-<a href="../../examples/SMESH/defining_hypotheses_ex03.py">Download this script</a>
+\tui_script{defining_hypotheses_ex03.py}
 
 <br>
 \anchor tui_average_length
 <h3>Local Length</h3>
-\include defining_hypotheses_ex04.py
-<a href="../../examples/SMESH/defining_hypotheses_ex04.py">Download this script</a>
+\tui_script{defining_hypotheses_ex04.py}
 
 <br><h2>Defining 2D and 3D hypotheses</h2>
 
 <br>
 \anchor tui_max_element_area
 <h3>Maximum Element Area</h3>
-\include defining_hypotheses_ex05.py
-<a href="../../examples/SMESH/defining_hypotheses_ex05.py">Download this script</a>
+\tui_script{defining_hypotheses_ex05.py}
 
 <br>
 \anchor tui_max_element_volume
 <h3>Maximum Element Volume</h3>
-\include defining_hypotheses_ex06.py
-<a href="../../examples/SMESH/defining_hypotheses_ex06.py">Download this script</a>
+\tui_script{defining_hypotheses_ex06.py}
 
 <br>
 \anchor tui_length_from_edges
 <h3>Length from Edges</h3>
-\include defining_hypotheses_ex07.py
-<a href="../../examples/SMESH/defining_hypotheses_ex07.py">Download this script</a>
+\tui_script{defining_hypotheses_ex07.py}
 
 <br><h2>Defining Additional Hypotheses</h2>
 
 <br>
 \anchor tui_propagation
 <h3>Propagation</h3>
-\include defining_hypotheses_ex08.py
-<a href="../../examples/SMESH/defining_hypotheses_ex08.py">Download this script</a>
+\tui_script{defining_hypotheses_ex08.py}
 
 <br>
 \anchor tui_defining_meshing_algos
 <h2>Defining Meshing Algorithms</h2>
-\include defining_hypotheses_ex09.py
-<a href="../../examples/SMESH/defining_hypotheses_ex09.py">Download this script</a>
+\tui_script{defining_hypotheses_ex09.py}
 
 <br>
 \anchor tui_projection
 <h3>Projection Algorithms</h3>
-\include defining_hypotheses_ex10.py
-<a href="../../examples/SMESH/defining_hypotheses_ex10.py">Download this script</a>
+\tui_script{defining_hypotheses_ex10.py}
 
 <h3>Projection 1D2D</h3>
-\include defining_hypotheses_ex11.py
-<a href="../../examples/SMESH/defining_hypotheses_ex11.py">Download this script</a>
+\tui_script{defining_hypotheses_ex11.py}
 
 <br>
 
 \anchor tui_fixed_points
 
 <h2>1D Mesh with Fixed Points example</h2>
-\include defining_hypotheses_ex12.py
-<a href="../../examples/SMESH/defining_hypotheses_ex12.py">Download this script</a>
+\tui_script{defining_hypotheses_ex12.py}
 
 \anchor tui_radial_quadrangle
 <h2> Radial Quadrangle 1D2D example </h2>
-\include defining_hypotheses_ex13.py
-<a href="../../examples/SMESH/defining_hypotheses_ex13.py">Download this script</a>
+\tui_script{defining_hypotheses_ex13.py}
 
 \anchor tui_quadrangle_parameters
 <h2>Quadrangle Parameters example 1 (meshing a face with 3 edges) </h2>
-\include defining_hypotheses_ex14.py
-<a href="../../examples/SMESH/defining_hypotheses_ex14.py">Download this script</a>
+\tui_script{defining_hypotheses_ex14.py}
 
 <h2>Quadrangle Parameters example 2 (using different types) </h2>
-\include defining_hypotheses_ex15.py
-<a href="../../examples/SMESH/defining_hypotheses_ex15.py">Download this script</a>
+\tui_script{defining_hypotheses_ex15.py}
 
 \anchor tui_import
 <h2>"Use Existing Elements" example </h2>
-\include defining_hypotheses_ex16.py
-<a href="../../examples/SMESH/defining_hypotheses_ex16.py">Download this script</a>
+\tui_script{defining_hypotheses_ex16.py}
 
 \anchor tui_viscous_layers
 <h2>Viscous layers construction</h2>
-
-\include defining_hypotheses_ex17.py
-<a href="../../examples/SMESH/defining_hypotheses_ex17.py">Download this script</a>
+\tui_script{defining_hypotheses_ex17.py}
 
 */

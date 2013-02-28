@@ -43,7 +43,6 @@
 #include "Utils_ExceptHandlers.hxx"
 
 #include <TopoDS_Iterator.hxx>
-#include <LDOMParser.hxx>
 
 #include "memoire.h"
 
@@ -523,6 +522,7 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
           .And( SMESH_HypoFilter::IsMoreLocalThan( algoShape, aMesh ));
 
         if ( SMESH_Algo* subAlgo = (SMESH_Algo*) aMesh.GetHypothesis( aSubShape, filter, true )) {
+          if ( ! subAlgo->NeedDiscreteBoundary() ) continue;
           SMESH_Hypothesis::Hypothesis_Status status;
           if ( subAlgo->CheckHypothesis( aMesh, aSubShape, status ))
             // mesh a lower smToCompute starting from vertices
@@ -998,100 +998,6 @@ std::vector< std::string > SMESH_Gen::GetPluginXMLPaths()
   return xmlPaths;
 }
 
-//=======================================================================
-namespace // Access to type of input and output of an algorithm
-//=======================================================================
-{
-  struct AlgoData
-  {
-    int                       _dim;
-    set<SMDSAbs_GeometryType> _inElemTypes; // acceptable types of input mesh element
-    set<SMDSAbs_GeometryType> _outElemTypes; // produced types of mesh elements
-
-    bool IsCompatible( const AlgoData& algo2 ) const
-    {
-      if ( _dim > algo2._dim ) return algo2.IsCompatible( *this );
-      // algo2 is of highter dimension
-      if ( _outElemTypes.empty() || algo2._inElemTypes.empty() )
-        return false;
-      bool compatible = true;
-      set<SMDSAbs_GeometryType>::const_iterator myOutType = _outElemTypes.begin();
-      for ( ; myOutType != _outElemTypes.end() && compatible; ++myOutType )
-        compatible = algo2._inElemTypes.count( *myOutType );
-      return compatible;
-    }
-  };
-
-  //================================================================================
-  /*!
-   * \brief Return AlgoData of the algorithm
-   */
-  //================================================================================
-
-  const AlgoData& getAlgoData( const SMESH_Algo* algo )
-  {
-    static map< string, AlgoData > theDataByName;
-    if ( theDataByName.empty() )
-    {
-      // Read Plugin.xml files
-      vector< string > xmlPaths = SMESH_Gen::GetPluginXMLPaths();
-      LDOMParser xmlParser;
-      for ( size_t iXML = 0; iXML < xmlPaths.size(); ++iXML )
-      {
-        bool error = xmlParser.parse( xmlPaths[iXML].c_str() );
-        if ( error )
-        {
-          TCollection_AsciiString data;
-          INFOS( xmlParser.GetError(data) );
-          continue;
-        }
-        // <algorithm type="Regular_1D"
-        //            ...
-        //            input="EDGE"
-        //            output="QUAD,TRIA">
-        //
-        LDOM_Document xmlDoc = xmlParser.getDocument();
-        LDOM_NodeList algoNodeList = xmlDoc.getElementsByTagName( "algorithm" );
-        for ( int i = 0; i < algoNodeList.getLength(); ++i )
-        {
-          LDOM_Node     algoNode           = algoNodeList.item( i );
-          LDOM_Element& algoElem           = (LDOM_Element&) algoNode;
-          TCollection_AsciiString algoType = algoElem.getAttribute("type");
-          TCollection_AsciiString input    = algoElem.getAttribute("input");
-          TCollection_AsciiString output   = algoElem.getAttribute("output");
-          TCollection_AsciiString dim      = algoElem.getAttribute("dim");
-          if ( algoType.IsEmpty() ) continue;
-          AlgoData & data                  = theDataByName[ algoType.ToCString() ];
-          data._dim = dim.IntegerValue();
-          for ( int isInput = 0; isInput < 2; ++isInput )
-          {
-            TCollection_AsciiString&   typeStr = isInput ? input : output;
-            set<SMDSAbs_GeometryType>& typeSet = isInput ? data._inElemTypes : data._outElemTypes;
-            int beg = 1, end;
-            while ( beg <= typeStr.Length() )
-            {
-              while ( beg < typeStr.Length() && !isalpha( typeStr.Value( beg ) ))
-                ++beg;
-              end = beg;
-              while ( end < typeStr.Length() && isalpha( typeStr.Value( end + 1 ) ))
-                ++end;
-              if ( end > beg )
-              {
-                TCollection_AsciiString typeName = typeStr.SubString( beg, end );
-                if      ( typeName == "EDGE" ) typeSet.insert( SMDSGeom_EDGE );
-                else if ( typeName == "TRIA" ) typeSet.insert( SMDSGeom_TRIANGLE );
-                else if ( typeName == "QUAD" ) typeSet.insert( SMDSGeom_QUADRANGLE );
-              }
-              beg = end + 1;
-            }
-          }
-        }
-      }
-    }
-    return theDataByName[ algo->GetName() ];
-  }
-}
-
 //=============================================================================
 /*!
  * Finds algo to mesh a shape. Optionally returns a shape the found algo is bound to
@@ -1104,6 +1010,8 @@ SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_Mesh &         aMesh,
 {
   SMESH_HypoFilter filter( SMESH_HypoFilter::IsAlgo() );
   filter.And( filter.IsApplicableTo( aShape ));
+
+  typedef SMESH_Algo::Features AlgoData;
 
   TopoDS_Shape assignedToShape;
   SMESH_Algo* algo =
@@ -1144,10 +1052,10 @@ SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_Mesh &         aMesh,
       // check compatibility of algos
       if ( algos3D.size() > 1 )
       {
-        const AlgoData& algoData    = getAlgoData( algo );
-        const AlgoData& algoData2   = getAlgoData( algo2 );
-        const AlgoData& algoData3d0 = getAlgoData( algos3D[0] );
-        const AlgoData& algoData3d1 = getAlgoData( algos3D[1] );
+        const AlgoData& algoData    = algo->SMESH_Algo::GetFeatures();
+        const AlgoData& algoData2   = algo2->SMESH_Algo::GetFeatures();
+        const AlgoData& algoData3d0 = algos3D[0]->SMESH_Algo::GetFeatures();
+        const AlgoData& algoData3d1 = algos3D[1]->SMESH_Algo::GetFeatures();
         if (( algoData2.IsCompatible( algoData3d0 ) &&
               algoData2.IsCompatible( algoData3d1 ))
             &&

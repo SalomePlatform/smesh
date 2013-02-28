@@ -352,7 +352,7 @@ QWidget* SMESHGUI_MeshPatternDlg::createButtonFrame (QWidget* theParent)
   aLay->addWidget(myHelpBtn);
 
   connect(myOkBtn,    SIGNAL(clicked()), SLOT(onOk()));
-  connect(myCloseBtn, SIGNAL(clicked()), SLOT(onClose()));
+  connect(myCloseBtn, SIGNAL(clicked()), SLOT(reject()));
   connect(myApplyBtn, SIGNAL(clicked()), SLOT(onApply()));
   connect(myHelpBtn,  SIGNAL(clicked()), SLOT(onHelp()));
 
@@ -390,7 +390,7 @@ void SMESHGUI_MeshPatternDlg::Init()
   // selection and SMESHGUI
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionDone()));
   connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), SLOT(onDeactivate()));
-  connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(onClose()));
+  connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(reject()));
 
   myTypeGrp->button(Type_2d)->setChecked(true);
   onTypeChanged(Type_2d);
@@ -538,14 +538,14 @@ bool SMESHGUI_MeshPatternDlg::onApply()
 void SMESHGUI_MeshPatternDlg::onOk()
 {
   if (onApply())
-    onClose();
+    reject();
 }
 
 //=======================================================================
-// name    : SMESHGUI_MeshPatternDlg::onClose
+// name    : SMESHGUI_MeshPatternDlg::reject
 // Purpose : SLOT called when "Close" button pressed. Close dialog
 //=======================================================================
-void SMESHGUI_MeshPatternDlg::onClose()
+void SMESHGUI_MeshPatternDlg::reject()
 {
   mySelectionMgr->clearFilters();
   SMESH::SetPickable();
@@ -555,7 +555,7 @@ void SMESHGUI_MeshPatternDlg::onClose()
   disconnect(mySMESHGUI, 0, this, 0);
   mySMESHGUI->ResetState();
   erasePreview();
-  reject();
+  QDialog::reject();
 }
 
 //=================================================================================
@@ -722,15 +722,6 @@ void SMESHGUI_MeshPatternDlg::enterEvent (QEvent*)
   activateSelection();
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionDone()));
   onTextChanged(mySelEdit[Ids]->text());
-}
-
-//=======================================================================
-// name    : SMESHGUI_MeshPatternDlg::closeEvent
-// Purpose :
-//=======================================================================
-void SMESHGUI_MeshPatternDlg::closeEvent (QCloseEvent*)
-{
-  onClose();
 }
 
 //=======================================================================

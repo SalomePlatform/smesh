@@ -628,13 +628,13 @@ void SMESHGUI_AddQuadraticElementDlg::Init()
   connect(myReverseCB,    SIGNAL(stateChanged(int)), SLOT(onReverse(int)));
 
   connect(buttonOk, SIGNAL(clicked()),     SLOT(ClickOnOk()));
-  connect(buttonCancel, SIGNAL(clicked()), SLOT(ClickOnCancel()));
+  connect(buttonCancel, SIGNAL(clicked()), SLOT(reject()));
   connect(buttonApply, SIGNAL(clicked()),  SLOT(ClickOnApply()));
   connect(buttonHelp, SIGNAL(clicked()),   SLOT(ClickOnHelp()));
 
   connect(mySMESHGUI, SIGNAL (SignalDeactivateActiveDialog()), SLOT(DeactivateActiveDialog()));
-  connect(mySMESHGUI, SIGNAL (SignalStudyFrameChanged()), SLOT(ClickOnCancel()));
-  connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), SLOT(ClickOnCancel()));
+  connect(mySMESHGUI, SIGNAL (SignalStudyFrameChanged()), SLOT(reject()));
+  connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), SLOT(reject()));
 
   myCurrentLineEdit = myCornerNodes;
 
@@ -803,14 +803,14 @@ void SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
 void SMESHGUI_AddQuadraticElementDlg::ClickOnOk()
 {
   ClickOnApply();
-  ClickOnCancel();
+  reject();
 }
 
 //=================================================================================
-// function : ClickOnCancel()
+// function : reject()
 // purpose  :
 //=================================================================================
-void SMESHGUI_AddQuadraticElementDlg::ClickOnCancel()
+void SMESHGUI_AddQuadraticElementDlg::reject()
 {
   mySelectionMgr->clearSelected();
   mySimulation->SetVisibility(false);
@@ -819,7 +819,7 @@ void SMESHGUI_AddQuadraticElementDlg::ClickOnCancel()
     aViewWindow->SetSelectionMode( ActorSelection );
   disconnect(mySelectionMgr, 0, this, 0);
   mySMESHGUI->ResetState();
-  reject();
+  QDialog::reject();
 }
 
 //=================================================================================
@@ -1132,26 +1132,6 @@ void SMESHGUI_AddQuadraticElementDlg::enterEvent (QEvent*)
   if (GroupConstructors->isEnabled())
     return;
   ActivateThisDialog();
-}
-
-//=================================================================================
-// function : closeEvent()
-// purpose  :
-//=================================================================================
-void SMESHGUI_AddQuadraticElementDlg::closeEvent (QCloseEvent*)
-{
-  /* same than click on cancel button */
-  ClickOnCancel();
-}
-
-//=================================================================================
-// function : hideEvent()
-// purpose  : caused by ESC key
-//=================================================================================
-void SMESHGUI_AddQuadraticElementDlg::hideEvent (QHideEvent*)
-{
-  if (!isMinimized())
-    ClickOnCancel();
 }
 
 //=================================================================================

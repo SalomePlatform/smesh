@@ -21,7 +21,7 @@
 CURRENT_DIR=`pwd`
 CONF_DIR=`echo $0 | sed -e "s,[^/]*$,,;s,/$,,;s,^$,.,"`
 cd ${CONF_DIR}
-python $KERNEL_ROOT_DIR/salome_adm/cmake_files/am2cmake.py --smesh
+python $KERNEL_ROOT_DIR/salome_adm/cmake_files/deprecated/am2cmake.py --smesh
 status=$?
 cd ${CURRENT_DIR}
 exit $status

@@ -82,7 +82,7 @@ signals:
 protected slots:
   void                      onOk();
   virtual bool              onApply();
-  virtual void              onClose();
+  virtual void              reject();
   void                      onHelp();
 
   void                      onDeactivate();
@@ -102,9 +102,7 @@ protected slots:
   SMESH::NumericalFunctor_ptr getNumericalFunctor();
 
 protected:
-  void                      closeEvent( QCloseEvent* );
   void                      enterEvent( QEvent * );
-  void                      hideEvent( QHideEvent* );                        /* ESC key */
   void                      keyPressEvent( QKeyEvent* );
   QWidget*                  createButtonFrame( QWidget* );
   QWidget*                  createMainFrame( QWidget*, const bool );
@@ -221,7 +219,7 @@ protected:
                          SMESH::SMESH_IDSource_ptr obj);
 
 protected slots:
-  virtual void  onClose();
+  virtual void  reject();
   void          onCriterionRB();
   void          onPreviewChk();
 
