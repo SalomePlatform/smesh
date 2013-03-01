@@ -33,13 +33,13 @@ class VTKViewer_CellCenters;
 class SMESHOBJECT_EXPORT SMESH_FaceOrientationFilter : public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeRevisionMacro( SMESH_FaceOrientationFilter, vtkPolyDataAlgorithm );
+  vtkTypeMacro( SMESH_FaceOrientationFilter, vtkPolyDataAlgorithm );
 
   /*!Create a new SMESH_FaceOrientationFilter.*/
   static SMESH_FaceOrientationFilter *New();
 
-  void SetOrientationScale( vtkFloatingPointType );
-  vtkFloatingPointType GetOrientationScale() const { return myOrientationScale; }
+  void SetOrientationScale( double );
+  double GetOrientationScale() const { return myOrientationScale; }
 
   void Set3dVectors( bool );
   bool Get3dVectors() const { return my3dVectors; }
@@ -61,7 +61,7 @@ private:
 
 private:
   bool my3dVectors;
-  vtkFloatingPointType myOrientationScale;
+  double myOrientationScale;
   vtkPolyData* myArrowPolyData;
   vtkPolyData* myFacePolyData;
   VTKViewer_CellCenters* myFaceCenters;

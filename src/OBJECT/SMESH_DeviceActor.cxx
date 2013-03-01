@@ -119,13 +119,13 @@ SMESH_DeviceActor
   // Orientation of faces
   myIsFacesOriented = false;
 
-  vtkFloatingPointType anRGB[3] = { 1, 1, 1 };
+  double anRGB[3] = { 1, 1, 1 };
   SMESH::GetColor( "SMESH", "orientation_color", anRGB[0], anRGB[1], anRGB[2], QColor( 255, 255, 255 ) );
 
   myFaceOrientationFilter = SMESH_FaceOrientationFilter::New();
 
   myFaceOrientationDataMapper = vtkPolyDataMapper::New();
-  myFaceOrientationDataMapper->SetInput(myFaceOrientationFilter->GetOutput());
+  myFaceOrientationDataMapper->SetInputConnection(myFaceOrientationFilter->GetOutputPort());
 
   myFaceOrientation = vtkActor::New();
   myFaceOrientation->SetMapper(myFaceOrientationDataMapper);
@@ -208,9 +208,9 @@ SMESH_DeviceActor
 {
   int anId = 0;
   if(theIsImplicitFunctionUsed)
-    myPassFilter[ anId ]->SetInput( myExtractGeometry->GetOutput() );
+    myPassFilter[ anId ]->SetInputConnection( myExtractGeometry->GetOutputPort() );
   else
-    myPassFilter[ anId ]->SetInput( myMergeFilter->GetOutput() );
+    myPassFilter[ anId ]->SetInputConnection( myMergeFilter->GetOutputPort() );
     
   myIsImplicitFunctionUsed = theIsImplicitFunctionUsed;
   SetStoreClippingMapping(myStoreClippingMapping);
@@ -225,32 +225,32 @@ SMESH_DeviceActor
     //myIsShrinkable = theGrid->GetNumberOfCells() > 10;
     myIsShrinkable = true;
 
-    myExtractUnstructuredGrid->SetInput(theGrid);
+    myExtractUnstructuredGrid->SetInputData(theGrid);
 
-    myMergeFilter->SetGeometry(myExtractUnstructuredGrid->GetOutput());
+    myMergeFilter->SetGeometryConnection(myExtractUnstructuredGrid->GetOutputPort());
 
-    myExtractGeometry->SetInput(myMergeFilter->GetOutput());
+    myExtractGeometry->SetInputConnection(myMergeFilter->GetOutputPort());
 
     int anId = 0;
     SetImplicitFunctionUsed(myIsImplicitFunctionUsed);
-    myPassFilter[ anId + 1]->SetInput( myPassFilter[ anId ]->GetOutput() );
+    myPassFilter[ anId + 1]->SetInputConnection( myPassFilter[ anId ]->GetOutputPort() );
     
     anId++; // 1
-    myTransformFilter->SetInput( myPassFilter[ anId ]->GetOutput() );
+    myTransformFilter->SetInputConnection( myPassFilter[ anId ]->GetOutputPort() );
 
     anId++; // 2
-    myPassFilter[ anId ]->SetInput( myTransformFilter->GetOutput() );
-    myPassFilter[ anId + 1 ]->SetInput( myPassFilter[ anId ]->GetOutput() );
+    myPassFilter[ anId ]->SetInputConnection( myTransformFilter->GetOutputPort() );
+    myPassFilter[ anId + 1 ]->SetInputConnection( myPassFilter[ anId ]->GetOutputPort() );
 
     anId++; // 3
-    myGeomFilter->SetInput( myPassFilter[ anId ]->GetOutput() );
+    myGeomFilter->SetInputConnection( myPassFilter[ anId ]->GetOutputPort() );
 
     anId++; // 4
-    myPassFilter[ anId ]->SetInput( myGeomFilter->GetOutput() ); 
-    myPassFilter[ anId + 1 ]->SetInput( myPassFilter[ anId ]->GetOutput() );
+    myPassFilter[ anId ]->SetInputConnection( myGeomFilter->GetOutputPort() ); 
+    myPassFilter[ anId + 1 ]->SetInputConnection( myPassFilter[ anId ]->GetOutputPort() );
 
     anId++; // 5
-    myMapper->SetInput( myPassFilter[ anId ]->GetPolyDataOutput() );
+    myMapper->SetInputConnection( myPassFilter[ anId ]->GetOutputPort() );
 
     vtkLODActor::SetMapper( myMapper );
     Modified();
@@ -322,7 +322,7 @@ SMESH_DeviceActor
     theLookupTable->SetNumberOfTableValues(theScalarBarActor->GetMaximumNumberOfColors());
     theLookupTable->Build();
     
-    myMergeFilter->SetScalars(aDataSet);
+    myMergeFilter->SetScalarsData(aDataSet);
     aDataSet->Delete();
   }
   GetMapper()->SetScalarVisibility(anIsInitialized);
@@ -402,7 +402,7 @@ SMESH_DeviceActor
       theLookupTable->SetRange(aScalars->GetRange());
       theLookupTable->Build();
       
-      myMergeFilter->SetScalars(aDataSet);
+      myMergeFilter->SetScalarsData(aDataSet);
       aDataSet->Delete();
     }
     else if (MultiConnection2D* aMultiConnection2D = dynamic_cast<MultiConnection2D*>(theFunctor.get())){
@@ -462,7 +462,7 @@ SMESH_DeviceActor
       theLookupTable->SetRange(aScalars->GetRange());
       theLookupTable->Build();
       
-      myMergeFilter->SetScalars(aDataSet);
+      myMergeFilter->SetScalarsData(aDataSet);
       aDataSet->Delete();
     }
   }
@@ -600,10 +600,10 @@ SMESH_DeviceActor
 ::SetShrink() 
 {
   if ( !myIsShrinkable ) return;
-  if ( vtkDataSet* aDataSet = myPassFilter[ 0 ]->GetOutput() )
+  if ( vtkAlgorithmOutput* aDataSet = myPassFilter[ 0 ]->GetOutputPort() )
   {
-    myShrinkFilter->SetInput( aDataSet );
-    myPassFilter[ 1 ]->SetInput( myShrinkFilter->GetOutput() );
+    myShrinkFilter->SetInputConnection( aDataSet );
+    myPassFilter[ 1 ]->SetInputConnection( myShrinkFilter->GetOutputPort() );
     myIsShrunk = true;
   }
 }
@@ -613,9 +613,9 @@ SMESH_DeviceActor
 ::UnShrink() 
 {
   if ( !myIsShrunk ) return;
-  if ( vtkDataSet* aDataSet = myPassFilter[ 0 ]->GetOutput() )
+  if ( vtkAlgorithmOutput* aDataSet = myPassFilter[ 0 ]->GetOutputPort() )
   {    
-    myPassFilter[ 1 ]->SetInput( aDataSet );
+    myPassFilter[ 1 ]->SetInputConnection( aDataSet );
     myPassFilter[ 1 ]->Modified();
     myIsShrunk = false;
     Modified();
@@ -627,37 +627,37 @@ void
 SMESH_DeviceActor
 ::SetFacesOriented(bool theIsFacesOriented) 
 {
-  if ( vtkDataSet* aDataSet = myTransformFilter->GetOutput() )
+  if ( vtkAlgorithmOutput* aDataSet = myTransformFilter->GetOutputPort() )
   {
     myIsFacesOriented = theIsFacesOriented;
     if( theIsFacesOriented )
-      myFaceOrientationFilter->SetInput( aDataSet );
+      myFaceOrientationFilter->SetInputConnection( aDataSet );
     UpdateFaceOrientation();
   }
 }
 
 void
 SMESH_DeviceActor
-::SetFacesOrientationColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b)
+::SetFacesOrientationColor(double r,double g,double b)
 {
   myFaceOrientation->GetProperty()->SetColor( r, g, b );
 }
 
 void
 SMESH_DeviceActor
-::GetFacesOrientationColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b)
+::GetFacesOrientationColor(double& r,double& g,double& b)
 {
   myFaceOrientation->GetProperty()->GetColor( r, g, b );
 }
 
 void
 SMESH_DeviceActor
-::SetFacesOrientationScale(vtkFloatingPointType theScale)
+::SetFacesOrientationScale(double theScale)
 {
   myFaceOrientationFilter->SetOrientationScale( theScale );
 }
 
-vtkFloatingPointType
+double
 SMESH_DeviceActor
 ::GetFacesOrientationScale()
 {
@@ -780,13 +780,13 @@ SMESH_DeviceActor
   return aRetID;
 }
 
-vtkFloatingPointType* 
+double* 
 SMESH_DeviceActor
 ::GetNodeCoord(int theObjID)
 {
   vtkDataSet* aDataSet = myMergeFilter->GetOutput();
   vtkIdType anID = myVisualObj->GetNodeVTKId(theObjID);
-  vtkFloatingPointType* aCoord = (anID >=0) ? aDataSet->GetPoint(anID) : NULL;
+  double* aCoord = (anID >=0) ? aDataSet->GetPoint(anID) : NULL;
   if(MYDEBUG) MESSAGE("GetNodeCoord - theObjID = "<<theObjID<<"; anID = "<<anID);
   return aCoord;
 }
@@ -829,7 +829,7 @@ SMESH_DeviceActor
 }
 
 
-vtkFloatingPointType 
+double 
 SMESH_DeviceActor
 ::GetShrinkFactor()
 {
@@ -838,7 +838,7 @@ SMESH_DeviceActor
 
 void
 SMESH_DeviceActor
-::SetShrinkFactor(vtkFloatingPointType theValue)
+::SetShrinkFactor(double theValue)
 {
   theValue = theValue > 0.1? theValue: 0.8;
   myShrinkFilter->SetShrinkFactor(theValue);
@@ -861,13 +861,13 @@ SMESH_DeviceActor
 ::Render(vtkRenderer *ren, vtkMapper* m)
 {
   int aResolveCoincidentTopology = vtkMapper::GetResolveCoincidentTopology();
-  vtkFloatingPointType aStoredFactor, aStoredUnit; 
+  double aStoredFactor, aStoredUnit; 
   vtkMapper::GetResolveCoincidentTopologyPolygonOffsetParameters(aStoredFactor,aStoredUnit);
 
   vtkMapper::SetResolveCoincidentTopologyToPolygonOffset();
-  vtkFloatingPointType aFactor = myPolygonOffsetFactor, aUnits = myPolygonOffsetUnits;
+  double aFactor = myPolygonOffsetFactor, aUnits = myPolygonOffsetUnits;
   if(myIsHighlited){
-    static vtkFloatingPointType EPS = .01;
+    static double EPS = .01;
     aUnits *= (1.0-EPS);
   }
   vtkMapper::SetResolveCoincidentTopologyPolygonOffsetParameters(aFactor,aUnits);
@@ -880,8 +880,8 @@ SMESH_DeviceActor
 
 void
 SMESH_DeviceActor
-::SetPolygonOffsetParameters(vtkFloatingPointType factor, 
-                             vtkFloatingPointType units)
+::SetPolygonOffsetParameters(double factor, 
+                             double units)
 {
   myPolygonOffsetFactor = factor;
   myPolygonOffsetUnits = units;
@@ -903,14 +903,14 @@ bool SMESH_DeviceActor::GetQuadraticArcMode(){
 /*!
  * Set Max angle for representation 2D quadratic element as arked polygon
  */
-void SMESH_DeviceActor::SetQuadraticArcAngle(vtkFloatingPointType theMaxAngle){
+void SMESH_DeviceActor::SetQuadraticArcAngle(double theMaxAngle){
   myGeomFilter->SetQuadraticArcAngle(theMaxAngle);
 }
 
 /*!
  * Return Max angle of the representation 2D quadratic element as arked polygon
  */
-vtkFloatingPointType SMESH_DeviceActor::GetQuadraticArcAngle(){
+double SMESH_DeviceActor::GetQuadraticArcAngle(){
   return myGeomFilter->GetQuadraticArcAngle();
 }
 

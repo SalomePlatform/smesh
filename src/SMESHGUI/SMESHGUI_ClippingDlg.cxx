@@ -105,6 +105,7 @@ void SMESH::OrientedPlane::ShallowCopy(SMESH::OrientedPlane* theOrientedPlane)
   myPlaneSource->SetOrigin(theOrientedPlane->myPlaneSource->GetOrigin());
   myPlaneSource->SetPoint1(theOrientedPlane->myPlaneSource->GetPoint1());
   myPlaneSource->SetPoint2(theOrientedPlane->myPlaneSource->GetPoint2());
+  myPlaneSource->Update();
 }
 
 SMESH::OrientedPlane::OrientedPlane(SVTK_ViewWindow* theViewWindow):
@@ -132,7 +133,7 @@ void SMESH::OrientedPlane::Init()
 
   // Create and display actor
   myMapper = vtkDataSetMapper::New();
-  myMapper->SetInput(myPlaneSource->GetOutput());
+  myMapper->SetInputConnection(myPlaneSource->GetOutputPort());
 
   myActor = SALOME_Actor::New();
   myActor->VisibilityOff();
@@ -140,7 +141,7 @@ void SMESH::OrientedPlane::Init()
   myActor->SetInfinitive(true);
   myActor->SetMapper(myMapper);
 
-  vtkFloatingPointType anRGB[3];
+  double anRGB[3];
   vtkProperty* aProp = vtkProperty::New();
   SMESH::GetColor( "SMESH", "fill_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
   aProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
@@ -208,7 +209,7 @@ SMESH::OrientedPlane* SMESHGUI_ClippingDlg::AddPlane (SMESH::TActorList         
                                                       SVTK_ViewWindow*           theViewWindow,
                                                       SMESH::Orientation         theOrientation,
                                                       double                     theDistance,
-                                                      const vtkFloatingPointType theAngle[2])
+                                                      const double theAngle[2])
 {
   SMESH::OrientedPlane* aPlane = SMESH::OrientedPlane::New(theViewWindow);
 
@@ -218,13 +219,13 @@ SMESH::OrientedPlane* SMESHGUI_ClippingDlg::AddPlane (SMESH::TActorList         
   aPlane->SetOrientation(theOrientation);
   aPlane->SetDistance(theDistance);
 
-  vtkFloatingPointType aNormal[3];
-  vtkFloatingPointType aDir[2][3] = {{0, 0, 0}, {0, 0, 0}};
+  double aNormal[3];
+  double aDir[2][3] = {{0, 0, 0}, {0, 0, 0}};
   {
     static double aCoeff = vtkMath::Pi()/180.0;
 
-    vtkFloatingPointType anU[2] = {cos(aCoeff * theAngle[0]), cos(aCoeff * theAngle[1])};
-    vtkFloatingPointType aV[2] = {sqrt(1.0 - anU[0]*anU[0]), sqrt(1.0 - anU[1]*anU[1])};
+    double anU[2] = {cos(aCoeff * theAngle[0]), cos(aCoeff * theAngle[1])};
+    double aV[2] = {sqrt(1.0 - anU[0]*anU[0]), sqrt(1.0 - anU[1]*anU[1])};
     aV[0] = theAngle[0] > 0? aV[0]: -aV[0];
     aV[1] = theAngle[1] > 0? aV[1]: -aV[1];
 
@@ -260,8 +261,8 @@ SMESH::OrientedPlane* SMESHGUI_ClippingDlg::AddPlane (SMESH::TActorList         
     vtkMath::Cross(aNormal,aDir[1],aDir[0]);
   }
 
-  vtkFloatingPointType aBounds[6];
-  vtkFloatingPointType anOrigin[3];
+  double aBounds[6];
+  double anOrigin[3];
 
   bool anIsOk = false;
   if( theActorList.empty() ) {
@@ -284,38 +285,38 @@ SMESH::OrientedPlane* SMESHGUI_ClippingDlg::AddPlane (SMESH::TActorList         
   aPlane->SetNormal( aNormal );
   aPlane->SetOrigin( anOrigin );
 
-  vtkFloatingPointType aPnt[3] = { ( aBounds[0] + aBounds[1] ) / 2.,
+  double aPnt[3] = { ( aBounds[0] + aBounds[1] ) / 2.,
                                    ( aBounds[2] + aBounds[3] ) / 2.,
                                    ( aBounds[4] + aBounds[5] ) / 2. };
 
-  vtkFloatingPointType aDel = pow( pow( aBounds[1] - aBounds[0], 2 ) +
+  double aDel = pow( pow( aBounds[1] - aBounds[0], 2 ) +
                                    pow( aBounds[3] - aBounds[2], 2 ) +
                                    pow( aBounds[5] - aBounds[4], 2 ), 0.5 );
 
-  vtkFloatingPointType aDelta[2][3] = {{aDir[0][0]*aDel, aDir[0][1]*aDel, aDir[0][2]*aDel},
+  double aDelta[2][3] = {{aDir[0][0]*aDel, aDir[0][1]*aDel, aDir[0][2]*aDel},
                                        {aDir[1][0]*aDel, aDir[1][1]*aDel, aDir[1][2]*aDel}};
-  vtkFloatingPointType aParam, aPnt0[3], aPnt1[3], aPnt2[3];
+  double aParam, aPnt0[3], aPnt1[3], aPnt2[3];
 
-  vtkFloatingPointType aPnt01[3] = {aPnt[0] - aDelta[0][0] - aDelta[1][0],
+  double aPnt01[3] = {aPnt[0] - aDelta[0][0] - aDelta[1][0],
                                     aPnt[1] - aDelta[0][1] - aDelta[1][1],
                                     aPnt[2] - aDelta[0][2] - aDelta[1][2]};
-  vtkFloatingPointType aPnt02[3] = {aPnt01[0] + aNormal[0],
+  double aPnt02[3] = {aPnt01[0] + aNormal[0],
                                     aPnt01[1] + aNormal[1],
                                     aPnt01[2] + aNormal[2]};
   vtkPlane::IntersectWithLine(aPnt01,aPnt02,aNormal,anOrigin,aParam,aPnt0);
 
-  vtkFloatingPointType aPnt11[3] = {aPnt[0] - aDelta[0][0] + aDelta[1][0],
+  double aPnt11[3] = {aPnt[0] - aDelta[0][0] + aDelta[1][0],
                                     aPnt[1] - aDelta[0][1] + aDelta[1][1],
                                     aPnt[2] - aDelta[0][2] + aDelta[1][2]};
-  vtkFloatingPointType aPnt12[3] = {aPnt11[0] + aNormal[0],
+  double aPnt12[3] = {aPnt11[0] + aNormal[0],
                                     aPnt11[1] + aNormal[1],
                                     aPnt11[2] + aNormal[2]};
   vtkPlane::IntersectWithLine(aPnt11,aPnt12,aNormal,anOrigin,aParam,aPnt1);
 
-  vtkFloatingPointType aPnt21[3] = {aPnt[0] + aDelta[0][0] - aDelta[1][0],
+  double aPnt21[3] = {aPnt[0] + aDelta[0][0] - aDelta[1][0],
                                     aPnt[1] + aDelta[0][1] - aDelta[1][1],
                                     aPnt[2] + aDelta[0][2] - aDelta[1][2]};
-  vtkFloatingPointType aPnt22[3] = {aPnt21[0] + aNormal[0],
+  double aPnt22[3] = {aPnt21[0] + aNormal[0],
                                     aPnt21[1] + aNormal[1],
                                     aPnt21[2] + aNormal[2]};
   vtkPlane::IntersectWithLine(aPnt21,aPnt22,aNormal,anOrigin,aParam,aPnt2);
@@ -325,6 +326,7 @@ SMESH::OrientedPlane* SMESHGUI_ClippingDlg::AddPlane (SMESH::TActorList         
   aPlaneSource->SetOrigin(aPnt0[0],aPnt0[1],aPnt0[2]);
   aPlaneSource->SetPoint1(aPnt1[0],aPnt1[1],aPnt1[2]);
   aPlaneSource->SetPoint2(aPnt2[0],aPnt2[1],aPnt2[2]);
+  aPlaneSource->Update();
 
   SMESH::TActorList::iterator anIter = theActorList.begin();
   for ( ; anIter != theActorList.end(); anIter++ )
@@ -898,18 +900,18 @@ void SMESHGUI_ClippingDlg::SetCurrentPlaneParam()
   SMESH::TPlaneData aPlaneData = myPlanes[aCurPlaneIndex];
   SMESH::OrientedPlane* aPlane = aPlaneData.Plane.GetPointer();
 
-  vtkFloatingPointType aNormal[3];
+  double aNormal[3];
   SMESH::Orientation anOrientation;
-  vtkFloatingPointType aDir[3][3] = {{0, 0, 0}, {0, 0, 0}};
+  double aDir[3][3] = {{0, 0, 0}, {0, 0, 0}};
   {
     static double aCoeff = vtkMath::Pi()/180.0;
 
-    vtkFloatingPointType aRot[2] = {getRotation1(), getRotation2()};
+    double aRot[2] = {getRotation1(), getRotation2()};
     aPlane->myAngle[0] = aRot[0];
     aPlane->myAngle[1] = aRot[1];
 
-    vtkFloatingPointType anU[2] = {cos(aCoeff*aRot[0]), cos(aCoeff*aRot[1])};
-    vtkFloatingPointType aV[2] = {sqrt(1.0-anU[0]*anU[0]), sqrt(1.0-anU[1]*anU[1])};
+    double anU[2] = {cos(aCoeff*aRot[0]), cos(aCoeff*aRot[1])};
+    double aV[2] = {sqrt(1.0-anU[0]*anU[0]), sqrt(1.0-anU[1]*anU[1])};
     aV[0] = aRot[0] > 0? aV[0]: -aV[0];
     aV[1] = aRot[1] > 0? aV[1]: -aV[1];
 
@@ -956,8 +958,8 @@ void SMESHGUI_ClippingDlg::SetCurrentPlaneParam()
 
   SMESH::TActorList anActorList = aPlaneData.ActorList;
 
-  vtkFloatingPointType aBounds[6];
-  vtkFloatingPointType anOrigin[3];
+  double aBounds[6];
+  double anOrigin[3];
   bool anIsOk = SMESH::ComputeClippingPlaneParameters( anActorList,
                                                        aNormal,
                                                        getDistance(),
@@ -970,38 +972,38 @@ void SMESHGUI_ClippingDlg::SetCurrentPlaneParam()
     aPlane->SetNormal( aNormal );
     aPlane->SetOrigin( anOrigin );
 
-    vtkFloatingPointType aPnt[3] = { ( aBounds[0] + aBounds[1] ) / 2.,
+    double aPnt[3] = { ( aBounds[0] + aBounds[1] ) / 2.,
                                      ( aBounds[2] + aBounds[3] ) / 2.,
                                      ( aBounds[4] + aBounds[5] ) / 2. };
 
-    vtkFloatingPointType aDel = pow( pow( aBounds[1] - aBounds[0], 2 ) +
+    double aDel = pow( pow( aBounds[1] - aBounds[0], 2 ) +
                                      pow( aBounds[3] - aBounds[2], 2 ) +
                                      pow( aBounds[5] - aBounds[4], 2 ), 0.5 );
 
-    vtkFloatingPointType aDelta[2][3] = {{aDir[0][0]*aDel, aDir[0][1]*aDel, aDir[0][2]*aDel},
+    double aDelta[2][3] = {{aDir[0][0]*aDel, aDir[0][1]*aDel, aDir[0][2]*aDel},
                                          {aDir[1][0]*aDel, aDir[1][1]*aDel, aDir[1][2]*aDel}};
-    vtkFloatingPointType aParam, aPnt0[3], aPnt1[3], aPnt2[3];
+    double aParam, aPnt0[3], aPnt1[3], aPnt2[3];
 
-    vtkFloatingPointType aPnt01[3] = {aPnt[0] - aDelta[0][0] - aDelta[1][0],
+    double aPnt01[3] = {aPnt[0] - aDelta[0][0] - aDelta[1][0],
                                       aPnt[1] - aDelta[0][1] - aDelta[1][1],
                                       aPnt[2] - aDelta[0][2] - aDelta[1][2]};
-    vtkFloatingPointType aPnt02[3] = {aPnt01[0] + aNormal[0],
+    double aPnt02[3] = {aPnt01[0] + aNormal[0],
                                       aPnt01[1] + aNormal[1],
                                       aPnt01[2] + aNormal[2]};
     vtkPlane::IntersectWithLine(aPnt01,aPnt02,aNormal,anOrigin,aParam,aPnt0);
 
-    vtkFloatingPointType aPnt11[3] = {aPnt[0] - aDelta[0][0] + aDelta[1][0],
+    double aPnt11[3] = {aPnt[0] - aDelta[0][0] + aDelta[1][0],
                                       aPnt[1] - aDelta[0][1] + aDelta[1][1],
                                       aPnt[2] - aDelta[0][2] + aDelta[1][2]};
-    vtkFloatingPointType aPnt12[3] = {aPnt11[0] + aNormal[0],
+    double aPnt12[3] = {aPnt11[0] + aNormal[0],
                                       aPnt11[1] + aNormal[1],
                                       aPnt11[2] + aNormal[2]};
     vtkPlane::IntersectWithLine(aPnt11,aPnt12,aNormal,anOrigin,aParam,aPnt1);
 
-    vtkFloatingPointType aPnt21[3] = {aPnt[0] + aDelta[0][0] - aDelta[1][0],
+    double aPnt21[3] = {aPnt[0] + aDelta[0][0] - aDelta[1][0],
                                       aPnt[1] + aDelta[0][1] - aDelta[1][1],
                                       aPnt[2] + aDelta[0][2] - aDelta[1][2]};
-    vtkFloatingPointType aPnt22[3] = {aPnt21[0] + aNormal[0],
+    double aPnt22[3] = {aPnt21[0] + aNormal[0],
                                       aPnt21[1] + aNormal[1],
                                       aPnt21[2] + aNormal[2]};
     vtkPlane::IntersectWithLine(aPnt21,aPnt22,aNormal,anOrigin,aParam,aPnt2);
@@ -1011,6 +1013,7 @@ void SMESHGUI_ClippingDlg::SetCurrentPlaneParam()
     aPlaneSource->SetOrigin(aPnt0[0],aPnt0[1],aPnt0[2]);
     aPlaneSource->SetPoint1(aPnt1[0],aPnt1[1],aPnt1[2]);
     aPlaneSource->SetPoint2(aPnt2[0],aPnt2[1],aPnt2[2]);
+    aPlaneSource->Update();
   }
 
   if(AutoApplyCheckBox->isChecked())
@@ -1148,8 +1151,8 @@ void SMESHGUI_ClippingDlg::dumpPlaneData() const
   for ( ; anIter1 != myPlanes.end(); anIter1++, anId++ ) {
     SMESH::TPlaneData aPlaneData = *anIter1;
     SMESH::TPlane aPlane = aPlaneData.Plane;
-    vtkFloatingPointType* aNormal = aPlane->GetNormal();
-    vtkFloatingPointType* anOrigin = aPlane->GetOrigin();
+    double* aNormal = aPlane->GetNormal();
+    double* anOrigin = aPlane->GetOrigin();
     printf( "Plane N%d:\n", anId );
     printf( "  Normal = ( %f, %f, %f )\n", aNormal[0], aNormal[1], aNormal[2] );
     printf( "  Origin = ( %f, %f, %f )\n", anOrigin[0], anOrigin[1], anOrigin[2] );

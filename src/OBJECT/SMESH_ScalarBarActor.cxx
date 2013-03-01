@@ -88,7 +88,7 @@ SMESH_ScalarBarActor::SMESH_ScalarBarActor() {
 
   this->ScalarBar = vtkPolyData::New();
   this->ScalarBarMapper = vtkPolyDataMapper2D::New();
-  this->ScalarBarMapper->SetInput(this->ScalarBar);
+  this->ScalarBarMapper->SetInputData(this->ScalarBar);
   this->ScalarBarActor = vtkActor2D::New();
   this->ScalarBarActor->SetMapper(this->ScalarBarMapper);
   this->ScalarBarActor->GetPositionCoordinate()->
@@ -103,7 +103,7 @@ SMESH_ScalarBarActor::SMESH_ScalarBarActor() {
   // Customization of the vtkScalarBarActor to show distribution histogram.
   myDistribution = vtkPolyData::New();
   myDistributionMapper = vtkPolyDataMapper2D::New();
-  myDistributionMapper->SetInput(this->myDistribution);
+  myDistributionMapper->SetInputData(this->myDistribution);
   
   myDistributionActor = vtkActor2D::New();
   myDistributionActor->SetMapper(this->myDistributionMapper);

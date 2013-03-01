@@ -100,51 +100,51 @@ class SMESH_ActorDef : public SMESH_Actor
 
   virtual bool IsInfinitive();  
 
-  virtual void SetOpacity(vtkFloatingPointType theValue);
-  virtual vtkFloatingPointType GetOpacity();
+  virtual void SetOpacity(double theValue);
+  virtual double GetOpacity();
 
-  virtual void SetSufaceColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b, int delta );
-  virtual void GetSufaceColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b, int& delta);
+  virtual void SetSufaceColor(double r,double g,double b, int delta );
+  virtual void GetSufaceColor(double& r,double& g,double& b, int& delta);
 
-  virtual void SetVolumeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b, int delta );
-  virtual void GetVolumeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b, int& delta);
+  virtual void SetVolumeColor(double r,double g,double b, int delta );
+  virtual void GetVolumeColor(double& r,double& g,double& b, int& delta);
 
-  virtual void SetEdgeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
-  virtual void GetEdgeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
+  virtual void SetEdgeColor(double r,double g,double b);
+  virtual void GetEdgeColor(double& r,double& g,double& b);
 
-  virtual void SetOutlineColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
-  virtual void GetOutlineColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
+  virtual void SetOutlineColor(double r,double g,double b);
+  virtual void GetOutlineColor(double& r,double& g,double& b);
 
 
-  virtual void SetNodeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
-  virtual void GetNodeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
+  virtual void SetNodeColor(double r,double g,double b);
+  virtual void GetNodeColor(double& r,double& g,double& b);
 
-  virtual void Set0DColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
-  virtual void Get0DColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
+  virtual void Set0DColor(double r,double g,double b);
+  virtual void Get0DColor(double& r,double& g,double& b);
 
-  virtual void SetBallColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
-  virtual void GetBallColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
+  virtual void SetBallColor(double r,double g,double b);
+  virtual void GetBallColor(double& r,double& g,double& b);
 
-  virtual void SetHighlightColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
-  virtual void GetHighlightColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
+  virtual void SetHighlightColor(double r,double g,double b);
+  virtual void GetHighlightColor(double& r,double& g,double& b);
 
-  virtual void SetPreHighlightColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
-  virtual void GetPreHighlightColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
+  virtual void SetPreHighlightColor(double r,double g,double b);
+  virtual void GetPreHighlightColor(double& r,double& g,double& b);
  
-  virtual vtkFloatingPointType GetLineWidth();
-  virtual void SetLineWidth(vtkFloatingPointType theVal);
+  virtual double GetLineWidth();
+  virtual void SetLineWidth(double theVal);
 
-  virtual vtkFloatingPointType GetOutlineWidth();
-  virtual void SetOutlineWidth(vtkFloatingPointType theVal);
+  virtual double GetOutlineWidth();
+  virtual void SetOutlineWidth(double theVal);
 
-  virtual void Set0DSize(vtkFloatingPointType size);
-  virtual vtkFloatingPointType Get0DSize();
+  virtual void Set0DSize(double size);
+  virtual double Get0DSize();
 
-  virtual void SetBallSize(vtkFloatingPointType size);
-  virtual vtkFloatingPointType GetBallSize();
+  virtual void SetBallSize(double size);
+  virtual double GetBallSize();
 
   virtual int GetNodeObjId(int theVtkID);
-  virtual vtkFloatingPointType* GetNodeCoord(int theObjID);
+  virtual double* GetNodeCoord(int theObjID);
 
   virtual int GetElemObjId(int theVtkID);
   virtual vtkCell* GetElemCell(int theObjID);
@@ -162,15 +162,15 @@ class SMESH_ActorDef : public SMESH_Actor
   virtual void SetPointRepresentation(bool theIsPointsVisible);
   virtual bool GetPointRepresentation();
 
-  virtual vtkFloatingPointType* GetBounds();
+  virtual double* GetBounds();
   virtual void SetTransform(VTKViewer_Transform* theTransform); 
 
   virtual vtkUnstructuredGrid* GetUnstructuredGrid();
   virtual vtkDataSet* GetInput();
   virtual vtkMapper* GetMapper();
 
-  virtual vtkFloatingPointType GetShrinkFactor();
-  virtual void SetShrinkFactor(vtkFloatingPointType theValue);
+  virtual double GetShrinkFactor();
+  virtual void SetShrinkFactor(double theValue);
 
   virtual bool IsShrunkable() { return myIsShrinkable;}
   virtual bool IsShrunk() { return myIsShrunk;}
@@ -182,10 +182,10 @@ class SMESH_ActorDef : public SMESH_Actor
 
   virtual void SetPointsFontProperties( SMESH::LabelFont family, int size, 
                                         bool bold, bool italic, bool shadow,
-                                        vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b );
+                                        double r, double g, double b );
   virtual void SetCellsFontProperties( SMESH::LabelFont family, int size, 
                                        bool bold, bool italic, bool shadow,
-                                       vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b );
+                                       double r, double g, double b );
   
   virtual void SetCellsLabeled(bool theIsCellsLabeled);
   virtual bool GetCellsLabeled();
@@ -193,11 +193,11 @@ class SMESH_ActorDef : public SMESH_Actor
   virtual void SetFacesOriented(bool theIsFacesOriented);
   virtual bool GetFacesOriented();
 
-  virtual void SetFacesOrientationColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
-  virtual void GetFacesOrientationColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
+  virtual void SetFacesOrientationColor(double r,double g,double b);
+  virtual void GetFacesOrientationColor(double& r,double& g,double& b);
 
-  virtual void SetFacesOrientationScale(vtkFloatingPointType theScale);
-  virtual vtkFloatingPointType GetFacesOrientationScale();
+  virtual void SetFacesOrientationScale(double theScale);
+  virtual double GetFacesOrientationScale();
 
   virtual void SetFacesOrientation3DVectors(bool theState);
   virtual bool GetFacesOrientation3DVectors();

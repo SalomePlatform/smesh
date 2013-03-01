@@ -50,16 +50,16 @@ SMESH_NodeLabelActor::SMESH_NodeLabelActor() {
   myPointsNumDataSet = vtkUnstructuredGrid::New();
 
   myPtsMaskPoints = vtkMaskPoints::New();
-  myPtsMaskPoints->SetInput(myPointsNumDataSet);
+  myPtsMaskPoints->SetInputData(myPointsNumDataSet);
   myPtsMaskPoints->SetOnRatio(1);
 
   myPtsSelectVisiblePoints = vtkSelectVisiblePoints::New();
-  myPtsSelectVisiblePoints->SetInput(myPtsMaskPoints->GetOutput());
+  myPtsSelectVisiblePoints->SetInputConnection(myPtsMaskPoints->GetOutputPort());
   myPtsSelectVisiblePoints->SelectInvisibleOff();
   myPtsSelectVisiblePoints->SetTolerance(0.1);
     
   myPtsLabeledDataMapper = vtkLabeledDataMapper::New();
-  myPtsLabeledDataMapper->SetInput(myPtsSelectVisiblePoints->GetOutput());
+  myPtsLabeledDataMapper->SetInputConnection(myPtsSelectVisiblePoints->GetOutputPort());
   myPtsLabeledDataMapper->SetLabelFormat("%d");
   myPtsLabeledDataMapper->SetLabelModeToLabelScalars();
     
@@ -112,7 +112,7 @@ SMESH_NodeLabelActor::~SMESH_NodeLabelActor() {
 
 void SMESH_NodeLabelActor::SetFontProperties( SMESH::LabelFont family, int size, 
                                               bool bold, bool italic, bool shadow,
-                                              vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b )
+                                              double r, double g, double b )
 {
   switch ( family ) {
   case SMESH::FntArial:
@@ -156,7 +156,7 @@ void SMESH_NodeLabelActor::SetPointsLabeled(bool theIsPointsLabeled) {
     }
     
     aDataSet->GetPointData()->SetScalars( anArray );
-    myPtsMaskPoints->SetInput( aDataSet );
+    myPtsMaskPoints->SetInputData( aDataSet );
     myPointLabels->SetVisibility( GetVisibility() );
     anArray->Delete();
   }

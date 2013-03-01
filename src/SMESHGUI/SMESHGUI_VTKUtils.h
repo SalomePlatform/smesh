@@ -202,10 +202,10 @@ SMESHGUI_EXPORT
   //----------------------------------------------------------------------------
 SMESHGUI_EXPORT
   bool ComputeClippingPlaneParameters( std::list<vtkActor*> theActorList,
-                                       vtkFloatingPointType theNormal[3],
-                                       vtkFloatingPointType theDist,
-                                       vtkFloatingPointType theBounds[6],
-                                       vtkFloatingPointType theOrigin[3] );
+                                       double theNormal[3],
+                                       double theDist,
+                                       double theBounds[6],
+                                       double theOrigin[3] );
  SMESHGUI_EXPORT
    void RemoveVisualObjectWithActors( const char* theEntry, bool fromAllViews = false );
 };

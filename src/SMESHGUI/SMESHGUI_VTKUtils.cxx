@@ -961,7 +961,7 @@ namespace SMESH
     SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( theModule );
     if ( !mgr ) return;
     //
-    vtkFloatingPointType anRGBNd[3] = {1,1,1};
+    double anRGBNd[3] = {1,1,1};
     SMESH::GetColor( "SMESH", "numbering_node_color", anRGBNd[0], anRGBNd[1], anRGBNd[2], QColor( 255, 255, 255 ) );
     int aSizeNd = 10;
     SMESH::LabelFont aFamilyNd = SMESH::FntTimes;
@@ -980,7 +980,7 @@ namespace SMESH
       aSizeNd    = f.pointSize();
     }
     //
-    vtkFloatingPointType anRGBEl[3] = {0,1,0};
+    double anRGBEl[3] = {0,1,0};
     SMESH::GetColor( "SMESH", "numbering_elem_color", anRGBEl[0], anRGBEl[1], anRGBEl[2], QColor( 0, 255, 0 ) );
     int aSizeEl = 12;
     SMESH::LabelFont aFamilyEl = SMESH::FntTimes;
@@ -1323,21 +1323,21 @@ namespace SMESH
 
   //----------------------------------------------------------------------------
   // internal function
-  void ComputeBoundsParam( vtkFloatingPointType theBounds[6],
-                           vtkFloatingPointType theDirection[3],
-                           vtkFloatingPointType theMinPnt[3],
-                           vtkFloatingPointType& theMaxBoundPrj,
-                           vtkFloatingPointType& theMinBoundPrj )
+  void ComputeBoundsParam( double theBounds[6],
+                           double theDirection[3],
+                           double theMinPnt[3],
+                           double& theMaxBoundPrj,
+                           double& theMinBoundPrj )
   {
     //Enlarge bounds in order to avoid conflicts of precision
     for(int i = 0; i < 6; i += 2){
       static double EPS = 1.0E-3;
-      vtkFloatingPointType aDelta = (theBounds[i+1] - theBounds[i])*EPS;
+      double aDelta = (theBounds[i+1] - theBounds[i])*EPS;
       theBounds[i] -= aDelta;
       theBounds[i+1] += aDelta;
     }
 
-    vtkFloatingPointType aBoundPoints[8][3] = { {theBounds[0],theBounds[2],theBounds[4]},
+    double aBoundPoints[8][3] = { {theBounds[0],theBounds[2],theBounds[4]},
                                                 {theBounds[1],theBounds[2],theBounds[4]},
                                                 {theBounds[0],theBounds[3],theBounds[4]},
                                                 {theBounds[1],theBounds[3],theBounds[4]},
@@ -1350,7 +1350,7 @@ namespace SMESH
     theMaxBoundPrj = vtkMath::Dot(theDirection,aBoundPoints[aMaxId]);
     theMinBoundPrj = theMaxBoundPrj;
     for(int i = 1; i < 8; i++){
-      vtkFloatingPointType aTmp = vtkMath::Dot(theDirection,aBoundPoints[i]);
+      double aTmp = vtkMath::Dot(theDirection,aBoundPoints[i]);
       if(theMaxBoundPrj < aTmp){
         theMaxBoundPrj = aTmp;
         aMaxId = i;
@@ -1359,43 +1359,43 @@ namespace SMESH
         theMinBoundPrj = aTmp;
       }
     }
-    vtkFloatingPointType *aMinPnt = aBoundPoints[aMaxId];
+    double *aMinPnt = aBoundPoints[aMaxId];
     theMinPnt[0] = aMinPnt[0];
     theMinPnt[1] = aMinPnt[1];
     theMinPnt[2] = aMinPnt[2];
   }
 
   // internal function
-  void DistanceToPosition( vtkFloatingPointType theBounds[6],
-                           vtkFloatingPointType theDirection[3],
-                           vtkFloatingPointType theDist,
-                           vtkFloatingPointType thePos[3] )
+  void DistanceToPosition( double theBounds[6],
+                           double theDirection[3],
+                           double theDist,
+                           double thePos[3] )
   {
-    vtkFloatingPointType aMaxBoundPrj, aMinBoundPrj, aMinPnt[3];
+    double aMaxBoundPrj, aMinBoundPrj, aMinPnt[3];
     ComputeBoundsParam(theBounds,theDirection,aMinPnt,aMaxBoundPrj,aMinBoundPrj);
-    vtkFloatingPointType aLength = (aMaxBoundPrj-aMinBoundPrj)*theDist;
+    double aLength = (aMaxBoundPrj-aMinBoundPrj)*theDist;
     thePos[0] = aMinPnt[0]-theDirection[0]*aLength;
     thePos[1] = aMinPnt[1]-theDirection[1]*aLength;
     thePos[2] = aMinPnt[2]-theDirection[2]*aLength;
   }
 
   // internal function (currently unused, left just in case)
-  void PositionToDistance( vtkFloatingPointType theBounds[6],
-                           vtkFloatingPointType theDirection[3],
-                           vtkFloatingPointType thePos[3],
-                           vtkFloatingPointType& theDist )
+  void PositionToDistance( double theBounds[6],
+                           double theDirection[3],
+                           double thePos[3],
+                           double& theDist )
   {
-    vtkFloatingPointType aMaxBoundPrj, aMinBoundPrj, aMinPnt[3];
+    double aMaxBoundPrj, aMinBoundPrj, aMinPnt[3];
     ComputeBoundsParam(theBounds,theDirection,aMinPnt,aMaxBoundPrj,aMinBoundPrj);
-    vtkFloatingPointType aPrj = vtkMath::Dot(theDirection,thePos);
+    double aPrj = vtkMath::Dot(theDirection,thePos);
     theDist = (aPrj-aMinBoundPrj)/(aMaxBoundPrj-aMinBoundPrj);
   }
 
   bool ComputeClippingPlaneParameters( std::list<vtkActor*> theActorList,
-                                       vtkFloatingPointType theNormal[3],
-                                       vtkFloatingPointType theDist,
-                                       vtkFloatingPointType theBounds[6],
-                                       vtkFloatingPointType theOrigin[3] )
+                                       double theNormal[3],
+                                       double theDist,
+                                       double theBounds[6],
+                                       double theOrigin[3] )
   {
     bool anIsOk = false;
     theBounds[0] = theBounds[2] = theBounds[4] = VTK_DOUBLE_MAX;
@@ -1404,7 +1404,7 @@ namespace SMESH
     for( ; anIter != theActorList.end(); anIter++ ) {
       if( vtkActor* aVTKActor = *anIter ) {
         if( SMESH_Actor* anActor = SMESH_Actor::SafeDownCast( aVTKActor ) ) {
-          vtkFloatingPointType aBounds[6];
+          double aBounds[6];
           anActor->GetUnstructuredGrid()->GetBounds( aBounds );
           theBounds[0] = std::min( theBounds[0], aBounds[0] );
           theBounds[1] = std::max( theBounds[1], aBounds[1] );

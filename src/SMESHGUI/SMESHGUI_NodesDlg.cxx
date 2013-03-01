@@ -173,7 +173,7 @@ namespace SMESH
 
       // Create and display actor
       myMapper = vtkDataSetMapper::New();
-      myMapper->SetInput( aGrid );
+      myMapper->SetInputData( aGrid );
       aGrid->Delete();
 
       myPreviewActor = SALOME_Actor::New();
@@ -185,11 +185,11 @@ namespace SMESH
       vtkProperty* aProp = vtkProperty::New();
       aProp->SetRepresentationToPoints();
 
-      vtkFloatingPointType anRGB[3];
+      double anRGB[3];
       GetColor( "SMESH", "node_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 255, 0 ) );
       aProp->SetColor( anRGB[0], anRGB[1], anRGB[2] );
 
-      vtkFloatingPointType aPointSize = GetFloat( "SMESH:node_size", 3 );
+      double aPointSize = GetFloat( "SMESH:node_size", 3 );
       aProp->SetPointSize( aPointSize );
 
       myPreviewActor->SetProperty( aProp );

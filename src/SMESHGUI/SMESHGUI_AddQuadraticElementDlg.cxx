@@ -121,7 +121,7 @@ namespace SMESH
     vtkUnstructuredGrid* myGrid;
     //vtkProperty* myBackProp, *myProp;
 
-    //vtkFloatingPointType myRGB[3], myBackRGB[3];
+    //double myRGB[3], myBackRGB[3];
 
     SALOME_Actor* myFaceOrientation;
     vtkPolyDataMapper* myFaceOrientationDataMapper;
@@ -140,7 +140,7 @@ namespace SMESH
 
       // Create and display actor
       myMapper = vtkDataSetMapper::New();
-      myMapper->SetInput(myGrid);
+      myMapper->SetInputData(myGrid);
 
       myPreviewActor = SALOME_Actor::New();
       myPreviewActor->PickableOff();
@@ -148,7 +148,7 @@ namespace SMESH
       myPreviewActor->SetMapper(myMapper);
 
       vtkProperty* myProp = vtkProperty::New();
-      vtkFloatingPointType aRGB[3], aBackRGB[3];
+      double aRGB[3], aBackRGB[3];
       GetColor( "SMESH", "fill_color", aRGB[0], aRGB[1], aRGB[2], QColor( 0, 170, 255 ) );
       myProp->SetColor( aRGB[0], aRGB[1], aRGB[2] );
       myPreviewActor->SetProperty( myProp );
@@ -164,10 +164,10 @@ namespace SMESH
 
       // Orientation of faces
       myFaceOrientationFilter = SMESH_FaceOrientationFilter::New();
-      myFaceOrientationFilter->SetInput(myGrid);
+      myFaceOrientationFilter->SetInputData(myGrid);
 
       myFaceOrientationDataMapper = vtkPolyDataMapper::New();
-      myFaceOrientationDataMapper->SetInput(myFaceOrientationFilter->GetOutput());
+      myFaceOrientationDataMapper->SetInputConnection(myFaceOrientationFilter->GetOutputPort());
 
       myFaceOrientation = SALOME_Actor::New();
       myFaceOrientation->PickableOff();

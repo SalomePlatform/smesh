@@ -221,7 +221,7 @@ private :
   SMESHGUI_ClippingPlaneInfoMap   myClippingPlaneInfoMap;
 
   vtkSmartPointer<vtkCallbackCommand> myEventCallbackCommand;
-  vtkFloatingPointType            myPriority;
+  double            myPriority;
 };
 
 #endif // SMESHGUI_H

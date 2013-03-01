@@ -87,7 +87,8 @@ unsigned long SMDS_UnstructuredGrid::GetMTime()
   MESSAGE("vtkUnstructuredGrid::GetMTime: " << mtime);
   return mtime;
 }
-
+// OUV_PORTING_VTK6: seems to be useless
+/*
 void SMDS_UnstructuredGrid::Update()
 {
   MESSAGE("SMDS_UnstructuredGrid::Update");
@@ -99,7 +100,7 @@ void SMDS_UnstructuredGrid::UpdateInformation()
   MESSAGE("SMDS_UnstructuredGrid::UpdateInformation");
   return vtkUnstructuredGrid::UpdateInformation();
 }
-
+*/
 vtkPoints* SMDS_UnstructuredGrid::GetPoints()
 {
   // TODO erreur incomprehensible de la macro vtk GetPoints apparue avec la version paraview de fin aout 2010

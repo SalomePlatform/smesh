@@ -1256,7 +1256,7 @@
         return;
       }
       case 1132: {
-        vtkFloatingPointType color[3];
+        double color[3];
         QColor faceColor, edgeColor, nodeColor, elem0dColor, ballColor;
         QColor orientationColor, outlineColor, volumeColor;
         int deltaF = 0, deltaV = 0;
@@ -1264,8 +1264,8 @@
         int ballSize     = 1;
         int edgeWidth    = 1;
         int outlineWidth = 1;
-        vtkFloatingPointType shrinkCoef = 0.0;
-        vtkFloatingPointType orientationScale = 0.0;
+        double shrinkCoef = 0.0;
+        double orientationScale = 0.0;
         bool orientation3d = false;
         VTK::MarkerType markerType = VTK::MT_NONE;
         VTK::MarkerScale markerScale = VTK::MS_NONE;
@@ -5456,7 +5456,7 @@ void SMESHGUI::storeVisualParameters (int savePoint)
                   ip->setParameter(entry, param, modeStr.toLatin1().data());
 
                   // Colors
-                  vtkFloatingPointType r, g, b;
+                  double r, g, b;
                   int delta;
 
                   aSmeshActor->GetSufaceColor(r, g, b, delta);
@@ -5595,8 +5595,8 @@ void SMESHGUI::storeVisualParameters (int savePoint)
 typedef struct {
   int Id;
   vtkIdType Orientation;
-  vtkFloatingPointType Distance;
-  vtkFloatingPointType Angle[2];
+  double Distance;
+  double Angle[2];
 } TPlaneData;
 typedef std::list<TPlaneData>         TPlaneDataList;
 typedef std::map<int, TPlaneDataList> TPlaneDataMap;
@@ -6171,7 +6171,7 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
                 if (val != "Off") {
                   SMESH::Orientation anOrientation = (SMESH::Orientation)vals[0].toInt();
                   double aDistance = vals[1].toFloat();
-                  vtkFloatingPointType anAngle[2];
+                  double anAngle[2];
                   anAngle[0] = vals[2].toFloat();
                   anAngle[1] = vals[3].toFloat();
 

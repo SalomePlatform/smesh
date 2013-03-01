@@ -68,7 +68,7 @@ class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
   void SetStoreIDMapping(bool theStoreMapping);
 
   virtual int GetNodeObjId(int theVtkID);
-  virtual vtkFloatingPointType* GetNodeCoord(int theObjID);
+  virtual double* GetNodeCoord(int theObjID);
 
   virtual int GetElemObjId(int theVtkID);
   virtual vtkCell* GetElemCell(int theObjID);
@@ -79,11 +79,11 @@ class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
   virtual void SetFacesOriented(bool theIsFacesOriented);
   virtual bool GetFacesOriented() { return myIsFacesOriented; }
 
-  virtual void SetFacesOrientationColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
-  virtual void GetFacesOrientationColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
+  virtual void SetFacesOrientationColor(double r,double g,double b);
+  virtual void GetFacesOrientationColor(double& r,double& g,double& b);
 
-  virtual void SetFacesOrientationScale(vtkFloatingPointType theScale);
-  virtual vtkFloatingPointType GetFacesOrientationScale();
+  virtual void SetFacesOrientationScale(double theScale);
+  virtual double GetFacesOrientationScale();
 
   virtual void SetFacesOrientation3DVectors(bool theState);
   virtual bool GetFacesOrientation3DVectors();
@@ -93,13 +93,13 @@ class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
   virtual void SetQuadraticArcMode(bool theFlag);
   virtual bool GetQuadraticArcMode();
   
-  virtual void SetQuadraticArcAngle(vtkFloatingPointType theMaxAngle);
-  virtual vtkFloatingPointType GetQuadraticArcAngle();
+  virtual void SetQuadraticArcAngle(double theMaxAngle);
+  virtual double GetQuadraticArcAngle();
   
   void UpdateFaceOrientation();
 
-  vtkFloatingPointType GetShrinkFactor();
-  void  SetShrinkFactor(vtkFloatingPointType value);
+  double GetShrinkFactor();
+  void  SetShrinkFactor(double value);
 
   bool IsShrunkable() { return myIsShrinkable;}
   bool IsShrunk() { return myIsShrunk;}
@@ -182,16 +182,16 @@ class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
   
   bool myIsHighlited;
 
-  vtkFloatingPointType myPolygonOffsetFactor;
-  vtkFloatingPointType myPolygonOffsetUnits;
+  double myPolygonOffsetFactor;
+  double myPolygonOffsetUnits;
 
   void
-  SetPolygonOffsetParameters(vtkFloatingPointType factor, 
-                             vtkFloatingPointType units);
+  SetPolygonOffsetParameters(double factor, 
+                             double units);
 
   void
-  GetPolygonOffsetParameters(vtkFloatingPointType& factor, 
-                             vtkFloatingPointType& units)
+  GetPolygonOffsetParameters(double& factor, 
+                             double& units)
   {
     factor = myPolygonOffsetFactor;
     units = myPolygonOffsetUnits;

@@ -55,12 +55,12 @@
 namespace SMESH
 {
 
-  vtkFloatingPointType
+  double
   GetFloat( const QString& theValue, 
-            vtkFloatingPointType theDefault )
+            double theDefault )
   {
     int pos = theValue.indexOf( ":" );
-    vtkFloatingPointType val = theDefault;
+    double val = theDefault;
     if( pos>=0 ) 
     {
       QString name = theValue.right( theValue.length()-pos-1 ),
@@ -71,15 +71,15 @@ namespace SMESH
     return val;
   }
 
-  vtkFloatingPointType
+  double
   GetFloat( const QString& theValue, 
             const QString& theSection, 
-            vtkFloatingPointType theDefault )
+            double theDefault )
   {
-    vtkFloatingPointType val = theDefault;
+    double val = theDefault;
     SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();
     if( mgr )
-      val = (vtkFloatingPointType) mgr->doubleValue( theSection, theValue, theDefault );
+      val = (double) mgr->doubleValue( theSection, theValue, theDefault );
 
     return val;
   }
@@ -90,7 +90,7 @@ namespace SMESH
   {
     vtkXMLUnstructuredGridWriter* aWriter = vtkXMLUnstructuredGridWriter::New();
     aWriter->SetFileName(theFileName);
-    aWriter->SetInput(theGrid);
+    aWriter->SetInputData(theGrid);
     aWriter->SetDataModeToAscii();
     if(theGrid->GetNumberOfCells()){
       aWriter->Write();
@@ -129,9 +129,9 @@ namespace SMESH
   void
   GetColor( const QString& theSect, 
             const QString& theName, 
-            vtkFloatingPointType& r, 
-            vtkFloatingPointType& g, 
-            vtkFloatingPointType& b, 
+            double& r, 
+            double& g, 
+            double& b, 
             const QColor& def )
   {
     int ir( 0 ), ig( 0 ), ib( 0 );

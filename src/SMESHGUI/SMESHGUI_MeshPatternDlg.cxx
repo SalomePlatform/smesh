@@ -948,7 +948,7 @@ void SMESHGUI_MeshPatternDlg::displayPreview()
 
     // Create and display actor
     vtkDataSetMapper* aMapper = vtkDataSetMapper::New();
-    aMapper->SetInput(aGrid);
+    aMapper->SetInputData(aGrid);
 
     myPreviewActor = SALOME_Actor::New();
     myPreviewActor->PickableOff();

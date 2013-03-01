@@ -260,8 +260,8 @@ bool SMESHGUI_ConvToQuadOp::onApply()
           if ( myBadElemsPreview ) delete myBadElemsPreview; // viewWindow may change
           myBadElemsPreview = new SMESHGUI_MeshEditPreview( viewWindow() );
           
-          vtkFloatingPointType aPointSize = SMESH::GetFloat("SMESH:node_size",3);
-          vtkFloatingPointType aLineWidth = SMESH::GetFloat("SMESH:element_width",1);
+          double aPointSize = SMESH::GetFloat("SMESH:node_size",3);
+          double aLineWidth = SMESH::GetFloat("SMESH:element_width",1);
           vtkProperty* prop = vtkProperty::New();
           prop->SetLineWidth( aLineWidth * 3 );
           prop->SetPointSize( aPointSize * 3 );

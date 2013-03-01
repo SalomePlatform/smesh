@@ -362,7 +362,7 @@ void SMESHGUI_MinDistance::createPreview( double x1, double y1, double z1, doubl
   aCells->Delete();
   // create actor
   vtkDataSetMapper* aMapper = vtkDataSetMapper::New();
-  aMapper->SetInput( aGrid );
+  aMapper->SetInputData( aGrid );
   aGrid->Delete();
   myPreview = SALOME_Actor::New();
   myPreview->PickableOff();
@@ -879,7 +879,7 @@ void SMESHGUI_BoundingBox::createPreview( double minX, double maxX, double minY,
   aCells->Delete();
   // create actor
   vtkDataSetMapper* aMapper = vtkDataSetMapper::New();
-  aMapper->SetInput( aGrid );
+  aMapper->SetInputData( aGrid );
   aGrid->Delete();
   myPreview = SALOME_Actor::New();
   myPreview->PickableOff();

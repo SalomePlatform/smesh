@@ -41,15 +41,15 @@ namespace SMESH
   };
 
 SMESHOBJECT_EXPORT  
-  vtkFloatingPointType 
+  double 
   GetFloat( const QString& theValue, 
-            vtkFloatingPointType theDefault = 0 );
+            double theDefault = 0 );
 
 SMESHOBJECT_EXPORT
-  vtkFloatingPointType 
+  double 
   GetFloat( const QString& theName, 
             const QString& theSection, 
-            vtkFloatingPointType theDefault = 0 );
+            double theDefault = 0 );
 
 SMESHOBJECT_EXPORT
   QColor 
@@ -70,9 +70,9 @@ SMESHOBJECT_EXPORT
   void
   GetColor( const QString& theSect, 
             const QString& theName, 
-            vtkFloatingPointType&, 
-            vtkFloatingPointType&, 
-            vtkFloatingPointType&, 
+            double&, 
+            double&, 
+            double&, 
             const QColor& = QColor() );
 
  SMESHOBJECT_EXPORT

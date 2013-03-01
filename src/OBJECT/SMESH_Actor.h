@@ -62,44 +62,44 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
                           const char* theName,
                           int theIsClear);
   
-  virtual void SetSufaceColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b, int delta ) = 0;
-  virtual void GetSufaceColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b, int& delta ) = 0;
+  virtual void SetSufaceColor(double r,double g,double b, int delta ) = 0;
+  virtual void GetSufaceColor(double& r,double& g,double& b, int& delta ) = 0;
     
-  virtual void SetVolumeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b, int delta ) = 0;
-  virtual void GetVolumeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b, int& delta) = 0;
+  virtual void SetVolumeColor(double r,double g,double b, int delta ) = 0;
+  virtual void GetVolumeColor(double& r,double& g,double& b, int& delta) = 0;
 
-  virtual void SetEdgeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b) = 0;
-  virtual void GetEdgeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b) = 0;
+  virtual void SetEdgeColor(double r,double g,double b) = 0;
+  virtual void GetEdgeColor(double& r,double& g,double& b) = 0;
 
-  virtual void SetNodeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b) = 0;
-  virtual void GetNodeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b) = 0;
+  virtual void SetNodeColor(double r,double g,double b) = 0;
+  virtual void GetNodeColor(double& r,double& g,double& b) = 0;
   
-  virtual void SetOutlineColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b) = 0;
-  virtual void GetOutlineColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b) = 0;  
+  virtual void SetOutlineColor(double r,double g,double b) = 0;
+  virtual void GetOutlineColor(double& r,double& g,double& b) = 0;  
 
-  virtual void Set0DColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b) = 0;
-  virtual void Get0DColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b) = 0;
+  virtual void Set0DColor(double r,double g,double b) = 0;
+  virtual void Get0DColor(double& r,double& g,double& b) = 0;
 
-  virtual void SetBallColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b) = 0;
-  virtual void GetBallColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b) = 0;
+  virtual void SetBallColor(double r,double g,double b) = 0;
+  virtual void GetBallColor(double& r,double& g,double& b) = 0;
 
-  virtual void SetHighlightColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b) = 0;
-  virtual void GetHighlightColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b) = 0;
+  virtual void SetHighlightColor(double r,double g,double b) = 0;
+  virtual void GetHighlightColor(double& r,double& g,double& b) = 0;
 
-  virtual void SetPreHighlightColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b) = 0;
-  virtual void GetPreHighlightColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b) = 0;
+  virtual void SetPreHighlightColor(double r,double g,double b) = 0;
+  virtual void GetPreHighlightColor(double& r,double& g,double& b) = 0;
  
-  virtual vtkFloatingPointType GetLineWidth() = 0;
-  virtual void SetLineWidth(vtkFloatingPointType theVal) = 0;
+  virtual double GetLineWidth() = 0;
+  virtual void SetLineWidth(double theVal) = 0;
 
-  virtual vtkFloatingPointType GetOutlineWidth() = 0;
-  virtual void SetOutlineWidth(vtkFloatingPointType theVal) = 0;
+  virtual double GetOutlineWidth() = 0;
+  virtual void SetOutlineWidth(double theVal) = 0;
 
-  virtual void Set0DSize(vtkFloatingPointType size) = 0;
-  virtual vtkFloatingPointType Get0DSize() = 0;
+  virtual void Set0DSize(double size) = 0;
+  virtual double Get0DSize() = 0;
 
-  virtual void SetBallSize(vtkFloatingPointType size) = 0;
-  virtual vtkFloatingPointType GetBallSize() = 0;
+  virtual void SetBallSize(double size) = 0;
+  virtual double GetBallSize() = 0;
 
   enum EReperesent { ePoint, eEdge, eSurface};
   
@@ -118,7 +118,7 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
 
   virtual vtkUnstructuredGrid* GetUnstructuredGrid() = 0;
 
-  virtual void SetShrinkFactor(vtkFloatingPointType theValue) = 0;
+  virtual void SetShrinkFactor(double theValue) = 0;
 
   virtual void SetPointsLabeled(bool theIsPointsLabeled) = 0;
   virtual bool GetPointsLabeled() = 0;
@@ -129,11 +129,11 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
   virtual void SetFacesOriented(bool theIsFacesOriented) = 0;
   virtual bool GetFacesOriented() = 0;
 
-  virtual void SetFacesOrientationColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b) = 0;
-  virtual void GetFacesOrientationColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b) = 0;
+  virtual void SetFacesOrientationColor(double r,double g,double b) = 0;
+  virtual void GetFacesOrientationColor(double& r,double& g,double& b) = 0;
 
-  virtual void SetFacesOrientationScale(vtkFloatingPointType theScale) = 0;
-  virtual vtkFloatingPointType GetFacesOrientationScale() = 0;
+  virtual void SetFacesOrientationScale(double theScale) = 0;
+  virtual double GetFacesOrientationScale() = 0;
 
   virtual void SetFacesOrientation3DVectors(bool theState) = 0;
   virtual bool GetFacesOrientation3DVectors() = 0;
@@ -165,10 +165,10 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
 
   virtual void SetPointsFontProperties( SMESH::LabelFont family, int size, 
                                         bool bold, bool italic, bool shadow,
-                                        vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b ) = 0;
+                                        double r, double g, double b ) = 0;
   virtual void SetCellsFontProperties( SMESH::LabelFont family, int size, 
                                        bool bold, bool italic, bool shadow,
-                                       vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b ) = 0;
+                                       double r, double g, double b ) = 0;
 
 #ifndef DISABLE_PLOT2DVIEWER
   virtual SPlot2d_Histogram* GetPlot2Histogram() = 0;

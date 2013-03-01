@@ -124,7 +124,7 @@ namespace SMESH
 
       // Create and display actor
       vtkDataSetMapper* aMapper = vtkDataSetMapper::New();
-      aMapper->SetInput( myIdGrid );
+      aMapper->SetInputData( myIdGrid );
 
       myIdActor = SALOME_Actor::New();
       myIdActor->SetInfinitive(true);
@@ -140,16 +140,16 @@ namespace SMESH
       myPointsNumDataSet = vtkUnstructuredGrid::New();
 
       myPtsMaskPoints = vtkMaskPoints::New();
-      myPtsMaskPoints->SetInput(myPointsNumDataSet);
+      myPtsMaskPoints->SetInputData(myPointsNumDataSet);
       myPtsMaskPoints->SetOnRatio(1);
 
       myPtsSelectVisiblePoints = vtkSelectVisiblePoints::New();
-      myPtsSelectVisiblePoints->SetInput(myPtsMaskPoints->GetOutput());
+      myPtsSelectVisiblePoints->SetInputConnection(myPtsMaskPoints->GetOutputPort());
       myPtsSelectVisiblePoints->SelectInvisibleOff();
       myPtsSelectVisiblePoints->SetTolerance(0.1);
     
       myPtsLabeledDataMapper = vtkLabeledDataMapper::New();
-      myPtsLabeledDataMapper->SetInput(myPtsSelectVisiblePoints->GetOutput());
+      myPtsLabeledDataMapper->SetInputConnection(myPtsSelectVisiblePoints->GetOutputPort());
 #if (VTK_XVERSION < 0x050200)
       myPtsLabeledDataMapper->SetLabelFormat("%g");
 #endif
@@ -250,7 +250,7 @@ namespace SMESH
           anArray->SetValue( i, myIDs[i] );
         aDataSet->GetPointData()->SetScalars( anArray );
         anArray->Delete();
-        myPtsMaskPoints->SetInput( aDataSet );
+        myPtsMaskPoints->SetInputData( aDataSet );
         myPointLabels->SetVisibility( theIsActorVisible );
       }
       else {

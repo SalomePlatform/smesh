@@ -145,7 +145,7 @@ public:
                                          SVTK_ViewWindow*           theViewWindow,
                                          SMESH::Orientation         theOrientation,
                                          double                     theDistance,
-                                         const vtkFloatingPointType theAngle[2]);
+                                         const double theAngle[2]);
 
 protected:  
   void                    keyPressEvent( QKeyEvent* );

@@ -649,7 +649,7 @@ void SMESHGUI_Preferences_ScalarBarDlg::onSelectionChanged()
         if ( myScalarBarActor->GetLookupTable() ) {
           vtkLookupTable* aLookupTable = static_cast<vtkLookupTable*>(myScalarBarActor->GetLookupTable());
 
-          vtkFloatingPointType *range = aLookupTable->GetRange();
+          double *range = aLookupTable->GetRange();
           myMinEdit->setText( QString::number( range[0],'g',12 ) );
           myMaxEdit->setText( QString::number( range[1],'g',12 ) );
           myLogarithmicCheck->setChecked(aLookupTable->GetScale() == VTK_SCALE_LOG10);
@@ -657,7 +657,7 @@ void SMESHGUI_Preferences_ScalarBarDlg::onSelectionChanged()
         }
 
         vtkTextProperty* aTitleTextPrp = myScalarBarActor->GetTitleTextProperty();
-        vtkFloatingPointType aTColor[3];
+        double aTColor[3];
         aTitleTextPrp->GetColor( aTColor );
         myTitleColorBtn->setColor( QColor( (int)( aTColor[0]*255 ), (int)( aTColor[1]*255 ), (int)( aTColor[2]*255 ) ) );
         myTitleFontCombo->setCurrentIndex( aTitleTextPrp->GetFontFamily() );
@@ -666,7 +666,7 @@ void SMESHGUI_Preferences_ScalarBarDlg::onSelectionChanged()
         myTitleShadowCheck->setChecked( aTitleTextPrp->GetShadow() );
 
         vtkTextProperty* aLabelsTextPrp = myScalarBarActor->GetLabelTextProperty();
-        vtkFloatingPointType aLColor[3];
+        double aLColor[3];
         aLabelsTextPrp->GetColor( aLColor );
         myLabelsColorBtn->setColor( QColor( (int)( aLColor[0]*255 ), (int)( aLColor[1]*255 ), (int)( aLColor[2]*255 ) ) );
         myLabelsFontCombo->setCurrentIndex( aLabelsTextPrp->GetFontFamily() );

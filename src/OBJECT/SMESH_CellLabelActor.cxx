@@ -52,19 +52,19 @@ SMESH_CellLabelActor::SMESH_CellLabelActor() {
   myCellsNumDataSet = vtkUnstructuredGrid::New();
 
   myCellCenters = VTKViewer_CellCenters::New();
-  myCellCenters->SetInput(myCellsNumDataSet);
+  myCellCenters->SetInputData(myCellsNumDataSet);
 
   myClsMaskPoints = vtkMaskPoints::New();
-  myClsMaskPoints->SetInput(myCellCenters->GetOutput());
+  myClsMaskPoints->SetInputConnection(myCellCenters->GetOutputPort());
   myClsMaskPoints->SetOnRatio(1);
     
   myClsSelectVisiblePoints = vtkSelectVisiblePoints::New();
-  myClsSelectVisiblePoints->SetInput(myClsMaskPoints->GetOutput());
+  myClsSelectVisiblePoints->SetInputConnection(myClsMaskPoints->GetOutputPort());
   myClsSelectVisiblePoints->SelectInvisibleOff();
   myClsSelectVisiblePoints->SetTolerance(0.1);
     
   myClsLabeledDataMapper = vtkLabeledDataMapper::New();
-  myClsLabeledDataMapper->SetInput(myClsSelectVisiblePoints->GetOutput());
+  myClsLabeledDataMapper->SetInputConnection(myClsSelectVisiblePoints->GetOutputPort());
 
   myClsLabeledDataMapper->SetLabelFormat("%d");
   myClsLabeledDataMapper->SetLabelModeToLabelScalars();
@@ -120,7 +120,7 @@ SMESH_CellLabelActor::~SMESH_CellLabelActor() {
 
 void SMESH_CellLabelActor::SetFontProperties( SMESH::LabelFont family, int size,
                                               bool bold, bool italic, bool shadow,
-                                              vtkFloatingPointType r, vtkFloatingPointType g, vtkFloatingPointType b  )
+                                              double r, double g, double b  )
 {
   switch ( family ) {
   case SMESH::FntArial:
@@ -156,7 +156,7 @@ void SMESH_CellLabelActor::SetCellsLabeled(bool theIsCellsLabeled) {
       anArray->SetValue(anId,aSMDSId);
     }
     aDataSet->GetCellData()->SetScalars(anArray);
-    myCellCenters->SetInput(aDataSet);
+    myCellCenters->SetInputData(aDataSet);
     myCellsLabels->SetVisibility(GetVisibility());
   }else{
     myCellsLabels->SetVisibility(false);
