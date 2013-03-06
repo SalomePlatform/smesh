@@ -2,13 +2,14 @@
 
 \page convert_to_from_quadratic_mesh_page Convert to/from Quadratic Mesh
 
-\n This functionality allows transforming standard meshes (or
-sub-meshes) to quadratic and vice versa. 
-See \ref adding_quadratic_elements_page "Adding quadratic elements" 
-for more information about quadratic meshes.
-Note that conversion of a sub-mesh most probably will
-produce a non-conformal mesh. Elements on the boundary between
-quadratic and linear sub-meshes become (or remain) quadratic.
+\n This functionality allows transforming linear meshes (or
+sub-meshes) to quadratic and vice versa.
+Note that conversion of a sub-mesh most probably will produce a
+non-conformal mesh. Elements on the boundary between quadratic and
+linear sub-meshes become (or remain) quadratic.
+
+See \ref adding_quadratic_elements_page for more information about
+quadratic meshes.
 
 <em>To produce a conversion:</em>
 <ol>
@@ -18,8 +19,10 @@ Viewer.</li>
 Mesh item </b>, or click <em>"Convert to/from quadratic"</em> button in the
 toolbar.
 
+<center>
 \image html image154.png
-<center><em>"Convert to/from quadratic" button</em></center>
+<em>"Convert to/from quadratic" button</em>
+</center>
 
 The following dialog box will appear:
 
@@ -29,18 +32,20 @@ The following dialog box will appear:
 <li>In this dialog box specify:
 
 <ul>
-<li>if it is necessary to convert a standard mesh to quadratic or a quadratic
-mesh to standard. Note that the choice is available only if the selected mesh
-(or sub-mesh) contains both quadratic and linear elements, else the
-direction of conversion is selected automatically.</li>
-
-<li>if it is necessary to place medium nodes of the quadratic mesh on the
+<li>If it is necessary to convert a linear mesh to quadratic or a quadratic
+  mesh to linear. **Convert to bi-quadratic** option means same as
+  **Convert to quadratic** except that QUAD9 elements are created
+  instead of QUAD8, and HEXA27 elements are created instead of
+  HEXA20. Note that the choice is available only if the selected mesh
+  (or sub-mesh) contains both quadratic and linear elements, else the
+  direction of conversion is selected automatically.</li>
+<li>If it is necessary to place medium nodes of the quadratic mesh on the
 geometry (meshed object). This option is relevant for conversion to
 quadratic provided that the mesh is based on a geometry (not imported from file).</li>
 </ul>
 
 \image html image156.gif
-<center>Standard mesh (coarse mesh on a torus)</center>
+<center>Linear mesh (coarse mesh on a torus)</center>
 
 \image html image155.gif
 <center>Quadratic mesh</center>

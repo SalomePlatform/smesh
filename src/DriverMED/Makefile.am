@@ -21,7 +21,7 @@
 #  Author : Marc Tajchman (CEA)
 #  Modified by : Alexander BORODIN (OCN) - autotools usage
 #  Module : SMESH
-
+#
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
 # header files 

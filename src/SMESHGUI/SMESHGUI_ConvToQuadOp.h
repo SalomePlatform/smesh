@@ -44,7 +44,7 @@ class SMESHGUI_EXPORT SMESHGUI_ConvToQuadOp : public SMESHGUI_SelectionOp
   Q_OBJECT
 
 public:      
-  enum MeshType{ Comp = 0, Linear, Quadratic };
+  enum MeshDestinationType { Linear = 1, Quadratic = 2, BiQuadratic = 4 };
 
 public:
   SMESHGUI_ConvToQuadOp();
@@ -56,7 +56,8 @@ protected:
   virtual void                   startOperation();
   virtual void                   selectionDone();
   virtual SUIT_SelectionFilter*  createFilter( const int ) const;
-  MeshType                       ConsistMesh( const SMESH::SMESH_IDSource_var& ) const;
+  MeshDestinationType            DestinationMesh( const SMESH::SMESH_IDSource_var& ,
+                                                  bool* isMixOrder = 0) const;
 
 protected slots:
   virtual bool                   onApply();

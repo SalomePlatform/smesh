@@ -329,7 +329,6 @@ namespace SMESH
     Controls::Length2DPtr          myLength2DPtr;
   };
   
-  
   /*
     Class       : MultiConnection_i
     Description : Functor for calculating number of faces conneted to the edge
@@ -450,7 +449,7 @@ namespace SMESH
     OverConstrainedFace_i();
     FunctorType                     GetFunctorType();
   };
-  
+
   /*
     Class       : BelongToGeom_i
     Description : Predicate for selection on geometrical support
@@ -762,6 +761,25 @@ namespace SMESH
 
   private:
     Controls::ElemGeomTypePtr myElemGeomTypePtr;
+  };
+
+  /*
+    Class       : ElemEntityType_i
+    Description : Functor for check element entity type
+  */
+  class SMESH_I_EXPORT ElemEntityType_i: public virtual POA_SMESH::ElemEntityType,
+                                         public virtual Predicate_i
+  {
+  public:
+    ElemEntityType_i();
+    FunctorType             GetFunctorType();
+
+    void                    SetElementType ( ElementType  theType );
+    void                    SetEntityType( EntityType theEntityType );
+    EntityType              GetEntityType() const;
+
+  private:
+    Controls::ElemEntityTypePtr myElemEntityTypePtr;
   };
   
   /*
@@ -1095,6 +1113,7 @@ namespace SMESH
     LinearOrQuadratic_ptr     CreateLinearOrQuadratic();
     GroupColor_ptr            CreateGroupColor();
     ElemGeomType_ptr          CreateElemGeomType();
+    ElemEntityType_ptr        CreateElemEntityType();
     CoplanarFaces_ptr         CreateCoplanarFaces();
 
     LessThan_ptr              CreateLessThan();

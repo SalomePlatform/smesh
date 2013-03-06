@@ -245,7 +245,6 @@ namespace SMESH{
       virtual SMDSAbs_ElementType GetType() const;
     };
 
-
     /*
       Class       : Skew
       Description : Functor for calculating skew in degrees
@@ -428,6 +427,28 @@ namespace SMESH{
     protected:
       const SMDS_Mesh* myMesh;
     };
+
+    /*
+      Class       : ElemEntityType
+      Description : Functor for calculating entity type
+    */
+    class SMESHCONTROLS_EXPORT ElemEntityType: public virtual Predicate{
+      public:
+      ElemEntityType();
+      virtual void         SetMesh( const SMDS_Mesh* theMesh );
+      virtual bool         IsSatisfy( long theElementId );
+      void                 SetType( SMDSAbs_ElementType theType );
+      virtual              SMDSAbs_ElementType GetType() const;
+      void                 SetElemEntityType( SMDSAbs_EntityType theEntityType );
+      SMDSAbs_EntityType   GetElemEntityType() const;
+
+    private:
+      const SMDS_Mesh*     myMesh;
+      SMDSAbs_ElementType  myType;
+      SMDSAbs_EntityType   myEntityType;
+    };
+    typedef boost::shared_ptr<ElemEntityType> ElemEntityTypePtr;
+
 
     /*
       BareBorderVolume

@@ -81,7 +81,11 @@ namespace {
 //================================================================================
 
 SMESH_MesherHelper::SMESH_MesherHelper(SMESH_Mesh& theMesh)
-  : myParIndex(0), myMesh(&theMesh), myShapeID(0), myCreateQuadratic(false),
+  : myParIndex(0),
+    myMesh(&theMesh),
+    myShapeID(0),
+    myCreateQuadratic(false),
+    myCreateBiQuadratic(false),
     myFixNodeParameters(false)
 {
   myPar1[0] = myPar2[0] = myPar1[1] = myPar2[1] = 0;
@@ -934,11 +938,18 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
 //function : GetMediumPos
 //purpose  : Return index and type of the shape  (EDGE or FACE only) to
 //          set a medium node on
+//param    : useCurSubShape - if true, returns the shape set via SetSubShape()
+//           if any
 //=======================================================================
 
-std::pair<int, TopAbs_ShapeEnum> SMESH_MesherHelper::GetMediumPos(const SMDS_MeshNode* n1,
-                                                                  const SMDS_MeshNode* n2)
+std::pair<int, TopAbs_ShapeEnum>
+SMESH_MesherHelper::GetMediumPos(const SMDS_MeshNode* n1,
+                                 const SMDS_MeshNode* n2,
+                                 const bool           useCurSubShape)
 {
+  if ( useCurSubShape && !myShape.IsNull() )
+    return std::make_pair( myShapeID, myShape.ShapeType() );
+
   TopAbs_ShapeEnum shapeType = TopAbs_SHAPE;
   int              shapeID = -1;
   TopoDS_Shape     shape;
@@ -1010,8 +1021,156 @@ std::pair<int, TopAbs_ShapeEnum> SMESH_MesherHelper::GetMediumPos(const SMDS_Mes
 }
 
 //=======================================================================
+//function : GetCentralNode
+//purpose  : Return existing or create a new central node for a quardilateral
+//           quadratic face given its 8 nodes.
+//@param   : force3d - true means node creation in between the given nodes,
+//             else node position is found on a geometrical face if any.
+//=======================================================================
+
+const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
+                                                        const SMDS_MeshNode* n2,
+                                                        const SMDS_MeshNode* n3,
+                                                        const SMDS_MeshNode* n4,
+                                                        const SMDS_MeshNode* n12,
+                                                        const SMDS_MeshNode* n23,
+                                                        const SMDS_MeshNode* n34,
+                                                        const SMDS_MeshNode* n41,
+                                                        bool                 force3d)
+{
+  SMDS_MeshNode *centralNode = 0; // central node to return
+
+  // Find an existing central node
+
+  TBiQuad keyOfMap(n1,n2,n3,n4);
+  std::map<TBiQuad, SMDS_MeshNode* >::iterator itMapCentralNode;
+  itMapCentralNode = myMapWithCentralNode.find( keyOfMap );
+  if ( itMapCentralNode != myMapWithCentralNode.end() ) 
+  {
+    return (*itMapCentralNode).second;
+  }
+
+  // Get type of shape for the new central node
+
+  TopAbs_ShapeEnum shapeType = TopAbs_SHAPE;
+  int              shapeID = -1;
+  int              faceID = -1;
+  TopoDS_Shape     shape;
+  TopTools_ListIteratorOfListOfShape it;
+
+  std::map< int, int > faceId2nbNodes;
+  std::map< int, int > ::iterator itMapWithIdFace;
+  
+  SMESHDS_Mesh* meshDS = GetMeshDS();
+  
+  // check if a face lie on a FACE, i.e. its all corner nodes lie either on the FACE or
+  // on sub-shapes of the FACE
+  if ( GetMesh()->HasShapeToMesh() )
+  {
+    const SMDS_MeshNode* nodes[] = { n1, n2, n3, n4 };
+    for(int i = 0; i < 4; i++)
+    {
+      shape = GetSubShapeByNode( nodes[i], meshDS );
+      if ( shape.IsNull() ) break;
+      if ( shape.ShapeType() == TopAbs_SOLID )
+      {
+        shapeID   = nodes[i]->getshapeId();
+        shapeType = TopAbs_SOLID;
+        break;
+      }
+      if ( shape.ShapeType() == TopAbs_FACE )
+      {
+        faceID          = nodes[i]->getshapeId();
+        itMapWithIdFace = faceId2nbNodes.insert( std::make_pair( faceID, 0 ) ).first;
+        itMapWithIdFace->second++;
+      }
+      else
+      {
+        PShapeIteratorPtr it = GetAncestors(shape, *GetMesh(), TopAbs_FACE );
+        while ( const TopoDS_Shape* face = it->next() )
+        {
+          faceID = meshDS->ShapeToIndex( *face );
+          itMapWithIdFace = faceId2nbNodes.insert( std::make_pair( faceID, 0 ) ).first;
+          itMapWithIdFace->second++;
+        }
+      }
+    }
+  }
+  if ( shapeID < 1 && !faceId2nbNodes.empty() ) // SOLID not found
+  {
+    // find ID of the FACE the four corner nodes belong to
+    itMapWithIdFace = faceId2nbNodes.begin();
+    for ( ; itMapWithIdFace != faceId2nbNodes.end(); ++itMapWithIdFace)
+    {
+      if ( itMapWithIdFace->second == 4 ) 
+      {
+        shapeType = TopAbs_FACE;
+        faceID = (*itMapWithIdFace).first;
+        break;
+      }
+    }
+  }
+
+  TopoDS_Face F;
+  if ( shapeType == TopAbs_FACE )
+  {
+    F = TopoDS::Face( meshDS->IndexToShape( faceID ));
+  }
+
+  // Create a node
+
+  gp_XY  uvAvg;
+  gp_Pnt P;
+  if ( !F.IsNull() )
+  {
+    if ( !force3d )
+    {
+      uvAvg = calcTFI (0.5, 0.5,
+                       GetNodeUV(F,n1,n3),  GetNodeUV(F,n2,n4),
+                       GetNodeUV(F,n3,n1),  GetNodeUV(F,n4,n2), 
+                       GetNodeUV(F,n12,n3), GetNodeUV(F,n23,n4),
+                       GetNodeUV(F,n34,n2), GetNodeUV(F,n41,n2));
+      TopLoc_Location loc;
+      Handle( Geom_Surface ) S = BRep_Tool::Surface( F, loc );
+      P = S->Value( uvAvg.X(), uvAvg.Y() ).Transformed( loc );
+      centralNode = meshDS->AddNode( P.X(), P.Y(), P.Z() );
+      if ( mySetElemOnShape )
+        meshDS->SetNodeOnFace( centralNode, faceID, uvAvg.X(), uvAvg.Y() );
+      myMapWithCentralNode.insert( std::make_pair( keyOfMap, centralNode ) );
+      return centralNode;
+    }
+  }
+
+  P = ( SMESH_TNodeXYZ( n1 ) +
+        SMESH_TNodeXYZ( n2 ) +
+        SMESH_TNodeXYZ( n3 ) +
+        SMESH_TNodeXYZ( n4 ) ) / 4;
+  centralNode = meshDS->AddNode( P.X(), P.Y(), P.Z() );
+
+  if ( mySetElemOnShape )
+  {
+    if ( !F.IsNull() )
+    {
+      uvAvg = (GetNodeUV(F,n1,n3) +
+               GetNodeUV(F,n2,n4) +
+               GetNodeUV(F,n3,n1) +
+               GetNodeUV(F,n4,n2)) / 4;
+      CheckNodeUV( F, centralNode, uvAvg, 2*BRep_Tool::Tolerance( F ), /*force=*/true);
+      meshDS->SetNodeOnFace( centralNode, faceID, uvAvg.X(), uvAvg.Y() );
+    }
+    else if ( shapeID > 0 )
+      meshDS->SetNodeInVolume( centralNode, shapeID );
+    else if ( myShapeID > 0 )
+      meshDS->SetMeshElementOnShape( centralNode, myShapeID );
+  }
+
+  myMapWithCentralNode.insert( std::make_pair( keyOfMap, centralNode ) );
+  return centralNode;
+}
+
+//=======================================================================
 //function : GetMediumNode
-//purpose  : Return existing or create new medium nodes between given ones
+//purpose  : Return existing or create a new medium node between given ones
 //=======================================================================
 
 const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
@@ -1041,7 +1200,7 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
   TopoDS_Face F; gp_XY  uv[2];
   bool uvOK[2] = { false, false };
 
-  pair<int, TopAbs_ShapeEnum> pos = GetMediumPos( n1, n2 );
+  pair<int, TopAbs_ShapeEnum> pos = GetMediumPos( n1, n2, mySetElemOnShape );
 
   // get positions of the given nodes on shapes
   if ( pos.second == TopAbs_FACE )
@@ -1088,7 +1247,8 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
         gp_XY UV = GetMiddleUV( S, uv[0], uv[1] );
         gp_Pnt P = S->Value( UV.X(), UV.Y() ).Transformed(loc);
         n12 = meshDS->AddNode(P.X(), P.Y(), P.Z());
-        meshDS->SetNodeOnFace(n12, faceID, UV.X(), UV.Y());
+        if ( mySetElemOnShape )
+          meshDS->SetNodeOnFace(n12, faceID, UV.X(), UV.Y());
         myTLinkNodeMap.insert(make_pair(link,n12));
         return n12;
       }
@@ -1112,7 +1272,8 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
 
         gp_Pnt P = C->Value( U );
         n12 = meshDS->AddNode(P.X(), P.Y(), P.Z());
-        meshDS->SetNodeOnEdge(n12, edgeID, U);
+        if ( mySetElemOnShape )
+          meshDS->SetNodeOnEdge(n12, edgeID, U);
         myTLinkNodeMap.insert(make_pair(link,n12));
         return n12;
       }
@@ -1125,21 +1286,24 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
   double z = ( n1->Z() + n2->Z() )/2.;
   n12 = meshDS->AddNode(x,y,z);
 
-  if ( !F.IsNull() )
+  if ( mySetElemOnShape )
   {
-    gp_XY UV = ( uv[0] + uv[1] ) / 2.;
-    CheckNodeUV( F, n12, UV, 2*BRep_Tool::Tolerance( F ), /*force=*/true);
-    meshDS->SetNodeOnFace(n12, faceID, UV.X(), UV.Y() );
-  }
-  else if ( !E.IsNull() )
-  {
-    double U = ( u[0] + u[1] ) / 2.;
-    CheckNodeU( E, n12, U, 2*BRep_Tool::Tolerance( E ), /*force=*/true);
-    meshDS->SetNodeOnEdge(n12, edgeID, U);
-  }
-  else if ( myShapeID > 0 )
-  {
-    meshDS->SetNodeInVolume(n12, myShapeID);
+    if ( !F.IsNull() )
+    {
+      gp_XY UV = ( uv[0] + uv[1] ) / 2.;
+      CheckNodeUV( F, n12, UV, 2*BRep_Tool::Tolerance( F ), /*force=*/true);
+      meshDS->SetNodeOnFace(n12, faceID, UV.X(), UV.Y() );
+    }
+    else if ( !E.IsNull() )
+    {
+      double U = ( u[0] + u[1] ) / 2.;
+      CheckNodeU( E, n12, U, 2*BRep_Tool::Tolerance( E ), /*force=*/true);
+      meshDS->SetNodeOnEdge(n12, edgeID, U);
+    }
+    else if ( myShapeID > 0 )
+    {
+      meshDS->SetMeshElementOnShape(n12, myShapeID);
+    }
   }
 
   myTLinkNodeMap.insert( make_pair( link, n12 ));
@@ -1211,7 +1375,8 @@ const SMDS_MeshNode* SMESH_MesherHelper::getMediumNodeOnComposedWire(const SMDS_
     GetMeshDS()->MoveNode( n12, p.X(), p.Y(), p.Z() );
   }
 
-  GetMeshDS()->SetNodeOnEdge(n12, edges[iOkEdge], u);
+  if ( mySetElemOnShape )
+    GetMeshDS()->SetNodeOnEdge(n12, edges[iOkEdge], u);
 
   myTLinkNodeMap.insert( make_pair( SMESH_TLink(n1,n2), n12 ));
 
@@ -1319,7 +1484,7 @@ SMDS_MeshFace* SMESH_MesherHelper::AddFace(const SMDS_MeshNode* n1,
 
 //=======================================================================
 //function : AddFace
-//purpose  : Creates quadratic or linear quadrangle
+//purpose  : Creates bi-quadratic, quadratic or linear quadrangle
 //=======================================================================
 
 SMDS_MeshFace* SMESH_MesherHelper::AddFace(const SMDS_MeshNode* n1,
@@ -1362,11 +1527,21 @@ SMDS_MeshFace* SMESH_MesherHelper::AddFace(const SMDS_MeshNode* n1,
     const SMDS_MeshNode* n23 = GetMediumNode(n2,n3,force3d);
     const SMDS_MeshNode* n34 = GetMediumNode(n3,n4,force3d);
     const SMDS_MeshNode* n41 = GetMediumNode(n4,n1,force3d);
-
-    if(id)
-      elem = meshDS->AddFaceWithID(n1, n2, n3, n4, n12, n23, n34, n41, id);
+    if(myCreateBiQuadratic)
+    {
+     const SMDS_MeshNode* nCenter = GetCentralNode(n1, n2, n3, n4, n12, n23, n34, n41, force3d);
+     if(id)
+       elem = meshDS->AddFaceWithID(n1, n2, n3, n4, n12, n23, n34, n41, nCenter, id);
+     else
+       elem = meshDS->AddFace(n1, n2, n3, n4, n12, n23, n34, n41, nCenter);
+    }
     else
-      elem = meshDS->AddFace(n1, n2, n3, n4, n12, n23, n34, n41);
+    {
+      if(id)
+        elem = meshDS->AddFaceWithID(n1, n2, n3, n4, n12, n23, n34, n41, id);
+      else
+        elem = meshDS->AddFace(n1, n2, n3, n4, n12, n23, n34, n41);
+    }
   }
   if ( mySetElemOnShape && myShapeID > 0 )
     meshDS->SetMeshElementOnShape( elem, myShapeID );
@@ -1550,7 +1725,7 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
 
 //=======================================================================
 //function : AddVolume
-//purpose  : Creates quadratic or linear hexahedron
+//purpose  : Creates bi-quadratic, quadratic or linear hexahedron
 //=======================================================================
 
 SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
@@ -1587,15 +1762,75 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
     const SMDS_MeshNode* n26 = GetMediumNode(n2,n6,force3d);
     const SMDS_MeshNode* n37 = GetMediumNode(n3,n7,force3d);
     const SMDS_MeshNode* n48 = GetMediumNode(n4,n8,force3d);
+    if(myCreateBiQuadratic)
+    {
+      const SMDS_MeshNode* n1234 = GetCentralNode(n1,n2,n3,n4,n12,n23,n34,n41,force3d);
+      const SMDS_MeshNode* n1256 = GetCentralNode(n1,n2,n5,n6,n12,n26,n56,n15,force3d);
+      const SMDS_MeshNode* n2367 = GetCentralNode(n2,n3,n6,n7,n23,n37,n67,n26,force3d);
+      const SMDS_MeshNode* n3478 = GetCentralNode(n3,n4,n7,n8,n34,n48,n78,n37,force3d);
+      const SMDS_MeshNode* n1458 = GetCentralNode(n1,n4,n5,n8,n41,n48,n15,n85,force3d);
+      const SMDS_MeshNode* n5678 = GetCentralNode(n5,n6,n7,n8,n56,n67,n78,n85,force3d);
 
-    if(id)
-      elem = meshDS->AddVolumeWithID(n1, n2, n3, n4, n5, n6, n7, n8,
-                                     n12, n23, n34, n41, n56, n67,
-                                     n78, n85, n15, n26, n37, n48, id);
+      vector<gp_XYZ> pointsOnShapes( SMESH_Block::ID_Shell );
+
+      pointsOnShapes[ SMESH_Block::ID_V000 ] = SMESH_TNodeXYZ( n4 );
+      pointsOnShapes[ SMESH_Block::ID_V100 ] = SMESH_TNodeXYZ( n8 );
+      pointsOnShapes[ SMESH_Block::ID_V010 ] = SMESH_TNodeXYZ( n3 );
+      pointsOnShapes[ SMESH_Block::ID_V110 ] = SMESH_TNodeXYZ( n7 );
+      pointsOnShapes[ SMESH_Block::ID_V001 ] = SMESH_TNodeXYZ( n1 );
+      pointsOnShapes[ SMESH_Block::ID_V101 ] = SMESH_TNodeXYZ( n5 );
+      pointsOnShapes[ SMESH_Block::ID_V011 ] = SMESH_TNodeXYZ( n2 );
+      pointsOnShapes[ SMESH_Block::ID_V111 ] = SMESH_TNodeXYZ( n6 );
+
+      pointsOnShapes[ SMESH_Block::ID_Ex00 ] = SMESH_TNodeXYZ( n48 );
+      pointsOnShapes[ SMESH_Block::ID_Ex10 ] = SMESH_TNodeXYZ( n37 );
+      pointsOnShapes[ SMESH_Block::ID_E0y0 ] = SMESH_TNodeXYZ( n15 );
+      pointsOnShapes[ SMESH_Block::ID_E1y0 ] = SMESH_TNodeXYZ( n26 );
+      pointsOnShapes[ SMESH_Block::ID_Ex01 ] = SMESH_TNodeXYZ( n34 );
+      pointsOnShapes[ SMESH_Block::ID_Ex11 ] = SMESH_TNodeXYZ( n78 );
+      pointsOnShapes[ SMESH_Block::ID_E0y1 ] = SMESH_TNodeXYZ( n12 );
+      pointsOnShapes[ SMESH_Block::ID_E1y1 ] = SMESH_TNodeXYZ( n56 );
+      pointsOnShapes[ SMESH_Block::ID_E00z ] = SMESH_TNodeXYZ( n41 );    
+      pointsOnShapes[ SMESH_Block::ID_E10z ] = SMESH_TNodeXYZ( n85 );    
+      pointsOnShapes[ SMESH_Block::ID_E01z ] = SMESH_TNodeXYZ( n23 );    
+      pointsOnShapes[ SMESH_Block::ID_E11z ] = SMESH_TNodeXYZ( n67 );
+
+      pointsOnShapes[ SMESH_Block::ID_Fxy0 ] = SMESH_TNodeXYZ( n3478 );
+      pointsOnShapes[ SMESH_Block::ID_Fxy1 ] = SMESH_TNodeXYZ( n1256 );
+      pointsOnShapes[ SMESH_Block::ID_Fx0z ] = SMESH_TNodeXYZ( n1458 );   
+      pointsOnShapes[ SMESH_Block::ID_Fx1z ] = SMESH_TNodeXYZ( n2367 );   
+      pointsOnShapes[ SMESH_Block::ID_F0yz ] = SMESH_TNodeXYZ( n1234 );    
+      pointsOnShapes[ SMESH_Block::ID_F1yz ] = SMESH_TNodeXYZ( n5678 );
+
+      gp_XYZ centerCube(0.5, 0.5, 0.5);
+      gp_XYZ nCenterElem;
+      SMESH_Block::ShellPoint( centerCube, pointsOnShapes, nCenterElem );
+      const SMDS_MeshNode* nCenter =
+        meshDS->AddNode( nCenterElem.X(), nCenterElem.Y(), nCenterElem.Z() );
+      meshDS->SetNodeInVolume( nCenter, myShapeID );
+
+     if(id)
+        elem = meshDS->AddVolumeWithID(n1, n2, n3, n4, n5, n6, n7, n8,
+                                      n12, n23, n34, n41, n56, n67,
+                                      n78, n85, n15, n26, n37, n48,
+                                      n1234, n1256, n2367, n3478, n1458, n5678, nCenter, id);
+      else
+        elem = meshDS->AddVolume(n1, n2, n3, n4, n5, n6, n7, n8,
+                                n12, n23, n34, n41, n56, n67,
+                                n78, n85, n15, n26, n37, n48,
+                                n1234, n1256, n2367, n3478, n1458, n5678, nCenter);
+    }
     else
-      elem = meshDS->AddVolume(n1, n2, n3, n4, n5, n6, n7, n8,
-                               n12, n23, n34, n41, n56, n67,
-                               n78, n85, n15, n26, n37, n48);
+    {
+      if(id)
+        elem = meshDS->AddVolumeWithID(n1, n2, n3, n4, n5, n6, n7, n8,
+                                      n12, n23, n34, n41, n56, n67,
+                                      n78, n85, n15, n26, n37, n48, id);
+      else
+        elem = meshDS->AddVolume(n1, n2, n3, n4, n5, n6, n7, n8,
+                                n12, n23, n34, n41, n56, n67,
+                                n78, n85, n15, n26, n37, n48);
+    }
   }
   if ( mySetElemOnShape && myShapeID > 0 )
     meshDS->SetMeshElementOnShape( elem, myShapeID );
@@ -1720,10 +1955,11 @@ bool SMESH_MesherHelper::IsSameElemGeometry(const SMESHDS_SubMesh* smDS,
   if ( !smDS ) return nullSubMeshRes;
 
   SMDS_ElemIteratorPtr elemIt = smDS->GetElements();
-  while ( elemIt->more() )
-    if ( elemIt->next()->GetGeomType() != shape )
+  while ( elemIt->more() ) {
+    const SMDS_MeshElement* e = elemIt->next();
+    if ( e->GetGeomType() != shape )
       return false;
-
+  }
   return true;
 }
 
@@ -1898,7 +2134,8 @@ namespace
   //================================================================================
 
   bool isCornerOfStructure( const SMDS_MeshNode*   n,
-                            const SMESHDS_SubMesh* faceSM )
+                            const SMESHDS_SubMesh* faceSM,
+                            SMESH_MesherHelper&    faceAnalyser )
   {
     int nbFacesInSM = 0;
     if ( n ) {
@@ -1906,7 +2143,14 @@ namespace
       while ( fIt->more() )
         nbFacesInSM += faceSM->Contains( fIt->next() );
     }
-    return ( nbFacesInSM == 1 );
+    if ( nbFacesInSM == 1 )
+      return true;
+
+    if ( nbFacesInSM == 2 && n->GetPosition()->GetTypeOfPosition() == SMDS_TOP_VERTEX )
+    {
+      return faceAnalyser.IsRealSeam( n->getshapeId() );
+    }
+    return false;
   }
 }
 
@@ -1925,13 +2169,15 @@ bool SMESH_MesherHelper::IsStructured( SMESH_subMesh* faceSM )
   list< int > nbEdgesInWires;
   int nbWires = SMESH_Block::GetOrderedEdges( TopoDS::Face( faceSM->GetSubShape() ),
                                               edges, nbEdgesInWires );
-  if ( nbWires != 1 )
+  if ( nbWires != 1 || nbEdgesInWires.front() != 4 )
     return false;
 
   // algo: find corners of a structure and then analyze nb of faces and
   // length of structure sides
 
   SMESHDS_Mesh* meshDS = faceSM->GetFather()->GetMeshDS();
+  SMESH_MesherHelper faceAnalyser( *faceSM->GetFather() );
+  faceAnalyser.SetSubShape( faceSM->GetSubShape() );
 
   // rotate edges to get the first node being at corner
   // (in principle it's not necessary but so far none SALOME algo can make
@@ -1940,7 +2186,8 @@ bool SMESH_MesherHelper::IsStructured( SMESH_subMesh* faceSM )
   int nbRemainEdges = nbEdgesInWires.front();
   do {
     TopoDS_Vertex V = IthVertex( 0, edges.front() );
-    isCorner = isCornerOfStructure( SMESH_Algo::VertexNode( V, meshDS ), fSM);
+    isCorner = isCornerOfStructure( SMESH_Algo::VertexNode( V, meshDS ),
+                                    fSM, faceAnalyser);
     if ( !isCorner ) {
       edges.splice( edges.end(), edges, edges.begin() );
       --nbRemainEdges;
@@ -1963,16 +2210,13 @@ bool SMESH_MesherHelper::IsStructured( SMESH_subMesh* faceSM )
 
     list< const SMDS_MeshNode* > edgeNodes;
     map< double, const SMDS_MeshNode* >::iterator u2n = u2Nodes.begin();
-    if ( !nodes.empty() && nodes.back() == u2n->second )
-      ++u2n;
-    map< double, const SMDS_MeshNode* >::iterator u2nEnd = --u2Nodes.end();
-    if ( nodes.empty() || nodes.back() != u2nEnd->second )
-      ++u2nEnd;
-    for ( ; u2n != u2nEnd; ++u2n )
+    for ( ; u2n != u2Nodes.end(); ++u2n )
       edgeNodes.push_back( u2n->second );
-
     if ( edge->Orientation() == TopAbs_REVERSED )
       edgeNodes.reverse();
+
+    if ( !nodes.empty() && nodes.back() == edgeNodes.front() )
+      edgeNodes.pop_front();
     nodes.splice( nodes.end(), edgeNodes, edgeNodes.begin(), edgeNodes.end() );
   }
 
@@ -1983,7 +2227,7 @@ bool SMESH_MesherHelper::IsStructured( SMESH_subMesh* faceSM )
   for ( ; n != nodes.end(); ++n )
   {
     ++nbEdges;
-    if ( isCornerOfStructure( *n, fSM )) {
+    if ( isCornerOfStructure( *n, fSM, faceAnalyser )) {
       nbEdgesInSide.push_back( nbEdges );
       nbEdges = 0;
     }
@@ -2488,7 +2732,7 @@ namespace { // Structures used by FixQuadraticElements()
   enum { ERR_OK, ERR_TRI, ERR_PRISM, ERR_UNKNOWN }; // errors of QFace::GetLinkChain()
   // --------------------------------------------------------------------
   /*!
-   * \brief Face shared by two volumes and bound by QLinks
+   * \brief Quadratic face shared by two volumes and bound by QLinks
    */
   struct QFace: public TIDSortedNodeSet
   {
@@ -3857,11 +4101,13 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
   // 3. Compute displacement of medium nodes
   // ---------------------------------------
 
-  // two loops on QFaces: the first is to treat boundary links, the second is for internal ones
+  // two loops on QFaces: the first is to treat boundary links, the second is for internal ones.
   TopLoc_Location loc;
-  // not treat boundary of volumic submesh
+  bool checkUV;
+  // not to treat boundary of volumic sub-mesh.
   int isInside = ( elemType == SMDSAbs_Volume && volumeOnly ) ? 1 : 0;
-  for ( ; isInside < 2; ++isInside ) {
+  for ( ; isInside < 2; ++isInside )
+  {
     MSG( "--------------- LOOP (inside=" << isInside << ") ------------------");
     SMDS_TypeOfPosition pos = isInside ? SMDS_TOP_3DSPACE : SMDS_TOP_FACE;
     SMDS_TypeOfPosition bndPos = isInside ? SMDS_TOP_FACE : SMDS_TOP_EDGE;
@@ -3936,7 +4182,6 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
           gp_Vec move1 = chain.back ()->_nodeMove;
 
           TopoDS_Face face;
-          bool checkUV = true;
           if ( !isInside )
           {
             // compute node displacement of end links of chain in parametric space of face
@@ -4049,10 +4294,131 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
   // 4. Move nodes
   // -------------
 
+  TIDSortedElemSet biQuadQuas, triQuadHexa;
+  const SMDS_MeshElement *biQuadQua, *triQuadHex;
+  const bool toFixCentralNodes = ( myMesh->NbBiQuadQuadrangles() +
+                                   myMesh->NbTriQuadraticHexas() );
+
   for ( pLink = links.begin(); pLink != links.end(); ++pLink ) {
-    if ( pLink->IsMoved() ) {
+    if ( pLink->IsMoved() )
+    {
       gp_Pnt p = pLink->MiddlePnt() + pLink->Move();
       GetMeshDS()->MoveNode( pLink->_mediumNode, p.X(), p.Y(), p.Z());
+
+      // collect bi-quadratic elements
+      if ( toFixCentralNodes )
+      {
+        biQuadQua = triQuadHex = 0;
+        SMDS_ElemIteratorPtr eIt = pLink->_mediumNode->GetInverseElementIterator();
+        while ( eIt->more() )
+        {
+          const SMDS_MeshElement* e = eIt->next();
+          SMDSAbs_EntityType   type = e->GetEntityType();
+          if ( type == SMDSEntity_BiQuad_Quadrangle )
+            biQuadQuas.insert( e );
+          else if ( type == SMDSEntity_TriQuad_Hexa )
+            triQuadHexa.insert( e );
+        }
+      }
+    }
+  }
+
+  // Fix positions of central nodes of bi-tri-quadratic elements
+
+  // treat bi-quad quadrangles
+  {
+    vector< const SMDS_MeshNode* > nodes( 9 );
+    gp_XY uv[ 9 ];
+    //TIDSortedNodeSet checkedNodes;
+    TIDSortedElemSet::iterator quadIt = biQuadQuas.begin();
+    for ( ; quadIt != biQuadQuas.end(); ++quadIt )
+    {
+      const SMDS_MeshElement* quad = *quadIt;
+      // nodes
+      nodes.clear();
+      nodes.assign( quad->begin_nodes(), quad->end_nodes() );
+      // FACE
+      TopoDS_Shape S = GetSubShapeByNode( nodes.back(), GetMeshDS() );
+      if ( S.IsNull() || S.ShapeType() != TopAbs_FACE ) continue;
+      const TopoDS_Face& F = TopoDS::Face( S );
+      Handle( Geom_Surface ) surf = BRep_Tool::Surface( F, loc );
+      const double tol = BRep_Tool::Tolerance( F );
+      // UV
+      for ( int i = 0; i < 8; ++i )
+      {
+        uv[ i ] = GetNodeUV( F, nodes[i], nodes[8], &checkUV );
+        // as this method is used after mesh generation, UV of nodes is not
+        // updated according to bending links, so we update 
+        if ( i > 3 && nodes[i]->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE )
+          CheckNodeUV( F, nodes[i], uv[ i ], 2*tol, /*force=*/true );
+      }
+      // move central node
+      gp_XY uvCent = calcTFI (0.5, 0.5, uv[0],uv[1],uv[2],uv[3],uv[4],uv[5],uv[6],uv[7] );
+      gp_Pnt p = surf->Value( uvCent.X(), uvCent.Y() ).Transformed( loc );
+      GetMeshDS()->MoveNode( nodes[8], p.X(), p.Y(), p.Z());
+    }
+  }
+
+  // treat tri-quadratic hexahedra
+  {
+    SMDS_VolumeTool volExp;
+    TIDSortedElemSet::iterator hexIt = triQuadHexa.begin();
+    for ( ; hexIt != triQuadHexa.end(); ++hexIt )
+    {
+      volExp.Set( *hexIt, /*ignoreCentralNodes=*/false );
+
+      // fix nodes central in sides
+      for ( int iQuad = 0; iQuad < volExp.NbFaces(); ++iQuad )
+      {
+        const SMDS_MeshNode** quadNodes = volExp.GetFaceNodes( iQuad );
+        if ( quadNodes[8]->GetPosition()->GetTypeOfPosition() == SMDS_TOP_3DSPACE )
+        {
+          gp_XYZ p = calcTFI( 0.5, 0.5,
+                              SMESH_TNodeXYZ( quadNodes[0] ), SMESH_TNodeXYZ( quadNodes[2] ),
+                              SMESH_TNodeXYZ( quadNodes[4] ), SMESH_TNodeXYZ( quadNodes[6] ),
+                              SMESH_TNodeXYZ( quadNodes[1] ), SMESH_TNodeXYZ( quadNodes[3] ),
+                              SMESH_TNodeXYZ( quadNodes[5] ), SMESH_TNodeXYZ( quadNodes[7] ));
+          GetMeshDS()->MoveNode( quadNodes[8], p.X(), p.Y(), p.Z());
+        }
+      }
+
+      // fix the volume central node
+      vector<gp_XYZ> pointsOnShapes( SMESH_Block::ID_Shell );
+      const SMDS_MeshNode** hexNodes = volExp.GetNodes();
+
+      pointsOnShapes[ SMESH_Block::ID_V000 ] = SMESH_TNodeXYZ( hexNodes[ 0 ] );
+      pointsOnShapes[ SMESH_Block::ID_V100 ] = SMESH_TNodeXYZ( hexNodes[ 3 ] );
+      pointsOnShapes[ SMESH_Block::ID_V010 ] = SMESH_TNodeXYZ( hexNodes[ 1 ] );
+      pointsOnShapes[ SMESH_Block::ID_V110 ] = SMESH_TNodeXYZ( hexNodes[ 2 ] );
+      pointsOnShapes[ SMESH_Block::ID_V001 ] = SMESH_TNodeXYZ( hexNodes[ 4 ] );
+      pointsOnShapes[ SMESH_Block::ID_V101 ] = SMESH_TNodeXYZ( hexNodes[ 7 ] );
+      pointsOnShapes[ SMESH_Block::ID_V011 ] = SMESH_TNodeXYZ( hexNodes[ 5 ] );
+      pointsOnShapes[ SMESH_Block::ID_V111 ] = SMESH_TNodeXYZ( hexNodes[ 6 ] );
+
+      pointsOnShapes[ SMESH_Block::ID_Ex00 ] = SMESH_TNodeXYZ( hexNodes[ 11 ] );
+      pointsOnShapes[ SMESH_Block::ID_Ex10 ] = SMESH_TNodeXYZ( hexNodes[  9 ] );
+      pointsOnShapes[ SMESH_Block::ID_E0y0 ] = SMESH_TNodeXYZ( hexNodes[  8 ] );
+      pointsOnShapes[ SMESH_Block::ID_E1y0 ] = SMESH_TNodeXYZ( hexNodes[ 10 ] );
+      pointsOnShapes[ SMESH_Block::ID_Ex01 ] = SMESH_TNodeXYZ( hexNodes[ 15 ] );
+      pointsOnShapes[ SMESH_Block::ID_Ex11 ] = SMESH_TNodeXYZ( hexNodes[ 13 ] );
+      pointsOnShapes[ SMESH_Block::ID_E0y1 ] = SMESH_TNodeXYZ( hexNodes[ 12 ] );
+      pointsOnShapes[ SMESH_Block::ID_E1y1 ] = SMESH_TNodeXYZ( hexNodes[ 14 ] );
+      pointsOnShapes[ SMESH_Block::ID_E00z ] = SMESH_TNodeXYZ( hexNodes[ 16 ] );    
+      pointsOnShapes[ SMESH_Block::ID_E10z ] = SMESH_TNodeXYZ( hexNodes[ 19 ] );    
+      pointsOnShapes[ SMESH_Block::ID_E01z ] = SMESH_TNodeXYZ( hexNodes[ 17 ] );    
+      pointsOnShapes[ SMESH_Block::ID_E11z ] = SMESH_TNodeXYZ( hexNodes[ 18 ] );
+
+      pointsOnShapes[ SMESH_Block::ID_Fxy0 ] = SMESH_TNodeXYZ( hexNodes[ 20 ] );
+      pointsOnShapes[ SMESH_Block::ID_Fxy1 ] = SMESH_TNodeXYZ( hexNodes[ 25 ] );
+      pointsOnShapes[ SMESH_Block::ID_Fx0z ] = SMESH_TNodeXYZ( hexNodes[ 21 ] );   
+      pointsOnShapes[ SMESH_Block::ID_Fx1z ] = SMESH_TNodeXYZ( hexNodes[ 23 ] );   
+      pointsOnShapes[ SMESH_Block::ID_F0yz ] = SMESH_TNodeXYZ( hexNodes[ 24 ] );    
+      pointsOnShapes[ SMESH_Block::ID_F1yz ] = SMESH_TNodeXYZ( hexNodes[ 22 ] );
+
+      gp_XYZ nCenterParams(0.5, 0.5, 0.5), nCenterCoords;
+      SMESH_Block::ShellPoint( nCenterParams, pointsOnShapes, nCenterCoords );
+      GetMeshDS()->MoveNode( hexNodes[26],
+                             nCenterCoords.X(), nCenterCoords.Y(), nCenterCoords.Z());
     }
   }
 

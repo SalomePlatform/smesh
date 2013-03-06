@@ -72,7 +72,7 @@ typedef gp_XY (*xyFunPtr)(const gp_XY& uv1, const gp_XY& uv2);
 
 class SMESH_EXPORT SMESH_MesherHelper
 {
-public:
+ public:
   // ---------- PUBLIC UTILITIES ----------
   
   /*!
@@ -147,6 +147,36 @@ public:
   }
 
   /*!
+   * \brief Return UV of a point inside a quadrilateral FACE by it's
+   *        normalized parameters within a unit quadrangle and the
+   *        corresponding projections on sub-shapes of the real-world FACE.
+   *        The used calculation method is called Trans-Finite Interpolation (TFI).
+   *  \param x,y - normalized parameters that should be in range [0,1]
+   *  \param a0,a1,a2,a3 - UV of VERTEXes of the FACE == projections on VERTEXes
+   *  \param p0,p1,p2,p3 - UV of the point projections on EDGEs of the FACE
+   *  \return gp_XY - UV of the point on the FACE
+   *
+   * Order of those UV in the FACE is as follows.
+   *   a4   p3    a3
+   *    o---x-----o
+   *    |   :     |
+   *    |   :UV   |
+   * p4 x...O.....x p2
+   *    |   :     |
+   *    o---x-----o
+   *   a1   p1    a2
+   */
+  inline static gp_XY calcTFI(double x, double y,
+                              const gp_XY a0,const gp_XY a1,const gp_XY a2,const gp_XY a3,
+                              const gp_XY p0,const gp_XY p1,const gp_XY p2,const gp_XY p3);
+
+  /*!
+   * \brief Same as "gp_XY calcTFI(...)" but in 3D
+   */
+  inline static gp_XYZ calcTFI(double x, double y,
+                               const gp_XYZ a0,const gp_XYZ a1,const gp_XYZ a2,const gp_XYZ a3,
+                               const gp_XYZ p0,const gp_XYZ p1,const gp_XYZ p2,const gp_XYZ p3);
+  /*!
    * \brief Count nb of sub-shapes
     * \param shape - the shape
     * \param type - the type of sub-shapes to count
@@ -214,8 +244,19 @@ public:
   /*!
    * \brief Set order of elements to create without calling IsQuadraticSubMesh()
    */
+
+  /*!
+   * \brief Set myCreateQuadratic flag
+   */
   void SetIsQuadratic(const bool theBuildQuadratic)
   { myCreateQuadratic = theBuildQuadratic; }
+
+  /*!
+   * \brief Set myCreateBiQuadratic flag
+   */
+  void SetIsBiQuadratic(const bool theBuildBiQuadratic)
+  { myCreateBiQuadratic = theBuildBiQuadratic; }
+  
   /*!
    * \brief Return myCreateQuadratic flag
    */
@@ -225,6 +266,11 @@ public:
    * \brief Find out elements orientation on a geometrical face
    */
   bool IsReversedSubMesh (const TopoDS_Face& theFace);
+
+  /*!
+   * \brief Return myCreateBiQuadratic flag
+   */
+  bool GetIsBiQuadratic() const { return myCreateBiQuadratic; }
 
   /*!
    * \brief Move medium nodes of faces and volumes to fix distorted elements
@@ -276,7 +322,7 @@ public:
                          const int id=0, 
                          const bool force3d = false);
   /*!
-   * Creates quadratic or linear quadrangle
+   * Creates bi-quadratic, quadratic or linear quadrangle
    */
   SMDS_MeshFace* AddFace(const SMDS_MeshNode* n1,
                          const SMDS_MeshNode* n2,
@@ -284,7 +330,6 @@ public:
                          const SMDS_MeshNode* n4,
                          const int id = 0,
                          const bool force3d = false);
-
   /*!
    * Creates polygon, with additional nodes in quadratic mesh
    */
@@ -322,7 +367,7 @@ public:
                              const int id = 0, 
                              const bool force3d = true);
   /*!
-   * Creates quadratic or linear hexahedron
+   * Creates bi-quadratic, quadratic or linear hexahedron
    */
   SMDS_MeshVolume* AddVolume(const SMDS_MeshNode* n1,
                              const SMDS_MeshNode* n2,
@@ -526,10 +571,26 @@ public:
                                      const SMDS_MeshNode* n2,
                                      const bool force3d);
   /*!
+   * \brief Return existing or create a new central node for a quardilateral
+   *       quadratic face given its 8 nodes.
+   *  \param force3d - true means node creation in between the given nodes,
+   *                   else node position is found on a geometrical face if any.
+   */
+  const SMDS_MeshNode* GetCentralNode(const SMDS_MeshNode* n1,
+                                      const SMDS_MeshNode* n2,
+                                      const SMDS_MeshNode* n3,
+                                      const SMDS_MeshNode* n4,
+                                      const SMDS_MeshNode* n12,
+                                      const SMDS_MeshNode* n23,
+                                      const SMDS_MeshNode* n34,
+                                      const SMDS_MeshNode* n41,
+                                      bool                 force3d);
+  /*!
    * \brief Return index and type of the shape (EDGE or FACE only) to set a medium node on
    */
   std::pair<int, TopAbs_ShapeEnum> GetMediumPos(const SMDS_MeshNode* n1,
-                                                const SMDS_MeshNode* n2);
+                                                const SMDS_MeshNode* n2,
+                                                const bool           useCurSubShape=false);
   /*!
    * \brief Add a link in my data structure
    */
@@ -561,13 +622,13 @@ public:
   
   virtual ~SMESH_MesherHelper();
 
-protected:
+ protected:
 
   /*!
    * \brief Select UV on either of 2 pcurves of a seam edge, closest to the given UV
-    * \param uv1 - UV on the seam
-    * \param uv2 - UV within a face
-    * \retval gp_Pnt2d - selected UV
+   *  \param uv1 - UV on the seam
+   *  \param uv2 - UV within a face
+   *  \retval gp_Pnt2d - selected UV
    */
   gp_Pnt2d GetUVOnSeam( const gp_Pnt2d& uv1, const gp_Pnt2d& uv2 ) const;
 
@@ -577,10 +638,31 @@ protected:
  private:
 
   // Forbiden copy constructor
-  SMESH_MesherHelper (const SMESH_MesherHelper& theOther) {};
+  SMESH_MesherHelper (const SMESH_MesherHelper& theOther);
 
-  // special map for using during creation of quadratic elements
-  TLinkNodeMap    myTLinkNodeMap;
+  // key of a map of bi-quadratic face to it's central node
+  struct TBiQuad: public std::pair<int, std::pair<int, int> >
+  {
+    TBiQuad(const SMDS_MeshNode* n1,
+            const SMDS_MeshNode* n2, 
+            const SMDS_MeshNode* n3,
+            const SMDS_MeshNode* n4)
+    {
+      TIDSortedNodeSet s;
+      s.insert(n1);
+      s.insert(n2);
+      s.insert(n3);
+      s.insert(n4);
+      TIDSortedNodeSet::iterator n = s.begin();
+      first = (*n++)->GetID();
+      second.first = (*n++)->GetID();
+      second.second = (*n++)->GetID();
+    }
+  };
+
+  // maps used during creation of quadratic elements
+  TLinkNodeMap                        myTLinkNodeMap;       // medium nodes on links
+  std::map< TBiQuad, SMDS_MeshNode* > myMapWithCentralNode; // central nodes of faces
 
   std::set< int > myDegenShapeIds;
   std::set< int > mySeamShapeIds;
@@ -597,14 +679,35 @@ protected:
   int             myShapeID;
 
   bool            myCreateQuadratic;
+  bool            myCreateBiQuadratic;
   bool            mySetElemOnShape;
   bool            myFixNodeParameters;
 
   std::map< int,bool > myNodePosShapesValidity;
   bool toCheckPosOnShape(int shapeID ) const;
   void setPosOnShapeValidity(int shapeID, bool ok ) const;
-
 };
 
+//=======================================================================
+inline gp_XY
+SMESH_MesherHelper::calcTFI(double x, double y,
+                            const gp_XY a0,const gp_XY a1,const gp_XY a2,const gp_XY a3,
+                            const gp_XY p0,const gp_XY p1,const gp_XY p2,const gp_XY p3)
+{
+  return
+    ((1 - y) * p0 + x * p1 + y * p2 + (1 - x) * p3 ) -
+    ((1 - x) * (1 - y) * a0 + x * (1 - y) * a1 + x * y * a2 + (1 - x) * y * a3);
+}
+//=======================================================================
+inline gp_XYZ
+SMESH_MesherHelper::calcTFI(double x, double y,
+                            const gp_XYZ a0,const gp_XYZ a1,const gp_XYZ a2,const gp_XYZ a3,
+                            const gp_XYZ p0,const gp_XYZ p1,const gp_XYZ p2,const gp_XYZ p3)
+{
+  return
+    ((1 - y) * p0 + x * p1 + y * p2 + (1 - x) * p3 ) -
+    ((1 - x) * (1 - y) * a0 + x * (1 - y) * a1 + x * y * a2 + (1 - x) * y * a3);
+}
+//=======================================================================
 
 #endif

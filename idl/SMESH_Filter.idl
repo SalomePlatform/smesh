@@ -75,6 +75,7 @@ module SMESH
     FT_LinearOrQuadratic,
     FT_GroupColor,
     FT_ElemGeomType,
+    FT_EntityType,
     FT_CoplanarFaces,
     FT_BallDiameter,
     FT_LessThan,
@@ -423,6 +424,15 @@ module SMESH
   };
 
   /*!
+  * Functor "Element entity type"
+  * Returns is element has indicated entity type
+  */
+  interface ElemEntityType : Predicate{
+    void            SetElementType ( in ElementType  theType );
+    void            SetEntityType( in EntityType theSetEntityType );
+  };
+
+  /*!
   * Functor "Coplanar faces"
   * Returns true if a mesh face is a coplanar neighbour to a given one. It checks
   * if normal of a face has angle with the threshold face less than a tolerance.
@@ -543,7 +553,6 @@ module SMESH
     MultiConnection   CreateMultiConnection();
     MultiConnection2D CreateMultiConnection2D();
     BallDiameter      CreateBallDiameter();
-
     /*!
     *  Create logical functors ( predicates )
     */
@@ -575,6 +584,7 @@ module SMESH
 
     GroupColor        CreateGroupColor();
     ElemGeomType      CreateElemGeomType();
+    ElemEntityType    CreateElemEntityType();
     CoplanarFaces     CreateCoplanarFaces();
 
     /*!

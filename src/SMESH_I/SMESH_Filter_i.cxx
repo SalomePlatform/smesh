@@ -702,7 +702,6 @@ FunctorType Taper_i::GetFunctorType()
   return SMESH::FT_Taper;
 }
 
-
 /*
   Class       : Skew_i
   Description : Functor for calculating skew in degrees
@@ -1638,6 +1637,37 @@ FunctorType ElemGeomType_i::GetFunctorType()
 }
 
 /*
+  Class       : ElemEntityType_i
+  Description : Predicate check is element has indicated entity type
+*/
+ElemEntityType_i::ElemEntityType_i()
+{
+  myElemEntityTypePtr.reset(new Controls::ElemEntityType());
+  myFunctorPtr = myPredicatePtr = myElemEntityTypePtr;
+}
+
+void ElemEntityType_i::SetElementType(ElementType theType)
+{
+  myElemEntityTypePtr->SetType(SMDSAbs_ElementType(theType));
+  TPythonDump()<<this<<".SetElementType("<<theType<<")";
+}
+
+void ElemEntityType_i::SetEntityType(EntityType theEntityType)
+{
+  myElemEntityTypePtr->SetElemEntityType(SMDSAbs_EntityType (theEntityType));
+  TPythonDump()<<this<<".SetEntityType("<<theEntityType<<")";
+}
+EntityType ElemEntityType_i::GetEntityType() const
+{
+ return (EntityType) myElemEntityTypePtr->GetElemEntityType();
+}
+
+FunctorType ElemEntityType_i::GetFunctorType()
+{
+  return SMESH::FT_EntityType;
+}
+
+/*
   Class       : CoplanarFaces_i
   Description : Returns true if a mesh face is a coplanar neighbour to a given one
 */
@@ -2312,6 +2342,14 @@ ElemGeomType_ptr FilterManager_i::CreateElemGeomType()
   return anObj._retn();
 }
 
+ElemEntityType_ptr FilterManager_i::CreateElemEntityType()
+{
+  SMESH::ElemEntityType_i* aServant = new SMESH::ElemEntityType_i();
+  SMESH::ElemEntityType_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateElemEntityType()";
+  return anObj._retn();
+}
+
 Filter_ptr FilterManager_i::CreateFilter()
 {
   SMESH::Filter_i* aServant = new SMESH::Filter_i();
@@ -2802,6 +2840,18 @@ static inline bool getCriteria( Predicate_i*                thePred,
       theCriteria[ i ].Threshold     = (double)aPred->GetGeometryType();
       return true;
     }
+  case FT_EntityType:
+    {
+      CORBA::ULong i = theCriteria->length();
+      theCriteria->length( i + 1 );
+
+      theCriteria[ i ] = createCriterion();
+
+      ElemEntityType_i* aPred = dynamic_cast<ElemEntityType_i*>( thePred );
+      theCriteria[ i ].Type          = aFType;
+      theCriteria[ i ].Threshold     = (double)aPred->GetEntityType();
+      return true;
+    }
 
   case FT_Undefined:
     return false;
@@ -3040,6 +3090,14 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
           SMESH::ElemGeomType_ptr tmpPred = aFilterMgr->CreateElemGeomType();
           tmpPred->SetElementType( aTypeOfElem );
           tmpPred->SetGeometryType( (GeometryType)(int)(aThreshold + 0.5) );
+          aPredicate = tmpPred;
+          break;
+        }
+      case SMESH::FT_EntityType:
+        {
+          SMESH::ElemEntityType_ptr tmpPred = aFilterMgr->CreateElemEntityType();
+          tmpPred->SetElementType( aTypeOfElem );
+          tmpPred->SetEntityType( EntityType( (int (aThreshold + 0.5))));
           aPredicate = tmpPred;
           break;
         }
@@ -3289,6 +3347,7 @@ static inline LDOMString toString( CORBA::Long theType )
     case FT_GroupColor      : return "Color of Group";
     case FT_LinearOrQuadratic : return "Linear or Quadratic";
     case FT_ElemGeomType    : return "Element geomtry type";
+    case FT_EntityType      : return "Entity type";
     case FT_Undefined       : return "";
     default                 : return "";
   }
@@ -3341,6 +3400,7 @@ static inline SMESH::FunctorType toFunctorType( const LDOMString& theStr )
   else if ( theStr.equals( "Color of Group"               ) ) return FT_GroupColor;
   else if ( theStr.equals( "Linear or Quadratic"          ) ) return FT_LinearOrQuadratic;
   else if ( theStr.equals( "Element geomtry type"         ) ) return FT_ElemGeomType;
+  else if ( theStr.equals( "Entity type"                  ) ) return FT_EntityType;
   else if ( theStr.equals( ""                             ) ) return FT_Undefined;
   else  return FT_Undefined;
 }
@@ -3903,6 +3963,7 @@ static const char** getFunctNames()
     "FT_LinearOrQuadratic",
     "FT_GroupColor",
     "FT_ElemGeomType",
+    "FT_EntityType", 
     "FT_CoplanarFaces",
     "FT_BallDiameter",
     "FT_LessThan",
@@ -3911,7 +3972,7 @@ static const char** getFunctNames()
     "FT_LogicalNOT",
     "FT_LogicalAND",
     "FT_LogicalOR",
-    "FT_Undefined" };
+    "FT_Undefined"};
   return functName;
 }
 

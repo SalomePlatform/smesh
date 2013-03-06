@@ -9587,14 +9587,26 @@ int SMESH_MeshEditor::convertElemToQuadratic(SMESHDS_SubMesh *   theSm,
   {
     nbElem++;
     const SMDS_MeshElement* elem = ElemItr->next();
-    if( !elem || elem->IsQuadratic() ) continue;
+    if( !elem ) continue;
 
+    const SMDSAbs_EntityType aGeomType = elem->GetEntityType();
+    if ( elem->IsQuadratic() )
+    {
+      bool alreadyOK;
+      switch ( aGeomType ) {
+      case SMDSEntity_Quad_Quadrangle:
+      case SMDSEntity_Quad_Hexa:         alreadyOK = !theHelper.GetIsBiQuadratic(); break;
+      case SMDSEntity_BiQuad_Quadrangle:
+      case SMDSEntity_TriQuad_Hexa:      alreadyOK = theHelper.GetIsBiQuadratic(); break;
+      default:                           alreadyOK = true;
+      }
+      if ( alreadyOK ) continue;
+    }
     // get elem data needed to re-create it
     //
-    const int id                        = elem->GetID();
-    const int nbNodes                   = elem->NbNodes();
-    const SMDSAbs_ElementType aType     = elem->GetType();
-    const SMDSAbs_EntityType  aGeomType = elem->GetEntityType();
+    const int id                     = elem->GetID();
+    const int nbNodes                = elem->NbCornerNodes();
+    const SMDSAbs_ElementType aType  = elem->GetType();
     nodes.assign(elem->begin_nodes(), elem->end_nodes());
     if ( aGeomType == SMDSEntity_Polyhedra )
       nbNodeInFaces = static_cast<const SMDS_VtkVolume* >( elem )->GetQuantities();
@@ -9643,6 +9655,8 @@ int SMESH_MeshEditor::convertElemToQuadratic(SMESHDS_SubMesh *   theSm,
           NewElem = theHelper.AddVolume(nodes[0], nodes[1], nodes[2], nodes[3], nodes[4], nodes[5], id, theForce3d);
           break;
         case SMDSEntity_Hexa:
+        case SMDSEntity_Quad_Hexa:
+        case SMDSEntity_TriQuad_Hexa:
           NewElem = theHelper.AddVolume(nodes[0], nodes[1], nodes[2], nodes[3],
                                         nodes[4], nodes[5], nodes[6], nodes[7], id, theForce3d);
           break;
@@ -9661,18 +9675,20 @@ int SMESH_MeshEditor::convertElemToQuadratic(SMESHDS_SubMesh *   theSm,
   }
   return nbElem;
 }
-
 //=======================================================================
 //function : ConvertToQuadratic
 //purpose  :
 //=======================================================================
 
-void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d)
+void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d, const bool theToBiQuad)
 {
   SMESHDS_Mesh* meshDS = GetMeshDS();
 
   SMESH_MesherHelper aHelper(*myMesh);
+
   aHelper.SetIsQuadratic( true );
+  aHelper.SetIsBiQuadratic( theToBiQuad );
+  aHelper.SetElementsOnShape(true);
 
   int nbCheckedElems = 0;
   if ( myMesh->HasShapeToMesh() )
@@ -9714,10 +9730,14 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d)
     while(aFaceItr->more())
     {
       const SMDS_MeshFace* face = aFaceItr->next();
-      if(!face || face->IsQuadratic() ) continue;
+      if ( !face ) continue;
+      
+      const SMDSAbs_EntityType type = face->GetEntityType();
+      if (( theToBiQuad  && type == SMDSEntity_BiQuad_Quadrangle ) ||
+          ( !theToBiQuad && type == SMDSEntity_Quad_Quadrangle ))
+        continue;
 
       const int id = face->GetID();
-      const SMDSAbs_EntityType type = face->GetEntityType();
       vector<const SMDS_MeshNode *> nodes ( face->begin_nodes(), face->end_nodes());
 
       meshDS->RemoveFreeElement(face, smDS, /*fromGroups=*/false);
@@ -9743,8 +9763,12 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d)
       const SMDS_MeshVolume* volume = aVolumeItr->next();
       if(!volume || volume->IsQuadratic() ) continue;
 
-      const int id = volume->GetID();
       const SMDSAbs_EntityType type = volume->GetEntityType();
+      if (( theToBiQuad  && type == SMDSEntity_TriQuad_Hexa ) ||
+          ( !theToBiQuad && type == SMDSEntity_Quad_Hexa ))
+        continue;
+
+      const int id = volume->GetID();
       vector<const SMDS_MeshNode *> nodes (volume->begin_nodes(), volume->end_nodes());
       if ( type == SMDSEntity_Polyhedra )
         nbNodeInFaces = static_cast<const SMDS_VtkVolume* >(volume)->GetQuantities();
@@ -9760,6 +9784,8 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d)
         NewVolume = aHelper.AddVolume(nodes[0], nodes[1], nodes[2], nodes[3], id, theForce3d );
         break;
       case SMDSEntity_Hexa:
+      case SMDSEntity_Quad_Hexa:
+      case SMDSEntity_TriQuad_Hexa:
         NewVolume = aHelper.AddVolume(nodes[0], nodes[1], nodes[2], nodes[3],
                                       nodes[4], nodes[5], nodes[6], nodes[7], id, theForce3d);
         break;
@@ -9795,7 +9821,8 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d)
 //================================================================================
 
 void SMESH_MeshEditor::ConvertToQuadratic(const bool        theForce3d,
-                                          TIDSortedElemSet& theElements)
+                                          TIDSortedElemSet& theElements,
+                                          const bool        theToBiQuad)
 {
   if ( theElements.empty() ) return;
 
@@ -9822,8 +9849,19 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool        theForce3d,
       const SMDS_MeshElement* e = invIt->next();
       if ( e->IsQuadratic() )
       {
-        quadAdjacentElems[ e->GetType() ].insert( e );
-        continue;
+        bool alreadyOK;
+        switch ( e->GetEntityType() ) {
+        case SMDSEntity_Quad_Quadrangle:
+        case SMDSEntity_Quad_Hexa:         alreadyOK = !theToBiQuad; break;
+        case SMDSEntity_BiQuad_Quadrangle:
+        case SMDSEntity_TriQuad_Hexa:      alreadyOK = theToBiQuad; break;
+        default:                           alreadyOK = true;
+        }
+        if ( alreadyOK )
+        {
+          quadAdjacentElems[ e->GetType() ].insert( e );
+          continue;
+        }
       }
       if ( e->GetType() >= elemType )
       {
@@ -9845,6 +9883,7 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool        theForce3d,
 
   SMESH_MesherHelper helper(*myMesh);
   helper.SetIsQuadratic( true );
+  helper.SetIsBiQuadratic( theToBiQuad );
 
   // add links of quadratic adjacent elements to the helper
 
@@ -9867,18 +9906,32 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool        theForce3d,
       helper.AddTLinks( static_cast< const SMDS_MeshVolume*> (*eIt) );
     }
 
-  // make quadratic elements instead of linear ones
+  // make quadratic (or bi-tri-quadratic) elements instead of linear ones
 
-  SMESHDS_Mesh* meshDS = GetMeshDS();
+  SMESHDS_Mesh*  meshDS = GetMeshDS();
   SMESHDS_SubMesh* smDS = 0;
   for ( eIt = theElements.begin(); eIt != theElements.end(); ++eIt )
   {
     const SMDS_MeshElement* elem = *eIt;
-    if( elem->IsQuadratic() || elem->NbNodes() < 2 || elem->IsPoly() )
+    if( elem->NbNodes() < 2 || elem->IsPoly() )
       continue;
 
-    const int id                   = elem->GetID();
+    if ( elem->IsQuadratic() )
+    {
+      bool alreadyOK;
+      switch ( elem->GetEntityType() ) {
+      case SMDSEntity_Quad_Quadrangle:
+      case SMDSEntity_Quad_Hexa:         alreadyOK = !theToBiQuad; break;
+      case SMDSEntity_BiQuad_Quadrangle:
+      case SMDSEntity_TriQuad_Hexa:      alreadyOK = theToBiQuad; break;
+      default:                           alreadyOK = true;
+      }
+      if ( alreadyOK ) continue;
+    }
+
     const SMDSAbs_ElementType type = elem->GetType();
+    const int                   id = elem->GetID();
+    const int              nbNodes = elem->NbCornerNodes();
     vector<const SMDS_MeshNode *> nodes ( elem->begin_nodes(), elem->end_nodes());
 
     if ( !smDS || !smDS->Contains( elem ))
@@ -9886,7 +9939,7 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool        theForce3d,
     meshDS->RemoveFreeElement(elem, smDS, /*fromGroups=*/false);
 
     SMDS_MeshElement * newElem = 0;
-    switch( nodes.size() )
+    switch( nbNodes )
     {
     case 4: // cases for most frequently used element types go first (for optimization)
       if ( type == SMDSAbs_Volume )

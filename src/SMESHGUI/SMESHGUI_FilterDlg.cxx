@@ -1137,6 +1137,7 @@ bool SMESHGUI_FilterTable::IsValid (const bool theMess, const int theEntityType)
              aCriterion == SMESH::FT_BelongToCylinder ||
              aCriterion == SMESH::FT_BelongToGenSurface ||
              aCriterion == SMESH::FT_ElemGeomType ||
+             aCriterion == SMESH::FT_EntityType ||
              aCriterion == SMESH::FT_CoplanarFaces ||
              aCriterion == SMESH::FT_LyingOnGeom)
     {
@@ -1253,6 +1254,8 @@ void SMESHGUI_FilterTable::GetCriterion (const int                 theRow,
   }
   else if ( aCriterionType == SMESH::FT_ElemGeomType )
     theCriterion.Threshold = (double)((ComboItem*)aTable->item(theRow, 2))->value();
+  else if ( aCriterionType == SMESH::FT_EntityType )
+    theCriterion.Threshold = (double)((ComboItem*)aTable->item(theRow, 2))->value();
   else if ( aCriterionType == SMESH::FT_CoplanarFaces )
     theCriterion.ThresholdID = aTable->text(theRow, 2).toLatin1().constData();
   else if ( aCriterionType != SMESH::FT_RangeOfIds &&
@@ -1325,6 +1328,11 @@ void SMESHGUI_FilterTable::SetCriterion (const int                       theRow,
     }
   }
   else if (theCriterion.Type == SMESH::FT_ElemGeomType )
+  {
+    ComboItem* typeBox = (ComboItem*)aTable->item(theRow, 2);
+    typeBox->setValue( (int)(theCriterion.Threshold + 0.5) );
+  }
+  else if (theCriterion.Type == SMESH::FT_EntityType )
   {
     ComboItem* typeBox = (ComboItem*)aTable->item(theRow, 2);
     typeBox->setValue( (int)(theCriterion.Threshold + 0.5) );
@@ -1652,9 +1660,39 @@ static QList<int> geomTypes( const int theType )
 }
 
 //=======================================================================
+// name    : entityTypes
+// Purpose : returns available entity types of elements
+//=======================================================================
+
+static QList<int> entityTypes( const int theType )
+{
+  QList<int> typeIds;
+
+  if ( theType == SMESH::EDGE )
+  {
+    typeIds.append( SMDSEntity_Edge );
+    typeIds.append( SMDSEntity_Quad_Edge );
+  }
+  if ( theType == SMESH::FACE )
+  {
+    typeIds.append( SMDSEntity_Quadrangle );
+    typeIds.append( SMDSEntity_Quad_Quadrangle );
+    typeIds.append( SMDSEntity_BiQuad_Quadrangle );
+  }
+  if ( theType == SMESH::VOLUME )
+  {
+    typeIds.append( SMDSEntity_Hexa );
+    typeIds.append( SMDSEntity_Quad_Hexa );
+    typeIds.append( SMDSEntity_TriQuad_Hexa );
+  }
+  return typeIds;
+}
+
+//=======================================================================
 // name    : SMESHGUI_FilterTable::onCriterionChanged()
 // Purpose : Provides reaction on change of criterion
 //=======================================================================
+
 void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, const int entityType)
 {
   int aType = entityType == -1 ? GetType() : entityType;
@@ -1689,8 +1727,8 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
     aCriterionType == SMESH::FT_Length2D ||
     aCriterionType == SMESH::FT_MaxElementLength2D ||
     aCriterionType == SMESH::FT_MaxElementLength3D ||
-    aCriterionType == SMESH::FT_Volume3D;
-
+    aCriterionType == SMESH::FT_Volume3D ||
+    aCriterionType == SMESH::FT_EntityType;
   int aPrecision = 0;
   if ( anIsDoubleCriterion ) {
     const char* aPrecisionType = getPrecision( aCriterionType );
@@ -1710,6 +1748,7 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
 
   if ( (aCriterionType != SMESH::FT_GroupColor && clrBtn) ||
        (aCriterionType != SMESH::FT_ElemGeomType && isComboItem) ||
+       (aCriterionType != SMESH::FT_EntityType && isComboItem) ||
        (aCriterionType != SMESH::FT_MultiConnection && isIntSpinItem) ||
        (!anIsDoubleCriterion && isDoubleSpinItem) ||
        anIsPrecisionChanged )
@@ -1722,6 +1761,7 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
   }
   if ( (aCriterionType == SMESH::FT_GroupColor && !clrBtn) ||
        (aCriterionType == SMESH::FT_ElemGeomType && !isComboItem) ||
+       (aCriterionType == SMESH::FT_EntityType && !isComboItem) ||
        (aCriterionType == SMESH::FT_MultiConnection && !isIntSpinItem) ||
        (anIsDoubleCriterion && !isDoubleSpinItem) ||
        anIsPrecisionChanged )
@@ -1737,6 +1777,18 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
       for ( int i = 0; anIter != typeIds.end(); ++anIter, ++i)
       {
         QString typeKey = QString( "GEOM_TYPE_%1" ).arg( *anIter );
+        typeNames[ *anIter ] = tr( typeKey.toLatin1().data() );
+      }
+      ComboItem* typeBox = new ComboItem( typeNames );
+      aTable->setItem( row, 2, typeBox );
+    }
+    else if ( aCriterionType == SMESH::FT_EntityType ) {
+      QList<int> typeIds = entityTypes( aType );
+      QMap<int, QString> typeNames;
+      QList<int>::const_iterator anIter = typeIds.begin();
+      for ( int i = 0; anIter != typeIds.end(); ++anIter, ++i)
+      {
+        QString typeKey = QString( "ENTITY_TYPE_%1" ).arg( *anIter );
         typeNames[ *anIter ] = tr( typeKey.toLatin1().data() );
       }
       ComboItem* typeBox = new ComboItem( typeNames );
@@ -1771,7 +1823,8 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
       aCriterionType == SMESH::FT_LinearOrQuadratic ||
       aCriterionType == SMESH::FT_GroupColor ||
       aCriterionType == SMESH::FT_ElemGeomType ||
-      aCriterionType == SMESH::FT_CoplanarFaces
+      aCriterionType == SMESH::FT_CoplanarFaces ||
+      aCriterionType == SMESH::FT_EntityType 
       )
   {
     bool isSignalsBlocked = aTable->signalsBlocked();
@@ -1783,6 +1836,7 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
     aTable->item(row, 2)->setText( QString("") );
     aTable->setEditable(aCriterionType == SMESH::FT_GroupColor ||
                         aCriterionType == SMESH::FT_ElemGeomType ||
+                        aCriterionType == SMESH::FT_EntityType || 
                         aCriterionType == SMESH::FT_CoplanarFaces, row, 2);
     aTable->blockSignals( isSignalsBlocked );
   }
@@ -1802,7 +1856,8 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
       aTable->setEditable(true, row, 2);
   }
   else if (aCriterionType == SMESH::FT_GroupColor ||
-           aCriterionType == SMESH::FT_ElemGeomType)
+           aCriterionType == SMESH::FT_ElemGeomType ||
+           aCriterionType == SMESH::FT_EntityType)
   {
     if (!aTable->isEditable(row, 2))
       aTable->setEditable(true, row, 2);
@@ -2034,6 +2089,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_GroupColor         ] = tr("GROUP_COLOR");
       aCriteria[ SMESH::FT_ElemGeomType       ] = tr("GEOM_TYPE");
       aCriteria[ SMESH::FT_EqualEdges         ] = tr("EQUAL_EDGE");
+      aCriteria[ SMESH::FT_EntityType         ] = tr("ENTITY_TYPE");
     }
     return aCriteria;
   }
@@ -2066,6 +2122,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_ElemGeomType       ] = tr("GEOM_TYPE");
       aCriteria[ SMESH::FT_CoplanarFaces      ] = tr("COPLANAR_FACES");
       aCriteria[ SMESH::FT_EqualFaces         ] = tr("EQUAL_FACE");
+      aCriteria[ SMESH::FT_EntityType         ] = tr("ENTITY_TYPE");
     }
     return aCriteria;
   }
@@ -2087,6 +2144,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_GroupColor           ] = tr("GROUP_COLOR");
       aCriteria[ SMESH::FT_ElemGeomType         ] = tr("GEOM_TYPE");
       aCriteria[ SMESH::FT_EqualVolumes         ] = tr("EQUAL_VOLUME");
+      aCriteria[ SMESH::FT_EntityType           ] = tr("ENTITY_TYPE");
     }
     return aCriteria;
   }

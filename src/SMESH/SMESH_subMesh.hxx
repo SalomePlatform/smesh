@@ -273,7 +273,7 @@ protected:
   void updateDependantsState(const compute_event theEvent);
   void updateSubMeshState(const compute_state theState);
   void cleanDependants();
-  void cleanDependsOn( bool keepSupportedsubMeshes = false );
+  void cleanDependsOn( SMESH_Algo* algoRequiringCleaning=0 );
   void setAlgoState(algo_state state);
 
   /*!

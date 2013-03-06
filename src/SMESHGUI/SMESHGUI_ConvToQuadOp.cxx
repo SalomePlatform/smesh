@@ -142,19 +142,10 @@ void SMESHGUI_ConvToQuadOp::selectionDone()
       myDlg->setButtonEnabled( false, QtxDialog::OK | QtxDialog::Apply );
       return;
     }
-    MeshType meshType = ConsistMesh( idSource );
-    if( meshType == SMESHGUI_ConvToQuadOp::Quadratic )
-    {
-      myDlg->SetEnabledRB( 0, false );
-    }
-    else if( meshType == SMESHGUI_ConvToQuadOp::Linear )
-    {
-      myDlg->SetEnabledRB( 1, false );
-    }
-    else 
-    {
-      myDlg->SetEnabledControls( true );
-    }
+    SMESH::SMESH_Mesh_var      mesh = idSource->GetMesh();
+    bool                    hasGeom = mesh->HasShapeToMesh();
+    MeshDestinationType meshTgtType = DestinationMesh( idSource );
+    myDlg->SetEnabledRB( meshTgtType, hasGeom && ( meshTgtType & ( BiQuadratic | Quadratic )));
 
     // show warning on non-conformal result mesh
     if ( ! idSource->_is_nil() )
@@ -166,8 +157,9 @@ void SMESHGUI_ConvToQuadOp::selectionDone()
       {
         SMESH::SMESH_Mesh_var mesh = idSource->GetMesh();
         idSource = SMESH::SMESH_IDSource::_narrow( mesh );
-        MeshType fullMeshType = ConsistMesh( idSource );
-        toShow = ( fullMeshType != Comp );
+        bool isMixOrder;
+        DestinationMesh( idSource, &isMixOrder );
+        toShow = !isMixOrder;
       }
       myDlg->ShowWarning( toShow );
     }
@@ -241,17 +233,20 @@ bool SMESHGUI_ConvToQuadOp::onApply()
     SMESH::SMESH_MeshEditor_var aEditor = mesh->GetMeshEditor();
     aResult = true; 
     SMESH::SMESH_Mesh_var sourceMesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( pObj );  
-    if( !myDlg->CurrentRB() )
+    if( myDlg->CurrentRB()==1 || myDlg->CurrentRB()==2)
     {
       bool force3d = true;
       if( myDlg->IsEnabledCheck() )
         force3d = myDlg->IsMediumNdsOnGeom();
-
-      if ( sourceMesh->_is_nil() )
-        aEditor->ConvertToQuadraticObject( force3d, idSource );
-      else
-        aEditor->ConvertToQuadratic( force3d );
-
+      bool theToBiQuad = myDlg->IsBiQuadratic();
+      if ( sourceMesh->_is_nil() ) {
+        if ( theToBiQuad ) aEditor->ConvertToBiQuadratic    ( force3d, idSource );
+        else               aEditor->ConvertToQuadraticObject( force3d, idSource );
+      }
+      else {
+        if ( theToBiQuad ) aEditor->ConvertToBiQuadratic( force3d, sourceMesh );
+        else               aEditor->ConvertToQuadratic  ( force3d );
+      }
       if ( !force3d )
       {
         SMESH::ComputeError_var error = aEditor->GetLastError();
@@ -259,7 +254,7 @@ bool SMESHGUI_ConvToQuadOp::onApply()
         {
           if ( myBadElemsPreview ) delete myBadElemsPreview; // viewWindow may change
           myBadElemsPreview = new SMESHGUI_MeshEditPreview( viewWindow() );
-          
+
           double aPointSize = SMESH::GetFloat("SMESH:node_size",3);
           double aLineWidth = SMESH::GetFloat("SMESH:element_width",1);
           vtkProperty* prop = vtkProperty::New();
@@ -325,12 +320,23 @@ void SMESHGUI_ConvToQuadOp::onWarningWinFinished()
 
 //================================================================================
 /*! ConsistMesh
- *  Determines, what elements this mesh contains. 
+ *  Determines, what elements this mesh does not contain.
  */
 //================================================================================
-SMESHGUI_ConvToQuadOp::MeshType SMESHGUI_ConvToQuadOp::ConsistMesh( const SMESH::SMESH_IDSource_var& idSource) const
+
+SMESHGUI_ConvToQuadOp::MeshDestinationType
+SMESHGUI_ConvToQuadOp::DestinationMesh( const SMESH::SMESH_IDSource_var& idSource,
+                                        bool*                            isMixOrder) const
 {
   SMESH::long_array_var nbElemOfType = idSource->GetMeshInfo();
+
+  bool hasBiQuad     = ( nbElemOfType[SMDSEntity_BiQuad_Quadrangle ] ||
+                         nbElemOfType[SMDSEntity_TriQuad_Hexa      ] );
+  bool hasLinStruct  = ( nbElemOfType[SMDSEntity_Quadrangle ] ||
+                         nbElemOfType[SMDSEntity_Hexa       ] );
+  bool hasQuadStruct = ( nbElemOfType[SMDSEntity_Quad_Quadrangle ] ||
+                         nbElemOfType[SMDSEntity_Quad_Hexa       ] );
+
   bool hasQuad = ( nbElemOfType[SMDSEntity_Quad_Edge      ] ||
                    nbElemOfType[SMDSEntity_Quad_Triangle  ] ||
                    nbElemOfType[SMDSEntity_Quad_Quadrangle] ||
@@ -347,9 +353,25 @@ SMESHGUI_ConvToQuadOp::MeshType SMESHGUI_ConvToQuadOp::ConsistMesh( const SMESH:
                    nbElemOfType[SMDSEntity_Pyramid   ] ||
                    nbElemOfType[SMDSEntity_Penta     ] );
 
-  if ( hasQuad && hasLin )
-    return Comp;
-  return hasQuad ? Quadratic : Linear;
+  int tgtType = 0;
+  if ( hasBiQuad )
+    tgtType |= ( Quadratic | Linear );
+  if ( hasLinStruct )
+    tgtType |= ( BiQuadratic | Quadratic );
+  if ( hasQuadStruct )
+    tgtType |= ( BiQuadratic | Linear );
+  if ( hasQuad )
+    tgtType |= Linear;
+  if ( hasLin )
+    tgtType |= Quadratic;
+
+  if ( tgtType == 0 )
+    tgtType = Quadratic;
+
+  if ( isMixOrder )
+    *isMixOrder = ( hasLin && ( hasQuad || hasBiQuad ));
+
+  return MeshDestinationType( tgtType );
 }
 
 void SMESHGUI_ConvToQuadOp::ConnectRadioButtons( int id )
@@ -364,7 +386,7 @@ void SMESHGUI_ConvToQuadOp::ConnectRadioButtons( int id )
 
   bool hasGeom = mesh->HasShapeToMesh();
 
-  if( id || !hasGeom )
+  if( id==0 || !hasGeom )
     myDlg->SetEnabledCheck( false );
   else
     myDlg->SetEnabledCheck( true );

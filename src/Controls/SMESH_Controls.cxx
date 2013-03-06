@@ -210,10 +210,13 @@ using namespace SMESH::Controls;
  *                               FUNCTORS
  */
 
+//================================================================================
 /*
   Class       : NumericalFunctor
   Description : Base class for numerical functors
 */
+//================================================================================
+
 NumericalFunctor::NumericalFunctor():
   myMesh(NULL)
 {
@@ -321,6 +324,7 @@ double NumericalFunctor::Round( const double & aVal )
  *  \param minmax - boundaries of diapason of values to divide into intervals
  */
 //================================================================================
+
 void NumericalFunctor::GetHistogram(int                  nbIntervals,
                                     std::vector<int>&    nbEvents,
                                     std::vector<double>& funValues,
@@ -403,9 +407,11 @@ void NumericalFunctor::GetHistogram(int                  nbIntervals,
 }
 
 //=======================================================================
-//function : GetValue
-//purpose  : 
-//=======================================================================
+/*
+  Class       : Volume
+  Description : Functor calculating volume of a 3D element
+*/
+//================================================================================
 
 double Volume::GetValue( long theElementId )
 {
@@ -417,20 +423,10 @@ double Volume::GetValue( long theElementId )
   return 0;
 }
 
-//=======================================================================
-//function : GetBadRate
-//purpose  : meaningless as it is not quality control functor
-//=======================================================================
-
 double Volume::GetBadRate( double Value, int /*nbNodes*/ ) const
 {
   return Value;
 }
-
-//=======================================================================
-//function : GetType
-//purpose  : 
-//=======================================================================
 
 SMDSAbs_ElementType Volume::GetType() const
 {
@@ -442,6 +438,8 @@ SMDSAbs_ElementType Volume::GetType() const
   Class       : MaxElementLength2D
   Description : Functor calculating maximum length of 2D element
 */
+//================================================================================
+
 double MaxElementLength2D::GetValue( const TSequenceOfXYZ& P )
 {
   if(P.size() == 0)
@@ -508,6 +506,7 @@ SMDSAbs_ElementType MaxElementLength2D::GetType() const
   Class       : MaxElementLength3D
   Description : Functor calculating maximum length of 3D element
 */
+//================================================================================
 
 double MaxElementLength3D::GetValue( long theElementId )
 {
@@ -683,6 +682,7 @@ SMDSAbs_ElementType MaxElementLength3D::GetType() const
   Class       : MinimumAngle
   Description : Functor for calculation of minimum angle
 */
+//================================================================================
 
 double MinimumAngle::GetValue( const TSequenceOfXYZ& P )
 {
@@ -715,10 +715,13 @@ SMDSAbs_ElementType MinimumAngle::GetType() const
 }
 
 
+//================================================================================
 /*
   Class       : AspectRatio
   Description : Functor for calculating aspect ratio
 */
+//================================================================================
+
 double AspectRatio::GetValue( long theId )
 {
   double aVal = 0;
@@ -899,10 +902,13 @@ SMDSAbs_ElementType AspectRatio::GetType() const
 }
 
 
+//================================================================================
 /*
   Class       : AspectRatio3D
   Description : Functor for calculating aspect ratio
 */
+//================================================================================
+
 namespace{
 
   inline double getHalfPerimeter(double theTria[3]){
@@ -1269,10 +1275,13 @@ SMDSAbs_ElementType AspectRatio3D::GetType() const
 }
 
 
+//================================================================================
 /*
   Class       : Warping
   Description : Functor for calculating warping
 */
+//================================================================================
+
 double Warping::GetValue( const TSequenceOfXYZ& P )
 {
   if ( P.size() != 4 )
@@ -1326,10 +1335,13 @@ SMDSAbs_ElementType Warping::GetType() const
 }
 
 
+//================================================================================
 /*
   Class       : Taper
   Description : Functor for calculating taper
 */
+//================================================================================
+
 double Taper::GetValue( const TSequenceOfXYZ& P )
 {
   if ( P.size() != 4 )
@@ -1366,11 +1378,13 @@ SMDSAbs_ElementType Taper::GetType() const
   return SMDSAbs_Face;
 }
 
-
+//================================================================================
 /*
   Class       : Skew
   Description : Functor for calculating skew in degrees
 */
+//================================================================================
+
 static inline double skewAngle( const gp_XYZ& p1, const gp_XYZ& p2, const gp_XYZ& p3 )
 {
   gp_XYZ p12 = ( p2 + p1 ) / 2.;
@@ -1430,10 +1444,13 @@ SMDSAbs_ElementType Skew::GetType() const
 }
 
 
+//================================================================================
 /*
   Class       : Area
   Description : Functor for calculating area
 */
+//================================================================================
+
 double Area::GetValue( const TSequenceOfXYZ& P )
 {
   double val = 0.0;
@@ -1463,11 +1480,13 @@ SMDSAbs_ElementType Area::GetType() const
   return SMDSAbs_Face;
 }
 
-
+//================================================================================
 /*
   Class       : Length
   Description : Functor for calculating length of edge
 */
+//================================================================================
+
 double Length::GetValue( const TSequenceOfXYZ& P )
 {
   switch ( P.size() ) {
@@ -1488,10 +1507,12 @@ SMDSAbs_ElementType Length::GetType() const
   return SMDSAbs_Edge;
 }
 
+//================================================================================
 /*
   Class       : Length2D
   Description : Functor for calculating length of edge
 */
+//================================================================================
 
 double Length2D::GetValue( long theElementId)
 {
@@ -1799,10 +1820,13 @@ void Length2D::GetValues(TValues& theValues){
   }
 }
 
+//================================================================================
 /*
   Class       : MultiConnection
   Description : Functor for calculating number of faces conneted to the edge
 */
+//================================================================================
+
 double MultiConnection::GetValue( const TSequenceOfXYZ& P )
 {
   return 0;
@@ -1823,10 +1847,13 @@ SMDSAbs_ElementType MultiConnection::GetType() const
   return SMDSAbs_Edge;
 }
 
+//================================================================================
 /*
   Class       : MultiConnection2D
   Description : Functor for calculating number of faces conneted to the edge
 */
+//================================================================================
+
 double MultiConnection2D::GetValue( const TSequenceOfXYZ& P )
 {
   return 0;
@@ -1970,10 +1997,13 @@ void MultiConnection2D::GetValues(MValues& theValues){
 
 }
 
+//================================================================================
 /*
   Class       : BallDiameter
   Description : Functor returning diameter of a ball element
 */
+//================================================================================
+
 double BallDiameter::GetValue( long theId )
 {
   double diameter = 0;
@@ -2002,10 +2032,12 @@ SMDSAbs_ElementType BallDiameter::GetType() const
                             PREDICATES
 */
 
+//================================================================================
 /*
   Class       : BadOrientedVolume
   Description : Predicate bad oriented volumes
 */
+//================================================================================
 
 BadOrientedVolume::BadOrientedVolume()
 {
@@ -2052,9 +2084,11 @@ bool BareBorderVolume::IsSatisfy(long theElementId )
   return false;
 }
 
+//================================================================================
 /*
   Class       : BareBorderFace
 */
+//================================================================================
 
 bool BareBorderFace::IsSatisfy(long theElementId )
 {
@@ -2092,9 +2126,11 @@ bool BareBorderFace::IsSatisfy(long theElementId )
   return ok;
 }
 
+//================================================================================
 /*
   Class       : OverConstrainedVolume
 */
+//================================================================================
 
 bool OverConstrainedVolume::IsSatisfy(long theElementId )
 {
@@ -2112,9 +2148,11 @@ bool OverConstrainedVolume::IsSatisfy(long theElementId )
   return false;
 }
 
+//================================================================================
 /*
   Class       : OverConstrainedFace
 */
+//================================================================================
 
 bool OverConstrainedFace::IsSatisfy(long theElementId )
 {
@@ -2145,10 +2183,12 @@ bool OverConstrainedFace::IsSatisfy(long theElementId )
   return false;
 }
 
+//================================================================================
 /*
   Class       : CoincidentNodes
   Description : Predicate of Coincident nodes
 */
+//================================================================================
 
 CoincidentNodes::CoincidentNodes()
 {
@@ -2190,11 +2230,13 @@ void CoincidentNodes::SetMesh( const SMDS_Mesh* theMesh )
   }
 }
 
+//================================================================================
 /*
   Class       : CoincidentElements
   Description : Predicate of Coincident Elements
   Note        : This class is suitable only for visualization of Coincident Elements
 */
+//================================================================================
 
 CoincidentElements::CoincidentElements()
 {
@@ -2245,10 +2287,12 @@ SMDSAbs_ElementType CoincidentElements3D::GetType() const
 }
 
 
+//================================================================================
 /*
   Class       : FreeBorders
   Description : Predicate for free borders
 */
+//================================================================================
 
 FreeBorders::FreeBorders()
 {
@@ -2271,10 +2315,13 @@ SMDSAbs_ElementType FreeBorders::GetType() const
 }
 
 
+//================================================================================
 /*
   Class       : FreeEdges
   Description : Predicate for free Edges
 */
+//================================================================================
+
 FreeEdges::FreeEdges()
 {
   myMesh = 0;
@@ -2406,11 +2453,12 @@ void FreeEdges::GetBoreders(TBorders& theBorders)
   }
 }
 
-
+//================================================================================
 /*
   Class       : FreeNodes
   Description : Predicate for free nodes
 */
+//================================================================================
 
 FreeNodes::FreeNodes()
 {
@@ -2437,10 +2485,12 @@ SMDSAbs_ElementType FreeNodes::GetType() const
 }
 
 
+//================================================================================
 /*
   Class       : FreeFaces
   Description : Predicate for free faces
 */
+//================================================================================
 
 FreeFaces::FreeFaces()
 {
@@ -2493,10 +2543,12 @@ SMDSAbs_ElementType FreeFaces::GetType() const
   return SMDSAbs_Face;
 }
 
+//================================================================================
 /*
   Class       : LinearOrQuadratic
   Description : Predicate to verify whether a mesh element is linear
 */
+//================================================================================
 
 LinearOrQuadratic::LinearOrQuadratic()
 {
@@ -2527,10 +2579,12 @@ SMDSAbs_ElementType LinearOrQuadratic::GetType() const
   return myType;
 }
 
+//================================================================================
 /*
   Class       : GroupColor
   Description : Functor for check color of group to whic mesh element belongs to
 */
+//================================================================================
 
 GroupColor::GroupColor()
 {
@@ -2619,6 +2673,7 @@ void GroupColor::SetColorStr( const TCollection_AsciiString& theStr )
 // Purpose : Get range as a string.
 //           Example: "1,2,3,50-60,63,67,70-"
 //=======================================================================
+
 void GroupColor::GetColorStr( TCollection_AsciiString& theResStr ) const
 {
   theResStr.Clear();
@@ -2627,10 +2682,12 @@ void GroupColor::GetColorStr( TCollection_AsciiString& theResStr ) const
   theResStr += TCollection_AsciiString( ";" ) + TCollection_AsciiString( myColor.Blue() );
 }
 
+//================================================================================
 /*
   Class       : ElemGeomType
   Description : Predicate to check element geometry type
 */
+//================================================================================
 
 ElemGeomType::ElemGeomType()
 {
@@ -2675,6 +2732,54 @@ void ElemGeomType::SetGeomType( SMDSAbs_GeometryType theType )
 SMDSAbs_GeometryType ElemGeomType::GetGeomType() const
 {
   return myGeomType;
+}
+
+//================================================================================
+/*
+  Class       : ElemEntityType
+  Description : Predicate to check element entity type
+*/
+//================================================================================
+
+ElemEntityType::ElemEntityType():
+  myMesh( 0 ),
+  myType( SMDSAbs_All ),
+  myEntityType( SMDSEntity_0D )
+{
+}
+
+void ElemEntityType::SetMesh( const SMDS_Mesh* theMesh )
+{
+  myMesh = theMesh;
+}
+
+bool ElemEntityType::IsSatisfy( long theId )
+{
+  if ( !myMesh ) return false;
+  const SMDS_MeshElement* anElem = myMesh->FindElement( theId );
+  return ( anElem &&
+           myEntityType == anElem->GetEntityType() &&
+           ( myType == SMDSAbs_Edge || myType == SMDSAbs_Face || myType ==  SMDSAbs_Volume ));
+}
+
+void ElemEntityType::SetType( SMDSAbs_ElementType theType )
+{
+  myType = theType;
+}
+
+SMDSAbs_ElementType ElemEntityType::GetType() const
+{
+  return myType;
+}
+
+void ElemEntityType::SetElemEntityType( SMDSAbs_EntityType theEntityType )
+{
+  myEntityType = theEntityType;
+}
+
+SMDSAbs_EntityType ElemEntityType::GetElemEntityType() const
+{
+  return myEntityType;
 }
 
 //================================================================================

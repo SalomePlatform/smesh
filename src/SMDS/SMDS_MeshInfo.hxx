@@ -39,8 +39,12 @@ public:
   inline SMDS_MeshInfo& operator=(const SMDS_MeshInfo& other);
   inline void Clear();
 
-  inline int NbElements(SMDSAbs_ElementType type=SMDSAbs_All) const;
+  inline int NbElements(SMDSAbs_ElementType  type=SMDSAbs_All) const;
+  inline int NbElements(SMDSAbs_EntityType   type) const { return NbEntities(type); }
+  inline int NbElements(SMDSAbs_GeometryType type) const { return NbElementsOfGeom(type); }
+
   inline int NbEntities(SMDSAbs_EntityType  type) const;
+  inline int NbElementsOfGeom(SMDSAbs_GeometryType geom) const;
 
   int NbNodes()      const { return myNbNodes; }
   int Nb0DElements() const { return myNb0DElements; }
@@ -230,47 +234,47 @@ inline void // RemoveVolume
 SMDS_MeshInfo::RemoveVolume(const SMDS_MeshElement* el)
 { if ( el->IsPoly() ) --myNbPolyhedrons; else remove( el ); }
 
-inline int // NbEdges
+inline int  // NbEdges
 SMDS_MeshInfo::NbEdges      (SMDSAbs_ElementOrder order) const
 { return order == ORDER_ANY ? myNbEdges+myNbQuadEdges : order == ORDER_LINEAR ? myNbEdges : myNbQuadEdges; }
 
-inline int // NbFaces
+inline int  // NbFaces
 SMDS_MeshInfo::NbFaces      (SMDSAbs_ElementOrder order) const
 { return NbTriangles(order)+NbQuadrangles(order)+(order == ORDER_QUADRATIC ? 0 : myNbPolygons); }
 
-inline int // NbTriangles
+inline int  // NbTriangles
 SMDS_MeshInfo::NbTriangles  (SMDSAbs_ElementOrder order) const
 { return order == ORDER_ANY ? myNbTriangles+myNbQuadTriangles : order == ORDER_LINEAR ? myNbTriangles : myNbQuadTriangles; }
 
-inline int // NbQuadrangles
+inline int  // NbQuadrangles
 SMDS_MeshInfo::NbQuadrangles(SMDSAbs_ElementOrder order) const
 { return order == ORDER_ANY ? myNbQuadrangles+myNbQuadQuadrangles+myNbBiQuadQuadrangles : order == ORDER_LINEAR ? myNbQuadrangles : myNbQuadQuadrangles+myNbBiQuadQuadrangles; }
 
-inline int // NbVolumes
+inline int  // NbVolumes
 SMDS_MeshInfo::NbVolumes (SMDSAbs_ElementOrder order) const
 { return NbTetras(order) + NbHexas(order) + NbPyramids(order) + NbPrisms(order) + NbHexPrisms(order) + (order == ORDER_QUADRATIC ? 0 : myNbPolyhedrons); }
 
-inline int // NbTetras
+inline int  // NbTetras
 SMDS_MeshInfo::NbTetras  (SMDSAbs_ElementOrder order) const
 { return order == ORDER_ANY ? myNbTetras+myNbQuadTetras : order == ORDER_LINEAR ? myNbTetras : myNbQuadTetras; }
 
-inline int // NbHexas
+inline int  // NbHexas
 SMDS_MeshInfo::NbHexas   (SMDSAbs_ElementOrder order) const
 { return order == ORDER_ANY ? myNbHexas+myNbQuadHexas+myNbTriQuadHexas : order == ORDER_LINEAR ? myNbHexas : myNbQuadHexas+myNbTriQuadHexas; }
 
-inline int // NbPyramids
+inline int  // NbPyramids
 SMDS_MeshInfo::NbPyramids(SMDSAbs_ElementOrder order) const
 { return order == ORDER_ANY ? myNbPyramids+myNbQuadPyramids : order == ORDER_LINEAR ? myNbPyramids : myNbQuadPyramids; }
 
-inline int // NbPrisms
+inline int  // NbPrisms
 SMDS_MeshInfo::NbPrisms  (SMDSAbs_ElementOrder order) const
 { return order == ORDER_ANY ? myNbPrisms+myNbQuadPrisms : order == ORDER_LINEAR ? myNbPrisms : myNbQuadPrisms; }
 
-inline int // NbHexPrisms
+inline int  // NbHexPrisms
 SMDS_MeshInfo::NbHexPrisms  (SMDSAbs_ElementOrder order) const
 { return order == ORDER_ANY ? myNbHexPrism : order == ORDER_LINEAR ? myNbHexPrism : 0; }
 
-inline int // NbElements
+inline int  // NbElements
 SMDS_MeshInfo::NbElements(SMDSAbs_ElementType type) const
 { 
   int nb = 0;
@@ -305,7 +309,7 @@ SMDS_MeshInfo::NbElements(SMDSAbs_ElementType type) const
   return nb;
 }
 
-int // NbEntities
+inline int  // NbEntities
 SMDS_MeshInfo::NbEntities(SMDSAbs_EntityType type) const
 {
   switch (type) {
@@ -338,7 +342,44 @@ SMDS_MeshInfo::NbEntities(SMDSAbs_EntityType type) const
   return 0;
 }
 
-void // set
+inline int  // NbElementsOfGeom
+SMDS_MeshInfo::NbElementsOfGeom(SMDSAbs_GeometryType geom) const
+{
+  switch ( geom ) {
+    // 0D:
+  case SMDSGeom_POINT:           return myNb0DElements;
+    // 1D:
+  case SMDSGeom_EDGE:            return (myNbEdges +
+                                         myNbQuadEdges);
+    // 2D:
+  case SMDSGeom_TRIANGLE:        return (myNbTriangles +
+                                         myNbQuadTriangles);
+  case SMDSGeom_QUADRANGLE:      return (myNbQuadrangles +
+                                         myNbQuadQuadrangles +
+                                         myNbBiQuadQuadrangles );
+  case SMDSGeom_POLYGON:         return myNbPolygons;
+    // 3D:
+  case SMDSGeom_TETRA:           return (myNbTetras +
+                                         myNbQuadTetras);
+  case SMDSGeom_PYRAMID:         return (myNbPyramids +
+                                         myNbQuadPyramids);
+  case SMDSGeom_HEXA:            return (myNbHexas +
+                                         myNbQuadHexas +
+                                         myNbTriQuadHexas);
+  case SMDSGeom_PENTA:           return (myNbPrisms +
+                                         myNbQuadPrisms);
+  case SMDSGeom_HEXAGONAL_PRISM: return myNbHexPrism;
+  case SMDSGeom_POLYHEDRA:       return myNbPolyhedrons;
+    // Discrete:
+  case SMDSGeom_BALL:            return myNbBalls;
+    //
+  case SMDSGeom_NONE:
+  default:;
+  }
+  return 0;
+}
+
+inline void // setNb
 SMDS_MeshInfo::setNb(const SMDSAbs_EntityType geomType, const int nb)
 {
   switch (geomType) {

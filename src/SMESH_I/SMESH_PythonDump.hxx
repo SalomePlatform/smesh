@@ -143,6 +143,9 @@ namespace SMESH
     operator<<(const SMESH::GeometryType& theArg);
 
     TPythonDump&
+    operator<<(const SMESH::EntityType& theArg);
+
+    TPythonDump&
     operator<<(const SMESH::long_array& theArg);
 
     TPythonDump&

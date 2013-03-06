@@ -1142,7 +1142,7 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
         }
         continue;
       }
-      // Compute
+      // Compute 'vertical projection'
       if ( nbTgtMeshed == 0 )
       {
         // compute nodes on target VERTEXes
@@ -2195,8 +2195,10 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper*         helper,
     {
       if ( len2edgeMap.size() != nbEdges )
         RETURN_BAD_RESULT("Uniqueness of edge lengths not assured");
-      map< double, int >::reverse_iterator maxLen_i = len2edgeMap.rbegin();
-      map< double, int >::reverse_iterator midLen_i = ++len2edgeMap.rbegin();
+
+      multimap< double, int >::reverse_iterator maxLen_i = len2edgeMap.rbegin();
+      multimap< double, int >::reverse_iterator midLen_i = ++len2edgeMap.rbegin();
+
       double maxLen = maxLen_i->first;
       double midLen = ( len2edgeMap.size() == 1 ) ? 0 : midLen_i->first;
       switch ( nbEdges ) {

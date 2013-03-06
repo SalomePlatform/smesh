@@ -27,6 +27,8 @@
 //
 #include "SMESHGUI_ConvToQuadDlg.h"
 
+#include "SMESHGUI_ConvToQuadOp.h"
+
 // Qt includes
 #include <QGroupBox>
 #include <QCheckBox>
@@ -62,14 +64,17 @@ SMESHGUI_ConvToQuadDlg::SMESHGUI_ConvToQuadDlg()
   aBGLayout->setMargin(MARGIN);
   aBGLayout->setSpacing(SPACING);
   
-  myRB1 = new QRadioButton( tr( "RADIOBTN_1" ), myBGBox );
-  myRB2 = new QRadioButton( tr( "RADIOBTN_2" ), myBGBox );
+  myRB2Lin = new QRadioButton( tr( "RADIOBTN_1" ), myBGBox );
+  myRB2Quad = new QRadioButton( tr( "RADIOBTN_2" ), myBGBox );
+  myRB2BiQua = new QRadioButton( tr( "RADIOBTN_3" ), myBGBox );
 
-  aBGLayout->addWidget(myRB1);
-  aBGLayout->addWidget(myRB2);
-  myBG->addButton(myRB1, 0);
-  myBG->addButton(myRB2, 1);
-  myRB1->setChecked( true );
+  aBGLayout->addWidget(myRB2Lin);
+  aBGLayout->addWidget(myRB2Quad);
+  aBGLayout->addWidget(myRB2BiQua);
+  myBG->addButton(myRB2Lin, 0);
+  myBG->addButton(myRB2Quad, 1);
+  myBG->addButton(myRB2BiQua, 2);
+  myRB2Lin->setChecked( true );
 
   myWarning = new QLabel(QString("<b>%1</b>").arg(tr("NON_CONFORM_WARNING")), mainFrame());
 
@@ -90,6 +95,11 @@ SMESHGUI_ConvToQuadDlg::SMESHGUI_ConvToQuadDlg()
 
 SMESHGUI_ConvToQuadDlg::~SMESHGUI_ConvToQuadDlg()
 {
+}
+
+bool SMESHGUI_ConvToQuadDlg::IsBiQuadratic() const
+{
+  return myRB2BiQua->isChecked();
 }
 
 bool SMESHGUI_ConvToQuadDlg::IsMediumNdsOnGeom() const
@@ -133,27 +143,32 @@ bool SMESHGUI_ConvToQuadDlg::isWarningShown()
 void SMESHGUI_ConvToQuadDlg::SetEnabledControls( const bool theCheck )
 {
   //myBGBox->setEnabled( theCheck );
-  myRB1->setEnabled( theCheck );
-  myRB2->setEnabled( theCheck );
+  myRB2Lin->setEnabled( theCheck );
+  myRB2Quad->setEnabled( theCheck );
+  myRB2BiQua->setEnabled( theCheck );
   myMedNdsOnGeom->setEnabled( theCheck );
   //setButtonEnabled( theCheck, QtxDialog::OK | QtxDialog::Apply );
 }
 
 void SMESHGUI_ConvToQuadDlg::SetEnabledRB( const int idx, const bool theCheck ) 
 {
-  if(idx)
+  myRB2Lin  ->setEnabled( idx & SMESHGUI_ConvToQuadOp::Linear );
+  myRB2Quad ->setEnabled( idx & SMESHGUI_ConvToQuadOp::Quadratic );
+  myRB2BiQua->setEnabled( idx & SMESHGUI_ConvToQuadOp::BiQuadratic );
+
+  if ( idx & SMESHGUI_ConvToQuadOp::Linear )
   {
-    myRB2->setEnabled( theCheck );
-    myRB1->setEnabled( !theCheck );
-    myRB1->setChecked( true );
+    myRB2Lin->setChecked( true );
+    myRB2Quad->setChecked( false );
   }
   else
   {
-    myRB1->setEnabled( theCheck );
-    myRB2->setEnabled( !theCheck );
-    myRB2->setChecked( true );
+    myRB2Lin->setChecked( false );
+    myRB2Quad->setChecked( true );
   }
+  myRB2BiQua->setChecked( false );
+
+  myMedNdsOnGeom->setEnabled( theCheck );
+
   emit onClicked( myBG->checkedId() );
 }
-
-

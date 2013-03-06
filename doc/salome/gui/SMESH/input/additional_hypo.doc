@@ -23,6 +23,9 @@ Quadratic Mesh hypothesis allows to build a quadratic mesh (whose
 edges are not straight but curved lines and can be defined by three
 points: first, middle and last instead of an ordinary two).
 
+See \ref adding_quadratic_elements_page
+for more information about quadratic meshes.
+
 \anchor propagation_anchor
 <h2>Propagation of 1D Hypothesis on opposite edges</h2>
 

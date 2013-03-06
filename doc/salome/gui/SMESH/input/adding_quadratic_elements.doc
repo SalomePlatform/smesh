@@ -4,10 +4,22 @@
 
 \n MESH module allows you to work with <b>Quadratic Elements</b>.
 
-Quadratic Edge is not a straight but a broken line and can be defined
-by three points: first, middle and last. All more complex \b Quadratic
-\b Elements differ from ordinary ones in that they consist of Quadratic
-Edges.
+Quadratic elements are defined by same corner nodes as the
+corresponding linear ones, and in addition they bear \a midside nodes
+located between the corner nodes on element sides.
+
+The quadratic quadrilateral element can bear an additional node at the
+element center, then it is referred as bi-quadratic one (or
+QUAD9). The quadratic hexahedral element can bear 7 additional nodes:
+at the element center and at centers of sides, then it is referred as
+tri-quadratic one (or HEXA27).
+
+There are several ways you can create quadratic elements in your mesh:
+- manually create quadratic elements (the way described below);
+- use \ref quadratic_mesh_anchor "Quadratic Mesh" hypothesis to
+generate quadratic mesh on your geometry;
+- convert an existing linear mesh to a quadratic one 
+(see \ref convert_to_from_quadratic_mesh_page).
 
 <em>To add a quadratic element to your mesh:</em>
 <ol>

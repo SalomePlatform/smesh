@@ -196,6 +196,40 @@ namespace SMESH
     }
     return *this;
   }
+  TPythonDump&
+  TPythonDump::
+  operator<<(const SMESH::EntityType& theArg)
+  {
+    myStream<<"SMESH.";
+    switch(theArg){
+    case Entity_0D:                myStream<<"Entity_0D";                break;
+    case Entity_Edge:              myStream<<"Entity_Edge";              break;
+    case Entity_Quad_Edge:         myStream<<"Entity_Quad_Edge";         break;
+    case Entity_Triangle:          myStream<<"Entity_Triangle";          break;
+    case Entity_Quad_Triangle:     myStream<<"Entity_Quad_Triangle";     break;
+    case Entity_Quadrangle:        myStream<<"Entity_Quadrangle";        break;
+    case Entity_Quad_Quadrangle:   myStream<<"Entity_Quad_Quadrangle";   break;
+    case Entity_BiQuad_Quadrangle: myStream<<"Entity_BiQuad_Quadrangle"; break;
+    case Entity_Polygon:           myStream<<"Entity_Polygon";           break;
+    case Entity_Quad_Polygon:      myStream<<"Entity_Quad_Polygon";      break;
+    case Entity_Tetra:             myStream<<"Entity_Tetra";             break;
+    case Entity_Quad_Tetra:        myStream<<"Entity_Quad_Tetra";        break;
+    case Entity_Pyramid:           myStream<<"Entity_Pyramid";           break;
+    case Entity_Quad_Pyramid:      myStream<<"Entity_Quad_Pyramid";      break;
+    case Entity_Hexa:              myStream<<"Entity_Hexa";              break;
+    case Entity_Quad_Hexa:         myStream<<"Entity_Quad_Hexa";         break;
+    case Entity_TriQuad_Hexa:      myStream<<"Entity_TriQuad_Hexa";      break;
+    case Entity_Penta:             myStream<<"Entity_Penta";             break;
+    case Entity_Quad_Penta:        myStream<<"Entity_Quad_Penta";        break;
+    case Entity_Hexagonal_Prism:   myStream<<"Entity_Hexagonal_Prism";   break;
+    case Entity_Polyhedra:         myStream<<"Entity_Polyhedra";         break;
+    case Entity_Quad_Polyhedra:    myStream<<"Entity_Quad_Polyhedra";    break;
+    case Entity_Ball:              myStream<<"Entity_Ball";              break;
+    case Entity_Last:              myStream<<"Entity_Last";              break;
+    default:    myStream<<"__UNKNOWN__EntityType: " << theArg;
+    }
+    return *this;
+  }
 
   template<class TArray>
   void DumpArray(const TArray& theArray, TPythonDump & theStream)

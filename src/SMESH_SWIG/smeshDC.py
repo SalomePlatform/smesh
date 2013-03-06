@@ -691,6 +691,20 @@ class smeshDC(SMESH._objref_SMESH_Gen):
                     return None
                 pass
             pass
+        elif CritType == FT_EntityType:
+            # Checks the Threshold
+            try:
+                aCriterion.Threshold = self.EnumToLong(aThreshold)
+                assert( aThreshold in SMESH.EntityType._items )
+            except:
+                if isinstance(aThreshold, int):
+                    aCriterion.Threshold = aThreshold
+                else:
+                    print "Error: The Threshold should be an integer or SMESH.EntityType."
+                    return None
+                pass
+            pass
+        
         elif CritType == FT_GroupColor:
             # Checks the Threshold
             try:
@@ -2161,7 +2175,7 @@ class Mesh:
     def GetElemNbNodes(self, id):
         return self.mesh.GetElemNbNodes(id)
 
-    ## Returns the node ID the given index for the given element
+    ## Returns the node ID the given (zero based) index for the given element
     #  \n If there is no element for the given ID - returns -1
     #  \n If there is no node for the given index - returns -2
     #  @return an integer value
@@ -3002,19 +3016,23 @@ class Mesh:
         return self.editor.SmoothParametricObject(theObject, IDsOfFixedNodes,
                                                   MaxNbOfIterations, MaxAspectRatio, Method)
 
-    ## Converts the mesh to quadratic, deletes old elements, replacing
+    ## Converts the mesh to quadratic or bi-quadratic, deletes old elements, replacing
     #  them with quadratic with the same id.
     #  @param theForce3d new node creation method:
     #         0 - the medium node lies at the geometrical entity from which the mesh element is built
     #         1 - the medium node lies at the middle of the line segments connecting start and end node of a mesh element
     #  @param theSubMesh a group or a sub-mesh to convert; WARNING: in this case the mesh can become not conformal
+    #  @param theToBiQuad If True, converts the mesh to bi-quadratic
     #  @ingroup l2_modif_tofromqu
-    def ConvertToQuadratic(self, theForce3d, theSubMesh=None):
-        if theSubMesh:
-            self.editor.ConvertToQuadraticObject(theForce3d,theSubMesh)
+    def ConvertToQuadratic(self, theForce3d, theSubMesh=None, theToBiQuad=False):
+        if theToBiQuad:
+            self.editor.ConvertToBiQuadratic(theForce3d,theSubMesh)
         else:
-            self.editor.ConvertToQuadratic(theForce3d)
-
+            if theSubMesh:
+                self.editor.ConvertToQuadraticObject(theForce3d,theSubMesh)
+            else:
+                self.editor.ConvertToQuadratic(theForce3d)
+            
     ## Converts the mesh from quadratic to ordinary,
     #  deletes old quadratic elements, \n replacing
     #  them with ordinary mesh elements with the same id.

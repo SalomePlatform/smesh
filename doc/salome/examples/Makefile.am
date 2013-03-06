@@ -174,7 +174,10 @@ pyexamples_SCRIPTS = $(BAD_TESTS) $(GOOD_TESTS)
 
 EXTRA_DIST += $(pyexamples_SCRIPTS) testme.py
 
+THIS_PYTHONPATH = $(KERNEL_ROOT_DIR)/bin/salome:$(KERNEL_ROOT_DIR)/lib/python$(PYTHON_VERSION)/site-packages/salome:$(KERNEL_ROOT_DIR)/lib64/python$(PYTHON_VERSION)/site-packages/salome
+THIS_LD_LIBRARY_PATH = $(KERNEL_ROOT_DIR)/lib/salome
+
 installcheck-local:
 	@for f in $(GOOD_TESTS) ; do \
-	  env SMESH_ROOT_DIR=$(prefix) python -B $(top_srcdir)/doc/salome/examples/testme.py $(top_srcdir)/doc/salome/examples/$$f || exit 1; \
+	  SMESH_ROOT_DIR=$(prefix) PYTHONPATH=$(THIS_PYTHONPATH):${PYTHONPATH} LD_LIBRARY_PATH=$(THIS_LD_LIBRARY_PATH):${LD_LIBRARY_PATH} python -B $(top_srcdir)/doc/salome/examples/testme.py $(top_srcdir)/doc/salome/examples/$$f || exit 1; \
 	done

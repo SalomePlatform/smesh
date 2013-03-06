@@ -31,6 +31,7 @@
 
 #include "Driver_SMESHDS_Mesh.h"
 #include "SMDSAbs_ElementType.hxx"
+#include "SMDS_ElemIterator.hxx"
 
 /*!
  * \brief Driver Writing a mesh into a GMF file.
@@ -50,6 +51,10 @@ public:
   virtual Status Perform();
 
  private:
+
+  SMDS_ElemIteratorPtr elementIterator(SMDSAbs_ElementType  type); 
+  SMDS_ElemIteratorPtr elementIterator(SMDSAbs_EntityType   type);  
+  SMDS_ElemIteratorPtr elementIterator(SMDSAbs_GeometryType type);
 
   bool _exportRequiredGroups;
 };

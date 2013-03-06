@@ -1144,7 +1144,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
       while ( faceIt->more() )
         tgtFaces.insert( tgtFaces.end(), faceIt->next() );
 
-      editor.ConvertToQuadratic(/*theForce3d=*/false, tgtFaces);
+      editor.ConvertToQuadratic(/*theForce3d=*/false, tgtFaces, false);
     }
 
     cleaner.Release(); // not to remove mesh

@@ -56,6 +56,7 @@ public:
   int           CurrentRB(); //returns the ID of the selected toggle button
   void          ShowWarning(bool);
   bool          isWarningShown();
+  bool          IsBiQuadratic() const;
 
 signals:
   void          onClicked( int );
@@ -64,8 +65,9 @@ private:
   QCheckBox*    myMedNdsOnGeom;
   QGroupBox*    myBGBox;
   QButtonGroup* myBG;
-  QRadioButton* myRB1;
-  QRadioButton* myRB2;
+  QRadioButton* myRB2Lin;
+  QRadioButton* myRB2Quad;
+  QRadioButton* myRB2BiQua;
   QLabel* myWarning;
 };
 

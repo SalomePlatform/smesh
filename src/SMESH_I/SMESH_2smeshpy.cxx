@@ -256,6 +256,8 @@ namespace {
     //   - FT_EqualVolumes          = 17
     // v 6.6.0: FT_Undefined == 44, new items:
     //   - FT_BallDiameter          = 37
+    // v 6.7.1: FT_Undefined == 45, new items:
+    //   - FT_EntityType            = 36
     //
     // It's necessary to continue recording this history and to fill
     // undef2newItems (see below) accordingly.
@@ -275,6 +277,8 @@ namespace {
         undef2newItems[ 43 ].assign( items, items+4 ); }
       { int items[] = { 37 };
         undef2newItems[ 44 ].assign( items, items+1 ); }
+      { int items[] = { 36 };
+        undef2newItems[ 45 ].assign( items, items+1 ); }
     }
 
     int iType     = Type.IntegerValue();
@@ -660,7 +664,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
     // 1    2       3         4            5           6       7        8         9             10
     // in order to avoid the problem of type mismatch of long and FunctorType
     const TCollection_AsciiString
-      SMESH("SMESH."), dfltFunctor = "SMESH.FT_Undefined", dftlTol = "1e-07", dftlPreci = "-1";
+      SMESH("SMESH."), dfltFunctor("SMESH.FT_Undefined"), dftlTol("1e-07"), dftlPreci("-1");
     TCollection_AsciiString
       Type          = aCommand->GetArg(1),  // long
       Compare       = aCommand->GetArg(2),  // long
@@ -686,17 +690,34 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
     aCommand->SetArg( 2, Type );
     aCommand->SetArg( 3, Compare );
 
-    if ( Type == "SMESH.FT_ElemGeomType" && Threshold.IsIntegerValue() )
+    if ( Threshold.IsIntegerValue() )
     {
-      // set SMESH.GeometryType instead of a numerical Threshold
-      const char* types[SMESH::Geom_BALL+1] = {
-        "Geom_POINT", "Geom_EDGE", "Geom_TRIANGLE", "Geom_QUADRANGLE", "Geom_POLYGON",
-        "Geom_TETRA", "Geom_PYRAMID", "Geom_HEXA", "Geom_PENTA", "Geom_HEXAGONAL_PRISM",
-        "Geom_POLYHEDRA", "Geom_BALL"
-      };
       int iGeom = Threshold.IntegerValue();
-      if ( -1 < iGeom && iGeom < SMESH::Geom_POLYHEDRA+1 )
-        Threshold = SMESH + types[ iGeom ];
+      if ( Type == "SMESH.FT_ElemGeomType" )
+      {
+        // set SMESH.GeometryType instead of a numerical Threshold
+        const char* types[SMESH::Geom_BALL+1] = {
+          "Geom_POINT", "Geom_EDGE", "Geom_TRIANGLE", "Geom_QUADRANGLE", "Geom_POLYGON",
+          "Geom_TETRA", "Geom_PYRAMID", "Geom_HEXA", "Geom_PENTA", "Geom_HEXAGONAL_PRISM",
+          "Geom_POLYHEDRA", "Geom_BALL" };
+        if ( -1 < iGeom && iGeom < SMESH::Geom_POLYHEDRA+1 )
+          Threshold = SMESH + types[ iGeom ];
+      }
+      if (Type == "SMESH.FT_EntityType")
+      {
+        // set SMESH.EntityType instead of a numerical Threshold
+        const char* types[SMESH::Entity_Ball+1] = {
+          "Entity_Node", "Entity_0D", "Entity_Edge", "Entity_Quad_Edge",
+          "Entity_Triangle", "Entity_Quad_Triangle",
+          "Entity_Quadrangle", "Entity_Quad_Quadrangle", "Entity_BiQuad_Quadrangle",
+          "Entity_Polygon", "Entity_Quad_Polygon", "Entity_Tetra", "Entity_Quad_Tetra",
+          "Entity_Pyramid", "Entity_Quad_Pyramid",
+          "Entity_Hexa", "Entity_Quad_Hexa", "Entity_TriQuad_Hexa",
+          "Entity_Penta", "Entity_Quad_Penta", "Entity_Hexagonal_Prism",
+          "Entity_Polyhedra", "Entity_Quad_Polyhedra", "Entity_Ball" };
+        if ( -1 < iGeom && iGeom < SMESH::Entity_Quad_Polyhedra+1 )
+          Threshold = SMESH + types[ iGeom ];
+      }
     }
     if ( ThresholdID.Length() != 2 && ThresholdStr.Length() != 2) // not '' or ""
       aCommand->SetArg( 4, ThresholdID.SubString( 2, ThresholdID.Length()-1 )); // shape entry
@@ -772,6 +793,14 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
       if ( !theCommand->IsStudyEntry( meshID ) ) continue;
       Handle(_pyMesh) mesh = new _pyMesh( theCommand, theCommand->GetResultValue(ind+1));
       myMeshes.insert( make_pair( mesh->GetID(), mesh ));
+    }
+    if ( method == "CreateMeshesFromGMF" )
+    {
+      // CreateMeshesFromGMF( theFileName, theMakeRequiredGroups ) ->
+      // CreateMeshesFromGMF( theFileName )
+      _AString file = theCommand->GetArg(1);
+      theCommand->RemoveArgs();
+      theCommand->SetArg( 1, file );
     }
   }
 
@@ -1571,13 +1600,21 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
          method == "ExportToMEDX" ) { // ExportToMEDX() --> ExportMED()
       theCommand->SetMethod( "ExportMED" );
     }
-    else if ( method == "ExportCGNS" || method == "ExportGMF" )
+    else if ( method == "ExportCGNS" )
     { // ExportCGNS(part, ...) -> ExportCGNS(..., part)
       _pyID partID = theCommand->GetArg( 1 );
       int nbArgs = theCommand->GetNbArgs();
       for ( int i = 2; i <= nbArgs; ++i )
         theCommand->SetArg( i-1, theCommand->GetArg( i ));
       theCommand->SetArg( nbArgs, partID );
+    }
+    else if ( method == "ExportGMF" )
+    { // ExportGMF(part,file,bool) -> ExportCGNS(file, part)
+      _pyID partID  = theCommand->GetArg( 1 );
+      _AString file = theCommand->GetArg( 2 );
+      theCommand->RemoveArgs();
+      theCommand->SetArg( 1, file );
+      theCommand->SetArg( 2, partID );
     }
     else if ( theCommand->MethodStartsFrom( "ExportPartTo" ))
     { // ExportPartTo*(part, ...) -> Export*(..., part)
@@ -2034,6 +2071,13 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
     TCollection_AsciiString newMethod = diffMethods.Value( method );
     if (( isPyMeshMethod = ( newMethod.Length() > 0 )))
       theCommand->SetMethod( newMethod );
+  }
+  // ConvertToBiQuadratic(...) -> ConvertToQuadratic(...,True)
+  if ( !isPyMeshMethod && (method == "ConvertToBiQuadratic" || method == "ConvertToBiQuadraticObject") )
+  {
+    isPyMeshMethod = true;
+    theCommand->SetMethod( method.SubString( 1, 9) + method.SubString( 12, method.Length()));
+    theCommand->SetArg( theCommand->GetNbArgs() + 1, "True" );
   }
 
   if ( !isPyMeshMethod )
@@ -3593,7 +3637,7 @@ void _pyCommand::SetArg( int index, const TCollection_AsciiString& theArg)
 
 void _pyCommand::RemoveArgs()
 {
-  if ( int pos = myString.Location( '(', 1, Length() ))
+  if ( int pos = myString.Location( '(', Max( 1, GetBegPos( METHOD_IND )), Length() ))
     myString.Trunc( pos );
   myString += ")";
   myArgs.Clear();

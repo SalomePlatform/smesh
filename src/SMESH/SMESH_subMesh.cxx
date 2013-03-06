@@ -647,7 +647,7 @@ SMESH_Hypothesis::Hypothesis_Status
 
   int oldAlgoState = _algoState;
   bool modifiedHyp = (event == MODIF_HYP);  // if set to true, force event MODIF_ALGO_STATE
-  bool needFullClean = false, subMeshesSupported = false;
+  SMESH_Algo* algoRequiringCleaning = 0;
 
   bool isApplicableHyp = IsApplicableHypotesis( anHyp );
 
@@ -671,7 +671,8 @@ SMESH_Hypothesis::Hypothesis_Status
       filter.Or( SMESH_HypoFilter::HasType( algo->GetType()+1 ));
       filter.Or( SMESH_HypoFilter::HasType( algo->GetType()+2 ));
       if ( SMESH_Algo * curAlgo = (SMESH_Algo*)_father->GetHypothesis(_subShape, filter, true ))
-        needFullClean = ( !curAlgo->NeedDiscreteBoundary() );
+        if ( !curAlgo->NeedDiscreteBoundary() )
+          algoRequiringCleaning = curAlgo;
     }
   }
 
@@ -702,13 +703,7 @@ SMESH_Hypothesis::Hypothesis_Status
     {
       algo = dynamic_cast<SMESH_Algo*> (anHyp);
       if (!algo->NeedDiscreteBoundary())
-      {
-        // clean all mesh in the tree of the current submesh;
-        // we must perform it now because later
-        // we will have no information about the type of the removed algo
-        needFullClean = true;
-        subMeshesSupported = algo->SupportSubmeshes();
-      }
+        algoRequiringCleaning = algo;
     }
   }
 
@@ -990,10 +985,7 @@ SMESH_Hypothesis::Hypothesis_Status
       // CLEAN was not called at event REMOVE_ALGO because the algo is not applicable to SOLID.
       algo = dynamic_cast<SMESH_Algo*> (anHyp);
       if (!algo->NeedDiscreteBoundary())
-      {
-        needFullClean = true;
-        subMeshesSupported = algo->SupportSubmeshes();
-      }
+        algoRequiringCleaning = algo;
       algo = GetAlgo();
       if (algo == NULL)  // no more applying algo on father
       {
@@ -1069,10 +1061,10 @@ SMESH_Hypothesis::Hypothesis_Status
     }
   }
 
-  if ( needFullClean ) {
+  if ( algoRequiringCleaning ) {
     // added or removed algo is all-dimensional
     ComputeStateEngine( CLEAN );
-    cleanDependsOn( subMeshesSupported );
+    cleanDependsOn( algoRequiringCleaning );
     ComputeSubMeshStateEngine( CHECK_COMPUTE_STATE );
   }
 
@@ -1174,45 +1166,67 @@ SMESH_Hypothesis::Hypothesis_Status
 //================================================================================
 /*!
  * \brief Remove elements from sub-meshes.
- *  \param keepSupportedsubMeshes - if true, the sub-meshes computed using more 
- *         local algorithms are not cleaned
+ *  \param algoRequiringCleaning - an all-dimensional algorithm whose presence
+ *         causes the cleaning.
  */
 //================================================================================
 
-void SMESH_subMesh::cleanDependsOn( bool keepSupportedsubMeshes )
+void SMESH_subMesh::cleanDependsOn( SMESH_Algo* algoRequiringCleaning/*=0*/ )
 {
-  if ( _father->NbNodes() == 0 ) return;
-
   SMESH_subMeshIteratorPtr smIt = getDependsOnIterator(false,
                                                        /*complexShapeFirst=*/true);
-  if ( !keepSupportedsubMeshes )
+  if ( _father->NbNodes() == 0 )
+  {
+    while ( smIt->more() )
+      smIt->next()->ComputeStateEngine(CHECK_COMPUTE_STATE);
+  }
+  else if ( !algoRequiringCleaning || !algoRequiringCleaning->SupportSubmeshes() )
   {
     while ( smIt->more() )
       smIt->next()->ComputeStateEngine(CLEAN);
   }
-  else
+  else if ( algoRequiringCleaning && algoRequiringCleaning->SupportSubmeshes() )
   {
+    SMESHDS_Mesh* meshDS = _father->GetMeshDS();
+
     // find sub-meshes to keep elements on
     set< SMESH_subMesh* > smToKeep;
-    SMESHDS_Mesh* meshDS = _father->GetMeshDS();
+    TopAbs_ShapeEnum prevShapeType = TopAbs_SHAPE;
+    bool toKeepPrevShapeType = false;
     while ( smIt->more() )
     {
       SMESH_subMesh* sm = smIt->next();
-      if ( sm->IsEmpty() ) continue;
-
-      // look for an algo assigned to sm
-      bool algoFound = false;
-      const list<const SMESHDS_Hypothesis*>& hyps = meshDS->GetHypothesis( sm->_subShape );
-      list<const SMESHDS_Hypothesis*>::const_iterator h = hyps.begin();
-      for ( ; ( !algoFound && h != hyps.end() ); ++h )
-        algoFound = ((*h)->GetType() != SMESHDS_Hypothesis::PARAM_ALGO );
-
-      // remember all sub-meshes of sm
-      if ( algoFound )
+      sm->ComputeStateEngine(CHECK_COMPUTE_STATE);
+      if ( !sm->IsEmpty() )
       {
-        SMESH_subMeshIteratorPtr smIt2 = getDependsOnIterator(false,true);
-        while ( smIt2->more() )
-          smToKeep.insert( smIt2->next() );
+        const bool sameShapeType = ( prevShapeType == sm->GetSubShape().ShapeType() );
+        bool keepSubMeshes = ( sameShapeType && toKeepPrevShapeType );
+        if ( !sameShapeType )
+        {
+          // check if the algo allows presence of global algos of dimension the algo
+          // can generate it-self
+          int  shapeDim = SMESH_Gen::GetShapeDim( sm->GetSubShape() );
+          keepSubMeshes = algoRequiringCleaning->NeedLowerHyps( shapeDim );
+          prevShapeType = sm->GetSubShape().ShapeType();
+          toKeepPrevShapeType = keepSubMeshes;
+        }
+        if ( !keepSubMeshes )
+        {
+          // look for an algo assigned to sm
+          bool algoFound = false;
+          const list<const SMESHDS_Hypothesis*>& hyps = meshDS->GetHypothesis( sm->_subShape );
+          list<const SMESHDS_Hypothesis*>::const_iterator h = hyps.begin();
+          for ( ; ( !algoFound && h != hyps.end() ); ++h )
+            algoFound = ((*h)->GetType() != SMESHDS_Hypothesis::PARAM_ALGO );
+          keepSubMeshes = algoFound;
+        }
+        // remember all sub-meshes of sm
+        if ( keepSubMeshes )
+        {
+          SMESH_subMeshIteratorPtr smIt2 = getDependsOnIterator(false,true);
+          while ( smIt2->more() )
+            smToKeep.insert( smIt2->next() );
+        }
       }
     }
     // remove elements
@@ -1374,7 +1388,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
     case MODIF_ALGO_STATE:
       algo = GetAlgo();
       if (algo && !algo->NeedDiscreteBoundary())
-        cleanDependsOn( algo->SupportSubmeshes() ); // clean sub-meshes with event CLEAN
+        cleanDependsOn( algo ); // clean sub-meshes with event CLEAN
       if ( _algoState == HYP_OK )
         _computeState = READY_TO_COMPUTE;
       break;
@@ -1420,7 +1434,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
       if (algo)
       {
         if (!algo->NeedDiscreteBoundary())
-          cleanDependsOn( algo->SupportSubmeshes() ); // clean sub-meshes with event CLEAN
+          cleanDependsOn( algo ); // clean sub-meshes with event CLEAN
         if ( _algoState == HYP_OK )
           _computeState = READY_TO_COMPUTE;
       }
@@ -1646,7 +1660,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
       ComputeStateEngine( CLEAN );
       algo = GetAlgo();
       if (algo && !algo->NeedDiscreteBoundary())
-        cleanDependsOn( algo->SupportSubmeshes() ); // clean sub-meshes with event CLEAN
+        cleanDependsOn( algo ); // clean sub-meshes with event CLEAN
       break;
     case COMPUTE:               // nothing to do
       break;
@@ -1701,7 +1715,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
         ComputeStateEngine( CLEAN );
       algo = GetAlgo();
       if (algo && !algo->NeedDiscreteBoundary())
-        cleanDependsOn( algo->SupportSubmeshes() ); // clean sub-meshes with event CLEAN
+        cleanDependsOn( algo ); // clean sub-meshes with event CLEAN
       if (_algoState == HYP_OK)
         _computeState = READY_TO_COMPUTE;
       else

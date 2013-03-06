@@ -770,6 +770,23 @@ void StdMeshers_MEFISTO_2D::ComputeScaleOnFace(SMESH_Mesh &        aMesh,
   ASSERT(scaley);
 }
 
+// namespace
+// {
+//   bool isDegenTria( const SMDS_MeshNode * nn[3] )
+//   {
+//     SMESH_TNodeXYZ p1( nn[0] );
+//     SMESH_TNodeXYZ p2( nn[1] );
+//     SMESH_TNodeXYZ p3( nn[2] );
+//     gp_XYZ vec1 = p2 - p1;
+//     gp_XYZ vec2 = p3 - p1;
+//     gp_XYZ cross = vec1 ^ vec2;
+//     const double eps = 1e-100;
+//     return ( fabs( cross.X() ) < eps &&
+//              fabs( cross.Y() ) < eps &&
+//              fabs( cross.Z() ) < eps );
+//   }
+// }
+
 //=============================================================================
 /*!
  *  
@@ -780,11 +797,12 @@ void StdMeshers_MEFISTO_2D::StoreResult(Z nbst, R2 * uvst, Z nbt, Z * nust,
                                         vector< const SMDS_MeshNode*>&mefistoToDS,
                                         double scalex, double scaley)
 {
-  SMESHDS_Mesh * meshDS = _helper->GetMeshDS();
-  int faceID = _helper->GetSubShapeID();
+  _helper->SetElementsOnShape( true );
 
   TopoDS_Face F = TopoDS::Face( _helper->GetSubShape() );
   Handle(Geom_Surface) S = BRep_Tool::Surface( F );
+
+  //const size_t nbInputNodes = mefistoToDS.size();
 
   Z n = mefistoToDS.size(); // nb input points
   mefistoToDS.resize( nbst );
@@ -796,12 +814,7 @@ void StdMeshers_MEFISTO_2D::StoreResult(Z nbst, R2 * uvst, Z nbt, Z * nust,
       double v = uvst[n][1] / scaley;
       gp_Pnt P = S->Value(u, v);
 
-      SMDS_MeshNode * node = meshDS->AddNode(P.X(), P.Y(), P.Z());
-      meshDS->SetNodeOnFace(node, faceID, u, v);
-
-      //MESSAGE(P.X()<<" "<<P.Y()<<" "<<P.Z());
-      mefistoToDS[n] = node;
-      //MESSAGE("NEW: "<<n<<" "<<mefistoToDS[n+1]);
+      mefistoToDS[n] = _helper->AddNode( P.X(), P.Y(), P.Z(), 0, u, v );
     }
   }
 
@@ -810,26 +823,32 @@ void StdMeshers_MEFISTO_2D::StoreResult(Z nbst, R2 * uvst, Z nbt, Z * nust,
   // triangle points must be in trigonometric order if face is Forward
   // else they must be put clockwise
 
-  bool triangleIsWellOriented = ( F.Orientation() == TopAbs_FORWARD );
+  int i1 = 1, i2 = 2;
+  if ( F.Orientation() != TopAbs_FORWARD )
+    std::swap( i1, i2 );
 
+  const SMDS_MeshNode * nn[3];
   for (n = 1; n <= nbt; n++)
   {
-    const SMDS_MeshNode * n1 = mefistoToDS[ nust[m++] - 1 ];
-    const SMDS_MeshNode * n2 = mefistoToDS[ nust[m++] - 1 ];
-    const SMDS_MeshNode * n3 = mefistoToDS[ nust[m++] - 1 ];
+    // const bool allNodesAreOld = ( nust[m + 0] <= nbInputNodes &&
+    //                               nust[m + 1] <= nbInputNodes &&
+    //                               nust[m + 2] <= nbInputNodes );
+    nn[ 0 ] = mefistoToDS[ nust[m++] - 1 ];
+    nn[ 1 ] = mefistoToDS[ nust[m++] - 1 ];
+    nn[ 2 ] = mefistoToDS[ nust[m++] - 1 ];
+    m++;
 
     // avoid creating degenetrated faces
-    bool isDegen = ( _helper->HasDegeneratedEdges() && ( n1 == n2 || n1 == n3 || n2 == n3 ));
+    bool isDegen = ( _helper->HasDegeneratedEdges() &&
+                     ( nn[0] == nn[1] || nn[1] == nn[2] || nn[2] == nn[0] ));
+
+    // It was an attemp to fix a problem of a zero area face whose all nodes
+    // are on one staight EDGE. But omitting this face makes a hole in the mesh :(
+    // if ( !isDegen && allNodesAreOld )
+    //   isDegen = isDegenTria( nn );
+
     if ( !isDegen )
-    {
-      SMDS_MeshElement * elt;
-      if (triangleIsWellOriented)
-        elt = _helper->AddFace(n1, n2, n3);
-      else
-        elt = _helper->AddFace(n1, n3, n2);
-      meshDS->SetMeshElementOnShape(elt, faceID);
-    }
-    m++;
+      _helper->AddFace( nn[0], nn[i1], nn[i2] );
   }
 
   // remove bad elements built on vertices shared by wires
@@ -849,7 +868,7 @@ void StdMeshers_MEFISTO_2D::StoreResult(Z nbst, R2 * uvst, Z nbt, Z * nust,
           nbSame++;
       if (nbSame > 1) {
         MESSAGE( "RM bad element " << elem->GetID());
-        meshDS->RemoveElement( elem );
+        _helper->GetMeshDS()->RemoveElement( elem );
       }
     }
   }

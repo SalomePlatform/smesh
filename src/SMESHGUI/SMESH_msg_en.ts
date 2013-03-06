@@ -4634,13 +4634,17 @@ Do you want to restore original submesh priority?</translation>
     </message>
     <message>
         <source>RADIOBTN_1</source>
-        <translation>Convert to quadratic</translation>
+        <translation>Convert to linear</translation>
     </message>
     <message>
         <source>RADIOBTN_2</source>
-        <translation>Convert from quadratic</translation>
+        <translation>Convert to quadratic</translation>
     </message>
-    <message>
+      <message>
+        <source>RADIOBTN_3</source>
+        <translation>Convert to bi-quadratic</translation>
+      </message>
+      <message>
         <source>NON_CONFORM_WARNING</source>
         <translation>Warning: mesh can become non-conformal</translation>
     </message>
@@ -5196,6 +5200,10 @@ Please check input data and try again</translation>
         <source>COPLANAR_FACES</source>
         <translation>Coplanar faces</translation>
     </message>
+  <message>
+    <source>NUMBEROFNODESINELEMENT</source>
+    <translation>Number Of Nodes In Element</translation>
+  </message>
     <message>
         <source>COPY_FROM</source>
         <translation>Copy from...</translation>
@@ -5215,10 +5223,6 @@ Please check input data and try again</translation>
     <message>
         <source>EDGES</source>
         <translation>Edges</translation>
-    </message>
-    <message>
-        <source>ENTITY_TYPE</source>
-        <translation>Entity type</translation>
     </message>
     <message>
         <source>EQUAL_TO</source>
@@ -5366,6 +5370,98 @@ Please enter correct value and try again</translation>
     <message>
         <source>ELEMENTS</source>
         <translation>Elements</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE</source>
+        <translation>Entity type</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_0</source>
+        <translation>POINT1</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_2</source>
+        <translation>SEG2</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_3</source>
+        <translation>SEG3</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_4</source>
+        <translation>TRIA3</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_5</source>
+        <translation>TRIA6</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_6</source>
+        <translation>QUAD4</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_7</source>
+        <translation>QUAD8</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_8</source>
+        <translation>QUAD9</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_9</source>
+        <translation>TETRA4</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_10</source>
+        <translation>TETRA10</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_11</source>
+        <translation>PYRA5</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_12</source>
+        <translation>PYRA13</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_13</source>
+        <translation>PENTA6</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_14</source>
+        <translation>PENTA15</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_15</source>
+        <translation>HEXA8</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_16</source>
+        <translation>HEXA20</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_17</source>
+        <translation>HEXA27</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_18</source>
+        <translation>OCTA12</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_19</source>
+        <translation>POLYGONE</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_20</source>
+        <translation>POLYEDRE</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_21</source>
+        <translation>NONE</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_22</source>
+        <translation>BALL</translation>
     </message>
     <message>
         <source>GEOM_TYPE</source>
