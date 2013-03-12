@@ -164,8 +164,8 @@ SMESH_SVTKActor
 ::Initialize()
 {
   Superclass::Initialize();
-  my0DActor->SetInput(my0DGrid);
-  myBallActor->SetInput(myBallGrid);
+  my0DActor->SetInputData(my0DGrid);
+  myBallActor->SetInputData(myBallGrid);
 }
 
 
