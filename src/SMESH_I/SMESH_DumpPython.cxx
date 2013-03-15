@@ -43,15 +43,11 @@ static int MYDEBUG = 0;
 static int MYDEBUG = 0;
 #endif
 
-static TCollection_AsciiString NotPublishedObjectName()
-{
-  return "__NOT__Published__Object__";
-}
-
 namespace SMESH
 {
 
   size_t TPythonDump::myCounter = 0;
+  const char theNotPublishedObjectName[] = "__NOT__Published__Object__";
 
   TVar::TVar(CORBA::Double value):myVals(1) { myVals[0] = SMESH_Comment(value); }
   TVar::TVar(CORBA::Long   value):myVals(1) { myVals[0] = SMESH_Comment(value); }
@@ -279,7 +275,7 @@ namespace SMESH
       myStream << entry.in();
     }
     else {
-      myStream << NotPublishedObjectName();
+      myStream << theNotPublishedObjectName;
     }
     return *this;
   }
@@ -298,7 +294,7 @@ namespace SMESH
       if ( aSMESHGen->CanPublishInStudy( theArg )) // not published SMESH object
         myStream << "smeshObj_" << size_t(theArg);
       else
-        myStream << NotPublishedObjectName();
+        myStream << theNotPublishedObjectName;
     }
     else
       myStream << "None";
@@ -343,7 +339,7 @@ namespace SMESH
       SMESH::ElementType type = types->length() ? types[0] : SMESH::ALL;
       return *this << mesh << ".GetIDSource(" << anElementsId << ", " << type << ")";
     }
-    return *this;
+    return *this << theNotPublishedObjectName;
   }
 
   TPythonDump&
@@ -504,6 +500,10 @@ namespace SMESH
   {
     DumpArray( theList, *this );
     return *this;
+  }
+  const char* TPythonDump::NotPublishedObjectName()
+  {
+    return theNotPublishedObjectName;
   }
 
   TCollection_AsciiString myLongStringStart( "TPythonDump::LongStringStart" );
@@ -679,7 +679,7 @@ Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Object_ptr theStudy,
   CORBA::Octet* anOctetBuf =  (CORBA::Octet*)aBuffer;
   Engines::TMPFile_var aStreamFile = new Engines::TMPFile(aLen+1, aLen+1, anOctetBuf, 1);
 
-  bool hasNotPublishedObjects = aScript.Location( NotPublishedObjectName(), 1, aLen);
+  bool hasNotPublishedObjects = aScript.Location( SMESH::theNotPublishedObjectName, 1, aLen);
   isValidScript = isValidScript && !hasNotPublishedObjects;
 
   return aStreamFile._retn();
@@ -915,9 +915,11 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   // Some objects are wrapped with python classes and
   // Resource_DataMapOfAsciiStringAsciiString holds methods returning wrapped objects
   Resource_DataMapOfAsciiStringAsciiString anEntry2AccessorMethod;
+  std::set< TCollection_AsciiString >      aRemovedObjIDs;
   if ( !getenv("NO_2smeshpy_conversion"))
     aScript = SMESH_2smeshpy::ConvertScript( aScript, anEntry2AccessorMethod,
-                                             theObjectNames, theStudy, isHistoricalDump );
+                                             theObjectNames, aRemovedObjIDs,
+                                             theStudy, isHistoricalDump );
 
   // Replace characters used instead of quote marks to quote notebook variables
   {
@@ -1017,6 +1019,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
     anUpdatedScript += "\n\taStudyBuilder = theStudy.NewBuilder()";
   }
   for (int ir = 1; ir <= seqRemoved.Length(); ir++) {
+    if ( aRemovedObjIDs.count( seqRemoved.Value(ir) )) continue;
     anUpdatedScript += "\n\tSO = theStudy.FindObjectIOR(theStudy.ConvertObjectToIOR(";
     anUpdatedScript += seqRemoved.Value(ir);
     // for object wrapped by class of smesh.py
@@ -1037,13 +1040,14 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   for (Standard_Integer i = 1; i <= aLen; i += 2)
   {
     anEntry = aScript.SubString(aSeq->Value(i), aSeq->Value(i + 1));
-    aName = geom->GetDumpName( anEntry.ToCString() );
+    aName   = geom->GetDumpName( anEntry.ToCString() );
     if (aName.IsEmpty() && // Not a GEOM object
         theNames.IsBound(anEntry) &&
+        !aRemovedObjIDs.count(anEntry) && // a command creating anEntry was erased
         !mapEntries.IsBound(anEntry) && // Not yet processed
         !mapRemoved.IsBound(anEntry)) // Was not removed
     {
-      aName = theObjectNames.Find(anEntry);
+      aName    = theObjectNames.Find(anEntry);
       aGUIName = theNames.Find(anEntry);
       mapEntries.Bind(anEntry, aName);
       anUpdatedScript += helper + "\n\t" + aSMESHGen + ".SetName(" + aName;

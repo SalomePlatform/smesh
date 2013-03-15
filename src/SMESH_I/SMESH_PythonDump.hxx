@@ -31,6 +31,7 @@
 
 #include <sstream>
 #include <vector>
+#include <set>
 
 class SMESH_Gen_i;
 class SMESH_MeshEditor_i;
@@ -51,8 +52,10 @@ public:
   /*!
    * \brief Convert a python script using commands of smesh.py
    * \param theScript - Input script
-   * \param theEntry2AccessorMethod - The returning method names to access to
+   * \param theEntry2AccessorMethod - returns method names to access to
    *        objects wrapped with python class
+   * \param theObjectNames - names of objects
+   * \param theRemovedObjIDs - entries of objects whose created commands were removed
    * \param theHistoricalDump - true means to keep all commands, false means
    *        to exclude commands relating to objects removed from study
    * \retval TCollection_AsciiString - Convertion result
@@ -61,6 +64,7 @@ public:
   ConvertScript(const TCollection_AsciiString&            theScript,
                 Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod,
                 Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
+                std::set< TCollection_AsciiString >&      theRemovedObjIDs,
                 SALOMEDS::Study_ptr&                      theStudy,
                 const bool                                theHistoricalDump);
 
@@ -213,6 +217,7 @@ namespace SMESH
 
     static const char* SMESHGenName() { return "smeshgen"; }
     static const char* MeshEditorName() { return "mesh_editor"; }
+    static const char* NotPublishedObjectName();
 
     /*!
      * \brief Return marker of long string literal beginning

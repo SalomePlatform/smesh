@@ -1294,7 +1294,11 @@ double Warping::GetValue( const TSequenceOfXYZ& P )
   double A3 = ComputeA( P( 3 ), P( 4 ), P( 1 ), G );
   double A4 = ComputeA( P( 4 ), P( 1 ), P( 2 ), G );
 
-  return Max( Max( A1, A2 ), Max( A3, A4 ) );
+  double val = Max( Max( A1, A2 ), Max( A3, A4 ) );
+
+  const double eps = 0.1; // val is in degrees
+
+  return val < eps ? 0. : val;
 }
 
 double Warping::ComputeA( const gp_XYZ& thePnt1,
@@ -1362,7 +1366,11 @@ double Taper::GetValue( const TSequenceOfXYZ& P )
   double T3 = fabs( ( J3 - JA ) / JA );
   double T4 = fabs( ( J4 - JA ) / JA );
 
-  return Max( Max( T1, T2 ), Max( T3, T4 ) );
+  double val = Max( Max( T1, T2 ), Max( T3, T4 ) );
+
+  const double eps = 0.01;
+
+  return val < eps ? 0. : val;
 }
 
 double Taper::GetBadRate( double Value, int /*nbNodes*/ ) const
@@ -1402,7 +1410,7 @@ double Skew::GetValue( const TSequenceOfXYZ& P )
     return 0.;
 
   // Compute skew
-  static double PI2 = M_PI / 2.;
+  const double PI2 = M_PI / 2.;
   if ( P.size() == 3 )
   {
     double A0 = fabs( PI2 - skewAngle( P( 3 ), P( 1 ), P( 2 ) ) );
@@ -1422,11 +1430,11 @@ double Skew::GetValue( const TSequenceOfXYZ& P )
     double A = v1.Magnitude() <= gp::Resolution() || v2.Magnitude() <= gp::Resolution()
       ? 0. : fabs( PI2 - v1.Angle( v2 ) );
 
-    //BUG SWP12743
-    if ( A < theEps )
-      return theInf;
+    double val = A * 180. / M_PI;
 
-    return A * 180. / M_PI;
+    const double eps = 0.1; // val is in degrees
+
+    return val < eps ? 0. : val;
   }
 }
 

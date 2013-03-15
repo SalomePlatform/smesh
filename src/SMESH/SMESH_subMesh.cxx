@@ -1336,6 +1336,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
   switch ( event ) {
   case MODIF_ALGO_STATE:
   case COMPUTE:
+  case COMPUTE_SUBMESH:
     //case COMPUTE_CANCELED:
   case CLEAN:
     //case SUBMESH_COMPUTED:
@@ -1351,7 +1352,8 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
   {
     _computeState = READY_TO_COMPUTE;
     SMESHDS_SubMesh* smDS = GetSubMeshDS();
-    if ( smDS && smDS->NbNodes() ) {
+    if ( smDS && smDS->NbNodes() )
+    {
       if ( event == CLEAN ) {
         cleanDependants();
         cleanSubMesh( this );
@@ -1359,7 +1361,9 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
       else
         _computeState = COMPUTE_OK;
     }
-    else if ( event == COMPUTE && !_alwaysComputed ) {
+    else if (( event == COMPUTE || event == COMPUTE_SUBMESH )
+             && !_alwaysComputed )
+    {
       const TopoDS_Vertex & V = TopoDS::Vertex( _subShape );
       gp_Pnt P = BRep_Tool::Pnt(V);
       if ( SMDS_MeshNode * n = _father->GetMeshDS()->AddNode(P.X(), P.Y(), P.Z()) ) {
@@ -1393,11 +1397,10 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
         _computeState = READY_TO_COMPUTE;
       break;
     case COMPUTE:               // nothing to do
+    case COMPUTE_SUBMESH:
       break;
-#ifdef WITH_SMESH_CANCEL_COMPUTE
-    case COMPUTE_CANCELED:               // nothing to do
+    case COMPUTE_CANCELED:      // nothing to do
       break;
-#endif
     case CLEAN:
       cleanDependants();
       removeSubMeshElementsAndNodes();
@@ -1440,6 +1443,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
       }
       break;
     case COMPUTE:
+    case COMPUTE_SUBMESH:
       {
         algo = GetAlgo();
         ASSERT(algo);
@@ -1455,10 +1459,16 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
         // check submeshes needed
         if (_father->HasShapeToMesh() ) {
           bool subComputed = false, subFailed = false;
-          if (!algo->OnlyUnaryInput())
-            shape = getCollection( gen, algo, subComputed, subFailed );
-          else
+          if (!algo->OnlyUnaryInput()) {
+            if ( event == COMPUTE &&
+                 ( algo->NeedDiscreteBoundary() || algo->SupportSubmeshes() ))
+              shape = getCollection( gen, algo, subComputed, subFailed );
+            else
+              subComputed = SubMeshesComputed( & subFailed );
+          }
+          else {
             subComputed = SubMeshesComputed();
+          }
           ret = ( algo->NeedDiscreteBoundary() ? subComputed :
                   algo->SupportSubmeshes() ? !subFailed :
                   ( !subComputed || _father->IsNotConformAllowed() ));
@@ -1607,10 +1617,8 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
         }
       }
       break;
-#ifdef WITH_SMESH_CANCEL_COMPUTE
     case COMPUTE_CANCELED:               // nothing to do
       break;
-#endif
     case CLEAN:
       cleanDependants();
       removeSubMeshElementsAndNodes();
@@ -1664,10 +1672,8 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
       break;
     case COMPUTE:               // nothing to do
       break;
-#ifdef WITH_SMESH_CANCEL_COMPUTE
-    case COMPUTE_CANCELED:               // nothing to do
+    case COMPUTE_CANCELED:      // nothing to do
       break;
-#endif
     case CLEAN:
       cleanDependants();  // clean sub-meshes, dependant on this one, with event CLEAN
       removeSubMeshElementsAndNodes();
@@ -1721,7 +1727,8 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
       else
         _computeState = NOT_READY;
       break;
-    case COMPUTE:      // nothing to do
+    case COMPUTE:        // nothing to do
+    case COMPUTE_SUBMESH:
       break;
     case COMPUTE_CANCELED:
       {
@@ -2369,6 +2376,7 @@ void SMESH_subMeshEventListener::ProcessEvent(const int          event,
         (*smIt)->ComputeStateEngine( event );
       break;
     case SMESH_subMesh::COMPUTE:
+    case SMESH_subMesh::COMPUTE_SUBMESH:
       if ( subMesh->GetComputeState() == SMESH_subMesh::COMPUTE_OK )
         for ( ; smIt != smEnd; ++ smIt)
           (*smIt)->ComputeStateEngine( SMESH_subMesh::SUBMESH_COMPUTED );

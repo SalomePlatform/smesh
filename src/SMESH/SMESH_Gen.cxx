@@ -63,18 +63,16 @@ using namespace std;
 
 SMESH_Gen::SMESH_Gen()
 {
-        MESSAGE("SMESH_Gen::SMESH_Gen");
-        _localId = 0;
-        _hypId = 0;
-        _segmentation = _nbSegments = 10;
-        SMDS_Mesh::_meshList.clear();
-        MESSAGE(SMDS_Mesh::_meshList.size());
-        //_counters = new counters(100);
-#ifdef WITH_SMESH_CANCEL_COMPUTE
-        _compute_canceled = false;
-        _sm_current = NULL;
-#endif
-        //vtkDebugLeaks::SetExitError(0);
+  MESSAGE("SMESH_Gen::SMESH_Gen");
+  _localId = 0;
+  _hypId = 0;
+  _segmentation = _nbSegments = 10;
+  SMDS_Mesh::_meshList.clear();
+  MESSAGE(SMDS_Mesh::_meshList.size());
+  //_counters = new counters(100);
+  _compute_canceled = false;
+  _sm_current = NULL;
+  //vtkDebugLeaks::SetExitError(0);
 }
 
 //=============================================================================
@@ -145,6 +143,11 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
   const int  globalAlgoDim = 100;
 
   SMESH_subMeshIteratorPtr smIt;
+  SMESH_subMesh::compute_event computeEvent;
+  if ( !anUpward && aShape.IsSame( aMesh.GetShapeToMesh() ))
+    computeEvent = SMESH_subMesh::COMPUTE;
+  else
+    computeEvent = SMESH_subMesh::COMPUTE_SUBMESH;
 
   if ( anUpward ) // is called from below code here
   {
@@ -172,15 +175,11 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
 
       if (smToCompute->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE)
       {
-#ifdef WITH_SMESH_CANCEL_COMPUTE
         if (_compute_canceled)
           return false;
         _sm_current = smToCompute;
-#endif
-        smToCompute->ComputeStateEngine( SMESH_subMesh::COMPUTE );
-#ifdef WITH_SMESH_CANCEL_COMPUTE
+        smToCompute->ComputeStateEngine( computeEvent );
         _sm_current = NULL;
-#endif
       }
 
       // we check all the submeshes here and detect if any of them failed to compute
@@ -258,15 +257,11 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
         }
         else
         {
-#ifdef WITH_SMESH_CANCEL_COMPUTE
           if (_compute_canceled)
             return false;
           _sm_current = smToCompute;
-#endif
-          smToCompute->ComputeStateEngine( SMESH_subMesh::COMPUTE );
-#ifdef WITH_SMESH_CANCEL_COMPUTE
+          smToCompute->ComputeStateEngine( computeEvent );
           _sm_current = NULL;
-#endif
           if ( aShapesId )
             aShapesId->insert( smToCompute->GetId() );
         }
@@ -342,15 +337,11 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
         if ( aShapesId && GetShapeDim( aShType ) > (int)aDim )
           continue;
 
-#ifdef WITH_SMESH_CANCEL_COMPUTE
         if (_compute_canceled)
           return false;
         _sm_current = sm;
-#endif
-        sm->ComputeStateEngine( SMESH_subMesh::COMPUTE );
-#ifdef WITH_SMESH_CANCEL_COMPUTE
+        sm->ComputeStateEngine( computeEvent );
         _sm_current = NULL;
-#endif
         if ( aShapesId )
           aShapesId->insert( sm->GetId() );
       }

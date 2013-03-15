@@ -1800,6 +1800,15 @@
       }
     }
 
+    // Call mesh->Clear() to prevent loading mesh from file caused by hypotheses removal
+    for( It.Initialize( selected ); It.More(); It.Next()) // loop on selected IO's
+    {
+      Handle(SALOME_InteractiveObject) IObject = It.Value();
+      SMESH::SMESH_Mesh_var mesh = SMESH::IObjectToInterface< SMESH::SMESH_Mesh >( IObject );
+      if ( !mesh->_is_nil() )
+        mesh->Clear();
+    }
+
     // Treat SO's in the list starting from the back
     aStudyBuilder->NewCommand();  // There is a transaction
     for ( ritSO = listSO.rbegin(); ritSO != listSO.rend(); ++ritSO )

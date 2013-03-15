@@ -179,6 +179,24 @@ namespace {
 
   void CheckObjectPresence( const Handle(_pyCommand)& cmd, set<_pyID> & presentObjects)
   {
+    // either comment or erase a command including NotPublishedObjectName()
+    if ( cmd->GetString().Location( TPythonDump::NotPublishedObjectName(), 1, cmd->Length() ))
+    {
+      bool isResultPublished = false;
+      for ( int i = 0; i < cmd->GetNbResultValues(); i++ )
+      {
+        _pyID objID = cmd->GetResultValue( i+1 );
+        if ( cmd->IsStudyEntry( objID ))
+          isResultPublished = (! theGen->IsNotPublished( objID ));
+        theGen->ObjectCreationRemoved( objID ); // objID.SetName( name ) is not needed
+      }
+      if ( isResultPublished )
+        cmd->Comment();
+      else
+        cmd->Clear();
+      return;
+    }
+    // comment a command having not created args
     for ( int iArg = cmd->GetNbArgs(); iArg; --iArg )
     {
       const _pyID& arg = cmd->GetArg( iArg );
@@ -192,14 +210,23 @@ namespace {
           cmd->Comment();
           cmd->GetString() += " ### " ;
           cmd->GetString() += *id + " has not been yet created";
+          for ( int i = 0; i < cmd->GetNbResultValues(); i++ ) {
+            _pyID objID = cmd->GetResultValue( i+1 );
+            theGen->ObjectCreationRemoved( objID ); // objID.SetName( name ) is not needed
+          }
           return;
         }
     }
+    // comment a command having not created Object
     const _pyID& obj = cmd->GetObject();
     if ( !obj.IsEmpty() && cmd->IsStudyEntry( obj ) && !presentObjects.count( obj ))
     {
       cmd->Comment();
       cmd->GetString() += " ### not created object" ;
+      for ( int i = 0; i < cmd->GetNbResultValues(); i++ ) {
+        _pyID objID = cmd->GetResultValue( i+1 );
+        theGen->ObjectCreationRemoved( objID ); // objID.SetName( name ) is not needed
+      }
     }
     const _pyID& result = cmd->GetResultValue();
     if ( result.IsEmpty() || result.Value( 1 ) == '"' || result.Value( 1 ) == '\'' )
@@ -318,13 +345,15 @@ namespace {
 
 //================================================================================
 /*!
- * \brief Convert python script using commands of smesh.py
-  * \param theScript - Input script
-  * \retval TCollection_AsciiString - Convertion result
-  * \param theToKeepAllCommands - to keep all commands or
-  *        to exclude commands relating to objects removed from study
-  *
-  * Class SMESH_2smeshpy declared in SMESH_PythonDump.hxx
+ * \brief Convert a python script using commands of smesh.py
+ *  \param theScript - Input script
+ *  \param theEntry2AccessorMethod - returns method names to access to
+ *         objects wrapped with python class
+ *  \param theObjectNames - names of objects
+ *  \param theRemovedObjIDs - entries of objects whose created commands were removed
+ *  \param theHistoricalDump - true means to keep all commands, false means
+ *         to exclude commands relating to objects removed from study
+ *  \retval TCollection_AsciiString - Convertion result
  */
 //================================================================================
 
@@ -332,10 +361,15 @@ TCollection_AsciiString
 SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString&            theScript,
                               Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod,
                               Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
+                              std::set< TCollection_AsciiString >&      theRemovedObjIDs,
                               SALOMEDS::Study_ptr&                      theStudy,
                               const bool                                theToKeepAllCommands)
 {
-  theGen = new _pyGen( theEntry2AccessorMethod, theObjectNames, theStudy, theToKeepAllCommands );
+  theGen = new _pyGen( theEntry2AccessorMethod,
+                       theObjectNames,
+                       theRemovedObjIDs,
+                       theStudy,
+                       theToKeepAllCommands );
 
   // split theScript into separate commands
 
@@ -345,9 +379,9 @@ SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString&            theScrip
   while ( from < end && ( to = theScript.Location( "\n", from, end )))
   {
     if ( to != from )
-        // cut out and store a command
-        aNoteBook->AddCommand( theScript.SubString( from, to - 1 ));
-      from = to + 1;
+      // cut out and store a command
+      aNoteBook->AddCommand( theScript.SubString( from, to - 1 ));
+    from = to + 1;
   }
 
   aNoteBook->ReplaceVariables();
@@ -416,12 +450,14 @@ SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString&            theScrip
 
 _pyGen::_pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod,
                Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
+               std::set< TCollection_AsciiString >&      theRemovedObjIDs,
                SALOMEDS::Study_ptr&                      theStudy,
                const bool                                theToKeepAllCommands)
   : _pyObject( new _pyCommand( "", 0 )),
     myNbCommands( 0 ),
     myID2AccessorMethod( theEntry2AccessorMethod ),
     myObjectNames( theObjectNames ),
+    myRemovedObjIDs( theRemovedObjIDs ),
     myNbFilters( 0 ),
     myToKeepAllCommands( theToKeepAllCommands ),
     myStudy( SALOMEDS::Study::_duplicate( theStudy )),
@@ -787,7 +823,7 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
       method == "CreateMeshesFromSAUV"||
       method == "CreateMeshesFromGMF" )
   {
-    for(int ind = 0;ind<theCommand->GetNbResultValues();ind++)
+    for ( int ind = 0; ind < theCommand->GetNbResultValues(); ind++ )
     {
       _pyID meshID = theCommand->GetResultValue(ind+1);
       if ( !theCommand->IsStudyEntry( meshID ) ) continue;
@@ -1366,6 +1402,19 @@ bool _pyGen::IsNotPublished(const _pyID& theObjID) const
     return CORBA::is_nil( obj );
   }
   return true; // SMESH object not in study
+}
+
+//================================================================================
+/*!
+ * \brief Remove object name from myObjectNames that leads to that SetName() for
+ *        this object is not dumped
+ *  \param [in] theObjID - entry of the object whose creation command was eliminated
+ */
+//================================================================================
+
+void _pyGen::ObjectCreationRemoved(const _pyID& theObjID)
+{
+  myRemovedObjIDs.insert( theObjID );
 }
 
 //================================================================================
@@ -3184,22 +3233,21 @@ const TCollection_AsciiString & _pyCommand::GetResultValue()
 //================================================================================
 /*!
  * \brief Return number of python command result value ResultValue = Obj.Meth()
-  * \retval const int
  */
 //================================================================================
 
-const int _pyCommand::GetNbResultValues()
+int _pyCommand::GetNbResultValues()
 {
+  int nb     = 0;
   int begPos = 1;
-  int Nb=0;
   int endPos = myString.Location( "=", 1, Length() );
-  TCollection_AsciiString str = "";
-  while ( begPos < endPos) {
-    str = GetWord( myString, begPos, true );
+  while ( begPos < endPos )
+  {
+    _AString str = GetWord( myString, begPos, true );
     begPos = begPos+ str.Length();
-    Nb++;
+    nb++;
   }
-  return (Nb-1);
+  return (nb-1);
 }
 
 

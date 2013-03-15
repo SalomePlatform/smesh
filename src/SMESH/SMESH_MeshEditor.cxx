@@ -7656,6 +7656,12 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
         //MESSAGE("  node to remove " << nToRemove->GetID());
         rmNodeIds.push_back( nToRemove->GetID() );
         AddToSameGroups( nToKeep, nToRemove, aMesh );
+        // set _alwaysComputed to a sub-mesh of VERTEX to enable mesh computing
+        // after MergeNodes() w/o creating node in place of merged ones.
+        const SMDS_PositionPtr& pos = nToRemove->GetPosition();
+        if ( pos && pos->GetTypeOfPosition() == SMDS_TOP_VERTEX )
+          if ( SMESH_subMesh* sm = myMesh->GetSubMeshContaining( nToRemove->getshapeId() ))
+            sm->SetIsAlwaysComputed( true );
       }
 
       SMDS_ElemIteratorPtr invElemIt = nToRemove->GetInverseElementIterator();

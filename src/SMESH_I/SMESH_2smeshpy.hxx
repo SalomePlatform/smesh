@@ -123,7 +123,7 @@ public:
   bool IsEmpty() const { return myString.IsEmpty(); }
   _AString GetIndentation();
   const _AString & GetResultValue();
-  const int GetNbResultValues();
+  int GetNbResultValues();
   _AString GetResultValue(int res);
   const _AString & GetObject();
   const _AString & GetMethod();
@@ -223,6 +223,7 @@ class _pyGen: public _pyObject
 public:
   _pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod,
          Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
+         std::set< TCollection_AsciiString >&      theRemovedObjIDs,
          SALOMEDS::Study_ptr&                      theStudy,
          const bool                                theToKeepAllCommands);
   Handle(_pyCommand) AddCommand( const _AString& theCommand );
@@ -236,8 +237,8 @@ public:
   _pyID GenerateNewID( const _pyID& theID );
   void AddObject( Handle(_pyObject)& theObj );
   void SetProxyObject( const _pyID& theID, Handle(_pyObject)& theObj );
-  Handle(_pyObject) FindObject( const _pyID& theObjID ) const;
-  Handle(_pySubMesh) FindSubMesh( const _pyID& theSubMeshID );
+  Handle(_pyObject)     FindObject( const _pyID& theObjID ) const;
+  Handle(_pySubMesh)    FindSubMesh( const _pyID& theSubMeshID );
   Handle(_pyHypothesis) FindHyp( const _pyID& theHypID );
   Handle(_pyHypothesis) FindAlgo( const _pyID& theGeom, const _pyID& theMesh,
                                   const Handle(_pyHypothesis)& theHypothesis);
@@ -249,6 +250,7 @@ public:
 
   bool IsGeomObject(const _pyID& theObjID) const;
   bool IsNotPublished(const _pyID& theObjID) const;
+  void ObjectCreationRemoved(const _pyID& theObjID);
   bool IsToKeepAllCommands() const { return myToKeepAllCommands; }
   void AddExportedMesh(const _AString& file, const ExportedMeshData& mesh )
   { myFile2ExportedMesh[ file ] = mesh; }
@@ -268,21 +270,22 @@ private:
                             const bool theIsAfter );
   
 private:
-  std::map< _pyID, Handle(_pyMesh) >       myMeshes;
-  std::map< _pyID, Handle(_pyMeshEditor) > myMeshEditors;
-  std::map< _pyID, Handle(_pyObject) >     myObjects;
-  std::list< Handle(_pyHypothesis) >       myHypos;
-  std::list< Handle(_pyCommand) >          myCommands;
-  int                                      myNbCommands;
+  std::map< _pyID, Handle(_pyMesh) >        myMeshes;
+  std::map< _pyID, Handle(_pyMeshEditor) >  myMeshEditors;
+  std::map< _pyID, Handle(_pyObject) >      myObjects;
+  std::list< Handle(_pyHypothesis) >        myHypos;
+  std::list< Handle(_pyCommand) >           myCommands;
+  int                                       myNbCommands;
   Resource_DataMapOfAsciiStringAsciiString& myID2AccessorMethod;
   Resource_DataMapOfAsciiStringAsciiString& myObjectNames;
-  Handle(_pyCommand)                       myLastCommand;
-  int                                      myNbFilters;
-  bool                                     myToKeepAllCommands;
-  SALOMEDS::Study_var                      myStudy;
-  int                                      myGeomIDNb, myGeomIDIndex;
-  std::map< _AString, ExportedMeshData >   myFile2ExportedMesh;
-  Handle( _pyHypothesisReader )            myHypReader;
+  std::set< TCollection_AsciiString >&      myRemovedObjIDs;
+  Handle(_pyCommand)                        myLastCommand;
+  int                                       myNbFilters;
+  bool                                      myToKeepAllCommands;
+  SALOMEDS::Study_var                       myStudy;
+  int                                       myGeomIDNb, myGeomIDIndex;
+  std::map< _AString, ExportedMeshData >    myFile2ExportedMesh;
+  Handle( _pyHypothesisReader )             myHypReader;
 
   DEFINE_STANDARD_RTTI (_pyGen)
 };

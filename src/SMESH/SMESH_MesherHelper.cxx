@@ -513,6 +513,7 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
                                     bool*                check) const
 {
   gp_Pnt2d uv( Precision::Infinite(), Precision::Infinite() );
+
   const SMDS_PositionPtr Pos = n->GetPosition();
   bool uvOK = false;
   if(Pos->GetTypeOfPosition()==SMDS_TOP_FACE)
@@ -797,7 +798,8 @@ double SMESH_MesherHelper::GetNodeU(const TopoDS_Edge&   E,
                                     const SMDS_MeshNode* inEdgeNode,
                                     bool*                check)
 {
-  double param = 0;
+  double param = Precision::Infinite();
+
   const SMDS_PositionPtr pos = n->GetPosition();
   if ( pos->GetTypeOfPosition()==SMDS_TOP_EDGE )
   {
@@ -1134,8 +1136,8 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
       Handle( Geom_Surface ) S = BRep_Tool::Surface( F, loc );
       P = S->Value( uvAvg.X(), uvAvg.Y() ).Transformed( loc );
       centralNode = meshDS->AddNode( P.X(), P.Y(), P.Z() );
-      if ( mySetElemOnShape )
-        meshDS->SetNodeOnFace( centralNode, faceID, uvAvg.X(), uvAvg.Y() );
+      // if ( mySetElemOnShape ) node is not elem!
+      meshDS->SetNodeOnFace( centralNode, faceID, uvAvg.X(), uvAvg.Y() );
       myMapWithCentralNode.insert( std::make_pair( keyOfMap, centralNode ) );
       return centralNode;
     }
@@ -1147,23 +1149,23 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
         SMESH_TNodeXYZ( n4 ) ) / 4;
   centralNode = meshDS->AddNode( P.X(), P.Y(), P.Z() );
 
-  if ( mySetElemOnShape )
+  if ( !F.IsNull() )
   {
-    if ( !F.IsNull() )
-    {
-      uvAvg = (GetNodeUV(F,n1,n3) +
-               GetNodeUV(F,n2,n4) +
-               GetNodeUV(F,n3,n1) +
-               GetNodeUV(F,n4,n2)) / 4;
-      CheckNodeUV( F, centralNode, uvAvg, 2*BRep_Tool::Tolerance( F ), /*force=*/true);
-      meshDS->SetNodeOnFace( centralNode, faceID, uvAvg.X(), uvAvg.Y() );
-    }
-    else if ( shapeID > 0 )
-      meshDS->SetNodeInVolume( centralNode, shapeID );
-    else if ( myShapeID > 0 )
-      meshDS->SetMeshElementOnShape( centralNode, myShapeID );
+    uvAvg = (GetNodeUV(F,n1,n3) +
+             GetNodeUV(F,n2,n4) +
+             GetNodeUV(F,n3,n1) +
+             GetNodeUV(F,n4,n2)) / 4;
+    CheckNodeUV( F, centralNode, uvAvg, 2*BRep_Tool::Tolerance( F ), /*force=*/true);
+    meshDS->SetNodeOnFace( centralNode, faceID, uvAvg.X(), uvAvg.Y() );
   }
-
+  else if ( shapeID > 0 )
+  {
+    meshDS->SetNodeInVolume( centralNode, shapeID );
+  }
+  else if ( myShapeID > 0 && mySetElemOnShape )
+  {
+    meshDS->SetMeshElementOnShape( centralNode, myShapeID );
+  }
   myMapWithCentralNode.insert( std::make_pair( keyOfMap, centralNode ) );
   return centralNode;
 }
@@ -1247,8 +1249,8 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
         gp_XY UV = GetMiddleUV( S, uv[0], uv[1] );
         gp_Pnt P = S->Value( UV.X(), UV.Y() ).Transformed(loc);
         n12 = meshDS->AddNode(P.X(), P.Y(), P.Z());
-        if ( mySetElemOnShape )
-          meshDS->SetNodeOnFace(n12, faceID, UV.X(), UV.Y());
+        // if ( mySetElemOnShape ) node is not elem!
+        meshDS->SetNodeOnFace(n12, faceID, UV.X(), UV.Y());
         myTLinkNodeMap.insert(make_pair(link,n12));
         return n12;
       }
@@ -1272,8 +1274,8 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
 
         gp_Pnt P = C->Value( U );
         n12 = meshDS->AddNode(P.X(), P.Y(), P.Z());
-        if ( mySetElemOnShape )
-          meshDS->SetNodeOnEdge(n12, edgeID, U);
+        //if ( mySetElemOnShape ) node is not elem!
+        meshDS->SetNodeOnEdge(n12, edgeID, U);
         myTLinkNodeMap.insert(make_pair(link,n12));
         return n12;
       }
@@ -1286,21 +1288,21 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
   double z = ( n1->Z() + n2->Z() )/2.;
   n12 = meshDS->AddNode(x,y,z);
 
-  if ( mySetElemOnShape )
+  //if ( mySetElemOnShape ) node is not elem!
   {
     if ( !F.IsNull() )
     {
       gp_XY UV = ( uv[0] + uv[1] ) / 2.;
-      CheckNodeUV( F, n12, UV, 2*BRep_Tool::Tolerance( F ), /*force=*/true);
+      CheckNodeUV( F, n12, UV, 2 * BRep_Tool::Tolerance( F ), /*force=*/true);
       meshDS->SetNodeOnFace(n12, faceID, UV.X(), UV.Y() );
     }
     else if ( !E.IsNull() )
     {
       double U = ( u[0] + u[1] ) / 2.;
-      CheckNodeU( E, n12, U, 2*BRep_Tool::Tolerance( E ), /*force=*/true);
+      CheckNodeU( E, n12, U, 2 * BRep_Tool::Tolerance( E ), /*force=*/true);
       meshDS->SetNodeOnEdge(n12, edgeID, U);
     }
-    else if ( myShapeID > 0 )
+    else if ( myShapeID > 0 && mySetElemOnShape )
     {
       meshDS->SetMeshElementOnShape(n12, myShapeID);
     }
@@ -1375,8 +1377,8 @@ const SMDS_MeshNode* SMESH_MesherHelper::getMediumNodeOnComposedWire(const SMDS_
     GetMeshDS()->MoveNode( n12, p.X(), p.Y(), p.Z() );
   }
 
-  if ( mySetElemOnShape )
-    GetMeshDS()->SetNodeOnEdge(n12, edges[iOkEdge], u);
+  //if ( mySetElemOnShape ) node is not elem!
+  GetMeshDS()->SetNodeOnEdge(n12, edges[iOkEdge], u);
 
   myTLinkNodeMap.insert( make_pair( SMESH_TLink(n1,n2), n12 ));
 
@@ -1397,7 +1399,7 @@ SMDS_MeshNode* SMESH_MesherHelper::AddNode(double x, double y, double z, int ID,
     node = meshDS->AddNodeWithID( x, y, z, ID );
   else
     node = meshDS->AddNode( x, y, z );
-  if ( mySetElemOnShape && myShapeID > 0 ) {
+  if ( mySetElemOnShape && myShapeID > 0 ) { // node is not elem ?
     switch ( myShape.ShapeType() ) {
     case TopAbs_SOLID:  meshDS->SetNodeInVolume( node, myShapeID);       break;
     case TopAbs_SHELL:  meshDS->SetNodeInVolume( node, myShapeID);       break;
@@ -2015,7 +2017,6 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap &            theParam2
   if ( theParam2ColumnMap.empty() )
   {
     // get data of edges for normalization of params
-
     vector< double > length;
     double fullLen = 0;
     list<TopoDS_Edge>::const_iterator edge;
@@ -2039,8 +2040,8 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap &            theParam2
       map< double, const SMDS_MeshNode*>::iterator u_n = sortedBaseNN.begin();
       if ( theProxyMesh ) // from sortedBaseNN remove nodes not shared by faces of faceSubMesh
       {
-        const SMDS_MeshNode* n1 = sortedBaseNN.begin()->second;
-        const SMDS_MeshNode* n2 = sortedBaseNN.rbegin()->second;
+        const SMDS_MeshNode* n1 = (++sortedBaseNN.begin())->second;
+        const SMDS_MeshNode* n2 = (++sortedBaseNN.rbegin())->second;
         bool allNodesAreProxy = ( n1 != theProxyMesh->GetProxyNode( n1 ) &&
                                   n2 != theProxyMesh->GetProxyNode( n2 ));
         if ( allNodesAreProxy )
@@ -2052,7 +2053,7 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap &            theParam2
           while ( ++u_n != sortedBaseNN.end() && !isNodeInSubMesh( u_n->second, faceSubMesh ));
           sortedBaseNN.erase( sortedBaseNN.begin(), u_n );
         }
-        else if ( u_n = --sortedBaseNN.end(), !isNodeInSubMesh( u_n->second, faceSubMesh ))
+        if ( u_n = --sortedBaseNN.end(), !isNodeInSubMesh( u_n->second, faceSubMesh ))
         {
           while ( u_n != sortedBaseNN.begin() && !isNodeInSubMesh( (--u_n)->second, faceSubMesh ));
           sortedBaseNN.erase( ++u_n, sortedBaseNN.end() );

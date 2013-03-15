@@ -71,6 +71,7 @@ class Mesh_Algorithm:
     #  @return SMESH.SMESH_Hypothesis
     def FindHypothesis (self, hypname, args, CompareMethod, smeshpyD):
         study = smeshpyD.GetCurrentStudy()
+        if not study: return None
         #to do: find component by smeshpyD object, not by its data type
         scomp = study.FindComponent(smeshpyD.ComponentDataType())
         if scomp is not None:

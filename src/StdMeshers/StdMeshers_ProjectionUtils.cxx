@@ -2044,7 +2044,7 @@ bool StdMeshers_ProjectionUtils::MakeComputed(SMESH_subMesh * sm, const int iter
     return true;
 
   SMESH_Mesh* mesh = sm->GetFather();
-  SMESH_Gen* gen   = mesh->GetGen();
+  SMESH_Gen*   gen = mesh->GetGen();
   SMESH_Algo* algo = sm->GetAlgo();
   if ( !algo )
   {

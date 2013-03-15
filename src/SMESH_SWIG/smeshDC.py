@@ -276,15 +276,15 @@ def AssureGeomPublished(mesh, geom, name=''):
 
 ## Return the first vertex of a geomertical edge by ignoring orienation
 def FirstVertexOnCurve(edge):
-    from geompy import SubShapeAll, ShapeType, KindOfShape, PointCoordinates
+    from geompy import SubShapeAll, ShapeType, MakeVertexOnCurve, PointCoordinates
     vv = SubShapeAll( edge, ShapeType["VERTEX"])
     if not vv:
         raise TypeError, "Given object has no vertices"
     if len( vv ) == 1: return vv[0]
-    info = KindOfShape(edge)
-    xyz = info[1:4] # coords of the first vertex
-    xyz1  = PointCoordinates( vv[0] )
-    xyz2  = PointCoordinates( vv[1] )
+    v0   = MakeVertexOnCurve(edge,0.)
+    xyz  = PointCoordinates( v0 ) # coords of the first vertex
+    xyz1 = PointCoordinates( vv[0] )
+    xyz2 = PointCoordinates( vv[1] )
     dist1, dist2 = 0,0
     for i in range(3):
         dist1 += abs( xyz[i] - xyz1[i] )
@@ -3666,7 +3666,7 @@ class Mesh:
 
     ## Translates the elements
     #  @param IDsOfElements list of elements ids
-    #  @param Vector the direction of translation (DirStruct or vector)
+    #  @param Vector the direction of translation (DirStruct or vector or 3 vector components)
     #  @param Copy allows copying the translated elements
     #  @param MakeGroups forces the generation of new groups from existing ones (if Copy)
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
@@ -3676,6 +3676,8 @@ class Mesh:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Vector, geompyDC.GEOM._objref_GEOM_Object)):
             Vector = self.smeshpyD.GetDirStruct(Vector)
+        if isinstance( Vector, list ):
+            Vector = self.smeshpyD.MakeDirStruct(*Vector)
         self.mesh.SetParameters(Vector.PS.parameters)
         if Copy and MakeGroups:
             return self.editor.TranslateMakeGroups(IDsOfElements, Vector)
@@ -3684,7 +3686,7 @@ class Mesh:
 
     ## Creates a new mesh of translated elements
     #  @param IDsOfElements list of elements ids
-    #  @param Vector the direction of translation (DirStruct or vector)
+    #  @param Vector the direction of translation (DirStruct or vector or 3 vector components)
     #  @param MakeGroups forces the generation of new groups from existing ones
     #  @param NewMeshName the name of the newly created mesh
     #  @return instance of Mesh class
@@ -3694,13 +3696,15 @@ class Mesh:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Vector, geompyDC.GEOM._objref_GEOM_Object)):
             Vector = self.smeshpyD.GetDirStruct(Vector)
+        if isinstance( Vector, list ):
+            Vector = self.smeshpyD.MakeDirStruct(*Vector)
         self.mesh.SetParameters(Vector.PS.parameters)
         mesh = self.editor.TranslateMakeMesh(IDsOfElements, Vector, MakeGroups, NewMeshName)
         return Mesh ( self.smeshpyD, self.geompyD, mesh )
 
     ## Translates the object
     #  @param theObject the object to translate (mesh, submesh, or group)
-    #  @param Vector direction of translation (DirStruct or geom vector)
+    #  @param Vector direction of translation (DirStruct or geom vector or 3 vector components)
     #  @param Copy allows copying the translated elements
     #  @param MakeGroups forces the generation of new groups from existing ones (if Copy)
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
@@ -3710,6 +3714,8 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( Vector, geompyDC.GEOM._objref_GEOM_Object)):
             Vector = self.smeshpyD.GetDirStruct(Vector)
+        if isinstance( Vector, list ):
+            Vector = self.smeshpyD.MakeDirStruct(*Vector)
         self.mesh.SetParameters(Vector.PS.parameters)
         if Copy and MakeGroups:
             return self.editor.TranslateObjectMakeGroups(theObject, Vector)
@@ -3718,16 +3724,18 @@ class Mesh:
 
     ## Creates a new mesh from the translated object
     #  @param theObject the object to translate (mesh, submesh, or group)
-    #  @param Vector the direction of translation (DirStruct or geom vector)
+    #  @param Vector the direction of translation (DirStruct or geom vector or 3 vector components)
     #  @param MakeGroups forces the generation of new groups from existing ones
     #  @param NewMeshName the name of the newly created mesh
     #  @return instance of Mesh class
     #  @ingroup l2_modif_trsf
     def TranslateObjectMakeMesh(self, theObject, Vector, MakeGroups=False, NewMeshName=""):
-        if (isinstance(theObject, Mesh)):
+        if isinstance( theObject, Mesh ):
             theObject = theObject.GetMesh()
-        if (isinstance(Vector, geompyDC.GEOM._objref_GEOM_Object)):
+        if isinstance( Vector, geompyDC.GEOM._objref_GEOM_Object ):
             Vector = self.smeshpyD.GetDirStruct(Vector)
+        if isinstance( Vector, list ):
+            Vector = self.smeshpyD.MakeDirStruct(*Vector)
         self.mesh.SetParameters(Vector.PS.parameters)
         mesh = self.editor.TranslateObjectMakeMesh(theObject, Vector, MakeGroups, NewMeshName)
         return Mesh( self.smeshpyD, self.geompyD, mesh )

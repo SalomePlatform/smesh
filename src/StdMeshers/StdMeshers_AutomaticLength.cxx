@@ -117,15 +117,29 @@ namespace {
    */
   //================================================================================
 
-  const double a14divPI = 14. / M_PI;
+  //const double a14divPI = 14. / M_PI;
+  const double a2div7divPI = 2. / 7. / M_PI;
 
   inline double segLength(double S0, double edgeLen, double minLen )
   {
     // PAL10237
-    // S = S0 * f(L/Lmin) where f(x) = 1 + (2/Pi * 7 * atan(x/5) )
+    // S = S0 * f(L/Lmin) where
+    // f(x) = 1 + (7 * 2/Pi * atan(x/5))
     // =>
     // S = S0 * ( 1 + 14/PI * atan( L / ( 5 * Lmin )))
-    return S0 * ( 1. + a14divPI * atan( edgeLen / ( 5 * minLen )));
+    //
+    // return S0 * ( 1. + a14divPI * atan( edgeLen / ( 5 * minLen )));
+
+    // The above formular gives too short segments when Lmax/Lmin is too high
+    // because by this formular the largest segment is only 8 times longer than the
+    // shortest one ( 2/Pi * atan(x/5) varies within [0,1] ). So a new formular is:
+    //
+    // f(x) = 1 + (x/7 * 2/Pi * atan(x/5))
+    // =>
+    // S = S0 * ( 1 + 2/7/PI * L/Lmin * atan( 5 * L/Lmin ))
+    //
+    const double Lratio = edgeLen / minLen;
+    return S0 * ( 1. + a2div7divPI * Lratio * atan( 5 * Lratio ));
   }
 
   //================================================================================
@@ -164,22 +178,22 @@ namespace {
       theTShapeToLengthMap.insert( make_pair( getTShape( edge ), L ));
     }
 
-    // Compute S0
+    // Compute S0 - minimal segement length, is computed by the shortest EDGE
 
-    // image attached to PAL10237
+    /* image attached to PAL10237
 
-    //   NbSeg
-    //     ^
-    //     |
-    //   10|\
-    //     | \
-    //     |  \
-    //     |   \
-    //    5|    --------
-    //     |
-    //     +------------>
-    //     1    10       Lmax/Lmin
-
+       NbSeg (on the shortest EDGE)
+         ^
+         |
+       10|\
+         | \
+         |  \
+         |   \
+        5|    --------
+         |
+         +------------>
+         1    10       Lmax/Lmin
+    */
     const int NbSegMin = 5, NbSegMax = 10; //  on axis NbSeg
     const double Lrat1 = 1., Lrat2 = 10.;  //  on axis Lmax/Lmin
 
@@ -192,6 +206,7 @@ namespace {
     MESSAGE( "S0 = " << S0 << ", Lmin = " << Lmin << ", Nbseg = " << (int) NbSeg);
 
     // Compute segments length for all edges
+
     map<const TopoDS_TShape*, double>::iterator tshape_length = theTShapeToLengthMap.begin();
     for ( ; tshape_length != theTShapeToLengthMap.end(); ++tshape_length )
     {
