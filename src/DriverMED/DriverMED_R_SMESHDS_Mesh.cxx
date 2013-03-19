@@ -18,12 +18,11 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
 //  SMESH DriverMED : driver to read and write 'med' files
 //  File   : DriverMED_R_SMESHDS_Mesh.cxx
 //  Module : SMESH
-//
+
 #include "DriverMED_R_SMESHDS_Mesh.h"
 #include "SMESHDS_Mesh.hxx"
 #include "utilities.h"
@@ -35,6 +34,8 @@
 #include "MED_Factory.hxx"
 #include "MED_CoordUtils.hxx"
 #include "MED_Utilities.hxx"
+
+#include <NCollection_Map.hxx>
 
 #include <stdlib.h>
 
@@ -71,7 +72,7 @@ DriverMED_R_SMESHDS_Mesh
 ::Perform()
 {
   Status aResult = DRS_FAIL;
-  bool isDescConn = false;
+  bool isDescConn = false; // Mantis issue 0020483
 #ifndef _DEXCEPT_
   try{
 #endif
@@ -175,13 +176,17 @@ DriverMED_R_SMESHDS_Mesh
         }
 
         // Are there any MED cells in descending connectivity
+        // Mantis issue 0020483
         //---------------------------------------------------
+        NCollection_Map<EEntiteMaillage> aDescendingEntitiesMap;
         if (!isDescConn) {
           MED::TEntityInfo aEntityInfoDesc = aMed->GetEntityInfo(aMeshInfo, eDESC);
           MED::TEntityInfo::iterator anEntityIterDesc = aEntityInfoDesc.begin();
-          for (; anEntityIterDesc != aEntityInfoDesc.end() && !isDescConn; anEntityIterDesc++) {
+          //for (; anEntityIterDesc != aEntityInfoDesc.end() && !isDescConn; anEntityIterDesc++) {
+          for (; anEntityIterDesc != aEntityInfoDesc.end(); anEntityIterDesc++) {
             const EEntiteMaillage& anEntity = anEntityIterDesc->first;
-            if (anEntity != eNOEUD) isDescConn = true;
+            aDescendingEntitiesMap.Add(anEntity);
+            //if (anEntity != eNOEUD) isDescConn = true;
           }
         }
 
@@ -193,6 +198,7 @@ DriverMED_R_SMESHDS_Mesh
         MED::TEntityInfo::iterator anEntityIter = aEntityInfo.begin();
         for (; anEntityIter != aEntityInfo.end(); anEntityIter++) {
           const EEntiteMaillage& anEntity = anEntityIter->first;
+          aDescendingEntitiesMap.Remove(anEntity); // Mantis issue 0020483
           if (anEntity == eNOEUD) continue;
           // Reading MED cells to the corresponding SMDS structure
           //------------------------------------------------------
@@ -904,8 +910,9 @@ DriverMED_R_SMESHDS_Mesh
             }}
           }
         }
-      }
-    }
+        if (aDescendingEntitiesMap.Extent()) isDescConn = true; // Mantis issue 0020483
+      } // for(int iMesh = 0; iMesh < aNbMeshes; iMesh++)
+    } // if aNbMeshes
 #ifndef _DEXCEPT_
   }catch(const std::exception& exc){
     INFOS("The following exception was caught:\n\t"<<exc.what());
@@ -918,6 +925,7 @@ DriverMED_R_SMESHDS_Mesh
   if (myMesh)
     myMesh->compactMesh();
 
+  // Mantis issue 0020483
   if (aResult == DRS_OK && isDescConn) {
     INFOS("There are some elements in descending connectivity in med file. They were not read !!!");
     aResult = DRS_WARN_DESCENDING;
@@ -944,10 +952,10 @@ list<string> DriverMED_R_SMESHDS_Mesh::GetMeshNames(Status& theStatus)
         aMeshNames.push_back(aMeshInfo->GetName());
       }
     }
-  }catch(const std::exception& exc){
+  } catch(const std::exception& exc) {
     INFOS("Following exception was caught:\n\t"<<exc.what());
     theStatus = DRS_FAIL;
-  }catch(...){
+  } catch(...) {
     INFOS("Unknown exception was caught !!!");
     theStatus = DRS_FAIL;
   }

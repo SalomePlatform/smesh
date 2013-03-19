@@ -117,6 +117,19 @@ namespace {
    */
   //================================================================================
 
+  const double a14divPI = 14. / M_PI;
+
+
+  inline double segLength(double S0, double edgeLen, double minLen )
+  {
+    // PAL10237
+    // S = S0 * f(L/Lmin) where f(x) = 1 + (2/Pi * 7 * atan(x/5) )
+
+    // =>
+    // S = S0 * ( 1 + 14/PI * atan( L / ( 5 * Lmin )))
+    return S0 * ( 1. + a14divPI * atan( edgeLen / ( 5 * minLen )));
+  }
+#if 0
   //const double a14divPI = 14. / M_PI;
   const double a2div7divPI = 2. / 7. / M_PI;
 
@@ -141,7 +154,7 @@ namespace {
     const double Lratio = edgeLen / minLen;
     return S0 * ( 1. + a2div7divPI * Lratio * atan( 5 * Lratio ));
   }
-
+#endif
   //================================================================================
   /*!
    * \brief Compute segment length for all edges
