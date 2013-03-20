@@ -32,7 +32,7 @@ AM_INIT_AUTOMAKE([-Wno-portability])
 
 XVERSION=`echo $VERSION | awk -F. '{printf("0x%02x%02x%02x",$1,$2,$3)}'`
 AC_SUBST(XVERSION)
-VERSION_DEV=0
+VERSION_DEV=1
 AC_SUBST(VERSION_DEV)
 
 # set up MODULE_NAME variable for dynamic construction of directories (resources, etc.)
