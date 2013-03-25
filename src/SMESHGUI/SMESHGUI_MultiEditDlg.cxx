@@ -662,7 +662,6 @@ void SMESHGUI_MultiEditDlg::onFilterBtn()
 
   myFilterDlg->SetSelection();
   myFilterDlg->SetMesh(myMesh);
-  myFilterDlg->SetSourceWg(myListBox);
 
   myFilterDlg->show();
 }
