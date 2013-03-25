@@ -466,8 +466,11 @@ bool SMESHGUI_FilterLibraryDlg::onApply()
 //=======================================================================
 void SMESHGUI_FilterLibraryDlg::onOk()
 {
-  if (onApply())
-    reject();
+  if (onApply()) {
+    disconnect( mySMESHGUI, 0, this, 0);
+    mySMESHGUI->ResetState();
+    accept();
+  }
 }
 
 //=======================================================================
