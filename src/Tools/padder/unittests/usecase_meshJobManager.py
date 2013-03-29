@@ -22,7 +22,9 @@
 
 # This script illustrates the standard use case of the component
 # MeshJobManager from within a SALOME script. It could be used as a
-# unit test of the component.
+# unit test of the component. The typical procedure is:
+# $ <appli>/runAppli -t
+# $ <appli>/runSession </path/to>/usecase_meshJobManager.py
 
 #
 # =======================================================================
@@ -32,7 +34,7 @@
 import sys
 import os
 import time
-from salome.smesh.spadder.configreader import ConfigReader, printConfig
+from salome.smesh.spadder.configreader import ConfigReader, printConfig, getPadderTestDir
 
 configReader = ConfigReader()
 defaultConfig = configReader.getDefaultConfig()
@@ -70,7 +72,15 @@ component.configure(configId,config)
 # for testing the component. The test function number corresponds to
 # the number of the test defined in the SpherePadder installation
 # directory.
-
+PADDERTESTDIR = getPadderTestDir(defaultConfig)
+#PADDERTESTDIR = spadder.getTestPadderDataDir()
+#
+# WARN: the above instruction (spadder.getTestPadderDataDir())
+# localizes the PADDERTEST DIR using the PADDERDIR shell variable,
+# while the previous one (getPadderTestDir) localizes this directory
+# from data of the config (read from the configuration file
+# padder.cfg).
+#
 def test00_parameters():
     """Test using a concrete mesh and a single steelbar mesh""" 
     file_concrete=os.path.join(spadder.getTestDataDir(),"concrete.med")
@@ -90,7 +100,7 @@ def test00_parameters():
 
 def test01_parameters():
     """One concrete mesh and two steelbar meshes"""
-    datadir = os.path.join(spadder.getTestPadderDataDir(),"test01")
+    datadir = os.path.join(PADDERTESTDIR,"test01")
     meshJobParameterList = []
 
     medfile = os.path.join(datadir,"concrete.med")
@@ -115,7 +125,7 @@ def test01_parameters():
 
 def test02_parameters():
     """One steelbar mesh only, without a concrete mesh"""
-    datadir = os.path.join(spadder.getTestPadderDataDir(),"test02")
+    datadir = os.path.join(PADDERTESTDIR,"test02")
     meshJobParameterList = []
 
     medfile = os.path.join(datadir,"cadreef.med")
@@ -127,7 +137,7 @@ def test02_parameters():
 
 def test03_parameters():
     """One concrete mesh only, without a steelbar mesh"""
-    datadir = os.path.join(spadder.getTestPadderDataDir(),"test03")
+    datadir = os.path.join(PADDERTESTDIR,"test03")
     meshJobParameterList = []
 
     medfile = os.path.join(datadir,"concrete.med")
@@ -209,4 +219,6 @@ else:
     print "OK:  jobid = "+str(jobid)+" ended with state="+str(state)
     meshJobResults = component.finalize(jobid)
     print meshJobResults
-    print "You will find the results files in the directory:\n%s"%meshJobResults.results_dirname
+    if meshJobResults.status is not True:
+        print "ERR: the results are not OK: %s"%component.getLastErrorMessage()
+        print "ERR: see log files in %s"%meshJobResults.results_dirname

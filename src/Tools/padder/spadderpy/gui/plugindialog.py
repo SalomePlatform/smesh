@@ -340,14 +340,14 @@ class PluginDialog(QDialog):
             return
 
         meshJobResults = jobManager.finalize(self.__jobid)
-        if state == "ERROR":
-            self.__log("ERR: jobid = "+str(self.__jobid)+" ended with error: "+meshJobResults.status)
-            self.__log("ERR: %s"%jobManager.getLastErrorMessage())
+        logsdirname = os.path.join(meshJobResults.results_dirname, "logs")
+        if state == "ERROR" or meshJobResults.status is not True:
+            msgtemp = "ERR: jobid = %s ended with error: %s"
+            self.__log(msgtemp%(str(self.__jobid),jobManager.getLastErrorMessage()))
+            self.__log("ERR: see log files in %s"%logsdirname)
             return
 
-        logsdirname = os.path.join(meshJobResults.results_dirname, "logs")
-        self.__log("INF:  jobid="+str(self.__jobid)+" ended normally   : "+meshJobResults.status)
-        self.__log("INF:  jobid="+str(self.__jobid)+" see log files in : "+logsdirname)
+        self.__log("INF:  jobid=%s ended normally (see log files in %s)"%(str(self.__jobid),logsdirname))
 
         medfilename = os.path.join(meshJobResults.results_dirname,
                                    meshJobResults.outputmesh_filename)

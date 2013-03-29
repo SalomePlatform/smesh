@@ -294,9 +294,9 @@ CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobParameterList & m
       break;
     default:
       _lastErrorMessage =
-        std::string("The type of the file ")+
-        std::string(currentMesh.file_name)+
-        std::string(" is not recognized");
+	std::string("The type of the file ")+
+	std::string(currentMesh.file_name)+
+	std::string(" is not recognized");
       LOG(_lastErrorMessage);
       return JOBID_UNDEFINED;
     }
@@ -569,18 +569,28 @@ MESHJOB::MeshJobResults * MeshJobManager_i::finalize(CORBA::Long jobId) {
     rename((local_resultdir+"/"+OUTPUTFILE).c_str(), (local_resultdir+"/"+outputFileName).c_str());
 
     result->outputmesh_filename = outputFileName.c_str();
-    result->status = "OK";
+    
+    if ( fexists( (local_resultdir+"/"+outputFileName).c_str()  ) != true ) {
+      _lastErrorMessage = std::string("The result file ")+
+	std::string((local_resultdir+"/"+outputFileName).c_str())+
+	std::string(" has not been created.");
+      result->status = false;
+    }
+    else {
+      result->status = true;
+    }
  }
   catch (const SALOME::SALOME_Exception & ex)
   {
-    LOG("SALOME Exception in getResults !");
-    result->status = "SALOME Exception in getResults !";
     _lastErrorMessage = ex.details.text.in();
+    LOG(_lastErrorMessage);
+    result->status = false;
   }
   catch (const CORBA::SystemException& ex)
   {
-    LOG("Receive CORBA System Exception: " << ex);
-    result->status = "Receive CORBA System Exception: see log";
+    _lastErrorMessage = "The SALOME launcher can not retrieve the result data";
+    LOG(_lastErrorMessage);
+    result->status = false;
   }
   endService("MeshJobManager_i::getResults");
   return result;

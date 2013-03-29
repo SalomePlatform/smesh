@@ -76,7 +76,7 @@ module MESHJOB
   {
     string results_dirname;
     string outputmesh_filename;
-    string status;
+    boolean status;
   };
 
   // This defines the possible states of a job

@@ -85,13 +85,22 @@ class ConfigReader:
             return TYPE_LOCAL
         return defaultType
 
-
 def printConfig(config):
     print "PADDER CONFIGURATION:"
     print "\tconfig.resname = %s"%config.resname
     print "\tconfig.binpath = %s"%config.binpath
     print "\tconfig.envpath = %s"%config.envpath
     
+def getPadderTestDir(config):
+    """
+    This function returns the directory of the SpherePadder
+    installation, where the tests cases are located. This should be
+    used for test only. It makes the hypothesis that the binpath to
+    the executable program is a path of the executable program of a
+    complete installation of SpherePadder.
+    """
+    testdir=os.path.join(os.path.abspath(os.path.dirname(config.binpath)),"tests")
+    return testdir
 
 #
 # =========================================================================
