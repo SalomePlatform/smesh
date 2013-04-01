@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2013  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -3051,18 +3051,23 @@ void _pyNumberOfSegmentsHyp::Flush()
   list<Handle(_pyCommand)>::reverse_iterator cmd = myUnusedCommands.rbegin();
   int distrTypeNb = 0;
   for ( ; !distrTypeNb && cmd != myUnusedCommands.rend(); ++cmd )
-    if ( (*cmd)->GetMethod() == "SetDistrType" )
-      distrTypeNb = (*cmd)->GetOrderNb();
-    else if (IsWrapped() && (*cmd)->GetMethod() == "SetObjectEntry" )
+    if ( (*cmd)->GetMethod() == "SetDistrType" ) {
+      if ( cmd != myUnusedCommands.rbegin() )
+        distrTypeNb = (*cmd)->GetOrderNb();
+    }
+    else if (IsWrapped() && (*cmd)->GetMethod() == "SetObjectEntry" ) {
       (*cmd)->Clear();
-
+    }
   // clear commands before the last SetDistrType()
   list<Handle(_pyCommand)> * cmds[2] = { &myArgCommands, &myUnusedCommands };
+  set< int > treatedCmdNbs; // avoid treating same cmd twice
   for ( int i = 0; i < 2; ++i ) {
     set<TCollection_AsciiString> uniqueMethods;
     list<Handle(_pyCommand)> & cmdList = *cmds[i];
     for ( cmd = cmdList.rbegin(); cmd != cmdList.rend(); ++cmd )
     {
+      if ( !treatedCmdNbs.insert( (*cmd)->GetOrderNb() ).second )
+        continue;// avoid treating same cmd twice
       bool clear = ( (*cmd)->GetOrderNb() < distrTypeNb );
       const TCollection_AsciiString& method = (*cmd)->GetMethod();
       if ( !clear || method == "SetNumberOfSegments" ) {

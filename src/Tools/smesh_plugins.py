@@ -1,5 +1,5 @@
 # -*- coding: iso-8859-1 -*-
-# Copyright (C) 2011-2012  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2011-2013  EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public

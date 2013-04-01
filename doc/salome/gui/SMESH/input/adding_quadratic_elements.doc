@@ -14,6 +14,12 @@ QUAD9). The quadratic hexahedral element can bear 7 additional nodes:
 at the element center and at centers of sides, then it is referred as
 tri-quadratic one (or HEXA27).
 
+SALOME uses the convention of nodal connectivity of elements of MED library. You
+can consult description of the nodal connectivity of elements located
+within documentation on MED library or 
+<a href="http://www.code-aster.org/outils/med/html/connectivites.html">
+  here </a>.
+
 There are several ways you can create quadratic elements in your mesh:
 - manually create quadratic elements (the way described below);
 - use \ref quadratic_mesh_anchor "Quadratic Mesh" hypothesis to

@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2013  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -571,10 +571,13 @@ public:
    */
   SALOMEDS::SObject_ptr GetAlgoSO(const ::SMESH_Algo* algo);
 
-  void UpdateParameters(/*CORBA::Object_ptr theObject,*/ const char* theParameters);
+  void UpdateParameters(CORBA::Object_ptr theObject, const char* theParameters);
   char* GetParameters(CORBA::Object_ptr theObject);
-  char* ParseParameters(const char* theParameters);
+  //char* ParseParameters(const char* theParameters);
+  const std::vector< int >&         GetLastParamIndices() const { return myLastParamIndex; }
   const std::vector< std::string >& GetLastParameters() const { return myLastParameters; }
+  const std::string &               GetLastObjEntry() const { return myLastObj; }
+  std::vector< std::string >        GetAllParameters(const std::string& theObjectEntry) const;
 
 private:
   // Create hypothesis of given type
@@ -620,7 +623,9 @@ private:
   // Dump Python: trace of API methods calls
   std::map < int, Handle(TColStd_HSequenceOfAsciiString) > myPythonScripts;
   bool                                                     myIsHistoricalPythonDump;
+  std::vector< int >                                       myLastParamIndex;
   std::vector< std::string >                               myLastParameters;
+  std::string                                              myLastObj;
 };
 
 

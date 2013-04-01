@@ -1,4 +1,4 @@
-# Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2007-2013  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -64,6 +64,11 @@ docdir             = $(datadir)/doc/salome
 
 # common rules
 
+# ============================================================
+# Cmake files wildcard (to add then to the distribution)
+# ============================================================
+CMAKEFILES         = $(notdir $(wildcard $(srcdir)/CMakeLists.txt))
+
 # meta object implementation files generation (moc)
 %_moc.cxx: %.h
 	$(MOC) $< -o $@
@@ -82,7 +87,8 @@ ui_%.h: %.ui
 
 # extra distributed files
 EXTRA_DIST = $(MOC_FILES:%_moc.cxx=%.h) $(QRC_FILES:qrc_%.cxx=%.qrc) \
-             $(UIC_FILES:ui_%.h=%.ui) $(nodist_salomeres_DATA:%.qm=%.ts)
+             $(UIC_FILES:ui_%.h=%.ui) $(nodist_salomeres_DATA:%.qm=%.ts) \
+             $(CMAKEFILES)
 
 # customize clean operation
 mostlyclean-local:

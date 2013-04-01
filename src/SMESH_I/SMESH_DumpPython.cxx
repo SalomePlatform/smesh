@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2013  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -71,26 +71,31 @@ namespace SMESH
       std::string aString = myStream.str();
       TCollection_AsciiString aCollection(Standard_CString(aString.c_str()));
       SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();
-      if(!aStudy->_is_nil() && !aCollection.IsEmpty()){
+      if(!aStudy->_is_nil() && !aCollection.IsEmpty())
+      {
+        const std::string & objEntry = SMESH_Gen_i::GetSMESHGen()->GetLastObjEntry();
+        if ( !objEntry.empty() )
+          aCollection += (TVar::ObjPrefix() + objEntry ).c_str();
         aSMESHGen->AddToPythonScript(aStudy->StudyId(),aCollection);
         if(MYDEBUG) MESSAGE(aString);
-        aSMESHGen->UpdateParameters(""); // prevent misuse of already treated variables
+        // prevent misuse of already treated variables
+        aSMESHGen->UpdateParameters(CORBA::Object_var().in(),"");
       }
     }
   }
 
-  TPythonDump& //!< to store a variable value
+  TPythonDump& //!< store a variable value. Write either a value or '$varID$'
   TPythonDump::
   operator<<(const TVar& theVarValue)
   {
-    const std::vector< std::string >& varNames = SMESH_Gen_i::GetSMESHGen()->GetLastParameters();
+    const std::vector< int >& varIDs = SMESH_Gen_i::GetSMESHGen()->GetLastParamIndices();
     if ( theVarValue.myVals.size() != 1 )
     {
       myStream << "[ ";
       for ( size_t i = 1; i <= theVarValue.myVals.size(); ++i )
       {
-        if ( myVarsCounter < varNames.size() && !varNames[ myVarsCounter ].empty() )
-          myStream << TVar::Quote() << varNames[ myVarsCounter ] << TVar::Quote();
+        if ( myVarsCounter < varIDs.size() && varIDs[ myVarsCounter ] >= 0 )
+          myStream << TVar::Quote() << varIDs[ myVarsCounter ] << TVar::Quote();
         else
           myStream << theVarValue.myVals[i-1];
         if ( i < theVarValue.myVals.size() )
@@ -101,8 +106,8 @@ namespace SMESH
     }
     else
     {
-      if ( myVarsCounter < varNames.size() && !varNames[ myVarsCounter ].empty() )
-        myStream << TVar::Quote() << varNames[ myVarsCounter ] << TVar::Quote();
+      if ( myVarsCounter < varIDs.size() && varIDs[ myVarsCounter ] >= 0 )
+        myStream << TVar::Quote() << varIDs[ myVarsCounter ] << TVar::Quote();
       else
         myStream << theVarValue.myVals[0];
       ++myVarsCounter;
@@ -310,7 +315,7 @@ namespace SMESH
     if(aSObject->_is_nil() && !CORBA::is_nil(theArg))
       myStream << "hyp_" << theArg->GetId();
     else
-      *this << CORBA::Object_ptr( theArg );
+      *this << aSObject;
     return *this;
   }
 
@@ -657,7 +662,6 @@ Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Object_ptr theStudy,
   }
 
   // Get trace of restored study
-  //SALOMEDS::SObject_wrap aSO = SMESH_Gen_i::ObjectToSObject(theStudy, _this());
   SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
   SALOMEDS::GenericAttribute_wrap anAttr =
     aStudyBuilder->FindOrCreateAttribute(aSO, "AttributePythonObject");

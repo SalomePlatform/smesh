@@ -1,4 +1,4 @@
-# Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2007-2013  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -870,7 +870,7 @@ class StdMeshersDC_Prism3D(Mesh_Algorithm):
         else:
             self.algoType = "RadialPrism_3D"
             self.Create(mesh, geom, "RadialPrism_3D")
-            self.distribHyp = self.Hypothesis("LayerDistribution", UseExisting=0)
+            self.distribHyp = None #self.Hypothesis("LayerDistribution", UseExisting=0)
             self.nbLayers = None
             pass
         pass
@@ -895,6 +895,8 @@ class StdMeshersDC_Prism3D(Mesh_Algorithm):
         self.mesh.smeshpyD.SetCurrentStudy( None )
         hyp = self.mesh.smeshpyD.CreateHypothesis(hypType, so)
         self.mesh.smeshpyD.SetCurrentStudy( study ) # enables publishing
+        if not distribHyp:
+            self.distribHyp = self.Hypothesis("LayerDistribution", UseExisting=0)
         self.distribHyp.SetLayerDistribution( hyp )
         return hyp
 
@@ -982,6 +984,39 @@ class StdMeshersDC_Prism3D(Mesh_Algorithm):
         return hyp
 
     pass # end of StdMeshersDC_Prism3D class
+
+## Defines a Prism 3D algorithm, which is either "Extrusion 3D" or "Radial Prism"
+#  depending on geometry
+# 
+#  It is created by calling smesh.Mesh.Prism(geom=0)
+#
+#  @ingroup l3_algos_3dextr
+class StdMeshersDC_RadialPrism3D(StdMeshersDC_Prism3D):
+
+    ## name of the dynamic method in smesh.Mesh class
+    #  @internal
+    meshMethod = "Prism"
+    ## type of algorithm used with helper function in smesh.Mesh class
+    #  @internal
+    algoType   = "RadialPrism_3D"
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates prism 3D algorithm for volumes"
+
+    ## Private constructor.
+    #  @param mesh parent mesh object algorithm is assigned to
+    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
+    #              if it is @c 0 (default), the algorithm is assigned to the main shape
+    def __init__(self, mesh, geom=0):
+        Mesh_Algorithm.__init__(self)
+        
+        shape = geom
+        if not shape:
+            shape = mesh.geom
+        self.Create(mesh, geom, "RadialPrism_3D")
+        self.distribHyp = None
+        self.nbLayers = None
+        return
 
 ## Defines a Radial Quadrangle 1D-2D algorithm
 # 

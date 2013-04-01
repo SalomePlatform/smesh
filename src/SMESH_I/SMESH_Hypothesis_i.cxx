@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2013  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -153,7 +153,10 @@ void SMESH_Hypothesis_i::SetVarParameter (const char* theParameter,
 {
   if ( SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen() )
   {
-    gen->UpdateParameters(theParameter);
+    SMESH::SMESH_Hypothesis_var varHolder;
+    if ( myHolder->_is_nil() ) varHolder = _this();
+    else                       varHolder = myHolder;
+    gen->UpdateParameters( varHolder, theParameter );
 
     const std::vector< std::string >& pars = gen->GetLastParameters();
     if ( !pars.empty() )
@@ -188,6 +191,20 @@ char* SMESH_Hypothesis_i::GetVarParameter (const char* theMethod)
 
 //================================================================================
 /*!
+ * \brief Store a hypothesis wrapping this not published one.
+ *
+ * This hyp, which has no own parameters but is published, is used to store variables
+ * defining parameters of this hypothesis.
+ */
+//================================================================================
+
+void SMESH_Hypothesis_i::SetHolderHypothesis(const SMESH::SMESH_Hypothesis_ptr hyp)
+{
+  myHolder = SMESH::SMESH_Hypothesis::_duplicate( hyp );
+}
+
+//================================================================================
+/*!
  * \brief Restore myMethod2VarParams by parameters stored in an old study
  */
 //================================================================================
@@ -201,7 +218,7 @@ void SMESH_Hypothesis_i::setOldParameters (const char* theParameters)
     if ( pos >= 0 ) aOldParameters = aOldParameters.Split(pos);
     pos = aOldParameters.SearchFromEnd(";*=");
     if ( pos >= 0 ) aOldParameters.Split(pos-1);
-    gen->UpdateParameters( aOldParameters.ToCString() );
+    gen->UpdateParameters( CORBA::Object_var( _this() ).in(), aOldParameters.ToCString() );
 
     myMethod2VarParams.clear();
     const std::vector< std::string >& pars = gen->GetLastParameters();
@@ -210,7 +227,7 @@ void SMESH_Hypothesis_i::setOldParameters (const char* theParameters)
       std::string meth = getMethodOfParameter( i, pars.size() );
       myMethod2VarParams[ meth ] = pars[i];
     }
-    gen->UpdateParameters(""); // clear params
+    gen->UpdateParameters( CORBA::Object_var( _this() ).in(), "" ); // clear params
   }
 }
 

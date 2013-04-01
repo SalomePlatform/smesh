@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2013  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -70,29 +70,20 @@ public:
   // Get unique id of hypothesis
   CORBA::Long GetId();
   
-  // Set the variable parameter; method is a name of method setting this parameter.
+  // Set the variable parameter (a variable name or a parameter value); \a method is a name
+  // of method setting this parameter.
   // This method must be called by the hypothesis creator just before calling hyp->method()
   void SetVarParameter (const char* parameter, const char* method);
 
-  // Return the variable parameter used for Hypothesis creation by name of method
-  // setting this parameter
+  // Return the variable parameter used at Hypothesis Creation by the name of method
+  // setting this parameter. The returned variable name is used at Hypothesis Edition.
   char* GetVarParameter (const char* methodName);
 
-  // Set list of parameters  separated by ":" symbol, used for Hypothesis creation
-  // void SetParameters (const char* theParameters);
-  
-  // // Return list of notebook variables used for Hypothesis creation separated by ":" symbol
-  // char* GetParameters();
-
-  // //Return list of last notebook variables used for Hypothesis creation.
-  // SMESH::ListOfParameters* GetLastParameters();
-
-  // //Set last parameters for not published hypothesis
-  
-  // void SetLastParameters(const char* theParameters);
-  
-  // // Clear parameters list
-  // void ClearParameters();
+  // Store a hypothesis wrapping this not published one. This hyp, which has
+  // no own parameters but is published, is used to store variables defining parameters
+  // of this hypothesis. This method is to be called before setting parameters
+  // of this hypothesis.
+  void SetHolderHypothesis(const SMESH::SMESH_Hypothesis_ptr hyp);
 
   //Return true if hypothesis was published in study
   bool IsPublished();
@@ -105,11 +96,16 @@ public:
   virtual void  LoadFrom( const char* theStream );
   virtual void  UpdateAsMeshesRestored(); // for hyps needing full data restored
 
-protected:
-  ::SMESH_Hypothesis*          myBaseImpl;    // base hypothesis implementation
+ protected:
 
-  std::map< std::string, std::string > myMethod2VarParams; // variable parameters
+  // base hypothesis implementation
+  ::SMESH_Hypothesis*         myBaseImpl;
 
+  // a published hypothesis wrapping this not published one
+  SMESH::SMESH_Hypothesis_var myHolder;
+
+  // variable parameters
+  std::map< std::string, std::string > myMethod2VarParams;
 
  public:
   // Methods for backward compatibility of notebook variables

@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2013  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -236,10 +236,11 @@ SMESH_NoteBook::~SMESH_NoteBook()
 //================================================================================
 void SMESH_NoteBook::ReplaceVariables()
 {
-  for(int i=0;i<_commands.size();i++) {
+  for(int i=0;i<_commands.size();i++)
+  {
     Handle(_pyCommand) aCmd = _commands[i];
-    TCollection_AsciiString aMethod = aCmd->GetMethod();
-    TCollection_AsciiString aObject = aCmd->GetObject();
+    TCollection_AsciiString aMethod      = aCmd->GetMethod();
+    TCollection_AsciiString aObject      = aCmd->GetObject();
     TCollection_AsciiString aResultValue = aCmd->GetResultValue();
     if(MYDEBUG) {
       cout<<"Command before : "<< aCmd->GetString()<<endl;
@@ -248,14 +249,72 @@ void SMESH_NoteBook::ReplaceVariables()
       cout<<"Result : "<< aResultValue<<endl;
     }
 
+    // NEW APPROACH
+    // Names of variables are stored in the Study, in "StringAttribute". Python commands
+    // store zero-based indices (as e.g.'$1$') of variables within "StringAttribute";
+    // An entry of object storing "StringAttribute" is at the end of the command
+    // after TVar::ObjPrefix().
+
+    // Get the entry of object storing "StringAttribute"
+    TCollection_AsciiString & cmdStr = aCmd->GetString();
+    TEntry2VarVecMap::iterator ent2varVec;
+    if (int pos = cmdStr.Location( SMESH::TVar::ObjPrefix(), 6, cmdStr.Length() ))
+    {
+      TCollection_AsciiString varHolderEntry =
+        cmdStr.SubString( pos + strlen( SMESH::TVar::ObjPrefix() ), cmdStr.Length() );
+      ent2varVec = _entry2VarsMap.find( varHolderEntry );
+      cmdStr.Split( pos - 1 );
+    }
+    else
+    {
+      ent2varVec = _entry2VarsMap.find( aObject );
+    }
+    // Set variables in cmdStr
+    if ( ent2varVec != _entry2VarsMap.end() && !ent2varVec->second.empty() )
+    {
+      const std::vector< std::string >& vars = ent2varVec->second;
+      int pos = 1, pos2;
+      // look for '$VarIndex$' in cmdStr. TVar::Quote() == '$'
+      while (( pos  = cmdStr.Location( 1, SMESH::TVar::Quote(), pos,   cmdStr.Length() )) &&
+             ( pos2 = cmdStr.Location( 1, SMESH::TVar::Quote(), pos+1, cmdStr.Length() )) )
+      {
+        size_t varIndex = std::string::npos;
+        const char* varIndexPtr = cmdStr.ToCString() + pos;
+        if ( '0' <= *varIndexPtr && *varIndexPtr <= '9' )
+          varIndex = atoi( varIndexPtr );
+        if ( 0 <= varIndex && varIndex < vars.size() && !vars[varIndex].empty() )
+        {
+          // replace '$VarIndex$' either by var name of var value
+          const char var0    = vars[varIndex][0];
+          const bool isValue = (( '0' <= var0 && var0 <= '9' ) || var0 == '-');
+          if ( isValue ) // remove TVar::Quote() as well
+            pos2 += 2; // pos still points to '$'
+          int indexLen = pos2 - pos - 1;
+          int  lenDiff = int( vars[varIndex].size() ) - indexLen;
+          if      ( lenDiff > 0 )
+            cmdStr.InsertBefore( pos2, vars[varIndex].c_str() + vars[varIndex].size() - lenDiff );
+          else if ( lenDiff < 0 )
+            cmdStr.Remove( pos+1, -lenDiff );
+          cmdStr.SetValue( pos+(!isValue), vars[varIndex].c_str() );
+        }
+        pos = pos2 + 1;
+        if ( pos + 2 >= cmdStr.Length() )
+          break;
+      }
+    }
+
+    // OLD APPROACH
+    // Variable names are stored historically in "StringAttribute",
+    // i.e. for each command there is a set of either var names or separated empty places.
+
     // check if method modifies the object itself
     TVariablesMap::const_iterator it = _objectMap.find(aObject);
     if(it == _objectMap.end()) // check if method returns a new object
       it = _objectMap.find(aResultValue);
     
     if(it == _objectMap.end()) { // check if method modifies a mesh using mesh editor
-      TMeshEditorMap::const_iterator meIt = myMeshEditors.find(aObject);
-      if(meIt != myMeshEditors.end()) {
+      TMeshEditorMap::const_iterator meIt = _meshEditors.find(aObject);
+      if(meIt != _meshEditors.end()) {
         TCollection_AsciiString aMesh = (*meIt).second;
         it = _objectMap.find(aMesh);
       }
@@ -694,7 +753,6 @@ void SMESH_NoteBook::InitObjectMap()
     return;
   
   SALOMEDS::ChildIterator_wrap Itr = aStudy->NewChildIterator(aSO);
-  CORBA::String_var aParameters;
   for( Itr->InitEx(true); Itr->More(); Itr->Next())
   {
     SALOMEDS::SObject_wrap aSObject = Itr->Value();
@@ -702,12 +760,15 @@ void SMESH_NoteBook::InitObjectMap()
     if ( aSObject->FindAttribute( anAttr.inout(), "AttributeString"))
     {
       SALOMEDS::AttributeString_wrap strAttr = anAttr;
-      aParameters = strAttr->Value();
+      CORBA::String_var          aParameters = strAttr->Value();
+      CORBA::String_var                 anID = aSObject->GetID();
+      std::vector< std::string >     allVars = aGen->GetAllParameters( anID.in() );
       SALOMEDS::ListOfListOfStrings_var aSections = aStudy->ParseVariables(aParameters.in());
+      _entry2VarsMap[ TCollection_AsciiString( anID.in() )] = allVars;
       if(MYDEBUG) {
-        cout<<"Entry : "<< aSObject->GetID()<<endl;
+        cout<<"Entry : "<< anID<<endl;
         cout<<"aParameters : "<<aParameters<<endl;
-      }      
+      }
       TCollection_AsciiString anObjType;
       CORBA::Object_var       anObject = SMESH_Gen_i::SObjectToObject(aSObject);
       SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow(anObject);
@@ -770,8 +831,8 @@ void SMESH_NoteBook::AddCommand(const TCollection_AsciiString& theString)
   _commands.push_back(aCommand);
 
   if ( aCommand->GetMethod() == "GetMeshEditor" ) { // MeshEditor creation
-    myMeshEditors.insert( make_pair( aCommand->GetResultValue(),
-                                     aCommand->GetObject() ) );
+    _meshEditors.insert( make_pair( aCommand->GetResultValue(),
+                                    aCommand->GetObject() ) );
   }
 }
 

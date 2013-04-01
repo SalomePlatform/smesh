@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2013  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -84,8 +84,7 @@ private:
 class SMESH_NoteBook
 {
 public:
-  typedef std::map<TCollection_AsciiString,SMESH_ObjectStates*> TVariablesMap;
-  typedef std::map<TCollection_AsciiString,TCollection_AsciiString> TMeshEditorMap;
+
   SMESH_NoteBook();
   ~SMESH_NoteBook();
   void ReplaceVariables();
@@ -94,6 +93,7 @@ public:
   TCollection_AsciiString GetResultScript() const;
 
 private:
+
   void InitObjectMap();
   void ProcessLayerDistribution();
 
@@ -101,9 +101,14 @@ private:
   
 private:
   
-  TVariablesMap _objectMap;
+  typedef std::map<TCollection_AsciiString,SMESH_ObjectStates*>         TVariablesMap;
+  typedef std::map<TCollection_AsciiString,TCollection_AsciiString>     TMeshEditorMap;
+  typedef std::map<TCollection_AsciiString,std::vector< std::string > > TEntry2VarVecMap;
+
+  TVariablesMap                   _objectMap; // old approach - full states are kept
+  TEntry2VarVecMap                _entry2VarsMap; // new approach - only var names are kept
   std::vector<Handle(_pyCommand)> _commands;
-  TMeshEditorMap myMeshEditors;
+  TMeshEditorMap                  _meshEditors;
 };
 
 #endif //SMESH_NoteBook_HeaderFile

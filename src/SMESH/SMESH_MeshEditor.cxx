@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2013  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -9714,6 +9714,7 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d, const bool theT
   int totalNbElems = meshDS->NbEdges() + meshDS->NbFaces() + meshDS->NbVolumes();
   if ( nbCheckedElems < totalNbElems ) // not all elements are in submeshes
   {
+    aHelper.SetElementsOnShape(false);
     SMESHDS_SubMesh *smDS = 0;
     SMDS_EdgeIteratorPtr aEdgeItr = meshDS->edgesIterator();
     while(aEdgeItr->more())

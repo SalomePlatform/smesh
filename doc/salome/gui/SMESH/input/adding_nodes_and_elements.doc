@@ -19,14 +19,20 @@
 <li>\ref adding_polyhedrons_anchor "Polyhedrons"</li>
 </ul>
 
+SALOME uses the convention of nodal connectivity of elements of MED library. You
+can consult description of the nodal connectivity of elements located
+within documentation on MED library or 
+<a href="http://www.code-aster.org/outils/med/html/connectivites.html">
+  here </a>.
+
 <em>To add a node or an element to your mesh:</em>
 <ol>
-<li>Select your mesh in the Object Browser or in the 3D viewer.</li>
+  <li>Select your mesh in the Object Browser or in the 3D viewer.</li>
 
-<li>From the \b Modification menu choose the \b Add item, the
-following associated sub-menu will appear:</li>
+  <li>From the \b Modification menu choose the \b Add item, the
+    following associated sub-menu will appear:</li>
 
-\image html image146.png
+  \image html image146.png
 
 From this sub-menu select the type of element which you would like to add to your mesh.
 

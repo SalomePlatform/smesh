@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2013  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -1347,6 +1347,9 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
     _computeError.reset(); break;
   default:;
   }
+
+  if ( event == CLEAN )
+    _alwaysComputed = false; // Unset 'true' set by MergeNodes() (issue 0022182)
 
   if (_subShape.ShapeType() == TopAbs_VERTEX)
   {

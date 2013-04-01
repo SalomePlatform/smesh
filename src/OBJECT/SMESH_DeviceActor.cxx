@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2013  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -295,30 +295,42 @@ SMESH_DeviceActor
     vtkIdType aNbCells = aGrid->GetNumberOfCells();
     aScalars->SetNumberOfComponents(1);
     aScalars->SetNumberOfTuples(aNbCells);
+    double* range;// = aScalars->GetRange();
     
     myVisualObj->UpdateFunctor(theFunctor);
 
     using namespace SMESH::Controls;
-    if(NumericalFunctor* aNumericalFunctor = dynamic_cast<NumericalFunctor*>(theFunctor.get())){
+    if(NumericalFunctor* aNumericalFunctor = dynamic_cast<NumericalFunctor*>(theFunctor.get()))
+    {
       for(vtkIdType i = 0; i < aNbCells; i++){
         vtkIdType anId = myExtractUnstructuredGrid->GetInputId(i);
         vtkIdType anObjId = myVisualObj->GetElemObjId(anId);
         double aValue = aNumericalFunctor->GetValue(anObjId);
         aScalars->SetValue(i,aValue);
       }
-    }else if(Predicate* aPredicate = dynamic_cast<Predicate*>(theFunctor.get())){
+      range = aScalars->GetRange();
+      if ( range[1] - range[0] < ( qMax(qAbs(range[0]),qAbs(range[1])) + 1e-100 ) * 1e-6 )
+      {
+        range[1] = range[0];
+        for(vtkIdType i = 0; i < aNbCells; i++)
+          aScalars->SetValue(i,range[0]);
+      }
+    }
+    else if(Predicate* aPredicate = dynamic_cast<Predicate*>(theFunctor.get()))
+    {
       for(vtkIdType i = 0; i < aNbCells; i++){
         vtkIdType anId = myExtractUnstructuredGrid->GetInputId(i);
         vtkIdType anObjId = myVisualObj->GetElemObjId(anId);
         bool aValue = aPredicate->IsSatisfy(anObjId);
         aScalars->SetValue(i,aValue);
       }
+      range = aScalars->GetRange();
     }
 
     aDataSet->GetCellData()->SetScalars(aScalars);
     aScalars->Delete();
-        
-    theLookupTable->SetRange(aScalars->GetRange());
+
+    theLookupTable->SetRange( range );
     theLookupTable->SetNumberOfTableValues(theScalarBarActor->GetMaximumNumberOfColors());
     theLookupTable->Build();
     

@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2013  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -50,15 +50,15 @@
 //================================================================================
 
 StdMeshersGUI_LayerDistributionParamWdg
-::StdMeshersGUI_LayerDistributionParamWdg(SMESH::SMESH_Hypothesis_ptr hyp,
-                                          const QString& theName,
-                                          QDialog* dlg): 
-  QWidget(), myName(theName), myDlg( dlg )
+::StdMeshersGUI_LayerDistributionParamWdg(SMESH::SMESH_Hypothesis_ptr holderHyp,
+                                          SMESH::SMESH_Hypothesis_ptr distribHyp,
+                                          const QString&              name,
+                                          QDialog*                    dlg): 
+  QWidget(), myName(name), myDlg( dlg )
 {
+  myHolderHyp = SMESH::SMESH_Hypothesis::_duplicate( holderHyp );
   init();
-  set( hyp );
-//   if ( IsOk() )
-//     onEdit();
+  set( distribHyp );
 }
 
 //================================================================================
@@ -73,6 +73,7 @@ void StdMeshersGUI_LayerDistributionParamWdg::set(SMESH::SMESH_Hypothesis_ptr hy
   myHyp = SMESH::SMESH_Hypothesis::_nil();
   if ( !CORBA::is_nil( hyp )) {
     myHyp = SMESH::SMESH_Hypothesis::_duplicate( hyp );
+    myHyp->SetHolderHypothesis( myHolderHyp );
     myEditButton->setEnabled( true );
     myCreateButton->setText( tr("CHANGE_TYPE"));
     myParamValue = hyp->GetName();
@@ -96,7 +97,7 @@ StdMeshersGUI_LayerDistributionParamWdg::~StdMeshersGUI_LayerDistributionParamWd
 
 //================================================================================
 /*!
- * \brief Create a leayout, initialize fields
+ * \brief Create a layout, initialize fields
  */
 //================================================================================
 

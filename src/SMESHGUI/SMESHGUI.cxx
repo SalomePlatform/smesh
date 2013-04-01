@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2013  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -4726,7 +4726,7 @@ void SMESHGUI::createPreferences()
   int exportgroup = addPreference( tr( "PREF_GROUP_EXPORT" ), genTab );
   setPreferenceProperty( exportgroup, "columns", 2 );
   addPreference( tr( "PREF_AUTO_GROUPS" ), exportgroup, LightApp_Preferences::Bool, "SMESH", "auto_groups" );
-  addPreference( tr( "PREF_RENUMBER" ), exportgroup, LightApp_Preferences::Bool, "SMESH", "renumbering" );
+  //addPreference( tr( "PREF_RENUMBER" ), exportgroup, LightApp_Preferences::Bool, "SMESH", "renumbering" );
 
   int computeGroup = addPreference( tr( "PREF_GROUP_COMPUTE" ), genTab );
   setPreferenceProperty( computeGroup, "columns", 2 );

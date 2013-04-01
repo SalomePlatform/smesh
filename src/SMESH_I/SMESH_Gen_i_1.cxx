@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2013  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -935,16 +935,28 @@ bool SMESH_Gen_i::RemoveHypothesisFromShape(SALOMEDS::Study_ptr         theStudy
   return true;
 }
 
-//=======================================================================
-//function : UpdateParameters
-//purpose  : 
-//=======================================================================
-void SMESH_Gen_i::UpdateParameters(/*CORBA::Object_ptr theObject,*/ const char* theParameters)
+//================================================================================
+/*!
+ * \brief Stores names of variables that WILL be passes as parameters when calling
+ *        some method of a given object.
+ *  \param [in] theObject - the object whose a method WILL be called with \a theParameters.
+ *  \param [in] theParameters - a string contating parameters separated by ':'.
+ */
+//================================================================================
+
+void SMESH_Gen_i::UpdateParameters(CORBA::Object_ptr theObject, const char* theParameters)
 {
   SALOMEDS::Study_var aStudy = GetCurrentStudy();
   if ( aStudy->_is_nil() )
     return;
+
+  // find variable names within theParameters
+
+  myLastObj.clear();
   myLastParameters.clear();
+  myLastParamIndex.clear(); /* vector holding indices of virables within the string
+                               of all varibles used for theObject */ 
+  int nbVars = 0;
   int pos = 0, prevPos = 0, len = strlen( theParameters );
   if ( len == 0 ) return;
   while ( pos <= len )
@@ -953,10 +965,11 @@ void SMESH_Gen_i::UpdateParameters(/*CORBA::Object_ptr theObject,*/ const char* 
     {
       if ( prevPos < pos )
       {
-        string val(theParameters + prevPos, theParameters + pos );
+        string val( theParameters + prevPos, theParameters + pos );
         if ( !aStudy->IsVariable( val.c_str() ))
           val.clear();
         myLastParameters.push_back( val );
+        nbVars += (! myLastParameters.back().empty() );
       }
       else
       {
@@ -966,123 +979,183 @@ void SMESH_Gen_i::UpdateParameters(/*CORBA::Object_ptr theObject,*/ const char* 
     }
     ++pos;
   }
-  return;
 
-  // OLD VARIANT
+  if ( nbVars < 1 )
+    return;
 
-  // if(VARIABLE_DEBUG)
-  //   cout<<"UpdateParameters : "<<theParameters<<endl;
-  // //SALOMEDS::Study_var aStudy = GetCurrentStudy();
-  // if(aStudy->_is_nil() || CORBA::is_nil(theObject)) 
-  //   return;
+  // store
+  // (1) variable names in the string of all varibles used for theObject and
+  // (2) indices of found variables in myLastParamIndex.
 
-  // SALOMEDS::SObject_wrap aSObj =  ObjectToSObject(aStudy,theObject);
-  // if(aSObj->_is_nil())  
-  //   return;
+  // remember theObject
+  SALOMEDS::SObject_wrap aSObj =  ObjectToSObject(aStudy,theObject);
+  if ( aSObj->_is_nil() )
+    return;
+  CORBA::String_var anObjEntry = aSObj->GetID();
+  myLastObj = anObjEntry.in();
 
-  // SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
+  // get a string of variable names
+  SALOMEDS::StudyBuilder_var   aStudyBuilder = aStudy->NewBuilder();
+  SALOMEDS::GenericAttribute_wrap     anAttr =
+    aStudyBuilder->FindOrCreateAttribute( aSObj, "AttributeString" );
+  SALOMEDS::AttributeString_wrap aStringAttr = anAttr;
+  CORBA::String_var                  oldVars = aStringAttr->Value();
+  std::string                         varStr = oldVars.in();
 
-  // SALOMEDS::GenericAttribute_var aFindAttr;
-  // bool hasAttr = aSObj->FindAttribute(aFindAttr, "AttributeString");
-  // if(VARIABLE_DEBUG)
-  //   cout<<"Find Attribute "<<hasAttr<<endl;
+  // add new variables and find indices of variables
+  for ( size_t i = 0; i < myLastParameters.size(); ++i )
+  {
+    int varIndex = -1;
+    if ( !myLastParameters[i].empty() )
+    {
+      // find index of myLastParameters[i] in varStr
+      int curIndex  = 0;
+      bool varFound = false;
+      size_t pos    = 0;
+      // varStr can be "A|B::C;*=2|D"
+      const std::string separators(":|;*=");
+      while ( pos < varStr.size() && !varFound )
+      {
+        // skip separators
+        while ( separators.find( varStr[ pos ]) != std::string::npos )
+          if ( ++pos >= varStr.size() )
+            break;
+        // skip repetition number following '='
+        if ( varStr[ pos-1 ] == '=' )
+        {
+          while ( '0' <= varStr[ pos ] && varStr[ pos ] <= '9' )
+            ++pos;
+          continue; // to skip next separator
+        }
+        // compare variable name
+        if ( pos < varStr.size() )
+        {
+          varFound = ( varStr.compare( pos, myLastParameters[i].size(), myLastParameters[i] ) == 0 &&
+                       // same string begining but is length same?
+                       ( pos + myLastParameters[i].size() >= varStr.size() ||
+                         separators.find( varStr[ pos+1 ]) != std::string::npos ));
+          if ( varFound )
+            varIndex = curIndex;
+          else
+            pos = varStr.find_first_of( separators, pos ); // goto the next separator
+          ++curIndex;
+        }
+      }
+      // add new variable
+      if ( !varFound )
+      {
+        varStr += ":" + myLastParameters[i];
+        varIndex = curIndex;
+      }
+    }
+    myLastParamIndex.push_back( varIndex );
+  }
+  aStringAttr->SetValue( varStr.c_str() );
+}
 
-  // SALOMEDS::GenericAttribute_var anAttr;
-  // anAttr = aStudyBuilder->FindOrCreateAttribute( aSObj, "AttributeString");
-  // SALOMEDS::AttributeString_var aStringAttr = SALOMEDS::AttributeString::_narrow(anAttr);
+//================================================================================
+/*!
+ * \brief Return all variables used to create an object
+ *  \param [in] theObjectEntry - an object entry in the current study
+ *  \return std::vector< std::string > - all variable names (or values of removed variables)
+ */
+//================================================================================
 
-  // CORBA::String_var oldparVar = aStringAttr->Value();
-  // CORBA::String_var inpparVar = ParseParameters(theParameters);
-  // TCollection_AsciiString aNewParams;
-  // TCollection_AsciiString aOldParameters(oldparVar.inout());
-  // TCollection_AsciiString anInputParams(inpparVar.inout());
-  // if(!hasAttr)
-  //   aNewParams = anInputParams;
-  // else 
-  //   {
-  //     int pos = aOldParameters.SearchFromEnd("|");
-  //     if(pos==-1) pos = 0;
-  //     TCollection_AsciiString previousParamFull(aOldParameters.Split(pos));
-  //     TCollection_AsciiString previousParam(previousParamFull);
-  //     TCollection_AsciiString theRepet("1");
-  //     pos = previousParam.SearchFromEnd(";*=");
-  //     if(pos >= 0)
-  //       {
-  //         theRepet = previousParam.Split(pos+2);
-  //         pos = pos-1;
-  //         if(pos==-1) pos = 0;
-  //         previousParam.Split(pos);
-  //       }
-  //     if(previousParam == anInputParams)
-  //       {
-  //         theRepet = theRepet.IntegerValue()+1;
-  //         aNewParams = aOldParameters + previousParam + ";*=" + theRepet;
-  //       }
-  //     else
-  //       {
-  //         aNewParams = aOldParameters + previousParamFull + "|" + anInputParams;
-  //       }
-  //   }
+std::vector< std::string > SMESH_Gen_i::GetAllParameters(const std::string& theObjectEntry) const
+{
+  std::vector< std::string > varNames;
+  if ( myCurrentStudy->_is_nil() )
+    return varNames;
 
-  // if(VARIABLE_DEBUG)
-  // {
-  //   cout<<"Input Parameters : "<<anInputParams<<endl;
-  //   cout<<"Old Parameters : "<<aOldParameters<<endl;
-  //   cout<<"New Parameters : "<<aNewParams<<endl;
-  // }
+  SALOMEDS::SObject_wrap aSObj = myCurrentStudy->FindObjectID( theObjectEntry.c_str() );
+  if ( myCurrentStudy->_is_nil() )
+    return varNames;
 
-  // aStringAttr->SetValue( aNewParams.ToCString() );
+  // get a string of variable names
+  SALOMEDS::StudyBuilder_var   aStudyBuilder = myCurrentStudy->NewBuilder();
+  SALOMEDS::GenericAttribute_wrap     anAttr =
+    aStudyBuilder->FindOrCreateAttribute( aSObj, "AttributeString" );
+  SALOMEDS::AttributeString_wrap aStringAttr = anAttr;
+  CORBA::String_var                  oldVars = aStringAttr->Value();
+  std::string                         varStr = oldVars.in();
+
+  // separate variables within varStr;
+  // varStr can be "A|B::C;*=2|D"
+  size_t pos = 0;
+  const std::string separators(":|;*=");
+  while ( pos < varStr.size() )
+  {
+    // skip separators
+    pos = varStr.find_first_not_of( separators, pos );
+    // while ( separators.find( varStr[ pos ]) != std::string::npos )
+    //   if ( ++pos >= varStr.size() )
+    //     break;
+    // skip repetition number following '='
+    if ( varStr[ pos-1 ] == '=' )
+    {
+      while ( '0' <= varStr[ pos ] && varStr[ pos ] <= '9' )
+        ++pos;
+      continue; // to skip next separator
+    }
+    // store variable name
+    if ( pos < varStr.size() )
+    {
+      size_t pos2 = varStr.find_first_of( separators, pos );
+      varNames.push_back( varStr.substr( pos, pos2 - pos));
+      pos = pos2;
+    }
+  }
+  return varNames;
 }
 
 //=======================================================================
 //function : ParseParameters
 //purpose  : Replace variables by their values
 //=======================================================================
-char* SMESH_Gen_i::ParseParameters(const char* theParameters)
-{
-  //const char* aParameters = theParameters;
-//   const char* aParameters = CORBA::string_dup(theParameters);
-  TCollection_AsciiString anInputParams;
-  SALOMEDS::Study_var aStudy = GetCurrentStudy();
-  if( !aStudy->_is_nil() ) {
-//     SALOMEDS::ListOfListOfStrings_var aSections = aStudy->ParseVariables(theParameters);
-//     for(int j=0;j<aSections->length();j++) {
-//       SALOMEDS::ListOfStrings aVars= aSections[j];
-//       for(int i=0;i<aVars.length();i++ ) {
-//         anInputParams += aStudy->IsVariable(aVars[i].in()) ? 
-//           TCollection_AsciiString(aVars[i].in()) : TCollection_AsciiString("");
-//         if(i != aVars.length()-1)
-//           anInputParams+=":";
+// char* SMESH_Gen_i::ParseParameters(const char* theParameters)
+// {
+//   //const char* aParameters = theParameters;
+// //   const char* aParameters = CORBA::string_dup(theParameters);
+//   TCollection_AsciiString anInputParams;
+//   SALOMEDS::Study_var aStudy = GetCurrentStudy();
+//   if( !aStudy->_is_nil() ) {
+// //     SALOMEDS::ListOfListOfStrings_var aSections = aStudy->ParseVariables(theParameters);
+// //     for(int j=0;j<aSections->length();j++) {
+// //       SALOMEDS::ListOfStrings aVars= aSections[j];
+// //       for(int i=0;i<aVars.length();i++ ) {
+// //         anInputParams += aStudy->IsVariable(aVars[i].in()) ? 
+// //           TCollection_AsciiString(aVars[i].in()) : TCollection_AsciiString("");
+// //         if(i != aVars.length()-1)
+// //           anInputParams+=":";
+// //       }
+// //       if(j!=aSections->length()-1)
+// //         anInputParams+="|";
+// //     }
+//     TCollection_AsciiString paramStr( theParameters );
+//     int beg = 0, end;
+//     char sep, *pParams = (char*)paramStr.ToCString();
+//     while ( beg < paramStr.Length() )
+//     {
+//       end = beg-1;
+//       while ( ++end < paramStr.Length() )
+//         if ( pParams[end] == ':' || pParams[end] == '|')
+//           break;
+//       if ( end < paramStr.Length())
+//       {
+//         sep = pParams[end];
+//         pParams[end] = '\0';
 //       }
-//       if(j!=aSections->length()-1)
-//         anInputParams+="|";
+//       if ( aStudy->IsVariable( pParams+beg ))
+//         anInputParams += pParams+beg;
+//       if ( end < paramStr.Length() )
+//         anInputParams += sep;
+//       else
+//         break;
+//       beg = end + 1;
 //     }
-    TCollection_AsciiString paramStr( theParameters );
-    static TCollection_AsciiString separators(":|");
-    int beg = 0, end;
-    char sep, *pParams = (char*)paramStr.ToCString();
-    while ( beg < paramStr.Length() )
-    {
-      end = beg-1;
-      while ( ++end < paramStr.Length() )
-        if ( pParams[end] == ':' || pParams[end] == '|')
-          break;
-      if ( end < paramStr.Length())
-      {
-        sep = pParams[end];
-        pParams[end] = '\0';
-      }
-      if ( aStudy->IsVariable( pParams+beg ))
-        anInputParams += pParams+beg;
-      if ( end < paramStr.Length() )
-        anInputParams += sep;
-      else
-        break;
-      beg = end + 1;
-    }
-  }
-  return CORBA::string_dup(anInputParams.ToCString());
-}
+//   }
+//   return CORBA::string_dup(anInputParams.ToCString());
+// }
 
 //=======================================================================
 //function : GetParameters

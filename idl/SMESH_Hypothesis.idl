@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2013  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -76,33 +76,12 @@ module SMESH
     string GetVarParameter (in string methodName);
 
     /*!
-     *  Set list of parameters
-     *  \param theParameters is a string containing the notebook variables separated by ":" symbol,
-     *         used for Hypothesis creation
+     * \brief Store a hypothesis wrapping this not published one.
+     *
+     * This hyp, which has no own parameters but is published, is used to store variables
+     * defining parameters of this hypothesis.
      */
-    // void SetParameters (in string theParameters);
-
-    // /*!
-    //  *  Return list of notebook variables used for Hypothesis creation separated by ":" symbol
-    //  */
-    // string GetParameters();
-
-    // /*!
-    //  *  Return list of last notebook variables used for Hypothesis creation.
-    //  */
-    // ListOfParameters GetLastParameters();
-
-    // /*!
-    //  *  Set list of parameters
-    //  *  \param theParameters is a string containing the last notebook variables separated by ":" symbol,
-    //  *         used for Hypothesis creation
-    //  */
-    // void SetLastParameters(in string theParameters);
-    
-    // /*!
-    //  * Clear parameters list
-    //  */
-    // void ClearParameters();
+    void SetHolderHypothesis(in SMESH::SMESH_Hypothesis hyp);
 
     /*!
      * Verify whether hypothesis supports given entity type 

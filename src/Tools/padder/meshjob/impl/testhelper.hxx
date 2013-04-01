@@ -1,4 +1,4 @@
-// Copyright (C) 2011-2012  CEA/DEN, EDF R&D
+// Copyright (C) 2011-2013  EDF R&D
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // Authors : Guillaume Boulant (EDF) - 01/03/2011
 
 #ifndef __TESTHELPER_HXX__

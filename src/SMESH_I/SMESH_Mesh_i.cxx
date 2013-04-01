@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2013  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -1984,12 +1984,12 @@ void SMESH_Mesh_i::CheckGeomGroupModif()
         list<const SMESHDS_Hypothesis*>& hyps = indS_hyps->second;
         int oldID = geom._index;
         int newID = meshDS->ShapeToIndex( geom._shape );
-        if ( !newID )
-          continue;
         if ( oldID == 1 ) { // main shape
           newID = 1;
           geom._shape = newShape;
         }
+        if ( !newID )
+          continue;
         for ( hypIt = hyps.begin(); hypIt != hyps.end(); ++hypIt )
           _impl->AddHypothesis( geom._shape, (*hypIt)->GetID());
         // care of submeshes
@@ -4285,9 +4285,8 @@ void SMESH_Mesh_i::checkGroupNames()
 //=============================================================================
 void SMESH_Mesh_i::SetParameters(const char* theParameters)
 {
-  // SMESH_Gen_i::GetSMESHGen()->UpdateParameters(SMESH::SMESH_Mesh::_narrow(_this()),
-  //                                              CORBA::string_dup(theParameters));
-  SMESH_Gen_i::GetSMESHGen()->UpdateParameters(theParameters);
+  SMESH_Gen_i::GetSMESHGen()->UpdateParameters( CORBA::Object_var( _this() ).in(),
+                                                theParameters );
 }
 
 //=============================================================================

@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2013  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -155,25 +155,28 @@ bool SMESHDS_SubMesh::RemoveElement(const SMDS_MeshElement * ME, bool isElemDele
 //function : AddNode
 //purpose  : 
 //=======================================================================
+
 void SMESHDS_SubMesh::AddNode(const SMDS_MeshNode * N)
 {
   if ( !IsComplexSubmesh() )
+  {
+    int idInSubShape = N->getIdInShape();
+    int shapeId = N->getshapeId();
+    if ((shapeId > 0) && (idInSubShape >= 0))
     {
-      int idInSubShape = N->getIdInShape();
-      int shapeId = N->getshapeId();
-      if ((shapeId > 0) && (idInSubShape >= 0))
-        {
-//           MESSAGE("========== AddNode already belonging to other subShape " << N->GetID());
-          // OK for vertex nodes
-          throw SALOME_Exception(LOCALIZED("add node in subshape already belonging to a subshape"));
-        }
-      SMDS_MeshNode* node = (SMDS_MeshNode*)(N);
-      node->setShapeId(myIndex);
-      node->setIdInShape(myNodes.size());
-      myNodes.push_back(N);
-      //MESSAGE("in "<< myIndex << " AddNode " << node->GetID());
+      if ( shapeId != myIndex )
+        throw SALOME_Exception
+          (LOCALIZED("a node being in sub-mesh is added to another sub-mesh"));
+      if ( idInSubShape >= NbNodes() || myNodes[ idInSubShape ] != N )
+        throw SALOME_Exception
+          (LOCALIZED("a node with wrong idInSubShape is re-added to the same sub-mesh"));
+      return; // already in
     }
-  //MESSAGE("try to add node in a complex submesh " << N->GetID());
+    SMDS_MeshNode* node = (SMDS_MeshNode*)(N);
+    node->setShapeId(myIndex);
+    node->setIdInShape(myNodes.size());
+    myNodes.push_back(N);
+  }
 }
 
 //=======================================================================

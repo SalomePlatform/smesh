@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2013  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -102,6 +102,8 @@ namespace SMESH
     // string used to temporary quote variable names in order
     // not to confuse variables with string arguments
     static char Quote() { return '$'; }
+    // string preceding an entry of object storing the attribute holding var names
+    static const char* ObjPrefix() { return " # OBJ: "; }
   };
 
   // ===========================================================================================

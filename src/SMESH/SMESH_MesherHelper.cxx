@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2013  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -1378,8 +1378,12 @@ const SMDS_MeshNode* SMESH_MesherHelper::getMediumNodeOnComposedWire(const SMDS_
   }
 
   //if ( mySetElemOnShape ) node is not elem!
-  GetMeshDS()->SetNodeOnEdge(n12, edges[iOkEdge], u);
-
+  {
+    int edgeID = GetMeshDS()->ShapeToIndex( edges[iOkEdge] );
+    if ( edgeID != n12->getshapeId() )
+      GetMeshDS()->UnSetNodeOnShape( n12 );
+    GetMeshDS()->SetNodeOnEdge(n12, edgeID, u);
+  }
   myTLinkNodeMap.insert( make_pair( SMESH_TLink(n1,n2), n12 ));
 
   return n12;
@@ -2170,7 +2174,7 @@ bool SMESH_MesherHelper::IsStructured( SMESH_subMesh* faceSM )
   list< int > nbEdgesInWires;
   int nbWires = SMESH_Block::GetOrderedEdges( TopoDS::Face( faceSM->GetSubShape() ),
                                               edges, nbEdgesInWires );
-  if ( nbWires != 1 || nbEdgesInWires.front() != 4 )
+  if ( nbWires != 1 /*|| nbEdgesInWires.front() != 4*/ ) // allow composite sides
     return false;
 
   // algo: find corners of a structure and then analyze nb of faces and

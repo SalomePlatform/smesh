@@ -5,9 +5,9 @@
 \n Construction of a mesh on some geometry consists of:
 <ul>
   <li> \ref create_mesh_anchor "Creating of a mesh object"</li>
-  <li> \ref evaluate_anchor "Evaluating mesh size"</li>
-  <li> \ref preview_anchor "Previewing the mesh"</li>
-  <li> \ref submesh_order_anchor "Changing submesh priority"</li>
+  <li> \ref evaluate_anchor "Evaluating mesh size" (optional)</li>
+  <li> \ref preview_anchor "Previewing the mesh" (optional)</li>
+  <li> \ref submesh_order_anchor "Changing sub-mesh priority" (optional)</li>
   <li> \ref compute_anchor "Computing the mesh"</li>
 </ul>
 Mesh can be \ref use_existing_anchor "computed using your own meshing algorithms" 
@@ -172,9 +172,9 @@ These elements can be kept in the mesh.
 
 
 \anchor submesh_order_anchor
-<h2>Changing submesh priority</h2>
+<h2>Changing sub-mesh priority</h2>
 
-If the mesh contains concurrent \ref constructing_submeshes_page "submeshes", 
+If the mesh contains concurrent \ref constructing_submeshes_page "sub-meshes", 
 it is possible to change the priority of their computation, i.e. to
 change the priority of applying algorithms to the shared sub-shapes of
 the Mesh shape.
