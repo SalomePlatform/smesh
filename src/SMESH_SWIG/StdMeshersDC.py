@@ -895,7 +895,7 @@ class StdMeshersDC_Prism3D(Mesh_Algorithm):
         self.mesh.smeshpyD.SetCurrentStudy( None )
         hyp = self.mesh.smeshpyD.CreateHypothesis(hypType, so)
         self.mesh.smeshpyD.SetCurrentStudy( study ) # enables publishing
-        if not distribHyp:
+        if not self.distribHyp:
             self.distribHyp = self.Hypothesis("LayerDistribution", UseExisting=0)
         self.distribHyp.SetLayerDistribution( hyp )
         return hyp
