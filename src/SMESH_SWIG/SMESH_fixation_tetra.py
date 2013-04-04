@@ -25,8 +25,12 @@
 # SMESH_fixation.py
 # Hypothesis and algorithms for the mesh generation are global
 #
+
 import SMESH_fixation
-import smesh
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 compshell = SMESH_fixation.compshell
 idcomp = SMESH_fixation.idcomp
@@ -93,7 +97,7 @@ print "-------------------------- MaxElementVolume"
 
 maxElementVolume = 1000
 
-netgen3D = mesh.Tetrahedron(smesh.NETGEN)
+netgen3D = mesh.Tetrahedron(smeshBuilder.NETGEN)
 netgen3D.SetName("NETGEN_3D")
 hypVolume = netgen3D.MaxElementVolume(maxElementVolume)
 print hypVolume.GetName()

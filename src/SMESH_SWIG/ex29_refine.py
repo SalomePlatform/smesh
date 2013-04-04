@@ -21,8 +21,15 @@
 # =======================================
 # Procedure that take a triangulation and split all triangles in 4 others triangles
 #
-import geompy
-import smesh
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 import os
 
@@ -81,10 +88,10 @@ def triangle(m, f, n1, n2, n3):
 
 def SplitTrianglesIn4(m):
     # Get all triangles
-    triangles = m.GetElementsByType(smesh.FACE)
+    triangles = m.GetElementsByType(SMESH.FACE)
 
     # Remove all edges
-    m.RemoveElements(m.GetElementsByType(smesh.EDGE))
+    m.RemoveElements(m.GetElementsByType(SMESH.EDGE))
 
     # Get the list of nodes (ids) associated with the CAD vertices
     shape = m.GetShape()
@@ -222,4 +229,4 @@ MyMesh.ExportMED(path+str(NbCells4)+"_triangles.med", 0)
 # Update the object browser
 # -------------------------
 
-geompy.salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(1)

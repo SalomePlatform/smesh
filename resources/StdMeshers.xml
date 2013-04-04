@@ -227,7 +227,7 @@
                output   ="EDGE"
                dim      ="1">
       <python-wrap>
-        <algo>CompositeSegment_1D=Segment(algo=smesh.COMPOSITE)</algo>
+        <algo>CompositeSegment_1D=Segment(algo=smeshBuilder.COMPOSITE)</algo>
         <hypo>LocalLength=LocalLength(SetLength(), ,SetPrecision())</hypo>
         <hypo>MaxLength=MaxSize(SetLength())</hypo>
         <hypo>Arithmetic1D=Arithmetic1D(SetStartLength(),SetEndLength(),SetReversedEdges())</hypo>
@@ -244,7 +244,7 @@
                output="EDGE"
                dim="1">
       <python-wrap>
-        <algo>Python_1D=Segment(algo=smesh.PYTHON)</algo>
+        <algo>Python_1D=Segment(algo=smeshBuilder.PYTHON)</algo>
         <hypo>PythonSplit1D=PythonSplit1D(SetNumberOfSegments(),SetPythonLog10RatioFunction())</hypo>
       </python-wrap>
     </algorithm>
@@ -258,7 +258,7 @@
                output    ="TRIA"
                dim       ="2">
       <python-wrap>
-        <algo>MEFISTO_2D=Triangle(algo=smesh.MEFISTO)</algo>
+        <algo>MEFISTO_2D=Triangle(algo=smeshBuilder.MEFISTO)</algo>
         <hypo>LengthFromEdges=LengthFromEdges()</hypo>
         <hypo>MaxElementArea=MaxElementArea(SetMaxElementArea())</hypo>
         <hypo>ViscousLayers2D=ViscousLayers2D(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetIgnoreEdges())</hypo>
@@ -274,7 +274,7 @@
                output   ="QUAD"
                dim      ="2">
       <python-wrap>
-        <algo>Quadrangle_2D=Quadrangle(algo=smesh.QUADRANGLE)</algo>
+        <algo>Quadrangle_2D=Quadrangle(algo=smeshBuilder.QUADRANGLE)</algo>
         <hypo>QuadrangleParams=QuadrangleParameters(SetQuadType(),SetTriaVertex())</hypo>
         <hypo>ViscousLayers2D=ViscousLayers2D(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetIgnoreEdges())</hypo>
       </python-wrap>
@@ -288,7 +288,7 @@
                opt-hypos="ViscousLayers"
                dim      ="3">
       <python-wrap>
-        <algo>Hexa_3D=Hexahedron(algo=smesh.Hexa)</algo>
+        <algo>Hexa_3D=Hexahedron(algo=smeshBuilder.Hexa)</algo>
         <hypo>ViscousLayers=ViscousLayers(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetIgnoreFaces())</hypo>
       </python-wrap>
     </algorithm>
@@ -419,7 +419,7 @@
                output  ="QUAD,TRIA"
                dim     ="2">
       <python-wrap>
-        <algo>RadialQuadrangle_1D2D=Quadrangle(algo=smesh.RADIAL_QUAD)</algo>
+        <algo>RadialQuadrangle_1D2D=Quadrangle(algo=smeshBuilder.RADIAL_QUAD)</algo>
         <hypo>NumberOfLayers2D=NumberOfLayers(SetNumberOfLayers())</hypo>
       </python-wrap>
     </algorithm>

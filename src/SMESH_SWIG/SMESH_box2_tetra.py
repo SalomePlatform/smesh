@@ -25,8 +25,14 @@
 # Hypothesis and algorithms for the mesh generation are global
 #
 import salome
-import geompy
-import smesh
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 
 # ---- define 2 boxes box1 and box2
@@ -74,7 +80,6 @@ print "number of Edges  in shell : ", len(subEdgeList)
 
 
 ### ---------------------------- SMESH --------------------------------------
-smesh.SetCurrentStudy(salome.myStudy)
 
 # ---- init a Mesh with the shell
 
@@ -109,7 +114,7 @@ print "-------------------------- MaxElementVolume"
 
 maxElementVolume = 500
 
-netgen3D = mesh.Tetrahedron(smesh.NETGEN)
+netgen3D = mesh.Tetrahedron(smeshBuilder.NETGEN)
 hypVolume = netgen3D.MaxElementVolume(maxElementVolume)
 print hypVolume.GetName()
 print hypVolume.GetId()

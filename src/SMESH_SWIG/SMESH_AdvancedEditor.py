@@ -22,10 +22,16 @@
 #
 
 import salome
-import smesh
-import math
-
 salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
+
+import math
 
 def GetNewNodes(mesh,Elems,OldNodes):
     """
@@ -55,7 +61,6 @@ def GetNewNodes(mesh,Elems,OldNodes):
         pass
     return newnodes
             
-smesh.SetCurrentStudy(salome.myStudy)
 
 # create empty mesh
 mesh = smesh.Mesh()
@@ -67,13 +72,13 @@ tol = 0.001
 n1 = mesh.AddNode(55,-5,0)
 n2 = mesh.AddNode(55,5,0)
 e1 = mesh.AddEdge([n1,n2])
-dir1 = smesh.DirStruct(smesh.PointStruct(-10,0,0))
+dir1 = SMESH.DirStruct(SMESH.PointStruct(-10,0,0))
 mesh.ExtrusionSweep([e1],dir1,11)
 # 2. create second edge and make extrusion along 0y
 n3 = mesh.AddNode(-5,-55,0)
 n4 = mesh.AddNode(5,-55,0)
 e2 = mesh.AddEdge([n3,n4])
-dir2 = smesh.DirStruct(smesh.PointStruct(0,10,0))
+dir2 = SMESH.DirStruct(SMESH.PointStruct(0,10,0))
 mesh.ExtrusionSweep([e2],dir2,11)
 
 # since result has coincident nodes and faces
@@ -83,12 +88,12 @@ mesh.MergeNodes(nodes)
 mesh.MergeEqualElements()
 
 # make extrusion faces along 0z
-faces = mesh.GetElementsByType(smesh.FACE)
+faces = mesh.GetElementsByType(SMESH.FACE)
 nbf = len(faces)
 maxang = 2.0
 zstep = 5
 nbzsteps = 50
-dir3 = smesh.DirStruct(smesh.PointStruct(0,0,zstep))
+dir3 = SMESH.DirStruct(SMESH.PointStruct(0,0,zstep))
 newfaces = [] # list for keeping created top faces
               # during extrusion
 
@@ -121,7 +126,7 @@ for i in range(0,nbzsteps):
     pass
     
 # rotate faces from newfaces
-axisr1 = smesh.AxisStruct(0,0,0,0,0,1)
+axisr1 = SMESH.AxisStruct(0,0,0,0,0,1)
 for i in range(0,nbzsteps):
     ang = maxang*(1-math.cos((i+1)*math.pi/nbzsteps))
     mesh.Rotate(newfaces[i],axisr1,ang,0)
@@ -135,7 +140,7 @@ n6 = mesh.AddNode(67.5,0,0)
 n7 = mesh.AddNode(70,0,0)
 e56 = mesh.AddEdge([n5,n6])
 e67 = mesh.AddEdge([n6,n7])
-axisr2 = smesh.AxisStruct(65,0,0,0,1,0)
+axisr2 = SMESH.AxisStruct(65,0,0,0,1,0)
 mesh.RotationSweep([e56,e67],axisr2, math.pi/6, 12, tol)
 res = mesh.GetLastCreatedElems()
 faces1 = []
@@ -152,7 +157,7 @@ n9 = mesh.AddNode(-67.5,0,0)
 n10 = mesh.AddNode(-70,0,0)
 e8 = mesh.AddEdge([n8,n9])
 e9 = mesh.AddEdge([n9,n10])
-axisr3 = smesh.AxisStruct(-65,0,0,0,-1,0)
+axisr3 = SMESH.AxisStruct(-65,0,0,0,-1,0)
 mesh.RotationSweep([e8,e9],axisr3, math.pi/6, 12, tol)
 res = mesh.GetLastCreatedElems()
 faces2 = []
@@ -212,4 +217,4 @@ for i in range(0,nbrs):
     oldnodes = newnodes
     pass
 
-smesh.salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(1)

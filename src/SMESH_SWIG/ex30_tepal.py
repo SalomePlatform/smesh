@@ -22,8 +22,15 @@
 #
 import os
 
-import geompy
-import smesh
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # Parameters
 # ----------
@@ -53,7 +60,7 @@ m = smesh.Mesh(cylinder)
 # 2D mesh with BLSURF
 # -------------------
 
-algo2d = m.Triangle(smesh.BLSURF)
+algo2d = m.Triangle(smeshBuilder.BLSURF)
 
 algo2d.SetPhysicalMesh(1)
 algo2d.SetPhySize(5)
@@ -63,7 +70,7 @@ algo2d.SetGeometricMesh(0)
 # 3D mesh with tepal
 # ------------------
 
-algo3d = m.Tetrahedron(smesh.GHS3DPRL)
+algo3d = m.Tetrahedron(smeshBuilder.GHS3DPRL)
 
 algo3d.SetMEDName(results)
 algo3d.SetNbPart(4)

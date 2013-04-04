@@ -1,8 +1,15 @@
 # Create a Group on Geometry
 
+
 import salome
-import geompy
-import smesh
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # create a box
 box = geompy.MakeBox(0., 0., 0., 100., 100., 100.)

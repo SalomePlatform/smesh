@@ -23,9 +23,15 @@
 
 # =======================================
 #
-from geompy import *
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
 
-import smesh
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 import math
 
@@ -52,74 +58,72 @@ r3   = demi*math.sqrt(3)
 # Points
 # ------
 
-piecePoint111 = MakeVertex(ox+rayon      , oy, oz)
-piecePoint211 = MakeVertex(ox+arete-rayon, oy, oz)
-piecePoint112 = MakeVertex(ox            , oy, oz+rayon)
-piecePoint212 = MakeVertex(ox+arete      , oy, oz+rayon)
-piecePoint113 = MakeVertex(ox            , oy, oz+arete-rayon)
-piecePoint213 = MakeVertex(ox+arete      , oy, oz+arete-rayon)
-piecePoint114 = MakeVertex(ox+rayon      , oy, oz+arete)
-piecePoint214 = MakeVertex(ox+arete-rayon, oy, oz+arete)
+piecePoint111 = geompy.MakeVertex(ox+rayon      , oy, oz)
+piecePoint211 = geompy.MakeVertex(ox+arete-rayon, oy, oz)
+piecePoint112 = geompy.MakeVertex(ox            , oy, oz+rayon)
+piecePoint212 = geompy.MakeVertex(ox+arete      , oy, oz+rayon)
+piecePoint113 = geompy.MakeVertex(ox            , oy, oz+arete-rayon)
+piecePoint213 = geompy.MakeVertex(ox+arete      , oy, oz+arete-rayon)
+piecePoint114 = geompy.MakeVertex(ox+rayon      , oy, oz+arete)
+piecePoint214 = geompy.MakeVertex(ox+arete-rayon, oy, oz+arete)
 
-pieceCenter1  = MakeVertex(ox            , oy, oz)
-pieceCenter2  = MakeVertex(ox+arete      , oy, oz)
-pieceCenter3  = MakeVertex(ox            , oy, oz+arete)
-pieceCenter4  = MakeVertex(ox+arete      , oy, oz+arete)
+pieceCenter1  = geompy.MakeVertex(ox            , oy, oz)
+pieceCenter2  = geompy.MakeVertex(ox+arete      , oy, oz)
+pieceCenter3  = geompy.MakeVertex(ox            , oy, oz+arete)
+pieceCenter4  = geompy.MakeVertex(ox+arete      , oy, oz+arete)
 
-piecePass1    = MakeVertex(ox+demi       , oy, oz+r3)
-piecePass2    = MakeVertex(ox+arete-demi , oy, oz+r3)
-piecePass3    = MakeVertex(ox+arete-demi , oy, oz+arete-r3)
-piecePass4    = MakeVertex(ox+demi       , oy, oz+arete-r3)
+piecePass1    = geompy.MakeVertex(ox+demi       , oy, oz+r3)
+piecePass2    = geompy.MakeVertex(ox+arete-demi , oy, oz+r3)
+piecePass3    = geompy.MakeVertex(ox+arete-demi , oy, oz+arete-r3)
+piecePass4    = geompy.MakeVertex(ox+demi       , oy, oz+arete-r3)
 
 # Edges
 # -----
 
-pieceEdgeSquare1   = MakeEdge(piecePoint111, piecePoint211)
-pieceEdgeSquare2   = MakeEdge(piecePoint114, piecePoint214)
-pieceEdgeSquare3   = MakeEdge(piecePoint112, piecePoint113)
-pieceEdgeSquare4   = MakeEdge(piecePoint212, piecePoint213)
+pieceEdgeSquare1   = geompy.MakeEdge(piecePoint111, piecePoint211)
+pieceEdgeSquare2   = geompy.MakeEdge(piecePoint114, piecePoint214)
+pieceEdgeSquare3   = geompy.MakeEdge(piecePoint112, piecePoint113)
+pieceEdgeSquare4   = geompy.MakeEdge(piecePoint212, piecePoint213)
 
-pieceEdgeDiagonal1 = MakeEdge(piecePoint111, piecePoint213)
-pieceEdgeDiagonal2 = MakeEdge(piecePoint112, piecePoint214)
+pieceEdgeDiagonal1 = geompy.MakeEdge(piecePoint111, piecePoint213)
+pieceEdgeDiagonal2 = geompy.MakeEdge(piecePoint112, piecePoint214)
 
-pieceEdgeArc1 = MakeArc(piecePoint111, piecePass1, piecePoint112)
-pieceEdgeArc2 = MakeArc(piecePoint211, piecePass2, piecePoint212)
-pieceEdgeArc3 = MakeArc(piecePoint213, piecePass3, piecePoint214)
-pieceEdgeArc4 = MakeArc(piecePoint113, piecePass4, piecePoint114)
+pieceEdgeArc1 = geompy.MakeArc(piecePoint111, piecePass1, piecePoint112)
+pieceEdgeArc2 = geompy.MakeArc(piecePoint211, piecePass2, piecePoint212)
+pieceEdgeArc3 = geompy.MakeArc(piecePoint213, piecePass3, piecePoint214)
+pieceEdgeArc4 = geompy.MakeArc(piecePoint113, piecePass4, piecePoint114)
 
 # Faces
 # -----
 
-pieceFace1 = MakeQuad(pieceEdgeSquare1, pieceEdgeArc2, pieceEdgeSquare4, pieceEdgeDiagonal1)
-pieceFace2 = MakeQuad(pieceEdgeSquare2, pieceEdgeArc4, pieceEdgeSquare3, pieceEdgeDiagonal2)
+pieceFace1 = geompy.MakeQuad(pieceEdgeSquare1, pieceEdgeArc2, pieceEdgeSquare4, pieceEdgeDiagonal1)
+pieceFace2 = geompy.MakeQuad(pieceEdgeSquare2, pieceEdgeArc4, pieceEdgeSquare3, pieceEdgeDiagonal2)
 
-pieceFace3 = MakeQuad(pieceEdgeArc1, pieceEdgeDiagonal1, pieceEdgeArc3, pieceEdgeDiagonal2)
+pieceFace3 = geompy.MakeQuad(pieceEdgeArc1, pieceEdgeDiagonal1, pieceEdgeArc3, pieceEdgeDiagonal2)
 
 # Solids
 # ------
 
-pieceVector = MakeVectorDXDYDZ(0, 1, 0)
+pieceVector = geompy.MakeVectorDXDYDZ(0, 1, 0)
 
-pieceSolid1 = MakePrismVecH(pieceFace1, pieceVector, hauteur)
-pieceSolid2 = MakePrismVecH(pieceFace2, pieceVector, hauteur)
-pieceSolid3 = MakePrismVecH(pieceFace3, pieceVector, hauteur)
+pieceSolid1 = geompy.MakePrismVecH(pieceFace1, pieceVector, hauteur)
+pieceSolid2 = geompy.MakePrismVecH(pieceFace2, pieceVector, hauteur)
+pieceSolid3 = geompy.MakePrismVecH(pieceFace3, pieceVector, hauteur)
 
 # Compound and glue
 # -----------------
 
-c_cpd = MakeCompound([pieceSolid1, pieceSolid2, pieceSolid3])
+c_cpd = geompy.MakeCompound([pieceSolid1, pieceSolid2, pieceSolid3])
 
-piece = MakeGlueFaces(c_cpd, 1.e-5)
+piece = geompy.MakeGlueFaces(c_cpd, 1.e-5)
 
 # Add in study
 # ------------
 
-piece_id = addToStudy(piece, "ex09_grid4build")
+piece_id = geompy.addToStudy(piece, "ex09_grid4build")
 
 # Meshing
 # =======
-
-smesh.SetCurrentStudy(salome.myStudy)
 
 # Create a hexahedral mesh
 # ------------------------

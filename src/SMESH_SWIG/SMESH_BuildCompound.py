@@ -28,8 +28,14 @@
 # ! documentation generation to identify certain places of this file
 #
 import salome
-import geompy
-import smesh
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 ## create a bottom box
 Box_inf = geompy.MakeBox(0., 0., 0., 200., 200., 50.)
@@ -60,7 +66,6 @@ geompy.addToStudy(Box_sup, "Box_sup")
 geompy.addToStudyInFather(Box_sup, Fsup2, "Fsup")
 geompy.addToStudyInFather(Box_sup, Finf2, "Finf")
 
-smesh.SetCurrentStudy(salome.myStudy)
 
 ## create a bottom mesh
 Mesh_inf = smesh.Mesh(Box_inf, "Mesh_inf")
@@ -91,10 +96,10 @@ Ginf2=Mesh_sup.Group(Finf2, "Inf")
 ## create compounds
 # create a compound of two meshes with renaming groups with the same names and
 # merging of elements with the given tolerance
-Compound1 = smesh.smesh.Concatenate([Mesh_inf.GetMesh(), Mesh_sup.GetMesh()], 0, 1, 1e-05)
+Compound1 = smesh.Concatenate([Mesh_inf.GetMesh(), Mesh_sup.GetMesh()], 0, 1, 1e-05)
 smesh.SetName(Compound1, 'Compound_with_RenamedGrps_and_MergeElems')
 # create a compound of two meshes with uniting groups with the same names and
 # creating groups of all elements
-Compound2 = smesh.smesh.Concatenate([Mesh_inf.GetMesh(), Mesh_sup.GetMesh()], 1, 0, 1e-05, True)
+Compound2 = smesh.Concatenate([Mesh_inf.GetMesh(), Mesh_sup.GetMesh()], 1, 0, 1e-05, True)
 smesh.SetName(Compound2, 'Compound_with_UniteGrps_and_GrpsOfAllElems')
 #end

@@ -23,9 +23,15 @@
 
 # =======================================
 #
-from geompy import *
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
 
-import smesh
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # Geometrie
 # =========
@@ -53,20 +59,20 @@ g_trim = 1000
 
 cpd = []
 
-g_base = MakeVertex(cx, cy, cz)
-g_dir  = MakeVectorDXDYDZ(0, 0, 1)
+g_base = geompy.MakeVertex(cx, cy, cz)
+g_dir  = geompy.MakeVectorDXDYDZ(0, 0, 1)
 t_hauteur = p_rayon+10.0
 
-g_cyl = MakeCylinder(g_base, g_dir, g_rayon, g_hauteur)
+g_cyl = geompy.MakeCylinder(g_base, g_dir, g_rayon, g_hauteur)
 
-g_coupe   = MakeVectorDXDYDZ(1, 0, 0)
+g_coupe   = geompy.MakeVectorDXDYDZ(1, 0, 0)
 
 g_tools = []
-g_tools.append(MakePlane(MakeVertex(cx+t_hauteur, cy, cz), g_coupe, g_trim))
-g_tools.append(MakePlane(MakeVertex(cx-t_hauteur, cy, cz), g_coupe, g_trim))
+g_tools.append(geompy.MakePlane(geompy.MakeVertex(cx+t_hauteur, cy, cz), g_coupe, g_trim))
+g_tools.append(geompy.MakePlane(geompy.MakeVertex(cx-t_hauteur, cy, cz), g_coupe, g_trim))
 
-g_partie = MakePartition([g_cyl], g_tools, [], [], ShapeType["SOLID"])
-g_bas, g_centre, g_haut = SubShapeAllSorted(g_partie, ShapeType["SOLID"])
+g_partie = geompy.MakePartition([g_cyl], g_tools, [], [], geompy.ShapeType["SOLID"])
+g_bas, g_centre, g_haut = geompy.SubShapeAllSorted(g_partie, geompy.ShapeType["SOLID"])
 
 # Partie basse du gros cylindre
 # -----------------------------
@@ -74,28 +80,28 @@ g_bas, g_centre, g_haut = SubShapeAllSorted(g_partie, ShapeType["SOLID"])
 b_hauteur = 10
 b_base    = 20
 
-b_boite = MakeBox(cx-t_hauteur, cy-b_base, cz,  cx-t_hauteur-b_hauteur, cy+b_base, cz+g_hauteur)
+b_boite = geompy.MakeBox(cx-t_hauteur, cy-b_base, cz,  cx-t_hauteur-b_hauteur, cy+b_base, cz+g_hauteur)
 cpd.append(b_boite)
 
-b_cyl = MakeCut(g_bas, b_boite)
+b_cyl = geompy.MakeCut(g_bas, b_boite)
 
 b_tools = []
-b_tools.append(MakePlane(MakeVertex(cx-t_hauteur-b_hauteur, cy+b_base, cz), MakeVectorDXDYDZ( 1, 1, 0), g_trim))
-b_tools.append(MakePlane(MakeVertex(cx-t_hauteur-b_hauteur, cy-b_base, cz), MakeVectorDXDYDZ(-1, 1, 0), g_trim))
+b_tools.append(geompy.MakePlane(geompy.MakeVertex(cx-t_hauteur-b_hauteur, cy+b_base, cz), geompy.MakeVectorDXDYDZ( 1, 1, 0), g_trim))
+b_tools.append(geompy.MakePlane(geompy.MakeVertex(cx-t_hauteur-b_hauteur, cy-b_base, cz), geompy.MakeVectorDXDYDZ(-1, 1, 0), g_trim))
 
-b_partie = MakePartition([b_cyl], b_tools, [], [], ShapeType["SOLID"])
-b_element = SubShapeAll(b_partie, ShapeType["SOLID"])
+b_partie = geompy.MakePartition([b_cyl], b_tools, [], [], geompy.ShapeType["SOLID"])
+b_element = geompy.SubShapeAll(b_partie, geompy.ShapeType["SOLID"])
 cpd = cpd + b_element
 
 # Partie haute du gros cylindre
 # -----------------------------
 
-h_plan = MakePlane(g_base, g_coupe, g_trim)
+h_plan = geompy.MakePlane(g_base, g_coupe, g_trim)
 
-cpd.append(MakeMirrorByPlane(b_boite, h_plan))
+cpd.append(geompy.MakeMirrorByPlane(b_boite, h_plan))
 
 for h in b_element:
-    h_symetrie = MakeMirrorByPlane(h, h_plan)
+    h_symetrie = geompy.MakeMirrorByPlane(h, h_plan)
     cpd.append(h_symetrie)
 
 # Petit cylindre
@@ -108,78 +114,76 @@ px = cx-x_arete
 py = cy-1.5*g_rayon
 pz = cz+g_hauteur/2
 
-p_base = MakeVertex(cx, py, pz)
-p_dir  = MakeVectorDXDYDZ(0, 1, 0)
-p_cyl  = MakeCylinder(p_base, p_dir, p_rayon, p_hauteur)
+p_base = geompy.MakeVertex(cx, py, pz)
+p_dir  = geompy.MakeVectorDXDYDZ(0, 1, 0)
+p_cyl  = geompy.MakeCylinder(p_base, p_dir, p_rayon, p_hauteur)
 
-p_boite = MakeBox(px, py, pz-z_arete,  cx+x_arete, py+p_hauteur, pz+z_arete)
+p_boite = geompy.MakeBox(px, py, pz-z_arete,  cx+x_arete, py+p_hauteur, pz+z_arete)
 
 # Partie interieure du petit cylindre
 # -----------------------------------
 
-i_cyl   = MakeCommon(p_cyl, g_cyl)
-i_tuyau = MakeCut(i_cyl, p_boite)
-i_boite = MakeCommon(p_boite, g_cyl)
+i_cyl   = geompy.MakeCommon(p_cyl, g_cyl)
+i_tuyau = geompy.MakeCut(i_cyl, p_boite)
+i_boite = geompy.MakeCommon(p_boite, g_cyl)
 
 # Partie exterieure du petit cylindre
 # -----------------------------------
 
-e_cyl0 = MakeCut(p_cyl, g_cyl)
-e_cyl  = SubShapeAllSorted(e_cyl0, ShapeType["SOLID"])
+e_cyl0 = geompy.MakeCut(p_cyl, g_cyl)
+e_cyl  = geompy.SubShapeAllSorted(e_cyl0, geompy.ShapeType["SOLID"])
 
-e_tuyau = MakeCut(e_cyl[1], p_boite)
+e_tuyau = geompy.MakeCut(e_cyl[1], p_boite)
 
-e_boite0 = MakeCut(p_boite, g_cyl)
-e_boite  = SubShapeAllSorted(e_boite0, ShapeType["SOLID"])
+e_boite0 = geompy.MakeCut(p_boite, g_cyl)
+e_boite  = geompy.SubShapeAllSorted(e_boite0, geompy.ShapeType["SOLID"])
 
 cpd.append(e_boite[1])
 
 # Partie centrale du gros cylindre
 # --------------------------------
 
-c_cyl = MakeCut(g_centre, p_cyl)
+c_cyl = geompy.MakeCut(g_centre, p_cyl)
 
 # Partitionner
 # ------------
 
 p_tools = []
-p_tools.append(MakePlane(MakeVertex(px, py, pz-z_arete), MakeVectorDXDYDZ(-z_arete, 0, x_arete), g_trim))
-p_tools.append(MakePlane(MakeVertex(px, py, pz+z_arete), MakeVectorDXDYDZ( z_arete, 0, x_arete), g_trim))
+p_tools.append(geompy.MakePlane(geompy.MakeVertex(px, py, pz-z_arete), geompy.MakeVectorDXDYDZ(-z_arete, 0, x_arete), g_trim))
+p_tools.append(geompy.MakePlane(geompy.MakeVertex(px, py, pz+z_arete), geompy.MakeVectorDXDYDZ( z_arete, 0, x_arete), g_trim))
 
-p_partie = MakePartition([e_tuyau], p_tools, [], [], ShapeType["SOLID"])
-p_element = SubShapeAll(p_partie, ShapeType["SOLID"])
+p_partie = geompy.MakePartition([e_tuyau], p_tools, [], [], geompy.ShapeType["SOLID"])
+p_element = geompy.SubShapeAll(p_partie, geompy.ShapeType["SOLID"])
 cpd = cpd + p_element
 
-q_partie = MakePartition([i_tuyau, c_cyl], p_tools, [], [], ShapeType["SOLID"])
-q_element = SubShapeAll(q_partie, ShapeType["SOLID"])
+q_partie = geompy.MakePartition([i_tuyau, c_cyl], p_tools, [], [], geompy.ShapeType["SOLID"])
+q_element = geompy.SubShapeAll(q_partie, geompy.ShapeType["SOLID"])
 
 q_element = q_element + [i_boite]
 
 q_tools = []
-q_tools.append(MakePlane(MakeVertex(cx, cy-b_base, cz), MakeVectorDXDYDZ(0, 1, 0), g_trim))
-q_tools.append(MakePlane(MakeVertex(cx, cy+b_base, cz), MakeVectorDXDYDZ(0, 1, 0), g_trim))
+q_tools.append(geompy.MakePlane(geompy.MakeVertex(cx, cy-b_base, cz), geompy.MakeVectorDXDYDZ(0, 1, 0), g_trim))
+q_tools.append(geompy.MakePlane(geompy.MakeVertex(cx, cy+b_base, cz), geompy.MakeVectorDXDYDZ(0, 1, 0), g_trim))
 
 r_element = []
 for e in q_element:
-    r_partie = MakePartition([e], q_tools, [], [], ShapeType["SOLID"])
-    r_element = r_element + SubShapeAll(r_partie, ShapeType["SOLID"])
+    r_partie = geompy.MakePartition([e], q_tools, [], [], geompy.ShapeType["SOLID"])
+    r_element = r_element + geompy.SubShapeAll(r_partie, geompy.ShapeType["SOLID"])
 
 cpd = cpd + r_element
 
 # Compound
 # --------
 
-piece = RemoveExtraEdges(MakeCompound(cpd), True)
+piece = geompy.RemoveExtraEdges(geompy.MakeCompound(cpd), True)
 
 # Ajouter la piece dans l'etude
 # -----------------------------
 
-piece_id = addToStudy(piece, "ex15_cyl2geometry")
+piece_id = geompy.addToStudy(piece, "ex15_cyl2geometry")
 
 # Meshing
 # =======
-
-smesh.SetCurrentStudy(salome.myStudy)
 
 # Create a hexahedral mesh
 # ------------------------

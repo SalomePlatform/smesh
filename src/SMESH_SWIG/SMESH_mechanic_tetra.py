@@ -27,10 +27,14 @@
 #  $Header$
 #
 import salome
-import geompy
-import smesh
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
 
-geom  = geompy.geom
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # ---------------------------- GEOM --------------------------------------
 
@@ -105,7 +109,6 @@ print "number of Faces in mechanic : ",len(subFaceList)
 print "number of Edges in mechanic : ",len(subEdgeList)
 
 ### ---------------------------- SMESH --------------------------------------
-smesh.SetCurrentStudy(salome.myStudy)
 
 shape_mesh = salome.IDToObject( Id_mechanic  )
 
@@ -125,7 +128,7 @@ smesh.SetName(hypNbSeg, "NumberOfSegments_" + str(numberOfSegment))
 
 maxElementArea = 20
 
-algo2 = mesh.Triangle(smesh.MEFISTO)
+algo2 = mesh.Triangle(smeshBuilder.MEFISTO)
 hypArea = algo2.MaxElementArea(maxElementArea)
 print hypArea.GetName()
 print hypArea.GetId()
@@ -135,7 +138,7 @@ smesh.SetName(hypArea, "MaxElementArea_" + str(maxElementArea))
 
 maxElementVolume = 20
 
-algo3 = mesh.Tetrahedron(smesh.NETGEN)
+algo3 = mesh.Tetrahedron(smeshBuilder.NETGEN)
 hypVolume = algo3.MaxElementVolume(maxElementVolume)
 print hypVolume.GetName()
 print hypVolume.GetId()

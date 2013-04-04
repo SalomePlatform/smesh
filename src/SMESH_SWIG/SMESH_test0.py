@@ -25,11 +25,14 @@
 #  Module : SMESH
 #
 import salome
-import geompy
-from geompy import geom
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
 
-
-myBuilder = salome.myStudy.NewBuilder()
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # ---- define a box
 

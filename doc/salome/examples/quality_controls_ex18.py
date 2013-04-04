@@ -1,6 +1,7 @@
 # Skew
 
 import SMESH_mechanic
+import SMESH
 
 smesh  = SMESH_mechanic.smesh
 mesh   = SMESH_mechanic.mesh
@@ -9,7 +10,7 @@ salome = SMESH_mechanic.salome
 # Criterion : Skew > 38.
 skew_margin = 38.
 
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Skew, smesh.FT_MoreThan, skew_margin)
+aFilter = smesh.GetFilter(SMESH.FACE, SMESH.FT_Skew, SMESH.FT_MoreThan, skew_margin)
 
 anIds = mesh.GetIdsFromFilter(aFilter)
 
@@ -24,7 +25,7 @@ for i in range(len(anIds)):
 print ""
 
 # create a group
-aGroup = mesh.CreateEmptyGroup(smesh.FACE, "Skew > " + `skew_margin`)
+aGroup = mesh.CreateEmptyGroup(SMESH.FACE, "Skew > " + `skew_margin`)
 aGroup.Add(anIds)
 
 salome.sg.updateObjBrowser(1)

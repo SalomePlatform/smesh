@@ -26,8 +26,14 @@
 #  Description : Create meshes to test extrusion of mesh elements along path
 #
 import salome
-import geompy
-import smesh
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 
 # create points to build two circles
@@ -50,8 +56,6 @@ face = geompy.MakeFace(wire, 1)
 idcircle = geompy.addToStudy(circle, "Circle")
 idface   = geompy.addToStudy(face,   "Circular face")
 
-
-smesh.SetCurrentStudy(salome.myStudy)
 
 # init a Mesh with the circular face
 mesh1 = smesh.Mesh(face, "Mesh on circular face")

@@ -1,6 +1,7 @@
 # Area
 
 import SMESH_mechanic
+import SMESH
 
 smesh  = SMESH_mechanic.smesh
 mesh   = SMESH_mechanic.mesh
@@ -9,7 +10,7 @@ salome = SMESH_mechanic.salome
 # Criterion : AREA > 100.
 area_margin = 100.
 
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Area, smesh.FT_MoreThan, area_margin)
+aFilter = smesh.GetFilter(SMESH.FACE, SMESH.FT_Area, SMESH.FT_MoreThan, area_margin)
 
 anIds = mesh.GetIdsFromFilter(aFilter) 
 
@@ -24,7 +25,7 @@ for i in range(len(anIds)):
 print ""
 
 # create a group
-aGroup = mesh.CreateEmptyGroup(smesh.FACE, "Area > " + `area_margin`)
+aGroup = mesh.CreateEmptyGroup(SMESH.FACE, "Area > " + `area_margin`)
 aGroup.Add(anIds)
 
 salome.sg.updateObjBrowser(1)  

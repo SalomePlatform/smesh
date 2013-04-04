@@ -1,9 +1,15 @@
 # Free Borders
 
-import salome
-import geompy
 
-import smesh
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # create open shell: a box without one plane
 box = geompy.MakeBox(0., 0., 0., 20., 20., 15.)
@@ -21,7 +27,7 @@ algo.MaxElementArea(20.)
 mesh.Compute() 
 
 # criterion : free borders
-aFilter = smesh.GetFilter(smesh.EDGE, smesh.FT_FreeBorders) 
+aFilter = smesh.GetFilter(SMESH.EDGE, SMESH.FT_FreeBorders)
 anIds = mesh.GetIdsFromFilter(aFilter)
 
 # print the result
@@ -35,7 +41,7 @@ for i in range(len(anIds)):
 print ""
 
 # create a group
-aGroup = mesh.GetMesh().CreateGroup(smesh.EDGE, "Free borders")
+aGroup = mesh.GetMesh().CreateGroup(SMESH.EDGE, "Free borders")
 aGroup.Add(anIds)
 
 salome.sg.updateObjBrowser(1)

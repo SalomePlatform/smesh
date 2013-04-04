@@ -1,7 +1,14 @@
 # "Use Existing Elements" example
 
-from smesh import *
-SetCurrentStudy(salome.myStudy)
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # Make a patritioned box
 
@@ -23,15 +30,15 @@ geompy.addToStudyInFather( boxes[1], midFace1, "middle Face")
 
 # Mesh one of boxes with quadrangles. It is a source mesh
 
-srcMesh = Mesh(boxes[0], "source mesh") # box coloser to CS origin
+srcMesh = smesh.Mesh(boxes[0], "source mesh") # box coloser to CS origin
 nSeg1 = srcMesh.Segment().NumberOfSegments(4)
 srcMesh.Quadrangle()
 srcMesh.Compute()
-srcFaceGroup = srcMesh.GroupOnGeom( midFace0, "src faces", FACE )
+srcFaceGroup = srcMesh.GroupOnGeom( midFace0, "src faces", SMESH.FACE )
 
 # Import faces from midFace0 to the target mesh
 
-tgtMesh = Mesh(boxes[1], "target mesh")
+tgtMesh = smesh.Mesh(boxes[1], "target mesh")
 importAlgo = tgtMesh.UseExisting2DElements(midFace1)
 import2hyp = importAlgo.SourceFaces( [srcFaceGroup] )
 tgtMesh.Segment().NumberOfSegments(3)

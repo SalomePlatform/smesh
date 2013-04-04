@@ -50,7 +50,7 @@ class SMESH_2smeshpy
 {
 public:
   /*!
-   * \brief Convert a python script using commands of smesh.py
+   * \brief Convert a python script using commands of smeshBuilder.py
    * \param theScript - Input script
    * \param theEntry2AccessorMethod - returns method names to access to
    *        objects wrapped with python class

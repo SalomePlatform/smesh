@@ -23,9 +23,15 @@
 
 # =======================================
 #
-from geompy import *
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
 
-import smesh
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 import math
 
@@ -57,69 +63,67 @@ g_trim = 15000
 # Cylindre
 # --------
 
-c_point    = MakeVertex(g_ox, g_oy, g_oz-g_cyl_demiHauteur)
-c_dir      = MakeVectorDXDYDZ(0, 0, 1)
+c_point    = geompy.MakeVertex(g_ox, g_oy, g_oz-g_cyl_demiHauteur)
+c_dir      = geompy.MakeVectorDXDYDZ(0, 0, 1)
 c_hauteur  = 2*g_cyl_demiHauteur
 
-c_cylindre = MakeCylinder(c_point, c_dir, g_cyl_rayon, c_hauteur)
+c_cylindre = geompy.MakeCylinder(c_point, c_dir, g_cyl_rayon, c_hauteur)
 
 # Sphere
 # ------
 
 s_hauteur = math.sqrt(g_sphere_rayon*g_sphere_rayon - g_cyl_rayon*g_cyl_rayon) - g_cyl_demiHauteur
 
-s_sphere  = MakeSphere(g_ox, g_oy, g_oz-s_hauteur, g_sphere_rayon)
+s_sphere  = geompy.MakeSphere(g_ox, g_oy, g_oz-s_hauteur, g_sphere_rayon)
 
 # Calottes
 # --------
 
 c_outils = []
-c_outils.append(MakePlane(MakeVertex(g_ox, g_oy, g_oz+g_cyl_demiHauteur), MakeVectorDXDYDZ(0, 0, 1), g_trim))
+c_outils.append(geompy.MakePlane(geompy.MakeVertex(g_ox, g_oy, g_oz+g_cyl_demiHauteur), geompy.MakeVectorDXDYDZ(0, 0, 1), g_trim))
 
-c_cpd = MakePartition([s_sphere], c_outils, [], [], ShapeType["SOLID"])
-c_calotte_haut, c_reste = SubShapeAllSorted(c_cpd, ShapeType["SOLID"])
+c_cpd = geompy.MakePartition([s_sphere], c_outils, [], [], geompy.ShapeType["SOLID"])
+c_calotte_haut, c_reste = geompy.SubShapeAllSorted(c_cpd, geompy.ShapeType["SOLID"])
 
-c_plan = MakePlane(MakeVertex(g_ox, g_oy, g_oz), MakeVectorDXDYDZ(0, 0, 1), g_trim)
-c_calotte_bas = MakeMirrorByPlane(c_calotte_haut, c_plan)
+c_plan = geompy.MakePlane(geompy.MakeVertex(g_ox, g_oy, g_oz), geompy.MakeVectorDXDYDZ(0, 0, 1), g_trim)
+c_calotte_bas = geompy.MakeMirrorByPlane(c_calotte_haut, c_plan)
 
 # Fusionner
 # ---------
 
-f_piece1 = MakeFuse(c_cylindre, c_calotte_haut)
-f_piece  = MakeFuse(f_piece1, c_calotte_bas)
+f_piece1 = geompy.MakeFuse(c_cylindre, c_calotte_haut)
+f_piece  = geompy.MakeFuse(f_piece1, c_calotte_bas)
 
 # Trouer
 # ------
 
 t_hauteur = g_sphere_rayon
-t_point   = MakeVertex(g_ox-g_trou_centre, g_oy, g_oz-t_hauteur)
-t_trou    = MakeCylinder(t_point, c_dir, g_trou_rayon, 2*t_hauteur)
+t_point   = geompy.MakeVertex(g_ox-g_trou_centre, g_oy, g_oz-t_hauteur)
+t_trou    = geompy.MakeCylinder(t_point, c_dir, g_trou_rayon, 2*t_hauteur)
 
-t_piece   = MakeCut(f_piece, t_trou)
+t_piece   = geompy.MakeCut(f_piece, t_trou)
 
 # Decouper
 # --------
 
 h_outils = []
-h_outils.append(MakePlane(t_point, MakeVectorDXDYDZ(1, 0, 0), g_trim))
-h_outils.append(MakePlane(t_point, MakeVectorDXDYDZ(0, 1, 0), g_trim))
+h_outils.append(geompy.MakePlane(t_point, geompy.MakeVectorDXDYDZ(1, 0, 0), g_trim))
+h_outils.append(geompy.MakePlane(t_point, geompy.MakeVectorDXDYDZ(0, 1, 0), g_trim))
 
-h_piece = MakePartition([t_piece], h_outils, [], [], ShapeType["SOLID"])
+h_piece = geompy.MakePartition([t_piece], h_outils, [], [], geompy.ShapeType["SOLID"])
 
 # Reparer
 # -------
 
-piece = RemoveExtraEdges(h_piece)
+piece = geompy.RemoveExtraEdges(h_piece)
 
 # Ajouter la piece dans l'etude
 # -----------------------------
 
-piece_id = addToStudy(piece, "ex18_dome2")
+piece_id = geompy.addToStudy(piece, "ex18_dome2")
 
 # Maillage
 # ========
-
-smesh.SetCurrentStudy(salome.myStudy)
 
 # Maillage hexahedrique
 # ---------------------

@@ -1,8 +1,14 @@
 # Radial Quadrangle 1D2D example
 
-from smesh import *
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
 
-SetCurrentStudy(salome.myStudy)
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # Create face from the wire and add to study
 Face = geompy.MakeSketcher("Sketcher:F 0 0:TT 20 0:R 90:C 20 90:WF", [0, 0, 0, 1, 0, 0, 0, 0, 1])
@@ -16,7 +22,7 @@ geompy.addToStudyInFather(Face, circle,"circle")
 
 # Define geometry for mesh, and Radial Quadrange algorithm
 mesh = smesh.Mesh(Face)
-radial_Quad_algo = mesh.Quadrangle(algo=RADIAL_QUAD)
+radial_Quad_algo = mesh.Quadrangle(algo=smeshBuilder.RADIAL_QUAD)
 
 # The Radial Quadrange algorithm can work without any hypothesis
 # In this case it uses "Default Nb of Segments" preferences parameter to discretize edges

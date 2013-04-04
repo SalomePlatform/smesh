@@ -22,8 +22,14 @@
 #
 
 import salome
-import geompy
-import smesh
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 
 # ---- GEOM
@@ -49,13 +55,13 @@ algo1 = mesh.Segment()
 algo1.NumberOfSegments(10)
 
 # Set 2D algorithm/hypotheses to mesh
-algo2 = mesh.Triangle(smesh.MEFISTO)
+algo2 = mesh.Triangle(smeshBuilder.MEFISTO)
 algo2.MaxElementArea(10)
 
 # Create submesh on face
 algo3 = mesh.Segment(face)
 algo3.NumberOfSegments(10)
-algo4 = mesh.Triangle(smesh.MEFISTO, face)
+algo4 = mesh.Triangle(smeshBuilder.MEFISTO, face)
 algo4.MaxElementArea(100)
 submesh = algo4.GetSubMesh()
 smesh.SetName(submesh, "SubMeshFace")
@@ -63,11 +69,11 @@ smesh.SetName(submesh, "SubMeshFace")
 
 mesh.Compute()
 
-faces = submesh.GetElementsByType(smesh.FACE)
+faces = submesh.GetElementsByType(SMESH.FACE)
 if len(faces) > 1:
     print len(faces), len(faces)/2
-    group1 = mesh.CreateEmptyGroup(smesh.FACE,"Group of faces")
-    group2 = mesh.CreateEmptyGroup(smesh.FACE,"Another group of faces")
+    group1 = mesh.CreateEmptyGroup(SMESH.FACE,"Group of faces")
+    group2 = mesh.CreateEmptyGroup(SMESH.FACE,"Another group of faces")
     group1.Add(faces[:int(len(faces)/2)])
     group2.Add(faces[int(len(faces)/2):])
 

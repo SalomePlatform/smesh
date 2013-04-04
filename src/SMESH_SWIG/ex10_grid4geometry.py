@@ -23,9 +23,15 @@
 
 # =======================================
 #
-from geompy import *
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
 
-import smesh
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # Geometry
 # ========
@@ -48,40 +54,38 @@ g_trim = 1000
 # Box
 # ---
 
-piecePoint = MakeVertex(ox, oy, oz)
+piecePoint = geompy.MakeVertex(ox, oy, oz)
 
-pieceBox = MakeBoxTwoPnt(piecePoint, MakeVertex(ox+arete, oy+hauteur, oz+arete))
+pieceBox = geompy.MakeBoxTwoPnt(piecePoint, geompy.MakeVertex(ox+arete, oy+hauteur, oz+arete))
 
 # Cut by cylinders
 # ----------------
 
-dirUp = MakeVectorDXDYDZ(0, 1, 0)
+dirUp = geompy.MakeVectorDXDYDZ(0, 1, 0)
 
-pieceCut1 = MakeCut(pieceBox , MakeCylinder(piecePoint                        , dirUp, rayon, hauteur))
-pieceCut2 = MakeCut(pieceCut1, MakeCylinder(MakeVertex(ox+arete, oy, oz      ), dirUp, rayon, hauteur))
-pieceCut3 = MakeCut(pieceCut2, MakeCylinder(MakeVertex(ox      , oy, oz+arete), dirUp, rayon, hauteur))
-pieceCut4 = MakeCut(pieceCut3, MakeCylinder(MakeVertex(ox+arete, oy, oz+arete), dirUp, rayon, hauteur))
+pieceCut1 = geompy.MakeCut(pieceBox , geompy.MakeCylinder(piecePoint                        , dirUp, rayon, hauteur))
+pieceCut2 = geompy.MakeCut(pieceCut1, geompy.MakeCylinder(geompy.MakeVertex(ox+arete, oy, oz      ), dirUp, rayon, hauteur))
+pieceCut3 = geompy.MakeCut(pieceCut2, geompy.MakeCylinder(geompy.MakeVertex(ox      , oy, oz+arete), dirUp, rayon, hauteur))
+pieceCut4 = geompy.MakeCut(pieceCut3, geompy.MakeCylinder(geompy.MakeVertex(ox+arete, oy, oz+arete), dirUp, rayon, hauteur))
 
 # Compound by make a partition of a solid
 # ---------------------------------------
 
-dir = MakeVectorDXDYDZ(-1, 0, 1)
+dir = geompy.MakeVectorDXDYDZ(-1, 0, 1)
 
 tools = []
-tools.append(MakePlane(MakeVertex(ox+rayon, oy, oz      ), dir, g_trim))
-tools.append(MakePlane(MakeVertex(ox      , oy, oz+rayon), dir, g_trim))
+tools.append(geompy.MakePlane(geompy.MakeVertex(ox+rayon, oy, oz      ), dir, g_trim))
+tools.append(geompy.MakePlane(geompy.MakeVertex(ox      , oy, oz+rayon), dir, g_trim))
 
-piece = MakePartition([pieceCut4], tools, [], [], ShapeType["SOLID"])
+piece = geompy.MakePartition([pieceCut4], tools, [], [], geompy.ShapeType["SOLID"])
 
 # Add in study
 # ------------
 
-piece_id = addToStudy(piece, "ex10_grid4geometry")
+piece_id = geompy.addToStudy(piece, "ex10_grid4geometry")
 
 # Meshing
 # =======
-
-smesh.SetCurrentStudy(salome.myStudy)
 
 # Create a hexahedral mesh
 # ------------------------

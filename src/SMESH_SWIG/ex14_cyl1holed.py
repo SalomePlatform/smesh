@@ -23,9 +23,15 @@
 
 # =======================================
 #
-from geompy import *
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
 
-import smesh
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # Geometrie
 # =========
@@ -52,19 +58,19 @@ g_trim = 15000
 # Construire le cylindre
 # ----------------------
 
-c_point    = MakeVertex(g_ox, g_oy, g_oz-g_cyl_demiHauteur)
-c_dir      = MakeVectorDXDYDZ(0, 0, 1)
+c_point    = geompy.MakeVertex(g_ox, g_oy, g_oz-g_cyl_demiHauteur)
+c_dir      = geompy.MakeVectorDXDYDZ(0, 0, 1)
 c_hauteur  = 2*g_cyl_demiHauteur
-c_cylindre = MakeCylinder(c_point, c_dir, g_cyl_rayon, c_hauteur)
+c_cylindre = geompy.MakeCylinder(c_point, c_dir, g_cyl_rayon, c_hauteur)
 
 # Trouer le cylindre par un minuscule cylindre excentre
 # -----------------------------------------------------
 
 t_hauteur = g_cyl_demiHauteur
-t_point   = MakeVertex(g_ox-g_trou_centre, g_oy, g_oz-t_hauteur)
-t_trou    = MakeCylinder(t_point, c_dir, g_trou_rayon, 2*t_hauteur)
+t_point   = geompy.MakeVertex(g_ox-g_trou_centre, g_oy, g_oz-t_hauteur)
+t_trou    = geompy.MakeCylinder(t_point, c_dir, g_trou_rayon, 2*t_hauteur)
 
-t_piece   = MakeCut(c_cylindre, t_trou)
+t_piece   = geompy.MakeCut(c_cylindre, t_trou)
 
 # Geometrie hexahedrique
 # ======================
@@ -73,10 +79,10 @@ t_piece   = MakeCut(c_cylindre, t_trou)
 # --------
 
 h_outils = []
-h_outils.append(MakePlane(t_point, MakeVectorDXDYDZ(1, 0, 0), g_trim))
-h_outils.append(MakePlane(t_point, MakeVectorDXDYDZ(0, 1, 0), g_trim))
+h_outils.append(geompy.MakePlane(t_point, geompy.MakeVectorDXDYDZ(1, 0, 0), g_trim))
+h_outils.append(geompy.MakePlane(t_point, geompy.MakeVectorDXDYDZ(0, 1, 0), g_trim))
 
-h_piece = MakePartition([t_piece], h_outils, [], [], ShapeType["SOLID"])
+h_piece = geompy.MakePartition([t_piece], h_outils, [], [], geompy.ShapeType["SOLID"])
 
 # Decouper pour les conditions locales
 # ------------------------------------
@@ -87,20 +93,18 @@ l_n = 12
 l_hauteur = c_hauteur/l_n
 
 while l_i<l_n:
-    l_outils.append(MakePlane(MakeVertex(g_ox, g_oy, g_oz-g_cyl_demiHauteur+l_i*l_hauteur), c_dir, g_trim))
+    l_outils.append(geompy.MakePlane(geompy.MakeVertex(g_ox, g_oy, g_oz-g_cyl_demiHauteur+l_i*l_hauteur), c_dir, g_trim))
     l_i = l_i+1
 
-piece = MakePartition([h_piece], l_outils, [], [], ShapeType["SOLID"])
+piece = geompy.MakePartition([h_piece], l_outils, [], [], geompy.ShapeType["SOLID"])
 
 # Ajouter la piece dans l'etude
 # -----------------------------
 
-piece_id = addToStudy(piece, "ex14_cyl1holed")
+piece_id = geompy.addToStudy(piece, "ex14_cyl1holed")
 
 # Maillage
 # ========
-
-smesh.SetCurrentStudy(salome.myStudy)
 
 # Creer un maillage hexahedrique
 # ------------------------------
@@ -127,8 +131,8 @@ m_y = g_oy
 m_z = g_oz-g_cyl_demiHauteur+m_h/2
 
 while m_i<m_n:
-    m_p = MakeVertex(m_x, m_y, m_z + m_i*m_h)
-    m_e = GetEdgeNearPoint(piece, m_p)
+    m_p = geompy.MakeVertex(m_x, m_y, m_z + m_i*m_h)
+    m_e = geompy.GetEdgeNearPoint(piece, m_p)
     m_a = hexa.Segment(m_e)
     m_a.NumberOfSegments(m_d[m_i])
     m_a.Propagation()

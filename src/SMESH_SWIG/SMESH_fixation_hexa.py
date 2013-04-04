@@ -26,7 +26,10 @@
 # Hypothesis and algorithms for the mesh generation are global
 #
 import SMESH_fixation
-import smesh
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 compshell = SMESH_fixation.compshell
 idcomp = SMESH_fixation.idcomp

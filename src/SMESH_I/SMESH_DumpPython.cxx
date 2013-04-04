@@ -869,9 +869,9 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   aScript += helper + "aFilterManager = " + aSMESHGen + ".CreateFilterManager()\n\t";
   aScript += helper + "aMeasurements = " + aSMESHGen + ".CreateMeasurements()\n\t";
   if ( isPublished )
-    aScript += aSMESHGen + ".SetCurrentStudy(theStudy)";
+    aScript += aSMESHGen + " = smeshBuilder.New(theStudy)";
   else
-    aScript += aSMESHGen + ".SetCurrentStudy(None)";
+    aScript += aSMESHGen + " = smeshBuilder.New(None)";
 
   // import python files corresponding to plugins
   set<string> moduleNameSet;
@@ -880,14 +880,14 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
     string moduleName = hyp_creator->second->GetModuleName();
     bool newModule = moduleNameSet.insert( moduleName ).second;
     if ( newModule )
-      aScript += helper + "\n\t" + "import " + (char*) moduleName.c_str();
+      aScript += helper + "\n\t" + "from salome." + (char*) moduleName.c_str() + " import " + (char*) moduleName.c_str() +"Builder";
   }
 
   // Dump trace of restored study
   if (theSavedTrace.Length() > 0) {
-    // For the convertion of IDL API calls -> smesh.py API, "smesh" standing for SMESH_Gen
+    // For the convertion of IDL API calls -> smeshBuilder.py API, "smesh" standing for SMESH_Gen
     // was replaces with "smeshgen" (==TPythonDump::SMESHGenName()).
-    // Change "smesh" -> "smeshgen" in the trace saved before passage to smesh.py API
+    // Change "smesh" -> "smeshgen" in the trace saved before passage to smeshBuilder.py API
     bool isNewVersion =
       theSavedTrace.Location( anOldGen + ".", 1, theSavedTrace.Length() );
     if ( !isNewVersion ) {
@@ -915,7 +915,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
     aScript += helper + "\n" + aNewLines;
   }
 
-  // Convert IDL API calls into smesh.py API.
+  // Convert IDL API calls into smeshBuilder.py API.
   // Some objects are wrapped with python classes and
   // Resource_DataMapOfAsciiStringAsciiString holds methods returning wrapped objects
   Resource_DataMapOfAsciiStringAsciiString anEntry2AccessorMethod;
@@ -1003,7 +1003,8 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   TCollection_AsciiString initPart = "import ";
   if ( isMultiFile )
     initPart += helper + "salome, ";
-  initPart += aSmeshpy + ", SMESH, SALOMEDS\n";
+  initPart += " SMESH, SALOMEDS\n";
+  initPart += "from salome.smesh import smeshBuilder\n";
   if ( importGeom && isMultiFile )
   {
     initPart += ("\n## import GEOM dump file ## \n"
@@ -1026,7 +1027,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
     if ( aRemovedObjIDs.count( seqRemoved.Value(ir) )) continue;
     anUpdatedScript += "\n\tSO = theStudy.FindObjectIOR(theStudy.ConvertObjectToIOR(";
     anUpdatedScript += seqRemoved.Value(ir);
-    // for object wrapped by class of smesh.py
+    // for object wrapped by class of smeshBuilder.py
     anEntry = theObjectNames( seqRemoved.Value(ir) );
     if ( anEntry2AccessorMethod.IsBound( anEntry ) )
       anUpdatedScript += helper + "." + anEntry2AccessorMethod( anEntry );

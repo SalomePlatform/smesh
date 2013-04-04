@@ -22,8 +22,14 @@
 #
 
 import salome
-import geompy
-import smesh
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 
 #-----------------------------GEOM----------------------------------------
@@ -55,7 +61,6 @@ Id_face1 = geompy.addToStudy(face1,"Face1")
 
 
 #-----------------------------SMESH-------------------------------------------
-smesh.SetCurrentStudy(salome.myStudy)
 
 # -- Init mesh --
 plane_mesh = salome.IDToObject( Id_face1)

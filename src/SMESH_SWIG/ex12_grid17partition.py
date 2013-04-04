@@ -23,9 +23,15 @@
 
 # =======================================
 #
-from geompy import *
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
 
-import smesh
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # Geometry
 # ========
@@ -57,67 +63,65 @@ g_trim = 1000
 # Solids and rotation to prevent repair
 # -------------------------------------
 
-s_boite = MakeBox(g_x-g_arete, g_y-g_hauteur, g_z-g_arete,  g_x+g_arete, g_y+g_hauteur, g_z+g_arete)
+s_boite = geompy.MakeBox(g_x-g_arete, g_y-g_hauteur, g_z-g_arete,  g_x+g_arete, g_y+g_hauteur, g_z+g_arete)
 
 s_pi4     = 3.141592653/4
 s_hauteur = 2*g_hauteur
-s_centre  = MakeVertex(g_x, g_y-g_hauteur, g_z)
-s_dir     = MakeVectorDXDYDZ(0, 1, 0)
+s_centre  = geompy.MakeVertex(g_x, g_y-g_hauteur, g_z)
+s_dir     = geompy.MakeVectorDXDYDZ(0, 1, 0)
 
-s_cyl0 = MakeCylinder(s_centre, s_dir, g_rayon3, s_hauteur)
-s_cyl1 = MakeRotation(s_cyl0, s_dir, s_pi4)
+s_cyl0 = geompy.MakeCylinder(s_centre, s_dir, g_rayon3, s_hauteur)
+s_cyl1 = geompy.MakeRotation(s_cyl0, s_dir, s_pi4)
 
-s_blo1 = MakeCut(s_boite, s_cyl1)
+s_blo1 = geompy.MakeCut(s_boite, s_cyl1)
 
-s_cyl0 = MakeCylinder(s_centre, s_dir, g_rayon2, s_hauteur)
-s_cyl2 = MakeRotation(s_cyl0, s_dir, s_pi4)
+s_cyl0 = geompy.MakeCylinder(s_centre, s_dir, g_rayon2, s_hauteur)
+s_cyl2 = geompy.MakeRotation(s_cyl0, s_dir, s_pi4)
 
-s_blo2 = MakeCut(s_cyl1, s_cyl2)
+s_blo2 = geompy.MakeCut(s_cyl1, s_cyl2)
 
-s_cyl0 = MakeCylinder(s_centre, s_dir, g_rayon1, s_hauteur)
-s_cyl3 = MakeRotation(s_cyl0, s_dir, s_pi4)
+s_cyl0 = geompy.MakeCylinder(s_centre, s_dir, g_rayon1, s_hauteur)
+s_cyl3 = geompy.MakeRotation(s_cyl0, s_dir, s_pi4)
 
-s_blo3 = MakeCut(s_cyl2, s_cyl3)
+s_blo3 = geompy.MakeCut(s_cyl2, s_cyl3)
 
 s_arete = g_rayon1/2
 
-s_blo4 = MakeBox(g_x-s_arete, g_y-g_hauteur, g_z-s_arete,  g_x+s_arete, g_y+g_hauteur, g_z+s_arete)
+s_blo4 = geompy.MakeBox(g_x-s_arete, g_y-g_hauteur, g_z-s_arete,  g_x+s_arete, g_y+g_hauteur, g_z+s_arete)
 
-s_blo5 = MakeCut(s_cyl3, s_blo4)
+s_blo5 = geompy.MakeCut(s_cyl3, s_blo4)
 
 # Partition
 # ---------
 
 p_tools = []
-p_tools.append(MakePlane(s_centre, MakeVectorDXDYDZ( 1, 0, 1), g_trim))
-p_tools.append(MakePlane(s_centre, MakeVectorDXDYDZ(-1, 0, 1), g_trim))
+p_tools.append(geompy.MakePlane(s_centre, geompy.MakeVectorDXDYDZ( 1, 0, 1), g_trim))
+p_tools.append(geompy.MakePlane(s_centre, geompy.MakeVectorDXDYDZ(-1, 0, 1), g_trim))
 
-p_partie = MakePartition([s_blo1, s_blo2, s_blo3, s_blo5], p_tools, [], [], ShapeType["SOLID"])
+p_partie = geompy.MakePartition([s_blo1, s_blo2, s_blo3, s_blo5], p_tools, [], [], geompy.ShapeType["SOLID"])
 
 # Compound and glue
 # -----------------
 
-c_blocs = SubShapeAll(p_partie, ShapeType["SOLID"])
+c_blocs = geompy.SubShapeAll(p_partie, geompy.ShapeType["SOLID"])
 c_blocs.append(s_blo4)
 
-c_cpd = MakeCompound(c_blocs)
+c_cpd = geompy.MakeCompound(c_blocs)
 
-c_element = MakeGlueFaces(c_cpd, 1e-4)
+c_element = geompy.MakeGlueFaces(c_cpd, 1e-4)
 
 # Grid
 # ----
 
-piece = MakeMultiTranslation2D(c_element, MakeVectorDXDYDZ(1, 0, 0), 2*g_arete, g_grid, MakeVectorDXDYDZ(0, 0, 1), 2*g_arete, g_grid)
+piece = geompy.MakeMultiTranslation2D(c_element, geompy.MakeVectorDXDYDZ(1, 0, 0), 2*g_arete, g_grid, geompy.MakeVectorDXDYDZ(0, 0, 1), 2*g_arete, g_grid)
 
 # Add in study
 # ------------
 
-piece_id = addToStudy(piece, "ex12_grid17partition")
+piece_id = geompy.addToStudy(piece, "ex12_grid17partition")
 
 # Meshing
 # =======
-
-smesh.SetCurrentStudy(salome.myStudy)
 
 # Create a hexahedral mesh
 # ------------------------

@@ -2,7 +2,15 @@
 
 # Project triangles from one meshed face to another mesh on the same box
 
-from smesh import *
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # Prepare geometry
 
@@ -20,7 +28,7 @@ geompy.addToStudyInFather( box, Face_1, 'Face_1' )
 geompy.addToStudyInFather( box, Face_2, 'Face_2' )
 
 # Make the source mesh with Netgem2D
-src_mesh = Mesh(Face_1, "Source mesh")
+src_mesh = smesh.Mesh(Face_1, "Source mesh")
 src_mesh.Segment().NumberOfSegments(15)
 src_mesh.Triangle()
 src_mesh.Compute()

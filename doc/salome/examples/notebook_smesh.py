@@ -1,7 +1,15 @@
 # Using SALOME NoteBook
 
-import geompy
-import smesh
+
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 import salome_notebook
 
 # set variables
@@ -34,6 +42,6 @@ algo3D.MaxElementVolume("MaxElementVolume")
 ret = tetra.Compute()
 
 # translate the mesh
-point = smesh.PointStruct("Offset", 0., 0.)
-vector = smesh.DirStruct(point) 
+point = SMESH.PointStruct("Offset", 0., 0.)
+vector = SMESH.DirStruct(point)
 tetra.TranslateObject(tetra, vector, 0)

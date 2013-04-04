@@ -64,7 +64,7 @@ fi
 
 #CCRTif test -f ${SMESH_DIR}/bin/salome/libSMESH_Swig.py ; then
 #if test -f ${SMESH_DIR}/bin/salome/MED_Test ; then
-if test -f ${SMESH_DIR}/bin/salome/smesh.py ; then
+if test -f ${SMESH_DIR}/bin/salome/SMESH_test.py ; then
    SMesh_ok=yes
    AC_MSG_RESULT(Using SMesh module distribution in ${SMESH_DIR})
 

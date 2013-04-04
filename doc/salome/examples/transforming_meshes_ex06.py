@@ -1,8 +1,15 @@
 # Merging Elements
 
+
 import salome
-import geompy
-import smesh
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # create a face to be meshed
 px = geompy.MakeVertex(100., 0.  , 0.  )
@@ -44,7 +51,7 @@ circlemesh.Compute()
 
 # extrusion of the mesh
 trias.ExtrusionAlongPath([], circlemesh, circle,
-                         1, 0, [], 0, smesh.PointStruct(0, 0, 0))
+                         1, 0, [], 0, SMESH.PointStruct(0, 0, 0))
 
 # merge nodes
 print "Number of nodes before MergeNodes:", 

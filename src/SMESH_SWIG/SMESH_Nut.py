@@ -26,9 +26,16 @@
 #Auhtor                 :MASLOV Eugeny, KOVALTCHUK Alexey 
 #####################################################################
 #
-import geompy
 import salome
-import smesh
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
+
 import os
 import math
 
@@ -98,8 +105,6 @@ Cut_1_ID = geompy.addToStudy(Cut_1, "Cut_1")
 
 #Mesh creation
 
-smesh.SetCurrentStudy(salome.myStudy)
-
 # -- Init --
 shape_mesh = salome.IDToObject( Cut_1_ID )
 
@@ -117,7 +122,7 @@ smesh.SetName(hAvLength, "AverageLength_"+str(theAverageLength))
 
 print "-------------------------- MaxElementArea"
 theMaxElementArea = 20
-algoMef = mesh.Triangle(smesh.MEFISTO)
+algoMef = mesh.Triangle(smeshBuilder.MEFISTO)
 hArea = algoMef.MaxElementArea( theMaxElementArea )
 print hArea.GetName()
 print hArea.GetId()
@@ -126,7 +131,7 @@ smesh.SetName(hArea, "MaxElementArea_"+str(theMaxElementArea))
 
 print "-------------------------- MaxElementVolume"
 theMaxElementVolume = 150
-algoNg = mesh.Tetrahedron(smesh.NETGEN)
+algoNg = mesh.Tetrahedron(smeshBuilder.NETGEN)
 hVolume = algoNg.MaxElementVolume( theMaxElementVolume )
 print hVolume.GetName()
 print hVolume.GetId()

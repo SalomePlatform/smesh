@@ -23,9 +23,15 @@
 
 # =======================================
 #
-from geompy import *
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
 
-import smesh
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # Geometrie
 # =========
@@ -47,42 +53,40 @@ plan_trim = 2000
 # Cylindre
 # --------
 
-cylindre_base = MakeVertex(0, 0, 0)
-cylindre_dir  = MakeVectorDXDYDZ(1, 0, 0)
-cylindre      = MakeCylinder(cylindre_base, cylindre_dir, cylindre_rayon, cylindre_hauteur)
+cylindre_base = geompy.MakeVertex(0, 0, 0)
+cylindre_dir  = geompy.MakeVectorDXDYDZ(1, 0, 0)
+cylindre      = geompy.MakeCylinder(cylindre_base, cylindre_dir, cylindre_rayon, cylindre_hauteur)
 
 # Dome
 # ----
 
-dome_sphere = MakeSpherePntR(cylindre_base, cylindre_rayon)
-dome        = MakeFuse(dome_sphere, cylindre)
+dome_sphere = geompy.MakeSpherePntR(cylindre_base, cylindre_rayon)
+dome        = geompy.MakeFuse(dome_sphere, cylindre)
 
 # Cheminee
 # --------
 
-cheminee_base = MakeVertex(-cylindre_hauteur/2, 0, trou_z)
-cheminee_trou = MakeCylinder(cheminee_base, cylindre_dir, trou_rayon, 2*cylindre_hauteur)
-cheminee      = MakeCut(dome, cheminee_trou)
+cheminee_base = geompy.MakeVertex(-cylindre_hauteur/2, 0, trou_z)
+cheminee_trou = geompy.MakeCylinder(cheminee_base, cylindre_dir, trou_rayon, 2*cylindre_hauteur)
+cheminee      = geompy.MakeCut(dome, cheminee_trou)
 
 # Decoupage et reparation
 # -----------------------
 
-blocs_plan1 = MakePlane(cheminee_base, MakeVectorDXDYDZ(0, 1, 0), plan_trim)
-blocs_plan2 = MakePlane(cheminee_base, MakeVectorDXDYDZ(0, 0, 1), plan_trim)
+blocs_plan1 = geompy.MakePlane(cheminee_base, geompy.MakeVectorDXDYDZ(0, 1, 0), plan_trim)
+blocs_plan2 = geompy.MakePlane(cheminee_base, geompy.MakeVectorDXDYDZ(0, 0, 1), plan_trim)
 
-blocs_part = MakePartition([cheminee], [blocs_plan1, blocs_plan2], [], [], ShapeType["SOLID"])
+blocs_part = geompy.MakePartition([cheminee], [blocs_plan1, blocs_plan2], [], [], geompy.ShapeType["SOLID"])
 
-piece = RemoveExtraEdges(blocs_part)
+piece = geompy.RemoveExtraEdges(blocs_part)
 
 # Etude
 # -----
 
-piece_id = addToStudy(piece, "ex17_dome1")
+piece_id = geompy.addToStudy(piece, "ex17_dome1")
 
 # Maillage
 # ========
-
-smesh.SetCurrentStudy(salome.myStudy)
 
 # Maillage hexahedrique
 # ---------------------

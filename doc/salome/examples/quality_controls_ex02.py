@@ -1,10 +1,15 @@
 # Borders at Multiconnection
 
-import salome
-import geompy
 
-import smesh
-import SMESH
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # create open shell: a box without one plane
 box = geompy.MakeBox(0., 0., 0., 20., 20., 15.)
@@ -24,7 +29,7 @@ mesh.Compute()
 # Criterion : Borders at multi-connection
 nb_conn = 2
 
-aFilter = smesh.GetFilter(smesh.EDGE, smesh.FT_MultiConnection, smesh.FT_EqualTo, nb_conn)
+aFilter = smesh.GetFilter(SMESH.EDGE, SMESH.FT_MultiConnection, SMESH.FT_EqualTo, nb_conn)
 anIds = mesh.GetIdsFromFilter(aFilter)
 
 # print the result
@@ -38,7 +43,7 @@ for i in range(len(anIds)):
 print ""
 
 # create a group
-aGroup = mesh.GetMesh().CreateGroup(smesh.EDGE, "Borders at multi-connections")
+aGroup = mesh.GetMesh().CreateGroup(SMESH.EDGE, "Borders at multi-connections")
 aGroup.Add(anIds)
 
 salome.sg.updateObjBrowser(1)

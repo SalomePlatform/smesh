@@ -18,13 +18,13 @@
 #
 
 ##
-# @package StdMeshersDC
+# @package StdMeshersBuilder
 # Python API for the standard meshing plug-in module.
 
-from smesh_algorithm import Mesh_Algorithm
-from smesh import AssureGeomPublished, IsEqual, ParseParameters
-from smesh import GetName, TreatHypoStatus
-from smeshDC import Mesh
+from salome.smesh.smesh_algorithm import Mesh_Algorithm
+from salome.smesh.smeshBuilder import AssureGeomPublished, IsEqual, ParseParameters
+from salome.smesh.smeshBuilder import GetName, TreatHypoStatus
+from salome.smesh.smeshBuilder import Mesh
 
 import StdMeshers
 
@@ -32,19 +32,19 @@ import StdMeshers
 # Mesh algo type identifiers
 #----------------------------
 
-## Algorithm type: Regular 1D algorithm, see StdMeshersDC_Segment
+## Algorithm type: Regular 1D algorithm, see StdMeshersBuilder_Segment
 REGULAR     = "Regular_1D"
-## Algorithm type: Python 1D algorithm, see StdMeshersDC_Segment_Python
+## Algorithm type: Python 1D algorithm, see StdMeshersBuilder_Segment_Python
 PYTHON      = "Python_1D"
-## Algorithm type: Composite segment 1D algorithm, see StdMeshersDC_CompositeSegment
+## Algorithm type: Composite segment 1D algorithm, see StdMeshersBuilder_CompositeSegment
 COMPOSITE   = "CompositeSegment_1D"
-## Algorithm type: Triangle MEFISTO 2D algorithm, see StdMeshersDC_Triangle_MEFISTO
+## Algorithm type: Triangle MEFISTO 2D algorithm, see StdMeshersBuilder_Triangle_MEFISTO
 MEFISTO     = "MEFISTO_2D"
-## Algorithm type: Hexahedron 3D (i-j-k) algorithm, see StdMeshersDC_Hexahedron
+## Algorithm type: Hexahedron 3D (i-j-k) algorithm, see StdMeshersBuilder_Hexahedron
 Hexa        = "Hexa_3D"
-## Algorithm type: Quadrangle 2D algorithm, see StdMeshersDC_Quadrangle
+## Algorithm type: Quadrangle 2D algorithm, see StdMeshersBuilder_Quadrangle
 QUADRANGLE  = "Quadrangle_2D"
-## Algorithm type: Radial Quadrangle 1D-2D algorithm, see StdMeshersDC_RadialQuadrangle1D2D
+## Algorithm type: Radial Quadrangle 1D-2D algorithm, see StdMeshersBuilder_RadialQuadrangle1D2D
 RADIAL_QUAD = "RadialQuadrangle_1D2D"
 
 # import items of enum QuadType
@@ -59,7 +59,7 @@ for e in StdMeshers.QuadType._items: exec('%s = StdMeshers.%s'%(e,e))
 #  It can be created by calling smesh.Mesh.Segment(geom=0)
 #
 #  @ingroup l3_algos_basic
-class StdMeshersDC_Segment(Mesh_Algorithm):
+class StdMeshersBuilder_Segment(Mesh_Algorithm):
 
     ## name of the dynamic method in smesh.Mesh class
     #  @internal
@@ -302,8 +302,8 @@ class StdMeshersDC_Segment(Mesh_Algorithm):
         store_geom = self.geom
         if type(vertex) is types.IntType:
             if vertex == 0 or vertex == 1:
-                import geompyDC
-                vertex = self.mesh.geompyD.ExtractShapes(self.geom, geompyDC.ShapeType["VERTEX"],True)[vertex]
+                from salome.geom import geomBuilder
+                vertex = self.mesh.geompyD.ExtractShapes(self.geom, geomBuilder.ShapeType["VERTEX"],True)[vertex]
                 self.geom = vertex
                 pass
             pass
@@ -342,14 +342,14 @@ class StdMeshersDC_Segment(Mesh_Algorithm):
         hyp = self.Hypothesis("QuadraticMesh", UseExisting=1, CompareMethod=self.CompareEqualHyp)
         return hyp
 
-    pass # end of StdMeshersDC_Segment class
+    pass # end of StdMeshersBuilder_Segment class
 
 ## Segment 1D algorithm for discretization of a set of adjacent edges as one edge.
 #
 #  It is created by calling smesh.Mesh.Segment(smesh.COMPOSITE,geom=0)
 #
 #  @ingroup l3_algos_basic
-class StdMeshersDC_CompositeSegment(StdMeshersDC_Segment):
+class StdMeshersBuilder_CompositeSegment(StdMeshersBuilder_Segment):
 
     ## name of the dynamic method in smesh.Mesh class
     #  @internal
@@ -373,14 +373,14 @@ class StdMeshersDC_CompositeSegment(StdMeshersDC_Segment):
         self.Create(mesh, geom, self.algoType)
         pass
 
-    pass # end of StdMeshersDC_CompositeSegment class
+    pass # end of StdMeshersBuilder_CompositeSegment class
 
 ## Defines a segment 1D algorithm for discretization of edges with Python function
 #
 #  It is created by calling smesh.Mesh.Segment(smesh.PYTHON,geom=0)
 #
 #  @ingroup l3_algos_basic
-class StdMeshersDC_Segment_Python(Mesh_Algorithm):
+class StdMeshersBuilder_Segment_Python(Mesh_Algorithm):
 
     ## name of the dynamic method in smesh.Mesh class
     #  @internal
@@ -418,14 +418,14 @@ class StdMeshersDC_Segment_Python(Mesh_Algorithm):
         hyp.SetPythonLog10RatioFunction(func)
         return hyp
 
-    pass # end of StdMeshersDC_Segment_Python class
+    pass # end of StdMeshersBuilder_Segment_Python class
 
 ## Triangle MEFISTO 2D algorithm
 #
 #  It is created by calling smesh.Mesh.Triangle(smesh.MEFISTO,geom=0)
 #
 #  @ingroup l3_algos_basic
-class StdMeshersDC_Triangle_MEFISTO(Mesh_Algorithm):
+class StdMeshersBuilder_Triangle_MEFISTO(Mesh_Algorithm):
 
     ## name of the dynamic method in smesh.Mesh class
     #  @internal
@@ -471,14 +471,14 @@ class StdMeshersDC_Triangle_MEFISTO(Mesh_Algorithm):
         hyp = self.Hypothesis("LengthFromEdges", UseExisting=1, CompareMethod=self.CompareEqualHyp)
         return hyp
 
-    pass # end of StdMeshersDC_Triangle_MEFISTO class
+    pass # end of StdMeshersBuilder_Triangle_MEFISTO class
 
 ## Defines a quadrangle 2D algorithm
 # 
 #  It is created by calling smesh.Mesh.Quadrangle(geom=0)
 #
 #  @ingroup l3_algos_basic
-class StdMeshersDC_Quadrangle(Mesh_Algorithm):
+class StdMeshersBuilder_Quadrangle(Mesh_Algorithm):
 
     ## name of the dynamic method in smesh.Mesh class
     #  @internal
@@ -590,14 +590,14 @@ class StdMeshersDC_Quadrangle(Mesh_Algorithm):
     def TriangleVertex(self, vertex, UseExisting=0):
         return self.QuadrangleParameters(QUAD_STANDARD,vertex,UseExisting)
 
-    pass # end of StdMeshersDC_Quadrangle class
+    pass # end of StdMeshersBuilder_Quadrangle class
 
 ## Defines a hexahedron 3D algorithm
 # 
 #  It is created by calling smesh.Mesh.Hexahedron(geom=0)
 #
 #  @ingroup l3_algos_basic
-class StdMeshersDC_Hexahedron(Mesh_Algorithm):
+class StdMeshersBuilder_Hexahedron(Mesh_Algorithm):
 
     ## name of the dynamic method in smesh.Mesh class
     #  @internal
@@ -622,14 +622,14 @@ class StdMeshersDC_Hexahedron(Mesh_Algorithm):
         self.Create(mesh, geom, Hexa)
         pass
 
-    pass # end of StdMeshersDC_Hexahedron class
+    pass # end of StdMeshersBuilder_Hexahedron class
 
 ## Defines a projection 1D algorithm
 #  
 #  It is created by calling smesh.Mesh.Projection1D(geom=0)
 #
 #  @ingroup l3_algos_proj
-class StdMeshersDC_Projection1D(Mesh_Algorithm):
+class StdMeshersBuilder_Projection1D(Mesh_Algorithm):
 
     ## name of the dynamic method in smesh.Mesh class
     #  @internal
@@ -679,14 +679,14 @@ class StdMeshersDC_Projection1D(Mesh_Algorithm):
         hyp.SetVertexAssociation( srcV, tgtV )
         return hyp
 
-    pass # end of StdMeshersDC_Projection1D class
+    pass # end of StdMeshersBuilder_Projection1D class
 
 ## Defines a projection 2D algorithm
 #  
 #  It is created by calling smesh.Mesh.Projection2D(geom=0)
 #
 #  @ingroup l3_algos_proj
-class StdMeshersDC_Projection2D(Mesh_Algorithm):
+class StdMeshersBuilder_Projection2D(Mesh_Algorithm):
 
     ## name of the dynamic method in smesh.Mesh class
     #  @internal
@@ -728,7 +728,7 @@ class StdMeshersDC_Projection2D(Mesh_Algorithm):
     #  Note: all association vertices must belong to one edge of a face
     def SourceFace(self, face, mesh=None, srcV1=None, tgtV1=None,
                    srcV2=None, tgtV2=None, UseExisting=0):
-        from smeshDC import Mesh
+        from salome.smesh.smeshBuilder import Mesh
         if isinstance(mesh, Mesh):
             mesh = mesh.GetMesh()
         for geom in [ face, srcV1, tgtV1, srcV2, tgtV2 ]:
@@ -742,14 +742,14 @@ class StdMeshersDC_Projection2D(Mesh_Algorithm):
         hyp.SetVertexAssociation( srcV1, srcV2, tgtV1, tgtV2 )
         return hyp
 
-    pass # end of StdMeshersDC_Projection2D class
+    pass # end of StdMeshersBuilder_Projection2D class
 
 ## Defines a projection 1D-2D algorithm
 #  
 #  It is created by calling smesh.Mesh.Projection1D2D(geom=0)
 #
 #  @ingroup l3_algos_proj
-class StdMeshersDC_Projection1D2D(StdMeshersDC_Projection2D):
+class StdMeshersBuilder_Projection1D2D(StdMeshersBuilder_Projection2D):
 
     ## name of the dynamic method in smesh.Mesh class
     #  @internal
@@ -766,17 +766,17 @@ class StdMeshersDC_Projection1D2D(StdMeshersDC_Projection2D):
     #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
     #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
-        StdMeshersDC_Projection2D.__init__(self, mesh, geom)
+        StdMeshersBuilder_Projection2D.__init__(self, mesh, geom)
         pass
 
-    pass # end of StdMeshersDC_Projection1D2D class
+    pass # end of StdMeshersBuilder_Projection1D2D class
 
 ## Defines a projection 3D algorithm
 # 
 #  It is created by calling smesh.Mesh.Projection3D(geom=0)
 #
 #  @ingroup l3_algos_proj
-class StdMeshersDC_Projection3D(Mesh_Algorithm):
+class StdMeshersBuilder_Projection3D(Mesh_Algorithm):
 
     ## name of the dynamic method in smesh.Mesh class
     #  @internal
@@ -831,7 +831,7 @@ class StdMeshersDC_Projection3D(Mesh_Algorithm):
         #elif srcV1 or srcV2 or tgtV1 or tgtV2:
         return hyp
 
-    pass # end of StdMeshersDC_Projection3D class
+    pass # end of StdMeshersBuilder_Projection3D class
 
 ## Defines a Prism 3D algorithm, which is either "Extrusion 3D" or "Radial Prism"
 #  depending on geometry
@@ -839,7 +839,7 @@ class StdMeshersDC_Projection3D(Mesh_Algorithm):
 #  It is created by calling smesh.Mesh.Prism(geom=0)
 #
 #  @ingroup l3_algos_3dextr
-class StdMeshersDC_Prism3D(Mesh_Algorithm):
+class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
 
     ## name of the dynamic method in smesh.Mesh class
     #  @internal
@@ -983,7 +983,7 @@ class StdMeshersDC_Prism3D(Mesh_Algorithm):
         hyp.SetFineness( fineness )
         return hyp
 
-    pass # end of StdMeshersDC_Prism3D class
+    pass # end of StdMeshersBuilder_Prism3D class
 
 ## Defines a Prism 3D algorithm, which is either "Extrusion 3D" or "Radial Prism"
 #  depending on geometry
@@ -991,7 +991,7 @@ class StdMeshersDC_Prism3D(Mesh_Algorithm):
 #  It is created by calling smesh.Mesh.Prism(geom=0)
 #
 #  @ingroup l3_algos_3dextr
-class StdMeshersDC_RadialPrism3D(StdMeshersDC_Prism3D):
+class StdMeshersBuilder_RadialPrism3D(StdMeshersBuilder_Prism3D):
 
     ## name of the dynamic method in smesh.Mesh class
     #  @internal
@@ -1023,7 +1023,7 @@ class StdMeshersDC_RadialPrism3D(StdMeshersDC_Prism3D):
 #  It is created by calling smesh.Mesh.Quadrangle(smesh.RADIAL_QUAD,geom=0)
 #
 #  @ingroup l2_algos_radialq
-class StdMeshersDC_RadialQuadrangle1D2D(Mesh_Algorithm):
+class StdMeshersBuilder_RadialQuadrangle1D2D(Mesh_Algorithm):
 
     ## name of the dynamic method in smesh.Mesh class
     #  @internal
@@ -1131,14 +1131,14 @@ class StdMeshersDC_RadialQuadrangle1D2D(Mesh_Algorithm):
         hyp.SetFineness( fineness )
         return hyp
 
-    pass # end of StdMeshersDC_RadialQuadrangle1D2D class
+    pass # end of StdMeshersBuilder_RadialQuadrangle1D2D class
 
 ## Defines a Use Existing Elements 1D algorithm
 #
 #  It is created by calling smesh.Mesh.UseExisting1DElements(geom=0)
 #
 #  @ingroup l3_algos_basic
-class StdMeshersDC_UseExistingElements_1D(Mesh_Algorithm):
+class StdMeshersBuilder_UseExistingElements_1D(Mesh_Algorithm):
 
     ## name of the dynamic method in smesh.Mesh class
     #  @internal
@@ -1180,14 +1180,14 @@ class StdMeshersDC_UseExistingElements_1D(Mesh_Algorithm):
         hyp.SetCopySourceMesh(toCopyMesh, toCopyGroups)
         return hyp
 
-    pass # end of StdMeshersDC_UseExistingElements_1D class
+    pass # end of StdMeshersBuilder_UseExistingElements_1D class
 
 ## Defines a Use Existing Elements 1D-2D algorithm
 #
 #  It is created by calling smesh.Mesh.UseExisting2DElements(geom=0)
 #
 #  @ingroup l3_algos_basic
-class StdMeshersDC_UseExistingElements_1D2D(Mesh_Algorithm):
+class StdMeshersBuilder_UseExistingElements_1D2D(Mesh_Algorithm):
 
     ## name of the dynamic method in smesh.Mesh class
     #  @internal
@@ -1229,14 +1229,14 @@ class StdMeshersDC_UseExistingElements_1D2D(Mesh_Algorithm):
         hyp.SetCopySourceMesh(toCopyMesh, toCopyGroups)
         return hyp
 
-    pass # end of StdMeshersDC_UseExistingElements_1D2D class
+    pass # end of StdMeshersBuilder_UseExistingElements_1D2D class
 
 ## Defines a Body Fitting 3D algorithm
 #
 #  It is created by calling smesh.Mesh.BodyFitted(geom=0)
 #
 #  @ingroup l3_algos_basic
-class StdMeshersDC_Cartesian_3D(Mesh_Algorithm):
+class StdMeshersBuilder_Cartesian_3D(Mesh_Algorithm):
 
     ## name of the dynamic method in smesh.Mesh class
     #  @internal
@@ -1302,7 +1302,7 @@ class StdMeshersDC_Cartesian_3D(Mesh_Algorithm):
         self.hyp.SetSizeThreshold( sizeThreshold )
         return self.hyp
 
-    pass # end of StdMeshersDC_Cartesian_3D class
+    pass # end of StdMeshersBuilder_Cartesian_3D class
 
 ## Defines a stub 1D algorithm, which enables "manual" creation of nodes and
 #  segments usable by 2D algoritms
@@ -1310,7 +1310,7 @@ class StdMeshersDC_Cartesian_3D(Mesh_Algorithm):
 #  It is created by calling smesh.Mesh.UseExistingSegments(geom=0)
 #
 #  @ingroup l3_algos_basic
-class StdMeshersDC_UseExisting_1D(Mesh_Algorithm):
+class StdMeshersBuilder_UseExisting_1D(Mesh_Algorithm):
 
     ## name of the dynamic method in smesh.Mesh class
     #  @internal
@@ -1330,7 +1330,7 @@ class StdMeshersDC_UseExisting_1D(Mesh_Algorithm):
         self.Create(mesh, geom, self.algoType)
         pass
 
-    pass # end of StdMeshersDC_UseExisting_1D class
+    pass # end of StdMeshersBuilder_UseExisting_1D class
 
 ## Defines a stub 2D algorithm, which enables "manual" creation of nodes and
 #  faces usable by 3D algoritms
@@ -1338,7 +1338,7 @@ class StdMeshersDC_UseExisting_1D(Mesh_Algorithm):
 #  It is created by calling smesh.Mesh.UseExistingFaces(geom=0)
 #
 #  @ingroup l3_algos_basic
-class StdMeshersDC_UseExisting_2D(Mesh_Algorithm):
+class StdMeshersBuilder_UseExisting_2D(Mesh_Algorithm):
 
     ## name of the dynamic method in smesh.Mesh class
     #  @internal
@@ -1358,4 +1358,4 @@ class StdMeshersDC_UseExisting_2D(Mesh_Algorithm):
         self.Create(mesh, geom, self.algoType)
         pass
 
-    pass # end of StdMeshersDC_UseExisting_2D class
+    pass # end of StdMeshersBuilder_UseExisting_2D class

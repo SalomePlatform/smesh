@@ -28,16 +28,21 @@
 #  $Header$
 #
 import salome
-import geompy
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
+
 import math
-import smesh
 
 import GEOM_Spanner
 
 isBlocksTest = 0 # False
 isMeshTest   = 1 # True
-
-smesh.SetCurrentStudy(salome.myStudy)
 
 GEOM_Spanner.MakeSpanner(geompy, math, isBlocksTest, isMeshTest, smesh)
 

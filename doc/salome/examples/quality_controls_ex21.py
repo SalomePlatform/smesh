@@ -1,6 +1,7 @@
 # Volume
 
 import SMESH_mechanic_tetra
+import SMESH
 
 smesh  = SMESH_mechanic_tetra.smesh
 mesh   = SMESH_mechanic_tetra.mesh
@@ -9,7 +10,7 @@ salome = SMESH_mechanic_tetra.salome
 # Criterion : VOLUME < 7.
 volume_margin = 7.
 
-aFilter = smesh.GetFilter(smesh.VOLUME, smesh.FT_Volume3D, smesh.FT_LessThan, volume_margin)
+aFilter = smesh.GetFilter(SMESH.VOLUME, SMESH.FT_Volume3D, SMESH.FT_LessThan, volume_margin)
 
 anIds = mesh.GetIdsFromFilter(aFilter) 
 
@@ -25,7 +26,7 @@ for i in range(len(anIds)):
 print ""
 
 # create a group
-aGroup = mesh.CreateEmptyGroup(smesh.VOLUME, "Volume < " + `volume_margin`)
+aGroup = mesh.CreateEmptyGroup(SMESH.VOLUME, "Volume < " + `volume_margin`)
 
 aGroup.Add(anIds)
 

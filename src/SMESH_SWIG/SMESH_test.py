@@ -26,8 +26,14 @@
 #  Module : SMESH
 #
 import salome
-import geompy
-import smesh
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # ---- define a box
 
@@ -69,7 +75,7 @@ print hyp.GetName()
 print hyp.GetId()
 print hyp.GetLength()
 
-algo_2 = mesh.Triangle(smesh.MEFISTO, box)
+algo_2 = mesh.Triangle(smeshBuilder.MEFISTO, box)
 hyp = algo_2.MaxElementArea(5000)
 print hyp.GetName()
 print hyp.GetId()

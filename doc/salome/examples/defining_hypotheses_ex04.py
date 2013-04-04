@@ -1,16 +1,23 @@
 # Local Length
 
-from geompy import *
-import smesh
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # create a box
-box = MakeBoxDXDYDZ(10., 10., 10.)
-addToStudy(box, "Box")
+box = geompy.MakeBoxDXDYDZ(10., 10., 10.)
+geompy.addToStudy(box, "Box")
 
 # get one edge of the box to put local hypothesis on
-p5 = MakeVertex(5., 0., 0.)
-EdgeX = GetEdgeNearPoint(box, p5)
-addToStudyInFather(box, EdgeX, "Edge [0,0,0 - 10,0,0]")
+p5 = geompy.MakeVertex(5., 0., 0.)
+EdgeX = geompy.GetEdgeNearPoint(box, p5)
+geompy.addToStudyInFather(box, EdgeX, "Edge [0,0,0 - 10,0,0]")
 
 # create a hexahedral mesh on the box
 hexa = smesh.Mesh(box, "Box : hexahedrical mesh")

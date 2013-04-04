@@ -1,9 +1,15 @@
 # Length 1D
 
-import salome
-import geompy
 
-import smesh
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # create open shell: a box without one plane
 box = geompy.MakeBox(0., 0., 0., 20., 20., 15.)
@@ -23,7 +29,7 @@ mesh.Compute()
 # Criterion : Length > 3.
 length_margin = 3.
 
-aFilter = smesh.GetFilter(smesh.EDGE, smesh.FT_Length, smesh.FT_MoreThan, length_margin)
+aFilter = smesh.GetFilter(SMESH.EDGE, SMESH.FT_Length, SMESH.FT_MoreThan, length_margin)
 anIds = mesh.GetIdsFromFilter(aFilter) 
 
 # print the result
@@ -37,7 +43,7 @@ for i in range(len(anIds)):
 print ""
 
 # create a group
-aGroup = mesh.GetMesh().CreateGroup(smesh.EDGE, "Edges with length > " + `length_margin`)
+aGroup = mesh.GetMesh().CreateGroup(SMESH.EDGE, "Edges with length > " + `length_margin`)
 aGroup.Add(anIds)
 
 salome.sg.updateObjBrowser(1)

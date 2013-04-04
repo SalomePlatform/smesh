@@ -33,32 +33,33 @@ import salome
 from salome import *
 
 import geompy
-import smeshDC
-from smeshDC import *
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
 
 # retrieve SMESH engine in try/except block
 # to avoid problems in some cases, e.g. when generating documentation
 try:
-    # get instance of class smeshDC
-    smesh = salome.lcc.FindOrLoadComponent( "FactoryServer", "SMESH" )
-    smesh.init_smesh( salome.myStudy, geompy.geom )
+    # get instance of class smeshBuilder
+    engineSmesh = salome.lcc.FindOrLoadComponent( "FactoryServer", "SMESH" )
+    smesh = smeshBuilder.New(salome.myStudy, engineSmesh)
 except:
     smesh = None
     pass
 
 # load plugins and add dynamically generated methods to Mesh class,
 # the same for for global variables declared by plug-ins
-from smeshDC import Mesh, algoCreator
+from salome.smesh.smeshBuilder import Mesh, algoCreator
 for pluginName in os.environ[ "SMESH_MeshersList" ].split( ":" ):
     #
-    pluginName += "DC"
+    #print "pluginName: ", pluginName
+    pluginBuilderName = pluginName + "Builder"
     try:
-        exec( "from %s import *" % pluginName )
+        exec( "from salome.%s.%s import *" % (pluginName, pluginBuilderName))
     except Exception, e:
-        print "Exception while loading %s: %s" % ( pluginName, e )
+        print "Exception while loading %s: %s" % ( pluginBuilderName, e )
         continue
-    exec( "import %s" % pluginName )
-    plugin = eval( pluginName )
+    exec( "from salome.%s import %s" % (pluginName, pluginBuilderName))
+    plugin = eval( pluginBuilderName )
 
     # add methods creating algorithms to Mesh
     for k in dir( plugin ):
@@ -74,10 +75,38 @@ for pluginName in os.environ[ "SMESH_MeshersList" ].split( ":" ):
     pass
 del pluginName
 
-# export the methods of smeshDC
+# export the methods of smeshBuilder
 if smesh:
     for k in dir( smesh ):
 	if k[0] == '_': continue
 	globals()[k] = getattr( smesh, k )
     del k
     pass
+
+print """
+===============================================================================
+WARNING:                                                                      |
+Usage of smesh.py is deprecated in SALOME V7.2!                               |
+smesh.py will be removed in a future version!                                 |
+TODO:                                                                         |
+The following changes in your scripts are required to avoid this message:     |
+                                                                              |
+replace                                                                       |
+-------                                                                       |
+                                                                              |
+import smesh, SMESH, SALOMEDS                                                 |
+smesh.SetCurrentStudy(theStudy)                                               |
+                                                                              |
+with                                                                          |
+----                                                                          |
+                                                                              |
+import SMESH, SALOMEDS                                                        |
+from salome.smesh import smeshBuilder                                         |
+smesh = smeshBuilder.New(theStudy)                                            |
+                                                                              |
+you also need to modify some lines where smeshBuilder is used instead of smesh|
+                                                                              |
+algo=smesh.xxxx  ==> algo.smeshBuilder.xxxx                                   |
+                                                                              |
+===============================================================================
+"""

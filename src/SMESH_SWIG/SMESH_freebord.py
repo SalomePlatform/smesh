@@ -22,8 +22,14 @@
 #
 
 import salome
-import geompy
-import smesh
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 
 # Create box without one plane
@@ -58,7 +64,7 @@ mesh.Compute()
 
 # Criterion : Free edges. Create group.
 
-aCriterion = smesh.GetCriterion(smesh.EDGE, smesh.FT_FreeEdges)
+aCriterion = smesh.GetCriterion(SMESH.EDGE, SMESH.FT_FreeEdges)
 
 aGroup = mesh.MakeGroupByCriterion("Free edges", aCriterion)
 

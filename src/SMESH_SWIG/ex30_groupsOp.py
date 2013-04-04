@@ -18,18 +18,17 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-import sys
 import salome
-import geompy
-import math
-import SALOMEDS
-import SMESH
-import smesh
-
 salome.salome_init()
-aStudyId = salome.myStudy._get_StudyId()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
 
-geompy.init_geom(salome.myStudy)
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
+import math
+
 global Face_1
 Face_1 = geompy.MakeFaceHW(100, 100, 1)
 geompy.addToStudy( Face_1, "Face_1" )
@@ -51,7 +50,7 @@ aListOfElems = [ 52, 53, 54, 55, 56, 57,
                  72, 73, 74, 75, 76, 77,
                  82, 83, 84, 85, 86, 87 ]
                  
-aRedGroup = Mesh_1.GetMesh().CreateGroup( smesh.FACE, "Red" )
+aRedGroup = Mesh_1.GetMesh().CreateGroup( SMESH.FACE, "Red" )
 aRedGroup.Add( aListOfElems );
 aRedGroup.SetColor( SALOMEDS.Color( 1, 0, 0 ) )
 
@@ -64,7 +63,7 @@ aListOfElems = [ 55, 56, 57, 58, 59,
                  115, 116, 117, 118, 119,
                  125, 126, 127, 128, 129 ]
                  
-aGreenGroup = Mesh_1.GetMesh().CreateGroup( smesh.FACE, "Green" )
+aGreenGroup = Mesh_1.GetMesh().CreateGroup( SMESH.FACE, "Green" )
 aGreenGroup.Add( aListOfElems );
 aGreenGroup.SetColor( SALOMEDS.Color( 0, 1, 0 ) )
 
@@ -75,7 +74,7 @@ aListOfElems = [ 63, 64, 65, 66, 67, 68,
                  103, 104, 105, 106, 107, 108, 
                  113, 114, 115, 116, 117, 118 ]
                  
-aBlueGroup = Mesh_1.GetMesh().CreateGroup( smesh.FACE, "Blue" )
+aBlueGroup = Mesh_1.GetMesh().CreateGroup( SMESH.FACE, "Blue" )
 aBlueGroup.Add( aListOfElems );
 aBlueGroup.SetColor( SALOMEDS.Color( 0, 0, 1 ) )
 

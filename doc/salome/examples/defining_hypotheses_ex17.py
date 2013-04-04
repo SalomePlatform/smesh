@@ -1,7 +1,14 @@
 # Viscous layers construction
 
-from smesh import *
-SetCurrentStudy(salome.myStudy)
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 X = geompy.MakeVectorDXDYDZ( 1,0,0 )
 O = geompy.MakeVertex( 100,50,50 )
@@ -19,7 +26,7 @@ geompy.addToStudy( shape, "shape" )
 geompy.addToStudyInFather( shape, face1, "face1")
 
 
-mesh = Mesh(shape, "CFD")
+mesh = smesh.Mesh(shape, "CFD")
 
 mesh.Segment().NumberOfSegments( 4 )
 
@@ -35,6 +42,6 @@ layersHyp = algo3D.ViscousLayers(thickness,numberOfLayers,stretchFactor,ignoreFa
 
 mesh.Compute()
 
-mesh.MakeGroup("Tetras",VOLUME,FT_ElemGeomType,"=",Geom_TETRA)
-mesh.MakeGroup("Pyras",VOLUME,FT_ElemGeomType,"=",Geom_PYRAMID)
-mesh.MakeGroup("Prims",VOLUME,FT_ElemGeomType,"=",Geom_PENTA)
+mesh.MakeGroup("Tetras",SMESH.VOLUME,SMESH.FT_ElemGeomType,"=",SMESH.Geom_TETRA)
+mesh.MakeGroup("Pyras",SMESH.VOLUME,SMESH.FT_ElemGeomType,"=",SMESH.Geom_PYRAMID)
+mesh.MakeGroup("Prims",SMESH.VOLUME,SMESH.FT_ElemGeomType,"=",SMESH.Geom_PENTA)

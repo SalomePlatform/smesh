@@ -1,9 +1,15 @@
 # Free Nodes
 
-import salome
-import geompy
 
-import smesh
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # create box
 box = geompy.MakeBox(0., 0., 0., 100., 200., 300.)
@@ -13,7 +19,7 @@ idbox = geompy.addToStudy(box, "box")
 mesh = smesh.Mesh(box, "Mesh_free_nodes")
 algo = mesh.Segment()
 algo.NumberOfSegments(10)
-algo = mesh.Triangle(smesh.MEFISTO)
+algo = mesh.Triangle(smeshBuilder.MEFISTO)
 algo.MaxElementArea(150.)
 mesh.Compute() 
 
@@ -21,18 +27,18 @@ mesh.Compute()
 # Criterion : AREA < 80.
 area_margin = 80.
 
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Area, smesh.FT_LessThan, area_margin)
+aFilter = smesh.GetFilter(SMESH.FACE, SMESH.FT_Area, SMESH.FT_LessThan, area_margin)
 
 anIds = mesh.GetIdsFromFilter(aFilter)
 
 mesh.RemoveElements(anIds)
 
 # criterion : free nodes
-aFilter = smesh.GetFilter(smesh.NODE, smesh.FT_FreeNodes) 
+aFilter = smesh.GetFilter(SMESH.NODE, SMESH.FT_FreeNodes)
 anNodeIds = mesh.GetIdsFromFilter(aFilter)
 
 # create a group
-aGroup = mesh.CreateEmptyGroup(smesh.NODE, "Free_nodes")
+aGroup = mesh.CreateEmptyGroup(SMESH.NODE, "Free_nodes")
 aGroup.Add(anNodeIds)
 
 # print the result

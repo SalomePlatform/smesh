@@ -1,10 +1,16 @@
 # Extrusion along a Path
 
 import math
-import salome
 
-# Geometry
-import geompy
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # 1. Create points
 points = [[0, 0], [50, 30], [50, 110], [0, 150], [-80, 150], [-130, 70], [-130, -20]]
@@ -36,7 +42,6 @@ for ii in range(len(Wire_polyline_edges)):
     pass
 
 # Mesh
-import smesh
 
 # Mesh the given shape with the given 1d hypothesis
 def Mesh1D(shape1d, nbSeg, name):
@@ -91,7 +96,7 @@ Edge_Circle_mesh   = Mesh1D(Edge_Circle  , 8, "Edge_Circle")
 # ExtrusionAlongPath
 # IDsOfElements, PathMesh, PathShape, NodeStart,
 # HasAngles, Angles, HasRefPoint, RefPoint
-refPoint = smesh.PointStruct(0, 0, 0)
+refPoint = SMESH.PointStruct(0, 0, 0)
 a10 = 10.0*math.pi/180.0
 a45 = 45.0*math.pi/180.0
 

@@ -1,7 +1,14 @@
 # Construction of a Mesh
 
-import geompy
-import smesh
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # create a box
 box = geompy.MakeBox(0., 0., 0., 100., 200., 300.)

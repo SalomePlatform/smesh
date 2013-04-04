@@ -1,7 +1,14 @@
 # Maximum Element Volume
 
-import geompy
-import smesh
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # create a cylinder
 cyl = geompy.MakeCylinderRH(30., 50.)

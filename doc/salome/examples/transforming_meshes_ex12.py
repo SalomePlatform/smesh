@@ -1,7 +1,17 @@
 # Create boundary elements
 
-from smesh import *
-SetCurrentStudy(salome.myStudy)
+
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
+import salome_notebook
+
 
 box = geompy.MakeBoxDXDYDZ(100, 100, 100)
 gFaces = geompy.SubShapeAllSorted(box, geompy.ShapeType["FACE"])
@@ -19,7 +29,7 @@ twoFaces = geompy.MakeCompound([f1,f2])
 ## -----------
 dim = SMESH.BND_2DFROM3D
 
-init_mesh = Mesh(box, "box")
+init_mesh = smesh.Mesh(box, "box")
 init_mesh.AutomaticHexahedralization() # it makes 3 x 3 x 3 hexahedrons
 
 # remove some faces
@@ -29,7 +39,7 @@ rm_face = faces[ : nb_faces/2]
 init_mesh.RemoveElements( rm_face )
 
 # restore boundary in this mesh
-mesh = CopyMesh( init_mesh, "2D from 3D")
+mesh = smesh.CopyMesh( init_mesh, "2D from 3D")
 groupName = "bnd 2D"
 nb, new_mesh, new_group = mesh.MakeBoundaryElements(dim, groupName)
 
@@ -49,7 +59,7 @@ nb, new_mesh, new_group = init_mesh.MakeBoundaryElements(dim, groupName, meshNam
 ## -----------
 dim = SMESH.BND_1DFROM2D
 
-init_mesh = Mesh(f1, "2D mesh")
+init_mesh = smesh.Mesh(f1, "2D mesh")
 init_mesh.AutomaticHexahedralization()
 
 # remove some edges
@@ -60,7 +70,7 @@ init_mesh.RemoveElements( rm_edge )
 
 
 # restore boundary edges in this mesh
-mesh = CopyMesh( init_mesh, "1D from 2D")
+mesh = smesh.CopyMesh( init_mesh, "1D from 2D")
 groupName = "bnd 1D"
 nb, new_mesh, new_group = mesh.MakeBoundaryElements(dim, groupName)
 
@@ -81,7 +91,7 @@ nb, new_mesh, new_group = init_mesh.MakeBoundaryElements(dim, groupName, meshNam
 ## ------------------
 dim = SMESH.BND_1DFROM3D
 
-init_mesh = Mesh(box, "box")
+init_mesh = smesh.Mesh(box, "box")
 init_mesh.AutomaticHexahedralization() # it makes 3 x 3 x 3 hexahedrons
 # remove all edges
 rm_edges = init_mesh.GetElementsByType( SMESH.EDGE )
@@ -92,7 +102,7 @@ fGroup1 = init_mesh.Group( f1, "f1" )
 fGroup2 = init_mesh.Group( f2, "f2" )
 
 # make 1D boundary around groups in this mesh
-mesh = CopyMesh( init_mesh, "1D from 2D groups", toCopyGroups=True)
+mesh = smesh.CopyMesh( init_mesh, "1D from 2D groups", toCopyGroups=True)
 groups = mesh.GetGroups()
 nb, new_mesh, new_group = mesh.MakeBoundaryElements(dim, groupName,groups=groups)
 

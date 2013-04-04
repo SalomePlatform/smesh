@@ -26,11 +26,14 @@
 # The new Netgen algorithm is used that discretizes baoundaries itself
 #
 import salome
-import geompy
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
 
-geom  = geompy.geom
-
-import smesh
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # ---------------------------- GEOM --------------------------------------
 
@@ -105,15 +108,14 @@ print "number of Faces in mechanic : ",len(subFaceList)
 print "number of Edges in mechanic : ",len(subEdgeList)
 
 ### ---------------------------- SMESH --------------------------------------
-smesh.SetCurrentStudy(salome.myStudy)
 
 print "-------------------------- create Mesh, algorithm, hypothesis"
 
 mesh = smesh.Mesh(mechanic, "Mesh_mechanic");
-netgen = mesh.Triangle(smesh.NETGEN)
+netgen = mesh.Triangle(smeshBuilder.NETGEN)
 netgen.SetMaxSize( 50 )
 #netgen.SetSecondOrder( 0 )
-netgen.SetFineness( smesh.Fine )
+netgen.SetFineness( smeshBuilder.Fine )
 netgen.SetQuadAllowed( 1 )
 #netgen.SetOptimize( 1 )
 

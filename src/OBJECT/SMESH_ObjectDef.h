@@ -24,7 +24,6 @@
 //  File   : SMESH_Object.h
 //  Author : Nicolas REJNERI
 //  Module : SMESH
-//  $Header$
 //
 #ifndef SMESH_OBJECTDEF_H
 #define SMESH_OBJECTDEF_H

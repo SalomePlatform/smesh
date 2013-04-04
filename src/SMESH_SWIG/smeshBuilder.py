@@ -16,11 +16,11 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-#  File   : smesh.py
+#  File   : smeshBuilder.py
 #  Author : Francis KLOSS, OCC
 #  Module : SMESH
 
-## @package smesh
+## @package smeshBuilder
 #  Python API for SALOME %Mesh module
 
 ## @defgroup l1_auxiliary Auxiliary methods and structures
@@ -83,34 +83,18 @@
 ## @defgroup l1_measurements Measurements
 
 import salome
-import geompyDC
+from salome.geom import geomBuilder
 
 import SMESH # This is necessary for back compatibility
 from   SMESH import *
-from   smesh_algorithm import Mesh_Algorithm
+from   salome.smesh.smesh_algorithm import Mesh_Algorithm
 
 import SALOME
 import SALOMEDS
+import os
 
 ## @addtogroup l1_auxiliary
 ## @{
-
-# MirrorType enumeration
-POINT = SMESH_MeshEditor.POINT
-AXIS =  SMESH_MeshEditor.AXIS
-PLANE = SMESH_MeshEditor.PLANE
-
-# Smooth_Method enumeration
-LAPLACIAN_SMOOTH = SMESH_MeshEditor.LAPLACIAN_SMOOTH
-CENTROIDAL_SMOOTH = SMESH_MeshEditor.CENTROIDAL_SMOOTH
-
-PrecisionConfusion = 1e-07
-
-# TopAbs_State enumeration
-[TopAbs_IN, TopAbs_OUT, TopAbs_ON, TopAbs_UNKNOWN] = range(4)
-
-# Methods of splitting a hexahedron into tetrahedra
-Hex_5Tet, Hex_6Tet, Hex_24Tet = 1, 2, 3
 
 ## Converts an angle from degrees to radians
 def DegreesToRadians(AngleInDegrees):
@@ -171,8 +155,8 @@ def __initAxisStruct(ax,*args):
     pass
 SMESH.AxisStruct.__init__ = __initAxisStruct
 
-
-def IsEqual(val1, val2, tol=PrecisionConfusion):
+smeshPrecisionConfusion = 1.e-07
+def IsEqual(val1, val2, tol=smeshPrecisionConfusion):
     if abs(val1 - val2) < tol:
         return True
     return False
@@ -256,7 +240,7 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo):
 
 ## Private method. Add geom (sub-shape of the main shape) into the study if not yet there
 def AssureGeomPublished(mesh, geom, name=''):
-    if not isinstance( geom, geompyDC.GEOM._objref_GEOM_Object ):
+    if not isinstance( geom, geomBuilder.GEOM._objref_GEOM_Object ):
         return
     if not geom.GetStudyEntry() and \
            mesh.smeshpyD.GetCurrentStudy():
@@ -265,7 +249,7 @@ def AssureGeomPublished(mesh, geom, name=''):
         if studyID != mesh.geompyD.myStudyId:
             mesh.geompyD.init_geom( mesh.smeshpyD.GetCurrentStudy())
         ## get a name
-        if not name and geom.GetShapeType() != geompyDC.GEOM.COMPOUND:
+        if not name and geom.GetShapeType() != geomBuilder.GEOM.COMPOUND:
             # for all groups SubShapeName() returns "Compound_-1"
             name = mesh.geompyD.SubShapeName(geom, mesh.geom)
         if not name:
@@ -274,17 +258,16 @@ def AssureGeomPublished(mesh, geom, name=''):
         mesh.geompyD.addToStudyInFather( mesh.geom, geom, name )
     return
 
-## Return the first vertex of a geomertical edge by ignoring orienation
+## Return the first vertex of a geometrical edge by ignoring orientation
 def FirstVertexOnCurve(edge):
-    from geompy import SubShapeAll, ShapeType, MakeVertexOnCurve, PointCoordinates
-    vv = SubShapeAll( edge, ShapeType["VERTEX"])
+    vv = geomBuilder.SubShapeAll( edge, geomBuilder.geomBuilder.ShapeType["VERTEX"])
     if not vv:
         raise TypeError, "Given object has no vertices"
     if len( vv ) == 1: return vv[0]
-    v0   = MakeVertexOnCurve(edge,0.)
-    xyz  = PointCoordinates( v0 ) # coords of the first vertex
-    xyz1 = PointCoordinates( vv[0] )
-    xyz2 = PointCoordinates( vv[1] )
+    v0   = geomBuilder.MakeVertexOnCurve(edge,0.)
+    xyz  = geomBuilder.PointCoordinates( v0 ) # coords of the first vertex
+    xyz1 = geomBuilder.PointCoordinates( vv[0] )
+    xyz2 = geomBuilder.PointCoordinates( vv[1] )
     dist1, dist2 = 0,0
     for i in range(3):
         dist1 += abs( xyz[i] - xyz1[i] )
@@ -297,8 +280,73 @@ def FirstVertexOnCurve(edge):
 # end of l1_auxiliary
 ## @}
 
-# All methods of this class are accessible directly from the smesh.py package.
-class smeshDC(SMESH._objref_SMESH_Gen):
+
+# Warning: smeshInst is a singleton
+smeshInst = None
+engine = None
+doLcc = False
+
+## This class allows to create, load or manipulate meshes
+#  It has a set of methods to create load or copy meshes, to combine several meshes.
+#  It also has methods to get infos on meshes.
+class smeshBuilder(object, SMESH._objref_SMESH_Gen):
+
+    # MirrorType enumeration
+    POINT = SMESH_MeshEditor.POINT
+    AXIS =  SMESH_MeshEditor.AXIS
+    PLANE = SMESH_MeshEditor.PLANE
+
+    # Smooth_Method enumeration
+    LAPLACIAN_SMOOTH = SMESH_MeshEditor.LAPLACIAN_SMOOTH
+    CENTROIDAL_SMOOTH = SMESH_MeshEditor.CENTROIDAL_SMOOTH
+
+    PrecisionConfusion = smeshPrecisionConfusion
+
+    # TopAbs_State enumeration
+    [TopAbs_IN, TopAbs_OUT, TopAbs_ON, TopAbs_UNKNOWN] = range(4)
+
+    # Methods of splitting a hexahedron into tetrahedra
+    Hex_5Tet, Hex_6Tet, Hex_24Tet = 1, 2, 3
+
+    def __new__(cls):
+        global engine
+        global smeshInst
+        global doLcc
+        #print "__new__", engine, smeshInst, doLcc
+
+        if smeshInst is None:
+            # smesh engine is either retrieved from engine, or created
+            smeshInst = engine
+            # Following test avoids a recursive loop
+            if doLcc:
+                if smeshInst is not None:
+                    # smesh engine not created: existing engine found
+                    doLcc = False
+                if doLcc:
+                    doLcc = False
+                    # FindOrLoadComponent called:
+                    # 1. CORBA resolution of server
+                    # 2. the __new__ method is called again
+                    #print "smeshInst = lcc.FindOrLoadComponent ", engine, smeshInst, doLcc
+                    smeshInst = salome.lcc.FindOrLoadComponent( "FactoryServer", "SMESH" )
+            else:
+                # FindOrLoadComponent not called
+                if smeshInst is None:
+                    # smeshBuilder instance is created from lcc.FindOrLoadComponent
+                    #print "smeshInst = super(smeshBuilder,cls).__new__(cls) ", engine, smeshInst, doLcc
+                    smeshInst = super(smeshBuilder,cls).__new__(cls)
+                else:
+                    # smesh engine not created: existing engine found
+                    #print "existing ", engine, smeshInst, doLcc
+                    pass
+
+            return smeshInst
+
+        return smeshInst
+
+    def __init__(self):
+        #print "__init__"
+        SMESH._objref_SMESH_Gen.__init__(self)
 
     ## Dump component to the Python script
     #  This method overrides IDL function to allow default values for the parameters.
@@ -317,7 +365,8 @@ class smeshDC(SMESH._objref_SMESH_Gen):
 
     ## Sets the current study and Geometry component
     #  @ingroup l1_auxiliary
-    def init_smesh(self,theStudy,geompyD):
+    def init_smesh(self,theStudy,geompyD = None):
+        #print "init_smesh"
         self.SetCurrentStudy(theStudy,geompyD)
 
     ## Creates an empty Mesh. This mesh can have an underlying geometry.
@@ -363,7 +412,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     #  @return SMESH.DirStruct
     #  @ingroup l1_auxiliary
     def GetDirStruct(self,theVector):
-        vertices = self.geompyD.SubShapeAll( theVector, geompyDC.ShapeType["VERTEX"] )
+        vertices = self.geompyD.SubShapeAll( theVector, geomBuilder.geomBuilder.ShapeType["VERTEX"] )
         if(len(vertices) != 2):
             print "Error: vector object is incorrect."
             return None
@@ -386,10 +435,10 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     #  @return SMESH.AxisStruct
     #  @ingroup l1_auxiliary
     def GetAxisStruct(self,theObj):
-        edges = self.geompyD.SubShapeAll( theObj, geompyDC.ShapeType["EDGE"] )
+        edges = self.geompyD.SubShapeAll( theObj, geomBuilder.geomBuilder.ShapeType["EDGE"] )
         if len(edges) > 1:
-            vertex1, vertex2 = self.geompyD.SubShapeAll( edges[0], geompyDC.ShapeType["VERTEX"] )
-            vertex3, vertex4 = self.geompyD.SubShapeAll( edges[1], geompyDC.ShapeType["VERTEX"] )
+            vertex1, vertex2 = self.geompyD.SubShapeAll( edges[0], geomBuilder.geomBuilder.ShapeType["VERTEX"] )
+            vertex3, vertex4 = self.geompyD.SubShapeAll( edges[1], geomBuilder.geomBuilder.ShapeType["VERTEX"] )
             vertex1 = self.geompyD.PointCoordinates(vertex1)
             vertex2 = self.geompyD.PointCoordinates(vertex2)
             vertex3 = self.geompyD.PointCoordinates(vertex3)
@@ -400,7 +449,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
             axis = AxisStruct(vertex1[0], vertex1[1], vertex1[2], normal[0], normal[1], normal[2])
             return axis
         elif len(edges) == 1:
-            vertex1, vertex2 = self.geompyD.SubShapeAll( edges[0], geompyDC.ShapeType["VERTEX"] )
+            vertex1, vertex2 = self.geompyD.SubShapeAll( edges[0], geomBuilder.geomBuilder.ShapeType["VERTEX"] )
             p1 = self.geompyD.PointCoordinates( vertex1 )
             p2 = self.geompyD.PointCoordinates( vertex2 )
             axis = AxisStruct(p1[0], p1[1], p1[2], p2[0]-p1[0], p2[1]-p1[1], p2[2]-p1[2])
@@ -439,8 +488,8 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     def SetCurrentStudy( self, theStudy, geompyD = None ):
         #self.SetCurrentStudy(theStudy)
         if not geompyD:
-            import geompy
-            geompyD = geompy.geom
+            from salome.geom import geomBuilder
+            geompyD = geomBuilder.geom
             pass
         self.geompyD=geompyD
         self.SetGeomEngine(geompyD)
@@ -643,7 +692,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         if CritType in [FT_BelongToGeom,     FT_BelongToPlane, FT_BelongToGenSurface,
                         FT_BelongToCylinder, FT_LyingOnGeom]:
             # Checks that Threshold is GEOM object
-            if isinstance(aThreshold, geompyDC.GEOM._objref_GEOM_Object):
+            if isinstance(aThreshold, geomBuilder.GEOM._objref_GEOM_Object):
                 aCriterion.ThresholdStr = GetName(aThreshold)
                 aCriterion.ThresholdID  = aThreshold.GetStudyEntry()
                 if not aCriterion.ThresholdID:
@@ -969,7 +1018,49 @@ class smeshDC(SMESH._objref_SMESH_Gen):
 
 import omniORB
 #Registering the new proxy for SMESH_Gen
-omniORB.registerObjref(SMESH._objref_SMESH_Gen._NP_RepositoryId, smeshDC)
+omniORB.registerObjref(SMESH._objref_SMESH_Gen._NP_RepositoryId, smeshBuilder)
+
+## Create a new smeshBuilder instance.The smeshBuilder class provides the Python
+#  interface to create or load meshes.
+#
+#  Typical use is:
+#  \code
+#    import salome
+#    salome.salome_init()
+#    from salome.smesh import smeshBuilder
+#    smesh = smeshBuilder.New(theStudy)
+#  \endcode
+#  @param  study     SALOME study, generally obtained by salome.myStudy.
+#  @param  instance  CORBA proxy of SMESH Engine. If None, the default Engine is used.
+#  @return smeshBuilder instance
+
+def New( study, instance=None):
+    """
+    Create a new smeshBuilder instance.The smeshBuilder class provides the Python
+    interface to create or load meshes.
+
+    Typical use is:
+        import salome
+        salome.salome_init()
+        from salome.smesh import smeshBuilder
+        smesh = smeshBuilder.New(theStudy)
+
+    Parameters:
+        study     SALOME study, generally obtained by salome.myStudy.
+        instance  CORBA proxy of SMESH Engine. If None, the default Engine is used.
+    Returns:
+        smeshBuilder instance
+    """
+    global engine
+    global smeshInst
+    global doLcc
+    engine = instance
+    if engine is None:
+      doLcc = True
+    smeshInst = smeshBuilder()
+    assert isinstance(smeshInst,smeshBuilder), "Smesh engine class is %s but should be smeshBuilder.smeshBuilder. Import salome.smesh.smeshBuilder before creating the instance."%smeshInst.__class__
+    smeshInst.init_smesh(study)
+    return smeshInst
 
 
 # Public class: Mesh
@@ -990,8 +1081,8 @@ class Mesh:
     #
     #  Creates a mesh on the shape \a obj (or an empty mesh if \a obj is equal to 0) and
     #  sets the GUI name of this mesh to \a name.
-    #  @param smeshpyD an instance of smeshDC class
-    #  @param geompyD an instance of geompyDC class
+    #  @param smeshpyD an instance of smeshBuilder class
+    #  @param geompyD an instance of geomBuilder class
     #  @param obj Shape to be meshed or SMESH_Mesh object
     #  @param name Study name of the mesh
     #  @ingroup l2_construct
@@ -1002,7 +1093,7 @@ class Mesh:
             obj = 0
         objHasName = False
         if obj != 0:
-            if isinstance(obj, geompyDC.GEOM._objref_GEOM_Object):
+            if isinstance(obj, geomBuilder.GEOM._objref_GEOM_Object):
                 self.geom = obj
                 objHasName = True
                 # publish geom of mesh (issue 0021122)
@@ -1038,6 +1129,7 @@ class Mesh:
         for attrName in dir(self):
             attr = getattr( self, attrName )
             if isinstance( attr, algoCreator ):
+                #print "algoCreator ", attrName
                 setattr( self, attrName, attr.copy( self ))
 
     ## Initializes the Mesh object from an instance of SMESH_Mesh interface
@@ -1127,7 +1219,7 @@ class Mesh:
     #  @ingroup l1_auxiliary
     def MeshDimension(self):
         if self.mesh.HasShapeToMesh():
-            shells = self.geompyD.SubShapeAllIDs( self.geom, geompyDC.ShapeType["SOLID"] )
+            shells = self.geompyD.SubShapeAllIDs( self.geom, self.geompyD.ShapeType["SOLID"] )
             if len( shells ) > 0 :
                 return 3
             elif self.geompyD.NumberOfFaces( self.geom ) > 0 :
@@ -1147,7 +1239,7 @@ class Mesh:
     #  To know predicted number of e.g. edges, inquire it this way
     #  Evaluate()[ EnumToLong( Entity_Edge )]
     def Evaluate(self, geom=0):
-        if geom == 0 or not isinstance(geom, geompyDC.GEOM._objref_GEOM_Object):
+        if geom == 0 or not isinstance(geom, geomBuilder.GEOM._objref_GEOM_Object):
             if self.geom == 0:
                 geom = self.mesh.GetShapeToMesh()
             else:
@@ -1163,7 +1255,7 @@ class Mesh:
     #  @return True or False
     #  @ingroup l2_construct
     def Compute(self, geom=0, discardModifs=False):
-        if geom == 0 or not isinstance(geom, geompyDC.GEOM._objref_GEOM_Object):
+        if geom == 0 or not isinstance(geom, geomBuilder.GEOM._objref_GEOM_Object):
             if self.geom == 0:
                 geom = self.mesh.GetShapeToMesh()
             else:
@@ -1203,7 +1295,7 @@ class Mesh:
                                 subIt.Next()
                                 obj = subSO.GetObject()
                                 if not obj: continue
-                                go = obj._narrow( geompyDC.GEOM._objref_GEOM_Object )
+                                go = obj._narrow( geomBuilder.GEOM._objref_GEOM_Object )
                                 if not go: continue
                                 ids = go.GetSubShapeIndices()
                                 if len(ids) == 1 and ids[0] == err.subShapeID:
@@ -1269,7 +1361,7 @@ class Mesh:
                               % ( glob, dim, name, glob, dim ))
                 else:
                     reason = ("For unknown reason. "
-                              "Developer, revise Mesh.Compute() implementation in smeshDC.py!")
+                              "Developer, revise Mesh.Compute() implementation in smeshBuilder.py!")
                     pass
                 if allReasons != "":allReasons += "\n"
                 allReasons += "-  " + reason
@@ -1337,7 +1429,7 @@ class Mesh:
             self.Triangle().LengthFromEdges()
             pass
         if dim > 2 :
-            from NETGENPluginDC import NETGEN
+            from salome.NETGENPlugin.NETGENPluginBuilder import NETGEN
             self.Tetrahedron(NETGEN)
             pass
         return self.Compute()
@@ -1590,7 +1682,7 @@ class Mesh:
         elif tgeo == "SOLID" or tgeo == "COMPSOLID":
             typ = VOLUME
         elif tgeo == "COMPOUND":
-            sub = self.geompyD.SubShapeAll( shape, geompyDC.ShapeType["SHAPE"])
+            sub = self.geompyD.SubShapeAll( shape, self.geompyD.ShapeType["SHAPE"])
             if not sub:
                 raise ValueError,"_groupTypeFromShape(): empty geometric group or compound '%s'" % GetName(shape)
             return self._groupTypeFromShape( sub[0] )
@@ -2086,7 +2178,7 @@ class Mesh:
     #  @return the list of integer values
     #  @ingroup l1_meshinfo
     def GetSubMeshElementsId(self, Shape):
-        if ( isinstance( Shape, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Shape, geomBuilder.GEOM._objref_GEOM_Object)):
             ShapeID = Shape.GetSubShapeIndices()[0]
         else:
             ShapeID = Shape
@@ -2099,7 +2191,7 @@ class Mesh:
     #  @return the list of integer values
     #  @ingroup l1_meshinfo
     def GetSubMeshNodesId(self, Shape, all):
-        if ( isinstance( Shape, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Shape, geomBuilder.GEOM._objref_GEOM_Object)):
             ShapeID = self.geompyD.GetSubShapeID( self.geom, Shape )
         else:
             ShapeID = Shape
@@ -2111,7 +2203,7 @@ class Mesh:
     #  @return element type
     #  @ingroup l1_meshinfo
     def GetSubMeshElementType(self, Shape):
-        if ( isinstance( Shape, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Shape, geomBuilder.GEOM._objref_GEOM_Object)):
             ShapeID = Shape.GetSubShapeIndices()[0]
         else:
             ShapeID = Shape
@@ -2481,7 +2573,7 @@ class Mesh:
     #  @return True if succeed else raises an exception
     #  @ingroup l2_modif_add
     def SetNodeOnVertex(self, NodeID, Vertex):
-        if ( isinstance( Vertex, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Vertex, geomBuilder.GEOM._objref_GEOM_Object)):
             VertexID = Vertex.GetSubShapeIndices()[0]
         else:
             VertexID = Vertex
@@ -2499,7 +2591,7 @@ class Mesh:
     #  @return True if succeed else raises an exception
     #  @ingroup l2_modif_add
     def SetNodeOnEdge(self, NodeID, Edge, paramOnEdge):
-        if ( isinstance( Edge, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Edge, geomBuilder.GEOM._objref_GEOM_Object)):
             EdgeID = Edge.GetSubShapeIndices()[0]
         else:
             EdgeID = Edge
@@ -2517,7 +2609,7 @@ class Mesh:
     #  @return True if succeed else raises an exception
     #  @ingroup l2_modif_add
     def SetNodeOnFace(self, NodeID, Face, u, v):
-        if ( isinstance( Face, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Face, geomBuilder.GEOM._objref_GEOM_Object)):
             FaceID = Face.GetSubShapeIndices()[0]
         else:
             FaceID = Face
@@ -2533,7 +2625,7 @@ class Mesh:
     #  @return True if succeed else raises an exception
     #  @ingroup l2_modif_add
     def SetNodeInVolume(self, NodeID, Solid):
-        if ( isinstance( Solid, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Solid, geomBuilder.GEOM._objref_GEOM_Object)):
             SolidID = Solid.GetSubShapeIndices()[0]
         else:
             SolidID = Solid
@@ -2549,7 +2641,7 @@ class Mesh:
     #  @return True if succeed else raises an exception
     #  @ingroup l2_modif_add
     def SetMeshElementOnShape(self, ElementID, Shape):
-        if ( isinstance( Shape, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Shape, geomBuilder.GEOM._objref_GEOM_Object)):
             ShapeID = Shape.GetSubShapeIndices()[0]
         else:
             ShapeID = Shape
@@ -2680,14 +2772,14 @@ class Mesh:
         if isinstance( the2DObject, list ):
             the2DObject = self.GetIDSource( the2DObject, SMESH.FACE )
         # check theDirection
-        if isinstance( theDirection, geompyDC.GEOM._objref_GEOM_Object):
+        if isinstance( theDirection, geomBuilder.GEOM._objref_GEOM_Object):
             theDirection = self.smeshpyD.GetDirStruct( theDirection )
         if isinstance( theDirection, list ):
             theDirection = self.smeshpyD.MakeDirStruct( *theDirection  )
         # prepare theFace and thePoint
         theFace = theFaceOrPoint
         thePoint = PointStruct(0,0,0)
-        if isinstance( theFaceOrPoint, geompyDC.GEOM._objref_GEOM_Object):
+        if isinstance( theFaceOrPoint, geomBuilder.GEOM._objref_GEOM_Object):
             thePoint = self.smeshpyD.GetPointStruct( theFaceOrPoint )
             theFace = -1
         if isinstance( theFaceOrPoint, list ):
@@ -2799,7 +2891,7 @@ class Mesh:
     #  @param method  flags passing splitting method: Hex_5Tet, Hex_6Tet, Hex_24Tet
     #         Hex_5Tet - split the hexahedron into 5 tetrahedrons, etc
     #  @ingroup l2_modif_cutquadr
-    def SplitVolumesIntoTetra(self, elemIDs, method=Hex_5Tet ):
+    def SplitVolumesIntoTetra(self, elemIDs, method=smeshBuilder.Hex_5Tet ):
         if isinstance( elemIDs, Mesh ):
             elemIDs = elemIDs.GetMesh()
         if ( isinstance( elemIDs, list )):
@@ -3128,7 +3220,7 @@ class Mesh:
                       MakeGroups=False, TotalAngle=False):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
-        if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Axis, geomBuilder.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
         AngleInRadians,AngleParameters,hasVars = ParseAngles(AngleInRadians)
         NbOfSteps,Tolerance,Parameters,hasVars = ParseParameters(NbOfSteps,Tolerance)
@@ -3158,7 +3250,7 @@ class Mesh:
                             MakeGroups=False, TotalAngle=False):
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
-        if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Axis, geomBuilder.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
         AngleInRadians,AngleParameters,hasVars = ParseAngles(AngleInRadians)
         NbOfSteps,Tolerance,Parameters,hasVars = ParseParameters(NbOfSteps,Tolerance)
@@ -3188,7 +3280,7 @@ class Mesh:
                               MakeGroups=False, TotalAngle=False):
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
-        if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Axis, geomBuilder.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
         AngleInRadians,AngleParameters,hasVars = ParseAngles(AngleInRadians)
         NbOfSteps,Tolerance,Parameters,hasVars = ParseParameters(NbOfSteps,Tolerance)
@@ -3218,7 +3310,7 @@ class Mesh:
                               MakeGroups=False, TotalAngle=False):
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
-        if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Axis, geomBuilder.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
         AngleInRadians,AngleParameters,hasVars = ParseAngles(AngleInRadians)
         NbOfSteps,Tolerance,Parameters,hasVars = ParseParameters(NbOfSteps,Tolerance)
@@ -3245,7 +3337,7 @@ class Mesh:
     def ExtrusionSweep(self, IDsOfElements, StepVector, NbOfSteps, MakeGroups=False, IsNodes = False):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
-        if isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object):
+        if isinstance( StepVector, geomBuilder.GEOM._objref_GEOM_Object):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
         if isinstance( StepVector, list ):
             StepVector = self.smeshpyD.MakeDirStruct(*StepVector)
@@ -3277,7 +3369,7 @@ class Mesh:
     #  @ingroup l2_modif_extrurev
     def AdvancedExtrusion(self, IDsOfElements, StepVector, NbOfSteps,
                           ExtrFlags, SewTolerance, MakeGroups=False):
-        if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( StepVector, geomBuilder.GEOM._objref_GEOM_Object)):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
         if isinstance( StepVector, list ):
             StepVector = self.smeshpyD.MakeDirStruct(*StepVector)
@@ -3302,7 +3394,7 @@ class Mesh:
     def ExtrusionSweepObject(self, theObject, StepVector, NbOfSteps, MakeGroups=False, IsNodes=False):
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
-        if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( StepVector, geomBuilder.GEOM._objref_GEOM_Object)):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
         if isinstance( StepVector, list ):
             StepVector = self.smeshpyD.MakeDirStruct(*StepVector)
@@ -3333,7 +3425,7 @@ class Mesh:
     def ExtrusionSweepObject1D(self, theObject, StepVector, NbOfSteps, MakeGroups=False):
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
-        if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( StepVector, geomBuilder.GEOM._objref_GEOM_Object)):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
         if isinstance( StepVector, list ):
             StepVector = self.smeshpyD.MakeDirStruct(*StepVector)
@@ -3358,7 +3450,7 @@ class Mesh:
     def ExtrusionSweepObject2D(self, theObject, StepVector, NbOfSteps, MakeGroups=False):
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
-        if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( StepVector, geomBuilder.GEOM._objref_GEOM_Object)):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
         if isinstance( StepVector, list ):
             StepVector = self.smeshpyD.MakeDirStruct(*StepVector)
@@ -3393,7 +3485,7 @@ class Mesh:
     def ExtrusionAlongPathX(self, Base, Path, NodeStart,
                             HasAngles, Angles, LinearVariation,
                             HasRefPoint, RefPoint, MakeGroups, ElemType):
-        if ( isinstance( RefPoint, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( RefPoint, geomBuilder.GEOM._objref_GEOM_Object)):
             RefPoint = self.smeshpyD.GetPointStruct(RefPoint)
             pass
         Angles,AnglesParameters,hasVars = ParseAngles(Angles)
@@ -3442,7 +3534,7 @@ class Mesh:
                            MakeGroups=False, LinearVariation=False):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
-        if ( isinstance( RefPoint, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( RefPoint, geomBuilder.GEOM._objref_GEOM_Object)):
             RefPoint = self.smeshpyD.GetPointStruct(RefPoint)
             pass
         if ( isinstance( PathMesh, Mesh )):
@@ -3484,7 +3576,7 @@ class Mesh:
                                  MakeGroups=False, LinearVariation=False):
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
-        if ( isinstance( RefPoint, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( RefPoint, geomBuilder.GEOM._objref_GEOM_Object)):
             RefPoint = self.smeshpyD.GetPointStruct(RefPoint)
         if ( isinstance( PathMesh, Mesh )):
             PathMesh = PathMesh.GetMesh()
@@ -3526,7 +3618,7 @@ class Mesh:
                                    MakeGroups=False, LinearVariation=False):
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
-        if ( isinstance( RefPoint, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( RefPoint, geomBuilder.GEOM._objref_GEOM_Object)):
             RefPoint = self.smeshpyD.GetPointStruct(RefPoint)
         if ( isinstance( PathMesh, Mesh )):
             PathMesh = PathMesh.GetMesh()
@@ -3568,7 +3660,7 @@ class Mesh:
                                    MakeGroups=False, LinearVariation=False):
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
-        if ( isinstance( RefPoint, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( RefPoint, geomBuilder.GEOM._objref_GEOM_Object)):
             RefPoint = self.smeshpyD.GetPointStruct(RefPoint)
         if ( isinstance( PathMesh, Mesh )):
             PathMesh = PathMesh.GetMesh()
@@ -3598,7 +3690,7 @@ class Mesh:
     def Mirror(self, IDsOfElements, Mirror, theMirrorType, Copy=0, MakeGroups=False):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
-        if ( isinstance( Mirror, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Mirror, geomBuilder.GEOM._objref_GEOM_Object)):
             Mirror = self.smeshpyD.GetAxisStruct(Mirror)
         self.mesh.SetParameters(Mirror.parameters)
         if Copy and MakeGroups:
@@ -3618,7 +3710,7 @@ class Mesh:
     def MirrorMakeMesh(self, IDsOfElements, Mirror, theMirrorType, MakeGroups=0, NewMeshName=""):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
-        if ( isinstance( Mirror, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Mirror, geomBuilder.GEOM._objref_GEOM_Object)):
             Mirror = self.smeshpyD.GetAxisStruct(Mirror)
         self.mesh.SetParameters(Mirror.parameters)
         mesh = self.editor.MirrorMakeMesh(IDsOfElements, Mirror, theMirrorType,
@@ -3637,7 +3729,7 @@ class Mesh:
     def MirrorObject (self, theObject, Mirror, theMirrorType, Copy=0, MakeGroups=False):
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
-        if ( isinstance( Mirror, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Mirror, geomBuilder.GEOM._objref_GEOM_Object)):
             Mirror = self.smeshpyD.GetAxisStruct(Mirror)
         self.mesh.SetParameters(Mirror.parameters)
         if Copy and MakeGroups:
@@ -3657,7 +3749,7 @@ class Mesh:
     def MirrorObjectMakeMesh (self, theObject, Mirror, theMirrorType,MakeGroups=0, NewMeshName=""):
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
-        if (isinstance(Mirror, geompyDC.GEOM._objref_GEOM_Object)):
+        if (isinstance(Mirror, geomBuilder.GEOM._objref_GEOM_Object)):
             Mirror = self.smeshpyD.GetAxisStruct(Mirror)
         self.mesh.SetParameters(Mirror.parameters)
         mesh = self.editor.MirrorObjectMakeMesh(theObject, Mirror, theMirrorType,
@@ -3674,7 +3766,7 @@ class Mesh:
     def Translate(self, IDsOfElements, Vector, Copy, MakeGroups=False):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
-        if ( isinstance( Vector, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Vector, geomBuilder.GEOM._objref_GEOM_Object)):
             Vector = self.smeshpyD.GetDirStruct(Vector)
         if isinstance( Vector, list ):
             Vector = self.smeshpyD.MakeDirStruct(*Vector)
@@ -3694,7 +3786,7 @@ class Mesh:
     def TranslateMakeMesh(self, IDsOfElements, Vector, MakeGroups=False, NewMeshName=""):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
-        if ( isinstance( Vector, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Vector, geomBuilder.GEOM._objref_GEOM_Object)):
             Vector = self.smeshpyD.GetDirStruct(Vector)
         if isinstance( Vector, list ):
             Vector = self.smeshpyD.MakeDirStruct(*Vector)
@@ -3712,7 +3804,7 @@ class Mesh:
     def TranslateObject(self, theObject, Vector, Copy, MakeGroups=False):
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
-        if ( isinstance( Vector, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Vector, geomBuilder.GEOM._objref_GEOM_Object)):
             Vector = self.smeshpyD.GetDirStruct(Vector)
         if isinstance( Vector, list ):
             Vector = self.smeshpyD.MakeDirStruct(*Vector)
@@ -3732,7 +3824,7 @@ class Mesh:
     def TranslateObjectMakeMesh(self, theObject, Vector, MakeGroups=False, NewMeshName=""):
         if isinstance( theObject, Mesh ):
             theObject = theObject.GetMesh()
-        if isinstance( Vector, geompyDC.GEOM._objref_GEOM_Object ):
+        if isinstance( Vector, geomBuilder.GEOM._objref_GEOM_Object ):
             Vector = self.smeshpyD.GetDirStruct(Vector)
         if isinstance( Vector, list ):
             Vector = self.smeshpyD.MakeDirStruct(*Vector)
@@ -3803,7 +3895,7 @@ class Mesh:
     def Rotate (self, IDsOfElements, Axis, AngleInRadians, Copy, MakeGroups=False):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
-        if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Axis, geomBuilder.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
         AngleInRadians,Parameters,hasVars = ParseAngles(AngleInRadians)
         Parameters = Axis.parameters + var_separator + Parameters
@@ -3824,7 +3916,7 @@ class Mesh:
     def RotateMakeMesh (self, IDsOfElements, Axis, AngleInRadians, MakeGroups=0, NewMeshName=""):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
-        if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Axis, geomBuilder.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
         AngleInRadians,Parameters,hasVars = ParseAngles(AngleInRadians)
         Parameters = Axis.parameters + var_separator + Parameters
@@ -3844,7 +3936,7 @@ class Mesh:
     def RotateObject (self, theObject, Axis, AngleInRadians, Copy, MakeGroups=False):
         if (isinstance(theObject, Mesh)):
             theObject = theObject.GetMesh()
-        if (isinstance(Axis, geompyDC.GEOM._objref_GEOM_Object)):
+        if (isinstance(Axis, geomBuilder.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
         AngleInRadians,Parameters,hasVars = ParseAngles(AngleInRadians)
         Parameters = Axis.parameters + ":" + Parameters
@@ -3865,7 +3957,7 @@ class Mesh:
     def RotateObjectMakeMesh(self, theObject, Axis, AngleInRadians, MakeGroups=0,NewMeshName=""):
         if (isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
-        if (isinstance(Axis, geompyDC.GEOM._objref_GEOM_Object)):
+        if (isinstance(Axis, geomBuilder.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
         AngleInRadians,Parameters,hasVars = ParseAngles(AngleInRadians)
         Parameters = Axis.parameters + ":" + Parameters
@@ -4299,7 +4391,7 @@ class algoCreator:
     def __call__(self,algo="",geom=0,*args):
         algoType = self.defaultAlgoType
         for arg in args + (algo,geom):
-            if isinstance( arg, geompyDC.GEOM._objref_GEOM_Object ):
+            if isinstance( arg, geomBuilder.GEOM._objref_GEOM_Object ):
                 geom = arg
             if isinstance( arg, str ) and arg:
                 algoType = arg
@@ -4340,3 +4432,32 @@ class hypMethodWrapper:
                 raise ValueError, detail # wrong variable name
 
         return result
+
+for pluginName in os.environ[ "SMESH_MeshersList" ].split( ":" ):
+    #
+    #print "pluginName: ", pluginName
+    pluginBuilderName = pluginName + "Builder"
+    try:
+        exec( "from salome.%s.%s import *" % (pluginName, pluginBuilderName))
+    except Exception, e:
+        print "Exception while loading %s: %s" % ( pluginBuilderName, e )
+        continue
+    exec( "from salome.%s import %s" % (pluginName, pluginBuilderName))
+    plugin = eval( pluginBuilderName )
+    #print "  plugin:" , str(plugin)
+
+    # add methods creating algorithms to Mesh
+    for k in dir( plugin ):
+        if k[0] == '_': continue
+        algo = getattr( plugin, k )
+        #print "             algo:", str(algo)
+        if type( algo ).__name__ == 'classobj' and hasattr( algo, "meshMethod" ):
+            #print "                     meshMethod:" , str(algo.meshMethod)
+            if not hasattr( Mesh, algo.meshMethod ):
+                setattr( Mesh, algo.meshMethod, algoCreator() )
+                pass
+            getattr( Mesh, algo.meshMethod ).add( algo )
+            pass
+        pass
+    pass
+del pluginName

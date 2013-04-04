@@ -25,8 +25,14 @@
 #  Module : SMESH
 #
 import salome
-import geompy
-import smesh
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # ---- define a box
 
@@ -59,8 +65,6 @@ idedge = geompy.addToStudyInFather(face, edge, name)
 
 
 # ---- SMESH
-
-smesh.SetCurrentStudy(salome.myStudy)
 
 # ---- Init a Mesh with the box
 

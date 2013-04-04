@@ -1,9 +1,14 @@
 # Change priority of submeshes in Mesh
 
 import salome
-import geompy
-import smesh
-import SMESH
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 Box_1 = geompy.MakeBoxDXDYDZ(200, 200, 200)
 [Face_1,Face_2,Face_3,Face_4,Face_5,Face_6] = geompy.SubShapeAllSorted(Box_1, geompy.ShapeType["FACE"])
@@ -24,7 +29,7 @@ Max_Element_Volume_1 = Tetrahedron.MaxElementVolume(40000)
 Regular_1D_1 = Mesh_1.Segment(geom=Face_1)
 Nb_Segments_2 = Regular_1D_1.NumberOfSegments(4)
 Nb_Segments_2.SetDistrType( 0 )
-MEFISTO_2D_1 = Mesh_1.Triangle(algo=smesh.MEFISTO,geom=Face_1)
+MEFISTO_2D_1 = Mesh_1.Triangle(algo=smeshBuilder.MEFISTO,geom=Face_1)
 Length_From_Edges_2D = MEFISTO_2D_1.LengthFromEdges()
 SubMesh_1 = MEFISTO_2D_1.GetSubMesh()
 
@@ -32,7 +37,7 @@ SubMesh_1 = MEFISTO_2D_1.GetSubMesh()
 Regular_1D_2 = Mesh_1.Segment(geom=Face_2)
 Nb_Segments_3 = Regular_1D_2.NumberOfSegments(8)
 Nb_Segments_3.SetDistrType( 0 )
-MEFISTO_2D_2 = Mesh_1.Triangle(algo=smesh.MEFISTO,geom=Face_2)
+MEFISTO_2D_2 = Mesh_1.Triangle(algo=smeshBuilder.MEFISTO,geom=Face_2)
 Length_From_Edges_2D_1 = MEFISTO_2D_2.LengthFromEdges()
 SubMesh_2 = MEFISTO_2D_2.GetSubMesh()
 
@@ -40,7 +45,7 @@ SubMesh_2 = MEFISTO_2D_2.GetSubMesh()
 Regular_1D_3 = Mesh_1.Segment(geom=Face_3)
 Nb_Segments_4 = Regular_1D_3.NumberOfSegments(12)
 Nb_Segments_4.SetDistrType( 0 )
-MEFISTO_2D_3 = Mesh_1.Triangle(algo=smesh.MEFISTO,geom=Face_3)
+MEFISTO_2D_3 = Mesh_1.Triangle(algo=smeshBuilder.MEFISTO,geom=Face_3)
 Length_From_Edges_2D_2 = MEFISTO_2D_3.LengthFromEdges()
 SubMesh_3 = MEFISTO_2D_3.GetSubMesh()
 

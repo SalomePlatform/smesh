@@ -27,10 +27,17 @@
 #  Module : GEOM
 #  $Header: 
 #
-from geompy import *
-from math import *
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
 
-import smesh
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
+
+import math
 
 # It is an example of creating a hexahedrical mesh on a sphere.
 #
@@ -42,20 +49,20 @@ import smesh
 Radius  = 100.
 Dist    = Radius / 2.
 Factor  = 2.5
-Angle90 = pi / 2.
+Angle90 = math.pi / 2.
 NbSeg   = 10
 
 PointsList = []
 ShapesList = []
 
 #Basic Elements
-P0 = MakeVertex(0., 0., 0.)
-P1 = MakeVertex(-Dist, -Dist, -Dist)
-P2 = MakeVertex(-Dist, -Dist, Dist)
-P3 = MakeVertex(-Dist, Dist, Dist)
-P4 = MakeVertex(-Dist, Dist, -Dist)
+P0 = geompy.MakeVertex(0., 0., 0.)
+P1 = geompy.MakeVertex(-Dist, -Dist, -Dist)
+P2 = geompy.MakeVertex(-Dist, -Dist, Dist)
+P3 = geompy.MakeVertex(-Dist, Dist, Dist)
+P4 = geompy.MakeVertex(-Dist, Dist, -Dist)
 
-VZ = MakeVectorDXDYDZ(0., 0., 1.)
+VZ = geompy.MakeVectorDXDYDZ(0., 0., 1.)
 
 #Construction Elements
 PointsList.append(P1)
@@ -64,47 +71,46 @@ PointsList.append(P3)
 PointsList.append(P4)
 PointsList.append(P1)
 
-PolyLine = MakePolyline(PointsList)
+PolyLine = geompy.MakePolyline(PointsList)
 
-Face1 = MakeFace(PolyLine, 1)
-Face2 = MakeScaleTransform(Face1, P0, Factor)
-Face3 = MakeScaleTransform(Face1, P0, -1.)
+Face1 = geompy.MakeFace(PolyLine, 1)
+Face2 = geompy.MakeScaleTransform(Face1, P0, Factor)
+Face3 = geompy.MakeScaleTransform(Face1, P0, -1.)
 
 #Models
-Sphere = MakeSphereR(Radius)
+Sphere = geompy.MakeSphereR(Radius)
 
-Block = MakeHexa2Faces(Face1, Face2)
-Cube  = MakeHexa2Faces(Face1, Face3)
+Block = geompy.MakeHexa2Faces(Face1, Face2)
+Cube  = geompy.MakeHexa2Faces(Face1, Face3)
 
-Common1 = MakeBoolean(Sphere, Block, 1)
-Common2 = MakeRotation(Common1, VZ, Angle90)
+Common1 = geompy.MakeBoolean(Sphere, Block, 1)
+Common2 = geompy.MakeRotation(Common1, VZ, Angle90)
 
-MultiBlock1 = MakeMultiTransformation1D(Common1, 20, -1, 3)
-MultiBlock2 = MakeMultiTransformation1D(Common2, 30, -1, 3)
+MultiBlock1 = geompy.MakeMultiTransformation1D(Common1, 20, -1, 3)
+MultiBlock2 = geompy.MakeMultiTransformation1D(Common2, 30, -1, 3)
 
 #Reconstruct sphere from several blocks
 ShapesList.append(Cube)
 ShapesList.append(MultiBlock1)
 ShapesList.append(MultiBlock2)
-Compound = MakeCompound(ShapesList)
+Compound = geompy.MakeCompound(ShapesList)
 
-Result = MakeGlueFaces(Compound, 0.1)
+Result = geompy.MakeGlueFaces(Compound, 0.1)
 
 #addToStudy
-Id_Sphere      = addToStudy(Sphere, "Sphere")
-Id_Cube        = addToStudy(Cube, "Cube")
+Id_Sphere      = geompy.addToStudy(Sphere, "Sphere")
+Id_Cube        = geompy.addToStudy(Cube, "Cube")
 
-Id_Common1     = addToStudy(Common1, "Common1")
-Id_Common2     = addToStudy(Common2, "Common2")
+Id_Common1     = geompy.addToStudy(Common1, "Common1")
+Id_Common2     = geompy.addToStudy(Common2, "Common2")
 
-Id_MultiBlock1 = addToStudy(MultiBlock1, "MultiBlock1")
-Id_MultiBlock2 = addToStudy(MultiBlock2, "MultiBlock2")
+Id_MultiBlock1 = geompy.addToStudy(MultiBlock1, "MultiBlock1")
+Id_MultiBlock2 = geompy.addToStudy(MultiBlock2, "MultiBlock2")
 
-Id_Result      = addToStudy(Result, "Result")
+Id_Result      = geompy.addToStudy(Result, "Result")
 
 #-----------------------------------------------------------------------
 #Meshing
-smesh.SetCurrentStudy(salome.myStudy)
 my_hexa = smesh.Mesh(Result, "Sphere_Mesh")
 algo = my_hexa.Segment()
 algo.NumberOfSegments(NbSeg)

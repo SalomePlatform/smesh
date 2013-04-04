@@ -18,20 +18,17 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-import sys
 import salome
-import geompy
-import math
-import SALOMEDS
-import SMESH
-import smesh
-
 salome.salome_init()
-aStudyId = salome.myStudy._get_StudyId()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
 
-geompy.init_geom(salome.myStudy)
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
+import math
 
-geompy.init_geom(salome.myStudy)
 global Box_1
 Box_1 = geompy.MakeBoxDXDYDZ(200, 200, 200)
 geompy.addToStudy( Box_1, "Box_1" )
@@ -50,18 +47,18 @@ isDone = Mesh_1.Compute()
 
 aListOf3d_1=range(721,821)
 
-aGrp3D_1=Mesh_1.GetMesh().CreateGroup( smesh.VOLUME, "Src 3D 1" )
+aGrp3D_1=Mesh_1.GetMesh().CreateGroup( SMESH.VOLUME, "Src 3D 1" )
 aGrp3D_1.Add( aListOf3d_1 )
 
 aListOf3d_2=range(821, 921)
-aGrp3D_2=Mesh_1.GetMesh().CreateGroup( smesh.VOLUME, "Src 3D 2" )
+aGrp3D_2=Mesh_1.GetMesh().CreateGroup( SMESH.VOLUME, "Src 3D 2" )
 aGrp3D_2.Add( aListOf3d_2 )
 
-aGrp2D = Mesh_1.CreateDimGroup( [aGrp3D_1, aGrp3D_2], smesh.FACE, "Faces" )
+aGrp2D = Mesh_1.CreateDimGroup( [aGrp3D_1, aGrp3D_2], SMESH.FACE, "Faces" )
 
-aGrp1D = Mesh_1.CreateDimGroup( [aGrp3D_1, aGrp3D_2], smesh.EDGE, "Edges" )
+aGrp1D = Mesh_1.CreateDimGroup( [aGrp3D_1, aGrp3D_2], SMESH.EDGE, "Edges" )
 
-aGrp0D = Mesh_1.CreateDimGroup( [aGrp3D_1, aGrp3D_2], smesh.NODE, "Nodes" )
+aGrp0D = Mesh_1.CreateDimGroup( [aGrp3D_1, aGrp3D_2], SMESH.NODE, "Nodes" )
 
 salome.sg.updateObjBrowser( 1 )
 

@@ -1,7 +1,14 @@
 # Quadrangle Parameters example 1 (meshing a face with 3 edges)
 
-from smesh import *
-SetCurrentStudy(salome.myStudy)
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # Get 1/4 part from the disk face.
 Box_1 = geompy.MakeBoxDXDYDZ(100, 100, 100)

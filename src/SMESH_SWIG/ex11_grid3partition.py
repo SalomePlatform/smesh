@@ -23,9 +23,15 @@
 
 # =======================================
 #
-from geompy import *
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
 
-import smesh
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # Geometry
 # ========
@@ -58,51 +64,49 @@ g_trim = 1000
 # Element
 # -------
 
-e_boite = MakeBox(g_x-g_arete, g_y-g_hauteur, g_z-g_arete,  g_x+g_arete, g_y+g_hauteur, g_z+g_arete)
+e_boite = geompy.MakeBox(g_x-g_arete, g_y-g_hauteur, g_z-g_arete,  g_x+g_arete, g_y+g_hauteur, g_z+g_arete)
 
 e_hauteur = 2*g_hauteur
-e_centre  = MakeVertex(g_x, g_y-g_hauteur, g_z)
-e_dir     = MakeVectorDXDYDZ(0, 1, 0)
+e_centre  = geompy.MakeVertex(g_x, g_y-g_hauteur, g_z)
+e_dir     = geompy.MakeVectorDXDYDZ(0, 1, 0)
 
-e_cyl1 = MakeCylinder(e_centre, e_dir, g_rayon3, e_hauteur)
+e_cyl1 = geompy.MakeCylinder(e_centre, e_dir, g_rayon3, e_hauteur)
 
-e_blo1 = MakeCut(e_boite, e_cyl1)
+e_blo1 = geompy.MakeCut(e_boite, e_cyl1)
 
-e_cyl2 = MakeCylinder(e_centre, e_dir, g_rayon2, e_hauteur)
+e_cyl2 = geompy.MakeCylinder(e_centre, e_dir, g_rayon2, e_hauteur)
 
-e_blo2 = MakeCut(e_cyl1, e_cyl2)
+e_blo2 = geompy.MakeCut(e_cyl1, e_cyl2)
 
-e_cyl3 = MakeCylinder(e_centre, e_dir, g_rayon1, e_hauteur)
+e_cyl3 = geompy.MakeCylinder(e_centre, e_dir, g_rayon1, e_hauteur)
 
-e_blo3 = MakeCut(e_cyl2, e_cyl3)
+e_blo3 = geompy.MakeCut(e_cyl2, e_cyl3)
 
 # Partition and repair
 # --------------------
 
 p_tools = []
-p_tools.append(MakePlane(e_centre, MakeVectorDXDYDZ( 1, 0, 1), g_trim))
-p_tools.append(MakePlane(e_centre, MakeVectorDXDYDZ(-1, 0, 1), g_trim))
+p_tools.append(geompy.MakePlane(e_centre, geompy.MakeVectorDXDYDZ( 1, 0, 1), g_trim))
+p_tools.append(geompy.MakePlane(e_centre, geompy.MakeVectorDXDYDZ(-1, 0, 1), g_trim))
 
-p_part = MakePartition([e_blo1, e_blo2, e_blo3], p_tools, [], [], ShapeType["SOLID"])
+p_part = geompy.MakePartition([e_blo1, e_blo2, e_blo3], p_tools, [], [], geompy.ShapeType["SOLID"])
 
-p_element = RemoveExtraEdges(p_part, doUnionFaces=True)
+p_element = geompy.RemoveExtraEdges(p_part, doUnionFaces=True)
 
 # Grid and glue
 # -------------
 
-grid = MakeMultiTranslation2D(p_element, MakeVectorDXDYDZ(1, 0, 0), 2*g_arete, g_grid, MakeVectorDXDYDZ(0, 0, 1), 2*g_arete, g_grid)
+grid = geompy.MakeMultiTranslation2D(p_element, geompy.MakeVectorDXDYDZ(1, 0, 0), 2*g_arete, g_grid, geompy.MakeVectorDXDYDZ(0, 0, 1), 2*g_arete, g_grid)
 
-piece = MakeGlueFaces(grid, 1e-5)
+piece = geompy.MakeGlueFaces(grid, 1e-5)
 
 # Add in study
 # ------------
 
-piece_id = addToStudy(piece, "ex11_grid3partition")
+piece_id = geompy.addToStudy(piece, "ex11_grid3partition")
 
 # Meshing
 # =======
-
-smesh.SetCurrentStudy(salome.myStudy)
 
 # Create a hexahedral mesh
 # ------------------------

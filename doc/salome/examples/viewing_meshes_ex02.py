@@ -1,8 +1,15 @@
 # Find Element by Point
 
-import geompy
-import smesh
-import SMESH
+
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # Create a geometry to mesh
 box = geompy.MakeBoxDXDYDZ(100,100,100)

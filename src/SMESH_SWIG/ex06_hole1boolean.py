@@ -23,9 +23,15 @@
 
 # =======================================
 #
-from geompy import *
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
 
-import smesh
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # Geometry
 # ========
@@ -54,21 +60,21 @@ rayon = 10
 
 def triangle(p1, p2, p3):
     l = []
-    l.append(MakeEdge(p1, p2))
-    l.append(MakeEdge(p2, p3))
-    l.append(MakeEdge(p3, p1))
-    w = MakeWire(l)
-    return MakeFace(w, 1)
+    l.append(geompy.MakeEdge(p1, p2))
+    l.append(geompy.MakeEdge(p2, p3))
+    l.append(geompy.MakeEdge(p3, p1))
+    w = geompy.MakeWire(l)
+    return geompy.MakeFace(w, 1)
 
 # Points
 # ------
 
-basePoint111 = MakeVertex(ox-longueur1,  oy, oz-largeur1)
-basePoint211 = MakeVertex(ox+longueur2,  oy, oz-largeur1)
-basePoint112 = MakeVertex(ox-longueur1,  oy, oz+largeur2)
-basePoint212 = MakeVertex(ox+longueur2,  oy, oz+largeur2)
+basePoint111 = geompy.MakeVertex(ox-longueur1,  oy, oz-largeur1)
+basePoint211 = geompy.MakeVertex(ox+longueur2,  oy, oz-largeur1)
+basePoint112 = geompy.MakeVertex(ox-longueur1,  oy, oz+largeur2)
+basePoint212 = geompy.MakeVertex(ox+longueur2,  oy, oz+largeur2)
 
-holePoint    = MakeVertex(ox, oy, oz)
+holePoint    = geompy.MakeVertex(ox, oy, oz)
 
 # Faces
 # -----
@@ -81,22 +87,22 @@ baseFace4 = triangle(basePoint112, basePoint111, holePoint)
 # Solids
 # ------
 
-baseVector = MakeVectorDXDYDZ(0, 1, 0)
+baseVector = geompy.MakeVectorDXDYDZ(0, 1, 0)
 
-baseSolid1 = MakePrismVecH(baseFace1, baseVector, hauteur)
-baseSolid2 = MakePrismVecH(baseFace2, baseVector, hauteur)
-baseSolid3 = MakePrismVecH(baseFace3, baseVector, hauteur)
-baseSolid4 = MakePrismVecH(baseFace4, baseVector, hauteur)
+baseSolid1 = geompy.MakePrismVecH(baseFace1, baseVector, hauteur)
+baseSolid2 = geompy.MakePrismVecH(baseFace2, baseVector, hauteur)
+baseSolid3 = geompy.MakePrismVecH(baseFace3, baseVector, hauteur)
+baseSolid4 = geompy.MakePrismVecH(baseFace4, baseVector, hauteur)
 
-holeSolid = MakeCylinder(holePoint, baseVector, rayon, hauteur)
+holeSolid = geompy.MakeCylinder(holePoint, baseVector, rayon, hauteur)
 
 # Boolean operations
 # ------------------
 
-baseHexa1 = MakeCut(baseSolid1, holeSolid)
-baseHexa2 = MakeCut(baseSolid2, holeSolid)
-baseHexa3 = MakeCut(baseSolid3, holeSolid)
-baseHexa4 = MakeCut(baseSolid4, holeSolid)
+baseHexa1 = geompy.MakeCut(baseSolid1, holeSolid)
+baseHexa2 = geompy.MakeCut(baseSolid2, holeSolid)
+baseHexa3 = geompy.MakeCut(baseSolid3, holeSolid)
+baseHexa4 = geompy.MakeCut(baseSolid4, holeSolid)
 
 # Compound, glue and repair
 # -------------------------
@@ -107,19 +113,17 @@ c_l.append(baseHexa2)
 c_l.append(baseHexa3)
 c_l.append(baseHexa4)
 
-c_cpd = MakeCompound(c_l)
-c_glu = MakeGlueFaces(c_cpd, 1.e-5)
-piece = RemoveExtraEdges(c_glu, doUnionFaces=True)
+c_cpd = geompy.MakeCompound(c_l)
+c_glu = geompy.MakeGlueFaces(c_cpd, 1.e-5)
+piece = geompy.RemoveExtraEdges(c_glu, doUnionFaces=True)
 
 # Add in study
 # ------------
 
-piece_id = addToStudy(piece, "ex06_hole1boolean")
+piece_id = geompy.addToStudy(piece, "ex06_hole1boolean")
 
 # Meshing
 # =======
-
-smesh.SetCurrentStudy(salome.myStudy)
 
 # Create a hexahedral mesh
 # ------------------------
@@ -137,22 +141,22 @@ hexa.Hexahedron()
 # Create local hypothesis
 # -----------------------
 
-edge1 = GetEdgeNearPoint(piece, MakeVertex(ox, oy, oz-largeur1))
+edge1 = geompy.GetEdgeNearPoint(piece, geompy.MakeVertex(ox, oy, oz-largeur1))
 algo1 = hexa.Segment(edge1)
 algo1.NumberOfSegments(3)
 algo1.Propagation()
 
-edge2 = GetEdgeNearPoint(piece, MakeVertex(ox-longueur1, oy, oz))
+edge2 = geompy.GetEdgeNearPoint(piece, geompy.MakeVertex(ox-longueur1, oy, oz))
 algo2 = hexa.Segment(edge2)
 algo2.NumberOfSegments(5)
 algo2.Propagation()
 
-edge3 = GetEdgeNearPoint(piece, MakeVertex(ox, oy, oz+largeur2))
+edge3 = geompy.GetEdgeNearPoint(piece, geompy.MakeVertex(ox, oy, oz+largeur2))
 algo3 = hexa.Segment(edge3)
 algo3.NumberOfSegments(7)
 algo3.Propagation()
 
-edge4 = GetEdgeNearPoint(piece, MakeVertex(ox+longueur2, oy, oz))
+edge4 = geompy.GetEdgeNearPoint(piece, geompy.MakeVertex(ox+longueur2, oy, oz))
 algo4 = hexa.Segment(edge4)
 algo4.NumberOfSegments(9)
 algo4.Propagation()

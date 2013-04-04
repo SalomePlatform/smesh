@@ -23,9 +23,15 @@
 
 # =======================================
 #
-from geompy import *
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
 
-import smesh
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # Geometry
 # ========
@@ -49,44 +55,42 @@ g_trim = 1000
 v_arete2 = g_arete*2
 v_arete3 = g_arete*3
 
-v_1 = MakeVertex(g_ox         , g_oy         , g_oz         )
-v_2 = MakeVertex(g_ox+v_arete3, g_oy+g_arete , g_oz+v_arete3)
+v_1 = geompy.MakeVertex(g_ox         , g_oy         , g_oz         )
+v_2 = geompy.MakeVertex(g_ox+v_arete3, g_oy+g_arete , g_oz+v_arete3)
 
-v_3 = MakeVertex(g_ox+g_arete , g_oy+g_arete , g_oz+g_arete )
-v_4 = MakeVertex(g_ox+v_arete2, g_oy+v_arete2, g_oz+v_arete2)
+v_3 = geompy.MakeVertex(g_ox+g_arete , g_oy+g_arete , g_oz+g_arete )
+v_4 = geompy.MakeVertex(g_ox+v_arete2, g_oy+v_arete2, g_oz+v_arete2)
 
 # Solids
 # ------
 
-s_base = MakeBoxTwoPnt(v_1, v_2)
-s_haut = MakeBoxTwoPnt(v_3, v_4)
+s_base = geompy.MakeBoxTwoPnt(v_1, v_2)
+s_haut = geompy.MakeBoxTwoPnt(v_3, v_4)
 
 # Partition
 # ---------
 
-p_dir1 = MakeVectorDXDYDZ(1, 0, 0)
-p_dir2 = MakeVectorDXDYDZ(0, 0, 1)
-p_dir3 = MakeVectorDXDYDZ(0, 1, 0)
+p_dir1 = geompy.MakeVectorDXDYDZ(1, 0, 0)
+p_dir2 = geompy.MakeVectorDXDYDZ(0, 0, 1)
+p_dir3 = geompy.MakeVectorDXDYDZ(0, 1, 0)
 
 p_tools = []
 
-p_tools.append(MakePlane(v_3, p_dir1, g_trim))
-p_tools.append(MakePlane(v_4, p_dir1, g_trim))
-p_tools.append(MakePlane(v_3, p_dir2, g_trim))
-p_tools.append(MakePlane(v_4, p_dir2, g_trim))
-p_tools.append(MakePlane(v_3, p_dir3, g_trim))
+p_tools.append(geompy.MakePlane(v_3, p_dir1, g_trim))
+p_tools.append(geompy.MakePlane(v_4, p_dir1, g_trim))
+p_tools.append(geompy.MakePlane(v_3, p_dir2, g_trim))
+p_tools.append(geompy.MakePlane(v_4, p_dir2, g_trim))
+p_tools.append(geompy.MakePlane(v_3, p_dir3, g_trim))
 
-piece = MakePartition([s_base, s_haut], p_tools, [], [], ShapeType["SOLID"])
+piece = geompy.MakePartition([s_base, s_haut], p_tools, [], [], geompy.ShapeType["SOLID"])
 
 # Study
 # -----
 
-piece_id = addToStudy(piece, "ex03_cube2partition")
+piece_id = geompy.addToStudy(piece, "ex03_cube2partition")
 
 # Meshing
 # =======
-
-smesh.SetCurrentStudy(salome.myStudy)
 
 # Create hexahedrical mesh on piece
 # ---------------------------------

@@ -9,17 +9,17 @@ Documentation for SALOME %Mesh module Python API is available in two forms:
 - <a href="smeshpy_doc/modules.html">Structured documentation</a>, where all methods and
 classes are grouped by their functionality, like it is done in the GUI documentation
 - <a href="smeshpy_doc/namespaces.html">Linear documentation</a> grouped only by classes, declared
-in the \ref smesh and StdMeshersDC Python packages.
+in the \ref SMESH_SWIG.smeshBuilder "smeshBuilder" and \ref SMESH_SWIG.StdMeshersBuilder "StdMeshersBuilder" Python packages.
 
-Python package \ref smesh provides an interface to create and handle
+Class \ref SMESH_SWIG.smeshBuilder.smeshBuilder "smeshBuilder" provides an interface to create and handle
 meshes. It can be used to create an empty mesh or to import mesh from the data file.
 
 As soon as mesh is created, it is possible to manage it via its own
-methods, described in \ref smesh.Mesh "class Mesh" documentation.
+methods, described in \ref SMESH_SWIG.smeshBuilder.Mesh "class Mesh" documentation.
 
-Class \ref smesh.Mesh "Mesh" allows assigning algorithms to a mesh.
+Class \ref SMESH_SWIG.smeshBuilder.Mesh "Mesh" allows assigning algorithms to a mesh.
 Please note that some algorithms, included in the standard SALOME
-distribution are always available. Python package \ref StdMeshersDC
+distribution are always available. Python package \ref SMESH_SWIG.StdMeshersBuilder "StdMeshersBuilder"
 provides an interface for standard meshing algorithms included into
 the SALOME %Mesh module distribution, like:
 - REGULAR (1D)

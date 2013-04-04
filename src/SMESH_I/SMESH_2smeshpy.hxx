@@ -47,8 +47,8 @@
  * This file was created in order to respond to requirement of bug PAL10494:
  * SMESH python dump uses idl interface.
  *
- * The creation reason is that smesh.py commands defining hypotheses encapsulate
- * several SMESH engine method calls. As well, the dependencies between smesh.py
+ * The creation reason is that smeshBuilder.py commands defining hypotheses encapsulate
+ * several SMESH engine method calls. As well, the dependencies between smeshBuilder.py
  * classes differ from ones between corresponding SMESH IDL interfaces.
  * 
  * Everything here is for internal usage by SMESH_2smeshpy::ConvertScript()

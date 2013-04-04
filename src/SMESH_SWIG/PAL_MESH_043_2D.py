@@ -26,8 +26,14 @@
 #  Description : Create meshes to test extrusion of mesh elements along path
 #
 import salome
-import geompy
-import smesh
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 
 #----------------------------------GEOM
@@ -53,7 +59,6 @@ id_ellipse2 = geompy.addToStudy(ellipse2, "Ellips 2")
 
 
 #---------------------------------SMESH
-smesh.SetCurrentStudy(salome.myStudy)
 
 # create the path mesh
 mesh1 = smesh.Mesh(ellipse1, "Path Mesh")

@@ -1,8 +1,15 @@
 # Duplicate nodes
 
+
 import salome
-import geompy
-import smesh
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # Create a box
 
@@ -20,11 +27,11 @@ mesh.Compute()
 # Without the duplication of border elements
 
 # Nodes to duplicate
-nodes1 = mesh.CreateEmptyGroup( smesh.NODE, 'nodes1' )
+nodes1 = mesh.CreateEmptyGroup( SMESH.NODE, 'nodes1' )
 nodes1.Add( [ 119, 125, 131, 137 ] )
 
 # Group of faces to replace nodes with new ones 
-faces1 = mesh.CreateEmptyGroup( smesh.FACE, 'faces1' )
+faces1 = mesh.CreateEmptyGroup( SMESH.FACE, 'faces1' )
 faces1.Add( [ 144, 151, 158 ] )
 
 # Duplicate nodes
@@ -44,15 +51,15 @@ print "Quadrangles : ", mesh.NbQuadrangles()
 # With the duplication of border elements
 
 # Edges to duplicate
-edges = mesh.CreateEmptyGroup( smesh.EDGE, 'edges' )
+edges = mesh.CreateEmptyGroup( SMESH.EDGE, 'edges' )
 edges.Add( [ 32, 33, 34 ] )
 
 # Nodes not to duplicate
-nodes2 = mesh.CreateEmptyGroup( smesh.NODE, 'nodes2' )
+nodes2 = mesh.CreateEmptyGroup( SMESH.NODE, 'nodes2' )
 nodes2.Add( [ 35, 38 ] )
 
 # Group of faces to replace nodes with new ones 
-faces2 = mesh.CreateEmptyGroup( smesh.FACE, 'faces2' )
+faces2 = mesh.CreateEmptyGroup( SMESH.FACE, 'faces2' )
 faces2.Add( [ 141, 148, 155 ] )
 
 # Duplicate nodes

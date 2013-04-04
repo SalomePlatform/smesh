@@ -26,8 +26,15 @@
 # -- Rayon de la bariere
 #
 import salome
-import geompy
-import smesh
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
+
 from math import sqrt
 
 
@@ -119,8 +126,6 @@ print "number of Edges  in alveole : ", len(subEdgeList)
 status = geompy.CheckShape(alveole)
 print " check status ", status
 
-# ---- launch SMESH
-smesh.SetCurrentStudy(salome.myStudy)
 
 # ---- init a Mesh with the alveole
 shape_mesh = salome.IDToObject( idalveole )
@@ -155,7 +160,7 @@ print "-------------------------- MaxElementVolume"
 
 maxElementVolume = 0.5
 
-netgen3D = mesh.Tetrahedron(smesh.NETGEN)
+netgen3D = mesh.Tetrahedron(smeshBuilder.NETGEN)
 hypVolume = netgen3D.MaxElementVolume(maxElementVolume)
 print hypVolume.GetName()
 print hypVolume.GetId()

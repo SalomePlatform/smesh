@@ -28,10 +28,15 @@
 #-------------------------------------------------------------------------
 #
 import salome
-import geompy
-import smesh
-
 salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
+
 # ---------------------------- GEOM --------------------------------------
 
 # ---- define contigous arcs and segment to define a closed wire
@@ -120,7 +125,6 @@ name      = geompy.SubShapeName( sub_face4, mechanic )
 Id_SubFace4 = geompy.addToStudyInFather( mechanic, sub_face4, name )
 
 # ---------------------------- SMESH --------------------------------------
-smesh.SetCurrentStudy(salome.myStudy)
 
 # -- Init --
 shape_mesh = salome.IDToObject( Id_mechanic )
@@ -194,37 +198,37 @@ mesh.SplitQuadObject(submesh2, 1)
 
 #2 cutting of triangles of the group
 FacesTriToQuad = [ 2391, 2824, 2825, 2826, 2827, 2828, 2832, 2833, 2834, 2835, 2836, 2837, 2838, 2839, 2841, 2844, 2845, 2847, 2854, 2861, 2863, 2922, 2923, 2924, 2925, 2926, 2927, 2928, 2929, 2930, 2931, 2932, 2933, 2934, 2935, 2936, 2937, 2938, 2940, 2941, 2946, 2951, 2970, 2971, 2972, 2973, 2974, 2975, 2976, 2977, 2978, 2979, 2980, 2981, 2982, 2983, 2984, 2985 ]
-GroupTriToQuad = mesh.MakeGroupByIds("Group of faces (quad)", smesh.FACE, FacesTriToQuad)
-mesh.TriToQuadObject(GroupTriToQuad, smesh.FT_AspectRatio , 1.57)
+GroupTriToQuad = mesh.MakeGroupByIds("Group of faces (quad)", SMESH.FACE, FacesTriToQuad)
+mesh.TriToQuadObject(GroupTriToQuad, SMESH.FT_AspectRatio , 1.57)
 
 #3 extrusion of the group
-point = smesh.PointStruct(0, 0, 5)
-vector = smesh.DirStruct(point) 
+point = SMESH.PointStruct(0, 0, 5)
+vector = SMESH.DirStruct(point)
 mesh.ExtrusionSweepObject(GroupTriToQuad, vector, 5)
 
 #4 mirror object
-mesh.Mirror([], smesh.AxisStruct(0, 0, 0, 0, 0, 0), smesh.POINT, 0) 
+mesh.Mirror([], SMESH.AxisStruct(0, 0, 0, 0, 0, 0), smesh.POINT, 0)
 
 #5 mesh translation
-point = smesh.PointStruct(10, 10, 10)
-vector = smesh.DirStruct(point) 
+point = SMESH.PointStruct(10, 10, 10)
+vector = SMESH.DirStruct(point)
 mesh.Translate([], vector, 0)
 
 #6 mesh rotation
-axisXYZ = smesh.AxisStruct(0, 0, 0, 10, 10, 10)
+axisXYZ = SMESH.AxisStruct(0, 0, 0, 10, 10, 10)
 angle180 =  180*3.141/180
 mesh.Rotate([], axisXYZ, angle180, 0)
 
 #7 group smoothing
 FacesSmooth = [864, 933, 941, 950, 1005, 1013]
-GroupSmooth = mesh.MakeGroupByIds("Group of faces (smooth)", smesh.FACE, FacesSmooth)
+GroupSmooth = mesh.MakeGroupByIds("Group of faces (smooth)", SMESH.FACE, FacesSmooth)
 mesh.SmoothObject(GroupSmooth, [], 20, 2, smesh.CENTROIDAL_SMOOTH)
 
 #8 rotation sweep object
 FacesRotate = [492, 493, 502, 503]
-GroupRotate = mesh.MakeGroupByIds("Group of faces (rotate)", smesh.FACE, FacesRotate)
+GroupRotate = mesh.MakeGroupByIds("Group of faces (rotate)", SMESH.FACE, FacesRotate)
 angle45 =  45*3.141/180
-axisXYZ = smesh.AxisStruct(-38.3128, -73.3658, -133.321, -13.3402, -13.3265, 6.66632)
+axisXYZ = SMESH.AxisStruct(-38.3128, -73.3658, -133.321, -13.3402, -13.3265, 6.66632)
 mesh.RotationSweepObject(GroupRotate, axisXYZ, angle45, 4, 1e-5)
 
 #9 reorientation of the submesh1

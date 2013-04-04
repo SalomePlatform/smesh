@@ -345,7 +345,7 @@ namespace {
 
 //================================================================================
 /*!
- * \brief Convert a python script using commands of smesh.py
+ * \brief Convert a python script using commands of smeshBuilder.py
  *  \param theScript - Input script
  *  \param theEntry2AccessorMethod - returns method names to access to
  *         objects wrapped with python class
@@ -498,7 +498,7 @@ _pyGen::_pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod
 
 //================================================================================
 /*!
- * \brief name of SMESH_Gen in smesh.py
+ * \brief name of SMESH_Gen in smeshBuilder.py
  */
 //================================================================================
 
@@ -916,7 +916,7 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
 
   // Replace name of SMESH_Gen
 
-  // names of SMESH_Gen methods fully equal to methods defined in smesh.py
+  // names of SMESH_Gen methods fully equal to methods defined in smeshBuilder.py
   static TStringSet smeshpyMethods;
   if ( smeshpyMethods.empty() ) {
     const char * names[] =

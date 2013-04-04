@@ -23,9 +23,15 @@
 
 # =======================================
 #
-from geompy import *
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
 
-import smesh
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # Geometry
 # ========
@@ -53,64 +59,62 @@ g_trim = 1000
 # The parallelepipede
 # -------------------
 
-p_boite = MakeBox(gx-g_dx, gy-g_dy, gz-g_dz,  gx+g_dx, gy+g_dy, gz+g_dz)
+p_boite = geompy.MakeBox(gx-g_dx, gy-g_dy, gz-g_dz,  gx+g_dx, gy+g_dy, gz+g_dz)
 
 # The great cylinder
 # ------------------
 
-g_base = MakeVertex(gx-g_dx, gy, gz)
-g_dir  = MakeVectorDXDYDZ(1, 0, 0)
-g_cyl  = MakeCylinder(g_base, g_dir, g_rayonGrand, g_dx*2)
+g_base = geompy.MakeVertex(gx-g_dx, gy, gz)
+g_dir  = geompy.MakeVectorDXDYDZ(1, 0, 0)
+g_cyl  = geompy.MakeCylinder(g_base, g_dir, g_rayonGrand, g_dx*2)
 
 # The first hole
 # --------------
 
-b_boite = MakeCut(p_boite , g_cyl)
+b_boite = geompy.MakeCut(p_boite , g_cyl)
 
 # Partitioning
 # ------------
 
-p_base = MakeVertex(gx, gy, gz)
+p_base = geompy.MakeVertex(gx, gy, gz)
 
 p_tools = []
 
-p_tools.append(MakePlane(p_base, MakeVectorDXDYDZ(0,  1   , 0   ), g_trim))
-p_tools.append(MakePlane(p_base, MakeVectorDXDYDZ(0,  g_dz, g_dy), g_trim))
-p_tools.append(MakePlane(p_base, MakeVectorDXDYDZ(0, -g_dz, g_dy), g_trim))
+p_tools.append(geompy.MakePlane(p_base, geompy.MakeVectorDXDYDZ(0,  1   , 0   ), g_trim))
+p_tools.append(geompy.MakePlane(p_base, geompy.MakeVectorDXDYDZ(0,  g_dz, g_dy), g_trim))
+p_tools.append(geompy.MakePlane(p_base, geompy.MakeVectorDXDYDZ(0, -g_dz, g_dy), g_trim))
 
-p_tools.append(MakePlane(MakeVertex(gx-g_rayonPetit, gy, gz), g_dir, g_trim))
-p_tools.append(MakePlane(MakeVertex(gx+g_rayonPetit, gy, gz), g_dir, g_trim))
+p_tools.append(geompy.MakePlane(geompy.MakeVertex(gx-g_rayonPetit, gy, gz), g_dir, g_trim))
+p_tools.append(geompy.MakePlane(geompy.MakeVertex(gx+g_rayonPetit, gy, gz), g_dir, g_trim))
 
-p_piece = MakePartition([b_boite], p_tools, [], [], ShapeType["SOLID"])
+p_piece = geompy.MakePartition([b_boite], p_tools, [], [], geompy.ShapeType["SOLID"])
 
 # The small cylinder
 # ------------------
 
-c_cyl = MakeCylinder(p_base, MakeVectorDXDYDZ(0, 0, 1), g_rayonPetit, g_dz)
+c_cyl = geompy.MakeCylinder(p_base, geompy.MakeVectorDXDYDZ(0, 0, 1), g_rayonPetit, g_dz)
 
 # The second hole
 # ---------------
 
-d_element = SubShapeAllSorted(p_piece, ShapeType["SOLID"])
+d_element = geompy.SubShapeAllSorted(p_piece, geompy.ShapeType["SOLID"])
 
-d_element[ 8] = MakeCut(d_element[ 8], c_cyl)
-d_element[10] = MakeCut(d_element[10], c_cyl)
+d_element[ 8] = geompy.MakeCut(d_element[ 8], c_cyl)
+d_element[10] = geompy.MakeCut(d_element[10], c_cyl)
 
 # Compound
 # --------
 
-piece = RemoveExtraEdges(MakeCompound(d_element))
-piece = MakeGlueFaces(piece, 1e-07)
+piece = geompy.RemoveExtraEdges(geompy.MakeCompound(d_element))
+piece = geompy.MakeGlueFaces(piece, 1e-07)
 
 # Add piece in study
 # ------------------
 
-piece_id = addToStudy(piece, "ex16_cyl2complementary")
+piece_id = geompy.addToStudy(piece, "ex16_cyl2complementary")
 
 # Meshing
 # =======
-
-smesh.SetCurrentStudy(salome.myStudy)
 
 # Create a hexahedral mesh
 # ------------------------
@@ -128,7 +132,7 @@ hexa.Hexahedron()
 # -----------------------
 
 def local(x, y, z, d):
-    edge = GetEdgeNearPoint(piece, MakeVertex(x, y, z))
+    edge = geompy.GetEdgeNearPoint(piece, geompy.MakeVertex(x, y, z))
     algo = hexa.Segment(edge)
     algo.NumberOfSegments(d)
     algo.Propagation()

@@ -1,6 +1,7 @@
 # Element Diameter 3D
 
 import SMESH_mechanic_tetra
+import SMESH
 
 smesh  = SMESH_mechanic_tetra.smesh
 mesh   = SMESH_mechanic_tetra.mesh
@@ -9,7 +10,7 @@ salome = SMESH_mechanic_tetra.salome
 # Criterion : ELEMENT DIAMETER 3D > 10
 mel_3d_margin = 10
 
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_MaxElementLength3D, smesh.FT_MoreThan, mel_3d_margin)
+aFilter = smesh.GetFilter(SMESH.FACE, SMESH.FT_MaxElementLength3D, SMESH.FT_MoreThan, mel_3d_margin)
 
 anIds = mesh.GetIdsFromFilter(aFilter) 
 
@@ -24,7 +25,7 @@ for i in range(len(anIds)):
 print ""
 
 # create a group
-aGroup = mesh.CreateEmptyGroup(smesh.FACE, "Element Diameter 3D > " + `mel_3d_margin`)
+aGroup = mesh.CreateEmptyGroup(SMESH.FACE, "Element Diameter 3D > " + `mel_3d_margin`)
 aGroup.Add(anIds)
 
 salome.sg.updateObjBrowser(1)

@@ -1,6 +1,7 @@
 # Aspect Ratio
 
 import SMESH_mechanic
+import SMESH
 
 smesh  = SMESH_mechanic.smesh
 mesh   = SMESH_mechanic.mesh
@@ -9,7 +10,7 @@ salome = SMESH_mechanic.salome
 # Criterion : ASPECT RATIO > 1.8
 ar_margin = 1.8
 
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_AspectRatio, smesh.FT_MoreThan, ar_margin)
+aFilter = smesh.GetFilter(SMESH.FACE, SMESH.FT_AspectRatio, SMESH.FT_MoreThan, ar_margin)
 
 anIds = mesh.GetIdsFromFilter(aFilter) 
 
@@ -24,7 +25,7 @@ for i in range(len(anIds)):
 print ""
 
 # create a group
-aGroup = mesh.CreateEmptyGroup(smesh.FACE, "Aspect Ratio > " + `ar_margin`)
+aGroup = mesh.CreateEmptyGroup(SMESH.FACE, "Aspect Ratio > " + `ar_margin`)
 aGroup.Add(anIds)
 
 salome.sg.updateObjBrowser(1)

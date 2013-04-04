@@ -27,7 +27,11 @@
 #  $Header$
 #
 import salome
-import geompy
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
 import math
 
 # -----------------------------------------------------------------------------

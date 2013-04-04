@@ -21,30 +21,5 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-#  File   : SMESH_GroupFromGeom.py
-#  Module : SMESH
-#
-from SMESH_test1 import *
-
-# Compute the mesh created in SMESH_test1
-
-mesh.Compute()
-
-# Create geometry groups on plane:
-aGeomGroup1 = geompy.CreateGroup(face , geompy.ShapeType["FACE"])
-geompy.AddObject(aGeomGroup1, 1)
-
-aGeomGroup2 = geompy.CreateGroup(face , geompy.ShapeType["EDGE"])
-
-geompy.AddObject(aGeomGroup2, 3)
-geompy.AddObject(aGeomGroup2, 6)
-geompy.AddObject(aGeomGroup2, 8)
-geompy.AddObject(aGeomGroup2, 10)
-
-geompy.addToStudy(aGeomGroup1, "Group on Faces")
-geompy.addToStudy(aGeomGroup2, "Group on Edges")
-
-aSmeshGroup1 = mesh.GroupOnGeom(aGeomGroup1, "SMESHGroup1", SMESH.FACE)
-aSmeshGroup2 = mesh.GroupOnGeom(aGeomGroup2, "SMESHGroup2", SMESH.EDGE)
-
-salome.sg.updateObjBrowser(1);
+#  File   : __init__.py
+#  Package : StdMeshers

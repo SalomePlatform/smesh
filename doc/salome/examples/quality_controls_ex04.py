@@ -1,6 +1,7 @@
 # Free Edges
 
 import SMESH_mechanic
+import SMESH
 
 smesh  = SMESH_mechanic.smesh
 mesh   = SMESH_mechanic.mesh
@@ -12,7 +13,7 @@ aFilterMgr = smesh.CreateFilterManager()
 # Criterion : AREA > 95.
 area_margin = 95.
 
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Area, smesh.FT_MoreThan, area_margin)
+aFilter = smesh.GetFilter(SMESH.FACE, SMESH.FT_Area, SMESH.FT_MoreThan, area_margin)
 
 anIds = mesh.GetIdsFromFilter(aFilter)
 
@@ -22,8 +23,8 @@ mesh.RemoveElements(anIds)
 aBorders = mesh.GetFreeBorders() 
 
 # create groups
-aGroupF = mesh.CreateEmptyGroup(smesh.FACE, "Faces with free edges")
-aGroupN = mesh.CreateEmptyGroup(smesh.NODE, "Nodes on free edges")
+aGroupF = mesh.CreateEmptyGroup(SMESH.FACE, "Faces with free edges")
+aGroupN = mesh.CreateEmptyGroup(SMESH.NODE, "Nodes on free edges")
 
 # fill groups with elements, corresponding to the criterion
 print ""

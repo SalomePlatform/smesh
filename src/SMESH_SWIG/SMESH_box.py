@@ -31,16 +31,16 @@
 # Salome geometry and meshing for a box
 #
 import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
+
 from salome import sg
-import geompy
-import smesh
-
-
-# ---- launch GEOM
-
-geom          = salome.lcc.FindOrLoadComponent("FactoryServer", "GEOM")
-
-###geom.GetCurrentStudy(salome.myStudy._get_StudyId())
 
 # Plate
 
@@ -48,7 +48,6 @@ box    = geompy.MakeBox(0.,0.,0.,1.,1.,1.)
 boxId  = geompy.addToStudy(box,"box")
 
 # ---- SMESH
-smesh.SetCurrentStudy(salome.myStudy)
 
 # ---- init a Mesh
 

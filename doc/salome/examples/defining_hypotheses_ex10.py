@@ -2,7 +2,15 @@
 
 # Project prisms from one meshed box to another mesh on the same box
 
-from smesh import *
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # Prepare geometry
 
@@ -36,7 +44,7 @@ geompy.addToStudyInFather( box, edgesF2, "edgesF2" )
 
 
 # Make the source mesh with prisms
-src_mesh = Mesh(box, "Source mesh")
+src_mesh = smesh.Mesh(box, "Source mesh")
 src_mesh.Segment().NumberOfSegments(9,10)
 src_mesh.Quadrangle()
 src_mesh.Hexahedron()
@@ -47,7 +55,7 @@ src_mesh.Compute()
 # Mesh the box using projection algoritms
 
 # Define the same global 1D and 2D hypotheses
-tgt_mesh = Mesh(box, "Target mesh")
+tgt_mesh = smesh.Mesh(box, "Target mesh")
 tgt_mesh.Segment().NumberOfSegments(9,10,UseExisting=True)
 tgt_mesh.Quadrangle()
 
@@ -73,4 +81,4 @@ proj3D.SourceShape3D( box, src_mesh, v1F1, v1F2, v2F1, v2F2 )
 tgt_mesh.Compute()
 
 # Move the source mesh to visualy compare the two meshes
-src_mesh.TranslateObject( src_mesh, MakeDirStruct( 210, 0, 0 ), Copy=False)
+src_mesh.TranslateObject( src_mesh, smesh.MakeDirStruct( 210, 0, 0 ), Copy=False)

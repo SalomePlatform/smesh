@@ -25,7 +25,6 @@ from SMESH_test1 import *
 
 ## Old style
 def CheckBelongToGeomFilterOld(theMeshGen, theMesh, theShape, theSubShape, theElemType):
-    import geompy
     if theShape != theSubShape:
         aName = str(theSubShape)
         geompy.addToStudyInFather(theShape,theSubShape,aName)
@@ -45,25 +44,23 @@ def CheckBelongToGeomFilterOld(theMeshGen, theMesh, theShape, theSubShape, theEl
 
 ## Current style
 def CheckBelongToGeomFilter(theMesh, theShape, theSubShape, theElemType):
-    import geompy
-    import smesh
     if theShape != theSubShape:
         aName = str(theSubShape)
         geompy.addToStudyInFather(theShape,theSubShape,aName)
 
     theMesh.Compute()
-    aFilter = smesh.GetFilter(theElemType, smesh.FT_BelongToGeom, theSubShape)
+    aFilter = smesh.GetFilter(theElemType, SMESH.FT_BelongToGeom, theSubShape)
     return aFilter.GetElementsId(theMesh.GetMesh())
     
 
-anElemType = smesh.FACE;
+anElemType = SMESH.FACE;
 print "anElemType =", anElemType
 #anIds = CheckBelongToGeomFilter(mesh,box,subShapeList[1],anElemType)
 anIds = CheckBelongToGeomFilter(mesh,box,box,anElemType)
 print "Number of ids = ", len(anIds)
 print "anIds = ", anIds
 ## Check old version
-#anIds = CheckBelongToGeomFilterOld(smesh.smesh,mesh.GetMesh(),box,box,anElemType)
+#anIds = CheckBelongToGeomFilterOld(smesh,mesh.GetMesh(),box,box,anElemType)
 #print "anIds = ", anIds
 
 salome.sg.updateObjBrowser(1);

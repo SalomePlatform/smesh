@@ -23,9 +23,15 @@
 
 # =======================================
 #
-from geompy import *
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
 
-import smesh
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # Geometry
 # ========
@@ -45,29 +51,27 @@ arete3 = arete*3
 # Solids
 # ------
 
-box_tetra1 = MakeBox(arete0, arete0, 0,  arete1, arete1, arete)
+box_tetra1 = geompy.MakeBox(arete0, arete0, 0,  arete1, arete1, arete)
 
-box_ijk1   = MakeBox(arete1, arete0, 0,  arete2, arete1, arete)
+box_ijk1   = geompy.MakeBox(arete1, arete0, 0,  arete2, arete1, arete)
 
-box_hexa   = MakeBox(arete1, arete1, 0,  arete2, arete2, arete)
+box_hexa   = geompy.MakeBox(arete1, arete1, 0,  arete2, arete2, arete)
 
-box_ijk2   = MakeBox(arete2, arete1, 0,  arete3, arete2, arete)
+box_ijk2   = geompy.MakeBox(arete2, arete1, 0,  arete3, arete2, arete)
 
-box_tetra2 = MakeBox(arete2, arete2, 0,  arete3 ,arete3, arete)
+box_tetra2 = geompy.MakeBox(arete2, arete2, 0,  arete3 ,arete3, arete)
 
 # Piece
 # -----
 
-piece_cpd = MakeCompound([box_tetra1, box_ijk1, box_hexa, box_ijk2, box_tetra2])
+piece_cpd = geompy.MakeCompound([box_tetra1, box_ijk1, box_hexa, box_ijk2, box_tetra2])
 
-piece = MakeGlueFaces(piece_cpd, 1e-4)
+piece = geompy.MakeGlueFaces(piece_cpd, 1e-4)
 
-piece_id = addToStudy(piece, "ex04_cube5tetraHexa")
+piece_id = geompy.addToStudy(piece, "ex04_cube5tetraHexa")
 
 # Meshing
 # =======
-
-smesh.SetCurrentStudy(salome.myStudy)
 
 # Create a hexahedral mesh
 # ------------------------
@@ -86,8 +90,8 @@ mixed.Hexahedron()
 # ----------------------
 
 def localMesh(b, hyp):
-    box   = GetInPlace(piece, b)
-    faces = SubShapeAll(box, ShapeType["FACE"])
+    box   = geompy.GetInPlace(piece, b)
+    faces = geompy.SubShapeAll(box, geompy.ShapeType["FACE"])
 
     i = 0
     n = len(faces)
@@ -99,7 +103,7 @@ def localMesh(b, hyp):
             algo.LengthFromEdges()
         i = i + 1
 
-    algo = mixed.Tetrahedron(smesh.NETGEN, box)
+    algo = mixed.Tetrahedron(smeshBuilder.NETGEN, box)
     algo.MaxElementVolume(400)
 
 localMesh(box_tetra1, 1)

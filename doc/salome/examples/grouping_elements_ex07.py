@@ -1,30 +1,31 @@
 # Cut of groups
 
 import SMESH_mechanic
+import SMESH
 
 smesh  = SMESH_mechanic.smesh
 mesh   = SMESH_mechanic.mesh
 salome = SMESH_mechanic.salome
 
 # Criterion : AREA > 20
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Area, smesh.FT_MoreThan, 20.)
+aFilter = smesh.GetFilter(SMESH.FACE, SMESH.FT_Area, SMESH.FT_MoreThan, 20.)
 
 anIds = mesh.GetIdsFromFilter(aFilter)
 
 print "Criterion: Area > 20, Nb = ", len(anIds) 
 
 # create a group by adding elements with area > 20
-aGroupMain = mesh.MakeGroupByIds("Area > 20", smesh.FACE, anIds)
+aGroupMain = mesh.MakeGroupByIds("Area > 20", SMESH.FACE, anIds)
 
 # Criterion : AREA < 60
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Area, smesh.FT_LessThan, 60.)
+aFilter = smesh.GetFilter(SMESH.FACE, SMESH.FT_Area, SMESH.FT_LessThan, 60.)
 
 anIds = mesh.GetIdsFromFilter(aFilter)
 
 print "Criterion: Area < 60, Nb = ", len(anIds) 
 
 # create a group by adding elements with area < 60
-aGroupTool = mesh.MakeGroupByIds("Area < 60", smesh.FACE, anIds)
+aGroupTool = mesh.MakeGroupByIds("Area < 60", SMESH.FACE, anIds)
  
 # create a cut of groups : area >= 60
 aGroupRes = mesh.CutGroups(aGroupMain, aGroupTool, "Area >= 60")

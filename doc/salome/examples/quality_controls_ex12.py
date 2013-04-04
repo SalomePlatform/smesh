@@ -1,9 +1,15 @@
 # Borders at Multiconnection 2D
 
-import salome
-import geompy
 
-import smesh
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # create a compound of two glued boxes
 box1 = geompy.MakeBox(0., 0., 0., 20., 20., 15.)
@@ -23,7 +29,7 @@ mesh.Compute()
 # Criterion : MULTI-CONNECTION 2D = 3
 nb_conn = 3
 
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_MultiConnection2D, smesh.FT_EqualTo, nb_conn)
+aFilter = smesh.GetFilter(SMESH.FACE, SMESH.FT_MultiConnection2D, SMESH.FT_EqualTo, nb_conn)
 
 anIds = mesh.GetIdsFromFilter(aFilter) 
 
@@ -38,7 +44,7 @@ for i in range(len(anIds)):
 print ""
 
 # create a group
-aGroup = mesh.CreateEmptyGroup(smesh.FACE, "Borders at multi-connection 2D = " + `nb_conn`)
+aGroup = mesh.CreateEmptyGroup(SMESH.FACE, "Borders at multi-connection 2D = " + `nb_conn`)
 aGroup.Add(anIds)
 
 salome.sg.updateObjBrowser(1)

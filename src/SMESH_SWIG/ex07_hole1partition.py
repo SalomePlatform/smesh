@@ -23,9 +23,15 @@
 
 # =======================================
 #
-from geompy import *
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
 
-import smesh
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # Geometry
 # ========
@@ -50,40 +56,38 @@ g_trim = 1000
 # Box
 # ---
 
-b_boite = MakeBox(g_x-g_longueur, g_y-g_hauteur, g_z-g_largeur,  g_x+g_longueur, g_y+g_hauteur, g_z+g_largeur)
+b_boite = geompy.MakeBox(g_x-g_longueur, g_y-g_hauteur, g_z-g_largeur,  g_x+g_longueur, g_y+g_hauteur, g_z+g_largeur)
 
 # Cylinder
 # --------
 
-c_axe = MakeVectorDXDYDZ(0, 1, 0)
+c_axe = geompy.MakeVectorDXDYDZ(0, 1, 0)
 
-c_cyl = MakeCylinder(MakeVertex(g_x, g_y-g_hauteur, g_z), c_axe, g_rayon, g_hauteur*2)
+c_cyl = geompy.MakeCylinder(geompy.MakeVertex(g_x, g_y-g_hauteur, g_z), c_axe, g_rayon, g_hauteur*2)
 
-c_piece = MakeCut(b_boite, c_cyl)
+c_piece = geompy.MakeCut(b_boite, c_cyl)
 
 # Partition and reperation
 # ------------------------
 
-p_centre = MakeVertex(g_x, g_y, g_z)
+p_centre = geompy.MakeVertex(g_x, g_y, g_z)
 
 p_tools = []
-p_tools.append(MakePlane(p_centre, MakeVectorDXDYDZ( g_largeur, 0, g_longueur), g_trim))
-p_tools.append(MakePlane(p_centre, MakeVectorDXDYDZ(-g_largeur, 0, g_longueur), g_trim))
+p_tools.append(geompy.MakePlane(p_centre, geompy.MakeVectorDXDYDZ( g_largeur, 0, g_longueur), g_trim))
+p_tools.append(geompy.MakePlane(p_centre, geompy.MakeVectorDXDYDZ(-g_largeur, 0, g_longueur), g_trim))
 
-p_part = MakePartition([c_piece], p_tools, [], [], ShapeType["SOLID"])
+p_part = geompy.MakePartition([c_piece], p_tools, [], [], geompy.ShapeType["SOLID"])
 
-p_blocs = RemoveExtraEdges(p_part, doUnionFaces=True)
-piece   = MakeGlueFaces(p_blocs, 1.e-5)
+p_blocs = geompy.RemoveExtraEdges(p_part, doUnionFaces=True)
+piece   = geompy.MakeGlueFaces(p_blocs, 1.e-5)
 
 # Add in study
 # ------------
 
-piece_id = addToStudy(piece, "ex07_hole1partition")
+piece_id = geompy.addToStudy(piece, "ex07_hole1partition")
 
 # Meshing
 # =======
-
-smesh.SetCurrentStudy(salome.myStudy)
 
 # Create a hexahedral mesh
 # ------------------------

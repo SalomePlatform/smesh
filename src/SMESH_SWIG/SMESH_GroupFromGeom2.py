@@ -50,11 +50,11 @@ geompy.AddObject(aGeomGroup2, 10)
 geompy.addToStudy(aGeomGroup1, "Group on Faces")
 geompy.addToStudy(aGeomGroup2, "Group on Edges")
 
-aSmeshGroup1 = mesh.GroupOnGeom(aGeomGroup1, "SMESHGroup1", smesh.FACE)
-aSmeshGroup2 = mesh.GroupOnGeom(aGeomGroup2, "SMESHGroup2", smesh.EDGE)
+aSmeshGroup1 = mesh.GroupOnGeom(aGeomGroup1, "SMESHGroup1", SMESH.FACE)
+aSmeshGroup2 = mesh.GroupOnGeom(aGeomGroup2, "SMESHGroup2", SMESH.EDGE)
 
 print "Create aGroupOnShell - a group linked to a shell"
-aGroupOnShell = mesh.GroupOnGeom(shell, "GroupOnShell", smesh.EDGE)
+aGroupOnShell = mesh.GroupOnGeom(shell, "GroupOnShell", SMESH.EDGE)
 print "aGroupOnShell type =", aGroupOnShell.GetType()
 print "aGroupOnShell size =", aGroupOnShell.Size()
 print "aGroupOnShell ids :", aGroupOnShell.GetListOfID()

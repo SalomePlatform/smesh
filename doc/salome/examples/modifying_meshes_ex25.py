@@ -1,7 +1,15 @@
 # Pattern Mapping
 
-import geompy
-import smesh
+
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # define the geometry
 Box_1 = geompy.MakeBoxDXDYDZ(200., 200., 200.)
@@ -41,7 +49,7 @@ isDone = pattern.LoadFromFace(Mesh_2.GetMesh(), Face_2, 0)
 if (isDone != 1): print 'LoadFromFace :', pattern.GetErrorCode()
 
 # apply the pattern to a face of the first mesh
-facesToSplit = Mesh_1.GetElementsByType(smesh.SMESH.FACE)
+facesToSplit = Mesh_1.GetElementsByType(SMESH.FACE)
 print "Splitting %d rectangular face(s) to %d triangles..."%(len(facesToSplit), 2*len(facesToSplit))
 pattern.ApplyToMeshFaces(Mesh_1.GetMesh(), facesToSplit, 0, 0)
 isDone = pattern.MakeMesh(Mesh_1.GetMesh(), 0, 0)
@@ -84,7 +92,7 @@ smp_hexa = """!!! Nb of points:
 pattern_hexa.LoadFromFile(smp_hexa)
 
 # apply the pattern to a mesh
-volsToSplit = Mesh_3.GetElementsByType(smesh.SMESH.VOLUME)
+volsToSplit = Mesh_3.GetElementsByType(SMESH.VOLUME)
 print "Splitting %d hexa volume(s) to %d hexas..."%(len(volsToSplit), 4*len(volsToSplit))
 pattern_hexa.ApplyToHexahedrons(Mesh_3.GetMesh(), volsToSplit,0,3)
 isDone = pattern_hexa.MakeMesh(Mesh_3.GetMesh(), True, True)
@@ -123,7 +131,7 @@ smp_pyra = """!!! Nb of points:
 pattern_pyra.LoadFromFile(smp_pyra)
 
 # apply the pattern to a face mesh
-volsToSplit = Mesh_4.GetElementsByType(smesh.SMESH.VOLUME)
+volsToSplit = Mesh_4.GetElementsByType(SMESH.VOLUME)
 print "Splitting %d hexa volume(s) to %d hexas..."%(len(volsToSplit), 6*len(volsToSplit))
 pattern_pyra.ApplyToHexahedrons(Mesh_4.GetMesh(), volsToSplit,1,0)
 isDone = pattern_pyra.MakeMesh(Mesh_4.GetMesh(), True, True)

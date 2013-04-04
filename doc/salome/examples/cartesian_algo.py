@@ -1,14 +1,24 @@
 # Usage of Body Fitting algorithm
 
-from smesh import *
-SetCurrentStudy(salome.myStudy)
+
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
+import salome_notebook
+
 
 # create a sphere
 sphere = geompy.MakeSphereR( 50 )
 geompy.addToStudy( sphere, "sphere" )
 
 # create a mesh and assign a "Body Fitting" algo
-mesh = Mesh( sphere )
+mesh = smesh.Mesh( sphere )
 cartAlgo = mesh.BodyFitted()
 
 # define a cartesian grid using Coordinates

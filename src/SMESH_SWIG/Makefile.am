@@ -28,9 +28,6 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 # Scripts to be installed.
 dist_salomescript_PYTHON = \
 	smesh.py \
-	smeshDC.py \
-	smesh_algorithm.py \
-	StdMeshersDC.py \
 	batchmode_smesh.py \
 	batchmode_mefisto.py \
 	ex00_all.py \
@@ -99,5 +96,15 @@ dist_salomescript_PYTHON = \
 	PAL_MESH_043_3D.py \
 	SMESH_reg.py
 
+mypkgpythondir = $(salomepythondir)/salome/smesh
+mypkgpython_PYTHON = \
+	smeshBuilder.py \
+	smesh_algorithm.py
+	
+stdpkgpythondir = $(salomepythondir)/salome/StdMeshers
+stdpkgpython_PYTHON = \
+	__init__.py \
+	StdMeshersBuilder.py
+	
 sharedpkgpython_PYTHON =		\
 	SMESH_shared_modules.py

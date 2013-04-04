@@ -23,9 +23,15 @@
 
 # =======================================
 #
-from geompy import *
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
 
-import smesh
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 import math
 
@@ -50,10 +56,10 @@ rayon = 10
 # Points
 # ------
 
-basePoint111 = MakeVertex(ox         ,  oy, oz)
-basePoint211 = MakeVertex(ox+longueur,  oy, oz)
-basePoint112 = MakeVertex(ox         ,  oy, oz+largeur)
-basePoint212 = MakeVertex(ox+longueur,  oy, oz+largeur)
+basePoint111 = geompy.MakeVertex(ox         ,  oy, oz)
+basePoint211 = geompy.MakeVertex(ox+longueur,  oy, oz)
+basePoint112 = geompy.MakeVertex(ox         ,  oy, oz+largeur)
+basePoint212 = geompy.MakeVertex(ox+longueur,  oy, oz+largeur)
 
 cx = ox+longueur/2
 cy = oy
@@ -64,46 +70,46 @@ ll = ll*ll
 dx = rayon/math.sqrt(1+ll)
 dz = rayon/math.sqrt(1+1/ll)
 
-circlePoint1 = MakeVertex(cx-dx, cy, cz-dz)
-circlePoint2 = MakeVertex(cx+dx, cy, cz-dz)
-circlePoint3 = MakeVertex(cx+dx, cy, cz+dz)
-circlePoint4 = MakeVertex(cx-dx, cy, cz+dz)
+circlePoint1 = geompy.MakeVertex(cx-dx, cy, cz-dz)
+circlePoint2 = geompy.MakeVertex(cx+dx, cy, cz-dz)
+circlePoint3 = geompy.MakeVertex(cx+dx, cy, cz+dz)
+circlePoint4 = geompy.MakeVertex(cx-dx, cy, cz+dz)
 
 # Edges
 # -----
 
-squareEdge1 = MakeEdge(basePoint111, basePoint211)
-squareEdge2 = MakeEdge(basePoint211, basePoint212)
-squareEdge3 = MakeEdge(basePoint212, basePoint112)
-squareEdge4 = MakeEdge(basePoint112, basePoint111)
+squareEdge1 = geompy.MakeEdge(basePoint111, basePoint211)
+squareEdge2 = geompy.MakeEdge(basePoint211, basePoint212)
+squareEdge3 = geompy.MakeEdge(basePoint212, basePoint112)
+squareEdge4 = geompy.MakeEdge(basePoint112, basePoint111)
 
-diagEdge1   = MakeEdge(basePoint111, circlePoint1)
-diagEdge2   = MakeEdge(basePoint211, circlePoint2)
-diagEdge3   = MakeEdge(basePoint212, circlePoint3)
-diagEdge4   = MakeEdge(basePoint112, circlePoint4)
+diagEdge1   = geompy.MakeEdge(basePoint111, circlePoint1)
+diagEdge2   = geompy.MakeEdge(basePoint211, circlePoint2)
+diagEdge3   = geompy.MakeEdge(basePoint212, circlePoint3)
+diagEdge4   = geompy.MakeEdge(basePoint112, circlePoint4)
 
-arcEdge1    = MakeArc(circlePoint1, MakeVertex(cx      , cy, cz-rayon), circlePoint2)
-arcEdge2    = MakeArc(circlePoint2, MakeVertex(cx+rayon, cy, cz      ), circlePoint3)
-arcEdge3    = MakeArc(circlePoint3, MakeVertex(cx      , cy, cz+rayon), circlePoint4)
-arcEdge4    = MakeArc(circlePoint4, MakeVertex(cx-rayon, cy, cz      ), circlePoint1)
+arcEdge1    = geompy.MakeArc(circlePoint1, geompy.MakeVertex(cx      , cy, cz-rayon), circlePoint2)
+arcEdge2    = geompy.MakeArc(circlePoint2, geompy.MakeVertex(cx+rayon, cy, cz      ), circlePoint3)
+arcEdge3    = geompy.MakeArc(circlePoint3, geompy.MakeVertex(cx      , cy, cz+rayon), circlePoint4)
+arcEdge4    = geompy.MakeArc(circlePoint4, geompy.MakeVertex(cx-rayon, cy, cz      ), circlePoint1)
 
 # Faces
 # -----
 
-baseFace1 = MakeQuad(squareEdge1, diagEdge2, arcEdge1, diagEdge1)
-baseFace2 = MakeQuad(squareEdge2, diagEdge3, arcEdge2, diagEdge2)
-baseFace3 = MakeQuad(squareEdge3, diagEdge4, arcEdge3, diagEdge3)
-baseFace4 = MakeQuad(squareEdge4, diagEdge1, arcEdge4, diagEdge4)
+baseFace1 = geompy.MakeQuad(squareEdge1, diagEdge2, arcEdge1, diagEdge1)
+baseFace2 = geompy.MakeQuad(squareEdge2, diagEdge3, arcEdge2, diagEdge2)
+baseFace3 = geompy.MakeQuad(squareEdge3, diagEdge4, arcEdge3, diagEdge3)
+baseFace4 = geompy.MakeQuad(squareEdge4, diagEdge1, arcEdge4, diagEdge4)
 
 # Solids
 # ------
 
-baseVector = MakeVectorDXDYDZ(0, 1, 0)
+baseVector = geompy.MakeVectorDXDYDZ(0, 1, 0)
 
-baseSolid1 = MakePrismVecH(baseFace1, baseVector, hauteur)
-baseSolid2 = MakePrismVecH(baseFace2, baseVector, hauteur)
-baseSolid3 = MakePrismVecH(baseFace3, baseVector, hauteur)
-baseSolid4 = MakePrismVecH(baseFace4, baseVector, hauteur)
+baseSolid1 = geompy.MakePrismVecH(baseFace1, baseVector, hauteur)
+baseSolid2 = geompy.MakePrismVecH(baseFace2, baseVector, hauteur)
+baseSolid3 = geompy.MakePrismVecH(baseFace3, baseVector, hauteur)
+baseSolid4 = geompy.MakePrismVecH(baseFace4, baseVector, hauteur)
 
 # Compound
 # --------
@@ -114,18 +120,16 @@ c_l.append(baseSolid2)
 c_l.append(baseSolid3)
 c_l.append(baseSolid4)
 
-c_cpd = MakeCompound(c_l)
-piece = MakeGlueFaces(c_cpd, 1.e-5)
+c_cpd = geompy.MakeCompound(c_l)
+piece = geompy.MakeGlueFaces(c_cpd, 1.e-5)
 
 # Add in study
 # ------------
 
-piece_id = addToStudy(piece, "ex05_hole1build")
+piece_id = geompy.addToStudy(piece, "ex05_hole1build")
 
 # Meshing
 # =======
-
-smesh.SetCurrentStudy(salome.myStudy)
 
 # Create a hexahedral mesh
 # ------------------------

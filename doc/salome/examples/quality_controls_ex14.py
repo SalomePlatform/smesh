@@ -1,6 +1,7 @@
 # Taper
 
 import SMESH_mechanic
+import SMESH
 
 smesh  = SMESH_mechanic.smesh
 mesh   = SMESH_mechanic.mesh
@@ -9,7 +10,7 @@ salome = SMESH_mechanic.salome
 # Criterion : Taper > 3e-20
 taper_margin = 3e-20
 
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Taper, smesh.FT_MoreThan, taper_margin)
+aFilter = smesh.GetFilter(SMESH.FACE, SMESH.FT_Taper, SMESH.FT_MoreThan, taper_margin)
 
 anIds = mesh.GetIdsFromFilter(aFilter) 
 
@@ -24,7 +25,7 @@ for i in range(len(anIds)):
 print ""
 
 # create a group
-aGroup = mesh.CreateEmptyGroup(smesh.FACE, "Taper > " + `taper_margin`)
+aGroup = mesh.CreateEmptyGroup(SMESH.FACE, "Taper > " + `taper_margin`)
 aGroup.Add(anIds)
 
 salome.sg.updateObjBrowser(1)

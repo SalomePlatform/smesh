@@ -1,9 +1,15 @@
 # Length 2D
 
-import salome
-import geompy
 
-import smesh
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 # create open shell: a box without one plane
 box = geompy.MakeBox(0., 0., 0., 20., 20., 15.)
@@ -23,7 +29,7 @@ mesh.Compute()
 # Criterion : Length 2D > 5.7
 length_margin = 5.7
 
-aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Length2D, smesh.FT_MoreThan, length_margin)
+aFilter = smesh.GetFilter(SMESH.FACE, SMESH.FT_Length2D, SMESH.FT_MoreThan, length_margin)
 
 anIds = mesh.GetIdsFromFilter(aFilter)
 
@@ -38,7 +44,7 @@ for i in range(len(anIds)):
 print ""
 
 # create a group
-aGroup = mesh.CreateEmptyGroup(smesh.FACE, "Faces with length 2D > " + `length_margin`)
+aGroup = mesh.CreateEmptyGroup(SMESH.FACE, "Faces with length 2D > " + `length_margin`)
 aGroup.Add(anIds)
 
 salome.sg.updateObjBrowser(1)

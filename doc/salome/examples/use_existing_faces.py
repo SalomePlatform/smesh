@@ -1,6 +1,17 @@
 # Use existing faces algorithm
 
-import smesh, geompy
+
+import salome
+salome.salome_init()
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
+import salome_notebook
+
 import numpy as np
 
 # define my 2D algorithm
