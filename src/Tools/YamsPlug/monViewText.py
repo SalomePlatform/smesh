@@ -37,6 +37,7 @@ class MonViewText(Ui_ViewExe,QDialog):
     """
     def __init__(self,parent,txt):
         QDialog.__init__(self,parent)
+        self.pere=parent
         self.setupUi(self)
         self.resize( QSize(600,600).expandedTo(self.minimumSizeHint()) )
         self.connect( self.PB_Ok,SIGNAL("clicked()"), self, SLOT("close()") )
@@ -46,6 +47,7 @@ class MonViewText(Ui_ViewExe,QDialog):
 
         self.connect(self.monExe, SIGNAL("readyReadStandardOutput()"), self.readFromStdOut )
         self.connect(self.monExe, SIGNAL("readyReadStandardError()"), self.readFromStdErr )
+        self.connect(self.monExe, SIGNAL("finished(int  )"), self.exeFinished )
       
         # Je n arrive pas a utiliser le setEnvironment du QProcess
         # fonctionne hors Salome mais pas dans Salome ???
@@ -62,6 +64,8 @@ class MonViewText(Ui_ViewExe,QDialog):
         self.monExe.closeWriteChannel()
         self.show()
 
+    def exeFinished(self):
+        self.pere.enregistreResultat()
         
     def saveFile(self):
         #recuperation du nom du fichier

@@ -72,9 +72,9 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
         if not(self.PrepareLigneCommande()) : return
         self.PBSavePressed(NomHypo=True)
         maFenetre=MonViewText(self,self.commande)
-        if os.path.isfile(self.fichierOut) :self.enregistreResultat()
 
   def enregistreResultat(self):
+        if not(os.path.isfile(self.fichierOut)) : return
         import smesh
         import SMESH
         import salome
