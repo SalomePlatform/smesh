@@ -51,7 +51,11 @@ import sys
 def main(plugin_name, dummymeshhelp = True, output_file = "smeshBuilder.py"):
     plugin_module_name  = plugin_name + "Builder"
     plugin_module       = "salome.%s.%s" % (plugin_name, plugin_module_name)
-    plugin_module_short = "SMESH_SWIG.%s" % (plugin_module_name)
+    if dummymeshhelp:
+        namespace = plugin_name
+    else:
+        namespace = "SMESH_SWIG"
+    plugin_module_short = "%s.%s" % (namespace, plugin_module_name)
     try:
         exec( "from salome.smesh.smeshBuilder import *")
         exec( "import %s" % plugin_module )

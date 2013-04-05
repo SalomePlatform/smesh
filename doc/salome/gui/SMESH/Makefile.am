@@ -36,7 +36,7 @@ DOC_LD_LIBRARY_PATH=$(prefix)lib/salome:${MED_ROOT_DIR}/lib/salome:${GEOM_ROOT_D
 DOC_SMESH_MeshersList=StdMeshers
 
 tmp/smeshBuilder.py: $(top_srcdir)/src/SMESH_SWIG/StdMeshersBuilder.py $(srcdir)/collect_mesh_methods.py
-	mkdir -p tmp && PYTHONPATH=$(DOC_PYTHONPATH):${PYTHONPATH} LD_LIBRARY_PATH=$(DOC_LD_LIBRARY_PATH):${LD_LIBRARY_PATH} SMESH_MeshersList=$(DOC_SMESH_MeshersList) $(PYTHON) $(srcdir)/collect_mesh_methods.py -o $@ StdMeshers
+	@mkdir -p tmp && PYTHONPATH=$(DOC_PYTHONPATH):${PYTHONPATH} LD_LIBRARY_PATH=$(DOC_LD_LIBRARY_PATH):${LD_LIBRARY_PATH} SMESH_MeshersList=$(DOC_SMESH_MeshersList) $(PYTHON) $(srcdir)/collect_mesh_methods.py -o $@ StdMeshers
 
 usr_docs: doxyfile_py doxyfile tmp/smeshBuilder.py
 	@$(DOXYGEN) doxyfile_py ;						\
