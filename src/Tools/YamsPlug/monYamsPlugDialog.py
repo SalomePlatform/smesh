@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2007-2013  EDF R&D
+# Copyright (C) 2007-2013   EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,7 +17,6 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-
 # Modules Python
 # Modules Eficas
 
@@ -265,8 +264,8 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
       else :
          self.commande+=' -Drelative'
       self.commande+=',tolerance=%f'%self.SP_Tolerance.value()
-      if self.CB_Ridge.isChecked()==False : self.commande+=',nr'
-      if self.CB_Point.isChecked()==False : self.commande+=',ns'
+      if self.CB_Ridge.isChecked()==False : self.commande+=',-nr'
+      if self.CB_Point.isChecked()==False : self.commande+=',-ns'
       if self.SP_Geomapp.value()!=0.04 : self.commande+=',geomapp=%f'%self.SP_Geomapp.value()
       if self.SP_Ridge.value()!=45.0 : self.commande+=',ridge=%f'%self.SP_Ridge.value()
       if self.SP_MaxSize.value()!=100 : self.commande+=',maxsize=%f'%self.SP_MaxSize.value()
