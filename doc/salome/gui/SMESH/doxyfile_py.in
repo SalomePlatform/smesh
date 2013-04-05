@@ -101,7 +101,8 @@ EXAMPLE_RECURSIVE      = NO
 #---------------------------------------------------------------------------
 INPUT             = @top_srcdir@/src/SMESH_SWIG/smeshBuilder.py \
                     @top_srcdir@/src/SMESH_SWIG/smesh_algorithm.py \
-                    @top_srcdir@/src/SMESH_SWIG/StdMeshersBuilder.py
+                    @top_srcdir@/src/SMESH_SWIG/StdMeshersBuilder.py \
+                    tmp/smeshBuilder.py
 FILE_PATTERNS     = 
 IMAGE_PATH        = @srcdir@/images
 RECURSIVE         = NO

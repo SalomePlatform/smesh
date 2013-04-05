@@ -56,19 +56,19 @@ for e in StdMeshers.QuadType._items: exec('%s = StdMeshers.%s'%(e,e))
 
 ## Defines segment 1D algorithm for edges discretization.
 #
-#  It can be created by calling smesh.Mesh.Segment(geom=0)
+#  It can be created by calling smeshBuilder.Mesh.Segment(geom=0)
 #
 #  @ingroup l3_algos_basic
 class StdMeshersBuilder_Segment(Mesh_Algorithm):
 
-    ## name of the dynamic method in smesh.Mesh class
+    ## name of the dynamic method in smeshBuilder.Mesh class
     #  @internal
     meshMethod = "Segment"
-    ## type of algorithm used with helper function in smesh.Mesh class
+    ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = REGULAR
     ## flag pointing either this algorithm should be used by default in dynamic method
-    #  of smesh.Mesh class
+    #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = True
     ## doc string of the method
@@ -346,19 +346,19 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
 
 ## Segment 1D algorithm for discretization of a set of adjacent edges as one edge.
 #
-#  It is created by calling smesh.Mesh.Segment(smesh.COMPOSITE,geom=0)
+#  It is created by calling smeshBuilder.Mesh.Segment(smesh.COMPOSITE,geom=0)
 #
 #  @ingroup l3_algos_basic
 class StdMeshersBuilder_CompositeSegment(StdMeshersBuilder_Segment):
 
-    ## name of the dynamic method in smesh.Mesh class
+    ## name of the dynamic method in smeshBuilder.Mesh class
     #  @internal
     meshMethod = "Segment"
-    ## type of algorithm used with helper function in smesh.Mesh class
+    ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = COMPOSITE
     ## flag pointing either this algorithm should be used by default in dynamic method
-    #  of smesh.Mesh class
+    #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = False
     ## doc string of the method
@@ -377,15 +377,15 @@ class StdMeshersBuilder_CompositeSegment(StdMeshersBuilder_Segment):
 
 ## Defines a segment 1D algorithm for discretization of edges with Python function
 #
-#  It is created by calling smesh.Mesh.Segment(smesh.PYTHON,geom=0)
+#  It is created by calling smeshBuilder.Mesh.Segment(smesh.PYTHON,geom=0)
 #
 #  @ingroup l3_algos_basic
 class StdMeshersBuilder_Segment_Python(Mesh_Algorithm):
 
-    ## name of the dynamic method in smesh.Mesh class
+    ## name of the dynamic method in smeshBuilder.Mesh class
     #  @internal
     meshMethod = "Segment"
-    ## type of algorithm used with helper function in smesh.Mesh class
+    ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = PYTHON
     ## doc string of the method
@@ -422,19 +422,19 @@ class StdMeshersBuilder_Segment_Python(Mesh_Algorithm):
 
 ## Triangle MEFISTO 2D algorithm
 #
-#  It is created by calling smesh.Mesh.Triangle(smesh.MEFISTO,geom=0)
+#  It is created by calling smeshBuilder.Mesh.Triangle(smesh.MEFISTO,geom=0)
 #
 #  @ingroup l3_algos_basic
 class StdMeshersBuilder_Triangle_MEFISTO(Mesh_Algorithm):
 
-    ## name of the dynamic method in smesh.Mesh class
+    ## name of the dynamic method in smeshBuilder.Mesh class
     #  @internal
     meshMethod = "Triangle"
-    ## type of algorithm used with helper function in smesh.Mesh class
+    ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = MEFISTO
     ## flag pointing either this algorithm should be used by default in dynamic method
-    #  of smesh.Mesh class
+    #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = True
     ## doc string of the method
@@ -475,19 +475,19 @@ class StdMeshersBuilder_Triangle_MEFISTO(Mesh_Algorithm):
 
 ## Defines a quadrangle 2D algorithm
 # 
-#  It is created by calling smesh.Mesh.Quadrangle(geom=0)
+#  It is created by calling smeshBuilder.Mesh.Quadrangle(geom=0)
 #
 #  @ingroup l3_algos_basic
 class StdMeshersBuilder_Quadrangle(Mesh_Algorithm):
 
-    ## name of the dynamic method in smesh.Mesh class
+    ## name of the dynamic method in smeshBuilder.Mesh class
     #  @internal
     meshMethod = "Quadrangle"
-    ## type of algorithm used with helper function in smesh.Mesh class
+    ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = QUADRANGLE
     ## flag pointing either this algorithm should be used by default in dynamic method
-    #  of smesh.Mesh class
+    #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = True
     ## doc string of the method
@@ -594,19 +594,19 @@ class StdMeshersBuilder_Quadrangle(Mesh_Algorithm):
 
 ## Defines a hexahedron 3D algorithm
 # 
-#  It is created by calling smesh.Mesh.Hexahedron(geom=0)
+#  It is created by calling smeshBuilder.Mesh.Hexahedron(geom=0)
 #
 #  @ingroup l3_algos_basic
 class StdMeshersBuilder_Hexahedron(Mesh_Algorithm):
 
-    ## name of the dynamic method in smesh.Mesh class
+    ## name of the dynamic method in smeshBuilder.Mesh class
     #  @internal
     meshMethod = "Hexahedron"
-    ## type of algorithm used with helper function in smesh.Mesh class
+    ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = Hexa
     ## flag pointing either this algorithm should be used by default in dynamic method
-    #  of smesh.Mesh class
+    #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = True
     ## doc string of the method
@@ -626,19 +626,19 @@ class StdMeshersBuilder_Hexahedron(Mesh_Algorithm):
 
 ## Defines a projection 1D algorithm
 #  
-#  It is created by calling smesh.Mesh.Projection1D(geom=0)
+#  It is created by calling smeshBuilder.Mesh.Projection1D(geom=0)
 #
 #  @ingroup l3_algos_proj
 class StdMeshersBuilder_Projection1D(Mesh_Algorithm):
 
-    ## name of the dynamic method in smesh.Mesh class
+    ## name of the dynamic method in smeshBuilder.Mesh class
     #  @internal
     meshMethod = "Projection1D"
-    ## type of algorithm used with helper function in smesh.Mesh class
+    ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = "Projection_1D"
     ## flag pointing either this algorithm should be used by default in dynamic method
-    #  of smesh.Mesh class
+    #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = True
     ## doc string of the method
@@ -683,19 +683,19 @@ class StdMeshersBuilder_Projection1D(Mesh_Algorithm):
 
 ## Defines a projection 2D algorithm
 #  
-#  It is created by calling smesh.Mesh.Projection2D(geom=0)
+#  It is created by calling smeshBuilder.Mesh.Projection2D(geom=0)
 #
 #  @ingroup l3_algos_proj
 class StdMeshersBuilder_Projection2D(Mesh_Algorithm):
 
-    ## name of the dynamic method in smesh.Mesh class
+    ## name of the dynamic method in smeshBuilder.Mesh class
     #  @internal
     meshMethod = "Projection2D"
-    ## type of algorithm used with helper function in smesh.Mesh class
+    ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = "Projection_2D"
     ## flag pointing either this algorithm should be used by default in dynamic method
-    #  of smesh.Mesh class
+    #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = True
     ## doc string of the method
@@ -746,15 +746,15 @@ class StdMeshersBuilder_Projection2D(Mesh_Algorithm):
 
 ## Defines a projection 1D-2D algorithm
 #  
-#  It is created by calling smesh.Mesh.Projection1D2D(geom=0)
+#  It is created by calling smeshBuilder.Mesh.Projection1D2D(geom=0)
 #
 #  @ingroup l3_algos_proj
 class StdMeshersBuilder_Projection1D2D(StdMeshersBuilder_Projection2D):
 
-    ## name of the dynamic method in smesh.Mesh class
+    ## name of the dynamic method in smeshBuilder.Mesh class
     #  @internal
     meshMethod = "Projection1D2D"
-    ## type of algorithm used with helper function in smesh.Mesh class
+    ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = "Projection_1D2D"
     ## doc string of the method
@@ -773,15 +773,15 @@ class StdMeshersBuilder_Projection1D2D(StdMeshersBuilder_Projection2D):
 
 ## Defines a projection 3D algorithm
 # 
-#  It is created by calling smesh.Mesh.Projection3D(geom=0)
+#  It is created by calling smeshBuilder.Mesh.Projection3D(geom=0)
 #
 #  @ingroup l3_algos_proj
 class StdMeshersBuilder_Projection3D(Mesh_Algorithm):
 
-    ## name of the dynamic method in smesh.Mesh class
+    ## name of the dynamic method in smeshBuilder.Mesh class
     #  @internal
     meshMethod = "Projection3D"
-    ## type of algorithm used with helper function in smesh.Mesh class
+    ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = "Projection_3D"
     ## doc string of the method
@@ -836,15 +836,15 @@ class StdMeshersBuilder_Projection3D(Mesh_Algorithm):
 ## Defines a Prism 3D algorithm, which is either "Extrusion 3D" or "Radial Prism"
 #  depending on geometry
 # 
-#  It is created by calling smesh.Mesh.Prism(geom=0)
+#  It is created by calling smeshBuilder.Mesh.Prism(geom=0)
 #
 #  @ingroup l3_algos_3dextr
 class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
 
-    ## name of the dynamic method in smesh.Mesh class
+    ## name of the dynamic method in smeshBuilder.Mesh class
     #  @internal
     meshMethod = "Prism"
-    ## type of algorithm used with helper function in smesh.Mesh class
+    ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = "Prism_3D"
     ## doc string of the method
@@ -988,15 +988,15 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
 ## Defines a Prism 3D algorithm, which is either "Extrusion 3D" or "Radial Prism"
 #  depending on geometry
 # 
-#  It is created by calling smesh.Mesh.Prism(geom=0)
+#  It is created by calling smeshBuilder.Mesh.Prism(geom=0)
 #
 #  @ingroup l3_algos_3dextr
 class StdMeshersBuilder_RadialPrism3D(StdMeshersBuilder_Prism3D):
 
-    ## name of the dynamic method in smesh.Mesh class
+    ## name of the dynamic method in smeshBuilder.Mesh class
     #  @internal
     meshMethod = "Prism"
-    ## type of algorithm used with helper function in smesh.Mesh class
+    ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = "RadialPrism_3D"
     ## doc string of the method
@@ -1020,15 +1020,15 @@ class StdMeshersBuilder_RadialPrism3D(StdMeshersBuilder_Prism3D):
 
 ## Defines a Radial Quadrangle 1D-2D algorithm
 # 
-#  It is created by calling smesh.Mesh.Quadrangle(smesh.RADIAL_QUAD,geom=0)
+#  It is created by calling smeshBuilder.Mesh.Quadrangle(smesh.RADIAL_QUAD,geom=0)
 #
 #  @ingroup l2_algos_radialq
 class StdMeshersBuilder_RadialQuadrangle1D2D(Mesh_Algorithm):
 
-    ## name of the dynamic method in smesh.Mesh class
+    ## name of the dynamic method in smeshBuilder.Mesh class
     #  @internal
     meshMethod = "Quadrangle"
-    ## type of algorithm used with helper function in smesh.Mesh class
+    ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = RADIAL_QUAD
     ## doc string of the method
@@ -1135,19 +1135,19 @@ class StdMeshersBuilder_RadialQuadrangle1D2D(Mesh_Algorithm):
 
 ## Defines a Use Existing Elements 1D algorithm
 #
-#  It is created by calling smesh.Mesh.UseExisting1DElements(geom=0)
+#  It is created by calling smeshBuilder.Mesh.UseExisting1DElements(geom=0)
 #
 #  @ingroup l3_algos_basic
 class StdMeshersBuilder_UseExistingElements_1D(Mesh_Algorithm):
 
-    ## name of the dynamic method in smesh.Mesh class
+    ## name of the dynamic method in smeshBuilder.Mesh class
     #  @internal
     meshMethod = "UseExisting1DElements"
-    ## type of algorithm used with helper function in smesh.Mesh class
+    ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = "Import_1D"
     ## flag pointing either this algorithm should be used by default in dynamic method
-    #  of smesh.Mesh class
+    #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = True
     ## doc string of the method
@@ -1184,19 +1184,19 @@ class StdMeshersBuilder_UseExistingElements_1D(Mesh_Algorithm):
 
 ## Defines a Use Existing Elements 1D-2D algorithm
 #
-#  It is created by calling smesh.Mesh.UseExisting2DElements(geom=0)
+#  It is created by calling smeshBuilder.Mesh.UseExisting2DElements(geom=0)
 #
 #  @ingroup l3_algos_basic
 class StdMeshersBuilder_UseExistingElements_1D2D(Mesh_Algorithm):
 
-    ## name of the dynamic method in smesh.Mesh class
+    ## name of the dynamic method in smeshBuilder.Mesh class
     #  @internal
     meshMethod = "UseExisting2DElements"
-    ## type of algorithm used with helper function in smesh.Mesh class
+    ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = "Import_1D2D"
     ## flag pointing either this algorithm should be used by default in dynamic method
-    #  of smesh.Mesh class
+    #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = True
     ## doc string of the method
@@ -1233,19 +1233,19 @@ class StdMeshersBuilder_UseExistingElements_1D2D(Mesh_Algorithm):
 
 ## Defines a Body Fitting 3D algorithm
 #
-#  It is created by calling smesh.Mesh.BodyFitted(geom=0)
+#  It is created by calling smeshBuilder.Mesh.BodyFitted(geom=0)
 #
 #  @ingroup l3_algos_basic
 class StdMeshersBuilder_Cartesian_3D(Mesh_Algorithm):
 
-    ## name of the dynamic method in smesh.Mesh class
+    ## name of the dynamic method in smeshBuilder.Mesh class
     #  @internal
     meshMethod = "BodyFitted"
-    ## type of algorithm used with helper function in smesh.Mesh class
+    ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = "Cartesian_3D"
     ## flag pointing either this algorithm should be used by default in dynamic method
-    #  of smesh.Mesh class
+    #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = True
     ## doc string of the method
@@ -1307,15 +1307,15 @@ class StdMeshersBuilder_Cartesian_3D(Mesh_Algorithm):
 ## Defines a stub 1D algorithm, which enables "manual" creation of nodes and
 #  segments usable by 2D algoritms
 #
-#  It is created by calling smesh.Mesh.UseExistingSegments(geom=0)
+#  It is created by calling smeshBuilder.Mesh.UseExistingSegments(geom=0)
 #
 #  @ingroup l3_algos_basic
 class StdMeshersBuilder_UseExisting_1D(Mesh_Algorithm):
 
-    ## name of the dynamic method in smesh.Mesh class
+    ## name of the dynamic method in smeshBuilder.Mesh class
     #  @internal
     meshMethod = "UseExistingSegments"
-    ## type of algorithm used with helper function in smesh.Mesh class
+    ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = "UseExisting_1D"
     ## doc string of the method
@@ -1335,15 +1335,15 @@ class StdMeshersBuilder_UseExisting_1D(Mesh_Algorithm):
 ## Defines a stub 2D algorithm, which enables "manual" creation of nodes and
 #  faces usable by 3D algoritms
 #
-#  It is created by calling smesh.Mesh.UseExistingFaces(geom=0)
+#  It is created by calling smeshBuilder.Mesh.UseExistingFaces(geom=0)
 #
 #  @ingroup l3_algos_basic
 class StdMeshersBuilder_UseExisting_2D(Mesh_Algorithm):
 
-    ## name of the dynamic method in smesh.Mesh class
+    ## name of the dynamic method in smeshBuilder.Mesh class
     #  @internal
     meshMethod = "UseExistingFaces"
-    ## type of algorithm used with helper function in smesh.Mesh class
+    ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = "UseExisting_2D"
     ## doc string of the method

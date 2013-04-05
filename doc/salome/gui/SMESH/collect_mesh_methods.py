@@ -48,10 +48,14 @@
 
 import sys
 
-def main(plugin, dummymeshhelp = True, output_file = "smesh.py"):
-    plugin_module = plugin + "DC"
+def main(plugin_name, dummymeshhelp = True, output_file = "smeshBuilder.py"):
+    plugin_module_name  = plugin_name + "Builder"
+    plugin_module       = "salome.%s.%s" % (plugin_name, plugin_module_name)
+    plugin_module_short = "SMESH_SWIG.%s" % (plugin_module_name)
     try:
-        mod = __import__(plugin_module)
+        exec( "from salome.smesh.smeshBuilder import *")
+        exec( "import %s" % plugin_module )
+        exec( "mod = %s" % plugin_module )
         methods = {}
         for attr in dir( mod ):
             if attr.startswith( '_' ): continue
@@ -66,7 +70,7 @@ def main(plugin, dummymeshhelp = True, output_file = "smesh.py"):
             output = []
             if dummymeshhelp:
                 output.append( "## @package smesh" )
-                output.append( "#  Documentation of the methods dynamically added by the " + plugin + " meshing plug-in to the Mesh class." )
+                output.append( "#  Documentation of the methods dynamically added by the " + plugin_name + " meshing plug-in to the Mesh class." )
                 output.append( "" )
                 pass
             output.append( "## This class allows defining and managing a mesh." )
@@ -76,7 +80,7 @@ def main(plugin, dummymeshhelp = True, output_file = "smesh.py"):
                 # This is supposed to be done when generating documentation for meshing plug-ins
                 output.append( "#  @note The documentation below does not provide complete description of class @b %Mesh" )
                 output.append( "#  from @b %smesh.py package. This documentation provides only information about" )
-                output.append( "#  the methods dynamically added to the %Mesh class by the " + plugin + " plugin" )
+                output.append( "#  the methods dynamically added to the %Mesh class by the " + plugin_name + " plugin" )
                 output.append( "#  For more details on the %Mesh class, please refer to the SALOME %Mesh module" )
                 output.append( "#  documentation." )
                 pass
@@ -104,7 +108,7 @@ def main(plugin, dummymeshhelp = True, output_file = "smesh.py"):
                 output.append( " #  @param algo_type type of algorithm to be created; allowed values are specified by classes implemented by plug-in (see below)" )
                 output.append( " #  @param geom_shape if defined, the subshape to be meshed (GEOM_Object)" )
                 output.append( " #  @return An instance of Mesh_Algorithm sub-class according to the specified @a algo_type, see " )
-                output.append( " #  %s" % ", ".join( [ "%s.%s" % ( plugin_module, algo.__name__ ) for algo in methods[ method ] ] ) )
+                output.append( " #  %s" % ", ".join( [ "%s.%s" % ( plugin_module_short, algo.__name__ ) for algo in methods[ method ] ] ) )
                 output.append( " def %s(algo_type, geom_shape=0):" % method )
                 output.append( "   pass" )
                 pass
