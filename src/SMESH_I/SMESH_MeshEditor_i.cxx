@@ -6580,13 +6580,18 @@ CORBA::Boolean SMESH_MeshEditor_i::Make2DMeshFrom3D()
 
 //================================================================================
 /*!
- * \brief Double nodes on shared faces between groups of volumes and create flat
- *        elements on demand.
- * The list of groups must describe a partition of the mesh volumes.
+ * \brief Double nodes on shared faces between groups of volumes and create flat elements on demand.
+ * The list of groups must contain at least two groups. The groups have to be disjoint:
+ * no common element into two different groups.
  * The nodes of the internal faces at the boundaries of the groups are doubled.
- * In option, the internal faces are replaced by flat elements.
- * Triangles are transformed in prisms, and quadrangles in hexahedrons.
+ * Optionally, the internal faces are replaced by flat elements.
+ * Triangles are transformed into prisms, and quadrangles into hexahedrons.
  * The flat elements are stored in groups of volumes.
+ * These groups are named according to the position of the group in the list:
+ * the group j_n_p is the group of the flat elements that are built between the group #n and the group #p in the list.
+ * If there is no shared faces between the group #n and the group #p in the list, the group j_n_p is not created.
+ * All the flat elements are gathered into the group named "joints3D" (or "joints2D" in 2D situation).
+ * The flat element of the multiple junctions between the simple junction are stored in a group named "jointsMultiples".
  * @param theDomains - list of groups of volumes
  * @param createJointElems - if TRUE, create the elements
  * @return TRUE if operation has been completed successfully, FALSE otherwise
@@ -6605,6 +6610,9 @@ SMESH_MeshEditor_i::DoubleNodesOnGroupBoundaries( const SMESH::ListOfGroups& the
 
   SMESHDS_Mesh* aMeshDS = getMeshDS();
 
+  // MESSAGE("theDomains.length = "<<theDomains.length());
+  if ( theDomains.length() <= 1 )
+    THROW_SALOME_CORBA_EXCEPTION("At least 2 groups are required.", SALOME::BAD_PARAM);
   vector<TIDSortedElemSet> domains;
   domains.clear();
 
