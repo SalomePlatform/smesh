@@ -233,4 +233,40 @@ when you request a computing of your mesh:
 
 \image html padder_error_noresource.png
 
+Another typical error when using the padder plugin is due to the ssh
+configuration between your client host and the execution host:
+
+\code
+ERR: the job with jobid = 0 can't be started
+ERR: Error of connection on remote host ! status = 65280
+\endcode
+
+This error message is display in the graphical interface of the plugin
+when you request a computing of your mesh:
+
+\image html padder_error_noconnection.png
+
+The underlying batch system for executing padder jobs is based on a
+ssh communication between the client local host and the execution host
+(see the protocol specified in the CatalogResources.xml file above),
+even if the executive host is your local host (i.e. the same as the
+client host). Then, a ssh connection must be configured so that the
+underlying batch system could work properly, even between your local
+host and itself. The configuration could be done using a set of
+instruction as follow in a shell terminal (see ssh documentation for
+details):
+
+\code 
+ssh-keygen
+ssh-copy-id -i ~/.ssh/id_rsa.pub <username>@<hostname>
+\endcode
+
+You can check the configuration by testing that you can connect to the
+host <hostname> with the login <username> without being asked a
+password:
+
+\code 
+ssh <username>@<hostname>
+\endcode
+
 */
