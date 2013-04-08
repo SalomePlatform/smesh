@@ -346,7 +346,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
 
 ## Segment 1D algorithm for discretization of a set of adjacent edges as one edge.
 #
-#  It is created by calling smeshBuilder.Mesh.Segment(smesh.COMPOSITE,geom=0)
+#  It is created by calling smeshBuilder.Mesh.Segment(smeshBuilder.COMPOSITE,geom=0)
 #
 #  @ingroup l3_algos_basic
 class StdMeshersBuilder_CompositeSegment(StdMeshersBuilder_Segment):
@@ -377,7 +377,7 @@ class StdMeshersBuilder_CompositeSegment(StdMeshersBuilder_Segment):
 
 ## Defines a segment 1D algorithm for discretization of edges with Python function
 #
-#  It is created by calling smeshBuilder.Mesh.Segment(smesh.PYTHON,geom=0)
+#  It is created by calling smeshBuilder.Mesh.Segment(smeshBuilder.PYTHON,geom=0)
 #
 #  @ingroup l3_algos_basic
 class StdMeshersBuilder_Segment_Python(Mesh_Algorithm):
@@ -422,7 +422,7 @@ class StdMeshersBuilder_Segment_Python(Mesh_Algorithm):
 
 ## Triangle MEFISTO 2D algorithm
 #
-#  It is created by calling smeshBuilder.Mesh.Triangle(smesh.MEFISTO,geom=0)
+#  It is created by calling smeshBuilder.Mesh.Triangle(smeshBuilder.MEFISTO,geom=0)
 #
 #  @ingroup l3_algos_basic
 class StdMeshersBuilder_Triangle_MEFISTO(Mesh_Algorithm):
@@ -1020,7 +1020,7 @@ class StdMeshersBuilder_RadialPrism3D(StdMeshersBuilder_Prism3D):
 
 ## Defines a Radial Quadrangle 1D-2D algorithm
 # 
-#  It is created by calling smeshBuilder.Mesh.Quadrangle(smesh.RADIAL_QUAD,geom=0)
+#  It is created by calling smeshBuilder.Mesh.Quadrangle(smeshBuilder.RADIAL_QUAD,geom=0)
 #
 #  @ingroup l2_algos_radialq
 class StdMeshersBuilder_RadialQuadrangle1D2D(Mesh_Algorithm):

@@ -68,7 +68,7 @@ install-data-local: usr_docs
 	  case $${filen} in									\
 	    ./Makefile | ./doxyfile | ./doxyfile_py ) ;;					\
 	    ./doxyfile.bak | ./doxyfile_py.bak ) ;;						\
-	    . | .. | ./static ) ;;								\
+	    . | .. | ./static | ./tmp1 | ./tmp2 ) ;;						\
 	    *) echo "Installing $${filen}" ; cp -rp $${filen} $(DESTDIR)$(docdir)/gui/SMESH ;;	\
 	  esac ;										\
 	done ;                                                                                  \
