@@ -68,7 +68,7 @@ def main(plugin_name, dummymeshhelp = True, output_file = "smeshBuilder.py"):
         if methods:
             output = []
             if dummymeshhelp:
-                output.append( "## @package smesh" )
+                output.append( "## @package smeshBuilder" )
                 output.append( "#  Documentation of the methods dynamically added by the " + plugin_name + " meshing plug-in to the Mesh class." )
                 output.append( "" )
                 pass
@@ -78,7 +78,7 @@ def main(plugin_name, dummymeshhelp = True, output_file = "smeshBuilder.py"):
                 # Add dummy Mesh help
                 # This is supposed to be done when generating documentation for meshing plug-ins
                 output.append( "#  @note The documentation below does not provide complete description of class @b %Mesh" )
-                output.append( "#  from @b %smesh.py package. This documentation provides only information about" )
+                output.append( "#  from @b smeshBuilder package. This documentation provides only information about" )
                 output.append( "#  the methods dynamically added to the %Mesh class by the " + plugin_name + " plugin" )
                 output.append( "#  For more details on the %Mesh class, please refer to the SALOME %Mesh module" )
                 output.append( "#  documentation." )
