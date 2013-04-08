@@ -51,11 +51,6 @@ import sys
 def main(plugin_name, dummymeshhelp = True, output_file = "smeshBuilder.py"):
     plugin_module_name  = plugin_name + "Builder"
     plugin_module       = "salome.%s.%s" % (plugin_name, plugin_module_name)
-    if dummymeshhelp:
-        namespace = plugin_name
-    else:
-        namespace = "SMESH_SWIG"
-    plugin_module_short = "%s.%s" % (namespace, plugin_module_name)
     try:
         exec( "from salome.smesh.smeshBuilder import *")
         exec( "import %s" % plugin_module )
@@ -112,7 +107,7 @@ def main(plugin_name, dummymeshhelp = True, output_file = "smeshBuilder.py"):
                 output.append( " #  @param algo_type type of algorithm to be created; allowed values are specified by classes implemented by plug-in (see below)" )
                 output.append( " #  @param geom_shape if defined, the subshape to be meshed (GEOM_Object)" )
                 output.append( " #  @return An instance of Mesh_Algorithm sub-class according to the specified @a algo_type, see " )
-                output.append( " #  %s" % ", ".join( [ "%s.%s" % ( plugin_module_short, algo.__name__ ) for algo in methods[ method ] ] ) )
+                output.append( " #  %s" % ", ".join( [ "%s.%s" % ( plugin_module_name, algo.__name__ ) for algo in methods[ method ] ] ) )
                 output.append( " def %s(algo_type, geom_shape=0):" % method )
                 output.append( "   pass" )
                 pass

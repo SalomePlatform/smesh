@@ -69,11 +69,14 @@ ENDIF(WINDOWS)
 
 FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/tmp_env.${EXT} "${SCR}")
 
-ADD_CUSTOM_TARGET(usr_docs ${PYTHON_EXECUTABLE} ${f} smesh.py ${CMAKE_SOURCE_DIR}/src/SMESH_SWIG/smeshDC.py smesh
-  COMMAND mkdir -p tmp && ${CALL_STR} ${CMAKE_CURRENT_BINARY_DIR}/tmp_env.${EXT} && ${PYTHON_EXECUTABLE} ${f1} -o tmp/smesh.py StdMeshers
+ADD_CUSTOM_TARGET(usr_docs mkdir -p tmp1 tmp2
+  COMMAND ${PYTHON_EXECUTABLE} ${f} -o tmp2/smeshBuilder.py ${CMAKE_SOURCE_DIR}/src/SMESH_SWIG/smeshBuilder.py
+  COMMAND ${PYTHON_EXECUTABLE} ${f} -o tmp2/smesh_algorithm.py ${CMAKE_SOURCE_DIR}/src/SMESH_SWIG/smesh_algorithm.py
+  COMMAND ${PYTHON_EXECUTABLE} ${f} -o tmp2/StdMeshersBuilder.py ${CMAKE_SOURCE_DIR}/src/SMESH_SWIG/StdMeshersBuilder.py
+  COMMAND ${CALL_STR} ${CMAKE_CURRENT_BINARY_DIR}/tmp_env.${EXT} && ${PYTHON_EXECUTABLE} ${f1} -o tmp1/smeshBuilder.py StdMeshers
   COMMAND ${DOXYGEN_EXECUTABLE} doxyfile_py
   COMMAND ${DOXYGEN_EXECUTABLE} doxyfile
-  COMMAND ${PYTHON_EXECUTABLE} -c "import os, shutil; os.remove(r'''smesh.py'''); shutil.rmtree(r'''tmp''')"
+  COMMAND ${PYTHON_EXECUTABLE} -c "import os, shutil; shutil.rmtree(r'''tmp1'''); shutil.rmtree(r'''tmp2''')"
   COMMAND ${PYTHON_EXECUTABLE} -c "import shutil, sys; shutil.rmtree(r'''${CMAKE_INSTALL_PREFIX}/share/doc/salome/gui/SMESH''', True); shutil.copytree(r'''${CMAKE_CURRENT_BINARY_DIR}''', r'''${CMAKE_INSTALL_PREFIX}/share/doc/salome/gui/SMESH''', ignore=shutil.ignore_patterns('tmp_env.*', '*usr_docs*', '*CMakeFiles*', '*.cmake', 'doxyfile*', '*.vcproj', 'static', 'Makefile*')); shutil.copy(r'''${CMAKE_CURRENT_SOURCE_DIR}/images/head.png''', r'''${CMAKE_INSTALL_PREFIX}/share/doc/salome/gui/SMESH''')"
   VERBATIM 
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}             

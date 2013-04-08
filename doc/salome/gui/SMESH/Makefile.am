@@ -35,10 +35,19 @@ DOC_PYTHONPATH=$(prefix)/bin/salome:$(prefix)/lib/python$(PYTHON_VERSION)/site-p
 DOC_LD_LIBRARY_PATH=$(prefix)lib/salome:${MED_ROOT_DIR}/lib/salome:${GEOM_ROOT_DIR}/lib/salome:${KERNEL_ROOT_DIR}/lib/salome
 DOC_SMESH_MeshersList=StdMeshers
 
-tmp/smeshBuilder.py: $(top_srcdir)/src/SMESH_SWIG/StdMeshersBuilder.py $(srcdir)/collect_mesh_methods.py
-	@mkdir -p tmp && PYTHONPATH=$(DOC_PYTHONPATH):${PYTHONPATH} LD_LIBRARY_PATH=$(DOC_LD_LIBRARY_PATH):${LD_LIBRARY_PATH} SMESH_MeshersList=$(DOC_SMESH_MeshersList) $(PYTHON) $(srcdir)/collect_mesh_methods.py -o $@ StdMeshers
+tmp1/smeshBuilder.py: $(top_srcdir)/src/SMESH_SWIG/StdMeshersBuilder.py $(srcdir)/collect_mesh_methods.py
+	@mkdir -p tmp1 && PYTHONPATH=$(DOC_PYTHONPATH):${PYTHONPATH} LD_LIBRARY_PATH=$(DOC_LD_LIBRARY_PATH):${LD_LIBRARY_PATH} SMESH_MeshersList=$(DOC_SMESH_MeshersList) $(PYTHON) $(srcdir)/collect_mesh_methods.py -o $@ StdMeshers
 
-usr_docs: doxyfile_py doxyfile tmp/smeshBuilder.py
+tmp2/smeshBuilder.py: $(top_srcdir)/src/SMESH_SWIG/smeshBuilder.py
+	mkdir -p tmp2 && $(KERNEL_ROOT_DIR)/bin/salome/prepare_generating_doc.py -o $@ $<
+
+tmp2/smesh_algorithm.py: $(top_srcdir)/src/SMESH_SWIG/smesh_algorithm.py
+	mkdir -p tmp2 && $(KERNEL_ROOT_DIR)/bin/salome/prepare_generating_doc.py -o $@ $<
+
+tmp2/StdMeshersBuilder.py: $(top_srcdir)/src/SMESH_SWIG/StdMeshersBuilder.py
+	mkdir -p tmp2 && $(KERNEL_ROOT_DIR)/bin/salome/prepare_generating_doc.py -o $@ $<
+
+usr_docs: doxyfile_py doxyfile tmp1/smeshBuilder.py tmp2/smeshBuilder.py tmp2/smesh_algorithm.py tmp2/StdMeshersBuilder.py
 	@$(DOXYGEN) doxyfile_py ;						\
 	$(DOXYGEN) doxyfile
 
