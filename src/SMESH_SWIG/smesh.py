@@ -43,11 +43,13 @@ try:
     engineSmesh = salome.lcc.FindOrLoadComponent( "FactoryServer", "SMESH" )
     smesh = smeshBuilder.New(salome.myStudy, engineSmesh)
 except:
+    print "exception in smesh.py: instance creation failed"
     smesh = None
     pass
 
 # load plugins and add dynamically generated methods to Mesh class,
 # the same for for global variables declared by plug-ins
+from salome.smesh.smeshBuilder import *
 from salome.smesh.smeshBuilder import Mesh, algoCreator
 for pluginName in os.environ[ "SMESH_MeshersList" ].split( ":" ):
     #
