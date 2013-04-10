@@ -285,6 +285,7 @@ def FirstVertexOnCurve(edge):
 smeshInst = None
 engine = None
 doLcc = False
+created = False
 
 ## This class allows to create, load or manipulate meshes
 #  It has a set of methods to create load or copy meshes, to combine several meshes.
@@ -312,7 +313,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
         global engine
         global smeshInst
         global doLcc
-        #print "__new__", engine, smeshInst, doLcc
+        #print "==== __new__", engine, smeshInst, doLcc
 
         if smeshInst is None:
             # smesh engine is either retrieved from engine, or created
@@ -327,26 +328,30 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
                     # FindOrLoadComponent called:
                     # 1. CORBA resolution of server
                     # 2. the __new__ method is called again
-                    #print "smeshInst = lcc.FindOrLoadComponent ", engine, smeshInst, doLcc
+                    #print "==== smeshInst = lcc.FindOrLoadComponent ", engine, smeshInst, doLcc
                     smeshInst = salome.lcc.FindOrLoadComponent( "FactoryServer", "SMESH" )
             else:
                 # FindOrLoadComponent not called
                 if smeshInst is None:
                     # smeshBuilder instance is created from lcc.FindOrLoadComponent
-                    #print "smeshInst = super(smeshBuilder,cls).__new__(cls) ", engine, smeshInst, doLcc
+                    #print "==== smeshInst = super(smeshBuilder,cls).__new__(cls) ", engine, smeshInst, doLcc
                     smeshInst = super(smeshBuilder,cls).__new__(cls)
                 else:
                     # smesh engine not created: existing engine found
-                    #print "existing ", engine, smeshInst, doLcc
+                    #print "==== existing ", engine, smeshInst, doLcc
                     pass
-
+            #print "====1 ", smeshInst
             return smeshInst
 
+        #print "====2 ", smeshInst
         return smeshInst
 
     def __init__(self):
-        #print "__init__"
-        SMESH._objref_SMESH_Gen.__init__(self)
+        global created
+        #print "--------------- smeshbuilder __init__ ---", created
+        if not created:
+          created = True
+          SMESH._objref_SMESH_Gen.__init__(self)
 
     ## Dump component to the Python script
     #  This method overrides IDL function to allow default values for the parameters.

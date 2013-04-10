@@ -87,28 +87,28 @@ if smesh:
 
 print """
 ===============================================================================
-WARNING:                                                                      |
-Usage of smesh.py is deprecated in SALOME V7.2!                               |
-smesh.py will be removed in a future version!                                 |
-TODO:                                                                         |
-The following changes in your scripts are required to avoid this message:     |
-                                                                              |
-replace                                                                       |
--------                                                                       |
-                                                                              |
-import smesh, SMESH, SALOMEDS                                                 |
-smesh.SetCurrentStudy(theStudy)                                               |
-                                                                              |
-with                                                                          |
-----                                                                          |
-                                                                              |
-import SMESH, SALOMEDS                                                        |
-from salome.smesh import smeshBuilder                                         |
-smesh = smeshBuilder.New(theStudy)                                            |
-                                                                              |
-you also need to modify some lines where smeshBuilder is used instead of smesh|
-                                                                              |
-algo=smesh.xxxx  ==> algo.smeshBuilder.xxxx                                   |
-                                                                              |
+WARNING:
+Usage of smesh.py is deprecated in SALOME V7.2!
+smesh.py will be removed in a future version!
+TODO:
+The following changes in your scripts are required to avoid this message:
+
+replace 
+-------
+
+import smesh, SMESH, SALOMEDS 
+smesh.SetCurrentStudy(theStudy)
+
+with
+----
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh = smeshBuilder.New(theStudy)
+
+you also need to modify some lines where smeshBuilder is used instead of smesh
+
+algo=smesh.xxxx  ==> algo.smeshBuilder.xxxx 
+
 ===============================================================================
 """
