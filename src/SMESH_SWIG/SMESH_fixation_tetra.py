@@ -25,7 +25,7 @@
 # SMESH_fixation.py
 # Hypothesis and algorithms for the mesh generation are global
 #
-
+import salome
 import SMESH_fixation
 
 import SMESH, SALOMEDS
