@@ -77,7 +77,7 @@ ADD_CUSTOM_TARGET(usr_docs mkdir -p tmp1 tmp2
   COMMAND ${DOXYGEN_EXECUTABLE} doxyfile_py
   COMMAND ${DOXYGEN_EXECUTABLE} doxyfile
   COMMAND ${PYTHON_EXECUTABLE} -c "import os, shutil; shutil.rmtree(r'''tmp1'''); shutil.rmtree(r'''tmp2''')"
-  COMMAND ${PYTHON_EXECUTABLE} -c "import shutil, sys; shutil.rmtree(r'''${CMAKE_INSTALL_PREFIX}/share/doc/salome/gui/SMESH''', True); shutil.copytree(r'''${CMAKE_CURRENT_BINARY_DIR}''', r'''${CMAKE_INSTALL_PREFIX}/share/doc/salome/gui/SMESH''', ignore=shutil.ignore_patterns('tmp_env.*', '*usr_docs*', '*CMakeFiles*', '*.cmake', 'doxyfile*', '*.vcproj', 'static', 'Makefile*')); shutil.copy(r'''${CMAKE_CURRENT_SOURCE_DIR}/images/head.png''', r'''${CMAKE_INSTALL_PREFIX}/share/doc/salome/gui/SMESH''')"
+  COMMAND ${PYTHON_EXECUTABLE} -c "import shutil, sys; shutil.rmtree(r'''${CMAKE_INSTALL_PREFIX}/share/doc/salome/gui/SMESH''', True); shutil.copytree(r'''${CMAKE_CURRENT_BINARY_DIR}''', r'''${CMAKE_INSTALL_PREFIX}/share/doc/salome/gui/SMESH''', ignore=shutil.ignore_patterns('tmp_env.*', '*usr_docs*', '*CMakeFiles*', '*.cmake', 'doxyfile*', '*.vcproj', 'static', 'Makefile*')); shutil.copy(r'''${CMAKE_CURRENT_SOURCE_DIR}/images/head.png''', r'''${CMAKE_INSTALL_PREFIX}/share/doc/salome/gui/SMESH'''); shutil.copy(r'''${CMAKE_CURRENT_SOURCE_DIR}/images/head.png''', r'''${CMAKE_INSTALL_PREFIX}/share/doc/salome/gui/SMESH/smeshpy_doc''')"
   VERBATIM 
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}             
 )

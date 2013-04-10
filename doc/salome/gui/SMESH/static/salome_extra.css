@@ -1,0 +1,29 @@
+/* The extra CSS for doxygen 1.8.3.1 */
+
+#titlearea {
+        background-image:url('head.png');
+        background-color: #175783;
+        border: 1px solid;
+        height: 80px;
+        background-repeat: no-repeat;
+	padding: 0px;
+	margin: 0px;
+	width: 99.9%;
+	border-bottom: 1px solid #5373B4;
+}
+
+div.version {
+	border:1px solid #0000FF;
+        color: #CCCCCC;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 9pt;
+	text-align: center;
+	width:100px;
+	-moz-border-radius: 8px;
+	margin: 5px;
+}
+
+.navpath li.footer {
+	line-height:15px;
+	text-align: right;
+}

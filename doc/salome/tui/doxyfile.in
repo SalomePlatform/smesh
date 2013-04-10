@@ -140,7 +140,7 @@ HTML_OUTPUT            = .
 HTML_FILE_EXTENSION    = .html
 HTML_HEADER            = @builddir@/static/header.html
 HTML_FOOTER            = @srcdir@/static/footer.html
-HTML_STYLESHEET        = @srcdir@/static/doxygen.css
+HTML_EXTRA_STYLESHEET  = @srcdir@/static/salome_extra.css
 HTML_ALIGN_MEMBERS     = YES
 GENERATE_HTMLHELP      = NO
 CHM_FILE               = 
@@ -150,7 +150,7 @@ BINARY_TOC             = NO
 TOC_EXPAND             = NO
 DISABLE_INDEX          = NO
 ENUM_VALUES_PER_LINE   = 4
-GENERATE_TREEVIEW      = NO
+GENERATE_TREEVIEW      = YES
 TREEVIEW_WIDTH         = 250
 
 #---------------------------------------------------------------------------

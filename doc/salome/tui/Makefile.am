@@ -23,7 +23,7 @@
 #
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
-EXTRA_DIST += input images static/doxygen.css static/footer.html
+EXTRA_DIST += input images static/salome_extra.css static/footer.html
 
 tuidocdir = $(docdir)/tui/SMESH
 tuidoc_DATA = images/head.png images/smeshscreen.png
