@@ -929,7 +929,7 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
     // smeshgen.Method() --> smesh.Method()
     theCommand->SetObject( SMESH_2smeshpy::SmeshpyName() );
   else
-    // smeshgen.Method() --> smesh.smesh.Method()
+    // smeshgen.Method() --> smesh.Method()
     theCommand->SetObject( SMESH_2smeshpy::GenName() );
 }
 
@@ -982,7 +982,7 @@ void _pyGen::Flush()
   for ( hyp = myHypos.begin(); hyp != myHypos.end(); ++hyp )
     if ( !hyp->IsNull() ) {
       (*hyp)->Flush();
-      // smeshgen.CreateHypothesis() --> smesh.smesh.CreateHypothesis()
+      // smeshgen.CreateHypothesis() --> smesh.CreateHypothesis()
       if ( !(*hyp)->IsWrapped() )
         (*hyp)->GetCreationCmd()->SetObject( SMESH_2smeshpy::GenName() );
     }
@@ -3316,7 +3316,7 @@ const TCollection_AsciiString & _pyCommand::GetObject()
     }
     myObj = GetWord( myString, begPos, true );
     // check if object is complex,
-    // so far consider case like "smesh.smesh.Method()"
+    // so far consider case like "smesh.Method()"
     if ( int bracketPos = myString.Location( "(", begPos, Length() )) {
       //if ( bracketPos==0 ) bracketPos = Length();
       int dotPos = begPos+myObj.Length();
