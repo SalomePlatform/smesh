@@ -40,7 +40,7 @@ class Resource_DataMapOfAsciiStringAsciiString;
 
 // ===========================================================================================
 /*!
- * \brief Tool converting SMESH engine calls into commands defined in smeshDC.py
+ * \brief Tool converting SMESH engine calls into commands defined in smeshBuilder.py
  *
  * Implementation is in SMESH_2smeshpy.cxx
  */
