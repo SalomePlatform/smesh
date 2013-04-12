@@ -607,7 +607,9 @@ void SMESHGUI_MultiEditDlg::onSelectionDone()
           anItem->setSelected(true);
       }
     }
-    myMesh = SMESH::GetMeshByIO(anIO);
+    SMESH::SMESH_Mesh_var aSelMesh = SMESH::GetMeshByIO(anIO);
+    if (!aSelMesh->_is_nil())
+      myMesh = aSelMesh;
   }
 
   if (nbSel > 0) {
@@ -662,6 +664,7 @@ void SMESHGUI_MultiEditDlg::onFilterBtn()
 
   myFilterDlg->SetSelection();
   myFilterDlg->SetMesh(myMesh);
+  myFilterDlg->SetSourceWg(myListBox, false);
 
   myFilterDlg->show();
 }
@@ -975,7 +978,7 @@ void SMESHGUI_MultiEditDlg::setSelectionMode()
 {
   SMESH::RemoveFilters();
 
-  mySelectionMgr->clearSelected();
+  //  mySelectionMgr->clearSelected();
   mySelectionMgr->clearFilters();
 
   if (mySubmeshChk->isChecked()) {

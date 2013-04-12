@@ -35,16 +35,16 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General substitutions.
-project = 'YAMS Plug_in'
+project = 'YAMS Plug-in'
 copyright = '2011, Pascale Noyret'
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.
 #
 # The short X.Y version.
-version = '6.4'
+version = '@VERSION@'
 # The full version, including alpha/beta/rc tags.
-release = '6.4.0'
+release = '@VERSION@'
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:

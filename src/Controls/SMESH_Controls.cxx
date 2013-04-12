@@ -65,6 +65,7 @@
 #include <set>
 #include <limits>
 
+#include <Basics_Utils.hxx>
 
 /*
                             AUXILIARY METHODS
@@ -2662,6 +2663,7 @@ void GroupColor::SetMesh( const SMDS_Mesh* theMesh )
 
 void GroupColor::SetColorStr( const TCollection_AsciiString& theStr )
 {
+  Kernel_Utils::Localizer loc;
   TCollection_AsciiString aStr = theStr;
   aStr.RemoveAll( ' ' );
   aStr.RemoveAll( '\t' );

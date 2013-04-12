@@ -149,11 +149,12 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
   else
     computeEvent = SMESH_subMesh::COMPUTE_SUBMESH;
 
-  if ( anUpward ) // is called from below code here
+  if ( anUpward ) // is called from the below code in this method
   {
-    // -----------------------------------------------
-    // mesh all the sub-shapes starting from vertices
-    // -----------------------------------------------
+    // ===============================================
+    // Mesh all the sub-shapes starting from vertices
+    // ===============================================
+
     smIt = sm->getDependsOnIterator(includeSelf, !complexShapeFirst);
     while ( smIt->more() )
     {
@@ -193,19 +194,21 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
   }
   else
   {
-    // -----------------------------------------------------------------
-    // apply algos that DO NOT require Discreteized boundaries and DO NOT
-    // support submeshes, starting from the most complex shapes
-    // and collect submeshes with algos that DO support submeshes
-    // -----------------------------------------------------------------
-    list< SMESH_subMesh* > smWithAlgoSupportingSubmeshes;
+    // ================================================================
+    // Apply algos that do NOT require discreteized boundaries
+    // ("all-dimensional") and do NOT support sub-meshes, starting from
+    // the most complex shapes and collect sub-meshes with algos that 
+    // DO support sub-meshes
+    // ================================================================
+
+    list< SMESH_subMesh* > smWithAlgoSupportingSubmeshes[4]; // for each dim
 
     // map to sort sm with same dim algos according to dim of
     // the shape the algo assigned to (issue 0021217)
     multimap< int, SMESH_subMesh* > shDim2sm;
     multimap< int, SMESH_subMesh* >::reverse_iterator shDim2smIt;
     TopoDS_Shape algoShape;
-    int prevShapeDim = -1;
+    int prevShapeDim = -1, aShapeDim;
 
     smIt = sm->getDependsOnIterator(includeSelf, complexShapeFirst);
     while ( smIt->more() )
@@ -215,7 +218,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
         continue;
 
       const TopoDS_Shape& aSubShape = smToCompute->GetSubShape();
-      int aShapeDim = GetShapeDim( aSubShape );
+      aShapeDim = GetShapeDim( aSubShape );
       if ( aShapeDim < 1 ) break;
       
       // check for preview dimension limitations
@@ -234,9 +237,9 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
             prevShapeDim = aShapeDim;
             for ( shDim2smIt = shDim2sm.rbegin(); shDim2smIt != shDim2sm.rend(); ++shDim2smIt )
               if ( shDim2smIt->first == globalAlgoDim )
-                smWithAlgoSupportingSubmeshes.push_back( shDim2smIt->second );
+                smWithAlgoSupportingSubmeshes[ aShapeDim ].push_back( shDim2smIt->second );
               else
-                smWithAlgoSupportingSubmeshes.push_front( shDim2smIt->second );
+                smWithAlgoSupportingSubmeshes[ aShapeDim ].push_front( shDim2smIt->second );
             shDim2sm.clear();
           }
           // add smToCompute to shDim2sm map
@@ -255,7 +258,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
           }
           shDim2sm.insert( make_pair( aShapeDim, smToCompute ));
         }
-        else
+        else // Compute w/o support of sub-meshes
         {
           if (_compute_canceled)
             return false;
@@ -270,82 +273,91 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
     // reload sub-meshes from shDim2sm into smWithAlgoSupportingSubmeshes
     for ( shDim2smIt = shDim2sm.rbegin(); shDim2smIt != shDim2sm.rend(); ++shDim2smIt )
       if ( shDim2smIt->first == globalAlgoDim )
-        smWithAlgoSupportingSubmeshes.push_back( shDim2smIt->second );
+        smWithAlgoSupportingSubmeshes[0].push_back( shDim2smIt->second );
       else
-        smWithAlgoSupportingSubmeshes.push_front( shDim2smIt->second );
+        smWithAlgoSupportingSubmeshes[0].push_front( shDim2smIt->second );
 
-    // ------------------------------------------------------------
-    // sort list of submeshes according to mesh order
-    // ------------------------------------------------------------
-    aMesh.SortByMeshOrder( smWithAlgoSupportingSubmeshes );
+    // ======================================================
+    // Apply all-dimensional algorithms supporing sub-meshes
+    // ======================================================
 
-    // ------------------------------------------------------------
-    // compute submeshes under shapes with algos that DO NOT require
-    // Discreteized boundaries and DO support submeshes
-    // ------------------------------------------------------------
-    list< SMESH_subMesh* >::iterator subIt, subEnd;
-    subIt  = smWithAlgoSupportingSubmeshes.begin();
-    subEnd = smWithAlgoSupportingSubmeshes.end();
-    // start from lower shapes
-    for ( ; subIt != subEnd; ++subIt )
+    for ( aShapeDim = 0; aShapeDim < 4; ++aShapeDim )
     {
-      sm = *subIt;
+      // ------------------------------------------------
+      // sort list of sub-meshes according to mesh order
+      // ------------------------------------------------
+      aMesh.SortByMeshOrder( smWithAlgoSupportingSubmeshes[ aShapeDim ] );
 
-      // get a shape the algo is assigned to
-      if ( !GetAlgo( aMesh, sm->GetSubShape(), & algoShape ))
-        continue; // strange...
-
-      // look for more local algos
-      smIt = sm->getDependsOnIterator(!includeSelf, !complexShapeFirst);
-      while ( smIt->more() )
+      // ------------------------------------------------------------
+      // compute sub-meshes with local uni-dimensional algos under
+      // sub-meshes with all-dimensional algos
+      // ------------------------------------------------------------
+      list< SMESH_subMesh* >::iterator subIt, subEnd;
+      subIt  = smWithAlgoSupportingSubmeshes[ aShapeDim ].begin();
+      subEnd = smWithAlgoSupportingSubmeshes[ aShapeDim ].end();
+      // start from lower shapes
+      for ( ; subIt != subEnd; ++subIt )
       {
-        SMESH_subMesh* smToCompute = smIt->next();
+        sm = *subIt;
 
-        const TopoDS_Shape& aSubShape = smToCompute->GetSubShape();
-        const int aShapeDim = GetShapeDim( aSubShape );
-        //if ( aSubShape.ShapeType() == TopAbs_VERTEX ) continue;
-        if ( aShapeDim < 1 ) continue;
+        // get a shape the algo is assigned to
+        if ( !GetAlgo( aMesh, sm->GetSubShape(), & algoShape ))
+          continue; // strange...
 
-        // check for preview dimension limitations
-        if ( aShapesId && GetShapeDim( aSubShape.ShapeType() ) > (int)aDim )
-          continue;
-        
-        SMESH_HypoFilter filter( SMESH_HypoFilter::IsAlgo() );
-        filter
-          .And( SMESH_HypoFilter::IsApplicableTo( aSubShape ))
-          .And( SMESH_HypoFilter::IsMoreLocalThan( algoShape, aMesh ));
+        // look for more local algos
+        smIt = sm->getDependsOnIterator(!includeSelf, !complexShapeFirst);
+        while ( smIt->more() )
+        {
+          SMESH_subMesh* smToCompute = smIt->next();
 
-        if ( SMESH_Algo* subAlgo = (SMESH_Algo*) aMesh.GetHypothesis( aSubShape, filter, true )) {
-          if ( ! subAlgo->NeedDiscreteBoundary() ) continue;
-          SMESH_Hypothesis::Hypothesis_Status status;
-          if ( subAlgo->CheckHypothesis( aMesh, aSubShape, status ))
-            // mesh a lower smToCompute starting from vertices
-            Compute( aMesh, aSubShape, /*anUpward=*/true, aDim, aShapesId );
+          const TopoDS_Shape& aSubShape = smToCompute->GetSubShape();
+          const int aShapeDim = GetShapeDim( aSubShape );
+          //if ( aSubShape.ShapeType() == TopAbs_VERTEX ) continue;
+          if ( aShapeDim < 1 ) continue;
+
+          // check for preview dimension limitations
+          if ( aShapesId && GetShapeDim( aSubShape.ShapeType() ) > (int)aDim )
+            continue;
+
+          SMESH_HypoFilter filter( SMESH_HypoFilter::IsAlgo() );
+          filter
+            .And( SMESH_HypoFilter::IsApplicableTo( aSubShape ))
+            .And( SMESH_HypoFilter::IsMoreLocalThan( algoShape, aMesh ));
+
+          if ( SMESH_Algo* subAlgo = (SMESH_Algo*) aMesh.GetHypothesis( aSubShape, filter, true )) {
+            if ( ! subAlgo->NeedDiscreteBoundary() ) continue;
+            SMESH_Hypothesis::Hypothesis_Status status;
+            if ( subAlgo->CheckHypothesis( aMesh, aSubShape, status ))
+              // mesh a lower smToCompute starting from vertices
+              Compute( aMesh, aSubShape, /*anUpward=*/true, aDim, aShapesId );
+          }
         }
       }
-    }
-    // ----------------------------------------------------------
-    // apply the algos that do not require Discreteized boundaries
-    // ----------------------------------------------------------
-    for ( subIt = smWithAlgoSupportingSubmeshes.begin(); subIt != subEnd; ++subIt )
-    {
-      sm = *subIt;
-      if ( sm->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE)
+      // --------------------------------
+      // apply the all-dimensional algos
+      // --------------------------------
+      subIt  = smWithAlgoSupportingSubmeshes[ aShapeDim ].begin();
+      for ( ; subIt != subEnd; ++subIt )
       {
-        const TopAbs_ShapeEnum aShType = sm->GetSubShape().ShapeType();
-        // check for preview dimension limitations
-        if ( aShapesId && GetShapeDim( aShType ) > (int)aDim )
-          continue;
+        sm = *subIt;
+        if ( sm->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE)
+        {
+          const TopAbs_ShapeEnum aShType = sm->GetSubShape().ShapeType();
+          // check for preview dimension limitations
+          if ( aShapesId && GetShapeDim( aShType ) > (int)aDim )
+            continue;
 
-        if (_compute_canceled)
-          return false;
-        _sm_current = sm;
-        sm->ComputeStateEngine( computeEvent );
-        _sm_current = NULL;
-        if ( aShapesId )
-          aShapesId->insert( sm->GetId() );
+          if (_compute_canceled)
+            return false;
+          _sm_current = sm;
+          sm->ComputeStateEngine( computeEvent );
+          _sm_current = NULL;
+          if ( aShapesId )
+            aShapesId->insert( sm->GetId() );
+        }
       }
-    }
+    } // loop on shape dimensions
+
     // -----------------------------------------------
     // mesh the rest sub-shapes starting from vertices
     // -----------------------------------------------
@@ -451,8 +463,8 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
   else {
     // -----------------------------------------------------------------
     // apply algos that DO NOT require Discreteized boundaries and DO NOT
-    // support submeshes, starting from the most complex shapes
-    // and collect submeshes with algos that DO support submeshes
+    // support sub-meshes, starting from the most complex shapes
+    // and collect sub-meshes with algos that DO support sub-meshes
     // -----------------------------------------------------------------
     list< SMESH_subMesh* > smWithAlgoSupportingSubmeshes;
     smIt = sm->getDependsOnIterator(includeSelf, complexShapeFirst);
@@ -481,8 +493,8 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
     aMesh.SortByMeshOrder( smWithAlgoSupportingSubmeshes );
 
     // ------------------------------------------------------------
-    // compute submeshes under shapes with algos that DO NOT require
-    // Discreteized boundaries and DO support submeshes
+    // compute sub-meshes under shapes with algos that DO NOT require
+    // Discreteized boundaries and DO support sub-meshes
     // ------------------------------------------------------------
     list< SMESH_subMesh* >::iterator subIt, subEnd;
     subIt  = smWithAlgoSupportingSubmeshes.begin();
@@ -650,9 +662,9 @@ static bool checkMissing(SMESH_Gen*                aGen,
   {
   case TopAbs_EDGE:
   case TopAbs_FACE:
-  case TopAbs_SOLID: break; // check this submesh, it can be meshed
+  case TopAbs_SOLID: break; // check this sub-mesh, it can be meshed
   default:
-    return true; // not meshable submesh
+    return true; // not meshable sub-mesh
   }
   if ( aCheckedMap.count( aSubMesh ))
     return true;

@@ -6065,7 +6065,26 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
           if ( resElem != sourceElem )
             resultElems.push_back( resElem );
 
-      // add resultElems to groups made by ones the sourceElem belongs to
+      // there must be a top element
+      const SMDS_MeshElement* topElem = 0;
+      if ( isNodes )
+      {
+        topElem = resultElems.back();
+        resultElems.pop_back();
+      }
+      else
+      {
+        list< const SMDS_MeshElement* >::reverse_iterator resElemIt = resultElems.rbegin();
+        for ( ; resElemIt != resultElems.rend() ; ++resElemIt )
+          if ( (*resElemIt)->GetType() == sourceElem->GetType() )
+          {
+            topElem = *resElemIt;
+            resultElems.erase( --(resElemIt.base()) ); // erase *resElemIt
+            break;
+          }
+      }
+
+      // add resultElems to groups originted from ones the sourceElem belongs to
       list< TOldNewGroup >::iterator gOldNew, gLast = groupsOldNew.end();
       for ( gOldNew = groupsOldNew.begin(); gOldNew != gLast; ++gOldNew )
       {
@@ -6074,19 +6093,15 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
         {
           // fill in a new group
           SMDS_MeshGroup & newGroup = gOldNew->get<1>()->SMDSGroup();
-          list< const SMDS_MeshElement* > rejectedElems; // elements of other type
           list< const SMDS_MeshElement* >::iterator resLast = resultElems.end(), resElemIt;
           for ( resElemIt = resultElems.begin(); resElemIt != resLast; ++resElemIt )
-            if ( !newGroup.Add( *resElemIt ))
-              rejectedElems.push_back( *resElemIt );
+            newGroup.Add( *resElemIt );
 
-          // fill "top" group
-          if ( !rejectedElems.empty() )
+          // fill a "top" group
+          if ( topElem )
           {
             SMDS_MeshGroup & newTopGroup = gOldNew->get<2>()->SMDSGroup();
-            resLast = rejectedElems.end();
-            for ( resElemIt = rejectedElems.begin(); resElemIt != resLast; ++resElemIt )
-              !newTopGroup.Add( *resElemIt );
+            newTopGroup.Add( topElem );
           }
         }
       }
@@ -6116,7 +6131,9 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
 
         // make a name
         const bool isTop = ( nbNewGroups == 2 &&
-                             newGroupDS->GetType() == oldGroupDS->GetType() );
+                             newGroupDS->GetType() == oldGroupDS->GetType() &&
+                             is2nd );
+
         string name = oldGroupDS->GetStoreName();
         if ( !targetMesh ) {
           string suffix = ( isTop ? "top": postfix.c_str() );

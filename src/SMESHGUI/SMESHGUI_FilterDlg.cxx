@@ -67,6 +67,7 @@
 
 // SALOME KERNEL includes
 #include <SALOMEDSClient_Study.hxx>
+#include <Basics_Utils.hxx>
 
 // OCCT includes
 #include <StdSelect_TypeOfFace.hxx>
@@ -1246,6 +1247,7 @@ void SMESHGUI_FilterTable::GetCriterion (const int                 theRow,
     QtxColorButton* clrBtn = qobject_cast<QtxColorButton*>(aTable->cellWidget(theRow, 2));
     if ( clrBtn )
     {
+      Kernel_Utils::Localizer loc;
       const QColor qClr = clrBtn->color();
       QString clrStr = QString( "%1;%2;%3" ).
         arg( qClr.red()/256. ).arg( qClr.green()/256. ).arg( qClr.blue()/256. );

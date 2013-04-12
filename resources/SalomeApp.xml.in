@@ -112,6 +112,7 @@
   <section name="smesh_help" >
     <parameter name="sub_menu"          value="%1 module"/>
     <parameter name="User's Guide"      value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/index.html"/>
+    <parameter name="Plug-ins/Yams plugin User's Guide" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/yams/index.html"/>
     <parameter name="Developer's Guide" value="%SMESH_ROOT_DIR%/share/doc/salome/tui/SMESH/index.html"/>
   </section>
   <section name="resources">

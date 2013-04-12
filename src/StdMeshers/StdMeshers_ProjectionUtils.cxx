@@ -1000,7 +1000,8 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       // get outer edge of theShape1
       TopoDS_Shape wire = OuterShape( face1, TopAbs_WIRE );
       //edge1 = TopoDS::Edge( OuterShape( face1, TopAbs_EDGE ));
-      map<int,TopoDS_Edge> propag_edges; // use map to find the closest propagation edge
+      // use map to find the closest propagation edge
+      map<int, pair< TopoDS_Edge, TopoDS_Edge > > propag_edges;
       for ( TopoDS_Iterator edgeIt( wire ); edgeIt.More(); edgeIt.Next() )
       {
         edge1 = TopoDS::Edge( edgeIt.Value() );
@@ -1009,7 +1010,8 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
           edge2 = TopoDS::Edge( exp.Current() );
           pair<int,TopoDS_Edge> step_edge = GetPropagationEdge( theMesh1, edge2, edge1 );
           if ( !step_edge.second.IsNull() ) { // propagation found
-            propag_edges.insert( step_edge );
+            propag_edges.insert( make_pair( step_edge.first,
+                                            ( make_pair( edge1, step_edge.second ))));
             if ( step_edge.first == 1 ) break; // most close found
           }
         }
@@ -1017,7 +1019,8 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       }
       if ( !propag_edges.empty() ) // propagation found
       {
-        edge2 = propag_edges.begin()->second;
+        edge1 = propag_edges.begin()->second.first;
+        edge2 = propag_edges.begin()->second.second;
         TopoDS_Vertex VV1[2], VV2[2];
         TopExp::Vertices( edge1, VV1[0], VV1[1], true );
         TopExp::Vertices( edge2, VV2[0], VV2[1], true );
