@@ -38,10 +38,10 @@ WARNINGS          = YES
 #---------------------------------------------------------------------------
 #Input related options
 #---------------------------------------------------------------------------
-INPUT             = @srcdir@/input @top_srcdir@/src/Tools/padder/doc/input
+INPUT             = @srcdir@/input @top_srcdir@/src/Tools/padder/doc/input $(GEOM_ROOT_DIR)/share/doc/salome/gui/GEOM/input
 FILE_PATTERNS     = *.doc
 EXCLUDE           = 
-IMAGE_PATH        = @srcdir@/images @top_srcdir@/src/Tools/padder/doc/images
+IMAGE_PATH        = @srcdir@/images @top_srcdir@/src/Tools/padder/doc/images $(GEOM_ROOT_DIR)/share/doc/salome/gui/GEOM
 EXAMPLE_PATH      = @top_srcdir@/doc/salome/examples @top_srcdir@/src/SMESH_SWIG
 
 #---------------------------------------------------------------------------
