@@ -204,7 +204,9 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
     list< SMESH_subMesh* > smWithAlgoSupportingSubmeshes[4]; // for each dim
 
     // map to sort sm with same dim algos according to dim of
-    // the shape the algo assigned to (issue 0021217)
+    // the shape the algo assigned to (issue 0021217).
+    // Other issues influenced the algo applying order:
+    // 21406, 21556, 21893, 20206
     multimap< int, SMESH_subMesh* > shDim2sm;
     multimap< int, SMESH_subMesh* >::reverse_iterator shDim2smIt;
     TopoDS_Shape algoShape;
@@ -273,7 +275,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
     // reload sub-meshes from shDim2sm into smWithAlgoSupportingSubmeshes
     for ( shDim2smIt = shDim2sm.rbegin(); shDim2smIt != shDim2sm.rend(); ++shDim2smIt )
       if ( shDim2smIt->first == globalAlgoDim )
-        smWithAlgoSupportingSubmeshes[0].push_back( shDim2smIt->second );
+        smWithAlgoSupportingSubmeshes[3].push_back( shDim2smIt->second );
       else
         smWithAlgoSupportingSubmeshes[0].push_front( shDim2smIt->second );
 
