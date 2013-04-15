@@ -51,6 +51,7 @@ vol1=geompy.MakeCut(sphereExt,sphereA)
 vol2=geompy.MakeCut(vol1,sphereB)
 vol3=geompy.MakeCut(vol2,cylindre)
 blob=geompy.MakeCut(vol3,sphereInt)
+blob=geompy.RemoveExtraEdges(blob)
 
 idblob = geompy.addToStudy(blob,"blob")
 
