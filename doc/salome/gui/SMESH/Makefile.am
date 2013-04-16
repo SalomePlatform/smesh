@@ -75,4 +75,12 @@ install-data-local: usr_docs
 	cp -rp $(srcdir)/images/head.png $(DESTDIR)$(docdir)/gui/SMESH/smeshpy_doc ;
 
 uninstall-local:
-	rm -rf $(DESTDIR)$(docdir)/gui/SMESH
+	@test -d $(DESTDIR)$(guidocdir) && chmod -R +w $(DESTDIR)$(guidocdir) ; \
+	for filen in `find $(DESTDIR)$(guidocdir) -mindepth 1 -maxdepth 1` dummy ; do \
+	  case $${filen} in \
+	    dummy ) ;; \
+	    $(DESTDIR)$(guidocdir)/yams ) ;; \
+	    $(DESTDIR)$(guidocdir)/head.png ) ;; \
+	    * ) echo "removing $${filen}" && rm -rf $${filen} ;; \
+	  esac ; \
+	done

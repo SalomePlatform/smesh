@@ -5,7 +5,6 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
 yamsdocdir=$(docdir)/gui/SMESH/yams
 
-
 RSTFILES = lct.rst \
 	   index.rst \
 	   editHypo.rst \
@@ -13,7 +12,7 @@ RSTFILES = lct.rst \
 	   Generics_params.rst \
 	   Advanced_params.rst
 
-EXTRA_DIST += $(RSTFILES)
+EXTRA_DIST += $(RSTFILES) images
 
 # You can set these variables from the command line.
 SPHINXOPTS    =
@@ -21,7 +20,7 @@ SOURCEDIR     = $(srcdir)
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = _build
-CONF_FILE_DIR = .
+CONF_FILE_DIR = $(top_builddir)/src/Tools/YamsPlug/doc
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
@@ -29,9 +28,6 @@ PAPEROPT_letter = -D latex_paper_size=letter
 ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees -c $(CONF_FILE_DIR) $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) $(SOURCEDIR)
 
 .PHONY: help clean html latexpdf 
-
-all:
-	make html
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
@@ -52,14 +48,16 @@ help:
 	@echo "  linkcheck  to check all external links for integrity"
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
 
-install-data-local: all
-	test -z $(yamsdocdir) || mkdir -p $(yamsdocdir)
-	cp -rf $(BUILDDIR)/html/* $(yamsdocdir) ;
+install-data-local: $(BUILDDIR)/html/index.html
+	-test -z $(yamsdocdir) || mkdir -p $(yamsdocdir) && cp -rf $(BUILDDIR)/html/* $(yamsdocdir) ;
 
-clean:
+uninstall-local:
+	-test -d $(yamsdocdir) && chmod -R +w $(yamsdocdir) && rm -rf $(yamsdocdir)/*
+
+clean-local:
 	-rm -rf $(BUILDDIR)/*
 
-html:
+$(BUILDDIR)/html/index.html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
