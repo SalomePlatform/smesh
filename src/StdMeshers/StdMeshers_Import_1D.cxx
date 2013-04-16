@@ -693,9 +693,11 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
         else
         {
           // find an existing vertex node
+          double checktol = max(1.E-10, 10*edgeTol*edgeTol);
           for ( vNIt = vertexNodes.begin(); vNIt != vertexNodes.end(); ++vNIt)
-            if ( vNIt->SquareDistance( *node ) < 10 * edgeTol * edgeTol)
+            if ( vNIt->SquareDistance( *node ) < checktol)
             {
+              //MESSAGE("SquareDistance " << vNIt->SquareDistance( *node ) << " checktol " << checktol);
               (*n2nIt).second = vNIt->_node;
               vertexNodes.erase( vNIt );
               break;
@@ -710,13 +712,17 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
             SMDS_MeshNode* newNode = tgtMesh->AddNode( (*node)->X(), (*node)->Y(), (*node)->Z());
             n2nIt->second = newNode;
             tgtMesh->SetNodeOnEdge( newNode, shapeID, u );
+            //MESSAGE("u=" << u);
           }
         }
         if ( !(newNodes[i] = n2nIt->second ))
           break;
       }
       if ( !newNodes.back() )
+      {
+        //MESSAGE("not all nodes of edge lie on theShape");
         continue; // not all nodes of edge lie on theShape
+      }
 
       // make a new edge
       SMDS_MeshElement * newEdge;
@@ -724,6 +730,7 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
         newEdge = tgtMesh->AddEdge( newNodes[0], newNodes[1], newNodes[2] );
       else
         newEdge = tgtMesh->AddEdge( newNodes[0], newNodes[1]);
+      //MESSAGE("add Edge");
       tgtMesh->SetMeshElementOnShape( newEdge, shapeID );
       e2e->insert( make_pair( edge, newEdge ));
     }
