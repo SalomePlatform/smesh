@@ -104,11 +104,13 @@ with
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh = smeshBuilder.New(theStudy)
+smesh = smeshBuilder.New(salome.myStudy)
 
 you also need to modify some lines where smeshBuilder is used instead of smesh
 
 algo=smesh.xxxx  ==> algo.smeshBuilder.xxxx 
+
+See also SMESH User's Guide for more details
 
 ===============================================================================
 """
