@@ -59,8 +59,8 @@ In this dialog you can define
     two <b>Target Vertices</b>, which belong to the same edge of the
     face being meshed.</li>
 </ul>
-For groups of face, the groups must contain equal number of faces and
-they must form topologically equal structures. 
+
+The groups of faces are suitable for this algorithm only if they contain an equal number of faces and form topologically equal structures. 
 
 \n <b>Projection 1D-2D</b> algorithm differs from <b>Projection 2D</b>
 algorithm in one aspect: it generates mesh segments on edges of

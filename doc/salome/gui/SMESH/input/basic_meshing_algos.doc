@@ -46,12 +46,8 @@ where the geometrical boundary intersects Cartesian cells.</li>
 \image html image126.gif "Example of a hexahedral 3D mesh"
 </ul>
 
-Some of 3D meshing algorithms also can generate 3D meshes from 2D meshes, working without
-geometrical objects. Such algorithms is
-<ul>
-<li>Hexahedron meshing algorithm (i,j,k),</li>
-<!-- <li>GHS3D meshing algorithm (commercial)</li> -->
-</ul>
+Some 3D meshing algorithms, such as Hexahedron(i,j,k) and GHS3D (commercial), also can generate 3D meshes from 2D meshes, working without
+geometrical objects. 
 
 There is also a number of more specific algorithms:
 <ul>

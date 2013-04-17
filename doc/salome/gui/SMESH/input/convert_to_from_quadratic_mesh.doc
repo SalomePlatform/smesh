@@ -33,8 +33,8 @@ The following dialog box will appear:
 
 <ul>
 <li>If it is necessary to convert a linear mesh to quadratic or a quadratic
-  mesh to linear. **Convert to bi-quadratic** option means same as
-  **Convert to quadratic** except that QUAD9 elements are created
+  mesh to linear. **Convert to bi-quadratic** option does the same as
+  **Convert to quadratic** except for that QUAD9 elements are created
   instead of QUAD8, and HEXA27 elements are created instead of
   HEXA20. Note that the choice is available only if the selected mesh
   (or sub-mesh) contains both quadratic and linear elements, else the

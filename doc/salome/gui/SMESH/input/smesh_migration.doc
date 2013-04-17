@@ -1,16 +1,16 @@
 /*!
 
-\page smesh_migration_page Modifying Mesh Python scripts from SALOME 6 and before
+\page smesh_migration_page Modifing Mesh Python scripts from SALOME 6 and before
 
-\n With SALOME 7.2, the Python interface for %Mesh has been slightly modified to offer new functionality:
+\n In SALOME 7.2, the Python interface for %Mesh has been slightly modified to offer new functionality:
 
 <ul>
   <li>\subpage tui_execution_distribution_page</li>
   <li>\subpage tui_auto_completion_documentation_page</li>
 </ul>
 
-\n Scripts generated for SALOME 6 and older versions must be adapted to work in SALOME 7.2 with all functionality.
-\n A compatibility mode allows old scripts to work in almost all cases, but with a warning.
+\n Scripts generated for SALOME 6 and older versions must be adapted to work in SALOME 7.2 with full functionality.
+\n The compatibility mode allows old scripts to work in almost all cases, but with a warning.
 
 See also <li>\subpage geompy_migration_page</li>
 
@@ -22,12 +22,12 @@ salome.salome_init()
 \endcode
 
 <b>smesh initialisation is modified.</b>
-\n old mode (from dump):
+\n the old mode (from dump):
 \code
 import smesh, SMESH, SALOMEDS
 smesh.SetCurrentStudy(theStudy)
 \endcode
-new mode:
+\n the new mode:
 \code
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
@@ -38,7 +38,7 @@ smesh =  smeshBuilder.New(salome.myStudy)
 <b> Of course, <em>from smesh import *</em> is no more possible.</b>
 \n You have to explicitely write <em>smesh.some_method()</em>.
 
-<b>algorithms are no longer in the namespace <em>smesh</em> but in <em>smeshBuilder</em>.</b>
+<b>Some algorithms have been transferred from the namespace <em>smesh</em> to the namespace <em>smeshBuilder</em>.</b>
 \n For instance:
 \code
 MEFISTO_2D_1 = Mesh_1.Triangle(algo=smesh.MEFISTO,geom=Face_1)
@@ -48,17 +48,17 @@ is replaced by:
 MEFISTO_2D_1 = Mesh_1.Triangle(algo=smeshBuilder.MEFISTO,geom=Face_1)
 \endcode
 \n StdMeshers algoritms concerned are <em>REGULAR, PYTHON, COMPOSITE, MEFISTO, Hexa, QUADRANGLE, RADIAL_QUAD</em>.
-\n SMESH Plugins provides algorithms such as: <em> NETGEN, NETGEN_FULL, FULL_NETGEN, NETGEN_1D2D3D, NETGEN_1D2D, NETGEN_2D, NETGEN_3D</em>.
+\n SMESH Plugins provide such algorithms as: <em> NETGEN, NETGEN_FULL, FULL_NETGEN, NETGEN_1D2D3D, NETGEN_1D2D, NETGEN_2D, NETGEN_3D</em>.
 \n If you use DISTENE plugins, you also have <em>BLSURF, GHS3D, GHS3DPRL, Hexotic</em>.
 
-<b>Some variables where at the same time in namespaces <em>smesh</em> and <em>SMESH</em>.
-They are now only in namespace <em>SMESH</em>.</b>.
-\n The dump function was already using the namespace <em>SMESH</em>,
-so, if your script was built with the help of dump function, it should be already OK for that part.
+<b>Some variables were available in both namespaces <em>smesh</em> and <em>SMESH</em>.
+Now they are available only in namespace <em>SMESH</em></b>.
+\n The dump function used only the namespace <em>SMESH</em>,
+so, if your script was built with the help of the dump function, it should be already OK in this respect.
 
-The more used variables concerned are:
-\n <em>NODE, EDGE, FACE, VOLUME, ALL.<em>
-\n <em>FT_xxx, geom_xxx, ADD_xxx...<em>
+The most used variables concerned are:
+\n <em>NODE, EDGE, FACE, VOLUME, ALL.</em>
+\n <em>FT_xxx, geom_xxx, ADD_xxx...</em>
 
 \n For instance:
 \code
@@ -84,7 +84,7 @@ is replaced by:
 Compound1 = smesh.Concatenate([Mesh_inf.GetMesh(), Mesh_sup.GetMesh()], 0, 1, 1e-05)
 \endcode
 
-<b>If you need to import explicitely an %SMESH Plugin, they are now in separate namespaces.</b>
+<b>If you need to import a %SMESH Plugin explicitely, keep in mind that  they are now located in separate namespaces.</b>
 \n For instance:
 \code
 import StdMeshers

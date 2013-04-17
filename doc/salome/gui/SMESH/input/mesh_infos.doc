@@ -35,28 +35,28 @@ type: 0D elements, edges, faces, volumes, balls.
 \anchor mesh_element_info_anchor
 <h2>Mesh Element Information</h2> 
 
-The <b>Element Info</b> tab page of the dialog box gives detail
-information about selected mesh node(s) or element(s), namely:
+The <b>Element Info</b> tab page of the dialog box gives detailed
+information about the selected mesh node(s) or element(s), namely:
 
-- For node:
-  - Node ID
-  - Coordinates (X, Y, Z)
-  - Connectivity information (connected elements)
-  - Position on a shape (for meshes built on geometry)
-  - Groups information (names of groups the node belongs to)
+- For a node:
+  - Node ID;
+  - Coordinates (X, Y, Z);
+  - Connectivity information (connected elements);
+  - Position on a shape (for meshes built on a geometry);
+  - Groups information (names of groups the node belongs to).
 
 <center>\image html eleminfo1.png
 <em>"Element Info" page, node information</em></center>
 <br>
 
-- For element:
-  - Element ID
-  - Type (triangle, quadrangle, etc...)
-  - Gravity center (X, Y, Z coordinates)
-  - Connectivity information (connected nodes)
-  - Quality controls (area, aspect ration, volume, etc)
-  - Position on a shape (for meshes built on geometry)
-  - Groups information (names of groups the element belongs to)
+- For an element:
+  - Element ID;
+  - Type (triangle, quadrangle, etc.);
+  - Gravity center (X, Y, Z coordinates);
+  - Connectivity information (connected nodes);
+  - Quality controls (area, aspect ration, volume, etc.);
+  - Position on a shape (for meshes built on a geometry);
+  - Groups information (names of groups the element belongs to).
 
 <center>\image html eleminfo2.png 
 <em>"Element Info" page, element information</em></center>
@@ -65,10 +65,10 @@ The use can either input the ID of a node or element he wants to
 analyze directly in the dialog box or select the node(s) or element(s) in
 the 3D viewer.
 
-\note The information about the groups, the node or element belongs
-to, can be shown in short or detail form. By default, for performance
-reasons, this information is show in short form (group names
-only). Detail information on groups can be switched on via the user
+\note The information about the groups, to which the node or element belongs,
+ can be shown in a short or in a detailed form. By default, for performance
+reasons, this information is shown in a short form (group names
+only). The detailed information on groups can be switched on via the user
 preferences, see \ref mesh_preferences_page.
 
 \anchor mesh_addition_info_anchor
@@ -120,7 +120,7 @@ the "Automatic nodes compute limit" set via the  "Mesh information"
 preferences (zero value means no limit).
 
 The button \b "Dump" allows printing the information displayed in the
-dialog box to the txt file.
+dialog box to a .txt file.
 
 In case you get <b>Mesh Information</b> via a TUI script, the information is
 displayed in the Python Console. 

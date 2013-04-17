@@ -75,15 +75,15 @@ the user will have to press \em Compute button explicitly. Zero value
 means "no limit". By default the value is set to 100 000 mesh elements.
 </li>
 <li><b>Show details on groups in element information tab</b> - when
-this option is switched off (default), only names of groups, the node
-or element belongs to, are shown in the \ref mesh_element_info_anchor "Info Tab"
+this option is switched off (default), only the names of groups, to which the node
+or element belongs, are shown in the \ref mesh_element_info_anchor "Info Tab"
 tab of "Mesh Information" dialog box. If this option is
-switched on, the detail information on groups is shown.</li>
-<li><b>Dump base information</b> - Dump base mesh information to the
+switched on, the detailed information on groups is shown.</li>
+<li><b>Dump base information</b> - allows to dump base mesh information to the
 file, see \ref mesh_infos_page.</li>
-<li><b>Dump element information</b> - Dump element information to the
+<li><b>Dump element information</b> - allows to dump element information to the
 file, see \ref mesh_infos_page.</li>
-<li><b>Dump additional information</b> - Dump additional mesh
+<li><b>Dump additional information</b> - allows to dump additional mesh
 information to the file, see \ref mesh_infos_page.</li>
 </ul>
 <li><b>Automatic Parameters</b></li>
@@ -113,7 +113,7 @@ number of segments on each edge</li>
 <li><b>Preview</b></li>
 <ul>
 <li><b>Sub-shapes preview chunk size</b> - allows to limit the number
-of preview sub-shapes shown in the hypotheses creation dialog boxes,
+of previewed sub-shapes shown in the hypotheses creation dialog boxes,
 for example "Reverse Edges" parameter of \ref number_of_segments_anchor "Number of segments" hypothesis. 
 </ul>
 <li><b>Python Dump</b></li>
