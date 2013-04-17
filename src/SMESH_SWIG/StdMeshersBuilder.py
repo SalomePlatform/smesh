@@ -302,8 +302,8 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         store_geom = self.geom
         if type(vertex) is types.IntType:
             if vertex == 0 or vertex == 1:
-                from salome.geom import geomBuilder
-                vertex = self.mesh.geompyD.ExtractShapes(self.geom, geomBuilder.ShapeType["VERTEX"],True)[vertex]
+                from geompy import ShapeType
+                vertex = self.mesh.geompyD.ExtractShapes(self.geom, ShapeType["VERTEX"],True)[vertex]
                 self.geom = vertex
                 pass
             pass
