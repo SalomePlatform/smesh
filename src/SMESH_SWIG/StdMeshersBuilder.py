@@ -861,9 +861,9 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
         shape = geom
         if not shape:
             shape = mesh.geom
-        from geompy import SubShapeAll, ShapeType
-        nbSolids = len( SubShapeAll( shape, ShapeType["SOLID"] ))
-        nbShells = len( SubShapeAll( shape, ShapeType["SHELL"] ))
+        from salome.geom import geomBuilder
+        nbSolids = len( geomBuilder.geom.SubShapeAll( shape, geomBuilder.geomBuilder.ShapeType["SOLID"] ))
+        nbShells = len( geomBuilder.geom.SubShapeAll( shape, geomBuilder.geomBuilder.ShapeType["SHELL"] ))
         if nbSolids == 0 or nbSolids == nbShells:
             self.Create(mesh, geom, "Prism_3D")
             pass
