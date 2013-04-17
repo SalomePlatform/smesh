@@ -259,15 +259,15 @@ def AssureGeomPublished(mesh, geom, name=''):
     return
 
 ## Return the first vertex of a geometrical edge by ignoring orientation
-def FirstVertexOnCurve(edge):
-    vv = geomBuilder.SubShapeAll( edge, geomBuilder.geomBuilder.ShapeType["VERTEX"])
+def FirstVertexOnCurve(mesh, edge):
+    vv = mesh.geompyD.SubShapeAll( edge, geomBuilder.geomBuilder.ShapeType["VERTEX"])
     if not vv:
         raise TypeError, "Given object has no vertices"
     if len( vv ) == 1: return vv[0]
-    v0   = geomBuilder.MakeVertexOnCurve(edge,0.)
-    xyz  = geomBuilder.PointCoordinates( v0 ) # coords of the first vertex
-    xyz1 = geomBuilder.PointCoordinates( vv[0] )
-    xyz2 = geomBuilder.PointCoordinates( vv[1] )
+    v0   = mesh.geompyD.MakeVertexOnCurve(edge,0.)
+    xyz  = mesh.geompyD.PointCoordinates( v0 ) # coords of the first vertex
+    xyz1 = mesh.geompyD.PointCoordinates( vv[0] )
+    xyz2 = mesh.geompyD.PointCoordinates( vv[1] )
     dist1, dist2 = 0,0
     for i in range(3):
         dist1 += abs( xyz[i] - xyz1[i] )
