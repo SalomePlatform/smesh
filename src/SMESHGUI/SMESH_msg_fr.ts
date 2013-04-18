@@ -40,6 +40,14 @@
         <translation>Fichiers CGNS</translation>
     </message>
     <message>
+        <source>GMF_ASCII_FILES_FILTER</source>
+        <translation>Fichiers GMF ASCII</translation>
+    </message>
+    <message>
+        <source>GMF_BINARY_FILES_FILTER</source>
+        <translation>Fichier GMF binaires</translation>
+    </message>
+    <message>
         <source>STL_BIN_FILES_FILTER</source>
         <translation>Fichiers STL binaires</translation>
     </message>
@@ -54,6 +62,10 @@
     <message>
         <source>AREA_ELEMENTS</source>
         <translation>Aire</translation>
+    </message>
+    <message>
+        <source>MIN_DIAG_ELEMENTS</source>
+        <translation>Diagonal minimum</translation>
     </message>
     <message>
         <source>ASPECTRATIO_3D_ELEMENTS</source>
@@ -121,7 +133,7 @@
     </message>
     <message>
         <source>COMPERR_NO_MESH_ON_SHAPE</source>
-        <translation>Aucun élément n'est associé à une sous-shape</translation>
+        <translation>Aucun élément n&apos;est associé à une sous-shape</translation>
     </message>
     <message>
         <source>EDITERR_NO_MEDIUM_ON_GEOM</source>
@@ -139,6 +151,10 @@
     <message>
         <source>ELEMENT_ID</source>
         <translation>ID de l&apos;élément</translation>
+    </message>
+    <message>
+        <source>ELEMENT_IDS</source>
+        <translation>IDs de l&apos;élément</translation>
     </message>
     <message>
         <source>FREE_BORDERS</source>
@@ -351,6 +367,10 @@
     <message>
         <source>MEN_ELEMS0D</source>
         <translation>Eléments 0D </translation>
+    </message>
+    <message>
+        <source>MEN_0D_ON_ALL_NODES</source>
+        <translation>Eléments 0D sur des noeuds</translation>
     </message>
     <message>
         <source>MEN_BALL</source>
@@ -1056,6 +1076,10 @@ Voulez-vous le convertir en un groupe autonome ?</translation>
         <translation>ID du nœud</translation>
     </message>
     <message>
+        <source>NODE_IDS</source>
+        <translation>IDs du nœud</translation>
+    </message>
+    <message>
         <source>NON_SMESH_OBJECTS_SELECTED</source>
         <translation>Certains objets sélectionnés n&apos;appartiennent pas au composant %1.</translation>
     </message>
@@ -1236,6 +1260,10 @@ Merci de les corriger, puis essayez de nouveau</translation>
     <message>
         <source>SMESH_AUTO_GROUPS</source>
         <translation>Créer les groupes automatiquement</translation>
+    </message>
+    <message>
+        <source>SMESH_REQUIRED_GROUPS</source>
+        <translation>Créer les groupes des types nécessaires</translation>
     </message>
     <message>
         <source>SMESH_AVAILABLE</source>
@@ -1450,7 +1478,7 @@ ce qui peut faire planter l&apos;application. Voulez-vous continuer la visualisa
     </message>
     <message>
         <source>SMESH_DRS_4</source>
-        <translation type="unfinished">MED file contains some elements in descending connectivity. They were not read.</translation>
+        <translation>Le fichier MED contient des éléments en connectivité descendante. Ils n&apos;ont pas été lu.</translation>
     </message>
     <message>
         <source>SMESH_DRS_5</source>
@@ -1802,7 +1830,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>SMESH_LOGARITHMIC_SCALARBAR</source>
-        <translation type="unfinished">Logarithmic</translation>
+        <translation>Logarithmique</translation>
     </message>
     <message>
         <source>SMESH_MAKE_GROUPS</source>
@@ -2202,15 +2230,15 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>PREF_GROUP_NUMBERING</source>
-        <translation type="unfinished">Numbering</translation>
+        <translation>Numérotation</translation>
     </message>
     <message>
         <source>PREF_NUMBERING_NODE</source>
-        <translation type="unfinished">Nodes: Color</translation>
+        <translation>Nœuds: couleur</translation>
     </message>
      <message>
         <source>PREF_NUMBERING_ELEM</source>
-        <translation type="unfinished">Edges: Color</translation>
+        <translation>Arêtes: couleur</translation>
     </message>
     <message>
         <source>PREF_NUMBERING_FONT</source>
@@ -2442,6 +2470,10 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <translation>Choisir un maillage entier, un sous-maillage ou un groupe</translation>
     </message>
     <message>
+        <source>SMESH_SUBMESH_GROUP</source>
+        <translation>Maillage, sous-maillage, groupe</translation>
+    </message>
+    <message>
         <source>SMESH_SET_COLOR</source>
         <translation>Groupe de couleur</translation>
     </message>
@@ -2572,6 +2604,10 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     <message>
         <source>SMESH_VISU_PROBLEM</source>
         <translation>Impossible de visualiser le maillage, probablement à cause d&apos;un manque de mémoire</translation>
+    </message>
+    <message>
+        <source>SMESH_VISU_PROBLEM_MEMORY</source>
+        <translation>L&apos;affichage du maillage a échoué, probablement à cause d&apos;un manque de mémoire</translation>
     </message>
     <message>
         <source>SMESH_VISU_PROBLEM_CLEAR</source>
@@ -2834,6 +2870,10 @@ Vérifiez la limite dans les préférences du module Mesh.
         <translation>Elément 0D</translation>
     </message>
     <message>
+        <source>STB_0D_ON_ALL_NODES</source>
+        <translation>Créer des éléments 0D sur des noeuds</translation>
+    </message>
+    <message>
         <source>STB_ELEMS0D</source>
         <translation>Eléments 0D</translation>
     </message>
@@ -2880,6 +2920,10 @@ Vérifiez la limite dans les préférences du module Mesh.
     <message>
         <source>STB_EXPORT_CGNS</source>
         <translation>Exporter au format CGNS</translation>
+    </message>
+    <message>
+        <source>STB_EXPORT_GMF</source>
+        <translation>Exporter au format GMF</translation>
     </message>
     <message>
         <source>STB_EXPORT_SAUV</source>
@@ -3438,6 +3482,10 @@ Vérifiez la limite dans les préférences du module Mesh.
         <translation>Visualiser une entité</translation>
     </message>
     <message>
+        <source>TOP_0D_ON_ALL_NODES</source>
+        <translation>Créer des éléments 0D sur des noeuds</translation>
+    </message>
+    <message>
         <source>TOP_ELEM0D</source>
         <translation>Elément 0D</translation>
     </message>
@@ -3604,6 +3652,14 @@ Vérifiez la limite dans les préférences du module Mesh.
     <message>
         <source>TOP_CGNS</source>
         <translation>Exporter un fichier CGNS</translation>
+    </message>
+    <message>
+        <source>TOP_IMPORT_GMF</source>
+        <translation>Importer un fichier GMF</translation>
+    </message>
+    <message>
+        <source>TOP_GMF</source>
+        <translation>Exporter un fichier GMF</translation>
     </message>
     <message>
         <source>TOP_IMPORT_SAUV</source>
@@ -4021,13 +4077,6 @@ Il ne peut pas être supprimé.</translation>
     </message>
 </context>
 <context>
-    <name>SMESHGUI_GroupDlg</name>
-    <message>
-        <source>ALLOW_ELEM_LIST_MODIF</source>
-        <translation>Edition manuelle</translation>
-    </message>
-</context>
-<context>
     <name>SMESHGUI</name>
     <message>
         <source>NOT_A_VTK_VIEWER</source>
@@ -4072,19 +4121,19 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_BACKFACE</source>
-        <translation>Face arrière</translation>
+        <translation>Couleur de face arrière</translation>
     </message>
     <message>
         <source>PREF_VOLUME</source>
-        <translation type="unfinished">Volume color</translation>
+        <translation>Couleur de volume</translation>
     </message>
     <message>
         <source>PREF_REVERSEDVOLUME</source>
-        <translation type="unfinished">Reversed volume color</translation>
+        <translation>Couleur de volume inversé</translation>
     </message>
     <message>
         <source>PREF_WIREFRAME</source>
-        <translation>Couleur de contour</translation>
+        <translation>Couleur du mode filaire</translation>
     </message>
     <message>
         <source>PREF_SELECTION</source>
@@ -4168,19 +4217,19 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_ELEM_INFO_GRP_DETAILS</source>
-        <translation type="unfinished">Show details on groups in element information tab</translation>
+        <translation>Afficher les détails des groupes dans la page d&apos;information de dl&apos;élément</translation>
     </message>
     <message>
         <source>PREF_DUMP_BASE_INFO</source>
-        <translation type="unfinished">Dump base information</translation>
+        <translation>Copier les informations de base</translation>
     </message>
     <message>
         <source>PREF_DUMP_ELEM_INFO</source>
-        <translation type="unfinished">Dump element information</translation>
+        <translation>Copier les informations de l&apos;élément</translation>
     </message>
     <message>
         <source>PREF_DUMP_ADD_INFO</source>
-        <translation type="unfinished">Dump additional information</translation>
+        <translation>Copier les informations additionelles</translation>
     </message>
     <message>
         <source>PREF_GPP_NODES_LIMIT</source>
@@ -4340,15 +4389,44 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_WIDTH</source>
-        <translation type="unfinished">Line width</translation>
+        <translation>Epaisseur de ligne</translation>
     </message>
     <message>
         <source>PREF_OUTLINE_WIDTH</source>
-        <translation type="unfinished">Outline width</translation>
+        <translation>Epaisseur du contour</translation>
     </message>
     <message>
         <source>PREF_PREVIEW_CHUNK_SIZE</source>
         <translation>Taille des blocs pour la prévisualisation des sous-shapes</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_GroupDlg</name>
+    <message>
+        <source>ALLOW_ELEM_LIST_MODIF</source>
+        <translation>Edition manuelle</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_Add0DElemsOnAllNodesDlg</name>
+    <message>
+        <source>CAPTION</source>
+        <translation>Créer des éléments 0D sur des noeuds</translation>
+    </message>
+    <message>
+        <source>OBJ_BTN</source>
+        <translation>Maillage, sous-maillage, groupe</translation>
+    </message>
+    <message>
+        <source>NB_NEW_0D</source>
+        <translation>%1 éléments 0D créés</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_Add0DElemsOnAllNodesOp</name>
+    <message>
+        <source>NB_NEW_0D</source>
+        <translation>%1 éléments 0D créés</translation>
     </message>
 </context>
 <context>
@@ -4562,7 +4640,11 @@ Voulez-vous restaurer la priorité initiale ?</translation>
         <source>RADIOBTN_2</source>
         <translation>Convertir à partir d&apos;éléments quadratiques</translation>
     </message>
-    <message>
+      <message>
+        <source>RADIOBTN_3</source>
+        <translation>Convertir en bi-quadratique</translation>
+      </message>
+      <message>
         <source>NON_CONFORM_WARNING</source>
         <translation>Attention: le maillage généré sera a priori non-conforme</translation>
     </message>
@@ -5118,6 +5200,10 @@ Vérifiez la validité des informations données</translation>
         <source>COPLANAR_FACES</source>
         <translation>Faces coplanaires</translation>
     </message>
+  <message>
+    <source>NUMBEROFNODESINELEMENT</source>
+    <translation>Nombre de noeuds dans l&apos;élément</translation>
+  </message>
     <message>
         <source>COPY_FROM</source>
         <translation>Copier de...</translation>
@@ -5137,10 +5223,6 @@ Vérifiez la validité des informations données</translation>
     <message>
         <source>EDGES</source>
         <translation>Arêtes</translation>
-    </message>
-    <message>
-        <source>ENTITY_TYPE</source>
-        <translation>Type de l&apos;entité</translation>
     </message>
     <message>
         <source>EQUAL_TO</source>
@@ -5290,6 +5372,98 @@ Entrez une valeur correcte et essayez de nouveau</translation>
         <translation>Eléments</translation>
     </message>
     <message>
+        <source>ENTITY_TYPE</source>
+        <translation>Type de l&apos;entité</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_0</source>
+        <translation>POINT1</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_2</source>
+        <translation>SEG2</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_3</source>
+        <translation>SEG3</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_4</source>
+        <translation>TRIA3</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_5</source>
+        <translation>TRIA6</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_6</source>
+        <translation>QUAD4</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_7</source>
+        <translation>QUAD8</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_8</source>
+        <translation>QUAD9</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_9</source>
+        <translation>TETRA4</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_10</source>
+        <translation>TETRA10</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_11</source>
+        <translation>PYRA5</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_12</source>
+        <translation>PYRA13</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_13</source>
+        <translation>PENTA6</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_14</source>
+        <translation>PENTA15</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_15</source>
+        <translation>HEXA8</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_16</source>
+        <translation>HEXA20</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_17</source>
+        <translation>HEXA27</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_18</source>
+        <translation>OCTA12</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_19</source>
+        <translation>POLYGONE</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_20</source>
+        <translation>POLYEDRE</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_21</source>
+        <translation>NONE</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_22</source>
+        <translation>BALL</translation>
+    </message>
+    <message>
         <source>GEOM_TYPE</source>
         <translation>Type de géométrie</translation>
     </message>
@@ -5393,6 +5567,13 @@ Indiquez-les et essayez de nouveau</translation>
     <message>
         <source>UNION_OF_TWO_GROUPS</source>
         <translation>Union de deux groupes</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_GroupDlg</name>
+    <message>
+        <source>SELECT_ALL</source>
+        <translation>Tout sélectionner</translation>
     </message>
 </context>
 <context>
@@ -6504,11 +6685,11 @@ en raison de leurs types incompatibles:
     </message>
     <message>
         <source>TEXT_FILES</source>
-        <translation type="unfinished">Text files (*.txt)</translation>
+        <translation>Fichiers texte (*.txt)</translation>
     </message>
     <message>
         <source>SAVE_INFO</source>
-        <translation type="unfinished">Save info</translation>
+        <translation>Sauver l&apos;info</translation>
     </message>
     <message>
         <source>X_FROM_Y_ITEMS_SHOWN</source>
@@ -7040,79 +7221,79 @@ en raison de leurs types incompatibles:
     <name>SMESHGUI_PropertiesDlg</name>
     <message>
         <source>TITLE</source>
-        <translation type="unfinished">Properties</translation>
+        <translation>Propriétés</translation>
     </message>
     <message>
         <source>NODES</source>
-        <translation type="unfinished">Nodes</translation>
+        <translation>Noeuds</translation>
     </message>
     <message>
         <source>EDGES</source>
-        <translation type="unfinished">Edges / wireframe</translation>
+        <translation>Arêtes / Mode filaire</translation>
     </message>
     <message>
         <source>FACES</source>
-        <translation type="unfinished">Faces</translation>
+        <translation>Faces</translation>
     </message>
     <message>
         <source>VOLUMES</source>
-        <translation type="unfinished">Volumes</translation>
+        <translation>Volumes</translation>
     </message>
     <message>
         <source>OUTLINES</source>
-        <translation type="unfinished">Outlines</translation>
+        <translation>Contours</translation>
     </message>
     <message>
         <source>0D_ELEMENTS</source>
-        <translation type="unfinished">0D elements</translation>
+        <translation>Eléments 0D</translation>
     </message>
     <message>
         <source>BALLS</source>
-        <translation type="unfinished">Balls</translation>
+        <translation>Boules</translation>
     </message>
     <message>
         <source>ORIENTATIONS</source>
-        <translation type="unfinished">Orientation vectors</translation>
+        <translation>Vecteurs d&apos;orientation</translation>
     </message>
     <message>
         <source>COLOR</source>
-        <translation type="unfinished">Color:</translation>
+        <translation>Couleur:</translation>
     </message>
     <message>
         <source>WIDTH</source>
-        <translation type="unfinished">Width:</translation>
+        <translation>Epaisseur:</translation>
     </message>
     <message>
         <source>FACE_FRONT</source>
-        <translation type="unfinished">Front:</translation>
+        <translation>Avant:</translation>
     </message>
     <message>
         <source>FACE_BACK</source>
-        <translation type="unfinished">Back:</translation>
+        <translation>Arrière:</translation>
     </message>
     <message>
         <source>VOLUME_NORMAL</source>
-        <translation type="unfinished">Normal:</translation>
+        <translation>Normal:</translation>
     </message>
     <message>
         <source>VOLUME_REVERSED</source>
-        <translation type="unfinished">Reversed:</translation>
+        <translation>Inversé:</translation>
     </message>
     <message>
         <source>SIZE</source>
-        <translation type="unfinished">Size:</translation>
+        <translation>Taille:</translation>
     </message>
     <message>
         <source>ORIENTATION_SCALE</source>
-        <translation type="unfinished">Scale:</translation>
+        <translation>Echelle:</translation>
     </message>
     <message>
         <source>ORIENTATION_3D</source>
-        <translation type="unfinished">3D vectors</translation>
+        <translation>Vecteurs 3D</translation>
     </message>
     <message>
         <source>SHRINK</source>
-        <translation type="unfinished">Shrink coef:</translation>
+        <translation>Coef de réduction:</translation>
     </message>
 </context>
 </TS>
