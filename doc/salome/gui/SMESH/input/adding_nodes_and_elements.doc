@@ -19,8 +19,9 @@
 <li>\ref adding_polyhedrons_anchor "Polyhedrons"</li>
 </ul>
 
-SALOME uses the convention of nodal connectivity of MED library elements. You
-can consult the description of nodal connectivity of elements in the documentation on MED library or 
+The convention of nodal connectivity of elements used in SALOME is
+the MED library convention. You can consult the description of
+nodal connectivity of elements in the documentation on MED library or 
 <a href="http://www.code-aster.org/outils/med/html/connectivites.html">
   here </a>.
 

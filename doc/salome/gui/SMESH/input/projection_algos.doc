@@ -60,7 +60,9 @@ In this dialog you can define
     face being meshed.</li>
 </ul>
 
-The groups of faces are suitable for this algorithm only if they contain an equal number of faces and form topologically equal structures. 
+The groups of faces are suitable for this algorithm only if they
+contain an equal number of faces and form topologically equal
+structures.
 
 \n <b>Projection 1D-2D</b> algorithm differs from <b>Projection 2D</b>
 algorithm in one aspect: it generates mesh segments on edges of

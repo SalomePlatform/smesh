@@ -38,7 +38,7 @@ smesh =  smeshBuilder.New(salome.myStudy)
 <b> Of course, <em>from smesh import *</em> is no more possible.</b>
 \n You have to explicitely write <em>smesh.some_method()</em>.
 
-<b>Some algorithms have been transferred from the namespace <em>smesh</em> to the namespace <em>smeshBuilder</em>.</b>
+<b>All algorithms have been transferred from the namespace <em>smesh</em> to the namespace <em>smeshBuilder</em>.</b>
 \n For instance:
 \code
 MEFISTO_2D_1 = Mesh_1.Triangle(algo=smesh.MEFISTO,geom=Face_1)

@@ -11,11 +11,12 @@ located between the corner nodes on element sides.
 If a quadratic quadrilateral element has an additional node at the
 element center, it is a bi-quadratic element (or
 QUAD9). If a quadratic hexahedral element has 7 additional nodes:
-at the element center and at the center of each side it is a
+at the element center and at the center of each side, it is a
 tri-quadratic element (or HEXA27).
 
-SALOME uses the convention of nodal connectivity of MED library elements. You
-can consult the description of nodal connectivity of elements in the documentation on MED library or 
+The convention of nodal connectivity of elements used in SALOME is
+the MED library convention. You can consult the description of nodal
+connectivity of elements in the documentation on MED library or 
 <a href="http://www.code-aster.org/outils/med/html/connectivites.html">
   here </a>.
 

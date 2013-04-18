@@ -63,7 +63,7 @@ The \b Local algorithms and hypotheses to be chosen at
     the highlighted edge. 
 </li></ul>
 
-\image html image157.gif "Prism with 3D extrusion meshing. Vertical division is different on neighbor edges because a local 1D hypotheses is assigned."
+\image html image157.gif "Prism with 3D extrusion meshing. Vertical division is different on neighbor edges because several local 1D hypotheses are assigned."
 
 \sa a sample TUI Script of
 \ref tui_prism_3d_algo "Use 3D extrusion meshing algorithm".
