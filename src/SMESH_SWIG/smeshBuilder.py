@@ -1503,6 +1503,8 @@ class Mesh:
     #  @return SMESH.Hypothesis_Status
     #  @ingroup l2_hypotheses
     def RemoveHypothesis(self, hyp, geom=0):
+        if not hyp:
+            return None
         if isinstance( hyp, Mesh_Algorithm ):
             hyp = hyp.GetAlgorithm()
             pass
