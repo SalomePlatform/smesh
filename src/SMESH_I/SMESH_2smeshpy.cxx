@@ -3715,9 +3715,9 @@ void _pyCommand::Comment()
     myString.Insert( i, "#" );
     for ( int iPart = 0; iPart < myBegPos.Length(); ++iPart )
     {
-      int begPos = GetBegPos( iPart );
+      int begPos = GetBegPos( iPart + 1 );
       if ( begPos != UNKNOWN )
-        SetBegPos( iPart, begPos + 1 );
+        SetBegPos( iPart + 1, begPos + 1 );
     }
   }
 }
