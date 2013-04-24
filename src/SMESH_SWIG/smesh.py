@@ -96,19 +96,19 @@ The following changes in your scripts are required to avoid this message:
 replace 
 -------
 
-import smesh, SMESH, SALOMEDS 
+import smesh, SMESH
 smesh.SetCurrentStudy(theStudy)
 
 with
 ----
 
-import SMESH, SALOMEDS
+import SMESH
 from salome.smesh import smeshBuilder
 smesh = smeshBuilder.New(salome.myStudy)
 
 you also need to modify some lines where smeshBuilder is used instead of smesh
 
-algo=smesh.xxxx  ==> algo.smeshBuilder.xxxx 
+algo=smesh.xxxx  ==> algo=smeshBuilder.xxxx 
 
 See also SMESH User's Guide for more details
 
