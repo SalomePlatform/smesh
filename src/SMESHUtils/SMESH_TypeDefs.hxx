@@ -39,7 +39,9 @@
 #include <cassert>
 
 typedef std::map<const SMDS_MeshElement*,
-                 std::list<const SMDS_MeshElement*> >        TElemOfElemListMap;
+                 std::list<const SMDS_MeshElement*>, TIDCompare > TElemOfElemListMap;
+typedef std::map<const SMDS_MeshElement*,
+                 std::list<const SMDS_MeshNode*>,    TIDCompare > TElemOfNodeListMap;
 typedef std::map<const SMDS_MeshNode*, const SMDS_MeshNode*> TNodeNodeMap;
 
 //!< Set of elements sorted by ID, to be used to assure predictability of edition
