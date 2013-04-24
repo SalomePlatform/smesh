@@ -107,9 +107,6 @@
 using namespace std;
 using namespace SMESH::Controls;
 
-typedef map<const SMDS_MeshElement*, list<const SMDS_MeshNode*> >    TElemOfNodeListMap;
-typedef map<const SMDS_MeshElement*, list<const SMDS_MeshElement*> > TElemOfElemListMap;
-
 typedef SMDS_SetIterator< SMDS_pElement, TIDSortedElemSet::const_iterator> TSetIterator;
 
 //=======================================================================
@@ -6028,8 +6025,8 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
     const SMDSAbs_ElementType type = groupDS->GetType();
     SMESHDS_Group* newGroup    = new SMESHDS_Group( newGroupID++, mesh->GetMeshDS(), type );
     SMESHDS_Group* newTopGroup = new SMESHDS_Group( newGroupID++, mesh->GetMeshDS(), type );
-    groupsByType[ groupDS->GetType() ].push_back( make_tuple( groupDS, newGroup, newTopGroup ));
-    orderedOldNewGroups.push_back( & groupsByType[ groupDS->GetType() ].back() );
+    groupsByType[ type ].push_back( make_tuple( groupDS, newGroup, newTopGroup ));
+    orderedOldNewGroups.push_back( & groupsByType[ type ].back() );
   }
 
   // Loop on nodes and elements to add them in new groups
