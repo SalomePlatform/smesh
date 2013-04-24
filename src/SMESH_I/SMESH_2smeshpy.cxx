@@ -2011,7 +2011,7 @@ void _pyMesh::ClearCommands()
 
 void _pyMesh::addFatherMesh( const _pyID& meshID )
 {
-  if ( !meshID.IsEmpty() )
+  if ( !meshID.IsEmpty() && meshID != GetID() )
     addFatherMesh( Handle(_pyMesh)::DownCast( theGen->FindObject( meshID )));
 }
 
@@ -2023,7 +2023,7 @@ void _pyMesh::addFatherMesh( const _pyID& meshID )
 
 void _pyMesh::addFatherMesh( const Handle(_pyMesh)& mesh )
 {
-  if ( !mesh.IsNull() )
+  if ( !mesh.IsNull() && mesh->GetID() != GetID() )
   {
     //myFatherMeshes.push_back( mesh );
     mesh->myChildMeshes.push_back( this );
