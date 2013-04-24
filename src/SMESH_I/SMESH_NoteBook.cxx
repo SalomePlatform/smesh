@@ -258,10 +258,12 @@ void SMESH_NoteBook::ReplaceVariables()
     // Get the entry of object storing "StringAttribute"
     TCollection_AsciiString & cmdStr = aCmd->GetString();
     TEntry2VarVecMap::iterator ent2varVec;
-    if (int pos = cmdStr.Location( SMESH::TVar::ObjPrefix(), 6, cmdStr.Length() ))
+    Standard_Integer fromIndex = 6;
+    Standard_Integer cmdLen = cmdStr.Length();
+    if ( int pos = (fromIndex <= cmdLen) ? cmdStr.Location( SMESH::TVar::ObjPrefix(), fromIndex, cmdLen ) : 0 )
     {
       TCollection_AsciiString varHolderEntry =
-        cmdStr.SubString( pos + strlen( SMESH::TVar::ObjPrefix() ), cmdStr.Length() );
+        cmdStr.SubString( pos + strlen( SMESH::TVar::ObjPrefix() ), cmdLen );
       ent2varVec = _entry2VarsMap.find( varHolderEntry );
       cmdStr.Split( pos - 1 );
     }
