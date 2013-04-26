@@ -656,7 +656,7 @@ public:
   typedef std::map<const SMDS_MeshNode*, std::list<const SMDS_MeshNode*> > TNodeOfNodeListMap;
   typedef TNodeOfNodeListMap::iterator                                     TNodeOfNodeListMapItr;
   typedef std::vector<TNodeOfNodeListMapItr>                               TVecOfNnlmiMap;
-  typedef std::map<const SMDS_MeshElement*, TVecOfNnlmiMap >               TElemOfVecOfNnlmiMap;
+  typedef std::map<const SMDS_MeshElement*, TVecOfNnlmiMap, TIDCompare >   TElemOfVecOfNnlmiMap;
 
   /*!
    * \brief Create elements by sweeping an element
