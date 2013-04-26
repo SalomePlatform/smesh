@@ -1463,8 +1463,8 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
         if (_father->HasShapeToMesh() ) {
           bool subComputed = false, subFailed = false;
           if (!algo->OnlyUnaryInput()) {
-            if ( event == COMPUTE &&
-                 ( algo->NeedDiscreteBoundary() || algo->SupportSubmeshes() ))
+            if ( event == COMPUTE /*&&
+                 ( algo->NeedDiscreteBoundary() || algo->SupportSubmeshes() )*/)
               shape = getCollection( gen, algo, subComputed, subFailed );
             else
               subComputed = SubMeshesComputed( & subFailed );
