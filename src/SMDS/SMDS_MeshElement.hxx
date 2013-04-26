@@ -198,7 +198,7 @@ protected:
 
 struct TIDCompare {
   bool operator () (const SMDS_MeshElement* e1, const SMDS_MeshElement* e2) const
-  { return e1->GetID() < e2->GetID(); }
+  { return e1->GetType() == e2->GetType() ? e1->GetID() < e2->GetID() : e1->GetType() < e2->GetType(); }
 };
 
 #endif
