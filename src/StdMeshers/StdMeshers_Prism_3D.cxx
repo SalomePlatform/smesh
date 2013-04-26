@@ -470,7 +470,7 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
   list< TopoDS_Face > meshedFaces, notQuadMeshedFaces, notQuadFaces;
   const bool meshHasQuads = ( theMesh.NbQuadrangles() > 0 );
   //StdMeshers_Quadrangle_2D* quadAlgo = TQuadrangleAlgo::instance( this );
-  for ( int iF = 1; iF < faceToSolids.Extent(); ++iF )
+  for ( int iF = 1; iF <= faceToSolids.Extent(); ++iF )
   {
     const TopoDS_Face& face = TopoDS::Face( faceToSolids.FindKey( iF ));
     SMESH_subMesh*   faceSM = theMesh.GetSubMesh( face );
