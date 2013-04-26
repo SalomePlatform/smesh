@@ -124,6 +124,38 @@ bool StdMeshers_Projection_1D2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape
   SMESH_MesherHelper helper( theMesh );
   helper.SetSubShape( theShape );
 
+  if ( _quadraticMesh )
+  {
+    // 2a) Move some medium nodes from FACE to EDGES. They are on FACE because
+    // EDGEs are discreteized later than FACE, in this case.
+
+    SMESH_MesherHelper posFixer( theMesh );
+    posFixer.ToFixNodeParameters( true );
+    SMDS_ElemIteratorPtr fIt = faceSubMesh->GetElements();
+    vector< const SMDS_MeshNode* > nodes;
+    double dummyU, tol = 1e-7;
+    while ( fIt->more() ) // loop on mesh faces created by StdMeshers_Projection_2D
+    {
+      const SMDS_MeshElement* f = fIt->next();
+      //if ( !f->IsQuadratic() ) continue;
+      nodes.assign( SMDS_MeshElement::iterator( f->interlacedNodesElemIterator() ),
+                    SMDS_MeshElement::iterator() );
+      nodes.push_back( nodes[0] );
+      for ( size_t i = 2; i < nodes.size(); i += 2 )
+      {
+        pair<int, TopAbs_ShapeEnum> idType = helper.GetMediumPos( nodes[i], nodes[i-2] );
+        if ( idType.second == TopAbs_EDGE &&
+             idType.first  != nodes[i-1]->getshapeId() )
+        {
+          faceSubMesh->RemoveNode( nodes[i-1], /*isDeleted=*/false );
+          meshDS->SetNodeOnEdge( (SMDS_MeshNode*) nodes[i-1], idType.first );
+          posFixer.SetSubShape( idType.first );
+          posFixer.CheckNodeU( TopoDS::Edge( posFixer.GetSubShape() ),
+                               nodes[i-1], dummyU=0., tol, /*force=*/true );
+        }
+      }
+    }
+  }
   TopoDS_Face F = TopoDS::Face( theShape );
   TError err;
   TSideVector wires = StdMeshers_FaceSide::GetFaceWires( F, theMesh,
