@@ -2258,29 +2258,22 @@ void SMESH_subMesh::notifyListenersOnEvent( const int         event,
                                             const event_type  eventType,
                                             SMESH_Hypothesis* hyp)
 {
-  set< EventListener* > notified;
-  const size_t nbListeners = _eventListeners.size();
-  while ( notified.size() != nbListeners )
+  list< pair< EventListener*, EventListenerData* > > eventListeners( _eventListeners.begin(),
+                                                                     _eventListeners.end());
+  list< pair< EventListener*, EventListenerData* > >::iterator l_d = eventListeners.begin();
+  for ( ; l_d != eventListeners.end(); ++l_d )
   {
-    map< EventListener*, EventListenerData* >::iterator l_d = _eventListeners.begin();
-    for ( ; l_d != _eventListeners.end(); ++l_d )
+    std::pair< EventListener*, EventListenerData* > li_da = *l_d;
+    if ( !_eventListeners.count( li_da.first )) continue;
+
+    if ( li_da.first->myBusySM.insert( this ).second )
     {
-      std::pair< EventListener*, EventListenerData* > li_da = *l_d;
+      const bool isDeletable = li_da.first->IsDeletable();
 
-      if ( notified.insert( li_da.first ).second &&
-           li_da.first->myBusySM.insert( this ).second )
-      {
-        const bool isDeletable = li_da.first->IsDeletable();
+      li_da.first->ProcessEvent( event, eventType, this, li_da.second, hyp );
 
-        li_da.first->ProcessEvent( event, eventType, this, li_da.second, hyp );
-
-        const bool isRemoved = !_eventListeners.count( li_da.first );
-        if ( !isDeletable || !isRemoved )
-          li_da.first->myBusySM.erase( this ); // a listener is hopefully not dead
-
-        if ( isRemoved )
-          break; // restart looping on _eventListeners
-      }
+      if ( !isDeletable || !_eventListeners.count( li_da.first ))
+        li_da.first->myBusySM.erase( this ); // a listener is hopefully not dead
     }
   }
 }
