@@ -402,6 +402,7 @@ void SMDS_UnstructuredGrid::BuildDownwardConnectivity(bool withEdges)
   _downArray[VTK_QUADRATIC_EDGE]          = new SMDS_DownQuadEdge(this);
   _downArray[VTK_TRIANGLE]                = new SMDS_DownTriangle(this);
   _downArray[VTK_QUADRATIC_TRIANGLE]      = new SMDS_DownQuadTriangle(this);
+  _downArray[VTK_BIQUADRATIC_TRIANGLE]    = new SMDS_DownQuadTriangle(this);
   _downArray[VTK_QUAD]                    = new SMDS_DownQuadrangle(this);
   _downArray[VTK_QUADRATIC_QUAD]          = new SMDS_DownQuadQuadrangle(this);
   _downArray[VTK_BIQUADRATIC_QUAD]        = new SMDS_DownQuadQuadrangle(this);
@@ -442,6 +443,7 @@ void SMDS_UnstructuredGrid::BuildDownwardConnectivity(bool withEdges)
   GuessSize[VTK_QUADRATIC_EDGE]          = nbQuadEdgeGuess;
   GuessSize[VTK_TRIANGLE]                = nbLinTriaGuess;
   GuessSize[VTK_QUADRATIC_TRIANGLE]      = nbQuadTriaGuess;
+  GuessSize[VTK_BIQUADRATIC_TRIANGLE]    = nbQuadTriaGuess;
   GuessSize[VTK_QUAD]                    = nbLinQuadGuess;
   GuessSize[VTK_QUADRATIC_QUAD]          = nbQuadQuadGuess;
   GuessSize[VTK_BIQUADRATIC_QUAD]        = nbQuadQuadGuess;
@@ -460,6 +462,7 @@ void SMDS_UnstructuredGrid::BuildDownwardConnectivity(bool withEdges)
   _downArray[VTK_QUADRATIC_EDGE]         ->allocate(nbQuadEdgeGuess);
   _downArray[VTK_TRIANGLE]               ->allocate(nbLinTriaGuess);
   _downArray[VTK_QUADRATIC_TRIANGLE]     ->allocate(nbQuadTriaGuess);
+  _downArray[VTK_BIQUADRATIC_TRIANGLE]   ->allocate(nbQuadTriaGuess);
   _downArray[VTK_QUAD]                   ->allocate(nbLinQuadGuess);
   _downArray[VTK_QUADRATIC_QUAD]         ->allocate(nbQuadQuadGuess);
   _downArray[VTK_BIQUADRATIC_QUAD]       ->allocate(nbQuadQuadGuess);

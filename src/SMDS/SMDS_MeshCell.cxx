@@ -51,6 +51,7 @@ VTKCellType SMDS_MeshCell::toVtkType (SMDSAbs_EntityType smdsType)
     vtkTypes[ SMDSEntity_Quad_Edge ]         = VTK_QUADRATIC_EDGE;
     vtkTypes[ SMDSEntity_Triangle ]          = VTK_TRIANGLE;
     vtkTypes[ SMDSEntity_Quad_Triangle ]     = VTK_QUADRATIC_TRIANGLE;
+    vtkTypes[ SMDSEntity_BiQuad_Triangle ]   = VTK_BIQUADRATIC_TRIANGLE;
     vtkTypes[ SMDSEntity_Quadrangle ]        = VTK_QUAD;
     vtkTypes[ SMDSEntity_Quad_Quadrangle ]   = VTK_QUADRATIC_QUAD;
     vtkTypes[ SMDSEntity_BiQuad_Quadrangle ] = VTK_BIQUADRATIC_QUAD;
@@ -199,6 +200,10 @@ const std::vector<int>& SMDS_MeshCell::reverseSmdsOrder(SMDSAbs_EntityType smdsT
       reverseInterlaces[SMDSEntity_Quad_Triangle].assign( &ids[0], &ids[0]+6 );
     }
     {
+      const int ids[] = {0,2,1,5,4,3,6};
+      reverseInterlaces[SMDSEntity_BiQuad_Triangle].assign( &ids[0], &ids[0]+7 );
+    }
+    {
       const int ids[] = {0,3,2,1};
       reverseInterlaces[SMDSEntity_Quadrangle].assign( &ids[0], &ids[0]+4 );
     }
@@ -272,8 +277,9 @@ const std::vector<int>& SMDS_MeshCell::interlacedSmdsOrder(SMDSAbs_EntityType sm
       interlace[SMDSEntity_Quad_Edge].assign( &ids[0], &ids[0]+3 );
     }
     {
-      const int ids[] = {0,3,1,4,2,5};
+      const int ids[] = {0,3,1,4,2,5,6};
       interlace[SMDSEntity_Quad_Triangle].assign( &ids[0], &ids[0]+6 );
+      interlace[SMDSEntity_BiQuad_Triangle].assign( &ids[0], &ids[0]+7 );
     }
     {
       const int ids[] = {0,4,1,5,2,6,3,7,8};
@@ -351,6 +357,7 @@ SMDSAbs_ElementType SMDS_MeshCell::toSmdsType(SMDSAbs_EntityType entityType)
 
   case SMDSEntity_Triangle:
   case SMDSEntity_Quad_Triangle:
+  case SMDSEntity_BiQuad_Triangle:
   case SMDSEntity_Quadrangle:
   case SMDSEntity_Quad_Quadrangle:
   case SMDSEntity_BiQuad_Quadrangle:
