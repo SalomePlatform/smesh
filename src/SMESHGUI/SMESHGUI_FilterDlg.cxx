@@ -36,9 +36,10 @@
 #include "SMESHGUI_FilterLibraryDlg.h"
 #include "SMESHGUI_SpinBox.h"
 
-#include <SMESH_Actor.h>
-#include <SMESH_NumberFilter.hxx>
-#include <SMESH_TypeFilter.hxx>
+#include "SMESH_Actor.h"
+#include "SMESH_NumberFilter.hxx"
+#include "SMESH_TypeFilter.hxx"
+#include "SMESH_LogicalFilter.hxx"
 
 // SALOME GEOM includes
 #include <GEOMBase.h>
@@ -1127,7 +1128,8 @@ bool SMESHGUI_FilterTable::IsValid (const bool theMess, const int theEntityType)
   {
     int aCriterion = GetCriterionType(i, aType);
     QString errMsg;
-    if (aCriterion == SMESH::FT_GroupColor ) {
+    if (aCriterion == SMESH::FT_GroupColor )
+    {
       QtxColorButton* clrBtn = qobject_cast<QtxColorButton*>(aTable->cellWidget(i, 2));
       if (clrBtn && !clrBtn->color().isValid())
         errMsg = tr( "GROUPCOLOR_ERROR" );
@@ -1140,12 +1142,14 @@ bool SMESHGUI_FilterTable::IsValid (const bool theMess, const int theEntityType)
              aCriterion == SMESH::FT_ElemGeomType ||
              aCriterion == SMESH::FT_EntityType ||
              aCriterion == SMESH::FT_CoplanarFaces ||
-             aCriterion == SMESH::FT_LyingOnGeom)
+             aCriterion == SMESH::FT_LyingOnGeom ||
+             aCriterion == SMESH::FT_ConnectedElements )
     {
       if (aTable->text(i, 2).isEmpty())
         errMsg = tr( "ERROR" );
     }
-    else {
+    else
+    {
       bool aRes = false;
       bool isSignalsBlocked = aTable->signalsBlocked();
       aTable->blockSignals(true);
@@ -1254,12 +1258,35 @@ void SMESHGUI_FilterTable::GetCriterion (const int                 theRow,
       theCriterion.ThresholdStr = clrStr.toLatin1().constData();
     }
   }
-  else if ( aCriterionType == SMESH::FT_ElemGeomType )
+  else if ( aCriterionType == SMESH::FT_ElemGeomType ||
+            aCriterionType == SMESH::FT_EntityType )
+  {
     theCriterion.Threshold = (double)((ComboItem*)aTable->item(theRow, 2))->value();
-  else if ( aCriterionType == SMESH::FT_EntityType )
-    theCriterion.Threshold = (double)((ComboItem*)aTable->item(theRow, 2))->value();
+  }
   else if ( aCriterionType == SMESH::FT_CoplanarFaces )
+  {
     theCriterion.ThresholdID = aTable->text(theRow, 2).toLatin1().constData();
+  }
+  else if ( aCriterionType == SMESH::FT_ConnectedElements )
+  {
+    QString id = aTable->text(theRow, 5);
+    if ( !id.isEmpty() ) // shape ID
+    {
+      theCriterion.ThresholdID = id.toLatin1().constData();
+    }
+    else
+    {
+      QString text = aTable->text(theRow, 2).trimmed();
+      QString workText = text;
+      for ( char c = '0'; c <= '9'; ++c )
+        workText.remove( c );
+
+      if ( workText.isEmpty() ) // node ID
+        theCriterion.Threshold = text.toDouble();
+      else // point coordinates
+        theCriterion.ThresholdStr = text.toLatin1().constData();
+    }
+  }
   else if ( aCriterionType != SMESH::FT_RangeOfIds &&
             aCriterionType != SMESH::FT_BelongToGeom &&
             aCriterionType != SMESH::FT_BelongToPlane &&
@@ -1329,12 +1356,8 @@ void SMESHGUI_FilterTable::SetCriterion (const int                       theRow,
       clrBtn->setColor( qClr );
     }
   }
-  else if (theCriterion.Type == SMESH::FT_ElemGeomType )
-  {
-    ComboItem* typeBox = (ComboItem*)aTable->item(theRow, 2);
-    typeBox->setValue( (int)(theCriterion.Threshold + 0.5) );
-  }
-  else if (theCriterion.Type == SMESH::FT_EntityType )
+  else if (theCriterion.Type == SMESH::FT_ElemGeomType || 
+           theCriterion.Type == SMESH::FT_EntityType )
   {
     ComboItem* typeBox = (ComboItem*)aTable->item(theRow, 2);
     typeBox->setValue( (int)(theCriterion.Threshold + 0.5) );
@@ -1343,13 +1366,32 @@ void SMESHGUI_FilterTable::SetCriterion (const int                       theRow,
   {
     aTable->item( theRow, 2 )->setText( QString( theCriterion.ThresholdID ) );
   }
+  else if (theCriterion.Type == SMESH::FT_ConnectedElements )
+  {
+    if ( strlen( theCriterion.ThresholdID ) > 0 ) // shape ID -> name
+    {
+      _PTR(SObject) sobj =
+        SMESH::GetActiveStudyDocument()->FindObjectID( theCriterion.ThresholdID.in() );
+      if ( !sobj )
+        aTable->item( theRow, 2 )->setText( QString( theCriterion.ThresholdID ) );
+      else
+        aTable->item( theRow, 2 )->setText( QString( sobj->GetName().c_str() ));
+    }
+    else if ( strlen( theCriterion.ThresholdStr ) > 0 ) // point coords
+    {
+      aTable->item( theRow, 2 )->setText( QString( theCriterion.ThresholdStr ));
+    }
+    else // node ID
+    {
+      aTable->item( theRow, 2 )->setText( QString("%1").arg((int) theCriterion.Threshold ));
+    }
+  }
   else if (theCriterion.Type != SMESH::FT_RangeOfIds &&
            theCriterion.Type != SMESH::FT_BelongToGeom &&
            theCriterion.Type != SMESH::FT_BelongToPlane &&
            theCriterion.Type != SMESH::FT_BelongToCylinder &&
            theCriterion.Type != SMESH::FT_BelongToGenSurface &&
            theCriterion.Type != SMESH::FT_LyingOnGeom &&
-           theCriterion.Type != SMESH::FT_CoplanarFaces &&
            theCriterion.Type != SMESH::FT_FreeBorders &&
            theCriterion.Type != SMESH::FT_FreeEdges &&
            theCriterion.Type != SMESH::FT_FreeNodes &&
@@ -1670,22 +1712,44 @@ static QList<int> entityTypes( const int theType )
 {
   QList<int> typeIds;
 
-  if ( theType == SMESH::EDGE )
+  switch ( theType )
   {
+  case SMESH::NODE:
+    typeIds.append( SMDSEntity_Node );
+  case SMESH::EDGE:
     typeIds.append( SMDSEntity_Edge );
     typeIds.append( SMDSEntity_Quad_Edge );
-  }
-  if ( theType == SMESH::FACE )
-  {
+    break;
+  case SMESH::FACE:
+    typeIds.append( SMDSEntity_Triangle );
+    typeIds.append( SMDSEntity_Quad_Triangle );
+    typeIds.append( SMDSEntity_BiQuad_Triangle );
     typeIds.append( SMDSEntity_Quadrangle );
     typeIds.append( SMDSEntity_Quad_Quadrangle );
     typeIds.append( SMDSEntity_BiQuad_Quadrangle );
-  }
-  if ( theType == SMESH::VOLUME )
-  {
+    typeIds.append( SMDSEntity_Polygon );
+    //typeIds.append( SMDSEntity_Quad_Polygon );
+    break;
+  case SMESH::VOLUME:
+    typeIds.append( SMDSEntity_Tetra );
+    typeIds.append( SMDSEntity_Quad_Tetra );
+    typeIds.append( SMDSEntity_Pyramid );
+    typeIds.append( SMDSEntity_Quad_Pyramid );
     typeIds.append( SMDSEntity_Hexa );
     typeIds.append( SMDSEntity_Quad_Hexa );
     typeIds.append( SMDSEntity_TriQuad_Hexa );
+    typeIds.append( SMDSEntity_Penta );
+    typeIds.append( SMDSEntity_Quad_Penta );
+    typeIds.append( SMDSEntity_Hexagonal_Prism );
+    typeIds.append( SMDSEntity_Polyhedra );
+    //typeIds.append( SMDSEntity_Quad_Polyhedra );
+    break;
+  case SMESH::ELEM0D:
+    typeIds.append( SMDSEntity_0D );
+    break;
+  case SMESH::BALL:
+    typeIds.append( SMDSEntity_Ball );
+    break;
   }
   return typeIds;
 }
@@ -1823,54 +1887,51 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
                                   aCriterionType == SMESH::FT_BareBorderVolume      ||
                                   aCriterionType == SMESH::FT_EqualVolumes ))       ||
       aCriterionType == SMESH::FT_LinearOrQuadratic ||
-      aCriterionType == SMESH::FT_GroupColor ||
-      aCriterionType == SMESH::FT_ElemGeomType ||
       aCriterionType == SMESH::FT_CoplanarFaces ||
-      aCriterionType == SMESH::FT_EntityType 
+      aCriterionType == SMESH::FT_ConnectedElements
       )
   {
+    // - No compare
     bool isSignalsBlocked = aTable->signalsBlocked();
     aTable->blockSignals( true );
 
     if (aCompareItem->count() > 0)
       aCompareItem->clear();
     aTable->setEditable(false, row, 1);
+    // - Threshold is NOT editable for most of criteria
     aTable->item(row, 2)->setText( QString("") );
-    aTable->setEditable(aCriterionType == SMESH::FT_GroupColor ||
-                        aCriterionType == SMESH::FT_ElemGeomType ||
-                        aCriterionType == SMESH::FT_EntityType || 
-                        aCriterionType == SMESH::FT_CoplanarFaces, row, 2);
+    aTable->setEditable(( aCriterionType == SMESH::FT_ConnectedElements ||
+                          aCriterionType == SMESH::FT_CoplanarFaces       ), row, 2);
     aTable->blockSignals( isSignalsBlocked );
   }
   else if (aCriterionType == SMESH::FT_RangeOfIds ||
+           aCriterionType == SMESH::FT_GroupColor ||
+           aCriterionType == SMESH::FT_ElemGeomType ||
+           aCriterionType == SMESH::FT_EntityType ||
            aCriterionType == SMESH::FT_BelongToGeom ||
            aCriterionType == SMESH::FT_BelongToPlane ||
            aCriterionType == SMESH::FT_BelongToCylinder ||
            aCriterionType == SMESH::FT_BelongToGenSurface ||
            aCriterionType == SMESH::FT_LyingOnGeom)
   {
+    // - EQUAL_TO compare ONLY
     QMap<int, QString> aMap;
     aMap[ SMESH::FT_EqualTo ] = tr("EQUAL_TO");
     aCompareItem->setItems(aMap);
-    if (!aTable->isEditable(row, 2))
-      aTable->setEditable(true, row, 1);
-    if (!aTable->isEditable(row, 2))
-      aTable->setEditable(true, row, 2);
-  }
-  else if (aCriterionType == SMESH::FT_GroupColor ||
-           aCriterionType == SMESH::FT_ElemGeomType ||
-           aCriterionType == SMESH::FT_EntityType)
-  {
+    // if (!aTable->isEditable(row, 2))
+    aTable->setEditable(false, row, 1);
+    // - Threshold is editable
     if (!aTable->isEditable(row, 2))
       aTable->setEditable(true, row, 2);
   }
   else
   {
+    // All compare signs
     if (aCompareItem && aCompareItem->count() != 3)
     {
       aCompareItem->setItems(getCompare());
     }
-
+    // Threshold is editable
     if (aTable->item( row, 2 )) {
       QString aText = aTable->text(row, 2);
       bool isOk = false;
@@ -1897,6 +1958,8 @@ void SMESHGUI_FilterTable::onCriterionChanged (int row, int col)
 {
   if( col == 0 )
     onCriterionChanged(row, col, -1);
+  else if ( col == 2 )
+    emit ThresholdChanged(row, GetType());
 }
 
 //=======================================================================
@@ -2070,6 +2133,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_FreeNodes          ] = tr("FREE_NODES");
       aCriteria[ SMESH::FT_GroupColor         ] = tr("GROUP_COLOR");
       aCriteria[ SMESH::FT_EqualNodes         ] = tr("EQUAL_NODE");
+      aCriteria[ SMESH::FT_ConnectedElements  ] = tr("CONNECTED_ELEMS");
     }
     return aCriteria;
   }
@@ -2092,6 +2156,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_ElemGeomType       ] = tr("GEOM_TYPE");
       aCriteria[ SMESH::FT_EqualEdges         ] = tr("EQUAL_EDGE");
       aCriteria[ SMESH::FT_EntityType         ] = tr("ENTITY_TYPE");
+      aCriteria[ SMESH::FT_ConnectedElements  ] = tr("CONNECTED_ELEMS");
     }
     return aCriteria;
   }
@@ -2125,6 +2190,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_CoplanarFaces      ] = tr("COPLANAR_FACES");
       aCriteria[ SMESH::FT_EqualFaces         ] = tr("EQUAL_FACE");
       aCriteria[ SMESH::FT_EntityType         ] = tr("ENTITY_TYPE");
+      aCriteria[ SMESH::FT_ConnectedElements  ] = tr("CONNECTED_ELEMS");
     }
     return aCriteria;
   }
@@ -2147,6 +2213,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_ElemGeomType         ] = tr("GEOM_TYPE");
       aCriteria[ SMESH::FT_EqualVolumes         ] = tr("EQUAL_VOLUME");
       aCriteria[ SMESH::FT_EntityType           ] = tr("ENTITY_TYPE");
+      aCriteria[ SMESH::FT_ConnectedElements    ] = tr("CONNECTED_ELEMS");
     }
     return aCriteria;
   }
@@ -2161,6 +2228,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_BelongToCylinder   ] = tr("BELONG_TO_CYLINDER");
       aCriteria[ SMESH::FT_BelongToGenSurface ] = tr("BELONG_TO_GENSURFACE");
       aCriteria[ SMESH::FT_GroupColor         ] = tr("GROUP_COLOR");
+      aCriteria[ SMESH::FT_ConnectedElements  ] = tr("CONNECTED_ELEMS");
     }
     return aCriteria;
   }
@@ -2176,6 +2244,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_BelongToCylinder   ] = tr("BELONG_TO_CYLINDER");
       aCriteria[ SMESH::FT_BelongToGenSurface ] = tr("BELONG_TO_GENSURFACE");
       aCriteria[ SMESH::FT_GroupColor         ] = tr("GROUP_COLOR");
+      aCriteria[ SMESH::FT_ConnectedElements  ] = tr("CONNECTED_ELEMS");
     }
     return aCriteria;
   }
@@ -2190,6 +2259,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_BelongToCylinder   ] = tr("BELONG_TO_CYLINDER");
       aCriteria[ SMESH::FT_BelongToGenSurface ] = tr("BELONG_TO_GENSURFACE");
       aCriteria[ SMESH::FT_GroupColor         ] = tr("GROUP_COLOR");
+      aCriteria[ SMESH::FT_ConnectedElements  ] = tr("CONNECTED_ELEMS");
     }
     return aCriteria;
   }
@@ -2204,6 +2274,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_LinearOrQuadratic  ] = tr("LINEAR");
       aCriteria[ SMESH::FT_GroupColor         ] = tr("GROUP_COLOR");
       aCriteria[ SMESH::FT_ElemGeomType       ] = tr("GEOM_TYPE");
+      aCriteria[ SMESH::FT_ConnectedElements  ] = tr("CONNECTED_ELEMS");
     }
 
     return aCriteria;
@@ -2473,7 +2544,13 @@ void SMESHGUI_FilterTable::SetThreshold (const int      theRow,
                                          const int      theEntityType)
 {
   Table* aTable = myTables[ theEntityType == -1 ? GetType() : theEntityType ];
+
+  bool isSignalsBlocked = aTable->signalsBlocked();
+  aTable->blockSignals(true);
+  
   aTable->item( theRow, 2 )->setText(theText);
+
+  aTable->blockSignals(isSignalsBlocked);
 }
 
 //=======================================================================
@@ -2752,6 +2829,7 @@ void SMESHGUI_FilterDlg::Init (const QList<int>& theTypes, const bool setInViewe
   myMesh      = SMESH::SMESH_Mesh::_nil();
   myIObjects.Clear();
   myIsSelectionChanged = false;
+  myToRestoreSelMode = false;
 
   myTable->Init(theTypes);
 
@@ -2818,6 +2896,7 @@ void SMESHGUI_FilterDlg::onOk()
 {
   if (onApply())
   {
+    restoreSelMode();
     mySelectionMgr->clearFilters();
     disconnect(mySMESHGUI, 0, this, 0);
     disconnect(mySelectionMgr, 0, this, 0);
@@ -2833,6 +2912,7 @@ void SMESHGUI_FilterDlg::onOk()
 //=======================================================================
 void SMESHGUI_FilterDlg::reject()
 {
+  restoreSelMode();
   // Restore previously selected object
   if (mySelectionMgr)
   {
@@ -3174,9 +3254,11 @@ bool SMESHGUI_FilterDlg::onApply()
   catch(const SALOME::SALOME_Exception& S_ex)
   {
     SalomeApp_Tools::QtCatchCorbaException(S_ex);
+    return false;
   }
   catch(...)
   {
+    return false;
   }
 
   return true;
@@ -3405,8 +3487,7 @@ void SMESHGUI_FilterDlg::selectInViewer (const int theType, const QList<int>& th
   if ( aViewWindow && aViewWindow->SelectionMode()!=aSelMode) {
     mySelectionMgr->clearSelected();
     mySelectionMgr->clearFilters();
-    if (aSelMode == NodeSelection)
-      SMESH::SetPointRepresentation(true);
+    SMESH::SetPointRepresentation( aSelMode == NodeSelection );
     aViewWindow->SetSelectionMode(aSelMode);
   }
 
@@ -3476,42 +3557,64 @@ SMESH::Filter::Criterion SMESHGUI_FilterDlg::createCriterion()
 //=======================================================================
 void SMESHGUI_FilterDlg::onSelectionDone()
 {
-  int aRow, aCol;
   const SALOME_ListIO& aList = mySelector->StoredIObjects();
-
-  if ( myMesh->_is_nil() && aList.Extent()>0 ) {
+  if ( myMesh->_is_nil() && aList.Extent()>0 )
+  {
     myMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(aList.First());
     if ( !(myMesh->_is_nil()) ) {
       myButtons[BTN_OK]->setEnabled(true);
       myButtons[BTN_Apply]->setEnabled(true);
     }
   }
+  int aRow, aCol;
+  if (aList.Extent() != 1 || !myTable->CurrentCell(aRow, aCol))
+    return;
 
+  const int type = myTable->GetCriterionType(aRow);
   QList<int> types; 
   types << SMESH::FT_BelongToGeom     << SMESH::FT_BelongToPlane 
         << SMESH::FT_BelongToCylinder << SMESH::FT_BelongToGenSurface
-        << SMESH::FT_LyingOnGeom      << SMESH::FT_CoplanarFaces;
-  if (aList.Extent() != 1 || !myTable->CurrentCell(aRow, aCol) || 
-      !types.contains(myTable->GetCriterionType(aRow)))
+        << SMESH::FT_LyingOnGeom      << SMESH::FT_CoplanarFaces
+        << SMESH::FT_ConnectedElements;
+  if ( !types.contains( type ))
     return;
 
-  if ( myTable->GetCriterionType(aRow) == SMESH::FT_CoplanarFaces )
+  Handle(SALOME_InteractiveObject) anIO = aList.First();
+  switch ( type )
   {
-    QString aString;
-    int nbElems = SMESH::GetNameOfSelectedElements(mySelector,//myViewWindow->GetSelector(),
-                                                   aList.First(), aString);
-    if (nbElems == 1)
-      myTable->SetThreshold(aRow, aString);
-  }
-  else
-  {
-    Handle(SALOME_InteractiveObject) anIO = aList.First();
-    GEOM::GEOM_Object_var anObj = SMESH::IObjectToInterface<GEOM::GEOM_Object>(anIO);
-    if (!anObj->_is_nil())
+  case SMESH::FT_CoplanarFaces: // get ID of a selected mesh face
     {
-      myTable->SetThreshold(aRow, GEOMBase::GetName(anObj));
-      //myTable->SetID( aRow, GEOMBase::GetIORFromObject(anObj));
-      myTable->SetID(aRow, anIO->getEntry());
+      QString aString;
+      int nbElems = SMESH::GetNameOfSelectedElements(mySelector, anIO, aString);
+      if (nbElems == 1)
+        myTable->SetThreshold(aRow, aString);
+      break;
+    }
+  case SMESH::FT_ConnectedElements: // get either VERTEX or a node ID
+    {
+      GEOM::GEOM_Object_var anObj = SMESH::IObjectToInterface<GEOM::GEOM_Object>(anIO);
+      if (!anObj->_is_nil())
+      {
+        myTable->SetThreshold(aRow, GEOMBase::GetName(anObj));
+        myTable->SetID       (aRow, anIO->getEntry());
+      }
+      else
+      {
+        QString aString;
+        int nbElems = SMESH::GetNameOfSelectedElements(mySelector, anIO, aString);
+        if (nbElems == 1)
+          myTable->SetThreshold(aRow, aString);
+      }
+      break;
+    }
+  default: // get a GEOM object
+    {
+      GEOM::GEOM_Object_var anObj = SMESH::IObjectToInterface<GEOM::GEOM_Object>(anIO);
+      if (!anObj->_is_nil())
+      {
+        myTable->SetThreshold(aRow, GEOMBase::GetName(anObj));
+        myTable->SetID(aRow, anIO->getEntry());
+      }
     }
   }
 }
@@ -3524,6 +3627,20 @@ void SMESHGUI_FilterDlg::onSelectionDone()
 void SMESHGUI_FilterDlg::onCriterionChanged (const int, const int)
 {
   updateSelection();
+}
+
+//=======================================================================
+// name    : SMESHGUI_FilterDlg::onThresholdChanged
+// Purpose : SLOT called when a threshold value is changed by the user and
+//           not by myTable->SetThreshold()
+//=======================================================================
+void SMESHGUI_FilterDlg::onThresholdChanged( const int row, const int type )
+{
+  if ( myTable->GetCriterionType( row, type ) == SMESH::FT_ConnectedElements )
+  {
+    // to differ the text entered by the user from that got from selection
+    myTable->SetID( row, "", type );
+  }
 }
 
 //=======================================================================
@@ -3551,6 +3668,7 @@ void SMESHGUI_FilterDlg::updateSelection()
   if( !aStudy )
     return;
 
+  restoreSelMode();
 
   mySelectionMgr->clearFilters();
 
@@ -3580,6 +3698,24 @@ void SMESHGUI_FilterDlg::updateSelection()
     myIsSelectionChanged = true;
 
   }
+  else if ( aCriterionType == SMESH::FT_ConnectedElements )
+  {
+    QList<SUIT_SelectionFilter*> fList;
+    fList.push_back( new SMESH_NumberFilter( "GEOM", TopAbs_SHAPE, 1, TopAbs_VERTEX ));
+    fList.push_back( new SMESH_TypeFilter( SMESH::IDSOURCE ));
+    mySelectionMgr->installFilter
+      ( new SMESH_LogicalFilter( fList, SMESH_LogicalFilter::LO_OR,
+                                 !mySelectionMgr->autoDeleteFilter() ));
+
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    {
+      mySelModeToRestore = aViewWindow->SelectionMode();
+      aViewWindow->SetSelectionMode( NodeSelection );
+      myToRestoreSelMode = ( mySelModeToRestore != NodeSelection );
+      if ( myToRestoreSelMode )
+        SMESH::SetPointRepresentation( true );
+    }
+  }
   else
   {
     mySelector->SetSelectionMode( getSelMode( myTable->GetType() ));
@@ -3604,5 +3740,24 @@ void SMESHGUI_FilterDlg::keyPressEvent( QKeyEvent* e )
   if ( e->key() == Qt::Key_F1 ) {
     e->accept();
     onHelp();
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Restores a selection mode if it was changed to set up some criterion
+ */
+//================================================================================
+
+void SMESHGUI_FilterDlg::restoreSelMode()
+{
+  if ( myToRestoreSelMode )
+  {
+    SMESH::SetPointRepresentation( mySelModeToRestore == NodeSelection );
+
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode( mySelModeToRestore );
+
+    myToRestoreSelMode = false;
   }
 }

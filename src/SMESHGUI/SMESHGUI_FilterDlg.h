@@ -141,6 +141,7 @@ signals:
   void                      EntityTypeChanged( const int );
   void                      NeedValidation();
   void                      CriterionChanged( const int, const int );
+  void                      ThresholdChanged( const int, const int );
   void                      CurrentChanged( int, int );
 
 private slots:
@@ -249,6 +250,7 @@ private slots:
   void                      onDeactivate();
   void                      onSelectionDone();
   void                      onCriterionChanged( const int, const int );
+  void                      onThresholdChanged( const int, const int );
   void                      onCurrentChanged( int, int );
 
 private:
@@ -303,6 +305,10 @@ private:
   QMap< int, int  >              myApplyToState;
 
   QString                   myHelpFileName;
+
+  bool                      myToRestoreSelMode;
+  int                       mySelModeToRestore;
+  void                      restoreSelMode();
 };
 
 #endif // SMESHGUI_FILTERDLG_H

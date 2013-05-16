@@ -124,7 +124,7 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule,
                                       SMESH::SMESH_Mesh_ptr theMesh )
   : QDialog( SMESH::GetDesktop( theModule ) ),
     mySMESHGUI( theModule ),
-    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
+    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ), myStoredShownEntity(0),
     mySelector( SMESH::GetViewWindow( theModule )->GetSelector() ),
     myIsBusy( false ),
     myNameChanged( false ),
@@ -152,7 +152,7 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule,
                                       const bool theIsConvert )
   : QDialog( SMESH::GetDesktop( theModule ) ),
     mySMESHGUI( theModule ),
-    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
+    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ), myStoredShownEntity(0),
     mySelector( SMESH::GetViewWindow( theModule )->GetSelector() ),
     myIsBusy( false ),
     myNameChanged( false ),
@@ -1725,8 +1725,8 @@ void SMESHGUI_GroupDlg::setFilters()
     myFilterDlg->Init( aType );
   }
 
-  myFilterDlg->SetSelection();
   myFilterDlg->SetMesh( myMesh );
+  myFilterDlg->SetSelection();
   myFilterDlg->SetSourceWg( myElements, false );
 
   myFilterDlg->show();

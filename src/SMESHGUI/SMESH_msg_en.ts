@@ -1226,6 +1226,10 @@ Please enter correct values and try again</translation>
         <translation>Add Quadratic Triangle</translation>
     </message>
     <message>
+        <source>SMESH_ADD_BIQUADRATIC_TRIANGLE_TITLE</source>
+        <translation>Add BiQuadratic Triangle</translation>
+    </message>
+    <message>
         <source>SMESH_ADD_SUBMESH</source>
         <translation>SubMesh Construction</translation>
     </message>
@@ -2371,6 +2375,26 @@ Check algorithm documentation for supported geometry</translation>
     <message>
         <source>STB_BIQUADRATIC_QUADRANGLE</source>
         <translation>BiQuadratic Quadrangle</translation>
+    </message>
+    <message>
+        <source>SMESH_BIQUADRATIC_TRIANGLE</source>
+        <translation>BiQuadratic Triangle</translation>
+    </message>
+    <message>
+        <source>SMESH_BIQUADRATIC_TRIANGLES</source>
+        <translation>BiQuadratic Triangles</translation>
+    </message>
+    <message>
+        <source>MEN_BIQUADRATIC_TRIANGLE</source>
+        <translation>BiQuadratic Triangle</translation>
+    </message>
+    <message>
+        <source>TOP_BIQUADRATIC_TRIANGLE</source>
+        <translation>BiQuadratic Triangle</translation>
+    </message>
+    <message>
+        <source>STB_BIQUADRATIC_TRIANGLE</source>
+        <translation>BiQuadratic Triangle</translation>
     </message>
     <message>
         <source>SMESH_QUADRATIC_TETRAHEDRON</source>
@@ -4468,6 +4492,10 @@ Please, create VTK viewer and try again</translation>
         <translation>Add Quadratic Triangle</translation>
     </message>
     <message>
+        <source>SMESH_ADD_BIQUADRATIC_TRIANGLE</source>
+        <translation>Add BiQuadratic Triangle</translation>
+    </message>
+    <message>
         <source>SMESH_CORNER_NODES</source>
         <translation>Corner Nodes:</translation>
     </message>
@@ -5200,6 +5228,10 @@ Please check input data and try again</translation>
         <source>COPLANAR_FACES</source>
         <translation>Coplanar faces</translation>
     </message>
+    <message>
+        <source>CONNECTED_ELEMS</source>
+        <translation>Elements of a domain</translation>
+    </message>
   <message>
     <source>NUMBEROFNODESINELEMENT</source>
     <translation>Number Of Nodes In Element</translation>
@@ -5377,6 +5409,10 @@ Please enter correct value and try again</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_0</source>
+        <translation>NONE</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_1</source>
         <translation>POINT1</translation>
     </message>
     <message>
@@ -5397,70 +5433,78 @@ Please enter correct value and try again</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_6</source>
-        <translation>QUAD4</translation>
+        <translation>TRIA7</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_7</source>
-        <translation>QUAD8</translation>
+        <translation>QUAD4</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_8</source>
-        <translation>QUAD9</translation>
+        <translation>QUAD8</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_9</source>
-        <translation>TETRA4</translation>
+        <translation>QUAD9</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_10</source>
-        <translation>TETRA10</translation>
+        <translation>POLYGON</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_11</source>
-        <translation>PYRA5</translation>
+        <translation>QPOLYGON</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_12</source>
-        <translation>PYRA13</translation>
+        <translation>TETRA4</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_13</source>
-        <translation>PENTA6</translation>
+        <translation>TETRA10</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_14</source>
-        <translation>PENTA15</translation>
+        <translation>PYRA5</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_15</source>
-        <translation>HEXA8</translation>
+        <translation>PYRA13</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_16</source>
-        <translation>HEXA20</translation>
+        <translation>HEXA8</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_17</source>
-        <translation>HEXA27</translation>
+        <translation>HEXA20</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_18</source>
-        <translation>OCTA12</translation>
+        <translation>HEXA27</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_19</source>
-        <translation>POLYGONE</translation>
+        <translation>PENTA6</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_20</source>
-        <translation>POLYEDRE</translation>
+        <translation>PENTA15</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_21</source>
-        <translation>NONE</translation>
+        <translation>OCTA12</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_21</source>
+        <translation>POLYEDRE</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_22</source>
+        <translation>QPOLYEDRE</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_23</source>
         <translation>BALL</translation>
     </message>
     <message>
