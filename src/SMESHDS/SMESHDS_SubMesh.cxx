@@ -160,14 +160,14 @@ void SMESHDS_SubMesh::AddNode(const SMDS_MeshNode * N)
 {
   if ( !IsComplexSubmesh() )
   {
-    int idInSubShape = N->getIdInShape();
-    int shapeId = N->getshapeId();
+    const int idInSubShape = N->getIdInShape();
+    const int shapeId      = N->getshapeId();
     if ((shapeId > 0) && (idInSubShape >= 0))
     {
       if ( shapeId != myIndex )
         throw SALOME_Exception
           (LOCALIZED("a node being in sub-mesh is added to another sub-mesh"));
-      if ( idInSubShape >= NbNodes() || myNodes[ idInSubShape ] != N )
+      if ( idInSubShape >= myNodes.size() || myNodes[ idInSubShape ] != N )
         throw SALOME_Exception
           (LOCALIZED("a node with wrong idInSubShape is re-added to the same sub-mesh"));
       return; // already in
