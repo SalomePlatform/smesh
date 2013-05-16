@@ -330,7 +330,7 @@ good quality elements</string>
        <property name="title">
         <string>Original Mesh</string>
        </property>
-       <widget class="QWidget" name="">
+       <widget class="QWidget" name="layoutWidget">
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -427,7 +427,7 @@ good quality elements</string>
         <rect>
          <x>430</x>
          <y>540</y>
-         <width>111</width>
+         <width>81</width>
          <height>31</height>
         </rect>
        </property>
@@ -440,21 +440,25 @@ good quality elements</string>
         <bool>true</bool>
        </property>
        <property name="toolTip">
-        <string>If the Units parameter is relative epsilon max correspond to 0.0001x s x tolerance parameter where s is the size of the bounding box of the domain.
-If the Units parameter is absolute, the tolerance parameter is expressed in model units :
-if P=2 and point coordinaters are givin in millimetre, it menas that the maximal chordal deviation is 2 mm </string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the Units parameter is relative, epsilon max corresponds to 0.001x s x tolerance parameter where s is the size of the bounding box of the domain.&lt;/p&gt;&lt;p&gt;If the Units parameter (P) is absolute, the tolerance parameter is expressed in model units :&lt;/p&gt;&lt;p&gt;if P=2 and point coordinates are given in millimetre, it means that the maximal chordal deviation is 2 mm &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="decimals">
+        <number>0</number>
+       </property>
+       <property name="minimum">
+        <double>1.000000000000000</double>
        </property>
        <property name="maximum">
-        <double>100000.000000000000000</double>
+        <double>1000.000000000000000</double>
        </property>
        <property name="singleStep">
         <double>1.000000000000000</double>
        </property>
        <property name="value">
-        <double>0.100000000000000</double>
+        <double>10.000000000000000</double>
        </property>
       </widget>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <property name="geometry">
         <rect>
          <x>30</x>
@@ -508,7 +512,7 @@ p, li { white-space: pre-wrap; }
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <property name="geometry">
         <rect>
          <x>60</x>
@@ -546,13 +550,11 @@ p, li { white-space: pre-wrap; }
         </item>
        </layout>
       </widget>
-      <zorder>GBUnit</zorder>
-      <zorder>GBTolerance_2</zorder>
+      <zorder>layoutWidget</zorder>
+      <zorder>layoutWidget</zorder>
       <zorder>groupBox</zorder>
       <zorder>GBOptim</zorder>
       <zorder>SP_Tolerance</zorder>
-      <zorder>RB_Relative</zorder>
-      <zorder>RB_Absolute</zorder>
      </widget>
      <widget class="QWidget" name="advanced">
       <attribute name="title">
