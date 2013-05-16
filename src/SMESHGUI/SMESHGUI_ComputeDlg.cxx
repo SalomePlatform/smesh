@@ -832,19 +832,15 @@ void SMESHGUI_BaseComputeOp::computeMesh()
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
       OCC_CATCH_SIGNALS;
 #endif
-      //SMESH::UpdateNulData(myIObject, true);
       bool res;
-#ifdef WITH_SMESH_CANCEL_COMPUTE
       SMESHGUI_ComputeDlg_QThreadQDialog qthreaddialog(desktop(), gen, myMesh, myMainShape);
       qthreaddialog.exec();
       res = qthreaddialog.result();
-#else
       res = gen->Compute(myMesh, myMainShape);
-#endif
       if (res)
         computeFailed = false;
     }
-    catch(const SALOME::SALOME_Exception & S_ex){
+    catch(const SALOME::SALOME_Exception & S_ex) {
       memoryLack = true;
     }
     try {
@@ -856,7 +852,7 @@ void SMESHGUI_BaseComputeOp::computeMesh()
       for ( int i = 0; (i < aCompErrors->length()) && !memoryLack; ++i )
         memoryLack = ( aCompErrors[ i ].code == SMESH::COMPERR_MEMORY_PB );
     }
-    catch(const SALOME::SALOME_Exception & S_ex){
+    catch(const SALOME::SALOME_Exception & S_ex) {
       memoryLack = true;
     }
 
