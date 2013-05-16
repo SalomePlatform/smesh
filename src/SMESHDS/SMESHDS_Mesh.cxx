@@ -202,10 +202,10 @@ SMDS_MeshNode* SMESHDS_Mesh::AddNodeWithID(double x, double y, double z, int ID)
 //function : MoveNode
 //purpose  : 
 //=======================================================================
+
 void SMESHDS_Mesh::MoveNode(const SMDS_MeshNode *n, double x, double y, double z)
 {
-  SMDS_MeshNode * node=const_cast<SMDS_MeshNode*>(n);
-  node->setXYZ(x,y,z);
+  SMDS_Mesh::MoveNode( n, x, y, z );
   myScript->MoveNode(n->GetID(), x, y, z);
 }
 
@@ -1070,58 +1070,63 @@ bool SMESHDS_Mesh::add(const SMDS_MeshElement* elem, SMESHDS_SubMesh* subMesh )
 //function : SetNodeOnVolume
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::SetNodeInVolume(SMDS_MeshNode *      aNode,
+void SMESHDS_Mesh::SetNodeInVolume(const SMDS_MeshNode* aNode,
                                    const TopoDS_Shell & S)
 {
   if ( add( aNode, getSubmesh(S) ))
-    aNode->SetPosition ( SMDS_SpacePosition::originSpacePosition() );
+    const_cast< SMDS_MeshNode* >
+      ( aNode )->SetPosition( SMDS_SpacePosition::originSpacePosition() );
 }
 
 //=======================================================================
 //function : SetNodeOnVolume
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::SetNodeInVolume(SMDS_MeshNode *      aNode,
+void SMESHDS_Mesh::SetNodeInVolume(const SMDS_MeshNode *      aNode,
                                    const TopoDS_Solid & S)
 {
   if ( add( aNode, getSubmesh(S) ))
-    aNode->SetPosition ( SMDS_SpacePosition::originSpacePosition() );
+    const_cast< SMDS_MeshNode* >
+      ( aNode )->SetPosition( SMDS_SpacePosition::originSpacePosition() );
 }
 
 //=======================================================================
 //function : SetNodeOnFace
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::SetNodeOnFace(SMDS_MeshNode *     aNode,
+void SMESHDS_Mesh::SetNodeOnFace(const SMDS_MeshNode *     aNode,
                                  const TopoDS_Face & S,
                                  double              u,
                                  double              v)
 {
   if ( add( aNode, getSubmesh(S) ))
-    aNode->SetPosition(SMDS_PositionPtr(new SMDS_FacePosition( u, v)));
+    const_cast< SMDS_MeshNode* >
+      ( aNode )->SetPosition(SMDS_PositionPtr(new SMDS_FacePosition( u, v)));
 }
 
 //=======================================================================
 //function : SetNodeOnEdge
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::SetNodeOnEdge(SMDS_MeshNode *     aNode,
+void SMESHDS_Mesh::SetNodeOnEdge(const SMDS_MeshNode *     aNode,
                                  const TopoDS_Edge & S,
                                  double              u)
 {
   if ( add( aNode, getSubmesh(S) ))
-    aNode->SetPosition(SMDS_PositionPtr(new SMDS_EdgePosition(u)));
+    const_cast< SMDS_MeshNode* >
+      ( aNode )->SetPosition(SMDS_PositionPtr(new SMDS_EdgePosition(u)));
 }
 
 //=======================================================================
 //function : SetNodeOnVertex
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::SetNodeOnVertex(SMDS_MeshNode *       aNode,
+void SMESHDS_Mesh::SetNodeOnVertex(const SMDS_MeshNode *       aNode,
                                    const TopoDS_Vertex & S)
 {
   if ( add( aNode, getSubmesh(S) ))
-    aNode->SetPosition(SMDS_PositionPtr(new SMDS_VertexPosition()));
+    const_cast< SMDS_MeshNode* >
+      ( aNode )->SetPosition(SMDS_PositionPtr(new SMDS_VertexPosition()));
 }
 
 //=======================================================================
@@ -1414,35 +1419,38 @@ void SMESHDS_Mesh::SetNodeInVolume(const SMDS_MeshNode* aNode, int Index)
 //function : SetNodeOnFace
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::SetNodeOnFace(SMDS_MeshNode* aNode, int Index, double u, double v)
+void SMESHDS_Mesh::SetNodeOnFace(const SMDS_MeshNode* aNode, int Index, double u, double v)
 {
   //Set Position on Node
   if ( add( aNode, getSubmesh( Index )))
-    aNode->SetPosition(SMDS_PositionPtr(new SMDS_FacePosition( u, v)));
+    const_cast< SMDS_MeshNode* >
+      ( aNode )->SetPosition(SMDS_PositionPtr(new SMDS_FacePosition( u, v)));
 }
 
 //=======================================================================
 //function : SetNodeOnEdge
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::SetNodeOnEdge(SMDS_MeshNode* aNode,
-                                 int            Index,
-                                 double         u)
+void SMESHDS_Mesh::SetNodeOnEdge(const SMDS_MeshNode* aNode,
+                                 int                  Index,
+                                 double               u)
 {
   //Set Position on Node
   if ( add( aNode, getSubmesh( Index )))
-    aNode->SetPosition(SMDS_PositionPtr(new SMDS_EdgePosition(u)));
+    const_cast< SMDS_MeshNode* >
+      ( aNode )->SetPosition(SMDS_PositionPtr(new SMDS_EdgePosition(u)));
 }
 
 //=======================================================================
 //function : SetNodeOnVertex
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::SetNodeOnVertex(SMDS_MeshNode* aNode, int Index)
+void SMESHDS_Mesh::SetNodeOnVertex(const SMDS_MeshNode* aNode, int Index)
 {
   //Set Position on Node
   if ( add( aNode, getSubmesh( Index )))
-    aNode->SetPosition(SMDS_PositionPtr(new SMDS_VertexPosition()));
+    const_cast< SMDS_MeshNode* >
+      ( aNode )->SetPosition(SMDS_PositionPtr(new SMDS_VertexPosition()));
 }
 
 //=======================================================================
@@ -1566,6 +1574,56 @@ SMDS_MeshFace* SMESHDS_Mesh::AddFaceWithID(const SMDS_MeshNode * n1,
   return AddFaceWithID(n1->GetID(), n2->GetID(), n3->GetID(),
                        n12->GetID(), n23->GetID(), n31->GetID(),
                        ID);
+}
+
+//=======================================================================
+//function : AddFace
+//purpose  : 
+//=======================================================================
+SMDS_MeshFace* SMESHDS_Mesh::AddFace(const SMDS_MeshNode * n1,
+                                     const SMDS_MeshNode * n2,
+                                     const SMDS_MeshNode * n3,
+                                     const SMDS_MeshNode * n12,
+                                     const SMDS_MeshNode * n23,
+                                     const SMDS_MeshNode * n31,
+                                     const SMDS_MeshNode * nCenter)
+{
+  SMDS_MeshFace *anElem = SMDS_Mesh::AddFace(n1,n2,n3,n12,n23,n31,nCenter);
+  if(anElem) myScript->AddFace(anElem->GetID(), 
+                               n1->GetID(), n2->GetID(), n3->GetID(),
+                               n12->GetID(), n23->GetID(), n31->GetID(),
+                               nCenter->GetID());
+  return anElem;
+}
+
+//=======================================================================
+//function : AddFaceWithID
+//purpose  : 
+//=======================================================================
+SMDS_MeshFace* SMESHDS_Mesh::AddFaceWithID(int n1, int n2, int n3,
+                                           int n12,int n23,int n31, int nCenter, int ID)
+{
+  SMDS_MeshFace *anElem = SMDS_Mesh::AddFaceWithID(n1,n2,n3,n12,n23,n31,nCenter,ID);
+  if(anElem) myScript->AddFace(ID,n1,n2,n3,n12,n23,n31,nCenter);
+  return anElem;
+}
+
+//=======================================================================
+//function : AddFaceWithID
+//purpose  : 
+//=======================================================================
+SMDS_MeshFace* SMESHDS_Mesh::AddFaceWithID(const SMDS_MeshNode * n1,
+                                           const SMDS_MeshNode * n2,
+                                           const SMDS_MeshNode * n3,
+                                           const SMDS_MeshNode * n12,
+                                           const SMDS_MeshNode * n23,
+                                           const SMDS_MeshNode * n31, 
+                                           const SMDS_MeshNode * nCenter, 
+                                           int ID)
+{
+  return AddFaceWithID(n1->GetID(), n2->GetID(), n3->GetID(),
+                       n12->GetID(), n23->GetID(), n31->GetID(),
+                       nCenter->GetID(), ID);
 }
 
 

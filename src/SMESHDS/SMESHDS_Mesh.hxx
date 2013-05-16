@@ -138,6 +138,25 @@ public:
                                  const SMDS_MeshNode * n23,
                                  const SMDS_MeshNode * n31);
 
+  // biquadratic triangle of 7 nodes
+  virtual SMDS_MeshFace* AddFaceWithID(int n1, int n2, int n3,
+                                       int n12,int n23,int n31, int nCenter, int ID);
+  virtual SMDS_MeshFace* AddFaceWithID(const SMDS_MeshNode * n1,
+                                       const SMDS_MeshNode * n2,
+                                       const SMDS_MeshNode * n3, 
+                                       const SMDS_MeshNode * n12,
+                                       const SMDS_MeshNode * n23,
+                                       const SMDS_MeshNode * n31,
+                                       const SMDS_MeshNode * nCenter, 
+                                       int ID);
+  virtual SMDS_MeshFace* AddFace(const SMDS_MeshNode * n1,
+                                 const SMDS_MeshNode * n2,
+                                 const SMDS_MeshNode * n3,
+                                 const SMDS_MeshNode * n12,
+                                 const SMDS_MeshNode * n23,
+                                 const SMDS_MeshNode * n31,
+                                 const SMDS_MeshNode * nCenter);
+
   // 2d order quadrangle
   virtual SMDS_MeshFace* AddFaceWithID(int n1, int n2, int n3, int n4,
                                        int n12,int n23,int n34,int n41, int ID);
@@ -159,7 +178,7 @@ public:
                                  const SMDS_MeshNode * n34,
                                  const SMDS_MeshNode * n41);
 
-  // bi-quadratic quadrangle of 9 nodes
+  // biquadratic quadrangle of 9 nodes
   virtual SMDS_MeshFace* AddFaceWithID(int n1, int n2, int n3, int n4,
                                        int n12,int n23,int n34,int n41, int nCenter, int ID);
   virtual SMDS_MeshFace* AddFaceWithID(const SMDS_MeshNode * n1,
@@ -502,7 +521,7 @@ public:
                            (const std::vector<const SMDS_MeshNode*>& nodes,
                             const std::vector<int>&                  quantities);
 
-  void MoveNode(const SMDS_MeshNode *, double x, double y, double z);
+  virtual void MoveNode(const SMDS_MeshNode *, double x, double y, double z);
   virtual void RemoveNode(const SMDS_MeshNode *);
   void RemoveElement(const SMDS_MeshElement *);
 
@@ -526,22 +545,26 @@ public:
   bool ModifyCellNodes(int smdsVolId, std::map<int,int> localClonedNodeIds);
   void Renumber (const bool isNodes, const int startID=1, const int deltaID=1);
 
-  void SetNodeInVolume(SMDS_MeshNode * aNode, const TopoDS_Shell & S);
-  void SetNodeInVolume(SMDS_MeshNode * aNode, const TopoDS_Solid & S);
-  void SetNodeOnFace(SMDS_MeshNode * aNode, const TopoDS_Face & S, double u=0., double v=0.);
-  void SetNodeOnEdge(SMDS_MeshNode * aNode, const TopoDS_Edge & S, double u=0.);
-  void SetNodeOnVertex(SMDS_MeshNode * aNode, const TopoDS_Vertex & S);
+  void SetNodeInVolume(const SMDS_MeshNode * aNode, const TopoDS_Shell & S);
+  void SetNodeInVolume(const SMDS_MeshNode * aNode, const TopoDS_Solid & S);
+  void SetNodeOnFace  (const SMDS_MeshNode * aNode, const TopoDS_Face& S, double u=0.,double v=0.);
+  void SetNodeOnEdge  (const SMDS_MeshNode * aNode, const TopoDS_Edge& S, double u=0.);
+  void SetNodeOnVertex(const SMDS_MeshNode * aNode, const TopoDS_Vertex & S);
   void UnSetNodeOnShape(const SMDS_MeshNode * aNode);
-  void SetMeshElementOnShape(const SMDS_MeshElement * anElt,
-                             const TopoDS_Shape & S);
-  void UnSetMeshElementOnShape(const SMDS_MeshElement * anElt,
-                               const TopoDS_Shape & S);
+  void SetMeshElementOnShape  (const SMDS_MeshElement * anElt, const TopoDS_Shape & S);
+  void UnSetMeshElementOnShape(const SMDS_MeshElement * anElt, const TopoDS_Shape & S);
+  void SetNodeInVolume(const SMDS_MeshNode * aNode, int Index);
+  void SetNodeOnFace  (const SMDS_MeshNode * aNode, int Index, double u=0., double v=0.);
+  void SetNodeOnEdge  (const SMDS_MeshNode * aNode, int Index, double u=0.);
+  void SetNodeOnVertex(const SMDS_MeshNode * aNode, int Index);
+  void SetMeshElementOnShape(const SMDS_MeshElement * anElt, int Index);
   bool HasMeshElements(const TopoDS_Shape & S) const;
   SMESHDS_SubMesh * MeshElements(const TopoDS_Shape & S) const;
   SMESHDS_SubMesh * MeshElements(const int Index) const;
   std::list<int> SubMeshIndices() const;
   const std::map<int,SMESHDS_SubMesh*>& SubMeshes() const
   { return myShapeIndexToSubMesh; }
+  const TopoDS_Shape& GetCurrentSubShape() const { return myCurSubShape; }
 
   bool HasHypothesis(const TopoDS_Shape & S);
   const std::list<const SMESHDS_Hypothesis*>& GetHypothesis(const TopoDS_Shape & S) const;
@@ -555,11 +578,6 @@ public:
 
   SMESHDS_SubMesh * NewSubMesh(int Index);
   int AddCompoundSubmesh(const TopoDS_Shape& S, TopAbs_ShapeEnum type = TopAbs_SHAPE);
-  void SetNodeInVolume(const SMDS_MeshNode * aNode, int Index);
-  void SetNodeOnFace(SMDS_MeshNode * aNode, int Index , double u=0., double v=0.);
-  void SetNodeOnEdge(SMDS_MeshNode * aNode, int Index , double u=0.);
-  void SetNodeOnVertex(SMDS_MeshNode * aNode, int Index);
-  void SetMeshElementOnShape(const SMDS_MeshElement * anElt, int Index);
 
   // Groups. SMESHDS_Mesh is not an owner of groups
   void AddGroup (SMESHDS_GroupBase* theGroup)      { myGroups.insert(theGroup); }
