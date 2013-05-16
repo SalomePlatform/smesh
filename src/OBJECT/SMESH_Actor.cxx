@@ -230,6 +230,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_TRIANGLE);
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_QUAD);
   aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUAD);
+  aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_TRIANGLE);
 
   my2DExtProp = vtkProperty::New();
   my2DExtProp->DeepCopy(mySurfaceProp);
@@ -252,6 +253,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_TRIANGLE);
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_QUAD);
   aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUAD);
+  aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_TRIANGLE);
 
   my3DActor = SMESH_CellLabelActor::New();
   my3DActor->SetStoreGemetryMapping(true);
@@ -1582,6 +1584,7 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode)
     aFilter->RegisterCellsWithType(VTK_QUADRATIC_TRIANGLE);
     aFilter->RegisterCellsWithType(VTK_QUADRATIC_QUAD);
     aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUAD);
+    aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_TRIANGLE);
 
     aHightFilter->RegisterCellsWithType(VTK_TRIANGLE);
     aHightFilter->RegisterCellsWithType(VTK_POLYGON);
@@ -1589,6 +1592,7 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode)
     aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_TRIANGLE);
     aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_QUAD);
     aHightFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUAD);
+    aHightFilter->RegisterCellsWithType(VTK_BIQUADRATIC_TRIANGLE);
   }
 
   if (myEntityMode & eVolumes) {

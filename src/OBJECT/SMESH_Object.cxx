@@ -103,6 +103,7 @@ static inline vtkIdType getCellType( const SMDSAbs_ElementType theType,
       else if ( theNbNodes == 6 )   return VTK_QUADRATIC_TRIANGLE;
       else if ( theNbNodes == 8 )   return VTK_QUADRATIC_QUAD;
       else if ( theNbNodes == 9 )   return VTK_BIQUADRATIC_QUAD;
+      else if ( theNbNodes == 7 )   return VTK_BIQUADRATIC_TRIANGLE;
       else return VTK_EMPTY_CELL;
       
     case SMDSAbs_Volume:
