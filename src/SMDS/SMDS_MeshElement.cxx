@@ -161,34 +161,69 @@ class SMDS_MeshElement_MyIterator:public SMDS_ElemIterator
   }     
 };
 
-SMDS_ElemIteratorPtr SMDS_MeshElement::
-        elementsIterator(SMDSAbs_ElementType type) const
+SMDS_ElemIteratorPtr
+SMDS_MeshElement::elementsIterator(SMDSAbs_ElementType type) const
 {
-        /** @todo Check that iterator in the child classes return elements
-        in the same order for each different implementation (i.e: SMDS_VolumeOfNodes
-        and SMDS_VolumeOfFaces */
-        
-        if(type==GetType())
-          return SMDS_ElemIteratorPtr(new SMDS_MeshElement_MyIterator(this));
-        else 
-        {
-          MESSAGE("Iterator not implemented");
-          return SMDS_ElemIteratorPtr((SMDS_ElemIterator*)NULL);
-        }
+  /** @todo Check that iterator in the child classes return elements
+      in the same order for each different implementation (i.e: SMDS_VolumeOfNodes
+      and SMDS_VolumeOfFaces */
+  if(type==GetType())
+    return SMDS_ElemIteratorPtr(new SMDS_MeshElement_MyIterator(this));
+  else
+  {
+    MESSAGE("Iterator not implemented");
+    return SMDS_ElemIteratorPtr((SMDS_ElemIterator*)NULL);
+  }
 }
 
 //! virtual, redefined in vtkEdge, vtkFace and vtkVolume classes
-SMDS_ElemIteratorPtr SMDS_MeshElement::nodesIteratorToUNV() const
+SMDS_NodeIteratorPtr SMDS_MeshElement::nodesIteratorToUNV() const
 {
-  MESSAGE("Iterator not implemented");
-  return SMDS_ElemIteratorPtr((SMDS_ElemIterator*) NULL);
+  return nodeIterator();
 }
 
 //! virtual, redefined in vtkEdge, vtkFace and vtkVolume classes
+SMDS_NodeIteratorPtr SMDS_MeshElement::interlacedNodesIterator() const
+{
+  return nodeIterator();
+}
+
+namespace
+{
+  //=======================================================================
+  //class : _MyNodeIteratorFromElemIterator
+  //=======================================================================
+  class _MyNodeIteratorFromElemIterator : public SMDS_NodeIterator
+  {
+    SMDS_ElemIteratorPtr myItr;
+  public:
+    _MyNodeIteratorFromElemIterator(SMDS_ElemIteratorPtr elemItr):myItr( elemItr ) {}
+    bool                 more() { return myItr->more(); }
+    const SMDS_MeshNode* next() { return static_cast< const SMDS_MeshNode*>( myItr->next() ); }
+  };
+  //=======================================================================
+  //class : _MyElemIteratorFromNodeIterator
+  //=======================================================================
+  class _MyElemIteratorFromNodeIterator : public SMDS_ElemIterator
+  {
+    SMDS_NodeIteratorPtr myItr;
+  public:
+    _MyElemIteratorFromNodeIterator(SMDS_NodeIteratorPtr nodeItr): myItr( nodeItr ) {}
+    bool more()                    { return myItr->more(); }
+    const SMDS_MeshElement* next() { return myItr->next(); }
+  };
+}
+
 SMDS_ElemIteratorPtr SMDS_MeshElement::interlacedNodesElemIterator() const
 {
-  MESSAGE("Iterator not implemented");
-  return SMDS_ElemIteratorPtr((SMDS_ElemIterator*) NULL);
+  return SMDS_ElemIteratorPtr
+    ( new _MyElemIteratorFromNodeIterator( interlacedNodesIterator() ));
+}
+
+SMDS_NodeIteratorPtr SMDS_MeshElement::nodeIterator() const
+{
+  return SMDS_NodeIteratorPtr
+    ( new _MyNodeIteratorFromElemIterator( nodesIterator() ));
 }
 
 bool operator<(const SMDS_MeshElement& e1, const SMDS_MeshElement& e2)

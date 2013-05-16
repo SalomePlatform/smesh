@@ -65,8 +65,11 @@ public:
   SMDS_ElemIteratorPtr edgesIterator() const;
   SMDS_ElemIteratorPtr facesIterator() const;
   virtual SMDS_ElemIteratorPtr elementsIterator(SMDSAbs_ElementType type) const;
-  virtual SMDS_ElemIteratorPtr nodesIteratorToUNV() const;
   virtual SMDS_ElemIteratorPtr interlacedNodesElemIterator() const;
+
+  virtual SMDS_NodeIteratorPtr nodeIterator() const;
+  virtual SMDS_NodeIteratorPtr interlacedNodesIterator() const;
+  virtual SMDS_NodeIteratorPtr nodesIteratorToUNV() const;
 
   // std-like iteration on nodes
   typedef SMDS_StdIterator< const SMDS_MeshNode*, SMDS_ElemIteratorPtr > iterator;
