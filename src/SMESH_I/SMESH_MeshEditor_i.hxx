@@ -75,6 +75,10 @@ public:
    */
   SMESH::long_array* GetLastCreatedElems() throw (SALOME::SALOME_Exception);
   /*!
+   * \brief Clears sequences of last created elements and nodes 
+   */
+  void ClearLastCreated() throw (SALOME::SALOME_Exception);
+  /*!
    * \brief Returns description of an error/warning occured during the last operation
    */
   SMESH::ComputeError* GetLastError() throw (SALOME::SALOME_Exception);
