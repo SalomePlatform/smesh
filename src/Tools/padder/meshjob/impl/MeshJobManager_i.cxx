@@ -295,9 +295,9 @@ CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobParameterList & m
       break;
     default:
       _lastErrorMessage =
-	std::string("The type of the file ")+
-	std::string(currentMesh.file_name)+
-	std::string(" is not recognized");
+        std::string("The type of the file ")+
+        std::string(currentMesh.file_name)+
+        std::string(" is not recognized");
       LOG(_lastErrorMessage);
       return JOBID_UNDEFINED;
     }
@@ -573,8 +573,8 @@ MESHJOB::MeshJobResults * MeshJobManager_i::finalize(CORBA::Long jobId) {
     
     if ( fexists( (local_resultdir+"/"+outputFileName).c_str()  ) != true ) {
       _lastErrorMessage = std::string("The result file ")+
-	std::string((local_resultdir+"/"+outputFileName).c_str())+
-	std::string(" has not been created.");
+        std::string((local_resultdir+"/"+outputFileName).c_str())+
+        std::string(" has not been created.");
       result->status = false;
     }
     else {
