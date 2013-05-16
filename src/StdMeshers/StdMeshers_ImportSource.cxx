@@ -121,7 +121,8 @@ namespace
   //================================================================================
 
   vector<SMESH_Group*> getValidGroups(const vector<SMESH_Group*>& groups,
-                                      StudyContextStruct*         studyContext)
+                                      StudyContextStruct*         studyContext,
+                                      bool                        loaded=false)
   {
     vector<SMESH_Group*> okGroups;
     for ( int i = 0; i < groups.size(); ++i )
@@ -137,7 +138,11 @@ namespace
           SMESH_Mesh::GroupIteratorPtr gIt = itm->second->GetGroups();
           while ( gIt->more() && !okGroup )
             if ( gIt->next() == groups[i] )
+            {
               okGroup = groups[i];
+              if ( loaded )
+                itm->second->Load();
+            }
         }
         if ( okGroup )
           okGroups.push_back( okGroup );
@@ -193,14 +198,16 @@ namespace
 //=============================================================================
 /*!
  *  Returns groups to import elements from
+ *  \param [in] loaded - if \c true, meshes holding the groups are loaded
  */
 //=============================================================================
 
-const std::vector<SMESH_Group*>&  StdMeshers_ImportSource1D::GetGroups() const
+const std::vector<SMESH_Group*>&  StdMeshers_ImportSource1D::GetGroups(bool loaded) const
 {
   // filter off deleted groups
   vector<SMESH_Group*> okGroups = getValidGroups( _groups,
-                                                  _gen->GetStudyContext(_studyId) );
+                                                  _gen->GetStudyContext(_studyId),
+                                                  loaded);
   if ( okGroups.size() != _groups.size() )
     ((StdMeshers_ImportSource1D*)this)->_groups = okGroups;
 

@@ -52,7 +52,7 @@ class STDMESHERS_EXPORT StdMeshers_ImportSource1D : public SMESH_Hypothesis
   virtual ~ StdMeshers_ImportSource1D();
 
   void SetGroups(const std::vector<SMESH_Group*>& groups);
-  const std::vector<SMESH_Group*>& GetGroups() const;
+  const std::vector<SMESH_Group*>& GetGroups(bool loaded=false) const;
 
   void SetCopySourceMesh(bool toCopyMesh, bool toCopyGroups);
   void GetCopySourceMesh(bool& toCopyMesh, bool& toCopyGroups) const;
