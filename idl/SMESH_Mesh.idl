@@ -72,6 +72,7 @@ module SMESH
       ADD_QUADPENTAHEDRON,
       ADD_QUADHEXAHEDRON,
       ADD_ELEM0D,
+      ADD_BIQUAD_TRIANGLE,
       ADD_BIQUAD_QUADRANGLE,
       ADD_TRIQUAD_HEXA,
       ADD_HEXAGONAL_PRISM,
@@ -174,6 +175,7 @@ module SMESH
     Entity_Quad_Edge,
     Entity_Triangle,
     Entity_Quad_Triangle,
+    Entity_BiQuad_Triangle,
     Entity_Quadrangle,
     Entity_Quad_Quadrangle,
     Entity_BiQuad_Quadrangle,
@@ -710,6 +712,9 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     long NbTrianglesOfOrder(in ElementOrder order)
+      raises (SALOME::SALOME_Exception);
+
+    long NbBiQuadTriangles()
       raises (SALOME::SALOME_Exception);
 
     long NbQuadrangles()
