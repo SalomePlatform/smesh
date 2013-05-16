@@ -507,6 +507,31 @@ namespace
     }
   }
 
+  //=======================================================================
+  //function : AddBiQuadTriasWithID
+  //=======================================================================
+  inline void AddBiQuadTriasWithID(SMDS_Mesh* theMesh,
+                                   SMESH::log_array_var theSeq,
+                                   CORBA::Long theId)
+  {
+    const SMESH::long_array& anIndexes = theSeq[theId].indexes;
+    CORBA::Long anElemId = 0, aNbElems = theSeq[theId].number;
+    if(8*aNbElems != anIndexes.length())
+      EXCEPTION(runtime_error,"AddBiQuadTriasWithID - 8*aNbElems != anIndexes.length()");
+    for(CORBA::Long anIndexId = 0; anElemId < aNbElems; anElemId++, anIndexId+=8){
+      SMDS_MeshElement* anElem = theMesh->AddFaceWithID(anIndexes[anIndexId+1],
+                                                        anIndexes[anIndexId+2],
+                                                        anIndexes[anIndexId+3],
+                                                        anIndexes[anIndexId+4],
+                                                        anIndexes[anIndexId+5],
+                                                        anIndexes[anIndexId+6],
+                                                        anIndexes[anIndexId+7],
+                                                        anIndexes[anIndexId]);
+      if(!anElem)
+        EXCEPTION(runtime_error,"AddBiQuadTriasWithID() - cannot AddFaceWithID for ID = "<<anElemId);
+    }
+  }
+
 
   //=======================================================================
   //function : AddQuadTetrasWithID
@@ -878,11 +903,13 @@ SMESH_Client::Update(bool theIsClear)
         case SMESH::ADD_QUADEDGE         : AddQuadEdgesWithID   ( mySMDSMesh, aSeq, anId ); break;
         case SMESH::ADD_QUADTRIANGLE     : AddQuadTriasWithID   ( mySMDSMesh, aSeq, anId ); break;
         case SMESH::ADD_QUADQUADRANGLE   : AddQuadQuadsWithID   ( mySMDSMesh, aSeq, anId ); break;
-        case SMESH::ADD_BIQUAD_QUADRANGLE: AddBiQuadQuadsWithID ( mySMDSMesh, aSeq, anId ); break;
         case SMESH::ADD_QUADTETRAHEDRON  : AddQuadTetrasWithID  ( mySMDSMesh, aSeq, anId ); break;
         case SMESH::ADD_QUADPYRAMID      : AddQuadPiramidsWithID( mySMDSMesh, aSeq, anId ); break;
         case SMESH::ADD_QUADPENTAHEDRON  : AddQuadPentasWithID  ( mySMDSMesh, aSeq, anId ); break;
         case SMESH::ADD_QUADHEXAHEDRON   : AddQuadHexasWithID   ( mySMDSMesh, aSeq, anId ); break;
+
+        case SMESH::ADD_BIQUAD_QUADRANGLE: AddBiQuadQuadsWithID ( mySMDSMesh, aSeq, anId ); break;
+        case SMESH::ADD_BIQUAD_TRIANGLE  : AddBiQuadTriasWithID ( mySMDSMesh, aSeq, anId ); break;
         case SMESH::ADD_TRIQUAD_HEXA     : AddTriQuadHexasWithID( mySMDSMesh, aSeq, anId ); break;
 
         case SMESH::CLEAR_MESH:
