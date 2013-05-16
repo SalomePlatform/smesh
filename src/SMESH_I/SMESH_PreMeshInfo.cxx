@@ -233,6 +233,7 @@ namespace
       med2smeshTypes[ MED::eSEG3     ] = SMDSEntity_Quad_Edge         ;
       med2smeshTypes[ MED::eTRIA3    ] = SMDSEntity_Triangle          ;
       med2smeshTypes[ MED::eTRIA6    ] = SMDSEntity_Quad_Triangle     ;
+      med2smeshTypes[ MED::eTRIA7    ] = SMDSEntity_BiQuad_Triangle   ;
       med2smeshTypes[ MED::eQUAD4    ] = SMDSEntity_Quadrangle        ;
       med2smeshTypes[ MED::eQUAD8    ] = SMDSEntity_Quad_Quadrangle   ;
       med2smeshTypes[ MED::eQUAD9    ] = SMDSEntity_BiQuad_Quadrangle ;
@@ -285,7 +286,7 @@ namespace
                      const std::string&    name,
                      HDFgroup*             hdfGroup)
   {
-    // we use med identification of element (MED::EGeometrieElement>) types
+    // we use med identification of element (MED::EGeometrieElement) types
     // but not enum SMDSAbs_EntityType because values of SMDSAbs_EntityType may
     // change at insertion of new items in the middle.
     const vector<MED::EGeometrieElement>& medTypes = mesh2medElemType();
