@@ -136,7 +136,7 @@ private slots:
   void                        onCellDoubleClicked( int, int );
   
   void                        ClickOnOk();
-  void                        ClickOnApply();
+  bool                        ClickOnApply();
   void                        ClickOnHelp();
   void                        SetCurrentSelection();
   void                        SelectionIntoArgument();

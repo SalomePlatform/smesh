@@ -278,7 +278,6 @@ static int LastHexahedronIds[] =  {1,2,3,0,5,6,7,4,4,5,6,7};
   \brief Simple 'busy state' flag locker.
   \internal
 */
-
 class BusyLocker
 {
 public:
@@ -295,7 +294,6 @@ private:
   \brief Simple editable table item.
   \internal
 */
-
 class IdEditItem: public QTableWidgetItem
 {
 public:
@@ -325,6 +323,7 @@ QWidget* IdEditItem::createEditor() const
 // function : SMESHGUI_AddQuadraticElementDlg()
 // purpose  : constructor
 //=================================================================================
+
 SMESHGUI_AddQuadraticElementDlg::SMESHGUI_AddQuadraticElementDlg( SMESHGUI* theModule,
                                                                   const SMDSAbs_EntityType theType )
   : QDialog( SMESH::GetDesktop( theModule ) ),
@@ -357,6 +356,9 @@ SMESHGUI_AddQuadraticElementDlg::SMESHGUI_AddQuadraticElementDlg( SMESHGUI* theM
     break;
   case SMDSEntity_BiQuad_Quadrangle:
     anElementName = QString("BIQUADRATIC_QUADRANGLE");
+    break;
+  case SMDSEntity_BiQuad_Triangle:
+    anElementName = QString("BIQUADRATIC_TRIANGLE");
     break;
   case SMDSEntity_Quad_Tetra:
     anElementName = QString("QUADRATIC_TETRAHEDRON");
@@ -501,6 +503,7 @@ SMESHGUI_AddQuadraticElementDlg::SMESHGUI_AddQuadraticElementDlg( SMESHGUI* theM
 // function : ~SMESHGUI_AddQuadraticElementDlg()
 // purpose  : Destroys the object and frees any allocated resources
 //=================================================================================
+
 SMESHGUI_AddQuadraticElementDlg::~SMESHGUI_AddQuadraticElementDlg()
 {
   delete mySimulation;
@@ -510,6 +513,7 @@ SMESHGUI_AddQuadraticElementDlg::~SMESHGUI_AddQuadraticElementDlg()
 // function : Init()
 // purpose  :
 //=================================================================================
+
 void SMESHGUI_AddQuadraticElementDlg::Init()
 {
   myRadioButton1->setChecked(true);
@@ -533,6 +537,12 @@ void SMESHGUI_AddQuadraticElementDlg::Init()
   case SMDSEntity_Quad_Triangle:
     aNumRows = 3;
     myNbCorners = 3;
+    myHelpFileName = "adding_quadratic_elements_page.html#?"; //Adding_triangles
+    break;
+  case SMDSEntity_BiQuad_Triangle:
+    aNumRows = 3;
+    myNbCorners = 3;
+    myNbCenterNodes = 1;
     myHelpFileName = "adding_quadratic_elements_page.html#?"; //Adding_triangles
     break;
   case SMDSEntity_Quad_Quadrangle:
@@ -651,13 +661,14 @@ void SMESHGUI_AddQuadraticElementDlg::Init()
 // function : ClickOnApply()
 // purpose  :
 //=================================================================================
-void SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
+
+bool SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
 {
   if( !isValid() )
-    return;
+    return false;
 
   if ( mySMESHGUI->isActiveStudyLocked() || myBusy || !IsValid() )
-    return;
+    return false;
 
   BusyLocker lock( myBusy );
 
@@ -671,6 +682,7 @@ void SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
     break;
   case SMDSEntity_Quad_Triangle:
   case SMDSEntity_Quad_Quadrangle:
+  case SMDSEntity_BiQuad_Triangle:
   case SMDSEntity_BiQuad_Quadrangle:
   case SMDSEntity_Quad_Tetra:
   case SMDSEntity_Quad_Pyramid:
@@ -722,7 +734,7 @@ void SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
         int res = SUIT_MessageBox::question( this, tr( "SMESH_WRN_WARNING" ),
                                              tr( "MESH_STANDALONE_GRP_CHOSEN" ).arg( aGroupName ),
                                              tr( "SMESH_BUT_YES" ), tr( "SMESH_BUT_NO" ), 0, 1 );
-        if ( res == 1 ) return;
+        if ( res == 1 ) return false;
       }
       aGroup = myGroups[idx-1];
     }
@@ -737,6 +749,7 @@ void SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
     anElemId = aMeshEditor->AddEdge(anArrayOfIdeces.inout()); break;
   case SMDSEntity_Quad_Triangle:
   case SMDSEntity_Quad_Quadrangle:
+  case SMDSEntity_BiQuad_Triangle:
   case SMDSEntity_BiQuad_Quadrangle:
     anElementType = SMESH::FACE;
     anElemId = aMeshEditor->AddFace(anArrayOfIdeces.inout()); break;
@@ -794,22 +807,26 @@ void SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
   updateButtons();
 
   SMESHGUI::Modified();
+
+  return true;
 }
 
 //=================================================================================
 // function : ClickOnOk()
 // purpose  :
 //=================================================================================
+
 void SMESHGUI_AddQuadraticElementDlg::ClickOnOk()
 {
-  ClickOnApply();
-  reject();
+  if ( ClickOnApply() )
+    reject();
 }
 
 //=================================================================================
 // function : reject()
 // purpose  :
 //=================================================================================
+
 void SMESHGUI_AddQuadraticElementDlg::reject()
 {
   mySelectionMgr->clearSelected();
@@ -826,6 +843,7 @@ void SMESHGUI_AddQuadraticElementDlg::reject()
 // function : ClickOnHelp()
 // purpose  :
 //=================================================================================
+
 void SMESHGUI_AddQuadraticElementDlg::ClickOnHelp()
 {
   LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
@@ -850,6 +868,7 @@ void SMESHGUI_AddQuadraticElementDlg::ClickOnHelp()
 // function : onTextChange()
 // purpose  :
 //=================================================================================
+
 void SMESHGUI_AddQuadraticElementDlg::onTextChange (const QString& theNewText)
 {
   if (myBusy) return;
@@ -901,6 +920,7 @@ void SMESHGUI_AddQuadraticElementDlg::onTextChange (const QString& theNewText)
 // function : SelectionIntoArgument()
 // purpose  : Called when selection has changed
 //=================================================================================
+
 void SMESHGUI_AddQuadraticElementDlg::SelectionIntoArgument()
 {
   if (myBusy) return;
@@ -951,6 +971,7 @@ void SMESHGUI_AddQuadraticElementDlg::SelectionIntoArgument()
       anElementType = SMESH::EDGE; break;
     case SMDSEntity_Quad_Triangle:
     case SMDSEntity_Quad_Quadrangle:
+    case SMDSEntity_BiQuad_Triangle:
     case SMDSEntity_BiQuad_Quadrangle:
       anElementType = SMESH::FACE; break;
     case SMDSEntity_Quad_Tetra:
@@ -1008,6 +1029,7 @@ void SMESHGUI_AddQuadraticElementDlg::SelectionIntoArgument()
 // function : displaySimulation()
 // purpose  :
 //=================================================================================
+
 void SMESHGUI_AddQuadraticElementDlg::displaySimulation()
 {
   if ( IsValid() )
@@ -1068,6 +1090,7 @@ void SMESHGUI_AddQuadraticElementDlg::displaySimulation()
 // function : SetCurrentSelection()
 // purpose  :
 //=================================================================================
+
 void SMESHGUI_AddQuadraticElementDlg::SetCurrentSelection()
 {
   QPushButton* send = (QPushButton*)sender();
@@ -1091,6 +1114,7 @@ void SMESHGUI_AddQuadraticElementDlg::SetCurrentSelection()
 // function : DeactivateActiveDialog()
 // purpose  :
 //=================================================================================
+
 void SMESHGUI_AddQuadraticElementDlg::DeactivateActiveDialog()
 {
   if (GroupConstructors->isEnabled()) {
@@ -1107,6 +1131,7 @@ void SMESHGUI_AddQuadraticElementDlg::DeactivateActiveDialog()
 // function : ActivateThisDialog()
 // purpose  :
 //=================================================================================
+
 void SMESHGUI_AddQuadraticElementDlg::ActivateThisDialog()
 {
   /* Emit a signal to deactivate the active dialog */
@@ -1127,6 +1152,7 @@ void SMESHGUI_AddQuadraticElementDlg::ActivateThisDialog()
 // function : enterEvent()
 // purpose  :
 //=================================================================================
+
 void SMESHGUI_AddQuadraticElementDlg::enterEvent (QEvent*)
 {
   if (GroupConstructors->isEnabled())
@@ -1138,6 +1164,7 @@ void SMESHGUI_AddQuadraticElementDlg::enterEvent (QEvent*)
 // function : onReverse()
 // purpose  :
 //=================================================================================
+
 void SMESHGUI_AddQuadraticElementDlg::onReverse (int state)
 {
   mySimulation->SetVisibility(false);
@@ -1145,11 +1172,11 @@ void SMESHGUI_AddQuadraticElementDlg::onReverse (int state)
   updateButtons();
 }
 
-
 //=================================================================================
 // function : IsValid()
 // purpose  :
 //=================================================================================
+
 bool SMESHGUI_AddQuadraticElementDlg::IsValid()
 {
   SMDS_Mesh* aMesh = 0;
@@ -1196,6 +1223,7 @@ bool SMESHGUI_AddQuadraticElementDlg::IsValid()
 // function : UpdateTable()
 // purpose  :
 //=================================================================================
+
 void SMESHGUI_AddQuadraticElementDlg::UpdateTable( bool theConersValidity )
 {
   QStringList aListCorners = myCornerNodes->text().split(" ", QString::SkipEmptyParts);
@@ -1217,6 +1245,7 @@ void SMESHGUI_AddQuadraticElementDlg::UpdateTable( bool theConersValidity )
       aLastColIds  = LastEdgeIds;
       break;
     case SMDSEntity_Quad_Triangle:
+    case SMDSEntity_BiQuad_Triangle:
       aFirstColIds = FirstTriangleIds;
       aLastColIds  = LastTriangleIds;
       break;
@@ -1262,11 +1291,11 @@ void SMESHGUI_AddQuadraticElementDlg::UpdateTable( bool theConersValidity )
   }
 }
 
-
 //=================================================================================
 // function : onTableActivate()
 // purpose  :
 //=================================================================================
+
 void SMESHGUI_AddQuadraticElementDlg::onCellDoubleClicked( int theRow, int theCol )
 {
   myCurrentLineEdit = 0;
@@ -1274,11 +1303,11 @@ void SMESHGUI_AddQuadraticElementDlg::onCellDoubleClicked( int theRow, int theCo
   updateButtons();
 }
 
-
 //=================================================================================
 // function : onCellTextChange()
 // purpose  :
 //=================================================================================
+
 void SMESHGUI_AddQuadraticElementDlg::onCellTextChange(int theRow, int theCol)
 {
   myCurrentLineEdit = 0;
@@ -1290,6 +1319,7 @@ void SMESHGUI_AddQuadraticElementDlg::onCellTextChange(int theRow, int theCol)
 // function : keyPressEvent()
 // purpose  :
 //=================================================================================
+
 void SMESHGUI_AddQuadraticElementDlg::keyPressEvent( QKeyEvent* e )
 {
   QDialog::keyPressEvent( e );
@@ -1302,6 +1332,11 @@ void SMESHGUI_AddQuadraticElementDlg::keyPressEvent( QKeyEvent* e )
   }
 }
 
+//=======================================================================
+//function : updateButtons
+//purpose  : 
+//=======================================================================
+
 void SMESHGUI_AddQuadraticElementDlg::updateButtons()
 {
   bool valid = IsValid();
@@ -1313,6 +1348,7 @@ void SMESHGUI_AddQuadraticElementDlg::updateButtons()
 // function : isValid
 // purpose  :
 //=================================================================================
+
 bool SMESHGUI_AddQuadraticElementDlg::isValid()
 {
   if( GroupGroups->isChecked() && ComboBox_GroupName->currentText().isEmpty() ) {

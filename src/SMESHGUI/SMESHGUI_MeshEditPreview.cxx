@@ -111,8 +111,8 @@ SMESHGUI_MeshEditPreview::~SMESHGUI_MeshEditPreview()
 //================================================================================
 
 vtkIdType getCellType( const SMDSAbs_ElementType theType,
-                       const bool thePoly,
-                       const int theNbNodes )
+                       const bool                thePoly,
+                       const int                 theNbNodes )
 {
   switch( theType ) 
   {
@@ -127,6 +127,7 @@ vtkIdType getCellType( const SMDSAbs_ElementType theType,
     else if ( theNbNodes == 3 )   return VTK_TRIANGLE;
     else if ( theNbNodes == 4 )   return VTK_QUAD;
     else if ( theNbNodes == 6 )   return VTK_QUADRATIC_TRIANGLE;
+    else if ( theNbNodes == 7 )   return VTK_BIQUADRATIC_TRIANGLE;
     else if ( theNbNodes == 8 )   return VTK_QUADRATIC_QUAD;
     else if ( theNbNodes == 9 )   return VTK_BIQUADRATIC_QUAD;
     else return VTK_EMPTY_CELL;

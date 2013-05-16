@@ -216,6 +216,10 @@
             <translation>mesh_quad_triangle.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_BIQUADRATIC_TRIANGLE</source>
+            <translation>mesh_biquad_triangle.png</translation>
+        </message>
+        <message>
             <source>ICON_DLG_REM_ELEMENT</source>
             <translation>mesh_rem_element.png</translation>
         </message>

@@ -8,11 +8,11 @@ Quadratic elements are defined by the same corner nodes as the
 corresponding linear ones, but in addition they have \a midside nodes
 located between the corner nodes on element sides.
 
-If a quadratic quadrilateral element has an additional node at the
-element center, it is a bi-quadratic element (or
-QUAD9). If a quadratic hexahedral element has 7 additional nodes:
-at the element center and at the center of each side, it is a
-tri-quadratic element (or HEXA27).
+If a quadratic 2D element has an additional node at the
+element center, it is a bi-quadratic element (both TRIA7 and
+QUAD9 elements are supported). If a quadratic hexahedral element has 7
+additional nodes: at the element center and at the center of each
+side, it is a tri-quadratic element (or HEXA27).
 
 The convention of nodal connectivity of elements used in SALOME is
 the MED library convention. You can consult the description of nodal
@@ -56,20 +56,22 @@ a new quadratic element is not created.
 
 
 To create any <b>Quadratic Element</b> specify the nodes which will form your
-triangle by selecting them in the 3D viewer with pressed Shift
+element by selecting them in the 3D viewer with pressed Shift
 button. Their numbers will appear in the dialog box as <b>Corner Nodes</b>
 (alternatively you can just input numbers in this field without
-selection).The edges formed by the corner nodes will appear in the
-table. To define the middle nodes for each edge double-click on the
-respective field and input the number of the node. All edges and the
-object formed by them will be displayed in the Object browser. When
-all edges are defined you will be able to click \b Apply or <b>Apply and Close</b> button to
+selection). The edges formed by the corner nodes will appear in the
+table. To define the middle nodes for each edge, double-click on the
+respective field and input the number of the node (or pick the node in
+the viewer). For bi-quadratic and tri-quadratic elements, your also
+need to specify central nodes.
+As soon as all needed nodes are specified, a preview of a new
+quadratic element will be displayed in the 3D viewer. Then
+you will be able to click \b Apply or <b>Apply and Close</b> button to
 add the element to the mesh.
 
 \image html aqt.png
 
-\b Reverse button for Quadratic Edges switches the first and the last
-nodes. For all other elements it reverses the element.
+\b Reverse button reverses the element.
 </li>
 </ol>
 

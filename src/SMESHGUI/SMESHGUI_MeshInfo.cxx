@@ -491,16 +491,16 @@ void SMESHGUI_MeshInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
     myWidgets[i1D][iTotal]    ->setProperty( "text", QString::number( nbEdges ) );
     myWidgets[i1D][iLinear]   ->setProperty( "text", QString::number( info[SMDSEntity_Edge] ) );
     myWidgets[i1D][iQuadratic]->setProperty( "text", QString::number( info[SMDSEntity_Quad_Edge] ) );
-    long nbTriangles   = info[SMDSEntity_Triangle]   + info[SMDSEntity_Quad_Triangle];
+    long nbTriangles   = info[SMDSEntity_Triangle]   + info[SMDSEntity_Quad_Triangle]   + info[SMDSEntity_BiQuad_Triangle];
     long nbQuadrangles = info[SMDSEntity_Quadrangle] + info[SMDSEntity_Quad_Quadrangle] + info[SMDSEntity_BiQuad_Quadrangle];
     long nb2DLinear    = info[SMDSEntity_Triangle] + info[SMDSEntity_Quadrangle] + info[SMDSEntity_Polygon];
-    long nb2DQuadratic = info[SMDSEntity_Quad_Triangle] + info[SMDSEntity_Quad_Quadrangle] + info[SMDSEntity_BiQuad_Quadrangle];
+    long nb2DQuadratic = info[SMDSEntity_Quad_Triangle] + info[SMDSEntity_BiQuad_Triangle] + info[SMDSEntity_Quad_Quadrangle] + info[SMDSEntity_BiQuad_Quadrangle];
     myWidgets[i2D][iTotal]               ->setProperty( "text", QString::number( nb2DLinear + nb2DQuadratic ) );
     myWidgets[i2D][iLinear]              ->setProperty( "text", QString::number( nb2DLinear ) );
     myWidgets[i2D][iQuadratic]           ->setProperty( "text", QString::number( nb2DQuadratic ) );
     myWidgets[i2DTriangles][iTotal]      ->setProperty( "text", QString::number( nbTriangles ) );
     myWidgets[i2DTriangles][iLinear]     ->setProperty( "text", QString::number( info[SMDSEntity_Triangle] ) );
-    myWidgets[i2DTriangles][iQuadratic]  ->setProperty( "text", QString::number( info[SMDSEntity_Quad_Triangle] ) );
+    myWidgets[i2DTriangles][iQuadratic]  ->setProperty( "text", QString::number( info[SMDSEntity_Quad_Triangle] + info[SMDSEntity_BiQuad_Triangle]) );
     myWidgets[i2DQuadrangles][iTotal]    ->setProperty( "text", QString::number( nbQuadrangles ) );
     myWidgets[i2DQuadrangles][iLinear]   ->setProperty( "text", QString::number( info[SMDSEntity_Quadrangle] ) );
     myWidgets[i2DQuadrangles][iQuadratic]->setProperty( "text", QString::number( info[SMDSEntity_Quad_Quadrangle] + info[SMDSEntity_BiQuad_Quadrangle] ));
@@ -1208,7 +1208,7 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
         SMESH::Controls::NumericalFunctorPtr afunctor;
         if ( !e ) return;
         
-        // element ID && type
+        // Element ID && Type
         QString stype;
         switch( e->GetType() ) {
         case SMDSAbs_0DElement:
@@ -1228,11 +1228,13 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
         myInfo->append( QString( "<b>%1 #%2</b>" ).arg( stype ).arg( id ) );
         // separator
         myInfo->append( "" );
-        // geometry type
+
+        // Geometry type
         QString gtype;
         switch( e->GetEntityType() ) {
         case SMDSEntity_Triangle:
         case SMDSEntity_Quad_Triangle:
+        case SMDSEntity_BiQuad_Triangle:
           gtype = SMESHGUI_ElemInfo::tr( "TRIANGLE" ); break;
         case SMDSEntity_Quadrangle:
         case SMDSEntity_Quad_Quadrangle:
@@ -1264,23 +1266,19 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
         }
         if ( !gtype.isEmpty() )
           myInfo->append( QString( "<b>%1:</b> %2" ).arg( SMESHGUI_ElemInfo::tr( "TYPE" ) ).arg( gtype ) );
-        // quadratic flag and gravity center (any element except 0D)
+
+        // Quadratic flag (any element except 0D)
         if ( e->GetEntityType() > SMDSEntity_0D && e->GetEntityType() < SMDSEntity_Ball ) {
-          // quadratic flag
           myInfo->append( QString( "<b>%1?</b> %2" ).arg( SMESHGUI_ElemInfo::tr( "QUADRATIC" ) ).arg( e->IsQuadratic() ? SMESHGUI_ElemInfo::tr( "YES" ) : SMESHGUI_ElemInfo::tr( "NO" ) ) );
-          // separator
-          myInfo->append( "" );
-          // gravity center
-          XYZ gc = gravityCenter( e );
-          myInfo->append( QString( "<b>%1:</b> (%2, %3, %4)" ).arg( SMESHGUI_ElemInfo::tr( "GRAVITY_CENTER" ) ).arg( gc.x() ).arg( gc.y() ).arg( gc.z() ) );
         }
         if ( const SMDS_BallElement* ball = dynamic_cast<const SMDS_BallElement*>( e )) {
-          // ball diameter
+          // Ball diameter
           myInfo->append( QString( "<b>%1:</b> %2" ).arg( SMESHGUI_ElemInfo::tr( "BALL_DIAMETER" ) ).arg( ball->GetDiameter() ));
         }
         // separator
         myInfo->append( "" );
-        // connectivity
+
+        // Connectivity
         SMDS_ElemIteratorPtr nodeIt = e->nodesIterator();
         for ( int idx = 1; nodeIt->more(); idx++ ) {
           const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
@@ -1314,27 +1312,28 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
         }
         // separator
         myInfo->append( "" );
-        //controls
+
+        // Controls
         myInfo->append( QString( "<b>%1:</b>" ).arg( SMESHGUI_ElemInfo::tr( "CONTROLS" ) ) );
         //Length
-        if ( e->GetType() == SMDSAbs_Edge ) {    
+        if ( e->GetType() == SMDSAbs_Edge ) {
           afunctor.reset( new SMESH::Controls::Length() );
           afunctor->SetMesh( actor()->GetObject()->GetMesh() );
           afunctor->SetPrecision( cprecision );
           myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "LENGTH_EDGES" ) ).arg( afunctor->GetValue( id ) ) );  
         }
         if( e->GetType() == SMDSAbs_Face ) {
-          //Area                         
+          //Area
           afunctor.reset(  new SMESH::Controls::Area() );
           afunctor->SetMesh( actor()->GetObject()->GetMesh() );
           afunctor->SetPrecision( cprecision );  
           myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "AREA_ELEMENTS" ) ).arg( afunctor->GetValue( id ) ) );
-          //Taper        
+          //Taper
           afunctor.reset( new SMESH::Controls::Taper() );
           afunctor->SetMesh( actor()->GetObject()->GetMesh() );  
           afunctor->SetPrecision( cprecision );
           myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "TAPER_ELEMENTS" ) ).arg( afunctor->GetValue( id ) ) );
-          //AspectRatio2D        
+          //AspectRatio2D
           afunctor.reset( new SMESH::Controls::AspectRatio() );
           afunctor->SetMesh( actor()->GetObject()->GetMesh() );
           myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "ASPECTRATIO_ELEMENTS" ) ).arg( afunctor->GetValue( id ) ) );
@@ -1372,7 +1371,14 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
           afunctor->SetMesh( actor()->GetObject()->GetMesh() );
           myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "MAX_ELEMENT_LENGTH_3D" ) ).arg( afunctor->GetValue( id ) ) );
         }
-        // element position
+        // separator
+        myInfo->append( "" );
+
+        // Gravity center
+        XYZ gc = gravityCenter( e );
+        myInfo->append( QString( "<b>%1:</b> (%2, %3, %4)" ).arg( SMESHGUI_ElemInfo::tr( "GRAVITY_CENTER" ) ).arg( gc.x() ).arg( gc.y() ).arg( gc.z() ) );
+
+        // Element position
         if ( e->GetType() >= SMDSAbs_Edge && e->GetType() <= SMDSAbs_Volume ) {
           SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();    
           if ( !CORBA::is_nil( aMesh ) ) {
@@ -1393,7 +1399,8 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
             }
           }
         }
-        // groups element belongs to
+
+        // Groups the element belongs to
         SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();
         if ( !CORBA::is_nil( aMesh ) ) {
           SMESH::ListOfGroups_var  groups = aMesh->GetGroups();
@@ -1721,18 +1728,12 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
         // element ID && type
         QString stype;
         switch( e->GetType() ) {
-        case SMDSAbs_0DElement:
-          stype = SMESHGUI_ElemInfo::tr( "0D_ELEMENT" ); break;
-        case SMDSAbs_Ball:
-          stype = SMESHGUI_ElemInfo::tr( "BALL" ); break;
-        case SMDSAbs_Edge:
-          stype = SMESHGUI_ElemInfo::tr( "EDGE" ); break;
-        case SMDSAbs_Face:
-          stype = SMESHGUI_ElemInfo::tr( "FACE" ); break;
-        case SMDSAbs_Volume:
-          stype = SMESHGUI_ElemInfo::tr( "VOLUME" ); break;
-        default: 
-          break;
+        case SMDSAbs_0DElement: stype = SMESHGUI_ElemInfo::tr( "0D_ELEMENT" ); break;
+        case SMDSAbs_Ball:      stype = SMESHGUI_ElemInfo::tr( "BALL" ); break;
+        case SMDSAbs_Edge:      stype = SMESHGUI_ElemInfo::tr( "EDGE" ); break;
+        case SMDSAbs_Face:      stype = SMESHGUI_ElemInfo::tr( "FACE" ); break;
+        case SMDSAbs_Volume:    stype = SMESHGUI_ElemInfo::tr( "VOLUME" ); break;
+        default:;
         }
         if ( stype.isEmpty() ) return;
         QTreeWidgetItem* elemItem = createItem( 0, Bold | All );
@@ -1743,6 +1744,7 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
         switch( e->GetEntityType() ) {
         case SMDSEntity_Triangle:
         case SMDSEntity_Quad_Triangle:
+        case SMDSEntity_BiQuad_Triangle:
           gtype = SMESHGUI_ElemInfo::tr( "TRIANGLE" ); break;
         case SMDSEntity_Quadrangle:
         case SMDSEntity_Quad_Quadrangle:
@@ -1777,25 +1779,12 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
           typeItem->setText( 0, SMESHGUI_ElemInfo::tr( "TYPE" ) );
           typeItem->setText( 1, gtype );
         }
-        // quadratic flag and gravity center (any element except 0D)
-        if ( e->GetEntityType() > SMDSEntity_0D && e->GetEntityType() < SMDSEntity_Ball ) {
+        // quadratic flag (for edges, faces and volumes)
+        if ( e->GetType() >= SMDSAbs_Edge && e->GetType() <= SMDSAbs_Volume ) {
           // quadratic flag
           QTreeWidgetItem* quadItem = createItem( elemItem, Bold );
           quadItem->setText( 0, SMESHGUI_ElemInfo::tr( "QUADRATIC" ) );
           quadItem->setText( 1, e->IsQuadratic() ? SMESHGUI_ElemInfo::tr( "YES" ) : SMESHGUI_ElemInfo::tr( "NO" ) );
-          // gravity center
-          XYZ gc = gravityCenter( e );
-          QTreeWidgetItem* gcItem = createItem( elemItem, Bold );
-          gcItem->setText( 0, SMESHGUI_ElemInfo::tr( "GRAVITY_CENTER" ) );
-          QTreeWidgetItem* xItem = createItem( gcItem );
-          xItem->setText( 0, "X" );
-          xItem->setText( 1, QString::number( gc.x(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
-          QTreeWidgetItem* yItem = createItem( gcItem );
-          yItem->setText( 0, "Y" );
-          yItem->setText( 1, QString::number( gc.y(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
-          QTreeWidgetItem* zItem = createItem( gcItem );
-          zItem->setText( 0, "Z" );
-          zItem->setText( 1, QString::number( gc.z(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
         }
         if ( const SMDS_BallElement* ball = dynamic_cast<const SMDS_BallElement*>( e )) {
           // ball diameter
@@ -1931,7 +1920,7 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
           diamItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );       
         }
         if( e->GetType() == SMDSAbs_Volume ) {
-          //AspectRatio3D       
+          //AspectRatio3D
           afunctor.reset( new SMESH::Controls::AspectRatio3D() );
           afunctor->SetMesh( actor()->GetObject()->GetMesh() );
           QTreeWidgetItem* ratlItem3 = createItem( cntrItem, Bold );
@@ -1943,16 +1932,30 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
           QTreeWidgetItem* volItem = createItem( cntrItem, Bold );
           volItem->setText( 0, tr( "VOLUME_3D_ELEMENTS" ) );
           volItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );
-          //ElementDiameter3D   
+          //ElementDiameter3D
           afunctor.reset( new SMESH::Controls::MaxElementLength3D() );
           afunctor->SetMesh( actor()->GetObject()->GetMesh() );
           QTreeWidgetItem* diam3Item = createItem( cntrItem, Bold );
           diam3Item->setText( 0, tr( "MAX_ELEMENT_LENGTH_3D" ) );
           diam3Item->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );     
         }
+
+        // gravity center
+        XYZ gc = gravityCenter( e );
+        QTreeWidgetItem* gcItem = createItem( elemItem, Bold );
+        gcItem->setText( 0, SMESHGUI_ElemInfo::tr( "GRAVITY_CENTER" ) );
+        QTreeWidgetItem* xItem = createItem( gcItem );
+        xItem->setText( 0, "X" );
+        xItem->setText( 1, QString::number( gc.x(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
+        QTreeWidgetItem* yItem = createItem( gcItem );
+        yItem->setText( 0, "Y" );
+        yItem->setText( 1, QString::number( gc.y(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
+        QTreeWidgetItem* zItem = createItem( gcItem );
+        zItem->setText( 0, "Z" );
+        zItem->setText( 1, QString::number( gc.z(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
         // element position
+        SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();
         if ( e->GetType() >= SMDSAbs_Edge && e->GetType() <= SMDSAbs_Volume ) {
-          SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();    
           if ( !CORBA::is_nil( aMesh ) ) {
             SMESH::ElementPosition pos = aMesh->GetElementPosition( id );
             int shapeID = pos.shapeID;
@@ -1973,7 +1976,6 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
           }
         }
         // groups element belongs to
-        SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();
         if ( !CORBA::is_nil( aMesh ) ) {
           SMESH::ListOfGroups_var  groups = aMesh->GetGroups();
           QTreeWidgetItem* groupsItem = 0;

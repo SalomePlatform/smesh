@@ -330,11 +330,14 @@ SMESHGUI_ConvToQuadOp::DestinationMesh( const SMESH::SMESH_IDSource_var& idSourc
 {
   SMESH::long_array_var nbElemOfType = idSource->GetMeshInfo();
 
-  bool hasBiQuad     = ( nbElemOfType[SMDSEntity_BiQuad_Quadrangle ] ||
+  bool hasBiQuad     = ( nbElemOfType[SMDSEntity_BiQuad_Triangle   ] ||
+                         nbElemOfType[SMDSEntity_BiQuad_Quadrangle ] ||
                          nbElemOfType[SMDSEntity_TriQuad_Hexa      ] );
-  bool hasLinStruct  = ( nbElemOfType[SMDSEntity_Quadrangle ] ||
+  bool hasLinBiQuad  = ( nbElemOfType[SMDSEntity_Triangle   ] ||
+                         nbElemOfType[SMDSEntity_Quadrangle ] ||
                          nbElemOfType[SMDSEntity_Hexa       ] );
-  bool hasQuadStruct = ( nbElemOfType[SMDSEntity_Quad_Quadrangle ] ||
+  bool hasQuadBiQuad = ( nbElemOfType[SMDSEntity_Quad_Triangle   ] ||
+                         nbElemOfType[SMDSEntity_Quad_Quadrangle ] ||
                          nbElemOfType[SMDSEntity_Quad_Hexa       ] );
 
   bool hasQuad = ( nbElemOfType[SMDSEntity_Quad_Edge      ] ||
@@ -356,9 +359,9 @@ SMESHGUI_ConvToQuadOp::DestinationMesh( const SMESH::SMESH_IDSource_var& idSourc
   int tgtType = 0;
   if ( hasBiQuad )
     tgtType |= ( Quadratic | Linear );
-  if ( hasLinStruct )
+  if ( hasLinBiQuad )
     tgtType |= ( BiQuadratic | Quadratic );
-  if ( hasQuadStruct )
+  if ( hasQuadBiQuad )
     tgtType |= ( BiQuadratic | Linear );
   if ( hasQuad )
     tgtType |= Linear;

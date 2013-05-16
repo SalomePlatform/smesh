@@ -403,6 +403,7 @@ void SMESHGUI_MeshInfosBox::SetMeshInfo(const SMESH::long_array& theInfo)
   // faces
   myNbFace     ->setText( QString("%1").arg( theInfo[SMDSEntity_Triangle] +
                                              theInfo[SMDSEntity_Quad_Triangle] +
+                                             theInfo[SMDSEntity_BiQuad_Triangle] +
                                              theInfo[SMDSEntity_Quadrangle] +
                                              theInfo[SMDSEntity_Quad_Quadrangle] +
                                              theInfo[SMDSEntity_BiQuad_Quadrangle] +
@@ -441,9 +442,11 @@ void SMESHGUI_MeshInfosBox::SetMeshInfo(const SMESH::long_array& theInfo)
   {
     // triangles
     myNbTrai     ->setText( QString("%1").arg( theInfo[SMDSEntity_Triangle] +
-                                               theInfo[SMDSEntity_Quad_Triangle] ));
+                                               theInfo[SMDSEntity_Quad_Triangle] +
+                                               theInfo[SMDSEntity_BiQuad_Triangle] ));
     myNbLinTrai  ->setText( QString("%1").arg( theInfo[SMDSEntity_Triangle] ));
-    myNbQuadTrai ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Triangle] ));
+    myNbQuadTrai ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Triangle] +
+                                               theInfo[SMDSEntity_BiQuad_Triangle] ));
     // quadrangles
     myNbQuad     ->setText( QString("%1").arg( theInfo[SMDSEntity_Quadrangle] +
                                                theInfo[SMDSEntity_Quad_Quadrangle] +
