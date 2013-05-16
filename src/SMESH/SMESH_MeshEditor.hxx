@@ -51,53 +51,7 @@ class gp_Ax1;
 class gp_Vec;
 class gp_Pnt;
 class SMESH_MesherHelper;
-
-
-//=======================================================================
-/*!
- * \brief Searcher for the node closest to point
- */
-//=======================================================================
-struct SMESH_NodeSearcher
-{
-  virtual const SMDS_MeshNode* FindClosestTo( const gp_Pnt& pnt ) = 0;
-  virtual void MoveNode( const SMDS_MeshNode* node, const gp_Pnt& toPnt ) = 0;
-};
-
-//=======================================================================
-/*!
- * \brief Searcher for elements
- */
-//=======================================================================
-
-struct SMESH_ElementSearcher
-{
-  /*!
-   * \brief Find elements of given type where the given point is IN or ON.
-   *        Returns nb of found elements and elements them-selves.
-   *
-   * 'ALL' type means elements of any type excluding nodes and 0D elements
-   */
-  virtual int FindElementsByPoint(const gp_Pnt&                           point,
-                                  SMDSAbs_ElementType                     type,
-                                  std::vector< const SMDS_MeshElement* >& foundElems)=0;
-  /*!
-   * \brief Return an element most close to the given point
-   */
-  virtual const SMDS_MeshElement* FindClosestTo( const gp_Pnt&       point,
-                                                 SMDSAbs_ElementType type) = 0;
-  /*!
-   * \brief Return elements possibly intersecting the line
-   */
-  virtual void GetElementsNearLine( const gp_Ax1&                           line,
-                                    SMDSAbs_ElementType                     type,
-                                    std::vector< const SMDS_MeshElement* >& foundElems)=0;
-  /*!
-   * \brief Find out if the given point is out of closed 2D mesh.
-   */
-  virtual TopAbs_State GetPointState(const gp_Pnt& point) = 0;
-
-};
+class SMESH_NodeSearcher;
 
 // ============================================================
 /*!
@@ -356,17 +310,6 @@ public:
                        SMESH_Mesh*        theTargetMesh=0);
   // Move or copy theElements applying theTrsf to their nodes
 
-  /*!
-   * \brief Return SMESH_NodeSearcher. The caller is responsible for deleteing it
-   */
-  SMESH_NodeSearcher* GetNodeSearcher();
-
-  /*!
-   * \brief Return SMESH_ElementSearcher. The caller is responsible for deleting it
-   */
-  SMESH_ElementSearcher* GetElementSearcher();
-  SMESH_ElementSearcher* GetElementSearcher( SMDS_ElemIteratorPtr elemIt );
-
   typedef std::list< std::list< const SMDS_MeshNode* > > TListOfListOfNodes;
 
   void FindCoincidentNodes (TIDSortedNodeSet &   theNodes,
@@ -393,16 +336,9 @@ public:
   // Remove all but one of elements built on the same nodes.
   // Return nb of successfully merged groups.
 
-  /*!
-   * \brief Return true if the point is IN or ON of the element
-   */
-  static bool IsOut( const SMDS_MeshElement* element, const gp_Pnt& point, double tol );
-
-  static double GetDistance( const SMDS_MeshFace* face, const gp_Pnt& point );
-
-  int SimplifyFace (const std::vector<const SMDS_MeshNode *> faceNodes,
-                    std::vector<const SMDS_MeshNode *>&      poly_nodes,
-                    std::vector<int>&                        quantities) const;
+  int SimplifyFace (const std::vector<const SMDS_MeshNode *>& faceNodes,
+                    std::vector<const SMDS_MeshNode *>&       poly_nodes,
+                    std::vector<int>&                         quantities) const;
   // Split face, defined by <faceNodes>, into several faces by repeating nodes.
   // Is used by MergeNodes()
 
@@ -532,17 +468,6 @@ public:
   static void GetLinkedNodes( const SMDS_MeshNode* node,
                               TIDSortedElemSet &   linkedNodes,
                               SMDSAbs_ElementType  type = SMDSAbs_All );
-
-  static const SMDS_MeshElement* FindFaceInSet(const SMDS_MeshNode*    n1,
-                                               const SMDS_MeshNode*    n2,
-                                               const TIDSortedElemSet& elemSet,
-                                               const TIDSortedElemSet& avoidSet,
-                                               int*                    i1=0,
-                                               int*                    i2=0);
-  // Return a face having linked nodes n1 and n2 and which is
-  // - not in avoidSet,
-  // - in elemSet provided that !elemSet.empty()
-  // i1 and i2 optionally returns indices of n1 and n2
 
   /*!
    * \brief Find corresponding nodes in two sets of faces 
