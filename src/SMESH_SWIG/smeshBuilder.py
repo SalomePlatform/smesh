@@ -520,25 +520,19 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
         return aMesh
 
     ## Creates a Mesh object(s) importing data from the given MED file
-    #  @return a list of Mesh class instances
+    #  @return a tuple ( list of Mesh class instances, SMESH.DriverMED_ReadStatus )
     #  @ingroup l2_impexp
     def CreateMeshesFromMED( self,theFileName ):
         aSmeshMeshes, aStatus = SMESH._objref_SMESH_Gen.CreateMeshesFromMED(self,theFileName)
-        aMeshes = []
-        for iMesh in range(len(aSmeshMeshes)) :
-            aMesh = Mesh(self, self.geompyD, aSmeshMeshes[iMesh])
-            aMeshes.append(aMesh)
+        aMeshes = [ Mesh(self, self.geompyD, m) for m in aSmeshMeshes ]
         return aMeshes, aStatus
 
     ## Creates a Mesh object(s) importing data from the given SAUV file
-    #  @return a list of Mesh class instances
+    #  @return a tuple ( list of Mesh class instances, SMESH.DriverMED_ReadStatus )
     #  @ingroup l2_impexp
     def CreateMeshesFromSAUV( self,theFileName ):
         aSmeshMeshes, aStatus = SMESH._objref_SMESH_Gen.CreateMeshesFromSAUV(self,theFileName)
-        aMeshes = []
-        for iMesh in range(len(aSmeshMeshes)) :
-            aMesh = Mesh(self, self.geompyD, aSmeshMeshes[iMesh])
-            aMeshes.append(aMesh)
+        aMeshes = [ Mesh(self, self.geompyD, m) for m in aSmeshMeshes ]
         return aMeshes, aStatus
 
     ## Creates a Mesh object importing data from the given STL file
@@ -550,18 +544,15 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
         return aMesh
 
     ## Creates Mesh objects importing data from the given CGNS file
-    #  @return an instance of Mesh class
+    #  @return a tuple ( list of Mesh class instances, SMESH.DriverMED_ReadStatus )
     #  @ingroup l2_impexp
     def CreateMeshesFromCGNS( self, theFileName ):
         aSmeshMeshes, aStatus = SMESH._objref_SMESH_Gen.CreateMeshesFromCGNS(self,theFileName)
-        aMeshes = []
-        for iMesh in range(len(aSmeshMeshes)) :
-            aMesh = Mesh(self, self.geompyD, aSmeshMeshes[iMesh])
-            aMeshes.append(aMesh)
+        aMeshes = [ Mesh(self, self.geompyD, m) for m in aSmeshMeshes ]
         return aMeshes, aStatus
 
     ## Creates a Mesh object importing data from the given GMF file
-    #  @return [ an instance of Mesh class, SMESH::ComputeError ]
+    #  @return [ an instance of Mesh class, SMESH.ComputeError ]
     #  @ingroup l2_impexp
     def CreateMeshesFromGMF( self, theFileName ):
         aSmeshMesh, error = SMESH._objref_SMESH_Gen.CreateMeshesFromGMF(self,
@@ -675,10 +666,10 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
                      Tolerance=1e-07):
         if not CritType in SMESH.FunctorType._items:
             raise TypeError, "CritType should be of SMESH.FunctorType"
-        aCriterion = self.GetEmptyCriterion()
+        aCriterion               = self.GetEmptyCriterion()
         aCriterion.TypeOfElement = elementType
-        aCriterion.Type = self.EnumToLong(CritType)
-        aCriterion.Tolerance = Tolerance
+        aCriterion.Type          = self.EnumToLong(CritType)
+        aCriterion.Tolerance     = Tolerance
 
         aThreshold = Threshold
 
@@ -732,6 +723,30 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
             else:
                 raise ValueError,\
                       "The Threshold should be an ID of mesh face and not '%s'"%aThreshold
+        elif CritType == FT_ConnectedElements:
+            # Checks the Threshold
+            if isinstance(aThreshold, geomBuilder.GEOM._objref_GEOM_Object): # shape
+                aCriterion.ThresholdID = aThreshold.GetStudyEntry()
+                if not aCriterion.ThresholdID:
+                    name = aThreshold.GetName()
+                    if not name:
+                        name = "%s_%s"%(aThreshold.GetShapeType(), id(aThreshold)%10000)
+                    aCriterion.ThresholdID = self.geompyD.addToStudy( aThreshold, name )
+            elif isinstance(aThreshold, int): # node id
+                aCriterion.Threshold = aThreshold
+            elif isinstance(aThreshold, list): # 3 point coordinates
+                if len( aThreshold ) < 3:
+                    raise ValueError, "too few point coordinates, must be 3"
+                aCriterion.ThresholdStr = " ".join( [str(c) for c in aThreshold[:3]] )
+            elif isinstance(aThreshold, str):
+                if aThreshold.isdigit():
+                    aCriterion.Threshold = aThreshold # node id
+                else:
+                    aCriterion.ThresholdStr = aThreshold # hope that it's point coordinates
+            else:
+                raise ValueError,\
+                      "The Threshold should either a VERTEX, or a node ID, "\
+                      "or a list of point coordinates and not '%s'"%aThreshold
         elif CritType == FT_ElemGeomType:
             # Checks the Threshold
             try:
@@ -817,13 +832,17 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
                   Compare=FT_EqualTo,
                   Threshold="",
                   UnaryOp=FT_Undefined,
-                  Tolerance=1e-07):
+                  Tolerance=1e-07,
+                  mesh=None):
         aCriterion = self.GetCriterion(elementType, CritType, Compare, Threshold, UnaryOp, FT_Undefined,Tolerance)
         aFilterMgr = self.CreateFilterManager()
         aFilter = aFilterMgr.CreateFilter()
         aCriteria = []
         aCriteria.append(aCriterion)
         aFilter.SetCriteria(aCriteria)
+        if mesh:
+            if isinstance( mesh, Mesh ): aFilter.SetMesh( mesh.GetMesh() )
+            else                       : aFilter.SetMesh( mesh )
         aFilterMgr.UnRegister()
         return aFilter
 
@@ -2024,6 +2043,12 @@ class Mesh:
     #  @ingroup l1_meshinfo
     def NbTrianglesOfOrder(self, elementOrder):
         return self.mesh.NbTrianglesOfOrder(elementOrder)
+
+    ## Returns the number of biquadratic triangles in the mesh
+    #  @return an integer value
+    #  @ingroup l1_meshinfo
+    def NbBiQuadTriangles(self):
+        return self.mesh.NbBiQuadTriangles()
 
     ## Returns the number of quadrangles in the mesh
     #  @return an integer value
@@ -4085,6 +4110,11 @@ class Mesh:
     #  @ingroup l1_auxiliary
     def GetLastCreatedElems(self):
         return self.editor.GetLastCreatedElems()
+
+    ## Clear sequences of nodes and elements created by mesh edition oparations
+    #  @ingroup l1_auxiliary
+    def ClearLastCreated(self):
+        self.editor.ClearLastCreated()
 
      ## Creates a hole in a mesh by doubling the nodes of some particular elements
     #  @param theNodes identifiers of nodes to be doubled
