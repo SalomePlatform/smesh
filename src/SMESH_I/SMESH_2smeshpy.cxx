@@ -285,6 +285,8 @@ namespace {
     //   - FT_BallDiameter          = 37
     // v 6.7.1: FT_Undefined == 45, new items:
     //   - FT_EntityType            = 36
+    // v 7.3.0: FT_Undefined == 46, new items:
+    //   - FT_ConnectedElements     = 39
     //
     // It's necessary to continue recording this history and to fill
     // undef2newItems (see below) accordingly.
@@ -302,10 +304,9 @@ namespace {
         undef2newItems[ 39 ].assign( items, items+6 ); }
       { int items[] = { 14, 15, 16, 17 };
         undef2newItems[ 43 ].assign( items, items+4 ); }
-      { int items[] = { 37 };
-        undef2newItems[ 44 ].assign( items, items+1 ); }
-      { int items[] = { 36 };
-        undef2newItems[ 45 ].assign( items, items+1 ); }
+      undef2newItems[ 44 ].push_back( 37 );
+      undef2newItems[ 45 ].push_back( 36 );
+      undef2newItems[ 46 ].push_back( 39 );
     }
 
     int iType     = Type.IntegerValue();
@@ -700,7 +701,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
     // 1    2       3         4            5           6       7        8         9             10
     // in order to avoid the problem of type mismatch of long and FunctorType
     const TCollection_AsciiString
-      SMESH("SMESH."), dfltFunctor("SMESH.FT_Undefined"), dftlTol("1e-07"), dftlPreci("-1");
+      SMESH("SMESH."), dfltFunctor("SMESH.FT_Undefined"), dfltTol("1e-07"), dfltPreci("-1");
     TCollection_AsciiString
       Type          = aCommand->GetArg(1),  // long
       Compare       = aCommand->GetArg(2),  // long
@@ -744,7 +745,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
         // set SMESH.EntityType instead of a numerical Threshold
         const char* types[SMESH::Entity_Ball+1] = {
           "Entity_Node", "Entity_0D", "Entity_Edge", "Entity_Quad_Edge",
-          "Entity_Triangle", "Entity_Quad_Triangle",
+          "Entity_Triangle", "Entity_Quad_Triangle", "Entity_BiQuad_Triangle",
           "Entity_Quadrangle", "Entity_Quad_Quadrangle", "Entity_BiQuad_Quadrangle",
           "Entity_Polygon", "Entity_Quad_Polygon", "Entity_Tetra", "Entity_Quad_Tetra",
           "Entity_Pyramid", "Entity_Quad_Pyramid",
@@ -755,7 +756,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
           Threshold = SMESH + types[ iGeom ];
       }
     }
-    if ( ThresholdID.Length() != 2 && ThresholdStr.Length() != 2) // not '' or ""
+    if ( ThresholdID.Length() != 2 ) // neither '' nor ""
       aCommand->SetArg( 4, ThresholdID.SubString( 2, ThresholdID.Length()-1 )); // shape entry
     else if ( ThresholdStr.Length() != 2 )
       aCommand->SetArg( 4, ThresholdStr );
@@ -765,7 +766,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
       aCommand->SetArg( 4, Threshold );
     // find the last not default arg
     int lastDefault = 8;
-    if ( Tolerance == dftlTol ) {
+    if ( Tolerance == dfltTol ) {
       lastDefault = 7;
       if ( BinaryOp == dfltFunctor ) {
         lastDefault = 6;
@@ -776,7 +777,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
     if ( 5 < lastDefault ) aCommand->SetArg( 5, UnaryOp );
     if ( 6 < lastDefault ) aCommand->SetArg( 6, BinaryOp );
     if ( 7 < lastDefault ) aCommand->SetArg( 7, Tolerance );
-    if ( Precision != dftlPreci )
+    if ( Precision != dfltPreci )
     {
       TCollection_AsciiString crit = aCommand->GetResultValue();
       aCommand->GetString() += "; ";
@@ -812,8 +813,7 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
   }
   if ( method == "CreateMeshesFromUNV" ||
        method == "CreateMeshesFromSTL" ||
-       method == "CreateMeshesFromCGNS" ||
-       method == "CopyMesh" )
+       method == "CopyMesh" ) // command result is a mesh
   {
     Handle(_pyMesh) mesh = new _pyMesh( theCommand, theCommand->GetResultValue() );
     myMeshes.insert( make_pair( mesh->GetID(), mesh ));
@@ -821,7 +821,8 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
   }
   if( method == "CreateMeshesFromMED" ||
       method == "CreateMeshesFromSAUV"||
-      method == "CreateMeshesFromGMF" )
+      method == "CreateMeshesFromCGNS" ||
+      method == "CreateMeshesFromGMF" ) // command result is ( [mesh1,mesh2], status )
   {
     for ( int ind = 0; ind < theCommand->GetNbResultValues(); ind++ )
     {
@@ -3315,19 +3316,22 @@ const TCollection_AsciiString & _pyCommand::GetObject()
         begPos = 1;
     }
     myObj = GetWord( myString, begPos, true );
-    // check if object is complex,
-    // so far consider case like "smesh.Method()"
-    if ( int bracketPos = myString.Location( "(", begPos, Length() )) {
-      //if ( bracketPos==0 ) bracketPos = Length();
-      int dotPos = begPos+myObj.Length();
-      while ( dotPos+1 < bracketPos ) {
-        if ( int pos = myString.Location( ".", dotPos+1, bracketPos ))
-          dotPos = pos;
-        else
-          break;
+    if ( begPos != EMPTY )
+    {
+      // check if object is complex,
+      // so far consider case like "smesh.Method()"
+      if ( int bracketPos = myString.Location( "(", begPos, Length() )) {
+        //if ( bracketPos==0 ) bracketPos = Length();
+        int dotPos = begPos+myObj.Length();
+        while ( dotPos+1 < bracketPos ) {
+          if ( int pos = myString.Location( ".", dotPos+1, bracketPos ))
+            dotPos = pos;
+          else
+            break;
+        }
+        if ( dotPos > begPos+myObj.Length() )
+          myObj = myString.SubString( begPos, dotPos-1 );
       }
-      if ( dotPos > begPos+myObj.Length() )
-        myObj = myString.SubString( begPos, dotPos-1 );
     }
     // 1st word after '=' is an object
     // else // no method -> no object
@@ -3863,7 +3867,16 @@ _pyID _pyObject::FatherID(const _pyID & childID)
 
 void _pySelfEraser::Flush()
 {
-  if ( GetNbCalls() == 0 )
+  int nbCalls = GetNbCalls();
+  if ( nbCalls > 0 )
+  {
+    // ignore cleared commands
+    std::list< Handle(_pyCommand) >& cmds = GetProcessedCmds();
+    std::list< Handle(_pyCommand) >::const_iterator cmd = cmds.begin();
+    for ( ; cmd != cmds.end(); ++cmd )
+      nbCalls -= (*cmd)->IsEmpty();
+  }
+  if ( nbCalls < 1 )
     GetCreationCmd()->Clear();
 }
 
