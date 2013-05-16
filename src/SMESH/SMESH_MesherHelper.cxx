@@ -32,6 +32,7 @@
 #include "SMDS_IteratorOnIterators.hxx"
 #include "SMDS_VolumeTool.hxx"
 #include "SMESH_Block.hxx"
+#include "SMESH_MeshAlgos.hxx"
 #include "SMESH_ProxyMesh.hxx"
 #include "SMESH_subMesh.hxx"
 
@@ -165,14 +166,14 @@ bool SMESH_MesherHelper::IsQuadraticSubMesh(const TopoDS_Shape& aSh)
             }
             else {
               // fill TLinkNodeMap
-              switch ( e->NbNodes() ) {
-              case 3:
+              switch ( e->NbCornerNodes() ) {
+              case 2:
                 AddTLinkNode(e->GetNode(0),e->GetNode(1),e->GetNode(2)); break;
-              case 6:
+              case 3:
                 AddTLinkNode(e->GetNode(0),e->GetNode(1),e->GetNode(3));
                 AddTLinkNode(e->GetNode(1),e->GetNode(2),e->GetNode(4));
                 AddTLinkNode(e->GetNode(2),e->GetNode(0),e->GetNode(5)); break;
-              case 8:
+              case 4:
                 AddTLinkNode(e->GetNode(0),e->GetNode(1),e->GetNode(4));
                 AddTLinkNode(e->GetNode(1),e->GetNode(2),e->GetNode(5));
                 AddTLinkNode(e->GetNode(2),e->GetNode(3),e->GetNode(6));
@@ -388,15 +389,26 @@ void SMESH_MesherHelper::AddTLinks(const SMDS_MeshFace* f)
 {
   if ( !f->IsPoly() )
     switch ( f->NbNodes() ) {
+    case 7:
+      // myMapWithCentralNode.insert
+      //   ( make_pair( TBiQuad( f->GetNode(0),f->GetNode(1),f->GetNode(2) ),
+      //                f->GetNode(6)));
+      // break; -- add medium nodes as well
     case 6:
       AddTLinkNode(f->GetNode(0),f->GetNode(1),f->GetNode(3));
       AddTLinkNode(f->GetNode(1),f->GetNode(2),f->GetNode(4));
       AddTLinkNode(f->GetNode(2),f->GetNode(0),f->GetNode(5)); break;
+
+    case 9:
+      // myMapWithCentralNode.insert
+      //   ( make_pair( TBiQuad( f->GetNode(0),f->GetNode(1),f->GetNode(2),f->GetNode(3) ),
+      //                f->GetNode(8)));
+      // break; -- add medium nodes as well
     case 8:
       AddTLinkNode(f->GetNode(0),f->GetNode(1),f->GetNode(4));
       AddTLinkNode(f->GetNode(1),f->GetNode(2),f->GetNode(5));
       AddTLinkNode(f->GetNode(2),f->GetNode(3),f->GetNode(6));
-      AddTLinkNode(f->GetNode(3),f->GetNode(0),f->GetNode(7));
+      AddTLinkNode(f->GetNode(3),f->GetNode(0),f->GetNode(7)); break;
     default:;
     }
 }
@@ -430,6 +442,15 @@ void SMESH_MesherHelper::AddTLinks(const SMDS_MeshVolume* volume)
           AddTLinkNode( nodes[iN1], nodes[iN2], nodes[iN12] );
         else
           addedLinks.erase( it_isNew.first ); // each link encounters only twice
+      }
+      if ( vTool.NbNodes() == 27 )
+      {
+        const SMDS_MeshNode* nFCenter = nodes[ vTool.GetCenterNodeIndex( iF )];
+        if ( nFCenter->GetPosition()->GetTypeOfPosition() == SMDS_TOP_3DSPACE )
+          myMapWithCentralNode.insert
+            ( make_pair( TBiQuad( nodes[ iNodes[0]], nodes[ iNodes[1]],
+                                  nodes[ iNodes[2]], nodes[ iNodes[3]] ),
+                         nFCenter ));
       }
     }
   }
@@ -1045,7 +1066,7 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
   // Find an existing central node
 
   TBiQuad keyOfMap(n1,n2,n3,n4);
-  std::map<TBiQuad, SMDS_MeshNode* >::iterator itMapCentralNode;
+  std::map<TBiQuad, const SMDS_MeshNode* >::iterator itMapCentralNode;
   itMapCentralNode = myMapWithCentralNode.find( keyOfMap );
   if ( itMapCentralNode != myMapWithCentralNode.end() ) 
   {
@@ -1055,7 +1076,7 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
   // Get type of shape for the new central node
 
   TopAbs_ShapeEnum shapeType = TopAbs_SHAPE;
-  int              shapeID = -1;
+  int              solidID = -1;
   int              faceID = -1;
   TopoDS_Shape     shape;
   TopTools_ListIteratorOfListOfShape it;
@@ -1065,7 +1086,7 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
   
   SMESHDS_Mesh* meshDS = GetMeshDS();
   
-  // check if a face lie on a FACE, i.e. its all corner nodes lie either on the FACE or
+  // check if a face lies on a FACE, i.e. its all corner nodes lie either on the FACE or
   // on sub-shapes of the FACE
   if ( GetMesh()->HasShapeToMesh() )
   {
@@ -1076,7 +1097,7 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
       if ( shape.IsNull() ) break;
       if ( shape.ShapeType() == TopAbs_SOLID )
       {
-        shapeID   = nodes[i]->getshapeId();
+        solidID   = nodes[i]->getshapeId();
         shapeType = TopAbs_SOLID;
         break;
       }
@@ -1098,7 +1119,7 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
       }
     }
   }
-  if ( shapeID < 1 && !faceId2nbNodes.empty() ) // SOLID not found
+  if ( solidID < 1 && !faceId2nbNodes.empty() ) // SOLID not found
   {
     // find ID of the FACE the four corner nodes belong to
     itMapWithIdFace = faceId2nbNodes.begin();
@@ -1123,48 +1144,183 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
 
   gp_XY  uvAvg;
   gp_Pnt P;
-  if ( !F.IsNull() )
+  if ( !F.IsNull() && !force3d )
   {
-    if ( !force3d )
+    uvAvg = calcTFI (0.5, 0.5,
+                     GetNodeUV(F,n1,n3),  GetNodeUV(F,n2,n4),
+                     GetNodeUV(F,n3,n1),  GetNodeUV(F,n4,n2), 
+                     GetNodeUV(F,n12,n3), GetNodeUV(F,n23,n4),
+                     GetNodeUV(F,n34,n2), GetNodeUV(F,n41,n2));
+    TopLoc_Location loc;
+    Handle( Geom_Surface ) S = BRep_Tool::Surface( F, loc );
+    P = S->Value( uvAvg.X(), uvAvg.Y() ).Transformed( loc );
+    centralNode = meshDS->AddNode( P.X(), P.Y(), P.Z() );
+    // if ( mySetElemOnShape ) node is not elem!
+    meshDS->SetNodeOnFace( centralNode, faceID, uvAvg.X(), uvAvg.Y() );
+  }
+  else // ( force3d || F.IsNull() )
+  {
+    P = ( SMESH_TNodeXYZ( n1 ) +
+          SMESH_TNodeXYZ( n2 ) +
+          SMESH_TNodeXYZ( n3 ) +
+          SMESH_TNodeXYZ( n4 ) ) / 4;
+    centralNode = meshDS->AddNode( P.X(), P.Y(), P.Z() );
+
+    if ( !F.IsNull() ) // force3d
     {
-      uvAvg = calcTFI (0.5, 0.5,
-                       GetNodeUV(F,n1,n3),  GetNodeUV(F,n2,n4),
-                       GetNodeUV(F,n3,n1),  GetNodeUV(F,n4,n2), 
-                       GetNodeUV(F,n12,n3), GetNodeUV(F,n23,n4),
-                       GetNodeUV(F,n34,n2), GetNodeUV(F,n41,n2));
-      TopLoc_Location loc;
-      Handle( Geom_Surface ) S = BRep_Tool::Surface( F, loc );
-      P = S->Value( uvAvg.X(), uvAvg.Y() ).Transformed( loc );
-      centralNode = meshDS->AddNode( P.X(), P.Y(), P.Z() );
-      // if ( mySetElemOnShape ) node is not elem!
+      uvAvg = (GetNodeUV(F,n1,n3) +
+               GetNodeUV(F,n2,n4) +
+               GetNodeUV(F,n3,n1) +
+               GetNodeUV(F,n4,n2)) / 4;
+      //CheckNodeUV( F, centralNode, uvAvg, 2*BRep_Tool::Tolerance( F ), /*force=*/true);
       meshDS->SetNodeOnFace( centralNode, faceID, uvAvg.X(), uvAvg.Y() );
-      myMapWithCentralNode.insert( std::make_pair( keyOfMap, centralNode ) );
-      return centralNode;
+    }
+    else if ( solidID > 0 )
+    {
+      meshDS->SetNodeInVolume( centralNode, solidID );
+    }
+    else if ( myShapeID > 0 && mySetElemOnShape )
+    {
+      meshDS->SetMeshElementOnShape( centralNode, myShapeID );
+    }
+  }
+  myMapWithCentralNode.insert( std::make_pair( keyOfMap, centralNode ) );
+  return centralNode;
+}
+
+//=======================================================================
+//function : GetCentralNode
+//purpose  : Return existing or create a new central node for a
+//           quadratic triangle given its 6 nodes.
+//@param   : force3d - true means node creation in between the given nodes,
+//             else node position is found on a geometrical face if any.
+//=======================================================================
+
+const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
+                                                        const SMDS_MeshNode* n2,
+                                                        const SMDS_MeshNode* n3,
+                                                        const SMDS_MeshNode* n12,
+                                                        const SMDS_MeshNode* n23,
+                                                        const SMDS_MeshNode* n31,
+                                                        bool                 force3d)
+{
+  SMDS_MeshNode *centralNode = 0; // central node to return
+
+  // Find an existing central node
+
+  TBiQuad keyOfMap(n1,n2,n3);
+  std::map<TBiQuad, const SMDS_MeshNode* >::iterator itMapCentralNode;
+  itMapCentralNode = myMapWithCentralNode.find( keyOfMap );
+  if ( itMapCentralNode != myMapWithCentralNode.end() ) 
+  {
+    return (*itMapCentralNode).second;
+  }
+
+  // Get type of shape for the new central node
+
+  TopAbs_ShapeEnum shapeType = TopAbs_SHAPE;
+  int              solidID = -1;
+  int              faceID = -1;
+  TopoDS_Shape     shape;
+  TopTools_ListIteratorOfListOfShape it;
+
+  std::map< int, int > faceId2nbNodes;
+  std::map< int, int > ::iterator itMapWithIdFace;
+  
+  SMESHDS_Mesh* meshDS = GetMeshDS();
+  
+  // check if a face lies on a FACE, i.e. its all corner nodes lie either on the FACE or
+  // on sub-shapes of the FACE
+  if ( GetMesh()->HasShapeToMesh() )
+  {
+    const SMDS_MeshNode* nodes[] = { n1, n2, n3 };
+    for(int i = 0; i < 3; i++)
+    {
+      shape = GetSubShapeByNode( nodes[i], meshDS );
+      if ( shape.IsNull() ) break;
+      if ( shape.ShapeType() == TopAbs_SOLID )
+      {
+        solidID   = nodes[i]->getshapeId();
+        shapeType = TopAbs_SOLID;
+        break;
+      }
+      if ( shape.ShapeType() == TopAbs_FACE )
+      {
+        faceID          = nodes[i]->getshapeId();
+        itMapWithIdFace = faceId2nbNodes.insert( std::make_pair( faceID, 0 ) ).first;
+        itMapWithIdFace->second++;
+      }
+      else
+      {
+        PShapeIteratorPtr it = GetAncestors(shape, *GetMesh(), TopAbs_FACE );
+        while ( const TopoDS_Shape* face = it->next() )
+        {
+          faceID = meshDS->ShapeToIndex( *face );
+          itMapWithIdFace = faceId2nbNodes.insert( std::make_pair( faceID, 0 ) ).first;
+          itMapWithIdFace->second++;
+        }
+      }
+    }
+  }
+  if ( solidID < 1 && !faceId2nbNodes.empty() ) // SOLID not found
+  {
+    // find ID of the FACE the four corner nodes belong to
+    itMapWithIdFace = faceId2nbNodes.begin();
+    for ( ; itMapWithIdFace != faceId2nbNodes.end(); ++itMapWithIdFace)
+    {
+      if ( itMapWithIdFace->second == 3 ) 
+      {
+        shapeType = TopAbs_FACE;
+        faceID = (*itMapWithIdFace).first;
+        break;
+      }
     }
   }
 
-  P = ( SMESH_TNodeXYZ( n1 ) +
-        SMESH_TNodeXYZ( n2 ) +
-        SMESH_TNodeXYZ( n3 ) +
-        SMESH_TNodeXYZ( n4 ) ) / 4;
-  centralNode = meshDS->AddNode( P.X(), P.Y(), P.Z() );
-
-  if ( !F.IsNull() )
+  TopoDS_Face F;
+  if ( shapeType == TopAbs_FACE )
   {
-    uvAvg = (GetNodeUV(F,n1,n3) +
-             GetNodeUV(F,n2,n4) +
-             GetNodeUV(F,n3,n1) +
-             GetNodeUV(F,n4,n2)) / 4;
-    CheckNodeUV( F, centralNode, uvAvg, 2*BRep_Tool::Tolerance( F ), /*force=*/true);
+    F = TopoDS::Face( meshDS->IndexToShape( faceID ));
+  }
+
+  // Create a node
+
+  gp_XY  uvAvg;
+  gp_Pnt P;
+  if ( !F.IsNull() && !force3d )
+  {
+    uvAvg = ( GetNodeUV(F,n12,n3) +
+              GetNodeUV(F,n23,n1) +
+              GetNodeUV(F,n31,n2) ) / 3.;
+    TopLoc_Location loc;
+    Handle( Geom_Surface ) S = BRep_Tool::Surface( F, loc );
+    P = S->Value( uvAvg.X(), uvAvg.Y() ).Transformed( loc );
+    centralNode = meshDS->AddNode( P.X(), P.Y(), P.Z() );
+    // if ( mySetElemOnShape ) node is not elem!
     meshDS->SetNodeOnFace( centralNode, faceID, uvAvg.X(), uvAvg.Y() );
   }
-  else if ( shapeID > 0 )
+  else // ( force3d || F.IsNull() )
   {
-    meshDS->SetNodeInVolume( centralNode, shapeID );
-  }
-  else if ( myShapeID > 0 && mySetElemOnShape )
-  {
-    meshDS->SetMeshElementOnShape( centralNode, myShapeID );
+    P = ( SMESH_TNodeXYZ( n12 ) +
+          SMESH_TNodeXYZ( n23 ) +
+          SMESH_TNodeXYZ( n31 ) ) / 3;
+    centralNode = meshDS->AddNode( P.X(), P.Y(), P.Z() );
+
+    if ( !F.IsNull() ) // force3d
+    {
+      uvAvg = ( GetNodeUV(F,n12,n3) +
+                GetNodeUV(F,n23,n1) +
+                GetNodeUV(F,n31,n2) ) / 3.;
+      meshDS->SetNodeOnFace( centralNode, faceID, uvAvg.X(), uvAvg.Y() );
+    }
+    else if ( solidID > 0 )
+    {
+      meshDS->SetNodeInVolume( centralNode, solidID );
+    }
+    else if ( myShapeID > 0 && mySetElemOnShape )
+    {
+      meshDS->SetMeshElementOnShape( centralNode, myShapeID );
+    }
   }
   myMapWithCentralNode.insert( std::make_pair( keyOfMap, centralNode ) );
   return centralNode;
@@ -1203,6 +1359,9 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
   bool uvOK[2] = { false, false };
 
   pair<int, TopAbs_ShapeEnum> pos = GetMediumPos( n1, n2, mySetElemOnShape );
+  // calling GetMediumPos() with useCurSubShape=mySetElemOnShape is OK only for the
+  // case where the lower dim mesh is already constructed, else, nodes on EDGEs are
+  // assigned to FACE, for example.
 
   // get positions of the given nodes on shapes
   if ( pos.second == TopAbs_FACE )
@@ -1476,11 +1635,21 @@ SMDS_MeshFace* SMESH_MesherHelper::AddFace(const SMDS_MeshNode* n1,
     const SMDS_MeshNode* n12 = GetMediumNode(n1,n2,force3d);
     const SMDS_MeshNode* n23 = GetMediumNode(n2,n3,force3d);
     const SMDS_MeshNode* n31 = GetMediumNode(n3,n1,force3d);
-
-    if(id)
-      elem = meshDS->AddFaceWithID(n1, n2, n3, n12, n23, n31, id);
+    if(myCreateBiQuadratic)
+    {
+     const SMDS_MeshNode* nCenter = GetCentralNode(n1, n2, n3, n12, n23, n31, force3d);
+     if(id)
+       elem = meshDS->AddFaceWithID(n1, n2, n3, n12, n23, n31, nCenter, id);
+     else
+       elem = meshDS->AddFace(n1, n2, n3, n12, n23, n31, nCenter);
+    }
     else
-      elem = meshDS->AddFace(n1, n2, n3, n12, n23, n31);
+    {
+      if(id)
+        elem = meshDS->AddFaceWithID(n1, n2, n3, n12, n23, n31, id);
+      else
+        elem = meshDS->AddFace(n1, n2, n3, n12, n23, n31);
+    }
   }
   if ( mySetElemOnShape && myShapeID > 0 )
     meshDS->SetMeshElementOnShape( elem, myShapeID );
@@ -2105,7 +2274,7 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap &            theParam2
     const SMDS_MeshNode *n2 = nCol2[ prevNbRows-1 ];
     // find face sharing node n1 and n2 and belonging to faceSubMesh
     while ( const SMDS_MeshElement* face =
-            SMESH_MeshEditor::FindFaceInSet( n1, n2, emptySet, avoidSet, &i1, &i2))
+            SMESH_MeshAlgos::FindFaceInSet( n1, n2, emptySet, avoidSet, &i1, &i2))
     {
       if ( faceSubMesh->Contains( face ))
       {
@@ -3698,7 +3867,7 @@ namespace { // Structures used by FixQuadraticElements()
             if ( nOnFace && nOnEdge.size() == 2 )
             {
               theHelper.AddTLinks( static_cast< const SMDS_MeshFace* > ( f ));
-              if ( !SMESH_Algo::FaceNormal( f, faceNorm, /*normalized=*/false ))
+              if ( !SMESH_MeshAlgos::FaceNormal( f, faceNorm, /*normalized=*/false ))
                 continue;
               gp_XYZ edgeDir  = SMESH_TNodeXYZ( nOnEdge[0] ) - SMESH_TNodeXYZ( nOnEdge[1] );
               gp_XYZ edgeNorm = faceNorm ^ edgeDir;
@@ -3788,7 +3957,7 @@ namespace { // Structures used by FixQuadraticElements()
 
       // a seacher to check if a volume is close to a concave face
       std::auto_ptr< SMESH_ElementSearcher > faceSearcher
-        ( SMESH_MeshEditor( theHelper.GetMesh() ).GetElementSearcher( faceIter ));
+        ( SMESH_MeshAlgos::GetElementSearcher( *theHelper.GetMeshDS(), faceIter ));
 
       // classifier
       //BRepClass3d_SolidClassifier solidClassifier( shape );
@@ -3862,7 +4031,7 @@ namespace { // Structures used by FixQuadraticElements()
             // to nInSolid than the link middle
             bool isDistorted = false;
             SMDS_FaceOfNodes onFaceTria( nOnFace[0], nOnFace[1], nOnFace[2] );
-            if ( !SMESH_Algo::FaceNormal( &onFaceTria, faceNorm, /*normalized=*/false ))
+            if ( !SMESH_MeshAlgos::FaceNormal( &onFaceTria, faceNorm, /*normalized=*/false ))
               continue;
             theHelper.AddTLinks( static_cast< const SMDS_MeshVolume* > ( vol ));
             vector< pair< SMESH_TLink, const SMDS_MeshNode* > > links;
@@ -4299,9 +4468,10 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
   // 4. Move nodes
   // -------------
 
-  TIDSortedElemSet biQuadQuas, triQuadHexa;
+  TIDSortedElemSet biQuadQuas, biQuadTris, triQuadHexa;
   const SMDS_MeshElement *biQuadQua, *triQuadHex;
   const bool toFixCentralNodes = ( myMesh->NbBiQuadQuadrangles() +
+                                   myMesh->NbBiQuadTriangles() +
                                    myMesh->NbTriQuadraticHexas() );
 
   for ( pLink = links.begin(); pLink != links.end(); ++pLink ) {
@@ -4318,23 +4488,22 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
         while ( eIt->more() )
         {
           const SMDS_MeshElement* e = eIt->next();
-          SMDSAbs_EntityType   type = e->GetEntityType();
-          if ( type == SMDSEntity_BiQuad_Quadrangle )
-            biQuadQuas.insert( e );
-          else if ( type == SMDSEntity_TriQuad_Hexa )
-            triQuadHexa.insert( e );
+          switch( e->GetEntityType() ) {
+          case SMDSEntity_BiQuad_Quadrangle: biQuadQuas.insert( e ); break;
+          case SMDSEntity_BiQuad_Triangle:   biQuadTris.insert( e ); break;
+          case SMDSEntity_TriQuad_Hexa:      triQuadHexa.insert( e ); break;
+          default:;
+          }
         }
       }
     }
   }
-
   // Fix positions of central nodes of bi-tri-quadratic elements
 
   // treat bi-quad quadrangles
   {
     vector< const SMDS_MeshNode* > nodes( 9 );
     gp_XY uv[ 9 ];
-    //TIDSortedNodeSet checkedNodes;
     TIDSortedElemSet::iterator quadIt = biQuadQuas.begin();
     for ( ; quadIt != biQuadQuas.end(); ++quadIt )
     {
@@ -4357,10 +4526,43 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
         if ( i > 3 && nodes[i]->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE )
           CheckNodeUV( F, nodes[i], uv[ i ], 2*tol, /*force=*/true );
       }
-      // move central node
+      // move the central node
       gp_XY uvCent = calcTFI (0.5, 0.5, uv[0],uv[1],uv[2],uv[3],uv[4],uv[5],uv[6],uv[7] );
       gp_Pnt p = surf->Value( uvCent.X(), uvCent.Y() ).Transformed( loc );
       GetMeshDS()->MoveNode( nodes[8], p.X(), p.Y(), p.Z());
+    }
+  }
+
+  // treat bi-quad triangles
+  {
+    const SMDS_MeshNode* nodes[3]; // medium nodes
+    gp_XY uv[ 3 ]; // UV of medium nodes
+    TIDSortedElemSet::iterator triIt = biQuadTris.begin();
+    for ( ; triIt != biQuadTris.end(); ++triIt )
+    {
+      const SMDS_MeshElement* tria = *triIt;
+      // nodes
+      for ( int i = 3; i < 6; ++i )
+        nodes[ i-3 ] = tria->GetNode( i );
+      // FACE
+      const TopoDS_Shape& S = GetMeshDS()->IndexToShape( tria->getshapeId() );
+      if ( S.IsNull() || S.ShapeType() != TopAbs_FACE ) continue;
+      const TopoDS_Face& F = TopoDS::Face( S );
+      Handle( Geom_Surface ) surf = BRep_Tool::Surface( F, loc );
+      const double tol = BRep_Tool::Tolerance( F );
+      // UV
+      for ( int i = 0; i < 3; ++i )
+      {
+        uv[ i ] = GetNodeUV( F, nodes[i], nodes[(i+1)%3], &checkUV );
+        // as this method is used after mesh generation, UV of nodes is not
+        // updated according to bending links, so we update 
+        if ( nodes[i]->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE )
+          CheckNodeUV( F, nodes[i], uv[ i ], 2*tol, /*force=*/true );
+      }
+      // move the central node
+      gp_XY uvCent = ( uv[0] + uv[1] + uv[2] ) / 3.;
+      gp_Pnt p = surf->Value( uvCent.X(), uvCent.Y() ).Transformed( loc );
+      GetMeshDS()->MoveNode( tria->GetNode(6), p.X(), p.Y(), p.Z() );
     }
   }
 

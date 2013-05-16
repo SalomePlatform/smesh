@@ -586,6 +586,19 @@ public:
                                       const SMDS_MeshNode* n41,
                                       bool                 force3d);
   /*!
+   * \brief Return existing or create a new central node for a 
+   *       quadratic triangle given its 6 nodes.
+   *  \param force3d - true means node creation in between the given nodes,
+   *                   else node position is found on a geometrical face if any.
+   */
+  const SMDS_MeshNode* GetCentralNode(const SMDS_MeshNode* n1,
+                                      const SMDS_MeshNode* n2,
+                                      const SMDS_MeshNode* n3,
+                                      const SMDS_MeshNode* n12,
+                                      const SMDS_MeshNode* n23,
+                                      const SMDS_MeshNode* n31,
+                                      bool                 force3d);
+  /*!
    * \brief Return index and type of the shape (EDGE or FACE only) to set a medium node on
    */
   std::pair<int, TopAbs_ShapeEnum> GetMediumPos(const SMDS_MeshNode* n1,
@@ -646,13 +659,13 @@ public:
     TBiQuad(const SMDS_MeshNode* n1,
             const SMDS_MeshNode* n2, 
             const SMDS_MeshNode* n3,
-            const SMDS_MeshNode* n4)
+            const SMDS_MeshNode* n4=0)
     {
       TIDSortedNodeSet s;
       s.insert(n1);
       s.insert(n2);
       s.insert(n3);
-      s.insert(n4);
+      if ( n4 ) s.insert(n4);
       TIDSortedNodeSet::iterator n = s.begin();
       first = (*n++)->GetID();
       second.first = (*n++)->GetID();
@@ -661,8 +674,8 @@ public:
   };
 
   // maps used during creation of quadratic elements
-  TLinkNodeMap                        myTLinkNodeMap;       // medium nodes on links
-  std::map< TBiQuad, SMDS_MeshNode* > myMapWithCentralNode; // central nodes of faces
+  TLinkNodeMap                              myTLinkNodeMap;       // medium nodes on links
+  std::map< TBiQuad, const SMDS_MeshNode* > myMapWithCentralNode; // central nodes of faces
 
   std::set< int > myDegenShapeIds;
   std::set< int > mySeamShapeIds;
