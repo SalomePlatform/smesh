@@ -50,6 +50,7 @@ int SMDS_Downward::getCellDimension(unsigned char cellType)
       _cellDimension[VTK_QUADRATIC_EDGE] = 1;
       _cellDimension[VTK_TRIANGLE] = 2;
       _cellDimension[VTK_QUADRATIC_TRIANGLE] = 2;
+      _cellDimension[VTK_BIQUADRATIC_TRIANGLE] = 2;
       _cellDimension[VTK_QUAD] = 2;
       _cellDimension[VTK_QUADRATIC_QUAD] = 2;
       _cellDimension[VTK_BIQUADRATIC_QUAD] = 2;
