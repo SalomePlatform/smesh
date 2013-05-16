@@ -487,20 +487,6 @@
     if ( isDAT )
     {
       format = "DAT";
-      notSupportedElemTypes.push_back( SMESH::Entity_Quad_Quadrangle );
-      notSupportedElemTypes.push_back( SMESH::Entity_BiQuad_Quadrangle );
-      notSupportedElemTypes.push_back( SMESH::Entity_Polygon );
-      notSupportedElemTypes.push_back( SMESH::Entity_Quad_Polygon );
-      notSupportedElemTypes.push_back( SMESH::Entity_Tetra );
-      notSupportedElemTypes.push_back( SMESH::Entity_Quad_Tetra );
-      notSupportedElemTypes.push_back( SMESH::Entity_Pyramid );
-      notSupportedElemTypes.push_back( SMESH::Entity_Quad_Pyramid );
-      notSupportedElemTypes.push_back( SMESH::Entity_Quad_Hexa );
-      notSupportedElemTypes.push_back( SMESH::Entity_TriQuad_Hexa );
-      notSupportedElemTypes.push_back( SMESH::Entity_Penta );
-      notSupportedElemTypes.push_back( SMESH::Entity_Quad_Penta );
-      notSupportedElemTypes.push_back( SMESH::Entity_Hexagonal_Prism );
-      notSupportedElemTypes.push_back( SMESH::Entity_Polyhedra );
       notSupportedElemTypes.push_back( SMESH::Entity_0D );
       notSupportedElemTypes.push_back( SMESH::Entity_Ball );
     }
@@ -528,11 +514,13 @@
     {
       format = "CGNS";
       notSupportedElemTypes.push_back( SMESH::Entity_Ball );
+      notSupportedElemTypes.push_back( SMESH::Entity_BiQuad_Triangle );
     }
     else if ( isSAUV )
     {
       format = "SAUV";
       notSupportedElemTypes.push_back( SMESH::Entity_Ball );
+      notSupportedElemTypes.push_back( SMESH::Entity_BiQuad_Triangle );
       notSupportedElemTypes.push_back( SMESH::Entity_BiQuad_Quadrangle );
       notSupportedElemTypes.push_back( SMESH::Entity_TriQuad_Hexa );
       notSupportedElemTypes.push_back( SMESH::Entity_Hexagonal_Prism );
@@ -562,10 +550,11 @@
     if ( !presentNotSupported.empty() )
     {
       QString typeNames;
-      const char* typeMsg[SMESH::Entity_Last] = { "SMESH_NODES",
-        "SMESH_ELEMS0D","SMESH_EDGES","SMESH_QUADRATIC_EDGES","SMESH_TRIANGLES",
-        "SMESH_QUADRATIC_TRIANGLES","SMESH_QUADRANGLES","SMESH_QUADRATIC_QUADRANGLES",
-        "SMESH_BIQUADRATIC_QUADRANGLES","SMESH_POLYGONS","SMESH_QUADRATIC_POLYGONS",
+      const char* typeMsg[SMESH::Entity_Last] = {
+        "SMESH_NODES", "SMESH_ELEMS0D","SMESH_EDGES","SMESH_QUADRATIC_EDGES",
+        "SMESH_TRIANGLES", "SMESH_QUADRATIC_TRIANGLES", "SMESH_BIQUADRATIC_TRIANGLES",
+        "SMESH_QUADRANGLES","SMESH_QUADRATIC_QUADRANGLES", "SMESH_BIQUADRATIC_QUADRANGLES",
+        "SMESH_POLYGONS","SMESH_QUADRATIC_POLYGONS",
         "SMESH_TETRAHEDRA","SMESH_QUADRATIC_TETRAHEDRONS","SMESH_PYRAMIDS",
         "SMESH_QUADRATIC_PYRAMIDS","SMESH_HEXAHEDRA","SMESH_QUADRATIC_HEXAHEDRONS",
         "SMESH_TRIQUADRATIC_HEXAHEDRONS","SMESH_PENTAHEDRA","SMESH_QUADRATIC_PENTAHEDRONS",
@@ -3057,6 +3046,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 4035:     // QUADRATIC TRIANGLE
   case 4036:     // QUADRATIC QUADRANGLE
   case 4136:     // BIQUADRATIC QUADRANGLE
+  case 4137:     // BIQUADRATIC TRIANGLE
   case 4037:     // QUADRATIC TETRAHEDRON
   case 4038:     // QUADRATIC PYRAMID
   case 4039:     // QUADRATIC PENTAHEDRON
@@ -3077,6 +3067,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
           type = SMDSEntity_Quad_Quadrangle; break;
         case 4136:
           type = SMDSEntity_BiQuad_Quadrangle; break;
+        case 4137:
+          type = SMDSEntity_BiQuad_Triangle; break;
         case 4037:
           type = SMDSEntity_Quad_Tetra; break;
         case 4038:
@@ -3675,6 +3667,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 4035, "QUADRATIC_TRIANGLE",      "ICON_DLG_QUADRATIC_TRIANGLE" );
   createSMESHAction( 4036, "QUADRATIC_QUADRANGLE",    "ICON_DLG_QUADRATIC_QUADRANGLE" );
   createSMESHAction( 4136, "BIQUADRATIC_QUADRANGLE",  "ICON_DLG_BIQUADRATIC_QUADRANGLE" );
+  createSMESHAction( 4137, "BIQUADRATIC_TRIANGLE",    "ICON_DLG_BIQUADRATIC_TRIANGLE" );
   createSMESHAction( 4037, "QUADRATIC_TETRAHEDRON",   "ICON_DLG_QUADRATIC_TETRAHEDRON" );
   createSMESHAction( 4038, "QUADRATIC_PYRAMID",       "ICON_DLG_QUADRATIC_PYRAMID" );
   createSMESHAction( 4039, "QUADRATIC_PENTAHEDRON",   "ICON_DLG_QUADRATIC_PENTAHEDRON" );
@@ -3873,6 +3866,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( separator(), addId, -1 );
   createMenu( 4034, addId, -1 );
   createMenu( 4035, addId, -1 );
+  createMenu( 4137, addId, -1 );
   createMenu( 4036, addId, -1 );
   createMenu( 4136, addId, -1 );
   createMenu( 4037, addId, -1 );
@@ -3999,6 +3993,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( separator(), addRemTb );
   createTool( 4034, addRemTb );
   createTool( 4035, addRemTb );
+  createTool( 4137, addRemTb );
   createTool( 4036, addRemTb );
   createTool( 4136, addRemTb );
   createTool( 4037, addRemTb );

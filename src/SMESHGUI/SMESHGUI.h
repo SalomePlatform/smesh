@@ -203,7 +203,7 @@ private:
   int                             addVtkFontPref( const QString&, 
                                                   const int, 
                                                   const QString&,
-						  const bool = false);
+                                                  const bool = false);
 
   void                            connectView( const SUIT_ViewWindow* );
  
