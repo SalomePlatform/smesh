@@ -33,6 +33,7 @@
 #include "SMESHDS_GroupBase.hxx"
 #include "SMESHDS_Mesh.hxx"
 #include "SMESH_OctreeNode.hxx"
+#include "SMESH_MeshAlgos.hxx"
 
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepClass_FaceClassifier.hxx>
@@ -2791,6 +2792,148 @@ void ElemEntityType::SetElemEntityType( SMDSAbs_EntityType theEntityType )
 SMDSAbs_EntityType ElemEntityType::GetElemEntityType() const
 {
   return myEntityType;
+}
+
+//================================================================================
+/*!
+ * \brief Class ConnectedElements
+ */
+//================================================================================
+
+ConnectedElements::ConnectedElements():
+  myNodeID(0), myType( SMDSAbs_All ), myOkIDsReady( false ) {}
+
+SMDSAbs_ElementType ConnectedElements::GetType() const
+{ return myType; }
+
+int ConnectedElements::GetNode() const
+{ return myXYZ.empty() ? myNodeID : 0; } // myNodeID can be found by myXYZ
+
+std::vector<double> ConnectedElements::GetPoint() const
+{ return myXYZ; }
+
+void ConnectedElements::clearOkIDs()
+{ myOkIDsReady = false; myOkIDs.clear(); }
+
+void ConnectedElements::SetType( SMDSAbs_ElementType theType )
+{
+  if ( myType != theType || myMeshModifTracer.IsMeshModified() )
+    clearOkIDs();
+  myType = theType;
+}
+
+void ConnectedElements::SetMesh( const SMDS_Mesh* theMesh )
+{
+  myMeshModifTracer.SetMesh( theMesh );
+  if ( myMeshModifTracer.IsMeshModified() )
+  {
+    clearOkIDs();
+    if ( !myXYZ.empty() )
+      SetPoint( myXYZ[0], myXYZ[1], myXYZ[2] ); // find a node near myXYZ it in a new mesh
+  }
+}
+
+void ConnectedElements::SetNode( int nodeID )
+{
+  myNodeID = nodeID;
+  myXYZ.clear();
+
+  bool isSameDomain = false;
+  if ( myOkIDsReady && myMeshModifTracer.GetMesh() && !myMeshModifTracer.IsMeshModified() )
+    if ( const SMDS_MeshNode* n = myMeshModifTracer.GetMesh()->FindNode( myNodeID ))
+    {
+      SMDS_ElemIteratorPtr eIt = n->GetInverseElementIterator( myType );
+      while ( !isSameDomain && eIt->more() )
+        isSameDomain = IsSatisfy( eIt->next()->GetID() );
+    }
+  if ( !isSameDomain )
+    clearOkIDs();
+}
+
+void ConnectedElements::SetPoint( double x, double y, double z )
+{
+  myXYZ.resize(3);
+  myXYZ[0] = x;
+  myXYZ[1] = y;
+  myXYZ[2] = z;
+  myNodeID = 0;
+
+  bool isSameDomain = false;
+
+  // find myNodeID by myXYZ if possible
+  if ( myMeshModifTracer.GetMesh() )
+  {
+    auto_ptr<SMESH_ElementSearcher> searcher
+      ( SMESH_MeshAlgos::GetElementSearcher( (SMDS_Mesh&) *myMeshModifTracer.GetMesh() ));
+
+    vector< const SMDS_MeshElement* > foundElems;
+    searcher->FindElementsByPoint( gp_Pnt(x,y,z), SMDSAbs_All, foundElems );
+
+    if ( !foundElems.empty() )
+    {
+      myNodeID = foundElems[0]->GetNode(0)->GetID();
+      if ( myOkIDsReady && !myMeshModifTracer.IsMeshModified() )
+        isSameDomain = IsSatisfy( foundElems[0]->GetID() );
+    }
+  }
+  if ( !isSameDomain )
+    clearOkIDs();
+}
+
+bool ConnectedElements::IsSatisfy( long theElementId )
+{
+  // Here we do NOT check if the mesh has changed, we do it in Set...() only!!!
+
+  if ( !myOkIDsReady )
+  {
+    if ( !myMeshModifTracer.GetMesh() )
+      return false;
+    const SMDS_MeshNode* node0 = myMeshModifTracer.GetMesh()->FindNode( myNodeID );
+    if ( !node0 )
+      return false;
+
+    list< const SMDS_MeshNode* > nodeQueue( 1, node0 );
+    std::set< int > checkedNodeIDs;
+    // algo:
+    // foreach node in nodeQueue:
+    //   foreach element sharing a node:
+    //     add ID of an element of myType to myOkIDs;
+    //     push all element nodes absent from checkedNodeIDs to nodeQueue;
+    while ( !nodeQueue.empty() )
+    {
+      const SMDS_MeshNode* node = nodeQueue.front();
+      nodeQueue.pop_front();
+
+      // loop on elements sharing the node
+      SMDS_ElemIteratorPtr eIt = node->GetInverseElementIterator();
+      while ( eIt->more() )
+      {
+        // keep elements of myType
+        const SMDS_MeshElement* element = eIt->next();
+        if ( element->GetType() == myType )
+          myOkIDs.insert( myOkIDs.end(), element->GetID() );
+
+        // enqueue nodes of the element
+        SMDS_ElemIteratorPtr nIt = element->nodesIterator();
+        while ( nIt->more() )
+        {
+          const SMDS_MeshNode* n = static_cast< const SMDS_MeshNode* >( nIt->next() );
+          if ( checkedNodeIDs.insert( n->GetID() ).second )
+            nodeQueue.push_back( n );
+        }
+      }
+    }
+    if ( myType == SMDSAbs_Node )
+      std::swap( myOkIDs, checkedNodeIDs );
+
+    size_t totalNbElems = myMeshModifTracer.GetMesh()->GetMeshInfo().NbElements( myType );
+    if ( myOkIDs.size() == totalNbElems )
+      myOkIDs.clear();
+
+    myOkIDsReady = true;
+  }
+
+  return myOkIDs.empty() ? true : myOkIDs.count( theElementId );
 }
 
 //================================================================================

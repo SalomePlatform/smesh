@@ -302,7 +302,7 @@ namespace SMESH{
 
     /*
       Class       : MultiConnection
-      Description : Functor for calculating number of faces conneted to the edge
+      Description : Functor for calculating number of faces connected to the edge
     */
     class SMESHCONTROLS_EXPORT MultiConnection: public virtual NumericalFunctor{
     public:
@@ -314,7 +314,7 @@ namespace SMESH{
     
     /*
       Class       : MultiConnection2D
-      Description : Functor for calculating number of faces conneted to the edge
+      Description : Functor for calculating number of faces connected to the edge
     */
     class SMESHCONTROLS_EXPORT MultiConnection2D: public virtual NumericalFunctor{
     public:
@@ -945,7 +945,7 @@ namespace SMESH{
       void                 SetType( SMDSAbs_ElementType theType );
       virtual              SMDSAbs_ElementType GetType() const;
       void                 SetGeomType( SMDSAbs_GeometryType theType );
-      virtual SMDSAbs_GeometryType GetGeomType() const;
+      SMDSAbs_GeometryType GetGeomType() const;
 
     private:
       const SMDS_Mesh*     myMesh;
@@ -980,9 +980,42 @@ namespace SMESH{
     typedef boost::shared_ptr<CoplanarFaces> CoplanarFacesPtr;
 
     /*
+      Class       : ConnectedElements
+      Description : Predicate to get elements of one domain
+    */
+    class SMESHCONTROLS_EXPORT ConnectedElements: public virtual Predicate
+    {
+    public:
+      ConnectedElements();
+      void                 SetNode( int nodeID );
+      void                 SetPoint( double x, double y, double z );
+      int                  GetNode() const;
+      std::vector<double>  GetPoint() const;
+
+      void                 SetType( SMDSAbs_ElementType theType );
+      virtual              SMDSAbs_ElementType GetType() const;
+
+      virtual void         SetMesh( const SMDS_Mesh* theMesh );
+      virtual bool         IsSatisfy( long theElementId );
+
+      //const std::set<long>& GetDomainIDs() const { return myOkIDs; }
+
+    private:
+      int                 myNodeID;
+      std::vector<double> myXYZ;
+      SMDSAbs_ElementType myType;
+      TMeshModifTracer    myMeshModifTracer;
+
+      void                clearOkIDs();
+      bool                myOkIDsReady;
+      std::set< int >     myOkIDs; // empty means that there is one domain
+    };
+    typedef boost::shared_ptr<ConnectedElements> ConnectedElementsPtr;
+
+    /*
       FILTER
     */
-    class SMESHCONTROLS_EXPORT Filter{
+    class SMESHCONTROLS_EXPORT Filter {
     public:
       Filter();
       virtual ~Filter();
