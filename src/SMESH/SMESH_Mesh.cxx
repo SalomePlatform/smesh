@@ -1504,6 +1504,18 @@ int SMESH_Mesh::NbTriangles(SMDSAbs_ElementOrder order) const throw(SALOME_Excep
 
 //================================================================================
 /*!
+ * \brief Return number of biquadratic triangles in the mesh
+ */
+//================================================================================
+
+int SMESH_Mesh::NbBiQuadTriangles() const throw(SALOME_Exception)
+{
+  Unexpect aCatch(SalomeException);
+  return _myMeshDS->GetMeshInfo().NbBiQuadTriangles();
+}
+
+//================================================================================
+/*!
  * \brief Return the number nodes faces in the mesh
  */
 //================================================================================

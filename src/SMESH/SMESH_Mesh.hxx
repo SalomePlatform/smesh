@@ -252,38 +252,26 @@ public:
                   bool theAutoGroups = true) throw(SALOME_Exception);
   
   int NbNodes() const throw(SALOME_Exception);
-  
   int Nb0DElements() const throw(SALOME_Exception);
+  int NbBalls() const throw(SALOME_Exception);
   
   int NbEdges(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
   
   int NbFaces(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
-  
   int NbTriangles(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
-  
   int NbQuadrangles(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
-
   int NbBiQuadQuadrangles() const throw(SALOME_Exception);
-  
+  int NbBiQuadTriangles() const throw(SALOME_Exception);
   int NbPolygons() const throw(SALOME_Exception);
   
   int NbVolumes(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
-  
   int NbTetras(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
-  
   int NbHexas(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
-  
   int NbTriQuadraticHexas() const throw(SALOME_Exception);
-  
   int NbPyramids(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
-
   int NbPrisms(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
-  
   int NbHexagonalPrisms() const throw(SALOME_Exception);
-  
   int NbPolyhedrons() const throw(SALOME_Exception);
-  
-  int NbBalls() const throw(SALOME_Exception);
   
   int NbSubMesh() const throw(SALOME_Exception);
   
