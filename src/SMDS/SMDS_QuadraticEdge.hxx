@@ -56,8 +56,6 @@ public:
 
   SMDS_NodeIteratorPtr interlacedNodesIterator() const;
 
-  SMDS_ElemIteratorPtr interlacedNodesElemIterator() const;
-
 protected:
   SMDS_ElemIteratorPtr
   elementsIterator(SMDSAbs_ElementType type) const;

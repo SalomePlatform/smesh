@@ -117,21 +117,6 @@ namespace
   };
 
   //=======================================================================
-  //class : _MyInterlacedNodeElemIterator
-  //purpose  : 
-  //=======================================================================
-
-  class _MyInterlacedNodeElemIterator : public SMDS_ElemIterator
-  {
-    SMDS_NodeIteratorPtr myItr;
-  public:
-    _MyInterlacedNodeElemIterator(SMDS_NodeIteratorPtr interlacedNodeItr):
-      myItr( interlacedNodeItr ) {}
-    bool more()                    { return myItr->more(); }
-    const SMDS_MeshElement* next() { return myItr->next(); }
-  };
-
-  //=======================================================================
   //class : _MyNodeIterator
   //purpose  : 
   //=======================================================================
@@ -152,18 +137,6 @@ namespace
 SMDS_NodeIteratorPtr SMDS_QuadraticEdge::interlacedNodesIterator() const
 {
   return SMDS_NodeIteratorPtr (new _MyInterlacedNodeIterator (myNodes));
-}
-
-
-//=======================================================================
-//function : interlacedNodesElemIterator
-//purpose  : 
-//=======================================================================
-
-SMDS_ElemIteratorPtr SMDS_QuadraticEdge::interlacedNodesElemIterator() const
-{
-  return SMDS_ElemIteratorPtr
-    (new _MyInterlacedNodeElemIterator ( interlacedNodesIterator() ));
 }
 
 //=======================================================================

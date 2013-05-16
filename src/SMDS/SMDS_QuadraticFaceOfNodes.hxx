@@ -66,8 +66,6 @@ public:
 
   SMDS_NodeIteratorPtr interlacedNodesIterator() const;
 
-  SMDS_ElemIteratorPtr interlacedNodesElemIterator() const;
-
   /*!
    * \brief Return node by its index
     * \param ind - node index

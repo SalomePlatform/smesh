@@ -193,21 +193,6 @@ namespace {
   };
 
   //=======================================================================
-  //class : _MyInterlacedNodeElemIterator
-  //purpose  : 
-  //=======================================================================
-
-  class _MyInterlacedNodeElemIterator : public SMDS_ElemIterator
-  {
-    SMDS_NodeIteratorPtr myItr;
-  public:
-    _MyInterlacedNodeElemIterator(SMDS_NodeIteratorPtr interlacedNodeItr):
-      myItr( interlacedNodeItr ) {}
-    bool more()                    { return myItr->more(); }
-    const SMDS_MeshElement* next() { return myItr->next(); }
-  };
-
-  //=======================================================================
   //class : _MyNodeIterator
   //purpose  : 
   //=======================================================================
@@ -234,16 +219,6 @@ SMDS_NodeIteratorPtr SMDS_QuadraticFaceOfNodes::interlacedNodesIterator() const
     (new _MyInterlacedNodeIterator (myNodes, myNodes.size()==6 ? triaInterlace : quadInterlace));
 }
 
-//=======================================================================
-//function : interlacedNodesElemIterator
-//purpose  : 
-//=======================================================================
-
-SMDS_ElemIteratorPtr SMDS_QuadraticFaceOfNodes::interlacedNodesElemIterator() const
-{
-  return SMDS_ElemIteratorPtr
-    (new _MyInterlacedNodeElemIterator ( interlacedNodesIterator() ));
-}
 /// ===================================================================
 /*!
  * \brief Iterator on edges of face
@@ -257,10 +232,10 @@ class _MyEdgeIterator : public SMDS_ElemIterator
 public:
   _MyEdgeIterator(const SMDS_QuadraticFaceOfNodes* face):myIndex(0) {
     myElems.reserve( face->NbNodes() );
-    SMDS_ElemIteratorPtr nIt = face->interlacedNodesElemIterator();
+    SMDS_NodeIteratorPtr nIt = face->interlacedNodesIterator();
     const SMDS_MeshNode* n0 = face->GetNodeWrap( -1 );
     while ( nIt->more() ) {
-      const SMDS_MeshNode* n1 = static_cast<const SMDS_MeshNode*>( nIt->next() );
+      const SMDS_MeshNode* n1 = nIt->next();
       const SMDS_MeshElement* edge = SMDS_Mesh::FindEdge( n0, n1 );
       if ( edge )
         myElems.push_back( edge );
