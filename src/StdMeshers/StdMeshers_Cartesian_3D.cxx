@@ -2124,6 +2124,7 @@ namespace
         SMESH_subMesh* sm = smIt->next();
         sm->SetIsAlwaysComputed( isComputed );
       }
+      subMeshOfSolid->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
     }
 
     // --------------------------------------------------------------------------------
