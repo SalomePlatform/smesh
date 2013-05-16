@@ -50,9 +50,6 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
   /****************************************************************************
    *                       NOMBRES D'OBJETS                                    *
    ****************************************************************************/
-  fprintf(stdout, "\n(****************************)\n");
-  fprintf(stdout, "(* INFORMATIONS GENERALES : *)\n");
-  fprintf(stdout, "(****************************)\n");
   
   /* Combien de noeuds ? */
   nbNodes = myMesh->NbNodes();
@@ -73,9 +70,6 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
   /****************************************************************************
    *                       ECRITURE DES NOEUDS                                 *
    ****************************************************************************/
-  fprintf(stdout, "\n(************************)\n");
-  fprintf(stdout, "(* NOEUDS DU MAILLAGE : *)\n");
-  fprintf(stdout, "(************************)\n");
   
   SMDS_NodeIteratorPtr itNodes=myMesh->nodesIterator();
   while(itNodes->more()){               
@@ -86,9 +80,6 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
   /****************************************************************************
    *                       ECRITURE DES ELEMENTS                                *
    ****************************************************************************/
-  fprintf(stdout, "\n(**************************)\n");
-  fprintf(stdout, "(* ELEMENTS DU MAILLAGE : *)\n");
-  fprintf(stdout, "(**************************)");
   /* Ecriture des connectivites, noms, numeros des mailles */
   
   SMDS_EdgeIteratorPtr itEdges=myMesh->edgesIterator();
@@ -111,17 +102,10 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
   SMDS_FaceIteratorPtr itFaces=myMesh->facesIterator();
   while(itFaces->more()){
     const SMDS_MeshElement * elem = itFaces->next();
-    switch (elem->NbNodes()) {
-    case 3:
-      fprintf(aFileId, "%d %d ", elem->GetID(), 203);
-      break;
-    case 4:
-      fprintf(aFileId, "%d %d ", elem->GetID(), 204);
-      break;
-    case 6:
-      fprintf(aFileId, "%d %d ", elem->GetID(), 206);
-      break;
-    }
+    if ( elem->IsPoly() )
+      fprintf(aFileId, "%d %d ", elem->GetID(), 400+elem->NbNodes());
+    else
+      fprintf(aFileId, "%d %d ", elem->GetID(), 200+elem->NbNodes());
     SMDS_ElemIteratorPtr it=elem->nodesIterator();
     while(it->more()) 
       fprintf(aFileId, "%d ", it->next()->GetID());
@@ -131,12 +115,10 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
   SMDS_VolumeIteratorPtr itVolumes=myMesh->volumesIterator();
   while(itVolumes->more()){
     const SMDS_MeshElement * elem = itVolumes->next();
-    switch (elem->NbNodes()) {
-    case 8:
-      fprintf(aFileId, "%d %d ", elem->GetID(), 308);
-      break;
-    }
-
+    if ( elem->IsPoly() )
+      fprintf(aFileId, "%d %d ", elem->GetID(), 500+elem->NbNodes());
+    else
+      fprintf(aFileId, "%d %d ", elem->GetID(), 300+elem->NbNodes());
     SMDS_ElemIteratorPtr it=elem->nodesIterator();
     while(it->more()) 
       fprintf(aFileId, "%d ", it->next()->GetID());
