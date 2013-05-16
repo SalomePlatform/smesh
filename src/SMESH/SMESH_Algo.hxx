@@ -325,11 +325,6 @@ public:
    */
   static double EdgeLength(const TopoDS_Edge & E);
 
-  /*!
-   * \brief Calculate normal of a mesh face
-   */
-  static bool FaceNormal(const SMDS_MeshElement* F, gp_XYZ& normal, bool normalized=true);
-
   //static int NumberOfWires(const TopoDS_Shape& S);
   int NumberOfPoints(SMESH_Mesh& aMesh,const TopoDS_Wire& W);
 
@@ -355,12 +350,6 @@ public:
     * \retval const SMDS_MeshNode* - found node or NULL
    */
   static const SMDS_MeshNode* VertexNode(const TopoDS_Vertex& V, const SMESHDS_Mesh* meshDS);
-
-  /*!
-   * \brief Return nodes common to two elements
-   */
-  static std::vector< const SMDS_MeshNode*> GetCommonNodes(const SMDS_MeshElement* e1,
-                                                           const SMDS_MeshElement* e2);
 
   enum EMeshError { MEr_OK = 0, MEr_HOLES, MEr_BAD_ORI, MEr_EMPTY };
 

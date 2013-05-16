@@ -316,45 +316,6 @@ double SMESH_Algo::EdgeLength(const TopoDS_Edge & E)
 
 //================================================================================
 /*!
- * \brief Calculate normal of a mesh face
- */
-//================================================================================
-
-bool SMESH_Algo::FaceNormal(const SMDS_MeshElement* F, gp_XYZ& normal, bool normalized)
-{
-  if ( !F || F->GetType() != SMDSAbs_Face )
-    return false;
-
-  normal.SetCoord(0,0,0);
-  int nbNodes = F->IsQuadratic() ? F->NbNodes()/2 : F->NbNodes();
-  for ( int i = 0; i < nbNodes-2; ++i )
-  {
-    gp_XYZ p[3];
-    for ( int n = 0; n < 3; ++n )
-    {
-      const SMDS_MeshNode* node = F->GetNode( i + n );
-      p[n].SetCoord( node->X(), node->Y(), node->Z() );
-    }
-    normal += ( p[2] - p[1] ) ^ ( p[0] - p[1] );
-  }
-  double size2 = normal.SquareModulus();
-  bool ok = ( size2 > numeric_limits<double>::min() * numeric_limits<double>::min());
-  if ( normalized && ok )
-    normal /= sqrt( size2 );
-
-  return ok;
-}
-
-/*
- * Moved to SMESH_MesherHelper
- */
-// bool SMESH_Algo::IsReversedSubMesh (const TopoDS_Face&  theFace,
-//                                     SMESHDS_Mesh*       theMeshDS)
-// {
-// }
-
-//================================================================================
-/*!
  * \brief Just return false as the algorithm does not hold parameters values
  */
 //================================================================================
@@ -581,21 +542,6 @@ const SMDS_MeshNode* SMESH_Algo::VertexNode(const TopoDS_Vertex& V,
       return nIt->next();
   }
   return 0;
-}
-
-//=======================================================================
-//function : GetCommonNodes
-//purpose  : Return nodes common to two elements
-//=======================================================================
-
-vector< const SMDS_MeshNode*> SMESH_Algo::GetCommonNodes(const SMDS_MeshElement* e1,
-                                                         const SMDS_MeshElement* e2)
-{
-  vector< const SMDS_MeshNode*> common;
-  for ( int i = 0 ; i < e1->NbNodes(); ++i )
-    if ( e2->GetNodeIndex( e1->GetNode( i )) >= 0 )
-      common.push_back( e1->GetNode( i ));
-  return common;
 }
 
 //=======================================================================
