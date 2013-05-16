@@ -164,7 +164,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
 {
   if ( !_sourceHyp ) return false;
 
-  const vector<SMESH_Group*>& srcGroups = _sourceHyp->GetGroups();
+  const vector<SMESH_Group*>& srcGroups = _sourceHyp->GetGroups(/*loaded=*/true);
   if ( srcGroups.empty() )
     return error("Invalid source groups");
 
@@ -210,6 +210,12 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
     vertexNodes.push_back( SMESH_TNodeXYZ( n ));
   }
 
+  // get EDGESs and their ids
+  vector< TopoDS_Edge > edges;
+  for ( exp.Init( theShape, TopAbs_EDGE ); exp.More(); exp.Next() )
+    if ( subShapeIDs.insert( tgtMesh->ShapeToIndex( exp.Current() )).second )
+      edges.push_back( TopoDS::Edge( exp.Current() ));
+
   // to count now many times a link between nodes encounters
   map<TLink, int> linkCount;
   map<TLink, int>::iterator link2Nb;
@@ -247,10 +253,11 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
       SMDS_MeshElement::iterator node = face->begin_nodes();
       for ( size_t i = 0; i < newNodes.size(); ++i, ++node )
       {
-        StdMeshers_Import_1D::TNodeNodeMap::iterator n2nIt = n2n->insert( make_pair( *node, (SMDS_MeshNode*)0 )).first;
+        StdMeshers_Import_1D::TNodeNodeMap::iterator n2nIt =
+          n2n->insert( make_pair( *node, (SMDS_MeshNode*)0 )).first;
         if ( n2nIt->second )
         {
-          if ( !subShapeIDs.count( n2nIt->second->getshapeId() ))
+          if ( !subShapeIDs.count( n2nIt->second->getshapeId() )) // node already on an EDGE
             break;
         }
         else
@@ -290,6 +297,8 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
         continue; // repeated face in source groups already created 
 
       // check future face orientation
+      const int nbCorners = face->NbCornerNodes();
+      const bool isQuad   = ( nbCorners != (int) newNodes.size() );
       if ( toCheckOri )
       {
         int iNode = -1;
@@ -300,10 +309,10 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
           surface->D1( uv.X(),uv.Y(), p, du,dv );
           geomNorm = reverse ? dv^du : du^dv;
         }
-        while ( geomNorm.SquareMagnitude() < 1e-6 && iNode+1 < face->NbCornerNodes());
+        while ( geomNorm.SquareMagnitude() < 1e-6 && iNode+1 < nbCorners );
 
-        int iNext = helper.WrapIndex( iNode+1, face->NbCornerNodes() );
-        int iPrev = helper.WrapIndex( iNode-1, face->NbCornerNodes() );
+        int iNext = helper.WrapIndex( iNode+1, nbCorners );
+        int iPrev = helper.WrapIndex( iNode-1, nbCorners );
 
         SMESH_TNodeXYZ prevNode( newNodes[iPrev] );
         SMESH_TNodeXYZ curNode ( newNodes[iNode] );
@@ -313,40 +322,43 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
         gp_Vec meshNorm = n1n2 ^ n1n0;
 
         if ( geomNorm * meshNorm < 0 )
-          std::reverse( newNodes.begin(), newNodes.end() );
+          SMDS_MeshCell::applyInterlace
+            ( SMDS_MeshCell::reverseSmdsOrder( face->GetEntityType() ), newNodes );
       }
 
       // make a new face
-      switch ( newNodes.size() )
-      {
-      case 3:
-        newFace = tgtMesh->AddFace( newNodes[0], newNodes[1], newNodes[2] );
-        break;
-      case 4:
-        newFace = tgtMesh->AddFace( newNodes[0], newNodes[1], newNodes[2], newNodes[3] );
-        break;
-      case 6:
-        newFace = tgtMesh->AddFace( newNodes[0], newNodes[1], newNodes[2],
-                                    newNodes[3], newNodes[4], newNodes[5]);
-        break;
-      case 8:
-        newFace = tgtMesh->AddFace( newNodes[0], newNodes[1], newNodes[2], newNodes[3],
-                                    newNodes[4], newNodes[5], newNodes[6], newNodes[7]);
-        break;
-      default: continue;
-      }
+      if ( face->IsPoly() )
+        newFace = tgtMesh->AddPolygonalFace( newNodes );
+      else
+        switch ( newNodes.size() )
+        {
+        case 3:
+          newFace = tgtMesh->AddFace( newNodes[0], newNodes[1], newNodes[2] );
+          break;
+        case 4:
+          newFace = tgtMesh->AddFace( newNodes[0], newNodes[1], newNodes[2], newNodes[3] );
+          break;
+        case 6:
+          newFace = tgtMesh->AddFace( newNodes[0], newNodes[1], newNodes[2],
+                                      newNodes[3], newNodes[4], newNodes[5]);
+          break;
+        case 8:
+          newFace = tgtMesh->AddFace( newNodes[0], newNodes[1], newNodes[2], newNodes[3],
+                                      newNodes[4], newNodes[5], newNodes[6], newNodes[7]);
+          break;
+        default: continue;
+        }
       tgtMesh->SetMeshElementOnShape( newFace, shapeID );
       e2e->insert( make_pair( face, newFace ));
 
       // collect links
-      int nbNodes = face->NbCornerNodes();
       const SMDS_MeshNode* medium = 0;
-      for ( int i = 0; i < nbNodes; ++i )
+      for ( int i = 0; i < nbCorners; ++i )
       {
         const SMDS_MeshNode* n1 = newNodes[i];
-        const SMDS_MeshNode* n2 = newNodes[ (i+1)%nbNodes ];
-        if ( newFace->IsQuadratic() )
-          medium = newNodes[i+nbNodes];
+        const SMDS_MeshNode* n2 = newNodes[ (i+1)%nbCorners ];
+        if ( isQuad ) // quadratic face
+          medium = newNodes[i+nbCorners];
         link2Nb = linkCount.insert( make_pair( TLink( n1, n2, medium ), 0)).first;
         ++link2Nb->second;
         // if ( link2Nb->second == 1 )
@@ -365,11 +377,6 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
   // Put nodes on geom edges and create edges on them;
   // check if the whole geom face is covered by imported faces
   // ==========================================================
-
-  vector< TopoDS_Edge > edges;
-  for ( exp.Init( theShape, TopAbs_EDGE ); exp.More(); exp.Next() )
-    if ( subShapeIDs.insert( tgtMesh->ShapeToIndex( exp.Current() )).second )
-      edges.push_back( TopoDS::Edge( exp.Current() ));
 
   // use large tolerance for projection of nodes to edges because of
   // BLSURF mesher specifics (issue 0020918, Study2.hdf)
@@ -395,7 +402,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
         for ( int is1stN = 0; is1stN < 2 && nodesOnBoundary; ++is1stN )
         {
           const SMDS_MeshNode* n = is1stN ? link.node1() : link.node2();
-          if ( !subShapeIDs.count( n->getshapeId() ))
+          if ( !subShapeIDs.count( n->getshapeId() )) // n is assigned to FACE
           {
             for ( size_t iE = 0; iE < edges.size(); ++iE )
               if ( helper.CheckNodeU( edges[iE], n, u=0, projTol, /*force=*/true ))
@@ -424,13 +431,13 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
           error("free internal link"); // just for an easier debug
           break;
         }
-        if ( bndShapes.front().ShapeType() == TopAbs_EDGE &&
+        if ( bndShapes.front().ShapeType() == TopAbs_EDGE && // all link nodes are on EDGEs
              bndShapes.front() != bndShapes.back() )
           // link nodes on different geom edges
           return error(COMPERR_BAD_INPUT_MESH, "Source nodes mismatch target vertices");
 
         // find geom edge the link is on
-        if ( bndShapes.back().ShapeType() != TopAbs_EDGE )
+        if ( bndShapes.back().ShapeType() != TopAbs_EDGE ) // all link nodes are on VERTEXes
         {
           // find geom edge by two vertices
           TopoDS_Shape geomEdge = helper.GetCommonAncestor( bndShapes.back(),
@@ -453,8 +460,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
         if ( link._reversed ) std::swap( newNodes[0], newNodes[1] );
         if ( link._medium )
         {
-          newNodes.push_back( link._medium );
-          edge = tgtMesh->AddEdge( newNodes[0], newNodes[1], newNodes[2] );
+          edge = tgtMesh->AddEdge( newNodes[0], newNodes[1], link._medium );
 
           TopoDS_Edge geomEdge = TopoDS::Edge(bndShapes.back());
           helper.CheckNodeU( geomEdge, link._medium, u, projTol, /*force=*/true );
