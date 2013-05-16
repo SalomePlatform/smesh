@@ -36,6 +36,7 @@
 #include "SMESH_PythonDump.hxx"
 
 #include <SALOMEDS_wrap.hxx>
+#include <GEOM_wrap.hxx>
 
 #include <BRep_Tool.hxx>
 #include <Geom_CylindricalSurface.hxx>
@@ -1712,6 +1713,172 @@ FunctorType CoplanarFaces_i::GetFunctorType()
 }
 
 /*
+ * Class       : ConnectedElements_i
+ * Description : Returns true if an element is connected via other elements to the element
+ *               located at a given point.
+ */
+ConnectedElements_i::ConnectedElements_i()
+{
+  myConnectedElementsPtr.reset(new Controls::ConnectedElements());
+  myFunctorPtr = myPredicatePtr = myConnectedElementsPtr;
+}
+
+FunctorType ConnectedElements_i::GetFunctorType()
+{
+  return FT_ConnectedElements;
+}
+
+void ConnectedElements_i::SetElementType( ElementType theType )
+{
+  myConnectedElementsPtr->SetType( SMDSAbs_ElementType( theType ));
+  TPythonDump() << this << ".SetElementType( " << theType << " )";
+}
+
+void ConnectedElements_i::SetPoint( CORBA::Double x, CORBA::Double y, CORBA::Double z )
+{
+  myConnectedElementsPtr->SetPoint( x,y,z );
+  myVertexID.clear();
+  TPythonDump() << this << ".SetPoint( " << x << ", " << y << ", " << z << " )";
+}
+
+void ConnectedElements_i::SetVertex( GEOM::GEOM_Object_ptr vertex )
+  throw (SALOME::SALOME_Exception)
+{
+  TopoDS_Shape shape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape( vertex );
+  if ( shape.IsNull() )
+    THROW_SALOME_CORBA_EXCEPTION( "ConnectedElements_i::SetVertex(): NULL Vertex",
+                                  SALOME::BAD_PARAM );
+
+  TopExp_Explorer v( shape, TopAbs_VERTEX );
+  if ( !v.More() )
+    THROW_SALOME_CORBA_EXCEPTION( "ConnectedElements_i::SetVertex(): empty vertex",
+                                  SALOME::BAD_PARAM );
+
+  gp_Pnt p = BRep_Tool::Pnt( TopoDS::Vertex( v.Current() ));
+  myConnectedElementsPtr->SetPoint( p.X(), p.Y(), p.Z() );
+  //
+  CORBA::String_var id = vertex->GetStudyEntry();
+  myVertexID = id.in();
+
+  TPythonDump() << this << ".SetVertex( " << vertex << " )";
+}
+
+void ConnectedElements_i::SetNode ( CORBA::Long nodeID )
+  throw (SALOME::SALOME_Exception)
+{
+  if ( nodeID < 1 )
+    THROW_SALOME_CORBA_EXCEPTION( "ConnectedElements_i::SetNode(): nodeID must be > 0",
+                                  SALOME::BAD_PARAM );
+
+  myConnectedElementsPtr->SetNode( nodeID );
+  myVertexID.clear();
+  TPythonDump() << this << ".SetNode( " << nodeID << " )";
+}
+
+/*!
+ * \brief This is a comfort method for Filter dialog
+ */
+void ConnectedElements_i::SetThreshold ( const char*                             threshold,
+                                         SMESH::ConnectedElements::ThresholdType type )
+  throw (SALOME::SALOME_Exception)
+{
+  if ( !threshold )
+    THROW_SALOME_CORBA_EXCEPTION( "ConnectedElements_i::SetThreshold(): NULL threshold",
+                                  SALOME::BAD_PARAM );
+  switch ( type )
+  {
+  case SMESH::ConnectedElements::POINT: // read 3 node coordinates ///////////////////
+    {
+      vector< double > xyz;
+      char* endptr;
+      do
+      {
+        // skip a separator
+        while ( *threshold &&
+                *threshold != '+' &&
+                *threshold != '-' &&
+                !isdigit( *threshold ))
+          ++threshold;
+        if ( !*threshold )
+          break;
+        // read a coordinate
+        xyz.push_back( strtod( threshold, &endptr ));
+        if ( threshold == endptr )
+        {
+          xyz.resize( xyz.size() - 1 );
+          break;
+        }
+        threshold = endptr;
+      }
+      while ( xyz.size() < 3 );
+
+      if ( xyz.size() < 3 )
+        THROW_SALOME_CORBA_EXCEPTION
+          ( "ConnectedElements_i::SetThreshold(): invalid point coordinates", SALOME::BAD_PARAM );
+
+      SetPoint( xyz[0], xyz[1], xyz[2] );
+      break;
+    }
+  case SMESH::ConnectedElements::VERTEX: // get a VERTEX by its entry /////////////////
+    {
+      SALOMEDS::Study_var study = SMESH_Gen_i::GetSMESHGen()->GetCurrentStudy();
+      if ( study->_is_nil() )
+        THROW_SALOME_CORBA_EXCEPTION
+          ( "ConnectedElements_i::SetThreshold(): NULL current study", SALOME::BAD_PARAM );
+      SALOMEDS::SObject_wrap sobj = study->FindObjectID( threshold );
+      if ( sobj->_is_nil() )
+        THROW_SALOME_CORBA_EXCEPTION
+          ( "ConnectedElements_i::SetThreshold(): invalid vertex study entry", SALOME::BAD_PARAM );
+      CORBA::Object_var         obj = sobj->GetObject();
+      GEOM::GEOM_Object_wrap vertex = GEOM::GEOM_Object::_narrow( obj );
+      if ( vertex->_is_nil() )
+        THROW_SALOME_CORBA_EXCEPTION
+          ( "ConnectedElements_i::SetThreshold(): no GEOM_Object in SObject", SALOME::BAD_PARAM );
+      SetVertex( vertex );
+      break;
+    }
+  case SMESH::ConnectedElements::NODE: // read a node ID ////////////////////////////
+    {
+      char* endptr;
+      int id = strtol( threshold, &endptr, 10 );
+      if ( threshold == endptr )
+        THROW_SALOME_CORBA_EXCEPTION
+          ( "ConnectedElements_i::SetThreshold(): invalid node ID", SALOME::BAD_PARAM );
+      SetNode( id );
+      break;
+    }
+  default:
+    THROW_SALOME_CORBA_EXCEPTION
+      ( "ConnectedElements_i::SetThreshold(): invalid ThresholdType", SALOME::BAD_PARAM );
+  }
+}
+
+char* ConnectedElements_i::GetThreshold ( SMESH::ConnectedElements::ThresholdType& type )
+{
+  std::string threshold;
+  if ( !myVertexID.empty() )
+  {
+    threshold = myVertexID;
+    type      = SMESH::ConnectedElements::VERTEX;
+  }
+  else
+  {
+    std::vector<double> xyz = myConnectedElementsPtr->GetPoint();
+    if ( xyz.size() == 3 )
+    {
+      threshold = SMESH_Comment( xyz[0] ) << "; " << xyz[1] << "; " << xyz[2];
+      type      = SMESH::ConnectedElements::POINT;
+    }
+    else
+    {
+      threshold = SMESH_Comment( myConnectedElementsPtr->GetNode() );
+      type      = SMESH::ConnectedElements::NODE;
+    }
+  }
+  return CORBA::string_dup( threshold.c_str() );
+}
+
+/*
   Class       : Comparator_i
   Description : Base class for comparators
 */
@@ -2158,6 +2325,14 @@ CoplanarFaces_ptr FilterManager_i::CreateCoplanarFaces()
   SMESH::CoplanarFaces_i* aServant = new SMESH::CoplanarFaces_i();
   SMESH::CoplanarFaces_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateCoplanarFaces()";
+  return anObj._retn();
+}
+
+ConnectedElements_ptr FilterManager_i::CreateConnectedElements()
+{
+  SMESH::ConnectedElements_i* aServant = new SMESH::ConnectedElements_i();
+  SMESH::ConnectedElements_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateConnectedElements()";
   return anObj._retn();
 }
 
@@ -2651,151 +2826,6 @@ static inline bool getCriteria( Predicate_i*                thePred,
 
   switch ( aFType )
   {
-  case FT_FreeBorders:
-  case FT_FreeEdges:
-  case FT_FreeFaces:
-  case FT_LinearOrQuadratic:
-  case FT_FreeNodes:
-  case FT_EqualEdges:
-  case FT_EqualFaces:
-  case FT_EqualVolumes:
-  case FT_BadOrientedVolume:
-  case FT_BareBorderVolume:
-  case FT_BareBorderFace:
-  case FT_OverConstrainedVolume:
-  case FT_OverConstrainedFace:
-    {
-      CORBA::ULong i = theCriteria->length();
-      theCriteria->length( i + 1 );
-
-      theCriteria[ i ] = createCriterion();
-
-      theCriteria[ i ].Type = aFType;
-      theCriteria[ i ].TypeOfElement = thePred->GetElementType();
-      return true;
-    }
-  case FT_BelongToGeom:
-    {
-      BelongToGeom_i* aPred = dynamic_cast<BelongToGeom_i*>( thePred );
-
-      CORBA::ULong i = theCriteria->length();
-      theCriteria->length( i + 1 );
-
-      theCriteria[ i ] = createCriterion();
-
-      theCriteria[ i ].Type          = FT_BelongToGeom;
-      theCriteria[ i ].ThresholdStr  = aPred->GetShapeName();
-      theCriteria[ i ].ThresholdID   = aPred->GetShapeID();
-      theCriteria[ i ].TypeOfElement = aPred->GetElementType();
-      theCriteria[ i ].Tolerance     = aPred->GetTolerance();
-
-      return true;
-    }
-  case FT_BelongToPlane:
-  case FT_BelongToCylinder:
-  case FT_BelongToGenSurface:
-    {
-      BelongToSurface_i* aPred = dynamic_cast<BelongToSurface_i*>( thePred );
-
-      CORBA::ULong i = theCriteria->length();
-      theCriteria->length( i + 1 );
-
-      theCriteria[ i ] = createCriterion();
-
-      theCriteria[ i ].Type          = aFType;
-      theCriteria[ i ].ThresholdStr  = aPred->GetShapeName();
-      theCriteria[ i ].ThresholdID   = aPred->GetShapeID();
-      theCriteria[ i ].TypeOfElement = aPred->GetElementType();
-      theCriteria[ i ].Tolerance     = aPred->GetTolerance();
-
-      return true;
-    }
-   case FT_LyingOnGeom:
-    {
-      LyingOnGeom_i* aPred = dynamic_cast<LyingOnGeom_i*>( thePred );
-
-      CORBA::ULong i = theCriteria->length();
-      theCriteria->length( i + 1 );
-
-      theCriteria[ i ] = createCriterion();
-
-      theCriteria[ i ].Type          = FT_LyingOnGeom;
-      theCriteria[ i ].ThresholdStr  = aPred->GetShapeName();
-      theCriteria[ i ].ThresholdID   = aPred->GetShapeID();
-      theCriteria[ i ].TypeOfElement = aPred->GetElementType();
-      theCriteria[ i ].Tolerance     = aPred->GetTolerance();
-
-      return true;
-    }
-   case FT_CoplanarFaces:
-    {
-      CoplanarFaces_i* aPred = dynamic_cast<CoplanarFaces_i*>( thePred );
-
-      CORBA::ULong i = theCriteria->length();
-      theCriteria->length( i + 1 );
-
-      theCriteria[ i ] = createCriterion();
-      CORBA::String_var faceId = aPred->GetFaceAsString();
-
-      theCriteria[ i ].Type          = FT_CoplanarFaces;
-      theCriteria[ i ].ThresholdID   = faceId;
-      theCriteria[ i ].Tolerance     = aPred->GetTolerance();
-
-      return true;
-    }
-  case FT_EqualNodes:
-    {
-      EqualNodes_i* aPred = dynamic_cast<EqualNodes_i*>( thePred );
-
-      CORBA::ULong i = theCriteria->length();
-      theCriteria->length( i + 1 );
-
-      theCriteria[ i ] = createCriterion();
-
-      theCriteria[ i ].Type          = FT_EqualNodes;
-      theCriteria[ i ].Tolerance     = aPred->GetTolerance();
-
-      return true;
-    }
-  case FT_RangeOfIds:
-    {
-      RangeOfIds_i* aPred = dynamic_cast<RangeOfIds_i*>( thePred );
-
-      CORBA::ULong i = theCriteria->length();
-      theCriteria->length( i + 1 );
-
-      theCriteria[ i ] = createCriterion();
-
-      theCriteria[ i ].Type          = FT_RangeOfIds;
-      theCriteria[ i ].ThresholdStr  = aPred->GetRangeStr();
-      theCriteria[ i ].TypeOfElement = aPred->GetElementType();
-
-      return true;
-    }
-  case FT_LessThan:
-  case FT_MoreThan:
-  case FT_EqualTo:
-    {
-      Comparator_i* aCompar = dynamic_cast<Comparator_i*>( thePred );
-
-      CORBA::ULong i = theCriteria->length();
-      theCriteria->length( i + 1 );
-
-      theCriteria[ i ] = createCriterion();
-
-      theCriteria[ i ].Type      = aCompar->GetNumFunctor_i()->GetFunctorType();
-      theCriteria[ i ].Compare   = aFType;
-      theCriteria[ i ].Threshold = aCompar->GetMargin();
-      theCriteria[ i ].TypeOfElement = aCompar->GetElementType();
-
-      if ( aFType == FT_EqualTo )
-      {
-        EqualTo_i* aCompar = dynamic_cast<EqualTo_i*>( thePred );
-        theCriteria[ i ].Tolerance = aCompar->GetTolerance();
-      }
-    }
-    return true;
-
   case FT_LogicalNOT:
     {
       Predicate_i* aPred = ( dynamic_cast<LogicalNOT_i*>( thePred ) )->GetPredicate_i();
@@ -2814,48 +2844,132 @@ static inline bool getCriteria( Predicate_i*                thePred,
       theCriteria[ theCriteria->length() - 1 ].BinaryOp = aFType;
       return getCriteria( aPred2, theCriteria );
     }
+  case FT_Undefined:
+    return false;
+  }
+
+  // resize theCriteria
+  CORBA::ULong i = theCriteria->length();
+  theCriteria->length( i + 1 );
+  theCriteria[ i ] = createCriterion();
+
+  // set members of the added Criterion
+
+  theCriteria[ i ].Type = aFType;
+  theCriteria[ i ].TypeOfElement = thePred->GetElementType();
+
+  switch ( aFType )
+  {
+  case FT_FreeBorders:
+  case FT_FreeEdges:
+  case FT_FreeFaces:
+  case FT_LinearOrQuadratic:
+  case FT_FreeNodes:
+  case FT_EqualEdges:
+  case FT_EqualFaces:
+  case FT_EqualVolumes:
+  case FT_BadOrientedVolume:
+  case FT_BareBorderVolume:
+  case FT_BareBorderFace:
+  case FT_OverConstrainedVolume:
+  case FT_OverConstrainedFace:
+    {
+      return true;
+    }
+  case FT_BelongToGeom:
+    {
+      BelongToGeom_i* aPred = dynamic_cast<BelongToGeom_i*>( thePred );
+      theCriteria[ i ].ThresholdStr  = aPred->GetShapeName();
+      theCriteria[ i ].ThresholdID   = aPred->GetShapeID();
+      theCriteria[ i ].Tolerance     = aPred->GetTolerance();
+      return true;
+    }
+  case FT_BelongToPlane:
+  case FT_BelongToCylinder:
+  case FT_BelongToGenSurface:
+    {
+      BelongToSurface_i* aPred = dynamic_cast<BelongToSurface_i*>( thePred );
+      theCriteria[ i ].ThresholdStr  = aPred->GetShapeName();
+      theCriteria[ i ].ThresholdID   = aPred->GetShapeID();
+      theCriteria[ i ].Tolerance     = aPred->GetTolerance();
+      return true;
+    }
+  case FT_LyingOnGeom:
+    {
+      LyingOnGeom_i* aPred = dynamic_cast<LyingOnGeom_i*>( thePred );
+      theCriteria[ i ].ThresholdStr  = aPred->GetShapeName();
+      theCriteria[ i ].ThresholdID   = aPred->GetShapeID();
+      theCriteria[ i ].Tolerance     = aPred->GetTolerance();
+      return true;
+    }
+  case FT_CoplanarFaces:
+    {
+      CoplanarFaces_i* aPred = dynamic_cast<CoplanarFaces_i*>( thePred );
+      theCriteria[ i ].ThresholdID   = aPred->GetFaceAsString();
+      theCriteria[ i ].Tolerance     = aPred->GetTolerance();
+      return true;
+    }
+  case FT_ConnectedElements:
+    {
+      ConnectedElements_i* aPred = dynamic_cast<ConnectedElements_i*>( thePred );
+      SMESH::ConnectedElements::ThresholdType type;
+      CORBA::String_var threshold = aPred->GetThreshold( type );
+      switch ( type ) {
+      case SMESH::ConnectedElements::POINT:
+        theCriteria[ i ].ThresholdStr = threshold; break;
+      case SMESH::ConnectedElements::VERTEX:
+        theCriteria[ i ].ThresholdID = threshold; break;
+      case SMESH::ConnectedElements::NODE:
+        theCriteria[ i ].Threshold = atof( threshold.in() ); break;
+      default:;
+      }
+      return true;
+    }
+  case FT_EqualNodes:
+    {
+      EqualNodes_i* aPred = dynamic_cast<EqualNodes_i*>( thePred );
+      theCriteria[ i ].Tolerance  = aPred->GetTolerance();
+      return true;
+    }
+  case FT_RangeOfIds:
+    {
+      RangeOfIds_i* aPred = dynamic_cast<RangeOfIds_i*>( thePred );
+      theCriteria[ i ].ThresholdStr  = aPred->GetRangeStr();
+      return true;
+    }
+  case FT_LessThan:
+  case FT_MoreThan:
+  case FT_EqualTo:
+    {
+      Comparator_i* aCompar = dynamic_cast<Comparator_i*>( thePred );
+      theCriteria[ i ].Type      = aCompar->GetNumFunctor_i()->GetFunctorType();
+      theCriteria[ i ].Compare   = aFType;
+      theCriteria[ i ].Threshold = aCompar->GetMargin();
+      if ( aFType == FT_EqualTo )
+      {
+        EqualTo_i* aCompar = dynamic_cast<EqualTo_i*>( thePred );
+        theCriteria[ i ].Tolerance = aCompar->GetTolerance();
+      }
+      return true;
+    }
   case FT_GroupColor:
     {
-      CORBA::ULong i = theCriteria->length();
-      theCriteria->length( i + 1 );
-
-      theCriteria[ i ] = createCriterion();
-
       GroupColor_i* aPred = dynamic_cast<GroupColor_i*>( thePred );
-      theCriteria[ i ].Type          = aFType;
-      theCriteria[ i ].TypeOfElement = aPred->GetElementType();
-      theCriteria[ i ].ThresholdStr  = aPred->GetColorStr();
-
+      theCriteria[ i ].ThresholdStr = aPred->GetColorStr();
       return true;
     }
   case FT_ElemGeomType:
     {
-      CORBA::ULong i = theCriteria->length();
-      theCriteria->length( i + 1 );
-
-      theCriteria[ i ] = createCriterion();
-
       ElemGeomType_i* aPred = dynamic_cast<ElemGeomType_i*>( thePred );
-      theCriteria[ i ].Type          = aFType;
-      theCriteria[ i ].TypeOfElement = aPred->GetElementType();
-      theCriteria[ i ].Threshold     = (double)aPred->GetGeometryType();
+      theCriteria[ i ].Threshold = (double)aPred->GetGeometryType();
       return true;
     }
   case FT_EntityType:
     {
-      CORBA::ULong i = theCriteria->length();
-      theCriteria->length( i + 1 );
-
-      theCriteria[ i ] = createCriterion();
-
       ElemEntityType_i* aPred = dynamic_cast<ElemEntityType_i*>( thePred );
-      theCriteria[ i ].Type          = aFType;
-      theCriteria[ i ].Threshold     = (double)aPred->GetEntityType();
+      theCriteria[ i ].Threshold = (double)aPred->GetEntityType();
       return true;
     }
-
-  case FT_Undefined:
-    return false;
   default:
     return false;
   }
@@ -2908,9 +3022,8 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
          << aCriterion    << ", "
          << aCompare      << ", "
          << aThreshold    << ", '"
-         << aThresholdStr << "', '";
-      if (aThresholdID) pd << aThresholdID;
-      pd                  << "', "
+         << aThresholdStr << "', '"
+         << aThresholdID  << "', "
          << aUnary        << ", "
          << aBinary       << ", "
          << aTolerance    << ", "
@@ -3107,6 +3220,19 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
           SMESH::CoplanarFaces_ptr tmpPred = aFilterMgr->CreateCoplanarFaces();
           tmpPred->SetFace( atol (aThresholdID ));
           tmpPred->SetTolerance( aTolerance );
+          aPredicate = tmpPred;
+          break;
+        }
+      case SMESH::FT_ConnectedElements:
+        {
+          SMESH::ConnectedElements_ptr tmpPred = aFilterMgr->CreateConnectedElements();
+          if ( strlen( aThresholdID ) > 0 ) // shape ID
+            tmpPred->SetThreshold( aThresholdID, SMESH::ConnectedElements::VERTEX );
+          else if ( strlen( aThresholdStr ) > 0 ) // point coords
+            tmpPred->SetThreshold( aThresholdStr, SMESH::ConnectedElements::POINT );
+          else if ( aThreshold >= 1 )
+            tmpPred->SetNode( (CORBA::Long) aThreshold ); // node ID
+          tmpPred->SetElementType( aTypeOfElem );
           aPredicate = tmpPred;
           break;
         }
@@ -3967,6 +4093,7 @@ static const char** getFunctNames()
     "FT_EntityType", 
     "FT_CoplanarFaces",
     "FT_BallDiameter",
+    "FT_ConnectedElements",
     "FT_LessThan",
     "FT_MoreThan",
     "FT_EqualTo",

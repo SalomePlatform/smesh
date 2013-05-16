@@ -142,10 +142,10 @@ namespace SMESH
                                   public virtual SALOME::GenericObj_i
   {
   public:
-    void                            SetMesh( SMESH_Mesh_ptr theMesh );
-    Controls::FunctorPtr            GetFunctor(){ return myFunctorPtr;}
+    virtual void                    SetMesh( SMESH_Mesh_ptr theMesh );
+    Controls::FunctorPtr            GetFunctor() { return myFunctorPtr; }
     ElementType                     GetElementType();
-    
+
   protected:
     Functor_i();
     ~Functor_i();
@@ -802,6 +802,34 @@ namespace SMESH
   private:
     Controls::CoplanarFacesPtr myCoplanarFacesPtr;
   };
+
+  /*
+   * Class       : ConnectedElements_i
+   * Description : Returns true if an element is connected via other elements to the element
+   *               located at a given point.
+   */
+  class SMESH_I_EXPORT ConnectedElements_i: public virtual POA_SMESH::ConnectedElements,
+                                            public virtual Predicate_i
+  {
+  public:
+    ConnectedElements_i();
+    FunctorType             GetFunctorType();
+
+    void                    SetElementType( ElementType theType );
+    void                    SetPoint( CORBA::Double x, CORBA::Double y, CORBA::Double z );
+    void                    SetVertex( GEOM::GEOM_Object_ptr vertex )
+      throw (SALOME::SALOME_Exception);
+    void                    SetNode ( CORBA::Long nodeID )
+      throw (SALOME::SALOME_Exception);
+    void                    SetThreshold ( const char* threshold,
+                                           SMESH::ConnectedElements::ThresholdType type )
+      throw (SALOME::SALOME_Exception);
+    char*                   GetThreshold ( SMESH::ConnectedElements::ThresholdType& type );
+
+  private:
+    Controls::ConnectedElementsPtr          myConnectedElementsPtr;
+    std::string                             myVertexID;
+  };
   
   /*
     Class       : Comparator_i
@@ -1116,6 +1144,7 @@ namespace SMESH
     ElemGeomType_ptr          CreateElemGeomType();
     ElemEntityType_ptr        CreateElemEntityType();
     CoplanarFaces_ptr         CreateCoplanarFaces();
+    ConnectedElements_ptr     CreateConnectedElements();
 
     LessThan_ptr              CreateLessThan();
     MoreThan_ptr              CreateMoreThan();
