@@ -94,23 +94,31 @@ DriverSTL_W_SMDS_Mesh::~DriverSTL_W_SMDS_Mesh()
 
 void DriverSTL_W_SMDS_Mesh::findVolumeTriangles()
 {
-  SMDS_VolumeTool myTool;
+  SMDS_VolumeTool theVolume;
   SMDS_VolumeIteratorPtr vIt = myMesh->volumesIterator();
+  std::vector< const SMDS_MeshNode*> nodes;
   while ( vIt->more() )
   {
-    myTool.Set( vIt->next() );
-    for ( int iF = 0; iF < myTool.NbFaces(); ++iF )
-      if ( myTool.IsFreeFace( iF ))
+    theVolume.Set( vIt->next(), /*ignoreCentralNodes=*/false );
+    for ( int iF = 0; iF < theVolume.NbFaces(); ++iF )
+      if ( theVolume.IsFreeFace( iF ))
       {
-        const SMDS_MeshNode** n = myTool.GetFaceNodes(iF);
-        int                 nbN = myTool.NbFaceNodes(iF);
-        std::vector< const SMDS_MeshNode*> nodes( n, n+nbN );
+        const SMDS_MeshNode** n = theVolume.GetFaceNodes(iF);
+        int                 nbN = theVolume.NbFaceNodes(iF);
+        nodes.assign( n, n+nbN );
         if ( !myMesh->FindElement( nodes, SMDSAbs_Face, /*Nomedium=*/false))
         {
-          int nbTria = nbN - 2;
-          for ( int iT = 0; iT < nbTria; ++iT )
+          if ( nbN == 9 && !theVolume.IsPoly() ) // facet is SMDSEntity_BiQuad_Quadrangle
           {
-            myVolumeTrias.push_back( new SMDS_FaceOfNodes( n[0], n[1+iT], n[2+iT] ));
+            int nbTria = nbN - 1;
+            for ( int iT = 0; iT < nbTria; ++iT )
+              myVolumeTrias.push_back( new SMDS_FaceOfNodes( n[8], n[0+iT], n[1+iT] ));
+          }
+          else
+          {
+            int nbTria = nbN - 2;
+            for ( int iT = 0; iT < nbTria; ++iT )
+              myVolumeTrias.push_back( new SMDS_FaceOfNodes( n[0], n[1+iT], n[2+iT] ));
           }
         }
       }
@@ -139,13 +147,12 @@ SMDS_ElemIteratorPtr DriverSTL_W_SMDS_Mesh::getFaces() const
 
 // static methods
 
-static void writeInteger( const Standard_Integer& theVal,
-                         OSD_File& ofile )
+static void writeInteger( const Standard_Integer& theVal, OSD_File& ofile )
 {
   union {
     Standard_Integer i;
     char c[4];
-  }u;
+  } u;
 
   u.i = theVal;
 
@@ -197,6 +204,33 @@ static gp_XYZ getNormale( const SMDS_MeshNode* n1,
 
 //================================================================================
 /*!
+ * \brief Return nb triangles in a decomposed mesh face
+ *  \retval int - number of triangles
+ */
+//================================================================================
+
+static int getNbTriangles( const SMDS_MeshElement* face)
+{
+  // WARNING: counting triangles must be coherent with getTriangles()
+  switch ( face->GetEntityType() )
+  {
+  case SMDSEntity_BiQuad_Triangle:
+  case SMDSEntity_BiQuad_Quadrangle:
+    return face->NbNodes() - 1;
+  // case SMDSEntity_Triangle:
+  // case SMDSEntity_Quad_Triangle:
+  // case SMDSEntity_Quadrangle:
+  // case SMDSEntity_Quad_Quadrangle:
+  // case SMDSEntity_Polygon:
+  // case SMDSEntity_Quad_Polygon:
+  default:
+    return face->NbNodes() - 2;
+  }
+  return 0;
+}
+
+//================================================================================
+/*!
  * \brief Decompose a mesh face into triangles
  *  \retval int - number of triangles
  */
@@ -205,14 +239,45 @@ static gp_XYZ getNormale( const SMDS_MeshNode* n1,
 static int getTriangles( const SMDS_MeshElement* face,
                          const SMDS_MeshNode**   nodes)
 {
-  // WARNING: implementation must be coherent with counting triangles in writeBinary()
-  int nbN = face->NbCornerNodes();
-  const int nbTria = nbN-2;
-  for ( int i = 0; nbN > 1; --nbN )
+  // WARNING: decomposing into triangles must be coherent with getNbTriangles()
+  int nbTria, i = 0;
+  SMDS_NodeIteratorPtr nIt = face->interlacedNodesIterator();
+  nodes[ i++ ] = nIt->next();
+  nodes[ i++ ] = nIt->next();
+
+  const SMDSAbs_EntityType type = face->GetEntityType();
+  switch ( type )
   {
-    nodes[ i++ ] = face->GetNode( 0 );
-    nodes[ i++ ] = face->GetNode( nbN-2 );
-    nodes[ i++ ] = face->GetNode( nbN-1 );
+  case SMDSEntity_BiQuad_Triangle:
+  case SMDSEntity_BiQuad_Quadrangle:
+    nbTria = ( type == SMDSEntity_BiQuad_Triangle ) ? 6 : 8;
+    nodes[ i++ ] = face->GetNode( nbTria );
+    while ( i < 3*(nbTria-1) )
+    {
+      nodes[ i++ ] = nodes[ i-2 ];
+      nodes[ i++ ] = nIt->next();
+      nodes[ i++ ] = nodes[ 2 ];
+    }
+    nodes[ i++ ] = nodes[ i-2 ];
+    nodes[ i++ ] = nodes[ 0 ];
+    nodes[ i++ ] = nodes[ 2 ];
+    break;
+  default:
+    // case SMDSEntity_Triangle:
+    // case SMDSEntity_Quad_Triangle:
+    // case SMDSEntity_Quadrangle:
+    // case SMDSEntity_Quad_Quadrangle:
+    // case SMDSEntity_Polygon:
+    // case SMDSEntity_Quad_Polygon:
+    nbTria = face->NbNodes() - 2;
+    nodes[ i++ ] = nIt->next();
+    while ( i < 3*nbTria )
+    {
+      nodes[ i++ ] = nodes[ 0 ];
+      nodes[ i++ ] = nodes[ i-2 ];
+      nodes[ i++ ] = nIt->next();
+    }
+    break;
   }
   return nbTria;
 }
@@ -291,6 +356,13 @@ Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::writeAscii() const
   return aResult;
 }
 
+//================================================================================
+/*!
+ * \brief Writes all triangles in binary format
+ *  \return Driver_Mesh::Status - DRS_FAIL if no file name is provided
+ */
+//================================================================================
+
 Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::writeBinary() const
 {
   Status aResult = DRS_OK;
@@ -304,23 +376,14 @@ Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::writeBinary() const
   aFile.Build(OSD_WriteOnly,OSD_Protection());
 
   // we first count the number of triangles
-  // WARNING: counting triangles must be coherent with getTriangles()
-  int nbTri = 0;
-  const SMDS_MeshInfo& info = myMesh->GetMeshInfo();
-  nbTri += info.NbTriangles();
-  nbTri += info.NbQuadrangles() * 2;
-  nbTri += myVolumeTrias.size();
-  if ( info.NbPolygons() > 0 )
+  int nbTri = myVolumeTrias.size();
   {
     SMDS_FaceIteratorPtr itFaces = myMesh->facesIterator();
-    while ( itFaces->more() )
-    {
+    while ( itFaces->more() ) {
       const SMDS_MeshElement* aFace = itFaces->next();
-      if ( aFace->IsPoly() )
-        nbTri += aFace->NbNodes() - 2;
+      nbTri += getNbTriangles( aFace );
     }
   }
-
   // char sval[80]; -- avoid writing not initialized memory
   TCollection_AsciiString sval(LABEL_SIZE-1,' ');
   aFile.Write((Standard_Address)sval.ToCString(),LABEL_SIZE);

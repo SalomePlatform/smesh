@@ -34,6 +34,9 @@
 
 #include <vector>
 
+/*!
+ * \brief Writer of a mesh in STL (STereoLithography) file format.
+ */
 class MESHDRIVERSTL_EXPORT DriverSTL_W_SMDS_Mesh: public Driver_SMDS_Mesh
 {
  public:
