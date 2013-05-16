@@ -45,7 +45,7 @@ enum SMESHDS_CommandType {
   SMESHDS_ChangePolyhedronNodes,
   SMESHDS_Renumber,
   SMESHDS_ClearAll,
-  // special types for quadratic elements
+  // quadratic elements
   SMESHDS_AddQuadEdge,
   SMESHDS_AddQuadTriangle,
   SMESHDS_AddQuadQuadrangle,
@@ -55,6 +55,7 @@ enum SMESHDS_CommandType {
   SMESHDS_AddQuadHexahedron,
   //
   SMESHDS_Add0DElement,
+  SMESHDS_AddBiQuadTriangle,
   SMESHDS_AddBiQuadQuadrangle,
   SMESHDS_AddTriQuadHexa,
   SMESHDS_AddHexagonalPrism,

@@ -65,6 +65,8 @@ class SMESHDS_EXPORT SMESHDS_Command
         void AddEdge(int NewEdgeID, int n1, int n2, int n12);
         void AddFace(int NewFaceID, int n1, int n2, int n3,
                      int n12, int n23, int n31);
+        void AddFace(int NewFaceID, int n1, int n2, int n3,
+                     int n12, int n23, int n31, int nCenter);
         void AddFace(int NewFaceID, int n1, int n2, int n3, int n4,
                      int n12, int n23, int n34, int n41);
         void AddFace(int NewFaceID, int n1, int n2, int n3, int n4,

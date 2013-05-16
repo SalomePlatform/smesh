@@ -507,6 +507,29 @@ void SMESHDS_Command::AddFace(int NewFaceID,
 //purpose  : 
 //=======================================================================
 void SMESHDS_Command::AddFace(int NewFaceID,
+                              int n1, int n2, int n3,
+                              int n12, int n23, int n31, int nCenter)
+{
+  if (!myType == SMESHDS_AddBiQuadTriangle) {
+    MESSAGE("SMESHDS_Command::AddFace : Bad Type");
+    return;
+  }
+  myIntegers.push_back(NewFaceID);
+  myIntegers.push_back(n1);
+  myIntegers.push_back(n2);
+  myIntegers.push_back(n3);
+  myIntegers.push_back(n12);
+  myIntegers.push_back(n23);
+  myIntegers.push_back(n31);
+  myIntegers.push_back(nCenter);
+  myNumber++;
+}
+
+//=======================================================================
+//function : AddFace
+//purpose  : 
+//=======================================================================
+void SMESHDS_Command::AddFace(int NewFaceID,
                               int n1, int n2, int n3, int n4,
                               int n12, int n23, int n34, int n41)
 {

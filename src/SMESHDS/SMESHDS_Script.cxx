@@ -439,6 +439,21 @@ void SMESHDS_Script::AddFace(int NewFaceID, int n1, int n2, int n3,
 //function : AddFace
 //purpose  : 
 //=======================================================================
+void SMESHDS_Script::AddFace(int NewFaceID, int n1, int n2, int n3,
+                             int n12, int n23, int n31, int nCenter)
+{
+  if(myIsEmbeddedMode){
+    myIsModified = true;
+    return;
+  }
+  getCommand(SMESHDS_AddBiQuadTriangle)->AddFace(NewFaceID, n1, n2, n3,
+                                                 n12, n23, n31, nCenter);
+}
+
+//=======================================================================
+//function : AddFace
+//purpose  : 
+//=======================================================================
 void SMESHDS_Script::AddFace(int NewFaceID, int n1, int n2, int n3, int n4,
                              int n12, int n23, int n34, int n41)
 {
