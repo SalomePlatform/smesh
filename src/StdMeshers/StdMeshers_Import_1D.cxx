@@ -621,7 +621,7 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
 {
   if ( !_sourceHyp ) return false;
 
-  const vector<SMESH_Group*>& srcGroups = _sourceHyp->GetGroups();
+  const vector<SMESH_Group*>& srcGroups = _sourceHyp->GetGroups(/*loaded=*/true);
   if ( srcGroups.empty() )
     return error("Invalid source groups");
 
@@ -1044,7 +1044,7 @@ void StdMeshers_Import_1D::getMaps(const SMESH_Mesh* srcMesh,
   e2e = &iData->_e2e;
   if ( iData->_copyMeshSubM.empty() )
   {
-    n2n->clear();
+    // n2n->clear(); -- for sharing nodes on EDGEs
     e2e->clear();
   }
 }
