@@ -53,7 +53,7 @@ module SMESH
     FT_FreeEdges,
     FT_FreeNodes,
     FT_FreeFaces,
-    FT_EqualNodes,  // IMPORTANT: when a new item is added, please
+    FT_EqualNodes,  // IMPORTANT: when a new item is added, don't forget to
     FT_EqualEdges,  // 1) update getFunctNames() in SMESH_Filter_i.cxx: line 3910
     FT_EqualFaces,  // 2) update fixFunctorType() in SMESH_2smeshpy.cxx: line 234
     FT_EqualVolumes,
@@ -78,6 +78,7 @@ module SMESH
     FT_EntityType,
     FT_CoplanarFaces,
     FT_BallDiameter,
+    FT_ConnectedElements,
     FT_LessThan,
     FT_MoreThan,
     FT_EqualTo,
@@ -317,7 +318,7 @@ module SMESH
   * Logical functor (predicate) "Free borders".
   * Verify whether 1D mesh element is free ( i.e. connected to one face only )
   */
-  interface FreeBorders: Predicate{};
+  interface FreeBorders: Predicate {};
 
   /*!
   * Logical functor (predicate) "Free edges".
@@ -338,13 +339,13 @@ module SMESH
   * Logical functor (predicate) "Free nodes".
   * Verify whether mesh has free nodes( i.e. nodes are not connected to any element )
   */
-  interface FreeNodes: Predicate{};
+  interface FreeNodes: Predicate {};
  
   /*!
   * Logical functor (predicate) "Free faces".
   * Verify whether 2D mesh element is free ( i.e. connected to one volume only )
   */
-  interface FreeFaces: Predicate{};
+  interface FreeFaces: Predicate {};
 
   /*!
   * Abstract logical functor (predicate) "RangeOfIds".
@@ -380,7 +381,7 @@ module SMESH
   /*!
   * Logical predicates are intended for compose predicates using boolean operations
   */
-  interface Logical: Predicate{};
+  interface Logical: Predicate {};
 
   interface LogicalNOT: Logical
   {
@@ -405,41 +406,57 @@ module SMESH
   };
 
   /*!
-  * Functor "Group Color"
+  * Predicate "Group Color"
   * Returns color of group to which mesh element belongs to
   */
-  interface GroupColor : Predicate{
+  interface GroupColor : Predicate {
     void            SetElementType( in ElementType theType );
     void            SetColorStr( in string theColor );
     string          GetColorStr();
   };
 
   /*!
-  * Functor "Element geometry type"
+  * Predicate "Element geometry type"
   * Returns is element has indicated geometry type
   */
-  interface ElemGeomType : Predicate{
+  interface ElemGeomType : Predicate {
     void            SetElementType ( in ElementType  theType );
     void            SetGeometryType( in GeometryType theType );
   };
 
   /*!
-  * Functor "Element entity type"
+  * Predicate "Element entity type"
   * Returns is element has indicated entity type
   */
-  interface ElemEntityType : Predicate{
+  interface ElemEntityType : Predicate {
     void            SetElementType ( in ElementType  theType );
     void            SetEntityType( in EntityType theSetEntityType );
   };
 
   /*!
-  * Functor "Coplanar faces"
+  * Predicate "Coplanar faces"
   * Returns true if a mesh face is a coplanar neighbour to a given one. It checks
   * if normal of a face has angle with the threshold face less than a tolerance.
   */
-  interface CoplanarFaces : Predicate{
+  interface CoplanarFaces : Predicate {
     void            SetFace ( in long theFaceID );
     void            SetTolerance( in double theToler );
+  };
+
+  /*!
+  * Predicate "Connected Elements"
+  * Returns true if an element is connected via other elements to the element 
+  * located at a given point.
+  */
+  interface ConnectedElements : Predicate {
+    enum ThresholdType { POINT, VERTEX, NODE, NONE };
+    void            SetElementType( in ElementType type );
+    void            SetPoint      ( in double x, in double y, in double z );
+    void            SetVertex     ( in GEOM::GEOM_Object vertex );
+    void            SetNode       ( in long nodeID );
+    string          GetThreshold  ( out ThresholdType type );
+    void            SetThreshold  ( in string threshold, in ThresholdType type ) 
+      raises (SALOME::SALOME_Exception);
   };
 
   /*!
@@ -456,14 +473,16 @@ module SMESH
     *   BinaryOp      - binary logical operation FT_LogicalAND, FT_LogicalOR or
     *                   (FT_Undefined must be for the last criterion)
     *   ThresholdStr  - Threshold value defined as string. Used for:
-    *                   1. Diapason of identifiers. Example: "1,2,3,5-10,12,27-29"
-    *                   2. BelongToGeom predicate for storing name of shape
-    *                   3. GroupColor predicate for storing group color "0.2;0;0.5"
+    *                   1. Diapason of identifiers. Example: "1,2,3,5-10,12,27-29".
+    *                   2. Storing name of shape.
+    *                   3. Storing group color "0.2;0;0.5".
+    *                   4. Storing point coordinates.
     *   ThresholdID   - One more threshold value defined as string. Used for:
-    *                   1. BelongToGeom predicate for storing id of shape
-    *   Tolerance     - Tolerance is used for comparators (EqualTo comparision) and for
-    *                   "Belong to plane", "Belong to cylinder" etc predicates
-    *   TypeOfElement - type of element SMESH::NODE, SMESH::FACE (used by BelongToGeom predicate only)
+    *                   1. Storing id of shape
+    *   Tolerance     - Tolerance is used for 
+    *                   1. Comparison of real values.
+    *                   2. Detection of geometrical coincidence.
+    *   TypeOfElement - type of element SMESH::NODE, SMESH::FACE etc.
     *   Precision     - Precision of numerical functors
     */
     struct Criterion
@@ -586,6 +605,7 @@ module SMESH
     ElemGeomType      CreateElemGeomType();
     ElemEntityType    CreateElemEntityType();
     CoplanarFaces     CreateCoplanarFaces();
+    ConnectedElements CreateConnectedElements();
 
     /*!
     *  Create comparators ( predicates )
