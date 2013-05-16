@@ -81,9 +81,11 @@ SMDS_VtkCellIteratorToUNV::SMDS_VtkCellIteratorToUNV(SMDS_Mesh* mesh, int vtkCel
         break;
       }
     case SMDSEntity_Quad_Triangle:
+    case SMDSEntity_BiQuad_Triangle:
       {
         static int id[] = { 0, 3, 1, 4, 2, 5 };
         ids = id;
+        _nbNodes = 6;
         break;
       }
     case SMDSEntity_Quad_Quadrangle:
@@ -144,6 +146,16 @@ SMDS_VtkCellIteratorToUNV::SMDS_VtkCellIteratorToUNV(SMDS_Mesh* mesh, int vtkCel
   else
     for (int i = 0; i < _nbNodes; i++)
       _vtkIdList->SetId(i, pts[i]);
+}
+
+bool SMDS_VtkCellIteratorToUNV::more()
+{
+  return SMDS_VtkCellIterator::more();
+}
+
+const SMDS_MeshNode* SMDS_VtkCellIteratorToUNV::next()
+{
+  return static_cast< const SMDS_MeshNode* >( SMDS_VtkCellIterator::next() );
 }
 
 SMDS_VtkCellIteratorToUNV::~SMDS_VtkCellIteratorToUNV()

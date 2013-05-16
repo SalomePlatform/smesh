@@ -52,10 +52,12 @@ protected:
   vtkIdList* _vtkIdList;
 };
 
-class SMDS_VtkCellIteratorToUNV: public SMDS_VtkCellIterator
+class SMDS_VtkCellIteratorToUNV: public SMDS_NodeIterator, protected SMDS_VtkCellIterator
 {
 public:
   SMDS_VtkCellIteratorToUNV(SMDS_Mesh* mesh, int vtkCellId, SMDSAbs_EntityType aType);
+  virtual const SMDS_MeshNode* next();
+  virtual bool more();
   virtual ~SMDS_VtkCellIteratorToUNV();
 };
 
