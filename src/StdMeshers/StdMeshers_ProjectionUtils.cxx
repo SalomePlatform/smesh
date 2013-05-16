@@ -41,6 +41,7 @@
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_subMesh.hxx"
 #include "SMESH_subMeshEventListener.hxx"
+#include "SMESH_MeshAlgos.hxx"
 
 #include "utilities.h"
 
@@ -1876,12 +1877,12 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
       TIDSortedElemSet inSet, notInSet;
 
       const SMDS_MeshElement* f1 =
-        SMESH_MeshEditor::FindFaceInSet( vNode, eNode, inSet, notInSet );
+        SMESH_MeshAlgos::FindFaceInSet( vNode, eNode, inSet, notInSet );
       if ( !f1 ) RETURN_BAD_RESULT("The first face on seam not found");
       notInSet.insert( f1 );
 
       const SMDS_MeshElement* f2 =
-        SMESH_MeshEditor::FindFaceInSet( vNode, eNode, inSet, notInSet );
+        SMESH_MeshAlgos::FindFaceInSet( vNode, eNode, inSet, notInSet );
       if ( !f2 ) RETURN_BAD_RESULT("The second face on seam not found");
 
       // select a face with less UV of vNode
@@ -1924,7 +1925,7 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
       for ( int i = 0; i < nbNodes; ++i ) {
         const SMDS_MeshNode* n1 = faceToKeep->GetNode( i );
         const SMDS_MeshNode* n2 = faceToKeep->GetNode(( i+1 ) % nbNodes );
-        f1 = SMESH_MeshEditor::FindFaceInSet( n1, n2, inSet, notInSet );
+        f1 = SMESH_MeshAlgos::FindFaceInSet( n1, n2, inSet, notInSet );
         if ( f1 )
           elems.insert( f1 );
       }

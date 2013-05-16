@@ -36,6 +36,7 @@
 #include "SMESH_Gen.hxx"
 #include "SMESH_Group.hxx"
 #include "SMESH_Mesh.hxx"
+#include "SMESH_MeshAlgos.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_ProxyMesh.hxx"
 #include "SMESH_subMesh.hxx"
@@ -2067,9 +2068,9 @@ bool _ViscousBuilder::inflate(_SolidData& data)
   // Limit inflation step size by geometry size found by itersecting
   // normals of _LayerEdge's with mesh faces
   double geomSize = Precision::Infinite(), intersecDist;
-  SMESH_MeshEditor editor( _mesh );
   auto_ptr<SMESH_ElementSearcher> searcher
-    ( editor.GetElementSearcher( data._proxyMesh->GetFaces( data._solid )) );
+    ( SMESH_MeshAlgos::GetElementSearcher( *getMeshDS(),
+                                           data._proxyMesh->GetFaces( data._solid )) );
   for ( unsigned i = 0; i < data._edges.size(); ++i )
   {
     if ( data._edges[i]->IsOnEdge() ) continue;
@@ -2265,9 +2266,9 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
   // Check if the last segments of _LayerEdge intersects 2D elements;
   // checked elements are either temporary faces or faces on surfaces w/o the layers
 
-  SMESH_MeshEditor editor( _mesh );
   auto_ptr<SMESH_ElementSearcher> searcher
-    ( editor.GetElementSearcher( data._proxyMesh->GetFaces( data._solid )) );
+    ( SMESH_MeshAlgos::GetElementSearcher( *getMeshDS(),
+                                           data._proxyMesh->GetFaces( data._solid )) );
 
   distToIntersection = Precision::Infinite();
   double dist;
@@ -2627,10 +2628,10 @@ bool _ViscousBuilder::updateNormals( _SolidData&         data,
   // 1) to find and fix intersection
   // 2) to check that no new intersection appears as result of 1)
 
-  SMESH_MeshEditor editor( _mesh );
   SMDS_ElemIteratorPtr fIt( new SMDS_ElementVectorIterator( tmpFaces.begin(),
                                                             tmpFaces.end()));
-  auto_ptr<SMESH_ElementSearcher> searcher ( editor.GetElementSearcher( fIt ));
+  auto_ptr<SMESH_ElementSearcher> searcher
+    ( SMESH_MeshAlgos::GetElementSearcher( *getMeshDS(), fIt ));
 
   // 1) Find intersections
   double dist;
@@ -3958,8 +3959,8 @@ void _ViscousBuilder::fixBadFaces(const TopoDS_Face& F, SMESH_MesherHelper& help
       const SMDS_MeshNode* n1 = badTrias[iTia]->GetNode( iSide );
       const SMDS_MeshNode* n2 = badTrias[iTia]->GetNode(( iSide+1 ) % 3 );
       trias [iSide].first  = badTrias[iTia];
-      trias [iSide].second = SMESH_MeshEditor::FindFaceInSet( n1, n2, emptySet, involvedFaces,
-                                                              & i1, & i2 );
+      trias [iSide].second = SMESH_MeshAlgos::FindFaceInSet( n1, n2, emptySet, involvedFaces,
+                                                             & i1, & i2 );
       if ( ! trias[iSide].second || trias[iSide].second->NbCornerNodes() != 3 )
         continue;
 

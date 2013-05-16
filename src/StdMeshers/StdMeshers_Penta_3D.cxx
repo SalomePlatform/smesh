@@ -34,11 +34,12 @@
 #include "SMDS_VolumeOfNodes.hxx"
 #include "SMDS_VolumeTool.hxx"
 #include "SMESHDS_SubMesh.hxx"
+#include "SMESH_Comment.hxx"
 #include "SMESH_Mesh.hxx"
+#include "SMESH_MeshAlgos.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_subMesh.hxx"
 #include "SMESH_subMeshEventListener.hxx"
-#include "SMESH_Comment.hxx"
 
 #include <BRep_Tool.hxx>
 #include <TopExp.hxx>
@@ -1533,7 +1534,7 @@ bool StdMeshers_Penta_3D::LoadIJNodes(StdMeshers_IJNodeMap & theIJNodes,
     const SMDS_MeshElement* face = 0;
     do {
       // look for a face by 2 nodes
-      face = SMESH_MeshEditor::FindFaceInSet( n1, n2, allFaces, foundFaces );
+      face = SMESH_MeshAlgos::FindFaceInSet( n1, n2, allFaces, foundFaces );
       if ( face ) {
         int nbFaceNodes = face->NbNodes();
         if ( (!myCreateQuadratic && nbFaceNodes>4) ||

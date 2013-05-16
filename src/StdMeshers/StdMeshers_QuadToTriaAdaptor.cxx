@@ -26,10 +26,11 @@
 
 #include "SMDS_SetIterator.hxx"
 
-#include "SMESH_Algo.hxx"
-#include "SMESH_MesherHelper.hxx"
-#include "SMESH_Group.hxx"
 #include "SMESHDS_GroupBase.hxx"
+#include "SMESH_Algo.hxx"
+#include "SMESH_Group.hxx"
+#include "SMESH_MeshAlgos.hxx"
+#include "SMESH_MesherHelper.hxx"
 
 #include <IntAna_IntConicQuad.hxx>
 #include <IntAna_Quadric.hxx>
@@ -149,8 +150,8 @@ namespace
       TIDSortedElemSet emptySet, avoidSet;
       int i1, i2;
       while ( const SMDS_MeshElement* f =
-              SMESH_MeshEditor::FindFaceInSet( baseNodes[0], baseNodes[1],
-                                               emptySet, avoidSet, &i1, &i2 ))
+              SMESH_MeshAlgos::FindFaceInSet( baseNodes[0], baseNodes[1],
+                                              emptySet, avoidSet, &i1, &i2 ))
       {
         avoidSet.insert( f );
 
@@ -542,7 +543,7 @@ bool StdMeshers_QuadToTriaAdaptor::CheckIntersection (const gp_Pnt&       P,
                                                       const SMDS_MeshElement* NotCheckedFace)
 {
   if ( !myElemSearcher )
-    myElemSearcher = SMESH_MeshEditor(&aMesh).GetElementSearcher();
+    myElemSearcher = SMESH_MeshAlgos::GetElementSearcher( *aMesh.GetMeshDS() );
   SMESH_ElementSearcher* searcher = const_cast<SMESH_ElementSearcher*>(myElemSearcher);
 
   //SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
@@ -730,9 +731,9 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh&         aMesh,
 
   if ( myElemSearcher ) delete myElemSearcher;
   if ( aProxyMesh )
-    myElemSearcher = SMESH_MeshEditor(&aMesh).GetElementSearcher( aProxyMesh->GetFaces(aShape));
+    myElemSearcher = SMESH_MeshAlgos::GetElementSearcher( *meshDS, aProxyMesh->GetFaces(aShape));
   else
-    myElemSearcher = SMESH_MeshEditor(&aMesh).GetElementSearcher();
+    myElemSearcher = SMESH_MeshAlgos::GetElementSearcher( *meshDS );
 
   const SMESHDS_SubMesh * aSubMeshDSFace;
   Handle(TColgp_HArray1OfPnt) PN = new TColgp_HArray1OfPnt(1,5);
@@ -879,7 +880,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh&         aMesh,
 
           delete myElemSearcher;
           myElemSearcher =
-            SMESH_MeshEditor(&aMesh).GetElementSearcher( aProxyMesh->GetFaces(aShape));
+            SMESH_MeshAlgos::GetElementSearcher( *meshDS, aProxyMesh->GetFaces(aShape));
         }
       }
     }
@@ -937,12 +938,12 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
   helper.IsQuadraticSubMesh(aMesh.GetShapeToMesh());
   helper.SetElementsOnShape( true );
 
-  if ( !myElemSearcher )
-    myElemSearcher = SMESH_MeshEditor(&aMesh).GetElementSearcher();
-  SMESH_ElementSearcher* searcher = const_cast<SMESH_ElementSearcher*>(myElemSearcher);
-
   SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
   SMESH_ProxyMesh::SubMesh* prxSubMesh = getProxySubMesh();
+
+  if ( !myElemSearcher )
+    myElemSearcher = SMESH_MeshAlgos::GetElementSearcher( *meshDS );
+  SMESH_ElementSearcher* searcher = const_cast<SMESH_ElementSearcher*>(myElemSearcher);
 
   SMDS_FaceIteratorPtr fIt = meshDS->facesIterator(/*idInceasingOrder=*/true);
   while( fIt->more())
@@ -1098,7 +1099,21 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
 
     // if the face belong to the group of skinFaces, do not build a pyramid outside
     if (groupDS && groupDS->Contains(face))
+    {
       intersected[0] = false;
+    }
+    else if ( intersected[0] && intersected[1] ) // check if one of pyramids is in a hole
+    {
+      gp_Pnt P ( PC.XYZ() + tmpDir.XYZ() * 0.5 * PC.Distance( intPnt[0] ));
+      if ( searcher->GetPointState( P ) == TopAbs_OUT )
+        intersected[0] = false;
+      else
+      {
+        P = ( PC.XYZ() - tmpDir.XYZ() * 0.5 * PC.Distance( intPnt[1] ));
+        if ( searcher->GetPointState( P ) == TopAbs_OUT )
+          intersected[1] = false;
+      }
+    }
 
     // Create one or two pyramids
 
@@ -1150,7 +1165,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh&                   
   int i, j, k, myShapeID = myPyramids[0]->GetNode(4)->getshapeId();
 
   if ( myElemSearcher ) delete myElemSearcher;
-  myElemSearcher = SMESH_MeshEditor(&aMesh).GetElementSearcher();
+  myElemSearcher = SMESH_MeshAlgos::GetElementSearcher( *meshDS );
   SMESH_ElementSearcher* searcher = const_cast<SMESH_ElementSearcher*>(myElemSearcher);
 
   set<const SMDS_MeshNode*> nodesToMove;
@@ -1181,7 +1196,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh&                   
       while ( vIt->more() )
       {
         const SMDS_MeshElement* PrmJ = vIt->next();
-        if ( SMESH_Algo::GetCommonNodes( PrmI, PrmJ ).size() > 1 )
+        if ( SMESH_MeshAlgos::GetCommonNodes( PrmI, PrmJ ).size() > 1 )
           checkedPyrams.insert( PrmJ );
       }
     }
