@@ -84,6 +84,7 @@ enum SMDSAbs_EntityType {
   SMDSEntity_Quad_Edge,
   SMDSEntity_Triangle,
   SMDSEntity_Quad_Triangle,
+  SMDSEntity_BiQuad_Triangle,
   SMDSEntity_Quadrangle,
   SMDSEntity_Quad_Quadrangle,
   SMDSEntity_BiQuad_Quadrangle,
