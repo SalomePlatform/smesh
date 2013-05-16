@@ -26,6 +26,21 @@
 
 #include "SMESH_Pattern.hxx"
 
+#include "SMDS_EdgePosition.hxx"
+#include "SMDS_FacePosition.hxx"
+#include "SMDS_MeshElement.hxx"
+#include "SMDS_MeshFace.hxx"
+#include "SMDS_MeshNode.hxx"
+#include "SMDS_VolumeTool.hxx"
+#include "SMESHDS_Group.hxx"
+#include "SMESHDS_Mesh.hxx"
+#include "SMESHDS_SubMesh.hxx"
+#include "SMESH_Block.hxx"
+#include "SMESH_Mesh.hxx"
+#include "SMESH_MeshAlgos.hxx"
+#include "SMESH_MesherHelper.hxx"
+#include "SMESH_subMesh.hxx"
+
 #include <BRepAdaptor_Curve.hxx>
 #include <BRepTools.hxx>
 #include <BRepTools_WireExplorer.hxx>
@@ -59,20 +74,6 @@
 #include <gp_Trsf.hxx>
 #include <gp_XY.hxx>
 #include <gp_XYZ.hxx>
-
-#include "SMDS_EdgePosition.hxx"
-#include "SMDS_FacePosition.hxx"
-#include "SMDS_MeshElement.hxx"
-#include "SMDS_MeshFace.hxx"
-#include "SMDS_MeshNode.hxx"
-#include "SMDS_VolumeTool.hxx"
-#include "SMESHDS_Group.hxx"
-#include "SMESHDS_Mesh.hxx"
-#include "SMESHDS_SubMesh.hxx"
-#include "SMESH_Block.hxx"
-#include "SMESH_Mesh.hxx"
-#include "SMESH_MesherHelper.hxx"
-#include "SMESH_subMesh.hxx"
 
 #include <Basics_OCCTVersion.hxx>
 
@@ -3559,7 +3560,7 @@ void SMESH_Pattern::
       while (true)
       {
         const SMDS_MeshElement* face =
-          SMESH_MeshEditor::FindFaceInSet( n1, n2, elemSet, avoidSet );
+          SMESH_MeshAlgos::FindFaceInSet( n1, n2, elemSet, avoidSet );
         if ( face )
         {
           avoidSet.insert ( face );
