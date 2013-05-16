@@ -1493,13 +1493,50 @@ double SMDS_VolumeTool::MaxLinearSize2() const
 
 //================================================================================
 /*!
- * \brief check that only one volume is build on the face nodes
- *
- * If a face is shared by one of <ignoreVolumes>, it is considered free
+ * \brief fast check that only one volume is build on the face nodes
  */
 //================================================================================
 
 bool SMDS_VolumeTool::IsFreeFace( int faceIndex, const SMDS_MeshElement** otherVol/*=0*/ ) const
+{
+  const bool isFree = true;
+
+  if (!setFace( faceIndex ))
+    return !isFree;
+
+  const SMDS_MeshNode** nodes = GetFaceNodes( faceIndex );
+
+  // a set of facet nodes w/o medium ones and w/o nodes[0]
+  set< const SMDS_MeshNode* > nodeSet;
+  const int di = myVolume->IsQuadratic() ? 2 : 1;
+  for ( int i = di; i < myFaceNbNodes; i += di )
+    nodeSet.insert( nodes[i] );
+
+  SMDS_ElemIteratorPtr eIt = nodes[0]->GetInverseElementIterator( SMDSAbs_Volume );
+  while ( eIt->more() ) {
+    const SMDS_MeshElement* vol = eIt->next();
+    if ( vol != myVolume ) {
+      size_t nbShared = 0;
+      SMDS_NodeIteratorPtr nIt = vol->nodeIterator();
+      while ( nIt->more() )
+        if (( nbShared += nodeSet.count( nIt->next() )) == nodeSet.size() )
+        {
+          if ( otherVol ) *otherVol = vol;
+          return !isFree;
+        }
+    }
+  }
+  if ( otherVol ) *otherVol = 0;
+  return isFree;
+}
+
+//================================================================================
+/*!
+ * \brief Thorough check that only one volume is build on the face nodes
+ */
+//================================================================================
+
+bool SMDS_VolumeTool::IsFreeFaceAdv( int faceIndex, const SMDS_MeshElement** otherVol/*=0*/ ) const
 {
   const bool isFree = true;
 
@@ -1621,14 +1658,16 @@ bool SMDS_VolumeTool::IsFreeFace( int faceIndex, const SMDS_MeshElement** otherV
 
 int SMDS_VolumeTool::GetFaceIndex( const set<const SMDS_MeshNode*>& theFaceNodes ) const
 {
-  for ( int iFace = 0; iFace < myNbFaces; iFace++ ) {
-    const SMDS_MeshNode** nodes = GetFaceNodes( iFace );
-    int nbFaceNodes = NbFaceNodes( iFace );
-    set<const SMDS_MeshNode*> nodeSet;
-    for ( int iNode = 0; iNode < nbFaceNodes; iNode++ )
-      nodeSet.insert( nodes[ iNode ] );
-    if ( theFaceNodes == nodeSet )
-      return iFace;
+  for ( int iFace = 0; iFace < myNbFaces; iFace++ )
+  {
+    const int nbNodes = NbFaceNodes( iFace );
+    if ( nbNodes == (int) theFaceNodes.size() )
+    {
+      const SMDS_MeshNode** nodes = GetFaceNodes( iFace );
+      set<const SMDS_MeshNode*> nodeSet( nodes, nodes + nbNodes);
+      if ( theFaceNodes == nodeSet )
+        return iFace;
+    }
   }
   return -1;
 }

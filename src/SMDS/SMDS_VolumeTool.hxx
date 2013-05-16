@@ -73,6 +73,8 @@ class SMDS_EXPORT SMDS_VolumeTool
   int ID() const;
   // return element ID
 
+  bool IsPoly() const { return myPolyedre; }
+
   // -----------------------
   // general info
   // -----------------------
@@ -177,7 +179,11 @@ class SMDS_EXPORT SMDS_VolumeTool
   // SetExternalNormal() is taken into account.
 
   bool IsFreeFace(  int faceIndex, const SMDS_MeshElement** otherVol=0 ) const;
-  // Check that all volumes built on the face nodes lays on one side
+  // Fast check that only one volume is built on nodes of a given face
+  // otherVol returns another volume sharing the given facet
+
+  bool IsFreeFaceAdv(  int faceIndex, const SMDS_MeshElement** otherVol=0 ) const;
+  // Thorough check that all volumes built on the face nodes lays on one side
   // otherVol returns another volume sharing the given facet
 
   bool GetFaceNormal (int faceIndex, double & X, double & Y, double & Z) const;
