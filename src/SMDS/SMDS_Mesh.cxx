@@ -1597,6 +1597,9 @@ SMDS_MeshFace* SMDS_Mesh::AddFaceFromVtkIdsWithID(const std::vector<vtkIdType>& 
     case VTK_BIQUADRATIC_QUAD:
       myInfo.myNbBiQuadQuadrangles++;
       break;
+    case VTK_BIQUADRATIC_TRIANGLE:
+      myInfo.myNbBiQuadTriangles++;
+      break;
     case VTK_POLYGON:
       myInfo.myNbPolygons++;
       break;
@@ -1636,6 +1639,17 @@ bool SMDS_Mesh::registerElement(int ID, SMDS_MeshElement* element)
 
   myElementIDFactory->updateMinMax(ID);
   return true;
+}
+
+//=======================================================================
+//function : MoveNode
+//purpose  : 
+//=======================================================================
+
+void SMDS_Mesh::MoveNode(const SMDS_MeshNode *n, double x, double y, double z)
+{
+  SMDS_MeshNode * node=const_cast<SMDS_MeshNode*>(n);
+  node->setXYZ(x,y,z);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2446,7 +2460,7 @@ const SMDS_MeshElement* SMDS_Mesh::FindElement (const vector<const SMDS_MeshNode
             e = 0;
         }
         if ( e )
-          return static_cast<const SMDS_MeshFace *> (e);
+          return e;
       }
     }
   }
@@ -3680,6 +3694,94 @@ SMDS_MeshFace* SMDS_Mesh::AddFaceWithID(const SMDS_MeshNode * n1,
     adjustmyCellsCapacity(ID);
     myCells[ID] = face;
     myInfo.myNbQuadTriangles++;
+
+//    if (!registerElement(ID, face)) {
+//      RemoveElement(face, false);
+//      face = NULL;
+//    }
+    return face;
+  }
+}
+
+
+//=======================================================================
+//function : AddFace
+//purpose  :
+//=======================================================================
+SMDS_MeshFace* SMDS_Mesh::AddFace(const SMDS_MeshNode * n1,
+                                  const SMDS_MeshNode * n2,
+                                  const SMDS_MeshNode * n3,
+                                  const SMDS_MeshNode * n12,
+                                  const SMDS_MeshNode * n23,
+                                  const SMDS_MeshNode * n31,
+                                  const SMDS_MeshNode * nCenter)
+{
+  return SMDS_Mesh::AddFaceWithID(n1,n2,n3,n12,n23,n31,nCenter,
+                                  myElementIDFactory->GetFreeID());
+}
+
+//=======================================================================
+//function : AddFaceWithID
+//purpose  :
+//=======================================================================
+SMDS_MeshFace* SMDS_Mesh::AddFaceWithID(int n1, int n2, int n3,
+                                        int n12,int n23,int n31, int nCenter, int ID)
+{
+  return SMDS_Mesh::AddFaceWithID
+    ((SMDS_MeshNode *)myNodeIDFactory->MeshElement(n1) ,
+     (SMDS_MeshNode *)myNodeIDFactory->MeshElement(n2) ,
+     (SMDS_MeshNode *)myNodeIDFactory->MeshElement(n3) ,
+     (SMDS_MeshNode *)myNodeIDFactory->MeshElement(n12),
+     (SMDS_MeshNode *)myNodeIDFactory->MeshElement(n23),
+     (SMDS_MeshNode *)myNodeIDFactory->MeshElement(n31),
+     (SMDS_MeshNode *)myNodeIDFactory->MeshElement(nCenter),
+     ID);
+}
+
+//=======================================================================
+//function : AddFaceWithID
+//purpose  :
+//=======================================================================
+SMDS_MeshFace* SMDS_Mesh::AddFaceWithID(const SMDS_MeshNode * n1,
+                                        const SMDS_MeshNode * n2,
+                                        const SMDS_MeshNode * n3,
+                                        const SMDS_MeshNode * n12,
+                                        const SMDS_MeshNode * n23,
+                                        const SMDS_MeshNode * n31,
+                                        const SMDS_MeshNode * nCenter,
+                                        int ID)
+{
+  if ( !n1 || !n2 || !n3 || !n12 || !n23 || !n31 || !nCenter) return 0;
+  if(hasConstructionEdges()) {
+    // creation quadratic edges - not implemented
+    return 0;
+  }
+  else
+  {
+    // --- retrieve nodes ID
+    vector<vtkIdType> nodeIds;
+    nodeIds.clear();
+    nodeIds.push_back(n1->getVtkId());
+    nodeIds.push_back(n2->getVtkId());
+    nodeIds.push_back(n3->getVtkId());
+    nodeIds.push_back(n12->getVtkId());
+    nodeIds.push_back(n23->getVtkId());
+    nodeIds.push_back(n31->getVtkId());
+    nodeIds.push_back(nCenter->getVtkId());
+
+    SMDS_MeshFace * face = 0;
+    SMDS_VtkFace *facevtk = myFacePool->getNew();
+    facevtk->init(nodeIds, this);
+    if (!this->registerElement(ID,facevtk))
+      {
+        this->myGrid->GetCellTypesArray()->SetValue(facevtk->getVtkId(), VTK_EMPTY_CELL);
+        myFacePool->destroy(facevtk);
+        return 0;
+      }
+    face = facevtk;
+    adjustmyCellsCapacity(ID);
+    myCells[ID] = face;
+    myInfo.myNbBiQuadTriangles++;
 
 //    if (!registerElement(ID, face)) {
 //      RemoveElement(face, false);

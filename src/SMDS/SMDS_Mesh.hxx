@@ -170,6 +170,25 @@ public:
                                  const SMDS_MeshNode * n23,
                                  const SMDS_MeshNode * n31);
 
+  // 2d order triangle of 7 nodes
+  virtual SMDS_MeshFace* AddFaceWithID(int n1, int n2, int n3,
+                                       int n12,int n23,int n31, int nCenter, int ID);
+  virtual SMDS_MeshFace* AddFaceWithID(const SMDS_MeshNode * n1,
+                                       const SMDS_MeshNode * n2,
+                                       const SMDS_MeshNode * n3,
+                                       const SMDS_MeshNode * n12,
+                                       const SMDS_MeshNode * n23,
+                                       const SMDS_MeshNode * n31,
+                                       const SMDS_MeshNode * nCenter,
+                                       int ID);
+  virtual SMDS_MeshFace* AddFace(const SMDS_MeshNode * n1,
+                                 const SMDS_MeshNode * n2,
+                                 const SMDS_MeshNode * n3,
+                                 const SMDS_MeshNode * n12,
+                                 const SMDS_MeshNode * n23,
+                                 const SMDS_MeshNode * n31,
+                                 const SMDS_MeshNode * nCenter);
+
   // 2d order quadrangle
   virtual SMDS_MeshFace* AddFaceWithID(int n1, int n2, int n3, int n4,
                                        int n12,int n23,int n34,int n41, int ID);
@@ -580,6 +599,7 @@ public:
 
   virtual SMDS_MeshFace* AddFaceFromVtkIdsWithID(const std::vector<vtkIdType>& vtkNodeIds,
                                                      const int ID);
+  virtual void MoveNode(const SMDS_MeshNode *n, double x, double y, double z);
 
   virtual void RemoveElement(const SMDS_MeshElement *        elem,
                              std::list<const SMDS_MeshElement *>& removedElems,
