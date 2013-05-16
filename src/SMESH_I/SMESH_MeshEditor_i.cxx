@@ -27,6 +27,11 @@
 #define NOMINMAX
 #endif
 
+// A macro used in SMESH_TryCatch.hxx,
+// it re-raises a CORBA SALOME exception thrown by SMESH_MeshEditor_i and caught by SMESH_CATCH
+#define SMY_OWN_CATCH \
+  catch ( SALOME::SALOME_Exception & e ) { throw e; }
+
 #include "SMESH_MeshEditor_i.hxx"
 
 #include "SMDS_EdgePosition.hxx"
@@ -47,6 +52,7 @@
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Group.hxx"
 #include "SMESH_Group_i.hxx"
+#include "SMESH_MeshAlgos.hxx"
 #include "SMESH_MeshPartDS.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_PythonDump.hxx"
@@ -653,6 +659,18 @@ SMESH::long_array* SMESH_MeshEditor_i::GetLastCreatedElems()
 }
 
 //=======================================================================
+//function : ClearLastCreated
+//purpose  : Clears sequences of last created elements and nodes 
+//=======================================================================
+
+void SMESH_MeshEditor_i::ClearLastCreated() throw (SALOME::SALOME_Exception)
+{
+  SMESH_TRY;
+  getEditor().CrearLastCreated();
+  SMESH_CATCH( SMESH::throwCorbaException );
+}
+
+//=======================================================================
 /*
  * Returns description of an error/warning occured during the last operation
  */
@@ -981,26 +999,19 @@ CORBA::Long SMESH_MeshEditor_i::AddFace(const SMESH::long_array & IDsOfNodes)
     nodes[i] = getMeshDS()->FindNode(IDsOfNodes[i]);
 
   SMDS_MeshElement* elem = 0;
-  if (NbNodes == 3) {
-    elem = getMeshDS()->AddFace(nodes[0], nodes[1], nodes[2]);
-  }
-  else if (NbNodes == 4) {
-    elem = getMeshDS()->AddFace(nodes[0], nodes[1], nodes[2], nodes[3]);
-  }
-  else if (NbNodes == 6) {
-    elem = getMeshDS()->AddFace(nodes[0], nodes[1], nodes[2], nodes[3],
-                                nodes[4], nodes[5]);
-  }
-  else if (NbNodes == 8) {
-    elem = getMeshDS()->AddFace(nodes[0], nodes[1], nodes[2], nodes[3],
-                                nodes[4], nodes[5], nodes[6], nodes[7]);
-  }
-  else if (NbNodes == 9) {
-    elem = getMeshDS()->AddFace(nodes[0], nodes[1], nodes[2], nodes[3],
-                                nodes[4], nodes[5], nodes[6], nodes[7], nodes[8] );
-  }
-  else if (NbNodes > 2) {
-    elem = getMeshDS()->AddPolygonalFace(nodes);
+  switch (NbNodes) {
+  case 3: elem = getMeshDS()->AddFace(nodes[0], nodes[1], nodes[2]); break;
+  case 4: elem = getMeshDS()->AddFace(nodes[0], nodes[1], nodes[2], nodes[3]); break;
+  case 6: elem = getMeshDS()->AddFace(nodes[0], nodes[1], nodes[2], nodes[3],
+                                      nodes[4], nodes[5]); break;
+  case 7: elem = getMeshDS()->AddFace(nodes[0], nodes[1], nodes[2], nodes[3],
+                                      nodes[4], nodes[5], nodes[6]); break;
+  case 8: elem = getMeshDS()->AddFace(nodes[0], nodes[1], nodes[2], nodes[3],
+                                      nodes[4], nodes[5], nodes[6], nodes[7]); break;
+  case 9: elem = getMeshDS()->AddFace(nodes[0], nodes[1], nodes[2], nodes[3],
+                                      nodes[4], nodes[5], nodes[6], nodes[7],
+                                      nodes[8] ); break;
+  default: elem = getMeshDS()->AddPolygonalFace(nodes);
   }
 
   // Update Python script
@@ -1413,7 +1424,6 @@ void SMESH_MeshEditor_i::SetNodeInVolume(CORBA::Long NodeID, CORBA::Long SolidID
  * \brief Bind an element to a shape
  * \param ElementID - element ID
  * \param ShapeID - shape ID available through GEOM_Object.GetSubShapeIndices()[0]
- * \retval boolean - false if ElementID or ShapeID is invalid
  */
 //=============================================================================
 
@@ -1427,7 +1437,7 @@ void SMESH_MeshEditor_i::SetMeshElementOnShape(CORBA::Long ElementID,
   if ( !elem )
     THROW_SALOME_CORBA_EXCEPTION("Invalid ElementID", SALOME::BAD_PARAM);
 
-  if ( mesh->MaxShapeIndex() < ShapeID )
+  if ( mesh->MaxShapeIndex() < ShapeID || ShapeID < 1 )
     THROW_SALOME_CORBA_EXCEPTION("Invalid ShapeID", SALOME::BAD_PARAM);
 
   TopoDS_Shape shape = mesh->IndexToShape( ShapeID );
@@ -1609,14 +1619,14 @@ CORBA::Long SMESH_MeshEditor_i::Reorient2D(SMESH::SMESH_IDSource_ptr the2Dgroup,
         if ( myMesh->NbFaces() == 0 )
           THROW_SALOME_CORBA_EXCEPTION("No faces in the mesh", SALOME::BAD_PARAM);
 
-        theElementSearcher = myEditor.GetElementSearcher();
+        theElementSearcher = SMESH_MeshAlgos::GetElementSearcher( *getMeshDS() );
       }
       else
       {
         typedef SMDS_SetIterator<const SMDS_MeshElement*, TIDSortedElemSet::const_iterator > TIter;
         SMDS_ElemIteratorPtr elemsIt( new TIter( elements.begin(), elements.end() ));
 
-        theElementSearcher = myEditor.GetElementSearcher(elemsIt);
+        theElementSearcher = SMESH_MeshAlgos::GetElementSearcher( *getMeshDS(), elemsIt);
       }
     }
     // find a face
@@ -4933,7 +4943,7 @@ CORBA::Long SMESH_MeshEditor_i::FindNodeClosestTo(CORBA::Double x,
   theSearchersDeleter.Set( myMesh ); // remove theNodeSearcher if mesh is other
 
   if ( !theNodeSearcher ) {
-    theNodeSearcher = myEditor.GetNodeSearcher();
+    theNodeSearcher = SMESH_MeshAlgos::GetNodeSearcher( *getMeshDS() );
   }
   gp_Pnt p( x,y,z );
   if ( const SMDS_MeshNode* node = theNodeSearcher->FindClosestTo( p ))
@@ -4970,7 +4980,7 @@ CORBA::Long SMESH_MeshEditor_i::MoveClosestNodeToPoint(CORBA::Double x,
   if ( !node ) // preview moving node
   {
     if ( !theNodeSearcher ) {
-      theNodeSearcher = myEditor.GetNodeSearcher();
+      theNodeSearcher = SMESH_MeshAlgos::GetNodeSearcher( *getMeshDS() );
     }
     gp_Pnt p( x,y,z );
     node = theNodeSearcher->FindClosestTo( p );
@@ -5040,7 +5050,7 @@ SMESH::long_array* SMESH_MeshEditor_i::FindElementsByPoint(CORBA::Double      x,
 
   theSearchersDeleter.Set( myMesh );
   if ( !theElementSearcher ) {
-    theElementSearcher = myEditor.GetElementSearcher();
+    theElementSearcher = SMESH_MeshAlgos::GetElementSearcher( *getMeshDS() );
   }
   theElementSearcher->FindElementsByPoint( gp_Pnt( x,y,z ),
                                            SMDSAbs_ElementType( type ),
@@ -5105,7 +5115,7 @@ SMESH_MeshEditor_i::FindAmongElementsByPoint(SMESH::SMESH_IDSource_ptr elementID
     typedef SMDS_SetIterator<const SMDS_MeshElement*, TIDSortedElemSet::const_iterator > TIter;
     SMDS_ElemIteratorPtr elemsIt( new TIter( elements.begin(), elements.end() ));
 
-    theElementSearcher = myEditor.GetElementSearcher(elemsIt);
+    theElementSearcher = SMESH_MeshAlgos::GetElementSearcher( *getMeshDS(), elemsIt );
   }
 
   vector< const SMDS_MeshElement* > foundElems;
@@ -5145,7 +5155,7 @@ CORBA::Short SMESH_MeshEditor_i::GetPointState(CORBA::Double x,
   SMESH_TRY;
   theSearchersDeleter.Set( myMesh );
   if ( !theElementSearcher ) {
-    theElementSearcher = myEditor.GetElementSearcher();
+    theElementSearcher = SMESH_MeshAlgos::GetElementSearcher( *getMeshDS() );
   }
   return CORBA::Short( theElementSearcher->GetPointState( gp_Pnt( x,y,z )));
 
@@ -6722,7 +6732,7 @@ void SMESH_MeshEditor_i::CreateHoleSkin(CORBA::Double                  radius,
 
   theSearchersDeleter.Set( myMesh ); // remove theNodeSearcher if mesh is other
   if ( !theNodeSearcher )
-    theNodeSearcher = aMeshEditor.GetNodeSearcher();
+    theNodeSearcher = SMESH_MeshAlgos::GetNodeSearcher( *getMeshDS() );
 
   vector<double> nodesCoords;
   for (int i = 0; i < theNodesCoords.length(); i++)
