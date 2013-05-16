@@ -99,13 +99,11 @@ SMDS_ElemIteratorPtr SMDS_LinearEdge::elementsIterator(SMDSAbs_ElementType type)
     case SMDSAbs_Node:
       return SMDS_ElemIteratorPtr(new SMDS_LinearEdge_MyNodeIterator(myNodes));
     default:
-      return SMDS_ElemIteratorPtr(
-                                  new SMDS_IteratorOfElements(
-                                                              this,
-                                                              type,
-                                                              SMDS_ElemIteratorPtr(
-                                                                                   new SMDS_LinearEdge_MyNodeIterator(
-                                                                                                                      myNodes))));
+      return SMDS_ElemIteratorPtr
+        (new SMDS_IteratorOfElements(this,
+                                     type,
+                                     SMDS_ElemIteratorPtr
+                                     (new SMDS_LinearEdge_MyNodeIterator(myNodes))));
   }
 }
 
