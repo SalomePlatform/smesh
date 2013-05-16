@@ -59,6 +59,11 @@ module SMESH
     long_array GetLastCreatedElems() raises (SALOME::SALOME_Exception);
 
     /*!
+     * \brief Clears sequences of last created elements and nodes 
+     */
+    void ClearLastCreated() raises (SALOME::SALOME_Exception);
+
+    /*!
      * \brief Returns description of an error/warning occured during the last operation
      */
     ComputeError GetLastError() raises (SALOME::SALOME_Exception);
