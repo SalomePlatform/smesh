@@ -3088,6 +3088,15 @@ CORBA::Long SMESH_Mesh_i::NbTriangles()throw(SALOME::SALOME_Exception)
   return _impl->NbTriangles();
 }
 
+CORBA::Long SMESH_Mesh_i::NbBiQuadTriangles()throw(SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  if ( _preMeshInfo )
+    return _preMeshInfo->NbBiQuadTriangles();
+
+  return _impl->NbBiQuadTriangles();
+}
+
 CORBA::Long SMESH_Mesh_i::NbQuadrangles()throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
@@ -4021,7 +4030,7 @@ CORBA::Long SMESH_Mesh_i::FindElementByNodes(const SMESH::long_array& nodes)
       if ( !( nn[i] = mesh->FindNode( nodes[i] )))
         return elemID;
 
-    const SMDS_MeshElement* elem = mesh->FindElement( nn );
+    const SMDS_MeshElement* elem = mesh->FindElement( nn, SMDSAbs_All, /*noMedium=*/false );
     if ( !elem && ( _impl->NbEdges  ( ORDER_QUADRATIC ) ||
                     _impl->NbFaces  ( ORDER_QUADRATIC ) ||
                     _impl->NbVolumes( ORDER_QUADRATIC )))

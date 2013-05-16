@@ -294,6 +294,9 @@ public:
   CORBA::Long NbTrianglesOfOrder(SMESH::ElementOrder order)
     throw (SALOME::SALOME_Exception);
 
+  CORBA::Long NbBiQuadTriangles()
+    throw (SALOME::SALOME_Exception);
+
   CORBA::Long NbQuadrangles()
     throw (SALOME::SALOME_Exception);
 
