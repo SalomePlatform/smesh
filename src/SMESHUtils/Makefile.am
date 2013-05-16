@@ -34,7 +34,8 @@ salomeinclude_HEADERS = \
 	SMESH_ComputeError.hxx \
 	SMESH_File.hxx \
 	SMESH_Utils.hxx \
-	SMESH_TryCatch.hxx
+	SMESH_TryCatch.hxx \
+	SMESH_MeshAlgos.hxx
 
 # Libraries targets
 
@@ -46,7 +47,8 @@ dist_libSMESHUtils_la_SOURCES = \
 	SMESH_Octree.cxx \
 	SMESH_OctreeNode.cxx \
 	SMESH_TryCatch.cxx \
-	SMESH_File.cxx
+	SMESH_File.cxx \
+	SMESH_MeshAlgos.cxx
 
 # additionnal information to compile and link file
 libSMESHUtils_la_CPPFLAGS = \
