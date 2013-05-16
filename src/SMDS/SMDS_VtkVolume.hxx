@@ -70,8 +70,8 @@ public:
   std::vector<int> GetQuantities() const;
 
   virtual SMDS_ElemIteratorPtr elementsIterator(SMDSAbs_ElementType type) const;
-  virtual SMDS_ElemIteratorPtr nodesIteratorToUNV() const;
-  virtual SMDS_ElemIteratorPtr interlacedNodesElemIterator() const;
+  virtual SMDS_NodeIteratorPtr nodesIteratorToUNV() const;
+  virtual SMDS_NodeIteratorPtr interlacedNodesIterator() const;
 
 protected:
 };

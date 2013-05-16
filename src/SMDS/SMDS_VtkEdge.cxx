@@ -155,18 +155,17 @@ SMDS_ElemIteratorPtr SMDS_VtkEdge::elementsIterator(SMDSAbs_ElementType type) co
     case SMDSAbs_Node:
       return SMDS_ElemIteratorPtr(new SMDS_VtkCellIterator(SMDS_Mesh::_meshList[myMeshId], myVtkID, GetEntityType()));
     default:
-      MESSAGE("ERROR : Iterator not implemented")
-      ;
+      MESSAGE("ERROR : Iterator not implemented");
       return SMDS_ElemIteratorPtr((SMDS_ElemIterator*) NULL);
   }
 }
 
-SMDS_ElemIteratorPtr SMDS_VtkEdge::nodesIteratorToUNV() const
+SMDS_NodeIteratorPtr SMDS_VtkEdge::nodesIteratorToUNV() const
 {
-  return SMDS_ElemIteratorPtr(new SMDS_VtkCellIteratorToUNV(SMDS_Mesh::_meshList[myMeshId], myVtkID, GetEntityType()));
+  return SMDS_NodeIteratorPtr(new SMDS_VtkCellIteratorToUNV(SMDS_Mesh::_meshList[myMeshId], myVtkID, GetEntityType()));
 }
 
-SMDS_ElemIteratorPtr SMDS_VtkEdge::interlacedNodesElemIterator() const
+SMDS_NodeIteratorPtr SMDS_VtkEdge::interlacedNodesIterator() const
 {
-  return SMDS_ElemIteratorPtr(new SMDS_VtkCellIteratorToUNV(SMDS_Mesh::_meshList[myMeshId], myVtkID, GetEntityType()));
+  return nodesIteratorToUNV();
 }

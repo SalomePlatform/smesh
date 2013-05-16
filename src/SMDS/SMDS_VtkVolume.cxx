@@ -404,14 +404,14 @@ SMDS_ElemIteratorPtr SMDS_VtkVolume::elementsIterator(SMDSAbs_ElementType type) 
   }
 }
 
-SMDS_ElemIteratorPtr SMDS_VtkVolume::nodesIteratorToUNV() const
+SMDS_NodeIteratorPtr SMDS_VtkVolume::nodesIteratorToUNV() const
 {
-  return SMDS_ElemIteratorPtr(new SMDS_VtkCellIteratorToUNV(SMDS_Mesh::_meshList[myMeshId], myVtkID, GetEntityType()));
+  return SMDS_NodeIteratorPtr(new SMDS_VtkCellIteratorToUNV(SMDS_Mesh::_meshList[myMeshId], myVtkID, GetEntityType()));
 }
 
-SMDS_ElemIteratorPtr SMDS_VtkVolume::interlacedNodesElemIterator() const
+SMDS_NodeIteratorPtr SMDS_VtkVolume::interlacedNodesIterator() const
 {
-  return SMDS_ElemIteratorPtr(new SMDS_VtkCellIteratorToUNV(SMDS_Mesh::_meshList[myMeshId], myVtkID, GetEntityType()));
+  return SMDS_NodeIteratorPtr(new SMDS_VtkCellIteratorToUNV(SMDS_Mesh::_meshList[myMeshId], myVtkID, GetEntityType()));
 }
 
 SMDSAbs_ElementType SMDS_VtkVolume::GetType() const

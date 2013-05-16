@@ -64,6 +64,9 @@ void SMDS_VtkFace::init(const std::vector<vtkIdType>& nodeIds, SMDS_Mesh* mesh)
     case 9:
       aType = VTK_BIQUADRATIC_QUAD;
       break;
+    case 7:
+      aType = VTK_BIQUADRATIC_TRIANGLE;
+      break;
     default:
       aType = VTK_POLYGON;
       break;
@@ -116,6 +119,7 @@ int SMDS_VtkFace::NbEdges() const
   {
     case VTK_TRIANGLE:
     case VTK_QUADRATIC_TRIANGLE:
+    case VTK_BIQUADRATIC_TRIANGLE:
       nbEdges = 3;
       break;
     case VTK_QUAD:
@@ -167,6 +171,7 @@ bool SMDS_VtkFace::IsQuadratic() const
     case VTK_QUADRATIC_TRIANGLE:
     case VTK_QUADRATIC_QUAD:
     case VTK_BIQUADRATIC_QUAD:
+    case VTK_BIQUADRATIC_TRIANGLE:
       return true;
       break;
     default:
@@ -189,6 +194,7 @@ bool SMDS_VtkFace::IsMediumNode(const SMDS_MeshNode* node) const
   switch (aVtkType)
   {
     case VTK_QUADRATIC_TRIANGLE:
+    case VTK_BIQUADRATIC_TRIANGLE:
       rankFirstMedium = 3; // medium nodes are of rank 3,4,5
       break;
     case VTK_QUADRATIC_QUAD:
@@ -245,13 +251,13 @@ SMDSAbs_GeometryType SMDS_VtkFace::GetGeomType() const
   switch ( aVtkType ) {
   case VTK_TRIANGLE:
   case VTK_QUADRATIC_TRIANGLE:
-    return SMDSGeom_TRIANGLE;
+  case VTK_BIQUADRATIC_TRIANGLE: return SMDSGeom_TRIANGLE;
+
   case VTK_QUAD:
   case VTK_QUADRATIC_QUAD:
-  case VTK_BIQUADRATIC_QUAD:
-    return SMDSGeom_QUADRANGLE;
-  case VTK_POLYGON:
-    return SMDSGeom_POLYGON;
+  case VTK_BIQUADRATIC_QUAD: return SMDSGeom_QUADRANGLE;
+
+  case VTK_POLYGON: return SMDSGeom_POLYGON;
   default:;
   }
   return SMDSGeom_NONE;
@@ -277,14 +283,14 @@ SMDS_ElemIteratorPtr SMDS_VtkFace::elementsIterator(SMDSAbs_ElementType type) co
   }
 }
 
-SMDS_ElemIteratorPtr SMDS_VtkFace::nodesIteratorToUNV() const
+SMDS_NodeIteratorPtr SMDS_VtkFace::nodesIteratorToUNV() const
 {
-  return SMDS_ElemIteratorPtr(new SMDS_VtkCellIteratorToUNV(SMDS_Mesh::_meshList[myMeshId], myVtkID, GetEntityType()));
+  return SMDS_NodeIteratorPtr(new SMDS_VtkCellIteratorToUNV(SMDS_Mesh::_meshList[myMeshId], myVtkID, GetEntityType()));
 }
 
-SMDS_ElemIteratorPtr SMDS_VtkFace::interlacedNodesElemIterator() const
+SMDS_NodeIteratorPtr SMDS_VtkFace::interlacedNodesIterator() const
 {
-  return SMDS_ElemIteratorPtr(new SMDS_VtkCellIteratorToUNV(SMDS_Mesh::_meshList[myMeshId], myVtkID, GetEntityType()));
+  return nodesIteratorToUNV();
 }
 
 //! change only the first node, used for temporary triangles in quadrangle to triangle adaptor
