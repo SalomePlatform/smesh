@@ -81,6 +81,8 @@ namespace
         static int ids[] = { 0, 2, 1, 5, 4, 3 };
         interlaces[SMDSEntity_Quad_Triangle] = ids;
         cgTypes   [SMDSEntity_Quad_Triangle] = CGNS_ENUMV( TRI_6 );
+        interlaces[SMDSEntity_BiQuad_Triangle] = ids;
+        cgTypes   [SMDSEntity_BiQuad_Triangle] = CGNS_ENUMV( TRI_6 );
       }
       {
         static int ids[] = { 0, 3, 2, 1 };
@@ -341,9 +343,12 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
     startID = cgID;
 
     if ( interlace ) // STANDARD elements
+    {
+      int cgnsNbNodes; // get nb nodes by element type, that can be less that elem->NbNodes()
+      cg_npe( cgType, &cgnsNbNodes );
       do
       {
-        for ( int i = 0, nb = elem->NbNodes(); i < nb; ++i )
+        for ( int i = 0; i < cgnsNbNodes; ++i )
           elemData.push_back( cgnsID( elem->GetNode( interlace[i] ), n2cgID ));
         if ( elem->GetID() != cgID )
           elem2cgID.insert( elem2cgID.end(), make_pair( elem, cgID ));
@@ -351,7 +356,7 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
         elem = elemIt->more() ? elemIt->next() : 0;
       }
       while ( elem && elem->GetEntityType() == elemType );
-
+    }
     else if ( elemType == SMDSEntity_Polygon ) // POLYGONS
       do
       {

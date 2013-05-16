@@ -106,17 +106,16 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
           TRecord aRec;
           aRec.label = anElem->GetID();
           aRec.node_labels.reserve(aNbNodes);
-          SMDS_ElemIteratorPtr aNodesIter;
-          aNodesIter = anElem->nodesIteratorToUNV();
           if( anElem->IsQuadratic() ) {
             aRec.fe_descriptor_id = 22;
           } else {
             aRec.fe_descriptor_id = 11;
           }
+          SMDS_NodeIteratorPtr aNodesIter = anElem->nodesIteratorToUNV();
           while( aNodesIter->more())
           {
-            const SMDS_MeshElement* aNode = aNodesIter->next();
-            aRec.node_labels.push_back(aNode->GetID());
+            const SMDS_MeshNode* aNode = aNodesIter->next();
+            aRec.node_labels.push_back( aNode->GetID() );
           }
           aDataSet2412.push_back(aRec);
         }
@@ -135,29 +134,18 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
           TRecord aRec;
           aRec.label = anElem->GetID();
           aRec.node_labels.reserve(aNbNodes);
-          SMDS_ElemIteratorPtr aNodesIter;
-          aNodesIter = anElem->nodesIteratorToUNV();
-          for(; aNodesIter->more();){
-            const SMDS_MeshElement* aNode = aNodesIter->next();
-            aRec.node_labels.push_back(aNode->GetID());
+          SMDS_NodeIteratorPtr aNodesIter = anElem->nodesIteratorToUNV();
+          while( aNodesIter->more() ) {
+            const SMDS_MeshNode* aNode = aNodesIter->next();
+            aRec.node_labels.push_back( aNode->GetID() );
           }
-          switch(aNbNodes){
-          case 3:
-            aRec.fe_descriptor_id = 41;
-            break;
-          case 4:
-            aRec.fe_descriptor_id = 44;
-            break;
-          case 6:
-            aRec.fe_descriptor_id = 42;
-            break;
-          case 8:
-            aRec.fe_descriptor_id = 45;
-            break;
-          case 9:
-            aRec.fe_descriptor_id = 45;
-            aRec.node_labels.resize( 8 );
-            break;
+          switch ( aNbNodes ) {
+          case 3: aRec.fe_descriptor_id = 41; break;
+          case 4: aRec.fe_descriptor_id = 44; break;
+          case 6: aRec.fe_descriptor_id = 42; break;
+          case 7: aRec.fe_descriptor_id = 42; break;
+          case 8: aRec.fe_descriptor_id = 45; break;
+          case 9: aRec.fe_descriptor_id = 45; aRec.node_labels.resize( 8 ); break;
           default:
             continue;
           }
@@ -173,11 +161,9 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
         while ( anIter->more())
         {
           const SMDS_MeshVolume* anElem = anIter->next();
-          int aNbNodes = anElem->NbNodes();
-          SMDS_ElemIteratorPtr aNodesIter = anElem->nodesIteratorToUNV();
-          if ( anElem->IsPoly() ) {
+          if ( anElem->IsPoly() )
             continue;
-          }
+          int aNbNodes = anElem->NbNodes();
           int anId = -1;
           switch(aNbNodes) {
           case 4:  anId = 111; break;
@@ -196,6 +182,7 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
             aRec.label = anElem->GetID();
             aRec.fe_descriptor_id = anId;
             aRec.node_labels.reserve(aNbNodes);
+            SMDS_NodeIteratorPtr aNodesIter = anElem->nodesIteratorToUNV();
             while ( aNodesIter->more() && aRec.node_labels.size() < aNbNodes )
             {
               const SMDS_MeshElement* aNode = aNodesIter->next();

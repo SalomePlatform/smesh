@@ -431,6 +431,7 @@ DriverMED_R_SMESHDS_Mesh
               case eSEG3:    aNbNodes = 3;  break;
               case eTRIA3:   aNbNodes = 3;  break;
               case eTRIA6:   aNbNodes = 6;  break;
+              case eTRIA7:   aNbNodes = 7;  break;
               case eQUAD4:   aNbNodes = 4;  break;
               case eQUAD8:   aNbNodes = 8;  break;
               case eQUAD9:   aNbNodes = 9;  break;
@@ -549,6 +550,24 @@ DriverMED_R_SMESHDS_Mesh
                                                   FindNode(myMesh,aNodeIds[3]),
                                                   FindNode(myMesh,aNodeIds[4]),
                                                   FindNode(myMesh,aNodeIds[5]));
+                      isRenum = anIsElemNum;
+                    }
+                    break;
+                  case eTRIA7:
+                    aNbNodes = 7;
+                    if(anIsElemNum)
+                      anElement = myMesh->AddFaceWithID(aNodeIds[0], aNodeIds[1],
+                                                        aNodeIds[2], aNodeIds[3],
+                                                        aNodeIds[4], aNodeIds[5], aNodeIds[6],
+                                                        aCellInfo->GetElemNum(iElem));
+                    if (!anElement) {
+                      anElement = myMesh->AddFace(FindNode(myMesh,aNodeIds[0]),
+                                                  FindNode(myMesh,aNodeIds[1]),
+                                                  FindNode(myMesh,aNodeIds[2]),
+                                                  FindNode(myMesh,aNodeIds[3]),
+                                                  FindNode(myMesh,aNodeIds[4]),
+                                                  FindNode(myMesh,aNodeIds[5]),
+                                                  FindNode(myMesh,aNodeIds[6]));
                       isRenum = anIsElemNum;
                     }
                     break;

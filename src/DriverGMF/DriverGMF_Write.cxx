@@ -155,8 +155,8 @@ Driver_Mesh::Status DriverGMF_Write::Perform()
                               GmfExtraVerticesAtTriangles, tria )
     node2IdMap[ tria->GetNode( 3 )],
     node2IdMap[ tria->GetNode( 4 )],
-    node2IdMap[ tria->GetNode( 5 )]
-    //node2IdMap[ tria->GetNodeWrap( 6 )] // for TRIA7
+    node2IdMap[ tria->GetNode( 5 )],
+    node2IdMap[ tria->GetNodeWrap( 6 )] // for TRIA7
     END_EXTRA_VERTICES_WRITE();
 
   // quadrangles

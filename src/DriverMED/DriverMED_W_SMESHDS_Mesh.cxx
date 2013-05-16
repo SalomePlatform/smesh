@@ -532,28 +532,33 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     anEntity = eARETE;
 #endif
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
-                                            eSEG2,
-                                            nbElemInfo.NbEdges( ORDER_LINEAR ),
-                                            SMDSAbs_Edge));
+                                             eSEG2,
+                                             nbElemInfo.NbEdges( ORDER_LINEAR ),
+                                             SMDSAbs_Edge));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
-                                            eSEG3,
-                                            nbElemInfo.NbEdges( ORDER_QUADRATIC ),
-                                            SMDSAbs_Edge));
+                                             eSEG3,
+                                             nbElemInfo.NbEdges( ORDER_QUADRATIC ),
+                                             SMDSAbs_Edge));
 #ifdef _ELEMENTS_BY_DIM_
     anEntity = eFACE;
 #endif
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
-                                            eTRIA3,
-                                            nbElemInfo.NbTriangles( ORDER_LINEAR ),
-                                            SMDSAbs_Face));
+                                             eTRIA3,
+                                             nbElemInfo.NbTriangles( ORDER_LINEAR ),
+                                             SMDSAbs_Face));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
-                                            eTRIA6,
-                                            nbElemInfo.NbTriangles( ORDER_QUADRATIC ),
-                                            SMDSAbs_Face));
+                                             eTRIA6,
+                                             nbElemInfo.NbTriangles( ORDER_QUADRATIC ) -
+                                             nbElemInfo.NbBiQuadTriangles(),
+                                             SMDSAbs_Face));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
-                                            eQUAD4,
-                                            nbElemInfo.NbQuadrangles( ORDER_LINEAR ),
-                                            SMDSAbs_Face));
+                                             eTRIA7,
+                                             nbElemInfo.NbBiQuadTriangles(),
+                                             SMDSAbs_Face));
+    aTElemTypeDatas.push_back( TElemTypeData(anEntity,
+                                             eQUAD4,
+                                             nbElemInfo.NbQuadrangles( ORDER_LINEAR ),
+                                             SMDSAbs_Face));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                              eQUAD8,
                                              nbElemInfo.NbQuadrangles( ORDER_QUADRATIC ) -
@@ -578,25 +583,25 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     anEntity = eMAILLE;
 #endif
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
-                                            eTETRA4,
-                                            nbElemInfo.NbTetras( ORDER_LINEAR ),
-                                            SMDSAbs_Volume));
+                                             eTETRA4,
+                                             nbElemInfo.NbTetras( ORDER_LINEAR ),
+                                             SMDSAbs_Volume));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
-                                            eTETRA10,
-                                            nbElemInfo.NbTetras( ORDER_QUADRATIC ),
-                                            SMDSAbs_Volume));
+                                             eTETRA10,
+                                             nbElemInfo.NbTetras( ORDER_QUADRATIC ),
+                                             SMDSAbs_Volume));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
-                                            ePYRA5,
-                                            nbElemInfo.NbPyramids( ORDER_LINEAR ),
-                                            SMDSAbs_Volume));
+                                             ePYRA5,
+                                             nbElemInfo.NbPyramids( ORDER_LINEAR ),
+                                             SMDSAbs_Volume));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
-                                            ePYRA13,
-                                            nbElemInfo.NbPyramids( ORDER_QUADRATIC ),
-                                            SMDSAbs_Volume));
+                                             ePYRA13,
+                                             nbElemInfo.NbPyramids( ORDER_QUADRATIC ),
+                                             SMDSAbs_Volume));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
-                                            ePENTA6,
-                                            nbElemInfo.NbPrisms( ORDER_LINEAR ),
-                                            SMDSAbs_Volume));
+                                             ePENTA6,
+                                             nbElemInfo.NbPrisms( ORDER_LINEAR ),
+                                             SMDSAbs_Volume));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                              ePENTA15,
                                              nbElemInfo.NbPrisms( ORDER_QUADRATIC ),

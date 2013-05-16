@@ -198,23 +198,32 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
                                               aRec.node_labels[2],
                                               aRec.label);
             break;
-            
+
           case 42: //  Plane Stress Parabolic Triangle       
           case 52: //  Plane Strain Parabolic Triangle       
           case 62: //  Plate Parabolic Triangle              
           case 72: //  Membrane Parabolic Triangle           
           case 82: //  Axisymetric Solid Parabolic Triangle  
-          case 92: //  Thin Shell Parabolic Triangle         
-            //MESSAGE("add face " << aRec.label << " " << aRec.node_labels[0] << " " << aRec.node_labels[1] << " " << aRec.node_labels[2] << " " << aRec.node_labels[3] << " " << aRec.node_labels[4] << " " << aRec.node_labels[5]);
-            anElement = myMesh->AddFaceWithID(aRec.node_labels[0],
-                                              aRec.node_labels[2],
-                                              aRec.node_labels[4],
-                                              aRec.node_labels[1],
-                                              aRec.node_labels[3],
-                                              aRec.node_labels[5],
-                                              aRec.label);
+          case 92: //  Thin Shell Parabolic Triangle
+            if ( aRec.node_labels.size() == 7 )
+              anElement = myMesh->AddFaceWithID(aRec.node_labels[0],
+                                                aRec.node_labels[2],
+                                                aRec.node_labels[4],
+                                                aRec.node_labels[1],
+                                                aRec.node_labels[3],
+                                                aRec.node_labels[5],
+                                                aRec.node_labels[6],
+                                                aRec.label);
+            else
+              anElement = myMesh->AddFaceWithID(aRec.node_labels[0],
+                                                aRec.node_labels[2],
+                                                aRec.node_labels[4],
+                                                aRec.node_labels[1],
+                                                aRec.node_labels[3],
+                                                aRec.node_labels[5],
+                                                aRec.label);
             break;
-            
+
           case 44: // Plane Stress Linear Quadrilateral     
           case 54: // Plane Strain Linear Quadrilateral     
           case 64: // Plate Linear Quadrilateral            
@@ -227,29 +236,41 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
                                               aRec.node_labels[3],
                                               aRec.label);
             break;
-            
+
           case 45: // Plane Stress Parabolic Quadrilateral      
           case 55: // Plane Strain Parabolic Quadrilateral      
           case 65: // Plate Parabolic Quadrilateral             
           case 75: // Membrane Parabolic Quadrilateral          
           case 85: // Axisymetric Solid Parabolic Quadrilateral 
           case 95: // Thin Shell Parabolic Quadrilateral        
-            anElement = myMesh->AddFaceWithID(aRec.node_labels[0],
-                                              aRec.node_labels[2],
-                                              aRec.node_labels[4],
-                                              aRec.node_labels[6],
-                                              aRec.node_labels[1],
-                                              aRec.node_labels[3],
-                                              aRec.node_labels[5],
-                                              aRec.node_labels[7],
-                                              aRec.label);
+            if ( aRec.node_labels.size() == 9 )
+              anElement = myMesh->AddFaceWithID(aRec.node_labels[0],
+                                                aRec.node_labels[2],
+                                                aRec.node_labels[4],
+                                                aRec.node_labels[6],
+                                                aRec.node_labels[1],
+                                                aRec.node_labels[3],
+                                                aRec.node_labels[5],
+                                                aRec.node_labels[7],
+                                                aRec.node_labels[8],
+                                                aRec.label);
+            else
+              anElement = myMesh->AddFaceWithID(aRec.node_labels[0],
+                                                aRec.node_labels[2],
+                                                aRec.node_labels[4],
+                                                aRec.node_labels[6],
+                                                aRec.node_labels[1],
+                                                aRec.node_labels[3],
+                                                aRec.node_labels[5],
+                                                aRec.node_labels[7],
+                                                aRec.label);
             break;
           }
         }
         else if(IsVolume(aRec.fe_descriptor_id)){
           //MESSAGE("add volume " << aRec.label);
           switch(aRec.fe_descriptor_id){
-            
+
           case 111: // Solid Linear Tetrahedron - TET4
             anElement = myMesh->AddVolumeWithID(aRec.node_labels[0],
                                                 aRec.node_labels[2],
