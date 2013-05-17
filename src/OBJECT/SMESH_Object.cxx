@@ -523,7 +523,7 @@ bool SMESH_VisualObjDef::GetEdgeNodes( const int theElemId,
   if ( anElem == 0 )
     return false;
     
-  int nbNodes = anElem->NbNodes();
+  int nbNodes = anElem->NbCornerNodes();
 
   if ( theEdgeNum < 0 || theEdgeNum > 3 || (nbNodes != 3 && nbNodes != 4) || theEdgeNum > nbNodes )
     return false;
@@ -531,7 +531,7 @@ bool SMESH_VisualObjDef::GetEdgeNodes( const int theElemId,
   vector<int> anIds( nbNodes );
   SMDS_ElemIteratorPtr anIter = anElem->nodesIterator();
   int i = 0;
-  while( anIter->more() )
+  while( anIter->more() && i < nbNodes )
     anIds[ i++ ] = anIter->next()->GetID();
 
   if ( theEdgeNum < nbNodes - 1 )

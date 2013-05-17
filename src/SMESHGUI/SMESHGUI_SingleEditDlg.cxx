@@ -305,7 +305,7 @@ static bool findTriangles (const SMDS_MeshNode *    theNode1,
   SMDS_ElemIteratorPtr it = theNode1->GetInverseElementIterator();
   while (it->more()) {
     const SMDS_MeshElement* elem = it->next();
-    if (elem->GetType() == SMDSAbs_Face && elem->NbNodes() == 3)
+    if (elem->GetType() == SMDSAbs_Face && elem->NbCornerNodes() == 3)
       emap.insert(elem);
   }
   it = theNode2->GetInverseElementIterator();
