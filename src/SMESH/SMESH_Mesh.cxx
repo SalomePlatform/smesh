@@ -918,10 +918,9 @@ SMESH_subMesh *SMESH_Mesh::GetSubMesh(const TopoDS_Shape & aSubShape)
     if ( it.More() )
     {
       index = _myMeshDS->AddCompoundSubmesh( aSubShape, it.Value().ShapeType() );
-      if ( index > _nbSubShapes ) _nbSubShapes = index; // not to create sm for this group again
-
       // fill map of Ancestors
-      fillAncestorsMap(aSubShape);
+      while ( _nbSubShapes < index )
+        fillAncestorsMap( _myMeshDS->IndexToShape( ++_nbSubShapes ));
     }
   }
 //   if ( !index )
