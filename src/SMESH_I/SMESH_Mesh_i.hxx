@@ -63,6 +63,7 @@ public:
   virtual ~SMESH_Mesh_i();
 
   // --- CORBA
+
   void SetShape( GEOM::GEOM_Object_ptr theShapeObject )
     throw (SALOME::SALOME_Exception);
 
@@ -182,6 +183,7 @@ public:
   CORBA::Long GetStudyId() throw (SALOME::SALOME_Exception);
 
   // --- C++ interface
+
   void SetImpl(::SMESH_Mesh* impl);
   ::SMESH_Mesh& GetImpl();         // :: force no namespace here
 
@@ -388,6 +390,11 @@ public:
 
   char* Dump();
 
+  // Create groups of elements preventing computation of a sub-shape
+  SMESH::ListOfGroups* MakeGroupsOfBadInputElements( int         theSubShapeID,
+                                                     const char* theGroupName)
+    throw (SALOME::SALOME_Exception);
+
   // Internal methods not available through CORBA
   // They are called by corresponding interface methods
   SMESH_Hypothesis::Hypothesis_Status addHypothesis(GEOM::GEOM_Object_ptr aSubShapeObject,
@@ -419,7 +426,7 @@ public:
   // return an existing subMesh object for the shapeID. shapeID == submeshID.
 
   const std::map<int, SMESH::SMESH_GroupBase_ptr>& getGroups() { return _mapGroups; }
-  // return an existing group object.
+  // return existing group objects
 
   void onHypothesisModified();
   // callback from _impl to forget not loaded mesh data (issue 0021208)

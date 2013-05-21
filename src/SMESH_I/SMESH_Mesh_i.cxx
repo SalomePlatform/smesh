@@ -4147,6 +4147,94 @@ SMESH::double_array* SMESH_Mesh_i::BaryCenter(const CORBA::Long id)
   return aResult._retn();
 }
 
+//================================================================================
+/*!
+ * \brief Create a group of elements preventing computation of a sub-shape
+ */
+//================================================================================
+
+SMESH::ListOfGroups*
+SMESH_Mesh_i::MakeGroupsOfBadInputElements( int         theSubShapeID,
+                                            const char* theGroupName )
+  throw ( SALOME::SALOME_Exception )
+{
+  Unexpect aCatch(SALOME_SalomeException);
+
+  if ( !theGroupName || strlen( theGroupName) == 0 )
+    THROW_SALOME_CORBA_EXCEPTION( "empty group name",SALOME::BAD_PARAM );
+
+  SMESH::ListOfGroups_var groups = new SMESH::ListOfGroups;
+
+  // submesh by subshape id
+  if ( !_impl->HasShapeToMesh() ) theSubShapeID = 1;
+  if ( SMESH_subMesh * sm = _impl->GetSubMeshContaining( theSubShapeID ))
+  {
+    // compute error
+    SMESH_ComputeErrorPtr error = sm->GetComputeError();
+    if ( error && !error->myBadElements.empty())
+    {
+      // sort bad elements by type
+      vector< const SMDS_MeshElement* > elemsByType[ SMDSAbs_NbElementTypes ];
+      list<const SMDS_MeshElement*>::iterator elemIt  = error->myBadElements.begin();
+      list<const SMDS_MeshElement*>::iterator elemEnd = error->myBadElements.end();
+      for ( ; elemIt != elemEnd; ++elemIt )
+      {
+        const SMDS_MeshElement* elem = *elemIt;
+        if ( !elem ) continue;
+
+        if ( elem->GetID() < 1 )
+        {
+          // elem is a temporary element, make a real element
+          vector< const SMDS_MeshNode* > nodes;
+          SMDS_NodeIteratorPtr nIt = elem->nodeIterator();
+          while ( nIt->more() && elem )
+          {
+            nodes.push_back( nIt->next() );
+            if ( nodes.back()->GetID() < 1 )
+              elem = 0;  // a temporary element on temporary nodes
+          }
+          if ( elem )
+          {
+            ::SMESH_MeshEditor editor( _impl );
+            elem = editor.AddElement( nodes, elem->GetType(), elem->IsPoly() );
+          }
+        }
+        if ( elem )
+          elemsByType[ elem->GetType() ].push_back( elem );
+      }
+
+      // how many groups to create?
+      int nbTypes = 0;
+      for ( int i = 0; i < SMDSAbs_NbElementTypes; ++i )
+        nbTypes += int( !elemsByType[ i ].empty() );
+      groups->length( nbTypes );
+
+      // create groups
+      for ( int i = 0, iG = -1; i < SMDSAbs_NbElementTypes; ++i )
+      {
+        vector< const SMDS_MeshElement* >& elems = elemsByType[ i ];
+        if ( elems.empty() ) continue;
+
+        groups[ ++iG ] = createGroup( SMESH::ElementType(i), theGroupName );
+        if ( _gen_i->CanPublishInStudy( groups[ iG ] ))
+        {
+          SALOMEDS::SObject_wrap aSO =
+            _gen_i->PublishGroup(_gen_i->GetCurrentStudy(), _this(), groups[ iG ],
+                                 GEOM::GEOM_Object::_nil(), theGroupName);
+          aSO->_is_nil(); // avoid "unused variable" warning
+        }
+        SMESH_GroupBase_i* grp_i = SMESH::DownCast< SMESH_GroupBase_i* >( groups[ iG ]);
+        if ( !grp_i ) continue;
+
+        if ( SMESHDS_Group*  grpDS = dynamic_cast< SMESHDS_Group* >( grp_i->GetGroupDS() ))
+          for ( size_t iE = 0; iE < elems.size(); ++iE )
+            grpDS->SMDSGroup().Add( elems[ iE ]);
+      }
+    }
+  }
+
+  return groups._retn();
+}
 
 //=============================================================================
 /*!
