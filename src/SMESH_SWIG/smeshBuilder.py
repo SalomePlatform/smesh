@@ -823,6 +823,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
     #  @param UnaryOp  FT_LogicalNOT or FT_Undefined
     #  @param Tolerance the tolerance used by FT_BelongToGeom, FT_BelongToSurface,
     #         FT_LyingOnGeom, FT_CoplanarFaces and FT_EqualNodes criteria
+    #  @param mesh the mesh to initialize the filter with
     #  @return SMESH_Filter
     #
     #  <a href="../tui_filters_page.html#tui_filters">Example of Filters usage</a>
