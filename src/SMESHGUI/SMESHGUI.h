@@ -142,6 +142,7 @@ public :
   virtual void                    update( const int );
 
   static SALOMEDS::Color          getUniqueColor( const QList<SALOMEDS::Color>& );
+  static SALOMEDS::Color          getPredefinedUniqueColor();
 
   virtual void                    storeVisualParameters  (int savePoint);
   virtual void                    restoreVisualParameters(int savePoint);

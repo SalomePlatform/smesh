@@ -174,6 +174,10 @@
 //Refer to KERNEL_SRC/src/SALOMEDSImpl/SALOMEDSImpl_AttributeIOR.cxx
 #define WITHGENERICOBJ
 
+// Below macro, when uncommented, switches on simplified (more performant) algorithm
+// of auto-color picking up
+#define SIMPLE_AUTOCOLOR
+
 //namespace{
   // Declarations
   //=============================================================
@@ -969,11 +973,21 @@
 
     aMainObject->SetAutoColor( true ); // mesh groups are re-colored here
 
+    QList<SALOMEDS::Color> aReservedColors;
+
     SMESH::ListOfGroups aListOfGroups = *aMainObject->GetGroups();
     for( int i = 0, n = aListOfGroups.length(); i < n; i++ )
     {
       SMESH::SMESH_GroupBase_var aGroupObject = aListOfGroups[i];
-      SALOMEDS::Color aColor = aGroupObject->GetColor();
+      //SALOMEDS::Color aColor = aGroupObject->GetColor();
+      
+#ifdef SIMPLE_AUTOCOLOR   // simplified algorithm for auto-colors
+      SALOMEDS::Color aColor = SMESHGUI::getPredefinedUniqueColor();
+#else                     // old algorithm  for auto-colors
+      SALOMEDS::Color aColor = SMESHGUI::getUniqueColor( aReservedColors );
+      aReservedColors.append( aColor );
+#endif                    // SIMPLE_AUTOCOLOR
+
       _PTR(SObject) aGroupSObject = SMESH::FindSObject(aGroupObject);
       if (aGroupSObject) {
         QColor c;
@@ -6538,4 +6552,34 @@ bool SMESHGUI::renameObject( const QString& entry, const QString& name) {
     }
   }
   return false;
+}
+
+
+SALOMEDS::Color SMESHGUI::getPredefinedUniqueColor()
+{
+  static QList<QColor> colors;
+
+  if ( colors.isEmpty() ) {
+
+    for (int s = 0; s < 2 ; s++)
+    {
+      for (int v = 100; v >= 40; v = v - 20)
+      {
+        for (int h = 0; h < 359 ; h = h + 60)
+        {
+          colors.append(QColor::fromHsv(h, 255 - s * 127, v * 255 / 100));
+        }
+      }
+    }
+  }
+  static int currentColor = 0;
+
+  SALOMEDS::Color color;
+  color.R = (double)colors[currentColor].red()   / 255.0;
+  color.G = (double)colors[currentColor].green() / 255.0;
+  color.B = (double)colors[currentColor].blue()  / 255.0;
+
+  currentColor = (currentColor+1) % colors.count();
+
+  return color;
 }

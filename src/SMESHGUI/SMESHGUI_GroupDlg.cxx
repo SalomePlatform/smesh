@@ -1142,6 +1142,8 @@ bool SMESHGUI_GroupDlg::onApply()
       myGroupOnGeom   = SMESH::SMESH_GroupOnGeom::_nil();
       myGroupOnFilter = SMESH::SMESH_GroupOnFilter::_nil();
       myFilter        = SMESH::Filter::_nil();
+
+      setDefaultGroupColor(); // reset color for case if 'auto-color' feature is enabled.
     }
     else
     {
@@ -2454,15 +2456,20 @@ void SMESHGUI_GroupDlg::setDefaultGroupColor()
 
   bool isAutoColor = myMesh->GetAutoColor();
 
-  QColor aQColor;
+  QColor aQColor = myColorBtn->color();
   if( !isAutoColor )
   {
-    int r = 0, g = 0, b = 0;
-    SMESH::GetColor( "SMESH", "default_grp_color", r, g, b, QColor( 255, 170, 0 ) );
-    aQColor.setRgb( r, g, b );
+    if ( !aQColor.isValid() ) {
+      int r = 0, g = 0, b = 0;
+      SMESH::GetColor( "SMESH", "default_grp_color", r, g, b, QColor( 255, 170, 0 ) );
+      aQColor.setRgb( r, g, b );
+    }
   }
   else
   {
+#ifdef SIMPLE_AUTOCOLOR   // simplified algorithm for auto-colors
+    SALOMEDS::Color aColor = SMESHGUI::getPredefinedUniqueColor();
+#else                     // old algorithm  for auto-colors
     SMESH::ListOfGroups aListOfGroups = *myMesh->GetGroups();
 
     QList<SALOMEDS::Color> aReservedColors;
@@ -2474,6 +2481,8 @@ void SMESHGUI_GroupDlg::setDefaultGroupColor()
     }
 
     SALOMEDS::Color aColor = SMESHGUI::getUniqueColor( aReservedColors );
+#endif                    // SIMPLE_AUTOCOLOR
+
     aQColor.setRgb( (int)( aColor.R * 255.0 ),
                     (int)( aColor.G * 255.0 ),
                     (int)( aColor.B * 255.0 ) );
