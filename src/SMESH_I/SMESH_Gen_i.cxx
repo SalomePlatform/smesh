@@ -124,7 +124,7 @@
 #include <map>
 #include <fstream>
 #include <cstdio>
-#include <stdlib.h>
+#include <cstdlib>
 
 using namespace std;
 using SMESH::TPythonDump;
@@ -1441,7 +1441,6 @@ SMESH::compute_error_array* SMESH_Gen_i::GetComputeErrors( SMESH::SMESH_Mesh_ptr
   return error_array._retn();
 }
 
-//
 //================================================================================
 /*!
  * \brief Return mesh elements preventing computation of a subshape
@@ -1525,6 +1524,40 @@ SMESH_Gen_i::GetBadInputElements( SMESH::SMESH_Mesh_ptr theMesh,
   }
 
   return result._retn();
+}
+
+//================================================================================
+/*!
+ * \brief Create a group of elements preventing computation of a sub-shape
+ */
+//================================================================================
+
+SMESH::ListOfGroups*
+SMESH_Gen_i::MakeGroupsOfBadInputElements( SMESH::SMESH_Mesh_ptr theMesh,
+                                           CORBA::Short          theSubShapeID,
+                                           const char*           theGroupName )
+  throw ( SALOME::SALOME_Exception )
+{
+  Unexpect aCatch(SALOME_SalomeException);
+
+  SMESH::ListOfGroups_var groups;
+
+  if ( CORBA::is_nil( theMesh ) )
+    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference",SALOME::BAD_PARAM );
+
+  try {
+    if ( SMESH_Mesh_i* meshServant = SMESH::DownCast<SMESH_Mesh_i*>( theMesh ))
+    {
+      groups = meshServant->MakeGroupsOfBadInputElements( theSubShapeID, theGroupName );
+      TPythonDump() << groups << " = " << this
+                    << ".MakeGroupsOfBadInputElements( "
+                    << theMesh << ", " << theSubShapeID << ", '" << theGroupName << "' )";
+    }
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    INFOS( "catch exception "<< S_ex.what() );
+  }
+  return groups._retn();
 }
 
 //================================================================================

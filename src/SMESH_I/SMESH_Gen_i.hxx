@@ -326,6 +326,12 @@ public:
                                                  CORBA::Short          theSubShapeID )
     throw ( SALOME::SALOME_Exception );
 
+  // Create groups of elements preventing computation of a sub-shape
+  SMESH::ListOfGroups* MakeGroupsOfBadInputElements( SMESH::SMESH_Mesh_ptr theMesh,
+                                                     CORBA::Short          theSubShapeID,
+                                                     const char*           theGroupName)
+    throw ( SALOME::SALOME_Exception );
+
   // Get sub-shapes unique ID's list
   SMESH::long_array* GetSubShapesId( GEOM::GEOM_Object_ptr      theMainShapeObject,
                                      const SMESH::object_array& theListOfSubShape )
