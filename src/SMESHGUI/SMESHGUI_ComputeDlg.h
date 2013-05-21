@@ -99,6 +99,7 @@ protected slots:
   void                           onPreviewShape();
   void                           onPublishShape();
   void                           onShowBadMesh();
+  void                           onGroupOfBadMesh();
   void                           currentCellChanged();
 
 private:
@@ -226,6 +227,7 @@ protected:
   QPushButton*                 myShowBtn;
   QPushButton*                 myPublishBtn;
   QPushButton*                 myBadMeshBtn;
+  QPushButton*                 myBadMeshToGroupBtn;
 
   SMESHGUI_MeshInfosBox*       myBriefInfo;
   SMESHGUI_MeshInfosBox*       myFullInfo;

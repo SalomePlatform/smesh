@@ -61,6 +61,8 @@
 #include <SALOMEDSClient_SObject.hxx>
 #include <SALOMEDS_wrap.hxx>
 
+#include CORBA_SERVER_HEADER(SMESH_Group)
+
 // OCCT includes
 #include <BRep_Tool.hxx>
 #include <TopExp.hxx>
@@ -460,10 +462,12 @@ namespace SMESH
     foreach( range, selRanges )
     {
       for ( int row = range.topRow(); row <= range.bottomRow(); ++row )
-        rows.append( row );
+        if ( !rows.count( row ))
+             rows.append( row );
     }
     if ( rows.isEmpty() && table->currentRow() > -1 )
-      rows.append( table->currentRow() );
+      if ( !rows.count( table->currentRow() ))
+        rows.append( table->currentRow() );
 
     return rows.count();
   }
@@ -553,6 +557,7 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent, bool ForEval)
   myShowBtn      = new QPushButton(tr("SHOW_SHAPE"), myCompErrorGroup);
   myPublishBtn   = new QPushButton(tr("PUBLISH_SHAPE"), myCompErrorGroup);
   myBadMeshBtn   = new QPushButton(tr("SHOW_BAD_MESH"), myCompErrorGroup);
+  myBadMeshToGroupBtn = new QPushButton(tr("GROUP_OF_BAD_MESH"), myCompErrorGroup);
 
   //myTable->setReadOnly( true ); // VSR: check
   myTable->setEditTriggers( QAbstractItemView::NoEditTriggers );
@@ -577,11 +582,12 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent, bool ForEval)
   QGridLayout* grpLayout = new QGridLayout(myCompErrorGroup);
   grpLayout->setSpacing(SPACING);
   grpLayout->setMargin(MARGIN);
-  grpLayout->addWidget( myWarningLabel, 0, 0, 1, 4 );
-  grpLayout->addWidget( myTable,        1, 0, 1, 4 );
-  grpLayout->addWidget( myShowBtn,      2, 0 );
-  grpLayout->addWidget( myPublishBtn,   2, 1 );
-  grpLayout->addWidget( myBadMeshBtn,   2, 2 );
+  grpLayout->addWidget( myWarningLabel,      0, 0, 1, 4 );
+  grpLayout->addWidget( myTable,             1, 0, 1, 4 );
+  grpLayout->addWidget( myShowBtn,           2, 0 );
+  grpLayout->addWidget( myPublishBtn,        2, 1 );
+  grpLayout->addWidget( myBadMeshBtn,        2, 2 );
+  grpLayout->addWidget( myBadMeshToGroupBtn, 2, 3 );
   grpLayout->setColumnStretch( 3, 1 );
 
   // Hypothesis definition errors
@@ -1068,11 +1074,14 @@ void SMESHGUI_BaseComputeOp::showComputeResult( const bool theMemoryLack,
       tbl->resizeColumnToContents( COL_SHAPE );
       tbl->setWordWrap( true );
 
-      if ( hasBadMesh )
+      if ( hasBadMesh ) {
         aCompDlg->myBadMeshBtn->show();
-      else
+        aCompDlg->myBadMeshToGroupBtn->show();
+      }
+      else {
         aCompDlg->myBadMeshBtn->hide();
-
+        aCompDlg->myBadMeshToGroupBtn->hide();
+      }
       tbl->setCurrentCell(0,0);
       currentCellChanged(); // to update buttons
     }
@@ -1191,6 +1200,43 @@ void SMESHGUI_BaseComputeOp::onShowBadMesh()
 
 //================================================================================
 /*!
+ * \brief create groups of bad mesh elements preventing computation of a submesh of current row
+ */
+//================================================================================
+
+void SMESHGUI_BaseComputeOp::onGroupOfBadMesh()
+{
+  QList<int> rows;
+  SMESH::getSelectedRows( table(), rows );
+  int row;
+  foreach ( row, rows )
+  {
+    bool hasBadMesh = ( !table()->item(row, COL_BAD_MESH)->text().isEmpty() );
+    if ( hasBadMesh ) {
+      int     curSub = table()->item(rows.front(), COL_SHAPEID)->text().toInt();
+      QString grName = table()->item(rows.front(), COL_SHAPE)->text();
+      if ( grName.isEmpty() ) grName = "bad mesh";
+      else                    grName = "bad mesh of " + grName;
+      SMESH::SMESH_Gen_var gen = getSMESHGUI()->GetSMESHGen();
+      SMESH::ListOfGroups_var groups
+        ( gen->MakeGroupsOfBadInputElements(myMesh,curSub,grName.toLatin1().data()) );
+      update( UF_ObjBrowser | UF_Model );
+      if( LightApp_Application* anApp = dynamic_cast<LightApp_Application*>( application() ))
+      {
+        QStringList anEntryList;
+        for ( size_t i = 0; i < groups->length(); ++i )
+          if ( _PTR(SObject) so = SMESH::FindSObject( groups[i] ))
+            anEntryList.append( so->GetID().c_str() );
+
+        if ( !anEntryList.isEmpty())
+          anApp->browseObjects( anEntryList, true, false );
+      }
+    }
+  }
+}
+
+//================================================================================
+/*!
  * \brief SLOT called when a selected cell in table() changed
  */
 //================================================================================
@@ -1287,9 +1333,10 @@ SMESHGUI_ComputeDlg* SMESHGUI_BaseComputeOp::computeDlg() const
     SMESHGUI_BaseComputeOp* me = (SMESHGUI_BaseComputeOp*)this;
     me->myCompDlg = new SMESHGUI_ComputeDlg( desktop(), false );
     // connect signals and slots
-    connect(myCompDlg->myShowBtn,    SIGNAL (clicked()), SLOT(onPreviewShape()));
-    connect(myCompDlg->myPublishBtn, SIGNAL (clicked()), SLOT(onPublishShape()));
-    connect(myCompDlg->myBadMeshBtn, SIGNAL (clicked()), SLOT(onShowBadMesh()));
+    connect(myCompDlg->myShowBtn,           SIGNAL (clicked()), SLOT(onPreviewShape()));
+    connect(myCompDlg->myPublishBtn,        SIGNAL (clicked()), SLOT(onPublishShape()));
+    connect(myCompDlg->myBadMeshBtn,        SIGNAL (clicked()), SLOT(onShowBadMesh()));
+    connect(myCompDlg->myBadMeshToGroupBtn, SIGNAL (clicked()), SLOT(onGroupOfBadMesh()));
 
     QTableWidget* aTable = me->table();
     connect(aTable, SIGNAL(itemSelectionChanged()), SLOT(currentCellChanged()));

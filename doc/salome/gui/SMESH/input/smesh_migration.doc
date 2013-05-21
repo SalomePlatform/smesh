@@ -12,7 +12,7 @@
 \n Scripts generated for SALOME 6 and older versions must be adapted to work in SALOME 7.2 with full functionality.
 \n The compatibility mode allows old scripts to work in almost all cases, but with a warning.
 
-See also <li>\subpage geompy_migration_page</li>
+See also \subpage geompy_migration_page
 
 <b>Salome initialisation must always be done as shown below</b>
 \n (<em>salome_init()</em> can be invoked safely several times):

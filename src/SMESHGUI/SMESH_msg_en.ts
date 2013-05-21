@@ -4604,6 +4604,10 @@ Please, create VTK viewer and try again</translation>
         <source>SHOW_BAD_MESH</source>
         <translation>Show bad Mesh</translation>
     </message>
+    <message>
+        <source>GROUP_OF_BAD_MESH</source>
+        <translation>Bad Mesh to Group</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_PrecomputeDlg</name>
@@ -5496,15 +5500,15 @@ Please enter correct value and try again</translation>
         <translation>OCTA12</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_21</source>
+        <source>ENTITY_TYPE_22</source>
         <translation>POLYEDRE</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_22</source>
+        <source>ENTITY_TYPE_23</source>
         <translation>QPOLYEDRE</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_23</source>
+        <source>ENTITY_TYPE_24</source>
         <translation>BALL</translation>
     </message>
     <message>
