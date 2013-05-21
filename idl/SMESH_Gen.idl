@@ -353,6 +353,14 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
 
     /*!
+     * Create groups of elements preventing computation of a sub-shape
+     */
+    SMESH::ListOfGroups MakeGroupsOfBadInputElements( in SMESH_Mesh theMesh,
+                                                      in short      theSubShapeID,
+                                                      in string     theGroupName)
+      raises ( SALOME::SALOME_Exception );
+
+    /*!
      * Return indeces of faces, edges and vertices of given sub-shapes
      * within theMainObject
      */
