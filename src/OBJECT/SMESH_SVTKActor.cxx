@@ -31,7 +31,6 @@
 #include <SVTK_Utils.h>
 #include <SALOME_Actor.h>
 
-
 #include <SVTK_DeviceActor.h>
 #include <vtkPoints.h>
 #include <vtkRenderer.h>
@@ -39,6 +38,9 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkCell.h>
 #include <vtkDataSetMapper.h>
+#include <vtkPolyhedron.h>
+
+#include <Utils_SALOME_Exception.hxx>
 
 vtkStandardNewMacro(SMESH_SVTKActor);
 
@@ -125,9 +127,7 @@ SMESH_SVTKActor
     int aPartId = theMapIndex( ind );
     if(vtkCell* aCell = theMapActor->GetElemCell(aPartId))
     {
-#if VTK_XVERSION > 50700
       if (aCell->GetCellType() != VTK_POLYHEDRON)
-#endif
       {
         if(aCell->GetCellType() == VTK_VERTEX ) {
           my0DGrid->InsertNextCell(aCell->GetCellType(),aCell->GetPointIds());
@@ -137,7 +137,6 @@ SMESH_SVTKActor
           myUnstructuredGrid->InsertNextCell(aCell->GetCellType(),aCell->GetPointIds());
         }
       }
-#if VTK_XVERSION > 50700
       else
       {
         vtkPolyhedron *polyhedron = dynamic_cast<vtkPolyhedron*>(aCell);
@@ -146,7 +145,6 @@ SMESH_SVTKActor
         vtkIdType *pts = polyhedron->GetFaces();
         myUnstructuredGrid->InsertNextCell(aCell->GetCellType(),pts[0], pts+1);
       }
-#endif
     }
   }
 

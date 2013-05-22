@@ -78,11 +78,6 @@
 #include <vtkImplicitBoolean.h>
 #include <vtkImplicitFunctionCollection.h>
 
-#include <vtkConfigure.h>
-#if !defined(VTK_XVERSION)
-#define VTK_XVERSION (VTK_MAJOR_VERSION<<16)+(VTK_MINOR_VERSION<<8)+(VTK_BUILD_VERSION)
-#endif
-
 #include "utilities.h"
 
 #ifdef _DEBUG_
