@@ -52,7 +52,7 @@ class SMESH_LogicalFilter;
 // class    : SMESHGUI_ScaleDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_EXPORT SMESHGUI_ScaleDlg : public SMESHGUI_PreviewDlg
+class SMESHGUI_EXPORT SMESHGUI_ScaleDlg : public SMESHGUI_MultiPreviewDlg
 { 
   Q_OBJECT
 
@@ -81,11 +81,13 @@ private:
   QWidget*               myEditCurrentArgument;
 
   bool                   myBusy;
-  SMESH::SMESH_Mesh_var  myMesh;
   SMESH_Actor*           myActor;
   SMESH_LogicalFilter*   myMeshOrSubMeshOrGroupFilter;
 
-  SMESH::SMESH_IDSource_var mySelectedObject;
+  QList<SMESH::SMESH_IDSource_var> myObjects;
+  QList<QString>                    myObjectsNames;
+  QList<SMESH::SMESH_Mesh_var>     myMeshes;
+  
 
   QGroupBox*             ConstructorsBox;
   QButtonGroup*          GroupConstructors;

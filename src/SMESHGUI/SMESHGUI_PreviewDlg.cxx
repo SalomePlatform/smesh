@@ -123,3 +123,107 @@ bool SMESHGUI_PreviewDlg::isApplyAndClose() const
 {
   return myIsApplyAndClose;
 }
+
+
+//=================================================================================
+// class    : SMESHGUI_SMESHGUI_MultiPreviewDlg()
+// purpose  :
+//=================================================================================
+SMESHGUI_MultiPreviewDlg::SMESHGUI_MultiPreviewDlg( SMESHGUI* theModule ) :
+  mySMESHGUI( theModule ),
+  QDialog( SMESH::GetDesktop( theModule ) ),
+  myIsApplyAndClose( false )
+{
+}
+
+//=================================================================================
+// function : ~SMESHGUI_MultiPreviewDlg()
+// purpose  : Destroys the object and frees any allocated resources
+//=================================================================================
+SMESHGUI_MultiPreviewDlg::~SMESHGUI_MultiPreviewDlg()
+{
+  qDeleteAll( mySimulationList );
+}
+
+//=================================================================================
+// function : showPreview
+// purpose  : Show preview in the viewer
+//=================================================================================
+void SMESHGUI_MultiPreviewDlg::showPreview()
+{
+  for ( int i = 0; i < mySimulationList.count(); i++ )
+    mySimulationList[i]->SetVisibility( true );
+}
+
+//=================================================================================
+// function : hidePreview
+// purpose  : Hide preview in the viewer
+//=================================================================================
+void SMESHGUI_MultiPreviewDlg::hidePreview()
+{
+  for ( int i = 0; i < mySimulationList.count(); i++ )
+    mySimulationList[i]->SetVisibility( false );
+}
+
+//=================================================================================
+// function : connectPreviewControl
+// purpose  : Connect the preview check box
+//=================================================================================
+void SMESHGUI_MultiPreviewDlg::connectPreviewControl()
+{
+  connect( myPreviewCheckBox, SIGNAL( toggled( bool ) ), this, SLOT( onDisplaySimulation( bool ) ) );
+}
+
+
+//=================================================================================
+// function : toDisplaySimulation
+// purpose  : 
+//=================================================================================
+void SMESHGUI_MultiPreviewDlg::toDisplaySimulation()
+{
+  onDisplaySimulation( true );
+}
+
+//=================================================================================
+// function : onDisplaySimulation
+// purpose  : 
+//=================================================================================
+void SMESHGUI_MultiPreviewDlg::onDisplaySimulation( bool toDisplayPreview )
+{
+  //Empty implementation here
+}
+
+//================================================================
+// Function : setIsApplyAndClose
+// Purpose  : Set value of the flag indicating that the dialog is
+//            accepted by Apply & Close button
+//================================================================
+void SMESHGUI_MultiPreviewDlg::setIsApplyAndClose( const bool theFlag )
+{
+  myIsApplyAndClose = theFlag;
+}
+
+//================================================================
+// Function : isApplyAndClose
+// Purpose  : Get value of the flag indicating that the dialog is
+//            accepted by Apply & Close button
+//================================================================
+bool SMESHGUI_MultiPreviewDlg::isApplyAndClose() const
+{
+  return myIsApplyAndClose;
+}
+
+//================================================================
+// Function : setSimulationPreview
+// Purpose  : 
+//================================================================
+void SMESHGUI_MultiPreviewDlg::setSimulationPreview( QList<SMESH::MeshPreviewStruct_var>& theMeshPreviewStruct )
+{
+  hidePreview();
+  qDeleteAll( mySimulationList );
+  mySimulationList.clear();
+  for ( int i = 0; i < theMeshPreviewStruct.count(); i++ ) {
+    mySimulationList << new SMESHGUI_MeshEditPreview( SMESH::GetViewWindow( mySMESHGUI ) );
+    mySimulationList[i]->SetData( theMeshPreviewStruct[i].operator->() );
+  }
+}

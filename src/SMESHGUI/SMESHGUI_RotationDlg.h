@@ -56,7 +56,7 @@ class SMESH_LogicalFilter;
 // class    : SMESHGUI_RotationDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_EXPORT SMESHGUI_RotationDlg : public SMESHGUI_PreviewDlg
+class SMESHGUI_EXPORT SMESHGUI_RotationDlg : public SMESHGUI_MultiPreviewDlg
 { 
   Q_OBJECT
 
@@ -82,10 +82,11 @@ private:
   QWidget*               myEditCurrentArgument;   /* Current  LineEdit */
   int                    myConstructorId;
   bool                   myBusy;
-  SMESH::SMESH_Mesh_var  myMesh;
   SMESH_Actor*           myActor;
   SMESH_LogicalFilter*   myMeshOrSubMeshOrGroupFilter;
-  SMESH::SMESH_IDSource_var mySelectedObject;
+  QList<SMESH::SMESH_IDSource_var> myObjects;
+  QList<QString>                   myObjectsNames;
+  QList<SMESH::SMESH_Mesh_var>     myMeshes;
   
   QGroupBox*             GroupConstructors;
   QRadioButton*          RadioButton1;

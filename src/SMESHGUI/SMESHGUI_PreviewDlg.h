@@ -33,6 +33,10 @@
 // Qt includes
 #include <QDialog>
 
+// IDL includes
+#include <SALOMEconfig.h>
+#include CORBA_SERVER_HEADER(SMESH_Mesh)
+
 class SMESHGUI;
 class SMESHGUI_MeshEditPreview;
 class QCheckBox;
@@ -62,6 +66,35 @@ protected:
   SMESHGUI_MeshEditPreview* mySimulation;
   QCheckBox*                myPreviewCheckBox;
   bool                      myIsApplyAndClose;
+};
+
+class SMESHGUI_EXPORT SMESHGUI_MultiPreviewDlg : public QDialog {
+  Q_OBJECT
+public:
+  SMESHGUI_MultiPreviewDlg( SMESHGUI* );
+  ~SMESHGUI_MultiPreviewDlg();
+
+  void showPreview();
+  void hidePreview();
+
+  void setSimulationPreview( QList<SMESH::MeshPreviewStruct_var>& );
+
+protected:
+  void connectPreviewControl();
+
+  virtual void setIsApplyAndClose( const bool theFlag );
+  virtual bool isApplyAndClose() const;
+
+protected slots:
+ void                      toDisplaySimulation();
+ virtual void              onDisplaySimulation( bool );
+
+  
+protected:
+  SMESHGUI*                        mySMESHGUI;              /* Current SMESHGUI object */  
+  QList<SMESHGUI_MeshEditPreview*> mySimulationList;
+  QCheckBox*                       myPreviewCheckBox;
+  bool                             myIsApplyAndClose;
 };
 
 #endif

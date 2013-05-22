@@ -56,7 +56,7 @@ class SMESH_LogicalFilter;
 // class    : SMESHGUI_SymmetryDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_EXPORT SMESHGUI_SymmetryDlg : public SMESHGUI_PreviewDlg
+class SMESHGUI_EXPORT SMESHGUI_SymmetryDlg : public SMESHGUI_MultiPreviewDlg
 { 
   Q_OBJECT
 
@@ -84,10 +84,11 @@ private:
 
   QWidget*               myEditCurrentArgument;   /* Current  LineEdit */
 
-  SMESH::SMESH_IDSource_var mySelectedObject;
+  QList<SMESH::SMESH_IDSource_var> myObjects;
+  QList<QString>                   myObjectsNames;
+  QList<SMESH::SMESH_Mesh_var>     myMeshes;
 
   bool                   myBusy;
-  SMESH::SMESH_Mesh_var  myMesh;
   SMESH_Actor*           myActor;
   SMESH_LogicalFilter*   myMeshOrSubMeshOrGroupFilter;
     

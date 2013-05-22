@@ -52,8 +52,10 @@
 #include <SVTK_ViewModel.h>
 #include <SVTK_ViewWindow.h>
 #include <SALOME_ListIO.hxx>
+#include <SALOME_ListIteratorOfListIO.hxx>
 
 // SALOME KERNEL includes
+#include <SALOMEDSClient.hxx>
 #include <SALOMEDSClient_SObject.hxx>
 
 // OCCT includes
@@ -93,10 +95,9 @@ enum { MOVE_ELEMS_BUTTON = 0, COPY_ELEMS_BUTTON, MAKE_MESH_BUTTON }; //!< action
 //=================================================================================
 
 SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule )
-  : SMESHGUI_PreviewDlg( theModule ),
+  : SMESHGUI_MultiPreviewDlg( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-    myFilterDlg(0),
-    mySelectedObject(SMESH::SMESH_IDSource::_nil())
+    myFilterDlg(0)
 {
   QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SMESH_SYMMETRY_POINT")));
   QPixmap image1 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SMESH_SYMMETRY_AXIS")));
@@ -355,6 +356,9 @@ SMESHGUI_SymmetryDlg::~SMESHGUI_SymmetryDlg()
 void SMESHGUI_SymmetryDlg::Init (bool ResetControls)
 {
   myBusy = false;
+  myMeshes.clear();
+  myObjects.clear();
+  myObjectsNames.clear();
 
   myEditCurrentArgument = 0;
   LineEditElements->clear();
@@ -365,7 +369,6 @@ void SMESHGUI_SymmetryDlg::Init (bool ResetControls)
   buttonApply->setEnabled(false);
 
   myActor = 0;
-  myMesh = SMESH::SMESH_Mesh::_nil();
 
   if (ResetControls) {
     SpinBox_X->SetValue(0.0);
@@ -496,41 +499,73 @@ bool SMESHGUI_SymmetryDlg::ClickOnApply()
     QStringList anEntryList;
     try {
       SUIT_OverrideCursor aWaitCursor;
-      SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
-
-      myMesh->SetParameters(aParameters.join(":").toLatin1().constData());
 
       switch ( actionButton ) {
       case MOVE_ELEMS_BUTTON: {
         if(CheckBoxMesh->isChecked())
-          aMeshEditor->MirrorObject(mySelectedObject, aMirror, aMirrorType, false );
-        else
+	  for ( int i = 0; i < myObjects.count(); i++ ) {
+	    SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
+	    myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+	    aMeshEditor->MirrorObject(myObjects[i], aMirror, aMirrorType, false );
+	  }
+        else {
+	  SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
+	  myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
           aMeshEditor->Mirror(anElementsId, aMirror, aMirrorType, false );
-
+	}
         break;
       }
       case COPY_ELEMS_BUTTON: {
         SMESH::ListOfGroups_var groups;
         if ( makeGroups ) {
           if(CheckBoxMesh->isChecked())
-            groups = aMeshEditor->MirrorObjectMakeGroups(mySelectedObject, aMirror, aMirrorType);
-          else
+	    for ( int i = 0; i < myObjects.count(); i++ ) {
+	      SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
+	      myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+	      groups = aMeshEditor->MirrorObjectMakeGroups(myObjects[i], aMirror, aMirrorType);
+	    }
+          else {
+	    SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
+	    myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
             groups = aMeshEditor->MirrorMakeGroups(anElementsId, aMirror, aMirrorType);
+	  }
         }
         else {
           if(CheckBoxMesh->isChecked())
-            aMeshEditor->MirrorObject(mySelectedObject, aMirror, aMirrorType, true);
-          else
+	    for ( int i = 0; i < myObjects.count(); i++ ) {
+	      SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
+	      myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+	      aMeshEditor->MirrorObject(myObjects[i], aMirror, aMirrorType, true);
+	    }
+          else {
+	    SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
+	    myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
             aMeshEditor->Mirror(anElementsId, aMirror, aMirrorType, true);
+	  }
         }
         break;
         }
       case MAKE_MESH_BUTTON: {
         SMESH::SMESH_Mesh_var mesh;
         if (CheckBoxMesh->isChecked())
-          mesh = aMeshEditor->MirrorObjectMakeMesh(mySelectedObject, aMirror, aMirrorType, makeGroups,
-                                                   LineEditNewMesh->text().toLatin1().data());
-        else
+	  for ( int i = 0; i < myObjects.count(); i++ ) {
+	    QString aName = SMESH::UniqueMeshName( LineEditNewMesh->text().replace( "*", myObjectsNames[i] ) );
+	    SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
+	    myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+	    mesh = aMeshEditor->MirrorObjectMakeMesh(myObjects[i], aMirror, aMirrorType, makeGroups,
+						     aName.toLatin1().data());
+	    if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
+	      anEntryList.append( aSObject->GetID().c_str() );
+#ifdef WITHGENERICOBJ
+	    // obj has been published in study. Its refcount has been incremented.
+	    // It is safe to decrement its refcount
+	    // so that it will be destroyed when the entry in study will be removed
+	    mesh->UnRegister();
+#endif
+	  }
+        else {
+	  SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
+	  myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
           mesh = aMeshEditor->MirrorMakeMesh(anElementsId, aMirror, aMirrorType, makeGroups,
                                              LineEditNewMesh->text().toLatin1().data());
           if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
@@ -541,13 +576,16 @@ bool SMESHGUI_SymmetryDlg::ClickOnApply()
           // so that it will be destroyed when the entry in study will be removed
           mesh->UnRegister();
 #endif
+	}
         }
         break;
       }
     } catch (...) {
     }
 
-    SMESH::UpdateView();
+    for ( int i = 0; i < myMeshes.count(); i++ )
+      SMESH::Update( (SMESH::FindActorByObject( myMeshes[i] ))->getIO(), true );
+
     if ( ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() ) ||
          actionButton == MAKE_MESH_BUTTON ) {
       mySMESHGUI->updateObjBrowser(true); // new groups may appear
@@ -557,7 +595,6 @@ bool SMESHGUI_SymmetryDlg::ClickOnApply()
     }
     Init(false);
     ConstructorsClicked(GetConstructorId());
-    mySelectedObject = SMESH::SMESH_IDSource::_nil();
     SelectionIntoArgument();
 
     SMESHGUI::Modified();
@@ -683,6 +720,7 @@ void SMESHGUI_SymmetryDlg::SelectionIntoArgument()
   // clear
   myActor = 0;
   QString aString = "";
+  onDisplaySimulation(false);
 
   myBusy = true;
   if (myEditCurrentArgument == (QWidget*)LineEditElements) {
@@ -701,27 +739,50 @@ void SMESHGUI_SymmetryDlg::SelectionIntoArgument()
   mySelectionMgr->selectedObjects(aList,SVTK_Viewer::Type());
 
   int nbSel = aList.Extent();
-  if (nbSel != 1)
-    return;
-
-  Handle(SALOME_InteractiveObject) IO = aList.First();
-  myMesh = SMESH::GetMeshByIO(IO);
-  if(myMesh->_is_nil())
-    return;
-
-  myActor = SMESH::FindActorByObject(myMesh);
-  if (!myActor)
-    myActor = SMESH::FindActorByEntry(IO->getEntry());
-  if (!myActor && !CheckBoxMesh->isChecked())
+  if (nbSel < 1)
     return;
 
   int aNbUnits = 0;
 
   if (myEditCurrentArgument == (QWidget*)LineEditElements) {
     myElementsId = "";
+    myObjects.clear();
+    myObjectsNames.clear();
+    myMeshes.clear();
+
+    for ( SALOME_ListIteratorOfListIO it( aList ); it.More(); it.Next() ) {
+      Handle(SALOME_InteractiveObject) IO = it.Value();
+      
+      SMESH::SMESH_Mesh_var aMesh = SMESH::GetMeshByIO( IO );
+      if( aMesh->_is_nil() )
+	return;
+
+      myActor = SMESH::FindActorByObject( aMesh );
+      if ( !myActor )
+	myActor = SMESH::FindActorByEntry( IO->getEntry() );
+      if ( !myActor && !CheckBoxMesh->isChecked() )
+	return;
+
+      if ( !SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO )->_is_nil() ) {
+	if ( _PTR(Study) aStudy = SMESH::GetActiveStudyDocument() ) {
+	  _PTR(SObject) obj = aStudy->FindObjectID( qPrintable( QString( IO->getEntry() ) ) );
+	  _PTR(GenericAttribute) anAttr;
+	  if ( obj && obj->FindAttribute( anAttr, "AttributeName" ) ) {
+	    _PTR(AttributeName) aNameAttr( anAttr );
+	    myObjects << SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO );
+	    myObjectsNames << aNameAttr->Value().c_str();
+	    myMeshes << aMesh;
+	  }
+	}
+      }
+    }
 
     // MakeGroups is available if there are groups and "Copy"
-    if ( myMesh->NbGroups() == 0 ) {
+      int aNbGroups = 0;
+      for ( int i = 0; i < myMeshes.count(); i++ )
+	aNbGroups += myMeshes[i]->NbGroups();
+      
+    if ( aNbGroups == 0 ) {
       MakeGroupsCheck->setChecked(false);
       MakeGroupsCheck->setEnabled(false);
     }
@@ -731,11 +792,8 @@ void SMESHGUI_SymmetryDlg::SelectionIntoArgument()
     if (CheckBoxMesh->isChecked()) {
       SMESH::GetNameOfSelectedIObjects(mySelectionMgr, aString);
 
-      if (!SMESH::IObjectToInterface<SMESH::SMESH_IDSource>(IO)->_is_nil()) { //MESH
-        mySelectedObject = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>(IO);
-      }
-      else
-        return;
+      if ( myObjects.isEmpty() ) 
+	return;
       // get IDs from mesh
       /*
         SMDS_Mesh* aSMDSMesh = myActor->GetObject()->GetMesh();
@@ -778,7 +836,7 @@ void SMESHGUI_SymmetryDlg::SelectionIntoArgument()
       }
       */
     } else {
-      aNbUnits = SMESH::GetNameOfSelectedElements( mySelector, IO, aString);
+      aNbUnits = SMESH::GetNameOfSelectedElements( mySelector, aList.First(), aString);
       myElementsId = aString;
       if (aNbUnits < 1)
         return;
@@ -786,11 +844,21 @@ void SMESHGUI_SymmetryDlg::SelectionIntoArgument()
 
     myNbOkElements = true;
   } else {
+    Handle(SALOME_InteractiveObject) IO = aList.First();
+    if ((SMESH::GetMeshByIO(IO))->_is_nil())
+      return;
+
+    SMESH_Actor* anActor = SMESH::FindActorByObject(SMESH::GetMeshByIO(IO));
+    if (!anActor)
+      anActor = SMESH::FindActorByEntry(IO->getEntry());
+    if (!anActor && !CheckBoxMesh->isChecked())
+      return;
+
     aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, IO, aString);
     if (aNbUnits != 1)
       return;
 
-    SMDS_Mesh* aMesh =  myActor->GetObject()->GetMesh();
+    SMDS_Mesh* aMesh =  anActor->GetObject()->GetMesh();
     if (!aMesh)
       return;
 
@@ -1002,6 +1070,10 @@ void SMESHGUI_SymmetryDlg::onVectorChanged()
 
 void SMESHGUI_SymmetryDlg::onActionClicked(int button)
 {
+  int aNbGroups = 0;
+  for ( int i = 0; i < myMeshes.count(); i++ )
+    aNbGroups += myMeshes[i]->NbGroups();
+
   switch ( button ) {
   case MOVE_ELEMS_BUTTON:
     MakeGroupsCheck->setEnabled(false);
@@ -1010,18 +1082,12 @@ void SMESHGUI_SymmetryDlg::onActionClicked(int button)
   case COPY_ELEMS_BUTTON:
     LineEditNewMesh->setEnabled(false);
     MakeGroupsCheck->setText( tr("SMESH_MAKE_GROUPS"));
-    if ( myMesh->_is_nil() || myMesh->NbGroups() > 0)
-      MakeGroupsCheck->setEnabled(true);
-    else
-      MakeGroupsCheck->setEnabled(false);
+    MakeGroupsCheck->setEnabled(myMeshes.isEmpty() || aNbGroups > 0);
     break;
   case MAKE_MESH_BUTTON:
     LineEditNewMesh->setEnabled(true);
     MakeGroupsCheck->setText( tr("SMESH_COPY_GROUPS"));
-    if ( myMesh->_is_nil() || myMesh->NbGroups() > 0)
-      MakeGroupsCheck->setEnabled(true);
-    else
-      MakeGroupsCheck->setEnabled(false);
+    MakeGroupsCheck->setEnabled(myMeshes.isEmpty() || aNbGroups > 0);
     break;
   }
   setNewMeshName();
@@ -1036,13 +1102,13 @@ void SMESHGUI_SymmetryDlg::onActionClicked(int button)
 void SMESHGUI_SymmetryDlg::setNewMeshName()
 {
   LineEditNewMesh->setText("");
-  if ( LineEditNewMesh->isEnabled() && !myMesh->_is_nil() ) {
+  if ( LineEditNewMesh->isEnabled() && !myMeshes.isEmpty() ) {
     QString name;
     if ( CheckBoxMesh->isChecked() ) {
-      name = LineEditElements->text();
+      name = myObjects.count() > 1 ? "*" : LineEditElements->text();
     }
     else {
-      _PTR(SObject) meshSO = SMESH::FindSObject( myMesh );
+      _PTR(SObject) meshSO = SMESH::FindSObject( myMeshes[0] );
       name = meshSO->GetName().c_str();
     }
     if ( !name.isEmpty() )
@@ -1072,7 +1138,7 @@ void SMESHGUI_SymmetryDlg::keyPressEvent( QKeyEvent* e )
 //=================================================================================
 void SMESHGUI_SymmetryDlg::setFilters()
 {
-  if(myMesh->_is_nil()) {
+  if(myMeshes.isEmpty()) {
     SUIT_MessageBox::critical(this,
                               tr("SMESH_ERROR"),
                               tr("NO_MESH_SELECTED"));
@@ -1082,7 +1148,7 @@ void SMESHGUI_SymmetryDlg::setFilters()
     myFilterDlg = new SMESHGUI_FilterDlg( mySMESHGUI, SMESH::ALL );
 
   myFilterDlg->SetSelection();
-  myFilterDlg->SetMesh( myMesh );
+  myFilterDlg->SetMesh( myMeshes[0] );
   myFilterDlg->SetSourceWg( LineEditElements );
 
   myFilterDlg->show();
@@ -1139,14 +1205,19 @@ void SMESHGUI_SymmetryDlg::onDisplaySimulation( bool toDisplayPreview ) {
         bool copy = ( ActionGroup->checkedId() == COPY_ELEMS_BUTTON ||
                       ActionGroup->checkedId() == MAKE_MESH_BUTTON );
         SUIT_OverrideCursor aWaitCursor;
-        SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
+	QList<SMESH::MeshPreviewStruct_var> aMeshPreviewStruct;
         if(CheckBoxMesh->isChecked())
-          aMeshEditor->MirrorObject(mySelectedObject, aMirror, aMirrorType, copy );
-        else
-          aMeshEditor->Mirror(anElementsId, aMirror, aMirrorType, copy );
-        
-        SMESH::MeshPreviewStruct_var aMeshPreviewStruct = aMeshEditor->GetPreviewData();
-        mySimulation->SetData(aMeshPreviewStruct._retn());
+	  for ( int i = 0; i < myMeshes.count(); i++ ) {
+	    SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditPreviewer();
+	    aMeshEditor->MirrorObject(myObjects[i], aMirror, aMirrorType, copy );
+	    aMeshPreviewStruct << aMeshEditor->GetPreviewData();
+	  }
+        else {
+	  SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditPreviewer();
+          aMeshEditor->Mirror(anElementsId, aMirror, aMirrorType, copy );        
+	  aMeshPreviewStruct << aMeshEditor->GetPreviewData();
+	}
+	setSimulationPreview(aMeshPreviewStruct);
       } catch (...) {
         hidePreview();
       }
