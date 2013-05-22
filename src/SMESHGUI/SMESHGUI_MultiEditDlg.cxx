@@ -439,65 +439,6 @@ SMESH::long_array_var SMESHGUI_MultiEditDlg::getIds(SMESH::SMESH_IDSource_var& o
   {
     myIds.Clear();
     obj = SMESH::SMESH_IDSource::_narrow( myMesh );
-//     SMESH_Actor * anActor = SMESH::FindActorByObject(myMesh);
-//     if (!anActor)
-//       anActor = myActor;
-//     if (anActor != 0)
-//     {
-//       // skl 07.02.2006
-//       SMDS_Mesh* aMesh = myActor->GetObject()->GetMesh();
-//       if( myFilterType == SMESH::TriaFilter || 
-//           myFilterType == SMESH::QuadFilter ||
-//           myFilterType == SMESH::FaceFilter ) {
-//         SMDS_FaceIteratorPtr it = aMesh->facesIterator();
-//         while(it->more()) {
-//           const SMDS_MeshFace* f = it->next();
-//           if(myFilterType == SMESH::FaceFilter) {
-//             myIds.Add(f->GetID());
-//           }
-//           else if( myFilterType==SMESH::TriaFilter &&
-//                    ( f->NbNodes()==3 || f->NbNodes()==6 ) ) {
-//             myIds.Add(f->GetID());
-//           }
-//           else if( myFilterType==SMESH::QuadFilter &&
-//                    ( f->NbNodes()==4 || f->NbNodes()==8 ) ) {
-//             myIds.Add(f->GetID());
-//           }
-//         }
-//       }
-//       else if(myFilterType == SMESH::VolumeFilter) {
-//         SMDS_VolumeIteratorPtr it = aMesh->volumesIterator();
-//         while(it->more()) {
-//           const SMDS_MeshVolume* f = it->next();
-//           myIds.Add(f->GetID());
-//         }
-//       }
-      /* commented by skl 07.02.2006 - to work with quadratic elements
-      TVisualObjPtr aVisualObj = anActor->GetObject();
-      vtkUnstructuredGrid* aGrid = aVisualObj->GetUnstructuredGrid();
-      if (aGrid != 0) {
-        for (int i = 0, n = aGrid->GetNumberOfCells(); i < n; i++) {
-          vtkCell* aCell = aGrid->GetCell(i);
-          if (aCell != 0) {
-            vtkTriangle* aTri = vtkTriangle::SafeDownCast(aCell);
-            vtkQuad*     aQua = vtkQuad::SafeDownCast(aCell);
-            vtkPolygon*  aPG  = vtkPolygon::SafeDownCast(aCell);
-
-            vtkCell3D*   a3d  = vtkCell3D::SafeDownCast(aCell);
-            vtkConvexPointSet* aPH = vtkConvexPointSet::SafeDownCast(aCell);
-
-            if (aTri && myFilterType == SMESHGUI_TriaFilter ||
-                aQua && myFilterType == SMESHGUI_QuadFilter ||
-                (aTri || aQua || aPG) && myFilterType == SMESHGUI_FaceFilter ||
-                (a3d || aPH) && myFilterType == SMESHGUI_VolumeFilter) {
-              int anObjId = aVisualObj->GetElemObjId(i);
-              myIds.Add(anObjId);
-            }
-          }
-        }
-      }
-      */
-    //}
   }
 
   anIds->length(myIds.Extent());
@@ -1225,6 +1166,14 @@ SMESHGUI_CuttingOfQuadsDlg
   QGridLayout* aLay = (QGridLayout*)(mySelGrp->layout());
   aLay->addWidget(myPreviewChk, aLay->rowCount(), 0, 1, aLay->columnCount());
 
+  // "split to 4 tria" option
+
+  QRadioButton* to4TriaRB = new QRadioButton(tr("TO_4_TRIA"), myChoiceWidget);
+  ((QVBoxLayout*)(myCriterionGrp->layout()))->insertWidget(0, to4TriaRB);
+  myGroupChoice->addButton(to4TriaRB, 3);
+  to4TriaRB->setChecked(true);
+  onCriterionRB();
+
   myCriterionGrp->show();
   myChoiceWidget->show();
   myComboBoxFunctor->insertItem(0, tr("MIN_DIAG_ELEMENTS"));
@@ -1259,6 +1208,14 @@ bool SMESHGUI_CuttingOfQuadsDlg::process (SMESH::SMESH_MeshEditor_ptr theEditor,
     return hasObj ? theEditor->SplitQuadObject(obj, true) : theEditor->SplitQuad(theIds, true);
   case 1: // use diagonal 2-4
     return hasObj ? theEditor->SplitQuadObject(obj, false) : theEditor->SplitQuad(theIds, false);
+  case 3: // split to 4 tria
+    {
+      if ( hasObj )
+        return theEditor->QuadTo4Tri( obj ), true;
+      SMESH::SMESH_IDSource_var elems = theEditor->MakeIDSource( theIds, SMESH::FACE );
+      theEditor->QuadTo4Tri( elems );
+      return true;
+    }
   default: // use numeric functor
     break;
   }
@@ -1274,6 +1231,16 @@ void SMESHGUI_CuttingOfQuadsDlg::onCriterionRB()
   else
     myComboBoxFunctor->setEnabled(false);
 
+  if (myGroupChoice->checkedId() == 3) // To 4 tria
+  {
+    if ( myPreviewChk->isChecked() )
+      myPreviewChk->setChecked( false );
+    myPreviewChk->setEnabled( false );
+  }
+  else
+  {
+    myPreviewChk->setEnabled( true );
+  }
   onPreviewChk();
 }
 

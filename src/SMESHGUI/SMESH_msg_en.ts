@@ -4795,6 +4795,10 @@ Please verify validity of entered information</translation>
         <source>CAPTION</source>
         <translation>Cutting of quadrangles</translation>
     </message>
+    <message>
+        <source>TO_4_TRIA</source>
+        <translation>Cut into 4 triangles</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_DeleteGroupDlg</name>
