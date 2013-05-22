@@ -247,20 +247,19 @@ module SMESH
 
     /*!
      * \brief Fuse neighbour triangles into quadrangles.
-     * \param theElems     The triangles to be fused.
+     * \param IDsOfElements Ids of triangles to be fused.
      * \param theCriterion Is used to choose a neighbour to fuse with.
      * \param theMaxAngle  Is a max angle between element normals at which fusion
      *                     is still performed; theMaxAngle is mesured in radians.
-     * \return TRUE in case of success, FALSE otherwise.
+     * \return \c true in case of success, FALSE otherwise.
      */
     boolean TriToQuad (in long_array       IDsOfElements,
                        in NumericalFunctor Criterion,
                        in double           MaxAngle) raises (SALOME::SALOME_Exception);
-
     /*!
      * \brief Fuse neighbour triangles into quadrangles.
      *
-     * Behaves like the above method, taking list of elements from \a theObject
+     * Behaves like the above method, taking a list of elements from \a theObject
      */
     boolean TriToQuadObject (in SMESH_IDSource   theObject,
                              in NumericalFunctor Criterion,
@@ -268,20 +267,24 @@ module SMESH
 
     /*!
      * \brief Split quadrangles into triangles.
-     * \param theElems     The faces to be splitted.
+     * \param IDsOfElements Ids of quadrangles to split.
      * \param theCriterion Is used to choose a diagonal for splitting.
      * \return TRUE in case of success, FALSE otherwise.
      */
     boolean QuadToTri (in long_array       IDsOfElements,
                        in NumericalFunctor Criterion) raises (SALOME::SALOME_Exception);
-
     /*!
      * \brief Split quadrangles into triangles.
      *
-     * Behaves like the above method, taking list of elements from \a theObject
+     * Behaves like the above method, taking a list of elements from \a theObject
      */
     boolean QuadToTriObject (in SMESH_IDSource   theObject,
                              in NumericalFunctor Criterion) raises (SALOME::SALOME_Exception);
+    /*!
+     * \brief Split each of quadrangles into 4 triangles.
+     * \param theQuads Container of quadrangles to split.
+     */
+    void QuadTo4Tri (in SMESH_IDSource theQuads) raises (SALOME::SALOME_Exception);
 
     /*!
      * \brief Split quadrangles into triangles.
@@ -291,7 +294,6 @@ module SMESH
      */
     boolean SplitQuad (in long_array IDsOfElements,
                        in boolean    Diag13) raises (SALOME::SALOME_Exception);
-
     /*!
      * \brief Split quadrangles into triangles.
      *
