@@ -2857,7 +2857,6 @@ class Mesh:
         return self.editor.TriToQuadObject(theObject, Functor, MaxAngle)
 
     ## Splits quadrangles into triangles.
-    #
     #  @param IDsOfElements the faces to be splitted.
     #  @param theCriterion   is a numerical functor, in terms of enum SMESH.FunctorType, used to
     #         choose a diagonal for splitting. If @a theCriterion is None, which is a default
@@ -2887,6 +2886,20 @@ class Mesh:
             theCriterion = FT_MaxElementLength2D
         Functor = self.smeshpyD.GetFunctor(theCriterion)
         return self.editor.QuadToTriObject(theObject, Functor)
+
+    ## Splits each of given quadrangles into 4 triangles. A node is added at the center of
+    #  a quadrangle.
+    #  @param theElements the faces to be splitted. This can be either mesh, sub-mesh,
+    #         group or a list of face IDs. By default all quadrangles are split
+    #  @ingroup l2_modif_cutquadr
+    def QuadTo4Tri (self, theElements=[]):
+        if isinstance( theElements, Mesh ):
+            theElements = theElements.mesh
+        elif not theElements:
+            theElements = self.mesh
+        elif isinstance( theElements, list ):
+            theElements = self.GetIDSource( theElements, SMESH.FACE )
+        return self.editor.QuadTo4Tri( theElements )
 
     ## Splits quadrangles into triangles.
     #  @param IDsOfElements the faces to be splitted
@@ -3150,6 +3163,8 @@ class Mesh:
     #  @param theToBiQuad If True, converts the mesh to bi-quadratic
     #  @ingroup l2_modif_tofromqu
     def ConvertToQuadratic(self, theForce3d, theSubMesh=None, theToBiQuad=False):
+        if isinstance( theSubMesh, Mesh ):
+            theSubMesh = theSubMesh.mesh
         if theToBiQuad:
             self.editor.ConvertToBiQuadratic(theForce3d,theSubMesh)
         else:
@@ -3157,6 +3172,9 @@ class Mesh:
                 self.editor.ConvertToQuadraticObject(theForce3d,theSubMesh)
             else:
                 self.editor.ConvertToQuadratic(theForce3d)
+        error = self.editor.GetLastError()
+        if error and error.comment:
+            print error.comment
             
     ## Converts the mesh from quadratic to ordinary,
     #  deletes old quadratic elements, \n replacing
