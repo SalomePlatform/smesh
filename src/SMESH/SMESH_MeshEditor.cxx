@@ -103,7 +103,14 @@
 using namespace std;
 using namespace SMESH::Controls;
 
-typedef SMDS_SetIterator< SMDS_pElement, TIDSortedElemSet::const_iterator> TSetIterator;
+namespace
+{
+  SMDS_ElemIteratorPtr elemSetIterator( const TIDSortedElemSet& elements )
+  {
+    typedef SMDS_SetIterator< SMDS_pElement, TIDSortedElemSet::const_iterator> TSetIterator;
+    return SMDS_ElemIteratorPtr( new TSetIterator( elements.begin(), elements.end() ));
+  }
+}
 
 //=======================================================================
 //function : SMESH_MeshEditor
@@ -416,12 +423,11 @@ int SMESH_MeshEditor::Remove (const list< int >& theIDs,
 void SMESH_MeshEditor::Create0DElementsOnAllNodes( const TIDSortedElemSet& elements,
                                                    TIDSortedElemSet&       all0DElems )
 {
-  typedef SMDS_SetIterator<const SMDS_MeshElement*, TIDSortedElemSet::const_iterator> TSetIterator;
   SMDS_ElemIteratorPtr elemIt;
   if ( elements.empty() )
     elemIt = GetMeshDS()->elementsIterator( SMDSAbs_Node );
   else
-    elemIt = SMDS_ElemIteratorPtr( new TSetIterator( elements.begin(), elements.end() ));
+    elemIt = elemSetIterator( elements );
 
   while ( elemIt->more() )
   {
@@ -1254,8 +1260,6 @@ bool SMESH_MeshEditor::QuadToTri (TIDSortedElemSet &                   theElems,
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();
 
-  MESSAGE( "::QuadToTri()" );
-
   if ( !theCrit.get() )
     return false;
 
@@ -1345,6 +1349,130 @@ bool SMESH_MeshEditor::QuadToTri (TIDSortedElemSet &                   theElems,
     aMesh->RemoveElement( elem );
   }
   return true;
+}
+
+//=======================================================================
+/*!
+ * \brief Split each of given quadrangles into 4 triangles.
+ * \param theElems - The faces to be splitted. If empty all faces are split.
+ */
+//=======================================================================
+
+void SMESH_MeshEditor::QuadTo4Tri (TIDSortedElemSet & theElems)
+{
+  myLastCreatedElems.Clear();
+  myLastCreatedNodes.Clear();
+
+  SMESH_MesherHelper helper( *GetMesh() );
+  helper.SetElementsOnShape( true );
+
+  SMDS_ElemIteratorPtr faceIt;
+  if ( theElems.empty() ) faceIt = GetMeshDS()->elementsIterator(SMDSAbs_Face);
+  else                    faceIt = elemSetIterator( theElems );
+
+  bool   checkUV;
+  gp_XY  uv [9]; uv[8] = gp_XY(0,0);
+  gp_XYZ xyz[9];
+  vector< const SMDS_MeshNode* > nodes;
+  SMESHDS_SubMesh*               subMeshDS;
+  TopoDS_Face                    F;
+  Handle(Geom_Surface)           surface;
+  TopLoc_Location                loc;
+
+  while ( faceIt->more() )
+  {
+    const SMDS_MeshElement* quad = faceIt->next();
+    if ( !quad || quad->NbCornerNodes() != 4 )
+      continue;
+
+    // get a surface the quad is on
+
+    if ( quad->getshapeId() < 1 )
+    {
+      F.Nullify();
+      helper.SetSubShape( 0 );
+      subMeshDS = 0;
+    }
+    else if ( quad->getshapeId() != helper.GetSubShapeID() )
+    {
+      helper.SetSubShape( quad->getshapeId() );
+      if ( !helper.GetSubShape().IsNull() &&
+           helper.GetSubShape().ShapeType() == TopAbs_FACE )
+      {
+        F = TopoDS::Face( helper.GetSubShape() );
+        surface = BRep_Tool::Surface( F, loc );
+        subMeshDS = GetMeshDS()->MeshElements( quad->getshapeId() );
+      }
+      else
+      {
+        helper.SetSubShape( 0 );
+        subMeshDS = 0;
+      }
+    }
+
+    // create a central node
+
+    const SMDS_MeshNode* nCentral;
+    nodes.assign( quad->begin_nodes(), quad->end_nodes() );
+
+    if ( nodes.size() == 9 )
+    {
+      nCentral = nodes.back();
+    }
+    else
+    {
+      size_t iN = 0;
+      if ( F.IsNull() )
+      {
+        for ( ; iN < nodes.size(); ++iN )
+          xyz[ iN ] = SMESH_TNodeXYZ( nodes[ iN ] );
+
+        for ( ; iN < 8; ++iN ) // mid-side points of a linear qudrangle
+          xyz[ iN ] = 0.5 * ( xyz[ iN - 4 ] + xyz[( iN - 3 )%4 ] );
+
+        xyz[ 8 ] = helper.calcTFI( 0.5, 0.5,
+                                   xyz[0], xyz[1], xyz[2], xyz[3],
+                                   xyz[4], xyz[5], xyz[6], xyz[7] );
+      }
+      else
+      {
+        for ( ; iN < nodes.size(); ++iN )
+          uv[ iN ] = helper.GetNodeUV( F, nodes[iN], nodes[(iN+2)%4], &checkUV );
+
+        for ( ; iN < 8; ++iN ) // UV of mid-side points of a linear qudrangle
+          uv[ iN ] = helper.GetMiddleUV( surface, uv[ iN - 4 ], uv[( iN - 3 )%4 ] );
+
+        uv[ 8 ] = helper.calcTFI( 0.5, 0.5,
+                                  uv[0], uv[1], uv[2], uv[3],
+                                  uv[4], uv[5], uv[6], uv[7] );
+
+        gp_Pnt p = surface->Value( uv[8].X(), uv[8].Y() ).Transformed( loc );
+        xyz[ 8 ] = p.XYZ();
+      }
+
+      nCentral = helper.AddNode( xyz[8].X(), xyz[8].Y(), xyz[8].Z(), /*id=*/0,
+                                 uv[8].X(), uv[8].Y() );
+      myLastCreatedNodes.Append( nCentral );
+    }
+
+    // create 4 triangles
+
+    GetMeshDS()->RemoveFreeElement( quad, subMeshDS, /*fromGroups=*/false );
+    
+    helper.SetIsQuadratic  ( nodes.size() > 4 );
+    helper.SetIsBiQuadratic( nodes.size() == 9 );
+    if ( helper.GetIsQuadratic() )
+      helper.AddTLinks( static_cast< const SMDS_MeshFace*>( quad ));
+
+    for ( int i = 0; i < 4; ++i )
+    {
+      SMDS_MeshElement* tria = helper.AddFace( nodes[ i ],
+                                               nodes[(i+1)%4],
+                                               nCentral );
+      ReplaceElemInGroups( tria, quad, GetMeshDS() );
+      myLastCreatedElems.Append( tria );
+    }
+  }
 }
 
 //=======================================================================
@@ -8721,8 +8849,7 @@ void SMESH_MeshEditor::ConvertFromQuadratic(TIDSortedElemSet& theElements)
   }
 
   // replace given elements by linear ones
-  typedef SMDS_SetIterator<const SMDS_MeshElement*, TIDSortedElemSet::iterator> TSetIterator;
-  SMDS_ElemIteratorPtr elemIt( new TSetIterator( theElements.begin(), theElements.end() ));
+  SMDS_ElemIteratorPtr elemIt = elemSetIterator( theElements );
   removeQuadElem( /*theSm=*/0, elemIt, /*theShapeID=*/0 );
 
   // we need to convert remaining elements whose all medium nodes are in mediumNodeIDs
@@ -8774,8 +8901,7 @@ void SMESH_MeshEditor::ConvertFromQuadratic(TIDSortedElemSet& theElements)
       }
     }
   }
-  elemIt = SMDS_ElemIteratorPtr
-    (new TSetIterator( moreElemsToConvert.begin(), moreElemsToConvert.end() ));
+  elemIt = elemSetIterator( moreElemsToConvert );
   removeQuadElem( /*theSm=*/0, elemIt, /*theShapeID=*/0 );
 }
 
@@ -11262,10 +11388,8 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
   typedef vector<const SMDS_MeshNode*> TConnectivity;
 
   SMDS_ElemIteratorPtr eIt;
-  if (elements.empty())
-    eIt = aMesh->elementsIterator(elemType);
-  else
-    eIt = SMDS_ElemIteratorPtr( new TSetIterator( elements.begin(), elements.end() ));
+  if (elements.empty()) eIt = aMesh->elementsIterator(elemType);
+  else                  eIt = elemSetIterator( elements );
 
   while (eIt->more())
   {
@@ -11459,10 +11583,8 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
   // -----------------------
   if ( toCopyElements && targetMesh != myMesh )
   {
-    if (elements.empty())
-      eIt = aMesh->elementsIterator(elemType);
-    else
-      eIt = SMDS_ElemIteratorPtr( new TSetIterator( elements.begin(), elements.end() ));
+    if (elements.empty()) eIt = aMesh->elementsIterator(elemType);
+    else                  eIt = elemSetIterator( elements );
     while (eIt->more())
     {
       const SMDS_MeshElement* elem = eIt->next();

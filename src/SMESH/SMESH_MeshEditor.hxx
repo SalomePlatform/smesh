@@ -137,7 +137,6 @@ public:
   bool TriToQuad (TIDSortedElemSet &                   theElems,
                   SMESH::Controls::NumericalFunctorPtr theCriterion,
                   const double                         theMaxAngle);
-
   /*!
    * \brief Split quadrangles into triangles.
    * \param theElems     - The faces to be splitted.
@@ -146,7 +145,6 @@ public:
    */
   bool QuadToTri (TIDSortedElemSet &                   theElems,
                   SMESH::Controls::NumericalFunctorPtr theCriterion);
-
   /*!
    * \brief Split quadrangles into triangles.
    * \param theElems  - The faces to be splitted.
@@ -155,6 +153,11 @@ public:
    */
   bool QuadToTri (TIDSortedElemSet & theElems,
                   const bool         the13Diag);
+  /*!
+   * \brief Split each of given quadrangles into 4 triangles.
+   * \param theElems - The faces to be splitted. If empty all faces are split.
+   */
+  void QuadTo4Tri (TIDSortedElemSet & theElems);
 
   /*!
    * \brief Find better diagonal for splitting.
