@@ -2080,8 +2080,8 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       "MergeElements","MergeEqualElements","SewFreeBorders","SewConformFreeBorders",
       "SewBorderToSide","SewSideElements","ChangeElemNodes","GetLastCreatedNodes",
       "GetLastCreatedElems",
-      "MirrorMakeMesh","MirrorObjectMakeMesh","TranslateMakeMesh",
-      "TranslateObjectMakeMesh","RotateMakeMesh","RotateObjectMakeMesh","MakeBoundaryMesh",
+      "MirrorMakeMesh","MirrorObjectMakeMesh","TranslateMakeMesh","TranslateObjectMakeMesh",
+      "Scale","ScaleMakeMesh","RotateMakeMesh","RotateObjectMakeMesh","MakeBoundaryMesh",
       "MakeBoundaryElements", "SplitVolumesIntoTetra"
       ,"" }; // <- mark of the end
     sameMethods.Insert( names );
@@ -2107,7 +2107,7 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
   if (diffLastTwoArgsMethods.empty() ) {
     const char * names[] = {
       "MirrorMakeGroups","MirrorObjectMakeGroups",
-      "TranslateMakeGroups","TranslateObjectMakeGroups",
+      "TranslateMakeGroups","TranslateObjectMakeGroups","ScaleMakeGroups",
       "RotateMakeGroups","RotateObjectMakeGroups",
       ""};// <- mark of the end
     diffLastTwoArgsMethods.Insert( names );
