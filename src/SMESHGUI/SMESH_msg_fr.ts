@@ -4803,6 +4803,10 @@ Choisissez un groupe et essayez de nouveau</translation>
         <translation>Tout sélectionner</translation>
     </message>
     <message>
+        <source>SHOW_IDS</source>
+        <translation type="unfinished">Show double nodes IDs</translation>
+    </message>
+    <message>
         <source>EXCLUDE_GROUPS</source>
         <translation>Exclure les groupes</translation>
     </message>

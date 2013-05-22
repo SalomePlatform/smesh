@@ -130,6 +130,7 @@ private:
   QPushButton*              AddGroupButton;
   QPushButton*              RemoveGroupButton;
   QCheckBox*                SelectAllCB;
+  QCheckBox*                ShowIDs;
 
   QGroupBox*                GroupEdit;
   QListWidget*              ListEdit;

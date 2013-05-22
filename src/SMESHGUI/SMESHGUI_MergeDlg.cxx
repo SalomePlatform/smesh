@@ -74,10 +74,6 @@
 #include <vtkIntArray.h>
 #include <vtkProperty2D.h>
 #include <vtkPointData.h>
-#include <vtkConfigure.h>
-#if !defined(VTK_XVERSION)
-#define VTK_XVERSION (VTK_MAJOR_VERSION<<16)+(VTK_MINOR_VERSION<<8)+(VTK_BUILD_VERSION)
-#endif
 
 // Qt includes
 #include <QApplication>
@@ -150,9 +146,6 @@ namespace SMESH
     
       myPtsLabeledDataMapper = vtkLabeledDataMapper::New();
       myPtsLabeledDataMapper->SetInputConnection(myPtsSelectVisiblePoints->GetOutputPort());
-#if (VTK_XVERSION < 0x050200)
-      myPtsLabeledDataMapper->SetLabelFormat("%g");
-#endif
       myPtsLabeledDataMapper->SetLabelModeToLabelScalars();
     
       vtkTextProperty* aPtsTextProp = vtkTextProperty::New();
@@ -437,12 +430,14 @@ SMESHGUI_MergeDlg::SMESHGUI_MergeDlg (SMESHGUI* theModule, int theAction)
   RemoveGroupButton = new QPushButton(tr("SMESH_BUT_REMOVE"), GroupCoincidentWidget);
 
   SelectAllCB = new QCheckBox(tr("SELECT_ALL"), GroupCoincidentWidget);
+  ShowIDs = new QCheckBox(tr("SHOW_IDS"), GroupCoincidentWidget);
 
   GroupCoincidentLayout->addWidget(ListCoincident,    0,   0, 4, 2);
   GroupCoincidentLayout->addWidget(DetectButton,      0,   2);
   GroupCoincidentLayout->addWidget(AddGroupButton,    2, 2);
   GroupCoincidentLayout->addWidget(RemoveGroupButton, 3, 2);
-  GroupCoincidentLayout->addWidget(SelectAllCB,       4, 0, 1, 3);
+  GroupCoincidentLayout->addWidget(SelectAllCB,       4, 0);
+  GroupCoincidentLayout->addWidget(ShowIDs,           4, 1);
   GroupCoincidentLayout->setRowMinimumHeight(1, 10);
   GroupCoincidentLayout->setRowStretch(1, 5);
 
@@ -513,6 +508,8 @@ SMESHGUI_MergeDlg::SMESHGUI_MergeDlg (SMESHGUI* theModule, int theAction)
 
   this->resize(10,10);
 
+  ShowIDs->setChecked( true );
+
   Init(); // Initialisations
 }
 
@@ -562,6 +559,7 @@ void SMESHGUI_MergeDlg::Init()
   connect(AddGroupButton, SIGNAL (clicked()), this, SLOT(onAddGroup()));
   connect(RemoveGroupButton, SIGNAL (clicked()), this, SLOT(onRemoveGroup()));
   connect(SelectAllCB, SIGNAL(toggled(bool)), this, SLOT(onSelectAll(bool)));
+  connect(ShowIDs, SIGNAL(toggled(bool)), this, SLOT(onSelectGroup()));
   connect(ListEdit, SIGNAL (itemSelectionChanged()), this, SLOT(onSelectElementFromGroup()));
   connect(AddElemButton, SIGNAL (clicked()), this, SLOT(onAddElement()));
   connect(RemoveElemButton, SIGNAL (clicked()), this, SLOT(onRemoveElement()));
@@ -847,6 +845,7 @@ void SMESHGUI_MergeDlg::onSelectGroup()
     return;
   myEditCurrentArgument = (QWidget*)ListCoincident;
 
+  myIsBusy = true;
   ListEdit->clear();
   
   TColStd_MapOfInteger anIndices;
@@ -872,18 +871,22 @@ void SMESHGUI_MergeDlg::onSelectGroup()
   aList.Append(myActor->getIO());
   mySelectionMgr->setSelectedObjects(aList,false);
   
-  if (myAction == 0) {
-    myIdPreview->SetPointsData(myActor->GetObject()->GetMesh(), anIndices);
-    myIdPreview->SetPointsLabeled(!anIndices.IsEmpty(), myActor->GetVisibility());
-  }
-  else {
-    std::list< gp_XYZ > aGrCentersXYZ;
-    FindGravityCenter(anIndices, aGrCentersXYZ);
-    myIdPreview->SetElemsData( anIndices, aGrCentersXYZ);
-    myIdPreview->SetPointsLabeled(!anIndices.IsEmpty(), myActor->GetVisibility());
-  }
+  if (ShowIDs->isChecked()) 
+    if (myAction == 0) {
+      myIdPreview->SetPointsData(myActor->GetObject()->GetMesh(), anIndices);
+      myIdPreview->SetPointsLabeled(!anIndices.IsEmpty(), myActor->GetVisibility());
+    }
+    else {
+      std::list< gp_XYZ > aGrCentersXYZ;
+      FindGravityCenter(anIndices, aGrCentersXYZ);
+      myIdPreview->SetElemsData( anIndices, aGrCentersXYZ);
+      myIdPreview->SetPointsLabeled(!anIndices.IsEmpty(), myActor->GetVisibility());
+    }
+  else
+    myIdPreview->SetPointsLabeled(false);
 
   updateControls();
+  myIsBusy = false;
 }
 
 //=================================================================================
@@ -920,17 +923,20 @@ void SMESHGUI_MergeDlg::onSelectElementFromGroup()
   SALOME_ListIO aList;
   aList.Append(myActor->getIO());
   mySelectionMgr->setSelectedObjects(aList);
-
-  if (myAction == 0) {
-    myIdPreview->SetPointsData(myActor->GetObject()->GetMesh(), anIndices);
-    myIdPreview->SetPointsLabeled(!anIndices.IsEmpty(), myActor->GetVisibility());
-  }
-  else {
-    std::list< gp_XYZ > aGrCentersXYZ;
-    FindGravityCenter(anIndices, aGrCentersXYZ);
-    myIdPreview->SetElemsData(anIndices, aGrCentersXYZ);
-    myIdPreview->SetPointsLabeled(!anIndices.IsEmpty(), myActor->GetVisibility());
-  }
+  
+  if (ShowIDs->isChecked())
+    if (myAction == 0) {
+      myIdPreview->SetPointsData(myActor->GetObject()->GetMesh(), anIndices);
+      myIdPreview->SetPointsLabeled(!anIndices.IsEmpty(), myActor->GetVisibility());
+    }
+    else {
+      std::list< gp_XYZ > aGrCentersXYZ;
+      FindGravityCenter(anIndices, aGrCentersXYZ);
+      myIdPreview->SetElemsData(anIndices, aGrCentersXYZ);
+      myIdPreview->SetPointsLabeled(!anIndices.IsEmpty(), myActor->GetVisibility());
+    }
+  else 
+    myIdPreview->SetPointsLabeled(false);
 }
 
 //=================================================================================
@@ -982,8 +988,9 @@ void SMESHGUI_MergeDlg::onRemoveGroup()
     delete anItem;
 
   ListEdit->clear();
+  myIdPreview->SetPointsLabeled(false);
   updateControls();
-
+  SMESH::UpdateView();
   myIsBusy = false;
 }
 
