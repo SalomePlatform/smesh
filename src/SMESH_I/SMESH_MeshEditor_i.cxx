@@ -571,10 +571,9 @@ SMESH::MeshPreviewStruct* SMESH_MeshEditor_i::GetPreviewData()
 
     while ( itMeshElems->more() ) {
       const SMDS_MeshElement* aMeshElem = itMeshElems->next();
-      SMDS_ElemIteratorPtr itElemNodes = aMeshElem->nodesIterator();
+      SMDS_NodeIteratorPtr itElemNodes = aMeshElem->nodeIterator();
       while ( itElemNodes->more() ) {
-        const SMDS_MeshNode* aMeshNode =
-          static_cast<const SMDS_MeshNode*>( itElemNodes->next() );
+        const SMDS_MeshNode* aMeshNode = itElemNodes->next();
         int aNodeID = aMeshNode->GetID();
         TNodesMap::iterator anIter = nodesMap.find(aNodeID);
         if ( anIter == nodesMap.end() ) {
@@ -591,12 +590,10 @@ SMESH::MeshPreviewStruct* SMESH_MeshEditor_i::GetPreviewData()
       // filling the elements types
       SMDSAbs_ElementType aType = aMeshElem->GetType();
       bool               isPoly = aMeshElem->IsPoly();
-
       myPreviewData->elementTypes[i].SMDS_ElementType = (SMESH::ElementType) aType;
-      myPreviewData->elementTypes[i].isPoly = isPoly;
+      myPreviewData->elementTypes[i].isPoly           = isPoly;
       myPreviewData->elementTypes[i].nbNodesInElement = aMeshElem->NbNodes();
       i++;
-
     }
     myPreviewData->nodesXYZ.length( j );
 
@@ -606,8 +603,8 @@ SMESH::MeshPreviewStruct* SMESH_MeshEditor_i::GetPreviewData()
     for( int i = 0; aConnIter != aNodesConnectivity.end(); aConnIter++, i++ )
       myPreviewData->elementConnectivities[i] = *aConnIter;
   }
-
   return myPreviewData._retn();
+
   SMESH_CATCH( SMESH::throwCorbaException );
   return 0;
 }
@@ -673,6 +670,7 @@ void SMESH_MeshEditor_i::ClearLastCreated() throw (SALOME::SALOME_Exception)
 //=======================================================================
 /*
  * Returns description of an error/warning occured during the last operation
+ * WARNING: ComputeError.code >= 100 and no corresponding enum in IDL API
  */
 //=======================================================================
 
@@ -1663,7 +1661,7 @@ CORBA::Long SMESH_MeshEditor_i::Reorient2D(SMESH::SMESH_IDSource_ptr the2Dgroup,
 
 //=============================================================================
 /*!
- *
+ * \brief Fuse neighbour triangles into quadrangles.
  */
 //=============================================================================
 
@@ -1703,7 +1701,7 @@ CORBA::Boolean SMESH_MeshEditor_i::TriToQuad (const SMESH::long_array &   IDsOfE
 
 //=============================================================================
 /*!
- *
+ * \brief Fuse neighbour triangles into quadrangles.
  */
 //=============================================================================
 
@@ -1734,7 +1732,7 @@ CORBA::Boolean SMESH_MeshEditor_i::TriToQuadObject (SMESH::SMESH_IDSource_ptr   
 
 //=============================================================================
 /*!
- *
+ * \brief Split quadrangles into triangles.
  */
 //=============================================================================
 
@@ -1770,12 +1768,12 @@ CORBA::Boolean SMESH_MeshEditor_i::QuadToTri (const SMESH::long_array &   IDsOfE
   return 0;
 }
 
-
 //=============================================================================
 /*!
- *
+ * \brief Split quadrangles into triangles.
  */
 //=============================================================================
+
 CORBA::Boolean SMESH_MeshEditor_i::QuadToTriObject (SMESH::SMESH_IDSource_ptr   theObject,
                                                     SMESH::NumericalFunctor_ptr Criterion)
   throw (SALOME::SALOME_Exception)
@@ -1801,12 +1799,36 @@ CORBA::Boolean SMESH_MeshEditor_i::QuadToTriObject (SMESH::SMESH_IDSource_ptr   
   return 0;
 }
 
+//================================================================================
+/*!
+ * \brief Split each of quadrangles into 4 triangles.
+ *  \param [in] theObject - theQuads Container of quadrangles to split.
+ */
+//================================================================================
+
+void SMESH_MeshEditor_i::QuadTo4Tri (SMESH::SMESH_IDSource_ptr theObject)
+  throw (SALOME::SALOME_Exception)
+{
+  SMESH_TRY;
+  initData();
+
+  TIDSortedElemSet faces;
+  if ( !idSourceToSet( theObject, getMeshDS(), faces, SMDSAbs_Face, /*emptyIfIsMesh=*/true ) &&
+       faces.empty() )
+    THROW_SALOME_CORBA_EXCEPTION("No faces given", SALOME::BAD_PARAM);
+
+  getEditor().QuadTo4Tri( faces );
+  TPythonDump() << this << ".QuadTo4Tri( " << theObject << " )";
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+}
 
 //=============================================================================
 /*!
- *
+ * \brief Split quadrangles into triangles.
  */
 //=============================================================================
+
 CORBA::Boolean SMESH_MeshEditor_i::SplitQuad (const SMESH::long_array & IDsOfElements,
                                               CORBA::Boolean            Diag13)
   throw (SALOME::SALOME_Exception)
@@ -1831,12 +1853,12 @@ CORBA::Boolean SMESH_MeshEditor_i::SplitQuad (const SMESH::long_array & IDsOfEle
   return 0;
 }
 
-
 //=============================================================================
 /*!
- *
+ * \brief Split quadrangles into triangles.
  */
 //=============================================================================
+
 CORBA::Boolean SMESH_MeshEditor_i::SplitQuadObject (SMESH::SMESH_IDSource_ptr theObject,
                                                     CORBA::Boolean            Diag13)
   throw (SALOME::SALOME_Exception)
@@ -1863,7 +1885,11 @@ CORBA::Boolean SMESH_MeshEditor_i::SplitQuadObject (SMESH::SMESH_IDSource_ptr th
 
 //=============================================================================
 /*!
- *  BestSplit
+ * Find better splitting of the given quadrangle.
+ *  \param IDOfQuad  ID of the quadrangle to be splitted.
+ *  \param Criterion A criterion to choose a diagonal for splitting.
+ *  \return 1 if 1-3 diagonal is better, 2 if 2-4
+ *          diagonal is better, 0 if error occurs.
  */
 //=============================================================================
 
@@ -2045,7 +2071,6 @@ SMESH_MeshEditor_i::smooth(const SMESH::long_array &              IDsOfElements,
   return 0;
 }
 
-
 //=============================================================================
 /*!
  *
@@ -2084,7 +2109,6 @@ SMESH_MeshEditor_i::smoothObject(SMESH::SMESH_IDSource_ptr              theObjec
   SMESH_CATCH( SMESH::throwCorbaException );
   return 0;
 }
-
 
 //=============================================================================
 /*!

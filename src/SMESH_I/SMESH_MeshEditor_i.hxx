@@ -218,6 +218,8 @@ public:
   CORBA::Boolean QuadToTriObject (SMESH::SMESH_IDSource_ptr   theObject,
                                   SMESH::NumericalFunctor_ptr Criterion)
     throw (SALOME::SALOME_Exception);
+  void           QuadTo4Tri      (SMESH::SMESH_IDSource_ptr   theObject)
+    throw (SALOME::SALOME_Exception);
   CORBA::Boolean SplitQuad       (const SMESH::long_array &   IDsOfElements,
                                   CORBA::Boolean              Diag13)
     throw (SALOME::SALOME_Exception);
