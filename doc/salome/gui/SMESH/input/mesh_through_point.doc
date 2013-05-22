@@ -24,6 +24,10 @@ The following dialog box shall appear:
 select the necessary node manually (X, Y, Z, dX, dY, dZ fields allow
 to see original coordinates and displacement of the node to move).
 \b Preview check-box allows to see the results of the operation.</li>
+<li>The <b>Update Destination</b> button is activated when <b>Find
+closest to destination</b> option is unchecked. Click the <b>Update
+Destination</b> button for update coordinates of the destination point
+from original coordinates of the node to move.</li>
 <li>Click the \b Apply or <b>Apply and Close</b> button.</li>
 </ol>
 

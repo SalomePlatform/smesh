@@ -175,6 +175,9 @@ QWidget* SMESHGUI_MakeNodeAtPointDlg::createMainFrame (QWidget* theParent)
   myId = new QLineEdit(myNodeToMoveGrp);
   myId->setValidator(new SMESHGUI_IdValidator(this, 1));
 
+  myUpdateBtn = new QPushButton(tr("UPDATE_DESTINATION"), myNodeToMoveGrp);
+  myUpdateBtn->setAutoDefault(true);
+
   QWidget* aCoordWidget = new QWidget(myNodeToMoveGrp);
 
   QLabel* aCurrentXLabel = new QLabel(tr("SMESH_X"), aCoordWidget);
@@ -243,9 +246,10 @@ QWidget* SMESHGUI_MakeNodeAtPointDlg::createMainFrame (QWidget* theParent)
   myNodeToMoveGrpLayout->addWidget( idLabel, 0, 0 );
   myNodeToMoveGrpLayout->addWidget( myIdBtn, 0, 1 );
   myNodeToMoveGrpLayout->addWidget( myId,    0, 2 );
-  myNodeToMoveGrpLayout->addWidget( aCoordWidget,       1, 0, 1, 3 );
-  myNodeToMoveGrpLayout->addWidget( myAutoSearchChkBox, 2, 0, 1, 3 );
-  myNodeToMoveGrpLayout->addWidget( myPreviewChkBox,    3, 0, 1, 3 );
+  myNodeToMoveGrpLayout->addWidget( myUpdateBtn, 0, 3 );
+  myNodeToMoveGrpLayout->addWidget( aCoordWidget,       1, 0, 1, 4 );
+  myNodeToMoveGrpLayout->addWidget( myAutoSearchChkBox, 2, 0, 1, 4 );
+  myNodeToMoveGrpLayout->addWidget( myPreviewChkBox,    3, 0, 1, 4 );
 
   QVBoxLayout* aLay = new QVBoxLayout(aFrame);
   aLay->addWidget(aPixGrp);
@@ -297,10 +301,12 @@ void SMESHGUI_MakeNodeAtPointDlg::ButtonToggled (bool on)
       myIdBtn->setChecked( false );
       myIdBtn->setEnabled( false );
       myCoordBtn->setChecked( true );
+      myUpdateBtn->setEnabled( false );
     }
     else {
       myId->setReadOnly ( false );
       myIdBtn->setEnabled( true );
+      myUpdateBtn->setEnabled( true );
     }
   }
 }
@@ -318,6 +324,9 @@ SMESHGUI_MakeNodeAtPointOp::SMESHGUI_MakeNodeAtPointOp()
   myFilter = 0;
   myHelpFileName = "mesh_through_point_page.html";
 
+  myNoPreview = false;
+  myUpdateDestination = false;
+
   // connect signals and slots
   connect(myDlg->myX, SIGNAL (valueChanged(double)), this, SLOT(redisplayPreview()));
   connect(myDlg->myY, SIGNAL (valueChanged(double)), this, SLOT(redisplayPreview()));
@@ -329,6 +338,14 @@ SMESHGUI_MakeNodeAtPointOp::SMESHGUI_MakeNodeAtPointOp()
   // IPAL22913: TC6.5.0: selected in "Move node" dialog box node is not highlighted
   // note: this slot seems to be lost together with removed obsolete SMESHGUI_MoveNodesDlg class
   connect(myDlg->myId,SIGNAL (textChanged(const QString&)),SLOT(onTextChange(const QString&)));
+  connect(myDlg->myUpdateBtn, SIGNAL (clicked()), this, SLOT(onUpdateDestination()));
+}
+
+void SMESHGUI_MakeNodeAtPointOp::onUpdateDestination()
+{
+  myUpdateDestination = true;
+  redisplayPreview();
+  myUpdateDestination = false;
 }
 
 //=======================================================================
@@ -667,7 +684,14 @@ void SMESHGUI_MakeNodeAtPointOp::redisplayPreview()
               double x = aXYZ->operator[](0);
               double y = aXYZ->operator[](1);
               double z = aXYZ->operator[](2);
-              double dx = myDlg->myX->GetValue() - x;
+
+	      if ( myUpdateDestination ) {
+		myDlg->myX->SetValue(x);
+		myDlg->myY->SetValue(y);
+		myDlg->myZ->SetValue(z);
+	      }
+
+	      double dx = myDlg->myX->GetValue() - x;
               double dy = myDlg->myY->GetValue() - y;
               double dz = myDlg->myZ->GetValue() - z;
               myDlg->myCurrentX->SetValue(x);

@@ -69,6 +69,7 @@ private slots:
   void                           onSelectionDone();
   void                           redisplayPreview();
   void                           onTextChange( const QString& );
+  void                           onUpdateDestination();
 
 private:
   SMESHGUI_MakeNodeAtPointDlg*  myDlg;
@@ -78,6 +79,7 @@ private:
   SMESHGUI_MeshEditPreview*     mySimulation;
   SMESH_Actor*                  myMeshActor;
   bool                          myNoPreview;
+  bool                          myUpdateDestination;
 };
 
 /*!
@@ -95,6 +97,7 @@ private:
   QWidget*                      createMainFrame( QWidget* );
 
   QPushButton*                  myCoordBtn;
+  QPushButton*                  myUpdateBtn;
   SMESHGUI_SpinBox*             myX;
   SMESHGUI_SpinBox*             myY;
   SMESHGUI_SpinBox*             myZ;
