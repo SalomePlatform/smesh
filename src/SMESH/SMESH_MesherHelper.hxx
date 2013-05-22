@@ -156,15 +156,16 @@ class SMESH_EXPORT SMESH_MesherHelper
    *  \param p0,p1,p2,p3 - UV of the point projections on EDGEs of the FACE
    *  \return gp_XY - UV of the point on the FACE
    *
-   * Order of those UV in the FACE is as follows.
-   *   a4   p3    a3
+   *  Y ^              Order of those UV in the FACE is as follows.
+   *    |
+   *   a3   p2    a2
    *    o---x-----o
    *    |   :     |
    *    |   :UV   |
-   * p4 x...O.....x p2
+   * p3 x...O.....x p1
    *    |   :     |
-   *    o---x-----o
-   *   a1   p1    a2
+   *    o---x-----o    ----> X
+   *   a0   p0    a1
    */
   inline static gp_XY calcTFI(double x, double y,
                               const gp_XY a0,const gp_XY a1,const gp_XY a2,const gp_XY a3,
@@ -303,7 +304,7 @@ public:
   const TopoDS_Shape& GetSubShape() const  { return myShape; }
 
   /*!
-   * Creates a node
+   * Creates a node (!Note ID before u=0.,v0.)
    */
   SMDS_MeshNode* AddNode(double x, double y, double z, int ID = 0, double u=0., double v=0.);
   /*!
@@ -459,6 +460,16 @@ public:
   static gp_XY GetMiddleUV(const Handle(Geom_Surface)& surface,
                            const gp_XY&                uv1,
                            const gp_XY&                uv2);
+  /*!
+   * \brief Return UV for the central node of a biquadratic triangle
+   */
+  static gp_XY GetCenterUV(const gp_XY& uv1,
+                           const gp_XY& uv2, 
+                           const gp_XY& uv3, 
+                           const gp_XY& uv12,
+                           const gp_XY& uv23,
+                           const gp_XY& uv31,
+                           bool *       isBadTria=0);
   /*!
    * \brief Define a pointer to wrapper over a function of gp_XY class,
    *       suitable to pass as xyFunPtr to applyIn2D().

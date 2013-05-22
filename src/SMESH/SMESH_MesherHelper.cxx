@@ -810,6 +810,34 @@ gp_XY SMESH_MesherHelper::GetMiddleUV(const Handle(Geom_Surface)& surface,
 }
 
 //=======================================================================
+//function : GetCenterUV
+//purpose  : Return UV for the central node of a biquadratic triangle
+//=======================================================================
+
+gp_XY SMESH_MesherHelper::GetCenterUV(const gp_XY& uv1,
+                                      const gp_XY& uv2, 
+                                      const gp_XY& uv3, 
+                                      const gp_XY& uv12,
+                                      const gp_XY& uv23,
+                                      const gp_XY& uv31,
+                                      bool *       isBadTria/*=0*/)
+{
+  bool badTria;
+  gp_XY uvAvg = ( uv12 + uv23 + uv31 ) / 3.;
+
+  if      (( badTria = (( uvAvg - uv1 ) * ( uvAvg - uv23 ) > 0 )))
+    uvAvg = ( uv1 + uv23 ) / 2.;
+  else if (( badTria = (( uvAvg - uv2 ) * ( uvAvg - uv31 ) > 0 )))
+    uvAvg = ( uv2 + uv31 ) / 2.;
+  else if (( badTria = (( uvAvg - uv3 ) * ( uvAvg - uv12 ) > 0 )))
+    uvAvg = ( uv3 + uv12 ) / 2.;
+
+  if ( isBadTria )
+    *isBadTria = badTria;
+  return uvAvg;
+}
+
+//=======================================================================
 //function : GetNodeU
 //purpose  : Return node U on edge
 //=======================================================================
@@ -1048,7 +1076,7 @@ SMESH_MesherHelper::GetMediumPos(const SMDS_MeshNode* n1,
 //purpose  : Return existing or create a new central node for a quardilateral
 //           quadratic face given its 8 nodes.
 //@param   : force3d - true means node creation in between the given nodes,
-//             else node position is found on a geometrical face if any.
+//           else node position is found on a geometrical face if any.
 //=======================================================================
 
 const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
@@ -1193,7 +1221,7 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
 //purpose  : Return existing or create a new central node for a
 //           quadratic triangle given its 6 nodes.
 //@param   : force3d - true means node creation in between the given nodes,
-//             else node position is found on a geometrical face if any.
+//           else node position is found on a geometrical face if any.
 //=======================================================================
 
 const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
@@ -1278,21 +1306,30 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
   }
 
   TopoDS_Face F;
+  gp_XY       uvAvg;
+  bool        badTria=false;
+
   if ( shapeType == TopAbs_FACE )
   {
     F = TopoDS::Face( meshDS->IndexToShape( faceID ));
+    bool check;
+    gp_XY uv1  = GetNodeUV( F, n1, n23, &check );
+    gp_XY uv2  = GetNodeUV( F, n2, n31, &check );
+    gp_XY uv3  = GetNodeUV( F, n3, n12, &check );
+    gp_XY uv12 = GetNodeUV( F, n12, n3, &check );
+    gp_XY uv23 = GetNodeUV( F, n23, n1, &check );
+    gp_XY uv31 = GetNodeUV( F, n31, n2, &check );
+    uvAvg = GetCenterUV( uv1,uv2,uv3, uv12,uv23,uv31, &badTria );
+    if ( badTria )
+      force3d = false;
   }
 
-  // Create a node
+  // Create a central node
 
-  gp_XY  uvAvg;
   gp_Pnt P;
   if ( !F.IsNull() && !force3d )
   {
-    uvAvg = ( GetNodeUV(F,n12,n3) +
-              GetNodeUV(F,n23,n1) +
-              GetNodeUV(F,n31,n2) ) / 3.;
-    TopLoc_Location loc;
+    TopLoc_Location        loc;
     Handle( Geom_Surface ) S = BRep_Tool::Surface( F, loc );
     P = S->Value( uvAvg.X(), uvAvg.Y() ).Transformed( loc );
     centralNode = meshDS->AddNode( P.X(), P.Y(), P.Z() );
@@ -1308,9 +1345,6 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
 
     if ( !F.IsNull() ) // force3d
     {
-      uvAvg = ( GetNodeUV(F,n12,n3) +
-                GetNodeUV(F,n23,n1) +
-                GetNodeUV(F,n31,n2) ) / 3.;
       meshDS->SetNodeOnFace( centralNode, faceID, uvAvg.X(), uvAvg.Y() );
     }
     else if ( solidID > 0 )
@@ -3095,7 +3129,7 @@ namespace { // Structures used by FixQuadraticElements()
     chLink->SetFace( this );
     MSGBEG( *this );
 
-    // propagate from quadrangle to neighbour faces
+    // propagate from a quadrangle to neighbour faces
     if ( link->MediumPos() >= pos ) {
       int nbLinkFaces = link->_faces.size();
       if ( nbLinkFaces == 4 || (/*nbLinkFaces < 4 && */link->OnBoundary())) {
@@ -3527,7 +3561,7 @@ namespace { // Structures used by FixQuadraticElements()
           if ( pInterLink == interLinks.end() ) continue; // not internal link
           interLink->Move( bndLink->_nodeMove );
           // treated internal links become new boundary ones
-          interLinks. erase( pInterLink );
+          interLinks.erase( pInterLink );
           newBndLinks->insert( interLink );
         }
       }
@@ -3847,7 +3881,7 @@ namespace { // Structures used by FixQuadraticElements()
           {
             const SMDS_MeshElement* f = faceIt->next();
             if ( !faceSM->Contains( f ) ||
-                 f->NbNodes() != 6      || // check quadratic triangles only
+                 f->NbNodes() < 6       || // check quadratic triangles only
                  !checkedFaces.insert( f ).second )
               continue;
 
@@ -4440,6 +4474,9 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
               gp_XY newUV   = applyIn2D( s, oldUV, gp_XY( move.X(),move.Y()), gp_XY_Added);
               gp_Pnt newPnt = s->Value( newUV.X(), newUV.Y());
               move = gp_Vec( XYZ((*link1)->_mediumNode), newPnt.Transformed(loc) );
+              if ( SMDS_FacePosition* nPos =
+                   dynamic_cast< SMDS_FacePosition* >((*link1)->_mediumNode->GetPosition()))
+                nPos->SetParameters( newUV.X(), newUV.Y() );
 #ifdef _DEBUG_
               if ( (XYZ((*link1)->node1()) - XYZ((*link1)->node2())).SquareModulus() <
                    move.SquareMagnitude())
@@ -4535,23 +4572,23 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
 
   // treat bi-quad triangles
   {
-    const SMDS_MeshNode* nodes[3]; // medium nodes
-    gp_XY uv[ 3 ]; // UV of medium nodes
+    vector< const SMDS_MeshNode* > nodes;
+    gp_XY uv[ 6 ];
     TIDSortedElemSet::iterator triIt = biQuadTris.begin();
     for ( ; triIt != biQuadTris.end(); ++triIt )
     {
       const SMDS_MeshElement* tria = *triIt;
-      // nodes
-      for ( int i = 3; i < 6; ++i )
-        nodes[ i-3 ] = tria->GetNode( i );
       // FACE
       const TopoDS_Shape& S = GetMeshDS()->IndexToShape( tria->getshapeId() );
       if ( S.IsNull() || S.ShapeType() != TopAbs_FACE ) continue;
       const TopoDS_Face& F = TopoDS::Face( S );
       Handle( Geom_Surface ) surf = BRep_Tool::Surface( F, loc );
       const double tol = BRep_Tool::Tolerance( F );
+
+      // nodes
+      nodes.assign( tria->begin_nodes(), tria->end_nodes() );
       // UV
-      for ( int i = 0; i < 3; ++i )
+      for ( int i = 0; i < 6; ++i )
       {
         uv[ i ] = GetNodeUV( F, nodes[i], nodes[(i+1)%3], &checkUV );
         // as this method is used after mesh generation, UV of nodes is not
@@ -4560,7 +4597,7 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
           CheckNodeUV( F, nodes[i], uv[ i ], 2*tol, /*force=*/true );
       }
       // move the central node
-      gp_XY uvCent = ( uv[0] + uv[1] + uv[2] ) / 3.;
+      gp_XY uvCent = GetCenterUV( uv[0], uv[1], uv[2], uv[3], uv[4], uv[5] );
       gp_Pnt p = surf->Value( uvCent.X(), uvCent.Y() ).Transformed( loc );
       GetMeshDS()->MoveNode( tria->GetNode(6), p.X(), p.Y(), p.Z() );
     }
@@ -4628,62 +4665,5 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
                              nCenterCoords.X(), nCenterCoords.Y(), nCenterCoords.Z());
     }
   }
-
-  // Issue 0020982
-  // Move the apex of pyramid together with the most curved link.
-  // TIDSortedNodeSet::iterator apexIt = apexOfPyramid.begin();
-  // for ( ; apexIt != apexOfPyramid.end(); ++apexIt )
-  // {
-  //   SMESH_TNodeXYZ apex = *apexIt;
-
-  //   gp_Vec maxMove( 0,0,0 );
-  //   double maxMoveSize2 = 0;
-
-  //   // shift of node index to get medium nodes between the base nodes
-  //   const int base2MediumShift = 5;
-
-  //   // find maximal movement of medium node
-  //   SMDS_ElemIteratorPtr volIt = apex._node->GetInverseElementIterator( SMDSAbs_Volume );
-  //   vector< const SMDS_MeshElement* > pyramids;
-  //   while ( volIt->more() )
-  //   {
-  //     const SMDS_MeshElement* pyram = volIt->next();
-  //     if ( pyram->GetEntityType() != SMDSEntity_Quad_Pyramid ) continue;
-  //     pyramids.push_back( pyram );
-
-  //     for ( int iBase = 0; iBase < apexIndex; ++iBase )
-  //     {
-  //       SMESH_TNodeXYZ medium = pyram->GetNode( iBase + base2MediumShift );
-  //       if ( medium._node->GetPosition()->GetTypeOfPosition() != SMDS_TOP_3DSPACE )
-  //       {
-  //         SMESH_TNodeXYZ n1 = pyram->GetNode( iBase );
-  //         SMESH_TNodeXYZ n2 = pyram->GetNode( ( iBase+1 ) % 4 );
-  //         gp_Pnt middle = 0.5 * ( n1 + n2 );
-  //         gp_Vec move( middle, medium );
-  //         double moveSize2 = move.SquareMagnitude();
-  //         if ( moveSize2 > maxMoveSize2 )
-  //           maxMove = move, maxMoveSize2 = moveSize2;
-  //       }
-  //     }
-  //   }
-
-  //   // move the apex
-  //   if ( maxMoveSize2 > 1e-20 )
-  //   {
-  //     apex += maxMove.XYZ();
-  //     GetMeshDS()->MoveNode( apex._node, apex.X(), apex.Y(), apex.Z());
-
-  //     // move medium nodes neighboring the apex to the middle
-  //     const int base2MediumShift_2 = 9;
-  //     for ( unsigned i = 0; i < pyramids.size(); ++i )
-  //       for ( int iBase = 0; iBase < apexIndex; ++iBase )
-  //       {
-  //         SMESH_TNodeXYZ         base = pyramids[i]->GetNode( iBase );
-  //         const SMDS_MeshNode* medium = pyramids[i]->GetNode( iBase + base2MediumShift_2 );
-  //         gp_XYZ middle = 0.5 * ( apex + base );
-  //         GetMeshDS()->MoveNode( medium, middle.X(), middle.Y(), middle.Z());
-  //       }
-  //   }
-  // }
 }
 
