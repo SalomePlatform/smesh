@@ -39,6 +39,8 @@ merging. All elements of each group will form one after the operation.
 <li>\b Add button adds to the list a group of elements selected in the
 viewer with pressed "Shift" key.</li>
 <li><b>Select all</b> checkbox selects all groups.</li>
+<li><b>Show double elements IDs</b> checkbox shows/hides identifiers of
+elements in the 3D viewer.</li>
 </ul></li>
 <li><b>Edit selected group</b> list allows editing the selected group:
 <br><br>

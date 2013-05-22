@@ -4835,8 +4835,12 @@ Please select a group and try again</translation>
         <translation>Select all</translation>
     </message>
     <message>
-        <source>SHOW_IDS</source>
+        <source>SHOW_NODES_IDS</source>
         <translation>Show double nodes IDs</translation>
+    </message>
+    <message>
+        <source>SHOW_ELEMS_IDS</source>
+        <translation>Show double elements IDs</translation>
     </message>
     <message>
         <source>EXCLUDE_GROUPS</source>

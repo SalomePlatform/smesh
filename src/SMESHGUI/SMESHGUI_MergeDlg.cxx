@@ -430,7 +430,7 @@ SMESHGUI_MergeDlg::SMESHGUI_MergeDlg (SMESHGUI* theModule, int theAction)
   RemoveGroupButton = new QPushButton(tr("SMESH_BUT_REMOVE"), GroupCoincidentWidget);
 
   SelectAllCB = new QCheckBox(tr("SELECT_ALL"), GroupCoincidentWidget);
-  ShowIDs = new QCheckBox(tr("SHOW_IDS"), GroupCoincidentWidget);
+  ShowIDs = new QCheckBox(myAction == 1 ? tr("SHOW_ELEMS_IDS") : tr("SHOW_NODES_IDS"), GroupCoincidentWidget);
 
   GroupCoincidentLayout->addWidget(ListCoincident,    0,   0, 4, 2);
   GroupCoincidentLayout->addWidget(DetectButton,      0,   2);
