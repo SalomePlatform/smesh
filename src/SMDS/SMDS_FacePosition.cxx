@@ -84,3 +84,14 @@ double SMDS_FacePosition::GetVParameter() const
 {
         return myVParameter;
 }
+
+//=======================================================================
+//function : SetParameters
+//purpose  : 
+//=======================================================================
+
+void SMDS_FacePosition::SetParameters(double aUparam, double aVparam)
+{
+  myUParameter = aUparam;
+  myVParameter = aVparam;
+}

@@ -39,6 +39,7 @@ class SMDS_EXPORT SMDS_FacePosition:public SMDS_Position
         SMDS_TypeOfPosition GetTypeOfPosition() const;
         void SetUParameter(double aUparam);
         void SetVParameter(double aVparam);
+        void SetParameters(double aUparam, double aVparam);
         double GetUParameter() const;
         double GetVParameter() const;
 
