@@ -27,10 +27,9 @@ import salome
 SMESH = None    # SMESH module is loaded only when needed
 
 from salome.kernel.studyedit import getStudyEditor
-try:
-    from salome.gui import helper
-except ImportError:
-    pass
+from salome.kernel.deprecation import is_called_by_sphinx
+if not is_called_by_sphinx():
+  from salome.gui import helper
 
 class SMeshStudyTools:
     """
