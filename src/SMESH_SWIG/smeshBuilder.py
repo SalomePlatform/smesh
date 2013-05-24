@@ -1354,7 +1354,10 @@ class Mesh:
                 if errText: errText += ". "
                 errText += err.comment
                 if allReasons != "":allReasons += "\n"
-                allReasons += '-  "%s" failed%s. Error: %s' %(err.algoName, shapeText, errText)
+                if ok:
+                    allReasons += '-  "%s"%s - %s' %(err.algoName, shapeText, errText)
+                else:
+                    allReasons += '-  "%s" failed%s. Error: %s' %(err.algoName, shapeText, errText)
                 pass
 
             # Treat hyp errors
