@@ -583,13 +583,13 @@ SMESH::Hypothesis_Status SMESH_Mesh_i::AddHypothesis(GEOM::GEOM_Object_ptr      
   if(MYDEBUG) MESSAGE( " AddHypothesis(): status = " << status );
 
   // Update Python script
-  if(_impl->HasShapeToMesh()) {
+  //if(_impl->HasShapeToMesh()) {
     TPythonDump() << "status = " << _this() << ".AddHypothesis( "
                   << aSubShapeObject << ", " << anHyp << " )";
-  }
-  else {
-    TPythonDump() << "status = " << _this() << ".AddHypothesis( "<< anHyp << " )";
-  }
+  // }
+  // else {
+  //   TPythonDump() << "status = " << _this() << ".AddHypothesis( "<< anHyp << " )";
+  // }
   
   return ConvertHypothesisStatus(status);
 }
@@ -1109,30 +1109,27 @@ SMESH::ListOfGroups * SMESH_Mesh_i::GetGroups() throw(SALOME::SALOME_Exception)
 
   // Python Dump
   TPythonDump aPythonDump;
-  if ( !_mapGroups.empty() ) // (IMP13463) avoid "SyntaxError: can't assign to []"
+  if ( !_mapGroups.empty() )
+  {
     aPythonDump << "[ ";
-
-  try {
-    aList->length( _mapGroups.size() );
-    int i = 0;
-    map<int, SMESH::SMESH_GroupBase_ptr>::iterator it = _mapGroups.begin();
-    for ( ; it != _mapGroups.end(); it++ ) {
-      if ( CORBA::is_nil( it->second )) continue;
-      aList[i++] = SMESH::SMESH_GroupBase::_duplicate( it->second );
-      // Python Dump
-      if (i > 1) aPythonDump << ", ";
-      aPythonDump << it->second;
+    try {
+      aList->length( _mapGroups.size() );
+      int i = 0;
+      map<int, SMESH::SMESH_GroupBase_ptr>::iterator it = _mapGroups.begin();
+      for ( ; it != _mapGroups.end(); it++ ) {
+        if ( CORBA::is_nil( it->second )) continue;
+        aList[i++] = SMESH::SMESH_GroupBase::_duplicate( it->second );
+        // Python Dump
+        if (i > 1) aPythonDump << ", ";
+        aPythonDump << it->second;
+      }
+      aList->length( i );
     }
-    aList->length( i );
-  }
-  catch(SALOME_Exception & S_ex) {
-    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
-  }
-
-  // Update Python script
-  if ( !_mapGroups.empty() ) // (IMP13463) avoid "SyntaxError: can't assign to []"
+    catch(SALOME_Exception & S_ex) {
+      THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+    }
     aPythonDump << " ] = " << _this() << ".GetGroups()";
-
+  }
   return aList._retn();
 }
 
