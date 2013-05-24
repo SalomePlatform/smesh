@@ -1049,6 +1049,9 @@ SMESH_Hypothesis::Hypothesis_Status
   if ( stateChange && _algoState == HYP_OK ) // hyp becomes OK
     algo->SetEventListener( this );
 
+  if ( event == REMOVE_ALGO || event == REMOVE_FATHER_ALGO )
+    _algo = 0;
+
   notifyListenersOnEvent( event, ALGO_EVENT, anHyp );
 
   if ( stateChange && oldAlgoState == HYP_OK ) { // hyp becomes KO
@@ -1512,7 +1515,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           {
             ret = algo->Compute((*_father), shape);
           }
-          if ( !_computeError || ( !ret && _computeError->IsOK() ) ) // algo can set _computeError of submesh
+          if ( !_computeError || (/* !ret && */_computeError->IsOK() ) ) // algo can set _computeError of submesh
             _computeError = algo->GetComputeError();
         }
         catch ( ::SMESH_ComputeError& comperr ) {
@@ -2272,7 +2275,7 @@ void SMESH_subMesh::notifyListenersOnEvent( const int         event,
 
       li_da.first->ProcessEvent( event, eventType, this, li_da.second, hyp );
 
-      if ( !isDeletable || !_eventListeners.count( li_da.first ))
+      if ( !isDeletable || _eventListeners.count( li_da.first ))
         li_da.first->myBusySM.erase( this ); // a listener is hopefully not dead
     }
   }
