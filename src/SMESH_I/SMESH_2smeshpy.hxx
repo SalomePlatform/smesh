@@ -594,6 +594,7 @@ public:
   virtual void Process( const Handle(_pyCommand)& theCommand);
   virtual void Flush();
   virtual void Free() { myFilter.Nullify(); }
+  virtual bool CanClear();
   void RemovedWithContents();
 
   DEFINE_STANDARD_RTTI (_pyGroup)

@@ -1407,7 +1407,7 @@ bool _pyGen::IsNotPublished(const _pyID& theObjID) const
 
 //================================================================================
 /*!
- * \brief Remove object name from myObjectNames that leads to that SetName() for
+ * \brief Add an object to myRemovedObjIDs that leads to that SetName() for
  *        this object is not dumped
  *  \param [in] theObjID - entry of the object whose creation command was eliminated
  */
@@ -1616,31 +1616,61 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
     myGroups.push_back( group );
     theGen->AddObject( group );
   }
+  // ----------------------------------------------------------------------
   // update list of groups
   else if ( method == "GetGroups" )
   {
+    bool allGroupsRemoved = true;
     TCollection_AsciiString grIDs = theCommand->GetResultValue();
-    list< _pyID > idList = theCommand->GetStudyEntries( grIDs );
-    list< _pyID >::iterator grID = idList.begin();
+    list< _pyID >          idList = theCommand->GetStudyEntries( grIDs );
+    list< _pyID >::iterator  grID = idList.begin();
+    const int nbGroupsBefore = myGroups.size();
+    Handle(_pyObject) obj;
     for ( ; grID != idList.end(); ++grID )
     {
-      Handle(_pyObject) obj = theGen->FindObject( *grID );
+      obj = theGen->FindObject( *grID );
       if ( obj.IsNull() )
       {
         Handle(_pyGroup) group = new _pyGroup( theCommand, *grID );
         theGen->AddObject( group );
         myGroups.push_back( group );
+        obj = group;
       }
+      if ( !obj->CanClear() )
+        allGroupsRemoved = false;
+    }
+    if ( nbGroupsBefore == myGroups.size() ) // no new _pyGroup created
+      obj->AddProcessedCmd( theCommand ); // to clear theCommand if all groups are removed
+
+    if ( !allGroupsRemoved && !theGen->IsToKeepAllCommands() )
+    {
+      // check if the preceding command is Compute();
+      // if GetGroups() is just after Compute(), this can mean that the groups
+      // were created by some algorithm and hence Compute() should not be discarded
+      std::list< Handle(_pyCommand) >& cmdList = theGen->GetCommands();
+      std::list< Handle(_pyCommand) >::iterator cmd = cmdList.begin();
+      while ( (*cmd)->GetMethod() == "GetGroups" )
+        ++cmd;
+      if ( myLastComputeCmd == (*cmd))
+        // protect last Compute() from clearing by the next Compute()
+        myLastComputeCmd.Nullify();
     }
   }
+  // ----------------------------------------------------------------------
   // notify a group about full removal
-  else if ( method == "RemoveGroupWithContents" )
+  else if ( method == "RemoveGroupWithContents" ||
+            method == "RemoveGroup")
   {
     if ( !theGen->IsToKeepAllCommands() ) { // snapshot mode
       const _pyID groupID = theCommand->GetArg( 1 );
       Handle(_pyGroup) grp = Handle(_pyGroup)::DownCast( theGen->FindObject( groupID ));
       if ( !grp.IsNull() )
-        grp->RemovedWithContents();
+      {
+        if ( method == "RemoveGroupWithContents" )
+          grp->RemovedWithContents();
+        // to clear RemoveGroup() if the group creation is cleared
+        grp->AddProcessedCmd( theCommand );
+      }
     }
   }
   // ----------------------------------------------------------------------
@@ -4018,12 +4048,55 @@ _pyGroup::_pyGroup(const Handle(_pyCommand)& theCreationCmd, const _pyID & id)
     }
     myFilter = filter;
   }
+  else if ( method == "GetGroups" )
+  {
+    myCanClearCreationCmd = ( theCreationCmd->GetNbResultValues() == 1 );
+  }
   else
   {
     // theCreationCmd does something else apart from creation of this group
     // and thus it can't be cleared if this group is removed
     myCanClearCreationCmd = false;
   }
+}
+
+//================================================================================
+/*!
+ * \brief Check if "[ group1, group2 ] = mesh.GetGroups()" creation command 
+ *        can be cleared
+ */
+//================================================================================
+
+bool _pyGroup::CanClear()
+{
+  if ( IsInStudy() )
+    return false;
+
+  if ( !myCanClearCreationCmd && myCreationCmd->GetMethod() == "GetGroups" )
+  {
+    TCollection_AsciiString grIDs = myCreationCmd->GetResultValue();
+    list< _pyID >          idList = myCreationCmd->GetStudyEntries( grIDs );
+    list< _pyID >::iterator  grID = idList.begin();
+    if ( GetID() == *grID )
+    {
+      myCanClearCreationCmd = true;
+      list< Handle(_pyGroup ) > groups;
+      for ( ; grID != idList.end(); ++grID )
+      {
+        Handle(_pyGroup) group = Handle(_pyGroup)::DownCast( theGen->FindObject( *grID ));
+        if ( group.IsNull() ) continue;
+        groups.push_back( group );
+        if ( group->IsInStudy() )
+          myCanClearCreationCmd = false;
+      }
+      // set myCanClearCreationCmd == true to all groups
+      list< Handle(_pyGroup ) >::iterator group = groups.begin();
+      for ( ; group != groups.end(); ++group )
+        (*group)->myCanClearCreationCmd = myCanClearCreationCmd;
+    }
+  }
+
+  return myCanClearCreationCmd;
 }
 
 //================================================================================
