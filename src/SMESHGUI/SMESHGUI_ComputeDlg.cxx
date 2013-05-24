@@ -356,7 +356,8 @@ namespace SMESH
         text = QObject::tr("COMPERR_ALGO_FAILED");
       break;
     case SMESH::COMPERR_WARNING:
-      return comment ? QString(comment) : QObject::tr("COMPERR_UNKNOWN");
+      text = QObject::tr( (comment && strlen(comment)) ? "COMPERR_WARNING" : "COMPERR_UNKNOWN");
+      break;
     default:
       text = QString("#%1").arg( -errCode );
     }

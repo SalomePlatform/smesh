@@ -124,6 +124,10 @@
         <translation>std::exception</translation>
     </message>
     <message>
+        <source>COMPERR_WARNING</source>
+        <translation>Warning</translation>
+    </message>
+    <message>
         <source>COMPERR_UNKNOWN</source>
         <translation>Unknown error</translation>
     </message>
