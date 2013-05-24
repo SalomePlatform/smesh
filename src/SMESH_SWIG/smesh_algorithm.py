@@ -180,7 +180,7 @@ class Mesh_Algorithm:
 
     ## Private method.
     def Create(self, mesh, geom, hypo, so="libStdMeshersEngine.so"):
-        if geom is None:
+        if geom is None and mesh.mesh.HasShapeToMesh():
             raise RuntimeError, "Attemp to create " + hypo + " algoritm on None shape"
         algo = self.FindAlgorithm(hypo, mesh.smeshpyD)
         if algo is None:
@@ -192,7 +192,7 @@ class Mesh_Algorithm:
     ## Private method
     def Assign(self, algo, mesh, geom):
         from salome.smesh.smeshBuilder import AssureGeomPublished, TreatHypoStatus, GetName
-        if geom is None:
+        if geom is None and mesh.mesh.HasShapeToMesh():
             raise RuntimeError, "Attemp to create " + algo + " algoritm on None shape"
         self.mesh = mesh
         name = ""
