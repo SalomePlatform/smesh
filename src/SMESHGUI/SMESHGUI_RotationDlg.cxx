@@ -525,8 +525,10 @@ bool SMESHGUI_RotationDlg::ClickOnApply()
     } catch (...) {
     }
 
-    for ( int i = 0; i < myMeshes.count(); i++ ) 
-      SMESH::Update( (SMESH::FindActorByObject( myMeshes[i] ))->getIO(), true );
+    for ( int i = 0; i < myObjects.count(); i++ ) {
+      SMESH_Actor* actor = SMESH::FindActorByObject( myObjects[i] );
+      if ( actor ) SMESH::Update( actor->getIO(), true );
+    }
    
     if ( ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() ) ||
          actionButton == MAKE_MESH_BUTTON ) {
