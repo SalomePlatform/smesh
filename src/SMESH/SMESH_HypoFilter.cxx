@@ -193,9 +193,9 @@ SMESH_HypoFilter::SMESH_HypoFilter()
 //purpose  : 
 //=======================================================================
 
-SMESH_HypoFilter::SMESH_HypoFilter( SMESH_HypoPredicate* aPredicate, bool notNagate )
+SMESH_HypoFilter::SMESH_HypoFilter( SMESH_HypoPredicate* aPredicate, bool notNegate )
 {
-  add( notNagate ? AND : AND_NOT, aPredicate );
+  add( notNegate ? AND : AND_NOT, aPredicate );
 }
 
 //=======================================================================
@@ -376,14 +376,14 @@ bool SMESH_HypoFilter::IsOk (const SMESH_Hypothesis* aHyp,
 //purpose  : 
 //=======================================================================
 
-SMESH_HypoFilter & SMESH_HypoFilter::Init  ( SMESH_HypoPredicate* aPredicate, bool notNagate )
+SMESH_HypoFilter & SMESH_HypoFilter::Init  ( SMESH_HypoPredicate* aPredicate, bool notNegate )
 {
   list<SMESH_HypoPredicate*>::const_iterator pred = myPredicates.begin();
   for ( ; pred != myPredicates.end(); ++pred )
     delete *pred;
   myPredicates.clear();
 
-  add( notNagate ? AND : AND_NOT, aPredicate );
+  add( notNegate ? AND : AND_NOT, aPredicate );
   return *this;
 }
 

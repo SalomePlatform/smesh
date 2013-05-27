@@ -59,9 +59,9 @@ class SMESH_EXPORT SMESH_HypoFilter: public SMESH_HypoPredicate
   // Create and add predicates.
   // Added predicates will be destroyed by filter when it dies
   SMESH_HypoFilter();
-  SMESH_HypoFilter( SMESH_HypoPredicate* aPredicate, bool notNagate = true );
-  // notNagate==false means !aPredicate->IsOk()
-  SMESH_HypoFilter & Init  ( SMESH_HypoPredicate* aPredicate, bool notNagate = true );
+  SMESH_HypoFilter( SMESH_HypoPredicate* aPredicate, bool notNegate = true );
+  // notNegate==false means !aPredicate->IsOk()
+  SMESH_HypoFilter & Init  ( SMESH_HypoPredicate* aPredicate, bool notNegate = true );
   SMESH_HypoFilter & And   ( SMESH_HypoPredicate* aPredicate );
   SMESH_HypoFilter & AndNot( SMESH_HypoPredicate* aPredicate );
   SMESH_HypoFilter & Or    ( SMESH_HypoPredicate* aPredicate );
