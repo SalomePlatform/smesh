@@ -2031,8 +2031,8 @@ TopoDS_Shape StdMeshers_ProjectionUtils::OuterShape( const TopoDS_Face& face,
 
 //================================================================================
 /*
- * Check that submesh is computed and try to compute it if is not
- *  \param sm - submesh to compute
+ * Check that sub-mesh is computed and try to compute it if is not
+ *  \param sm - sub-mesh to compute
  *  \param iterationNb - int used to stop infinite recursive call
  *  \retval bool - true if computed
  */
@@ -2047,30 +2047,65 @@ bool StdMeshers_ProjectionUtils::MakeComputed(SMESH_subMesh * sm, const int iter
   if ( sm->IsMeshComputed() )
     return true;
 
-  SMESH_Mesh* mesh = sm->GetFather();
-  SMESH_Gen*   gen = mesh->GetGen();
-  SMESH_Algo* algo = sm->GetAlgo();
+  SMESH_Mesh*   mesh = sm->GetFather();
+  SMESH_Gen*     gen = mesh->GetGen();
+  SMESH_Algo*   algo = sm->GetAlgo();
+  TopoDS_Shape shape = sm->GetSubShape();
   if ( !algo )
   {
-    if ( sm->GetSubShape().ShapeType() != TopAbs_COMPOUND )
-      RETURN_BAD_RESULT("No algo assigned to submesh " << sm->GetId());
-    // group
-    bool computed = true;
-    for ( TopoDS_Iterator grMember( sm->GetSubShape() ); grMember.More(); grMember.Next())
-      if ( SMESH_subMesh* grSub = mesh->GetSubMesh( grMember.Value() ))
-        if ( !MakeComputed( grSub, iterationNb + 1 ))
-          computed = false;
-    return computed;
+    if ( shape.ShapeType() != TopAbs_COMPOUND )
+    {
+      // No algo assigned to a non-compound sub-mesh.
+      // Try to find an all-dimensional algo of an upper dimension
+      int dim = gen->GetShapeDim( shape );
+      for ( ++dim; ( dim <= 3 && !algo ); ++dim )
+      {
+        SMESH_HypoFilter hypoFilter( SMESH_HypoFilter::IsAlgo() );
+        hypoFilter.And( SMESH_HypoFilter::HasDim( dim ));
+        list <const SMESHDS_Hypothesis * > hyps;
+        list< TopoDS_Shape >               assignedTo;
+        int nbAlgos =
+          mesh->GetHypotheses( shape, hypoFilter, hyps, true, &assignedTo );
+        if ( nbAlgos > 1 ) // concurrent algos
+        {
+          list<SMESH_subMesh*> smList; // where an algo is assigned
+          list< TopoDS_Shape >::iterator shapeIt = assignedTo.begin();
+          for ( ; shapeIt != assignedTo.end(); ++shapeIt )
+            smList.push_back( mesh->GetSubMesh( *shapeIt ));
+
+          mesh->SortByMeshOrder( smList );
+          algo  = smList.front()->GetAlgo();
+          shape = smList.front()->GetSubShape();
+        }
+        else if ( nbAlgos == 1 )
+        {
+          algo = (SMESH_Algo*) hyps.front();
+          shape = assignedTo.front();
+        }
+      }
+      if ( !algo )
+        return false;
+    }
+    else
+    {
+      // group
+      bool computed = true;
+      for ( TopoDS_Iterator grMember( shape ); grMember.More(); grMember.Next())
+        if ( SMESH_subMesh* grSub = mesh->GetSubMesh( grMember.Value() ))
+          if ( !MakeComputed( grSub, iterationNb + 1 ))
+            computed = false;
+      return computed;
+    }
   }
 
   string algoType = algo->GetName();
   if ( algoType.substr(0, 11) != "Projection_")
-    return gen->Compute( *mesh, sm->GetSubShape() );
+    return gen->Compute( *mesh, shape );
 
   // try to compute source mesh
 
   const list <const SMESHDS_Hypothesis *> & hyps =
-    algo->GetUsedHypothesis( *mesh, sm->GetSubShape() );
+    algo->GetUsedHypothesis( *mesh, shape );
 
   TopoDS_Shape srcShape;
   SMESH_Mesh* srcMesh = 0;
@@ -2097,16 +2132,16 @@ bool StdMeshers_ProjectionUtils::MakeComputed(SMESH_subMesh * sm, const int iter
     }
   }
   if ( srcShape.IsNull() ) // no projection source defined
-    return gen->Compute( *mesh, sm->GetSubShape() );
+    return gen->Compute( *mesh, shape );
 
-  if ( srcShape.IsSame( sm->GetSubShape() ))
+  if ( srcShape.IsSame( shape ))
     RETURN_BAD_RESULT("Projection from self");
     
   if ( !srcMesh )
     srcMesh = mesh;
 
   if ( MakeComputed( srcMesh->GetSubMesh( srcShape ), iterationNb + 1 ) &&
-       gen->Compute( *mesh, sm->GetSubShape() ))
+       gen->Compute( *mesh, shape ))
     return sm->IsMeshComputed();
 
   return false;
