@@ -627,7 +627,9 @@ static bool checkConformIgnoredAlgos(SMESH_Mesh&               aMesh,
           theErrors.back().Set( SMESH_Hypothesis::HYP_NOTCONFORM, algo, false );
         }
 
-        // sub-algos will be hidden by a local <algo>
+        // sub-algos will be hidden by a local <algo> if <algo> does not support sub-meshes
+        if ( algo->SupportSubmeshes() )
+          algo = 0;
         SMESH_subMeshIteratorPtr revItSub =
           aSubMesh->getDependsOnIterator( /*includeSelf=*/false, /*complexShapeFirst=*/true);
         bool checkConform2 = false;
