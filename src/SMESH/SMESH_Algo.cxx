@@ -262,15 +262,16 @@ const vector < string > &SMESH_Algo::GetCompatibleHypothesis()
 const list <const SMESHDS_Hypothesis *> &
 SMESH_Algo::GetUsedHypothesis(SMESH_Mesh &         aMesh,
                               const TopoDS_Shape & aShape,
-                              const bool           ignoreAuxiliary)
+                              const bool           ignoreAuxiliary) const
 {
-  _usedHypList.clear();
+  SMESH_Algo* me = const_cast< SMESH_Algo* >( this );
+  me->_usedHypList.clear();
   SMESH_HypoFilter filter;
   if ( InitCompatibleHypoFilter( filter, ignoreAuxiliary ))
   {
-    aMesh.GetHypotheses( aShape, filter, _usedHypList, true );
+    aMesh.GetHypotheses( aShape, filter, me->_usedHypList, true );
     if ( ignoreAuxiliary && _usedHypList.size() > 1 )
-      _usedHypList.clear(); //only one compatible hypothesis allowed
+      me->_usedHypList.clear(); //only one compatible hypothesis allowed
   }
   return _usedHypList;
 }
@@ -286,12 +287,13 @@ SMESH_Algo::GetUsedHypothesis(SMESH_Mesh &         aMesh,
 const list<const SMESHDS_Hypothesis *> &
 SMESH_Algo::GetAppliedHypothesis(SMESH_Mesh &         aMesh,
                                  const TopoDS_Shape & aShape,
-                                 const bool           ignoreAuxiliary)
+                                 const bool           ignoreAuxiliary) const
 {
-  _appliedHypList.clear();
+  SMESH_Algo* me = const_cast< SMESH_Algo* >( this );
+  me->_appliedHypList.clear();
   SMESH_HypoFilter filter;
   if ( InitCompatibleHypoFilter( filter, ignoreAuxiliary ))
-    aMesh.GetHypotheses( aShape, filter, _appliedHypList, false );
+    aMesh.GetHypotheses( aShape, filter, me->_appliedHypList, false );
 
   return _appliedHypList;
 }

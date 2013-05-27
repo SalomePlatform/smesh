@@ -195,7 +195,7 @@ class SMESH_EXPORT SMESH_Algo : public SMESH_Hypothesis
   virtual const std::list <const SMESHDS_Hypothesis *> &
   GetUsedHypothesis(SMESH_Mesh &         aMesh,
                     const TopoDS_Shape & aShape,
-                    const bool           ignoreAuxiliary=true);
+                    const bool           ignoreAuxiliary=true) const;
   /*!
    * \brief Returns a list of compatible hypotheses assigned to a shape in a mesh
     * \param aMesh - the mesh 
@@ -210,7 +210,7 @@ class SMESH_EXPORT SMESH_Algo : public SMESH_Hypothesis
   const list <const SMESHDS_Hypothesis *> &
   GetAppliedHypothesis(SMESH_Mesh &         aMesh,
                        const TopoDS_Shape & aShape,
-                       const bool           ignoreAuxiliary=true);
+                       const bool           ignoreAuxiliary=true) const;
   /*!
    * \brief Make the filter recognize only compatible hypotheses
    * \param theFilter - the filter to initialize
