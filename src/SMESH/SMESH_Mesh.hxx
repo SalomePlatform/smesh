@@ -144,8 +144,9 @@ public:
   
   int GetHypotheses(const TopoDS_Shape &                     aSubShape,
                     const SMESH_HypoFilter&                  aFilter,
-                    std::list <const SMESHDS_Hypothesis * >& aHypList,
-                    const bool                               andAncestors) const;
+                    std::list< const SMESHDS_Hypothesis * >& aHypList,
+                    const bool                               andAncestors,
+                    std::list< TopoDS_Shape > *              assignedTo=0) const;
 
   const std::list<SMESHDS_Command*> & GetLog() throw(SALOME_Exception);
   

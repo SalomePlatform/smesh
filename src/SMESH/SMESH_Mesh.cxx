@@ -813,7 +813,8 @@ const SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const TopoDS_Shape &    aSubS
 int SMESH_Mesh::GetHypotheses(const TopoDS_Shape &                aSubShape,
                               const SMESH_HypoFilter&             aFilter,
                               list <const SMESHDS_Hypothesis * >& aHypList,
-                              const bool                          andAncestors) const
+                              const bool                          andAncestors,
+                              list< TopoDS_Shape > *              assignedTo/*=0*/) const
 {
   set<string> hypTypes; // to exclude same type hypos from the result list
   int nbHyps = 0;
@@ -842,6 +843,7 @@ int SMESH_Mesh::GetHypotheses(const TopoDS_Shape &                aSubShape,
         nbHyps++;
         if ( !cSMESH_Hyp(*hyp)->IsAuxiliary() )
           mainHypFound = true;
+        if ( assignedTo ) assignedTo->push_back( aSubShape );
       }
   }
 
@@ -868,6 +870,7 @@ int SMESH_Mesh::GetHypotheses(const TopoDS_Shape &                aSubShape,
           nbHyps++;
           if ( !cSMESH_Hyp(*hyp)->IsAuxiliary() )
             mainHypFound = true;
+          if ( assignedTo ) assignedTo->push_back( curSh );
         }
     }
   }
