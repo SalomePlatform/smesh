@@ -95,6 +95,7 @@ namespace SMESH
       if ( !p ) p = aStudy->FindComponent( "SMESH" );
       if ( p ) {
         _PTR(ChildIterator) iter = aStudy->NewChildIterator( p );
+        iter->InitEx(/*allLevels=*/true);
         int idx = 0;
         while( true ) {
           bool found = false;
