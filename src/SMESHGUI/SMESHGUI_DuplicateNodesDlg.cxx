@@ -29,6 +29,7 @@
 
 #include "SMESHGUI.h"
 #include "SMESHGUI_Utils.h"
+#include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_VTKUtils.h"
 
 #include <SMESH_TypeFilter.hxx>
@@ -63,6 +64,7 @@
 #include <QKeyEvent>
 
 #include <utilities.h>
+#include <SALOMEDSClient_SObject.hxx>
 
 // IDL includes
 #include <SALOMEconfig.h>
@@ -107,6 +109,7 @@ SMESHGUI_DuplicateNodesDlg::SMESHGUI_DuplicateNodesDlg( SMESHGUI* theModule )
   SUIT_ResourceMgr* aResMgr = SMESH::GetResourceMgr( mySMESHGUI );
   QPixmap iconWithoutElem (aResMgr->loadPixmap("SMESH", tr("ICON_SMESH_DUPLICATE_NODES")));
   QPixmap iconWithElem (aResMgr->loadPixmap("SMESH", tr("ICON_SMESH_DUPLICATE_NODES_WITH_ELEM")));
+  QPixmap iconElemOnly (aResMgr->loadPixmap("SMESH", tr("ICON_SMESH_DUPLICATE_ELEM_ONLY")));
   QPixmap iconSelect (aResMgr->loadPixmap("SMESH", tr("ICON_SELECT")));
 
   // Main layout
@@ -125,11 +128,15 @@ SMESHGUI_DuplicateNodesDlg::SMESHGUI_DuplicateNodesDlg( SMESHGUI* theModule )
   aRadioButton1->setIcon(iconWithoutElem);
   QRadioButton* aRadioButton2 = new QRadioButton(aConstructorsBox);
   aRadioButton2->setIcon(iconWithElem);
+  QRadioButton* aRadioButton3 = new QRadioButton(aConstructorsBox);
+  aRadioButton3->setIcon(iconElemOnly);
   
   aConstructorsBoxLayout->addWidget(aRadioButton1);
   aConstructorsBoxLayout->addWidget(aRadioButton2);
+  aConstructorsBoxLayout->addWidget(aRadioButton3);
   myGroupConstructors->addButton(aRadioButton1, 0);
   myGroupConstructors->addButton(aRadioButton2, 1);
+  myGroupConstructors->addButton(aRadioButton3, 2);
 
   // Arguments
   myGroupArguments = new QGroupBox(this);
@@ -200,6 +207,9 @@ SMESHGUI_DuplicateNodesDlg::SMESHGUI_DuplicateNodesDlg( SMESHGUI* theModule )
   aMainLayout->addWidget(myGroupArguments);
   aMainLayout->addWidget(aGroupButtons);
   
+  myCheckBoxNewElemGroup->setChecked(true);
+  myCheckBoxNewNodeGroup->setChecked(true);
+
   // Initialize the dialog
   Init();
 
@@ -237,8 +247,6 @@ SMESHGUI_DuplicateNodesDlg::~SMESHGUI_DuplicateNodesDlg()
 void SMESHGUI_DuplicateNodesDlg::Init()
 {
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
-  myCheckBoxNewElemGroup->setChecked(true);
-  myCheckBoxNewNodeGroup->setChecked(true);
 
   // Set initial parameters
   myBusy = false;
@@ -318,6 +326,25 @@ void SMESHGUI_DuplicateNodesDlg::onConstructorsClicked (int constructorId)
 
       break;
     }
+  case 2:
+    {
+      // Set text to the group of arguments and to all the labels
+      myGroupArguments->setTitle(tr("DUPLICATION_ONLY_ELEMS"));
+      myTextLabel1->setText(tr("GROUP_ELEMS_TO_DUPLICATE"));
+      
+      myCheckBoxNewElemGroup->show();
+      myCheckBoxNewNodeGroup->hide();
+
+      // Hide the second and the third field
+      myTextLabel2->hide();
+      mySelectButton2->hide();
+      myLineEdit2->hide();
+      myTextLabel3->hide();
+      mySelectButton3->hide();
+      myLineEdit3->hide();
+
+      break;
+    }
   }
   
   // Process selection
@@ -336,17 +363,20 @@ bool SMESHGUI_DuplicateNodesDlg::onApply()
  
   bool toCreateElemGroup = myCheckBoxNewElemGroup->isChecked();
   bool toCreateNodeGroup = myCheckBoxNewNodeGroup->isChecked();
-  int operationMode = myGroupConstructors->checkedId();
+  int operationMode      = myGroupConstructors->checkedId();
   
   // Apply changes
   bool result = false;
   SUIT_OverrideCursor aWaitCursor;
+  QStringList anEntryList;
 
   try {
     SMESH::SMESH_Mesh_var aMesh = myGroups1[0]->GetMesh();
     SMESH::SMESH_MeshEditor_var aMeshEditor = aMesh->GetMeshEditor();
 
-    if ( operationMode == 0 ) {
+    switch ( operationMode ) {
+    case 0:
+    {
       SMESH::ListOfGroups_var g1 = new SMESH::ListOfGroups();
       g1->length( myGroups1.count() );
       for ( int i = 0; i < myGroups1.count(); i++ )
@@ -364,8 +394,10 @@ bool SMESHGUI_DuplicateNodesDlg::onApply()
       else {
         result = aMeshEditor->DoubleNodeGroups( g1.in(), g2.in() );
       }
+      break;
     }
-    else {
+    case 1:
+    {
       SMESH::ListOfGroups_var g1 = new SMESH::ListOfGroups();
       g1->length( myGroups1.count() );
       for ( int i = 0; i < myGroups1.count(); i++ )
@@ -388,6 +420,31 @@ bool SMESHGUI_DuplicateNodesDlg::onApply()
       else {
         result = aMeshEditor->DoubleNodeElemGroups( g1.in(), g2.in(), g3.in() );
       }
+      break;
+    }
+    case 2:
+    {
+      result = true;
+      QString groupName;
+      if ( toCreateElemGroup )
+        groupName = SMESH::UniqueName("DoubleElements");
+      for ( int i = 0; i < myGroups1.count(); i++ )
+      {
+        SMESH::SMESH_Group_var group =
+          aMeshEditor->DoubleElements( myGroups1[i], groupName.toLatin1().data() );
+        if ( group->_is_nil() )
+        {
+          if ( toCreateElemGroup )
+            result = false;
+        }
+        else
+        {
+          if ( _PTR(SObject) so = SMESH::FindSObject( group ))
+            anEntryList.append( so->GetID().c_str() );
+        }
+      }
+      break;
+    }
     }
   }
   catch (const SALOME::SALOME_Exception& S_ex) {
@@ -396,7 +453,7 @@ bool SMESHGUI_DuplicateNodesDlg::onApply()
   catch ( const std::exception& exc ) {
     INFOS( "Follow exception was cought:\n\t" << exc.what() );
   } 
-  catch (...){
+  catch (...) {
     INFOS( "Unknown exception was cought !!!" );
   }
 
@@ -413,9 +470,14 @@ bool SMESHGUI_DuplicateNodesDlg::onApply()
   SMESHGUI::Modified();
   mySMESHGUI->updateObjBrowser(true);
 
+  if ( !anEntryList.isEmpty())
+    if( LightApp_Application* anApp =
+        dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ))
+      anApp->browseObjects( anEntryList, true, false );
+
   // Reinitialize the dialog
   Init();
-  
+
   return true;
 }
 
@@ -471,15 +533,20 @@ void SMESHGUI_DuplicateNodesDlg::onSelectionChanged()
     // check group of proper type is selected
     if ( ok ) {
       SMESH::ElementType aGroupType = aGroup->GetType();
-      if ( operationMode == 0 ) {
+      switch ( operationMode ) {
+      case 0:
         ok = ( myCurrentLineEdit == myLineEdit1 && aGroupType == SMESH::NODE ) ||
              ( myCurrentLineEdit == myLineEdit2 && aGroupType != SMESH::NODE );
-      }
-      else {
+        break;
+      case 1:
         ok = ( myCurrentLineEdit == myLineEdit1 && ( aGroupType == SMESH::EDGE ||
                                                      aGroupType == SMESH::FACE ) ) ||
              ( myCurrentLineEdit == myLineEdit2 && aGroupType == SMESH::NODE )     ||
              ( myCurrentLineEdit == myLineEdit3 && aGroupType != SMESH::NODE );
+        break;
+      case 2:
+        ok = ( aGroupType != SMESH::NODE );
+        break;
       }
     }
     if ( ok ) aGroups << aGroup;
@@ -533,7 +600,7 @@ void SMESHGUI_DuplicateNodesDlg::onEditCurrentArgument()
 
 /*!
   \brief Check if the input data is valid.
-  \return \c true id the data is valid
+  \return \c true if the data is valid
 */
 bool SMESHGUI_DuplicateNodesDlg::isValid()
 {

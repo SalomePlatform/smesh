@@ -946,7 +946,7 @@
     </message>
     <message>
         <source>MEN_DUPLICATE_NODES</source>
-        <translation>Duplicate Nodes</translation>
+        <translation>Duplicate Nodes or/and Elements</translation>
     </message>
     <message>
         <source>MEN_TRANSF</source>
@@ -2555,7 +2555,7 @@ Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>SMESH_DUPLICATE_TITLE</source>
-        <translation>Duplicate Nodes</translation>
+        <translation>Duplicate Nodes and/or Elements</translation>
     </message>
     <message>
         <source>SMESH_SCALE</source>
@@ -3283,7 +3283,7 @@ Please check preferences of Mesh module.
     </message>
     <message>
         <source>STB_DUPLICATE_NODES</source>
-        <translation>Duplicate Nodes</translation>
+        <translation>Duplicate Nodes or/and Elements</translation>
     </message>
     <message>
         <source>STB_TRANSP</source>
@@ -3891,7 +3891,7 @@ Please check preferences of Mesh module.
     </message>
     <message>
         <source>TOP_DUPLICATE_NODES</source>
-        <translation>Duplicate Nodes</translation>
+        <translation>Duplicate Nodes or/and Elements</translation>
     </message>
     <message>
         <source>TOP_TRANSP</source>
@@ -6463,7 +6463,7 @@ It is impossible to read point coordinates from file</translation>
     </message>
     <message>
         <source>DUPLICATION_WITHOUT_ELEMS</source>
-        <translation>Without duplication of border elements</translation>
+        <translation>Duplicate nodes only</translation>
     </message>
     <message>
         <source>GROUP_NODES_TO_DUPLICATE</source>
@@ -6475,7 +6475,11 @@ It is impossible to read point coordinates from file</translation>
     </message>
     <message>
         <source>DUPLICATION_WITH_ELEMS</source>
-        <translation>With duplication of border elements</translation>
+        <translation>Duplicate nodes and border elements</translation>
+    </message>
+    <message>
+        <source>DUPLICATION_ONLY_ELEMS</source>
+        <translation>Duplicate elements only</translation>
     </message>
     <message>
         <source>GROUP_ELEMS_TO_DUPLICATE</source>
