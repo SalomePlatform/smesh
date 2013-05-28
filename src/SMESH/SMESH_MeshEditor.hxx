@@ -504,6 +504,8 @@ public:
   // Return an index of the shape theElem is on
   // or zero if a shape not found
 
+  void DoubleElements( const TIDSortedElemSet& theElements );
+
   bool DoubleNodes( const std::list< int >& theListOfNodes, 
                     const std::list< int >& theListOfModifiedElems );
   
