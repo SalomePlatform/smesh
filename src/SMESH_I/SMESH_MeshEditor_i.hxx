@@ -723,6 +723,10 @@ public:
   CORBA::Boolean ChangeElemNodes(CORBA::Long ide, const SMESH::long_array& newIDs)
     throw (SALOME::SALOME_Exception);
 
+  SMESH::SMESH_Group_ptr DoubleElements(SMESH::SMESH_IDSource_ptr theElements,
+                                        const char*               theGroupName)
+    throw (SALOME::SALOME_Exception);
+
   CORBA::Boolean DoubleNodes( const SMESH::long_array& theNodes,
                               const SMESH::long_array& theModifiedElems )
     throw (SALOME::SALOME_Exception);
@@ -1076,6 +1080,8 @@ private: //!< private methods
                       const SMESH::ListOfGroups * theGroupList);
 
   string generateGroupName(const string& thePrefix);
+
+  void prepareIdSource(SMESH::SMESH_IDSource_ptr theObject);
 
 private: //!< fields
 
