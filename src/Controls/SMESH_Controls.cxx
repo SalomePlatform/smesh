@@ -2768,10 +2768,11 @@ void ElemEntityType::SetMesh( const SMDS_Mesh* theMesh )
 bool ElemEntityType::IsSatisfy( long theId )
 {
   if ( !myMesh ) return false;
+  if ( myType == SMDSAbs_Node )
+    return myMesh->FindNode( theId );
   const SMDS_MeshElement* anElem = myMesh->FindElement( theId );
   return ( anElem &&
-           myEntityType == anElem->GetEntityType() &&
-           ( myType == SMDSAbs_Edge || myType == SMDSAbs_Face || myType ==  SMDSAbs_Volume ));
+           myEntityType == anElem->GetEntityType() );
 }
 
 void ElemEntityType::SetType( SMDSAbs_ElementType theType )
