@@ -151,19 +151,28 @@ public:
   /*!
    * \brief Filters of elements, to be used with SMDS_SetIterator
    */
-  struct TypeFilter
+  struct Filter
+  {
+    virtual bool operator()(const SMDS_MeshElement* e) const = 0;
+    ~Filter() {}
+  };
+  struct NonNullFilter: public Filter
+  {
+    bool operator()(const SMDS_MeshElement* e) const { return e; }
+  };
+  struct TypeFilter : public Filter
   {
     SMDSAbs_ElementType _type;
     TypeFilter( SMDSAbs_ElementType t = SMDSAbs_NbElementTypes ):_type(t) {}
     bool operator()(const SMDS_MeshElement* e) const { return e && e->GetType() == _type; }
   };
-  struct EntityFilter
+  struct EntityFilter : public Filter
   {
     SMDSAbs_EntityType _type;
     EntityFilter( SMDSAbs_EntityType t = SMDSEntity_Last ):_type(t) {}
     bool operator()(const SMDS_MeshElement* e) const { return e && e->GetEntityType() == _type; }
   };
-  struct GeomFilter
+  struct GeomFilter : public Filter
   {
     SMDSAbs_GeometryType _type;
     GeomFilter( SMDSAbs_GeometryType t = SMDSGeom_NONE ):_type(t) {}
