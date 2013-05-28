@@ -366,7 +366,6 @@ const SMDS_MeshNode* SMDS_VtkVolume::GetFaceNode(const int face_ind, const int n
 std::vector<int> SMDS_VtkVolume::GetQuantities() const
 {
   vector<int> quantities;
-  quantities.clear();
   SMDS_Mesh *mesh = SMDS_Mesh::_meshList[myMeshId];
   vtkUnstructuredGrid* grid = mesh->getGrid();
   vtkIdType aVtkType = grid->GetCellType(this->myVtkID);
@@ -428,6 +427,22 @@ const SMDS_MeshNode* SMDS_VtkVolume::GetNode(const int ind) const
 {
   vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
   vtkIdType aVtkType = grid->GetCellType(this->myVtkID);
+  if ( aVtkType == VTK_POLYHEDRON)
+  {
+    vtkIdType nFaces = 0;
+    vtkIdType* ptIds = 0;
+    grid->GetFaceStream(this->myVtkID, nFaces, ptIds);
+    int id = 0, nbPoints = 0;
+    for (int i = 0; i < nFaces; i++)
+    {
+      int nodesInFace = ptIds[id];
+      if ( ind < nbPoints + nodesInFace )
+        return SMDS_Mesh::_meshList[myMeshId]->FindNodeVtk( ptIds[ ind + i ]);
+      nbPoints += nodesInFace;
+      id += (nodesInFace + 1);
+    }
+    return 0;
+  }
   vtkIdType npts, *pts;
   grid->GetCellPoints( this->myVtkID, npts, pts );
   const std::vector<int>& interlace = SMDS_MeshCell::fromVtkOrder( VTKCellType( aVtkType ));
