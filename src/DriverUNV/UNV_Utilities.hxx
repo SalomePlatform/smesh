@@ -128,15 +128,14 @@ namespace UNV{
    */
   inline std::string read_line(std::ifstream& in_stream, const bool next=true)
   {
-    char line[theMaxLineLen];
-    in_stream.getline( line, theMaxLineLen );
+    std::string resLine;
+    std::getline( in_stream, resLine );
     if ( next )
-      in_stream.getline( line, theMaxLineLen );
+      std::getline( in_stream, resLine );
 
-    std::string resLine = line;
     if ( resLine.size() > 0 && resLine[ resLine.size()-1 ] == '\r' )
       resLine.resize( resLine.size()-1 );
-    return line;
+    return resLine;
   }
 };
 
