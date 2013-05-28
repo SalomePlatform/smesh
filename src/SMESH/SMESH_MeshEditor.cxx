@@ -105,9 +105,11 @@ using namespace SMESH::Controls;
 
 namespace
 {
-  SMDS_ElemIteratorPtr elemSetIterator( const TIDSortedElemSet& elements )
+  template < class ELEM_SET >
+  SMDS_ElemIteratorPtr elemSetIterator( const ELEM_SET& elements )
   {
-    typedef SMDS_SetIterator< SMDS_pElement, TIDSortedElemSet::const_iterator> TSetIterator;
+    typedef SMDS_SetIterator
+      < SMDS_pElement, typename ELEM_SET::const_iterator> TSetIterator;
     return SMDS_ElemIteratorPtr( new TSetIterator( elements.begin(), elements.end() ));
   }
 }
@@ -424,10 +426,20 @@ void SMESH_MeshEditor::Create0DElementsOnAllNodes( const TIDSortedElemSet& eleme
                                                    TIDSortedElemSet&       all0DElems )
 {
   SMDS_ElemIteratorPtr elemIt;
+  vector< const SMDS_MeshElement* > allNodes;
   if ( elements.empty() )
+  {
+    allNodes.reserve( GetMeshDS()->NbNodes() );
     elemIt = GetMeshDS()->elementsIterator( SMDSAbs_Node );
+    while ( elemIt->more() )
+      allNodes.push_back( elemIt->next() );
+
+    elemIt = elemSetIterator( allNodes );
+  }
   else
+  {
     elemIt = elemSetIterator( elements );
+  }
 
   while ( elemIt->more() )
   {
@@ -9584,6 +9596,95 @@ SMESH_MeshEditor::FindMatchingNodes(set<const SMDS_MeshElement*>& theSide1,
   } // loop on link lists
 
   return SEW_OK;
+}
+
+//================================================================================
+/*!
+ * \brief Create elements equal (on same nodes) to given ones
+ *  \param [in] theElements - a set of elems to duplicate. If it is empty, all
+ *              elements of the uppest dimension are duplicated.
+ */
+//================================================================================
+
+void SMESH_MeshEditor::DoubleElements( const TIDSortedElemSet& theElements )
+{
+  CrearLastCreated();
+  SMESHDS_Mesh* mesh = GetMeshDS();
+
+  // get an element type and an iterator over elements
+
+  SMDSAbs_ElementType type;
+  SMDS_ElemIteratorPtr elemIt;
+  vector< const SMDS_MeshElement* > allElems;
+  if ( theElements.empty() )
+  {
+    if ( mesh->NbNodes() == 0 )
+      return;
+    // get most complex type
+    SMDSAbs_ElementType types[SMDSAbs_NbElementTypes] = {
+      SMDSAbs_Volume, SMDSAbs_Face, SMDSAbs_Edge,
+      SMDSAbs_0DElement, SMDSAbs_Ball, SMDSAbs_Node
+    };
+    for ( int i = 0; i < SMDSAbs_NbElementTypes; ++i )
+      if ( mesh->GetMeshInfo().NbElements( types[i] ))
+      {
+        type = types[i];
+        break;
+      }
+    // put all elements in the vector <allElems>
+    allElems.reserve( mesh->GetMeshInfo().NbElements( type ));
+    elemIt = mesh->elementsIterator( type );
+    while ( elemIt->more() )
+      allElems.push_back( elemIt->next());
+    elemIt = elemSetIterator( allElems );
+  }
+  else
+  {
+    type = (*theElements.begin())->GetType();
+    elemIt = elemSetIterator( theElements );
+  }
+
+  // duplicate elements
+
+  if ( type == SMDSAbs_Ball )
+  {
+    SMDS_UnstructuredGrid* vtkGrid = mesh->getGrid();
+    while ( elemIt->more() )
+    {
+      const SMDS_MeshElement* elem = elemIt->next();
+      if ( elem->GetType() != SMDSAbs_Ball )
+        continue;
+      if (( elem = mesh->AddBall( elem->GetNode(0),
+                                  vtkGrid->GetBallDiameter( elem->getVtkId() ))))
+        myLastCreatedElems.Append( elem );
+    }
+  }
+  else
+  {
+    vector< const SMDS_MeshNode* > nodes;
+    while ( elemIt->more() )
+    {
+      const SMDS_MeshElement* elem = elemIt->next();
+      if ( elem->GetType() != type )
+        continue;
+
+      nodes.assign( elem->begin_nodes(), elem->end_nodes() );
+
+      if ( type == SMDSAbs_Volume  && elem->GetVtkType() == VTK_POLYHEDRON )
+      {
+        std::vector<int> quantities =
+          static_cast< const SMDS_VtkVolume* >( elem )->GetQuantities();
+        elem = mesh->AddPolyhedralVolume( nodes, quantities );
+      }
+      else
+      {
+        AddElement( nodes, type, elem->IsPoly() );
+        elem = 0; // myLastCreatedElems is already filled
+      }
+      if ( elem )
+        myLastCreatedElems.Append( elem );
+    }
+  }
 }
 
 //================================================================================
