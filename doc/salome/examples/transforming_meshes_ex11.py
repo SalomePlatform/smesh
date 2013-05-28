@@ -1,13 +1,14 @@
-# Duplicate nodes
+# Duplicate nodes or/and elements
 
 
 import salome
 salome.salome_init()
+
 import GEOM
 from salome.geom import geomBuilder
 geompy = geomBuilder.New(salome.myStudy)
 
-import SMESH, SALOMEDS
+import SMESH
 from salome.smesh import smeshBuilder
 smesh =  smeshBuilder.New(salome.myStudy)
 
@@ -24,7 +25,7 @@ mesh.Hexahedron()
 # Compute mesh
 mesh.Compute()
 
-# Without the duplication of border elements
+# Duplicate nodes only
 
 # Nodes to duplicate
 nodes1 = mesh.CreateEmptyGroup( SMESH.NODE, 'nodes1' )
@@ -48,7 +49,7 @@ print "Nodes       : ", mesh.NbNodes()
 print "Edges       : ", mesh.NbEdges()
 print "Quadrangles : ", mesh.NbQuadrangles()
 
-# With the duplication of border elements
+# Duplicate nodes and border elements
 
 # Edges to duplicate
 edges = mesh.CreateEmptyGroup( SMESH.EDGE, 'edges' )
@@ -75,6 +76,19 @@ print "\nMesh after the second nodes duplication:"
 print "Nodes       : ", mesh.NbNodes()
 print "Edges       : ", mesh.NbEdges()
 print "Quadrangles : ", mesh.NbQuadrangles()
+
+
+# Duplicate elements only
+
+# Duplicate all faces and make a group of new faces.
+# If a mesh is given to DoubleElements(), all elements of the greatest dimension are duplicated
+newFacesGroup = mesh.DoubleElements( mesh, "newFacesGroup" )
+
+# Duplicate edges contained in the group "edges" and add new edges to this group
+mesh.DoubleElements( edges, edges.GetName() )
+
+# Duplicate two first edges of the mesh
+mesh.DoubleElements([ 1, 2 ])
 
 # Update object browser
 if salome.sg.hasDesktop():

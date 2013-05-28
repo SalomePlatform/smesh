@@ -1,36 +1,37 @@
 /*!
 
-\page double_nodes_page Duplicate Nodes
+\page double_nodes_page Duplicate Nodes or/and Elements
 
-\n This operation allows to duplicate nodes of your mesh, which can be
-useful to emulate a crack in the model.
-Duplication consists in replacement of an existing mesh element by another one.
-Lower level elements of the duplicated ones are cloned automatically. 
+\n This operation allows to duplicate nodes or/and elements of your mesh.
+Duplication of nodes can be useful to emulate a crack in the model.
+Duplication consists in creation of mesh element "equal" to existing ones.
 
-<em>To duplicate nodes:</em>
+<em>To duplicate nodes or/and elements:</em>
 <ol>
-<li>From the \b Modification menu choose \b Transformation -> \b Duplicate
-\b Nodes item or click <em>"Duplicate Nodes"</em> button in the toolbar.
+<li>From the \b Modification menu choose \b Transformation -> <b> Duplicate
+ Nodes or/and Elements </b> item or click <em>"Duplicate Nodes or/and
+ Elements"</em> button in the toolbar.
 <br>
-\image html duplicate_nodes.png "Duplicate Nodes button"
+\image html duplicate_nodes.png "Duplicate Nodes or/and Elements button"
 </li>
-<li>Check in the dialog box one of two radio buttons corresponding to
-the type of nodes duplication operation you would like to perform.</li>
-<li>Fill the other fields available in the dialog box (depends on the chosen
- operation mode).</li>
-<li>Click the \b Apply or <b>Apply and Close</b> button to perform the operation of nodes
- duplication.</li>
+<li>Check in the dialog box one of three radio buttons corresponding to
+  the type of duplication operation you would like to perform.</li>
+<li>Fill the other fields available in the dialog box (depending on
+  the chosen operation mode).</li>
+<li>Click the \b Apply or <b>Apply and Close</b> button to perform the
+  operation of duplication.</li> 
 </ol>
 
-\n "Duplicate Nodes" dialog has two working modes:
+\n "Duplicate Nodes or/and Elements" dialog has three working modes:
 <ul>
-<li>\ref mode_without_elem_anchor "Without the duplication of border elements"</li>
-<li>\ref mode_with_elem_anchor "With the duplication of border elements"</li>
+<li>\ref mode_without_elem_anchor "Duplicate nodes only"</li>
+<li>\ref mode_with_elem_anchor "Duplicate nodes and border elements"</li>
+<li>\ref mode_elem_only_anchor "Duplicate elements only"</li>
 </ul>
 
 <br>
 \anchor mode_without_elem_anchor
-<h2>Without duplication of border elements</h2>
+<h2>Duplicate nodes only</h2>
 
 In this mode the dialog looks like:
 
@@ -38,16 +39,29 @@ In this mode the dialog looks like:
 
 Parameters to be defined in this mode:
 <ul>
-<li><b>Group of nodes to duplicate</b> (<em>mandatory</em>): these nodes will be duplicated.</li>
-<li><b>Group of elements to replace nodes with new ones</b> (<em>optional</em>): the duplicated nodes
- will be associated with these elements.</li>
-<li><b>Construct group with newly created nodes</b> option (<em>checked by default</em>): 
- if checked - the group with just created nodes will be built.</li>
+<li><b>Group of nodes to duplicate</b> (<em>mandatory</em>): these
+  nodes will be duplicated.</li>
+<li><b>Group of elements to replace nodes with new ones</b>
+  (<em>optional</em>): the new nodes will replace the nodes to
+  duplicate within these elements.</li> 
+<li><b>Construct group with newly created nodes</b> option
+  (<em>checked by default</em>): if checked - the group with just
+  created nodes will be built.</li> 
 </ul>
+A schema below explains the crack emulation using the node duplication.
+\image html crack_emulation_double_nodes.png "Crack emulation"
+This schema shows a virtual crack in a 2D mesh created using this duplication
+mode. In this schema:
+- Black balls are <b>nodes to duplicate</b>.
+- Red balls are <b>new nodes</b>.
+- <b>Elements to replace nodes with new ones</b> are marked with green.
+
+Note that in reality <b>nodes to duplicate</b> coincide with <b>new nodes</b>.
+
 
 <br>
 \anchor mode_with_elem_anchor
-<h2>With duplication of border elements</h2>
+<h2>Duplicate nodes and border elements</h2>
 
 In this mode the dialog looks like:
 
@@ -55,18 +69,62 @@ In this mode the dialog looks like:
 
 Parameters to be defined in this mode:
 <ul>
-<li><b>Group of elements to duplicate</b> (<em>mandatory</em>): these elements will be duplicated.</li>
-<li><b>Group of nodes at not to duplicate</b> (<em>optional</em>): group of nodes at crack bottom
- which will not be duplicated.</li>
-<li><b>Group of elements to replace nodes with new ones</b> (<em>mandatory</em>): the duplicated nodes
- will be associated with these elements.</li>
-<li><b>Construct group with newly created elements</b> option (<em>checked by default</em>): 
- if checked - the group of just created elements will be built.</li>
-<li><b>Construct group with newly created nodes</b> option (<em>checked by default</em>): 
- if checked - the group of just created nodes will be built.</li>
+<li><b>Group of elements to duplicate</b> (<em>mandatory</em>): these
+  elements will be duplicated.</li> 
+<li><b>Group of nodes not to duplicate</b> (<em>optional</em>):
+  group of nodes at crack bottom which will not be duplicated.</li>
+<li><b>Group of elements to replace nodes with new ones</b>
+  (<em>mandatory</em>): the new nodes will replace the nodes to
+  duplicate within these elements.</li> 
+<li><b>Construct group with newly created elements</b> option
+ (<em>checked by default</em>): if checked - the group of just created
+ elements will be built.</li>
+<li><b>Construct group with newly created nodes</b> option
+  (<em>checked by default</em>): if checked - the group of just
+  created nodes will be built.</li>
+</ul>
+
+A schema below explains the crack emulation using the node duplication
+with border elements.
+\image html crack_emulation_double_nodes_with_elems.png "Crack emulation"
+This schema shows a virtual crack in a 2D mesh created using this duplication
+mode. In this schema:
+- Black segments are <b>elements to duplicate</b> (edges in 2D case).
+- Black balls (except the lowest one) are nodes of <b>elements to
+  duplicate</b> that are duplicated.
+- The lowest black ball is a <b>node not to duplicate</b>.
+- Red balls are <b>creates nodes</b>.
+- Red segments are <b>created elements</b> (edges).
+- <b>Elements to replace nodes with new ones</b> are marked with green.
+
+Note that in reality <b>nodes to duplicate</b> coincide with <b>new nodes</b>.
+<br>
+In a 3D case, where <b>elements to duplicate</b> are faces, the edges
+located at the "crack" (if any) are cloned automatically.
+
+<br>
+\anchor mode_elem_only_anchor
+<h2>Duplicate elements only</h2>
+
+This mode just duplicates given elements, i.e. creates new elements on
+the same nodes as the given elements.
+<br>
+In this mode the dialog looks like:
+
+\image html duplicate03.png
+
+Parameters to be defined in this mode:
+<ul>
+<li><b>Group of elements to duplicate</b> (<em>mandatory</em>): these
+  elements will be duplicated.</li> 
+<li><b>Construct group with newly created elements</b> option
+  (<em>checked by default</em>): if checked - the group of just created
+  elements will be built. A name of the created group starts from
+  "DoubleElements".</li>
 </ul>
 
 
-<br><b>See Also</b> a sample TUI Script of a \ref tui_duplicate_nodes "Duplicate nodes" operation.
+<br><b>See Also</b> a sample TUI Script of a
+ \ref tui_duplicate_nodes "Duplicate nodes or/and elements" operation.
 
 */

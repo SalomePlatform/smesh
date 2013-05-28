@@ -22,7 +22,8 @@ the mesh or some of its elements.</li>
 elements.</li>
 <li>\subpage symmetry_page "Mirror" the mesh
 through a point or a vector of symmetry.</li>
-<li>\subpage double_nodes_page "Duplicate nodes" to emulate a crack in the model.</li>
+<li>\subpage double_nodes_page "Duplicate nodes or/and
+  Elements". Duplication of nodes can be useful to emulate a crack in the model.</li>
 <li>Unite meshes by \subpage sewing_meshes_page "sewing" free borders,
 conform free borders, border to side or side elements.</li>
 <li>\subpage merging_nodes_page "Merge Nodes", considered coincident

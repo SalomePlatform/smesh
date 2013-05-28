@@ -58,7 +58,7 @@
 
 <br>
 \anchor tui_duplicate_nodes
-<h3>Duplicate nodes</h3>
+<h3>Duplicate nodes or/and elements</h3>
 \tui_script{transforming_meshes_ex11.py}
 
 <br>
