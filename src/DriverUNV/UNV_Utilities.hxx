@@ -36,7 +36,7 @@
 namespace UNV{
   using namespace std;
 
-  const size_t theMaxLineLen = 80;
+  const size_t theMaxLineLen = 82;
 
   class MESHDRIVERUNV_EXPORT PrefixPrinter{
     static int myCounter;
