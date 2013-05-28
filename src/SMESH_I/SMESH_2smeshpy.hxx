@@ -268,7 +268,8 @@ private:
   void setNeighbourCommand( Handle(_pyCommand)& theCmd,
                             Handle(_pyCommand)& theOtherCmd,
                             const bool theIsAfter );
-  
+  void addFilterUser( Handle(_pyCommand)& theCmd, const Handle(_pyObject)& user );
+
 private:
   std::map< _pyID, Handle(_pyMesh) >        myMeshes;
   std::map< _pyID, Handle(_pyMeshEditor) >  myMeshEditors;
