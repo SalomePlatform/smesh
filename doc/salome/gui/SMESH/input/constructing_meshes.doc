@@ -251,7 +251,7 @@ And the last mesh computation is made with:
 <em>"Result mesh with order SubMesh_3, SubMesh_2, SubMesh_1 "</em></center>
 
 As we can see, each mesh computation has a different number of result
-elements and a different mesh discretisation on the shared edges (the edges 
+elements and a different mesh discretization on the shared edges (the edges 
 that are shared between <b>Face_1</b>, <b>Face_2</b> and <b>Face_3</b>)
 
 Additionally, submesh priority (the order of applied algorithms) can
