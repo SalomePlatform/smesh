@@ -2100,7 +2100,7 @@ bool StdMeshers_ProjectionUtils::MakeComputed(SMESH_subMesh * sm, const int iter
 
   string algoType = algo->GetName();
   if ( algoType.substr(0, 11) != "Projection_")
-    return gen->Compute( *mesh, shape );
+    return gen->Compute( *mesh, shape, /*shapeOnly=*/true );
 
   // try to compute source mesh
 
@@ -2132,7 +2132,7 @@ bool StdMeshers_ProjectionUtils::MakeComputed(SMESH_subMesh * sm, const int iter
     }
   }
   if ( srcShape.IsNull() ) // no projection source defined
-    return gen->Compute( *mesh, shape );
+    return gen->Compute( *mesh, shape, /*shapeOnly=*/true );
 
   if ( srcShape.IsSame( shape ))
     RETURN_BAD_RESULT("Projection from self");
@@ -2141,7 +2141,7 @@ bool StdMeshers_ProjectionUtils::MakeComputed(SMESH_subMesh * sm, const int iter
     srcMesh = mesh;
 
   if ( MakeComputed( srcMesh->GetSubMesh( srcShape ), iterationNb + 1 ) &&
-       gen->Compute( *mesh, shape ))
+       gen->Compute( *mesh, shape, /*shapeOnly=*/true ))
     return sm->IsMeshComputed();
 
   return false;
