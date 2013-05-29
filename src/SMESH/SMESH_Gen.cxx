@@ -120,16 +120,17 @@ SMESH_Mesh* SMESH_Gen::CreateMesh(int theStudyId, bool theIsEmbeddedMode)
 }
 
 //=============================================================================
-/*!
+/*
  * Compute a mesh
  */
 //=============================================================================
 
 bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
                         const TopoDS_Shape &  aShape,
-                        const bool            anUpward,
-                        const ::MeshDimension aDim,
-                        TSetOfInt*            aShapesId)
+                        const bool            aShapeOnly /*=false*/,
+                        const bool            anUpward /*=false*/,
+                        const ::MeshDimension aDim /*=::MeshDim_3D*/,
+                        TSetOfInt*            aShapesId /*=0*/)
 {
   MESSAGE("SMESH_Gen::Compute");
   MEMOSTAT;
@@ -143,11 +144,12 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
   const int  globalAlgoDim = 100;
 
   SMESH_subMeshIteratorPtr smIt;
-  SMESH_subMesh::compute_event computeEvent;
-  if ( !anUpward && aShape.IsSame( aMesh.GetShapeToMesh() ))
-    computeEvent = SMESH_subMesh::COMPUTE;
-  else
-    computeEvent = SMESH_subMesh::COMPUTE_SUBMESH;
+
+  // Fix of Issue 22150. Due to !BLSURF->OnlyUnaryInput(), BLSURF computes edges
+  // that must be computed by Projection 1D-2D when Projection asks to compute
+  // one face only.
+  SMESH_subMesh::compute_event computeEvent =
+    aShapeOnly ? SMESH_subMesh::COMPUTE_SUBMESH : SMESH_subMesh::COMPUTE;
 
   if ( anUpward ) // is called from the below code in this method
   {
@@ -331,7 +333,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
             SMESH_Hypothesis::Hypothesis_Status status;
             if ( subAlgo->CheckHypothesis( aMesh, aSubShape, status ))
               // mesh a lower smToCompute starting from vertices
-              Compute( aMesh, aSubShape, /*anUpward=*/true, aDim, aShapesId );
+              Compute( aMesh, aSubShape, aShapeOnly, /*anUpward=*/true, aDim, aShapesId );
           }
         }
       }
@@ -363,7 +365,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
     // -----------------------------------------------
     // mesh the rest sub-shapes starting from vertices
     // -----------------------------------------------
-    ret = Compute( aMesh, aShape, /*anUpward=*/true, aDim, aShapesId );
+    ret = Compute( aMesh, aShape, aShapeOnly, /*anUpward=*/true, aDim, aShapesId );
   }
 
   MESSAGE( "VSR - SMESH_Gen::Compute() finished, OK = " << ret);

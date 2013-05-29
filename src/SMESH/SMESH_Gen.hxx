@@ -70,6 +70,8 @@ public:
 
   /*!
    * \brief Computes aMesh on aShape 
+   *  \param aShapeOnly - if true, algo->OnlyUnaryInput() feature is ignored and
+   *                      only \a aShape is computed.
    *  \param anUpward - compute from vertices up to more complex shape (internal usage)
    *  \param aDim - upper level dimension of the mesh computation
    *  \param aShapesId - list of shapes with computed mesh entities (elements or nodes)
@@ -77,6 +79,7 @@ public:
    */
   bool Compute(::SMESH_Mesh &        aMesh,
                const TopoDS_Shape &  aShape,
+               const bool            aShapeOnly=false,
                const bool            anUpward=false,
                const ::MeshDimension aDim=::MeshDim_3D,
                TSetOfInt*            aShapesId=0);
