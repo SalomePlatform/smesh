@@ -13,11 +13,10 @@
 \anchor max_element_area_anchor
 <h2>Max Element Area</h2>
 
-<b>Max Element Area</b> hypothesis is applied for meshing of 2D faces
+<b>Max Element Area</b> hypothesis is applied for meshing of faces
 composing your geometrical object. Definition of this hypothesis
-consists of setting the <b>maximum area</b> of meshing elements (depending on
-the chosen meshing algorithm it can be <b>triangles</b> or <b>quadrangles</b>),
-which will compose the mesh of these 2D faces.
+consists of setting the <b>maximum area</b> of mesh elements,
+which will compose the mesh of these faces.
 
 \image html a-maxelarea.png
 
@@ -33,8 +32,9 @@ operation.
 \anchor length_from_edges_anchor
 <h2>Length from Edges</h2>
 
-<b>Length from edges</b> hypothesis builds 2D mesh segments having a
-length calculated as an average edge length for a given wire.
+<b>Length from edges</b> hypothesis builds 2D mesh elements having a
+maximum linear size calculated as an average segment length for a wire
+of a given face.
 
 <b>See Also</b> a sample TUI Script of a 
 \ref tui_length_from_edges "Length from Edges" hypothesis operation.
@@ -48,7 +48,7 @@ length calculated as an average edge length for a given wire.
 <b>Quadrangle parameters</b> is a hypothesis for Quadrangle (Mapping).
 
 <b>Base vertex</b> parameter allows using Quadrangle (Mapping)
-algorithm for meshing of triangular faces. In this case it is
+algorithm for meshing of trilateral faces. In this case it is
 necessary to select the vertex, which will be used as the fourth edge
 (degenerated).
 
@@ -86,13 +86,22 @@ between them. The following types are available:
     <i>This type corresponds to <b>Quadrangle Preference</b>
     additional hypothesis, which is obsolete now.</i></li>
 <li><b>Quadrangle preference (reversed)</b> works in the same way and
-with the same restriction as <b>Quadrangle preference</b>, but
-    the transition area is located along the coarser meshed sides.</li>
+  with the same restriction as <b>Quadrangle preference</b>, but
+  the transition area is located along the coarser meshed sides.</li>
 <li><b>Reduced</b> type forces building only quadrangles and the transition
     between the sides is made gradually, layer by layer. This type has
     a limitation on the number of segments: one pair of opposite sides must have
     the same number of segments, the other pair must have an even difference
-    between the numbers of segments on the sides.</li>
+    between the numbers of segments on the sides. In addition, number
+    of rows of faces between sides with different discretization
+    should be enough for the transition. At the fastest transition
+    pattern, tree segments become one (see the image below), hence
+    the least number of face rows needed to reduce from Nmax segments
+    to Nmin segments is log<sub>3</sub>( Nmax / Nmin ). The number of
+    face rows is equal to number of segments on each of equally
+    discretized sides.
+\image html reduce_three_to_one.png "The fastest transition pattern: 3 to 1"
+</li>
 </ul>
 
 <b>See Also</b> a sample TUI Script of a 
