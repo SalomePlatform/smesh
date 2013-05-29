@@ -254,6 +254,17 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh&         aMesh,
         Smooth( quad ); 
       return ok;
     }
+    if ( n1 != n3 && n2 != n4 )
+      error( COMPERR_WARNING,
+             "To use 'Reduced' transition, "
+             "two opposite sides should have same number of segments, "
+             "but actual number of segments is different on all sides. "
+             "'Standard' transion has been used.");
+    else
+      error( COMPERR_WARNING,
+             "To use 'Reduced' transition, "
+             "two opposite sides should have an even difference in number of segments. "
+             "'Standard' transion has been used.");
   }
 
   // set normalized grid on unit square in parametric domain
@@ -2316,19 +2327,20 @@ namespace
  *  Implementation of Reduced algorithm (meshing with quadrangles only)
  */
 //=======================================================================
+
 bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
                                                const TopoDS_Shape& aShape,
                                                FaceQuadStruct::Ptr quad)
 {
-  SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
-  const TopoDS_Face& F = TopoDS::Face(aShape);
+  SMESHDS_Mesh * meshDS  = aMesh.GetMeshDS();
+  const TopoDS_Face& F   = TopoDS::Face(aShape);
   Handle(Geom_Surface) S = BRep_Tool::Surface(F);
-  int i,j,geomFaceID = meshDS->ShapeToIndex(F);
+  int i,j,geomFaceID     = meshDS->ShapeToIndex(F);
 
-  int nb = quad->side[0]->NbPoints();
-  int nr = quad->side[1]->NbPoints();
-  int nt = quad->side[2]->NbPoints();
-  int nl = quad->side[3]->NbPoints();
+  int nb = quad->side[0]->NbPoints(); // bottom
+  int nr = quad->side[1]->NbPoints(); // right
+  int nt = quad->side[2]->NbPoints(); // top
+  int nl = quad->side[3]->NbPoints(); // left
 
   //  Simple Reduce 10->8->6->4 (3 steps)     Multiple Reduce 10->4 (1 step)
   //
@@ -2374,13 +2386,21 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
     }
 
     // number of rows and columns
-    int nrows = nr1 - 1;
+    int nrows    = nr1 - 1;
     int ncol_top = nt1 - 1;
     int ncol_bot = nb1 - 1;
     // number of rows needed to reduce ncol_bot to ncol_top using simple 3->1 "tree" (see below)
-    int nrows_tree31 = int( log( (double)(ncol_bot / ncol_top) ) / log((double) 3 )); // = log x base 3
+    int nrows_tree31 =
+      int( ceil( log( double(ncol_bot) / ncol_top) / log( 3.))); // = log x base 3
     if ( nrows < nrows_tree31 )
+    {
       MultipleReduce = true;
+      error( COMPERR_WARNING,
+             SMESH_Comment("To use 'Reduced' transition, "
+                           "number of face rows should be at least ")
+             << nrows_tree31 << ". Actual number of face rows is " << nrows << ". "
+             "'Quadrangle preference (reversed)' transion has been used.");
+    }
   }
 
   if (MultipleReduce) { // == ComputeQuadPref QUAD_QUADRANGLE_PREF_REVERSED
@@ -2624,7 +2644,7 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
     // add bottom nodes (first columns)
     for (i=2; i<nb; i++)
       NodesC.SetValue(i,1,uv_eb[i-1].node);
-    
+
     // create and add needed nodes
     // add linear layers
     for (i=2; i<nb; i++) {
@@ -2656,13 +2676,12 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
     // create faces
     for (i=1; i<nb; i++) {
       for (j=1; j<nbv; j++) {
-          SMDS_MeshFace* F =
-            myHelper->AddFace(NodesC.Value(i,j), NodesC.Value(i+1,j),
+        SMDS_MeshFace* F =
+          myHelper->AddFace(NodesC.Value(i,j), NodesC.Value(i+1,j),
                             NodesC.Value(i+1,j+1), NodesC.Value(i,j+1));
-          if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
+        if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
       }
     }
-    // TODO ???
   } // end Multiple Reduce implementation
   else { // Simple Reduce (!MultipleReduce)
     //=========================================================
