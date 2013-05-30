@@ -99,6 +99,7 @@ protected:
   bool                         hasInitParamsHypothesis() const;
   const ListOfWidgets&         widgets() const;
   ListOfWidgets&               changeWidgets();
+  QLabel*                      getLabel(int i) const;
   QtxDialog*                   dlg() const;
   QString                      getVariableName(const char* methodName) const;
 
@@ -134,6 +135,7 @@ private:
   QString                      myHypName;
   QString                      myHypType;
   ListOfWidgets                myParamWidgets;
+  ListOfWidgets                myParamLabels;
   bool                         myIsCreate;
   QtxDialog*                   myDlg;
   QString                      myShapeEntry;

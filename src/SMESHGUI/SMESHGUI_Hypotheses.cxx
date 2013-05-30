@@ -185,6 +185,7 @@ QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
   {
     QLabel* lab = new QLabel( (*anIt).myName, GroupC1 );
     GroupC1Layout->addWidget( lab, i, 0 );
+    myParamLabels << lab;
 
     QWidget* w = getCustomWidget( *anIt, GroupC1, i );
     if ( !w )
@@ -464,6 +465,22 @@ const SMESHGUI_GenericHypothesisCreator::ListOfWidgets& SMESHGUI_GenericHypothes
 SMESHGUI_GenericHypothesisCreator::ListOfWidgets& SMESHGUI_GenericHypothesisCreator::changeWidgets()
 {
   return myParamWidgets;
+}
+
+//================================================================================
+/*!
+ * \brief Returns a QLabel of a spesified parameter.
+ * If isCreation(), the 1st label (supposed to be "Name") is not countered.
+ */
+//================================================================================
+
+QLabel* SMESHGUI_GenericHypothesisCreator::getLabel(int i) const
+{
+  if ( isCreation() )
+    i++;
+  if ( i < myParamLabels.size() )
+    return (QLabel*) myParamLabels.at(i);
+  return NULL;
 }
 
 QtxDialog* SMESHGUI_GenericHypothesisCreator:: dlg() const
