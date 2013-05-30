@@ -512,7 +512,6 @@ _ViscousBuilder2D::_ViscousBuilder2D(SMESH_Mesh&                       theMesh,
 
 bool _ViscousBuilder2D::error(const string& text )
 {
-  cout << "_ViscousBuilder2D::error " << text << endl;
   _error->myName    = COMPERR_ALGO_FAILED;
   _error->myComment = string("Viscous layers builder 2D: ") + text;
   if ( SMESH_subMesh* sm = _mesh->GetSubMesh( _face ) )
@@ -522,7 +521,9 @@ bool _ViscousBuilder2D::error(const string& text )
       _error->myAlgo = smError->myAlgo;
     smError = _error;
   }
-
+#ifdef _DEBUG_
+  cout << "_ViscousBuilder2D::error " << text << endl;
+#endif
   return false;
 }
 
@@ -1748,7 +1749,7 @@ bool _ViscousBuilder2D::toShrinkForAdjacent( const TopoDS_Face&   adjFace,
   }
   return false;
 }
-  
+
 //================================================================================
 /*!
  * \brief Make faces
@@ -1757,6 +1758,10 @@ bool _ViscousBuilder2D::toShrinkForAdjacent( const TopoDS_Face&   adjFace,
 
 bool _ViscousBuilder2D::refine()
 {
+  // find out orientation of faces to create
+  bool isReverse = 
+    ( _helper.GetSubShapeOri( _mesh->GetShapeToMesh(), _face ) == TopAbs_REVERSED );
+
   // store a proxyMesh in a sub-mesh
   // make faces on each _PolyLine
   vector< double > layersHeight;
@@ -1861,6 +1866,8 @@ bool _ViscousBuilder2D::refine()
       nbN = innerNodes.size() - ( hasRightNode || hasOwnRightNode );
     L._leftNodes .reserve( _hyp->GetNumberLayers() );
     L._rightNodes.reserve( _hyp->GetNumberLayers() );
+    int cur = 0, prev = -1; // to take into account orientation of _face
+    if ( isReverse ) std::swap( cur, prev );
     for ( int iF = 0; iF < _hyp->GetNumberLayers(); ++iF ) // loop on layers of faces
     {
       // get accumulated length of intermediate segments
@@ -1894,10 +1901,9 @@ bool _ViscousBuilder2D::refine()
       if ( !hasOwnRightNode ) L._rightNodes.push_back( innerNodes.back() );
 
       // create faces
-      // TODO care of orientation
       for ( size_t i = 1; i < innerNodes.size(); ++i )
-        if ( SMDS_MeshElement* f = _helper.AddFace( outerNodes[ i-1 ], outerNodes[ i ],
-                                                    innerNodes[ i ],   innerNodes[ i-1 ]))
+        if ( SMDS_MeshElement* f = _helper.AddFace( outerNodes[ i+prev ], outerNodes[ i+cur ],
+                                                    innerNodes[ i+cur  ], innerNodes[ i+prev ]))
           L._newFaces.insert( L._newFaces.end(), f );
 
       outerNodes.swap( innerNodes );
@@ -1914,11 +1920,14 @@ bool _ViscousBuilder2D::refine()
         continue;
 
       for ( size_t i = 1; i < lNodes.size(); ++i )
-        _helper.AddFace( lNodes[ i-1 ], rNodes[ i-1 ],
-                         rNodes[ i ],   lNodes[ i ]);
+        _helper.AddFace( lNodes[ i+prev ], rNodes[ i+prev ],
+                         rNodes[ i+cur ],  lNodes[ i+cur ]);
 
       const UVPtStruct& ptOnVertex = points[ isR ? L._lastPntInd : L._firstPntInd ];
-      _helper.AddFace( ptOnVertex.node, rNodes[ 0 ], lNodes[ 0 ]);
+      if ( isReverse )
+        _helper.AddFace( ptOnVertex.node, lNodes[ 0 ], rNodes[ 0 ]);
+      else
+        _helper.AddFace( ptOnVertex.node, rNodes[ 0 ], lNodes[ 0 ]);
     }
 
     // Fill the _ProxyMeshOfFace
