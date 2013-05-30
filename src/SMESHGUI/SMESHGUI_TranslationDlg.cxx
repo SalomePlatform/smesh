@@ -103,9 +103,6 @@ private:
 #define SPACING 6
 #define MARGIN  11
 
-//To disable automatic genericobj management, the following line should be commented.
-//Otherwise, it should be uncommented. Refer to KERNEL_SRC/src/SALOMEDSImpl/SALOMEDSImpl_AttributeIOR.cxx
-#define WITHGENERICOBJ
 
 //=================================================================================
 // class    : SMESHGUI_TranslationDlg()
@@ -509,84 +506,80 @@ bool SMESHGUI_TranslationDlg::ClickOnApply()
       switch ( actionButton ) {
       case MOVE_ELEMS_BUTTON:
         if(CheckBoxMesh->isChecked())
-	  for ( int i = 0; i < myObjects.count(); i++ ) {
-	    SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
-	    myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
-	    aMeshEditor->TranslateObject(myObjects[i], aVector, false);
-	  }
+          for ( int i = 0; i < myObjects.count(); i++ ) {
+            SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
+            myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+            aMeshEditor->TranslateObject(myObjects[i], aVector, false);
+          }
         else {
-	  SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
-	  myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+          SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
+          myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
           aMeshEditor->Translate(anElementsId, aVector, false);
-	}
+        }
         break;
       case COPY_ELEMS_BUTTON:
         if ( makeGroups ) {
           SMESH::ListOfGroups_var groups;
           if(CheckBoxMesh->isChecked()) {
-	    for ( int i = 0; i < myObjects.count(); i++ ) {
-	      SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
-	      myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
-	      groups = aMeshEditor->TranslateObjectMakeGroups(myObjects[i],aVector);
-	    }
-	  }
+            for ( int i = 0; i < myObjects.count(); i++ ) {
+              SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
+              myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+              groups = aMeshEditor->TranslateObjectMakeGroups(myObjects[i],aVector);
+            }
+          }
           else {
-	    SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
-	    myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+            SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
+            myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
             groups = aMeshEditor->TranslateMakeGroups(anElementsId, aVector);
-	  }
+          }
         }
         else {
           if(CheckBoxMesh->isChecked()) {
-	    for ( int i = 0; i < myObjects.count(); i++ ) {
-	      SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
-	      myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
-	      aMeshEditor->TranslateObject(myObjects[i], aVector, true);
-	    }
-	  }
+            for ( int i = 0; i < myObjects.count(); i++ ) {
+              SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
+              myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+              aMeshEditor->TranslateObject(myObjects[i], aVector, true);
+            }
+          }
           else {
-	    SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
-	    myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+            SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
+            myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
             aMeshEditor->Translate(anElementsId, aVector, true);
-	  }
+          }
         }
         break;
       case MAKE_MESH_BUTTON: {
         SMESH::SMESH_Mesh_var mesh;
         if (CheckBoxMesh->isChecked()) {
-	  for ( int i = 0; i < myObjects.count(); i++ ) {
-	    QString aName = SMESH::UniqueMeshName( LineEditNewMesh->text().replace( "*", myObjectsNames[i] ) );
-	    SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
-	    myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
-	    mesh = aMeshEditor->TranslateObjectMakeMesh(myObjects[i], aVector, makeGroups,
-							aName.toLatin1().data());
-	    if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
-	      anEntryList.append( aSObject->GetID().c_str() );
+          for ( int i = 0; i < myObjects.count(); i++ ) {
+            QString aName = SMESH::UniqueMeshName( LineEditNewMesh->text().replace( "*", myObjectsNames[i] ) );
+            SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
+            myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+            mesh = aMeshEditor->TranslateObjectMakeMesh(myObjects[i], aVector, makeGroups,
+                                                        aName.toLatin1().data());
+            if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
+              anEntryList.append( aSObject->GetID().c_str() );
 
-#ifdef WITHGENERICOBJ
-	    // obj has been published in study. Its refcount has been incremented.
-	    // It is safe to decrement its refcount
-	    // so that it will be destroyed when the entry in study will be removed
-	    mesh->UnRegister();
-#endif
-	  }
-	}
-	else {
-	  SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
-	  myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
-	  mesh = aMeshEditor->TranslateMakeMesh(anElementsId, aVector, makeGroups,
+            // obj has been published in study. Its refcount has been incremented.
+            // It is safe to decrement its refcount
+            // so that it will be destroyed when the entry in study will be removed
+            mesh->UnRegister();
+          }
+        }
+        else {
+          SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
+          myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+          mesh = aMeshEditor->TranslateMakeMesh(anElementsId, aVector, makeGroups,
                                                 LineEditNewMesh->text().toLatin1().data());
           if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
             anEntryList.append( aSObject->GetID().c_str() );
-	
-#ifdef WITHGENERICOBJ
+        
           // obj has been published in study. Its refcount has been incremented.
           // It is safe to decrement its refcount
           // so that it will be destroyed when the entry in study will be removed
           mesh->UnRegister();
-#endif
-	}
-	break;
+        }
+        break;
       }
       }
     } catch (...) {
@@ -762,26 +755,26 @@ void SMESHGUI_TranslationDlg::SelectionIntoArgument()
       Handle(SALOME_InteractiveObject) IO = it.Value();
       SMESH::SMESH_Mesh_var aMesh = SMESH::GetMeshByIO( IO );
       if ( aMesh->_is_nil() )
-	return;
+        return;
 
       SMESH_Actor* anActor = SMESH::FindActorByObject( aMesh );
       if ( !anActor )
-	anActor = SMESH::FindActorByEntry( IO->getEntry() );
+        anActor = SMESH::FindActorByEntry( IO->getEntry() );
 
       if ( !anActor && !CheckBoxMesh->isChecked() )
-	return;
+        return;
 
       if ( !SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO )->_is_nil() ) {
-	if ( _PTR(Study) aStudy = SMESH::GetActiveStudyDocument() ) {
-	  _PTR(SObject) obj = aStudy->FindObjectID( qPrintable( QString( IO->getEntry() ) ) );
-	  _PTR(GenericAttribute) anAttr;
-	  if ( obj && obj->FindAttribute( anAttr, "AttributeName" ) ) {
-	    _PTR(AttributeName) aNameAttr( anAttr );
-	    myObjects << SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO );
-	    myObjectsNames << aNameAttr->Value().c_str();
-	    myMeshes << aMesh;
-	  }
-	}
+        if ( _PTR(Study) aStudy = SMESH::GetActiveStudyDocument() ) {
+          _PTR(SObject) obj = aStudy->FindObjectID( qPrintable( QString( IO->getEntry() ) ) );
+          _PTR(GenericAttribute) anAttr;
+          if ( obj && obj->FindAttribute( anAttr, "AttributeName" ) ) {
+            _PTR(AttributeName) aNameAttr( anAttr );
+            myObjects << SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO );
+            myObjectsNames << aNameAttr->Value().c_str();
+            myMeshes << aMesh;
+          }
+        }
       }
 
       myActor = anActor;
@@ -803,7 +796,7 @@ void SMESHGUI_TranslationDlg::SelectionIntoArgument()
     if (CheckBoxMesh->isChecked()) {
       SMESH::GetNameOfSelectedIObjects( mySelectionMgr, aString );
       if (myMeshes.isEmpty())
-	return;
+        return;
     } else {
       aNbUnits = SMESH::GetNameOfSelectedElements(mySelector, aList.First(), aString);
       myElementsId = aString;
@@ -1151,19 +1144,19 @@ void SMESHGUI_TranslationDlg::onDisplaySimulation( bool toDisplayPreview ) {
         bool copy = ( ActionGroup->checkedId() == COPY_ELEMS_BUTTON ||
                       ActionGroup->checkedId() == MAKE_MESH_BUTTON );
         SUIT_OverrideCursor aWaitCursor;
-	QList<SMESH::MeshPreviewStruct_var> aMeshPreviewStruct;
+        QList<SMESH::MeshPreviewStruct_var> aMeshPreviewStruct;
         if(CheckBoxMesh->isChecked())
-	  for ( int i = 0; i < myObjects.count(); i++ ) {
-	    SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditPreviewer();
-	    aMeshEditor->TranslateObject(myObjects[i], aVector, copy);
-	    aMeshPreviewStruct << aMeshEditor->GetPreviewData();
-	  }
+          for ( int i = 0; i < myObjects.count(); i++ ) {
+            SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditPreviewer();
+            aMeshEditor->TranslateObject(myObjects[i], aVector, copy);
+            aMeshPreviewStruct << aMeshEditor->GetPreviewData();
+          }
         else {
-	  SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditPreviewer();
+          SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditPreviewer();
           aMeshEditor->Translate(anElementsId, aVector, copy);
-	  aMeshPreviewStruct << aMeshEditor->GetPreviewData();
-	}
-	setSimulationPreview( aMeshPreviewStruct );
+          aMeshPreviewStruct << aMeshEditor->GetPreviewData();
+        }
+        setSimulationPreview( aMeshPreviewStruct );
       } catch (...) {
         
       }
