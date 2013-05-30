@@ -290,21 +290,27 @@ class Mesh_Algorithm:
     #  @param thickness total thickness of layers of quadrilaterals
     #  @param numberOfLayers number of layers
     #  @param stretchFactor factor (>1.0) of growth of layer thickness towards inside of mesh
-    #  @param ignoreEdges list of geometrical edge (or their ids) not to generate layers on
+    #  @param edges list of geometrical edge (or their ids).
+    #         Viscous layers are either generated on these edges or not, depending on
+    #         the values of \a isEdgesToIgnore parameter.
+    #  @param isEdgesToIgnore if \c True, the Viscous layers are not generated on the
+    #         edges specified by the previous parameter (\a edges).
     #  @ingroup l3_hypos_additi
-    def ViscousLayers2D(self, thickness, numberOfLayers, stretchFactor, ignoreEdges=[]):
+    def ViscousLayers2D(self, thickness, numberOfLayers, stretchFactor,
+                        edges=[], isEdgesToIgnore=True ):
         if not isinstance(self.algo, SMESH._objref_SMESH_2D_Algo):
             raise TypeError, "ViscousLayers2D are supported by 2D algorithms only"
         if not "ViscousLayers2D" in self.GetCompatibleHypothesis():
             raise TypeError, "ViscousLayers2D are not supported by %s"%self.algo.GetName()
-        if ignoreEdges and isinstance( ignoreEdges[0], geomBuilder.GEOM._objref_GEOM_Object ):
-            ignoreEdges = [ self.mesh.geompyD.GetSubShapeID(self.mesh.geom, f) for f in ignoreEdges ]
+        if edges and isinstance( edges[0], geomBuilder.GEOM._objref_GEOM_Object ):
+            edges = [ self.mesh.geompyD.GetSubShapeID(self.mesh.geom, f) for f in edges ]
         hyp = self.Hypothesis("ViscousLayers2D",
-                              [thickness, numberOfLayers, stretchFactor, ignoreEdges])
+                              [thickness, numberOfLayers, stretchFactor,
+                               edges, isEdgesToIgnore])
         hyp.SetTotalThickness(thickness)
         hyp.SetNumberLayers(numberOfLayers)
         hyp.SetStretchFactor(stretchFactor)
-        hyp.SetIgnoreEdges(ignoreEdges)
+        hyp.SetEdges(edges, isEdgesToIgnore)
         return hyp
 
     ## Transform a list of ether edges or tuples (edge, 1st_vertex_of_edge)
