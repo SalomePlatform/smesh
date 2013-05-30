@@ -495,7 +495,7 @@ _ViscousBuilder2D::_ViscousBuilder2D(SMESH_Mesh&                       theMesh,
   _mesh( &theMesh ), _face( theFace ), _hyp( theHyp ), _helper( theMesh )
 {
   _helper.SetSubShape( _face );
-  _helper.SetElementsOnShape(true);
+  _helper.SetElementsOnShape( true );
 
   //_face.Orientation( TopAbs_FORWARD );
   _surface = BRep_Tool::Surface( _face );
@@ -522,7 +522,6 @@ bool _ViscousBuilder2D::error(const string& text )
       _error->myAlgo = smError->myAlgo;
     smError = _error;
   }
-  //makeGroupOfLE(); // debug
 
   return false;
 }
@@ -573,14 +572,30 @@ bool _ViscousBuilder2D::findEdgesWithLayers()
 {
   // collect all EDGEs to ignore defined by hyp
   int nbMyEdgesIgnored = 0;
-  vector<TGeomID> ids = _hyp->GetBndShapesToIgnore();
-  for ( size_t i = 0; i < ids.size(); ++i )
+  vector<TGeomID> ids = _hyp->GetBndShapes();
+  if ( _hyp->IsToIgnoreShapes() ) // EDGEs to ignore are given
   {
-    const TopoDS_Shape& s = getMeshDS()->IndexToShape( ids[i] );
-    if ( !s.IsNull() && s.ShapeType() == TopAbs_EDGE ) {
-      _ignoreShapeIds.insert( ids[i] );
-      nbMyEdgesIgnored += ( _helper.IsSubShape( s, _face ));
+    for ( size_t i = 0; i < ids.size(); ++i )
+    {
+      const TopoDS_Shape& s = getMeshDS()->IndexToShape( ids[i] );
+      if ( !s.IsNull() && s.ShapeType() == TopAbs_EDGE ) {
+        _ignoreShapeIds.insert( ids[i] );
+        nbMyEdgesIgnored += ( _helper.IsSubShape( s, _face ));
+      }
     }
+  }
+  else // EDGEs to to make the Viscous Layers on are given
+  {
+    for ( size_t iWire = 0; iWire < _faceSideVec.size(); ++iWire )
+    {
+      StdMeshers_FaceSidePtr wire = _faceSideVec[ iWire ];
+      for ( int iE = 0; iE < wire->NbEdges(); ++iE )
+        _ignoreShapeIds.insert( wire->EdgeID( iE ));
+    }
+    for ( size_t i = 0; i < ids.size(); ++i )
+      _ignoreShapeIds.erase( ids[i] );
+
+    nbMyEdgesIgnored = _ignoreShapeIds.size();
   }
 
   // check all EDGEs of the _face
@@ -613,7 +628,7 @@ bool _ViscousBuilder2D::findEdgesWithLayers()
 
           set<TGeomID> neighbourIgnoreEdges;
           if (viscHyp) {
-            vector<TGeomID> ids = _hyp->GetBndShapesToIgnore();
+            vector<TGeomID> ids = _hyp->GetBndShapes();
             neighbourIgnoreEdges.insert( ids.begin(), ids.end() );
           }
           for ( int iV = 0; iV < 2; ++iV )
@@ -773,7 +788,8 @@ bool _ViscousBuilder2D::makePolyLines()
         }
       }
     }
-    _thickness = Min( _hyp->GetTotalThickness(), maxPossibleThick );
+    if ( maxPossibleThick > 0. )
+      _thickness = Min( _hyp->GetTotalThickness(), maxPossibleThick );
   }
 
   // Adjust _LayerEdge's at _PolyLine's extremities
