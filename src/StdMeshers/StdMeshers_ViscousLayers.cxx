@@ -567,20 +567,17 @@ virtual SMDS_ElemIteratorPtr elementsIterator(SMDSAbs_ElementType type) const
 //
 StdMeshers_ViscousLayers::StdMeshers_ViscousLayers(int hypId, int studyId, SMESH_Gen* gen)
   :SMESH_Hypothesis(hypId, studyId, gen),
-   _nbLayers(1), _thickness(1), _stretchFactor(1)
+   _isToIgnoreShapes(18), _nbLayers(1), _thickness(1), _stretchFactor(1)
 {
   _name = StdMeshers_ViscousLayers::GetHypType();
   _param_algo_dim = -3; // auxiliary hyp used by 3D algos
 } // --------------------------------------------------------------------------------
-void StdMeshers_ViscousLayers::SetBndShapesToIgnore(const std::vector<int>& faceIds)
+void StdMeshers_ViscousLayers::SetBndShapes(const std::vector<int>& faceIds, bool toIgnore)
 {
-  if ( faceIds != _ignoreBndShapeIds )
-    _ignoreBndShapeIds = faceIds, NotifySubMeshesHypothesisModification();
-} // --------------------------------------------------------------------------------
-bool StdMeshers_ViscousLayers::IsIgnoredShape(const int shapeID) const
-{
-  return ( find( _ignoreBndShapeIds.begin(), _ignoreBndShapeIds.end(), shapeID )
-           != _ignoreBndShapeIds.end() );
+  if ( faceIds != _shapeIds )
+    _shapeIds = faceIds, NotifySubMeshesHypothesisModification();
+  if ( _isToIgnoreShapes != toIgnore )
+    _isToIgnoreShapes = toIgnore, NotifySubMeshesHypothesisModification();
 } // --------------------------------------------------------------------------------
 void StdMeshers_ViscousLayers::SetTotalThickness(double thickness)
 {
@@ -638,17 +635,22 @@ std::ostream & StdMeshers_ViscousLayers::SaveTo(std::ostream & save)
   save << " " << _nbLayers
        << " " << _thickness
        << " " << _stretchFactor
-       << " " << _ignoreBndShapeIds.size();
-  for ( unsigned i = 0; i < _ignoreBndShapeIds.size(); ++i )
-    save << " " << _ignoreBndShapeIds[i];
+       << " " << _shapeIds.size();
+  for ( unsigned i = 0; i < _shapeIds.size(); ++i )
+    save << " " << _shapeIds[i];
+  save << " " << !_isToIgnoreShapes; // negate to keep the behavior in old studies.
   return save;
 } // --------------------------------------------------------------------------------
 std::istream & StdMeshers_ViscousLayers::LoadFrom(std::istream & load)
 {
-  int nbFaces, faceID;
+  int nbFaces, faceID, shapeToTreat;
   load >> _nbLayers >> _thickness >> _stretchFactor >> nbFaces;
-  while ( _ignoreBndShapeIds.size() < nbFaces && load >> faceID )
-    _ignoreBndShapeIds.push_back( faceID );
+  while ( _shapeIds.size() < nbFaces && load >> faceID )
+    _shapeIds.push_back( faceID );
+  if ( load >> shapeToTreat )
+    _isToIgnoreShapes = !shapeToTreat;
+  else
+    _isToIgnoreShapes = true; // old behavior
   return load;
 } // --------------------------------------------------------------------------------
 bool StdMeshers_ViscousLayers::SetParametersByMesh(const SMESH_Mesh*   theMesh,
@@ -1072,7 +1074,7 @@ bool _ViscousBuilder::findFacesWithLayers()
   vector<TopoDS_Shape> ignoreFaces;
   for ( unsigned i = 0; i < _sdVec.size(); ++i )
   {
-    vector<TGeomID> ids = _sdVec[i]._hyp->GetBndShapesToIgnore();
+    vector<TGeomID> ids = _sdVec[i]._hyp->GetBndShapes();
     for ( unsigned i = 0; i < ids.size(); ++i )
     {
       const TopoDS_Shape& s = getMeshDS()->IndexToShape( ids[i] );

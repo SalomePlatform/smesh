@@ -39,10 +39,11 @@ class STDMESHERS_EXPORT StdMeshers_ViscousLayers : public SMESH_Hypothesis
 public:
   StdMeshers_ViscousLayers(int hypId, int studyId, SMESH_Gen* gen);
 
-  // Set boundary shapes to exclude from treatment, faces in 3D, edges in 2D
-  void SetBndShapesToIgnore(const std::vector<int>& shapeIds);
-  std::vector<int> GetBndShapesToIgnore() const { return _ignoreBndShapeIds; }
-  bool IsIgnoredShape(const int shapeID) const;
+  // Set boundary shapes, faces in 3D, edges in 2D, either to exclude from
+  // treatment or to make the Viscous Layers on
+  void SetBndShapes(const std::vector<int>& shapeIds, bool toIgnore);
+  std::vector<int> GetBndShapes() const { return _shapeIds; }
+  bool IsToIgnoreShapes() const { return _isToIgnoreShapes; }
 
   // Set total thickness of layers of prisms
   void SetTotalThickness(double thickness);
@@ -86,7 +87,8 @@ public:
 
  private:
 
-  std::vector<int> _ignoreBndShapeIds;
+  std::vector<int> _shapeIds;
+  bool             _isToIgnoreShapes;
   int              _nbLayers;
   double           _thickness;
   double           _stretchFactor;
