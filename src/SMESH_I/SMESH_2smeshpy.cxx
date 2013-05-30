@@ -376,17 +376,17 @@ namespace {
         if ( arg.Search( "SMESH.PointStruct" ) == 1 ||
              arg.Search( "SMESH.DirStruct"   ) == 1 )
         {
-          _pyCommand workCmd( arg );
-          if ( workCmd.GetNbArgs() == 1 ) // SMESH.DirStruct( SMESH.PointStruct(x,y,z))
+          Handle(_pyCommand) workCmd = new _pyCommand( arg );
+          if ( workCmd->GetNbArgs() == 1 ) // SMESH.DirStruct( SMESH.PointStruct(x,y,z))
           {
-            workCmd = _pyCommand( workCmd.GetArg( 1 ));
+            workCmd = new _pyCommand( workCmd->GetArg( 1 ) );
           }
-          if ( workCmd.GetNbArgs() == 3 ) // SMESH.PointStruct(x,y,z)
+          if ( workCmd->GetNbArgs() == 3 ) // SMESH.PointStruct(x,y,z)
           {
             _AString newArg = "[ ";
-            newArg += ( workCmd.GetArg( 1 ) + ", " +
-                        workCmd.GetArg( 2 ) + ", " +
-                        workCmd.GetArg( 3 ) + " ]");
+            newArg += ( workCmd->GetArg( 1 ) + ", " +
+                        workCmd->GetArg( 2 ) + ", " +
+                        workCmd->GetArg( 3 ) + " ]");
             theCommand->SetArg( i, newArg );
           }
         }
