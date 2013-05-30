@@ -35,7 +35,8 @@ salomeinclude_HEADERS = \
 	StdMeshersGUI_LayerDistributionParamWdg.h \
 	StdMeshersGUI_FixedPointsParamWdg.h \
 	StdMeshersGUI_SubShapeSelectorWdg.h \
-	StdMeshersGUI_CartesianParamCreator.h
+	StdMeshersGUI_CartesianParamCreator.h \
+	StdMeshersGUI_RadioButtonsGrpWdg.h
 
 # Libraries targets
 lib_LTLIBRARIES = libStdMeshersGUI.la
@@ -51,7 +52,8 @@ dist_libStdMeshersGUI_la_SOURCES = \
 	StdMeshersGUI_LayerDistributionParamWdg.cxx \
 	StdMeshersGUI_FixedPointsParamWdg.cxx \
 	StdMeshersGUI_SubShapeSelectorWdg.cxx \
-	StdMeshersGUI_CartesianParamCreator.cxx
+	StdMeshersGUI_CartesianParamCreator.cxx \
+	StdMeshersGUI_RadioButtonsGrpWdg.cxx
 
 MOC_FILES = \
 	StdMeshersGUI_StdHypothesisCreator_moc.cxx \
@@ -63,7 +65,8 @@ MOC_FILES = \
 	StdMeshersGUI_LayerDistributionParamWdg_moc.cxx \
 	StdMeshersGUI_FixedPointsParamWdg_moc.cxx \
 	StdMeshersGUI_SubShapeSelectorWdg_moc.cxx \
-	StdMeshersGUI_CartesianParamCreator_moc.cxx
+	StdMeshersGUI_CartesianParamCreator_moc.cxx \
+	StdMeshersGUI_RadioButtonsGrpWdg_moc.cxx
 
 nodist_libStdMeshersGUI_la_SOURCES= \
 	$(MOC_FILES)

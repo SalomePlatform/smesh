@@ -2,6 +2,21 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="en_US">
 <context>
+    <name>StdMeshersGUI_StdHypothesisCreator</name>
+    <message>
+        <source>TO_IGNORE_EDGES_OR_NOT</source>
+        <translation>Specified edges are</translation>
+    </message>
+    <message>
+        <source>NOT_TO_IGNORE_EDGES</source>
+        <translation>Edges with layers (walls)</translation>
+    </message>
+    <message>
+        <source>TO_IGNORE_EDGES</source>
+        <translation>Edges without layers (inlets and oulets)</translation>
+    </message>
+</context>
+<context>
     <name>@default</name>
     <message>
         <source>SMESH_ARITHMETIC_1D_HYPOTHESIS</source>
@@ -170,8 +185,16 @@
     </message>
     <message>
         <source>SMESH_EDGES_WO_LAYERS</source>
-        <translation>Edges without layers
-(inlets and oulets)</translation>
+        <translation>Edges without layers</translation>
+    </message>
+    <message>
+        <source>SMESH_FACES_WITH_LAYERS</source>
+        <translation>Faces with layers 
+(walls)</translation>
+    </message>
+    <message>
+        <source>SMESH_EDGES_WITH_LAYERS</source>
+        <translation>Edges with layers</translation>
     </message>
     <message>
         <source>SMESH_MAX_LENGTH_TITLE</source>

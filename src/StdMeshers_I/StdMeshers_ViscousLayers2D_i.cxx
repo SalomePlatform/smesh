@@ -77,15 +77,48 @@ StdMeshers_ViscousLayers2D_i::~StdMeshers_ViscousLayers2D_i()
  */
 //================================================================================
 
-void StdMeshers_ViscousLayers2D_i::SetIgnoreEdges(const ::SMESH::long_array& edgeIDs)
-throw ( SALOME::SALOME_Exception )
+void StdMeshers_ViscousLayers2D_i::SetEdges(const ::SMESH::long_array& edgeIDs,
+                                            CORBA::Boolean             toIgnore)
+  throw ( SALOME::SALOME_Exception )
 {
   vector<int> ids( edgeIDs.length() );
   for ( unsigned i = 0; i < ids.size(); ++i )
     if (( ids[i] = edgeIDs[i] ) < 1 )
       THROW_SALOME_CORBA_EXCEPTION( "Invalid edge id", SALOME::BAD_PARAM );
-  GetImpl()->SetBndShapesToIgnore( ids );
-  SMESH::TPythonDump() << _this() << ".SetIgnoreEdges( " << edgeIDs << " )";
+
+  GetImpl()->SetBndShapes( ids, toIgnore );
+
+  SMESH::TPythonDump() << _this() << ".SetEdges( " << edgeIDs << ", " << toIgnore << " )";
+}
+
+//================================================================================
+/*!
+ * \brief 
+ */
+//================================================================================
+
+void StdMeshers_ViscousLayers2D_i::SetIgnoreEdges(const ::SMESH::long_array& edgeIDs)
+  throw ( SALOME::SALOME_Exception )
+{
+  SMESH::TPythonDump pyDump;
+  this->SetEdges( edgeIDs, true );
+  pyDump<< _this() << ".SetIgnoreEdges( " << edgeIDs << " )";
+}
+
+//================================================================================
+/*!
+ * \brief 
+ */
+//================================================================================
+
+SMESH::long_array* StdMeshers_ViscousLayers2D_i::GetEdges()
+{
+  vector<int> idsVec = GetImpl()->GetBndShapes();
+  SMESH::long_array_var ids = new SMESH::long_array;
+  ids->length( idsVec.size() );
+  for ( unsigned i = 0; i < idsVec.size(); ++i )
+    ids[i] = idsVec[i];
+  return ids._retn();
 }
 
 //================================================================================
@@ -96,12 +129,20 @@ throw ( SALOME::SALOME_Exception )
 
 SMESH::long_array* StdMeshers_ViscousLayers2D_i::GetIgnoreEdges()
 {
-  vector<int> idsVec = GetImpl()->GetBndShapesToIgnore();
-  SMESH::long_array_var ids = new SMESH::long_array;
-  ids->length( idsVec.size() );
-  for ( unsigned i = 0; i < idsVec.size(); ++i )
-    ids[i] = idsVec[i];
-  return ids._retn();
+  if ( GetImpl()->IsToIgnoreShapes() )
+    return this->GetEdges();
+  return new SMESH::long_array;
+}
+
+//================================================================================
+/*!
+ * \brief 
+ */
+//================================================================================
+
+CORBA::Boolean StdMeshers_ViscousLayers2D_i::GetIsToIgnoreEdges()
+{
+  return GetImpl()->IsToIgnoreShapes();
 }
 
 //================================================================================

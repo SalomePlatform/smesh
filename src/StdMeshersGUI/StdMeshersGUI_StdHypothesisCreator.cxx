@@ -39,6 +39,7 @@
 #include "StdMeshersGUI_ObjectReferenceParamWdg.h"
 #include "StdMeshersGUI_QuadrangleParamWdg.h"
 #include "StdMeshersGUI_SubShapeSelectorWdg.h"
+#include "StdMeshersGUI_RadioButtonsGrpWdg.h"
 
 #include <SALOMEDSClient_Study.hxx>
 
@@ -58,6 +59,7 @@
 #include <QSlider>
 #include <QLabel>
 #include <QCheckBox>
+#include <QButtonGroup>
 
 const double VALUE_MAX = 1.0e+15, // COORD_MAX
              VALUE_MAX_2  = VALUE_MAX * VALUE_MAX,
@@ -708,10 +710,10 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
       h->SetVarParameter( params[2].text(), "SetStretchFactor" );
       h->SetStretchFactor ( params[2].myValue.toDouble() );
 
-      if ( StdMeshersGUI_SubShapeSelectorWdg* idsWg = 
-           widget< StdMeshersGUI_SubShapeSelectorWdg >( 3 ))
+      if ( StdMeshersGUI_SubShapeSelectorWdg* idsWg =
+           widget< StdMeshersGUI_SubShapeSelectorWdg >( 4 ))
       {
-        h->SetIgnoreEdges( idsWg->GetListOfIDs() );
+        h->SetEdges( idsWg->GetListOfIDs(), params[3].myValue.toInt() );
       }
     }
     else if( hypType()=="QuadrangleParams" )
@@ -1198,7 +1200,19 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
     if ( !aMainEntry.isEmpty() )
     {
-      item.myName = tr( "SMESH_EDGES_WO_LAYERS" );
+      item.myName = tr("TO_IGNORE_EDGES_OR_NOT");
+      p.append( item );
+
+      StdMeshersGUI_RadioButtonsGrpWdg* ignoreWdg = new StdMeshersGUI_RadioButtonsGrpWdg("");
+      ignoreWdg->setButtonLabels ( QStringList()
+                                   << tr("NOT_TO_IGNORE_EDGES")
+                                   << tr("TO_IGNORE_EDGES") );
+      ignoreWdg->setChecked( h->GetIsToIgnoreEdges() );
+      connect(ignoreWdg->getButtonGroup(),SIGNAL(buttonClicked(int)),this,SLOT(onValueChanged()));
+      customWidgets()->append( ignoreWdg );
+
+      item.myName =
+        tr( h->GetIsToIgnoreEdges() ? "SMESH_EDGES_WO_LAYERS" : "SMESH_EDGES_WITH_LAYERS" );
       p.append( item );
 
       StdMeshersGUI_SubShapeSelectorWdg* idsWg =
@@ -1206,7 +1220,7 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
 
       idsWg->SetGeomShapeEntry( aMainEntry );
       idsWg->SetMainShapeEntry( aMainEntry );
-      idsWg->SetListOfIDs( h->GetIgnoreEdges() );
+      idsWg->SetListOfIDs( h->GetEdges() );
       idsWg->showPreview( true );
       customWidgets()->append ( idsWg );
     }
@@ -1489,6 +1503,13 @@ bool StdMeshersGUI_StdHypothesisCreator::getParamFromCustomWidget( StdParam & pa
     //param.myValue = w->isChecked();
     return true;
   }
+  if ( widget->inherits( "StdMeshersGUI_RadioButtonsGrpWdg" ))
+  {
+    const StdMeshersGUI_RadioButtonsGrpWdg * w =
+      static_cast<const StdMeshersGUI_RadioButtonsGrpWdg*>( widget );
+    param.myValue = w->checkedId();
+    return true;
+  }
   return false;
 }
 
@@ -1537,6 +1558,14 @@ void StdMeshersGUI_StdHypothesisCreator::valueChanged( QWidget* paramWidget)
     else
     {
       toCopyGroups->setEnabled( true );
+    }
+  }
+  else if ( hypType() == "ViscousLayers2D" && paramWidget->inherits("QButtonGroup"))
+  {
+    if ( QLabel* label = getLabel(4) )
+    {
+      bool toIgnore = widget< StdMeshersGUI_RadioButtonsGrpWdg >( 3 )->checkedId();
+      label->setText( tr( toIgnore ? "SMESH_EDGES_WO_LAYERS" : "SMESH_EDGES_WITH_LAYERS" ));
     }
   }
 }

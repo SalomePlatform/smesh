@@ -53,8 +53,8 @@ segments on all four sides of the face must be even (divisible by 2).
 <h2>Viscous Layers and Viscous Layers 2D</h2>
 
 <b>Viscous Layers</b> and <b>Viscous Layers 2D </b> additional
-hypotheses can be used together with some 3D algorithms, for example,
-Hexahedron(i,j,k) or 2D algorithms, for example, Triangle
+hypotheses can be used together with either some 3D algorithms, for example
+Hexahedron(i,j,k), or 2D algorithms, for example Triangle
 (MEFISTO), correspondingly. These hypotheses allow creation of layers
 of highly stretched elements, prisms in 3D and quadrilaterals in 2D,
 near mesh boundary, which is beneficial for high quality viscous
@@ -67,13 +67,20 @@ computations.
 <li><b>Total thickness</b> - gives the total thickness of element layers.</li>
 <li><b>Number of layers</b> - defines the number of element layers.</li>
 <li><b>Stretch factor</b> - defines the growth factor of element height
-from the mesh boundary inwards.</li>
-<li><b>Faces (Edges) without layers</b> - defines geometrical faces
-  (or edges in 2D) on which element layers should not be
-  constructed. By default the element layers are not constructed on
-  geometrical faces shared by solids (and edges shared by faces in 2D). 
+  from the mesh boundary inwards.</li>
+<li><b>Specified Edges are</b> - defines how the shapes specified by
+  the next parameter are used.
+<li><b>Faces without layers</b> and <b>Edges with/without layers</b> - 
+  in the 3D case it defines geometrical faces on which element layers
+  should not be constructed; in the 2D case it defines geometrical edges
+  on which element layers either should be or should not be
+  constructed, depending on the value of the previous parameter
+  (<b>Specified Edges are</b>). Whatever shapes are specified by this
+  parameter, the element layers are not constructed on geometrical
+  faces shared by several solids in 3D case and edges shared by
+  several faces in 2D case.
   \note A mesh shown in the 3D Viewer can prevent selection of faces
-  and edges, in this case just hide the mesh. To avoid a long wait when a
+  and edges, just hide the mesh to avoid this. To avoid a long wait when a
   geometry with many faces (or edges) is displayed, the number of faces
   (edges) shown at a time is limited by the value of "Sub-shapes
   preview chunk size" preference (in Preferences/Mesh/General tab).
