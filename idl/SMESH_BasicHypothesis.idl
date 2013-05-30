@@ -876,6 +876,14 @@ module StdMeshers
     SMESH::long_array GetIgnoreEdges();
 
     /*!
+     * Set edges either to exclude from treatment or to make the Viscous Layers on.
+     */
+    void SetEdges(in SMESH::long_array edgeIDs, 
+                  in boolean           toIgnore) raises (SALOME::SALOME_Exception);
+    SMESH::long_array GetEdges();
+    boolean           GetIsToIgnoreEdges();
+
+    /*!
      * Set total thickness of layers of prisms
      */
     void SetTotalThickness(in double thickness) raises (SALOME::SALOME_Exception);
@@ -918,7 +926,7 @@ module StdMeshers
     boolean IsGridBySpacing(in short axis);
 
     /*!
-     * Set coordinates of nodes along an axis (counterd from zero)
+     * Set coordinates of nodes along an axis (countered from zero)
      */
     void SetGrid(in SMESH::double_array coords,
                  in short               axis) raises (SALOME::SALOME_Exception);
