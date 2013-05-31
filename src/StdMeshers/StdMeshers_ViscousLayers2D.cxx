@@ -497,7 +497,7 @@ _ViscousBuilder2D::_ViscousBuilder2D(SMESH_Mesh&                       theMesh,
   _helper.SetSubShape( _face );
   _helper.SetElementsOnShape( true );
 
-  //_face.Orientation( TopAbs_FORWARD );
+  _face.Orientation( TopAbs_FORWARD ); // 2D logic works only in this case
   _surface = BRep_Tool::Surface( _face );
 
   if ( _hyp )
@@ -1760,7 +1760,7 @@ bool _ViscousBuilder2D::refine()
 {
   // find out orientation of faces to create
   bool isReverse = 
-    ( _helper.GetSubShapeOri( _mesh->GetShapeToMesh(), _face ) != _face.Orientation() );
+    ( _helper.GetSubShapeOri( _mesh->GetShapeToMesh(), _face ) == TopAbs_REVERSED );
 
   // store a proxyMesh in a sub-mesh
   // make faces on each _PolyLine
