@@ -25,6 +25,7 @@ ignoreFaces = [ faces[0], faces[-1]]
 geompy.addToStudy( shape, "shape" )
 geompy.addToStudyInFather( shape, face1, "face1")
 
+# 3D Viscous layers
 
 mesh = smesh.Mesh(shape, "CFD")
 
@@ -45,3 +46,21 @@ mesh.Compute()
 mesh.MakeGroup("Tetras",SMESH.VOLUME,SMESH.FT_ElemGeomType,"=",SMESH.Geom_TETRA)
 mesh.MakeGroup("Pyras",SMESH.VOLUME,SMESH.FT_ElemGeomType,"=",SMESH.Geom_PYRAMID)
 mesh.MakeGroup("Prims",SMESH.VOLUME,SMESH.FT_ElemGeomType,"=",SMESH.Geom_PENTA)
+
+# 2D Viscous layers
+
+# 3 edges of the 4 edges of face1
+edgeIds = geompy.SubShapeAllIDs( face1, geompy.ShapeType["EDGE"])[:-1]
+
+mesh = smesh.Mesh(face1,"VicsousLayers2D")
+mesh.Segment().NumberOfSegments( 5 )
+
+# viscous layers should be created on 1 edge, as we set 3 edges to ignore
+vlHyp = mesh.Triangle().ViscousLayers2D( 2, 3, 1.5, edgeIds, isEdgesToIgnore=True )
+
+mesh.Compute()
+
+# viscous layers should be created on 3 edges, as we pass isEdgesToIgnore=False
+vlHyp.SetEdges( edgeIds, False )
+
+mesh.Compute()
