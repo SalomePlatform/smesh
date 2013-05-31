@@ -358,13 +358,18 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
       {
         const UVPtStructVec& edgeUVPtStruct = proxySubMesh[iE]->GetUVPtStructVec();
         std::copy( edgeUVPtStruct.begin(), edgeUVPtStruct.end(), & points[iPt] );
+        // check orientation
+        double du1 = edgeUVPtStruct.back().param - edgeUVPtStruct[0].param;
+        double du2 = myLast[iE] - myFirst[iE];
+        if ( du1 * du2 < 0 )
+          std::reverse( & points[iPt], & points[iPt + edgeUVPtStruct.size()]);
         // update normalized params
         if ( myEdge.size() > 1 ) {
           for ( size_t i = 0; i < edgeUVPtStruct.size(); ++i, ++iPt )
           {
             UVPtStruct & uvPt = points[iPt];
-            uvPt.normParam = prevNormPar + uvPt.normParam * paramSize;
-            uvPt.x = uvPt.y = uvPt.normParam;
+            uvPt.normParam    = prevNormPar + uvPt.normParam * paramSize;
+            uvPt.x = uvPt.y   = uvPt.normParam;
           }
           --iPt; // to point to the 1st VERTEX of the next EDGE
         }
