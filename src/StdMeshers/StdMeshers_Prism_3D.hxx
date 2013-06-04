@@ -270,16 +270,17 @@ private:
     std::vector< std::pair< double, double> > myParams;
     bool                            myIsForward;
     std::vector< TSideFace* >       myComponents;
-    SMESH_MesherHelper *            myHelper;
+    SMESH_MesherHelper              myHelper;
   public:
-    TSideFace( SMESH_MesherHelper*        helper,
+    TSideFace( SMESH_Mesh&                mesh,
                const int                  faceID,
                const Prism_3D::TQuadList& quadList,
                const TopoDS_Edge&         baseEdge,
                TParam2ColumnMap*          columnsMap,
                const double               first = 0.0,
                const double               last  = 1.0);
-    TSideFace( const std::vector< TSideFace* >&                  components,
+    TSideFace( SMESH_Mesh&                                       mesh,
+               const std::vector< TSideFace* >&                  components,
                const std::vector< std::pair< double, double> > & params);
     TSideFace( const TSideFace& other );
     ~TSideFace();
@@ -287,8 +288,8 @@ private:
     { return ( NbComponents() > 0 || myParams[0].first != 0. || myParams[0].second != 1. ); }
     int FaceID() const { return myID; }
     TParam2ColumnMap* GetColumns() const { return myParamToColumnMap; }
-    gp_XY GetNodeUV(const TopoDS_Face& F, const SMDS_MeshNode* n) const
-    { return myHelper->GetNodeUV( F, n ); }
+    gp_XY GetNodeUV(const TopoDS_Face& F, const SMDS_MeshNode* n, const SMDS_MeshNode* n2=0) const
+    { return ((SMESH_MesherHelper&) myHelper).SetSubShape(F), myHelper.GetNodeUV( F, n, n2 ); }
     const TopoDS_Edge & BaseEdge() const { return myBaseEdge; }
     int ColumnHeight() const {
       if ( NbComponents() ) return GetComponent(0)->GetColumns()->begin()->second.size();

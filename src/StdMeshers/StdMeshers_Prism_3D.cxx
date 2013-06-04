@@ -2118,15 +2118,17 @@ bool StdMeshers_Prism_3D::initPrism(Prism_3D::TPrismTopo& thePrism,
 bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper*         helper,
                                    const Prism_3D::TPrismTopo& thePrism)
 {
+  myHelper = helper;
+  SMESHDS_Mesh* meshDS = myHelper->GetMeshDS();
+  SMESH_Mesh*     mesh = myHelper->GetMesh();
+
   if ( mySide ) {
     delete mySide; mySide = 0;
   }
   vector< TSideFace* >         sideFaces( NB_WALL_FACES, 0 );
   vector< pair< double, double> > params( NB_WALL_FACES );
-  mySide = new TSideFace( sideFaces, params );
+  mySide = new TSideFace( *mesh, sideFaces, params );
 
-  myHelper = helper;
-  SMESHDS_Mesh* meshDS = myHelper->GetMeshDS();
 
   SMESH_Block::init();
   myShapeIDMap.Clear();
@@ -2265,14 +2267,14 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper*         helper,
         for ( int i = 0; i < nbSplit; ++i ) {
           double f = ( isForward ? params[ i ]   : params[ nbSplit - i-1 ]);
           double l = ( isForward ? params[ i+1 ] : params[ nbSplit - i ]);
-          TSideFace* comp = new TSideFace( myHelper, wallFaceIds[ iSide ],
+          TSideFace* comp = new TSideFace( *mesh, wallFaceIds[ iSide ],
                                            thePrism.myWallQuads[ iE ], *botE,
                                            &myParam2ColumnMaps[ iE ], f, l );
           mySide->SetComponent( iSide++, comp );
         }
       }
       else {
-        TSideFace* comp = new TSideFace( myHelper, wallFaceIds[ iSide ],
+        TSideFace* comp = new TSideFace( *mesh, wallFaceIds[ iSide ],
                                          thePrism.myWallQuads[ iE ], *botE,
                                          &myParam2ColumnMaps[ iE ]);
         mySide->SetComponent( iSide++, comp );
@@ -2293,19 +2295,19 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper*         helper,
     list< TopoDS_Edge >::const_iterator botE = thePrism.myBottomEdges.begin();
     for ( iE = 0; iE < nbExraFaces; ++iE, ++botE )
     {
-      components[ iE ] = new TSideFace( myHelper, wallFaceIds[ iSide ],
+      components[ iE ] = new TSideFace( *mesh, wallFaceIds[ iSide ],
                                         thePrism.myWallQuads[ iE ], *botE,
                                         &myParam2ColumnMaps[ iE ]);
       double u1 = u0 + edgeLength[ iE ] / sumLen;
       params[ iE ] = make_pair( u0 , u1 );
       u0 = u1;
     }
-    mySide->SetComponent( iSide++, new TSideFace( components, params ));
+    mySide->SetComponent( iSide++, new TSideFace( *mesh, components, params ));
 
     // fill the rest faces
     for ( ; iE < nbEdges; ++iE, ++botE )
     {
-      TSideFace* comp = new TSideFace( myHelper, wallFaceIds[ iSide ],
+      TSideFace* comp = new TSideFace( *mesh, wallFaceIds[ iSide ],
                                        thePrism.myWallQuads[ iE ], *botE,
                                        &myParam2ColumnMaps[ iE ]);
       mySide->SetComponent( iSide++, comp );
@@ -2583,7 +2585,7 @@ bool StdMeshers_PrismAsBlock::IsForwardEdge(SMESHDS_Mesh*           meshDS,
  */
 //================================================================================
 
-StdMeshers_PrismAsBlock::TSideFace::TSideFace(SMESH_MesherHelper*        helper,
+StdMeshers_PrismAsBlock::TSideFace::TSideFace(SMESH_Mesh&                mesh,
                                               const int                  faceID,
                                               const Prism_3D::TQuadList& quadList,
                                               const TopoDS_Edge&         baseEdge,
@@ -2592,20 +2594,20 @@ StdMeshers_PrismAsBlock::TSideFace::TSideFace(SMESH_MesherHelper*        helper,
                                               const double               last):
   myID( faceID ),
   myParamToColumnMap( columnsMap ),
-  myHelper( helper )
+  myHelper( mesh )
 {
   myParams.resize( 1 );
   myParams[ 0 ] = make_pair( first, last );
   mySurface     = PSurface( new BRepAdaptor_Surface( quadList.front()->face ));
   myBaseEdge    = baseEdge;
-  myIsForward   = StdMeshers_PrismAsBlock::IsForwardEdge( myHelper->GetMeshDS(),
+  myIsForward   = StdMeshers_PrismAsBlock::IsForwardEdge( myHelper.GetMeshDS(),
                                                           *myParamToColumnMap,
                                                           myBaseEdge, myID );
   if ( quadList.size() > 1 ) // side is vertically composite
   {
     // fill myShapeID2Surf map to enable finding a right surface by any sub-shape ID
 
-    SMESHDS_Mesh* meshDS = myHelper->GetMeshDS();
+    SMESHDS_Mesh* meshDS = myHelper.GetMeshDS();
 
     TopTools_IndexedDataMapOfShapeListOfShape subToFaces;
     Prism_3D::TQuadList::const_iterator quad = quadList.begin();
@@ -2630,19 +2632,20 @@ StdMeshers_PrismAsBlock::TSideFace::TSideFace(SMESH_MesherHelper*        helper,
 
 //================================================================================
 /*!
- * \brief Constructor of complex side face
+ * \brief Constructor of a complex side face
  */
 //================================================================================
 
 StdMeshers_PrismAsBlock::TSideFace::
-TSideFace(const vector< TSideFace* >&             components,
+TSideFace(SMESH_Mesh&                             mesh,
+          const vector< TSideFace* >&             components,
           const vector< pair< double, double> > & params)
   :myID( components[0] ? components[0]->myID : 0 ),
    myParamToColumnMap( 0 ),
    myParams( params ),
    myIsForward( true ),
    myComponents( components ),
-   myHelper( components[0] ? components[0]->myHelper : 0 )
+   myHelper( mesh )
 {}
 //================================================================================
 /*!
@@ -2651,17 +2654,17 @@ TSideFace(const vector< TSideFace* >&             components,
  */
 //================================================================================
 
-StdMeshers_PrismAsBlock::TSideFace::TSideFace( const TSideFace& other )
+StdMeshers_PrismAsBlock::TSideFace::TSideFace( const TSideFace& other ):
+  myID               ( other.myID ),
+  myParamToColumnMap ( other.myParamToColumnMap ),
+  mySurface          ( other.mySurface ),
+  myBaseEdge         ( other.myBaseEdge ),
+  myShapeID2Surf     ( other.myShapeID2Surf ),
+  myParams           ( other.myParams ),
+  myIsForward        ( other.myIsForward ),
+  myComponents       ( other.myComponents.size() ),
+  myHelper           ( *other.myHelper.GetMesh() )
 {
-  myID               = other.myID;
-  mySurface          = other.mySurface;
-  myBaseEdge         = other.myBaseEdge;
-  myParams           = other.myParams;
-  myIsForward        = other.myIsForward;
-  myHelper           = other.myHelper;
-  myParamToColumnMap = other.myParamToColumnMap;
-
-  myComponents.resize( other.myComponents.size());
   for (int i = 0 ; i < myComponents.size(); ++i )
     myComponents[ i ] = new TSideFace( *other.myComponents[ i ]);
 }
@@ -2864,16 +2867,16 @@ gp_Pnt StdMeshers_PrismAsBlock::TSideFace::Value(const Standard_Real U,
     }
     else
     {
-      TopoDS_Shape s = myHelper->GetSubShapeByNode( nn[0], myHelper->GetMeshDS() );
+      TopoDS_Shape s = myHelper.GetSubShapeByNode( nn[0], myHelper.GetMeshDS() );
       if ( s.ShapeType() != TopAbs_EDGE )
-        s = myHelper->GetSubShapeByNode( nn[2], myHelper->GetMeshDS() );
+        s = myHelper.GetSubShapeByNode( nn[2], myHelper.GetMeshDS() );
       if ( s.ShapeType() == TopAbs_EDGE )
         edge = TopoDS::Edge( s );
     }
     if ( !edge.IsNull() )
     {
-      double u1 = myHelper->GetNodeU( edge, nn[0] );
-      double u3 = myHelper->GetNodeU( edge, nn[2] );
+      double u1 = myHelper.GetNodeU( edge, nn[0] );
+      double u3 = myHelper.GetNodeU( edge, nn[2] );
       double u = u1 * ( 1 - hR ) + u3 * hR;
       TopLoc_Location loc; double f,l;
       Handle(Geom_Curve) curve = BRep_Tool::Curve( edge,loc,f,l );
@@ -2909,10 +2912,10 @@ gp_Pnt StdMeshers_PrismAsBlock::TSideFace::Value(const Standard_Real U,
       }
     if ( notFaceID2 ) // no nodes of FACE and nodes are on different FACEs
     {
-      SMESHDS_Mesh* meshDS = myHelper->GetMeshDS();
-      TopoDS_Shape face = myHelper->GetCommonAncestor( meshDS->IndexToShape( notFaceID1 ),
+      SMESHDS_Mesh* meshDS = myHelper.GetMeshDS();
+      TopoDS_Shape face = myHelper.GetCommonAncestor( meshDS->IndexToShape( notFaceID1 ),
                                                        meshDS->IndexToShape( notFaceID2 ),
-                                                       *myHelper->GetMesh(),
+                                                       *myHelper.GetMesh(),
                                                        TopAbs_FACE );
       if ( face.IsNull() ) 
         throw SALOME_Exception("StdMeshers_PrismAsBlock::TSideFace::Value() face.IsNull()");
@@ -2923,12 +2926,12 @@ gp_Pnt StdMeshers_PrismAsBlock::TSideFace::Value(const Standard_Real U,
     }
   }
   
-  gp_XY uv1 = myHelper->GetNodeUV( mySurface->Face(), nn[0], nn[2]);
-  gp_XY uv2 = myHelper->GetNodeUV( mySurface->Face(), nn[1], nn[3]);
+  gp_XY uv1 = myHelper.GetNodeUV( mySurface->Face(), nn[0], nn[2]);
+  gp_XY uv2 = myHelper.GetNodeUV( mySurface->Face(), nn[1], nn[3]);
   gp_XY uv12 = uv1 * ( 1 - vR ) + uv2 * vR;
 
-  gp_XY uv3 = myHelper->GetNodeUV( mySurface->Face(), nn[2], nn[0]);
-  gp_XY uv4 = myHelper->GetNodeUV( mySurface->Face(), nn[3], nn[1]);
+  gp_XY uv3 = myHelper.GetNodeUV( mySurface->Face(), nn[2], nn[0]);
+  gp_XY uv4 = myHelper.GetNodeUV( mySurface->Face(), nn[3], nn[1]);
   gp_XY uv34 = uv3 * ( 1 - vR ) + uv4 * vR;
 
   gp_XY uv = uv12 * ( 1 - hR ) + uv34 * hR;
@@ -2957,7 +2960,7 @@ TopoDS_Edge StdMeshers_PrismAsBlock::TSideFace::GetEdge(const int iEdge) const
   }
   TopoDS_Shape edge;
   const SMDS_MeshNode* node = 0;
-  SMESHDS_Mesh * meshDS = myHelper->GetMesh()->GetMeshDS();
+  SMESHDS_Mesh * meshDS = myHelper.GetMesh()->GetMeshDS();
   TNodeColumn* column;
 
   switch ( iEdge ) {
@@ -2965,7 +2968,7 @@ TopoDS_Edge StdMeshers_PrismAsBlock::TSideFace::GetEdge(const int iEdge) const
   case BOTTOM_EDGE:
     column = & (( ++myParamToColumnMap->begin())->second );
     node = ( iEdge == TOP_EDGE ) ? column->back() : column->front();
-    edge = myHelper->GetSubShapeByNode ( node, meshDS );
+    edge = myHelper.GetSubShapeByNode ( node, meshDS );
     if ( edge.ShapeType() == TopAbs_VERTEX ) {
       column = & ( myParamToColumnMap->begin()->second );
       node = ( iEdge == TOP_EDGE ) ? column->back() : column->front();
@@ -2980,7 +2983,7 @@ TopoDS_Edge StdMeshers_PrismAsBlock::TSideFace::GetEdge(const int iEdge) const
     else
       column = & ( myParamToColumnMap->begin()->second );
     if ( column->size() > 0 )
-      edge = myHelper->GetSubShapeByNode( (*column)[ 1 ], meshDS );
+      edge = myHelper.GetSubShapeByNode( (*column)[ 1 ], meshDS );
     if ( edge.IsNull() || edge.ShapeType() == TopAbs_VERTEX )
       node = column->front();
     break;
@@ -2992,10 +2995,10 @@ TopoDS_Edge StdMeshers_PrismAsBlock::TSideFace::GetEdge(const int iEdge) const
 
   // find edge by 2 vertices
   TopoDS_Shape V1 = edge;
-  TopoDS_Shape V2 = myHelper->GetSubShapeByNode( node, meshDS );
+  TopoDS_Shape V2 = myHelper.GetSubShapeByNode( node, meshDS );
   if ( !V2.IsNull() && V2.ShapeType() == TopAbs_VERTEX && !V2.IsSame( V1 ))
   {
-    TopoDS_Shape ancestor = myHelper->GetCommonAncestor( V1, V2, *myHelper->GetMesh(), TopAbs_EDGE);
+    TopoDS_Shape ancestor = myHelper.GetCommonAncestor( V1, V2, *myHelper.GetMesh(), TopAbs_EDGE);
     if ( !ancestor.IsNull() )
       return TopoDS::Edge( ancestor );
   }
@@ -3035,8 +3038,8 @@ int StdMeshers_PrismAsBlock::TSideFace::InsertSubShapes(TBlockShapes& shapeMap) 
   GetColumns(0, col1, col2 );
   const SMDS_MeshNode* node0 = col1->second.front();
   const SMDS_MeshNode* node1 = col1->second.back();
-  TopoDS_Shape v0 = myHelper->GetSubShapeByNode( node0, myHelper->GetMeshDS());
-  TopoDS_Shape v1 = myHelper->GetSubShapeByNode( node1, myHelper->GetMeshDS());
+  TopoDS_Shape v0 = myHelper.GetSubShapeByNode( node0, myHelper.GetMeshDS());
+  TopoDS_Shape v1 = myHelper.GetSubShapeByNode( node1, myHelper.GetMeshDS());
   if ( v0.ShapeType() == TopAbs_VERTEX ) {
     nbInserted += SMESH_Block::Insert( v0, vertIdVec[ 0 ], shapeMap);
   }
@@ -3049,8 +3052,8 @@ int StdMeshers_PrismAsBlock::TSideFace::InsertSubShapes(TBlockShapes& shapeMap) 
   GetColumns(1, col1, col2 );
   node0 = col2->second.front();
   node1 = col2->second.back();
-  v0 = myHelper->GetSubShapeByNode( node0, myHelper->GetMeshDS());
-  v1 = myHelper->GetSubShapeByNode( node1, myHelper->GetMeshDS());
+  v0 = myHelper.GetSubShapeByNode( node0, myHelper.GetMeshDS());
+  v1 = myHelper.GetSubShapeByNode( node1, myHelper.GetMeshDS());
   if ( v0.ShapeType() == TopAbs_VERTEX ) {
     nbInserted += SMESH_Block::Insert( v0, vertIdVec[ 0 ], shapeMap);
   }
@@ -3242,7 +3245,7 @@ gp_Pnt2d StdMeshers_PrismAsBlock::TPCurveOnHorFaceAdaptor::Value(const Standard_
 {
   TParam2ColumnIt u_col1, u_col2;
   double r = mySide->GetColumns( U, u_col1, u_col2 );
-  gp_XY uv1 = mySide->GetNodeUV( myFace, u_col1->second[ myZ ]);
-  gp_XY uv2 = mySide->GetNodeUV( myFace, u_col2->second[ myZ ]);
+  gp_XY uv1 = mySide->GetNodeUV( myFace, u_col1->second[ myZ ], u_col2->second[ myZ ]);
+  gp_XY uv2 = mySide->GetNodeUV( myFace, u_col2->second[ myZ ], u_col1->second[ myZ ]);
   return uv1 * ( 1 - r ) + uv2 * r;
 }
