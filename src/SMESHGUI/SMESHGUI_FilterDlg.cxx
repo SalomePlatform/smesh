@@ -1765,184 +1765,215 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
   Table* aTable = myTables[ aType ];
   ComboItem* aCompareItem = (ComboItem*)aTable->item(row, 1);
 
-  int aCriterionType = GetCriterionType(row);
+  // find out type of a existing threshould table item
   QtxColorButton* clrBtn = qobject_cast<QtxColorButton*>(aTable->cellWidget(row, 2));
-  int aComboType = ComboItem::Type();
-  int aIntSpinType = IntSpinItem::Type();
-  int aDoubleSpinType = DoubleSpinItem::Type();
-  QTableWidgetItem* aTableItem = aTable->item(row, 2);
-  bool isComboItem = false;
-  bool isIntSpinItem = false;
-  bool isDoubleSpinItem = false;
-  if (aTableItem) {
-    int aTableType = aTable->item(row, 2)->type();
-    isComboItem = ( aTableType == aComboType );
-    isIntSpinItem = ( aTableType == aIntSpinType );
-    isDoubleSpinItem = ( aTableType == aDoubleSpinType );
+  bool isComboItem       = false;
+  bool isIntSpinItem     = false;
+  bool isDoubleSpinItem  = false;
+  if ( QTableWidgetItem* aTableItem = aTable->item(row, 2) )
+  {
+    int aTableType   = aTableItem->type();
+    isComboItem      = ( aTableType == ComboItem::Type() );
+    isIntSpinItem    = ( aTableType == IntSpinItem::Type() );
+    isDoubleSpinItem = ( aTableType == DoubleSpinItem::Type() );
   }
-  
-  bool anIsDoubleCriterion =
-    aCriterionType == SMESH::FT_AspectRatio ||
-    aCriterionType == SMESH::FT_AspectRatio3D ||
-    aCriterionType == SMESH::FT_Taper ||
-    aCriterionType == SMESH::FT_Warping ||
-    aCriterionType == SMESH::FT_MinimumAngle ||
-    aCriterionType == SMESH::FT_Skew ||
-    aCriterionType == SMESH::FT_Area ||
-    aCriterionType == SMESH::FT_Length ||
-    aCriterionType == SMESH::FT_Length2D ||
-    aCriterionType == SMESH::FT_MaxElementLength2D ||
-    aCriterionType == SMESH::FT_MaxElementLength3D ||
-    aCriterionType == SMESH::FT_Volume3D ||
-    aCriterionType == SMESH::FT_EntityType;
+
+  // find out a type of item required by a new criterion and other table features
+  int aCriterionType       = GetCriterionType(row);
+  bool anIsDoubleCriterion = false;
+  bool anIsIntCriterion    = false;
+  bool anIsComboCriterion  = false;
+  // other features:
+  QList<int> comboIDs; // values to show in a combo item
+  int nbCompareSigns = 0; // possible values are 0,1,3
+  bool isThresholdEditable = false; // actual for "simple" item types
+  switch ( aCriterionType )
+  {
+  case SMESH::FT_AspectRatio:
+  case SMESH::FT_AspectRatio3D:
+  case SMESH::FT_Warping:
+  case SMESH::FT_MinimumAngle:
+  case SMESH::FT_Taper:
+  case SMESH::FT_Skew:
+  case SMESH::FT_Area:
+  case SMESH::FT_Volume3D:
+  case SMESH::FT_MaxElementLength2D:
+  case SMESH::FT_MaxElementLength3D:
+    anIsDoubleCriterion = true; nbCompareSigns = 3; break;
+
+  case SMESH::FT_FreeBorders:
+  case SMESH::FT_FreeEdges:
+  case SMESH::FT_FreeNodes:
+  case SMESH::FT_FreeFaces:
+  case SMESH::FT_EqualNodes:
+  case SMESH::FT_EqualEdges:
+  case SMESH::FT_EqualFaces:
+  case SMESH::FT_EqualVolumes: break;
+
+  case SMESH::FT_MultiConnection:
+  case SMESH::FT_MultiConnection2D: anIsIntCriterion = true; break;
+
+  case SMESH::FT_Length:
+  case SMESH::FT_Length2D: anIsDoubleCriterion = true; break;
+
+  case SMESH::FT_BelongToGeom:
+  case SMESH::FT_BelongToPlane:
+  case SMESH::FT_BelongToCylinder:
+  case SMESH::FT_BelongToGenSurface:
+  case SMESH::FT_LyingOnGeom: nbCompareSigns = 1; isThresholdEditable = true; break;
+
+  case SMESH::FT_RangeOfIds: nbCompareSigns = 1; isThresholdEditable = true; break;
+
+  case SMESH::FT_BadOrientedVolume:
+  case SMESH::FT_BareBorderVolume:
+  case SMESH::FT_BareBorderFace:
+  case SMESH::FT_OverConstrainedVolume:
+  case SMESH::FT_OverConstrainedFace:
+  case SMESH::FT_LinearOrQuadratic: break;
+
+  case SMESH::FT_GroupColor: nbCompareSigns = 1; isThresholdEditable = true; break;
+
+  case SMESH::FT_ElemGeomType:
+    comboIDs = geomTypes( aType ); anIsComboCriterion = true; nbCompareSigns = 1; break;
+
+  case SMESH::FT_EntityType:
+    comboIDs = entityTypes( aType ); anIsComboCriterion = true; nbCompareSigns = 1; break;
+
+  case SMESH::FT_CoplanarFaces: isThresholdEditable = true; break;
+
+  case SMESH::FT_BallDiameter: anIsDoubleCriterion = true; break;
+
+  case SMESH::FT_ConnectedElements: isThresholdEditable = true; break;
+
+  case SMESH::FT_LessThan:
+  case SMESH::FT_MoreThan:
+  case SMESH::FT_EqualTo:
+  case SMESH::FT_LogicalNOT:
+  case SMESH::FT_LogicalAND:
+  case SMESH::FT_LogicalOR:
+  case SMESH::FT_Undefined:
+  default: return;
+  }
+
+  // get a precision of a double criterion
   int aPrecision = 0;
   if ( anIsDoubleCriterion ) {
-    const char* aPrecisionType = getPrecision( aCriterionType );
+    const char*     aPrecisionType = getPrecision( aCriterionType );
     SUIT_ResourceMgr* aResourceMgr = SMESH::GetResourceMgr( mySMESHGUI );
     if( aPrecisionType && aResourceMgr )
       aPrecision = aResourceMgr->integerValue( "SMESH", aPrecisionType, aPrecision );
   }
 
-  // if the precision is to be changed we should remove the existing
-  // spin item and create another one with new precision
-  bool anIsPrecisionChanged = false;
-  if ( anIsDoubleCriterion && isDoubleSpinItem ) {
-    if ( DoubleSpinItem* aDoubleSpinItem = dynamic_cast<DoubleSpinItem*>( aTable->item( row, 2 ) ) ) {
-      anIsPrecisionChanged = aDoubleSpinItem->precision() != aPrecision;
+  // check if the current item type satisfies the criterion
+  bool itemTypeKO =
+    ( aCriterionType == SMESH::FT_GroupColor && !clrBtn) ||
+    ( anIsComboCriterion                     && !isComboItem ) ||
+    ( anIsIntCriterion                       && !isIntSpinItem ) ||
+    ( anIsDoubleCriterion                    && !isDoubleSpinItem );
+
+  if ( !itemTypeKO )
+  {
+    if ( anIsDoubleCriterion )
+    {
+      // if the precision is to be changed we should remove the existing
+      // spin item and create another one with new precision
+      if ( DoubleSpinItem* aDoubleSpinItem = dynamic_cast<DoubleSpinItem*>( aTable->item( row, 2 )))
+        itemTypeKO = ( aDoubleSpinItem->precision() != aPrecision );
+      else
+        itemTypeKO = true;
+    }
+    else if ( anIsComboCriterion )
+    {
+      if ( ComboItem* aComboItem = dynamic_cast<ComboItem*>( aTable->item( row, 2 )))
+        itemTypeKO = ( aComboItem->count() != comboIDs.count() );
+      else
+        itemTypeKO = true;
+    }
+    else if ( !anIsIntCriterion && aCriterionType != SMESH::FT_GroupColor )
+    {
+      itemTypeKO = ( clrBtn || isComboItem || isIntSpinItem || isDoubleSpinItem );
     }
   }
 
-  if ( (aCriterionType != SMESH::FT_GroupColor && clrBtn) ||
-       (aCriterionType != SMESH::FT_ElemGeomType && isComboItem) ||
-       (aCriterionType != SMESH::FT_EntityType && isComboItem) ||
-       (aCriterionType != SMESH::FT_MultiConnection && isIntSpinItem) ||
-       (!anIsDoubleCriterion && isDoubleSpinItem) ||
-       anIsPrecisionChanged )
+  // update the table row
+
+  bool isSignalsBlocked = aTable->signalsBlocked();
+  aTable->blockSignals( true );
+
+  // update threshold table item
+  if ( itemTypeKO )
   {
-    bool isSignalsBlocked = aTable->signalsBlocked();
-    aTable->blockSignals( true );
     aTable->removeCellWidget( row, 2 );
-    aTable->setItem( row, 2, new QTableWidgetItem() );
-    aTable->blockSignals( isSignalsBlocked );
-  }
-  if ( (aCriterionType == SMESH::FT_GroupColor && !clrBtn) ||
-       (aCriterionType == SMESH::FT_ElemGeomType && !isComboItem) ||
-       (aCriterionType == SMESH::FT_EntityType && !isComboItem) ||
-       (aCriterionType == SMESH::FT_MultiConnection && !isIntSpinItem) ||
-       (anIsDoubleCriterion && !isDoubleSpinItem) ||
-       anIsPrecisionChanged )
-  {
-    bool isSignalsBlocked = aTable->signalsBlocked();
-    aTable->blockSignals( true );
-    if ( aCriterionType == SMESH::FT_GroupColor )
+
+    if ( aCriterionType == SMESH::FT_GroupColor ) // ---------------------- QtxColorButton
+    {
       aTable->setCellWidget( row, 2, new QtxColorButton( aTable ) );
-    else if ( aCriterionType == SMESH::FT_ElemGeomType ) {
-      QList<int> typeIds = geomTypes( aType );
-      QMap<int, QString> typeNames;
-      QList<int>::const_iterator anIter = typeIds.begin();
-      for ( int i = 0; anIter != typeIds.end(); ++anIter, ++i)
-      {
-        QString typeKey = QString( "GEOM_TYPE_%1" ).arg( *anIter );
-        typeNames[ *anIter ] = tr( typeKey.toLatin1().data() );
-      }
-      ComboItem* typeBox = new ComboItem( typeNames );
-      aTable->setItem( row, 2, typeBox );
     }
-    else if ( aCriterionType == SMESH::FT_EntityType ) {
-      QList<int> typeIds = entityTypes( aType );
-      QMap<int, QString> typeNames;
-      QList<int>::const_iterator anIter = typeIds.begin();
-      for ( int i = 0; anIter != typeIds.end(); ++anIter, ++i)
+    else if ( anIsComboCriterion ) // -------------------------------------------ComboItem
+    {
+      QString msgPrefix
+        ( aCriterionType == SMESH::FT_ElemGeomType  ? "GEOM_TYPE_%1" :  "ENTITY_TYPE_%1" );
+      QMap<int, QString> names;
+      QList<int>::const_iterator id = comboIDs.begin();
+      for ( ; id != comboIDs.end(); ++id )
       {
-        QString typeKey = QString( "ENTITY_TYPE_%1" ).arg( *anIter );
-        typeNames[ *anIter ] = tr( typeKey.toLatin1().data() );
+        QString name = msgPrefix.arg( *id );
+        names[ *id ] = tr( name.toLatin1().data() );
       }
-      ComboItem* typeBox = new ComboItem( typeNames );
-      aTable->setItem( row, 2, typeBox );
+      ComboItem* comboBox = new ComboItem( names );
+      aTable->setItem( row, 2, comboBox );
     }
-    else if ( aCriterionType == SMESH::FT_MultiConnection ) {
+    else if ( anIsIntCriterion ) // ------------------------------------------ IntSpinItem
+    {
       IntSpinItem* intSpin = new IntSpinItem( 0 );
       aTable->setItem( row, 2, intSpin );
     }
-    else if ( anIsDoubleCriterion ) {
+    else if ( anIsDoubleCriterion ) // -------------------------------------DoubleSpinItem
+    {
       DoubleSpinItem* dblSpin = new DoubleSpinItem( 0 );
       dblSpin->setPrecision( aPrecision );
       aTable->setItem( row, 2, dblSpin );
     }
-    aTable->blockSignals( isSignalsBlocked );
-  }
-
-  // set Compare and enable/desable Threshold
-  if ((aType == SMESH::NODE && (aCriterionType == SMESH::FT_FreeNodes               ||
-                                aCriterionType == SMESH::FT_EqualNodes ))           ||
-      (aType == SMESH::EDGE && (aCriterionType == SMESH::FT_FreeBorders             ||
-                                aCriterionType == SMESH::FT_EqualEdges ))           ||
-      (aType == SMESH::FACE && (aCriterionType == SMESH::FT_BareBorderFace          ||
-                                aCriterionType == SMESH::FT_OverConstrainedFace     ||
-                                aCriterionType == SMESH::FT_FreeEdges               ||
-                                aCriterionType == SMESH::FT_FreeFaces               ||
-                                aCriterionType == SMESH::FT_EqualFaces))            ||
-      (aType == SMESH::VOLUME && (aCriterionType == SMESH::FT_BadOrientedVolume     ||
-                                  aCriterionType == SMESH::FT_OverConstrainedVolume ||
-                                  aCriterionType == SMESH::FT_BareBorderVolume      ||
-                                  aCriterionType == SMESH::FT_EqualVolumes ))       ||
-      aCriterionType == SMESH::FT_LinearOrQuadratic ||
-      aCriterionType == SMESH::FT_CoplanarFaces ||
-      aCriterionType == SMESH::FT_ConnectedElements
-      )
-  {
-    // - No compare
-    bool isSignalsBlocked = aTable->signalsBlocked();
-    aTable->blockSignals( true );
-
-    if (aCompareItem->count() > 0)
-      aCompareItem->clear();
-    aTable->setEditable(false, row, 1);
-    // - Threshold is NOT editable for most of criteria
-    aTable->item(row, 2)->setText( QString("") );
-    aTable->setEditable(( aCriterionType == SMESH::FT_ConnectedElements ||
-                          aCriterionType == SMESH::FT_CoplanarFaces       ), row, 2);
-    aTable->blockSignals( isSignalsBlocked );
-  }
-  else if (aCriterionType == SMESH::FT_RangeOfIds ||
-           aCriterionType == SMESH::FT_GroupColor ||
-           aCriterionType == SMESH::FT_ElemGeomType ||
-           aCriterionType == SMESH::FT_EntityType ||
-           aCriterionType == SMESH::FT_BelongToGeom ||
-           aCriterionType == SMESH::FT_BelongToPlane ||
-           aCriterionType == SMESH::FT_BelongToCylinder ||
-           aCriterionType == SMESH::FT_BelongToGenSurface ||
-           aCriterionType == SMESH::FT_LyingOnGeom)
-  {
-    // - EQUAL_TO compare ONLY
-    QMap<int, QString> aMap;
-    aMap[ SMESH::FT_EqualTo ] = tr("EQUAL_TO");
-    aCompareItem->setItems(aMap);
-    // if (!aTable->isEditable(row, 2))
-    aTable->setEditable(false, row, 1);
-    // - Threshold is editable
-    if (!aTable->isEditable(row, 2))
-      aTable->setEditable(true, row, 2);
-  }
-  else
-  {
-    // All compare signs
-    if (aCompareItem && aCompareItem->count() != 3)
+    else // --------------------------------------------------------------QTableWidgetItem
     {
-      aCompareItem->setItems(getCompare());
-    }
-    // Threshold is editable
-    if (aTable->item( row, 2 )) {
-      QString aText = aTable->text(row, 2);
-      bool isOk = false;
-      aText.toDouble(&isOk);
-      aTable->item( row, 2 )->setText(isOk ? aText : QString(""));
-      if (!aTable->isEditable(row, 1))
-        aTable->setEditable(true, row, 1);
-      if (!aTable->isEditable(row, 2))
-        aTable->setEditable(true, row, 2);
+      aTable->setItem( row, 2, new QTableWidgetItem() );
     }
   }
+
+  // set Compare
+  if ( aCompareItem->count() != nbCompareSigns )
+  {
+    switch ( nbCompareSigns ) {
+    case 0: {
+      aCompareItem->clear();
+      break;
+    }
+    case 1: {
+      QMap<int, QString> aMap;
+      aMap[ SMESH::FT_EqualTo ] = tr("EQUAL_TO");
+      aCompareItem->setItems(aMap);
+      break;
+    }
+    case 3: {
+      aCompareItem->setItems(getCompare());
+      break;
+    }
+    }
+  }
+  aTable->setEditable( nbCompareSigns == 3, row, 1);
+
+  // enable/desable Threshold
+  if ( aCriterionType == SMESH::FT_GroupColor ||
+       anIsComboCriterion ||
+       anIsIntCriterion ||
+       anIsDoubleCriterion )
+  {
+    isThresholdEditable = true;
+  }
+  aTable->setEditable( isThresholdEditable, row, 2);
+
+
+  aTable->blockSignals( isSignalsBlocked );
 
   updateAdditionalWidget();
 
