@@ -362,7 +362,11 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
         double du1 = edgeUVPtStruct.back().param - edgeUVPtStruct[0].param;
         double du2 = myLast[iE] - myFirst[iE];
         if ( du1 * du2 < 0 )
+        {
           std::reverse( & points[iPt], & points[iPt + edgeUVPtStruct.size()]);
+          for ( size_t i = 0; i < edgeUVPtStruct.size(); ++i )
+            points[iPt+i].normParam = 1. - points[iPt+i].normParam;
+        }
         // update normalized params
         if ( myEdge.size() > 1 ) {
           for ( size_t i = 0; i < edgeUVPtStruct.size(); ++i, ++iPt )
