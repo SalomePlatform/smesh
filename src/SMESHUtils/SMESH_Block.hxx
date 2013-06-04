@@ -383,7 +383,7 @@ public:
   double   myValues[ 4 ]; // values computed at myParam: square distance and 3 derivatives
 
   typedef std::pair<gp_XYZ,gp_XYZ> TxyzPair;
-  TxyzPair my3x3x3GridNodes[ 27 ]; // to compute the first param guess
+  TxyzPair my3x3x3GridNodes[ 1000 ]; // to compute the first param guess
   bool     myGridComputed;
 };
 

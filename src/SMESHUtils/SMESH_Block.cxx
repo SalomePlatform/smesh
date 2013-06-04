@@ -694,12 +694,12 @@ bool SMESH_Block::ComputeParameters(const gp_Pnt& thePoint,
       start.SetCoord( iParam, sumParam / 4.);
     }
     if ( needGrid ) {
-      // compute nodes of 3 x 3 x 3 grid
+      // compute nodes of 10 x 10 x 10 grid
       int iNode = 0;
       Bnd_Box box;
-      for ( double x = 0.25; x < 0.9; x += 0.25 )
-        for ( double y = 0.25; y < 0.9; y += 0.25 )
-          for ( double z = 0.25; z < 0.9; z += 0.25 ) {
+      for ( double x = 0.05; x < 1.; x += 0.1 )
+        for ( double y = 0.05; y < 1.; y += 0.1 )
+          for ( double z = 0.05; z < 1.; z += 0.1 ) {
             TxyzPair & prmPtn = my3x3x3GridNodes[ iNode++ ];
             prmPtn.first.SetCoord( x, y, z );
             ShellPoint( prmPtn.first, prmPtn.second );
@@ -718,7 +718,7 @@ bool SMESH_Block::ComputeParameters(const gp_Pnt& thePoint,
   {
     double minDist = DBL_MAX;
     gp_XYZ* bestParam = 0;
-    for ( int iNode = 0; iNode < 27; iNode++ ) {
+    for ( int iNode = 0; iNode < 1000; iNode++ ) {
       TxyzPair & prmPtn = my3x3x3GridNodes[ iNode ];
       double dist = ( thePoint.XYZ() - prmPtn.second ).SquareModulus();
       if ( dist < minDist ) {
@@ -818,6 +818,12 @@ bool SMESH_Block::ComputeParameters(const gp_Pnt& thePoint,
          << " ------ DIST : " << sqrt( sqDistance ) << "\t Tol=" << myTolerance << "\t Nb LOOPS=" << nbLoops << std::endl
          << " ------ NB IT: " << myNbIterations << ",  SUM DIST: " << mySumDist );
 #endif
+
+  const double reachedDist = sqrt( sqDistance );
+  if ( reachedDist > 1000 * myTolerance &&
+       computeParameters( thePoint, theParams, solution ) &&
+       reachedDist > distance() )
+    return true;
 
   theParams = solution;
 
