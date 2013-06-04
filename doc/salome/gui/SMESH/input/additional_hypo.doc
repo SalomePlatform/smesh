@@ -75,15 +75,24 @@ computations.
   should not be constructed; in the 2D case it defines geometrical edges
   on which element layers either should be or should not be
   constructed, depending on the value of the previous parameter
-  (<b>Specified Edges are</b>). Whatever shapes are specified by this
-  parameter, the element layers are not constructed on geometrical
-  faces shared by several solids in 3D case and edges shared by
-  several faces in 2D case.
+  (<b>Specified Edges are</b>). 
   \note A mesh shown in the 3D Viewer can prevent selection of faces
   and edges, just hide the mesh to avoid this. To avoid a long wait when a
   geometry with many faces (or edges) is displayed, the number of faces
   (edges) shown at a time is limited by the value of "Sub-shapes
-  preview chunk size" preference (in Preferences/Mesh/General tab).
+  preview chunk size" preference (in Preferences/Mesh/General tab).<br>
+
+  Whatever shapes are specified by this
+  parameter, the element layers are not constructed on geometrical
+  faces shared by several solids in 3D case and edges shared by
+  several faces in 2D case. In other words the element layers can be
+  constructed on boundary faces and edges, and are not constructed on
+  internal faces and edges. There is an exception to this rule in 2D
+  case: if "Viscous Layers 2D" hypothesis is assigned to a sub-mesh,
+  the element layers can be constructed on boundary edges of the shape
+  of this sub-mesh.
+  \image html viscous_layers_on_submesh.png 2D viscous layers constructed on boundary edges of a sub-mesh on a disk face.
+
 </li>
 </ul>
 
