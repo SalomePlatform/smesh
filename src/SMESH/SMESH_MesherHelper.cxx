@@ -845,7 +845,7 @@ gp_XY SMESH_MesherHelper::GetCenterUV(const gp_XY& uv1,
 double SMESH_MesherHelper::GetNodeU(const TopoDS_Edge&   E,
                                     const SMDS_MeshNode* n,
                                     const SMDS_MeshNode* inEdgeNode,
-                                    bool*                check)
+                                    bool*                check) const
 {
   double param = Precision::Infinite();
 
