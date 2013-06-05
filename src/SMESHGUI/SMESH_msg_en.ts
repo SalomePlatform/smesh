@@ -1270,6 +1270,10 @@ Please enter correct values and try again</translation>
         <translation>Automatically create groups</translation>
     </message>
     <message>
+        <source>SMESH_AUTO_DIM</source>
+        <translation>Automatically define space dimension</translation>
+    </message>
+    <message>
         <source>SMESH_REQUIRED_GROUPS</source>
         <translation>Create groups of required entities</translation>
     </message>

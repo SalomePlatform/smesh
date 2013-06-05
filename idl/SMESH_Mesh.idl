@@ -596,19 +596,26 @@ module SMESH
     boolean HasDuplicatedGroupNamesMED();
 
     /*!
-     * Export Mesh to different MED Formats
+     * Export Mesh to a MED Format file
      * @params
      * - file : name of the MED file
      * - auto_groups : boolean parameter for creating/not creating
-     *   the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
-     *   the typical use is auto_groups=false.
+     *                 the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
+     *                 the typical use is auto_groups=false.
      * - version : define the version of format of MED file, that will be created
      * - overwrite : boolean parameter for overwriting/not overwriting the file, if it exists
+     * - autoDimension: if @c True (default), a space dimension of a MED mesh can be either
+     *         - 1D if all mesh nodes lie on OX coordinate axis, or
+     *         - 2D if all mesh nodes lie on XOY coordinate plane, or
+     *         - 3D in the rest cases.
+     *
+     *         If @a autoDimension is @c False, the space dimension is always 3.
      */
     void ExportToMEDX( in string      file, 
                        in boolean     auto_groups, 
                        in MED_VERSION version, 
-                       in boolean     overwrite ) raises (SALOME::SALOME_Exception);
+                       in boolean     overwrite,
+                       in boolean     autoDimension ) raises (SALOME::SALOME_Exception);
 
     /*!
      * Export a part of Mesh into a MED file
@@ -617,15 +624,20 @@ module SMESH
      * - file : name of the MED file
      * - version : define the version of format of MED file, that will be created
      * - overwrite : boolean parameter for overwriting/not overwriting the file, if it exists
+     * - autoDimension: if @c True, a space dimension for export is defined by mesh 
+     *                 configuration; for example a planar mesh lying on XOY plane
+     *                 will be exported as a mesh in 2D space. 
+     *                 If @a autoDimension == @c False, the space dimension is 3.
      */
     void ExportPartToMED( in SMESH_IDSource meshPart, 
                           in string         file, 
                           in boolean        auto_groups,
                           in MED_VERSION    version,
-                          in boolean        overwrite ) raises (SALOME::SALOME_Exception);
+                          in boolean        overwrite,
+                          in boolean        autoDimension ) raises (SALOME::SALOME_Exception);
 
     /*!
-     * Export Mesh to different MED Formats
+     * Export Mesh to a MED Format file
      * Works, just the same as ExportToMEDX, with overwrite parameter equal to true.
      * The method is kept in order to support old functionality
      */

@@ -2,19 +2,22 @@
 
 \page importing_exporting_meshes_page Importing and exporting meshes
 
-\n In MESH there is a functionality allowing importation/exportation
+\n In MESH there is a functionality allowing import/export
 of meshes from/to \b MED, \b UNV (I-DEAS 10), \b DAT (simple ascii format), \b STL,
-\b GMF (internal format of DISTENE products, namely BLSurf, GHS3D and Hexotic algorithms) and \b CGNS format files. You can also export a group as a whole mesh.
+\b GMF (internal format of DISTENE products, namely BLSurf, GHS3D and
+Hexotic algorithms) and \b CGNS format files. You can also export a
+group as a whole mesh.
 
 
 <em>To import a mesh:</em>
 
 <ol>
 <li>From the \b File menu choose the \b Import item, from its sub-menu
-select the corresponding format (MED, UNV, STL, GMF and CGNS) of the file containing
-your mesh.</li>
+  select the corresponding format (MED, UNV, STL, GMF and CGNS) of the
+  file containing your mesh.</li>
 <li>In the standard <b>Search File</b> dialog box find the file for
-importation. It is possible to select multiple files to be imported all at once. </li>
+  import. It is possible to select multiple files to be imported all at
+  once. </li> 
 
 <li>Click the \b OK button.</li>
 </ol>
@@ -24,17 +27,35 @@ importation. It is possible to select multiple files to be imported all at once.
 <em>To export a mesh or a group:</em>
 
 <ol>
-<li>Select the object you wish to export.</li>
-<li>From the \b File menu choose the \b Export item, from its sub-menu
-select the format (MED, UNV, DAT, STL, GMF and CGNS) of the file which will
-contain your exported mesh.</li>
-<li>In the standard <b>Search File</b> select a location for the
-exported file and enter its name.</li>
-<li>Click the \b OK button.</li>
+  <li>Select the object you wish to export.</li>
+  <li>From the \b File menu choose the \b Export item, from its sub-menu
+    select the format (MED, UNV, DAT, STL, GMF and CGNS) of the file which will
+    contain your exported mesh.</li>
+  <li>In the standard <b>Search File</b> select a location for the
+    exported file and enter its name.</li>
+  <li>Click the \b OK button.</li>
 </ol>
 
 \image html meshexportmesh.png
 
+At export to MED and SAUV format files additional parameters are available.
+<ul>
+  <li><b>Automatically create groups</b> check-box specifies whether to
+  create groups of all mesh entities of available dimensions or
+  not. If checked, the created groups have names like "Group_On_All_Nodes",
+  "Group_On_All_Faces" etc.</li>
+  <li><b>Automatically define space dimension</b> check-box specifies
+  whether to define space dimension for export by mesh configuration
+  or not. Usually the mesh is exported as a mesh in 3D space, just as
+  it is in Mesh module. The mesh can be exported as a mesh in lower
+  dimension in following cases, provided that this check-box is
+  checked.
+    <ul>
+      <li> 1D: if all mesh nodes lie on OX coordinate axis. </li>
+      <li> 2D: if all mesh nodes lie on XOY coordinate plane. </li>
+    </ul>
+  </li>
+</ul>
 <br><b>See Also</b> a sample TUI Script of an \ref tui_export_mesh "Export Mesh" operation.
 
 */

@@ -591,6 +591,7 @@
     if ( resMgr )
       toCreateGroups = resMgr->booleanValue( "SMESH", "auto_groups", false );
     bool toOverwrite = true;
+    bool toFindOutDim = true;
 
     QString aFilter, aTitle = QObject::tr("SMESH_EXPORT_MESH");
     QString anInitialPath = "";
@@ -612,32 +613,6 @@
                                             anInitialPath + QString("/") + aMeshName,
                                             aFilter, aTitle, false);
     }
-    // else if ( isGMF )// Export to GMF
-    // {
-      // SalomeApp_CheckFileDlg* fd = new SalomeApp_CheckFileDlg
-      //   ( SMESHGUI::desktop(), false, QObject::tr("SMESH_REQUIRED_GROUPS"), true, true );
-      // QStringList filters;
-      // filters << QObject::tr( "GMF_ASCII_FILES_FILTER" ) + " (*.mesh)"
-      //         << QObject::tr( "GMF_BINARY_FILES_FILTER" )  + " (*.meshb)";
-      // fd->setWindowTitle( aTitle );
-      // fd->setNameFilters( filters );
-
-      // if ( !aMeshOrGroup->_is_equivalent( aMesh ))
-      //   toCreateGroups = false;
-      // else
-      //   toCreateGroups = ( aMesh->NbGroups() > 0 );
-
-      // fd->SetChecked( true );
-      // if ( !anInitialPath.isEmpty() )
-      //   fd->setDirectory( anInitialPath );
-      // fd->selectFile(aMeshName);
-
-      // if ( fd->exec() )
-      //   aFilename = fd->selectedFile();
-      // toCreateGroups = fd->IsChecked();
-
-      // delete fd;
-    // }
     else if ( isCGNS )// Export to CGNS
     {
       SUIT_FileDlg* fd = new SUIT_FileDlg( SMESHGUI::desktop(), false, true, true );
@@ -705,13 +680,16 @@
         if (it.value() == SMESH::MED_V2_2)
           aDefaultFilter = it.key();
       }
+      QStringList checkBoxes;
+      checkBoxes << QObject::tr("SMESH_AUTO_GROUPS") << QObject::tr("SMESH_AUTO_DIM");
 
-      SalomeApp_CheckFileDlg* fd = new SalomeApp_CheckFileDlg
-        ( SMESHGUI::desktop(), false, QObject::tr("SMESH_AUTO_GROUPS"), true, true );
+      SalomeApp_CheckFileDlg* fd =
+        new SalomeApp_CheckFileDlg ( SMESHGUI::desktop(), false, checkBoxes, true, true );
       fd->setWindowTitle( aTitle );
       fd->setNameFilters( filters );
       fd->selectNameFilter(aDefaultFilter);
-      fd->SetChecked(toCreateGroups);
+      fd->SetChecked(0,toCreateGroups);
+      fd->SetChecked(1,toFindOutDim);
       if ( !anInitialPath.isEmpty() )
         fd->setDirectory( anInitialPath );
       fd->selectFile(aMeshName);
@@ -794,7 +772,8 @@
           }
         }
       }
-      toCreateGroups = fd->IsChecked();
+      toCreateGroups = fd->IsChecked(0);
+      toFindOutDim   = fd->IsChecked(1);
       delete fd;
     }
     else
@@ -833,10 +812,10 @@
             SMESH::SMESH_Mesh_var        aMeshItem = aMeshOrGroup->GetMesh();
             if ( aMeshOrGroup->_is_equivalent( aMeshItem ))
               aMeshItem->ExportToMEDX( aFilename.toLatin1().data(), toCreateGroups,
-                                       aFormat, toOverwrite && aMeshIndex == 0 );
+                                       aFormat, toOverwrite && aMeshIndex == 0, toFindOutDim );
             else
               aMeshItem->ExportPartToMED( aMeshOrGroup, aFilename.toLatin1().data(), toCreateGroups,
-                                          aFormat, toOverwrite && aMeshIndex == 0 );
+                                          aFormat, toOverwrite && aMeshIndex == 0, toFindOutDim );
           }
         }
         else if ( isSAUV )

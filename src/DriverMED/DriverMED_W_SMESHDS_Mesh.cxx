@@ -52,7 +52,8 @@ DriverMED_W_SMESHDS_Mesh::DriverMED_W_SMESHDS_Mesh():
   myDoGroupOfFaces (false),
   myDoGroupOfVolumes (false),
   myDoGroupOf0DElems(false),
-  myDoGroupOfBalls(false)
+  myDoGroupOfBalls(false),
+  myAutoDimension(true)
 {}
 
 void DriverMED_W_SMESHDS_Mesh::SetFile(const std::string& theFileName, 
@@ -120,7 +121,8 @@ void DriverMED_W_SMESHDS_Mesh::AddGroupOfVolumes()
   myDoGroupOfVolumes = true;
 }
 
-namespace{
+namespace
+{
   typedef double (SMDS_MeshNode::* TGetCoord)() const;
   typedef const char* TName;
   typedef const char* TUnit;
@@ -311,12 +313,13 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     }
 
     // Mesh dimension definition
-    TInt aSpaceDimension;
+    TInt aSpaceDimension = 3;
     TCoordHelperPtr aCoordHelperPtr;
     {
       bool anIsXDimension = false;
       bool anIsYDimension = false;
       bool anIsZDimension = false;
+      if ( myAutoDimension )
       {
         SMDS_NodeIteratorPtr aNodesIter = myMesh->nodesIterator();
         double aBounds[6];

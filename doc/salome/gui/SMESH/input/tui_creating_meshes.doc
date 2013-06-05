@@ -20,7 +20,7 @@
 
 <br>
 \anchor tui_editing_mesh
-<h2>Editing of a mesh</h2>
+<h2>Editing a mesh</h2>
 \tui_script{creating_meshes_ex04.py}
 
 <br>

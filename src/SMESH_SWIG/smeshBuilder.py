@@ -1567,14 +1567,21 @@ class Mesh:
     #  @param version MED format version(MED_V2_1 or MED_V2_2)
     #  @param overwrite boolean parameter for overwriting/not overwriting the file
     #  @param meshPart a part of mesh (group, sub-mesh) to export instead of the mesh
+    #  @param autoDimension: if @c True (default), a space dimension of a MED mesh can be either
+    #         - 1D if all mesh nodes lie on OX coordinate axis, or
+    #         - 2D if all mesh nodes lie on XOY coordinate plane, or
+    #         - 3D in the rest cases.
+    #
+    #         If @a autoDimension is @c False, the space dimension is always 3.
     #  @ingroup l2_impexp
-    def ExportMED(self, f, auto_groups=0, version=MED_V2_2, overwrite=1, meshPart=None):
+    def ExportMED(self, f, auto_groups=0, version=MED_V2_2,
+                  overwrite=1, meshPart=None, autoDimension=True):
         if meshPart:
             if isinstance( meshPart, list ):
                 meshPart = self.GetIDSource( meshPart, SMESH.ALL )
-            self.mesh.ExportPartToMED( meshPart, f, auto_groups, version, overwrite )
+            self.mesh.ExportPartToMED( meshPart, f, auto_groups, version, overwrite, autoDimension)
         else:
-            self.mesh.ExportToMEDX(f, auto_groups, version, overwrite)
+            self.mesh.ExportToMEDX(f, auto_groups, version, overwrite, autoDimension)
 
     ## Exports the mesh in a file in SAUV format
     #  @param f is the file name

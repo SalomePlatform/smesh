@@ -2708,7 +2708,8 @@ string SMESH_Mesh_i::prepareMeshNameAndGroups(const char*    file,
 void SMESH_Mesh_i::ExportToMEDX (const char*        file,
                                  CORBA::Boolean     auto_groups,
                                  SMESH::MED_VERSION theVersion,
-                                 CORBA::Boolean     overwrite)
+                                 CORBA::Boolean     overwrite,
+                                 CORBA::Boolean     autoDimension)
   throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
@@ -2717,9 +2718,11 @@ void SMESH_Mesh_i::ExportToMEDX (const char*        file,
 
   string aMeshName = prepareMeshNameAndGroups(file, overwrite);
   TPythonDump() << _this() << ".ExportToMEDX( r'"
-                << file << "', " << auto_groups << ", " << theVersion << ", " << overwrite << " )";
+                << file << "', " << auto_groups << ", "
+                << theVersion << ", " << overwrite << ", "
+                << autoDimension << " )";
 
-  _impl->ExportMED( file, aMeshName.c_str(), auto_groups, theVersion );
+  _impl->ExportMED( file, aMeshName.c_str(), auto_groups, theVersion, 0, autoDimension );
 }
 
 //================================================================================
@@ -2848,29 +2851,39 @@ void SMESH_Mesh_i::ExportPartToMED(::SMESH::SMESH_IDSource_ptr meshPart,
                                    const char*                 file,
                                    CORBA::Boolean              auto_groups,
                                    ::SMESH::MED_VERSION        version,
-                                   ::CORBA::Boolean            overwrite)
+                                   ::CORBA::Boolean            overwrite,
+                                   ::CORBA::Boolean            autoDimension)
   throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  if ( _preMeshInfo )
-    _preMeshInfo->FullLoadFromFile();
+  TPythonDump pyDump;
 
-  PrepareForWriting(file, overwrite);
-
-  string aMeshName = "Mesh";
-  SALOMEDS::Study_var aStudy = _gen_i->GetCurrentStudy();
-  if ( !aStudy->_is_nil() ) {
-    SALOMEDS::SObject_wrap SO = _gen_i->ObjectToSObject( aStudy, meshPart );
-    if ( !SO->_is_nil() ) {
-      CORBA::String_var name = SO->GetName();
-      aMeshName = name;
-    }
+  if ( SMESH_Mesh_i * mesh = SMESH::DownCast< SMESH_Mesh_i* >( meshPart ))
+  {
+    mesh->ExportToMEDX( file, auto_groups, version, autoDimension );
   }
-  SMESH_MeshPartDS partDS( meshPart );
-  _impl->ExportMED( file, aMeshName.c_str(), auto_groups, version, &partDS );
+  else
+  {
+    if ( _preMeshInfo )
+      _preMeshInfo->FullLoadFromFile();
 
-  TPythonDump() << _this() << ".ExportPartToMED( " << meshPart << ", r'" << file << "', "
-                << auto_groups << ", " << version << ", " << overwrite << " )";
+    PrepareForWriting(file, overwrite);
+
+    string aMeshName = "Mesh";
+    SALOMEDS::Study_var aStudy = _gen_i->GetCurrentStudy();
+    if ( !aStudy->_is_nil() ) {
+      SALOMEDS::SObject_wrap SO = _gen_i->ObjectToSObject( aStudy, meshPart );
+      if ( !SO->_is_nil() ) {
+        CORBA::String_var name = SO->GetName();
+        aMeshName = name;
+      }
+    }
+    SMESH_MeshPartDS partDS( meshPart );
+    _impl->ExportMED( file, aMeshName.c_str(), auto_groups, version, &partDS, autoDimension );
+  }
+  pyDump << _this() << ".ExportPartToMED( " << meshPart << ", r'" << file << "', "
+         << auto_groups << ", " << version << ", " << overwrite << ", "
+         << autoDimension << " )";
 }
 
 //================================================================================

@@ -1248,19 +1248,21 @@ void SMESH_Mesh::ExportMED(const char *        file,
                            const char*         theMeshName, 
                            bool                theAutoGroups,
                            int                 theVersion,
-                           const SMESHDS_Mesh* meshPart) 
+                           const SMESHDS_Mesh* meshPart,
+                           bool                theAutoDimension)
   throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
 
   DriverMED_W_SMESHDS_Mesh myWriter;
-  myWriter.SetFile    ( file, MED::EVersion(theVersion) );
-  myWriter.SetMesh    ( meshPart ? (SMESHDS_Mesh*) meshPart : _myMeshDS   );
+  myWriter.SetFile         ( file, MED::EVersion(theVersion) );
+  myWriter.SetMesh         ( meshPart ? (SMESHDS_Mesh*) meshPart : _myMeshDS   );
+  myWriter.SetAutoDimension( theAutoDimension );
   if ( !theMeshName ) 
-    myWriter.SetMeshId  ( _id         );
+    myWriter.SetMeshId     ( _id         );
   else {
-    myWriter.SetMeshId  ( -1          );
-    myWriter.SetMeshName( theMeshName );
+    myWriter.SetMeshId     ( -1          );
+    myWriter.SetMeshName   ( theMeshName );
   }
 
   if ( theAutoGroups ) {

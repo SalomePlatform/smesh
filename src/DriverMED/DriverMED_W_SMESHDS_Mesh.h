@@ -48,6 +48,7 @@ class MESHDRIVERMED_EXPORT DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
 
   virtual void SetFile(const std::string& theFileName);
   void SetFile(const std::string& theFileName, MED::EVersion theId);
+  void SetAutoDimension(bool toFindOutDimension) { myAutoDimension = toFindOutDimension; }
   static std::string GetVersionString(const MED::EVersion theVersion, int theNbDigits=2);
 
   /*! sets file name; only for usage with Add(), not Write()
@@ -81,6 +82,7 @@ class MESHDRIVERMED_EXPORT DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
   bool myDoGroupOfVolumes;
   bool myDoGroupOf0DElems;
   bool myDoGroupOfBalls;
+  bool myAutoDimension;
 };
 
 
