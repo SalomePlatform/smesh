@@ -473,7 +473,8 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
   // activate the CORBA servant of hypothesis
   hypothesis_i = SMESH::SMESH_Hypothesis::_narrow( myHypothesis_i->_this() );
   int nextId = RegisterObject( hypothesis_i );
-  if(MYDEBUG) MESSAGE( "Add hypo to map with id = "<< nextId );
+  if(MYDEBUG) { MESSAGE( "Add hypo to map with id = "<< nextId ); }
+  else        { nextId = 0; } // avoid "unused variable" warning in release mode
 
   return hypothesis_i._retn();
 }
@@ -502,7 +503,8 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::createMesh()
     // activate the CORBA servant of Mesh
     SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( meshServant->_this() );
     int nextId = RegisterObject( mesh );
-    if(MYDEBUG) MESSAGE( "Add mesh to map with id = "<< nextId);
+    if(MYDEBUG) { MESSAGE( "Add mesh to map with id = "<< nextId); }
+    else        { nextId = 0; } // avoid "unused variable" warning in release mode
     return mesh._retn();
   }
   catch (SALOME_Exception& S_ex) {

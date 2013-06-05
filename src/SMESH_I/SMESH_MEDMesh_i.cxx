@@ -564,8 +564,7 @@ SMESH_MEDMesh_i::getElementNumber(SALOME_MED::medConnectivity mode,
                                   const SALOME_TYPES::ListOfLong & connectivity)
   throw(SALOME::SALOME_Exception)
 {
-  const char *LOC = "getElementNumber ";
-  MESSAGE(LOC << "Pas Implemente dans SMESH");
+  MESSAGE("getElementNumber(): Pas Implemente dans SMESH");
   THROW_SALOME_CORBA_EXCEPTION("Unimplemented Method", SALOME::BAD_PARAM);
   return -1;
 }

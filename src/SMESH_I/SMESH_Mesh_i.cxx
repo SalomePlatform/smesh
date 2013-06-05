@@ -2155,7 +2155,8 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::createSubMesh( GEOM::GEOM_Object_ptr theS
 
   // register CORBA object for persistence
   int nextId = _gen_i->RegisterObject( subMesh );
-  if(MYDEBUG) MESSAGE( "Add submesh to map with id = "<< nextId);
+  if(MYDEBUG) { MESSAGE( "Add submesh to map with id = "<< nextId); }
+  else        { nextId = 0; } // avoid "unused variable" warning in release mode
 
   // to track changes of GEOM groups
   addGeomGroupData( theSubShapeObject, subMesh );
@@ -2270,7 +2271,8 @@ SMESH::SMESH_GroupBase_ptr SMESH_Mesh_i::createGroup (SMESH::ElementType        
 
     // register CORBA object for persistence
     int nextId = _gen_i->RegisterObject( aGroup );
-    if(MYDEBUG) MESSAGE( "Add group to map with id = "<< nextId);
+    if(MYDEBUG) { MESSAGE( "Add group to map with id = "<< nextId); }
+    else        { nextId = 0; } // avoid "unused variable" warning in release mode
 
     // to track changes of GEOM groups
     if ( !theShape.IsNull() ) {
@@ -4273,7 +4275,8 @@ void SMESH_Mesh_i::CreateGroupServants()
 
     // register CORBA object for persistence
     int nextId = _gen_i->RegisterObject( groupVar );
-    if(MYDEBUG) MESSAGE( "Add group to map with id = "<< nextId);
+    if(MYDEBUG) { MESSAGE( "Add group to map with id = "<< nextId); }
+    else        { nextId = 0; } // avoid "unused variable" warning in release mode
 
     // publishing the groups in the study
     if ( !aStudy->_is_nil() ) {
