@@ -682,8 +682,7 @@ SMESH_Hypothesis::Hypothesis_Status
   
   SMESH_Hypothesis *anHyp = sc->mapHypothesis[anHypId];
   if(MYDEBUG) {
-    int hypType = anHyp->GetType();
-    SCRUTE(hypType);
+    SCRUTE(anHyp->GetType());
   }
   
   // shape 

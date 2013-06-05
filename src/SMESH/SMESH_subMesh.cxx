@@ -1251,8 +1251,7 @@ void SMESH_subMesh::cleanDependsOn( SMESH_Algo* algoRequiringCleaning/*=0*/ )
 
 void SMESH_subMesh::DumpAlgoState(bool isMain)
 {
-        int dim = SMESH_Gen::GetShapeDim(_subShape);
-//   if (dim < 1) return;
+  // if (dim < 1) return;
         if (isMain)
         {
                 const map < int, SMESH_subMesh * >&subMeshes = DependsOn();
@@ -1264,8 +1263,9 @@ void SMESH_subMesh::DumpAlgoState(bool isMain)
                         sm->DumpAlgoState(false);
                 }
         }
-        int type = _subShape.ShapeType();
-        MESSAGE("dim = " << dim << " type of shape " << type);
+        //int type = _subShape.ShapeType();
+        MESSAGE("dim = " << SMESH_Gen::GetShapeDim(_subShape) <<
+                " type of shape " << _subShape.ShapeType());
         switch (_algoState)
         {
         case NO_ALGO:

@@ -10991,7 +10991,8 @@ void SMESH_MeshEditor::CreateHoleSkin(double radius,
           double z = nodesCoords[i++];
           gp_Pnt p = gp_Pnt(x, y ,z);
           gpnts.push_back(p);
-          MESSAGE("TopoDS_Vertex " << k++ << " " << p.X() << " " << p.Y() << " " << p.Z());
+          MESSAGE("TopoDS_Vertex " << k << " " << p.X() << " " << p.Y() << " " << p.Z());
+          k++;
         }
     }
   else // --- no group, no coordinates : use the vertices of the geom shape provided, and radius
