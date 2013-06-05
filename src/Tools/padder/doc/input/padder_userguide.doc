@@ -156,7 +156,7 @@ installation process of the SALOME plateform, on the basis of the
 environment variable PADDERHOME that localizes the installation root
 of the SpherePadder external program. This installation process
 creates a configuration file padder.cfg located in the folder
-<SMESH_ROOT_DIR>/share/salome/plugins/smesh, where <SMESH_ROOT_DIR> is
+\<SMESH_ROOT_DIR\>/share/salome/plugins/smesh, where \<SMESH_ROOT_DIR\> is
 the installation root directory of the SMESH module.
 
 In the case where you have to specify a different configuration than
@@ -262,7 +262,7 @@ ssh-copy-id -i ~/.ssh/id_rsa.pub <username>@<hostname>
 \endcode
 
 You can check the configuration by testing that you can connect to the
-host <hostname> with the login <username> without being asked a
+host \<hostname\> with the login \<username\> without being asked a
 password:
 
 \code 
