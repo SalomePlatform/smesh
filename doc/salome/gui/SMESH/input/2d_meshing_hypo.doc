@@ -95,7 +95,7 @@ between them. The following types are available:
     between the numbers of segments on the sides. In addition, number
     of rows of faces between sides with different discretization
     should be enough for the transition. At the fastest transition
-    pattern, tree segments become one (see the image below), hence
+    pattern, three segments become one (see the image below), hence
     the least number of face rows needed to reduce from Nmax segments
     to Nmin segments is log<sub>3</sub>( Nmax / Nmin ). The number of
     face rows is equal to number of segments on each of equally
