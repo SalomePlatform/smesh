@@ -1806,9 +1806,17 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
   // ----------------------------------------------------------------------
   else if ( theCommand->MethodStartsFrom( "Export" ))
   {
-    if ( method == "ExportToMED" ||   // ExportToMED()  --> ExportMED()
-         method == "ExportToMEDX" ) { // ExportToMEDX() --> ExportMED()
+    if ( method == "ExportToMED" ||  // ExportToMED()  --> ExportMED()
+         method == "ExportToMEDX" )  // ExportToMEDX() --> ExportMED()
+    {
       theCommand->SetMethod( "ExportMED" );
+      if ( theCommand->GetNbArgs() == 5 )
+      {
+        // ExportToMEDX(...,autoDimension) -> ExportToMEDX(...,meshPart=None,autoDimension)
+        _AString autoDimension = theCommand->GetArg( 5 );
+        theCommand->SetArg( 5, "None" );
+        theCommand->SetArg( 6, autoDimension );
+      }
     }
     else if ( method == "ExportCGNS" )
     { // ExportCGNS(part, ...) -> ExportCGNS(..., part)
@@ -1833,9 +1841,9 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
       TCollection_AsciiString newMethod = method;
       newMethod.Remove( 7, 6 );
       theCommand->SetMethod( newMethod );
-      // make the 1st arg be the last one
+      // make the 1st arg be the last one (or last but one for ExportMED())
       _pyID partID = theCommand->GetArg( 1 );
-      int nbArgs = theCommand->GetNbArgs();
+      int nbArgs = theCommand->GetNbArgs() - (newMethod == "ExportMED");
       for ( int i = 2; i <= nbArgs; ++i )
         theCommand->SetArg( i-1, theCommand->GetArg( i ));
       theCommand->SetArg( nbArgs, partID );
