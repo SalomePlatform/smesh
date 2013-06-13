@@ -80,6 +80,7 @@ uninstall-local:
 	  case $${filen} in \
 	    dummy ) ;; \
 	    $(DESTDIR)$(guidocdir)/yams ) ;; \
+	    $(DESTDIR)$(guidocdir)/MGCleaner ) ;; \
 	    $(DESTDIR)$(guidocdir)/head.png ) ;; \
 	    * ) echo "removing $${filen}" && rm -rf $${filen} ;; \
 	  esac ; \
