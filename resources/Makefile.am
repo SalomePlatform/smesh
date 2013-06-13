@@ -156,7 +156,8 @@ dist_salomeres_DATA = \
 	mesh_sew_sideelements.png \
 	mesh_merge_nodes.png \
 	mesh_merge_elements.png \
-	select1.png \
+  select1.png \
+  open.png \
 	StdMeshers.xml \
 	mesh_pattern.png \
 	mesh_pentahedron.png \
@@ -193,10 +194,10 @@ dist_salomeres_DATA = \
 	mesh_tree_mesh_partial.png \
 	mesh_extractGroup.png \
 	mesh_precompute.png \
-	mesh_2d_from_3d.png \
-        mesh_free_faces.png \
-        scale.png \
-        scale_along_axes.png \
+  mesh_2d_from_3d.png \
+  mesh_free_faces.png \
+  scale.png \
+  scale_along_axes.png \
 	split_into_tetra.png \
 	mesh_duplicate_nodes.png \
 	mesh_duplicate_nodes_with_elem.png \

@@ -17,21 +17,22 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-#  File   : Makefile.in
-#  Author : Patrick GOLDBRONN (CEA)
-#  Modified by : Alexander BORODIN (OCN) - autotools usage
-#  Module : SMESH
-#  $Header$
-#
+SUBDIRS = doc
+
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
-SUBDIRS = MeshCut padder
-
-if SMESH_ENABLE_GUI
-  SUBDIRS += YamsPlug MGCleanerPlug
-endif
+UIPY_FILES = MGCleanerPlugDialog.py  MGCleanerViewText.py 
 
 salomeplugins_PYTHON = \
-	smesh_plugins.py
+	MGCleanerMonPlugDialog.py\
+	MGCleanerMonViewText.py\
+	MGCleanerplug_plugin.py 
 
-DIST_SUBDIRS = MeshCut padder YamsPlug MGCleanerPlug
+nodist_salomeplugins_PYTHON = $(UIPY_FILES)
+
+CLEANFILES = $(UIPY_FILES)
+
+EXTRA_DIST += $(UIPY_FILES:%.py=%.ui)
+
+%.py : %.ui
+	$(PYUIC) $< -o $@

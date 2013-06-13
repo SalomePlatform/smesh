@@ -24,6 +24,7 @@ import salome_pluginsmanager
 from spadderPlugin import runSpadderPlugin
 from meshcut_plugin import MeshCut
 from yamsplug_plugin import YamsLct
+from MGCleanerplug_plugin import MGCleanerLct
 
 salome_pluginsmanager.AddFunction('PADDER mesher',
                                   'Create a mesh with PADDER',
@@ -36,3 +37,8 @@ salome_pluginsmanager.AddFunction('MeshCut',
 salome_pluginsmanager.AddFunction('ReMesh with Yams',
                                   'Run Yams',
                                   YamsLct)
+
+salome_pluginsmanager.AddFunction('ReMesh with MGCleaner',
+                                  'Run MGCleaner',
+                                  MGCleanerLct)
+

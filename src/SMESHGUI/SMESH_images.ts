@@ -51,7 +51,7 @@
             <source>ICON_CONNECTION_2D</source>
             <translation>mesh_multi_edges_2d.png</translation>
         </message>
-	<message>
+        <message>
             <source>ICON_CREATE_GROUP</source>
             <translation>mesh_group.png</translation>
         </message>
@@ -271,11 +271,11 @@
             <source>ICON_FREE_EDGE</source>
             <translation>mesh_free_edges.png</translation>
         </message>
-	<message>
+        <message>
             <source>ICON_FREE_EDGE_2D</source>
             <translation>mesh_free_edges_2d.png</translation>
         </message>
-	<message>
+        <message>
             <source>ICON_FREE_NODE</source>
             <translation>mesh_free_nodes.png</translation>
         </message>
@@ -427,15 +427,15 @@
             <source>ICON_REORIENT_2D</source>
             <translation>reorient_faces_face.png</translation>
         </message>
-	<message>
+        <message>
             <source>ICON_SMESH_DUPLICATE_NODES</source>
             <translation>mesh_duplicate_nodes.png</translation>
         </message>
-	<message>
+        <message>
             <source>ICON_SMESH_DUPLICATE_NODES_WITH_ELEM</source>
             <translation>mesh_duplicate_nodes_with_elem.png</translation>
         </message>
-	<message>
+	    <message>
             <source>ICON_SMESH_DUPLICATE_ELEM_ONLY</source>
             <translation>mesh_duplicate_elem_only.png</translation>
         </message>

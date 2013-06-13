@@ -578,6 +578,9 @@ AC_OUTPUT([ \
   src/Tools/YamsPlug/Makefile \
   src/Tools/YamsPlug/doc/Makefile \
   src/Tools/YamsPlug/doc/conf.py \
+  src/Tools/MGCleanerPlug/Makefile \
+  src/Tools/MGCleanerPlug/doc/Makefile \
+  src/Tools/MGCleanerPlug/doc/conf.py \
   src/Tools/padder/Makefile \
   src/Tools/padder/meshjob/Makefile \
   src/Tools/padder/meshjob/idl/Makefile \
