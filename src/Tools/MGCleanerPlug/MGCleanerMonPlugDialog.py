@@ -142,11 +142,12 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     maFenetre=MGCleanerMonViewText(self, self.commande)
 
   def enregistreResultat(self):
-    import smesh
-    import SMESH
     import salome
+    import SMESH
     from salome.kernel import studyedit
-
+    from salome.smesh import smeshBuilder
+    smesh = smeshBuilder.New(salome.myStudy)
+    
     if not os.path.isfile(self.fichierOut):
       QMessageBox.warning(self, "Compute", "Result file "+self.fichierOut+" not found")
 
@@ -221,12 +222,11 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
 
   def PBSaveHypPressed(self):
     """save hypothesis in Object Browser"""
-    #QMessageBox.warning(self, "save Object Browser MGCleaner Hypothesis", "TODO")
-    
-    import smesh
-    import SMESH
     import salome
+    import SMESH
     from salome.kernel import studyedit
+    from salome.smesh import smeshBuilder
+    smesh = smeshBuilder.New(salome.myStudy)
 
     maStudy=studyedit.getActiveStudy()
     smesh.SetCurrentStudy(maStudy)
@@ -413,12 +413,13 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     self.paramsFile=self.LE_ParamsFile.text()
 
   def PBMeshSmeshPressed(self):
+    from omniORB import CORBA
     import salome
-    import smesh
     from salome.kernel import studyedit
     from salome.smesh.smeshstudytools import SMeshStudyTools
     from salome.gui import helper as guihelper
-    from omniORB import CORBA
+    from salome.smesh import smeshBuilder
+    smesh = smeshBuilder.New(salome.myStudy)
 
     mySObject, myEntry = guihelper.getSObjectSelected()
     if CORBA.is_nil(mySObject) or mySObject==None:
@@ -442,8 +443,6 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
 
   def prepareFichier(self):
     self.fichierIn="/tmp/ForMGCleaner_"+str(self.num)+".mesh"
-    #print "prepareFichier"
-    import SMESH
     self.__selectedMesh.ExportGMF(self.__selectedMesh, self.fichierIn, True)
 
   def PrepareLigneCommande(self):
@@ -555,7 +554,6 @@ def TEST_standalone():
   python /export/home/wambeke/2013/V6_main_MGC_CO6.4_64/INSTALL/SMESH/share/salome/plugins/smesh/MGCleanerMonPlugDialog.py
   """
   import salome
-  import smesh
   import SMESH
   from salome.kernel import studyedit
   salome.salome_init()
