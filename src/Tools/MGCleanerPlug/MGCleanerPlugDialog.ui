@@ -558,13 +558,13 @@ Default is computed from model.</string>
          </rect>
         </property>
         <property name="maximum">
-         <double>360</double>
+         <double>90</double>
         </property>
         <property name="minimum">
          <double>0</double>
         </property>
         <property name="singleStep">
-         <double>0.01</double>
+         <double>1</double>
         </property>
         <property name="value">
          <double>15</double>
@@ -652,7 +652,7 @@ Default is computed from model.</string>
          </rect>
         </property>
         <property name="maximum">
-         <double>360</double>
+         <double>90</double>
         </property>
         <property name="minimum">
          <double>0</double>

@@ -78,24 +78,28 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     #v1.setTop(10000.)
     v1.setDecimals(4)
     self.SP_MinHoleSize.setValidator(v1)
+    self.SP_MinHoleSize.titleForWarning="MinHoleSize"
 
     v2=QDoubleValidator(self)
     v2.setBottom(0.)
     #v2.setTop(10000.)
     v2.setDecimals(4)
     self.SP_ToleranceDisplacement.setValidator(v2)
+    self.SP_ToleranceDisplacement.titleForWarning="ToleranceDisplacement"
 
     v3=QDoubleValidator(self)
     v3.setBottom(0.)
     #v3.setTop(10000.)
     v3.setDecimals(4)
     self.SP_ResolutionLength.setValidator(v3)
+    self.SP_ResolutionLength.titleForWarning="ResolutionLength"
     
     v4=QDoubleValidator(self)
     v4.setBottom(0.)
     #v4.setTop(10000.)
     v4.setDecimals(4)
     self.SP_OverlapDistance.setValidator(v4)
+    self.SP_OverlapDistance.titleForWarning="OverlapDistance"
     
     self.resize(800, 500)
     self.clean()
@@ -253,12 +257,30 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     """
   
   def SP_toStr(self, widget):
+    """only for a QLineEdit widget"""
     #cr, pos=widget.validator().validate(res, 0) #n.b. "1,3" is acceptable !locale!
     try:
-      return str(float(widget.text()))
+      val=float(widget.text())
     except:
-      widget.setProperty("text", "0.0")
-      return "0.0"
+      QMessageBox.warning(self, widget.titleForWarning, "float value is incorrect: '"+widget.text()+"'")
+      res=str(widget.validator().bottom())
+      widget.setProperty("text", res)
+      return res
+    valtest=widget.validator().bottom()
+    if valtest!=None:
+      if val<valtest:
+        QMessageBox.warning(self, widget.titleForWarning, "float value is under minimum: "+str(val)+" < "+str(valtest))
+        res=str(valtest)
+        widget.setProperty("text", res)
+        return res
+    valtest=widget.validator().top()
+    if valtest!=None:
+      if val>valtest:
+        QMessageBox.warning(self, widget.titleForWarning, "float value is over maximum: "+str(val)+" > "+str(valtest))
+        res=str(valtest)
+        widget.setProperty("text", res)
+        return res    
+    return str(val)
 
   def getResumeData(self, separator="\n"):
     text=""
