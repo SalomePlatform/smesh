@@ -1,7 +1,7 @@
 Running Yams Plug-in 
 =====================
 
-Yamms plug-in can be invoked via SMESH Plugin item in Mesh menu bar 
+Yams plug-in can be invoked via SMESH Plugin item in Mesh menu bar 
 
 .. image:: images/AppelYams.png
    :align: center

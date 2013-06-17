@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2006-2013  EDF R&D
 #
 # This library is free software; you can redistribute it and/or
@@ -34,11 +35,12 @@ def YamsLct(context):
   from PyQt4.QtGui import QFileDialog
   from PyQt4.QtGui import QMessageBox
   
+  #prior test to avoid unnecessary user GUI work with ending crash
   try :
       os.environ['DISTENE_LICENCE_FILE_FOR_YAMS']
   except:
-      QMessageBox.warning(None,"Products","Distene's products are not installed")
+      QMessageBox.warning(None,"Products","Distene's product Yams is not installed.\nrequired environment variable:\nDISTENE_LICENCE_FILE_FOR_YAMS='/.../dlim8.var.sh'")
       return
   import monYamsPlugDialog
-  window=monYamsPlugDialog.getDialog() 
+  window=monYamsPlugDialog.getDialog()
   window.show()

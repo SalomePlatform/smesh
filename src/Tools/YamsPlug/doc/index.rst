@@ -11,6 +11,8 @@ Mesh module for remeshing 2D Surface.
 Yams plug-in uses Distene commercial software Yams, which is an **automatic surface remeshing tool**.
 This plug_in offers only the most common functionnalities of the tool.
 
+.. note::
+  for a complete documentation, see :download:`Yams whitepaper <files/YamsWhitePaper_3.2.pdf>`.
 
 Contents:
 
@@ -19,8 +21,8 @@ Contents:
   
    lct.rst
    Mandatory_params.rst
-   Generics_params.rst
    Advanced_params.rst
+   Generics_params.rst
    editHypo.rst
    
    

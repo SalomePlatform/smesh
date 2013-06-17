@@ -12,7 +12,7 @@ RSTFILES = lct.rst \
 	   Generics_params.rst \
 	   Advanced_params.rst
 
-EXTRA_DIST += $(RSTFILES) images
+EXTRA_DIST += $(RSTFILES) images files
 
 # You can set these variables from the command line.
 SPHINXOPTS    =

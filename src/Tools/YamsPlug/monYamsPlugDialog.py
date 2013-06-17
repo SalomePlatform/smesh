@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2007-2013   EDF R&D
+# Copyright (C) 2007-2013  EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,6 +17,7 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 # Modules Python
 # Modules Eficas
 
@@ -31,275 +32,463 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
   """
   """
   def __init__(self):
-        QWidget.__init__(self)
-        self.setupUi(self)
-        self.connecterSignaux()
-        self.fichierIn=""
-        self.fichierOut=""
-        self.MeshIn="" 
-        self.num=1
+    QWidget.__init__(self)
+    self.setupUi(self)
+    self.connecterSignaux()
+    self.fichierIn=""
+    self.fichierOut=""
+    self.MeshIn=""
+    self.commande=""
+    self.num=1
+    self.__selectedMesh=None
 
-#	Ces parametres ne sont pas remis à rien par le clean
-        self.paramsFile= os.path.abspath(os.path.join(os.environ['HOME'],'.yams.dat'))
-        self.LE_ParamsFile.setText(self.paramsFile)
-        self.LE_MeshFile.setText("")
-        self.LE_MeshSmesh.setText("")
+    # complex whith QResources: not used
+    # The icon are supposed to be located in the $SMESH_ROOT_DIR/share/salome/resources/smesh folder,
+    # other solution could be in the same folder than this python module file:
+    # iconfolder=os.path.dirname(os.path.abspath(__file__))
+
+    self.iconfolder=os.environ["SMESH_ROOT_DIR"]+"/share/salome/resources/smesh"
+    #print "monYamsPlugDialog iconfolder",iconfolder
+    icon = QIcon()
+    icon.addFile(os.path.join(self.iconfolder,"select1.png"))
+    self.PB_LoadHyp.setIcon(icon)
+    self.PB_LoadHyp.setToolTip("hypothesis from Salome Object Browser")
+    self.PB_SaveHyp.setIcon(icon)
+    self.PB_SaveHyp.setToolTip("hypothesis to Salome Object Browser")
+    self.PB_MeshSmesh.setIcon(icon)
+    self.PB_MeshSmesh.setToolTip("source mesh from Salome Object Browser")
+    icon = QIcon()
+    icon.addFile(os.path.join(self.iconfolder,"open.png"))
+    self.PB_ParamsFileExplorer.setIcon(icon)
+    self.PB_Load.setIcon(icon)
+    self.PB_Load.setToolTip("hypothesis from file")
+    self.PB_Save.setIcon(icon)
+    self.PB_Save.setToolTip("hypothesis to file")
+    self.PB_MeshFile.setIcon(icon)
+    self.PB_MeshFile.setToolTip("source mesh from a file in disk")
+
+    #Ces parametres ne sont pas remis Ã  rien par le clean
+    self.paramsFile= os.path.abspath(os.path.join(os.environ["HOME"],".yams.dat"))
+    self.LE_ParamsFile.setText(self.paramsFile)
+    self.LE_MeshFile.setText("")
+    self.LE_MeshSmesh.setText("")
+    
+    v1=QDoubleValidator(self)
+    v1.setBottom(0.)
+    #v1.setTop(1000.) #per thousand... only if relative
+    v1.setDecimals(2)
+    self.SP_Tolerance.setValidator(v1)
+    self.SP_Tolerance.titleForWarning="Chordal Tolerance"
+    
+    self.resize(800, 600)
+    self.clean()
 
   def connecterSignaux(self) :
-        self.connect(self.PB_Cancel,SIGNAL("clicked()"),self.PBCancelPressed)
-        self.connect(self.PB_Default,SIGNAL("clicked()"),self.clean)
-        self.connect(self.PB_Help,SIGNAL("clicked()"),self.PBHelpPressed)
-        self.connect(self.PB_Load,SIGNAL("clicked()"),self.PBLoadPressed)
-        self.connect(self.PB_OK,SIGNAL("clicked()"),self.PBOKPressed)
-        self.connect(self.PB_Save,SIGNAL("clicked()"),self.PBSavePressed)
-        self.connect(self.PB_MeshFile,SIGNAL("clicked()"),self.PBMeshFilePressed)
-        self.connect(self.PB_MeshSmesh,SIGNAL("clicked()"),self.PBMeshSmeshPressed)
-        self.connect(self.PB_ParamsFileExplorer,SIGNAL("clicked()"),self.setParamsFileName)
-        self.connect(self.LE_MeshFile,SIGNAL("returnPressed()"),self.meshFileNameChanged)
-        self.connect(self.LE_ParamsFile,SIGNAL("returnPressed()"),self.paramsFileNameChanged)
-
+    self.connect(self.PB_Cancel,SIGNAL("clicked()"),self.PBCancelPressed)
+    self.connect(self.PB_Default,SIGNAL("clicked()"),self.clean)
+    self.connect(self.PB_Help,SIGNAL("clicked()"),self.PBHelpPressed)
+    self.connect(self.PB_OK,SIGNAL("clicked()"),self.PBOKPressed)
+    
+    self.connect(self.PB_Load,SIGNAL("clicked()"),self.PBLoadPressed)
+    self.connect(self.PB_Save,SIGNAL("clicked()"),self.PBSavePressed)
+    self.connect(self.PB_LoadHyp,SIGNAL("clicked()"),self.PBLoadHypPressed)
+    self.connect(self.PB_SaveHyp,SIGNAL("clicked()"),self.PBSaveHypPressed)
+    
+    self.connect(self.PB_MeshFile,SIGNAL("clicked()"),self.PBMeshFilePressed)
+    self.connect(self.PB_MeshSmesh,SIGNAL("clicked()"),self.PBMeshSmeshPressed)
+    self.connect(self.LE_MeshSmesh,SIGNAL("returnPressed()"),self.meshSmeshNameChanged)
+    self.connect(self.PB_ParamsFileExplorer,SIGNAL("clicked()"),self.setParamsFileName)
+    self.connect(self.LE_MeshFile,SIGNAL("returnPressed()"),self.meshFileNameChanged)
+    self.connect(self.LE_ParamsFile,SIGNAL("returnPressed()"),self.paramsFileNameChanged)
 
   def PBHelpPressed(self):
-        try :
-          maDoc=os.environ['DISTENE_YAMS_DOC_PDF']
-        except Exception:
-          QMessageBox.warning( self, "Help unavailable", str(maDoc) + " not found")
-        command="xdg-open "+maDoc+";"
-	subprocess.call(command, shell=True)
-
+    try :
+      mydir=os.environ["SMESH_ROOT_DIR"]
+    except Exception:
+      QMessageBox.warning(self, "Help", "Help unavailable $SMESH_ROOT_DIR not found")
+      return
+    maDoc=mydir+"/share/doc/salome/gui/SMESH/yams/_downloads/YamsWhitePaper_3.2.pdf"
+    command="xdg-open "+maDoc+";"
+    subprocess.call(command, shell=True)
 
   def PBOKPressed(self):
-        if not(self.PrepareLigneCommande()) : return
-        self.PBSavePressed(NomHypo=True)
-        maFenetre=MonViewText(self,self.commande)
+    if not(self.PrepareLigneCommande()):
+      #warning done yet
+      #QMessageBox.warning(self, "Compute", "Command not found")
+      return
+    maFenetre=MonViewText(self,self.commande)
 
   def enregistreResultat(self):
-        if not(os.path.isfile(self.fichierOut)) : return
-        import smesh
-        import SMESH
-        import salome
-        from salome.kernel import studyedit
+    import smesh
+    import SMESH
+    import salome
+    from salome.kernel import studyedit
 
-        maStudy=studyedit.getActiveStudy()
-        smesh.SetCurrentStudy(maStudy)
-        (outputMesh, status) = smesh.CreateMeshesFromGMF(self.fichierOut)
-        meshname = 'yams'+str(self.num)
-        smesh.SetName(outputMesh.GetMesh(), meshname)
-        outputMesh.Compute()
+    if not os.path.isfile(self.fichierOut):
+      QMessageBox.warning(self, "Compute", "Result file "+self.fichierOut+" not found")
 
+    maStudy=studyedit.getActiveStudy()
+    smesh.SetCurrentStudy(maStudy)
+    (outputMesh, status) = smesh.CreateMeshesFromGMF(self.fichierOut)
+    name=str(self.LE_MeshSmesh.text())
+    initialMeshFile=None
+    initialMeshObject=None
+    if name=="":
+      a=str(self.fichierIn)
+      name=os.path.basename(os.path.splitext(a)[0])
+      initialMeshFile=a
+    else:
+      initialMeshObject=maStudy.FindObjectByName(name ,"SMESH")[0]
 
-        self.editor = studyedit.getStudyEditor()    # 
-        moduleEntry=self.editor.findOrCreateComponent("SMESH","SMESH")
-        HypReMeshEntry = self.editor.findOrCreateItem( moduleEntry, name = 'HypoForRemesh',
-                                           comment = 'HypoForRemshing')
-        monStudyBuilder=maStudy.NewBuilder();
-        monStudyBuilder.NewCommand();
-        newStudyIter=monStudyBuilder.NewObject(HypReMeshEntry)
-        aNameAttrib=monStudyBuilder.FindOrCreateAttribute(newStudyIter,"AttributeName")
-        hypoName = 'monHypo_Yams_'+str(self.num)
-        aNameAttrib.SetValue(hypoName)
-        aCommentAttrib=monStudyBuilder.FindOrCreateAttribute(newStudyIter,"AttributeComment")
-        aCommentAttrib.SetValue(str(self.commande))
-        
-        SOMesh=maStudy.FindObjectByName(meshname ,"SMESH")[0]
-        newLink=monStudyBuilder.NewObject(SOMesh)
-        monStudyBuilder.Addreference(newLink, newStudyIter);
-        if salome.sg.hasDesktop(): salome.sg.updateObjBrowser(0)
-        self.num+=1
-        return True
+    meshname = name+"_YAMS_"+str(self.num)
+    smesh.SetName(outputMesh.GetMesh(), meshname)
+    outputMesh.Compute() #no algorithms message for "Mesh_x" has been computed with warnings: -  global 1D algorithm is missing
+
+    self.editor = studyedit.getStudyEditor()    # 
+    moduleEntry=self.editor.findOrCreateComponent("SMESH","SMESH")
+    HypReMeshEntry = self.editor.findOrCreateItem(
+        moduleEntry, name = "Plugins Hypotheses", icon="mesh_tree_hypo.png") #, comment = "HypoForRemeshing" )
+
+    monStudyBuilder=maStudy.NewBuilder()
+    monStudyBuilder.NewCommand()
+    newStudyIter=monStudyBuilder.NewObject(HypReMeshEntry)
+    self.editor.setAttributeValue(newStudyIter, "AttributeName", "YAMS Parameters_"+str(self.num))
+    self.editor.setAttributeValue(newStudyIter, "AttributeComment", self.getResumeData(separator=" ; "))
+    
+    SOMesh=maStudy.FindObjectByName(meshname ,"SMESH")[0]
+    
+    if initialMeshFile!=None:
+      newStudyFileName=monStudyBuilder.NewObject(SOMesh)
+      self.editor.setAttributeValue(newStudyFileName, "AttributeName", "meshFile")
+      self.editor.setAttributeValue(newStudyFileName, "AttributeExternalFileDef", initialMeshFile)
+      self.editor.setAttributeValue(newStudyFileName, "AttributeComment", initialMeshFile)
+
+    if initialMeshObject!=None:
+      newLink=monStudyBuilder.NewObject(SOMesh)
+      monStudyBuilder.Addreference(newLink, initialMeshObject)
+
+    newLink=monStudyBuilder.NewObject(SOMesh)
+    monStudyBuilder.Addreference(newLink, newStudyIter)
+
+    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser(0)
+    self.num+=1
+    return True
 
   def PBSavePressed(self,NomHypo=False):
-        if NomHypo : text = '# Params for Hypothese : monHypo_Yams_'+str(self.num - 1)+"\n"
-        else :       text = '# Save intermediate params \n' 
-        text += "# Params for mesh : " +  self.LE_MeshSmesh.text() +'\n'
-        for RB in self.GBOptim.findChildren(QRadioButton,):
-            if RB.isChecked()==True:
-               text+="Optimisation ='"+RB.text()+"'\n"
-               break
-        for RB in self.GBUnit.findChildren(QRadioButton,):
-            if RB.isChecked()==True:
-               text+="Units ='"+RB.text()+"'\n"
-        text+='Chordal_Tolerance_Deviation='+str(self.SP_Tolerance.value())+'\n'
+    from datetime import datetime
+    if not(self.PrepareLigneCommande()): return
+    text = "# YAMS hypothesis parameters\n" 
+    text += "# Params for mesh : " +  self.LE_MeshSmesh.text() +"\n"
+    text += datetime.now().strftime("# Date : %d/%m/%y %H:%M:%S\n")
+    text += "# Command : "+self.commande+"\n"
+    text += self.getResumeData(separator="\n")
+    text += "\n\n"
 
-        text+='Ridge_Detection=' + str(self.CB_Ridge.isChecked())+'\n'
-        text+='Split_Edge='      + str(self.CB_SplitEdge.isChecked())+'\n'
-        text+='Point_Smoothing=' + str(self.CB_Point.isChecked())+'\n'
-        text+='Geometrical_Approximation='+ str(self.SP_Geomapp.value())  +'\n'
-        text+='Ridge_Angle='              + str(self.SP_Ridge.value())    +'\n'
-        text+='Maximum_Size='             + str(self.SP_MaxSize.value())  +'\n'
-        text+='Minimum_Size='             + str(self.SP_MaxSize.value())  +'\n'
-        text+='Mesh_Gradation='           + str(self.SP_Gradation.value())+'\n'
+    try:
+      f=open(self.paramsFile,"a")
+    except:
+      QMessageBox.warning(self, "File", "Unable to open "+self.paramsFile)
+      return
+    try:
+      f.write(text)
+    except:
+      QMessageBox.warning(self, "File", "Unable to write "+self.paramsFile)
+      return
+    f.close()
 
-        text+='Verbosity='                + str(self.SP_Verbosity.value())+'\n'
-        text+='Memory='                   + str(self.SP_Memory.value())+'\n'
-        text+='\n\n'
+  def PBSaveHypPressed(self):
+    """save hypothesis in Object Browser"""
+    #QMessageBox.warning(self, "save Object Browser YAMS Hypothesis", "TODO")
+    
+    import smesh
+    import SMESH
+    import salome
+    from salome.kernel import studyedit
 
-        try :
-           f=open(self.paramsFile,'a')
-        except :
-           QMessageBox.warning( self, "File", "Unable to open "+self.paramsFile)
-           return
-        try :
-           f.write(text)
-        except :
-           QMessageBox.warning( self, "File", "Unable to write "+self.paramsFile)
-           return
-        f.close()
+    maStudy=studyedit.getActiveStudy()
+    smesh.SetCurrentStudy(maStudy)
+    
+    self.editor = studyedit.getStudyEditor()
+    moduleEntry=self.editor.findOrCreateComponent("SMESH","SMESH")
+    HypReMeshEntry = self.editor.findOrCreateItem(
+        moduleEntry, name = "Plugins Hypotheses", icon="mesh_tree_hypo.png") #, comment = "HypoForRemeshing" )
+    
+    monStudyBuilder=maStudy.NewBuilder()
+    monStudyBuilder.NewCommand()
+    newStudyIter=monStudyBuilder.NewObject(HypReMeshEntry)
+    self.editor.setAttributeValue(newStudyIter, "AttributeName", "YAMS Parameters_"+str(self.num))
+    self.editor.setAttributeValue(newStudyIter, "AttributeComment", self.getResumeData(separator=" ; "))
+    
+    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser(0)
+    self.num+=1
+    return True
+
+  def SP_toStr(self, widget):
+    """only for a QLineEdit widget"""
+    #cr, pos=widget.validator().validate(res, 0) #n.b. "1,3" is acceptable !locale!
+    try:
+      val=float(widget.text())
+    except:
+      QMessageBox.warning(self, widget.titleForWarning, "float value is incorrect: '"+widget.text()+"'")
+      res=str(widget.validator().bottom())
+      widget.setProperty("text", res)
+      return res
+    valtest=widget.validator().bottom()
+    if valtest!=None:
+      if val<valtest:
+        QMessageBox.warning(self, widget.titleForWarning, "float value is under minimum: "+str(val)+" < "+str(valtest))
+        res=str(valtest)
+        widget.setProperty("text", res)
+        return res
+    valtest=widget.validator().top()
+    if valtest!=None:
+      if val>valtest:
+        QMessageBox.warning(self, widget.titleForWarning, "float value is over maximum: "+str(val)+" > "+str(valtest))
+        res=str(valtest)
+        widget.setProperty("text", res)
+        return res    
+    return str(val)
+
+  def getResumeData(self, separator="\n"):
+    text=""
+    for RB in self.GBOptim.findChildren(QRadioButton,):
+      if RB.isChecked()==True:
+        text+="Optimisation="+RB.text()+separator
+        break
+    if self.RB_Absolute.isChecked():
+      text+="Units=absolute"+separator
+    else:
+      text+="Units=relative"+separator
+    v=self.SP_toStr(self.SP_Tolerance)
+    text+="ChordalToleranceDeviation="+v+separator
+    text+="RidgeDetection="+str(self.CB_Ridge.isChecked())+separator
+    text+="SplitEdge="+str(self.CB_SplitEdge.isChecked())+separator
+    text+="PointSmoothing="+str(self.CB_Point.isChecked())+separator
+    text+="GeometricalApproximation="+str(self.SP_Geomapp.value())+separator
+    text+="RidgeAngle="+str(self.SP_Ridge.value())+separator
+    text+="MaximumSize="+str(self.SP_MaxSize.value())+separator
+    text+="MinimumSize="+str(self.SP_MinSize.value())+separator
+    text+="MeshGradation="+str(self.SP_Gradation.value())+separator
+    text+="Verbosity="+str(self.SP_Verbosity.value())+separator
+    text+="Memory="+str(self.SP_Memory.value())+separator
+    return str(text)
+
+  def loadResumeData(self, hypothesis, separator="\n"):
+    text=str(hypothesis)
+    self.clean()
+    for slig in reversed(text.split(separator)):
+      lig=slig.strip()
+      #print "load ResumeData",lig
+      if lig=="": continue #skip blanck lines
+      if lig[0]=="#": break
+      try:
+        tit,value=lig.split("=")
+        if tit=="Optimisation":
+          for RB in self.GBUnit.findChildren(QRadioButton,):
+            RB.setChecked(False)
+          for RB in self.GBUnit.findChildren(QRadioButton,):
+            if RB.text()==value :
+              RB.setChecked(True)
+              break
+        if tit=="Units":
+          if value=="absolute":
+            self.RB_Absolute.setChecked(True)
+            self.RB_Relative.setChecked(False)
+          else:
+            self.RB_Absolute.setChecked(False)
+            self.RB_Relative.setChecked(True)
+        if tit=="ChordalToleranceDeviation": self.SP_Tolerance.setProperty("text", float(value))
+        if tit=="RidgeDetection": self.CB_Ridge.setChecked(value=="True")
+        if tit=="SplitEdge": self.CB_SplitEdge.setChecked(value=="True")
+        if tit=="PointSmoothing": self.CB_Point.setChecked(value=="True")
+        if tit=="GeometricalApproximation": self.SP_Geomapp.setProperty("value", float(value))
+        if tit=="RidgeAngle": self.SP_Ridge.setProperty("value", float(value))
+        if tit=="MaximumSize": self.SP_MaxSize.setProperty("value", float(value))
+        if tit=="MinimumSize": self.SP_MinSize.setProperty("value", float(value))
+        if tit=="MeshGradation": self.SP_Gradation.setProperty("value", float(value))
+        if tit=="Verbosity": self.SP_Verbosity.setProperty("value", int(float(value)))
+        if tit=="Memory": self.SP_Memory.setProperty("value", float(value))
+      except:
+        QMessageBox.warning(self, "load YAMS Hypothesis", "Problem on '"+lig+"'")
 
   def PBLoadPressed(self):
-        try :
-           f=open(self.paramsFile,'r')
-        except :
-           QMessageBox.warning( self, "File", "Unable to open "+self.paramsFile)
-           return
-        try :
-           text=f.read()
-        except :
-           QMessageBox.warning( self, "File", "Unable to read "+self.paramsFile)
-           return
-        f.close()
-        d={}
-        exec text in d
-        for RB in self.GBOptim.findChildren(QRadioButton,):
-            if d['Optimisation']== RB.text():
-               RB.setChecked(True)
-               break
-        for RB in self.GBUnit.findChildren(QRadioButton,):
-            if d['Units']== RB.text():
-               RB.setChecked(True)
-               break
-        self.SP_Tolerance.setValue(d['Chordal_Tolerance_Deviation'])
+    """load last hypothesis saved in tail of file"""
+    try:
+      f=open(self.paramsFile,"r")
+    except:
+      QMessageBox.warning(self, "File", "Unable to open "+self.paramsFile)
+      return
+    try:
+      text=f.read()
+    except:
+      QMessageBox.warning(self, "File", "Unable to read "+self.paramsFile)
+      return
+    f.close()
+    self.loadResumeData(text, separator="\n")
 
-        self.CB_Ridge.setChecked(d['Ridge_Detection'])
-        self.CB_Point.setChecked(d['Point_Smoothing'])
-        self.CB_SplitEdge.setChecked(d['Split_Edge'])
-        self.SP_Geomapp.setValue(d['Geometrical_Approximation'])
-        self.SP_Ridge.setValue(d['Ridge_Angle'])
-        self.SP_MaxSize.setValue(d['Maximum_Size'])
-        self.SP_MinSize.setValue(d['Minimum_Size'])
-        self.SP_Gradation.setValue(d['Mesh_Gradation'])
+  def PBLoadHypPressed(self):
+    """load hypothesis saved in Object Browser"""
+    #QMessageBox.warning(self, "load Object Browser YAMS hypothesis", "TODO")
+    import salome
+    from salome.kernel import studyedit
+    from salome.smesh.smeshstudytools import SMeshStudyTools
+    from salome.gui import helper as guihelper
+    from omniORB import CORBA
 
-        self.SP_Verbosity.setValue(d['Verbosity'])
-        self.SP_Memory.setValue(d['Memory'])
-
-
+    mySObject, myEntry = guihelper.getSObjectSelected()
+    if CORBA.is_nil(mySObject) or mySObject==None:
+      QMessageBox.critical(self, "Hypothese", "select an Object Browser YAMS hypothesis")
+      return
+    
+    text=mySObject.GetComment()
+    
+    #a verification
+    if "Optimisation=" not in text:
+      QMessageBox.critical(self, "Load Hypothese", "Object Browser selection not a YAMS Hypothesis")
+      return
+    self.loadResumeData(text, separator=" ; ")
+    return
+    
   def PBCancelPressed(self):
-        self.close()
+    self.close()
 
   def PBMeshFilePressed(self):
-       fd = QFileDialog(self, "select an existing Mesh file", self.LE_MeshFile.text(), "Mesh-Files (*.mesh);;All Files (*)")
-       if fd.exec_():
-          infile = fd.selectedFiles()[0]
-          self.LE_MeshFile.setText(infile)
-          self.fichierIn=infile.toLatin1()
+    fd = QFileDialog(self, "select an existing Mesh file", self.LE_MeshFile.text(), "Mesh-Files (*.mesh);;All Files (*)")
+    if fd.exec_():
+      infile = fd.selectedFiles()[0]
+      self.LE_MeshFile.setText(infile)
+      self.fichierIn=infile.toLatin1()
+      self.MeshIn=""
+      self.LE_MeshSmesh.setText("")
 
   def setParamsFileName(self):
-       fd = QFileDialog(self, "select a file", self.LE_ParamsFile.text(), "dat Files (*.dat);;All Files (*)")
-       if fd.exec_():
-          infile = fd.selectedFiles()[0]
-          self.LE_ParamsFile.setText(infile)
-          self.paramsFile=infile.toLatin1()
-
+    fd = QFileDialog(self, "select a file", self.LE_ParamsFile.text(), "dat Files (*.dat);;All Files (*)")
+    if fd.exec_():
+      infile = fd.selectedFiles()[0]
+      self.LE_ParamsFile.setText(infile)
+      self.paramsFile=infile.toLatin1()
 
   def meshFileNameChanged(self):
-      self.fichierIn=self.LE_MeshFile.text()
-      if os.path.exists(self.fichierIn): return
-      QMessageBox.warning( self, "Unknown File", "File doesn't exist")
+    self.fichierIn=str(self.LE_MeshFile.text())
+    #print "meshFileNameChanged", self.fichierIn
+    if os.path.exists(self.fichierIn): 
+      self.__selectedMesh=None
+      self.MeshIn=""
+      self.LE_MeshSmesh.setText("")
+      return
+    QMessageBox.warning(self, "Mesh file", "File doesn't exist")
+
+  def meshSmeshNameChanged(self):
+    """only change by GUI mouse selection, otherwise clear"""
+    self.__selectedMesh = None
+    self.MeshIn=""
+    self.LE_MeshSmesh.setText("")
+    self.fichierIn=""
+    return
 
   def paramsFileNameChanged(self):
-      self.paramsFile=self.LE_ParamsFile.text()
+    self.paramsFile=self.LE_ParamsFile.text()
 
   def PBMeshSmeshPressed(self):
-      import salome
-      import smesh
-      from salome.kernel import studyedit
-      from salome.smesh.smeshstudytools import SMeshStudyTools
-      from salome.gui import helper as guihelper
-      from omniORB import CORBA
+    import salome
+    import smesh
+    from salome.kernel import studyedit
+    from salome.smesh.smeshstudytools import SMeshStudyTools
+    from salome.gui import helper as guihelper
+    from omniORB import CORBA
 
-      mySObject, myEntry = guihelper.getSObjectSelected()
-      if CORBA.is_nil(mySObject) or mySObject==None:
-         QMessageBox.critical(self, "Mesh", "select an input mesh")
-         return
-      self.smeshStudyTool = SMeshStudyTools()
+    mySObject, myEntry = guihelper.getSObjectSelected()
+    if CORBA.is_nil(mySObject) or mySObject==None:
+      QMessageBox.critical(self, "Mesh", "select an input mesh")
+      return
+    self.smeshStudyTool = SMeshStudyTools()
+    try:
       self.__selectedMesh = self.smeshStudyTool.getMeshObjectFromSObject(mySObject)
-      if CORBA.is_nil(self.__selectedMesh):
-         QMessageBox.critical(self, "Mesh", "select an input mesh")
-         return
-      myName = mySObject.GetName()
-      self.MeshIn=myName
-      self.LE_MeshSmesh.setText(myName)
+    except:
+      QMessageBox.critical(self, "Mesh", "select an input mesh")
+      return
+    if CORBA.is_nil(self.__selectedMesh):
+      QMessageBox.critical(self, "Mesh", "select an input mesh")
+      return
+    myName = mySObject.GetName()
+    #print "MeshSmeshNameChanged", myName
+    self.MeshIn=myName
+    self.LE_MeshSmesh.setText(myName)
+    self.LE_MeshFile.setText("")
+    self.fichierIn=""
 
   def prepareFichier(self):
-      self.fichierIn="/tmp/PourYam_"+str(self.num)+".mesh"
-      import SMESH
-      self.__selectedMesh.ExportGMF(self.__selectedMesh,self.fichierIn, True)
+    self.fichierIn="/tmp/ForYams_"+str(self.num)+".mesh"
+    import SMESH
+    self.__selectedMesh.ExportGMF(self.__selectedMesh, self.fichierIn, True)
 
   def PrepareLigneCommande(self):
-      self.commande="yams "
-      verbosity=str(self.SP_Verbosity.value())
-      self.commande+="-v "+verbosity
-      for obj in self.mesRB.children():
-          try :
-           if obj.isChecked():
-              self.style=obj.objectName().remove(0,3)
-              self.style.replace("_","-")
-              break
-          except :
-              pass
-      self.commande+=" -O "+self.style.toLatin1()
-      if self.fichierIn=="" and self.MeshIn=="" :
-         QMessageBox.critical(self, "Mesh", "select an input mesh")
-         return False
-      if self.MeshIn!="" : self.prepareFichier()
-      if not (os.path.isfile(self.fichierIn)):
-         QMessageBox.critical(self, "File", "unable to read GMF Mesh in "+str(self.fichierIn))
-         return False
+    if self.fichierIn=="" and self.MeshIn=="":
+      QMessageBox.critical(self, "Mesh", "select an input mesh")
+      return False
+    if self.__selectedMesh!=None: self.prepareFichier()
+    if not (os.path.isfile(self.fichierIn)):
+      QMessageBox.critical(self, "File", "unable to read GMF Mesh in "+str(self.fichierIn))
+      return False
+    
+    self.commande="yams"
+    verbosity=str(self.SP_Verbosity.value())
+    self.commande+=" -v "+verbosity
+    for obj in self.GBOptim.findChildren(QRadioButton,):
+      try:
+        if obj.isChecked():
+          self.style=obj.objectName().remove(0,3)
+          self.style.replace("_","-")
+          break
+      except:
+        pass
+    self.commande+=" -O "+self.style.toLatin1()
 
-      deb=os.path.splitext(self.fichierIn)
-      self.fichierOut=deb[0]+'.d.meshb'
+    deb=os.path.splitext(self.fichierIn)
+    self.fichierOut=deb[0] + ".d.meshb"
 
-      if self.RB_Absolute.isChecked()==True :
-         self.commande+=' -Dabsolute'
-      else :
-         self.commande+=' -Drelative'
-      self.commande+=',tolerance=%f'%self.SP_Tolerance.value()
-      if self.CB_Ridge.isChecked()==False : self.commande+=',-nr'
-      if self.CB_Point.isChecked()==False : self.commande+=',-ns'
-      if self.SP_Geomapp.value()!=0.04 : self.commande+=',geomapp=%f'%self.SP_Geomapp.value()
-      if self.SP_Ridge.value()!=45.0 : self.commande+=',ridge=%f'%self.SP_Ridge.value()
-      if self.SP_MaxSize.value()!=100 : self.commande+=',maxsize=%f'%self.SP_MaxSize.value()
-      if self.SP_MinSize.value()!=5 : self.commande+=',minsize=%f'%self.SP_MinSize.value()
-      if self.SP_Gradation.value()!=1.3 : self.commande+=',gradation=%f'%self.SP_MaxSize.value()
-      if self.CB_SplitEdge.isChecked()==True : self.commande+=',splitedge=1'
+    if self.RB_Absolute.isChecked()==True :
+        self.commande+=" -Dabsolute"
+    else :
+        self.commande+=" -Drelative"
+    
+    v=self.SP_toStr(self.SP_Tolerance)
+    self.commande+=",tolerance="+v
+    if self.CB_Ridge.isChecked()==False : self.commande+=",-nr"
+    if self.CB_Point.isChecked()==False : self.commande+=",-ns"
+    if self.SP_Geomapp.value()!=0.04 : self.commande+=",geomapp=%f"%self.SP_Geomapp.value()
+    if self.SP_Ridge.value()!=45.0 : self.commande+=",ridge=%f"%self.SP_Ridge.value()
+    if self.SP_MaxSize.value()!=100 : self.commande+=",maxsize=%f"%self.SP_MaxSize.value()
+    if self.SP_MinSize.value()!=5 : self.commande+=",minsize=%f"%self.SP_MinSize.value()
+    if self.SP_Gradation.value()!=1.3 : self.commande+=",gradation=%f"%self.SP_MaxSize.value()
+    if self.CB_SplitEdge.isChecked()==True : self.commande+=",splitedge=1"
 
-      if self.SP_Verbosity.value()!=3 : self.commande+=' -v %d'%self.SP_Verbosity.value()
-      if self.SP_Memory.value()!=0 : self.commande+=' -m %d'%self.SP_Memory.value()
+    if self.SP_Verbosity.value()!=3 : self.commande+=" -v %d"%self.SP_Verbosity.value()
+    if self.SP_Memory.value()!=0 : self.commande+=" -m %d"%self.SP_Memory.value()
 
-      self.commande+=" "+self.fichierIn
-      return True
+    self.commande+=" "+self.fichierIn
+    return True
 
   def clean(self):
-        self.RB_0.setChecked(True)
-        self.RB_G.setChecked(False)
-        self.RB_U.setChecked(False)
-        self.RB_S.setChecked(False)
-        self.RB_2.setChecked(False)
-        self.RB_1.setChecked(False)
-        self.RB_Absolute.setChecked(False)
-        self.RB_Relative.setChecked(True)
-        self.SP_Tolerance.setProperty("value", 0.1)
-        self.SP_Geomapp.setProperty("value", 0.04)
-        self.SP_Ridge.setProperty("value", 45.0)
-        self.SP_Gradation.setProperty("value", 1.3)
-        self.CB_Ridge.setChecked(True)
-        self.CB_Point.setChecked(True)
-        self.CB_SplitEdge.setChecked(False)
-        self.SP_MaxSize.setProperty("value", -2.0)
-        self.SP_MinSize.setProperty("value", -2.0)
-        self.SP_Verbosity.setProperty("value", 3)
-        self.SP_Memory.setProperty("value", 0)
-
+    self.RB_0.setChecked(True)
+    self.RB_G.setChecked(False)
+    self.RB_U.setChecked(False)
+    self.RB_S.setChecked(False)
+    self.RB_2.setChecked(False)
+    self.RB_1.setChecked(False)
+    self.RB_Absolute.setChecked(False)
+    self.RB_Relative.setChecked(True)
+    self.SP_Tolerance.setProperty("text", "10.")
+    self.SP_Geomapp.setProperty("value", 0.04)
+    self.SP_Ridge.setProperty("value", 45.0)
+    self.SP_Gradation.setProperty("value", 1.3)
+    self.CB_Ridge.setChecked(True)
+    self.CB_Point.setChecked(True)
+    self.CB_SplitEdge.setChecked(False)
+    self.SP_MaxSize.setProperty("value", -2.0)
+    self.SP_MinSize.setProperty("value", -2.0)
+    self.SP_Verbosity.setProperty("value", 3)
+    self.SP_Memory.setProperty("value", 0)
 
 __dialog=None
 def getDialog():
@@ -314,3 +503,23 @@ def getDialog():
     #   __dialog.clean()
     return __dialog
 
+#
+# ==============================================================================
+# Basic use cases and unit test functions
+# ==============================================================================
+#
+def TEST_MonYamsPlugDialog():
+  #print "TEST_YamsMonPlugDialog"
+  import sys
+  from PyQt4.QtGui import QApplication
+  from PyQt4.QtCore import QObject, SIGNAL, SLOT
+  app = QApplication(sys.argv)
+  QObject.connect(app, SIGNAL("lastWindowClosed()"), app, SLOT("quit()"))
+
+  dlg=MonYamsPlugDialog()
+  dlg.show()
+  sys.exit(app.exec_())
+
+if __name__ == "__main__":
+  TEST_MonYamsPlugDialog()
+  pass

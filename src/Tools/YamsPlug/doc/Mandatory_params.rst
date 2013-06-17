@@ -61,7 +61,7 @@ This is the main remeshing Option.  Yams always does quality improvement. It is 
 
    - **Mesh for finite element computation : Coarsening** 
 
-     The given surface triangulation is modfied in accordance to a size map. The latter is the intrinsic size map (computed automatically and based on the surface properties, i.e. the local curvatures). One should use this option to coarsen  the mesh, when a regular mesh  for computation purposes is desired, i.e. a mesh with good aspect ratios or good quality elements.
+     The given surface triangulation is modified in accordance to a size map. The latter is the intrinsic size map (computed automatically and based on the surface properties, i.e. the local curvatures). One should use this option to coarsen  the mesh, when a regular mesh  for computation purposes is desired, i.e. a mesh with good aspect ratios or good quality elements.
 
      It is equivalent to Yams's batch option -1.
 

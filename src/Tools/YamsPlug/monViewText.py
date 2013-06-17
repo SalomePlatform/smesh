@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 # Copyright (C) 2007-2013  EDF R&D
 #
 # This library is free software; you can redistribute it and/or
@@ -28,45 +28,59 @@ from PyQt4.QtCore import *
 
 # Import des panels
 
-# ------------------------------- #
 from ViewText import Ui_ViewExe
-class MonViewText(Ui_ViewExe,QDialog):
-# ------------------------------- #
+
+class MonViewText(Ui_ViewExe, QDialog):
     """
     Classe permettant la visualisation de texte
     """
-    def __init__(self,parent,txt):
+    def __init__(self, parent, txt):
         QDialog.__init__(self,parent)
-        self.pere=parent
         self.setupUi(self)
-        self.resize( QSize(600,600).expandedTo(self.minimumSizeHint()) )
-        self.connect( self.PB_Ok,SIGNAL("clicked()"), self, SLOT("close()") )
+        self.resize( QSize(1000,600).expandedTo(self.minimumSizeHint()) )
+        #self.connect( self.PB_Ok,SIGNAL("clicked()"), self, SLOT("close()") )
+        self.connect( self.PB_Ok,SIGNAL("clicked()"), self.theClose )
         self.connect( self.PB_Save,SIGNAL("clicked()"), self.saveFile )
         self.monExe=QProcess(self)
 
-
         self.connect(self.monExe, SIGNAL("readyReadStandardOutput()"), self.readFromStdOut )
         self.connect(self.monExe, SIGNAL("readyReadStandardError()"), self.readFromStdErr )
-        self.connect(self.monExe, SIGNAL("finished(int  )"), self.exeFinished )
       
         # Je n arrive pas a utiliser le setEnvironment du QProcess
         # fonctionne hors Salome mais pas dans Salome ???
-        LICENCE=os.environ['DISTENE_LICENCE_FILE_FOR_YAMS']
-        txt='export DISTENE_LICENSE_FILE='+LICENCE+';'+ txt
+        cmds=''
+        try :
+          LICENCE_FILE=os.environ["DISTENE_LICENCE_FILE_FOR_YAMS"]
+        except:
+          LICENCE_FILE=''
+        try :
+          PATH=os.environ["DISTENE_PATH_FOR_YAMS"]
+        except:
+          PATH=''
+        if LICENCE_FILE != '': 
+          cmds+='source '+LICENCE_FILE+'\n'
+        else:
+          cmds+="# $DISTENE_LICENCE_FILE_FOR_YAMS NOT SET\n"
+        if PATH != '': 
+          cmds+='export PATH='+PATH+':$PATH\n'
+        else:
+          cmds+="# $DISTENE_PATH_FOR_YAMS NOT SET\n"
+        #cmds+='env\n'
+        cmds+='rm -f '+self.parent().fichierOut+'\n'
+        cmds+=txt+'\n'
+        cmds+='echo END_OF_Yams\n'
         pid=self.monExe.pid()
-        nomFichier='/tmp/yam_'+str(pid)+'.py'
+        nomFichier='/tmp/Yams_'+str(pid)+'.sh'
         f=open(nomFichier,'w')
-        f.write(txt)
+        f.write(cmds)
         f.close()
 
         maBidouille='sh  ' + nomFichier
         self.monExe.start(maBidouille)
         self.monExe.closeWriteChannel()
+        self.enregistreResultatsDone=False
         self.show()
 
-    def exeFinished(self):
-        self.pere.enregistreResultat()
-        
     def saveFile(self):
         #recuperation du nom du fichier
         savedir=os.environ['HOME']
@@ -84,8 +98,19 @@ class MonViewText(Ui_ViewExe,QDialog):
 
     def readFromStdErr(self):
         a=self.monExe.readAllStandardError()
-        self.TB_Exe.append(QString.fromUtf8(a.data(),len(a))) ;
+        self.TB_Exe.append(QString.fromUtf8(a.data(),len(a)))
 
     def readFromStdOut(self) :
         a=self.monExe.readAllStandardOutput()
-        self.TB_Exe.append(QString.fromUtf8(a.data(),len(a))) ;
+        aa=QString.fromUtf8(a.data(),len(a))
+        self.TB_Exe.append(aa)
+        if "END_OF_Yams" in aa:
+          self.parent().enregistreResultat()
+          self.enregistreResultatsDone=True
+          #self.theClose()
+    
+    def theClose(self):
+      if not self.enregistreResultatsDone:
+        self.parent().enregistreResultat()
+        self.enregistreResultatsDone=True
+      self.close()
