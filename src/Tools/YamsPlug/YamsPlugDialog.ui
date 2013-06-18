@@ -301,20 +301,17 @@ good quality elements.</string>
 The latter can be either the intrinsic size map (computed automatically
 and based on the surface properties, i.e. the local curvatures),
 or on a given size map (which is then combined to the intrinsic size map). 
-One should use this option to coarsen  and enrich the mesh, when a regular mesh 
+One should use this option to coarse and enrich the mesh, when a regular mesh 
 for computation purposes is desired, i.e. a mesh with good aspect ratios or 
 good quality elements</string>
            </property>
            <property name="text">
-            <string>Mesh for finite element computation : Coarsening and Enrichment  (1)</string>
+            <string>Mesh for finite element computation : Coarsening and Enrichment (1)</string>
            </property>
           </widget>
          </item>
-
         </layout>
-
        </item>
-
       </layout>
 
       </widget>

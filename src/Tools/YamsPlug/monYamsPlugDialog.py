@@ -119,11 +119,12 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     maFenetre=MonViewText(self,self.commande)
 
   def enregistreResultat(self):
-    import smesh
-    import SMESH
     import salome
+    import SMESH
     from salome.kernel import studyedit
-
+    from salome.smesh import smeshBuilder
+    smesh = smeshBuilder.New(salome.myStudy)
+    
     if not os.path.isfile(self.fichierOut):
       QMessageBox.warning(self, "Compute", "Result file "+self.fichierOut+" not found")
 
@@ -144,11 +145,11 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     smesh.SetName(outputMesh.GetMesh(), meshname)
     outputMesh.Compute() #no algorithms message for "Mesh_x" has been computed with warnings: -  global 1D algorithm is missing
 
-    self.editor = studyedit.getStudyEditor()    # 
+    self.editor = studyedit.getStudyEditor()
     moduleEntry=self.editor.findOrCreateComponent("SMESH","SMESH")
     HypReMeshEntry = self.editor.findOrCreateItem(
         moduleEntry, name = "Plugins Hypotheses", icon="mesh_tree_hypo.png") #, comment = "HypoForRemeshing" )
-
+    
     monStudyBuilder=maStudy.NewBuilder()
     monStudyBuilder.NewCommand()
     newStudyIter=monStudyBuilder.NewObject(HypReMeshEntry)
@@ -174,7 +175,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     self.num+=1
     return True
 
-  def PBSavePressed(self,NomHypo=False):
+  def PBSavePressed(self):
     from datetime import datetime
     if not(self.PrepareLigneCommande()): return
     text = "# YAMS hypothesis parameters\n" 
@@ -198,12 +199,11 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
 
   def PBSaveHypPressed(self):
     """save hypothesis in Object Browser"""
-    #QMessageBox.warning(self, "save Object Browser YAMS Hypothesis", "TODO")
-    
-    import smesh
-    import SMESH
     import salome
+    import SMESH
     from salome.kernel import studyedit
+    from salome.smesh import smeshBuilder
+    smesh = smeshBuilder.New(salome.myStudy)
 
     maStudy=studyedit.getActiveStudy()
     smesh.SetCurrentStudy(maStudy)
@@ -284,9 +284,10 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
       try:
         tit,value=lig.split("=")
         if tit=="Optimisation":
-          for RB in self.GBUnit.findChildren(QRadioButton,):
-            RB.setChecked(False)
-          for RB in self.GBUnit.findChildren(QRadioButton,):
+          #no need: exlusives QRadioButton
+          #for RB in self.GBOptim.findChildren(QRadioButton,):
+          #  RB.setChecked(False)
+          for RB in self.GBOptim.findChildren(QRadioButton,):
             if RB.text()==value :
               RB.setChecked(True)
               break
@@ -390,12 +391,13 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     self.paramsFile=self.LE_ParamsFile.text()
 
   def PBMeshSmeshPressed(self):
+    from omniORB import CORBA
     import salome
-    import smesh
     from salome.kernel import studyedit
     from salome.smesh.smeshstudytools import SMeshStudyTools
     from salome.gui import helper as guihelper
-    from omniORB import CORBA
+    from salome.smesh import smeshBuilder
+    smesh = smeshBuilder.New(salome.myStudy)
 
     mySObject, myEntry = guihelper.getSObjectSelected()
     if CORBA.is_nil(mySObject) or mySObject==None:
@@ -419,7 +421,6 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
 
   def prepareFichier(self):
     self.fichierIn="/tmp/ForYams_"+str(self.num)+".mesh"
-    import SMESH
     self.__selectedMesh.ExportGMF(self.__selectedMesh, self.fichierIn, True)
 
   def PrepareLigneCommande(self):
@@ -471,13 +472,15 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
 
   def clean(self):
     self.RB_0.setChecked(True)
-    self.RB_G.setChecked(False)
-    self.RB_U.setChecked(False)
-    self.RB_S.setChecked(False)
-    self.RB_2.setChecked(False)
-    self.RB_1.setChecked(False)
-    self.RB_Absolute.setChecked(False)
+    #no need: exlusives QRadioButton
+    #self.RB_G.setChecked(False)
+    #self.RB_U.setChecked(False)
+    #self.RB_S.setChecked(False)
+    #self.RB_2.setChecked(False)
+    #self.RB_1.setChecked(False)
     self.RB_Relative.setChecked(True)
+    #no need: exlusives QRadioButton
+    #self.RB_Absolute.setChecked(False)
     self.SP_Tolerance.setProperty("text", "10.")
     self.SP_Geomapp.setProperty("value", 0.04)
     self.SP_Ridge.setProperty("value", 45.0)
@@ -492,16 +495,16 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
 
 __dialog=None
 def getDialog():
-    """
-    This function returns a singleton instance of the plugin dialog.
-    c est obligatoire pour faire un show sans parent...
-    """
-    global __dialog
-    if __dialog is None:
-        __dialog = MonYamsPlugDialog()
-    #else :
-    #   __dialog.clean()
-    return __dialog
+  """
+  This function returns a singleton instance of the plugin dialog.
+  c est obligatoire pour faire un show sans parent...
+  """
+  global __dialog
+  if __dialog is None:
+    __dialog = MonYamsPlugDialog()
+  #else :
+  #   __dialog.clean()
+  return __dialog
 
 #
 # ==============================================================================
@@ -509,7 +512,6 @@ def getDialog():
 # ==============================================================================
 #
 def TEST_MonYamsPlugDialog():
-  #print "TEST_YamsMonPlugDialog"
   import sys
   from PyQt4.QtGui import QApplication
   from PyQt4.QtCore import QObject, SIGNAL, SLOT
