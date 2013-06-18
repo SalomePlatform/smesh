@@ -347,15 +347,15 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
   def PBLoadPressed(self):
     """load last hypothesis saved in tail of file"""
     try:
-        f=open(self.paramsFile,"r")
-    except :
-        QMessageBox.warning(self, "File", "Unable to open "+self.paramsFile)
-        return
+      f=open(self.paramsFile,"r")
+    except:
+      QMessageBox.warning(self, "File", "Unable to open "+self.paramsFile)
+      return
     try:
-        text=f.read()
-    except :
-        QMessageBox.warning(self, "File", "Unable to read "+self.paramsFile)
-        return
+      text=f.read()
+    except:
+      QMessageBox.warning(self, "File", "Unable to read "+self.paramsFile)
+      return
     f.close()
     self.loadResumeData(text, separator="\n")
 
@@ -526,7 +526,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
       self.commande+=" --overlap_distance " + self.SP_toStr(self.SP_OverlapDistance)
     self.commande+=" --overlap_angle " + str(self.SP_OverlapAngle.value())
     return True
-    
+
   def clean(self):
     self.RB_Check.setChecked(False)
     self.RB_Fix1.setChecked(False)
@@ -555,7 +555,7 @@ def getDialog():
   """
   global __dialog
   if __dialog is None:
-      __dialog = MGCleanerMonPlugDialog()
+    __dialog = MGCleanerMonPlugDialog()
   #else :
   #   __dialog.clean()
   return __dialog
@@ -570,10 +570,10 @@ def TEST_standalone():
   """
   works only if a salome is launched yet with a study loaded
   to launch standalone python do:
-  /export/home/wambeke/2013/V6_main_MGC_CO6.4_64/APPLI/runSession
+  ./APPLI/runSession
   python
   or (do not works)
-  python /export/home/wambeke/2013/V6_main_MGC_CO6.4_64/INSTALL/SMESH/share/salome/plugins/smesh/MGCleanerMonPlugDialog.py
+  python ./INSTALL/SMESH/share/salome/plugins/smesh/MGCleanerMonPlugDialog.py
   """
   import salome
   import SMESH
@@ -588,7 +588,6 @@ def TEST_standalone():
 # ==============================================================================
 #
 def TEST_MGCleanerMonPlugDialog():
-  #print "TEST_MGCleanerMonPlugDialog"
   import sys
   from PyQt4.QtGui import QApplication
   from PyQt4.QtCore import QObject, SIGNAL, SLOT
