@@ -15,11 +15,13 @@ in the toolbar.
 
 The <b>Mesh Information</b> dialog box provides three tab pages:
 - <b>\ref advanced_mesh_infos_anchor "Base Info"</b> - to show base
-information about the selected mesh object
+information about the selected mesh object.
 - <b>\ref mesh_element_info_anchor "Element Info"</b> - to show
 detailed information about the selected mesh node or element.
 - <b>\ref mesh_addition_info_anchor "Additional Info"</b> - to show additional information available
 for the selected mesh, sub-mesh or group object.
+- <b>\ref mesh_quality_info_anchor "Quality Info"</b> - to show
+overall quality information about the selected mesh, sub-mesh or group object.
 
 \anchor advanced_mesh_infos_anchor
 <h2>Base Information</h2>
@@ -118,6 +120,36 @@ button (see picture). Also, the number of underlying nodes is
 automatically calculated if the size of the group does not exceed
 the "Automatic nodes compute limit" set via the  "Mesh information"
 preferences (zero value means no limit).
+
+\anchor mesh_quality_info_anchor
+<h2>Quality Information</h2>
+
+The <b>Quality Info</b> tab page of the dialog box provides overal
+mesh quality controls information on the selected object - mesh, 
+sub-mesh or mesh group:
+- Name;
+- Nodes information:
+  - Number of the free nodes;
+  - Number of double nodes;
+- Edges information:
+  - Number of double edges;
+- Faces information:
+  - Number of double faces;
+  - Number of over-constrained faces;
+  - Aspect Ratio histogram;
+- Volume information:
+  - Number of double volumes;
+  - Number of over-constrained volumes;
+  - Aspect Ratio 3D histogram.
+
+<center>\image html ctrlinfo.png
+<em>"Quality Info" page</em></center>
+
+\note For the perfomance reason, the Aspect Ratio histogram for the big meshes is
+computed only by demand. For this, the user should press the "Compute"
+button (see picture). Also, histogram is automatically computed if the size of the 
+elements does not exceed the "Automatic controls compute limit" set 
+via the "Mesh information" preferences (zero value means no limit).
 
 The button \b "Dump" allows printing the information displayed in the
 dialog box to a .txt file.

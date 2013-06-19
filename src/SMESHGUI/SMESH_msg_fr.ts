@@ -825,6 +825,10 @@
         <translation>Restaurer</translation>
     </message>
     <message>
+        <source>MEN_OVERALL_MESH_QUALITY</source>
+        <translation type="unfinished">Overall Mesh Quality</translation>
+    </message>
+    <message>
         <source>MEN_DISTRIBUTION_CTRL</source>
         <translation>Distribution</translation>
     </message>
@@ -4236,8 +4240,16 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
         <translation>Copier les informations additionelles</translation>
     </message>
     <message>
+        <source>PREF_DUMP_CTRL_INFO</source>
+        <translation type="unfinished">Dump controls information</translation>
+    </message>
+    <message>
         <source>PREF_GPP_NODES_LIMIT</source>
         <translation>Calcul automatique du nombre de nœuds: limite</translation>
+    </message>
+    <message>
+        <source>PREF_CTRL_LIMIT</source>
+        <translation type="unfinished">Automatic controls compute limit</translation>
     </message>
     <message>
         <source>SMESH_PREF_GROUP_PRECISION</source>
@@ -6684,6 +6696,10 @@ en raison de leurs types incompatibles:
         <translation>Infos détaillées</translation>
     </message>
     <message>
+        <source>CTRL_INFO</source>
+        <translation type="unfinished">Quality Info</translation>
+    </message>
+    <message>
         <source>NODE_MODE</source>
         <translation>Nœud</translation>
     </message>
@@ -7047,6 +7063,80 @@ en raison de leurs types incompatibles:
     <message>
         <source>SUBMESHES_7</source>
         <translation>Point</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_CtrlInfo</name>
+    <message>
+        <source>CTRL_INFO</source>
+        <translation type="unfinished">Quality information</translation>
+    </message>
+    <message>
+        <source>NAME_LAB</source>
+        <translation type="unfinished">Name:</translation>
+    </message>
+    <message>
+        <source>VALUE</source>
+        <translation type="unfinished">Value</translation>
+    </message>
+    <message>
+        <source>BUT_COMPUTE</source>
+        <translation type="unfinished">Compute</translation>
+    </message>
+    <message>
+        <source>NODES_INFO</source>
+        <translation type="unfinished">Nodes Information:</translation>
+    </message>
+    <message>
+        <source>NUMBER_OF_THE_FREE_NODES</source>
+        <translation type="unfinished">Number of the free nodes</translation>
+    </message>
+    <message>
+        <source>NUMBER_OF_THE_DOUBLE_NODES</source>
+        <translation type="unfinished">Number of the double nodes</translation>
+    </message>
+    <message>
+        <source>EDGES_INFO</source>
+        <translation type="unfinished">Edges Information:</translation>
+    </message>
+    <message>
+        <source>NUMBER_OF_THE_DOUBLE_EDGES</source>
+        <translation type="unfinished">Number of the double edges</translation>
+    </message>
+    <message>
+        <source>FACES_INFO</source>
+        <translation type="unfinished">Faces Information:</translation>
+    </message>
+    <message>
+        <source>NUMBER_OF_THE_DOUBLE_FACES</source>
+        <translation type="unfinished">Number of the double faces</translation>
+    </message>   
+    <message>
+        <source>ASPECT_RATIO_HISTOGRAM</source>
+        <translation type="unfinished">Aspect Ratio histogram</translation>
+    </message>
+    <message>
+        <source>VOLUMES_INFO</source>
+        <translation type="unfinished">Volumes Information:</translation>
+    </message>
+    <message>
+        <source>NUMBER_OF_THE_DOUBLE_VOLUMES</source>
+        <translation type="unfinished">Number of the double volumes</translation>
+    </message>
+    <message>
+        <source>NUMBER_OF_THE_OVER_CONSTRAINED</source>
+        <translation type="unfinished">Number of the over-constrained</translation>
+    </message>
+    <message>
+        <source>ASPECT_RATIO_3D_HISTOGRAM</source>
+        <translation type="unfinished">Aspect Ratio 3D histogram</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_CtrlInfoDlg</name>
+    <message>
+        <source>CTRL_INFO</source>
+        <translation type="unfinished">Quality Info</translation>
     </message>
 </context>
 <context>

@@ -85,9 +85,11 @@
     <parameter name="mesh_elem_info"               value="1"/>
     <parameter name="elem_info_grp_details"        value="false"/>
     <parameter name="info_groups_nodes_limit"      value="100000"/>
+    <parameter name="info_controls_limit"          value="3000"/>
     <parameter name="info_dump_base"               value="true" />
     <parameter name="info_dump_elem"               value="true" />
     <parameter name="info_dump_add"                value="true" />
+    <parameter name="info_dump_ctrl"               value="true" />
     <parameter name="segmentation"                 value="10"/>
     <parameter name="nb_segments_per_edge"         value="15"/>
     <parameter name="forget_mesh_on_hyp_modif"     value="true"/>

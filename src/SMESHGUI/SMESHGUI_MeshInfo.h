@@ -27,6 +27,9 @@
 
 #include "SMESH_SMESHGUI.hxx"
 #include <SALOME_InteractiveObject.hxx>
+#include "SMESH_ControlsDef.hxx"
+
+#include <Plot2d_Histogram.h>
 
 #include <QFrame>
 #include <QDialog>
@@ -280,6 +283,37 @@ private:
   SMESH::submesh_array_var mySubMeshes;
 };
 
+class SMESHGUI_EXPORT SMESHGUI_CtrlInfo : public QFrame
+{
+  Q_OBJECT;
+
+public:
+  SMESHGUI_CtrlInfo( QWidget* = 0 );
+  ~SMESHGUI_CtrlInfo();
+
+  void              showInfo( SMESH::SMESH_IDSource_ptr );
+  void              saveInfo( QTextStream &out );
+
+private:
+  QLabel*           createField();
+  QwtPlot*          createPlot( QWidget* );
+  void              setFontAttributes( QWidget* );
+  void              clearInternal();
+  int               nbElemsControl( SMESH::long_array_var&, SMESH::Controls::FunctorPtr );
+  Plot2d_Histogram* getHistogram( SMESH::long_array_var&, SMESH::Controls::NumericalFunctorPtr ); 
+
+private slots:
+  void              computeFaceInfo();
+  void              computeVolumeInfo();
+
+private:
+  QList<QLabel*> myWidgets;
+  QwtPlot*       myPlot;
+  QwtPlot*       myPlot3D;
+  QPushButton*   myComputeFaceBtn;
+  QPushButton*   myComputeVolumeBtn;
+};
+
 class SMESHGUI_EXPORT SMESHGUI_MeshInfoDlg : public QDialog
 { 
   Q_OBJECT;
@@ -291,7 +325,8 @@ public:
   enum { 
     BaseInfo,  //!< base mesh information
     ElemInfo,  //!< mesh element information
-    AddInfo    //!< additional information
+    AddInfo,   //!< additional information
+    CtrlInfo //!< controls information
   };
 
   SMESHGUI_MeshInfoDlg( QWidget* = 0, int = BaseInfo );
@@ -323,7 +358,29 @@ private:
   QLineEdit*         myID;
   SMESHGUI_ElemInfo* myElemInfo;   
   SMESHGUI_AddInfo*  myAddInfo;
+  SMESHGUI_CtrlInfo* myCtrlInfo;
   SMESH_Actor*       myActor;
+};
+
+class SMESHGUI_EXPORT SMESHGUI_CtrlInfoDlg : public QDialog
+{ 
+  Q_OBJECT;
+
+public:
+  SMESHGUI_CtrlInfoDlg( QWidget* = 0 );
+  ~SMESHGUI_CtrlInfoDlg();
+
+  void showInfo( const Handle(SALOME_InteractiveObject)& );
+  void reject();
+
+private slots:
+  void updateInfo();
+  void activate();
+  void deactivate();
+  void updateSelection();
+
+private:
+  SMESHGUI_CtrlInfo*  myCtrlInfo;
 };
 
 #endif // SMESHGUI_MESHINFO_H

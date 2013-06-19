@@ -996,6 +996,22 @@
     SMESH::RepaintCurrentView();
   }
 
+  void OverallMeshQuality() {
+    SMESHGUI::GetSMESHGUI()->EmitSignalDeactivateDialog();
+    LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
+    SALOME_ListIO selected;
+    if( aSel )
+      aSel->selectedObjects( selected );
+    
+    if ( selected.IsEmpty() ) return;
+    SALOME_ListIteratorOfListIO It( selected );
+    for ( ; It.More(); It.Next() ) {
+      SMESHGUI_CtrlInfoDlg* ctrlDlg = new SMESHGUI_CtrlInfoDlg( SMESHGUI::desktop() );
+      ctrlDlg->showInfo( It.Value() );
+      ctrlDlg->show();
+    }
+  }
+
   QString functorToString( SMESH::Controls::FunctorPtr f )
   {
     QString type = QObject::tr( "UNKNOWN_CONTROL" );
@@ -3403,6 +3419,9 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
                                tr( "NOT_A_VTK_VIEWER" ) );
     }
     break;
+  case 6032: 
+    OverallMeshQuality();
+    break;
   case 9010:
     {
       LightApp_SelectionMgr* mgr = selectionMgr();
@@ -3630,6 +3649,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 6029, "EQUAL_EDGE",      "ICON_EQUAL_EDGE",    0, true );
   createSMESHAction( 6030, "EQUAL_FACE",      "ICON_EQUAL_FACE",    0, true );
   createSMESHAction( 6031, "EQUAL_VOLUME",    "ICON_EQUAL_VOLUME",  0, true );
+  createSMESHAction( 6032, "OVERALL_MESH_QUALITY" );
   createSMESHAction( 6003, "FREE_BORDER",     "ICON_FREE_EDGE_2D",  0, true );
   createSMESHAction( 6004, "CONNECTION",      "ICON_CONNECTION",    0, true );
   createSMESHAction( 6005, "FREE_NODE",       "ICON_FREE_NODE",     0, true );
@@ -3841,6 +3861,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 6024, volumeId, -1 );
   createMenu( 6026, volumeId, -1 );
   createMenu( 6031, volumeId, -1 );
+  createMenu( separator(), ctrlId, -1 );
+  createMenu( 6032, ctrlId, -1 );
 
   createMenu( 4000, addId, -1 );
   createMenu( 4009, addId, -1 );
@@ -4085,6 +4107,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( 214, OB, mesh_part );                   // UPDATE
   createPopupItem( 900, OB, mesh_part );                   // ADV_INFO
   createPopupItem( 904, OB, mesh_group );                  // FIND_ELEM
+  createPopupItem( 6032, OB, mesh_part );                  // CTRL_INFO
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( 801, OB, mesh );                        // CREATE_GROUP
   createPopupItem( 806, OB, mesh );                        // CREATE_GEO_GROUP
@@ -4746,10 +4769,15 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( nodesLim, "max", 10000000 );
   setPreferenceProperty( nodesLim, "step", 10000 );
   setPreferenceProperty( nodesLim, "special", tr( "PREF_UPDATE_LIMIT_NOLIMIT" ) );
+  int ctrlLim = addPreference( tr( "PREF_CTRL_LIMIT" ), infoGroup, LightApp_Preferences::IntSpin, "SMESH", "info_controls_limit" );
+  setPreferenceProperty( ctrlLim, "min", 0 );
+  setPreferenceProperty( ctrlLim, "max", 10000000 );
+  setPreferenceProperty( ctrlLim, "step", 1000 );
   addPreference( tr( "PREF_ELEM_INFO_GRP_DETAILS" ), infoGroup, LightApp_Preferences::Bool, "SMESH", "elem_info_grp_details" );
   addPreference( tr( "PREF_DUMP_BASE_INFO" ), infoGroup, LightApp_Preferences::Bool, "SMESH", "info_dump_base" );
   addPreference( tr( "PREF_DUMP_ELEM_INFO" ), infoGroup, LightApp_Preferences::Bool, "SMESH", "info_dump_elem" );
   addPreference( tr( "PREF_DUMP_ADD_INFO"  ), infoGroup, LightApp_Preferences::Bool, "SMESH", "info_dump_add" );
+  addPreference( tr( "PREF_DUMP_CTRL_INFO" ), infoGroup, LightApp_Preferences::Bool, "SMESH", "info_dump_ctrl" );
 
   int segGroup = addPreference( tr( "PREF_GROUP_SEGMENT_LENGTH" ), genTab );
   setPreferenceProperty( segGroup, "columns", 2 );

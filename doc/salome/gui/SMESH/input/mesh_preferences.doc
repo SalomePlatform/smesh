@@ -74,6 +74,12 @@ automatically. If the group size exceeds the value set in the preferences,
 the user will have to press \em Compute button explicitly. Zero value
 means "no limit". By default the value is set to 100 000 mesh elements.
 </li>
+<li><b>Automatic controls compute limit</b></li> - allows to define the size limit for the
+mesh elements for which the Aspect Ratio histogram is calculated
+automatically. If the mesh elements size exceeds the value set in the preferences,
+the user will have to press \em Compute button explicitly. Zero value
+means "no limit". By default the value is set to 3 000 mesh elements.
+</li>
 <li><b>Show details on groups in element information tab</b> - when
 this option is switched off (default), only the names of groups, to which the node
 or element belongs, are shown in the \ref mesh_element_info_anchor "Info Tab"
@@ -84,6 +90,8 @@ file, see \ref mesh_infos_page.</li>
 <li><b>Dump element information</b> - allows to dump element information to the
 file, see \ref mesh_infos_page.</li>
 <li><b>Dump additional information</b> - allows to dump additional mesh
+information to the file, see \ref mesh_infos_page.</li>
+<li><b>Dump controls information</b> - allows to dump quality mesh
 information to the file, see \ref mesh_infos_page.</li>
 </ul>
 <li><b>Automatic Parameters</b></li>

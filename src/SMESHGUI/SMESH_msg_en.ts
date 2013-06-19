@@ -829,6 +829,10 @@
         <translation>Reset</translation>
     </message>
     <message>
+        <source>MEN_OVERALL_MESH_QUALITY</source>
+        <translation>Overall Mesh Quality</translation>
+    </message>
+    <message>
         <source>MEN_DISTRIBUTION_CTRL</source>
         <translation>Distribution</translation>
     </message>
@@ -4268,8 +4272,16 @@ Please, create VTK viewer and try again</translation>
         <translation>Dump additional information</translation>
     </message>
     <message>
+        <source>PREF_DUMP_CTRL_INFO</source>
+        <translation>Dump controls information</translation>
+    </message>
+    <message>
         <source>PREF_GPP_NODES_LIMIT</source>
         <translation>Automatic nodes compute limit</translation>
+    </message>
+    <message>
+        <source>PREF_CTRL_LIMIT</source>
+        <translation>Automatic controls compute limit</translation>
     </message>
     <message>
         <source>SMESH_PREF_GROUP_PRECISION</source>
@@ -6748,6 +6760,10 @@ as they are of improper type:
         <translation>Additional Info</translation>
     </message>
     <message>
+        <source>CTRL_INFO</source>
+        <translation>Quality Info</translation>
+    </message>
+    <message>
         <source>NODE_MODE</source>
         <translation>Node</translation>
     </message>
@@ -7111,6 +7127,80 @@ as they are of improper type:
     <message>
         <source>SUBMESHES_7</source>
         <translation>Vertex</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_CtrlInfo</name>
+    <message>
+        <source>CTRL_INFO</source>
+        <translation>Quality information</translation>
+    </message>
+    <message>
+        <source>NAME_LAB</source>
+        <translation>Name:</translation>
+    </message>
+    <message>
+        <source>VALUE</source>
+        <translation>Value</translation>
+    </message>
+    <message>
+        <source>BUT_COMPUTE</source>
+        <translation>Compute</translation>
+    </message>
+    <message>
+        <source>NODES_INFO</source>
+        <translation>Nodes Information:</translation>
+    </message>
+    <message>
+        <source>NUMBER_OF_THE_FREE_NODES</source>
+        <translation>Number of the free nodes</translation>
+    </message>
+    <message>
+        <source>NUMBER_OF_THE_DOUBLE_NODES</source>
+        <translation>Number of the double nodes</translation>
+    </message>
+    <message>
+        <source>EDGES_INFO</source>
+        <translation>Edges Information:</translation>
+    </message>
+    <message>
+        <source>NUMBER_OF_THE_DOUBLE_EDGES</source>
+        <translation>Number of the double edges</translation>
+    </message>
+    <message>
+        <source>FACES_INFO</source>
+        <translation>Faces Information:</translation>
+    </message>
+    <message>
+        <source>NUMBER_OF_THE_DOUBLE_FACES</source>
+        <translation>Number of the double faces</translation>
+    </message>   
+    <message>
+        <source>ASPECT_RATIO_HISTOGRAM</source>
+        <translation>Aspect Ratio histogram</translation>
+    </message>
+    <message>
+        <source>VOLUMES_INFO</source>
+        <translation>Volumes Information:</translation>
+    </message>
+    <message>
+        <source>NUMBER_OF_THE_DOUBLE_VOLUMES</source>
+        <translation>Number of the double volumes</translation>
+    </message>
+    <message>
+        <source>NUMBER_OF_THE_OVER_CONSTRAINED</source>
+        <translation>Number of the over-constrained</translation>
+    </message>
+    <message>
+        <source>ASPECT_RATIO_3D_HISTOGRAM</source>
+        <translation>Aspect Ratio 3D histogram</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_CtrlInfoDlg</name>
+    <message>
+        <source>CTRL_INFO</source>
+        <translation>Quality Info</translation>
     </message>
 </context>
 <context>
