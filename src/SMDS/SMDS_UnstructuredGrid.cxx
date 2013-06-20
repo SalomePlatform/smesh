@@ -328,7 +328,7 @@ void SMDS_UnstructuredGrid::copyBloc(vtkUnsignedCharArray *newTypes,
                                      int                   start,
                                      int                   end)
 {
-  MESSAGE("copyBloc " << alreadyCopied << " " << start << " " << end << " size: " << end - start << " total: " << alreadyCopied + end - start);
+  //MESSAGE("copyBloc " << alreadyCopied << " " << start << " " << end << " size: " << end - start << " total: " << alreadyCopied + end - start);
   for (int j = start; j < end; j++)
     {
       newTypes->SetValue(alreadyCopied, this->Types->GetValue(j));
