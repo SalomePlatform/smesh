@@ -2381,6 +2381,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 214:                                     // UPDATE
     {
       if(checkLock(aStudy)) break;
+      SUIT_OverrideCursor wc;
       try {
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
         OCC_CATCH_SIGNALS;
@@ -3068,26 +3069,16 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         SMDSAbs_EntityType type = SMDSEntity_Last;
 
         switch (theCommandID) {
-        case 4034:
-          type = SMDSEntity_Quad_Edge; break;
-        case 4035:
-          type = SMDSEntity_Quad_Triangle; break;
-        case 4036:
-          type = SMDSEntity_Quad_Quadrangle; break;
-        case 4136:
-          type = SMDSEntity_BiQuad_Quadrangle; break;
-        case 4137:
-          type = SMDSEntity_BiQuad_Triangle; break;
-        case 4037:
-          type = SMDSEntity_Quad_Tetra; break;
-        case 4038:
-          type = SMDSEntity_Quad_Pyramid; break;
-        case 4039:
-          type = SMDSEntity_Quad_Penta; break;
-        case 4040:
-          type = SMDSEntity_Quad_Hexa; break;
-        case 4140:
-          type = SMDSEntity_TriQuad_Hexa; break;
+        case 4034: type = SMDSEntity_Quad_Edge; break;
+        case 4035: type = SMDSEntity_Quad_Triangle; break;
+        case 4036: type = SMDSEntity_Quad_Quadrangle; break;
+        case 4136: type = SMDSEntity_BiQuad_Quadrangle; break;
+        case 4137: type = SMDSEntity_BiQuad_Triangle; break;
+        case 4037: type = SMDSEntity_Quad_Tetra; break;
+        case 4038: type = SMDSEntity_Quad_Pyramid; break;
+        case 4039: type = SMDSEntity_Quad_Penta; break;
+        case 4040: type = SMDSEntity_Quad_Hexa; break;
+        case 4140: type = SMDSEntity_TriQuad_Hexa; break;
         default: break;
         }
         if ( type != SMDSEntity_Last )
@@ -3184,6 +3175,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
                                                     SUIT_MessageBox::No ) == SUIT_MessageBox::Yes;
           if( confirm ) {
             try {
+              SUIT_OverrideCursor wc;
               SMESH::SMESH_MeshEditor_var aMeshEditor = aMesh->GetMeshEditor();
               int removed = aMeshEditor->RemoveOrphanNodes();
               SUIT_MessageBox::information(SMESHGUI::desktop(),
@@ -3403,6 +3395,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
           SMESH::SMESH_subMesh_var   aSubMesh = SMESH::SMESH_subMesh::_narrow( aObject );
           SMESH::SMESH_GroupBase_var aGroup   = SMESH::SMESH_GroupBase::_narrow( aObject );
           if ( !aMesh->_is_nil() || !aSubMesh->_is_nil() || !aGroup->_is_nil() ) {
+            SUIT_OverrideCursor wc;
             ::Control( theCommandID );
             break;
           }
@@ -3424,6 +3417,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     break;
   case 9010:
     {
+      SUIT_OverrideCursor wc;
       LightApp_SelectionMgr* mgr = selectionMgr();
       SALOME_ListIO selected; mgr->selectedObjects( selected );
 
@@ -3440,6 +3434,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
   case 9011:
     {
+      SUIT_OverrideCursor wc;
       LightApp_SelectionMgr* mgr = selectionMgr();
       SALOME_ListIO selected; mgr->selectedObjects( selected );
 
