@@ -96,6 +96,7 @@ struct SMESH_ElementSearcher
    * \brief Find out if the given point is out of closed 2D mesh.
    */
   virtual TopAbs_State GetPointState(const gp_Pnt& point) = 0;
+  virtual ~SMESH_ElementSearcher();
 
 };
 

@@ -49,6 +49,7 @@ public:
   // Constructor. limit must be provided at tree root construction.
   // limit will be deleted by SMESH_Octree
   SMESH_Octree (SMESH_TreeLimit* limit=0);
+  virtual ~SMESH_Octree() {};
 
   // Compute the bigger dimension of my box
   double                 maxSize() const;

@@ -6360,7 +6360,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
     void getElementsInSphere ( const gp_XYZ& center,
                                const double  radius, TIDSortedElemSet& foundElems);
     size_t getSize() { return std::max( _size, _elements.size() ); }
-    ~ElementBndBoxTree();
+    virtual ~ElementBndBoxTree();
 
   protected:
     ElementBndBoxTree():_size(0) {}
@@ -6559,6 +6559,9 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
  *        of classification of point in 2D mesh
  */
 //=======================================================================
+SMESH_ElementSearcher::~SMESH_ElementSearcher()
+{
+}
 
 struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
 {
@@ -6572,8 +6575,8 @@ struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
   set<const SMDS_MeshElement*> _outerFaces; // empty means "no internal faces at all"
 
   SMESH_ElementSearcherImpl( SMESHDS_Mesh& mesh, SMDS_ElemIteratorPtr elemIt=SMDS_ElemIteratorPtr())
-    : _mesh(&mesh),_meshPartIt(elemIt),_ebbTree(0),_nodeSearcher(0),_tolerance(-1),_outerFacesFound(false) {}
-  ~SMESH_ElementSearcherImpl()
+    : _mesh(&mesh),_meshPartIt(elemIt),_ebbTree(0),_nodeSearcher(0),_tolerance(-1),_outerFacesFound(false) {MESSAGE("-----------> SMESH_ElementSearcherImpl constructor");}
+  virtual ~SMESH_ElementSearcherImpl()
   {
     if ( _ebbTree )      delete _ebbTree;      _ebbTree      = 0;
     if ( _nodeSearcher ) delete _nodeSearcher; _nodeSearcher = 0;
