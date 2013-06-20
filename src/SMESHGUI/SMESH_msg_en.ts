@@ -4100,6 +4100,14 @@ Input value precision can be adjusted using
         <translation>Selected object has been used to create another one.
 It can&apos;t be deleted </translation>
     </message>
+    <message>
+        <source>SMESH_FREERAM</source>
+        <translation>Free RAM</translation>
+    </message>
+    <message>
+        <source>SMESH_GIGABYTE</source>
+        <translation>%1 G</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_Dialog</name>

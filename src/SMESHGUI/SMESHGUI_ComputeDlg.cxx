@@ -99,6 +99,10 @@
 #include <vector>
 #include <set>
 
+#ifndef WIN32
+#include <sys/sysinfo.h>
+#endif
+
 #define SPACING 6
 #define MARGIN  11
 
@@ -748,17 +752,24 @@ SMESHGUI_ComputeDlg_QThreadQDialog::SMESHGUI_ComputeDlg_QThreadQDialog(QWidget  
 
   QLabel * nbNodesName = new QLabel(tr("SMESH_MESHINFO_NODES"), this );
   QLabel * nbElemsName = new QLabel(tr("SMESH_MESHINFO_ELEMENTS"), this );
+  QLabel * freeRAMName = new QLabel(tr("SMESH_FREERAM"), this );
   nbNodesLabel = new QLabel("0", this );
   nbElemsLabel = new QLabel("0", this );
+  freeRAMLabel = new QLabel("", this );
 
   QGridLayout* layout = new QGridLayout(this);
   layout->setMargin( MARGIN );
   layout->setSpacing( SPACING );
-  layout->addWidget(nbNodesName,  0, 0);
-  layout->addWidget(nbNodesLabel, 0, 1);
-  layout->addWidget(nbElemsName,  1, 0);
-  layout->addWidget(nbElemsLabel, 1, 1);
-  layout->addWidget(cancelButton, 2, 0, 1, 2);
+  int row = 0;
+  layout->addWidget(nbNodesName,  row,   0);
+  layout->addWidget(nbNodesLabel, row++, 1);
+  layout->addWidget(nbElemsName,  row,   0);
+  layout->addWidget(nbElemsLabel, row++, 1);
+#ifndef WNT
+  layout->addWidget(freeRAMName,  row,   0);
+  layout->addWidget(freeRAMLabel, row++, 1);
+#endif
+  layout->addWidget(cancelButton, row,   0, 1, 2);
   adjustSize();
   update();
 
@@ -781,18 +792,30 @@ void SMESHGUI_ComputeDlg_QThreadQDialog::onCancel()
 void SMESHGUI_ComputeDlg_QThreadQDialog::timerEvent(QTimerEvent *event)
 {
   if(qthread.isFinished())
-    {
-      close();
-    }
-  nbNodesLabel->setText( QString("%1").arg( qthread.getMesh()->NbNodes() ));
-  nbElemsLabel->setText( QString("%1").arg( qthread.getMesh()->NbElements() ));
+  {
+    close();
+  }
+  else
+  {
+    nbNodesLabel->setText( QString("%1").arg( qthread.getMesh()->NbNodes() ));
+    nbElemsLabel->setText( QString("%1").arg( qthread.getMesh()->NbElements() ));
+#ifndef WNT
+    struct sysinfo si;
+    const int err = sysinfo( &si );
+    if ( err )
+      freeRAMLabel->setText("");
+    else
+      freeRAMLabel->setText( tr("SMESH_GIGABYTE").arg
+                             ( si.freeram * si.mem_unit /1024./1024./1024., 0, 'f', 2 ));
+#endif
+  }
   event->accept();
 }
 
 void SMESHGUI_ComputeDlg_QThreadQDialog::closeEvent(QCloseEvent *event)
 {
   if(qthread.isRunning())
-    {
+  {
       event->ignore();
       return;
     }

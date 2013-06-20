@@ -317,6 +317,7 @@ private:
   QPushButton *               cancelButton;
   QLabel *                    nbNodesLabel;
   QLabel *                    nbElemsLabel;
+  QLabel *                    freeRAMLabel;
 };
 
 #endif // SMESHGUI_COMPUTEDLG_H
