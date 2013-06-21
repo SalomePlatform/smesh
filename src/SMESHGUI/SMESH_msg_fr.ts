@@ -4,6 +4,46 @@
 <context>
     <name>@default</name>
     <message>
+        <source>SMESH_GIGABYTE</source>
+        <translation type="unfinished">  </translation>
+    </message>
+    <message>
+        <source>SMESH_FREERAM</source>
+        <translation type="unfinished">  </translation>
+    </message>
+    <message>
+        <source>STB_BIQUADRATIC_TRIANGLE</source>
+        <translation type="unfinished">  </translation>
+    </message>
+    <message>
+        <source>TOP_BIQUADRATIC_TRIANGLE</source>
+        <translation type="unfinished">  </translation>
+    </message>
+    <message>
+        <source>MEN_BIQUADRATIC_TRIANGLE</source>
+        <translation type="unfinished">  </translation>
+    </message>
+    <message>
+        <source>SMESH_BIQUADRATIC_TRIANGLES</source>
+        <translation type="unfinished">  </translation>
+    </message>
+    <message>
+        <source>SMESH_BIQUADRATIC_TRIANGLE</source>
+        <translation type="unfinished">  </translation>
+    </message>
+    <message>
+        <source>SMESH_AUTO_DIM</source>
+        <translation type="unfinished">  </translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_BIQUADRATIC_TRIANGLE_TITLE</source>
+        <translation type="unfinished">  </translation>
+    </message>
+    <message>
+        <source>COMPERR_WARNING</source>
+        <translation type="unfinished">  </translation>
+    </message>
+    <message>
         <source>SMESH_EXPORT_MESH</source>
         <translation>Exporter le maillage</translation>
     </message>
@@ -4458,6 +4498,10 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
 <context>
     <name>SMESHGUI_AddQuadraticElementDlg</name>
     <message>
+        <source>SMESH_ADD_BIQUADRATIC_TRIANGLE</source>
+        <translation type="unfinished">  </translation>
+    </message>
+    <message>
         <source>SMESH_ADD_QUADRATIC_EDGE</source>
         <translation>Ajouter une arête quadratique</translation>
     </message>
@@ -4566,6 +4610,10 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
 </context>
 <context>
     <name>SMESHGUI_ComputeDlg</name>
+    <message>
+        <source>GROUP_OF_BAD_MESH</source>
+        <translation type="unfinished">  </translation>
+    </message>
     <message>
         <source>CAPTION</source>
         <translation>Le calcul du maillage a échoué</translation>
@@ -4785,6 +4833,10 @@ Vérifiez l&apos;espace de disque disponible et vos droits d&apos;écriture dans
 </context>
 <context>
     <name>SMESHGUI_CuttingOfQuadsDlg</name>
+    <message>
+        <source>TO_4_TRIA</source>
+        <translation type="unfinished">  </translation>
+    </message>
     <message>
         <source>CAPTION</source>
         <translation>Découpe des quadrangles</translation>
@@ -5154,6 +5206,22 @@ Vérifiez la validité des informations données</translation>
 </context>
 <context>
     <name>SMESHGUI_FilterTable</name>
+    <message>
+        <source>ENTITY_TYPE_24</source>
+        <translation type="unfinished">  </translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_23</source>
+        <translation type="unfinished">  </translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_1</source>
+        <translation type="unfinished">  </translation>
+    </message>
+    <message>
+        <source>CONNECTED_ELEMS</source>
+        <translation type="unfinished">  </translation>
+    </message>
     <message>
         <source>ADD</source>
         <translation>Ajouter</translation>
@@ -6423,6 +6491,10 @@ Il y a trop peu de points dans le fichier </translation>
 </context>
 <context>
     <name>SMESHGUI_DuplicateNodesDlg</name>
+    <message>
+        <source>DUPLICATION_ONLY_ELEMS</source>
+        <translation type="unfinished">  </translation>
+    </message>
     <message>
         <source>DUPLICATION_MODE</source>
         <translation>Mode de duplication</translation>
