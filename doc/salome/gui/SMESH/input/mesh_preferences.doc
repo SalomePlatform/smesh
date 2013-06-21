@@ -9,221 +9,227 @@ later sessions with this module.
 
 \image html pref21.png
 
-<ul>
-<li><b>Automatic Update</b></li>
-<ul>
-<li>If you toggle <b>Automatic Update</b> checkbox, the model in your
-viewer automatically updated whenever you make changes in it.</li>
-<li><b>Size limit (elements)</b> - allows to specify the maximum
-number of elements in the resulting mesh for which the automatic updating
-of the presentation is performed. This option affects only
-<b>Compute</b> operation. Zero value means "no limit". Default value
-is 500 000 mesh elements.
-</ul>
-<li><b>Quality Controls</b></li>
-<ul>
-<li>If you toggle <b>Display entity</b>, both faces and edges of an
-object will be displayed in the viewer by default.</li>
-<li>If you toggle <b>Use precision</b> checkbox, you can display numbers in
-<b>Quality Control</b> diagrams at the necessary level of precision.</li>
-<li><b>Number of digits after point</b> - defines precision for <b>Quality Controls</b>. By default, numbers in <b>Quality Control</b>
-diagrams are presented as integers.</li>
-<li><b>Double nodes tolerance</b> defines the maximal distance between two
-mesh nodes, at which they are considered coincident by <b>Double nodes</b>
-quality control.
-</ul>
-<li><b>Display mode</b> - allows to set Wireframe, Shading, Nodes or Shrink
-presentation mode as default.</li>
-<li><b>Representation of the 2D quadratic elements</b></li>
-<ul>
-<li><b>Representation of the 2D quadratic elements</b> combobox - allows
-to select lines or arcs for representation of quadratic elements.</li>
-<li><b>Maximum Angle</b> - maximum deviation angle used by the
-application to build arcs. </li>
-</ul>
-<li><b>Mesh export</b></li>
-<ul>
-<li>If you toggle <b>Automatically create groups for MED export</b> checkbox,
-this operation will be carried out automatically.</li>
-<li>If you toggle <b>Automatic renumbering</b> checkbox, the exported
-mesh will be renumbered automatically</li>
-</ul>
-<li><b>Mesh computation</b></li>
-<ul>
-<li><b>Show a computation result notification</b> combobox allows to
-select the notification mode about a mesh computation result.
-There are 3 possible modes:</li>
-<ul>
-<li><b>Never</b> - do not show the result dialog at all;</li>
-<li><b>Errors only</b> - the result dialog will be shown if there were
-some errors during a mesh computation;</li>
-<li><b>Always</b> - show the result dialog after each mesh
-computation. This is a default mode.</li>
-</ul></ul>
-<li><b>Mesh information</b></li>
-<ul>
-<li><b>Mesh element information</b></li> - Change the way mesh element
-information is shown:
-<ul>
-<li><b>Simple</b> - as a plain text</li>
-<li><b>Tree</b> - in a tree-like form</li>
-</ul>
-<li><b>Automatic nodes compute limit</b></li> - allows to define the size limit for the
-mesh groups for which the number of underlying nodes is calculated
-automatically. If the group size exceeds the value set in the preferences,
-the user will have to press \em Compute button explicitly. Zero value
-means "no limit". By default the value is set to 100 000 mesh elements.
-</li>
-<li><b>Automatic controls compute limit</b></li> - allows to define the size limit for the
-mesh elements for which the Aspect Ratio histogram is calculated
-automatically. If the mesh elements size exceeds the value set in the preferences,
-the user will have to press \em Compute button explicitly. Zero value
-means "no limit". By default the value is set to 3 000 mesh elements.
-</li>
-<li><b>Show details on groups in element information tab</b> - when
-this option is switched off (default), only the names of groups, to which the node
-or element belongs, are shown in the \ref mesh_element_info_anchor "Info Tab"
-tab of "Mesh Information" dialog box. If this option is
-switched on, the detailed information on groups is shown.</li>
-<li><b>Dump base information</b> - allows to dump base mesh information to the
-file, see \ref mesh_infos_page.</li>
-<li><b>Dump element information</b> - allows to dump element information to the
-file, see \ref mesh_infos_page.</li>
-<li><b>Dump additional information</b> - allows to dump additional mesh
-information to the file, see \ref mesh_infos_page.</li>
-<li><b>Dump controls information</b> - allows to dump quality mesh
-information to the file, see \ref mesh_infos_page.</li>
-</ul>
-<li><b>Automatic Parameters</b></li>
-<ul>
-<li><b>Ratio Bounding Box Diagonal / Max Size</b> - this parameter is
-used for automatic meshing: ratio between the bounding box of the
-meshed object and the Max Size of segments.</li>
-<li><b>Default Number of Segments</b> - allows defining the default
-number of segments on each edge</li>
-</li></ul>
-<li><b>Mesh loading</b></li>
-<ul>
-<li>If <b>No mesh loading from study file at hypothesis modification</b>
-  checkbox is on, the mesh data will not be loaded from the study file
-  when a hypothesis is modified. This allows  saving time by omitting
-  loading data of a large mesh that is planned to be recomputed with other parameters.</li>
-</ul>
-<li><b>Input fields precision</b></li>
-<ul>
-<li><b>Length precision</b> - allows to adjust input precision of coordinates and dimensions.</li>
-<li><b>Angular precision</b> - allows to adjust input precision of angles.</li>
-<li><b>Length tolerance precision</b> - allows to adjust input precision of tolerance of coordinates and dimensions.</li>
-<li><b>Parametric precision</b> - allows to adjust input precision of parametric values.</li>
-<li><b>Area precision</b> - allows to adjust input precision of mesh element area.</li>
-<li><b>Volume precision</b> - allows to adjust input precision of mesh element volume.</li>
-</ul>
-<li><b>Preview</b></li>
-<ul>
-<li><b>Sub-shapes preview chunk size</b> - allows to limit the number
-of previewed sub-shapes shown in the hypotheses creation dialog boxes,
-for example "Reverse Edges" parameter of \ref number_of_segments_anchor "Number of segments" hypothesis. 
-</ul>
-<li><b>Python Dump</b></li>
-<ul>
-<li><b>Historical python dump</b> checkbox allows switching between 
-  \a Historical and \a Snapshot dump mode. In \a
-  Historical mode, Python Dump script includes all commands
-  performed by SMESH engine. In \a Snapshot mode, the commands
-  relating to objects removed from the Study as well as the commands
-  not influencing the current state of meshes are excluded from the script.</li>
-</ul>
-</ul>
+- <b>Automatic Update</b>
+  - If you toggle <b>Automatic Update</b> checkbox, the model in your
+    viewer automatically updated when you make changes in it, depending on
+    values of additional preferences specified below.
+  - <b>Size limit (elements)</b> - allows to specify the maximum
+    number of elements in the resulting mesh for which the automatic updating
+    of the presentation is performed. This option affects only
+    <b>Compute</b> operation. Zero value means "no limit". Default value
+    is 500 000 mesh elements.
+  - <b>Incremental limit check</b> - when this control is switched on,
+    check for mesh size limit will be applied not to total number of
+    elements in resulting mesh, but iteratively to each entity types
+    in the following order: 0D elements, edges, faces, volumes, balls;
+    at each step number of entities of given type will be added to the
+    total number of elements computed at previous step - if resulting
+    number of elements does not exceed size limit, the entities of
+    this type will be shown, otherwise user will be warned that some
+    entities are not shown.
+
+- <b>Quality Controls</b>
+  - If you toggle <b>Display entity</b>, both faces and edges of an
+    object will be displayed in the viewer by default.
+  - If you toggle <b>Use precision</b> checkbox, you can display numbers in
+    <b>Quality Control</b> diagrams at the necessary level of precision.
+  - <b>Number of digits after point</b> - defines precision for
+    <b>Quality Controls</b>. By default, numbers in <b>Quality Control</b>
+    diagrams are presented as integers.
+  - <b>Double nodes tolerance</b> defines the maximal distance between two
+    mesh nodes, at which they are considered coincident by <b>Double nodes</b>
+    quality control.
+
+- <b>Display mode</b> - allows to set Wireframe, Shading, Nodes or Shrink
+  presentation mode as default.
+
+- <b>Representation of the 2D quadratic elements</b>
+  - <b>Representation of the 2D quadratic elements</b> combobox - allows
+    to select lines or arcs for representation of quadratic elements.
+  - <b>Maximum Angle</b> - maximum deviation angle used by the
+    application to build arcs.
+
+- <b>Mesh export</b>
+  - If you toggle <b>Automatically create groups for MED export</b> checkbox,
+    this operation will be carried out automatically.
+
+- <b>Mesh computation</b>
+  - <b>Show a computation result notification</b> combobox allows to
+    select the notification mode about a mesh computation result.
+    There are 3 possible modes:
+    - <b>Never</b> - do not show the result dialog at all;
+    - <b>Errors only</b> - the result dialog will be shown if there were
+      some errors during a mesh computation;
+    - <b>Always</b> - show the result dialog after each mesh
+      computation. This is a default mode.
+
+- <b>Mesh information</b>
+  - <b>Mesh element information</b> - change the way mesh element
+    information is shown:
+    - <b>Simple</b> - as a plain text
+    - <b>Tree</b> - in a tree-like form
+  - <b>Automatic nodes compute limit</b> - allows to define the size limit for the
+    mesh groups for which the number of underlying nodes is calculated
+    automatically. If the group size exceeds the value set in the preferences,
+    the user will have to press \em Compute button explicitly. Zero value
+    means "no limit". By default the value is set to 100 000 mesh elements.
+  - <b>Automatic controls compute limit</b> - allows to define the size limit for the
+    mesh elements for which the Aspect Ratio histogram is calculated
+    automatically. If the mesh elements size exceeds the value set in the preferences,
+    the user will have to press \em Compute button explicitly. Zero value
+    means "no limit". By default the value is set to 3 000 mesh elements.
+  - <b>Show details on groups in element information tab</b> - when
+    this option is switched off (default), only the names of groups, to which the node
+    or element belongs, are shown in the \ref mesh_element_info_anchor "Info Tab"
+    tab of "Mesh Information" dialog box. If this option is
+    switched on, the detailed information on groups is shown.
+  - <b>Dump base information</b> - allows to dump base mesh information to the
+    file, see \ref mesh_infos_page.
+  - <b>Dump element information</b> - allows to dump element information to the
+    file, see \ref mesh_infos_page.
+  - <b>Dump additional information</b> - allows to dump additional mesh
+    information to the file, see \ref mesh_infos_page.
+  - <b>Dump controls information</b> - allows to dump quality mesh
+    information to the file, see \ref mesh_infos_page.
+
+- <b>Automatic Parameters</b>
+  - <b>Ratio Bounding Box Diagonal / Max Size</b> - this parameter is
+    used for automatic meshing: ratio between the bounding box of the
+    meshed object and the Max Size of segments.
+  - <b>Default Number of Segments</b> - allows defining the default
+    number of segments on each edge.
+
+- <b>Mesh loading</b>
+  - If <b>No mesh loading from study file at hypothesis modification</b>
+    checkbox is on, the mesh data will not be loaded from the study file
+    when a hypothesis is modified. This allows  saving time by omitting
+    loading data of a large mesh that is planned to be recomputed with other parameters.
+
+- <b>Input fields precision</b>
+  - <b>Length precision</b> - allows to adjust input precision of coordinates and dimensions.
+  - <b>Angular precision</b> - allows to adjust input precision of angles.
+  - <b>Length tolerance precision</b> - allows to adjust input precision of tolerance of coordinates and dimensions.
+  - <b>Parametric precision</b> - allows to adjust input precision of parametric values.
+  - <b>Area precision</b> - allows to adjust input precision of mesh element area.
+  - <b>Volume precision</b> - allows to adjust input precision of mesh element volume.
+
+- <b>Preview</b>
+  - <b>Sub-shapes preview chunk size</b> - allows to limit the number
+    of previewed sub-shapes shown in the hypotheses creation dialog boxes,
+    for example "Reverse Edges" parameter of \ref number_of_segments_anchor "Number of segments" hypothesis.
+
+- <b>Python Dump</b>
+  - <b>Historical python dump</b> checkbox allows switching between
+    \a Historical and \a Snapshot dump mode:
+    - In \a Historical mode, Python Dump script includes all commands
+      performed by SMESH engine.
+    - In \a Snapshot mode, the commands relating to objects removed
+      from the Study as well as the commands not influencing the
+      current state of meshes are excluded from the script.
 
 <h2>Mesh Preferences</h2>
 
 \image html pref22.png
 
-<ul>
-<li><b>Nodes</b></li>
-<ul>
-<li><b>Color</b> -  allows to select the color of nodes. Click on the
-colored line to access to the <b>Select Color</b> dialog box.</li>
-<li><b>Type of marker</b> - allows to define the shape of nodes.</li>
-<li><b>Scale of marker</b> - allows to define the size of nodes.</li>
-</ul>
-<li><b>Elements</b></li>
-<ul>
-<li><b>Surface color</b>  - allows to select the surface color of elements
-(seen in Shading mode). Click on the colored line to access to the <b>Select Color</b> dialog box.</li>
-<li><b>Back surface color</b> - allows to select the interior surface color
-of elements. Use the slider to select the color generated basing on  
-the <b>Surface color</b> by changing its brightness and saturation.</li>
-<li><b>Outline color</b> - allows to select the color of element
-borders. Click on the colored line to access to the <b>Select Color</b> dialog box.</li>
-<li><b>Wireframe color</b> - allows to select the color of borders of
-elements in the wireframe mode. Click on the colored line to access to the <b>Select Color</b> dialog box.</li>
-<li><b>Width</b> - allows to define the width of lines (edges and borders of elements).</li>
-<li><b>Shrink coef.</b> - allows to define relative space of elements
-compared to gaps between them in shrink mode.</li>
-</ul>
-<li><b>Orientation of Faces</b> - allows to define the behavior of
-<b>Orientation of faces</b> functionality</li>
-<ul>
-<li> \b Color - allows to define the color of orientation vertors;</li>
-<li> \b Scale - allows to define the size of orientation vectors;</li> 
-<li> <b> 3D Vector </b> checkbox allows to choose between 2D planar
-and 3D vectors.</li>
-</ul>
-</ul>
+- <b>Nodes</b>
+  - <b>Color</b> -  allows to select the color of nodes. Click on the
+    colored line to access to the <b>Select Color</b> dialog box.
+  - <b>Type of marker</b> - allows to define the shape of nodes.
+  - <b>Scale of marker</b> - allows to define the size of nodes.
+
+- <b>Elements</b>
+  - <b>Surface color</b>  - allows to select the surface color of 2D elements
+    (seen in Shading mode). Click on the colored line to access to the
+    <b>Select Color</b> dialog box.
+  - <b>Back surface color</b> - allows to select the back surface color
+    of 2D elements. This is useful to differ 2d elements with
+    reversed orientation. Use the slider to select the color generated basing on
+    the <b>Surface color</b> by changing its brightness and saturation.
+  - <b>Volume color</b> - allows to select the surface color of 3D elements
+    (seen in Shading mode).
+  - <b>Reversed volume color</b> - allows to select the surface color
+    of reversed 3D elements. Use the slider to select the color generated basing on
+    the <b>Volume color</b> by changing its brightness and saturation.
+  - <b>0D elements</b> - allows to choose color of 0D mesh elements.
+  - <b>Balls</b> - allows to choose color of discrete mesh elements (balls).
+  - <b>Outline color</b> - allows to select the color of element
+    borders.
+  - <b>Wireframe color</b> - allows to select the color of borders of
+    elements in the wireframe mode.
+  - <b>Size of 0D elements</b> - specifies default size of 0D elements.
+  - <b>Size of ball elements</b> - specifies default size of discrete
+    elements (balls).
+  - <b>Line width</b> - allows to define the width of 1D elements (edges).
+  - <b>Outline width</b> - allows to define the width of borders of
+    2D and 3D elements (shown in the Shading mode).
+  - <b>Shrink coef.</b> - allows to define relative space of elements
+    compared to gaps between them in shrink mode.
+
+- <b>Groups</b> allows to define groups default properties:
+  - <b>Names color</b> - specifies color of group names to be used in
+    3D viewer.
+  - <b>Default color</b> - specifies default group color.
+
+- <b>Numbering</b> allows to define properties of numbering functionality:
+  - <b>Nodes</b> - specifies text properties of nodes numbering
+    (font family, size, attributes, color).
+  - <b>Elements</b> - same for elements.
+
+- <b>Orientation of Faces</b> - allows to define the behavior of
+  <b>Orientation of faces</b> functionality:
+  - \b Color - allows to define the color of orientation vertors;
+  - \b Scale - allows to define the size of orientation vectors;
+  - <b>3D Vector</b> checkbox allows to choose between 2D planar
+    and 3D vectors.
 
 <br><h2>Selection Preferences</h2>
 
 \image html pref23.png
 
-<ul>
-<li><b>Selection</b> - performed with mouse-indexing (preselection)
-and left-clicking on an object, whose appearance changes as defined in
-the <b>Preferences</b>.</li>
-<ul>
-<li><b>Object Color</b> -  allows to select the color of mesh (edges and
-borders of meshes) of the selected entity. Click on the colored line
-to access to the <b>Select Color</b> dialog
-box.</li>
-<li><b>Element color</b> - allows to select the color of surface of selected
-elements (seen in Shading mode). Click on the colored line to access
-to the <b>Select Color</b> dialog box.</li>
-</ul>
-<li><b>Preselection</b> - performed with mouse-indexing on an object,
-whose appearance changes as defined in the <b>Preferences</b>.</li>
-<ul>
-<li><b>Highlight Color</b> -  allows to select the color of mesh (edges and
-borders of meshes) of the entity . Click on the colored line to access
-to the <b>Select Color</b> dialog box.</li>
-</ul>
-<li><b>Precision</b> - in this menu you can set the value of precision
-used for <b>Nodes</b>, <b>Elements</b> and <b>Objects</b>.</li>
-</ul>
+- <b>Selection</b> - performed with mouse-indexing (preselection)
+  and left-clicking on an object, whose appearance changes as defined in
+  the <b>Preferences</b>.
+  - <b>Object Color</b> -  allows to select the color of mesh (edges and
+    borders of meshes) of the selected entity. Click on the colored line
+    to access to the <b>Select Color</b> dialog box.
+  - <b>Element color</b> - allows to select the color of surface of selected
+    elements (seen in Shading mode). Click on the colored line to access
+    to the <b>Select Color</b> dialog box.
+
+- <b>Preselection</b> - performed with mouse-indexing on an object,
+  whose appearance changes as defined in the <b>Preferences</b>.
+  - <b>Highlight Color</b> -  allows to select the color of mesh (edges and
+    borders of meshes) of the entity . Click on the colored line to access
+    to the <b>Select Color</b> dialog box.
+
+- <b>Precision</b> - in this menu you can set the value of precision
+  used for <b>Nodes</b>, <b>Elements</b> and <b>Objects</b>.
 
 <br><h2>Scalar Bar Preferences</h2>
 
 \image html pref24.png
 
-<ul>
-<li><b>Font</b> - in this menu you can set type, face and color for
-the font of <b>Title</b> and <b>Labels</b>.</li>
-<li><b>Colors & Labels</b> - in this menu you can set the <b>number of
-colors</b> and the <b>number of labels</b> in use.</li>
-<li><b>Orientation</b> - here you can choose between vertical and
-horizontal orientation of the <b>Scalar Bar</b></li>.
-<li><b>Origin & Size Vertical & Horizontal</b> - allows to define
-placement (<b>X</b> and <b>Y</b>) and lookout (<b>Width</b> and
-<b>Height</b>) of Scalar Bars</li>
-<ul>
-<li><b>X</b>: abscissa of the point of origin (from the left
-side)</li>
-<li><b>Y</b>: ordinate of the origin of the bar (from the bottom)</li>
-</ul>
-<li><b>Distribution</b> in this menu you can Show/Hide distribution histogram of the values of the <b>Scalar Bar</b> and specify the <b>Coloring Type</b> of the histogram</li>
-<ul>
-<li><b>Multicolor</b> the histogram is colored as <b>Scalar Bar</b></li>
-<li><b>Monocolor</b> the histogram is colored as selected with <b>Distribution color</b> selector</li>
-</ul>
-</ul>
+- <b>Font</b> - in this menu you can set type, face and color for
+  the font of <b>Title</b> and <b>Labels</b>.
+
+- <b>Colors & Labels</b> - in this menu you can set the <b>number of
+  colors</b> and the <b>number of labels</b> in use.
+
+- <b>Orientation</b> - here you can choose between vertical and
+  horizontal orientation of the <b>Scalar Bar</b>
+
+- <b>Origin & Size Vertical & Horizontal</b> - allows to define
+  placement (<b>X</b> and <b>Y</b>) and lookout (<b>Width</b> and
+  <b>Height</b>) of Scalar Bars.
+  - <b>X</b>: abscissa of the point of origin (from the left
+    side)
+  - <b>Y</b>: ordinate of the origin of the bar (from the bottom)
+
+- <b>Distribution</b> in this menu you can Show/Hide distribution
+  histogram of the values of the <b>Scalar Bar</b> and specify the
+  <b>Coloring Type</b> of the histogram:
+  - <b>Multicolor</b> the histogram is colored as <b>Scalar Bar</b>
+  - <b>Monocolor</b> the histogram is colored as selected with
+    <b>Distribution color</b> selector 
 
 */
