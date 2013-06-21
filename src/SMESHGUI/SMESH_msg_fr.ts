@@ -5,43 +5,43 @@
     <name>@default</name>
     <message>
         <source>SMESH_GIGABYTE</source>
-        <translation type="unfinished">  </translation>
+        <translation type="unfinished">%1 GB</translation>
     </message>
     <message>
         <source>SMESH_FREERAM</source>
-        <translation type="unfinished">  </translation>
+        <translation type="unfinished">Free RAM</translation>
     </message>
     <message>
         <source>STB_BIQUADRATIC_TRIANGLE</source>
-        <translation type="unfinished">  </translation>
+        <translation type="unfinished">BiQuadratic Triangle</translation>
     </message>
     <message>
         <source>TOP_BIQUADRATIC_TRIANGLE</source>
-        <translation type="unfinished">  </translation>
+        <translation type="unfinished">BiQuadratic Triangle</translation>
     </message>
     <message>
         <source>MEN_BIQUADRATIC_TRIANGLE</source>
-        <translation type="unfinished">  </translation>
+        <translation type="unfinished">BiQuadratic Triangle</translation>
     </message>
     <message>
         <source>SMESH_BIQUADRATIC_TRIANGLES</source>
-        <translation type="unfinished">  </translation>
+        <translation type="unfinished">BiQuadratic Triangles</translation>
     </message>
     <message>
         <source>SMESH_BIQUADRATIC_TRIANGLE</source>
-        <translation type="unfinished">  </translation>
+        <translation type="unfinished">BiQuadratic Triangle</translation>
     </message>
     <message>
         <source>SMESH_AUTO_DIM</source>
-        <translation type="unfinished">  </translation>
+        <translation type="unfinished">Automatically define space dimension</translation>
     </message>
     <message>
         <source>SMESH_ADD_BIQUADRATIC_TRIANGLE_TITLE</source>
-        <translation type="unfinished">  </translation>
+        <translation type="unfinished">Add BiQuadratic Triangle</translation>
     </message>
     <message>
         <source>COMPERR_WARNING</source>
-        <translation type="unfinished">  </translation>
+        <translation type="unfinished">Warning</translation>
     </message>
     <message>
         <source>SMESH_EXPORT_MESH</source>
@@ -4499,7 +4499,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     <name>SMESHGUI_AddQuadraticElementDlg</name>
     <message>
         <source>SMESH_ADD_BIQUADRATIC_TRIANGLE</source>
-        <translation type="unfinished">  </translation>
+        <translation type="unfinished">Add BiQuadratic Triangle</translation>
     </message>
     <message>
         <source>SMESH_ADD_QUADRATIC_EDGE</source>
@@ -4612,7 +4612,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     <name>SMESHGUI_ComputeDlg</name>
     <message>
         <source>GROUP_OF_BAD_MESH</source>
-        <translation type="unfinished">  </translation>
+        <translation type="unfinished">Bad Mesh to Group</translation>
     </message>
     <message>
         <source>CAPTION</source>
@@ -4835,7 +4835,7 @@ Vérifiez l&apos;espace de disque disponible et vos droits d&apos;écriture dans
     <name>SMESHGUI_CuttingOfQuadsDlg</name>
     <message>
         <source>TO_4_TRIA</source>
-        <translation type="unfinished">  </translation>
+        <translation type="unfinished">Cut into 4 triangles</translation>
     </message>
     <message>
         <source>CAPTION</source>
@@ -5208,19 +5208,19 @@ Vérifiez la validité des informations données</translation>
     <name>SMESHGUI_FilterTable</name>
     <message>
         <source>ENTITY_TYPE_24</source>
-        <translation type="unfinished">  </translation>
+        <translation type="unfinished">BALL</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_23</source>
-        <translation type="unfinished">  </translation>
+        <translation type="unfinished">QPOLYEDRE</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_1</source>
-        <translation type="unfinished">  </translation>
+        <translation type="unfinished">POINT1</translation>
     </message>
     <message>
         <source>CONNECTED_ELEMS</source>
-        <translation type="unfinished">  </translation>
+        <translation type="unfinished">Elements of a domain</translation>
     </message>
     <message>
         <source>ADD</source>
@@ -6493,7 +6493,7 @@ Il y a trop peu de points dans le fichier </translation>
     <name>SMESHGUI_DuplicateNodesDlg</name>
     <message>
         <source>DUPLICATION_ONLY_ELEMS</source>
-        <translation type="unfinished">  </translation>
+        <translation type="unfinished">Duplicate elements only</translation>
     </message>
     <message>
         <source>DUPLICATION_MODE</source>
