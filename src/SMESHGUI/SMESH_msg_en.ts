@@ -2722,6 +2722,12 @@ Please check preferences of Mesh module.
 </translation>
     </message>
     <message>
+        <source>SMESH_WRN_SIZE_INC_LIMIT_EXCEEDED</source>
+        <translation>New mesh sise (%1 elements) exceeds current size limit (%2 elements).
+Not all mesh elements are shown. Please check preferences of Mesh module.
+</translation>
+    </message>
+    <message>
         <source>SMESH_WRN_WARNING</source>
         <translation>Warning</translation>
     </message>
@@ -4166,6 +4172,10 @@ Please, create VTK viewer and try again</translation>
     <message>
         <source>PREF_UPDATE_LIMIT_NOLIMIT</source>
         <translation>No limit</translation>
+    </message>
+    <message>
+        <source>PREF_INCREMENTAL_LIMIT</source>
+        <translation>Incremental limit check</translation>
     </message>
     <message>
         <source>PREF_BACKFACE</source>

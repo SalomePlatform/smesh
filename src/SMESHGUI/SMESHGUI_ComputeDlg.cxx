@@ -33,6 +33,7 @@
 #include "SMESHGUI_MeshOrderOp.h"
 #include "SMESHGUI_MeshOrderDlg.h"
 
+#include "SMESH_Actor.h"
 #include "SMESH_ActorUtils.h"
 
 #include <SMDS_SetIterator.hxx>
@@ -898,17 +899,31 @@ void SMESHGUI_BaseComputeOp::computeMesh()
       // SHOW MESH
       // NPAL16631: if ( getSMESHGUI()->automaticUpdate() )
       SUIT_ResourceMgr* resMgr = SMESH::GetResourceMgr( SMESHGUI::GetSMESHGUI() );
-      long newSize = myMesh->NbElements();
       bool limitExceeded;
+      long limitSize = resMgr->integerValue( "SMESH", "update_limit", 500000 );
+      int entities = SMESH_Actor::eAllEntity;
       if ( !memoryLack )
       {
-        if ( getSMESHGUI()->automaticUpdate( newSize, &limitExceeded ) )
+	if ( getSMESHGUI()->automaticUpdate( myMesh, &entities, &limitExceeded ) )
         {
           try {
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
             OCC_CATCH_SIGNALS;
 #endif
-            SMESH::Update(myIObject, true);
+	    SMESH_Actor *anActor = SMESH::FindActorByObject( myMesh );
+	    if ( !anActor ) anActor = SMESH::CreateActor( aMeshSObj->GetStudy(), aMeshSObj->GetID().c_str(), true );	
+
+	    anActor->SetEntityMode( entities );
+	    SMESH::DisplayActor( SMESH::GetActiveWindow(), anActor );
+
+	    SMESH::Update(myIObject, true);
+
+	    if ( limitExceeded )
+	    {
+	      SUIT_MessageBox::warning( desktop(),
+					tr( "SMESH_WRN_WARNING" ),
+					tr( "SMESH_WRN_SIZE_INC_LIMIT_EXCEEDED" ).arg( myMesh->NbElements() ).arg( limitSize ) );
+	    }
           }
           catch (...) {
 #ifdef _DEBUG_
@@ -922,12 +937,11 @@ void SMESHGUI_BaseComputeOp::computeMesh()
             }
           }
         }
-        else if ( limitExceeded )
+	else if ( limitExceeded )
         {
-          long limitSize = resMgr->integerValue( "SMESH", "update_limit", 500000 );
           SUIT_MessageBox::warning( desktop(),
                                     tr( "SMESH_WRN_WARNING" ),
-                                    tr( "SMESH_WRN_SIZE_LIMIT_EXCEEDED" ).arg( newSize ).arg( limitSize ) );
+                                    tr( "SMESH_WRN_SIZE_LIMIT_EXCEEDED" ).arg( myMesh->NbElements() ).arg( limitSize ) );
         }
       }
       LightApp_SelectionMgr *Sel = selectionMgr();

@@ -1981,6 +1981,82 @@ bool SMESHGUI::automaticUpdate(unsigned int requestedSize, bool* limitExceeded)
  *
  */
 //=============================================================================
+bool SMESHGUI::automaticUpdate( SMESH::SMESH_Mesh_ptr theMesh,
+				int* entities, bool* limitExceeded )
+{
+  SUIT_ResourceMgr* resMgr = SUIT_Session::session()->resourceMgr();
+  if ( !resMgr )
+    return false;
+
+  bool autoUpdate  = resMgr->booleanValue( "SMESH", "auto_update", false );
+  long updateLimit = resMgr->integerValue( "SMESH", "update_limit", 500000 );
+  bool incrementalLimit = resMgr->booleanValue( "SMESH", "incremental_limit", false );
+
+  long requestedSize = theMesh->NbElements();
+
+  *entities = SMESH_Actor::eAllEntity;
+
+  bool exceeded = updateLimit > 0 && requestedSize > updateLimit;
+
+  if ( limitExceeded ) *limitExceeded = autoUpdate && exceeded;
+
+  if ( incrementalLimit ) {
+    long nbOdElems = theMesh->Nb0DElements();
+    long nbEdges   = theMesh->NbEdges();
+    long nbFaces   = theMesh->NbFaces();
+    long nbVolumes = theMesh->NbVolumes();
+    long nbBalls   = theMesh->NbBalls();
+    long total     = 0;
+
+    if ( nbOdElems > 0 ) {
+      if ( total + nbOdElems > updateLimit )
+	*entities = *entities & ~SMESH_Actor::e0DElements;
+      else
+	exceeded = false;
+    }
+    total += nbOdElems;
+
+    if ( nbEdges > 0 ) {
+      if ( total + nbEdges > updateLimit )
+	*entities = *entities & ~SMESH_Actor::eEdges;
+      else
+	exceeded = false;
+    }
+    total += nbEdges;
+
+    if ( nbFaces > 0 ) {
+      if ( total + nbFaces > updateLimit )
+	*entities = *entities & ~SMESH_Actor::eFaces;
+      else
+	exceeded = false;
+    }
+    total += nbFaces;
+
+    if ( nbVolumes > 0 ) {
+      if ( total + nbVolumes > updateLimit )
+	*entities = *entities & ~SMESH_Actor::eVolumes;
+      else
+	exceeded = false;
+    }
+    total += nbVolumes;
+
+    if ( nbBalls > 0 ) {
+      if ( total + nbBalls > updateLimit )
+	*entities = *entities & ~SMESH_Actor::eBallElem;
+      else
+	exceeded = false;
+    }
+    total += nbBalls;
+  }
+  
+  return autoUpdate && !exceeded;
+}
+
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
 SUIT_ResourceMgr* SMESHGUI::resourceMgr()
 {
   return dynamic_cast<SUIT_ResourceMgr*>( SUIT_Session::session()->resourceMgr() );
@@ -4388,7 +4464,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert ( action( 6031 ), aSubId, -1 ); // EQUAL_VOLUME
   popupMgr()->setRule( action( 6031 ), aMeshInVtkHasVolumes, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( 6031 ), "controlMode = 'eCoincidentElems3D'", QtxPopupMgr::ToggleRule );
-
+ 
   popupMgr()->insert( separator(), anId, -1 );
 
   popupMgr()->insert( action( 201 ), anId, -1 ); // SCALAR_BAR_PROP
@@ -4675,11 +4751,13 @@ void SMESHGUI::createPreferences()
   int genTab = addPreference( tr( "PREF_TAB_GENERAL" ) );
 
   int autoUpdate = addPreference( tr( "PREF_AUTO_UPDATE" ), genTab, LightApp_Preferences::Auto, "SMESH", "auto_update" );
+  setPreferenceProperty( autoUpdate, "columns", 2 );
   int lim = addPreference( tr( "PREF_UPDATE_LIMIT" ), autoUpdate, LightApp_Preferences::IntSpin, "SMESH", "update_limit" );
   setPreferenceProperty( lim, "min",  0 );
   setPreferenceProperty( lim, "max",  100000000 );
   setPreferenceProperty( lim, "step", 1000 );
   setPreferenceProperty( lim, "special", tr( "PREF_UPDATE_LIMIT_NOLIMIT" ) );
+  addPreference( tr( "PREF_INCREMENTAL_LIMIT" ), autoUpdate, LightApp_Preferences::Bool, "SMESH", "incremental_limit" );
 
   int qaGroup = addPreference( tr( "PREF_GROUP_QUALITY" ), genTab );
   setPreferenceProperty( qaGroup, "columns", 2 );

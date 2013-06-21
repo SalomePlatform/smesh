@@ -77,6 +77,7 @@
     <parameter name="distribution_color"           value="0, 85, 0" />
     <parameter name="DisplayMode"                  value="true" />
     <parameter name="auto_update"                  value="true" />
+    <parameter name="incremental_limit"            value="false" />
     <parameter name="update_limit"                 value="500000" />
     <parameter name="display_entity"               value="true" />
     <parameter name="display_mode"                 value="1"    />
