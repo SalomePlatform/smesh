@@ -4112,7 +4112,7 @@ It can&apos;t be deleted </translation>
     </message>
     <message>
         <source>SMESH_GIGABYTE</source>
-        <translation>%1 G</translation>
+        <translation>%1 GB</translation>
     </message>
 </context>
 <context>
