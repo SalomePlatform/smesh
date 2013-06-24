@@ -267,6 +267,7 @@ libSMESH_la_CPPFLAGS = \
 	-I$(srcdir)/../SMESH_I \
 	-I$(srcdir)/../Controls \
 	-I$(srcdir)/../SMESHClient \
+	-I$(srcdir)/../MEDWrapper/Base \
 	-I$(top_builddir) \
 	-I$(top_builddir)/idl
 
