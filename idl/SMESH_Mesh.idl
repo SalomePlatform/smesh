@@ -237,7 +237,7 @@ module SMESH
   /*!
    * Enumeration for DriverMED (used by Perform() method)
    */
-  enum MED_VERSION // in the order of severity
+  enum MED_VERSION
   {
     MED_V2_1,
     MED_V2_2
