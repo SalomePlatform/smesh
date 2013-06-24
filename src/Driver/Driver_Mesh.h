@@ -59,7 +59,7 @@ class MESHDRIVER_EXPORT Driver_Mesh
   };
 
   void                SetMeshId(int theMeshId);
-  void                SetFile(const std::string& theFileName);
+  virtual void        SetFile(const std::string& theFileName);
   virtual void        SetMeshName(const std::string& theMeshName);
   virtual std::string GetMeshName() const;
 
