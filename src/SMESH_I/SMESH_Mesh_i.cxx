@@ -27,6 +27,7 @@
 
 #include "DriverMED_R_SMESHDS_Mesh.h"
 #include "DriverMED_W_SMESHDS_Mesh.h"
+#include "MED_Factory.hxx"
 #include "SMDS_EdgePosition.hxx"
 #include "SMDS_ElemIterator.hxx"
 #include "SMDS_FacePosition.hxx"

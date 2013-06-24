@@ -67,6 +67,12 @@
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_version.h"
 
+#include "DriverMED_W_SMESHDS_Mesh.h"
+#include "DriverMED_R_SMESHDS_Mesh.h"
+#ifdef WITH_CGNS
+#include "DriverCGNS_Read.hxx"
+#endif
+#include "MED_Factory.hxx"
 #include "SMDS_EdgePosition.hxx"
 #include "SMDS_FacePosition.hxx"
 #include "SMDS_PolyhedralVolumeOfNodes.hxx"
@@ -87,17 +93,12 @@
 #include "SMESH_Mesh_i.hxx"
 #include "SMESH_PreMeshInfo.hxx"
 #include "SMESH_PythonDump.hxx"
+#include "memoire.h"
 
 #include CORBA_SERVER_HEADER(SMESH_Group)
 #include CORBA_SERVER_HEADER(SMESH_Filter)
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
-#include "DriverMED_W_SMESHDS_Mesh.h"
-#include "DriverMED_R_SMESHDS_Mesh.h"
-#ifdef WITH_CGNS
-#include "DriverCGNS_Read.hxx"
-#endif
-#include "memoire.h"
 
 #include <GEOM_Client.hxx>
 
