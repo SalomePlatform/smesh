@@ -549,6 +549,10 @@ AC_OUTPUT([ \
   doc/salome/tui/static/header.html \
   src/Makefile \
   src/Controls/Makefile \
+  src/MEDWrapper/Makefile \
+  src/MEDWrapper/Base/Makefile \
+  src/MEDWrapper/Factory/Makefile \
+  src/MEDWrapper/V2_2/Makefile \
   src/Driver/Makefile \
   src/DriverDAT/Makefile \
   src/DriverMED/Makefile \
