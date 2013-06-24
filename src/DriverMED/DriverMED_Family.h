@@ -24,12 +24,12 @@
 //  File   : DriverMED_Family.hxx
 //  Author : Julia DOROVSKIKH
 //  Module : SMESH
-//  $Header$
 //
 #ifndef _INCLUDE_DRIVERMED_FAMILY
 #define _INCLUDE_DRIVERMED_FAMILY
 
 #include "SMESH_DriverMED.hxx"
+#include "DriverMED.hxx"
 
 #include "SMDS_Mesh.hxx"
 #include "SMESHDS_GroupBase.hxx"
@@ -49,8 +49,6 @@
 #define REST_BALL_FAMILY    -5
 #define FIRST_ELEM_FAMILY   -6
 
-class DriverMED_Family;
-typedef boost::shared_ptr<DriverMED_Family> DriverMED_FamilyPtr;
 typedef std::list<DriverMED_FamilyPtr     > DriverMED_FamilyPtrList;
 typedef std::map<int,SMESHDS_SubMesh*     > SMESHDS_SubMeshPtrMap;
 typedef std::list<SMESHDS_GroupBase*      > SMESHDS_GroupBasePtrList;

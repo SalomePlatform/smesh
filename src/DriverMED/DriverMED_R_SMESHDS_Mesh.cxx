@@ -52,6 +52,26 @@ static int MYDEBUG = 0;
 using namespace MED;
 using namespace std;
 
+typedef std::map<int, DriverMED_FamilyPtr> TID2FamilyMap;
+
+namespace DriverMED
+{
+  bool buildMeshGrille(const MED::PWrapper&  theWrapper,
+                       const MED::PMeshInfo& theMeshInfo,
+                       SMESHDS_Mesh*         theMesh,
+                       const TID2FamilyMap&  myFamilies);
+  /*!
+   * \brief Ensure aFamily has a required ID
+    * \param aFamily - a family to check
+    * \param anID - an ID aFamily should have
+    * \param myFamilies - a map of the family ID to the Family
+    * \retval bool  - true if successful
+   */
+  bool checkFamilyID(DriverMED_FamilyPtr & aFamily,
+                     int                   anID,
+                     const TID2FamilyMap&  myFamilies);
+}
+
 void
 DriverMED_R_SMESHDS_Mesh
 ::SetMeshName(string theMeshName)
@@ -135,7 +155,7 @@ DriverMED_R_SMESHDS_Mesh
         }
 
         if (aMeshInfo->GetType() == MED::eSTRUCTURE){
-          /*bool aRes = */buildMeshGrille(aMed,aMeshInfo);
+          /*bool aRes = */DriverMED::buildMeshGrille(aMed,aMeshInfo,myMesh,myFamilies);
           continue;
         }
 
@@ -169,7 +189,7 @@ DriverMED_R_SMESHDS_Mesh
 
           // Save reference to this node from its family
           TInt aFamNum = aNodeInfo->GetFamNum(iElem);
-          if ( checkFamilyID ( aFamily, aFamNum ))
+          if ( DriverMED::checkFamilyID ( aFamily, aFamNum, myFamilies ))
           {
             aFamily->AddElement(aNode);
             aFamily->SetType(SMDSAbs_Node);
@@ -257,7 +277,7 @@ DriverMED_R_SMESHDS_Mesh
 
                 // Save reference to this element from its family
                 TInt aFamNum = aBallInfo->GetFamNum(iBall);
-                if ( checkFamilyID ( aFamily, aFamNum ))
+                if ( DriverMED::checkFamilyID ( aFamily, aFamNum, myFamilies ))
                 {
                   aFamily->AddElement(anElement);
                   aFamily->SetType( SMDSAbs_Ball );
@@ -329,7 +349,7 @@ DriverMED_R_SMESHDS_Mesh
                     if(aResult < DRS_WARN_RENUMBER)
                       aResult = DRS_WARN_RENUMBER;
                   }
-                  if ( checkFamilyID ( aFamily, aFamNum ))
+                  if ( DriverMED::checkFamilyID ( aFamily, aFamNum, myFamilies ))
                   {
                     // Save reference to this element from its family
                     aFamily->AddElement(anElement);
@@ -409,7 +429,7 @@ DriverMED_R_SMESHDS_Mesh
                     if (aResult < DRS_WARN_RENUMBER)
                       aResult = DRS_WARN_RENUMBER;
                   }
-                  if ( checkFamilyID ( aFamily, aFamNum )) {
+                  if ( DriverMED::checkFamilyID ( aFamily, aFamNum, myFamilies )) {
                     // Save reference to this element from its family
                     aFamily->AddElement(anElement);
                     aFamily->SetType(anElement->GetType());
@@ -920,7 +940,7 @@ DriverMED_R_SMESHDS_Mesh
                     if (aResult < DRS_WARN_RENUMBER)
                       aResult = DRS_WARN_RENUMBER;
                   }
-                  if ( checkFamilyID ( aFamily, aFamNum )) {
+                  if ( DriverMED::checkFamilyID ( aFamily, aFamNum, myFamilies )) {
                     // Save reference to this element from its family
                     myFamilies[aFamNum]->AddElement(anElement);
                     myFamilies[aFamNum]->SetType(anElement->GetType());
@@ -1127,7 +1147,9 @@ void DriverMED_R_SMESHDS_Mesh::CreateAllSubMeshes ()
  * \param anID - an ID aFamily should have
  * \retval bool  - true if successful
  */
-bool DriverMED_R_SMESHDS_Mesh::checkFamilyID(DriverMED_FamilyPtr & aFamily, int anID) const
+bool DriverMED::checkFamilyID(DriverMED_FamilyPtr & aFamily,
+                              int                   anID,
+                              const TID2FamilyMap&  myFamilies)
 {
   if ( !aFamily || aFamily->GetId() != anID ) {
     map<int, DriverMED_FamilyPtr>::const_iterator i_fam = myFamilies.find(anID);
@@ -1138,14 +1160,18 @@ bool DriverMED_R_SMESHDS_Mesh::checkFamilyID(DriverMED_FamilyPtr & aFamily, int 
   return ( aFamily->GetId() == anID );
 }
 
-
-/*! \brief Reading the structured mesh and convert to non structured (by filling of smesh structure for non structured mesh)
+/*!
+ * \brief Reading the structured mesh and convert to non structured
+ *        (by filling of smesh structure for non structured mesh)
  * \param theWrapper  - PWrapper const pointer
  * \param theMeshInfo - PMeshInfo const pointer
+ * \param myFamilies  - a map of the family ID to the Family
  * \return TRUE, if successfully. Else FALSE
  */
-bool DriverMED_R_SMESHDS_Mesh::buildMeshGrille(const MED::PWrapper& theWrapper,
-                                               const MED::PMeshInfo& theMeshInfo)
+bool DriverMED::buildMeshGrille(const MED::PWrapper&  theWrapper,
+                                const MED::PMeshInfo& theMeshInfo,
+                                SMESHDS_Mesh*         myMesh,
+                                const TID2FamilyMap&  myFamilies)
 {
   bool res = true;
 
@@ -1167,7 +1193,7 @@ bool DriverMED_R_SMESHDS_Mesh::buildMeshGrille(const MED::PWrapper& theWrapper,
 
     if((aGrilleInfo->myFamNumNode).size() > 0){
       TInt aFamNum = aGrilleInfo->GetFamNumNode(iNode);
-      if ( checkFamilyID ( aFamily, aFamNum ))
+      if ( DriverMED::checkFamilyID ( aFamily, aFamNum, myFamilies ))
         {
           aFamily->AddElement(aNode);
           aFamily->SetType(SMDSAbs_Node);
@@ -1224,7 +1250,7 @@ bool DriverMED_R_SMESHDS_Mesh::buildMeshGrille(const MED::PWrapper& theWrapper,
     }
     if((aGrilleInfo->myFamNum).size() > 0){
       TInt aFamNum = aGrilleInfo->GetFamNum(iCell);
-      if ( checkFamilyID ( aFamily, aFamNum )){
+      if ( DriverMED::checkFamilyID ( aFamily, aFamNum, myFamilies )){
         aFamily->AddElement(anElement);
         aFamily->SetType(anElement->GetType());
       }

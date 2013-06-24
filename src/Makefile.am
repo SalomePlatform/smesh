@@ -34,6 +34,7 @@ SUBDIRS = \
 	SMESHUtils \
 	Controls \
 	Driver \
+	MEDWrapper \
 	DriverMED \
 	DriverDAT \
 	DriverUNV \

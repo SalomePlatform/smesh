@@ -26,6 +26,7 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
 # header files 
 salomeinclude_HEADERS = \
+	DriverMED.hxx \
 	DriverMED_R_SMESHDS_Mesh.h \
 	DriverMED_W_SMESHDS_Mesh.h \
 	DriverMED_Family.h \
@@ -47,12 +48,13 @@ dist_MED_Test_SOURCES = \
 
 # additionnal information to compil and link file
 libMeshDriverMED_la_CPPFLAGS = \
-	$(MED_CXXFLAGS) \
 	@HDF5_INCLUDES@ \
 	$(KERNEL_CXXFLAGS) \
 	$(CAS_CPPFLAGS) \
         $(VTK_INCLUDES) \
 	$(BOOST_CPPFLAGS) \
+	-I$(srcdir)/../MEDWrapper/Base \
+	-I$(srcdir)/../MEDWrapper/Factory \
 	-I$(srcdir)/../Driver \
 	-I$(srcdir)/../SMDS \
 	-I$(srcdir)/../SMESHUtils \
@@ -61,7 +63,9 @@ libMeshDriverMED_la_CPPFLAGS = \
 libMeshDriverMED_la_LDFLAGS  = \
 	$(BOOST_LIBS) \
 	../Driver/libMeshDriver.la \
-	$(MED_LDFLAGS) -lMEDWrapper -lMEDWrapperBase -lMEDWrapper_V2_2
+	../MEDWrapper/Factory/libMEDWrapper.la \
+	../MEDWrapper/Base/libMEDWrapperBase.la \
+	../MEDWrapper/V2_2/libMEDWrapper_V2_2.la \
 	$(BOOST_LIB_SYSTEM) 
 
 MED_Test_CPPFLAGS = \
@@ -77,8 +81,7 @@ MED_Test_LDADD = \
 	-lOpUtil \
 	-lSALOMELocalTrace \
 	-lSALOMEBasics \
-	$(MED_LDFLAGS) \
-	-lMEDWrapper \
-	-lMEDWrapperBase \
-	-lMEDWrapper_V2_2
+	../MEDWrapper/Factory/libMEDWrapper.la \
+	../MEDWrapper/Base/libMEDWrapperBase.la \
+	../MEDWrapper/V2_2/libMEDWrapper_V2_2.la \
 	$(BOOST_LIB_SYSTEM) 

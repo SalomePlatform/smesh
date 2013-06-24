@@ -19,46 +19,39 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-
-//  SMESH DriverMED : driver to read and write 'med' files
-//  File   : DriverMED_R_SMESHDS_Mesh.h
-//  Module : SMESH
 //
-#ifndef _INCLUDE_DRIVERMED_R_SMESHDS_MESH
-#define _INCLUDE_DRIVERMED_R_SMESHDS_MESH
+#ifndef MED_CoordUtils_HeaderFile
+#define MED_CoordUtils_HeaderFile
 
-#include "SMESH_DriverMED.hxx"
+#include "MED_WrapperBase.hxx"
 
-#include "DriverMED.hxx"
-#include "Driver_SMESHDS_Mesh.h"
-#include "SMDSAbs_ElementType.hxx"
+#include "MED_Structures.hxx"
 
-#include <list>
-#include <map>
-
-class SMESHDS_Mesh;
-class SMESHDS_Group;
-class SMESHDS_SubMesh;
-
-typedef std::pair< std::string, SMDSAbs_ElementType > TNameAndType;
-
-class MESHDRIVERMED_EXPORT DriverMED_R_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
+namespace MED
 {
- public:
-  virtual Status Perform();
+  typedef TFloat (*TGetCoord)(const TCCoordSlice& theCoordSlice);
 
-  std::list< TNameAndType > GetGroupNamesAndTypes();
-  void GetGroup(SMESHDS_Group* theGroup);
-  void CreateAllSubMeshes();
-  void GetSubMesh(SMESHDS_SubMesh* theSubMesh, const int theId);
 
-  std::list<std::string> GetMeshNames(Status& theStatus);
-  void SetMeshName(std::string theMeshName);
+  //---------------------------------------------------------------
+  class MEDWRAPPER_EXPORT TCoordHelper
+  {
+    TGetCoord* myGetCoord;
+    
+  public:
+    TCoordHelper(TGetCoord* theGetCoord);
 
- private:
-  std::string myMeshName;
-  std::map<int, DriverMED_FamilyPtr> myFamilies;
+    TFloat 
+    GetCoord(TCCoordSlice& theCoordSlice, 
+             TInt theCoordId);
+  };
+  typedef SharedPtr<TCoordHelper> PCoordHelper;
 
-};
+
+  //---------------------------------------------------------------
+  MEDWRAPPER_EXPORT 
+  PCoordHelper
+  GetCoordHelper(PNodeInfo theNodeInfo);
+
+}
 
 #endif

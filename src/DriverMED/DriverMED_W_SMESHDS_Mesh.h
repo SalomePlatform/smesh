@@ -30,7 +30,7 @@
 #include "SMESH_DriverMED.hxx"
 
 #include "Driver_SMESHDS_Mesh.h"
-#include "MED_Factory.hxx"
+#include "MED_Common.hxx"
 
 #include <string>
 #include <list>
@@ -72,7 +72,7 @@ class MESHDRIVERMED_EXPORT DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
 
  private:
 
-  MED::PWrapper myMed;
+  MED::EVersion myMedVersion;
   std::list<SMESHDS_GroupBase*> myGroups;
   bool myAllSubMeshes;
   std::map<int,SMESHDS_SubMesh*> mySubMeshes;
@@ -85,6 +85,4 @@ class MESHDRIVERMED_EXPORT DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
   bool myAutoDimension;
 };
 
-
 #endif
-
