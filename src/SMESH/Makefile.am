@@ -63,12 +63,12 @@ dist_libSMESHimpl_la_SOURCES = \
 libSMESHimpl_la_CPPFLAGS = \
 	$(KERNEL_CXXFLAGS) \
 	$(CAS_CPPFLAGS) \
-	$(MED_CXXFLAGS) \
 	$(GEOM_CXX_FLAGS) \
         $(VTK_INCLUDES) \
 	$(BOOST_CPPFLAGS) \
 	@HDF5_INCLUDES@ \
 	-I$(srcdir)/../Controls \
+	-I$(srcdir)/../MEDWrapper/Base \
 	-I$(srcdir)/../Driver \
 	-I$(srcdir)/../DriverDAT \
 	-I$(srcdir)/../DriverMED \
