@@ -100,6 +100,8 @@ libSMESHEngine_la_CPPFLAGS = \
 	-I$(srcdir)/../Controls \
 	-I$(srcdir)/../SMDS \
 	-I$(srcdir)/../SMESHDS \
+	-I$(srcdir)/../MEDWrapper/Base \
+	-I$(srcdir)/../MEDWrapper/Factory \
 	-I$(srcdir)/../Driver \
 	-I$(srcdir)/../DriverMED \
 	-I$(srcdir)/../DriverCGNS \
@@ -124,10 +126,6 @@ libSMESHEngine_la_LDFLAGS  = \
 	-lSalomeGenericObj \
 	-lSalomeIDLKernel \
 	-lSALOMELocalTrace \
-	$(MED_LDFLAGS) \
-	-lMEDWrapper \
-	-lMEDWrapper_V2_2 \
-        -lSalomeIDLMED \
 	$(CAS_LDPATH) \
 	-lTKCDF \
 	-lTKBO \
