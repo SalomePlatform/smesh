@@ -27,14 +27,14 @@
 #include <QtxDialog.h>
 
 #include <SALOMEconfig.h>
-#include CORBA_CLIENT_HEADER(MED)
+#include CORBA_CLIENT_HEADER(SMESH_Mesh)
 
 class SMESHGUI_FileInfoDlg : public QtxDialog
 {
   Q_OBJECT
 
 public:
-  SMESHGUI_FileInfoDlg( QWidget*, SALOME_MED::MedFileInfo* );
+  SMESHGUI_FileInfoDlg( QWidget*, SMESH::MedFileInfo* );
   virtual ~SMESHGUI_FileInfoDlg();
 };
 

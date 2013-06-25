@@ -29,7 +29,7 @@
 #include <QLabel>
 #include <QLineEdit>
 
-SMESHGUI_FileInfoDlg::SMESHGUI_FileInfoDlg( QWidget* parent, SALOME_MED::MedFileInfo* inf )
+SMESHGUI_FileInfoDlg::SMESHGUI_FileInfoDlg( QWidget* parent, SMESH::MedFileInfo* inf )
   : QtxDialog( parent, true, true, QtxDialog::OK )
 {
   setWindowTitle( tr( "CAPTION" ) );
