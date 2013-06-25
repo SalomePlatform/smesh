@@ -71,7 +71,7 @@ libSPADDERPluginTesterEngine_la_LIBADD = \
 # For testing SMESH
 #
 libSPADDERPluginTesterEngine_la_CXXFLAGS += \
-	@GEOM_CXXFLAGS@ @MED_CXXFLAGS@ \
+	@GEOM_CXXFLAGS@ \
 	-I$(top_builddir)/idl \
 	-I$(top_srcdir)/src/SMESH \
 	-I$(top_srcdir)/src/SMESH_I \
