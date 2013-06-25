@@ -66,10 +66,12 @@ libSMESHClient_la_LDFLAGS  = \
 	../SMESH/libSMESHimpl.la \
 	../SMESHDS/libSMESHDS.la \
 	../Controls/libSMESHControls.la \
+	../MEDWrapper/Factory/libMEDWrapper.la \
+	../MEDWrapper/Base/libMEDWrapperBase.la \
+	../MEDWrapper/V2_2/libMEDWrapper_V2_2.la \
 	$(KERNEL_LDFLAGS) -lSalomeLifeCycleCORBA -lSalomeNS -lOpUtil -lSALOMEBasics \
 	-lSalomeIDLKernel -lSALOMELocalTrace \
 	$(GEOM_LDFLAGS) -lNMTDS -lSalomeIDLGEOM \
-	$(MED_LDFLAGS) -lMEDWrapper_V2_2 -lSalomeIDLMED -lMEDWrapper \
 	$(CAS_KERNEL)
 
 SMESHClientBin_CPPFLAGS = \
