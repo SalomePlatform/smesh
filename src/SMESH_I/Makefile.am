@@ -38,11 +38,8 @@ salomeinclude_HEADERS = \
 	SMESH_Hypothesis_i.hxx \
 	SMESH_PythonDump.hxx \
 	SMESH_Group_i.hxx \
-	SMESH_MEDMesh_i.hxx \
 	SMESH_Filter_i.hxx \
 	SMESH_MeshEditor_i.hxx \
-	SMESH_MEDFamily_i.hxx \
-	SMESH_MEDSupport_i.hxx \
 	SMESH_Pattern_i.hxx \
 	SMESH_2smeshpy.hxx \
 	SMESH_NoteBook.hxx \
@@ -60,9 +57,6 @@ dist_libSMESHEngine_la_SOURCES = \
 	SMESH_Gen_i_1.cxx \
 	SMESH_DumpPython.cxx \
 	SMESH_Mesh_i.cxx \
-	SMESH_MEDMesh_i.cxx \
-	SMESH_MEDFamily_i.cxx \
-	SMESH_MEDSupport_i.cxx \
 	SMESH_subMesh_i.cxx \
 	SMESH_MeshEditor_i.cxx \
 	SMESH_Hypothesis_i.cxx \
@@ -95,7 +89,6 @@ libSMESHEngine_la_CPPFLAGS = \
 	$(BOOST_CPPFLAGS) \
 	$(KERNEL_CXXFLAGS) \
 	$(GUI_CXXFLAGS) \
-	$(MED_CXXFLAGS) \
 	$(GEOM_CXXFLAGS) \
 	-I$(srcdir)/../Controls \
 	-I$(srcdir)/../SMDS \

@@ -490,30 +490,6 @@ GEOM::GEOM_Object_ptr SMESH_subMesh_i::GetSubShape()
  *  
  */
 //=============================================================================
-SALOME_MED::FAMILY_ptr SMESH_subMesh_i::GetFamily()
-  throw (SALOME::SALOME_Exception)
-{
-  Unexpect aCatch(SALOME_SalomeException);
-  if ( _preMeshInfo )
-    _preMeshInfo->FullLoadFromFile();
-  SALOME_MED::MESH_var MEDMesh = GetFather()->GetMEDMesh();
-
-  SALOME_MED::Family_array_var families = 
-    MEDMesh->getFamilies(SALOME_MED::MED_NODE);
-    
-  for ( int i = 0; i < families->length(); i++ ) {
-    if ( families[i]->getIdentifier() == ( _localId ) )
-      return families[i];
-  }
-  
-  return SALOME_MED::FAMILY::_nil();
-}
-
-//=============================================================================
-/*!
- *  
- */
-//=============================================================================
 SMESH::long_array* SMESH_subMesh_i::GetIDs()
 {
   return GetElementsId();

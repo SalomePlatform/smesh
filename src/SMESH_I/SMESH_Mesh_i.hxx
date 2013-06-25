@@ -34,7 +34,6 @@
 #include CORBA_SERVER_HEADER(SMESH_Group)
 #include CORBA_SERVER_HEADER(SMESH_Hypothesis)
 #include CORBA_CLIENT_HEADER(GEOM_Gen)
-#include CORBA_CLIENT_HEADER(MED)
 
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_Mesh.hxx"
@@ -264,9 +263,6 @@ public:
   void ExportPartToSTL(SMESH::SMESH_IDSource_ptr meshPart,
                        const char*               file,
                        CORBA::Boolean            isascii) throw (SALOME::SALOME_Exception);
-
-  SALOME_MED::MESH_ptr GetMEDMesh()
-    throw (SALOME::SALOME_Exception);
 
   CORBA::Long NbNodes()
     throw (SALOME::SALOME_Exception);
@@ -562,7 +558,7 @@ public:
   /*!
    * Returns information about imported MED file
    */
-  virtual SALOME_MED::MedFileInfo* GetMEDFileInfo();
+  virtual SMESH::MedFileInfo* GetMEDFileInfo();
 
   /*!
    * Sets list of notebook variables used for Mesh operations separated by ":" symbol
@@ -648,8 +644,8 @@ private:
   std::map<int, SMESH::SMESH_subMesh_ptr>    _mapSubMeshIor;
   std::map<int, SMESH::SMESH_GroupBase_ptr>  _mapGroups;
   std::map<int, SMESH::SMESH_Hypothesis_ptr> _mapHypo;
-  SALOME_MED::MedFileInfo_var _medFileInfo;
-  SMESH_PreMeshInfo*          _preMeshInfo; // mesh info before full loading from study file
+  SMESH::MedFileInfo_var _medFileInfo;
+  SMESH_PreMeshInfo*     _preMeshInfo; // mesh info before full loading from study file
 
   SMESH_PreMeshInfo* & changePreMeshInfo() { return _preMeshInfo; }
   friend class SMESH_PreMeshInfo;

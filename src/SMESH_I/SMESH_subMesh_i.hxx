@@ -34,7 +34,6 @@
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_Hypothesis)
 #include CORBA_CLIENT_HEADER(GEOM_Gen)
-#include CORBA_CLIENT_HEADER(MED)
 
 #include "SALOME_GenericObj_i.hh"
 #include "SMESH_Mesh_i.hxx"
@@ -79,9 +78,6 @@ public:
     throw (SALOME::SALOME_Exception);
 
   CORBA::Long GetId();
-
-  SALOME_MED::FAMILY_ptr GetFamily()
-    throw (SALOME::SALOME_Exception);
 
 
   // =========================

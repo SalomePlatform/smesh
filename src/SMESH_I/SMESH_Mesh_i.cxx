@@ -43,7 +43,6 @@
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Group.hxx"
 #include "SMESH_Group_i.hxx"
-#include "SMESH_MEDMesh_i.hxx"
 #include "SMESH_MeshEditor.hxx"
 #include "SMESH_MeshEditor_i.hxx"
 #include "SMESH_MeshPartDS.hxx"
@@ -383,7 +382,7 @@ SMESH_Mesh_i::ImportMEDFile( const char* theFileName, const char* theMeshName )
   int major, minor, release;
   if( !MED::getMEDVersion( theFileName, major, minor, release ) )
     major = minor = release = -1;
-  _medFileInfo           = new SALOME_MED::MedFileInfo();
+  _medFileInfo           = new SMESH::MedFileInfo();
   _medFileInfo->fileName = theFileName;
   _medFileInfo->fileSize = 0;
 #ifdef WIN32
@@ -3008,23 +3007,6 @@ void SMESH_Mesh_i::ExportGMF(::SMESH::SMESH_IDSource_ptr meshPart,
 }
 
 //=============================================================================
-/*!
- * Return implementation of SALOME_MED::MESH interfaces
- */
-//=============================================================================
-
-SALOME_MED::MESH_ptr SMESH_Mesh_i::GetMEDMesh()throw(SALOME::SALOME_Exception)
-{
-  Unexpect aCatch(SALOME_SalomeException);
-  if ( _preMeshInfo )
-    _preMeshInfo->FullLoadFromFile();
-
-  SMESH_MEDMesh_i *aMedMesh = new SMESH_MEDMesh_i(this);
-  SALOME_MED::MESH_var aMesh = aMedMesh->_this();
-  return aMesh._retn();
-}
-
-//=============================================================================
 
 CORBA::Long SMESH_Mesh_i::NbNodes()throw(SALOME::SALOME_Exception)
 {
@@ -4340,11 +4322,11 @@ SMESH::ListOfGroups* SMESH_Mesh_i::GetGroups(const list<int>& groupIDs) const
  */
 //=============================================================================
 
-SALOME_MED::MedFileInfo* SMESH_Mesh_i::GetMEDFileInfo()
+SMESH::MedFileInfo* SMESH_Mesh_i::GetMEDFileInfo()
 {
-  SALOME_MED::MedFileInfo_var res( _medFileInfo );
+  SMESH::MedFileInfo_var res( _medFileInfo );
   if ( !res.operator->() ) {
-    res = new SALOME_MED::MedFileInfo;
+    res = new SMESH::MedFileInfo;
     res->fileName = "";
     res->fileSize = res->major = res->minor = res->release = -1;
   }
