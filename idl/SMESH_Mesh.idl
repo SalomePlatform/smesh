@@ -29,7 +29,6 @@
 #include "SALOME_Exception.idl"
 #include "SALOME_GenericObj.idl"
 #include "GEOM_Gen.idl"
-#include "MED.idl"
 
 module SMESH
 {
@@ -86,6 +85,7 @@ module SMESH
     double_array coords;
     long_array indexes;
   };
+  typedef sequence<log_block> log_array;
 
   struct PointStruct { double x;
   		       double y;
@@ -93,7 +93,7 @@ module SMESH
 
   typedef sequence<PointStruct> nodes_array;
 
-  struct DirStruct   { PointStruct PS ; } ;          // analog to Occ Direction
+  struct DirStruct   { PointStruct PS ; } ;          // analog to OCCT gp_Vec
 
   struct AxisStruct  { double x;
   		       double y;
@@ -101,7 +101,6 @@ module SMESH
   		       double vx;
   		       double vy;
   		       double vz; } ;
-
   /*!
    * Node location on a shape
    */
@@ -135,7 +134,7 @@ module SMESH
   typedef sequence<ElementType> array_of_ElementType ;
 
   /*!
-   * Enumeration for element geometry type, like in SMDS
+   * Enumeration for element geometry type, like SMDSAbs_GeometryType in SMDSAbs_ElementType.hxx
    */
   enum GeometryType
   {
@@ -161,7 +160,6 @@ module SMESH
     ORDER_LINEAR,       /*! entities of 1st order */
     ORDER_QUADRATIC     /*! entities of 2nd order */
   };
-
 
   /*!
    * Enumeration of entity type used in mesh info array,
@@ -197,7 +195,6 @@ module SMESH
     Entity_Last
   };
 
-
   /*!
    * Enumeration for hypothesis status (used by AddHypothesis() and RemoveHypothesis() methods)
    */
@@ -221,12 +218,12 @@ module SMESH
   };
 
   /*!
-   * Enumeration for DriverMED read status (used by ImportMEDFile() method)
+   * Enumeration for mesh read status (used by SMESH_Gen::CreateMeshesFrom*() methods)
    */
   enum DriverMED_ReadStatus // in the order of severity
   {
     DRS_OK,
-    DRS_EMPTY,          // a MED file contains no mesh with the given name
+    DRS_EMPTY,          // a file contains no mesh with the given name
     DRS_WARN_RENUMBER,  // a MED file has overlapped ranges of element numbers,
                         // so the numbers from the file are ignored
     DRS_WARN_SKIP_ELEM, // some elements were skipped due to incorrect file data
@@ -235,7 +232,7 @@ module SMESH
   };
 
   /*!
-   * Enumeration for DriverMED (used by Perform() method)
+   * Enumeration for ExportToMED*()
    */
   enum MED_VERSION
   {
@@ -243,8 +240,15 @@ module SMESH
     MED_V2_2
   };
 
-  typedef sequence<log_block> log_array;
-
+  /*! 
+   * \brief A structure containing information about MED file
+   */
+  struct MedFileInfo
+  {
+    string fileName; //!< name of file
+    long   fileSize; //!< size of file
+    long   major, minor, release; //!< MED file version
+  };
 
   /*!
    * Auxilary flags for advanced extrusion.
@@ -688,12 +692,6 @@ module SMESH
                           in boolean        isascii ) raises (SALOME::SALOME_Exception);
 
     /*!
-     * Get MED Mesh
-     */
-    SALOME_MED::MESH GetMEDMesh()
-      raises (SALOME::SALOME_Exception);
-
-    /*!
      * Get informations about mesh contents
      */
     long NbNodes()
@@ -944,7 +942,7 @@ module SMESH
     double_array BaryCenter(in long id);
 
     /*! Gets information about imported MED file */
-    SALOME_MED::MedFileInfo GetMEDFileInfo();
+    MedFileInfo GetMEDFileInfo();
 
     /*!
      *  Sets list of notebook variables used for Mesh operations separated by ":" symbol
@@ -1017,12 +1015,6 @@ module SMESH
      * Get the internal Id
      */
     long GetId();
-
-    /*!
-     * Get MED subMesh
-     */
-    SALOME_MED::FAMILY GetFamily()
-      raises (SALOME::SALOME_Exception);
   };
 
 };
