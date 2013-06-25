@@ -24,7 +24,6 @@
 //  File   : DriverMED_Family.cxx
 //  Author : Julia DOROVSKIKH
 //  Module : SMESH
-//  $Header$
 //
 #include "DriverMED_Family.h"
 #include "MED_Factory.hxx"
