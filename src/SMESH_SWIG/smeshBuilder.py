@@ -1972,12 +1972,6 @@ class Mesh:
     def GetIDSource(self, ids, elemType):
         return self.editor.MakeIDSource(ids, elemType)
 
-    ## Gets MED Mesh
-    #  @return an instance of SALOME_MED::MESH
-    #  @ingroup l1_auxiliary
-    def GetMEDMesh(self):
-        return self.mesh.GetMEDMesh()
-
 
     # Get informations about mesh contents:
     # ------------------------------------
