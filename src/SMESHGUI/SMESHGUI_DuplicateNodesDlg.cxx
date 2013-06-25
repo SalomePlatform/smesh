@@ -302,6 +302,9 @@ void SMESHGUI_DuplicateNodesDlg::onConstructorsClicked (int constructorId)
       myCheckBoxNewNodeGroup->show();
       
       // Hide the third field
+      myTextLabel2->show();
+      mySelectButton2->show();
+      myLineEdit2->show();
       myTextLabel3->hide();
       mySelectButton3->hide();
       myLineEdit3->hide();
@@ -320,6 +323,9 @@ void SMESHGUI_DuplicateNodesDlg::onConstructorsClicked (int constructorId)
       myCheckBoxNewNodeGroup->show();
 
       // Show the third field
+      myTextLabel2->show();
+      mySelectButton2->show();
+      myLineEdit2->show();
       myTextLabel3->show();
       mySelectButton3->show();
       myLineEdit3->show();
