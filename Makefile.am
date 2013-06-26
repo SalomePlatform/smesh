@@ -28,12 +28,10 @@ if SMESH_ENABLE_GUI
   ACLOCAL_AMFLAGS = -I adm_local/unix/config_files			\
                     -I ${GUI_ROOT_DIR}/adm_local/unix/config_files	\
                     -I ${KERNEL_ROOT_DIR}/salome_adm/unix/config_files	\
-                    -I ${MED_ROOT_DIR}/adm_local/unix/config_files	\
                     -I ${GEOM_ROOT_DIR}/adm_local/unix/config_files
 else !SMESH_ENABLE_GUI
   ACLOCAL_AMFLAGS = -I adm_local/unix/config_files			\
                     -I ${KERNEL_ROOT_DIR}/salome_adm/unix/config_files	\
-                    -I ${MED_ROOT_DIR}/adm_local/unix/config_files	\
                     -I ${GEOM_ROOT_DIR}/adm_local/unix/config_files
 endif
 

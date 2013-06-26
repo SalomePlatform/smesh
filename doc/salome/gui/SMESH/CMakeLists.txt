@@ -46,8 +46,6 @@ IF(WINDOWS)
   @SET PATH=$ENV{KERNEL_ROOT_DIR}/lib/salome\;%PATH%
   @SET PYTHONPATH=$ENV{KERNEL_ROOT_DIR}/bin/salome\;%PYTHONPATH%
   @SET PYTHONPATH=$ENV{KERNEL_ROOT_DIR}/lib/python${PYTHON_VERSION}/site-packages/salome\;%PYTHONPATH%
-  @SET PYTHONPATH=$ENV{MED_ROOT_DIR}/lib/python${PYTHON_VERSION}/site-packages/salome\;%PYTHONPATH%
-  @SET PYTHONPATH=$ENV{MED_ROOT_DIR}/bin/salome\;%PYTHONPATH%
   @SET PYTHONPATH=$ENV{GEOM_ROOT_DIR}/lib/python${PYTHON_VERSION}/site-packages/salome\;%PYTHONPATH%
   @SET PYTHONPATH=$ENV{GEOM_ROOT_DIR}/bin/salome\;%PYTHONPATH%
   @SET PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib/python${PYTHON_VERSION}/site-packages/salome\;%PYTHONPATH%
@@ -57,8 +55,8 @@ IF(WINDOWS)
   SET(EXT "bat")
   SET(CALL_STR "call")
 ELSE(WINDOWS)
-  SET(DOC_PYTHONPATH "${CMAKE_INSTALL_PREFIX}/bin/salome:${CMAKE_INSTALL_PREFIX}/lib/python${PYTHON_VERSION}/site-packages/salome:${MED_ROOT_DIR}/lib/python${PYTHON_VERSION}/site-packages/salome:${GEOM_ROOT_DIR}/bin/salome:${GEOM_ROOT_DIR}/lib/python${PYTHON_VERSION}/site-packages/salome:${KERNEL_ROOT_DIR}/bin/salome:${KERNEL_ROOT_DIR}/lib/python${PYTHON_VERSION}/site-packages/salome:${OMNIORB_ROOT_USER}/lib/python${PYTHON_VERSION}/site-packages:${OMNIORB_ROOT_USER}/lib64/python${PYTHON_VERSION}/site-packages")
-  SET(DOC_LD_LIBRARY_PATH "${CMAKE_INSTALL_PREFIX}/lib/salome:${MED_ROOT_DIR}/lib/salome:${GEOM_ROOT_DIR}/lib/salome:${KERNEL_ROOT_DIR}/lib/salome")
+  SET(DOC_PYTHONPATH "${CMAKE_INSTALL_PREFIX}/bin/salome:${CMAKE_INSTALL_PREFIX}/lib/python${PYTHON_VERSION}/site-packages/salome:${GEOM_ROOT_DIR}/bin/salome:${GEOM_ROOT_DIR}/lib/python${PYTHON_VERSION}/site-packages/salome:${KERNEL_ROOT_DIR}/bin/salome:${KERNEL_ROOT_DIR}/lib/python${PYTHON_VERSION}/site-packages/salome:${OMNIORB_ROOT_USER}/lib/python${PYTHON_VERSION}/site-packages:${OMNIORB_ROOT_USER}/lib64/python${PYTHON_VERSION}/site-packages")
+  SET(DOC_LD_LIBRARY_PATH "${CMAKE_INSTALL_PREFIX}/lib/salome:${GEOM_ROOT_DIR}/lib/salome:${KERNEL_ROOT_DIR}/lib/salome")
   SET(SCR "export PYTHONPATH=${DOC_PYTHONPATH}:\${PYTHONPATH}
   export LD_LIBRARY_PATH=${DOC_LD_LIBRARY_PATH}:\${LD_LIBRARY_PATH}
   export SMESH_MeshersList=${DOC_SMESH_MeshersList}

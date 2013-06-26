@@ -31,8 +31,8 @@ dist_salomescript_PYTHON = collect_mesh_methods.py
 guidocdir = $(docdir)/gui/SMESH
 guidoc_DATA = images/head.png
 
-DOC_PYTHONPATH=$(prefix)/bin/salome:$(prefix)/lib/python$(PYTHON_VERSION)/site-packages/salome:$(MED_ROOT_DIR)/lib/python$(PYTHON_VERSION)/site-packages/salome:$(GEOM_ROOT_DIR)/bin/salome:$(GEOM_ROOT_DIR)/lib/python$(PYTHON_VERSION)/site-packages/salome:$(KERNEL_ROOT_DIR)/bin/salome:$(KERNEL_ROOT_DIR)/lib/python$(PYTHON_VERSION)/site-packages/salome:$(OMNIORB_ROOT)/lib/python$(PYTHON_VERSION)/site-packages:$(OMNIORB_ROOT)/lib64/python$(PYTHON_VERSION)/site-packages
-DOC_LD_LIBRARY_PATH=$(prefix)/lib/salome:$(MED_ROOT_DIR)/lib/salome:$(GEOM_ROOT_DIR)/lib/salome:$(KERNEL_ROOT_DIR)/lib/salome
+DOC_PYTHONPATH=$(prefix)/bin/salome:$(prefix)/lib/python$(PYTHON_VERSION)/site-packages/salome:$(GEOM_ROOT_DIR)/bin/salome:$(GEOM_ROOT_DIR)/lib/python$(PYTHON_VERSION)/site-packages/salome:$(KERNEL_ROOT_DIR)/bin/salome:$(KERNEL_ROOT_DIR)/lib/python$(PYTHON_VERSION)/site-packages/salome:$(OMNIORB_ROOT)/lib/python$(PYTHON_VERSION)/site-packages:$(OMNIORB_ROOT)/lib64/python$(PYTHON_VERSION)/site-packages
+DOC_LD_LIBRARY_PATH=$(prefix)/lib/salome:$(GEOM_ROOT_DIR)/lib/salome:$(KERNEL_ROOT_DIR)/lib/salome
 DOC_SMESH_MeshersList=StdMeshers
 
 tmp1/smeshBuilder.py: $(top_srcdir)/src/SMESH_SWIG/StdMeshersBuilder.py $(srcdir)/collect_mesh_methods.py
