@@ -7174,6 +7174,10 @@ as they are of improper type:
         <translation>Number of the free nodes</translation>
     </message>
     <message>
+        <source>DOUBLE_NODES_TOLERANCE</source>
+        <translation>Double nodes tolerance</translation>
+    </message>
+    <message>
         <source>NUMBER_OF_THE_DOUBLE_NODES</source>
         <translation>Number of the double nodes</translation>
     </message>

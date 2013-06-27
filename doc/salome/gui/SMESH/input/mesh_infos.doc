@@ -145,10 +145,13 @@ sub-mesh or mesh group:
 <center>\image html ctrlinfo.png
 <em>"Quality Info" page</em></center>
 
-\note For the perfomance reason, the Aspect Ratio histogram for the big meshes is
-computed only by demand. For this, the user should press the "Compute"
-button (see picture). Also, histogram is automatically computed if the size of the 
-elements does not exceed the "Automatic controls compute limit" set 
+\note User can set "Double nodes tolerance" in the dialog for local change 
+      or via the "Quality controls" in Mesh preferences.
+
+\note For the perfomance reason, all quality control values for the big meshes are
+computed only by demand. For this, the user should press the "compute"
+button (see picture). Also, values are automatically computed if the number of the 
+nodes / elements does not exceed the "Automatic controls compute limit" set 
 via the "Mesh information" preferences (zero value means no limit).
 
 The button \b "Dump" allows printing the information displayed in the

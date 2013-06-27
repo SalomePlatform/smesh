@@ -43,6 +43,7 @@
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_Group)
 
+class QAbstractButton;
 class QButtonGroup;
 class QContextMenuEvent;
 class QLabel;
@@ -50,9 +51,11 @@ class QLineEdit;
 class QPushButton;
 class QTabWidget;
 class QTextBrowser;
+class QGridLayout;
 class SMESH_Actor;
 class SMDS_MeshNode;
 class SMDS_MeshElement;
+class SMESHGUI_SpinBox;
 
 class ExtraWidget;
 
@@ -291,27 +294,40 @@ public:
   SMESHGUI_CtrlInfo( QWidget* = 0 );
   ~SMESHGUI_CtrlInfo();
 
-  void              showInfo( SMESH::SMESH_IDSource_ptr );
-  void              saveInfo( QTextStream &out );
+  void                  showInfo( SMESH::SMESH_IDSource_ptr );
+  void                  saveInfo( QTextStream &out );
 
 private:
-  QLabel*           createField();
-  QwtPlot*          createPlot( QWidget* );
-  void              setFontAttributes( QWidget* );
-  void              clearInternal();
-  int               nbElemsControl( SMESH::long_array_var&, SMESH::Controls::FunctorPtr );
-  Plot2d_Histogram* getHistogram( SMESH::long_array_var&, SMESH::Controls::NumericalFunctorPtr ); 
+  enum ObjectType { Mesh, SubMesh, Group };
+  QLabel*               createField();
+  QwtPlot*              createPlot( QWidget* );
+  void                  setFontAttributes( QWidget* );
+  void                  clearInternal();
+  SMESH::long_array_var getElementsByType( SMESH::ElementType theElementType );
+  int                   nbElemsControl( SMESH::long_array_var&, SMESH::Controls::FunctorPtr );
+  Plot2d_Histogram*     getHistogram( SMESH::long_array_var&, SMESH::Controls::NumericalFunctorPtr );
 
 private slots:
-  void              computeFaceInfo();
-  void              computeVolumeInfo();
+  void                  computeFaceInfo();
+  void                  computeVolumeInfo();
+  void                  computeFreeNodesInfo();
+  void                  computeDoubleNodesInfo();
+  void                  computeDoubleEdgesInfo();
+  void                  computeDoubleFacesInfo();
+  void                  computeOverConstrainedFacesInfo();
+  void                  computeDoubleVolumesInfo();
+  void                  computeOverConstrainedVolumesInfo();
+  void                  setTolerance( const double theTolerance );
 
 private:
-  QList<QLabel*> myWidgets;
-  QwtPlot*       myPlot;
-  QwtPlot*       myPlot3D;
-  QPushButton*   myComputeFaceBtn;
-  QPushButton*   myComputeVolumeBtn;
+  SMESH_Actor*              myActor;
+  ObjectType                myObjectType;
+  SMESHGUI_SpinBox*         myToleranceWidget;
+  QList<QLabel*>            myWidgets;
+  QGridLayout*              myMainLayout;
+  QwtPlot*                  myPlot;
+  QwtPlot*                  myPlot3D;
+  QList<QAbstractButton*>   myButtons;
 };
 
 class SMESHGUI_EXPORT SMESHGUI_MeshInfoDlg : public QDialog

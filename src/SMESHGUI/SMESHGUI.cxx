@@ -4220,6 +4220,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( 214, View, mesh_part );  // UPDATE
   createPopupItem( 900, View, mesh_part );  // ADV_INFO
+  createPopupItem( 6032,View, mesh_part );  // CTRL_INFO
   createPopupItem( 904, View, mesh );       // FIND_ELEM
   popupMgr()->insert( separator(), -1, 0 );
 
@@ -4843,6 +4844,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( nodesLim, "step", 10000 );
   setPreferenceProperty( nodesLim, "special", tr( "PREF_UPDATE_LIMIT_NOLIMIT" ) );
   int ctrlLim = addPreference( tr( "PREF_CTRL_LIMIT" ), infoGroup, LightApp_Preferences::IntSpin, "SMESH", "info_controls_limit" );
+  setPreferenceProperty( ctrlLim, "special", tr( "PREF_UPDATE_LIMIT_NOLIMIT" ) );
   setPreferenceProperty( ctrlLim, "min", 0 );
   setPreferenceProperty( ctrlLim, "max", 10000000 );
   setPreferenceProperty( ctrlLim, "step", 1000 );

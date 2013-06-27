@@ -29,6 +29,7 @@
 #include "SMESHGUI_IdValidator.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
+#include "SMESHGUI_SpinBox.h"
 #include "SMDSAbs_ElementType.hxx"
 #include "SMDS_Mesh.hxx"
 #include "SMDS_BallElement.hxx"
@@ -59,6 +60,7 @@
 #include <QLineEdit>
 #include <QMenu>
 #include <QPushButton>
+#include <QToolButton>
 #include <QRadioButton>
 #include <QTextStream>
 #include <QTabWidget>
@@ -2999,15 +3001,18 @@ SMESHGUI_CtrlInfo::SMESHGUI_CtrlInfo( QWidget* parent )
 {
   setFrameStyle( StyledPanel | Sunken );
 
-  QGridLayout* l = new QGridLayout( this );
-  l->setMargin( MARGIN );
-  l->setSpacing( SPACING );
+  myMainLayout = new QGridLayout( this );
+  myMainLayout->setMargin( MARGIN );
+  myMainLayout->setSpacing( SPACING );
 
   // name
   QLabel* aNameLab = new QLabel( tr( "NAME_LAB" ), this );
   QLabel* aName = createField();
   aName->setMinimumWidth( 150 );
   myWidgets << aName;
+
+  SUIT_ResourceMgr* aResMgr = SUIT_Session::session()->resourceMgr();
+  QIcon aComputeIcon( aResMgr->loadPixmap( "SMESH", tr( "ICON_COMPUTE" ) ) );
 
   // nodes info
   QLabel* aNodesLab = new QLabel( tr( "NODES_INFO" ), this );
@@ -3017,6 +3022,11 @@ SMESHGUI_CtrlInfo::SMESHGUI_CtrlInfo( QWidget* parent )
   QLabel* aNodesDoubleLab = new QLabel( tr( "NUMBER_OF_THE_DOUBLE_NODES" ), this );
   QLabel* aNodesDouble = createField();
   myWidgets << aNodesDouble;
+  QLabel* aToleranceLab = new QLabel( tr( "DOUBLE_NODES_TOLERANCE" ), this );
+  myToleranceWidget = new SMESHGUI_SpinBox( this );
+  myToleranceWidget->RangeStepAndValidator(0.0000000001, 1000000.0, 0.0000001, "length_precision" );
+  myToleranceWidget->setAcceptNames( false );
+  myToleranceWidget->SetValue( SMESHGUI::resourceMgr()->doubleValue( "SMESH", "equal_nodes_tolerance", 1e-7 ) );
 
   // edges info
   QLabel* anEdgesLab = new QLabel( tr( "EDGES_INFO" ),  this );
@@ -3046,17 +3056,52 @@ SMESHGUI_CtrlInfo::SMESHGUI_CtrlInfo( QWidget* parent )
   QLabel* anAspectRatio3DLab = new QLabel( tr( "ASPECT_RATIO_3D_HISTOGRAM" ), this );
   myPlot3D = createPlot( this );
 
-  myComputeFaceBtn = new QPushButton( tr( "BUT_COMPUTE" ), this );
-  myComputeFaceBtn->setAutoDefault( true );
-  myComputeFaceBtn->setFixedWidth( 80 );
-  myComputeFaceBtn->setVisible( false );
-  myComputeVolumeBtn = new QPushButton( tr( "BUT_COMPUTE" ), this );
-  myComputeVolumeBtn->setAutoDefault( true );
-  myComputeVolumeBtn->setFixedWidth( 80 );
-  myComputeVolumeBtn->setVisible( false );
+  QToolButton* aFreeNodesBtn = new QToolButton( this );
+  aFreeNodesBtn->setIcon(aComputeIcon);
+  myButtons << aFreeNodesBtn;       //0
 
-  connect( myComputeFaceBtn,   SIGNAL( clicked() ), this, SLOT( computeFaceInfo() ) );
-  connect( myComputeVolumeBtn, SIGNAL( clicked() ), this, SLOT( computeVolumeInfo() ) );
+  QToolButton* aDoubleNodesBtn = new QToolButton( this );
+  aDoubleNodesBtn->setIcon(aComputeIcon);
+  myButtons << aDoubleNodesBtn;     //1
+
+  QToolButton* aDoubleEdgesBtn = new QToolButton( this );
+  aDoubleEdgesBtn->setIcon(aComputeIcon);
+  myButtons << aDoubleEdgesBtn;     //2
+
+  QToolButton* aDoubleFacesBtn = new QToolButton( this );
+  aDoubleFacesBtn->setIcon(aComputeIcon);
+  myButtons << aDoubleFacesBtn;     //3
+
+  QToolButton* aOverContFacesBtn = new QToolButton( this );
+  aOverContFacesBtn->setIcon(aComputeIcon);
+  myButtons << aOverContFacesBtn;   //4
+
+  QToolButton* aComputeFaceBtn = new QToolButton( this );
+  aComputeFaceBtn->setIcon(aComputeIcon);
+  myButtons << aComputeFaceBtn;     //5
+
+  QToolButton* aDoubleVolumesBtn = new QToolButton( this );
+  aDoubleVolumesBtn->setIcon(aComputeIcon);
+  myButtons << aDoubleVolumesBtn;   //6
+
+  QToolButton* aOverContVolumesBtn = new QToolButton( this );
+  aOverContVolumesBtn->setIcon(aComputeIcon);
+  myButtons << aOverContVolumesBtn; //7
+
+  QToolButton* aComputeVolumeBtn = new QToolButton( this );
+  aComputeVolumeBtn->setIcon(aComputeIcon);
+  myButtons << aComputeVolumeBtn;   //8
+
+  connect( aComputeFaceBtn,   SIGNAL( clicked() ), this, SLOT( computeFaceInfo() ) );
+  connect( aComputeVolumeBtn, SIGNAL( clicked() ), this, SLOT( computeVolumeInfo() ) );
+  connect( aFreeNodesBtn, SIGNAL( clicked() ), this, SLOT( computeFreeNodesInfo() ) );
+  connect( aDoubleNodesBtn, SIGNAL( clicked() ), this, SLOT( computeDoubleNodesInfo() ) );
+  connect( aDoubleEdgesBtn, SIGNAL( clicked() ), this, SLOT( computeDoubleEdgesInfo() ) );
+  connect( aDoubleFacesBtn, SIGNAL( clicked() ), this, SLOT( computeDoubleFacesInfo() ) );
+  connect( aOverContFacesBtn, SIGNAL( clicked() ), this, SLOT( computeOverConstrainedFacesInfo() ) );
+  connect( aDoubleVolumesBtn, SIGNAL( clicked() ), this, SLOT( computeDoubleVolumesInfo() ) );
+  connect( aOverContVolumesBtn, SIGNAL( clicked() ), this, SLOT( computeOverConstrainedVolumesInfo() ) );
+  connect( myToleranceWidget, SIGNAL(valueChanged(double)), this, SLOT( setTolerance( double )));
 
   setFontAttributes( aNameLab );
   setFontAttributes( aNodesLab );
@@ -3064,37 +3109,47 @@ SMESHGUI_CtrlInfo::SMESHGUI_CtrlInfo( QWidget* parent )
   setFontAttributes( aFacesLab );
   setFontAttributes( aVolumesLab );
 
-  l->addWidget( aNameLab,           0, 0 );
-  l->addWidget( aName,              0, 1 );
-  l->addWidget( aNodesLab,          1, 0, 1, 2 );
-  l->addWidget( aNodesFreeLab,      2, 0 );
-  l->addWidget( aNodesFree,         2, 1 );
-  l->addWidget( aNodesDoubleLab,    3, 0 );
-  l->addWidget( aNodesDouble,       3, 1 );
-  l->addWidget( anEdgesLab,         4, 0, 1, 2 );
-  l->addWidget( anEdgesDoubleLab,   5, 0 );
-  l->addWidget( anEdgesDouble,      5, 1 );
-  l->addWidget( aFacesLab,          6, 0, 1, 2 );
-  l->addWidget( aFacesDoubleLab,    7, 0 );
-  l->addWidget( aFacesDouble,       7, 1 );
-  l->addWidget( aFacesOverLab,      8, 0 );
-  l->addWidget( aFacesOver,         8, 1 );
-  l->addWidget( anAspectRatioLab,   9, 0 );
-  l->addWidget( myComputeFaceBtn,   9, 1 );
-  l->addWidget( myPlot,             10, 0, 1, 2 );
-  l->addWidget( aVolumesLab,        11, 0, 1, 2 );
-  l->addWidget( aVolumesDoubleLab,  12, 0 );
-  l->addWidget( aVolumesDouble,     12, 1 );
-  l->addWidget( aVolumesOverLab,    13, 0 );
-  l->addWidget( aVolumesOver,       13, 1 );
-  l->addWidget( anAspectRatio3DLab, 14, 0 );
-  l->addWidget( myComputeVolumeBtn, 14, 1 );
-  l->addWidget( myPlot3D,           15, 0, 1, 2 );
+  myMainLayout->addWidget( aNameLab,           0, 0 );       //0
+  myMainLayout->addWidget( aName,              0, 1, 1, 2 ); //1
+  myMainLayout->addWidget( aNodesLab,          1, 0, 1, 3 ); //2
+  myMainLayout->addWidget( aNodesFreeLab,      2, 0 );       //3
+  myMainLayout->addWidget( aNodesFree,         2, 1 );       //4
+  myMainLayout->addWidget( aFreeNodesBtn,      2, 2 );       //5
+  myMainLayout->addWidget( aNodesDoubleLab,    3, 0 );       //6
+  myMainLayout->addWidget( aNodesDouble,       3, 1 );       //7
+  myMainLayout->addWidget( aDoubleNodesBtn,    3, 2 );       //8
+  myMainLayout->addWidget( aToleranceLab,      4, 0 );       //9
+  myMainLayout->addWidget( myToleranceWidget,  4, 1 );       //10
+  myMainLayout->addWidget( anEdgesLab,         5, 0, 1, 3 ); //11
+  myMainLayout->addWidget( anEdgesDoubleLab,   6, 0 );       //12
+  myMainLayout->addWidget( anEdgesDouble,      6, 1 );       //13
+  myMainLayout->addWidget( aDoubleEdgesBtn,    6, 2 );       //14
+  myMainLayout->addWidget( aFacesLab,          7, 0, 1, 3 ); //15
+  myMainLayout->addWidget( aFacesDoubleLab,    8, 0 );       //16
+  myMainLayout->addWidget( aFacesDouble,       8, 1 );       //17
+  myMainLayout->addWidget( aDoubleFacesBtn,    8, 2 );       //18
+  myMainLayout->addWidget( aFacesOverLab,      9, 0 );       //19
+  myMainLayout->addWidget( aFacesOver,         9, 1 );       //20
+  myMainLayout->addWidget( aOverContFacesBtn,  9, 2 );       //21
+  myMainLayout->addWidget( anAspectRatioLab,   10, 0 );      //22
+  myMainLayout->addWidget( aComputeFaceBtn,    10, 2 );      //23
+  myMainLayout->addWidget( myPlot,             11, 0, 1, 3 );//24
+  myMainLayout->addWidget( aVolumesLab,        12, 0, 1, 3 );//25
+  myMainLayout->addWidget( aVolumesDoubleLab,  13, 0 );      //26
+  myMainLayout->addWidget( aVolumesDouble,     13, 1 );      //27
+  myMainLayout->addWidget( aDoubleVolumesBtn,  13, 2 );      //28
+  myMainLayout->addWidget( aVolumesOverLab,    14, 0 );      //28
+  myMainLayout->addWidget( aVolumesOver,       14, 1 );      //30
+  myMainLayout->addWidget( aOverContVolumesBtn,14, 2 );      //31
+  myMainLayout->addWidget( anAspectRatio3DLab, 15, 0 );      //32
+  myMainLayout->addWidget( aComputeVolumeBtn,  15, 2 );      //33
+  myMainLayout->addWidget( myPlot3D,           16, 0, 1, 3 );//34
  
-  l->setColumnStretch(  0, 0 );
-  l->setColumnStretch(  1, 5 );
-  l->setRowStretch   ( 10, 5 );
-  l->setRowStretch   ( 15, 5 );
+  myMainLayout->setColumnStretch(  0,  0 );
+  myMainLayout->setColumnStretch(  1,  5 );
+  myMainLayout->setRowStretch   ( 11,  5 );
+  myMainLayout->setRowStretch   ( 16,  5 );
+  myMainLayout->setRowStretch   ( 17,  1 );
 
   clearInternal();
 }
@@ -3103,8 +3158,7 @@ SMESHGUI_CtrlInfo::SMESHGUI_CtrlInfo( QWidget* parent )
   \brief Destructor
 */
 SMESHGUI_CtrlInfo::~SMESHGUI_CtrlInfo()
-{
-}
+{}
 
 /*!
   \brief Change widget font attributes (bold, ...).
@@ -3155,7 +3209,6 @@ QwtPlot* SMESHGUI_CtrlInfo::createPlot( QWidget* parent )
   return aPlot;
 }
 
-
 /*!
   \brief Show controls information on the selected object
 */
@@ -3177,76 +3230,204 @@ void SMESHGUI_CtrlInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
   SMESH_Actor* anActor = SMESH::FindActorByEntry( IO->getEntry() );
   if ( !anActor ) anActor = SMESH::CreateActor( aSO->GetStudy(), aSO->GetID().c_str(), true );
   if ( !anActor ) return;
+  myActor = anActor;
 
   SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow( obj );
-  if ( aMesh->_is_nil() ) return;
-
-  SMESH::Controls::FunctorPtr aFunctor;
+  SMESH::SMESH_subMesh_var   aSubMesh = SMESH::SMESH_subMesh::_narrow( obj );
+  SMESH::SMESH_GroupBase_var aGroup   = SMESH::SMESH_GroupBase::_narrow( obj );
+  if ( !aMesh->_is_nil() )
+    myObjectType = Mesh;
+  else if( !aSubMesh->_is_nil() )
+    myObjectType = SubMesh;
+  else if( !aGroup->_is_nil() )
+    myObjectType = Group;
+  else
+    return;
 
   // nodes info
-  if ( aMesh->NbNodes() ) {
-    // free nodes
-    aFunctor.reset( new SMESH::Controls::FreeNodes() );
-    aFunctor->SetMesh( anActor->GetObject()->GetMesh() );
-    anElems = aMesh->GetElementsByType( SMESH::NODE );
-    myWidgets[1]->setText( QString::number( nbElemsControl( anElems, aFunctor ) ) );
-    // double nodes
-    SMESH::Controls::CoincidentNodes* aNodes = new SMESH::Controls::CoincidentNodes();
-    double tol = SMESHGUI::resourceMgr()->doubleValue( "SMESH", "equal_nodes_tolerance", 1e-7 );
-    aNodes->SetTolerance( tol );
-    aFunctor.reset( aNodes );
-    aFunctor->SetMesh( anActor->GetObject()->GetMesh() );
-    myWidgets[2]->setText( QString::number( nbElemsControl( anElems, aFunctor ) ) );
+  anElems = getElementsByType( SMESH::NODE );
+  if( myObjectType == Group ){
+    anElems = aGroup->GetNodeIDs();
+  }
+  if ( anElems->length() ) {
+    if( anElems->length() <= ctrlLimit ) {
+      // free nodes
+      computeFreeNodesInfo();
+      // double nodes
+      computeDoubleNodesInfo();
+    }
+    else {
+      myButtons[0]->setEnabled( true );
+      myButtons[1]->setEnabled( true );
+    }
+  }
+  else {
+    for( int i=2; i<=10; i++)
+      myMainLayout->itemAt(i)->widget()->setVisible( false );
   }
 
   // edges info
-  if ( aMesh->NbEdges() ) {
+  anElems = getElementsByType( SMESH::EDGE );
+  if ( anElems->length() ) {
     // double edges
-    aFunctor.reset( new SMESH::Controls::CoincidentElements1D() );
-    aFunctor->SetMesh( anActor->GetObject()->GetMesh() );
-    anElems = aMesh->GetElementsByType( SMESH::EDGE );
-    myWidgets[3]->setText( QString::number( nbElemsControl( anElems, aFunctor ) ) );
+    if( anElems->length() <= ctrlLimit )
+      computeDoubleEdgesInfo();
+    else
+      myButtons[2]->setEnabled( true );
+  }
+  else {
+    for( int i=11; i<=14; i++)
+      myMainLayout->itemAt(i)->widget()->setVisible( false );
   }
  
   // faces info
-  if ( aMesh->NbFaces() ) {
-    // double faces
-    aFunctor.reset( new SMESH::Controls::CoincidentElements2D() );
-    aFunctor->SetMesh( anActor->GetObject()->GetMesh() );
-    anElems = aMesh->GetElementsByType( SMESH::FACE );
-    myWidgets[4]->setText( QString::number( nbElemsControl( anElems, aFunctor ) ) );
-    // over constrained faces
-    aFunctor.reset( new SMESH::Controls::OverConstrainedFace() );
-    aFunctor->SetMesh( anActor->GetObject()->GetMesh() );
-    myWidgets[5]->setText( QString::number( nbElemsControl( anElems, aFunctor ) ) );
-    // aspect Ratio histogram
-    if ( aMesh->NbFaces() <= ctrlLimit )
+  anElems = getElementsByType( SMESH::FACE );
+  if ( anElems->length() ) {
+    if ( anElems->length() <= ctrlLimit ) {
+      // double faces
+      computeDoubleFacesInfo();
+      // over constrained faces
+      computeOverConstrainedFacesInfo();
+      // aspect Ratio histogram
       computeFaceInfo();
-    else 
-      myComputeFaceBtn->setVisible( true );
+    }
+    else {
+      myButtons[3]->setEnabled( true );
+      myButtons[4]->setEnabled( true );
+      myButtons[5]->setEnabled( true );
+    }
+  }
+  else {
+    myMainLayout->setRowStretch(11,0);
+    for( int i=15; i<=24; i++)
+      myMainLayout->itemAt(i)->widget()->setVisible( false );
   }
 
   // volumes info
-  if ( aMesh->NbVolumes() ) {
-    // double volumes
-    aFunctor.reset( new SMESH::Controls::CoincidentElements3D() );
-    aFunctor->SetMesh( anActor->GetObject()->GetMesh() );
-    anElems = aMesh->GetElementsByType( SMESH::VOLUME );
-    myWidgets[6]->setText( QString::number( nbElemsControl( anElems, aFunctor ) ) );
-    // over constrained volumes
-    aFunctor.reset( new SMESH::Controls::OverConstrainedVolume() );
-    aFunctor->SetMesh( anActor->GetObject()->GetMesh() );
-    myWidgets[7]->setText( QString::number( nbElemsControl( anElems, aFunctor ) ) );
-    // aspect Ratio 3D histogram
-    if ( aMesh->NbVolumes() <= ctrlLimit )
+  anElems = getElementsByType( SMESH::VOLUME );
+  if ( anElems->length() ) {
+    if ( anElems->length() <= ctrlLimit ) {
+      // double volumes
+      computeDoubleVolumesInfo();
+      // over constrained volumes
+      computeOverConstrainedVolumesInfo();
+      // aspect Ratio 3D histogram
       computeVolumeInfo();
-    else 
-      myComputeVolumeBtn->setVisible( true );
+     }
+     else {
+       myButtons[6]->setEnabled( true );
+       myButtons[7]->setEnabled( true );
+       myButtons[8]->setEnabled( true );
+     }
+  }
+  else {
+    myMainLayout->setRowStretch(16,0);
+    for( int i=25; i<=34; i++)
+      myMainLayout->itemAt(i)->widget()->setVisible( false );
   }
 }
 
+void SMESHGUI_CtrlInfo::computeFreeNodesInfo()
+{
+  myButtons[0]->setEnabled( false );
+  SALOME_ListIO selected;
+  SMESHGUI::selectionMgr()->selectedObjects( selected );
+  if ( selected.Extent() < 1 ) return;
+  SMESH::SMESH_IDSource_var obj = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( selected.First() );
+  if ( CORBA::is_nil( obj ) ) return;
+
+  SMESH::Controls::FunctorPtr aFunctor;
+  aFunctor.reset( new SMESH::Controls::FreeNodes() );
+  aFunctor->SetMesh( myActor->GetObject()->GetMesh() );
+  SMESH::long_array_var anElems = getElementsByType( SMESH::NODE );
+  if( myObjectType == Group ){
+    SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( obj );
+    anElems = aGroup->GetNodeIDs();
+  }
+  int aNBFreeNodes = nbElemsControl( anElems, aFunctor );
+  myWidgets[1]->setText( QString::number( aNBFreeNodes ) );
+}
+
+void SMESHGUI_CtrlInfo::computeDoubleNodesInfo()
+{
+  myButtons[1]->setEnabled( false );
+  SALOME_ListIO selected;
+  SMESHGUI::selectionMgr()->selectedObjects( selected );
+  if ( selected.Extent() < 1 ) return;
+  SMESH::SMESH_IDSource_var obj = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( selected.First() );
+  if ( CORBA::is_nil( obj ) ) return;
+
+  SMESH::Controls::FunctorPtr aFunctor;
+  SMESH::Controls::CoincidentNodes* aNodes = new SMESH::Controls::CoincidentNodes();
+  aNodes->SetTolerance( myToleranceWidget->value() );
+  aFunctor.reset( aNodes );
+  aFunctor->SetMesh( myActor->GetObject()->GetMesh() );
+  SMESH::long_array_var anElems = getElementsByType( SMESH::NODE );
+  if( myObjectType == Group ){
+    SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( obj );
+    anElems = aGroup->GetNodeIDs();
+  }
+  int aNBDoubleNodes = nbElemsControl( anElems, aFunctor );
+  myWidgets[2]->setText( QString::number( aNBDoubleNodes ) );
+}
+
+void SMESHGUI_CtrlInfo::computeDoubleEdgesInfo()
+{
+  myButtons[2]->setEnabled( false );
+  SMESH::Controls::FunctorPtr aFunctor;
+  aFunctor.reset( new SMESH::Controls::CoincidentElements1D() );
+  aFunctor->SetMesh( myActor->GetObject()->GetMesh() );
+  SMESH::long_array_var anElems = getElementsByType( SMESH::EDGE );
+  int aNBDoubleEdges = nbElemsControl( anElems, aFunctor );
+  myWidgets[3]->setText( QString::number( aNBDoubleEdges ) );
+}
+
+void SMESHGUI_CtrlInfo::computeDoubleFacesInfo()
+{
+  myButtons[3]->setEnabled( false );
+  SMESH::Controls::FunctorPtr aFunctor;
+  aFunctor.reset( new SMESH::Controls::CoincidentElements2D() );
+  aFunctor->SetMesh( myActor->GetObject()->GetMesh() );
+  SMESH::long_array_var anElems = getElementsByType( SMESH::FACE );
+  int aNBDoubleFaces = nbElemsControl( anElems, aFunctor );
+  myWidgets[4]->setText( QString::number( aNBDoubleFaces ) );
+}
+
+void SMESHGUI_CtrlInfo::computeOverConstrainedFacesInfo()
+{
+  myButtons[4]->setEnabled( false );
+  SMESH::Controls::FunctorPtr aFunctor;
+  aFunctor.reset( new SMESH::Controls::OverConstrainedFace() );
+  aFunctor->SetMesh( myActor->GetObject()->GetMesh() );
+  SMESH::long_array_var anElems = getElementsByType( SMESH::FACE );
+  int aNBOverConstrainedFaces = nbElemsControl( anElems, aFunctor );
+  myWidgets[5]->setText( QString::number( aNBOverConstrainedFaces ) );
+}
+
+void SMESHGUI_CtrlInfo::computeDoubleVolumesInfo()
+{
+  myButtons[6]->setEnabled( false );
+  SMESH::Controls::FunctorPtr aFunctor;
+  aFunctor.reset( new SMESH::Controls::CoincidentElements3D() );
+  aFunctor->SetMesh( myActor->GetObject()->GetMesh() );
+  SMESH::long_array_var anElems = getElementsByType( SMESH::VOLUME );
+  int aNBDoubleVolumes = nbElemsControl( anElems, aFunctor );
+  myWidgets[6]->setText( QString::number( aNBDoubleVolumes ) );
+}
+
+void SMESHGUI_CtrlInfo::computeOverConstrainedVolumesInfo()
+{
+  myButtons[7]->setEnabled( false );
+  SMESH::Controls::FunctorPtr aFunctor;
+  aFunctor.reset( new SMESH::Controls::OverConstrainedVolume() );
+  aFunctor->SetMesh( myActor->GetObject()->GetMesh() );
+  SMESH::long_array_var anElems = getElementsByType( SMESH::VOLUME );
+  int aNBOverConstrainedVolumes = nbElemsControl( anElems, aFunctor );
+  myWidgets[7]->setText( QString::number( aNBOverConstrainedVolumes ) );
+}
+
 void SMESHGUI_CtrlInfo::computeFaceInfo() {
-  myComputeFaceBtn->setVisible( false );
+  myButtons[5]->setEnabled( false );
 
   SUIT_OverrideCursor wc;
   SALOME_ListIO selected;
@@ -3259,17 +3440,14 @@ void SMESHGUI_CtrlInfo::computeFaceInfo() {
   SMESH_Actor* anActor = SMESH::FindActorByEntry( selected.First()->getEntry() );
   if ( !anActor ) anActor = SMESH::CreateActor( aSO->GetStudy(), aSO->GetID().c_str(), true );
   if ( !anActor ) return;
-  SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow( obj );
-  if ( aMesh->_is_nil() ) return;
 
-  SMESH::long_array_var anElems;
-  anElems = aMesh->GetElementsByType( SMESH::FACE );
   SMESH::Controls::NumericalFunctorPtr anAspectRatio( new SMESH::Controls::AspectRatio() );
   int cprecision = 6;
   if ( SMESHGUI::resourceMgr()->booleanValue( "SMESH", "use_precision", false ) ) 
     cprecision = SMESHGUI::resourceMgr()->integerValue( "SMESH", "controls_precision", -1 );
   anAspectRatio->SetPrecision( cprecision );
   anAspectRatio->SetMesh( anActor->GetObject()->GetMesh() );
+  SMESH::long_array_var anElems = getElementsByType( SMESH::FACE );
   Plot2d_Histogram* aHistogram = getHistogram( anElems, anAspectRatio );
   
   if ( !aHistogram->isEmpty() ) {
@@ -3280,7 +3458,7 @@ void SMESHGUI_CtrlInfo::computeFaceInfo() {
 }
 
 void SMESHGUI_CtrlInfo::computeVolumeInfo() {
-  myComputeVolumeBtn->setVisible( false );
+  myButtons[8]->setEnabled( false );
 
   SUIT_OverrideCursor wc;
   SALOME_ListIO selected;
@@ -3293,17 +3471,14 @@ void SMESHGUI_CtrlInfo::computeVolumeInfo() {
   SMESH_Actor* anActor = SMESH::FindActorByEntry( selected.First()->getEntry() );
   if ( !anActor ) anActor = SMESH::CreateActor( aSO->GetStudy(), aSO->GetID().c_str(), true );
   if ( !anActor ) return;
-  SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow( obj );
-  if ( aMesh->_is_nil() ) return;
 
-  SMESH::long_array_var anElems;
-  anElems = aMesh->GetElementsByType( SMESH::VOLUME );
   SMESH::Controls::NumericalFunctorPtr anAspectRatio3D( new SMESH::Controls::AspectRatio3D() );
   int cprecision = 6;
   if ( SMESHGUI::resourceMgr()->booleanValue( "SMESH", "use_precision", false ) ) 
     cprecision = SMESHGUI::resourceMgr()->integerValue( "SMESH", "controls_precision", -1 );
   anAspectRatio3D->SetPrecision( cprecision );
   anAspectRatio3D->SetMesh( anActor->GetObject()->GetMesh() );
+  SMESH::long_array_var anElems = getElementsByType( SMESH::VOLUME );
   Plot2d_Histogram* aHistogram = getHistogram( anElems, anAspectRatio3D );
   
   if ( !aHistogram->isEmpty() ) {
@@ -3313,20 +3488,56 @@ void SMESHGUI_CtrlInfo::computeVolumeInfo() {
   }
 }
 
+SMESH::long_array_var
+SMESHGUI_CtrlInfo::getElementsByType( SMESH::ElementType theElementType )
+{
+  SALOME_ListIO selected;
+  SMESHGUI::selectionMgr()->selectedObjects( selected );
+  if ( selected.Extent() < 1 ) return new SMESH::long_array();;
+  SMESH::SMESH_IDSource_var obj = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( selected.First() );
+  if ( CORBA::is_nil( obj ) ) return new SMESH::long_array();;
+
+  SMESH::long_array_var anElems;
+  if( myObjectType == Mesh ) {
+    SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow( obj );
+    anElems = aMesh->GetElementsByType( theElementType );
+  }
+  else if( myObjectType == SubMesh ) {
+    SMESH::SMESH_subMesh_var aSubMesh = SMESH::SMESH_subMesh::_narrow( obj );
+    anElems = aSubMesh->GetElementsByType( theElementType );
+  }
+  else if( myObjectType == Group ){
+    SMESH::SMESH_GroupBase_var aGroup   = SMESH::SMESH_GroupBase::_narrow( obj );
+    anElems = aGroup->GetType() == theElementType ? obj->GetIDs() :  new SMESH::long_array();
+  }
+  return anElems;
+}
+
 /*!
   \brief Internal clean-up (reset widget)
 */
 void SMESHGUI_CtrlInfo::clearInternal()
 {
-  myComputeFaceBtn->setVisible( false );
-  myComputeVolumeBtn->setVisible( false );
+  for( int i=0; i<=34; i++)
+    myMainLayout->itemAt(i)->widget()->setVisible( true );
+  for( int i=0; i<=8; i++)
+    myButtons[i]->setEnabled( false );
   myPlot->detachItems();
   myPlot3D->detachItems();
   myPlot->replot();
   myPlot3D->replot();
   myWidgets[0]->setText( QString() );
   for ( int i = 1; i < myWidgets.count(); i++ )
-    myWidgets[i]->setText( QString::number( 0 ) );
+    myWidgets[i]->setText( "" );
+  myMainLayout->setRowStretch(11,5);
+  myMainLayout->setRowStretch(16,5);
+}
+
+void SMESHGUI_CtrlInfo::setTolerance( double theTolerance )
+{
+  SMESH::long_array_var anElems = getElementsByType( SMESH::NODE );
+  myButtons[1]->setEnabled( true );
+  myWidgets[2]->setText("");
 }
 
 int SMESHGUI_CtrlInfo::nbElemsControl( SMESH::long_array_var& elems, SMESH::Controls::FunctorPtr theFunctor ) {

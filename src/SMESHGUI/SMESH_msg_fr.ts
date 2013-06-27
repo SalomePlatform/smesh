@@ -7178,6 +7178,10 @@ en raison de leurs types incompatibles:
         <translation type="unfinished">Number of the double nodes</translation>
     </message>
     <message>
+        <source>DOUBLE_NODES_TOLERANCE</source>
+        <translation>Tolérance des nœuds doubles</translation>
+    </message>
+    <message>
         <source>EDGES_INFO</source>
         <translation type="unfinished">Edges Information:</translation>
     </message>
