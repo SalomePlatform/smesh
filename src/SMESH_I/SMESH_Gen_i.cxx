@@ -1797,7 +1797,7 @@ SMESH::MeshPreviewStruct* SMESH_Gen_i::Precompute( SMESH::SMESH_Mesh_ptr theMesh
       ::SMESH_Mesh& myLocMesh = meshServant->GetImpl();
       TSetOfInt shapeIds;
       ::MeshDimension aDim = (MeshDimension)theDimension;
-      if ( myGen.Compute( myLocMesh, myLocShape, false, aDim, &shapeIds ) )
+      if ( myGen.Compute( myLocMesh, myLocShape, false, false, aDim, &shapeIds ) )
       {
         int nbShapeId = shapeIds.size();
         theShapesId.length( nbShapeId );
