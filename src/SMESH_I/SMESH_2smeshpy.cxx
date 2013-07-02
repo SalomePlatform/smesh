@@ -310,6 +310,8 @@ namespace {
       undef2newItems[ 44 ].push_back( 37 );
       undef2newItems[ 45 ].push_back( 36 );
       undef2newItems[ 46 ].push_back( 39 );
+
+      ASSERT( undef2newItems.rbegin()->first == SMESH::FT_Undefined );
     }
 
     int iType     = Type.IntegerValue();
