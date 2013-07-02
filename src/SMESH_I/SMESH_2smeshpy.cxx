@@ -306,8 +306,9 @@ namespace {
         undef2newItems[ 43 ].assign( items, items+4 ); }
       { int items[] = { 37 };
         undef2newItems[ 44 ].assign( items, items+1 ); }
-      { int items[] = { 36 };
-        undef2newItems[ 45 ].assign( items, items+1 ); }
+      // { int items[] = { 36 };
+      //undef2newItems[ 45 ].assign( items, items+1 ); }
+      ASSERT( undef2newItems.rbegin()->first == SMESH::FT_Undefined );
     }
 
     int iType     = Type.IntegerValue();
