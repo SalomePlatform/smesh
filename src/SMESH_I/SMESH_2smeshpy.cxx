@@ -195,8 +195,16 @@ namespace {
         cmd->Clear();
       return;
     }
-    // comment a command having not created args
-    for ( int iArg = cmd->GetNbArgs(); iArg; --iArg )
+    // check if an Object was created in the script
+    _AString comment;
+    const _pyID& obj = cmd->GetObject();
+    if ( !obj.IsEmpty() && cmd->IsStudyEntry( obj ) && !presentObjects.count( obj ))
+    {
+      comment = "not created Object";
+      theGen->ObjectCreationRemoved( obj );
+    }
+    // check if a command has not created args
+    for ( int iArg = cmd->GetNbArgs(); iArg && comment.IsEmpty(); --iArg )
     {
       const _pyID& arg = cmd->GetArg( iArg );
       if ( arg.IsEmpty() || arg.Value( 1 ) == '"' || arg.Value( 1 ) == '\'' )
@@ -206,35 +214,29 @@ namespace {
       for ( ; id != idList.end(); ++id )
         if ( !theGen->IsGeomObject( *id ) && !presentObjects.count( *id ))
         {
-          cmd->Comment();
-          cmd->GetString() += " ### " ;
-          cmd->GetString() += *id + " has not been yet created";
-          for ( int i = 0; i < cmd->GetNbResultValues(); i++ ) {
-            _pyID objID = cmd->GetResultValue( i+1 );
-            theGen->ObjectCreationRemoved( objID ); // objID.SetName( name ) is not needed
-          }
-          return;
+          comment += *id + " has not been yet created";
+          break;
         }
     }
-    // comment a command with an Object that was not created in the script
-    const _pyID& obj = cmd->GetObject();
-    if ( !obj.IsEmpty() && cmd->IsStudyEntry( obj ) && !presentObjects.count( obj ))
+    // treat result objects
+    const _pyID& result = cmd->GetResultValue();
+    if ( !result.IsEmpty() && result.Value( 1 ) != '"' && result.Value( 1 ) != '\'' )
+    {
+      list< _pyID > idList = cmd->GetStudyEntries( result );
+      list< _pyID >::iterator id = idList.begin();
+      for ( ; id != idList.end(); ++id )
+        if ( comment.IsEmpty() )
+          presentObjects.insert( *id );
+        else
+          theGen->ObjectCreationRemoved( *id ); // objID.SetName( name ) is not needed
+    }
+    // comment the command
+    if ( !comment.IsEmpty() )
     {
       cmd->Comment();
-      cmd->GetString() += " ### not created Object" ;
-      for ( int i = 0; i < cmd->GetNbResultValues(); i++ ) {
-        _pyID objID = cmd->GetResultValue( i+1 );
-        theGen->ObjectCreationRemoved( objID ); // objID.SetName( name ) is not needed
-      }
-      return;
+      cmd->GetString() += " ### ";
+      cmd->GetString() += comment;
     }
-    const _pyID& result = cmd->GetResultValue();
-    if ( result.IsEmpty() || result.Value( 1 ) == '"' || result.Value( 1 ) == '\'' )
-      return;
-    list< _pyID > idList = cmd->GetStudyEntries( result );
-    list< _pyID >::iterator id = idList.begin();
-    for ( ; id != idList.end(); ++id )
-      presentObjects.insert( *id );
   }
 
   //================================================================================
@@ -3166,6 +3168,7 @@ int _pyCommand::GetBegPos( int thePartIndex )
     return EMPTY;
   if ( myBegPos.Length() < thePartIndex )
     return UNKNOWN;
+  ASSERT( thePartIndex > 0 );
   return myBegPos( thePartIndex );
 }
 
@@ -3181,6 +3184,7 @@ void _pyCommand::SetBegPos( int thePartIndex, int thePosition )
 {
   while ( myBegPos.Length() < thePartIndex )
     myBegPos.Append( UNKNOWN );
+  ASSERT( thePartIndex > 0 );
   myBegPos( thePartIndex ) = thePosition;
 }
 
@@ -3708,7 +3712,7 @@ void _pyCommand::Comment()
   if ( i <= Length() )
   {
     myString.Insert( i, "#" );
-    for ( int iPart = 0; iPart < myBegPos.Length(); ++iPart )
+    for ( int iPart = 1; iPart <= myBegPos.Length(); ++iPart )
     {
       int begPos = GetBegPos( iPart );
       if ( begPos != UNKNOWN )
