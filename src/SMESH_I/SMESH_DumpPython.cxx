@@ -979,7 +979,8 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
         do {
           aName = aBaseName + (++objectCounter);
         } while (theObjectNames.IsBound(aName));
-        seqRemoved.Append(aName);
+        if ( !aRemovedObjIDs.count( anEntry ))
+          seqRemoved.Append(aName);
         mapRemoved.Bind(anEntry, "1");
         theObjectNames.Bind(anEntry, aName);
       }
@@ -1017,7 +1018,6 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
     anUpdatedScript += "\n\taStudyBuilder = theStudy.NewBuilder()";
   }
   for (int ir = 1; ir <= seqRemoved.Length(); ir++) {
-    if ( aRemovedObjIDs.count( seqRemoved.Value(ir) )) continue;
     anUpdatedScript += "\n\tSO = theStudy.FindObjectIOR(theStudy.ConvertObjectToIOR(";
     anUpdatedScript += seqRemoved.Value(ir);
     // for object wrapped by class of smesh.py
@@ -1028,12 +1028,8 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   }
 
   // Set object names
-  anUpdatedScript += "\n\t## set object names";
-//   anUpdatedScript += "\n\t\tsmeshgui = salome.ImportComponentGUI(\"SMESH\")";
-//   anUpdatedScript += "\n\t\tsmeshgui.Init(theStudy._get_StudyId())";
-//   anUpdatedScript += "\n";
 
-  TCollection_AsciiString aGUIName;
+  TCollection_AsciiString aGUIName, aSetNameScriptPart;
   Resource_DataMapOfAsciiStringAsciiString mapEntries;
   for (Standard_Integer i = 1; i <= aLen; i += 2)
   {
@@ -1048,16 +1044,17 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
       aName    = theObjectNames.Find(anEntry);
       aGUIName = theNames.Find(anEntry);
       mapEntries.Bind(anEntry, aName);
-      anUpdatedScript += helper + "\n\t" + aSMESHGen + ".SetName(" + aName;
+      aSetNameScriptPart += helper + "\n\t" + aSMESHGen + ".SetName(" + aName;
       if ( anEntry2AccessorMethod.IsBound( anEntry ) )
-        anUpdatedScript += helper + "." + anEntry2AccessorMethod( anEntry );
-      anUpdatedScript += helper + ", '" + aGUIName + "')";
+        aSetNameScriptPart += helper + "." + anEntry2AccessorMethod( anEntry );
+      aSetNameScriptPart += helper + ", '" + aGUIName + "')";
     }
   }
-
-  // Issue 0021249: removed (a similar block is dumped by SALOMEDSImpl_Study)
-  //anUpdatedScript += "\n\tif salome.sg.hasDesktop():";
-  //anUpdatedScript += "\n\t\tsalome.sg.updateObjBrowser(0)";
+  if ( !aSetNameScriptPart.IsEmpty() )
+  {
+    anUpdatedScript += "\n\t## set object names";
+    anUpdatedScript += aSetNameScriptPart;
+  }
 
   // -----------------------------------------------------------------
   // store visual properties of displayed objects
