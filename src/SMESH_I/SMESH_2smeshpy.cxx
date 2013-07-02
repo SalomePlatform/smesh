@@ -217,16 +217,17 @@ namespace {
           return;
         }
     }
-    // comment a command having not created Object
+    // comment a command with an Object that was not created in the script
     const _pyID& obj = cmd->GetObject();
     if ( !obj.IsEmpty() && cmd->IsStudyEntry( obj ) && !presentObjects.count( obj ))
     {
       cmd->Comment();
-      cmd->GetString() += " ### not created object" ;
+      cmd->GetString() += " ### not created Object" ;
       for ( int i = 0; i < cmd->GetNbResultValues(); i++ ) {
         _pyID objID = cmd->GetResultValue( i+1 );
         theGen->ObjectCreationRemoved( objID ); // objID.SetName( name ) is not needed
       }
+      return;
     }
     const _pyID& result = cmd->GetResultValue();
     if ( result.IsEmpty() || result.Value( 1 ) == '"' || result.Value( 1 ) == '\'' )
