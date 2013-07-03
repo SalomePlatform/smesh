@@ -721,6 +721,14 @@ struct SMESH_MeshEditor_i::_IDSource : public POA_SMESH::SMESH_IDSource
   SMESH::SMESH_Mesh_ptr _mesh;
   SMESH::long_array* GetIDs()      { return new SMESH::long_array( _ids ); }
   SMESH::long_array* GetMeshInfo() { return 0; }
+  SMESH::long_array* GetNbElementsByType()
+  {
+    SMESH::long_array_var aRes = new SMESH::long_array();
+    aRes->length(SMESH::NB_ELEMENT_TYPES);
+    for (int i = 0; i < SMESH::NB_ELEMENT_TYPES; i++)
+      aRes[ i ] = ( i == _type ) ? _ids.length() : 0;
+    return aRes._retn();  
+  }
   SMESH::SMESH_Mesh_ptr GetMesh()  { return SMESH::SMESH_Mesh::_duplicate( _mesh ); }
   bool IsMeshInfoCorrect()         { return true; }
   SMESH::array_of_ElementType* GetTypes()
@@ -754,6 +762,18 @@ SMESH::SMESH_IDSource_ptr SMESH_MeshEditor_i::MakeIDSource(const SMESH::long_arr
 bool SMESH_MeshEditor_i::IsTemporaryIDSource( SMESH::SMESH_IDSource_ptr& idSource )
 {
   return SMESH::DownCast<SMESH_MeshEditor_i::_IDSource*>( idSource );
+}
+
+CORBA::Long* SMESH_MeshEditor_i::GetTemporaryIDs( SMESH::SMESH_IDSource_ptr& idSource,
+                                                  int&                       nbIds)
+{
+  if ( _IDSource* tmpIdSource = SMESH::DownCast<SMESH_MeshEditor_i::_IDSource*>( idSource ))
+  {
+    nbIds = (int) tmpIdSource->_ids.length();
+    return & tmpIdSource->_ids[0];
+  }
+  nbIds = 0;
+  return 0;
 }
 
 void SMESH_MeshEditor_i::deleteAuxIDSources()
