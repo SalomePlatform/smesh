@@ -26,7 +26,6 @@
 #define SMESHGUI_MESHINFO_H
 
 #include "SMESH_SMESHGUI.hxx"
-#include <SALOME_InteractiveObject.hxx>
 #include "SMESH_ControlsDef.hxx"
 
 #include <Plot2d_Histogram.h>
@@ -42,6 +41,10 @@
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_Group)
+#include CORBA_SERVER_HEADER(SMESH_Filter)
+
+#include <SALOME_InteractiveObject.hxx>
+#include <SALOME_GenericObj_wrap.hxx>
 
 class QAbstractButton;
 class QButtonGroup;
@@ -303,13 +306,12 @@ private:
   QwtPlot*              createPlot( QWidget* );
   void                  setFontAttributes( QWidget* );
   void                  clearInternal();
-  SMESH::long_array_var getElementsByType( SMESH::ElementType theElementType );
-  int                   nbElemsControl( SMESH::long_array_var&, SMESH::Controls::FunctorPtr );
-  Plot2d_Histogram*     getHistogram( SMESH::long_array_var&, SMESH::Controls::NumericalFunctorPtr );
+  Plot2d_Histogram*     getHistogram( SMESH::NumericalFunctor_ptr functor );
+  void                  computeNb( int ft, int iBut, int iWdg );
 
 private slots:
-  void                  computeFaceInfo();
-  void                  computeVolumeInfo();
+  void                  computeAspectRatio();
+  void                  computeAspectRatio3D();
   void                  computeFreeNodesInfo();
   void                  computeDoubleNodesInfo();
   void                  computeDoubleEdgesInfo();
@@ -318,9 +320,12 @@ private slots:
   void                  computeDoubleVolumesInfo();
   void                  computeOverConstrainedVolumesInfo();
   void                  setTolerance( const double theTolerance );
+  
 
 private:
-  SMESH_Actor*              myActor;
+  typedef SALOME::GenericObj_wrap< SMESH::Predicate >        TPredicate;
+  typedef SALOME::GenericObj_wrap< SMESH::NumericalFunctor > TNumFunctor;
+  SMESH::SMESH_IDSource_var myObject;
   ObjectType                myObjectType;
   SMESHGUI_SpinBox*         myToleranceWidget;
   QList<QLabel*>            myWidgets;
@@ -328,6 +333,8 @@ private:
   QwtPlot*                  myPlot;
   QwtPlot*                  myPlot3D;
   QList<QAbstractButton*>   myButtons;
+  QList<TPredicate>         myPredicates;
+  TNumFunctor               myAspectRatio, myAspectRatio3D;
 };
 
 class SMESHGUI_EXPORT SMESHGUI_MeshInfoDlg : public QDialog
