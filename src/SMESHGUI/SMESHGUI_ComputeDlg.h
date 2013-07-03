@@ -49,6 +49,7 @@ class QPushButton;
 class QTableWidget;
 class QLabel;
 class QtxComboBox;
+class QProgressBar;
 class SMESHGUI_ComputeDlg;
 class SMESHGUI_MeshInfosBox;
 class SMESHGUI_PrecomputeDlg;
@@ -318,6 +319,7 @@ private:
   QLabel *                    nbNodesLabel;
   QLabel *                    nbElemsLabel;
   QLabel *                    freeRAMLabel;
+  QProgressBar*               progressBar;
 };
 
 #endif // SMESHGUI_COMPUTEDLG_H

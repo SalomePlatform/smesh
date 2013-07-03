@@ -7484,4 +7484,19 @@ en raison de leurs types incompatibles:
         <translation>Coef de réduction:</translation>
     </message>
 </context>
+<context>
+    <name>SMESHGUI_ComputeDlg_QThreadQDialog</name>
+    <message>
+        <source>TITLE</source>
+        <translation type="unfinished">Compute</translation>
+    </message>
+    <message>
+        <source>CANCELING</source>
+        <translation type="unfinished">Canceling...</translation>
+    </message>
+    <message>
+        <source>CANCEL</source>
+        <translation type="unfinished">Cancel</translation>
+    </message>
+</context>
 </TS>

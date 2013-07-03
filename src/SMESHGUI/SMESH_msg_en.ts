@@ -4652,6 +4652,21 @@ Please, create VTK viewer and try again</translation>
     </message>
 </context>
 <context>
+    <name>SMESHGUI_ComputeDlg_QThreadQDialog</name>
+    <message>
+        <source>CANCEL</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <source>CANCELING</source>
+        <translation>Canceling...</translation>
+    </message>
+    <message>
+        <source>TITLE</source>
+        <translation>Compute</translation>
+    </message>
+</context>
+<context>
     <name>SMESHGUI_PrecomputeDlg</name>
     <message>
         <source>CAPTION</source>
