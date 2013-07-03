@@ -39,6 +39,7 @@
 #include "SMESHDS_CommandType.hxx"
 #include "SMESHDS_Group.hxx"
 #include "SMESHDS_GroupOnGeom.hxx"
+#include "SMESH_Controls.hxx"
 #include "SMESH_Filter_i.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Group.hxx"
@@ -3007,6 +3008,20 @@ void SMESH_Mesh_i::ExportGMF(::SMESH::SMESH_IDSource_ptr meshPart,
 }
 
 //=============================================================================
+/*!
+ * Return computation progress [0.,1]
+ */
+//=============================================================================
+
+CORBA::Double SMESH_Mesh_i::GetComputeProgress()
+{
+  SMESH_TRY;
+
+  return _impl->GetComputeProgress();
+
+  SMESH_CATCH( SMESH::doNothing );
+  return 0.;
+}
 
 CORBA::Long SMESH_Mesh_i::NbNodes()throw(SALOME::SALOME_Exception)
 {
@@ -4465,7 +4480,7 @@ bool SMESH_Mesh_i::IsMeshInfoCorrect()
 
 //=============================================================================
 /*!
- * \brief Returns statistic of mesh elements
+ * \brief Returns number of mesh elements per each \a EntityType
  */
 //=============================================================================
 
@@ -4489,7 +4504,33 @@ SMESH::long_array* SMESH_Mesh_i::GetMeshInfo()
 
 //=============================================================================
 /*!
- * \brief Collect statistic of mesh elements given by iterator
+ * \brief Returns number of mesh elements per each \a ElementType
+ */
+//=============================================================================
+
+SMESH::long_array* SMESH_Mesh_i::GetNbElementsByType()
+{
+  SMESH::long_array_var aRes = new SMESH::long_array();
+  aRes->length(SMESH::NB_ELEMENT_TYPES);
+  for (int i = 0; i < SMESH::NB_ELEMENT_TYPES; i++)
+    aRes[ i ] = 0;
+
+  const SMDS_MeshInfo* meshInfo = 0;
+  if ( _preMeshInfo )
+    meshInfo = _preMeshInfo;
+  else if ( SMESHDS_Mesh* meshDS = _impl->GetMeshDS() )
+    meshInfo = & meshDS->GetMeshInfo();
+
+  if (meshInfo)
+    for (int i = 0; i < SMESH::NB_ELEMENT_TYPES; i++)
+      aRes[i] = meshInfo->NbElements((SMDSAbs_ElementType)i);
+
+  return aRes._retn();
+}
+
+//=============================================================================
+/*
+ * Collect statistic of mesh elements given by iterator
  */
 //=============================================================================
 
@@ -4499,6 +4540,232 @@ void SMESH_Mesh_i::CollectMeshInfo(const SMDS_ElemIteratorPtr theItr,
   if (!theItr) return;
   while (theItr->more())
     theInfo[ theItr->next()->GetEntityType() ]++;
+}
+
+//=============================================================================
+namespace /* Iterators used in SMESH_Mesh_i::GetElements(SMESH::SMESH_IDSource_var obj,
+           *                                             SMESH::ElementType        type) */
+{
+  using namespace SMESH::Controls;
+  //-----------------------------------------------------------------------------
+  struct PredicateIterator : public SMDS_ElemIterator
+  {
+    SMDS_ElemIteratorPtr    _elemIter;
+    PredicatePtr            _predicate;
+    const SMDS_MeshElement* _elem;
+
+    PredicateIterator( SMDS_ElemIteratorPtr   iterator,
+                       PredicatePtr predicate):
+      _elemIter(iterator), _predicate(predicate)
+    {
+      next();
+    }
+    virtual bool more()
+    {
+      return _elem;
+    }
+    virtual const SMDS_MeshElement* next()
+    {
+      const SMDS_MeshElement* res = _elem;
+      _elem = 0;
+      while ( _elemIter->more() && !_elem )
+      {
+        _elem = _elemIter->next();
+        if ( _elem && ( !_predicate->IsSatisfy( _elem->GetID() )))
+          _elem = 0;
+      }
+      return res;
+    }
+  };
+
+  //-----------------------------------------------------------------------------
+  struct IDSourceIterator : public SMDS_ElemIterator
+  {
+    const CORBA::Long*        _idPtr;
+    const CORBA::Long*        _idEndPtr;
+    SMESH::long_array_var     _idArray;
+    const SMDS_Mesh*          _mesh;
+    const SMDSAbs_ElementType _type;
+    const SMDS_MeshElement*   _elem;
+
+    IDSourceIterator( const SMDS_Mesh*    mesh,
+                      const CORBA::Long*  ids,
+                      const int           nbIds,
+                      SMDSAbs_ElementType type):
+      _idPtr( ids ), _idEndPtr( ids + nbIds ), _mesh( mesh ), _type( type ), _elem( 0 )
+    {
+      if ( _idPtr && nbIds && _mesh )
+        next();
+    }
+    IDSourceIterator( const SMDS_Mesh*    mesh,
+                      SMESH::long_array*  idArray,
+                      SMDSAbs_ElementType type):
+      _idPtr( 0 ), _idEndPtr( 0 ), _idArray( idArray), _mesh( mesh ), _type( type ), _elem( 0 )
+    {
+      if ( idArray && _mesh )
+      {
+        _idPtr    = &_idArray[0];
+        _idEndPtr = _idPtr + _idArray->length();
+        next();
+      }
+    }
+    virtual bool more()
+    {
+      return _elem;
+    }
+    virtual const SMDS_MeshElement* next()
+    {
+      const SMDS_MeshElement* res = _elem;
+      _elem = 0;
+      while ( _idPtr < _idEndPtr && !_elem )
+      {
+        if ( _type == SMDSAbs_Node )
+        {
+          _elem = _mesh->FindNode( *_idPtr++ );
+        }
+        else if ((_elem = _mesh->FindElement( *_idPtr++ )) &&
+                 _elem->GetType() != _type )
+        {
+          _elem = 0;
+        }
+      }
+      return res;
+    }
+  };
+  //-----------------------------------------------------------------------------
+
+  struct NodeOfElemIterator : public SMDS_ElemIterator
+  {
+    TColStd_MapOfInteger    _checkedNodeIDs;
+    SMDS_ElemIteratorPtr    _elemIter;
+    SMDS_ElemIteratorPtr    _nodeIter;
+    const SMDS_MeshElement* _node;
+
+    NodeOfElemIterator( SMDS_ElemIteratorPtr iter ): _elemIter( iter ), _node( 0 )
+    {
+      if ( _elemIter && _elemIter->more() )
+      {
+        _nodeIter = _elemIter->next()->nodesIterator();
+        next();
+      }
+    }
+    virtual bool more()
+    {
+      return _node;
+    }
+    virtual const SMDS_MeshElement* next()
+    {
+      const SMDS_MeshElement* res = _node;
+      _node = 0;
+      while (( _elemIter->more() || _nodeIter->more() ) && !_node )
+      {
+        if ( _nodeIter->more() )
+        {
+          _node = _nodeIter->next();
+          if ( !_checkedNodeIDs.Add( _node->GetID() ))
+            _node = 0;
+        }
+        else
+        {
+          _nodeIter = _elemIter->next()->nodesIterator();
+        }
+      }
+      return res;
+    }
+  };
+}
+
+//=============================================================================
+/*
+ * Return iterator on elements of given type in given object
+ */
+//=============================================================================
+
+SMDS_ElemIteratorPtr SMESH_Mesh_i::GetElements(SMESH::SMESH_IDSource_ptr theObject,
+                                               SMESH::ElementType        theType)
+{
+  SMDS_ElemIteratorPtr  elemIt;
+  bool                  typeOK = false;
+  SMDSAbs_ElementType elemType = SMDSAbs_ElementType( theType );
+
+  SMESH::SMESH_Mesh_var meshVar = theObject->GetMesh();
+  SMESH_Mesh_i*          mesh_i = SMESH::DownCast<SMESH_Mesh_i*>( meshVar );
+  if ( !mesh_i ) return elemIt;
+  SMESHDS_Mesh*          meshDS = mesh_i->GetImpl().GetMeshDS();
+
+  if ( SMESH::DownCast<SMESH_Mesh_i*>( theObject ))
+  {
+    elemIt = meshDS->elementsIterator( elemType );
+    typeOK = true;
+  }
+  else if ( SMESH_subMesh_i* submesh_i = SMESH::DownCast<SMESH_subMesh_i*>( theObject ))
+  {
+    SMESHDS_SubMesh* sm = ((SMESHDS_Mesh*) meshDS)->MeshElements( submesh_i->GetId() );
+    if ( sm )
+    {
+      elemIt = sm->GetElements();
+      if ( elemType != SMDSAbs_Node )
+      {
+        typeOK = ( elemIt && elemIt->more() && elemIt->next()->GetType() == elemType );
+        elemIt = typeOK ? sm->GetElements() : SMDS_ElemIteratorPtr();
+      }
+    }
+  }
+  else if ( SMESH_GroupBase_i* group_i = SMESH::DownCast<SMESH_GroupBase_i*>( theObject ))
+  {
+    SMESHDS_GroupBase* groupDS = group_i->GetGroupDS();
+    if ( groupDS && ( groupDS->GetType() == elemType || elemType == SMDSAbs_Node ))
+    {
+      elemIt = groupDS->GetElements();
+      typeOK = ( groupDS->GetType() == elemType );
+    }
+  }
+  else if ( SMESH::Filter_i* filter_i = SMESH::DownCast<SMESH::Filter_i*>( theObject ))
+  {
+    if ( filter_i->GetElementType() == theType || elemType == SMDSAbs_Node )
+    {
+      SMESH::Predicate_i* pred_i = filter_i->GetPredicate_i();
+      if ( pred_i && pred_i->GetPredicate() )
+      {
+        SMDSAbs_ElementType filterType = SMDSAbs_ElementType( filter_i->GetElementType() );
+        SMDS_ElemIteratorPtr allElemIt = meshDS->elementsIterator( filterType );
+        elemIt = SMDS_ElemIteratorPtr( new PredicateIterator( allElemIt, pred_i->GetPredicate() ));
+        typeOK = ( filterType == elemType );
+      }
+    }
+  }
+  else
+  {
+    SMESH::array_of_ElementType_var types = theObject->GetTypes();
+    const bool                    isNodes = ( types->length() == 1 && types[0] == SMESH::NODE );
+    if ( isNodes && elemType != SMDSAbs_Node )
+      return elemIt;
+    if ( SMESH_MeshEditor_i::IsTemporaryIDSource( theObject ))
+    {
+      int nbIds;
+      if ( CORBA::Long* ids = SMESH_MeshEditor_i::GetTemporaryIDs( theObject, nbIds ))
+        elemIt = SMDS_ElemIteratorPtr( new IDSourceIterator( meshDS, ids, nbIds, elemType ));
+    }
+    else
+    {
+      SMESH::long_array_var ids = theObject->GetIDs();
+      elemIt = SMDS_ElemIteratorPtr( new IDSourceIterator( meshDS, ids._retn(), elemType ));
+    }
+    typeOK = ( isNodes == ( elemType == SMDSAbs_Node ));
+  }
+
+  if ( elemIt && elemIt->more() && !typeOK )
+  {
+    if ( elemType == SMDSAbs_Node )
+    {
+      elemIt = SMDS_ElemIteratorPtr( new NodeOfElemIterator( elemIt ));
+    }
+    else
+    {
+      elemIt = SMDS_ElemIteratorPtr();
+    }
+  }
+  return elemIt;
 }
 
 //=============================================================================
@@ -4548,9 +4815,9 @@ class SMESH_DimHyp
 
   //-----------------------------------------------------------------------------
   //! Constructors
-  SMESH_DimHyp(const SMESH_subMesh*  theSubMesh,
-               const int             theDim,
-               const TopoDS_Shape&   theShape)
+  SMESH_DimHyp(const SMESH_subMesh* theSubMesh,
+               const int            theDim,
+               const TopoDS_Shape&  theShape)
   {
     _subMesh = (SMESH_subMesh*)theSubMesh;
     SetShape( theDim, theShape );
@@ -4562,7 +4829,7 @@ class SMESH_DimHyp
                 const TopoDS_Shape& theShape)
   {
     _dim = theDim;
-    _ownDim = (int)SMESH_Gen::GetShapeDim(theShape);
+    _ownDim = SMESH_Gen::GetShapeDim(theShape);
     if (_dim >= _ownDim)
       _shapeMap.Add( theShape );
     else {

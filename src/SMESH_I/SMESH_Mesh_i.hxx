@@ -264,6 +264,8 @@ public:
                        const char*               file,
                        CORBA::Boolean            isascii) throw (SALOME::SALOME_Exception);
 
+  CORBA::Double GetComputeProgress();
+
   CORBA::Long NbNodes()
     throw (SALOME::SALOME_Exception);
 
@@ -576,12 +578,6 @@ public:
   SMESH::string_array* GetLastParameters();
 
   /*!
-   * Collect statistic of mesh elements given by iterator
-   */
-  static void CollectMeshInfo(const SMDS_ElemIteratorPtr theItr,
-                              SMESH::long_array&         theInfo);
-
-  /*!
    * \brief Return submesh objects list in meshing order
    */
   virtual SMESH::submesh_array_array* GetMeshOrder();
@@ -591,17 +587,32 @@ public:
   virtual ::CORBA::Boolean SetMeshOrder(const SMESH::submesh_array_array& theSubMeshArray);
 
 
+  /*!
+   * Collect statistic of mesh elements given by iterator
+   */
+  static void CollectMeshInfo(const SMDS_ElemIteratorPtr theItr,
+                              SMESH::long_array&         theInfo);
+  /*!
+   * \brief Return iterator on elements of given type in given object
+   */
+  static SMDS_ElemIteratorPtr GetElements(SMESH::SMESH_IDSource_ptr obj,
+                                          SMESH::ElementType        type);
+
   // =========================
   // SMESH_IDSource interface
   // =========================
 
   virtual SMESH::long_array* GetIDs();
   /*!
-   * Returns statistic of mesh elements
-   * Result array of number enityties
+   * Returns number of mesh elements of each \a EntityType
+   * Result array of number of elements per \a EntityType
    * Inherited from SMESH_IDSource
    */
   virtual SMESH::long_array* GetMeshInfo();
+  /*!
+   * Returns number of mesh elements of each \a ElementType
+   */
+  virtual SMESH::long_array* GetNbElementsByType();
   /*!
    * Returns types of elements it contains
    */
