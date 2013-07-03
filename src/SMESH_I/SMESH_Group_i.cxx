@@ -677,9 +677,9 @@ void SMESH_GroupBase_i::SetColorNumber(CORBA::Long color)
 }
 
 //=============================================================================
-/*!
- * Returns statistic of mesh elements
- * Result array of number enityties
+/*
+ * Returns number of mesh elements of each \a SMESH::EntityType
+ * Result array of number of elements per \a SMESH::EntityType
  * Inherited from SMESH_IDSource
  */
 //=============================================================================
@@ -704,6 +704,27 @@ SMESH::long_array* SMESH_GroupBase_i::GetMeshInfo()
   }
 
   return aRes._retn();
+}
+
+//=============================================================================
+/*
+ * Returns number of mesh elements of each \a ElementType
+ */
+//=============================================================================
+
+SMESH::long_array* SMESH_GroupBase_i::GetNbElementsByType()
+{
+  SMESH::long_array_var aRes = new SMESH::long_array();
+  aRes->length(SMESH::NB_ELEMENT_TYPES);
+  for (int i = 0; i < SMESH::NB_ELEMENT_TYPES; i++)
+    aRes[ i ] = 0;
+
+  if ( myPreMeshInfo )
+    aRes[ GetType() ] = myPreMeshInfo->NbElements( SMDSAbs_ElementType( GetType() ));
+  else
+    aRes[ GetType() ] = Size();
+
+  return aRes._retn();  
 }
 
 //=======================================================================

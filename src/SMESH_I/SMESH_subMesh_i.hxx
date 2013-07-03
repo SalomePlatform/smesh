@@ -88,11 +88,15 @@ public:
    */
   virtual SMESH::long_array* GetIDs();
   /*!
-   * Returns statistic of mesh elements
-   * Result array of number enityties
+   * Returns number of mesh elements of each \a EntityType
+   * Result array of number of elements per \a EntityType
    * Inherited from SMESH_IDSource
    */
   virtual SMESH::long_array* GetMeshInfo();
+  /*!
+   * Returns number of mesh elements of each \a ElementType
+   */
+  virtual SMESH::long_array* GetNbElementsByType();
   /*!
    * Returns types of elements it contains
    */

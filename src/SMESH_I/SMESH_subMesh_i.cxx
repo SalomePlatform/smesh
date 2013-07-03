@@ -207,53 +207,29 @@ CORBA::Long SMESH_subMesh_i::GetNumberOfNodes(CORBA::Boolean all)
   ::SMESH_subMesh* aSubMesh = _mesh_i->_mapSubMesh[_localId];
   SMESHDS_SubMesh* aSubMeshDS = aSubMesh->GetSubMeshDS();
 
-  set<int> nodeIds;
-
-  // nodes are bound to shell instead of solid
-  TListOfSubMeshes smList;
-  if ( all && getSubMeshes( aSubMesh, smList ))
+  if ( aSubMeshDS && aSubMeshDS->IsComplexSubmesh() )
   {
-    TListOfSubMeshes::iterator sm = smList.begin();
-    for ( ; sm != smList.end(); ++sm )
+    // sub-mesh on a geom group, always return all nodes
+    return aSubMeshDS->NbNodes();
+  }
+  if ( aSubMeshDS && !all )
+  {
+    // return anything we have
+    return aSubMeshDS->NbNodes();
+  }
+  if ( all ) // get nodes from aSubMesh and all child sub-meshes
+  {
+    int nbNodes = 0;
+    SMESH_subMeshIteratorPtr smIt = aSubMesh->getDependsOnIterator( /*includeSelf=*/true );
+    while ( smIt->more() )
     {
-      SMDS_ElemIteratorPtr eIt = (*sm)->GetElements();
-      if ( eIt->more() ) {
-        while ( eIt->more() ) {
-          const SMDS_MeshElement* anElem = eIt->next();
-          SMDS_ElemIteratorPtr nIt = anElem->nodesIterator();
-          while ( nIt->more() )
-            nodeIds.insert( nIt->next()->GetID() );
-        }
-      } else {
-        SMDS_NodeIteratorPtr nIt = (*sm)->GetNodes();
-        while ( nIt->more() )
-          nodeIds.insert( nIt->next()->GetID() );
-      }      
+      aSubMesh = smIt->next();
+      if (( aSubMeshDS = aSubMesh->GetSubMeshDS() ))
+        nbNodes += aSubMeshDS->NbNodes();
     }
-    return nodeIds.size();
   }
 
-  if ( aSubMeshDS == NULL )
-    return 0;
-
-  if ( all ) { // all nodes of submesh elements
-    SMDS_ElemIteratorPtr eIt = aSubMeshDS->GetElements();
-    if ( eIt->more() ) {
-      while ( eIt->more() ) {
-        const SMDS_MeshElement* anElem = eIt->next();
-        SMDS_ElemIteratorPtr nIt = anElem->nodesIterator();
-        while ( nIt->more() )
-          nodeIds.insert( nIt->next()->GetID() );
-      }
-    } else {
-      SMDS_NodeIteratorPtr nIt = aSubMeshDS->GetNodes();
-      while ( nIt->more() )
-        nodeIds.insert( nIt->next()->GetID() );
-    }
-    return nodeIds.size();
-  }
-
-  return aSubMeshDS->NbNodes();
+  return aSubMeshDS ? aSubMeshDS->NbNodes() : 0;
 }
 
 //=============================================================================
@@ -508,14 +484,13 @@ SMESH::ElementType SMESH_subMesh_i::GetElementType( const CORBA::Long id, const 
   return GetFather()->GetElementType( id, iselem );
 }
 
-
 //=============================================================================
-/*!
- * Returns statistic of mesh elements
- * Result array of number enityties
- * Inherited from SMESH_IDSource
+/*
+ * Returns number of mesh elements of each \a EntityType
+ * @return array of number of elements per \a EntityType
  */
 //=============================================================================
+
 SMESH::long_array* SMESH_subMesh_i::GetMeshInfo()
 {
   if ( _preMeshInfo )
@@ -538,6 +513,37 @@ SMESH::long_array* SMESH_subMesh_i::GetMeshInfo()
       SMESH_Mesh_i::CollectMeshInfo( (*sm)->GetElements(), aRes );
 
   return aRes._retn();
+}
+
+//=======================================================================
+/*
+ * Returns number of mesh elements of each \a ElementType
+ */
+//=======================================================================
+
+SMESH::long_array* SMESH_subMesh_i::GetNbElementsByType()
+{
+  SMESH::long_array_var aRes = new SMESH::long_array();
+  aRes->length(SMESH::NB_ELEMENT_TYPES);
+  for (int i = 0; i < SMESH::NB_ELEMENT_TYPES; i++)
+    if ( _preMeshInfo )
+      aRes[ i ] = _preMeshInfo->NbElements( SMDSAbs_ElementType( i ));
+    else
+      aRes[ i ] = 0;
+
+  if ( !_preMeshInfo )
+  {
+    aRes[ SMESH::NODE ] = GetNumberOfNodes(true);
+
+    ::SMESH_subMesh* aSubMesh = _mesh_i->_mapSubMesh[_localId];
+    if ( SMESHDS_SubMesh* smDS = aSubMesh->GetSubMeshDS() )
+    {
+      SMDS_ElemIteratorPtr eIt = smDS->GetElements();
+      if ( eIt->more() )
+        aRes[ eIt->next()->GetType() ] = smDS->NbElements();
+    }
+  }
+  return aRes._retn();  
 }
 
 
