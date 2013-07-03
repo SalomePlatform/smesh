@@ -84,12 +84,12 @@ public:
                const ::MeshDimension aDim=::MeshDim_3D,
                TSetOfInt*            aShapesId=0);
 
-#ifdef WITH_SMESH_CANCEL_COMPUTE
   void PrepareCompute(::SMESH_Mesh &        aMesh,
                       const TopoDS_Shape &  aShape);
   void CancelCompute(::SMESH_Mesh &        aMesh,
                      const TopoDS_Shape &  aShape);
-#endif
+
+  const SMESH_subMesh* GetCurrentSubMesh() const { return _sm_current; }
 
   /*!
    * \brief evaluates size of prospective mesh on a shape 
@@ -154,11 +154,11 @@ public:
 
   int GetANewId();
 
-  std::map < int, SMESH_Algo * >_mapAlgo;
-  std::map < int, SMESH_0D_Algo * >_map0D_Algo;
-  std::map < int, SMESH_1D_Algo * >_map1D_Algo;
-  std::map < int, SMESH_2D_Algo * >_map2D_Algo;
-  std::map < int, SMESH_3D_Algo * >_map3D_Algo;
+  // std::map < int, SMESH_Algo * >_mapAlgo;
+  // std::map < int, SMESH_0D_Algo * >_map0D_Algo;
+  // std::map < int, SMESH_1D_Algo * >_map1D_Algo;
+  // std::map < int, SMESH_2D_Algo * >_map2D_Algo;
+  // std::map < int, SMESH_3D_Algo * >_map3D_Algo;
 
 private:
 
@@ -171,14 +171,13 @@ private:
   // number of segments per diagonal of boundary box of geometry by which
   // default segment length of appropriate 1D hypotheses is defined
   int _segmentation;
-  // default of segments
+  // default number of segments
   int _nbSegments;
+
   counters *_counters;
 
-#ifdef WITH_SMESH_CANCEL_COMPUTE
-  volatile bool _compute_canceled;
+  volatile bool  _compute_canceled;
   SMESH_subMesh* _sm_current;
-#endif
 };
 
 #endif
