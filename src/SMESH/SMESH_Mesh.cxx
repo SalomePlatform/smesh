@@ -592,19 +592,9 @@ SMESH_Hypothesis::Hypothesis_Status
   if ( !subMesh || !subMesh->GetId())
     return SMESH_Hypothesis::HYP_BAD_SUBSHAPE;
 
-  StudyContextStruct *sc = _gen->GetStudyContext(_studyId);
-  if (sc->mapHypothesis.find(anHypId) == sc->mapHypothesis.end())
-  {
-    if(MYDEBUG) MESSAGE("Hypothesis ID does not give an hypothesis");
-    if(MYDEBUG) {
-      SCRUTE(_studyId);
-      SCRUTE(anHypId);
-    }
+  SMESH_Hypothesis *anHyp = GetHypothesis( anHypId );
+  if ( !anHyp )
     throw SALOME_Exception(LOCALIZED("hypothesis does not exist"));
-  }
-
-  SMESH_Hypothesis *anHyp = sc->mapHypothesis[anHypId];
-  MESSAGE( "SMESH_Mesh::AddHypothesis " << anHyp->GetName() );
 
   bool isGlobalHyp = IsMainShape( aSubShape );
 
@@ -874,6 +864,22 @@ int SMESH_Mesh::GetHypotheses(const TopoDS_Shape &                aSubShape,
     }
   }
   return nbHyps;
+}
+
+//================================================================================
+/*!
+ * \brief Return a hypothesis by its ID
+ */
+//================================================================================
+
+SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const int anHypId) const
+{
+  StudyContextStruct *sc = _gen->GetStudyContext(_studyId);
+  if (sc->mapHypothesis.find(anHypId) == sc->mapHypothesis.end())
+    return false;
+
+  SMESH_Hypothesis *anHyp = sc->mapHypothesis[anHypId];
+  return anHyp;
 }
 
 //=============================================================================
@@ -1301,6 +1307,12 @@ void SMESH_Mesh::ExportMED(const char *        file,
   myWriter.Perform();
 }
 
+//================================================================================
+/*!
+ * \brief Export the mesh to a SAUV file
+ */
+//================================================================================
+
 void SMESH_Mesh::ExportSAUV(const char *file, 
                             const char* theMeshName, 
                             bool theAutoGroups)
@@ -1443,6 +1455,54 @@ void SMESH_Mesh::ExportGMF(const char *        file,
   myWriter.SetExportRequiredGroups( withRequiredGroups );
 
   myWriter.Perform();
+}
+
+//================================================================================
+/*!
+ * \brief Return a ratio of "compute cost" of computed sub-meshes to the whole
+ *        "compute cost".
+ */
+//================================================================================
+
+double SMESH_Mesh::GetComputeProgress() const
+{
+  double totalCost = 1e-100, computedCost = 0;
+  const SMESH_subMesh* curSM = _gen->GetCurrentSubMesh();
+
+  // get cost of already treated sub-meshes
+  if ( SMESH_subMesh* mainSM = GetSubMeshContaining( 1 ))
+  {
+    SMESH_subMeshIteratorPtr smIt = mainSM->getDependsOnIterator(/*includeSelf=*/true);
+    while ( smIt->more() )
+    {
+      SMESH_subMesh* sm = smIt->next();
+      const int smCost = sm->GetComputeCost();
+      totalCost += smCost;
+      if ( sm != curSM &&
+           ( !sm->IsEmpty() ||
+             sm->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE ))
+      {
+        computedCost += smCost;
+      }
+    }
+  }
+  // get progress of a current algo 
+  if ( curSM )
+    if ( SMESH_Algo* algo = curSM->GetAlgo() )
+    {
+      double rate = algo->GetProgress();
+      if ( 0. < rate && rate < 1.001 )
+      {
+        //cout << " rate: " << rate << " cost " << algo->GetComputeCost() << endl;
+        computedCost += rate * algo->GetComputeCost();
+      }
+      else
+      {
+        computedCost += algo->GetProgressByTic() * algo->GetComputeCost();
+      }
+    }
+  //cout << "Total: " << totalCost << " progress: " << computedCost / totalCost << endl;
+  return computedCost / totalCost;
 }
 
 //================================================================================
