@@ -117,8 +117,9 @@ module SMESH
   {
     double GetValue( in long theElementId );
 
-    Histogram GetHistogram( in short nbIntervals, in boolean isLogarithmic );
-
+    Histogram GetHistogram     ( in short nbIntervals, in boolean isLogarithmic );
+    Histogram GetLocalHistogram( in short nbIntervals, in boolean isLogarithmic,
+                                 in SMESH::SMESH_IDSource obj );
     /*!
     * Set precision for calculation. It is a position after point which is
     * used to functor value after calculation.
@@ -164,11 +165,12 @@ module SMESH
 
   /*!
   * Predicates are intended for verification of criteria,
-  *            must return bool value by mesh id
+  *            they return bool value by mesh id
   */
   interface Predicate: Functor
   {
     boolean IsSatisfy( in long thEntityId );
+    long    NbSatisfying( in SMESH::SMESH_IDSource obj );
   };
 
   /*!
