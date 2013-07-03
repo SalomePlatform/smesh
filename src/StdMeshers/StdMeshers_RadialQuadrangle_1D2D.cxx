@@ -295,12 +295,11 @@ public:
   // -----------------------------------------------------------------------------
   static TNodeDistributor* GetDistributor(SMESH_Mesh& aMesh)
   {
-    const int myID = -1000;
-    map < int, SMESH_1D_Algo * > & algoMap = aMesh.GetGen()->_map1D_Algo;
-    map < int, SMESH_1D_Algo * >::iterator id_algo = algoMap.find( myID );
-    if ( id_algo == algoMap.end() )
-      return new TNodeDistributor( myID, 0, aMesh.GetGen() );
-    return static_cast< TNodeDistributor* >( id_algo->second );
+    const int myID = -1001;
+    TNodeDistributor* myHyp = dynamic_cast<TNodeDistributor*>( aMesh.GetHypothesis( myID ));
+    if ( !myHyp )
+      myHyp = new TNodeDistributor( myID, 0, aMesh.GetGen() );
+    return myHyp;
   }
   // -----------------------------------------------------------------------------
   //! Computes distribution of nodes on a straight line ending at pIn and pOut
