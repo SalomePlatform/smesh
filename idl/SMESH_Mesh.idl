@@ -129,7 +129,8 @@ module SMESH
     FACE,
     VOLUME,
     ELEM0D,
-    BALL
+    BALL,
+    NB_ELEMENT_TYPES
   };
   typedef sequence<ElementType> array_of_ElementType ;
 
@@ -284,10 +285,16 @@ module SMESH
     long_array GetIDs();
 
     /*!
-     * Returns statistic of mesh elements
-     * @return array of number enityties by index of EntityType
+     * Returns number of mesh elements of each \a EntityType
+     * @return array of number of elements per \a EntityType
      */
     long_array GetMeshInfo();
+
+    /*!
+     * Returns number of mesh elements of each \a ElementType
+     * @return array of number of elements per \a ElementType
+     */
+    long_array GetNbElementsByType();
 
     /*!
      * Returns types of elements it contains.
@@ -690,6 +697,10 @@ module SMESH
     void ExportPartToSTL( in SMESH_IDSource meshPart,
                           in string         file,
                           in boolean        isascii ) raises (SALOME::SALOME_Exception);
+    /*!
+     * Return computation progress [0.,1]
+     */
+    double GetComputeProgress();
 
     /*!
      * Get informations about mesh contents
