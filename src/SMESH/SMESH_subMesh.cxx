@@ -104,6 +104,7 @@ SMESH_subMesh::SMESH_subMesh(int                  Id,
     _algoState = NO_ALGO;
     _computeState = NOT_READY;
   }
+  _computeCost = 0; // how costly is to compute this sub-mesh
 }
 
 //=============================================================================
@@ -353,6 +354,35 @@ bool SMESH_subMesh::SubMeshesComputed(bool * isFailedToCompute/*=0*/) const
     }
   }
   return subMeshesComputed;
+}
+
+//================================================================================
+/*!
+ * \brief Return cost of computing this sub-mesh. The cost depends on the shape type
+ * and number of sub-meshes this one DependsOn().
+ *  \return int - the computation cost in abstract units.
+ */
+//================================================================================
+
+int SMESH_subMesh::GetComputeCost() const
+{
+  if ( !_computeCost )
+  {
+    int computeCost;
+    switch ( _subShape.ShapeType() ) {
+    case TopAbs_SOLID:
+    case TopAbs_SHELL: computeCost = 1000; break;
+    case TopAbs_FACE:  computeCost = 100; break;
+    case TopAbs_EDGE:  computeCost = 10; break;
+    default:           computeCost = 1;
+    }
+    SMESH_subMeshIteratorPtr childIt = getDependsOnIterator(/*includeSelf=*/false);
+    while ( childIt->more() )
+      computeCost += childIt->next()->GetComputeCost();
+
+    ((SMESH_subMesh*)this)->_computeCost = computeCost;
+  }
+  return _computeCost;
 }
 
 //=============================================================================
@@ -1462,13 +1492,14 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           break;
         }
         TopoDS_Shape shape = _subShape;
+        int computeCost = GetComputeCost();
         // check submeshes needed
         if (_father->HasShapeToMesh() ) {
           bool subComputed = false, subFailed = false;
           if (!algo->OnlyUnaryInput()) {
             if ( event == COMPUTE /*&&
                  ( algo->NeedDiscreteBoundary() || algo->SupportSubmeshes() )*/)
-              shape = getCollection( gen, algo, subComputed, subFailed );
+              shape = getCollection( gen, algo, subComputed, subFailed, computeCost);
             else
               subComputed = SubMeshesComputed( & subFailed );
           }
@@ -1501,6 +1532,8 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           OCC_CATCH_SIGNALS;
 #endif
           algo->InitComputeError();
+          algo->GetComputeCost() = computeCost;
+
           MemoryReserve aMemoryReserve;
           SMDS_Mesh::CheckMemory();
           Kernel_Utils::Localizer loc;
@@ -2028,7 +2061,8 @@ void SMESH_subMesh::removeSubMeshElementsAndNodes()
 TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * theGen,
                                           SMESH_Algo* theAlgo,
                                           bool &      theSubComputed,
-                                          bool &      theSubFailed)
+                                          bool &      theSubFailed,
+                                          int  &      theComputeCost)
 {
   theSubComputed = SubMeshesComputed( & theSubFailed );
 
@@ -2048,11 +2082,14 @@ TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * theGen,
   BRep_Builder aBuilder;
   aBuilder.MakeCompound( aCompound );
 
+  theComputeCost = 0;
+
   TopExp_Explorer anExplorer( mainShape, _subShape.ShapeType() );
   for ( ; anExplorer.More(); anExplorer.Next() )
   {
     const TopoDS_Shape& S = anExplorer.Current();
     SMESH_subMesh* subMesh = _father->GetSubMesh( S );
+    theComputeCost += subMesh->GetComputeCost();
     if ( subMesh == this )
     {
       aBuilder.Add( aCompound, S );
@@ -2065,6 +2102,16 @@ TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * theGen,
         aBuilder.Add( aCompound, S );
       if ( !subMesh->SubMeshesComputed() )
         theSubComputed = false;
+    }
+    if ( !theAlgo->NeedDiscreteBoundary() )
+    {
+      SMESH_subMeshIteratorPtr smIt = subMesh->getDependsOnIterator(/*includeSelf=*/false);
+      while ( smIt->more() )
+      {
+        SMESH_subMesh* sm = smIt->next();
+        if ( sm->IsEmpty() )
+          theComputeCost += sm->GetComputeCost();
+      }
     }
   }
 
