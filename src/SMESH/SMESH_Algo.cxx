@@ -175,7 +175,7 @@ const SMESH_Algo::Features& SMESH_Algo::GetFeatures( const std::string& algoType
 SMESH_Algo::SMESH_Algo (int hypId, int studyId, SMESH_Gen * gen)
   : SMESH_Hypothesis(hypId, studyId, gen)
 {
-  gen->_mapAlgo[hypId] = this;
+  //gen->_mapAlgo[hypId] = this;
 
   _onlyUnaryInput = _requireDiscreteBoundary = _requireShape = true;
   _quadraticMesh = _supportSubmeshes = false;
@@ -205,28 +205,28 @@ SMESH_0D_Algo::SMESH_0D_Algo(int hypId, int studyId, SMESH_Gen* gen)
 {
   _shapeType = (1 << TopAbs_VERTEX);
   _type = ALGO_0D;
-  gen->_map0D_Algo[hypId] = this;
+  //gen->_map0D_Algo[hypId] = this;
 }
 SMESH_1D_Algo::SMESH_1D_Algo(int hypId, int studyId, SMESH_Gen* gen)
   : SMESH_Algo(hypId, studyId, gen)
 {
   _shapeType = (1 << TopAbs_EDGE);
   _type = ALGO_1D;
-  gen->_map1D_Algo[hypId] = this;
+  //gen->_map1D_Algo[hypId] = this;
 }
 SMESH_2D_Algo::SMESH_2D_Algo(int hypId, int studyId, SMESH_Gen* gen)
   : SMESH_Algo(hypId, studyId, gen)
 {
   _shapeType = (1 << TopAbs_FACE);
   _type = ALGO_2D;
-  gen->_map2D_Algo[hypId] = this;
+  //gen->_map2D_Algo[hypId] = this;
 }
 SMESH_3D_Algo::SMESH_3D_Algo(int hypId, int studyId, SMESH_Gen* gen)
   : SMESH_Algo(hypId, studyId, gen)
 {
   _shapeType = (1 << TopAbs_SOLID);
   _type = ALGO_3D;
-  gen->_map3D_Algo[hypId] = this;
+  //gen->_map3D_Algo[hypId] = this;
 }
 
 //=============================================================================
@@ -682,6 +682,17 @@ void SMESH_Algo::CancelCompute()
 }
 
 //================================================================================
+/*
+ * If possible, returns progress of computation [0.,1.]
+ */
+//================================================================================
+
+double SMESH_Algo::GetProgress() const
+{
+  return _progress;
+}
+
+//================================================================================
 /*!
  * \brief store error and comment and then return ( error == COMPERR_OK )
  */
@@ -728,7 +739,7 @@ SMESH_ComputeErrorPtr SMESH_Algo::GetComputeError() const
 
 //================================================================================
 /*!
- * \brief initialize compute error
+ * \brief initialize compute error before call of Compute()
  */
 //================================================================================
 
@@ -743,6 +754,23 @@ void SMESH_Algo::InitComputeError()
   _badInputElements.clear();
 
   _computeCanceled = false;
+  _computeCost     = 1;
+  _progressTic     = 0;
+  _progress        = 0.;
+}
+
+//================================================================================
+/*!
+ * \brief Return compute progress by nb of calls of this method
+ */
+//================================================================================
+
+double SMESH_Algo::GetProgressByTic() const
+{
+  const_cast<SMESH_Algo*>( this )->_progressTic++;
+  double x = 5 * _progressTic;
+  x = ( x < _computeCost ) ? ( x / _computeCost ) : 1.;
+  return 0.9 * sin( x * M_PI / 2 );
 }
 
 //================================================================================
