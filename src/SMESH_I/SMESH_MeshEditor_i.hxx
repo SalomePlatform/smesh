@@ -89,6 +89,7 @@ public:
   SMESH::SMESH_IDSource_ptr MakeIDSource(const SMESH::long_array& IDsOfElements,
                                          SMESH::ElementType       type);
   static bool               IsTemporaryIDSource( SMESH::SMESH_IDSource_ptr& idSource );
+  static CORBA::Long*       GetTemporaryIDs( SMESH::SMESH_IDSource_ptr& idSource, int& nbIds );
 
   CORBA::Boolean RemoveElements(const SMESH::long_array & IDsOfElements)
     throw (SALOME::SALOME_Exception);
