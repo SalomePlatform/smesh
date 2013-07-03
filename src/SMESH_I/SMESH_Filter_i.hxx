@@ -162,7 +162,11 @@ namespace SMESH
   {
   public:
     CORBA::Double                   GetValue( CORBA::Long theElementId );
-    SMESH::Histogram*               GetHistogram(CORBA::Short nbIntervals, CORBA::Boolean isLogarithmic);
+    SMESH::Histogram*               GetHistogram(CORBA::Short   nbIntervals,
+                                                 CORBA::Boolean isLogarithmic);
+    SMESH::Histogram*               GetLocalHistogram(CORBA::Short               nbIntervals,
+                                                      CORBA::Boolean            isLogarithmic,
+                                                      SMESH::SMESH_IDSource_ptr object);
     void                            SetPrecision( CORBA::Long thePrecision );
     CORBA::Long                     GetPrecision();
     Controls::NumericalFunctorPtr   GetNumericalFunctor();
@@ -383,6 +387,7 @@ namespace SMESH
   {
   public:
     CORBA::Boolean                  IsSatisfy( CORBA::Long theElementId );
+    CORBA::Long                     NbSatisfying( SMESH::SMESH_IDSource_ptr obj );
     Controls::PredicatePtr          GetPredicate();
     
   protected:
@@ -1029,6 +1034,7 @@ namespace SMESH
     // =========================
     virtual SMESH::long_array*           GetIDs();
     virtual SMESH::long_array*           GetMeshInfo();
+    virtual SMESH::long_array*           GetNbElementsByType();
     virtual SMESH::array_of_ElementType* GetTypes();
     virtual SMESH::SMESH_Mesh_ptr        GetMesh();
     virtual bool                         IsMeshInfoCorrect() { return true; }

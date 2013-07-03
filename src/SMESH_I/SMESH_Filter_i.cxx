@@ -33,6 +33,7 @@
 #include "SMDS_MeshNode.hxx"
 #include "SMESHDS_Mesh.hxx"
 #include "SMESH_Gen_i.hxx"
+#include "SMESH_Group_i.hxx"
 #include "SMESH_PythonDump.hxx"
 
 #include <SALOMEDS_wrap.hxx>
@@ -588,12 +589,63 @@ SMESH::Histogram* NumericalFunctor_i::GetHistogram(CORBA::Short nbIntervals, COR
   std::vector<int> elements;
   myNumericalFunctorPtr->GetHistogram(nbIntervals,nbEvents,funValues,elements,0,isLogarithmic);
 
-#ifdef WIN32
-  nbIntervals = CORBA::Short( min( nbEvents.size(), funValues.size() - 1));
-#else
-  nbIntervals = CORBA::Short( std::min( nbEvents.size(), funValues.size() - 1));
-#endif
   SMESH::Histogram_var histogram = new SMESH::Histogram;
+
+  nbIntervals = CORBA::Short( Min( int( nbEvents.size()),
+                                   int( funValues.size() - 1 )));
+  if ( nbIntervals > 0 )
+  {
+    histogram->length( nbIntervals );
+    for ( int i = 0; i < nbIntervals; ++i )
+    {
+      HistogramRectangle& rect = histogram[i];
+      rect.nbEvents = nbEvents[i];
+      rect.min = funValues[i];
+      rect.max = funValues[i+1];
+    }
+  }
+  return histogram._retn();
+}
+
+SMESH::Histogram* NumericalFunctor_i::GetLocalHistogram(CORBA::Short              nbIntervals,
+                                                        CORBA::Boolean            isLogarithmic,
+                                                        SMESH::SMESH_IDSource_ptr object)
+{
+  SMESH::Histogram_var histogram = new SMESH::Histogram;
+
+  std::vector<int>    nbEvents;
+  std::vector<double> funValues;
+  std::vector<int>    elements;
+
+  SMDS_ElemIteratorPtr elemIt;
+  if ( SMESH::DownCast< SMESH_GroupOnFilter_i* >( object ) ||
+       SMESH::DownCast< SMESH::Filter_i* >( object ))
+  {
+    elemIt = SMESH_Mesh_i::GetElements( object, GetElementType() );
+  }
+  else
+  {
+    SMESH::SMESH_Mesh_var        mesh = object->GetMesh();
+    SMESH::long_array_var  objNbElems = object->GetNbElementsByType();
+    SMESH::long_array_var meshNbElems = mesh->  GetNbElementsByType();
+    if ( meshNbElems[ GetElementType() ] !=
+         objNbElems [ GetElementType() ] )
+    {
+      elements.reserve( objNbElems[ GetElementType() ]);
+      elemIt = SMESH_Mesh_i::GetElements( object, GetElementType() );
+    }
+  }
+  if ( elemIt )
+  {
+    while ( elemIt->more() )
+      elements.push_back( elemIt->next()->GetID() );
+    if ( elements.empty() ) return histogram._retn();
+  }
+
+  myNumericalFunctorPtr->GetHistogram(nbIntervals,nbEvents,funValues,elements,0,isLogarithmic);
+
+  nbIntervals = CORBA::Short( Min( int( nbEvents.size()),
+                                   int( funValues.size() - 1 )));
   if ( nbIntervals > 0 )
   {
     histogram->length( nbIntervals );
@@ -918,6 +970,29 @@ SMESH::MultiConnection2D::Values* MultiConnection2D_i::GetValues()
 CORBA::Boolean Predicate_i::IsSatisfy( CORBA::Long theId )
 {
   return myPredicatePtr->IsSatisfy( theId );
+}
+
+CORBA::Long Predicate_i::NbSatisfying( SMESH::SMESH_IDSource_ptr obj )
+{
+  SMESH::SMESH_Mesh_var meshVar = obj->GetMesh();
+  const SMDS_Mesh*       meshDS = MeshPtr2SMDSMesh( meshVar );
+  if ( !meshDS )
+    return 0;
+  myPredicatePtr->SetMesh( meshDS );
+
+  SMDSAbs_ElementType elemType = SMDSAbs_ElementType( GetElementType() );
+
+  int nb = 0;
+  SMDS_ElemIteratorPtr elemIt =
+    SMESH::DownCast<SMESH_Mesh_i*>( meshVar )->GetElements( obj, GetElementType() );
+  if ( elemIt )
+    while ( elemIt->more() )
+    {
+      const SMDS_MeshElement* e = elemIt->next();
+      if ( e && e->GetType() == elemType )
+        nb += myPredicatePtr->IsSatisfy( e->GetID() );
+    }
+  return nb;
 }
 
 Controls::PredicatePtr Predicate_i::GetPredicate()
@@ -2702,58 +2777,62 @@ GetElementsId( SMESH_Mesh_ptr theMesh )
   return anArray._retn();
 }
 
-template<class TElement, class TIterator, class TPredicate>
-static void collectMeshInfo(const TIterator& theItr,
-                            TPredicate& thePred,
-                            SMESH::long_array& theRes)
-{         
-  if (!theItr)
-    return;
-  while (theItr->more()) {
-    const SMDS_MeshElement* anElem = theItr->next();
-    if ( thePred->IsSatisfy( anElem->GetID() ) )
-      theRes[ anElem->GetEntityType() ]++;
-  }
-}
-
 //=============================================================================
 /*!
- * \brief Returns statistic of mesh elements
+ * \brief Returns number of mesh elements per each \a EntityType
  */
 //=============================================================================
+
 SMESH::long_array* ::Filter_i::GetMeshInfo()
 {
   SMESH::long_array_var aRes = new SMESH::long_array();
   aRes->length(SMESH::Entity_Last);
-  for (int i = SMESH::Entity_Node; i < SMESH::Entity_Last; i++)
+  for (int i = 0; i < SMESH::Entity_Last; i++)
     aRes[i] = 0;
 
-  if(!CORBA::is_nil(myMesh) && myPredicate) {
-    const SMDS_Mesh* aMesh = MeshPtr2SMDSMesh(myMesh);
-    SMDS_ElemIteratorPtr it;
-    switch( GetElementType() )
+  if ( !CORBA::is_nil(myMesh) && myPredicate )
+  {
+    const SMDS_Mesh*  aMesh = MeshPtr2SMDSMesh(myMesh);
+    SMDS_ElemIteratorPtr it = aMesh->elementsIterator( SMDSAbs_ElementType( GetElementType() ));
+    while ( it->more() )
     {
-    case SMDSAbs_Node:
-      collectMeshInfo<const SMDS_MeshNode*>(aMesh->nodesIterator(),myPredicate,aRes);
-      break;
-    case SMDSAbs_Edge:
-      collectMeshInfo<const SMDS_MeshElement*>(aMesh->edgesIterator(),myPredicate,aRes);
-      break;
-    case SMDSAbs_Face:
-      collectMeshInfo<const SMDS_MeshElement*>(aMesh->facesIterator(),myPredicate,aRes);
-      break;
-    case SMDSAbs_Volume:
-      collectMeshInfo<const SMDS_MeshElement*>(aMesh->volumesIterator(),myPredicate,aRes);
-      break;
-    case SMDSAbs_All:
-    default:
-      collectMeshInfo<const SMDS_MeshElement*>(aMesh->elementsIterator(),myPredicate,aRes);
-      break;
+      const SMDS_MeshElement* anElem = it->next();
+      if ( myPredicate->IsSatisfy( anElem->GetID() ) )
+        aRes[ anElem->GetEntityType() ]++;
     }
   }
 
   return aRes._retn();  
 }
+
+//=============================================================================
+/*!
+ * \brief Returns number of mesh elements of each \a ElementType
+ */
+//=============================================================================
+
+SMESH::long_array* ::Filter_i::GetNbElementsByType()
+{
+  SMESH::long_array_var aRes = new SMESH::long_array();
+  aRes->length(SMESH::NB_ELEMENT_TYPES);
+  for (int i = 0; i < SMESH::NB_ELEMENT_TYPES; i++)
+    aRes[i] = 0;
+
+  if ( !CORBA::is_nil(myMesh) && myPredicate ) {
+    const SMDS_Mesh*  aMesh = MeshPtr2SMDSMesh(myMesh);
+    SMDS_ElemIteratorPtr it = aMesh->elementsIterator( SMDSAbs_ElementType( GetElementType() ));
+    CORBA::Long& nbElems = aRes[ GetElementType() ];
+    while ( it->more() )
+    {
+      const SMDS_MeshElement* anElem = it->next();
+      if ( myPredicate->IsSatisfy( anElem->GetID() ) )
+        nbElems++;
+    }
+  }
+
+  return aRes._retn();  
+}
+
 
 //================================================================================
 /*!
