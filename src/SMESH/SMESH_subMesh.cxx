@@ -2089,7 +2089,8 @@ TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * theGen,
   {
     const TopoDS_Shape& S = anExplorer.Current();
     SMESH_subMesh* subMesh = _father->GetSubMesh( S );
-    theComputeCost += subMesh->GetComputeCost();
+    if ( subMesh->GetComputeState() != NOT_READY )
+      theComputeCost += subMesh->GetComputeCost();
     if ( subMesh == this )
     {
       aBuilder.Add( aCompound, S );
@@ -2109,7 +2110,8 @@ TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * theGen,
       while ( smIt->more() )
       {
         SMESH_subMesh* sm = smIt->next();
-        if ( sm->IsEmpty() )
+        if ( sm->GetComputeState() != NOT_READY &&
+             sm->IsEmpty() )
           theComputeCost += sm->GetComputeCost();
       }
     }

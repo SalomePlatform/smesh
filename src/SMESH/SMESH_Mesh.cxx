@@ -1476,13 +1476,16 @@ double SMESH_Mesh::GetComputeProgress() const
     while ( smIt->more() )
     {
       SMESH_subMesh* sm = smIt->next();
-      const int smCost = sm->GetComputeCost();
-      totalCost += smCost;
-      if ( sm != curSM &&
-           ( !sm->IsEmpty() ||
-             sm->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE ))
+      if ( sm->GetComputeState() != SMESH_subMesh::NOT_READY )
       {
-        computedCost += smCost;
+        const int smCost = sm->GetComputeCost();
+        totalCost += smCost;
+        if ( sm != curSM &&
+             ( !sm->IsEmpty() ||
+               sm->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE ))
+        {
+          computedCost += smCost;
+        }
       }
     }
   }
@@ -1496,9 +1499,13 @@ double SMESH_Mesh::GetComputeProgress() const
         //cout << " rate: " << rate << " cost " << algo->GetComputeCost() << endl;
         computedCost += rate * algo->GetComputeCost();
       }
-      else
+      else if ( curSM->IsEmpty() )
       {
         computedCost += algo->GetProgressByTic() * algo->GetComputeCost();
+      }
+      else
+      {
+        computedCost += 0.99 * algo->GetComputeCost();
       }
     }
   //cout << "Total: " << totalCost << " progress: " << computedCost / totalCost << endl;
