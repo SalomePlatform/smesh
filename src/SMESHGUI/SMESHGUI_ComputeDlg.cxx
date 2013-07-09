@@ -737,6 +737,7 @@ SMESHGUI_ComputeDlg_QThreadQDialog::SMESHGUI_ComputeDlg_QThreadQDialog(QWidget  
 
   cancelButton = new QPushButton(tr("CANCEL"));
   cancelButton->setDefault(true);
+  cancelButton->setCheckable(true);
 
   QLabel * nbNodesName = new QLabel(tr("SMESH_MESHINFO_NODES"), this );
   QLabel * nbElemsName = new QLabel(tr("SMESH_MESHINFO_ELEMENTS"), this );
@@ -779,13 +780,13 @@ bool SMESHGUI_ComputeDlg_QThreadQDialog::result()
 void SMESHGUI_ComputeDlg_QThreadQDialog::onCancel()
 {
   qthread.cancel();
-  cancelButton->setDown( true );
   cancelButton->setText( tr("CANCELING"));
+  cancelButton->setEnabled(false);
 }
 
 void SMESHGUI_ComputeDlg_QThreadQDialog::timerEvent(QTimerEvent *event)
 {
-  if ( !cancelButton->isDown() ) // not yet cancelled
+  if ( !cancelButton->isChecked() ) // not yet cancelled
     progressBar->setValue( progressBar->maximum() * qthread.getMesh()->GetComputeProgress() );
 
   if(qthread.isFinished())
