@@ -58,6 +58,7 @@
 #include <BRepBndLib.hxx>
 #include <BRepPrimAPI_MakeBox.hxx>
 #include <Bnd_Box.hxx>
+#include <TColStd_MapOfInteger.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
@@ -1469,46 +1470,51 @@ double SMESH_Mesh::GetComputeProgress() const
   double totalCost = 1e-100, computedCost = 0;
   const SMESH_subMesh* curSM = _gen->GetCurrentSubMesh();
 
+  // get progress of a current algo
+  TColStd_MapOfInteger currentSubIds; 
+  if ( curSM )
+    if ( SMESH_Algo* algo = curSM->GetAlgo() )
+    {
+      int algoNotDoneCost = 0, algoDoneCost = 0;
+      const std::vector<SMESH_subMesh*>& smToCompute = algo->SubMeshesToCompute();
+      for ( size_t i = 0; i < smToCompute.size(); ++i )
+      {
+        if ( smToCompute[i]->IsEmpty() )
+          algoNotDoneCost += smToCompute[i]->GetComputeCost();
+        else
+          algoDoneCost += smToCompute[i]->GetComputeCost();
+        currentSubIds.Add( smToCompute[i]->GetId() );
+      }
+      double rate = algo->GetProgress();
+      if ( !( 0. < rate && rate < 1.001 ))
+      {
+        rate = algo->GetProgressByTic();
+      }
+      // cout << "rate: "<<rate << " algoNotDoneCost: " << algoNotDoneCost << endl;
+      computedCost += algoDoneCost + rate * algoNotDoneCost;
+    }
+
   // get cost of already treated sub-meshes
   if ( SMESH_subMesh* mainSM = GetSubMeshContaining( 1 ))
   {
     SMESH_subMeshIteratorPtr smIt = mainSM->getDependsOnIterator(/*includeSelf=*/true);
     while ( smIt->more() )
     {
-      SMESH_subMesh* sm = smIt->next();
-      if ( sm->GetComputeState() != SMESH_subMesh::NOT_READY )
+      const SMESH_subMesh* sm = smIt->next();
+      const int smCost = sm->GetComputeCost();
+      totalCost += smCost;
+      if ( !currentSubIds.Contains( sm->GetId() ) )
       {
-        const int smCost = sm->GetComputeCost();
-        totalCost += smCost;
-        if ( sm != curSM &&
-             ( !sm->IsEmpty() ||
-               sm->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE ))
-        {
+        if (( !sm->IsEmpty() ) ||
+            ( sm->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE &&
+              !sm->DependsOn( curSM ) ))
           computedCost += smCost;
-        }
       }
     }
   }
-  // get progress of a current algo 
-  if ( curSM )
-    if ( SMESH_Algo* algo = curSM->GetAlgo() )
-    {
-      double rate = algo->GetProgress();
-      if ( 0. < rate && rate < 1.001 )
-      {
-        //cout << " rate: " << rate << " cost " << algo->GetComputeCost() << endl;
-        computedCost += rate * algo->GetComputeCost();
-      }
-      else if ( curSM->IsEmpty() )
-      {
-        computedCost += algo->GetProgressByTic() * algo->GetComputeCost();
-      }
-      else
-      {
-        computedCost += 0.99 * algo->GetComputeCost();
-      }
-    }
-  //cout << "Total: " << totalCost << " progress: " << computedCost / totalCost << endl;
+  // cout << "Total: " << totalCost
+  //      << " computed: " << computedCost << " progress: " << computedCost / totalCost
+  //      << " nbElems: " << GetMeshDS()->GetMeshInfo().NbElements() << endl;
   return computedCost / totalCost;
 }
 
