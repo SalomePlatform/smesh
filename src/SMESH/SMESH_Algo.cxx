@@ -754,7 +754,6 @@ void SMESH_Algo::InitComputeError()
   _badInputElements.clear();
 
   _computeCanceled = false;
-  _computeCost     = 1;
   _progressTic     = 0;
   _progress        = 0.;
 }
@@ -767,9 +766,14 @@ void SMESH_Algo::InitComputeError()
 
 double SMESH_Algo::GetProgressByTic() const
 {
+  int computeCost = 0;
+  for ( size_t i = 0; i < _smToCompute.size(); ++i )
+    computeCost += _smToCompute[i]->GetComputeCost();
+
   const_cast<SMESH_Algo*>( this )->_progressTic++;
+
   double x = 5 * _progressTic;
-  x = ( x < _computeCost ) ? ( x / _computeCost ) : 1.;
+  x = ( x < computeCost ) ? ( x / computeCost ) : 1.;
   return 0.9 * sin( x * M_PI / 2 );
 }
 

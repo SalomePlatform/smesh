@@ -235,7 +235,7 @@ class SMESH_EXPORT SMESH_Algo : public SMESH_Hypothesis
    */
   SMESH_ComputeErrorPtr GetComputeError() const;
   /*!
-   * \brief initialize compute error before call of Compute()
+   * \brief initialize compute error etc. before call of Compute()
    */
   void InitComputeError();
   /*!
@@ -243,9 +243,9 @@ class SMESH_EXPORT SMESH_Algo : public SMESH_Hypothesis
    */
   double GetProgressByTic() const;
   /*!
-   * Return a storage of "compute cost" of shapes being Compute()d.
+   * Return a vector of sub-meshes to Compute()
    */
-  int& GetComputeCost() { return _computeCost; }
+  std::vector<SMESH_subMesh*>& SubMeshesToCompute() { return _smToCompute; }
 
 public:
   // ==================================================================
@@ -421,9 +421,11 @@ protected:
   std::list<const SMDS_MeshElement*> _badInputElements; //!< to explain COMPERR_BAD_INPUT_MESH
 
   volatile bool _computeCanceled; //!< is set to True while computing to stop it
-  int           _computeCost;     //!< "compute cost" of shapes being Compute()d
-  int           _progressTic;     //!< counter of calls from SMESH_Mesh::GetComputeProgress()
-  double        _progress;        //!< progress of Compute() [0.,1.]
+
+  double        _progress;        /* progress of Compute() [0.,1.],
+                                     to be set by an algo really tracking the progress */
+  int           _progressTic;     // counter of calls from SMESH_Mesh::GetComputeProgress()
+  std::vector<SMESH_subMesh*> _smToCompute; // sub-meshes to Compute()
 };
 
 
