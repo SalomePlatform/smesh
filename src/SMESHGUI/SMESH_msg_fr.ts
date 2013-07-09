@@ -4114,6 +4114,14 @@ avec le paramètre &apos;%1&apos; des préférences du module Mesh.</translation
         <translation>L&apos;objet sélectionné a été utilisé pour en créer un autre.
 Il ne peut pas être supprimé.</translation>
     </message>
+    <message>
+        <source>MEN_SORT_CHILD_ITEMS</source>
+        <translation type="unfinished">Sort children</translation>
+    </message>
+    <message>
+        <source>STB_SORT_CHILD_ITEMS</source>
+        <translation type="unfinished">Sort child items</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_Dialog</name>

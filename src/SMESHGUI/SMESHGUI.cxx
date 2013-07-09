@@ -162,6 +162,7 @@
 #include <SALOMEDSClient_SComponent.hxx>
 #include <SALOMEDSClient_StudyBuilder.hxx>
 #include <SALOMEDS_Study.hxx>
+#include <SALOMEDS_SObject.hxx>
 
 // OCCT includes
 #include <Standard_ErrorHandler.hxx>
@@ -1217,6 +1218,25 @@
       SMESH::SMESH_Mesh_var aMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(anIObject);
       if ( !aMesh->_is_nil() ) {
         aMesh->SetAutoColor( false );
+      }
+    }
+  }
+
+  void sortChildren(){
+    LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
+    SALOME_ListIO selected;
+    if( aSel ) {
+      aSel->selectedObjects( selected );
+      
+      if(selected.Extent()){
+	Handle(SALOME_InteractiveObject) anIObject = selected.First();
+	_PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+	_PTR(SObject) aSObj = aStudy->FindObjectID(anIObject->getEntry());
+	if (aSObj) {
+	  if ( aStudy->GetUseCaseBuilder()->SortChildren( aSObj, true/*AscendingOrder*/ ) ) {
+	    SMESHGUI::GetSMESHGUI()->updateObjBrowser();
+	  }
+	}
       }
     }
   }
@@ -3533,6 +3553,10 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       dlg->show();
       break;
     }
+  case 41:
+    ::sortChildren();
+    break;
+
   }
 
   anApp->updateActions(); //SRN: To update a Save button in the toolbar
@@ -3829,6 +3853,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 300, "HIDE" );
   createSMESHAction( 301, "SHOW" );
   createSMESHAction( 302, "DISPLAY_ONLY" );
+
+  createSMESHAction( 41, "SORT_CHILD_ITEMS" );
 
   // ----- create menu --------------
   int fileId    = createMenu( tr( "MEN_FILE" ),    -1,  1 ),
@@ -4510,6 +4536,10 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( action( 1134 ), -1, -1 );
   popupMgr()->setRule( action( 1134 ), "client='VTKViewer'", QtxPopupMgr::VisibleRule );
 
+  popupMgr()->insert( separator(), -1, -1 );
+
+  popupMgr()->insert( action( 41 ), -1, -1 );
+  popupMgr()->setRule( action( 41 ), "$component={'SMESH'} and client='ObjectBrowser' and isContainer and nbChildren>1", QtxPopupMgr::VisibleRule );
   popupMgr()->insert( separator(), -1, -1 );
 
   connect( application(), SIGNAL( viewManagerActivated( SUIT_ViewManager* ) ),

@@ -585,6 +585,11 @@ public:
   const std::string &               GetLastObjEntry() const { return myLastObj; }
   std::vector< std::string >        GetAllParameters(const std::string& theObjectEntry) const;
 
+  // Move objects to the specified position
+  void Move( const SMESH::sobject_list& what,
+	     SALOMEDS::SObject_ptr where,
+	     CORBA::Long row );
+
 private:
   // Create hypothesis of given type
   SMESH::SMESH_Hypothesis_ptr createHypothesis( const char* theHypName,

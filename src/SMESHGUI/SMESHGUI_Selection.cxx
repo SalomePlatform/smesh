@@ -127,6 +127,9 @@ QVariant SMESHGUI_Selection::parameter( const int ind, const QString& p ) const
   else if ( p=="groupType" )     val = QVariant( groupType( ind ) );
   else if ( p=="quadratic2DMode") val =  QVariant(quadratic2DMode(ind));
   else if ( p=="isDistributionVisible") val = QVariant(isDistributionVisible(ind));
+  else if ( p=="hasChildren") val = QVariant(hasChildren(ind));
+  else if ( p=="nbChildren") val = QVariant(nbChildren(ind));
+  else if ( p=="isContainer") val = QVariant(isContainer(ind));
 
   if( val.isValid() )
     return val;
@@ -527,6 +530,50 @@ QVariant SMESHGUI_Selection::isVisible( int ind ) const
     }
   }
   return QVariant( false );
+}
+
+//=======================================================================
+//function : hasChildren
+//purpose  : 
+//=======================================================================
+
+bool SMESHGUI_Selection::hasChildren( int ind ) const
+{
+  if ( ind >= 0 )
+  {
+    _PTR(SObject) sobj = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
+    return SMESH::GetActiveStudyDocument()->GetUseCaseBuilder()->HasChildren( sobj );
+  }
+  return false;
+}
+
+//=======================================================================
+//function : hasChildren
+//purpose  : 
+//=======================================================================
+
+int SMESHGUI_Selection::nbChildren( int ind ) const
+{
+  int nb = 0;
+  if ( ind >= 0 )
+  {
+    _PTR(SObject) sobj = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
+    if ( sobj->GetStudy()->GetUseCaseBuilder()->IsUseCaseNode( sobj ) ) {
+      _PTR(UseCaseIterator) it = sobj->GetStudy()->GetUseCaseBuilder()->GetUseCaseIterator( sobj ); 
+      for (it->Init(false); it->More(); it->Next()) nb++;
+    }
+  }
+  return nb;
+}
+
+//=======================================================================
+//function : isContainer
+//purpose  : 
+//=======================================================================
+
+bool SMESHGUI_Selection::isContainer( int ind ) const
+{
+  return ind >= 0 && ind < myTypes.count() && myTypes[ind] == "Unknown";
 }
 
 //=======================================================================

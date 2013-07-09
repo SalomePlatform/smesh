@@ -4790,6 +4790,18 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
   }
   pd << ""; // prevent optimizing pd out
 
+  // creation of tree nodes for all data objects in the study
+  // to support tree representation customization and drag-n-drop:
+  SALOMEDS::UseCaseBuilder_var useCaseBuilder = theComponent->GetStudy()->GetUseCaseBuilder();
+  if ( !useCaseBuilder->IsUseCaseNode( theComponent ) ) {
+    useCaseBuilder->SetRootCurrent();
+    useCaseBuilder->Append( theComponent ); // component object is added as the top level item
+    SALOMEDS::ChildIterator_var it = theComponent->GetStudy()->NewChildIterator( theComponent ); 
+    for (it->InitEx(true); it->More(); it->Next()) {
+      useCaseBuilder->AppendTo( it->Value()->GetFather(), it->Value() );
+    }
+  }
+
   INFOS( "SMESH_Gen_i::Load completed" );
   return true;
 }
@@ -4995,6 +5007,46 @@ char* SMESH_Gen_i::getVersion()
 #else
   return CORBA::string_dup(SMESH_VERSION_STR);
 #endif
+}
+
+//=================================================================================
+// function : Move()
+// purpose  : Moves objects to the specified position. 
+//            Is used in the drag-n-drop functionality.
+//=================================================================================
+void SMESH_Gen_i::Move( const SMESH::sobject_list& what,
+			SALOMEDS::SObject_ptr where,
+			CORBA::Long row )
+{
+  if ( CORBA::is_nil( where ) ) return;
+
+  SALOMEDS::Study_var study = where->GetStudy();
+  SALOMEDS::StudyBuilder_var studyBuilder = study->NewBuilder();
+  SALOMEDS::UseCaseBuilder_var useCaseBuilder = study->GetUseCaseBuilder();
+  SALOMEDS::SComponent_var father = where->GetFatherComponent();
+  std::string dataType = father->ComponentDataType();
+  if ( dataType != "SMESH" ) return; // not a SMESH component
+  
+  SALOMEDS::SObject_var objAfter;
+  if ( row >= 0 && useCaseBuilder->HasChildren( where ) ) {
+    // insert at given row -> find insertion position
+    SALOMEDS::UseCaseIterator_var useCaseIt = useCaseBuilder->GetUseCaseIterator( where );
+    int i;
+    for ( i = 0; i < row && useCaseIt->More(); i++, useCaseIt->Next() );
+    if ( i == row && useCaseIt->More() ) {
+      objAfter = useCaseIt->Value();
+    }
+  }
+  
+  for ( int i = 0; i < what.length(); i++ ) {
+    SALOMEDS::SObject_var sobj = what[i];
+    if ( CORBA::is_nil( sobj ) ) continue; // skip bad object
+    // insert the object to the use case tree
+    if ( !CORBA::is_nil( objAfter ) )
+      useCaseBuilder->InsertBefore( sobj, objAfter ); // insert at given row
+    else
+      useCaseBuilder->AppendTo( where, sobj );        // append to the end of list
+  }
 }
 
 //=============================================================================

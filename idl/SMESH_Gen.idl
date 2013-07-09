@@ -36,6 +36,7 @@
 
 module SMESH
 {
+  typedef sequence<SALOMEDS::SObject> sobject_list;
   typedef sequence<GEOM::GEOM_Object> object_array;
   typedef sequence<SMESH_Mesh>        mesh_array;
 
@@ -402,6 +403,19 @@ module SMESH
      * \brief Get names of meshes defined in file with the specified name.
      */
     string_array GetMeshNames(in string theFileName);
+
+    /*!
+     * \brief Moves objects to the specified position
+     *
+     * This function is used in the drag-n-drop functionality.
+     *
+     * \param what objects being moved
+     * \param where parent object where objects are moved to
+     * \param row position in the parent object's children list at which objects are moved
+     */
+    void Move( in sobject_list what, 
+	       in SALOMEDS::SObject where, 
+	       in long row );
   };
 
 };

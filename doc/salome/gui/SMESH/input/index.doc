@@ -23,6 +23,9 @@ array of dedicated operations;</li>
 \subpage using_notebook_mesh_page "Salome notebook".</li>
 </ul>
 
+The possibility to sort the created sub-meshes or groups is detailed on
+\subpage arranging_study_objects_page section.
+
 Mesh module preferences are described in the \subpage mesh_preferences_page section of SALOME Mesh Help.
 
 Almost all mesh module functionalities are accessible via

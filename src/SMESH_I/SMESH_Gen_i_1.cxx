@@ -261,6 +261,7 @@ static SALOMEDS::SObject_ptr publish(SALOMEDS::Study_ptr   theStudy,
 {
   SALOMEDS::SObject_wrap SO = SMESH_Gen_i::ObjectToSObject( theStudy, theIOR );
   SALOMEDS::StudyBuilder_var aStudyBuilder = theStudy->NewBuilder();
+  SALOMEDS::UseCaseBuilder_var useCaseBuilder = theStudy->GetUseCaseBuilder();
   if ( SO->_is_nil() ) {
     if ( theTag == 0 )
       SO = aStudyBuilder->NewObject( theFatherObject );
@@ -285,6 +286,10 @@ static SALOMEDS::SObject_ptr publish(SALOMEDS::Study_ptr   theStudy,
     SALOMEDS::AttributeSelectable_wrap selAttr = anAttr;
     selAttr->SetSelectable( false );
   }
+
+  // add object to the use case tree
+  // (to support tree representation customization and drag-n-drop)
+  useCaseBuilder->AppendTo( SO->GetFather(), SO );
 
   return SO._retn();
 }
@@ -377,6 +382,9 @@ static void addReference (SALOMEDS::Study_ptr   theStudy,
     if ( !theSObject->FindSubObject( theTag, aReferenceSO.inout() ))
       aReferenceSO = aStudyBuilder->NewObjectToTag( theSObject, theTag );
     aStudyBuilder->Addreference( aReferenceSO, aToObjSO );
+    // add reference to the use case tree
+    // (to support tree representation customization and drag-n-drop)
+    theStudy->GetUseCaseBuilder()->AppendTo( aReferenceSO->GetFather(), aReferenceSO );
   }
 }
 
@@ -456,6 +464,7 @@ SALOMEDS::SComponent_ptr SMESH_Gen_i::PublishComponent(SALOMEDS::Study_ptr theSt
     return father._retn();
 
   SALOMEDS::StudyBuilder_var      aStudyBuilder = theStudy->NewBuilder(); 
+  SALOMEDS::UseCaseBuilder_var    useCaseBuilder = theStudy->GetUseCaseBuilder();
   SALOMEDS::GenericAttribute_wrap anAttr;
   SALOMEDS::AttributePixMap_wrap  aPixmap;
 
@@ -466,6 +475,10 @@ SALOMEDS::SComponent_ptr SMESH_Gen_i::PublishComponent(SALOMEDS::Study_ptr theSt
   aPixmap->SetPixMap( "ICON_OBJBROWSER_SMESH" );
   CORBA::String_var userName = aComp->componentusername();
   SetName( father, userName.in(), "MESH" );
+  // add component to the use case tree
+  // (to support tree representation customization and drag-n-drop)
+  useCaseBuilder->SetRootCurrent();
+  useCaseBuilder->Append( father ); // component object is added as the top level item
   if(MYDEBUG) MESSAGE("PublishComponent--END");
 
   return father._retn();

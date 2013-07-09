@@ -4114,6 +4114,14 @@ It can&apos;t be deleted </translation>
         <source>SMESH_GIGABYTE</source>
         <translation>%1 GB</translation>
     </message>
+    <message>
+        <source>MEN_SORT_CHILD_ITEMS</source>
+        <translation>Sort children</translation>
+    </message>
+    <message>
+        <source>STB_SORT_CHILD_ITEMS</source>
+        <translation>Sort child items</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_Dialog</name>
