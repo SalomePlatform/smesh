@@ -80,6 +80,7 @@ class SMESH_EXPORT SMESH_subMesh
   SMESH_Algo* GetAlgo() const;
 
   const std::map < int, SMESH_subMesh * >& DependsOn();
+  bool DependsOn( const SMESH_subMesh* other ) const;
   /*!
    * \brief Return iterator on the sub-meshes this one depends on. By default
    *        most simple sub-meshes go first.
@@ -287,7 +288,7 @@ protected:
                              SMESH_Algo* theAlgo,
                              bool &      theSubComputed,
                              bool &      theSubFailed,
-                             int  &      theComputeCost);
+                             std::vector<SMESH_subMesh*>& theSubs);
   /*!
    * \brief Update compute_state by _computeError
     * \retval bool - false if there are errors
@@ -307,6 +308,7 @@ protected:
                                              const SMESH_Hypothesis * theHyp,
                                              const int                theHypType = 0);
   // 
+  int computeCost() const;
 
 protected:
 
@@ -322,7 +324,8 @@ protected:
   algo_state            _algoState;
   compute_state         _computeState;
   SMESH_ComputeErrorPtr _computeError;
-  int                   _computeCost; // how costly is to compute this sub-mesh
+  int                   _computeCost;     // how costly is to compute this sub-mesh
+  int                   _realComputeCost; // _computeCost depending on presence of needed hypotheses
 
   // allow algo->Compute() if a sub-shape of lower dim is meshed but
   // none mesh entity is bound to it. Eg StdMeshers_CompositeSegment_1D can
