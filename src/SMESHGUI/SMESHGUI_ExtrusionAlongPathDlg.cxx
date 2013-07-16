@@ -883,7 +883,7 @@ void SMESHGUI_ExtrusionAlongPathDlg::SelectionIntoArgument()
       return;
 
     QString aString;
-    int aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, myMeshActor->getIO(), aString);
+    int aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, IO, aString);
     // return if more than one node is selected
     if (aNbUnits != 1)
       return;
@@ -978,17 +978,15 @@ void SMESHGUI_ExtrusionAlongPathDlg::SetEditCurrentArgument (QToolButton* button
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
       aViewWindow->SetSelectionMode(NodeSelection);
 
-    SMESH_TypeFilter* aMeshOrSubMeshFilter = new SMESH_TypeFilter(SMESH::MESHorSUBMESH);
-    SMESH_TypeFilter* aSmeshGroupFilter    = new SMESH_TypeFilter(SMESH::GROUP);
+    SMESH_TypeFilter* aMeshOrSubMeshFilter = new SMESH_TypeFilter(SMESH::IDSOURCE);
     SMESH_NumberFilter* aVertexFilter      = new SMESH_NumberFilter ("GEOM", TopAbs_SHAPE,
                                                                      -1, TopAbs_VERTEX);
     QList<SUIT_SelectionFilter*> aListOfFilters;
     if (aMeshOrSubMeshFilter) aListOfFilters.append(aMeshOrSubMeshFilter);
-    if (aSmeshGroupFilter)    aListOfFilters.append(aSmeshGroupFilter);
     if (aVertexFilter)        aListOfFilters.append(aVertexFilter);
 
     mySelectionMgr->installFilter(new SMESH_LogicalFilter
-                                  (aListOfFilters, SMESH_LogicalFilter::LO_OR));
+                                  (aListOfFilters, SMESH_LogicalFilter::LO_OR, true));
   }
 
   if (myEditCurrentArgument && !myEditCurrentArgument->hasFocus())
@@ -1277,9 +1275,7 @@ void SMESHGUI_ExtrusionAlongPathDlg::onDisplaySimulation( bool toDisplayPreview 
           SMESH::SMESH_MeshEditor::Extrusion_Error retVal;
           SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
           bool NeedGroups = false;
-          SMESH::ElementType ElemType = SMESH::FACE;
-          if( GetConstructorId() == 0 )
-            ElemType = SMESH::EDGE;
+          SMESH::ElementType ElemType = ( GetConstructorId() == 0 ) ? SMESH::EDGE : SMESH::FACE;
           if( !MeshCheck->isChecked() ) {
             aMeshEditor->ExtrusionAlongPathX(anElementsId, myPath, aNodeStart, AnglesGrp->isChecked(),
                                              anAngles, LinearAnglesCheck->isChecked(),
@@ -1293,8 +1289,7 @@ void SMESHGUI_ExtrusionAlongPathDlg::onDisplaySimulation( bool toDisplayPreview 
                                                   BasePointGrp->isChecked(), aBasePoint,
                                                   NeedGroups, ElemType, retVal);
           }
-          
-          wc.suspend();
+
           if( retVal == SMESH::SMESH_MeshEditor::EXTR_OK ) {
             SMESH::MeshPreviewStruct_var aMeshPreviewStruct = aMeshEditor->GetPreviewData();
             mySimulation->SetData(aMeshPreviewStruct._retn());
