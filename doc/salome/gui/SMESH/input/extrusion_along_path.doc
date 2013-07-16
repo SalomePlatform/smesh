@@ -119,7 +119,7 @@ curve. By default, the <b>Base Point</b> around which the elements are rotated i
 the mass center of the elements, however, you can specify any point as
 the <b>Base Point</b> and the elements will be rotated with respect to this
 point.<br>
-  Note that it is the <b>Base Point</b> who goes exactly along the 
+  Note that it is the <b>Base Point</b> whos track exactly equals to the 
   path, and all the elements being extruded just keep their relative
   position around the <b>Base Point</b> at each iteration.
 </li>
