@@ -79,7 +79,7 @@ path</b> item or click <em>"Extrusion along a path"</em> button in the toolbar.
 
 The following dialog common for line and planar elements will appear:
 
-\image html extrusion1.png
+\image html extrusion_along_path_dlg.png
 </li>
 
 <li>In this dialog:
@@ -99,28 +99,31 @@ about filters in the \ref selection_filter_library_page "Selection filter librar
 </ul>
 
 </li>
-<li>define the Path along which the elements will be extruded,
-\n Path definition consists of several elements:
-<ul>
-<li><b>Mesh or submesh</b> - 1D mesh or sub-mesh, along which proceeds the extrusion</li>
-<li><b>Start node</b> - the start node. It is used to define the direction of extrusion </li>
-</ul>
+<li>define the \b Path along which the elements will be extruded.<br>
+  Path definition consists of several elements:
+  <ul>
+    <li><b>Mesh or submesh</b> - 1D mesh or sub-mesh, along which proceeds the extrusion</li>
+    <li><b>Start node</b> - the start node. It is used to define the direction of extrusion </li>
+  </ul>
 </li>
-<li>activate  <b>Generate Groups</b> checkbox if it is necessary to  copy the groups of
-elements of the source mesh to the newly created one. </li>
+<li>activate <b>Generate Groups</b> checkbox if it is necessary to  copy the groups of
+  elements of the source mesh to the newly created one. </li>
 </ul>
 </li>
 
 <li>There are two optional parameters, which can be very useful:
 <ul>
 <li>If the path of extrusion is curvilinear, at each iteration the
-extruded shape is rotated to keep its initial angularity to the
-curve. By default, the <b>Base Point</b> around which the shape is rotated is
-the mass center of the shape, however, you can specify any point as
-the <b>Base Point</b> and the shape will be rotated with respect to this
-point.
+extruded elements are rotated to keep its initial angularity to the
+curve. By default, the <b>Base Point</b> around which the elements are rotated is
+the mass center of the elements, however, you can specify any point as
+the <b>Base Point</b> and the elements will be rotated with respect to this
+point.<br>
+  Note that it is the <b>Base Point</b> who goes exactly along the 
+  path, and all the elements being extruded just keep their relative
+  position around the <b>Base Point</b> at each iteration.
 </li>
-<li>The shape can also be rotated around the path to get the resulting
+<li>The elements can also be rotated around the path to get the resulting
 mesh in a helical fashion. You can set the values of angles at the
 right, add them to the list of angles at the left by pressing the <em>"Add"</em>
 button and remove them from the list by pressing the <em>"Remove"</em> button. 
@@ -132,7 +135,7 @@ button and remove them from the list by pressing the <em>"Remove"</em> button.
 <center><em>"Remove" button</em></center>
 
 <b>Linear variation of the angles</b> option allows defining the angle of gradual rotation for the whole path. 
-At each step the shape will be rotated by angle/nb. of steps. 
+At each step the elements will be rotated by <code>angle / nb. of steps</code>. 
 
 </li>
 </ul>
