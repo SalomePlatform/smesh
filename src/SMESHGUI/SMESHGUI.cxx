@@ -1229,14 +1229,14 @@
       aSel->selectedObjects( selected );
       
       if(selected.Extent()){
-	Handle(SALOME_InteractiveObject) anIObject = selected.First();
-	_PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-	_PTR(SObject) aSObj = aStudy->FindObjectID(anIObject->getEntry());
-	if (aSObj) {
-	  if ( aStudy->GetUseCaseBuilder()->SortChildren( aSObj, true/*AscendingOrder*/ ) ) {
-	    SMESHGUI::GetSMESHGUI()->updateObjBrowser();
-	  }
-	}
+        Handle(SALOME_InteractiveObject) anIObject = selected.First();
+        _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+        _PTR(SObject) aSObj = aStudy->FindObjectID(anIObject->getEntry());
+        if (aSObj) {
+          if ( aStudy->GetUseCaseBuilder()->SortChildren( aSObj, true/*AscendingOrder*/ ) ) {
+            SMESHGUI::GetSMESHGUI()->updateObjBrowser();
+          }
+        }
       }
     }
   }
