@@ -166,6 +166,7 @@ protected:
   _pyID                           myID;
   Handle(_pyCommand)              myCreationCmd;
   std::list< Handle(_pyCommand) > myProcessedCmds;
+  std::list< Handle(_pyCommand) > myArgCmds; // where this obj is used as an argument
   bool                            myIsPublished;
 
   void setID(const _pyID& theID);
@@ -182,10 +183,11 @@ public:
   void AddProcessedCmd( const Handle(_pyCommand) & cmd )
   { if (myProcessedCmds.empty() || myProcessedCmds.back()!=cmd) myProcessedCmds.push_back( cmd );}
   std::list< Handle(_pyCommand) >& GetProcessedCmds() { return myProcessedCmds; }
+  void AddArgCmd( const Handle(_pyCommand) & cmd ) { myArgCmds.push_back( cmd ); }
   virtual void Process(const Handle(_pyCommand) & cmd) { AddProcessedCmd(cmd); }
   virtual void Flush() = 0;
   virtual const char* AccessorMethod() const;
-  virtual bool CanClear() { return !myIsPublished; }
+  virtual bool CanClear();
   virtual void ClearCommands();
   virtual void Free() {}
 
@@ -228,14 +230,15 @@ public:
          const bool                                theToKeepAllCommands);
   Handle(_pyCommand) AddCommand( const _AString& theCommand );
   void ExchangeCommands( Handle(_pyCommand) theCmd1, Handle(_pyCommand) theCmd2 );
-  void SetCommandAfter( Handle(_pyCommand) theCmd, Handle(_pyCommand) theAfterCmd );
-  void SetCommandBefore( Handle(_pyCommand) theCmd, Handle(_pyCommand) theBeforeCmd );
+  void SetCommandAfter ( Handle(_pyCommand) theCmd,  Handle(_pyCommand) theAfterCmd );
+  void SetCommandBefore( Handle(_pyCommand) theCmd,  Handle(_pyCommand) theBeforeCmd );
   Handle(_pyCommand)& GetLastCommand();
   std::list< Handle(_pyCommand) >& GetCommands() { return myCommands; }
   void PlaceSubmeshAfterItsCreation( Handle(_pyCommand) theCmdUsingSubmesh ) const;
 
   _pyID GenerateNewID( const _pyID& theID );
   void AddObject( Handle(_pyObject)& theObj );
+  void CheckObjectIsReCreated( Handle(_pyObject)& theObj );
   void SetProxyObject( const _pyID& theID, Handle(_pyObject)& theObj );
   Handle(_pyObject)     FindObject( const _pyID& theObjID ) const;
   Handle(_pySubMesh)    FindSubMesh( const _pyID& theSubMeshID );
@@ -251,6 +254,7 @@ public:
   bool IsGeomObject(const _pyID& theObjID) const;
   bool IsNotPublished(const _pyID& theObjID) const;
   void ObjectCreationRemoved(const _pyID& theObjID);
+  void KeepAgrCmds(const _pyID& theObjID) { myKeepAgrCmdsIDs.push_back( theObjID ); }
   bool IsToKeepAllCommands() const { return myToKeepAllCommands; }
   void AddExportedMesh(const _AString& file, const ExportedMeshData& mesh )
   { myFile2ExportedMesh[ file ] = mesh; }
@@ -268,13 +272,14 @@ private:
   void setNeighbourCommand( Handle(_pyCommand)& theCmd,
                             Handle(_pyCommand)& theOtherCmd,
                             const bool theIsAfter );
-  void addFilterUser( Handle(_pyCommand)& theCmd, const Handle(_pyObject)& user );
+  //void addFilterUser( Handle(_pyCommand)& theCmd, const Handle(_pyObject)& user );
 
 private:
   std::map< _pyID, Handle(_pyMesh) >        myMeshes;
   std::map< _pyID, Handle(_pyMeshEditor) >  myMeshEditors;
   std::map< _pyID, Handle(_pyObject) >      myObjects;
-  std::list< Handle(_pyHypothesis) >        myHypos;
+  std::map< _pyID, Handle(_pyHypothesis) >  myHypos;
+  std::list< _pyID >                        myKeepAgrCmdsIDs;
   std::list< Handle(_pyCommand) >           myCommands;
   int                                       myNbCommands;
   Resource_DataMapOfAsciiStringAsciiString& myID2AccessorMethod;
@@ -530,9 +535,10 @@ DEFINE_STANDARD_HANDLE (_pySegmentLengthAroundVertexHyp, _pyHypothesis);
 // -------------------------------------------------------------------------------------
 class _pySelfEraser: public _pyObject
 {
+  bool myIgnoreOwnCalls; // not to erase only if this obj is used as argument
 public:
-  _pySelfEraser(const Handle(_pyCommand)& theCreationCmd)
-    :_pyObject(theCreationCmd) { myIsPublished = true; }
+  _pySelfEraser(const Handle(_pyCommand)& theCreationCmd);
+  void IgnoreOwnCalls() { myIgnoreOwnCalls = true; }
   virtual void Flush();
 
   DEFINE_STANDARD_RTTI (_pySelfEraser)
@@ -567,14 +573,14 @@ public:
 class _pyFilter:  public _pyObject
 {
   _pyID myNewID, myMesh;
-  std::list< Handle(_pyObject) > myUsers;
+  //std::list< Handle(_pyObject) > myUsers;
 public:
   _pyFilter(const Handle(_pyCommand)& theCreationCmd, const _pyID& newID="");
-  void AddUser( const Handle(_pyObject)& user) { myUsers.push_back( user ); }
+  //void AddUser( const Handle(_pyObject)& user) { myUsers.push_back( user ); }
   virtual void Process( const Handle(_pyCommand)& theCommand);
   virtual void Flush();
-  virtual bool CanClear();
-  virtual void Free() { myUsers.clear(); }
+  //virtual bool CanClear();
+  //virtual void Free() { myUsers.clear(); }
   const _pyID& GetNewID() const { return myNewID; }
 
   DEFINE_STANDARD_RTTI (_pyFilter)
