@@ -3530,8 +3530,10 @@ class Mesh:
     #  @param LinearVariation forces the computation of rotation angles as linear
     #                         variation of the given Angles along path steps
     #  @param HasRefPoint allows using the reference point
-    #  @param RefPoint the point around which the shape is rotated (the mass center of the shape by default).
+    #  @param RefPoint the point around which the elements are rotated (the mass
+    #         center of the elements by default).
     #         The User can specify any point as the Reference Point.
+    #         RefPoint can be either GEOM Vertex, [x,y,z] or SMESH.PointStruct
     #  @param MakeGroups forces the generation of new groups from existing ones
     #  @param ElemType type of elements for extrusion (if param Base is a mesh)
     #  @return list of created groups (SMESH_GroupBase) and SMESH::Extrusion_Error if MakeGroups=True,
@@ -3540,8 +3542,11 @@ class Mesh:
     def ExtrusionAlongPathX(self, Base, Path, NodeStart,
                             HasAngles, Angles, LinearVariation,
                             HasRefPoint, RefPoint, MakeGroups, ElemType):
-        if ( isinstance( RefPoint, geomBuilder.GEOM._objref_GEOM_Object)):
+        if isinstance( RefPoint, geomBuilder.GEOM._objref_GEOM_Object):
             RefPoint = self.smeshpyD.GetPointStruct(RefPoint)
+            pass
+        elif isinstance( RefPoint, list ):
+            RefPoint = PointStruct(*RefPoint)
             pass
         Angles,AnglesParameters,hasVars = ParseAngles(Angles)
         Parameters = AnglesParameters + var_separator + RefPoint.parameters
