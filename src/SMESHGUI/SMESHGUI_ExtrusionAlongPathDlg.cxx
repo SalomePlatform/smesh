@@ -354,6 +354,7 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   connect(SelectPathMeshButton,   SIGNAL(clicked()), this, SLOT(SetEditCurrentArgument()));
   connect(SelectStartPointButton, SIGNAL(clicked()), this, SLOT(SetEditCurrentArgument()));
   connect(SelectBasePointButton,  SIGNAL(clicked()), this, SLOT(SetEditCurrentArgument()));
+  connect(BasePointGrp,       SIGNAL(toggled(bool)), this, SLOT(SetEditCurrentArgument()));
 
   connect(mySMESHGUI,  SIGNAL(SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()),      this, SLOT(SelectionIntoArgument()));
@@ -914,6 +915,8 @@ void SMESHGUI_ExtrusionAlongPathDlg::SelectionIntoArgument()
 void SMESHGUI_ExtrusionAlongPathDlg::SetEditCurrentArgument()
 {
   QToolButton* send = (QToolButton*)sender();
+  if ( sender() == BasePointGrp )
+    send = SelectBasePointButton;
   if (send != SelectElementsButton   &&
       send != SelectPathMeshButton   &&
       send != SelectStartPointButton &&
