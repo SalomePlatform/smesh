@@ -587,8 +587,8 @@ public:
 
   // Move objects to the specified position
   void Move( const SMESH::sobject_list& what,
-	     SALOMEDS::SObject_ptr where,
-	     CORBA::Long row );
+             SALOMEDS::SObject_ptr where,
+             CORBA::Long row );
 
 private:
   // Create hypothesis of given type
