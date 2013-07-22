@@ -4675,8 +4675,10 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 
               if ( SMESH_GroupOnFilter_i* aFilterGroup =
                    dynamic_cast< SMESH_GroupOnFilter_i*>( aGroupImpl ))
+              {
                 aFilterGroup->SetFilter( filter );
-
+                filter->UnRegister();
+              }
               SMESHDS_GroupBase* aGroupBaseDS = aGroupImpl->GetGroupDS();
               if ( !aGroupBaseDS )
                 continue;
@@ -5015,8 +5017,8 @@ char* SMESH_Gen_i::getVersion()
 //            Is used in the drag-n-drop functionality.
 //=================================================================================
 void SMESH_Gen_i::Move( const SMESH::sobject_list& what,
-			SALOMEDS::SObject_ptr where,
-			CORBA::Long row )
+                        SALOMEDS::SObject_ptr where,
+                        CORBA::Long row )
 {
   if ( CORBA::is_nil( where ) ) return;
 
