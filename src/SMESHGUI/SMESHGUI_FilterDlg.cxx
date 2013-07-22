@@ -1970,6 +1970,10 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
   {
     isThresholdEditable = true;
   }
+  if ( !isThresholdEditable )
+  {
+    aTable->setItem( row, 2, new QTableWidgetItem() );
+  }
   aTable->setEditable( isThresholdEditable, row, 2);
 
 
@@ -3323,6 +3327,8 @@ bool SMESHGUI_FilterDlg::createFilter (const int theType)
     aCriteria[ i ] = aCriterion;
   }
 
+  if ( !myFilter[ theType ]->_is_nil() )
+    myFilter[ theType ]->UnRegister();
   myFilter[ theType ] = aFilterMgr->CreateFilter();
   myFilter[ theType ]->SetCriteria(aCriteria.inout());
 
@@ -3356,7 +3362,27 @@ SMESH::Filter_var SMESHGUI_FilterDlg::GetFilter() const
 
 void SMESHGUI_FilterDlg::SetFilter(SMESH::Filter_var filter, int type)
 {
+  if ( !filter->_is_nil() )
+    filter->Register();
+  if ( !myFilter[ type ]->_is_nil() )
+    myFilter[ type ]->UnRegister();
+
   myFilter[ type ] = filter;
+}
+
+//================================================================================
+/*!
+ * \brief call UnRegister() for myFilter's
+ */
+//================================================================================
+
+void SMESHGUI_FilterDlg::UnRegisterFilters()
+{
+  QMap< int, SMESH::Filter_var >::iterator i_f = myFilter.begin();
+  for ( ; i_f != myFilter.end(); ++i_f )
+    if ( !i_f.value()->_is_nil() )
+      i_f.value()->UnRegister();
+  myFilter.clear();
 }
 
 //=======================================================================

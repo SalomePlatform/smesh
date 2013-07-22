@@ -234,6 +234,7 @@ public:
 
   SMESH::Filter_var         GetFilter() const;
   void                      SetFilter(SMESH::Filter_var filter, int type);
+  void                      UnRegisterFilters();
 
 signals:
 
