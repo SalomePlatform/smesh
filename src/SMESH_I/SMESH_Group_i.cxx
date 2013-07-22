@@ -101,10 +101,6 @@ SMESH_GroupOnFilter_i::SMESH_GroupOnFilter_i( PortableServer::POA_ptr thePOA,
 
 SMESH_GroupBase_i::~SMESH_GroupBase_i()
 {
-  MESSAGE("~SMESH_GroupBase_i; this = "<<this );
-  if ( myMeshServant )
-    myMeshServant->removeGroup(myLocalID);
-
   if ( myPreMeshInfo ) delete myPreMeshInfo; myPreMeshInfo = NULL;
 }
 
@@ -156,15 +152,16 @@ void SMESH_GroupBase_i::SetName( const char* theName )
   aGroup->SetName(theName);
 
   // Update group name in a study
-  SMESH_Gen_i*          aGen = myMeshServant->GetGen();
-  SALOMEDS::Study_var aStudy = aGen->GetCurrentStudy();
-  SALOMEDS::SObject_var anSO = aGen->ObjectToSObject( aStudy, _this() );
+  SMESH_Gen_i*              aGen = myMeshServant->GetGen();
+  SALOMEDS::Study_var      aStudy = aGen->GetCurrentStudy();
+  SMESH::SMESH_GroupBase_var aGrp = _this();
+  SALOMEDS::SObject_var      anSO = aGen->ObjectToSObject( aStudy, aGrp );
   if ( !anSO->_is_nil() )
   {
     aGen->SetName( anSO, theName );
 
     // Update Python script
-    TPythonDump() <<  _this() << ".SetName( '" << theName << "' )";
+    TPythonDump() <<  anSO << ".SetName( '" << theName << "' )";
   }
 }
 
@@ -259,7 +256,7 @@ void SMESH_Group_i::Clear()
     myPreMeshInfo->FullLoadFromFile();
 
   // Update Python script
-  TPythonDump() << _this() << ".Clear()";
+  TPythonDump() << SMESH::SMESH_Group_var(_this()) << ".Clear()";
 
   // Clear the group
   SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( GetGroupDS() );
@@ -300,7 +297,7 @@ CORBA::Long SMESH_Group_i::Add( const SMESH::long_array& theIDs )
     myPreMeshInfo->FullLoadFromFile();
 
   // Update Python script
-  TPythonDump() << "nbAdd = " << _this() << ".Add( " << theIDs << " )";
+  TPythonDump() << "nbAdd = " << SMESH::SMESH_Group_var(_this()) << ".Add( " << theIDs << " )";
 
   // Add elements to the group
   SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( GetGroupDS() );
@@ -329,7 +326,8 @@ CORBA::Long SMESH_Group_i::Remove( const SMESH::long_array& theIDs )
     myPreMeshInfo->FullLoadFromFile();
 
   // Update Python script
-  TPythonDump() << "nbDel = " << _this() << ".Remove( " << theIDs << " )";
+  TPythonDump() << "nbDel = " << SMESH::SMESH_Group_var(_this())
+                << ".Remove( " << theIDs << " )";
 
   // Remove elements from the group
   SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( GetGroupDS() );
@@ -382,8 +380,9 @@ AddByPredicate( SMESH::Predicate_ptr thePredicate )
     myPreMeshInfo->FullLoadFromFile();
 
   if(SMESH::Predicate_i* aPredicate = SMESH::GetPredicate(thePredicate)){
-    TPythonDump()<<_this()<<".AddByPredicate("<<aPredicate<<")";
-    return ChangeByPredicate(aPredicate,GetGroupDS(),&SMESHDS_Group::Add);
+    TPythonDump() << SMESH::SMESH_Group_var(_this())
+                  << ".AddByPredicate( " << aPredicate << " )";
+    return ChangeByPredicate( aPredicate, GetGroupDS(), &SMESHDS_Group::Add );
   }
   return 0;
 }
@@ -396,7 +395,8 @@ RemoveByPredicate( SMESH::Predicate_ptr thePredicate )
     myPreMeshInfo->FullLoadFromFile();
 
   if(SMESH::Predicate_i* aPredicate = SMESH::GetPredicate(thePredicate)){
-    TPythonDump()<<_this()<<".RemoveByPredicate("<<aPredicate<<")";
+    TPythonDump() << SMESH::SMESH_Group_var(_this())
+                  << ".RemoveByPredicate( " << aPredicate << " )";
     return ChangeByPredicate(aPredicate,GetGroupDS(),&SMESHDS_Group::Remove);
   }
   return 0;
@@ -408,35 +408,18 @@ CORBA::Long SMESH_Group_i::AddFrom( SMESH::SMESH_IDSource_ptr theSource )
     myPreMeshInfo->FullLoadFromFile();
 
   TPythonDump pd;
-  long nbAdd = 0;
+  long prevNb = Size();
   SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( GetGroupDS() );
   if (aGroupDS) {
-    SMESH::long_array_var anIds;
-    SMESH::SMESH_GroupBase_var group = SMESH::SMESH_GroupBase::_narrow(theSource);
-    SMESH::SMESH_Mesh_var mesh       = SMESH::SMESH_Mesh::_narrow(theSource);
-    SMESH::SMESH_subMesh_var submesh = SMESH::SMESH_subMesh::_narrow(theSource);
-    SMESH::Filter_var filter         = SMESH::Filter::_narrow(theSource);
-    if ( !group->_is_nil())
-      anIds = group->GetType()==GetType() ? theSource->GetIDs() :  new SMESH::long_array();
-    else if ( !mesh->_is_nil() )
-      anIds = mesh->GetElementsByType( GetType() );
-    else if ( !submesh->_is_nil())
-      anIds = submesh->GetElementsByType( GetType() );
-    else if ( !filter->_is_nil() ) {
-      filter->SetMesh( GetMeshServant()->_this() );
-      anIds = filter->GetElementType()==GetType() ? theSource->GetIDs() : new SMESH::long_array();
-    }
-    else 
-      anIds = theSource->GetIDs();
-    for ( int i = 0, total = anIds->length(); i < total; i++ ) {
-      if ( aGroupDS->Add((int)anIds[i]) ) nbAdd++;
-    }
+    SMDS_ElemIteratorPtr elemIt = SMESH_Mesh_i::GetElements( theSource, GetType() );
+    while ( elemIt->more() )
+      aGroupDS->SMDSGroup().Add( elemIt->next() );
   }
 
   // Update Python script
-  pd << "nbAdd = " << _this() << ".AddFrom( " << theSource << " )";
+  pd << "nbAdd = " << SMESH::SMESH_Group_var(_this()) << ".AddFrom( " << theSource << " )";
 
-  return nbAdd;
+  return prevNb - Size();
 }
 
 //=============================================================================
@@ -583,7 +566,7 @@ SMESH::SMESH_Mesh_ptr SMESH_GroupBase_i::GetMesh()
 {
   SMESH::SMESH_Mesh_var aMesh;
   if ( myMeshServant )
-    aMesh = SMESH::SMESH_Mesh::_narrow( myMeshServant->_this() );
+    aMesh = myMeshServant->_this();
   return aMesh._retn();
 }
 
@@ -640,7 +623,9 @@ void SMESH_GroupBase_i::SetColor(const SALOMEDS::Color& color)
     if ( oldColor != aQColor )
     {
       aGroupDS->SetColor(aQColor);
-      TPythonDump()<<_this()<<".SetColor( SALOMEDS.Color( "<<color.R<<", "<<color.G<<", "<<color.B<<" ))";
+      TPythonDump()<< SMESH::SMESH_GroupBase_var(_this())
+                   << ".SetColor( SALOMEDS.Color( "
+                   <<color.R<<", "<<color.G<<", "<<color.B<<" ))";
     }
   }
 }
@@ -670,7 +655,7 @@ void SMESH_GroupBase_i::SetColorNumber(CORBA::Long color)
   if (aGroupDS)
   {
     aGroupDS->SetColorGroup(color);
-    TPythonDump()<<_this()<<".SetColorNumber( "<<color<<" )";
+    TPythonDump()<<SMESH::SMESH_GroupBase_var(_this())<<".SetColorNumber( "<<color<<" )";
   }
   MESSAGE("set color number of a group");
   return ;
@@ -800,7 +785,7 @@ void SMESH_GroupOnFilter_i::SetFilter(SMESH::Filter_ptr theFilter)
   if ( SMESHDS_GroupOnFilter* grDS = dynamic_cast< SMESHDS_GroupOnFilter*>( GetGroupDS() ))
     grDS->SetPredicate( GetPredicate( myFilter ));
 
-  TPythonDump()<< _this() <<".SetFilter( "<<theFilter<<" )";
+  TPythonDump()<< SMESH::SMESH_GroupOnFilter_var(_this()) <<".SetFilter( "<<theFilter<<" )";
 
   if ( myFilter )
   {
@@ -819,7 +804,7 @@ void SMESH_GroupOnFilter_i::SetFilter(SMESH::Filter_ptr theFilter)
 SMESH::Filter_ptr SMESH_GroupOnFilter_i::GetFilter()
 {
   SMESH::Filter_var f = myFilter;
-  TPythonDump() << f << " = " << _this() << ".GetFilter()";
+  TPythonDump() << f << " = " << SMESH::SMESH_GroupOnFilter_var(_this()) << ".GetFilter()";
   return f._retn();
 }
 
