@@ -466,14 +466,6 @@ bool SMESHGUI_Make2DFrom3DOp::compute2DMesh( QStringList& theEntryList )
       if ( !newMesh->_is_nil() ) {
         if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( newMesh ) )
           theEntryList.append( aSObject->GetID().c_str() );
-#ifdef WITHGENERICOBJ
-        newMesh->UnRegister();
-#endif
-      }
-      if ( !newGrp->_is_nil() ) {
-#ifdef WITHGENERICOBJ
-        newGrp->UnRegister();
-#endif
       }
       ok = true;
 

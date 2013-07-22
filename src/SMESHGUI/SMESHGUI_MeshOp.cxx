@@ -75,10 +75,6 @@
 #include <SALOMEconfig.h>
 #include CORBA_CLIENT_HEADER(SMESH_Gen)
 
-//To disable automatic genericobj management, the following line should be commented.
-//Otherwise, it should be uncommented. Refer to KERNEL_SRC/src/SALOMEDSImpl/SALOMEDSImpl_AttributeIOR.cxx
-#define WITHGENERICOBJ
-
 //================================================================================
 /*!
  * \brief Constructor
@@ -1103,14 +1099,10 @@ void SMESHGUI_MeshOp::createHypothesis(const int theDim,
     // Call hypothesis creation server method (without GUI)
     SMESH::SMESH_Hypothesis_var aHyp =
       SMESH::CreateHypothesis(theTypeName, aHypName, false);
-#ifdef WITHGENERICOBJ
-    if (!CORBA::is_nil(aHyp))
-      aHyp->UnRegister();
-#endif
-  } else {
+    aHyp.out();
+  }
+  else {
     // Get hypotheses creator client (GUI)
-    // BUG 0020378
-    //SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(theTypeName);
     SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(theTypeName);
 
     // Create hypothesis
@@ -1179,10 +1171,7 @@ void SMESHGUI_MeshOp::createHypothesis(const int theDim,
     else {
      SMESH::SMESH_Hypothesis_var aHyp =
        SMESH::CreateHypothesis(theTypeName, aHypName, false);
-#ifdef WITHGENERICOBJ
-     if (!CORBA::is_nil(aHyp))
-       aHyp->UnRegister();
-#endif
+     aHyp.out();
     }
   }
 
@@ -1653,13 +1642,6 @@ bool SMESHGUI_MeshOp::createMesh( QString& theMess, QStringList& theEntryList )
       if ( !anAlgoVar->_is_nil() )
         SMESH::AddHypothesisOnMesh( aMeshVar, anAlgoVar );
     }
-#ifdef WITHGENERICOBJ
-    // obj has been published in study. Its refcount has been incremented.
-    // It is safe to decrement its refcount
-    // so that it will be destroyed when the entry in study will be removed
-    if (aMeshSO)
-      aMeshVar->UnRegister();
-#endif
   }
   return true;
 }
@@ -1918,32 +1900,25 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
     if (aHypData)
     {
       QString aClientLibName = aHypData->ClientLibName;
-      if (aClientLibName == "")
+      if ( aClientLibName.isEmpty() )
       {
         // Call hypothesis creation server method (without GUI)
         SMESH::SMESH_Hypothesis_var aHyp =
           SMESH::CreateHypothesis(aHypName, aHypName, true);
-#ifdef WITHGENERICOBJ
-        if (!CORBA::is_nil(aHyp))
-          aHyp->UnRegister();
-#endif
+        aHyp.out();
       }
       else
       {
         // Get hypotheses creator client (GUI)
-        // BUG 0020378
         SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHypName);
 
         // Create algorithm
         if (aCreator)
-          aCreator->create(true, aHypName, myDlg, 0, QString::null );
+          aCreator->create( true, aHypName, myDlg, 0, QString::null );
         else {
           SMESH::SMESH_Hypothesis_var aHyp =
             SMESH::CreateHypothesis(aHypName, aHypName, true);
-#ifdef WITHGENERICOBJ
-          if (!CORBA::is_nil(aHyp))
-            aHyp->UnRegister();
-#endif
+          aHyp.out();
         }
       }
       QStringList tmpList;

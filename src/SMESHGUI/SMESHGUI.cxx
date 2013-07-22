@@ -361,11 +361,6 @@
               SMESH::SetName( aMeshSO, QFileInfo(filename).fileName() );
 
             anEntryList.append( aMeshSO->GetID().c_str() );
-
-            // obj has been published in study. Its refcount has been incremented.
-            // It is safe to decrement its refcount
-            // so that it will be destroyed when the entry in study will be removed
-            aMeshes[i]->UnRegister();
           }
           else {
             isEmpty = true;
@@ -1790,7 +1785,7 @@
           aSO = aRefSObject; // Delete main Object instead of reference
 
         listSO.push_back( aSO );
-        std::list< _PTR(SObject) >::iterator itSO = listSO.begin();
+        std::list< _PTR(SObject) >::iterator itSO = --listSO.end();
         for ( ; itSO != listSO.end(); ++itSO ) {
           _PTR(ChildIterator) it = aStudy->NewChildIterator( *itSO );
           for (it->InitEx(false); it->More(); it->Next())
@@ -1835,24 +1830,9 @@
       if ( !SO ) continue;
       std::string anEntry = SO->GetID();
 
-      /** Erase graphical object **/
+      /** Erase graphical object and remove all its data **/
       if(SO->FindAttribute(anAttr, "AttributeIOR")) {
         SMESH::RemoveVisualObjectWithActors( anEntry.c_str(), true);
-        // ViewManagerList aViewMenegers = anApp->viewManagers();
-        // ViewManagerList::const_iterator it = aViewMenegers.begin();
-        // for( ; it != aViewMenegers.end(); it++) {         
-        //   SUIT_ViewManager* vm = *it;
-        //   int nbSf = vm ? vm->getViewsCount() : 0;
-        //   if(vm) {
-        //     QVector<SUIT_ViewWindow*> aViews = vm->getViews();
-        //     for(int i = 0; i < nbSf; i++){
-        //       SUIT_ViewWindow *sf = aViews[i];
-        //       if(SMESH_Actor* anActor = SMESH::FindActorByEntry(sf,anEntry.c_str())){
-        //         SMESH::RemoveActor(sf,anActor);
-        //       }
-        //     }
-        //   }
-        // }
       }
       /** Remove an object from data structures **/
       SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SMESH::SObjectToObject( SO ));
@@ -2529,10 +2509,10 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         if (vtkwnd) {
           SALOME_ListIteratorOfListIO It( to_process );
           for ( ; It.More(); It.Next()) {
-                MESSAGE("---");
+            MESSAGE("---");
             Handle(SALOME_InteractiveObject) IOS = It.Value();
             if (IOS->hasEntry()) {
-                MESSAGE("---");
+              MESSAGE("---");
               if (!SMESH::UpdateView(anAction, IOS->getEntry())) {
                 SMESHGUI::GetSMESHGUI()->EmitSignalVisibilityChanged();
                 break; // PAL16774 (Crash after display of many groups)
@@ -2548,7 +2528,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
         // PAL13338 + PAL15161 -->
         if ( ( theCommandID==301 || theCommandID==302 ) && !checkLock(aStudy)) {
-                MESSAGE("anAction = SMESH::eDisplayOnly");
+          MESSAGE("anAction = SMESH::eDisplayOnly");
           SMESH::UpdateView();
           SMESHGUI::GetSMESHGUI()->EmitSignalVisibilityChanged();
         }

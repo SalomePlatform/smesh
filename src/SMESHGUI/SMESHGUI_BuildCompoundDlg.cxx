@@ -65,10 +65,6 @@
 #define SPACING 6
 #define MARGIN  11
 
-//To disable automatic genericobj management, the following line should be commented.
-//Otherwise, it should be uncommented. Refer to KERNEL_SRC/src/SALOMEDSImpl/SALOMEDSImpl_AttributeIOR.cxx
-#define WITHGENERICOBJ
-
 //=================================================================================
 // name    : SMESHGUI_BuildCompoundDlg
 // Purpose :
@@ -346,12 +342,6 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
       anApp->browseObjects( anEntryList, isApplyAndClose() );
 
     SMESHGUI::Modified();
-
-    // obj has been published in study. Its refcount has been incremented.
-    // It is safe to decrement its refcount
-    // so that it will be destroyed when the entry in study will be removed
-    if (!CORBA::is_nil(aCompoundMesh))
-      aCompoundMesh->UnRegister();
 
     return true;
   }

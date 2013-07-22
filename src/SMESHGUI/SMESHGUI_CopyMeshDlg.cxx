@@ -98,10 +98,6 @@ namespace
 #define SPACING 6
 #define MARGIN  11
 
-//To disable automatic genericobj management, the following line should be commented.
-//Otherwise, it should be uncommented. Refer to KERNEL_SRC/src/SALOMEDSImpl/SALOMEDSImpl_AttributeIOR.cxx
-#define WITHGENERICOBJ
-
 
 //================================================================================
 /*!
@@ -338,13 +334,8 @@ bool SMESHGUI_CopyMeshDlg::ClickOnApply()
     if( !newMesh->_is_nil() )
       if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( newMesh ) )
         anEntryList.append( aSObject->GetID().c_str() );
-#ifdef WITHGENERICOBJ
-    // obj has been published in study. Its refcount has been incremented.
-    // It is safe to decrement its refcount
-    // so that it will be destroyed when the entry in study will be removed
-    newMesh->UnRegister();
-#endif
-  } catch (...) {
+  }
+  catch (...) {
   }
 
   mySMESHGUI->updateObjBrowser(true);

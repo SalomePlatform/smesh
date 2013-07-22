@@ -88,7 +88,7 @@ void SMESHGUI_GenericHypothesisCreator::create( SMESH::SMESH_Hypothesis_ptr init
   create( false, theHypName, parent, obj, slot );
 }
 
-void SMESHGUI_GenericHypothesisCreator::create( bool isAlgo,
+void SMESHGUI_GenericHypothesisCreator::create( bool           isAlgo,
                                                 const QString& theHypName,
                                                 QWidget* theParent, QObject* obj, const QString& slot )
 {
@@ -100,26 +100,21 @@ void SMESHGUI_GenericHypothesisCreator::create( bool isAlgo,
   if (isAlgo) {
     SMESH::SMESH_Hypothesis_var anAlgo =
       SMESH::CreateHypothesis( hypType(), theHypName, isAlgo );
-    if (!CORBA::is_nil(anAlgo))
-      anAlgo->UnRegister();
+    anAlgo.out(); // avoid unused variable warning
   }
   else {
     SMESH::SMESH_Hypothesis_var aHypothesis =
       SMESH::CreateHypothesis( hypType(), theHypName, false );
     editHypothesis( aHypothesis.in(), theHypName, theParent, obj, slot );
-    if (!CORBA::is_nil(aHypothesis))
-      aHypothesis->UnRegister();
   }
 }
 
 void SMESHGUI_GenericHypothesisCreator::edit( SMESH::SMESH_Hypothesis_ptr theHypothesis,
-                                              const QString& theHypName,
+                                              const QString&              theHypName,
                                               QWidget* theParent, QObject* obj, const QString& slot )
 {
   if( CORBA::is_nil( theHypothesis ) )
     return;
-
-  MESSAGE("Edition of hypothesis");
 
   myIsCreate = false;
 

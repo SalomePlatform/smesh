@@ -85,10 +85,6 @@ enum { MOVE_ELEMS_BUTTON = 0, COPY_ELEMS_BUTTON, MAKE_MESH_BUTTON }; //!< action
 #define SPACING 6
 #define MARGIN  11
 
-//To disable automatic genericobj management, the following line should be commented.
-//Otherwise, it should be uncommented. Refer to KERNEL_SRC/src/SALOMEDSImpl/SALOMEDSImpl_AttributeIOR.cxx
-#define WITHGENERICOBJ
-
 //=================================================================================
 // class    : SMESHGUI_SymmetryDlg()
 // purpose  :
@@ -556,12 +552,6 @@ bool SMESHGUI_SymmetryDlg::ClickOnApply()
 						     aName.toLatin1().data());
 	    if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
 	      anEntryList.append( aSObject->GetID().c_str() );
-#ifdef WITHGENERICOBJ
-	    // obj has been published in study. Its refcount has been incremented.
-	    // It is safe to decrement its refcount
-	    // so that it will be destroyed when the entry in study will be removed
-	    mesh->UnRegister();
-#endif
 	  }
         else {
 	  SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
@@ -570,12 +560,6 @@ bool SMESHGUI_SymmetryDlg::ClickOnApply()
                                              LineEditNewMesh->text().toLatin1().data());
           if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
             anEntryList.append( aSObject->GetID().c_str() );
-#ifdef WITHGENERICOBJ
-          // obj has been published in study. Its refcount has been incremented.
-          // It is safe to decrement its refcount
-          // so that it will be destroyed when the entry in study will be removed
-          mesh->UnRegister();
-#endif
 	}
         }
         break;

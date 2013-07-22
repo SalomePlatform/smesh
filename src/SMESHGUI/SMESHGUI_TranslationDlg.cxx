@@ -559,11 +559,6 @@ bool SMESHGUI_TranslationDlg::ClickOnApply()
                                                         aName.toLatin1().data());
             if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
               anEntryList.append( aSObject->GetID().c_str() );
-
-            // obj has been published in study. Its refcount has been incremented.
-            // It is safe to decrement its refcount
-            // so that it will be destroyed when the entry in study will be removed
-            mesh->UnRegister();
           }
         }
         else {
@@ -573,11 +568,6 @@ bool SMESHGUI_TranslationDlg::ClickOnApply()
                                                 LineEditNewMesh->text().toLatin1().data());
           if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
             anEntryList.append( aSObject->GetID().c_str() );
-        
-          // obj has been published in study. Its refcount has been incremented.
-          // It is safe to decrement its refcount
-          // so that it will be destroyed when the entry in study will be removed
-          mesh->UnRegister();
         }
         break;
       }
