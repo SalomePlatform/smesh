@@ -64,6 +64,6 @@ SMESHControls_LDADD = \
 	../SMDS/libSMDS.la \
 	../SMESHDS/libSMESHDS.la \
 	libSMESHControls.la \
-	$(KERNEL_LDFLAGS) -lOpUtil -lSALOMELocalTrace -lSALOMEBasics \
+	$(KERNEL_LDFLAGS) -lOpUtil -lSALOMELocalTrace -lSALOMEBasics -lSalomeIDLKernel \
 	$(GEOM_LDFLAGS) -lGEOMAlgo \
 	$(CAS_LDPATH) -lTKernel -lTKBRep -lTKG3d

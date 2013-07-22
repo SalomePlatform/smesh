@@ -57,7 +57,7 @@ libMeshDriverDAT_la_CPPFLAGS = \
 
 libMeshDriverDAT_la_LDFLAGS  = \
 	../Driver/libMeshDriver.la \
-	$(KERNEL_LDFLAGS) -lSALOMEBasics \
+	$(KERNEL_LDFLAGS) -lSALOMEBasics -lSalomeIDLKernel \
 	$(CAS_KERNEL)
 
 DAT_Test_CPPFLAGS = \
@@ -67,5 +67,5 @@ DAT_Test_LDADD = \
 	libMeshDriverDAT.la \
 	../Driver/libMeshDriver.la \
 	../SMDS/libSMDS.la \
-	$(KERNEL_LDFLAGS) -lOpUtil -lSALOMELocalTrace -lSALOMEBasics
+	$(KERNEL_LDFLAGS) -lOpUtil -lSALOMELocalTrace -lSALOMEBasics -lSalomeIDLKernel
 
