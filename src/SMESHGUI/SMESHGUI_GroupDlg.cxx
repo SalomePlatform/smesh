@@ -38,7 +38,7 @@
 
 #include <SMESH_TypeFilter.hxx>
 #include <SMESH_Actor.h>
-#include <SMESH_ActorUtils.h>
+//#include <SMESH_ActorUtils.h>
 #include <SMESH_LogicalFilter.hxx>
 
 // SALOME GEOM includes
@@ -921,7 +921,7 @@ bool SMESHGUI_GroupDlg::onApply()
   QStringList anEntryList;
 
   SMESH::SMESH_GroupBase_var resultGroup;
-  bool isCreation;
+  bool isCreation, isConversion = false;
     
   if (myGrpTypeId == 0)  // standalone
   {
@@ -940,8 +940,9 @@ bool SMESHGUI_GroupDlg::onApply()
         else
           myGroup = myMesh->ConvertToStandalone( myGroupOnGeom );
 
-        myGroupOnGeom = SMESH::SMESH_GroupOnGeom::_nil();
+        myGroupOnGeom   = SMESH::SMESH_GroupOnGeom::_nil();
         myGroupOnFilter = SMESH::SMESH_GroupOnFilter::_nil();
+        isConversion    = true;
       }
     }
 
@@ -1150,7 +1151,17 @@ bool SMESHGUI_GroupDlg::onApply()
       resultGroup->SetName(myName->text().toLatin1().data());
 
       if ( aMeshGroupSO )
+      {
         if(SMESH_Actor *anActor = SMESH::FindActorByEntry(aMeshGroupSO->GetID().c_str())) {
+          if ( isConversion ) { // need to reset TVisualObj and actor
+            Handle(SALOME_InteractiveObject) anIO = anActor->getIO();
+            SMESH::RemoveVisualObjectWithActors( anIO->getEntry(), true );
+            SMESH::Update( anIO,true);
+            myActorsList.clear();
+            anActor = SMESH::FindActorByEntry( anIO->getEntry() );
+            if ( !anActor ) return false;
+            myActorsList.append( anActor );
+          }
           anActor->setName(myName->text().toLatin1().data());
           QColor c;
           int delta;
@@ -1160,16 +1171,17 @@ bool SMESHGUI_GroupDlg::onApply()
           case grpBallSelection:   anActor->SetBallColor( aColor.R, aColor.G, aColor.B ); break;
           case grpEdgeSelection:   anActor->SetEdgeColor( aColor.R, aColor.G, aColor.B ); break;
           case grpVolumeSelection: 
-              SMESH::GetColor("SMESH", "volume_color", c , delta, "255,0,170|-100");
-              anActor->SetVolumeColor( aColor.R, aColor.G, aColor.B, delta ); break;          
-              break;
+            SMESH::GetColor("SMESH", "volume_color", c , delta, "255,0,170|-100");
+            anActor->SetVolumeColor( aColor.R, aColor.G, aColor.B, delta ); break;          
+            break;
           case grpFaceSelection:   
           default:
-              SMESH::GetColor("SMESH", "fill_color", c , delta, "0,170,255|-100");
-              anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B, delta ); break;          
-              break;
+            SMESH::GetColor("SMESH", "fill_color", c , delta, "0,170,255|-100");
+            anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B, delta ); break;          
+            break;
           }
         }
+      }
     }
     SMESHGUI::Modified();
     mySMESHGUI->updateObjBrowser(true);
@@ -1193,6 +1205,8 @@ void SMESHGUI_GroupDlg::onOK()
   if ( onApply() )
     reject();
   setIsApplyAndClose( false );
+
+  if ( myFilterDlg ) myFilterDlg->UnRegisterFilters();
 }
 
 //=================================================================================
@@ -2202,6 +2216,8 @@ void SMESHGUI_GroupDlg::reject()
   mySMESHGUI->ResetState();
 
   QDialog::reject();
+
+  if ( myFilterDlg ) myFilterDlg->UnRegisterFilters();
 }
 
 //=================================================================================
