@@ -45,6 +45,7 @@ class SMESH_Gen_i;
 class SMESH_GroupBase_i;
 class SMESH_subMesh_i;
 class SMESH_PreMeshInfo;
+class SMESH_MeshEditor_i;
 
 #include <map>
 
@@ -655,6 +656,8 @@ private:
   std::map<int, SMESH::SMESH_subMesh_ptr>    _mapSubMeshIor;
   std::map<int, SMESH::SMESH_GroupBase_ptr>  _mapGroups;
   std::map<int, SMESH::SMESH_Hypothesis_ptr> _mapHypo;
+  SMESH_MeshEditor_i*    _editor;
+  SMESH_MeshEditor_i*    _previewEditor;
   SMESH::MedFileInfo_var _medFileInfo;
   SMESH_PreMeshInfo*     _preMeshInfo; // mesh info before full loading from study file
 
@@ -669,7 +672,7 @@ private:
     // number of items in a group varies (1) <-> (>1)
     std::string       _groupEntry;
     std::set<int>     _indices; // indices of group items within group's main shape
-    CORBA::Object_ptr _smeshObject; // SMESH object depending on GEOM group
+    CORBA::Object_var _smeshObject; // SMESH object depending on GEOM group
   };
   std::list<TGeomGroupData> _geomGroupData;
 
@@ -683,7 +686,7 @@ private:
    */
   void removeGeomGroupData(CORBA::Object_ptr theSmeshObj);
   /*!
-   * \brief Return new group contents if it has been changed and update group data
+   * Return new group contents if it has been changed and update group data
    */
   TopoDS_Shape newGroupShape( TGeomGroupData & groupData);
 
