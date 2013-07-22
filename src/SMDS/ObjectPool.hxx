@@ -42,9 +42,16 @@ private:
   int _nextFree;
   int _maxAvail;
   int _chunkSize;
+  int _maxOccupied;
+  int _nbHoles;
 
   int getNextFree()
   {
+    // Don't iterate on the _freeList if all the "holes"
+    // are filled. Go straight to the last occupied ID + 1
+    if ( _nbHoles == 0 )
+      return std::min(_maxOccupied + 1, _maxAvail);
+    
     for (int i = _nextFree; i < _maxAvail; i++)
       if (_freeList[i] == true)
         {
@@ -73,6 +80,8 @@ public:
     _chunkSize = nblk;
     _nextFree = 0;
     _maxAvail = 0;
+    _maxOccupied = 0;
+    _nbHoles = 0;
     _chunkList.clear();
     _freeList.clear();
   }
@@ -103,6 +112,14 @@ public:
         _freeList[_nextFree] = false;
         obj = _chunkList[chunkId] + rank; // &_chunkList[chunkId][rank];
       }
+    if (_nextFree < _maxOccupied)
+      {
+        _nbHoles-=1;
+      }
+    else
+      {
+        _maxOccupied = _nextFree;
+      }
     //obj->init();
     return obj;
   }
@@ -124,6 +141,8 @@ public:
         _freeList[toFree] = true;
         if (toFree < _nextFree)
           _nextFree = toFree;
+        if (toFree < _maxOccupied)
+          _nbHoles += 1;
         //obj->clean();
         //checkDelete(i); compactage non fait
         break;
@@ -134,6 +153,8 @@ public:
   {
     _nextFree = 0;
     _maxAvail = 0;
+    _maxOccupied = 0;
+    _nbHoles = 0;
     for (size_t i = 0; i < _chunkList.size(); i++)
       delete[] _chunkList[i];
     clearVector( _chunkList );

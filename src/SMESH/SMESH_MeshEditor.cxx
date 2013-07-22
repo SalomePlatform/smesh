@@ -1899,20 +1899,6 @@ namespace
   };
 } // namespace
 
-class TElemToDelete
-{
-public:
-  TElemToDelete(const SMDS_MeshElement* theElem, SMESHDS_SubMesh* theSubMesh)
-  {
-    elem = theElem;
-    subMesh = theSubMesh;
-  }
-  const SMDS_MeshElement* Elem() const {return elem;}
-  SMESHDS_SubMesh* Submesh() {return subMesh;}
-  const SMDS_MeshElement* elem;
-  SMESHDS_SubMesh* subMesh;
-};
-
 //=======================================================================
 //function : SplitVolumesIntoTetra
 //purpose  : Split volume elements into tetrahedra.
@@ -1938,7 +1924,6 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
   double bc[3];
 
   TIDSortedElemSet::const_iterator elem = theElems.begin();
-  std::vector<TElemToDelete> elem_to_delete;
   for ( ; elem != theElems.end(); ++elem )
   {
     if ( (*elem)->GetType() != SMDSAbs_Volume )
@@ -2102,26 +2087,11 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
         }
         ReplaceElemInGroups( face, triangles, GetMeshDS() );
         GetMeshDS()->RemoveFreeElement( face, fSubMesh, /*fromGroups=*/false );
-//         TElemToDelete faceToDelete(face, fSubMesh);
-//         elem_to_delete.push_back(faceToDelete); 
       }
 
     } // loop on volume faces to split them into triangles
 
-//     GetMeshDS()->RemoveFreeElement( *elem, subMesh, /*fromGroups=*/false );
-
-    // rnc : don't delete the elem here because it results in a mesh with a free
-    // ID at the beginning of the ID list. The first tetra is then inserted in O(1)
-    // but the second one is inserted in O(n), then the whole procedure has almost a O(n^2)
-    // complexity. If all elements to remove are stored and removed after tetra creation 
-    // we get a O(n) complexity for the whole procedure. 
-    // The memory cost is at worst a 6*n*constant memory occupation (where n is the number of elements) 
-    // before deletion of the hexas and then 5*n*constant instead of a maximum of 5*n*constant.
-    // So there is a transient 1/5*(memory occupation) additional cost.
-
-    // Store the elements to delete
-    TElemToDelete elemToDelete(*elem, subMesh);
-    elem_to_delete.push_back(elemToDelete);
+    GetMeshDS()->RemoveFreeElement( *elem, subMesh, /*fromGroups=*/false );
 
     if ( geomType == SMDSEntity_TriQuad_Hexa )
     {
@@ -2131,13 +2101,6 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
           GetMeshDS()->RemoveNode( volNodes[i] );
     }
   } // loop on volumes to split
-
-  // Delete stored elements
-  std::vector<TElemToDelete>::iterator it;
-  for( it = elem_to_delete.begin(); it!= elem_to_delete.end(); it++)
-  {
-    GetMeshDS()->RemoveFreeElement( it->Elem(), it->Submesh(), /*fromGroups=*/false );
-  }
   
   myLastCreatedNodes = newNodes;
   myLastCreatedElems = newElems;
