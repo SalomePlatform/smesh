@@ -260,7 +260,7 @@ static SALOMEDS::SObject_ptr publish(SALOMEDS::Study_ptr   theStudy,
                                      const bool            theSelectable = true)
 {
   SALOMEDS::SObject_wrap SO = SMESH_Gen_i::ObjectToSObject( theStudy, theIOR );
-  SALOMEDS::StudyBuilder_var aStudyBuilder = theStudy->NewBuilder();
+  SALOMEDS::StudyBuilder_var    aStudyBuilder = theStudy->NewBuilder();
   SALOMEDS::UseCaseBuilder_var useCaseBuilder = theStudy->GetUseCaseBuilder();
   if ( SO->_is_nil() ) {
     if ( theTag == 0 )
@@ -275,6 +275,10 @@ static SALOMEDS::SObject_ptr publish(SALOMEDS::Study_ptr   theStudy,
     CORBA::String_var objStr = SMESH_Gen_i::GetORB()->object_to_string( theIOR );
     SALOMEDS::AttributeIOR_wrap iorAttr = anAttr;
     iorAttr->SetValue( objStr.in() );
+    // UnRegister() !!!
+    SALOME::GenericObj_var genObj = SALOME::GenericObj::_narrow( theIOR );
+    if ( !genObj->_is_nil() )
+      genObj->UnRegister();
   }
   if ( thePixMap ) {
     anAttr  = aStudyBuilder->FindOrCreateAttribute( SO, "AttributePixMap" );
@@ -1179,7 +1183,7 @@ char* SMESH_Gen_i::GetParameters(CORBA::Object_ptr theObject)
 {
   CORBA::String_var aResult("");
 
-  SALOMEDS::SObject_wrap aSObj = ObjectToSObject( myCurrentStudy,theObject);
+  SALOMEDS::SObject_wrap aSObj = ObjectToSObject( myCurrentStudy, theObject );
   if ( !aSObj->_is_nil() )
   {
     SALOMEDS::GenericAttribute_wrap attr;
@@ -1189,6 +1193,5 @@ char* SMESH_Gen_i::GetParameters(CORBA::Object_ptr theObject)
       aResult = strAttr->Value();
     }
   }
-
-  return CORBA::string_dup( aResult.in() );
+  return aResult._retn();
 }
