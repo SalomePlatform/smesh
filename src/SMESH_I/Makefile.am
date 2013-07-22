@@ -110,6 +110,11 @@ libSMESHEngine_la_LDFLAGS  = \
 	../SMESHDS/libSMESHDS.la \
 	../Controls/libSMESHControls.la \
 	$(KERNEL_LDFLAGS) \
+	-lOpUtil \
+	-lSalomeNotification \
+	-lResourcesManager \
+	-lSalomeResourcesManager \
+	-lSALOMEBasics \
 	-lSalomeContainer \
 	-lSalomeNS \
 	-lRegistry \

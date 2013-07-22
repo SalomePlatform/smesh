@@ -69,10 +69,12 @@ libSMESHClient_la_LDFLAGS  = \
 	../MEDWrapper/Factory/libMEDWrapper.la \
 	../MEDWrapper/Base/libMEDWrapperBase.la \
 	../MEDWrapper/V2_2/libMEDWrapper_V2_2.la \
-	$(KERNEL_LDFLAGS) -lSalomeLifeCycleCORBA -lSalomeNS -lOpUtil -lSALOMEBasics \
+	$(KERNEL_LDFLAGS) -lSalomeLifeCycleCORBA -lSalomeNS -lOpUtil -lSALOMEBasics -lSalomeContainer -lSalomeHDFPersist -lSalomeGenericObj \
+	-lRegistry -lResourcesManager -lSalomeResourcesManager -lSalomeNotification \
 	-lSalomeIDLKernel -lSALOMELocalTrace \
 	$(GEOM_LDFLAGS) -lNMTDS -lSalomeIDLGEOM \
 	$(CAS_KERNEL)
+
 
 SMESHClientBin_CPPFLAGS = \
 	$(libSMESHClient_la_CPPFLAGS)

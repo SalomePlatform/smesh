@@ -82,4 +82,4 @@ UNV_Test_LDADD = \
 	libMeshDriverUNV.la \
 	../Driver/libMeshDriver.la \
 	../SMDS/libSMDS.la \
-	$(KERNEL_LDFLAGS) -lOpUtil -lSALOMELocalTrace -lSALOMEBasics
+	$(KERNEL_LDFLAGS) -lOpUtil -lSALOMELocalTrace -lSALOMEBasics -lSalomeIDLKernel

@@ -81,6 +81,7 @@ MED_Test_LDADD = \
 	-lOpUtil \
 	-lSALOMELocalTrace \
 	-lSALOMEBasics \
+	-lSalomeIDLKernel \
 	../MEDWrapper/Factory/libMEDWrapper.la \
 	../MEDWrapper/Base/libMEDWrapperBase.la \
 	../MEDWrapper/V2_2/libMEDWrapper_V2_2.la \
