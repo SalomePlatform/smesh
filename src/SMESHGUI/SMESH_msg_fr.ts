@@ -7229,6 +7229,18 @@ en raison de leurs types incompatibles:
 <context>
     <name>SMESHGUI_CtrlInfoDlg</name>
     <message>
+        <source>SAVE_INFO</source>
+        <translation type="unfinished">Save info</translation>
+    </message>
+    <message>
+        <source>TEXT_FILES</source>
+        <translation type="unfinished">Text files (*.txt)</translation>
+    </message>
+    <message>
+        <source>BUT_DUMP_MESH</source>
+        <translation type="unfinished">&amp;Dump</translation>
+    </message>
+    <message>
         <source>CTRL_INFO</source>
         <translation type="unfinished">Quality Info</translation>
     </message>

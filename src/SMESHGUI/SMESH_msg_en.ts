@@ -7247,6 +7247,18 @@ as they are of improper type:
         <source>CTRL_INFO</source>
         <translation>Quality Info</translation>
     </message>
+    <message>
+        <source>BUT_DUMP_MESH</source>
+        <translation>&amp;Dump</translation>
+    </message>
+    <message>
+        <source>TEXT_FILES</source>
+        <translation>Text files (*.txt)</translation>
+    </message>
+    <message>
+        <source>SAVE_INFO</source>
+        <translation>Save info</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_MinDistance</name>

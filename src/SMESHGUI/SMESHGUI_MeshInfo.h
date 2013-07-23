@@ -401,6 +401,8 @@ private slots:
   void activate();
   void deactivate();
   void updateSelection();
+  void help();
+  void dump();
 
 private:
   SMESHGUI_CtrlInfo*  myCtrlInfo;
