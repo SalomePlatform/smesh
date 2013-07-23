@@ -3547,7 +3547,7 @@ const TCollection_AsciiString & _pyCommand::GetObject()
   if ( GetBegPos( OBJECT_IND ) == UNKNOWN )
   {
     // beginning
-    int begPos = GetBegPos( RESULT_IND ) + myRes.Length();
+    int begPos = GetBegPos( RESULT_IND );
     if ( begPos < 1 ) {
       begPos = myString.Location( "=", 1, Length() ) + 1;
       // is '=' in the string argument (for example, name) or not
@@ -3563,6 +3563,9 @@ const TCollection_AsciiString & _pyCommand::GetObject()
       // then get an object at the start of the command
       if ( nb1 % 2 != 0 || nb2 % 2 != 0 )
         begPos = 1;
+    }
+    else {
+      begPos += myRes.Length();
     }
     myObj = GetWord( myString, begPos, true );
     if ( begPos != EMPTY )
@@ -4327,7 +4330,9 @@ bool _pyGroup::CanClear()
   if ( IsInStudy() )
     return false;
 
-  if ( !myCanClearCreationCmd && myCreationCmd->GetMethod() == "GetGroups" )
+  if ( !myCanClearCreationCmd &&
+       !myCreationCmd.IsNull() &&
+       myCreationCmd->GetMethod() == "GetGroups" )
   {
     TCollection_AsciiString grIDs = myCreationCmd->GetResultValue();
     list< _pyID >          idList = myCreationCmd->GetStudyEntries( grIDs );
@@ -4413,6 +4418,7 @@ void _pyGroup::Process( const Handle(_pyCommand)& theCommand)
       makeGroupCmd->SetMethod( "MakeGroupByFilter" );
       makeGroupCmd->SetArg( 1, name );
       makeGroupCmd->SetArg( 2, idSource );
+      filter->AddArgCmd( makeGroupCmd );
     }
   }
   else if ( theCommand->GetMethod() == "SetFilter" )
@@ -4452,7 +4458,7 @@ void _pyGroup::Process( const Handle(_pyCommand)& theCommand)
 void _pyGroup::Flush()
 {
   if ( !theGen->IsToKeepAllCommands() &&
-       myCreationCmd && !myCanClearCreationCmd )
+       !myCreationCmd.IsNull() && !myCanClearCreationCmd )
   {
     myCreationCmd.Nullify(); // this way myCreationCmd won't be cleared
   }
@@ -4467,6 +4473,7 @@ void _pyGroup::Flush()
 _pyFilter::_pyFilter(const Handle(_pyCommand)& theCreationCmd, const _pyID& newID/*=""*/)
   :_pyObject(theCreationCmd), myNewID( newID )
 {
+  //myIsPublished = true; // prevent clearing as a not published
   theGen->KeepAgrCmds( GetID() ); // ask to fill myArgCmds
 }
 
@@ -4500,8 +4507,11 @@ void _pyFilter::Process( const Handle(_pyCommand)& theCommand)
     theCommand->SetObject( SMESH_2smeshpy::GenName() );
     theCommand->SetMethod( "GetFilterFromCriteria" );
 
-    // Clear aFilterManager.CreateFilter()
+    // Swap "aFilterManager.CreateFilter()" and "smesh.GetFilterFromCriteria(criteria)"
     GetCreationCmd()->Clear();
+    GetCreationCmd()->GetString() = theCommand->GetString();
+    theCommand->Clear();
+    theCommand->AddDependantCmd( GetCreationCmd() );
   }
   else if ( theCommand->GetMethod() == "SetMesh" )
   {
@@ -4551,9 +4561,6 @@ void _pyFilter::Flush()
 
 bool _pyObject::CanClear()
 {
-  if ( !myIsPublished )
-    return true;
-
   list< Handle(_pyCommand) >::iterator cmd = myArgCmds.begin();
   for ( ; cmd != myArgCmds.end(); ++cmd )
     if ( !(*cmd)->IsEmpty() )
@@ -4562,8 +4569,7 @@ bool _pyObject::CanClear()
       if ( !obj.IsNull() && !obj->CanClear() )
         return false;
     }
-
-  return true;
+  return ( !myIsPublished );
 }
 
 //================================================================================
