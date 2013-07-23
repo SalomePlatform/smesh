@@ -2235,7 +2235,7 @@ void SMESHGUI_AddInfo::meshInfo( SMESH::SMESH_Mesh_ptr mesh, QTreeWidgetItem* pa
 {
   // type
   GEOM::GEOM_Object_var shape = mesh->GetShapeToMesh();
-  SMESH::MedFileInfo* inf = mesh->GetMEDFileInfo();
+  SMESH::MedFileInfo_var inf = mesh->GetMEDFileInfo();
   QTreeWidgetItem* typeItem = createItem( parent, Bold );
   typeItem->setText( 0, tr( "TYPE" ) );
   if ( !CORBA::is_nil( shape ) ) {
