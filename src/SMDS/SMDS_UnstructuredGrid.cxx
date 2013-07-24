@@ -285,8 +285,6 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
         }
       newFaceLocations->Squeeze();
       newFaces->Squeeze();
-      newFaceLocations->Register(this);
-      newFaces->Register(this);
       this->SetCells(newTypes, newLocations, newConnectivity, newFaceLocations, newFaces);
       newFaceLocations->Delete();
       newFaces->Delete();
