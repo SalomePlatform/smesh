@@ -285,4 +285,5 @@ libSMESH_la_LDFLAGS  = \
 nodist_salomeres_DATA= \
 	SMESH_images.qm \
 	SMESH_msg_en.qm \
-	SMESH_msg_fr.qm
+	SMESH_msg_fr.qm \
+	SMESH_msg_ja.qm
