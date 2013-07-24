@@ -215,10 +215,10 @@ namespace SMESH
     SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>
       (SUIT_Session::session()->activeApplication());
     if ( app ) {
-      QString IOR = app->orb()->object_to_string( theObject );
+      CORBA::String_var ior = app->orb()->object_to_string( theObject );
       SalomeApp_Study* study = dynamic_cast<SalomeApp_Study*>( app->activeStudy() );
-      if ( study && !IOR.isEmpty() )
-        res = study->studyDS()->FindObjectIOR( IOR.toLatin1().constData() );
+      if ( study && strlen( ior ) > 0 )
+        res = study->studyDS()->FindObjectIOR( ior.in() );
     }
     return res;
   }
