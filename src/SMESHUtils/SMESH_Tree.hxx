@@ -85,7 +85,7 @@ class SMESH_Tree
 
   static int             nbChildren() { return NB_CHILDREN; }
 
-  // Compute the bigger dimension of my box
+  // Compute the biggest dimension of my box
   virtual double         maxSize() const = 0;
 
 protected:
@@ -141,7 +141,7 @@ SMESH_Tree<BND_BOX,NB_CHILDREN>::SMESH_Tree (SMESH_TreeLimit* limit):
   myLevel(0),
   myBox(0)
 {
-  if ( !myLimit ) myLimit = new SMESH_TreeLimit();
+  //if ( !myLimit ) myLimit = new SMESH_TreeLimit();
 }
 
 //================================================================================
@@ -155,6 +155,7 @@ void SMESH_Tree<BND_BOX,NB_CHILDREN>::compute()
 {
   if ( myLevel==0 )
   {
+    if ( !myLimit ) myLimit = new SMESH_TreeLimit();
     myBox = buildRootBox();
     if ( myLimit->myMinBoxSize > 0. && maxSize() <= myLimit->myMinBoxSize )
       myIsLeaf = true;
