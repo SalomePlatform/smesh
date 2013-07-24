@@ -327,29 +327,27 @@ void SMESH_OctreeNode::FindCoincidentNodes ( TIDSortedNodeSet* theSetOfNodes,
  * \param precision - Precision used
  */
 //======================================================================================
-void SMESH_OctreeNode::FindCoincidentNodes (const SMDS_MeshNode * Node,
-                                            TIDSortedNodeSet* SetOfNodes,
+void SMESH_OctreeNode::FindCoincidentNodes (const SMDS_MeshNode *       Node,
+                                            TIDSortedNodeSet*           SetOfNodes,
                                             list<const SMDS_MeshNode*>* Result,
-                                            const double precision)
+                                            const double                precision)
 {
-  gp_XYZ p(Node->X(), Node->Y(), Node->Z());
-  bool isInsideBool = isInside(p, precision);
+  gp_Pnt p1 (Node->X(), Node->Y(), Node->Z());
+  bool isInsideBool = isInside( p1.XYZ(), precision );
 
   if (isInsideBool)
   {
     // I'm only looking in the leaves, since all the nodes are stored there.
     if (isLeaf())
     {
-      gp_Pnt p1 (Node->X(), Node->Y(), Node->Z());
-
-      TIDSortedNodeSet myNodesCopy = myNodes;
-      TIDSortedNodeSet::iterator it = myNodesCopy.begin();
-      double tol2 = precision * precision;
+      TIDSortedNodeSet::iterator it = myNodes.begin();
+      const double tol2 = precision * precision;
       bool squareBool;
 
-      while (it != myNodesCopy.end())
+      while (it != myNodes.end())
       {
         const SMDS_MeshNode* n2 = *it;
+        squareBool = false;
         // We're only looking at nodes with a superior Id.
         // JFA: Why?
         //if (Node->GetID() < n2->GetID())
@@ -364,14 +362,13 @@ void SMESH_OctreeNode::FindCoincidentNodes (const SMDS_MeshNode * Node,
           {
             Result->insert(Result->begin(), n2);
             SetOfNodes->erase( n2 );
-            myNodes.erase( n2 );
+            myNodes.erase( *it++ ); // it++ goes forward and returns it's previous position
           }
         }
-        //myNodesCopy.erase( it );
-        //it = myNodesCopy.begin();
-        it++;
+        if ( !squareBool )
+          it++;
       }
-      if (Result->size() > 0)
+      if ( !Result->empty() )
         myNodes.erase(Node); // JFA: for bug 0020185
     }
     else
