@@ -4794,11 +4794,11 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 
   // creation of tree nodes for all data objects in the study
   // to support tree representation customization and drag-n-drop:
-  SALOMEDS::UseCaseBuilder_var useCaseBuilder = theComponent->GetStudy()->GetUseCaseBuilder();
+  SALOMEDS::UseCaseBuilder_wrap useCaseBuilder = theComponent->GetStudy()->GetUseCaseBuilder();
   if ( !useCaseBuilder->IsUseCaseNode( theComponent ) ) {
     useCaseBuilder->SetRootCurrent();
     useCaseBuilder->Append( theComponent ); // component object is added as the top level item
-    SALOMEDS::ChildIterator_var it = theComponent->GetStudy()->NewChildIterator( theComponent ); 
+    SALOMEDS::ChildIterator_wrap it = theComponent->GetStudy()->NewChildIterator( theComponent ); 
     for (it->InitEx(true); it->More(); it->Next()) {
       useCaseBuilder->AppendTo( it->Value()->GetFather(), it->Value() );
     }
