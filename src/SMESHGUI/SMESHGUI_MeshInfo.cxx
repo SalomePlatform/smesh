@@ -3401,6 +3401,7 @@ void SMESHGUI_CtrlInfo::computeAspectRatio()
     anItem->attach( myPlot );
     myPlot->replot();
   }
+  delete aHistogram;
 }
 
 void SMESHGUI_CtrlInfo::computeAspectRatio3D()
@@ -3417,6 +3418,7 @@ void SMESHGUI_CtrlInfo::computeAspectRatio3D()
     anItem->attach( myPlot3D );
     myPlot3D->replot();
   }
+  delete aHistogram;
 }
 
 /*!
