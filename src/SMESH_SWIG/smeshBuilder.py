@@ -1664,9 +1664,15 @@ class Mesh:
     #  @param opt boolean parameter for creating/not creating
     #         the groups Group_On_All_Nodes, Group_On_All_Faces, ...
     #  @param overwrite boolean parameter for overwriting/not overwriting the file
+    #  @param autoDimension: if @c True (default), a space dimension of a MED mesh can be either
+    #         - 1D if all mesh nodes lie on OX coordinate axis, or
+    #         - 2D if all mesh nodes lie on XOY coordinate plane, or
+    #         - 3D in the rest cases.
+    #
+    #         If @a autoDimension is @c False, the space dimension is always 3.
     #  @ingroup l2_impexp
-    def ExportToMED(self, f, version, opt=0, overwrite=1):
-        self.mesh.ExportToMEDX(f, opt, version, overwrite)
+    def ExportToMED(self, f, version, opt=0, overwrite=1, autoDimension=True):
+        self.mesh.ExportToMEDX(f, opt, version, overwrite, autoDimension)
 
     # Operations with groups:
     # ----------------------
