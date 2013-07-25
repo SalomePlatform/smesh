@@ -2120,10 +2120,10 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::ConvertToStandalone( SMESH::SMESH_GroupBase
 SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::createSubMesh( GEOM::GEOM_Object_ptr theSubShapeObject )
 {
   if(MYDEBUG) MESSAGE( "createSubMesh" );
-  TopoDS_Shape myLocSubShape = _gen_i->GeomObjectToShape(theSubShapeObject);
-  const int        subMeshId = _impl->GetMeshDS()->ShapeToIndex( myLocSubShape );
+  TopoDS_Shape  myLocSubShape = _gen_i->GeomObjectToShape(theSubShapeObject);
+  ::SMESH_subMesh * mySubMesh = _impl->GetSubMesh(myLocSubShape);
+  const int         subMeshId = mySubMesh->GetId();
 
-  ::SMESH_subMesh *      mySubMesh = _impl->GetSubMesh(myLocSubShape);
   SMESH_subMesh_i * subMeshServant = new SMESH_subMesh_i(myPOA, _gen_i, this, subMeshId);
   SMESH::SMESH_subMesh_var subMesh = subMeshServant->_this();
 
