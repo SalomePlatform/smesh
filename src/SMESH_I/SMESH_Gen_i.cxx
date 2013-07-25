@@ -3957,7 +3957,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 
   // Get temporary files location
   TCollection_AsciiString tmpDir =
-    isMultiFile ? TCollection_AsciiString( ( char* )theURL ) : ( char* )SALOMEDS_Tool::GetTmpDir().c_str();
+    ( char* )( isMultiFile ? theURL : SALOMEDS_Tool::GetTmpDir().c_str() );
 
   INFOS( "THE URL++++++++++++++" );
   INFOS( theURL );
@@ -3969,12 +3969,13 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                                                                             tmpDir.ToCString(),
                                                                             isMultiFile );
   TCollection_AsciiString aStudyName( "" );
-  if ( isMultiFile )
-    aStudyName = ( (char*)SALOMEDS_Tool::GetNameFromPath( myCurrentStudy->URL() ).c_str() );
-
+  if ( isMultiFile ) {
+    CORBA::String_var url = myCurrentStudy->URL();
+    aStudyName = (char*)SALOMEDS_Tool::GetNameFromPath( url.in() ).c_str();
+  }
   // Set names of temporary files
-  TCollection_AsciiString filename = tmpDir + aStudyName + TCollection_AsciiString( "_SMESH.hdf" );
-  TCollection_AsciiString meshfile = tmpDir + aStudyName + TCollection_AsciiString( "_SMESH_Mesh.med" );
+  TCollection_AsciiString filename = tmpDir + aStudyName + "_SMESH.hdf";
+  TCollection_AsciiString meshfile = tmpDir + aStudyName + "_SMESH_Mesh.med";
 
   int size;
   HDFfile*    aFile;
@@ -4430,21 +4431,21 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 
       // --> try to find SUB-MESHES containers for each type of submesh
       for ( int j = GetSubMeshOnVertexTag(); j <= GetSubMeshOnCompoundTag(); j++ ) {
-        char name_meshgroup[ 30 ];
+        const char* name_meshgroup;
         if ( j == GetSubMeshOnVertexTag() )
-          strcpy( name_meshgroup, "SubMeshes On Vertex" );
+          name_meshgroup = "SubMeshes On Vertex";
         else if ( j == GetSubMeshOnEdgeTag() )
-          strcpy( name_meshgroup, "SubMeshes On Edge" );
+          name_meshgroup = "SubMeshes On Edge";
         else if ( j == GetSubMeshOnWireTag() )
-          strcpy( name_meshgroup, "SubMeshes On Wire" );
+          name_meshgroup = "SubMeshes On Wire";
         else if ( j == GetSubMeshOnFaceTag() )
-          strcpy( name_meshgroup, "SubMeshes On Face" );
+          name_meshgroup = "SubMeshes On Face";
         else if ( j == GetSubMeshOnShellTag() )
-          strcpy( name_meshgroup, "SubMeshes On Shell" );
+          name_meshgroup = "SubMeshes On Shell";
         else if ( j == GetSubMeshOnSolidTag() )
-          strcpy( name_meshgroup, "SubMeshes On Solid" );
+          name_meshgroup = "SubMeshes On Solid";
         else if ( j == GetSubMeshOnCompoundTag() )
-          strcpy( name_meshgroup, "SubMeshes On Compound" );
+          name_meshgroup = "SubMeshes On Compound";
 
         // try to get submeshes container HDF group
         if ( aTopGroup->ExistInternalObject( name_meshgroup ) ) {
@@ -4458,9 +4459,9 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
             // identify submesh
             char name_submeshgroup[ HDF_NAME_MAX_LEN+1 ];
             aGroup->InternalObjectIndentify( k, name_submeshgroup );
-            if ( string( name_submeshgroup ).substr( 0, 7 ) == string( "SubMesh" )  ) {
+            if ( strncmp( name_submeshgroup, "SubMesh", 7 ) == 0 ) {
               // --> get submesh id
-              int subid = atoi( string( name_submeshgroup ).substr( 7 ).c_str() );
+              int subid = atoi( name_submeshgroup + 7 );
               if ( subid <= 0 )
                 continue;
               // open submesh HDF group
@@ -4510,7 +4511,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                   char name_dataset[ HDF_NAME_MAX_LEN+1 ];
                   aSubSubGroup->InternalObjectIndentify( l, name_dataset );
                   // check if it is an algorithm
-                  if ( string( name_dataset ).substr( 0, 4 ) == string( "Algo" ) ) {
+                  if ( strncmp( name_dataset, "Algo", 4 ) == 0 ) {
                     aDataset = new HDFdataset( name_dataset, aSubSubGroup );
                     aDataset->OpenOnDisk();
                     size = aDataset->GetSize();
