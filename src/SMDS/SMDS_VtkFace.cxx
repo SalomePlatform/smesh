@@ -161,6 +161,22 @@ SMDS_VtkFace::GetNode(const int ind) const
   return SMDS_Mesh::_meshList[myMeshId]->FindNodeVtk( pts[ ind ]);
 }
 
+/*!
+ * \brief Check if a node belongs to the element
+ * \param node - the node to check
+ * \retval int - node index within the element, -1 if not found
+ */
+int SMDS_VtkFace::GetNodeIndex( const SMDS_MeshNode* node ) const
+{
+  vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
+  vtkIdType npts, *pts;
+  grid->GetCellPoints( this->myVtkID, npts, pts );
+  for ( vtkIdType i = 0; i < npts; ++i )
+    if ( pts[i] == node->getVtkId() )
+      return i;
+  return -1;
+}
+
 bool SMDS_VtkFace::IsQuadratic() const
 {
   vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();

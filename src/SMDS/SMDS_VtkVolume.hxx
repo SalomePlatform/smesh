@@ -56,6 +56,7 @@ public:
   virtual SMDSAbs_EntityType   GetEntityType() const;
   virtual SMDSAbs_GeometryType GetGeomType() const;
   virtual const SMDS_MeshNode* GetNode(const int ind) const;
+  virtual int GetNodeIndex( const SMDS_MeshNode* node ) const;
   virtual bool IsQuadratic() const;
   virtual bool IsPoly() const;
   virtual bool IsMediumNode(const SMDS_MeshNode* node) const;
