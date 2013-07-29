@@ -923,7 +923,8 @@
     }
   }
 
-  void AutoColor(){
+  void AutoColor()
+  {
     SALOME_ListIO selected;
     SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( SUIT_Session::session()->activeApplication() );
     if( !app )
@@ -946,6 +947,8 @@
     if( aMainObject->_is_nil() )
       return;
 
+    SUIT_OverrideCursor wc;
+
     aMainObject->SetAutoColor( true ); // mesh groups are re-colored here
 
     QList<SALOMEDS::Color> aReservedColors;
@@ -962,6 +965,7 @@
       SALOMEDS::Color aColor = SMESHGUI::getUniqueColor( aReservedColors );
       aReservedColors.append( aColor );
 #endif                    // SIMPLE_AUTOCOLOR
+      aGroupObject->SetColor( aColor );
 
       _PTR(SObject) aGroupSObject = SMESH::FindSObject(aGroupObject);
       if (aGroupSObject) {
