@@ -462,14 +462,13 @@ int SMDS_VtkVolume::GetNodeIndex( const SMDS_MeshNode* node ) const
     vtkIdType nFaces = 0;
     vtkIdType* ptIds = 0;
     grid->GetFaceStream(this->myVtkID, nFaces, ptIds);
-    int id = 0, nbPoints = 0;
+    int id = 0;
     for (int iF = 0; iF < nFaces; iF++)
     {
       int nodesInFace = ptIds[id];
       for ( vtkIdType i = 0; i < nodesInFace; ++i )
-        if ( ptIds[id+i] == node->getVtkId() )
+        if ( ptIds[id+i+1] == node->getVtkId() )
           return id+i-iF;
-      nbPoints += nodesInFace;
       id += (nodesInFace + 1);
     }
     return -1;
