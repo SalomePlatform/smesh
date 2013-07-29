@@ -141,7 +141,7 @@ public:
     * \param node - the node to check
     * \retval int - node index within the element, -1 if not found
    */
-  int GetNodeIndex( const SMDS_MeshNode* node ) const;
+  virtual int GetNodeIndex( const SMDS_MeshNode* node ) const;
 
   inline ShortType getMeshId()  const { return myMeshId; }
   inline LongType  getshapeId() const { return myShapeId; }
