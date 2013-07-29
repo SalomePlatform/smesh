@@ -65,7 +65,6 @@ protected:
   SMDS_MeshNode(int id, int meshId, int shapeId = -1, double x=0, double y=0, double z=0);
   virtual ~SMDS_MeshNode();
   void init(int id, int meshId, int shapeId = -1, double x=0, double y=0, double z=0);
-  inline void setVtkId(int vtkId) { myVtkID = vtkId; };
   double* getCoord() const;
   void AddInverseElement(const SMDS_MeshElement * ME);
   void RemoveInverseElement(const SMDS_MeshElement * parent);
