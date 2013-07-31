@@ -587,9 +587,6 @@ AC_OUTPUT([ \
   src/Tools/padder/spadderpy/plugin/Makefile \
   src/Tools/padder/spadderpy/plugin/envPlugins.sh \
   src/Tools/padder/resources/Makefile \
-  src/Tools/padder/resources/appligen/Makefile \
-  src/Tools/padder/resources/appligen/appligen.sh \
-  src/Tools/padder/resources/appligen/config_appli.xml \
   src/Tools/padder/resources/testdata/Makefile \
   src/Tools/padder/unittests/Makefile \
   src/Tools/padder/unittests/autotest.sh \

@@ -50,7 +50,7 @@ module MESHJOB
   //
 
   // This defines the set of temporary folders used by the jobmanager
-  // when executing a job (may depends on the job).
+  // when executing a job (may depend on the job).
   struct MeshJobPaths
   {
     string local_inputdir;
