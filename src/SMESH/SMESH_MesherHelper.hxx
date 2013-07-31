@@ -97,7 +97,7 @@ class SMESH_EXPORT SMESH_MesherHelper
    * The key of the map is a normalized parameter of each
    * base node on theBaseSide. Edges in theBaseSide must be sequenced.
    * This method works in supposition that nodes on the face
-   * forms a rectangular grid and elements can be quardrangles or triangles
+   * forms a structured grid and elements can be quardrangles or triangles
    */
   static bool LoadNodeColumns(TParam2ColumnMap &            theParam2ColumnMap,
                               const TopoDS_Face&            theFace,
