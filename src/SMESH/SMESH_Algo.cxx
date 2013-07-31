@@ -38,6 +38,7 @@
 #include "SMESH_Gen.hxx"
 #include "SMESH_HypoFilter.hxx"
 #include "SMESH_Mesh.hxx"
+#include "SMESH_MeshAlgos.hxx"
 #include "SMESH_TypeDefs.hxx"
 #include "SMESH_subMesh.hxx"
 
@@ -71,6 +72,8 @@
 
 #include <algorithm>
 #include <limits>
+#include "SMESH_ProxyMesh.hxx"
+#include "SMESH_MesherHelper.hxx"
 
 using namespace std;
 
@@ -848,3 +851,206 @@ int SMESH_Algo::NumberOfPoints(SMESH_Mesh& aMesh, const TopoDS_Wire& W)
 }
 
 
+//================================================================================
+/*!
+ * Method in which an algorithm generating a structured mesh
+ * fixes positions of in-face nodes after there movement
+ * due to insertion of viscous layers.
+ */
+//================================================================================
+
+bool SMESH_2D_Algo::FixInternalNodes(const SMESH_ProxyMesh& mesh,
+                                     const TopoDS_Face&     face)
+{
+  const SMESHDS_SubMesh* smDS = mesh.GetSubMesh(face);
+  if ( !smDS || smDS->NbElements() < 1 )
+    return false;
+
+  SMESH_MesherHelper helper( *mesh.GetMesh() );
+
+  // get all faces from a proxy sub-mesh
+  typedef SMDS_StdIterator< const SMDS_MeshElement*, SMDS_ElemIteratorPtr > TIterator;
+  TIDSortedElemSet allFaces( TIterator( smDS->GetElements() ), TIterator() );
+  TIDSortedElemSet avoidSet, firstRowQuads;
+
+  // indices of nodes to pass to a neighbour quad using SMESH_MeshAlgos::FindFaceInSet()
+  int iN1, iN2;
+
+  // get two first rows of nodes by passing through the first row of faces
+  vector< vector< const SMDS_MeshNode* > > nodeRows;
+  int iRow1 = 0, iRow2 = 1;
+  const SMDS_MeshElement* quad;
+  {
+    // look for a corner quadrangle and it's corner node
+    const SMDS_MeshElement* cornerQuad = 0;
+    int                     cornerNodeInd = -1;
+    SMDS_ElemIteratorPtr fIt = smDS->GetElements();
+    while ( !cornerQuad && fIt->more() )
+    {
+      cornerQuad = fIt->next();
+      if ( cornerQuad->NbCornerNodes() != 4 )
+        return false;
+      SMDS_NodeIteratorPtr nIt = cornerQuad->nodeIterator();
+      for ( int i = 0; i < 4; ++i )
+      {
+        int nbInverseQuads = 0;
+        SMDS_ElemIteratorPtr fIt = nIt->next()->GetInverseElementIterator(SMDSAbs_Face);
+        while ( fIt->more() )
+          nbInverseQuads += allFaces.count( fIt->next() );
+        if ( nbInverseQuads == 1 )
+          cornerNodeInd = i, i = 4;
+      }
+      if ( cornerNodeInd < 0 )
+        cornerQuad = 0;
+    }
+    if ( !cornerQuad || cornerNodeInd < 0 )
+      return false;
+
+    iN1     = helper.WrapIndex( cornerNodeInd + 1, 4 );
+    iN2     = helper.WrapIndex( cornerNodeInd + 2, 4 );
+    int iN3 = helper.WrapIndex( cornerNodeInd + 3, 4 );
+    nodeRows.resize(2);
+    nodeRows[iRow1].push_back( cornerQuad->GetNode( cornerNodeInd ));
+    nodeRows[iRow1].push_back( cornerQuad->GetNode( iN1 ));
+    nodeRows[iRow2].push_back( cornerQuad->GetNode( iN3 ));
+    nodeRows[iRow2].push_back( cornerQuad->GetNode( iN2 ));
+    firstRowQuads.insert( cornerQuad );
+
+    // pass through the rest quads in a face row
+    quad = cornerQuad;
+    while ( quad )
+    {
+      avoidSet.clear();
+      avoidSet.insert( quad );
+      if (( quad = SMESH_MeshAlgos::FindFaceInSet( nodeRows[iRow1].back(),
+                                                   nodeRows[iRow2].back(),
+                                                   allFaces, avoidSet, &iN1, &iN2)))
+      {
+        nodeRows[iRow1].push_back( quad->GetNode( helper.WrapIndex( iN2 + 2, 4 )));
+        nodeRows[iRow2].push_back( quad->GetNode( helper.WrapIndex( iN1 + 2, 4 )));
+        if ( quad->NbCornerNodes() != 4 )
+          return false;
+      }
+    }
+    if ( nodeRows[iRow1].size() < 3 )
+      return true; // there is nothing to fix
+  }
+
+  nodeRows.reserve( smDS->NbElements() / nodeRows[iRow1].size() );
+
+  // get the rest node rows
+  while ( true )
+  {
+    ++iRow1, ++iRow2;
+
+    // get the first quad in the next face row 
+    if (( quad = SMESH_MeshAlgos::FindFaceInSet( nodeRows[iRow1][0],
+                                                 nodeRows[iRow1][1],
+                                                 allFaces, /*avoid=*/firstRowQuads,
+                                                 &iN1, &iN2)))
+    {
+      if ( quad->NbCornerNodes() != 4 )
+        return false;
+      nodeRows.resize( iRow2+1 );
+      nodeRows[iRow2].push_back( quad->GetNode( helper.WrapIndex( iN2 + 2, 4 )));
+      nodeRows[iRow2].push_back( quad->GetNode( helper.WrapIndex( iN1 + 2, 4 )));
+      firstRowQuads.insert( quad );
+    }
+    else
+    {
+      break; // no more rows
+    }
+
+    // pass through the rest quads in a face row
+    while ( quad )
+    {
+      avoidSet.clear();
+      avoidSet.insert( quad );
+      if (( quad = SMESH_MeshAlgos::FindFaceInSet( nodeRows[iRow1][ nodeRows[iRow2].size()-1 ],
+                                                   nodeRows[iRow2].back(),
+                                                   allFaces, avoidSet, &iN1, &iN2)))
+      {
+        if ( quad->NbCornerNodes() != 4 )
+          return false;
+        nodeRows[iRow2].push_back( quad->GetNode( helper.WrapIndex( iN1 + 2, 4 )));
+      }
+    }
+    if ( nodeRows[iRow1].size() != nodeRows[iRow2].size() )
+      return false;
+  }
+  if ( nodeRows.size() < 3 )
+    return true; // there is nothing to fix
+
+  // get params of the first (bottom) and last (top) node rows
+  UVPtStructVec uvB( nodeRows[0].size() ), uvT( nodeRows[0].size() );
+  for ( int isBot = 0; isBot < 2; ++isBot )
+  {
+    UVPtStructVec &                  uvps = isBot ? uvB : uvT;
+    vector< const SMDS_MeshNode* >& nodes = nodeRows[ isBot ? 0 : nodeRows.size()-1 ];
+    for ( size_t i = 0; i < nodes.size(); ++i )
+    {
+      uvps[i].node = nodes[i];
+      gp_XY uv = helper.GetNodeUV( face, uvps[i].node );
+      uvps[i].u = uv.Coord(1);
+      uvps[i].v = uv.Coord(2);
+      uvps[i].x = 0;
+    }
+    // calculate x (normalized param)
+    for ( size_t i = 1; i < nodes.size(); ++i )
+      uvps[i].x = uvps[i-1].x + SMESH_TNodeXYZ( uvps[i-1].node ).Distance( uvps[i].node );
+    for ( size_t i = 1; i < nodes.size(); ++i )
+      uvps[i].x /= uvps.back().x;
+  }
+
+  // get params of the left and right node rows
+  UVPtStructVec uvL( nodeRows.size() ), uvR( nodeRows.size() );
+  for ( int isLeft = 0; isLeft < 2; ++isLeft )
+  {
+    UVPtStructVec & uvps = isLeft ? uvL : uvR;
+    const int       iCol = isLeft ? 0 : nodeRows[0].size() - 1;
+    for ( size_t i = 0; i < nodeRows.size(); ++i )
+    {
+      uvps[i].node = nodeRows[i][iCol];
+      gp_XY uv = helper.GetNodeUV( face, uvps[i].node );
+      uvps[i].u = uv.Coord(1);
+      uvps[i].v = uv.Coord(2);
+      uvps[i].y = 0;
+    }
+    // calculate y (normalized param)
+    for ( size_t i = 1; i < nodeRows.size(); ++i )
+      uvps[i].y = uvps[i-1].y + SMESH_TNodeXYZ( uvps[i-1].node ).Distance( uvps[i].node );
+    for ( size_t i = 1; i < nodeRows.size(); ++i )
+      uvps[i].y /= uvps.back().y;
+  }
+
+  // update node coordinates
+  SMESHDS_Mesh*   meshDS = mesh.GetMeshDS();
+  Handle(Geom_Surface) S = BRep_Tool::Surface( face );
+  gp_XY a0 ( uvB.front().u, uvB.front().v );
+  gp_XY a1 ( uvB.back().u,  uvB.back().v );
+  gp_XY a2 ( uvT.back().u,  uvT.back().v );
+  gp_XY a3 ( uvT.front().u, uvT.front().v );
+  for ( size_t iRow = 1; iRow < nodeRows.size()-1; ++iRow )
+  {
+    gp_XY p1 ( uvR[ iRow ].u, uvR[ iRow ].v );
+    gp_XY p3 ( uvL[ iRow ].u, uvL[ iRow ].v );
+    const double y0 = uvL[ iRow ].y;
+    const double y1 = uvR[ iRow ].y;
+    for ( size_t iCol = 1; iCol < nodeRows[0].size()-1; ++iCol )
+    {
+      gp_XY p0 ( uvB[ iCol ].u, uvB[ iCol ].v );
+      gp_XY p2 ( uvT[ iCol ].u, uvT[ iCol ].v );
+      const double x0 = uvB[ iCol ].x;
+      const double x1 = uvT[ iCol ].x;
+      double x = (x0 + y0 * (x1 - x0)) / (1 - (y1 - y0) * (x1 - x0));
+      double y = y0 + x * (y1 - y0);
+      gp_XY uv = helper.calcTFI( x, y, a0,a1,a2,a3, p0,p1,p2,p3 );
+      gp_Pnt p = S->Value( uv.Coord(1), uv.Coord(2));
+      const SMDS_MeshNode* n = nodeRows[iRow][iCol];
+      meshDS->MoveNode( n, p.X(), p.Y(), p.Z() );
+      if ( SMDS_FacePosition* pos = dynamic_cast< SMDS_FacePosition*>( n->GetPosition() ))
+        pos->SetParameters( uv.Coord(1), uv.Coord(2) );
+    }
+  }
+  return true;
+}

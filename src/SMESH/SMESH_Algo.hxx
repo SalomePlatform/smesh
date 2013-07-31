@@ -52,6 +52,7 @@ class SMESH_Gen;
 class SMESH_HypoFilter;
 class SMESH_Mesh;
 class SMESH_MesherHelper;
+class SMESH_ProxyMesh;
 class SMESH_subMesh;
 class TopoDS_Face;
 class TopoDS_Shape;
@@ -445,6 +446,13 @@ class SMESH_EXPORT SMESH_2D_Algo: public SMESH_Algo
 {
 public:
   SMESH_2D_Algo(int hypId, int studyId, SMESH_Gen* gen);
+  /*!
+   * \brief Method in which an algorithm generating a structured mesh
+   *        fixes positions of in-face nodes after there movement
+   *        due to insertion of viscous layers.
+   */
+  virtual bool FixInternalNodes(const SMESH_ProxyMesh& mesh,
+                                const TopoDS_Face&     face);
 };
 
 class SMESH_EXPORT SMESH_3D_Algo: public SMESH_Algo
