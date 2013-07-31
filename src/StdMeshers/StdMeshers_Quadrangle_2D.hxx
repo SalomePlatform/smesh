@@ -62,21 +62,22 @@ public:
   StdMeshers_Quadrangle_2D(int hypId, int studyId, SMESH_Gen* gen);
   virtual ~StdMeshers_Quadrangle_2D();
 
-  virtual bool CheckHypothesis(SMESH_Mesh& aMesh,
+  virtual bool CheckHypothesis(SMESH_Mesh&         aMesh,
                                const TopoDS_Shape& aShape,
-                               SMESH_Hypothesis::Hypothesis_Status& aStatus);
+                               Hypothesis_Status&  aStatus);
 
-  virtual bool Compute(SMESH_Mesh& aMesh,
+  virtual bool Compute(SMESH_Mesh&         aMesh,
                        const TopoDS_Shape& aShape);
 
-  virtual bool Evaluate(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape,
-                        MapShapeNbElems& aResMap);
+  virtual bool Evaluate(SMESH_Mesh &         aMesh,
+                        const TopoDS_Shape & aShape,
+                        MapShapeNbElems&     aResMap);
 
-  FaceQuadStruct::Ptr CheckAnd2Dcompute(SMESH_Mesh& aMesh,
+  FaceQuadStruct::Ptr CheckAnd2Dcompute(SMESH_Mesh&         aMesh,
                                         const TopoDS_Shape& aShape,
-                                        const bool CreateQuadratic);
+                                        const bool          CreateQuadratic);
 
-  FaceQuadStruct::Ptr CheckNbEdges(SMESH_Mesh& aMesh,
+  FaceQuadStruct::Ptr CheckNbEdges(SMESH_Mesh&         aMesh,
                                    const TopoDS_Shape& aShape);
 
 protected:
