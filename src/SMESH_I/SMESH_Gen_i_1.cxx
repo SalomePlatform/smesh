@@ -262,7 +262,7 @@ static SALOMEDS::SObject_ptr publish(SALOMEDS::Study_ptr   theStudy,
   SALOMEDS::SObject_wrap SO = SMESH_Gen_i::ObjectToSObject( theStudy, theIOR );
   SALOMEDS::StudyBuilder_var    aStudyBuilder = theStudy->NewBuilder();
   SALOMEDS::UseCaseBuilder_var useCaseBuilder = theStudy->GetUseCaseBuilder();
-  SALOMEDS::SObject_var objAfter;
+  SALOMEDS::SObject_wrap objAfter;
   if ( SO->_is_nil() ) {
     if ( theTag == 0 ) {
       SO = aStudyBuilder->NewObject( theFatherObject );
@@ -273,15 +273,19 @@ static SALOMEDS::SObject_ptr publish(SALOMEDS::Study_ptr   theStudy,
       std::string anEntry;
       int last2Pnt_pos = -1;
       int tagAfter = -1;
+      CORBA::String_var entry;
+      SALOMEDS::SObject_wrap curObj;
       SALOMEDS::UseCaseIterator_var anUseCaseIter = useCaseBuilder->GetUseCaseIterator(theFatherObject);
       for ( ; anUseCaseIter->More(); anUseCaseIter->Next() ) {
-      	anEntry = anUseCaseIter->Value()->GetID();
-      	last2Pnt_pos = anEntry.rfind( ":" );
-      	tagAfter = atoi( anEntry.substr( last2Pnt_pos+1 ).c_str() );
-      	if ( tagAfter > theTag  ) {
-      	  theFatherObject->FindSubObject( tagAfter, objAfter.inout() );
-      	  break;
-      	}
+        curObj = anUseCaseIter->Value();
+        entry = curObj->GetID();
+        anEntry = entry.in();
+        last2Pnt_pos = anEntry.rfind( ":" );
+        tagAfter = atoi( anEntry.substr( last2Pnt_pos+1 ).c_str() );
+        if ( tagAfter > theTag  ) {
+	  objAfter = curObj;
+          break;
+        }
       }
     }
   }
@@ -313,7 +317,7 @@ static SALOMEDS::SObject_ptr publish(SALOMEDS::Study_ptr   theStudy,
   if ( !CORBA::is_nil( objAfter ) ) {
     useCaseBuilder->InsertBefore( SO, objAfter );    // insert at given tag
   } else if ( !useCaseBuilder->IsUseCaseNode( SO ) ) {
-    useCaseBuilder->AppendTo( SO->GetFather(), SO ); // append to the end of list
+    useCaseBuilder->AppendTo( theFatherObject, SO ); // append to the end of list
   }
 
   return SO._retn();
