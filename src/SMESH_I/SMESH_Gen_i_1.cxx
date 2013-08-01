@@ -262,11 +262,28 @@ static SALOMEDS::SObject_ptr publish(SALOMEDS::Study_ptr   theStudy,
   SALOMEDS::SObject_wrap SO = SMESH_Gen_i::ObjectToSObject( theStudy, theIOR );
   SALOMEDS::StudyBuilder_var    aStudyBuilder = theStudy->NewBuilder();
   SALOMEDS::UseCaseBuilder_var useCaseBuilder = theStudy->GetUseCaseBuilder();
+  SALOMEDS::SObject_var objAfter;
   if ( SO->_is_nil() ) {
-    if ( theTag == 0 )
+    if ( theTag == 0 ) {
       SO = aStudyBuilder->NewObject( theFatherObject );
-    else if ( !theFatherObject->FindSubObject( theTag, SO.inout() ))
+    } else if ( !theFatherObject->FindSubObject( theTag, SO.inout() )) {
       SO = aStudyBuilder->NewObjectToTag( theFatherObject, theTag );
+
+      // define the next tag after given one in the data tree to insert SOobject
+      std::string anEntry;
+      int last2Pnt_pos = -1;
+      int tagAfter = -1;
+      SALOMEDS::UseCaseIterator_var anUseCaseIter = useCaseBuilder->GetUseCaseIterator(theFatherObject);
+      for ( ; anUseCaseIter->More(); anUseCaseIter->Next() ) {
+      	anEntry = anUseCaseIter->Value()->GetID();
+      	last2Pnt_pos = anEntry.rfind( ":" );
+      	tagAfter = atoi( anEntry.substr( last2Pnt_pos+1 ).c_str() );
+      	if ( tagAfter > theTag  ) {
+      	  theFatherObject->FindSubObject( tagAfter, objAfter.inout() );
+      	  break;
+      	}
+      }
+    }
   }
 
   SALOMEDS::GenericAttribute_wrap anAttr;
@@ -293,7 +310,11 @@ static SALOMEDS::SObject_ptr publish(SALOMEDS::Study_ptr   theStudy,
 
   // add object to the use case tree
   // (to support tree representation customization and drag-n-drop)
-  useCaseBuilder->AppendTo( SO->GetFather(), SO );
+  if ( !CORBA::is_nil( objAfter ) ) {
+    useCaseBuilder->InsertBefore( SO, objAfter );    // insert at given tag
+  } else if ( !useCaseBuilder->IsUseCaseNode( SO ) ) {
+    useCaseBuilder->AppendTo( SO->GetFather(), SO ); // append to the end of list
+  }
 
   return SO._retn();
 }
