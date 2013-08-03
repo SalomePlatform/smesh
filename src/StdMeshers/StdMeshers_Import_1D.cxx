@@ -621,6 +621,7 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
 {
   if ( !_sourceHyp ) return false;
 
+  //MESSAGE("---------> StdMeshers_Import_1D::Compute");
   const vector<SMESH_Group*>& srcGroups = _sourceHyp->GetGroups(/*loaded=*/true);
   if ( srcGroups.empty() )
     return error("Invalid source groups");
@@ -650,9 +651,11 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
     {
       _gen->Compute(theMesh,v,/*anUpward=*/true);
       n = SMESH_Algo::VertexNode( v, tgtMesh );
+      //MESSAGE("_gen->Compute " << n);
       if ( !n ) return false; // very strange
     }
     vertexNodes.push_back( SMESH_TNodeXYZ( n ));
+    //MESSAGE("SMESH_Algo::VertexNode " << n->GetID() << " " << n->X() << " " << n->Y() << " " << n->Z() );
   }
 
   // import edges from groups
@@ -670,17 +673,19 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
     SMDS_ElemIteratorPtr srcElems = srcGroup->GetElements();
     vector<const SMDS_MeshNode*> newNodes;
     SMDS_MeshNode *tmpNode = helper.AddNode(0,0,0);
-    double u = 0;
+    double u = 0.314159; // "random" value between 0 and 1, avoid 0 and 1, false detection possible on edge restrictions
     while ( srcElems->more() ) // loop on group contents
     {
       const SMDS_MeshElement* edge = srcElems->next();
       // find or create nodes of a new edge
       newNodes.resize( edge->NbNodes() );
+      //MESSAGE("edge->NbNodes " << edge->NbNodes());
       newNodes.back() = 0;
       SMDS_MeshElement::iterator node = edge->begin_nodes();
       SMESH_TNodeXYZ a(edge->GetNode(0));
       // --- define a tolerance relative to the length of an edge
       double mytol = a.Distance(edge->GetNode(edge->NbNodes()-1))/25;
+      //mytol = max(1.E-5, 10*edgeTol); // too strict and not necessary
       //MESSAGE("mytol = " << mytol);
       for ( unsigned i = 0; i < newNodes.size(); ++i, ++node )
       {
@@ -697,22 +702,26 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
           for ( vNIt = vertexNodes.begin(); vNIt != vertexNodes.end(); ++vNIt)
             if ( vNIt->SquareDistance( *node ) < checktol)
             {
-              //MESSAGE("SquareDistance " << vNIt->SquareDistance( *node ) << " checktol " << checktol);
+              //MESSAGE("SquareDistance " << vNIt->SquareDistance( *node ) << " checktol " << checktol <<" "<<vNIt->X()<<" "<<vNIt->Y()<<" "<<vNIt->Z());
               (*n2nIt).second = vNIt->_node;
               vertexNodes.erase( vNIt );
               break;
             }
+            else if ( vNIt->SquareDistance( *node ) < 10*checktol)
+              MESSAGE("SquareDistance missed" << vNIt->SquareDistance( *node ) << " checktol " << checktol <<" "<<vNIt->X()<<" "<<vNIt->Y()<<" "<<vNIt->Z());
         }
         if ( !n2nIt->second )
         {
           // find out if node lies on theShape
+          //double dxyz[4];
           tmpNode->setXYZ( (*node)->X(), (*node)->Y(), (*node)->Z());
-          if ( helper.CheckNodeU( geomEdge, tmpNode, u, mytol, /*force=*/true ))
+          if ( helper.CheckNodeU( geomEdge, tmpNode, u, mytol, /*force=*/true)) // , dxyz )) // dxyz used for debug purposes
           {
             SMDS_MeshNode* newNode = tgtMesh->AddNode( (*node)->X(), (*node)->Y(), (*node)->Z());
             n2nIt->second = newNode;
             tgtMesh->SetNodeOnEdge( newNode, shapeID, u );
-            //MESSAGE("u=" << u);
+            //MESSAGE("u=" << u << " " << newNode->X()<< " " << newNode->Y()<< " " << newNode->Z());
+            //MESSAGE("d=" << dxyz[0] << " " << dxyz[1] << " " << dxyz[2] << " " << dxyz[3]);
           }
         }
         if ( !(newNodes[i] = n2nIt->second ))
@@ -730,7 +739,7 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
         newEdge = tgtMesh->AddEdge( newNodes[0], newNodes[1], newNodes[2] );
       else
         newEdge = tgtMesh->AddEdge( newNodes[0], newNodes[1]);
-      //MESSAGE("add Edge");
+      //MESSAGE("add Edge " << newNodes[0]->GetID() << " " << newNodes[1]->GetID());
       tgtMesh->SetMeshElementOnShape( newEdge, shapeID );
       e2e->insert( make_pair( edge, newEdge ));
     }

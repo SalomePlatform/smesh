@@ -909,6 +909,7 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
       {
         double r = Max( 0.5, 1 - tol*n->GetID()); // to get a unique u on edge
         u =  f*r + l*(1-r);
+        MESSAGE("curve.IsNull: " << u);
       }
     }
     else
@@ -944,6 +945,7 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
         }
         Quantity_Parameter U = projector->LowerDistanceParameter();
         u = double( U );
+        MESSAGE(" f " << f << " l " << l << " u " << u);
         curvPnt = curve->Value( u );
         dist = nodePnt.Distance( curvPnt );
         if ( distXYZ ) {
@@ -964,10 +966,12 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
       }
       else if ( fabs( u ) > numeric_limits<double>::min() )
       {
+        MESSAGE("fabs( u ) > numeric_limits<double>::min() ; u " << u << " f " << f << " l " << l);
         setPosOnShapeValidity( shapeID, true );
       }
       if (( u < f-tol || u > l+tol ) && force )
       {
+        MESSAGE("u < f-tol || u > l+tol  ; u " << u << " f " << f << " l " << l);
         // node is on vertex but is set on periodic but trimmed edge (issue 0020890)
         try
         {

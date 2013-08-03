@@ -9891,12 +9891,14 @@ namespace {
 
 //================================================================================
 /*!
-  \brief Identify the elements that will be affected by node duplication (actual duplication is not performed.
+  \brief Identify the elements that will be affected by node duplication (actual duplication is not performed).
   This method is the first step of DoubleNodeElemGroupsInRegion.
   \param theElems - list of groups of elements (edges or faces) to be replicated
   \param theNodesNot - list of groups of nodes not to replicated
   \param theShape - shape to detect affected elements (element which geometric center
-         located on or inside shape).
+         located on or inside shape). If the shape is null, detection is done on faces orientations
+         (select elements with a gravity center on the side given by faces normals).
+         This mode (null shape) is faster, but works only when theElems are faces, with coherents orientations.
          The replicated nodes should be associated to affected elements.
   \return groups of affected elements
   \sa DoubleNodeElemGroupsInRegion()
@@ -9909,44 +9911,145 @@ bool SMESH_MeshEditor::AffectedElemGroupsInRegion( const TIDSortedElemSet& theEl
                                                    TIDSortedElemSet&       theAffectedElems)
 {
   if ( theShape.IsNull() )
-    return false;
-
-  const double aTol = Precision::Confusion();
-  auto_ptr< BRepClass3d_SolidClassifier> bsc3d;
-  auto_ptr<_FaceClassifier>              aFaceClassifier;
-  if ( theShape.ShapeType() == TopAbs_SOLID )
   {
-    bsc3d.reset( new BRepClass3d_SolidClassifier(theShape));;
-    bsc3d->PerformInfinitePoint(aTol);
-  }
-  else if (theShape.ShapeType() == TopAbs_FACE )
-  {
-    aFaceClassifier.reset( new _FaceClassifier(TopoDS::Face(theShape)));
-  }
+    std::set<const SMDS_MeshNode*> alreadyCheckedNodes;
+    std::set<const SMDS_MeshElement*> alreadyCheckedElems;
+    std::set<const SMDS_MeshElement*> edgesToCheck;
+    alreadyCheckedNodes.clear();
+    alreadyCheckedElems.clear();
+    edgesToCheck.clear();
 
-  // iterates on indicated elements and get elements by back references from their nodes
-  TIDSortedElemSet::const_iterator elemItr = theElems.begin();
-  for ( ;  elemItr != theElems.end(); ++elemItr )
-  {
-    SMDS_MeshElement* anElem = (SMDS_MeshElement*)*elemItr;
-    if (!anElem)
-      continue;
+    // --- iterates on elements to be replicated and get elements by back references from their nodes
 
-    SMDS_ElemIteratorPtr nodeItr = anElem->nodesIterator();
-    while ( nodeItr->more() )
+    TIDSortedElemSet::const_iterator elemItr = theElems.begin();
+    int ielem = 1;
+    for ( ;  elemItr != theElems.end(); ++elemItr )
     {
-      const SMDS_MeshNode* aNode = cast2Node(nodeItr->next());
-      if ( !aNode || theNodesNot.find(aNode) != theNodesNot.end() )
+      SMDS_MeshElement* anElem = (SMDS_MeshElement*)*elemItr;
+      if (!anElem || (anElem->GetType() != SMDSAbs_Face))
         continue;
-      SMDS_ElemIteratorPtr backElemItr = aNode->GetInverseElementIterator();
-      while ( backElemItr->more() )
+      gp_XYZ normal;
+      SMESH_MeshAlgos::FaceNormal( anElem, normal, /*normalized=*/true );
+      MESSAGE("element " << ielem++ <<  " normal " << normal.X() << " " << normal.Y() << " " << normal.Z());
+      std::set<const SMDS_MeshNode*> nodesElem;
+      nodesElem.clear();
+      SMDS_ElemIteratorPtr nodeItr = anElem->nodesIterator();
+      while ( nodeItr->more() )
       {
-        const SMDS_MeshElement* curElem = backElemItr->next();
-        if ( curElem && theElems.find(curElem) == theElems.end() &&
-             ( bsc3d.get() ?
-               isInside( curElem, *bsc3d, aTol ) :
-               isInside( curElem, *aFaceClassifier, aTol )))
-          theAffectedElems.insert( curElem );
+        const SMDS_MeshNode* aNode = cast2Node(nodeItr->next());
+        nodesElem.insert(aNode);
+      }
+      std::set<const SMDS_MeshNode*>::iterator nodit = nodesElem.begin();
+      for (; nodit != nodesElem.end(); nodit++)
+      {
+        MESSAGE("  noeud ");
+        const SMDS_MeshNode* aNode = *nodit;
+        if ( !aNode || theNodesNot.find(aNode) != theNodesNot.end() )
+          continue;
+        if (alreadyCheckedNodes.find(aNode) != alreadyCheckedNodes.end())
+          continue;
+        alreadyCheckedNodes.insert(aNode);
+        SMDS_ElemIteratorPtr backElemItr = aNode->GetInverseElementIterator();
+        while ( backElemItr->more() )
+        {
+          MESSAGE("    backelem ");
+          const SMDS_MeshElement* curElem = backElemItr->next();
+          if (alreadyCheckedElems.find(curElem) != alreadyCheckedElems.end())
+            continue;
+          if (theElems.find(curElem) != theElems.end())
+            continue;
+          alreadyCheckedElems.insert(curElem);
+          double x=0, y=0, z=0;
+          int nb = 0;
+          SMDS_ElemIteratorPtr nodeItr2 = curElem->nodesIterator();
+          while ( nodeItr2->more() )
+          {
+            const SMDS_MeshNode* anotherNode = cast2Node(nodeItr2->next());
+            x += anotherNode->X();
+            y += anotherNode->Y();
+            z += anotherNode->Z();
+            nb++;
+          }
+          gp_XYZ p;
+          p.SetCoord( x/nb -aNode->X(),
+                      y/nb -aNode->Y(),
+                      z/nb -aNode->Z() );
+          MESSAGE("      check " << p.X() << " " << p.Y() << " " << p.Z());
+          if (normal*p > 0)
+          {
+            MESSAGE("    --- inserted")
+            theAffectedElems.insert( curElem );
+          }
+          else if (curElem->GetType() == SMDSAbs_Edge)
+            edgesToCheck.insert(curElem);
+        }
+      }
+    }
+    // --- add also edges lying on the set of faces (all nodes in alreadyCheckedNodes)
+    std::set<const SMDS_MeshElement*>::iterator eit = edgesToCheck.begin();
+    for( ; eit != edgesToCheck.end(); eit++)
+    {
+      bool onside = true;
+      const SMDS_MeshElement* anEdge = *eit;
+      SMDS_ElemIteratorPtr nodeItr = anEdge->nodesIterator();
+      while ( nodeItr->more() )
+      {
+        const SMDS_MeshNode* aNode = cast2Node(nodeItr->next());
+        if (alreadyCheckedNodes.find(aNode) == alreadyCheckedNodes.end())
+        {
+          onside = false;
+          break;
+        }
+      }
+      if (onside)
+      {
+        MESSAGE("    --- edge onside inserted")
+        theAffectedElems.insert(anEdge);
+      }
+    }
+  }
+  else
+  {
+    const double aTol = Precision::Confusion();
+    auto_ptr< BRepClass3d_SolidClassifier> bsc3d;
+    auto_ptr<_FaceClassifier>              aFaceClassifier;
+    if ( theShape.ShapeType() == TopAbs_SOLID )
+    {
+      bsc3d.reset( new BRepClass3d_SolidClassifier(theShape));;
+      bsc3d->PerformInfinitePoint(aTol);
+    }
+    else if (theShape.ShapeType() == TopAbs_FACE )
+    {
+      aFaceClassifier.reset( new _FaceClassifier(TopoDS::Face(theShape)));
+    }
+
+    // iterates on indicated elements and get elements by back references from their nodes
+    TIDSortedElemSet::const_iterator elemItr = theElems.begin();
+    int ielem = 1;
+    for ( ;  elemItr != theElems.end(); ++elemItr )
+    {
+      MESSAGE("element " << ielem++);
+      SMDS_MeshElement* anElem = (SMDS_MeshElement*)*elemItr;
+      if (!anElem)
+        continue;
+      SMDS_ElemIteratorPtr nodeItr = anElem->nodesIterator();
+      while ( nodeItr->more() )
+      {
+        MESSAGE("  noeud ");
+        const SMDS_MeshNode* aNode = cast2Node(nodeItr->next());
+        if ( !aNode || theNodesNot.find(aNode) != theNodesNot.end() )
+          continue;
+        SMDS_ElemIteratorPtr backElemItr = aNode->GetInverseElementIterator();
+        while ( backElemItr->more() )
+        {
+          MESSAGE("    backelem ");
+          const SMDS_MeshElement* curElem = backElemItr->next();
+          if ( curElem && theElems.find(curElem) == theElems.end() &&
+              ( bsc3d.get() ?
+                isInside( curElem, *bsc3d, aTol ) :
+                isInside( curElem, *aFaceClassifier, aTol )))
+            theAffectedElems.insert( curElem );
+        }
       }
     }
   }

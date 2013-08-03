@@ -210,7 +210,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
     void getElementsInSphere ( const gp_XYZ& center,
                                const double  radius, TIDSortedElemSet& foundElems);
     size_t getSize() { return std::max( _size, _elements.size() ); }
-    ~ElementBndBoxTree();
+    virtual ~ElementBndBoxTree();
 
   protected:
     ElementBndBoxTree():_size(0) {}
@@ -410,6 +410,10 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
  */
 //=======================================================================
 
+SMESH_ElementSearcher::~SMESH_ElementSearcher()
+{
+}
+
 struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
 {
   SMDS_Mesh*                   _mesh;
@@ -423,7 +427,7 @@ struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
 
   SMESH_ElementSearcherImpl( SMDS_Mesh& mesh, SMDS_ElemIteratorPtr elemIt=SMDS_ElemIteratorPtr())
     : _mesh(&mesh),_meshPartIt(elemIt),_ebbTree(0),_nodeSearcher(0),_tolerance(-1),_outerFacesFound(false) {}
-  ~SMESH_ElementSearcherImpl()
+  virtual ~SMESH_ElementSearcherImpl()
   {
     if ( _ebbTree )      delete _ebbTree;      _ebbTree      = 0;
     if ( _nodeSearcher ) delete _nodeSearcher; _nodeSearcher = 0;

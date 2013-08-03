@@ -219,6 +219,8 @@ void SMESH_Tree<BND_BOX,NB_CHILDREN>::buildChildren()
     myChildren[i] = newChild();
     // and we assign to him its box.
     myChildren[i]->myFather = this;
+    if (myChildren[i]->myLimit)
+      delete myChildren[i]->myLimit;
     myChildren[i]->myLimit = myLimit;
     myChildren[i]->myLevel = myLevel + 1;
     myChildren[i]->myBox = newChildBox( i );
