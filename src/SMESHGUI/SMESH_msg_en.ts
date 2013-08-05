@@ -1650,6 +1650,10 @@ Do you want to continue ?</translation>
         <translation>Face</translation>
     </message>
     <message>
+        <source>SMESH_FACES</source>
+        <translation>Faces</translation>
+    </message>
+    <message>
         <source>SMESH_FEATUREANGLE</source>
         <translation>Feature Angle</translation>
     </message>
@@ -2656,6 +2660,10 @@ Consider saving your work before application crash</translation>
         <translation>Volume</translation>
     </message>
     <message>
+        <source>SMESH_VOLUMES</source>
+        <translation>Volumes</translation>
+    </message>
+    <message>
         <source>SMESH_WARNING</source>
         <translation>Warning</translation>
     </message>
@@ -2717,14 +2725,15 @@ Consider saving your work before application crash</translation>
     </message>
     <message>
         <source>SMESH_WRN_SIZE_LIMIT_EXCEEDED</source>
-        <translation>No automatic update of the presentation has been done: new mesh size (%1 elements) exceeds current size limit (%2 elements).
-Please check preferences of Mesh module.
+        <translation>No automatic update of the presentation has been done:
+New mesh size (%1 elements) exceeds current size limit of automatic update (%2 elements).
 </translation>
     </message>
     <message>
         <source>SMESH_WRN_SIZE_INC_LIMIT_EXCEEDED</source>
-        <translation>New mesh sise (%1 elements) exceeds current size limit (%2 elements).
-Not all mesh elements are shown. Please check preferences of Mesh module.
+        <translation>New mesh sise (%1 elements) exceeds current size limit of automatic update (%2 elements).
+The following elements are not shown: %3.
+Use Display Entity menu command to show them.
 </translation>
     </message>
     <message>

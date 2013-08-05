@@ -1986,7 +1986,7 @@ bool SMESHGUI::automaticUpdate(unsigned int requestedSize, bool* limitExceeded)
  */
 //=============================================================================
 bool SMESHGUI::automaticUpdate( SMESH::SMESH_Mesh_ptr theMesh,
-                                int* entities, bool* limitExceeded )
+                                int* entities, bool* limitExceeded, int* hidden )
 {
   SUIT_ResourceMgr* resMgr = SUIT_Session::session()->resourceMgr();
   if ( !resMgr )
@@ -1999,6 +1999,7 @@ bool SMESHGUI::automaticUpdate( SMESH::SMESH_Mesh_ptr theMesh,
   long requestedSize = theMesh->NbElements();
 
   *entities = SMESH_Actor::eAllEntity;
+  *hidden   = 0;
 
   bool exceeded = updateLimit > 0 && requestedSize > updateLimit;
 
@@ -2013,40 +2014,50 @@ bool SMESHGUI::automaticUpdate( SMESH::SMESH_Mesh_ptr theMesh,
     long total     = 0;
 
     if ( nbOdElems > 0 ) {
-      if ( total + nbOdElems > updateLimit )
+      if ( total + nbOdElems > updateLimit ) {
         *entities = *entities & ~SMESH_Actor::e0DElements;
+	*hidden = *hidden | SMESH_Actor::e0DElements;
+      }
       else
         exceeded = false;
     }
     total += nbOdElems;
 
     if ( nbEdges > 0 ) {
-      if ( total + nbEdges > updateLimit )
+      if ( total + nbEdges > updateLimit ) {
         *entities = *entities & ~SMESH_Actor::eEdges;
+	*hidden = *hidden | SMESH_Actor::eEdges;
+      }
       else
         exceeded = false;
     }
     total += nbEdges;
 
     if ( nbFaces > 0 ) {
-      if ( total + nbFaces > updateLimit )
+      if ( total + nbFaces > updateLimit ) {
         *entities = *entities & ~SMESH_Actor::eFaces;
+	*hidden = *hidden | SMESH_Actor::eFaces;
+      }
       else
         exceeded = false;
     }
     total += nbFaces;
 
     if ( nbVolumes > 0 ) {
-      if ( total + nbVolumes > updateLimit )
+      if ( total + nbVolumes > updateLimit ) {
         *entities = *entities & ~SMESH_Actor::eVolumes;
+	*hidden = *hidden | SMESH_Actor::eVolumes;
+      }
       else
         exceeded = false;
     }
     total += nbVolumes;
 
     if ( nbBalls > 0 ) {
-      if ( total + nbBalls > updateLimit )
+      if ( total + nbBalls > updateLimit ) {
         *entities = *entities & ~SMESH_Actor::eBallElem;
+	*hidden = *hidden | SMESH_Actor::eBallElem;
+      }
       else
         exceeded = false;
     }

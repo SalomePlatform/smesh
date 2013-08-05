@@ -1678,6 +1678,10 @@ Voulez-vous continuer ?</translation>
         <translation>Face</translation>
     </message>
     <message>
+        <source>SMESH_FACES</source>
+        <translation>Faces</translation>
+    </message>
+    <message>
         <source>SMESH_FEATUREANGLE</source>
         <translation>Montrer l&apos;angle</translation>
     </message>
@@ -2664,6 +2668,10 @@ Enregistrez votre travail avant que l&apos;application se plante</translation>
         <translation>Volume</translation>
     </message>
     <message>
+        <source>SMESH_VOLUMES</source>
+        <translation>Volumes</translation>
+    </message>
+    <message>
         <source>SMESH_WARNING</source>
         <translation>Avertissement</translation>
     </message>
@@ -2725,14 +2733,16 @@ Enregistrez votre travail avant que l&apos;application se plante</translation>
     </message>
     <message>
         <source>SMESH_WRN_SIZE_LIMIT_EXCEEDED</source>
-        <translation>La présentation n&apos;a pas été mise à jour automatiquement: la nouvelle taille du maillage (%1 éléments) dépasse la limite de taille actuelle (%2 éléments).
+        <translation>La présentation n&apos;a pas été mise à jour automatiquement:
+la nouvelle taille du maillage (%1 éléments) dépasse la limite de taille actuelle (%2 éléments).
 Vérifiez la limite dans les préférences du module Mesh.
 </translation>
     </message>
     <message>
         <source>SMESH_WRN_SIZE_INC_LIMIT_EXCEEDED</source>
-        <translation type="unfinished">New mesh sise (%1 elements) exceeds current size limit (%2 elements).
-Not all mesh elements are shown. Please check preferences of Mesh module.
+        <translation type="unfinished">New mesh sise (%1 elements) exceeds current size limit of automatic update (%2 elements).
+The following elements are not shown: %3.
+Use Display Entity menu command to show them.
 </translation>
     </message>
     <message>

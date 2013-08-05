@@ -895,9 +895,10 @@ void SMESHGUI_BaseComputeOp::computeMesh()
       bool limitExceeded;
       long limitSize = resMgr->integerValue( "SMESH", "update_limit", 500000 );
       int entities = SMESH_Actor::eAllEntity;
+      int hidden = 0;
       if ( !memoryLack )
       {
-        if ( getSMESHGUI()->automaticUpdate( myMesh, &entities, &limitExceeded ) )
+        if ( getSMESHGUI()->automaticUpdate( myMesh, &entities, &limitExceeded, &hidden ) )
         {
           try {
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
@@ -913,9 +914,15 @@ void SMESHGUI_BaseComputeOp::computeMesh()
 
             if ( limitExceeded )
             {
+	      QStringList hiddenMsg;
+	      if ( hidden & SMESH_Actor::e0DElements ) hiddenMsg << tr( "SMESH_ELEMS0D" );
+	      if ( hidden & SMESH_Actor::eEdges )      hiddenMsg << tr( "SMESH_EDGES" );
+	      if ( hidden & SMESH_Actor::eFaces )      hiddenMsg << tr( "SMESH_FACES" );
+	      if ( hidden & SMESH_Actor::eVolumes )    hiddenMsg << tr( "SMESH_VOLUMES" );
+	      if ( hidden & SMESH_Actor::eBallElem )   hiddenMsg << tr( "SMESH_BALLS" );
               SUIT_MessageBox::warning( desktop(),
                                         tr( "SMESH_WRN_WARNING" ),
-                                        tr( "SMESH_WRN_SIZE_INC_LIMIT_EXCEEDED" ).arg( myMesh->NbElements() ).arg( limitSize ) );
+                                        tr( "SMESH_WRN_SIZE_INC_LIMIT_EXCEEDED" ).arg( myMesh->NbElements() ).arg( limitSize ).arg( hiddenMsg.join(", ") ) );
             }
           }
           catch (...) {
