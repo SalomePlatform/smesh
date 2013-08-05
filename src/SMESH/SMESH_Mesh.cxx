@@ -1486,12 +1486,16 @@ double SMESH_Mesh::GetComputeProgress() const
         currentSubIds.Add( smToCompute[i]->GetId() );
       }
       double rate = algo->GetProgress();
-      if ( !( 0. < rate && rate < 1.001 ))
+      if ( 0. < rate && rate < 1.001 )
+      {
+        computedCost += rate * ( algoDoneCost + algoNotDoneCost );
+      }
+      else
       {
         rate = algo->GetProgressByTic();
+        computedCost += algoDoneCost + rate * algoNotDoneCost;
       }
       // cout << "rate: "<<rate << " algoNotDoneCost: " << algoNotDoneCost << endl;
-      computedCost += algoDoneCost + rate * algoNotDoneCost;
     }
 
   // get cost of already treated sub-meshes

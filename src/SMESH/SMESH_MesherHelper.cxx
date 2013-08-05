@@ -600,10 +600,8 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
         for ( TopExp_Explorer vert(F,TopAbs_VERTEX); !uvOK && vert.More(); vert.Next() )
           uvOK = ( V == vert.Current() );
         if ( !uvOK ) {
-#ifdef _DEBUG_
           MESSAGE ( "SMESH_MesherHelper::GetNodeUV(); Vertex " << vertexID
-               << " not in face " << GetMeshDS()->ShapeToIndex( F ) );
-#endif
+                    << " not in face " << GetMeshDS()->ShapeToIndex( F ) );
           // get UV of a vertex closest to the node
           double dist = 1e100;
           gp_Pnt pn = XYZ( n );
@@ -909,7 +907,6 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
       {
         double r = Max( 0.5, 1 - tol*n->GetID()); // to get a unique u on edge
         u =  f*r + l*(1-r);
-        MESSAGE("curve.IsNull: " << u);
       }
     }
     else
@@ -966,7 +963,6 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
       }
       else if ( fabs( u ) > numeric_limits<double>::min() )
       {
-        MESSAGE("fabs( u ) > numeric_limits<double>::min() ; u " << u << " f " << f << " l " << l);
         setPosOnShapeValidity( shapeID, true );
       }
       if (( u < f-tol || u > l+tol ) && force )
@@ -4677,4 +4673,3 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
     }
   }
 }
-
