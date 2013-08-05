@@ -745,8 +745,10 @@ struct SMESH_MeshEditor_i::_IDSource : public POA_SMESH::SMESH_IDSource
 SMESH::SMESH_IDSource_ptr SMESH_MeshEditor_i::MakeIDSource(const SMESH::long_array& ids,
                                                            SMESH::ElementType       type)
 {
-  if ( myAuxIDSources.size() > 10 )
-    deleteAuxIDSources();
+  if ( myAuxIDSources.size() > 10 ) {
+    delete myAuxIDSources.front();
+    myAuxIDSources.pop_front();
+  }
 
   _IDSource* idSrc = new _IDSource;
   idSrc->_mesh = myMesh_i->_this();
