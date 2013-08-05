@@ -906,10 +906,11 @@ void SMESHGUI_BaseComputeOp::computeMesh()
 #endif
             SMESH_Actor *anActor = SMESH::FindActorByObject( myMesh );
             if ( !anActor ) anActor = SMESH::CreateActor( aMeshSObj->GetStudy(), aMeshSObj->GetID().c_str(), true );    
-
-            anActor->SetEntityMode( entities );
-            SMESH::DisplayActor( SMESH::GetActiveWindow(), anActor );
-
+            if ( anActor ) // actor is not created for an empty mesh
+            {
+              anActor->SetEntityMode( entities );
+              SMESH::DisplayActor( SMESH::GetActiveWindow(), anActor );
+            }
             SMESH::Update(myIObject, true);
 
             if ( limitExceeded )
