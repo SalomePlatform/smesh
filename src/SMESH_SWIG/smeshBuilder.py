@@ -551,7 +551,9 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
         aMeshes = [ Mesh(self, self.geompyD, m) for m in aSmeshMeshes ]
         return aMeshes, aStatus
 
-    ## Creates a Mesh object importing data from the given GMF file
+    ## Creates a Mesh object importing data from the given GMF file.
+    #  GMF files have .mesh extension for the ASCII format and .meshb for
+    #  the bynary format.
     #  @return [ an instance of Mesh class, SMESH.ComputeError ]
     #  @ingroup l2_impexp
     def CreateMeshesFromGMF( self, theFileName ):
@@ -1643,7 +1645,9 @@ class Mesh:
             meshPart = self.mesh
         self.mesh.ExportCGNS(meshPart, f, overwrite)
 
-    ## Exports the mesh in a file in GMF format
+    ## Exports the mesh in a file in GMF format.
+    #  GMF files must have .mesh extension for the ASCII format and .meshb for
+    #  the bynary format. Other extensions are not allowed.
     #  @param f is the file name
     #  @param meshPart a part of mesh (group, sub-mesh) to export instead of the mesh
     #  @ingroup l2_impexp
