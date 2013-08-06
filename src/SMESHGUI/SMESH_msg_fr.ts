@@ -2740,9 +2740,9 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>SMESH_WRN_SIZE_INC_LIMIT_EXCEEDED</source>
-        <translation type="unfinished">New mesh sise (%1 elements) exceeds current size limit of automatic update (%2 elements).
-The following elements are not shown: %3.
-Use Display Entity menu command to show them.
+        <translation>La nouvelle taille de maillage (%1 éléments) dépasse l'actuelle taille limite de la mise à jour automatique (%2 éléments).
+Les éléments suivants ne sont pas affichés: %3.
+Utilisez le menu "Visualiser une entité" pour les afficher.
 </translation>
     </message>
     <message>

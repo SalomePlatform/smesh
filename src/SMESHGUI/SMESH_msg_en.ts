@@ -2731,7 +2731,7 @@ New mesh size (%1 elements) exceeds current size limit of automatic update (%2 e
     </message>
     <message>
         <source>SMESH_WRN_SIZE_INC_LIMIT_EXCEEDED</source>
-        <translation>New mesh sise (%1 elements) exceeds current size limit of automatic update (%2 elements).
+        <translation>New mesh size (%1 elements) exceeds current size limit of automatic update (%2 elements).
 The following elements are not shown: %3.
 Use Display Entity menu command to show them.
 </translation>
