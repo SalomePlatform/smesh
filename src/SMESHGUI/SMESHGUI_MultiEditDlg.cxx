@@ -1212,7 +1212,7 @@ bool SMESHGUI_CuttingOfQuadsDlg::process (SMESH::SMESH_MeshEditor_ptr theEditor,
     {
       if ( hasObj )
         return theEditor->QuadTo4Tri( obj ), true;
-      SMESH::SMESH_IDSource_var elems = theEditor->MakeIDSource( theIds, SMESH::FACE );
+      SMESH::SMESH_IDSource_wrap elems = theEditor->MakeIDSource( theIds, SMESH::FACE );
       theEditor->QuadTo4Tri( elems );
       return true;
     }
@@ -1466,14 +1466,19 @@ bool SMESHGUI_CuttingIntoTetraDlg::process (SMESH::SMESH_MeshEditor_ptr theEdito
                                             const SMESH::long_array&    theIds,
                                             SMESH::SMESH_IDSource_ptr   theObj)
 {
-  SMESH::SMESH_IDSource_var obj = theObj;
+  SMESH::SMESH_IDSource_wrap obj = theObj;
   if ( CORBA::is_nil( obj ))
     obj = theEditor->MakeIDSource( theIds, myEntityType ? SMESH::VOLUME : SMESH::FACE );
+  else
+    obj->Register();
   try {
     theEditor->SplitVolumesIntoTetra( obj, myGroupChoice->checkedId()+1 );
   }
   catch ( const SALOME::SALOME_Exception& S_ex ) {
     SalomeApp_Tools::QtCatchCorbaException( S_ex );
+    return false;
+  }
+  catch(...) {
     return false;
   }
   return true;

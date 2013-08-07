@@ -58,6 +58,7 @@
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
+
 #define SPACING 6
 #define MARGIN  11
 
@@ -352,14 +353,17 @@ bool SMESHGUI_Add0DElemsOnAllNodesOp::onApply()
     return false;
 
   // get a mesh
-  SMESH::SMESH_IDSource_var meshObject;
-  SMESH::SMESH_Mesh_var     mesh;
+  SMESH::SMESH_IDSource_wrap meshObject;
+  SMESH::SMESH_Mesh_var      mesh;
   if ( !myIO.IsNull() )
   {
     CORBA::Object_var obj = SMESH::IObjectToObject( myIO );
     meshObject = SMESH::SMESH_IDSource::_narrow( obj );
     if ( !meshObject->_is_nil() )
+    {
       mesh = meshObject->GetMesh();
+      meshObject->Register();
+    }
   }
   if ( mesh->_is_nil() )
   {

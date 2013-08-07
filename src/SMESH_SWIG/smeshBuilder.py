@@ -982,6 +982,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
         if not hasattr(src1, "_narrow"): return None
         src1 = src1._narrow(SMESH.SMESH_IDSource)
         if not src1: return None
+        unRegister = genObjUnRegister()
         if id1 != 0:
             m = src1.GetMesh()
             e = m.GetMeshEditor()
@@ -989,6 +990,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
                 src1 = e.MakeIDSource([id1], SMESH.FACE)
             else:
                 src1 = e.MakeIDSource([id1], SMESH.NODE)
+            unRegister.set( src1 )
             pass
         if hasattr(src2, "_narrow"):
             src2 = src2._narrow(SMESH.SMESH_IDSource)
@@ -999,11 +1001,12 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
                     src2 = e.MakeIDSource([id2], SMESH.FACE)
                 else:
                     src2 = e.MakeIDSource([id2], SMESH.NODE)
+                unRegister.set( src2 )
                 pass
             pass
         aMeasurements = self.CreateMeasurements()
+        unRegister.set( aMeasurements )
         result = aMeasurements.MinDistance(src1, src2)
-        aMeasurements.UnRegister()
         return result
 
     ## Get bounding box of the specified object(s)
@@ -1579,8 +1582,10 @@ class Mesh:
     def ExportMED(self, f, auto_groups=0, version=MED_V2_2,
                   overwrite=1, meshPart=None, autoDimension=True):
         if meshPart:
+            unRegister = genObjUnRegister()
             if isinstance( meshPart, list ):
                 meshPart = self.GetIDSource( meshPart, SMESH.ALL )
+                unRegister.set( meshPart )
             self.mesh.ExportPartToMED( meshPart, f, auto_groups, version, overwrite, autoDimension)
         else:
             self.mesh.ExportToMEDX(f, auto_groups, version, overwrite, autoDimension)
@@ -1600,8 +1605,10 @@ class Mesh:
     #  @ingroup l2_impexp
     def ExportDAT(self, f, meshPart=None):
         if meshPart:
+            unRegister = genObjUnRegister()
             if isinstance( meshPart, list ):
                 meshPart = self.GetIDSource( meshPart, SMESH.ALL )
+                unRegister.set( meshPart )
             self.mesh.ExportPartToDAT( meshPart, f )
         else:
             self.mesh.ExportDAT(f)
@@ -1612,8 +1619,10 @@ class Mesh:
     #  @ingroup l2_impexp
     def ExportUNV(self, f, meshPart=None):
         if meshPart:
+            unRegister = genObjUnRegister()
             if isinstance( meshPart, list ):
                 meshPart = self.GetIDSource( meshPart, SMESH.ALL )
+                unRegister.set( meshPart )
             self.mesh.ExportPartToUNV( meshPart, f )
         else:
             self.mesh.ExportUNV(f)
@@ -1625,8 +1634,10 @@ class Mesh:
     #  @ingroup l2_impexp
     def ExportSTL(self, f, ascii=1, meshPart=None):
         if meshPart:
+            unRegister = genObjUnRegister()
             if isinstance( meshPart, list ):
                 meshPart = self.GetIDSource( meshPart, SMESH.ALL )
+                unRegister.set( meshPart )
             self.mesh.ExportPartToSTL( meshPart, f, ascii )
         else:
             self.mesh.ExportSTL(f, ascii)
@@ -1637,8 +1648,10 @@ class Mesh:
     #  @param meshPart a part of mesh (group, sub-mesh) to export instead of the mesh
     #  @ingroup l2_impexp
     def ExportCGNS(self, f, overwrite=1, meshPart=None):
+        unRegister = genObjUnRegister()
         if isinstance( meshPart, list ):
             meshPart = self.GetIDSource( meshPart, SMESH.ALL )
+            unRegister.set( meshPart )
         if isinstance( meshPart, Mesh ):
             meshPart = meshPart.mesh
         elif not meshPart:
@@ -1652,8 +1665,10 @@ class Mesh:
     #  @param meshPart a part of mesh (group, sub-mesh) to export instead of the mesh
     #  @ingroup l2_impexp
     def ExportGMF(self, f, meshPart=None):
+        unRegister = genObjUnRegister()
         if isinstance( meshPart, list ):
             meshPart = self.GetIDSource( meshPart, SMESH.ALL )
+            unRegister.set( meshPart )
         if isinstance( meshPart, Mesh ):
             meshPart = meshPart.mesh
         elif not meshPart:
@@ -2438,7 +2453,7 @@ class Mesh:
 
         aMeasurements = self.smeshpyD.CreateMeasurements()
         aMeasure = aMeasurements.MinDistance(id1, id2)
-        aMeasurements.UnRegister()
+        genObjUnRegister([aMeasurements,id1, id2])
         return aMeasure
 
     ## Get bounding box of the specified object(s)
@@ -2471,6 +2486,7 @@ class Mesh:
         if len(IDs) > 0 and isinstance(IDs[0], int):
             IDs = [IDs]
         srclist = []
+        unRegister = genObjUnRegister()
         for o in IDs:
             if isinstance(o, Mesh):
                 srclist.append(o.mesh)
@@ -2483,11 +2499,12 @@ class Mesh:
                     srclist.append(self.editor.MakeIDSource(o, SMESH.FACE))
                 else:
                     srclist.append(self.editor.MakeIDSource(o, SMESH.NODE))
+                unRegister.set( srclist[-1] )
                 pass
             pass
         aMeasurements = self.smeshpyD.CreateMeasurements()
+        unRegister.set( aMeasurements )
         aMeasure = aMeasurements.BoundingBox(srclist)
-        aMeasurements.UnRegister()
         return aMeasure
 
     # Mesh edition (SMESH_MeshEditor functionality):
@@ -2540,10 +2557,12 @@ class Mesh:
     #          can be retrieved from the returned object by calling GetIDs()
     #  @ingroup l2_modif_add
     def Add0DElementsToAllNodes(self, theObject, theGroupName=""):
+        unRegister = genObjUnRegister()
         if isinstance( theObject, Mesh ):
             theObject = theObject.GetMesh()
         if isinstance( theObject, list ):
             theObject = self.GetIDSource( theObject, SMESH.ALL )
+            unRegister.set( theObject )
         return self.editor.Create0DElementsOnAllNodes( theObject, theGroupName )
 
     ## Creates a ball element on a node with given ID.
@@ -2813,11 +2832,13 @@ class Mesh:
     #  @return number of reoriented faces
     #  @ingroup l2_modif_changori
     def Reorient2D(self, the2DObject, theDirection, theFaceOrPoint ):
+        unRegister = genObjUnRegister()
         # check the2DObject
         if isinstance( the2DObject, Mesh ):
             the2DObject = the2DObject.GetMesh()
         if isinstance( the2DObject, list ):
             the2DObject = self.GetIDSource( the2DObject, SMESH.FACE )
+            unRegister.set( the2DObject )
         # check theDirection
         if isinstance( theDirection, geomBuilder.GEOM._objref_GEOM_Object):
             theDirection = self.smeshpyD.GetDirStruct( theDirection )
@@ -2907,12 +2928,14 @@ class Mesh:
     #         group or a list of face IDs. By default all quadrangles are split
     #  @ingroup l2_modif_cutquadr
     def QuadTo4Tri (self, theElements=[]):
+        unRegister = genObjUnRegister()
         if isinstance( theElements, Mesh ):
             theElements = theElements.mesh
         elif not theElements:
             theElements = self.mesh
         elif isinstance( theElements, list ):
             theElements = self.GetIDSource( theElements, SMESH.FACE )
+            unRegister.set( theElements )
         return self.editor.QuadTo4Tri( theElements )
 
     ## Splits quadrangles into triangles.
@@ -2952,10 +2975,12 @@ class Mesh:
     #         Hex_5Tet - split the hexahedron into 5 tetrahedrons, etc
     #  @ingroup l2_modif_cutquadr
     def SplitVolumesIntoTetra(self, elemIDs, method=smeshBuilder.Hex_5Tet ):
+        unRegister = genObjUnRegister()
         if isinstance( elemIDs, Mesh ):
             elemIDs = elemIDs.GetMesh()
         if ( isinstance( elemIDs, list )):
             elemIDs = self.editor.MakeIDSource(elemIDs, SMESH.VOLUME)
+            unRegister.set( elemIDs )
         self.editor.SplitVolumesIntoTetra(elemIDs, method)
 
     ## Splits quadrangle faces near triangular facets of volumes
@@ -3226,12 +3251,14 @@ class Mesh:
     #  @ingroup l2_modif_edit
     def MakeBoundaryMesh(self, elements, dimension=SMESH.BND_2DFROM3D, groupName="", meshName="",
                          toCopyElements=False, toCopyExistingBondary=False):
+        unRegister = genObjUnRegister()
         if isinstance( elements, Mesh ):
             elements = elements.GetMesh()
         if ( isinstance( elements, list )):
             elemType = SMESH.ALL
             if elements: elemType = self.GetElementType( elements[0], iselem=True)
             elements = self.editor.MakeIDSource(elements, elemType)
+            unRegister.set( elements )
         mesh, group = self.editor.MakeBoundaryMesh(elements,dimension,groupName,meshName,
                                                    toCopyElements,toCopyExistingBondary)
         if mesh: mesh = self.smeshpyD.Mesh(mesh)
@@ -3914,10 +3941,12 @@ class Mesh:
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True,
     #          empty list otherwise
     def Scale(self, theObject, thePoint, theScaleFact, Copy, MakeGroups=False):
+        unRegister = genObjUnRegister()
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
         if ( isinstance( theObject, list )):
             theObject = self.GetIDSource(theObject, SMESH.ALL)
+            unRegister.set( theObject )
         if ( isinstance( theScaleFact, float )):
              theScaleFact = [theScaleFact]
         if ( isinstance( theScaleFact, int )):
@@ -3938,10 +3967,12 @@ class Mesh:
     #  @param NewMeshName - the name of the newly created mesh
     #  @return instance of Mesh class
     def ScaleMakeMesh(self, theObject, thePoint, theScaleFact, MakeGroups=False, NewMeshName=""):
+        unRegister = genObjUnRegister()
         if (isinstance(theObject, Mesh)):
             theObject = theObject.GetMesh()
         if ( isinstance( theObject, list )):
             theObject = self.GetIDSource(theObject,SMESH.ALL)
+            unRegister.set( theObject )
         if ( isinstance( theScaleFact, float )):
              theScaleFact = [theScaleFact]
         if ( isinstance( theScaleFact, int )):
@@ -4050,12 +4081,14 @@ class Mesh:
     #  @return the list of groups of nodes
     #  @ingroup l2_modif_trsf
     def FindCoincidentNodesOnPart (self, SubMeshOrGroup, Tolerance, exceptNodes=[]):
+        unRegister = genObjUnRegister()
         if (isinstance( SubMeshOrGroup, Mesh )):
             SubMeshOrGroup = SubMeshOrGroup.GetMesh()
         if not isinstance( exceptNodes, list):
             exceptNodes = [ exceptNodes ]
         if exceptNodes and isinstance( exceptNodes[0], int):
             exceptNodes = [ self.GetIDSource( exceptNodes, SMESH.NODE)]
+            unRegister.set( exceptNodes )
         return self.editor.FindCoincidentNodesOnPartBut(SubMeshOrGroup, Tolerance,exceptNodes)
 
     ## Merges nodes
@@ -4166,10 +4199,12 @@ class Mesh:
     # @return a group where the new elements are added. None if theGroupName == "".
     #  @ingroup l2_modif_edit
     def DoubleElements(self, theElements, theGroupName=""):
+        unRegister = genObjUnRegister()
         if isinstance( theElements, Mesh ):
             theElements = theElements.mesh
         elif isinstance( theElements, list ):
             theElements = self.GetIDSource( theElements, SMESH.ALL )
+            unRegister.set( theElements )
         return self.editor.DoubleElements(theElements, theGroupName)
 
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -4525,6 +4560,28 @@ class hypMethodWrapper:
                 raise ValueError, detail # wrong variable name
 
         return result
+    pass
+
+# A helper class that call UnRegister() of SALOME.GenericObj'es stored in it
+class genObjUnRegister:
+
+    def __init__(self, genObj=None):
+        self.genObjList = []
+        self.set( genObj )
+        return
+
+    def set(self, genObj):
+        "Store one or a list of of SALOME.GenericObj'es"
+        if isinstance( genObj, list ):
+            self.genObjList.extend( genObj )
+        else:
+            self.genObjList.append( genObj )
+        return
+
+    def __del__(self):
+        for genObj in self.genObjList:
+            if genObj and hasattr( genObj, "UnRegister" ):
+                genObj.UnRegister()
 
 for pluginName in os.environ[ "SMESH_MeshersList" ].split( ":" ):
     #

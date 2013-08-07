@@ -519,8 +519,8 @@ void SMESHGUI_MinDistance::secondEdited()
 void SMESHGUI_MinDistance::compute()
 {
   SUIT_OverrideCursor wc;
-  SMESH::SMESH_IDSource_var s1;
-  SMESH::SMESH_IDSource_var s2;
+  SMESH::SMESH_IDSource_wrap s1;
+  SMESH::SMESH_IDSource_wrap s2;
   bool isOrigin = mySecond->checkedId() == OriginTgt;
 
   // process first target
@@ -538,6 +538,7 @@ void SMESHGUI_MinDistance::compute()
     }
     else {
       s1 = myFirstSrc;
+      s1->Register();
     }
   }
 
@@ -556,6 +557,7 @@ void SMESHGUI_MinDistance::compute()
     }
     else {
       s2 = mySecondSrc;
+      s2->Register();
     }
   }
 
@@ -1035,14 +1037,17 @@ void SMESHGUI_BoundingBox::compute()
   }
   else {
     srcList->length( mySrc.count() );
-    for( int i = 0; i < mySrc.count(); i++ )
+    for( int i = 0; i < mySrc.count(); i++ ) {
       srcList[i] = mySrc[i];
+      mySrc[i]->Register();
+    }
   }
   if ( srcList->length() > 0 ) {
     // compute bounding box
     int precision = SMESHGUI::resourceMgr()->integerValue( "SMESH", "length_precision", 6 );
     SMESH::Measurements_var measure = SMESHGUI::GetSMESHGen()->CreateMeasurements();
     SMESH::Measure result = measure->BoundingBox( srcList.in() );
+    SALOME::UnRegister( srcList );
     measure->UnRegister();
     myXmin->setText( QString::number( result.minX, precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
     myXmax->setText( QString::number( result.maxX, precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
