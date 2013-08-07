@@ -1097,8 +1097,8 @@ private: //!< fields
 
   // temporary IDSources
   struct _IDSource;
-  std::list< _IDSource* >      myAuxIDSources;
-  void                         deleteAuxIDSources();
+  // std::list< _IDSource* >      myAuxIDSources;
+  // void                         deleteAuxIDSources();
 };
 
 #endif

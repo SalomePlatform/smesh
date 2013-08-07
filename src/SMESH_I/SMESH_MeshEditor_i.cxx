@@ -63,6 +63,7 @@
 #include <Utils_ExceptHandlers.hxx>
 #include <Utils_CorbaException.hxx>
 #include <SALOMEDS_wrap.hxx>
+#include <SALOME_GenericObj_i.hh>
 
 #include <BRepAdaptor_Surface.hxx>
 #include <BRep_Tool.hxx>
@@ -453,7 +454,7 @@ SMESH_MeshEditor_i::SMESH_MeshEditor_i(SMESH_Mesh_i* theMesh, bool isPreview):
 
 SMESH_MeshEditor_i::~SMESH_MeshEditor_i()
 {
-  deleteAuxIDSources();
+  //deleteAuxIDSources();
   delete myPreviewMesh;   myPreviewMesh = 0;
   delete myPreviewEditor; myPreviewEditor = 0;
 }
@@ -711,10 +712,12 @@ SMESH::ComputeError* SMESH_MeshEditor_i::GetLastError()
 
 //=======================================================================
 //function : MakeIDSource
-//purpose  : Wrap a sequence of ids in a SMESH_IDSource
+//purpose  : Wrap a sequence of ids in a SMESH_IDSource.
+//           Call UnRegister() as you fininsh using it!!
 //=======================================================================
 
-struct SMESH_MeshEditor_i::_IDSource : public POA_SMESH::SMESH_IDSource
+struct SMESH_MeshEditor_i::_IDSource : public virtual POA_SMESH::SMESH_IDSource,
+                                       public virtual SALOME::GenericObj_i
 {
   SMESH::long_array     _ids;
   SMESH::ElementType    _type;
@@ -745,16 +748,16 @@ struct SMESH_MeshEditor_i::_IDSource : public POA_SMESH::SMESH_IDSource
 SMESH::SMESH_IDSource_ptr SMESH_MeshEditor_i::MakeIDSource(const SMESH::long_array& ids,
                                                            SMESH::ElementType       type)
 {
-  if ( myAuxIDSources.size() > 10 ) {
-    delete myAuxIDSources.front();
-    myAuxIDSources.pop_front();
-  }
+  // if ( myAuxIDSources.size() > 10 ) {
+  //   delete myAuxIDSources.front();
+  //   myAuxIDSources.pop_front();
+  // }
 
   _IDSource* idSrc = new _IDSource;
   idSrc->_mesh = myMesh_i->_this();
   idSrc->_ids  = ids;
   idSrc->_type = type;
-  myAuxIDSources.push_back( idSrc );
+  //myAuxIDSources.push_back( idSrc );
 
   SMESH::SMESH_IDSource_var anIDSourceVar = idSrc->_this();
 
@@ -778,13 +781,13 @@ CORBA::Long* SMESH_MeshEditor_i::GetTemporaryIDs( SMESH::SMESH_IDSource_ptr& idS
   return 0;
 }
 
-void SMESH_MeshEditor_i::deleteAuxIDSources()
-{
-  std::list< _IDSource* >::iterator idSrcIt = myAuxIDSources.begin();
-  for ( ; idSrcIt != myAuxIDSources.end(); ++idSrcIt )
-    delete *idSrcIt;
-  myAuxIDSources.clear();
-}
+// void SMESH_MeshEditor_i::deleteAuxIDSources()
+// {
+//   std::list< _IDSource* >::iterator idSrcIt = myAuxIDSources.begin();
+//   for ( ; idSrcIt != myAuxIDSources.end(); ++idSrcIt )
+//     delete *idSrcIt;
+//   myAuxIDSources.clear();
+// }
 
 //=============================================================================
 /*!
