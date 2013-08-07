@@ -283,7 +283,7 @@ static SALOMEDS::SObject_ptr publish(SALOMEDS::Study_ptr   theStudy,
         last2Pnt_pos = anEntry.rfind( ":" );
         tagAfter = atoi( anEntry.substr( last2Pnt_pos+1 ).c_str() );
         if ( tagAfter > theTag  ) {
-	  objAfter = curObj;
+          objAfter = curObj;
           break;
         }
       }
