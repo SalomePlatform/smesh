@@ -277,7 +277,7 @@ module SMESH
 
   interface SMESH_Mesh;
 
-  interface SMESH_IDSource
+  interface SMESH_IDSource : SALOME::GenericObj
   {
     /*!
      * Returns a sequence of all element IDs
