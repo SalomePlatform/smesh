@@ -93,7 +93,7 @@
 #include "SMESH_Mesh_i.hxx"
 #include "SMESH_PreMeshInfo.hxx"
 #include "SMESH_PythonDump.hxx"
-#include "memoire.h"
+//#include "memoire.h"
 
 #include CORBA_SERVER_HEADER(SMESH_Group)
 #include CORBA_SERVER_HEADER(SMESH_Filter)
@@ -360,10 +360,10 @@ SMESH_Gen_i::~SMESH_Gen_i()
 //=============================================================================
 SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName,
                                                           const char* theLibName)
-     throw (SALOME::SALOME_Exception)
+  throw (SALOME::SALOME_Exception)
 {
   /* It's Need to tranlate lib name for WIN32 or X platform */
-  char* aPlatformLibName = 0;
+  std::string aPlatformLibName;
   if ( theLibName && theLibName[0] != '\0'  )
   {
     int libNameLen = strlen(theLibName);
@@ -374,39 +374,24 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
     {
       //the old format
 #ifdef WNT
-      aPlatformLibName = new char[libNameLen - 1];
-      aPlatformLibName[0] = '\0';
-      aPlatformLibName = strncat( aPlatformLibName, theLibName+3, libNameLen-6  );
-      aPlatformLibName = strcat( aPlatformLibName, ".dll" );
-      aPlatformLibName[libNameLen - 2] = '\0';
+      aPlatformLibName = std::string( theLibName+3, libNameLen-6 ) + ".dll";
 #else
-      aPlatformLibName = new char[ libNameLen + 1];
-      aPlatformLibName[0] = '\0';
-      aPlatformLibName = strcat( aPlatformLibName, theLibName );
-      aPlatformLibName[libNameLen] = '\0';
+      aPlatformLibName = theLibName;
 #endif
     }
     else
     {
       //try to use new format
 #ifdef WNT
-      aPlatformLibName = new char[ libNameLen + 5 ];
-      aPlatformLibName[0] = '\0';
-      aPlatformLibName = strcat( aPlatformLibName, theLibName );
-      aPlatformLibName = strcat( aPlatformLibName, ".dll" );
+      aPlatformLibName = theLibName + ".dll";
 #else
-      aPlatformLibName = new char[ libNameLen + 7 ];
-      aPlatformLibName[0] = '\0';
-      aPlatformLibName = strcat( aPlatformLibName, "lib" );
-      aPlatformLibName = strcat( aPlatformLibName, theLibName );
-      aPlatformLibName = strcat( aPlatformLibName, ".so" );
+      aPlatformLibName = "lib" + std::string( theLibName ) + ".so";
 #endif
     }
   }
 
-
   Unexpect aCatch(SALOME_SalomeException);
-  if(MYDEBUG) MESSAGE( "Create Hypothesis <" << theHypName << "> from " << aPlatformLibName/*theLibName*/);
+  if(MYDEBUG) MESSAGE( "Create Hypothesis <" << theHypName << "> from " << aPlatformLibName);
 
   // create a new hypothesis object servant
   SMESH_Hypothesis_i* myHypothesis_i = 0;
@@ -419,7 +404,7 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
     {
       // load plugin library
       if(MYDEBUG) MESSAGE("Loading server meshers plugin library ...");
-      LibHandle libHandle = LoadLib( aPlatformLibName/*theLibName*/ );
+      LibHandle libHandle = LoadLib( aPlatformLibName.c_str() );
       if (!libHandle)
       {
         // report any error, if occured
@@ -458,21 +443,18 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
     if(MYDEBUG) MESSAGE("Create Hypothesis " << theHypName);
     myHypothesis_i =
       myHypCreatorMap[string(theHypName)]->Create(myPoa, GetCurrentStudyID(), &myGen);
-    myHypothesis_i->SetLibName(aPlatformLibName/*theLibName*/); // for persistency assurance
+    myHypothesis_i->SetLibName(aPlatformLibName.c_str()); // for persistency assurance
   }
   catch (SALOME_Exception& S_ex)
   {
     THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
   }
 
-  if ( aPlatformLibName )
-    delete[] aPlatformLibName;
-
   if (!myHypothesis_i)
     return hypothesis_i._retn();
 
   // activate the CORBA servant of hypothesis
-  hypothesis_i = SMESH::SMESH_Hypothesis::_narrow( myHypothesis_i->_this() );
+  hypothesis_i = myHypothesis_i->_this();
   int nextId = RegisterObject( hypothesis_i );
   if(MYDEBUG) { MESSAGE( "Add hypo to map with id = "<< nextId ); }
   else        { nextId = 0; } // avoid "unused variable" warning in release mode
@@ -1712,7 +1694,7 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
                                      GEOM::GEOM_Object_ptr theShapeObject )
      throw ( SALOME::SALOME_Exception )
 {
-  MEMOSTAT;
+  //MEMOSTAT;
   Unexpect aCatch(SALOME_SalomeException);
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::Compute" );
 
