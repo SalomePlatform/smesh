@@ -28,6 +28,11 @@
 
 #include "SMESH.hxx"
 
+#include "SMESH_Hypothesis.hxx"
+#include "SMESH_Mesh.hxx"
+#include "SMESH_subMesh.hxx"
+
+#include <SALOME_GenericObj_i.hh>
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Gen)
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
@@ -35,19 +40,13 @@
 #include CORBA_SERVER_HEADER(SMESH_Hypothesis)
 #include CORBA_CLIENT_HEADER(GEOM_Gen)
 
-#include "SMESH_Hypothesis.hxx"
-#include "SMESH_Mesh.hxx"
-#include "SMESH_subMesh.hxx"
-
-#include "SALOME_GenericObj_i.hh"
+#include <map>
 
 class SMESH_Gen_i;
 class SMESH_GroupBase_i;
 class SMESH_subMesh_i;
 class SMESH_PreMeshInfo;
 class SMESH_MeshEditor_i;
-
-#include <map>
 
 class SMESH_I_EXPORT SMESH_Mesh_i:
   public virtual POA_SMESH::SMESH_Mesh,
