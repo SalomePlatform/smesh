@@ -36,6 +36,7 @@
 
 #include <TColStd_HSequenceOfInteger.hxx>
 #include <TCollection_AsciiString.hxx>
+#include <LDOMParser.hxx>
 
 #ifdef _DEBUG_
 static int MYDEBUG = 0;
@@ -846,6 +847,45 @@ namespace {
     }
     return isValidName;
   }
+
+  //================================================================================
+  /*!
+   * \brief Return Python module names of available plug-ins.
+   */
+  //================================================================================
+
+  std::vector<std::string> getPluginNames()
+  {
+    std::vector<std::string> pluginNames;
+    std::vector< std::string > xmlPaths = SMESH_Gen::GetPluginXMLPaths();
+    LDOMParser xmlParser;
+    for ( size_t i = 0; i < xmlPaths.size(); ++i )
+    {
+      bool error = xmlParser.parse( xmlPaths[i].c_str() );
+      if ( error )
+      {
+        TCollection_AsciiString data;
+        INFOS( xmlParser.GetError(data) );
+        continue;
+      }
+      // <meshers-group name="Standard Meshers"
+      //                resources="StdMeshers"
+      //                idl-module="StdMeshers"
+      //                server-lib="StdMeshersEngine"
+      //                gui-lib="StdMeshersGUI">
+      LDOM_Document xmlDoc   = xmlParser.getDocument();
+      LDOM_NodeList nodeList = xmlDoc.getElementsByTagName( "meshers-group" );
+      for ( int i = 0; i < nodeList.getLength(); ++i )
+      {
+        LDOM_Node       node = nodeList.item( i );
+        LDOM_Element&   elem = (LDOM_Element&) node;
+        LDOMString idlModule = elem.getAttribute( "idl-module" );
+        if ( strlen( idlModule.GetString() ) > 0 )
+          pluginNames.push_back( idlModule.GetString() );
+      }
+    }
+    return pluginNames;
+  }
 }
 
 //=============================================================================
@@ -873,6 +913,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   TCollection_AsciiString aScript;
   if( isMultiFile )
     aScript += "def RebuildData(theStudy):";
+
   aScript += "\n\t";
   if ( isPublished )
     aScript += aSMESHGen + " = smeshBuilder.New(theStudy)\n\t";
@@ -880,17 +921,6 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
     aScript += aSMESHGen + " = smeshBuilder.New(None)\n\t";
   aScript += helper + "aFilterManager = " + aSMESHGen + ".CreateFilterManager()\n\t";
   aScript += helper + "aMeasurements = " + aSMESHGen + ".CreateMeasurements()\n\t";
-
-  // This is not needed since entering a plug-in system to smesh.py
-  // import python files corresponding to plugins
-  // set<string> moduleNameSet;
-  // map<string, GenericHypothesisCreator_i*>::iterator hyp_creator = myHypCreatorMap.begin();
-  // for ( ; hyp_creator != myHypCreatorMap.end(); ++hyp_creator ) {
-  //   string moduleName = hyp_creator->second->GetModuleName();
-  //   bool newModule = moduleNameSet.insert( moduleName ).second;
-  //   if ( newModule )
-  //     aScript += helper + "\n\t" + "from salome." + (char*) moduleName.c_str() + " import " + (char*) moduleName.c_str() +"Builder";
-  // }
 
   // Dump trace of restored study
   if (theSavedTrace.Length() > 0) {
@@ -922,6 +952,30 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   TCollection_AsciiString aNewLines = GetNewPythonLines(aStudyID);
   if (aNewLines.Length() > 0) {
     aScript += helper + "\n" + aNewLines;
+  }
+
+  // import python files corresponding to plugins if they are used in aScript
+  {
+    TCollection_AsciiString importStr;
+    std::vector<std::string> pluginNames = getPluginNames();
+    for ( size_t i = 0; i < pluginNames.size(); ++i )
+    {
+      // Convert access to plugin members:
+      // e.g. StdMeshers.QUAD_REDUCED -> StdMeshersBuilder.QUAD_REDUCED
+      TCollection_AsciiString pluginAccess = (pluginNames[i] + ".").c_str() ;
+      int iFrom = 1, iPos;
+      while (( iPos = aScript.Location( pluginAccess, iFrom, aScript.Length() )))
+      {
+        aScript.Insert( iPos + pluginNames[i].size(), "Builder" );
+        iFrom = iPos + pluginNames[i].size() + 8;
+      }
+      // if any plugin member is used, import the plugin
+      if ( iFrom > 1 )
+        importStr += ( helper + "\n\t" + "from salome." + (char*) pluginNames[i].c_str() +
+                       " import " + (char*) pluginNames[i].c_str() +"Builder" );
+    }
+    if ( !importStr.IsEmpty() )
+      aScript.Insert( 1, importStr + "\n\t" );
   }
 
   // Convert IDL API calls into smeshBuilder.py API.
