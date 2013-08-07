@@ -30,6 +30,7 @@
 
 <meshers-group name="Standard Meshers"
                resources="StdMeshers"
+               idl-module="StdMeshers"
                server-lib="StdMeshersEngine"
                gui-lib="StdMeshersGUI">
   <hypotheses>
