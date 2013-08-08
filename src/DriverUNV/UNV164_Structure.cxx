@@ -42,7 +42,7 @@ void UNV164::Read(std::ifstream& in_stream, TRecord& theUnitsRecord )
     return;
 
   string num_buf;
-  char line[theMaxLineLen];
+  char line[theMaxLineLen] = "";
 
   in_stream >> theUnitsRecord.units_code;
   in_stream.readsome( line, 20 );
