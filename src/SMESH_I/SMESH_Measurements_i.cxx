@@ -25,6 +25,7 @@
 #include "SMESH_Measurements_i.hxx"
 
 #include "SMESH_Gen_i.hxx"
+#include "SMESH_Filter_i.hxx"
 #include "SMESH_PythonDump.hxx"
 
 #include "SMDS_Mesh.hxx"
@@ -129,6 +130,24 @@ static SMESHDS_Mesh* getMesh(SMESH::SMESH_IDSource_ptr theSource)
 static bool isNodeType (SMESH::array_of_ElementType_var theTypes)
 {
   return theTypes->length() > 0 && theTypes[0] == SMESH::NODE;
+}
+
+static double getNumericalValue(SMESH::SMESH_IDSource_ptr theSource, SMESH::Controls::NumericalFunctorPtr theFunctor)
+{
+  double value = 0;
+
+  if ( !CORBA::is_nil( theSource ) ) {
+    const SMESHDS_Mesh* aMesh = getMesh( theSource );
+    if ( aMesh ) {
+      theFunctor->SetMesh( aMesh );
+      
+      SMESH::long_array_var anElementsId = theSource->GetIDs();
+      for (int i = 0; i < anElementsId->length(); i++) {
+	value += theFunctor->GetValue( anElementsId[i] );
+      }
+    }
+  }
+  return value;
 }
 
 //=======================================================================
@@ -256,4 +275,31 @@ SMESH::Measure Measurements_i::BoundingBox (const SMESH::ListOfIDSources& theSou
     enlargeBoundingBox( theSources[i], aMeasure );
 
   return aMeasure;
+}
+
+//=======================================================================
+// name    : Length
+// Purpose : sum of length of 1D elements of the source
+//=======================================================================
+double Measurements_i::Length(SMESH::SMESH_IDSource_ptr theSource)
+{
+  return getNumericalValue( theSource, SMESH::Controls::NumericalFunctorPtr(new SMESH::Controls::Length()) );
+}
+
+//=======================================================================
+// name    : Area
+// Purpose : sum of area of 2D elements of the source
+//=======================================================================
+double Measurements_i::Area(SMESH::SMESH_IDSource_ptr theSource)
+{
+  return getNumericalValue( theSource, SMESH::Controls::NumericalFunctorPtr(new SMESH::Controls::Area()) );
+}
+
+//=======================================================================
+// name    : Volume
+// Purpose : sum of volume of 3D elements of the source
+//=======================================================================
+double Measurements_i::Volume(SMESH::SMESH_IDSource_ptr theSource)
+{
+  return getNumericalValue( theSource, SMESH::Controls::NumericalFunctorPtr(new SMESH::Controls::Volume()) );
 }

@@ -1086,6 +1086,219 @@ void SMESHGUI_BoundingBox::clear()
 }
 
 /*!
+  \class SMESHGUI_BasicProperties
+  \brief basic properties measurement widget.
+  
+  Widget to calculate length, area or volume for the selected object(s).
+*/
+
+/*!
+  \brief Constructor.
+  \param parent parent widget
+*/
+SMESHGUI_BasicProperties::SMESHGUI_BasicProperties( QWidget* parent )
+: QWidget( parent )
+{
+  // Property (length, area or volume)
+  QGroupBox* aPropertyGrp = new QGroupBox( tr( "PROPERTY" ), this );
+
+  QRadioButton* aLength = new QRadioButton( tr( "LENGTH" ), aPropertyGrp );
+  QRadioButton* anArea = new QRadioButton( tr( "AREA" ), aPropertyGrp );
+  QRadioButton* aVolume = new QRadioButton( tr( "VOLUME" ), aPropertyGrp );
+
+  myMode = new QButtonGroup( this );
+  myMode->addButton( aLength, Length );
+  myMode->addButton( anArea, Area );
+  myMode->addButton( aVolume, Volume );
+
+  QHBoxLayout* aPropertyLayout = new QHBoxLayout;
+  aPropertyLayout->addWidget( aLength );
+  aPropertyLayout->addWidget( anArea );
+  aPropertyLayout->addWidget( aVolume );
+
+  aPropertyGrp->setLayout( aPropertyLayout );
+
+  // Source object
+  QGroupBox* aSourceGrp = new QGroupBox( tr( "SOURCE_MESH_SUBMESH_GROUP" ), this );
+
+  mySource = new QLineEdit( aSourceGrp );
+  mySource->setReadOnly( true );
+    
+  QHBoxLayout* aSourceLayout = new QHBoxLayout;
+  aSourceLayout->addWidget( mySource );
+  
+  aSourceGrp->setLayout( aSourceLayout );
+
+  // Compute button
+  QPushButton* aCompute = new QPushButton( tr( "COMPUTE" ), this );
+
+  // Result of computation (length, area or volume)
+  myResultGrp = new QGroupBox( this );
+
+  myResult = new QLineEdit;
+  myResult->setReadOnly( true );
+
+  QHBoxLayout* aResultLayout = new QHBoxLayout;
+  aResultLayout->addWidget( myResult );
+  
+  myResultGrp->setLayout( aResultLayout );
+
+  // Layout
+  QGridLayout* aMainLayout = new QGridLayout( this );
+  aMainLayout->setMargin( MARGIN );
+  aMainLayout->setSpacing( SPACING );
+
+  aMainLayout->addWidget( aPropertyGrp, 0, 0, 1, 2 );
+  aMainLayout->addWidget( aSourceGrp, 1, 0, 1, 2 );
+  aMainLayout->addWidget( aCompute,   2, 0 );
+  aMainLayout->addWidget( myResultGrp, 3, 0, 1, 2 );
+  aMainLayout->setColumnStretch( 1, 5 );
+  aMainLayout->setRowStretch( 4, 5 );
+
+  // Initial state
+  setMode( Length );
+  
+  // Connections
+  connect( myMode, SIGNAL( buttonClicked( int ) ),  this, SLOT( modeChanged( int ) ) );
+  connect( aCompute, SIGNAL( clicked() ), this, SLOT( compute() ) );
+  
+  // Selection filter
+  QList<SUIT_SelectionFilter*> filters;
+  filters.append( new SMESH_TypeFilter( SMESH::MESHorSUBMESH ) );
+  filters.append( new SMESH_TypeFilter( SMESH::GROUP ) );
+  myFilter = new SMESH_LogicalFilter( filters, SMESH_LogicalFilter::LO_OR );
+}
+
+/*!
+  \brief Destructor
+*/
+SMESHGUI_BasicProperties::~SMESHGUI_BasicProperties()
+{
+}
+
+/*!
+  \brief Sets the measurement mode.
+  \param theMode the mode to set (length, area or volume meausurement)
+*/
+void SMESHGUI_BasicProperties::setMode( const Mode theMode )
+{
+  QRadioButton* aButton = qobject_cast<QRadioButton*>( myMode->button( theMode ) );
+  if ( aButton ) {
+    aButton->setChecked( true );
+    modeChanged( theMode );
+  }
+}
+
+/*!
+  \brief Setup the selection mode.
+*/
+void SMESHGUI_BasicProperties::updateSelection()
+{
+  LightApp_SelectionMgr* selMgr = SMESHGUI::selectionMgr();
+
+  disconnect( selMgr, 0, this, 0 );
+  selMgr->clearFilters();
+  
+  SMESH::SetPointRepresentation( false );
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow() ) {
+    aViewWindow->SetSelectionMode( ActorSelection );
+  }
+  selMgr->installFilter( myFilter );
+  
+  connect( selMgr, SIGNAL( currentSelectionChanged() ), this, SLOT( selectionChanged() ) );
+}
+
+/*!
+  \brief Deactivate widget
+*/
+void SMESHGUI_BasicProperties::deactivate()
+{
+  disconnect( SMESHGUI::selectionMgr(), 0, this, 0 );
+}
+
+/*!
+  \brief Called when selection is changed
+*/
+void SMESHGUI_BasicProperties::selectionChanged()
+{
+  SUIT_OverrideCursor wc;
+
+  SALOME_ListIO selected;
+  SMESHGUI::selectionMgr()->selectedObjects( selected );
+
+  if ( selected.Extent() == 1 ) {
+    Handle(SALOME_InteractiveObject) IO = selected.First();
+    SMESH::SMESH_IDSource_var obj = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO );
+    if ( !CORBA::is_nil( obj ) ) {
+      mySrc = obj;
+
+      QString aName;
+      SMESH::GetNameOfSelectedIObjects( SMESHGUI::selectionMgr(), aName );
+      mySource->setText( aName );
+    }
+  }
+
+  clear();
+}
+
+/*!
+  \brief Called when the measurement mode selection is changed.
+  \param theMode the selected mode
+*/
+void SMESHGUI_BasicProperties::modeChanged( int theMode )
+{
+  clear();
+
+  if ( theMode == Length ) {
+    myResultGrp->setTitle( tr("LENGTH") );
+  } else if ( theMode == Area ) {
+    myResultGrp->setTitle( tr("AREA") );
+  } else if ( theMode == Volume ) {
+    myResultGrp->setTitle( tr("VOLUME") );
+  }
+}
+
+/*!
+  \brief Calculate length, area or volume for the selected object(s)
+*/
+void SMESHGUI_BasicProperties::compute()
+{
+  SUIT_OverrideCursor wc;
+
+  SMESH::SMESH_IDSource_var source;
+
+  if ( !CORBA::is_nil( mySrc ) ) {
+    // compute
+    int precision = SMESHGUI::resourceMgr()->integerValue( "SMESH", "length_precision", 6 );
+    SMESH::Measurements_var measure = SMESHGUI::GetSMESHGen()->CreateMeasurements();
+
+    double result = 0;
+
+    if ( myMode->checkedId() == Length ) {
+      result = measure->Length( mySrc.in() );
+    } else if ( myMode->checkedId() == Area ) {
+      result = measure->Area( mySrc.in() );
+    } else if ( myMode->checkedId() == Volume ) {
+      result = measure->Volume( mySrc.in() );
+    }
+    
+    measure->UnRegister();
+
+    myResult->setText( QString::number( result, precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
+  } else {
+    clear();
+  }
+}
+
+/*!
+  \brief Reset the widget to the initial state (nullify the result field)
+*/
+void SMESHGUI_BasicProperties::clear()
+{
+  myResult->clear();
+}
+
+/*!
   \class SMESHGUI_MeshInfoDlg
   \brief Centralized dialog box for the measurements
 */
@@ -1110,12 +1323,17 @@ SMESHGUI_MeasureDlg::SMESHGUI_MeasureDlg( QWidget* parent, int page )
   // min distance
 
   myMinDist = new SMESHGUI_MinDistance( myTabWidget );
-  myTabWidget->addTab( myMinDist, resMgr->loadPixmap( "SMESH", tr( "ICON_MEASURE_MIN_DIST" ) ), tr( "MIN_DIST" ) );
+  int aMinDistInd = myTabWidget->addTab( myMinDist, resMgr->loadPixmap( "SMESH", tr( "ICON_MEASURE_MIN_DIST" ) ), tr( "MIN_DIST" ) );
 
   // bounding box
   
   myBndBox = new SMESHGUI_BoundingBox( myTabWidget );
-  myTabWidget->addTab( myBndBox, resMgr->loadPixmap( "SMESH", tr( "ICON_MEASURE_BND_BOX" ) ), tr( "BND_BOX" ) );
+  int aBndBoxInd = myTabWidget->addTab( myBndBox, resMgr->loadPixmap( "SMESH", tr( "ICON_MEASURE_BND_BOX" ) ), tr( "BND_BOX" ) );
+
+  // basic properties
+  
+  myBasicProps = new SMESHGUI_BasicProperties( myTabWidget );
+  int aBasicPropInd = myTabWidget->addTab( myBasicProps, resMgr->loadPixmap( "SMESH", tr( "ICON_MEASURE_BASIC_PROPS" ) ), tr( "BASIC_PROPERTIES" ) );
 
   // buttons
   QPushButton* okBtn = new QPushButton( tr( "SMESH_BUT_OK" ), this );
@@ -1139,7 +1357,19 @@ SMESHGUI_MeasureDlg::SMESHGUI_MeasureDlg( QWidget* parent, int page )
   l->addStretch();
   l->addLayout( btnLayout );
 
-  myTabWidget->setCurrentIndex( qMax( (int)MinDistance, qMin( (int)BoundingBox, page ) ) );
+  int anInd = -1;
+  if ( page == MinDistance ) {
+    anInd = aMinDistInd;
+  } else if ( page == BoundingBox ) {
+    anInd = aBndBoxInd;
+  } else if ( page == Length || page == Area || page == Volume ) {
+    myBasicProps->setMode( (SMESHGUI_BasicProperties::Mode)(page - Length) );
+    anInd = aBasicPropInd;
+  }
+
+  if ( anInd >= 0 ) {
+    myTabWidget->setCurrentIndex( anInd );
+  }
 
   connect( okBtn,       SIGNAL( clicked() ),              this, SLOT( reject() ) );
   connect( helpBtn,     SIGNAL( clicked() ),              this, SLOT( help() ) );
@@ -1200,7 +1430,10 @@ void SMESHGUI_MeasureDlg::updateSelection()
     myMinDist->updateSelection();
   else if ( myTabWidget->currentIndex() == BoundingBox )
     myBndBox->updateSelection();
-    
+  else {
+    myBndBox->erasePreview();
+    myBasicProps->updateSelection();
+  }
 }
 
 /*!
@@ -1208,9 +1441,16 @@ void SMESHGUI_MeasureDlg::updateSelection()
 */
 void SMESHGUI_MeasureDlg::help()
 {
-  SMESH::ShowHelpFile( myTabWidget->currentIndex() == MinDistance ?
-                       "measurements_page.html#min_distance_anchor" : 
-                       "measurements_page.html#bounding_box_anchor" );
+  QString aHelpFile;
+  if ( myTabWidget->currentIndex() == MinDistance ) {
+    aHelpFile = "measurements_page.html#min_distance_anchor";
+  } else if ( myTabWidget->currentIndex() == BoundingBox ) {
+    aHelpFile = "measurements_page.html#bounding_box_anchor";
+  } else {
+    aHelpFile = "measurements_page.html#basic_properties_anchor";
+  }
+
+  SMESH::ShowHelpFile( aHelpFile );
 }
 
 /*!
@@ -1229,6 +1469,7 @@ void SMESHGUI_MeasureDlg::activate()
 */
 void SMESHGUI_MeasureDlg::deactivate()
 {
+  myBasicProps->deactivate();
   myMinDist->deactivate();
   myBndBox->deactivate();
   myTabWidget->setEnabled( false );

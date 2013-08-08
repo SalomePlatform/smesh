@@ -57,6 +57,22 @@ namespace SMESH
      * common bounding box of entities
      */
     SMESH::Measure BoundingBox(const SMESH::ListOfIDSources& theSources);
+
+
+    /*!
+     * sum of length of 1D elements of the source
+     */
+    double Length(SMESH::SMESH_IDSource_ptr theSource);
+
+    /*!
+     * sum of area of 2D elements of the source
+     */
+    double Area(SMESH::SMESH_IDSource_ptr);
+
+    /*!
+     * sum of volume of 3D elements of the source
+     */
+    double Volume(SMESH::SMESH_IDSource_ptr);
   };
 }
 

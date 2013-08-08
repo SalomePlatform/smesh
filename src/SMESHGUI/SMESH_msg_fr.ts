@@ -749,6 +749,46 @@
         <translation>Boîte englobante</translation>
     </message>
     <message>
+        <source>MEN_BASIC_PROPERTIES</source>
+        <translation type="unfinished">Basic Properties</translation>
+    </message>
+    <message>
+        <source>MEN_MEASURE_LENGTH</source>
+        <translation type="unfinished">Length</translation>
+    </message>
+    <message>
+        <source>STB_MEASURE_LENGTH</source>
+        <translation type="unfinished">Calculate sum of length of all 1D elements of the selected object(s)</translation>
+    </message>
+    <message>
+        <source>TOP_MEASURE_LENGTH</source>
+        <translation type="unfinished">Length</translation>
+    </message>
+    <message>
+        <source>MEN_MEASURE_AREA</source>
+        <translation type="unfinished">Area</translation>
+    </message>
+    <message>
+        <source>STB_MEASURE_AREA</source>
+        <translation type="unfinished">Calculate sum of area of all 2D elements of the selected object(s)</translation>
+    </message>
+    <message>
+        <source>TOP_MEASURE_AREA</source>
+        <translation type="unfinished">Area</translation>
+    </message>
+     <message>
+        <source>MEN_MEASURE_VOLUME</source>
+        <translation type="unfinished">Volume</translation>
+    </message>
+    <message>
+        <source>STB_MEASURE_VOLUME</source>
+        <translation type="unfinished">Calculate sum of volume of all 3D elements of the selected object(s)</translation>
+    </message>
+    <message>
+        <source>TOP_MEASURE_VOLUME</source>
+        <translation type="unfinished">Volume</translation>
+    </message>
+    <message>
         <source>MEN_MOVE</source>
         <translation>Déplacer un nœud</translation>
     </message>
@@ -7295,6 +7335,33 @@ en raison de leurs types incompatibles:
     </message>
 </context>
 <context>
+    <name>SMESHGUI_BasicProperties</name>
+    <message>
+        <source>PROPERTY</source>
+        <translation type="unfinished">Property</translation>
+    </message>
+    <message>
+        <source>LENGTH</source>
+        <translation type="unfinished">Length</translation>
+    </message>
+    <message>
+        <source>AREA</source>
+        <translation type="unfinished">Area</translation>
+    </message>
+    <message>
+        <source>VOLUME</source>
+        <translation type="unfinished">Volume</translation>
+    </message>
+    <message>
+        <source>SOURCE_MESH_SUBMESH_GROUP</source>
+        <translation type="unfinished">Source (mesh, sub-mesh or group)</translation>
+    </message>
+    <message>
+        <source>COMPUTE</source>
+        <translation type="unfinished">Compute</translation>
+    </message>
+</context>
+<context>
     <name>SMESHGUI_CopyMeshDlg</name>
     <message>
         <source>OBJECT_NAME</source>
@@ -7322,6 +7389,10 @@ en raison de leurs types incompatibles:
     <message>
         <source>BND_BOX</source>
         <translation>Boîte englobante</translation>
+    </message>
+    <message>
+        <source>BASIC_PROPERTIES</source>
+        <translation type="unfinished">Basic Properties</translation>
     </message>
 </context>
 <context>

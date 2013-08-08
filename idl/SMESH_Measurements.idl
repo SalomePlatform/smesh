@@ -55,6 +55,21 @@ module SMESH
      * common bounding box of entities
      */
     Measure BoundingBox(in ListOfIDSources sources);
+
+    /*!
+     * sum of length of 1D elements of the source
+     */
+    double Length(in SMESH_IDSource source);
+
+    /*!
+     * sum of area of 2D elements of the source
+     */
+    double Area(in SMESH_IDSource source);
+
+    /*!
+     * sum of volume of 3D elements of the source
+     */
+    double Volume(in SMESH_IDSource source);
   };
 };    
 

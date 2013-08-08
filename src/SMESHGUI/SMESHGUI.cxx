@@ -3541,8 +3541,20 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
   case 501:
   case 502:
+  case 503:
+  case 504:
+  case 505:
     {
-      int page = theCommandID == 501 ? SMESHGUI_MeasureDlg::MinDistance : SMESHGUI_MeasureDlg::BoundingBox;
+      int page = SMESHGUI_MeasureDlg::MinDistance;
+      if ( theCommandID == 502 )
+	page = SMESHGUI_MeasureDlg::BoundingBox;
+      else if ( theCommandID == 503 )
+	page = SMESHGUI_MeasureDlg::Length;
+      else if ( theCommandID == 504 )
+	page = SMESHGUI_MeasureDlg::Area;
+      else if ( theCommandID == 505 )
+	page = SMESHGUI_MeasureDlg::Volume;
+
       EmitSignalDeactivateDialog();
       SMESHGUI_MeasureDlg* dlg = new SMESHGUI_MeasureDlg( SMESHGUI::desktop(), page );
       dlg->show();
@@ -3844,6 +3856,9 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   createSMESHAction( 501, "MEASURE_MIN_DIST", "ICON_MEASURE_MIN_DIST" );
   createSMESHAction( 502, "MEASURE_BND_BOX",  "ICON_MEASURE_BND_BOX" );
+  createSMESHAction( 503, "MEASURE_LENGTH",   "ICON_MEASURE_LENGTH" );
+  createSMESHAction( 504, "MEASURE_AREA",     "ICON_MEASURE_AREA" );
+  createSMESHAction( 505, "MEASURE_VOLUME",   "ICON_MEASURE_VOLUME" );
 
   createSMESHAction( 300, "HIDE" );
   createSMESHAction( 301, "SHOW" );
@@ -3872,7 +3887,8 @@ void SMESHGUI::initialize( CAM_Application* app )
       addId    = createMenu( tr( "MEN_ADD" ),    modifyId, 402 ),
       removeId = createMenu( tr( "MEN_REMOVE" ), modifyId, 403 ),
       renumId  = createMenu( tr( "MEN_RENUM" ),  modifyId, 404 ),
-      transfId = createMenu( tr( "MEN_TRANSF" ), modifyId, 405 );
+      transfId = createMenu( tr( "MEN_TRANSF" ), modifyId, 405 ),
+      basicPropId = createMenu( tr( "MEN_BASIC_PROPERTIES" ), measureId, -1, 10 );
 
   //createMenu( 111, importId, -1 );
   createMenu( 112, importId, -1 );
@@ -4020,6 +4036,9 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   createMenu( 501, measureId, -1 );
   createMenu( 502, measureId, -1 );
+  createMenu( 503, basicPropId, -1 );
+  createMenu( 504, basicPropId, -1 );
+  createMenu( 505, basicPropId, -1 );
   createMenu( 214, viewId, -1 );
 
   // ----- create toolbars --------------

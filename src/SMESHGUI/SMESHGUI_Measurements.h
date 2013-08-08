@@ -32,6 +32,7 @@
 class QButtonGroup;
 class QLineEdit;
 class QTabWidget;
+class QGroupBox;
 class SUIT_SelectionFilter;
 class SALOME_Actor;
 class SMESH_Actor;
@@ -101,9 +102,9 @@ public:
 
   void updateSelection();
   void deactivate();
+  void erasePreview();
 
 private:
-  void erasePreview();
   void displayPreview();
   void createPreview( double, double, double, double, double, double );
 
@@ -135,6 +136,37 @@ private:
   SALOME_Actor*             myPreview;
 };
 
+class SMESHGUI_EXPORT SMESHGUI_BasicProperties : public QWidget
+{
+  Q_OBJECT;
+  
+public:
+  //! Property type
+  enum Mode { Length, Area, Volume };
+
+  SMESHGUI_BasicProperties( QWidget* = 0 );
+  ~SMESHGUI_BasicProperties();
+
+  void setMode( const Mode );
+
+  void updateSelection();
+  void deactivate();
+
+private slots:
+  void selectionChanged();
+  void modeChanged( int);
+  void compute();
+  void clear();
+
+private:
+  QButtonGroup*             myMode;
+  QLineEdit*                mySource;
+  QGroupBox*                myResultGrp;
+  QLineEdit*                myResult;
+  SMESH::SMESH_IDSource_var mySrc;
+  SUIT_SelectionFilter*     myFilter;
+};
+
 class SMESHGUI_EXPORT SMESHGUI_MeasureDlg : public QDialog
 { 
   Q_OBJECT;
@@ -145,7 +177,10 @@ public:
   //! Measurement type
   enum { 
     MinDistance,   //!< minimum distance
-    BoundingBox    //!< bounding box
+    BoundingBox,   //!< bounding box
+    Length,        //!< length
+    Area,          //!< area
+    Volume         //!< volume
   };
 
   SMESHGUI_MeasureDlg( QWidget* = 0, int = MinDistance );
@@ -167,6 +202,7 @@ private:
   QTabWidget*           myTabWidget;
   SMESHGUI_MinDistance* myMinDist;   
   SMESHGUI_BoundingBox* myBndBox;
+  SMESHGUI_BasicProperties* myBasicProps;
 };
 
 #endif // SMESHGUI_MEASUREMENTS_H

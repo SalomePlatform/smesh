@@ -559,6 +559,22 @@
             <source>ICON_SPLIT_TO_TETRA</source>
             <translation>split_into_tetra.png</translation>
         </message>
+	<message>
+            <source>ICON_MEASURE_LENGTH</source>
+            <translation>mesh_measure_length.png</translation>
+        </message>
+        <message>
+            <source>ICON_MEASURE_AREA</source>
+            <translation>mesh_measure_area.png</translation>
+        </message>	
+        <message>
+            <source>ICON_MEASURE_VOLUME</source>
+            <translation>mesh_measure_volume.png</translation>
+        </message>
+        <message>
+            <source>ICON_MEASURE_BASIC_PROPS</source>
+            <translation>mesh_measure_basic_props.png</translation>
+        </message>
         <message>
             <source>ICON_MEASURE_MIN_DIST</source>
             <translation>mesh_min_dist.png</translation>

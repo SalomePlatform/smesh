@@ -4398,25 +4398,46 @@ class Mesh:
         return val
 
     ## Get length of 1D element.
-    #  @param elemId mesh element ID
+    #  @param elemId mesh element ID (if not defined - sum of length of all 1D elements will be calculated)
     #  @return element's length value
     #  @ingroup l1_measurements
-    def GetLength(self, elemId):
-        return self._valueFromFunctor(SMESH.FT_Length, elemId)
+    def GetLength(self, elemId=None):
+        length = 0
+        if elemId == None:
+            aMeasurements = self.smeshpyD.CreateMeasurements()
+            length = aMeasurements.Length(self.GetMesh())
+            aMeasurements.UnRegister()
+        else:
+            length = self._valueFromFunctor(SMESH.FT_Length, elemId)
+        return length
 
     ## Get area of 2D element.
-    #  @param elemId mesh element ID
+    #  @param elemId mesh element ID (if not defined - sum of area of all 2D elements will be calculated)
     #  @return element's area value
     #  @ingroup l1_measurements
-    def GetArea(self, elemId):
-        return self._valueFromFunctor(SMESH.FT_Area, elemId)
+    def GetArea(self, elemId=None):
+        area = 0
+        if elemId == None:
+            aMeasurements = self.smeshpyD.CreateMeasurements()
+            area = aMeasurements.Area(self.GetMesh())
+            aMeasurements.UnRegister()
+        else:
+            area = self._valueFromFunctor(SMESH.FT_Area, elemId)
+        return area
 
     ## Get volume of 3D element.
-    #  @param elemId mesh element ID
+    #  @param elemId mesh element ID (if not defined - sum of volume of all 3D elements will be calculated)
     #  @return element's volume value
     #  @ingroup l1_measurements
-    def GetVolume(self, elemId):
-        return self._valueFromFunctor(SMESH.FT_Volume3D, elemId)
+    def GetVolume(self, elemId=None):
+        volume = 0
+        if elemId == None:
+            aMeasurements = self.smeshpyD.CreateMeasurements()
+            volume = aMeasurements.Volume(self.GetMesh())
+            aMeasurements.UnRegister()
+        else:
+            volume = self._valueFromFunctor(SMESH.FT_Volume3D, elemId)
+        return volume
 
     ## Get maximum element length.
     #  @param elemId mesh element ID

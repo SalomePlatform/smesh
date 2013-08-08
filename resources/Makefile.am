@@ -208,7 +208,11 @@ dist_salomeres_DATA = \
 	mesh_min_dist.png \
 	reorient_faces_point.png \
 	reorient_faces_face.png \
-	mesh_ball.png
+	mesh_ball.png \
+	mesh_measure_basic_props.png \
+	mesh_measure_length.png \
+	mesh_measure_area.png \
+	mesh_measure_volume.png
 
 # VSR: little trick to avoid putting if SMESHCatalog.xml to the distribution archive
 nodist_salomeres_SCRIPTS = SMESHCatalog.xml SalomeApp.xml

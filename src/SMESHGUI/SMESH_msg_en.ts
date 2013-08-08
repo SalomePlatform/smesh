@@ -713,6 +713,46 @@
         <translation>Bounding box</translation>
     </message>
     <message>
+        <source>MEN_BASIC_PROPERTIES</source>
+        <translation>Basic Properties</translation>
+    </message>
+    <message>
+        <source>MEN_MEASURE_LENGTH</source>
+        <translation>Length</translation>
+    </message>
+    <message>
+        <source>STB_MEASURE_LENGTH</source>
+        <translation>Calculate sum of length of all 1D elements of the selected object(s)</translation>
+    </message>
+    <message>
+        <source>TOP_MEASURE_LENGTH</source>
+        <translation>Length</translation>
+    </message>
+    <message>
+        <source>MEN_MEASURE_AREA</source>
+        <translation>Area</translation>
+    </message>
+    <message>
+        <source>STB_MEASURE_AREA</source>
+        <translation>Calculate sum of area of all 2D elements of the selected object(s)</translation>
+    </message>
+    <message>
+        <source>TOP_MEASURE_AREA</source>
+        <translation>Area</translation>
+    </message>
+     <message>
+        <source>MEN_MEASURE_VOLUME</source>
+        <translation>Volume</translation>
+    </message>
+    <message>
+        <source>STB_MEASURE_VOLUME</source>
+        <translation>Calculate sum of volume of all 3D elements of the selected object(s)</translation>
+    </message>
+    <message>
+        <source>TOP_MEASURE_VOLUME</source>
+        <translation>Volume</translation>
+    </message>
+    <message>
         <source>MEN_MOVE</source>
         <translation>Move Node</translation>
     </message>
@@ -7309,6 +7349,33 @@ as they are of improper type:
     </message>
 </context>
 <context>
+    <name>SMESHGUI_BasicProperties</name>
+    <message>
+        <source>PROPERTY</source>
+        <translation>Property</translation>
+    </message>
+    <message>
+        <source>LENGTH</source>
+        <translation>Length</translation>
+    </message>
+    <message>
+        <source>AREA</source>
+        <translation>Area</translation>
+    </message>
+    <message>
+        <source>VOLUME</source>
+        <translation>Volume</translation>
+    </message>
+    <message>
+        <source>SOURCE_MESH_SUBMESH_GROUP</source>
+        <translation>Source (mesh, sub-mesh or group)</translation>
+    </message>
+    <message>
+        <source>COMPUTE</source>
+        <translation>Compute</translation>
+    </message>
+</context>
+<context>
     <name>SMESHGUI_CopyMeshDlg</name>
     <message>
         <source>OBJECT_NAME</source>
@@ -7336,6 +7403,10 @@ as they are of improper type:
     <message>
         <source>BND_BOX</source>
         <translation>Bounding Box</translation>
+    </message>
+    <message>
+        <source>BASIC_PROPERTIES</source>
+        <translation>Basic Properties</translation>
     </message>
 </context>
 <context>

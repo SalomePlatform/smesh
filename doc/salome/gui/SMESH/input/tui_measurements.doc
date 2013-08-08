@@ -8,4 +8,7 @@
 \section tui_bounding_box Bounding Box
 \tui_script{measurements_ex02.py}
 
+\section tui_bounding_box Basic Properties
+\tui_script{measurements_ex03.py}
+
 */
