@@ -888,8 +888,8 @@ void SMESHDS_Mesh::RemoveFreeNode(const SMDS_MeshNode * n,
     set<SMESHDS_GroupBase*>::iterator GrIt = myGroups.begin();
     for (; GrIt != myGroups.end(); GrIt++) {
       SMESHDS_Group* group = dynamic_cast<SMESHDS_Group*>(*GrIt);
-      if (!group || group->IsEmpty()) continue;
-      group->SMDSGroup().Remove(n);
+      if (group && !group->IsEmpty())
+        group->SMDSGroup().Remove(n);
     }
   }
 
