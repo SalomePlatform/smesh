@@ -8446,11 +8446,20 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d, const bool theT
       if ( !volume ) continue;
 
       const SMDSAbs_EntityType type = volume->GetEntityType();
-      if (( theToBiQuad  && type == SMDSEntity_TriQuad_Hexa ) ||
-          ( !theToBiQuad && type == SMDSEntity_Quad_Hexa ))
+      if ( volume->IsQuadratic() )
       {
-        aHelper.AddTLinks( static_cast< const SMDS_MeshVolume* >( volume ));
-        continue;
+        bool alreadyOK;
+        switch ( type )
+        {
+        case SMDSEntity_Quad_Hexa:    alreadyOK = !theToBiQuad; break;
+        case SMDSEntity_TriQuad_Hexa: alreadyOK = theToBiQuad; break;
+        default:                      alreadyOK = true;
+        }
+        if ( alreadyOK )
+        {
+          aHelper.AddTLinks( static_cast< const SMDS_MeshVolume* >( volume ));
+          continue;
+        }
       }
       const int id = volume->GetID();
       vector<const SMDS_MeshNode *> nodes (volume->begin_nodes(), volume->end_nodes());
