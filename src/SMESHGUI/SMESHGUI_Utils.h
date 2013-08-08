@@ -44,6 +44,9 @@
 //OCC includes
 #include <gp_XYZ.hxx>
 
+#include <SALOMEconfig.h>
+#include CORBA_CLIENT_HEADER(SMESH_Mesh)
+
 class SUIT_ViewWindow;
 class SUIT_Desktop;
 class SUIT_Study;
