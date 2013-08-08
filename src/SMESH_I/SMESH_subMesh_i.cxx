@@ -227,6 +227,7 @@ CORBA::Long SMESH_subMesh_i::GetNumberOfNodes(CORBA::Boolean all)
       if (( aSubMeshDS = aSubMesh->GetSubMeshDS() ))
         nbNodes += aSubMeshDS->NbNodes();
     }
+    return nbNodes;
   }
 
   return aSubMeshDS ? aSubMeshDS->NbNodes() : 0;
