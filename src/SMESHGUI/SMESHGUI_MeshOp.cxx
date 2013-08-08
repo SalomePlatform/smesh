@@ -1723,8 +1723,9 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess, QStringList& theEntryList
         GEOM::GEOM_Object_wrap aGroupVar = op->CreateGroup(mainGeom, aGroupType);
         op->UnionList(aGroupVar, aSeq);
 
-        if (op->IsDone()) {
-          aGeomVar = aGroupVar.in();
+        if (op->IsDone())
+        {
+          aGeomVar = GEOM::GEOM_Object::_duplicate( aGroupVar.in() );
 
           // publish the GEOM group in study
           QString aNewGeomGroupName ("Auto_group_for_");
