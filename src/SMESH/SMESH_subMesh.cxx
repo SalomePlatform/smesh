@@ -1381,7 +1381,7 @@ static void cleanSubMesh( SMESH_subMesh * subMesh )
         const SMDS_MeshElement * elt = ite->next();
         //MESSAGE( " RM elt: "<<elt->GetID()<<" ( "<<elt->NbNodes()<<" )" );
         //meshDS->RemoveElement(elt);
-        meshDS->RemoveFreeElement(elt, subMeshDS);
+        meshDS->RemoveFreeElement(elt, 0);
       }
 
       SMDS_NodeIteratorPtr itn = subMeshDS->GetNodes();
@@ -1389,10 +1389,11 @@ static void cleanSubMesh( SMESH_subMesh * subMesh )
         const SMDS_MeshNode * node = itn->next();
         //MESSAGE( " RM node: "<<node->GetID());
         if ( node->NbInverseElements() == 0 )
-          meshDS->RemoveFreeNode(node, subMeshDS);
+          meshDS->RemoveFreeNode(node, 0);
         else // for StdMeshers_CompositeSegment_1D: node in one submesh, edge in another
           meshDS->RemoveNode(node);
       }
+      subMeshDS->Clear();
     }
   }
 }
