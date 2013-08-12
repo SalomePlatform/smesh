@@ -165,7 +165,7 @@ public:
             cellList.push_back(vtkId);
           }
       }
-    myCells = &cellList[0];
+    myCells = cellList.empty() ? 0 : &cellList[0];
     myNcells = cellList.size();
     //MESSAGE("myNcells="<<myNcells);
   }

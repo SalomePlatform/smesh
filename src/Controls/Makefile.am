@@ -54,7 +54,8 @@ libSMESHControls_la_LDFLAGS = \
 	../SMESHDS/libSMESHDS.la \
 	../SMESHUtils/libSMESHUtils.la \
 	$(CAS_LDPATH) -lTKernel -lTKBRep -lTKG3d -lTKTopAlgo -lTKGeomBase -lTKGeomAlgo \
-	$(VTK_LIBS)
+	$(VTK_LIBS) \
+	$(KERNEL_LDFLAGS) -lOpUtil -lSALOMELocalTrace -lSALOMEBasics
 
 SMESHControls_CPPFLAGS = \
 	$(libSMESHControls_la_CPPFLAGS)
