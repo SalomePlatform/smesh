@@ -371,6 +371,61 @@ namespace {
     return nbRemoved;
   }
 
+  //================================================================================
+  /*!
+   * Consider continuous straight EDGES as one side - mark them to unite
+   */
+  //================================================================================
+
+  int countNbSides( const Prism_3D::TPrismTopo & thePrism,
+                    vector<int> &                nbUnitePerEdge )
+  {
+    int nbEdges = thePrism.myNbEdgesInWires.front();  // nb outer edges
+    int nbSides = nbEdges;
+
+    list< TopoDS_Edge >::const_iterator edgeIt = thePrism.myBottomEdges.begin();
+    std::advance( edgeIt, nbEdges-1 );
+    TopoDS_Edge   prevE = *edgeIt;
+    bool isPrevStraight = SMESH_Algo::isStraight( prevE );
+    int           iPrev = nbEdges - 1;
+
+    int iUnite = -1; // the first of united EDGEs
+
+    edgeIt = thePrism.myBottomEdges.begin();
+    for ( int iE = 0; iE < nbEdges; ++iE, ++edgeIt )
+    {
+      const TopoDS_Edge&  curE = *edgeIt;
+      const bool isCurStraight = SMESH_Algo::isStraight( curE );
+      if ( isPrevStraight && isCurStraight && SMESH_Algo::IsContinuous( prevE, curE ))
+      {
+        if ( iUnite < 0 )
+          iUnite = iPrev;
+        nbUnitePerEdge[ iUnite ]++;
+        nbUnitePerEdge[ iE ] = -1;
+        --nbSides;
+      }
+      else
+      {
+        iUnite = -1;
+      }
+      prevE          = curE;
+      isPrevStraight = isCurStraight;
+      iPrev = iE;
+    }
+    
+    return nbSides;
+  }
+
+  void pointsToPython(const std::vector<gp_XYZ>& p)
+  {
+#ifdef _DEBUG_
+    for ( int i = SMESH_Block::ID_V000; i < p.size(); ++i )
+    {
+      cout << "mesh.AddNode( " << p[i].X() << ", "<< p[i].Y() << ", "<< p[i].Z() << ") # " << i <<" " ;
+      SMESH_Block::DumpShapeID( i, cout ) << endl;
+    }
+#endif
+  }
 } // namespace
 
 //=======================================================================
@@ -705,10 +760,11 @@ bool StdMeshers_Prism_3D::getWallFaces( Prism_3D::TPrismTopo & thePrism,
   list< TopoDS_Edge >::iterator edge = thePrism.myBottomEdges.begin();
   std::list< int >::iterator     nbE = thePrism.myNbEdgesInWires.begin();
   int iE = 0;
+  double f,l;
   while ( edge != thePrism.myBottomEdges.end() )
   {
     ++iE;
-    if ( BRep_Tool::Degenerated( *edge ))
+    if ( BRep_Tool::Curve( *edge, f,l ).IsNull() )
     {
       edge = thePrism.myBottomEdges.erase( edge );
       --iE;
@@ -989,6 +1045,9 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
         if ( !SMESH_Block::ShellPoint( params, myShapeXYZ, coords ))
           return toSM( error("Can't compute coordinates by normalized parameters"));
 
+        // if ( !meshDS->MeshElements( volumeID ) ||
+        //      meshDS->MeshElements( volumeID )->NbNodes() == 0 )
+        //   pointsToPython(myShapeXYZ);
         SHOWYXZ("TOPFacePoint ",myShapeXYZ[ ID_TOP_FACE]);
         SHOWYXZ("BOT Node "<< tBotNode.myNode->GetID(),gpXYZ(tBotNode.myNode));
         SHOWYXZ("ShellPoint ",coords);
@@ -2150,8 +2209,15 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper*         helper,
   myParam2ColumnMaps.resize( thePrism.myBottomEdges.size() ); // total nb edges
 
   size_t iE, nbEdges = thePrism.myNbEdgesInWires.front(); // nb outer edges
-  vector< double >    edgeLength( nbEdges );
+  vector< double > edgeLength( nbEdges );
   multimap< double, int > len2edgeMap;
+
+  // for each EDGE: either split into several parts, or join with several next EDGEs
+  vector<int> nbSplitPerEdge( nbEdges, 0 );
+  vector<int> nbUnitePerEdge( nbEdges, 0 ); // -1 means "joined to a previous"
+
+  // consider continuous straight EDGEs as one side
+  const int nbSides = countNbSides( thePrism, nbUnitePerEdge );
 
   list< TopoDS_Edge >::const_iterator edgeIt = thePrism.myBottomEdges.begin();
   for ( iE = 0; iE < nbEdges; ++iE, ++edgeIt )
@@ -2172,14 +2238,8 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper*         helper,
 
     edgeLength[ iE ] = SMESH_Algo::EdgeLength( *edgeIt );
 
-    if ( nbEdges < NB_WALL_FACES ) // fill map used to split faces
-    {
-      SMESHDS_SubMesh* smDS = meshDS->MeshElements( *edgeIt);
-      if ( !smDS )
-        return error(COMPERR_BAD_INPUT_MESH, TCom("Null submesh on the edge #")
-                     << MeshDS()->ShapeToIndex( *edgeIt ));
-      len2edgeMap.insert( make_pair( edgeLength[ iE ], iE ));
-    }
+    if ( nbSides < NB_WALL_FACES ) // fill map used to split faces
+      len2edgeMap.insert( make_pair( edgeLength[ iE ], iE )); // sort edges by length
   }
   // Load columns of internal edges (forming holes)
   // and fill map ShapeIndex to TParam2ColumnMap for them
@@ -2217,10 +2277,9 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper*         helper,
   // Create 4 wall faces of a block
   // -------------------------------
 
-  if ( nbEdges <= NB_WALL_FACES ) // ************* Split faces if necessary
+  if ( nbSides <= NB_WALL_FACES ) // ************* Split faces if necessary
   {
-    map< int, int > iE2nbSplit;
-    if ( nbEdges != NB_WALL_FACES ) // define how to split
+    if ( nbSides != NB_WALL_FACES ) // define how to split
     {
       if ( len2edgeMap.size() != nbEdges )
         RETURN_BAD_RESULT("Uniqueness of edge lengths not assured");
@@ -2232,80 +2291,106 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper*         helper,
       double midLen = ( len2edgeMap.size() == 1 ) ? 0 : midLen_i->first;
       switch ( nbEdges ) {
       case 1: // 0-th edge is split into 4 parts
-        iE2nbSplit.insert( make_pair( 0, 4 )); break;
+        nbSplitPerEdge[ 0 ] = 4;
+        break;
       case 2: // either the longest edge is split into 3 parts, or both edges into halves
         if ( maxLen / 3 > midLen / 2 ) {
-          iE2nbSplit.insert( make_pair( maxLen_i->second, 3 ));
+          nbSplitPerEdge[ maxLen_i->second ] = 3;
         }
         else {
-          iE2nbSplit.insert( make_pair( maxLen_i->second, 2 ));
-          iE2nbSplit.insert( make_pair( midLen_i->second, 2 ));
+          nbSplitPerEdge[ maxLen_i->second ] = 2;
+          nbSplitPerEdge[ midLen_i->second ] = 2;
         }
         break;
       case 3:
-        // split longest into halves
-        iE2nbSplit.insert( make_pair( maxLen_i->second, 2 ));
-      }
-    }
-    // Create TSideFace's
-    int iSide = 0;
-    list< TopoDS_Edge >::const_iterator botE = thePrism.myBottomEdges.begin();
-    for ( iE = 0; iE < nbEdges; ++iE, ++botE )
-    {
-      TFaceQuadStructPtr quad = thePrism.myWallQuads[ iE ].front();
-      // split?
-      map< int, int >::iterator i_nb = iE2nbSplit.find( iE );
-      if ( i_nb != iE2nbSplit.end() ) {
-        // split!
-        int nbSplit = i_nb->second;
-        vector< double > params;
-        splitParams( nbSplit, &myParam2ColumnMaps[ iE ], params );
-        const bool isForward =
-          StdMeshers_PrismAsBlock::IsForwardEdge( myHelper->GetMeshDS(),
-                                                  myParam2ColumnMaps[iE],
-                                                  *botE, SMESH_Block::ID_Fx0z );
-        for ( int i = 0; i < nbSplit; ++i ) {
-          double f = ( isForward ? params[ i ]   : params[ nbSplit - i-1 ]);
-          double l = ( isForward ? params[ i+1 ] : params[ nbSplit - i ]);
-          TSideFace* comp = new TSideFace( *mesh, wallFaceIds[ iSide ],
-                                           thePrism.myWallQuads[ iE ], *botE,
-                                           &myParam2ColumnMaps[ iE ], f, l );
-          mySide->SetComponent( iSide++, comp );
-        }
-      }
-      else {
-        TSideFace* comp = new TSideFace( *mesh, wallFaceIds[ iSide ],
-                                         thePrism.myWallQuads[ iE ], *botE,
-                                         &myParam2ColumnMaps[ iE ]);
-        mySide->SetComponent( iSide++, comp );
+        if ( nbSides == 2 )
+          // split longest into 3 parts
+          nbSplitPerEdge[ maxLen_i->second ] = 3;
+        else
+          // split longest into halves
+          nbSplitPerEdge[ maxLen_i->second ] = 2;
       }
     }
   }
-  else { // **************************** Unite faces
-
-    // unite first faces
-    int nbExraFaces = nbEdges - 3;
-    int iSide = 0, iE;
-    double u0 = 0, sumLen = 0;
-    for ( iE = 0; iE < nbExraFaces; ++iE )
-      sumLen += edgeLength[ iE ];
-
-    vector< TSideFace* >        components( nbExraFaces );
-    vector< pair< double, double> > params( nbExraFaces );
-    list< TopoDS_Edge >::const_iterator botE = thePrism.myBottomEdges.begin();
-    for ( iE = 0; iE < nbExraFaces; ++iE, ++botE )
+  else // **************************** Unite faces
+  {
+    int nbExraFaces = nbSides - 3; // nb of faces to fuse
+    for ( iE = 0; iE < nbEdges; ++iE )
     {
-      components[ iE ] = new TSideFace( *mesh, wallFaceIds[ iSide ],
-                                        thePrism.myWallQuads[ iE ], *botE,
-                                        &myParam2ColumnMaps[ iE ]);
-      double u1 = u0 + edgeLength[ iE ] / sumLen;
-      params[ iE ] = make_pair( u0 , u1 );
-      u0 = u1;
+      if ( nbUnitePerEdge[ iE ] < 0 )
+        continue;
+      // look for already united faces
+      for ( int i = iE; i < iE + nbExraFaces; ++i )
+      {
+        if ( nbUnitePerEdge[ i ] > 0 ) // a side including nbUnitePerEdge[i]+1 edge
+          nbExraFaces += nbUnitePerEdge[ i ];
+        nbUnitePerEdge[ i ] = -1;
+      }
+      nbUnitePerEdge[ iE ] = nbExraFaces;
+      break;
     }
-    mySide->SetComponent( iSide++, new TSideFace( *mesh, components, params ));
+  }
 
-    // fill the rest faces
-    for ( ; iE < nbEdges; ++iE, ++botE )
+  // Create TSideFace's
+  int iSide = 0;
+  list< TopoDS_Edge >::const_iterator botE = thePrism.myBottomEdges.begin();
+  for ( iE = 0; iE < nbEdges; ++iE, ++botE )
+  {
+    TFaceQuadStructPtr quad = thePrism.myWallQuads[ iE ].front();
+    const int       nbSplit = nbSplitPerEdge[ iE ];
+    const int   nbExraFaces = nbUnitePerEdge[ iE ] + 1;
+    if ( nbSplit > 0 ) // split
+    {
+      vector< double > params;
+      splitParams( nbSplit, &myParam2ColumnMaps[ iE ], params );
+      const bool isForward =
+        StdMeshers_PrismAsBlock::IsForwardEdge( myHelper->GetMeshDS(),
+                                                myParam2ColumnMaps[iE],
+                                                *botE, SMESH_Block::ID_Fx0z );
+      for ( int i = 0; i < nbSplit; ++i ) {
+        double f = ( isForward ? params[ i ]   : params[ nbSplit - i-1 ]);
+        double l = ( isForward ? params[ i+1 ] : params[ nbSplit - i ]);
+        TSideFace* comp = new TSideFace( *mesh, wallFaceIds[ iSide ],
+                                         thePrism.myWallQuads[ iE ], *botE,
+                                         &myParam2ColumnMaps[ iE ], f, l );
+        mySide->SetComponent( iSide++, comp );
+      }
+    }
+    else if ( nbExraFaces > 1 ) // unite
+    {
+      double u0 = 0, sumLen = 0;
+      for ( int i = iE; i < iE + nbExraFaces; ++i )
+        sumLen += edgeLength[ i ];
+
+      vector< TSideFace* >        components( nbExraFaces );
+      vector< pair< double, double> > params( nbExraFaces );
+      bool endReached = false;
+      for ( int i = 0; i < nbExraFaces; ++i, ++botE, ++iE )
+      {
+        if ( iE == nbEdges )
+        {
+          endReached = true;
+          botE = thePrism.myBottomEdges.begin();
+          iE = 0;
+        }
+        components[ i ] = new TSideFace( *mesh, wallFaceIds[ iSide ],
+                                         thePrism.myWallQuads[ iE ], *botE,
+                                         &myParam2ColumnMaps[ iE ]);
+        double u1 = u0 + edgeLength[ iE ] / sumLen;
+        params[ i ] = make_pair( u0 , u1 );
+        u0 = u1;
+      }
+      TSideFace* comp = new TSideFace( *mesh, components, params );
+      mySide->SetComponent( iSide++, comp );
+      if ( endReached )
+        break;
+      --iE; // for increment in an external loop on iE
+      --botE;
+    }
+    else if ( nbExraFaces < 0 ) // skip already united face
+    {
+    }
+    else // use as is
     {
       TSideFace* comp = new TSideFace( *mesh, wallFaceIds[ iSide ],
                                        thePrism.myWallQuads[ iE ], *botE,
@@ -2423,15 +2508,20 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper*         helper,
     }
   }
 
-//   gp_XYZ testPar(0.25, 0.25, 0), testCoord;
-//   if ( !FacePoint( ID_BOT_FACE, testPar, testCoord ))
-//     RETURN_BAD_RESULT("TEST FacePoint() FAILED");
-//   SHOWYXZ("IN TEST PARAM" , testPar);
-//   SHOWYXZ("OUT TEST CORD" , testCoord);
-//   if ( !ComputeParameters( testCoord, testPar , ID_BOT_FACE))
-//     RETURN_BAD_RESULT("TEST ComputeParameters() FAILED");
-//   SHOWYXZ("OUT TEST PARAM" , testPar);
-
+  // double _u[]={ 0.1, 0.1, 0.9, 0.9 };
+  // double _v[]={ 0.1, 0.9, 0.1, 0.9,  };
+  // for ( int i = 0; i < 4; ++i )
+  // {
+  //   //gp_XYZ testPar(0.25, 0.25, 0), testCoord;
+  //   gp_XYZ testPar(_u[i], _v[i], 0), testCoord;
+  // if ( !FacePoint( ID_BOT_FACE, testPar, testCoord ))
+  //   RETURN_BAD_RESULT("TEST FacePoint() FAILED");
+  // SHOWYXZ("IN TEST PARAM" , testPar);
+  // SHOWYXZ("OUT TEST CORD" , testCoord);
+  // if ( !ComputeParameters( testCoord, testPar , ID_BOT_FACE))
+  //   RETURN_BAD_RESULT("TEST ComputeParameters() FAILED");
+  // SHOWYXZ("OUT TEST PARAM" , testPar);
+  // }
   return true;
 }
 
@@ -2603,6 +2693,8 @@ StdMeshers_PrismAsBlock::TSideFace::TSideFace(SMESH_Mesh&                mesh,
   myIsForward   = StdMeshers_PrismAsBlock::IsForwardEdge( myHelper.GetMeshDS(),
                                                           *myParamToColumnMap,
                                                           myBaseEdge, myID );
+  myHelper.SetSubShape( quadList.front()->face );
+
   if ( quadList.size() > 1 ) // side is vertically composite
   {
     // fill myShapeID2Surf map to enable finding a right surface by any sub-shape ID
@@ -2646,7 +2738,20 @@ TSideFace(SMESH_Mesh&                             mesh,
    myIsForward( true ),
    myComponents( components ),
    myHelper( mesh )
-{}
+{
+  if ( myID == ID_Fx1z || myID == ID_F0yz )
+  {
+    // reverse components
+    std::reverse( myComponents.begin(), myComponents.end() );
+    std::reverse( myParams.begin(),     myParams.end() );
+    for ( size_t i = 0; i < myParams.size(); ++i )
+    {
+      const double f = myParams[i].first;
+      const double l = myParams[i].second;
+      myParams[i] = make_pair( 1. - l, 1. - f );
+    }
+  }
+}
 //================================================================================
 /*!
  * \brief Copy constructor
@@ -2925,7 +3030,8 @@ gp_Pnt StdMeshers_PrismAsBlock::TSideFace::Value(const Standard_Real U,
         throw SALOME_Exception("StdMeshers_PrismAsBlock::TSideFace::Value() !mySurface");
     }
   }
-  
+  ((TSideFace*) this)->myHelper.SetSubShape( mySurface->Face() );
+
   gp_XY uv1 = myHelper.GetNodeUV( mySurface->Face(), nn[0], nn[2]);
   gp_XY uv2 = myHelper.GetNodeUV( mySurface->Face(), nn[1], nn[3]);
   gp_XY uv12 = uv1 * ( 1 - vR ) + uv2 * vR;
