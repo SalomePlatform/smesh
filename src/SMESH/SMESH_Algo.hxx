@@ -357,6 +357,10 @@ public:
   static bool IsContinuous(const TopoDS_Edge & E1, const TopoDS_Edge & E2) {
     return ( Continuity( E1, E2 ) >= GeomAbs_G1 );
   }
+  /*!
+   * \brief Return true if an edge can be considered straight
+   */
+  static bool isStraight( const TopoDS_Edge & E, const bool degenResult=false );
 
   /*!
    * \brief Return the node built on a vertex

@@ -531,6 +531,57 @@ GeomAbs_Shape SMESH_Algo::Continuity(TopoDS_Edge E1,
 
 //================================================================================
 /*!
+ * \brief Return true if an edge can be considered straight
+ */
+//================================================================================
+
+bool SMESH_Algo::isStraight( const TopoDS_Edge & E,
+                             const bool          degenResult)
+{
+  {
+    double f,l;
+    if ( BRep_Tool::Curve( E, f, l ).IsNull())
+      return degenResult;
+  }
+  BRepAdaptor_Curve curve( E );
+  switch( curve.GetType() )
+  {
+  case GeomAbs_Line:
+    return true;
+  case GeomAbs_Circle:
+  case GeomAbs_Ellipse:
+  case GeomAbs_Hyperbola:
+  case GeomAbs_Parabola:
+    return false;
+  // case GeomAbs_BezierCurve:
+  // case GeomAbs_BSplineCurve:
+  // case GeomAbs_OtherCurve:
+  default:;
+  }
+  const double   f = curve.FirstParameter();
+  const double   l = curve.LastParameter();
+  const gp_Pnt  pf = curve.Value( f );
+  const gp_Pnt  pl = curve.Value( l );
+  const gp_Vec v1( pf, pl );
+  const double v1Len = v1.Magnitude();
+  if ( v1Len < std::numeric_limits< double >::min() )
+    return false; // E seems closed
+  const double tol = Min( 10 * curve.Tolerance(), v1Len * 1e-2 );
+  const int nbSamples = 7;
+  for ( int i = 0; i < nbSamples; ++i )
+  {
+    const double  r = ( i + 1 ) / nbSamples;
+    const gp_Pnt pi = curve.Value( f * r + l * ( 1 - r ));
+    const gp_Vec vi( pf, pi );
+    const double  h = 0.5 * v1.Crossed( vi ).Magnitude() / v1Len;
+    if ( h > tol )
+      return false;
+  }
+  return true;
+}
+
+//================================================================================
+/*!
  * \brief Return the node built on a vertex
  * \param V - the vertex
  * \param meshDS - mesh
