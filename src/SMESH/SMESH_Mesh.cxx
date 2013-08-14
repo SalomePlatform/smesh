@@ -66,6 +66,8 @@
 #include <TopTools_MapOfShape.hxx>
 #include <TopoDS_Iterator.hxx>
 
+#include "SMESH_TryCatch.hxx" // include after OCCT headers!
+
 #include "Utils_ExceptHandlers.hxx"
 
 #include <boost/thread/thread.hpp>
@@ -1259,7 +1261,7 @@ void SMESH_Mesh::ExportMED(const char *        file,
                            bool                theAutoDimension)
   throw(SALOME_Exception)
 {
-  Unexpect aCatch(SalomeException);
+  SMESH_TRY;
 
   DriverMED_W_SMESHDS_Mesh myWriter;
   myWriter.SetFile         ( file, MED::EVersion(theVersion) );
@@ -1306,6 +1308,8 @@ void SMESH_Mesh::ExportMED(const char *        file,
   }
   // Perform export
   myWriter.Perform();
+
+  SMESH_CATCH( SMESH::throwSalomeEx );
 }
 
 //================================================================================
