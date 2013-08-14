@@ -2710,7 +2710,7 @@ void SMESH_Mesh_i::ExportToMEDX (const char*        file,
                                  CORBA::Boolean     autoDimension)
   throw(SALOME::SALOME_Exception)
 {
-  Unexpect aCatch(SALOME_SalomeException);
+  SMESH_TRY;
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
@@ -2721,6 +2721,8 @@ void SMESH_Mesh_i::ExportToMEDX (const char*        file,
                 << autoDimension << " )";
 
   _impl->ExportMED( file, aMeshName.c_str(), auto_groups, theVersion, 0, autoDimension );
+
+  SMESH_CATCH( SMESH::throwCorbaException );
 }
 
 //================================================================================
