@@ -182,10 +182,11 @@ namespace // INTERNAL STUFF
       if ( !_importMeshSubDS ) return;
       SMDS_ElemIteratorPtr eIt = _importMeshSubDS->GetElements();
       while ( eIt->more() )
-        meshDS->RemoveFreeElement( eIt->next(), _importMeshSubDS, /*fromGroups=*/false );
+        meshDS->RemoveFreeElement( eIt->next(), 0, /*fromGroups=*/false );
       SMDS_NodeIteratorPtr nIt = _importMeshSubDS->GetNodes();
       while ( nIt->more() )
-        meshDS->RemoveFreeNode( nIt->next(), _importMeshSubDS, /*fromGroups=*/false );
+        meshDS->RemoveFreeNode( nIt->next(), 0, /*fromGroups=*/false );
+      _importMeshSubDS->Clear();
       _n2n.clear();
       _e2e.clear();
     }
@@ -266,6 +267,7 @@ namespace // INTERNAL STUFF
                               const SMESH_Hypothesis*         hyp);
     void removeSubmesh( SMESH_subMesh* sm, _ListenerData* data );
     void clearSubmesh ( SMESH_subMesh* sm, _ListenerData* data, bool clearAllSub );
+    void clearN2N     ( SMESH_Mesh* tgtMesh );
 
     // mark sm as missing src hyp with valid groups
     static void waitHypModification(SMESH_subMesh* sm)
@@ -345,6 +347,18 @@ namespace // INTERNAL STUFF
         if ( rmGroups && data )
           d->removeGroups( sm, data->_srcHyp );
       }
+  }
+  //--------------------------------------------------------------------------------
+  /*!
+   * \brief Clear _ImportData::_n2n.
+   *        _n2n is usefull within one mesh.Compute() only
+   */
+  void _Listener::clearN2N( SMESH_Mesh* tgtMesh )
+  {
+    list< _ImportData >& dList = get()->_tgtMesh2ImportData[tgtMesh];
+    list< _ImportData >::iterator d = dList.begin();
+    for ( ; d != dList.end(); ++d )
+      d->_n2n.clear();
   }
   //--------------------------------------------------------------------------------
   /*!
@@ -448,6 +462,8 @@ namespace // INTERNAL STUFF
         default:;
         }
       }
+      if ( !data->mySubMeshes.empty() )
+        clearN2N( data->mySubMeshes.front()->GetFather() );
     }
     else // event of Import submesh
     {
@@ -496,6 +512,10 @@ namespace // INTERNAL STUFF
                 d->_computedSubM.insert( *smIt);
           }
       }
+      // Clear _ImportData::_n2n if it's no more useful, i.e. when
+      // the event is not within mesh.Compute()
+      if ( SMESH_subMesh::ALGO_EVENT == eventType )
+        clearN2N( subMesh->GetFather() );
     }
   }
 
