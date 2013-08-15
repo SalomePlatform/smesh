@@ -3370,6 +3370,7 @@ void SMDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elem)
       myNodes[elemId] = 0;
       myInfo.myNbNodes--;
       ((SMDS_MeshNode*) n)->SetPosition(SMDS_SpacePosition::originSpacePosition());
+      ((SMDS_MeshNode*) n)->SMDS_MeshElement::init( -1, -1, -1 ); // avoid reuse
       myNodePool->destroy(static_cast<SMDS_MeshNode*>(todest));
       myNodeIDFactory->ReleaseID(elemId, vtkId);
     }
