@@ -1569,7 +1569,8 @@ void SMESHGUI_FilterTable::updateAdditionalWidget()
                    aCriterion != SMESH::FT_OverConstrainedFace &&
                    aCriterion != SMESH::FT_OverConstrainedVolume)
                    ||
-                   aCriterion == SMESH::FT_CoplanarFaces);
+                   aCriterion == SMESH::FT_CoplanarFaces ||
+                   aCriterion == SMESH::FT_EqualNodes);
   
   if (!myAddWidgets.contains(anItem))
   {
