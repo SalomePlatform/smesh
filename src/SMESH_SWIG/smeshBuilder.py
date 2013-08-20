@@ -1046,6 +1046,44 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
         aMeasurements.UnRegister()
         return result
 
+    ## Get sum of lengths of all 1D elements in the mesh object.
+    #  @param elemId obj mesh, submesh or group
+    #  @return sum of lengths of all 1D elements
+    #  @ingroup l1_measurements
+    def GetLength(self, obj):
+        if isinstance(obj, Mesh): obj = obj.mesh
+        if isinstance(obj, Mesh_Algorithm): obj = obj.GetSubMesh()
+        aMeasurements = self.CreateMeasurements()
+        value = aMeasurements.Length(obj)
+        aMeasurements.UnRegister()
+        return value
+
+    ## Get sum of areas of all 2D elements in the mesh object.
+    #  @param elemId obj mesh, submesh or group
+    #  @return sum of areas of all 2D elements
+    #  @ingroup l1_measurements
+    def GetArea(self, obj):
+        if isinstance(obj, Mesh): obj = obj.mesh
+        if isinstance(obj, Mesh_Algorithm): obj = obj.GetSubMesh()
+        aMeasurements = self.CreateMeasurements()
+        value = aMeasurements.Area(obj)
+        aMeasurements.UnRegister()
+        return value
+
+    ## Get sum of volumes of all 3D elements in the mesh object.
+    #  @param elemId obj mesh, submesh or group
+    #  @return sum of volumes of all 3D elements
+    #  @ingroup l1_measurements
+    def GetVolume(self, obj):
+        if isinstance(obj, Mesh): obj = obj.mesh
+        if isinstance(obj, Mesh_Algorithm): obj = obj.GetSubMesh()
+        aMeasurements = self.CreateMeasurements()
+        value = aMeasurements.Volume(obj)
+        aMeasurements.UnRegister()
+        return value
+
+    pass # end of class smeshBuilder
+
 import omniORB
 #Registering the new proxy for SMESH_Gen
 omniORB.registerObjref(SMESH._objref_SMESH_Gen._NP_RepositoryId, smeshBuilder)
@@ -4397,44 +4435,38 @@ class Mesh:
             val = 0
         return val
 
-    ## Get length of 1D element.
+    ## Get length of 1D element or sum of lengths of all 1D mesh elements
     #  @param elemId mesh element ID (if not defined - sum of length of all 1D elements will be calculated)
-    #  @return element's length value
+    #  @return element's length value if \a elemId is specified or sum of all 1D mesh elements' lengths otherwise
     #  @ingroup l1_measurements
     def GetLength(self, elemId=None):
         length = 0
         if elemId == None:
-            aMeasurements = self.smeshpyD.CreateMeasurements()
-            length = aMeasurements.Length(self.GetMesh())
-            aMeasurements.UnRegister()
+            length = self.smeshpyD.GetLength(self)
         else:
             length = self._valueFromFunctor(SMESH.FT_Length, elemId)
         return length
 
-    ## Get area of 2D element.
-    #  @param elemId mesh element ID (if not defined - sum of area of all 2D elements will be calculated)
-    #  @return element's area value
+    ## Get area of 2D element or sum of areas of all 2D mesh elements
+    #  @param elemId mesh element ID (if not defined - sum of areas of all 2D elements will be calculated)
+    #  @return element's area value if \a elemId is specified or sum of all 2D mesh elements' areas otherwise
     #  @ingroup l1_measurements
     def GetArea(self, elemId=None):
         area = 0
         if elemId == None:
-            aMeasurements = self.smeshpyD.CreateMeasurements()
-            area = aMeasurements.Area(self.GetMesh())
-            aMeasurements.UnRegister()
+            area = self.smeshpyD.GetArea(self)
         else:
             area = self._valueFromFunctor(SMESH.FT_Area, elemId)
         return area
 
-    ## Get volume of 3D element.
-    #  @param elemId mesh element ID (if not defined - sum of volume of all 3D elements will be calculated)
-    #  @return element's volume value
+    ## Get volume of 3D element or sum of volumes of all 3D mesh elements
+    #  @param elemId mesh element ID (if not defined - sum of volumes of all 3D elements will be calculated)
+    #  @return element's volume value if \a elemId is specified or sum of all 3D mesh elements' volumes otherwise
     #  @ingroup l1_measurements
     def GetVolume(self, elemId=None):
         volume = 0
         if elemId == None:
-            aMeasurements = self.smeshpyD.CreateMeasurements()
-            volume = aMeasurements.Volume(self.GetMesh())
-            aMeasurements.UnRegister()
+            volume = self.smeshpyD.GetVolume(self)
         else:
             volume = self._valueFromFunctor(SMESH.FT_Volume3D, elemId)
         return volume
