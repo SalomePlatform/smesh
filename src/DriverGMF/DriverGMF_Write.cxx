@@ -32,6 +32,8 @@
 
 #include <Basics_Utils.hxx>
 
+#include "utilities.h"
+
 extern "C"
 {
 #include "libmesh5.h"
@@ -76,7 +78,30 @@ extern "C"
 #define END_EXTRA_VERTICES_WRITE()           \
   );                                         \
   }}}}
+  
 
+Control_Pnt::Control_Pnt(): gp_Pnt()
+{
+  size=0;
+}
+Control_Pnt::Control_Pnt( const gp_Pnt& aPnt, 
+                          double theSize): gp_Pnt( aPnt )
+{
+  size=theSize;
+}
+Control_Pnt::Control_Pnt(double theX, 
+                         double theY, 
+                         double theZ): gp_Pnt(theX, theY, theZ)
+{
+  size=0;
+}
+Control_Pnt::Control_Pnt(double theX, 
+                         double theY, 
+                         double theZ, 
+                         double theSize): gp_Pnt(theX, theY, theZ)
+{
+  size=theSize;
+}
 
 DriverGMF_Write::DriverGMF_Write():
   Driver_SMESHDS_Mesh(), _exportRequiredGroups( true )
@@ -338,6 +363,45 @@ Driver_Mesh::Status DriverGMF_Write::Perform()
   }
 
   return DRS_OK;
+}
+
+Driver_Mesh::Status DriverGMF_Write::PerformSizeMap( const std::vector<Control_Pnt>& points )
+{
+//   const int dim = 3, version = sizeof(long) == 4 ? 2 : 3;
+  const int dim = 3, version = 2; // Version 3 not supported by mg-hexa
+  
+  // Open files
+  int verticesFileID = GmfOpenMesh( myVerticesFile.c_str(), GmfWrite, version, dim );  
+  int solFileID = GmfOpenMesh( mySolFile.c_str(), GmfWrite, version, dim );
+  
+  int pointsNumber = points.size();
+  
+  // Vertices Keyword
+  GmfSetKwd( verticesFileID, GmfVertices, pointsNumber );
+  // SolAtVertices Keyword
+  int TypTab[] = {GmfSca};
+  GmfSetKwd(solFileID, GmfSolAtVertices, pointsNumber, 1, TypTab);
+  
+  // Read the control points information from the vector and write it into the files
+  std::vector<Control_Pnt>::const_iterator points_it;
+  for (points_it = points.begin(); points_it != points.end(); points_it++ )
+  {
+    GmfSetLin( verticesFileID, GmfVertices, points_it->X(), points_it->Y(), points_it->Z(), 0 );
+    double ValTab[] = {points_it->Size()};
+    GmfSetLin( solFileID, GmfSolAtVertices, ValTab);
+  } 
+  
+  // Close Files
+  GmfCloseMesh( verticesFileID );
+  GmfCloseMesh( solFileID );
+}
+
+std::vector<std::string> DriverGMF_Write::GetSizeMapFiles()
+{
+  std::vector<std::string> files;
+  files.push_back(myVerticesFile);
+  files.push_back(mySolFile);
+  return files;
 }
 
 //================================================================================

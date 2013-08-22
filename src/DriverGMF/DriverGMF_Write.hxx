@@ -33,6 +33,26 @@
 #include "SMDSAbs_ElementType.hxx"
 #include "SMDS_ElemIterator.hxx"
 
+#include <gp_Pnt.hxx>
+
+/*!
+ * \brief Class for storing control points for writing GMF size maps
+ */
+class Control_Pnt : public gp_Pnt
+{
+public:
+  Control_Pnt();
+  Control_Pnt(const gp_Pnt& aPnt, double theSize);
+  Control_Pnt(double x, double y, double z);
+  Control_Pnt(double x, double y, double z, double size);
+
+  double Size() const { return size; };
+  void SetSize( double theSize ) { size = theSize; };
+  
+private:
+  double size;
+};
+
 /*!
  * \brief Driver Writing a mesh into a GMF file.
  */
@@ -47,8 +67,17 @@ public:
   {
     _exportRequiredGroups = toExport;
   }
-
+   
   virtual Status Perform();
+  
+  // Size Maps
+  Status PerformSizeMap( const std::vector<Control_Pnt>& points );
+  void SetSizeMapPrefix( std::string prefix )
+  {
+    myVerticesFile = prefix + ".mesh";
+    mySolFile = prefix + ".sol";
+  };
+  std::vector<std::string> GetSizeMapFiles();
 
  private:
 
@@ -57,6 +86,8 @@ public:
   SMDS_ElemIteratorPtr elementIterator(SMDSAbs_GeometryType type);
 
   bool _exportRequiredGroups;
+  std::string myVerticesFile;
+  std::string mySolFile;
 };
 
 #endif
