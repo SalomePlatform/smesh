@@ -140,7 +140,11 @@ bool SMESHDS_SubMesh::RemoveElement(const SMDS_MeshElement * ME, bool isElemDele
     if ((idInSubShape >= 0) && (idInSubShape < myElements.size()))
     {
       myElements[idInSubShape] = 0; // this vector entry is no more used
-      myUnusedIdElements++;
+      if ( ++myUnusedIdElements == (int) myElements.size() )
+      {
+        clearVector( myElements );
+        myUnusedIdElements = 0;
+      }
       return true;
     }
     return false;
@@ -195,7 +199,11 @@ bool SMESHDS_SubMesh::RemoveNode(const SMDS_MeshNode * N, bool isNodeDeleted)
     if ((idInSubShape >= 0) && (idInSubShape < myNodes.size()))
     {
       myNodes[idInSubShape] = 0; // this vector entry is no more used
-      myUnusedIdNodes++;
+      if ( ++myUnusedIdNodes == (int) myNodes.size() )
+      {
+        clearVector( myNodes );
+        myUnusedIdNodes = 0;
+      }
       return true;
     }
     return false;
