@@ -42,6 +42,8 @@
 #include <SALOMEconfig.h>
 #include CORBA_CLIENT_HEADER(SALOMEDS)
 
+#define USE_STRING_FAMILY
+
 // ===========================================================================================
 /*!
  * This file was created in order to respond to requirement of bug PAL10494:
@@ -129,6 +131,7 @@ public:
   const _AString & GetMethod();
   const _AString & GetArg( int index );
   int GetNbArgs() { FindAllArgs(); return myArgs.Length(); }
+  bool IsMethodCall();
   bool MethodStartsFrom(const _AString& beg)
   { GetMethod(); return ( myMeth.Location( beg, 1, myMeth.Length() ) == 1 ); }
   void SetResultValue( const _AString& theResult )
@@ -144,6 +147,7 @@ public:
   static _AString GetWord( const _AString & theSring, int & theStartPos,
                            const bool theForward, const bool dotIsWord = false);
   static bool IsStudyEntry( const _AString& str );
+  static bool IsID( const _AString& str );
   static std::list< _pyID > GetStudyEntries( const _AString& str );
   void AddDependantCmd( Handle(_pyCommand) cmd, bool prepend = false)
   { if (prepend) myDependentCmds.push_front( cmd ); else myDependentCmds.push_back( cmd ); }
@@ -216,6 +220,26 @@ struct ExportedMeshData
 
 // -------------------------------------------------------------------------------------
 /*!
+ * \brief A container of strings groupped by prefix. It is used for a faster search of
+ *        objects requiring to KeepAgrCmds() in commands. A speed up is gained because
+ *        only a common prefix (e.g. "aArea") of many object IDs is searched in a command
+ *        and not every object ID
+ */
+// -------------------------------------------------------------------------------------
+class _pyStringFamily
+{
+  _AString                     _prefix;
+  std::list< _pyStringFamily > _subFams;
+  std::list< _AString >        _strings;
+  int isIn( const char* str );
+public:
+  bool Add( const char* str );
+  bool IsIn( const _AString& str, _AString& subStr );
+  void Print( int level = 0 );
+};
+
+// -------------------------------------------------------------------------------------
+/*!
  * \brief Class corresponding to SMESH_Gen. It holds info on existing
  *        meshes and hypotheses
  */
@@ -254,7 +278,11 @@ public:
   bool IsGeomObject(const _pyID& theObjID) const;
   bool IsNotPublished(const _pyID& theObjID) const;
   void ObjectCreationRemoved(const _pyID& theObjID);
+#ifdef USE_STRING_FAMILY
+  void KeepAgrCmds(const _pyID& theObjID) { myKeepAgrCmdsIDs.Add( theObjID.ToCString() ); }
+#else
   void KeepAgrCmds(const _pyID& theObjID) { myKeepAgrCmdsIDs.push_back( theObjID ); }
+#endif
   bool IsToKeepAllCommands() const { return myToKeepAllCommands; }
   void AddExportedMesh(const _AString& file, const ExportedMeshData& mesh )
   { myFile2ExportedMesh[ file ] = mesh; }
@@ -279,7 +307,11 @@ private:
   std::map< _pyID, Handle(_pyMeshEditor) >  myMeshEditors;
   std::map< _pyID, Handle(_pyObject) >      myObjects;
   std::map< _pyID, Handle(_pyHypothesis) >  myHypos;
+#ifdef USE_STRING_FAMILY
+  _pyStringFamily                           myKeepAgrCmdsIDs;
+#else
   std::list< _pyID >                        myKeepAgrCmdsIDs;
+#endif
   std::list< Handle(_pyCommand) >           myCommands;
   int                                       myNbCommands;
   Resource_DataMapOfAsciiStringAsciiString& myID2AccessorMethod;
@@ -555,7 +587,7 @@ class _pySubMesh:  public _pyObject
   Handle(_pyObject) myCreator;
   Handle(_pyMesh) myMesh;
 public:
-  _pySubMesh(const Handle(_pyCommand)& theCreationCmd);
+  _pySubMesh(const Handle(_pyCommand)& theCreationCmd, bool toKeepAgrCmds=true);
   virtual void Process( const Handle(_pyCommand)& theCommand);
   virtual void Flush();
   virtual Handle(_pyMesh) GetMesh() { return myMesh; }
@@ -592,7 +624,7 @@ DEFINE_STANDARD_HANDLE (_pyFilter, _pyObject);
  * \brief To convert creation of a group by filter
  */
 // -------------------------------------------------------------------------------------
-class _pyGroup:  public _pySubMesh
+class _pyGroup:  public _pySubMesh // use myMesh of _pySubMesh
 {
   Handle(_pyFilter) myFilter;
   bool              myCanClearCreationCmd;

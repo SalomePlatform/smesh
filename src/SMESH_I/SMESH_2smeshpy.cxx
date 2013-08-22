@@ -198,8 +198,9 @@ namespace {
     }
     // check if an Object was created in the script
     _AString comment;
-    const _pyID& obj = cmd->GetObject();
-    if ( !obj.IsEmpty() && cmd->IsStudyEntry( obj ) && !presentObjects.count( obj ))
+    const _pyID&        obj = cmd->GetObject();
+    const bool isMethodCall = cmd->IsMethodCall();
+    if ( !obj.IsEmpty() && isMethodCall && !presentObjects.count( obj ) )
     {
       comment = "not created Object";
       theGen->ObjectCreationRemoved( obj );
@@ -218,6 +219,8 @@ namespace {
           comment += *id + " has not been yet created";
           break;
         }
+      // if ( idList.empty() && cmd->IsID( arg ) && !presentObjects.count( arg ))
+      //   comment += arg + " has not been yet created";
     }
     // treat result objects
     const _pyID& result = cmd->GetResultValue();
@@ -226,10 +229,14 @@ namespace {
       list< _pyID > idList = cmd->GetStudyEntries( result );
       list< _pyID >::iterator id = idList.begin();
       for ( ; id != idList.end(); ++id )
+      {
         if ( comment.IsEmpty() )
           presentObjects.insert( *id );
         else
           theGen->ObjectCreationRemoved( *id ); // objID.SetName( name ) is not needed
+      }
+      if ( idList.empty() && cmd->IsID( result ))
+        presentObjects.insert( result );
     }
     // comment the command
     if ( !comment.IsEmpty() )
@@ -513,6 +520,9 @@ SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString&            theScrip
   // concat commands back into a script
   TCollection_AsciiString aScript, aPrevCmd;
   set<_pyID> createdObjects;
+  createdObjects.insert( "smeshBuilder" );
+  createdObjects.insert( "smesh" );
+  createdObjects.insert( "theStudy" );
   for ( cmd = theGen->GetCommands().begin(); cmd != theGen->GetCommands().end(); ++cmd )
   {
 #ifdef DUMP_CONVERSION
@@ -520,9 +530,11 @@ SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString&            theScrip
 #endif
     if ( !(*cmd)->IsEmpty() && aPrevCmd != (*cmd)->GetString()) {
       CheckObjectPresence( *cmd, createdObjects );
-      aPrevCmd = (*cmd)->GetString();
-      aScript += "\n";
-      aScript += aPrevCmd;
+      if ( !(*cmd)->IsEmpty() ) {
+        aPrevCmd = (*cmd)->GetString();
+        aScript += "\n";
+        aScript += aPrevCmd;
+      }
     }
   }
   aScript += "\n";
@@ -631,14 +643,29 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
   StructToList( aCommand );
 
   // not to erase _pySelfEraser's etc. used as args in some commands
-  std::list< _pyID >::const_iterator id = myKeepAgrCmdsIDs.begin();
-  for ( ; id != myKeepAgrCmdsIDs.end(); ++id )
-    if ( *id != objID && theCommand.Search( *id ) > id->Length() )
+  {
+#ifdef USE_STRING_FAMILY
+    _pyID objID;
+    if ( myKeepAgrCmdsIDs.IsIn( theCommand, objID ))
     {
-      Handle(_pyObject) obj = FindObject( *id );
+      Handle(_pyObject) obj = FindObject( objID );
       if ( !obj.IsNull() )
+      {
         obj->AddArgCmd( aCommand );
+        //cout << objID << " found in " << theCommand << endl;
+      }
     }
+#else
+    std::list< _pyID >::const_iterator id = myKeepAgrCmdsIDs.begin();
+    for ( ; id != myKeepAgrCmdsIDs.end(); ++id )
+      if ( *id != objID && theCommand.Search( *id ) > id->Length() )
+      {
+        Handle(_pyObject) obj = FindObject( *id );
+        if ( !obj.IsNull() )
+          obj->AddArgCmd( aCommand );
+      }
+#endif
+  }
 
   // Find an object to process theCommand
 
@@ -1208,6 +1235,8 @@ void _pyGen::Free()
   myHypos.clear();
 
   myFile2ExportedMesh.clear();
+
+  //myKeepAgrCmdsIDs.Print();
 }
 
 //================================================================================
@@ -3626,6 +3655,20 @@ const TCollection_AsciiString & _pyCommand::GetMethod()
 
 //================================================================================
 /*!
+ * \brief Returns true if there are brackets after the method
+ */
+//================================================================================
+
+bool _pyCommand::IsMethodCall()
+{
+  if ( GetMethod().IsEmpty() )
+    return false;
+  const char* s = myString.ToCString() + GetBegPos( METHOD_IND ) + myMeth.Length() - 1;
+  return ( s[0] == '(' || s[1] == '(' );
+}
+
+//================================================================================
+/*!
  * \brief Return substring of python command looking like ResVal = Obj.Meth(Arg1,...)
   * \retval const TCollection_AsciiString & - Arg<index> substring
  */
@@ -3808,6 +3851,27 @@ bool _pyCommand::IsStudyEntry( const TCollection_AsciiString& str )
     nbColons += isColon;
   }
   return nbColons > 2 && str.Length()-nbColons > 2;
+}
+
+//================================================================================
+/*!
+ * \brief Returns true if the string looks like an object ID but not like a list,
+ *        string, command etc.
+ */
+//================================================================================
+
+bool _pyCommand::IsID( const TCollection_AsciiString& str )
+{
+  if ( str.Length() < 1 ) return false;
+
+  if ( isdigit( str.Value( 1 )))
+    return IsStudyEntry( str );
+
+  for ( int i = 1; i <= str.Length(); ++i )
+    if ( !isalnum( str.Value( i )) && !str.Value( i ) != '_' )
+      return false;
+
+  return true;
 }
 
 //================================================================================
@@ -4167,11 +4231,12 @@ void _pySelfEraser::Flush()
  */
 //================================================================================
 
-_pySubMesh::_pySubMesh(const Handle(_pyCommand)& theCreationCmd):
+_pySubMesh::_pySubMesh(const Handle(_pyCommand)& theCreationCmd, bool toKeepAgrCmds):
   _pyObject(theCreationCmd)
 {
   myMesh = ObjectToMesh( theGen->FindObject( theCreationCmd->GetObject() ));
-  theGen->KeepAgrCmds( GetID() ); // ask to fill myArgCmds
+  if ( toKeepAgrCmds )
+    theGen->KeepAgrCmds( GetID() ); // ask to fill myArgCmds
 }
 
 //================================================================================
@@ -4257,7 +4322,7 @@ void _pySubMesh::Flush()
 //================================================================================
 
 _pyGroup::_pyGroup(const Handle(_pyCommand)& theCreationCmd, const _pyID & id)
-  :_pySubMesh(theCreationCmd)
+  :_pySubMesh(theCreationCmd, /*toKeepAgrCmds=*/false)
 {
   if ( !id.IsEmpty() )
     setID( id );
@@ -4734,3 +4799,201 @@ _pyHypothesisReader::GetHypothesis(const _AString&           hypType,
   }
   return resHyp;
 }
+
+//================================================================================
+/*!
+ * \brief Adds an object ID to some family of IDs with a common prefix
+ *  \param [in] str - the object ID
+ *  \return bool - \c false if \a str does not have the same prefix as \a this family
+ *          (for internal usage)
+ */
+//================================================================================
+
+bool _pyStringFamily::Add( const char* str )
+{
+  if ( strncmp( str, _prefix.ToCString(), _prefix.Length() ) != 0 )
+    return false; // expected prefix is missing
+
+  str += _prefix.Length(); // skip _prefix
+
+  // try to add to some of child falimies
+  std::list< _pyStringFamily >::iterator itSub = _subFams.begin();
+  for ( ; itSub != _subFams.end(); ++itSub )
+    if ( itSub->Add( str ))
+      return true;
+
+  // no suitable family found - add str to _strings or create a new child family
+
+  // look for a proper place within sorted _strings
+  std::list< _AString >::iterator itStr = _strings.begin();
+  while ( itStr != _strings.end() && itStr->IsLess( str ))
+    ++itStr;
+  if ( itStr != _strings.end() && itStr->IsEqual( str ))
+    return true; // same ID already kept
+
+  const int minPrefixSize = 4;
+
+  // count "smaller" strings with the same prefix
+  std::list< _AString >::iterator itLess = itStr; --itLess;
+  int nbLess = 0;
+  for ( ; itLess != _strings.end(); --itLess )
+    if ( strncmp( str, itLess->ToCString(), minPrefixSize ) == 0 )
+      ++nbLess;
+    else
+      break;
+  ++itLess;
+  // count "greater" strings with the same prefix
+  std::list< _AString >::iterator itMore = itStr;
+  int nbMore = 0;
+  for ( ; itMore != _strings.end(); ++itMore )
+    if ( strncmp( str, itMore->ToCString(), minPrefixSize ) == 0 )
+      ++nbMore;
+    else
+      break;
+  --itMore;
+  if ( nbLess + nbMore > 1 ) // ------- ADD a NEW CHILD FAMILY -------------
+  {
+    // look for a maximal prefix length
+    // int lessPrefSize = 3, morePrefSize = 3;
+    // if ( nbLess > 0 )
+    //   while( itLess->ToCString()[ lessPrefSize ] == str[ lessPrefSize ]  )
+    //     ++lessPrefSize;
+    // if ( nbMore > 0 )
+    //   while ( itMore->ToCString()[ morePrefSize ] == str[ morePrefSize ] )
+    //     ++morePrefSize;
+    // int prefixSize = 3;
+    // if ( nbLess == 0 )
+    //   prefixSize = morePrefSize;
+    // else if ( nbMore == 0 )
+    //   prefixSize = lessPrefSize;
+    // else
+    //   prefixSize = Min( lessPrefSize, morePrefSize );
+    int prefixSize = minPrefixSize;
+    _AString newPrefix ( str, prefixSize );
+
+    // look for a proper place within _subFams sorted by _prefix
+    for ( itSub = _subFams.begin(); itSub != _subFams.end(); ++itSub )
+      if ( !itSub->_prefix.IsLess( newPrefix ))
+        break;
+
+    // add the new _pyStringFamily
+    itSub = _subFams.insert( itSub, _pyStringFamily());
+    _pyStringFamily& newSubFam = *itSub;
+    newSubFam._prefix = newPrefix;
+
+    // pass this->_strings to newSubFam._strings
+    for ( itStr = itLess; nbLess > 0; --nbLess, ++itStr )
+      newSubFam._strings.push_back( itStr->ToCString() + prefixSize );
+    newSubFam._strings.push_back( str + prefixSize );
+    for ( ; nbMore > 0; --nbMore, ++itStr )
+      newSubFam._strings.push_back( itStr->ToCString() + prefixSize );
+
+    _strings.erase( itLess, ++itMore );
+  }
+  else // to few string to make a family fot them
+  {
+    _strings.insert( itStr, str );
+  }
+  return true;
+}
+
+//================================================================================
+/*!
+ * \brief Finds an object ID in the command
+ *  \param [in] longStr - the command string
+ *  \param [out] subStr - the found object ID
+ *  \return bool - \c true if the object ID found
+ */
+//================================================================================
+
+bool _pyStringFamily::IsIn( const _AString& longStr, _AString& subStr )
+{
+  const char* s = longStr.ToCString();
+
+  // look in _subFams
+  std::list< _pyStringFamily >::iterator itSub = _subFams.begin();
+  int pos, len;
+  for ( ; itSub != _subFams.end(); ++itSub )
+  {
+    if (( pos = longStr.Search( itSub->_prefix )-1) > 6-1 ) // 6 = strlen("a=b.c(")
+      if (( len = itSub->isIn( s + pos + itSub->_prefix.Length() )) >= 0 )
+      {
+        subStr = _AString( s + pos, len + itSub->_prefix.Length() );
+        return true;
+      }
+  }
+  // look among _strings
+  std::list< _AString >::iterator itStr = _strings.begin();
+  for ( ; itStr != _strings.end(); ++itStr )
+    if ( longStr.Search( *itStr ) > itStr->Length() )
+    {
+      subStr = *itStr;
+      return true;
+    }
+  return false;
+}
+
+//================================================================================
+/*!
+ * \brief Return remainder length of the object ID after my _prefix
+ *  \param [in] str - remainder of the command after my _prefix
+ *  \return int - length of the object ID or -1 if not found
+ */
+//================================================================================
+
+int _pyStringFamily::isIn( const char* str )
+{
+  std::list< _pyStringFamily >::iterator itSub = _subFams.begin();
+  int len;
+  for ( ; itSub != _subFams.end(); ++itSub )
+  {
+    int cmp = strncmp( str, itSub->_prefix.ToCString(), itSub->_prefix.Length() );
+    if ( cmp == 0 )
+    {
+      if (( len = itSub->isIn( str + itSub->_prefix.Length() )) >= 0 )
+        return itSub->_prefix.Length() + len;
+    }
+    else if ( cmp > 0 )
+      break;
+  }
+  if ( !_strings.empty() )
+  {
+    std::list< _AString >::iterator itStr = _strings.begin();
+    bool firstEmpty = itStr->IsEmpty();
+    if ( firstEmpty )
+      ++itStr;
+    for ( ; itStr != _strings.end(); ++itStr )
+    {
+      int cmp = strncmp( str, itStr->ToCString(), itStr->Length() );
+      if ( cmp == 0 )
+        return itStr->Length();
+      else if ( cmp < 0 )
+        break;
+    }
+    if ( firstEmpty )
+      return 0;
+  }
+
+  return -1;
+}
+
+//================================================================================
+/*!
+ * \brief DEBUG
+ */
+//================================================================================
+
+void _pyStringFamily::Print( int level )
+{
+  cout << string( level, ' ' ) << "prefix = '" << _prefix << "' : ";
+  std::list< _AString >::iterator itStr = _strings.begin();
+  for ( ; itStr != _strings.end(); ++itStr )
+    cout << *itStr << " | ";
+  cout << endl;
+  std::list< _pyStringFamily >::iterator itSub = _subFams.begin();
+  for ( ; itSub != _subFams.end(); ++itSub )
+    itSub->Print( level + 1 );
+  if ( level == 0 )
+    cout << string( 70, '-' ) << endl;
+}
+
