@@ -226,7 +226,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
           typedef SMDS_StdIterator< const SMDS_MeshNode*, SMDS_NodeIteratorPtr > iterator;
           existingNodes.insert( iterator( eSM->GetNodes() ), iterator() );
         }
-      } 
+      }
   }
   // octree to find existing nodes
   SMESH_OctreeNode existingNodeOcTr( existingNodes );
@@ -513,7 +513,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
           int sId = editor.FindShape( edge );
           nbEdges += subShapeIDs.count( sId );
         }
-        if ( nbEdges < 2 )
+        if ( nbEdges < 2 && !helper.IsRealSeam( s ))
           return false; // weird
         if ( nbEdges > 2 )
           return error( COMPERR_BAD_INPUT_MESH, "Source elements overlap one another");
@@ -601,8 +601,8 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
   for ( size_t iE = 0; iE < edges.size(); ++iE )
   {
     SMESH_subMesh * sm = theMesh.GetSubMesh( edges[iE] );
-    if ( SMESH_Algo::isDegenerated( edges[iE] ))
-      sm->SetIsAlwaysComputed( true );
+    // if ( SMESH_Algo::isDegenerated( edges[iE] ))
+    //   sm->SetIsAlwaysComputed( true );
     sm->ComputeStateEngine(SMESH_subMesh::CHECK_COMPUTE_STATE);
     if ( sm->GetComputeState() != SMESH_subMesh::COMPUTE_OK )
       return error(SMESH_Comment("Failed to create segments on the edge ")
