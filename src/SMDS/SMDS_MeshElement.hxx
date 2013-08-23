@@ -208,9 +208,16 @@ protected:
  */
 // ============================================================
 
-struct TIDCompare {
+struct TIDTypeCompare {
   bool operator () (const SMDS_MeshElement* e1, const SMDS_MeshElement* e2) const
   { return e1->GetType() == e2->GetType() ? e1->GetID() < e2->GetID() : e1->GetType() < e2->GetType(); }
+};
+
+// WARNING: this comparator makes impossible to store both nodes and elements in the same set
+// because there are nodes and elements with the same ID. Use TIDTypeCompare for such containers.
+struct TIDCompare {
+  bool operator () (const SMDS_MeshElement* e1, const SMDS_MeshElement* e2) const
+  { return e1->GetID() < e2->GetID(); }
 };
 
 #endif
