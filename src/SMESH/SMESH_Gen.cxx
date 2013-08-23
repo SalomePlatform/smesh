@@ -43,6 +43,7 @@
 #include "Utils_ExceptHandlers.hxx"
 
 #include <TopoDS_Iterator.hxx>
+#include <TopoDS.hxx>
 
 #include "memoire.h"
 
@@ -65,7 +66,7 @@ SMESH_Gen::SMESH_Gen()
 {
   MESSAGE("SMESH_Gen::SMESH_Gen");
   _localId = 0;
-  _hypId = 0;
+  _hypId   = 0;
   _segmentation = _nbSegments = 10;
   SMDS_Mesh::_meshList.clear();
   MESSAGE(SMDS_Mesh::_meshList.size());
@@ -163,12 +164,13 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
       SMESH_subMesh* smToCompute = smIt->next();
 
       // do not mesh vertices of a pseudo shape
-      const TopAbs_ShapeEnum aShType = smToCompute->GetSubShape().ShapeType();
-      if ( !aMesh.HasShapeToMesh() && aShType == TopAbs_VERTEX )
+      const TopoDS_Shape&        shape = smToCompute->GetSubShape();
+      const TopAbs_ShapeEnum shapeType = shape.ShapeType();
+      if ( !aMesh.HasShapeToMesh() && shapeType == TopAbs_VERTEX )
         continue;
 
       // check for preview dimension limitations
-      if ( aShapesId && GetShapeDim( aShType ) > (int)aDim )
+      if ( aShapesId && GetShapeDim( shapeType ) > (int)aDim )
       {
         // clear compute state not to show previous compute errors
         //  if preview invoked less dimension less than previous
@@ -185,8 +187,9 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
         _sm_current = NULL;
       }
 
-      // we check all the submeshes here and detect if any of them failed to compute
-      if (smToCompute->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE)
+      // we check all the sub-meshes here and detect if any of them failed to compute
+      if (smToCompute->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE &&
+          ( shapeType != TopAbs_EDGE || !SMESH_Algo::isDegenerated( TopoDS::Edge( shape ))))
         ret = false;
       else if ( aShapesId )
         aShapesId->insert( smToCompute->GetId() );
@@ -346,9 +349,9 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
         sm = *subIt;
         if ( sm->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE)
         {
-          const TopAbs_ShapeEnum aShType = sm->GetSubShape().ShapeType();
+          const TopAbs_ShapeEnum shapeType = sm->GetSubShape().ShapeType();
           // check for preview dimension limitations
-          if ( aShapesId && GetShapeDim( aShType ) > (int)aDim )
+          if ( aShapesId && GetShapeDim( shapeType ) > (int)aDim )
             continue;
 
           if (_compute_canceled)
@@ -449,12 +452,12 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
       SMESH_subMesh* smToCompute = smIt->next();
 
       // do not mesh vertices of a pseudo shape
-      const TopAbs_ShapeEnum aShType = smToCompute->GetSubShape().ShapeType();
-      //if ( !aMesh.HasShapeToMesh() && aShType == TopAbs_VERTEX )
+      const TopAbs_ShapeEnum shapeType = smToCompute->GetSubShape().ShapeType();
+      //if ( !aMesh.HasShapeToMesh() && shapeType == TopAbs_VERTEX )
       //  continue;
       if ( !aMesh.HasShapeToMesh() ) {
-        if( aShType == TopAbs_VERTEX || aShType == TopAbs_WIRE ||
-            aShType == TopAbs_SHELL )
+        if( shapeType == TopAbs_VERTEX || shapeType == TopAbs_WIRE ||
+            shapeType == TopAbs_SHELL )
           continue;
       }
 
@@ -520,8 +523,6 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
         const TopoDS_Shape& aSubShape = smToCompute->GetSubShape();
         const int aShapeDim = GetShapeDim( aSubShape );
         if ( aShapeDim < 1 ) continue;
-
-        //const TopAbs_ShapeEnum aShType = smToCompute->GetSubShape().ShapeType();
 
         SMESH_HypoFilter filter( SMESH_HypoFilter::IsAlgo() );
         filter
