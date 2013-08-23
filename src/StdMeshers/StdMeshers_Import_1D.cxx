@@ -227,6 +227,8 @@ namespace // INTERNAL STUFF
         switch ( sm->GetSubShape().ShapeType() )
         {
         case TopAbs_EDGE:
+          if ( SMESH_Algo::isDegenerated( TopoDS::Edge( sm->GetSubShape() )))
+            continue;
         case TopAbs_FACE:
           _subM.insert( sm );
           if ( !sm->IsEmpty() )
