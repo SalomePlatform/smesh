@@ -310,10 +310,10 @@ SMESH_Algo::GetAppliedHypothesis(SMESH_Mesh &         aMesh,
 double SMESH_Algo::EdgeLength(const TopoDS_Edge & E)
 {
   double UMin = 0, UMax = 0;
-  if (BRep_Tool::Degenerated(E))
-    return 0;
   TopLoc_Location L;
   Handle(Geom_Curve) C = BRep_Tool::Curve(E, L, UMin, UMax);
+  if ( C.IsNull() )
+    return 0.;
   GeomAdaptor_Curve AdaptCurve(C, UMin, UMax); //range is important for periodic curves
   double length = GCPnts_AbscissaPoint::Length(AdaptCurve, UMin, UMax);
   return length;
@@ -578,6 +578,20 @@ bool SMESH_Algo::isStraight( const TopoDS_Edge & E,
       return false;
   }
   return true;
+}
+
+//================================================================================
+/*!
+ * \brief Return true if an edge has no 3D curve
+ */
+//================================================================================
+
+bool SMESH_Algo::isDegenerated( const TopoDS_Edge & E )
+{
+  double f,l;
+  TopLoc_Location loc;
+  Handle(Geom_Curve) C = BRep_Tool::Curve( E, loc, f,l );
+  return C.IsNull();
 }
 
 //================================================================================

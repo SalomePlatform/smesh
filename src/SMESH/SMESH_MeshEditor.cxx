@@ -4976,7 +4976,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
   if( aS.ShapeType() == TopAbs_EDGE ) {
     aTrackEdge = TopoDS::Edge( aS );
     // the Edge must not be degenerated
-    if ( BRep_Tool::Degenerated( aTrackEdge ) )
+    if ( SMESH_Algo::isDegenerated( aTrackEdge ) )
       return EXTR_BAD_PATH_SHAPE;
     TopExp::Vertices( aTrackEdge, aV1, aV2 );
     aItN = theTrack->GetFather()->GetSubMesh( aV1 )->GetSubMeshDS()->GetNodes();
@@ -5264,7 +5264,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
   else if( aS.ShapeType() == TopAbs_EDGE ) {
     aTrackEdge = TopoDS::Edge( aS );
     // the Edge must not be degenerated
-    if ( BRep_Tool::Degenerated( aTrackEdge ) )
+    if ( SMESH_Algo::isDegenerated( aTrackEdge ) )
       return EXTR_BAD_PATH_SHAPE;
     TopExp::Vertices( aTrackEdge, aV1, aV2 );
     const SMDS_MeshNode* aN1 = SMESH_Algo::VertexNode( aV1, pMeshDS );
@@ -5290,7 +5290,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
     TopExp_Explorer eExp(aS, TopAbs_EDGE);
     for(; eExp.More(); eExp.Next()) {
       TopoDS_Edge E = TopoDS::Edge( eExp.Current() );
-      if( BRep_Tool::Degenerated(E) ) continue;
+      if( SMESH_Algo::isDegenerated(E) ) continue;
       SMESH_subMesh* SM = theTrack->GetSubMesh(E);
       if(SM) {
         LSM.push_back(SM);

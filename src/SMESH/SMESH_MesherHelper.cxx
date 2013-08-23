@@ -281,7 +281,7 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
         }
 
         // look for a degenerated edge
-        if ( BRep_Tool::Degenerated( edge )) {
+        if ( SMESH_Algo::isDegenerated( edge )) {
           myDegenShapeIds.insert( meshDS->ShapeToIndex( edge ));
           for ( TopExp_Explorer v( edge, TopAbs_VERTEX ); v.More(); v.Next() )
             myDegenShapeIds.insert( meshDS->ShapeToIndex( v.Current() ));
@@ -3825,7 +3825,7 @@ namespace { // Structures used by FixQuadraticElements()
       {
         // check if the EDGE needs checking
         const TopoDS_Edge& edge = TopoDS::Edge( edgeIt.Current() );
-        if ( BRep_Tool::Degenerated( edge ) )
+        if ( SMESH_Algo::isDegenerated( edge ) )
           continue;
         if ( theHelper.IsRealSeam( edge ) &&
              edge.Orientation() == TopAbs_REVERSED )

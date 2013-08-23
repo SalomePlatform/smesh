@@ -901,7 +901,7 @@ FaceQuadStruct::Ptr StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         
             sideEdges.splice(sideEdges.begin(), edges, --edges.end());
         }
       }
-      if ( sideEdges.size() == 1 && BRep_Tool::Degenerated( sideEdges.front() ))
+      if ( sideEdges.size() == 1 && SMESH_Algo::isDegenerated( sideEdges.front() ))
         degenSides.push_back( nbSides );
 
       quad->side.push_back(new StdMeshers_FaceSide(F, sideEdges, &aMesh, nbSides < QUAD_TOP_SIDE,

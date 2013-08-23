@@ -2088,7 +2088,7 @@ bool StdMeshers_Prism_3D::initPrism(Prism_3D::TPrismTopo& thePrism,
     if ( botSM ) {
       if ( ! botSM->GetSubShape().IsSame( thePrism.myBottom )) {
         std::swap( botSM, topSM );
-        if ( ! botSM->GetSubShape().IsSame( thePrism.myBottom ))
+        if ( !botSM || ! botSM->GetSubShape().IsSame( thePrism.myBottom ))
           return toSM( error( COMPERR_BAD_INPUT_MESH,
                               "Incompatible non-structured sub-meshes"));
       }
@@ -2571,7 +2571,7 @@ bool StdMeshers_PrismAsBlock::GetLayersTransformation(vector<gp_Trsf> &         
     list< TopoDS_Edge >::const_iterator edgeIt = prism.myBottomEdges.begin();
     for ( int iE = 0; iE < prism.myNbEdgesInWires.front(); ++iE, ++edgeIt )
     {
-      if ( BRep_Tool::Degenerated( *edgeIt )) continue;
+      if ( SMESH_Algo::isDegenerated( *edgeIt )) continue;
       const TParam2ColumnMap* u2colMap =
         GetParam2ColumnMap( MeshDS()->ShapeToIndex( *edgeIt ), isReverse );
       if ( !u2colMap ) return false;

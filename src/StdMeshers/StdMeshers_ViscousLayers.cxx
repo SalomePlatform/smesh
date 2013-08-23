@@ -786,7 +786,7 @@ namespace
     for ( ; eExp.More(); eExp.Next() )
     {
       const TopoDS_Edge& E = TopoDS::Edge( eExp.Current() );
-      if ( BRep_Tool::Degenerated( E )) continue;
+      if ( SMESH_Algo::isDegenerated( E )) continue;
       // check if 2D curve is concave
       BRepAdaptor_Curve2d curve( E, F );
       const int nbIntervals = curve.NbIntervals( GeomAbs_C2 );

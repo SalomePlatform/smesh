@@ -1965,7 +1965,7 @@ bool SMESH_subMesh::checkComputeError(SMESH_Algo*         theAlgo,
       if ( _computeState != COMPUTE_OK )
       {
         if ( _subShape.ShapeType() == TopAbs_EDGE &&
-             BRep_Tool::Degenerated( TopoDS::Edge( _subShape )) )
+             SMESH_Algo::isDegenerated( TopoDS::Edge( _subShape )) )
           _computeState = COMPUTE_OK;
         else if ( theComputeOK )
           _computeError = SMESH_ComputeError::New(COMPERR_NO_MESH_ON_SHAPE,"",theAlgo);
