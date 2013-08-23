@@ -193,6 +193,12 @@ public:
   // If the2D, smoothing is performed using UV parameters of nodes
   // on geometrical faces
 
+  typedef std::map < const SMDS_MeshElement*,
+    std::list<const SMDS_MeshElement*>, TIDTypeCompare >                   TTElemOfElemListMap;
+  typedef std::map<const SMDS_MeshNode*, std::list<const SMDS_MeshNode*> > TNodeOfNodeListMap;
+  typedef TNodeOfNodeListMap::iterator                                     TNodeOfNodeListMapItr;
+  typedef std::vector<TNodeOfNodeListMapItr>                               TVecOfNnlmiMap;
+  typedef std::map<const SMDS_MeshElement*, TVecOfNnlmiMap, TIDCompare >   TElemOfVecOfNnlmiMap;
   typedef std::auto_ptr< std::list<int> > PGroupIDs;
 
   PGroupIDs RotationSweep (TIDSortedElemSet & theElements,
@@ -246,13 +252,13 @@ public:
    * @param theTolerance - uses for comparing locations of nodes if flag
    *   EXTRUSION_FLAG_SEW is set
    */
-  PGroupIDs ExtrusionSweep (TIDSortedElemSet &  theElems,
-                            const gp_Vec&       theStep,
-                            const int           theNbSteps,
-                            TElemOfElemListMap& newElemsMap,
-                            const bool          theMakeGroups,
-                            const int           theFlags = EXTRUSION_FLAG_BOUNDARY,
-                            const double        theTolerance = 1.e-6);
+  PGroupIDs ExtrusionSweep (TIDSortedElemSet &   theElems,
+                            const gp_Vec&        theStep,
+                            const int            theNbSteps,
+                            TTElemOfElemListMap& newElemsMap,
+                            const bool           theMakeGroups,
+                            const int            theFlags = EXTRUSION_FLAG_BOUNDARY,
+                            const double         theTolerance = 1.e-6);
   
   /*!
    * Generate new elements by extrusion of theElements
@@ -264,12 +270,12 @@ public:
    *   EXTRUSION_FLAG_SEW is set
    * @param theParams - special structure for manage of extrusion
    */
-  PGroupIDs ExtrusionSweep (TIDSortedElemSet &  theElems,
-                            ExtrusParam&        theParams,
-                            TElemOfElemListMap& newElemsMap,
-                            const bool          theMakeGroups,
-                            const int           theFlags,
-                            const double        theTolerance);
+  PGroupIDs ExtrusionSweep (TIDSortedElemSet &   theElems,
+                            ExtrusParam&         theParams,
+                            TTElemOfElemListMap& newElemsMap,
+                            const bool           theMakeGroups,
+                            const int            theFlags,
+                            const double         theTolerance);
 
 
   // Generate new elements by extrusion of theElements 
@@ -581,13 +587,6 @@ public:
                            const SMESH_SequenceOfElemPtr& elemGens,
                            const std::string&             postfix,
                            SMESH_Mesh*                    targetMesh=0);
-
-
-  typedef std::map<const SMDS_MeshNode*, std::list<const SMDS_MeshNode*> > TNodeOfNodeListMap;
-  typedef TNodeOfNodeListMap::iterator                                     TNodeOfNodeListMapItr;
-  typedef std::vector<TNodeOfNodeListMapItr>                               TVecOfNnlmiMap;
-  typedef std::map<const SMDS_MeshElement*, TVecOfNnlmiMap, TIDCompare >   TElemOfVecOfNnlmiMap;
-
   /*!
    * \brief Create elements by sweeping an element
    * \param elem - element to sweep
@@ -612,7 +611,7 @@ public:
    * \param srcElements - to append elem for each generated element
    */
   void makeWalls (TNodeOfNodeListMap &     mapNewNodes,
-                  TElemOfElemListMap &     newElemsMap,
+                  TTElemOfElemListMap &    newElemsMap,
                   TElemOfVecOfNnlmiMap &   elemNewNodesMap,
                   TIDSortedElemSet&        elemSet,
                   const int                nbSteps,

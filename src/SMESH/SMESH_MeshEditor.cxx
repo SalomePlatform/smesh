@@ -4200,7 +4200,7 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
 //=======================================================================
 
 void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
-                                  TElemOfElemListMap &     newElemsMap,
+                                  TTElemOfElemListMap &    newElemsMap,
                                   TElemOfVecOfNnlmiMap &   elemNewNodesMap,
                                   TIDSortedElemSet&        elemSet,
                                   const int                nbSteps,
@@ -4245,7 +4245,7 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
   // Make a ceiling for each element ie an equal element of last new nodes.
   // Find free links of faces - make edges and sweep them into faces.
 
-  TElemOfElemListMap::iterator   itElem      = newElemsMap.begin();
+  TTElemOfElemListMap::iterator  itElem      = newElemsMap.begin();
   TElemOfVecOfNnlmiMap::iterator itElemNodes = elemNewNodesMap.begin();
   for ( ; itElem != newElemsMap.end(); itElem++, itElemNodes++ )
   {
@@ -4630,7 +4630,7 @@ SMESH_MeshEditor::RotationSweep(TIDSortedElemSet & theElems,
 
   TNodeOfNodeListMap mapNewNodes;
   TElemOfVecOfNnlmiMap mapElemNewNodes;
-  TElemOfElemListMap newElemsMap;
+  TTElemOfElemListMap newElemsMap;
 
   const bool isQuadraticMesh = bool( myMesh->NbEdges(ORDER_QUADRATIC) +
                                      myMesh->NbFaces(ORDER_QUADRATIC) +
@@ -4772,13 +4772,13 @@ const SMDS_MeshNode* SMESH_MeshEditor::CreateNode(const double x,
 //=======================================================================
 
 SMESH_MeshEditor::PGroupIDs
-SMESH_MeshEditor::ExtrusionSweep (TIDSortedElemSet &  theElems,
-                                  const gp_Vec&       theStep,
-                                  const int           theNbSteps,
-                                  TElemOfElemListMap& newElemsMap,
-                                  const bool          theMakeGroups,
-                                  const int           theFlags,
-                                  const double        theTolerance)
+SMESH_MeshEditor::ExtrusionSweep (TIDSortedElemSet &   theElems,
+                                  const gp_Vec&        theStep,
+                                  const int            theNbSteps,
+                                  TTElemOfElemListMap& newElemsMap,
+                                  const bool           theMakeGroups,
+                                  const int            theFlags,
+                                  const double         theTolerance)
 {
   ExtrusParam aParams;
   aParams.myDir = gp_Dir(theStep);
@@ -4799,12 +4799,12 @@ SMESH_MeshEditor::ExtrusionSweep (TIDSortedElemSet &  theElems,
 //=======================================================================
 
 SMESH_MeshEditor::PGroupIDs
-SMESH_MeshEditor::ExtrusionSweep (TIDSortedElemSet &  theElems,
-                                  ExtrusParam&        theParams,
-                                  TElemOfElemListMap& newElemsMap,
-                                  const bool          theMakeGroups,
-                                  const int           theFlags,
-                                  const double        theTolerance)
+SMESH_MeshEditor::ExtrusionSweep (TIDSortedElemSet &   theElems,
+                                  ExtrusParam&         theParams,
+                                  TTElemOfElemListMap& newElemsMap,
+                                  const bool           theMakeGroups,
+                                  const int            theFlags,
+                                  const double         theTolerance)
 {
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();
@@ -5468,7 +5468,7 @@ SMESH_MeshEditor::MakeExtrElements(TIDSortedElemSet&                 theElements
 
   TNodeOfNodeListMap   mapNewNodes;
   TElemOfVecOfNnlmiMap mapElemNewNodes;
-  TElemOfElemListMap   newElemsMap;
+  TTElemOfElemListMap  newElemsMap;
   TIDSortedElemSet::iterator itElem;
   // source elements for each generated one
   SMESH_SequenceOfElemPtr srcElems, srcNodes;
