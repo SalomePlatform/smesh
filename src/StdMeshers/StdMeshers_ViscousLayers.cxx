@@ -2533,6 +2533,10 @@ bool _ViscousBuilder::smoothAnalyticEdge( _SolidData&           data,
 
     if ( F.IsNull() ) // 3D
     {
+      if ( data._edges[iFrom]->_2neibors->_nodes[0] ==
+           data._edges[iTo-1]->_2neibors->_nodes[1] )
+        return true; // closed EDGE - nothing to do
+
       return false; // TODO ???
     }
     else // 2D
