@@ -3285,7 +3285,7 @@ class Mesh:
     #     the new mesh else only boundary elements will be copied into the new mesh
     #  @param toCopyExistingBondary - if true, not only new but also pre-existing
     #     boundary elements will be copied into the new mesh
-    #  @return tuple (mesh, group) where bondary elements were added to
+    #  @return tuple (mesh, group) where boundary elements were added to
     #  @ingroup l2_modif_edit
     def MakeBoundaryMesh(self, elements, dimension=SMESH.BND_2DFROM3D, groupName="", meshName="",
                          toCopyElements=False, toCopyExistingBondary=False):
