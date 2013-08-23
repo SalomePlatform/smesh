@@ -38,6 +38,7 @@
 #include "SMESH_Group.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_MesherHelper.hxx"
+#include "SMESH_OctreeNode.hxx"
 #include "SMESH_subMesh.hxx"
 
 #include "Utils_SALOME_Exception.hxx"
@@ -191,9 +192,10 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
   set<int> subShapeIDs;
   subShapeIDs.insert( shapeID );
 
-  // get nodes on vertices
-  list < SMESH_TNodeXYZ > vertexNodes;
-  list < SMESH_TNodeXYZ >::iterator vNIt;
+  // nodes already existing on sub-shapes of the FACE
+  TIDSortedNodeSet existingNodes;
+
+  // get/make nodes on vertices and add them to existingNodes
   TopExp_Explorer exp( theShape, TopAbs_VERTEX );
   for ( ; exp.More(); exp.Next() )
   {
@@ -207,14 +209,28 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
       n = SMESH_Algo::VertexNode( v, tgtMesh );
       if ( !n ) return false; // very strange
     }
-    vertexNodes.push_back( SMESH_TNodeXYZ( n ));
+    existingNodes.insert( n );
   }
 
-  // get EDGESs and their ids
+  // get EDGESs and their ids and get existing nodes on EDGEs
   vector< TopoDS_Edge > edges;
   for ( exp.Init( theShape, TopAbs_EDGE ); exp.More(); exp.Next() )
-    if ( subShapeIDs.insert( tgtMesh->ShapeToIndex( exp.Current() )).second )
-      edges.push_back( TopoDS::Edge( exp.Current() ));
+  {
+    const TopoDS_Edge & edge = TopoDS::Edge( exp.Current() );
+    if ( !SMESH_Algo::isDegenerated( edge ))
+      if ( subShapeIDs.insert( tgtMesh->ShapeToIndex( edge )).second )
+      {
+        edges.push_back( edge );
+        if ( SMESHDS_SubMesh* eSM = tgtMesh->MeshElements( edge ))
+        {
+          typedef SMDS_StdIterator< const SMDS_MeshNode*, SMDS_NodeIteratorPtr > iterator;
+          existingNodes.insert( iterator( eSM->GetNodes() ), iterator() );
+        }
+      } 
+  }
+  // octree to find existing nodes
+  SMESH_OctreeNode existingNodeOcTr( existingNodes );
+  std::map<double, const SMDS_MeshNode*> dist2foundNodes;
 
   // to count now many times a link between nodes encounters
   map<TLink, int> linkCount;
@@ -262,14 +278,10 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
         }
         else
         {
-          // find an existing vertex node
-          for ( vNIt = vertexNodes.begin(); vNIt != vertexNodes.end(); ++vNIt)
-            if ( vNIt->SquareDistance( *node ) < groupTol * groupTol)
-            {
-              (*n2nIt).second = vNIt->_node;
-              vertexNodes.erase( vNIt );
-              break;
-            }
+          // find a pre-existing node
+          dist2foundNodes.clear();
+          if ( existingNodeOcTr.NodesAround( SMESH_TNodeXYZ( *node ), dist2foundNodes, groupTol ))
+            (*n2nIt).second = dist2foundNodes.begin()->second;
         }
         if ( !n2nIt->second )
         {
@@ -412,7 +424,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
                   // duplicated node on vertex
                   return error("Source elements overlap one another");
                 tgtFaceSM->RemoveNode( n, /*isNodeDeleted=*/false );
-                tgtMesh->SetNodeOnEdge( (SMDS_MeshNode*)n, edges[iE], u );
+                tgtMesh->SetNodeOnEdge( n, edges[iE], u );
                 break;
               }
             nodesOnBoundary = subShapeIDs.count( n->getshapeId());
@@ -589,7 +601,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
   for ( size_t iE = 0; iE < edges.size(); ++iE )
   {
     SMESH_subMesh * sm = theMesh.GetSubMesh( edges[iE] );
-    if ( BRep_Tool::Degenerated( edges[iE] ))
+    if ( SMESH_Algo::isDegenerated( edges[iE] ))
       sm->SetIsAlwaysComputed( true );
     sm->ComputeStateEngine(SMESH_subMesh::CHECK_COMPUTE_STATE);
     if ( sm->GetComputeState() != SMESH_subMesh::COMPUTE_OK )
