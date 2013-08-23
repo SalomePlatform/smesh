@@ -2554,7 +2554,7 @@ SMESH_MeshEditor_i::extrusionSweep(const SMESH::long_array & theIDsOfElements,
     theMakeGroups = false;
   }
 
-  TElemOfElemListMap aHystory;
+  ::SMESH_MeshEditor::TTElemOfElemListMap aHystory;
   ::SMESH_MeshEditor::PGroupIDs groupIds = 
       getEditor().ExtrusionSweep (*workElements, stepVec, theNbOfSteps, aHystory, theMakeGroups);
 
@@ -2846,7 +2846,7 @@ SMESH_MeshEditor_i::advancedExtrusion(const SMESH::long_array & theIDsOfElements
   const SMESH::PointStruct * P = &theStepVector.PS;
   gp_Vec stepVec( P->x, P->y, P->z );
 
-  TElemOfElemListMap aHystory;
+  ::SMESH_MeshEditor::TTElemOfElemListMap aHystory;
   ::SMESH_MeshEditor::PGroupIDs groupIds =
       getEditor().ExtrusionSweep (elements, stepVec, theNbOfSteps, aHystory,
                                   theMakeGroups, theExtrFlags, theSewTolerance);
