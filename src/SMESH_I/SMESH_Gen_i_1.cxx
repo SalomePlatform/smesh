@@ -478,10 +478,19 @@ SALOMEDS::SComponent_ptr SMESH_Gen_i::PublishComponent(SALOMEDS::Study_ptr theSt
     return SALOMEDS::SComponent::_nil();
   if(MYDEBUG) MESSAGE("PublishComponent");
 
+  SALOMEDS::StudyBuilder_var   aStudyBuilder  = theStudy->NewBuilder(); 
+  SALOMEDS::UseCaseBuilder_var useCaseBuilder = theStudy->GetUseCaseBuilder();
+
   CORBA::String_var   compDataType = ComponentDataType();
   SALOMEDS::SComponent_wrap father = theStudy->FindComponent( compDataType.in() );
-  if ( !CORBA::is_nil( father ) )
+  if ( !CORBA::is_nil( father ) ) {
+    // check that the component is added to the use case browser
+    if ( !useCaseBuilder->IsUseCaseNode( father ) ) {
+      useCaseBuilder->SetRootCurrent();
+      useCaseBuilder->Append( father ); // component object is added as the top level item
+    }
     return father._retn();
+  }
 
   SALOME_ModuleCatalog::ModuleCatalog_var aCat =
     SALOME_ModuleCatalog::ModuleCatalog::_narrow( GetNS()->Resolve("/Kernel/ModulCatalog") );
@@ -492,8 +501,6 @@ SALOMEDS::SComponent_ptr SMESH_Gen_i::PublishComponent(SALOMEDS::Study_ptr theSt
   if ( CORBA::is_nil( aComp ) )
     return father._retn();
 
-  SALOMEDS::StudyBuilder_var      aStudyBuilder = theStudy->NewBuilder(); 
-  SALOMEDS::UseCaseBuilder_var    useCaseBuilder = theStudy->GetUseCaseBuilder();
   SALOMEDS::GenericAttribute_wrap anAttr;
   SALOMEDS::AttributePixMap_wrap  aPixmap;
 
