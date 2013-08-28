@@ -3690,6 +3690,8 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                   SMDS_ElemIteratorPtr eIt =
                     mySMESHDSMesh->elementsIterator( isNode ? SMDSAbs_Node : SMDSAbs_All );
                   int nbElems = isNode ? mySMESHDSMesh->NbNodes() : mySMESHDSMesh->GetMeshInfo().NbElements();
+                  if ( nbElems < 1 )
+                    continue;
                   std::vector<int> smIDs; smIDs.reserve( nbElems );
                   while ( eIt->more() )
                     if ( const SMDS_MeshElement* e = eIt->next())
@@ -4779,11 +4781,12 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 
   // creation of tree nodes for all data objects in the study
   // to support tree representation customization and drag-n-drop:
-  SALOMEDS::UseCaseBuilder_wrap useCaseBuilder = theComponent->GetStudy()->GetUseCaseBuilder();
+  SALOMEDS::Study_var                    study = theComponent->GetStudy();
+  SALOMEDS::UseCaseBuilder_wrap useCaseBuilder = study->GetUseCaseBuilder();
   if ( !useCaseBuilder->IsUseCaseNode( theComponent ) ) {
     useCaseBuilder->SetRootCurrent();
     useCaseBuilder->Append( theComponent ); // component object is added as the top level item
-    SALOMEDS::ChildIterator_wrap it = theComponent->GetStudy()->NewChildIterator( theComponent ); 
+    SALOMEDS::ChildIterator_wrap it = study->NewChildIterator( theComponent ); 
     for (it->InitEx(true); it->More(); it->Next()) {
       useCaseBuilder->AppendTo( it->Value()->GetFather(), it->Value() );
     }
