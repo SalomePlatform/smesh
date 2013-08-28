@@ -80,6 +80,15 @@ public:
   bool IsObjectSelected(unsigned i=0) const
   { return i < myObjects.size() && !CORBA::is_nil(myObjects[i]); }
 
+  /*!
+   * \brief Get the selection status
+    *
+    * Useful to know which Object Reference param widget is activated
+    * to be able to activate the next one when the content of this
+    * one has been modified
+   */
+  bool IsSelectionActivated() const { return mySelectionActivated; }
+
   void AvoidSimultaneousSelection( StdMeshersGUI_ObjectReferenceParamWdg* other);
   
   void SetDefaultText(QString defaultText="", QString styleSheet="");
