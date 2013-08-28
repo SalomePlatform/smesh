@@ -260,22 +260,25 @@ static SALOMEDS::SObject_ptr publish(SALOMEDS::Study_ptr   theStudy,
                                      const bool            theSelectable = true)
 {
   SALOMEDS::SObject_wrap SO = SMESH_Gen_i::ObjectToSObject( theStudy, theIOR );
-  SALOMEDS::StudyBuilder_var    aStudyBuilder = theStudy->NewBuilder();
-  SALOMEDS::UseCaseBuilder_var useCaseBuilder = theStudy->GetUseCaseBuilder();
+  SALOMEDS::StudyBuilder_var     aStudyBuilder = theStudy->NewBuilder();
+  SALOMEDS::UseCaseBuilder_wrap useCaseBuilder = theStudy->GetUseCaseBuilder();
   SALOMEDS::SObject_wrap objAfter;
-  if ( SO->_is_nil() ) {
+  if ( SO->_is_nil() )
+  {
     if ( theTag == 0 ) {
       SO = aStudyBuilder->NewObject( theFatherObject );
-    } else if ( !theFatherObject->FindSubObject( theTag, SO.inout() )) {
+    }
+    else if ( !theFatherObject->FindSubObject( theTag, SO.inout() ))
+    {
       SO = aStudyBuilder->NewObjectToTag( theFatherObject, theTag );
 
-      // define the next tag after given one in the data tree to insert SOobject
+      // define the next tag after given one in the data tree to insert SObject
       std::string anEntry;
       int last2Pnt_pos = -1;
       int tagAfter = -1;
       CORBA::String_var entry;
       SALOMEDS::SObject_wrap curObj;
-      SALOMEDS::UseCaseIterator_var anUseCaseIter = useCaseBuilder->GetUseCaseIterator(theFatherObject);
+      SALOMEDS::UseCaseIterator_wrap anUseCaseIter = useCaseBuilder->GetUseCaseIterator(theFatherObject);
       for ( ; anUseCaseIter->More(); anUseCaseIter->Next() ) {
         curObj = anUseCaseIter->Value();
         entry = curObj->GetID();
@@ -413,7 +416,8 @@ static void addReference (SALOMEDS::Study_ptr   theStudy,
     aStudyBuilder->Addreference( aReferenceSO, aToObjSO );
     // add reference to the use case tree
     // (to support tree representation customization and drag-n-drop)
-    theStudy->GetUseCaseBuilder()->AppendTo( aReferenceSO->GetFather(), aReferenceSO );
+    SALOMEDS::UseCaseBuilder_wrap useCaseBuilder = theStudy->GetUseCaseBuilder();
+    useCaseBuilder->AppendTo( aReferenceSO->GetFather(), aReferenceSO );
   }
 }
 
@@ -478,8 +482,8 @@ SALOMEDS::SComponent_ptr SMESH_Gen_i::PublishComponent(SALOMEDS::Study_ptr theSt
     return SALOMEDS::SComponent::_nil();
   if(MYDEBUG) MESSAGE("PublishComponent");
 
-  SALOMEDS::StudyBuilder_var   aStudyBuilder  = theStudy->NewBuilder(); 
-  SALOMEDS::UseCaseBuilder_var useCaseBuilder = theStudy->GetUseCaseBuilder();
+  SALOMEDS::StudyBuilder_var    aStudyBuilder  = theStudy->NewBuilder(); 
+  SALOMEDS::UseCaseBuilder_wrap useCaseBuilder = theStudy->GetUseCaseBuilder();
 
   CORBA::String_var   compDataType = ComponentDataType();
   SALOMEDS::SComponent_wrap father = theStudy->FindComponent( compDataType.in() );
