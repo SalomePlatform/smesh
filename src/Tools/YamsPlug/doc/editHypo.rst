@@ -1,10 +1,10 @@
 .. _hypothesis-label:
 
 ===========================
-How to save Yams Parameters 
+How to save MeshGems-SurfOpt Parameters 
 ===========================
 
-Yams hypothesis is not meshing hypothesis for Salome, but hypothesis for yams.
+MeshGems-SurfOpt hypothesis is not meshing hypothesis for Salome, but hypothesis for yams.
 The current set of parameters is automatically written in the salome study object browser when you run computation.
 
 Theses parameters could also be stored in a special file.

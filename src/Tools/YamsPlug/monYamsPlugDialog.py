@@ -107,7 +107,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     except Exception:
       QMessageBox.warning(self, "Help", "Help unavailable $SMESH_ROOT_DIR not found")
       return
-    maDoc=mydir+"/share/doc/salome/gui/SMESH/yams/_downloads/YamsWhitePaper_3.2.pdf"
+    maDoc=mydir+"/share/doc/salome/gui/SMESH/yams/_downloads/mg-surfopt_user_manual.pdf"
     command="xdg-open "+maDoc+";"
     subprocess.call(command, shell=True)
 
@@ -420,7 +420,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     self.fichierIn=""
 
   def prepareFichier(self):
-    self.fichierIn="/tmp/ForYams_"+str(self.num)+".mesh"
+    self.fichierIn="/tmp/ForYams_"+str(self.num)+".meshb"
     self.__selectedMesh.ExportGMF(self.__selectedMesh, self.fichierIn, True)
 
   def PrepareLigneCommande(self):
@@ -432,9 +432,8 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
       QMessageBox.critical(self, "File", "unable to read GMF Mesh in "+str(self.fichierIn))
       return False
     
-    self.commande="yams"
-    verbosity=str(self.SP_Verbosity.value())
-    self.commande+=" -v "+verbosity
+    self.commande="mg-surfopt.exe"
+    
     for obj in self.GBOptim.findChildren(QRadioButton,):
       try:
         if obj.isChecked():
@@ -443,31 +442,45 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
           break
       except:
         pass
-    self.commande+=" -O "+self.style.toLatin1()
+      
+    style = self.style.toLatin1()
+    # Translation of old Yams options to new MG-SurfOpt options
+    if   style == "0" :
+      self.commande+= " --optimisation only"
+    elif style == "2" :
+      self.commande+= " --Hausdorff_like yes"
+    elif style == "-1":
+      self.commande+= " --enrich no"
+    elif style == "-2":
+      self.commande+= " --Hausdorff_like yes --enrich no"
+    elif style == "U" :
+      self.commande+= " --uniform_flat_subdivision yes"
+    elif style == "S" :
+      self.commande+= " --sand_paper yes"
 
     deb=os.path.splitext(self.fichierIn)
-    self.fichierOut=deb[0] + ".d.meshb"
-
-    if self.RB_Absolute.isChecked()==True :
-        self.commande+=" -Dabsolute"
-    else :
-        self.commande+=" -Drelative"
+    self.fichierOut=deb[0] + "_surfopt.meshb"
     
-    v=self.SP_toStr(self.SP_Tolerance)
-    self.commande+=",tolerance="+v
-    if self.CB_Ridge.isChecked()==False : self.commande+=",-nr"
-    if self.CB_Point.isChecked()==False : self.commande+=",-ns"
-    if self.SP_Geomapp.value()!=0.04 : self.commande+=",geomapp=%f"%self.SP_Geomapp.value()
-    if self.SP_Ridge.value()!=45.0 : self.commande+=",ridge=%f"%self.SP_Ridge.value()
-    if self.SP_MaxSize.value()!=100 : self.commande+=",maxsize=%f"%self.SP_MaxSize.value()
-    if self.SP_MinSize.value()!=5 : self.commande+=",minsize=%f"%self.SP_MinSize.value()
-    if self.SP_Gradation.value()!=1.3 : self.commande+=",gradation=%f"%self.SP_MaxSize.value()
-    if self.CB_SplitEdge.isChecked()==True : self.commande+=",splitedge=1"
+    tolerance=self.SP_toStr(self.SP_Tolerance)
+    if not self.RB_Absolute.isChecked():
+      tolerance+="r"  
+    self.commande+=" --chordal_error %s"%tolerance
+    
+    if self.CB_Ridge.isChecked()    == False : self.commande+=" --compute_ridges no"
+    if self.CB_Point.isChecked()    == False : self.commande+=" --optimisation no"
+    if self.CB_SplitEdge.isChecked()== True  : self.commande+=" --element_order quadratic"
+    if self.SP_Geomapp.value()      != 0.04  : self.commande+=" --geometric_approximation_angle %f"%self.SP_Geomapp.value()
+    if self.SP_Ridge.value()        != 45.0  : self.commande+=" --ridge_angle %f"%self.SP_Ridge.value()
+    if self.SP_MaxSize.value()      != 100   : self.commande+=" --max_size %f"   %self.SP_MaxSize.value()
+    if self.SP_MinSize.value()      != 5     : self.commande+=" --min_size %f"   %self.SP_MinSize.value()
+    if self.SP_Gradation.value()    != 1.3   : self.commande+=" --gradation %f"  %self.SP_MaxSize.value()
+    if self.SP_Memory.value()       != 0     : self.commande+=" --max_memory %d" %self.SP_Memory.value()
+    if self.SP_Verbosity.value()    != 3     : self.commande+=" --max_memory %d" %self.SP_Verbosity.value()
 
-    if self.SP_Verbosity.value()!=3 : self.commande+=" -v %d"%self.SP_Verbosity.value()
-    if self.SP_Memory.value()!=0 : self.commande+=" -m %d"%self.SP_Memory.value()
-
-    self.commande+=" "+self.fichierIn
+    self.commande+=" --in "  + self.fichierIn
+    self.commande+=" --out " + self.fichierOut
+    
+    print self.commande
     return True
 
   def clean(self):

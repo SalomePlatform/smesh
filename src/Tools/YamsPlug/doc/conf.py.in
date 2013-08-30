@@ -35,8 +35,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General substitutions.
-project = 'YAMS Plug-in'
-copyright = '2011, Pascale Noyret'
+project = 'MeshGems-SurfOpt Plug-in'
+copyright = '2007-2013 CEA/DEN, EDF R&D, OPEN CASCADE'
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.

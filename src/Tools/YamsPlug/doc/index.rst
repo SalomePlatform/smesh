@@ -2,17 +2,17 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-YAMS plugin documentation
-==========================
+MeshGems-SurfOpt plugin documentation
+=====================================
 
-This documentation covers the usage of Yams as plug-in in Salome that can be used within the Salome
+This documentation covers the usage of MeshGems-SurfOpt as plug-in in Salome that can be used within the Salome
 Mesh module for remeshing 2D Surface. 
 
-Yams plug-in uses Distene commercial software Yams, which is an **automatic surface remeshing tool**.
-This plug_in offers only the most common functionnalities of the tool.
+MeshGems-SurfOpt plug-in uses Distene commercial software MeshGems-SurfOpt, which is an **automatic surface remeshing tool**.
+This plug-in offers only the most common functionnalities of the tool.
 
 .. note::
-  for a complete documentation, see :download:`Yams whitepaper <files/YamsWhitePaper_3.2.pdf>`.
+  for a complete documentation, see :download:`MeshGems-SurfOpt: The automatic surface remeshing tool of the MeshGems Suite <files/mg-surfopt_user_manual.pdf>`.
 
 Contents:
 

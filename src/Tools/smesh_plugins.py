@@ -34,7 +34,7 @@ salome_pluginsmanager.AddFunction('MeshCut',
                                   'Cut a tetrahedron mesh by a plane',
                                   MeshCut)
 
-salome_pluginsmanager.AddFunction('ReMesh with Yams',
+salome_pluginsmanager.AddFunction('ReMesh with MGSurfOpt ( formerly Yams )',
                                   'Run Yams',
                                   YamsLct)
 
