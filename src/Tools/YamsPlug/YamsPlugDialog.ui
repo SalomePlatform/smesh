@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Yams : Remeshing tool</string>
+   <string>MGSurfOpt : Remeshing tool</string>
   </property>
   <property name="sizeGripEnabled" stdset="0">
    <bool>false</bool>
@@ -19,7 +19,7 @@
   <layout class="QGridLayout" name="gridLayout">
    <item row="2" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout">
-         <item>
+     <item>
       <spacer name="horizontalSpacer_xx">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -34,7 +34,7 @@
         </size>
        </property>
       </spacer>
-         </item>
+     </item>
      <item>
       <widget class="QPushButton" name="PB_OK">
        <property name="text">
@@ -67,12 +67,12 @@
        <property name="text">
         <string>Save</string>
        </property>
-        <property name="iconSize">
-         <size>
-          <width>18</width>
-          <height>18</height>
-         </size>
-        </property>
+       <property name="iconSize">
+        <size>
+         <width>18</width>
+         <height>18</height>
+        </size>
+       </property>
       </widget>
      </item>
      <item>
@@ -80,12 +80,12 @@
        <property name="text">
         <string>Load</string>
        </property>
-        <property name="iconSize">
-         <size>
-          <width>18</width>
-          <height>18</height>
-         </size>
-        </property>
+       <property name="iconSize">
+        <size>
+         <width>18</width>
+         <height>18</height>
+        </size>
+       </property>
       </widget>
      </item>
      <item>
@@ -120,7 +120,7 @@
        </property>
       </widget>
      </item>
-         <item>
+     <item>
       <spacer name="horizontalSpacer_xx">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -135,7 +135,7 @@
         </size>
        </property>
       </spacer>
-         </item>
+     </item>
     </layout>
    </item>
    <item row="1" column="0">
@@ -164,156 +164,152 @@
        <property name="title">
         <string>Optimisation</string>
        </property>
-
-        <layout class="QHBoxLayout" name="RBLayoutopt">
-
-         <item>
-      <spacer name="horizontalSpacer_xx">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Minimum</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>30</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-         </item>
-
-         <item>
-        <layout class="QVBoxLayout" name="monRBLayout">
-         <item>
-          <widget class="QRadioButton" name="RB_0">
-           <property name="toolTip">
-            <string>Quality improvement is done by point smoothing and edge swapping.</string>
-           </property>
-           <property name="text">
-            <string>Quality improvement Only (0)</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="RB_G">
-           <property name="toolTip">
-            <string>The given surface triangulation is enriched (no coarsening at all) in such away that the distance 
+       <layout class="QHBoxLayout" name="RBLayoutopt">
+        <item>
+         <spacer name="horizontalSpacer_xx">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Minimum</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>30</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="monRBLayout">
+          <item>
+           <widget class="QRadioButton" name="RB_0">
+            <property name="toolTip">
+             <string>Quality improvement is done by point smoothing and edge swapping.</string>
+            </property>
+            <property name="text">
+             <string>Quality improvement Only </string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="RB_G">
+            <property name="toolTip">
+             <string>The given surface triangulation is enriched (no coarsening at all) in such away that the distance 
 between the elements in the final mesh and those of the initial one is bounded by auser specified tolerance value. 
 One should use this option, to enrich the mesh where purely
 geometrical features may be insuficiently fine, i.e. the resulting mesh will be least as fine as the input.
 Mesh and the geometric features will be refined if needed as specified by the other program parameters.
 The meshes obtained with those settings may not be suitable for computation.</string>
-           </property>
-           <property name="text">
-            <string>Pure Geometry Enrichment (G)</string>
-           </property>
-           <property name="checked">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="RB_U">
-           <property name="toolTip">
-            <string>An uniform subdivision of the given surface triangulation is performed : 
+            </property>
+            <property name="text">
+             <string>Pure Geometry Enrichment </string>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="RB_U">
+            <property name="toolTip">
+             <string>An uniform subdivision of the given surface triangulation is performed : 
 each triangle of the given surface triangulation is considered at and
 is divided into identical triangles.</string>
-           </property>
-           <property name="text">
-            <string>Uniform Subdivision (U)</string>
-           </property>
-           <property name="checked">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="RB_S">
-           <property name="toolTip">
-            <string>A surface sandpapering without shrinkage of the given surface
+            </property>
+            <property name="text">
+             <string>Uniform Subdivision </string>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="RB_S">
+            <property name="toolTip">
+             <string>A surface sandpapering without shrinkage of the given surface
 triangulation is performed, i.e., the high curvature variations of the
 given surface will be smoothed out without shrinking the volume in
 doing so. If ridges are defined, they will be kept as they are in the
 resulting mesh.
 This option modifies the geometry.</string>
-           </property>
-           <property name="text">
-            <string>Sandpapering (S)</string>
-           </property>
-           <property name="checked">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="RB__2">
-           <property name="toolTip">
-            <string>The given surface triangulation is modified in such a way that the distance between 
+            </property>
+            <property name="text">
+             <string>Sandpapering</string>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="RB__2">
+            <property name="toolTip">
+             <string>The given surface triangulation is modified in such a way that the distance between 
 the elements in the final mesh and those of the initial one is bounded by a user specfied tolerance value.
 One should use this option, to coarsen when a purely geometrical mesh is needed. (a mesh that keeps
 and obeys its geometric features only.) The meshes obtained with this option are usually not suitable
 for computation because anisotropic elements may be generated</string>
-           </property>
-           <property name="text">
-            <string>Geometrical Mesh : Coarsening (-2)</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="RB_2">
-           <property name="toolTip">
-            <string>The given surface triangulation is modified in such a way that the distance between 
+            </property>
+            <property name="text">
+             <string>Geometrical Mesh : Coarsening</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="RB_2">
+            <property name="toolTip">
+             <string>The given surface triangulation is modified in such a way that the distance between 
 the elements in the final mesh and those of the initial one is bounded by a user specfied tolerance value.
 One should use this option, to coarsen and enrich when a purely geometrical mesh is needed. (a mesh that keeps
 and obeys its geometric features only.) The meshes obtained with this setting are usually not suitable
 for computation because anisotropic elements may be generated</string>
-           </property>
-           <property name="text">
-            <string>Geometrical Mesh : Coarsening and Enrichment (2)</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="RB__1">
-           <property name="toolTip">
-            <string>The given surface triangulation is modified in accordance to a size map. 
+            </property>
+            <property name="text">
+             <string>Geometrical Mesh : Coarsening and Enrichment</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="RB__1">
+            <property name="toolTip">
+             <string>The given surface triangulation is modified in accordance to a size map. 
 The latter can be either the intrinsic size map (computed automatically
 and based on the surface properties, i.e. the local curvatures),
 or on a given size map (which is then combined to the intrinsic size map). 
 One should use this option to coarsen  the mesh, when a regular mesh 
 for computation purposes is desired, i.e. a mesh with good aspect ratios or 
 good quality elements.</string>
-           </property>
-           <property name="text">
-            <string>Mesh for finite element computation : Coarsening (-1)</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="RB_1">
-           <property name="toolTip">
-            <string>The given surface triangulation is modified in accordance to a size map. 
+            </property>
+            <property name="text">
+             <string>Mesh for finite element computation : Coarsening</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="RB_1">
+            <property name="toolTip">
+             <string>The given surface triangulation is modified in accordance to a size map. 
 The latter can be either the intrinsic size map (computed automatically
 and based on the surface properties, i.e. the local curvatures),
 or on a given size map (which is then combined to the intrinsic size map). 
 One should use this option to coarse and enrich the mesh, when a regular mesh 
 for computation purposes is desired, i.e. a mesh with good aspect ratios or 
 good quality elements</string>
-           </property>
-           <property name="text">
-            <string>Mesh for finite element computation : Coarsening and Enrichment (1)</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
-
+            </property>
+            <property name="text">
+             <string>Mesh for finite element computation : Coarsening and Enrichment</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
       </widget>
       <widget class="QGroupBox" name="GBUnit">
        <property name="geometry">
@@ -494,6 +490,7 @@ If the Units parameter is absolute, the tolerance parameter is expressed in mode
         </property>
        </widget>
       </widget>
+      <zorder>GBUnit</zorder>
       <zorder>groupBox</zorder>
       <zorder>GBOptim</zorder>
      </widget>
@@ -558,7 +555,6 @@ or add vertices (refines) to change the mesh.</string>
          <bool>true</bool>
         </property>
        </widget>
-
        <widget class="QCheckBox" name="CB_SplitEdge">
         <property name="geometry">
          <rect>
@@ -580,8 +576,6 @@ New created vertices are saved in the .mesh file under keyword section 'Vertices
          <bool>false</bool>
         </property>
        </widget>
-
-
       </widget>
       <widget class="QGroupBox" name="groupBox_5">
        <property name="geometry">
@@ -595,7 +589,6 @@ New created vertices are saved in the .mesh file under keyword section 'Vertices
        <property name="title">
         <string>You can control</string>
        </property>
-##1
        <widget class="QDoubleSpinBox" name="SP_Geomapp">
         <property name="geometry">
          <rect>
@@ -606,13 +599,13 @@ New created vertices are saved in the .mesh file under keyword section 'Vertices
          </rect>
         </property>
         <property name="maximum">
-         <double>0.89</double>
+         <double>0.890000000000000</double>
         </property>
         <property name="singleStep">
-         <double>0.01</double>
+         <double>0.010000000000000</double>
         </property>
         <property name="value">
-         <double>0.04</double>
+         <double>0.040000000000000</double>
         </property>
        </widget>
        <widget class="QLabel" name="label_2">
@@ -646,7 +639,6 @@ faces.</string>
 Maximum angle allowed between a face and a curve (not separated by a ridge).</string>
         </property>
        </widget>
-##2
        <widget class="QDoubleSpinBox" name="SP_Ridge">
         <property name="geometry">
          <rect>
@@ -657,10 +649,10 @@ Maximum angle allowed between a face and a curve (not separated by a ridge).</st
          </rect>
         </property>
         <property name="maximum">
-         <double>90.</double>
+         <double>90.000000000000000</double>
         </property>
         <property name="value">
-         <double>45.</double>
+         <double>45.000000000000000</double>
         </property>
        </widget>
        <widget class="QLabel" name="label_4">
@@ -677,7 +669,6 @@ Maximum angle allowed between a face and a curve (not separated by a ridge).</st
 the edge common to the faces is a ridge.</string>
         </property>
        </widget>
-##3
        <widget class="QDoubleSpinBox" name="SP_MaxSize">
         <property name="geometry">
          <rect>
@@ -688,16 +679,16 @@ the edge common to the faces is a ridge.</string>
          </rect>
         </property>
         <property name="minimum">
-         <double>0.01</double>
+         <double>0.010000000000000</double>
         </property>
         <property name="maximum">
-         <double>100.</double>
+         <double>100.000000000000000</double>
         </property>
         <property name="singleStep">
-         <double>0.1</double>
+         <double>0.100000000000000</double>
         </property>
         <property name="value">
-         <double>100.</double>
+         <double>100.000000000000000</double>
         </property>
        </widget>
        <widget class="QLabel" name="label_5">
@@ -723,7 +714,6 @@ size  may be slightly bigger than the prescribed ones.</string>
 the lengths of the edges with respect to the specified size map.</string>
         </property>
        </widget>
-##4
        <widget class="QDoubleSpinBox" name="SP_MinSize">
         <property name="geometry">
          <rect>
@@ -734,16 +724,16 @@ the lengths of the edges with respect to the specified size map.</string>
          </rect>
         </property>
         <property name="minimum">
-         <double>0.</double>
+         <double>0.000000000000000</double>
         </property>
         <property name="maximum">
-         <double>100.</double>
+         <double>100.000000000000000</double>
         </property>
         <property name="singleStep">
-         <double>0.1</double>
+         <double>0.100000000000000</double>
         </property>
         <property name="value">
-         <double>5.</double>
+         <double>5.000000000000000</double>
         </property>
        </widget>
        <widget class="QLabel" name="label_9">
@@ -769,7 +759,6 @@ size  may be slightly bigger than the prescribed ones.</string>
 the lengths of the edges with respect to the specified size map.</string>
         </property>
        </widget>
-##5
        <widget class="QDoubleSpinBox" name="SP_Gradation">
         <property name="geometry">
          <rect>
@@ -780,10 +769,10 @@ the lengths of the edges with respect to the specified size map.</string>
          </rect>
         </property>
         <property name="singleStep">
-         <double>0.01</double>
+         <double>0.010000000000000</double>
         </property>
         <property name="value">
-         <double>1.3</double>
+         <double>1.300000000000000</double>
         </property>
        </widget>
        <widget class="QLabel" name="label_3">
@@ -827,8 +816,7 @@ Yams will avoid having two adjacent edges which sizes vary more than the given g
        <property name="title">
         <string>Yams Generic Options</string>
        </property>
-       
-          <widget class="QSpinBox" name="SP_Verbosity">
+       <widget class="QSpinBox" name="SP_Verbosity">
         <property name="geometry">
          <rect>
           <x>20</x>
@@ -837,15 +825,14 @@ Yams will avoid having two adjacent edges which sizes vary more than the given g
           <height>25</height>
          </rect>
         </property>
-           <property name="maximum">
-            <number>10</number>
-           </property>
-           <property name="value">
-            <number>3</number>
-           </property>
-          </widget>
-       
-          <widget class="QLabel" name="label">
+        <property name="maximum">
+         <number>10</number>
+        </property>
+        <property name="value">
+         <number>3</number>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label">
         <property name="geometry">
          <rect>
           <x>130</x>
@@ -859,12 +846,11 @@ Yams will avoid having two adjacent edges which sizes vary more than the given g
 From 0 (no detail) to 10 (very detailed).
 Default is 3.</string>
         </property>
-           <property name="text">
-            <string>Verbosity level</string>
-           </property>
-          </widget>
-       
-          <widget class="QSpinBox" name="SP_Memory">
+        <property name="text">
+         <string>Verbosity level</string>
+        </property>
+       </widget>
+       <widget class="QSpinBox" name="SP_Memory">
         <property name="geometry">
          <rect>
           <x>20</x>
@@ -873,16 +859,15 @@ Default is 3.</string>
           <height>25</height>
          </rect>
         </property>
-           <property name="maximum">
-            <number>100000</number>
-           </property>
-           <property name="value">
-            <number>0</number>
-           </property>
-          </widget>
-       
-          <widget class="QLabel" name="label_6">
-       <property name="geometry">
+        <property name="maximum">
+         <number>100000</number>
+        </property>
+        <property name="value">
+         <number>0</number>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_6">
+        <property name="geometry">
          <rect>
           <x>130</x>
           <y>70</y>
@@ -890,11 +875,8 @@ Default is 3.</string>
           <height>30</height>
          </rect>
         </property>
-           <property name="text">
-            <string>Memory size (in Mbytes)</string>
-           </property>
-           <property name="toolTip">
-            <string>The program requires roughly about 370 bytes per point. It is thus possible to estimate a priori 
+        <property name="toolTip">
+         <string>The program requires roughly about 370 bytes per point. It is thus possible to estimate a priori 
 the required memory size to complete a job. As an example of memory space needed, a mesh 
 of 543,652 points (1,087,716 triangles) requires 182 Mbytes (about 351 bytes per point). Conversely, 
 a workstation having 512 Mbytes of memory can handle a mesh of about 2,750,000 points.
@@ -907,9 +889,11 @@ Specify the memory if:
 - you want to limit the amount of memory used by the program.
 If the input mesh size requires more memory than requested or if the allocated memory (user defined or not)
 exceeds the machine capabilities, the tool will stop because of insufficient memory.</string>
-           </property>
-          </widget>
-        
+        </property>
+        <property name="text">
+         <string>Memory size (in Mbytes)</string>
+        </property>
+       </widget>
       </widget>
       <widget class="QGroupBox" name="groupBox_6">
        <property name="geometry">
@@ -959,8 +943,7 @@ exceeds the machine capabilities, the tool will stop because of insufficient mem
          </rect>
         </property>
        </widget>
-       
-      <widget class="QPushButton" name="PB_Save">
+       <widget class="QPushButton" name="PB_Save">
         <property name="geometry">
          <rect>
           <x>20</x>
@@ -969,18 +952,17 @@ exceeds the machine capabilities, the tool will stop because of insufficient mem
           <height>31</height>
          </rect>
         </property>
-       <property name="text">
-        <string>Save</string>
-       </property>
+        <property name="text">
+         <string>Save</string>
+        </property>
         <property name="iconSize">
          <size>
           <width>18</width>
           <height>18</height>
          </size>
         </property>
-      </widget>
-
-      <widget class="QPushButton" name="PB_Load">
+       </widget>
+       <widget class="QPushButton" name="PB_Load">
         <property name="geometry">
          <rect>
           <x>120</x>
@@ -989,17 +971,16 @@ exceeds the machine capabilities, the tool will stop because of insufficient mem
           <height>31</height>
          </rect>
         </property>
-       <property name="text">
-        <string>Load</string>
-       </property>
+        <property name="text">
+         <string>Load</string>
+        </property>
         <property name="iconSize">
          <size>
           <width>18</width>
           <height>18</height>
          </size>
         </property>
-      </widget>
-       
+       </widget>
       </widget>
      </widget>
     </widget>

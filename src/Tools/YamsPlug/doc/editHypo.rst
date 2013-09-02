@@ -4,11 +4,11 @@
 How to save MeshGems-SurfOpt Parameters 
 ===========================
 
-MeshGems-SurfOpt hypothesis is not meshing hypothesis for Salome, but hypothesis for yams.
+MeshGems-SurfOpt hypothesis is not a meshing hypothesis for Salome, but an hypothesis for MeshGems-SurfOpt.
 The current set of parameters is automatically written in the salome study object browser when you run computation.
 
 Theses parameters could also be stored in a special file.
-Default file is $HOME/.yams.dat.
+Default file is $HOME/.MGSurfOpt.dat.
 This ASCII file is appended, and never cleaned.
 
 In frame "Plug-in Generic Options":
@@ -23,15 +23,15 @@ At the bottom of the dialog window:
 - To load the default setting, click on "Default" pushbutton. .
 
 
-**example of .yams.dat**
+**example of .MGSurfOpt.dat**
 
 
 .. code-block:: python
 
-   # YAMS hypothesis parameters
+   # MGSurfOpt hypothesis parameters
    # Params for mesh : Mesh_1
    # Date : 23/05/13 14:23:18
-   # Command : yams -v 3 -O 0 -Drelative,tolerance=0.100000,maxsize=0.010000,minsize=0.000000 /tmp/ForYams_1.mesh
+   # Command : mg-surfopt.exe --verbose 3 --chordal_error 0.1 --max_size 0.01 --minsize 0.0 --in /tmp/ForSurfOpt_1.mesh
    Optimisation=Quality improvement Only (0)
    Units=Relative
    ChordalToleranceDeviation=0.1

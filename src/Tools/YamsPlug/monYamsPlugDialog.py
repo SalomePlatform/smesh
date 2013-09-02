@@ -420,7 +420,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     self.fichierIn=""
 
   def prepareFichier(self):
-    self.fichierIn="/tmp/ForYams_"+str(self.num)+".meshb"
+    self.fichierIn="/tmp/ForSurfOpt_"+str(self.num)+".meshb"
     self.__selectedMesh.ExportGMF(self.__selectedMesh, self.fichierIn, True)
 
   def PrepareLigneCommande(self):
@@ -457,9 +457,11 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
       self.commande+= " --uniform_flat_subdivision yes"
     elif style == "S" :
       self.commande+= " --sand_paper yes"
+    elif style == "G" :
+      self.commande+= " -O G"  # This option has not been updated to the new option style yet
 
     deb=os.path.splitext(self.fichierIn)
-    self.fichierOut=deb[0] + "_surfopt.meshb"
+    self.fichierOut=deb[0] + "_output.meshb"
     
     tolerance=self.SP_toStr(self.SP_Tolerance)
     if not self.RB_Absolute.isChecked():
@@ -469,7 +471,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     if self.CB_Ridge.isChecked()    == False : self.commande+=" --compute_ridges no"
     if self.CB_Point.isChecked()    == False : self.commande+=" --optimisation no"
     if self.CB_SplitEdge.isChecked()== True  : self.commande+=" --element_order quadratic"
-    if self.SP_Geomapp.value()      != 0.04  : self.commande+=" --geometric_approximation_angle %f"%self.SP_Geomapp.value()
+    if self.SP_Geomapp.value()      != 15.0  : self.commande+=" --geometric_approximation_angle %f"%self.SP_Geomapp.value()
     if self.SP_Ridge.value()        != 45.0  : self.commande+=" --ridge_angle %f"%self.SP_Ridge.value()
     if self.SP_MaxSize.value()      != 100   : self.commande+=" --max_size %f"   %self.SP_MaxSize.value()
     if self.SP_MinSize.value()      != 5     : self.commande+=" --min_size %f"   %self.SP_MinSize.value()
@@ -494,8 +496,8 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     self.RB_Relative.setChecked(True)
     #no need: exlusives QRadioButton
     #self.RB_Absolute.setChecked(False)
-    self.SP_Tolerance.setProperty("text", "10.")
-    self.SP_Geomapp.setProperty("value", 0.04)
+    self.SP_Tolerance.setProperty("text", "0.001")
+    self.SP_Geomapp.setProperty("value", 15.0)
     self.SP_Ridge.setProperty("value", 45.0)
     self.SP_Gradation.setProperty("value", 1.3)
     self.CB_Ridge.setChecked(True)
