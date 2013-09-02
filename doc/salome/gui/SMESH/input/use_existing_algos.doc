@@ -55,9 +55,9 @@ The following dialog box will appear:
 In this dialog box you can define 
 <ul>
 <li>The \b Name of the algorithm. </li>
-<li>The <b>Groups of Edges</b> to import 1D elements from.
-<li><b>To copy mesh</b> checkbox allows to import not only the edges of
-the selected <b>Groups of Edges</b>, but the whole source
+<li>The <b>Groups of Faces</b> to import 2D elements from.
+<li><b>To copy mesh</b> checkbox allows to import not only the faces of
+the selected <b>Groups of Faces</b>, but the whole source
 mesh. In this case <b>To copy groups</b> checkbox allows to create
 the same groups as in the imported source mesh.</li>
 </ul>
