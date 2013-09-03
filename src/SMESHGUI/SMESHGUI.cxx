@@ -276,7 +276,7 @@
             {
               // UNV format
               aMeshes->length( 1 );
-              aMeshes[0] = theComponentMesh->CreateMeshesFromUNV( filename.toLatin1().constData() );
+              aMeshes[0] = theComponentMesh->CreateMeshesFromUNV( filename.toUtf8().constData() );
               if ( aMeshes[0]->_is_nil() )
                 errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
                                arg( QObject::tr( "SMESH_ERR_UNKNOWN_IMPORT_ERROR" ) ) );
@@ -286,7 +286,7 @@
             {
               // MED format
               SMESH::DriverMED_ReadStatus res;
-              aMeshes = theComponentMesh->CreateMeshesFromMED( filename.toLatin1().constData(), res );
+              aMeshes = theComponentMesh->CreateMeshesFromMED( filename.toUtf8().constData(), res );
               if ( res != SMESH::DRS_OK ) {
                 errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
                                arg( QObject::tr( QString( "SMESH_DRS_%1" ).arg( res ).toLatin1().data() ) ) );
@@ -297,7 +297,7 @@
             {
               // STL format
               aMeshes->length( 1 );
-              aMeshes[0] = theComponentMesh->CreateMeshesFromSTL( filename.toLatin1().constData() );
+              aMeshes[0] = theComponentMesh->CreateMeshesFromSTL( filename.toUtf8().constData() );
               if ( aMeshes[0]->_is_nil() ) {
                 errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
                                arg( QObject::tr( "SMESH_ERR_UNKNOWN_IMPORT_ERROR" ) ) );
@@ -308,7 +308,7 @@
             {
               // CGNS format
               SMESH::DriverMED_ReadStatus res;
-              aMeshes = theComponentMesh->CreateMeshesFromCGNS( filename.toLatin1().constData(), res );
+              aMeshes = theComponentMesh->CreateMeshesFromCGNS( filename.toUtf8().constData(), res );
               if ( res != SMESH::DRS_OK ) {
                 errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
                                arg( QObject::tr( QString( "SMESH_DRS_%1" ).arg( res ).toLatin1().data() ) ) );
@@ -319,7 +319,7 @@
             {
               // SAUV format
               SMESH::DriverMED_ReadStatus res;
-              aMeshes = theComponentMesh->CreateMeshesFromSAUV( filename.toLatin1().constData(), res );
+              aMeshes = theComponentMesh->CreateMeshesFromSAUV( filename.toUtf8().constData(), res );
               if ( res != SMESH::DRS_OK ) {
                 errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
                                arg( QObject::tr( QString( "SMESH_DRS_%1" ).arg( res ).toLatin1().data() ) ) );
@@ -331,7 +331,7 @@
               // GMF format
               SMESH::ComputeError_var res;
               aMeshes->length( 1 );
-              aMeshes[0] = theComponentMesh->CreateMeshesFromGMF( filename.toLatin1().constData(),
+              aMeshes[0] = theComponentMesh->CreateMeshesFromGMF( filename.toUtf8().constData(),
                                                                   toCreateGroups,
                                                                   res.out() );
               if ( res->code != SMESH::DRS_OK ) {
@@ -727,7 +727,7 @@
           if( !toOverwrite ) {
             // can't append to an existing using other format
             SMESH::MED_VERSION aVersion = SMESH::MED_V2_1;
-            bool isVersionOk = SMESHGUI::GetSMESHGen()->GetMEDVersion( aFilename.toLatin1().constData(), aVersion );
+            bool isVersionOk = SMESHGUI::GetSMESHGen()->GetMEDVersion( aFilename.toUtf8().constData(), aVersion );
             if( !isVersionOk || aVersion != aFormat ) {
               int aRet = SUIT_MessageBox::warning(SMESHGUI::desktop(),
                                                   QObject::tr("SMESH_WRN_WARNING"),
@@ -741,7 +741,7 @@
             }
 
             QStringList aMeshNamesCollisionList;
-            SMESH::string_array_var aMeshNames = SMESHGUI::GetSMESHGen()->GetMeshNames( aFilename.toLatin1().constData() );
+            SMESH::string_array_var aMeshNames = SMESHGUI::GetSMESHGen()->GetMeshNames( aFilename.toUtf8().constData() );
             for( int i = 0, n = aMeshNames->length(); i < n; i++ ) {
               QString anExistingMeshName( aMeshNames[ i ] );
               for( aMeshIter = aMeshList.begin(); aMeshIter != aMeshList.end(); aMeshIter++ ) {
@@ -807,10 +807,10 @@
             SMESH::SMESH_IDSource_var aMeshOrGroup = (*aMeshIter).first;
             SMESH::SMESH_Mesh_var        aMeshItem = aMeshOrGroup->GetMesh();
             if ( aMeshOrGroup->_is_equivalent( aMeshItem ))
-              aMeshItem->ExportToMEDX( aFilename.toLatin1().data(), toCreateGroups,
+              aMeshItem->ExportToMEDX( aFilename.toUtf8().data(), toCreateGroups,
                                        aFormat, toOverwrite && aMeshIndex == 0, toFindOutDim );
             else
-              aMeshItem->ExportPartToMED( aMeshOrGroup, aFilename.toLatin1().data(), toCreateGroups,
+              aMeshItem->ExportPartToMED( aMeshOrGroup, aFilename.toUtf8().data(), toCreateGroups,
                                           aFormat, toOverwrite && aMeshIndex == 0, toFindOutDim );
           }
         }
@@ -820,29 +820,29 @@
           {
             SMESH::SMESH_Mesh_var aMeshItem = SMESH::SMESH_Mesh::_narrow( (*aMeshIter).first );
             if( !aMeshItem->_is_nil() )
-              aMeshItem->ExportSAUV( aFilename.toLatin1().data(), toCreateGroups );
+              aMeshItem->ExportSAUV( aFilename.toUtf8().data(), toCreateGroups );
           }
         }
         else if ( isDAT )
         {
           if ( aMeshOrGroup->_is_equivalent( aMesh ))
-            aMesh->ExportDAT( aFilename.toLatin1().data() );
+            aMesh->ExportDAT( aFilename.toUtf8().data() );
           else
-            aMesh->ExportPartToDAT( aMeshOrGroup, aFilename.toLatin1().data() );
+            aMesh->ExportPartToDAT( aMeshOrGroup, aFilename.toUtf8().data() );
         }
         else if ( isUNV )
         {
           if ( aMeshOrGroup->_is_equivalent( aMesh ))
-            aMesh->ExportUNV( aFilename.toLatin1().data() );
+            aMesh->ExportUNV( aFilename.toUtf8().data() );
           else
-            aMesh->ExportPartToUNV( aMeshOrGroup, aFilename.toLatin1().data() );
+            aMesh->ExportPartToUNV( aMeshOrGroup, aFilename.toUtf8().data() );
         }
         else if ( isSTL )
         {
           if ( aMeshOrGroup->_is_equivalent( aMesh ))
-            aMesh->ExportSTL( aFilename.toLatin1().data(), aIsASCII_STL );
+            aMesh->ExportSTL( aFilename.toUtf8().data(), aIsASCII_STL );
           else
-            aMesh->ExportPartToSTL( aMeshOrGroup, aFilename.toLatin1().data(), aIsASCII_STL );
+            aMesh->ExportPartToSTL( aMeshOrGroup, aFilename.toUtf8().data(), aIsASCII_STL );
         }
         else if ( isCGNS )
         {
@@ -852,14 +852,14 @@
             SMESH::SMESH_IDSource_var aMeshOrGroup = (*aMeshIter).first;
             SMESH::SMESH_Mesh_var        aMeshItem = aMeshOrGroup->GetMesh();
             aMeshItem->ExportCGNS( aMeshOrGroup,
-                                   aFilename.toLatin1().data(),
+                                   aFilename.toUtf8().data(),
                                    toOverwrite && aMeshIndex == 0 );
           }
         }
         else if ( isGMF )
         {
           toCreateGroups = true;
-          aMesh->ExportGMF( aMeshOrGroup, aFilename.toLatin1().data(), toCreateGroups );
+          aMesh->ExportGMF( aMeshOrGroup, aFilename.toUtf8().data(), toCreateGroups );
         }
       }
       catch (const SALOME::SALOME_Exception& S_ex){
