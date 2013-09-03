@@ -385,9 +385,9 @@ int SMESH_subMesh::computeCost() const
     int computeCost;
     switch ( _subShape.ShapeType() ) {
     case TopAbs_SOLID:
-    case TopAbs_SHELL: computeCost = 1000; break;
-    case TopAbs_FACE:  computeCost = 100; break;
-    case TopAbs_EDGE:  computeCost = 10; break;
+    case TopAbs_SHELL: computeCost = 5000; break;
+    case TopAbs_FACE:  computeCost = 500; break;
+    case TopAbs_EDGE:  computeCost = 2; break;
     default:           computeCost = 1;
     }
     SMESH_subMeshIteratorPtr childIt = getDependsOnIterator(/*includeSelf=*/false);
