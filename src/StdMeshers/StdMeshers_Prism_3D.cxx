@@ -60,6 +60,8 @@
 #include <gp_Ax2.hxx>
 #include <gp_Ax3.hxx>
 
+#include <limits>
+
 using namespace std;
 
 #define RETURN_BAD_RESULT(msg) { MESSAGE(")-: Error: " << msg); return false; }
@@ -931,6 +933,13 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
 
   int volumeID = meshDS->ShapeToIndex( thePrism.myShape3D );
 
+  // Try to get gp_Trsf to get all nodes from bottom ones
+  vector<gp_Trsf> trsf;
+  gp_Trsf bottomToTopTrsf;
+  if ( !myBlock.GetLayersTransformation( trsf, thePrism ))
+    trsf.clear();
+  else if ( !trsf.empty() )
+    bottomToTopTrsf = trsf.back();
 
   // To compute coordinates of a node inside a block, it is necessary to know
   // 1. normalized parameters of the node by which
@@ -946,15 +955,14 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
   // Projections on the top and bottom faces are taken from nodes existing
   // on these faces; find correspondence between bottom and top nodes
   myBotToColumnMap.clear();
-  if ( !assocOrProjBottom2Top() ) // it also fills myBotToColumnMap
+  if ( !assocOrProjBottom2Top( bottomToTopTrsf ) ) // it also fills myBotToColumnMap
     return false;
 
 
   // Create nodes inside the block
 
   // try to use transformation (issue 0020680)
-  vector<gp_Trsf> trsf;
-  if ( myBlock.GetLayersTransformation( trsf, thePrism ))
+  if ( !trsf.empty() )
   {
     // loop on nodes inside the bottom face
     TNode2ColumnMap::iterator bot_column = myBotToColumnMap.begin();
@@ -988,36 +996,45 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
     {
       const Prism_3D::TNode& tBotNode = bot_column->first; // bottom TNode
       if ( tBotNode.GetPositionType() != SMDS_TOP_FACE )
-        continue; // node is not inside face 
+        continue; // node is not inside the FACE 
 
       // column nodes; middle part of the column are zero pointers
       TNodeColumn& column = bot_column->second;
 
-      // compute bottom node parameters
-      gp_XYZ paramHint(-1,-1,-1);
-      if ( prevBNode.IsNeighbor( tBotNode ))
-        paramHint = prevBNode.GetParams();
-      if ( !myBlock.ComputeParameters( tBotNode.GetCoords(), tBotNode.ChangeParams(),
-                                       ID_BOT_FACE, paramHint ))
-        return toSM( error(TCom("Can't compute normalized parameters for node ")
-                           << tBotNode.myNode->GetID() << " on the face #"
-                           << myBlock.SubMesh( ID_BOT_FACE )->GetId() ));
-      prevBNode = tBotNode;
+      gp_XYZ botParams, topParams;
+      if ( !tBotNode.HasParams() )
+      {
+        // compute bottom node parameters
+        gp_XYZ paramHint(-1,-1,-1);
+        if ( prevBNode.IsNeighbor( tBotNode ))
+          paramHint = prevBNode.GetParams();
+        if ( !myBlock.ComputeParameters( tBotNode.GetCoords(), tBotNode.ChangeParams(),
+                                         ID_BOT_FACE, paramHint ))
+          return toSM( error(TCom("Can't compute normalized parameters for node ")
+                             << tBotNode.myNode->GetID() << " on the face #"
+                             << myBlock.SubMesh( ID_BOT_FACE )->GetId() ));
+        prevBNode = tBotNode;
+
+        botParams = topParams = tBotNode.GetParams();
+        topParams.SetZ( 1 );
+
+        // compute top node parameters
+        if ( column.size() > 2 ) {
+          gp_Pnt topCoords = gpXYZ( column.back() );
+          if ( !myBlock.ComputeParameters( topCoords, topParams, ID_TOP_FACE, topParams ))
+            return toSM( error(TCom("Can't compute normalized parameters ")
+                               << "for node " << column.back()->GetID()
+                               << " on the face #"<< column.back()->getshapeId() ));
+        }
+      }
+      else // top nodes are created by projection using parameters
+      {
+        botParams = topParams = tBotNode.GetParams();
+        topParams.SetZ( 1 );
+      }
 
       myShapeXYZ[ ID_BOT_FACE ] = tBotNode.GetCoords();
-      gp_XYZ botParams          = tBotNode.GetParams();
-
-      // compute top node parameters
       myShapeXYZ[ ID_TOP_FACE ] = gpXYZ( column.back() );
-      gp_XYZ topParams = botParams;
-      topParams.SetZ( 1 );
-      if ( column.size() > 2 ) {
-        gp_Pnt topCoords = myShapeXYZ[ ID_TOP_FACE ];
-        if ( !myBlock.ComputeParameters( topCoords, topParams, ID_TOP_FACE, topParams ))
-          return toSM( error(TCom("Can't compute normalized parameters ")
-                             << "for node " << column.back()->GetID()
-                             << " on the face #"<< column.back()->getshapeId() ));
-      }
 
       // vertical loop
       TNodeColumn::iterator columnNodes = column.begin();
@@ -1181,7 +1198,7 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
           srcSM->ComputeSubMeshStateEngine( SMESH_subMesh::COMPUTE );
           srcSM->ComputeStateEngine       ( SMESH_subMesh::COMPUTE );
           if ( !srcSM->IsMeshComputed() )
-            return false;
+            return toSM( error( "Can't compute 1D mesh" ));
         }
         nbSrcSegments += srcSM->GetSubMeshDS()->NbElements();
       }
@@ -1618,7 +1635,7 @@ void StdMeshers_Prism_3D::AddPrisms( vector<const TNodeColumn*> & columns,
  */
 //================================================================================
 
-bool StdMeshers_Prism_3D::assocOrProjBottom2Top()
+bool StdMeshers_Prism_3D::assocOrProjBottom2Top( const gp_Trsf & bottomToTopTrsf )
 {
   SMESH_subMesh * botSM = myBlock.SubMesh( ID_BOT_FACE );
   SMESH_subMesh * topSM = myBlock.SubMesh( ID_TOP_FACE );
@@ -1654,7 +1671,7 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top()
 
   if ( needProject )
   {
-    return projectBottomToTop();
+    return projectBottomToTop( bottomToTopTrsf );
   }
 
   TopoDS_Face botFace = TopoDS::Face( myBlock.Shape( ID_BOT_FACE ));
@@ -1706,7 +1723,7 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top()
  */
 //================================================================================
 
-bool StdMeshers_Prism_3D::projectBottomToTop()
+bool StdMeshers_Prism_3D::projectBottomToTop( const gp_Trsf & bottomToTopTrsf )
 {
   SMESHDS_Mesh*  meshDS = myBlock.MeshDS();
   SMESH_subMesh * botSM = myBlock.SubMesh( ID_BOT_FACE );
@@ -1718,9 +1735,18 @@ bool StdMeshers_Prism_3D::projectBottomToTop()
   if ( topSMDS && topSMDS->NbElements() > 0 )
     topSM->ComputeStateEngine( SMESH_subMesh::CLEAN );
 
-  const TopoDS_Shape& botFace = myBlock.Shape( ID_BOT_FACE ); // oriented within the 3D SHAPE
-  const TopoDS_Shape& topFace = myBlock.Shape( ID_TOP_FACE);
+  const TopoDS_Face& botFace = TopoDS::Face( myBlock.Shape( ID_BOT_FACE )); // oriented within
+  const TopoDS_Face& topFace = TopoDS::Face( myBlock.Shape( ID_TOP_FACE )); //    the 3D SHAPE
   int topFaceID = meshDS->ShapeToIndex( topFace );
+
+  SMESH_MesherHelper botHelper( *myHelper->GetMesh() );
+  botHelper.SetSubShape( botFace );
+  botHelper.ToFixNodeParameters( true );
+  bool checkUV;
+  SMESH_MesherHelper topHelper( *myHelper->GetMesh() );
+  topHelper.SetSubShape( topFace );
+  topHelper.ToFixNodeParameters( true );
+  double distXYZ[4], fixTol = 10 * topHelper.MaxTolerance( topFace );
 
   // Fill myBotToColumnMap
 
@@ -1730,26 +1756,47 @@ bool StdMeshers_Prism_3D::projectBottomToTop()
   while ( nIt->more() )
   {
     const SMDS_MeshNode* botNode = nIt->next();
+    const SMDS_MeshNode* topNode = 0;
     if ( botNode->GetPosition()->GetTypeOfPosition() != SMDS_TOP_FACE )
       continue; // strange
-    // compute bottom node params
+
     Prism_3D::TNode bN( botNode );
-    gp_XYZ paramHint(-1,-1,-1);
-    if ( prevTNode.IsNeighbor( bN ))
-      paramHint = prevTNode.GetParams();
-    if ( !myBlock.ComputeParameters( bN.GetCoords(), bN.ChangeParams(),
-                                     ID_BOT_FACE, paramHint ))
-      return toSM( error(TCom("Can't compute normalized parameters for node ")
-                         << botNode->GetID() << " on the face #"<< botSM->GetId() ));
-    prevTNode = bN;
-    // compute top node coords
-    gp_XYZ topXYZ; gp_XY topUV;
-    if ( !myBlock.FacePoint( ID_TOP_FACE, bN.GetParams(), topXYZ ) ||
-         !myBlock.FaceUV   ( ID_TOP_FACE, bN.GetParams(), topUV ))
-      return toSM( error(TCom("Can't compute coordinates "
-                              "by normalized parameters on the face #")<< topSM->GetId() ));
-    SMDS_MeshNode * topNode = meshDS->AddNode( topXYZ.X(),topXYZ.Y(),topXYZ.Z() );
-    meshDS->SetNodeOnFace( topNode, topFaceID, topUV.X(), topUV.Y() );
+    if ( bottomToTopTrsf.Form() == gp_Identity )
+    {
+      // compute bottom node params
+      gp_XYZ paramHint(-1,-1,-1);
+      if ( prevTNode.IsNeighbor( bN ))
+      {
+        paramHint = prevTNode.GetParams();
+        // double tol = 1e-2 * ( prevTNode.GetCoords() - bN.GetCoords() ).Modulus();
+        // myBlock.SetTolerance( Min( myBlock.GetTolerance(), tol ));
+      }
+      if ( !myBlock.ComputeParameters( bN.GetCoords(), bN.ChangeParams(),
+                                       ID_BOT_FACE, paramHint ))
+        return toSM( error(TCom("Can't compute normalized parameters for node ")
+                           << botNode->GetID() << " on the face #"<< botSM->GetId() ));
+      prevTNode = bN;
+      // compute top node coords
+      gp_XYZ topXYZ; gp_XY topUV;
+      if ( !myBlock.FacePoint( ID_TOP_FACE, bN.GetParams(), topXYZ ) ||
+           !myBlock.FaceUV   ( ID_TOP_FACE, bN.GetParams(), topUV ))
+        return toSM( error(TCom("Can't compute coordinates "
+                                "by normalized parameters on the face #")<< topSM->GetId() ));
+      topNode = meshDS->AddNode( topXYZ.X(),topXYZ.Y(),topXYZ.Z() );
+      meshDS->SetNodeOnFace( topNode, topFaceID, topUV.X(), topUV.Y() );
+    }
+    else // use bottomToTopTrsf
+    {
+      gp_XYZ coords = bN.GetCoords();
+      bottomToTopTrsf.Transforms( coords );
+      topNode = meshDS->AddNode( coords.X(), coords.Y(), coords.Z() );
+      gp_XY topUV = botHelper.GetNodeUV( botFace, botNode, 0, &checkUV );
+      meshDS->SetNodeOnFace( topNode, topFaceID, topUV.X(), topUV.Y() );
+      distXYZ[0] = -1;
+      if ( topHelper.CheckNodeUV( topFace, topNode, topUV, fixTol, /*force=*/false, distXYZ ) &&
+           distXYZ[0] > fixTol && distXYZ[0] < fixTol * 1e+3 )
+        meshDS->MoveNode( topNode, distXYZ[1], distXYZ[2], distXYZ[3] ); // transform can be inaccurate
+    }
     // create node column
     TNode2ColumnMap::iterator bN_col = 
       myBotToColumnMap.insert( make_pair ( bN, TNodeColumn() )).first;
@@ -1767,7 +1814,7 @@ bool StdMeshers_Prism_3D::projectBottomToTop()
   // if the bottom faces is orienetd OK then top faces must be reversed
   bool reverseTop = true;
   if ( myHelper->NbAncestors( botFace, *myBlock.Mesh(), TopAbs_SOLID ) > 1 )
-    reverseTop = ! myHelper->IsReversedSubMesh( TopoDS::Face( botFace ));
+    reverseTop = ! myHelper->IsReversedSubMesh( botFace );
   int iFrw, iRev, *iPtr = &( reverseTop ? iRev : iFrw );
 
   // loop on bottom mesh faces
@@ -2169,7 +2216,7 @@ bool StdMeshers_Prism_3D::initPrism(Prism_3D::TPrismTopo& thePrism,
 /*!
  * \brief Initialization.
  * \param helper - helper loaded with mesh and 3D shape
- * \param thePrism - a prosm data
+ * \param thePrism - a prism data
  * \retval bool - false if a mesh or a shape are KO
  */
 //================================================================================
@@ -2314,7 +2361,7 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper*         helper,
   }
   else // **************************** Unite faces
   {
-    int nbExraFaces = nbSides - 3; // nb of faces to fuse
+    int nbExraFaces = nbSides - 4; // nb of faces to fuse
     for ( iE = 0; iE < nbEdges; ++iE )
     {
       if ( nbUnitePerEdge[ iE ] < 0 )
@@ -2477,6 +2524,8 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper*         helper,
     tFace.Set( ID_TOP_FACE, new BRepAdaptor_Surface( thePrism.myTop ), topPcurves, isForward );
     SMESH_Block::Insert( thePrism.myTop, ID_TOP_FACE, myShapeIDMap );
   }
+  // faceGridToPythonDump( SMESH_Block::ID_Fxy0 );
+  // faceGridToPythonDump( SMESH_Block::ID_Fxy1 );
 
   // Fill map ShapeIndex to TParam2ColumnMap
   // ----------------------------------------
@@ -2508,20 +2557,26 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper*         helper,
     }
   }
 
-  // double _u[]={ 0.1, 0.1, 0.9, 0.9 };
-  // double _v[]={ 0.1, 0.9, 0.1, 0.9,  };
-  // for ( int i = 0; i < 4; ++i )
-  // {
-  //   //gp_XYZ testPar(0.25, 0.25, 0), testCoord;
-  //   gp_XYZ testPar(_u[i], _v[i], 0), testCoord;
-  // if ( !FacePoint( ID_BOT_FACE, testPar, testCoord ))
-  //   RETURN_BAD_RESULT("TEST FacePoint() FAILED");
-  // SHOWYXZ("IN TEST PARAM" , testPar);
-  // SHOWYXZ("OUT TEST CORD" , testCoord);
-  // if ( !ComputeParameters( testCoord, testPar , ID_BOT_FACE))
-  //   RETURN_BAD_RESULT("TEST ComputeParameters() FAILED");
-  // SHOWYXZ("OUT TEST PARAM" , testPar);
-  // }
+// #define SHOWYXZ(msg, xyz) {                     \
+//     gp_Pnt p (xyz);                                                     \
+//     cout << msg << " ("<< p.X() << "; " <<p.Y() << "; " <<p.Z() << ") " <<endl; \
+//   }
+//   double _u[]={ 0.1, 0.1, 0.9, 0.9 };
+//   double _v[]={ 0.1, 0.9, 0.1, 0.9 };
+//   for ( int z = 0; z < 2; ++z )
+//     for ( int i = 0; i < 4; ++i )
+//     {
+//       //gp_XYZ testPar(0.25, 0.25, 0), testCoord;
+//       int iFace = (z ? ID_TOP_FACE : ID_BOT_FACE);
+//       gp_XYZ testPar(_u[i], _v[i], z), testCoord;
+//       if ( !FacePoint( iFace, testPar, testCoord ))
+//         RETURN_BAD_RESULT("TEST FacePoint() FAILED");
+//       SHOWYXZ("IN TEST PARAM" , testPar);
+//       SHOWYXZ("OUT TEST CORD" , testCoord);
+//       if ( !ComputeParameters( testCoord, testPar , iFace))
+//         RETURN_BAD_RESULT("TEST ComputeParameters() FAILED");
+//       SHOWYXZ("OUT TEST PARAM" , testPar);
+//     }
   return true;
 }
 
@@ -2554,14 +2609,17 @@ const TNodeColumn* StdMeshers_PrismAsBlock::GetNodeColumn(const SMDS_MeshNode* n
 //purpose  : Return transformations to get coordinates of nodes of each layer
 //           by nodes of the bottom. Layer is a set of nodes at a certain step
 //           from bottom to top.
+//           Transformation to get top node from bottom ones is computed
+//           only if the top FACE is not meshed.
 //=======================================================================
 
 bool StdMeshers_PrismAsBlock::GetLayersTransformation(vector<gp_Trsf> &           trsf,
                                                       const Prism_3D::TPrismTopo& prism) const
 {
+  const bool itTopMeshed = !SubMesh( ID_BOT_FACE )->IsEmpty();
   const int zSize = VerticalSize();
-  if ( zSize < 3 ) return true;
-  trsf.resize( zSize - 2 );
+  if ( zSize < 3 && !itTopMeshed ) return true;
+  trsf.resize( zSize - 1 );
 
   // Select some node columns by which we will define coordinate system of layers
 
@@ -2606,7 +2664,7 @@ bool StdMeshers_PrismAsBlock::GetLayersTransformation(vector<gp_Trsf> &         
   gp_Ax3 cs0 = getLayerCoordSys(0, columns, xCol );
   //double dist0 = cs0.Location().Distance( gpXYZ( (*columns[0])[0]));
   toCs0.SetTransformation( cs0 );
-  for ( int z = 1; z < zSize-1; ++z )
+  for ( int z = 1; z < zSize; ++z )
   {
     gp_Ax3 csZ = getLayerCoordSys(z, columns, xCol );
     //double distZ = csZ.Location().Distance( gpXYZ( (*columns[0])[z]));
@@ -2623,7 +2681,10 @@ bool StdMeshers_PrismAsBlock::GetLayersTransformation(vector<gp_Trsf> &         
       gp_Pnt pz = gpXYZ( (*columns[i])[z] );
       t.Transforms( p0.ChangeCoord() );
       if ( p0.SquareDistance( pz ) > tol2 )
-        return false;
+      {
+        t = gp_Trsf();
+        return ( z == zSize - 1 ); // OK if fails only botton->top trsf
+      }
     }
   }
   return true;
@@ -2661,6 +2722,53 @@ bool StdMeshers_PrismAsBlock::IsForwardEdge(SMESHDS_Mesh*           meshDS,
   if ( sideFaceID == ID_Fx1z || sideFaceID == ID_F0yz )
     isForward = !isForward;
   return isForward;
+}
+
+//=======================================================================
+//function : faceGridToPythonDump
+//purpose  : Prints a script creating a normal grid on the prism side
+//=======================================================================
+
+void StdMeshers_PrismAsBlock::faceGridToPythonDump(const SMESH_Block::TShapeID face)
+{
+#ifdef _DEBUG_
+  gp_XYZ pOnF[6] = { gp_XYZ(0,0,0), gp_XYZ(0,0,1),
+                     gp_XYZ(0,0,0), gp_XYZ(0,1,0),
+                     gp_XYZ(0,0,0), gp_XYZ(1,0,0) };
+  gp_XYZ p2;
+  cout << "mesh = smesh.Mesh( 'Face " << face << "')" << endl;
+  SMESH_Block::TFace& f = myFace[ face - ID_FirstF ];
+  gp_XYZ params = pOnF[ face - ID_FirstF ];
+  const int nb = 10; // nb face rows
+  for ( int j = 0; j <= nb; ++j )
+  {
+    params.SetCoord( f.GetVInd(), double( j )/ nb );
+    for ( int i = 0; i <= nb; ++i )
+    {
+      params.SetCoord( f.GetUInd(), double( i )/ nb );
+      gp_XYZ p = f.Point( params );
+      gp_XY uv = f.GetUV( params );
+      cout << "mesh.AddNode( " << p.X() << ", " << p.Y() << ", " << p.Z() << " )"
+           << " # " << 1 + i + j * ( nb + 1 )
+           << " ( " << i << ", " << j << " ) "
+           << " UV( " << uv.X() << ", " << uv.Y() << " )" << endl;
+      ShellPoint( params, p2 );
+      double dist = ( p2 - p ).Modulus();
+      if ( dist > 1e-4 )
+        cout << "#### dist from ShellPoint " << dist
+             << " (" << p2.X() << ", " << p2.Y() << ", " << p2.Z() << " ) " << endl;
+    }
+  }
+  for ( int j = 0; j < nb; ++j )
+    for ( int i = 0; i < nb; ++i )
+    {
+      int n = 1 + i + j * ( nb + 1 );
+      cout << "mesh.AddFace([ "
+           << n << ", " << n+1 << ", "
+           << n+nb+2 << ", " << n+nb+1 << "]) " << endl;
+    }
+  
+#endif
 }
 
 //================================================================================
@@ -2930,6 +3038,52 @@ double StdMeshers_PrismAsBlock::TSideFace::GetColumns(const double      U,
     r = ( u - uf ) / ( ul - uf );
   }
   return r;
+}
+
+//================================================================================
+/*!
+ * \brief Return all nodes at a given height together with their normalized parameters
+ *  \param [in] Z - the height of interest
+ *  \param [out] nodes - map of parameter to node
+ */
+//================================================================================
+
+void StdMeshers_PrismAsBlock::
+TSideFace::GetNodesAtZ(const int Z,
+                       map<double, const SMDS_MeshNode* >& nodes ) const
+{
+  if ( !myComponents.empty() )
+  {
+    double u0 = 0.;
+    for ( size_t i = 0; i < myComponents.size(); ++i )
+    {
+      map<double, const SMDS_MeshNode* > nn;
+      myComponents[i]->GetNodesAtZ( Z, nn );
+      map<double, const SMDS_MeshNode* >::iterator u2n = nn.begin();
+      if ( !nodes.empty() && nodes.rbegin()->second == u2n->second )
+        ++u2n;
+      const double uRange = myParams[i].second - myParams[i].first;
+      for ( ; u2n != nn.end(); ++u2n )
+        nodes.insert( nodes.end(), make_pair( u0 + uRange * u2n->first, u2n->second ));
+      u0 += uRange;
+    }
+  }
+  else
+  {
+    double f = myParams[0].first, l = myParams[0].second;
+    if ( !myIsForward )
+      std::swap( f, l );
+    const double uRange = l - f;
+    if ( Abs( uRange ) < std::numeric_limits<double>::min() )
+      return;
+    TParam2ColumnIt u2col = getColumn( myParamToColumnMap, myParams[0].first + 1e-3 );
+    for ( ; u2col != myParamToColumnMap->end(); ++u2col )
+      if ( u2col->first > myParams[0].second + 1e-9 )
+        break;
+      else
+        nodes.insert( nodes.end(),
+                      make_pair( ( u2col->first - f ) / uRange, u2col->second[ Z ] ));
+  }
 }
 
 //================================================================================
@@ -3339,6 +3493,79 @@ void StdMeshers_PrismAsBlock::THorizontalEdgeAdaptor::dumpNodes(int nbNodes) con
     cout << col->second[ i ]->GetID();
 #endif
 }
+
+//================================================================================
+/*!
+ * \brief Costructor of TPCurveOnHorFaceAdaptor fills its map of
+ * normalized parameter to node UV on a horizontal face
+ *  \param [in] sideFace - lateral prism side
+ *  \param [in] isTop - is \a horFace top or bottom of the prism
+ *  \param [in] horFace - top or bottom face of the prism
+ */
+//================================================================================
+
+StdMeshers_PrismAsBlock::
+TPCurveOnHorFaceAdaptor::TPCurveOnHorFaceAdaptor( const TSideFace*   sideFace,
+                                                  const bool         isTop,
+                                                  const TopoDS_Face& horFace)
+{
+  if ( sideFace && !horFace.IsNull() )
+  {
+    //cout << "\n\t FACE " << sideFace->FaceID() << endl;
+    const int Z = isTop ? sideFace->ColumnHeight() - 1 : 0;
+    map<double, const SMDS_MeshNode* > u2nodes;
+    sideFace->GetNodesAtZ( Z, u2nodes );
+
+    SMESH_MesherHelper helper( *sideFace->GetMesh() );
+    helper.SetSubShape( horFace );
+
+    bool okUV;
+    gp_XY uv;
+    double f,l;
+    Handle(Geom2d_Curve) C2d;
+    int edgeID = -1;
+    const double tol = 10 * helper.MaxTolerance( horFace );
+    const SMDS_MeshNode* prevNode = u2nodes.rbegin()->second;
+
+    map<double, const SMDS_MeshNode* >::iterator u2n = u2nodes.begin();
+    for ( ; u2n != u2nodes.end(); ++u2n )
+    {
+      const SMDS_MeshNode* n = u2n->second;
+      okUV = false;
+      if ( n->GetPosition()->GetTypeOfPosition() == SMDS_TOP_EDGE )
+      {
+        if ( n->getshapeId() != edgeID )
+        {
+          C2d.Nullify();
+          edgeID = n->getshapeId();
+          TopoDS_Shape S = helper.GetSubShapeByNode( n, helper.GetMeshDS() );
+          if ( !S.IsNull() && S.ShapeType() == TopAbs_EDGE )
+          {
+            C2d = BRep_Tool::CurveOnSurface( TopoDS::Edge( S ), horFace, f,l );
+          }
+        }
+        if ( !C2d.IsNull() )
+        {
+          double u = static_cast< const SMDS_EdgePosition* >( n->GetPosition() )->GetUParameter();
+          if ( f <= u && u <= l )
+          {
+            uv = C2d->Value( u ).XY();
+            okUV = helper.CheckNodeUV( horFace, n, uv, tol );
+          }
+        }
+      }
+      if ( !okUV )
+        uv = helper.GetNodeUV( horFace, n, prevNode, &okUV );
+
+      myUVmap.insert( myUVmap.end(), make_pair( u2n->first, uv ));
+      // cout << n->getshapeId() << " N " << n->GetID()
+      //      << " \t" << uv.X() << ", " << uv.Y() << " \t" << u2n->first << endl;
+
+      prevNode = n;
+    }
+  }
+}
+
 //================================================================================
 /*!
  * \brief Return UV on pcurve for the given normalized parameter
@@ -3349,9 +3576,16 @@ void StdMeshers_PrismAsBlock::THorizontalEdgeAdaptor::dumpNodes(int nbNodes) con
 
 gp_Pnt2d StdMeshers_PrismAsBlock::TPCurveOnHorFaceAdaptor::Value(const Standard_Real U) const
 {
-  TParam2ColumnIt u_col1, u_col2;
-  double r = mySide->GetColumns( U, u_col1, u_col2 );
-  gp_XY uv1 = mySide->GetNodeUV( myFace, u_col1->second[ myZ ], u_col2->second[ myZ ]);
-  gp_XY uv2 = mySide->GetNodeUV( myFace, u_col2->second[ myZ ], u_col1->second[ myZ ]);
-  return uv1 * ( 1 - r ) + uv2 * r;
+  map< double, gp_XY >::const_iterator i1 = myUVmap.upper_bound( U );
+
+  if ( i1 == myUVmap.end() )
+    return myUVmap.rbegin()->second;
+
+  if ( i1 == myUVmap.begin() )
+    return (*i1).second;
+
+  map< double, gp_XY >::const_iterator i2 = i1--;
+
+  double r = ( U - i1->first ) / ( i2->first - i1->first );
+  return i1->second * ( 1 - r ) + i2->second * r;
 }

@@ -267,7 +267,7 @@ private:
     TopoDS_Edge                     myBaseEdge;
     map< int, PSurface >            myShapeID2Surf;
     // first and last normalized params and orientaion for each component or it-self
-    std::vector< std::pair< double, double> > myParams;
+    std::vector< std::pair< double, double> > myParams; // select my columns in myParamToColumnMap
     bool                            myIsForward;
     std::vector< TSideFace* >       myComponents;
     SMESH_MesherHelper              myHelper;
@@ -287,6 +287,7 @@ private:
     bool IsComplex() const
     { return ( NbComponents() > 0 || myParams[0].first != 0. || myParams[0].second != 1. ); }
     int FaceID() const { return myID; }
+    SMESH_Mesh* GetMesh() const { return myHelper.GetMesh(); }
     TParam2ColumnMap* GetColumns() const { return myParamToColumnMap; }
     gp_XY GetNodeUV(const TopoDS_Face& F, const SMDS_MeshNode* n, const SMDS_MeshNode* n2=0) const
     { return ((SMESH_MesherHelper&) myHelper).SetSubShape(F), myHelper.GetNodeUV( F, n, n2 ); }
@@ -295,6 +296,7 @@ private:
       if ( NbComponents() ) return GetComponent(0)->GetColumns()->begin()->second.size();
       else                  return GetColumns()->begin()->second.size(); }
     double GetColumns(const double U, TParam2ColumnIt & col1, TParam2ColumnIt& col2 ) const;
+    void GetNodesAtZ(const int Z, std::map<double, const SMDS_MeshNode* >& nodes ) const;
     int NbComponents() const { return myComponents.size(); }
     TSideFace* GetComponent(const int i) const { return myComponents.at( i ); }
     void SetComponent(const int i, TSideFace* c)
@@ -358,14 +360,11 @@ private:
   // --------------------------------------------------------------------
   class STDMESHERS_EXPORT TPCurveOnHorFaceAdaptor: public Adaptor2d_Curve2d
   {
-    const TSideFace*  mySide;
-    int               myZ;
-    TopoDS_Face       myFace;
+    std::map< double, gp_XY > myUVmap; // normalized parameter to UV on a horizontal face
   public:
     TPCurveOnHorFaceAdaptor( const TSideFace*   sideFace,
                              const bool         isTop,
-                             const TopoDS_Face& horFace)
-      : mySide(sideFace), myFace(horFace), myZ(isTop ? mySide->ColumnHeight() - 1 : 0 ) {}
+                             const TopoDS_Face& horFace);
     gp_Pnt2d Value(const Standard_Real U) const;
     Standard_Real FirstParameter() const { return 0; }
     Standard_Real LastParameter() const { return 1; }
@@ -390,6 +389,11 @@ private:
     myError = SMESH_ComputeError::New(error,comment);
     return myError->IsOK();
   }
+  /*!
+   * \brief Prints a script creating a normal grid on the prism side
+   */
+  void faceGridToPythonDump(const SMESH_Block::TShapeID face);
+
 }; // class StdMeshers_PrismAsBlock
 
 // =============================================
@@ -459,14 +463,14 @@ private:
    *  and projection is possible and allowed, perform the projection
     * \retval bool - is a success or not
    */
-  bool assocOrProjBottom2Top();
+  bool assocOrProjBottom2Top( const gp_Trsf & bottomToTopTrsf );
 
   /*!
    * \brief Remove quadrangles from the top face and
    *        create triangles there by projection from the bottom
     * \retval bool - a success or not
    */
-  bool projectBottomToTop();
+  bool projectBottomToTop( const gp_Trsf & bottomToTopTrsf );
 
   /*!
    * \brief Project mesh faces from a source FACE of one prism to
