@@ -193,12 +193,13 @@ public:
   // If the2D, smoothing is performed using UV parameters of nodes
   // on geometrical faces
 
+  typedef TIDTypeCompare TElemSort;
   typedef std::map < const SMDS_MeshElement*,
-    std::list<const SMDS_MeshElement*>, TIDTypeCompare >                   TTElemOfElemListMap;
+    std::list<const SMDS_MeshElement*>, TElemSort >                        TTElemOfElemListMap;
   typedef std::map<const SMDS_MeshNode*, std::list<const SMDS_MeshNode*> > TNodeOfNodeListMap;
   typedef TNodeOfNodeListMap::iterator                                     TNodeOfNodeListMapItr;
   typedef std::vector<TNodeOfNodeListMapItr>                               TVecOfNnlmiMap;
-  typedef std::map<const SMDS_MeshElement*, TVecOfNnlmiMap, TIDCompare >   TElemOfVecOfNnlmiMap;
+  typedef std::map<const SMDS_MeshElement*, TVecOfNnlmiMap, TElemSort >    TElemOfVecOfNnlmiMap;
   typedef std::auto_ptr< std::list<int> > PGroupIDs;
 
   PGroupIDs RotationSweep (TIDSortedElemSet & theElements,
