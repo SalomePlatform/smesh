@@ -177,6 +177,10 @@ namespace MeshEditor_I {
       return _myMeshDS->AddNodeWithID(anElemNode->X(), anElemNode->Y(), anElemNode->Z(),
                                       anElemNode->GetID());
     }
+    void RemoveAll()
+    {
+      GetMeshDS()->ClearMesh();
+    }
   };// struct TPreviewMesh
 
   static SMESH_NodeSearcher *    theNodeSearcher    = 0;
@@ -468,7 +472,7 @@ SMESH_MeshEditor_i::~SMESH_MeshEditor_i()
 void SMESH_MeshEditor_i::initData(bool deleteSearchers)
 {
   if ( myIsPreviewMode ) {
-    if ( myPreviewMesh ) myPreviewMesh->Clear();
+    if ( myPreviewMesh ) myPreviewMesh->RemoveAll();
   }
   else {
     if ( deleteSearchers )
