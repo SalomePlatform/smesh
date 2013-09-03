@@ -246,6 +246,8 @@ public:
                           const gp_XYZ& theParamsHint = gp_XYZ(-1,-1,-1));
   // compute point parameters in the block.
   // Note: for edges, it is better to use EdgeParameters()
+  // Return false only in case of "hard" failure, use IsToleranceReached() etc
+  // to evaluate quality of the found solution
 
   bool VertexParameters(const int theVertexID, gp_XYZ& theParams);
   // return parameters of a vertex given by TShapeID
@@ -253,14 +255,18 @@ public:
   bool EdgeParameters(const int theEdgeID, const double theU, gp_XYZ& theParams);
   // return parameters of a point given by theU on edge
 
+  void SetTolerance(const double tol);
+  // set tolerance for ComputeParameters()
 
- public:
-  // ---------------
-  // Block geometry
-  // ---------------
+  double GetTolerance() const { return myTolerance; }
+  // return current tolerance of ComputeParameters()
 
-  
-  
+  bool IsToleranceReached() const;
+  // return true if solution found by ComputeParameters() is within the tolerance
+
+  double DistanceReached() const { return distance(); }
+  // return distance between solution found by ComputeParameters() and thePoint
+
  public:
   // ---------
   // Services
@@ -352,6 +358,10 @@ public:
     int GetUInd() const { return myCoordInd[ 0 ]; }
     int GetVInd() const { return myCoordInd[ 2 ]; }
     void GetCoefs( int i, const gp_XYZ& theParams, double& eCoef, double& vCoef ) const;
+    const Adaptor3d_Surface* Surface() const { return myS; }
+    bool IsUVInQuad( const gp_XY& uv,
+                     const gp_XYZ& param0, const gp_XYZ& param1,
+                     const gp_XYZ& param2, const gp_XYZ& param3 ) const;
     TFace(): myS(0) { myC2d[0]=myC2d[1]=myC2d[2]=myC2d[3]=0; }
     ~TFace();
   };
@@ -369,7 +379,9 @@ public:
   enum { SQUARE_DIST = 0, DRV_1, DRV_2, DRV_3 };
   double distance () const { return sqrt( myValues[ SQUARE_DIST ]); }
   double funcValue(double sqDist) const { return mySquareFunc ? sqDist : sqrt(sqDist); }
-  bool computeParameters(const gp_Pnt& thePoint, gp_XYZ& theParams, const gp_XYZ& theParamsHint);
+  bool computeParameters(const gp_Pnt& thePoint, gp_XYZ& theParams, const gp_XYZ& theParamsHint, int);
+  void refineParametersOnFace( const gp_Pnt& thePoint, gp_XYZ& theParams, int theFaceID );
+  bool saveBetterSolution( const gp_XYZ& theNewParams, gp_XYZ& theParams, double sqDistance );
 
   int      myFaceIndex;
   double   myFaceParam;
