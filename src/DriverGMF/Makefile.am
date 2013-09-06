@@ -47,7 +47,7 @@ libMeshDriverGMF_la_CPPFLAGS = \
 	-I$(srcdir)/../SMESHDS
 
 libMeshDriverGMF_la_LDFLAGS  = \
-	$(BOOST_LIBS) -lboost_filesystem \
+	$(BOOST_LIBS) -lboost_filesystem$(BOOST_LIBSUFFIX) \
 	../Driver/libMeshDriver.la \
 	../SMESHUtils/libSMESHUtils.la \
 	$(KERNEL_LDFLAGS) -lSALOMEBasics
