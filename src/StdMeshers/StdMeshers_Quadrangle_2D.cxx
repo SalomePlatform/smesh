@@ -961,7 +961,7 @@ FaceQuadStruct::Ptr StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         
       }
     }
   }
-  if (nbSides != 4) {
+  if (nbSides != 4 && myHelper) {
 #ifdef _DEBUG_
     MESSAGE ("StdMeshers_Quadrangle_2D. Edge IDs of " << nbSides << " sides:\n");
     for (int i = 0; i < nbSides; ++i) {
