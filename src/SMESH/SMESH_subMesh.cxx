@@ -1561,6 +1561,9 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
         }
         // Compute
 
+        // to restore cout that may be redirected by algo
+        std::streambuf* coutBuffer = std::cout.rdbuf();
+
         //cleanDependants(); for "UseExisting_*D" algos
         //removeSubMeshElementsAndNodes();
         loadDependentMeshes();
@@ -1641,6 +1644,8 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           else
             ret = false;
         }
+        std::cout.rdbuf( coutBuffer ); // restore cout that could be redirected by algo
+
         // check if an error reported on any sub-shape
         bool isComputeErrorSet = !checkComputeError( algo, ret, shape );
         if ( isComputeErrorSet )
