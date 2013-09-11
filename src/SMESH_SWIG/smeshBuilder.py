@@ -553,7 +553,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
 
     ## Creates a Mesh object importing data from the given GMF file.
     #  GMF files must have .mesh extension for the ASCII format and .meshb for
-    #  the bynary format.
+    #  the binary format.
     #  @return [ an instance of Mesh class, SMESH.ComputeError ]
     #  @ingroup l2_impexp
     def CreateMeshesFromGMF( self, theFileName ):
