@@ -961,13 +961,13 @@ FaceQuadStruct::Ptr StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         
       }
     }
   }
-  if (nbSides != 4 && myHelper) {
+  if (nbSides != 4 ) {
 #ifdef _DEBUG_
     MESSAGE ("StdMeshers_Quadrangle_2D. Edge IDs of " << nbSides << " sides:\n");
     for (int i = 0; i < nbSides; ++i) {
       MESSAGE (" (");
       for (int e = 0; e < quad->side[i]->NbEdges(); ++e)
-        MESSAGE (myHelper->GetMeshDS()->ShapeToIndex(quad->side[i]->Edge(e)) << " ");
+        MESSAGE (aMesh.GetMeshDS()->ShapeToIndex(quad->side[i]->Edge(e)) << " ");
       MESSAGE (")\n");
     }
 #endif
