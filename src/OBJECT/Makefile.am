@@ -87,6 +87,6 @@ libSMESHObject_la_LDFLAGS  = \
         $(GUI_LDFLAGS) -lSalomeApp -lSalomeObject -lSVTK -lVTKViewer -lqtx -lsuit -lstd \
 	-lPlot2d \
 	-lSPlot2d \
-	$(GEOM_LDFLAGS) -lGEOMObject \
+	$(GEOM_LDFLAGS) -lGEOMObject -lOCC2VTK -lSalomeIDLGEOM \
 	$(CAS_KERNEL) \
         $(VTK_LIBS) $(QT_MT_LIBS)
