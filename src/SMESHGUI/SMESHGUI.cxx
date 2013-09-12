@@ -116,6 +116,8 @@
 
 #include <VTKViewer_Algorithm.h>
 
+#include <PyInterp_Interp.h>
+
 #include <SUIT_Desktop.h>
 #include <SUIT_FileDlg.h>
 #include <SUIT_MessageBox.h>
@@ -4603,18 +4605,17 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
 
   // import Python module that manages SMESH plugins (need to be here because SalomePyQt API uses active module)
   PyGILState_STATE gstate = PyGILState_Ensure();
-  PyObject* pluginsmanager=PyImport_ImportModuleNoBlock((char*)"salome_pluginsmanager");
-  if(pluginsmanager==NULL)
+  PyObjWrapper pluginsmanager = PyImport_ImportModuleNoBlock((char*)"salome_pluginsmanager");
+  if ( !pluginsmanager ) {
     PyErr_Print();
-  else
-    {
-      PyObject* result=PyObject_CallMethod( pluginsmanager, (char*)"initialize", (char*)"isss",1,"smesh",tr("MEN_MESH").toStdString().c_str(),tr("SMESH_PLUGINS_OTHER").toStdString().c_str());
-      if(result==NULL)
-        PyErr_Print();
-      Py_XDECREF(result);
-    }
+  }
+  else {
+    PyObjWrapper result = PyObject_CallMethod( pluginsmanager, (char*)"initialize", (char*)"isss",1,"smesh",tr("MEN_MESH").toStdString().c_str(),tr("SMESH_PLUGINS_OTHER").toStdString().c_str());
+    if ( !result )
+      PyErr_Print();
+  }
   PyGILState_Release(gstate);
-  // end of GEOM plugins loading
+  // end of SMESH plugins loading
 
   // Reset actions accelerator keys
   //action(111)->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_B)); // Import DAT
