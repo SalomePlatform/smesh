@@ -72,7 +72,7 @@ libSMESHClient_la_LDFLAGS  = \
 	$(KERNEL_LDFLAGS) -lSalomeLifeCycleCORBA -lSalomeNS -lOpUtil -lSALOMEBasics -lSalomeContainer -lSalomeHDFPersist -lSalomeGenericObj \
 	-lRegistry -lResourcesManager -lSalomeResourcesManager -lSalomeNotification \
 	-lSalomeIDLKernel -lSALOMELocalTrace \
-	$(GEOM_LDFLAGS) -lNMTDS -lSalomeIDLGEOM \
+	$(GEOM_LDFLAGS) -lSalomeIDLGEOM \
 	$(CAS_KERNEL)
 
 
