@@ -25,12 +25,14 @@
 //
 #include "SMESH_NumberFilter.hxx"
 
+#include <SALOME_LifeCycleCORBA.hxx>
+
 #include "GEOM_Client.hxx"
-#include "GeometryGUI.h"
 
 #include "SUIT_Application.h"
 #include "SUIT_Session.h"
 
+#include "SalomeApp_Application.h"
 #include "SalomeApp_Study.h"
 #include "LightApp_DataOwner.h"
 
@@ -104,11 +106,16 @@ bool SMESH_NumberFilter::isOk (const SUIT_DataOwner* theDataOwner) const
   if (aGeomObj->_is_nil())
     return false;
 
+  // Get GEOM engine
+  Engines::EngineComponent_var comp =
+    SalomeApp_Application::lcc()->FindOrLoad_Component( "FactoryServer", "GEOM" );
+  GEOM::GEOM_Gen_var geomEngine = GEOM::GEOM_Gen::_narrow( comp );
+  if ( CORBA::is_nil( geomEngine ) )
+    return false;
+
   // Get shape from geom object and verify its parameters
   GEOM_Client aGeomClient;
-  if ( CORBA::is_nil( GeometryGUI::GetGeomGen() ) && !GeometryGUI::InitGeomGen() )
-    return false;
-  TopoDS_Shape aShape = aGeomClient.GetShape(GeometryGUI::GetGeomGen(), aGeomObj);
+  TopoDS_Shape aShape = aGeomClient.GetShape(geomEngine.in(), aGeomObj);
   if (aShape.IsNull() ||
       !myShapeTypes.Contains(aShape.ShapeType()))
     return false;
@@ -118,7 +125,7 @@ bool SMESH_NumberFilter::isOk (const SUIT_DataOwner* theDataOwner) const
 
   // Verify whether shape of entry object is sub-shape of myMainObj
   if (!myMainObj->_is_nil()) {
-    TopoDS_Shape aMainShape = aGeomClient.GetShape(GeometryGUI::GetGeomGen(), myMainObj);
+    TopoDS_Shape aMainShape = aGeomClient.GetShape(geomEngine.in(), myMainObj);
     if (aMainShape.IsNull())
       return false;
 
