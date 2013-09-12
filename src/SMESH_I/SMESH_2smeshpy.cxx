@@ -455,14 +455,35 @@ namespace {
  */
 //================================================================================
 
-TCollection_AsciiString
-SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString&            theScript,
+void
+SMESH_2smeshpy::ConvertScript(TCollection_AsciiString&                  theScript,
                               Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod,
                               Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
                               std::set< TCollection_AsciiString >&      theRemovedObjIDs,
                               SALOMEDS::Study_ptr&                      theStudy,
                               const bool                                theToKeepAllCommands)
 {
+  // process notebook variables
+  {
+    SMESH_NoteBook aNoteBook;
+
+    int from = 1, end = theScript.Length(), to;
+    while ( from < end && ( to = theScript.Location( "\n", from, end )))
+    {
+      if ( to != from )
+        // cut out and store a command
+        aNoteBook.AddCommand( theScript.SubString( from, to - 1 ));
+      from = to + 1;
+    }
+    theScript.Clear();
+
+    aNoteBook.ReplaceVariables();
+
+    theScript = aNoteBook.GetResultScript();
+  }
+
+  // convert to smeshBuilder.py API
+
   theGen = new _pyGen( theEntry2AccessorMethod,
                        theObjectNames,
                        theRemovedObjIDs,
@@ -470,33 +491,15 @@ SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString&            theScrip
                        theToKeepAllCommands );
 
   // split theScript into separate commands
-
-  SMESH_NoteBook * aNoteBook = new SMESH_NoteBook();
-
   int from = 1, end = theScript.Length(), to;
   while ( from < end && ( to = theScript.Location( "\n", from, end )))
   {
     if ( to != from )
       // cut out and store a command
-      aNoteBook->AddCommand( theScript.SubString( from, to - 1 ));
+      theGen->AddCommand( theScript.SubString( from, to - 1 ));
     from = to + 1;
   }
-
-  aNoteBook->ReplaceVariables();
-
-  TCollection_AsciiString aNoteScript = aNoteBook->GetResultScript();
-  delete aNoteBook;
-  aNoteBook = 0;
-
-  // split theScript into separate commands
-  from = 1, end = aNoteScript.Length();
-  while ( from < end && ( to = aNoteScript.Location( "\n", from, end )))
-  {
-    if ( to != from )
-      // cut out and store a command
-      theGen->AddCommand( aNoteScript.SubString( from, to - 1 ));
-    from = to + 1;
-  }
+  theScript.Clear();
 
   // finish conversion
   theGen->Flush();
@@ -518,7 +521,7 @@ SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString&            theScrip
   } while ( orderChanges );
 
   // concat commands back into a script
-  TCollection_AsciiString aScript, aPrevCmd;
+  TCollection_AsciiString aPrevCmd;
   set<_pyID> createdObjects;
   createdObjects.insert( "smeshBuilder" );
   createdObjects.insert( "smesh" );
@@ -532,17 +535,15 @@ SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString&            theScrip
       CheckObjectPresence( *cmd, createdObjects );
       if ( !(*cmd)->IsEmpty() ) {
         aPrevCmd = (*cmd)->GetString();
-        aScript += "\n";
-        aScript += aPrevCmd;
+        theScript += "\n";
+        theScript += aPrevCmd;
       }
     }
   }
-  aScript += "\n";
+  theScript += "\n";
 
   theGen->Free();
   theGen.Nullify();
-
-  return aScript;
 }
 
 //================================================================================

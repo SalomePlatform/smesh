@@ -46,12 +46,11 @@ class Resource_DataMapOfAsciiStringAsciiString;
  */
 // ===========================================================================================
 
-class SMESH_2smeshpy
+namespace SMESH_2smeshpy
 {
-public:
   /*!
    * \brief Convert a python script using commands of smeshBuilder.py
-   * \param theScript - Input script
+   * \param theScript - the Input script to convert
    * \param theEntry2AccessorMethod - returns method names to access to
    *        objects wrapped with python class
    * \param theObjectNames - names of objects
@@ -60,8 +59,8 @@ public:
    *        to exclude commands relating to objects removed from study
    * \retval TCollection_AsciiString - Convertion result
    */
-  static TCollection_AsciiString
-  ConvertScript(const TCollection_AsciiString&            theScript,
+  void
+  ConvertScript(TCollection_AsciiString&                  theScript,
                 Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod,
                 Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
                 std::set< TCollection_AsciiString >&      theRemovedObjIDs,

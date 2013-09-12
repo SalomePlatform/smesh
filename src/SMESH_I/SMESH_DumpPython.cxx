@@ -984,9 +984,9 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   Resource_DataMapOfAsciiStringAsciiString anEntry2AccessorMethod;
   std::set< TCollection_AsciiString >      aRemovedObjIDs;
   if ( !getenv("NO_2smeshpy_conversion"))
-    aScript = SMESH_2smeshpy::ConvertScript( aScript, anEntry2AccessorMethod,
-                                             theObjectNames, aRemovedObjIDs,
-                                             theStudy, isHistoricalDump );
+    SMESH_2smeshpy::ConvertScript( aScript, anEntry2AccessorMethod,
+                                   theObjectNames, aRemovedObjIDs,
+                                   theStudy, isHistoricalDump );
 
   // Replace characters used instead of quote marks to quote notebook variables
   {
