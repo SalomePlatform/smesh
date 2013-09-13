@@ -1176,7 +1176,7 @@ class Mesh:
                     else:
                         geo_name = "%s_%s to mesh"%(self.geom.GetShapeType(), id(self.geom)%100)
                     geompyD.addToStudy( self.geom, geo_name )
-                self.mesh = self.smeshpyD.CreateMesh(self.geom)
+                self.SetMesh( self.smeshpyD.CreateMesh(self.geom) )
 
             elif isinstance(obj, SMESH._objref_SMESH_Mesh):
                 self.SetMesh(obj)
@@ -1199,7 +1199,17 @@ class Mesh:
             if isinstance( attr, algoCreator ):
                 #print "algoCreator ", attrName
                 setattr( self, attrName, attr.copy( self ))
+                pass
+            pass
+        pass
 
+    ## Destructor. Clean-up resources
+    def __del__(self):
+        if self.mesh:
+            self.mesh.UnRegister()
+            pass
+        pass
+        
     ## Initializes the Mesh object from an instance of SMESH_Mesh interface
     #  @param theMesh a SMESH_Mesh object
     #  @ingroup l2_construct
