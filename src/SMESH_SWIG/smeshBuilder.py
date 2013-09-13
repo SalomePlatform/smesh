@@ -1181,7 +1181,7 @@ class Mesh:
             elif isinstance(obj, SMESH._objref_SMESH_Mesh):
                 self.SetMesh(obj)
         else:
-            self.mesh = self.smeshpyD.CreateEmptyMesh()
+            self.SetMesh( self.smeshpyD.CreateEmptyMesh() )
         if name:
             self.smeshpyD.SetName(self.mesh, name)
         elif objHasName:
@@ -1219,6 +1219,7 @@ class Mesh:
         if self.mesh:
             self.mesh.Register()
             self.geom = self.mesh.GetShapeToMesh()
+        pass
 
     ## Returns the mesh, that is an instance of SMESH_Mesh interface
     #  @return a SMESH_Mesh object
