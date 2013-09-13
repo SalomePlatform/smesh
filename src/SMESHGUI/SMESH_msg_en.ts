@@ -4303,6 +4303,10 @@ Please, create VTK viewer and try again</translation>
         <translation>Surface color</translation>
     </message>
     <message>
+        <source>PREF_PREVIEW_COLOR</source>
+        <translation>Preview color</translation>
+    </message>
+    <message>
         <source>PREF_NOTIFY_MODE</source>
         <translation>Show a computation result notification</translation>
     </message>

@@ -39,6 +39,7 @@
 #include <vtkCell.h>
 #include <vtkDataSetMapper.h>
 #include <vtkPolyhedron.h>
+#include <vtkCellData.h>
 
 #include <Utils_SALOME_Exception.hxx>
 
@@ -53,6 +54,7 @@ SMESH_SVTKActor::SMESH_SVTKActor():
 {
   my0DActor = SVTK_DeviceActor::New();
   myBallActor = SVTK_DeviceActor::New();
+  myBallActor->SetBallEnabled(true);
 
   myBallActor->SetResolveCoincidentTopology(false);
   myBallActor->SetCoincident3DAllowed(true);
@@ -121,8 +123,18 @@ SMESH_SVTKActor
   SVTK::CopyPoints( GetSource(), aSourceDataSet );
   SVTK::CopyPoints( myBallGrid, aSourceDataSet );
   SVTK::CopyPoints( my0DGrid,    aSourceDataSet );
+  
 
   int aNbOfParts = theMapIndex.Extent();
+
+  vtkCellData* cd = 0;
+  vtkCellData* outputCD = 0;
+  //Copy deamaters of the balls
+  if(myVisualObj) {
+    outputCD = myBallGrid->GetCellData();
+    cd = aSourceDataSet->GetCellData();
+  }
+  outputCD->CopyAllocate(cd,aNbOfParts,aNbOfParts/2);
   for(int ind = 1; ind <= aNbOfParts; ind++){
     int aPartId = theMapIndex( ind );
     if(vtkCell* aCell = theMapActor->GetElemCell(aPartId))
@@ -132,7 +144,10 @@ SMESH_SVTKActor
         if(aCell->GetCellType() == VTK_VERTEX ) {
           my0DGrid->InsertNextCell(aCell->GetCellType(),aCell->GetPointIds());
         } else if(aCell->GetCellType() == VTK_POLY_VERTEX ) {
-          myBallGrid->InsertNextCell(aCell->GetCellType(),aCell->GetPointIds());
+	  vtkIdType newCellId = myBallGrid->InsertNextCell(aCell->GetCellType(),aCell->GetPointIds());
+	  if(myVisualObj) {
+	    outputCD->CopyData(cd, myVisualObj->GetElemVTKId(aPartId), newCellId);
+	  }
         } else {
           myUnstructuredGrid->InsertNextCell(aCell->GetCellType(),aCell->GetPointIds());
         }
@@ -180,5 +195,9 @@ void SMESH_SVTKActor::Set0DSize(float theSize) {
 
 void SMESH_SVTKActor::SetBallSize(float theSize) {
   myBallActor->GetProperty()->SetPointSize(theSize);
+}
+
+void SMESH_SVTKActor::SetVisualObject(TVisualObjPtr theVisualObj) {
+  myVisualObj = theVisualObj;
 }
 

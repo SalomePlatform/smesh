@@ -30,6 +30,7 @@
 
 #include "SMDS_Mesh.hxx"
 #include "SMDS_PolyhedralVolumeOfNodes.hxx"
+#include "SMDS_BallElement.hxx"
 #include "SMESH_Actor.h"
 #include "SMESH_ControlsDef.hxx"
 #include "SalomeApp_Application.h"
@@ -43,7 +44,7 @@
 #include <vtkIdList.h>
 #include <vtkCellArray.h>
 #include <vtkUnsignedCharArray.h>
-
+#include <vtkCellData.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <memory>
@@ -279,7 +280,9 @@ void SMESH_VisualObjDef::buildPrs(bool buildGrid)
         //MESSAGE(myGrid->GetReferenceCount());
         //MESSAGE( "Update - myGrid->GetNumberOfCells() = "<<myGrid->GetNumberOfCells() );
         //MESSAGE( "Update - myGrid->GetNumberOfPoints() = "<<myGrid->GetNumberOfPoints() );
-        if( MYDEBUGWITHFILES ) SMESH::WriteUnstructuredGrid( myGrid,"buildPrs.vtu" );
+        if( MYDEBUGWITHFILES ) {
+	  SMESH::WriteUnstructuredGrid( myGrid,"myPrs.vtu" );
+	}
   }
 }
 
@@ -417,7 +420,13 @@ void SMESH_VisualObjDef::buildElemPrs()
   aConnect.reserve(VTK_CELL_SIZE);
 
   SMDS_Mesh::CheckMemory(); // PAL16631
-
+  bool hasBalls = nbEnts[ SMDSAbs_Ball ] > 0;
+  vtkDataArray* aScalars = 0;
+  if(hasBalls) {
+    aScalars = vtkDataArray::CreateDataArray(VTK_DOUBLE);
+    aScalars->SetNumberOfComponents(1);
+    aScalars->SetNumberOfTuples(aNbCells);
+  }
   for ( int i = 0; i < nbTypes; i++ ) // iterate through all types of elements
   {
     if ( nbEnts[ aTypes[ i ] ] > 0 ) {
@@ -475,8 +484,19 @@ void SMESH_VisualObjDef::buildElemPrs()
             }
           }
         }
-        aConnectivity->InsertNextCell( anIdList );
+        vtkIdType aCurId = aConnectivity->InsertNextCell( anIdList );
         aCellTypesArray->InsertNextValue( vtkElemType );
+	
+	//Store diameters of the balls
+	if(aScalars) {
+	  double aDiam = 0;
+	  if(aType == SMDSAbs_Ball) {
+	    if (const SMDS_BallElement* ball = dynamic_cast<const SMDS_BallElement*>(anElem) ) {
+	      aDiam = ball->GetDiameter();
+	    }
+	  }
+	  aScalars->SetTuple(aCurId,&aDiam);
+	}
 
         iElem++;
       }
@@ -497,6 +517,7 @@ void SMESH_VisualObjDef::buildElemPrs()
     aCellLocationsArray->SetValue( idType, aConnectivity->GetTraversalLocation( npts ) );
 
   myGrid->SetCells( aCellTypesArray, aCellLocationsArray,aConnectivity );
+  myGrid->GetCellData()->SetScalars(aScalars);
 
   aCellLocationsArray->Delete();
   aCellTypesArray->Delete();

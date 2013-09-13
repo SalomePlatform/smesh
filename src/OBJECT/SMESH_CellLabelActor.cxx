@@ -27,6 +27,7 @@
 
 #include <VTKViewer_TransformFilter.h>
 #include <VTKViewer_CellCenters.h>
+#include <VTKViewer_ExtractUnstructuredGrid.h>
 
 #include <vtkObjectFactory.h>
 #include <vtkCallbackCommand.h>
@@ -152,7 +153,9 @@ void SMESH_CellLabelActor::SetCellsLabeled(bool theIsCellsLabeled) {
     vtkIntArray *anArray = vtkIntArray::New();
     anArray->SetNumberOfValues(aNbElem);
     for(int anId = 0; anId < aNbElem; anId++){
-      int aSMDSId = myVisualObj->GetElemObjId(anId);
+      vtkIdType id = myExtractUnstructuredGrid->GetInputId(anId);
+      id = (id >=0) ? id : anId; 
+      int aSMDSId = myVisualObj->GetElemObjId(id);
       anArray->SetValue(anId,aSMDSId);
     }
     aDataSet->GetCellData()->SetScalars(anArray);

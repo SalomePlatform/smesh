@@ -68,12 +68,15 @@ public:
   void
   RemoveFromRender(vtkRenderer* theRendere);
 
+  void SetVisualObject(TVisualObjPtr theVisualObj);
+
  protected:
   SVTK_DeviceActor* my0DActor;
   SVTK_DeviceActor* myBallActor;
 
   vtkUnstructuredGrid* my0DGrid;
   vtkUnstructuredGrid* myBallGrid;
+  TVisualObjPtr myVisualObj;
   
   SMESH_SVTKActor();
   virtual ~SMESH_SVTKActor();

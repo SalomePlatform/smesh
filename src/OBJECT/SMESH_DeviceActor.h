@@ -144,6 +144,7 @@ class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
   bool IsImplicitFunctionUsed() const{ return myIsImplicitFunctionUsed;}
 
   void SetMarkerEnabled( bool );
+  void SetBallEnabled( bool );
   void SetMarkerStd( VTK::MarkerType, VTK::MarkerScale );
   void SetMarkerTexture( int, VTK::MarkerTexture );
   VTK::MarkerType GetMarkerType();

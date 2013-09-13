@@ -156,6 +156,7 @@ later sessions with this module.
     borders.
   - <b>Wireframe color</b> - allows to select the color of borders of
     elements in the wireframe mode.
+  - <b>Preview color</b> - allows to select the preview color of the elements.
   - <b>Size of 0D elements</b> - specifies default size of 0D elements.
   - <b>Size of ball elements</b> - specifies default size of discrete
     elements (balls).

@@ -259,9 +259,6 @@ class SMESH_ActorDef : public SMESH_Actor
   vtkProperty* myOutLineProp;
   vtkProperty* myPreselectProp;
 
-  vtkProperty* myBallHighlightProp;
-  vtkProperty* myBallPreselectProp;
-          
   SMESH_DeviceActor* myHighlitableActor;
 
   eControl myControlMode;

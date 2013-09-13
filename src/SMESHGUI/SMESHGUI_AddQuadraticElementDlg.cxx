@@ -55,6 +55,8 @@
 
 #include <SalomeApp_Application.h>
 
+#include <Qtx.h>
+
 // IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
@@ -146,17 +148,19 @@ namespace SMESH
       myPreviewActor->PickableOff();
       myPreviewActor->VisibilityOff();
       myPreviewActor->SetMapper(myMapper);
-
+      
+      QColor ffc, bfc;
+      int delta;
       vtkProperty* myProp = vtkProperty::New();
-      double aRGB[3], aBackRGB[3];
-      GetColor( "SMESH", "fill_color", aRGB[0], aRGB[1], aRGB[2], QColor( 0, 170, 255 ) );
-      myProp->SetColor( aRGB[0], aRGB[1], aRGB[2] );
+      SMESH::GetColor( "SMESH", "preview_color", ffc, delta, "0, 255, 0|-100" ) ;
+   
+      myProp->SetColor( ffc.red() / 255. , ffc.green() / 255. , ffc.blue() / 255. );
       myPreviewActor->SetProperty( myProp );
       myProp->Delete();
 
       vtkProperty* myBackProp = vtkProperty::New();
-      GetColor( "SMESH", "backface_color", aBackRGB[0], aBackRGB[1], aBackRGB[2], QColor( 0, 0, 255 ) );
-      myBackProp->SetColor( aBackRGB[0], aBackRGB[1], aBackRGB[2] );
+      bfc = Qtx::mainColorToSecondary(ffc, delta);
+      myBackProp->SetColor( bfc.red() / 255. , bfc.green() / 255. , bfc.blue() / 255. );
       myPreviewActor->SetBackfaceProperty( myBackProp );
       myBackProp->Delete();
 
@@ -175,6 +179,7 @@ namespace SMESH
       myFaceOrientation->SetMapper(myFaceOrientationDataMapper);
 
       vtkProperty* anOrientationProp = vtkProperty::New();
+      double aRGB[3];
       GetColor( "SMESH", "orientation_color", aRGB[0], aRGB[1], aRGB[2], QColor( 255, 255, 255 ) );
       anOrientationProp->SetColor( aRGB[0], aRGB[1], aRGB[2] );
       myFaceOrientation->SetProperty( anOrientationProp );

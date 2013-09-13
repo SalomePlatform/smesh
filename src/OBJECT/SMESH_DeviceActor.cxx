@@ -228,6 +228,11 @@ SMESH_DeviceActor
     myExtractUnstructuredGrid->SetInputData(theGrid);
 
     myMergeFilter->SetGeometryConnection(myExtractUnstructuredGrid->GetOutputPort());
+    
+    //Pass diameters of the balls
+    if(myMapper->GetBallEnabled()) {
+      myMergeFilter->SetScalarsConnection(myExtractUnstructuredGrid->GetOutputPort());
+    }
 
     myExtractGeometry->SetInputConnection(myMergeFilter->GetOutputPort());
 
@@ -933,6 +938,14 @@ double SMESH_DeviceActor::GetQuadraticArcAngle(){
 void SMESH_DeviceActor::SetMarkerEnabled( bool theMarkerEnabled )
 {
   myMapper->SetMarkerEnabled( theMarkerEnabled );
+}
+
+/*!
+ * Set point marker enabled
+ * \param theBallEnabled flag to enable/disable ball drawing
+ */
+void SMESH_DeviceActor::SetBallEnabled( bool theBallEnabled ) {
+  myMapper->SetBallEnabled( theBallEnabled );
 }
 
 /*!

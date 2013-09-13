@@ -141,17 +141,20 @@ void SMESH::OrientedPlane::Init()
   myActor->SetInfinitive(true);
   myActor->SetMapper(myMapper);
 
-  double anRGB[3];
+  QColor ffc, bfc;
+  int delta;
+  SMESH::GetColor( "SMESH", "fill_color", ffc, delta, "255, 170, 0|-100" ) ;
+ 
   vtkProperty* aProp = vtkProperty::New();
-  SMESH::GetColor( "SMESH", "fill_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
-  aProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
+  SMESH::GetColor( "SMESH", "fill_color", ffc, delta, "255, 170, 0|-100" ) ;
+  aProp->SetColor(ffc.red() / 255. , ffc.green() / 255. , ffc.blue() / 255.);
   aProp->SetOpacity(0.75);
   myActor->SetProperty(aProp);
   aProp->Delete();
 
   vtkProperty* aBackProp = vtkProperty::New();
-  SMESH::GetColor( "SMESH", "backface_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 0, 255 ) );
-  aBackProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
+  bfc = Qtx::mainColorToSecondary(ffc, delta);
+  aBackProp->SetColor( bfc.red() / 255. , bfc.green() / 255. , bfc.blue() / 255.);
   aBackProp->SetOpacity(0.75);
   myActor->SetBackfaceProperty(aBackProp);
   aBackProp->Delete();

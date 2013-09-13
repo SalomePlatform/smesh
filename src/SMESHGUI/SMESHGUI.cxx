@@ -4994,6 +4994,7 @@ void SMESHGUI::createPreferences()
   addPreference( tr( "PREF_BALL_COLOR" ), elemGroup, LightApp_Preferences::Color, "SMESH", "ball_elem_color" );
   addPreference( tr( "PREF_OUTLINE"  ), elemGroup, LightApp_Preferences::Color, "SMESH", "outline_color" );
   addPreference( tr( "PREF_WIREFRAME"  ), elemGroup, LightApp_Preferences::Color, "SMESH", "wireframe_color" );
+  addPreference( tr( "PREF_PREVIEW_COLOR"  ), elemGroup, LightApp_Preferences::BiColor, "SMESH", "preview_color" );
 
 
   int grpGroup = addPreference( tr( "PREF_GROUP_GROUPS" ), meshTab );

@@ -34,6 +34,7 @@
     <parameter name="node_color"                   value="255, 0,   0"/>
     <parameter name="fill_color"                   value="#00aaff|100"/>
     <parameter name="volume_color"                 value="255, 0, 170|-100"/>
+    <parameter name="preview_color"                value="0, 255, 0|-100"/>
     <parameter name="wireframe_color"              value="0, 170, 255"/>
     <parameter name="outline_color"                value="#004600"/>
     <parameter name="elem0d_color"                 value="0, 255,   0"/>

@@ -51,6 +51,10 @@
 #include <SalomeApp_Application.h>
 #include <SVTK_ViewModel.h>
 #include <SVTK_ViewWindow.h>
+#include <VTKViewer_PolyDataMapper.h>
+#include <SVTK_Renderer.h>
+#include <Qtx.h>
+
 
 // IDL incldues
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
@@ -65,6 +69,7 @@
 #include <vtkDataSetMapper.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
+#include <vtkCellData.h>
 
 // Qt includes
 #include <QComboBox>
@@ -95,6 +100,10 @@ namespace SMESH
     SALOME_Actor* myPreviewActor;
     vtkDataSetMapper* myMapper;
     vtkUnstructuredGrid* myGrid;
+    
+    SALOME_Actor* myBallActor;
+    VTKViewer_PolyDataMapper* myBallMapper;
+    vtkPolyData* myBallPolyData; 
 
     SALOME_Actor* myFaceOrientation;
     vtkPolyDataMapper* myFaceOrientationDataMapper;
@@ -120,16 +129,18 @@ namespace SMESH
       myPreviewActor->VisibilityOff();
       myPreviewActor->SetMapper(myMapper);
 
-      double anRGB[3];
+      QColor ffc, bfc;
+      int delta;
+
       vtkProperty* aProp = vtkProperty::New();
-      GetColor( "SMESH", "fill_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
-      aProp->SetColor( anRGB[0], anRGB[1], anRGB[2] );
+      SMESH::GetColor( "SMESH", "preview_color", ffc, delta, "0, 255, 0|-100" ) ;
+      aProp->SetColor( ffc.red() / 255. , ffc.green() / 255. , ffc.blue() / 255. );
       myPreviewActor->SetProperty( aProp );
       aProp->Delete();
 
       vtkProperty* aBackProp = vtkProperty::New();
-      GetColor( "SMESH", "backface_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 0, 255 ) );
-      aBackProp->SetColor( anRGB[0], anRGB[1], anRGB[2] );
+      bfc = Qtx::mainColorToSecondary(ffc, delta);
+      aBackProp->SetColor( bfc.red() / 255. , bfc.green() / 255. , bfc.blue() / 255. );
       myPreviewActor->SetBackfaceProperty( aBackProp );
       aBackProp->Delete();
 
@@ -148,12 +159,34 @@ namespace SMESH
       myFaceOrientation->SetMapper(myFaceOrientationDataMapper);
 
       vtkProperty* anOrientationProp = vtkProperty::New();
+      double anRGB[3];
       GetColor( "SMESH", "orientation_color", anRGB[0], anRGB[1], anRGB[2], QColor( 255, 255, 255 ) );
       anOrientationProp->SetColor( anRGB[0], anRGB[1], anRGB[2] );
       myFaceOrientation->SetProperty( anOrientationProp );
       anOrientationProp->Delete();
-
       myVTKViewWindow->AddActor(myFaceOrientation);
+
+      // Preview for the balls
+      vtkProperty* aBallProp = vtkProperty::New();
+      aBallProp->SetColor(ffc.red() / 255. , ffc.green() / 255. , ffc.blue() / 255.);
+      double aBallElemSize = SMESH::GetFloat("SMESH:ball_elem_size",10);
+      aBallProp->SetPointSize(aBallElemSize);
+
+      myBallPolyData = vtkPolyData::New();
+      myBallPolyData->Allocate();
+
+      myBallMapper = VTKViewer_PolyDataMapper::New();
+      myBallMapper->SetInputData(myBallPolyData);
+      myBallMapper->SetBallEnabled(true);
+
+      myBallActor = SALOME_Actor::New();
+      myBallActor->PickableOff();
+      myBallActor->SetVisibility(false);
+      myBallActor->SetProperty(aBallProp);
+      myBallActor->SetMapper(myBallMapper);
+      aBallProp->Delete();
+      
+      myVTKViewWindow->AddActor(myBallActor);
     }
 
     typedef std::vector<vtkIdType> TVTKIds;
@@ -163,7 +196,7 @@ namespace SMESH
     {
       vtkUnstructuredGrid *aGrid = theActor->GetUnstructuredGrid();
       myGrid->SetPoints(aGrid->GetPoints());
-      myGrid->Reset();
+      myGrid->Reset();      
 
       const std::vector<int>& interlace = SMDS_MeshCell::toVtkOrder( VTKCellType( theType ));
       SMDS_MeshCell::applyInterlace( interlace, theIds );
@@ -177,36 +210,68 @@ namespace SMESH
 
       myGrid->Modified();
 
-      SetVisibility(true, theActor->GetFacesOriented());
+      SetVisibility(true, theActor->GetFacesOriented(), false);
     }
 
+    void SetBallPosition(SMESH_Actor* theActor,TVTKIds& theIds, double theDiameter) {
+      vtkUnstructuredGrid *aGrid = theActor->GetUnstructuredGrid();
+      myBallPolyData->Reset();
+      myBallPolyData->DeleteCells();
+      myBallPolyData->SetPoints(aGrid->GetPoints());
+      
+      vtkDataArray* aScalars = vtkDataArray::CreateDataArray(VTK_DOUBLE);
+      aScalars->SetNumberOfComponents(1);
+      aScalars->SetNumberOfTuples(theIds.size());
+      myBallPolyData->GetCellData()->SetScalars(aScalars);
+      aScalars->Delete();
 
-    void SetVisibility (bool theVisibility, bool theShowOrientation = false)
+      vtkIdList *anIds = vtkIdList::New();
+      anIds->SetNumberOfIds(1);
+      for (int i = 0, iEnd = theIds.size(); i < iEnd; i++){
+        anIds->InsertId(0,theIds[i]);
+	vtkIdType anId = myBallPolyData->InsertNextCell(VTK_POLY_VERTEX,anIds);
+	double d = theDiameter;
+	aScalars->SetTuple(anId,&d);
+	anIds->Reset();
+      }
+      
+      anIds->Delete();
+      myBallPolyData->Modified();
+      SetVisibility (false, false, true);
+    }
+
+    void SetVisibility (bool theVisibility, bool theShowOrientation = false, bool theShowBalls = false)
     {
       myPreviewActor->SetVisibility(theVisibility);
       myFaceOrientation->SetVisibility(theShowOrientation);
+      myBallActor->SetVisibility(theShowBalls);
       RepaintCurrentView();
     }
 
 
     ~TElementSimulation()
     {
+      myMapper->RemoveAllInputs();
+      myFaceOrientationDataMapper->RemoveAllInputs();
+      myBallMapper->RemoveAllInputs();
+
       if (FindVtkViewWindow(myApplication->activeViewManager(), myViewWindow)) {
-        myVTKViewWindow->RemoveActor(myPreviewActor);
-        myVTKViewWindow->RemoveActor(myFaceOrientation);
+        myVTKViewWindow->RemoveActor(myPreviewActor,false,false);
+        myVTKViewWindow->RemoveActor(myFaceOrientation,false,false);
+	myVTKViewWindow->RemoveActor(myBallActor,false,false);
       }
+
+      myMapper->Delete();
+      myGrid->Delete();
       myPreviewActor->Delete();
+            
+      myFaceOrientationFilter->Delete();      
+      myFaceOrientationDataMapper->Delete();
       myFaceOrientation->Delete();
 
-      myMapper->RemoveAllInputs();
-      myMapper->Delete();
-
-      myFaceOrientationFilter->Delete();
-
-      myFaceOrientationDataMapper->RemoveAllInputs();
-      myFaceOrientationDataMapper->Delete();
-
-      myGrid->Delete();
+      myBallMapper->Delete();
+      myBallPolyData->Delete();
+      myBallActor->Delete();
     }
   };
 }
@@ -363,6 +428,7 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI*          theMo
 
     DiameterSpinBox->RangeStepAndValidator( 1e-7, 1e+9, 0.1 );
     DiameterSpinBox->SetValue( 1. );
+    connect( DiameterSpinBox, SIGNAL( valueChanged ( double ) ), this, SLOT( onDiameterChanged( ) ) );
   }
   /* Add to group ************************************************/
   GroupGroups = new QGroupBox( tr( "SMESH_ADD_TO_GROUP" ), this );
@@ -578,9 +644,9 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
     mySelector->ClearIndex();
     mySelectionMgr->setSelectedObjects( aList, false );
 
-    SMESH::UpdateView();
     mySimulation->SetVisibility(false);
-
+    SMESH::UpdateView();
+    
     buttonOk->setEnabled(false);
     buttonApply->setEnabled(false);
 
@@ -608,7 +674,6 @@ void SMESHGUI_AddMeshElementDlg::ClickOnOk()
 //=================================================================================
 void SMESHGUI_AddMeshElementDlg::reject()
 {
-  //mySelectionMgr->clearSelected();
   mySimulation->SetVisibility(false);
   SMESH::SetPointRepresentation(false);
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
@@ -808,7 +873,11 @@ void SMESHGUI_AddMeshElementDlg::displaySimulation()
     }
 
     vtkIdType aType = SMDS_MeshCell::toVtkType( myGeomType );
-    mySimulation->SetPosition(myActor,aType,anIds);
+    if(aType == VTK_POLY_VERTEX) {
+      mySimulation->SetBallPosition(myActor,anIds,DiameterSpinBox->GetValue());
+    } else {
+      mySimulation->SetPosition(myActor,aType,anIds);
+    }
     SMESH::UpdateView();
   }
 }
@@ -903,6 +972,14 @@ void SMESHGUI_AddMeshElementDlg::keyPressEvent( QKeyEvent* e )
     e->accept();
     ClickOnHelp();
   }
+}
+
+//=================================================================================
+// function : isValid
+// purpose  :
+//=================================================================================
+void SMESHGUI_AddMeshElementDlg::onDiameterChanged(){
+  displaySimulation();
 }
 
 //=================================================================================

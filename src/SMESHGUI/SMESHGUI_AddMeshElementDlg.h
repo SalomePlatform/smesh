@@ -64,7 +64,6 @@ namespace SMESH
 class SMESHGUI_EXPORT SMESHGUI_AddMeshElementDlg : public QDialog
 { 
   Q_OBJECT
-
 public:
   SMESHGUI_AddMeshElementDlg( SMESHGUI*, SMDSAbs_EntityType = SMDSEntity_Edge );
   ~SMESHGUI_AddMeshElementDlg();
@@ -119,6 +118,7 @@ private:
   
 protected slots:
   virtual void                reject();
+          void                onDiameterChanged();
 
 private slots:
   void                        ClickOnOk();
