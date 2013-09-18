@@ -569,7 +569,8 @@ namespace // INTERNAL STUFF
       aBuilder.MakeCompound( comp );
       shapeForSrcMesh = comp;
       for ( int iSub = 0; iSub < nbSubShapes; ++iSub )
-        aBuilder.Add( comp, pseudoSubShapes( subIndex+iSub ));
+        if ( subIndex+iSub <= pseudoSubShapes.Extent() )
+          aBuilder.Add( comp, pseudoSubShapes( subIndex+iSub ));
       TopExp_Explorer vExp( tgtMeshDS->ShapeToMesh(), TopAbs_VERTEX );
       aBuilder.Add( comp, vExp.Current() );
     }
