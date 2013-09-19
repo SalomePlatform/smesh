@@ -1206,7 +1206,7 @@ class Mesh:
     ## Destructor. Clean-up resources
     def __del__(self):
         if self.mesh:
-            self.mesh.UnRegister()
+            #self.mesh.UnRegister()
             pass
         pass
         
@@ -1214,10 +1214,11 @@ class Mesh:
     #  @param theMesh a SMESH_Mesh object
     #  @ingroup l2_construct
     def SetMesh(self, theMesh):
-        if self.mesh: self.mesh.UnRegister()
+        # do not call Register() as this prevents mesh servant deletion at closing study
+        #if self.mesh: self.mesh.UnRegister()
         self.mesh = theMesh
         if self.mesh:
-            self.mesh.Register()
+            #self.mesh.Register()
             self.geom = self.mesh.GetShapeToMesh()
         pass
 
