@@ -183,7 +183,8 @@ namespace {
     if ( cmd->GetString().Location( TPythonDump::NotPublishedObjectName(), 1, cmd->Length() ))
     {
       bool isResultPublished = false;
-      for ( int i = 0; i < cmd->GetNbResultValues(); i++ )
+      const int nbRes = cmd->GetNbResultValues();
+      for ( int i = 0; i < nbRes; i++ )
       {
         _pyID objID = cmd->GetResultValue( i+1 );
         if ( cmd->IsStudyEntry( objID ))
@@ -198,7 +199,12 @@ namespace {
     }
     // check if an Object was created in the script
     _AString comment;
-    const _pyID&        obj = cmd->GetObject();
+
+    _pyID obj = cmd->GetObject();
+    if ( !obj.IsEmpty() && obj.Value( obj.Length() ) == ')' )
+      // remove an accessor method
+      obj = _pyCommand( obj ).GetObject();
+
     const bool isMethodCall = cmd->IsMethodCall();
     if ( !obj.IsEmpty() && isMethodCall && !presentObjects.count( obj ) )
     {
@@ -444,7 +450,7 @@ namespace {
 //================================================================================
 /*!
  * \brief Convert a python script using commands of smeshBuilder.py
- *  \param theScript - Input script
+ *  \param theScriptLines - Lines of the input script
  *  \param theEntry2AccessorMethod - returns method names to access to
  *         objects wrapped with python class
  *  \param theObjectNames - names of objects
@@ -456,30 +462,26 @@ namespace {
 //================================================================================
 
 void
-SMESH_2smeshpy::ConvertScript(TCollection_AsciiString&                  theScript,
+SMESH_2smeshpy::ConvertScript(std::list< TCollection_AsciiString >&     theScriptLines,
                               Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod,
                               Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
                               std::set< TCollection_AsciiString >&      theRemovedObjIDs,
                               SALOMEDS::Study_ptr&                      theStudy,
                               const bool                                theToKeepAllCommands)
 {
+  std::list< TCollection_AsciiString >::iterator lineIt;
   // process notebook variables
   {
     SMESH_NoteBook aNoteBook;
 
-    int from = 1, end = theScript.Length(), to;
-    while ( from < end && ( to = theScript.Location( "\n", from, end )))
-    {
-      if ( to != from )
-        // cut out and store a command
-        aNoteBook.AddCommand( theScript.SubString( from, to - 1 ));
-      from = to + 1;
-    }
-    theScript.Clear();
+    for ( lineIt = theScriptLines.begin(); lineIt != theScriptLines.end(); ++lineIt )
+      aNoteBook.AddCommand( *lineIt );
+
+    theScriptLines.clear();
 
     aNoteBook.ReplaceVariables();
 
-    theScript = aNoteBook.GetResultScript();
+    aNoteBook.GetResultLines( theScriptLines );
   }
 
   // convert to smeshBuilder.py API
@@ -490,16 +492,10 @@ SMESH_2smeshpy::ConvertScript(TCollection_AsciiString&                  theScrip
                        theStudy,
                        theToKeepAllCommands );
 
-  // split theScript into separate commands
-  int from = 1, end = theScript.Length(), to;
-  while ( from < end && ( to = theScript.Location( "\n", from, end )))
-  {
-    if ( to != from )
-      // cut out and store a command
-      theGen->AddCommand( theScript.SubString( from, to - 1 ));
-    from = to + 1;
-  }
-  theScript.Clear();
+  for ( lineIt = theScriptLines.begin(); lineIt != theScriptLines.end(); ++lineIt )
+    theGen->AddCommand( *lineIt );
+
+  theScriptLines.clear();
 
   // finish conversion
   theGen->Flush();
@@ -535,12 +531,10 @@ SMESH_2smeshpy::ConvertScript(TCollection_AsciiString&                  theScrip
       CheckObjectPresence( *cmd, createdObjects );
       if ( !(*cmd)->IsEmpty() ) {
         aPrevCmd = (*cmd)->GetString();
-        theScript += "\n";
-        theScript += aPrevCmd;
+        theScriptLines.push_back( aPrevCmd );
       }
     }
   }
-  theScript += "\n";
 
   theGen->Free();
   theGen.Nullify();
@@ -643,17 +637,23 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
   // Method( SMESH.PointStruct(x,y,z)... -> Method( [x,y,z]...
   StructToList( aCommand );
 
+  const TCollection_AsciiString& method = aCommand->GetMethod();
+
   // not to erase _pySelfEraser's etc. used as args in some commands
   {
 #ifdef USE_STRING_FAMILY
-    _pyID objID;
-    if ( myKeepAgrCmdsIDs.IsIn( theCommand, objID ))
+    std::list<_pyID>  objIDs;
+    if ( myKeepAgrCmdsIDs.IsInArgs( aCommand, objIDs ))
     {
-      Handle(_pyObject) obj = FindObject( objID );
-      if ( !obj.IsNull() )
+      std::list<_pyID>::iterator objID = objIDs.begin();
+      for ( ; objID != objIDs.end(); ++objID )
       {
-        obj->AddArgCmd( aCommand );
-        //cout << objID << " found in " << theCommand << endl;
+        Handle(_pyObject) obj = FindObject( *objID );
+        if ( !obj.IsNull() )
+        {
+          obj->AddArgCmd( aCommand );
+          //cout << objID << " found in " << theCommand << endl;
+        }
       }
     }
 #else
@@ -695,8 +695,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
     else if ( aCommand->GetMethod() == "GetSubMesh" ) { // SubMesh creation
       _pyID subMeshID = aCommand->GetResultValue();
       Handle(_pySubMesh) subMesh = new _pySubMesh( aCommand );
-      CheckObjectIsReCreated( subMesh );
-      myObjects.insert( make_pair( subMeshID, subMesh ));
+      AddObject( subMesh );
     }
 
     // Method( mesh.GetIDSource([id1,id2]) -> Method( [id1,id2]
@@ -717,8 +716,6 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
     GetIDSourceToList( aCommand );
 
     //addFilterUser( aCommand, theGen ); // protect filters from clearing
-
-    const TCollection_AsciiString& method = aCommand->GetMethod();
 
     // some commands of SMESH_MeshEditor create meshes and groups
     _pyID meshID, groups;
@@ -981,11 +978,11 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
       method == "CreateMeshesFromCGNS" ||
       method == "CreateMeshesFromGMF" ) // command result is ( [mesh1,mesh2], status )
   {
-    for ( int ind = 0; ind < theCommand->GetNbResultValues(); ind++ )
+    std::list< _pyID > meshIDs = theCommand->GetStudyEntries( theCommand->GetResultValue() );
+    std::list< _pyID >::iterator meshID = meshIDs.begin();
+    for ( ; meshID != meshIDs.end(); ++meshID )
     {
-      _pyID meshID = theCommand->GetResultValue(ind+1);
-      if ( !theCommand->IsStudyEntry( meshID ) ) continue;
-      Handle(_pyMesh) mesh = new _pyMesh( theCommand, theCommand->GetResultValue(ind+1));
+      Handle(_pyMesh) mesh = new _pyMesh( theCommand, *meshID );
       AddObject( mesh );
     }
     if ( method == "CreateMeshesFromGMF" )
@@ -1053,7 +1050,7 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
        method == "CreateMeasurements" )
   {
     Handle(_pyObject) obj = new _pySelfEraser( theCommand );
-    if ( !myObjects.insert( make_pair( obj->GetID(), obj )).second )
+    if ( !AddObject( obj ) )
       theCommand->Clear(); // already created
   }
   // Concatenate( [mesh1, ...], ... )
@@ -1149,10 +1146,15 @@ void _pyGen::Flush()
         id_hyp->second->GetCreationCmd()->SetObject( SMESH_2smeshpy::GenName() );
     }
 
-  // Flush other objects
-  for ( id_obj = myObjects.begin(); id_obj != myObjects.end(); ++id_obj )
-    if ( ! id_obj->second.IsNull() )
-      id_obj->second->Flush();
+  // Flush other objects. 2 times, for objects depending on Flush() of later created objects
+  std::list< Handle(_pyObject) >::reverse_iterator robj = myOrderedObjects.rbegin();
+  for ( ; robj != myOrderedObjects.rend(); ++robj )
+    if ( ! robj->IsNull() )
+      (*robj)->Flush();
+  std::list< Handle(_pyObject) >::iterator obj = myOrderedObjects.begin();
+  for ( ; obj != myOrderedObjects.end(); ++obj )
+    if ( ! obj->IsNull() )
+      (*obj)->Flush();
 
   myLastCommand->SetOrderNb( ++myNbCommands );
   myCommands.push_back( myLastCommand );
@@ -1167,23 +1169,23 @@ void _pyGen::Flush()
 
 void _pyGen::PlaceSubmeshAfterItsCreation( Handle(_pyCommand) theCmdUsingSubmesh ) const
 {
-  map< _pyID, Handle(_pyObject) >::const_iterator id_obj = myObjects.begin();
-  for ( ; id_obj != myObjects.end(); ++id_obj )
-  {
-    if ( !id_obj->second->IsKind( STANDARD_TYPE( _pySubMesh ))) continue;
-    for ( int iArg = theCmdUsingSubmesh->GetNbArgs(); iArg; --iArg )
-    {
-      const _pyID& arg = theCmdUsingSubmesh->GetArg( iArg );
-      if ( arg.IsEmpty() || arg.Value( 1 ) == '"' || arg.Value( 1 ) == '\'' )
-        continue;
-      list< _pyID > idList = theCmdUsingSubmesh->GetStudyEntries( arg );
-      list< _pyID >::iterator id = idList.begin();
-      for ( ; id != idList.end(); ++id )
-        if ( id_obj->first == *id )
-          // _pySubMesh::Process() does what we need
-          Handle(_pySubMesh)::DownCast( id_obj->second )->Process( theCmdUsingSubmesh );
-    }
-  }
+  // map< _pyID, Handle(_pyObject) >::const_iterator id_obj = myObjects.begin();
+  // for ( ; id_obj != myObjects.end(); ++id_obj )
+  // {
+  //   if ( !id_obj->second->IsKind( STANDARD_TYPE( _pySubMesh ))) continue;
+  //   for ( int iArg = theCmdUsingSubmesh->GetNbArgs(); iArg; --iArg )
+  //   {
+  //     const _pyID& arg = theCmdUsingSubmesh->GetArg( iArg );
+  //     if ( arg.IsEmpty() || arg.Value( 1 ) == '"' || arg.Value( 1 ) == '\'' )
+  //       continue;
+  //     list< _pyID > idList = theCmdUsingSubmesh->GetStudyEntries( arg );
+  //     list< _pyID >::iterator id = idList.begin();
+  //     for ( ; id != idList.end(); ++id )
+  //       if ( id_obj->first == *id )
+  //         // _pySubMesh::Process() does what we need
+  //         Handle(_pySubMesh)::DownCast( id_obj->second )->Process( theCmdUsingSubmesh );
+  //   }
+  // }
 }
 
 //================================================================================
@@ -1203,9 +1205,15 @@ void _pyGen::ClearCommands()
     if ( !id_hyp->second.IsNull() )
       id_hyp->second->ClearCommands();
 
-  map< _pyID, Handle(_pyObject) >::iterator id_obj = myObjects.begin();
-  for ( ; id_obj != myObjects.end(); ++id_obj )
-    id_obj->second->ClearCommands();
+  // Other objects. 2 times, for objects depending on ClearCommands() of later created objects
+  std::list< Handle(_pyObject) >::reverse_iterator robj = myOrderedObjects.rbegin();
+  for ( ; robj != myOrderedObjects.rend(); ++robj )
+    if ( ! robj->IsNull() )
+      (*robj)->ClearCommands();
+  std::list< Handle(_pyObject) >::iterator obj = myOrderedObjects.begin();
+  for ( ; obj != myOrderedObjects.end(); ++obj )
+    if ( ! obj->IsNull() )
+      (*obj)->ClearCommands();
 }
 
 //================================================================================
@@ -1500,20 +1508,27 @@ _pyID _pyGen::GenerateNewID( const _pyID& theID )
  */
 //================================================================================
 
-void _pyGen::AddObject( Handle(_pyObject)& theObj )
+bool _pyGen::AddObject( Handle(_pyObject)& theObj )
 {
-  if ( theObj.IsNull() ) return;
+  if ( theObj.IsNull() ) return false;
 
   CheckObjectIsReCreated( theObj );
 
-  if ( theObj->IsKind( STANDARD_TYPE( _pyMesh )))
-    myMeshes.insert( make_pair( theObj->GetID(), Handle(_pyMesh)::DownCast( theObj )));
+  bool add;
 
-  else if ( theObj->IsKind( STANDARD_TYPE( _pyMeshEditor )))
-    myMeshEditors.insert( make_pair( theObj->GetID(), Handle(_pyMeshEditor)::DownCast( theObj )));
-
-  else
-    myObjects.insert( make_pair( theObj->GetID(), theObj ));
+  if ( theObj->IsKind( STANDARD_TYPE( _pyMesh ))) {
+    add = myMeshes.insert( make_pair( theObj->GetID(),
+                                      Handle(_pyMesh)::DownCast( theObj ))).second;
+  }
+  else if ( theObj->IsKind( STANDARD_TYPE( _pyMeshEditor ))) {
+    add = myMeshEditors.insert( make_pair( theObj->GetID(),
+                                          Handle(_pyMeshEditor)::DownCast( theObj ))).second;
+  }
+  else {
+    add = myObjects.insert( make_pair( theObj->GetID(), theObj )).second;
+    if ( add ) myOrderedObjects.push_back( theObj );
+  }
+  return add;
 }
 
 //================================================================================
@@ -1984,7 +1999,7 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
         {
           addCmd = *cmd;
           cmd    = addHypCmds.erase( cmd );
-          if ( !theGen->IsToKeepAllCommands() ) {
+          if ( !theGen->IsToKeepAllCommands() && CanClear() ) {
             addCmd->Clear();
             theCommand->Clear();
           }
@@ -3445,7 +3460,7 @@ bool _pyAlgorithm::Addition2Creation( const Handle(_pyCommand)& theCmd,
  */
 //================================================================================
 
-int _pyCommand::GetBegPos( int thePartIndex )
+int _pyCommand::GetBegPos( int thePartIndex ) const
 {
   if ( IsEmpty() )
     return EMPTY;
@@ -3485,7 +3500,7 @@ TCollection_AsciiString _pyCommand::GetIndentation()
     GetWord( myString, end, true );
   else
     end = GetBegPos( RESULT_IND );
-  return myString.SubString( 1, end - 1 );
+  return myString.SubString( 1, Max( end - 1, 1 ));
 }
 
 //================================================================================
@@ -3525,16 +3540,8 @@ const TCollection_AsciiString & _pyCommand::GetResultValue()
 
 int _pyCommand::GetNbResultValues()
 {
-  int nb     = 0;
-  int begPos = 1;
-  int endPos = myString.Location( "=", 1, Length() );
-  while ( begPos < endPos )
-  {
-    _AString str = GetWord( myString, begPos, true );
-    begPos = begPos+ str.Length();
-    nb++;
-  }
-  return (nb-1);
+  GetResultValue(1);
+  return myResults.Length();
 }
 
 
@@ -3545,32 +3552,38 @@ int _pyCommand::GetNbResultValues()
  * \retval const TCollection_AsciiString & - ResultValue with res index substring
  */
 //================================================================================
-TCollection_AsciiString _pyCommand::GetResultValue(int res)
+const _AString& _pyCommand::GetResultValue(int res)
 {
-  int begPos = 1;
-  if ( SkipSpaces( myString, begPos ) && myString.Value( begPos ) == '[' )
-    ++begPos; // skip [, else the whole list is returned
-  int endPos = myString.Location( "=", 1, Length() );
-  int Nb=0;
-  while ( begPos < endPos) {
-    _AString result = GetWord( myString, begPos, true );
-    begPos = begPos + result.Length();
-    Nb++;
-    if(res == Nb) {
-      result.RemoveAll('[');
-      result.RemoveAll(']');
-      return result;
+  if ( GetResultValue().IsEmpty() )
+    return theEmptyString;
+
+  if ( myResults.IsEmpty() )
+  {
+    int begPos = 1;
+    if ( SkipSpaces( myRes, begPos ) && myRes.Value( begPos ) == '[' )
+      ++begPos; // skip [, else the whole list is returned
+    while ( begPos < myRes.Length() ) {
+      _AString result = GetWord( myRes, begPos, true );
+      begPos += result.Length();
+      // if(res == Nb) {
+      //   result.RemoveAll('[');
+      //   result.RemoveAll(']');
+      //   return result;
+      // }
+      // if(Nb>res)
+      //   break;
+      myResults.Append( result );
     }
-    if(Nb>res)
-      break;
   }
+  if ( res > 0 && res <= myResults.Length() )
+    return myResults( res );
   return theEmptyString;
 }
 
 //================================================================================
 /*!
  * \brief Return substring of python command looking like ResVal = Object.Meth()
-  * \retval const TCollection_AsciiString & - Object substring
+ * \retval const TCollection_AsciiString & - Object substring
  */
 //================================================================================
 
@@ -3755,6 +3768,24 @@ const TCollection_AsciiString & _pyCommand::GetArg( int index )
 
 //================================================================================
 /*!
+ * \brief Return position where arguments begin
+ */
+//================================================================================
+
+int _pyCommand::GetArgBeginning() const
+{
+  int pos = GetBegPos( ARG1_IND );
+  if ( pos == UNKNOWN )
+  {
+    pos = GetBegPos( METHOD_IND ) + myMeth.Length();
+    if ( pos < 1 )
+      pos = myString.Location( "(", 4, Length() ); // 4 = strlen("b.c(")
+  }
+  return pos;
+}
+
+//================================================================================
+/*!
  * \brief Check if char is a word part
   * \param c - The character to check
   * \retval bool - The check result
@@ -3867,11 +3898,10 @@ bool _pyCommand::IsID( const TCollection_AsciiString& str )
 {
   if ( str.Length() < 1 ) return false;
 
-  if ( isdigit( str.Value( 1 )))
-    return IsStudyEntry( str );
+  const char* s = str.ToCString();
 
-  for ( int i = 1; i <= str.Length(); ++i )
-    if ( !isalnum( str.Value( i )) && !str.Value( i ) != '_' )
+  for ( int i = 0; i < str.Length(); ++i )
+    if ( !IsIDChar( s[i] ))
       return false;
 
   return true;
@@ -4038,9 +4068,9 @@ void _pyCommand::Comment()
     myString.Insert( i, "#" );
     for ( int iPart = 1; iPart <= myBegPos.Length(); ++iPart )
     {
-      int begPos = GetBegPos( iPart + 1 );
-      if ( begPos != UNKNOWN )
-        SetBegPos( iPart + 1, begPos + 1 );
+      int begPos = GetBegPos( iPart );
+      if ( begPos != UNKNOWN && begPos != EMPTY )
+        SetBegPos( iPart, begPos + 1 );
     }
   }
 }
@@ -4088,7 +4118,8 @@ bool _pyCommand::AddAccessorMethod( _pyID theObjectID, const char* theAcsMethod 
     // check that theObjectID is not just a part of a longer ID
     int afterEnd = beg + theObjectID.Length();
     Standard_Character c = myString.Value( afterEnd );
-    if ( !isalnum( c ) && c != ':' ) {
+    if ( !IsIDChar( c ))
+    {
       // check if accessor method already present
       if ( c != '.' ||
            myString.Location( (char*) theAcsMethod, afterEnd, Length() ) != afterEnd+1) {
@@ -4105,7 +4136,7 @@ bool _pyCommand::AddAccessorMethod( _pyID theObjectID, const char* theAcsMethod 
         added = true;
       }
     }
-    beg = afterEnd; // is a part - next search
+    beg = afterEnd; // is a part -> next search
   }
   return added;
 }
@@ -4180,7 +4211,8 @@ _pyID _pyObject::FatherID(const _pyID & childID)
 
 //================================================================================
 /*!
- * \brief SelfEraser erases creation command if no more it's commands invoked
+ * \brief SelfEraser erases creation command if none of it's commands invoked
+ *        (e.g. filterManager) or it's not used as a command argument (e.g. a filter)
  */
 //================================================================================
 
@@ -4193,11 +4225,12 @@ _pySelfEraser::_pySelfEraser(const Handle(_pyCommand)& theCreationCmd)
 
 //================================================================================
 /*!
- * \brief SelfEraser erases creation command if no more it's commands invoked
+ * \brief SelfEraser erases creation command if none of it's commands invoked
+ *        (e.g. filterManager) or it's not used as a command argument (e.g. a filter)
  */
 //================================================================================
 
-void _pySelfEraser::Flush()
+bool _pySelfEraser::CanClear()
 {
   bool toErase = false;
   if ( myIgnoreOwnCalls ) // check if this obj is used as argument
@@ -4205,23 +4238,55 @@ void _pySelfEraser::Flush()
     int nbArgUses = 0;
     list< Handle(_pyCommand) >::iterator cmd = myArgCmds.begin();
     for ( ; cmd != myArgCmds.end(); ++cmd )
-      nbArgUses += !(*cmd)->IsEmpty();
+      nbArgUses += IsAliveCmd( *cmd );
+
     toErase = ( nbArgUses < 1 );
   }
   else
   {
-    int nbCalls = GetNbCalls();
-    if ( nbCalls > 0 )
-    {
-      // ignore cleared commands
-      std::list< Handle(_pyCommand) >& cmds = GetProcessedCmds();
-      std::list< Handle(_pyCommand) >::const_iterator cmd = cmds.begin();
-      for ( ; cmd != cmds.end(); ++cmd )
-        nbCalls -= (*cmd)->IsEmpty();
-    }
+    int nbCalls = 0;
+    std::list< Handle(_pyCommand) >& cmds = GetProcessedCmds();
+    std::list< Handle(_pyCommand) >::const_iterator cmd = cmds.begin();
+    for ( ; cmd != cmds.end(); ++cmd )
+      // check of cmd emptiness is not enough as object can change
+      nbCalls += ( ( *cmd )->GetString().Search( GetID() ) > 0 );
+
     toErase = ( nbCalls < 1 );
   }
-  if ( toErase )
+  return toErase;
+}
+
+//================================================================================
+/*!
+ * \brief Check if a command is or can be cleared
+ */
+//================================================================================
+
+bool _pySelfEraser::IsAliveCmd( const Handle(_pyCommand)& theCmd )
+{
+  if ( theCmd->IsEmpty() )
+    return false;
+
+  if ( !theGen->IsToKeepAllCommands() )
+  {
+    const _pyID& objID = theCmd->GetObject();
+    Handle( _pyObject ) obj = theGen->FindObject( objID );
+    if ( !obj.IsNull() )
+      return !obj->CanClear();
+  }
+  return true;
+}
+
+//================================================================================
+/*!
+ * \brief SelfEraser erases creation command if none of it's commands invoked
+ *        (e.g. filterManager) or it's not used as a command argument (e.g. a filter)
+ */
+//================================================================================
+
+void _pySelfEraser::Flush()
+{
+  if ( CanClear() )
   {
     myIsPublished = false;
     _pyObject::ClearCommands();
@@ -4576,10 +4641,12 @@ void _pyFilter::Process( const Handle(_pyCommand)& theCommand)
     theCommand->SetMethod( "GetFilterFromCriteria" );
 
     // Swap "aFilterManager.CreateFilter()" and "smesh.GetFilterFromCriteria(criteria)"
+    // GetCreationCmd()->Clear();
+    // GetCreationCmd()->GetString() = theCommand->GetString();
+    // theCommand->Clear();
+    // theCommand->AddDependantCmd( GetCreationCmd() );
+    // why swap?
     GetCreationCmd()->Clear();
-    GetCreationCmd()->GetString() = theCommand->GetString();
-    theCommand->Clear();
-    theCommand->AddDependantCmd( GetCreationCmd() );
   }
   else if ( theCommand->GetMethod() == "SetMesh" )
   {
@@ -4909,31 +4976,42 @@ bool _pyStringFamily::Add( const char* str )
  */
 //================================================================================
 
-bool _pyStringFamily::IsIn( const _AString& longStr, _AString& subStr )
+bool _pyStringFamily::IsInArgs( Handle( _pyCommand)& cmd, std::list<_AString>& subStr )
 {
-  const char* s = longStr.ToCString();
+  const _AString& longStr = cmd->GetString();
+  const char*           s = longStr.ToCString();
 
   // look in _subFams
   std::list< _pyStringFamily >::iterator itSub = _subFams.begin();
-  int pos, len;
+  int nbFound = 0, pos, len, from, argBeg = cmd->GetArgBeginning();
+  if ( argBeg < 4 || argBeg > longStr.Length() )
+    return false;
   for ( ; itSub != _subFams.end(); ++itSub )
   {
-    if (( pos = longStr.Search( itSub->_prefix )-1) > 6-1 ) // 6 = strlen("a=b.c(")
-      if (( len = itSub->isIn( s + pos + itSub->_prefix.Length() )) >= 0 )
+    from = argBeg;
+    while (( pos = longStr.Location( itSub->_prefix, from, longStr.Length() )))
+      if (( len = itSub->isIn( s + pos-1 + itSub->_prefix.Length() )) >= 0 )
       {
-        subStr = _AString( s + pos, len + itSub->_prefix.Length() );
-        return true;
+        subStr.push_back( _AString( s + pos-1, len + itSub->_prefix.Length() ));
+        from = pos + len + itSub->_prefix.Length();
+        nbFound++;
+      }
+      else
+      {
+        from += itSub->_prefix.Length();
       }
   }
   // look among _strings
   std::list< _AString >::iterator itStr = _strings.begin();
   for ( ; itStr != _strings.end(); ++itStr )
-    if ( longStr.Search( *itStr ) > itStr->Length() )
-    {
-      subStr = *itStr;
-      return true;
-    }
-  return false;
+    if (( pos = longStr.Location( *itStr, argBeg, longStr.Length() )))
+      // check that object ID does not continue after len
+      if ( !cmd->IsIDChar( s[ pos + itStr->Length() - 1 ] ))
+      {
+        subStr.push_back( *itStr );
+        nbFound++;
+      }
+  return nbFound;
 }
 
 //================================================================================
@@ -4947,7 +5025,7 @@ bool _pyStringFamily::IsIn( const _AString& longStr, _AString& subStr )
 int _pyStringFamily::isIn( const char* str )
 {
   std::list< _pyStringFamily >::iterator itSub = _subFams.begin();
-  int len;
+  int len = -1;
   for ( ; itSub != _subFams.end(); ++itSub )
   {
     int cmp = strncmp( str, itSub->_prefix.ToCString(), itSub->_prefix.Length() );
@@ -4964,20 +5042,27 @@ int _pyStringFamily::isIn( const char* str )
     std::list< _AString >::iterator itStr = _strings.begin();
     bool firstEmpty = itStr->IsEmpty();
     if ( firstEmpty )
-      ++itStr;
+      ++itStr, len = 0;
     for ( ; itStr != _strings.end(); ++itStr )
     {
       int cmp = strncmp( str, itStr->ToCString(), itStr->Length() );
       if ( cmp == 0 )
-        return itStr->Length();
-      else if ( cmp < 0 )
+      {
+        len = itStr->Length();
         break;
+      }
+      else if ( cmp < 0 )
+      {
+        break;
+      }
     }
-    if ( firstEmpty )
-      return 0;
+
+    // check that object ID does not continue after len
+    if ( len >= 0 && _pyCommand::IsIDChar( str[len] ))
+      len = -1;
   }
 
-  return -1;
+  return len;
 }
 
 //================================================================================

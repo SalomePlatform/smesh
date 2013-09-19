@@ -29,13 +29,15 @@
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SALOMEDS)
 
+#include <TCollection_AsciiString.hxx>
+
 #include <sstream>
 #include <vector>
 #include <set>
+#include <list>
 
 class SMESH_Gen_i;
 class SMESH_MeshEditor_i;
-class TCollection_AsciiString;
 class Resource_DataMapOfAsciiStringAsciiString;
 
 // ===========================================================================================
@@ -46,8 +48,9 @@ class Resource_DataMapOfAsciiStringAsciiString;
  */
 // ===========================================================================================
 
-namespace SMESH_2smeshpy
+class SMESH_2smeshpy
 {
+public:
   /*!
    * \brief Convert a python script using commands of smeshBuilder.py
    * \param theScript - the Input script to convert
@@ -59,8 +62,8 @@ namespace SMESH_2smeshpy
    *        to exclude commands relating to objects removed from study
    * \retval TCollection_AsciiString - Convertion result
    */
-  void
-  ConvertScript(TCollection_AsciiString&                  theScript,
+  static void
+  ConvertScript(std::list< TCollection_AsciiString >&     theScriptLines,
                 Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod,
                 Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
                 std::set< TCollection_AsciiString >&      theRemovedObjIDs,

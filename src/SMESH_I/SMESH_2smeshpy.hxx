@@ -102,11 +102,12 @@ class _pyCommand: public Standard_Transient
   _AString                        myString;             //!< command text
   _AString                        myRes, myObj, myMeth; //!< found parts of command
   TColStd_SequenceOfAsciiString   myArgs;               //!< found arguments
+  TColStd_SequenceOfAsciiString   myResults;            //!< found results
   TColStd_SequenceOfInteger       myBegPos;             //!< where myRes, myObj, ... begin
   std::list< Handle(_pyCommand) > myDependentCmds; //!< commands that sould follow me in the script
 
   enum { UNKNOWN=-1, EMPTY=0, RESULT_IND, OBJECT_IND, METHOD_IND, ARG1_IND };
-  int  GetBegPos( int thePartIndex );
+  int  GetBegPos( int thePartIndex ) const;
   void SetBegPos( int thePartIndex, int thePosition );
   void SetPart( int thePartIndex, const _AString& theNewPart, _AString& theOldPart);
   void FindAllArgs() { GetArg(1); }
@@ -120,17 +121,18 @@ public:
   void SetOrderNb( int theNb ) { myOrderNb = theNb; }
   typedef void* TAddr;
   TAddr GetAddress() const { return (void*) this; }
-  int Length() { return myString.Length(); }
+  int Length() const { return myString.Length(); }
   void Clear() { myString.Clear(); myBegPos.Clear(); myArgs.Clear(); }
   bool IsEmpty() const { return myString.IsEmpty(); }
   _AString GetIndentation();
   const _AString & GetResultValue();
   int GetNbResultValues();
-  _AString GetResultValue(int res);
+  const _AString& GetResultValue(int res);
   const _AString & GetObject();
   const _AString & GetMethod();
   const _AString & GetArg( int index );
   int GetNbArgs() { FindAllArgs(); return myArgs.Length(); }
+  int GetArgBeginning() const;
   bool IsMethodCall();
   bool MethodStartsFrom(const _AString& beg)
   { GetMethod(); return ( myMeth.Location( beg, 1, myMeth.Length() ) == 1 ); }
@@ -148,6 +150,8 @@ public:
                            const bool theForward, const bool dotIsWord = false);
   static bool IsStudyEntry( const _AString& str );
   static bool IsID( const _AString& str );
+  static bool IsIDChar( char c )
+  { return ( isalnum( c ) || c == '_' || c == ':' ); }
   static std::list< _pyID > GetStudyEntries( const _AString& str );
   void AddDependantCmd( Handle(_pyCommand) cmd, bool prepend = false)
   { if (prepend) myDependentCmds.push_front( cmd ); else myDependentCmds.push_back( cmd ); }
@@ -234,7 +238,7 @@ class _pyStringFamily
   int isIn( const char* str );
 public:
   bool Add( const char* str );
-  bool IsIn( const _AString& str, _AString& subStr );
+  bool IsInArgs( Handle( _pyCommand)& cmd, std::list<_AString>& subStr );
   void Print( int level = 0 );
 };
 
@@ -261,7 +265,7 @@ public:
   void PlaceSubmeshAfterItsCreation( Handle(_pyCommand) theCmdUsingSubmesh ) const;
 
   _pyID GenerateNewID( const _pyID& theID );
-  void AddObject( Handle(_pyObject)& theObj );
+  bool AddObject( Handle(_pyObject)& theObj );
   void CheckObjectIsReCreated( Handle(_pyObject)& theObj );
   void SetProxyObject( const _pyID& theID, Handle(_pyObject)& theObj );
   Handle(_pyObject)     FindObject( const _pyID& theObjID ) const;
@@ -305,8 +309,9 @@ private:
 private:
   std::map< _pyID, Handle(_pyMesh) >        myMeshes;
   std::map< _pyID, Handle(_pyMeshEditor) >  myMeshEditors;
-  std::map< _pyID, Handle(_pyObject) >      myObjects;
   std::map< _pyID, Handle(_pyHypothesis) >  myHypos;
+  std::map< _pyID, Handle(_pyObject) >      myObjects;
+  std::list< Handle(_pyObject) >            myOrderedObjects; // to know order of myObjects creation
 #ifdef USE_STRING_FAMILY
   _pyStringFamily                           myKeepAgrCmdsIDs;
 #else
@@ -572,6 +577,8 @@ public:
   _pySelfEraser(const Handle(_pyCommand)& theCreationCmd);
   void IgnoreOwnCalls() { myIgnoreOwnCalls = true; }
   virtual void Flush();
+  virtual bool CanClear();
+  static bool IsAliveCmd( const Handle(_pyCommand)& theCmd );
 
   DEFINE_STANDARD_RTTI (_pySelfEraser)
 };
