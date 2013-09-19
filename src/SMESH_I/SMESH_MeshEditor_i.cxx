@@ -458,6 +458,10 @@ SMESH_MeshEditor_i::SMESH_MeshEditor_i(SMESH_Mesh_i* theMesh, bool isPreview):
 
 SMESH_MeshEditor_i::~SMESH_MeshEditor_i()
 {
+  PortableServer::POA_var poa = SMESH_Gen_i::GetPOA();
+  PortableServer::ObjectId_var anObjectId = poa->servant_to_id(this);
+  poa->deactivate_object(anObjectId.in());
+
   //deleteAuxIDSources();
   delete myPreviewMesh;   myPreviewMesh = 0;
   delete myPreviewEditor; myPreviewEditor = 0;
