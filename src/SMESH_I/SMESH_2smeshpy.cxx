@@ -4641,12 +4641,12 @@ void _pyFilter::Process( const Handle(_pyCommand)& theCommand)
     theCommand->SetMethod( "GetFilterFromCriteria" );
 
     // Swap "aFilterManager.CreateFilter()" and "smesh.GetFilterFromCriteria(criteria)"
-    // GetCreationCmd()->Clear();
-    // GetCreationCmd()->GetString() = theCommand->GetString();
-    // theCommand->Clear();
-    // theCommand->AddDependantCmd( GetCreationCmd() );
-    // why swap?
     GetCreationCmd()->Clear();
+    GetCreationCmd()->GetString() = theCommand->GetString();
+    theCommand->Clear();
+    theCommand->AddDependantCmd( GetCreationCmd() );
+    // why swap? -- it's needed
+    //GetCreationCmd()->Clear();
   }
   else if ( theCommand->GetMethod() == "SetMesh" )
   {
