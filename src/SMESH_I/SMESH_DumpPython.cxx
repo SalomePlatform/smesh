@@ -1056,7 +1056,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
       anEntry = aLine.SubString( aSeq->Value(i), aSeq->Value(i + 1) );
       // is a GEOM object?
       CORBA::String_var geomName = geom->GetDumpName( anEntry.ToCString() );
-      if ( !geomName.in() || !geomName[0] ) {
+      if ( !geomName.in() || !geomName.in()[0] ) {
         // is a SMESH object
         if ( theObjectNames.IsBound( anEntry )) {
           // The Object is in Study
@@ -1204,7 +1204,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
     //Output the script that sets up the visual parameters.
     CORBA::String_var compDataType = ComponentDataType();
     CORBA::String_var script = theStudy->GetDefaultScript( compDataType.in(), tab.ToCString() );
-    if ( script.in() && script[0] ) {
+    if ( script.in() && script.in()[0] ) {
       visualPropertiesPart += nt + "### Store presentation parameters of displayed objects\n";
       visualPropertiesPart += script.in();
     }
