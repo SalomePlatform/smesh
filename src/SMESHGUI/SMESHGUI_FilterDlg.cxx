@@ -1609,6 +1609,7 @@ const char* SMESHGUI_FilterTable::getPrecision( const int aType )
   case SMESH::FT_Length2D:
   case SMESH::FT_MaxElementLength2D:
   case SMESH::FT_MaxElementLength3D:
+  case SMESH::FT_BallDiameter:
     retval = "length_precision"; break;
   case SMESH::FT_Volume3D:
     retval = "vol_precision"; break;
@@ -1800,7 +1801,7 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
   case SMESH::FT_Volume3D:
   case SMESH::FT_MaxElementLength2D:
   case SMESH::FT_MaxElementLength3D:
-    anIsDoubleCriterion = true; nbCompareSigns = 3; break;
+    anIsDoubleCriterion = true; break;
 
   case SMESH::FT_FreeBorders:
   case SMESH::FT_FreeEdges:
@@ -1934,6 +1935,7 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
       DoubleSpinItem* dblSpin = new DoubleSpinItem( 0 );
       dblSpin->setPrecision( aPrecision );
       aTable->setItem( row, 2, dblSpin );
+      nbCompareSigns = 3;
     }
     else // --------------------------------------------------------------QTableWidgetItem
     {
