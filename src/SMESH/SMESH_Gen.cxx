@@ -912,7 +912,6 @@ bool SMESH_Gen::GetAlgoState(SMESH_Mesh&               theMesh,
 
   if ( !hasAlgo ) {
     ret = false;
-    INFOS( "None algorithm attached" );
     theErrors.push_back( TAlgoStateError() );
     theErrors.back().Set( SMESH_Hypothesis::HYP_MISSING, 1, true );
   }
