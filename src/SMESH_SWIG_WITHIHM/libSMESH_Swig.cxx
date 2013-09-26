@@ -380,9 +380,9 @@ SMESH_Swig::Init(int theStudyID)
         aPixmap->SetPixMap( "ICON_OBJBROWSER_SMESH" );
         aPixmap->UnRegister();
 
-	SALOMEDS::UseCaseBuilder_var useCaseBuilder = myStudy->GetUseCaseBuilder();
-	useCaseBuilder->SetRootCurrent();
-	useCaseBuilder->Append( aSComponent.in() );
+        SALOMEDS::UseCaseBuilder_var useCaseBuilder = myStudy->GetUseCaseBuilder();
+        useCaseBuilder->SetRootCurrent();
+        useCaseBuilder->Append( aSComponent.in() );
   
         myStudyBuilder->DefineComponentInstance(aSComponent,aSMESHGen);
         if (aLocked)

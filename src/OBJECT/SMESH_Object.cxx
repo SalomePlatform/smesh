@@ -281,8 +281,8 @@ void SMESH_VisualObjDef::buildPrs(bool buildGrid)
         //MESSAGE( "Update - myGrid->GetNumberOfCells() = "<<myGrid->GetNumberOfCells() );
         //MESSAGE( "Update - myGrid->GetNumberOfPoints() = "<<myGrid->GetNumberOfPoints() );
         if( MYDEBUGWITHFILES ) {
-	  SMESH::WriteUnstructuredGrid( myGrid,"myPrs.vtu" );
-	}
+          SMESH::WriteUnstructuredGrid( myGrid,"myPrs.vtu" );
+        }
   }
 }
 
@@ -486,17 +486,17 @@ void SMESH_VisualObjDef::buildElemPrs()
         }
         vtkIdType aCurId = aConnectivity->InsertNextCell( anIdList );
         aCellTypesArray->InsertNextValue( vtkElemType );
-	
-	//Store diameters of the balls
-	if(aScalars) {
-	  double aDiam = 0;
-	  if(aType == SMDSAbs_Ball) {
-	    if (const SMDS_BallElement* ball = dynamic_cast<const SMDS_BallElement*>(anElem) ) {
-	      aDiam = ball->GetDiameter();
-	    }
-	  }
-	  aScalars->SetTuple(aCurId,&aDiam);
-	}
+        
+        //Store diameters of the balls
+        if(aScalars) {
+          double aDiam = 0;
+          if(aType == SMDSAbs_Ball) {
+            if (const SMDS_BallElement* ball = dynamic_cast<const SMDS_BallElement*>(anElem) ) {
+              aDiam = ball->GetDiameter();
+            }
+          }
+          aScalars->SetTuple(aCurId,&aDiam);
+        }
 
         iElem++;
       }

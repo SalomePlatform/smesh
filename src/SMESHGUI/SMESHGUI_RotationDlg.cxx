@@ -436,74 +436,74 @@ bool SMESHGUI_RotationDlg::ClickOnApply()
       switch ( actionButton ) {
       case MOVE_ELEMS_BUTTON:
         if(CheckBoxMesh->isChecked()) {
-	  for ( int i = 0; i < myObjects.count(); i++ ) {
-	    SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
-	    myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
-	    aMeshEditor->RotateObject(myObjects[i], anAxis, anAngle, false);
-	  }
-	}
-	else {
-	  SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
-	  myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
-	  aMeshEditor->Rotate(anElementsId, anAxis, anAngle, false);
-	}
+          for ( int i = 0; i < myObjects.count(); i++ ) {
+            SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
+            myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+            aMeshEditor->RotateObject(myObjects[i], anAxis, anAngle, false);
+          }
+        }
+        else {
+          SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
+          myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+          aMeshEditor->Rotate(anElementsId, anAxis, anAngle, false);
+        }
         break;
       case COPY_ELEMS_BUTTON:
         if ( makeGroups ) {
           SMESH::ListOfGroups_var groups;
           if(CheckBoxMesh->isChecked()) {
-	    for ( int i = 0; i < myObjects.count(); i++ ) {
-	      SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
-	      myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
-	      groups = aMeshEditor->RotateObjectMakeGroups(myObjects[i], anAxis, anAngle);
-	    }
-	  }
+            for ( int i = 0; i < myObjects.count(); i++ ) {
+              SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
+              myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+              groups = aMeshEditor->RotateObjectMakeGroups(myObjects[i], anAxis, anAngle);
+            }
+          }
           else {
-	    SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
-	    myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+            SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
+            myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
             groups = aMeshEditor->RotateMakeGroups(anElementsId, anAxis, anAngle);
-	  }
+          }
         }
         else {
           if(CheckBoxMesh->isChecked()) {
-	    for ( int i = 0; i < myObjects.count(); i++ ) {
-	      SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
-	      myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
-	      aMeshEditor->RotateObject(myObjects[i], anAxis, anAngle, true);
-	    }
-	  }
+            for ( int i = 0; i < myObjects.count(); i++ ) {
+              SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
+              myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+              aMeshEditor->RotateObject(myObjects[i], anAxis, anAngle, true);
+            }
+          }
           else {
-	    SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
-	    myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
-	    aMeshEditor->Rotate(anElementsId, anAxis, anAngle, true);
-	  }
+            SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
+            myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+            aMeshEditor->Rotate(anElementsId, anAxis, anAngle, true);
+          }
         }
         break;
       case MAKE_MESH_BUTTON: {
         SMESH::SMESH_Mesh_var mesh;
         if (CheckBoxMesh->isChecked()) {
-	  for ( int i = 0; i < myObjects.count(); i++ ) {
-	    QString aName = SMESH::UniqueMeshName( LineEditNewMesh->text().replace( "*", myObjectsNames[i] ) );
-	    SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
-	    myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
-	    mesh = aMeshEditor->RotateObjectMakeMesh(myObjects[i], anAxis, anAngle, makeGroups,
-						     aName.toLatin1().data());
-	    if (!mesh->_is_nil()) {
-	      if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
-		anEntryList.append( aSObject->GetID().c_str() );
-	    }
-	  }
-	}
+          for ( int i = 0; i < myObjects.count(); i++ ) {
+            QString aName = SMESH::UniqueMeshName( LineEditNewMesh->text().replace( "*", myObjectsNames[i] ) );
+            SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
+            myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+            mesh = aMeshEditor->RotateObjectMakeMesh(myObjects[i], anAxis, anAngle, makeGroups,
+                                                     aName.toLatin1().data());
+            if (!mesh->_is_nil()) {
+              if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
+                anEntryList.append( aSObject->GetID().c_str() );
+            }
+          }
+        }
         else {
-	  SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
-	  myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+          SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
+          myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
           mesh = aMeshEditor->RotateMakeMesh(anElementsId, anAxis, anAngle, makeGroups,
                                              LineEditNewMesh->text().toLatin1().data());
-	  if (!mesh->_is_nil()) {
-	    if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
-	      anEntryList.append( aSObject->GetID().c_str() );
-	  }
-	}
+          if (!mesh->_is_nil()) {
+            if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
+              anEntryList.append( aSObject->GetID().c_str() );
+          }
+        }
         break;
       }
       }
@@ -682,25 +682,25 @@ void SMESHGUI_RotationDlg::SelectionIntoArgument()
       Handle(SALOME_InteractiveObject) IO = it.Value();
       SMESH::SMESH_Mesh_var aMesh = SMESH::GetMeshByIO( IO );
       if ( aMesh->_is_nil() )
-	return;
+        return;
       
       myActor = SMESH::FindActorByObject( aMesh );
       if ( !myActor )
-	myActor = SMESH::FindActorByEntry( IO->getEntry() );
+        myActor = SMESH::FindActorByEntry( IO->getEntry() );
       if ( !myActor && !CheckBoxMesh->isChecked() )
-	return;
+        return;
       
       if ( !SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO )->_is_nil() ) {
-	if ( _PTR(Study) aStudy = SMESH::GetActiveStudyDocument() ) {
-	  _PTR(SObject) obj = aStudy->FindObjectID( qPrintable( QString( IO->getEntry() ) ) );
-	  _PTR(GenericAttribute) anAttr;
-	  if ( obj && obj->FindAttribute( anAttr, "AttributeName" ) ) {
-	    _PTR(AttributeName) aNameAttr( anAttr );
-	    myObjects << SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO );
-	    myObjectsNames << aNameAttr->Value().c_str();
-	    myMeshes << aMesh;
-	  }
-	}
+        if ( _PTR(Study) aStudy = SMESH::GetActiveStudyDocument() ) {
+          _PTR(SObject) obj = aStudy->FindObjectID( qPrintable( QString( IO->getEntry() ) ) );
+          _PTR(GenericAttribute) anAttr;
+          if ( obj && obj->FindAttribute( anAttr, "AttributeName" ) ) {
+            _PTR(AttributeName) aNameAttr( anAttr );
+            myObjects << SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO );
+            myObjectsNames << aNameAttr->Value().c_str();
+            myMeshes << aMesh;
+          }
+        }
       }
     }
 
@@ -719,7 +719,7 @@ void SMESHGUI_RotationDlg::SelectionIntoArgument()
       SMESH::GetNameOfSelectedIObjects(mySelectionMgr, aString);
 
       if ( myMeshes.isEmpty() )
-	return;
+        return;
       // get IDs from mesh
         /*
           SMDS_Mesh* aSMDSMesh = myActor->GetObject()->GetMesh();
@@ -1129,19 +1129,19 @@ void SMESHGUI_RotationDlg::onDisplaySimulation( bool toDisplayPreview ) {
         SUIT_OverrideCursor aWaitCursor;
         bool copy = ( ActionGroup->checkedId() == COPY_ELEMS_BUTTON  ||
                       ActionGroup->checkedId() == MAKE_MESH_BUTTON );
-	QList<SMESH::MeshPreviewStruct_var> aMeshPreviewStruct;
+        QList<SMESH::MeshPreviewStruct_var> aMeshPreviewStruct;
         if(CheckBoxMesh->isChecked())
-	  for ( int i = 0; i < myObjects.count(); i++ ) {
-	    SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditPreviewer();
-	    aMeshEditor->RotateObject(myObjects[i], anAxis, anAngle, copy);
-	    aMeshPreviewStruct << aMeshEditor->GetPreviewData();
-	  }
-	else {
-	  SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditPreviewer();
+          for ( int i = 0; i < myObjects.count(); i++ ) {
+            SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditPreviewer();
+            aMeshEditor->RotateObject(myObjects[i], anAxis, anAngle, copy);
+            aMeshPreviewStruct << aMeshEditor->GetPreviewData();
+          }
+        else {
+          SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditPreviewer();
           aMeshEditor->Rotate(anElementsId, anAxis, anAngle, copy);
-	  aMeshPreviewStruct << aMeshEditor->GetPreviewData();
-	}
-	setSimulationPreview( aMeshPreviewStruct );
+          aMeshPreviewStruct << aMeshEditor->GetPreviewData();
+        }
+        setSimulationPreview( aMeshPreviewStruct );
       } catch (...) {
         hidePreview();
       }

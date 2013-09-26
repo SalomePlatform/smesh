@@ -685,13 +685,13 @@ void SMESHGUI_MakeNodeAtPointOp::redisplayPreview()
               double y = aXYZ->operator[](1);
               double z = aXYZ->operator[](2);
 
-	      if ( myUpdateDestination ) {
-		myDlg->myX->SetValue(x);
-		myDlg->myY->SetValue(y);
-		myDlg->myZ->SetValue(z);
-	      }
+              if ( myUpdateDestination ) {
+                myDlg->myX->SetValue(x);
+                myDlg->myY->SetValue(y);
+                myDlg->myZ->SetValue(z);
+              }
 
-	      double dx = myDlg->myX->GetValue() - x;
+              double dx = myDlg->myX->GetValue() - x;
               double dy = myDlg->myY->GetValue() - y;
               double dz = myDlg->myZ->GetValue() - z;
               myDlg->myCurrentX->SetValue(x);

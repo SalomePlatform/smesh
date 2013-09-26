@@ -477,71 +477,71 @@ bool SMESHGUI_ScaleDlg::ClickOnApply()
       switch ( actionButton ) {
 
       case MOVE_ELEMS_BUTTON:
-	if ( CheckBoxMesh->isChecked() )
-	  for ( int i = 0; i < myObjects.count(); i++ ) {
-	    SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
-	    myMeshes[i]->SetParameters( aParameters.join( ":" ).toLatin1().constData() );
-	    aMeshEditor->Scale(myObjects[i], aPoint, aScaleFact, false);
-	  }
-	else {
-	  SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
+        if ( CheckBoxMesh->isChecked() )
+          for ( int i = 0; i < myObjects.count(); i++ ) {
+            SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
+            myMeshes[i]->SetParameters( aParameters.join( ":" ).toLatin1().constData() );
+            aMeshEditor->Scale(myObjects[i], aPoint, aScaleFact, false);
+          }
+        else {
+          SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
           SMESH::SMESH_IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
-	  myMeshes[0]->SetParameters( aParameters.join( ":" ).toLatin1().constData() );
-	  aMeshEditor->Scale( src, aPoint, aScaleFact, false);
-	}
+          myMeshes[0]->SetParameters( aParameters.join( ":" ).toLatin1().constData() );
+          aMeshEditor->Scale( src, aPoint, aScaleFact, false);
+        }
         break;
 
       case COPY_ELEMS_BUTTON:
         if ( makeGroups ) {
-	  SMESH::ListOfGroups_var groups;
-	  if(CheckBoxMesh->isChecked())
-	    for ( int i = 0; i < myObjects.count(); i++ ) {
-	      SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
-	      myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
-	      groups = aMeshEditor->ScaleMakeGroups(myObjects[i], aPoint, aScaleFact);
-	    }
+          SMESH::ListOfGroups_var groups;
+          if(CheckBoxMesh->isChecked())
+            for ( int i = 0; i < myObjects.count(); i++ ) {
+              SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
+              myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+              groups = aMeshEditor->ScaleMakeGroups(myObjects[i], aPoint, aScaleFact);
+            }
           else {
-	    SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
+            SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
             SMESH::SMESH_IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
-	    myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
-	    groups = aMeshEditor->ScaleMakeGroups( src, aPoint, aScaleFact);
-	  }
-	}
+            myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+            groups = aMeshEditor->ScaleMakeGroups( src, aPoint, aScaleFact);
+          }
+        }
         else {
-	  if(CheckBoxMesh->isChecked()) {
-	    for ( int i = 0; i < myObjects.count(); i++ ) {
-	      SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
-	      myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
-	      aMeshEditor->Scale(myObjects[i], aPoint, aScaleFact, true);
-	    }
-	  }
+          if(CheckBoxMesh->isChecked()) {
+            for ( int i = 0; i < myObjects.count(); i++ ) {
+              SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
+              myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+              aMeshEditor->Scale(myObjects[i], aPoint, aScaleFact, true);
+            }
+          }
           else {
-	    SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
+            SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
             SMESH::SMESH_IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
-	    myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
-	    aMeshEditor->Scale( src, aPoint, aScaleFact, true);
-	  }
-	}
+            myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+            aMeshEditor->Scale( src, aPoint, aScaleFact, true);
+          }
+        }
         break;
 
       case MAKE_MESH_BUTTON: {
-	SMESH::SMESH_Mesh_var mesh;
-	if (CheckBoxMesh->isChecked()) {
-	  for ( int i = 0; i < myObjects.count(); i++ ) {
-	    QString aName = SMESH::UniqueMeshName( LineEditNewMesh->text().replace( "*", myObjectsNames[i] ) );
-	    SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
-	    myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
-	    mesh = aMeshEditor->ScaleMakeMesh(myObjects[i], aPoint, aScaleFact, makeGroups,
-					      aName.toLatin1().data());
-	    if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
-	      anEntryList.append( aSObject->GetID().c_str() );
-	  }
-	}
-	else {
-	  SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
-	  myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+        SMESH::SMESH_Mesh_var mesh;
+        if (CheckBoxMesh->isChecked()) {
+          for ( int i = 0; i < myObjects.count(); i++ ) {
+            QString aName = SMESH::UniqueMeshName( LineEditNewMesh->text().replace( "*", myObjectsNames[i] ) );
+            SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
+            myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+            mesh = aMeshEditor->ScaleMakeMesh(myObjects[i], aPoint, aScaleFact, makeGroups,
+                                              aName.toLatin1().data());
+            if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
+              anEntryList.append( aSObject->GetID().c_str() );
+          }
+        }
+        else {
+          SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
+          myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
           SMESH::SMESH_IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
-	  mesh = aMeshEditor->ScaleMakeMesh( src, aPoint, aScaleFact, makeGroups,
+          mesh = aMeshEditor->ScaleMakeMesh( src, aPoint, aScaleFact, makeGroups,
                                              LineEditNewMesh->text().toLatin1().data());
           if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
             anEntryList.append( aSObject->GetID().c_str() );
@@ -722,25 +722,25 @@ void SMESHGUI_ScaleDlg::SelectionIntoArgument()
       Handle(SALOME_InteractiveObject) IO = it.Value();
       SMESH::SMESH_Mesh_var aMesh = SMESH::GetMeshByIO( IO );
       if ( aMesh->_is_nil() )
-	return;
+        return;
   
       myActor = SMESH::FindActorByObject( aMesh );
       if ( !myActor )
-	myActor = SMESH::FindActorByEntry( IO->getEntry() );
+        myActor = SMESH::FindActorByEntry( IO->getEntry() );
       if ( !myActor && !CheckBoxMesh->isChecked() )
-	return;
+        return;
 
       if ( !SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO )->_is_nil() ) {
-	if ( _PTR(Study) aStudy = SMESH::GetActiveStudyDocument() ) {
-	  _PTR(SObject) obj = aStudy->FindObjectID( qPrintable( QString( IO->getEntry() ) ) );
-	  _PTR(GenericAttribute) anAttr;
-	  if ( obj && obj->FindAttribute( anAttr, "AttributeName" ) ) {
-	    _PTR(AttributeName) aNameAttr( anAttr );
-	    myObjects << SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO );
-	    myObjectsNames << aNameAttr->Value().c_str();
-	    myMeshes << aMesh;
-	  }
-	}
+        if ( _PTR(Study) aStudy = SMESH::GetActiveStudyDocument() ) {
+          _PTR(SObject) obj = aStudy->FindObjectID( qPrintable( QString( IO->getEntry() ) ) );
+          _PTR(GenericAttribute) anAttr;
+          if ( obj && obj->FindAttribute( anAttr, "AttributeName" ) ) {
+            _PTR(AttributeName) aNameAttr( anAttr );
+            myObjects << SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO );
+            myObjectsNames << aNameAttr->Value().c_str();
+            myMeshes << aMesh;
+          }
+        }
       }
     }
       
@@ -760,7 +760,7 @@ void SMESHGUI_ScaleDlg::SelectionIntoArgument()
     if (CheckBoxMesh->isChecked()) {
       SMESH::GetNameOfSelectedIObjects( mySelectionMgr, aString );
       if (myMeshes.isEmpty())
-	return;
+        return;
         // get IDs from mesh
         /*
         SMDS_Mesh* aSMDSMesh = myActor->GetObject()->GetMesh();
@@ -1136,21 +1136,21 @@ void SMESHGUI_ScaleDlg::onDisplaySimulation( bool toDisplayPreview ) {
         bool copy = ( ActionGroup->checkedId() == COPY_ELEMS_BUTTON ||
                       ActionGroup->checkedId() == MAKE_MESH_BUTTON );
         SUIT_OverrideCursor aWaitCursor;
-	QList<SMESH::MeshPreviewStruct_var> aMeshPreviewStruct;
+        QList<SMESH::MeshPreviewStruct_var> aMeshPreviewStruct;
 
-	if(CheckBoxMesh->isChecked())
-	  for ( int i = 0; i < myObjects.count(); i++ ) {
-	    SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditPreviewer();
-	    aMeshEditor->Scale(myObjects[i], aPoint, aScaleFact, copy);
-	    aMeshPreviewStruct << aMeshEditor->GetPreviewData();
-	  }
+        if(CheckBoxMesh->isChecked())
+          for ( int i = 0; i < myObjects.count(); i++ ) {
+            SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditPreviewer();
+            aMeshEditor->Scale(myObjects[i], aPoint, aScaleFact, copy);
+            aMeshPreviewStruct << aMeshEditor->GetPreviewData();
+          }
         else {
-	  SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditPreviewer();
+          SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditPreviewer();
           SMESH::SMESH_IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
-	  aMeshEditor->Scale( src, aPoint, aScaleFact, copy);
-	  aMeshPreviewStruct << aMeshEditor->GetPreviewData();
-	}
-	setSimulationPreview(aMeshPreviewStruct);
+          aMeshEditor->Scale( src, aPoint, aScaleFact, copy);
+          aMeshPreviewStruct << aMeshEditor->GetPreviewData();
+        }
+        setSimulationPreview(aMeshPreviewStruct);
       } catch (...) {
         hidePreview();
       }

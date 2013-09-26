@@ -143,7 +143,7 @@ static double getNumericalValue(SMESH::SMESH_IDSource_ptr theSource, SMESH::Cont
       
       SMESH::long_array_var anElementsId = theSource->GetIDs();
       for (int i = 0; i < anElementsId->length(); i++) {
-	value += theFunctor->GetValue( anElementsId[i] );
+        value += theFunctor->GetValue( anElementsId[i] );
       }
     }
   }

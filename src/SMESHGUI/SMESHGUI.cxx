@@ -2018,7 +2018,7 @@ bool SMESHGUI::automaticUpdate( SMESH::SMESH_Mesh_ptr theMesh,
     if ( nbOdElems > 0 ) {
       if ( total + nbOdElems > updateLimit ) {
         *entities = *entities & ~SMESH_Actor::e0DElements;
-	*hidden = *hidden | SMESH_Actor::e0DElements;
+        *hidden = *hidden | SMESH_Actor::e0DElements;
       }
       else
         exceeded = false;
@@ -2028,7 +2028,7 @@ bool SMESHGUI::automaticUpdate( SMESH::SMESH_Mesh_ptr theMesh,
     if ( nbEdges > 0 ) {
       if ( total + nbEdges > updateLimit ) {
         *entities = *entities & ~SMESH_Actor::eEdges;
-	*hidden = *hidden | SMESH_Actor::eEdges;
+        *hidden = *hidden | SMESH_Actor::eEdges;
       }
       else
         exceeded = false;
@@ -2038,7 +2038,7 @@ bool SMESHGUI::automaticUpdate( SMESH::SMESH_Mesh_ptr theMesh,
     if ( nbFaces > 0 ) {
       if ( total + nbFaces > updateLimit ) {
         *entities = *entities & ~SMESH_Actor::eFaces;
-	*hidden = *hidden | SMESH_Actor::eFaces;
+        *hidden = *hidden | SMESH_Actor::eFaces;
       }
       else
         exceeded = false;
@@ -2048,7 +2048,7 @@ bool SMESHGUI::automaticUpdate( SMESH::SMESH_Mesh_ptr theMesh,
     if ( nbVolumes > 0 ) {
       if ( total + nbVolumes > updateLimit ) {
         *entities = *entities & ~SMESH_Actor::eVolumes;
-	*hidden = *hidden | SMESH_Actor::eVolumes;
+        *hidden = *hidden | SMESH_Actor::eVolumes;
       }
       else
         exceeded = false;
@@ -2058,7 +2058,7 @@ bool SMESHGUI::automaticUpdate( SMESH::SMESH_Mesh_ptr theMesh,
     if ( nbBalls > 0 ) {
       if ( total + nbBalls > updateLimit ) {
         *entities = *entities & ~SMESH_Actor::eBallElem;
-	*hidden = *hidden | SMESH_Actor::eBallElem;
+        *hidden = *hidden | SMESH_Actor::eBallElem;
       }
       else
         exceeded = false;
@@ -3549,13 +3549,13 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       int page = SMESHGUI_MeasureDlg::MinDistance;
       if ( theCommandID == 502 )
-	page = SMESHGUI_MeasureDlg::BoundingBox;
+        page = SMESHGUI_MeasureDlg::BoundingBox;
       else if ( theCommandID == 503 )
-	page = SMESHGUI_MeasureDlg::Length;
+        page = SMESHGUI_MeasureDlg::Length;
       else if ( theCommandID == 504 )
-	page = SMESHGUI_MeasureDlg::Area;
+        page = SMESHGUI_MeasureDlg::Area;
       else if ( theCommandID == 505 )
-	page = SMESHGUI_MeasureDlg::Volume;
+        page = SMESHGUI_MeasureDlg::Volume;
 
       EmitSignalDeactivateDialog();
       SMESHGUI_MeasureDlg* dlg = new SMESHGUI_MeasureDlg( SMESHGUI::desktop(), page );

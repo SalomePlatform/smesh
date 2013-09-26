@@ -915,12 +915,12 @@ void SMESHGUI_BaseComputeOp::computeMesh()
 
             if ( limitExceeded )
             {
-	      QStringList hiddenMsg;
-	      if ( hidden & SMESH_Actor::e0DElements ) hiddenMsg << tr( "SMESH_ELEMS0D" );
-	      if ( hidden & SMESH_Actor::eEdges )      hiddenMsg << tr( "SMESH_EDGES" );
-	      if ( hidden & SMESH_Actor::eFaces )      hiddenMsg << tr( "SMESH_FACES" );
-	      if ( hidden & SMESH_Actor::eVolumes )    hiddenMsg << tr( "SMESH_VOLUMES" );
-	      if ( hidden & SMESH_Actor::eBallElem )   hiddenMsg << tr( "SMESH_BALLS" );
+              QStringList hiddenMsg;
+              if ( hidden & SMESH_Actor::e0DElements ) hiddenMsg << tr( "SMESH_ELEMS0D" );
+              if ( hidden & SMESH_Actor::eEdges )      hiddenMsg << tr( "SMESH_EDGES" );
+              if ( hidden & SMESH_Actor::eFaces )      hiddenMsg << tr( "SMESH_FACES" );
+              if ( hidden & SMESH_Actor::eVolumes )    hiddenMsg << tr( "SMESH_VOLUMES" );
+              if ( hidden & SMESH_Actor::eBallElem )   hiddenMsg << tr( "SMESH_BALLS" );
               SUIT_MessageBox::warning( desktop(),
                                         tr( "SMESH_WRN_WARNING" ),
                                         tr( "SMESH_WRN_SIZE_INC_LIMIT_EXCEEDED" ).arg( myMesh->NbElements() ).arg( limitSize ).arg( hiddenMsg.join(", ") ) );

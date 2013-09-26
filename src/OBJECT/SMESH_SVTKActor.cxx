@@ -144,10 +144,10 @@ SMESH_SVTKActor
         if(aCell->GetCellType() == VTK_VERTEX ) {
           my0DGrid->InsertNextCell(aCell->GetCellType(),aCell->GetPointIds());
         } else if(aCell->GetCellType() == VTK_POLY_VERTEX ) {
-	  vtkIdType newCellId = myBallGrid->InsertNextCell(aCell->GetCellType(),aCell->GetPointIds());
-	  if(myVisualObj) {
-	    outputCD->CopyData(cd, myVisualObj->GetElemVTKId(aPartId), newCellId);
-	  }
+          vtkIdType newCellId = myBallGrid->InsertNextCell(aCell->GetCellType(),aCell->GetPointIds());
+          if(myVisualObj) {
+            outputCD->CopyData(cd, myVisualObj->GetElemVTKId(aPartId), newCellId);
+          }
         } else {
           myUnstructuredGrid->InsertNextCell(aCell->GetCellType(),aCell->GetPointIds());
         }

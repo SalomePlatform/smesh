@@ -229,10 +229,10 @@ namespace SMESH
       anIds->SetNumberOfIds(1);
       for (int i = 0, iEnd = theIds.size(); i < iEnd; i++){
         anIds->InsertId(0,theIds[i]);
-	vtkIdType anId = myBallPolyData->InsertNextCell(VTK_POLY_VERTEX,anIds);
-	double d = theDiameter;
-	aScalars->SetTuple(anId,&d);
-	anIds->Reset();
+        vtkIdType anId = myBallPolyData->InsertNextCell(VTK_POLY_VERTEX,anIds);
+        double d = theDiameter;
+        aScalars->SetTuple(anId,&d);
+        anIds->Reset();
       }
       
       anIds->Delete();
@@ -258,7 +258,7 @@ namespace SMESH
       if (FindVtkViewWindow(myApplication->activeViewManager(), myViewWindow)) {
         myVTKViewWindow->RemoveActor(myPreviewActor,false,false);
         myVTKViewWindow->RemoveActor(myFaceOrientation,false,false);
-	myVTKViewWindow->RemoveActor(myBallActor,false,false);
+        myVTKViewWindow->RemoveActor(myBallActor,false,false);
       }
 
       myMapper->Delete();
