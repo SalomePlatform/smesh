@@ -394,6 +394,8 @@ Driver_Mesh::Status DriverGMF_Write::PerformSizeMap( const std::vector<Control_P
   // Close Files
   GmfCloseMesh( verticesFileID );
   GmfCloseMesh( solFileID );
+
+  return DRS_OK;
 }
 
 std::vector<std::string> DriverGMF_Write::GetSizeMapFiles()
