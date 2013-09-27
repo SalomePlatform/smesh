@@ -1047,7 +1047,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
         return result
 
     ## Get sum of lengths of all 1D elements in the mesh object.
-    #  @param elemId obj mesh, submesh or group
+    #  @param obj mesh, submesh or group
     #  @return sum of lengths of all 1D elements
     #  @ingroup l1_measurements
     def GetLength(self, obj):
@@ -1059,7 +1059,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
         return value
 
     ## Get sum of areas of all 2D elements in the mesh object.
-    #  @param elemId obj mesh, submesh or group
+    #  @param obj mesh, submesh or group
     #  @return sum of areas of all 2D elements
     #  @ingroup l1_measurements
     def GetArea(self, obj):
@@ -1071,7 +1071,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
         return value
 
     ## Get sum of volumes of all 3D elements in the mesh object.
-    #  @param elemId obj mesh, submesh or group
+    #  @param obj mesh, submesh or group
     #  @return sum of volumes of all 3D elements
     #  @ingroup l1_measurements
     def GetVolume(self, obj):
