@@ -9931,8 +9931,8 @@ bool SMESH_MeshEditor::AffectedElemGroupsInRegion( const TIDSortedElemSet& theEl
     // --- iterates on elements to be replicated and get elements by back references from their nodes
 
     TIDSortedElemSet::const_iterator elemItr = theElems.begin();
-    int ielem = 1;
-    for ( ;  elemItr != theElems.end(); ++elemItr )
+    int ielem;
+    for ( ielem=1;  elemItr != theElems.end(); ++elemItr )
     {
       SMDS_MeshElement* anElem = (SMDS_MeshElement*)*elemItr;
       if (!anElem || (anElem->GetType() != SMDSAbs_Face))
@@ -10034,8 +10034,8 @@ bool SMESH_MeshEditor::AffectedElemGroupsInRegion( const TIDSortedElemSet& theEl
 
     // iterates on indicated elements and get elements by back references from their nodes
     TIDSortedElemSet::const_iterator elemItr = theElems.begin();
-    int ielem = 1;
-    for ( ;  elemItr != theElems.end(); ++elemItr )
+    int ielem;
+    for ( ielem = 1;  elemItr != theElems.end(); ++elemItr )
     {
       MESSAGE("element " << ielem++);
       SMDS_MeshElement* anElem = (SMDS_MeshElement*)*elemItr;
