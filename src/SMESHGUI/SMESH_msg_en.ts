@@ -3413,12 +3413,44 @@ Use Display Entity menu command to show them.
         <translation>Taper</translation>
     </message>
     <message>
-        <source>TB_ADD_REMOVE</source>
-        <translation>Add/Remove Toolbar</translation>
+        <source>TB_ADD</source>
+        <translation>Add Element Toolbar</translation>
     </message>
     <message>
-        <source>TB_CTRL</source>
-        <translation>Controls Toolbar</translation>
+        <source>TB_ADDNON</source>
+        <translation>Add Non Linear Element Toolbar</translation>
+    </message>
+    <message>
+        <source>TB_REM</source>
+        <translation>Remove Toolbar</translation>
+    </message>
+    <message>
+        <source>TB_RENUMBER</source>
+        <translation>Renumbering Toolbar</translation>
+    </message>
+    <message>
+        <source>TB_TRANSFORM</source>
+        <translation>Transformation Toolbar</translation>
+    </message>
+    <message>
+        <source>TB_CTRL0D</source>
+        <translation>Node Controls Toolbar</translation>
+    </message>
+    <message>
+        <source>TB_CTRL1D</source>
+        <translation>Edge Controls Toolbar</translation>
+    </message>
+    <message>
+        <source>TB_CTRL2D</source>
+        <translation>Face Controls Toolbar</translation>
+    </message>
+    <message>
+        <source>TB_CTRL3D</source>
+        <translation>Volume Controls Toolbar</translation>
+    </message>
+    <message>
+        <source>TB_MEASUREM</source>
+        <translation>Measurements Toolbar</translation>
     </message>
     <message>
         <source>TB_DISP_MODE</source>
@@ -3430,6 +3462,18 @@ Use Display Entity menu command to show them.
     </message>
     <message>
         <source>TB_MESH</source>
+        <translation>Mesh Toolbar</translation>
+    </message>
+    <message>
+        <source>TB_GROUP</source>
+        <translation>Group Toolbar</translation>
+    </message>
+    <message>
+        <source>TB_INFO</source>
+        <translation>Information Toolbar</translation>
+    </message>
+    <message>
+        <source>TB_ADD1D</source>
         <translation>Mesh Toolbar</translation>
     </message>
     <message>

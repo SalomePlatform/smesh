@@ -4044,11 +4044,21 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 214, viewId, -1 );
 
   // ----- create toolbars --------------
-  int meshTb     = createTool( tr( "TB_MESH" ) ),
-      ctrlTb     = createTool( tr( "TB_CTRL" ) ),
-      addRemTb   = createTool( tr( "TB_ADD_REMOVE" ) ),
-      modifyTb   = createTool( tr( "TB_MODIFY" ) ),
-      dispModeTb = createTool( tr( "TB_DISP_MODE" ) );
+  int meshTb       = createTool( tr( "TB_MESH" ) ),
+      info         = createTool( tr( "TB_INFO" ) ),
+      groupTb      = createTool( tr( "TB_GROUP" ) ),
+      ctrl0dTb     = createTool( tr( "TB_CTRL0D" ) ),
+      ctrl1dTb     = createTool( tr( "TB_CTRL1D" ) ),
+      ctrl2dTb     = createTool( tr( "TB_CTRL2D" ) ),
+      ctrl3dTb     = createTool( tr( "TB_CTRL3D" ) ),
+      addElemTb    = createTool( tr( "TB_ADD" ) ),
+      addNonElemTb = createTool( tr( "TB_ADDNON" ) ),
+      remTb        = createTool( tr( "TB_REM" ) ),
+      renumbTb     = createTool( tr( "TB_RENUMBER" ) ),  
+      transformTb  = createTool( tr( "TB_TRANSFORM" ) ),  
+      modifyTb     = createTool( tr( "TB_MODIFY" ) ),
+      measuremTb     = createTool( tr( "TB_MEASUREM" ) ),
+      dispModeTb   = createTool( tr( "TB_DISP_MODE" ) );
 
   createTool( 702, meshTb );
   createTool( 703, meshTb );
@@ -4060,93 +4070,90 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 711, meshTb );
   createTool( 712, meshTb );
   createTool( 713, meshTb );
-  createTool( separator(), meshTb );
-  createTool( 801, meshTb );
-  createTool( 806, meshTb );
-  createTool( 802, meshTb );
-  createTool( 803, meshTb );
-  //createTool( 815, meshTb );
-  createTool( separator(), meshTb );
-  createTool( 900, meshTb );
+
+  createTool( 801, groupTb );
+  createTool( 806, groupTb );
+  createTool( 802, groupTb );
+  createTool( 803, groupTb );
+
+  createTool( 900, info );
   //createTool( 902, meshTb );
   //createTool( 903, meshTb ); // VSR: issue #0021242 (eliminate "Mesh Element Information" command)
-  createTool( 904, meshTb );
-  createTool( separator(), meshTb );
+  createTool( 904, info );
 
-  createTool( 6005, ctrlTb );
-  createTool( 6028, ctrlTb );
-  createTool( separator(), ctrlTb );
-  createTool( 6002, ctrlTb );
-  createTool( 6003, ctrlTb );
-  createTool( 6001, ctrlTb );
-  createTool( 6004, ctrlTb );
-  createTool( 6029, ctrlTb );
-  createTool( separator(), ctrlTb );
-  createTool( 6021, ctrlTb );
-  createTool( 6025, ctrlTb );
-  createTool( 6027, ctrlTb );
-  createTool( 6018, ctrlTb );
-  createTool( 6019, ctrlTb );
-  createTool( 6011, ctrlTb );
-  createTool( 6012, ctrlTb );
-  createTool( 6013, ctrlTb );
-  createTool( 6014, ctrlTb );
-  createTool( 6015, ctrlTb );
-  createTool( 6016, ctrlTb );
-  createTool( 6022, ctrlTb );
-  createTool( 6030, ctrlTb );
-  createTool( separator(), ctrlTb );
-  createTool( 6017, ctrlTb );
-  createTool( 6009, ctrlTb );
-  createTool( 6023, ctrlTb );
-  createTool( 6024, ctrlTb );
-  createTool( 6026, ctrlTb );
-  createTool( 6031, ctrlTb );
-  createTool( separator(), ctrlTb );
+  createTool( 6005, ctrl0dTb );
+  createTool( 6028, ctrl0dTb );
 
-  createTool( 4000, addRemTb );
-  createTool( 4009, addRemTb );
-  createTool( 4070, addRemTb );
-  createTool( 4008, addRemTb );
-  createTool( 4010, addRemTb );
-  createTool( 4021, addRemTb );
-  createTool( 4022, addRemTb );
-  createTool( 4023, addRemTb );
-  createTool( 4031, addRemTb );
-  createTool( 4032, addRemTb );
-  createTool( 4133, addRemTb );
-  createTool( 4134, addRemTb );
-  createTool( 4135, addRemTb );
-  createTool( 4033, addRemTb );
-  createTool( separator(), addRemTb );
-  createTool( 4034, addRemTb );
-  createTool( 4035, addRemTb );
-  createTool( 4137, addRemTb );
-  createTool( 4036, addRemTb );
-  createTool( 4136, addRemTb );
-  createTool( 4037, addRemTb );
-  createTool( 4038, addRemTb );
-  createTool( 4039, addRemTb );
-  createTool( 4040, addRemTb );
-  createTool( 4140, addRemTb );
-  createTool( separator(), addRemTb );
-  createTool( 4041, addRemTb );
-  createTool( 4042, addRemTb );
-  createTool( 4044, addRemTb );
-  createTool( 4043, addRemTb );
-  createTool( separator(), addRemTb );
-  createTool( 4051, addRemTb );
-  createTool( 4052, addRemTb );
-  createTool( separator(), addRemTb );
-  createTool( 4061, addRemTb );
-  createTool( 4062, addRemTb );
-  createTool( 4063, addRemTb );
-  createTool( 4068, addRemTb );
-  createTool( 4064, addRemTb );
-  createTool( 4065, addRemTb );
-  createTool( 4066, addRemTb );
-  createTool( 4069, addRemTb );
-  createTool( separator(), addRemTb );
+  createTool( 6002, ctrl1dTb );
+  createTool( 6003, ctrl1dTb );
+  createTool( 6001, ctrl1dTb );
+  createTool( 6004, ctrl1dTb );
+  createTool( 6029, ctrl1dTb );
+
+  createTool( 6021, ctrl2dTb );
+  createTool( 6025, ctrl2dTb );
+  createTool( 6027, ctrl2dTb );
+  createTool( 6018, ctrl2dTb );
+  createTool( 6019, ctrl2dTb );
+  createTool( 6011, ctrl2dTb );
+  createTool( 6012, ctrl2dTb );
+  createTool( 6013, ctrl2dTb );
+  createTool( 6014, ctrl2dTb );
+  createTool( 6015, ctrl2dTb );
+  createTool( 6016, ctrl2dTb );
+  createTool( 6022, ctrl2dTb );
+  createTool( 6030, ctrl2dTb );
+
+  createTool( 6017, ctrl3dTb );
+  createTool( 6009, ctrl3dTb );
+  createTool( 6023, ctrl3dTb );
+  createTool( 6024, ctrl3dTb );
+  createTool( 6026, ctrl3dTb );
+  createTool( 6031, ctrl3dTb );
+
+  createTool( 4000, addElemTb );
+  createTool( 4009, addElemTb );
+  createTool( 4070, addElemTb );
+  createTool( 4008, addElemTb );
+  createTool( 4010, addElemTb );
+  createTool( 4021, addElemTb );
+  createTool( 4022, addElemTb );
+  createTool( 4023, addElemTb );
+  createTool( 4031, addElemTb );
+  createTool( 4032, addElemTb );
+  createTool( 4133, addElemTb );
+  createTool( 4134, addElemTb );
+  createTool( 4135, addElemTb );
+  createTool( 4033, addElemTb );
+
+  createTool( 4034, addNonElemTb );
+  createTool( 4035, addNonElemTb );
+  createTool( 4137, addNonElemTb );
+  createTool( 4036, addNonElemTb );
+  createTool( 4136, addNonElemTb );
+  createTool( 4037, addNonElemTb );
+  createTool( 4038, addNonElemTb );
+  createTool( 4039, addNonElemTb );
+  createTool( 4040, addNonElemTb );
+  createTool( 4140, addNonElemTb );
+
+  createTool( 4041, remTb );
+  createTool( 4042, remTb );
+  createTool( 4044, remTb );
+  createTool( 4043, remTb );
+
+  createTool( 4051, renumbTb );
+  createTool( 4052, renumbTb );
+
+
+  createTool( 4061, transformTb );
+  createTool( 4062, transformTb );
+  createTool( 4063, transformTb );
+  createTool( 4068, transformTb );
+  createTool( 4064, transformTb );
+  createTool( 4065, transformTb );
+  createTool( 4066, transformTb );
+  createTool( 4069, transformTb );
 
   createTool( 4067,modifyTb );
   createTool( 407, modifyTb );
@@ -4163,6 +4170,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 415, modifyTb );
   createTool( 417, modifyTb );
   createTool( 418, modifyTb );
+
+  createTool( 501, measuremTb );  
 
   createTool( 214, dispModeTb );
 
