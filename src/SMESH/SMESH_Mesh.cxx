@@ -366,16 +366,10 @@ void SMESH_Mesh::Clear()
   {
     if ( SMESH_subMesh *sm = GetSubMeshContaining( GetShapeToMesh() ) )
     {
+      sm->ComputeStateEngine( SMESH_subMesh::CLEAN );
+      sm->ComputeSubMeshStateEngine( SMESH_subMesh::CLEAN );
       sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
-      sm->ComputeStateEngine( SMESH_subMesh::CLEAN ); // for event listeners (issue 0020918)
-
-      SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(/*includeSelf=*/false,
-                                                               /*complexShapeFirst=*/true);
-      while ( smIt->more() )
-      {
-        sm = smIt->next();
-        sm->ComputeStateEngine( SMESH_subMesh::CLEAN );
-      }
+      sm->ComputeSubMeshStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
     }
   }
   _isModified = false;
