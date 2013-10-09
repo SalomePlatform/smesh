@@ -949,11 +949,11 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   std::list< TCollection_AsciiString >::iterator linesIt;
   
   if ( isPublished )
-    lines.push_back(  tab + aSMESHGen + " = smeshBuilder.New(theStudy)" );
+    lines.push_back(  aSMESHGen + " = smeshBuilder.New(theStudy)" );
    else
-    lines.push_back(  tab + aSMESHGen + " = smeshBuilder.New(None)" );
-  lines.push_back(  tab + "aFilterManager = " + aSMESHGen + ".CreateFilterManager()" );
-  lines.push_back(  tab + "aMeasurements = "  + aSMESHGen + ".CreateMeasurements()" );
+    lines.push_back(  aSMESHGen + " = smeshBuilder.New(None)" );
+  lines.push_back( helper + "aFilterManager = " + aSMESHGen + ".CreateFilterManager()" );
+  lines.push_back( helper + "aMeasurements = "  + aSMESHGen + ".CreateMeasurements()" );
 
   // Treat dump trace of restored study
   if (theSavedTrace.Length() > 0)
