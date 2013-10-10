@@ -17,41 +17,57 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+# --- options ---
+# additional include directories
 INCLUDE_DIRECTORIES(
   ${HDF5_INCLUDE_DIRS}
-  ${BOOST_INCLUDE_DIRS}
-  ${MED3_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
+  ${MEDFILE_INCLUDE_DIRS}
+  ${KERNEL_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}/../Base
   ${CMAKE_CURRENT_SOURCE_DIR}/../V2_2
-  )
+)
 
-IF(MED_ENABLE_KERNEL)
-  INCLUDE_DIRECTORIES(${KERNEL_ROOT_DIR}/include/salome)
-ELSE(MED_ENABLE_KERNEL)
-  INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/adm_local_without_kernel)
-ENDIF(MED_ENABLE_KERNEL)  
+# additional preprocessor / compiler flags
+ADD_DEFINITIONS(
+  ${HDF5_DEFINITIONS}
+  ${BOOST_DEFINITIONS}
+)
 
+SET(_link_LIBRARIES
+  MEDWrapperBase
+  MEDWrapper_V2_2
+  ${Boost_LIBRARIES}
+  ${MEDFILE_C_LIBRARIES}
+)
+
+# --- headers ---
+
+# header files / no moc processing
+SET(MEDWrapper_HEADERS
+  MED_Factory.hxx
+  MED_WrapperFactory.hxx
+)
+
+# --- sources ---
+
+# sources / static
 SET(MEDWrapper_SOURCES
   MED_Factory.cxx
 )
 
-SET(mprint_version_SOURCES
-  mprint_version.cxx
-  )
+# --- rules ---
 
-ADD_LIBRARY(MEDWrapper SHARED ${MEDWrapper_SOURCES})
-SET_TARGET_PROPERTIES(MEDWrapper PROPERTIES COMPILE_FLAGS "${BOOST_DEFINITIONS} ${MED3_DEFINITIONS} ${PLATFORM_DEFINITIONS}")
-TARGET_LINK_LIBRARIES(MEDWrapper MEDWrapper_V2_2)
-INSTALL(TARGETS MEDWrapper DESTINATION ${MED_salomelib_LIBS})
+ADD_LIBRARY(MEDWrapper ${MEDWrapper_SOURCES})
+TARGET_LINK_LIBRARIES(MEDWrapper ${_link_LIBRARIES} ${MED_medloader} )
+INSTALL(TARGETS MEDWrapper EXPORT ${PROJECT_NAME}TargetGroup DESTINATION ${SALOME_INSTALL_LIBS})
 
-ADD_EXECUTABLE(mprint_version ${mprint_version_SOURCES})
-SET_TARGET_PROPERTIES(mprint_version PROPERTIES COMPILE_FLAGS "${BOOST_DEFINITIONS} ${MED3_DEFINITIONS} ${PLATFORM_DEFINITIONS}")
-TARGET_LINK_LIBRARIES(mprint_version MEDWrapper MEDWrapper_V2_2 MEDWrapperBase ${BOOST_LIBS} ${MED3_LIBS_C_ONLY})
+ADD_EXECUTABLE(mprint_version mprint_version.cxx)
+TARGET_LINK_LIBRARIES(mprint_version ${_link_LIBRARIES} MEDWrapper)
 
-ADD_EXECUTABLE(MED_Test ${mprint_version_SOURCES})
-SET_TARGET_PROPERTIES(MED_Test PROPERTIES COMPILE_FLAGS "${BOOST_DEFINITIONS} ${MED3_DEFINITIONS} ${PLATFORM_DEFINITIONS}")
-TARGET_LINK_LIBRARIES(MED_Test MEDWrapper MEDWrapper_V2_2 MEDWrapperBase ${BOOST_LIBS})
+ADD_EXECUTABLE(MED_Test MED_Test.cxx)
+TARGET_LINK_LIBRARIES(MED_Test ${_link_LIBRARIES} MEDWrapper)
 
-FILE(GLOB MEDWrapper_HEADERS_HXX "${CMAKE_CURRENT_SOURCE_DIR}/*.hxx")
-INSTALL(FILES ${MEDWrapper_HEADERS_HXX} DESTINATION ${MED_salomeinclude_HEADERS})
-INSTALL(TARGETS mprint_version MED_Test DESTINATION ${MED_salomebin_BINS})
+INSTALL(TARGETS mprint_version MED_Test EXPORT ${PROJECT_NAME}TargetGroup DESTINATION ${SALOME_INSTALL_BINS})
+
+INSTALL(FILES ${MEDWrapper_HEADERS} DESTINATION ${SALOME_INSTALL_HEADERS})

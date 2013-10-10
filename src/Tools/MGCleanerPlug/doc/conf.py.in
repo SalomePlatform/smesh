@@ -42,9 +42,9 @@ copyright = '2013, CEA'
 # other places throughout the built documents.
 #
 # The short X.Y version.
-version = '@VERSION@'
+version = '@SALOMESMESH_VERSION@'
 # The full version, including alpha/beta/rc tags.
-release = '@VERSION@'
+release = '@SALOMESMESH_VERSION@'
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:

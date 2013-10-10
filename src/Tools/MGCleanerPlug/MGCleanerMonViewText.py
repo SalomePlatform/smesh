@@ -28,7 +28,7 @@ from PyQt4.QtCore import *
 
 # Import des panels
 
-from MGCleanerViewText import Ui_ViewExe
+from MGCleanerViewText_ui import Ui_ViewExe
 
 class MGCleanerMonViewText(Ui_ViewExe, QDialog):
     """

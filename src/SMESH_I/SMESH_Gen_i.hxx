@@ -439,7 +439,7 @@ public:
   // Copy-paste methods - returns true if object can be copied to the clipboard
   CORBA::Boolean CanCopy( SALOMEDS::SObject_ptr theObject ) { return false; }
   // Copy-paste methods - copy object to the clipboard
-  SALOMEDS::TMPFile* CopyFrom( SALOMEDS::SObject_ptr theObject, CORBA::Long& theObjectID ) { return false; }
+  SALOMEDS::TMPFile* CopyFrom( SALOMEDS::SObject_ptr theObject, CORBA::Long& theObjectID ) { return NULL; }
   // Copy-paste methods - returns true if object can be pasted from the clipboard
   CORBA::Boolean CanPaste( const char* theComponentName, CORBA::Long theObjectID ) { return false; }
   // Copy-paste methods - paste object from the clipboard

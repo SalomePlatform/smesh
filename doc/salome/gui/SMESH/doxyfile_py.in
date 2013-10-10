@@ -24,7 +24,7 @@
 # Project related configuration options
 #---------------------------------------------------------------------------
 PROJECT_NAME           = "SALOME Mesh User's Guide"
-OUTPUT_DIRECTORY       = .
+OUTPUT_DIRECTORY       = SMESH
 CREATE_SUBDIRS	       = NO
 OUTPUT_LANGUAGE        = English
 USE_WINDOWS_ENCODING   = NO
@@ -104,18 +104,18 @@ INPUT             = tmp2/smeshBuilder.py \
                     tmp2/StdMeshersBuilder.py \
                     tmp1/smeshBuilder.py
 FILE_PATTERNS     = 
-IMAGE_PATH        = @srcdir@/images
+IMAGE_PATH        = @CMAKE_CURRENT_SOURCE_DIR@/images
 RECURSIVE         = NO
-EXAMPLE_PATH      = @top_srcdir@/src/SMESH_SWIG
+EXAMPLE_PATH      = @CMAKE_SOURCE_DIR@/src/SMESH_SWIG
 
 #---------------------------------------------------------------------------
 #HTML related options
 #---------------------------------------------------------------------------
 GENERATE_HTML     = YES
 HTML_OUTPUT       = smeshpy_doc
-HTML_HEADER       = @builddir@/static/header_py.html
-HTML_FOOTER       = @srcdir@/static/footer.html
-HTML_EXTRA_STYLESHEET   = @srcdir@/static/salome_extra.css
+HTML_HEADER       = @CMAKE_CURRENT_BINARY_DIR@/static/header_py.html
+HTML_FOOTER       = @CMAKE_CURRENT_SOURCE_DIR@/static/footer.html
+HTML_EXTRA_STYLESHEET   = @CMAKE_CURRENT_SOURCE_DIR@/static/salome_extra.css
 TOC_EXPAND        = YES
 DISABLE_INDEX     = NO
 GENERATE_TREEVIEW = YES

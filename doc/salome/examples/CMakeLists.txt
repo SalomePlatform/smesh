@@ -17,7 +17,6 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-SET(docdir ${CMAKE_INSTALL_PREFIX}/share/doc/salome)
 FILE(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/*.py")
-INSTALL(FILES ${files} DESTINATION ${docdir}/examples/SMESH)
+INSTALL(FILES ${files} DESTINATION ${SALOME_INSTALL_DOC}/examples/SMESH)
 

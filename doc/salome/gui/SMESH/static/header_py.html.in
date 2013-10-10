@@ -19,6 +19,6 @@ $extrastylesheet
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
 
-<div id="titlearea"><div align="right"><div class="version">Version: @VERSION@</div></div></div>
+<div id="titlearea"><div align="right"><div class="version">Version: @SALOMESMESH_VERSION@</div></div></div>
 <div align="bottom-left"><a href=../index.html>Home</a></div>
 <!-- end header part -->

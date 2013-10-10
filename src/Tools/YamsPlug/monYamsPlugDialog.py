@@ -22,7 +22,7 @@
 # Modules Eficas
 
 import os, subprocess
-from YamsPlugDialog import Ui_YamsPlugDialog
+from YamsPlugDialog_ui import Ui_YamsPlugDialog
 from monViewText import MonViewText
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *

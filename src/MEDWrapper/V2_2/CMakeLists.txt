@@ -17,27 +17,47 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+# --- options ---
+# additional include directories
 INCLUDE_DIRECTORIES(
-  ${MED3_INCLUDE_DIRS}
+  ${MEDFILE_INCLUDE_DIRS}
   ${HDF5_INCLUDE_DIRS}
-  ${BOOST_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
+  ${KERNEL_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}/../Base
-  )
+)
 
+# additional preprocessor / compiler flags
+ADD_DEFINITIONS(
+  ${HDF5_DEFINITIONS}
+  ${BOOST_DEFINITIONS}
+)
+
+SET(_link_LIBRARIES
+  ${HDF5_LIBS}
+  ${MEDFILE_C_LIBRARIES}
+  ${Boost_LIBRARIES}
+  MEDWrapperBase
+)
+
+# --- headers ---
+
+# header files / no moc processing
+SET(MEDWrapper_V2_2_HEADERS
+  MED_V2_2_Wrapper.hxx
+)
+
+# --- sources ---
+
+# sources / static
 SET(MEDWrapper_V2_2_SOURCES
   MED_V2_2_Wrapper.cxx
-  )
+)
 
-IF(MED_ENABLE_KERNEL)
-  INCLUDE_DIRECTORIES(${KERNEL_ROOT_DIR}/include/salome)
-ELSE(MED_ENABLE_KERNEL)
-  INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/adm_local_without_kernel)
-ENDIF(MED_ENABLE_KERNEL)
+# --- rules ---
 
-ADD_LIBRARY(MEDWrapper_V2_2 SHARED ${MEDWrapper_V2_2_SOURCES})
-SET_TARGET_PROPERTIES(MEDWrapper_V2_2 PROPERTIES COMPILE_FLAGS "${HDF5_DEFINITIONS} ${MED3_DEFINITIONS} ${BOOST_DEFINITIONS} ${PLATFORM_DEFINITIONS}")
-TARGET_LINK_LIBRARIES(MEDWrapper_V2_2 MEDWrapperBase ${MED3_LIBS_C_ONLY} ${HDF5_LIBS})
-INSTALL(TARGETS MEDWrapper_V2_2 DESTINATION ${MED_salomelib_LIBS})
+ADD_LIBRARY(MEDWrapper_V2_2 ${MEDWrapper_V2_2_SOURCES})
+TARGET_LINK_LIBRARIES(MEDWrapper_V2_2 ${_link_LIBRARIES})
+INSTALL(TARGETS MEDWrapper_V2_2 EXPORT ${PROJECT_NAME}TargetGroup DESTINATION ${SALOME_INSTALL_LIBS})
 
-FILE(GLOB MEDWrapper_V2_2_HEADERS_HXX "${CMAKE_CURRENT_SOURCE_DIR}/*.hxx")
-INSTALL(FILES ${MEDWrapper_V2_2_HEADERS_HXX} DESTINATION ${MED_salomeinclude_HEADERS})
+INSTALL(FILES ${MEDWrapper_V2_2_HEADERS} DESTINATION ${SALOME_INSTALL_HEADERS})

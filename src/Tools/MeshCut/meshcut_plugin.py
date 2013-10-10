@@ -33,7 +33,7 @@ def MeshCut(context):
   from PyQt4 import QtGui
   from PyQt4.QtGui import QFileDialog
   from PyQt4.QtGui import QMessageBox
-  from MeshCutDialog import Ui_Dialog
+  from MeshCutDialog_ui import Ui_Dialog
   
   class CutDialog(QtGui.QDialog):
     

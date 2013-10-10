@@ -35,7 +35,7 @@
 #include <QWidget>
 
 // CORBA includes
-#include <CORBA.h>
+#include <omniORB4/CORBA.h>
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)

@@ -17,17 +17,48 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+# --- options ---
+# additional include directories
 INCLUDE_DIRECTORIES(
   ${HDF5_INCLUDE_DIRS}
-  ${BOOST_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
+  ${KERNEL_INCLUDE_DIRS}
+  ${MEDFILE_INCLUDE_DIRS}
 )
 
-IF(MED_ENABLE_KERNEL)
-  INCLUDE_DIRECTORIES(${KERNEL_ROOT_DIR}/include/salome)
-ELSE(MED_ENABLE_KERNEL)
-  INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/adm_local_without_kernel)
-ENDIF(MED_ENABLE_KERNEL)
+# additional preprocessor / compiler flags
+ADD_DEFINITIONS(
+  ${HDF5_DEFINITIONS}
+  ${BOOST_DEFINITIONS}
+)
 
+SET(_link_LIBRARIES
+  ${Boost_LIBRARIES}
+)
+
+# --- headers ---
+
+# header files / no moc processing
+SET(MEDWrapperBase_HEADERS
+  MED_Common.hxx
+  MED_Vector.hxx
+  MED_SharedPtr.hxx
+  MED_SliceArray.hxx
+  MED_Wrapper.hxx
+  MED_TWrapper.hxx
+  MED_Structures.hxx
+  MED_TStructures.hxx
+  MED_Algorithm.hxx
+  MED_GaussUtils.hxx
+  MED_CoordUtils.hxx
+  MED_Utilities.hxx
+  MED_GaussDef.hxx
+  MED_WrapperBase.hxx
+)
+
+# --- sources ---
+
+# sources / static
 SET(MEDWrapperBase_SOURCES
   MED_Structures.cxx
   MED_Wrapper.cxx
@@ -36,12 +67,12 @@ SET(MEDWrapperBase_SOURCES
   MED_CoordUtils.cxx
   MED_Utilities.cxx
   MED_GaussDef.cxx
-  )
+)
 
-ADD_LIBRARY(MEDWrapperBase SHARED ${MEDWrapperBase_SOURCES})
-SET_TARGET_PROPERTIES(MEDWrapperBase PROPERTIES COMPILE_FLAGS "-D${MACHINE} ${HDF5_DEFINITIONS} ${BOOST_DEFINITIONS} ${PLATFORM_DEFINITIONS}")
-TARGET_LINK_LIBRARIES(MEDWrapperBase ${BOOST_LIB_THREAD} ${BOOST_LIB_DATE_TIME})
-INSTALL(TARGETS MEDWrapperBase DESTINATION ${MED_salomelib_LIBS})
+# --- rules ---
+ 
+ADD_LIBRARY(MEDWrapperBase ${MEDWrapperBase_SOURCES})
+TARGET_LINK_LIBRARIES(MEDWrapperBase ${_link_LIBRARIES})
+INSTALL(TARGETS MEDWrapperBase EXPORT ${PROJECT_NAME}TargetGroup DESTINATION ${SALOME_INSTALL_LIBS})
 
-FILE(GLOB MEDWrapperBase_HEADERS_HXX "${CMAKE_CURRENT_SOURCE_DIR}/*.hxx")
-INSTALL(FILES ${MEDWrapperBase_HEADERS_HXX} DESTINATION ${MED_salomeinclude_HEADERS})
+INSTALL(FILES ${MEDWrapperBase_HEADERS} DESTINATION ${SALOME_INSTALL_HEADERS})

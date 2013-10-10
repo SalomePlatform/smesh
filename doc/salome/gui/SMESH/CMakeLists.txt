@@ -19,23 +19,15 @@
 
 INCLUDE(${KERNEL_ROOT_DIR}/salome_adm/cmake_files/SalomeMacros.cmake)
 
-SET(top_builddir ${CMAKE_BINARY_DIR})
-SET(top_srcdir ${CMAKE_SOURCE_DIR})
-SET(srcdir ${CMAKE_CURRENT_SOURCE_DIR})
-SET(builddir ${CMAKE_CURRENT_BINARY_DIR})
-SET(datadir ${CMAKE_INSTALL_PREFIX}/share)
-SET(docdir ${datadir}/doc/salome)
-SET(guidocdir ${docdir}/gui/SMESH)
-
 SALOME_CONFIGURE_FILE(doxyfile.in doxyfile)
 SALOME_CONFIGURE_FILE(doxyfile_py.in doxyfile_py)
-SALOME_CONFIGURE_FILE(static/header.html.in ${builddir}/static/header.html)
-SALOME_CONFIGURE_FILE(static/header_py.html.in ${builddir}/static/header_py.html)
+SALOME_CONFIGURE_FILE(static/header.html.in ${CMAKE_CURRENT_BINARY_DIR}/static/header.html)
+SALOME_CONFIGURE_FILE(static/header_py.html.in ${CMAKE_CURRENT_BINARY_DIR}/static/header_py.html)
 
-SALOME_INSTALL_SCRIPTS(collect_mesh_methods.py bin/salome)
+SALOME_INSTALL_SCRIPTS(collect_mesh_methods.py ${SALOME_INSTALL_BINS})
             
 SET(DOC_SMESH_MeshersList StdMeshers)
-SET(f1 "${srcdir}/collect_mesh_methods.py")
+SET(f1 "${CMAKE_CURRENT_SOURCE_DIR}/collect_mesh_methods.py")
 SET(f "$ENV{KERNEL_ROOT_DIR}/bin/salome/prepare_generating_doc.py")
 IF(WINDOWS)
   STRING(REPLACE "/" "\\" f ${f})
@@ -67,7 +59,7 @@ ENDIF(WINDOWS)
 
 FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/tmp_env.${EXT} "${SCR}")
 
-ADD_CUSTOM_TARGET(usr_docs mkdir -p tmp1 tmp2
+ADD_CUSTOM_TARGET(usr_docs mkdir -p tmp1 tmp2 
   COMMAND ${PYTHON_EXECUTABLE} ${f} -o tmp2/smeshBuilder.py ${CMAKE_SOURCE_DIR}/src/SMESH_SWIG/smeshBuilder.py
   COMMAND ${PYTHON_EXECUTABLE} ${f} -o tmp2/smesh_algorithm.py ${CMAKE_SOURCE_DIR}/src/SMESH_SWIG/smesh_algorithm.py
   COMMAND ${PYTHON_EXECUTABLE} ${f} -o tmp2/StdMeshersBuilder.py ${CMAKE_SOURCE_DIR}/src/SMESH_SWIG/StdMeshersBuilder.py
@@ -76,8 +68,11 @@ ADD_CUSTOM_TARGET(usr_docs mkdir -p tmp1 tmp2
   COMMAND ${DOXYGEN_EXECUTABLE} doxyfile
   COMMAND ${PYTHON_EXECUTABLE} -c "import os, shutil; shutil.rmtree(r'''tmp1'''); shutil.rmtree(r'''tmp2''')"
   COMMAND ${PYTHON_EXECUTABLE} -c "import shutil, sys; shutil.rmtree(r'''${CMAKE_INSTALL_PREFIX}/share/doc/salome/gui/SMESH''', True); shutil.copytree(r'''${CMAKE_CURRENT_BINARY_DIR}''', r'''${CMAKE_INSTALL_PREFIX}/share/doc/salome/gui/SMESH''', ignore=shutil.ignore_patterns('tmp_env.*', '*usr_docs*', '*CMakeFiles*', '*.cmake', 'doxyfile*', '*.vcproj', 'static', 'Makefile*')); shutil.copy(r'''${CMAKE_CURRENT_SOURCE_DIR}/images/head.png''', r'''${CMAKE_INSTALL_PREFIX}/share/doc/salome/gui/SMESH'''); shutil.copy(r'''${CMAKE_CURRENT_SOURCE_DIR}/images/head.png''', r'''${CMAKE_INSTALL_PREFIX}/share/doc/salome/gui/SMESH/smeshpy_doc''')"
-  VERBATIM 
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}             
+#  VERBATIM 
+#  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}             
 )
 
 ADD_DEPENDENCIES(usr_docs html_docs)
+
+INSTALL(CODE "EXECUTE_PROCESS(COMMAND \"${CMAKE_COMMAND}\" --build ${PROJECT_BINARY_DIR} --target usr_docs)")
+INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/SMESH DESTINATION ${SALOME_INSTALL_DOC}/gui)

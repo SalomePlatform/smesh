@@ -22,7 +22,7 @@
 # Modules Eficas
 
 import os, subprocess
-from MGCleanerPlugDialog import Ui_MGCleanerPlugDialog
+from MGCleanerPlugDialog_ui import Ui_MGCleanerPlugDialog
 from MGCleanerMonViewText import MGCleanerMonViewText
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *

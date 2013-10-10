@@ -27,12 +27,22 @@
 #if !defined(__SMESH_VERSION_H__)
 #define __SMESH_VERSION_H__
 
-/*
-  SMESH_VERSION is (major << 16) + (minor << 8) + patch.
+/*!
+  Specify version of SALOME SMESH module, as follows
+
+  SMESH_VERSION_MAJOR       : (integer) number identifying major version
+  SMESH_VERSION_MINOR       : (integer) number identifying minor version
+  SMESH_VERSION_MAINTENANCE : (integer) number identifying maintenance version
+  SMESH_VERSION_STR         : (string)  complete version number "major.minor.maintenance"
+  SMESH_VERSION             : (hex)     complete version number (major << 16) + (minor << 8) + maintenance
+  SMESH_DEVELOPMENT         : (integer) indicates development version when set to 1
 */
 
-#define SMESH_VERSION_STR "@VERSION@"
-#define SMESH_VERSION     @XVERSION@
-#define SMESH_DEVELOPMENT @VERSION_DEV@
+#define SMESH_VERSION_MAJOR       @SALOMESMESH_MAJOR_VERSION@
+#define SMESH_VERSION_MINOR       @SALOMESMESH_MINOR_VERSION@
+#define SMESH_VERSION_MAINTENANCE @SALOMESMESH_PATCH_VERSION@
+#define SMESH_VERSION_STR         "@SALOMESMESH_VERSION@"
+#define SMESH_VERSION             @SALOMESMESH_XVERSION@
+#define SMESH_DEVELOPMENT         @SALOMESMESH_VERSION_DEV@
 
 #endif // __SMESH_VERSION_H__

@@ -28,7 +28,7 @@ from PyQt4.QtCore import *
 
 # Import des panels
 
-from ViewText import Ui_ViewExe
+from ViewText_ui import Ui_ViewExe
 
 class MonViewText(Ui_ViewExe, QDialog):
     """
