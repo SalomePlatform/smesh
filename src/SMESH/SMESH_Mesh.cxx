@@ -1486,7 +1486,17 @@ double SMESH_Mesh::GetComputeProgress() const
           algoDoneCost += smToCompute[i]->GetComputeCost();
         currentSubIds.Add( smToCompute[i]->GetId() );
       }
-      double rate = algo->GetProgress();
+      double rate = 0;
+      try
+      {
+        OCC_CATCH_SIGNALS;
+        rate = algo->GetProgress();
+      }
+      catch (...) {
+#ifdef _DEBUG_
+        cerr << "Exception in " << algo->GetName() << "::GetProgress()" << endl;
+#endif
+      }
       if ( 0. < rate && rate < 1.001 )
       {
         computedCost += rate * ( algoDoneCost + algoNotDoneCost );
