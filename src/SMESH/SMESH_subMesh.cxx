@@ -1571,9 +1571,8 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
         _computeState = FAILED_TO_COMPUTE;
         _computeError = SMESH_ComputeError::New(COMPERR_OK,"",algo);
         try {
-#if OCC_VERSION_LARGE > 0x06010000
           OCC_CATCH_SIGNALS;
-#endif
+
           algo->InitComputeError();
 
           MemoryReserve aMemoryReserve;
