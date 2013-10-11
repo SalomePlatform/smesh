@@ -103,10 +103,12 @@
 #include <GEOM_Client.hxx>
 
 #include <Basics_Utils.hxx>
+#include <Basics_DirUtils.hxx>
 #include <HDFOI.hxx>
 #include <OpUtil.hxx>
 #include <SALOMEDS_Tool.hxx>
 #include <SALOME_Container_i.hxx>
+#include <SALOME_DataContainer_i.hxx>
 #include <SALOME_LifeCycleCORBA.hxx>
 #include <SALOME_NamingService.hxx>
 #include <Utils_CorbaException.hxx>
@@ -293,6 +295,9 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
   mySMESHGen = this;
   myIsHistoricalPythonDump = true;
   myToForgetMeshDataOnHypModif = false;
+
+  myImportedStudyChanged = true;
+  myImportedStudyId      = 0;
 
   // set it in standalone mode only
   //OSD::SetSignal( true );
@@ -4941,6 +4946,8 @@ int SMESH_Gen_i::RegisterObject(CORBA::Object_ptr theObject)
 {
   StudyContext* myStudyContext = GetCurrentStudyContext();
   if ( myStudyContext && !CORBA::is_nil( theObject )) {
+    if (GetCurrentStudyID() == myImportedStudyId)
+      myImportedStudyChanged = true;
     CORBA::String_var iorString = GetORB()->object_to_string( theObject );
     return myStudyContext->addObject( string( iorString.in() ) );
   }
@@ -5037,6 +5044,140 @@ void SMESH_Gen_i::Move( const SMESH::sobject_list& what,
     else
       useCaseBuilder->AppendTo( where, sobj );        // append to the end of list
   }
+}
+
+//=================================================================================
+// function : importData
+// purpose  : imports mesh data file (the med one) into the SMESH internal data structure
+//=================================================================================
+Engines::ListOfIdentifiers* SMESH_Gen_i::importData(
+  CORBA::Long studyId, Engines::DataContainer_ptr data, const Engines::ListOfOptions& options)
+{
+  Engines::ListOfIdentifiers_var aResultIds = new Engines::ListOfIdentifiers;
+  list<string> aResultList;
+
+  CORBA::Object_var aSMObject = myNS->Resolve( "/myStudyManager" );
+  SALOMEDS::StudyManager_var aStudyManager = SALOMEDS::StudyManager::_narrow( aSMObject );
+  SALOMEDS::Study_var aStudy = aStudyManager->GetStudyByID( studyId );
+  SetCurrentStudy(aStudy);
+
+  // load and store temporary imported file
+  string aFileName = Kernel_Utils::GetTmpFileName();
+  aFileName += string(".") + data->extension();
+  Engines::TMPFile* aFileStream = data->get();
+  const char *aBuffer = (const char*)aFileStream->NP_data();
+#ifdef WIN32
+  std::ofstream aFile(aFileName.c_str(), std::ios::binary);
+#else
+  std::ofstream aFile(aFileName.c_str());
+#endif
+  aFile.write(aBuffer, aFileStream->length());
+  aFile.close();
+
+  // Retrieve mesh names from the file
+  DriverMED_R_SMESHDS_Mesh aReader;
+  aReader.SetFile( aFileName );
+  aReader.SetMeshId(-1);
+  Driver_Mesh::Status aStatus;
+  list<string> aNames = aReader.GetMeshNames(aStatus);
+  SMESH::mesh_array_var aResult = new SMESH::mesh_array();
+  SMESH::DriverMED_ReadStatus aStatus2 = (SMESH::DriverMED_ReadStatus)aStatus;
+  if (aStatus2 == SMESH::DRS_OK) {
+    // Iterate through all meshes and create mesh objects
+    for ( list<string>::iterator it = aNames.begin(); it != aNames.end(); it++ ) {
+      // create mesh
+      SMESH::SMESH_Mesh_var mesh = createMesh();
+
+      // publish mesh in the study
+      SALOMEDS::SObject_var aSO;
+      if (CanPublishInStudy(mesh)) {
+        aSO = PublishMesh(aStudy, mesh.in(), (*it).c_str());
+        aResultList.push_back(aSO->GetID());
+      }
+      // Read mesh data (groups are published automatically by ImportMEDFile())
+      SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( mesh ).in() );
+      ASSERT( meshServant );
+      meshServant->ImportMEDFile( aFileName.c_str(), (*it).c_str() );
+      //meshServant->GetImpl().GetMeshDS()->Modified();
+    }
+  } else {
+    MESSAGE("Opening MED file problems "<<aFileName.c_str())
+    return aResultIds._retn();
+  }
+
+  // remove temporary file 
+#ifdef WIN32
+  DeleteFileA(aFileName.c_str());
+#else
+  unlink(aFileName.c_str());
+#endif
+
+  if (!aResultList.empty()) {
+    aResultIds->length(aResultList.size());
+    list<string>::iterator aListIter = aResultList.begin();
+    for(int a = 0; aListIter != aResultList.end(); aListIter++, a++)
+      aResultIds[a] = aListIter->c_str();
+  }
+  
+  myImportedStudyId = studyId;
+  myImportedStudyChanged = false;
+
+  return aResultIds._retn();
+}
+
+//=================================================================================
+// function : getModifiedData
+// purpose  : exports all geometry of this GEOM module into one BRep file
+//=================================================================================
+Engines::ListOfData* SMESH_Gen_i::getModifiedData(CORBA::Long studyId)
+{
+  Engines::ListOfData_var aResult = new Engines::ListOfData;
+  
+  if (!myImportedStudyChanged) {
+    INFOS("SMESH module data was not changed")
+    return aResult._retn();
+  }
+
+  CORBA::Object_var aSMObject = myNS->Resolve("/myStudyManager");
+  SALOMEDS::StudyManager_var aStudyManager = SALOMEDS::StudyManager::_narrow(aSMObject);
+  SALOMEDS::Study_var aStudy = aStudyManager->GetStudyByID(studyId);
+  SetCurrentStudy(aStudy);
+  SALOMEDS::SComponent_var aComponent = aStudy->FindComponent("SMESH");
+  
+  if (CORBA::is_nil(aComponent))
+    return aResult._retn();
+
+  std::string aFullPath(Kernel_Utils::GetTmpFileName());
+  aFullPath += ".med";
+  StudyContext* myStudyContext = GetCurrentStudyContext();
+
+  SALOMEDS::ChildIterator_var anIter = aStudy->NewChildIterator(aComponent); // check only published meshes
+  int aNumMeshes = 0; // number of meshes in result
+  for(; anIter->More(); anIter->Next()) {
+    SALOMEDS::SObject_var aSO = anIter->Value();
+    CORBA::Object_var anObj = aSO->GetObject();
+    if (!CORBA::is_nil(anObj)) {
+      SMESH::SMESH_Mesh_var aCORBAMesh = SMESH::SMESH_Mesh::_narrow(anObj);
+      if(!aCORBAMesh->_is_nil()) {
+        SMESH_Mesh_i* myImpl = dynamic_cast<SMESH_Mesh_i*>(GetServant(aCORBAMesh).in());
+        if (myImpl) {
+          myImpl->Load();
+          SMESH_Mesh& aMesh = myImpl->GetImpl();
+          CORBA::String_var objName = aSO->GetName();
+          aMesh.ExportMED(aFullPath.c_str(), objName.in(), false, MED::eV2_2, 0);
+          aNumMeshes++;
+        }
+      }
+    }
+  }
+  if (aNumMeshes > 0) { // prepare a container to store files
+    INFOS("Write "<<aNumMeshes<<" meshes to "<<aFullPath.c_str());
+    aResult->length(1);
+    Engines::DataContainer_var aData = (new Engines_DataContainer_i(
+                    aFullPath.c_str(), "", "", true))->_this();
+    aResult[0] = aData;
+  }
+  return aResult._retn();
 }
 
 //=============================================================================

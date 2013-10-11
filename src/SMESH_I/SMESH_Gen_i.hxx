@@ -484,6 +484,12 @@ public:
 
   void CleanPythonTrace (int theStudyID);
 
+  // SIMAN-related functions (check out/check in) : import data to study
+  virtual Engines::ListOfIdentifiers* importData(CORBA::Long studyId,
+						 Engines::DataContainer_ptr data,
+						 const Engines::ListOfOptions& options);
+  // SIMAN-related functions (check out/check in) : get modified data
+  virtual Engines::ListOfData* getModifiedData(CORBA::Long studyId);
 
   // *****************************************
   // Internal methods
@@ -637,6 +643,8 @@ private:
   std::vector< int >                                       myLastParamIndex;
   std::vector< std::string >                               myLastParameters;
   std::string                                              myLastObj;
+  int                                                      myImportedStudyId;      // SIMAN: identifier of the imported in importData study to keep no-modifiection flag for getModifiedData method
+  int                                                      myImportedStudyChanged; // SIMAN: flag that indicates that the imported study has been changed (by creation of the additional mesh)
 };
 
 
