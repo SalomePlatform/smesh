@@ -57,6 +57,8 @@ SET(SALOME_SMESH_USE_TBB   @SALOME_SMESH_USE_TBB@)
 # Level 1 prerequisites:
 SET_AND_CHECK(GEOM_ROOT_DIR_EXP "@PACKAGE_GEOM_ROOT_DIR@")
 SET_AND_CHECK(MEDFILE_ROOT_DIR_EXP "@PACKAGE_MEDFILE_ROOT_DIR@")
+SET_AND_CHECK(CGNS_ROOT_DIR_EXP "@PACKAGE_CGNS_ROOT_DIR@")
+SET_AND_CHECK(TBB_ROOT_DIR_EXP "@PACKAGE_TBB_ROOT_DIR@")
 
 # Optional level 1 prerequisites:
 IF(SALOME_SMESH_USE_CGNS)
@@ -69,8 +71,8 @@ ENDIF()
 # For all prerequisites, load the corresponding targets if the package was used 
 # in CONFIG mode. This ensures dependent projects link correctly
 # without having to set LD_LIBRARY_PATH:
-SET(_PREREQ CGNS TBB)
-SET(_PREREQ_CONFIG_DIR "@CGNS_DIR@" "@TBB_DIR@" )
+SET(_PREREQ CGNS TBB MEDFile)
+SET(_PREREQ_CONFIG_DIR "@CGNS_DIR@" "@TBB_DIR@" "@MEDFile_DIR@")
 LIST(LENGTH _PREREQ_CONFIG_DIR _list_len)
 # Another CMake stupidity - FOREACH(... RANGE r) generates r+1 numbers ...
 MATH(EXPR _range "${_list_len}-1")
