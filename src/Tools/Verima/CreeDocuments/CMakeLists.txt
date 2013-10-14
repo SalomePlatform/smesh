@@ -17,24 +17,15 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-ADD_SUBDIRECTORY(Doc)
-ADD_SUBDIRECTORY(CreeDocuments)
-ADD_SUBDIRECTORY(Gui)
-ADD_SUBDIRECTORY(Scripts)
-ADD_SUBDIRECTORY(Stats)
-ADD_SUBDIRECTORY(Base)
+ADD_SUBDIRECTORY(templatesHtml)
 
 # --- scripts ---
 
 # scripts / static
 SET(plugin_SCRIPTS
-  ajoutEnreg.py
-  changeVersion.py
-  compareVersions.py
-  createDatabase.py
-  lance.py
-  passeJobs.py
-  ) 
+ creeHtml.py
+ jobHtml.py
+ )
 
 # --- rules ---
 

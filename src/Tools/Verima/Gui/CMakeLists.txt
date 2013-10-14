@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2013  CEA/DEN, EDF R&D
+# Copyright (C) 2012-2013  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,25 +17,36 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-ADD_SUBDIRECTORY(Doc)
-ADD_SUBDIRECTORY(CreeDocuments)
-ADD_SUBDIRECTORY(Gui)
-ADD_SUBDIRECTORY(Scripts)
-ADD_SUBDIRECTORY(Stats)
-ADD_SUBDIRECTORY(Base)
+INCLUDE(UsePyQt4)
 
 # --- scripts ---
 
 # scripts / static
 SET(plugin_SCRIPTS
-  ajoutEnreg.py
-  changeVersion.py
-  compareVersions.py
-  createDatabase.py
-  lance.py
-  passeJobs.py
-  ) 
+  maFenetreChoix.py
+  monEditor.py
+  monNomBase.py
+  visualiseDatabase.py
+)
+
+# --- resources ---
+
+# uic files / to be processed by pyuic
+SET(_pyuic_files
+  desFenetreChoix.ui
+  desStat.ui
+  myMainTotale.ui
+  myMain.ui
+  tousLesJobs.ui
+  nomBase.ui
+  tousLesJobs.ui
+)
+
+# scripts / pyuic wrappings
+PYQT4_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_files})
 
 # --- rules ---
 
 SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS})
+
+SALOME_INSTALL_SCRIPTS("${_pyuic_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS})

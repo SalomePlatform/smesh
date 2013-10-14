@@ -17,25 +17,32 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-ADD_SUBDIRECTORY(Doc)
-ADD_SUBDIRECTORY(CreeDocuments)
-ADD_SUBDIRECTORY(Gui)
-ADD_SUBDIRECTORY(Scripts)
-ADD_SUBDIRECTORY(Stats)
-ADD_SUBDIRECTORY(Base)
-
 # --- scripts ---
 
 # scripts / static
 SET(plugin_SCRIPTS
-  ajoutEnreg.py
-  changeVersion.py
-  compareVersions.py
-  createDatabase.py
-  lance.py
-  passeJobs.py
+  dataBase.py
+  exportToCSV.py
+  importFromCSV.py
+  tableDeBase.py
+  tableGroupes.py
+  tableGroupesRef.py
+  tableMachines.py
+  tableMaillages.py
+  tableMailles.py
+  tableMailleurs.py
+  tablePerfs.py
+  tableRatios.py
+  tableTailles.py
+  tableVersions.py
+  versions.py
   ) 
+
+SET(plugin_DB
+  myMesh.db
+  )
 
 # --- rules ---
 
 SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS})
+SALOME_INSTALL_SCRIPTS("${plugin_DB}" ${SALOME_SMESH_INSTALL_PLUGINS})
