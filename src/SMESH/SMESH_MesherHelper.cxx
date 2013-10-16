@@ -1172,11 +1172,12 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
 
   gp_XY  uvAvg;
   gp_Pnt P;
+  bool toCheck = true;
   if ( !F.IsNull() && !force3d )
   {
     uvAvg = calcTFI (0.5, 0.5,
-                     GetNodeUV(F,n1,n3),  GetNodeUV(F,n2,n4),
-                     GetNodeUV(F,n3,n1),  GetNodeUV(F,n4,n2), 
+                     GetNodeUV(F,n1,n3,&toCheck), GetNodeUV(F,n2,n4,&toCheck),
+                     GetNodeUV(F,n3,n1,&toCheck), GetNodeUV(F,n4,n2,&toCheck), 
                      GetNodeUV(F,n12,n3), GetNodeUV(F,n23,n4),
                      GetNodeUV(F,n34,n2), GetNodeUV(F,n41,n2));
     TopLoc_Location loc;
@@ -1196,10 +1197,10 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
 
     if ( !F.IsNull() ) // force3d
     {
-      uvAvg = (GetNodeUV(F,n1,n3) +
-               GetNodeUV(F,n2,n4) +
-               GetNodeUV(F,n3,n1) +
-               GetNodeUV(F,n4,n2)) / 4;
+      uvAvg = (GetNodeUV(F,n1,n3,&toCheck) +
+               GetNodeUV(F,n2,n4,&toCheck) +
+               GetNodeUV(F,n3,n1,&toCheck) +
+               GetNodeUV(F,n4,n2,&toCheck)) / 4;
       //CheckNodeUV( F, centralNode, uvAvg, 2*BRep_Tool::Tolerance( F ), /*force=*/true);
       meshDS->SetNodeOnFace( centralNode, faceID, uvAvg.X(), uvAvg.Y() );
     }
