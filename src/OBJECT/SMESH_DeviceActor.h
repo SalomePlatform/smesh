@@ -45,6 +45,7 @@ class vtkUnstructuredGrid;
 class vtkLookupTable;
 class vtkImplicitBoolean;
 class vtkPassThroughFilter;
+class vtkPlaneCollection;
 
 class VTKViewer_Transform;
 class VTKViewer_TransformFilter;
@@ -119,6 +120,8 @@ class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
   VTKViewer_ExtractUnstructuredGrid* GetExtractUnstructuredGrid();
   vtkUnstructuredGrid* GetUnstructuredGrid();
 
+  void SetPlaneCollection( vtkPlaneCollection* theCollection );
+
   void SetControlMode(SMESH::Controls::FunctorPtr theFunctor,
                       SMESH_ScalarBarActor* theScalarBarActor,
                       vtkLookupTable* theLookupTable);
@@ -158,6 +161,7 @@ class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
   VTKViewer_PolyDataMapper *myMapper;
   TVisualObjPtr myVisualObj;
 
+  vtkPlaneCollection* myPlaneCollection;
   vtkProperty *myProperty;
   EReperesent myRepresentation;
 

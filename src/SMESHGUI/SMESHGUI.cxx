@@ -960,7 +960,7 @@
     {
       SMESH::SMESH_GroupBase_var aGroupObject = aListOfGroups[i];
       //SALOMEDS::Color aColor = aGroupObject->GetColor();
-      
+
 #ifdef SIMPLE_AUTOCOLOR   // simplified algorithm for auto-colors
       SALOMEDS::Color aColor = SMESHGUI::getPredefinedUniqueColor();
 #else                     // old algorithm  for auto-colors
@@ -1004,7 +1004,7 @@
     SALOME_ListIO selected;
     if( aSel )
       aSel->selectedObjects( selected );
-    
+
     if ( selected.IsEmpty() ) return;
     SALOME_ListIteratorOfListIO It( selected );
     for ( ; It.More(); It.Next() ) {
@@ -1228,7 +1228,7 @@
     SALOME_ListIO selected;
     if( aSel ) {
       aSel->selectedObjects( selected );
-      
+
       if(selected.Extent()){
         Handle(SALOME_InteractiveObject) anIObject = selected.First();
         _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
@@ -2065,7 +2065,7 @@ bool SMESHGUI::automaticUpdate( SMESH::SMESH_Mesh_ptr theMesh,
     }
     total += nbBalls;
   }
-  
+
   return autoUpdate && !exceeded;
 }
 
@@ -3505,7 +3505,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
                                tr( "NOT_A_VTK_VIEWER" ) );
     }
     break;
-  case 6032: 
+  case 6032:
     OverallMeshQuality();
     break;
   case 9010:
@@ -4516,7 +4516,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert ( action( 6031 ), aSubId, -1 ); // EQUAL_VOLUME
   popupMgr()->setRule( action( 6031 ), aMeshInVtkHasVolumes, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( 6031 ), "controlMode = 'eCoincidentElems3D'", QtxPopupMgr::ToggleRule );
- 
+
   popupMgr()->insert( separator(), anId, -1 );
 
   popupMgr()->insert( action( 201 ), anId, -1 ); // SCALAR_BAR_PROP
@@ -5533,13 +5533,34 @@ void SMESHGUI::storeVisualParameters (int savePoint)
           aPropertyName += gSeparator;
           aPropertyName += QString::number( anId );
 
-          QString aPropertyValue = QString::number( (int)aPlane->GetOrientation() ).toLatin1().constData();
+          QString aPropertyValue = QString::number( (int)aPlane->PlaneMode ).toLatin1().constData();
           aPropertyValue += gDigitsSep;
-          aPropertyValue += QString::number( aPlane->GetDistance() ).toLatin1().constData();
+          aPropertyValue += QString::number( aPlane->IsOpenGLClipping ).toLatin1().constData();
           aPropertyValue += gDigitsSep;
-          aPropertyValue += QString::number( aPlane->myAngle[0] ).toLatin1().constData();
-          aPropertyValue += gDigitsSep;
-          aPropertyValue += QString::number( aPlane->myAngle[1] ).toLatin1().constData();
+          if ( aPlane->PlaneMode == SMESH::Absolute ) {
+            aPropertyValue += QString::number( aPlane->myAbsoluteOrientation ).toLatin1().constData();
+            aPropertyValue += gDigitsSep;
+            aPropertyValue += QString::number( aPlane->X ).toLatin1().constData();
+            aPropertyValue += gDigitsSep;
+            aPropertyValue += QString::number( aPlane->Y ).toLatin1().constData();
+            aPropertyValue += gDigitsSep;
+            aPropertyValue += QString::number( aPlane->Z ).toLatin1().constData();
+            aPropertyValue += gDigitsSep;
+            aPropertyValue += QString::number( aPlane->Dx ).toLatin1().constData();
+            aPropertyValue += gDigitsSep;
+            aPropertyValue += QString::number( aPlane->Dy ).toLatin1().constData();
+            aPropertyValue += gDigitsSep;
+            aPropertyValue += QString::number( aPlane->Dz ).toLatin1().constData();
+          }
+          else if ( aPlane->PlaneMode == SMESH::Relative ) {
+            aPropertyValue += QString::number( (int)aPlane->myRelativeOrientation ).toLatin1().constData();
+            aPropertyValue += gDigitsSep;
+            aPropertyValue += QString::number( aPlane->GetDistance() ).toLatin1().constData();
+            aPropertyValue += gDigitsSep;
+            aPropertyValue += QString::number( aPlane->myAngle[0] ).toLatin1().constData();
+            aPropertyValue += gDigitsSep;
+            aPropertyValue += QString::number( aPlane->myAngle[1] ).toLatin1().constData();
+          }
 
           ip->setProperty( aPropertyName.toStdString(), aPropertyValue.toStdString() );
         }
@@ -5749,9 +5770,13 @@ void SMESHGUI::storeVisualParameters (int savePoint)
 // data structures for clipping planes processing
 typedef struct {
   int Id;
-  vtkIdType Orientation;
+  int Mode;
+  bool isOpenGLClipping;
+  vtkIdType RelativeOrientation;
   double Distance;
   double Angle[2];
+  int AbsoluteOrientation;
+  double X, Y, Z, Dx, Dy, Dz;
 } TPlaneData;
 typedef std::list<TPlaneData>         TPlaneDataList;
 typedef std::map<int, TPlaneDataList> TPlaneDataMap;
@@ -5868,31 +5893,80 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
         continue;
 
       QStringList aPropertyValueList = aPropertyValue.split( gDigitsSep, QString::SkipEmptyParts );
-      if( aPropertyValueList.size() != 4 )
+      if( aPropertyValueList.size() != 6 && aPropertyValueList.size() != 9 )
         continue;
 
       TPlaneData aPlaneData;
       aPlaneData.Id = aClippingPlaneId;
 
       ok = false;
-      aPlaneData.Orientation = aPropertyValueList[0].toInt( &ok );
+      aPlaneData.Mode = aPropertyValueList[0].toInt( &ok );
+      if( !ok )
+        continue;
+      
+      ok = false;
+      aPlaneData.isOpenGLClipping = aPropertyValueList[1].toInt( &ok );
       if( !ok )
         continue;
 
-      ok = false;
-      aPlaneData.Distance = aPropertyValueList[1].toDouble( &ok );
-      if( !ok )
-        continue;
+      if ( (SMESH::Mode)aPlaneData.Mode == SMESH::Absolute )
+      {
+        ok = false;
+        aPlaneData.AbsoluteOrientation = aPropertyValueList[2].toInt( &ok );
+        if( !ok )
+          continue;
 
-      ok = false;
-      aPlaneData.Angle[0] = aPropertyValueList[2].toDouble( &ok );
-      if( !ok )
-        continue;
+        ok = false;
+        aPlaneData.X = aPropertyValueList[3].toDouble( &ok );
+        if( !ok )
+          continue;
 
-      ok = false;
-      aPlaneData.Angle[1] = aPropertyValueList[3].toDouble( &ok );
-      if( !ok )
-        continue;
+        ok = false;
+        aPlaneData.Y = aPropertyValueList[4].toDouble( &ok );
+        if( !ok )
+          continue;
+
+        ok = false;
+        aPlaneData.Z = aPropertyValueList[5].toDouble( &ok );
+        if( !ok )
+          continue;
+
+        ok = false;
+        aPlaneData.Dx = aPropertyValueList[6].toDouble( &ok );
+        if( !ok )
+          continue;
+
+        ok = false;
+        aPlaneData.Dy = aPropertyValueList[7].toDouble( &ok );
+        if( !ok )
+          continue;
+
+        ok = false;
+        aPlaneData.Dz = aPropertyValueList[8].toDouble( &ok );
+        if( !ok )
+          continue;
+      }
+      else if ( (SMESH::Mode)aPlaneData.Mode == SMESH::Relative ) {
+        ok = false;
+        aPlaneData.RelativeOrientation = aPropertyValueList[2].toInt( &ok );
+        if( !ok )
+          continue;
+
+        ok = false;
+        aPlaneData.Distance = aPropertyValueList[3].toDouble( &ok );
+        if( !ok )
+          continue;
+
+        ok = false;
+        aPlaneData.Angle[0] = aPropertyValueList[4].toDouble( &ok );
+        if( !ok )
+          continue;
+
+        ok = false;
+        aPlaneData.Angle[1] = aPropertyValueList[5].toDouble( &ok );
+        if( !ok )
+          continue;
+      }
 
       TPlaneDataList& aPlaneDataList = aPlaneDataMap[ aViewId ];
       aPlaneDataList.push_back( aPlaneData );
@@ -6315,21 +6389,18 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
             // Clipping
             else if (paramNameStr.startsWith("ClippingPlane")) {
               QStringList vals = val.split(gDigitsSep, QString::SkipEmptyParts);
-              // old format - val looks like "Off" or "0:0.5:0:0" (orientation, distance, two angles)
+              // old format - val looks like "Off" or "1:0:0:0.5:0:0" 
+              // (mode(relative), is OpenGL clipping plane, orientation, distance, two angles)
+              // or "0:1:1:10.5:1.0:1.0:15.0:10.0:10.0" 
+              // (mode(absolute), is OpenGL clipping plane, orientation, base point(x, y, z), direction (dx, dy, dz))
               // new format - val looks like "Off" or "0" (plane id)
               // (note: in new format "Off" value is used only for consistency,
               //  so it is processed together with values in old format)
-              bool anIsOldFormat = ( vals.count() == 4 || val == "Off" );
+              bool anIsOldFormat = ( vals.count() == 6 || vals.count() == 9 || val == "Off" );
               if( anIsOldFormat ) {
                 if (paramNameStr == "ClippingPlane1" || val == "Off")
                   aSmeshActor->RemoveAllClippingPlanes();
                 if (val != "Off") {
-                  SMESH::Orientation anOrientation = (SMESH::Orientation)vals[0].toInt();
-                  double aDistance = vals[1].toFloat();
-                  double anAngle[2];
-                  anAngle[0] = vals[2].toFloat();
-                  anAngle[1] = vals[3].toFloat();
-
                   QList<SUIT_ViewManager*> lst;
                   getApp()->viewManagers(viewerTypStr, lst);
                   // SVTK ViewManager always has 1 ViewWindow, so view index is index of view manager
@@ -6341,13 +6412,35 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
 
                     SMESH::TActorList anActorList;
                     anActorList.push_back( aSmeshActor );
-                    SMESH::OrientedPlane* aPlane =
-                      SMESHGUI_ClippingDlg::AddPlane(anActorList, vtkView, anOrientation, aDistance, anAngle);
+                    SMESH::OrientedPlane* aPlane = SMESH::OrientedPlane::New( vtkView );
+                    aPlane->myViewWindow = vtkView;
+                    SMESH::Mode aMode = ( SMESH::Mode )vals[0].toInt();
+                    aPlane->PlaneMode = aMode;
+                    bool isOpenGLClipping = ( bool )vals[1].toInt();
+                    aPlane->IsOpenGLClipping = isOpenGLClipping;
+                    if ( aMode == SMESH::Absolute ) {
+                      aPlane->myAbsoluteOrientation = vals[2].toInt();
+                      aPlane->X = vals[3].toFloat();
+                      aPlane->Y = vals[4].toFloat();
+                      aPlane->Z = vals[5].toFloat();
+                      aPlane->Dx = vals[6].toFloat();
+                      aPlane->Dy = vals[7].toFloat();
+                      aPlane->Dz = vals[8].toFloat();
+                    }
+                    else if ( aMode == SMESH::Relative ) {
+                      aPlane->myRelativeOrientation = (SMESH::Orientation)vals[2].toInt();
+                      aPlane->myDistance = vals[3].toFloat();
+                      aPlane->myAngle[0] = vals[4].toFloat();
+                      aPlane->myAngle[1] = vals[5].toFloat();
+                    }
+
                     if( aPlane ) {
-                      SMESH::ClippingPlaneInfo aClippingPlaneInfo;
-                      aClippingPlaneInfo.Plane = aPlane;
-                      aClippingPlaneInfo.ActorList = anActorList;
-                      aClippingPlaneInfoList.push_back( aClippingPlaneInfo );
+                      if ( SMESHGUI_ClippingDlg::AddPlane( anActorList, aPlane ) ) {
+                        SMESH::ClippingPlaneInfo aClippingPlaneInfo;
+                        aClippingPlaneInfo.Plane = aPlane;
+                        aClippingPlaneInfo.ActorList = anActorList;
+                        aClippingPlaneInfoList.push_back( aClippingPlaneInfo );
+                      }
                     }
                   }
                 }
@@ -6468,23 +6561,40 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
       for( ; anIter4 != aPlaneDataList.end(); anIter4++ ) {
         const TPlaneData& aPlaneData = *anIter4;
         if( aPlaneData.Id == aPlaneId ) {
-          SMESH::OrientedPlane* aPlane =
-            SMESHGUI_ClippingDlg::AddPlane( anActorList,
-                                            aViewWindow,
-                                            (SMESH::Orientation)aPlaneData.Orientation,
-                                            aPlaneData.Distance,
-                                            aPlaneData.Angle );
+          SMESH::OrientedPlane* aPlane = SMESH::OrientedPlane::New( aViewWindow );
+          aPlane->myViewWindow = aViewWindow;
+          aPlane->PlaneMode = (SMESH::Mode)aPlaneData.Mode;
+          aPlane->IsOpenGLClipping = aPlaneData.isOpenGLClipping;
+          if ( aPlane->PlaneMode == SMESH::Absolute ) {
+            aPlane->myAbsoluteOrientation = aPlaneData.AbsoluteOrientation;
+            aPlane->X = aPlaneData.X;
+            aPlane->Y = aPlaneData.Y;
+            aPlane->Z = aPlaneData.Z;
+            aPlane->Dx = aPlaneData.Dx;
+            aPlane->Dy = aPlaneData.Dy;
+            aPlane->Dz = aPlaneData.Dz;
+          }
+          else if ( aPlane->PlaneMode == SMESH::Relative ) {
+            aPlane->myRelativeOrientation = (SMESH::Orientation)aPlaneData.RelativeOrientation;
+            aPlane->myDistance = aPlaneData.Distance;
+            aPlane->myAngle[0] = aPlaneData.Angle[0];
+            aPlane->myAngle[1] = aPlaneData.Angle[1];
+          }
           if( aPlane ) {
-            SMESH::ClippingPlaneInfo aClippingPlaneInfo;
-            aClippingPlaneInfo.Plane = aPlane;
-            aClippingPlaneInfo.ActorList = anActorList;
-            aClippingPlaneInfoList.push_back( aClippingPlaneInfo );
+            if ( SMESHGUI_ClippingDlg::AddPlane( anActorList, aPlane ) ) {
+              SMESH::ClippingPlaneInfo aClippingPlaneInfo;
+              aClippingPlaneInfo.Plane = aPlane;
+              aClippingPlaneInfo.ActorList = anActorList;
+              aClippingPlaneInfoList.push_back( aClippingPlaneInfo );
+            }
           }
           break;
         }
       }
+    
     }
   }
+  
 
   // update all VTK views
   QList<SUIT_ViewManager*> lst;
@@ -6493,6 +6603,14 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
     SUIT_ViewModel* vmodel = (*it)->getViewModel();
     if (vmodel && vmodel->getType() == SVTK_Viewer::Type()) {
       SVTK_ViewWindow* vtkView = (SVTK_ViewWindow*) (*it)->getActiveView();
+      // set OpenGL clipping planes
+      VTK::ActorCollectionCopy aCopy( vtkView->getRenderer()->GetActors() );
+      vtkActorCollection* anAllActors = aCopy.GetActors();
+      anAllActors->InitTraversal();
+      while( vtkActor* aVTKActor = anAllActors->GetNextActor() )
+        if( SMESH_Actor* anActor = SMESH_Actor::SafeDownCast( aVTKActor ) )
+      	  anActor->SetOpenGLClippingPlane();
+      
       vtkView->getRenderer()->ResetCameraClippingRange();
       vtkView->Repaint();
     }
@@ -6690,7 +6808,6 @@ bool SMESHGUI::renameObject( const QString& entry, const QString& name) {
   }
   return false;
 }
-
 
 SALOMEDS::Color SMESHGUI::getPredefinedUniqueColor()
 {

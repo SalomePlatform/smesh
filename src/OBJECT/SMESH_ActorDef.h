@@ -65,6 +65,7 @@ class vtkLookupTable;
 class vtkPlane;
 class vtkImplicitBoolean;
 class vtkTimeStamp;
+class vtkPlaneCollection;
 
 class SMESH_DeviceActor;
 class SMESH_NodeLabelActor;
@@ -212,6 +213,8 @@ class SMESH_ActorDef : public SMESH_Actor
   virtual vtkIdType GetNumberOfClippingPlanes();
   virtual vtkPlane* GetClippingPlane(vtkIdType theID);
   virtual vtkIdType AddClippingPlane(vtkPlane* thePlane); 
+  virtual void AddOpenGLClippingPlane(vtkPlane* thePlane);
+  virtual void SetOpenGLClippingPlane();
 
   virtual TVisualObjPtr GetObject() { return myVisualObj;}
 
@@ -296,6 +299,7 @@ class SMESH_ActorDef : public SMESH_Actor
   bool myIsShrunk;
   
   vtkImplicitBoolean* myImplicitBoolean;
+  vtkPlaneCollection* myPlaneCollection;
   typedef TVTKSmartPtr<vtkPlane> TPlanePtr;
   typedef std::vector<TPlanePtr> TCippingPlaneCont;
   TCippingPlaneCont myCippingPlaneCont;

@@ -6487,6 +6487,10 @@ Il y a trop peu de points dans le fichier </translation>
         <translation>Plans de découpe</translation>
     </message>
     <message>
+        <source>IS_OPENGL_CLIPPING</source>
+        <translation>OpenGL découpage</translation>
+    </message>
+    <message>
         <source>MESHES_SUBMESHES_GROUPS</source>
         <translation>Maillages, sous-maillages et groupes</translation>
     </message>
@@ -6545,6 +6549,30 @@ Il y a trop peu de points dans le fichier </translation>
     <message>
         <source>NO_PLANES</source>
         <translation>Pas de plans</translation>
+    </message>
+    <message>
+        <source>ABSOLUTE</source>
+        <translation>Absolute</translation>
+    </message>
+    <message>
+        <source>RELATIVE</source>
+        <translation>Relative</translation>
+    </message>
+    <message>
+        <source>RESET</source>
+        <translation>Réinitialiser</translation>
+    </message>
+    <message>
+        <source>INVERT</source>
+        <translation>Inverser</translation>
+    </message>
+    <message>
+        <source>BASE_POINT</source>
+        <translation>Le point fondamental</translation>
+    </message>
+    <message>
+        <source>DIRECTION</source>
+        <translation>Direction</translation>
     </message>
 </context>
 <context>

@@ -154,6 +154,8 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
   virtual vtkIdType GetNumberOfClippingPlanes() = 0; 
   virtual vtkPlane* GetClippingPlane(vtkIdType theID) = 0; 
   virtual vtkIdType AddClippingPlane(vtkPlane* thePlane) = 0; 
+  virtual void AddOpenGLClippingPlane(vtkPlane* thePlane) = 0;
+  virtual void SetOpenGLClippingPlane() = 0;
 
   virtual TVisualObjPtr GetObject() = 0;
 

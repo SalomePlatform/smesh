@@ -75,6 +75,7 @@
 
 #include <vtkMath.h>
 #include <vtkPlane.h>
+#include <vtkPlaneCollection.h>
 #include <vtkImplicitBoolean.h>
 #include <vtkImplicitFunctionCollection.h>
 
@@ -534,6 +535,8 @@ SMESH_ActorDef::SMESH_ActorDef()
   myImplicitBoolean = vtkImplicitBoolean::New();
   myImplicitBoolean->SetOperationTypeToIntersection();
 
+  myPlaneCollection = vtkPlaneCollection::New();
+
   //Quadratic 2D elements representation
   //-----------------------------------------------------------------------------
   int aQuadratic2DMode = mgr->integerValue( "SMESH", "quadratic_mode", 0);
@@ -619,6 +622,7 @@ SMESH_ActorDef::~SMESH_ActorDef()
   //my0DExtActor->Delete();
 
   myImplicitBoolean->Delete();
+  myPlaneCollection->Delete();
 
 #ifndef DISABLE_PLOT2DVIEWER
   if(my2dHistogram) {
@@ -2150,9 +2154,66 @@ SMESH_ActorDef::AddClippingPlane(vtkPlane* thePlane)
 }
 
 void
+SMESH_ActorDef::AddOpenGLClippingPlane(vtkPlane* thePlane)
+{
+  if(thePlane)
+    myPlaneCollection->AddItem( thePlane );
+}
+
+void
+SMESH_ActorDef::SetOpenGLClippingPlane()
+{
+  // before use this method you must add clipping planes using method
+  // SMESH_ActorDef::AddOpenGLClippingPlane(vtkPlane* thePlane)
+  if( !myPlaneCollection->GetNumberOfItems() )
+    return;
+
+  // It is necessary to set plane collection for each mapper of actor
+  // and update current inputs of mapper
+  myNodeActor->SetPlaneCollection( myPlaneCollection );
+  myNodeActor->SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
+
+  myBaseActor->SetPlaneCollection( myPlaneCollection );
+  myBaseActor->SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
+
+  myHighlitableActor->SetPlaneCollection( myPlaneCollection );
+  myHighlitableActor->SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
+
+  my1DActor->SetPlaneCollection( myPlaneCollection );
+  my1DActor->SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
+
+  my2DActor->SetPlaneCollection( myPlaneCollection );
+  my2DActor->SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
+
+  myNodeExtActor->SetPlaneCollection( myPlaneCollection );
+  myNodeExtActor->SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
+
+  my0DActor->SetPlaneCollection( myPlaneCollection );
+  my0DActor->SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
+
+  myBallActor->SetPlaneCollection( myPlaneCollection );
+  myBallActor->SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
+
+  my1DExtActor->SetPlaneCollection( myPlaneCollection );
+  my1DExtActor->SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
+
+  my2DExtActor->SetPlaneCollection( myPlaneCollection );
+  my2DExtActor->SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
+
+  my3DActor->SetPlaneCollection( myPlaneCollection );
+  my3DActor->SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
+
+  my3DExtActor->SetPlaneCollection( myPlaneCollection );
+  my3DExtActor->SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
+
+  Modified();
+}
+
+void
 SMESH_ActorDef::
 RemoveAllClippingPlanes()
 {
+  myPlaneCollection->RemoveAllItems();
   myImplicitBoolean->GetFunction()->RemoveAllItems();
   myImplicitBoolean->GetFunction()->Modified(); // VTK bug
   myCippingPlaneCont.clear();

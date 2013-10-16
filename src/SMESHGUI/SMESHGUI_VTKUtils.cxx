@@ -1398,6 +1398,20 @@ namespace SMESH
                                        double theOrigin[3] )
   {
     bool anIsOk = false;
+    anIsOk = ComputeBounds( theActorList, theBounds );
+
+
+    if( !anIsOk )
+      return false;
+
+    DistanceToPosition( theBounds, theNormal, theDist, theOrigin );
+    return true;
+  }
+
+  bool ComputeBounds( std::list<vtkActor*> theActorList,
+                      double theBounds[6])
+  {
+    bool anIsOk = false;
     theBounds[0] = theBounds[2] = theBounds[4] = VTK_DOUBLE_MAX;
     theBounds[1] = theBounds[3] = theBounds[5] = -VTK_DOUBLE_MAX;
     std::list<vtkActor*>::iterator anIter = theActorList.begin();
@@ -1416,12 +1430,7 @@ namespace SMESH
         }
       }
     }
-
-    if( !anIsOk )
-      return false;
-    
-    DistanceToPosition( theBounds, theNormal, theDist, theOrigin );
-    return true;
+    return anIsOk;
   }
 
 #ifndef DISABLE_PLOT2DVIEWER

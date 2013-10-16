@@ -6549,6 +6549,10 @@ It is impossible to read point coordinates from file</translation>
         <translation>Clipping planes</translation>
     </message>
     <message>
+        <source>IS_OPENGL_CLIPPING</source>
+        <translation>OpenGL clipping</translation>
+    </message>
+    <message>
         <source>MESHES_SUBMESHES_GROUPS</source>
         <translation>Meshes, sub-meshes and groups</translation>
     </message>
@@ -6607,6 +6611,30 @@ It is impossible to read point coordinates from file</translation>
     <message>
         <source>NO_PLANES</source>
         <translation>No planes</translation>
+    </message>
+    <message>
+        <source>ABSOLUTE</source>
+        <translation>Absolute</translation>
+    </message>
+    <message>
+        <source>RELATIVE</source>
+        <translation>Relative</translation>
+    </message>
+    <message>
+        <source>BASE_POINT</source>
+        <translation>Base point</translation>
+    </message>
+    <message>
+        <source>DIRECTION</source>
+        <translation>Direction</translation>
+    </message>
+    <message>
+        <source>RESET</source>
+        <translation>Reset</translation>
+    </message>
+    <message>
+        <source>INVERT</source>
+        <translation>Invert</translation>
     </message>
 </context>
 <context>

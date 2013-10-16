@@ -206,6 +206,14 @@ SMESHGUI_EXPORT
                                        double theDist,
                                        double theBounds[6],
                                        double theOrigin[3] );
+
+  bool ComputeBounds( std::list<vtkActor*> theActorList,
+                      double theBounds[6]);
+
+  void PositionToDistance( double theBounds[6],
+                           double theDirection[3],
+                           double thePos[3],
+                           double& theDist );
  SMESHGUI_EXPORT
    void RemoveVisualObjectWithActors( const char* theEntry, bool fromAllViews = false );
 };

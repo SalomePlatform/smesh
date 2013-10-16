@@ -63,6 +63,8 @@
 
 #include <vtkRenderer.h>
 
+#include <vtkPlaneCollection.h>
+
 #include "utilities.h"
 
 #ifdef _DEBUG_
@@ -90,6 +92,7 @@ SMESH_DeviceActor
 
   myProperty = vtkProperty::New();
   myMapper = VTKViewer_PolyDataMapper::New();
+  myPlaneCollection = vtkPlaneCollection::New();
 
   vtkMapper::GetResolveCoincidentTopologyPolygonOffsetParameters(myPolygonOffsetFactor,
                                                                  myPolygonOffsetUnits);
@@ -139,6 +142,7 @@ SMESH_DeviceActor
   if(MYDEBUG) MESSAGE("~SMESH_DeviceActor - "<<this);
 
   myMapper->Delete();
+  myPlaneCollection->Delete();
 
   myProperty->Delete();
 
@@ -256,12 +260,20 @@ SMESH_DeviceActor
 
     anId++; // 5
     myMapper->SetInputConnection( myPassFilter[ anId ]->GetOutputPort() );
+    if( myPlaneCollection->GetNumberOfItems() )
+      myMapper->SetClippingPlanes( myPlaneCollection );
 
     vtkLODActor::SetMapper( myMapper );
     Modified();
   }
 }
 
+void
+SMESH_DeviceActor
+::SetPlaneCollection( vtkPlaneCollection* theCollection )
+{
+  myPlaneCollection = theCollection;
+}
 
 VTKViewer_ExtractUnstructuredGrid* 
 SMESH_DeviceActor

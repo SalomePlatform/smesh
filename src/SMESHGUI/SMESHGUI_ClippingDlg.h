@@ -46,60 +46,74 @@
 #include <map>
 #include <vector>
 
+class QGroupBox;
 class QLabel;
 class QPushButton;
 class QCheckBox;
 class QComboBox;
 class QListWidget;
 class QListWidgetItem;
+class QStackedLayout;
+class QSlider;
+class QMenu;
 class SALOME_Actor;
 class SMESHGUI;
 class SMESH_Actor;
-class SMESHGUI_SpinBox;
+class QtxDoubleSpinBox;
 class vtkActor;
 class vtkDataSetMapper;
 class vtkPlaneSource;
+class vtkCallbackCommand;
+class vtkObject;
+class vtkImplicitPlaneWidget;
 
 namespace SMESH
 {
+  enum Mode { Absolute, Relative };
   enum Orientation { XY, YZ, ZX };
 
   class OrientedPlane: public vtkPlane
   {
-    QPointer<SVTK_ViewWindow> myViewWindow;
     vtkDataSetMapper* myMapper;
 
-  public:
-    static OrientedPlane *New();
-    static OrientedPlane *New(SVTK_ViewWindow* theViewWindow);
-    vtkTypeMacro (OrientedPlane, vtkPlane);
+    public:
+      static OrientedPlane *New();
+      static OrientedPlane *New(SVTK_ViewWindow* theViewWindow);
+      vtkTypeMacro (OrientedPlane, vtkPlane);
 
-    SMESH::Orientation myOrientation;
-    float myDistance;
-    double myAngle[2];
+      QPointer<SVTK_ViewWindow> myViewWindow;
+      SMESH::Orientation myRelativeOrientation;
+      float myDistance;
+      double myAngle[2];
+      double X, Y, Z, Dx, Dy, Dz;
+      int myAbsoluteOrientation;
+      bool IsInvert;
+      bool IsOpenGLClipping;
+      Mode PlaneMode;
 
-    vtkPlaneSource* myPlaneSource;
-    SALOME_Actor *myActor;
+      vtkPlaneSource* myPlaneSource;
+      SALOME_Actor *myActor;
 
-    void SetOrientation (SMESH::Orientation theOrientation) { myOrientation = theOrientation; }
-    SMESH::Orientation GetOrientation() { return myOrientation; }
+      void SetOrientation (SMESH::Orientation theOrientation) { myRelativeOrientation = theOrientation; }
+      SMESH::Orientation GetOrientation() { return myRelativeOrientation; }
 
-    void SetDistance (float theDistance) { myDistance = theDistance; }
-    float GetDistance() { return myDistance; }
+      void SetDistance (float theDistance) { myDistance = theDistance; }
+      float GetDistance() { return myDistance; }
 
-    void ShallowCopy (OrientedPlane* theOrientedPlane);
+      void ShallowCopy (OrientedPlane* theOrientedPlane);
+      OrientedPlane* InvertPlane ();
 
-  protected:
-    OrientedPlane(SVTK_ViewWindow* theViewWindow);
-    OrientedPlane();
+    protected:
+      OrientedPlane(SVTK_ViewWindow* theViewWindow);
+      OrientedPlane();
 
-    void Init();
+      void Init();
 
-    ~OrientedPlane();
-  private:
-    // Not implemented.
-    OrientedPlane (const OrientedPlane&);
-    void operator= (const OrientedPlane&);
+      ~OrientedPlane();
+    private:
+      // Not implemented.
+      OrientedPlane (const OrientedPlane&);
+      void operator= (const OrientedPlane&);
   };
 
   typedef vtkSmartPointer<OrientedPlane>    TPlane;
@@ -132,82 +146,133 @@ class SMESHGUI_EXPORT SMESHGUI_ClippingDlg : public QDialog
 public:
   SMESHGUI_ClippingDlg( SMESHGUI*, SVTK_ViewWindow* );
   ~SMESHGUI_ClippingDlg();
-  
-  double                  getDistance() const;
-  void                    setDistance( const double );
-  double                  getRotation1() const;
-  double                  getRotation2() const;
-  void                    setRotation( const double, const double );
 
-  // used in SMESHGUI::restoreVisualParameters() to avoid
-  // declaration of OrientedPlane outside of SMESHGUI_ClippingDlg.cxx
-  static SMESH::OrientedPlane* AddPlane (SMESH::TActorList          theActorList,
-                                         SVTK_ViewWindow*           theViewWindow,
-                                         SMESH::Orientation         theOrientation,
-                                         double                     theDistance,
-                                         const double theAngle[2]);
-
-protected:  
-  void                    keyPressEvent( QKeyEvent* );
-
+  static bool AddPlane ( SMESH::TActorList          theActorList,
+                         SMESH::OrientedPlane*      thePlane );
+protected:
+  void        keyPressEvent( QKeyEvent* );
+  static void ProcessEvents( vtkObject* theObject,
+                             unsigned long theEvent,
+                             void* theClientData,
+                             void* theCallData);
 private:
-  void                    initializePlaneData();
+  double  getDistance() const;
+  void    setDistance( const double );
+  double  getRotation1() const;
+  double  getRotation2() const;
+  void    setRotation( const double, const double );
 
-  void                    synchronize();
+  void    setOrigin(double theVal[3]);
+  void    setDirection(double theVal[3]);
 
-  void                    updateActorList();
-  SMESH::TActorList       getCurrentActors();
+  void    initializePlaneData();
+  void    initParam();
+  void    synchronize();
+  void    updateActorList();
+  void    updateActorItem( QListWidgetItem* theItem,
+                           bool theUpdateSelectAll,
+                           bool theUpdateClippingPlaneMap );
+  SMESH::TActorList getCurrentActors();
 
-  void                    updateActorItem( QListWidgetItem* theItem,
-                                           bool theUpdateSelectAll,
-                                           bool theUpdateClippingPlaneMap );
+  void    dumpPlaneData() const;
+  void    absolutePlaneToRelative ( double theOrigin[3], double theDir[3] );
+  void    setBoundsForPreviewWidget();
+  vtkImplicitPlaneWidget* createPreviewWidget();
 
-  void                    dumpPlaneData() const;
 
 private:
   SMESHGUI*               mySMESHGUI;
   SVTK_ViewWindow*        myViewWindow;
   SMESH::TPlaneDataVector myPlanes;
+
+  vtkCallbackCommand*     myCallback;
+  vtkImplicitPlaneWidget* myPreviewWidget;
+  double                  myBounds[6];
   
   QComboBox*              ComboBoxPlanes;
+  QCheckBox*              isOpenGLClipping;
   QPushButton*            buttonNew;
+  QMenu*                  MenuMode;
   QPushButton*            buttonDelete;
+
   QListWidget*            ActorList;
   QCheckBox*              SelectAllCheckBox;
+
+  QStackedLayout*         ModeStackedLayout;
+
+  QGroupBox*              GroupAbsolutePoint;
+  QLabel*                 TextLabelX;
+  QLabel*                 TextLabelY;
+  QLabel*                 TextLabelZ;
+  QtxDoubleSpinBox*       SpinBox_X;
+  QtxDoubleSpinBox*       SpinBox_Y;
+  QtxDoubleSpinBox*       SpinBox_Z;
+  QPushButton*            resetButton;
+
+  QGroupBox*              GroupAbsoluteDirection;
+  QLabel*                 TextLabelDx;
+  QLabel*                 TextLabelDy;
+  QLabel*                 TextLabelDz;
+  QtxDoubleSpinBox*       SpinBox_Dx;
+  QtxDoubleSpinBox*       SpinBox_Dy;
+  QtxDoubleSpinBox*       SpinBox_Dz;
+  QPushButton*            invertButton;
+  QComboBox*              CBAbsoluteOrientation;
+
+  QGroupBox*              GroupRelative;
   QLabel*                 TextLabelOrientation;
-  QComboBox*              ComboBoxOrientation;
   QLabel*                 TextLabelDistance;
-  SMESHGUI_SpinBox*       SpinBoxDistance;
-  QLabel*                 TextLabelRot1;
-  SMESHGUI_SpinBox*       SpinBoxRot1;
-  QLabel*                 TextLabelRot2;
-  SMESHGUI_SpinBox*       SpinBoxRot2;
+  QLabel*                 TextLabelRotation1;
+  QLabel*                 TextLabelRotation2;
+  QLabel*                 TLValueDistance;
+  QLabel*                 TLValueRotation1;
+  QLabel*                 TLValueRotation2;
+  QSlider*                SliderDistance;
+  QSlider*                SliderRotation1;
+  QSlider*                SliderRotation2;
+  QComboBox*              CBRelativeOrientation;
+
   QCheckBox*              PreviewCheckBox;
   QCheckBox*              AutoApplyCheckBox;
+
   QPushButton*            buttonOk;
   QPushButton*            buttonCancel;
   QPushButton*            buttonApply;
   QPushButton*            buttonHelp;
   
   bool                    myIsSelectPlane;
+  bool                    myIsPreviewMoved;
   QString                 myHelpFileName;
 
+  SMESH::Mode             CurrentMode;
+
 protected slots:
-  virtual void            reject();
+  virtual void reject();
 
 public slots:
-  void                    onSelectPlane( int );
-  void                    ClickOnNew();
-  void                    ClickOnDelete();
-  void                    onActorItemChanged( QListWidgetItem* );
-  void                    onSelectAll( int );
-  void                    onSelectOrientation( int );
-  void                    SetCurrentPlaneParam();
-  void                    OnPreviewToggle( bool );
-  void                    onAutoApply(bool);
-  void                    ClickOnOk();
-  void                    ClickOnApply();
-  void                    ClickOnHelp();
+  void onModeAbsolute();
+  void onModeRelative();
+  void ClickOnNew();
+  void ClickOnDelete();
+  void onSelectPlane( int );
+  void onSelectAll( int );
+  void onActorItemChanged( QListWidgetItem* );
+  void SetCurrentPlaneParam();
+
+  void onIsOpenGLClipping(bool);
+  void OnPreviewToggle( bool );
+  void onAutoApply(bool);
+  void ClickOnOk();
+  void ClickOnApply();
+  void ClickOnHelp();
+
+  void SliderDistanceHasMoved(int);
+  void SliderRotation1HasMoved(int);
+  void SliderRotation2HasMoved(int);
+  void onSelectAbsoluteOrientation( int );
+  void onSelectRelativeOrientation( int );
+  void onReset();
+  void onInvert();
 };
 
 #endif // SMESHGUI_CLIPPINGDLG_H
