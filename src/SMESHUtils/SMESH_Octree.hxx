@@ -55,7 +55,7 @@ public:
   double                 maxSize() const;
 
   // Return index of a child the given point is in
-  inline int             getChildIndex(double x, double y, double z, const gp_XYZ& boxMiddle)const;
+  inline static int      getChildIndex(double x, double y, double z, const gp_XYZ& boxMiddle);
 
  protected:
 
@@ -67,7 +67,7 @@ public:
 /*!
  * \brief Return index of a child the given point is in
  */
-inline int SMESH_Octree::getChildIndex(double x, double y, double z, const gp_XYZ& mid) const
+inline int SMESH_Octree::getChildIndex(double x, double y, double z, const gp_XYZ& mid)
 {
   return (x > mid.X()) + ( y > mid.Y())*2 + (z > mid.Z())*4;
 }
