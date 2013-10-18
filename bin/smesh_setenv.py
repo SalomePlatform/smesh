@@ -36,7 +36,7 @@ def set_env(args):
         pass
 
     # find plugins
-    plugin_list = []
+    plugin_list = ["StdMeshers"]
     resource_path_list = []
     for env_var in os.environ.keys():
         value = os.environ[env_var]
@@ -78,7 +78,6 @@ def set_env(args):
                         pass
                     pass
                 break
-    plugin_list.append("StdMeshers")
     os.environ["SMESH_MeshersList"] = ":".join(plugin_list)
     os.environ["SalomeAppConfig"] = os.environ["SalomeAppConfig"] + psep + psep.join(resource_path_list)
 

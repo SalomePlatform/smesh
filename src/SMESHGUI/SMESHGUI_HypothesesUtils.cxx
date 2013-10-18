@@ -224,18 +224,17 @@ namespace SMESH
             for( ;it1 != aXmlHandler->myHypothesesMap.end(); it1++)
               myHypothesesMap.insert( it1.key(), it1.value() );
             
-            
             it1 = aXmlHandler->myAlgorithmsMap.begin();
             for( ;it1 != aXmlHandler->myAlgorithmsMap.end(); it1++)
               myAlgorithmsMap.insert( it1.key(), it1.value() );
             
-            QList<HypothesesSet*>::iterator it, pos = myListOfHypothesesSets.begin();
+            QList<HypothesesSet*>::iterator it;
             for ( it = aXmlHandler->myListOfHypothesesSets.begin(); 
                   it != aXmlHandler->myListOfHypothesesSets.end();
                   ++it )
             {
               (*it)->setIsCustom( i == 0 );
-              myListOfHypothesesSets.insert( pos, *it );
+              myListOfHypothesesSets.append( *it );
             }
           }
           else {
@@ -316,6 +315,7 @@ namespace SMESH
         aSetNameList.append( mangledHypoSetName( aSet ));
       }
     }
+    aSetNameList.removeDuplicates();
     aSetNameList.sort();
 
     //  reverse order of aSetNameList
