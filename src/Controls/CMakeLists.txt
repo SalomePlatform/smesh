@@ -49,19 +49,6 @@ SET(_link_LIBRARIES
   SMESHUtils
 )
 
-SET(_link_LIBRARIES_bin
-  ${KERNEL_OpUtil}
-  ${KERNEL_SALOMELocalTrace}
-  ${KERNEL_SALOMEBasics}
-  ${KERNEL_SalomeIDLKERNEL}
-  ${GEOM_GEOMAlgo}
-  ${CAS_TKernel}
-  ${CAS_TKBRep}
-  ${CAS_TKG3d}
-  SMDS
-  SMESHDS
-)
-
 # --- headers ---
 
 # header files / no moc processing
@@ -76,20 +63,10 @@ SET(SMESHControls_SOURCES
   SMESH_Controls.cxx 
 )
 
-# bin programs
-SET(SMESHControls_bin_SOURCES
-  SMESHControls.cxx
-)
-
 # --- rules ---
 
 ADD_LIBRARY(SMESHControls ${SMESHControls_SOURCES})
 TARGET_LINK_LIBRARIES(SMESHControls ${_link_LIBRARIES} )
 INSTALL(TARGETS SMESHControls EXPORT ${PROJECT_NAME}TargetGroup DESTINATION ${SALOME_INSTALL_LIBS})
-
-ADD_EXECUTABLE(SMESHControls_bin ${SMESHControls_bin_SOURCES})
-TARGET_LINK_LIBRARIES(SMESHControls_bin ${_link_LIBRARIES_bin} SMESHControls)
-SET_TARGET_PROPERTIES(SMESHControls_bin PROPERTIES OUTPUT_NAME "SMESHControls")
-INSTALL(TARGETS SMESHControls_bin EXPORT ${PROJECT_NAME}TargetGroup DESTINATION ${SALOME_INSTALL_BINS})
 
 INSTALL(FILES ${SMESHControls_HEADERS} DESTINATION ${SALOME_INSTALL_HEADERS})

@@ -27,7 +27,7 @@
 #ifndef _SMESH_DriverUNV_HXX_
 #define _SMESH_DriverUNV_HXX_
 
-#ifdef WNT
+#ifdef WIN32
  #if defined MESHDRIVERUNV_EXPORTS || defined MeshDriverUNV_EXPORTS
   #define MESHDRIVERUNV_EXPORT __declspec( dllexport )
  #else

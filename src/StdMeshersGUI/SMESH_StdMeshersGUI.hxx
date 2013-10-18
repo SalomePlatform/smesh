@@ -26,7 +26,7 @@
 #ifndef SMESH_STDMESHERSGUI_HXX
 #define SMESH_STDMESHERSGUI_HXX
 
-#ifdef WNT
+#ifdef WIN32
  #if defined STDMESHERSGUI_EXPORTS || defined StdMeshersGUI_EXPORTS
   #define STDMESHERSGUI_EXPORT __declspec( dllexport )
  #else

@@ -250,7 +250,7 @@
       </python-wrap>
     </algorithm>
 
-    <algorithm type      ="MEFISTO_2D"
+    <algorithm type      ="@MEFISTO2D_NAME@"
 	       label-id  ="Triangle (Mefisto)"
 	       icon-id   ="mesh_algo_mefisto.png"
                hypos     ="LengthFromEdges,MaxElementArea"
@@ -463,7 +463,7 @@
 
     <hypotheses-set name="Automatic Tetrahedralization"
                     hypos="MaxLength"
-                    algos="Regular_1D, MEFISTO_2D, NETGEN_3D"/>
+                    algos="Regular_1D, @MEFISTO2D_NAME@, NETGEN_3D"/>
 
     <hypotheses-set name="Automatic Hexahedralization"
                     hypos="NumberOfSegments"
@@ -471,7 +471,7 @@
 
     <hypotheses-set name="Automatic Triangulation"
                     hypos="MaxLength"
-                    algos="Regular_1D, MEFISTO_2D"/>
+                    algos="Regular_1D, @MEFISTO2D_NAME@"/>
 
     <hypotheses-set name="Automatic Quadrangulation"
                     hypos="NumberOfSegments"

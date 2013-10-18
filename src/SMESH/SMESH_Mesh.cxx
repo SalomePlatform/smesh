@@ -1323,7 +1323,7 @@ void SMESH_Mesh::ExportSAUV(const char *file,
   std::string medfilename(file);
   medfilename += ".med";
   std::string cmd;
-#ifdef WNT
+#ifdef WIN32
   cmd = "%PYTHONBIN% ";
 #else
   cmd = "python ";
@@ -1333,7 +1333,7 @@ void SMESH_Mesh::ExportSAUV(const char *file,
   cmd += "\"";
   system(cmd.c_str());
   ExportMED(medfilename.c_str(), theMeshName, theAutoGroups, 1);
-#ifdef WNT
+#ifdef WIN32
   cmd = "%PYTHONBIN% ";
 #else
   cmd = "python ";
@@ -1342,7 +1342,7 @@ void SMESH_Mesh::ExportSAUV(const char *file,
   cmd += "from medutilities import convert ; convert(r'" + medfilename + "', 'MED', 'GIBI', 1, r'" + file + "')";
   cmd += "\"";
   system(cmd.c_str());
-#ifdef WNT
+#ifdef WIN32
   cmd = "%PYTHONBIN% ";
 #else
   cmd = "python ";

@@ -124,7 +124,7 @@ MeshJobManager_i::~MeshJobManager_i() {
 // ====================================================================
 //
 #include <fstream>     // to get the file streams
-#ifdef WNT             
+#ifdef WIN32
 #include <stdlib.h>    // to get _splitpath
 #include <direct.h>    // to get _mkdir
 #else

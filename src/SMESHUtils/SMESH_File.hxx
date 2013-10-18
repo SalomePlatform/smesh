@@ -29,7 +29,7 @@
 #include <string>
 #include <vector>
 
-#ifdef WNT
+#ifdef WIN32
 #include <windows.h>
 #else
 #include <dlfcn.h>
@@ -82,7 +82,7 @@ private:
 
   std::string _name; //!< file name
   int         _size; //!< file size
-#ifdef WNT
+#ifdef WIN32
   HANDLE      _file, _mapObj;
 #else
   int         _file;

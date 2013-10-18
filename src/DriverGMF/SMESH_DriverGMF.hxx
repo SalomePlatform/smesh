@@ -27,7 +27,7 @@
 #ifndef _SMESH_DriverGMF_HXX_
 #define _SMESH_DriverGMF_HXX_
 
-#ifdef WNT
+#ifdef WIN32
  #if defined MESHDriverGMF_EXPORTS || defined MeshDriverGMF_EXPORTS
   #define MESHDriverGMF_EXPORT __declspec( dllexport )
  #else

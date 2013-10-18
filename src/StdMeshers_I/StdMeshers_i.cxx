@@ -61,7 +61,9 @@
 #include "StdMeshers_Cartesian_3D_i.hxx"
 
 #include "StdMeshers_Regular_1D_i.hxx"
-#include "StdMeshers_MEFISTO_2D_i.hxx"
+#ifdef ENABLE_MEFISTO
+ #include "StdMeshers_MEFISTO_2D_i.hxx"
+#endif
 #include "StdMeshers_Quadrangle_2D_i.hxx"
 #include "StdMeshers_Hexa_3D_i.hxx"
 #include "StdMeshers_Projection_1D_2D_3D_i.hxx"
@@ -188,8 +190,10 @@ STDMESHERS_I_EXPORT
     // Algorithms
     else if (strcmp(aHypName, "Regular_1D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_Regular_1D_i>;
+#ifdef ENABLE_MEFISTO
     else if (strcmp(aHypName, "MEFISTO_2D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_MEFISTO_2D_i>;
+#endif
     else if (strcmp(aHypName, "Quadrangle_2D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_Quadrangle_2D_i>;
     else if (strcmp(aHypName, "Hexa_3D") == 0)

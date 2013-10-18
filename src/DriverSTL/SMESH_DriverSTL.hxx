@@ -27,7 +27,7 @@
 #ifndef _SMESH_DriverSTL_HXX_
 #define _SMESH_DriverSTL_HXX_
 
-#ifdef WNT
+#ifdef WIN32
  #if defined MESHDRIVERSTL_EXPORTS || defined MeshDriverSTL_EXPORTS
   #define MESHDRIVERSTL_EXPORT __declspec( dllexport )
  #else

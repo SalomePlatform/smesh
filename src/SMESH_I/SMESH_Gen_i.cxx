@@ -45,14 +45,14 @@
 #include <TCollection_AsciiString.hxx>
 #include <OSD.hxx>
 
-#ifdef WNT
+#ifdef WIN32
  #include <windows.h>
  #include <process.h>
 #else
  #include <dlfcn.h>
 #endif
 
-#ifdef WNT
+#ifdef WIN32
  #define LibHandle HMODULE
  #define LoadLib( name ) LoadLibrary( name )
  #define GetProc GetProcAddress
@@ -315,7 +315,7 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
       CORBA::String_var str_host = session->getHostname();
       CORBA::Long        s_pid = session->getPID();
       string my_host = Kernel_Utils::GetHostname();
-#ifdef WNT
+#ifdef WIN32
       long    my_pid = (long)_getpid();
 #else
       long    my_pid = (long) getpid();
@@ -378,7 +378,7 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
         !strcmp( theLibName+libNameLen-3, ".so" ))
     {
       //the old format
-#ifdef WNT
+#ifdef WIN32
       aPlatformLibName = std::string( theLibName+3, libNameLen-6 ) + ".dll";
 #else
       aPlatformLibName = theLibName;
@@ -387,8 +387,9 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
     else
     {
       //try to use new format
-#ifdef WNT
-      aPlatformLibName = theLibName + ".dll";
+#ifdef WIN32
+      aPlatformLibName = theLibName;
+      aPlatformLibName += ".dll";
 #else
       aPlatformLibName = "lib" + std::string( theLibName ) + ".so";
 #endif
@@ -413,7 +414,7 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
       if (!libHandle)
       {
         // report any error, if occured
-#ifndef WNT
+#ifndef WIN32
         const char* anError = dlerror();
         throw(SALOME_Exception(anError));
 #else
@@ -1088,7 +1089,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromSAUV( const char* theFileName,
   std::string medfilename(theFileName);
   medfilename += ".med";
   std::string cmd;
-#ifdef WNT
+#ifdef WIN32
   cmd = "%PYTHONBIN% ";
 #else
   cmd = "python ";
@@ -1098,7 +1099,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromSAUV( const char* theFileName,
   cmd += "\"";
   system(cmd.c_str());
   SMESH::mesh_array* result = CreateMeshesFromMEDorSAUV(medfilename.c_str(), theStatus, "CreateMeshesFromSAUV", sauvfilename.c_str());
-#ifdef WNT
+#ifdef WIN32
   cmd = "%PYTHONBIN% ";
 #else
   cmd = "python ";
@@ -2927,7 +2928,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 
 
   //Remove the files if they exist: BugID: 11225
-#ifndef WNT /* unix functionality */
+#ifndef WIN32 /* unix functionality */
   TCollection_AsciiString cmd("rm -f \"");
 #else /* windows */
   TCollection_AsciiString cmd("del /F \"");
@@ -3008,9 +3009,9 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
               string libname = string( myHyp->GetLibName() );
               // BUG SWP13062
               // Needs for save crossplatform libname, i.e. parth of name ( ".dll" for
-              // WNT and ".so" for X-system) must be deleted
+              // WIN32 and ".so" for X-system) must be deleted
               int libname_len = libname.length();
-#ifdef WNT
+#ifdef WIN32
               if( libname_len > 4 )
                 libname.resize( libname_len - 4 );
 #else
@@ -3077,9 +3078,9 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
               string libname = string( myHyp->GetLibName() );
               // BUG SWP13062
               // Needs for save crossplatform libname, i.e. parth of name ( ".dll" for
-              // WNT and ".so" for X-system) must be deleted
+              // WIN32 and ".so" for X-system) must be deleted
               int libname_len = libname.length();
-#ifdef WNT
+#ifdef WIN32
               if( libname_len > 4 )
                 libname.resize( libname_len - 4 );
 #else

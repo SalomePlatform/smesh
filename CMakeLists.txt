@@ -17,7 +17,7 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)
-PROJECT(SalomeSMESH C CXX Fortran)
+PROJECT(SalomeSMESH C CXX)
 
 # Ensure a proper linker behavior:
 CMAKE_POLICY(SET CMP0003 NEW)
@@ -55,7 +55,7 @@ INCLUDE(SalomeSetupPlatform)   # From KERNEL
 # Always build libraries as shared objects:
 SET(BUILD_SHARED_LIBS TRUE)
 # Local macros:
-LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/adm_local/cmake_files")
+LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/adm_local/cmake_files") 
 
 # User options
 # (some options have already been defined in KERNEL) 
@@ -64,11 +64,20 @@ LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/adm_local/cmake_files")
 OPTION(SALOME_BUILD_DOC "Generate SALOME SMESH documentation" ${SALOME_BUILD_DOC})
   
 # Advanced options:
-OPTION(SALOME_BUILD_GUI       "Enable GUI" ON)
-OPTION(SALOME_SMESH_USE_CGNS  "Enable shape recognition from picture" OFF)
-OPTION(SALOME_SMESH_USE_TBB   "Enable shape recognition from picture" OFF)
+OPTION(SALOME_BUILD_GUI            "Enable GUI" ON)
+OPTION(SALOME_SMESH_USE_CGNS       "Enable shape recognition from picture" OFF)
+OPTION(SALOME_SMESH_USE_TBB        "Enable shape recognition from picture" OFF)
+
+#On Linux use Fortran to compile MEFISTO2D
+IF(NOT WIN32)
+  ENABLE_LANGUAGE(Fortran)
+  SET(SALOME_SMESH_ENABLE_MEFISTO ON)
+  ADD_DEFINITIONS(-DENABLE_MEFISTO)
+ENDIF(NOT WIN32)
+
 
 MARK_AS_ADVANCED(SALOME_BUILD_GUI SALOME_SMESH_USE_CGNS SALOME_SMESH_USE_TBB)
+
 
 # Prerequisites
 # =============
@@ -126,7 +135,7 @@ IF(SALOME_BUILD_GUI)
     # PyQt4
     FIND_PACKAGE(SalomePyQt4 REQUIRED)
     # Qwt
-    FIND_PACKAGE(SalomeQwt)
+    FIND_PACKAGE(SalomeQwt REQUIRED)
   ELSE(EXISTS ${GUI_ROOT_DIR})
     MESSAGE(FATAL_ERROR "GUI_ROOT_DIR is not well defined, SMESH will be built without GUI!!!")
   ENDIF(EXISTS ${GUI_ROOT_DIR})
@@ -163,6 +172,25 @@ IF(SALOME_SMESH_USE_TBB)
 ENDIF(SALOME_SMESH_USE_TBB)
 
 FIND_PACKAGE(SalomeMEDFile REQUIRED)
+
+#On Windows use f2c to generate C MEFISTO2D code
+IF(WIN32)
+  SET(SALOME_SMESH_ENABLE_MEFISTO OFF)
+  FIND_PACKAGE(Salomef2c QUIET)
+  IF(${F2C_FOUND})
+    ADD_DEFINITIONS(-DENABLE_MEFISTO)
+    SET(SALOME_SMESH_ENABLE_MEFISTO ON)
+    MESSAGE(STATUS "Build MEFISTO2D mesher using Fortran to C generator")
+  ELSE(${F2C_FOUND})
+    MESSAGE(STATUS "Fortran to C generator is not found: MEFISTO2D mesher will be unavailable.")
+  ENDIF(${F2C_FOUND})  
+ENDIF(WIN32)
+
+IF(SALOME_SMESH_ENABLE_MEFISTO)
+ SET(MEFISTO2D_NAME "MEFISTO_2D")
+ELSE(SALOME_SMESH_ENABLE_MEFISTO)
+ SET(MEFISTO2D_NAME "NOT_FOUND")
+ENDIF(SALOME_SMESH_ENABLE_MEFISTO)
 
 # Detection summary:
 SALOME_PACKAGE_REPORT_AND_CHECK()
@@ -234,13 +262,18 @@ INCLUDE(CMakePackageConfigHelpers)
 SET(_${PROJECT_NAME}_exposed_targets 
   SMESHControls MeshDriver MeshDriverDAT MeshDriverGMF MeshDriverMED
   MeshDriverSTL MeshDriverUNV MEDWrapperBase MEDWrapper MEDWrapper_V2_2
-  MEFISTO2D SMDS SMESHimpl SMESHEngine SMESHClient SMESHDS
+  SMDS SMESHimpl SMESHEngine SMESHClient SMESHDS
   SMESHUtils StdMeshers StdMeshersEngine MeshJobManagerEngine
   SPADDERPluginTesterEngine SalomeIDLSMESH SalomeIDLSPADDER
 )
 
+IF(SALOME_SMESH_ENABLE_MEFISTO)
+  LIST(APPEND _${PROJECT_NAME}_exposed_targets
+       MEFISTO2D) 
+ENDIF(SALOME_SMESH_ENABLE_MEFISTO)
+
 IF(SALOME_BUILD_GUI)
-  LIST(APPEND _${PROJECT_NAME}_exposed_targets.
+  LIST(APPEND _${PROJECT_NAME}_exposed_targets
       SMESHObject SMESHFiltersSelection SMESH GeomSelectionTools StdMeshersGUI
   )
 ENDIF(SALOME_BUILD_GUI)

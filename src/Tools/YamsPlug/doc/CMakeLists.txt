@@ -45,7 +45,7 @@ SALOME_CONFIGURE_FILE(conf.py.in conf.py)
 #    Their root dir were found when looking for Sphinx (FindSalomeSphinx.cmake):
 
 SET(_pydir python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
-IF(WINDOWS)
+IF(WIN32)
   STRING(REPLACE "/" "\\" SCR "@SET PYTHONPATH=${CMAKE_INSTALL_PREFIX}\\lib\\${_pydir}\\site-packages\\salome\;%PYTHONPATH%
   @SET PYTHONPATH=${CMAKE_INSTALL_PREFIX}\\bin\\salome\;%PYTHONPATH%
   @SET PATH=${CMAKE_INSTALL_PREFIX}\\lib\\salome\;%PATH%
@@ -65,7 +65,7 @@ IF(WINDOWS)
   ")
   SET(EXT "bat")
   SET(CALL_STR "call")
-ELSE(WINDOWS)
+ELSE(WIN32)
   SET(SCR  " export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib/${_pydir}/site-packages/salome:\${PYTHONPATH}
   export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/bin/salome:\${PYTHONPATH}
   export LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib/salome:\${LD_LIBRARY_PATH}
@@ -93,7 +93,7 @@ ELSE(WINDOWS)
   )
   SET(EXT "sh")
   SET(CALL_STR ".")
-ENDIF(WINDOWS)
+ENDIF(WIN32)
 
 FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/env_s.${EXT} "${SCR}")
 

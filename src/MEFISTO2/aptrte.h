@@ -46,7 +46,7 @@
 #include <sys/time.h>
 #endif
 
-#ifdef WNT
+#ifdef WIN32
  #if defined MEFISTO2D_EXPORTS
   #define MEFISTO2D_EXPORT __declspec( dllexport )
  #else

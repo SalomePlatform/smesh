@@ -757,7 +757,7 @@ SMESHGUI_ComputeDlg_QThreadQDialog::SMESHGUI_ComputeDlg_QThreadQDialog(QWidget  
   layout->addWidget(nbNodesLabel, row++, 1);
   layout->addWidget(nbElemsName,  row,   0);
   layout->addWidget(nbElemsLabel, row++, 1);
-#ifndef WNT
+#ifndef WIN32
   layout->addWidget(freeRAMName,  row,   0);
   layout->addWidget(freeRAMLabel, row++, 1);
 #endif
@@ -797,7 +797,7 @@ void SMESHGUI_ComputeDlg_QThreadQDialog::timerEvent(QTimerEvent *event)
   {
     nbNodesLabel->setText( QString("%1").arg( qthread.getMesh()->NbNodes() ));
     nbElemsLabel->setText( QString("%1").arg( qthread.getMesh()->NbElements() ));
-#ifndef WNT
+#ifndef WIN32
     struct sysinfo si;
     const int err = sysinfo( &si );
     if ( err )

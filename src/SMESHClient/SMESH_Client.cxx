@@ -37,7 +37,7 @@
 #include "Basics_Utils.hxx"
 #include "utilities.h"
 
-#ifdef WNT
+#ifdef WIN32
 #include <process.h>
 #else
 #include <unistd.h>
@@ -754,7 +754,7 @@ SMESH_Client::GetSMESHGen(CORBA::ORB_ptr theORB,
   static SMESH::SMESH_Gen_var aMeshGen;
 
   if(CORBA::is_nil(aMeshGen.in())){
-#ifdef WNT
+#ifdef WIN32
     long aClientPID = (long)_getpid();
 #else
     long aClientPID =  (long)getpid();

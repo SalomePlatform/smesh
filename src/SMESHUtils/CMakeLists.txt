@@ -41,6 +41,7 @@ SET(_link_LIBRARIES
   ${CAS_TKG2d}
   ${CAS_TKG3d}
   ${CAS_TKGeomBase}
+  ${CAS_TKGeomAlgo}
   SMESHDS
 )
 

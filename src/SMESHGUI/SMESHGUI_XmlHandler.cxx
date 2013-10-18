@@ -36,6 +36,8 @@
 // SALOME KERNEL includes
 #include <utilities.h>
 
+#define BAD_HYP_FLAG "NOT_FOUND"
+
 /*!
   Constructor
 */
@@ -89,7 +91,7 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
  */
       if( !myClientLib.isEmpty() )
       {
-#ifdef WNT
+#ifdef WIN32
       //myServerLib += ".dll";
         myClientLib += ".dll";
 #else
@@ -157,19 +159,21 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
         }
       }
       
-      HypothesisData* aHypData =
-        new HypothesisData (aHypAlType, myPluginName, myServerLib, myClientLib,
-                            aLabel, anIcon, aDim, isAux,
-                            attr[ HYPOS ], attr[ OPT_HYPOS ], attr[ INPUT ], attr[ OUTPUT ],
-                            isNeedGeom, isSupportSubmeshes );
+      if ( !aHypAlType.contains( BAD_HYP_FLAG ) ) {
+        HypothesisData* aHypData =
+          new HypothesisData (aHypAlType, myPluginName, myServerLib, myClientLib,
+                              aLabel, anIcon, aDim, isAux,
+                              attr[ HYPOS ], attr[ OPT_HYPOS ], attr[ INPUT ], attr[ OUTPUT ],
+                              isNeedGeom, isSupportSubmeshes );
 
-      if (qName == "algorithm")
-      {
-        myAlgorithmsMap.insert(aHypAlType,aHypData);
-      }
-      else
-      {
-        myHypothesesMap.insert(aHypAlType,aHypData);
+        if (qName == "algorithm")
+        {
+          myAlgorithmsMap.insert(aHypAlType,aHypData);
+        }
+        else
+        {
+          myHypothesesMap.insert(aHypAlType,aHypData);
+        }
       }
     }
   }
@@ -180,15 +184,14 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
   {
     if (atts.value("name") != "")
     {
-      HypothesesSet* aHypoSet = new HypothesesSet ( atts.value("name") );
-      myListOfHypothesesSets.append( aHypoSet );
+      QString hypos = atts.value("hypos").remove( ' ' );
+      QString algos = atts.value("algos").remove( ' ' );
+      bool badSet = hypos.contains( BAD_HYP_FLAG ) || algos.contains( BAD_HYP_FLAG );
 
-      for ( int isHypo = 0; isHypo < 2; ++isHypo )
-      {
-        QString aHypos = isHypo ? atts.value("hypos") : atts.value("algos");
-        aHypos = aHypos.remove( ' ' );
-        aHypoSet->set( !isHypo, aHypos.split( ',', QString::SkipEmptyParts ) );
-      }
+      if ( !badSet )
+	myListOfHypothesesSets.append( new HypothesesSet ( atts.value("name"), 
+							   hypos.split( ',', QString::SkipEmptyParts ),
+							   algos.split( ',', QString::SkipEmptyParts ) ) );
     }
   }
   else if ( qName == "python-wrap" ||

@@ -23,7 +23,7 @@
 //  Author : Nicolas REJNERI
 //  Module : SMESH
 
-#ifdef WNT
+#ifdef WIN32
 #define NOMINMAX
 #endif
 

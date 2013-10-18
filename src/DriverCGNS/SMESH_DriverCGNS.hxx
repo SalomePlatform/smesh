@@ -27,7 +27,7 @@
 #ifndef _SMESH_DriverCGNS_HXX_
 #define _SMESH_DriverCGNS_HXX_
 
-#ifdef WNT
+#ifdef WIN32
  #if defined MESHDriverCGNS_EXPORTS || defined MeshDriverCGNS_EXPORTS
   #define MESHDriverCGNS_EXPORT __declspec( dllexport )
  #else

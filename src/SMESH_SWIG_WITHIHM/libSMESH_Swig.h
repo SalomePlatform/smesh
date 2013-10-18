@@ -24,7 +24,7 @@
 #ifndef LIBSMESH_SWIG_H
 #define LIBSMESH_SWIG_H
 
-#ifdef WNT
+#ifdef WIN32
 #if defined SMESH_SWIG_EXPORTS || defined _libSMESH_Swig_EXPORTS
   #define SMESH_SWIG_EXPORT __declspec( dllexport )
  #else

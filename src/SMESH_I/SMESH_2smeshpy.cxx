@@ -44,7 +44,7 @@
 
 #include <LDOMParser.hxx>
 
-#ifdef WNT
+#ifdef WIN32
 #include <windows.h>
 #else
 #include <unistd.h>

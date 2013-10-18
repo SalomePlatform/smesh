@@ -47,7 +47,7 @@
 
 #include "memoire.h"
 
-#ifdef WNT
+#ifdef WIN32
   #include <windows.h>
 #endif
 
@@ -979,7 +979,7 @@ std::vector< std::string > SMESH_Gen::GetPluginXMLPaths()
           sep = rootDir[pos];
           break;
         }
-#ifdef WNT
+#ifdef WIN32
       if (sep.empty() ) sep = "\\";
 #else
       if (sep.empty() ) sep = "/";
@@ -994,7 +994,7 @@ std::vector< std::string > SMESH_Gen::GetPluginXMLPaths()
         xmlPath += tolower( pluginSubDir[pos] );
       xmlPath += sep + plugin + ".xml";
       bool fileOK;
-#ifdef WNT
+#ifdef WIN32
       fileOK = (GetFileAttributes(xmlPath.c_str()) != INVALID_FILE_ATTRIBUTES);
 #else
       fileOK = (access(xmlPath.c_str(), F_OK) == 0);

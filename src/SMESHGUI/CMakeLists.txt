@@ -56,6 +56,11 @@ ADD_DEFINITIONS(
   ${OMNIORB_DEFINITIONS}
 )
 
+# To avoid GetObject macro definition on WIN32
+IF(WIN32)
+  ADD_DEFINITIONS(-DNOGDI)
+ENDIF(WIN32)
+
 # libraries to link to
 SET(_link_LIBRARIES
   ${CAS_TKV3d}

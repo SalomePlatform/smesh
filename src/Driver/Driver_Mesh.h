@@ -32,7 +32,7 @@
 #include <string>
 #include <vector>
 
-#ifdef WNT
+#ifdef WIN32
  #if defined MESHDRIVER_EXPORTS || defined MeshDriver_EXPORTS
   #define MESHDRIVER_EXPORT __declspec( dllexport )
  #else

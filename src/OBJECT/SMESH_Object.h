@@ -28,7 +28,7 @@
 #ifndef SMESH_OBJECT_H
 #define SMESH_OBJECT_H
 
-#ifdef WNT
+#ifdef WIN32
  #if defined SMESHOBJECT_EXPORTS || defined SMESHObject_EXPORTS
   #define SMESHOBJECT_EXPORT __declspec( dllexport )
  #else

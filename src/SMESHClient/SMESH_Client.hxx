@@ -32,7 +32,7 @@
 #include CORBA_SERVER_HEADER(SMESH_Gen)
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
-#ifdef WNT
+#ifdef WIN32
 # if defined SMESHCLIENT_EXPORTS || defined SMESHClient_EXPORTS
 #  define SMESHCLIENT_EXPORT __declspec( dllexport )
 # else

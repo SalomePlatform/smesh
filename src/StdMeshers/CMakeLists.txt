@@ -30,7 +30,6 @@ INCLUDE_DIRECTORIES(
   ${VTK_INCLUDE_DIRS}
   ${KERNEL_INCLUDE_DIRS}
   ${GUI_INCLUDE_DIRS}
-  ${PROJECT_SOURCE_DIR}/src/MEFISTO2
   ${PROJECT_SOURCE_DIR}/src/SMESHUtils
   ${PROJECT_SOURCE_DIR}/src/SMESH
   ${PROJECT_SOURCE_DIR}/src/SMESHDS
@@ -38,6 +37,12 @@ INCLUDE_DIRECTORIES(
   ${PROJECT_SOURCE_DIR}/src/Controls
   ${TBB_INCLUDES}
 )
+
+IF(SALOME_SMESH_ENABLE_MEFISTO)
+  INCLUDE_DIRECTORIES(
+    ${PROJECT_SOURCE_DIR}/src/MEFISTO2
+  )
+ENDIF(SALOME_SMESH_ENABLE_MEFISTO)
 
 # additional preprocessor / compiler flags
 ADD_DEFINITIONS(
@@ -58,9 +63,12 @@ SET(_link_LIBRARIES
   ${CAS_TKG3d}
   SMESHimpl
   SMESHDS
-  MEFISTO2D
   ${TBB_LIBS}
 )
+
+IF(SALOME_SMESH_ENABLE_MEFISTO)
+  SET(_link_LIBRARIES ${_link_LIBRARIES} MEFISTO2D)
+ENDIF(SALOME_SMESH_ENABLE_MEFISTO)
 
 # --- headers ---
 
@@ -79,7 +87,6 @@ SET(StdMeshers_HEADERS
   StdMeshers_NotConformAllowed.hxx
   StdMeshers_Regular_1D.hxx
   StdMeshers_Quadrangle_2D.hxx
-  StdMeshers_MEFISTO_2D.hxx
   StdMeshers_Hexa_3D.hxx
   StdMeshers_Penta_3D.hxx
   StdMeshers_AutomaticLength.hxx
@@ -121,6 +128,9 @@ SET(StdMeshers_HEADERS
   StdMeshers_Cartesian_3D.hxx
 )
 
+IF(SALOME_SMESH_ENABLE_MEFISTO)
+  SET(StdMeshers_HEADERS ${StdMeshers_HEADERS} StdMeshers_MEFISTO_2D.hxx)
+ENDIF(SALOME_SMESH_ENABLE_MEFISTO)
 # --- sources ---
 
 # sources / static
@@ -138,7 +148,6 @@ SET(StdMeshers_SOURCES
   StdMeshers_NotConformAllowed.cxx
   StdMeshers_Regular_1D.cxx
   StdMeshers_Quadrangle_2D.cxx
-  StdMeshers_MEFISTO_2D.cxx
   StdMeshers_Penta_3D.cxx
   StdMeshers_Hexa_3D.cxx
   StdMeshers_AutomaticLength.cxx
@@ -178,6 +187,10 @@ SET(StdMeshers_SOURCES
   StdMeshers_CartesianParameters3D.cxx
   StdMeshers_Cartesian_3D.cxx
 )
+
+IF(SALOME_SMESH_ENABLE_MEFISTO)
+  SET(StdMeshers_SOURCES ${StdMeshers_SOURCES} StdMeshers_MEFISTO_2D.cxx)
+ENDIF(SALOME_SMESH_ENABLE_MEFISTO)
 
 # --- rules ---
 

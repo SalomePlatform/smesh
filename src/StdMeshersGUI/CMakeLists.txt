@@ -51,6 +51,7 @@ ADD_DEFINITIONS(
   ${CAS_DEFINITIONS}
   ${BOOST_DEFINITIONS}
   ${OMNIORB_DEFINITIONS}
+  ${QWT_DEFINITIONS}
 )
 
 # libraries to link to
@@ -59,6 +60,7 @@ SET(_link_LIBRARIES
   ${CAS_TKernel}
   ${CAS_TKBO}
   ${CAS_TKAdvTools}
+  ${QWT_LIBRARY}
   SalomeIDLSMESH
   SMESHFiltersSelection
   SMESH

@@ -30,7 +30,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-#ifdef WNT
+#ifdef WIN32
  #if defined SMESHCONTROLS_EXPORTS || defined SMESHControls_EXPORTS
   #define SMESHCONTROLS_EXPORT __declspec( dllexport )
  #else

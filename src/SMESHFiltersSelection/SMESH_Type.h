@@ -29,7 +29,7 @@
 #ifndef SMESH_TYPE_HEADER
 #define SMESH_TYPE_HEADER
 
-#ifdef WNT
+#ifdef WIN32
  #if defined SMESHFILTERSSELECTION_EXPORTS || defined SMESHFiltersSelection_EXPORTS
   #define SMESHFILTERSSELECTION_EXPORT __declspec( dllexport )
  #else

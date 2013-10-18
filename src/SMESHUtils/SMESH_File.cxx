@@ -74,7 +74,7 @@ bool SMESH_File::open()
   int length = size();
   if ( !_map && length > 0 )
   {
-#ifdef WNT
+#ifdef WIN32
     _file = CreateFile(_name.data(), GENERIC_READ, FILE_SHARE_READ,
                        NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     bool ok = ( _file != INVALID_HANDLE_VALUE );
@@ -84,7 +84,7 @@ bool SMESH_File::open()
 #endif
     if ( ok )
     {
-#ifdef WNT
+#ifdef WIN32
       _mapObj = CreateFileMapping(_file, NULL, PAGE_READONLY, 0, (DWORD)length, NULL);
       _map = (void*) MapViewOfFile( _mapObj, FILE_MAP_READ, 0, 0, 0 );
 #else
@@ -99,7 +99,7 @@ bool SMESH_File::open()
       }
       else
       {
-#ifdef WNT
+#ifdef WIN32
         CloseHandle(_mapObj);
         CloseHandle(_file);
 #else
@@ -121,7 +121,7 @@ void SMESH_File::close()
 {
   if ( _map != NULL )
   {
-#ifdef WNT
+#ifdef WIN32
     UnmapViewOfFile(_map);
     CloseHandle(_mapObj);
     CloseHandle(_file);

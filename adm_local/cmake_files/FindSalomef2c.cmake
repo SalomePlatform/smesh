@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2013  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2013  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,18 +17,5 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-# ===============================================================
-# Files to be installed
-# ===============================================================
-
-# These files are data, module or lib files
-SET(_adm_data
-  FindCGNS.cmake
-  FindTBB.cmake
-  Findf2c.cmake 
-  FindSalomeSMESH.cmake
-  FindSalomeCGNS.cmake
-  FindSalomeTBB.cmake
-  FindSalomef2c.cmake 
-)
-INSTALL(FILES ${_adm_data} DESTINATION ${SALOME_INSTALL_CMAKE_LOCAL})
+SALOME_FIND_PACKAGE_AND_DETECT_CONFLICTS(f2c f2c_INCLUDE_DIRS 0)
+MARK_AS_ADVANCED(F2C_INCLUDE_DIRS F2C_LIBRARIES F2C_GENERATOR)

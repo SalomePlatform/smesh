@@ -27,7 +27,7 @@
 #ifndef _SMESH_SMESHDS_HXX_
 #define _SMESH_SMESHDS_HXX_
 
-#ifdef WNT
+#ifdef WIN32
  #if defined SMESHDS_EXPORTS
   #define SMESHDS_EXPORT __declspec( dllexport )
  #else
