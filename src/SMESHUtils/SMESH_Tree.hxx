@@ -115,14 +115,15 @@ protected:
   // Tree limit
   const SMESH_TreeLimit* myLimit;
 
+  // Bounding box of a tree
+  box_type*      myBox;
+
 private:
   // Build the children recursively
   void                   buildChildren();
 
   // Level of the Tree
   int            myLevel;
-
-  box_type*      myBox;
 };
 
 //===========================================================================
