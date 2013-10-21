@@ -118,12 +118,11 @@ protected:
   // Bounding box of a tree
   box_type*      myBox;
 
-private:
-  // Build the children recursively
-  void                   buildChildren();
-
   // Level of the Tree
   int            myLevel;
+
+  // Build the children recursively
+  void                   buildChildren();
 };
 
 //===========================================================================
