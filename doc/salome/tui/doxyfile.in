@@ -35,7 +35,7 @@ ABBREVIATE_BRIEF       =
 ALWAYS_DETAILED_SEC    = YES
 INLINE_INHERITED_MEMB  = YES
 FULL_PATH_NAMES        = YES
-STRIP_FROM_PATH        = @top_srcdir@ @top_builddir@
+STRIP_FROM_PATH        = @PROJECT_SOURCE_DIR@ @PROJECT_BINARY_DIR@
 STRIP_FROM_INC_PATH    = 
 SHORT_NAMES            = NO
 JAVADOC_AUTOBRIEF      = YES
@@ -96,11 +96,11 @@ WARN_LOGFILE           = log.txt
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = @top_srcdir@/src \
-			 @top_srcdir@/bin \
-			 @top_srcdir@/idl \
-			 @top_builddir@/bin \
-			 @srcdir@/input
+INPUT                  = @PROJECT_SOURCE_DIR@/src \
+			 @PROJECT_SOURCE_DIR@/bin \
+			 @PROJECT_SOURCE_DIR@/idl \
+			 @PROJECT_SOURCE_DIR@/bin \
+			 @CMAKE_CURRENT_SOURCE_DIR@/input
 FILE_PATTERNS          = *.idl *.hxx *.cxx *.h *.c *.hh *.cc @DOXYGEN_PYTHON_EXTENSION@ *.doc
 RECURSIVE              = YES
 EXCLUDE                = 
@@ -138,9 +138,9 @@ IGNORE_PREFIX          =
 GENERATE_HTML          = YES
 HTML_OUTPUT            = .
 HTML_FILE_EXTENSION    = .html
-HTML_HEADER            = @builddir@/static/header.html
-HTML_FOOTER            = @srcdir@/static/footer.html
-HTML_EXTRA_STYLESHEET  = @srcdir@/static/salome_extra.css
+HTML_HEADER            = @CMAKE_CURRENT_BINARY_DIR@/static/header.html
+HTML_FOOTER            = @CMAKE_CURRENT_SOURCE_DIR@/static/footer.html
+HTML_EXTRA_STYLESHEET  = @CMAKE_CURRENT_SOURCE_DIR@/static/salome_extra.css
 HTML_ALIGN_MEMBERS     = YES
 GENERATE_HTMLHELP      = NO
 CHM_FILE               = 
