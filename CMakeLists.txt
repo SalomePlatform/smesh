@@ -60,8 +60,8 @@ LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/adm_local/cmake_files")
 # User options
 # (some options have already been defined in KERNEL) 
 # ============
-#OPTION(SALOME_BUILD_TESTS "Build SALOME tests" ${SALOME_BUILD_TESTS}) For use in the future
-OPTION(SALOME_BUILD_DOC "Generate SALOME SMESH documentation" ${SALOME_BUILD_DOC})
+# OPTION(SALOME_BUILD_TESTS "Build SALOME tests" ON) For use in the future
+OPTION(SALOME_BUILD_DOC "Generate SALOME SMESH documentation" ON)
   
 # Advanced options:
 OPTION(SALOME_BUILD_GUI            "Enable GUI" ON)
@@ -75,9 +75,7 @@ IF(NOT WIN32)
   ADD_DEFINITIONS(-DENABLE_MEFISTO)
 ENDIF(NOT WIN32)
 
-
 MARK_AS_ADVANCED(SALOME_BUILD_GUI SALOME_SMESH_USE_CGNS SALOME_SMESH_USE_TBB)
-
 
 # Prerequisites
 # =============
@@ -124,7 +122,7 @@ IF(SALOME_BUILD_GUI)
   IF(EXISTS ${GUI_ROOT_DIR})
     LIST(APPEND CMAKE_MODULE_PATH "${GUI_ROOT_DIR}/adm_local/cmake_files")
     FIND_PACKAGE(SalomeGUI)
-
+    
     ##
     ## Prerequisites From GUI:
     ##
@@ -148,6 +146,13 @@ SET(GEOM_ROOT_DIR $ENV{GEOM_ROOT_DIR} CACHE PATH "Path to the Salome GEOM")
 IF(EXISTS ${GEOM_ROOT_DIR})
   LIST(APPEND CMAKE_MODULE_PATH "${GEOM_ROOT_DIR}/adm_local/cmake_files")
   FIND_PACKAGE(SalomeGEOM REQUIRED)
+  ADD_DEFINITIONS(${GEOM_DEFINITIONS})
+  INCLUDE_DIRECTORIES(${GEOM_INCLUDE_DIRS})
+  IF(SALOME_BUILD_GUI)
+    IF(NOT SALOME_GEOM_BUILD_GUI)
+      MESSAGE(FATAL_ERROR "We absolutely need a Salome GEOM with GUI, please set SALOME_BUILD_GUI=ON in GEOM module")
+    ENDIF(NOT SALOME_GEOM_BUILD_GUI)
+  ENDIF(SALOME_BUILD_GUI)
 ELSE(EXISTS ${GEOM_ROOT_DIR})
   MESSAGE(FATAL_ERROR "We absolutely need a Salome GEOM, please define GEOM_ROOT_DIR")
 ENDIF(EXISTS ${GEOM_ROOT_DIR})
