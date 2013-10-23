@@ -83,7 +83,7 @@ MATH(EXPR _range "${_list_len}-1")
 FOREACH(_p RANGE ${_range})  
   LIST(GET _PREREQ            ${_p} _pkg    )
   LIST(GET _PREREQ_CONFIG_DIR ${_p} _pkg_dir)
-  IF(_pkg_dir)
+  IF(NOT _pkg_dir STREQUAL "")
      MESSAGE(STATUS "===> Reloading targets from ${_pkg} ...")
      FIND_PACKAGE(${_pkg} REQUIRED NO_MODULE 
           PATHS "${_pkg_dir}" 
