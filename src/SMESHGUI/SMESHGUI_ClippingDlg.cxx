@@ -79,8 +79,6 @@
 #include <vtkCallbackCommand.h>
 #include <vtkImplicitPlaneWidget.h>
 
-#include <math.h>
-
 #define SPACING 6
 #define MARGIN  11
 #define SIZEFACTOR 1.1
@@ -1703,10 +1701,10 @@ void SMESHGUI_ClippingDlg::absolutePlaneToRelative ( double theOrigin[3], double
   else if( aDirection[0] < 0 && aDirection[1] < 0 && aDirection[2] < 0 && aRot[0] > 0 ) {
     aRot[0] = aRotation1 + 270.0; aRot[1] = aRotation2 + 90.0; }
 
-  SliderRotation1HasMoved( round( aRot[0] ) );
-  SliderRotation1->setValue( round( aRot[0] ) );
-  SliderRotation2HasMoved( round( aRot[1] ) );
-  SliderRotation2->setValue( round( aRot[1] ) );
+  SliderRotation1HasMoved( qRound( aRot[0] ) );
+  SliderRotation1->setValue( qRound( aRot[0] ) );
+  SliderRotation2HasMoved( qRound( aRot[1] ) );
+  SliderRotation2->setValue( qRound( aRot[1] ) );
 
   int aCurPlaneIndex = ComboBoxPlanes->currentIndex();
   const SMESH::TPlaneData& aPlaneData = myPlanes[ aCurPlaneIndex ];
@@ -1722,8 +1720,8 @@ void SMESHGUI_ClippingDlg::absolutePlaneToRelative ( double theOrigin[3], double
   else if( aDist < 0.0 )
     aDist = 0.0;
 
-  SliderDistanceHasMoved( round( aDist*100 ) );
-  SliderDistance->setValue( round( aDist*100 ) );
+  SliderDistanceHasMoved( qRound( aDist*100 ) );
+  SliderDistance->setValue( qRound( aDist*100 ) );
   return;
 }
 
