@@ -16,8 +16,9 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-
-ADD_SUBDIRECTORY(Doc)
+IF(SALOME_BUILD_DOC)
+  ADD_SUBDIRECTORY(Doc)
+ENDIF(SALOME_BUILD_DOC)
 ADD_SUBDIRECTORY(CreeDocuments)
 IF(SALOME_BUILD_GUI)
   ADD_SUBDIRECTORY(Gui)
