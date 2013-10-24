@@ -33,8 +33,19 @@
 #include <string>
 #include <map>
 
-class MeshJobManager_i: public virtual POA_MESHJOB::MeshJobManager,
-                        public Engines_Component_i
+#ifdef WIN32
+ #if defined MESHJOBMANAGERENGINE_EXPORTS || defined MeshJobManagerEngine_EXPORTS
+  #define MESHJOBMANAGERENGINE_EXPORT __declspec( dllexport )
+ #else
+  #define MESHJOBMANAGERENGINE_EXPORT __declspec( dllimport )
+ #endif
+#else
+ #define MESHJOBMANAGERENGINE_EXPORT
+#endif
+
+
+class MESHJOBMANAGERENGINE_EXPORT MeshJobManager_i: public virtual POA_MESHJOB::MeshJobManager,
+                                                    public Engines_Component_i
 {
 public:
   MeshJobManager_i(CORBA::ORB_ptr orb, PortableServer::POA_ptr poa,
