@@ -4117,9 +4117,9 @@ class Mesh:
         self.mesh.SetParameters(Parameters)
         return Mesh( self.smeshpyD, self.geompyD, mesh )
 
-    ## Finds groups of ajacent nodes within Tolerance.
+    ## Finds groups of adjacent nodes within Tolerance.
     #  @param Tolerance the value of tolerance
-    #  @return the list of groups of nodes
+    #  @return the list of pairs of nodes IDs (e.g. [[1,12],[25,4]])
     #  @ingroup l2_modif_trsf
     def FindCoincidentNodes (self, Tolerance):
         return self.editor.FindCoincidentNodes(Tolerance)
@@ -4128,7 +4128,7 @@ class Mesh:
     #  @param Tolerance the value of tolerance
     #  @param SubMeshOrGroup SubMesh or Group
     #  @param exceptNodes list of either SubMeshes, Groups or node IDs to exclude from search
-    #  @return the list of groups of nodes
+    #  @return the list of pairs of nodes IDs (e.g. [[1,12],[25,4]])
     #  @ingroup l2_modif_trsf
     def FindCoincidentNodesOnPart (self, SubMeshOrGroup, Tolerance, exceptNodes=[]):
         unRegister = genObjUnRegister()
@@ -4142,14 +4142,14 @@ class Mesh:
         return self.editor.FindCoincidentNodesOnPartBut(SubMeshOrGroup, Tolerance,exceptNodes)
 
     ## Merges nodes
-    #  @param GroupsOfNodes the list of groups of nodes
+    #  @param GroupsOfNodes a list of pairs of nodes IDs for merging (e.g. [[1,12],[25,4]])
     #  @ingroup l2_modif_trsf
     def MergeNodes (self, GroupsOfNodes):
         self.editor.MergeNodes(GroupsOfNodes)
 
     ## Finds the elements built on the same nodes.
     #  @param MeshOrSubMeshOrGroup Mesh or SubMesh, or Group of elements for searching
-    #  @return a list of groups of equal elements
+    #  @return the list of pairs of equal elements IDs (e.g. [[1,12],[25,4]])
     #  @ingroup l2_modif_trsf
     def FindEqualElements (self, MeshOrSubMeshOrGroup):
         if ( isinstance( MeshOrSubMeshOrGroup, Mesh )):
@@ -4157,7 +4157,7 @@ class Mesh:
         return self.editor.FindEqualElements(MeshOrSubMeshOrGroup)
 
     ## Merges elements in each given group.
-    #  @param GroupsOfElementsID groups of elements for merging
+    #  @param GroupsOfElementsID a list of pairs of elements IDs for merging (e.g. [[1,12],[25,4]])
     #  @ingroup l2_modif_trsf
     def MergeElements(self, GroupsOfElementsID):
         self.editor.MergeElements(GroupsOfElementsID)
