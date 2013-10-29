@@ -46,6 +46,9 @@ SET_AND_CHECK(SMESH_INCLUDE_DIRS "${SMESH_ROOT_DIR_EXP}/@SALOME_INSTALL_HEADERS@
 SET(SMESH_INCLUDE_DIRS "${SMESH_INCLUDE_DIRS};@_SalomeSMESH_EXTRA_HEADERS@")
 SET(SMESH_DEFINITIONS "@GEOM_DEFINITIONS@")
 
+# Package specific environment variables
+@_SalomeSMESH_EXTRA_ENV_FULL@
+
 #### Now the specificities
 
 # Options exported by the package:
