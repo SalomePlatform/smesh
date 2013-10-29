@@ -74,6 +74,11 @@ SET(SMESH_Swig_SOURCES
   ${SMESH_Swig_HEADERS}
 )
 
+# workaround about SWIG_ADD_MODULE bug: remove duplicates in include directories
+GET_DIRECTORY_PROPERTY(_cmake_include_directories INCLUDE_DIRECTORIES)
+LIST(REMOVE_DUPLICATES _cmake_include_directories)
+SET_DIRECTORY_PROPERTIES(PROPERTIES INCLUDE_DIRECTORIES "${_cmake_include_directories}")
+
 # swig flags
 SET_SOURCE_FILES_PROPERTIES(libSMESH_Swig.i PROPERTIES CPLUSPLUS ON)
 SET_SOURCE_FILES_PROPERTIES(libSMESH_Swig.i PROPERTIES SWIG_DEFINITIONS "-shadow")
