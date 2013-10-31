@@ -40,6 +40,7 @@ ADD_DEFINITIONS(
 # libraries to link to
 SET(_link_LIBRARIES
   ${CGNS_LIBRARIES}
+  ${HDF5_LIBRARIES}
   MeshDriver
   SMESHUtils
 )
