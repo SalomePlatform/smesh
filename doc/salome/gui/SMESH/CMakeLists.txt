@@ -17,8 +17,6 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-INCLUDE(${KERNEL_ROOT_DIR}/salome_adm/cmake_files/SalomeMacros.cmake)
-
 SALOME_CONFIGURE_FILE(doxyfile.in doxyfile)
 SALOME_CONFIGURE_FILE(doxyfile_py.in doxyfile_py)
 SALOME_CONFIGURE_FILE(static/header.html.in ${CMAKE_CURRENT_BINARY_DIR}/static/header.html)
@@ -27,44 +25,20 @@ SALOME_CONFIGURE_FILE(static/header_py.html.in ${CMAKE_CURRENT_BINARY_DIR}/stati
 SALOME_INSTALL_SCRIPTS(collect_mesh_methods.py ${SALOME_INSTALL_BINS})
             
 SET(DOC_SMESH_MeshersList StdMeshers)
-SET(f1 "${CMAKE_CURRENT_SOURCE_DIR}/collect_mesh_methods.py")
-SET(f "$ENV{KERNEL_ROOT_DIR}/bin/salome/prepare_generating_doc.py")
-IF(WIN32)
-  STRING(REPLACE "/" "\\" f ${f})
-  STRING(REPLACE "/" "\\" f1 ${f1})
-  STRING(REPLACE "/" "\\" SCR "@SET PYTHONPATH=${OMNIORB_ROOT_USER}/lib/x86_win32\;%PYTHONPATH%
-  @SET PYTHONPATH=${OMNIORB_ROOT_USER}/lib/python\;%PYTHONPATH%
-  @SET PATH=${OMNIORB_ROOT_USER}/lib/x86_win32\;%PATH%
-  @SET PATH=$ENV{KERNEL_ROOT_DIR}/lib/salome\;%PATH%
-  @SET PYTHONPATH=$ENV{KERNEL_ROOT_DIR}/bin/salome\;%PYTHONPATH%
-  @SET PYTHONPATH=$ENV{KERNEL_ROOT_DIR}/lib/python${PYTHON_VERSION}/site-packages/salome\;%PYTHONPATH%
-  @SET PYTHONPATH=$ENV{GEOM_ROOT_DIR}/lib/python${PYTHON_VERSION}/site-packages/salome\;%PYTHONPATH%
-  @SET PYTHONPATH=$ENV{GEOM_ROOT_DIR}/bin/salome\;%PYTHONPATH%
-  @SET PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib/python${PYTHON_VERSION}/site-packages/salome\;%PYTHONPATH%
-  @SET PYTHONPATH=${CMAKE_INSTALL_PREFIX}/bin/salome\;%PYTHONPATH%
-  @SET SMESH_MeshersList=${DOC_SMESH_MeshersList}
-  ")
-  SET(EXT "bat")
-  SET(CALL_STR "call")
-ELSE(WIN32)
-  SET(DOC_PYTHONPATH "${CMAKE_INSTALL_PREFIX}/bin/salome:${CMAKE_INSTALL_PREFIX}/lib/python${PYTHON_VERSION}/site-packages/salome:${GEOM_ROOT_DIR}/bin/salome:${GEOM_ROOT_DIR}/lib/python${PYTHON_VERSION}/site-packages/salome:${KERNEL_ROOT_DIR}/bin/salome:${KERNEL_ROOT_DIR}/lib/python${PYTHON_VERSION}/site-packages/salome:${OMNIORB_ROOT_USER}/lib/python${PYTHON_VERSION}/site-packages:${OMNIORB_ROOT_USER}/lib64/python${PYTHON_VERSION}/site-packages")
-  SET(DOC_LD_LIBRARY_PATH "${CMAKE_INSTALL_PREFIX}/lib/salome:${GEOM_ROOT_DIR}/lib/salome:${KERNEL_ROOT_DIR}/lib/salome")
-  SET(SCR "export PYTHONPATH=${DOC_PYTHONPATH}:\${PYTHONPATH}
-  export LD_LIBRARY_PATH=${DOC_LD_LIBRARY_PATH}:\${LD_LIBRARY_PATH}
-  export SMESH_MeshersList=${DOC_SMESH_MeshersList}
-  ")
-  SET(EXT "sh")
-  SET(CALL_STR ".")
-ENDIF(WIN32)
+SET(smesh_file "${CMAKE_CURRENT_SOURCE_DIR}/collect_mesh_methods.py")
+SET(kernel_file "${KERNEL_ROOT_DIR}/bin/salome/prepare_generating_doc.py")
 
-FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/tmp_env.${EXT} "${SCR}")
+SALOME_ACCUMULATE_ENVIRONMENT(SMESH_MeshersList NOCHECK ${DOC_SMESH_MeshersList})
+
+SET(_cmd_options ${smesh_file} -d -o tmp/smeshBuilder.py StdMeshers)
+SALOME_GENERATE_ENVIRONMENT_SCRIPT(_cmd env_script "${PYTHON_EXECUTABLE}" "${_cmd_options}")            
 
 ADD_CUSTOM_TARGET(usr_docs ${CMAKE_COMMAND} -E make_directory tmp1
   COMMAND ${CMAKE_COMMAND} -E make_directory tmp2
-  COMMAND ${PYTHON_EXECUTABLE} ${f} -o tmp2/smeshBuilder.py ${CMAKE_SOURCE_DIR}/src/SMESH_SWIG/smeshBuilder.py
-  COMMAND ${PYTHON_EXECUTABLE} ${f} -o tmp2/smesh_algorithm.py ${CMAKE_SOURCE_DIR}/src/SMESH_SWIG/smesh_algorithm.py
-  COMMAND ${PYTHON_EXECUTABLE} ${f} -o tmp2/StdMeshersBuilder.py ${CMAKE_SOURCE_DIR}/src/SMESH_SWIG/StdMeshersBuilder.py
-  COMMAND ${CALL_STR} ${CMAKE_CURRENT_BINARY_DIR}/tmp_env.${EXT} && ${PYTHON_EXECUTABLE} ${f1} -o tmp1/smeshBuilder.py StdMeshers
+  COMMAND ${PYTHON_EXECUTABLE} ${kernel_file} -o tmp2/smeshBuilder.py ${CMAKE_SOURCE_DIR}/src/SMESH_SWIG/smeshBuilder.py
+  COMMAND ${PYTHON_EXECUTABLE} ${kernel_file} -o tmp2/smesh_algorithm.py ${CMAKE_SOURCE_DIR}/src/SMESH_SWIG/smesh_algorithm.py
+  COMMAND ${PYTHON_EXECUTABLE} ${kernel_file} -o tmp2/StdMeshersBuilder.py ${CMAKE_SOURCE_DIR}/src/SMESH_SWIG/StdMeshersBuilder.py
+  COMMAND ${_cmd}
   COMMAND ${DOXYGEN_EXECUTABLE} doxyfile_py
   COMMAND ${DOXYGEN_EXECUTABLE} doxyfile
   COMMAND ${CMAKE_COMMAND} -E remove_directory tmp1
