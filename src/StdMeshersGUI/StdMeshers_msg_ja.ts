@@ -2,26 +2,41 @@
 <!DOCTYPE TS>
 <TS>
   <context>
+    <name>StdMeshersGUI_StdHypothesisCreator</name>
+    <message>
+      <source>TO_IGNORE_EDGES_OR_NOT</source>
+      <translation>TO_IGNORE_EDGES_OR_NOT</translation>
+    </message>
+    <message>
+      <source>NOT_TO_IGNORE_EDGES</source>
+      <translation>NOT_TO_IGNORE_EDGES</translation>
+    </message>
+    <message>
+      <source>TO_IGNORE_EDGES</source>
+      <translation>TO_IGNORE_EDGES</translation>
+    </message>
+  </context>
+  <context>
     <name>@default</name>
     <message>
       <source>SMESH_ARITHMETIC_1D_HYPOTHESIS</source>
-      <translation>算数 1 D</translation>
+      <translation>算術 1 d</translation>
     </message>
     <message>
       <source>SMESH_ARITHMETIC_1D_PARAM</source>
-      <translation>算術の理由</translation>
+      <translation>算術右</translation>
     </message>
     <message>
       <source>SMESH_ARITHMETIC_1D_TITLE</source>
-      <translation>仮説構築</translation>
+      <translation>仮定の構成</translation>
     </message>
     <message>
       <source>SMESH_AUTOMATIC_LENGTH_HYPOTHESIS</source>
-      <translation>長さの自動調整</translation>
+      <translation>自動の長さ</translation>
     </message>
     <message>
       <source>SMESH_AUTOMATIC_LENGTH_TITLE</source>
-      <translation>仮説構築</translation>
+      <translation>仮定の構成</translation>
     </message>
     <message>
       <source>SMESH_CONV_MODE</source>
@@ -29,11 +44,11 @@
     </message>
     <message>
       <source>SMESH_CUT_NEG_MODE</source>
-      <translation>否定的なカットします。</translation>
+      <translation>負のセクション</translation>
     </message>
     <message>
       <source>SMESH_DEFLECTION1D_HYPOTHESIS</source>
-      <translation>たわみ 1 D</translation>
+      <translation>変形 d</translation>
     </message>
     <message>
       <source>SMESH_DEFLECTION1D_PARAM</source>
@@ -41,7 +56,7 @@
     </message>
     <message>
       <source>SMESH_DEFLECTION1D_TITLE</source>
-      <translation>仮説構築</translation>
+      <translation>仮定の構成</translation>
     </message>
     <message>
       <source>SMESH_DENSITY_FUNC</source>
@@ -53,7 +68,7 @@
     </message>
     <message>
       <source>SMESH_DISTR_EXPR</source>
-      <translation>ピエゾ密度分布</translation>
+      <translation>分析の密度分布</translation>
     </message>
     <message>
       <source>SMESH_DISTR_REGULAR</source>
@@ -61,11 +76,11 @@
     </message>
     <message>
       <source>SMESH_DISTR_SCALE</source>
-      <translation>規模の分布</translation>
+      <translation>幾何学的進行</translation>
     </message>
     <message>
       <source>SMESH_DISTR_TAB</source>
-      <translation>テーブルの密度分布</translation>
+      <translation>密度のテーブル</translation>
     </message>
     <message>
       <source>SMESH_DISTR_TYPE</source>
@@ -73,15 +88,15 @@
     </message>
     <message>
       <source>SMESH_END_LENGTH_PARAM</source>
-      <translation>最後の長さ</translation>
+      <translation>最終的な長さ</translation>
     </message>
     <message>
       <source>SMESH_EXPR_FUNC</source>
-      <translation>密度関数</translation>
+      <translation>密度の表現</translation>
     </message>
     <message>
       <source>SMESH_EXP_MODE</source>
-      <translation>指数</translation>
+      <translation>出展者</translation>
     </message>
     <message>
       <source>SMESH_FINENESS_PARAM</source>
@@ -89,7 +104,7 @@
     </message>
     <message>
       <source>SMESH_FUNC_DOMAIN</source>
-      <translation>警告: 関数はセグメント [0..1] に定義する必要があります。</translation>
+      <translation>警告: 関数 [0.1] のセグメントを定義しなければなりません</translation>
     </message>
     <message>
       <source>SMESH_INSERT_ROW</source>
@@ -101,19 +116,19 @@
     </message>
     <message>
       <source>SMESH_LAYERS_DISTRIBUTION</source>
-      <translation>1 次元仮説</translation>
+      <translation>仮説 1 d</translation>
     </message>
     <message>
       <source>SMESH_LAYER_DISTRIBUTION_HYPOTHESIS</source>
-      <translation>層の分布</translation>
+      <translation>レイヤーの分布</translation>
     </message>
     <message>
       <source>SMESH_LAYER_DISTRIBUTION_TITLE</source>
-      <translation>仮説構築</translation>
+      <translation>仮定の構成</translation>
     </message>
     <message>
       <source>SMESH_LOCAL_LENGTH_HYPOTHESIS</source>
-      <translation>ローカルの長さ</translation>
+      <translation>平均の長さ</translation>
     </message>
     <message>
       <source>SMESH_LOCAL_LENGTH_PARAM</source>
@@ -125,15 +140,15 @@
     </message>
     <message>
       <source>SMESH_LOCAL_LENGTH_TITLE</source>
-      <translation>仮説構築</translation>
+      <translation>仮定の構成</translation>
     </message>
     <message>
       <source>SMESH_FIXED_POINTS_1D_HYPOTHESIS</source>
-      <translation>固定ポイント 1 D</translation>
+      <translation>固定ポイント 1 d</translation>
     </message>
     <message>
       <source>SMESH_FIXED_POINTS_1D_TITLE</source>
-      <translation>仮説構築</translation>
+      <translation>仮定の構成</translation>
     </message>
     <message>
       <source>SMESH_MAX_LENGTH_HYPOTHESIS</source>
@@ -141,19 +156,19 @@
     </message>
     <message>
       <source>SMESH_CARTESIAN_PARAMS_HYPOTHESIS</source>
-      <translation>体継ぎ手パラメーター</translation>
+      <translation>体の継ぎ手パラメーター</translation>
     </message>
     <message>
       <source>SMESH_USE_PREESTIMATED_LENGTH</source>
-      <translation>伴う長さを使用します。</translation>
+      <translation>予測長さの使用</translation>
     </message>
     <message>
       <source>SMESH_VISCOUS_LAYERS_HYPOTHESIS</source>
-      <translation>粘性層</translation>
+      <translation>境界層</translation>
     </message>
     <message>
       <source>SMESH_VISCOUS_LAYERS_TITLE</source>
-      <translation>仮説構築</translation>
+      <translation>仮定の構成</translation>
     </message>
     <message>
       <source>SMESH_TOTAL_THICKNESS</source>
@@ -161,47 +176,55 @@
     </message>
     <message>
       <source>SMESH_STRETCH_FACTOR</source>
-      <translation>伸縮係数</translation>
+      <translation>スケール ファクター</translation>
     </message>
     <message>
       <source>SMESH_FACES_WO_LAYERS</source>
-      <translation>顔にレイヤー （入り江と oulets）</translation>
+      <translation>顔なし層 limite\n (入力と出力)</translation>
     </message>
     <message>
       <source>SMESH_EDGES_WO_LAYERS</source>
-      <translation>エッジ層 （入り江と oulets） が不要</translation>
+      <translation>エッジ層 limite\n (入力と出力) なし</translation>
+    </message>
+    <message>
+      <source>SMESH_FACES_WITH_LAYERS</source>
+      <translation>SMESH_FACES_WITH_LAYERS</translation>
+    </message>
+    <message>
+      <source>SMESH_EDGES_WITH_LAYERS</source>
+      <translation>SMESH_EDGES_WITH_LAYERS</translation>
     </message>
     <message>
       <source>SMESH_MAX_LENGTH_TITLE</source>
-      <translation>仮説構築</translation>
+      <translation>仮定の構成</translation>
     </message>
     <message>
       <source>SMESH_CARTESIAN_PARAMS_TITLE</source>
-      <translation>仮説構築</translation>
+      <translation>仮定の構成</translation>
     </message>
     <message>
       <source>SMESH_MAX_ELEMENT_AREA_HYPOTHESIS</source>
-      <translation>最大。要素エリア</translation>
+      <translation>メッシュの最大範囲</translation>
     </message>
     <message>
       <source>SMESH_MAX_ELEMENT_AREA_PARAM</source>
-      <translation>最大。エリア</translation>
+      <translation>最大範囲</translation>
     </message>
     <message>
       <source>SMESH_MAX_ELEMENT_AREA_TITLE</source>
-      <translation>仮説構築</translation>
+      <translation>仮定の構成</translation>
     </message>
     <message>
       <source>SMESH_MAX_ELEMENT_VOLUME_HYPOTHESIS</source>
-      <translation>最大。要素音量</translation>
+      <translation>最大ボリューム メッシュの</translation>
     </message>
     <message>
       <source>SMESH_MAX_ELEMENT_VOLUME_PARAM</source>
-      <translation>最大。ボリューム</translation>
+      <translation>最大ボリューム</translation>
     </message>
     <message>
       <source>SMESH_MAX_ELEMENT_VOLUME_TITLE</source>
-      <translation>仮説構築</translation>
+      <translation>仮定の構成</translation>
     </message>
     <message>
       <source>SMESH_NB_SEGMENTS_HYPOTHESIS</source>
@@ -213,11 +236,11 @@
     </message>
     <message>
       <source>SMESH_NB_SEGMENTS_SCALE_PARAM</source>
-      <translation>尺度係数</translation>
+      <translation>スケール ファクター</translation>
     </message>
     <message>
       <source>SMESH_NB_SEGMENTS_TITLE</source>
-      <translation>仮説構築</translation>
+      <translation>仮定の構成</translation>
     </message>
     <message>
       <source>SMESH_NO_CONV</source>
@@ -225,95 +248,95 @@
     </message>
     <message>
       <source>SMESH_NUMBER_OF_LAYERS</source>
-      <translation>層の数</translation>
+      <translation>層数</translation>
     </message>
     <message>
       <source>SMESH_NUMBER_OF_LAYERS_HYPOTHESIS</source>
-      <translation>ラジアル プリズム パラメーター</translation>
+      <translation>放射状のプリズムのパラメーター</translation>
     </message>
     <message>
       <source>SMESH_NUMBER_OF_LAYERS_2D_HYPOTHESIS</source>
-      <translation>放射状の四角形パラメーター</translation>
+      <translation>放射状の中庭のパラメーター</translation>
     </message>
     <message>
       <source>SMESH_NUMBER_OF_LAYERS_TITLE</source>
-      <translation>仮説構築</translation>
+      <translation>仮定の構成</translation>
     </message>
     <message>
       <source>SMESH_NUMBER_OF_LAYERS_2D_TITLE</source>
-      <translation>仮説構築</translation>
+      <translation>仮定の構成</translation>
     </message>
     <message>
       <source>SMESH_PROJECTION_SOURCE_1D_HYPOTHESIS</source>
-      <translation>投射の源 1 D</translation>
+      <translation>1D 射影のソース</translation>
     </message>
     <message>
       <source>SMESH_PROJECTION_SOURCE_1D_TITLE</source>
-      <translation>仮説構築</translation>
+      <translation>仮定の構成</translation>
     </message>
     <message>
       <source>SMESH_PROJECTION_SOURCE_2D_HYPOTHESIS</source>
-      <translation>投影ソース 2 D</translation>
+      <translation>2 D 投影用のソース</translation>
     </message>
     <message>
       <source>SMESH_PROJECTION_SOURCE_2D_TITLE</source>
-      <translation>仮説構築</translation>
+      <translation>仮定の構成</translation>
     </message>
     <message>
       <source>SMESH_PROJECTION_SOURCE_3D_HYPOTHESIS</source>
-      <translation>投影ソースの 3 D</translation>
+      <translation>ソースの 3 D プロジェクション</translation>
     </message>
     <message>
       <source>SMESH_PROJECTION_SOURCE_3D_TITLE</source>
-      <translation>仮説構築</translation>
+      <translation>仮定の構成</translation>
     </message>
     <message>
       <source>SMESH_IMPORT_SOURCE_1D_HYPOTHESIS</source>
-      <translation>ソース エッジ</translation>
+      <translation>エッジのソース</translation>
     </message>
     <message>
       <source>SMESH_IMPORT_SOURCE_1D_TITLE</source>
-      <translation>仮説構築</translation>
+      <translation>仮定の構成</translation>
     </message>
     <message>
       <source>SMESH_IMPORT_SOURCE_2D_HYPOTHESIS</source>
-      <translation>ソース顔</translation>
+      <translation>顔のソース</translation>
     </message>
     <message>
       <source>SMESH_IMPORT_SOURCE_2D_TITLE</source>
-      <translation>仮説構築</translation>
+      <translation>仮定の構成</translation>
     </message>
     <message>
       <source>SMESH_REMOVE_ROW</source>
-      <translation>行を削除します。</translation>
+      <translation>行を削除</translation>
     </message>
     <message>
       <source>SMESH_REVERSED_EDGES</source>
-      <translation>逆のエッジ</translation>
+      <translation>逆端</translation>
     </message>
     <message>
       <source>SMESH_FIXED_POINTS</source>
-      <translation>固定ポイント</translation>
+      <translation>固定点</translation>
     </message>
     <message>
       <source>SMESH_RANGE</source>
-      <translation>範囲</translation>
+      <translation>間隔</translation>
     </message>
     <message>
       <source>SMESH_NB_SEGMENTS</source>
-      <translation>注意セグメント</translation>
+      <translation>Nb に登録セグメント</translation>
     </message>
     <message>
       <source>SMESH_SAME_NB_SEGMENTS</source>
-      <translation>同じ注意セグメントすべての間隔</translation>
+      <translation>各間隔で同じ nb に登録セグメント</translation>
     </message>
     <message>
       <source>SMESH_BASE_VERTEX</source>
-      <translation>ベース頂点</translation>
+      <translation>基準点</translation>
     </message>
     <message>
       <source>SMESH_SEGMENT_LENGTH_AROUND_VERTEX_HYPOTHESIS</source>
-      <translation>頂点の周りのセグメントの長さ</translation>
+      <translation>点をセグメントの長さ</translation>
     </message>
     <message>
       <source>SMESH_SEGMENT_LENGTH_AROUND_VERTEX_PARAM</source>
@@ -321,15 +344,15 @@
     </message>
     <message>
       <source>SMESH_SEGMENT_LENGTH_AROUND_VERTEX_TITLE</source>
-      <translation>仮説構築</translation>
+      <translation>仮定の構成</translation>
     </message>
     <message>
       <source>SMESH_SOURCE_3DSHAPE</source>
-      <translation>元の 3 D 図形</translation>
+      <translation>3D オブジェクト</translation>
     </message>
     <message>
       <source>SMESH_SOURCE_EDGE</source>
-      <translation>ソース エッジ</translation>
+      <translation>エッジ</translation>
     </message>
     <message>
       <source>SMESH_SOURCE_EDGES</source>
@@ -337,7 +360,7 @@
     </message>
     <message>
       <source>SMESH_SOURCE_FACE</source>
-      <translation>ソース顔</translation>
+      <translation>フェース</translation>
     </message>
     <message>
       <source>SMESH_SOURCE_FACES</source>
@@ -345,63 +368,63 @@
     </message>
     <message>
       <source>SMESH_SOURCE_MESH</source>
-      <translation>ソース メッシュ</translation>
+      <translation>メッシュ</translation>
     </message>
     <message>
       <source>SMESH_COPY_MESH</source>
-      <translation>メッシュをコピーするには</translation>
+      <translation>メッシュをコピーします。</translation>
     </message>
     <message>
       <source>SMESH_TO_COPY_GROUPS</source>
-      <translation>グループをコピーするには</translation>
+      <translation>グループのコピー</translation>
     </message>
     <message>
       <source>SMESH_SOURCE_VERTEX</source>
-      <translation>ソース頂点</translation>
+      <translation>ポイントのソース</translation>
     </message>
     <message>
       <source>SMESH_SOURCE_VERTEX1</source>
-      <translation>ソース頂点 1</translation>
+      <translation>ポイント ソース 1</translation>
     </message>
     <message>
       <source>SMESH_SOURCE_VERTEX2</source>
-      <translation>ソース頂点 2</translation>
+      <translation>ポイント ソース 2</translation>
     </message>
     <message>
       <source>SMESH_START_END_LENGTH_HYPOTHESIS</source>
-      <translation>開始と終了ローカルの長さ</translation>
+      <translation>開始し、終了のローカルの長さ</translation>
     </message>
     <message>
       <source>SMESH_START_END_LENGTH_TITLE</source>
-      <translation>仮説構築</translation>
+      <translation>仮定の構成</translation>
     </message>
     <message>
       <source>SMESH_START_LENGTH_PARAM</source>
-      <translation>長さを開始します。</translation>
+      <translation>初期の長さ</translation>
     </message>
     <message>
       <source>SMESH_TAB_FUNC</source>
-      <translation>テーブル関数</translation>
+      <translation>テーブル値関数の</translation>
     </message>
     <message>
       <source>SMESH_TARGET_VERTEX</source>
-      <translation>ターゲットの頂点</translation>
+      <translation>ターゲット ポイント</translation>
     </message>
     <message>
       <source>SMESH_TARGET_VERTEX1</source>
-      <translation>ターゲット頂点 1</translation>
+      <translation>ポイント対象 1</translation>
     </message>
     <message>
       <source>SMESH_TARGET_VERTEX2</source>
-      <translation>ターゲット頂点 2</translation>
+      <translation>ポイント対象 2</translation>
     </message>
     <message>
       <source>SMESH_QUADRANGLE_PARAMS_HYPOTHESIS</source>
-      <translation>四角形のパラメーター</translation>
+      <translation>四角形のメッシュをパラメーター</translation>
     </message>
     <message>
       <source>SMESH_QUADRANGLE_PARAMS_TITLE</source>
-      <translation>仮説構築</translation>
+      <translation>仮定の構成</translation>
     </message>
     <message>
       <source>SMESH_QUAD_TYPE</source>
@@ -416,15 +439,15 @@
     </message>
     <message>
       <source>SMESH_QUAD_TYPE_1</source>
-      <translation>三角形の好み</translation>
+      <translation>特権を持つ三角形</translation>
     </message>
     <message>
       <source>SMESH_QUAD_TYPE_2</source>
-      <translation>四角形の設定</translation>
+      <translation>特権の中庭</translation>
     </message>
     <message>
       <source>SMESH_QUAD_TYPE_3</source>
-      <translation>（逆に） の四角形の設定</translation>
+      <translation>特権の中庭 (反転)</translation>
     </message>
     <message>
       <source>SMESH_QUAD_TYPE_4</source>
@@ -439,7 +462,7 @@
     </message>
     <message>
       <source>CREATE</source>
-      <translation>作成します。</translation>
+      <translation>作成</translation>
     </message>
     <message>
       <source>EDIT</source>
@@ -462,7 +485,7 @@
     </message>
     <message>
       <source>AXIS_Z</source>
-      <translation>軸、Z 軸</translation>
+      <translation>Z 軸</translation>
     </message>
   </context>
   <context>
