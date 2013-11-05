@@ -1590,6 +1590,7 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode)
     aFilter->RegisterCellsWithType(VTK_QUADRATIC_TETRA);
     aFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
     aFilter->RegisterCellsWithType(VTK_TRIQUADRATIC_HEXAHEDRON);
+    aFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
     aFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
     aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
 //#ifdef VTK_HAVE_POLYHEDRON
