@@ -60,7 +60,7 @@ LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/adm_local/cmake_files")
 # User options
 # (some options have already been defined in KERNEL) 
 # ============
-# OPTION(SALOME_BUILD_TESTS "Build SALOME tests" ON) For use in the future
+OPTION(SALOME_BUILD_TESTS "Build SALOME tests" ON)
 OPTION(SALOME_BUILD_DOC "Generate SALOME SMESH documentation" ON)
   
 # Advanced options:
@@ -108,7 +108,11 @@ FIND_PACKAGE(SalomeHDF5 REQUIRED COMPONENTS C)
 IF(SALOME_USE_MPI)
   FIND_PACKAGE(SalomeMPI) # needed for doc generation by Sphinx
 ENDIF()
-
+IF(SALOME_BUILD_TESTS)
+  ENABLE_TESTING()
+  FIND_PACKAGE(SalomeCppUnit)
+  SALOME_LOG_OPTIONAL_PACKAGE(CppUnit SALOME_BUILD_TESTS)
+ENDIF()
 IF(SALOME_BUILD_DOC)
   FIND_PACKAGE(SalomeDoxygen)
   FIND_PACKAGE(SalomeSphinx)
