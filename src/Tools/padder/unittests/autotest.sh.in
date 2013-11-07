@@ -33,7 +33,7 @@ listfiles="\
     unittests/usecase_meshJobManager.py \
     gui/inputdata.py"
 
-INSTALL_DIR=@prefix@
+INSTALL_DIR=@CMAKE_INSTALL_PREFIX@
 PYTHON_DIR=$INSTALL_DIR/lib/python@PYTHON_VERSION@/site-packages/salome
 PYTHONPATH=$PYTHON_DIR:$PYTHONPATH
 export PYTHONPATH

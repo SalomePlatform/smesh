@@ -17,6 +17,6 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-SPADDER_PLUGINS_PATH=@prefix@/plugins
+SPADDER_PLUGINS_PATH=@CMAKE_INSTALL_PREFIX@/plugins
 export SALOME_PLUGINS_PATH=$SALOME_PLUGINS_PATH:$SPADDER_PLUGINS_PATH
 
