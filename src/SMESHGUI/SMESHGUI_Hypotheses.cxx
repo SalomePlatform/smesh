@@ -561,6 +561,8 @@ QString SMESHGUI_GenericHypothesisCreator::helpPage() const
     aHelpFileName = "a1d_meshing_hypo_page.html#start_and_end_length_anchor";
   else if ( aHypType == "Deflection1D")
     aHelpFileName = "a1d_meshing_hypo_page.html#deflection_1d_anchor";
+  else if ( aHypType == "Adaptive1D")
+    aHelpFileName = "a1d_meshing_hypo_page.html#adaptive_1d_anchor";
   else if ( aHypType == "AutomaticLength")
     aHelpFileName = "a1d_meshing_hypo_page.html#automatic_length_anchor";
   else if ( aHypType == "NumberOfSegments")

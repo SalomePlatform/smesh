@@ -582,6 +582,17 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
       h->SetVarParameter( params[0].text(), "SetDeflection" );
       h->SetDeflection( params[0].myValue.toDouble() );
     }
+    else if( hypType()=="Adaptive1D" )
+    {
+      StdMeshers::StdMeshers_Adaptive1D_var h =
+        StdMeshers::StdMeshers_Adaptive1D::_narrow( hypothesis() );
+      h->SetVarParameter( params[0].text(), "SetMinSize" );
+      h->SetMinSize( params[0].myValue.toDouble() );
+      h->SetVarParameter( params[0].text(), "SetMaxSize" );
+      h->SetMaxSize( params[1].myValue.toDouble() );
+      h->SetVarParameter( params[0].text(), "SetDeflection" );
+      h->SetDeflection( params[2].myValue.toDouble() );
+    }
     else if( hypType()=="AutomaticLength" )
     {
       StdMeshers::StdMeshers_AutomaticLength_var h =
@@ -960,7 +971,27 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
   {
     StdMeshers::StdMeshers_Deflection1D_var h =
       StdMeshers::StdMeshers_Deflection1D::_narrow( hyp );
-    
+
+    item.myName = tr( "SMESH_DEFLECTION1D_PARAM" );
+    if(!initVariableName( hyp, item, "SetDeflection" )) 
+      item.myValue = h->GetDeflection();
+    p.append( item );
+  }
+  else if( hypType()=="Adaptive1D" )
+  {
+    StdMeshers::StdMeshers_Adaptive1D_var h =
+      StdMeshers::StdMeshers_Adaptive1D::_narrow( hyp );
+
+    item.myName = tr( "SMESH_MIN_SIZE" );
+    if(!initVariableName( hyp, item, "SetMinSize" )) 
+      item.myValue = h->GetMinSize();
+    p.append( item );
+
+    item.myName = tr( "SMESH_MAX_SIZE" );
+    if(!initVariableName( hyp, item, "SetMaxSize" )) 
+      item.myValue = h->GetMaxSize();
+    p.append( item );
+
     item.myName = tr( "SMESH_DEFLECTION1D_PARAM" );
     if(!initVariableName( hyp, item, "SetDeflection" )) 
       item.myValue = h->GetDeflection();
@@ -1315,6 +1346,10 @@ void StdMeshersGUI_StdHypothesisCreator::attuneStdWidget (QWidget* w, const int)
     {
       sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "parametric_precision" );
     }
+    else if( hypType()=="Adaptive1D" )
+    {
+      sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "length_precision" );
+    }
     else if( hypType().startsWith( "ViscousLayers" ))
     {
       if (sb->objectName() == tr("SMESH_STRETCH_FACTOR"))
@@ -1386,6 +1421,7 @@ QString StdMeshersGUI_StdHypothesisCreator::hypTypeName( const QString& t ) cons
     types.insert( "MaxElementVolume", "MAX_ELEMENT_VOLUME" );
     types.insert( "StartEndLength", "START_END_LENGTH" );
     types.insert( "Deflection1D", "DEFLECTION1D" );
+    types.insert( "Adaptive1D", "ADAPTIVE1D" );
     types.insert( "Arithmetic1D", "ARITHMETIC_1D" );
     types.insert( "FixedPoints1D", "FIXED_POINTS_1D" );
     types.insert( "AutomaticLength", "AUTOMATIC_LENGTH" );

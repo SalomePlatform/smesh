@@ -186,6 +186,7 @@ SET(StdMeshers_SOURCES
   StdMeshers_Projection_1D2D.cxx
   StdMeshers_CartesianParameters3D.cxx
   StdMeshers_Cartesian_3D.cxx
+  StdMeshers_Adaptive1D.cxx
 )
 
 IF(SALOME_SMESH_ENABLE_MEFISTO)

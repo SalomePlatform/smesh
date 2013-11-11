@@ -170,6 +170,7 @@ SET(StdMeshersEngine_SOURCES
   StdMeshers_ViscousLayers2D_i.cxx
   StdMeshers_CartesianParameters3D_i.cxx
   StdMeshers_Cartesian_3D_i.cxx
+  StdMeshers_Adaptive1D_i.cxx 
 )
 
 IF(SALOME_SMESH_ENABLE_MEFISTO)

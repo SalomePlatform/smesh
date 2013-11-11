@@ -7,6 +7,7 @@ This page provides example codes of \ref tui_defining_meshing_algos
 <ul>
 <li>Wire discretisation 1D algorithm
   <ul>
+    <li>\ref tui_1d_adaptive "Adaptive 1D" hypothesis</li>
     <li>\ref tui_1d_arithmetic "Arithmetic 1D" hypothesis</li>
     <li>\ref tui_deflection_1d "Deflection 1D and Number of Segments" hypotheses</li>
     <li>\ref tui_start_and_end_length "Start and End Length" hypotheses</li>
@@ -45,6 +46,11 @@ This page provides example codes of \ref tui_defining_meshing_algos
 \anchor tui_1d_arithmetic
 <h3>Arithmetic 1D</h3>
 \tui_script{defining_hypotheses_ex01.py}
+
+<br>
+\anchor tui_1d_adaptive
+<h3>Adaptive</h3>
+\tui_script{defining_hypotheses_adaptive1d.py}
 
 <br>
 \anchor tui_deflection_1d

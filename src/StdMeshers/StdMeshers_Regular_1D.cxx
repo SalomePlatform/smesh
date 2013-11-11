@@ -26,27 +26,27 @@
 //  Module : SMESH
 //
 #include "StdMeshers_Regular_1D.hxx"
-#include "StdMeshers_Distribution.hxx"
 
+#include "SMDS_MeshElement.hxx"
+#include "SMDS_MeshNode.hxx"
+#include "SMESH_Comment.hxx"
+#include "SMESH_Gen.hxx"
+#include "SMESH_HypoFilter.hxx"
+#include "SMESH_Mesh.hxx"
+#include "SMESH_subMesh.hxx"
+#include "SMESH_subMeshEventListener.hxx"
+#include "StdMeshers_Adaptive1D.hxx"
 #include "StdMeshers_Arithmetic1D.hxx"
 #include "StdMeshers_AutomaticLength.hxx"
 #include "StdMeshers_Deflection1D.hxx"
+#include "StdMeshers_Distribution.hxx"
+#include "StdMeshers_FixedPoints1D.hxx"
 #include "StdMeshers_LocalLength.hxx"
 #include "StdMeshers_MaxLength.hxx"
 #include "StdMeshers_NumberOfSegments.hxx"
 #include "StdMeshers_Propagation.hxx"
 #include "StdMeshers_SegmentLengthAroundVertex.hxx"
 #include "StdMeshers_StartEndLength.hxx"
-
-#include "SMESH_Gen.hxx"
-#include "SMESH_Mesh.hxx"
-#include "SMESH_HypoFilter.hxx"
-#include "SMESH_subMesh.hxx"
-#include "SMESH_subMeshEventListener.hxx"
-#include "SMESH_Comment.hxx"
-
-#include "SMDS_MeshElement.hxx"
-#include "SMDS_MeshNode.hxx"
 
 #include "Utils_SALOME_Exception.hxx"
 #include "utilities.h"
@@ -75,29 +75,31 @@ using namespace std;
 //=============================================================================
 
 StdMeshers_Regular_1D::StdMeshers_Regular_1D(int hypId, int studyId,
-        SMESH_Gen * gen):SMESH_1D_Algo(hypId, studyId, gen)
+                                             SMESH_Gen * gen)
+  :SMESH_1D_Algo(hypId, studyId, gen)
 {
-        MESSAGE("StdMeshers_Regular_1D::StdMeshers_Regular_1D");
-        _name = "Regular_1D";
-        _shapeType = (1 << TopAbs_EDGE);
-        _fpHyp = 0;
+  MESSAGE("StdMeshers_Regular_1D::StdMeshers_Regular_1D");
+  _name = "Regular_1D";
+  _shapeType = (1 << TopAbs_EDGE);
+  _fpHyp = 0;
 
-        _compatibleHypothesis.push_back("LocalLength");
-        _compatibleHypothesis.push_back("MaxLength");
-        _compatibleHypothesis.push_back("NumberOfSegments");
-        _compatibleHypothesis.push_back("StartEndLength");
-        _compatibleHypothesis.push_back("Deflection1D");
-        _compatibleHypothesis.push_back("Arithmetic1D");
-        _compatibleHypothesis.push_back("FixedPoints1D");
-        _compatibleHypothesis.push_back("AutomaticLength");
+  _compatibleHypothesis.push_back("LocalLength");
+  _compatibleHypothesis.push_back("MaxLength");
+  _compatibleHypothesis.push_back("NumberOfSegments");
+  _compatibleHypothesis.push_back("StartEndLength");
+  _compatibleHypothesis.push_back("Deflection1D");
+  _compatibleHypothesis.push_back("Arithmetic1D");
+  _compatibleHypothesis.push_back("FixedPoints1D");
+  _compatibleHypothesis.push_back("AutomaticLength");
+  _compatibleHypothesis.push_back("Adaptive1D");
 
-        _compatibleHypothesis.push_back("QuadraticMesh"); // auxiliary !!!
-        _compatibleHypothesis.push_back("Propagation"); // auxiliary !!!
+  _compatibleHypothesis.push_back("QuadraticMesh"); // auxiliary !!!
+  _compatibleHypothesis.push_back("Propagation"); // auxiliary !!!
 }
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -111,13 +113,13 @@ StdMeshers_Regular_1D::~StdMeshers_Regular_1D()
  */
 //=============================================================================
 
-bool StdMeshers_Regular_1D::CheckHypothesis
-                         (SMESH_Mesh&                          aMesh,
-                          const TopoDS_Shape&                  aShape,
-                          SMESH_Hypothesis::Hypothesis_Status& aStatus)
+bool StdMeshers_Regular_1D::CheckHypothesis( SMESH_Mesh&         aMesh,
+                                             const TopoDS_Shape& aShape,
+                                             Hypothesis_Status&  aStatus )
 {
   _hypType = NONE;
   _quadraticMesh = false;
+  _onlyUnaryInput = true;
 
   const list <const SMESHDS_Hypothesis * > & hyps =
     GetUsedHypothesis(aMesh, aShape, /*ignoreAuxiliaryHyps=*/false);
@@ -263,11 +265,16 @@ bool StdMeshers_Regular_1D::CheckHypothesis
       (dynamic_cast <const StdMeshers_AutomaticLength * >(theHyp));
     ASSERT(hyp);
     _value[ BEG_LENGTH_IND ] = _value[ END_LENGTH_IND ] = hyp->GetLength( &aMesh, aShape );
-//     _value[ BEG_LENGTH_IND ] = hyp->GetLength( &aMesh, aShape );
-//     _value[ END_LENGTH_IND ] = Precision::Confusion(); // ?? or set to zero?
     ASSERT( _value[ BEG_LENGTH_IND ] > 0 );
     _hypType = MAX_LENGTH;
     aStatus = SMESH_Hypothesis::HYP_OK;
+  }
+  else if (hypName == "Adaptive1D")
+  {
+    _adaptiveHyp = dynamic_cast < const StdMeshers_Adaptive1D* >(theHyp);
+    ASSERT(_adaptiveHyp);
+    _hypType = ADAPTIVE;
+    _onlyUnaryInput = false;
   }
   else
     aStatus = SMESH_Hypothesis::HYP_INCOMPATIBLE;
@@ -950,6 +957,13 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
   if ( _hypType == NONE )
     return false;
 
+  if ( _hypType == ADAPTIVE )
+  {
+    _adaptiveHyp->GetAlgo()->InitComputeError();
+    _adaptiveHyp->GetAlgo()->Compute( theMesh, theShape, &_progress, &_progressTic );
+    return error( _adaptiveHyp->GetAlgo()->GetComputeError() );
+  }
+
   SMESHDS_Mesh * meshDS = theMesh.GetMeshDS();
 
   const TopoDS_Edge & EE = TopoDS::Edge(theShape);
@@ -1128,11 +1142,15 @@ bool StdMeshers_Regular_1D::Evaluate(SMESH_Mesh & theMesh,
   if ( _hypType == NONE )
     return false;
 
-  //SMESHDS_Mesh * meshDS = theMesh.GetMeshDS();
+  if ( _hypType == ADAPTIVE )
+  {
+    _adaptiveHyp->GetAlgo()->InitComputeError();
+    _adaptiveHyp->GetAlgo()->Evaluate( theMesh, theShape, aResMap );
+    return error( _adaptiveHyp->GetAlgo()->GetComputeError() );
+  }
 
   const TopoDS_Edge & EE = TopoDS::Edge(theShape);
   TopoDS_Edge E = TopoDS::Edge(EE.Oriented(TopAbs_FORWARD));
-  //  int shapeID = meshDS->ShapeToIndex( E );
 
   double f, l;
   Handle(Geom_Curve) Curve = BRep_Tool::Curve(E, f, l);
@@ -1236,4 +1254,17 @@ StdMeshers_Regular_1D::GetUsedHypothesis(SMESH_Mesh &         aMesh,
     _usedHypList.clear(); //only one compatible non-auxiliary hypothesis allowed
 
   return _usedHypList;
+}
+
+//================================================================================
+/*!
+ * \brief Pass CancelCompute() to a child algorithm
+ */
+//================================================================================
+
+void StdMeshers_Regular_1D::CancelCompute()
+{
+  SMESH_Algo::CancelCompute();
+  if ( _hypType == ADAPTIVE )
+    _adaptiveHyp->GetAlgo()->CancelCompute();
 }

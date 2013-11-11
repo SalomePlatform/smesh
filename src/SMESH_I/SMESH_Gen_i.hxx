@@ -486,8 +486,8 @@ public:
 
   // SIMAN-related functions (check out/check in) : import data to study
   virtual Engines::ListOfIdentifiers* importData(CORBA::Long studyId,
-						 Engines::DataContainer_ptr data,
-						 const Engines::ListOfOptions& options);
+                                                 Engines::DataContainer_ptr data,
+                                                 const Engines::ListOfOptions& options);
   // SIMAN-related functions (check out/check in) : get modified data
   virtual Engines::ListOfData* getModifiedData(CORBA::Long studyId);
 

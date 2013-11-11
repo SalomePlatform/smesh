@@ -75,6 +75,11 @@
                 icon-id  ="mesh_hypo_length.png"
                 dim      ="1"/>
 
+    <hypothesis type     ="Adaptive1D"
+                label-id ="Adaptive"
+                icon-id  ="mesh_hypo_length.png"
+                dim      ="1"/>
+
     <hypothesis type     ="Propagation"
                 label-id ="Propagation of 1D Hyp. on Opposite Edges"
                 icon-id  ="mesh_hypo_length.png"
@@ -200,7 +205,7 @@
     <algorithm type     ="Regular_1D"
 	       label-id ="Wire Discretisation"
 	       icon-id  ="mesh_algo_regular.png"
-               hypos    ="LocalLength,MaxLength,Arithmetic1D,StartEndLength,NumberOfSegments,Deflection1D,AutomaticLength,FixedPoints1D"
+               hypos    ="Adaptive1D,LocalLength,MaxLength,Arithmetic1D,StartEndLength,NumberOfSegments,Deflection1D,AutomaticLength,FixedPoints1D"
                opt-hypos="Propagation,QuadraticMesh"
                input    ="VERTEX"
                output   ="EDGE"
@@ -212,6 +217,7 @@
         <hypo>Arithmetic1D=Arithmetic1D(SetStartLength(),SetEndLength(),SetReversedEdges())</hypo>
         <hypo>StartEndLength=StartEndLength(SetStartLength(),SetEndLength(),SetReversedEdges())</hypo>
         <hypo>Deflection1D=Deflection1D(SetDeflection())</hypo>
+        <hypo>Adaptive1D=Adaptive(SetMinSize(),SetMaxSize(),SetDeflection())</hypo>
         <hypo>AutomaticLength=AutomaticLength(SetFineness())</hypo>
         <hypo>FixedPoints1D=FixedPoints1D(SetPoints(),SetNbSegments(),SetReversedEdges())</hypo>
         <hypo>Propagation=Propagation()</hypo>
@@ -222,7 +228,7 @@
     <algorithm type     ="CompositeSegment_1D"
 	       label-id ="Composite Side Discretisation"
 	       icon-id  ="mesh_algo_regular.png"
-               hypos    ="LocalLength,MaxLength,Arithmetic1D,StartEndLength,NumberOfSegments,Deflection1D,AutomaticLength,FixedPoints1D"
+               hypos    ="Adaptive1D,LocalLength,MaxLength,Arithmetic1D,StartEndLength,NumberOfSegments,Deflection1D,AutomaticLength,FixedPoints1D"
                opt-hypos="Propagation,QuadraticMesh"
                input    ="VERTEX"
                output   ="EDGE"
@@ -234,6 +240,7 @@
         <hypo>Arithmetic1D=Arithmetic1D(SetStartLength(),SetEndLength(),SetReversedEdges())</hypo>
         <hypo>StartEndLength=StartEndLength(SetStartLength(),SetEndLength(),SetReversedEdges())</hypo>
         <hypo>Deflection1D=Deflection1D(SetDeflection())</hypo>
+        <hypo>Adaptive1D=Adaptive(SetMinSize(),SetMaxSize(),SetDeflection())</hypo>
         <hypo>AutomaticLength=AutomaticLength(SetFineness())</hypo>
         <hypo>FixedPoints1D=FixedPoints1D(SetPoints(),SetNbSegments(),SetReversedEdges())</hypo>
         <hypo>Propagation=Propagation()</hypo>

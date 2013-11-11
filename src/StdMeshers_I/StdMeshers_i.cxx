@@ -38,6 +38,7 @@
 #include "StdMeshers_FixedPoints1D_i.hxx"
 #include "StdMeshers_NumberOfSegments_i.hxx"
 #include "StdMeshers_Deflection1D_i.hxx"
+#include "StdMeshers_Adaptive1D_i.hxx"
 #include "StdMeshers_Propagation_i.hxx"
 #include "StdMeshers_LengthFromEdges_i.hxx"
 #include "StdMeshers_QuadranglePreference_i.hxx"
@@ -143,6 +144,8 @@ STDMESHERS_I_EXPORT
       aCreator = new StdHypothesisCreator_i<StdMeshers_StartEndLength_i>;
     else if (strcmp(aHypName, "Deflection1D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_Deflection1D_i>;
+    else if (strcmp(aHypName, "Adaptive1D") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_Adaptive1D_i>;
     else if (strcmp(aHypName, "FixedPoints1D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_FixedPoints1D_i>;
     else if (strcmp(aHypName, "Arithmetic1D") == 0)

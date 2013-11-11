@@ -876,7 +876,7 @@ SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const int anHypId) const
 {
   StudyContextStruct *sc = _gen->GetStudyContext(_studyId);
   if (sc->mapHypothesis.find(anHypId) == sc->mapHypothesis.end())
-    return false;
+    return NULL;
 
   SMESH_Hypothesis *anHyp = sc->mapHypothesis[anHypId];
   return anHyp;

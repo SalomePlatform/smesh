@@ -33,11 +33,12 @@
 
 #include "SMESH_Algo.hxx"
 
-#include "StdMeshers_FixedPoints1D.hxx"
-
 class Adaptor3d_Curve;
-class TopoDS_Vertex;
+class StdMeshers_Adaptive1D;
+class StdMeshers_AdaptiveAlgo_1D;
+class StdMeshers_FixedPoints1D;
 class StdMeshers_SegmentLengthAroundVertex;
+class TopoDS_Vertex;
 
 class STDMESHERS_EXPORT StdMeshers_Regular_1D: public SMESH_1D_Algo
 {
@@ -54,6 +55,8 @@ public:
 
   virtual bool Evaluate(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape,
                         MapShapeNbElems& aResMap);
+
+  virtual void CancelCompute();
 
   virtual const std::list <const SMESHDS_Hypothesis *> &
     GetUsedHypothesis(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape, const bool=true);
@@ -100,7 +103,7 @@ protected:
   StdMeshers_SegmentLengthAroundVertex* getVertexHyp(SMESH_Mesh &          theMesh,
                                                      const TopoDS_Vertex & theV);
 
-  enum HypothesisType { LOCAL_LENGTH, MAX_LENGTH, NB_SEGMENTS, BEG_END_LENGTH, DEFLECTION, ARITHMETIC_1D, FIXED_POINTS_1D, NONE };
+  enum HypothesisType { LOCAL_LENGTH, MAX_LENGTH, NB_SEGMENTS, BEG_END_LENGTH, DEFLECTION, ARITHMETIC_1D, FIXED_POINTS_1D, ADAPTIVE, NONE };
 
   enum ValueIndex {
     SCALE_FACTOR_IND = 0,
@@ -111,9 +114,9 @@ protected:
   };
 
   enum IValueIndex {
-    NB_SEGMENTS_IND  = 0,
-    DISTR_TYPE_IND   = 1,
-    CONV_MODE_IND    = 2
+    NB_SEGMENTS_IND   = 0,
+    DISTR_TYPE_IND    = 1,
+    CONV_MODE_IND     = 2
   };
 
   enum VValueIndex {
@@ -127,6 +130,8 @@ protected:
   HypothesisType _hypType;
 
   const StdMeshers_FixedPoints1D* _fpHyp;
+  const StdMeshers_Adaptive1D*    _adaptiveHyp;
+  StdMeshers_AdaptiveAlgo_1D*     getAdaptiveAlgo();
 
   double _value[2];
   int    _ivalue[3];

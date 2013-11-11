@@ -385,7 +385,6 @@ module StdMeshers
     double GetDeflection();
   };
 
-
   /*!
    * StdMeshers_FixedPoints1D: interface of "Fixed points 1D" hypothesis
    */
@@ -433,6 +432,30 @@ module StdMeshers
     string GetObjectEntry();
   };
 
+  /*!
+   * StdMeshers_Adaptive1D: interface of "Adaptive" hypothesis
+   */
+  interface StdMeshers_Adaptive1D : SMESH::SMESH_Hypothesis
+  {
+    /*!
+     * Sets minimal allowed segment length
+     */
+    void SetMinSize(in double minSegLen) raises (SALOME::SALOME_Exception);
+    double GetMinSize();
+
+    /*!
+     * Sets maximal allowed segment length
+     */
+    void SetMaxSize(in double maxSegLen) raises (SALOME::SALOME_Exception);
+    double GetMaxSize();
+
+    /*!
+     * Sets <deflection> parameter value, 
+     * i.e. a maximal allowed distance between a segment and an edge.
+     */
+    void SetDeflection(in double deflection) raises (SALOME::SALOME_Exception);
+    double GetDeflection();
+  };
 
   /*!
    * StdMeshers_MaxElementVolume: interface of "Max. Hexahedron or Tetrahedron Volume" hypothesis

@@ -63,6 +63,7 @@ SET(GOOD_TESTS
   defining_hypotheses_ex14.py 
   defining_hypotheses_ex15.py 
   defining_hypotheses_ex16.py 
+  defining_hypotheses_adaptive1d.py
   filters_ex01.py 
   filters_ex03.py 
   filters_ex04.py 

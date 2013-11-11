@@ -178,6 +178,28 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
                                 return True
         return False
 
+    ## Defines "Adaptive" hypothesis to cut an edge into segments keeping segment size
+    #  within the given range and considering (1) deflection of segments from the edge
+    #  and (2) distance from segments to closest edges and faces to have segment length
+    #  not longer than two times shortest distances to edges and faces.
+    #  @param minSize defines the minimal allowed segment length
+    #  @param maxSize defines the maximal allowed segment length
+    #  @param deflection defines the maximal allowed distance from a segment to an edge
+    #  @param UseExisting if ==true - searches for an existing hypothesis created with
+    #                     the same parameters, else (default) - creates a new one
+    #  @return an instance of StdMeshers_Adaptive1D hypothesis
+    #  @ingroup l3_hypos_1dhyps
+    def Adaptive(self, minSize, maxSize, deflection, UseExisting=False):
+        compFun = lambda hyp, args: ( IsEqual(hyp.GetMinSize(), args[0]) and \
+                                      IsEqual(hyp.GetMaxSize(), args[1]) and \
+                                      IsEqual(hyp.GetDeflection(), args[2]))
+        hyp = self.Hypothesis("Adaptive1D", [minSize, maxSize, deflection],
+                              UseExisting=UseExisting, CompareMethod=compFun)
+        hyp.SetMinSize(minSize)
+        hyp.SetMaxSize(maxSize)
+        hyp.SetDeflection(deflection)
+        return hyp
+
     ## Defines "Arithmetic1D" hypothesis to cut an edge in several segments with increasing arithmetic length
     #  @param start defines the length of the first segment
     #  @param end   defines the length of the last  segment

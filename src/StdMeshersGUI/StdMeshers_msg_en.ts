@@ -47,6 +47,22 @@
         <translation>Cut negative</translation>
     </message>
     <message>
+        <source>SMESH_ADAPTIVE1D_HYPOTHESIS</source>
+        <translation>Adaptive</translation>
+    </message>
+    <message>
+        <source>SMESH_MIN_SIZE</source>
+        <translation>Min size</translation>
+    </message>
+    <message>
+        <source>SMESH_MAX_SIZE</source>
+        <translation>Max size</translation>
+    </message>
+    <message>
+        <source>SMESH_ADAPTIVE1D_TITLE</source>
+        <translation>Hypothesis Construction</translation>
+    </message>
+    <message>
         <source>SMESH_DEFLECTION1D_HYPOTHESIS</source>
         <translation>Deflection 1D</translation>
     </message>
