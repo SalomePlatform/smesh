@@ -41,6 +41,7 @@
 #include "SMESH_ProxyMesh.hxx"
 #include "SMESH_subMesh.hxx"
 #include "SMESH_subMeshEventListener.hxx"
+#include "StdMeshers_FaceSide.hxx"
 
 #include <BRepAdaptor_Curve2d.hxx>
 #include <BRep_Tool.hxx>
@@ -780,6 +781,8 @@ namespace
 
   bool isConcave( const TopoDS_Face& F, SMESH_MesherHelper& helper )
   {
+    // if ( helper.Count( F, TopAbs_WIRE, /*useMap=*/false) > 1 )
+    //   return true;
     gp_Vec2d drv1, drv2;
     gp_Pnt2d p;
     TopExp_Explorer eExp( F.Oriented( TopAbs_FORWARD ), TopAbs_EDGE );
@@ -829,6 +832,26 @@ namespace
         //   uvPrev = uv;
         //   uPrev = u2n->first;
         // }
+      }
+    }
+    // check angles at VERTEXes
+    TError error;
+    TSideVector wires = StdMeshers_FaceSide::GetFaceWires( F, *helper.GetMesh(), 0, error );
+    for ( size_t iW = 0; iW < wires.size(); ++iW )
+    {
+      const int nbEdges = wires[iW]->NbEdges();
+      if ( nbEdges < 2 && SMESH_Algo::isDegenerated( wires[iW]->Edge(0)))
+        continue;
+      for ( int iE1 = 0; iE1 < nbEdges; ++iE1 )
+      {
+        if ( SMESH_Algo::isDegenerated( wires[iW]->Edge( iE1 ))) continue;
+        int iE2 = ( iE1 + 1 ) % nbEdges;
+        while ( SMESH_Algo::isDegenerated( wires[iW]->Edge( iE2 )))
+          iE2 = ( iE2 + 1 ) % nbEdges;
+        double angle = helper.GetAngle( wires[iW]->Edge( iE1 ),
+                                        wires[iW]->Edge( iE2 ), F );
+        if ( angle < -5. * M_PI / 180. )
+          return true;
       }
     }
     return false;
@@ -3654,9 +3677,10 @@ bool _ViscousBuilder::shrink()
       = isConcaveFace ? _SmoothNode::CENTROIDAL : _SmoothNode::LAPLACIAN;
     while ( shrinked )
     {
+      shriStep++;
       // Move boundary nodes (actually just set new UV)
       // -----------------------------------------------
-      dumpFunction(SMESH_Comment("moveBoundaryOnF")<<f2sd->first<<"_st"<<shriStep++ ); // debug
+      dumpFunction(SMESH_Comment("moveBoundaryOnF")<<f2sd->first<<"_st"<<shriStep ); // debug
       shrinked = false;
       for ( unsigned i = 0; i < lEdges.size(); ++i )
       {
@@ -3696,6 +3720,8 @@ bool _ViscousBuilder::shrink()
       }
       if ( badNb > 0 )
         return error(SMESH_Comment("Can't shrink 2D mesh on face ") << f2sd->first );
+      if ( shriStep > 20 )
+        return error(SMESH_Comment("Infinite loop at shrinking 2D mesh on face ") << f2sd->first );
     }
 
     // No wrongly shaped faces remain; final smooth. Set node XYZ.
