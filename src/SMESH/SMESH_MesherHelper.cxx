@@ -897,7 +897,8 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
                                     double               distXYZ[4]) const
 {
   int shapeID = n->getshapeId();
-  if ( force || toCheckPosOnShape( shapeID ))
+  bool infinit = Precision::IsInfinite( u );
+  if ( force || toCheckPosOnShape( shapeID ) || infinit )
   {
     TopLoc_Location loc; double f,l;
     Handle(Geom_Curve) curve = BRep_Tool::Curve( E,loc,f,l );
@@ -913,12 +914,17 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
     {
       gp_Pnt nodePnt = SMESH_TNodeXYZ( n );
       if ( !loc.IsIdentity() ) nodePnt.Transform( loc.Transformation().Inverted() );
-      gp_Pnt curvPnt = curve->Value( u );
-      double dist = nodePnt.Distance( curvPnt );
-      if ( distXYZ ) {
-        curvPnt.Transform( loc );
-        distXYZ[0] = dist;
-        distXYZ[1] = curvPnt.X(); distXYZ[2] = curvPnt.Y(); distXYZ[3]=curvPnt.Z();
+      gp_Pnt curvPnt;
+      double dist = u;
+      if ( !infinit )
+      {
+        curvPnt = curve->Value( u );
+        dist    = nodePnt.Distance( curvPnt );
+        if ( distXYZ ) {
+          curvPnt.Transform( loc );
+          distXYZ[0] = dist;
+          distXYZ[1] = curvPnt.X(); distXYZ[2] = curvPnt.Y(); distXYZ[3]=curvPnt.Z();
+        }
       }
       if ( dist > tol )
       {
@@ -2652,6 +2658,57 @@ double SMESH_MesherHelper::MaxTolerance( const TopoDS_Shape& shape )
     tol = Max( tol, BRep_Tool::Tolerance( TopoDS::Vertex( exp.Current())));
 
   return tol;
+}
+
+//================================================================================
+/*!
+ * \brief Return an angle between two EDGEs sharing a common VERTEX with reference
+ *        of the FACE normal
+ *  \return double - the angle (between -Pi and Pi), negative if the angle is concave,
+ *                   1e100 in case of failure
+ */
+//================================================================================
+
+double SMESH_MesherHelper::GetAngle( const TopoDS_Edge & theE1,
+                                     const TopoDS_Edge & theE2,
+                                     const TopoDS_Face & theFace)
+{
+  double angle = 1e100;
+  try
+  {
+    TopoDS_Vertex vCommon;
+    if ( !TopExp::CommonVertex( theE1, theE2, vCommon ))
+      return angle;
+    double f,l;
+    Handle(Geom2d_Curve) c2d1 = BRep_Tool::CurveOnSurface( theE1, theFace, f,l );
+    Handle(Geom_Curve)     c1 = BRep_Tool::Curve( theE1, f,l );
+    Handle(Geom_Curve)     c2 = BRep_Tool::Curve( theE2, f,l );
+    Handle(Geom_Surface) surf = BRep_Tool::Surface( theFace );
+    double                 p1 = BRep_Tool::Parameter( vCommon, theE1 );
+    double                 p2 = BRep_Tool::Parameter( vCommon, theE2 );
+    if ( c1.IsNull() || c2.IsNull() )
+      return angle;
+    gp_Pnt2d uv = c2d1->Value( p1 );
+    gp_Vec du, dv; gp_Pnt p;
+    surf->D1( uv.X(), uv.Y(), p, du, dv );
+    gp_Vec vec1, vec2, vecRef = du ^ dv;
+    if ( theFace.Orientation() == TopAbs_REVERSED )
+      vecRef.Reverse();
+    c1->D1( p1, p, vec1 );
+    c2->D1( p2, p, vec2 );
+    TopoDS_Face F = theFace;
+    if ( F.Orientation() == TopAbs_INTERNAL )
+      F.Orientation( TopAbs_FORWARD );
+    if ( GetSubShapeOri( F, theE1 ) == TopAbs_REVERSED )
+      vec1.Reverse();
+    if ( GetSubShapeOri( F, theE2 ) == TopAbs_REVERSED )
+      vec2.Reverse();
+    angle = vec1.AngleWithRef( vec2, vecRef );
+  }
+  catch (...)
+  {
+  }
+  return angle;
 }
 
 //================================================================================
