@@ -6609,7 +6609,7 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
       anAllActors->InitTraversal();
       while( vtkActor* aVTKActor = anAllActors->GetNextActor() )
         if( SMESH_Actor* anActor = SMESH_Actor::SafeDownCast( aVTKActor ) )
-      	  anActor->SetOpenGLClippingPlane();
+          anActor->SetOpenGLClippingPlane();
       
       vtkView->getRenderer()->ResetCameraClippingRange();
       vtkView->Repaint();
