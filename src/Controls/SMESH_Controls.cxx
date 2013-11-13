@@ -3408,6 +3408,31 @@ bool LogicalOR::IsSatisfy( long theId )
                               FILTER
 */
 
+// #ifdef WITH_TBB
+// #include <tbb/parallel_for.h>
+// #include <tbb/enumerable_thread_specific.h>
+
+// namespace Parallel
+// {
+//   typedef tbb::enumerable_thread_specific< TIdSequence > TIdSeq;
+
+//   struct Predicate
+//   {
+//     const SMDS_Mesh* myMesh;
+//     PredicatePtr     myPredicate;
+//     TIdSeq &         myOKIds;
+//     Predicate( const SMDS_Mesh* m, PredicatePtr p, TIdSeq & ids ):
+//       myMesh(m), myPredicate(p->Duplicate()), myOKIds(ids) {}
+//     void operator() ( const tbb::blocked_range<size_t>& r ) const
+//     {
+//       for ( size_t i = r.begin(); i != r.end(); ++i )
+//         if ( myPredicate->IsSatisfy( i ))
+//           myOKIds.local().push_back();
+//     }
+//   }
+// }
+// #endif
+
 Filter::Filter()
 {}
 
