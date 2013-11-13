@@ -58,7 +58,6 @@ SET(BUILD_SHARED_LIBS TRUE)
 LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/adm_local/cmake_files") 
 
 # User options
-# (some options have already been defined in KERNEL) 
 # ============
 OPTION(SALOME_BUILD_TESTS "Build SALOME tests" ON)
 OPTION(SALOME_BUILD_DOC "Generate SALOME SMESH documentation" ON)
