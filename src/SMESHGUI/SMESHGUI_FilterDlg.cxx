@@ -51,6 +51,7 @@
 #include <SUIT_ResourceMgr.h>
 #include <SUIT_Session.h>
 #include <SUIT_MessageBox.h>
+#include <SUIT_OverrideCursor.h>
 #include <QtxColorButton.h>
 
 #include <LightApp_Application.h>
@@ -3270,6 +3271,7 @@ bool SMESHGUI_FilterDlg::onApply()
   if (!isValid())
     return false;
 
+  SUIT_OverrideCursor wc;
   try {
     int aCurrType = myTable->GetType();
 
