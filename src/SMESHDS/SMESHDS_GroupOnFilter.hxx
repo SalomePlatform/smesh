@@ -49,7 +49,7 @@ class SMESHDS_EXPORT SMESHDS_GroupOnFilter: public SMESHDS_GroupBase
   std::vector< int > GetMeshInfo() const;
 
   template< typename IDTYPE >
-    int        GetElementIds( IDTYPE* ids ) const
+    int GetElementIds( IDTYPE* ids ) const
   {
     return getElementIds( (void*)ids, sizeof(IDTYPE));
   }
@@ -76,8 +76,16 @@ class SMESHDS_EXPORT SMESHDS_GroupOnFilter: public SMESHDS_GroupBase
   const SMDS_MeshElement* setNbElemToSkip( SMDS_ElemIteratorPtr& elIt );
   int getElementIds( void* ids, size_t idSize ) const;
 
+  // We use two ways of optimaization:
+  // 1) The case of little free memory. Remember nb of KO elements (myNbElemToSkip)
+  //    to skip before the first OK element. As well remember total nb of OK
+  //    elements (myMeshInfo) to stop iteration as all OK elements are found.
+  // 2) The case of enough free memory. Remember all OK elements (myElements).
+
   SMESH_PredicatePtr                    myPredicate;
   std::vector< int >                    myMeshInfo;
+  std::vector< const SMDS_MeshElement*> myElements;
+  bool                                  myElementsOK;
   size_t                                myMeshModifTime; // when myMeshInfo was updated
   int                                   myPredicateTic;
   size_t                                myNbElemToSkip;
