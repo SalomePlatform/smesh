@@ -65,7 +65,7 @@ OPTION(SALOME_BUILD_DOC "Generate SALOME SMESH documentation" ON)
   
 # Advanced options:
 OPTION(SALOME_BUILD_GUI            "Enable GUI" ON)
-OPTION(SALOME_SMESH_USE_CGNS       "Enable shape recognition from picture" OFF)
+OPTION(SALOME_SMESH_USE_CGNS       "Enable import/export to CGNS format" OFF)
 OPTION(SALOME_SMESH_USE_TBB        "Enable shape recognition from picture" OFF)
 
 #On Linux use Fortran to compile MEFISTO2D
