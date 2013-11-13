@@ -998,6 +998,10 @@ void SMESHDS_Mesh::ClearMesh()
       g->Clear();
       g->SetType( groupType );
     }
+    else
+    {
+      (*group)->Extent(); // to free cashed elements in GroupOnFilter's
+    }
   }
 }
 
