@@ -401,7 +401,7 @@ int SMESHGUI_Selection::numberOfNodes( int ind ) const
         return aSubMeshObj->GetNumberOfNodes(true);
       SMESH::SMESH_GroupBase_var aGroupObj = SMESH::SMESH_GroupBase::_narrow( obj );
       if ( !aGroupObj->_is_nil() )
-        return aGroupObj->IsEmpty(); // aGroupObj->Size();
+        return aGroupObj->IsEmpty() ? 0 : 1; // aGroupObj->Size();
     }
   }
   return 0;
