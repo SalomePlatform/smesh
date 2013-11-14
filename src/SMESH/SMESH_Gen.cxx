@@ -392,8 +392,6 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
   return ret;
 }
 
-
-#ifdef WITH_SMESH_CANCEL_COMPUTE
 //=============================================================================
 /*!
  * Prepare Compute a mesh
@@ -419,7 +417,6 @@ void SMESH_Gen::CancelCompute(SMESH_Mesh &          aMesh,
       _sm_current->ComputeStateEngine( SMESH_subMesh::COMPUTE_CANCELED );
     }
 }
-#endif
 
 //=============================================================================
 /*!
