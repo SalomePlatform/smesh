@@ -23,29 +23,29 @@
 #ifndef _SMESH_CONTROLSDEF_HXX_
 #define _SMESH_CONTROLSDEF_HXX_
 
+#include "SMESH_Controls.hxx"
+
+#include "SMDS_MeshNode.hxx"
+#include "SMESH_TypeDefs.hxx"
+
+#include <BRepClass3d_SolidClassifier.hxx>
+#include <Bnd_B3d.hxx>
+#include <GeomAPI_ProjectPointOnCurve.hxx>
+#include <GeomAPI_ProjectPointOnSurf.hxx>
+#include <Quantity_Color.hxx>
+#include <TColStd_MapOfInteger.hxx>
+#include <TColStd_SequenceOfInteger.hxx>
+#include <TCollection_AsciiString.hxx>
+#include <TopAbs.hxx>
+#include <TopTools_MapOfShape.hxx>
+#include <TopoDS_Face.hxx>
+#include <gp_XYZ.hxx>
+
 #include <set>
 #include <map>
 #include <vector>
 
 #include <boost/shared_ptr.hpp>
-
-#include <gp_XYZ.hxx>
-#include <GeomAPI_ProjectPointOnSurf.hxx>
-#include <GeomAPI_ProjectPointOnCurve.hxx>
-#include <TColStd_SequenceOfInteger.hxx>
-#include <TColStd_MapOfInteger.hxx>
-#include <TCollection_AsciiString.hxx>
-#include <TopAbs.hxx>
-#include <TopoDS_Face.hxx>
-#include <TopTools_MapOfShape.hxx>
-#include <BRepClass3d_SolidClassifier.hxx>
-#include <Quantity_Color.hxx>
-
-#include "SMDSAbs_ElementType.hxx"
-#include "SMDS_MeshNode.hxx"
-#include "SMESH_TypeDefs.hxx"
-
-#include "SMESH_Controls.hxx"
 
 class SMDS_MeshElement;
 class SMDS_MeshFace;
@@ -851,12 +851,15 @@ namespace SMESH{
         TopAbs_ShapeEnum ShapeType() const;
       private:
         bool isOutOfSolid (const gp_Pnt& p);
+        bool isOutOfBox   (const gp_Pnt& p);
         bool isOutOfFace  (const gp_Pnt& p);
         bool isOutOfEdge  (const gp_Pnt& p);
         bool isOutOfVertex(const gp_Pnt& p);
+        bool isBox        (const TopoDS_Shape& s);
 
         bool (TClassifier::* myIsOutFun)(const gp_Pnt& p);
         BRepClass3d_SolidClassifier mySolidClfr;
+        Bnd_B3d                     myBox;
         GeomAPI_ProjectPointOnSurf  myProjFace;
         GeomAPI_ProjectPointOnCurve myProjEdge;
         gp_Pnt                      myVertexXYZ;
@@ -876,6 +879,83 @@ namespace SMESH{
 
     typedef boost::shared_ptr<ElementsOnShape> ElementsOnShapePtr;
 
+
+    /*
+      Class       : BelongToGeom
+      Description : Predicate for verifying whether entiy belong to
+      specified geometrical support
+    */
+    class SMESHCONTROLS_EXPORT BelongToGeom: public virtual Predicate
+    {
+    public:
+      BelongToGeom();
+
+      virtual void                    SetMesh( const SMDS_Mesh* theMesh );
+      virtual void                    SetGeom( const TopoDS_Shape& theShape );
+
+      virtual bool                    IsSatisfy( long theElementId );
+
+      virtual void                    SetType( SMDSAbs_ElementType theType );
+      virtual                         SMDSAbs_ElementType GetType() const;
+
+      TopoDS_Shape                    GetShape();
+      const SMESHDS_Mesh*             GetMeshDS() const;
+
+      void                            SetTolerance( double );
+      double                          GetTolerance();
+
+    private:
+      virtual void                    init();
+
+      TopoDS_Shape                    myShape;
+      const SMESHDS_Mesh*             myMeshDS;
+      SMDSAbs_ElementType             myType;
+      bool                            myIsSubshape;
+      double                          myTolerance;          // only if myIsSubshape == false
+      Controls::ElementsOnShapePtr    myElementsOnShapePtr; // only if myIsSubshape == false
+    };
+    typedef boost::shared_ptr<BelongToGeom> BelongToGeomPtr;
+
+    /*
+      Class       : LyingOnGeom
+      Description : Predicate for verifying whether entiy lying or partially lying on
+      specified geometrical support
+    */
+    class SMESHCONTROLS_EXPORT LyingOnGeom: public virtual Predicate
+    {
+    public:
+      LyingOnGeom();
+      
+      virtual void                    SetMesh( const SMDS_Mesh* theMesh );
+      virtual void                    SetGeom( const TopoDS_Shape& theShape );
+      
+      virtual bool                    IsSatisfy( long theElementId );
+      
+      virtual void                    SetType( SMDSAbs_ElementType theType );
+      virtual                         SMDSAbs_ElementType GetType() const;
+      
+      TopoDS_Shape                    GetShape();
+      const SMESHDS_Mesh*             GetMeshDS() const;
+
+      void                            SetTolerance( double );
+      double                          GetTolerance();
+      
+      virtual bool                    Contains( const SMESHDS_Mesh*     theMeshDS,
+                                                const TopoDS_Shape&     theShape,
+                                                const SMDS_MeshElement* theElem,
+                                                TopAbs_ShapeEnum        theFindShapeEnum,
+                                                TopAbs_ShapeEnum        theAvoidShapeEnum = TopAbs_SHAPE );
+    private:
+      virtual void                    init();
+
+      TopoDS_Shape                    myShape;
+      const SMESHDS_Mesh*             myMeshDS;
+      SMDSAbs_ElementType             myType;
+      bool                            myIsSubshape;
+      double                          myTolerance;          // only if myIsSubshape == false
+      Controls::ElementsOnShapePtr    myElementsOnShapePtr; // only if myIsSubshape == false
+    };
+    typedef boost::shared_ptr<LyingOnGeom> LyingOnGeomPtr;
 
     /*
       Class       : FreeFaces

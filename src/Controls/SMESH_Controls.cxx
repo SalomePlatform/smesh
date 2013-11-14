@@ -35,6 +35,8 @@
 #include "SMESH_OctreeNode.hxx"
 #include "SMESH_MeshAlgos.hxx"
 
+#include <Basics_Utils.hxx>
+
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepClass_FaceClassifier.hxx>
 #include <BRep_Tool.hxx>
@@ -47,6 +49,7 @@
 #include <TColStd_SequenceOfAsciiString.hxx>
 #include <TColgp_Array1OfXYZ.hxx>
 #include <TopAbs.hxx>
+#include <TopExp.hxx>
 #include <TopoDS.hxx>
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Face.hxx>
@@ -65,8 +68,6 @@
 
 #include <set>
 #include <limits>
-
-#include <Basics_Utils.hxx>
 
 /*
                             AUXILIARY METHODS
@@ -4083,8 +4084,15 @@ void ElementsOnShape::TClassifier::Init (const TopoDS_Shape& theShape, double th
   switch ( myShape.ShapeType() )
   {
   case TopAbs_SOLID: {
-    mySolidClfr.Load(theShape);
-    myIsOutFun = & ElementsOnShape::TClassifier::isOutOfSolid;
+    if ( isBox( theShape ))
+    {
+      myIsOutFun = & ElementsOnShape::TClassifier::isOutOfBox;
+    }
+    else
+    {
+      mySolidClfr.Load(theShape);
+      myIsOutFun = & ElementsOnShape::TClassifier::isOutOfSolid;
+    }
     break;
   }
   case TopAbs_FACE:  {
@@ -4118,6 +4126,11 @@ bool ElementsOnShape::TClassifier::isOutOfSolid (const gp_Pnt& p)
   return ( mySolidClfr.State() != TopAbs_IN && mySolidClfr.State() != TopAbs_ON );
 }
 
+bool ElementsOnShape::TClassifier::isOutOfBox (const gp_Pnt& p)
+{
+  return myBox.IsOut( p.XYZ() );
+}
+
 bool ElementsOnShape::TClassifier::isOutOfFace  (const gp_Pnt& p)
 {
   myProjFace.Perform( p );
@@ -4145,6 +4158,383 @@ bool ElementsOnShape::TClassifier::isOutOfVertex(const gp_Pnt& p)
   return ( myVertexXYZ.Distance( p ) > myTol );
 }
 
+bool ElementsOnShape::TClassifier::isBox (const TopoDS_Shape& theShape)
+{
+  TopTools_IndexedMapOfShape vMap;
+  TopExp::MapShapes( theShape, TopAbs_VERTEX, vMap );
+  if ( vMap.Extent() != 8 )
+    return false;
+
+  myBox.Clear();
+  for ( int i = 1; i <= 8; ++i )
+    myBox.Add( BRep_Tool::Pnt( TopoDS::Vertex( vMap( i ))).XYZ() );
+
+  gp_XYZ pMin = myBox.CornerMin(), pMax = myBox.CornerMax();
+  for ( int i = 1; i <= 8; ++i )
+  {
+    gp_Pnt p = BRep_Tool::Pnt( TopoDS::Vertex( vMap( i )));
+    for ( int iC = 1; iC <= 3; ++ iC )
+    {
+      double d1 = Abs( pMin.Coord( iC ) - p.Coord( iC ));
+      double d2 = Abs( pMax.Coord( iC ) - p.Coord( iC ));
+      if ( Min( d1, d2 ) > myTol )
+        return false;
+    }
+  }
+  myBox.Enlarge( myTol );
+  return true;
+}
+
+
+/*
+  Class       : BelongToGeom
+  Description : Predicate for verifying whether entity belongs to
+                specified geometrical support
+*/
+
+BelongToGeom::BelongToGeom()
+  : myMeshDS(NULL),
+    myType(SMDSAbs_All),
+    myIsSubshape(false),
+    myTolerance(Precision::Confusion())
+{}
+
+void BelongToGeom::SetMesh( const SMDS_Mesh* theMesh )
+{
+  myMeshDS = dynamic_cast<const SMESHDS_Mesh*>(theMesh);
+  init();
+}
+
+void BelongToGeom::SetGeom( const TopoDS_Shape& theShape )
+{
+  myShape = theShape;
+  init();
+}
+
+static bool IsSubShape (const TopTools_IndexedMapOfShape& theMap,
+                        const TopoDS_Shape& theShape)
+{
+  if (theMap.Contains(theShape)) return true;
+
+  if (theShape.ShapeType() == TopAbs_COMPOUND ||
+      theShape.ShapeType() == TopAbs_COMPSOLID)
+  {
+    TopoDS_Iterator anIt (theShape, Standard_True, Standard_True);
+    for (; anIt.More(); anIt.Next())
+    {
+      if (!IsSubShape(theMap, anIt.Value())) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  return false;
+}
+
+void BelongToGeom::init()
+{
+  if (!myMeshDS || myShape.IsNull()) return;
+
+  // is sub-shape of main shape?
+  TopoDS_Shape aMainShape = myMeshDS->ShapeToMesh();
+  if (aMainShape.IsNull()) {
+    myIsSubshape = false;
+  }
+  else {
+    TopTools_IndexedMapOfShape aMap;
+    TopExp::MapShapes(aMainShape, aMap);
+    myIsSubshape = IsSubShape(aMap, myShape);
+  }
+
+  if (!myIsSubshape)
+  {
+    myElementsOnShapePtr.reset(new ElementsOnShape());
+    myElementsOnShapePtr->SetTolerance(myTolerance);
+    myElementsOnShapePtr->SetAllNodes(true); // belong, while false means "lays on"
+    myElementsOnShapePtr->SetMesh(myMeshDS);
+    myElementsOnShapePtr->SetShape(myShape, myType);
+  }
+}
+
+static bool IsContains( const SMESHDS_Mesh*     theMeshDS,
+                        const TopoDS_Shape&     theShape,
+                        const SMDS_MeshElement* theElem,
+                        TopAbs_ShapeEnum        theFindShapeEnum,
+                        TopAbs_ShapeEnum        theAvoidShapeEnum = TopAbs_SHAPE )
+{
+  TopExp_Explorer anExp( theShape,theFindShapeEnum,theAvoidShapeEnum );
+
+  while( anExp.More() )
+  {
+    const TopoDS_Shape& aShape = anExp.Current();
+    if( SMESHDS_SubMesh* aSubMesh = theMeshDS->MeshElements( aShape ) ){
+      if( aSubMesh->Contains( theElem ) )
+        return true;
+    }
+    anExp.Next();
+  }
+  return false;
+}
+
+bool BelongToGeom::IsSatisfy (long theId)
+{
+  if (myMeshDS == 0 || myShape.IsNull())
+    return false;
+
+  if (!myIsSubshape)
+  {
+    return myElementsOnShapePtr->IsSatisfy(theId);
+  }
+
+  // Case of submesh
+  if (myType == SMDSAbs_Node)
+  {
+    if( const SMDS_MeshNode* aNode = myMeshDS->FindNode( theId ) )
+    {
+      const SMDS_PositionPtr& aPosition = aNode->GetPosition();
+      SMDS_TypeOfPosition aTypeOfPosition = aPosition->GetTypeOfPosition();
+      switch( aTypeOfPosition )
+      {
+      case SMDS_TOP_VERTEX : return IsContains( myMeshDS,myShape,aNode,TopAbs_VERTEX );
+      case SMDS_TOP_EDGE   : return IsContains( myMeshDS,myShape,aNode,TopAbs_EDGE );
+      case SMDS_TOP_FACE   : return IsContains( myMeshDS,myShape,aNode,TopAbs_FACE );
+      case SMDS_TOP_3DSPACE: return IsContains( myMeshDS,myShape,aNode,TopAbs_SHELL );
+      }
+    }
+  }
+  else
+  {
+    if( const SMDS_MeshElement* anElem = myMeshDS->FindElement( theId ) )
+    {
+      if( myType == SMDSAbs_All )
+      {
+        return IsContains( myMeshDS,myShape,anElem,TopAbs_EDGE ) ||
+               IsContains( myMeshDS,myShape,anElem,TopAbs_FACE ) ||
+               IsContains( myMeshDS,myShape,anElem,TopAbs_SHELL )||
+               IsContains( myMeshDS,myShape,anElem,TopAbs_SOLID );
+      }
+      else if( myType == anElem->GetType() )
+      {
+        switch( myType )
+        {
+        case SMDSAbs_Edge  : return IsContains( myMeshDS,myShape,anElem,TopAbs_EDGE );
+        case SMDSAbs_Face  : return IsContains( myMeshDS,myShape,anElem,TopAbs_FACE );
+        case SMDSAbs_Volume: return IsContains( myMeshDS,myShape,anElem,TopAbs_SHELL )||
+                                    IsContains( myMeshDS,myShape,anElem,TopAbs_SOLID );
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+void BelongToGeom::SetType (SMDSAbs_ElementType theType)
+{
+  myType = theType;
+  init();
+}
+
+SMDSAbs_ElementType BelongToGeom::GetType() const
+{
+  return myType;
+}
+
+TopoDS_Shape BelongToGeom::GetShape()
+{
+  return myShape;
+}
+
+const SMESHDS_Mesh* BelongToGeom::GetMeshDS() const
+{
+  return myMeshDS;
+}
+
+void BelongToGeom::SetTolerance (double theTolerance)
+{
+  myTolerance = theTolerance;
+  if (!myIsSubshape)
+    init();
+}
+
+double BelongToGeom::GetTolerance()
+{
+  return myTolerance;
+}
+
+/*
+  Class       : LyingOnGeom
+  Description : Predicate for verifying whether entiy lying or partially lying on
+                specified geometrical support
+*/
+
+LyingOnGeom::LyingOnGeom()
+  : myMeshDS(NULL),
+    myType(SMDSAbs_All),
+    myIsSubshape(false),
+    myTolerance(Precision::Confusion())
+{}
+
+void LyingOnGeom::SetMesh( const SMDS_Mesh* theMesh )
+{
+  myMeshDS = dynamic_cast<const SMESHDS_Mesh*>(theMesh);
+  init();
+}
+
+void LyingOnGeom::SetGeom( const TopoDS_Shape& theShape )
+{
+  myShape = theShape;
+  init();
+}
+
+void LyingOnGeom::init()
+{
+  if (!myMeshDS || myShape.IsNull()) return;
+
+  // is sub-shape of main shape?
+  TopoDS_Shape aMainShape = myMeshDS->ShapeToMesh();
+  if (aMainShape.IsNull()) {
+    myIsSubshape = false;
+  }
+  else {
+    TopTools_IndexedMapOfShape aMap;
+    TopExp::MapShapes(aMainShape, aMap);
+    myIsSubshape = IsSubShape(aMap, myShape);
+  }
+
+  if (!myIsSubshape)
+  {
+    myElementsOnShapePtr.reset(new ElementsOnShape());
+    myElementsOnShapePtr->SetTolerance(myTolerance);
+    myElementsOnShapePtr->SetAllNodes(false); // lays on, while true means "belong"
+    myElementsOnShapePtr->SetMesh(myMeshDS);
+    myElementsOnShapePtr->SetShape(myShape, myType);
+  }
+}
+
+bool LyingOnGeom::IsSatisfy( long theId )
+{
+  if ( myMeshDS == 0 || myShape.IsNull() )
+    return false;
+
+  if (!myIsSubshape)
+  {
+    return myElementsOnShapePtr->IsSatisfy(theId);
+  }
+
+  // Case of submesh
+  if( myType == SMDSAbs_Node )
+  {
+    if( const SMDS_MeshNode* aNode = myMeshDS->FindNode( theId ) )
+    {
+      const SMDS_PositionPtr& aPosition = aNode->GetPosition();
+      SMDS_TypeOfPosition aTypeOfPosition = aPosition->GetTypeOfPosition();
+      switch( aTypeOfPosition )
+      {
+      case SMDS_TOP_VERTEX : return IsContains( myMeshDS,myShape,aNode,TopAbs_VERTEX );
+      case SMDS_TOP_EDGE   : return IsContains( myMeshDS,myShape,aNode,TopAbs_EDGE );
+      case SMDS_TOP_FACE   : return IsContains( myMeshDS,myShape,aNode,TopAbs_FACE );
+      case SMDS_TOP_3DSPACE: return IsContains( myMeshDS,myShape,aNode,TopAbs_SHELL );
+      }
+    }
+  }
+  else
+  {
+    if( const SMDS_MeshElement* anElem = myMeshDS->FindElement( theId ) )
+    {
+      if( myType == SMDSAbs_All )
+      {
+        return Contains( myMeshDS,myShape,anElem,TopAbs_EDGE ) ||
+               Contains( myMeshDS,myShape,anElem,TopAbs_FACE ) ||
+               Contains( myMeshDS,myShape,anElem,TopAbs_SHELL )||
+               Contains( myMeshDS,myShape,anElem,TopAbs_SOLID );
+      }
+      else if( myType == anElem->GetType() )
+      {
+        switch( myType )
+        {
+        case SMDSAbs_Edge  : return Contains( myMeshDS,myShape,anElem,TopAbs_EDGE );
+        case SMDSAbs_Face  : return Contains( myMeshDS,myShape,anElem,TopAbs_FACE );
+        case SMDSAbs_Volume: return Contains( myMeshDS,myShape,anElem,TopAbs_SHELL )||
+                                    Contains( myMeshDS,myShape,anElem,TopAbs_SOLID );
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+void LyingOnGeom::SetType( SMDSAbs_ElementType theType )
+{
+  myType = theType;
+  init();
+}
+
+SMDSAbs_ElementType LyingOnGeom::GetType() const
+{
+  return myType;
+}
+
+TopoDS_Shape LyingOnGeom::GetShape()
+{
+  return myShape;
+}
+
+const SMESHDS_Mesh* LyingOnGeom::GetMeshDS() const
+{
+  return myMeshDS;
+}
+
+void LyingOnGeom::SetTolerance (double theTolerance)
+{
+  myTolerance = theTolerance;
+  if (!myIsSubshape)
+    init();
+}
+
+double LyingOnGeom::GetTolerance()
+{
+  return myTolerance;
+}
+
+bool LyingOnGeom::Contains( const SMESHDS_Mesh*     theMeshDS,
+                            const TopoDS_Shape&     theShape,
+                            const SMDS_MeshElement* theElem,
+                            TopAbs_ShapeEnum        theFindShapeEnum,
+                            TopAbs_ShapeEnum        theAvoidShapeEnum )
+{
+  if (IsContains(theMeshDS, theShape, theElem, theFindShapeEnum, theAvoidShapeEnum))
+    return true;
+
+  TopTools_IndexedMapOfShape aSubShapes;
+  TopExp::MapShapes( theShape, aSubShapes );
+
+  for (int i = 1; i <= aSubShapes.Extent(); i++)
+  {
+    const TopoDS_Shape& aShape = aSubShapes.FindKey(i);
+
+    if( SMESHDS_SubMesh* aSubMesh = theMeshDS->MeshElements( aShape ) ){
+      if( aSubMesh->Contains( theElem ) )
+        return true;
+
+      SMDS_NodeIteratorPtr aNodeIt = aSubMesh->GetNodes();
+      while ( aNodeIt->more() )
+      {
+        const SMDS_MeshNode* aNode = static_cast<const SMDS_MeshNode*>(aNodeIt->next());
+        SMDS_ElemIteratorPtr anElemIt = aNode->GetInverseElementIterator();
+        while ( anElemIt->more() )
+        {
+          const SMDS_MeshElement* anElement = static_cast<const SMDS_MeshElement*>(anElemIt->next());
+          if (anElement == theElem)
+            return true;
+        }
+      }
+    }
+  }
+  return false;
+}
 
 TSequenceOfXYZ::TSequenceOfXYZ()
 {}
