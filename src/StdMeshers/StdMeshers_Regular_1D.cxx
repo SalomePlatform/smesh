@@ -960,7 +960,7 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
   if ( _hypType == ADAPTIVE )
   {
     _adaptiveHyp->GetAlgo()->InitComputeError();
-    _adaptiveHyp->GetAlgo()->Compute( theMesh, theShape, &_progress, &_progressTic );
+    _adaptiveHyp->GetAlgo()->Compute( theMesh, theShape );
     return error( _adaptiveHyp->GetAlgo()->GetComputeError() );
   }
 

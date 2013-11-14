@@ -35,7 +35,6 @@
 
 class Adaptor3d_Curve;
 class StdMeshers_Adaptive1D;
-class StdMeshers_AdaptiveAlgo_1D;
 class StdMeshers_FixedPoints1D;
 class StdMeshers_SegmentLengthAroundVertex;
 class TopoDS_Vertex;
@@ -131,7 +130,6 @@ protected:
 
   const StdMeshers_FixedPoints1D* _fpHyp;
   const StdMeshers_Adaptive1D*    _adaptiveHyp;
-  StdMeshers_AdaptiveAlgo_1D*     getAdaptiveAlgo();
 
   double _value[2];
   int    _ivalue[3];

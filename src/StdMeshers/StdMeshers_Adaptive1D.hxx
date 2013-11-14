@@ -31,8 +31,6 @@
 
 #include "Utils_SALOME_Exception.hxx"
 
-class StdMeshers_AdaptiveAlgo_1D;
-
 /*!
  * \brief Adaptive 1D hypothesis
  */
@@ -81,35 +79,12 @@ class STDMESHERS_EXPORT StdMeshers_Adaptive1D : public SMESH_Hypothesis
   /*!
    * \brief Returns an algorithm that works using this hypothesis
    */
-  StdMeshers_AdaptiveAlgo_1D* GetAlgo() const;
+  SMESH_Algo* GetAlgo() const;
 
 protected:
 
   double myMinSize, myMaxSize, myDeflection;
-  StdMeshers_AdaptiveAlgo_1D* myAlgo;
-};
-
-/*!
- * \brief Adaptive wire discertizator.
- * This algorithm is not used directly by via StdMeshers_Regular_1D
- */
-class StdMeshers_AdaptiveAlgo_1D : public StdMeshers_Regular_1D
-{
-public:
-
-  StdMeshers_AdaptiveAlgo_1D(int hypId, int studyId, SMESH_Gen* gen);
-
-  void SetHypothesis( const StdMeshers_Adaptive1D* hyp );
-
-  bool Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape,
-               double* progress, int* progressTic );
-  virtual bool Evaluate(SMESH_Mesh &         theMesh,
-                        const TopoDS_Shape & theShape,
-                        MapShapeNbElems&     theResMap);
-
-private:
-
-  const StdMeshers_Adaptive1D* myHyp;
+  SMESH_Algo* myAlgo; // StdMeshers_AdaptiveAlgo_1D implemented in cxx file
 };
 
 #endif

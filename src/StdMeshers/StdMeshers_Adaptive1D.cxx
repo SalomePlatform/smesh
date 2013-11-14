@@ -65,6 +65,16 @@ namespace // internal utils
 {
   //================================================================================
   /*!
+   * \brief Bnd_B3d with access to its center and half-size
+   */
+  struct BBox : public Bnd_B3d
+  {
+    gp_XYZ Center() const { return gp_XYZ( myCenter[0], myCenter[1], myCenter[2] ); }
+    gp_XYZ HSize()  const { return gp_XYZ( myHSize[0],  myHSize[1],  myHSize[2]  ); }
+    double Size()   const { return 2 * myHSize[0]; }
+  };
+  //================================================================================
+  /*!
    * \brief Working data of an EDGE
    */
   struct EdgeData
@@ -79,26 +89,22 @@ namespace // internal utils
     BRepAdaptor_Curve myC3d;
     double            myLength;
     list< ProbePnt >  myPoints;
+    BBox              myBBox;
 
     typedef list< ProbePnt >::iterator TPntIter;
     void AddPoint( TPntIter where, double u )
     {
-      myPoints.insert( where, ProbePnt( myC3d.Value( u ), u ));
+      TPntIter it = myPoints.insert( where, ProbePnt( myC3d.Value( u ), u ));
+      myBBox.Add( it->myP.XYZ() );
     }
     const ProbePnt& First() const { return myPoints.front(); }
     const ProbePnt& Last()  const { return myPoints.back(); }
     const TopoDS_Edge& Edge() const { return myC3d.Edge(); }
-  };
-
-  //================================================================================
-  /*!
-   * \brief Bnd_B3d with access to its center and half-size
-   */
-  struct BBox : public Bnd_B3d
-  {
-    gp_XYZ Center() const { return gp_XYZ( myCenter[0], myCenter[1], myCenter[2] ); }
-    gp_XYZ HSize()  const { return gp_XYZ( myHSize[0],  myHSize[1],  myHSize[2]  ); }
-    double Size()   const { return 2 * myHSize[0]; }
+    bool IsTooDistant( const SMESH_Octree::box_type* faceBox, double maxSegSize ) const
+    {
+      gp_XYZ hsize = myBBox.HSize() + gp_XYZ( maxSegSize, maxSegSize, maxSegSize );
+      return faceBox->IsOut ( SMESH_Octree::box_type( myBBox.Center(), hsize ));
+    }
   };
   //================================================================================
   /*!
@@ -140,12 +146,36 @@ namespace // internal utils
   };
   //================================================================================
   /*!
+   * \brief Adaptive wire discertizator.
+   */
+  class AdaptiveAlgo : public StdMeshers_Regular_1D
+  {
+  public:
+    AdaptiveAlgo(int hypId, int studyId, SMESH_Gen* gen);
+    virtual bool Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape );
+    virtual bool Evaluate(SMESH_Mesh &         theMesh,
+                          const TopoDS_Shape & theShape,
+                          MapShapeNbElems&     theResMap);
+    void SetHypothesis( const StdMeshers_Adaptive1D* hyp );
+  private:
+
+    bool makeSegments();
+
+    const StdMeshers_Adaptive1D* myHyp;
+    SMESH_Mesh*                  myMesh;
+    vector< EdgeData >           myEdges;
+    SegSizeTree*                 mySizeTree;
+  };
+
+  //================================================================================
+  /*!
    * \brief Data of triangle used to locate it in an octree and to find distance
    *        to a point
    */
   struct Triangle
   {
     Bnd_B3d myBox;
+    bool    myIsChecked; // to mark treated trias instead of using std::set
     // data for DistToProjection()
     gp_XYZ myN0, myEdge1, myEdge2, myNorm, myPVec;
     double myInvDet, myMaxSize2;
@@ -161,6 +191,7 @@ namespace // internal utils
   class ElementBndBoxTree;
   struct ElemTreeData : public SMESH_TreeLimit
   {
+    vector< int >                myWorkIDs[8];
     virtual const Bnd_B3d* GetBox(int elemID) const = 0;
   };
   struct TriaTreeData : public ElemTreeData
@@ -168,10 +199,13 @@ namespace // internal utils
     vector< Triangle >           myTrias;
     double                       myFaceTol;
     double                       myTriasDeflection;
+    BRepAdaptor_Surface          mySurface;
     const ElementBndBoxTree*     myTree;
     const Poly_Array1OfTriangle* myPolyTrias;
     const TColgp_Array1OfPnt*    myNodes;
     bool                         myOwnNodes;
+
+    vector< int >                myFoundTriaIDs;
 
     TriaTreeData( const TopoDS_Face& face, ElementBndBoxTree* triaTree );
     ~TriaTreeData() { if ( myOwnNodes ) delete myNodes; myNodes = NULL; }
@@ -191,7 +225,7 @@ namespace // internal utils
   public:
     ElementBndBoxTree(const TopoDS_Face& face);
     void GetElementsInSphere( const gp_XYZ& center,
-                              const double  radius, std::set<int> & foundElemIDs) const;
+                              const double  radius, vector<int> & foundElemIDs) const;
     ElemTreeData* GetElemData() const { return (ElemTreeData*) myLimit; }
     TriaTreeData* GetTriaData() const { return (TriaTreeData*) myLimit; }
 
@@ -233,7 +267,8 @@ namespace // internal utils
   //================================================================================
 
   TriaTreeData::TriaTreeData( const TopoDS_Face& face, ElementBndBoxTree* triaTree )
-    : myTree(NULL), myPolyTrias(NULL), myNodes(NULL), myOwnNodes(false), myTriasDeflection(0)
+    : myTriasDeflection(0), mySurface( face ),
+      myTree(NULL), myPolyTrias(NULL), myNodes(NULL), myOwnNodes(false)
   {
     TopLoc_Location loc;
     Handle(Poly_Triangulation) tr = BRep_Tool::Triangulation( face, loc );
@@ -281,40 +316,87 @@ namespace // internal utils
 
   void TriaTreeData::SetSizeByTrias( SegSizeTree& sizeTree, double deflection ) const
   {
-    if ( myTriasDeflection <= std::numeric_limits<double>::min() )
+    if ( mySurface.GetType() == GeomAbs_Plane ||
+         myTriasDeflection   <= std::numeric_limits<double>::min() )
       return;
     const double factor = deflection / myTriasDeflection;
 
-    Standard_Integer n1,n2,n3;
+    bool isConstSize;
+    switch( mySurface.GetType() ) {
+    case GeomAbs_Cylinder:
+    case GeomAbs_Sphere:
+    case GeomAbs_Torus:
+      isConstSize = true; break;
+    default:
+      isConstSize = false;
+    }
+
+    typedef std::pair<int,int> TLink;
+    TLink link;
+    map< TLink, double >           lenOfDoneLink;
+    map< TLink, double >::iterator link2len;
+
+    Standard_Integer n[4];
     gp_Pnt p[4];
     double a[3];
+    bool   isDone[3];
+    double size = -1., maxLinkLen;
+    int    jLongest;
+
+    int nbLinks = 0;
     for ( int i = 1; i <= myPolyTrias->Upper(); ++i )
     {
-      // compute minimal altitude of a triangle
-      myPolyTrias->Value( i ).Get( n1,n2,n3 );
-      p[0] = myNodes->Value( n1 );
-      p[1] = myNodes->Value( n2 );
-      p[2] = myNodes->Value( n3 );
+      // get corners of a triangle
+      myPolyTrias->Value( i ).Get( n[0],n[1],n[2] );
+      n[3] = n[0];
+      p[0] = myNodes->Value( n[0] );
+      p[1] = myNodes->Value( n[1] );
+      p[2] = myNodes->Value( n[2] );
       p[3] = p[0];
-      a[0] = p[0].Distance( p[1] );
-      a[1] = p[1].Distance( p[2] );
-      a[2] = p[2].Distance( p[3] );
-      double maxSide = Max( a[0], Max( a[1], a[2] ));
-      double s       = 0.5 * ( a[0] + a[1] + a[2] );
-      double area    = sqrt( s * (s - a[0]) * (s - a[1]) * (s - a[2]));
-      double sz      = 2 * area / maxSide; // minimal altitude
+      // get length of links and find the longest one
+      maxLinkLen = 0;
       for ( int j = 0; j < 3; ++j )
       {
-        int nb = 2 * int( a[j] / sz + 0.5 );
-        for ( int k = 1; k <= nb; ++k )
+        if ( n[j] < n[j+1] )
+          link = TLink( n[j], n[j+1] );
+        else
+          link = TLink( n[j+1], n[j] );
+        link2len  = lenOfDoneLink.insert( make_pair( link, -1. )).first;
+        isDone[j] = !((*link2len).second < 0 );
+        a[j]      = isDone[j] ? (*link2len).second : (*link2len).second = p[j].Distance( p[j+1] );
+        if ( isDone[j] )
+          lenOfDoneLink.erase( link2len );
+        if ( a[j] > maxLinkLen )
         {
-          double r = double( k ) / nb;
-          sizeTree.SetSize( r * p[j].XYZ() + ( 1-r ) * p[j+1].XYZ(), sz * factor );
+          maxLinkLen = a[j];
+          jLongest   = j;
         }
       }
-      sizeTree.SetSize(( p[0].XYZ() + p[1].XYZ() + p[2].XYZ()) / 3., sz * factor );
+      // compute minimal altitude of a triangle
+      if ( !isConstSize || size < 0. )
+      {
+        double maxSide = Max( a[0], Max( a[1], a[2] ));
+        double s       = 0.5 * ( a[0] + a[1] + a[2] );
+        double area    = sqrt( s * (s - a[0]) * (s - a[1]) * (s - a[2]));
+        size           = 2 * area / maxSide; // minimal altitude
+      }
+      // set size to the size tree
+      if ( !isDone[ jLongest ] || !isConstSize )
+      {
+        ++nbLinks;
+        int nb = Max( 1, int( a[jLongest] / size / 2 ));
+        for ( int k = 0; k <= nb; ++k )
+        {
+          double r = double( k ) / nb;
+          sizeTree.SetSize( r * p[ jLongest ].XYZ() + ( 1-r ) * p[ jLongest+1 ].XYZ(),
+                            size * factor );
+        }
+      }
       //cout << "SetSizeByTrias, i="<< i << " " << sz * factor << endl;
     }
+    // cout << "SetSizeByTrias, nn tria="<< myPolyTrias->Upper()
+    //      << " nb links" << nbLinks << " isConstSize="<<isConstSize
+    //      << " " << size * factor << endl;
   }
   //================================================================================
   /*!
@@ -332,16 +414,21 @@ namespace // internal utils
     double minDist2 = 1e100;
     const double tol2 = myFaceTol * myFaceTol;
 
-    std::set<int> foundElemIDs;
-    myTree->GetElementsInSphere( p.XYZ(), radius, foundElemIDs );
+    TriaTreeData* me = const_cast<TriaTreeData*>( this );
+    me->myFoundTriaIDs.clear();
+    myTree->GetElementsInSphere( p.XYZ(), radius, me->myFoundTriaIDs );
 
-    std::set<int>::iterator id = foundElemIDs.begin();
     Standard_Integer n[ 3 ];
-    for ( ; id != foundElemIDs.end(); ++id )
+    for ( size_t i = 0; i < myFoundTriaIDs.size(); ++i )
     {
+      Triangle& t = me->myTrias[ myFoundTriaIDs[i] ];
+      if ( t.myIsChecked )
+        continue;
+      t.myIsChecked = true;
+
       double d, minD2 = minDist2;
       bool avoidTria = false;
-      myPolyTrias->Value( *id+1 ).Get( n[0],n[1],n[2] );
+      myPolyTrias->Value( myFoundTriaIDs[i]+1 ).Get( n[0],n[1],n[2] );
       for ( int i = 0; i < 3; ++i )
       {
         const gp_Pnt& pn = myNodes->Value(n[i]);
@@ -352,12 +439,15 @@ namespace // internal utils
       }
       if ( !avoidTria )
       {
-        const Triangle& t = myTrias[ *id ];
         if ( minD2 < t.myMaxSize2 && t.DistToProjection( p, d ))
           minD2 = Min( minD2, d*d );
         minDist2 = Min( minDist2, minD2 );
       }
     }
+
+    for ( size_t i = 0; i < myFoundTriaIDs.size(); ++i )
+      me->myTrias[ myFoundTriaIDs[i] ].myIsChecked = false;
+
     return sqrt( minDist2 );
   }
   //================================================================================
@@ -468,8 +558,8 @@ namespace // internal utils
     {
       const Bnd_B3d* elemBox = data->GetBox( _elementIDs[i] );
       for (int j = 0; j < 8; j++)
-        if ( !elemBox->IsOut( *myChildren[j]->getBox() ))
-          ((ElementBndBoxTree*)myChildren[j])->_elementIDs.push_back( _elementIDs[i] );
+        if ( !elemBox->IsOut( *myChildren[ j ]->getBox() ))
+          data->myWorkIDs[ j ].push_back( _elementIDs[i] );
     }
     SMESHUtils::FreeVector( _elementIDs ); // = _elements.clear() + free memory
 
@@ -478,8 +568,10 @@ namespace // internal utils
     for (int j = 0; j < 8; j++)
     {
       ElementBndBoxTree* child = static_cast<ElementBndBoxTree*>( myChildren[j] );
+      child->_elementIDs = data->myWorkIDs[ j ];
       if ( child->_elementIDs.size() <= theMaxNbElemsInLeaf )
         child->myIsLeaf = true;
+      data->myWorkIDs[ j ].clear();
     }
   }
   //================================================================================
@@ -488,9 +580,9 @@ namespace // internal utils
    */
   //================================================================================
 
-  void ElementBndBoxTree::GetElementsInSphere( const gp_XYZ&   center,
-                                               const double    radius,
-                                               std::set<int> & foundElemIDs) const
+  void ElementBndBoxTree::GetElementsInSphere( const gp_XYZ& center,
+                                               const double  radius,
+                                               vector<int> & foundElemIDs) const
   {
     if ( const box_type* box = getBox() )
     {
@@ -502,7 +594,7 @@ namespace // internal utils
         ElemTreeData* data = GetElemData();
         for ( int i = 0; i < _elementIDs.size(); ++i )
           if ( !data->GetBox( _elementIDs[i] )->IsOut( center, radius ))
-            foundElemIDs.insert( _elementIDs[i] );
+            foundElemIDs.push_back( _elementIDs[i] );
       }
       else
       {
@@ -829,12 +921,12 @@ bool StdMeshers_Adaptive1D::SetParametersByDefaults(const TDefaults&  dflts,
 //purpose  : Returns an algorithm that works using this hypothesis
 //=======================================================================
 
-StdMeshers_AdaptiveAlgo_1D* StdMeshers_Adaptive1D::GetAlgo() const
+SMESH_Algo* StdMeshers_Adaptive1D::GetAlgo() const
 {
   if ( !myAlgo )
   {
-    StdMeshers_AdaptiveAlgo_1D* newAlgo = 
-      new StdMeshers_AdaptiveAlgo_1D( _gen->GetANewId(), _studyId, _gen );
+    AdaptiveAlgo* newAlgo = 
+      new AdaptiveAlgo( _gen->GetANewId(), _studyId, _gen );
     newAlgo->SetHypothesis( this );
 
     ((StdMeshers_Adaptive1D*) this)->myAlgo = newAlgo;
@@ -848,9 +940,9 @@ StdMeshers_AdaptiveAlgo_1D* StdMeshers_Adaptive1D::GetAlgo() const
  */
 //================================================================================
 
-StdMeshers_AdaptiveAlgo_1D::StdMeshers_AdaptiveAlgo_1D(int        hypId,
-                                                       int        studyId,
-                                                       SMESH_Gen* gen)
+AdaptiveAlgo::AdaptiveAlgo(int        hypId,
+                           int        studyId,
+                           SMESH_Gen* gen)
   : StdMeshers_Regular_1D( hypId, studyId, gen ),
     myHyp(NULL)
 {
@@ -863,7 +955,7 @@ StdMeshers_AdaptiveAlgo_1D::StdMeshers_AdaptiveAlgo_1D(int        hypId,
  */
 //================================================================================
 
-void StdMeshers_AdaptiveAlgo_1D::SetHypothesis( const StdMeshers_Adaptive1D* hyp )
+void AdaptiveAlgo::SetHypothesis( const StdMeshers_Adaptive1D* hyp )
 {
   myHyp = hyp;
 }
@@ -874,16 +966,15 @@ void StdMeshers_AdaptiveAlgo_1D::SetHypothesis( const StdMeshers_Adaptive1D* hyp
  */
 //================================================================================
 
-bool StdMeshers_AdaptiveAlgo_1D::Compute(SMESH_Mesh &         theMesh,
-                                         const TopoDS_Shape & theShape,
-                                         double*              theProgress,
-                                         int*                 theProgressTic)
+bool AdaptiveAlgo::Compute(SMESH_Mesh &         theMesh,
+                           const TopoDS_Shape & theShape)
 {
-  *theProgress = 0.01;
+  //*theProgress = 0.01;
 
   if ( myHyp->GetMinSize() > myHyp->GetMaxSize() )
     return error( "Bad parameters: min size > max size" );
 
+  myMesh = &theMesh;
   SMESH_MesherHelper helper( theMesh );
   const double grading = 0.7;
 
@@ -897,17 +988,17 @@ bool StdMeshers_AdaptiveAlgo_1D::Compute(SMESH_Mesh &         theMesh,
     IncrementalMesh im( theMesh.GetShapeToMesh(), myHyp->GetDeflection(), /*Relatif=*/false);
     box = im.GetBox();
   }
-  *theProgress = 0.3;
+  //*theProgress = 0.3;
 
   // holder of segment size at each point
   SegSizeTree sizeTree( box, grading, myHyp->GetMinSize(), myHyp->GetMaxSize() );
+  mySizeTree = & sizeTree;
 
   // minimal segment size that sizeTree can store with reasonable tree height
   const double minSize = Max( myHyp->GetMinSize(), 1.1 * sizeTree.GetMinSize() );
 
 
-  // working data of EDGEs
-  vector< EdgeData > edges;
+  // fill myEdges - working data of EDGEs
   {
     // sort EDGEs by length
     multimap< double, TopoDS_Edge > edgeOfLength;
@@ -917,18 +1008,20 @@ bool StdMeshers_AdaptiveAlgo_1D::Compute(SMESH_Mesh &         theMesh,
       if ( !SMESH_Algo::isDegenerated( edge) )
         edgeOfLength.insert( make_pair( EdgeLength( edge ), edge ));
     }
-    edges.resize( edgeOfLength.size() );
+    myEdges.clear();
+    myEdges.resize( edgeOfLength.size() );
     multimap< double, TopoDS_Edge >::const_iterator len2edge = edgeOfLength.begin();
     for ( int iE = 0; len2edge != edgeOfLength.end(); ++len2edge, ++iE )
     {
       const TopoDS_Edge & edge = len2edge->second;
-      EdgeData& eData = edges[ iE ];
+      EdgeData& eData = myEdges[ iE ];
       eData.myC3d.Initialize( edge );
       eData.myLength  = EdgeLength( edge );
       eData.AddPoint( eData.myPoints.end(), eData.myC3d.FirstParameter() );
       eData.AddPoint( eData.myPoints.end(), eData.myC3d.LastParameter() );
     }
   }
+  if ( _computeCanceled ) return false;
 
   // Take into account size of already existing segments
   SMDS_EdgeIteratorPtr segIterator = theMesh.GetMeshDS()->edgesIterator();
@@ -937,6 +1030,7 @@ bool StdMeshers_AdaptiveAlgo_1D::Compute(SMESH_Mesh &         theMesh,
     const SMDS_MeshElement* seg = segIterator->next();
     sizeTree.SetSize( SMESH_TNodeXYZ( seg->GetNode( 0 )), SMESH_TNodeXYZ( seg->GetNode( 1 )));
   }
+  if ( _computeCanceled ) return false;
 
   // Set size of segments according to the deflection
 
@@ -944,9 +1038,9 @@ bool StdMeshers_AdaptiveAlgo_1D::Compute(SMESH_Mesh &         theMesh,
   StdMeshers_Regular_1D::_value[ DEFLECTION_IND ] = myHyp->GetDeflection();
 
   list< double > params;
-  for ( int iE = 0; iE < edges.size(); ++iE )
+  for ( int iE = 0; iE < myEdges.size(); ++iE )
   {
-    EdgeData& eData = edges[ iE ];
+    EdgeData& eData = myEdges[ iE ];
     //cout << "E " << theMesh.GetMeshDS()->ShapeToIndex( eData.Edge() ) << endl;
 
     double f = eData.First().myU, l = eData.Last().myU;
@@ -966,12 +1060,16 @@ bool StdMeshers_AdaptiveAlgo_1D::Compute(SMESH_Mesh &         theMesh,
     EdgeData::TPntIter pIt2 = eData.myPoints.begin(), pIt1 = pIt2++;
     for ( ; pIt2 != eData.myPoints.end(); ++pIt1, ++pIt2 )
       sizeTree.SetSize( (*pIt1).myP, (*pIt2).myP );
+
+    if ( _computeCanceled ) return false;
   }
 
   // Limit size of segments according to distance to closest FACE
 
   for ( int iF = 1; iF <= faceMap.Extent(); ++iF )
   {
+    if ( _computeCanceled ) return false;
+
     const TopoDS_Face & face = TopoDS::Face( faceMap( iF ));
     // cout << "FACE " << iF << "/" << faceMap.Extent()
     //      << " id-" << theMesh.GetMeshDS()->ShapeToIndex( face ) << endl;
@@ -979,33 +1077,39 @@ bool StdMeshers_AdaptiveAlgo_1D::Compute(SMESH_Mesh &         theMesh,
     ElementBndBoxTree triaTree( face ); // tree of FACE triangulation
     TriaTreeData*     triaSearcher = triaTree.GetTriaData();
 
-    if ( BRepAdaptor_Surface( face ).GetType() != GeomAbs_Plane )
-      triaSearcher->SetSizeByTrias( sizeTree, myHyp->GetDeflection() );
+    triaSearcher->SetSizeByTrias( sizeTree, myHyp->GetDeflection() );
 
-    for ( int iE = 0; iE < edges.size(); ++iE )
+    for ( int iE = 0; iE < myEdges.size(); ++iE )
     {
-      EdgeData& eData = edges[ iE ];
+      EdgeData& eData = myEdges[ iE ];
 
       // check if the face is in topological contact with the edge
       bool isAdjFace = ( helper.IsSubShape( helper.IthVertex( 0, eData.Edge()), face ) ||
                          helper.IsSubShape( helper.IthVertex( 1, eData.Edge()), face ));
 
+      if ( isAdjFace && triaSearcher->mySurface.GetType() == GeomAbs_Plane )
+        continue;
+
       bool sizeDecreased = true;
       for (int iLoop = 0; sizeDecreased; ++iLoop ) //repeat until segment size along the edge becomes stable
       {
+        double maxSegSize = 0;
+
         // get points to check distance to the face
         EdgeData::TPntIter pIt2 = eData.myPoints.begin(), pIt1 = pIt2++;
-        pIt1->mySegSize = sizeTree.GetSize( pIt1->myP );
+        maxSegSize = pIt1->mySegSize = sizeTree.GetSize( pIt1->myP );
         for ( ; pIt2 != eData.myPoints.end(); )
         {
           pIt2->mySegSize = sizeTree.GetSize( pIt2->myP );
-          double curSize = Min( pIt1->mySegSize, pIt2->mySegSize );
+          double curSize  = Min( pIt1->mySegSize, pIt2->mySegSize );
+          maxSegSize      = Max( pIt2->mySegSize, maxSegSize );
           if ( pIt1->myP.Distance( pIt2->myP ) > curSize )
           {
             double midU  = 0.5*( pIt1->myU + pIt2->myU );
             gp_Pnt midP  = eData.myC3d.Value( midU );
             double midSz = sizeTree.GetSize( midP );
             pIt2 = eData.myPoints.insert( pIt2, EdgeData::ProbePnt( midP, midU, midSz ));
+            eData.myBBox.Add( midP.XYZ() );
           }
           else
           {
@@ -1014,6 +1118,9 @@ bool StdMeshers_AdaptiveAlgo_1D::Compute(SMESH_Mesh &         theMesh,
         }
         // check if the face is more distant than a half of the current segment size,
         // if not, segment size is decreased
+        if ( iLoop == 0 && eData.IsTooDistant( triaTree.getBox(), maxSegSize ))
+          break;
+        //cout << "E " << theMesh.GetMeshDS()->ShapeToIndex( eData.Edge() ) << endl;
         sizeDecreased = false;
         const gp_Pnt* avoidPnt = & eData.First().myP;
         for ( pIt1 = eData.myPoints.begin(); pIt1 != eData.myPoints.end();  )
@@ -1045,37 +1152,47 @@ bool StdMeshers_AdaptiveAlgo_1D::Compute(SMESH_Mesh &         theMesh,
           if ( iLoop > 20 )
           {
 #ifdef _DEBUG_
-            cout << "Infinite loop in StdMeshers_AdaptiveAlgo_1D::Compute()" << endl;
+            cout << "Infinite loop in AdaptiveAlgo::Compute()" << endl;
 #endif
             sizeDecreased = false;
             break;
           }
         }
       } // while ( sizeDecreased )
-    } // loop on edges
+    } // loop on myEdges
 
-    *theProgress = 0.3 + 0.3 * iF / double( faceMap.Extent() );
-    if ( _computeCanceled )
-      return false;
+    //*theProgress = 0.3 + 0.3 * iF / double( faceMap.Extent() );
 
   } // loop on faceMap
 
+  return makeSegments();
+}
 
-  // Create segments
+//================================================================================
+/*!
+ * \brief Create segments
+ */
+//================================================================================
 
+bool AdaptiveAlgo::makeSegments()
+{
   SMESH_HypoFilter quadHyp( SMESH_HypoFilter::HasName( "QuadraticMesh" ));
-  _quadraticMesh = theMesh.GetHypothesis( edges[0].Edge(), quadHyp, /*andAncestors=*/true );
+  _quadraticMesh = myMesh->GetHypothesis( myEdges[0].Edge(), quadHyp, /*andAncestors=*/true );
+
+  SMESH_MesherHelper helper( *myMesh );
   helper.SetIsQuadratic( _quadraticMesh );
 
-  for ( int iE = 0; iE < edges.size(); ++iE )
+  vector< double > nbSegs, params;
+
+  for ( int iE = 0; iE < myEdges.size(); ++iE )
   {
-    EdgeData& eData = edges[ iE ];
+    EdgeData& eData = myEdges[ iE ];
 
     // estimate roughly min segement size on the EDGE
     double edgeMinSize = myHyp->GetMaxSize();
     EdgeData::TPntIter pIt1 = eData.myPoints.begin();
     for ( ; pIt1 != eData.myPoints.end(); ++pIt1 )
-      edgeMinSize = Min( edgeMinSize, sizeTree.GetSize( pIt1->myP ));
+      edgeMinSize = Min( edgeMinSize, mySizeTree->GetSize( pIt1->myP ));
 
     const double f = eData.myC3d.FirstParameter(), l = eData.myC3d.LastParameter();
     const double parLen = l - f;
@@ -1083,7 +1200,6 @@ bool StdMeshers_AdaptiveAlgo_1D::Compute(SMESH_Mesh &         theMesh,
     int           nbDiv = int ( eData.myLength / edgeMinSize * nbDivSeg );
 
     // compute nb of segments
-    vector< double > nbSegs;
     bool toRecompute = true;
     double maxSegSize = 0;
     //cout << "E " << theMesh.GetMeshDS()->ShapeToIndex( eData.Edge() ) << endl;
@@ -1097,7 +1213,7 @@ bool StdMeshers_AdaptiveAlgo_1D::Compute(SMESH_Mesh &         theMesh,
       for ( size_t i = 1, segCount = 1; i < nbSegs.size(); ++i )
       {
         p2 = eData.myC3d.Value( f + parLen * i / nbDiv );
-        double locSize = Min( sizeTree.GetSize( p2 ), myHyp->GetMaxSize() );
+        double locSize = Min( mySizeTree->GetSize( p2 ), myHyp->GetMaxSize() );
         double nb      = p1.Distance( p2 ) / locSize;
         // if ( nbSegs.size() < 30 )
         //   cout << "locSize " << locSize << " nb " << nb << endl;
@@ -1138,10 +1254,10 @@ bool StdMeshers_AdaptiveAlgo_1D::Compute(SMESH_Mesh &         theMesh,
     // get nodes on VERTEXes
     TopoDS_Vertex vf = helper.IthVertex( 0, eData.Edge(), false );
     TopoDS_Vertex vl = helper.IthVertex( 1, eData.Edge(), false );
-    theMesh.GetSubMesh( vf )->ComputeStateEngine( SMESH_subMesh::COMPUTE );
-    theMesh.GetSubMesh( vl )->ComputeStateEngine( SMESH_subMesh::COMPUTE );
-    const SMDS_MeshNode * nf = VertexNode( vf, theMesh.GetMeshDS() );
-    const SMDS_MeshNode * nl = VertexNode( vl, theMesh.GetMeshDS() );
+    myMesh->GetSubMesh( vf )->ComputeStateEngine( SMESH_subMesh::COMPUTE );
+    myMesh->GetSubMesh( vl )->ComputeStateEngine( SMESH_subMesh::COMPUTE );
+    const SMDS_MeshNode * nf = VertexNode( vf, myMesh->GetMeshDS() );
+    const SMDS_MeshNode * nl = VertexNode( vl, myMesh->GetMeshDS() );
     if ( !nf || !nl )
       return error("No node on vertex");
 
@@ -1150,33 +1266,34 @@ bool StdMeshers_AdaptiveAlgo_1D::Compute(SMESH_Mesh &         theMesh,
     helper.SetElementsOnShape( true );
     const int ID = 0;
     const SMDS_MeshNode *n1 = nf, *n2;
-    list< double >::const_iterator u = params.begin();
-    for ( ; u != params.end(); ++u, n1 = n2 )
+    for ( size_t i = 0; i < params.size(); ++i, n1 = n2 )
     {
-      gp_Pnt p2 = eData.myC3d.Value( *u );
-      n2 = helper.AddNode( p2.X(), p2.Y(), p2.Z(), ID, *u );
+      gp_Pnt p2 = eData.myC3d.Value( params[i] );
+      n2 = helper.AddNode( p2.X(), p2.Y(), p2.Z(), ID, params[i] );
       helper.AddEdge( n1, n2, ID, /*force3d=*/false );
     }
     helper.AddEdge( n1, nl, ID, /*force3d=*/false );
 
-    *theProgress = 0.6 + 0.4 * iE / double( edges.size() );
+    eData.myPoints.clear();
+
+    //*theProgress = 0.6 + 0.4 * iE / double( myEdges.size() );
     if ( _computeCanceled )
       return false;
 
   } // loop on EDGEs
 
+  myEdges.clear();
 }
-
 
 //================================================================================
 /*!
- * \brief Creates segments on all given EDGEs
+ * \brief Predict number of segments on all given EDGEs
  */
 //================================================================================
 
-bool StdMeshers_AdaptiveAlgo_1D::Evaluate(SMESH_Mesh &         theMesh,
-                                          const TopoDS_Shape & theShape,
-                                          MapShapeNbElems&     theResMap)
+bool AdaptiveAlgo::Evaluate(SMESH_Mesh &         theMesh,
+                            const TopoDS_Shape & theShape,
+                            MapShapeNbElems&     theResMap)
 {
   // initialize fields of inherited StdMeshers_Regular_1D
   StdMeshers_Regular_1D::_hypType = DEFLECTION;
