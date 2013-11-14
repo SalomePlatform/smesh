@@ -382,7 +382,7 @@ bool SMESHGUI_Selection::isAutoColor( int ind ) const
 
 //=======================================================================
 //function : numberOfNodes
-//purpose  : 
+//purpose  : this method is actually used to check if an object is empty or not
 //=======================================================================
 
 int SMESHGUI_Selection::numberOfNodes( int ind ) const
@@ -401,7 +401,7 @@ int SMESHGUI_Selection::numberOfNodes( int ind ) const
         return aSubMeshObj->GetNumberOfNodes(true);
       SMESH::SMESH_GroupBase_var aGroupObj = SMESH::SMESH_GroupBase::_narrow( obj );
       if ( !aGroupObj->_is_nil() )
-        return aGroupObj->Size();
+        return aGroupObj->IsEmpty(); // aGroupObj->Size();
     }
   }
   return 0;
