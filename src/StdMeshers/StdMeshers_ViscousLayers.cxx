@@ -3720,7 +3720,7 @@ bool _ViscousBuilder::shrink()
       }
       if ( badNb > 0 )
         return error(SMESH_Comment("Can't shrink 2D mesh on face ") << f2sd->first );
-      if ( shriStep > 20 )
+      if ( shriStep > 200 )
         return error(SMESH_Comment("Infinite loop at shrinking 2D mesh on face ") << f2sd->first );
     }
 
