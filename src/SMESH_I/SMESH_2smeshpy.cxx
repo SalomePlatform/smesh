@@ -201,6 +201,9 @@ namespace {
     _AString comment;
 
     _pyID obj = cmd->GetObject();
+    if ( obj.Search( "print " ) == 1 )
+      return; // print statement
+
     if ( !obj.IsEmpty() && obj.Value( obj.Length() ) == ')' )
       // remove an accessor method
       obj = _pyCommand( obj ).GetObject();
