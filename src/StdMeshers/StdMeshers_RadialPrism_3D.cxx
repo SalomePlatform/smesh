@@ -48,26 +48,27 @@
 
 #include <BRepAdaptor_Curve.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>
+#include <BRep_Tool.hxx>
+#include <TopExp_Explorer.hxx>
+#include <TopTools_DataMapIteratorOfDataMapOfShapeShape.hxx>
+#include <TopTools_MapOfShape.hxx>
+#include <TopoDS.hxx>
+#include <TopoDS_Shell.hxx>
+#include <TopoDS_Solid.hxx>
+#include <gp.hxx>
+#include <gp_Pnt.hxx>
 #if OCC_VERSION_LARGE > 0x06050400
 #include <BRepClass3d.hxx>
 #else
 #include <BRepTools.hxx>
 #endif
-#include <BRep_Tool.hxx>
-#include <TopExp_Explorer.hxx>
-#include <TopoDS.hxx>
-#include <TopoDS_Shell.hxx>
-#include <TopoDS_Solid.hxx>
-#include <TopTools_MapOfShape.hxx>
-#include <gp.hxx>
-#include <gp_Pnt.hxx>
 
 using namespace std;
 
 #define RETURN_BAD_RESULT(msg) { MESSAGE(")-: Error: " << msg); return false; }
 #define gpXYZ(n) gp_XYZ(n->X(),n->Y(),n->Z())
 
-namespace TAssocTool = StdMeshers_ProjectionUtils;
+namespace ProjectionUtils = StdMeshers_ProjectionUtils;
 
 //=======================================================================
 //function : StdMeshers_RadialPrism_3D
@@ -106,8 +107,8 @@ bool StdMeshers_RadialPrism_3D::CheckHypothesis(SMESH_Mesh&                     
 {
   // check aShape that must have 2 shells
 /*  PAL16229
-  if ( TAssocTool::Count( aShape, TopAbs_SOLID, 0 ) != 1 ||
-       TAssocTool::Count( aShape, TopAbs_SHELL, 0 ) != 2 )
+  if ( ProjectionUtils::Count( aShape, TopAbs_SOLID, 0 ) != 1 ||
+       ProjectionUtils::Count( aShape, TopAbs_SHELL, 0 ) != 2 )
   {
     aStatus = HYP_BAD_GEOMETRY;
     return false;
@@ -185,11 +186,38 @@ bool StdMeshers_RadialPrism_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& a
   // Associate sub-shapes of the shells
   // ----------------------------------
 
-  TAssocTool::TShapeShapeMap shape2ShapeMap;
-  if ( !TAssocTool::FindSubShapeAssociation( innerShell, &aMesh,
-                                             outerShell, &aMesh,
-                                             shape2ShapeMap) )
+  ProjectionUtils::TShapeShapeMap shape2ShapeMaps[2];
+  if ( !ProjectionUtils::FindSubShapeAssociation( innerShell, &aMesh,
+                                                  outerShell, &aMesh,
+                                                  shape2ShapeMaps[0])
+       &&
+       !ProjectionUtils::FindSubShapeAssociation( innerShell.Reversed(), &aMesh,
+                                                  outerShell, &aMesh,
+                                                  shape2ShapeMaps[1]))
     return error(COMPERR_BAD_SHAPE,"Topology of inner and outer shells seems different" );
+
+  int iMap;
+  if ( shape2ShapeMaps[0].Extent() == shape2ShapeMaps[1].Extent() )
+  {
+    // choose an assiciation by shortest distance between VERTEXes
+    double dist1 = 0, dist2 = 0;
+    TopTools_DataMapIteratorOfDataMapOfShapeShape ssIt( shape2ShapeMaps[0]._map1to2 );
+    for (; ssIt.More(); ssIt.Next() )
+    {
+      if ( ssIt.Key().ShapeType() != TopAbs_VERTEX ) continue;
+      gp_Pnt pIn   = BRep_Tool::Pnt( TopoDS::Vertex( ssIt.Key() ));
+      gp_Pnt pOut1 = BRep_Tool::Pnt( TopoDS::Vertex( ssIt.Value() ));
+      gp_Pnt pOut2 = BRep_Tool::Pnt( TopoDS::Vertex( shape2ShapeMaps[1]( ssIt.Key() )));
+      dist1 += pIn.SquareDistance( pOut1 );
+      dist2 += pIn.SquareDistance( pOut2 );
+    }
+    iMap = ( dist1 < dist2 ) ? 0 : 1;
+  }
+  else
+  {
+    iMap = ( shape2ShapeMaps[0].Extent() > shape2ShapeMaps[1].Extent() ) ? 0 : 1;
+  }
+  ProjectionUtils::TShapeShapeMap& shape2ShapeMap = shape2ShapeMaps[iMap];
 
   // ------------------
   // Make mesh
@@ -212,8 +240,8 @@ bool StdMeshers_RadialPrism_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& a
 
     // Find matching nodes of in and out faces
     TNodeNodeMap nodeIn2OutMap;
-    if ( ! TAssocTool::FindMatchingNodesOnFaces( inFace, &aMesh, outFace, &aMesh,
-                                                 shape2ShapeMap, nodeIn2OutMap ))
+    if ( ! ProjectionUtils::FindMatchingNodesOnFaces( inFace, &aMesh, outFace, &aMesh,
+                                                      shape2ShapeMap, nodeIn2OutMap ))
       return error(COMPERR_BAD_INPUT_MESH,SMESH_Comment("Mesh on faces #")
                    << meshDS->ShapeToIndex( outFace ) << " and "
                    << meshDS->ShapeToIndex( inFace ) << " seems different" );
@@ -432,10 +460,10 @@ bool StdMeshers_RadialPrism_3D::Evaluate(SMESH_Mesh& aMesh,
   }
 
   // Associate sub-shapes of the shells
-  TAssocTool::TShapeShapeMap shape2ShapeMap;
-  if ( !TAssocTool::FindSubShapeAssociation( outerShell, &aMesh,
-                                             innerShell, &aMesh,
-                                             shape2ShapeMap) ) {
+  ProjectionUtils::TShapeShapeMap shape2ShapeMap;
+  if ( !ProjectionUtils::FindSubShapeAssociation( outerShell, &aMesh,
+                                                  innerShell, &aMesh,
+                                                  shape2ShapeMap) ) {
     std::vector<int> aResVec(SMDSEntity_Last);
     for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aResVec[i] = 0;
     SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);

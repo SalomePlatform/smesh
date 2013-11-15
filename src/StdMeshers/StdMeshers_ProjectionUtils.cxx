@@ -438,8 +438,8 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
                                                          TShapeShapeMap &    theMap)
 {
   // Structure of this long function is following
-  // 1) Group->group projection: theShape1 is a group member,
-  //    theShape2 is a group. We find a group theShape1 is in and recall self.
+  // 1) Group -> Group projection: theShape1 is a group member,
+  //    theShape2 is another group. We find a group theShape1 is in and recall self.
   // 2) Accosiate same shapes with different location (partners).
   // 3) If vertex association is given, perform accosiation according to shape type:
   //       switch ( ShapeType ) {
@@ -622,7 +622,8 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       TopTools_ListIteratorOfListOfShape ancestIt1( edgeToFace1.FindFromKey( edge1 ));
       for ( ; F1.IsNull() && ancestIt1.More(); ancestIt1.Next() )
         if ( ancestIt1.Value().ShapeType() == TopAbs_FACE )
-          F1 = ancestIt1.Value().Oriented( TopAbs_FORWARD );
+          F1 = ancestIt1.Value().Oriented //( TopAbs_FORWARD );
+            ( SMESH_MesherHelper::GetSubShapeOri( theShape1, ancestIt1.Value() ));
       if ( F1.IsNull() )
         RETURN_BAD_RESULT(" Face1 not found");
 
@@ -630,7 +631,8 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       TopTools_ListIteratorOfListOfShape ancestIt2( edgeToFace2.FindFromKey( edge2 ));
       for ( int i = 0; FF2[1].IsNull() && ancestIt2.More(); ancestIt2.Next() )
         if ( ancestIt2.Value().ShapeType() == TopAbs_FACE )
-          FF2[ i++ ] = ancestIt2.Value().Oriented( TopAbs_FORWARD );
+          FF2[ i++ ] = ancestIt2.Value().Oriented // ( TopAbs_FORWARD );
+            ( SMESH_MesherHelper::GetSubShapeOri( theShape2, ancestIt2.Value() ));
 
       // get oriented edge1 and edge2 from F1 and FF2[0]
       for ( exp.Init( F1, TopAbs_EDGE ); exp.More(); exp.Next() )
