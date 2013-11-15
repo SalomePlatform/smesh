@@ -4249,10 +4249,13 @@ bool _pySelfEraser::CanClear()
   {
     int nbCalls = 0;
     std::list< Handle(_pyCommand) >& cmds = GetProcessedCmds();
-    std::list< Handle(_pyCommand) >::const_iterator cmd = cmds.begin();
-    for ( ; cmd != cmds.end(); ++cmd )
+    std::list< Handle(_pyCommand) >::iterator cmd = cmds.begin();
+    for ( ; cmd != cmds.end();  )
       // check of cmd emptiness is not enough as object can change
-      nbCalls += ( ( *cmd )->GetString().Search( GetID() ) > 0 );
+      if (( *cmd )->GetString().Search( GetID() ) > 0 )
+        ++nbCalls, ++cmd;
+      else
+        cmd = cmds.erase( cmd ); // save the cmd from clearing
 
     toErase = ( nbCalls < 1 );
   }
