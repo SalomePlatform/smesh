@@ -1936,7 +1936,6 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
       DoubleSpinItem* dblSpin = new DoubleSpinItem( 0 );
       dblSpin->setPrecision( aPrecision );
       aTable->setItem( row, 2, dblSpin );
-      nbCompareSigns = 3;
     }
     else // --------------------------------------------------------------QTableWidgetItem
     {
@@ -1945,6 +1944,8 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
   }
 
   // set Compare
+  if ( anIsDoubleCriterion )
+    nbCompareSigns = 3;
   if ( aCompareItem->count() != nbCompareSigns )
   {
     switch ( nbCompareSigns ) {
