@@ -895,8 +895,9 @@ void SMESHDS_Mesh::RemoveFreeNode(const SMDS_MeshNode * n,
 
   // Rm from sub-mesh
   // Node should belong to only one sub-mesh
-  if( subMesh )
-    subMesh->RemoveNode(n,/*deleted=*/false);
+  if ( !subMesh || !subMesh->RemoveNode(n,/*deleted=*/false))
+    if (( subMesh = MeshElements( n->getshapeId() )))
+      subMesh->RemoveNode(n,/*deleted=*/false );
 
   SMDS_Mesh::RemoveFreeElement(n);
 }
