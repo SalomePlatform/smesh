@@ -100,10 +100,10 @@ namespace // internal utils
     const ProbePnt& First() const { return myPoints.front(); }
     const ProbePnt& Last()  const { return myPoints.back(); }
     const TopoDS_Edge& Edge() const { return myC3d.Edge(); }
-    bool IsTooDistant( const SMESH_Octree::box_type* faceBox, double maxSegSize ) const
+    bool IsTooDistant( const BBox& faceBox, double maxSegSize ) const
     {
       gp_XYZ hsize = myBBox.HSize() + gp_XYZ( maxSegSize, maxSegSize, maxSegSize );
-      return faceBox->IsOut ( SMESH_Octree::box_type( myBBox.Center(), hsize ));
+      return faceBox.IsOut ( Bnd_B3d( myBBox.Center(), hsize ));
     }
   };
   //================================================================================
@@ -191,7 +191,7 @@ namespace // internal utils
   class ElementBndBoxTree;
   struct ElemTreeData : public SMESH_TreeLimit
   {
-    vector< int >                myWorkIDs[8];
+    vector< int >                myWorkIDs[8];// to speed up filling ElementBndBoxTree::_elementIDs
     virtual const Bnd_B3d* GetBox(int elemID) const = 0;
   };
   struct TriaTreeData : public ElemTreeData
@@ -199,17 +199,20 @@ namespace // internal utils
     vector< Triangle >           myTrias;
     double                       myFaceTol;
     double                       myTriasDeflection;
+    BBox                         myBBox;
     BRepAdaptor_Surface          mySurface;
-    const ElementBndBoxTree*     myTree;
+    ElementBndBoxTree*           myTree;
     const Poly_Array1OfTriangle* myPolyTrias;
     const TColgp_Array1OfPnt*    myNodes;
     bool                         myOwnNodes;
 
-    vector< int >                myFoundTriaIDs;
+    typedef vector<int> IntVec;
+    IntVec                       myFoundTriaIDs;
 
     TriaTreeData( const TopoDS_Face& face, ElementBndBoxTree* triaTree );
     ~TriaTreeData() { if ( myOwnNodes ) delete myNodes; myNodes = NULL; }
     virtual const Bnd_B3d* GetBox(int elemID) const { return &myTrias[elemID].myBox; }
+    void PrepareToTriaSearch();
     void SetSizeByTrias( SegSizeTree& sizeTree, double deflection ) const;
     double GetMinDistInSphere(const gp_Pnt& p,
                               const double  radius,
@@ -226,6 +229,7 @@ namespace // internal utils
     ElementBndBoxTree(const TopoDS_Face& face);
     void GetElementsInSphere( const gp_XYZ& center,
                               const double  radius, vector<int> & foundElemIDs) const;
+    void FillIn();
     ElemTreeData* GetElemData() const { return (ElemTreeData*) myLimit; }
     TriaTreeData* GetTriaData() const { return (TriaTreeData*) myLimit; }
 
@@ -289,37 +293,49 @@ namespace // internal utils
         for ( int i = trsfNodes->Lower(); i <= trsfNodes->Upper(); ++i )
           trsfNodes->ChangeValue(i).Transform( trsf );
       }
-      myTrias.resize( myPolyTrias->Length() );
-      Standard_Integer n1,n2,n3;
-      for ( int i = 1; i <= myPolyTrias->Upper(); ++i )
-      {
-        myPolyTrias->Value( i ).Get( n1,n2,n3 );
-        myTrias[ i-1 ].Init( myNodes->Value( n1 ),
-                             myNodes->Value( n2 ),
-                             myNodes->Value( n3 ));
-      }
-      // TODO: mark triangles with nodes on VERTEXes to
-      // less frequently compare with avoidPnt in GetMinDistInSphere()
-      //
-      // Handle(Poly_PolygonOnTriangulation) polygon =
-      //   BRep_Tool::PolygonOnTriangulation( edge, tr, loc );
-      // if ( polygon.IsNull() /*|| !pologon.HasParameters()*/ )
-      //   continue;
-      // Handle(TColStd_Array1OfInteger) nodeIDs = polygon->Nodes();
+      for ( int i = myNodes->Lower(); i <= myNodes->Upper(); ++i )
+        myBBox.Add( myNodes->Value(i).XYZ() );
+
     }
   }
+  void TriaTreeData::PrepareToTriaSearch()
+  {
+    if ( !myTrias.empty() ) return; // already done
+    if ( !myPolyTrias ) return;
+
+    myTrias.resize( myPolyTrias->Length() );
+    Standard_Integer n1,n2,n3;
+    for ( int i = 1; i <= myPolyTrias->Upper(); ++i )
+    {
+      myPolyTrias->Value( i ).Get( n1,n2,n3 );
+      myTrias[ i-1 ].Init( myNodes->Value( n1 ),
+                           myNodes->Value( n2 ),
+                           myNodes->Value( n3 ));
+    }
+    myTree->FillIn();
+
+    // TODO: mark triangles with nodes on VERTEXes to
+    // less frequently compare with avoidPnt in GetMinDistInSphere()
+    //
+    // Handle(Poly_PolygonOnTriangulation) polygon =
+    //   BRep_Tool::PolygonOnTriangulation( edge, tr, loc );
+    // if ( polygon.IsNull() || !pologon.HasParameters() )
+    //   continue;
+    // Handle(TColStd_Array1OfInteger) nodeIDs = polygon->Nodes();
+  }
+
   //================================================================================
   /*!
    * \brief Set size of segments by size of triangles
    */
   //================================================================================
 
-  void TriaTreeData::SetSizeByTrias( SegSizeTree& sizeTree, double deflection ) const
+  void TriaTreeData::SetSizeByTrias( SegSizeTree& sizeTree, double hypDeflection ) const
   {
     if ( mySurface.GetType() == GeomAbs_Plane ||
-         myTriasDeflection   <= std::numeric_limits<double>::min() )
+         myTriasDeflection   <= 1e-100 )
       return;
-    const double factor = deflection / myTriasDeflection;
+    const double factor = hypDeflection / myTriasDeflection;
 
     bool isConstSize;
     switch( mySurface.GetType() ) {
@@ -343,7 +359,7 @@ namespace // internal utils
     double size = -1., maxLinkLen;
     int    jLongest;
 
-    int nbLinks = 0;
+    //int nbLinks = 0;
     for ( int i = 1; i <= myPolyTrias->Upper(); ++i )
     {
       // get corners of a triangle
@@ -375,16 +391,15 @@ namespace // internal utils
       // compute minimal altitude of a triangle
       if ( !isConstSize || size < 0. )
       {
-        double maxSide = Max( a[0], Max( a[1], a[2] ));
-        double s       = 0.5 * ( a[0] + a[1] + a[2] );
-        double area    = sqrt( s * (s - a[0]) * (s - a[1]) * (s - a[2]));
-        size           = 2 * area / maxSide; // minimal altitude
+        double s    = 0.5 * ( a[0] + a[1] + a[2] );
+        double area = sqrt( s * (s - a[0]) * (s - a[1]) * (s - a[2]));
+        size        = 2 * area / maxLinkLen; // minimal altitude
       }
       // set size to the size tree
       if ( !isDone[ jLongest ] || !isConstSize )
       {
-        ++nbLinks;
-        int nb = Max( 1, int( a[jLongest] / size / 2 ));
+        //++nbLinks;
+        int nb = Max( 1, int( maxLinkLen / size / 2 ));
         for ( int k = 0; k <= nb; ++k )
         {
           double r = double( k ) / nb;
@@ -521,7 +536,17 @@ namespace // internal utils
     TriaTreeData* data = new TriaTreeData( face, this );
     data->myMaxLevel = 5;
     myLimit = data;
+  }
+  //================================================================================
+  /*!
+   * \brief Fill all levels of octree of Poly_Triangulation of a FACE
+   */
+  //================================================================================
 
+  void ElementBndBoxTree::FillIn()
+  {
+    if ( myChildren ) return;
+    TriaTreeData* data = GetTriaData();
     if ( !data->myTrias.empty() )
     {
       for ( size_t i = 0; i < data->myTrias.size(); ++i )
@@ -538,13 +563,10 @@ namespace // internal utils
 
   Bnd_B3d* ElementBndBoxTree::buildRootBox()
   {
-    Bnd_B3d* box = new Bnd_B3d;
-    ElemTreeData* data = GetElemData();
-    for ( int i = 0; i < _elementIDs.size(); ++i )
-      box->Add( *data->GetBox( _elementIDs[i] ));
+    TriaTreeData* data = GetTriaData();
+    Bnd_B3d*       box = new Bnd_B3d( data->myBBox );
     return box;
   }
-
   //================================================================================
   /*!
    * \brief Redistrubute element boxes among children
@@ -1059,7 +1081,12 @@ bool AdaptiveAlgo::Compute(SMESH_Mesh &         theMesh,
 
     EdgeData::TPntIter pIt2 = eData.myPoints.begin(), pIt1 = pIt2++;
     for ( ; pIt2 != eData.myPoints.end(); ++pIt1, ++pIt2 )
-      sizeTree.SetSize( (*pIt1).myP, (*pIt2).myP );
+    {
+      double sz = sizeTree.SetSize( (*pIt1).myP, (*pIt2).myP );
+      sz = Min( sz, myHyp->GetMaxSize() );
+      pIt1->mySegSize = Min( sz, pIt1->mySegSize );
+      pIt2->mySegSize = Min( sz, pIt2->mySegSize );
+    }
 
     if ( _computeCanceled ) return false;
   }
@@ -1097,10 +1124,10 @@ bool AdaptiveAlgo::Compute(SMESH_Mesh &         theMesh,
 
         // get points to check distance to the face
         EdgeData::TPntIter pIt2 = eData.myPoints.begin(), pIt1 = pIt2++;
-        maxSegSize = pIt1->mySegSize = sizeTree.GetSize( pIt1->myP );
+        maxSegSize = pIt1->mySegSize = Min( pIt1->mySegSize, sizeTree.GetSize( pIt1->myP ));
         for ( ; pIt2 != eData.myPoints.end(); )
         {
-          pIt2->mySegSize = sizeTree.GetSize( pIt2->myP );
+          pIt2->mySegSize = Min( pIt2->mySegSize, sizeTree.GetSize( pIt2->myP ));
           double curSize  = Min( pIt1->mySegSize, pIt2->mySegSize );
           maxSegSize      = Max( pIt2->mySegSize, maxSegSize );
           if ( pIt1->myP.Distance( pIt2->myP ) > curSize )
@@ -1118,8 +1145,11 @@ bool AdaptiveAlgo::Compute(SMESH_Mesh &         theMesh,
         }
         // check if the face is more distant than a half of the current segment size,
         // if not, segment size is decreased
-        if ( iLoop == 0 && eData.IsTooDistant( triaTree.getBox(), maxSegSize ))
+
+        if ( iLoop == 0 && eData.IsTooDistant( triaSearcher->myBBox, maxSegSize ))
           break;
+        triaSearcher->PrepareToTriaSearch();
+
         //cout << "E " << theMesh.GetMeshDS()->ShapeToIndex( eData.Edge() ) << endl;
         sizeDecreased = false;
         const gp_Pnt* avoidPnt = & eData.First().myP;
@@ -1247,7 +1277,11 @@ bool AdaptiveAlgo::makeSegments()
       while ( nbSegs[i] * fact < segCount )
         ++i;
       if ( i < nbDiv )
-        params.push_back( f + parLen * i / nbDiv );
+      {
+        double d = i - ( nbSegs[i] - segCount/fact ) / ( nbSegs[i] - nbSegs[i-1] );
+        params.push_back( f + parLen * d / nbDiv );
+        //params.push_back( f + parLen * i / nbDiv );
+      }
       else
         break;
     }
@@ -1282,7 +1316,9 @@ bool AdaptiveAlgo::makeSegments()
 
   } // loop on EDGEs
 
-  myEdges.clear();
+  SMESHUtils::FreeVector( myEdges );
+
+  return true;
 }
 
 //================================================================================
