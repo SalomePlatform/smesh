@@ -307,7 +307,7 @@ double NumericalFunctor::GetValue( long theId )
   myCurrElement = myMesh->FindElement( theId );
 
   TSequenceOfXYZ P;
-  if ( GetPoints( theId, P ))
+  if ( GetPoints( theId, P )) // elem type is checked here
     aVal = Round( GetValue( P ));
 
   return aVal;
