@@ -292,6 +292,9 @@ int SMESHDS_GroupOnFilter::getElementIds( void* ids, size_t idSize ) const
 {
   SMESHDS_GroupOnFilter* me = const_cast<SMESHDS_GroupOnFilter*>( this );
 
+  if ( IsUpToDate() )
+    me->setChanged();
+    
   char* curID = (char*) ids;
   SMDS_ElemIteratorPtr elIt = GetElements();
   if ( elIt->more() )
@@ -303,8 +306,6 @@ int SMESHDS_GroupOnFilter::getElementIds( void* ids, size_t idSize ) const
     }
     else
     {
-      me->setChanged();
-
       // find out nb of elements to skip w/o check before the 1st OK element
       const SMDS_MeshElement* firstOkElem = me->setNbElemToSkip( elIt );
 
