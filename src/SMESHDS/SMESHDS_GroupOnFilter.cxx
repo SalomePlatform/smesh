@@ -292,7 +292,7 @@ int SMESHDS_GroupOnFilter::getElementIds( void* ids, size_t idSize ) const
 {
   SMESHDS_GroupOnFilter* me = const_cast<SMESHDS_GroupOnFilter*>( this );
 
-  if ( IsUpToDate() )
+  if ( !IsUpToDate() )
     me->setChanged();
     
   char* curID = (char*) ids;
