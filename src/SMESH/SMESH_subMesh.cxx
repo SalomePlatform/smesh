@@ -1654,7 +1654,10 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
         if (ret)
         {
           for (; ret && subS.More(); subS.Next())
-            ret = _father->GetSubMesh( subS.Current() )->IsMeshComputed();
+            if ( !_father->GetSubMesh( subS.Current() )->IsMeshComputed() &&
+                 ( _subShape.ShapeType() != TopAbs_EDGE ||
+                   !algo->isDegenerated( TopoDS::Edge( subS.Current() ))))
+              ret = false;
         }
         // Set _computeError
         if (!ret && !isComputeErrorSet)
