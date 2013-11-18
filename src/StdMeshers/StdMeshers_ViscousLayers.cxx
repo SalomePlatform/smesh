@@ -801,10 +801,10 @@ namespace
         double u1 = intervals( i );
         double u2 = intervals( i+1 );
         curve.D2( 0.5*( u1+u2 ), p, drv1, drv2 );
-        double cross = drv2 ^ drv1;
+        double cross = drv2 * drv1; //drv2 ^ drv1;
         if ( E.Orientation() == TopAbs_REVERSED )
           cross = -cross;
-        isConvex = ( cross < 1e-9 );
+        isConvex = ( cross > -1e-9 );
       }
       // check if concavity is strong enough to care about it
       //const double maxAngle = 5 * Standard_PI180;
