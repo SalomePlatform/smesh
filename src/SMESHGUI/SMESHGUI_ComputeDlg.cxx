@@ -1313,6 +1313,7 @@ void SMESHGUI_BaseComputeOp::currentCellChanged()
   myCompDlg->myPublishBtn->setEnabled( publishEnable );
   myCompDlg->myShowBtn   ->setEnabled( showEnable );
   myCompDlg->myBadMeshBtn->setEnabled( hasBadMesh && ( nbSelected == 1 ));
+  myCompDlg->myBadMeshToGroupBtn->setEnabled( hasBadMesh && ( nbSelected == 1 ));
 }
 
 //================================================================================
@@ -2209,10 +2210,15 @@ void SMESHGUI_BaseComputeOp::showEvaluateResult(const SMESH::long_array& theRes,
       tbl->setWordWrap( true );
 
       if ( hasBadMesh )
+      {
         aCompDlg->myBadMeshBtn->show();
+        aCompDlg->myBadMeshToGroupBtn->show();
+      }
       else
+      {
         aCompDlg->myBadMeshBtn->hide();
-
+        aCompDlg->myBadMeshToGroupBtn->hide();
+      }
       tbl->setCurrentCell(0,0);
       currentCellChanged(); // to update buttons
     }
