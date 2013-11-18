@@ -932,9 +932,9 @@ bool StdMeshers_Adaptive1D::SetParametersByMesh(const SMESH_Mesh*   theMesh,
 bool StdMeshers_Adaptive1D::SetParametersByDefaults(const TDefaults&  dflts,
                                                     const SMESH_Mesh* /*theMesh*/)
 {
-  myMinSize = dflts._elemLength / 100;
+  myMinSize = dflts._elemLength / 10;
   myMaxSize = dflts._elemLength * 2;
-  myDeflection = myMinSize / 10;
+  myDeflection = myMinSize / 7;
   return true;
 }
 
