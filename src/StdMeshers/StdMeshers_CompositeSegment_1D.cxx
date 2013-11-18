@@ -215,6 +215,18 @@ namespace {
           }
         }
       }
+      // clean all EDGEs of a complex side if one EDGE is cleaned
+      else if ( event     == SMESH_subMesh::CLEAN &&
+                eventType == SMESH_subMesh::COMPUTE_EVENT )
+      {
+        SMESH_subMeshIteratorPtr smIt = subMesh->getDependsOnIterator(/*includeSelf=*/false);
+        while ( smIt->more() ) // loop on VERTEX sub-meshes
+        {
+          SMESH_subMesh* sm = smIt->next();
+          if ( sm->IsAlwaysComputed() ) // it's an internal node sub-mesh
+            sm->ComputeStateEngine( SMESH_subMesh::CLEAN );
+        }
+      }
     }
   }; // struct VertexNodesRestoringListener
 }
