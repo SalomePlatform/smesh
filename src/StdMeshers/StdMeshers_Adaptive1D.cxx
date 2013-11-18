@@ -1227,7 +1227,7 @@ bool AdaptiveAlgo::makeSegments()
     const double f = eData.myC3d.FirstParameter(), l = eData.myC3d.LastParameter();
     const double parLen = l - f;
     const int  nbDivSeg = 5;
-    int           nbDiv = int ( eData.myLength / edgeMinSize * nbDivSeg );
+    int           nbDiv = Max( 1, int ( eData.myLength / edgeMinSize * nbDivSeg ));
 
     // compute nb of segments
     bool toRecompute = true;
