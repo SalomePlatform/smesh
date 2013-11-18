@@ -1266,7 +1266,7 @@ bool AdaptiveAlgo::makeSegments()
     }
 
     // compute parameters of nodes
-    int nbSegFinal = int(floor(nbSegs.back()+0.5));
+    int nbSegFinal = Max( 1, int(floor( nbSegs.back() + 0.5 )));
     double fact = nbSegFinal / nbSegs.back();
     if ( maxSegSize / fact > myHyp->GetMaxSize() )
       fact = ++nbSegFinal / nbSegs.back();
