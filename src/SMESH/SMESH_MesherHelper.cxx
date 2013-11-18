@@ -2666,6 +2666,8 @@ double SMESH_MesherHelper::MaxTolerance( const TopoDS_Shape& shape )
  *        of the FACE normal
  *  \return double - the angle (between -Pi and Pi), negative if the angle is concave,
  *                   1e100 in case of failure
+ *  \waring Care about order of the EDGEs and their orientation to be as they are
+ *          within the FACE!
  */
 //================================================================================
 
@@ -2699,9 +2701,9 @@ double SMESH_MesherHelper::GetAngle( const TopoDS_Edge & theE1,
     TopoDS_Face F = theFace;
     if ( F.Orientation() == TopAbs_INTERNAL )
       F.Orientation( TopAbs_FORWARD );
-    if ( GetSubShapeOri( F, theE1 ) == TopAbs_REVERSED )
+    if ( theE1.Orientation() /*GetSubShapeOri( F, theE1 )*/ == TopAbs_REVERSED )
       vec1.Reverse();
-    if ( GetSubShapeOri( F, theE2 ) == TopAbs_REVERSED )
+    if ( theE2.Orientation() /*GetSubShapeOri( F, theE2 )*/ == TopAbs_REVERSED )
       vec2.Reverse();
     angle = vec1.AngleWithRef( vec2, vecRef );
   }
