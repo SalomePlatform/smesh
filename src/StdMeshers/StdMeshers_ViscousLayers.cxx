@@ -865,9 +865,11 @@ namespace
       const char* fname = "/tmp/viscous.py";
       cout << "execfile('"<<fname<<"')"<<endl;
       py = new ofstream(fname);
-      *py << "from smesh import *" << endl
-          << "meshSO = GetCurrentStudy().FindObjectID('0:1:2:3')" << endl
-          << "mesh = Mesh( meshSO.GetObject() )"<<endl;
+      *py << "import SMESH" << endl
+          << "from salome.smesh import smeshBuilder" << endl
+          << "smesh = smeshBuilder.New(salome.myStudy)" << endl
+          << "meshSO = smesh.GetCurrentStudy().FindObjectID('0:1:2:3')" << endl
+          << "mesh = smesh.Mesh( meshSO.GetObject() )"<<endl;
     }
     void Finish() {
       if (py)

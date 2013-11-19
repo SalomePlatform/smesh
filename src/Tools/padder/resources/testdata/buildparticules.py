@@ -18,11 +18,11 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-import geompy
 import salome
 salome.salome_init()
-theStudy = salome.myStudy
-geompy.init_geom(theStudy)
+import GEOM
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
 
 filename="/home/gboulant/development/projets/salome/SPADDER/spadder/resources/padderexe/REF_spheres.dat.xyz"
 file=open(filename,'rb')
