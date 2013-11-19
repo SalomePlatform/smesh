@@ -25,7 +25,7 @@ salome.salome_init()
 \n the old mode (from dump):
 \code
 import smesh, SMESH, SALOMEDS
-smesh.SetCurrentStudy(theStudy)
+smesh.SetCurrentStudy(salome.myStudy)
 \endcode
 \n the new mode:
 \code
@@ -98,7 +98,7 @@ is replaced by:
 from salome.StdMeshers import StdMeshersBuilder
 from salome.NETGENPlugin import NETGENPluginBuilder
 from salome.BLSURFPlugin import BLSURFPluginBuilder
-from salomeGHS3DPlugin .import GHS3DPluginBuilder
+from salome.GHS3DPlugin import GHS3DPluginBuilder
 from salome.HexoticPLUGIN import HexoticPLUGINBuilder
 \endcode
 
