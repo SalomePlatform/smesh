@@ -9,7 +9,7 @@ geompy = geomBuilder.New(salome.myStudy)
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 smesh =  smeshBuilder.New(salome.myStudy)
-import StdMeshers
+from salome.StdMeshers import StdMeshersBuilder
 
 # Make quadrangle face and explode it on edges.
 Vertex_1 = geompy.MakeVertex(0, 0, 0)
@@ -31,7 +31,7 @@ Mesh_1 = smesh.Mesh(Quadrangle_Face_1)
 # Create Quadrangle parameters and
 # define the Type as Quadrangle Preference
 Quadrangle_Parameters_1 = smesh.CreateHypothesis('QuadrangleParams')
-Quadrangle_Parameters_1.SetQuadType( StdMeshers.QUAD_QUADRANGLE_PREF )
+Quadrangle_Parameters_1.SetQuadType( StdMeshersBuilder.QUAD_QUADRANGLE_PREF )
 
 # Define other hypotheses and algorithms
 Regular_1D = Mesh_1.Segment()
@@ -50,5 +50,5 @@ SubMesh_1 = Regular_1D_1.GetSubMesh()
 isDone = Mesh_1.Compute()
 
 # Change type to Reduced and compute again
-Quadrangle_Parameters_1.SetQuadType( StdMeshers.QUAD_REDUCED )
+Quadrangle_Parameters_1.SetQuadType( StdMeshersBuilder.QUAD_REDUCED )
 isDone = Mesh_1.Compute()
