@@ -34,7 +34,7 @@ import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 smesh =  smeshBuilder.New(salome.myStudy)
 
-import StdMeshers
+from salome.StdMeshers import StdMeshersBuilder
 
 
 # ---- define a box

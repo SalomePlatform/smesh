@@ -97,8 +97,10 @@ class SMeshStudyTools:
         '''
         if entry is None:
             return None
-        import smesh
-        smesh.SetCurrentStudy(self.editor.study)
+        import SMESH
+        from salome.smesh import smeshBuilder
+        smesh = smeshBuilder.New(self.editor.study)
+
         meshObject=smesh.IDToObject(entry)
         return meshObject
 
@@ -153,13 +155,17 @@ class SMeshStudyTools:
 def TEST_createBoxMesh():
     theStudy = helper.getActiveStudy()
     
-    import geompy
-    geompy.init_geom(theStudy)
+    import GEOM
+    from salome.geom import geomBuilder
+    geompy = geomBuilder.New(theStudy)
+    
     box = geompy.MakeBoxDXDYDZ(200, 200, 200)
 
-    import smesh, SMESH, SALOMEDS    
-    smesh.SetCurrentStudy(theStudy)
-    import StdMeshers
+    import SMESH, SALOMEDS
+    from salome.smesh import smeshBuilder
+    smesh = smeshBuilder.New(theStudy) 
+
+    from salome.StdMeshers import StdMeshersBuilder
     boxmesh = smesh.Mesh(box)
     Regular_1D = boxmesh.Segment()
     Nb_Segments_1 = Regular_1D.NumberOfSegments(15)

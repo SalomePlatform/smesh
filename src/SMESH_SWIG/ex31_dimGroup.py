@@ -34,7 +34,7 @@ Box_1 = geompy.MakeBoxDXDYDZ(200, 200, 200)
 geompy.addToStudy( Box_1, "Box_1" )
 
 smesh.SetCurrentStudy(salome.myStudy)
-import StdMeshers
+from salome.StdMeshers import StdMeshersBuilder
 Mesh_1 = smesh.Mesh(Box_1)
 Regular_1D = Mesh_1.Segment()
 Nb_Segments_1 = Regular_1D.NumberOfSegments(10)

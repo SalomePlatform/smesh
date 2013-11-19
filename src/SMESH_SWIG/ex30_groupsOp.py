@@ -34,7 +34,7 @@ Face_1 = geompy.MakeFaceHW(100, 100, 1)
 geompy.addToStudy( Face_1, "Face_1" )
 
 smesh.SetCurrentStudy(salome.myStudy)
-import StdMeshers
+from salome.StdMeshers import StdMeshersBuilder
 pattern = smesh.GetPattern()
 Mesh_1 = smesh.Mesh(Face_1)
 Regular_1D = Mesh_1.Segment()

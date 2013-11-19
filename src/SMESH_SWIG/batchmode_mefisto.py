@@ -27,7 +27,7 @@ import re
 import batchmode_salome
 import batchmode_geompy
 import batchmode_smesh
-import StdMeshers
+from salome.StdMeshers import StdMeshersBuilder
 
 smesh = batchmode_smesh.smesh
 smesh.SetCurrentStudy(batchmode_salome.myStudy)
