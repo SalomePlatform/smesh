@@ -399,6 +399,8 @@ namespace // internal utils
       if ( !isDone[ jLongest ] || !isConstSize )
       {
         //++nbLinks;
+        if ( size < numeric_limits<double>::min() )
+          continue;
         int nb = Max( 1, int( maxLinkLen / size / 2 ));
         for ( int k = 0; k <= nb; ++k )
         {
