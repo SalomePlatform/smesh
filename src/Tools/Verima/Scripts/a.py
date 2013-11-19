@@ -34,11 +34,10 @@ l_cas = [ "tout", "syme" ]
 ### GEOM component
 ###
 import GEOM
-import geompy
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(theStudy)
 import math
 import SALOMEDS
-#
-geompy.init_geom(theStudy)
 #
 # 0. Les conventions d'orientation des axes sont les suivantes :
 #    . l'axe Z s'enfonce dans le plan du dessin, son origine étant dans le plan
@@ -199,7 +198,7 @@ TRX = 0.0
 TRY = -2.0*LG_ARETE_BLOC + DELTA
 TRZ = - 2.0*DELTA
 geompy.TranslateDXDYDZ(boite_aux_G, TRX, TRY, TRZ)
-l_aux = geompy.GetShapesOnBox (boite_aux_G, B_G1, geompy.ShapeType["SOLID"], geompy.GEOM.ST_IN )
+l_aux = geompy.GetShapesOnBox (boite_aux_G, B_G1, geompy.ShapeType["SOLID"], GEOM.ST_IN )
 #print "l_aux =", l_aux
 B_G2 = geompy.MakeCut(l_aux[0], OUTIL_G_1)
 # . Repérage du volume interne inférieur
@@ -207,7 +206,7 @@ TRX = 0.0
 TRY = -RAYON_H - DELTA
 TRZ = 0.0
 geompy.TranslateDXDYDZ(boite_aux_G, TRX, TRY, TRZ)
-l_aux = geompy.GetShapesOnBox (boite_aux_G, B_G1, geompy.ShapeType["SOLID"], geompy.GEOM.ST_IN )
+l_aux = geompy.GetShapesOnBox (boite_aux_G, B_G1, geompy.ShapeType["SOLID"], GEOM.ST_IN )
 B_G3 = geompy.MakeCut(l_aux[0], OUTIL_G_2)
 #
 # 3.3.3. Partie droite
@@ -224,7 +223,7 @@ TRX = -DX
 TRY = -2.0*LG_ARETE_BLOC + DELTA
 TRZ = - 2.0*DELTA
 geompy.TranslateDXDYDZ(boite_aux_D, TRX, TRY, TRZ)
-l_aux = geompy.GetShapesOnBox (boite_aux_D, B_D1, geompy.ShapeType["SOLID"], geompy.GEOM.ST_IN )
+l_aux = geompy.GetShapesOnBox (boite_aux_D, B_D1, geompy.ShapeType["SOLID"], GEOM.ST_IN )
 if ( verbose_max ) :
   print "3.3.3. supérieur l_aux =", l_aux
 B_D2 = geompy.MakeCut(l_aux[0], OUTIL_D_1)
@@ -233,7 +232,7 @@ TRX = 0.0
 TRY = -RAYON_H - DELTA
 TRZ = 0.0
 geompy.TranslateDXDYDZ(boite_aux_D, TRX, TRY, TRZ)
-l_aux = geompy.GetShapesOnBox (boite_aux_D, B_D1, geompy.ShapeType["SOLID"], geompy.GEOM.ST_IN )
+l_aux = geompy.GetShapesOnBox (boite_aux_D, B_D1, geompy.ShapeType["SOLID"], GEOM.ST_IN )
 if ( verbose_max ) :
   print "3.3.3. inférieur l_aux =", l_aux
 B_D3 = geompy.MakeCut(l_aux[0], OUTIL_D_2)
@@ -393,7 +392,7 @@ for cas in l_cas :
   TRY = -0.5*LG_ARETE_MASSIF - DELTA
   TRZ = - DELTA
   geompy.TranslateDXDYDZ(boite_aux, TRX, TRY, TRZ)
-  l_solid_id = geompy.GetShapesOnBoxIDs (boite_aux, MASSIF_G, geompy.ShapeType["SOLID"], geompy.GEOM.ST_IN )
+  l_solid_id = geompy.GetShapesOnBoxIDs (boite_aux, MASSIF_G, geompy.ShapeType["SOLID"], GEOM.ST_IN )
   if ( verbose_max ) :
     print "6.1. l_solid_id =", l_solid_id
   ROCHE_G = geompy.CreateGroup(MASSIF_G, geompy.ShapeType["SOLID"])
@@ -411,7 +410,7 @@ for cas in l_cas :
   TRY = -0.5*LG_ARETE_MASSIF - DELTA
   TRZ = - DELTA
   geompy.TranslateDXDYDZ(boite_aux, TRX, TRY, TRZ)
-  l_aux  = geompy.GetShapesOnBoxIDs (boite_aux, MASSIF_G, geompy.ShapeType["FACE"], geompy.GEOM.ST_IN )
+  l_aux  = geompy.GetShapesOnBoxIDs (boite_aux, MASSIF_G, geompy.ShapeType["FACE"], GEOM.ST_IN )
   if ( verbose_max ) :
     print "6.2.1.1. Gauche l_aux =", l_aux
   GAUCHE_G = geompy.CreateGroup ( MASSIF_G, geompy.ShapeType["FACE"] )
@@ -426,7 +425,7 @@ for cas in l_cas :
     TRY = 0.0
     TRZ = 0.0
     geompy.TranslateDXDYDZ(boite_aux, TRX, TRY, TRZ)
-    l_aux  = geompy.GetShapesOnBoxIDs (boite_aux, MASSIF_G, geompy.ShapeType["FACE"], geompy.GEOM.ST_IN )
+    l_aux  = geompy.GetShapesOnBoxIDs (boite_aux, MASSIF_G, geompy.ShapeType["FACE"], GEOM.ST_IN )
     if ( verbose_max ) :
       print "6.2.1.2. Droite l_aux =", l_aux
     DROITE_G = geompy.CreateGroup ( MASSIF_G, geompy.ShapeType["FACE"] )
@@ -438,7 +437,7 @@ for cas in l_cas :
     TRY = 0.0
     TRZ = 0.0
     geompy.TranslateDXDYDZ(boite_aux, TRX, TRY, TRZ)
-    l_face_id_syme  = geompy.GetShapesOnBoxIDs (boite_aux, MASSIF_G, geompy.ShapeType["FACE"], geompy.GEOM.ST_IN )
+    l_face_id_syme  = geompy.GetShapesOnBoxIDs (boite_aux, MASSIF_G, geompy.ShapeType["FACE"], GEOM.ST_IN )
     if ( verbose_max ) :
       print "6.2.1.2. Symetrie - tout l_face_id_syme =", l_face_id_syme
     l_aux = []
@@ -463,7 +462,7 @@ for cas in l_cas :
       if ( verbose_max ) :
         print "6.2.1.2. Cavite %02d" % (iaux+1)
       # Les id des faces bordant la cavite courante
-      l_aux_2 = geompy.GetShapesOnBoxIDs (boite_2, MASSIF_G, geompy.ShapeType["FACE"], geompy.GEOM.ST_IN )
+      l_aux_2 = geompy.GetShapesOnBoxIDs (boite_2, MASSIF_G, geompy.ShapeType["FACE"], GEOM.ST_IN )
       if ( verbose_max ) :
         print ".. l_aux_2 =", l_aux_2
       for face_id in l_aux_2 :
@@ -485,7 +484,7 @@ for cas in l_cas :
   TRY =  0.5*LG_ARETE_MASSIF - DELTA
   TRZ = - DELTA
   geompy.TranslateDXDYDZ(boite_aux, TRX, TRY, TRZ)
-  l_aux  = geompy.GetShapesOnBoxIDs (boite_aux, MASSIF_G, geompy.ShapeType["FACE"], geompy.GEOM.ST_IN )
+  l_aux  = geompy.GetShapesOnBoxIDs (boite_aux, MASSIF_G, geompy.ShapeType["FACE"], GEOM.ST_IN )
   if ( verbose_max ) :
     print "6.2.2. Haut l_aux =", l_aux
   HAUT_G = geompy.CreateGroup ( MASSIF_G, geompy.ShapeType["FACE"] )
@@ -495,7 +494,7 @@ for cas in l_cas :
   TRY = -LG_ARETE_MASSIF
   TRZ = 0.0
   geompy.TranslateDXDYDZ(boite_aux, TRX, TRY, TRZ)
-  l_aux  = geompy.GetShapesOnBoxIDs (boite_aux, MASSIF_G, geompy.ShapeType["FACE"], geompy.GEOM.ST_IN )
+  l_aux  = geompy.GetShapesOnBoxIDs (boite_aux, MASSIF_G, geompy.ShapeType["FACE"], GEOM.ST_IN )
   if ( verbose_max ) :
     print "6.2.2. Bas l_aux =", l_aux
   BAS_G = geompy.CreateGroup ( MASSIF_G, geompy.ShapeType["FACE"] )
@@ -512,7 +511,7 @@ for cas in l_cas :
   TRY = -0.5*LG_ARETE_BLOC - DELTA
   TRZ = - DELTA
   geompy.TranslateDXDYDZ(boite_aux_1, TRX, TRY, TRZ)
-  l_face_avant_tunnel  = geompy.GetShapesOnBoxIDs (boite_aux_1, MASSIF_G, geompy.ShapeType["FACE"], geompy.GEOM.ST_IN )
+  l_face_avant_tunnel  = geompy.GetShapesOnBoxIDs (boite_aux_1, MASSIF_G, geompy.ShapeType["FACE"], GEOM.ST_IN )
   if ( verbose_max ) :
     print "6.2.3.1. Devant l_face_avant_tunnel =", l_face_avant_tunnel
   # Création du groupe de la face avant
@@ -530,7 +529,7 @@ for cas in l_cas :
   TRY = -0.5*LG_ARETE_MASSIF - DELTA
   TRZ = - DELTA
   geompy.TranslateDXDYDZ(boite_aux, TRX, TRY, TRZ)
-  l_aux_2  = geompy.GetShapesOnBoxIDs (boite_aux, MASSIF_G, geompy.ShapeType["FACE"], geompy.GEOM.ST_IN )
+  l_aux_2  = geompy.GetShapesOnBoxIDs (boite_aux, MASSIF_G, geompy.ShapeType["FACE"], GEOM.ST_IN )
   if ( verbose_max ) :
     print "6.2.3.2. Devant l_aux_2  =", l_aux_2
 # Pour le groupe, on retire les faces correspondant a l'empreinte du tunnel
@@ -549,7 +548,7 @@ for cas in l_cas :
   TRY = 0.0
   TRZ = LG_ARETE_MASSIF
   geompy.TranslateDXDYDZ(boite_aux, TRX, TRY, TRZ)
-  l_aux  = geompy.GetShapesOnBoxIDs (boite_aux, MASSIF_G, geompy.ShapeType["FACE"], geompy.GEOM.ST_IN )
+  l_aux  = geompy.GetShapesOnBoxIDs (boite_aux, MASSIF_G, geompy.ShapeType["FACE"], GEOM.ST_IN )
   if ( verbose_max ) :
     print "6.2.3.3. Derriere l_aux =", l_aux
   DERRIERE_G = geompy.CreateGroup ( MASSIF_G, geompy.ShapeType["FACE"] )
@@ -567,7 +566,7 @@ for cas in l_cas :
   DY = -0.5*LG_ARETE_BLOC
   point = geompy.MakeVertex(DX, DY, DZ)
   #        Les faces posees sur ce plan
-  liste_face_tunnel_base = geompy.GetShapesOnPlaneWithLocationIDs (MASSIF_G, geompy.ShapeType["FACE"], normale, point, geompy.GEOM.ST_ON )
+  liste_face_tunnel_base = geompy.GetShapesOnPlaneWithLocationIDs (MASSIF_G, geompy.ShapeType["FACE"], normale, point, GEOM.ST_ON )
   if ( verbose_max ) :
     print "6.3.1. liste_face_tunnel_base =", liste_face_tunnel_base
 #        Création du groupe associe
@@ -595,7 +594,7 @@ for cas in l_cas :
     geompy.TranslateDXDYDZ(boite, TRX, TRY, TRZ)
     l_cyl_supp.append((boite, cle))
   # Reperage des faces
-    l_aux_1 = geompy.GetShapesOnShapeIDs (boite, MASSIF_G, geompy.ShapeType["FACE"], geompy.GEOM.ST_IN )
+    l_aux_1 = geompy.GetShapesOnShapeIDs (boite, MASSIF_G, geompy.ShapeType["FACE"], GEOM.ST_IN )
     if ( verbose_max ) :
       print ".. l_aux_1 =", l_aux_1
     l_aux = []
@@ -648,7 +647,7 @@ for cas in l_cas :
       geompy.UnionIDs ( GR_CAV_G, l_cav_toutes_p_id )
       l_groupe_cav_e_g.append((GR_CAV_G, "PAROI_%02d" % (iaux+1)))
     # Les id des solides dans la cavite courante
-    l_aux_1 = geompy.GetShapesOnBoxIDs (boite_cav_v, MASSIF_G, geompy.ShapeType["SOLID"], geompy.GEOM.ST_IN )
+    l_aux_1 = geompy.GetShapesOnBoxIDs (boite_cav_v, MASSIF_G, geompy.ShapeType["SOLID"], GEOM.ST_IN )
     if ( verbose_max ) :
       print ".. l_aux_1 =", l_aux_1
     # Création du groupe solide de la cavite courante
@@ -672,7 +671,7 @@ for cas in l_cas :
     geompy.UnionIDs ( GR_CAV_G, l_solid_id_1 )
     l_groupe_roche_g.append((GR_CAV_G, "ROCHE_%02d" % (iaux+1)))
     # Les id des faces du fond de la cavite courante
-    l_aux_1 = geompy.GetShapesOnBoxIDs (boite_cav_f, MASSIF_G, geompy.ShapeType["FACE"], geompy.GEOM.ST_IN )
+    l_aux_1 = geompy.GetShapesOnBoxIDs (boite_cav_f, MASSIF_G, geompy.ShapeType["FACE"], GEOM.ST_IN )
     if ( verbose_max ) :
       print ".. l_aux_1 =", l_aux_1
     # Création du groupe du fond de la cavite
@@ -680,7 +679,7 @@ for cas in l_cas :
     geompy.UnionIDs ( GR_CAV_G, l_aux_1 )
     l_groupe_cav_f_g.append((GR_CAV_G, "FOND_%02d" % (iaux+1)))
     # Les id des faces dans la cavite courante
-    l_aux_2 = geompy.GetShapesOnBoxIDs (boite_cav_v, MASSIF_G, geompy.ShapeType["FACE"], geompy.GEOM.ST_IN )
+    l_aux_2 = geompy.GetShapesOnBoxIDs (boite_cav_v, MASSIF_G, geompy.ShapeType["FACE"], GEOM.ST_IN )
     if ( verbose_max ) :
       print ".. l_aux_2 =", l_aux_2
     # Création du groupe du pourtour de la cavite : penser a retirer les fonds et l'eventuel plan de symetrie !
@@ -803,11 +802,11 @@ for cas in l_cas :
 ### SMESH component
 ###=======================================================================
 
-import smesh, SMESH, SALOMEDS
-
-smesh.SetCurrentStudy(theStudy)
-import BLSURFPlugin
-import GHS3DPlugin
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh = smeshBuilder.New(theStudy)
+from salome.BLSURFPlugin import BLSURFPluginBuilder
+from salome.GHS3DPlugin import GHS3DPluginBuilder
 #
 for cas in l_cas :
 #
@@ -823,19 +822,19 @@ for cas in l_cas :
 # 2. Parametres du maillage volumique
 #
   if cas == "tout" :
-    GHS3D_3D = MASSIF_M.Tetrahedron(algo=smesh.GHS3D)
+    GHS3D_3D = MASSIF_M.Tetrahedron(algo=smeshBuilder.GHS3D)
     GHS3D_Parameters = smesh.CreateHypothesis('GHS3D_Parameters', 'GHS3DEngine')
     # Niveau d'optimisation : 3 ==> standard +
     GHS3D_Parameters.SetOptimizationLevel( 3 )
   else :
     isdone = MASSIF_M.AddHypothesis(GHS3D_Parameters)
-    GHS3D_3D_1 = MASSIF_M.Tetrahedron(algo=smesh.GHS3D)
+    GHS3D_3D_1 = MASSIF_M.Tetrahedron(algo=smeshBuilder.GHS3D)
 #
 # 3. Parametres du maillage surfacique
 #
   if cas == "tout" :
     #
-    BLSURF = MASSIF_M.Triangle(algo=smesh.BLSURF)
+    BLSURF = MASSIF_M.Triangle(algo=smeshBuilder.BLSURF)
     BLSURF_Parameters = BLSURF.Parameters()
     # Geometrical mesh - if set to "Custom", allows user input in Angle Mesh S, Angle Mesh C and Gradation fields.
     # These fields control computation of the element size, so called geometrical size, conform to the
@@ -852,7 +851,7 @@ for cas in l_cas :
     BLSURF_Parameters.SetPhySize( 25. )
   else :
     isdone = MASSIF_M.AddHypothesis(BLSURF_Parameters)
-    BLSURF_1 = MASSIF_M.Triangle(algo=smesh.BLSURF)
+    BLSURF_1 = MASSIF_M.Triangle(algo=smeshBuilder.BLSURF)
 #
 # 4. Calcul
 #

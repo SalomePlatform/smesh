@@ -1,11 +1,10 @@
 # Get Information About Mesh by GetMeshIn
 import salome
-import smesh
-import SMESH, SALOMEDS
-
 salome.salome_init()
-theStudy = salome.myStudy
-smesh.SetCurrentStudy(theStudy)
+
+import SMESH, SALOMEDS
+from salome.smesh import smeshBuilder
+smesh = smeshBuilder.New(salome.myStudy)
 
 aMesh,aResult = smesh.CreateMeshesFromMED('/tmp/MASSIF.new.med')
 print aResult, aMesh
