@@ -26,7 +26,7 @@ from salome.smesh.smeshBuilder import AssureGeomPublished, IsEqual, ParseParamet
 from salome.smesh.smeshBuilder import GetName, TreatHypoStatus
 from salome.smesh.smeshBuilder import Mesh
 
-from salome.StdMeshers import StdMeshersBuilder
+import StdMeshers
 
 #----------------------------
 # Mesh algo type identifiers
