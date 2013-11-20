@@ -28,6 +28,7 @@
 
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
+#include "SMESHGUI_PreviewDlg.h"
 
 // Qt includes 
 #include <QDialog>
@@ -64,7 +65,7 @@ class QButtonGroup;
  *               union of two neighboring triangles
  */
 
-class SMESHGUI_EXPORT SMESHGUI_MultiEditDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_MultiEditDlg : public SMESHGUI_PreviewDlg
 {
   Q_OBJECT
 
@@ -196,6 +197,9 @@ protected:
   virtual bool      process( SMESH::SMESH_MeshEditor_ptr,
                              const SMESH::long_array&,
                              SMESH::SMESH_IDSource_ptr obj );
+
+protected slots:
+   virtual void     onDisplaySimulation( bool );
 
 private:
   SMESHGUI_SpinBox* myMaxAngleSpin;

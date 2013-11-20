@@ -277,12 +277,16 @@ namespace MeshEditor_I {
   void arrayToSet(const SMESH::long_array & IDs,
                   const SMESHDS_Mesh*       aMesh,
                   TIDSortedElemSet&         aMap,
-                  const SMDSAbs_ElementType aType = SMDSAbs_All )
+                  const SMDSAbs_ElementType aType = SMDSAbs_All,
+                  SMDS_MeshElement::Filter* aFilter = NULL)
   {
     SMDS_MeshElement::NonNullFilter filter1;
     SMDS_MeshElement::TypeFilter    filter2( aType );
-    SMDS_MeshElement::Filter &      filter =
-      ( aType == SMDSAbs_All ) ? (SMDS_MeshElement::Filter&) filter1 : filter2;
+
+    if ( aFilter == NULL )
+      aFilter = ( aType == SMDSAbs_All ) ? (SMDS_MeshElement::Filter*) &filter1 : (SMDS_MeshElement::Filter*) &filter2;
+    
+    SMDS_MeshElement::Filter & filter = *aFilter;
 
     if ( aType == SMDSAbs_Node )
       for (int i=0; i<IDs.length(); i++) {
@@ -1721,8 +1725,16 @@ CORBA::Boolean SMESH_MeshEditor_i::TriToQuad (const SMESH::long_array &   IDsOfE
   initData();
 
   SMESHDS_Mesh* aMesh = getMeshDS();
-  TIDSortedElemSet faces;
-  arrayToSet(IDsOfElements, aMesh, faces, SMDSAbs_Face);
+  TIDSortedElemSet faces,copyFaces;
+  SMDS_MeshElement::GeomFilter triaFilter(SMDSGeom_TRIANGLE);
+  arrayToSet(IDsOfElements, aMesh, faces, SMDSAbs_Face, & triaFilter);
+  TIDSortedElemSet* workElements = & faces;
+
+  if ( myIsPreviewMode ) {
+    SMDSAbs_ElementType select =  SMDSAbs_Face;
+    getPreviewMesh( SMDSAbs_Face )->Copy( faces, copyFaces, select );
+    workElements = & copyFaces;
+  }
 
   SMESH::NumericalFunctor_i* aNumericalFunctor =
     dynamic_cast<SMESH::NumericalFunctor_i*>( SMESH_Gen_i::GetServant( Criterion ).in() );
@@ -1732,12 +1744,13 @@ CORBA::Boolean SMESH_MeshEditor_i::TriToQuad (const SMESH::long_array &   IDsOfE
   else
     aCrit = aNumericalFunctor->GetNumericalFunctor();
 
-  // Update Python script
-  TPythonDump() << "isDone = " << this << ".TriToQuad( "
-                << IDsOfElements << ", " << aNumericalFunctor << ", " << TVar( MaxAngle ) << " )";
+  if ( !myIsPreviewMode ) {
+    // Update Python script
+    TPythonDump() << "isDone = " << this << ".TriToQuad( "
+		  << IDsOfElements << ", " << aNumericalFunctor << ", " << TVar( MaxAngle ) << " )";
+  }
 
-
-  bool stat = getEditor().TriToQuad( faces, aCrit, MaxAngle );
+  bool stat = getEditor().TriToQuad( *workElements, aCrit, MaxAngle );
 
   declareMeshModified( /*isReComputeSafe=*/!stat );
   return stat;
@@ -1766,12 +1779,14 @@ CORBA::Boolean SMESH_MeshEditor_i::TriToQuadObject (SMESH::SMESH_IDSource_ptr   
   SMESH::long_array_var anElementsId = theObject->GetIDs();
   CORBA::Boolean isDone = TriToQuad(anElementsId, Criterion, MaxAngle);
 
-  SMESH::NumericalFunctor_i* aNumericalFunctor =
-    SMESH::DownCast<SMESH::NumericalFunctor_i*>( Criterion );
+  if ( !myIsPreviewMode ) {
+    SMESH::NumericalFunctor_i* aNumericalFunctor =
+      SMESH::DownCast<SMESH::NumericalFunctor_i*>( Criterion );
 
-  // Update Python script
-  aTPythonDump << "isDone = " << this << ".TriToQuadObject("
-               << theObject << ", " << aNumericalFunctor << ", " << TVar( MaxAngle ) << " )";
+    // Update Python script
+    aTPythonDump << "isDone = " << this << ".TriToQuadObject("
+		 << theObject << ", " << aNumericalFunctor << ", " << TVar( MaxAngle ) << " )";
+  }
 
   return isDone;
 
@@ -1965,6 +1980,7 @@ CORBA::Long SMESH_MeshEditor_i::BestSplit (CORBA::Long                 IDOfQuad,
 
     int id = getEditor().BestSplit(quad, aCrit);
     declareMeshModified( /*isReComputeSafe=*/ id < 1 );
+    return id;
   }
 
   SMESH_CATCH( SMESH::throwCorbaException );

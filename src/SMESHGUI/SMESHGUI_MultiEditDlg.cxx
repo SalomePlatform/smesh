@@ -34,6 +34,7 @@
 #include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_FilterUtils.h"
 #include "SMESHGUI_SpinBox.h"
+#include "SMESHGUI_MeshEditPreview.h"
 
 #include <SMESH_Actor.h>
 #include <SMESH_TypeFilter.hxx>
@@ -105,7 +106,7 @@ SMESHGUI_MultiEditDlg
 ::SMESHGUI_MultiEditDlg(SMESHGUI* theModule,
                         const int theMode,
                         const bool the3d2d):
-  QDialog(SMESH::GetDesktop(theModule)),
+  SMESHGUI_PreviewDlg(theModule),
   mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
   mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
   mySMESHGUI(theModule)
@@ -1080,6 +1081,11 @@ SMESHGUI_UnionOfTrianglesDlg
 {
   setWindowTitle(tr("CAPTION"));
 
+  //Preview check box
+  myPreviewCheckBox = new QCheckBox(tr("PREVIEW"), mySelGrp);
+  QGridLayout* aLay = (QGridLayout*)(mySelGrp->layout());
+  aLay->addWidget(myPreviewCheckBox, aLay->rowCount(), 0, 1, aLay->columnCount());
+
   myComboBoxFunctor->setEnabled(true);  
   myComboBoxFunctor->addItem(tr("AREA_ELEMENTS"));
   myComboBoxFunctor->addItem(tr("WARP_ELEMENTS")); // for quadrangles only
@@ -1101,6 +1107,14 @@ SMESHGUI_UnionOfTrianglesDlg
 
   ((QVBoxLayout*)(myCriterionGrp->layout()))->addWidget(aMaxAngleGrp);
   myCriterionGrp->show();
+
+  connect(myComboBoxFunctor, SIGNAL(activated(int)),       this, SLOT(toDisplaySimulation()));
+  connect(myMaxAngleSpin,    SIGNAL(valueChanged(int)),    this, SLOT(toDisplaySimulation()));
+  connect(this,              SIGNAL(ListContensChanged()), this, SLOT(toDisplaySimulation()));
+  connectPreviewControl(); //To Connect preview check box
+
+  myPreviewCheckBox->setChecked(false);
+  onDisplaySimulation(false);
 
   myHelpFileName = "uniting_set_of_triangles_page.html";
 }
@@ -1148,7 +1162,47 @@ bool SMESHGUI_UnionOfTrianglesDlg::process (SMESH::SMESH_MeshEditor_ptr theEdito
     ok = theEditor->TriToQuadObject(obj, aCriterion, aMaxAngle);
   return ok;
 }
+  
+void SMESHGUI_UnionOfTrianglesDlg::onDisplaySimulation( bool toDisplayPreview )
+{
+  if ( myPreviewCheckBox->isChecked() && toDisplayPreview ) {
+    if ( isValid( true ) ) {
+      try{
+	SUIT_OverrideCursor aWaitCursor;
+	// get Ids of elements
+	SMESH::SMESH_IDSource_var obj;
+	SMESH::long_array_var anElemIds = getIds( obj );
 
+	SMESH::NumericalFunctor_var aCriterion  = getNumericalFunctor();
+	SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
+
+	double aMaxAngle = myMaxAngleSpin->GetValue() * M_PI / 180.0;
+      
+	if ( CORBA::is_nil( obj ) )
+	  aMeshEditor->TriToQuad( anElemIds.inout(), aCriterion, aMaxAngle );
+	else
+	  aMeshEditor->TriToQuadObject( obj, aCriterion, aMaxAngle );
+      
+	SMESH::MeshPreviewStruct_var aMeshPreviewStruct = aMeshEditor->GetPreviewData();
+
+	vtkProperty* aProp = vtkProperty::New();
+	aProp->SetRepresentationToWireframe();
+	aProp->SetColor( 250, 0, 250 );
+	aProp->SetLineWidth( SMESH::GetFloat( "SMESH:element_width", 1 ) + 3 );
+	mySimulation->GetActor()->SetProperty( aProp );
+	aProp->Delete();
+
+	mySimulation->SetData( aMeshPreviewStruct._retn() );
+      } catch ( ... ) {
+	hidePreview();
+      }
+    } else {
+      hidePreview();
+    }
+  } else {
+    hidePreview();
+  }
+}
 
 /*!
  *  Class       : SMESHGUI_CuttingOfQuadsDlg
@@ -1270,6 +1324,7 @@ void SMESHGUI_CuttingOfQuadsDlg::displayPreview()
   if (myPreviewActor != 0)
     erasePreview();
 
+  SUIT_OverrideCursor aWaitCursor;
   // get Ids of elements
   SMESH::SMESH_IDSource_var obj;
   SMESH::long_array_var anElemIds = getIds(obj);
@@ -1289,6 +1344,10 @@ void SMESHGUI_CuttingOfQuadsDlg::displayPreview()
     aMeshEditor = myMesh->GetMeshEditor();
     if (aMeshEditor->_is_nil())
       return;
+  }
+
+  if ( anElemIds->length() == 0 ) {
+    anElemIds = obj->GetIDs();
   }
 
   //Create grid
