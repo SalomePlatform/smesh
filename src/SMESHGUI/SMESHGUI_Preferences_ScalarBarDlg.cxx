@@ -654,7 +654,8 @@ void SMESHGUI_Preferences_ScalarBarDlg::onSelectionChanged()
           myMinEdit->setText( QString::number( range[0],'g',12 ) );
           myMaxEdit->setText( QString::number( range[1],'g',12 ) );
           myLogarithmicCheck->setChecked(aLookupTable->GetScale() == VTK_SCALE_LOG10);
-          myLogarithmicCheck->setEnabled(range[0] > 1e-07 && range[1] > 1e-07);
+          //myLogarithmicCheck->setEnabled(range[0] > 1e-07 && range[1] > 1e-07);
+          myLogarithmicCheck->setEnabled(range[0] != range[1]);
         }
 
         vtkTextProperty* aTitleTextPrp = myScalarBarActor->GetTitleTextProperty();
