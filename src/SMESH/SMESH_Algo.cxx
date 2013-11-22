@@ -178,8 +178,6 @@ const SMESH_Algo::Features& SMESH_Algo::GetFeatures( const std::string& algoType
 SMESH_Algo::SMESH_Algo (int hypId, int studyId, SMESH_Gen * gen)
   : SMESH_Hypothesis(hypId, studyId, gen)
 {
-  //gen->_mapAlgo[hypId] = this;
-
   _onlyUnaryInput = _requireDiscreteBoundary = _requireShape = true;
   _quadraticMesh = _supportSubmeshes = false;
   _error = COMPERR_OK;
@@ -208,28 +206,24 @@ SMESH_0D_Algo::SMESH_0D_Algo(int hypId, int studyId, SMESH_Gen* gen)
 {
   _shapeType = (1 << TopAbs_VERTEX);
   _type = ALGO_0D;
-  //gen->_map0D_Algo[hypId] = this;
 }
 SMESH_1D_Algo::SMESH_1D_Algo(int hypId, int studyId, SMESH_Gen* gen)
   : SMESH_Algo(hypId, studyId, gen)
 {
   _shapeType = (1 << TopAbs_EDGE);
   _type = ALGO_1D;
-  //gen->_map1D_Algo[hypId] = this;
 }
 SMESH_2D_Algo::SMESH_2D_Algo(int hypId, int studyId, SMESH_Gen* gen)
   : SMESH_Algo(hypId, studyId, gen)
 {
   _shapeType = (1 << TopAbs_FACE);
   _type = ALGO_2D;
-  //gen->_map2D_Algo[hypId] = this;
 }
 SMESH_3D_Algo::SMESH_3D_Algo(int hypId, int studyId, SMESH_Gen* gen)
   : SMESH_Algo(hypId, studyId, gen)
 {
   _shapeType = (1 << TopAbs_SOLID);
   _type = ALGO_3D;
-  //gen->_map3D_Algo[hypId] = this;
 }
 
 //=============================================================================
@@ -535,7 +529,7 @@ GeomAbs_Shape SMESH_Algo::Continuity(TopoDS_Edge E1,
  */
 //================================================================================
 
-bool SMESH_Algo::isStraight( const TopoDS_Edge & E,
+bool SMESH_Algo::IsStraight( const TopoDS_Edge & E,
                              const bool          degenResult)
 {
   {

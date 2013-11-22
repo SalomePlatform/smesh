@@ -360,7 +360,7 @@ public:
   /*!
    * \brief Return true if an edge can be considered straight
    */
-  static bool isStraight( const TopoDS_Edge & E, const bool degenResult=false );
+  static bool IsStraight( const TopoDS_Edge & E, const bool degenResult=false );
   /*!
    * \brief Return true if an edge has no 3D curve
    */
