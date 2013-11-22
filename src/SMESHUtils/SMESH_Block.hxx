@@ -362,6 +362,7 @@ public:
     bool IsUVInQuad( const gp_XY& uv,
                      const gp_XYZ& param0, const gp_XYZ& param1,
                      const gp_XYZ& param2, const gp_XYZ& param3 ) const;
+    gp_XY GetUVRange() const;
     TFace(): myS(0) { myC2d[0]=myC2d[1]=myC2d[2]=myC2d[3]=0; }
     ~TFace();
   };
@@ -381,6 +382,10 @@ public:
   double funcValue(double sqDist) const { return mySquareFunc ? sqDist : sqrt(sqDist); }
   bool computeParameters(const gp_Pnt& thePoint, gp_XYZ& theParams, const gp_XYZ& theParamsHint, int);
   void refineParametersOnFace( const gp_Pnt& thePoint, gp_XYZ& theParams, int theFaceID );
+  bool findUVByHalfDivision( const gp_Pnt& thePoint, const gp_XY& theUV,
+                             const TFace& tface, gp_XYZ& theParams);
+  bool findUVAround( const gp_Pnt& thePoint, const gp_XY& theUV,
+                     const TFace& tface, gp_XYZ& theParams, int nbGetWorstLimit );
   bool saveBetterSolution( const gp_XYZ& theNewParams, gp_XYZ& theParams, double sqDistance );
 
   int      myFaceIndex;
