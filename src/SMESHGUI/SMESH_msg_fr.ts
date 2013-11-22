@@ -4,6 +4,62 @@
 <context>
     <name>@default</name>
     <message>
+        <source>TB_ADD1D</source>
+        <translation type="unfinished">Mesh Toolbar</translation>
+    </message>
+    <message>
+        <source>TB_INFO</source>
+        <translation type="unfinished">Information Toolbar</translation>
+    </message>
+    <message>
+        <source>TB_GROUP</source>
+        <translation type="unfinished">Group Toolbar</translation>
+    </message>
+    <message>
+        <source>TB_MEASUREM</source>
+        <translation type="unfinished">Measurements Toolbar</translation>
+    </message>
+    <message>
+        <source>TB_CTRL3D</source>
+        <translation type="unfinished">Volume Controls Toolbar</translation>
+    </message>
+    <message>
+        <source>TB_CTRL2D</source>
+        <translation type="unfinished">Face Controls Toolbar</translation>
+    </message>
+    <message>
+        <source>TB_CTRL1D</source>
+        <translation type="unfinished">Edge Controls Toolbar</translation>
+    </message>
+    <message>
+        <source>TB_CTRL0D</source>
+        <translation type="unfinished">Node Controls Toolbar</translation>
+    </message>
+    <message>
+        <source>TB_TRANSFORM</source>
+        <translation type="unfinished">Transformation Toolbar</translation>
+    </message>
+    <message>
+        <source>TB_RENUMBER</source>
+        <translation type="unfinished">Renumbering Toolbar</translation>
+    </message>
+    <message>
+        <source>TB_REM</source>
+        <translation type="unfinished">Remove Toolbar</translation>
+    </message>
+    <message>
+        <source>TB_ADDNON</source>
+        <translation type="unfinished">Add Non Linear Element Toolbar</translation>
+    </message>
+    <message>
+        <source>TB_ADD</source>
+        <translation type="unfinished">Add Element Toolbar</translation>
+    </message>
+    <message>
+        <source>COMPERR_BAD_PARMETERS</source>
+        <translation type="unfinished">Invalid input parameters</translation>
+    </message>
+    <message>
         <source>SMESH_GIGABYTE</source>
         <translation type="unfinished">%1 GB</translation>
     </message>
@@ -4190,6 +4246,10 @@ Il ne peut pas être supprimé.</translation>
 </context>
 <context>
     <name>SMESHGUI</name>
+    <message>
+        <source>PREF_PREVIEW_COLOR</source>
+        <translation type="unfinished">Preview color</translation>
+    </message>
     <message>
         <source>NOT_A_VTK_VIEWER</source>
         <translation>Cette commande n&apos;est disponible qu&apos;à partir d&apos;une fenêtre VTK.
