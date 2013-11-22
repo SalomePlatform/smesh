@@ -392,7 +392,8 @@ private:
   /*!
    * \brief Prints a script creating a normal grid on the prism side
    */
-  void faceGridToPythonDump(const SMESH_Block::TShapeID face);
+  void faceGridToPythonDump(const SMESH_Block::TShapeID face,
+                            const int                   nb=10);
 
 }; // class StdMeshers_PrismAsBlock
 

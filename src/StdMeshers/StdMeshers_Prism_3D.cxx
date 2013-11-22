@@ -375,45 +375,102 @@ namespace {
 
   //================================================================================
   /*!
+   * \brief Return and angle between two EDGEs
+   *  \return double - the angle normalized so that
+   * >~ 0  -> 2.0
+   *  PI/2 -> 1.0
+   *  PI   -> 0.0
+   * -PI/2 -> -1.0
+   * <~ 0  -> -2.0
+   */
+  //================================================================================
+
+  double normAngle(const TopoDS_Edge & E1, const TopoDS_Edge & E2, const TopoDS_Face & F)
+  {
+    return SMESH_MesherHelper::GetAngle( E1, E2, F ) / ( 0.5 * M_PI );
+  }
+
+  //================================================================================
+  /*!
    * Consider continuous straight EDGES as one side - mark them to unite
    */
   //================================================================================
 
   int countNbSides( const Prism_3D::TPrismTopo & thePrism,
-                    vector<int> &                nbUnitePerEdge )
+                    vector<int> &                nbUnitePerEdge,
+                    vector< double > &           edgeLength)
   {
     int nbEdges = thePrism.myNbEdgesInWires.front();  // nb outer edges
     int nbSides = nbEdges;
 
+    
     list< TopoDS_Edge >::const_iterator edgeIt = thePrism.myBottomEdges.begin();
     std::advance( edgeIt, nbEdges-1 );
     TopoDS_Edge   prevE = *edgeIt;
-    bool isPrevStraight = SMESH_Algo::isStraight( prevE );
+    // bool isPrevStraight = SMESH_Algo::IsStraight( prevE );
     int           iPrev = nbEdges - 1;
 
     int iUnite = -1; // the first of united EDGEs
 
+    // analyse angles between EDGEs
+    int nbCorners = 0;
+    vector< bool > isCorner( nbEdges );
     edgeIt = thePrism.myBottomEdges.begin();
     for ( int iE = 0; iE < nbEdges; ++iE, ++edgeIt )
     {
       const TopoDS_Edge&  curE = *edgeIt;
-      const bool isCurStraight = SMESH_Algo::isStraight( curE );
-      if ( isPrevStraight && isCurStraight && SMESH_Algo::IsContinuous( prevE, curE ))
-      {
-        if ( iUnite < 0 )
-          iUnite = iPrev;
-        nbUnitePerEdge[ iUnite ]++;
-        nbUnitePerEdge[ iE ] = -1;
-        --nbSides;
-      }
-      else
-      {
-        iUnite = -1;
-      }
-      prevE          = curE;
-      isPrevStraight = isCurStraight;
-      iPrev = iE;
+      edgeLength[ iE ] = SMESH_Algo::EdgeLength( curE );
+
+      // double normAngle = normAngle( prevE, curE, thePrism.myBottom );
+      // isCorner[ iE ] = false;
+      // if ( normAngle < 2.0 )
+      // {
+      //   if ( normAngle < 0.001 ) // straight or obtuse angle
+      //   {
+      //     // unite EDGEs in order not to put a corner of the unit quadrangle at this VERTEX
+      //     if ( iUnite < 0 )
+      //       iUnite = iPrev;
+      //     nbUnitePerEdge[ iUnite ]++;
+      //     nbUnitePerEdge[ iE ] = -1;
+      //     --nbSides;
+      //   }
+      //   else
+      //   {
+      //     isCorner[ iE ] = true;
+      //     nbCorners++;
+      //     iUnite = -1;
+      //   }
+      // }
+      // prevE = curE;
     }
+
+    if ( nbCorners > 4 )
+    {
+      // define which of corners to put on a side of the unit quadrangle
+    }
+    // edgeIt = thePrism.myBottomEdges.begin();
+    // for ( int iE = 0; iE < nbEdges; ++iE, ++edgeIt )
+    // {
+    //   const TopoDS_Edge&  curE = *edgeIt;
+    //   edgeLength[ iE ] = SMESH_Algo::EdgeLength( curE );
+
+    //   const bool isCurStraight = SMESH_Algo::IsStraight( curE );
+    //   if ( isPrevStraight && isCurStraight && SMESH_Algo::IsContinuous( prevE, curE ))
+    //   {
+    //     if ( iUnite < 0 )
+    //       iUnite = iPrev;
+    //     nbUnitePerEdge[ iUnite ]++;
+    //     nbUnitePerEdge[ iE ] = -1;
+    //     --nbSides;
+    //   }
+    //   else
+    //   {
+    //     iUnite = -1;
+    //   }
+    //   prevE          = curE;
+    //   isPrevStraight = isCurStraight;
+    //   iPrev = iE;
+    // }
     
     return nbSides;
   }
@@ -925,7 +982,7 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
   if ( !computeWalls( thePrism ))
     return false;
 
-  // Analyse mesh and geometry to find block sub-shapes and submeshes
+  // Analyse mesh and geometry to find all block sub-shapes and submeshes
   if ( !myBlock.Init( myHelper, thePrism ))
     return toSM( error( myBlock.GetError()));
 
@@ -1322,7 +1379,7 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
         SMESH_subMesh*    topSM = mesh->GetSubMesh( topE );
         SMESH_subMesh*    srcSM = botSM;
         SMESH_subMesh*    tgtSM = topSM;
-        if ( !srcSM->IsMeshComputed() && topSM->IsMeshComputed() )
+        if ( !srcSM->IsMeshComputed() && tgtSM->IsMeshComputed() )
           std::swap( srcSM, tgtSM );
 
         if ( !srcSM->IsMeshComputed() )
@@ -1333,10 +1390,31 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
         }
         srcSM->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
 
+        if ( tgtSM->IsMeshComputed() &&
+             tgtSM->GetSubMeshDS()->NbNodes() != srcSM->GetSubMeshDS()->NbNodes() )
+        {
+          // the top EDGE is computed differently than the bottom one,
+          // try to clear a wrong mesh
+          bool isAdjFaceMeshed = false;
+          PShapeIteratorPtr fIt = myHelper->GetAncestors( tgtSM->GetSubShape(),
+                                                          *mesh, TopAbs_FACE );
+          while ( const TopoDS_Shape* f = fIt->next() )
+            if (( isAdjFaceMeshed = mesh->GetSubMesh( *f )->IsMeshComputed() ))
+              break;
+          if ( isAdjFaceMeshed )
+            return toSM( error( TCom("Different nb of segment on logically horizontal edges #")
+                                << shapeID( botE ) << " and #"
+                                << shapeID( topE ) << ": "
+                                << tgtSM->GetSubMeshDS()->NbElements() << " != "
+                                << srcSM->GetSubMeshDS()->NbElements() ));
+          tgtSM->ComputeStateEngine( SMESH_subMesh::CLEAN );
+        }
         if ( !tgtSM->IsMeshComputed() )
         {
           // compute nodes on VERTEXes
-          tgtSM->ComputeSubMeshStateEngine( SMESH_subMesh::COMPUTE );
+          SMESH_subMeshIteratorPtr smIt = tgtSM->getDependsOnIterator(/*includeSelf=*/false);
+          while ( smIt->more() )
+            smIt->next()->ComputeSubMeshStateEngine( SMESH_subMesh::COMPUTE );
           // project segments
           DBGOUT( "COMPUTE H edge (proj) " << tgtSM->GetId());
           projector1D->myHyp.SetSourceEdge( TopoDS::Edge( srcSM->GetSubShape() ));
@@ -2264,7 +2342,7 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper*         helper,
   vector<int> nbUnitePerEdge( nbEdges, 0 ); // -1 means "joined to a previous"
 
   // consider continuous straight EDGEs as one side
-  const int nbSides = countNbSides( thePrism, nbUnitePerEdge );
+  const int nbSides = countNbSides( thePrism, nbUnitePerEdge, edgeLength );
 
   list< TopoDS_Edge >::const_iterator edgeIt = thePrism.myBottomEdges.begin();
   for ( iE = 0; iE < nbEdges; ++iE, ++edgeIt )
@@ -2282,8 +2360,6 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper*         helper,
     SHOWYXZ("\np1 F " <<iE, gpXYZ(faceColumns.begin()->second.front() ));
     SHOWYXZ("p2 F "   <<iE, gpXYZ(faceColumns.rbegin()->second.front() ));
     SHOWYXZ("V First "<<iE, BRep_Tool::Pnt( TopExp::FirstVertex(*edgeIt,true )));
-
-    edgeLength[ iE ] = SMESH_Algo::EdgeLength( *edgeIt );
 
     if ( nbSides < NB_WALL_FACES ) // fill map used to split faces
       len2edgeMap.insert( make_pair( edgeLength[ iE ], iE )); // sort edges by length
@@ -2524,8 +2600,8 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper*         helper,
     tFace.Set( ID_TOP_FACE, new BRepAdaptor_Surface( thePrism.myTop ), topPcurves, isForward );
     SMESH_Block::Insert( thePrism.myTop, ID_TOP_FACE, myShapeIDMap );
   }
-  // faceGridToPythonDump( SMESH_Block::ID_Fxy0 );
-  // faceGridToPythonDump( SMESH_Block::ID_Fxy1 );
+  //faceGridToPythonDump( SMESH_Block::ID_Fxy0, 50 );
+  //faceGridToPythonDump( SMESH_Block::ID_Fxy1 );
 
   // Fill map ShapeIndex to TParam2ColumnMap
   // ----------------------------------------
@@ -2729,7 +2805,8 @@ bool StdMeshers_PrismAsBlock::IsForwardEdge(SMESHDS_Mesh*           meshDS,
 //purpose  : Prints a script creating a normal grid on the prism side
 //=======================================================================
 
-void StdMeshers_PrismAsBlock::faceGridToPythonDump(const SMESH_Block::TShapeID face)
+void StdMeshers_PrismAsBlock::faceGridToPythonDump(const SMESH_Block::TShapeID face,
+                                                   const int                   nb)
 {
 #ifdef _DEBUG_
   gp_XYZ pOnF[6] = { gp_XYZ(0,0,0), gp_XYZ(0,0,1),
@@ -2739,7 +2816,7 @@ void StdMeshers_PrismAsBlock::faceGridToPythonDump(const SMESH_Block::TShapeID f
   cout << "mesh = smesh.Mesh( 'Face " << face << "')" << endl;
   SMESH_Block::TFace& f = myFace[ face - ID_FirstF ];
   gp_XYZ params = pOnF[ face - ID_FirstF ];
-  const int nb = 10; // nb face rows
+  //const int nb = 10; // nb face rows
   for ( int j = 0; j <= nb; ++j )
   {
     params.SetCoord( f.GetVInd(), double( j )/ nb );
