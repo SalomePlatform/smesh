@@ -202,30 +202,46 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face&   theFace,
 //================================================================================
 /*!
  * \brief Constructor of a side for vertex using data from other FaceSide
-  * \param theVertex - the vertex
-  * \param theSide - the side
+ *  \param theVertex - the vertex
+ *  \param theSide - the side
  */
 //================================================================================
 
-StdMeshers_FaceSide::StdMeshers_FaceSide(const SMDS_MeshNode*       theNode,
-                                         const gp_Pnt2d             thePnt2d,
-                                         const StdMeshers_FaceSide* theSide)
+StdMeshers_FaceSide::StdMeshers_FaceSide(const StdMeshers_FaceSide*  theSide,
+                                         const SMDS_MeshNode*        theNode,
+                                         const gp_Pnt2d*             thePnt2d1,
+                                         const gp_Pnt2d*             thePnt2d2,
+                                         const Handle(Geom2d_Curve)& theC2d,
+                                         const double                theUFirst,
+                                         const double                theULast)
 {
-  myC2d.resize(1);
+  myC2d.push_back      ( theC2d );
+  myFirst.push_back    ( theUFirst );
+  myLast.push_back     ( theULast );
+  myNormPar.push_back  ( 1. );
+  myIsUniform.push_back( true );
+  myEdgeID.push_back   ( 0 );
   myLength       = 0;
   myProxyMesh    = theSide->myProxyMesh;
-  myDefaultPnt2d = thePnt2d;
-
-  myPoints = theSide->GetUVPtStruct();
-  myNbPonits = myPoints.size();
-  myNbSegments = theSide->myNbSegments;
-  std::vector<uvPtStruct>::iterator it = myPoints.begin();
-  for(; it!=myPoints.end(); it++) {
-    (*it).u = thePnt2d.X();
-    (*it).v = thePnt2d.Y();
-    (*it).y = 0.0;
-    (*it).node = theNode;
-  }
+  myDefaultPnt2d = *thePnt2d1;
+  myPoints       = theSide->GetUVPtStruct();
+  myNbPonits     = myPoints.size();
+  myNbSegments   = theSide->myNbSegments;
+  if ( thePnt2d2 )
+    for ( size_t i = 0; i < myPoints.size(); ++i )
+    {
+      double r = i / ( myPoints.size() - 1. );
+      myPoints[i].u = (1-r) * thePnt2d1->X() + r * thePnt2d2->X();
+      myPoints[i].v = (1-r) * thePnt2d1->Y() + r * thePnt2d2->Y();
+      myPoints[i].node = theNode;
+    }
+  else
+    for ( size_t i = 0; i < myPoints.size(); ++i )
+    {
+      myPoints[i].u = thePnt2d1->X();
+      myPoints[i].v = thePnt2d1->Y();
+      myPoints[i].node = theNode;
+    }
 }
 
 //================================================================================
