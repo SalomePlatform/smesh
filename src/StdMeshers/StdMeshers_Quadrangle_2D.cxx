@@ -41,14 +41,17 @@
 #include "StdMeshers_ViscousLayers2D.hxx"
 
 #include <BRep_Tool.hxx>
+#include <GeomAPI_ProjectPointOnSurf.hxx>
 #include <Geom_Surface.hxx>
 #include <NCollection_DefineArray2.hxx>
 #include <Precision.hxx>
-#include <TColStd_SequenceOfReal.hxx>
+#include <Quantity_Parameter.hxx>
 #include <TColStd_SequenceOfInteger.hxx>
+#include <TColStd_SequenceOfReal.hxx>
 #include <TColgp_SequenceOfXY.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
+#include <TopTools_DataMapOfShapeReal.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <TopTools_MapOfShape.hxx>
 #include <TopoDS.hxx>
@@ -71,7 +74,7 @@ typedef SMESH_Comment TComm;
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -96,7 +99,7 @@ StdMeshers_Quadrangle_2D::StdMeshers_Quadrangle_2D (int hypId, int studyId,
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -816,165 +819,101 @@ FaceQuadStruct::Ptr StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         
     error(COMPERR_BAD_SHAPE, TComm("Wrong number of wires: ") << nbWire);
     return FaceQuadStruct::Ptr();
   }
+
+  // find corner vertices of the quad
+  vector<TopoDS_Vertex> corners;
+  int nbDegenEdges, nbSides = GetCorners( F, aMesh, edges, corners, nbDegenEdges );
+  if ( nbSides == 0 )
+  {
+    return FaceQuadStruct::Ptr();
+  }
   FaceQuadStruct::Ptr quad( new FaceQuadStruct );
   quad->uv_grid = 0;
   quad->side.reserve(nbEdgesInWire.front());
   quad->face = F;
 
-  int nbSides = 0;
   list< TopoDS_Edge >::iterator edgeIt = edges.begin();
-  if (nbEdgesInWire.front() == 3) // exactly 3 edges
+  if ( nbSides == 3 ) // 3 sides and corners[0] is a vertex with myTriaVertexID
   {
-    SMESH_Comment comment;
-    SMESHDS_Mesh* meshDS = aMesh.GetMeshDS();
-    if (myTriaVertexID < 1)
+    for ( int iSide = 0; iSide < 3; ++iSide )
     {
-      comment << "No Base vertex parameter provided for a trilateral geometrical face";
+      list< TopoDS_Edge > sideEdges;
+      TopoDS_Vertex nextSideV = corners[( iSide + 1 ) % 3 ];
+      while ( edgeIt != edges.end() &&
+              !nextSideV.IsSame( SMESH_MesherHelper::IthVertex( 0, *edgeIt )))
+        if ( SMESH_Algo::isDegenerated( *edgeIt ))
+          ++edgeIt;
+        else
+          sideEdges.push_back( *edgeIt++ );
+      if ( !sideEdges.empty() )
+        quad->side.push_back(new StdMeshers_FaceSide(F, sideEdges, &aMesh, iSide < QUAD_TOP_SIDE,
+                                                     ignoreMediumNodes, myProxyMesh));
+      else
+        --iSide;
     }
-    else
-    {
-      TopoDS_Vertex V = TopoDS::Vertex(meshDS->IndexToShape(myTriaVertexID));
-      if (!V.IsNull()) {
-        TopoDS_Edge E1,E2,E3;
-        for (; edgeIt != edges.end(); ++edgeIt) {
-          TopoDS_Edge E =  *edgeIt;
-          TopoDS_Vertex VF, VL;
-          TopExp::Vertices(E, VF, VL, true);
-          if (VF.IsSame(V))
-            E1 = E;
-          else if (VL.IsSame(V))
-            E3 = E;
-          else
-            E2 = E;
-        }
-        if (!E1.IsNull() && !E2.IsNull() && !E3.IsNull())
-        {
-          quad->side.push_back(new StdMeshers_FaceSide(F, E1, &aMesh, true,
-                                                       ignoreMediumNodes, myProxyMesh));
-          quad->side.push_back(new StdMeshers_FaceSide(F, E2, &aMesh, true,
-                                                       ignoreMediumNodes, myProxyMesh));
-          quad->side.push_back(new StdMeshers_FaceSide(F, E3, &aMesh, false,
-                                                       ignoreMediumNodes, myProxyMesh));
-          const vector<UVPtStruct>& UVPSleft  = quad->side[0]->GetUVPtStruct(true,0);
-          /*  vector<UVPtStruct>& UVPStop   = */quad->side[1]->GetUVPtStruct(false,1);
-          /*  vector<UVPtStruct>& UVPSright = */quad->side[2]->GetUVPtStruct(true,1);
-          const SMDS_MeshNode* aNode = UVPSleft[0].node;
-          gp_Pnt2d aPnt2d(UVPSleft[0].u, UVPSleft[0].v);
-          quad->side.push_back(new StdMeshers_FaceSide(aNode, aPnt2d, quad->side[1]));
-          return quad;
-        }
-      }
-      comment << "Invalid Base vertex parameter: " << myTriaVertexID << " is not among [";
-      TopTools_MapOfShape vMap;
-      for (TopExp_Explorer v(aShape, TopAbs_VERTEX); v.More(); v.Next())
-        if (vMap.Add(v.Current()))
-          comment << meshDS->ShapeToIndex(v.Current()) << (vMap.Extent()==3 ? "]" : ", ");
-    }
-    error(comment);
-    quad.reset();
+    const vector<UVPtStruct>& UVPSleft  = quad->side[0]->GetUVPtStruct(true,0);
+    /*  vector<UVPtStruct>& UVPStop   = */quad->side[1]->GetUVPtStruct(false,1);
+    /*  vector<UVPtStruct>& UVPSright = */quad->side[2]->GetUVPtStruct(true,1);
+    const SMDS_MeshNode* aNode = UVPSleft[0].node;
+    gp_Pnt2d aPnt2d(UVPSleft[0].u, UVPSleft[0].v);
+    quad->side.push_back(new StdMeshers_FaceSide(quad->side[1], aNode, &aPnt2d));
+    myNeedSmooth = ( nbDegenEdges > 0 );
     return quad;
   }
-  else if (nbEdgesInWire.front() == 4) // exactly 4 edges
+  else // 4 sides
   {
-    for (; edgeIt != edges.end(); ++edgeIt, nbSides++)
-      quad->side.push_back(new StdMeshers_FaceSide(F, *edgeIt, &aMesh, nbSides < QUAD_TOP_SIDE,
-                                                   ignoreMediumNodes, myProxyMesh));
-  }
-  else if (nbEdgesInWire.front() > 4) // more than 4 edges - try to unite some
-  {
-    list< TopoDS_Edge > sideEdges;
-    vector< int > degenSides;
-    while (!edges.empty()) {
-      sideEdges.clear();
-      sideEdges.splice(sideEdges.end(), edges, edges.begin()); // edges.front() -> sideEdges.end()
-      bool sameSide = true;
-      while (!edges.empty() && sameSide) {
-        sameSide = SMESH_Algo::IsContinuous(sideEdges.back(), edges.front());
-        if (sameSide)
-          sideEdges.splice(sideEdges.end(), edges, edges.begin());
-      }
-      if (nbSides == 0) { // go backward from the first edge
-        sameSide = true;
-        while (!edges.empty() && sameSide) {
-          sameSide = SMESH_Algo::IsContinuous(sideEdges.front(), edges.back());
-          if (sameSide)
-            sideEdges.splice(sideEdges.begin(), edges, --edges.end());
-        }
-      }
-      if ( sideEdges.size() == 1 && SMESH_Algo::isDegenerated( sideEdges.front() ))
-        degenSides.push_back( nbSides );
-
-      quad->side.push_back(new StdMeshers_FaceSide(F, sideEdges, &aMesh, nbSides < QUAD_TOP_SIDE,
-                                                   ignoreMediumNodes, myProxyMesh));
-      ++nbSides;
-    }
-    if ( !degenSides.empty() && nbSides - degenSides.size() == 4 )
+    myNeedSmooth = ( corners.size() == 4 && nbDegenEdges > 0 );
+    int iSide = 0, nbUsedDegen = 0, nbLoops = 0;
+    for ( ; edgeIt != edges.end(); ++nbLoops )
     {
-      myNeedSmooth = true;
-      for ( unsigned i = QUAD_TOP_SIDE; i < quad->side.size(); ++i )
-        quad->side[i]->Reverse();
-
-      for ( int i = degenSides.size()-1; i > -1; --i )
+      list< TopoDS_Edge > sideEdges;
+      TopoDS_Vertex nextSideV = corners[( iSide + 1 - nbUsedDegen ) % corners.size() ];
+      while ( edgeIt != edges.end() &&
+              !nextSideV.IsSame( myHelper->IthVertex( 0, *edgeIt )))
       {
-        StdMeshers_FaceSide* degenSide = quad->side[ degenSides[ i ]];
-        delete degenSide;
-        quad->side.erase( quad->side.begin() + degenSides[ i ] );
-      }
-      for ( unsigned i = QUAD_TOP_SIDE; i < quad->side.size(); ++i )
-        quad->side[i]->Reverse();
-
-      nbSides -= degenSides.size();
-    }
-    // issue 20222. Try to unite only edges shared by two same faces
-    if (nbSides < 4)
-    {
-      quad.reset( new FaceQuadStruct );
-      quad->side.reserve(nbEdgesInWire.front());
-      nbSides = 0;
-
-      SMESH_Block::GetOrderedEdges (F, edges, nbEdgesInWire);
-      while (!edges.empty()) {
-        sideEdges.clear();
-        sideEdges.splice(sideEdges.end(), edges, edges.begin());
-        bool sameSide = true;
-        while (!edges.empty() && sameSide) {
-          sameSide =
-            SMESH_Algo::IsContinuous(sideEdges.back(), edges.front()) &&
-            twoEdgesMeatAtVertex(sideEdges.back(), edges.front(), aMesh);
-          if (sameSide)
-            sideEdges.splice(sideEdges.end(), edges, edges.begin());
-        }
-        if (nbSides == 0) { // go backward from the first edge
-          sameSide = true;
-          while (!edges.empty() && sameSide) {
-            sameSide =
-              SMESH_Algo::IsContinuous(sideEdges.front(), edges.back()) &&
-              twoEdgesMeatAtVertex(sideEdges.front(), edges.back(), aMesh);
-            if (sameSide)
-              sideEdges.splice(sideEdges.begin(), edges, --edges.end());
+        if ( SMESH_Algo::isDegenerated( *edgeIt ))
+        {
+          if ( myNeedSmooth )
+          {
+            ++edgeIt; // no side on the degenerated EDGE
+          }
+          else
+          {
+            if ( sideEdges.empty() )
+            {
+              ++nbUsedDegen;
+              sideEdges.push_back( *edgeIt++ ); // a degenerated side
+              break;
+            }
+            else
+            {
+              break; // do not append a degenerated EDGE to a regular side
+            }
           }
         }
-        quad->side.push_back(new StdMeshers_FaceSide(F, sideEdges, &aMesh,
-                                                     nbSides < QUAD_TOP_SIDE,
+        else
+        {
+          sideEdges.push_back( *edgeIt++ );
+        }
+      }
+      if ( !sideEdges.empty() )
+      {
+        quad->side.push_back(new StdMeshers_FaceSide(F, sideEdges, &aMesh, iSide < QUAD_TOP_SIDE,
                                                      ignoreMediumNodes, myProxyMesh));
-        ++nbSides;
+        ++iSide;
+      }
+      if ( nbLoops > 8 )
+      {
+        error(TComm("Bug: infinite loop in StdMeshers_Quadrangle_2D::CheckNbEdges()"));
+        quad.reset();
+        break;
       }
     }
-  }
-  if (nbSides != 4 ) {
-#ifdef _DEBUG_
-    MESSAGE ("StdMeshers_Quadrangle_2D. Edge IDs of " << nbSides << " sides:\n");
-    for (int i = 0; i < nbSides; ++i) {
-      MESSAGE (" (");
-      for (int e = 0; e < quad->side[i]->NbEdges(); ++e)
-        MESSAGE (aMesh.GetMeshDS()->ShapeToIndex(quad->side[i]->Edge(e)) << " ");
-      MESSAGE (")\n");
+    if ( quad->side.size() != 4 )
+    {
+      error(TComm("Bug: ") << quad->side.size()  << " sides found instead of 4");
+      quad.reset();
     }
-#endif
-    if (!nbSides)
-      nbSides = nbEdgesInWire.front();
-    error(COMPERR_BAD_SHAPE, TComm("Face must have 4 sides but not ") << nbSides);
-    quad.reset();
   }
 
   return quad;
@@ -1268,6 +1207,8 @@ bool StdMeshers_Quadrangle_2D::SetNormalizedGrid (SMESH_Mesh &          aMesh,
 
   // 3 --- 2D normalized values on unit square [0..1][0..1]
 
+  UpdateDegenUV( quad );
+
   int nbhoriz  = Min(quad->side[0]->NbPoints(), quad->side[2]->NbPoints());
   int nbvertic = Min(quad->side[1]->NbPoints(), quad->side[3]->NbPoints());
 
@@ -1286,9 +1227,6 @@ bool StdMeshers_Quadrangle_2D::SetNormalizedGrid (SMESH_Mesh &          aMesh,
   if (uv_e0.empty() || uv_e1.empty() || uv_e2.empty() || uv_e3.empty())
     //return error("Can't find nodes on sides");
     return error(COMPERR_BAD_INPUT_MESH);
-
-  if ( myNeedSmooth )
-    UpdateDegenUV( quad );
 
   // copy data of face boundary
   /*if (! quad->isEdgeOut[0])*/ {
@@ -1543,8 +1481,7 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
   if (uv_eb.size() != nb || uv_er.size() != nr || uv_et.size() != nt || uv_el.size() != nl)
     return error(COMPERR_BAD_INPUT_MESH);
 
-  if ( myNeedSmooth )
-    UpdateDegenUV( quad );
+  UpdateDegenUV( quad );
 
   // arrays for normalized params
   TColStd_SequenceOfReal npb, npr, npt, npl;
@@ -2457,8 +2394,7 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
     if (uv_eb.size() != nb || uv_er.size() != nr || uv_et.size() != nt || uv_el.size() != nl)
       return error(COMPERR_BAD_INPUT_MESH);
 
-    if ( myNeedSmooth )
-      UpdateDegenUV( quad );
+    UpdateDegenUV( quad );
 
     // arrays for normalized params
     TColStd_SequenceOfReal npb, npr, npt, npl;
@@ -3265,7 +3201,8 @@ namespace // data for smoothing
    */
   struct TSmoothNode
   {
-    gp_XY _uv;
+    gp_XY  _uv;
+    gp_XYZ _xyz;
     vector< TTriangle > _triangles; // if empty, then node is not movable
   };
   // --------------------------------------------------------------------------------
@@ -3287,41 +3224,70 @@ namespace // data for smoothing
 
 void StdMeshers_Quadrangle_2D::UpdateDegenUV(FaceQuadStruct::Ptr quad)
 {
-  for ( unsigned i = 0; i < quad->side.size(); ++i )
-  {
-    StdMeshers_FaceSide* side = quad->side[i];
-    const vector<UVPtStruct>& uvVec = side->GetUVPtStruct();
+  if ( myNeedSmooth )
 
-    // find which end of the side is on degenerated shape
-    int degenInd = -1;
-    if ( myHelper->IsDegenShape( uvVec[0].node->getshapeId() ))
-      degenInd = 0;
-    else if ( myHelper->IsDegenShape( uvVec.back().node->getshapeId() ))
-      degenInd = uvVec.size() - 1;
-    else
-      continue;
+    // Set UV of nodes on degenerated VERTEXes in the middle of degenerated EDGE
+    // --------------------------------------------------------------------------
+    for ( unsigned i = 0; i < quad->side.size(); ++i )
+    {
+      StdMeshers_FaceSide* side = quad->side[i];
+      const vector<UVPtStruct>& uvVec = side->GetUVPtStruct();
 
-    // find another side sharing the degenerated shape
-    bool isPrev = ( degenInd == 0 );
-    if ( i >= QUAD_TOP_SIDE )
-      isPrev = !isPrev;
-    int i2 = ( isPrev ? ( i + 3 ) : ( i + 1 )) % 4;
-    StdMeshers_FaceSide* side2 = quad->side[ i2 ];
-    const vector<UVPtStruct>& uvVec2 = side2->GetUVPtStruct();
-    int degenInd2 = -1;
-    if ( uvVec[ degenInd ].node == uvVec2[0].node )
-      degenInd2 = 0;
-    else if ( uvVec[ degenInd ].node == uvVec2.back().node )
-      degenInd2 = uvVec2.size() - 1;
-    else
-      throw SALOME_Exception( LOCALIZED( "Logical error" ));
+      // find which end of the side is on degenerated shape
+      int degenInd = -1;
+      if ( myHelper->IsDegenShape( uvVec[0].node->getshapeId() ))
+        degenInd = 0;
+      else if ( myHelper->IsDegenShape( uvVec.back().node->getshapeId() ))
+        degenInd = uvVec.size() - 1;
+      else
+        continue;
 
-    // move UV in the middle
-    uvPtStruct& uv1 = const_cast<uvPtStruct&>( uvVec [ degenInd  ]);
-    uvPtStruct& uv2 = const_cast<uvPtStruct&>( uvVec2[ degenInd2 ]);
-    uv1.u = uv2.u = 0.5 * ( uv1.u + uv2.u );
-    uv1.v = uv2.v = 0.5 * ( uv1.v + uv2.v );
-  }
+      // find another side sharing the degenerated shape
+      bool isPrev = ( degenInd == 0 );
+      if ( i >= QUAD_TOP_SIDE )
+        isPrev = !isPrev;
+      int i2 = ( isPrev ? ( i + 3 ) : ( i + 1 )) % 4;
+      StdMeshers_FaceSide* side2 = quad->side[ i2 ];
+      const vector<UVPtStruct>& uvVec2 = side2->GetUVPtStruct();
+      int degenInd2 = -1;
+      if ( uvVec[ degenInd ].node == uvVec2[0].node )
+        degenInd2 = 0;
+      else if ( uvVec[ degenInd ].node == uvVec2.back().node )
+        degenInd2 = uvVec2.size() - 1;
+      else
+        throw SALOME_Exception( LOCALIZED( "Logical error" ));
+
+      // move UV in the middle
+      uvPtStruct& uv1 = const_cast<uvPtStruct&>( uvVec [ degenInd  ]);
+      uvPtStruct& uv2 = const_cast<uvPtStruct&>( uvVec2[ degenInd2 ]);
+      uv1.u = uv2.u = 0.5 * ( uv1.u + uv2.u );
+      uv1.v = uv2.v = 0.5 * ( uv1.v + uv2.v );
+    }
+
+  else if ( quad->side.size() == 4 )
+
+    // Set number of nodes on a degenerated side to be same as on an opposite side
+    // ----------------------------------------------------------------------------
+    for ( unsigned i = 0; i < quad->side.size(); ++i )
+    {
+      StdMeshers_FaceSide* degSide = quad->side[i];
+      if ( !myHelper->IsDegenShape( degSide->EdgeID(0) ))
+        continue;
+      StdMeshers_FaceSide* oppSide = quad->side[( i+2 ) % quad->side.size() ];
+      if ( degSide->NbSegments() == oppSide->NbSegments() )
+        continue;
+
+      // make new side data
+      const vector<UVPtStruct>& uvVecDegOld = degSide->GetUVPtStruct();
+      const SMDS_MeshNode*   n = uvVecDegOld[0].node;
+      Handle(Geom2d_Curve) c2d = degSide->Curve2d(0);
+      double f = degSide->FirstU(0), l = degSide->LastU(0);
+      gp_Pnt2d p1( uvVecDegOld.front().u, uvVecDegOld.front().v );
+      gp_Pnt2d p2( uvVecDegOld.back().u,  uvVecDegOld.back().v );
+
+      delete degSide;
+      quad->side[i] = new StdMeshers_FaceSide( oppSide, n, &p1, &p2, c2d, f, l );
+    }
 }
 
 //================================================================================
@@ -3339,15 +3305,22 @@ void StdMeshers_Quadrangle_2D::Smooth (FaceQuadStruct::Ptr quad)
   typedef map< const SMDS_MeshNode*, TSmoothNode, TIDCompare > TNo2SmooNoMap;
   TNo2SmooNoMap smooNoMap;
 
-  const TopoDS_Face& geomFace = TopoDS::Face( myHelper->GetSubShape() );
-  SMESHDS_Mesh* meshDS = myHelper->GetMeshDS();
-  SMESHDS_SubMesh* fSubMesh = meshDS->MeshElements( geomFace );
-  SMDS_NodeIteratorPtr nIt = fSubMesh->GetNodes();
+  const TopoDS_Face&  geomFace = TopoDS::Face( myHelper->GetSubShape() );
+  Handle(Geom_Surface) surface = BRep_Tool::Surface( geomFace );
+  double U1, U2, V1, V2;
+  surface->Bounds(U1, U2, V1, V2);
+  GeomAPI_ProjectPointOnSurf proj;
+  proj.Init( surface, U1, U2, V1, V2, BRep_Tool::Tolerance( geomFace ) );
+
+  SMESHDS_Mesh*        meshDS = myHelper->GetMeshDS();
+  SMESHDS_SubMesh*   fSubMesh = meshDS->MeshElements( geomFace );
+  SMDS_NodeIteratorPtr    nIt = fSubMesh->GetNodes();
   while ( nIt->more() ) // loop on nodes bound to a FACE
   {
     const SMDS_MeshNode* node = nIt->next();
     TSmoothNode & sNode = smooNoMap[ node ];
-    sNode._uv = myHelper->GetNodeUV( geomFace, node );
+    sNode._uv  = myHelper->GetNodeUV( geomFace, node );
+    sNode._xyz = SMESH_TNodeXYZ( node );
 
     // set sNode._triangles
     SMDS_ElemIteratorPtr fIt = node->GetInverseElementIterator( SMDSAbs_Face );
@@ -3372,6 +3345,7 @@ void StdMeshers_Quadrangle_2D::Smooth (FaceQuadStruct::Ptr quad)
     {
       TSmoothNode & sNode = smooNoMap[ uvVec[j].node ];
       sNode._uv.SetCoord( uvVec[j].u, uvVec[j].v );
+      sNode._xyz = SMESH_TNodeXYZ( uvVec[j].node );
     }
   }
 
@@ -3394,25 +3368,47 @@ void StdMeshers_Quadrangle_2D::Smooth (FaceQuadStruct::Ptr quad)
       if ( sNode._triangles.empty() )
         continue; // not movable node
 
-      // compute a new UV
-      gp_XY newUV (0,0);
+      // compute a new XYZ
+      gp_XYZ newXYZ (0,0,0);
       for ( unsigned i = 0; i < sNode._triangles.size(); ++i )
-        newUV += sNode._triangles[i]._n1->_uv;
-      newUV /= sNode._triangles.size();
+        newXYZ += sNode._triangles[i]._n1->_xyz;
+      newXYZ /= sNode._triangles.size();
 
-      // check validity of the newUV
-      bool isValid = true;
-      for ( unsigned i = 0; i < sNode._triangles.size() && isValid; ++i )
-        isValid = ( sNode._triangles[i].IsForward( newUV ) == refForward );
-
+      // compute a new UV by projection
+      gp_XY newUV;
+      proj.Perform( newXYZ );
+      bool isValid = ( proj.IsDone() && proj.NbPoints() > 0 );
       if ( isValid )
+      {
+        // check validity of the newUV
+        Quantity_Parameter u,v;
+        proj.LowerDistanceParameters( u, v );
+        newUV.SetCoord( u, v );
+        for ( unsigned i = 0; i < sNode._triangles.size() && isValid; ++i )
+          isValid = ( sNode._triangles[i].IsForward( newUV ) == refForward );
+      }
+      if ( !isValid )
+      {
+        // compute a new UV by averaging
+        newUV.SetCoord(0.,0.);
+        for ( unsigned i = 0; i < sNode._triangles.size(); ++i )
+          newUV += sNode._triangles[i]._n1->_uv;
+        newUV /= sNode._triangles.size();
+
+        // check validity of the newUV
+        isValid = true;
+        for ( unsigned i = 0; i < sNode._triangles.size() && isValid; ++i )
+          isValid = ( sNode._triangles[i].IsForward( newUV ) == refForward );
+      }
+      if ( isValid )
+      {
         sNode._uv = newUV;
+        sNode._xyz = surface->Value( newUV.X(), newUV.Y() ).XYZ();
+      }
     }
   }
 
   // Set new XYZ to the smoothed nodes
-
-  Handle(Geom_Surface) surface = BRep_Tool::Surface( geomFace );
 
   for ( n2sn = smooNoMap.begin(); n2sn != smooNoMap.end(); ++n2sn )
   {
@@ -3451,4 +3447,239 @@ void StdMeshers_Quadrangle_2D::Smooth (FaceQuadStruct::Ptr quad)
       meshDS->MoveNode( node, xyz.X(), xyz.Y(), xyz.Z() );
     }
   }
+}
+
+/*//================================================================================
+/*!
+ * \brief Finds vertices at the most sharp face corners
+ *  \param [in] theFace - the FACE
+ *  \param [in,out] theWire - the ordered edges of the face. It can be modified to
+ *         have the first VERTEX of the first EDGE in \a vertices
+ *  \param [out] theVertices - the found corner vertices in the order corresponding to
+ *         the order of EDGEs in \a theWire
+ *  \param [out] theNbDegenEdges - nb of degenerated EDGEs in theFace
+ *  \return int - number of quad sides found: 0, 3 or 4
+ */
+//================================================================================
+
+int StdMeshers_Quadrangle_2D::GetCorners(const TopoDS_Face&          theFace,
+                                         SMESH_Mesh &                theMesh,
+                                         std::list<TopoDS_Edge>&     theWire,
+                                         std::vector<TopoDS_Vertex>& theVertices,
+                                         int &                       theNbDegenEdges)
+{
+  theNbDegenEdges = 0;
+
+  SMESH_MesherHelper helper( theMesh );
+
+  // sort theVertices by angle
+  multimap<double, TopoDS_Vertex> vertexByAngle;
+  TopTools_DataMapOfShapeReal angleByVertex;
+  TopoDS_Edge prevE = theWire.back();
+  if ( SMESH_Algo::isDegenerated( prevE ))
+  {
+    list<TopoDS_Edge>::reverse_iterator edge = ++theWire.rbegin();
+    while ( SMESH_Algo::isDegenerated( *edge ))
+      ++edge;
+    if ( edge == theWire.rend() )
+      return false;
+    prevE = *edge;
+  }
+  list<TopoDS_Edge>::iterator edge = theWire.begin();
+  for ( ; edge != theWire.end(); ++edge )
+  {
+    if ( SMESH_Algo::isDegenerated( *edge ))
+    {
+      ++theNbDegenEdges;
+      continue;
+    }
+    TopoDS_Vertex v = helper.IthVertex( 0, *edge );
+    if ( SMESH_Algo::VertexNode( v, helper.GetMeshDS() ))
+    {
+      double angle = SMESH_MesherHelper::GetAngle( prevE, *edge, theFace );
+      vertexByAngle.insert( make_pair( angle, v ));
+      angleByVertex.Bind( v, angle );
+    }
+    prevE = *edge;
+  }
+
+  // find out required nb of corners (3 or 4)
+  int nbCorners = 4;
+  TopoDS_Shape triaVertex = helper.GetMeshDS()->IndexToShape( myTriaVertexID );
+  if ( !triaVertex.IsNull() &&
+       triaVertex.ShapeType() == TopAbs_VERTEX &&
+       helper.IsSubShape( triaVertex, theFace ))
+    nbCorners = 3;
+  else
+    triaVertex.Nullify();
+
+  // check nb of available corners
+  if ( nbCorners == 3 )
+  {
+    if ( vertexByAngle.size() < 3 )
+      return error(COMPERR_BAD_SHAPE,
+                   TComm("Face must have 3 sides but not ") << vertexByAngle.size() );
+  }
+  else
+  {
+    if ( vertexByAngle.size() == 3 && theNbDegenEdges == 0 )
+    {
+      if ( myTriaVertexID < 1 )
+        return error(COMPERR_BAD_PARMETERS,
+                     "No Base vertex provided for a trilateral geometrical face");
+        
+      TComm comment("Invalid Base vertex: ");
+      comment << myTriaVertexID << " its ID is not among [ ";
+      multimap<double, TopoDS_Vertex>::iterator a2v = vertexByAngle.begin();
+      comment << helper.GetMeshDS()->ShapeToIndex( a2v->second ) << ", "; a2v++;
+      comment << helper.GetMeshDS()->ShapeToIndex( a2v->second ) << ", "; a2v++;
+      comment << helper.GetMeshDS()->ShapeToIndex( a2v->second ) << " ]";
+      return error(COMPERR_BAD_PARMETERS, comment );
+    }
+    if ( vertexByAngle.size() + ( theNbDegenEdges > 0 ) < 4 &&
+         vertexByAngle.size() + theNbDegenEdges != 4 )
+      return error(COMPERR_BAD_SHAPE,
+                   TComm("Face must have 4 sides but not ") << vertexByAngle.size() );
+  }
+
+  // put all corner vertices in a map
+  TopTools_MapOfShape vMap;
+  if ( nbCorners == 3 )
+    vMap.Add( triaVertex );
+  multimap<double, TopoDS_Vertex>::reverse_iterator a2v = vertexByAngle.rbegin();
+  for ( ; a2v != vertexByAngle.rend() && vMap.Extent() < nbCorners; ++a2v )
+    vMap.Add( (*a2v).second );
+
+  // check if there are possible variations in choosing corners
+  bool isThereVariants = false;
+  if ( vertexByAngle.size() > nbCorners )
+  {
+    double lostAngle = a2v->first;
+    double lastAngle = ( --a2v, a2v->first );
+    isThereVariants  = ( lostAngle * 1.1 >= lastAngle );
+  }
+
+  // make theWire begin from a corner vertex or triaVertex
+  if ( nbCorners == 3 )
+    while ( !triaVertex.IsSame( ( helper.IthVertex( 0, theWire.front() ))) ||
+            SMESH_Algo::isDegenerated( theWire.front() ))
+      theWire.splice( theWire.end(), theWire, theWire.begin() );
+  else
+    while ( !vMap.Contains( helper.IthVertex( 0, theWire.front() )) ||
+            SMESH_Algo::isDegenerated( theWire.front() ))
+      theWire.splice( theWire.end(), theWire, theWire.begin() );
+
+  // fill the result vector and prepare for its refinement
+  theVertices.clear();
+  vector< double >      angles;
+  vector< TopoDS_Edge > edgeVec;
+  vector< int >         cornerInd;
+  angles.reserve( vertexByAngle.size() );
+  edgeVec.reserve( vertexByAngle.size() );
+  cornerInd.reserve( nbCorners );
+  for ( edge = theWire.begin(); edge != theWire.end(); ++edge )
+  {
+    if ( SMESH_Algo::isDegenerated( *edge ))
+      continue;
+    TopoDS_Vertex v = helper.IthVertex( 0, *edge );
+    bool   isCorner = vMap.Contains( v );
+    if ( isCorner )
+    {
+      theVertices.push_back( v );
+      cornerInd.push_back( angles.size() );
+    }
+    angles.push_back( angleByVertex( v ));
+    edgeVec.push_back( *edge );
+  }
+
+  // refine the result vector - make sides elual by length if
+  // there are several equal angles
+  if ( isThereVariants )
+  {
+    if ( nbCorners == 3 )
+      angles[0] = 2 * M_PI; // not to move the base triangle VERTEX
+
+    set< int > refinedCorners;
+    for ( size_t iC = 0; iC < cornerInd.size(); ++iC )
+    {
+      int iV = cornerInd[iC];
+      if ( !refinedCorners.insert( iV ).second )
+        continue;
+      list< int > equalVertices;
+      equalVertices.push_back( iV );
+      int nbC[2] = { 0, 0 };
+      // find equal angles backward and forward from the iV-th corner vertex
+      for ( int isFwd = 0; isFwd < 2; ++isFwd )
+      {
+        int     dV = isFwd ? +1 : -1;
+        int iCNext = helper.WrapIndex( iC + dV, cornerInd.size() );
+        int iVNext = helper.WrapIndex( iV + dV, angles.size() );
+        while ( iVNext != iV )
+        {
+          bool equal = Abs( angles[iV] - angles[iVNext] ) < 0.1 * angles[iV];
+          if ( equal )
+            equalVertices.insert( isFwd ? equalVertices.end() : equalVertices.begin(), iVNext );
+          if ( iVNext == cornerInd[ iCNext ])
+          {
+            if ( !equal )
+              break;
+            nbC[ isFwd ]++;
+            refinedCorners.insert( cornerInd[ iCNext ] );
+            iCNext = helper.WrapIndex( iCNext + dV, cornerInd.size() );
+          }
+          iVNext = helper.WrapIndex( iVNext + dV, angles.size() );
+        }
+      }
+      // move corners to make sides equal by length
+      int nbEqualV  = equalVertices.size();
+      int nbExcessV = nbEqualV - ( 1 + nbC[0] + nbC[1] );
+      if ( nbExcessV > 0 )
+      {
+        // calculate normalized length of each side enclosed between neighbor equalVertices
+        vector< double > curLengths;
+        double totalLen = 0;
+        vector< int > evVec( equalVertices.begin(), equalVertices.end() );
+        int   iEV = 0;
+        int    iE = cornerInd[ helper.WrapIndex( iC - nbC[0] - 1, cornerInd.size() )];
+        int iEEnd = cornerInd[ helper.WrapIndex( iC + nbC[1] + 1, cornerInd.size() )];
+        while ( curLengths.size() < nbEqualV + 1 )
+        {
+          curLengths.push_back( totalLen );
+          do {
+            curLengths.back() += SMESH_Algo::EdgeLength( edgeVec[ iE ]);
+            iE = helper.WrapIndex( iE + 1, edgeVec.size());
+            if ( iEV < evVec.size() && iE == evVec[ iEV++ ] )
+              break;
+          }
+          while( iE != iEEnd );
+          totalLen = curLengths.back();
+        }
+        curLengths.resize( equalVertices.size() );
+        for ( size_t iS = 0; iS < curLengths.size(); ++iS )
+          curLengths[ iS ] /= totalLen;
+
+        // find equalVertices most close to the ideal sub-division of all sides
+        int iBestEV = 0;
+        int iCorner = helper.WrapIndex( iC - nbC[0], cornerInd.size() );
+        int nbSides = 2 + nbC[0] + nbC[1];
+        for ( int iS = 1; iS < nbSides; ++iS, ++iBestEV )
+        {
+          double idealLen = iS / double( nbSides );
+          double d, bestDist = 1.;
+          for ( iEV = iBestEV; iEV < curLengths.size(); ++iEV )
+            if (( d = Abs( idealLen - curLengths[ iEV ])) < bestDist )
+            {
+              bestDist = d;
+              iBestEV  = iEV;
+            }
+          if ( iBestEV > iS-1 + nbExcessV )
+            iBestEV = iS-1 + nbExcessV;
+          theVertices[ iCorner ] = helper.IthVertex( 0, edgeVec[ evVec[ iBestEV ]]);
+          iCorner = helper.WrapIndex( iCorner + 1, cornerInd.size() );
+        }
+      }
+    }
+  }
+
+  return nbCorners;
 }

@@ -117,25 +117,25 @@ protected:
 
   void Smooth (FaceQuadStruct::Ptr quad);
 
+  int GetCorners(const TopoDS_Face&          theFace,
+                 SMESH_Mesh &                theMesh,
+                 std::list<TopoDS_Edge>&     theWire,
+                 std::vector<TopoDS_Vertex>& theVertices,
+                 int &                       theNbDegenEdges);
+
 
   // true if QuadranglePreference hypothesis is assigned that forces
   // construction of quadrangles if the number of nodes on opposite edges
   // is not the same in the case where the global number of nodes on edges
   // is even
   bool myQuadranglePreference;
-
   bool myTrianglePreference;
-
   int  myTriaVertexID;
-
   bool myNeedSmooth;
 
   StdMeshers_QuadType  myQuadType;
-
   SMESH_MesherHelper*  myHelper; // tool for working with quadratic elements
-
   SMESH_ProxyMesh::Ptr myProxyMesh;
-
   FaceQuadStruct::Ptr  myQuadStruct;
 };
 
