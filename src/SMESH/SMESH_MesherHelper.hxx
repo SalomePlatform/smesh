@@ -140,10 +140,8 @@ class SMESH_EXPORT SMESH_MesherHelper
     * \param nbNodes - total nb of nodes
     * \retval int - valid node index
    */
-  static int WrapIndex(const int ind, const int nbNodes) {
-    if ( ind < 0 ) return nbNodes + ind % nbNodes;
-    if ( ind >= nbNodes ) return ind % nbNodes;
-    return ind;
+  static inline int WrapIndex(int ind, const int nbNodes) {
+    return (( ind %= nbNodes ) < 0 ) ? ind + nbNodes : ind;
   }
 
   /*!
