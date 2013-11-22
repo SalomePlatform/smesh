@@ -140,6 +140,10 @@
         <translation>No mesh elements assigned to a Sub-shape</translation>
     </message>
     <message>
+        <source>COMPERR_BAD_PARMETERS</source>
+        <translation>Invalid input parameters</translation>
+    </message>
+    <message>
         <source>EDITERR_NO_MEDIUM_ON_GEOM</source>
         <translation>Some medium nodes not placed on geometry to avoid
         distorting elements shown in magenta</translation>
