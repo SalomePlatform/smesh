@@ -52,6 +52,7 @@ enum SMESH_ComputeErrorName
   COMPERR_WARNING          = -10, //!< algo reports error but sub-mesh is computed anyway
   COMPERR_CANCELED         = -11, //!< compute canceled
   COMPERR_NO_MESH_ON_SHAPE = -12, //!< no mesh elements assigned to sub-shape
+  COMPERR_BAD_PARMETERS    = -13, //!< incorrect hypotheses parameters
   COMPERR_LAST_ALGO_ERROR  = -100,//!< terminator of mesh computation errors
   // Errors of SMESH_MeshEditor follow
   EDITERR_NO_MEDIUM_ON_GEOM= -101 /* during conversion to quadratic,
