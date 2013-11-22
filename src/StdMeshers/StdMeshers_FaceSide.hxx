@@ -86,9 +86,13 @@ public:
   /*!
    * \brief Simulate a side from a vertex using data from other FaceSide
    */
-  StdMeshers_FaceSide(const SMDS_MeshNode*       theNode,
-                      const gp_Pnt2d             thePnt2d,
-                      const StdMeshers_FaceSide* theSide);
+  StdMeshers_FaceSide(const StdMeshers_FaceSide*  theSide,
+                      const SMDS_MeshNode*        theNode,
+                      const gp_Pnt2d*             thePnt2d1,
+                      const gp_Pnt2d*             thePnt2d2=NULL,
+                      const Handle(Geom2d_Curve)& theC2d=NULL,
+                      const double                theUFirst=0.,
+                      const double                theULast=1.);
   /*!
    * \brief Return wires of a face as StdMeshers_FaceSide's
    */
@@ -251,7 +255,7 @@ protected:
   std::vector<double>               myFirst, myLast;
   std::vector<double>               myNormPar;
   std::vector<double>               myEdgeLength;
-  std::vector<double>               myIsUniform;
+  std::vector<int>                  myIsUniform;
   double                            myLength;
   int                               myNbPonits, myNbSegments;
   SMESH_ProxyMesh::Ptr              myProxyMesh;
