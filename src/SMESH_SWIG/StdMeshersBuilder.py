@@ -22,10 +22,6 @@
 # Python API for the standard meshing plug-in module.
 
 from salome.smesh.smesh_algorithm import Mesh_Algorithm
-from salome.smesh.smeshBuilder import AssureGeomPublished, IsEqual, ParseParameters
-from salome.smesh.smeshBuilder import GetName, TreatHypoStatus
-from salome.smesh.smeshBuilder import Mesh
-
 import StdMeshers
 
 #----------------------------
@@ -100,6 +96,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
     #  @return an instance of StdMeshers_LocalLength hypothesis
     #  @ingroup l3_hypos_1dhyps
     def LocalLength(self, l, UseExisting=0, p=1e-07):
+        from salome.smesh.smeshBuilder import IsEqual
         comFun=lambda hyp, args: IsEqual(hyp.GetLength(), args[0]) and IsEqual(hyp.GetPrecision(), args[1])
         hyp = self.Hypothesis("LocalLength", [l,p], UseExisting=UseExisting, CompareMethod=comFun)
         hyp.SetLength(l)
@@ -171,6 +168,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
                     if not args[1] or hyp.GetObjectEntry() == args[2]:
                         return True
             else:
+                from salome.smesh.smeshBuilder import IsEqual
                 if hyp.GetReversedEdges() == args[2]:
                     if not args[2] or hyp.GetObjectEntry() == args[3]:
                         if hyp.GetDistrType() == 1:
@@ -190,6 +188,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
     #  @return an instance of StdMeshers_Adaptive1D hypothesis
     #  @ingroup l3_hypos_1dhyps
     def Adaptive(self, minSize, maxSize, deflection, UseExisting=False):
+        from salome.smesh.smeshBuilder import IsEqual
         compFun = lambda hyp, args: ( IsEqual(hyp.GetMinSize(), args[0]) and \
                                       IsEqual(hyp.GetMaxSize(), args[1]) and \
                                       IsEqual(hyp.GetDeflection(), args[2]))
@@ -214,6 +213,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
             reversedEdges, UseExisting = [], reversedEdges
         reversedEdgeInd = self.ReversedEdgeIndices(reversedEdges)
         entry = self.MainShapeEntry()
+        from salome.smesh.smeshBuilder import IsEqual
         compFun = lambda hyp, args: ( IsEqual(hyp.GetLength(1), args[0]) and \
                                       IsEqual(hyp.GetLength(0), args[1]) and \
                                       hyp.GetReversedEdges() == args[2]  and \
@@ -270,6 +270,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
             reversedEdges, UseExisting = [], reversedEdges
         reversedEdgeInd = self.ReversedEdgeIndices(reversedEdges)
         entry = self.MainShapeEntry()
+        from salome.smesh.smeshBuilder import IsEqual
         compFun = lambda hyp, args: ( IsEqual(hyp.GetLength(1), args[0]) and \
                                       IsEqual(hyp.GetLength(0), args[1]) and \
                                       hyp.GetReversedEdges() == args[2]  and \
@@ -288,6 +289,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
     #                     the same parameters, else (default) - create a new one
     #  @ingroup l3_hypos_1dhyps
     def Deflection1D(self, d, UseExisting=0):
+        from salome.smesh.smeshBuilder import IsEqual
         compFun = lambda hyp, args: IsEqual(hyp.GetDeflection(), args[0])
         hyp = self.Hypothesis("Deflection1D", [d], UseExisting=UseExisting, CompareMethod=compFun)
         hyp.SetDeflection(d)
@@ -305,6 +307,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
     #                     same parameters, else (default) - create a new one
     #  @ingroup l3_hypos_1dhyps
     def AutomaticLength(self, fineness=0, UseExisting=0):
+        from salome.smesh.smeshBuilder import IsEqual
         compFun = lambda hyp, args: IsEqual(hyp.GetFineness(), args[0])
         hyp = self.Hypothesis("AutomaticLength",[fineness],UseExisting=UseExisting,
                               CompareMethod=compFun)
@@ -335,6 +338,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         # 0D algorithm
         if self.geom is None:
             raise RuntimeError, "Attemp to create SegmentAroundVertex_0D algoritm on None shape"
+        from salome.smesh.smeshBuilder import AssureGeomPublished, GetName, TreatHypoStatus
         AssureGeomPublished( self.mesh, self.geom )
         name = GetName(self.geom)
 
@@ -345,6 +349,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         status = self.mesh.mesh.AddHypothesis(self.geom, algo)
         TreatHypoStatus(status, "SegmentAroundVertex_0D", name, True)
         #
+        from salome.smesh.smeshBuilder import IsEqual
         comFun = lambda hyp, args: IsEqual(hyp.GetLength(), args[0])
         hyp = self.Hypothesis("SegmentLengthAroundVertex", [length], UseExisting=UseExisting,
                               CompareMethod=comFun)
@@ -479,6 +484,7 @@ class StdMeshersBuilder_Triangle_MEFISTO(Mesh_Algorithm):
     #
     #  @ingroup l3_hypos_2dhyps
     def MaxElementArea(self, area, UseExisting=0):
+        from salome.smesh.smeshBuilder import IsEqual
         comparator = lambda hyp, args: IsEqual(hyp.GetMaxElementArea(), args[0])
         hyp = self.Hypothesis("MaxElementArea", [area], UseExisting=UseExisting,
                               CompareMethod=comparator)
@@ -687,6 +693,7 @@ class StdMeshersBuilder_Projection1D(Mesh_Algorithm):
     #  @param UseExisting if ==true - searches for the existing hypothesis created with
     #                     the same parameters, else (default) - creates a new one
     def SourceEdge(self, edge, mesh=None, srcV=None, tgtV=None, UseExisting=0):
+        from salome.smesh.smeshBuilder import AssureGeomPublished
         AssureGeomPublished( self.mesh, edge )
         AssureGeomPublished( self.mesh, srcV )
         AssureGeomPublished( self.mesh, tgtV )
@@ -754,6 +761,7 @@ class StdMeshersBuilder_Projection2D(Mesh_Algorithm):
         if isinstance(mesh, Mesh):
             mesh = mesh.GetMesh()
         for geom in [ face, srcV1, tgtV1, srcV2, tgtV2 ]:
+            from salome.smesh.smeshBuilder import AssureGeomPublished
             AssureGeomPublished( self.mesh, geom )
         hyp = self.Hypothesis("ProjectionSource2D", [face,mesh,srcV1,tgtV1,srcV2,tgtV2],
                               UseExisting=0)
@@ -837,6 +845,7 @@ class StdMeshersBuilder_Projection3D(Mesh_Algorithm):
     def SourceShape3D(self, solid, mesh=0, srcV1=0, tgtV1=0,
                       srcV2=0, tgtV2=0, UseExisting=0):
         for geom in [ solid, srcV1, tgtV1, srcV2, tgtV2 ]:
+            from salome.smesh.smeshBuilder import AssureGeomPublished
             AssureGeomPublished( self.mesh, geom )
         hyp = self.Hypothesis("ProjectionSource3D",
                               [solid,mesh,srcV1,tgtV1,srcV2,tgtV2],
@@ -932,6 +941,7 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
             print "Prism_3D algorith doesn't support any hyposesis"
             return None
         self.mesh.RemoveHypothesis( self.distribHyp, self.geom )
+        from salome.smesh.smeshBuilder import IsEqual
         compFun = lambda hyp, args: IsEqual(hyp.GetNumberOfLayers(), args[0])
         self.nbLayers = self.Hypothesis("NumberOfLayers", [n], UseExisting=UseExisting,
                                         CompareMethod=compFun)
@@ -1098,6 +1108,7 @@ class StdMeshersBuilder_RadialQuadrangle1D2D(Mesh_Algorithm):
     def NumberOfLayers(self, n, UseExisting=0):
         if self.distribHyp:
             self.mesh.GetMesh().RemoveHypothesis( self.geom, self.distribHyp )
+        from salome.smesh.smeshBuilder import IsEqual
         compFun = lambda hyp, args: IsEqual(hyp.GetNumberOfLayers(), args[0])
         self.nbLayers = self.Hypothesis("NumberOfLayers2D", [n], UseExisting=UseExisting,
                                         CompareMethod=compFun)
@@ -1193,6 +1204,7 @@ class StdMeshersBuilder_UseExistingElements_1D(Mesh_Algorithm):
     #                     the same parameters, else (default) - creates a new one
     def SourceEdges(self, groups, toCopyMesh=False, toCopyGroups=False, UseExisting=False):
         for group in groups:
+            from salome.smesh.smeshBuilder import AssureGeomPublished
             AssureGeomPublished( self.mesh, group )
         compFun = lambda hyp, args: ( hyp.GetSourceEdges() == args[0] and \
                                       hyp.GetCopySourceMesh() == args[1], args[2] )
@@ -1242,6 +1254,7 @@ class StdMeshersBuilder_UseExistingElements_1D2D(Mesh_Algorithm):
     #                     the same parameters, else (default) - creates a new one
     def SourceFaces(self, groups, toCopyMesh=False, toCopyGroups=False, UseExisting=False):
         for group in groups:
+            from salome.smesh.smeshBuilder import AssureGeomPublished
             AssureGeomPublished( self.mesh, group )
         compFun = lambda hyp, args: ( hyp.GetSourceFaces() == args[0] and \
                                       hyp.GetCopySourceMesh() == args[1], args[2] )
