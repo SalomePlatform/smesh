@@ -103,7 +103,8 @@ module SMESH
     COMPERR_BAD_SHAPE     ,  // bad geometry
     COMPERR_WARNING       ,  // algo reports error but sub-mesh is computed anyway
     COMPERR_CANCELED      ,  // compute canceled
-    COMPERR_NO_MESH_ON_SHAPE // no mesh elements assigned to sub-mesh
+    COMPERR_NO_MESH_ON_SHAPE,// no mesh elements assigned to sub-mesh
+    COMPERR_BAD_PARMETERS    // incorrect hypotheses parameters
   };
   struct ComputeError
   {
