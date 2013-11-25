@@ -1397,6 +1397,8 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
   bool WisF = true;
   int i,j,geomFaceID = meshDS->ShapeToIndex(F);
 
+  UpdateDegenUV( quad );
+
   int nb = quad->side[0]->NbPoints();
   int nr = quad->side[1]->NbPoints();
   int nt = quad->side[2]->NbPoints();
@@ -1436,14 +1438,14 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
   int addh = 0;
   int addv = 0;
 
+  // Orientation of face and 3 main domain for future faces
   // ----------- Old version ---------------
-  // orientation of face and 3 main domain for future faces
   //       0   top    1
   //      1------------1
   //       |   |  |   |
-  //       |   |  |   |
+  //       |   |C |   |
   //       | L |  | R |
-  //  left |   |  |   | rigth
+  //  left |   |__|   | rigth
   //       |  /    \  |
   //       | /  C   \ |
   //       |/        \|
@@ -1451,15 +1453,14 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
   //       0  bottom  1
 
   // ----------- New version ---------------
-  // orientation of face and 3 main domain for future faces
   //       0   top    1
   //      1------------1
-  //       |  |____|  |
+  //       |  |_C__|  |
   //       |  /    \  |
   //       | /  C   \ |
   //  left |/________\| rigth
   //       |          |
-  //       |          |
+  //       |    C     |
   //       |          |
   //      0------------0
   //       0  bottom  1
@@ -1480,8 +1481,6 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
 
   if (uv_eb.size() != nb || uv_er.size() != nr || uv_et.size() != nt || uv_el.size() != nl)
     return error(COMPERR_BAD_INPUT_MESH);
-
-  UpdateDegenUV( quad );
 
   // arrays for normalized params
   TColStd_SequenceOfReal npb, npr, npt, npl;
@@ -2758,10 +2757,10 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
 
       vector<int> nb_col_by_row;
 
-      int delta_all = nb - nt;
+      int delta_all     = nb - nt;
       int delta_one_col = nrows * 2;
-      int nb_col = delta_all / delta_one_col;
-      int remainder = delta_all - nb_col * delta_one_col;
+      int nb_col        = delta_all / delta_one_col;
+      int remainder     = delta_all - nb_col * delta_one_col;
       if (remainder > 0) {
         nb_col++;
       }
@@ -2772,13 +2771,13 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
         nb_col = ( nt - 1 ) / col_top_size;
         nb_col_by_row.resize( nrows, nb_col );
         int nbrows_not_full = nrows - 1;
-        int cur_top_size = nt - 1;
+        int cur_top_size    = nt - 1;
         remainder = delta_all - nb_col * delta_one_col;
         while ( remainder > 0 )
         {
-          delta_one_col = nbrows_not_full * 2;
-          int nb_col_add = remainder / delta_one_col;
-          cur_top_size += 2 * nb_col_by_row[ nbrows_not_full ];
+          delta_one_col   = nbrows_not_full * 2;
+          int nb_col_add  = remainder / delta_one_col;
+          cur_top_size   += 2 * nb_col_by_row[ nbrows_not_full ];
           int nb_col_free = cur_top_size / col_top_size - nb_col_by_row[ nbrows_not_full-1 ];
           if ( nb_col_add > nb_col_free )
             nb_col_add = nb_col_free;
@@ -3588,7 +3587,7 @@ int StdMeshers_Quadrangle_2D::GetCorners(const TopoDS_Face&          theFace,
       theVertices.push_back( v );
       cornerInd.push_back( angles.size() );
     }
-    angles.push_back( angleByVertex( v ));
+    angles.push_back( angleByVertex.IsBound( v ) ? angleByVertex( v ) : -M_PI );
     edgeVec.push_back( *edge );
   }
 
