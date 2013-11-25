@@ -63,6 +63,8 @@ using namespace std;
 
 namespace {
 
+  void careOfSubMeshes( StdMeshers_FaceSide& side );
+
   //================================================================================
   /*!
    * \brief Search for an edge conjunct to the given one by the vertex
@@ -106,43 +108,6 @@ namespace {
 
   //================================================================================
   /*!
-   * \brief Update submeshes state for all edges and internal vertices,
-   * make them look computed even if none edge or node is set on them
-   */
-  //================================================================================
-
-  void careOfSubMeshes( StdMeshers_FaceSide& side, EventListener* eListener)
-  {
-    if ( side.NbEdges() < 2)
-      return;
-    for ( int iE = 0; iE < side.NbEdges(); ++iE )
-    {
-      // set listener and its data
-      EventListenerData * listenerData = new EventListenerData(true);
-      const TopoDS_Edge& edge = side.Edge( iE );
-      SMESH_subMesh * sm = side.GetMesh()->GetSubMesh( edge );
-      sm->SetEventListener( eListener, listenerData, sm );
-      // add edge submesh to the data
-      sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
-      if ( sm->GetComputeState() != SMESH_subMesh::COMPUTE_OK ) {
-        sm->SetIsAlwaysComputed( true );
-        listenerData->mySubMeshes.push_back( sm );
-      }
-      // add internal vertex submesh to the data
-      if ( iE )
-      {
-        TopoDS_Vertex V = side.FirstVertex( iE );
-        sm = side.GetMesh()->GetSubMesh( V );
-        sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
-        if ( sm->GetComputeState() != SMESH_subMesh::COMPUTE_OK )
-          sm->SetIsAlwaysComputed( true );
-        listenerData->mySubMeshes.push_back( sm );
-      }
-    }
-  }
-
-  //================================================================================
-  /*!
    * \brief Class used to restore nodes on internal vertices of a complex side
    *  when StdMeshers_CompositeSegment_1D algorithm is removed
    */
@@ -151,17 +116,19 @@ namespace {
   struct VertexNodesRestoringListener : public SMESH_subMeshEventListener
   {
     VertexNodesRestoringListener():
-      SMESH_subMeshEventListener(0, // won't be deleted by submesh
+      SMESH_subMeshEventListener(1, // will be deleted by sub-mesh
                                  "StdMeshers_CompositeSegment_1D::VertexNodesRestoringListener")
     {}
-  /*!
-   * \brief Restore nodes on internal vertices of a complex side
-   * \param event - algo_event or compute_event itself (of SMESH_subMesh)
-   * \param eventType - ALGO_EVENT or COMPUTE_EVENT (of SMESH_subMesh)
-   * \param subMesh - the submesh where the event occures
-   * \param data - listener data stored in the subMesh
-   * \param hyp - hypothesis, if eventType is algo_event
-   */
+    static VertexNodesRestoringListener* New() { return new VertexNodesRestoringListener(); }
+
+    /*!
+     * \brief Restore nodes on internal vertices of a complex side
+     * \param event - algo_event or compute_event itself (of SMESH_subMesh)
+     * \param eventType - ALGO_EVENT or COMPUTE_EVENT (of SMESH_subMesh)
+     * \param subMesh - the submesh where the event occures
+     * \param data - listener data stored in the subMesh
+     * \param hyp - hypothesis, if eventType is algo_event
+     */
     void ProcessEvent(const int          event,
                       const int          eventType,
                       SMESH_subMesh*     subMesh,
@@ -210,7 +177,7 @@ namespace {
                 ( StdMeshers_CompositeSegment_1D::GetFaceSide(*subMesh->GetFather(),
                                                               edge, face, false ));
               if ( side->NbEdges() > 1 && side->NbSegments() )
-                careOfSubMeshes( *side, this );
+                careOfSubMeshes( *side );
             }
           }
         }
@@ -229,6 +196,43 @@ namespace {
       }
     }
   }; // struct VertexNodesRestoringListener
+
+  //================================================================================
+  /*!
+   * \brief Update submeshes state for all edges and internal vertices,
+   * make them look computed even if none edge or node is set on them
+   */
+  //================================================================================
+
+  void careOfSubMeshes( StdMeshers_FaceSide& side )
+  {
+    if ( side.NbEdges() < 2)
+      return;
+    for ( int iE = 0; iE < side.NbEdges(); ++iE )
+    {
+      // set listener and its data
+      EventListenerData * listenerData = new EventListenerData(true);
+      const TopoDS_Edge& edge = side.Edge( iE );
+      SMESH_subMesh * sm = side.GetMesh()->GetSubMesh( edge );
+      sm->SetEventListener( new VertexNodesRestoringListener(), listenerData, sm );
+      // add edge submesh to the data
+      sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+      if ( sm->GetComputeState() != SMESH_subMesh::COMPUTE_OK ) {
+        sm->SetIsAlwaysComputed( true );
+        listenerData->mySubMeshes.push_back( sm );
+      }
+      // add internal vertex submesh to the data
+      if ( iE )
+      {
+        TopoDS_Vertex V = side.FirstVertex( iE );
+        sm = side.GetMesh()->GetSubMesh( V );
+        sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+        if ( sm->GetComputeState() != SMESH_subMesh::COMPUTE_OK )
+          sm->SetIsAlwaysComputed( true );
+        listenerData->mySubMeshes.push_back( sm );
+      }
+    }
+  }
 }
 
 //=============================================================================
@@ -244,7 +248,6 @@ StdMeshers_CompositeSegment_1D::StdMeshers_CompositeSegment_1D(int         hypId
 {
   MESSAGE("StdMeshers_CompositeSegment_1D::StdMeshers_CompositeSegment_1D");
   _name = AlgoName();
-  _EventListener = new VertexNodesRestoringListener();
 }
 
 //=======================================================================
@@ -255,16 +258,6 @@ StdMeshers_CompositeSegment_1D::StdMeshers_CompositeSegment_1D(int         hypId
 std::string StdMeshers_CompositeSegment_1D::AlgoName()
 {
   return "CompositeSegment_1D";
-}
-//=============================================================================
-/*!
- *  
- */
-//=============================================================================
-
-StdMeshers_CompositeSegment_1D::~StdMeshers_CompositeSegment_1D()
-{
-  delete _EventListener;
 }
 
 //=============================================================================
@@ -308,7 +301,7 @@ void StdMeshers_CompositeSegment_1D::SetEventListener(SMESH_subMesh* subMesh)
     }
   }
   // set listener that will remove _alwaysComputed from submeshes at algorithm change
-  subMesh->SetEventListener( _EventListener, 0, subMesh);
+  subMesh->SetEventListener( new VertexNodesRestoringListener(), 0, subMesh);
   StdMeshers_Regular_1D::SetEventListener( subMesh );
 }
 
@@ -480,7 +473,7 @@ bool StdMeshers_CompositeSegment_1D::Compute(SMESH_Mesh &         aMesh,
 
   // Update submeshes state for all edges and internal vertices,
   // make them look computed even if none edge or node is set on them
-  careOfSubMeshes( *side, _EventListener );
+  careOfSubMeshes( *side );
 
   return true;
 }

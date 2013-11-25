@@ -40,7 +40,6 @@ class STDMESHERS_EXPORT StdMeshers_CompositeSegment_1D: public StdMeshers_Regula
 {
 public:
   StdMeshers_CompositeSegment_1D(int hypId, int studyId, SMESH_Gen* gen);
-  virtual ~StdMeshers_CompositeSegment_1D();
 
   virtual bool Compute(SMESH_Mesh&         aMesh,
                        const TopoDS_Shape& aShape);
@@ -66,8 +65,6 @@ public:
    */
   static std::string AlgoName();
 
-protected:
-  SMESH_subMeshEventListener* _EventListener;
 };
 
 #endif
