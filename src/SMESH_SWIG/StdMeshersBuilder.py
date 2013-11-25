@@ -693,7 +693,7 @@ class StdMeshersBuilder_Projection1D(Mesh_Algorithm):
     #  @param UseExisting if ==true - searches for the existing hypothesis created with
     #                     the same parameters, else (default) - creates a new one
     def SourceEdge(self, edge, mesh=None, srcV=None, tgtV=None, UseExisting=0):
-        from salome.smesh.smeshBuilder import AssureGeomPublished
+        from salome.smesh.smeshBuilder import AssureGeomPublished, Mesh
         AssureGeomPublished( self.mesh, edge )
         AssureGeomPublished( self.mesh, srcV )
         AssureGeomPublished( self.mesh, tgtV )
@@ -853,6 +853,7 @@ class StdMeshersBuilder_Projection3D(Mesh_Algorithm):
         # seems to be not really useful to reuse existing "SourceShape3D" hypothesis
                               #UseExisting=UseExisting, CompareMethod=self.CompareSourceShape3D)
         hyp.SetSource3DShape( solid )
+        from salome.smesh.smeshBuilder import Mesh
         if isinstance(mesh, Mesh):
             mesh = mesh.GetMesh()
         if mesh:
