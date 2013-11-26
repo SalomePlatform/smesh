@@ -25,6 +25,6 @@ deflection = 0.05
 
 mesh = smesh.Mesh( shape )
 mesh.Segment().Adaptive( minSize, maxSize, deflection )
-mesh.Triangle( smeshBuilder.NETGEN_2D )
+mesh.Triangle().MaxElementArea( 300 )
 mesh.Compute()
 
