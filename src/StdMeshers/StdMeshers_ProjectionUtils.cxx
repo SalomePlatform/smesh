@@ -1332,9 +1332,15 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face&    face1,
           CONT_BAD_RESULT("GetOrderedEdges() failed");
       }
     }
-    edgeIt = --edges2.end();
     if ( !VV2[1].IsSame( TopExp::LastVertex( edges2.front(), true ))) {
       reverse = !reverse;
+      edgeIt = --edges2.end();
+      // move a degenerated edge from back to front
+      // http://www.salome-platform.org/forum/forum_11/173031193
+      if ( TopExp::FirstVertex( *edgeIt ).IsSame( TopExp::LastVertex( *edgeIt ))) {
+        edges2.splice( edges2.begin(), edges2, edgeIt );
+        edgeIt = --edges2.end();
+      }
       // check if the second vertex belongs to the first or last edge in the wire
       if ( !VV2[1].IsSame( TopExp::FirstVertex( *edgeIt, true ))) {
         bool KO = true; // belongs to none
