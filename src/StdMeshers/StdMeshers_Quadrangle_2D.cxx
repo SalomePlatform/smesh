@@ -119,18 +119,19 @@ bool StdMeshers_Quadrangle_2D::CheckHypothesis
                           const TopoDS_Shape&                  aShape,
                           SMESH_Hypothesis::Hypothesis_Status& aStatus)
 {
+  myTriaVertexID = -1;
+  myQuadType = QUAD_STANDARD;
+  myQuadranglePreference = false;
+  myTrianglePreference = false;
+  myQuadStruct.reset();
+  myHelper = NULL;
+
   bool isOk = true;
   aStatus = SMESH_Hypothesis::HYP_OK;
 
   const list <const SMESHDS_Hypothesis * >& hyps =
     GetUsedHypothesis(aMesh, aShape, false);
   const SMESHDS_Hypothesis * aHyp = 0;
-
-  myTriaVertexID = -1;
-  myQuadType = QUAD_STANDARD;
-  myQuadranglePreference = false;
-  myTrianglePreference = false;
-  myQuadStruct.reset();
 
   bool isFirstParams = true;
 
@@ -205,10 +206,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh&         aMesh,
                                         const TopoDS_Shape& aShape)
 {
   const TopoDS_Face& F = TopoDS::Face(aShape);
-  Handle(Geom_Surface) S = BRep_Tool::Surface(F);
-
-  SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
-  aMesh.GetSubMesh(aShape);
+  aMesh.GetSubMesh( F );
 
   SMESH_MesherHelper helper (aMesh);
   myHelper = &helper;
@@ -220,59 +218,79 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh&         aMesh,
   _quadraticMesh = myHelper->IsQuadraticSubMesh(aShape);
   myNeedSmooth = false;
 
-  FaceQuadStruct::Ptr quad = CheckNbEdges(aMesh, aShape);
+  FaceQuadStruct::Ptr quad = CheckNbEdges( aMesh, F );
   if (!quad)
     return false;
   myQuadStruct = quad;
 
-  if (myQuadranglePreference) {
-    int n1 = quad->side[0]->NbPoints();
-    int n2 = quad->side[1]->NbPoints();
-    int n3 = quad->side[2]->NbPoints();
-    int n4 = quad->side[3]->NbPoints();
+  bool ok = false;
+  if (myQuadranglePreference)
+  {
+    int n1    = quad->side[0]->NbPoints();
+    int n2    = quad->side[1]->NbPoints();
+    int n3    = quad->side[2]->NbPoints();
+    int n4    = quad->side[3]->NbPoints();
     int nfull = n1+n2+n3+n4;
-    int ntmp = nfull/2;
+    int ntmp  = nfull/2;
     ntmp = ntmp*2;
-    if (nfull == ntmp && ((n1 != n3) || (n2 != n4))) {
-      // special path for using only quandrangle faces
-      bool ok = ComputeQuadPref(aMesh, aShape, quad);
-      if ( ok && myNeedSmooth )
-        Smooth( quad ); 
-      return ok;
+    if (nfull == ntmp && ((n1 != n3) || (n2 != n4)))
+    {
+      // special path genarating only quandrangle faces
+      ok = computeQuadPref( aMesh, F, quad );
     }
   }
-  else if (myQuadType == QUAD_REDUCED) {
-    int n1 = quad->side[0]->NbPoints();
-    int n2 = quad->side[1]->NbPoints();
-    int n3 = quad->side[2]->NbPoints();
-    int n4 = quad->side[3]->NbPoints();
-    int n13 = n1 - n3;
-    int n24 = n2 - n4;
+  else if (myQuadType == QUAD_REDUCED)
+  {
+    int n1     = quad->side[0]->NbPoints();
+    int n2     = quad->side[1]->NbPoints();
+    int n3     = quad->side[2]->NbPoints();
+    int n4     = quad->side[3]->NbPoints();
+    int n13    = n1 - n3;
+    int n24    = n2 - n4;
     int n13tmp = n13/2; n13tmp = n13tmp*2;
     int n24tmp = n24/2; n24tmp = n24tmp*2;
     if ((n1 == n3 && n2 != n4 && n24tmp == n24) ||
-        (n2 == n4 && n1 != n3 && n13tmp == n13)) {
-      bool ok = ComputeReduced(aMesh, aShape, quad);
-      if ( ok && myNeedSmooth )
-        Smooth( quad ); 
-      return ok;
+        (n2 == n4 && n1 != n3 && n13tmp == n13))
+    {
+      ok = computeReduced( aMesh, F, quad );
     }
-    if ( n1 != n3 && n2 != n4 )
-      error( COMPERR_WARNING,
-             "To use 'Reduced' transition, "
-             "two opposite sides should have same number of segments, "
-             "but actual number of segments is different on all sides. "
-             "'Standard' transion has been used.");
     else
-      error( COMPERR_WARNING,
-             "To use 'Reduced' transition, "
-             "two opposite sides should have an even difference in number of segments. "
-             "'Standard' transion has been used.");
+    {
+      if ( n1 != n3 && n2 != n4 )
+        error( COMPERR_WARNING,
+               "To use 'Reduced' transition, "
+               "two opposite sides should have same number of segments, "
+               "but actual number of segments is different on all sides. "
+               "'Standard' transion has been used.");
+      else
+        error( COMPERR_WARNING,
+               "To use 'Reduced' transition, "
+               "two opposite sides should have an even difference in number of segments. "
+               "'Standard' transion has been used.");
+    }
   }
 
+  ok = computeQuadDominant( aMesh, F, quad );
+
+  if ( ok && myNeedSmooth )
+    smooth( quad );
+
+  return ok;
+}
+
+//================================================================================
+/*!
+ * \brief Compute quadrangles and possibly triangles
+ */
+//================================================================================
+
+bool StdMeshers_Quadrangle_2D::computeQuadDominant(SMESH_Mesh&         aMesh,
+                                                   const TopoDS_Face&  aFace,
+                                                   FaceQuadStruct::Ptr quad)
+{
   // set normalized grid on unit square in parametric domain
-  
-  if (!SetNormalizedGrid(aMesh, aShape, quad))
+
+  if (!setNormalizedGrid(aMesh, aFace, quad))
     return false;
 
   // --- compute 3D values on points, store points & quadrangles
@@ -287,7 +305,9 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh&         aMesh,
   int nbvertic = Min(nbright, nbleft);
 
   // internal mesh nodes
-  int i, j, geomFaceID = meshDS->ShapeToIndex(F);
+  SMESHDS_Mesh *  meshDS = aMesh.GetMeshDS();
+  Handle(Geom_Surface) S = BRep_Tool::Surface(aFace);
+  int i, j, geomFaceID = meshDS->ShapeToIndex(aFace);
   for (i = 1; i < nbhoriz - 1; i++) {
     for (j = 1; j < nbvertic - 1; j++) {
       int ij = j * nbhoriz + i;
@@ -423,7 +443,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh&         aMesh,
           if (face) meshDS->SetMeshElementOnShape(face, geomFaceID);
         }
         else {
-          SplitQuad(meshDS, geomFaceID, a, b, c, d);
+          splitQuad(meshDS, geomFaceID, a, b, c, d);
         }
 
         // if node d is not at position g - make additional triangles
@@ -510,7 +530,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh&         aMesh,
             if (face) meshDS->SetMeshElementOnShape(face, geomFaceID);
           }
           else {
-            SplitQuad(meshDS, geomFaceID, a, b, c, d);
+            splitQuad(meshDS, geomFaceID, a, b, c, d);
           }
 
           if (near + 1 < g) { // if d not is at g - make additional triangles
@@ -583,7 +603,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh&         aMesh,
           if (face) meshDS->SetMeshElementOnShape(face, geomFaceID);
         }
         else {
-          SplitQuad(meshDS, geomFaceID, a, b, c, d);
+          splitQuad(meshDS, geomFaceID, a, b, c, d);
         }
 
         if (near - 1 > g) { // if d not is at g - make additional triangles
@@ -652,7 +672,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh&         aMesh,
             if (face) meshDS->SetMeshElementOnShape(face, geomFaceID);
           }
           else {
-            SplitQuad(meshDS, geomFaceID, a, b, c, d);
+            splitQuad(meshDS, geomFaceID, a, b, c, d);
           }
 
           if (near + 1 < g) { // if d not is at g - make additional triangles
@@ -672,9 +692,6 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh&         aMesh,
     }
   }
 
-  if ( myNeedSmooth )
-    Smooth( quad );
-
   bool isOk = true;
   return isOk;
 }
@@ -686,19 +703,19 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh&         aMesh,
  */
 //=============================================================================
 
-bool StdMeshers_Quadrangle_2D::Evaluate(SMESH_Mesh& aMesh,
-                                        const TopoDS_Shape& aShape,
-                                        MapShapeNbElems& aResMap)
+bool StdMeshers_Quadrangle_2D::Evaluate(SMESH_Mesh&         aMesh,
+                                        const TopoDS_Shape& aFace,
+                                        MapShapeNbElems&    aResMap)
 
 {
-  aMesh.GetSubMesh(aShape);
+  aMesh.GetSubMesh(aFace);
 
   std::vector<int> aNbNodes(4);
   bool IsQuadratic = false;
-  if (!CheckNbEdgesForEvaluate(aMesh, aShape, aResMap, aNbNodes, IsQuadratic)) {
+  if (!checkNbEdgesForEvaluate(aMesh, aFace, aResMap, aNbNodes, IsQuadratic)) {
     std::vector<int> aResVec(SMDSEntity_Last);
     for (int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aResVec[i] = 0;
-    SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
+    SMESH_subMesh * sm = aMesh.GetSubMesh(aFace);
     aResMap.insert(std::make_pair(sm,aResVec));
     SMESH_ComputeErrorPtr& smError = sm->GetComputeError();
     smError.reset(new SMESH_ComputeError(COMPERR_ALGO_FAILED,"Submesh can not be evaluated",this));
@@ -715,7 +732,7 @@ bool StdMeshers_Quadrangle_2D::Evaluate(SMESH_Mesh& aMesh,
     ntmp = ntmp*2;
     if (nfull==ntmp && ((n1!=n3) || (n2!=n4))) {
       // special path for using only quandrangle faces
-      return EvaluateQuadPref(aMesh, aShape, aNbNodes, aResMap, IsQuadratic);
+      return evaluateQuadPref(aMesh, aFace, aNbNodes, aResMap, IsQuadratic);
       //return true;
     }
   }
@@ -767,7 +784,7 @@ bool StdMeshers_Quadrangle_2D::Evaluate(SMESH_Mesh& aMesh,
       aVec[SMDSEntity_Quadrangle] = nbFaces4 - aNbNodes[3] + 1;
     }
   }
-  SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
+  SMESH_subMesh * sm = aMesh.GetSubMesh(aFace);
   aResMap.insert(std::make_pair(sm,aVec));
 
   return true;
@@ -822,7 +839,7 @@ FaceQuadStruct::Ptr StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         
 
   // find corner vertices of the quad
   vector<TopoDS_Vertex> corners;
-  int nbDegenEdges, nbSides = GetCorners( F, aMesh, edges, corners, nbDegenEdges );
+  int nbDegenEdges, nbSides = getCorners( F, aMesh, edges, corners, nbDegenEdges );
   if ( nbSides == 0 )
   {
     return FaceQuadStruct::Ptr();
@@ -871,7 +888,7 @@ FaceQuadStruct::Ptr StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         
       while ( edgeIt != edges.end() &&
               !nextSideV.IsSame( myHelper->IthVertex( 0, *edgeIt )))
       {
-        if ( SMESH_Algo::isDegenerated( *edgeIt ))
+        if ( SMESH_Algo::isDegenerated( *edgeIt ) )
         {
           if ( myNeedSmooth )
           {
@@ -902,6 +919,13 @@ FaceQuadStruct::Ptr StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         
                                                      ignoreMediumNodes, myProxyMesh));
         ++iSide;
       }
+      else if ( !SMESH_Algo::isDegenerated( *edgeIt ) && // closed EDGE
+                myHelper->IthVertex( 0, *edgeIt ).IsSame( myHelper->IthVertex( 1, *edgeIt )))
+      {
+        quad->side.push_back(new StdMeshers_FaceSide(F, *edgeIt++, &aMesh, iSide < QUAD_TOP_SIDE,
+                                                     ignoreMediumNodes, myProxyMesh));
+        ++iSide;
+      }
       if ( nbLoops > 8 )
       {
         error(TComm("Bug: infinite loop in StdMeshers_Quadrangle_2D::CheckNbEdges()"));
@@ -926,11 +950,11 @@ FaceQuadStruct::Ptr StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         
  */
 //=============================================================================
 
-bool StdMeshers_Quadrangle_2D::CheckNbEdgesForEvaluate(SMESH_Mesh& aMesh,
+bool StdMeshers_Quadrangle_2D::checkNbEdgesForEvaluate(SMESH_Mesh&          aMesh,
                                                        const TopoDS_Shape & aShape,
-                                                       MapShapeNbElems& aResMap,
-                                                       std::vector<int>& aNbNodes,
-                                                       bool& IsQuadratic)
+                                                       MapShapeNbElems&     aResMap,
+                                                       std::vector<int>&    aNbNodes,
+                                                       bool&                IsQuadratic)
 
 {
   const TopoDS_Face & F = TopoDS::Face(aShape);
@@ -1122,7 +1146,7 @@ StdMeshers_Quadrangle_2D::CheckAnd2Dcompute (SMESH_Mesh &         aMesh,
   if ( quad )
   {
     // set normalized grid on unit square in parametric domain
-    if (!SetNormalizedGrid(aMesh, aShape, quad))
+    if ( ! setNormalizedGrid( aMesh, TopoDS::Face( aShape ), quad))
       quad.reset();
   }
   return quad;
@@ -1179,19 +1203,14 @@ namespace
  */
 //=============================================================================
 
-bool StdMeshers_Quadrangle_2D::SetNormalizedGrid (SMESH_Mesh &          aMesh,
-                                                  const TopoDS_Shape&   aShape,
+bool StdMeshers_Quadrangle_2D::setNormalizedGrid (SMESH_Mesh &          aMesh,
+                                                  const TopoDS_Face&    aFace,
                                                   FaceQuadStruct::Ptr & quad)
 {
   // Algorithme décrit dans "Génération automatique de maillages"
   // P.L. GEORGE, MASSON, § 6.4.1 p. 84-85
   // traitement dans le domaine paramétrique 2d u,v
   // transport - projection sur le carré unité
-
-//  MESSAGE("StdMeshers_Quadrangle_2D::SetNormalizedGrid");
-//  const TopoDS_Face& F = TopoDS::Face(aShape);
-
-  // 1 --- find orientation of the 4 edges, by test on extrema
 
   //      max             min                    0     x1     1
   //     |<----north-2-------^                a3 -------------> a2
@@ -1205,9 +1224,7 @@ bool StdMeshers_Quadrangle_2D::SetNormalizedGrid (SMESH_Mesh &          aMesh,
   //             =down
   //
 
-  // 3 --- 2D normalized values on unit square [0..1][0..1]
-
-  UpdateDegenUV( quad );
+  updateDegenUV( quad );
 
   int nbhoriz  = Min(quad->side[0]->NbPoints(), quad->side[2]->NbPoints());
   int nbvertic = Min(quad->side[1]->NbPoints(), quad->side[3]->NbPoints());
@@ -1229,48 +1246,48 @@ bool StdMeshers_Quadrangle_2D::SetNormalizedGrid (SMESH_Mesh &          aMesh,
     return error(COMPERR_BAD_INPUT_MESH);
 
   // copy data of face boundary
-  /*if (! quad->isEdgeOut[0])*/ {
+  {
     const int j = 0;
     for (int i = 0; i < nbhoriz; i++)       // down
       uv_grid[ j * nbhoriz + i ] = uv_e0[i];
   }
-  /*if (! quad->isEdgeOut[1])*/ {
+  {
     const int i = nbhoriz - 1;
     for (int j = 0; j < nbvertic; j++)      // right
       uv_grid[ j * nbhoriz + i ] = uv_e1[j];
   }
-  /*if (! quad->isEdgeOut[2])*/ {
+  {
     const int j = nbvertic - 1;
     for (int i = 0; i < nbhoriz; i++)       // up
       uv_grid[ j * nbhoriz + i ] = uv_e2[i];
   }
-  /*if (! quad->isEdgeOut[3])*/ {
-    int i = 0;
+  {
+    const int i = 0;
     for (int j = 0; j < nbvertic; j++)      // left
       uv_grid[ j * nbhoriz + i ] = uv_e3[j];
   }
 
   // normalized 2d parameters on grid
+
   for (int i = 0; i < nbhoriz; i++) {
     for (int j = 0; j < nbvertic; j++) {
       int ij = j * nbhoriz + i;
       // --- droite i cste : x = x0 + y(x1-x0)
-      double x0 = uv_e0[i].normParam;   // bas - sud
+      double x0 = uv_e0[i].normParam;   // bas  - sud
       double x1 = uv_e2[i].normParam;   // haut - nord
       // --- droite j cste : y = y0 + x(y1-y0)
-      double y0 = uv_e3[j].normParam;   // gauche-ouest
+      double y0 = uv_e3[j].normParam;   // gauche - ouest
       double y1 = uv_e1[j].normParam;   // droite - est
       // --- intersection : x=x0+(y0+x(y1-y0))(x1-x0)
       double x = (x0 + y0 * (x1 - x0)) / (1 - (y1 - y0) * (x1 - x0));
       double y = y0 + x * (y1 - y0);
       uv_grid[ij].x = x;
       uv_grid[ij].y = y;
-      //MESSAGE("-xy-01 "<<x0<<" "<<x1<<" "<<y0<<" "<<y1);
-      //MESSAGE("-xy-norm "<<i<<" "<<j<<" "<<x<<" "<<y);
     }
   }
 
-  // 4 --- projection on 2d domain (u,v)
+  // projection on 2d domain (u,v)
+
   gp_UV a0 (uv_e0.front().u, uv_e0.front().v);
   gp_UV a1 (uv_e0.back().u,  uv_e0.back().v );
   gp_UV a2 (uv_e2.back().u,  uv_e2.back().v );
@@ -1300,10 +1317,10 @@ bool StdMeshers_Quadrangle_2D::SetNormalizedGrid (SMESH_Mesh &          aMesh,
 
 //=======================================================================
 //function : ShiftQuad
-//purpose  : auxilary function for ComputeQuadPref
+//purpose  : auxilary function for computeQuadPref
 //=======================================================================
 
-static void shiftQuad(FaceQuadStruct::Ptr& quad, const int num, bool)
+static void shiftQuad(FaceQuadStruct::Ptr& quad, const int num)
 {
   quad->shift( num, /*ori=*/true );
 }
@@ -1311,7 +1328,7 @@ static void shiftQuad(FaceQuadStruct::Ptr& quad, const int num, bool)
 //================================================================================
 /*!
  * \brief Rotate sides of a quad by nb
- *  \param nb  - number of rotation quartes 
+ *  \param nb  - number of rotation quartes
  *  \param ori - to keep orientation of sides as in an unit quad or not
  */
 //================================================================================
@@ -1332,7 +1349,7 @@ void FaceQuadStruct::shift( size_t nb, bool ori )
 
 //=======================================================================
 //function : calcUV
-//purpose  : auxilary function for ComputeQuadPref
+//purpose  : auxilary function for computeQuadPref
 //=======================================================================
 
 static gp_UV calcUV(double x0, double x1, double y0, double y1,
@@ -1355,7 +1372,7 @@ static gp_UV calcUV(double x0, double x1, double y0, double y1,
 
 //=======================================================================
 //function : calcUV2
-//purpose  : auxilary function for ComputeQuadPref
+//purpose  : auxilary function for computeQuadPref
 //=======================================================================
 
 static gp_UV calcUV2(double x, double y,
@@ -1380,24 +1397,21 @@ static gp_UV calcUV2(double x, double y,
  */
 //=======================================================================
 
-bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
-                                                const TopoDS_Shape& aShape,
+bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
+                                                const TopoDS_Face&  aFace,
                                                 FaceQuadStruct::Ptr quad)
 {
   // Auxilary key in order to keep old variant
   // of meshing after implementation new variant
   // for bug 0016220 from Mantis.
-  bool OldVersion = false;
-  if (myQuadType == QUAD_QUADRANGLE_PREF_REVERSED)
-    OldVersion = true;
+  bool OldVersion = (myQuadType == QUAD_QUADRANGLE_PREF_REVERSED);
 
-  SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
-  const TopoDS_Face& F = TopoDS::Face(aShape);
-  Handle(Geom_Surface) S = BRep_Tool::Surface(F);
+  SMESHDS_Mesh *  meshDS = aMesh.GetMeshDS();
+  Handle(Geom_Surface) S = BRep_Tool::Surface(aFace);
   bool WisF = true;
-  int i,j,geomFaceID = meshDS->ShapeToIndex(F);
+  int i,j,geomFaceID = meshDS->ShapeToIndex(aFace);
 
-  UpdateDegenUV( quad );
+  updateDegenUV( quad );
 
   int nb = quad->side[0]->NbPoints();
   int nr = quad->side[1]->NbPoints();
@@ -1406,26 +1420,12 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
   int dh = abs(nb-nt);
   int dv = abs(nr-nl);
 
-  if (dh>=dv) {
-    if (nt>nb) {
-      // it is a base case => not shift quad but me be replacement is need
-      shiftQuad(quad,0,WisF);
-    }
-    else {
-      // we have to shift quad on 2
-      shiftQuad(quad,2,WisF);
-    }
-  }
-  else {
-    if (nr>nl) {
-      // we have to shift quad on 1
-      shiftQuad(quad,1,WisF);
-    }
-    else {
-      // we have to shift quad on 3
-      shiftQuad(quad,3,WisF);
-    }
-  }
+  // rotate sides to be as in the picture below and to have
+  // dh >= dv and nt > nb
+  if ( dh >= dv )
+    shiftQuad( quad, ( nt > nb ) ? 0 : 2 );
+  else
+    shiftQuad( quad, ( nr > nl ) ? 1 : 3 );
 
   nb = quad->side[0]->NbPoints();
   nr = quad->side[1]->NbPoints();
@@ -1434,7 +1434,7 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
   dh = abs(nb-nt);
   dv = abs(nr-nl);
   int nbh  = Max(nb,nt);
-  int nbv = Max(nr,nl);
+  int nbv  = Max(nr,nl);
   int addh = 0;
   int addv = 0;
 
@@ -1455,7 +1455,7 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
   // ----------- New version ---------------
   //       0   top    1
   //      1------------1
-  //       |  |_C__|  |
+  //       |   |__|   |
   //       |  /    \  |
   //       | /  C   \ |
   //  left |/________\| rigth
@@ -1465,13 +1465,13 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
   //      0------------0
   //       0  bottom  1
 
-  if (dh>dv) {
+  if ( dh > dv ) {
     addv = (dh-dv)/2;
-    nbv = nbv + addv;
+    nbv  = nbv + addv;
   }
-  else { // dv>=dh
+  else { // dv >= dh
     addh = (dv-dh)/2;
-    nbh = nbh + addh;
+    nbh  = nbh + addh;
   }
 
   const vector<UVPtStruct>& uv_eb = quad->side[0]->GetUVPtStruct(true,0);
@@ -1481,6 +1481,11 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
 
   if (uv_eb.size() != nb || uv_er.size() != nr || uv_et.size() != nt || uv_el.size() != nl)
     return error(COMPERR_BAD_INPUT_MESH);
+
+  if ( !OldVersion )
+  {
+    // dh/2, Min(nb,nt), dh - dh/2, dv
+  }
 
   // arrays for normalized params
   TColStd_SequenceOfReal npb, npr, npt, npl;
@@ -1920,11 +1925,11 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
  */
 //=======================================================================
 
-bool StdMeshers_Quadrangle_2D::EvaluateQuadPref(SMESH_Mesh &        aMesh,
+bool StdMeshers_Quadrangle_2D::evaluateQuadPref(SMESH_Mesh &        aMesh,
                                                 const TopoDS_Shape& aShape,
-                                                std::vector<int>& aNbNodes,
-                                                MapShapeNbElems& aResMap,
-                                                bool IsQuadratic)
+                                                std::vector<int>&   aNbNodes,
+                                                MapShapeNbElems&    aResMap,
+                                                bool                IsQuadratic)
 {
   // Auxilary key in order to keep old variant
   // of meshing after implementation new variant
@@ -2048,32 +2053,30 @@ bool StdMeshers_Quadrangle_2D::EvaluateQuadPref(SMESH_Mesh &        aMesh,
   return true;
 }
 
-
 //=============================================================================
 /*! Split quadrangle in to 2 triangles by smallest diagonal
  *   
  */
 //=============================================================================
-void StdMeshers_Quadrangle_2D::SplitQuad(SMESHDS_Mesh *theMeshDS,
-                                         int theFaceID,
+
+void StdMeshers_Quadrangle_2D::splitQuad(SMESHDS_Mesh *       theMeshDS,
+                                         int                  theFaceID,
                                          const SMDS_MeshNode* theNode1,
                                          const SMDS_MeshNode* theNode2,
                                          const SMDS_MeshNode* theNode3,
                                          const SMDS_MeshNode* theNode4)
 {
-  gp_Pnt a(theNode1->X(),theNode1->Y(),theNode1->Z());
-  gp_Pnt b(theNode2->X(),theNode2->Y(),theNode2->Z());
-  gp_Pnt c(theNode3->X(),theNode3->Y(),theNode3->Z());
-  gp_Pnt d(theNode4->X(),theNode4->Y(),theNode4->Z());
   SMDS_MeshFace* face;
-  if (a.Distance(c) > b.Distance(d)){
+  if ( SMESH_TNodeXYZ( theNode1 ).SquareDistance( theNode3 ) >
+       SMESH_TNodeXYZ( theNode2 ).SquareDistance( theNode4 ) )
+  {
     face = myHelper->AddFace(theNode2, theNode4 , theNode1);
     if (face) theMeshDS->SetMeshElementOnShape(face, theFaceID);
     face = myHelper->AddFace(theNode2, theNode3, theNode4);
     if (face) theMeshDS->SetMeshElementOnShape(face, theFaceID);
-
   }
-  else{
+  else
+  {
     face = myHelper->AddFace(theNode1, theNode2 ,theNode3);
     if (face) theMeshDS->SetMeshElementOnShape(face, theFaceID);
     face = myHelper->AddFace(theNode1, theNode3, theNode4);
@@ -2264,14 +2267,13 @@ namespace
  */
 //=======================================================================
 
-bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
-                                               const TopoDS_Shape& aShape,
+bool StdMeshers_Quadrangle_2D::computeReduced (SMESH_Mesh &        aMesh,
+                                               const TopoDS_Face&  aFace,
                                                FaceQuadStruct::Ptr quad)
 {
   SMESHDS_Mesh * meshDS  = aMesh.GetMeshDS();
-  const TopoDS_Face& F   = TopoDS::Face(aShape);
-  Handle(Geom_Surface) S = BRep_Tool::Surface(F);
-  int i,j,geomFaceID     = meshDS->ShapeToIndex(F);
+  Handle(Geom_Surface) S = BRep_Tool::Surface(aFace);
+  int i,j,geomFaceID     = meshDS->ShapeToIndex(aFace);
 
   int nb = quad->side[0]->NbPoints(); // bottom
   int nr = quad->side[1]->NbPoints(); // right
@@ -2339,7 +2341,7 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
     }
   }
 
-  if (MultipleReduce) { // == ComputeQuadPref QUAD_QUADRANGLE_PREF_REVERSED
+  if (MultipleReduce) { // == computeQuadPref QUAD_QUADRANGLE_PREF_REVERSED
     //==================================================
     int dh = abs(nb-nt);
     int dv = abs(nr-nl);
@@ -2347,21 +2349,21 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
     if (dh >= dv) {
       if (nt > nb) {
         // it is a base case => not shift quad but may be replacement is need
-        shiftQuad(quad,0,true);
+        shiftQuad(quad,0);
       }
       else {
         // we have to shift quad on 2
-        shiftQuad(quad,2,true);
+        shiftQuad(quad,2);
       }
     }
     else {
       if (nr > nl) {
         // we have to shift quad on 1
-        shiftQuad(quad,1,true);
+        shiftQuad(quad,1);
       }
       else {
         // we have to shift quad on 3
-        shiftQuad(quad,3,true);
+        shiftQuad(quad,3);
       }
     }
 
@@ -2393,7 +2395,7 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
     if (uv_eb.size() != nb || uv_er.size() != nr || uv_et.size() != nt || uv_el.size() != nl)
       return error(COMPERR_BAD_INPUT_MESH);
 
-    UpdateDegenUV( quad );
+    updateDegenUV( quad );
 
     // arrays for normalized params
     TColStd_SequenceOfReal npb, npr, npt, npl;
@@ -2627,17 +2629,17 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
       }
       else {
         // we have to shift quad on 2
-        shiftQuad(quad,2,true);
+        shiftQuad(quad,2);
       }
     }
     else {
       if (nl > nr) {
         // we have to shift quad on 1
-        shiftQuad(quad,1,true);
+        shiftQuad(quad,1);
       }
       else {
         // we have to shift quad on 3
-        shiftQuad(quad,3,true);
+        shiftQuad(quad,3);
       }
     }
 
@@ -3221,7 +3223,7 @@ namespace // data for smoothing
  */
 //================================================================================
 
-void StdMeshers_Quadrangle_2D::UpdateDegenUV(FaceQuadStruct::Ptr quad)
+void StdMeshers_Quadrangle_2D::updateDegenUV(FaceQuadStruct::Ptr quad)
 {
   if ( myNeedSmooth )
 
@@ -3295,7 +3297,7 @@ void StdMeshers_Quadrangle_2D::UpdateDegenUV(FaceQuadStruct::Ptr quad)
  */
 //================================================================================
 
-void StdMeshers_Quadrangle_2D::Smooth (FaceQuadStruct::Ptr quad)
+void StdMeshers_Quadrangle_2D::smooth (FaceQuadStruct::Ptr quad)
 {
   if ( !myNeedSmooth ) return;
 
@@ -3461,7 +3463,7 @@ void StdMeshers_Quadrangle_2D::Smooth (FaceQuadStruct::Ptr quad)
  */
 //================================================================================
 
-int StdMeshers_Quadrangle_2D::GetCorners(const TopoDS_Face&          theFace,
+int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
                                          SMESH_Mesh &                theMesh,
                                          std::list<TopoDS_Edge>&     theWire,
                                          std::vector<TopoDS_Vertex>& theVertices,

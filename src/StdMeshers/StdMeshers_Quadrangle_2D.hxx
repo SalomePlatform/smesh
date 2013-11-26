@@ -82,42 +82,46 @@ public:
 
 protected:
 
-  bool CheckNbEdgesForEvaluate(SMESH_Mesh& aMesh,
+  bool checkNbEdgesForEvaluate(SMESH_Mesh& aMesh,
                                const TopoDS_Shape & aShape,
                                MapShapeNbElems& aResMap,
                                std::vector<int>& aNbNodes,
                                bool& IsQuadratic);
 
-  bool SetNormalizedGrid(SMESH_Mesh&          aMesh,
-                         const TopoDS_Shape&  aShape,
+  bool setNormalizedGrid(SMESH_Mesh&          aMesh,
+                         const TopoDS_Face&   aFace,
                          FaceQuadStruct::Ptr& quad);
   
-  void SplitQuad(SMESHDS_Mesh *theMeshDS,
+  void splitQuad(SMESHDS_Mesh *theMeshDS,
                  const int theFaceID,
                  const SMDS_MeshNode* theNode1,
                  const SMDS_MeshNode* theNode2,
                  const SMDS_MeshNode* theNode3,
                  const SMDS_MeshNode* theNode4);
 
-  bool ComputeQuadPref(SMESH_Mesh&         aMesh,
-                       const TopoDS_Shape& aShape,
+  bool computeQuadDominant(SMESH_Mesh&         aMesh,
+                           const TopoDS_Face&  aFace,
+                           FaceQuadStruct::Ptr quad);
+
+  bool computeQuadPref(SMESH_Mesh&         aMesh,
+                       const TopoDS_Face&  aFace,
                        FaceQuadStruct::Ptr quad);
 
-  bool EvaluateQuadPref(SMESH_Mesh&         aMesh,
+  bool evaluateQuadPref(SMESH_Mesh&         aMesh,
                         const TopoDS_Shape& aShape,
                         std::vector<int>&   aNbNodes,
                         MapShapeNbElems&    aResMap,
                         bool                isQuadratic);
 
-  bool ComputeReduced (SMESH_Mesh&         aMesh,
-                       const TopoDS_Shape& aShape,
+  bool computeReduced (SMESH_Mesh&         aMesh,
+                       const TopoDS_Face&  aFace,
                        FaceQuadStruct::Ptr quad);
 
-  void UpdateDegenUV(FaceQuadStruct::Ptr quad);
+  void updateDegenUV(FaceQuadStruct::Ptr quad);
 
-  void Smooth (FaceQuadStruct::Ptr quad);
+  void smooth (FaceQuadStruct::Ptr quad);
 
-  int GetCorners(const TopoDS_Face&          theFace,
+  int getCorners(const TopoDS_Face&          theFace,
                  SMESH_Mesh &                theMesh,
                  std::list<TopoDS_Edge>&     theWire,
                  std::vector<TopoDS_Vertex>& theVertices,
