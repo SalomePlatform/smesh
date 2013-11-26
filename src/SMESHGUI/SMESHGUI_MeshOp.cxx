@@ -141,6 +141,13 @@ bool SMESHGUI_MeshOp::onApply()
       SUIT_MessageBox::warning( myDlg, tr( "SMESH_WRN_WARNING" ), aMess );
     return false;
   }
+/*  else if ( aMess == tr( "GEOMETRY_OBJECT_IS_NOT_DEFINED" ) || aMess == tr( "GEOMETRY_OBJECT_IS_NULL" ) )
+  {
+	dlg()->show();
+	if ( SUIT_MessageBox::warning( myDlg, tr( "SMESH_WRN_WARNING" ), aMess,
+		 SUIT_MessageBox::Yes, SUIT_MessageBox::No ) == SUIT_MessageBox::No )
+	  return false;
+  }*/
 
   bool aResult = false;
   aMess = "";
@@ -733,7 +740,14 @@ bool SMESHGUI_MeshOp::isValid( QString& theMess ) const
     if ( aGeomEntry == "" )
     {
       theMess = tr( "GEOMETRY_OBJECT_IS_NOT_DEFINED" );
-      return false;
+      dlg()->show();
+      if ( SUIT_MessageBox::warning( myDlg, tr( "SMESH_WRN_WARNING" ), theMess,
+           SUIT_MessageBox::Yes, SUIT_MessageBox::No ) == SUIT_MessageBox::No )
+      {
+    	theMess = "";
+  	    return false;
+      }
+      return true;
     }
     _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.toLatin1().data() );
     if ( !pGeom || GEOM::GEOM_Object::_narrow( _CAST( SObject,pGeom )->GetObject() )->_is_nil() )
@@ -1601,6 +1615,23 @@ bool SMESHGUI_MeshOp::createMesh( QString& theMess, QStringList& theEntryList )
 
   QStringList aList;
   myDlg->selectedObject( SMESHGUI_MeshDlg::Geom, aList );
+  if ( aList.isEmpty() )
+  {
+    SMESH::SMESH_Gen_var aSMESHGen = SMESHGUI::GetSMESHGen();
+    if ( aSMESHGen->_is_nil() )
+      return false;
+
+    SMESH::SMESH_Mesh_var aMeshVar= aSMESHGen->CreateEmptyMesh();
+    if ( aMeshVar->_is_nil() )
+      return false;
+
+    _PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshVar.in() );
+    if ( aMeshSO ) {
+      SMESH::SetName( aMeshSO, myDlg->objectText( SMESHGUI_MeshDlg::Obj ) );
+      theEntryList.append( aMeshSO->GetID().c_str() );
+    }
+    return true;
+  }
   QStringList::Iterator it = aList.begin();
   for ( ; it!=aList.end(); it++)
   {
