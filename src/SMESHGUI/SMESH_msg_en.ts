@@ -5999,15 +5999,13 @@ Please specify them and try again</translation>
     </message>
     <message>
         <source>GEOMETRY_OBJECT_IS_NOT_DEFINED</source>
-        <translation>Geometry object is not defined
-Do you want to create empty mesh 
-without algorithm&apos;s and hypothesis? </translation>
+        <translation>Geometry object is not defined.
+Do you want to create an empty mesh 
+without algorithms and hypotheses? </translation>
     </message>
     <message>
         <source>GEOMETRY_OBJECT_IS_NULL</source>
-        <translation>Geometry object is null
-Do you want to create empty mesh 
-without algorithm&apos;s and hypothesis? </translation>
+        <translation>Geometry object is null</translation>
     </message>
     <message>
         <source>HYPOTHESES_AND_ALGORITHMS_ARE_NOT_DEFINED</source>
