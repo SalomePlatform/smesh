@@ -2288,7 +2288,7 @@ void SMESH_subMesh::setEventListener(EventListener*     listener,
         EventListenerData* curData = l_d->second;
         if ( curData && curData != data && curData->IsDeletable() )
           delete curData;
-        if ( l_d->first->IsDeletable() )
+        if ( l_d->first != listener && l_d->first->IsDeletable() )
           delete l_d->first;
         _eventListeners.erase( l_d );
         break;
