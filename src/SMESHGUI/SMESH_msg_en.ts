@@ -6000,11 +6000,14 @@ Please specify them and try again</translation>
     <message>
         <source>GEOMETRY_OBJECT_IS_NOT_DEFINED</source>
         <translation>Geometry object is not defined
-Please specify it and try again</translation>
+Do you want to create empty mesh 
+without algorithm&apos;s and hypothesis? </translation>
     </message>
     <message>
         <source>GEOMETRY_OBJECT_IS_NULL</source>
-        <translation>Geometry object is null</translation>
+        <translation>Geometry object is null
+Do you want to create empty mesh 
+without algorithm&apos;s and hypothesis? </translation>
     </message>
     <message>
         <source>HYPOTHESES_AND_ALGORITHMS_ARE_NOT_DEFINED</source>

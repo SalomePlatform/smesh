@@ -141,13 +141,6 @@ bool SMESHGUI_MeshOp::onApply()
       SUIT_MessageBox::warning( myDlg, tr( "SMESH_WRN_WARNING" ), aMess );
     return false;
   }
-/*  else if ( aMess == tr( "GEOMETRY_OBJECT_IS_NOT_DEFINED" ) || aMess == tr( "GEOMETRY_OBJECT_IS_NULL" ) )
-  {
-	dlg()->show();
-	if ( SUIT_MessageBox::warning( myDlg, tr( "SMESH_WRN_WARNING" ), aMess,
-		 SUIT_MessageBox::Yes, SUIT_MessageBox::No ) == SUIT_MessageBox::No )
-	  return false;
-  }*/
 
   bool aResult = false;
   aMess = "";
