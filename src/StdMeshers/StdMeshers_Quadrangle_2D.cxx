@@ -909,7 +909,7 @@ FaceQuadStruct::Ptr StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         
         break;
       }
     }
-    if ( quad->side.size() != 4 )
+    if ( quad && quad->side.size() != 4 )
     {
       error(TComm("Bug: ") << quad->side.size()  << " sides found instead of 4");
       quad.reset();
