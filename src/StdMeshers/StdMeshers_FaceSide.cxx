@@ -51,6 +51,7 @@
 #include <TopoDS_Wire.hxx>
 
 #include <map>
+#include <limits>
 
 #include "utilities.h"
 
@@ -245,9 +246,49 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const StdMeshers_FaceSide*  theSide,
 }
 
 //================================================================================
-/*!
- * \brief Return info on nodes on the side
-  * \retval UVPtStruct* - array of data structures
+/*
+ * Create a side from an UVPtStructVec
+ */
+//================================================================================
+
+StdMeshers_FaceSide::StdMeshers_FaceSide(UVPtStructVec& theSideNodes)
+{
+  myEdge.resize( 1 );
+  myEdgeID.resize( 1, -1 );
+  myC2d.resize( 1 );
+  myC3dAdaptor.resize( 1 );
+  myFirst.resize( 1, 0. );
+  myLast.resize( 1, 1. );
+  myNormPar.resize( 1, 1. );
+  myIsUniform.resize( 1, 1 );
+  myMissingVertexNodes = myIgnoreMediumNodes = false;
+  myDefaultPnt2d.SetCoord( 1e100, 1e100 );
+
+  myPoints     = theSideNodes;
+  myNbPonits   = myPoints.size();
+  myNbSegments = myNbPonits + 1;
+
+  myLength = 0;
+  if ( !myPoints.empty() )
+  {
+    myPoints[0].normParam = 0;
+    gp_Pnt pPrev = SMESH_TNodeXYZ( myPoints[0].node );
+    for ( size_t i = 1; i < myPoints.size(); ++i )
+    {
+      gp_Pnt p = SMESH_TNodeXYZ( myPoints[i].node );
+      myLength += ( myPoints[i].normParam = p.Distance( pPrev ));
+      pPrev = p;
+    }
+    if ( myLength > std::numeric_limits<double>::min() )
+      for ( size_t i = 1; i < myPoints.size(); ++i )
+        myPoints[i].normParam /= myLength;
+  }
+  myEdgeLength.resize( 1, myLength );
+}
+
+//================================================================================
+/*
+ * Return info on nodes on the side
  */
 //================================================================================
 
@@ -604,7 +645,8 @@ void StdMeshers_FaceSide::Reverse()
   int nbEdges = myEdge.size();
   for ( int i = nbEdges-1; i >= 0; --i ) {
     std::swap( myFirst[i], myLast[i] );
-    myEdge[i].Reverse();
+    if ( !myEdge[i].IsNull() )
+      myEdge[i].Reverse();
     if ( i > 0 ) // at the first loop 1. is overwritten
       myNormPar[i] = 1 - myNormPar[i-1];
   }
@@ -622,10 +664,33 @@ void StdMeshers_FaceSide::Reverse()
   if ( nbEdges > 0 )
   {
     myNormPar[nbEdges-1]=1.;
-    myPoints.clear();
-    myFalsePoints.clear();
-    for ( size_t i = 0; i < myEdge.size(); ++i )
-      reverseProxySubmesh( myEdge[i] );
+    if ( !myEdge[0].IsNull() )
+    {
+      for ( size_t i = 0; i < myEdge.size(); ++i )
+        reverseProxySubmesh( myEdge[i] );
+      myPoints.clear();
+      myFalsePoints.clear();
+    }
+    else
+    {
+      for ( size_t i = 0; i < myPoints.size(); ++i )
+      {
+        UVPtStruct & uvPt = myPoints[i];
+        uvPt.normParam = 1 - uvPt.normParam;
+        uvPt.x         = 1 - uvPt.x;
+        uvPt.y         = 1 - uvPt.y;
+      }
+      reverse( myPoints );
+
+      for ( size_t i = 0; i < myFalsePoints.size(); ++i )
+      {
+        UVPtStruct & uvPt = myFalsePoints[i];
+        uvPt.normParam = 1 - uvPt.normParam;
+        uvPt.x         = 1 - uvPt.x;
+        uvPt.y         = 1 - uvPt.y;
+      }
+      reverse( myFalsePoints );
+    }
   }
   for ( size_t i = 0; i < myEdge.size(); ++i )
   {

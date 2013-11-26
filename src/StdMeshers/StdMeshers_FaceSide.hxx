@@ -94,6 +94,11 @@ public:
                       const double                theUFirst=0.,
                       const double                theULast=1.);
   /*!
+   * \brief Create a side from an UVPtStructVec
+   */
+  StdMeshers_FaceSide(UVPtStructVec& theSideNodes);
+
+  /*!
    * \brief Return wires of a face as StdMeshers_FaceSide's
    */
   static TSideVector GetFaceWires(const TopoDS_Face&   theFace,
