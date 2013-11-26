@@ -737,8 +737,8 @@ bool SMESHGUI_MeshOp::isValid( QString& theMess ) const
       if ( SUIT_MessageBox::warning( myDlg, tr( "SMESH_WRN_WARNING" ), theMess,
            SUIT_MessageBox::Yes, SUIT_MessageBox::No ) == SUIT_MessageBox::No )
       {
-    	theMess = "";
-  	    return false;
+        theMess = "";
+        return false;
       }
       return true;
     }
