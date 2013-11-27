@@ -5993,15 +5993,13 @@ Voulez-vous éditer ce sous-maillage?</translation>
     </message>
     <message>
         <source>GEOMETRY_OBJECT_IS_NOT_DEFINED</source>
-        <translation type="unfinished">Geometry object is not defined
-Do you want to create empty mesh 
-without algorithm&apos;s and hypothesis? </translation>
+        <translation type="unfinished">Geometry object is not defined.
+Do you want to create an empty mesh 
+without algorithms and hypotheses? </translation>
     </message>
     <message>
         <source>GEOMETRY_OBJECT_IS_NULL</source>
-        <translation type="unfinished">Geometry object is null
-Do you want to create empty mesh 
-without algorithm&apos;s and hypothesis? </translation>
+        <translation>L&apos;objet géométrique est nul</translation>
     </message>
     <message>
         <source>HYPOTHESES_AND_ALGORITHMS_ARE_NOT_DEFINED</source>
