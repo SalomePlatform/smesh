@@ -78,7 +78,8 @@ public:
                                         const bool          CreateQuadratic);
 
   FaceQuadStruct::Ptr CheckNbEdges(SMESH_Mesh&         aMesh,
-                                   const TopoDS_Shape& aShape);
+                                   const TopoDS_Shape& aShape,
+                                   const bool          considerMesh=false);
 
 protected:
 
@@ -125,7 +126,8 @@ protected:
                  SMESH_Mesh &                theMesh,
                  std::list<TopoDS_Edge>&     theWire,
                  std::vector<TopoDS_Vertex>& theVertices,
-                 int &                       theNbDegenEdges);
+                 int &                       theNbDegenEdges,
+                 const bool                  considerMesh);
 
 
   // true if QuadranglePreference hypothesis is assigned that forces

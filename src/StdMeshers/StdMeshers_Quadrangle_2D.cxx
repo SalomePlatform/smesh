@@ -218,7 +218,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh&         aMesh,
   _quadraticMesh = myHelper->IsQuadraticSubMesh(aShape);
   myNeedSmooth = false;
 
-  FaceQuadStruct::Ptr quad = CheckNbEdges( aMesh, F );
+  FaceQuadStruct::Ptr quad = CheckNbEdges( aMesh, F, /*considerMesh=*/true );
   if (!quad)
     return false;
   myQuadStruct = quad;
@@ -819,7 +819,8 @@ static bool twoEdgesMeatAtVertex(const TopoDS_Edge& e1,
 //=============================================================================
 
 FaceQuadStruct::Ptr StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMesh,
-                                                           const TopoDS_Shape & aShape)
+                                                           const TopoDS_Shape & aShape,
+                                                           const bool           considerMesh)
 {
   if ( myQuadStruct && myQuadStruct->face.IsSame( aShape ))
     return myQuadStruct;
@@ -839,7 +840,7 @@ FaceQuadStruct::Ptr StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         
 
   // find corner vertices of the quad
   vector<TopoDS_Vertex> corners;
-  int nbDegenEdges, nbSides = getCorners( F, aMesh, edges, corners, nbDegenEdges );
+  int nbDegenEdges, nbSides = getCorners( F, aMesh, edges, corners, nbDegenEdges, considerMesh );
   if ( nbSides == 0 )
   {
     return FaceQuadStruct::Ptr();
@@ -3459,6 +3460,8 @@ void StdMeshers_Quadrangle_2D::smooth (FaceQuadStruct::Ptr quad)
  *  \param [out] theVertices - the found corner vertices in the order corresponding to
  *         the order of EDGEs in \a theWire
  *  \param [out] theNbDegenEdges - nb of degenerated EDGEs in theFace
+ *  \param [in] theConsiderMesh - if \c true, only meshed VERTEXes are considered
+ *         as possible corners
  *  \return int - number of quad sides found: 0, 3 or 4
  */
 //================================================================================
@@ -3467,7 +3470,8 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
                                          SMESH_Mesh &                theMesh,
                                          std::list<TopoDS_Edge>&     theWire,
                                          std::vector<TopoDS_Vertex>& theVertices,
-                                         int &                       theNbDegenEdges)
+                                         int &                       theNbDegenEdges,
+                                         const bool                  theConsiderMesh)
 {
   theNbDegenEdges = 0;
 
@@ -3495,7 +3499,7 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
       continue;
     }
     TopoDS_Vertex v = helper.IthVertex( 0, *edge );
-    if ( SMESH_Algo::VertexNode( v, helper.GetMeshDS() ))
+    if ( !theConsiderMesh || SMESH_Algo::VertexNode( v, helper.GetMeshDS() ))
     {
       double angle = SMESH_MesherHelper::GetAngle( prevE, *edge, theFace );
       vertexByAngle.insert( make_pair( angle, v ));
