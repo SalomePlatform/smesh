@@ -223,7 +223,8 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh&         aMesh,
     return false;
   myQuadStruct = quad;
 
-  bool ok = false;
+  enum { NOT_COMPUTED = -1, COMPUTE_FAILED = 0, COMPUTE_OK = 1 };
+  int res = NOT_COMPUTED;
   if (myQuadranglePreference)
   {
     int n1    = quad->side[0]->NbPoints();
@@ -236,7 +237,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh&         aMesh,
     if (nfull == ntmp && ((n1 != n3) || (n2 != n4)))
     {
       // special path genarating only quandrangle faces
-      ok = computeQuadPref( aMesh, F, quad );
+      res = computeQuadPref( aMesh, F, quad );
     }
   }
   else if (myQuadType == QUAD_REDUCED)
@@ -252,7 +253,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh&         aMesh,
     if ((n1 == n3 && n2 != n4 && n24tmp == n24) ||
         (n2 == n4 && n1 != n3 && n13tmp == n13))
     {
-      ok = computeReduced( aMesh, F, quad );
+      res = computeReduced( aMesh, F, quad );
     }
     else
     {
@@ -270,12 +271,15 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh&         aMesh,
     }
   }
 
-  ok = computeQuadDominant( aMesh, F, quad );
+  if ( res == NOT_COMPUTED )
+  {
+    res = computeQuadDominant( aMesh, F, quad );
+  }
 
-  if ( ok && myNeedSmooth )
+  if ( res == COMPUTE_OK && myNeedSmooth )
     smooth( quad );
 
-  return ok;
+  return ( res == COMPUTE_OK );
 }
 
 //================================================================================
