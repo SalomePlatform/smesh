@@ -931,6 +931,8 @@ FaceQuadStruct::Ptr StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         
                                                      ignoreMediumNodes, myProxyMesh));
         ++iSide;
       }
+      if ( quad->side.size() == 4 )
+        break;
       if ( nbLoops > 8 )
       {
         error(TComm("Bug: infinite loop in StdMeshers_Quadrangle_2D::CheckNbEdges()"));
@@ -3582,9 +3584,10 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
   theVertices.clear();
   vector< double >      angles;
   vector< TopoDS_Edge > edgeVec;
-  vector< int >         cornerInd;
+  vector< int >         cornerInd, nbSeg;
   angles.reserve( vertexByAngle.size() );
   edgeVec.reserve( vertexByAngle.size() );
+  nbSeg.reserve( vertexByAngle.size() );
   cornerInd.reserve( nbCorners );
   for ( edge = theWire.begin(); edge != theWire.end(); ++edge )
   {
@@ -3599,6 +3602,13 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
     }
     angles.push_back( angleByVertex.IsBound( v ) ? angleByVertex( v ) : -M_PI );
     edgeVec.push_back( *edge );
+    if ( theConsiderMesh && isThereVariants )
+    {
+      if ( SMESHDS_SubMesh* sm = helper.GetMeshDS()->MeshElements( *edge ))
+        nbSeg.push_back( sm->NbNodes() + 1 );
+      else
+        nbSeg.push_back( 0 );
+    }
   }
 
   // refine the result vector - make sides elual by length if
