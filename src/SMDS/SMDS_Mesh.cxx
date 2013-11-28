@@ -53,6 +53,7 @@
 #include <map>
 #include <iostream>
 #include <fstream>
+#include <iterator>
 using namespace std;
 
 #ifndef WIN32
