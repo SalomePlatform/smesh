@@ -3335,8 +3335,8 @@ void StdMeshers_Quadrangle_2D::smooth (FaceQuadStruct::Ptr quad)
     while ( fIt->more() )
     {
       const SMDS_MeshElement* face = fIt->next();
-      const int nbN = face->NbCornerNodes();
-      const int nInd = face->GetNodeIndex( node );
+      const int nbN     = face->NbCornerNodes();
+      const int nInd    = face->GetNodeIndex( node );
       const int prevInd = myHelper->WrapIndex( nInd - 1, nbN );
       const int nextInd = myHelper->WrapIndex( nInd + 1, nbN );
       const SMDS_MeshNode* prevNode = face->GetNode( prevInd );
@@ -3376,24 +3376,30 @@ void StdMeshers_Quadrangle_2D::smooth (FaceQuadStruct::Ptr quad)
       if ( sNode._triangles.empty() )
         continue; // not movable node
 
-      // compute a new XYZ
-      gp_XYZ newXYZ (0,0,0);
-      for ( unsigned i = 0; i < sNode._triangles.size(); ++i )
-        newXYZ += sNode._triangles[i]._n1->_xyz;
-      newXYZ /= sNode._triangles.size();
-
-      // compute a new UV by projection
       gp_XY newUV;
-      proj.Perform( newXYZ );
-      bool isValid = ( proj.IsDone() && proj.NbPoints() > 0 );
-      if ( isValid )
+      bool isValid = false;
+      bool use3D   = ( iLoop > 2 ); // 3 loops in 2D and 2, in 3D
+
+      if ( use3D )
       {
-        // check validity of the newUV
-        Quantity_Parameter u,v;
-        proj.LowerDistanceParameters( u, v );
-        newUV.SetCoord( u, v );
-        for ( unsigned i = 0; i < sNode._triangles.size() && isValid; ++i )
-          isValid = ( sNode._triangles[i].IsForward( newUV ) == refForward );
+        // compute a new XYZ
+        gp_XYZ newXYZ (0,0,0);
+        for ( unsigned i = 0; i < sNode._triangles.size(); ++i )
+          newXYZ += sNode._triangles[i]._n1->_xyz;
+        newXYZ /= sNode._triangles.size();
+
+        // compute a new UV by projection
+        proj.Perform( newXYZ );
+        isValid = ( proj.IsDone() && proj.NbPoints() > 0 );
+        if ( isValid )
+        {
+          // check validity of the newUV
+          Quantity_Parameter u,v;
+          proj.LowerDistanceParameters( u, v );
+          newUV.SetCoord( u, v );
+          for ( unsigned i = 0; i < sNode._triangles.size() && isValid; ++i )
+            isValid = ( sNode._triangles[i].IsForward( newUV ) == refForward );
+        }
       }
       if ( !isValid )
       {
