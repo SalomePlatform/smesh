@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>500</height>
+    <width>791</width>
+    <height>593</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -339,7 +339,7 @@ In other words, it avoids having faces too far away from the curve they should r
          </rect>
         </property>
         <property name="toolTip">
-         <string>If the Units parameter is relative, epsilon max correspond to (per thousand) s*Tolerance/1000, where s is the size of the bounding box of the domain.
+         <string>If the Units parameter is relative, epsilon max correspond to s*Tolerance, where s is the size of the bounding box of the domain.
 If the Units parameter is absolute, the tolerance parameter is expressed in model units:
   if P=2 and point coordinates are given in millimeters, the maximal chordal deviation is 2 mm.</string>
         </property>
