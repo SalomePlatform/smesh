@@ -76,7 +76,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     v1=QDoubleValidator(self)
     v1.setBottom(0.)
     #v1.setTop(1000.) #per thousand... only if relative
-    v1.setDecimals(2)
+    v1.setDecimals(3)
     self.SP_Tolerance.setValidator(v1)
     self.SP_Tolerance.titleForWarning="Chordal Tolerance"
     
