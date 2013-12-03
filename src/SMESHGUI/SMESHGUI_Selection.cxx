@@ -107,31 +107,31 @@ bool SMESHGUI_Selection::processOwner( const LightApp_DataOwner* ow )
 QVariant SMESHGUI_Selection::parameter( const int ind, const QString& p ) const
 {
   QVariant val;
-  if      ( p=="client" )        val = QVariant( LightApp_Selection::parameter( p ) );
-  else if ( p=="type" )          val = QVariant( myTypes[ind] );
-  else if ( p=="elemTypes" )     val = QVariant( elemTypes( ind ) );
-  else if ( p=="isAutoColor" )   val = QVariant( isAutoColor( ind ) );
-  else if ( p=="numberOfNodes" ) val = QVariant( numberOfNodes( ind ) );
-  else if ( p=="dim" )           val = QVariant( dim( ind ) );
-  else if ( p=="labeledTypes" )  val = QVariant( labeledTypes( ind ) );
-  else if ( p=="shrinkMode" )    val = QVariant( shrinkMode( ind ) );
-  else if ( p=="entityMode" )    val = QVariant( entityMode( ind ) );
-  else if ( p=="controlMode" )   val = QVariant( controlMode( ind ) );
-  else if ( p=="isNumFunctor" )  val = QVariant( isNumFunctor( ind ) );
-  else if ( p=="displayMode" )   val = QVariant( displayMode( ind ) );
-  else if ( p=="isComputable" )  val = QVariant( isComputable( ind ) );
-  else if ( p=="isPreComputable" )  val = QVariant( isPreComputable( ind ) );
-  else if ( p=="hasReference" )  val = QVariant( hasReference( ind ) );
-  else if ( p=="isImported" )    val = QVariant( isImported( ind ) );
+  if      ( p=="client" )               val = QVariant( LightApp_Selection::parameter( p ) );
+  else if ( p=="type" )                 val = QVariant( myTypes[ind] );
+  else if ( p=="elemTypes" )            val = QVariant( elemTypes( ind ) );
+  else if ( p=="isAutoColor" )          val = QVariant( isAutoColor( ind ) );
+  else if ( p=="numberOfNodes" )        val = QVariant( numberOfNodes( ind ) );
+  else if ( p=="dim" )                  val = QVariant( dim( ind ) );
+  else if ( p=="labeledTypes" )         val = QVariant( labeledTypes( ind ) );
+  else if ( p=="shrinkMode" )           val = QVariant( shrinkMode( ind ) );
+  else if ( p=="entityMode" )           val = QVariant( entityMode( ind ) );
+  else if ( p=="controlMode" )          val = QVariant( controlMode( ind ) );
+  else if ( p=="isNumFunctor" )         val = QVariant( isNumFunctor( ind ) );
+  else if ( p=="displayMode" )          val = QVariant( displayMode( ind ) );
+  else if ( p=="isComputable" )         val = QVariant( isComputable( ind ) );
+  else if ( p=="isPreComputable" )      val = QVariant( isPreComputable( ind ) );
+  else if ( p=="hasReference" )         val = QVariant( hasReference( ind ) );
+  else if ( p=="isImported" )           val = QVariant( isImported( ind ) );
   else if ( p=="facesOrientationMode" ) val = QVariant( facesOrientationMode( ind ) );
-  else if ( p=="groupType" )     val = QVariant( groupType( ind ) );
-  else if ( p=="quadratic2DMode") val =  QVariant(quadratic2DMode(ind));
-  else if ( p=="isDistributionVisible") val = QVariant(isDistributionVisible(ind));
-  else if ( p=="hasChildren") val = QVariant(hasChildren(ind));
-  else if ( p=="nbChildren") val = QVariant(nbChildren(ind));
-  else if ( p=="isContainer") val = QVariant(isContainer(ind));
+  else if ( p=="groupType" )            val = QVariant( groupType( ind ) );
+  else if ( p=="quadratic2DMode")       val = QVariant( quadratic2DMode( ind ) );
+  else if ( p=="isDistributionVisible") val = QVariant( isDistributionVisible( ind ) );
+  else if ( p=="hasChildren")           val = QVariant( hasChildren( ind ) );
+  else if ( p=="nbChildren")            val = QVariant( nbChildren( ind ) );
+  else if ( p=="isContainer")           val = QVariant( isContainer( ind ) );
 
-  if( val.isValid() )
+  if ( val.isValid() )
     return val;
   else
     return LightApp_Selection::parameter( ind, p );
@@ -163,10 +163,10 @@ QList<QVariant> SMESHGUI_Selection::elemTypes( int ind ) const
     TVisualObjPtr object = actor->GetObject();
     if ( object ) {
       if ( object->GetNbEntities( SMDSAbs_0DElement )) types.append( "Elem0d" );
-      if ( object->GetNbEntities( SMDSAbs_Ball )) types.append( "BallElem" );
-      if ( object->GetNbEntities( SMDSAbs_Edge )) types.append( "Edge" );
-      if ( object->GetNbEntities( SMDSAbs_Face )) types.append( "Face" );
-      if ( object->GetNbEntities( SMDSAbs_Volume )) types.append( "Volume" );
+      if ( object->GetNbEntities( SMDSAbs_Ball ))      types.append( "BallElem" );
+      if ( object->GetNbEntities( SMDSAbs_Edge ))      types.append( "Edge" );
+      if ( object->GetNbEntities( SMDSAbs_Face ))      types.append( "Face" );
+      if ( object->GetNbEntities( SMDSAbs_Volume ))    types.append( "Volume" );
     }
   }
   return types;
@@ -183,7 +183,7 @@ QList<QVariant> SMESHGUI_Selection::labeledTypes( int ind ) const
   SMESH_Actor* actor = getActor( ind );
   if ( actor ) {
     if ( actor->GetPointsLabeled()) types.append( "Point" );
-    if ( actor->GetCellsLabeled()) types.append( "Cell" );
+    if ( actor->GetCellsLabeled())  types.append( "Cell" );
   }
   return types;
 }
@@ -217,8 +217,8 @@ QString SMESHGUI_Selection::quadratic2DMode( int ind ) const
   SMESH_Actor* actor = getActor( ind );
   if ( actor ) {
     switch( actor->GetQuadratic2DRepresentation() ) {
-    case SMESH_Actor::eLines:    return "eLines";
-    case SMESH_Actor::eArcs: return "eArcs";
+    case SMESH_Actor::eLines: return "eLines";
+    case SMESH_Actor::eArcs:  return "eArcs";
     default: break;
     }
   }
@@ -244,9 +244,7 @@ QString SMESHGUI_Selection::shrinkMode( int ind ) const
 {
   SMESH_Actor* actor = getActor( ind );
   if ( actor && actor->IsShrunkable() ) {
-    if ( actor->IsShrunk() )
-      return "IsShrunk";
-    return "IsNotShrunk";
+    return actor->IsShrunk() ? "IsShrunk" : "IsNotShrunk";
   }
   return "IsNotShrinkable";
 }
@@ -266,7 +264,7 @@ QList<QVariant> SMESHGUI_Selection::entityMode( int ind ) const
     if ( aMode & SMESH_Actor::eFaces      ) types.append( "Face"   );
     if ( aMode & SMESH_Actor::eEdges      ) types.append( "Edge"   );
     if ( aMode & SMESH_Actor::e0DElements ) types.append( "Elem0d" );
-    if ( aMode & SMESH_Actor::eBallElem ) types.append( "BallElem" );
+    if ( aMode & SMESH_Actor::eBallElem )   types.append( "BallElem" );
   }
   return types;
 }
@@ -352,9 +350,7 @@ QString SMESHGUI_Selection::facesOrientationMode( int ind ) const
 {
   SMESH_Actor* actor = getActor( ind );
   if ( actor ) {
-    if ( actor->GetFacesOriented() )
-      return "IsOriented";
-    return "IsNotOriented";
+    return actor->GetFacesOriented() ? "IsOriented" : "IsNotOriented";
   }
   return "Unknown";
 }
@@ -371,9 +367,9 @@ bool SMESHGUI_Selection::isAutoColor( int ind ) const
     _PTR(SObject) sobj = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
     CORBA::Object_var obj = SMESH::SObjectToObject( sobj, SMESH::GetActiveStudyDocument() );
 
-    if ( ! CORBA::is_nil( obj )) {
+    if ( !CORBA::is_nil( obj ) ) {
       SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( obj );
-      if ( ! mesh->_is_nil() )
+      if ( !CORBA::is_nil( mesh ) )
         return mesh->GetAutoColor();
     }
   }
@@ -392,15 +388,15 @@ int SMESHGUI_Selection::numberOfNodes( int ind ) const
     _PTR(SObject) sobj = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
     CORBA::Object_var obj = SMESH::SObjectToObject( sobj, SMESH::GetActiveStudyDocument() );
 
-    if ( ! CORBA::is_nil( obj )) {
+    if ( !CORBA::is_nil( obj ) ) {
       SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( obj );
-      if ( ! mesh->_is_nil() )
+      if ( !CORBA::is_nil( mesh ) )
         return mesh->NbNodes();
       SMESH::SMESH_subMesh_var aSubMeshObj = SMESH::SMESH_subMesh::_narrow( obj );
-      if ( !aSubMeshObj->_is_nil() )
+      if ( !CORBA::is_nil( aSubMeshObj ) )
         return aSubMeshObj->GetNumberOfNodes(true);
       SMESH::SMESH_GroupBase_var aGroupObj = SMESH::SMESH_GroupBase::_narrow( obj );
-      if ( !aGroupObj->_is_nil() )
+      if ( !CORBA::is_nil( aGroupObj ) )
         return aGroupObj->IsEmpty() ? 0 : 1; // aGroupObj->Size();
     }
   }
@@ -423,20 +419,21 @@ int SMESHGUI_Selection::dim( int ind ) const
     _PTR(SObject) sobj = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
     CORBA::Object_var obj = SMESH::SObjectToObject( sobj, SMESH::GetActiveStudyDocument() );
 
-    if ( ! CORBA::is_nil( obj )) {
+    if ( !CORBA::is_nil( obj ) ) {
       SMESH::SMESH_IDSource_var idSrc = SMESH::SMESH_IDSource::_narrow( obj );
-      if ( ! idSrc->_is_nil() )
+      if ( !CORBA::is_nil( idSrc ) )
       {
         SMESH::array_of_ElementType_var types = idSrc->GetTypes();
-        for ( int i = 0; i < types->length(); ++ i)
+        for ( int i = 0; i < types->length(); ++ i) {
           switch ( types[i] ) {
           case SMESH::EDGE  : dim = std::max( dim, 1 ); break;
           case SMESH::FACE  : dim = std::max( dim, 2 ); break;
           case SMESH::VOLUME: dim = std::max( dim, 3 ); break;
           case SMESH::ELEM0D: dim = std::max( dim, 0 ); break;
           case SMESH::BALL  : dim = std::max( dim, 0 ); break;
-          default:;
+          default: break;
           }
+	}
       }
     }
   }
@@ -452,36 +449,26 @@ QVariant SMESHGUI_Selection::isComputable( int ind ) const
 {
   if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] != "Unknown" )
   {
-/*    Handle(SALOME_InteractiveObject) io =
-      static_cast<LightApp_DataOwner*>( myDataOwners[ ind ].get() )->IO();
-    if ( !io.IsNull() ) {
-      SMESH::SMESH_Mesh_var mesh = SMESH::GetMeshByIO(io); // m,sm,gr->m
-      if ( !mesh->_is_nil() ) {*/
-        _PTR(SObject) so = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
-        //FindSObject( mesh );
-        if ( so ) {
-          CORBA::Object_var obj = SMESH::SObjectToObject(so, SMESH::GetActiveStudyDocument());
-          if(!CORBA::is_nil(obj)){
-            SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( obj );
-            if (!mesh->_is_nil()){
-              if(mesh->HasShapeToMesh()) {
-                GEOM::GEOM_Object_var shape = SMESH::GetShapeOnMeshOrSubMesh( so );
-                return QVariant( !shape->_is_nil() );
-              }
-              else
-              {
-                return QVariant(!mesh->NbFaces()==0);
-              }
-            }
-            else
-            {
-              GEOM::GEOM_Object_var shape = SMESH::GetShapeOnMeshOrSubMesh( so );
-              return QVariant( !shape->_is_nil() );
-            }
-          }
-        }
-//      }
-//    }
+    _PTR(SObject) so = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
+    CORBA::Object_var obj = SMESH::SObjectToObject( so, SMESH::GetActiveStudyDocument() );
+    if( !CORBA::is_nil( obj ) ) {
+      SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( obj );
+      if ( !CORBA::is_nil( mesh ) ) {
+	if ( mesh->HasShapeToMesh() ) {
+	  GEOM::GEOM_Object_var shape = SMESH::GetShapeOnMeshOrSubMesh( so );
+	  return QVariant( !shape->_is_nil() );
+	}
+	else
+	{
+	  return QVariant( mesh->NbFaces() !=0 );
+	}
+      }
+      else
+      {
+	GEOM::GEOM_Object_var shape = SMESH::GetShapeOnMeshOrSubMesh( so );
+	return QVariant( !shape->_is_nil() );
+      }
+    }
   }
   return QVariant( false );
 }
@@ -522,10 +509,9 @@ QVariant SMESHGUI_Selection::isVisible( int ind ) const
 {
   if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] != "Unknown" )
   {
-    QString ent = entry( ind );
-    SMESH_Actor* actor = SMESH::FindActorByEntry( ent.toLatin1().data() );
+    SMESH_Actor* actor = SMESH::FindActorByEntry( entry( ind ).toLatin1().data() );
     if ( actor && actor->hasIO() ) {
-      if(SVTK_ViewWindow* aViewWindow = SMESH::GetCurrentVtkView())
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetCurrentVtkView() )
         return QVariant( aViewWindow->isVisible( actor->getIO() ) );
     }
   }
@@ -542,7 +528,8 @@ bool SMESHGUI_Selection::hasChildren( int ind ) const
   if ( ind >= 0 )
   {
     _PTR(SObject) sobj = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
-    return SMESH::GetActiveStudyDocument()->GetUseCaseBuilder()->HasChildren( sobj );
+    if ( sobj ) 
+      return SMESH::GetActiveStudyDocument()->GetUseCaseBuilder()->HasChildren( sobj );
   }
   return false;
 }
@@ -558,9 +545,9 @@ int SMESHGUI_Selection::nbChildren( int ind ) const
   if ( ind >= 0 )
   {
     _PTR(SObject) sobj = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
-    if ( sobj->GetStudy()->GetUseCaseBuilder()->IsUseCaseNode( sobj ) ) {
+    if ( sobj && sobj->GetStudy()->GetUseCaseBuilder()->IsUseCaseNode( sobj ) ) {
       _PTR(UseCaseIterator) it = sobj->GetStudy()->GetUseCaseBuilder()->GetUseCaseIterator( sobj ); 
-      for (it->Init(false); it->More(); it->Next()) nb++;
+      for ( it->Init( false ); it->More(); it->Next() ) nb++;
     }
   }
   return nb;
@@ -583,72 +570,57 @@ bool SMESHGUI_Selection::isContainer( int ind ) const
 
 int SMESHGUI_Selection::type( const QString& entry, _PTR(Study) study )
 {
-  _PTR(SObject) obj (study->FindObjectID(entry.toLatin1().data()));
-  if( !obj )
-    return -1;
+  int res = -1;
+  _PTR(SObject) obj = study->FindObjectID( entry.toLatin1().data() );
+  if ( obj ) {
+    _PTR(SObject) ref;
+    if ( obj->ReferencedObject( ref ) )
+      obj = ref;
 
-  _PTR(SObject) ref;
-  if( obj->ReferencedObject( ref ) )
-    obj = ref;
+    _PTR(SObject) objFather = obj->GetFather();
+    _PTR(SComponent) objComponent = obj->GetFatherComponent();
 
-  _PTR(SObject) objFather = obj->GetFather();
-  _PTR(SComponent) objComponent = obj->GetFatherComponent();
+    if ( objComponent->ComponentDataType() == "SMESH" ) {
+      if ( objComponent->GetIOR() == obj->GetIOR() ) {
+	res = SMESH::COMPONENT;
+      }
+      else {
+	int aLevel = obj->Depth() - objComponent->Depth(),
+	  aFTag = objFather->Tag(),
+	  anOTag = obj->Tag();
 
-  if( objComponent->ComponentDataType()!="SMESH" )
-    return -1;
-
-  if( objComponent->GetIOR()==obj->GetIOR() )
-    return SMESH::COMPONENT;
-
-  int aLevel = obj->Depth() - objComponent->Depth(),
-      aFTag = objFather->Tag(),
-      anOTag = obj->Tag(),
-      res = -1;
-
-  switch (aLevel)
-  {
-  case 1:
-    if (anOTag >= SMESH::Tag_FirstMeshRoot)
-      res = SMESH::MESH;
-    break;
-  case 2:
-    switch (aFTag)
-    {
-    case SMESH::Tag_HypothesisRoot:
-      res = SMESH::HYPOTHESIS;
-      break;
-    case SMESH::Tag_AlgorithmsRoot:
-      res = SMESH::ALGORITHM;
-      break;
+	switch ( aLevel )
+	{
+	case 1:
+	  if ( anOTag >= SMESH::Tag_FirstMeshRoot )
+	    res = SMESH::MESH;
+	  break;
+	case 2:
+	  switch ( aFTag )
+	  {
+	  case SMESH::Tag_HypothesisRoot: res = SMESH::HYPOTHESIS; break;
+	  case SMESH::Tag_AlgorithmsRoot: res = SMESH::ALGORITHM;  break;
+	  default: break;
+	  }
+	  break;
+	case 3:
+	  switch ( aFTag )
+	  {
+	  case SMESH::Tag_SubMeshOnVertex:   res = SMESH::SUBMESH_VERTEX;   break;
+	  case SMESH::Tag_SubMeshOnEdge:     res = SMESH::SUBMESH_EDGE;     break;
+	  case SMESH::Tag_SubMeshOnFace:     res = SMESH::SUBMESH_FACE;     break;
+	  case SMESH::Tag_SubMeshOnSolid:    res = SMESH::SUBMESH_SOLID;    break;
+	  case SMESH::Tag_SubMeshOnCompound: res = SMESH::SUBMESH_COMPOUND; break;
+	  default:
+	    if ( aFTag >= SMESH::Tag_FirstGroup) res = SMESH::GROUP;
+	    else                                 res = SMESH::SUBMESH;
+	    break;
+	  }
+	  break;
+	}
+      }
     }
-    break;
-  case 3:
-    switch (aFTag)
-    {
-    case SMESH::Tag_SubMeshOnVertex:
-      res = SMESH::SUBMESH_VERTEX;
-      break;
-    case SMESH::Tag_SubMeshOnEdge:
-      res = SMESH::SUBMESH_EDGE;
-      break;
-    case SMESH::Tag_SubMeshOnFace:
-      res = SMESH::SUBMESH_FACE;
-      break;
-    case SMESH::Tag_SubMeshOnSolid:
-      res = SMESH::SUBMESH_SOLID;
-      break;
-    case SMESH::Tag_SubMeshOnCompound:
-      res = SMESH::SUBMESH_COMPOUND;
-      break;
-    default:
-      if (aFTag >= SMESH::Tag_FirstGroup)
-        res = SMESH::GROUP;
-      else
-        res = SMESH::SUBMESH;
-    }
-    break;
   }
-
   return res;
 }
 
@@ -659,45 +631,46 @@ int SMESHGUI_Selection::type( const QString& entry, _PTR(Study) study )
 
 QString SMESHGUI_Selection::typeName( const int t )
 {
+  QString res = "Unknown";
   switch( t )
   {
   case SMESH::HYPOTHESIS:
-    return "Hypothesis";
+    res = "Hypothesis"; break;
   case SMESH::ALGORITHM:
-    return "Algorithm";
+    res = "Algorithm"; break;
   case SMESH::MESH:
-    return "Mesh";
+    res = "Mesh"; break;
   case SMESH::SUBMESH:
-    return "SubMesh";
+    res = "SubMesh"; break;
   case SMESH::MESHorSUBMESH:
-    return "Mesh or submesh";
+    res = "Mesh or submesh"; break;
   case SMESH::SUBMESH_VERTEX:
-    return "Mesh vertex";
+    res = "Mesh vertex"; break;
   case SMESH::SUBMESH_EDGE:
-    return "Mesh edge";
+    res = "Mesh edge"; break;
   case SMESH::SUBMESH_FACE:
-    return "Mesh face";
+    res = "Mesh face"; break;
   case SMESH::SUBMESH_SOLID:
-    return "Mesh solid";
+    res = "Mesh solid"; break;
   case SMESH::SUBMESH_COMPOUND:
-    return "Mesh compound";
+    res = "Mesh compound"; break;
   case SMESH::GROUP:
-    return "Group";
+    res = "Group"; break;
   case SMESH::COMPONENT:
-    return "Component";
+    res = "Component"; break;
   default:
-    return "Unknown";
+     break;
   }
+  return res;
 }
 
 bool SMESHGUI_Selection::isImported( const int ind ) const
 {
-  QString e = entry( ind );
-  _PTR(SObject) SO = SMESH::GetActiveStudyDocument()->FindObjectID( e.toLatin1().constData() );
   bool res = false;
-  if( SO )
+  _PTR(SObject) sobj = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().constData() );
+  if ( sobj )
   {
-    SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow( SMESH::SObjectToObject( SO ) );
+    SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow( SMESH::SObjectToObject( sobj ) );
     if( !aMesh->_is_nil() )
     {
       SMESH::MedFileInfo_var inf = aMesh->GetMEDFileInfo();
@@ -714,20 +687,17 @@ bool SMESHGUI_Selection::isImported( const int ind ) const
 
 QString SMESHGUI_Selection::groupType( int ind ) const
 {
-  QString e = entry( ind );
-  _PTR(SObject) SO = SMESH::GetActiveStudyDocument()->FindObjectID( e.toLatin1().constData() );
-  if( SO )
+  _PTR(SObject) sobj = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().constData() );
+  if ( sobj )
   {
-    SMESH::SMESH_Group_var g = SMESH::SObjectToInterface<SMESH::SMESH_Group>( SO );
-    if( !g->_is_nil() )
+    SMESH::SMESH_Group_var g = SMESH::SObjectToInterface<SMESH::SMESH_Group>( sobj );
+    if ( !CORBA::is_nil( g ) )
       return "Group";
-
-    SMESH::SMESH_GroupOnGeom_var gog = SMESH::SObjectToInterface<SMESH::SMESH_GroupOnGeom>( SO );
-    if( !gog->_is_nil() )
+    SMESH::SMESH_GroupOnGeom_var gog = SMESH::SObjectToInterface<SMESH::SMESH_GroupOnGeom>( sobj );
+    if( !CORBA::is_nil( gog ) )
       return "GroupOnGeom";
-
-    SMESH::SMESH_GroupOnFilter_var gof = SMESH::SObjectToInterface<SMESH::SMESH_GroupOnFilter>(SO);
-    if ( !gof->_is_nil() )
+    SMESH::SMESH_GroupOnFilter_var gof = SMESH::SObjectToInterface<SMESH::SMESH_GroupOnFilter>( sobj );
+    if ( !CORBA::is_nil( gof ) )
       return "GroupOnFilter";
   }
   return "";
