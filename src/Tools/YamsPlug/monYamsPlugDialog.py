@@ -102,14 +102,20 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     self.connect(self.LE_ParamsFile,SIGNAL("returnPressed()"),self.paramsFileNameChanged)
 
   def PBHelpPressed(self):
+    import SalomePyQt
+    sgPyQt = SalomePyQt.SalomePyQt()
     try :
       mydir=os.environ["SMESH_ROOT_DIR"]
     except Exception:
       QMessageBox.warning(self, "Help", "Help unavailable $SMESH_ROOT_DIR not found")
       return
-    maDoc=mydir+"/share/doc/salome/gui/SMESH/yams/_downloads/mg-surfopt_user_manual.pdf"
-    command="xdg-open "+maDoc+";"
-    subprocess.call(command, shell=True)
+
+    maDoc=mydir+"/share/doc/salome/gui/SMESH/yams/index.html"
+    sgPyQt.helpContext(maDoc,"")
+    
+    #maDoc=mydir+"/share/doc/salome/gui/SMESH/yams/_downloads/mg-surfopt_user_manual.pdf"
+    #command="xdg-open "+maDoc+";"
+    #subprocess.call(command, shell=True)
 
   def PBOKPressed(self):
     if not(self.PrepareLigneCommande()):
@@ -518,7 +524,7 @@ __dialog=None
 def getDialog():
   """
   This function returns a singleton instance of the plugin dialog.
-  It is mandatory in order to call show witout a parent ...
+  It is mandatory in order to call show without a parent ...
   """
   global __dialog
   if __dialog is None:

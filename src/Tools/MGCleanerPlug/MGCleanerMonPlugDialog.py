@@ -129,14 +129,20 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     self.connect(self.CB_ComputedOverlapDistance,SIGNAL("stateChanged(int)"),self.SP_OverlapDistance.setDisabled)
 
   def PBHelpPressed(self):
+    import SalomePyQt
+    sgPyQt = SalomePyQt.SalomePyQt()
     try:
       mydir=os.environ["SMESH_ROOT_DIR"]
     except Exception:
       QMessageBox.warning( self, "Help", "Help unavailable $SMESH_ROOT_DIR not found")
       return
-    maDoc=mydir+"/share/doc/salome/gui/SMESH/MGCleaner/_downloads/mg-cleaner_user_manual.pdf"
-    command="xdg-open "+maDoc+";"
-    subprocess.call(command, shell=True)
+    
+    maDoc=mydir+"/share/doc/salome/gui/SMESH/MGCleaner/index.html"
+    sgPyQt.helpContext(maDoc,"")
+    
+    #maDoc=mydir+"/share/doc/salome/gui/SMESH/MGCleaner/_downloads/mg-cleaner_user_manual.pdf"
+    #command="xdg-open "+maDoc+";"
+    #subprocess.call(command, shell=True)
 
   def PBOKPressed(self):
     if not(self.PrepareLigneCommande()):
