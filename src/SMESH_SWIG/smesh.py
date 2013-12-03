@@ -32,9 +32,8 @@
 import salome
 from salome import *
 
-import GEOM
-from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+import geompy
+
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
