@@ -599,13 +599,13 @@ New created vertices are saved in the .mesh file under keyword section 'Vertices
          </rect>
         </property>
         <property name="maximum">
-         <double>0.890000000000000</double>
+         <double>90.000000000000000</double>
         </property>
         <property name="singleStep">
-         <double>0.010000000000000</double>
+         <double>1.000000000000000</double>
         </property>
         <property name="value">
-         <double>0.040000000000000</double>
+         <double>15.000000000000000</double>
         </property>
        </widget>
        <widget class="QLabel" name="label_2">
