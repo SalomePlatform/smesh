@@ -113,7 +113,7 @@ namespace
 }
 namespace SMESH
 {
-  class TElementSimulation {
+  class TElementSimulationQuad {
     SalomeApp_Application* myApplication;
     SUIT_ViewWindow* myViewWindow;
     SVTK_ViewWindow* myVTKViewWindow;
@@ -130,7 +130,7 @@ namespace SMESH
     SMESH_FaceOrientationFilter* myFaceOrientationFilter;
 
   public:
-    TElementSimulation (SalomeApp_Application* theApplication)
+    TElementSimulationQuad (SalomeApp_Application* theApplication)
     {
       myApplication = theApplication;
       SUIT_ViewManager* mgr = theApplication->activeViewManager();
@@ -230,7 +230,7 @@ namespace SMESH
     }
 
 
-    ~TElementSimulation()
+    ~TElementSimulationQuad()
     {
       if (FindVtkViewWindow(myApplication->activeViewManager(), myViewWindow)) {
         myVTKViewWindow->RemoveActor(myPreviewActor);
@@ -344,7 +344,7 @@ SMESHGUI_AddQuadraticElementDlg::SMESHGUI_AddQuadraticElementDlg( SMESHGUI* theM
   SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>
     (SUIT_Session::session()->activeApplication());
 
-  mySimulation = new SMESH::TElementSimulation (anApp);
+  mySimulation = new SMESH::TElementSimulationQuad (anApp);
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
   QString anElementName;
@@ -1039,7 +1039,7 @@ void SMESHGUI_AddQuadraticElementDlg::displaySimulation()
 {
   if ( IsValid() )
   {
-    SMESH::TElementSimulation::TVTKIds anIds;
+    SMESH::TElementSimulationQuad::TVTKIds anIds;
 
     // Collect ids from the dialog
     int anID;
