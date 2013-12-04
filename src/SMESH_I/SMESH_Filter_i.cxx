@@ -3067,8 +3067,8 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
   }
 
   SetPredicate( aResPredicate );
-
-  aResPredicate->UnRegister();
+  if ( !aResPredicate->_is_nil() )
+    aResPredicate->UnRegister();
 
   return !aResPredicate->_is_nil();
 }
