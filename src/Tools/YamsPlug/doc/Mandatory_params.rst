@@ -1,7 +1,7 @@
 Simple Remeshing Options
 =========================
 
-simple case 
+Simple case 
 -----------
 
    All options, but the input mesh, have default values. however, **you have to specify these
@@ -42,7 +42,7 @@ This is the main remeshing Option.  SurfOpt always does quality improvement. It 
 
      It is equivalent to SurfOpt's batch option *- - uniform_flat_subdivision yes*.
 
-   - **Smoothing**
+   - **Sandpapering**
 
      A surface sandpapering without shrinkage of the given surface triangulation is performed, i.e., the high curvature variations of the given surface will be smoothed out without shrinking the volume in doing so. If ridges are defined, they will be kept as they are in the resulting mesh. It could modify the geometry.
      It is equivalent to SurfOpt's batch option *- - sand_paper yes*.
