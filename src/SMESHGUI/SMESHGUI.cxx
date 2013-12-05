@@ -685,9 +685,9 @@
         new SalomeApp_CheckFileDlg ( SMESHGUI::desktop(), false, checkBoxes, true, true );
       fd->setWindowTitle( aTitle );
       fd->setNameFilters( filters );
-      fd->selectNameFilter(aDefaultFilter);
-      fd->SetChecked(0,toCreateGroups);
-      fd->SetChecked(1,toFindOutDim);
+      fd->selectNameFilter( aDefaultFilter );
+      fd->SetChecked( toCreateGroups, 0 );
+      fd->SetChecked( toFindOutDim,   1 );
       if ( !anInitialPath.isEmpty() )
         fd->setDirectory( anInitialPath );
       fd->selectFile(aMeshName);
