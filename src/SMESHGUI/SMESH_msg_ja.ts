@@ -5,7 +5,7 @@
     <name>@default</name>
     <message>
       <source>SMESH_EXPORT_MESH</source>
-      <translation>メッシュをエクスポートします。</translation>
+      <translation>メッシュのエクスポート</translation>
     </message>
     <message>
       <source>MED_FILES_FILTER</source>
@@ -13,7 +13,7 @@
     </message>
     <message>
       <source>IDEAS_FILES_FILTER</source>
-      <translation>ファイルのアイデア</translation>
+      <translation>IDEAS ファイル</translation>
     </message>
     <message>
       <source>DAT_FILES_FILTER</source>
@@ -41,15 +41,15 @@
     </message>
     <message>
       <source>GMF_ASCII_FILES_FILTER</source>
-      <translation>組み換え ASCII ファイル</translation>
+      <translation>GMFアスキーファイル</translation>
     </message>
     <message>
       <source>GMF_BINARY_FILES_FILTER</source>
-      <translation>組み換えバイナリ ファイル</translation>
+      <translation>GMFバイナリファイル</translation>
     </message>
     <message>
       <source>STL_BIN_FILES_FILTER</source>
-      <translation>バイナリの STL ファイル</translation>
+      <translation>STL バイナリ ファイル</translation>
     </message>
     <message>
       <source>ALL_FILES_FILTER</source>
@@ -65,15 +65,15 @@
     </message>
     <message>
       <source>MIN_DIAG_ELEMENTS</source>
-      <translation>最小斜め</translation>
+      <translation>最小の対角線</translation>
     </message>
     <message>
       <source>ASPECTRATIO_3D_ELEMENTS</source>
-      <translation>レポートの 3 D を形成</translation>
+      <translation>3D要素のアスペクト比</translation>
     </message>
     <message>
       <source>ASPECTRATIO_ELEMENTS</source>
-      <translation>レポート フォーム</translation>
+      <translation>アスペクト比</translation>
     </message>
     <message>
       <source>COL_ALGO_HEADER</source>
@@ -125,7 +125,7 @@
     </message>
     <message>
       <source>COMPERR_WARNING</source>
-      <translation>COMPERR_WARNING</translation>
+      <translation>警告</translation>
     </message>
     <message>
       <source>COMPERR_UNKNOWN</source>
@@ -140,8 +140,12 @@
       <translation>スロット図形に関連付けられている要素がないです。</translation>
     </message>
     <message>
+      <source>COMPERR_BAD_PARMETERS</source>
+      <translation>無効な入力パラメータ</translation>
+    </message>
+    <message>
       <source>EDITERR_NO_MEDIUM_ON_GEOM</source>
-      <translation>いくつか (マジェンタ色で表示されている) ノード環境歪んだ要素を避けるために places\n のジオメトリではありません。</translation>
+      <translation>ノードが （マジェンタ色で図示） 環境によって歪んだ要素を避けるためにジオメトリに配置されません。</translation>
     </message>
     <message>
       <source>SMESH_GEOM</source>
@@ -217,11 +221,11 @@
     </message>
     <message>
       <source>MEN_ASPECT</source>
-      <translation>アスペクト比</translation>
+      <translation>レポート フォーム</translation>
     </message>
     <message>
       <source>MEN_ASPECT_3D</source>
-      <translation>アスペクト比 3D</translation>
+      <translation>レポートの 3 D を形成</translation>
     </message>
     <message>
       <source>MEN_AUTO_COLOR</source>
@@ -233,7 +237,7 @@
     </message>
     <message>
       <source>MEN_BUILD_COMPOUND</source>
-      <translation>コンパウンドの作成</translation>
+      <translation>アセンブリをビルド</translation>
     </message>
     <message>
       <source>MEN_COPY_MESH</source>
@@ -249,7 +253,7 @@
     </message>
     <message>
       <source>MEN_COMPUTE</source>
-      <translation>計算</translation>
+      <translation>計算します。</translation>
     </message>
     <message>
       <source>MEN_PRECOMPUTE</source>
@@ -377,7 +381,7 @@
     </message>
     <message>
       <source>MEN_BALL</source>
-      <translation>粒子</translation>
+      <translation>要素粒子</translation>
     </message>
     <message>
       <source>MEN_BALLS</source>
@@ -429,7 +433,7 @@
     </message>
     <message>
       <source>MEN_EXPORT_GMF</source>
-      <translation>組み換えをエクスポートします。</translation>
+      <translation>GMF形式でエクスポート</translation>
     </message>
     <message>
       <source>MEN_EXPORT_SAUV</source>
@@ -445,7 +449,7 @@
     </message>
     <message>
       <source>MEN_EXTRUSION</source>
-      <translation>面の押出し</translation>
+      <translation>Extrusion</translation>
     </message>
     <message>
       <source>MEN_EXTRUSION_ALONG</source>
@@ -453,7 +457,7 @@
     </message>
     <message>
       <source>MEN_FACES</source>
-      <translation>フェース</translation>
+      <translation>Faces</translation>
     </message>
     <message>
       <source>MEN_FILE</source>
@@ -465,7 +469,7 @@
     </message>
     <message>
       <source>TOP_REORIENT_2D</source>
-      <translation>ベクトルによると顔をリダイレクトします。</translation>
+      <translation>ベクトルによってフェースの向きを変える</translation>
     </message>
     <message>
       <source>MEN_REORIENT_2D</source>
@@ -473,7 +477,7 @@
     </message>
     <message>
       <source>STB_REORIENT_2D</source>
-      <translation>ベクトルによると顔をリダイレクトします。</translation>
+      <translation>ベクトルによってフェースの向きを変える</translation>
     </message>
     <message>
       <source>TOP_FIND_ELEM</source>
@@ -649,7 +653,7 @@
     </message>
     <message>
       <source>MEN_GMF</source>
-      <translation>GMF file</translation>
+      <translation>GMFファイル</translation>
     </message>
     <message>
       <source>MEN_IMPORT_SAUV</source>
@@ -661,7 +665,7 @@
     </message>
     <message>
       <source>MEN_MERGE</source>
-      <translation>ノードを結合します。</translation>
+      <translation>節点の結合</translation>
     </message>
     <message>
       <source>MEN_MERGE_ELEMENTS</source>
@@ -713,43 +717,43 @@
     </message>
     <message>
       <source>MEN_BASIC_PROPERTIES</source>
-      <translation>MEN_BASIC_PROPERTIES</translation>
+      <translation>基本的なプロパティ</translation>
     </message>
     <message>
       <source>MEN_MEASURE_LENGTH</source>
-      <translation>MEN_MEASURE_LENGTH</translation>
+      <translation>長さ</translation>
     </message>
     <message>
       <source>STB_MEASURE_LENGTH</source>
-      <translation>STB_MEASURE_LENGTH</translation>
+      <translation>選択したオブジェクトのすべての 1 次元要素の長さの合計を計算します。</translation>
     </message>
     <message>
       <source>TOP_MEASURE_LENGTH</source>
-      <translation>TOP_MEASURE_LENGTH</translation>
+      <translation>長さ</translation>
     </message>
     <message>
       <source>MEN_MEASURE_AREA</source>
-      <translation>MEN_MEASURE_AREA</translation>
+      <translation>エリア</translation>
     </message>
     <message>
       <source>STB_MEASURE_AREA</source>
-      <translation>STB_MEASURE_AREA</translation>
+      <translation>選択したオブジェクトのすべての 2D 要素の領域の合計を計算します。</translation>
     </message>
     <message>
       <source>TOP_MEASURE_AREA</source>
-      <translation>TOP_MEASURE_AREA</translation>
+      <translation>エリア</translation>
     </message>
     <message>
       <source>MEN_MEASURE_VOLUME</source>
-      <translation>MEN_MEASURE_VOLUME</translation>
+      <translation>ボリューム</translation>
     </message>
     <message>
       <source>STB_MEASURE_VOLUME</source>
-      <translation>STB_MEASURE_VOLUME</translation>
+      <translation>選択したオブジェクトのすべての 3 D 要素の量の合計を計算します。</translation>
     </message>
     <message>
       <source>TOP_MEASURE_VOLUME</source>
-      <translation>TOP_MEASURE_VOLUME</translation>
+      <translation>ボリューム</translation>
     </message>
     <message>
       <source>MEN_MOVE</source>
@@ -869,7 +873,7 @@
     </message>
     <message>
       <source>MEN_OVERALL_MESH_QUALITY</source>
-      <translation>MEN_OVERALL_MESH_QUALITY</translation>
+      <translation>全体的なメッシュの品質</translation>
     </message>
     <message>
       <source>MEN_DISTRIBUTION_CTRL</source>
@@ -893,7 +897,7 @@
     </message>
     <message>
       <source>MEN_REVOLUTION</source>
-      <translation>回転</translation>
+      <translation>Revolution</translation>
     </message>
     <message>
       <source>MEN_ROT</source>
@@ -945,7 +949,7 @@
     </message>
     <message>
       <source>MEN_SKEW</source>
-      <translation>スキュー</translation>
+      <translation>傾斜</translation>
     </message>
     <message>
       <source>MEN_SMOOTH</source>
@@ -953,7 +957,7 @@
     </message>
     <message>
       <source>MEN_STD_INFO</source>
-      <translation>メッシュに関する情報</translation>
+      <translation>標準的なメッシュ情報</translation>
     </message>
     <message>
       <source>MEN_IMPORT_STL</source>
@@ -969,7 +973,7 @@
     </message>
     <message>
       <source>MEN_TAPER</source>
-      <translation>コーン</translation>
+      <translation>Cone</translation>
     </message>
     <message>
       <source>MEN_TETRA</source>
@@ -1053,11 +1057,11 @@
     </message>
     <message>
       <source>MEN_WHAT_IS</source>
-      <translation>Whatis</translation>
+      <translation>メッシュ要素について</translation>
     </message>
     <message>
       <source>MEN_WIRE</source>
-      <translation>ワイヤー</translation>
+      <translation>Wires</translation>
     </message>
     <message>
       <source>MEN_SPLIT_TO_TETRA</source>
@@ -1113,7 +1117,7 @@
     </message>
     <message>
       <source>MESH_STANDALONE_GRP_CHOSEN</source>
-      <translation>ジオメトリにリンクして、グループを選択: %1。スタンドアロンのグループに変換しますか。</translation>
+      <translation>ジオメトリにリンクされているグループが選択されている： %1。スタンドアロン アレイに変換しますか。</translation>
     </message>
     <message>
       <source>NODE_ID</source>
@@ -1137,7 +1141,7 @@
     </message>
     <message>
       <source>SMESHGUI_INVALID_PARAMETERS</source>
-      <translation>指定されたパラメーターが正しくありません。ください。 修正し、もう一度やり直してください。</translation>
+      <translation>指定されたパラメーターが正しくありません。を修正するおかげで、再度実行してください</translation>
     </message>
     <message>
       <source>SMESH_ADD_ALGORITHM</source>
@@ -1181,23 +1185,23 @@
     </message>
     <message>
       <source>SMESH_ADD_HYPOTHESIS</source>
-      <translation>前提条件</translation>
+      <translation>詳細設定</translation>
     </message>
     <message>
       <source>SMESH_ADD_HYPOTHESIS_TITLE</source>
-      <translation>仮説の割り当て</translation>
+      <translation>詳細設定の割り当て</translation>
     </message>
     <message>
       <source>SMESH_ADD_HYP_WRN</source>
-      <translation>"1%"が割り当てられた。しかし:。</translation>
+      <translation>'%' は帰因させる、しかし：</translation>
     </message>
     <message>
       <source>SMESH_ADD_OCTA</source>
-      <translation>6角柱を追加します。</translation>
+      <translation>6角柱の追加</translation>
     </message>
     <message>
       <source>SMESH_ADD_OCTA_TITLE</source>
-      <translation>6角柱を追加します。</translation>
+      <translation>6角柱の追加</translation>
     </message>
     <message>
       <source>SMESH_ADD_POLYGON</source>
@@ -1217,11 +1221,11 @@
     </message>
     <message>
       <source>SMESH_ADD_PYRAMID</source>
-      <translation>ピラミッドを追加します。</translation>
+      <translation>ピラミッドの追加</translation>
     </message>
     <message>
       <source>SMESH_ADD_PYRAMID_TITLE</source>
-      <translation>ピラミッドを追加します。</translation>
+      <translation>ピラミッドの追加</translation>
     </message>
     <message>
       <source>SMESH_ADD_QUADRANGLE</source>
@@ -1269,7 +1273,7 @@
     </message>
     <message>
       <source>SMESH_ADD_BIQUADRATIC_TRIANGLE_TITLE</source>
-      <translation>SMESH_ADD_BIQUADRATIC_TRIANGLE_TITLE</translation>
+      <translation>バイカッド三角形を追加します。</translation>
     </message>
     <message>
       <source>SMESH_ADD_SUBMESH</source>
@@ -1277,11 +1281,11 @@
     </message>
     <message>
       <source>SMESH_ADD_TETRAS</source>
-      <translation>四面体を追加します。</translation>
+      <translation>四面体の追加</translation>
     </message>
     <message>
       <source>SMESH_ADD_TETRAS_TITLE</source>
-      <translation>四面体を追加します。</translation>
+      <translation>四面体の追加</translation>
     </message>
     <message>
       <source>SMESH_ADD_TO_GROUP</source>
@@ -1309,11 +1313,11 @@
     </message>
     <message>
       <source>SMESH_AUTO_DIM</source>
-      <translation>SMESH_AUTO_DIM</translation>
+      <translation>自動的に空間の寸法を定義します。</translation>
     </message>
     <message>
       <source>SMESH_REQUIRED_GROUPS</source>
-      <translation>必要なエンティティのグループを作成します。</translation>
+      <translation>必要な種類のグループを作成します。</translation>
     </message>
     <message>
       <source>SMESH_AVAILABLE</source>
@@ -1397,7 +1401,7 @@
     </message>
     <message>
       <source>SMESH_BUT_OK</source>
-      <translation>Ok(&amp;O)</translation>
+      <translation>わかりました(&amp;O)</translation>
     </message>
     <message>
       <source>SMESH_BUT_OVERWRITE</source>
@@ -1421,11 +1425,11 @@
     </message>
     <message>
       <source>SMESH_CANT_ADD_HYP</source>
-      <translation>"1%"を割り当てることができません:</translation>
+      <translation>「%1」を割り当てることができません。</translation>
     </message>
     <message>
       <source>SMESH_CANT_RM_HYP</source>
-      <translation>"%1"の割り当て解除ができませんでした。</translation>
+      <translation>Désassigner '%' にできません。</translation>
     </message>
     <message>
       <source>SMESH_CHECK_COLOR</source>
@@ -1457,7 +1461,7 @@
     </message>
     <message>
       <source>SMESH_CONTINUE_MESH_VISUALIZATION</source>
-      <translation>メッシュ表示にはメモリ不足でアプリケーションがクラッシュした様です。\n表示を継続しますか？</translation>
+      <translation>システムは、アプリケーションをクラッシュさせることができますメッシュを表示するメモリが不足実行するようです。視聴続行しますか。</translation>
     </message>
     <message>
       <source>SMESH_COORDINATES</source>
@@ -1525,11 +1529,11 @@
     </message>
     <message>
       <source>SMESH_DRS_4</source>
-      <translation>ファイルが正しくない、データが不足しています。</translation>
+      <translation>MED ファイルは下位の接続の要素を格納します。彼らは読まれていません。</translation>
     </message>
     <message>
       <source>SMESH_DRS_5</source>
-      <translation>SMESH_DRS_5</translation>
+      <translation>ファイルが正しくない、データが不足しています。</translation>
     </message>
     <message>
       <source>SMESH_DRS_EMPTY</source>
@@ -1557,11 +1561,11 @@
     </message>
     <message>
       <source>SMESH_BALL_ELEM</source>
-      <translation>粒子</translation>
+      <translation>要素粒子</translation>
     </message>
     <message>
       <source>SMESH_BALL</source>
-      <translation>粒子</translation>
+      <translation>要素粒子</translation>
     </message>
     <message>
       <source>SMESH_BALLS</source>
@@ -1569,7 +1573,7 @@
     </message>
     <message>
       <source>SMESH_EDGE</source>
-      <translation>エッジ</translation>
+      <translation>Edge</translation>
     </message>
     <message>
       <source>SMESH_EDGES</source>
@@ -1621,35 +1625,35 @@
     </message>
     <message>
       <source>SMESH_EXPORT_FAILED</source>
-      <translation>メッシュをエクスポートできませんでした。ディスク上の空き領域を確認します。</translation>
+      <translation>メッシュをエクスポートすることができません。ディスクの空き領域を確認してください。</translation>
     </message>
     <message>
       <source>SMESH_EXPORT_MED_DUPLICATED_GRP</source>
-      <translation>メッシュ"%1"の中に重複したグループの名前があります。エクスポートとそれらの名前変更をキャンセルすることができます。さもなければ結果ファイルの中にできるいくつかグループ名がstudyと一致しなくなります。続行しますか。</translation>
+      <translation>「%1」メッシュ内で重複するグループの名前です。エクスポートをキャンセルすることができ、名前の変更、結果の MED ファイル名に非グループの場合は研究の名前を一致しません。続行しますか。</translation>
     </message>
     <message>
       <source>SMESH_EXPORT_MED_DUPLICATED_MESH_NAMES</source>
-      <translation>メッシュと同じ名前の選択であります。結果のファイルが正しくないことが可能です。続行しますか。</translation>
+      <translation>選択範囲内の同じ名前を持つメッシュがあります。結果のファイルが正しい可能性が。続行しますか。</translation>
     </message>
     <message>
       <source>SMESH_EXPORT_MED_V2_1</source>
-      <translation>メッシュ "%1" を MED 2.1に出力する際、多角形及び多面体要素があると失敗します。正しく出力できるよう MED 2.2をご使用ください。MED 2.1 へのエクスポートを実行しますか？</translation>
+      <translation>多角形、多面体要素は正しいエクスポート用 MED 2.1 MED 2.2 にメッシュ '%' のエクスポートの場合省略されます。MED 2.1 をエクスポートしますか。</translation>
     </message>
     <message>
       <source>SMESH_EXPORT_MED_VERSION_COLLISION</source>
-      <translation>ファイル"%1"のMED バージョンはわからない、もしくは選択したバージョンと一致しません。上書きしますか？</translation>
+      <translation>ファイル「%1」MED バージョンは知られていないか、選択したバージョンと一致しません。ファイルを上書きしますか。</translation>
     </message>
     <message>
       <source>SMESH_EXPORT_MED_MESH_NAMES_COLLISION</source>
-      <translation>選択したファイルはすでに次に示す名前のメッシュに含まれています。:\n %1\n\n結果ファイルは、正しくないかもしれません。 \nそれらのファイルを上書きしますか？</translation>
+      <translation>選択したファイルには既に次の名を持つメッシュが含まれています: %1 結果ファイルが正しくない可能性があります。ファイルを上書きしますか。</translation>
     </message>
     <message>
       <source>EXPORT_NOT_SUPPORTED</source>
-      <translation>名前"%1"のメッシュを %2に出力します。\n%3 は無視されます \n続行しますか？。</translation>
+      <translation>名前 '%1' を %2 %3 とメッシュのエクスポートは無視されます。続行しますか。</translation>
     </message>
     <message>
       <source>SMESH_EXTRUSION</source>
-      <translation>押出し</translation>
+      <translation>Extrusion</translation>
     </message>
     <message>
       <source>SMESH_EXTRUSION_TO_DISTANCE</source>
@@ -1661,11 +1665,11 @@
     </message>
     <message>
       <source>SMESH_FACE</source>
-      <translation>フェース</translation>
+      <translation>Face</translation>
     </message>
     <message>
       <source>SMESH_FACES</source>
-      <translation>SMESH_FACES</translation>
+      <translation>Faces</translation>
     </message>
     <message>
       <source>SMESH_FEATUREANGLE</source>
@@ -1677,7 +1681,7 @@
     </message>
     <message>
       <source>SMESH_FILE_EXISTS</source>
-      <translation>ファイル"%1"は既に存在します。再書き込み、またはエクスポートするデータを追加しますか。</translation>
+      <translation>ファイル"%1"は既に存在します。それを書き直すか、エクスポートされたデータを追加したいですか？</translation>
     </message>
     <message>
       <source>SMESH_FONT_ARIAL</source>
@@ -1773,7 +1777,7 @@
     </message>
     <message>
       <source>SMESH_HYP_12</source>
-      <translation>ジオメトリ アルゴリズムと一致しません、アルゴリズムでサポートされているジオメトリのマニュアルを参照してください</translation>
+      <translation>ジオメトリは、アルゴリズムと一致しません、アルゴリズムでサポートされるジオメトリのマニュアルを参照してください</translation>
     </message>
     <message>
       <source>SMESH_HYP_13</source>
@@ -1861,7 +1865,7 @@
     </message>
     <message>
       <source>SMESH_LOGARITHMIC_SCALARBAR</source>
-      <translation>SMESH_LOGARITHMIC_SCALARBAR</translation>
+      <translation>対数</translation>
     </message>
     <message>
       <source>SMESH_MAKE_GROUPS</source>
@@ -1885,7 +1889,7 @@
     </message>
     <message>
       <source>SMESH_MEN_APPLIED_HYPOTHESIS</source>
-      <translation>前提条件の適用</translation>
+      <translation>詳細設定の適用</translation>
     </message>
     <message>
       <source>SMESH_MEN_COMPONENT</source>
@@ -1893,7 +1897,7 @@
     </message>
     <message>
       <source>SMESH_MEN_HYPOTHESIS</source>
-      <translation>前提条件</translation>
+      <translation>詳細設定</translation>
     </message>
     <message>
       <source>SMESH_MEN_SubMeshesOnCompound</source>
@@ -1981,7 +1985,7 @@
     </message>
     <message>
       <source>SMESH_MESHINFO_FACES</source>
-      <translation>フェース</translation>
+      <translation>Faces</translation>
     </message>
     <message>
       <source>SMESH_MESHINFO_HEXAS</source>
@@ -2117,7 +2121,7 @@
     </message>
     <message>
       <source>SMESH_OBJECT_HYPOTHESIS</source>
-      <translation>前提条件</translation>
+      <translation>詳細設定</translation>
     </message>
     <message>
       <source>SMESH_OBJECT_MESH</source>
@@ -2189,7 +2193,7 @@
     </message>
     <message>
       <source>SMESH_PLANE</source>
-      <translation>平面</translation>
+      <translation>Plane</translation>
     </message>
     <message>
       <source>SMESH_POINT</source>
@@ -2261,19 +2265,19 @@
     </message>
     <message>
       <source>PREF_GROUP_NUMBERING</source>
-      <translation>PREF_GROUP_NUMBERING</translation>
+      <translation>番号</translation>
     </message>
     <message>
       <source>PREF_NUMBERING_NODE</source>
-      <translation>PREF_NUMBERING_NODE</translation>
+      <translation>ノード: 色</translation>
     </message>
     <message>
       <source>PREF_NUMBERING_ELEM</source>
-      <translation>PREF_NUMBERING_ELEM</translation>
+      <translation>エッジ: 色</translation>
     </message>
     <message>
       <source>PREF_NUMBERING_FONT</source>
-      <translation>PREF_NUMBERING_FONT</translation>
+      <translation>フォント</translation>
     </message>
     <message>
       <source>SMESH_PREFERENCES_SCALARBAR</source>
@@ -2393,7 +2397,7 @@
     </message>
     <message>
       <source>MEN_BIQUADRATIC_QUADRANGLE</source>
-      <translation>バイカッド四角</translation>
+      <translation>ラグランジュ２次四角形</translation>
     </message>
     <message>
       <source>TOP_BIQUADRATIC_QUADRANGLE</source>
@@ -2405,23 +2409,23 @@
     </message>
     <message>
       <source>SMESH_BIQUADRATIC_TRIANGLE</source>
-      <translation>SMESH_BIQUADRATIC_TRIANGLE</translation>
+      <translation>バイカッド三角形</translation>
     </message>
     <message>
       <source>SMESH_BIQUADRATIC_TRIANGLES</source>
-      <translation>SMESH_BIQUADRATIC_TRIANGLES</translation>
+      <translation>バイカッド三角形</translation>
     </message>
     <message>
       <source>MEN_BIQUADRATIC_TRIANGLE</source>
-      <translation>MEN_BIQUADRATIC_TRIANGLE</translation>
+      <translation>ラグランジュ２次三角形</translation>
     </message>
     <message>
       <source>TOP_BIQUADRATIC_TRIANGLE</source>
-      <translation>TOP_BIQUADRATIC_TRIANGLE</translation>
+      <translation>バイカッド三角形</translation>
     </message>
     <message>
       <source>STB_BIQUADRATIC_TRIANGLE</source>
-      <translation>STB_BIQUADRATIC_TRIANGLE</translation>
+      <translation>バイカッド三角形</translation>
     </message>
     <message>
       <source>SMESH_QUADRATIC_TETRAHEDRON</source>
@@ -2485,11 +2489,11 @@
     </message>
     <message>
       <source>SMESH_REVOLUTION</source>
-      <translation>公転</translation>
+      <translation>Revolution</translation>
     </message>
     <message>
       <source>SMESH_RM_HYP_WRN</source>
-      <translation>"1%"は未割り当てです。しかし:</translation>
+      <translation>「%1」が原因ではない、しかし：</translation>
     </message>
     <message>
       <source>SMESH_ROTATION</source>
@@ -2629,7 +2633,7 @@
     </message>
     <message>
       <source>SMESH_VECTOR</source>
-      <translation>ベクトル</translation>
+      <translation>Vector</translation>
     </message>
     <message>
       <source>SMESH_VERTICAL</source>
@@ -2657,11 +2661,11 @@
     </message>
     <message>
       <source>SMESH_VISU_PROBLEM_MEMORY</source>
-      <translation>SMESH_VISU_PROBLEM_MEMORY</translation>
+      <translation>メッシュの表示の原因で失敗おそらくメモリ不足</translation>
     </message>
     <message>
       <source>SMESH_VISU_PROBLEM_CLEAR</source>
-      <translation>メッシュを表示できません、ためすべてのビジュアル データは削除されている、メッセージを表示する十分なメモリがクラッシュ、アプリケーション。アプリケーションがクラッシュする前に作業内容を保存します。</translation>
+      <translation>メッシュ、メッセージを表示する十分なメモリを視覚化することは不可能したがってすべてのビジュアル データのため削除されているクラッシュ アプリケーションにありません。アプリケーションがクラッシュする前に作業内容を保存します。</translation>
     </message>
     <message>
       <source>SMESH_VOLUME</source>
@@ -2669,7 +2673,7 @@
     </message>
     <message>
       <source>SMESH_VOLUMES</source>
-      <translation>SMESH_VOLUMES</translation>
+      <translation>ボリューム</translation>
     </message>
     <message>
       <source>SMESH_WARNING</source>
@@ -2705,7 +2709,7 @@
     </message>
     <message>
       <source>SMESH_WRN_HYPOTHESIS_NOTEXIST</source>
-      <translation>仮説やアルゴリズムは存在しません。</translation>
+      <translation>詳細設定やアルゴリズムは存在しません。</translation>
     </message>
     <message>
       <source>SMESH_WRN_MISSING_PARAMETERS</source>
@@ -2733,11 +2737,11 @@
     </message>
     <message>
       <source>SMESH_WRN_SIZE_LIMIT_EXCEEDED</source>
-      <translation>presentationは自動更新されておりません。: 新しいメッシュサイズ(%1 要素)は現在のサイズ制限(%2 要素)を越えております。メッシュモジュール設定を確認してください。</translation>
+      <translation>プレゼンテーションが更新されていない最後に自動的に: メッシュ (%1 項目) の新しいサイズが現在のサイズ制限 (%2 要素) を超えています。メッシュのモジュール設定の制限を確認してください。</translation>
     </message>
     <message>
       <source>SMESH_WRN_SIZE_INC_LIMIT_EXCEEDED</source>
-      <translation>SMESH_WRN_SIZE_INC_LIMIT_EXCEEDED</translation>
+      <translation>新しいメッシュ サイズ (%1 項目) 自動更新 (%2 項目) の現在のサイズ制限を超えています。次の要素が表示されない: 3%。「エンティティの表示」メニューを使用して表示します。</translation>
     </message>
     <message>
       <source>SMESH_WRN_WARNING</source>
@@ -2829,7 +2833,7 @@
     </message>
     <message>
       <source>STB_COMPUTE</source>
-      <translation>計算</translation>
+      <translation>計算します。</translation>
     </message>
     <message>
       <source>STB_PRECOMPUTE</source>
@@ -2853,11 +2857,11 @@
     </message>
     <message>
       <source>STB_CONV_TO_QUAD</source>
-      <translation>二次メッシュの作成</translation>
+      <translation>2次要素の追加</translation>
     </message>
     <message>
       <source>STB_2D_FROM_3D</source>
-      <translation>Border 要素を作成します。</translation>
+      <translation>境界要素の作成</translation>
     </message>
     <message>
       <source>STB_MESH_ORDER</source>
@@ -2925,7 +2929,7 @@
     </message>
     <message>
       <source>STB_0D_ON_ALL_NODES</source>
-      <translation>0 D 要素の要素ノードを</translation>
+      <translation>ノードに d の要素を作成します。</translation>
     </message>
     <message>
       <source>STB_ELEMS0D</source>
@@ -2941,7 +2945,7 @@
     </message>
     <message>
       <source>STB_EDGE</source>
-      <translation>エッジを作成</translation>
+      <translation>Edge</translation>
     </message>
     <message>
       <source>STB_EDGES</source>
@@ -2977,7 +2981,7 @@
     </message>
     <message>
       <source>STB_EXPORT_GMF</source>
-      <translation>組み換えファイルにエクスポートします。</translation>
+      <translation>組み換えをエクスポートします。</translation>
     </message>
     <message>
       <source>STB_EXPORT_SAUV</source>
@@ -2993,7 +2997,7 @@
     </message>
     <message>
       <source>STB_EXTRUSION</source>
-      <translation>押し出しを作成</translation>
+      <translation>Extrusion</translation>
     </message>
     <message>
       <source>STB_EXTRUSION_ALONG</source>
@@ -3001,7 +3005,7 @@
     </message>
     <message>
       <source>STB_FACES</source>
-      <translation>フェース</translation>
+      <translation>Faces</translation>
     </message>
     <message>
       <source>STB_BARE_BORDER_VOLUME</source>
@@ -3009,7 +3013,7 @@
     </message>
     <message>
       <source>STB_BARE_BORDER_FACE</source>
-      <translation>顔の皮膚 1 d 要素が不足しています。</translation>
+      <translation>むき出しの境界線をもつフェース</translation>
     </message>
     <message>
       <source>STB_OVER_CONSTRAINED_VOLUME</source>
@@ -3065,7 +3069,7 @@
     </message>
     <message>
       <source>STB_MAP</source>
-      <translation>軸に目盛り付け</translation>
+      <translation>パターンマッピング</translation>
     </message>
     <message>
       <source>STB_MAX_ELEMENT_LENGTH_2D</source>
@@ -3237,7 +3241,7 @@
     </message>
     <message>
       <source>STB_REVOLUTION</source>
-      <translation>公転を作成</translation>
+      <translation>Revolution</translation>
     </message>
     <message>
       <source>STB_ROT</source>
@@ -3293,7 +3297,7 @@
     </message>
     <message>
       <source>STB_TAPER</source>
-      <translation>コーン</translation>
+      <translation>Cone</translation>
     </message>
     <message>
       <source>STB_TETRA</source>
@@ -3305,7 +3309,7 @@
     </message>
     <message>
       <source>STB_SCALE</source>
-      <translation>オブジェクトのサイズを変更</translation>
+      <translation>スケーリング</translation>
     </message>
     <message>
       <source>STB_DUPLICATE_NODES</source>
@@ -3365,59 +3369,59 @@
     </message>
     <message>
       <source>STB_WHAT_IS</source>
-      <translation>Whatis</translation>
+      <translation>要素またはメッシュ ノードについて</translation>
     </message>
     <message>
       <source>STB_WIRE</source>
-      <translation>ワイヤーを構築</translation>
+      <translation>ワイヤー</translation>
     </message>
     <message>
       <source>TAPER_ELEMENTS</source>
-      <translation>コーン</translation>
+      <translation>Cone</translation>
     </message>
     <message>
       <source>TB_ADD</source>
-      <translation>TB_ADD</translation>
+      <translation>要素追加ツールバー</translation>
     </message>
     <message>
       <source>TB_ADDNON</source>
-      <translation>TB_ADDNON</translation>
+      <translation>非線形要素追加ツールバー</translation>
     </message>
     <message>
       <source>TB_REM</source>
-      <translation>TB_REM</translation>
+      <translation>削除ツールバー</translation>
     </message>
     <message>
       <source>TB_RENUMBER</source>
-      <translation>TB_RENUMBER</translation>
+      <translation>番号変更ツールバー</translation>
     </message>
     <message>
       <source>TB_TRANSFORM</source>
-      <translation>TB_TRANSFORM</translation>
+      <translation>変換ツールバー</translation>
     </message>
     <message>
       <source>TB_CTRL0D</source>
-      <translation>TB_CTRL0D</translation>
+      <translation>節点制御ツールバー</translation>
     </message>
     <message>
       <source>TB_CTRL1D</source>
-      <translation>TB_CTRL1D</translation>
+      <translation>エッジ 制御ツールバー</translation>
     </message>
     <message>
       <source>TB_CTRL2D</source>
-      <translation>TB_CTRL2D</translation>
+      <translation>面制御ツールバー</translation>
     </message>
     <message>
       <source>TB_CTRL3D</source>
-      <translation>TB_CTRL3D</translation>
+      <translation>ボリューム 制御 ツールバー</translation>
     </message>
     <message>
       <source>TB_MEASUREM</source>
-      <translation>TB_MEASUREM</translation>
+      <translation>測定ツールバー</translation>
     </message>
     <message>
       <source>TB_DISP_MODE</source>
-      <translation>可視化モード バー</translation>
+      <translation>表示モード バー</translation>
     </message>
     <message>
       <source>TB_HYPO</source>
@@ -3425,23 +3429,23 @@
     </message>
     <message>
       <source>TB_MESH</source>
-      <translation>メッシュのバー</translation>
+      <translation>メッシュ ツールバー</translation>
     </message>
     <message>
       <source>TB_GROUP</source>
-      <translation>TB_GROUP</translation>
+      <translation>グループツールバー</translation>
     </message>
     <message>
       <source>TB_INFO</source>
-      <translation>TB_INFO</translation>
+      <translation>情報ツールバー</translation>
     </message>
     <message>
       <source>TB_ADD1D</source>
-      <translation>TB_ADD1D</translation>
+      <translation>メッシュのバー</translation>
     </message>
     <message>
       <source>TB_MODIFY</source>
-      <translation>変更バー</translation>
+      <translation>変更ツールバー</translation>
     </message>
     <message>
       <source>TOP_ADV_INFO</source>
@@ -3489,7 +3493,7 @@
     </message>
     <message>
       <source>TOP_COMPUTE</source>
-      <translation>計算</translation>
+      <translation>計算します。</translation>
     </message>
     <message>
       <source>TOP_PRECOMPUTE</source>
@@ -3501,11 +3505,11 @@
     </message>
     <message>
       <source>TOP_CONNECTION</source>
-      <translation>境界線上の複数の接続</translation>
+      <translation>複数の面に属する</translation>
     </message>
     <message>
       <source>TOP_CONNECTION_2D</source>
-      <translation>境界線上の複数の接続 2 D</translation>
+      <translation>複数の面に属する 2D</translation>
     </message>
     <message>
       <source>TOP_CONSTRUCT_GROUP</source>
@@ -3513,11 +3517,11 @@
     </message>
     <message>
       <source>TOP_CONV_TO_QUAD</source>
-      <translation>二次メッシュの作成</translation>
+      <translation>2次要素の追加</translation>
     </message>
     <message>
       <source>TOP_2D_FROM_3D</source>
-      <translation>Border 要素を作成します。</translation>
+      <translation>境界要素の作成</translation>
     </message>
     <message>
       <source>TOP_MESH_ORDER</source>
@@ -3581,7 +3585,7 @@
     </message>
     <message>
       <source>TOP_0D_ON_ALL_NODES</source>
-      <translation>0 D 要素の要素ノードを</translation>
+      <translation>ノードに d の要素を作成します。</translation>
     </message>
     <message>
       <source>TOP_ELEM0D</source>
@@ -3593,7 +3597,7 @@
     </message>
     <message>
       <source>TOP_BALL</source>
-      <translation>粒子</translation>
+      <translation>要素粒子</translation>
     </message>
     <message>
       <source>TOP_BALLS</source>
@@ -3601,7 +3605,7 @@
     </message>
     <message>
       <source>TOP_EDGE</source>
-      <translation>エッジを構築</translation>
+      <translation>Edge</translation>
     </message>
     <message>
       <source>TOP_EDGES</source>
@@ -3645,7 +3649,7 @@
     </message>
     <message>
       <source>TOP_EXTRUSION</source>
-      <translation>押し出しを作成</translation>
+      <translation>Extrusion</translation>
     </message>
     <message>
       <source>TOP_EXTRUSION_ALONG</source>
@@ -3653,7 +3657,7 @@
     </message>
     <message>
       <source>TOP_FACES</source>
-      <translation>フェース</translation>
+      <translation>Faces</translation>
     </message>
     <message>
       <source>TOP_BARE_BORDER_VOLUME</source>
@@ -3661,7 +3665,7 @@
     </message>
     <message>
       <source>TOP_BARE_BORDER_FACE</source>
-      <translation>顔の皮膚 1 d 要素が不足しています。</translation>
+      <translation>むき出しの境界線をもつフェース</translation>
     </message>
     <message>
       <source>TOP_OVER_CONSTRAINED_VOLUME</source>
@@ -3717,7 +3721,7 @@
     </message>
     <message>
       <source>TOP_MAP</source>
-      <translation>軸に目盛り付け</translation>
+      <translation>パターンマッピング</translation>
     </message>
     <message>
       <source>TOP_MAX_ELEMENT_LENGTH_2D</source>
@@ -3753,7 +3757,7 @@
     </message>
     <message>
       <source>TOP_IMPORT_GMF</source>
-      <translation>組み換えファイルのインポート</translation>
+      <translation>組み換えファイルをインポートします。</translation>
     </message>
     <message>
       <source>TOP_GMF</source>
@@ -3889,7 +3893,7 @@
     </message>
     <message>
       <source>TOP_REVOLUTION</source>
-      <translation>公転を作成</translation>
+      <translation>Revolution</translation>
     </message>
     <message>
       <source>TOP_ROT</source>
@@ -3945,7 +3949,7 @@
     </message>
     <message>
       <source>TOP_TAPER</source>
-      <translation>コーン</translation>
+      <translation>Cone</translation>
     </message>
     <message>
       <source>TOP_TETRA</source>
@@ -3957,7 +3961,7 @@
     </message>
     <message>
       <source>TOP_SCALE</source>
-      <translation>サイズを変更</translation>
+      <translation>スケーリング</translation>
     </message>
     <message>
       <source>TOP_DUPLICATE_NODES</source>
@@ -4017,11 +4021,11 @@
     </message>
     <message>
       <source>TOP_WHAT_IS</source>
-      <translation>Whatis</translation>
+      <translation>メッシュの要素に関する情報</translation>
     </message>
     <message>
       <source>TOP_WIRE</source>
-      <translation>ワイヤーを構築</translation>
+      <translation>Wires</translation>
     </message>
     <message>
       <source>UNKNOWN_CONTROL</source>
@@ -4029,7 +4033,7 @@
     </message>
     <message>
       <source>UPDATE_DESTINATION</source>
-      <translation>UPDATE_DESTINATION</translation>
+      <translation>宛先を更新します。</translation>
     </message>
     <message>
       <source>VOLUME_3D_ELEMENTS</source>
@@ -4109,7 +4113,7 @@
     </message>
     <message>
       <source>FULL_RECOMPUTE_QUESTION</source>
-      <translation>\n ワークフロー メッシュ、最後の完全計算後編集されて、\nceci は、正しい計算を防ぐことができます変更を拒否するには、全体のメッシュを再計算しますか?。</translation>
+      <translation>メッシュは、最後の完全な計算後編集されています、これは正しい計算を防ぐことができます。変更を破棄するメッシュ全体を再計算しますか。</translation>
     </message>
     <message>
       <source>SMESH_PREF_vol_precision</source>
@@ -4117,7 +4121,7 @@
     </message>
     <message>
       <source>SMESH_PRECISION_HINT</source>
-      <translation>メッシュモジュール設定の中の'%1'パラメータを用いて入力した値の精度を調整することができます。</translation>
+      <translation>パラメーターの入力値の有効桁数を変更することは 'メッシュ モジュール プリファレンスの 1' %。</translation>
     </message>
     <message>
       <source>REMOVE_ORPHAN_NODES_QUESTION</source>
@@ -4153,23 +4157,23 @@
     </message>
     <message>
       <source>DEP_OBJECT</source>
-      <translation>選択したオブジェクトは、別のオブジェクトの作成に使用されました。 削除することはできません。</translation>
+      <translation>選択したオブジェクトは、新しいものの作成に使用されました。このファイルは削除できません。</translation>
     </message>
     <message>
       <source>SMESH_FREERAM</source>
-      <translation>SMESH_FREERAM</translation>
+      <translation>Ram の空き容量</translation>
     </message>
     <message>
       <source>SMESH_GIGABYTE</source>
-      <translation>SMESH_GIGABYTE</translation>
+      <translation>%1 GB</translation>
     </message>
     <message>
       <source>MEN_SORT_CHILD_ITEMS</source>
-      <translation>MEN_SORT_CHILD_ITEMS</translation>
+      <translation>並べ替えの子供</translation>
     </message>
     <message>
       <source>STB_SORT_CHILD_ITEMS</source>
-      <translation>STB_SORT_CHILD_ITEMS</translation>
+      <translation>子アイテムを並べ替える</translation>
     </message>
   </context>
   <context>
@@ -4191,7 +4195,7 @@
     <name>SMESHGUI</name>
     <message>
       <source>NOT_A_VTK_VIEWER</source>
-      <translation>このコマンドは、VTK ウィンドウからのみです。VTK ウィンドウを開き、もう一度やり直してください。</translation>
+      <translation>このコマンドは、VTK ウィンドウからのみ使用できます。VTK ウィンドウを開き、もう一度やり直してください。</translation>
     </message>
     <message>
       <source>PREF_AUTO_GROUPS</source>
@@ -4231,11 +4235,11 @@
     </message>
     <message>
       <source>PREF_INCREMENTAL_LIMIT</source>
-      <translation>PREF_INCREMENTAL_LIMIT</translation>
+      <translation>増分限度額の確認</translation>
     </message>
     <message>
       <source>PREF_BACKFACE</source>
-      <translation>背面の色</translation>
+      <translation>カラー フロント バック</translation>
     </message>
     <message>
       <source>PREF_VOLUME</source>
@@ -4243,7 +4247,7 @@
     </message>
     <message>
       <source>PREF_REVERSEDVOLUME</source>
-      <translation>逆ボリューム ・ カラー</translation>
+      <translation>ボリューム ・ カラーを反転します。</translation>
     </message>
     <message>
       <source>PREF_WIREFRAME</source>
@@ -4303,7 +4307,7 @@
     </message>
     <message>
       <source>PREF_PREVIEW_COLOR</source>
-      <translation>PREF_PREVIEW_COLOR</translation>
+      <translation>プレビュー色</translation>
     </message>
     <message>
       <source>PREF_NOTIFY_MODE</source>
@@ -4335,23 +4339,23 @@
     </message>
     <message>
       <source>PREF_ELEM_INFO_GRP_DETAILS</source>
-      <translation>PREF_ELEM_INFO_GRP_DETAILS</translation>
+      <translation>Dl 情報 page'element のグループの詳細を見る</translation>
     </message>
     <message>
       <source>PREF_DUMP_BASE_INFO</source>
-      <translation>PREF_DUMP_BASE_INFO</translation>
+      <translation>基本情報の書き出し</translation>
     </message>
     <message>
       <source>PREF_DUMP_ELEM_INFO</source>
-      <translation>PREF_DUMP_ELEM_INFO</translation>
+      <translation>要素情報の書き出し</translation>
     </message>
     <message>
       <source>PREF_DUMP_ADD_INFO</source>
-      <translation>PREF_DUMP_ADD_INFO</translation>
+      <translation>追加情報の書き出し</translation>
     </message>
     <message>
       <source>PREF_DUMP_CTRL_INFO</source>
-      <translation>PREF_DUMP_CTRL_INFO</translation>
+      <translation>品質情報の書き出し</translation>
     </message>
     <message>
       <source>PREF_GPP_NODES_LIMIT</source>
@@ -4359,7 +4363,7 @@
     </message>
     <message>
       <source>PREF_CTRL_LIMIT</source>
-      <translation>PREF_CTRL_LIMIT</translation>
+      <translation>自動制御計算の制限</translation>
     </message>
     <message>
       <source>SMESH_PREF_GROUP_PRECISION</source>
@@ -4515,11 +4519,11 @@
     </message>
     <message>
       <source>PREF_WIDTH</source>
-      <translation>線の幅</translation>
+      <translation>線の太さ</translation>
     </message>
     <message>
       <source>PREF_OUTLINE_WIDTH</source>
-      <translation>アウトラインの幅</translation>
+      <translation>アウトラインの太さ</translation>
     </message>
     <message>
       <source>PREF_PREVIEW_CHUNK_SIZE</source>
@@ -4537,7 +4541,7 @@
     <name>SMESHGUI_Add0DElemsOnAllNodesDlg</name>
     <message>
       <source>CAPTION</source>
-      <translation>0 D 要素の要素ノードを</translation>
+      <translation>ノードに d の要素を作成します。</translation>
     </message>
     <message>
       <source>OBJ_BTN</source>
@@ -4545,14 +4549,14 @@
     </message>
     <message>
       <source>NB_NEW_0D</source>
-      <translation>%1 0 D 要素の作成</translation>
+      <translation>作成された %1 項目 d</translation>
     </message>
   </context>
   <context>
     <name>SMESHGUI_Add0DElemsOnAllNodesOp</name>
     <message>
       <source>NB_NEW_0D</source>
-      <translation>%1 0 D 要素の作成</translation>
+      <translation>作成された %1 項目 d</translation>
     </message>
   </context>
   <context>
@@ -4595,7 +4599,7 @@
     </message>
     <message>
       <source>SMESH_ADD_BIQUADRATIC_TRIANGLE</source>
-      <translation>SMESH_ADD_BIQUADRATIC_TRIANGLE</translation>
+      <translation>バイカッド三角形を追加します。</translation>
     </message>
     <message>
       <source>SMESH_CORNER_NODES</source>
@@ -4626,7 +4630,7 @@
     <name>SMESHGUI_BuildCompoundDlg</name>
     <message>
       <source>COMPOUND</source>
-      <translation>コンパウンド</translation>
+      <translation>Compound</translation>
     </message>
     <message>
       <source>COMPOUND_MESH</source>
@@ -4708,22 +4712,22 @@
     </message>
     <message>
       <source>GROUP_OF_BAD_MESH</source>
-      <translation>GROUP_OF_BAD_MESH</translation>
+      <translation>グループに不正メッシュ</translation>
     </message>
   </context>
   <context>
     <name>SMESHGUI_ComputeDlg_QThreadQDialog</name>
     <message>
       <source>CANCEL</source>
-      <translation>CANCEL</translation>
+      <translation>キャンセル</translation>
     </message>
     <message>
       <source>CANCELING</source>
-      <translation>CANCELING</translation>
+      <translation>キャンセルしています.</translation>
     </message>
     <message>
       <source>TITLE</source>
-      <translation>TITLE</translation>
+      <translation>計算</translation>
     </message>
   </context>
   <context>
@@ -4746,14 +4750,14 @@
     </message>
     <message>
       <source>COMPUTE</source>
-      <translation>計算</translation>
+      <translation>計算します。</translation>
     </message>
   </context>
   <context>
     <name>SMESHGUI_PrecomputeOp</name>
     <message>
       <source>CLEAR_SUBMESH_QUESTION</source>
-      <translation>一時 sous-maillages は、選択したジオメトリのプレビューの操作を作成しています。すべてのこれらの sous maillages を削除しますか。</translation>
+      <translation>一時的なサブメッシュを作成されている、選択したジオメトリのプレビュー中に。これらのすべてのサブ メッシュを削除しますか。</translation>
     </message>
     <message>
       <source>SMESH_WRN_NOTHING_PREVIEW</source>
@@ -4761,14 +4765,14 @@
     </message>
     <message>
       <source>SMESH_REJECT_MESH_ORDER</source>
-      <translation>Sous maillages の優先順位は、プレビューで変更されています。初期の優先度を復元しますか。</translation>
+      <translation>サブメッシュの優先順位は、プレビュー時に変更されました。初期の優先度を復元しますか。</translation>
     </message>
   </context>
   <context>
     <name>SMESHGUI_ConvToQuadDlg</name>
     <message>
       <source>CAPTION</source>
-      <translation>二次要素への変換／二次要素からの変換</translation>
+      <translation>2次要素の追加</translation>
     </message>
     <message>
       <source>MEDIUMNDS</source>
@@ -4788,7 +4792,7 @@
     </message>
     <message>
       <source>RADIOBTN_3</source>
-      <translation>RADIOBTN_3</translation>
+      <translation>Bi quadratique への変換します。</translation>
     </message>
     <message>
       <source>NON_CONFORM_WARNING</source>
@@ -4799,7 +4803,7 @@
     <name>SMESHGUI_ConvToQuadOp</name>
     <message>
       <source>MESH_IS_NOT_SELECTED</source>
-      <translation>選択したメッシュはありません。メッシュを選択し、もう一度やり直してください。</translation>
+      <translation>メッシュが選択されていないこのことを示すしてくださいもう一度やり直してください</translation>
     </message>
     <message>
       <source>REF_IS_NULL</source>
@@ -4810,7 +4814,7 @@
     <name>SMESHGUI_CreatePatternDlg</name>
     <message>
       <source>CAPTION</source>
-      <translation>パターンの作成</translation>
+      <translation>パターンマッピング</translation>
     </message>
     <message>
       <source>DEFAULT_2D</source>
@@ -4822,11 +4826,11 @@
     </message>
     <message>
       <source>ERROR_OF_CREATION</source>
-      <translation>情報の有効性を確認するには、地上の作成中に内部エラーが発生しました</translation>
+      <translation>グラウンド チェック、情報の妥当性の作成中に内部エラーが発生</translation>
     </message>
     <message>
       <source>ERROR_OF_SAVING</source>
-      <translation>フィルターのライブラリの保護でにエラーが発生しました。情報の有効性をチェックします。</translation>
+      <translation>地面の記録中に内部エラーが発生しました。ディスクの空き領域と、このファイルへの書き込み権限を確認してください。</translation>
     </message>
     <message>
       <source>ERR_LOADF_CANT_PROJECT</source>
@@ -4908,18 +4912,18 @@
     </message>
     <message>
       <source>TO_4_TRIA</source>
-      <translation>TO_4_TRIA</translation>
+      <translation>4 三角形にカットします。</translation>
     </message>
   </context>
   <context>
     <name>SMESHGUI_DeleteGroupDlg</name>
     <message>
       <source>CAPTION</source>
-      <translation>中身ごとグループの削除</translation>
+      <translation>グループとその内容を削除します。</translation>
     </message>
     <message>
       <source>NO_SELECTED_GROUPS</source>
-      <translation>選択したグループがない、グループを選択し、もう一度やり直してください。</translation>
+      <translation>あるなし選択したグループをグループを選択し、もう一度やり直してください</translation>
     </message>
     <message>
       <source>SELECTED_GROUPS</source>
@@ -4950,11 +4954,11 @@
     </message>
     <message>
       <source>SHOW_NODES_IDS</source>
-      <translation>SHOW_NODES_IDS</translation>
+      <translation>二重ノード Id を表示します。</translation>
     </message>
     <message>
       <source>SHOW_ELEMS_IDS</source>
-      <translation>SHOW_ELEMS_IDS</translation>
+      <translation>二重要素の Id を表示します。</translation>
     </message>
     <message>
       <source>EXCLUDE_GROUPS</source>
@@ -4985,7 +4989,7 @@
     </message>
     <message>
       <source>EXTRUSION_ALONG_PATH</source>
-      <translation>経路に沿って押出し</translation>
+      <translation>経路に沿って押し出し</translation>
     </message>
     <message>
       <source>EXTR_BAD_STARTING_NODE</source>
@@ -5063,7 +5067,7 @@
     <name>SMESHGUI_FilterDlg</name>
     <message>
       <source>BAD_SHAPE_NAME</source>
-      <translation>現在のstudyではジオメトリオブジェクト"%1"はありません、有効なオブジェクトを選択し、もう一度やり直してください。</translation>
+      <translation>本研究ではないオブジェクト ジオメトリ '%' がある、有効なオブジェクトを選択して、もう一度やり直してください。</translation>
     </message>
     <message>
       <source>CURRENT_DIALOG</source>
@@ -5103,23 +5107,23 @@
     </message>
     <message>
       <source>SHAPE_IS_NOT_A_CYLINDER</source>
-      <translation>"%1" 円筒面選択ではない円筒サーフェスともう一度やり直してください</translation>
+      <translation>"%1"は、円筒面を選択していないが、円筒面ともう一度やり直してください。</translation>
     </message>
     <message>
       <source>SHAPE_IS_NOT_A_FACE</source>
-      <translation>"%1" は面ではありません。\n面を選択してもう一度やり直してください。</translation>
+      <translation>"%1"は、顔を選択していないが、顔ともう一度やり直してください。</translation>
     </message>
     <message>
       <source>SHAPE_IS_NOT_A_PLANE</source>
-      <translation>"%1" は平面ではありません\n平面を選択し、もう一度やり直してください。</translation>
+      <translation>"%1"は計画を選択していないが、平面ともう一度やり直してください。</translation>
     </message>
     <message>
       <source>FACE_ID_NOT_SELECTED</source>
-      <translation>メッシュフェースが選択されていません。\nもう一度指定してやり直してください</translation>
+      <translation>標準顔メッシュが選択されていません。それを入力し、もう一度やり直してください。</translation>
     </message>
     <message>
       <source>NOT_FACE_ID</source>
-      <translation>"%1" では、顔、メッシュ内の有効な ID は一致しません。アドレスを選択し、もう一度やり直してください。</translation>
+      <translation>'%' は、メッシュの側の任意の有効な ID と一致します。面を選択し、もう一度やり直してください。</translation>
     </message>
     <message>
       <source>SOURCE</source>
@@ -5150,7 +5154,7 @@
     </message>
     <message>
       <source>ASSIGN_NEW_NAME</source>
-      <translation>ライブラリに既に"%1"追加フィルターに起因する"%2"の新しい名前名前フィルターが含まれています</translation>
+      <translation>ライブラリはすでにフィルターが含まれている名前 '%' で新しい名前 '%' は、追加のフィルターに起因します。</translation>
     </message>
     <message>
       <source>COPY_FROM_TLT</source>
@@ -5162,7 +5166,7 @@
     </message>
     <message>
       <source>EDGE</source>
-      <translation>エッジ</translation>
+      <translation>Edge</translation>
     </message>
     <message>
       <source>EDIT_LIB_TLT</source>
@@ -5174,39 +5178,39 @@
     </message>
     <message>
       <source>EMPTY_FILTER_NAME</source>
-      <translation>フィルターの名前を空の空でない名前です。</translation>
+      <translation>フィルター名を空が空でない名前を指定します。</translation>
     </message>
     <message>
       <source>ERROR_FILTER_NAME</source>
-      <translation>フィルター名は一意ではない別の名前を入力</translation>
+      <translation>フィルター名が一意でない別の名前を入力してください</translation>
     </message>
     <message>
       <source>ERROR_LOAD</source>
-      <translation>チェック ファイルをライブラリとそのプロパティの名前を読み込むことができません。</translation>
+      <translation>ライブラリのチェック、ライブラリ ファイルおよびそのプロパティの名前をロードすることはできません。</translation>
     </message>
     <message>
       <source>ERROR_OF_ADDING</source>
-      <translation>また、ライブラリに新しいフィルターの内部エラーが発生しました。情報の有効性をチェックします。</translation>
+      <translation>本屋で新しいフィルターのさらに内部エラーが発生しました。情報の有効性を確認します。</translation>
     </message>
     <message>
       <source>ERROR_OF_COPYING</source>
-      <translation>内部エラーをフィルターのコピーには、書店からが発生しました。情報の有効性をチェックします。</translation>
+      <translation>内部エラーが本屋からフィルターのコピーに発生しました。情報の有効性を確認します。</translation>
     </message>
     <message>
       <source>ERROR_OF_DELETING</source>
-      <translation>書店からフィルターを削除中に内部エラーが発生しました。情報の有効性をチェックします。</translation>
+      <translation>本屋からフィルターを削除すると内部エラーが発生しました。情報の有効性を確認します。</translation>
     </message>
     <message>
       <source>ERROR_OF_EDITING</source>
-      <translation>ライブラリ内のフィルターの編集で内部エラーが発生しました。情報の有効性をチェックします。</translation>
+      <translation>本屋でフィルターの版で内部エラーが発生しました。情報の有効性を確認します。</translation>
     </message>
     <message>
       <source>ERROR_OF_SAVING</source>
-      <translation>フィルターのライブラリの保護でにエラーが発生しました。情報の有効性をチェックします。</translation>
+      <translation>フィルターのライブラリの保全にエラーが発生しました。情報の有効性を確認します。</translation>
     </message>
     <message>
       <source>FACE</source>
-      <translation>顔</translation>
+      <translation>Face</translation>
     </message>
     <message>
       <source>FILTER</source>
@@ -5341,11 +5345,11 @@
     </message>
     <message>
       <source>CONNECTED_ELEMS</source>
-      <translation>CONNECTED_ELEMS</translation>
+      <translation>ドメインの要素</translation>
     </message>
     <message>
       <source>NUMBEROFNODESINELEMENT</source>
-      <translation>NUMBEROFNODESINELEMENT</translation>
+      <translation>要素内のノード数</translation>
     </message>
     <message>
       <source>COPY_FROM</source>
@@ -5373,11 +5377,11 @@
     </message>
     <message>
       <source>ERROR</source>
-      <translation>しきい値が無効です \n 有効な値を入力し、もう一度やり直してください。</translation>
+      <translation>しきい値が無効です。有効な値を入力し、もう一度やり直してください。</translation>
     </message>
     <message>
       <source>FACES</source>
-      <translation>フェース</translation>
+      <translation>Faces</translation>
     </message>
     <message>
       <source>FILTER</source>
@@ -5441,11 +5445,11 @@
     </message>
     <message>
       <source>MULTIEDGES_ERROR</source>
-      <translation>接続されている複数のしきい値値ありますに等しいないエッジ 1 正しい値を入力し、もう一度やり直してください</translation>
+      <translation>マルチ接続されたエッジのしきい値値を等しくすることはできません 1 に正しい値を入力して、もう一度やり直して</translation>
     </message>
     <message>
       <source>GROUPCOLOR_ERROR</source>
-      <translation>識別できません、カラー グループの正しい値を入力して再試行してください。</translation>
+      <translation>識別できません、グループの色正しい値を入力やり直してください。</translation>
     </message>
     <message>
       <source>MULTI_BORDERS</source>
@@ -5477,7 +5481,7 @@
     </message>
     <message>
       <source>TAPER</source>
-      <translation>テーパー</translation>
+      <translation>Cone</translation>
     </message>
     <message>
       <source>THRESHOLD_VALUE</source>
@@ -5517,103 +5521,103 @@
     </message>
     <message>
       <source>ENTITY_TYPE_0</source>
-      <translation>ENTITY_TYPE_0</translation>
+      <translation>POINT1</translation>
     </message>
     <message>
       <source>ENTITY_TYPE_1</source>
-      <translation>ENTITY_TYPE_1</translation>
+      <translation>POINT1</translation>
     </message>
     <message>
       <source>ENTITY_TYPE_2</source>
-      <translation>ENTITY_TYPE_2</translation>
+      <translation>SEG2</translation>
     </message>
     <message>
       <source>ENTITY_TYPE_3</source>
-      <translation>ENTITY_TYPE_3</translation>
+      <translation>SEG3</translation>
     </message>
     <message>
       <source>ENTITY_TYPE_4</source>
-      <translation>ENTITY_TYPE_4</translation>
+      <translation>TRIA3</translation>
     </message>
     <message>
       <source>ENTITY_TYPE_5</source>
-      <translation>ENTITY_TYPE_5</translation>
+      <translation>TRIA6</translation>
     </message>
     <message>
       <source>ENTITY_TYPE_6</source>
-      <translation>ENTITY_TYPE_6</translation>
+      <translation>QUAD4</translation>
     </message>
     <message>
       <source>ENTITY_TYPE_7</source>
-      <translation>ENTITY_TYPE_7</translation>
+      <translation>QUAD8</translation>
     </message>
     <message>
       <source>ENTITY_TYPE_8</source>
-      <translation>ENTITY_TYPE_8</translation>
+      <translation>QUAD9</translation>
     </message>
     <message>
       <source>ENTITY_TYPE_9</source>
-      <translation>ENTITY_TYPE_9</translation>
+      <translation>TETRA4</translation>
     </message>
     <message>
       <source>ENTITY_TYPE_10</source>
-      <translation>ENTITY_TYPE_10</translation>
+      <translation>TETRA10</translation>
     </message>
     <message>
       <source>ENTITY_TYPE_11</source>
-      <translation>ENTITY_TYPE_11</translation>
+      <translation>PYRA5</translation>
     </message>
     <message>
       <source>ENTITY_TYPE_12</source>
-      <translation>ENTITY_TYPE_12</translation>
+      <translation>PYRA13</translation>
     </message>
     <message>
       <source>ENTITY_TYPE_13</source>
-      <translation>ENTITY_TYPE_13</translation>
+      <translation>PENTA6</translation>
     </message>
     <message>
       <source>ENTITY_TYPE_14</source>
-      <translation>ENTITY_TYPE_14</translation>
+      <translation>PENTA15</translation>
     </message>
     <message>
       <source>ENTITY_TYPE_15</source>
-      <translation>ENTITY_TYPE_15</translation>
+      <translation>HEXA8</translation>
     </message>
     <message>
       <source>ENTITY_TYPE_16</source>
-      <translation>ENTITY_TYPE_16</translation>
+      <translation>HEXA20</translation>
     </message>
     <message>
       <source>ENTITY_TYPE_17</source>
-      <translation>ENTITY_TYPE_17</translation>
+      <translation>HEXA27</translation>
     </message>
     <message>
       <source>ENTITY_TYPE_18</source>
-      <translation>ENTITY_TYPE_18</translation>
+      <translation>OCTA12</translation>
     </message>
     <message>
       <source>ENTITY_TYPE_19</source>
-      <translation>ENTITY_TYPE_19</translation>
+      <translation>ポリゴン</translation>
     </message>
     <message>
       <source>ENTITY_TYPE_20</source>
-      <translation>ENTITY_TYPE_20</translation>
+      <translation>POLYEDRE</translation>
     </message>
     <message>
       <source>ENTITY_TYPE_21</source>
-      <translation>ENTITY_TYPE_21</translation>
+      <translation>[なし]</translation>
     </message>
     <message>
       <source>ENTITY_TYPE_22</source>
-      <translation>ENTITY_TYPE_22</translation>
+      <translation>ボール</translation>
     </message>
     <message>
       <source>ENTITY_TYPE_23</source>
-      <translation>ENTITY_TYPE_23</translation>
+      <translation>QPOLYEDRE</translation>
     </message>
     <message>
       <source>ENTITY_TYPE_24</source>
-      <translation>ENTITY_TYPE_24</translation>
+      <translation>ボール</translation>
     </message>
     <message>
       <source>GEOM_TYPE</source>
@@ -5625,7 +5629,7 @@
     </message>
     <message>
       <source>GEOM_TYPE_1</source>
-      <translation>エッジ</translation>
+      <translation>Edge</translation>
     </message>
     <message>
       <source>GEOM_TYPE_2</source>
@@ -5665,7 +5669,7 @@
     </message>
     <message>
       <source>GEOM_TYPE_11</source>
-      <translation>粒子</translation>
+      <translation>要素粒子</translation>
     </message>
   </context>
   <context>
@@ -5676,19 +5680,19 @@
     </message>
     <message>
       <source>DIFF_MESHES</source>
-      <translation>グループ別のメッシュを有効な引数に対応して再度操作の引数が正しく示されない</translation>
+      <translation>グループ異なるメッシュを与える有効な引数に対応し、もう一度やり直してください、操作の引数が正しく示されていません。</translation>
     </message>
     <message>
       <source>DIFF_TYPES</source>
-      <translation>グループの種類を有効な引数の要素を含む、やり直して操作の引数が正しく示されない</translation>
+      <translation>グループのさまざまな種類を与える有効な引数の要素を含めるし、もう一度やり直してください、操作の引数が正しく示されていません。</translation>
     </message>
     <message>
       <source>EMPTY_NAME</source>
-      <translation>グループ名は無効な空でない名前で、もう一度やり直してください。</translation>
+      <translation>グループの名前は有効な空でない名を指定し、もう一度やり直してください</translation>
     </message>
     <message>
       <source>INCORRECT_ARGUMENTS</source>
-      <translation>操作の引数が表示されていないを入力してもう一度やり直してください</translation>
+      <translation>操作の引数されていないそれらを入力し、もう一度やり直してください</translation>
     </message>
     <message>
       <source>NAME</source>
@@ -5719,7 +5723,7 @@
     <name>SMESHGUI_GroupDlg</name>
     <message>
       <source>SELECT_ALL</source>
-      <translation>すべてを選択します。</translation>
+      <translation>すべて選択します。</translation>
     </message>
   </context>
   <context>
@@ -5745,11 +5749,11 @@
     </message>
     <message>
       <source>EDGE</source>
-      <translation>エッジ</translation>
+      <translation>Edge</translation>
     </message>
     <message>
       <source>FACE</source>
-      <translation>顔</translation>
+      <translation>Face</translation>
     </message>
     <message>
       <source>VOLUME</source>
@@ -5786,7 +5790,7 @@
     </message>
     <message>
       <source>CAPTION</source>
-      <translation>節点移動</translation>
+      <translation>ノードを移動</translation>
     </message>
     <message>
       <source>DESTINATION</source>
@@ -5828,7 +5832,7 @@
     </message>
     <message>
       <source>CAPTION</source>
-      <translation>点から要素探索</translation>
+      <translation>ポイントで要素を見つける</translation>
     </message>
     <message>
       <source>CREATE_NEW_METHOD</source>
@@ -5891,7 +5895,7 @@
     </message>
     <message>
       <source>HYPOTHESES_SETS</source>
-      <translation>前提条件のセットを割り当てる</translation>
+      <translation>詳細設定セットの割当て</translation>
     </message>
     <message>
       <source>MESH</source>
@@ -5910,7 +5914,7 @@
     </message>
     <message>
       <source>EDIT_SUBMESH_QUESTION</source>
-      <translation>Sous maillage はこの sous maillage を編集する選択したジオメトリに既に存在するか？</translation>
+      <translation>サブ メッシュは、選択したジオメトリに既に存在するこのサブ メッシュを編集したいですか？</translation>
     </message>
     <message>
       <source>SUBMESH_NOT_ALLOWED</source>
@@ -5918,7 +5922,7 @@
     </message>
     <message>
       <source>GEOMETRY_OBJECT_IS_NOT_DEFINED</source>
-      <translation>幾何学的オブジェクトが設定されていないを入力して、もう一度やり直してください</translation>
+      <translation>幾何学的オブジェクトが定義されてそれを言及し、もう一度やり直してください</translation>
     </message>
     <message>
       <source>GEOMETRY_OBJECT_IS_NULL</source>
@@ -5942,7 +5946,7 @@
     </message>
     <message>
       <source>MESH_IS_NOT_DEFINED</source>
-      <translation>メッシュが定義されていない指定、もう一度やり直してください</translation>
+      <translation>メッシュが定義されていないを指定し、もう一度やり直してくださいすることができます</translation>
     </message>
     <message>
       <source>MESH_IS_NULL</source>
@@ -5950,15 +5954,15 @@
     </message>
     <message>
       <source>NAME_OF_MESH_IS_EMPTY</source>
-      <translation>メッシュの名前が空である、有効な名前を指定して、やり直してください</translation>
+      <translation>メッシュの名前は空です有効な名前を入力し、もう一度やり直してください</translation>
     </message>
     <message>
       <source>NAME_OF_SUBMESH_IS_EMPTY</source>
-      <translation>Sous maillage の名前が空である、有効な名前を指定して、やり直してください</translation>
+      <translation>サブ メッシュの名前は空です有効な名前を入力し、もう一度やり直してください</translation>
     </message>
     <message>
       <source>THERE_IS_NO_OBJECT_FOR_EDITING</source>
-      <translation>編集するオブジェクトはありません。メッシュまたは sous maillage を選択し、もう一度やり直してください。</translation>
+      <translation>編集するオブジェクトはありません。メッシュまたはサブメッシュを選択し、もう一度やり直してください。</translation>
     </message>
   </context>
   <context>
@@ -5981,55 +5985,55 @@
     </message>
     <message>
       <source>ERROR_OF_LOADING</source>
-      <translation>地面をロードできませんでした。ファイルが壊れているか、他のタイプの理由が含まれていることは</translation>
+      <translation>地面をロードできませんでした。ファイルが壊れているか、他の種類のパターンが含まれている可能性が高いです。</translation>
     </message>
     <message>
       <source>ERROR_OF_OPENING</source>
-      <translation>ファイルを開くことはできません。かどうかを確認し、アクセス許可がある場合</translation>
+      <translation>ファイルを開くことはできません。それが存在する場合、アクセス許可がある場合を確認してください。</translation>
     </message>
     <message>
       <source>ERROR_OF_READING</source>
-      <translation>接地のチェック、ファイルの内容をロードすることはできません。</translation>
+      <translation>地面のチェック、ファイルの内容をロードすることはできません。</translation>
     </message>
     <message>
       <source>ERR_READ_3D_COORD</source>
-      <translation>3 D の点の座標が [0, 1] の範囲外であるためにをロードすることはできません。</translation>
+      <translation>3D ポイントの座標は間隔 [0, 1] の外の地面をロードすることはできません。</translation>
     </message>
     <message>
       <source>ERR_READ_BAD_INDEX</source>
-      <translation>無効なポイントのインデックスが検出されましたが、地面を読み込むことができません。</translation>
+      <translation>無効なポイント インデックスが検出されました地面をロードすることはできません。</translation>
     </message>
     <message>
       <source>ERR_READ_BAD_KEY_POINT</source>
-      <translation>ポイントの境界線に存在しないために読み込むことができません。</translation>
+      <translation>重要なポイント上にある罫線パターンをロードすることはできません。</translation>
     </message>
     <message>
       <source>ERR_READ_ELEM_POINTS</source>
-      <translation>ポイント要素の数が無効であるためにをロードすることはできません。</translation>
+      <translation>要素の点の数が無効です理由をロードすることはできません。</translation>
     </message>
     <message>
       <source>ERR_READ_NB_POINTS</source>
-      <translation>ファイル内のポイント数を読み取ることできないためにをロードすることはできません。</translation>
+      <translation>ファイル内のポイントの番号を読み取ることはできません。 のでロードすることはできません。</translation>
     </message>
     <message>
       <source>ERR_READ_NO_ELEMS</source>
-      <translation>要素が含まれていないために読み込むことができません。</translation>
+      <translation>要素が含まれていないために、読み込みすることはできません。</translation>
     </message>
     <message>
       <source>ERR_READ_NO_KEYPOINT</source>
-      <translation>2D ポイント キーではないため、地面を読み込むことができません。</translation>
+      <translation>二次元パターンはしなかった地面をロードすることはできませんポイント キー</translation>
     </message>
     <message>
       <source>ERR_READ_POINT_COORDS</source>
-      <translation>ファイル内の点の座標を読み取ることできないためにをロードすることはできません。</translation>
+      <translation>ファイル内の点の座標を読み取るすることはできません。 のでロードすることはできません。</translation>
     </message>
     <message>
       <source>ERR_READ_TOO_FEW_POINTS</source>
-      <translation>地面を読み込むことはできません。ファイルにあまりにも少ないです。</translation>
+      <translation>地面をロードすることはできません。ファイルにあまりにもいくつかのポイントがあります。</translation>
     </message>
     <message>
       <source>FACE</source>
-      <translation>顔</translation>
+      <translation>Face</translation>
     </message>
     <message>
       <source>LOAD_PATTERN</source>
@@ -6096,7 +6100,7 @@
     <name>SMESHGUI_MeshTab</name>
     <message>
       <source>ADD_HYPOTHESIS</source>
-      <translation>前提条件を追加</translation>
+      <translation>詳細設定の追加項目</translation>
     </message>
     <message>
       <source>ALGORITHM</source>
@@ -6104,7 +6108,7 @@
     </message>
     <message>
       <source>HYPOTHESIS</source>
-      <translation>前提条件</translation>
+      <translation>詳細設定</translation>
     </message>
     <message>
       <source>NONE</source>
@@ -6376,7 +6380,7 @@
     </message>
     <message>
       <source>MAX_ASPECT_RATIO</source>
-      <translation>最大比</translation>
+      <translation>最大アスペクト比</translation>
     </message>
     <message>
       <source>METHOD</source>
@@ -6394,7 +6398,7 @@
     <name>SMESHGUI_UnionOfTrianglesDlg</name>
     <message>
       <source>CAPTION</source>
-      <translation>三角形要素の結合</translation>
+      <translation>三角形の結合</translation>
     </message>
     <message>
       <source>MAXIMUM_ANGLE</source>
@@ -6405,7 +6409,7 @@
     <name>SMESHGUI_UnionOfTwoTrianglesDlg</name>
     <message>
       <source>CAPTION</source>
-      <translation>2つの三角形要素を結合</translation>
+      <translation>2 つの三角形の結合</translation>
     </message>
   </context>
   <context>
@@ -6453,6 +6457,10 @@
     <message>
       <source>CLIP_PLANES</source>
       <translation>切断の計画</translation>
+    </message>
+    <message>
+      <source>IS_OPENGL_CLIPPING</source>
+      <translation>OpenGL　クリッピング</translation>
     </message>
     <message>
       <source>MESHES_SUBMESHES_GROUPS</source>
@@ -6508,11 +6516,35 @@
     </message>
     <message>
       <source>PLANE_NUM</source>
-      <translation>平面 ＃%1</translation>
+      <translation>Plan# %1</translation>
     </message>
     <message>
       <source>NO_PLANES</source>
       <translation>計画の手順</translation>
+    </message>
+    <message>
+      <source>ABSOLUTE</source>
+      <translation>絶対</translation>
+    </message>
+    <message>
+      <source>RELATIVE</source>
+      <translation>相対</translation>
+    </message>
+    <message>
+      <source>BASE_POINT</source>
+      <translation>基準点</translation>
+    </message>
+    <message>
+      <source>DIRECTION</source>
+      <translation>方向</translation>
+    </message>
+    <message>
+      <source>RESET</source>
+      <translation>リセット</translation>
+    </message>
+    <message>
+      <source>INVERT</source>
+      <translation>反転</translation>
     </message>
   </context>
   <context>
@@ -6539,7 +6571,7 @@
     </message>
     <message>
       <source>DUPLICATION_ONLY_ELEMS</source>
-      <translation>DUPLICATION_ONLY_ELEMS</translation>
+      <translation>重複する要素のみ</translation>
     </message>
     <message>
       <source>GROUP_ELEMS_TO_DUPLICATE</source>
@@ -6621,7 +6653,7 @@
     </message>
     <message>
       <source>WRONG_GROUPS</source>
-      <translation>次のグループ traités\nen は、incompatibles:\n%1 型のためでした。</translation>
+      <translation>次のグループを互換性のないタイプのため扱われなかった: %1</translation>
     </message>
     <message>
       <source>SMESH_ERR_NO_INPUT_MESH</source>
@@ -6656,7 +6688,7 @@
     <name>SMESHGUI_MeshInfo</name>
     <message>
       <source>BASE_INFO</source>
-      <translation>BASE_INFO</translation>
+      <translation>基本情報</translation>
     </message>
     <message>
       <source>NAME_LAB</source>
@@ -6803,7 +6835,7 @@
     </message>
     <message>
       <source>CTRL_INFO</source>
-      <translation>CTRL_INFO</translation>
+      <translation>品質情報</translation>
     </message>
     <message>
       <source>NODE_MODE</source>
@@ -6815,15 +6847,15 @@
     </message>
     <message>
       <source>BUT_DUMP_MESH</source>
-      <translation>BUT_DUMP_MESH</translation>
+      <translation>書き出し(&amp;D)</translation>
     </message>
     <message>
       <source>TEXT_FILES</source>
-      <translation>TEXT_FILES</translation>
+      <translation>テキスト ファイル (*.txt)</translation>
     </message>
     <message>
       <source>SAVE_INFO</source>
-      <translation>SAVE_INFO</translation>
+      <translation>情報を保存します。</translation>
     </message>
     <message>
       <source>X_FROM_Y_ITEMS_SHOWN</source>
@@ -6834,7 +6866,7 @@
     <name>SMESHGUI_ElemInfo</name>
     <message>
       <source>ELEM_INFO</source>
-      <translation>ELEM_INFO</translation>
+      <translation>要素情報</translation>
     </message>
     <message>
       <source>COORDINATES</source>
@@ -6878,11 +6910,11 @@
     </message>
     <message>
       <source>FACE</source>
-      <translation>顔</translation>
+      <translation>Face</translation>
     </message>
     <message>
       <source>FACES</source>
-      <translation>フェース</translation>
+      <translation>Faces</translation>
     </message>
     <message>
       <source>VOLUME</source>
@@ -6950,69 +6982,69 @@
     </message>
     <message>
       <source>BALL_DIAMETER</source>
-      <translation>BALL_DIAMETER</translation>
+      <translation>直径</translation>
     </message>
     <message>
       <source>GEOM_VERTEX</source>
-      <translation>GEOM_VERTEX</translation>
+      <translation>Vertex</translation>
     </message>
     <message>
       <source>GEOM_EDGE</source>
-      <translation>GEOM_EDGE</translation>
+      <translation>Edge</translation>
     </message>
     <message>
       <source>GEOM_FACE</source>
-      <translation>GEOM_FACE</translation>
+      <translation>Face</translation>
     </message>
     <message>
       <source>GEOM_SOLID</source>
-      <translation>GEOM_SOLID</translation>
+      <translation>ソリッド</translation>
     </message>
     <message>
       <source>GEOM_SHELL</source>
-      <translation>GEOM_SHELL</translation>
+      <translation>シェル</translation>
     </message>
     <message>
       <source>GEOM_SHAPE</source>
-      <translation>GEOM_SHAPE</translation>
+      <translation>形状</translation>
     </message>
     <message>
       <source>POSITION</source>
-      <translation>POSITION</translation>
+      <translation>位置</translation>
     </message>
     <message>
       <source>U_POSITION</source>
-      <translation>U_POSITION</translation>
+      <translation>U</translation>
     </message>
     <message>
       <source>V_POSITION</source>
-      <translation>V_POSITION</translation>
+      <translation>V</translation>
     </message>
     <message>
       <source>CONTROLS</source>
-      <translation>CONTROLS</translation>
+      <translation>品質コントロール</translation>
     </message>
   </context>
   <context>
     <name>SMESHGUI_TreeElemInfo</name>
     <message>
       <source>SHOW_ITEM_INFO</source>
-      <translation>SHOW_ITEM_INFO</translation>
+      <translation>情報を表示します。</translation>
     </message>
     <message>
       <source>PROPERTY</source>
-      <translation>PROPERTY</translation>
+      <translation>プロパティ</translation>
     </message>
     <message>
       <source>VALUE</source>
-      <translation>VALUE</translation>
+      <translation>値</translation>
     </message>
   </context>
   <context>
     <name>SMESHGUI_AddInfo</name>
     <message>
       <source>ADDITIONAL_INFO</source>
-      <translation>ADDITIONAL_INFO</translation>
+      <translation>追加情報</translation>
     </message>
     <message>
       <source>NAME</source>
@@ -7032,7 +7064,7 @@
     </message>
     <message>
       <source>GROUPS_3</source>
-      <translation>フェース</translation>
+      <translation>Faces</translation>
     </message>
     <message>
       <source>GROUPS_4</source>
@@ -7060,7 +7092,7 @@
     </message>
     <message>
       <source>GROUP_ON_GEOMETRY</source>
-      <translation>グループは、ジオメトリにリンク</translation>
+      <translation>ジオメトリ上のグループ</translation>
     </message>
     <message>
       <source>GROUP_ON_FILTER</source>
@@ -7076,11 +7108,11 @@
     </message>
     <message>
       <source>EDGE</source>
-      <translation>エッジ</translation>
+      <translation>Edge</translation>
     </message>
     <message>
       <source>FACE</source>
-      <translation>顔</translation>
+      <translation>Face</translation>
     </message>
     <message>
       <source>VOLUME</source>
@@ -7116,7 +7148,7 @@
     </message>
     <message>
       <source>COMPUTE</source>
-      <translation>計算</translation>
+      <translation>計算します。</translation>
     </message>
     <message>
       <source>LOAD</source>
@@ -7144,7 +7176,7 @@
     </message>
     <message>
       <source>SUBMESHES_0</source>
-      <translation>アセンブリ</translation>
+      <translation>Compound</translation>
     </message>
     <message>
       <source>SUBMESHES_2</source>
@@ -7156,7 +7188,7 @@
     </message>
     <message>
       <source>SUBMESHES_4</source>
-      <translation>フェース</translation>
+      <translation>Face</translation>
     </message>
     <message>
       <source>SUBMESHES_5</source>
@@ -7175,90 +7207,90 @@
     <name>SMESHGUI_CtrlInfo</name>
     <message>
       <source>CTRL_INFO</source>
-      <translation>CTRL_INFO</translation>
+      <translation>品質情報</translation>
     </message>
     <message>
       <source>NAME_LAB</source>
-      <translation>NAME_LAB</translation>
+      <translation>名前:</translation>
     </message>
     <message>
       <source>VALUE</source>
-      <translation>VALUE</translation>
+      <translation>値</translation>
     </message>
     <message>
       <source>BUT_COMPUTE</source>
-      <translation>BUT_COMPUTE</translation>
+      <translation>計算</translation>
     </message>
     <message>
       <source>NODES_INFO</source>
-      <translation>NODES_INFO</translation>
+      <translation>ノード情報：</translation>
     </message>
     <message>
       <source>NUMBER_OF_THE_FREE_NODES</source>
-      <translation>NUMBER_OF_THE_FREE_NODES</translation>
+      <translation>空きノードの数</translation>
     </message>
     <message>
       <source>DOUBLE_NODES_TOLERANCE</source>
-      <translation>DOUBLE_NODES_TOLERANCE</translation>
+      <translation>重複節点の許容値</translation>
     </message>
     <message>
       <source>NUMBER_OF_THE_DOUBLE_NODES</source>
-      <translation>NUMBER_OF_THE_DOUBLE_NODES</translation>
+      <translation>重複節点の数</translation>
     </message>
     <message>
       <source>EDGES_INFO</source>
-      <translation>EDGES_INFO</translation>
+      <translation>エッジ情報:</translation>
     </message>
     <message>
       <source>NUMBER_OF_THE_DOUBLE_EDGES</source>
-      <translation>NUMBER_OF_THE_DOUBLE_EDGES</translation>
+      <translation>重複エッジの数</translation>
     </message>
     <message>
       <source>FACES_INFO</source>
-      <translation>FACES_INFO</translation>
+      <translation>顔情報:</translation>
     </message>
     <message>
       <source>NUMBER_OF_THE_DOUBLE_FACES</source>
-      <translation>NUMBER_OF_THE_DOUBLE_FACES</translation>
+      <translation>重複面の数</translation>
     </message>
     <message>
       <source>ASPECT_RATIO_HISTOGRAM</source>
-      <translation>ASPECT_RATIO_HISTOGRAM</translation>
+      <translation>アスペクト比のヒストグラム</translation>
     </message>
     <message>
       <source>VOLUMES_INFO</source>
-      <translation>VOLUMES_INFO</translation>
+      <translation>ボリューム情報:</translation>
     </message>
     <message>
       <source>NUMBER_OF_THE_DOUBLE_VOLUMES</source>
-      <translation>NUMBER_OF_THE_DOUBLE_VOLUMES</translation>
+      <translation>重複ボリュームの数</translation>
     </message>
     <message>
       <source>NUMBER_OF_THE_OVER_CONSTRAINED</source>
-      <translation>NUMBER_OF_THE_OVER_CONSTRAINED</translation>
+      <translation>過剰制約の数</translation>
     </message>
     <message>
       <source>ASPECT_RATIO_3D_HISTOGRAM</source>
-      <translation>ASPECT_RATIO_3D_HISTOGRAM</translation>
+      <translation>アスペクト比 3 D ヒストグラム</translation>
     </message>
   </context>
   <context>
     <name>SMESHGUI_CtrlInfoDlg</name>
     <message>
       <source>CTRL_INFO</source>
-      <translation>CTRL_INFO</translation>
+      <translation>品質情報</translation>
     </message>
     <message>
       <source>BUT_DUMP_MESH</source>
-      <translation>BUT_DUMP_MESH</translation>
+      <translation>書き出し(&amp;D)</translation>
     </message>
     <message>
       <source>TEXT_FILES</source>
-      <translation>TEXT_FILES</translation>
+      <translation>テキスト ファイル (*.txt)</translation>
     </message>
     <message>
       <source>SAVE_INFO</source>
-      <translation>SAVE_INFO</translation>
+      <translation>情報を保存します。</translation>
     </message>
   </context>
   <context>
@@ -7289,7 +7321,7 @@
     </message>
     <message>
       <source>COMPUTE</source>
-      <translation>計算</translation>
+      <translation>計算します。</translation>
     </message>
     <message>
       <source>RESULT</source>
@@ -7304,27 +7336,27 @@
     <name>SMESHGUI_BasicProperties</name>
     <message>
       <source>PROPERTY</source>
-      <translation>PROPERTY</translation>
+      <translation>プロパティ</translation>
     </message>
     <message>
       <source>LENGTH</source>
-      <translation>LENGTH</translation>
+      <translation>長さ</translation>
     </message>
     <message>
       <source>AREA</source>
-      <translation>AREA</translation>
+      <translation>エリア</translation>
     </message>
     <message>
       <source>VOLUME</source>
-      <translation>VOLUME</translation>
+      <translation>ボリューム</translation>
     </message>
     <message>
       <source>SOURCE_MESH_SUBMESH_GROUP</source>
-      <translation>SOURCE_MESH_SUBMESH_GROUP</translation>
+      <translation>ソース メッシュ、サブメッシュ (グループ)</translation>
     </message>
     <message>
       <source>COMPUTE</source>
-      <translation>COMPUTE</translation>
+      <translation>計算</translation>
     </message>
   </context>
   <context>
@@ -7358,7 +7390,7 @@
     </message>
     <message>
       <source>BASIC_PROPERTIES</source>
-      <translation>BASIC_PROPERTIES</translation>
+      <translation>基本的なプロパティ</translation>
     </message>
   </context>
   <context>
@@ -7381,7 +7413,7 @@
     </message>
     <message>
       <source>COMPUTE</source>
-      <translation>計算</translation>
+      <translation>計算します。</translation>
     </message>
     <message>
       <source>RESULT</source>
@@ -7438,7 +7470,7 @@
     </message>
     <message>
       <source>FACE</source>
-      <translation>顔</translation>
+      <translation>Face</translation>
     </message>
     <message>
       <source>FACES</source>
@@ -7480,15 +7512,15 @@
     </message>
     <message>
       <source>NODES</source>
-      <translation>ノード</translation>
+      <translation>節点</translation>
     </message>
     <message>
       <source>EDGES</source>
-      <translation>エッジ</translation>
+      <translation>エッジ/ワイヤ フレーム モード</translation>
     </message>
     <message>
       <source>FACES</source>
-      <translation>フェース</translation>
+      <translation>Faces</translation>
     </message>
     <message>
       <source>VOLUMES</source>
@@ -7496,11 +7528,11 @@
     </message>
     <message>
       <source>OUTLINES</source>
-      <translation>概要</translation>
+      <translation>Wires</translation>
     </message>
     <message>
       <source>0D_ELEMENTS</source>
-      <translation>０D要素</translation>
+      <translation>0D要素</translation>
     </message>
     <message>
       <source>BALLS</source>
@@ -7516,15 +7548,15 @@
     </message>
     <message>
       <source>WIDTH</source>
-      <translation>幅：</translation>
+      <translation>厚さ:</translation>
     </message>
     <message>
       <source>FACE_FRONT</source>
-      <translation>フロント:</translation>
+      <translation>フロント：</translation>
     </message>
     <message>
       <source>FACE_BACK</source>
-      <translation>戻る：</translation>
+      <translation>リア：</translation>
     </message>
     <message>
       <source>VOLUME_NORMAL</source>
@@ -7532,7 +7564,7 @@
     </message>
     <message>
       <source>VOLUME_REVERSED</source>
-      <translation>元に戻します。</translation>
+      <translation>逆。</translation>
     </message>
     <message>
       <source>SIZE</source>
@@ -7548,7 +7580,7 @@
     </message>
     <message>
       <source>SHRINK</source>
-      <translation>縮小係数:</translation>
+      <translation>減少係数:</translation>
     </message>
   </context>
 </TS>
