@@ -223,6 +223,8 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh&         aMesh,
     return false;
   myQuadStruct = quad;
 
+  updateDegenUV( quad );
+
   enum { NOT_COMPUTED = -1, COMPUTE_FAILED = 0, COMPUTE_OK = 1 };
   int res = NOT_COMPUTED;
   if (myQuadranglePreference)
@@ -1231,8 +1233,6 @@ bool StdMeshers_Quadrangle_2D::setNormalizedGrid (SMESH_Mesh &          aMesh,
   //             =down
   //
 
-  updateDegenUV( quad );
-
   int nbhoriz  = Min(quad->side[0]->NbPoints(), quad->side[2]->NbPoints());
   int nbvertic = Min(quad->side[1]->NbPoints(), quad->side[3]->NbPoints());
 
@@ -1417,8 +1417,6 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
   Handle(Geom_Surface) S = BRep_Tool::Surface(aFace);
   bool WisF = true;
   int i,j,geomFaceID = meshDS->ShapeToIndex(aFace);
-
-  updateDegenUV( quad );
 
   int nb = quad->side[0]->NbPoints();
   int nr = quad->side[1]->NbPoints();
@@ -2402,8 +2400,6 @@ bool StdMeshers_Quadrangle_2D::computeReduced (SMESH_Mesh &        aMesh,
     if (uv_eb.size() != nb || uv_er.size() != nr || uv_et.size() != nt || uv_el.size() != nl)
       return error(COMPERR_BAD_INPUT_MESH);
 
-    updateDegenUV( quad );
-
     // arrays for normalized params
     TColStd_SequenceOfReal npb, npr, npt, npl;
     for (j = 0; j < nb; j++) {
@@ -3272,7 +3268,7 @@ void StdMeshers_Quadrangle_2D::updateDegenUV(FaceQuadStruct::Ptr quad)
       uv1.v = uv2.v = 0.5 * ( uv1.v + uv2.v );
     }
 
-  else if ( quad->side.size() == 4 )
+  else if ( quad->side.size() == 4 && myQuadType == QUAD_STANDARD)
 
     // Set number of nodes on a degenerated side to be same as on an opposite side
     // ----------------------------------------------------------------------------
