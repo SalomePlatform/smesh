@@ -93,10 +93,16 @@ bool SMESHGUI_Selection::processOwner( const LightApp_DataOwner* ow )
 {
   const LightApp_SVTKDataOwner* owner =
     dynamic_cast<const LightApp_SVTKDataOwner*> ( ow );
-  if( owner )
+  if( owner ) {
     myActors.append( dynamic_cast<SMESH_Actor*>( owner->GetActor() ) );
-  else
+  }
+  else if ( ow ) { // SVTK selection disabled
+    QString entry = ow->entry();
+    myActors.append( SMESH::FindActorByEntry( entry.toStdString().c_str() ));
+  }
+  else {
     myActors.append( 0 );
+  }
   return true;
 }
 
@@ -433,7 +439,7 @@ int SMESHGUI_Selection::dim( int ind ) const
           case SMESH::BALL  : dim = std::max( dim, 0 ); break;
           default: break;
           }
-	}
+        }
       }
     }
   }
@@ -454,19 +460,19 @@ QVariant SMESHGUI_Selection::isComputable( int ind ) const
     if( !CORBA::is_nil( obj ) ) {
       SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( obj );
       if ( !CORBA::is_nil( mesh ) ) {
-	if ( mesh->HasShapeToMesh() ) {
-	  GEOM::GEOM_Object_var shape = SMESH::GetShapeOnMeshOrSubMesh( so );
-	  return QVariant( !shape->_is_nil() );
-	}
-	else
-	{
-	  return QVariant( mesh->NbFaces() !=0 );
-	}
+        if ( mesh->HasShapeToMesh() ) {
+          GEOM::GEOM_Object_var shape = SMESH::GetShapeOnMeshOrSubMesh( so );
+          return QVariant( !shape->_is_nil() );
+        }
+        else
+        {
+          return QVariant( mesh->NbFaces() !=0 );
+        }
       }
       else
       {
-	GEOM::GEOM_Object_var shape = SMESH::GetShapeOnMeshOrSubMesh( so );
-	return QVariant( !shape->_is_nil() );
+        GEOM::GEOM_Object_var shape = SMESH::GetShapeOnMeshOrSubMesh( so );
+        return QVariant( !shape->_is_nil() );
       }
     }
   }
@@ -582,42 +588,42 @@ int SMESHGUI_Selection::type( const QString& entry, _PTR(Study) study )
 
     if ( objComponent->ComponentDataType() == "SMESH" ) {
       if ( objComponent->GetIOR() == obj->GetIOR() ) {
-	res = SMESH::COMPONENT;
+        res = SMESH::COMPONENT;
       }
       else {
-	int aLevel = obj->Depth() - objComponent->Depth(),
-	  aFTag = objFather->Tag(),
-	  anOTag = obj->Tag();
+        int aLevel = obj->Depth() - objComponent->Depth(),
+          aFTag = objFather->Tag(),
+          anOTag = obj->Tag();
 
-	switch ( aLevel )
-	{
-	case 1:
-	  if ( anOTag >= SMESH::Tag_FirstMeshRoot )
-	    res = SMESH::MESH;
-	  break;
-	case 2:
-	  switch ( aFTag )
-	  {
-	  case SMESH::Tag_HypothesisRoot: res = SMESH::HYPOTHESIS; break;
-	  case SMESH::Tag_AlgorithmsRoot: res = SMESH::ALGORITHM;  break;
-	  default: break;
-	  }
-	  break;
-	case 3:
-	  switch ( aFTag )
-	  {
-	  case SMESH::Tag_SubMeshOnVertex:   res = SMESH::SUBMESH_VERTEX;   break;
-	  case SMESH::Tag_SubMeshOnEdge:     res = SMESH::SUBMESH_EDGE;     break;
-	  case SMESH::Tag_SubMeshOnFace:     res = SMESH::SUBMESH_FACE;     break;
-	  case SMESH::Tag_SubMeshOnSolid:    res = SMESH::SUBMESH_SOLID;    break;
-	  case SMESH::Tag_SubMeshOnCompound: res = SMESH::SUBMESH_COMPOUND; break;
-	  default:
-	    if ( aFTag >= SMESH::Tag_FirstGroup) res = SMESH::GROUP;
-	    else                                 res = SMESH::SUBMESH;
-	    break;
-	  }
-	  break;
-	}
+        switch ( aLevel )
+        {
+        case 1:
+          if ( anOTag >= SMESH::Tag_FirstMeshRoot )
+            res = SMESH::MESH;
+          break;
+        case 2:
+          switch ( aFTag )
+          {
+          case SMESH::Tag_HypothesisRoot: res = SMESH::HYPOTHESIS; break;
+          case SMESH::Tag_AlgorithmsRoot: res = SMESH::ALGORITHM;  break;
+          default: break;
+          }
+          break;
+        case 3:
+          switch ( aFTag )
+          {
+          case SMESH::Tag_SubMeshOnVertex:   res = SMESH::SUBMESH_VERTEX;   break;
+          case SMESH::Tag_SubMeshOnEdge:     res = SMESH::SUBMESH_EDGE;     break;
+          case SMESH::Tag_SubMeshOnFace:     res = SMESH::SUBMESH_FACE;     break;
+          case SMESH::Tag_SubMeshOnSolid:    res = SMESH::SUBMESH_SOLID;    break;
+          case SMESH::Tag_SubMeshOnCompound: res = SMESH::SUBMESH_COMPOUND; break;
+          default:
+            if ( aFTag >= SMESH::Tag_FirstGroup) res = SMESH::GROUP;
+            else                                 res = SMESH::SUBMESH;
+            break;
+          }
+          break;
+        }
       }
     }
   }
