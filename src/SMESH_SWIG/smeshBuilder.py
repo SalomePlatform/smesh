@@ -4655,7 +4655,8 @@ for pluginName in os.environ[ "SMESH_MeshersList" ].split( ":" ):
     try:
         exec( "from salome.%s.%s import *" % (pluginName, pluginBuilderName))
     except Exception, e:
-        print "Exception while loading %s: %s" % ( pluginBuilderName, e )
+	from salome_utils import verbose
+	if verbose(): print "Exception while loading %s: %s" % ( pluginBuilderName, e )
         continue
     exec( "from salome.%s import %s" % (pluginName, pluginBuilderName))
     plugin = eval( pluginBuilderName )
