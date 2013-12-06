@@ -5463,7 +5463,7 @@ SMESH_MeshEditor::MakeExtrElements(TIDSortedElemSet&                 theElements
   for( ; itPP != fullList.end(); itPP++) {
     aPPs.push_back( *itPP );
     if ( theHasAngles && itAngles != theAngles.end() )
-      aPPs.back().SetAngle( *itAngles );
+      aPPs.back().SetAngle( *itAngles++ );
   }
 
   TNodeOfNodeListMap   mapNewNodes;
