@@ -658,7 +658,7 @@ bool SMESH_MeshEditor::InverseDiag (const SMDS_MeshElement * theTria1,
 
     // put nodes in array and find out indices of the same ones
     const SMDS_MeshNode* aNodes [6];
-    int sameInd [] = { 0, 0, 0, 0, 0, 0 };
+    int sameInd [] = { -1, -1, -1, -1, -1, -1 };
     int i = 0;
     SMDS_ElemIteratorPtr it = theTria1->nodesIterator();
     while ( it->more() ) {
@@ -684,15 +684,15 @@ bool SMESH_MeshEditor::InverseDiag (const SMDS_MeshElement * theTria1,
     }
 
     // find indices of 1,2 and of A,B in theTria1
-    int iA = 0, iB = 0, i1 = 0, i2 = 0;
+    int iA = -1, iB = 0, i1 = 0, i2 = 0;
     for ( i = 0; i < 6; i++ ) {
-      if ( sameInd [ i ] == 0 ) {
+      if ( sameInd [ i ] == -1 ) {
         if ( i < 3 ) i1 = i;
         else         i2 = i;
       }
       else if (i < 3) {
-        if ( iA ) iB = i;
-        else      iA = i;
+        if ( iA >= 0) iB = i;
+        else          iA = i;
       }
     }
     // nodes 1 and 2 should not be the same
