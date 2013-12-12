@@ -6,7 +6,7 @@
 
 \n \b MESH module of SALOME is destined for:
 <ul>
-<li>\ref importing_exporting_meshes_page "import and export of meshes in different formats";</li>
+<li>\ref importing_exporting_meshes_page "import and export of meshes in various formats";</li>
 <li>\subpage about_meshes_page "meshing geometrical models"
 previously created or imported by the Geometry component; </li>
 <li>\subpage viewing_meshes_overview_page "viewing created meshes" in
@@ -18,21 +18,19 @@ allowing to highlight important elements;
 \subpage filters_page "Filters" functionality;</li>
 <li>\subpage modifying_meshes_page "modifying meshes" with a vast
 array of dedicated operations;</li> 
-<li>different \subpage measurements_page "measurements" of the mesh objects;
-<li>easily setting parameters via the variables predefined in
-\subpage using_notebook_mesh_page "Salome notebook".</li>
+<li>various \subpage measurements_page "measurements" of the mesh objects.
 </ul>
 
-The possibility to sort the created sub-meshes or groups is detailed on
-\subpage arranging_study_objects_page section.
+It is possible to easily set parameters via the variables predefined in
+\subpage using_notebook_mesh_page "Salome notebook".
 
 Mesh module preferences are described in the \subpage mesh_preferences_page section of SALOME Mesh Help.
+Also, there is a possibility to \subpage arranging_study_objects_page "re-arrange sub-meshes and groups in the SALOME study".
 
 Almost all mesh module functionalities are accessible via
 \subpage smeshpy_interface_page "Mesh module Python interface".
 
 Other functions are available in <a class="el" target="_new" href="../../tui/SMESH/docutils/index.html">salome.smesh python package</a>.
-
 
 \image html image7.jpg "Example of MESH module usage for engineering tasks"
 

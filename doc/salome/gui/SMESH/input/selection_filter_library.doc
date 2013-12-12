@@ -84,7 +84,7 @@ IDs.
 the color defined by the <b>Threshold Value</b>.
 </li><li>
 <b>Elements of a domain</b> allows selection of entities belonging to
-one domain of a mesh. The domain is a part of mesh not connected to
+one domain of a mesh. The domain is mesh part not connected to
 other parts. <b>Threshold Value</b> locating any element of the domain can be either
 - node ID (that you can pick in the Viewer) or
 - geometrical vertex (that you can pick either in the Viewer or in the

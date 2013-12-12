@@ -314,8 +314,8 @@ or/and hidden by other mesh elements. They can be seen after
 switching the mesh to Wireframe visualization mode or switching off
 the visualization of faces and volumes (if any).
 
-<b>Bad Mesh to Group</b> button creates groups of the bad mesh entities,
-thus allowing you for more comfortable analysis of these entities.
+<b>Bad Mesh to Group</b> button creates groups of bad mesh entities
+to facilitate their analysis.
 
 \image html show_bad_mesh.png
 <em>Edges bounding a hole in the surface are shown in magenta using <b>Show
@@ -341,8 +341,8 @@ this, there exist two algorithms: <b>Use existing edges</b> and <b>Use
 For example, you want to use standard algorithms to generate 1D and 3D
 meshes and to create 2D mesh by your python code. Then you
 <ol>
-  <li> create a mesh object, assign an 1D algorithm,</li>
-  <li> invoke \b Compute command, which computes an 1D mesh,</li>
+  <li> create a mesh object, assign a 1D algorithm,</li>
+  <li> invoke \b Compute command, which computes a 1D mesh,</li>
   <li> assign <b>Use existing faces</b> and a 3D algorithm,</li>
   <li> run your python code, which creates a 2D mesh,</li>
   <li> invoke \b Compute command, which computes a 3D mesh.</li>
