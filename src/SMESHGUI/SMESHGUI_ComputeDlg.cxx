@@ -198,6 +198,7 @@ namespace SMESH
     void Show( int subShapeID, GEOM::GEOM_Object_var aMainShape, bool only = false)
     {
       SVTK_ViewWindow* aViewWindow  = SMESH::GetViewWindow( SMESHGUI::GetSMESHGUI() );
+      SUIT_ResourceMgr* resMgr = SMESH::GetResourceMgr( SMESHGUI::GetSMESHGUI() );
       std::string mainEntry;
       if ( !aMainShape->_is_nil() )
         mainEntry = aMainShape->GetStudyEntry();
@@ -226,8 +227,13 @@ namespace SMESH
         TopAbs_ShapeEnum type( aShape.ShapeType() >= TopAbs_WIRE ? TopAbs_EDGE : TopAbs_FACE );
         for ( TopExp_Explorer exp( aShape, type ); exp.More(); exp.Next() ) {
           //checkTriangulation( exp.Current() );
-          if ( GEOM_Actor* anActor = getActor( exp.Current() ))
+          if ( GEOM_Actor* anActor = getActor( exp.Current() ) ) {
+            int UNbIsos = resMgr->integerValue( "Geometry", "iso_number_u", 1);
+            int VNbIsos = resMgr->integerValue( "Geometry", "iso_number_v", 1);
+            int aNbIsos[2] = { UNbIsos ? UNbIsos : 1, VNbIsos ? VNbIsos : 1 };
+            anActor->SetNbIsos( aNbIsos );
             myShownActors.push_back( anActor );
+          }
         }
         if ( type == TopAbs_FACE ) {
           for ( TopExp_Explorer exp( aShape, TopAbs_EDGE ); exp.More(); exp.Next() ) {
