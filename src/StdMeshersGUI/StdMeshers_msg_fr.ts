@@ -4,6 +4,31 @@
 <context>
     <name>@default</name>
     <message>
+        <source>SMESH_EDGES_WITH_LAYERS</source>
+        <translation type="unfinished">Edges with layers</translation>
+    </message>
+    <message>
+        <source>SMESH_FACES_WITH_LAYERS</source>
+        <translation type="unfinished">Faces with layers 
+(walls)</translation>
+    </message>
+    <message>
+        <source>SMESH_ADAPTIVE1D_TITLE</source>
+        <translation type="unfinished">Hypothesis Construction</translation>
+    </message>
+    <message>
+        <source>SMESH_MAX_SIZE</source>
+        <translation type="unfinished">Max size</translation>
+    </message>
+    <message>
+        <source>SMESH_MIN_SIZE</source>
+        <translation type="unfinished">Min size</translation>
+    </message>
+    <message>
+        <source>SMESH_ADAPTIVE1D_HYPOTHESIS</source>
+        <translation type="unfinished">Adaptive</translation>
+    </message>
+    <message>
         <source>SMESH_ARITHMETIC_1D_HYPOTHESIS</source>
         <translation>Arithmétique 1D</translation>
     </message>
@@ -484,6 +509,21 @@
     <message>
         <source>COORD_STEP</source>
         <translation>Pas</translation>
+    </message>
+</context>
+<context>
+    <name>StdMeshersGUI_StdHypothesisCreator</name>
+    <message>
+        <source>TO_IGNORE_EDGES</source>
+        <translation type="unfinished">Edges without layers (inlets and oulets)</translation>
+    </message>
+    <message>
+        <source>NOT_TO_IGNORE_EDGES</source>
+        <translation type="unfinished">Edges with layers (walls)</translation>
+    </message>
+    <message>
+        <source>TO_IGNORE_EDGES_OR_NOT</source>
+        <translation type="unfinished">Specified edges are</translation>
     </message>
 </context>
 </TS>
