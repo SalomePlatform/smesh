@@ -42,6 +42,7 @@
 #include <GeomAdaptor_Curve.hxx>
 #include <Geom_Curve.hxx>
 #include <Poly_Array1OfTriangle.hxx>
+#include <Poly_PolygonOnTriangulation.hxx>
 #include <Poly_Triangulation.hxx>
 #include <TColgp_Array1OfPnt.hxx>
 #include <TopExp.hxx>
@@ -169,19 +170,53 @@ namespace // internal utils
 
   //================================================================================
   /*!
+   * \brief Segment of Poly_PolygonOnTriangulation
+   */
+  struct Segment
+  {
+    gp_XYZ myPos, myDir;
+    double myLength;
+
+    void Init( const gp_Pnt& p1, const gp_Pnt& p2 )
+    {
+      myPos    = p1.XYZ();
+      myDir    = p2.XYZ() - p1.XYZ();
+      myLength = myDir.Modulus();
+      if ( myLength > std::numeric_limits<double>::min() )
+        myDir /= myLength;
+    }
+    bool Distance( const gp_Pnt& P, double& dist ) const // returns length of normal projection
+    {
+      gp_XYZ p = P.XYZ();
+      p.Subtract( myPos );
+      double proj = p.Dot( myDir );
+      if ( 0 < proj && proj < myLength )
+      {
+        p.Cross( myDir );
+        dist = p.Modulus();
+        return true;
+      }
+      return false;
+    }
+  };
+  //================================================================================
+  /*!
    * \brief Data of triangle used to locate it in an octree and to find distance
    *        to a point
    */
   struct Triangle
   {
-    Bnd_B3d myBox;
-    bool    myIsChecked; // to mark treated trias instead of using std::set
+    Bnd_B3d  myBox;
+    bool     myIsChecked; // to mark treated trias instead of using std::set
+    bool     myHasNodeOnVertex;
+    Segment* mySegments[3];
     // data for DistToProjection()
-    gp_XYZ myN0, myEdge1, myEdge2, myNorm, myPVec;
-    double myInvDet, myMaxSize2;
+    gp_XYZ   myN0, myEdge1, myEdge2, myNorm, myPVec;
+    double   myInvDet, myMaxSize2;
 
     void Init( const gp_Pnt& n1, const gp_Pnt& n2, const gp_Pnt& n3 ); 
     bool DistToProjection( const gp_Pnt& p, double& dist ) const;
+    bool DistToSegment   ( const gp_Pnt& p, double& dist ) const;
   };
   //================================================================================
   /*!
@@ -197,6 +232,7 @@ namespace // internal utils
   struct TriaTreeData : public ElemTreeData
   {
     vector< Triangle >           myTrias;
+    vector< Segment >            mySegments;
     double                       myFaceTol;
     double                       myTriasDeflection;
     BBox                         myBBox;
@@ -263,6 +299,28 @@ namespace // internal utils
       return bb;
     }
   };
+  //================================================================================
+  /*!
+   * \brief Link of two nodes
+   */
+  struct NLink : public std::pair< int, int >
+  {
+    NLink( int n1, int n2 )
+    {
+      if ( n1 < n2 )
+      {
+        first  = n1;
+        second = n2;
+      }
+      else
+      {
+        first  = n2;
+        second = n1;
+      }
+    }
+    int N1() const { return first; }
+    int N2() const { return second; }
+  };
 
   //================================================================================
   /*!
@@ -295,33 +353,82 @@ namespace // internal utils
       }
       for ( int i = myNodes->Lower(); i <= myNodes->Upper(); ++i )
         myBBox.Add( myNodes->Value(i).XYZ() );
-
     }
   }
+  //================================================================================
+  /*!
+   * \brief Prepare data for search of trinagles in GetMinDistInSphere()
+   */
+  //================================================================================
+
   void TriaTreeData::PrepareToTriaSearch()
   {
     if ( !myTrias.empty() ) return; // already done
     if ( !myPolyTrias ) return;
 
+    // get all boundary links and nodes on VERTEXes
+    map< NLink, Segment* > linkToSegMap;
+    map< NLink, Segment* >::iterator l2s;
+    set< int > vertexNodes;
+    TopLoc_Location loc;
+    Handle(Poly_Triangulation) tr = BRep_Tool::Triangulation( mySurface.Face(), loc );
+    if ( !tr.IsNull() )
+    {
+      TopTools_IndexedMapOfShape edgeMap;
+      TopExp::MapShapes( mySurface.Face(), TopAbs_EDGE, edgeMap );
+      for ( int iE = 1; iE <= edgeMap.Extent(); ++iE )
+      {
+        const TopoDS_Edge& edge = TopoDS::Edge( edgeMap( iE ));
+        Handle(Poly_PolygonOnTriangulation) polygon =
+          BRep_Tool::PolygonOnTriangulation( edge, tr, loc );
+        if ( polygon.IsNull()  )
+          continue;
+        const TColStd_Array1OfInteger& nodes = polygon->Nodes();
+        for ( int i = nodes.Lower(); i < nodes.Upper(); ++i )
+          linkToSegMap.insert( make_pair( NLink( nodes(i), nodes(i+1)), (Segment*)0 ));
+        vertexNodes.insert( nodes( nodes.Lower()));
+        vertexNodes.insert( nodes( nodes.Upper()));
+      }
+      // fill mySegments by boundary links
+      mySegments.resize( linkToSegMap.size() );
+      int iS = 0;
+      for ( l2s = linkToSegMap.begin(); l2s != linkToSegMap.end(); ++l2s, ++iS )
+      {
+        const NLink& link = (*l2s).first;
+        (*l2s).second = & mySegments[ iS ];
+        mySegments[ iS ].Init( myNodes->Value( link.N1() ),
+                               myNodes->Value( link.N2() ));
+      }
+    }
+
+    // initialize myTrias
     myTrias.resize( myPolyTrias->Length() );
     Standard_Integer n1,n2,n3;
     for ( int i = 1; i <= myPolyTrias->Upper(); ++i )
     {
+      Triangle & t = myTrias[ i-1 ];
       myPolyTrias->Value( i ).Get( n1,n2,n3 );
-      myTrias[ i-1 ].Init( myNodes->Value( n1 ),
-                           myNodes->Value( n2 ),
-                           myNodes->Value( n3 ));
-    }
-    myTree->FillIn();
+      t.Init( myNodes->Value( n1 ),
+              myNodes->Value( n2 ),
+              myNodes->Value( n3 ));
+      int nbSeg = 0;
+      if (( l2s = linkToSegMap.find( NLink( n1, n2 ))) != linkToSegMap.end())
+        t.mySegments[ nbSeg++ ] = l2s->second;
+      if (( l2s = linkToSegMap.find( NLink( n2, n3 ))) != linkToSegMap.end())
+        t.mySegments[ nbSeg++ ] = l2s->second;
+      if (( l2s = linkToSegMap.find( NLink( n3, n1 ))) != linkToSegMap.end())
+        t.mySegments[ nbSeg++ ] = l2s->second;
+      while ( nbSeg < 3 )
+        t.mySegments[ nbSeg++ ] = NULL;
 
-    // TODO: mark triangles with nodes on VERTEXes to
-    // less frequently compare with avoidPnt in GetMinDistInSphere()
-    //
-    // Handle(Poly_PolygonOnTriangulation) polygon =
-    //   BRep_Tool::PolygonOnTriangulation( edge, tr, loc );
-    // if ( polygon.IsNull() || !pologon.HasParameters() )
-    //   continue;
-    // Handle(TColStd_Array1OfInteger) nodeIDs = polygon->Nodes();
+      t.myIsChecked = false;
+      t.myHasNodeOnVertex = ( vertexNodes.count( n1 ) ||
+                              vertexNodes.count( n2 ) ||
+                              vertexNodes.count( n3 ));
+    }
+
+    // fill the tree of triangles
+    myTree->FillIn();
   }
 
   //================================================================================
@@ -347,10 +454,8 @@ namespace // internal utils
       isConstSize = false;
     }
 
-    typedef std::pair<int,int> TLink;
-    TLink link;
-    map< TLink, double >           lenOfDoneLink;
-    map< TLink, double >::iterator link2len;
+    map< NLink, double >           lenOfDoneLink;
+    map< NLink, double >::iterator link2len;
 
     Standard_Integer n[4];
     gp_Pnt p[4];
@@ -373,11 +478,7 @@ namespace // internal utils
       maxLinkLen = 0;
       for ( int j = 0; j < 3; ++j )
       {
-        if ( n[j] < n[j+1] )
-          link = TLink( n[j], n[j+1] );
-        else
-          link = TLink( n[j+1], n[j] );
-        link2len  = lenOfDoneLink.insert( make_pair( link, -1. )).first;
+        link2len  = lenOfDoneLink.insert( make_pair( NLink( n[j], n[j+1] ), -1. )).first;
         isDone[j] = !((*link2len).second < 0 );
         a[j]      = isDone[j] ? (*link2len).second : (*link2len).second = p[j].Distance( p[j+1] );
         if ( isDone[j] )
@@ -430,10 +531,13 @@ namespace // internal utils
   {
     double minDist2 = 1e100;
     const double tol2 = myFaceTol * myFaceTol;
+    const double dMin2 = myTriasDeflection * myTriasDeflection;
 
     TriaTreeData* me = const_cast<TriaTreeData*>( this );
     me->myFoundTriaIDs.clear();
     myTree->GetElementsInSphere( p.XYZ(), radius, me->myFoundTriaIDs );
+    if ( myFoundTriaIDs.empty() )
+      return minDist2;
 
     Standard_Integer n[ 3 ];
     for ( size_t i = 0; i < myFoundTriaIDs.size(); ++i )
@@ -444,19 +548,35 @@ namespace // internal utils
       t.myIsChecked = true;
 
       double d, minD2 = minDist2;
-      bool avoidTria = false;
       myPolyTrias->Value( myFoundTriaIDs[i]+1 ).Get( n[0],n[1],n[2] );
-      for ( int i = 0; i < 3; ++i )
+      if ( avoidPnt && t.myHasNodeOnVertex )
       {
-        const gp_Pnt& pn = myNodes->Value(n[i]);
-        if ( avoidTria = ( avoidPnt && pn.SquareDistance(*avoidPnt) <= tol2 ))
-          break;
-        if ( !projectedOnly )
-          minD2 = Min( minD2, pn.SquareDistance( p ));
+        bool avoidTria = false;
+        for ( int i = 0; i < 3; ++i )
+        {
+          const gp_Pnt& pn = myNodes->Value(n[i]);
+          if ( avoidTria = ( pn.SquareDistance( *avoidPnt ) <= tol2 ))
+            break;
+          if ( !projectedOnly )
+            minD2 = Min( minD2, pn.SquareDistance( p ));
+        }
+        if ( avoidTria )
+          continue;
+        if (( projectedOnly || minD2 < t.myMaxSize2 ) &&
+            ( t.DistToProjection( p, d ) || t.DistToSegment( p, d )))
+          minD2 = Min( minD2, d*d );
+        minDist2 = Min( minDist2, minD2 );
       }
-      if ( !avoidTria )
+      else if ( projectedOnly )
       {
-        if ( minD2 < t.myMaxSize2 && t.DistToProjection( p, d ))
+        if ( t.DistToProjection( p, d ) && d*d > dMin2 )
+          minDist2 = Min( minDist2, d*d );
+      }
+      else
+      {
+        for ( int i = 0; i < 3; ++i )
+          minD2 = Min( minD2, p.SquareDistance( myNodes->Value(n[i]) ));
+        if ( minD2 < t.myMaxSize2  && ( t.DistToProjection( p, d ) || t.DistToSegment( p, d )))
           minD2 = Min( minD2, d*d );
         minDist2 = Min( minDist2, minD2 );
       }
@@ -524,6 +644,31 @@ namespace // internal utils
 
     dist = ( myEdge2 * qvec ) * myInvDet;
     return true;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Compute distance from a point to either of mySegments. Return false if the point
+   *        is not projected on a segment
+   */
+  //================================================================================
+
+  bool Triangle::DistToSegment( const gp_Pnt& p, double& dist ) const
+  {
+    dist = 1e100;
+    bool res = false;
+    double d;
+    for ( int i = 0; i < 3; ++i )
+    {
+      if ( !mySegments[ i ])
+        break;
+      if ( mySegments[ i ]->Distance( p, d ))
+      {
+        res = true;
+        dist = Min( dist, d );
+      }
+    }
+    return res;
   }
 
   //================================================================================
@@ -993,7 +1138,7 @@ void AdaptiveAlgo::SetHypothesis( const StdMeshers_Adaptive1D* hyp )
 bool AdaptiveAlgo::Compute(SMESH_Mesh &         theMesh,
                            const TopoDS_Shape & theShape)
 {
-  //*theProgress = 0.01;
+  // *theProgress = 0.01;
 
   if ( myHyp->GetMinSize() > myHyp->GetMaxSize() )
     return error( "Bad parameters: min size > max size" );
@@ -1012,7 +1157,7 @@ bool AdaptiveAlgo::Compute(SMESH_Mesh &         theMesh,
     IncrementalMesh im( theMesh.GetShapeToMesh(), myHyp->GetDeflection(), /*Relatif=*/false);
     box = im.GetBox();
   }
-  //*theProgress = 0.3;
+  // *theProgress = 0.3;
 
   // holder of segment size at each point
   SegSizeTree sizeTree( box, grading, myHyp->GetMinSize(), myHyp->GetMaxSize() );
@@ -1160,19 +1305,24 @@ bool AdaptiveAlgo::Compute(SMESH_Mesh &         theMesh,
           double distToFace =
             triaSearcher->GetMinDistInSphere( pIt1->myP, pIt1->mySegSize, isAdjFace, avoidPnt );
           double allowedSize = Max( minSize, distToFace*( 1. + grading ));
-          if ( 1.1 * allowedSize < pIt1->mySegSize  )
+          if ( allowedSize < pIt1->mySegSize  )
           {
-            sizeDecreased = true;
-            sizeTree.SetSize( pIt1->myP, allowedSize );
             // cout << "E " << theMesh.GetMeshDS()->ShapeToIndex( eData.Edge() )
-            //      << "\t SetSize " << allowedSize << " at "
-            //      << pIt1->myP.X() <<", "<< pIt1->myP.Y()<<", "<<pIt1->myP.Z() << endl;
-            pIt2 = pIt1;
-            if ( --pIt2 != eData.myPoints.end() && pIt2->mySegSize > allowedSize )
-              sizeTree.SetSize( eData.myC3d.Value( 0.6*pIt2->myU + 0.4*pIt1->myU ), allowedSize );
-            pIt2 = pIt1;
-            if ( ++pIt2 != eData.myPoints.end() && pIt2->mySegSize > allowedSize )
-              sizeTree.SetSize( eData.myC3d.Value( 0.6*pIt2->myU + 0.4*pIt1->myU ), allowedSize );
+            //      << "\t closure detected " << endl;
+            if ( 1.1 * allowedSize < pIt1->mySegSize  )
+            {
+              sizeDecreased = true;
+              sizeTree.SetSize( pIt1->myP, allowedSize );
+              // cout << "E " << theMesh.GetMeshDS()->ShapeToIndex( eData.Edge() )
+              //      << "\t SetSize " << allowedSize << " at "
+              //      << pIt1->myP.X() <<", "<< pIt1->myP.Y()<<", "<<pIt1->myP.Z() << endl;
+              pIt2 = pIt1;
+              if ( --pIt2 != eData.myPoints.end() && pIt2->mySegSize > allowedSize )
+                sizeTree.SetSize( eData.myC3d.Value( 0.6*pIt2->myU + 0.4*pIt1->myU ), allowedSize );
+              pIt2 = pIt1;
+              if ( ++pIt2 != eData.myPoints.end() && pIt2->mySegSize > allowedSize )
+                sizeTree.SetSize( eData.myC3d.Value( 0.6*pIt2->myU + 0.4*pIt1->myU ), allowedSize );
+            }
             pIt1->mySegSize = allowedSize;
           }
           ++pIt1;
@@ -1193,7 +1343,7 @@ bool AdaptiveAlgo::Compute(SMESH_Mesh &         theMesh,
       } // while ( sizeDecreased )
     } // loop on myEdges
 
-    //*theProgress = 0.3 + 0.3 * iF / double( faceMap.Extent() );
+    // *theProgress = 0.3 + 0.3 * iF / double( faceMap.Extent() );
 
   } // loop on faceMap
 
@@ -1220,11 +1370,12 @@ bool AdaptiveAlgo::makeSegments()
   {
     EdgeData& eData = myEdges[ iE ];
 
-    // estimate roughly min segement size on the EDGE
+    // estimate roughly min segment size on the EDGE
     double edgeMinSize = myHyp->GetMaxSize();
     EdgeData::TPntIter pIt1 = eData.myPoints.begin();
     for ( ; pIt1 != eData.myPoints.end(); ++pIt1 )
-      edgeMinSize = Min( edgeMinSize, mySizeTree->GetSize( pIt1->myP ));
+      edgeMinSize = Min( edgeMinSize,
+                         Min( pIt1->mySegSize, mySizeTree->GetSize( pIt1->myP )));
 
     const double f = eData.myC3d.FirstParameter(), l = eData.myC3d.LastParameter();
     const double parLen = l - f;
@@ -1234,6 +1385,7 @@ bool AdaptiveAlgo::makeSegments()
     // compute nb of segments
     bool toRecompute = true;
     double maxSegSize = 0;
+    size_t i = 1, segCount;
     //cout << "E " << theMesh.GetMeshDS()->ShapeToIndex( eData.Edge() ) << endl;
     while ( toRecompute ) // recompute if segment size at some point is less than edgeMinSize/nbDivSeg
     {
@@ -1241,11 +1393,32 @@ bool AdaptiveAlgo::makeSegments()
       nbSegs[0] = 0;
       toRecompute = false;
 
+      // fill nbSegs with segment size stored in EdgeData::ProbePnt::mySegSize which can
+      // be less than size in mySizeTree
+      pIt1 = eData.myPoints.begin();
+      EdgeData::ProbePnt* pp1 = &(*pIt1), *pp2;
+      for ( ++pIt1; pIt1 != eData.myPoints.end(); ++pIt1 )
+      {
+        pp2 = &(*pIt1);
+        double size1 = Min( pp1->mySegSize, myHyp->GetMaxSize() );
+        double size2 = Min( pp2->mySegSize, myHyp->GetMaxSize() );
+        double r, u, du = pp2->myU - pp1->myU;
+        while(( u = f + parLen * i / nbDiv ) < pp2->myU )
+        {
+          r = ( u - pp1->myU ) / du;
+          nbSegs[i] = (1-r) * size1 + r * size2;
+          ++i;
+        }
+        if ( i < nbSegs.size() )
+          nbSegs[i] = size2;
+        pp1 = pp2;
+      }
+      // fill nbSegs with local nb of segments
       gp_Pnt p1 = eData.First().myP, p2, pDiv = p1;
-      for ( size_t i = 1, segCount = 1; i < nbSegs.size(); ++i )
+      for ( i = 1, segCount = 1; i < nbSegs.size(); ++i )
       {
         p2 = eData.myC3d.Value( f + parLen * i / nbDiv );
-        double locSize = Min( mySizeTree->GetSize( p2 ), myHyp->GetMaxSize() );
+        double locSize = Min( mySizeTree->GetSize( p2 ), nbSegs[i] );
         double nb      = p1.Distance( p2 ) / locSize;
         // if ( nbSegs.size() < 30 )
         //   cout << "locSize " << locSize << " nb " << nb << endl;
@@ -1274,7 +1447,7 @@ bool AdaptiveAlgo::makeSegments()
       fact = ++nbSegFinal / nbSegs.back();
     //cout << "nbSegs.back() " << nbSegs.back() << " nbSegFinal " << nbSegFinal << endl;
     params.clear();
-    for ( int i = 0, segCount = 1; segCount < nbSegFinal; ++segCount )
+    for ( i = 0, segCount = 1; segCount < nbSegFinal; ++segCount )
     {
       while ( nbSegs[i] * fact < segCount )
         ++i;
@@ -1302,7 +1475,7 @@ bool AdaptiveAlgo::makeSegments()
     helper.SetElementsOnShape( true );
     const int ID = 0;
     const SMDS_MeshNode *n1 = nf, *n2;
-    for ( size_t i = 0; i < params.size(); ++i, n1 = n2 )
+    for ( i = 0; i < params.size(); ++i, n1 = n2 )
     {
       gp_Pnt p2 = eData.myC3d.Value( params[i] );
       n2 = helper.AddNode( p2.X(), p2.Y(), p2.Z(), ID, params[i] );

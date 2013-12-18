@@ -18,79 +18,72 @@ available, but this operation will be extended in the future to support
 other mesh objects - elements, meshes, sub-meshes and groups.
 
 To start <b>Minimum Distance</b> operation, select <b>Minimum Distance</b>
-item from \b Measurements menu.
+tab in \b Measurements dialog.
 
 \image html min_distance.png
 
-In the dialog box choose the first target and the second target mode by
+Choose the first and the second target by
 switching the corresponding radio buttons, then select the objects the distance
 between which is to be calculated (or input their IDs directly 
-in case of nodes/elements) and press \em Compute button.
+in case of nodes/elements) and press \b Compute button.
 
-The following types of targets are supported:
-- \em Node: single mesh node;
-- \em Element: single mesh element (not available in this version);
-- \em Object: mesh, sub-mesh or group object (not available in this
+The following targets are supported:
+- \b Node: single mesh node;
+- \b Element: single mesh element (not available in this version);
+- \b Object: mesh, sub-mesh or group object (not available in this
 version);
-- \em Origin: origin of the global co-ordinate system.
+- \b Origin: origin of the global co-ordinate system.
 
-The result will
-be shown in the bottom area of the dialog box. In addition, a simple
+The result will be shown in the bottom area of the dialog. In addition, a simple
 preview will be shown in the 3D viewer.
 
 \image html min_distance_preview.png
 
 \section bounding_box_anchor Bounding Box
 
-This operation allows to calculate the bounding box of the selected
+This operation allows calculating the bounding box of the selected
 object(s).
 
 To start <b>Bounding Box</b> operation, select <b>Bounding Box</b>
-item from \b Measurements menu.
+tab in \b Measurements dialog.
 
 \image html bnd_box.png
 
-In the dialog box choose the required type of the object by switching the
-corresponding radio button, select the object(s) and press \em Compute button.
+Choose the required type of the object by switching the corresponding radio button, select the object(s) and press \em Compute button.
 
 The following types of input are available:
-- \em Objects: select one or several mesh, sub-mesh or group objects;
-- \em Nodes: select a set of mesh nodes;
-- \em Elements: select a set of mesh elements.
+- \b Objects: one or several mesh, sub-mesh or group objects;
+- \b Nodes: a set of mesh nodes;
+- \b Elements: a set of mesh elements.
 
 The result of calculation will be shown in the bottom area of the
-dialog box. In addition, a simple preview will be shown in the 3D
-viewer.
+dialog. In addition, a simple preview will be shown in the 3D viewer.
 
 \image html bnd_box_preview.png
 
 \section basic_properties_anchor Basic Properties
 
-This operation allows calculation of length, area or volume for the the selected
-object:
-- Length is calculated as a sum of length of all 1D elements;
-- Area id a sum of area of all 2D elements
-- Volume is a sum of volume of all 3D elements. 
+This operation provides calculation of length, area or volume for the the selected object:
+- \b Length is calculated as a sum of lengths of all 1D elements;
+- \b Area is a sum of areas of all 2D elements
+- \b Volume is a sum of volumes of all 3D elements. 
 
-To start one of <b>Basic Properties</b> calculations, select <b>Length</b>, <b>Area</b> 
-or <b>Volume</b> item from <b>Measurements - Basic Properties</b> menu.
+To start a <b>Basic Properties</b> calculation, select <b>Length</b>, <b>Area</b> or <b>Volume</b> item.
 
 \image html basic_props.png
 
-In the dialog box select the required type of calculation (length, area or volume), select
-the the object (mesh, sub-mesh or group) and press \em Compute button.
+In the dialog box select the required type of calculation (length, area or volume) and the object (mesh, sub-mesh or group) and press \b Compute button.
 
-The result of calculation will be shown in the bottom area of the
-dialog box.
+The result of calculation will be shown in the bottom area of the dialog.
 
 \note
-- If mesh consists of 3D elements only, its "length" and "area" will be 0.
-- As calculation result is a sum of length, area and volume of all mesh elements,
-  duplications are not taken into account; i.e. all duplicated elements
+- If the mesh consists of 3D elements only, its "length" and "area" will be 0.
+- As calculation result is a sum of lengths, areas and volumes of all mesh elements, the
+  duplication is not taken into account; i.e. all duplicated elements
   (elements built on the same set of nodes) will be included into the result.
 - Similarly, intersection of elements is not taken into account.
 
-<b>See Also</b> a sample TUI Script of a 
+<b>See Also</b> a sample TUI Script of 
 \ref tui_measurements_page "Measurement operations".
 
 */

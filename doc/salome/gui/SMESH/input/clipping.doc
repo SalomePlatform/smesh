@@ -2,27 +2,26 @@
 
 \page clipping_page Clipping
 
-\n Using this menu you can create cross-section views (clipping planes)
+\b Clipping allows creating cross-section views (clipping planes)
 of your mesh.
 
-To start, click on the \em New button.
+It is available as a sub-item in the context menu of an active mesh. 
 
-Now you must specify what mode of creating plane you want to choose: 
-absolute or relative.
+To create a clipping plane, click on the \b New button in the dialog and choose how it is  defined: by \b Absolute or \b Relative coordinates.
 
-<b>Absolute mode</b>
+<b>Absolute Coordinates</b>
 
 \image html Clipping_Absolute.png
 
-- <b>Base point</b> - allows to define the coordinates of the base
+- <b>Base point</b> - allows defining the coordinates of the base
   point for the clipping plane.
 
   - <b>Reset</b> - returns the base point to coordinate origin.
 
-- <b>Direction</b> - allows to define the orientation of the
+- <b>Direction</b> - allows defining the orientation of the
   clipping plane.
 
-  - <b>Invert</b> - allows to select which part of the object will be
+	- <b>Invert</b> - allows selecting, which part of the object will be
     removed and which will remain after clipping.
     
 <b>Relative mode</b>  
@@ -30,42 +29,34 @@ absolute or relative.
 \image html Clipping_Relative.png
 
 - \b Orientation ( ||X-Y, ||X-Z or ||Y-Z).
+
 - \b Distance between the opposite extremities of the boundary box of 
 selected objects, if it is set to 0.5 the boundary box is split in two halves.
+
 - \b Rotation (in angle degrees) <b>around X</b> (Y to Z) and <b>around 
 Y</b> (X to Z) (depending on the chosen Orientation)
 
-The parameters of cross-section: 
-
-List of <b>meshes, sub-meshes and groups</b> to which the cross-section will be applied.
-
-<b>Select all</b> button allows to select and deselect all available
-objects at once.
-
-If the <b>Show preview</b> button is on, you can see the clipping plane
-in the <b>3D Viewer</b>.
-
-\image html before_clipping.png "The plane and the cut object"
-
-Also there the possibility to interact directly with the clipping plane in 3D 
-view with mouse. User can change the parameters of clipping plane by dialog data 
-or by hand.
-
 \image html before_clipping_preview.png "The preview plane and the cut object"
 
-If the <b>Auto Apply</b> button is on, you can preview the
+The other parameters are available in both modes : 
+
+- <b>OpenGL clipping</b> check-box allows choosing OpenGL native clipping, which clips the whole presentation. If it is unchecked, the clipping is done on the dataset i.e. only the visibility of separate mesh cells is changed (see the examples).
+- The List contains <b>Meshes, sub-meshes and groups</b> to which the cross-section will be applied.
+- <b>Select all</b> check-box allows to selecting and deselecting all available objects at once.
+- <b>Show preview</b> check-box shows the clipping plane in the <b>3D Viewer</b>.
+- <b>Auto Apply</b> check-box shows button is on, you can preview the
 cross-section in the <b>3D Viewer</b>.
 
-Also, it is possible to specify the type of clipping: using dataset, 
-i.e. it only changes the visibility of separate mesh cells or alternative 
-clipping - an OpenGL native one, which clips overall presentation.
-For choosing use <b>OpenGL clipping</b> checkbox.
+It is also possible to interact  with the clipping plane directly in 3D 
+view using the mouse. 
+
+To get a new object from \b Clipping, click \b Apply.
+
+<b>Examples:</b>
 
 \image html dataset_clipping.png "The cross-section using dataset"
 
-
 \image html opengl_clipping.png "The OpenGL cross-section"
 
-To get a new object from \b Clipping, click \b Apply.
 
 */

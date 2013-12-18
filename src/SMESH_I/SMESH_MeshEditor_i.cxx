@@ -227,22 +227,22 @@ namespace MeshEditor_I {
         }
         myMesh = mesh;
         myMeshPartIOR = meshPartIOR;
-        if ( SMESH_subMesh* myMainSubMesh = mesh->GetSubMeshContaining(1) ) {
-          const TDependsOnMap & subMeshes = myMainSubMesh->DependsOn();
-          TDependsOnMap::const_iterator sm;
-          for (sm = subMeshes.begin(); sm != subMeshes.end(); sm++)
-            sm->second->SetEventListener( this, 0, sm->second );
+        SMESH_subMesh* sm = mesh->GetSubMesh( mesh->GetShapeToMesh() );
+        SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator( /*includeSelf=*/true );
+        while ( smIt->more() )
+        {
+          sm = smIt->next();
+          sm->SetEventListener( this, 0, sm );
         }
       }
     }
     //!<  delete self from all submeshes
     void Unset(SMESH_Mesh* mesh)
     {
-      if ( SMESH_subMesh* myMainSubMesh = mesh->GetSubMeshContaining(1) ) {
-        const TDependsOnMap & subMeshes = myMainSubMesh->DependsOn();
-        TDependsOnMap::const_iterator sm;
-        for (sm = subMeshes.begin(); sm != subMeshes.end(); sm++)
-          sm->second->DeleteEventListener( this );
+      if ( SMESH_subMesh* sm = mesh->GetSubMeshContaining(1) ) {
+        SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator( /*includeSelf=*/true );
+        while ( smIt->more() )
+          smIt->next()->DeleteEventListener( this );
       }
       myMesh = 0;
     }
@@ -1747,7 +1747,7 @@ CORBA::Boolean SMESH_MeshEditor_i::TriToQuad (const SMESH::long_array &   IDsOfE
   if ( !myIsPreviewMode ) {
     // Update Python script
     TPythonDump() << "isDone = " << this << ".TriToQuad( "
-		  << IDsOfElements << ", " << aNumericalFunctor << ", " << TVar( MaxAngle ) << " )";
+                  << IDsOfElements << ", " << aNumericalFunctor << ", " << TVar( MaxAngle ) << " )";
   }
 
   bool stat = getEditor().TriToQuad( *workElements, aCrit, MaxAngle );
@@ -1785,7 +1785,7 @@ CORBA::Boolean SMESH_MeshEditor_i::TriToQuadObject (SMESH::SMESH_IDSource_ptr   
 
     // Update Python script
     aTPythonDump << "isDone = " << this << ".TriToQuadObject("
-		 << theObject << ", " << aNumericalFunctor << ", " << TVar( MaxAngle ) << " )";
+                 << theObject << ", " << aNumericalFunctor << ", " << TVar( MaxAngle ) << " )";
   }
 
   return isDone;

@@ -124,12 +124,10 @@ preferences (zero value means no limit).
 \anchor mesh_quality_info_anchor
 <h2>Quality Information</h2>
 
-The <b>Quality Info</b> tab page of the dialog box provides overal
-mesh quality controls information on the selected object - mesh, 
-sub-mesh or mesh group:
+The <b>Quality Info</b> tab provides overall information about mesh quality controls  on the selected object - mesh, sub-mesh or mesh group:
 - Name;
 - Nodes information:
-  - Number of the free nodes;
+  - Number of free nodes;
   - Number of double nodes;
 - Edges information:
   - Number of double edges;
@@ -145,21 +143,22 @@ sub-mesh or mesh group:
 <center>\image html ctrlinfo.png
 <em>"Quality Info" page</em></center>
 
-\note User can set "Double nodes tolerance" in the dialog for local change 
+\note It is possible to set "Double nodes tolerance" in the dialog for a local change 
       or via the "Quality controls" in Mesh preferences.
 
-\note For the perfomance reason, all quality control values for the big meshes are
-computed only by demand. For this, the user should press the "compute"
-button (see picture). Also, values are automatically computed if the number of the 
+\note For performance reasons, all quality control values for big meshes are
+computed only by demand. For this, press the "compute"
+button. Also, values are automatically computed if the number of 
 nodes / elements does not exceed the "Automatic controls compute limit" set 
-via the "Mesh information" preferences (zero value means no limit).
+via the "Mesh information" preferences (zero value means that there is no limit).
 
 The button \b "Dump" allows printing the information displayed in the
 dialog box to a .txt file.
 
 In case you get <b>Mesh Information</b> via a TUI script, the information is
 displayed in the Python Console. 
-<b>See the</b> \ref tui_viewing_mesh_infos "TUI Example".
+
+See the \ref tui_viewing_mesh_infos "TUI Example".
 
 */
 	

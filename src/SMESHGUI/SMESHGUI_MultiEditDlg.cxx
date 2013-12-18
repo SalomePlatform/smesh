@@ -989,6 +989,7 @@ bool SMESHGUI_MultiEditDlg::onApply()
 
     updateButtons();
   }
+  obj._retn(); // else myMesh is deleted by ~obj
 
   myBusy = false;
   return aResult;

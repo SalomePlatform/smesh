@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>500</height>
+    <width>791</width>
+    <height>593</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -339,7 +339,7 @@ In other words, it avoids having faces too far away from the curve they should r
          </rect>
         </property>
         <property name="toolTip">
-         <string>If the Units parameter is relative, epsilon max correspond to (per thousand) s*Tolerance/1000, where s is the size of the bounding box of the domain.
+         <string>If the Units parameter is relative, epsilon max correspond to s*Tolerance, where s is the size of the bounding box of the domain.
 If the Units parameter is absolute, the tolerance parameter is expressed in model units:
   if P=2 and point coordinates are given in millimeters, the maximal chordal deviation is 2 mm.</string>
         </property>
@@ -599,13 +599,13 @@ New created vertices are saved in the .mesh file under keyword section 'Vertices
          </rect>
         </property>
         <property name="maximum">
-         <double>0.890000000000000</double>
+         <double>90.000000000000000</double>
         </property>
         <property name="singleStep">
-         <double>0.010000000000000</double>
+         <double>1.000000000000000</double>
         </property>
         <property name="value">
-         <double>0.040000000000000</double>
+         <double>15.000000000000000</double>
         </property>
        </widget>
        <widget class="QLabel" name="label_2">

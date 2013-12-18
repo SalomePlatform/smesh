@@ -54,7 +54,7 @@ class LightApp_SelectionMgr;
 
 namespace SMESH
 {
-  struct TElementSimulation;
+  struct TElementSimulationQuad;
 }
 
 //=================================================================================
@@ -92,7 +92,7 @@ private:
   
   SMESH::SMESH_Mesh_var       myMesh;
   SMESH_Actor*                myActor;
-  SMESH::TElementSimulation*  mySimulation;
+  SMESH::TElementSimulationQuad* mySimulation;
   QString                     myEntry;
   GrpList                     myGroups;
   

@@ -223,7 +223,10 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh&         aMesh,
     return false;
   myQuadStruct = quad;
 
-  bool ok = false;
+  updateDegenUV( quad );
+
+  enum { NOT_COMPUTED = -1, COMPUTE_FAILED = 0, COMPUTE_OK = 1 };
+  int res = NOT_COMPUTED;
   if (myQuadranglePreference)
   {
     int n1    = quad->side[0]->NbPoints();
@@ -236,7 +239,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh&         aMesh,
     if (nfull == ntmp && ((n1 != n3) || (n2 != n4)))
     {
       // special path genarating only quandrangle faces
-      ok = computeQuadPref( aMesh, F, quad );
+      res = computeQuadPref( aMesh, F, quad );
     }
   }
   else if (myQuadType == QUAD_REDUCED)
@@ -252,7 +255,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh&         aMesh,
     if ((n1 == n3 && n2 != n4 && n24tmp == n24) ||
         (n2 == n4 && n1 != n3 && n13tmp == n13))
     {
-      ok = computeReduced( aMesh, F, quad );
+      res = computeReduced( aMesh, F, quad );
     }
     else
     {
@@ -270,12 +273,15 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh&         aMesh,
     }
   }
 
-  ok = computeQuadDominant( aMesh, F, quad );
+  if ( res == NOT_COMPUTED )
+  {
+    res = computeQuadDominant( aMesh, F, quad );
+  }
 
-  if ( ok && myNeedSmooth )
+  if ( res == COMPUTE_OK && myNeedSmooth )
     smooth( quad );
 
-  return ok;
+  return ( res == COMPUTE_OK );
 }
 
 //================================================================================
@@ -927,6 +933,8 @@ FaceQuadStruct::Ptr StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         
                                                      ignoreMediumNodes, myProxyMesh));
         ++iSide;
       }
+      if ( quad->side.size() == 4 )
+        break;
       if ( nbLoops > 8 )
       {
         error(TComm("Bug: infinite loop in StdMeshers_Quadrangle_2D::CheckNbEdges()"));
@@ -1225,8 +1233,6 @@ bool StdMeshers_Quadrangle_2D::setNormalizedGrid (SMESH_Mesh &          aMesh,
   //             =down
   //
 
-  updateDegenUV( quad );
-
   int nbhoriz  = Min(quad->side[0]->NbPoints(), quad->side[2]->NbPoints());
   int nbvertic = Min(quad->side[1]->NbPoints(), quad->side[3]->NbPoints());
 
@@ -1411,8 +1417,6 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
   Handle(Geom_Surface) S = BRep_Tool::Surface(aFace);
   bool WisF = true;
   int i,j,geomFaceID = meshDS->ShapeToIndex(aFace);
-
-  updateDegenUV( quad );
 
   int nb = quad->side[0]->NbPoints();
   int nr = quad->side[1]->NbPoints();
@@ -2396,8 +2400,6 @@ bool StdMeshers_Quadrangle_2D::computeReduced (SMESH_Mesh &        aMesh,
     if (uv_eb.size() != nb || uv_er.size() != nr || uv_et.size() != nt || uv_el.size() != nl)
       return error(COMPERR_BAD_INPUT_MESH);
 
-    updateDegenUV( quad );
-
     // arrays for normalized params
     TColStd_SequenceOfReal npb, npr, npt, npl;
     for (j = 0; j < nb; j++) {
@@ -3266,7 +3268,7 @@ void StdMeshers_Quadrangle_2D::updateDegenUV(FaceQuadStruct::Ptr quad)
       uv1.v = uv2.v = 0.5 * ( uv1.v + uv2.v );
     }
 
-  else if ( quad->side.size() == 4 )
+  else if ( quad->side.size() == 4 && myQuadType == QUAD_STANDARD)
 
     // Set number of nodes on a degenerated side to be same as on an opposite side
     // ----------------------------------------------------------------------------
@@ -3329,8 +3331,8 @@ void StdMeshers_Quadrangle_2D::smooth (FaceQuadStruct::Ptr quad)
     while ( fIt->more() )
     {
       const SMDS_MeshElement* face = fIt->next();
-      const int nbN = face->NbCornerNodes();
-      const int nInd = face->GetNodeIndex( node );
+      const int nbN     = face->NbCornerNodes();
+      const int nInd    = face->GetNodeIndex( node );
       const int prevInd = myHelper->WrapIndex( nInd - 1, nbN );
       const int nextInd = myHelper->WrapIndex( nInd + 1, nbN );
       const SMDS_MeshNode* prevNode = face->GetNode( prevInd );
@@ -3370,24 +3372,30 @@ void StdMeshers_Quadrangle_2D::smooth (FaceQuadStruct::Ptr quad)
       if ( sNode._triangles.empty() )
         continue; // not movable node
 
-      // compute a new XYZ
-      gp_XYZ newXYZ (0,0,0);
-      for ( unsigned i = 0; i < sNode._triangles.size(); ++i )
-        newXYZ += sNode._triangles[i]._n1->_xyz;
-      newXYZ /= sNode._triangles.size();
-
-      // compute a new UV by projection
       gp_XY newUV;
-      proj.Perform( newXYZ );
-      bool isValid = ( proj.IsDone() && proj.NbPoints() > 0 );
-      if ( isValid )
+      bool isValid = false;
+      bool use3D   = ( iLoop > 2 ); // 3 loops in 2D and 2, in 3D
+
+      if ( use3D )
       {
-        // check validity of the newUV
-        Quantity_Parameter u,v;
-        proj.LowerDistanceParameters( u, v );
-        newUV.SetCoord( u, v );
-        for ( unsigned i = 0; i < sNode._triangles.size() && isValid; ++i )
-          isValid = ( sNode._triangles[i].IsForward( newUV ) == refForward );
+        // compute a new XYZ
+        gp_XYZ newXYZ (0,0,0);
+        for ( unsigned i = 0; i < sNode._triangles.size(); ++i )
+          newXYZ += sNode._triangles[i]._n1->_xyz;
+        newXYZ /= sNode._triangles.size();
+
+        // compute a new UV by projection
+        proj.Perform( newXYZ );
+        isValid = ( proj.IsDone() && proj.NbPoints() > 0 );
+        if ( isValid )
+        {
+          // check validity of the newUV
+          Quantity_Parameter u,v;
+          proj.LowerDistanceParameters( u, v );
+          newUV.SetCoord( u, v );
+          for ( unsigned i = 0; i < sNode._triangles.size() && isValid; ++i )
+            isValid = ( sNode._triangles[i].IsForward( newUV ) == refForward );
+        }
       }
       if ( !isValid )
       {
@@ -3578,9 +3586,10 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
   theVertices.clear();
   vector< double >      angles;
   vector< TopoDS_Edge > edgeVec;
-  vector< int >         cornerInd;
+  vector< int >         cornerInd, nbSeg;
   angles.reserve( vertexByAngle.size() );
   edgeVec.reserve( vertexByAngle.size() );
+  nbSeg.reserve( vertexByAngle.size() );
   cornerInd.reserve( nbCorners );
   for ( edge = theWire.begin(); edge != theWire.end(); ++edge )
   {
@@ -3595,6 +3604,13 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
     }
     angles.push_back( angleByVertex.IsBound( v ) ? angleByVertex( v ) : -M_PI );
     edgeVec.push_back( *edge );
+    if ( theConsiderMesh && isThereVariants )
+    {
+      if ( SMESHDS_SubMesh* sm = helper.GetMeshDS()->MeshElements( *edge ))
+        nbSeg.push_back( sm->NbNodes() + 1 );
+      else
+        nbSeg.push_back( 0 );
+    }
   }
 
   // refine the result vector - make sides elual by length if

@@ -21,13 +21,9 @@ The following dialog box shall appear:
 </li>
 <li>Enter the coordinates of the destination point.</li>
 <li>Check in <b>Find closest to destination</b> option or
-select the necessary node manually (X, Y, Z, dX, dY, dZ fields allow
-to see original coordinates and displacement of the node to move).
-\b Preview check-box allows to see the results of the operation.</li>
-<li>The <b>Update Destination</b> button is activated when <b>Find
-closest to destination</b> option is unchecked. Click the <b>Update
-Destination</b> button for update coordinates of the destination point
-from original coordinates of the node to move.</li>
+select the necessary node manually (X, Y, Z, dX, dY, dZ fields show the original coordinates and displacement of the node to move).
+\b Preview check-box shows the operation results.</li>
+<li> <b>Update Destination</b> button is activated when <b>Find closest to destination</b> option is unchecked. Click <b>Update Destination</b> button to update the coordinates of the destination point.</li>
 <li>Click the \b Apply or <b>Apply and Close</b> button.</li>
 </ol>
 

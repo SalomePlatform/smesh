@@ -1,8 +1,8 @@
 /*!
 
-\page extrusion_along_path_page Extrusion along a path
+\page extrusion_along_path_page Extrusion along Path
 
-\n In principle, <b>Extrusion along a path</b> works in the same way
+\n In principle, <b>Extrusion along Path</b> works in the same way
 as \b Extrusion, the main difference is that we define not a vector,
 but a path of extrusion which must be a 1D mesh or 1D sub-mesh. 
 To get an idea of how this algorithm works, examine several examples,
@@ -69,7 +69,7 @@ mesh.</center>
 <center>The same, but using angles {45, -45, 45, -45, 45, -45, 45,
 -45}</center>
 
-<br><em>To use Extrusion along a path:</em>
+<br><em>To use Extrusion along Path:</em>
 <ol>
 <li>From the \b Modification menu choose the <b>Extrusion along a
 path</b> item or click <em>"Extrusion along a path"</em> button in the toolbar.
@@ -88,25 +88,24 @@ The following dialog common for line and planar elements will appear:
 <li>specify the <b>IDs of the elements</b> which will be extruded
 
 <ul>
-<li><b>Select the whole mesh, submesh or group</b> activating this
-checkbox; or</li>
-<li>choose mesh elements with the mouse in the 3D Viewer. It is
+<li><b>Select the whole mesh, sub-mesh or group</b> activating the corresponding check-box; or</li>
+<li>Choose mesh elements with the mouse in the 3D Viewer. It is
 possible to select a whole area with a mouse frame; or</li> 
-<li>input the element IDs directly in <b>ID Elements</b> field. The selected elements will be highlighted in the
+<li>Input the element IDs directly in <b>ID Elements</b> field. The selected elements will be highlighted in the
 viewer; or</li>
 <li>apply Filters. <b>Set filter</b> button allows to apply a filter to the selection of elements. See more
 about filters in the \ref selection_filter_library_page "Selection filter library" page.</li>
 </ul>
 
 </li>
-<li>define the \b Path along which the elements will be extruded.<br>
+<li>Define the \b Path along which the elements will be extruded.<br>
   Path definition consists of several elements:
   <ul>
     <li><b>Mesh or submesh</b> - 1D mesh or sub-mesh, along which proceeds the extrusion</li>
     <li><b>Start node</b> - the start node. It is used to define the direction of extrusion </li>
   </ul>
 </li>
-<li>activate <b>Generate Groups</b> checkbox if it is necessary to  copy the groups of
+<li>Activate <b>Generate Groups</b> check-box if it is necessary to  copy the groups of
   elements of the source mesh to the newly created one. </li>
 </ul>
 </li>
@@ -119,9 +118,8 @@ curve. By default, the <b>Base Point</b> around which the elements are rotated i
 the mass center of the elements, however, you can specify any point as
 the <b>Base Point</b> and the elements will be rotated with respect to this
 point.<br>
-  Note that it is the <b>Base Point</b> whos track exactly equals to the 
-  path, and all the elements being extruded just keep their relative
-  position around the <b>Base Point</b> at each iteration.
+  Note that only the displacement of the <b>Base Point</b> exactly equals to the 
+  path, and all other extruded elements simply keep their position relatively to the <b>Base Point</b> at each iteration.
 </li>
 <li>The elements can also be rotated around the path to get the resulting
 mesh in a helical fashion. You can set the values of angles at the

@@ -2,14 +2,10 @@
 
 \page a2d_meshing_hypo_page 2D Meshing Hypotheses
 
-<br>
-<ul>
-<li>\ref max_element_area_anchor "Max Element Area"</li>
-<li>\ref length_from_edges_anchor "Length from Edges"</li>
-<li>\ref hypo_quad_params_anchor "Quadrangle parameters"</li>
-</ul>
+- \ref max_element_area_anchor "Max Element Area"
+- \ref length_from_edges_anchor "Length from Edges"
+- \ref hypo_quad_params_anchor "Quadrangle parameters"
 
-<br>
 \anchor max_element_area_anchor
 <h2>Max Element Area</h2>
 
@@ -25,10 +21,8 @@ which will compose the mesh of these faces.
 \image html max_el_area.png "In this example, Max. element area is very small compared to the 1D hypothesis"
 
 <b>See Also</b> a sample TUI Script of a 
-\ref tui_max_element_area "Maximum Element Area" hypothesis
-operation. 
+\ref tui_max_element_area "Maximum Element Area" hypothesis operation. 
 
-<br>
 \anchor length_from_edges_anchor
 <h2>Length from Edges</h2>
 
@@ -39,7 +33,6 @@ of a given face.
 <b>See Also</b> a sample TUI Script of a 
 \ref tui_length_from_edges "Length from Edges" hypothesis operation.
 
-<br>
 \anchor hypo_quad_params_anchor
 <h2>Quadrangle parameters</h2>
 
@@ -72,37 +65,34 @@ shows the good (left) and the bad (right) results of meshing.
 segments on opposite sides to define the algorithm of transition
 between them. The following types are available:
 
-<ul>
-<li><b>Standard</b> is the default case, when both triangles and quadrangles
-    are possible in the transition area along the finer meshed sides.</li>
-<li><b>Triangle preference</b> forces building only triangles in the
-    transition area along the finer meshed sides.
-    <i>This type corresponds to <b>Triangle Preference</b> additional
-    hypothesis, which is obsolete now.</i></li>
-<li><b>Quadrangle preference</b> forces building only quadrangles in the
-    transition area along the finer meshed sides. This hypothesis has a
-    restriction: the total quantity of segments on all
-    four sides of the face must be even (divisible by 2).</li>
-    <i>This type corresponds to <b>Quadrangle Preference</b>
-    additional hypothesis, which is obsolete now.</i></li>
-<li><b>Quadrangle preference (reversed)</b> works in the same way and
+- <b>Standard</b> is the default case, when both triangles and quadrangles
+  are possible in the transition area along the finer meshed sides.
+- <b>Triangle preference</b> forces building only triangles in the
+  transition area along the finer meshed sides.
+  \note This type corresponds to <b>Triangle Preference</b> additional hypothesis,
+  which is obsolete now.
+- <b>Quadrangle preference</b> forces building only quadrangles in the
+  transition area along the finer meshed sides. This hypothesis has a
+  restriction: the total quantity of segments on all
+  four sides of the face must be even (divisible by 2).
+  \note This type corresponds to <b>Quadrangle Preference</b> additional hypothesis,
+  which is obsolete now.
+- <b>Quadrangle preference (reversed)</b> works in the same way and
   with the same restriction as <b>Quadrangle preference</b>, but
-  the transition area is located along the coarser meshed sides.</li>
-<li><b>Reduced</b> type forces building only quadrangles and the transition
-    between the sides is made gradually, layer by layer. This type has
-    a limitation on the number of segments: one pair of opposite sides must have
-    the same number of segments, the other pair must have an even difference
-    between the numbers of segments on the sides. In addition, number
-    of rows of faces between sides with different discretization
-    should be enough for the transition. At the fastest transition
-    pattern, three segments become one (see the image below), hence
-    the least number of face rows needed to reduce from Nmax segments
-    to Nmin segments is log<sub>3</sub>( Nmax / Nmin ). The number of
-    face rows is equal to number of segments on each of equally
-    discretized sides.
-\image html reduce_three_to_one.png "The fastest transition pattern: 3 to 1"
-</li>
-</ul>
+  the transition area is located along the coarser meshed sides.
+- <b>Reduced</b> type forces building only quadrangles and the transition
+  between the sides is made gradually, layer by layer. This type has
+  a limitation on the number of segments: one pair of opposite sides must have
+  the same number of segments, the other pair must have an even difference
+  between the numbers of segments on the sides. In addition, the number
+  of rows between sides with different discretization
+  should be enough for the transition. Following the fastest transition
+  pattern, three segments become one (see the image below), hence
+  the least number of face rows needed to reduce from Nmax segments
+  to Nmin segments is log<sub>3</sub>( Nmax / Nmin ). The number of
+  face rows is equal to the number of segments on each of equally
+  discretized sides.
+  \image html reduce_three_to_one.png "The fastest transition pattern: 3 to 1"
 
 <b>See Also</b> a sample TUI Script of a 
 \ref tui_quadrangle_parameters "Quadrangle Parameters" hypothesis.

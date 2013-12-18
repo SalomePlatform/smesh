@@ -2667,7 +2667,7 @@ double SMESH_MesherHelper::MaxTolerance( const TopoDS_Shape& shape )
  *  \return double - the angle (between -Pi and Pi), negative if the angle is concave,
  *                   1e100 in case of failure
  *  \waring Care about order of the EDGEs and their orientation to be as they are
- *          within the FACE!
+ *          within the FACE! Don't pass degenerated EDGEs neither!
  */
 //================================================================================
 
@@ -2682,18 +2682,35 @@ double SMESH_MesherHelper::GetAngle( const TopoDS_Edge & theE1,
     if ( !TopExp::CommonVertex( theE1, theE2, vCommon ))
       return angle;
     double f,l;
-    Handle(Geom2d_Curve) c2d1 = BRep_Tool::CurveOnSurface( theE1, theFace, f,l );
     Handle(Geom_Curve)     c1 = BRep_Tool::Curve( theE1, f,l );
     Handle(Geom_Curve)     c2 = BRep_Tool::Curve( theE2, f,l );
+    Handle(Geom2d_Curve) c2d1 = BRep_Tool::CurveOnSurface( theE1, theFace, f,l );
     Handle(Geom_Surface) surf = BRep_Tool::Surface( theFace );
     double                 p1 = BRep_Tool::Parameter( vCommon, theE1 );
     double                 p2 = BRep_Tool::Parameter( vCommon, theE2 );
     if ( c1.IsNull() || c2.IsNull() )
       return angle;
-    gp_Pnt2d uv = c2d1->Value( p1 );
+    gp_XY uv = c2d1->Value( p1 ).XY();
     gp_Vec du, dv; gp_Pnt p;
     surf->D1( uv.X(), uv.Y(), p, du, dv );
     gp_Vec vec1, vec2, vecRef = du ^ dv;
+    int  nbLoops = 0;
+    double p1tmp = p1;
+    while ( vecRef.SquareMagnitude() < std::numeric_limits<double>::min() )
+    {
+      double dp = ( l - f ) / 1000.;
+      p1tmp += dp * (( Abs( p1 - f ) > Abs( p1 - l )) ? +1. : -1.);
+      uv = c2d1->Value( p1tmp ).XY();
+      surf->D1( uv.X(), uv.Y(), p, du, dv );
+      vecRef = du ^ dv;
+      if ( ++nbLoops > 10 )
+      {
+#ifdef _DEBUG_
+        cout << "SMESH_MesherHelper::GetAngle(): Captured in a sigularity" << endl;
+#endif
+        return angle;
+      }
+    }
     if ( theFace.Orientation() == TopAbs_REVERSED )
       vecRef.Reverse();
     c1->D1( p1, p, vec1 );

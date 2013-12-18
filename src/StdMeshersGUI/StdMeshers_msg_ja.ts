@@ -5,15 +5,15 @@
     <name>StdMeshersGUI_StdHypothesisCreator</name>
     <message>
       <source>TO_IGNORE_EDGES_OR_NOT</source>
-      <translation>TO_IGNORE_EDGES_OR_NOT</translation>
+      <translation>指定したエッジが</translation>
     </message>
     <message>
       <source>NOT_TO_IGNORE_EDGES</source>
-      <translation>NOT_TO_IGNORE_EDGES</translation>
+      <translation>エッジ層 （壁）</translation>
     </message>
     <message>
       <source>TO_IGNORE_EDGES</source>
-      <translation>TO_IGNORE_EDGES</translation>
+      <translation>エッジ層 (入り江および oulets) なし</translation>
     </message>
   </context>
   <context>
@@ -45,6 +45,22 @@
     <message>
       <source>SMESH_CUT_NEG_MODE</source>
       <translation>負のセクション</translation>
+    </message>
+    <message>
+      <source>SMESH_ADAPTIVE1D_HYPOTHESIS</source>
+      <translation>アダプティブ1次元Hypothesis</translation>
+    </message>
+    <message>
+      <source>SMESH_MIN_SIZE</source>
+      <translation>最小サイズ</translation>
+    </message>
+    <message>
+      <source>SMESH_MAX_SIZE</source>
+      <translation>最大サイズ</translation>
+    </message>
+    <message>
+      <source>SMESH_ADAPTIVE1D_TITLE</source>
+      <translation>Hypothesis構造</translation>
     </message>
     <message>
       <source>SMESH_DEFLECTION1D_HYPOTHESIS</source>
@@ -152,7 +168,7 @@
     </message>
     <message>
       <source>SMESH_MAX_LENGTH_HYPOTHESIS</source>
-      <translation>最大長</translation>
+      <translation>最大要素長</translation>
     </message>
     <message>
       <source>SMESH_CARTESIAN_PARAMS_HYPOTHESIS</source>
@@ -164,11 +180,11 @@
     </message>
     <message>
       <source>SMESH_VISCOUS_LAYERS_HYPOTHESIS</source>
-      <translation>境界層</translation>
+      <translation>境界層設定</translation>
     </message>
     <message>
       <source>SMESH_VISCOUS_LAYERS_TITLE</source>
-      <translation>仮定の構成</translation>
+      <translation>詳細設定</translation>
     </message>
     <message>
       <source>SMESH_TOTAL_THICKNESS</source>
@@ -180,23 +196,23 @@
     </message>
     <message>
       <source>SMESH_FACES_WO_LAYERS</source>
-      <translation>顔なし層 limite\n (入力と出力)</translation>
+      <translation>境界層 (入力と出力) のない顔</translation>
     </message>
     <message>
       <source>SMESH_EDGES_WO_LAYERS</source>
-      <translation>エッジ層 limite\n (入力と出力) なし</translation>
+      <translation>エッジ境界層 (入力と出力) なし</translation>
     </message>
     <message>
       <source>SMESH_FACES_WITH_LAYERS</source>
-      <translation>SMESH_FACES_WITH_LAYERS</translation>
+      <translation>面層 （壁）</translation>
     </message>
     <message>
       <source>SMESH_EDGES_WITH_LAYERS</source>
-      <translation>SMESH_EDGES_WITH_LAYERS</translation>
+      <translation>レイヤーのエッジ</translation>
     </message>
     <message>
       <source>SMESH_MAX_LENGTH_TITLE</source>
-      <translation>仮定の構成</translation>
+      <translation>要素長設定</translation>
     </message>
     <message>
       <source>SMESH_CARTESIAN_PARAMS_TITLE</source>
@@ -224,7 +240,7 @@
     </message>
     <message>
       <source>SMESH_MAX_ELEMENT_VOLUME_TITLE</source>
-      <translation>仮定の構成</translation>
+      <translation>詳細設定</translation>
     </message>
     <message>
       <source>SMESH_NB_SEGMENTS_HYPOTHESIS</source>
@@ -352,7 +368,7 @@
     </message>
     <message>
       <source>SMESH_SOURCE_EDGE</source>
-      <translation>エッジ</translation>
+      <translation>Edge</translation>
     </message>
     <message>
       <source>SMESH_SOURCE_EDGES</source>
@@ -360,7 +376,7 @@
     </message>
     <message>
       <source>SMESH_SOURCE_FACE</source>
-      <translation>フェース</translation>
+      <translation>Face</translation>
     </message>
     <message>
       <source>SMESH_SOURCE_FACES</source>

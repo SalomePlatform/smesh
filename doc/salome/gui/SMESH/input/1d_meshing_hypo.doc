@@ -20,22 +20,21 @@
 <h2>Adaptive hypothesis</h2>
 
 <b>Adaptive</b> hypothesis allows to split edges into segments with a
-length that depends on curvature of edges and faces and is limited
-from up and down. In addition length of a segment depends on lengths
-of adjacent segments (that can't differ more than twice) and on
+length that depends on the curvature of edges and faces and is limited by <b>Min. Size</b>
+and <b>Max Size</b>. The length of a segment also depends on the lengths
+of adjacent segments (that can't differ more than twice) and on the 
 distance to close geometrical entities (edges and faces) to avoid
 creation of narrow 2D elements.
 
 \image html adaptive1d.png
 
-<b>Min size</b> parameter limits minimal segment size. <b>Max size</b>
-parameter defines length of segments on stright edges. \b Deflection
-parameter gives maximal distance of a segment from a curved edge.
+- <b>Min size</b> parameter limits the minimal segment size. 
+- <b>Max size</b> parameter defines the length of segments on straight edges. 
+- \b Deflection parameter gives maximal distance of a segment from a curved edge.
 
-\image html adaptive1d_sample_mesh.png "A geometry and a mesh generated on this geometry using Adaptive hypothesis and Netgen 2D algorithm - the size of mesh segments reflects size of geometrical features"
+\image html adaptive1d_sample_mesh.png "Adaptive hypothesis and Netgen 2D algorithm - the size of mesh segments reflects the size of geometrical features"
 
-<b>See Also</b> a \ref tui_1d_adaptive "sample TUI Script" that
-creates the mesh of the above image.
+<b>See Also</b> a \ref tui_1d_adaptive "sample TUI Script" that creates mesh of the above image.
 
 <br>
 \anchor arithmetic_1d_anchor

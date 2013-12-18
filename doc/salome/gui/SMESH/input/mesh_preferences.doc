@@ -11,22 +11,21 @@ later sessions with this module.
 
 - <b>Automatic Update</b>
   - If you toggle <b>Automatic Update</b> checkbox, the model in your
-    viewer automatically updated when you make changes in it, depending on
+    viewer will be automatically updated when you make changes in it, depending on
     values of additional preferences specified below.
-  - <b>Size limit (elements)</b> - allows to specify the maximum
+  - <b>Size limit (elements)</b> - allows specifying the maximum
     number of elements in the resulting mesh for which the automatic updating
     of the presentation is performed. This option affects only
     <b>Compute</b> operation. Zero value means "no limit". Default value
     is 500 000 mesh elements.
   - <b>Incremental limit check</b> - when this control is switched on,
-    check for mesh size limit will be applied not to total number of
-    elements in resulting mesh, but iteratively to each entity types
-    in the following order: 0D elements, edges, faces, volumes, balls;
-    at each step number of entities of given type will be added to the
-    total number of elements computed at previous step - if resulting
-    number of elements does not exceed size limit, the entities of
-    this type will be shown, otherwise user will be warned that some
-    entities are not shown.
+    the mesh size limit check is not applied to the total number of
+    elements in the resulting mesh, it is applied iteratively to each entity type
+    in the following order: 0D elements, edges, faces, volumes, balls.
+    At each step the number of entities of a certain type is added to the
+    total number of elements computed at the previous step - if the resulting
+    number of elements does not exceed the size limit, the entities of
+    this type are shown, otherwise the user is warned that some entities are not shown.
 
 - <b>Quality Controls</b>
   - If you toggle <b>Display entity</b>, both faces and edges of an
@@ -68,40 +67,40 @@ later sessions with this module.
     information is shown:
     - <b>Simple</b> - as a plain text
     - <b>Tree</b> - in a tree-like form
-  - <b>Automatic nodes compute limit</b> - allows to define the size limit for the
+  - <b>Automatic nodes compute limit</b> - allows defining the size limit for the
     mesh groups for which the number of underlying nodes is calculated
     automatically. If the group size exceeds the value set in the preferences,
     the user will have to press \em Compute button explicitly. Zero value
     means "no limit". By default the value is set to 100 000 mesh elements.
-  - <b>Automatic controls compute limit</b> - allows to define the size limit for the
+  - <b>Automatic controls compute limit</b> - allows defining the size limit for the
     mesh elements for which the Aspect Ratio histogram is calculated
     automatically. If the mesh elements size exceeds the value set in the preferences,
-    the user will have to press \em Compute button explicitly. Zero value
+    it is possible to press \b Compute button explicitly to calculate the histogram . Zero value
     means "no limit". By default the value is set to 3 000 mesh elements.
   - <b>Show details on groups in element information tab</b> - when
     this option is switched off (default), only the names of groups, to which the node
     or element belongs, are shown in the \ref mesh_element_info_anchor "Info Tab"
     tab of "Mesh Information" dialog box. If this option is
     switched on, the detailed information on groups is shown.
-  - <b>Dump base information</b> - allows to dump base mesh information to the
+  - <b>Dump base information</b> - allows dumping base mesh information to the
     file, see \ref mesh_infos_page.
-  - <b>Dump element information</b> - allows to dump element information to the
+  - <b>Dump element information</b> - allows dumping element information to the
     file, see \ref mesh_infos_page.
-  - <b>Dump additional information</b> - allows to dump additional mesh
+  - <b>Dump additional information</b> - allows dumping additional mesh
     information to the file, see \ref mesh_infos_page.
-  - <b>Dump controls information</b> - allows to dump quality mesh
+  - <b>Dump controls information</b> - allows dumping quality mesh
     information to the file, see \ref mesh_infos_page.
 
 - <b>Automatic Parameters</b>
   - <b>Ratio Bounding Box Diagonal / Max Size</b> - this parameter is
-    used for automatic meshing: ratio between the bounding box of the
+    used for automatic meshing. This is the ratio between the bounding box of the
     meshed object and the Max Size of segments.
-  - <b>Default Number of Segments</b> - allows defining the default
+  - <b>Default Number of Segments</b> - defines the default
     number of segments on each edge.
 
 - <b>Mesh loading</b>
   - If <b>No mesh loading from study file at hypothesis modification</b>
-    checkbox is on, the mesh data will not be loaded from the study file
+    check-box is on, the mesh data will not be loaded from the study file
     when a hypothesis is modified. This allows  saving time by omitting
     loading data of a large mesh that is planned to be recomputed with other parameters.
 

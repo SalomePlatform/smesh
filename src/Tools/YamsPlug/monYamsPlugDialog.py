@@ -76,7 +76,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     v1=QDoubleValidator(self)
     v1.setBottom(0.)
     #v1.setTop(1000.) #per thousand... only if relative
-    v1.setDecimals(2)
+    v1.setDecimals(3)
     self.SP_Tolerance.setValidator(v1)
     self.SP_Tolerance.titleForWarning="Chordal Tolerance"
     
@@ -102,14 +102,20 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     self.connect(self.LE_ParamsFile,SIGNAL("returnPressed()"),self.paramsFileNameChanged)
 
   def PBHelpPressed(self):
+    import SalomePyQt
+    sgPyQt = SalomePyQt.SalomePyQt()
     try :
       mydir=os.environ["SMESH_ROOT_DIR"]
     except Exception:
       QMessageBox.warning(self, "Help", "Help unavailable $SMESH_ROOT_DIR not found")
       return
-    maDoc=mydir+"/share/doc/salome/gui/SMESH/yams/_downloads/mg-surfopt_user_manual.pdf"
-    command="xdg-open "+maDoc+";"
-    subprocess.call(command, shell=True)
+
+    maDoc=mydir+"/share/doc/salome/gui/SMESH/yams/index.html"
+    sgPyQt.helpContext(maDoc,"")
+    
+    #maDoc=mydir+"/share/doc/salome/gui/SMESH/yams/_downloads/mg-surfopt_user_manual.pdf"
+    #command="xdg-open "+maDoc+";"
+    #subprocess.call(command, shell=True)
 
   def PBOKPressed(self):
     if not(self.PrepareLigneCommande()):
@@ -401,7 +407,11 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
 
     mySObject, myEntry = guihelper.getSObjectSelected()
     if CORBA.is_nil(mySObject) or mySObject==None:
-      QMessageBox.critical(self, "Mesh", "select an input mesh")
+      #QMessageBox.critical(self, "Mesh", "select an input mesh")
+      self.LE_MeshSmesh.setText("")
+      self.MeshIn=""
+      self.LE_MeshFile.setText("")
+      self.fichierIn=""
       return
     self.smeshStudyTool = SMeshStudyTools()
     try:
@@ -477,7 +487,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     if self.SP_MinSize.value()      != 5     : self.commande+=" --min_size %f"   %self.SP_MinSize.value()
     if self.SP_Gradation.value()    != 1.3   : self.commande+=" --gradation %f"  %self.SP_MaxSize.value()
     if self.SP_Memory.value()       != 0     : self.commande+=" --max_memory %d" %self.SP_Memory.value()
-    if self.SP_Verbosity.value()    != 3     : self.commande+=" --max_memory %d" %self.SP_Verbosity.value()
+    if self.SP_Verbosity.value()    != 3     : self.commande+=" --verbose %d" %self.SP_Verbosity.value()
 
     self.commande+=" --in "  + self.fichierIn
     self.commande+=" --out " + self.fichierOut
@@ -503,22 +513,24 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     self.CB_Ridge.setChecked(True)
     self.CB_Point.setChecked(True)
     self.CB_SplitEdge.setChecked(False)
-    self.SP_MaxSize.setProperty("value", -2.0)
-    self.SP_MinSize.setProperty("value", -2.0)
+    self.SP_MaxSize.setProperty("value", 100)
+    self.SP_MinSize.setProperty("value", 5)
     self.SP_Verbosity.setProperty("value", 3)
     self.SP_Memory.setProperty("value", 0)
+    self.PBMeshSmeshPressed()
+    self.TWOptions.setCurrentIndex(0) # Reset current active tab to the first tab
 
 __dialog=None
 def getDialog():
   """
   This function returns a singleton instance of the plugin dialog.
-  c est obligatoire pour faire un show sans parent...
+  It is mandatory in order to call show without a parent ...
   """
   global __dialog
   if __dialog is None:
     __dialog = MonYamsPlugDialog()
-  #else :
-  #   __dialog.clean()
+  else :
+    __dialog.clean()
   return __dialog
 
 #
