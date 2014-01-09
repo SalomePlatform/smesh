@@ -69,9 +69,12 @@
 #include "SMESH_TryCatch.hxx" // include after OCCT headers!
 
 #include "Utils_ExceptHandlers.hxx"
-
+#ifndef WIN32
 #include <boost/thread/thread.hpp>
 #include <boost/bind.hpp>
+#else 
+#include <pthread.h> 
+#endif
 
 using namespace std;
 
@@ -139,11 +142,23 @@ SMESH_Mesh::SMESH_Mesh():
 
 namespace
 {
-  void deleteMeshDS(SMESHDS_Mesh* meshDS)
+#ifndef WIN32
+ void deleteMeshDS(SMESHDS_Mesh* meshDS)
   {
     //cout << "deleteMeshDS( " << meshDS << endl;
     delete meshDS;
   }
+#else
+  static void* deleteMeshDS(void* meshDS)
+  {
+    //cout << "deleteMeshDS( " << meshDS << endl;
+	SMESHDS_Mesh* m = (SMESHDS_Mesh*)meshDS;
+	if(m) { 
+	  delete m;	  
+	}
+   return 0;
+  }
+#endif
 }
 
 //=============================================================================
@@ -191,9 +206,15 @@ SMESH_Mesh::~SMESH_Mesh()
     _myDocument->RemoveMesh( _id );
   _myDocument = 0;
 
-  if ( _myMeshDS )
-    // delete _myMeshDS, in a thread in order not to block closing a study with large meshes
+  if ( _myMeshDS ) {
+    // delete _myMeshDS, in a thread in order not to block closing a study with large meshes	
+#ifndef WIN32
     boost::thread aThread(boost::bind( & deleteMeshDS, _myMeshDS ));
+#else
+    pthread_t thread;
+    int result=pthread_create(&thread, NULL, deleteMeshDS, (void*)_myMeshDS);
+#endif
+  }
 }
 
 //================================================================================

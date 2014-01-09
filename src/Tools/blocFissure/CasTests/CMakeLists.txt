@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2013  CEA/DEN, EDF R&D
+# Copyright (C) 2012-2013  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,21 +17,39 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-ADD_SUBDIRECTORY(MeshCut)
-ADD_SUBDIRECTORY(padder)
-ADD_SUBDIRECTORY(Verima)
-ADD_SUBDIRECTORY(blocFissure)
-
-IF(SALOME_BUILD_GUI)
-  ADD_SUBDIRECTORY(MGCleanerPlug)
-  ADD_SUBDIRECTORY(YamsPlug)
-ENDIF(SALOME_BUILD_GUI)
+# --- scripts ---
 
 # scripts / static
 SET(plugin_SCRIPTS
-  smesh_plugins.py 
+  __init__.py
+  cubeAngle2.py
+  cubeAngle.py
+  cylindre_2.py
+  cylindre.py
+  disquePerce.py
+  ellipse_1.py
+  ellipse_2.py
+  eprouvetteCourbe.py
+  eprouvetteDroite_2.py
+  eprouvetteDroite.py
+  execution_Cas.py
+  faceGauche_2.py
+  faceGauche.py
+  fissureCoude_10.py
+  fissureCoude_1.py
+  fissureCoude_2.py
+  fissureCoude_3.py
+  fissure_Coude_4.py
+  fissureCoude_4.py
+  fissureCoude_5.py
+  fissureCoude_6.py
+  fissureCoude_7.py
+  fissureCoude_8.py
+  fissureCoude_9.py
+  fissure_Coude.py
+  vis_1.py
 )
 
 # --- rules ---
 
-SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS})
+SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS}/blocFissure/CasTests)

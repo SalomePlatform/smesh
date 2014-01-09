@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2013  CEA/DEN, EDF R&D
+# Copyright (C) 2012-2013  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,21 +17,30 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-ADD_SUBDIRECTORY(MeshCut)
-ADD_SUBDIRECTORY(padder)
-ADD_SUBDIRECTORY(Verima)
-ADD_SUBDIRECTORY(blocFissure)
+INCLUDE(UsePyQt4)
 
-IF(SALOME_BUILD_GUI)
-  ADD_SUBDIRECTORY(MGCleanerPlug)
-  ADD_SUBDIRECTORY(YamsPlug)
-ENDIF(SALOME_BUILD_GUI)
+# --- scripts ---
 
 # scripts / static
 SET(plugin_SCRIPTS
-  smesh_plugins.py 
+  __init__.py
+  fissureCoude_ihm.py
+  fissureCoude_plugin.py
 )
+
+# --- resources ---
+
+# uic files / to be processed by pyuic
+SET(_pyuic_files
+  fissureCoude.ui
+  fissureGenerale.ui
+)
+
+# scripts / pyuic wrappings
+PYQT4_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_files})
 
 # --- rules ---
 
-SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS})
+SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS}/blocFissure/ihm)
+
+SALOME_INSTALL_SCRIPTS("${_pyuic_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS}/blocFissure/ihm)

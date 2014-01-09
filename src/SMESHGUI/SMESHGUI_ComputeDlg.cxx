@@ -748,10 +748,12 @@ SMESHGUI_ComputeDlg_QThreadQDialog::SMESHGUI_ComputeDlg_QThreadQDialog(QWidget  
 
   QLabel * nbNodesName = new QLabel(tr("SMESH_MESHINFO_NODES"), this );
   QLabel * nbElemsName = new QLabel(tr("SMESH_MESHINFO_ELEMENTS"), this );
-  QLabel * freeRAMName = new QLabel(tr("SMESH_FREERAM"), this );
   nbNodesLabel = new QLabel("0", this );
   nbElemsLabel = new QLabel("0", this );
+#ifndef WIN32
+  QLabel * freeRAMName = new QLabel(tr("SMESH_FREERAM"), this );
   freeRAMLabel = new QLabel("", this );
+#endif
   progressBar  = new QProgressBar(this);
   progressBar->setMinimum( 0 );
   progressBar->setMaximum( 1000 );

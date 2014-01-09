@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2013  CEA/DEN, EDF R&D
+# Copyright (C) 2012-2013  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,21 +17,24 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-ADD_SUBDIRECTORY(MeshCut)
-ADD_SUBDIRECTORY(padder)
-ADD_SUBDIRECTORY(Verima)
-ADD_SUBDIRECTORY(blocFissure)
+ADD_SUBDIRECTORY(CasTests)
+ADD_SUBDIRECTORY(gmu)
+ADD_SUBDIRECTORY(materielCasTests)
 
 IF(SALOME_BUILD_GUI)
-  ADD_SUBDIRECTORY(MGCleanerPlug)
-  ADD_SUBDIRECTORY(YamsPlug)
+  ADD_SUBDIRECTORY(ihm)
 ENDIF(SALOME_BUILD_GUI)
+
+# --- scripts ---
 
 # scripts / static
 SET(plugin_SCRIPTS
-  smesh_plugins.py 
+  __init__.py
+  casStandard.py
+  exemple.py
+  exemple2.py
 )
 
 # --- rules ---
 
-SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS})
+SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS}/blocFissure)

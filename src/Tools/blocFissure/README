@@ -1,0 +1,25 @@
+
+Exécution des exemples et cas tests :
+------------------------------------ 
+
+- lancer salome
+- exécuter les instructions suivantes dans la console Python embarquée, ou dans une console Python avec l'environnement SALOME
+  # les shapes et fichiers med nécessaires aux tests sont créés dans ${SMESH_ROOT_DIR}/share/salome/plugins/smesh/blocFissure/CasTests
+  # les maillages fissurés sont écrits dans le répertoire d'exécution.
+
+
+# preparation des shapes et fichiers MED
+
+import sys, os
+sys.path.append(os.path.join(os.environ["SMESH_ROOT_DIR"], "share", "salome", "plugins", "smesh"))
+from blocFissure.materielCasTests import genereMateriel
+
+# execution exemples
+
+from blocFissure import exemple
+from blocFissure import exemple
+
+# execution des cas tests
+
+from blocFissure.CasTests import execution_Cas
+
