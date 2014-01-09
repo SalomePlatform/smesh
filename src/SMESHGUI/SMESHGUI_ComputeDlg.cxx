@@ -439,8 +439,10 @@ namespace SMESH
   QString shapeText(int subShapeID, GEOM::GEOM_Object_var aMainShape )
   {
     QString text;
-    if ( _PTR(SObject) aSO = getSubShapeSO( subShapeID, aMainShape ))
-      text = aSO->GetName().c_str();
+    if ( _PTR(SObject) aSO = getSubShapeSO( subShapeID, aMainShape )) {
+      text  = aSO->GetName().c_str();
+      text += QString(" (%1)").arg( aSO->GetID().c_str() );
+    }
     else {
       text = QString("#%1").arg( subShapeID );
       GEOM::GEOM_Object_wrap shape = getSubShape( subShapeID, aMainShape );
