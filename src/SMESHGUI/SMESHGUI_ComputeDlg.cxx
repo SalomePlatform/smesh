@@ -382,7 +382,11 @@ namespace SMESH
         if ( !geom->_is_nil() ) {
           GEOM::ListOfLong_var list = geom->GetSubShapeIndices();
           if ( list->length() == 1 && list[0] == subShapeID )
-            subSO = it->Value();
+          {
+            GEOM::GEOM_Object_var mainGO = geom->GetMainShape();
+            if ( aMainShape->IsSame( mainGO ))
+              subSO = it->Value();
+          }
         }
       }
     }
@@ -1193,7 +1197,8 @@ void SMESHGUI_BaseComputeOp::onPublishShape()
             if ( so->_is_nil() ) {
               CORBA::String_var name  = so->GetName();
               CORBA::String_var entry = so->GetID();
-              table()->item( r, COL_SHAPE     )->setText( name.in() );
+              QString       shapeText = QString("%1 (%2)").arg( name.in() ).arg( entry.in() );
+              table()->item( r, COL_SHAPE     )->setText( shapeText );
               table()->item( r, COL_PUBLISHED )->setText( entry.in() );
             }
             break;
@@ -1206,7 +1211,8 @@ void SMESHGUI_BaseComputeOp::onPublishShape()
       if ( !so->_is_nil() ) {
         CORBA::String_var name  = so->GetName();
         CORBA::String_var entry = so->GetID();
-        table()->item( row, COL_SHAPE     )->setText( name.in() );
+        QString       shapeText = QString("%1 (%2)").arg( name.in() ).arg( entry.in() );
+        table()->item( row, COL_SHAPE     )->setText( shapeText );
         table()->item( row, COL_PUBLISHED )->setText( entry.in() );
       }
     }
