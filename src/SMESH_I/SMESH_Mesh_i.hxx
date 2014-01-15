@@ -533,6 +533,11 @@ public:
   SMESH::long_array* GetElemFaceNodes(CORBA::Long elemId, CORBA::Short faceIndex);
 
   /*!
+   * Returns three components of normal of given mesh face (or an empty array in KO case)
+   */
+  SMESH::double_array* GetFaceNormal(CORBA::Long faceId);
+
+  /*!
    * Returns an element based on all given nodes.
    */
   CORBA::Long FindElementByNodes(const SMESH::long_array& nodes);

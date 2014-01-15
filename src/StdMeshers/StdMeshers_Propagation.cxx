@@ -64,7 +64,8 @@ namespace {
     /*!
      * \brief Return an edge from which hypotheses are propagated from
      */
-    static TopoDS_Edge GetSource(SMESH_subMesh * submesh);
+    static TopoDS_Edge GetSource(SMESH_subMesh * submesh,
+                                 bool&           isPropagOfDistribution);
     /*!
      * \brief Does it's main job
      */
@@ -90,23 +91,28 @@ StdMeshers_Propagation::StdMeshers_Propagation (int hypId, int studyId, SMESH_Ge
   _name = GetName();
   _param_algo_dim = -1; // 1D auxiliary
 }
+StdMeshers_PropagOfDistribution::StdMeshers_PropagOfDistribution (int hypId,
+                                                                  int studyId,
+                                                                  SMESH_Gen * gen)
+  : StdMeshers_Propagation(hypId, studyId, gen)                        { _name = GetName(); }
 StdMeshers_Propagation::~StdMeshers_Propagation()                      {}
 string StdMeshers_Propagation::GetName ()                              { return "Propagation"; }
+string StdMeshers_PropagOfDistribution::GetName ()                     { return "PropagOfDistribution"; }
 ostream & StdMeshers_Propagation::SaveTo (ostream & save)              { return save; }
 istream & StdMeshers_Propagation::LoadFrom (istream & load)            { return load; }
-ostream & operator << (ostream & save, StdMeshers_Propagation & hyp)   { return hyp.SaveTo(save); }
-istream & operator >> (istream & load, StdMeshers_Propagation & hyp)   { return hyp.LoadFrom(load); }
 bool StdMeshers_Propagation::SetParametersByMesh(const SMESH_Mesh*,
                                                  const TopoDS_Shape& ) { return false; }
 bool StdMeshers_Propagation::SetParametersByDefaults(const TDefaults&,const SMESH_Mesh*) { return false; }
 void StdMeshers_Propagation::SetPropagationMgr(SMESH_subMesh* subMesh) { PropagationMgr::Set( subMesh ); }
 /*!
- * \brief Return an edge from which hypotheses are propagated from
+ * \brief Return an edge from which hypotheses are propagated
  */
-TopoDS_Edge StdMeshers_Propagation::GetPropagationSource(SMESH_Mesh& theMesh,
-                                                         const TopoDS_Shape& theEdge)
+TopoDS_Edge StdMeshers_Propagation::GetPropagationSource(SMESH_Mesh&         theMesh,
+                                                         const TopoDS_Shape& theEdge,
+                                                         bool&               isPropagOfDistribution)
 {
-  return PropagationMgr::GetSource(theMesh.GetSubMeshContaining( theEdge ));
+  return PropagationMgr::GetSource( theMesh.GetSubMeshContaining( theEdge ),
+                                    isPropagOfDistribution);
 }
 
 //=============================================================================
@@ -126,11 +132,13 @@ namespace {
   struct PropagationMgrData : public EventListenerData
   {
     bool myForward; //!< true if a curve of edge in chain is codirected with one of source edge
+    bool myIsPropagOfDistribution; //!< type of Propagation hyp
     PropagationMgrData( SubMeshState state=WAIT_PROPAG_HYP ): EventListenerData(true) {
-      myType = state; myForward = true;
+      myType = state; myForward = true; myIsPropagOfDistribution = false;
     }
     void Init() {
       myType = WAIT_PROPAG_HYP;  mySubMeshes.clear(); myForward = true;
+      myIsPropagOfDistribution = false;
     }
     SubMeshState State() const {
       return (SubMeshState) myType;
@@ -217,8 +225,13 @@ namespace {
   const SMESH_Hypothesis* getProagationHyp (SMESH_Mesh&         theMesh,
                                             const TopoDS_Shape& theEdge)
   {
-    static SMESH_HypoFilter propagHypFilter
-      ( SMESH_HypoFilter::HasName( StdMeshers_Propagation::GetName ()));
+    static SMESH_HypoFilter propagHypFilter;
+    if ( propagHypFilter.IsEmpty() )
+    {
+      propagHypFilter.
+        Init( SMESH_HypoFilter::HasName( StdMeshers_Propagation::GetName ())).
+        Or  ( SMESH_HypoFilter::HasName( StdMeshers_PropagOfDistribution::GetName ()));
+    }
     return theMesh.GetHypothesis( theEdge, propagHypFilter, true );
   }
   //================================================================================
@@ -247,6 +260,10 @@ namespace {
 
     PropagationMgrData* chainData = getData( theMainSubMesh );
     chainData->SetState( HAS_PROPAG_HYP );
+
+    if ( const SMESH_Hypothesis * propagHyp = getProagationHyp( *mesh, theMainEdge ))
+      chainData->myIsPropagOfDistribution =
+        ( StdMeshers_PropagOfDistribution::GetName() == propagHyp->GetName() );
 
     // Edge submeshes, to which the 1D hypothesis will be propagated from theMainEdge
     list<SMESH_subMesh*> & chain = chainData->mySubMeshes;
@@ -462,17 +479,21 @@ namespace {
   {
     if ( findData( submesh )) return;
     DBGMSG( "PropagationMgr::Set() on  " << submesh->GetId() );
-    EventListenerData* data = new PropagationMgrData();
+    PropagationMgrData* data = new PropagationMgrData();
     submesh->SetEventListener( getListener(), data, submesh );
 
     const SMESH_Hypothesis * propagHyp =
       getProagationHyp( *submesh->GetFather(), submesh->GetSubShape() );
     if ( propagHyp )
+    {
+      data->myIsPropagOfDistribution =
+        ( StdMeshers_PropagOfDistribution::GetName() == propagHyp->GetName() );
       getListener()->ProcessEvent( SMESH_subMesh::ADD_HYP,
                                    SMESH_subMesh::ALGO_EVENT,
                                    submesh,
                                    data,
                                    propagHyp);
+    }
   }
   //================================================================================
   /*!
@@ -480,7 +501,8 @@ namespace {
    */
   //================================================================================
 
-  TopoDS_Edge PropagationMgr::GetSource(SMESH_subMesh * submesh)
+  TopoDS_Edge PropagationMgr::GetSource(SMESH_subMesh * submesh,
+                                        bool&           isPropagOfDistribution)
   {
     if ( PropagationMgrData* data = findData( submesh )) {
       if ( data->State() == IN_CHAIN ) {
@@ -489,6 +511,9 @@ namespace {
           TopoDS_Shape edge = sm->GetSubShape();
           edge = edge.Oriented( data->myForward ? TopAbs_FORWARD : TopAbs_REVERSED );
           DBGMSG( " GetSource() = edge " << sm->GetId() << " REV = " << (!data->myForward));
+          isPropagOfDistribution = false;
+          if ( PropagationMgrData* data = findData( sm ))
+            isPropagOfDistribution = data->myIsPropagOfDistribution;
           if ( edge.ShapeType() == TopAbs_EDGE )
             return TopoDS::Edge( edge );
         }
@@ -502,9 +527,9 @@ namespace {
    */
   //================================================================================
 
-  void PropagationMgr::ProcessEvent(const int          event,
-                                    const int          eventType,
-                                    SMESH_subMesh*     subMesh,
+  void PropagationMgr::ProcessEvent(const int                       event,
+                                    const int                       eventType,
+                                    SMESH_subMesh*                  subMesh,
                                     SMESH_subMeshEventListenerData* listenerData,
                                     const SMESH_Hypothesis*         hyp)
   {
@@ -516,7 +541,8 @@ namespace {
       return;
     DBGMSG( "PropagationMgr::ProcessEvent() on  " << subMesh->GetId() );
 
-    bool isPropagHyp = ( StdMeshers_Propagation::GetName() == hyp->GetName() );
+    bool isPropagHyp = ( StdMeshers_Propagation::GetName()          == hyp->GetName() ||
+                         StdMeshers_PropagOfDistribution::GetName() == hyp->GetName() );
 
     PropagationMgrData* data = static_cast<PropagationMgrData*>( listenerData );
     switch ( data->State() ) {

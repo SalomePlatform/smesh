@@ -48,6 +48,7 @@ class SMESHGUI_EXPORT SMESHGUI_MeshOp : public SMESHGUI_SelectionOp
       
 public:
   enum HypType{ Algo = 0, MainHyp, AddHyp, NbHypTypes };
+  enum MeshType{ MT_ANY = 0, MT_TRIANGULAR, MT_QUADRILATERAL, MT_TETRAHEDRAL, MT_HEXAHEDRAL };
 
   typedef std::pair<SMESH::SMESH_Hypothesis_var, QString> THypItem;
   typedef QList< THypItem > THypList;
@@ -83,6 +84,7 @@ protected slots:
   void                           processSet();
   void                           onHypoCreated( int );
   void                           onHypoEdited( int );
+  void                           onAlgoSetByMeshType( const int, const int );
 
 private:
   typedef QList<HypothesisData*> THypDataList; // typedef: list of hypothesis data
@@ -125,7 +127,8 @@ private:
   char*                          isSubmeshIgnored() const;
   _PTR(SObject)                  getSubmeshByGeom() const;
   void                           selectObject( _PTR(SObject) ) const;
-
+  void                           createMeshTypeList( QStringList& );
+  void                           setAvailableMeshType( const QStringList& );
 private:
   SMESHGUI_MeshDlg*              myDlg;
   SMESHGUI_ShapeByMeshOp*        myShapeByMeshOp;
@@ -136,13 +139,12 @@ private:
   TDim2Type2HypList              myExistingHyps; //!< all hypothesis of SMESH module
   TDim2Type2HypList              myObjHyps;      //!< hypothesis assigned to the current 
                                                  //   edited mesh/sub-mesh
-
   // hypdata corresponding to hypotheses present in myDlg
   THypDataList                   myAvailableHypData[4][NbHypTypes];
 
   bool                           myIgnoreAlgoSelection;
   HypothesesSet* myHypoSet;
-  int myDim, myType;
+  int myDim, myType, myMaxShapeDim;
 
   QString                        myObjectToSelect;
 };

@@ -26,6 +26,11 @@
 //
 #include "SMESH_Block.hxx"
 
+#include "SMDS_MeshNode.hxx"
+#include "SMDS_MeshVolume.hxx"
+#include "SMDS_VolumeTool.hxx"
+#include "SMESH_MeshAlgos.hxx"
+
 #include <BRepAdaptor_Curve.hxx>
 #include <BRepAdaptor_Curve2d.hxx>
 #include <BRepAdaptor_Surface.hxx>
@@ -56,10 +61,7 @@
 #include <math_Matrix.hxx>
 #include <math_Vector.hxx>
 
-#include "SMDS_MeshNode.hxx"
-#include "SMDS_MeshVolume.hxx"
-#include "SMDS_VolumeTool.hxx"
-#include "utilities.h"
+#include <utilities.h>
 
 #include <list>
 #include <limits>
@@ -309,24 +311,15 @@ gp_XYZ SMESH_Block::TFace::Point( const gp_XYZ& theParams ) const
 
 namespace
 {
+  inline
   bool isPntInTria( const gp_XY& p, const gp_XY& t0, const gp_XY& t1, const gp_XY& t2  )
   {
-    const double // matrix 2x2
-      T11 = t0.X()-t2.X(), T12 = t1.X()-t2.X(),
-      T21 = t0.Y()-t2.Y(), T22 = t1.Y()-t2.Y();
-    const double Tdet = T11*T22 - T12*T21; // matrix determinant
-    if ( Abs( Tdet ) < std::numeric_limits<double>::min() )
-      return false;
-    // matrix inverse
-    const double t11 = T22, t12 = -T12, t21 = -T21, t22 = T11;
-    // vector
-    const double r11 = p.X()-t2.X(), r12 = p.Y()-t2.Y();
-    // barycentric coordinates: mutiply matrix by vector
-    const double bc0 = (t11 * r11 + t12 * r12)/Tdet;
-    const double bc1 = (t21 * r11 + t22 * r12)/Tdet;
+    double bc0, bc1;
+    SMESH_MeshAlgos::GetBarycentricCoords( p, t0, t1, t2, bc0, bc1 );
     return ( bc0 >= 0. && bc1 >= 0. && bc0 + bc1 <= 1. );
   }
 
+  inline
   bool isPntInQuad( const gp_XY& p,
                     const gp_XY& q0, const gp_XY& q1, const gp_XY& q2, const gp_XY& q3 )
   {

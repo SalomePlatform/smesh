@@ -1,12 +1,11 @@
-# Arithmetic 1D
+# Arithmetic 1D and Geometric Progression
 
 import salome
 salome.salome_init()
-import GEOM
+
 from salome.geom import geomBuilder
 geompy = geomBuilder.New(salome.myStudy)
 
-import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 smesh =  smeshBuilder.New(salome.myStudy)
 
@@ -21,11 +20,19 @@ hexa = smesh.Mesh(box, "Box : hexahedrical mesh")
 algo1D = hexa.Segment()
 
 # optionally reverse node distribution on certain edges
-allEdges = geompy.SubShapeAllSortedIDs( box, geompy.ShapeType["EDGE"])
+allEdges = geompy.SubShapeAllSorted( box, geompy.ShapeType["EDGE"])
 reversedEdges = [ allEdges[0], allEdges[4] ]
 
 # define "Arithmetic1D" hypothesis to cut all edges in several segments with increasing arithmetic length 
 algo1D.Arithmetic1D(1, 4, reversedEdges)
+
+# define "Geometric Progression" hypothesis on one edge to cut this edge in segments with length increasing by 20% starting from 1
+gpAlgo = hexa.Segment( allEdges[1] )
+gpAlgo.GeometricProgression( 1, 1.2 )
+
+# propagate distribution of nodes computed using "Geometric Progression" to parallel edges
+gpAlgo.PropagationOfDistribution() 
+
 
 # create a quadrangle 2D algorithm for faces
 hexa.Quadrangle()

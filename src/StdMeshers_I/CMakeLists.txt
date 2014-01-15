@@ -129,8 +129,10 @@ ENDIF(SALOME_SMESH_ENABLE_MEFISTO)
 SET(StdMeshersEngine_SOURCES
   StdMeshers_i.cxx
   StdMeshers_LocalLength_i.cxx 
+  StdMeshers_Reversible1D_i.cxx
   StdMeshers_StartEndLength_i.cxx
   StdMeshers_Arithmetic1D_i.cxx
+  StdMeshers_Geometric1D_i.cxx
   StdMeshers_FixedPoints1D_i.cxx
   StdMeshers_NumberOfSegments_i.cxx
   StdMeshers_Deflection1D_i.cxx

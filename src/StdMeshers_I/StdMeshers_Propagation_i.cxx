@@ -23,7 +23,6 @@
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : StdMeshers_Propagation_i.cxx
 //  Module : SMESH
-//  $Header$
 //
 #include "StdMeshers_Propagation_i.hxx"
 #include "SMESH_Gen.hxx"
@@ -43,8 +42,8 @@ using namespace std;
 StdMeshers_Propagation_i::StdMeshers_Propagation_i (PortableServer::POA_ptr thePOA,
                                                     int                     theStudyId,
                                                     ::SMESH_Gen*            theGenImpl )
-     : SALOME::GenericObj_i( thePOA ), 
-       SMESH_Hypothesis_i( thePOA )
+  : SALOME::GenericObj_i( thePOA ),
+    SMESH_Hypothesis_i( thePOA )
 {
   MESSAGE( "StdMeshers_Propagation_i::StdMeshers_Propagation_i" );
   myBaseImpl = new ::StdMeshers_Propagation(theGenImpl->GetANewId(),
@@ -52,41 +51,49 @@ StdMeshers_Propagation_i::StdMeshers_Propagation_i (PortableServer::POA_ptr theP
                                             theGenImpl);
 }
 
-//=============================================================================
+//================================================================================
 /*!
- *  StdMeshers_Propagation_i::~StdMeshers_Propagation_i
+ * \brief Verify whether hypothesis supports given entity type
+ * \param type - dimension (see SMESH::Dimension enumeration)
+ * \retval CORBA::Boolean - TRUE if dimension is supported, FALSE otherwise
  *
- *  Destructor
+ * Verify whether hypothesis supports given entity type (see SMESH::Dimension enumeration)
  */
-//=============================================================================
-StdMeshers_Propagation_i::~StdMeshers_Propagation_i()
+//================================================================================
+CORBA::Boolean StdMeshers_Propagation_i::IsDimSupported( SMESH::Dimension type )
 {
-  MESSAGE( "StdMeshers_Propagation_i::~StdMeshers_Propagation_i" );
+  return type == SMESH::DIM_1D;
 }
 
 //=============================================================================
 /*!
- *  StdMeshers_Propagation_i::GetImpl
+ *  StdMeshers_PropagOfDistribution_i::StdMeshers_PropagOfDistribution_i
  *
- *  Get implementation
+ *  Constructor
  */
 //=============================================================================
-::StdMeshers_Propagation* StdMeshers_Propagation_i::GetImpl()
+StdMeshers_PropagOfDistribution_i::
+StdMeshers_PropagOfDistribution_i (PortableServer::POA_ptr thePOA,
+                                   int                     theStudyId,
+                                   ::SMESH_Gen*            theGenImpl )
+  : SALOME::GenericObj_i( thePOA ),
+    SMESH_Hypothesis_i( thePOA )
 {
-  MESSAGE( "StdMeshers_Propagation_i::GetImpl" );
-  return ( ::StdMeshers_Propagation* )myBaseImpl;
+  myBaseImpl = new ::StdMeshers_PropagOfDistribution(theGenImpl->GetANewId(),
+                                                     theStudyId,
+                                                     theGenImpl);
 }
 
 //================================================================================
 /*!
- * \brief Verify whether hypothesis supports given entity type 
-  * \param type - dimension (see SMESH::Dimension enumeration)
-  * \retval CORBA::Boolean - TRUE if dimension is supported, FALSE otherwise
- * 
+ * \brief Verify whether hypothesis supports given entity type
+ * \param type - dimension (see SMESH::Dimension enumeration)
+ * \retval CORBA::Boolean - TRUE if dimension is supported, FALSE otherwise
+ *
  * Verify whether hypothesis supports given entity type (see SMESH::Dimension enumeration)
  */
-//================================================================================  
-CORBA::Boolean StdMeshers_Propagation_i::IsDimSupported( SMESH::Dimension type )
+//================================================================================
+CORBA::Boolean StdMeshers_PropagOfDistribution_i::IsDimSupported( SMESH::Dimension type )
 {
   return type == SMESH::DIM_1D;
 }

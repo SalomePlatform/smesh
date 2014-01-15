@@ -74,21 +74,26 @@ public:
   void                         enableTab(const int);
   bool                         isTabEnabled(const int) const;
   int                          getActiveObject();
+  void                         setAvailableMeshType(const QStringList& );
+  int                          currentMeshType();
 
 signals:
   void                         hypoSet( const QString& );
   void                         geomSelectionByMesh( bool );
+  void                         selectMeshType( const int, const int );
 
 private slots:  
   void                         onHypoSetPopup( QAction* );
   void                         onGeomPopup( QAction* );
   void                         onGeomSelectionButton( bool );
+  void                         onChangedMeshType( const int );
 
 private:
   QMap<int, SMESHGUI_MeshTab*> myTabs;
   QTabWidget*                  myTabWg;
   QToolButton*                 myHypoSetButton;
   QMenu*                       myGeomPopup;
+  QComboBox*                   myMeshType;
 };
 
 /*!

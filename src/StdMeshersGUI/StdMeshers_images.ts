@@ -8,6 +8,10 @@
             <translation>mesh_hypo_length.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_GEOMETRIC_1D</source>
+            <translation>mesh_hypo_length.png</translation>
+        </message>
+        <message>
             <source>ICON_DLG_FIXED_POINTS_1D</source>
             <translation>mesh_hypo_length.png</translation>
         </message>
@@ -21,10 +25,6 @@
         </message>
         <message>
             <source>ICON_DLG_ADAPTIVE1D</source>
-            <translation>mesh_hypo_length.png</translation>
-        </message>
-        <message>
-            <source>ICON_DLG_GEOMETRIC_1D</source>
             <translation>mesh_hypo_length.png</translation>
         </message>
         <message>
@@ -164,6 +164,10 @@
             <translation>mesh_tree_hypo_length.png</translation>
         </message>
         <message>
+            <source>ICON_SMESH_TREE_HYPO_Geometric1D</source>
+            <translation>mesh_tree_hypo_length.png</translation>
+        </message>
+        <message>
             <source>ICON_SMESH_TREE_HYPO_AutomaticLength</source>
             <translation>mesh_tree_hypo_length.png</translation>
         </message>
@@ -229,6 +233,10 @@
         </message>
         <message>
             <source>ICON_SMESH_TREE_HYPO_Propagation</source>
+            <translation>mesh_tree_hypo_length.png</translation>
+        </message>
+        <message>
+            <source>ICON_SMESH_TREE_HYPO_PropagOfDistribution</source>
             <translation>mesh_tree_hypo_length.png</translation>
         </message>
         <message>

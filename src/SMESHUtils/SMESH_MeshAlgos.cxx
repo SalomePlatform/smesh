@@ -1386,6 +1386,39 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshFace* face,
   return badDistance;
 }
 
+//================================================================================
+/*!
+ * \brief Returns barycentric coordinates of a point within a triangle.
+ *        A not returned bc2 = 1. - bc0 - bc1.
+ *        The point lies within the triangle if ( bc0 >= 0 && bc1 >= 0 && bc0+bc1 <= 1 )
+ */
+//================================================================================
+
+void SMESH_MeshAlgos::GetBarycentricCoords( const gp_XY& p,
+                                            const gp_XY& t0,
+                                            const gp_XY& t1,
+                                            const gp_XY& t2,
+                                            double &     bc0,
+                                            double &     bc1)
+{
+  const double // matrix 2x2
+    T11 = t0.X()-t2.X(), T12 = t1.X()-t2.X(),
+    T21 = t0.Y()-t2.Y(), T22 = t1.Y()-t2.Y();
+  const double Tdet = T11*T22 - T12*T21; // matrix determinant
+  if ( Abs( Tdet ) < std::numeric_limits<double>::min() )
+  {
+    bc0 = bc1 = 2.;
+    return;
+  }
+  // matrix inverse
+  const double t11 = T22, t12 = -T12, t21 = -T21, t22 = T11;
+  // vector
+  const double r11 = p.X()-t2.X(), r12 = p.Y()-t2.Y();
+  // barycentric coordinates: mutiply matrix by vector
+  bc0 = (t11 * r11 + t12 * r12)/Tdet;
+  bc1 = (t21 * r11 + t22 * r12)/Tdet;
+}
+
 //=======================================================================
 //function : FindFaceInSet
 //purpose  : Return a face having linked nodes n1 and n2 and which is

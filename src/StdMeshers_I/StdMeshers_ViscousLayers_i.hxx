@@ -51,6 +51,11 @@ class STDMESHERS_I_EXPORT StdMeshers_ViscousLayers_i:
   void SetIgnoreFaces(const ::SMESH::long_array& faceIDs) throw ( SALOME::SALOME_Exception );
   SMESH::long_array* GetIgnoreFaces();
 
+  void SetFaces(const SMESH::long_array& faceIDs,
+                CORBA::Boolean           toIgnore) throw (SALOME::SALOME_Exception);
+  SMESH::long_array* GetFaces();
+  CORBA::Boolean     GetIsToIgnoreFaces();
+
   void SetTotalThickness(::CORBA::Double thickness) throw ( SALOME::SALOME_Exception );
   ::CORBA::Double GetTotalThickness();
 

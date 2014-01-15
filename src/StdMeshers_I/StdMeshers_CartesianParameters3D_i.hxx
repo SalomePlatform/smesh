@@ -85,6 +85,14 @@ class STDMESHERS_I_EXPORT StdMeshers_CartesianParameters3D_i:
                       CORBA::Short            axis) throw (SALOME::SALOME_Exception);
 
   /*!
+   * \brief Enables implementation of geometrical edges into the mesh. If this feature
+   *        is disabled, sharp edges of the shape are lost ("smoothed") in the mesh if
+   *        they don't coincide with the grid lines
+   */
+  void SetToAddEdges(CORBA::Boolean toAdd);
+  CORBA::Boolean GetToAddEdges();
+
+  /*!
    * \brief Return true if the grid is defined by spacing functions and 
    *        not by node coordinates
    */

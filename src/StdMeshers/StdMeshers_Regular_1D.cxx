@@ -37,6 +37,7 @@
 #include "SMESH_subMeshEventListener.hxx"
 #include "StdMeshers_Adaptive1D.hxx"
 #include "StdMeshers_Arithmetic1D.hxx"
+#include "StdMeshers_Geometric1D.hxx"
 #include "StdMeshers_AutomaticLength.hxx"
 #include "StdMeshers_Deflection1D.hxx"
 #include "StdMeshers_Distribution.hxx"
@@ -89,12 +90,14 @@ StdMeshers_Regular_1D::StdMeshers_Regular_1D(int hypId, int studyId,
   _compatibleHypothesis.push_back("StartEndLength");
   _compatibleHypothesis.push_back("Deflection1D");
   _compatibleHypothesis.push_back("Arithmetic1D");
+  _compatibleHypothesis.push_back("GeometricProgression");
   _compatibleHypothesis.push_back("FixedPoints1D");
   _compatibleHypothesis.push_back("AutomaticLength");
   _compatibleHypothesis.push_back("Adaptive1D");
-
-  _compatibleHypothesis.push_back("QuadraticMesh"); // auxiliary !!!
-  _compatibleHypothesis.push_back("Propagation"); // auxiliary !!!
+  // auxiliary:
+  _compatibleHypothesis.push_back("QuadraticMesh");
+  _compatibleHypothesis.push_back("Propagation");
+  _compatibleHypothesis.push_back("PropagOfDistribution");
 }
 
 //=============================================================================
@@ -217,6 +220,21 @@ bool StdMeshers_Regular_1D::CheckHypothesis( SMESH_Mesh&         aMesh,
     _value[ END_LENGTH_IND ] = hyp->GetLength( false );
     ASSERT( _value[ BEG_LENGTH_IND ] > 0 && _value[ END_LENGTH_IND ] > 0 );
     _hypType = ARITHMETIC_1D;
+
+    _revEdgesIDs = hyp->GetReversedEdges();
+
+    aStatus = SMESH_Hypothesis::HYP_OK;
+  }
+
+  else if (hypName == "GeometricProgression")
+  {
+    const StdMeshers_Geometric1D * hyp =
+      dynamic_cast <const StdMeshers_Geometric1D * >(theHyp);
+    ASSERT(hyp);
+    _value[ BEG_LENGTH_IND ] = hyp->GetStartLength();
+    _value[ END_LENGTH_IND ] = hyp->GetCommonRatio();
+    ASSERT( _value[ BEG_LENGTH_IND ] > 0 && _value[ END_LENGTH_IND ] > 0 );
+    _hypType = GEOMETRIC_1D;
 
     _revEdgesIDs = hyp->GetReversedEdges();
 
@@ -616,6 +634,58 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
 
   double f = theFirstU, l = theLastU;
 
+  // Propagation Of Distribution
+  //
+  if ( !_mainEdge.IsNull() && _isPropagOfDistribution )
+  {
+    TopoDS_Edge mainEdge = TopoDS::Edge( _mainEdge ); // should not be a reference!
+    _gen->Compute( theMesh, mainEdge, /*aShapeOnly=*/true, /*anUpward=*/true);
+
+    SMESHDS_SubMesh* smDS = theMesh.GetMeshDS()->MeshElements( mainEdge );
+    if ( !smDS )
+      return error("No mesh on the source edge of Propagation Of Distribution");
+    if ( smDS->NbNodes() < 1 )
+      return true; // 1 segment
+
+    vector< double > mainEdgeParams;
+    if ( ! SMESH_Algo::GetNodeParamOnEdge( theMesh.GetMeshDS(), mainEdge, mainEdgeParams ))
+      return error("Bad node parameters on the source edge of Propagation Of Distribution");
+
+    vector< double > segLen( mainEdgeParams.size() - 1 );
+    double totalLen = 0;
+    BRepAdaptor_Curve mainEdgeCurve( mainEdge );
+    for ( size_t i = 1; i < mainEdgeParams.size(); ++i )
+    {
+      segLen[ i-1 ] = GCPnts_AbscissaPoint::Length( mainEdgeCurve,
+                                                    mainEdgeParams[i-1],
+                                                    mainEdgeParams[i]);
+      totalLen += segLen[ i-1 ];
+    }
+    for ( size_t i = 0; i < segLen.size(); ++i )
+      segLen[ i ] *= theLength / totalLen;
+
+    size_t iSeg = theReverse ? segLen.size()-1 : 0;
+    size_t dSeg = theReverse ? -1 : +1;
+    double param = theFirstU;
+    int nbParams = 0;
+    for ( int i = 0, nb = segLen.size()-1; i < nb; ++i, iSeg += dSeg )
+    {
+      GCPnts_AbscissaPoint Discret( theC3d, segLen[ iSeg ], param );
+      if ( !Discret.IsDone() ) break;
+      param = Discret.Parameter();
+      theParams.push_back( param );
+      ++nbParams;
+    }
+    if ( nbParams != segLen.size()-1 )
+      return error( SMESH_Comment("Can't divide into ") << segLen.size() << " segements");
+
+    compensateError( segLen[ theReverse ? segLen.size()-1 : 0 ],
+                     segLen[ theReverse ? 0 : segLen.size()-1 ],
+                     f, l, theLength, theC3d, theParams, true );
+    return true;
+  }
+
+
   switch( _hypType )
   {
   case LOCAL_LENGTH:
@@ -824,9 +894,54 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     return true;
   }
 
+  case GEOMETRIC_1D: {
+
+    double a1 = _value[ BEG_LENGTH_IND ], an;
+    double q  = _value[ END_LENGTH_IND ];
+
+    double U1 = theReverse ? l : f;
+    double Un = theReverse ? f : l;
+    double param = U1;
+    double eltSize = a1;
+    if ( theReverse )
+      eltSize = -eltSize;
+
+    int nbParams = 0;
+    while ( true ) {
+      // computes a point on a curve <theC3d> at the distance <eltSize>
+      // from the point of parameter <param>.
+      GCPnts_AbscissaPoint Discret( theC3d, eltSize, param );
+      if ( !Discret.IsDone() ) break;
+      param = Discret.Parameter();
+      if ( f < param && param < l )
+        theParams.push_back( param );
+      else
+        break;
+      an = eltSize;
+      eltSize *= q;
+      ++nbParams;
+    }
+    if ( nbParams > 1 )
+    {
+      if ( Abs( param - Un ) < 0.2 * Abs( param - theParams.back() ))
+      {
+        compensateError( a1, eltSize, U1, Un, theLength, theC3d, theParams );
+      }
+      else if ( Abs( Un - theParams.back() ) <
+                0.2 * Abs( theParams.back() - *(--theParams.rbegin())))
+      {
+        theParams.pop_back();
+        compensateError( a1, an, U1, Un, theLength, theC3d, theParams );
+      }
+    }
+    if (theReverse) theParams.reverse(); // NPAL18025
+
+    return true;
+  }
+
   case FIXED_POINTS_1D: {
     const std::vector<double>& aPnts = _fpHyp->GetPoints();
-    const std::vector<int>& nbsegs = _fpHyp->GetNbSegments();
+    const std::vector<int>&   nbsegs = _fpHyp->GetNbSegments();
     int i = 0;
     TColStd_SequenceOfReal Params;
     for(; i<aPnts.size(); i++) {
@@ -1231,7 +1346,8 @@ StdMeshers_Regular_1D::GetUsedHypothesis(SMESH_Mesh &         aMesh,
   if (nbHyp == 0 && aShape.ShapeType() == TopAbs_EDGE)
   {
     // Check, if propagated from some other edge
-    _mainEdge = StdMeshers_Propagation::GetPropagationSource( aMesh, aShape );
+    _mainEdge = StdMeshers_Propagation::GetPropagationSource( aMesh, aShape,
+                                                              _isPropagOfDistribution );
     if ( !_mainEdge.IsNull() )
     {
       // Propagation of 1D hypothesis from <aMainEdge> on this edge;

@@ -27,6 +27,7 @@
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
+#include CORBA_SERVER_HEADER(GEOM_Gen)
 #include CORBA_SERVER_HEADER(SALOMEDS)
 
 #include <TCollection_AsciiString.hxx>
@@ -163,6 +164,9 @@ namespace SMESH
     operator<<(const SMESH::string_array& theArg);
 
     TPythonDump&
+    operator<<(const SMESH::nodes_array& theArg);
+
+    TPythonDump&
     operator<<(SMESH::SMESH_Hypothesis_ptr theArg);
 
     TPythonDump&
@@ -215,6 +219,9 @@ namespace SMESH
 
     TPythonDump&
     operator<<(const SMESH::ListOfGroups * theList);
+
+    TPythonDump&
+    operator<<(const GEOM::ListOfGO& theList);
 
     TPythonDump&
     operator<<(const SMESH::ListOfIDSources& theList);

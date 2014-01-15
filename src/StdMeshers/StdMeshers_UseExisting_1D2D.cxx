@@ -25,6 +25,9 @@
 //
 #include "StdMeshers_UseExisting_1D2D.hxx"
 
+#include "SMESH_Mesh.hxx"
+#include "SMESH_subMesh.hxx"
+
 //=======================================================================
 //function : StdMeshers_UseExisting_1D
 //purpose  : 
@@ -56,10 +59,11 @@ bool StdMeshers_UseExisting_1D::CheckHypothesis(SMESH_Mesh& ,
 //purpose  : 
 //=======================================================================
 
-bool StdMeshers_UseExisting_1D::Compute(SMESH_Mesh&, const TopoDS_Shape&)
+bool StdMeshers_UseExisting_1D::Compute(SMESH_Mesh& mesh, const TopoDS_Shape& edge)
 {
   // This algorithm exists to allow mesh generation by mesh
   // edition functions in TUI mode
+  mesh.GetSubMesh( edge )->SetIsAlwaysComputed( true );
   return true;
 }
 
@@ -110,10 +114,11 @@ bool StdMeshers_UseExisting_2D::CheckHypothesis(SMESH_Mesh& ,
 //purpose  : 
 //=======================================================================
 
-bool StdMeshers_UseExisting_2D::Compute(SMESH_Mesh&, const TopoDS_Shape&)
+bool StdMeshers_UseExisting_2D::Compute(SMESH_Mesh& mesh, const TopoDS_Shape& face)
 {
   // This algorithm exists to allow mesh generation by mesh edition
   // functions in TUI mode
+  mesh.GetSubMesh( face )->SetIsAlwaysComputed( true );
   return true;
 }
 

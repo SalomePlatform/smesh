@@ -32,10 +32,11 @@
 
 #include "utilities.h"
 
-#include <Precision.hxx>
-#include <Bnd_Box.hxx>
-
 #include <limits>
+
+#include <Bnd_Box.hxx>
+#include <Precision.hxx>
+#include <gp_Vec.hxx>
 
 using namespace std;
 
@@ -48,10 +49,23 @@ StdMeshers_CartesianParameters3D::StdMeshers_CartesianParameters3D(int         h
                                                                    int         studyId,
                                                                    SMESH_Gen * gen)
   : SMESH_Hypothesis(hypId, studyId, gen),
-    _sizeThreshold( 4.0 ) // default according to the customer specification
+    _sizeThreshold( 4.0 ), // default according to the customer specification
+    _toAddEdges( false )
 {
   _name = "CartesianParameters3D"; // used by "Cartesian_3D"
   _param_algo_dim = 3; // 3D
+
+  _axisDirs[0] = 1.;
+  _axisDirs[1] = 0.;
+  _axisDirs[2] = 0.;
+
+  _axisDirs[3] = 0.;
+  _axisDirs[4] = 1.;
+  _axisDirs[5] = 0.;
+
+  _axisDirs[6] = 0.;
+  _axisDirs[7] = 0.;
+  _axisDirs[8] = 1.;
 }
 
 
@@ -309,6 +323,44 @@ void StdMeshers_CartesianParameters3D::GetCoordinates(std::vector<double>& xNode
 }
 
 //=======================================================================
+//function : SetAxisDirs
+//purpose  : Sets directions of axes
+//=======================================================================
+
+void StdMeshers_CartesianParameters3D::SetAxisDirs(const double* the9DirComps)
+  throw ( SALOME_Exception )
+{
+  gp_Vec x( the9DirComps[0],
+            the9DirComps[1],
+            the9DirComps[2] );
+  gp_Vec y( the9DirComps[3],
+            the9DirComps[4],
+            the9DirComps[5] );
+  gp_Vec z( the9DirComps[6],
+            the9DirComps[7],
+            the9DirComps[8] );
+  if ( x.Magnitude() < RealSmall() ||
+       y.Magnitude() < RealSmall() ||
+       z.Magnitude() < RealSmall() )
+    throw SALOME_Exception("Zero magnitude of axis direction");
+
+  if ( x.IsParallel( y, M_PI / 180. ) ||
+       x.IsParallel( z, M_PI / 180. ) ||
+       y.IsParallel( z, M_PI / 180. ))
+    throw SALOME_Exception("Parallel axis directions");
+
+  bool isChanged = false;
+  for ( int i = 0; i < 9; ++i )
+  {
+    if ( Abs( _axisDirs[i] - the9DirComps[i] ) > 1e-7 )
+      isChanged = true;
+    _axisDirs[i] = the9DirComps[i];
+  }
+  if ( isChanged )
+    NotifySubMeshesHypothesisModification();
+}
+
+//=======================================================================
 //function : GetGrid
 //purpose  : Return coordinates of node positions along the three axes
 //=======================================================================
@@ -330,6 +382,33 @@ void StdMeshers_CartesianParameters3D::GetGrid(std::vector<double>& coords, int 
 double StdMeshers_CartesianParameters3D::GetSizeThreshold() const
 {
   return _sizeThreshold;
+}
+
+//=======================================================================
+//function : SetToAddEdges
+//purpose  : Enables implementation of geometrical edges into the mesh. If this feature
+//           is disabled, sharp edges of the shape are lost ("smoothed") in the mesh if
+//           they don't coincide with the grid lines
+//=======================================================================
+
+void StdMeshers_CartesianParameters3D::SetToAddEdges(bool toAdd)
+{
+  if ( _toAddEdges != toAdd )
+  {
+    _toAddEdges = toAdd;
+    NotifySubMeshesHypothesisModification();
+  }
+}
+
+//=======================================================================
+//function : GetToAddEdges
+//purpose  : Returns true if implementation of geometrical edges into the
+//           mesh is enabled
+//=======================================================================
+
+bool StdMeshers_CartesianParameters3D::GetToAddEdges() const
+{
+  return _toAddEdges;
 }
 
 //=======================================================================
@@ -369,6 +448,7 @@ std::ostream & StdMeshers_CartesianParameters3D::SaveTo(std::ostream & save)
     for ( size_t j = 0; j < _spaceFunctions[i].size(); ++j )
       save << _spaceFunctions[i][j] << " ";
   }
+  save << _toAddEdges << " ";
 
   return save;
 }
@@ -382,7 +462,7 @@ std::istream & StdMeshers_CartesianParameters3D::LoadFrom(std::istream & load)
 {
   bool ok;
 
-  ok = (load >> _sizeThreshold  );
+  ok = ( load >> _sizeThreshold );
   for ( int ax = 0; ax < 3; ++ax )
   {
     if (ok)
@@ -419,6 +499,9 @@ std::istream & StdMeshers_CartesianParameters3D::LoadFrom(std::istream & load)
       }
     }
   }
+
+  load >> _toAddEdges;
+
   return load;
 }
 

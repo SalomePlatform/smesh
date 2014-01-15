@@ -50,8 +50,6 @@ class STDMESHERS_EXPORT StdMeshers_Propagation:public SMESH_Hypothesis
 
   virtual std::ostream & SaveTo(std::ostream & save);
   virtual std::istream & LoadFrom(std::istream & load);
-  friend std::ostream & operator <<(std::ostream & save, StdMeshers_Propagation & hyp);
-  friend std::istream & operator >>(std::istream & load, StdMeshers_Propagation & hyp);
 
   static std::string GetName ();
 
@@ -69,7 +67,9 @@ class STDMESHERS_EXPORT StdMeshers_Propagation:public SMESH_Hypothesis
     * \param theEdge - edge to which hypotheses are propagated
     * \retval TopoDS_Edge - source edge, also passing orientation
    */
-  static TopoDS_Edge GetPropagationSource(SMESH_Mesh& theMesh, const TopoDS_Shape& theEdge);
+  static TopoDS_Edge GetPropagationSource(SMESH_Mesh&         theMesh,
+                                          const TopoDS_Shape& theEdge,
+                                          bool&               isPropagOfDistribution );
 
   /*!
    * \brief Initialize my parameter values by the mesh built on the geometry
@@ -88,4 +88,19 @@ class STDMESHERS_EXPORT StdMeshers_Propagation:public SMESH_Hypothesis
   virtual bool SetParametersByDefaults(const TDefaults& dflts, const SMESH_Mesh* theMesh=0);
 
 };
+
+// =======================================================================
+/*!
+ * \brief Propagation Of Distribution hypothesis
+ */
+// =======================================================================
+
+class STDMESHERS_EXPORT StdMeshers_PropagOfDistribution: public StdMeshers_Propagation
+{
+ public:
+  StdMeshers_PropagOfDistribution(int hypId, int studyId, SMESH_Gen * gen);
+
+  static std::string GetName();
+};
+
 #endif

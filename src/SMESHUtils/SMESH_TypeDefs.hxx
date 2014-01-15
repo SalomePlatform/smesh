@@ -29,9 +29,10 @@
 
 #include "SMESH_Utils.hxx"
 
-#include <SMDS_MeshNode.hxx>
+#include "SMDS_MeshNode.hxx"
 
 #include <gp_XYZ.hxx>
+#include <gp_XY.hxx>
 
 #include <map>
 #include <list>
@@ -42,7 +43,7 @@ typedef std::map<const SMDS_MeshElement*,
                  std::list<const SMDS_MeshElement*>, TIDCompare > TElemOfElemListMap;
 typedef std::map<const SMDS_MeshElement*,
                  std::list<const SMDS_MeshNode*>,    TIDCompare > TElemOfNodeListMap;
-typedef std::map<const SMDS_MeshNode*, const SMDS_MeshNode*> TNodeNodeMap;
+typedef std::map<const SMDS_MeshNode*, const SMDS_MeshNode*>      TNodeNodeMap;
 
 //!< Set of elements sorted by ID, to be used to assure predictability of edition
 typedef std::set< const SMDS_MeshElement*, TIDCompare >      TIDSortedElemSet;
@@ -50,8 +51,8 @@ typedef std::set< const SMDS_MeshNode*,    TIDCompare >      TIDSortedNodeSet;
 
 typedef std::pair< const SMDS_MeshNode*, const SMDS_MeshNode* >   NLink;
 
-struct faceQuadStruct; // defined in StdMeshers_Quadrangle_2D.hxx
-typedef boost::shared_ptr<faceQuadStruct> TFaceQuadStructPtr;
+struct FaceQuadStruct; // defined in StdMeshers_Quadrangle_2D.hxx
+typedef boost::shared_ptr<FaceQuadStruct> TFaceQuadStructPtr;
 
 
 namespace SMESHUtils
@@ -136,6 +137,10 @@ typedef struct uvPtStruct
   double u, v; // original 2d parameter
   double x, y; // 2d parameter, normalized [0,1]
   const SMDS_MeshNode * node;
+
+  uvPtStruct(): node(NULL) {}
+
+  inline gp_XY UV() const { return gp_XY( u, v ); }
 
   struct NodeAccessor // accessor to iterate on nodes in UVPtStructVec
   {

@@ -42,6 +42,7 @@
 #include <QAbstractItemModel>
 #include <QApplication>
 #include <QButtonGroup>
+#include <QCheckBox>
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
@@ -49,14 +50,14 @@
 #include <QLineEdit>
 #include <QListWidget>
 #include <QModelIndex>
+#include <QPushButton>
 #include <QRadioButton>
 #include <QString>
 #include <QStyleOptionViewItem>
+#include <QTabWidget>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 #include <QVBoxLayout>
-#include <QPushButton>
-#include <QTabWidget>
 
 #define SPACING 6
 #define MARGIN  11
@@ -162,7 +163,7 @@ namespace StdMeshersGUI
     myStepSpin->SetValue( myStep = 1. );
 
     // 3) Coodrinates/Spacing group
-    QFrame* csFrame = new QFrame( this );
+    QFrame*    csFrame = new QFrame( this );
     QVBoxLayout* scLay = new QVBoxLayout( csFrame );
     scLay->setMargin( 0 );
     scLay->setSpacing( SPACING );
@@ -610,7 +611,12 @@ QFrame* StdMeshersGUI_CartesianParamCreator::buildFrame()
   argGroupLayout->addWidget( myThreshold, row, 1 );
   row++;
   
-  // 2)  Grid definition
+  // 2)  "Implement edges"
+  myAddEdges = new QCheckBox( tr("ADD_EDGES"), GroupC1 );
+  argGroupLayout->addWidget( myAddEdges, row, 0, 1, 2 );
+  row++;
+
+  // 3)  Grid definition
   QTabWidget* tabWdg = new QTabWidget( fr );
   myAxisTabs[ 0 ] = new StdMeshersGUI::GridAxisTab( tabWdg, 0 );
   myAxisTabs[ 1 ] = new StdMeshersGUI::GridAxisTab( tabWdg, 1 );
@@ -637,6 +643,8 @@ void StdMeshersGUI_CartesianParamCreator::retrieveParams() const
   else
     myThreshold->setText( varName );
 
+  myAddEdges->setChecked( h->GetToAddEdges() );
+
   for ( int ax = 0; ax < 3; ++ax )
   {
     if ( h->IsGridBySpacing( ax ))
@@ -653,7 +661,8 @@ void StdMeshersGUI_CartesianParamCreator::retrieveParams() const
     }
   }
   if ( dlg() )
-    dlg()->setMinimumSize( dlg()->minimumSizeHint().width(), dlg()->minimumSizeHint().height() );
+    dlg()->setMinimumSize( dlg()->minimumSizeHint().width(),
+                           dlg()->minimumSizeHint().height() );
 }
 
 QString StdMeshersGUI_CartesianParamCreator::storeParams() const
@@ -668,6 +677,7 @@ QString StdMeshersGUI_CartesianParamCreator::storeParams() const
 
     h->SetVarParameter( myThreshold->text().toLatin1().constData(), "SetSizeThreshold" );
     h->SetSizeThreshold( myThreshold->text().toDouble() );
+    h->SetToAddEdges( myAddEdges->isChecked() );
 
     for ( int ax = 0; ax < 3; ++ax )
     {

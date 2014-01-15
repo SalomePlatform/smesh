@@ -21,14 +21,17 @@
 //  Module : SMESH
 
 #include "StdMeshers_QuadrangleParams_i.hxx"
-#include "SMESH_Gen_i.hxx"
+
 #include "SMESH_Gen.hxx"
+#include "SMESH_Gen_i.hxx"
 #include "SMESH_PythonDump.hxx"
+#include "StdMeshers_ObjRefUlils.hxx"
 
-#include "Utils_CorbaException.hxx"
-#include "utilities.h"
+#include <Utils_CorbaException.hxx>
+#include <utilities.h>
 
-#include <TCollection_AsciiString.hxx>
+#include <Standard_ErrorHandler.hxx>
+#include "SMESH_TryCatch.hxx"
 
 using namespace std;
 
@@ -82,13 +85,11 @@ void StdMeshers_QuadrangleParams_i::SetTriaVertex(CORBA::Long vertID)
     this->GetImpl()->SetTriaVertex( vertID );
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-                                  SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
   }
 
   // Update Python script
-  SMESH::TPythonDump() << _this() << ".SetTriaVertex( "
-      << vertID << " )";
+  SMESH::TPythonDump() << _this() << ".SetTriaVertex( " << vertID << " )";
 }
 
 //=============================================================================
@@ -147,8 +148,7 @@ char* StdMeshers_QuadrangleParams_i::GetObjectEntry()
     entry = this->GetImpl()->GetObjectEntry();
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-                                  SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
   }
   return CORBA::string_dup( entry );
 }
@@ -162,12 +162,6 @@ char* StdMeshers_QuadrangleParams_i::GetObjectEntry()
 //=============================================================================
 void StdMeshers_QuadrangleParams_i::SetQuadType(StdMeshers::QuadType type)
 {
-  //static char* quadTypes[5] = {"StdMeshers.QUAD_STANDARD",
-  //                             "StdMeshers.QUAD_TRIANGLE_PREF",
-  //                             "StdMeshers.QUAD_QUADRANGLE_PREF",
-  //                             "StdMeshers.QUAD_QUADRANGLE_PREF_REVERSED",
-  //                             "StdMeshers.QUAD_REDUCED"};
-
   MESSAGE("StdMeshers_QuadrangleParams_i::SetQuadType");
   ASSERT(myBaseImpl);
 
@@ -199,7 +193,6 @@ void StdMeshers_QuadrangleParams_i::SetQuadType(StdMeshers::QuadType type)
     quadType = "UNKNOWN";
   }
   SMESH::TPythonDump() << _this() << ".SetQuadType( " << quadType << " )";
-  //SMESH::TPythonDump() << _this() << ".SetQuadType( " << quadTypes[int(type)] << " )";
 }
 
 //=============================================================================
@@ -214,6 +207,100 @@ StdMeshers::QuadType StdMeshers_QuadrangleParams_i::GetQuadType()
   MESSAGE("StdMeshers_QuadrangleParams_i::GetQuadType");
   ASSERT(myBaseImpl);
   return StdMeshers::QuadType(int(this->GetImpl()->GetQuadType()));
+}
+
+//================================================================================
+/*!
+ * \brief Set positions of enforced nodes
+ */
+//================================================================================
+
+void StdMeshers_QuadrangleParams_i::SetEnforcedNodes(const GEOM::ListOfGO&     theVertices,
+                                                     const SMESH::nodes_array& thePoints)
+  throw ( SALOME::SALOME_Exception )
+{
+  try {
+    std::vector< TopoDS_Shape > shapes;
+    std::vector< gp_Pnt       > points;
+    shapes.reserve( theVertices.length() );
+    points.reserve( thePoints.length() );
+
+    myShapeEntries.clear();
+
+    for ( size_t i = 0; i < theVertices.length(); ++i )
+    {
+      if ( CORBA::is_nil( theVertices[i] ))
+        continue;
+      CORBA::String_var entry = theVertices[i]->GetStudyEntry();
+      if ( !entry.in() || !entry.in()[0] )
+        THROW_SALOME_CORBA_EXCEPTION( "Not published enforced vertex shape", SALOME::BAD_PARAM );
+
+      shapes.push_back( StdMeshers_ObjRefUlils::GeomObjectToShape( theVertices[i].in() ));
+      myShapeEntries.push_back( entry.in() );
+    }
+    for ( size_t i = 0; i < thePoints.length(); ++i )
+    {
+      points.push_back( gp_Pnt( thePoints[i].x, thePoints[i].y, thePoints[i].z ));
+    }
+    this->GetImpl()->SetEnforcedNodes( shapes, points );
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+  }
+  // Update Python script
+  SMESH::TPythonDump() << _this() << ".SetEnforcedNodes( "
+                       << theVertices << ", " << thePoints << " )";
+}
+  
+//================================================================================
+/*!
+ * \brief Returns positions of enforced nodes
+ */
+//================================================================================
+
+void StdMeshers_QuadrangleParams_i::GetEnforcedNodes(GEOM::ListOfGO_out     theVertices,
+                                                     SMESH::nodes_array_out thePoints)
+{
+  SMESH_TRY;
+
+  std::vector< TopoDS_Shape > shapes;
+  std::vector< gp_Pnt       > points;
+  this->GetImpl()->GetEnforcedNodes( shapes, points );
+
+  theVertices = new GEOM::ListOfGO;
+  thePoints   = new SMESH::nodes_array;
+
+  size_t i = 0;
+  theVertices->length( myShapeEntries.size() );
+  for ( i = 0; i < myShapeEntries.size(); ++i )
+    theVertices[i] =
+      StdMeshers_ObjRefUlils::EntryOrShapeToGeomObject( myShapeEntries[i], shapes[i] );
+
+  thePoints->length( points.size() );
+  for ( i = 0; i < points.size(); ++i )
+  {
+    thePoints[i].x = points[i].X();
+    thePoints[i].y = points[i].Y();
+    thePoints[i].z = points[i].Z();
+  }
+  SMESH_CATCH( SMESH::doNothing );
+}
+
+//================================================================================
+/*!
+ * \brief Returns study entries of shapes defining enforced nodes
+ */
+//================================================================================
+
+SMESH::string_array* StdMeshers_QuadrangleParams_i::GetEnfVertices()
+{
+  SMESH::string_array_var arr = new SMESH::string_array;
+  arr->length( myShapeEntries.size() );
+
+  for ( size_t i = 0; i < myShapeEntries.size(); ++i )
+    arr[ i ] = myShapeEntries[ i ].c_str();
+
+  return arr._retn();
 }
 
 //=============================================================================
@@ -242,4 +329,59 @@ StdMeshers::QuadType StdMeshers_QuadrangleParams_i::GetQuadType()
 CORBA::Boolean StdMeshers_QuadrangleParams_i::IsDimSupported( SMESH::Dimension type )
 {
   return type == SMESH::DIM_2D;
+}
+
+//================================================================================
+/*!
+ * \brief Write parameters in a string
+  * \retval char* - resulting string
+ */
+//================================================================================
+
+char* StdMeshers_QuadrangleParams_i::SaveTo()
+{
+  ASSERT( myBaseImpl );
+  std::ostringstream os;
+
+  os << "ENTRIES: " << myShapeEntries.size();
+  for ( size_t i = 0; i < myShapeEntries.size(); ++i )
+    StdMeshers_ObjRefUlils::SaveToStream( myShapeEntries[ i ], os );
+  os << " ";
+
+  myBaseImpl->SaveTo( os );
+
+  return CORBA::string_dup( os.str().c_str() );
+}
+
+//================================================================================
+/*!
+ * \brief Retrieve parameters from the string
+  * \param theStream - the input string
+ */
+//================================================================================
+
+void StdMeshers_QuadrangleParams_i::LoadFrom( const char* theStream )
+{
+  ASSERT( myBaseImpl );
+
+  bool hasEntries = ( strncmp( "ENTRIES: ", theStream, 9 ) == 0 );
+  std::istringstream is( theStream + ( hasEntries ? 9 : 0 ));
+
+  if ( hasEntries )
+  {
+    int nb = 0;
+    if ( is >> nb && nb > 0 )
+    {
+      std::vector< TopoDS_Shape > shapes;
+      std::vector< gp_Pnt >       points;
+      myShapeEntries.resize( nb );
+
+      for ( int i = 0; i < nb; ++i )
+        shapes.push_back( StdMeshers_ObjRefUlils::LoadFromStream( is, & myShapeEntries[i] ));
+
+      GetImpl()->SetEnforcedNodes( shapes, points );
+    }
+  }
+
+  myBaseImpl->LoadFrom( is );
 }

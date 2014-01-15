@@ -20,6 +20,7 @@ In \b MESH there are the following Basic Hypotheses:
 <li>\ref max_length_anchor "Max Size"</li>
 <li>\ref adaptive_1d_anchor "Adaptive"</li>
 <li>\ref arithmetic_1d_anchor "Arithmetic 1D"</li>
+<li>\ref geometric_1d_anchor "Geometric 1D"</li>
 <li>\ref start_and_end_length_anchor "Start and end length"</li>
 <li>\ref deflection_1d_anchor "Deflection 1D"</li>
 <li>\ref automatic_length_anchor "Automatic Length"</li>
@@ -41,6 +42,7 @@ There also exist
 with other hypotheses:
 <ul>
 <li>\ref propagation_anchor "Propagation of 1D Hypothesis on opposite edges"</li>
+<li>\ref propagofdistribution_anchor "Propagation of Node Distribution on Opposite Edges"</li>
 <li>\ref viscous_layers_anchor "Viscous layers"</li>
 <li>\ref quadratic_mesh_anchor "Quadratic mesh"</li>
 <li>\ref non_conform_allowed_anchor "Non conform mesh allowed"</li>

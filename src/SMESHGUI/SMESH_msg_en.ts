@@ -5978,6 +5978,10 @@ Please specify them and try again</translation>
         <translation>Mesh</translation>
     </message>
     <message>
+        <source>MESH_TYPE</source>
+        <translation>Mesh type</translation>
+    </message>
+    <message>
         <source>NAME</source>
         <translation>Name</translation>
     </message>
@@ -6031,6 +6035,26 @@ Please specify it and try again</translation>
     <message>
         <source>MESH_IS_NULL</source>
         <translation>Mesh is null</translation>
+    </message>
+    <message>
+        <source>MT_ANY</source>
+        <translation>Any</translation>
+    </message>
+    <message>
+        <source>MT_HEXAHEDRAL</source>
+        <translation>Hexahedral</translation>
+    </message>
+    <message>
+        <source>MT_TETRAHEDRAL</source>
+        <translation>Tetrahedral</translation>
+    </message>
+    <message>
+        <source>MT_TRIANGULAR</source>
+        <translation>Triangular</translation>
+    </message>
+    <message>
+        <source>MT_QUADRILATERAL</source>
+        <translation>Quadrilaterial</translation>
     </message>
     <message>
         <source>NAME_OF_MESH_IS_EMPTY</source>

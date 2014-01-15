@@ -30,31 +30,77 @@
 #include "SMESH_Algo.hxx"
 #include "SMESH_ProxyMesh.hxx"
 #include "SMESH_StdMeshers.hxx"
+#include "StdMeshers_FaceSide.hxx"
 #include "StdMeshers_QuadrangleParams.hxx"
 
 #include <TopoDS_Face.hxx>
+#include <Bnd_B2d.hxx>
 
 class SMDS_MeshNode;
 class SMESH_Mesh;
 class SMESH_MesherHelper;
 class SMESH_ProxyMesh;
-class StdMeshers_FaceSide;
 struct uvPtStruct;
 
 
 enum TSideID { QUAD_BOTTOM_SIDE=0, QUAD_RIGHT_SIDE, QUAD_TOP_SIDE, QUAD_LEFT_SIDE, NB_QUAD_SIDES };
 
 typedef uvPtStruct UVPtStruct;
-typedef struct faceQuadStruct
+struct FaceQuadStruct
 {
-  std::vector< StdMeshers_FaceSide*> side;
-  bool isEdgeOut[4]; // true, if an EDGE has more nodes, than an opposite one
-  UVPtStruct* uv_grid;
-  TopoDS_Face face;
-  ~faceQuadStruct();
-  void shift( size_t nb, bool keepUnitOri );
-  typedef boost::shared_ptr<faceQuadStruct> Ptr;
-} FaceQuadStruct;
+  struct Side // a side of FaceQuadStruct
+  {
+    struct Contact // contact of two sides
+    {
+      int   point; // index of a grid point of this side where two sides meat
+      Side* other_side;
+      int   other_point;
+    };
+    StdMeshers_FaceSidePtr grid;
+    int                    from, to;     // indices of grid points used by the quad
+    std::set<int>          forced_nodes; // indices of forced grid points
+    std::vector<Contact>   contacts;     // contacts with sides of other quads
+    int                    nbNodeOut;    // nb of missing nodes on an opposite shorter side
+
+    Side(StdMeshers_FaceSidePtr theGrid = StdMeshers_FaceSidePtr());
+    Side& operator=(const Side& otherSide);
+    operator StdMeshers_FaceSidePtr() { return grid; }
+    operator const StdMeshers_FaceSidePtr() const { return grid; }
+    void AddContact( int ip, Side* side, int iop );
+    int  ToSideIndex( int quadNodeIndex ) const;
+    int  ToQuadIndex( int sideNodeIndex ) const;
+    bool IsForced( int nodeIndex ) const;
+    bool IsReversed() const { return nbNodeOut ? false : to < from; }
+    int  NbPoints() const { return Abs( to - from ); }
+    double Param( int nodeIndex ) const;
+    double Length( int from=-1, int to=-1) const;
+    gp_XY Value2d( double x ) const;
+    // some sortcuts
+    const vector<UVPtStruct>& GetUVPtStruct(bool isXConst=0, double constValue=0) const
+    { return nbNodeOut ?
+        grid->SimulateUVPtStruct( NbPoints()-nbNodeOut-1, isXConst, constValue ) :
+        grid->GetUVPtStruct( isXConst, constValue );
+    }
+  };
+
+  std::vector< Side >      side;
+  std::vector< UVPtStruct> uv_grid;
+  int                      iSize, jSize;
+  TopoDS_Face              face;
+  Bnd_B2d                  uv_box;
+
+  FaceQuadStruct ( const TopoDS_Face& F = TopoDS_Face() );
+  UVPtStruct& UVPt( int i, int j ) { return uv_grid[ i + j * iSize ]; }
+  void  shift    ( size_t nb, bool keepUnitOri );
+  int & nbNodeOut( int iSide ) { return side[ iSide ].nbNodeOut; }
+  bool  findCell ( const gp_XY& uv, int & i, int & j );
+  bool  isNear   ( const gp_XY& uv, int & i, int & j, int nbLoops=1 );
+  bool  isEqual  ( const gp_XY& uv, int   i, int   j );
+  void  normPa2IJ( double x, double y, int & i, int & j );
+  void  updateUV ( const gp_XY& uv, int   i, int   j, bool isVertical );
+
+  typedef boost::shared_ptr<FaceQuadStruct> Ptr;
+};
 
 class STDMESHERS_EXPORT StdMeshers_Quadrangle_2D: public SMESH_2D_Algo
 {
@@ -89,16 +135,17 @@ protected:
                                std::vector<int>& aNbNodes,
                                bool& IsQuadratic);
 
-  bool setNormalizedGrid(SMESH_Mesh&          aMesh,
-                         const TopoDS_Face&   aFace,
-                         FaceQuadStruct::Ptr& quad);
+  bool setNormalizedGrid(FaceQuadStruct::Ptr quad);
   
-  void splitQuad(SMESHDS_Mesh *theMeshDS,
-                 const int theFaceID,
-                 const SMDS_MeshNode* theNode1,
-                 const SMDS_MeshNode* theNode2,
-                 const SMDS_MeshNode* theNode3,
-                 const SMDS_MeshNode* theNode4);
+  void splitQuadFace(SMESHDS_Mesh *       theMeshDS,
+                     const int            theFaceID,
+                     const SMDS_MeshNode* theNode1,
+                     const SMDS_MeshNode* theNode2,
+                     const SMDS_MeshNode* theNode3,
+                     const SMDS_MeshNode* theNode4);
+
+  bool computeQuadDominant(SMESH_Mesh&         aMesh,
+                           const TopoDS_Face&  aFace);
 
   bool computeQuadDominant(SMESH_Mesh&         aMesh,
                            const TopoDS_Face&  aFace,
@@ -107,6 +154,10 @@ protected:
   bool computeQuadPref(SMESH_Mesh&         aMesh,
                        const TopoDS_Face&  aFace,
                        FaceQuadStruct::Ptr quad);
+
+  bool computeTriangles(SMESH_Mesh&         aMesh,
+                        const TopoDS_Face&  aFace,
+                        FaceQuadStruct::Ptr quad);
 
   bool evaluateQuadPref(SMESH_Mesh&         aMesh,
                         const TopoDS_Shape& aShape,
@@ -129,20 +180,43 @@ protected:
                  int &                       theNbDegenEdges,
                  const bool                  considerMesh);
 
+  bool getEnforcedUV();
 
-  // true if QuadranglePreference hypothesis is assigned that forces
-  // construction of quadrangles if the number of nodes on opposite edges
-  // is not the same in the case where the global number of nodes on edges
-  // is even
+  bool addEnforcedNodes();
+
+  int splitQuad(FaceQuadStruct::Ptr quad, int i, int j);
+
+  typedef std::map< StdMeshers_FaceSidePtr, std::vector< FaceQuadStruct::Ptr > > TQuadsBySide;
+  void updateSideUV( FaceQuadStruct::Side&  side,
+                     int                    iForced,
+                     const TQuadsBySide&    quads,
+                     int *                  iNext=NULL);
+
+
+  // Fields
+
   bool myQuadranglePreference;
   bool myTrianglePreference;
   int  myTriaVertexID;
   bool myNeedSmooth;
+  const StdMeshers_QuadrangleParams* myParams;
+  StdMeshers_QuadType                myQuadType;
 
-  StdMeshers_QuadType  myQuadType;
-  SMESH_MesherHelper*  myHelper; // tool for working with quadratic elements
-  SMESH_ProxyMesh::Ptr myProxyMesh;
-  FaceQuadStruct::Ptr  myQuadStruct;
+  SMESH_MesherHelper*                myHelper;
+  SMESH_ProxyMesh::Ptr               myProxyMesh;
+  std::list< FaceQuadStruct::Ptr >   myQuadList;
+
+  struct ForcedPoint
+  {
+    gp_XY         uv;
+    gp_XYZ        xyz;
+    TopoDS_Vertex vertex;
+
+    double U() const { return uv.X(); }
+    double V() const { return uv.Y(); }
+    operator const gp_XY& () { return uv; }
+  };
+  std::vector< ForcedPoint >         myForcedPnts;
 };
 
 #endif

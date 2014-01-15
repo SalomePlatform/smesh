@@ -2418,6 +2418,12 @@ class Mesh:
     def GetElemFaceNodes(self,elemId, faceIndex):
         return self.mesh.GetElemFaceNodes(elemId, faceIndex)
 
+    ## Returns three components of normal of given mesh face
+    #  (or an empty array in KO case)
+    #  @ingroup l1_meshinfo
+    def GetFaceNormal(self, faceId):
+        return self.mesh.GetFaceNormal(faceId)
+
     ## Returns an element based on all given nodes.
     #  @ingroup l1_meshinfo
     def FindElementByNodes(self,nodes):
@@ -3181,7 +3187,8 @@ class Mesh:
     #  Note that nodes built on edges and boundary nodes are always fixed.
     #  @param MaxNbOfIterations the maximum number of iterations
     #  @param MaxAspectRatio varies in range [1.0, inf]
-    #  @param Method is Laplacian(LAPLACIAN_SMOOTH) or Centroidal(CENTROIDAL_SMOOTH)
+    #  @param Method is either Laplacian (SMESH.SMESH_MeshEditor.LAPLACIAN_SMOOTH)
+    #         or Centroidal (SMESH.SMESH_MeshEditor.CENTROIDAL_SMOOTH)
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_smooth
     def Smooth(self, IDsOfElements, IDsOfFixedNodes,
@@ -3199,7 +3206,8 @@ class Mesh:
     #  Note that nodes built on edges and boundary nodes are always fixed.
     #  @param MaxNbOfIterations the maximum number of iterations
     #  @param MaxAspectRatio varies in range [1.0, inf]
-    #  @param Method is Laplacian(LAPLACIAN_SMOOTH) or Centroidal(CENTROIDAL_SMOOTH)
+    #  @param Method is either Laplacian (SMESH.SMESH_MeshEditor.LAPLACIAN_SMOOTH)
+    #         or Centroidal (SMESH.SMESH_MeshEditor.CENTROIDAL_SMOOTH)
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_smooth
     def SmoothObject(self, theObject, IDsOfFixedNodes,
@@ -3215,7 +3223,8 @@ class Mesh:
     #  Note that nodes built on edges and boundary nodes are always fixed.
     #  @param MaxNbOfIterations the maximum number of iterations
     #  @param MaxAspectRatio varies in range [1.0, inf]
-    #  @param Method is Laplacian(LAPLACIAN_SMOOTH) or Centroidal(CENTROIDAL_SMOOTH)
+    #  @param Method is either Laplacian (SMESH.SMESH_MeshEditor.LAPLACIAN_SMOOTH)
+    #         or Centroidal (SMESH.SMESH_MeshEditor.CENTROIDAL_SMOOTH)
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_smooth
     def SmoothParametric(self, IDsOfElements, IDsOfFixedNodes,
@@ -3233,7 +3242,8 @@ class Mesh:
     #  Note that nodes built on edges and boundary nodes are always fixed.
     #  @param MaxNbOfIterations the maximum number of iterations
     #  @param MaxAspectRatio varies in range [1.0, inf]
-    #  @param Method Laplacian(LAPLACIAN_SMOOTH) or Centroidal(CENTROIDAL_SMOOTH)
+    #  @param Method is either Laplacian (SMESH.SMESH_MeshEditor.LAPLACIAN_SMOOTH)
+    #         or Centroidal (SMESH.SMESH_MeshEditor.CENTROIDAL_SMOOTH)
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_smooth
     def SmoothParametricObject(self, theObject, IDsOfFixedNodes,

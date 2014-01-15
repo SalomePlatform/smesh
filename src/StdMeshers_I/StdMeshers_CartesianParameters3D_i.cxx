@@ -225,6 +225,28 @@ void StdMeshers_CartesianParameters3D_i::GetGridSpacing(SMESH::string_array_out 
 }
 
 //=======================================================================
+//function : SetToAddEdges
+//purpose  : Enables implementation of geometrical edges into the mesh.
+//=======================================================================
+
+void StdMeshers_CartesianParameters3D_i::SetToAddEdges(CORBA::Boolean toAdd)
+{
+  GetImpl()->SetToAddEdges( toAdd );
+  SMESH::TPythonDump() << _this() << ".SetToAddEdges( " << toAdd << " )";
+}
+
+//=======================================================================
+//function : GetToAddEdges
+//purpose  : Returns true if implementation of geometrical edges into the
+//           mesh is enabled
+//=======================================================================
+
+CORBA::Boolean StdMeshers_CartesianParameters3D_i::GetToAddEdges()
+{
+  return GetImpl()->GetToAddEdges();
+}
+
+//=======================================================================
 //function : IsGridBySpacing
 //purpose  : Return true if the grid is defined by spacing functions and 
 //           not by node coordinates

@@ -24,9 +24,12 @@
 #define _SMESH_QUADRANGLEPARAMS_HXX_
 
 #include "SMESH_StdMeshers.hxx"
-
 #include "SMESH_Hypothesis.hxx"
-#include "Utils_SALOME_Exception.hxx"
+
+#include <gp_Pnt.hxx>
+
+#include <vector>
+#include <string>
 
 enum StdMeshers_QuadType
   {
@@ -38,8 +41,7 @@ enum StdMeshers_QuadType
     QUAD_NB_TYPES
   };
 
-class STDMESHERS_EXPORT StdMeshers_QuadrangleParams:
-  public SMESH_Hypothesis
+class STDMESHERS_EXPORT StdMeshers_QuadrangleParams: public SMESH_Hypothesis
 {
 public:
   StdMeshers_QuadrangleParams(int hypId, int studyId, SMESH_Gen* gen);
@@ -54,12 +56,13 @@ public:
   void SetQuadType (StdMeshers_QuadType type);
   StdMeshers_QuadType GetQuadType() const { return _quadType; }
 
+  void SetEnforcedNodes( const std::vector< TopoDS_Shape >& shapes,
+                         const std::vector< gp_Pnt >&       points );
+  void GetEnforcedNodes( std::vector< TopoDS_Shape >& shapes,
+                         std::vector< gp_Pnt >&       points ) const;
+
   virtual std::ostream & SaveTo(std::ostream & save);
   virtual std::istream & LoadFrom(std::istream & load);
-  friend std::ostream& operator << (std::ostream & save,
-                                    StdMeshers_QuadrangleParams & hyp);
-  friend std::istream& operator >> (std::istream & load,
-                                    StdMeshers_QuadrangleParams & hyp);
 
   /*!
    * \brief Initialize start and end length by the mesh built on the geometry
@@ -78,9 +81,11 @@ public:
                                        const SMESH_Mesh* theMesh=0);
 
 protected:
-  int                 _triaVertexID;
-  std::string         _objEntry;
-  StdMeshers_QuadType _quadType;
+  int                         _triaVertexID;
+  std::string                 _objEntry;
+  StdMeshers_QuadType         _quadType;
+  std::vector< TopoDS_Shape > _enforcedVertices;
+  std::vector< gp_Pnt >       _enforcedPoints;
 };
 
 #endif

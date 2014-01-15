@@ -2641,10 +2641,10 @@ bool SMESH_Pattern::Apply (const SMDS_MeshFace* theFace,
 
   list< const SMDS_MeshNode* > nodes;
   list< const SMDS_MeshNode* >::iterator n = nodes.end();
-  SMDS_ElemIteratorPtr noIt = theFace->nodesIterator();
+  SMDS_NodeIteratorPtr noIt = theFace->nodeIterator();
   int iSub = 0;
   while ( noIt->more() && iSub < nbFaceNodes ) {
-    const SMDS_MeshNode* node = smdsNode( noIt->next() );
+    const SMDS_MeshNode* node = noIt->next();
     nodes.push_back( node );
     if ( iSub++ == theNodeIndexOnKeyPoint1 )
       n = --nodes.end();
@@ -2661,7 +2661,7 @@ bool SMESH_Pattern::Apply (const SMDS_MeshFace* theFace,
   list< gp_XYZ > xyzList;
   myOrderedNodes.resize( nbFaceNodes );
   for ( iSub = 0, n = nodes.begin(); n != nodes.end(); ++n ) {
-    xyzList.push_back( gp_XYZ( (*n)->X(), (*n)->Y(), (*n)->Z() ));
+    xyzList.push_back( SMESH_TNodeXYZ( *n ));
     myOrderedNodes[ iSub++] = *n;
   }
 
@@ -2963,11 +2963,6 @@ bool SMESH_Pattern::Apply (SMESH_Mesh*                     theMesh,
   myXYZ.resize( myPoints.size() * theFaces.size(), undefinedXYZ() );
   myElements.reserve( theFaces.size() );
 
-  // to find point index
-  map< TPoint*, int > pointIndex;
-  for ( int i = 0; i < myPoints.size(); i++ )
-    pointIndex.insert( make_pair( & myPoints[ i ], i ));
-
   int ind1 = 0; // lowest point index for a face
 
   // meshed geometry
@@ -3019,7 +3014,7 @@ bool SMESH_Pattern::Apply (SMESH_Mesh*                     theMesh,
     {
       list< TPoint* > & linkPoints = getShapePoints( eID++ );
       const SMDS_MeshNode* n1 = myOrderedNodes[ i ];
-      const SMDS_MeshNode* n2 = myOrderedNodes[ i + 1 == nbNodes ? 0 : i + 1 ];
+      const SMDS_MeshNode* n2 = myOrderedNodes[( i+1 ) % nbNodes ];
       // make a link and a node set
       TNodeSet linkSet, node1Set;
       linkSet.insert( n1 );
@@ -3028,7 +3023,7 @@ bool SMESH_Pattern::Apply (SMESH_Mesh*                     theMesh,
       list< TPoint* >::iterator p = linkPoints.begin();
       {
         // map the first link point to n1
-        int nId = pointIndex[ *p ] + ind1;
+        int nId = ( *p - &myPoints[0] ) + ind1;
         myXYZIdToNodeMap[ nId ] = n1;
         list< list< int > >& groups = myIdsOnBoundary[ node1Set ];
         groups.push_back(list< int > ());
@@ -3040,7 +3035,7 @@ bool SMESH_Pattern::Apply (SMESH_Mesh*                     theMesh,
       list< int >& indList = groups.back();
       // add points to the map excluding the end points
       for ( p++; *p != linkPoints.back(); p++ )
-        indList.push_back( pointIndex[ *p ] + ind1 );
+        indList.push_back( ( *p - &myPoints[0] ) + ind1 );
     }
     ind1 += myPoints.size();
   }
@@ -3443,7 +3438,7 @@ void SMESH_Pattern::mergePoints (const bool uniteGroups)
       Bnd_Box box;
       TNodeSet::const_iterator n = nodes.begin();
       for ( ; n != nodes.end(); ++n )
-        box.Add( gp_Pnt( (*n)->X(), (*n)->Y(), (*n)->Z() ));
+        box.Add( gp_Pnt( SMESH_TNodeXYZ( *n )));
       double x, y, z, X, Y, Z;
       box.Get( x, y, z, X, Y, Z );
       gp_Pnt p( x, y, z ), P( X, Y, Z );
@@ -3454,7 +3449,7 @@ void SMESH_Pattern::mergePoints (const bool uniteGroups)
     bool unite = ( uniteGroups && nodes.size() == 2 );
     map< double, int > distIndMap;
     const SMDS_MeshNode* node = *nodes.begin();
-    gp_Pnt P( node->X(), node->Y(), node->Z() );
+    gp_Pnt P = SMESH_TNodeXYZ( node );
 
     // compare points, replace indices
 
@@ -3928,32 +3923,142 @@ bool SMESH_Pattern::MakeMesh(SMESH_Mesh* theMesh,
                                              myXYZ[ i ].Y(),
                                              myXYZ[ i ].Z());
     }
-  }
+    if ( theMesh->HasShapeToMesh() )
+    {
+      // set nodes on EDGEs (IMP 22368)
+      SMESH_MesherHelper helper( *theMesh );
+      helper.ToFixNodeParameters( true );
+      map< TNodeSet, list< list< int > > >::iterator idListIt = myIdsOnBoundary.begin();
+      for ( ; idListIt != myIdsOnBoundary.end(); idListIt++ )
+      {
+        list<list< int > >& groups = idListIt->second;
+        const TNodeSet&      nodes = idListIt->first;
+        if ( nodes.size() != 2 )
+          continue; // not a link
+        const SMDS_MeshNode* n1 = *nodes.begin();
+        const SMDS_MeshNode* n2 = *nodes.rbegin();
+        TopoDS_Shape S1 = helper.GetSubShapeByNode( n1, aMeshDS );
+        TopoDS_Shape S2 = helper.GetSubShapeByNode( n2, aMeshDS );
+        if ( S1.IsNull() || S1.ShapeType() < TopAbs_EDGE ||
+             S2.IsNull() || S2.ShapeType() < TopAbs_EDGE )
+          continue;
+        TopoDS_Shape S;
+        if ( S1.ShapeType() == TopAbs_EDGE )
+        {
+          if ( S1 == S2 || helper.IsSubShape( S2, S1 ))
+            S = S1;
+        }
+        else if ( S2.ShapeType() == TopAbs_EDGE )
+        {
+          if ( helper.IsSubShape( S1, S2 ))
+            S = S2;
+        }
+        else
+        {
+          S = helper.GetCommonAncestor( S1, S2, *theMesh, TopAbs_EDGE );
+        } 
+        if ( S.IsNull() )
+          continue;
+        const TopoDS_Edge & E = TopoDS::Edge( S );
+        helper.SetSubShape( E );
+        list<list< int > >::iterator g = groups.begin();
+        for ( ; g != groups.end(); ++g )
+        {
+          list< int >& ids = *g;
+          list< int >::iterator id = ids.begin();
+          for ( ; id != ids.end(); ++id )
+            if ( nodesVector[ *id ] && nodesVector[ *id ]->getshapeId() < 1 )
+            {
+              double u = 1e100;
+              aMeshDS->SetNodeOnEdge( nodesVector[ *id ], E, u );
+              helper.CheckNodeU( E, nodesVector[ *id ], u, 1e-7, true );
+            }
+        }
+      }
+    }
+  }  // if ( onMeshElements )
+
   else
   {
     nodesVector.resize( myPoints.size(), 0 );
 
-    // to find point index
-    map< TPoint*, int > pointIndex;
-    for ( int i = 0; i < myPoints.size(); i++ )
-      pointIndex.insert( make_pair( & myPoints[ i ], i ));
+    // find existing nodes on EDGEs and VERTEXes (IMP 22368)
+    map< int, list< TPoint* > >::iterator idPointIt = myShapeIDToPointsMap.begin();
+    if ( !myShapeIDMap.IsEmpty() && aMeshDS->NbNodes() > 0 )
+
+      for ( ; idPointIt != myShapeIDToPointsMap.end(); idPointIt++ )
+      {
+        const TopoDS_Shape&    S = myShapeIDMap( idPointIt->first );
+        list< TPoint* > & points = idPointIt->second;
+        if ( points.empty() )
+          continue;
+
+        switch ( S.ShapeType() )
+        {
+        case TopAbs_VERTEX:
+        {
+          int pIndex = points.back() - &myPoints[0];
+          if ( !nodesVector[ pIndex ] )
+            nodesVector[ pIndex ] = SMESH_Algo::VertexNode( TopoDS::Vertex( S ), aMeshDS );
+          break;
+        }
+        case TopAbs_EDGE:
+        {
+          const TopoDS_Edge& edge = TopoDS::Edge( S );
+          map< double, const SMDS_MeshNode* > paramsOfNodes;
+          if ( !SMESH_Algo::GetSortedNodesOnEdge( aMeshDS, edge,
+                                                  /*ignoreMediumNodes=*/false,
+                                                  paramsOfNodes )
+               || paramsOfNodes.size() < 3 )
+            break;
+          // points on VERTEXes are included with wrong myU
+          list< TPoint* >::reverse_iterator pItR = ++points.rbegin();
+          list< TPoint* >::iterator         pItF = ++points.begin();
+          const bool isForward = ( (*pItF)->myU < (*pItR)->myU );
+          map< double, const SMDS_MeshNode* >::iterator u2n    = ++paramsOfNodes.begin();
+          map< double, const SMDS_MeshNode* >::iterator u2nEnd = --paramsOfNodes.end();
+          TPoint* p;
+          while ( u2n != u2nEnd && pItF != points.end() )
+          {
+            const double         u = u2n->first;
+            const SMDS_MeshNode* n = u2n->second;
+            const double       tol = ( (++u2n)->first - u ) / 20;
+            do
+            {
+              p = ( isForward ? *pItF : *pItR );
+              if ( Abs( u - p->myU ) < tol )
+              {
+                int pIndex = p - &myPoints[0];
+                if ( !nodesVector [ pIndex ] )
+                  nodesVector [ pIndex ] = n;
+                ++pItF;
+                ++pItR;
+                break;
+              }
+            }
+            while ( p->myU < u && ( ++pItF, ++pItR != points.rend() ));
+          }
+          break;
+        }
+        default:;
+        }
+      } // end of "find existing nodes on EDGEs and VERTEXes"
 
     // loop on sub-shapes of myShape: create nodes
-    map< int, list< TPoint* > >::iterator idPointIt = myShapeIDToPointsMap.begin();
+    idPointIt = myShapeIDToPointsMap.begin();
     for ( ; idPointIt != myShapeIDToPointsMap.end(); idPointIt++ )
     {
       TopoDS_Shape S;
-      //SMESHDS_SubMesh * subMeshDS = 0;
       if ( !myShapeIDMap.IsEmpty() ) {
         S = myShapeIDMap( idPointIt->first );
-        //subMeshDS = aMeshDS->MeshElements( S );
       }
       list< TPoint* > & points = idPointIt->second;
       list< TPoint* >::iterator pIt = points.begin();
       for ( ; pIt != points.end(); pIt++ )
       {
         TPoint* point = *pIt;
-        int pIndex = pointIndex[ point ];
+        //int pIndex = pointIndex[ point ];
+        int pIndex = point - &myPoints[0];
         if ( nodesVector [ pIndex ] )
           continue;
         SMDS_MeshNode* node = aMeshDS->AddNode (point->myXYZ.X(),
@@ -4148,8 +4253,9 @@ void SMESH_Pattern::createElements(SMESH_Mesh*                            theMes
         SMDS_ElemIteratorPtr noIt = elem->nodesIterator();
         while ( noIt->more() ) {
           SMDS_MeshNode* node = const_cast<SMDS_MeshNode*>(smdsNode( noIt->next() ));
-          if (!node->getshapeId() &&
-              shellNodes.find( node ) == shellNodes.end() ) {
+          if ( node->getshapeId() < 1 &&
+               shellNodes.find( node ) == shellNodes.end() )
+          {
             if ( S.ShapeType() == TopAbs_FACE )
               aMeshDS->SetNodeOnFace( node, shapeID,
                                       Precision::Infinite(),// <- it's a sign that UV is not set

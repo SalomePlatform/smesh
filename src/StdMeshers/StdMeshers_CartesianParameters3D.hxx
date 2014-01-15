@@ -100,6 +100,10 @@ public:
                       std::vector<double>& yNodes,
                       std::vector<double>& zNodes,
                       const Bnd_Box&       bndBox) const throw ( SALOME_Exception );
+
+  void SetAxisDirs(const double* the9DirComps) throw ( SALOME_Exception );
+  const double* GetAxisDirs() const { return _axisDirs; }
+
   /*!
    * Set size threshold. A polyhedral cell got by cutting an initial
    * hexahedron by geometry boundary is considered small and is removed if
@@ -110,6 +114,14 @@ public:
    * \brief Return size threshold
    */
   double GetSizeThreshold() const;
+
+  /*!
+   * \brief Enables implementation of geometrical edges into the mesh. If this feature
+   *        is disabled, sharp edges of the shape are lost ("smoothed") in the mesh if
+   *        they don't coincide with the grid lines
+   */
+  void SetToAddEdges(bool toAdd);
+  bool GetToAddEdges() const;
 
   /*!
    * \brief Return true if parameters are well defined
@@ -138,7 +150,10 @@ public:
   std::vector<std::string> _spaceFunctions[3];
   std::vector<double>      _internalPoints[3];
 
+  double _axisDirs[9];
+
   double _sizeThreshold;
+  bool   _toAddEdges;
 };
 
 #endif

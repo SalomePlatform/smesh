@@ -102,7 +102,7 @@ protected:
   StdMeshers_SegmentLengthAroundVertex* getVertexHyp(SMESH_Mesh &          theMesh,
                                                      const TopoDS_Vertex & theV);
 
-  enum HypothesisType { LOCAL_LENGTH, MAX_LENGTH, NB_SEGMENTS, BEG_END_LENGTH, DEFLECTION, ARITHMETIC_1D, FIXED_POINTS_1D, ADAPTIVE, NONE };
+  enum HypothesisType { LOCAL_LENGTH, MAX_LENGTH, NB_SEGMENTS, BEG_END_LENGTH, DEFLECTION, ARITHMETIC_1D, FIXED_POINTS_1D, ADAPTIVE, GEOMETRIC_1D, NONE };
 
   enum ValueIndex {
     SCALE_FACTOR_IND = 0,
@@ -140,6 +140,7 @@ protected:
   // a source of propagated hypothesis, is set by CheckHypothesis()
   // always called before Compute()
   TopoDS_Shape _mainEdge;
+  bool         _isPropagOfDistribution;
 };
 
 #endif

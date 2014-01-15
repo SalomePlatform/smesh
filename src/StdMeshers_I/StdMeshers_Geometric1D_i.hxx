@@ -21,11 +21,11 @@
 //
 
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
-//  File   : StdMeshers_Propagation_i.hxx
+//  File   : StdMeshers_Geometric1D_i.hxx
 //  Module : SMESH
 //
-#ifndef _SMESH_PROPAGATION_I_HXX_
-#define _SMESH_PROPAGATION_I_HXX_
+#ifndef _SMESH_Geometric1D_I_HXX_
+#define _SMESH_Geometric1D_I_HXX_
 
 #include "SMESH_StdMeshers_I.hxx"
 
@@ -33,44 +33,33 @@
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
 
 #include "SMESH_Hypothesis_i.hxx"
-#include "StdMeshers_Propagation.hxx"
-
-class SMESH_Gen;
+#include "StdMeshers_Geometric1D.hxx"
+#include "StdMeshers_Reversible1D_i.hxx"
 
 // ======================================================
-// Propagation hypothesis
+// Geometric 1D hypothesis
 // ======================================================
-
-class STDMESHERS_I_EXPORT StdMeshers_Propagation_i:
-  public virtual POA_StdMeshers::StdMeshers_Propagation,
-  public virtual SMESH_Hypothesis_i
+class STDMESHERS_I_EXPORT StdMeshers_Geometric1D_i:
+  public virtual POA_StdMeshers::StdMeshers_Geometric1D,
+  public virtual SMESH_Hypothesis_i,
+  public virtual StdMeshers_Reversible1D_i
 {
-public:
+ public:
   // Constructor
-  StdMeshers_Propagation_i (PortableServer::POA_ptr thePOA,
+  StdMeshers_Geometric1D_i( PortableServer::POA_ptr thePOA,
                             int                     theStudyId,
-                            ::SMESH_Gen*            theGenImpl);
-  
-  // Verify whether hypothesis supports given entity type 
-  CORBA::Boolean IsDimSupported( SMESH::Dimension type );
-};
+                            ::SMESH_Gen*            theGenImpl );
 
-// ======================================================
-// Propagation of Distribution hypothesis
-// ======================================================
+  void SetStartLength(CORBA::Double length) throw(SALOME::SALOME_Exception);
+  void SetCommonRatio(CORBA::Double factor) throw(SALOME::SALOME_Exception);
 
-class STDMESHERS_I_EXPORT StdMeshers_PropagOfDistribution_i:
-  public virtual POA_StdMeshers::StdMeshers_PropagOfDistribution,
-  public virtual SMESH_Hypothesis_i
-{
-public:
-  // Constructor
-  StdMeshers_PropagOfDistribution_i (PortableServer::POA_ptr thePOA,
-                                     int                     theStudyId,
-                                     ::SMESH_Gen*            theGenImpl);
-  
-  // Verify whether hypothesis supports given entity type 
-  CORBA::Boolean IsDimSupported( SMESH::Dimension type );
+  CORBA::Double GetStartLength();
+  CORBA::Double GetCommonRatio();
+
+  virtual ::CORBA::Boolean IsDimSupported(::SMESH::Dimension type);
+
+  // Get implementation
+  ::StdMeshers_Geometric1D* GetImpl();
 };
 
 #endif

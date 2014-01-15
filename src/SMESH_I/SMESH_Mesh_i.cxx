@@ -44,6 +44,7 @@
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Group.hxx"
 #include "SMESH_Group_i.hxx"
+#include "SMESH_MeshAlgos.hxx"
 #include "SMESH_MeshEditor.hxx"
 #include "SMESH_MeshEditor_i.hxx"
 #include "SMESH_MeshPartDS.hxx"
@@ -4018,6 +4019,32 @@ SMESH::long_array* SMESH_Mesh_i::GetElemFaceNodes(CORBA::Long  elemId,
         for ( int i = 0; i < aResult->length(); ++i )
           aResult[ i ] = nn[ i ]->GetID();
       }
+    }
+  }
+  return aResult._retn();
+}
+
+//=======================================================================
+//function : GetElemFaceNodes
+//purpose  : Returns three components of normal of given mesh face.
+//=======================================================================
+
+SMESH::double_array* SMESH_Mesh_i::GetFaceNormal(CORBA::Long  elemId)
+{
+  if ( _preMeshInfo )
+    _preMeshInfo->FullLoadFromFile();
+
+  SMESH::double_array_var aResult = new SMESH::double_array();
+
+  if ( SMESHDS_Mesh* mesh = _impl->GetMeshDS() )
+  {
+    gp_XYZ normal;
+    if ( SMESH_MeshAlgos::FaceNormal( mesh->FindElement(elemId), normal, /*normalized=*/true ))
+    {
+      aResult->length( 3 );
+      aResult[ 0 ] = normal.X();
+      aResult[ 1 ] = normal.Y();
+      aResult[ 2 ] = normal.Z();
     }
   }
   return aResult._retn();

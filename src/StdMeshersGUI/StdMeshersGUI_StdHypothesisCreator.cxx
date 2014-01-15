@@ -523,6 +523,23 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
         h->SetObjectEntry( w->GetMainShapeEntry() );
       }
     }
+    else if( hypType()=="GeometricProgression" )
+    {
+      StdMeshers::StdMeshers_Geometric1D_var h =
+        StdMeshers::StdMeshers_Geometric1D::_narrow( hypothesis() );
+
+      StdMeshersGUI_SubShapeSelectorWdg* w = 
+        widget< StdMeshersGUI_SubShapeSelectorWdg >( 2 );
+
+      h->SetVarParameter( params[0].text(), "SetStartLength" );
+      h->SetStartLength( params[0].myValue.toDouble() );
+      h->SetVarParameter( params[1].text(), "SetCommonRatio" );
+      h->SetCommonRatio( params[1].myValue.toDouble() );
+      if (w) {
+        h->SetReversedEdges( w->GetListOfIDs() );
+        h->SetObjectEntry( w->GetMainShapeEntry() );
+      }
+    }
     else if( hypType()=="FixedPoints1D" )
     {
       StdMeshers::StdMeshers_FixedPoints1D_var h =
@@ -704,9 +721,9 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
       h->SetStretchFactor ( params[2].myValue.toDouble() );
 
       if ( StdMeshersGUI_SubShapeSelectorWdg* idsWg = 
-           widget< StdMeshersGUI_SubShapeSelectorWdg >( 3 ))
+           widget< StdMeshersGUI_SubShapeSelectorWdg >( 4 ))
       {
-        h->SetIgnoreFaces( idsWg->GetListOfIDs() );
+        h->SetFaces( idsWg->GetListOfIDs(), params[3].myValue.toInt() );
       }
     }
     else if( hypType()=="ViscousLayers2D" )
@@ -878,6 +895,41 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     customWidgets()->append ( aDirectionWidget );
   }
 
+  else if( hypType()=="GeometricProgression" )
+  {
+    StdMeshers::StdMeshers_Geometric1D_var h =
+      StdMeshers::StdMeshers_Geometric1D::_narrow( hyp );
+
+    item.myName = tr( "SMESH_START_LENGTH_PARAM" );
+    if(!initVariableName( hyp, item, "SetStartLength" ))
+      item.myValue = h->GetStartLength();
+    p.append( item );
+
+    customWidgets()->append (0);
+
+    item.myName = tr( "SMESH_COMMON_RATIO" );
+    if(!initVariableName( hyp, item, "SetCommonRatio" ))
+      item.myValue = h->GetCommonRatio();
+    p.append( item );
+
+    customWidgets()->append (0);
+
+    item.myName = tr( "SMESH_REVERSED_EDGES" );
+    p.append( item );
+
+    StdMeshersGUI_SubShapeSelectorWdg* aDirectionWidget =
+      new StdMeshersGUI_SubShapeSelectorWdg();
+    QString aGeomEntry = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
+    QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
+    if ( aGeomEntry == "" )
+      aGeomEntry = h->GetObjectEntry();
+
+    aDirectionWidget->SetGeomShapeEntry( aGeomEntry );
+    aDirectionWidget->SetMainShapeEntry( aMainEntry );
+    aDirectionWidget->SetListOfIDs( h->GetReversedEdges() );
+    aDirectionWidget->showPreview( true );
+    customWidgets()->append ( aDirectionWidget );
+  }
 
   else if( hypType()=="FixedPoints1D" )
   {
@@ -1192,7 +1244,19 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
     if ( !aMainEntry.isEmpty() )
     {
-      item.myName = tr( "SMESH_FACES_WO_LAYERS" );
+      item.myName = tr( "TO_IGNORE_FACES_OR_NOT" );
+      p.append( item );
+
+      StdMeshersGUI_RadioButtonsGrpWdg* ignoreWdg = new StdMeshersGUI_RadioButtonsGrpWdg("");
+      ignoreWdg->setButtonLabels ( QStringList()
+                                   << tr("NOT_TO_IGNORE_FACES")
+                                   << tr("TO_IGNORE_FACES") );
+      ignoreWdg->setChecked( h->GetIsToIgnoreFaces() );
+      connect(ignoreWdg->getButtonGroup(),SIGNAL(buttonClicked(int)),this,SLOT(onValueChanged()));
+      customWidgets()->append( ignoreWdg );
+
+      item.myName =
+        tr( h->GetIsToIgnoreFaces() ? "SMESH_FACES_WO_LAYERS" : "SMESH_FACES_WITH_LAYERS" );
       p.append( item );
 
       StdMeshersGUI_SubShapeSelectorWdg* idsWg =
@@ -1200,7 +1264,7 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
 
       idsWg->SetGeomShapeEntry( aMainEntry );
       idsWg->SetMainShapeEntry( aMainEntry );
-      idsWg->SetListOfIDs( h->GetIgnoreFaces() );
+      idsWg->SetListOfIDs( h->GetFaces() );
       idsWg->showPreview( true );
       customWidgets()->append ( idsWg );
     }
@@ -1325,6 +1389,13 @@ void StdMeshersGUI_StdHypothesisCreator::attuneStdWidget (QWidget* w, const int)
     {
       sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "parametric_precision" );
     }
+    else if( hypType()=="GeometricProgression" )
+    {
+      if (sb->objectName() == tr("SMESH_START_LENGTH_PARAM"))
+        sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "length_precision" );
+      else if (sb->objectName() == tr("SMESH_COMMON_RATIO"))
+        sb->RangeStepAndValidator( -VALUE_MAX, VALUE_MAX, 0.5, "len_tol_precision" );
+    }
     else if( hypType()=="MaxLength" )
     {
       sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "length_precision" );
@@ -1423,6 +1494,7 @@ QString StdMeshersGUI_StdHypothesisCreator::hypTypeName( const QString& t ) cons
     types.insert( "Deflection1D", "DEFLECTION1D" );
     types.insert( "Adaptive1D", "ADAPTIVE1D" );
     types.insert( "Arithmetic1D", "ARITHMETIC_1D" );
+    types.insert( "GeometricProgression", "GEOMETRIC_1D" );
     types.insert( "FixedPoints1D", "FIXED_POINTS_1D" );
     types.insert( "AutomaticLength", "AUTOMATIC_LENGTH" );
     types.insert( "ProjectionSource1D", "PROJECTION_SOURCE_1D" );
@@ -1596,12 +1668,15 @@ void StdMeshersGUI_StdHypothesisCreator::valueChanged( QWidget* paramWidget)
       toCopyGroups->setEnabled( true );
     }
   }
-  else if ( hypType() == "ViscousLayers2D" && paramWidget->inherits("QButtonGroup"))
+  else if ( hypType().startsWith( "ViscousLayers" ) && paramWidget->inherits("QButtonGroup"))
   {
     if ( QLabel* label = getLabel(4) )
     {
       bool toIgnore = widget< StdMeshersGUI_RadioButtonsGrpWdg >( 3 )->checkedId();
-      label->setText( tr( toIgnore ? "SMESH_EDGES_WO_LAYERS" : "SMESH_EDGES_WITH_LAYERS" ));
+      if ( hypType() == "ViscousLayers2D" )
+        label->setText( tr( toIgnore ? "SMESH_EDGES_WO_LAYERS" : "SMESH_EDGES_WITH_LAYERS" ));
+      else
+        label->setText( tr( toIgnore ? "SMESH_FACES_WO_LAYERS" : "SMESH_FACES_WITH_LAYERS" ));
     }
   }
 }

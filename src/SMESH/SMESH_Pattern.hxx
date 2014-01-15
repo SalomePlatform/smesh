@@ -356,7 +356,7 @@ private:
   // all functions assure that shapes are indexed so that first go
   // ordered vertices, then ordered edge, then faces and maybe a shell
   TopTools_IndexedMapOfOrientedShape   myShapeIDMap;
-  std::map< int, std::list< TPoint* > >     myShapeIDToPointsMap;
+  std::map< int, std::list< TPoint*> > myShapeIDToPointsMap;
 
   // for the 2d case:
   // nb of key-points in each of pattern boundaries

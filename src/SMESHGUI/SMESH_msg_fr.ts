@@ -5972,6 +5972,10 @@ Indiquez-les et essayez de nouveau</translation>
         <translation>Maillage</translation>
     </message>
     <message>
+        <source>MESH_TYPE</source>
+        <translation type="unfinished">Mesh type</translation>
+    </message>
+    <message>
         <source>NAME</source>
         <translation>Nom</translation>
     </message>
@@ -6025,6 +6029,26 @@ Spécifiez-le et essayez de nouveau</translation>
     <message>
         <source>MESH_IS_NULL</source>
         <translation>Le maillage est nul</translation>
+    </message>
+    <message>
+        <source>MT_ANY</source>
+        <translation type="unfinished">Any</translation>
+    </message>
+    <message>
+        <source>MT_HEXAHEDRAL</source>
+        <translation type="unfinished">Hexahedral</translation>
+    </message>
+    <message>
+        <source>MT_TETRAHEDRAL</source>
+        <translation type="unfinished">Tetrahedral</translation>
+    </message>
+    <message>
+        <source>MT_TRIANGULAR</source>
+        <translation type="unfinished">Triangular</translation>
+    </message>
+    <message>
+        <source>MT_QUADRILATERAL</source>
+        <translation>Quadrilaterial</translation>
     </message>
     <message>
         <source>NAME_OF_MESH_IS_EMPTY</source>

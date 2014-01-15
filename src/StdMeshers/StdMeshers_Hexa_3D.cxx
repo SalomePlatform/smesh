@@ -222,8 +222,8 @@ namespace
    * \brief Finds FaceQuadStruct having a side equal to a given one and rearranges
    *  the found FaceQuadStruct::side to have the given side at a Q_BOTTOM place
    */
-  FaceQuadStructPtr getQuadWithBottom( StdMeshers_FaceSide* side,
-                                       FaceQuadStructPtr    quad[ 6 ])
+  FaceQuadStructPtr getQuadWithBottom( StdMeshers_FaceSidePtr side,
+                                       FaceQuadStructPtr      quad[ 6 ])
   {
     FaceQuadStructPtr foundQuad;
     for ( int i = 1; i < 6; ++i )
@@ -231,7 +231,7 @@ namespace
       if ( !quad[i] ) continue;
       for ( unsigned iS = 0; iS < quad[i]->side.size(); ++iS )
       {
-        const StdMeshers_FaceSide* side2 = quad[i]->side[iS];
+        const StdMeshers_FaceSidePtr side2 = quad[i]->side[iS];
         if (( side->FirstVertex().IsSame( side2->FirstVertex() ) ||
               side->FirstVertex().IsSame( side2->LastVertex() ))
             &&
@@ -241,7 +241,7 @@ namespace
         {
           if ( iS != Q_BOTTOM )
           {
-            vector< StdMeshers_FaceSide*> newSides;
+            vector< FaceQuadStruct::Side > newSides;
             for ( unsigned j = iS; j < quad[i]->side.size(); ++j )
               newSides.push_back( quad[i]->side[j] );
             for ( unsigned j = 0; j < iS; ++j )
@@ -391,7 +391,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
   for ( int i = 0; i < 6; ++i )
   {
     const TopoDS_Face& F = aCubeSide[i]._quad->face;
-    StdMeshers_FaceSide* baseQuadSide = aCubeSide[i]._quad->side[ Q_BOTTOM ];
+    StdMeshers_FaceSidePtr baseQuadSide = aCubeSide[i]._quad->side[ Q_BOTTOM ];
     list<TopoDS_Edge> baseEdges( baseQuadSide->Edges().begin(), baseQuadSide->Edges().end() );
 
     // assure correctness of node positions on baseE:

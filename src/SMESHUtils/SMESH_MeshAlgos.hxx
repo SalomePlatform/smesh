@@ -97,9 +97,16 @@ namespace SMESH_MeshAlgos
   /*!
    * \brief Return true if the point is IN or ON of the element
    */
-  SMESHUtils_EXPORT bool IsOut( const SMDS_MeshElement* element, const gp_Pnt& point, double tol );
+  SMESHUtils_EXPORT
+  bool IsOut( const SMDS_MeshElement* element, const gp_Pnt& point, double tol );
 
-  SMESHUtils_EXPORT double GetDistance( const SMDS_MeshFace* face, const gp_Pnt& point );
+  SMESHUtils_EXPORT
+  double GetDistance( const SMDS_MeshFace* face, const gp_Pnt& point );
+
+  SMESHUtils_EXPORT
+  void GetBarycentricCoords( const gp_XY& point,
+                             const gp_XY& t0, const gp_XY& t1, const gp_XY& t2,
+                             double &    bc0, double &    bc1);
 
   /*!
    * Return a face having linked nodes n1 and n2 and which is
@@ -107,35 +114,40 @@ namespace SMESH_MeshAlgos
    * - in elemSet provided that !elemSet.empty()
    * i1 and i2 optionally returns indices of n1 and n2
    */
-  SMESHUtils_EXPORT const SMDS_MeshElement* 
-    FindFaceInSet(const SMDS_MeshNode*    n1,
-                  const SMDS_MeshNode*    n2,
-                  const TIDSortedElemSet& elemSet,
-                  const TIDSortedElemSet& avoidSet,
-                  int*                    i1=0,
-                  int*                    i2=0);
+  SMESHUtils_EXPORT
+  const SMDS_MeshElement* FindFaceInSet(const SMDS_MeshNode*    n1,
+                                        const SMDS_MeshNode*    n2,
+                                        const TIDSortedElemSet& elemSet,
+                                        const TIDSortedElemSet& avoidSet,
+                                        int*                    i1=0,
+                                        int*                    i2=0);
   /*!
    * \brief Calculate normal of a mesh face
    */
-  SMESHUtils_EXPORT bool FaceNormal(const SMDS_MeshElement* F, gp_XYZ& normal, bool normalized=true);
+  SMESHUtils_EXPORT
+  bool FaceNormal(const SMDS_MeshElement* F, gp_XYZ& normal, bool normalized=true);
 
   /*!
    * \brief Return nodes common to two elements
    */
-  SMESHUtils_EXPORT std::vector< const SMDS_MeshNode*> GetCommonNodes(const SMDS_MeshElement* e1,
+  SMESHUtils_EXPORT
+  std::vector< const SMDS_MeshNode*> GetCommonNodes(const SMDS_MeshElement* e1,
                                                     const SMDS_MeshElement* e2);
 
   /*!
    * \brief Return SMESH_NodeSearcher. The caller is responsible for deleteing it
    */
-  SMESHUtils_EXPORT SMESH_NodeSearcher* GetNodeSearcher( SMDS_Mesh& mesh );
+  SMESHUtils_EXPORT
+  SMESH_NodeSearcher* GetNodeSearcher( SMDS_Mesh& mesh );
 
   /*!
    * \brief Return SMESH_ElementSearcher. The caller is responsible for deleting it
    */
-  SMESHUtils_EXPORT SMESH_ElementSearcher* GetElementSearcher( SMDS_Mesh& mesh );
-  SMESHUtils_EXPORT SMESH_ElementSearcher* GetElementSearcher( SMDS_Mesh& mesh,
-                                                               SMDS_ElemIteratorPtr elemIt );
+  SMESHUtils_EXPORT
+  SMESH_ElementSearcher* GetElementSearcher( SMDS_Mesh& mesh );
+  SMESHUtils_EXPORT
+  SMESH_ElementSearcher* GetElementSearcher( SMDS_Mesh& mesh,
+                                             SMDS_ElemIteratorPtr elemIt );
 }
 
 #endif

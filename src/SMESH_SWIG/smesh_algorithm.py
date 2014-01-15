@@ -267,21 +267,26 @@ class Mesh_Algorithm:
     #  @param thickness total thickness of layers of prisms
     #  @param numberOfLayers number of layers of prisms
     #  @param stretchFactor factor (>1.0) of growth of layer thickness towards inside of mesh
-    #  @param ignoreFaces list of geometrical faces (or their ids) not to generate layers on
+    #  @param faces list of geometrical faces (or their ids).
+    #         Viscous layers are either generated on these faces or not, depending on
+    #         the value of \a isFacesToIgnore parameter.
+    #  @param isFacesToIgnore if \c True, the Viscous layers are not generated on the
+    #         faces specified by the previous parameter (\a faces).
     #  @ingroup l3_hypos_additi
-    def ViscousLayers(self, thickness, numberOfLayers, stretchFactor, ignoreFaces=[]):
+    def ViscousLayers(self, thickness, numberOfLayers, stretchFactor,
+                      faces=[], isFacesToIgnore=True ):
         if not isinstance(self.algo, SMESH._objref_SMESH_3D_Algo):
             raise TypeError, "ViscousLayers are supported by 3D algorithms only"
         if not "ViscousLayers" in self.GetCompatibleHypothesis():
             raise TypeError, "ViscousLayers are not supported by %s"%self.algo.GetName()
-        if ignoreFaces and isinstance( ignoreFaces[0], geomBuilder.GEOM._objref_GEOM_Object ):
-            ignoreFaces = [ self.mesh.geompyD.GetSubShapeID(self.mesh.geom, f) for f in ignoreFaces ]
+        if faces and isinstance( faces[0], geomBuilder.GEOM._objref_GEOM_Object ):
+            faces = [ self.mesh.geompyD.GetSubShapeID(self.mesh.geom, f) for f in faces ]
         hyp = self.Hypothesis("ViscousLayers",
-                              [thickness, numberOfLayers, stretchFactor, ignoreFaces])
+                              [thickness, numberOfLayers, stretchFactor, faces])
         hyp.SetTotalThickness(thickness)
         hyp.SetNumberLayers(numberOfLayers)
         hyp.SetStretchFactor(stretchFactor)
-        hyp.SetIgnoreFaces(ignoreFaces)
+        hyp.SetFaces(faces, isFacesToIgnore)
         return hyp
 
     ## Defines "ViscousLayers2D" hypothesis to give parameters of layers of quadrilateral
@@ -290,9 +295,9 @@ class Mesh_Algorithm:
     #  @param thickness total thickness of layers of quadrilaterals
     #  @param numberOfLayers number of layers
     #  @param stretchFactor factor (>1.0) of growth of layer thickness towards inside of mesh
-    #  @param edges list of geometrical edge (or their ids).
+    #  @param edges list of geometrical edges (or their ids).
     #         Viscous layers are either generated on these edges or not, depending on
-    #         the values of \a isEdgesToIgnore parameter.
+    #         the value of \a isEdgesToIgnore parameter.
     #  @param isEdgesToIgnore if \c True, the Viscous layers are not generated on the
     #         edges specified by the previous parameter (\a edges).
     #  @ingroup l3_hypos_additi
@@ -313,7 +318,7 @@ class Mesh_Algorithm:
         hyp.SetEdges(edges, isEdgesToIgnore)
         return hyp
 
-    ## Transform a list of ether edges or tuples (edge, 1st_vertex_of_edge)
+    ## Transform a list of either edges or tuples (edge, 1st_vertex_of_edge)
     #  into a list acceptable to SetReversedEdges() of some 1D hypotheses
     #  @ingroup l3_hypos_1dhyps
     def ReversedEdgeIndices(self, reverseList):

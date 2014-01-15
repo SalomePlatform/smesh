@@ -251,7 +251,8 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const StdMeshers_FaceSide*  theSide,
  */
 //================================================================================
 
-StdMeshers_FaceSide::StdMeshers_FaceSide(UVPtStructVec& theSideNodes)
+StdMeshers_FaceSide::StdMeshers_FaceSide(UVPtStructVec&     theSideNodes,
+                                         const TopoDS_Face& theFace)
 {
   myEdge.resize( 1 );
   myEdgeID.resize( 1, -1 );
@@ -272,12 +273,42 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(UVPtStructVec& theSideNodes)
   if ( !myPoints.empty() )
   {
     myPoints[0].normParam = 0;
-    gp_Pnt pPrev = SMESH_TNodeXYZ( myPoints[0].node );
-    for ( size_t i = 1; i < myPoints.size(); ++i )
+    if ( myPoints[0].node &&
+         myPoints.back().node &&
+         myPoints[ myNbPonits/2 ].node )
     {
-      gp_Pnt p = SMESH_TNodeXYZ( myPoints[i].node );
-      myLength += ( myPoints[i].normParam = p.Distance( pPrev ));
-      pPrev = p;
+      gp_Pnt pPrev = SMESH_TNodeXYZ( myPoints[0].node );
+      for ( size_t i = 1; i < myPoints.size(); ++i )
+      {
+        gp_Pnt p = SMESH_TNodeXYZ( myPoints[i].node );
+        myLength += p.Distance( pPrev );
+        myPoints[i].normParam = myLength;
+        pPrev = p;
+      }
+    }
+    else if ( !theFace.IsNull() )
+    {
+      TopLoc_Location loc;
+      Handle(Geom_Surface) surf = BRep_Tool::Surface( theFace, loc );
+      gp_Pnt pPrev = surf->Value( myPoints[0].u, myPoints[0].v );
+      for ( size_t i = 1; i < myPoints.size(); ++i )
+      {
+        gp_Pnt p = surf->Value( myPoints[i].u, myPoints[i].v );
+        myLength += p.Distance( pPrev );
+        myPoints[i].normParam = myLength;
+        pPrev = p;
+      }
+    }
+    else
+    {
+      gp_Pnt2d pPrev = myPoints[0].UV();
+      for ( size_t i = 1; i < myPoints.size(); ++i )
+      {
+        gp_Pnt2d p = myPoints[i].UV();
+        myLength += p.Distance( pPrev );
+        myPoints[i].normParam = myLength;
+        pPrev = p;
+      }
     }
     if ( myLength > std::numeric_limits<double>::min() )
       for ( size_t i = 1; i < myPoints.size(); ++i )
@@ -925,6 +956,18 @@ gp_Pnt2d StdMeshers_FaceSide::Value2d(double U) const
     }
     return myC2d[ i ]->Value(par);
 
+  }
+  else if ( !myPoints.empty() )
+  {
+    int i = U * double( myPoints.size()-1 );
+    while ( i > 0 && myPoints[ i ].normParam > U )
+      --i;
+    while ( i+1 < myPoints.size() && myPoints[ i+1 ].normParam < U )
+      ++i;
+    double r = (( U - myPoints[ i ].normParam ) /
+                ( myPoints[ i+1 ].normParam - myPoints[ i ].normParam ));
+    return ( myPoints[ i   ].UV() * ( 1 - r ) +
+             myPoints[ i+1 ].UV() * r );
   }
   return myDefaultPnt2d;
 }

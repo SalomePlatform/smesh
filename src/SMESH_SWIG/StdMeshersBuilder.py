@@ -199,7 +199,8 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         hyp.SetDeflection(deflection)
         return hyp
 
-    ## Defines "Arithmetic1D" hypothesis to cut an edge in several segments with increasing arithmetic length
+    ## Defines "Arithmetic1D" hypothesis to cut an edge in several segments with a length
+    #  that changes in arithmetic progression
     #  @param start defines the length of the first segment
     #  @param end   defines the length of the last  segment
     #  @param reversedEdges is a list of edges to mesh using reversed orientation.
@@ -226,6 +227,32 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         hyp.SetObjectEntry( entry )
         return hyp
 
+    ## Defines "GeometricProgression" hypothesis to cut an edge in several
+    #  segments with a length that changes in Geometric progression
+    #  @param start defines the length of the first segment
+    #  @param ratio defines the common ratio of the geometric progression
+    #  @param reversedEdges is a list of edges to mesh using reversed orientation.
+    #                       A list item can also be a tuple (edge, 1st_vertex_of_edge)
+    #  @param UseExisting if ==true - searches for an existing hypothesis created with
+    #                     the same parameters, else (default) - creates a new one
+    #  @return an instance of StdMeshers_Geometric1D hypothesis
+    #  @ingroup l3_hypos_1dhyps
+    def GeometricProgression(self, start, ratio, reversedEdges=[], UseExisting=0):
+        reversedEdgeInd = self.ReversedEdgeIndices(reversedEdges)
+        entry = self.MainShapeEntry()
+        from salome.smesh.smeshBuilder import IsEqual
+        compFun = lambda hyp, args: ( IsEqual(hyp.GetLength(1), args[0]) and \
+                                      IsEqual(hyp.GetLength(0), args[1]) and \
+                                      hyp.GetReversedEdges() == args[2]  and \
+                                      (not args[2] or hyp.GetObjectEntry() == args[3]))
+        hyp = self.Hypothesis("GeometricProgression", [start, ratio, reversedEdgeInd, entry],
+                              UseExisting=UseExisting, CompareMethod=compFun)
+        hyp.SetStartLength( start )
+        hyp.SetCommonRatio( ratio )
+        hyp.SetReversedEdges( reversedEdgeInd )
+        hyp.SetObjectEntry( entry )
+        return hyp
+
     ## Defines "FixedPoints1D" hypothesis to cut an edge using parameter
     # on curve from 0 to 1 (additionally it is neecessary to check
     # orientation of edges and create list of reversed edges if it is
@@ -237,7 +264,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
     #                       A list item can also be a tuple (edge, 1st_vertex_of_edge)
     #  @param UseExisting if ==true - searches for an existing hypothesis created with
     #                     the same parameters, else (default) - creates a new one
-    #  @return an instance of StdMeshers_Arithmetic1D hypothesis
+    #  @return an instance of StdMeshers_FixedPoints1D hypothesis
     #  @ingroup l3_hypos_1dhyps
     def FixedPoints1D(self, points, nbSegs=[1], reversedEdges=[], UseExisting=0):
         if not isinstance(reversedEdges,list): #old version script, before adding reversedEdges
@@ -295,11 +322,22 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         hyp.SetDeflection(d)
         return hyp
 
-    ## Defines "Propagation" hypothesis that propagates all other hypotheses on all other edges that are at
-    #  the opposite side in case of quadrangular faces
+    ## Defines "Propagation" hypothesis that propagates 1D hypotheses
+    #  from an edge where this hypothesis is assigned to
+    #  on all other edges that are at the opposite side in case of quadrangular faces
+    #  This hypothesis should be assigned to an edge to propagate a hypothesis from.
     #  @ingroup l3_hypos_additi
     def Propagation(self):
         return self.Hypothesis("Propagation", UseExisting=1, CompareMethod=self.CompareEqualHyp)
+
+    ## Defines "Propagation of Node Distribution" hypothesis that propagates
+    #  distribution of nodes from an edge where this hypothesis is assigned to,
+    #  to opposite edges of quadrangular faces, so that number of segments on all these
+    #  edges will be the same, as well as relations between segment lengths. 
+    #  @ingroup l3_hypos_additi
+    def PropagationOfDistribution(self):
+        return self.Hypothesis("PropagOfDistribution", UseExisting=1,
+                               CompareMethod=self.CompareEqualHyp)
 
     ## Defines "AutomaticLength" hypothesis
     #  @param fineness for the fineness [0-1]
@@ -552,28 +590,56 @@ class StdMeshersBuilder_Quadrangle(Mesh_Algorithm):
     #                    same number of segments, the other pair must have an even difference
     #                    between the numbers of segments on the sides.
     #  @param triangleVertex: vertex of a trilateral geometrical face, around which triangles
-    #                  will be created while other elements will be quadrangles.
-    #                  Vertex can be either a GEOM_Object or a vertex ID within the
-    #                  shape to mesh
-    #  @param UseExisting: if ==true - searches for the existing hypothesis created with
-    #                  the same parameters, else (default) - creates a new one
+    #                    will be created while other elements will be quadrangles.
+    #                    Vertex can be either a GEOM_Object or a vertex ID within the
+    #                    shape to mesh
+    #  @param enfVertices: list of shapes defining positions where nodes (enforced nodes)
+    #                    must be created by the mesher. Shapes can be of any type,
+    #                    vertices of given shapes define positions of enforced nodes.
+    #                    Only vertices successfully projected to the face are used.
+    #  @param enfPoint: list of points giving positions of enforced nodes.
+    #                    Point can be defined either as SMESH.PointStruct's
+    #                    ([SMESH.PointStruct(x1,y1,z1), SMESH.PointStruct(x2,y2,z2),...])
+    #                    or triples of values ([[x1,y1,z1], [x2,y2,z2], ...]).
+    #                    In the case if the defined QuadrangleParameters() refer to a sole face,
+    #                    all given points must lie on this face, else the mesher fails.
+    #  @param UseExisting: if \c True - searches for the existing hypothesis created with
+    #                    the same parameters, else (default) - creates a new one
     #  @ingroup l3_hypos_quad
-    def QuadrangleParameters(self, quadType=StdMeshers.QUAD_STANDARD, triangleVertex=0, UseExisting=0):
-        import GEOM
+    def QuadrangleParameters(self, quadType=StdMeshers.QUAD_STANDARD, triangleVertex=0,
+                             enfVertices=[],enfPoints=[],UseExisting=0):
+        import GEOM, SMESH
         vertexID = triangleVertex
         if isinstance( triangleVertex, GEOM._objref_GEOM_Object ):
             vertexID = self.mesh.geompyD.GetSubShapeID( self.mesh.geom, triangleVertex )
+        if isinstance( enfVertices, int ) and not enfPoints and not UseExisting:
+            # a call of old syntax, before inserting enfVertices and enfPoints before UseExisting
+            UseExisting, enfVertices = enfVertices, []
+        pStructs, xyz = [], []
+        for p in enfPoints:
+            if isinstance( p, SMESH.PointStruct ):
+                xyz.append(( p.x, p.y, p.z ))
+                pStructs.append( p )
+            else:
+                xyz.append(( p[0], p[1], p[2] ))
+                pStructs.append( SMESH.PointStruct( p[0], p[1], p[2] ))
         if not self.params:
             compFun = lambda hyp,args: \
                       hyp.GetQuadType() == args[0] and \
-                      ( hyp.GetTriaVertex()==args[1] or ( hyp.GetTriaVertex()<1 and args[1]<1))
-            self.params = self.Hypothesis("QuadrangleParams", [quadType,vertexID],
+                      (hyp.GetTriaVertex()==args[1] or ( hyp.GetTriaVertex()<1 and args[1]<1)) and \
+                      ((hyp.GetEnforcedNodes()) == (args[2],args[3])) # True w/o enfVertices only
+            entries = [ shape.GetStudyEntry() for shape in enfVertices ]
+            self.params = self.Hypothesis("QuadrangleParams", [quadType,vertexID,entries,xyz],
                                           UseExisting = UseExisting, CompareMethod=compFun)
             pass
         if self.params.GetQuadType() != quadType:
             self.params.SetQuadType(quadType)
         if vertexID > 0:
             self.params.SetTriaVertex( vertexID )
+        from salome.smesh.smeshBuilder import AssureGeomPublished
+        for v in enfVertices:
+            AssureGeomPublished( self.mesh, v )
+        self.params.SetEnforcedNodes( enfVertices, pStructs )
         return self.params
 
     ## Defines "QuadrangleParams" hypothesis with a type of quadrangulation that only
@@ -980,7 +1046,8 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
         return hyp
 
     ## Defines "Arithmetic1D" hypothesis, specifying the distribution of segments
-    #  to build between the inner and the outer shells with a length that changes in arithmetic progression
+    #  to build between the inner and the outer shells with a length that changes
+    #  in arithmetic progression
     #  @param start  the length of the first segment
     #  @param end    the length of the last  segment
     def Arithmetic1D(self, start, end ):
@@ -990,6 +1057,20 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
         hyp = self.OwnHypothesis("Arithmetic1D", [start, end])
         hyp.SetLength(start, 1)
         hyp.SetLength(end  , 0)
+        return hyp
+
+    ## Defines "GeometricProgression" hypothesis, specifying the distribution of segments
+    #  to build between the inner and the outer shells with a length that changes
+    #  in Geometric progression
+    #  @param start  the length of the first segment
+    #  @param ratio  the common ratio of the geometric progression
+    def GeometricProgression(self, start, ratio ):
+        if self.algoType != "RadialPrism_3D":
+            print "Prism_3D algorith doesn't support any hyposesis"
+            return None
+        hyp = self.OwnHypothesis("GeometricProgression", [start, ratio])
+        hyp.SetStartLength( start )
+        hyp.SetCommonRatio( ratio )
         return hyp
 
     ## Defines "StartEndLength" hypothesis, specifying distribution of segments
@@ -1146,6 +1227,16 @@ class StdMeshersBuilder_RadialQuadrangle1D2D(Mesh_Algorithm):
         hyp = self.OwnHypothesis("Arithmetic1D", [start, end])
         hyp.SetLength(start, 1)
         hyp.SetLength(end  , 0)
+        return hyp
+
+    ## Defines "GeometricProgression" hypothesis, specifying the distribution of segments
+    #  with a length that changes in Geometric progression
+    #  @param start  the length of the first segment
+    #  @param ratio  the common ratio of the geometric progression
+    def GeometricProgression(self, start, ratio ):
+        hyp = self.OwnHypothesis("GeometricProgression", [start, ratio])
+        hyp.SetStartLength( start )
+        hyp.SetCommonRatio( ratio )
         return hyp
 
     ## Defines "StartEndLength" hypothesis, specifying distribution of segments

@@ -19,7 +19,6 @@
 //  File   : StdMeshers_QuadrangleParams_i.hxx
 //  Author : Sergey KUUL, OCC
 //  Module : SMESH
-//  $Header$
 
 #ifndef _SMESH_QUADRANGLEPARAMS_I_HXX_
 #define _SMESH_QUADRANGLEPARAMS_I_HXX_
@@ -47,13 +46,6 @@ public:
   // Destructor
   virtual ~StdMeshers_QuadrangleParams_i();
 
-  // Set length
-  //void SetLength( CORBA::Double theLength, CORBA::Boolean theIsStart )
-  //  throw ( SALOME::SALOME_Exception );
-
-  // Get length
-  //CORBA::Double GetLength(CORBA::Boolean theIsStart);
-
   // Set base vertex for triangles
   void SetTriaVertex (CORBA::Long vertID);
 
@@ -72,11 +64,31 @@ public:
   // Get the type of quadrangulation
   StdMeshers::QuadType GetQuadType();
 
+  // Set positions of enforced nodes
+  void SetEnforcedNodes(const GEOM::ListOfGO&     vertices,
+                        const SMESH::nodes_array& points) throw ( SALOME::SALOME_Exception );
+  
+  // Returns positions of enforced nodes
+  void GetEnforcedNodes(GEOM::ListOfGO_out vertices, SMESH::nodes_array_out points);
+
+  // Returns entries of shapes defining enforced nodes
+  SMESH::string_array* GetEnfVertices();
+
+
   // Get implementation
   ::StdMeshers_QuadrangleParams* GetImpl();
   
   // Verify whether hypothesis supports given entity type 
   CORBA::Boolean IsDimSupported( SMESH::Dimension type );
+
+  // Redefined Persistence
+  virtual char* SaveTo();
+  virtual void  LoadFrom( const char* theStream );
+
+ protected:
+
+  std::vector<std::string> myShapeEntries;
+  
 };
 
 #endif

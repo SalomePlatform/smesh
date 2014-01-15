@@ -296,24 +296,45 @@ namespace SMESH
   }
 
 
-  QStringList GetHypothesesSets(int maxDim)
+  QStringList GetHypothesesSets(int maxDim, const QString& MeshType)
   {
     QStringList aSetNameList;
 
     // Init list of available hypotheses, if needed
     InitAvailableHypotheses();
-
     QList<HypothesesSet*>::iterator hypoSet;
-    for ( hypoSet  = myListOfHypothesesSets.begin(); 
+    for ( hypoSet  = myListOfHypothesesSets.begin();
           hypoSet != myListOfHypothesesSets.end();
           ++hypoSet ) {
       HypothesesSet* aSet = *hypoSet;
-      if ( aSet &&
-           ( aSet->count( true ) || aSet->count( false )) &&
-           aSet->maxDim() <= maxDim)
+      bool isAvailable = false;
+      if ( !MeshType.isEmpty() )
       {
-        aSetNameList.append( mangledHypoSetName( aSet ));
+        if ( aSet->maxDim() != maxDim)
+          continue;
+        aSet->init( true );
+        while ( aSet->next(), aSet->more() )
+        {
+          if ( HypothesisData* hypData = SMESH::GetHypothesisData( aSet->current() ) )
+          {
+            QStringList::const_iterator inElemType = hypData->OutputTypes.begin();
+            for ( ; inElemType != hypData->OutputTypes.end(); inElemType++ )
+            {
+              if ( *inElemType == MeshType ){
+                isAvailable = true;
+                break;
+              }
+            }
+          }
+          if ( isAvailable ) break;
+        }
       }
+      else if ( aSet && ( aSet->count( true ) || aSet->count( false )) &&
+                aSet->maxDim() <= maxDim)
+      {
+        isAvailable = true;
+      }
+      if ( isAvailable ) aSetNameList.append( mangledHypoSetName( aSet ));
     }
     aSetNameList.removeDuplicates();
     aSetNameList.sort();

@@ -15,6 +15,18 @@
         <source>TO_IGNORE_EDGES</source>
         <translation>Edges without layers (inlets and oulets)</translation>
     </message>
+    <message>
+        <source>TO_IGNORE_FACES_OR_NOT</source>
+        <translation>Specified faces are</translation>
+    </message>
+    <message>
+        <source>NOT_TO_IGNORE_FACES</source>
+        <translation>Faces with layers (walls)</translation>
+    </message>
+    <message>
+        <source>TO_IGNORE_FACES</source>
+        <translation>Faces without layers (inlets and oulets)</translation>
+    </message>
 </context>
 <context>
     <name>@default</name>
@@ -23,12 +35,20 @@
         <translation>Arithmetic 1D</translation>
     </message>
     <message>
-        <source>SMESH_ARITHMETIC_1D_PARAM</source>
-        <translation>Arithmetic Reason</translation>
-    </message>
-    <message>
         <source>SMESH_ARITHMETIC_1D_TITLE</source>
         <translation>Hypothesis Construction</translation>
+    </message>
+    <message>
+        <source>SMESH_GEOMETRIC_1D_HYPOTHESIS</source>
+        <translation>Geometric Progression</translation>
+    </message>
+    <message>
+        <source>SMESH_GEOMETRIC_1D_TITLE</source>
+        <translation>Hypothesis Construction</translation>
+    </message>
+    <message>
+        <source>SMESH_COMMON_RATIO</source>
+        <translation>Common Ratio</translation>
     </message>
     <message>
         <source>SMESH_AUTOMATIC_LENGTH_HYPOTHESIS</source>
@@ -492,6 +512,10 @@
     <message>
         <source>THRESHOLD</source>
         <translation>Threshold</translation>
+    </message>
+    <message>
+        <source>ADD_EDGES</source>
+        <translation>Implement Edges</translation>
     </message>
     <message>
         <source>AXIS_X</source>

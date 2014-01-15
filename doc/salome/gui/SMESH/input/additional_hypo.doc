@@ -38,6 +38,19 @@ has been locally defined on the opposite edge.
 <br><b>See Also</b> a sample TUI Script of a 
 \ref tui_propagation "Propagation hypothesis" operation
 
+\anchor propagofdistribution_anchor
+<h2>Propagation of Node Distribution on Opposite Edges</h2>
+
+<b>Propagation of Node Distribution on Opposite Edges</b> allows to propagate
+distribution of nodes onto an opposite edge. If a local hypothesis and
+propagation are defined on an edge of a quadrangular face, the
+opposite edge will have the same number of nodes and the same
+relations between segment lengths, unless another hypothesis
+has been locally defined on the opposite edge.
+ 
+<br><b>See Also</b> a sample TUI Script of a 
+\ref tui_propagation "Propagation hypothesis" operation
+
 \anchor quadrangle_preference_anchor
 <h2>Quadrangle Preference</h2>
 
@@ -68,29 +81,29 @@ computations.
 <li><b>Number of layers</b> - defines the number of element layers.</li>
 <li><b>Stretch factor</b> - defines the growth factor of element height
   from the mesh boundary inwards.</li>
-<li><b>Specified Edges are</b> - defines how the shapes specified by
+<li><b>Specified Faces/Edges are</b> - defines how the shapes specified by
   the next parameter are used.
-<li><b>Faces without layers</b> and <b>Edges with/without layers</b> - 
-  in the 3D case it defines geometrical faces on which element layers
-  should not be constructed; in the 2D case it defines geometrical edges
-  on which element layers either should be or should not be
-  constructed, depending on the value of the previous parameter
-  (<b>Specified Edges are</b>). 
+<li><b> Faces/Edges with/without layers</b> - 
+  defines geometrical faces or edges on which element layers
+  either should be or should not be constructed, depending on the
+  value of the previous parameter (<b>Specified Faces/Edges are</b>). 
+  Faces (or edges) can be selected either in the Object Browser or in
+  the VTK Viewer.
   \note A mesh shown in the 3D Viewer can prevent selection of faces
   and edges, just hide the mesh to avoid this. To avoid a long wait when a
   geometry with many faces (or edges) is displayed, the number of faces
   (edges) shown at a time is limited by the value of "Sub-shapes
   preview chunk size" preference (in Preferences/Mesh/General tab).<br>
 
-  Whatever shapes are specified by this
-  parameter, the element layers are not constructed on geometrical
-  faces shared by several solids in 3D case and edges shared by
-  several faces in 2D case. In other words the element layers can be
-  constructed on boundary faces and edges, and are not constructed on
-  internal faces and edges. There is an exception to this rule in 2D
-  case: if "Viscous Layers 2D" hypothesis is assigned to a sub-mesh,
-  the element layers can be constructed on boundary edges of the shape
-  of this sub-mesh.
+  If faces/edges without layers are specified, the element layers are
+  not constructed on geometrical faces shared by several solids in 3D
+  case and edges shared by several faces in 2D case. In other words,
+  in this mode the element layers can be constructed on boundary faces
+  and edges only, and are not constructed on internal faces and
+  edges. There is an exception to this rule: if a hypothesis is
+  assigned to a sub-mesh, the element layers can be constructed on
+  boundary faces/edges of the shape of this sub-mesh, at same time
+  possibly being internal faces/edges within the whole model.
   \image html viscous_layers_on_submesh.png 2D viscous layers constructed on boundary edges of a sub-mesh on a disk face.
 
 </li>
@@ -100,6 +113,5 @@ computations.
 
 <br><b>See also</b> a sample TUI script of a \ref tui_viscous_layers
 "Viscous layers construction".
-
 
 */

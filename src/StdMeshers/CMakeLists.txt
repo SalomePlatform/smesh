@@ -75,8 +75,10 @@ ENDIF(SALOME_SMESH_ENABLE_MEFISTO)
 # header files / no moc processing
 SET(StdMeshers_HEADERS
   StdMeshers_LocalLength.hxx
+  StdMeshers_Reversible1D.hxx
   StdMeshers_StartEndLength.hxx
   StdMeshers_Arithmetic1D.hxx
+  StdMeshers_Geometric1D.hxx
   StdMeshers_FixedPoints1D.hxx
   StdMeshers_NumberOfSegments.hxx
   StdMeshers_Deflection1D.hxx
@@ -136,8 +138,10 @@ ENDIF(SALOME_SMESH_ENABLE_MEFISTO)
 # sources / static
 SET(StdMeshers_SOURCES
   StdMeshers_LocalLength.cxx
+  StdMeshers_Reversible1D.cxx
   StdMeshers_StartEndLength.cxx
   StdMeshers_Arithmetic1D.cxx
+  StdMeshers_Geometric1D.cxx
   StdMeshers_FixedPoints1D.cxx
   StdMeshers_NumberOfSegments.cxx
   StdMeshers_Deflection1D.cxx

@@ -35,6 +35,7 @@
 #include <Geom2d_Curve.hxx>
 #include <GeomAdaptor_Curve.hxx>
 #include <TopoDS_Edge.hxx>
+#include <TopoDS_Face.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <gp_Pnt2d.hxx>
 
@@ -47,7 +48,6 @@ class SMESH_Mesh;
 class Adaptor2d_Curve2d;
 class Adaptor3d_Curve;
 class BRepAdaptor_CompCurve;
-class TopoDS_Face;
 struct SMESH_ComputeError;
 class StdMeshers_FaceSide;
 
@@ -96,7 +96,43 @@ public:
   /*!
    * \brief Create a side from an UVPtStructVec
    */
-  StdMeshers_FaceSide(UVPtStructVec& theSideNodes);
+  StdMeshers_FaceSide(UVPtStructVec&     theSideNodes,
+                      const TopoDS_Face& theFace = TopoDS_Face());
+
+  // static "consrtuctors"
+  static StdMeshers_FaceSidePtr New(const TopoDS_Face&   Face,
+                                    const TopoDS_Edge&   Edge,
+                                    SMESH_Mesh*          Mesh,
+                                    const bool           IsForward,
+                                    const bool           IgnoreMediumNodes,
+                                    SMESH_ProxyMesh::Ptr ProxyMesh = SMESH_ProxyMesh::Ptr())
+  { return StdMeshers_FaceSidePtr
+      ( new StdMeshers_FaceSide( Face,Edge,Mesh,IsForward,IgnoreMediumNodes,ProxyMesh ));
+  }
+  static StdMeshers_FaceSidePtr New (const TopoDS_Face&      Face,
+                                     std::list<TopoDS_Edge>& Edges,
+                                     SMESH_Mesh*             Mesh,
+                                     const bool              IsForward,
+                                     const bool              IgnoreMediumNodes,
+                                     SMESH_ProxyMesh::Ptr    ProxyMesh = SMESH_ProxyMesh::Ptr())
+  { return StdMeshers_FaceSidePtr
+      ( new StdMeshers_FaceSide( Face,Edges,Mesh,IsForward,IgnoreMediumNodes,ProxyMesh ));
+  }
+  static StdMeshers_FaceSidePtr New (const StdMeshers_FaceSide*  Side,
+                                     const SMDS_MeshNode*        Node,
+                                     const gp_Pnt2d*             Pnt2d1,
+                                     const gp_Pnt2d*             Pnt2d2=NULL,
+                                     const Handle(Geom2d_Curve)& C2d=NULL,
+                                     const double                UFirst=0.,
+                                     const double                ULast=1.)
+  { return StdMeshers_FaceSidePtr
+      ( new StdMeshers_FaceSide( Side,Node,Pnt2d1,Pnt2d2,C2d,UFirst,ULast ));
+  }
+  static StdMeshers_FaceSidePtr New (UVPtStructVec&     theSideNodes,
+                                     const TopoDS_Face& theFace = TopoDS_Face())
+  {
+    return StdMeshers_FaceSidePtr( new StdMeshers_FaceSide( theSideNodes, theFace ));
+  }
 
   /*!
    * \brief Return wires of a face as StdMeshers_FaceSide's

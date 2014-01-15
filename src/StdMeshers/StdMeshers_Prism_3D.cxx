@@ -107,7 +107,7 @@ namespace {
            algo->myProxyMesh->GetMesh() != helper->GetMesh() )
         algo->myProxyMesh.reset( new SMESH_ProxyMesh( *helper->GetMesh() ));
 
-      algo->myQuadStruct.reset();
+      algo->myQuadList.clear();
 
       if ( helper )
         algo->_quadraticMesh = helper->GetIsQuadratic();
@@ -166,15 +166,15 @@ namespace {
   //================================================================================
 
   bool setBottomEdge( const TopoDS_Edge&   botE,
-                      faceQuadStruct::Ptr& quad,
+                      FaceQuadStruct::Ptr& quad,
                       const TopoDS_Shape&  face)
   {
-    quad->side[ QUAD_TOP_SIDE  ]->Reverse();
-    quad->side[ QUAD_LEFT_SIDE ]->Reverse();
+    quad->side[ QUAD_TOP_SIDE  ].grid->Reverse();
+    quad->side[ QUAD_LEFT_SIDE ].grid->Reverse();
     int edgeIndex = 0;
     for ( size_t i = 0; i < quad->side.size(); ++i )
     {
-      StdMeshers_FaceSide* quadSide = quad->side[i];
+      StdMeshers_FaceSidePtr quadSide = quad->side[i];
       for ( int iE = 0; iE < quadSide->NbEdges(); ++iE )
         if ( botE.IsSame( quadSide->Edge( iE )))
         {
@@ -681,7 +681,7 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
               continue; // already computed prism
             }
             // find a source FACE of the SOLID: it's a FACE sharing a bottom EDGE with wFace
-            const TopoDS_Edge& wEdge = (*wQuad)->side[ QUAD_TOP_SIDE ]->Edge(0);
+            const TopoDS_Edge& wEdge = (*wQuad)->side[ QUAD_TOP_SIDE ].grid->Edge(0);
             PShapeIteratorPtr faceIt = myHelper->GetAncestors( wEdge, *myHelper->GetMesh(),
                                                                TopAbs_FACE);
             while ( const TopoDS_Shape* f = faceIt->next() )
@@ -879,7 +879,7 @@ bool StdMeshers_Prism_3D::getWallFaces( Prism_3D::TPrismTopo & thePrism,
     int nbKnownFaces;
     do {
       nbKnownFaces = faceMap.Extent();
-      StdMeshers_FaceSide *rightSide, *topSide; // sides of the quad
+      StdMeshers_FaceSidePtr rightSide, topSide; // sides of the quad
       for ( size_t i = 0; i < thePrism.myWallQuads.size(); ++i )
       {
         rightSide = thePrism.myWallQuads[i].back()->side[ QUAD_RIGHT_SIDE ];
@@ -911,8 +911,8 @@ bool StdMeshers_Prism_3D::getWallFaces( Prism_3D::TPrismTopo & thePrism,
     {
       for ( size_t i = 0; i < thePrism.myWallQuads.size(); ++i )
       {
-        StdMeshers_FaceSide* topSide = thePrism.myWallQuads[i].back()->side[ QUAD_TOP_SIDE ];
-        const TopoDS_Edge &     topE = topSide->Edge( 0 );
+        StdMeshers_FaceSidePtr topSide = thePrism.myWallQuads[i].back()->side[ QUAD_TOP_SIDE ];
+        const TopoDS_Edge &       topE = topSide->Edge( 0 );
         if ( topSide->NbEdges() > 1 )
           return toSM( error(COMPERR_BAD_SHAPE, TCom("Side face #") <<
                              shapeID( thePrism.myWallQuads[i].back()->face )
@@ -958,8 +958,8 @@ bool StdMeshers_Prism_3D::getWallFaces( Prism_3D::TPrismTopo & thePrism,
   // Check that the top FACE shares all the top EDGEs
   for ( size_t i = 0; i < thePrism.myWallQuads.size(); ++i )
   {
-    StdMeshers_FaceSide* topSide = thePrism.myWallQuads[i].back()->side[ QUAD_TOP_SIDE ];
-    const TopoDS_Edge &     topE = topSide->Edge( 0 );
+    StdMeshers_FaceSidePtr topSide = thePrism.myWallQuads[i].back()->side[ QUAD_TOP_SIDE ];
+    const TopoDS_Edge &       topE = topSide->Edge( 0 );
     if ( !myHelper->IsSubShape( topE, thePrism.myTop ))
       return toSM( error( TCom("Wrong source face (#") << shapeID( thePrism.myBottom )));
   }
@@ -1205,7 +1205,7 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
     int wgt = 0; // "weight"
     for ( ; quad != thePrism.myWallQuads[iW].end(); ++quad )
     {
-      StdMeshers_FaceSide* lftSide = (*quad)->side[ QUAD_LEFT_SIDE ];
+      StdMeshers_FaceSidePtr lftSide = (*quad)->side[ QUAD_LEFT_SIDE ];
       for ( int i = 0; i < lftSide->NbEdges(); ++i )
       {
         ++wgt;
@@ -1224,7 +1224,7 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
       quad = thePrism.myWallQuads[iW].begin();
       for ( ; quad != thePrism.myWallQuads[iW].end(); ++quad )
         for ( int i = 0; i < NB_QUAD_SIDES; ++i )
-          (*quad)->side[ i ]->SetIgnoreMediumNodes( true );
+          (*quad)->side[ i ].grid->SetIgnoreMediumNodes( true );
     }
   }
 
@@ -1237,8 +1237,8 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
     Prism_3D::TQuadList::const_iterator quad = quads.begin();
     for ( ; quad != quads.end(); ++quad )
     {
-      StdMeshers_FaceSide* rgtSide = (*quad)->side[ QUAD_RIGHT_SIDE ]; // tgt
-      StdMeshers_FaceSide* lftSide = (*quad)->side[ QUAD_LEFT_SIDE ];  // src
+      StdMeshers_FaceSidePtr rgtSide = (*quad)->side[ QUAD_RIGHT_SIDE ]; // tgt
+      StdMeshers_FaceSidePtr lftSide = (*quad)->side[ QUAD_LEFT_SIDE ];  // src
       bool swapLeftRight = ( lftSide->NbSegments( /*update=*/true ) == 0 &&
                              rgtSide->NbSegments( /*update=*/true )  > 0 );
       if ( swapLeftRight )
@@ -1373,8 +1373,8 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
       // to compute stuctured quad mesh on wall FACEs
       // ---------------------------------------------------
       {
-        const TopoDS_Edge& botE = (*quad)->side[ QUAD_BOTTOM_SIDE ]->Edge(0);
-        const TopoDS_Edge& topE = (*quad)->side[ QUAD_TOP_SIDE    ]->Edge(0);
+        const TopoDS_Edge& botE = (*quad)->side[ QUAD_BOTTOM_SIDE ].grid->Edge(0);
+        const TopoDS_Edge& topE = (*quad)->side[ QUAD_TOP_SIDE    ].grid->Edge(0);
         SMESH_subMesh*    botSM = mesh->GetSubMesh( botE );
         SMESH_subMesh*    topSM = mesh->GetSubMesh( topE );
         SMESH_subMesh*    srcSM = botSM;
@@ -2352,7 +2352,7 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper*         helper,
     Prism_3D::TQuadList::const_iterator quad = thePrism.myWallQuads[ iE ].begin();
     for ( ; quad != thePrism.myWallQuads[ iE ].end(); ++quad )
     {
-      const TopoDS_Edge& quadBot = (*quad)->side[ QUAD_BOTTOM_SIDE ]->Edge( 0 );
+      const TopoDS_Edge& quadBot = (*quad)->side[ QUAD_BOTTOM_SIDE ].grid->Edge( 0 );
       if ( !myHelper->LoadNodeColumns( faceColumns, (*quad)->face, quadBot, meshDS ))
         return error(COMPERR_BAD_INPUT_MESH, TCom("Can't find regular quadrangle mesh ")
                      << "on a side face #" << MeshDS()->ShapeToIndex( (*quad)->face ));
@@ -2373,7 +2373,7 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper*         helper,
     Prism_3D::TQuadList::const_iterator quad = thePrism.myWallQuads[ iE ].begin();
     for ( ; quad != thePrism.myWallQuads[ iE ].end(); ++quad )
     {
-      const TopoDS_Edge& quadBot = (*quad)->side[ QUAD_BOTTOM_SIDE ]->Edge( 0 );
+      const TopoDS_Edge& quadBot = (*quad)->side[ QUAD_BOTTOM_SIDE ].grid->Edge( 0 );
       if ( !myHelper->LoadNodeColumns( faceColumns, (*quad)->face, quadBot, meshDS ))
         return error(COMPERR_BAD_INPUT_MESH, TCom("Can't find regular quadrangle mesh ")
                      << "on a side face #" << MeshDS()->ShapeToIndex( (*quad)->face ));

@@ -71,7 +71,7 @@ namespace SMESH
                                       const bool = false,
                                       const bool = true);
   SMESHGUI_EXPORT
-  QStringList GetHypothesesSets( int maxDim );
+  QStringList GetHypothesesSets( int, const QString& );
 
   SMESHGUI_EXPORT
   HypothesesSet* GetHypothesesSet( const QString& );

@@ -39,18 +39,19 @@
 #include <QFrame>
 #include <QItemDelegate>
 
-class SMESHGUI_SpinBox;
-class QLineEdit;
-class QButtonGroup;
-class QTreeWidgetItem;
-class QString;
-class QWidget;
-class QTreeWidget;
-class QListWidget;
-class QStyleOptionViewItem;
-class QModelIndex;
 class QAbstractItemModel;
+class QButtonGroup;
+class QCheckBox;
+class QLineEdit;
+class QListWidget;
 class QListWidgetItem;
+class QModelIndex;
+class QString;
+class QStyleOptionViewItem;
+class QTreeWidget;
+class QTreeWidgetItem;
+class QWidget;
+class SMESHGUI_SpinBox;
 
 namespace StdMeshersGUI
 {
@@ -136,6 +137,7 @@ protected:
 private:
   QLineEdit*                  myName;
   SMESHGUI_SpinBox*           myThreshold;
+  QCheckBox*                  myAddEdges;
   StdMeshersGUI::GridAxisTab* myAxisTabs[3];
 };
 

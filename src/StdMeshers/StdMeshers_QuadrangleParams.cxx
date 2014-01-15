@@ -87,6 +87,43 @@ void StdMeshers_QuadrangleParams::SetQuadType (StdMeshers_QuadType type)
   }
 }
 
+//================================================================================
+/*!
+ * \brief Set positions of enforced nodes
+ */
+//================================================================================
+
+void StdMeshers_QuadrangleParams::
+SetEnforcedNodes( const std::vector< TopoDS_Shape >& shapes,
+                  const std::vector< gp_Pnt >&       points )
+{
+  bool isChanged = ( shapes        != _enforcedVertices ||
+                     points.size() != _enforcedPoints.size() );
+  for ( size_t i = 0; i < points.size() && !isChanged; ++i )
+    isChanged = ( _enforcedPoints[ i ].SquareDistance( points[i] ) > 1e-100 );
+      
+  if ( isChanged )
+  {
+    _enforcedVertices = shapes;
+    _enforcedPoints   = points;
+    NotifySubMeshesHypothesisModification();
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Returns positions of enforced nodes
+ */
+//================================================================================
+
+void StdMeshers_QuadrangleParams::
+GetEnforcedNodes( std::vector< TopoDS_Shape >& shapes,
+                  std::vector< gp_Pnt >&       points ) const
+{
+  shapes = _enforcedVertices;
+  points = _enforcedPoints;
+}
+
 //=============================================================================
 /*!
  *
@@ -98,6 +135,13 @@ ostream & StdMeshers_QuadrangleParams::SaveTo(ostream & save)
     save << _triaVertexID << " UNDEFINED " << int(_quadType);
   else
     save << _triaVertexID << " " << _objEntry << " " << int(_quadType);
+
+  save << " " << _enforcedPoints.size();
+  for ( size_t i = 0; i < _enforcedPoints.size(); ++i )
+    save << " " << _enforcedPoints[i].X()
+         << " " << _enforcedPoints[i].Y()
+         << " " << _enforcedPoints[i].Z();
+
   return save;
 }
 
@@ -122,27 +166,23 @@ istream & StdMeshers_QuadrangleParams::LoadFrom(istream & load)
   if (isOK)
     _quadType = StdMeshers_QuadType(type);
 
+  // _enforcedVertices are loaded at StdMeshers_I level
+  // because GEOM objects are referred by study entry.
+
+  int nbP = 0;
+  double x,y,z;
+  if ( load >> nbP && nbP > 0 )
+  {
+    _enforcedPoints.reserve( nbP );
+    while ( _enforcedPoints.size() < _enforcedPoints.capacity() )
+      if ( load >> x &&
+           load >> y &&
+           load >> z )
+        _enforcedPoints.push_back( gp_Pnt( x,y,z ));
+      else
+        break;
+  }
   return load;
-}
-
-//=============================================================================
-/*!
- *
- */
-//=============================================================================
-ostream & operator <<(ostream & save, StdMeshers_QuadrangleParams & hyp)
-{
-  return hyp.SaveTo( save );
-}
-
-//=============================================================================
-/*!
- *
- */
-//=============================================================================
-istream & operator >>(istream & load, StdMeshers_QuadrangleParams & hyp)
-{
-  return hyp.LoadFrom( load );
 }
 
 //================================================================================

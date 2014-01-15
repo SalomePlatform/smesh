@@ -926,6 +926,11 @@ module SMESH
     long_array GetElemFaceNodes(in long elemId, in short faceIndex);
 
     /*!
+     * Returns three components of normal of given mesh face (or an empty array in KO case)
+     */
+    double_array GetFaceNormal(in long faceId);
+
+    /*!
      * Returns an element based on all given nodes.
      */
     long FindElementByNodes(in long_array nodes);

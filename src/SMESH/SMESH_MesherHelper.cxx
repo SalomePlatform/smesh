@@ -896,7 +896,7 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
                                     const bool           force,
                                     double               distXYZ[4]) const
 {
-  int shapeID = n->getshapeId();
+  int  shapeID = n->getshapeId();
   bool infinit = Precision::IsInfinite( u );
   if ( force || toCheckPosOnShape( shapeID ) || infinit )
   {

@@ -6,6 +6,7 @@
 <ul>
 <li>\ref adaptive_1d_anchor "Adaptive"</li>
 <li>\ref arithmetic_1d_anchor "Arithmetic 1D"</li>
+<li>\ref geometric_1d_anchor "Geometric Progression"</li>
 <li>\ref average_length_anchor "Local Length"</li>
 <li>\ref max_length_anchor "Max Size"</li>
 <li>\ref deflection_1d_anchor "Deflection 1D"</li>
@@ -55,7 +56,30 @@ picking them in the 3D viewer or by selecting the edges or groups of edges in th
 \image html b-ithmetic1d.png "Arithmetic 1D hypothesis - the size of mesh elements gradually increases"
 
 <b>See Also</b> a sample TUI Script of a 
-\ref tui_1d_arithmetic "Defining Arithmetic 1D hypothesis" operation.  
+\ref tui_1d_arithmetic "Defining Arithmetic 1D and Geometric Progression hypothesis" operation.  
+
+<br>
+\anchor geometric_1d_anchor
+<h2>Geometric Progression hypothesis</h2>
+
+<b>Geometric Progression</b> hypothesis allows to split edges into
+segments with a length that changes in geometric progression (Lk =
+Lk-1 * d) beginning from a given starting length and with a given
+common ratio.
+
+The direction of the splitting is defined by the orientation of the
+underlying geometrical edge. <b>"Reverse Edges"</b> list box allows to
+specify the edges for which the splitting should be made in the
+direction opposing to their orientation. This list box is enabled only
+if the geometry object is selected for the meshing. In this case the
+user can select edges to be reversed either directly picking them in
+the 3D viewer or by selecting the edges or groups of edges in the
+Object Browser. 
+
+\image html a-geometric1d.png
+
+<b>See Also</b> a sample TUI Script of a 
+\ref tui_1d_arithmetic "Defining Arithmetic 1D and Geometric Progression hypothesis" operation.  
 
 <br>
 \anchor deflection_1d_anchor

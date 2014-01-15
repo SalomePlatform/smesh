@@ -364,6 +364,9 @@ SMESHGUI_MeshDlg::SMESHGUI_MeshDlg( const bool theToCreate, const bool theIsMesh
   // geometry
   createObject( tr( "GEOMETRY" ), mainFrame(), Geom );
   myGeomPopup = 0;
+  // mesh type
+  QLabel* anMeshTypeLbl = new QLabel( tr( "MESH_TYPE" ), this );
+  myMeshType = new QComboBox( this );
   
   // Create tab widget
   
@@ -398,10 +401,16 @@ SMESHGUI_MeshDlg::SMESHGUI_MeshDlg( const bool theToCreate, const bool theIsMesh
   aLay->addWidget( objectWg( Geom, Label ),   2, 0 );
   aLay->addWidget( objectWg( Geom, Btn ),     2, 1 );
   aLay->addWidget( objectWg( Geom, Control ), 2, 2 );
-  aLay->addWidget( myTabWg,                   4, 0, 1, 3 );
-  aLay->addWidget( myHypoSetButton,           5, 0, 1, 3 );
+  aLay->addWidget( anMeshTypeLbl,             3, 0 );
+  aLay->addWidget( myMeshType,                3, 2 );
+  aLay->addWidget( myTabWg,                   5, 0, 1, 3 );
+  aLay->addWidget( myHypoSetButton,           6, 0, 1, 3 );
   aLay->setRowMinimumHeight( 3, 20 );
 
+  myMeshType->clear();
+
+  // Connect signals and slots
+  connect( myMeshType, SIGNAL( activated( int ) ), SLOT( onChangedMeshType( int ) ) );
   // Disable controls if necessary
   setObjectShown( Mesh, false );
   if ( theToCreate )
@@ -615,3 +624,36 @@ int SMESHGUI_MeshDlg::getActiveObject()
       return i;
   return -1;
 }
+//================================================================================
+/*!
+ * \brief Sets available types of mesh
+ * \param theTypeMesh - list of available types of mesh
+ */
+//================================================================================
+void SMESHGUI_MeshDlg::setAvailableMeshType( const QStringList& theTypeMesh )
+{
+  myMeshType->clear();
+  myMeshType->addItems(theTypeMesh);
+}
+//================================================================================
+/*!
+ * \brief Emits selectMeshType( const int, const int ) signal
+ *
+ * SLOT is called when a combo box "mesh type" is selected.
+ */
+//================================================================================
+void SMESHGUI_MeshDlg::onChangedMeshType( const int isIndex )
+{
+  emit selectMeshType( Dim3D - myTabWg->currentIndex(), isIndex );
+}
+//================================================================================
+/*!
+ * \brief Get current index types of mesh
+ */
+//================================================================================
+int SMESHGUI_MeshDlg::currentMeshType( )
+{
+  return myMeshType->currentIndex( );
+}
+
+

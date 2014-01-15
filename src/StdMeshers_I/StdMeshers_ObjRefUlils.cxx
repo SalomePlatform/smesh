@@ -37,7 +37,7 @@ using namespace std;
 //purpose  : Return study entry of GEOM Object
 //=======================================================================
 
-std::string StdMeshers_ObjRefUlils::GeomObjectToEntry(GEOM::GEOM_Object_ptr&  theGeomObject)
+std::string StdMeshers_ObjRefUlils::GeomObjectToEntry(GEOM::GEOM_Object_ptr theGeomObject)
 {
   if ( CORBA::is_nil( theGeomObject ))
     return "NULL_OBJECT";
@@ -109,13 +109,16 @@ void StdMeshers_ObjRefUlils::SaveToStream( const TopoDS_Shape& theShape, ostream
    */
 //================================================================================
 
-TopoDS_Shape StdMeshers_ObjRefUlils::LoadFromStream( istream & stream)
+TopoDS_Shape StdMeshers_ObjRefUlils::LoadFromStream( istream &    stream,
+                                                     std::string* entry)
 {
-  if (SMESH_Gen_i* gen = SMESH_Gen_i::GetSMESHGen()) {
-    SALOMEDS::Study_var study = gen->GetCurrentStudy();
-    if ( ! study->_is_nil() ) {
-      string str;
-      if (stream >> str) {
+  string str;
+  if (stream >> str) {
+    if ( entry )
+      * entry = str;
+    if (SMESH_Gen_i* gen = SMESH_Gen_i::GetSMESHGen()) {
+      SALOMEDS::Study_var study = gen->GetCurrentStudy();
+      if ( ! study->_is_nil() ) {
         SALOMEDS::SObject_wrap sobj = study->FindObjectID( str.c_str() );
         CORBA::Object_var       obj = gen->SObjectToObject( sobj );
         GEOM::GEOM_Object_var  geom = GEOM::GEOM_Object::_narrow( obj );
@@ -123,6 +126,8 @@ TopoDS_Shape StdMeshers_ObjRefUlils::LoadFromStream( istream & stream)
       }
     }
   }
+  if ( entry )
+    entry->clear();
   return TopoDS_Shape();
 }
 

@@ -68,20 +68,19 @@ class SMESHUtils_EXPORT SMESH_Block: public math_FunctionSetWithDerivatives
     // ----------------------------
     ID_NONE = 0,
 
-    ID_V000 = 1, ID_V100, ID_V010, ID_V110, ID_V001, ID_V101, ID_V011, ID_V111,
+    ID_V000 = 1, ID_V100, ID_V010, ID_V110, ID_V001, ID_V101, ID_V011, ID_V111, // 1-8
 
-    ID_Ex00, ID_Ex10, ID_Ex01, ID_Ex11,
-    ID_E0y0, ID_E1y0, ID_E0y1, ID_E1y1,
-    ID_E00z, ID_E10z, ID_E01z, ID_E11z,
+    ID_Ex00, ID_Ex10, ID_Ex01, ID_Ex11, // 9-12
+    ID_E0y0, ID_E1y0, ID_E0y1, ID_E1y1, // 13-16
+    ID_E00z, ID_E10z, ID_E01z, ID_E11z, // 17-20
 
-    ID_Fxy0, ID_Fxy1, ID_Fx0z, ID_Fx1z, ID_F0yz, ID_F1yz,
+    ID_Fxy0, ID_Fxy1, ID_Fx0z, ID_Fx1z, ID_F0yz, ID_F1yz, // 21-26
 
-    ID_Shell
-    };
-  enum { // to use TShapeID for indexing certain type subshapes
+    ID_Shell, // 27
+
+    // to use TShapeID for indexing certain type subshapes
 
     ID_FirstV = ID_V000, ID_FirstE = ID_Ex00, ID_FirstF = ID_Fxy0
-
   };
 
 
@@ -285,7 +284,7 @@ public:
                               std::list< int >  &       theNbEdgesInWires,
                               TopoDS_Vertex             theFirstVertex=TopoDS_Vertex(),
                               const bool                theShapeAnalysisAlgo=false);
-  // Return nb wires and a list of oredered edges.
+  // Return nb wires and a list of ordered edges.
   // It is used to assign indices to subshapes.
   // theFirstVertex may be NULL.
   // Always try to set a seam edge first

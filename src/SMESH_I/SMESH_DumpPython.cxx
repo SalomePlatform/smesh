@@ -240,13 +240,20 @@ namespace SMESH
   template<class TArray>
   void DumpArray(const TArray& theArray, TPythonDump & theStream)
   {
-    theStream << "[ ";
-    for (int i = 1; i <= theArray.length(); i++) {
-      theStream << theArray[i-1];
-      if ( i < theArray.length() )
-        theStream << ", ";
+    if ( theArray.length() == 0 )
+    {
+      theStream << "[]";
     }
-    theStream << " ]";
+    else
+    {
+      theStream << "[ ";
+      for (int i = 1; i <= theArray.length(); i++) {
+        theStream << theArray[i-1];
+        if ( i < theArray.length() )
+          theStream << ", ";
+      }
+      theStream << " ]";
+    }
   }
 
   TPythonDump&
@@ -258,6 +265,13 @@ namespace SMESH
 
   TPythonDump&
   TPythonDump::operator<<(const SMESH::double_array& theArg)
+  {
+    DumpArray( theArg, *this );
+    return *this;
+  }
+
+  TPythonDump&
+  TPythonDump::operator<<(const SMESH::nodes_array& theArg)
   {
     DumpArray( theArg, *this );
     return *this;
@@ -515,6 +529,11 @@ namespace SMESH
   TPythonDump& TPythonDump::operator<<(const SMESH::ListOfGroups * theList)
   {
     DumpArray( *theList, *this );
+    return *this;
+  }
+  TPythonDump& TPythonDump::operator<<(const GEOM::ListOfGO& theList)
+  {
+    DumpArray( theList, *this );
     return *this;
   }
   TPythonDump& TPythonDump::operator<<(const SMESH::ListOfIDSources& theList)

@@ -68,7 +68,7 @@ public:
   /*!
    * \brief Return study entry of GEOM Object
    */
-  static std::string GeomObjectToEntry(GEOM::GEOM_Object_ptr&  theGeomObject);
+  static std::string GeomObjectToEntry(GEOM::GEOM_Object_ptr theGeomObject);
 
   /*!
    * \brief Return GEOM Object by its study entry or TopoDS_Shape
@@ -89,7 +89,7 @@ public:
     * \param stream - the stream
     * \retval TopoDS_Shape - resulting shape
    */
-  static TopoDS_Shape LoadFromStream( std::istream & stream );
+  static TopoDS_Shape LoadFromStream( std::istream & stream, std::string* entry=NULL );
 
   /*!
    * \brief Store the CORBA object in the stream

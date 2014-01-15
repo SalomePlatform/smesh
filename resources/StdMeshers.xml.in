@@ -55,6 +55,11 @@
                 icon-id  ="mesh_hypo_length.png"
                 dim      ="1"/>
 
+    <hypothesis type     ="GeometricProgression"
+                label-id ="Geometric Progression"
+                icon-id  ="mesh_hypo_length.png"
+                dim      ="1"/>
+
     <hypothesis type     ="FixedPoints1D"
                 label-id ="Fixed Points 1D"
                 icon-id  ="mesh_hypo_length.png"
@@ -82,6 +87,12 @@
 
     <hypothesis type     ="Propagation"
                 label-id ="Propagation of 1D Hyp. on Opposite Edges"
+                icon-id  ="mesh_hypo_length.png"
+                dim      ="1"
+                auxiliary="true"/>
+
+    <hypothesis type     ="PropagOfDistribution"
+                label-id ="Propagation of Node Distribution on Opposite Edges"
                 icon-id  ="mesh_hypo_length.png"
                 dim      ="1"
                 auxiliary="true"/>
@@ -205,8 +216,8 @@
     <algorithm type     ="Regular_1D"
 	       label-id ="Wire Discretisation"
 	       icon-id  ="mesh_algo_regular.png"
-               hypos    ="Adaptive1D,LocalLength,MaxLength,Arithmetic1D,StartEndLength,NumberOfSegments,Deflection1D,AutomaticLength,FixedPoints1D"
-               opt-hypos="Propagation,QuadraticMesh"
+               hypos    ="Adaptive1D,LocalLength,MaxLength,Arithmetic1D,GeometricProgression,StartEndLength,NumberOfSegments,Deflection1D,AutomaticLength,FixedPoints1D"
+               opt-hypos="Propagation,PropagOfDistribution,QuadraticMesh"
                input    ="VERTEX"
                output   ="EDGE"
                dim      ="1">
@@ -215,12 +226,14 @@
         <hypo>LocalLength=LocalLength(SetLength(1),,SetPrecision(1))</hypo>
         <hypo>MaxLength=MaxSize(SetLength(1))</hypo>
         <hypo>Arithmetic1D=Arithmetic1D(SetStartLength(),SetEndLength(),SetReversedEdges())</hypo>
+        <hypo>GeometricProgression=GeometricProgression(SetStartLength(),SetCommonRatio(),SetReversedEdges())</hypo>
         <hypo>StartEndLength=StartEndLength(SetStartLength(),SetEndLength(),SetReversedEdges())</hypo>
         <hypo>Deflection1D=Deflection1D(SetDeflection())</hypo>
         <hypo>Adaptive1D=Adaptive(SetMinSize(),SetMaxSize(),SetDeflection())</hypo>
         <hypo>AutomaticLength=AutomaticLength(SetFineness())</hypo>
         <hypo>FixedPoints1D=FixedPoints1D(SetPoints(),SetNbSegments(),SetReversedEdges())</hypo>
         <hypo>Propagation=Propagation()</hypo>
+        <hypo>PropagOfDistribution=PropagationOfDistribution()</hypo>
         <hypo>QuadraticMesh=QuadraticMesh()</hypo>
       </python-wrap>
     </algorithm>
@@ -228,8 +241,8 @@
     <algorithm type     ="CompositeSegment_1D"
 	       label-id ="Composite Side Discretisation"
 	       icon-id  ="mesh_algo_regular.png"
-               hypos    ="Adaptive1D,LocalLength,MaxLength,Arithmetic1D,StartEndLength,NumberOfSegments,Deflection1D,AutomaticLength,FixedPoints1D"
-               opt-hypos="Propagation,QuadraticMesh"
+               hypos    ="Adaptive1D,LocalLength,MaxLength,Arithmetic1D,GeometricProgression,StartEndLength,NumberOfSegments,Deflection1D,AutomaticLength,FixedPoints1D"
+               opt-hypos="Propagation,PropagOfDistribution,QuadraticMesh"
                input    ="VERTEX"
                output   ="EDGE"
                dim      ="1">
@@ -238,12 +251,14 @@
         <hypo>LocalLength=LocalLength(SetLength(), ,SetPrecision())</hypo>
         <hypo>MaxLength=MaxSize(SetLength())</hypo>
         <hypo>Arithmetic1D=Arithmetic1D(SetStartLength(),SetEndLength(),SetReversedEdges())</hypo>
+        <hypo>GeometricProgression=GeometricProgression(SetStartLength(),SetCommonRatio(),SetReversedEdges())</hypo>
         <hypo>StartEndLength=StartEndLength(SetStartLength(),SetEndLength(),SetReversedEdges())</hypo>
         <hypo>Deflection1D=Deflection1D(SetDeflection())</hypo>
         <hypo>Adaptive1D=Adaptive(SetMinSize(),SetMaxSize(),SetDeflection())</hypo>
         <hypo>AutomaticLength=AutomaticLength(SetFineness())</hypo>
         <hypo>FixedPoints1D=FixedPoints1D(SetPoints(),SetNbSegments(),SetReversedEdges())</hypo>
         <hypo>Propagation=Propagation()</hypo>
+        <hypo>PropagOfDistribution=PropagationOfDistribution()</hypo>
         <hypo>QuadraticMesh=QuadraticMesh()</hypo>
       </python-wrap>
     </algorithm>
@@ -292,6 +307,7 @@
                label-id ="Hexahedron (i,j,k)"
                icon-id  ="mesh_algo_hexa.png"
                input    ="QUAD"
+               output   ="HEXA,PENTA"
 	       need-geom="false"
                opt-hypos="ViscousLayers"
                dim      ="3">
@@ -379,6 +395,7 @@
                label-id="3D Extrusion"
                icon-id ="mesh_algo_hexa.png"
                input   ="QUAD,TRIA"
+               output  ="HEXA,PENTA,OCTA,POLYHEDRON"
                dim     ="3">
       <python-wrap>
         <algo>Prism_3D=Prism()</algo>
@@ -390,6 +407,7 @@
                icon-id ="mesh_algo_hexa.png"
                hypos   ="NumberOfLayers, LayerDistribution"
                input   ="QUAD,TRIA"
+               output  ="HEXA,PENTA,OCTA,POLYHEDRON"
                dim     ="3">
       <python-wrap>
         <algo>RadialPrism_3D=Prism('RadialPrism_3D')</algo>
@@ -424,7 +442,7 @@
                icon-id ="mesh_algo_quad.png"
                hypos   ="NumberOfLayers2D, LayerDistribution2D"
                input   ="EDGE"
-               output  ="QUAD,TRIA"
+               output  ="QUAD"
                dim     ="2">
       <python-wrap>
         <algo>RadialQuadrangle_1D2D=Quadrangle(algo=smeshBuilder.RADIAL_QUAD)</algo>
@@ -437,6 +455,7 @@
                icon-id          ="mesh_algo_hexa.png"
                hypos            ="CartesianParameters3D"
                support-submeshes="false"
+               output           ="HEXA"
                dim              ="3">
       <python-wrap>
         <algo>Cartesian_3D=BodyFitted()</algo>

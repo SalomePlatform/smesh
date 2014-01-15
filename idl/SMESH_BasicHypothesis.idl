@@ -128,9 +128,35 @@ module StdMeshers
   };
 
   /*!
+   * Common inteface of 1D hypotheses that can be reversed
+   */
+  interface Reversible1D
+  {
+    /*!
+     * Set list of edges to reverse
+     */
+    void SetReversedEdges( in SMESH::long_array list );
+    
+    /*!
+     * Returns list of edges to reverse
+     */
+    SMESH::long_array GetReversedEdges();
+    
+    /*!
+     * Set entry of the main object
+     */
+    void SetObjectEntry( in string entry );
+    
+    /*!
+     * Get the entry of the main object
+     */
+    string GetObjectEntry();
+  };
+
+  /*!
    * StdMeshers_NumberOfSegments: interface of "Nb. Segments" hypothesis
    */
-  interface StdMeshers_NumberOfSegments : SMESH::SMESH_Hypothesis
+  interface StdMeshers_NumberOfSegments : SMESH::SMESH_Hypothesis, Reversible1D
   {
     /*!
      * Builds and returns point distribution according to passed density function
@@ -209,32 +235,12 @@ module StdMeshers
      */
     long ConversionMode()
       raises (SALOME::SALOME_Exception);
-
-    /*!
-     * Set list of edges to reverse
-     */
-    void SetReversedEdges( in SMESH::long_array list );
-    
-    /*!
-     * Returns list of edges to reverse
-     */
-    SMESH::long_array GetReversedEdges();
-    
-    /*!
-     * Set entry of the main object
-     */
-    void SetObjectEntry( in string entry );
-    
-    /*!
-     * Get the entry of the main object
-     */
-    string GetObjectEntry();
   };
 
   /*!
    * StdMeshers_Arithmetic1D: interface of "Arithmetic 1D" hypothesis
    */
-  interface StdMeshers_Arithmetic1D : SMESH::SMESH_Hypothesis
+  interface StdMeshers_Arithmetic1D : SMESH::SMESH_Hypothesis, Reversible1D
   {
     /*!
      * Sets <start segment length> or <end segment length> parameter value
@@ -260,26 +266,36 @@ module StdMeshers
      * Returns <start segment length> or <end segment length> parameter value
      */
     double GetLength(in boolean isStartLength);
-    
+
+  };
+
+  /*!
+   * StdMeshers_Arithmetic1D: interface of "Geometric 1D" hypothesis
+   */
+  interface StdMeshers_Geometric1D : SMESH::SMESH_Hypothesis, Reversible1D
+  {
     /*!
-     * Set list of edges to reverse
+     * Sets length of the first segment
      */
-    void SetReversedEdges( in SMESH::long_array list );
-    
+    void SetStartLength(in double length) 
+      raises (SALOME::SALOME_Exception);
+
     /*!
-     * Returns list of edges to reverse
+     * Sets value of Common Ratio
      */
-    SMESH::long_array GetReversedEdges();
-    
+    void SetCommonRatio(in double factor)
+      raises (SALOME::SALOME_Exception);
+
     /*!
-     * Set entry of the main object
+     * Returns length of the first segment
      */
-    void SetObjectEntry( in string entry );
-    
+    double GetStartLength();
+
     /*!
-     * Get the entry of the main object
+     * Returns value of Common Ratio
      */
-    string GetObjectEntry();
+    double GetCommonRatio();
+
   };
 
   /*!
@@ -319,7 +335,7 @@ module StdMeshers
   /*!
    * StdMeshers_StartEndLength: interface of "Start and End Length" hypothesis
    */
-  interface StdMeshers_StartEndLength : SMESH::SMESH_Hypothesis
+  interface StdMeshers_StartEndLength : SMESH::SMESH_Hypothesis, Reversible1D
   {
     /*!
      * Sets <start segment length> or <end segment length> parameter value
@@ -346,25 +362,6 @@ module StdMeshers
      */
     double GetLength(in boolean isStartLength);
 
-    /*!
-     * Set list of edges to reverse
-     */
-    void SetReversedEdges( in SMESH::long_array list );
-    
-    /*!
-     * Returns list of edges to reverse
-     */
-    SMESH::long_array GetReversedEdges();
-    
-    /*!
-     * Set entry of the main object
-     */
-    void SetObjectEntry( in string entry );
-    
-    /*!
-     * Get the entry of the main object
-     */
-    string GetObjectEntry();
   };
 
 
@@ -388,7 +385,7 @@ module StdMeshers
   /*!
    * StdMeshers_FixedPoints1D: interface of "Fixed points 1D" hypothesis
    */
-  interface StdMeshers_FixedPoints1D : SMESH::SMESH_Hypothesis
+  interface StdMeshers_FixedPoints1D : SMESH::SMESH_Hypothesis, Reversible1D
   {
     /*!
      * Sets some points on edge using parameter on curve from 0 to 1
@@ -410,26 +407,7 @@ module StdMeshers
      * Returns list of numbers of segments
      */
     SMESH::long_array GetNbSegments();
-    
-    /*!
-     * Set list of edges to reverse
-     */
-    void SetReversedEdges( in SMESH::long_array list );
-    
-    /*!
-     * Returns list of edges to reverse
-     */
-    SMESH::long_array GetReversedEdges();
-    
-    /*!
-     * Set entry of the main object
-     */
-    void SetObjectEntry( in string entry );
-    
-    /*!
-     * Get the entry of the main object
-     */
-    string GetObjectEntry();
+
   };
 
   /*!
@@ -483,12 +461,24 @@ module StdMeshers
   };
 
   /*!
-   * StdMeshers_Propagation: interface of "Propagation" hypothesis.
+   * StdMeshers_Propagation: interface of "Propagation of 1D Hyp. on
+   * Opposite Edges" hypothesis.
    * Presence of this hypothesis on any edge propagates any other 1D
    * hypothesis from this edge on all edges, opposite to it.
    * It concerns only edges of quadrangle faces.
    */
   interface StdMeshers_Propagation : SMESH::SMESH_Hypothesis
+  {
+  };
+
+  /*!
+   * StdMeshers_Propagation: interface of "Propagation of Node
+   * Distribution on Opposite Edges" hypothesis.
+   * Presence of this hypothesis on any edge propagates distribution of nodes
+   * from this edge on all edges, opposite to it.
+   * It concerns only edges of quadrangle faces.
+   */
+  interface StdMeshers_PropagOfDistribution : SMESH::SMESH_Hypothesis
   {
   };
 
@@ -807,6 +797,22 @@ module StdMeshers
      * Get the type of quadrangulation
      */
     QuadType GetQuadType();
+
+    /*!
+     * Set positions of enforced nodes
+     */
+    void SetEnforcedNodes(in GEOM::ListOfGO vertices, in SMESH::nodes_array points)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns positions of enforced nodes
+     */
+    void GetEnforcedNodes(out GEOM::ListOfGO vertices, out SMESH::nodes_array points);
+
+    /*!
+     * Returns entries of shapes defining enforced nodes
+     */
+    SMESH::string_array GetEnfVertices();
   };
 
   /*!
@@ -864,6 +870,14 @@ module StdMeshers
      */
     void SetIgnoreFaces(in SMESH::long_array faceIDs) raises (SALOME::SALOME_Exception);
     SMESH::long_array GetIgnoreFaces();
+
+    /*!
+     * Set faces either to exclude from treatment or to make the Viscous Layers on.
+     */
+    void SetFaces(in SMESH::long_array faceIDs,
+                  in boolean           toIgnore) raises (SALOME::SALOME_Exception);
+    SMESH::long_array GetFaces();
+    boolean           GetIsToIgnoreFaces();
 
     /*!
      * Set total thickness of layers of prisms
@@ -936,7 +950,7 @@ module StdMeshers
     /*!
      * Set size threshold. A polyhedral cell got by cutting an initial
      * hexahedron by geometry boundary is considered small and is removed if
-     * it's size is \athreshold times less than the size of the initial hexahedron. 
+     * it's size is \a threshold times less than the size of the initial hexahedron. 
      * threshold must be > 1.0
      */
     void SetSizeThreshold(in double threshold) raises (SALOME::SALOME_Exception);
@@ -971,6 +985,13 @@ module StdMeshers
     void GetGridSpacing(out SMESH::string_array spaceFunctions,
                         out SMESH::double_array internalPoints,
                         in short                axis) raises (SALOME::SALOME_Exception);
+    /*!
+     * Enables implementation of geometrical edges into the mesh. If this feature
+     * is disabled, sharp edges of the shape are lost ("smoothed") in the mesh if
+     * they don't coincide with the grid lines
+     */
+    void SetToAddEdges(in boolean toAdd);
+    boolean GetToAddEdges();
 
     /*!
      * \brief Computes node coordinates by spacing functions
@@ -978,13 +999,15 @@ module StdMeshers
      *  \param x1 - upper coordinate
      *  \param spaceFuns - space functions
      *  \param points - internal points
-     *  \param coords - the computed coordinates
+     *  \param axisName - e.g. "X"
+     *  \return the computed coordinates
      */
     SMESH::double_array ComputeCoordinates(in double              x0,
                                            in double              x1,
                                            in SMESH::string_array spaceFuns,
                                            in SMESH::double_array points,
-                                           in string              axisName ) raises (SALOME::SALOME_Exception);
+                                           in string              axisName ) 
+      raises (SALOME::SALOME_Exception);
   };
 
   /*!
