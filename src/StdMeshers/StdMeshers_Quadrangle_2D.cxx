@@ -1304,37 +1304,29 @@ bool StdMeshers_Quadrangle_2D::setNormalizedGrid (FaceQuadStruct::Ptr quad)
   //      min             max                    0     x0     1
   //             =down
   //
+  const FaceQuadStruct::Side & bSide = quad->side[0];
+  const FaceQuadStruct::Side & rSide = quad->side[1];
+  const FaceQuadStruct::Side & tSide = quad->side[2];
+  const FaceQuadStruct::Side & lSide = quad->side[3];
 
-  int nbhoriz  = Min(quad->side[0].NbPoints(), quad->side[2].NbPoints());
-  int nbvertic = Min(quad->side[1].NbPoints(), quad->side[3].NbPoints());
+  int nbhoriz  = Min( bSide.NbPoints(), tSide.NbPoints() );
+  int nbvertic = Min( rSide.NbPoints(), lSide.NbPoints() );
 
   if ( myQuadList.size() == 1 )
   {
     // all sub-quads must have NO sides with nbNodeOut > 0
-    quad->nbNodeOut(0) = Max( 0, quad->side[0].grid->NbPoints() - quad->side[2].grid->NbPoints());
-    quad->nbNodeOut(1) = Max( 0, quad->side[1].grid->NbPoints() - quad->side[3].grid->NbPoints());
-    quad->nbNodeOut(2) = Max( 0, quad->side[2].grid->NbPoints() - quad->side[0].grid->NbPoints());
-    quad->nbNodeOut(3) = Max( 0, quad->side[3].grid->NbPoints() - quad->side[1].grid->NbPoints());
+    quad->nbNodeOut(0) = Max( 0, bSide.grid->NbPoints() - tSide.grid->NbPoints() );
+    quad->nbNodeOut(1) = Max( 0, rSide.grid->NbPoints() - lSide.grid->NbPoints() );
+    quad->nbNodeOut(2) = Max( 0, tSide.grid->NbPoints() - bSide.grid->NbPoints() );
+    quad->nbNodeOut(3) = Max( 0, lSide.grid->NbPoints() - rSide.grid->NbPoints() );
   }
-  int from[4] = {
-    quad->side[0].from,
-    quad->side[1].from,
-    quad->side[2].from,
-    quad->side[3].from
-  };
-  const vector<UVPtStruct>& uv_e0_vec = quad->side[ 0 ].GetUVPtStruct();
-  const vector<UVPtStruct>& uv_e1_vec = quad->side[ 1 ].GetUVPtStruct();
-  const vector<UVPtStruct>& uv_e2_vec = quad->side[ 2 ].GetUVPtStruct();
-  const vector<UVPtStruct>& uv_e3_vec = quad->side[ 3 ].GetUVPtStruct();
-
-  if (uv_e0_vec.empty() || uv_e1_vec.empty() || uv_e2_vec.empty() || uv_e3_vec.empty())
+  const vector<UVPtStruct>& uv_e0 = bSide.GetUVPtStruct();
+  const vector<UVPtStruct>& uv_e1 = rSide.GetUVPtStruct();
+  const vector<UVPtStruct>& uv_e2 = tSide.GetUVPtStruct();
+  const vector<UVPtStruct>& uv_e3 = lSide.GetUVPtStruct();
+  if (uv_e0.empty() || uv_e1.empty() || uv_e2.empty() || uv_e3.empty())
     //return error("Can't find nodes on sides");
     return error(COMPERR_BAD_INPUT_MESH);
-
-  UVPtStruct* uv_e0 = (UVPtStruct*) & uv_e0_vec[0] + from[0];
-  UVPtStruct* uv_e1 = (UVPtStruct*) & uv_e1_vec[0] + from[1];
-  UVPtStruct* uv_e2 = (UVPtStruct*) & uv_e2_vec[0] + from[2];
-  UVPtStruct* uv_e3 = (UVPtStruct*) & uv_e3_vec[0] + from[3];
 
   quad->uv_grid.resize( nbvertic * nbhoriz );
   quad->iSize = nbhoriz;
@@ -1345,55 +1337,62 @@ bool StdMeshers_Quadrangle_2D::setNormalizedGrid (FaceQuadStruct::Ptr quad)
 
   // copy data of face boundary
 
+  FaceQuadStruct::SideIterator sideIter;
+
   { // BOTTOM
-    const int j = 0;
-    const double x0 = uv_e0[ 0 ].normParam;
-    const double dx = uv_e0[ nbhoriz-1 ].normParam - uv_e0[ 0 ].normParam;
-    for (int i = 0; i < nbhoriz; i++) {      // down
-      uv_e0[i].x = ( uv_e0[i].normParam - x0 ) / dx;
-      uv_e0[i].y = 0.;
-      uv_grid[ j * nbhoriz + i ] = uv_e0[i];
-      quad->uv_box.Add( uv_e0[i].UV() );
+    const int     j = 0;
+    const double x0 = bSide.First().normParam;
+    const double dx = bSide.Last().normParam - bSide.First().normParam;
+    for ( sideIter.Init( bSide ); sideIter.More(); sideIter.Next() ) {
+      sideIter.UVPt().x = ( sideIter.UVPt().normParam - x0 ) / dx;
+      sideIter.UVPt().y = 0.;
+      uv_grid[ j * nbhoriz + sideIter.Count() ] = sideIter.UVPt();
+      quad->uv_box.Add( sideIter.UVPt().UV() );
     }
   }
   { // RIGHT
-    const int i = nbhoriz - 1;
-    const double y0 = uv_e1[ 0 ].normParam;
-    const double dy = uv_e1[ nbvertic-1 ].normParam - uv_e1[ 0 ].normParam;
-    int j = 0, nb = nbvertic;
-    if ( quad->UVPt( i, j ).node ) ++j; // avoid copying from a split emulated side
-    for ( ; j < nb; j++) {      // right
-      uv_e1[j].x = 1.;
-      uv_e1[j].y = ( uv_e1[j].normParam - y0 ) / dy;
-      uv_grid[ j * nbhoriz + i ] = uv_e1[j];
-      quad->uv_box.Add( uv_e1[j].UV() );
+    const int     i = nbhoriz - 1;
+    const double y0 = rSide.First().normParam;
+    const double dy = rSide.Last().normParam - rSide.First().normParam;
+    sideIter.Init( rSide );
+    if ( quad->UVPt( i, sideIter.Count() ).node )
+      sideIter.Next(); // avoid copying from a split emulated side
+    for ( ; sideIter.More(); sideIter.Next() ) {
+      sideIter.UVPt().x = 1.;
+      sideIter.UVPt().y = ( sideIter.UVPt().normParam - y0 ) / dy;
+      uv_grid[ sideIter.Count() * nbhoriz + i ] = sideIter.UVPt();
+      quad->uv_box.Add( sideIter.UVPt().UV() );
     }
   }
   { // TOP
-    const int j = nbvertic - 1;
-    const double x0 = uv_e2[ 0 ].normParam;
-    const double dx = uv_e2[ nbhoriz-1 ].normParam - uv_e2[ 0 ].normParam;
+    const int     j = nbvertic - 1;
+    const double x0 = tSide.First().normParam;
+    const double dx = tSide.Last().normParam - tSide.First().normParam;
     int i = 0, nb = nbhoriz;
+    sideIter.Init( tSide );
     if ( quad->UVPt( nb-1, j ).node ) --nb; // avoid copying from a split emulated side
-    for (; i < nb; i++) {      // up
-      uv_e2[i].x = ( uv_e2[i].normParam - x0 ) / dx;
-      uv_e2[i].y = 1.;
-      uv_grid[ j * nbhoriz + i ] = uv_e2[i];
-      quad->uv_box.Add( uv_e2[i].UV() );
+    for ( ; i < nb; i++, sideIter.Next()) {
+      sideIter.UVPt().x = ( sideIter.UVPt().normParam - x0 ) / dx;
+      sideIter.UVPt().y = 1.;
+      uv_grid[ j * nbhoriz + i ] = sideIter.UVPt();
+      quad->uv_box.Add( sideIter.UVPt().UV() );
     }
   }
   { // LEFT
     const int i = 0;
-    const double y0 = uv_e3[ 0 ].normParam;
-    const double dy = uv_e3[ nbvertic-1 ].normParam - uv_e3[ 0 ].normParam;
+    const double y0 = lSide.First().normParam;
+    const double dy = lSide.Last().normParam - lSide.First().normParam;
     int j = 0, nb = nbvertic;
-    if ( quad->UVPt( i, j    ).node ) ++j; // avoid copying from a split emulated side
-    if ( quad->UVPt( i, nb-1 ).node ) --nb;
-    for ( ; j < nb; j++) {     // left
-      uv_e3[j].x = 0.;
-      uv_e3[j].y = ( uv_e3[j].normParam - y0 ) / dy;
-      uv_grid[ j * nbhoriz + i ] = uv_e3[j];
-      quad->uv_box.Add( uv_e3[j].UV() );
+    sideIter.Init( lSide );
+    if ( quad->UVPt( i, j    ).node )
+      ++j, sideIter.Next(); // avoid copying from a split emulated side
+    if ( quad->UVPt( i, nb-1 ).node )
+      --nb;
+    for ( ; j < nb; j++, sideIter.Next()) {
+      sideIter.UVPt().x = 0.;
+      sideIter.UVPt().y = ( sideIter.UVPt().normParam - y0 ) / dy;
+      uv_grid[ j * nbhoriz + i ] = sideIter.UVPt();
+      quad->uv_box.Add( sideIter.UVPt().UV() );
     }
   }
 
@@ -1401,12 +1400,12 @@ bool StdMeshers_Quadrangle_2D::setNormalizedGrid (FaceQuadStruct::Ptr quad)
 
   for (int i = 1; i < nbhoriz-1; i++)
   {
-    const double x0 = uv_e0[i].x;
-    const double x1 = uv_e2[i].x;
+    const double x0 = quad->UVPt( i, 0          ).x;
+    const double x1 = quad->UVPt( i, nbvertic-1 ).x;
     for (int j = 1; j < nbvertic-1; j++)
     {
-      const double y0 = uv_e3[j].y;
-      const double y1 = uv_e1[j].y;
+      const double y0 = quad->UVPt( 0,         j ).y;
+      const double y1 = quad->UVPt( nbhoriz-1, j ).y;
       // --- intersection : x=x0+(y0+x(y1-y0))(x1-x0)
       double x = (x0 + y0 * (x1 - x0)) / (1 - (y1 - y0) * (x1 - x0));
       double y = y0 + x * (y1 - y0);
@@ -1419,19 +1418,19 @@ bool StdMeshers_Quadrangle_2D::setNormalizedGrid (FaceQuadStruct::Ptr quad)
 
   // projection on 2d domain (u,v)
 
-  gp_UV a0 = uv_e0[0        ].UV();
-  gp_UV a1 = uv_e0[nbhoriz-1].UV();
-  gp_UV a2 = uv_e2[nbhoriz-1].UV();
-  gp_UV a3 = uv_e2[0        ].UV();
+  gp_UV a0 = quad->UVPt( 0,         0          ).UV();
+  gp_UV a1 = quad->UVPt( nbhoriz-1, 0          ).UV();
+  gp_UV a2 = quad->UVPt( nbhoriz-1, nbvertic-1 ).UV();
+  gp_UV a3 = quad->UVPt( 0,         nbvertic-1 ).UV();
 
   for (int i = 1; i < nbhoriz-1; i++)
   {
-    gp_UV p0 = uv_e0[i].UV();
-    gp_UV p2 = uv_e2[i].UV();
+    gp_UV p0 = quad->UVPt( i, 0          ).UV();
+    gp_UV p2 = quad->UVPt( i, nbvertic-1 ).UV();
     for (int j = 1; j < nbvertic-1; j++)
     {
-      gp_UV p1 = uv_e1[j].UV();
-      gp_UV p3 = uv_e3[j].UV();
+      gp_UV p1 = quad->UVPt( nbhoriz-1, j ).UV();
+      gp_UV p3 = quad->UVPt( 0,         j ).UV();
 
       int ij = j * nbhoriz + i;
       double x = uv_grid[ij].x;
@@ -1458,7 +1457,7 @@ static void shiftQuad(FaceQuadStruct::Ptr& quad, const int num)
 
 //================================================================================
 /*!
- * \brief Rotate sides of a quad by nb
+ * \brief Rotate sides of a quad by given nb of quartes
  *  \param nb  - number of rotation quartes
  *  \param ori - to keep orientation of sides as in an unit quad or not
  */
@@ -1467,15 +1466,37 @@ static void shiftQuad(FaceQuadStruct::Ptr& quad, const int num)
 void FaceQuadStruct::shift( size_t nb, bool ori )
 {
   if ( nb == 0 ) return;
-  StdMeshers_FaceSidePtr sideArr[4] = { side[0], side[1], side[2], side[3] };
-  for (int i = QUAD_BOTTOM_SIDE; i < NB_QUAD_SIDES; ++i) {
+
+  vector< Side > newSides( side.size() );
+  vector< Side* > sidePtrs( side.size() );
+  for (int i = QUAD_BOTTOM_SIDE; i < NB_QUAD_SIDES; ++i)
+  {
     int id = (i + nb) % NB_QUAD_SIDES;
-    bool wasForward = (i  < QUAD_TOP_SIDE);
-    bool newForward = (id < QUAD_TOP_SIDE);
-    if (ori && wasForward != newForward)
-      sideArr[ i ]->Reverse();
-    side[ id ] = sideArr[ i ];
+    if ( ori )
+    {
+      bool wasForward = (i  < QUAD_TOP_SIDE);
+      bool newForward = (id < QUAD_TOP_SIDE);
+      if ( wasForward != newForward )
+        side[ i ].Reverse();
+    }
+    newSides[ id ] = side[ i ];
+    sidePtrs[ i ] = & side[ i ];
   }
+  // make newSides refer newSides via Side::Contact's
+  for ( size_t i = 0; i < newSides.size(); ++i )
+  {
+    FaceQuadStruct::Side& ns = newSides[ i ];
+    for ( size_t iC = 0; iC < ns.contacts.size(); ++iC )
+    {
+      FaceQuadStruct::Side* oSide = ns.contacts[iC].other_side;
+      vector< Side* >::iterator sIt = std::find( sidePtrs.begin(), sidePtrs.end(), oSide );
+      if ( sIt != sidePtrs.end() )
+        ns.contacts[iC].other_side = & newSides[ *sIt - sidePtrs[0] ];
+    }
+  }
+  newSides.swap( side );
+
+  uv_grid.clear();
 }
 
 //=======================================================================
@@ -1532,20 +1553,17 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
                                                 const TopoDS_Face&  aFace,
                                                 FaceQuadStruct::Ptr quad)
 {
-  // Auxilary key in order to keep old variant
-  // of meshing after implementation new variant
-  // for bug 0016220 from Mantis.
-  bool OldVersion = (myQuadType == QUAD_QUADRANGLE_PREF_REVERSED);
+  const bool OldVersion = (myQuadType == QUAD_QUADRANGLE_PREF_REVERSED);
+  const bool WisF = true;
 
   SMESHDS_Mesh *  meshDS = aMesh.GetMeshDS();
   Handle(Geom_Surface) S = BRep_Tool::Surface(aFace);
-  bool WisF = true;
-  int i,j,geomFaceID = meshDS->ShapeToIndex(aFace);
+  int i,j,    geomFaceID = meshDS->ShapeToIndex(aFace);
 
-  int nb = quad->side[0].grid->NbPoints();
-  int nr = quad->side[1].grid->NbPoints();
-  int nt = quad->side[2].grid->NbPoints();
-  int nl = quad->side[3].grid->NbPoints();
+  int nb = quad->side[0].NbPoints();
+  int nr = quad->side[1].NbPoints();
+  int nt = quad->side[2].NbPoints();
+  int nl = quad->side[3].NbPoints();
   int dh = abs(nb-nt);
   int dv = abs(nr-nl);
 
@@ -1569,10 +1587,10 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
       quad->shift( 3, true );
   }
 
-  nb = quad->side[0].grid->NbPoints();
-  nr = quad->side[1].grid->NbPoints();
-  nt = quad->side[2].grid->NbPoints();
-  nl = quad->side[3].grid->NbPoints();
+  nb = quad->side[0].NbPoints();
+  nr = quad->side[1].NbPoints();
+  nt = quad->side[2].NbPoints();
+  nl = quad->side[3].NbPoints();
   dh = abs(nb-nt);
   dv = abs(nr-nl);
   int nbh  = Max(nb,nt);
@@ -1607,13 +1625,24 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
   //      0------------0
   //       0  bottom  1
 
-  const vector<UVPtStruct>& uv_eb = quad->side[0].GetUVPtStruct(true,0);
-  const vector<UVPtStruct>& uv_er = quad->side[1].GetUVPtStruct(false,1);
-  const vector<UVPtStruct>& uv_et = quad->side[2].GetUVPtStruct(true,1);
-  const vector<UVPtStruct>& uv_el = quad->side[3].GetUVPtStruct(false,0);
-
-  if (uv_eb.size() != nb || uv_er.size() != nr || uv_et.size() != nt || uv_el.size() != nl)
+  const vector<UVPtStruct>& uv_eb_vec = quad->side[0].GetUVPtStruct(true,0);
+  const vector<UVPtStruct>& uv_er_vec = quad->side[1].GetUVPtStruct(false,1);
+  const vector<UVPtStruct>& uv_et_vec = quad->side[2].GetUVPtStruct(true,1);
+  const vector<UVPtStruct>& uv_el_vec = quad->side[3].GetUVPtStruct(false,0);
+  const int bfrom = quad->side[0].from;
+  const int rfrom = quad->side[1].from;
+  const int tfrom = quad->side[2].from;
+  const int lfrom = quad->side[3].from;
+  if (uv_eb_vec.size() < nb + bfrom ||
+      uv_er_vec.size() < nr + rfrom ||
+      uv_et_vec.size() < nt + tfrom ||
+      uv_el_vec.size() < nl + lfrom)
     return error(COMPERR_BAD_INPUT_MESH);
+
+  const UVPtStruct *  uv_eb = & uv_eb_vec[0] + bfrom;
+  const UVPtStruct *  uv_er = & uv_er_vec[0] + rfrom;
+  const UVPtStruct *  uv_et = & uv_et_vec[0] + tfrom;
+  const UVPtStruct *  uv_el = & uv_el_vec[0] + lfrom;
 
   gp_UV a0,a1,a2,a3, p0,p1,p2,p3, uv;
   double x,y;
@@ -1679,10 +1708,13 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
         y  = uv_er[ dmin ].normParam;
         p1 = uv_er[ dmin ].UV();
         p3 = quad->side[3].grid->Value2d( y ).XY();
+        double x0 = uv_et[ dmin ].normParam;
+        double xn = uv_et[ dmin+nb-1 ].normParam;
+        double kx = ( 1. - x0 ) / ( xn - x0 );
         for ( int i = 1; i < nb-1; ++i )
         {
-          x  = uv_et[ i + dmin ].normParam;
-          p2 = uv_et[ i + dmin ].UV();
+          x  = x0 + ( uv_et[ i + dmin ].normParam - x0 ) * kx;
+          p2 = quad->side[2].grid->Value2d( x ).XY();
           p0 = quad->side[0].grid->Value2d( x ).XY();
           uv = calcUV( x,y, a0,a1,a2,a3, p0,p1,p2,p3 );
           pointsCbCt[ i ].u = uv.X();
@@ -1691,7 +1723,7 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
         sideCbCt = StdMeshers_FaceSide::New( pointsCbCt, aFace );
       }
       // Make Cb quad
-      FaceQuadStruct* qCb = new FaceQuadStruct( quad->face );
+      FaceQuadStruct* qCb = new FaceQuadStruct( quad->face, "Cb" );
       myQuadList.push_back( FaceQuadStruct::Ptr( qCb ));
       qCb->side.resize(4);
       qCb->side[0] = quad->side[0];
@@ -1700,7 +1732,7 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
       qCb->side[3] = sideLCb;
       qCb->side[1].to = dmin+1;
       // Make L quad
-      FaceQuadStruct* qL = new FaceQuadStruct( quad->face );
+      FaceQuadStruct* qL = new FaceQuadStruct( quad->face, "L" );
       myQuadList.push_back( FaceQuadStruct::Ptr( qL ));
       qL->side.resize(4);
       qL->side[0] = sideLCb;
@@ -1715,6 +1747,7 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
       qCt->side[1].from = dmin;
       qCt->side[2].from = dmin;
       qCt->uv_grid.clear();
+      qCt->name = "Ct";
 
       // Connect sides
       qCb->side[3].AddContact( dmin, & qCb->side[2], 0 );
@@ -1744,17 +1777,14 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
     //    |/          \|
     //    +------------+
     const int lw = dh/2; // lateral width
-    const int bfrom = quad->side[0].from;
-    const int rfrom = quad->side[1].from;
-    const int tfrom = quad->side[2].from;
-    const int lfrom = quad->side[3].from;
 
     const double   lL = quad->side[3].Length();
-    const double lLwL = quad->side[2].Length( tfrom, tfrom + lw + 1 );
+    const double lLwL = quad->side[2].Length( tfrom, tfrom + lw );
     const double yCbL = lLwL / ( lLwL + lL );
 
     const double   lR = quad->side[1].Length();
-    const double lLwR = quad->side[2].Length( nt - lw - 1, nt );
+    const double lLwR = quad->side[2].Length( tfrom + lw + nb-1,
+                                              tfrom + lw + nb-1 + lw );
     const double yCbR = lLwR / ( lLwR + lR );
 
     // Make sides separating domains Cb and L and R
@@ -1762,15 +1792,15 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
     UVPtStruct pTBL, pTBR; // points where 3 domains meat
     {
       vector<UVPtStruct> pointsLCb( lw+1 ), pointsRCb( lw+1 );
-      pointsLCb[0] = uv_eb[ 0  + bfrom ];
-      pointsRCb[0] = uv_eb[ nb + bfrom ];
+      pointsLCb[0] = uv_eb[ 0    ];
+      pointsRCb[0] = uv_eb[ nb-1 ];
       for ( int i = 1, i2 = nt-2; i <= lw; ++i, --i2 )
       {
         x  = quad->side[2].Param( i );
         y  = yCbL * i / lw;
         p0 = quad->side[0].Value2d( x );
         p1 = quad->side[1].Value2d( y );
-        p2 = uv_et[ i + tfrom ].UV();
+        p2 = uv_et[ i ].UV();
         p3 = quad->side[3].Value2d( y );
         uv = calcUV( x,y, a0,a1,a2,a3, p0,p1,p2,p3 );
         pointsLCb[ i ].u = uv.X();
@@ -1780,7 +1810,7 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
         x  = quad->side[2].Param( i2 );
         y  = yCbR * i / lw;
         p0 = quad->side[0].Value2d( x );
-        p2 = uv_et[ i2 + tfrom ].UV();
+        p2 = uv_et[ i2 ].UV();
         uv = calcUV( x,y, a0,a1,a2,a3, p0,p1,p2,p3 );
         pointsRCb[ i ].u = uv.X();
         pointsRCb[ i ].v = uv.Y();
@@ -1796,29 +1826,29 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
     {
       vector<UVPtStruct> pointsLCt( nl ), pointsRCt( nl );
       pointsLCt[0]     = pTBL;
-      pointsLCt.back() = uv_et[ lw + tfrom ];
+      pointsLCt.back() = uv_et[ lw ];
       pointsRCt[0]     = pTBR;
-      pointsRCt.back() = uv_et[ lw + nb - 1 + tfrom ];
+      pointsRCt.back() = uv_et[ lw + nb - 1 ];
       x  = pTBL.x;
       p0 = quad->side[0].Value2d( x );
-      p2 = uv_et[ lw + tfrom ].UV();
+      p2 = uv_et[ lw ].UV();
       int     iR = lw + nb - 1;
       double  xR = pTBR.x;
       gp_UV  p0R = quad->side[0].Value2d( xR );
-      gp_UV  p2R = uv_et[ iR + tfrom ].UV();
-      for ( int i = 1; i < nl; ++i )
+      gp_UV  p2R = uv_et[ iR ].UV();
+      for ( int i = 1; i < nl-1; ++i )
       {
-        y  = yCbL + ( 1. - yCbL ) * i / nl;
+        y  = yCbL + ( 1. - yCbL ) * i / (nl-1.);
         p1 = quad->side[1].Value2d( y );
         p3 = quad->side[3].Value2d( y );
         uv = calcUV( x,y, a0,a1,a2,a3, p0,p1,p2,p3 );
         pointsLCt[ i ].u = uv.X();
         pointsLCt[ i ].v = uv.Y();
 
-        y  = yCbR + ( 1. - yCbR ) * i / nl;
+        y  = yCbR + ( 1. - yCbR ) * i / (nl-1.);
         p1 = quad->side[1].Value2d( y );
         p3 = quad->side[3].Value2d( y );
-        uv = calcUV( xR,y, a0,a1,a2,a3, p0,p1,p2,p3 );
+        uv = calcUV( xR,y, a0,a1,a2,a3, p0R,p1,p2R,p3 );
         pointsRCt[ i ].u = uv.X();
         pointsRCt[ i ].v = uv.Y();
       }
@@ -1836,8 +1866,8 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
       for ( int i = 1; i < nb-1; ++i )
       {
         x  = quad->side[2].Param( i + lw );
-        y  = yCbL + ( yCbR - yCbL ) * i / nb;
-        p2 = uv_et[ i + lw + tfrom ].UV();
+        y  = yCbL + ( yCbR - yCbL ) * i / (nb-1.);
+        p2 = uv_et[ i + lw ].UV();
         p0 = quad->side[0].Value2d( x );
         uv = calcUV( x,y, a0,a1,a2,a3, p0,p1,p2,p3 );
         pointsCbCt[ i ].u = uv.X();
@@ -1846,7 +1876,7 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
       sideCbCt = StdMeshers_FaceSide::New( pointsCbCt, aFace );
     }
     // Make Cb quad
-    FaceQuadStruct* qCb = new FaceQuadStruct( quad->face );
+    FaceQuadStruct* qCb = new FaceQuadStruct( quad->face, "Cb" );
     myQuadList.push_back( FaceQuadStruct::Ptr( qCb ));
     qCb->side.resize(4);
     qCb->side[0] = quad->side[0];
@@ -1854,16 +1884,16 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
     qCb->side[2] = sideCbCt;
     qCb->side[3] = sideLCb;
     // Make L quad
-    FaceQuadStruct* qL = new FaceQuadStruct( quad->face );
+    FaceQuadStruct* qL = new FaceQuadStruct( quad->face, "L" );
     myQuadList.push_back( FaceQuadStruct::Ptr( qL ));
     qL->side.resize(4);
     qL->side[0] = sideLCb;
     qL->side[1] = sideLCt;
     qL->side[2] = quad->side[2];
     qL->side[3] = quad->side[3];
-    qL->side[2].to = lw+1;
+    qL->side[2].to = lw + 1 + tfrom;
     // Make R quad
-    FaceQuadStruct* qR = new FaceQuadStruct( quad->face );
+    FaceQuadStruct* qR = new FaceQuadStruct( quad->face, "R" );
     myQuadList.push_back( FaceQuadStruct::Ptr( qR ));
     qR->side.resize(4);
     qR->side[0] = sideRCb;
@@ -1871,37 +1901,36 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
     qR->side[0].to   = -1;
     qR->side[1] = quad->side[1];
     qR->side[2] = quad->side[2];
-    qR->side[2].from = nb + lw + tfrom;
+    qR->side[2].from = lw + nb-1 + tfrom;
     qR->side[3] = sideRCt;
     // Make Ct from the main quad
     FaceQuadStruct::Ptr qCt = quad;
     qCt->side[0] = sideCbCt;
     qCt->side[1] = sideRCt;
     qCt->side[2].from = lw + tfrom;
-    qCt->side[2].to   = nt - lw + tfrom;
+    qCt->side[2].to   = lw + nb + tfrom;
     qCt->side[3] = sideLCt;
     qCt->uv_grid.clear();
+    qCt->name = "Ct";
 
     // Connect sides
     qCb->side[3].AddContact( lw, & qCb->side[2], 0 );
     qCb->side[3].AddContact( lw, & qCt->side[3], 0 );
-    qCt->side[3].AddContact(  0, & qCt->side[0], 0 );
-    qCt->side[0].AddContact(  0, & qL ->side[0], lw );
+    qCt->side[3].AddContact( 0,  & qCt->side[0], 0 );
+    qCt->side[0].AddContact( 0,  & qL ->side[0], lw );
     qL ->side[0].AddContact( lw, & qL ->side[1], 0 );
     qL ->side[0].AddContact( lw, & qCb->side[2], 0 );
     //
-    qCb->side[1].AddContact( lw, & qCb->side[2], lw );
-    qCb->side[1].AddContact( lw, & qCt->side[1], 0 );
-    qCt->side[0].AddContact( lw, & qCt->side[1], 0 );
-    qCt->side[0].AddContact( lw, & qR ->side[0], lw );
-    qR ->side[3].AddContact( lw, & qR ->side[0], lw );
-    qR ->side[3].AddContact( lw, & qCb->side[2], lw );
+    qCb->side[1].AddContact( lw,   & qCb->side[2], nb-1 );
+    qCb->side[1].AddContact( lw,   & qCt->side[1], 0 );
+    qCt->side[0].AddContact( nb-1, & qCt->side[1], 0 );
+    qCt->side[0].AddContact( nb-1, & qR ->side[0], lw );
+    qR ->side[3].AddContact( 0,    & qR ->side[0], lw );
+    qR ->side[3].AddContact( 0,    & qCb->side[2], nb-1 );
 
-    if ( dh == dv )
-      return computeQuadDominant( aMesh, aFace );
+    return computeQuadDominant( aMesh, aFace );
 
-
-  }
+  } // if ( !myForcedPnts.empty() )
 
   if ( dh > dv ) {
     addv = (dh-dv)/2;
@@ -1998,12 +2027,6 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
                                 NodesL.Value(i+1,j+1), NodesL.Value(i,j+1));
             if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
           }
-          else {
-            SMDS_MeshFace* F =
-              myHelper->AddFace(NodesL.Value(i,j), NodesL.Value(i,j+1),
-                                NodesL.Value(i+1,j+1), NodesL.Value(i+1,j));
-            if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
-          }
         }
       }
     }
@@ -2059,12 +2082,6 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
             SMDS_MeshFace* F =
               myHelper->AddFace(NodesR.Value(i,j), NodesR.Value(i+1,j),
                                 NodesR.Value(i+1,j+1), NodesR.Value(i,j+1));
-            if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
-          }
-          else {
-            SMDS_MeshFace* F =
-              myHelper->AddFace(NodesR.Value(i,j), NodesR.Value(i,j+1),
-                                NodesR.Value(i+1,j+1), NodesR.Value(i+1,j));
             if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
           }
         }
@@ -2140,12 +2157,6 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
                               NodesC.Value(i+1,j+1), NodesC.Value(i,j+1));
           if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
         }
-        else {
-          SMDS_MeshFace* F =
-            myHelper->AddFace(NodesC.Value(i,j), NodesC.Value(i,j+1),
-                              NodesC.Value(i+1,j+1), NodesC.Value(i+1,j));
-          if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
-        }
       }
     }
   }
@@ -2176,12 +2187,6 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
           SMDS_MeshFace* F =
             myHelper->AddFace(NodesBRD.Value(i,j), NodesBRD.Value(i+1,j),
                               NodesBRD.Value(i+1,j+1), NodesBRD.Value(i,j+1));
-          if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
-        }
-        else {
-          SMDS_MeshFace* F =
-            myHelper->AddFace(NodesBRD.Value(i,j), NodesBRD.Value(i,j+1),
-                              NodesBRD.Value(i+1,j+1), NodesBRD.Value(i+1,j));
           if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
         }
       }
@@ -2290,12 +2295,6 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
                                 NodesC.Value(i+1,j+1), NodesC.Value(i,j+1));
             if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
           }
-          else {
-            SMDS_MeshFace* F =
-              myHelper->AddFace(NodesC.Value(i,j), NodesC.Value(i,j+1),
-                                NodesC.Value(i+1,j+1), NodesC.Value(i+1,j));
-            if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
-          }
         }
       } // end nr<nl
 
@@ -2321,12 +2320,6 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
           SMDS_MeshFace* F =
             myHelper->AddFace(NodesLast.Value(i,1), NodesLast.Value(i+1,1),
                               NodesLast.Value(i+1,2), NodesLast.Value(i,2));
-          if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
-        }
-        else {
-          SMDS_MeshFace* F =
-            myHelper->AddFace(NodesLast.Value(i,1), NodesLast.Value(i,2),
-                              NodesLast.Value(i+1,2), NodesLast.Value(i+1,2));
           if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
         }
       }
@@ -2695,10 +2688,10 @@ bool StdMeshers_Quadrangle_2D::computeReduced (SMESH_Mesh &        aMesh,
   Handle(Geom_Surface) S = BRep_Tool::Surface(aFace);
   int i,j,geomFaceID     = meshDS->ShapeToIndex(aFace);
 
-  int nb = quad->side[0].grid->NbPoints(); // bottom
-  int nr = quad->side[1].grid->NbPoints(); // right
-  int nt = quad->side[2].grid->NbPoints(); // top
-  int nl = quad->side[3].grid->NbPoints(); // left
+  int nb = quad->side[0].NbPoints(); // bottom
+  int nr = quad->side[1].NbPoints(); // right
+  int nt = quad->side[2].NbPoints(); // top
+  int nl = quad->side[3].NbPoints(); // left
 
   //  Simple Reduce 10->8->6->4 (3 steps)     Multiple Reduce 10->4 (1 step)
   //
@@ -2787,10 +2780,10 @@ bool StdMeshers_Quadrangle_2D::computeReduced (SMESH_Mesh &        aMesh,
       }
     }
 
-    nb = quad->side[0].grid->NbPoints();
-    nr = quad->side[1].grid->NbPoints();
-    nt = quad->side[2].grid->NbPoints();
-    nl = quad->side[3].grid->NbPoints();
+    nb = quad->side[0].NbPoints();
+    nr = quad->side[1].NbPoints();
+    nt = quad->side[2].NbPoints();
+    nl = quad->side[3].NbPoints();
     dh = abs(nb-nt);
     dv = abs(nr-nl);
     int nbh = Max(nb,nt);
@@ -3061,10 +3054,10 @@ bool StdMeshers_Quadrangle_2D::computeReduced (SMESH_Mesh &        aMesh,
       }
     }
 
-    nb = quad->side[0].grid->NbPoints();
-    nr = quad->side[1].grid->NbPoints();
-    nt = quad->side[2].grid->NbPoints();
-    nl = quad->side[3].grid->NbPoints();
+    nb = quad->side[0].NbPoints();
+    nr = quad->side[1].NbPoints();
+    nt = quad->side[2].NbPoints();
+    nl = quad->side[3].NbPoints();
 
     // number of rows and columns
     int nrows = nr - 1; // and also == nl - 1
@@ -4134,7 +4127,8 @@ FaceQuadStruct::Side::Side(StdMeshers_FaceSidePtr theGrid)
  */
 //=============================================================================
 
-FaceQuadStruct::FaceQuadStruct(const TopoDS_Face& F) : face( F )
+FaceQuadStruct::FaceQuadStruct(const TopoDS_Face& F, const std::string& theName)
+  : face( F ), name( theName )
 {
   side.reserve(4);
 }
@@ -4274,7 +4268,11 @@ bool StdMeshers_Quadrangle_2D::addEnforcedNodes()
   list< FaceQuadStruct::Ptr >::iterator quadIt = myQuadList.begin();
   for ( ; quadIt != myQuadList.end(); ++quadIt )
     for ( size_t iSide = 0; iSide < (*quadIt)->side.size(); ++iSide )
+    {
+      if ( !setNormalizedGrid( *quadIt ))
+        return false;
       quadsBySide[ (*quadIt)->side[iSide] ].push_back( *quadIt );
+    }
 
   SMESH_Mesh*          mesh = myHelper->GetMesh();
   SMESHDS_Mesh*      meshDS = myHelper->GetMeshDS();
@@ -4289,9 +4287,9 @@ bool StdMeshers_Quadrangle_2D::addEnforcedNodes()
     for ( quadIt = myQuadList.begin(); quadIt != myQuadList.end(); ++quadIt )
     {
       FaceQuadStruct::Ptr quad = *quadIt;
-      int i,j;
-      if ( !setNormalizedGrid( quad ))
+      if ( !setNormalizedGrid( *quadIt ))
         return false;
+      int i,j;
       if ( !quad->findCell( myForcedPnts[ iFP ], i, j ))
         continue;
 
@@ -4390,7 +4388,10 @@ bool StdMeshers_Quadrangle_2D::addEnforcedNodes()
           quad->side[( iNewSide+2 ) % 4 ].forced_nodes.insert( indForced );
 
           quadsBySide[ newSide ].push_back( quad );
-          quadsBySide[ newSide ].push_back( newQuad );
+          quadsBySide[ newQuad->side[0] ].push_back( newQuad );
+          quadsBySide[ newQuad->side[1] ].push_back( newQuad );
+          quadsBySide[ newQuad->side[2] ].push_back( newQuad );
+          quadsBySide[ newQuad->side[3] ].push_back( newQuad );
 
           isNodeEnforced = true;
 
@@ -4402,6 +4403,9 @@ bool StdMeshers_Quadrangle_2D::addEnforcedNodes()
       set< FaceQuadStruct::Ptr >::iterator qIt = changedQuads.begin();
       for ( ; qIt != changedQuads.end(); ++qIt )
         (*qIt)->uv_grid.clear();
+
+      if ( isNodeEnforced )
+        break;
 
     } // loop on quads
 
@@ -4509,6 +4513,7 @@ int StdMeshers_Quadrangle_2D::splitQuad(FaceQuadStruct::Ptr quad, int I, int J)
 
     newQuad->side[ QUAD_BOTTOM_SIDE ].from = iBot;
     newQuad->side[ QUAD_TOP_SIDE    ].from = iTop;
+    newQuad->name = ( TComm("Right of I=") << I );
 
     quad->side[ QUAD_BOTTOM_SIDE ].to = iBot + 1;
     quad->side[ QUAD_TOP_SIDE    ].to = iTop + 1;
@@ -4516,7 +4521,7 @@ int StdMeshers_Quadrangle_2D::splitQuad(FaceQuadStruct::Ptr quad, int I, int J)
 
     return QUAD_LEFT_SIDE;
   }
-  else if ( J > 0 ) //// split horizontally
+  else if ( J > 0 ) //// split horizontally, a new quad is below an old one
   {
     points.reserve( quad->iSize );
     for ( int iP = 0; iP < quad->iSize; ++iP )
@@ -4547,6 +4552,7 @@ int StdMeshers_Quadrangle_2D::splitQuad(FaceQuadStruct::Ptr quad, int I, int J)
 
     newQuad->side[ QUAD_RIGHT_SIDE ].to = iRgt+1;
     newQuad->side[ QUAD_LEFT_SIDE  ].to = iLft+1;
+    newQuad->name = ( TComm("Below J=") << J );
 
     quad->side[ QUAD_RIGHT_SIDE ].from = iRgt;
     quad->side[ QUAD_LEFT_SIDE  ].from = iLft;
@@ -4590,10 +4596,10 @@ void StdMeshers_Quadrangle_2D::updateSideUV( FaceQuadStruct::Side&  side,
   const int iTo      = Max ( iForced, *iNext ) + 1;
   const int sideSize = iTo - iFrom;
 
-  vector<UVPtStruct> points[4];
+  vector<UVPtStruct> points[4]; // side points of a temporary quad
 
-  // get from the quads grid points adjacent to the side
-  // to make two sides of another temporary quad
+  // from the quads get grid points adjacent to the side
+  // to make two sides of a temporary quad
   vector< FaceQuadStruct::Ptr > quads = quadsBySide.find( side )->second; // copy!
   for ( int is2nd = 0; is2nd < 2; ++is2nd )
   {
@@ -4607,7 +4613,8 @@ void StdMeshers_Quadrangle_2D::updateSideUV( FaceQuadStruct::Side&  side,
       for ( size_t iQ = 0; iQ < quads.size(); ++iQ )
       {
         FaceQuadStruct::Ptr q = quads[ iQ ];
-        if ( !q ) continue;
+        if ( !q )
+          continue;
         size_t iS;
         for ( iS = 0; iS < q->side.size(); ++iS )
           if ( side.grid == q->side[ iS ].grid )
@@ -4619,10 +4626,12 @@ void StdMeshers_Quadrangle_2D::updateSideUV( FaceQuadStruct::Side&  side,
           isOut = ( q->side[ iS ].to  >= iCur || q->side[ iS ].from <= iCur );
         if ( isOut )
           continue;
+        if ( !setNormalizedGrid( q ))
+          continue;
 
         // found - copy points
         int i,j,di,dj,nb;
-        if ( iS % 2 ) // right ot left
+        if ( iS % 2 ) // right or left
         {
           i  = ( iS == QUAD_LEFT_SIDE ) ? 1 : q->iSize-2;
           j  = q->side[ iS ].ToQuadIndex( iCur );
@@ -4678,7 +4687,8 @@ void StdMeshers_Quadrangle_2D::updateSideUV( FaceQuadStruct::Side&  side,
   points[T].push_back( points[R].back() );
 
   // make the temporary quad
-  FaceQuadStruct::Ptr tmpQuad( new FaceQuadStruct( TopoDS::Face( myHelper->GetSubShape() )));
+  FaceQuadStruct::Ptr tmpQuad
+    ( new FaceQuadStruct( TopoDS::Face( myHelper->GetSubShape() ), "tmpQuad"));
   tmpQuad->side.push_back( StdMeshers_FaceSide::New( points[B] )); // bottom
   tmpQuad->side.push_back( StdMeshers_FaceSide::New( points[R] )); // right
   tmpQuad->side.push_back( StdMeshers_FaceSide::New( points[T] ));
@@ -4717,7 +4727,6 @@ bool FaceQuadStruct::findCell( const gp_XY& UV, int & I, int & J )
   y = Min( 1., Max( 0., y ));
 
   // precise the position
-  //int i, j;
   normPa2IJ( x,y, I,J );
   if ( !isNear( UV, I,J ))
   {
@@ -4764,11 +4773,11 @@ void FaceQuadStruct::normPa2IJ(double X, double Y, int & I, int & J )
     oldI = I, oldJ = J;
     while ( X <= UVPt( I,J ).x   && I != 0 )
       --I;
-    while ( X >  UVPt( I+1,J ).x && I+1 < iSize )
+    while ( X >  UVPt( I+1,J ).x && I+2 < iSize )
       ++I;
     while ( Y <= UVPt( I,J ).y   && J != 0 )
       --J;
-    while ( Y >  UVPt( I,J+1 ).y && J+1 < jSize )
+    while ( Y >  UVPt( I,J+1 ).y && J+2 < jSize )
       ++J;
   } while ( oldI != I || oldJ != J );
 }
@@ -4798,9 +4807,9 @@ bool FaceQuadStruct::isNear( const gp_XY& UV, int & I, int & J, int nbLoops )
       return true;
 
     if ( I > 0       && bcI < 0. ) --I;
-    if ( I+1 < iSize && bcI > 1. ) ++I;
+    if ( I+2 < iSize && bcI > 1. ) ++I;
     if ( J > 0       && bcJ < 0. ) --J;
-    if ( J+1 < jSize && bcJ > 1. ) ++J;
+    if ( J+2 < jSize && bcJ > 1. ) ++J;
 
     uv1 = UVPt( I+1,J+1).UV();
     if ( I != oldI || J != oldJ )
@@ -4813,9 +4822,9 @@ bool FaceQuadStruct::isNear( const gp_XY& UV, int & I, int & J, int nbLoops )
       return true;
 
     if ( I > 0       && bcI > 1. ) --I;
-    if ( I+1 < iSize && bcI < 0. ) ++I;
+    if ( I+2 < iSize && bcI < 0. ) ++I;
     if ( J > 0       && bcJ > 1. ) --J;
-    if ( J+1 < jSize && bcJ < 0. ) ++J;
+    if ( J+2 < jSize && bcJ < 0. ) ++J;
 
     if ( I == oldI && J == oldJ )
       return false;
@@ -4840,7 +4849,7 @@ bool FaceQuadStruct::isNear( const gp_XY& UV, int & I, int & J, int nbLoops )
 
 //================================================================================
 /*!
- * \brief Checks if a given UV is equal to a given frid point
+ * \brief Checks if a given UV is equal to a given grid point
  */
 //================================================================================
 
@@ -5028,6 +5037,37 @@ int FaceQuadStruct::Side::ToQuadIndex( int sideNodeIndex ) const
 
 //================================================================================
 /*!
+ * \brief Reverse the side
+ */
+//================================================================================
+
+bool FaceQuadStruct::Side::Reverse()
+{
+  if ( grid )
+  {
+    // if ( nbNodeOut == 0 )
+    // {
+    //   if ( from > to )
+    //   {
+    //     from++;
+    //     to++;
+    //   }
+    //   else
+    //   {
+    //     from--;
+    //     to--;
+    //   }
+    //   std::swap( from, to );
+    // }
+    // else
+    {
+      grid->Reverse();
+    }
+  }
+}
+
+//================================================================================
+/*!
  * \brief Checks if a node is enforced
  *  \param [in] nodeIndex - an index of a node in a size
  *  \return bool - \c true if the node is forced
@@ -5112,8 +5152,19 @@ gp_XY FaceQuadStruct::Side::Value2d( double x ) const
 
 double FaceQuadStruct::Side::Length(int theFrom, int theTo) const
 {
+  if ( IsReversed() != ( theTo < theFrom ))
+    std::swap( theTo, theFrom );
+
   const vector<UVPtStruct>& points = GetUVPtStruct();
-  double r = ( points[ Max( to,   theTo )-1 ].normParam -
-               points[ Max( from, theFrom ) ].normParam );
+  double r;
+  if ( theFrom == theTo && theTo == -1 )
+    r = Abs( First().normParam -
+             Last ().normParam );
+  else if ( IsReversed() )
+    r = Abs( points[ Max( to,   theTo+1 ) ].normParam -
+             points[ Min( from, theFrom ) ].normParam );
+  else
+    r = Abs( points[ Min( to,   theTo-1 ) ].normParam -
+             points[ Max( from, theFrom ) ].normParam );
   return r * grid->Length();
 }

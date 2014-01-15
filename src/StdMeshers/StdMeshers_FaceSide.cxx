@@ -725,6 +725,7 @@ void StdMeshers_FaceSide::Reverse()
   }
   for ( size_t i = 0; i < myEdge.size(); ++i )
   {
+    if ( myEdge[i].IsNull() ) continue; // for a side on points only
     double fp,lp;
     Handle(Geom_Curve) C3d = BRep_Tool::Curve(myEdge[i],fp,lp);
     if ( !C3d.IsNull() )

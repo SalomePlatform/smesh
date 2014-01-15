@@ -71,10 +71,15 @@ struct FaceQuadStruct
     int  ToQuadIndex( int sideNodeIndex ) const;
     bool IsForced( int nodeIndex ) const;
     bool IsReversed() const { return nbNodeOut ? false : to < from; }
+    bool Reverse();
     int  NbPoints() const { return Abs( to - from ); }
     double Param( int nodeIndex ) const;
     double Length( int from=-1, int to=-1) const;
     gp_XY Value2d( double x ) const;
+    const UVPtStruct& First() const { return GetUVPtStruct()[ from ]; }
+    const UVPtStruct& Last()  const {
+      return GetUVPtStruct()[ to-nbNodeOut-(IsReversed() ? -1 : +1)];
+    }
     // some sortcuts
     const vector<UVPtStruct>& GetUVPtStruct(bool isXConst=0, double constValue=0) const
     { return nbNodeOut ?
@@ -82,14 +87,35 @@ struct FaceQuadStruct
         grid->GetUVPtStruct( isXConst, constValue );
     }
   };
+  struct SideIterator // iterator on UVPtStruct of a Side
+  {
+    const UVPtStruct *uvPtr, *uvEnd;
+    int               dPtr, counter;
+    SideIterator(): uvPtr(0), uvEnd(0), dPtr(0), counter(0) {}
+    void Init( const Side& side ) {
+      dPtr  = counter = 0;
+      uvPtr = uvEnd = 0;
+      if ( side.NbPoints() > 0 ) {
+        uvPtr = & side.First();
+        uvEnd = & side.Last();
+        dPtr  = ( uvEnd > uvPtr ) ? +1 : -1;
+        uvEnd += dPtr;
+      }
+    }
+    bool More() const { return uvPtr != uvEnd; }
+    void Next() { uvPtr += dPtr; ++counter; }
+    UVPtStruct& UVPt() const { return (UVPtStruct&) *uvPtr; }
+    int  Count() const { return counter; }
+  };
 
   std::vector< Side >      side;
   std::vector< UVPtStruct> uv_grid;
   int                      iSize, jSize;
   TopoDS_Face              face;
   Bnd_B2d                  uv_box;
+  std::string              name; // to ease debugging
 
-  FaceQuadStruct ( const TopoDS_Face& F = TopoDS_Face() );
+  FaceQuadStruct ( const TopoDS_Face& F = TopoDS_Face(), const std::string& nm="main" );
   UVPtStruct& UVPt( int i, int j ) { return uv_grid[ i + j * iSize ]; }
   void  shift    ( size_t nb, bool keepUnitOri );
   int & nbNodeOut( int iSide ) { return side[ iSide ].nbNodeOut; }
