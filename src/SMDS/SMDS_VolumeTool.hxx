@@ -201,7 +201,8 @@ class SMDS_EXPORT SMDS_VolumeTool
   int GetCenterNodeIndex( int faceIndex ) const;
   // Return index of the node located at face center of a quadratic element like HEX27
 
-  int GetFaceIndex( const std::set<const SMDS_MeshNode*>& theFaceNodes ) const;
+  int GetFaceIndex( const std::set<const SMDS_MeshNode*>& theFaceNodes,
+                    const int                             theFaceIndexHint=-1) const;
   // Return index of a face formed by theFaceNodes.
   // Return -1 if a face not found
 
@@ -237,6 +238,9 @@ class SMDS_EXPORT SMDS_VolumeTool
 
   static int NbCornerNodes(VolumeType type);
   // Useful to know nb of corner nodes of a quadratic volume
+
+  static int GetOppFaceIndexOfHex( int faceIndex );
+  // Return index of the opposite face of the hexahedron
 
 private:
 

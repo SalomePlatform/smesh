@@ -132,8 +132,6 @@ static int Penta_nbN [] = { 3, 3, 4, 4, 4 };
 //        /  |       /  |
 //     N4+----------+N7 |
 //       |   |      |   |           HEXAHEDRON
-//       |   |      |   |
-//       |   |      |   |
 //       | N1+------|---+N2
 //       |  /       |  /
 //       | /        | /
@@ -155,6 +153,7 @@ static int Hexa_RE [6][5] = { // REVERSED -> EXTERNAL
   { 3, 7, 6, 2, 3 }, 
   { 0, 4, 7, 3, 0 }};
 static int Hexa_nbN [] = { 4, 4, 4, 4, 4, 4 };
+static int Hexa_oppF[] = { 1, 0, 4, 5, 2, 3 }; // oppopsite facet indices
 
 /*   
 //      N8 +------+ N9
@@ -279,7 +278,7 @@ static int QuadPyram_nbN [] = { 8, 6, 6, 6, 6 };
 */
 static int QuadPenta_F [5][9] = {  // FORWARD
   { 0, 6, 1, 7, 2, 8, 0, 0, 0 },
-  { 3,11, 5, 10,4, 9, 3, 3, 3 },
+  { 3, 11,5, 10,4, 9, 3, 3, 3 },
   { 0, 12,3, 9, 4, 13,1, 6, 0 },
   { 1, 13,4, 10,5, 14,2, 7, 1 },
   { 0, 8, 2, 14,5, 11,3, 12,0 }}; 
@@ -1147,17 +1146,22 @@ int SMDS_VolumeTool::GetOppFaceIndex( int faceIndex ) const
       break;
     case 20:
     case 27:
-      if ( faceIndex <= 1 ) // top or bottom
-        ind = 1 - faceIndex;
-      else {
-        const int nbSideFaces = myAllFacesNbNodes[0] / 2;
-        ind = ( faceIndex - nbHoriFaces + nbSideFaces/2 ) % nbSideFaces + nbHoriFaces;
-      }
+      ind = GetOppFaceIndexOfHex( faceIndex );
       break;
     default:;
     }
   }
   return ind;
+}
+
+//=======================================================================
+//function : GetOppFaceIndexOfHex
+//purpose  : Return index of the opposite face of the hexahedron
+//=======================================================================
+
+int SMDS_VolumeTool::GetOppFaceIndexOfHex( int faceIndex )
+{
+  return Hexa_oppF[ faceIndex ];
 }
 
 //=======================================================================
@@ -1660,16 +1664,38 @@ bool SMDS_VolumeTool::IsFreeFaceAdv( int faceIndex, const SMDS_MeshElement** oth
 //purpose  : Return index of a face formed by theFaceNodes
 //=======================================================================
 
-int SMDS_VolumeTool::GetFaceIndex( const set<const SMDS_MeshNode*>& theFaceNodes ) const
+int SMDS_VolumeTool::GetFaceIndex( const set<const SMDS_MeshNode*>& theFaceNodes,
+                                   const int                        theFaceIndexHint ) const
 {
+  if ( theFaceIndexHint >= 0 )
+  {
+    int nbNodes = NbFaceNodes( theFaceIndexHint );
+    if ( nbNodes == (int) theFaceNodes.size() )
+    {
+      const SMDS_MeshNode** nodes = GetFaceNodes( theFaceIndexHint );
+      while ( nbNodes )
+        if ( theFaceNodes.count( nodes[ nbNodes-1 ]))
+          --nbNodes;
+        else
+          break;
+      if ( nbNodes == 0 )
+        return theFaceIndexHint;
+    }
+  }
   for ( int iFace = 0; iFace < myNbFaces; iFace++ )
   {
-    const int nbNodes = NbFaceNodes( iFace );
+    if ( iFace == theFaceIndexHint )
+      continue;
+    int nbNodes = NbFaceNodes( iFace );
     if ( nbNodes == (int) theFaceNodes.size() )
     {
       const SMDS_MeshNode** nodes = GetFaceNodes( iFace );
-      set<const SMDS_MeshNode*> nodeSet( nodes, nodes + nbNodes);
-      if ( theFaceNodes == nodeSet )
+      while ( nbNodes )
+        if ( theFaceNodes.count( nodes[ nbNodes-1 ]))
+          --nbNodes;
+        else
+          break;
+      if ( nbNodes == 0 )
         return iFace;
     }
   }
