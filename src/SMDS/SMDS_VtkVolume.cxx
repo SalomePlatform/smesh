@@ -557,7 +557,6 @@ bool SMDS_VtkVolume::IsMediumNode(const SMDS_MeshNode* node) const
 int SMDS_VtkVolume::NbCornerNodes() const
 {
   vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
-  int            nbN = grid->GetCell(myVtkID)->GetNumberOfPoints();
   vtkIdType aVtkType = grid->GetCellType(myVtkID);
   switch (aVtkType)
   {
@@ -568,7 +567,7 @@ int SMDS_VtkVolume::NbCornerNodes() const
   case VTK_TRIQUADRATIC_HEXAHEDRON: return 8;
   default:;
   }
-  return nbN;
+  return grid->GetCell(myVtkID)->GetNumberOfPoints();
 }
 
 SMDSAbs_EntityType SMDS_VtkVolume::GetEntityType() const

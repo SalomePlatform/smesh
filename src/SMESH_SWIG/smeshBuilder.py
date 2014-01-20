@@ -73,7 +73,7 @@
 ##   @defgroup l2_modif_invdiag  Diagonal inversion of elements
 ##   @defgroup l2_modif_unitetri Uniting triangles
 ##   @defgroup l2_modif_changori Changing orientation of elements
-##   @defgroup l2_modif_cutquadr Cutting quadrangles
+##   @defgroup l2_modif_cutquadr Cutting elements
 ##   @defgroup l2_modif_smooth   Smoothing
 ##   @defgroup l2_modif_extrurev Extrusion and Revolution
 ##   @defgroup l2_modif_patterns Pattern mapping
@@ -307,7 +307,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
     [TopAbs_IN, TopAbs_OUT, TopAbs_ON, TopAbs_UNKNOWN] = range(4)
 
     # Methods of splitting a hexahedron into tetrahedra
-    Hex_5Tet, Hex_6Tet, Hex_24Tet = 1, 2, 3
+    Hex_5Tet, Hex_6Tet, Hex_24Tet, Hex_2Prisms, Hex_4Prisms = 1, 2, 3, 1, 2
 
     def __new__(cls):
         global engine
@@ -851,11 +851,15 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
 
     ## Creates a filter from criteria
     #  @param criteria a list of criteria
+    #  @param binOp binary operator used when binary operator of criteria is undefined
     #  @return SMESH_Filter
     #
     #  <a href="../tui_filters_page.html#tui_filters">Example of Filters usage</a>
     #  @ingroup l1_controls
-    def GetFilterFromCriteria(self,criteria):
+    def GetFilterFromCriteria(self,criteria, binOp=SMESH.FT_LogicalAND):
+        for i in range( len( criteria ) - 1 ):
+            if criteria[i].BinaryOp == self.EnumToLong( SMESH.FT_Undefined ):
+                criteria[i].BinaryOp = self.EnumToLong( binOp )
         aFilterMgr = self.CreateFilterManager()
         aFilter = aFilterMgr.CreateFilter()
         aFilter.SetCriteria(criteria)
@@ -2284,6 +2288,12 @@ class Mesh:
     def GetElementGeomType(self, id):
         return self.mesh.GetElementGeomType(id)
 
+    ## Returns the shape type of mesh element
+    #  @return the value from SMESH::GeometryType enumeration
+    #  @ingroup l1_meshinfo
+    def GetElementShape(self, id):
+        return self.mesh.GetElementShape(id)
+
     ## Returns the list of submesh elements IDs
     #  @param Shape a geom object(sub-shape) IOR
     #         Shape must be the sub-shape of a ShapeToMesh()
@@ -3026,18 +3036,54 @@ class Mesh:
         return self.editor.BestSplit(IDOfQuad, self.smeshpyD.GetFunctor(theCriterion))
 
     ## Splits volumic elements into tetrahedrons
-    #  @param elemIDs either list of elements or mesh or group or submesh
-    #  @param method  flags passing splitting method: Hex_5Tet, Hex_6Tet, Hex_24Tet
-    #         Hex_5Tet - split the hexahedron into 5 tetrahedrons, etc
+    #  @param elems either a list of elements or a mesh or a group or a submesh or a filter
+    #  @param method  flags passing splitting method:
+    #         smesh.Hex_5Tet, smesh.Hex_6Tet, smesh.Hex_24Tet.
+    #         smesh.Hex_5Tet - to split the hexahedron into 5 tetrahedrons, etc.
     #  @ingroup l2_modif_cutquadr
-    def SplitVolumesIntoTetra(self, elemIDs, method=smeshBuilder.Hex_5Tet ):
+    def SplitVolumesIntoTetra(self, elems, method=smeshBuilder.Hex_5Tet ):
         unRegister = genObjUnRegister()
-        if isinstance( elemIDs, Mesh ):
-            elemIDs = elemIDs.GetMesh()
-        if ( isinstance( elemIDs, list )):
-            elemIDs = self.editor.MakeIDSource(elemIDs, SMESH.VOLUME)
-            unRegister.set( elemIDs )
-        self.editor.SplitVolumesIntoTetra(elemIDs, method)
+        if isinstance( elems, Mesh ):
+            elems = elems.GetMesh()
+        if ( isinstance( elems, list )):
+            elems = self.editor.MakeIDSource(elems, SMESH.VOLUME)
+            unRegister.set( elems )
+        self.editor.SplitVolumesIntoTetra(elems, method)
+
+    ## Splits hexahedra into prisms
+    #  @param elems either a list of elements or a mesh or a group or a submesh or a filter
+    #  @param startHexPoint a point used to find a hexahedron for which @a facetNormal
+    #         gives a normal vector defining facets to split into triangles.
+    #         @a startHexPoint can be either a triple of coordinates or a vertex.
+    #  @param facetNormal a normal to a facet to split into triangles of a
+    #         hexahedron found by @a startHexPoint.
+    #         @a facetNormal can be either a triple of coordinates or an edge.
+    #  @param method  flags passing splitting method: smesh.Hex_2Prisms, smesh.Hex_4Prisms.
+    #         smesh.Hex_2Prisms - to split the hexahedron into 2 prisms, etc.
+    #  @param allDomains if @c False, only hexahedra adjacent to one closest
+    #         to @a startHexPoint are split, else @a startHexPoint
+    #         is used to find the facet to split in all domains present in @a elems.
+    #  @ingroup l2_modif_cutquadr
+    def SplitHexahedraIntoPrisms(self, elems, startHexPoint, facetNormal,
+                                 method=smeshBuilder.Hex_2Prisms, allDomains=False ):
+        # IDSource
+        unRegister = genObjUnRegister()
+        if isinstance( elems, Mesh ):
+            elems = elems.GetMesh()
+        if ( isinstance( elems, list )):
+            elems = self.editor.MakeIDSource(elems, SMESH.VOLUME)
+            unRegister.set( elems )
+            pass
+        # axis
+        if isinstance( startHexPoint, geomBuilder.GEOM._objref_GEOM_Object):
+            startHexPoint = self.geompyD.PointCoordinates( startHexPoint )
+        if isinstance( facetNormal, geomBuilder.GEOM._objref_GEOM_Object):
+            facetNormal = self.geompyD.VectorCoordinates( facetNormal )
+        axis = SMESH.AxisStruct( startHexPoint[0], startHexPoint[1], startHexPoint[2],
+                                 facetNormal[0],   facetNormal[1],   facetNormal[2])
+        self.mesh.SetParameters( axis.parameters )
+
+        self.editor.SplitHexahedraIntoPrisms(elems, method, axis, allDomains)
 
     ## Splits quadrangle faces near triangular facets of volumes
     #
@@ -3187,8 +3233,8 @@ class Mesh:
     #  Note that nodes built on edges and boundary nodes are always fixed.
     #  @param MaxNbOfIterations the maximum number of iterations
     #  @param MaxAspectRatio varies in range [1.0, inf]
-    #  @param Method is either Laplacian (SMESH.SMESH_MeshEditor.LAPLACIAN_SMOOTH)
-    #         or Centroidal (SMESH.SMESH_MeshEditor.CENTROIDAL_SMOOTH)
+    #  @param Method is either Laplacian (smesh.LAPLACIAN_SMOOTH)
+    #         or Centroidal (smesh.CENTROIDAL_SMOOTH)
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_smooth
     def Smooth(self, IDsOfElements, IDsOfFixedNodes,
@@ -3206,8 +3252,8 @@ class Mesh:
     #  Note that nodes built on edges and boundary nodes are always fixed.
     #  @param MaxNbOfIterations the maximum number of iterations
     #  @param MaxAspectRatio varies in range [1.0, inf]
-    #  @param Method is either Laplacian (SMESH.SMESH_MeshEditor.LAPLACIAN_SMOOTH)
-    #         or Centroidal (SMESH.SMESH_MeshEditor.CENTROIDAL_SMOOTH)
+    #  @param Method is either Laplacian (smesh.LAPLACIAN_SMOOTH)
+    #         or Centroidal (smesh.CENTROIDAL_SMOOTH)
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_smooth
     def SmoothObject(self, theObject, IDsOfFixedNodes,
@@ -3223,8 +3269,8 @@ class Mesh:
     #  Note that nodes built on edges and boundary nodes are always fixed.
     #  @param MaxNbOfIterations the maximum number of iterations
     #  @param MaxAspectRatio varies in range [1.0, inf]
-    #  @param Method is either Laplacian (SMESH.SMESH_MeshEditor.LAPLACIAN_SMOOTH)
-    #         or Centroidal (SMESH.SMESH_MeshEditor.CENTROIDAL_SMOOTH)
+    #  @param Method is either Laplacian (smesh.LAPLACIAN_SMOOTH)
+    #         or Centroidal (smesh.CENTROIDAL_SMOOTH)
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_smooth
     def SmoothParametric(self, IDsOfElements, IDsOfFixedNodes,
@@ -3242,8 +3288,8 @@ class Mesh:
     #  Note that nodes built on edges and boundary nodes are always fixed.
     #  @param MaxNbOfIterations the maximum number of iterations
     #  @param MaxAspectRatio varies in range [1.0, inf]
-    #  @param Method is either Laplacian (SMESH.SMESH_MeshEditor.LAPLACIAN_SMOOTH)
-    #         or Centroidal (SMESH.SMESH_MeshEditor.CENTROIDAL_SMOOTH)
+    #  @param Method is either Laplacian (smesh.LAPLACIAN_SMOOTH)
+    #         or Centroidal (smesh.CENTROIDAL_SMOOTH)
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_smooth
     def SmoothParametricObject(self, theObject, IDsOfFixedNodes,

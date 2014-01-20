@@ -36,9 +36,12 @@
 #include "SMESHGUI_SpinBox.h"
 #include "SMESHGUI_MeshEditPreview.h"
 
-#include <SMESH_Actor.h>
-#include <SMESH_TypeFilter.hxx>
-#include <SMDS_Mesh.hxx>
+#include "SMDS_Mesh.hxx"
+#include "SMDS_MeshNode.hxx"
+#include "SMDS_VolumeTool.hxx"
+#include "SMESH_Actor.h"
+#include "SMESH_MeshAlgos.hxx"
+#include "SMESH_TypeFilter.hxx"
 
 // SALOME GUI includes
 #include <SUIT_Desktop.h>
@@ -58,9 +61,11 @@
 #include <VTKViewer_CellLocationsArray.h>
 
 // OCCT includes
-#include <TColStd_IndexedMapOfInteger.hxx>
+#include <Bnd_B3d.hxx>
 #include <TColStd_DataMapOfIntegerInteger.hxx>
+#include <TColStd_IndexedMapOfInteger.hxx>
 #include <TColStd_MapIteratorOfMapOfInteger.hxx>
+#include <gp_Ax1.hxx>
 
 // VTK includes
 #include <vtkIdList.h>
@@ -103,9 +108,10 @@
 // Purpose : Constructor
 //=======================================================================
 SMESHGUI_MultiEditDlg
-::SMESHGUI_MultiEditDlg(SMESHGUI* theModule,
-                        const int theMode,
-                        const bool the3d2d):
+::SMESHGUI_MultiEditDlg(SMESHGUI*  theModule,
+                        const int  theMode,
+                        const bool the3d2d,
+                        bool       theDoInit):
   SMESHGUI_PreviewDlg(theModule),
   mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
   mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
@@ -128,7 +134,8 @@ SMESHGUI_MultiEditDlg
   aDlgLay->addWidget(aMainFrame);
   aDlgLay->addWidget(aBtnFrame);
 
-  Init();
+  if ( theDoInit )
+    Init();
 }
 
 //=======================================================================
@@ -161,6 +168,7 @@ QWidget* SMESHGUI_MultiEditDlg::createMainFrame (QWidget* theParent, const bool 
 
     QRadioButton* aFaceRb = new QRadioButton(tr("SMESH_FACE"), aEntityTypeGrp);
     QRadioButton* aVolumeRb = new QRadioButton(tr("SMESH_VOLUME"), aEntityTypeGrp);
+
 
     aEntityLayout->addWidget(aFaceRb);
     aEntityLayout->addWidget(aVolumeRb);
@@ -226,9 +234,6 @@ QWidget* SMESHGUI_MultiEditDlg::createMainFrame (QWidget* theParent, const bool 
   myComboBoxFunctor->addItem(tr("ASPECTRATIO_ELEMENTS"));
   myComboBoxFunctor->addItem(tr("MINIMUMANGLE_ELEMENTS"));
   myComboBoxFunctor->addItem(tr("SKEW_ELEMENTS"));
-  //myComboBoxFunctor->addItem(tr("AREA_ELEMENTS"));
-  //myComboBoxFunctor->addItem(tr("LENGTH2D_EDGES")); // for existing elements only
-  //myComboBoxFunctor->addItem(tr("MULTI2D_BORDERS")); // for existing elements only
   myComboBoxFunctor->setCurrentIndex(0);
 
   aCriterionLayout->addWidget(myChoiceWidget);
@@ -305,7 +310,7 @@ QWidget* SMESHGUI_MultiEditDlg::createButtonFrame (QWidget* theParent)
 bool SMESHGUI_MultiEditDlg::isValid (const bool /*theMess*/)
 {
   return (!myMesh->_is_nil() &&
-          (myListBox->count() > 0 || (myToAllChk->isChecked()/* && myActor*/)));
+          (myListBox->count() > 0 || (myToAllChk->isChecked() && nbElemsInMesh() > 0)));
 }
 
 //=======================================================================
@@ -1071,6 +1076,11 @@ bool SMESHGUI_ChangeOrientationDlg::process (SMESH::SMESH_MeshEditor_ptr theEdit
     return theEditor->ReorientObject( obj );
 }
 
+int SMESHGUI_ChangeOrientationDlg::nbElemsInMesh()
+{
+  return ( myFilterType = SMESH::FaceFilter ) ? myMesh->NbFaces() : myMesh->NbVolumes();
+}
+
 /*!
  *  Class       : SMESHGUI_UnionOfTrianglesDlg
  *  Description : Construction of quadrangles by automatic association of triangles
@@ -1163,39 +1173,44 @@ bool SMESHGUI_UnionOfTrianglesDlg::process (SMESH::SMESH_MeshEditor_ptr theEdito
     ok = theEditor->TriToQuadObject(obj, aCriterion, aMaxAngle);
   return ok;
 }
+
+int SMESHGUI_UnionOfTrianglesDlg::nbElemsInMesh()
+{
+  return myMesh->NbTriangles();
+}
   
 void SMESHGUI_UnionOfTrianglesDlg::onDisplaySimulation( bool toDisplayPreview )
 {
   if ( myPreviewCheckBox->isChecked() && toDisplayPreview ) {
     if ( isValid( true ) ) {
       try{
-	SUIT_OverrideCursor aWaitCursor;
-	// get Ids of elements
-	SMESH::SMESH_IDSource_var obj;
-	SMESH::long_array_var anElemIds = getIds( obj );
+        SUIT_OverrideCursor aWaitCursor;
+        // get Ids of elements
+        SMESH::SMESH_IDSource_var obj;
+        SMESH::long_array_var anElemIds = getIds( obj );
 
-	SMESH::NumericalFunctor_var aCriterion  = getNumericalFunctor();
-	SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
+        SMESH::NumericalFunctor_var aCriterion  = getNumericalFunctor();
+        SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
 
-	double aMaxAngle = myMaxAngleSpin->GetValue() * M_PI / 180.0;
+        double aMaxAngle = myMaxAngleSpin->GetValue() * M_PI / 180.0;
       
-	if ( CORBA::is_nil( obj ) )
-	  aMeshEditor->TriToQuad( anElemIds.inout(), aCriterion, aMaxAngle );
-	else
-	  aMeshEditor->TriToQuadObject( obj, aCriterion, aMaxAngle );
+        if ( CORBA::is_nil( obj ) )
+          aMeshEditor->TriToQuad( anElemIds.inout(), aCriterion, aMaxAngle );
+        else
+          aMeshEditor->TriToQuadObject( obj, aCriterion, aMaxAngle );
       
-	SMESH::MeshPreviewStruct_var aMeshPreviewStruct = aMeshEditor->GetPreviewData();
+        SMESH::MeshPreviewStruct_var aMeshPreviewStruct = aMeshEditor->GetPreviewData();
 
-	vtkProperty* aProp = vtkProperty::New();
-	aProp->SetRepresentationToWireframe();
-	aProp->SetColor( 250, 0, 250 );
-	aProp->SetLineWidth( SMESH::GetFloat( "SMESH:element_width", 1 ) + 3 );
-	mySimulation->GetActor()->SetProperty( aProp );
-	aProp->Delete();
+        vtkProperty* aProp = vtkProperty::New();
+        aProp->SetRepresentationToWireframe();
+        aProp->SetColor( 250, 0, 250 );
+        aProp->SetLineWidth( SMESH::GetFloat( "SMESH:element_width", 1 ) + 3 );
+        mySimulation->GetActor()->SetProperty( aProp );
+        aProp->Delete();
 
-	mySimulation->SetData( aMeshPreviewStruct._retn() );
+        mySimulation->SetData( aMeshPreviewStruct._retn() );
       } catch ( ... ) {
-	hidePreview();
+        hidePreview();
       }
     } else {
       hidePreview();
@@ -1278,6 +1293,12 @@ bool SMESHGUI_CuttingOfQuadsDlg::process (SMESH::SMESH_MeshEditor_ptr theEditor,
   SMESH::NumericalFunctor_var aCrit = getNumericalFunctor();
   return hasObj ? theEditor->QuadToTriObject(obj, aCrit) : theEditor->QuadToTri(theIds, aCrit);
 }
+
+int SMESHGUI_CuttingOfQuadsDlg::nbElemsInMesh()
+{
+  return myMesh->NbQuadrangles();
+}
+
 
 void SMESHGUI_CuttingOfQuadsDlg::onCriterionRB()
 {
@@ -1488,51 +1509,147 @@ void SMESHGUI_CuttingOfQuadsDlg::displayPreview()
 }
 
 /*!
- *  Class       : SMESHGUI_CuttingIntoTetraDlg
- *  Description : Modification of orientation of faces
+ *  Class       : SMESHGUI_SplitVolumesDlg
+ *  Description : Spliter of volumes into tetrahedra or prisms
  */
 
-SMESHGUI_CuttingIntoTetraDlg::SMESHGUI_CuttingIntoTetraDlg(SMESHGUI* theModule)
-  : SMESHGUI_MultiEditDlg(theModule, SMESH::VolumeFilter, false)
+SMESHGUI_SplitVolumesDlg::SMESHGUI_SplitVolumesDlg(SMESHGUI* theModule)
+  : SMESHGUI_MultiEditDlg(theModule, SMESH::VolumeFilter, /*the3d2d=*/true, /*doInit=*/false)
 {
   setWindowTitle(tr("CAPTION"));
   myHelpFileName = "split_to_tetra_page.html";
   myEntityType = 1;
+  myCellSize = -1.;
+
+  // Facet selection group
+
+  myFacetSelGrp = new QGroupBox(tr("FACET_TO_SPLIT"), myCriterionGrp->parentWidget());
+  QGridLayout* facetSelLayout = new QGridLayout( myFacetSelGrp );
+  facetSelLayout->setMargin(MARGIN);
+  facetSelLayout->setSpacing(SPACING);
+
+  QLabel* pointLbl = new QLabel( tr("START_POINT"), myFacetSelGrp);
+  QLabel* normalLbl = new QLabel( tr("FACET_NORMAL"), myFacetSelGrp);
+  myFacetSelBtn = new QPushButton( mySubmeshBtn->icon(), "", myFacetSelGrp );
+  myFacetSelBtn->setCheckable( true );
+  QLabel* XLbl = new QLabel( tr("SMESH_X"), myFacetSelGrp);
+  QLabel* YLbl = new QLabel( tr("SMESH_Y"), myFacetSelGrp);
+  QLabel* ZLbl = new QLabel( tr("SMESH_Z"), myFacetSelGrp);
+  QLabel* dXLbl = new QLabel( tr("SMESH_DX"), myFacetSelGrp);
+  QLabel* dYLbl = new QLabel( tr("SMESH_DY"), myFacetSelGrp);
+  QLabel* dZLbl = new QLabel( tr("SMESH_DZ"), myFacetSelGrp);
+  QPushButton* axisBtn[3];
+  for ( int i = 0; i < 3; ++i )
+  {
+    myPointSpin[i] = new SMESHGUI_SpinBox( myFacetSelGrp );
+    myDirSpin  [i] = new SMESHGUI_SpinBox( myFacetSelGrp );
+    myPointSpin[i]->RangeStepAndValidator( -1e10, 1e10, 10 );
+    myDirSpin  [i]->RangeStepAndValidator( -1., 1., 0.1 );
+    myPointSpin[i]->SetValue(0.);
+    myDirSpin  [i]->SetValue(0.);
+    myAxisBtn  [i] = new QPushButton( QString("|| O") + char('X'+i ), myFacetSelGrp);
+  }
+  myDirSpin[2]->SetValue(1.);
+
+  myAllDomainsChk = new QCheckBox( tr("ALL_DOMAINS"), mySelGrp );
+
+  facetSelLayout->addWidget( pointLbl,      0, 0 );
+  facetSelLayout->addWidget( myFacetSelBtn, 0, 1 );
+  facetSelLayout->addWidget( XLbl,          0, 2 );
+  facetSelLayout->addWidget( myPointSpin[0],0, 3 );
+  facetSelLayout->addWidget( YLbl,          0, 4 );
+  facetSelLayout->addWidget( myPointSpin[1],0, 5 );
+  facetSelLayout->addWidget( ZLbl,          0, 6 );
+  facetSelLayout->addWidget( myPointSpin[2],0, 7 );
+
+  facetSelLayout->addWidget( normalLbl,     1, 0 );
+  facetSelLayout->addWidget( dXLbl,         1, 2 );
+  facetSelLayout->addWidget( myDirSpin[0],  1, 3 );
+  facetSelLayout->addWidget( dYLbl,         1, 4 );
+  facetSelLayout->addWidget( myDirSpin[1],  1, 5 );
+  facetSelLayout->addWidget( dZLbl,         1, 6 );
+  facetSelLayout->addWidget( myDirSpin[2],  1, 7 );
+
+  facetSelLayout->addWidget( myAxisBtn[0],  2, 2, 1, 2 );
+  facetSelLayout->addWidget( myAxisBtn[1],  2, 4, 1, 2 );
+  facetSelLayout->addWidget( myAxisBtn[2],  2, 6, 1, 2 );
+
+  myCriterionGrp->layout()->addWidget( myFacetSelGrp );
+  myCriterionGrp->layout()->addWidget( myAllDomainsChk );
+  //myChoiceWidget->layout()->addWidget( myAllDomainsChk );
+
+  connect( myFacetSelBtn,    SIGNAL(clicked(bool)), SLOT(onFacetSelection(bool)) );
+  for ( int i = 0; i < 3; ++i )
+  {
+    connect( myAxisBtn  [i], SIGNAL(clicked()),     SLOT(onSetDir()) );
+    connect( myPointSpin[i], SIGNAL(valueChanged       (const QString&)),
+             this,           SLOT  (updateNormalPreview(const QString&)) );
+    connect( myDirSpin  [i], SIGNAL(valueChanged       (const QString&)),
+             this,           SLOT  (updateNormalPreview(const QString&)) );
+  }
+  if ( myEntityTypeGrp )
+  {
+    myEntityTypeGrp->button(0)->setText( tr("SMESH_TETRAS"));
+    myEntityTypeGrp->button(1)->setText( tr("SMESH_PRISM"));
+    if ( QGroupBox* gb = qobject_cast< QGroupBox* >( myEntityTypeGrp->button(0)->parent() ))
+      gb->setTitle( tr("TARGET_ELEM_TYPE"));
+  }
 
   myToAllChk->setChecked( true ); //aplly to the whole mesh by default
 
   bool hasHexa = true;//myMesh->_is_nil() ? false : myMesh->NbHexas();
-
   if ( hasHexa )
   {
-    myGroupChoice->button(0)->setText( tr("SPLIT_HEX_TO_5_TETRA"));
-    myGroupChoice->button(1)->setText( tr("SPLIT_HEX_TO_6_TETRA"));
-    myGroupChoice->button(2)->setText( tr("SPLIT_HEX_TO_24_TETRA"));
-
     myCriterionGrp->setTitle( tr("SPLIT_METHOD"));
     myCriterionGrp->show();
     myComboBoxFunctor->hide();
     myChoiceWidget->show();
   }
-  setSelectionMode();
-  updateButtons();
+
+  on3d2dChanged( 0 );
+  Init();
 }
 
-SMESHGUI_CuttingIntoTetraDlg::~SMESHGUI_CuttingIntoTetraDlg()
+SMESHGUI_SplitVolumesDlg::~SMESHGUI_SplitVolumesDlg()
 {
 }
 
-bool SMESHGUI_CuttingIntoTetraDlg::process (SMESH::SMESH_MeshEditor_ptr theEditor,
-                                            const SMESH::long_array&    theIds,
-                                            SMESH::SMESH_IDSource_ptr   theObj)
+bool SMESHGUI_SplitVolumesDlg::process (SMESH::SMESH_MeshEditor_ptr theEditor,
+                                        const SMESH::long_array&    theIds,
+                                        SMESH::SMESH_IDSource_ptr   theObj)
 {
   SMESH::SMESH_IDSource_wrap obj = theObj;
   if ( CORBA::is_nil( obj ))
-    obj = theEditor->MakeIDSource( theIds, myEntityType ? SMESH::VOLUME : SMESH::FACE );
+    obj = theEditor->MakeIDSource( theIds, SMESH::VOLUME );
   else
     obj->Register();
   try {
-    theEditor->SplitVolumesIntoTetra( obj, myGroupChoice->checkedId()+1 );
+    if ( isIntoPrisms() )
+    {
+      QStringList aParameters;
+      aParameters << myPointSpin[0]->text();
+      aParameters << myPointSpin[1]->text();
+      aParameters << myPointSpin[2]->text();
+      aParameters << myDirSpin[0]->text();
+      aParameters << myDirSpin[1]->text();
+      aParameters << myDirSpin[2]->text();
+      myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+
+      SMESH::AxisStruct_var axis = new SMESH::AxisStruct;
+      axis->x  = myPointSpin[0]->GetValue();
+      axis->y  = myPointSpin[1]->GetValue();
+      axis->z  = myPointSpin[2]->GetValue();
+      axis->vx = myDirSpin[0]->GetValue();
+      axis->vy = myDirSpin[1]->GetValue();
+      axis->vz = myDirSpin[2]->GetValue();
+
+      theEditor->SplitHexahedraIntoPrisms( obj,  myGroupChoice->checkedId()+1,
+                                           axis, myAllDomainsChk->isChecked() );
+    }
+    else
+    {
+      theEditor->SplitVolumesIntoTetra( obj, myGroupChoice->checkedId()+1 );
+    }
   }
   catch ( const SALOME::SALOME_Exception& S_ex ) {
     SalomeApp_Tools::QtCatchCorbaException( S_ex );
@@ -1542,4 +1659,309 @@ bool SMESHGUI_CuttingIntoTetraDlg::process (SMESH::SMESH_MeshEditor_ptr theEdito
     return false;
   }
   return true;
+}
+
+int SMESHGUI_SplitVolumesDlg::nbElemsInMesh()
+{
+  return isIntoPrisms() ? myMesh->NbHexas() : myMesh->NbVolumes() - myMesh->NbTetras();
+}
+
+bool SMESHGUI_SplitVolumesDlg::isIntoPrisms()
+{
+  return ( myEntityTypeGrp->checkedId() == 1 );
+}
+
+//================================================================================
+/*!
+ * \brief Slot called when a target element type changes
+ */
+//================================================================================
+
+void SMESHGUI_SplitVolumesDlg::on3d2dChanged(int isPrism)
+{
+  if ( isPrism )
+  {
+    myFacetSelGrp->show();
+    myAllDomainsChk->show();
+    myGroupChoice->button(2)->hide();
+    myGroupChoice->button(0)->setText( tr("SPLIT_HEX_TO_2_PRISMS"));
+    myGroupChoice->button(1)->setText( tr("SPLIT_HEX_TO_4_PRISMS"));
+  }
+  else
+  {
+    myFacetSelGrp->hide();
+    myAllDomainsChk->hide();
+    myGroupChoice->button(2)->show();
+    myGroupChoice->button(0)->setText( tr("SPLIT_HEX_TO_5_TETRA"));
+    myGroupChoice->button(1)->setText( tr("SPLIT_HEX_TO_6_TETRA"));
+    myGroupChoice->button(2)->setText( tr("SPLIT_HEX_TO_24_TETRA"));
+  }
+  SMESHGUI_MultiEditDlg::on3d2dChanged( !myEntityType );
+  myEntityType = 1; // == VOLUME
+}
+
+//================================================================================
+/*!
+ * \brief Set selection mode
+ */
+//================================================================================
+
+void SMESHGUI_SplitVolumesDlg::setSelectionMode()
+{
+  if ( myBusy || !isEnabled() ) return;
+
+  SMESH::RemoveFilters();
+
+  mySelectionMgr->clearFilters();
+
+  if (mySubmeshChk->isChecked()) {
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(ActorSelection);
+    mySelectionMgr->installFilter(new SMESH_TypeFilter(SMESH::SUBMESH));
+    myFacetSelBtn->setChecked( false );
+  }
+  else if (myGroupChk->isChecked()) {
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(ActorSelection);
+    mySelectionMgr->installFilter(new SMESH_TypeFilter(SMESH::GROUP));
+    myFacetSelBtn->setChecked( false );
+  }
+
+  if ( myFacetSelBtn->isChecked() )
+  {
+    // facet selection - select any element
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode( CellSelection );
+    myFilterType = SMESH::AllElementsFilter;
+  }
+  else
+  {
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode( VolumeSelection );
+    if ( isIntoPrisms() )
+    {
+      SMESH::SetFilter(new SMESHGUI_VolumeShapeFilter( SMDSGeom_HEXA ));
+      myFilterType = SMESHGUI_VolumeShapeFilter::GetId( SMDSGeom_HEXA );
+    }
+    else // to tetrahedra
+    {
+      SMESH::SetFilter(new SMESHGUI_VolumesFilter());
+      myFilterType = SMESH::VolumeFilter;
+    }
+  }
+}
+
+//================================================================================
+/*!
+ * \brief SLOT called when selection changed
+ */
+//================================================================================
+
+void SMESHGUI_SplitVolumesDlg::onSelectionDone()
+{
+  if (myBusy || !isEnabled()) return;
+
+  if ( !myFacetSelBtn->isChecked() )
+  {
+    SMESHGUI_MultiEditDlg::onSelectionDone();
+  }
+  else // set point and normal by a selected element
+  {
+    const SALOME_ListIO& aList = mySelector->StoredIObjects();
+    int nbSel = aList.Extent();
+    if (nbSel > 0)
+    {
+      Handle(SALOME_InteractiveObject) anIO = aList.First();
+
+      myActor = SMESH::FindActorByEntry( anIO->getEntry() );
+
+      SMESH::SMESH_Mesh_var aSelMesh = SMESH::GetMeshByIO(anIO);
+      if (!aSelMesh->_is_nil())
+        myMesh = aSelMesh;
+
+      TColStd_IndexedMapOfInteger aMapIndex;
+      mySelector->GetIndex( anIO, aMapIndex );
+      if ( !aMapIndex.IsEmpty() )
+        showFacetByElement( aMapIndex(1) );
+      else if ( myCellSize < 0 )
+        showFacetByElement( 1 );
+    }
+    updateButtons();
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Show facet normal by a selected element
+ */
+//================================================================================
+
+void SMESHGUI_SplitVolumesDlg::showFacetByElement( int elemID )
+{
+  if ( !isIntoPrisms() || !myActor )
+  {
+    mySimulation->SetVisibility( false );
+    return;
+  }
+  SMDS_Mesh*              mesh = myActor->GetObject()->GetMesh();
+  const SMDS_MeshElement* elem = mesh->FindElement( elemID );
+  if ( !elem ) return;
+
+  // set point XYZ by the element barycenter
+  gp_XYZ bc( 0,0,0 );
+  Bnd_B3d bbox;
+  SMDS_NodeIteratorPtr nIt = elem->nodeIterator();
+  vector< const SMDS_MeshNode* > nodes;
+  nodes.reserve( elem->NbNodes() );
+  while ( nIt->more() )
+  {
+    nodes.push_back( nIt->next() );
+    gp_XYZ p = SMESH_TNodeXYZ( nodes.back() );
+    bc += p;
+    bbox.Add( p );
+  }
+  bc /= nodes.size();
+
+  myPointSpin[0]->SetValue( bc.X() );
+  myPointSpin[1]->SetValue( bc.Y() );
+  myPointSpin[2]->SetValue( bc.Z() );
+
+  // set size
+  myCellSize = sqrt( bbox.SquareExtent() );
+
+  // set normal and size
+  gp_XYZ norm;
+  switch ( elem->GetType())
+  {
+  case SMDSAbs_Edge:
+  {
+    norm = SMESH_TNodeXYZ( nodes[1] ) - SMESH_TNodeXYZ( nodes[0] );
+    break;
+  }
+  case SMDSAbs_Face:
+  {
+    if ( !SMESH_MeshAlgos::FaceNormal( elem, norm, /*normalized=*/false ))
+      return;
+    break;
+  }
+  case SMDSAbs_Volume:
+  {
+    SMDS_VolumeTool vTool( elem );
+    vTool.SetExternalNormal();
+    bool freeFacetFound = false;
+    double n[3];
+    for ( int i = 0; i < vTool.NbFaces() && !freeFacetFound; ++i )
+      if (( freeFacetFound = vTool.IsFreeFace( i )))
+        vTool.GetFaceNormal( i, n[0], n[1], n[2] );
+    if ( !freeFacetFound )
+      vTool.GetFaceNormal( 0, n[0], n[1], n[2] );
+    norm.SetCoord( n[0], n[1], n[2] );
+    break;
+  }
+  default: return;
+  }
+
+  double size = norm.Modulus();
+  if ( size < 1e-20 )
+    return;
+  norm /= size;
+
+  myDirSpin[0]->SetValue( norm.X() );
+  myDirSpin[1]->SetValue( norm.Y() );
+  myDirSpin[2]->SetValue( norm.Z() );
+
+  if ( myCellSize > 0. )
+    updateNormalPreview();
+}
+
+//================================================================================
+/*!
+ * \brief SLOT called when a point or a normal changes
+ */
+//================================================================================
+
+void SMESHGUI_SplitVolumesDlg::updateNormalPreview(const QString&)
+{
+  if ( myCellSize < 0. )
+  {
+    showFacetByElement( 1 );
+    return;
+  }
+
+  gp_Pnt point ( myPointSpin[0]->GetValue(),
+                 myPointSpin[1]->GetValue(),
+                 myPointSpin[2]->GetValue() );
+  gp_XYZ norm  ( myDirSpin[0]->GetValue(),
+                 myDirSpin[1]->GetValue(),
+                 myDirSpin[2]->GetValue() );
+  if ( norm.Modulus() < 1e-20 )
+    return;
+
+  vtkUnstructuredGrid* grid = mySimulation->GetGrid();
+
+  // Initialize the preview mesh of an arrow
+  if ( grid->GetNumberOfPoints() == 0 )
+  {
+    mySimulation->SetArrowShapeAndNb( /*nb=*/1, /*hLen=*/0.3, /*R=*/0.1, /*start=*/0 );
+  }
+
+  // Compute new coordinates of the grid according to the dialog controls
+
+  gp_Ax1 axis( point, norm );
+  mySimulation->SetArrows( &axis, 4 * myCellSize );
+  mySimulation->SetVisibility(true);
+}
+
+//================================================================================
+/*!
+ * \brief Slot called when facet selection button is clicked
+ */
+//================================================================================
+
+void SMESHGUI_SplitVolumesDlg::onFacetSelection(bool isFacetSelection)
+{
+  setSelectionMode();
+  onSelectionDone();
+  mySelGrp->setEnabled( !isFacetSelection );
+}
+
+//================================================================================
+/*!
+ * \brief Slot called when an || axis button is clicked
+ */
+//================================================================================
+
+void SMESHGUI_SplitVolumesDlg::onSetDir()
+{
+  myDirSpin[0]->SetValue(0.);
+  myDirSpin[1]->SetValue(0.);
+  myDirSpin[2]->SetValue(0.);
+  int i = 0;
+  for ( ; i < 3; ++i )
+    if ( sender() == myAxisBtn[i] )
+      break;
+  if ( i == 3 )
+    i == 0;
+  myDirSpin[i]->SetValue(1.);
+
+  if ( myActor && !myMesh->_is_nil() && myMesh->NbNodes() > 0 )
+  {
+    double b[6];
+    myActor->GetUnstructuredGrid()->GetBounds(b);
+    gp_XYZ center( 0.5 * ( b[0] + b[1] ),
+                   0.5 * ( b[2] + b[3] ),
+                   0.5 * ( b[4] + b[5] ));
+    gp_XYZ point ( myPointSpin[0]->GetValue(),
+                   myPointSpin[1]->GetValue(),
+                   myPointSpin[2]->GetValue() );
+    gp_XYZ norm  ( myDirSpin[0]->GetValue(),
+                   myDirSpin[1]->GetValue(),
+                   myDirSpin[2]->GetValue() );
+
+    gp_Vec cp( center, point );
+    if ( cp.Dot( norm ) < 0. )
+      myDirSpin[i]->SetValue(-1.);
+  }
+
+  updateNormalPreview();
 }

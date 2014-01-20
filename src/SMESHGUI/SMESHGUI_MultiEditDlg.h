@@ -70,7 +70,10 @@ class SMESHGUI_EXPORT SMESHGUI_MultiEditDlg : public SMESHGUI_PreviewDlg
   Q_OBJECT
 
 public:
-  SMESHGUI_MultiEditDlg( SMESHGUI*, const int, const bool = false );
+  SMESHGUI_MultiEditDlg( SMESHGUI*  theModule,
+                         const int  theMode,
+                         const bool the3d2d = false,
+                         bool       theDoInit = true );
   virtual ~SMESHGUI_MultiEditDlg();
 
   void                      Init();
@@ -87,7 +90,7 @@ protected slots:
   void                      onHelp();
 
   void                      onDeactivate();
-  void                      onSelectionDone();
+  virtual void              onSelectionDone();
 
   void                      onFilterBtn();
   void                      onAddBtn();
@@ -98,7 +101,7 @@ protected slots:
   void                      onGroupChk();
   virtual void              onToAllChk();
   void                      onFilterAccepted();
-  void                      on3d2dChanged(int);
+  virtual void              on3d2dChanged(int);
 
   SMESH::NumericalFunctor_ptr getNumericalFunctor();
 
@@ -110,11 +113,12 @@ protected:
   virtual bool              isValid( const bool );
   SMESH::long_array_var     getIds(SMESH::SMESH_IDSource_var& obj);
   void                      updateButtons();
-  void                      setSelectionMode();
+  virtual void              setSelectionMode();
   virtual bool              isIdValid( const int ) const;
   virtual bool              process( SMESH::SMESH_MeshEditor_ptr, 
                                      const SMESH::long_array& ,
                                      SMESH::SMESH_IDSource_ptr obj) = 0;
+  virtual int               nbElemsInMesh() = 0;
   int                       entityType();
 
 protected:
@@ -178,6 +182,7 @@ protected:
   virtual bool process( SMESH::SMESH_MeshEditor_ptr,
                         const SMESH::long_array& ,
                         SMESH::SMESH_IDSource_ptr obj);
+  virtual int  nbElemsInMesh();
 };
 
 /*!
@@ -197,6 +202,7 @@ protected:
   virtual bool      process( SMESH::SMESH_MeshEditor_ptr,
                              const SMESH::long_array&,
                              SMESH::SMESH_IDSource_ptr obj );
+  virtual int       nbElemsInMesh();
 
 protected slots:
    virtual void     onDisplaySimulation( bool );
@@ -221,6 +227,7 @@ protected:
   virtual bool  process( SMESH::SMESH_MeshEditor_ptr,
                          const SMESH::long_array& ,
                          SMESH::SMESH_IDSource_ptr obj);
+  virtual int   nbElemsInMesh();
 
 protected slots:
   virtual void  reject();
@@ -237,21 +244,45 @@ private:
 };
 
 /*!
- * Class       : SMESHGUI_CuttingIntoTetraDlg
+ * Class       : SMESHGUI_SplitVolumesDlg
  * Description : Split all volumes into tetrahedrons
  */
-class  SMESHGUI_CuttingIntoTetraDlg : public SMESHGUI_MultiEditDlg
+class  SMESHGUI_SplitVolumesDlg : public SMESHGUI_MultiEditDlg
 {
   Q_OBJECT
 
 public:
-  SMESHGUI_CuttingIntoTetraDlg( SMESHGUI* );
-  virtual ~SMESHGUI_CuttingIntoTetraDlg();
+  SMESHGUI_SplitVolumesDlg( SMESHGUI* );
+  virtual ~SMESHGUI_SplitVolumesDlg();
+
+protected slots:
+
+  virtual void on3d2dChanged(int);
+  virtual void onSelectionDone();
+
+  void         onFacetSelection(bool);
+  void         onSetDir();
+  void         updateNormalPreview(const QString& s="");
 
 protected:
+
   virtual bool process( SMESH::SMESH_MeshEditor_ptr,
                         const SMESH::long_array&,
                         SMESH::SMESH_IDSource_ptr obj );
+  virtual int  nbElemsInMesh();
+
+  virtual void setSelectionMode();
+  void         showFacetByElement( int id );
+  bool         isIntoPrisms();
+
+  QGroupBox*        myFacetSelGrp;
+  SMESHGUI_SpinBox* myPointSpin[3];
+  SMESHGUI_SpinBox* myDirSpin  [3];
+  QPushButton*      myFacetSelBtn;
+  QPushButton*      myAxisBtn[3];
+  QCheckBox*        myAllDomainsChk;
+
+  double            myCellSize;
 };
 
 #endif // SMESHGUI_MULTIEDITDLG_H

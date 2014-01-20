@@ -1999,17 +1999,79 @@ void SMESH_MeshEditor_i::SplitVolumesIntoTetra (SMESH::SMESH_IDSource_ptr elems,
 {
   SMESH_TRY;
   initData();
-
   prepareIdSource( elems );
-  SMESH::long_array_var anElementsId = elems->GetIDs();
-  TIDSortedElemSet elemSet;
-  arrayToSet( anElementsId, getMeshDS(), elemSet, SMDSAbs_Volume );
 
-  getEditor().SplitVolumesIntoTetra( elemSet, int( methodFlags ));
+  ::SMESH_MeshEditor::TFacetOfElem elemSet;
+  const int noneFacet = -1;
+  SMDS_ElemIteratorPtr volIt = myMesh_i->GetElements( elems, SMESH::VOLUME );
+  while( volIt->more() )
+    elemSet.insert( elemSet.end(), make_pair( volIt->next(), noneFacet ));
+
+  getEditor().SplitVolumes( elemSet, int( methodFlags ));
   declareMeshModified( /*isReComputeSafe=*/true ); // it does not influence Compute()
 
   TPythonDump() << this << ".SplitVolumesIntoTetra( "
                 << elems << ", " << methodFlags << " )";
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+}
+
+//================================================================================
+/*!
+ * \brief Split hexahedra into triangular prisms
+ *  \param elems - elements to split
+ *  \param facetToSplitNormal - normal used to find a facet of hexahedron
+ *         to split into triangles
+ *  \param methodFlags - flags passing splitting method:
+ *         1 - split the hexahedron into 2 prisms
+ *         2 - split the hexahedron into 4 prisms
+ */
+//================================================================================
+
+void SMESH_MeshEditor_i::SplitHexahedraIntoPrisms (SMESH::SMESH_IDSource_ptr elems,
+                                                   CORBA::Short              methodFlags,
+                                                   const SMESH::AxisStruct & facetToSplitNormal,
+                                                   CORBA::Boolean            allDomains)
+  throw (SALOME::SALOME_Exception)
+{
+  SMESH_TRY;
+  initData();
+  prepareIdSource( elems );
+
+  gp_Ax1 facetNorm( gp_Pnt( facetToSplitNormal.x,
+                            facetToSplitNormal.y,
+                            facetToSplitNormal.z ),
+                    gp_Dir( facetToSplitNormal.vx,
+                            facetToSplitNormal.vy,
+                            facetToSplitNormal.vz ));
+  TIDSortedElemSet elemSet;
+  SMESH::long_array_var anElementsId = elems->GetIDs();
+  SMDS_MeshElement::GeomFilter filter( SMDSGeom_HEXA );
+  arrayToSet( anElementsId, getMeshDS(), elemSet, SMDSAbs_Volume, &filter );
+
+  ::SMESH_MeshEditor::TFacetOfElem elemFacets;
+  while ( !elemSet.empty() )
+  {
+    getEditor().GetHexaFacetsToSplit( elemSet, facetNorm, elemFacets );
+    if ( !allDomains )
+      break;
+
+    ::SMESH_MeshEditor::TFacetOfElem::iterator ef = elemFacets.begin();
+    for ( ; ef != elemFacets.end(); ++ef )
+      elemSet.erase( ef->first );
+  }
+
+  if ( methodFlags == 2 )
+    methodFlags = int( ::SMESH_MeshEditor::HEXA_TO_4_PRISMS );
+  else
+    methodFlags = int( ::SMESH_MeshEditor::HEXA_TO_2_PRISMS );
+
+  getEditor().SplitVolumes( elemFacets, int( methodFlags ));
+  declareMeshModified( /*isReComputeSafe=*/true ); // it does not influence Compute()
+
+  TPythonDump() << this << ".SplitHexahedraIntoPrisms( "
+                << elems << ", " << methodFlags<< ", "
+                << facetToSplitNormal<< ", " << allDomains << " )";
 
   SMESH_CATCH( SMESH::throwCorbaException );
 }

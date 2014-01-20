@@ -233,6 +233,11 @@ public:
   void           SplitVolumesIntoTetra(SMESH::SMESH_IDSource_ptr elems,
                                        CORBA::Short             methodFlags)
     throw (SALOME::SALOME_Exception);
+  void           SplitHexahedraIntoPrisms(SMESH::SMESH_IDSource_ptr elems,
+                                          CORBA::Short              methodFlags,
+                                          const SMESH::AxisStruct & facetToSplitNormal,
+                                          CORBA::Boolean            allDomains)
+    throw (SALOME::SALOME_Exception);
 
   CORBA::Boolean Smooth(const SMESH::long_array &              IDsOfElements,
                         const SMESH::long_array &              IDsOfFixedNodes,

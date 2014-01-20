@@ -2668,7 +2668,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       else if ( theCommandID == 410 )
         aDlg = new SMESHGUI_UnionOfTrianglesDlg(this);
       else if ( theCommandID == 419 )
-        aDlg = new SMESHGUI_CuttingIntoTetraDlg(this);
+        aDlg = new SMESHGUI_SplitVolumesDlg(this);
       else
         aDlg = new SMESHGUI_CuttingOfQuadsDlg(this);
 

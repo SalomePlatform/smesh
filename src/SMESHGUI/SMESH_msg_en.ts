@@ -1066,15 +1066,15 @@
     </message>
     <message>
         <source>MEN_SPLIT_TO_TETRA</source>
-        <translation>Split into Tetrahedra</translation>
+        <translation>Split Volumes</translation>
     </message>
     <message>
         <source>TOP_SPLIT_TO_TETRA</source>
-        <translation>Split into Tetrahedra</translation>
+        <translation>Split Volumes</translation>
     </message>
     <message>
         <source>STB_SPLIT_TO_TETRA</source>
-        <translation>Split into Tetrahedra</translation>
+        <translation>Split Volumes</translation>
     </message>
     <message>
         <source>MESHERS_FILE_CANT_OPEN</source>
@@ -6278,10 +6278,10 @@ It is impossible to read point coordinates from file</translation>
     </message>
 </context>
 <context>
-    <name>SMESHGUI_CuttingIntoTetraDlg</name>
+    <name>SMESHGUI_SplitVolumesDlg</name>
     <message>
         <source>CAPTION</source>
-        <translation>Splitting volumes into tetrahedra</translation>
+        <translation>Splitting volumes</translation>
     </message>
     <message>
         <source>SPLIT_METHOD</source>
@@ -6298,6 +6298,34 @@ It is impossible to read point coordinates from file</translation>
     <message>
         <source>SPLIT_HEX_TO_24_TETRA</source>
         <translation>Into 24 tetrahedra</translation>
+    </message>
+    <message>
+        <source>SPLIT_HEX_TO_2_PRISMS</source>
+        <translation>Into 2 prisms</translation>
+    </message>
+    <message>
+        <source>SPLIT_HEX_TO_4_PRISMS</source>
+        <translation>Into 4 Prisms</translation>
+    </message>
+    <message>
+        <source>TARGET_ELEM_TYPE</source>
+        <translation>Target element type</translation>
+    </message>
+    <message>
+        <source>FACET_TO_SPLIT</source>
+        <translation>Facet to split</translation>
+    </message>
+    <message>
+        <source>START_POINT</source>
+        <translation>Hexa location</translation>
+    </message>
+    <message>
+        <source>FACET_NORMAL</source>
+        <translation>Facet normal</translation>
+    </message>
+    <message>
+        <source>ALL_DOMAINS</source>
+        <translation>All domains</translation>
     </message>
 </context>
 <context>

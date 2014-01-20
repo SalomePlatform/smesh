@@ -169,11 +169,32 @@ public:
                  SMESH::Controls::NumericalFunctorPtr theCriterion);
 
 
-  enum SplitVolumToTetraFlags { HEXA_TO_5 = 1, HEXA_TO_6 = 2, HEXA_TO_24 = 3 };//!<arg of SplitVolumesIntoTetra()
+  typedef std::map < const SMDS_MeshElement*, int, TIDCompare > TFacetOfElem;
+
+    //!<2nd arg of SplitVolumes()
+  enum SplitVolumToTetraFlags { HEXA_TO_5 = 1, // split into tetrahedra
+                                HEXA_TO_6,
+                                HEXA_TO_24,
+                                HEXA_TO_2_PRISMS, // split into prisms
+                                HEXA_TO_4_PRISMS };
   /*!
-   * \brief Split volumic elements into tetrahedra.
+   * \brief Split volumic elements into tetrahedra or prisms.
+   *        If facet ID < 0, element is split into tetrahedra,
+   *        else a hexahedron is split into prisms so that the given facet is
+   *        split into triangles
    */
-  void SplitVolumesIntoTetra (const TIDSortedElemSet & theElems, const int theMethodFlags);
+  void SplitVolumes (const TFacetOfElem & theElems, const int theMethodFlags);
+
+  /*!
+   * \brief For hexahedra that will be split into prisms, finds facets to
+   *        split into triangles 
+   *  \param [in,out] theHexas - the hexahedra
+   *  \param [in]     theFacetNormal - facet normal
+   *  \param [out]    theFacets - the hexahedra and found facet IDs
+   */
+  void GetHexaFacetsToSplit( TIDSortedElemSet& theHexas,
+                             const gp_Ax1&     theFacetNormal,
+                             TFacetOfElem &    theFacets);
 
 
   enum SmoothMethod { LAPLACIAN = 0, CENTROIDAL };

@@ -323,6 +323,25 @@ module SMESH
     void SplitVolumesIntoTetra(in SMESH_IDSource elems, in short methodFlags)
       raises (SALOME::SALOME_Exception);
 
+    /*!
+     * \brief Split hexahedra into triangular prisms
+     *  \param elems - elements to split
+     *  \param facetToSplitNormal - normal used to find a facet of hexahedron
+     *         to split into triangles. Location of this vector is used to 
+     *         find a hexahedron whose facets are tested using direction of this vector.
+     *  \param methodFlags - flags passing splitting method:
+     *         1 - split the hexahedron into 2 prisms
+     *         2 - split the hexahedron into 4 prisms
+     *  \param allDomains - if \c False, only hexahedra adjacent to one closest
+     *         to \a facetToSplitNormal location are split, else \a facetToSplitNormal
+     *         is used to find the facet to split in all domains present in \a elems.
+     */
+    void SplitHexahedraIntoPrisms(in SMESH_IDSource    elems, 
+                                  in short             methodFlags,
+                                  in SMESH::AxisStruct facetToSplitNormal,
+                                  in boolean           allDomains)
+      raises (SALOME::SALOME_Exception);
+
 
     enum Smooth_Method { LAPLACIAN_SMOOTH, CENTROIDAL_SMOOTH };
 

@@ -1603,44 +1603,110 @@ namespace
   const int* thePentaTo3[6] = { thePentaTo3_1, thePentaTo3_2, thePentaTo3_3,
                                 thePentaTo3_4, thePentaTo3_5, thePentaTo3_6 };
 
+  // Methods of splitting hexahedron into prisms
+
+  const int theHexTo4Prisms_BT[6*4+1] = // bottom-top
+    {
+      0, 1, 8, 4, 5, 9,    1, 2, 8, 5, 6, 9,    2, 3, 8, 6, 7, 9,   3, 0, 8, 7, 4, 9,    -1
+    };
+  const int theHexTo4Prisms_LR[6*4+1] = // left-right
+    {
+      1, 0, 8, 2, 3, 9,    0, 4, 8, 3, 7, 9,    4, 5, 8, 7, 6, 9,   5, 1, 8, 6, 2, 9,    -1
+    };
+  const int theHexTo4Prisms_FB[6*4+1] = // front-back
+    {
+      0, 3, 8, 1, 2, 9,    3, 7, 8, 2, 6, 9,    7, 4, 8, 6, 5, 9,   4, 0, 8, 5, 1, 9,    -1
+    };
+
+  const int theHexTo2Prisms_BT_1[6*2+1] =
+    {
+      0, 1, 3, 4, 5, 7,    1, 2, 3, 5, 6, 7,   -1
+    };
+  const int theHexTo2Prisms_BT_2[6*2+1] =
+    {
+      0, 1, 2, 4, 5, 6,    0, 2, 3, 4, 6, 7,   -1
+    };
+  const int* theHexTo2Prisms_BT[2] = { theHexTo2Prisms_BT_1, theHexTo2Prisms_BT_2 };
+
+  const int theHexTo2Prisms_LR_1[6*2+1] =
+    {
+      1, 0, 4, 2, 3, 7,    1, 4, 5, 2, 7, 6,   -1
+    };
+  const int theHexTo2Prisms_LR_2[6*2+1] =
+    {
+      1, 0, 4, 2, 3, 7,    1, 4, 5, 2, 7, 6,   -1
+    };
+  const int* theHexTo2Prisms_LR[2] = { theHexTo2Prisms_LR_1, theHexTo2Prisms_LR_2 };
+
+  const int theHexTo2Prisms_FB_1[6*2+1] =
+    {
+      0, 3, 4, 1, 2, 5,    3, 7, 4, 2, 6, 5,   -1
+    };
+  const int theHexTo2Prisms_FB_2[6*2+1] =
+    {
+      0, 3, 7, 1, 2, 7,    0, 7, 4, 1, 6, 5,   -1
+    };
+  const int* theHexTo2Prisms_FB[2] = { theHexTo2Prisms_FB_1, theHexTo2Prisms_FB_2 };
+
+
   struct TTriangleFacet //!< stores indices of three nodes of tetra facet
   {
     int _n1, _n2, _n3;
     TTriangleFacet(int n1, int n2, int n3): _n1(n1), _n2(n2), _n3(n3) {}
     bool contains(int n) const { return ( n == _n1 || n == _n2 || n == _n3 ); }
-    bool hasAdjacentTetra( const SMDS_MeshElement* elem ) const;
+    bool hasAdjacentVol( const SMDS_MeshElement*    elem,
+                         const SMDSAbs_GeometryType geom = SMDSGeom_TETRA) const;
   };
   struct TSplitMethod
   {
-    int        _nbTetra;
+    int        _nbSplits;
+    int        _nbCorners;
     const int* _connectivity; //!< foursomes of tetra connectivy finished by -1
     bool       _baryNode;     //!< additional node is to be created at cell barycenter
     bool       _ownConn;      //!< to delete _connectivity in destructor
     map<int, const SMDS_MeshNode*> _faceBaryNode; //!< map face index to node at BC of face
 
     TSplitMethod( int nbTet=0, const int* conn=0, bool addNode=false)
-      : _nbTetra(nbTet), _connectivity(conn), _baryNode(addNode), _ownConn(false) {}
+      : _nbSplits(nbTet), _nbCorners(4), _connectivity(conn), _baryNode(addNode), _ownConn(false) {}
     ~TSplitMethod() { if ( _ownConn ) delete [] _connectivity; _connectivity = 0; }
     bool hasFacet( const TTriangleFacet& facet ) const
     {
-      const int* tetConn = _connectivity;
-      for ( ; tetConn[0] >= 0; tetConn += 4 )
-        if (( facet.contains( tetConn[0] ) +
-              facet.contains( tetConn[1] ) +
-              facet.contains( tetConn[2] ) +
-              facet.contains( tetConn[3] )) == 3 )
-          return true;
+      if ( _nbCorners == 4 )
+      {
+        const int* tetConn = _connectivity;
+        for ( ; tetConn[0] >= 0; tetConn += 4 )
+          if (( facet.contains( tetConn[0] ) +
+                facet.contains( tetConn[1] ) +
+                facet.contains( tetConn[2] ) +
+                facet.contains( tetConn[3] )) == 3 )
+            return true;
+      }
+      else // prism, _nbCorners == 6
+      {
+        const int* prismConn = _connectivity;
+        for ( ; prismConn[0] >= 0; prismConn += 6 )
+        {
+          if (( facet.contains( prismConn[0] ) &&
+                facet.contains( prismConn[1] ) &&
+                facet.contains( prismConn[2] ))
+              ||
+              ( facet.contains( prismConn[3] ) &&
+                facet.contains( prismConn[4] ) &&
+                facet.contains( prismConn[5] )))
+            return true;
+        }
+      }
       return false;
     }
   };
 
   //=======================================================================
   /*!
-   * \brief return TSplitMethod for the given element
+   * \brief return TSplitMethod for the given element to split into tetrahedra
    */
   //=======================================================================
 
-  TSplitMethod getSplitMethod( SMDS_VolumeTool& vol, const int theMethodFlags)
+  TSplitMethod getTetraSplitMethod( SMDS_VolumeTool& vol, const int theMethodFlags)
   {
     const int iQ = vol.Element()->IsQuadratic() ? 2 : 1;
 
@@ -1665,8 +1731,8 @@ namespace
       {
         TTriangleFacet t012( nInd[0*iQ], nInd[1*iQ], nInd[2*iQ] );
         TTriangleFacet t123( nInd[1*iQ], nInd[2*iQ], nInd[3*iQ] );
-        if      ( t012.hasAdjacentTetra( vol.Element() )) triaSplits.push_back( t012 );
-        else if ( t123.hasAdjacentTetra( vol.Element() )) triaSplits.push_back( t123 );
+        if      ( t012.hasAdjacentVol( vol.Element() )) triaSplits.push_back( t012 );
+        else if ( t123.hasAdjacentVol( vol.Element() )) triaSplits.push_back( t123 );
       }
       else
       {
@@ -1679,7 +1745,7 @@ namespace
           TTriangleFacet t023( nInd[ iQ * ( iCom             )],
                                nInd[ iQ * ( (iCom+2)%nbNodes )],
                                nInd[ iQ * ( (iCom+3)%nbNodes )]);
-          if ( t012.hasAdjacentTetra( vol.Element() ) && t023.hasAdjacentTetra( vol.Element() ))
+          if ( t012.hasAdjacentVol( vol.Element() ) && t023.hasAdjacentVol( vol.Element() ))
           {
             triaSplits.push_back( t012 );
             triaSplits.push_back( t023 );
@@ -1719,12 +1785,12 @@ namespace
       default:
         nbVariants = 0;
       }
-      for ( int variant = 0; variant < nbVariants && method._nbTetra == 0; ++variant )
+      for ( int variant = 0; variant < nbVariants && method._nbSplits == 0; ++variant )
       {
         // check method compliancy with adjacent tetras,
         // all found splits must be among facets of tetras described by this method
         method = TSplitMethod( nbTet, connVariants[variant] );
-        if ( hasAdjacentSplits && method._nbTetra > 0 )
+        if ( hasAdjacentSplits && method._nbSplits > 0 )
         {
           bool facetCreated = true;
           for ( int iF = 0; facetCreated && iF < triaSplitsByFace.size(); ++iF )
@@ -1738,7 +1804,7 @@ namespace
         }
       }
     }
-    if ( method._nbTetra < 1 )
+    if ( method._nbSplits < 1 )
     {
       // No standard method is applicable, use a generic solution:
       // each facet of a volume is split into triangles and
@@ -1832,7 +1898,7 @@ namespace
             connectivity[ connSize++ ] = baryCenInd;
           }
         }
-        method._nbTetra += nbTet;
+        method._nbSplits += nbTet;
 
       } // loop on volume faces
 
@@ -1842,13 +1908,132 @@ namespace
 
     return method;
   }
+  //=======================================================================
+  /*!
+   * \brief return TSplitMethod to split haxhedron into prisms
+   */
+  //=======================================================================
+
+  TSplitMethod getPrismSplitMethod( SMDS_VolumeTool& vol,
+                                    const int        methodFlags,
+                                    const int        facetToSplit)
+  {
+    // order of facets in HEX according to SMDS_VolumeTool::Hexa_F :
+    // B, T, L, B, R, F
+    const int iF = ( facetToSplit < 2 ) ? 0 : 1 + ( facetToSplit-2 ) % 2; // [0,1,2]
+
+    if ( methodFlags == SMESH_MeshEditor::HEXA_TO_4_PRISMS )
+    {
+      static TSplitMethod to4methods[4]; // order BT, LR, FB
+      if ( to4methods[iF]._nbSplits == 0 )
+      {
+        switch ( iF ) {
+        case 0:
+          to4methods[iF]._connectivity = theHexTo4Prisms_BT;
+          to4methods[iF]._faceBaryNode[ 0 ] = 0;
+          to4methods[iF]._faceBaryNode[ 1 ] = 0;
+          break;
+        case 1:
+          to4methods[iF]._connectivity = theHexTo4Prisms_LR;
+          to4methods[iF]._faceBaryNode[ 2 ] = 0;
+          to4methods[iF]._faceBaryNode[ 4 ] = 0;
+          break;
+        case 2:
+          to4methods[iF]._connectivity = theHexTo4Prisms_FB;
+          to4methods[iF]._faceBaryNode[ 3 ] = 0;
+          to4methods[iF]._faceBaryNode[ 5 ] = 0;
+          break;
+        default: return to4methods[3];
+        }
+        to4methods[iF]._nbSplits  = 4;
+        to4methods[iF]._nbCorners = 6;
+      }
+      return to4methods[iF];
+    }
+    // else if ( methodFlags == HEXA_TO_2_PRISMS )
+
+    TSplitMethod method;
+
+    const int iQ = vol.Element()->IsQuadratic() ? 2 : 1;
+
+    const int nbVariants = 2, nbSplits = 2;
+    const int** connVariants = 0;
+    switch ( iF ) {
+    case 0: connVariants = theHexTo2Prisms_BT; break;
+    case 1: connVariants = theHexTo2Prisms_LR; break;
+    case 2: connVariants = theHexTo2Prisms_FB; break;
+    default: return method;
+    }
+
+    // look for prisms adjacent via facetToSplit and an opposite one
+    for ( int is2nd = 0; is2nd < 2; ++is2nd )
+    {
+      int iFacet = is2nd ? vol.GetOppFaceIndexOfHex( facetToSplit ) : facetToSplit;
+      int nbNodes = vol.NbFaceNodes( iFacet ) / iQ;
+      if ( nbNodes != 4 ) return method;
+
+      const int* nInd = vol.GetFaceNodesIndices( iFacet );
+      TTriangleFacet t012( nInd[0*iQ], nInd[1*iQ], nInd[2*iQ] );
+      TTriangleFacet t123( nInd[1*iQ], nInd[2*iQ], nInd[3*iQ] );
+      TTriangleFacet* t;
+      if      ( t012.hasAdjacentVol( vol.Element(), SMDSGeom_PENTA ))
+        t = &t012;
+      else if ( t123.hasAdjacentVol( vol.Element(), SMDSGeom_PENTA ))
+        t = &t123;
+      else
+        continue;
+
+      // there are adjacent prism
+      for ( int variant = 0; variant < nbVariants; ++variant )
+      {
+        // check method compliancy with adjacent prisms,
+        // the found prism facets must be among facets of prisms described by current method
+        method._nbSplits     = nbSplits;
+        method._nbCorners    = 6;
+        method._connectivity = connVariants[ variant ];
+        if ( method.hasFacet( *t ))
+          return method;
+      }
+    }
+
+    // No adjacent prisms. Select a variant with a best aspect ratio.
+
+    double badness[2] = { 0, 0 };
+    static SMESH::Controls::NumericalFunctorPtr aspectRatio( new SMESH::Controls::AspectRatio);
+    const SMDS_MeshNode** nodes = vol.GetNodes();
+    for ( int variant = 0; variant < nbVariants; ++variant )
+      for ( int is2nd = 0; is2nd < 2; ++is2nd )
+      {
+        int iFacet = is2nd ? vol.GetOppFaceIndexOfHex( facetToSplit ) : facetToSplit;
+        const int*             nInd = vol.GetFaceNodesIndices( iFacet );
+
+        method._connectivity = connVariants[ variant ];
+        TTriangleFacet t012( nInd[0*iQ], nInd[1*iQ], nInd[2*iQ] );
+        TTriangleFacet t123( nInd[1*iQ], nInd[2*iQ], nInd[3*iQ] );
+        TTriangleFacet* t = ( method.hasFacet( t012 )) ? & t012 : & t123;
+
+        SMDS_FaceOfNodes tria ( nodes[ t->_n1 ],
+                                nodes[ t->_n2 ],
+                                nodes[ t->_n3 ] );
+        badness[ variant ] += getBadRate( &tria, aspectRatio );
+      }
+    const int iBetter = ( badness[1] < badness[0] && badness[0]-badness[1] > 0.1 * badness[0] );
+
+    method._nbSplits     = nbSplits;
+    method._nbCorners    = 6;
+    method._connectivity = connVariants[ iBetter ];
+
+    return method;
+  }
+
   //================================================================================
   /*!
    * \brief Check if there is a tetraherdon adjacent to the given element via this facet
    */
   //================================================================================
 
-  bool TTriangleFacet::hasAdjacentTetra( const SMDS_MeshElement* elem ) const
+  bool TTriangleFacet::hasAdjacentVol( const SMDS_MeshElement*    elem,
+                                       const SMDSAbs_GeometryType geom ) const
   {
     // find the tetrahedron including the three nodes of facet
     const SMDS_MeshNode* n1 = elem->GetNode(_n1);
@@ -1858,16 +2043,16 @@ namespace
     while ( volIt1->more() )
     {
       const SMDS_MeshElement* v = volIt1->next();
-      SMDSAbs_EntityType type = v->GetEntityType();
-      if ( type != SMDSEntity_Tetra && type != SMDSEntity_Quad_Tetra )
+      if ( v->GetGeomType() != geom )
         continue;
-      if ( type == SMDSEntity_Quad_Tetra && v->GetNodeIndex( n1 ) > 3 )
+      const int lastCornerInd = v->NbCornerNodes() - 1;
+      if ( v->IsQuadratic() && v->GetNodeIndex( n1 ) > lastCornerInd )
         continue; // medium node not allowed
       const int ind2 = v->GetNodeIndex( n2 );
-      if ( ind2 < 0 || 3 < ind2 )
+      if ( ind2 < 0 || lastCornerInd < ind2 )
         continue;
       const int ind3 = v->GetNodeIndex( n3 );
-      if ( ind3 < 0 || 3 < ind3 )
+      if ( ind3 < 0 || lastCornerInd < ind3 )
         continue;
       return true;
     }
@@ -1900,19 +2085,23 @@ namespace
 } // namespace
 
 //=======================================================================
-//function : SplitVolumesIntoTetra
-//purpose  : Split volume elements into tetrahedra.
+//function : SplitVolumes
+//purpose  : Split volume elements into tetrahedra or prisms.
+//           If facet ID < 0, element is split into tetrahedra,
+//           else a hexahedron is split into prisms so that the given facet is
+//           split into triangles
 //=======================================================================
 
-void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
-                                              const int                theMethodFlags)
+void SMESH_MeshEditor::SplitVolumes (const TFacetOfElem & theElems,
+                                     const int            theMethodFlags)
 {
   // std-like iterator on coordinates of nodes of mesh element
   typedef SMDS_StdIterator< SMESH_TNodeXYZ, SMDS_ElemIteratorPtr > NXyzIterator;
   NXyzIterator xyzEnd;
 
   SMDS_VolumeTool    volTool;
-  SMESH_MesherHelper helper( *GetMesh());
+  SMESH_MesherHelper helper( *GetMesh()), fHelper(*GetMesh());
+  fHelper.ToFixNodeParameters( true );
 
   SMESHDS_SubMesh* subMesh = 0;//GetMeshDS()->MeshElements(1);
   SMESHDS_SubMesh* fSubMesh = 0;//subMesh;
@@ -1923,29 +2112,33 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
   map< TVolumeFaceKey, const SMDS_MeshNode* > volFace2BaryNode;
   double bc[3];
 
-  TIDSortedElemSet::const_iterator elem = theElems.begin();
-  for ( ; elem != theElems.end(); ++elem )
+  TFacetOfElem::const_iterator elem2facet = theElems.begin();
+  for ( ; elem2facet != theElems.end(); ++elem2facet )
   {
-    if ( (*elem)->GetType() != SMDSAbs_Volume )
+    const SMDS_MeshElement* elem = elem2facet->first;
+    const int       facetToSplit = elem2facet->second;
+    if ( elem->GetType() != SMDSAbs_Volume )
       continue;
-    SMDSAbs_EntityType geomType = (*elem)->GetEntityType();
+    const SMDSAbs_EntityType geomType = elem->GetEntityType();
     if ( geomType == SMDSEntity_Tetra || geomType == SMDSEntity_Quad_Tetra )
       continue;
 
-    if ( !volTool.Set( *elem, /*ignoreCentralNodes=*/false )) continue; // strange...
+    if ( !volTool.Set( elem, /*ignoreCentralNodes=*/false )) continue; // strange...
 
-    TSplitMethod splitMethod = getSplitMethod( volTool, theMethodFlags );
-    if ( splitMethod._nbTetra < 1 ) continue;
+    TSplitMethod splitMethod = ( facetToSplit < 0  ?
+                                 getTetraSplitMethod( volTool, theMethodFlags ) :
+                                 getPrismSplitMethod( volTool, theMethodFlags, facetToSplit ));
+    if ( splitMethod._nbSplits < 1 ) continue;
 
     // find submesh to add new tetras to
-    if ( !subMesh || !subMesh->Contains( *elem ))
+    if ( !subMesh || !subMesh->Contains( elem ))
     {
-      int shapeID = FindShape( *elem );
+      int shapeID = FindShape( elem );
       helper.SetSubShape( shapeID ); // helper will add tetras to the found submesh
       subMesh = GetMeshDS()->MeshElements( shapeID );
     }
     int iQ;
-    if ( (*elem)->IsQuadratic() )
+    if ( elem->IsQuadratic() )
     {
       iQ = 2;
       // add quadratic links to the helper
@@ -1963,7 +2156,8 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
       iQ = 1;
       helper.SetIsQuadratic( false );
     }
-    vector<const SMDS_MeshNode*> nodes( (*elem)->begin_nodes(), (*elem)->end_nodes() );
+    vector<const SMDS_MeshNode*> nodes( volTool.GetNodes(),
+                                        volTool.GetNodes() + elem->NbCornerNodes() );
     helper.SetElementsOnShape( true );
     if ( splitMethod._baryNode )
     {
@@ -1991,16 +2185,25 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
       }
     }
 
-    // make tetras
-    vector<const SMDS_MeshElement* > tetras( splitMethod._nbTetra ); // splits of a volume
-    const int* tetConn = splitMethod._connectivity;
-    for ( int i = 0; i < splitMethod._nbTetra; ++i, tetConn += 4 )
-      newElems.Append( tetras[ i ] = helper.AddVolume( nodes[ tetConn[0] ],
-                                                       nodes[ tetConn[1] ],
-                                                       nodes[ tetConn[2] ],
-                                                       nodes[ tetConn[3] ]));
+    // make new volumes
+    vector<const SMDS_MeshElement* > splitVols( splitMethod._nbSplits ); // splits of a volume
+    const int* volConn = splitMethod._connectivity;
+    if ( splitMethod._nbCorners == 4 ) // tetra
+      for ( int i = 0; i < splitMethod._nbSplits; ++i, volConn += splitMethod._nbCorners )
+        newElems.Append( splitVols[ i ] = helper.AddVolume( nodes[ volConn[0] ],
+                                                            nodes[ volConn[1] ],
+                                                            nodes[ volConn[2] ],
+                                                            nodes[ volConn[3] ]));
+    else // prisms
+      for ( int i = 0; i < splitMethod._nbSplits; ++i, volConn += splitMethod._nbCorners )
+        newElems.Append( splitVols[ i ] = helper.AddVolume( nodes[ volConn[0] ],
+                                                            nodes[ volConn[1] ],
+                                                            nodes[ volConn[2] ],
+                                                            nodes[ volConn[3] ],
+                                                            nodes[ volConn[4] ],
+                                                            nodes[ volConn[5] ]));
 
-    ReplaceElemInGroups( *elem, tetras, GetMeshDS() );
+    ReplaceElemInGroups( elem, splitVols, GetMeshDS() );
 
     // Split faces on sides of the split volume
 
@@ -2029,17 +2232,37 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
         map<int, const SMDS_MeshNode*>::iterator iF_n = splitMethod._faceBaryNode.find(iF);
         if ( iF_n != splitMethod._faceBaryNode.end() )
         {
+          const SMDS_MeshNode *baryNode = iF_n->second;
           for ( int iN = 0; iN < nbNodes*iQ; iN += iQ )
           {
             const SMDS_MeshNode* n1 = fNodes[iN];
             const SMDS_MeshNode *n2 = fNodes[(iN+iQ)%(nbNodes*iQ)];
-            const SMDS_MeshNode *n3 = iF_n->second;
+            const SMDS_MeshNode *n3 = baryNode;
             if ( !volTool.IsFaceExternal( iF ))
               swap( n2, n3 );
             triangles.push_back( helper.AddFace( n1,n2,n3 ));
-
-            if ( fSubMesh && n3->getshapeId() < 1 )
-              fSubMesh->AddNode( n3 );
+          }
+          if ( fSubMesh ) // update position of the bary node on geometry
+          {
+            if ( subMesh )
+              subMesh->RemoveNode( baryNode, false );
+            GetMeshDS()->SetNodeOnFace( baryNode, fSubMesh->GetID() );
+            const TopoDS_Shape& s = GetMeshDS()->IndexToShape( fSubMesh->GetID() );
+            if ( !s.IsNull() && s.ShapeType() == TopAbs_FACE )
+            {
+              fHelper.SetSubShape( s );
+              gp_XY uv( 1e100, 1e100 );
+              double distXYZ[4];
+              if ( !fHelper.CheckNodeUV( TopoDS::Face( s ), baryNode,
+                                        uv, /*tol=*/1e-7, /*force=*/true, distXYZ ) &&
+                   uv.X() < 1e100 )
+              {
+                // node is too far from the surface
+                GetMeshDS()->MoveNode( baryNode, distXYZ[1], distXYZ[2], distXYZ[3] );
+                const_cast<SMDS_MeshNode*>( baryNode )->SetPosition
+                  ( SMDS_PositionPtr( new SMDS_FacePosition( uv.X(), uv.Y() )));
+              }
+            }
           }
         }
         else
@@ -2069,6 +2292,8 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
             }
           }
           list< TTriangleFacet >::iterator facet = facets.begin();
+          if ( facet == facets.end() )
+            break;
           for ( ; facet != facets.end(); ++facet )
           {
             if ( !volTool.IsFaceExternal( iF ))
@@ -2087,11 +2312,11 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
         }
         ReplaceElemInGroups( face, triangles, GetMeshDS() );
         GetMeshDS()->RemoveFreeElement( face, fSubMesh, /*fromGroups=*/false );
-      }
 
+      } // while a face based on facet nodes exists
     } // loop on volume faces to split them into triangles
 
-    GetMeshDS()->RemoveFreeElement( *elem, subMesh, /*fromGroups=*/false );
+    GetMeshDS()->RemoveFreeElement( elem, subMesh, /*fromGroups=*/false );
 
     if ( geomType == SMDSEntity_TriQuad_Hexa )
     {
@@ -2104,6 +2329,198 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
   
   myLastCreatedNodes = newNodes;
   myLastCreatedElems = newElems;
+}
+
+//=======================================================================
+//function : GetHexaFacetsToSplit
+//purpose  : For hexahedra that will be split into prisms, finds facets to
+//           split into triangles. Only hexahedra adjacent to the one closest
+//           to theFacetNormal.Location() are returned.
+//param [in,out] theHexas - the hexahedra
+//param [in]     theFacetNormal - facet normal
+//param [out]    theFacets - the hexahedra and found facet IDs
+//=======================================================================
+
+void SMESH_MeshEditor::GetHexaFacetsToSplit( TIDSortedElemSet& theHexas,
+                                             const gp_Ax1&     theFacetNormal,
+                                             TFacetOfElem &    theFacets)
+{
+  #define THIS_METHOD "SMESH_MeshEditor::GetHexaFacetsToSplit(): "
+
+  // Find a hexa closest to the location of theFacetNormal
+
+  const SMDS_MeshElement* startHex;
+  {
+    // get SMDS_ElemIteratorPtr on theHexas
+    typedef const SMDS_MeshElement*                                      TValue;
+    typedef TIDSortedElemSet::iterator                                   TSetIterator;
+    typedef SMDS::SimpleAccessor<TValue,TSetIterator>                    TAccesor;
+    typedef SMDS_MeshElement::GeomFilter                                 TFilter;
+    typedef SMDS_SetIterator < TValue, TSetIterator, TAccesor, TFilter > TElemSetIter;
+    SMDS_ElemIteratorPtr elemIt = SMDS_ElemIteratorPtr
+      ( new TElemSetIter( theHexas.begin(),
+                          theHexas.end(),
+                          SMDS_MeshElement::GeomFilter( SMDSGeom_HEXA )));
+
+    SMESH_ElementSearcher* searcher =
+      SMESH_MeshAlgos::GetElementSearcher( *myMesh->GetMeshDS(), elemIt );
+
+    startHex = searcher->FindClosestTo( theFacetNormal.Location(), SMDSAbs_Volume );
+
+    delete searcher;
+
+    if ( !startHex )
+      throw SALOME_Exception( THIS_METHOD "startHex not found");
+  }
+
+  // Select a facet of startHex by theFacetNormal
+
+  SMDS_VolumeTool vTool( startHex );
+  double norm[3], dot, maxDot = 0;
+  int facetID = -1;
+  for ( int iF = 0; iF < vTool.NbFaces(); ++iF )
+    if ( vTool.GetFaceNormal( iF, norm[0], norm[1], norm[2] ))
+    {
+      dot = Abs( theFacetNormal.Direction().Dot( gp_Dir( norm[0], norm[1], norm[2] )));
+      if ( dot > maxDot )
+      {
+        facetID = iF;
+        maxDot = dot;
+      }
+    }
+  if ( facetID < 0 )
+    throw SALOME_Exception( THIS_METHOD "facet of startHex not found");
+
+  // Fill theFacets starting from facetID of startHex
+
+  // facets used for seach of volumes adjacent to already treated ones
+  typedef pair< TFacetOfElem::iterator, int > TElemFacets;
+  typedef map< TVolumeFaceKey, TElemFacets  > TFacetMap;
+  TFacetMap facetsToCheck;
+
+  set<const SMDS_MeshNode*> facetNodes;
+  const SMDS_MeshElement*   curHex;
+
+  const bool allHex = ( theHexas.size() == myMesh->NbHexas() );
+
+  while ( startHex )
+  {
+    // move in two directions from startHex via facetID
+    for ( int is2nd = 0; is2nd < 2; ++is2nd )
+    {
+      curHex       = startHex;
+      int curFacet = facetID;
+      if ( is2nd ) // do not treat startHex twice
+      {
+        vTool.Set( curHex );
+        if ( vTool.IsFreeFace( curFacet, &curHex ))
+        {
+          curHex = 0;
+        }
+        else
+        {
+          vTool.GetFaceNodes( curFacet, facetNodes );
+          vTool.Set( curHex );
+          curFacet = vTool.GetFaceIndex( facetNodes );
+        }
+      }
+      while ( curHex )
+      {
+        // store a facet to split
+        if ( curHex->GetGeomType() != SMDSGeom_HEXA )
+        {
+          theFacets.insert( make_pair( curHex, -1 ));
+          break;
+        }
+        if ( !allHex && !theHexas.count( curHex ))
+          break;
+
+        pair< TFacetOfElem::iterator, bool > facetIt2isNew =
+          theFacets.insert( make_pair( curHex, curFacet ));
+        if ( !facetIt2isNew.second )
+          break;
+
+        // remember not-to-split facets in facetsToCheck
+        int oppFacet = vTool.GetOppFaceIndexOfHex( curFacet );
+        for ( int iF = 0; iF < vTool.NbFaces(); ++iF )
+        {
+          if ( iF == curFacet && iF == oppFacet )
+            continue;
+          TVolumeFaceKey facetKey ( vTool, iF );
+          TElemFacets    elemFacet( facetIt2isNew.first, iF );
+          pair< TFacetMap::iterator, bool > it2isnew =
+            facetsToCheck.insert( make_pair( facetKey, elemFacet ));
+          if ( !it2isnew.second )
+            facetsToCheck.erase( it2isnew.first ); // adjacent hex already checked
+        }
+        // pass to a volume adjacent via oppFacet
+        if ( vTool.IsFreeFace( oppFacet, &curHex ))
+        {
+          curHex = 0;
+        }
+        else
+        {
+          // get a new curFacet
+          vTool.GetFaceNodes( oppFacet, facetNodes );
+          vTool.Set( curHex );
+          curFacet = vTool.GetFaceIndex( facetNodes, /*hint=*/curFacet );
+        }
+      }
+    } // move in two directions from startHex via facetID
+
+    // Find a new startHex by facetsToCheck
+
+    startHex = 0;
+    facetID  = -1;
+    TFacetMap::iterator fIt = facetsToCheck.begin();
+    while ( !startHex && fIt != facetsToCheck.end() )
+    {
+      const TElemFacets&  elemFacets = fIt->second;
+      const SMDS_MeshElement*    hex = elemFacets.first->first;
+      int                 splitFacet = elemFacets.first->second;
+      int               lateralFacet = elemFacets.second;
+      facetsToCheck.erase( fIt );
+      fIt = facetsToCheck.begin();
+
+      vTool.Set( hex );
+      if ( vTool.IsFreeFace( lateralFacet, &curHex ) || 
+           curHex->GetGeomType() != SMDSGeom_HEXA )
+        continue;
+      if ( !allHex && !theHexas.count( curHex ))
+        continue;
+
+      startHex = curHex;
+
+      // find a facet of startHex to split 
+
+      set<const SMDS_MeshNode*> lateralNodes;
+      vTool.GetFaceNodes( lateralFacet, lateralNodes );
+      vTool.GetFaceNodes( splitFacet,   facetNodes );
+      int oppLateralFacet = vTool.GetOppFaceIndexOfHex( lateralFacet );
+      vTool.Set( startHex );
+      lateralFacet = vTool.GetFaceIndex( lateralNodes, oppLateralFacet );
+
+      // look for a facet of startHex having common nodes with facetNodes
+      // but not lateralFacet
+      for ( int iF = 0; iF < vTool.NbFaces(); ++iF )
+      {
+        if ( iF == lateralFacet )
+          continue;
+        int nbCommonNodes = 0;
+        const SMDS_MeshNode** nn = vTool.GetFaceNodes( iF );
+        for ( int iN = 0, nbN = vTool.NbFaceNodes( iF ); iN < nbN; ++iN )
+          nbCommonNodes += facetNodes.count( nn[ iN ]);
+
+        if ( nbCommonNodes >= 2 )
+        {
+          facetID = iF;
+          break;
+        }
+      }
+      if ( facetID < 0 )
+        throw SALOME_Exception( THIS_METHOD "facet of a new startHex not found");
+    }
+  } //   while ( startHex )
 }
 
 //=======================================================================
