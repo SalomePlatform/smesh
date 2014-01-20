@@ -51,6 +51,9 @@ IMPLEMENT_STANDARD_RTTIEXT(SMESHGUI_FacesFilter, SMESHGUI_Filter)
 IMPLEMENT_STANDARD_HANDLE(SMESHGUI_VolumesFilter, SMESHGUI_Filter)
 IMPLEMENT_STANDARD_RTTIEXT(SMESHGUI_VolumesFilter, SMESHGUI_Filter)
 
+IMPLEMENT_STANDARD_HANDLE(SMESHGUI_VolumeShapeFilter, SMESHGUI_Filter)
+IMPLEMENT_STANDARD_RTTIEXT(SMESHGUI_VolumeShapeFilter, SMESHGUI_Filter)
+
 /*
   Class       : SMESHGUI_PredicateFilter
   Description : Selection filter for VTK viewer. This class aggregate object
@@ -489,6 +492,89 @@ int SMESHGUI_VolumesFilter::GetId() const
 // Purpose : Returns true if filter is intended for nodes
 //=======================================================================
 bool SMESHGUI_VolumesFilter::IsNodeFilter() const
+{
+  return false;
+}
+
+
+/*
+  Class       : SMESHGUI_VolumeShapeFilter
+  Description : Verify whether selected cell is a volume of a certain shape
+*/
+
+
+//=======================================================================
+// name    : SMESHGUI_VolumeShapeFilter::SMESHGUI_VolumeShapeFilter
+// Purpose : Constructor
+//=======================================================================
+SMESHGUI_VolumeShapeFilter::SMESHGUI_VolumeShapeFilter(const SMDSAbs_GeometryType shape)
+  : SMESHGUI_Filter(), myGeometryType( shape )
+{
+}
+
+//=======================================================================
+// name    : SMESHGUI_VolumeShapeFilter::IsValid
+// Purpose : Verify whether selected cell is a volume of a certain shape
+//=======================================================================
+bool SMESHGUI_VolumeShapeFilter::IsValid( const int theCellId ) const
+{
+  if ( myActor == 0 || theCellId < 1 )
+    return false;
+
+  SMESH_Actor* anActor = dynamic_cast< SMESH_Actor* >( myActor );
+  if ( !anActor || anActor->GetObject() == 0 )
+    return false;
+
+  SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
+  const SMDS_MeshElement* anElem = aMesh->FindElement( anActor->GetElemObjId( theCellId ) );
+
+  return anElem && anElem->GetGeomType() == myGeometryType;
+}
+
+//=======================================================================
+// name    : SMESHGUI_VolumeShapeFilter::IsValid
+// Purpose : Verify whether selected cell is volume
+//=======================================================================
+bool SMESHGUI_VolumeShapeFilter::IsObjValid( const int theObjId ) const
+{
+  if ( myActor == 0 )
+    return false;
+
+  SMESH_Actor* anActor = dynamic_cast< SMESH_Actor* >( myActor );
+  if ( !anActor || anActor->GetObject() == 0 )
+    return false;
+
+  SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
+  const SMDS_MeshElement* anElem = aMesh->FindElement( theObjId );
+
+  return anElem && anElem->GetGeomType() == myGeometryType;
+}
+
+//=======================================================================
+// name    : SMESHGUI_VolumeShapeFilter::GetId
+// Purpose : Get ID of the filter. Must return value from SMESHGUI_FilterType
+//           enumeration. All filters must have different ids
+//=======================================================================
+int SMESHGUI_VolumeShapeFilter::GetId() const
+{
+  return GetId( myGeometryType );
+}
+
+//=======================================================================
+//function : GetId
+//purpose  : Compose filter ID basing on 
+//=======================================================================
+
+int SMESHGUI_VolumeShapeFilter::GetId( SMDSAbs_GeometryType shape )
+{
+  return SMESH::FirstGeometryTypeFilter + shape;
+}
+
+//=======================================================================
+// name    : SMESHGUI_VolumeShapeFilter::IsNodeFilter
+// Purpose : Returns true if filter is intended for nodes
+//=======================================================================
+bool SMESHGUI_VolumeShapeFilter::IsNodeFilter() const
 {
   return false;
 }

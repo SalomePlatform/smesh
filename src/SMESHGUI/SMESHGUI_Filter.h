@@ -29,6 +29,7 @@
 
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
+#include "SMDSAbs_ElementType.hxx"
 
 // SALOME GUI includes
 #include <VTKViewer_Filter.h>
@@ -42,15 +43,17 @@ class SALOME_Actor;
 namespace SMESH
 {
   enum SMESHGUI_FilterType {
-    UnknownFilter      = -1,
-    NodeFilter         =  0,
-    EdgeFilter         =  1,
-    FaceFilter         =  2,
-    VolumeFilter       =  3,
-    AllElementsFilter  =  4,
-    QuadFilter         =  5,
-    TriaFilter         =  6,
-    LastFilter
+    UnknownFilter           = -1,
+    NodeFilter              =  0,
+    EdgeFilter              =  1,
+    FaceFilter              =  2,
+    VolumeFilter            =  3,
+    AllElementsFilter       =  4,
+    QuadFilter              =  5,
+    TriaFilter              =  6,
+    FirstGeometryTypeFilter,
+    FirstEntityTypeFilter   = FirstGeometryTypeFilter + SMDSGeom_NONE,
+    LastFilter              = FirstEntityTypeFilter   + SMDSEntity_Last
   };
 };
 
@@ -181,10 +184,34 @@ public:
   Standard_EXPORT virtual bool IsValid( const int ) const;
   Standard_EXPORT virtual bool IsObjValid( const int ) const;
   Standard_EXPORT virtual int  GetId() const;
-  Standard_EXPORT virtual bool IsNodeFilter() const;  
+  Standard_EXPORT virtual bool IsNodeFilter() const;
 
 public:
   DEFINE_STANDARD_RTTI(SMESHGUI_VolumesFilter)
+};
+
+/*
+  Class       : SMESHGUI_VolumeShapeFilter
+  Description : Verify whether selected cell is a volume of a certain shape
+*/
+
+DEFINE_STANDARD_HANDLE(SMESHGUI_VolumeShapeFilter, SMESHGUI_Filter)
+
+class SMESHGUI_VolumeShapeFilter : public SMESHGUI_Filter
+{
+  SMDSAbs_GeometryType myGeometryType;
+public:
+  Standard_EXPORT SMESHGUI_VolumeShapeFilter(const SMDSAbs_GeometryType shape);
+
+  Standard_EXPORT virtual bool IsValid( const int ) const;
+  Standard_EXPORT virtual bool IsObjValid( const int ) const;
+  Standard_EXPORT virtual int  GetId() const;
+  Standard_EXPORT virtual bool IsNodeFilter() const;
+
+  Standard_EXPORT static int GetId( SMDSAbs_GeometryType geom );
+
+public:
+  DEFINE_STANDARD_RTTI(SMESHGUI_VolumeShapeFilter)
 };
 
 #endif // SMESHGUI_FILTER_H
