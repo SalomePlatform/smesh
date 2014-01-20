@@ -28,9 +28,11 @@
 
 #include "SMESH_MeshAlgos.hxx"
 
+#include "SMDS_FaceOfNodes.hxx"
 #include "SMDS_LinearEdge.hxx"
-#include "SMDS_VolumeTool.hxx"
 #include "SMDS_Mesh.hxx"
+#include "SMDS_PolygonalFaceOfNodes.hxx"
+#include "SMDS_VolumeTool.hxx"
 #include "SMESH_OctreeNode.hxx"
 
 #include <GC_MakeSegment.hxx>
@@ -743,7 +745,7 @@ SMESH_ElementSearcherImpl::FindClosestTo( const gp_Pnt&       point,
 {
   const SMDS_MeshElement* closestElem = 0;
 
-  if ( type == SMDSAbs_Face )
+  if ( type == SMDSAbs_Face || type == SMDSAbs_Volume )
   {
     if ( !_ebbTree || _elementType != type )
     {
@@ -773,8 +775,7 @@ SMESH_ElementSearcherImpl::FindClosestTo( const gp_Pnt&       point,
     TIDSortedElemSet::iterator elem = suspectElems.begin();
     for ( ; elem != suspectElems.end(); ++elem )
     {
-      double dist = SMESH_MeshAlgos::GetDistance( dynamic_cast<const SMDS_MeshFace*>(*elem),
-                                                   point );
+      double dist = SMESH_MeshAlgos::GetDistance( *elem, point );
       if ( dist < minDist + 1e-10)
       {
         minDist = dist;
@@ -1292,6 +1293,31 @@ namespace
 
 //=======================================================================
 /*!
+ * \brief Return minimal distance from a point to an element
+ *
+ * Currently we ignore non-planarity and 2nd order of face
+ */
+//=======================================================================
+
+double SMESH_MeshAlgos::GetDistance( const SMDS_MeshElement* elem,
+                                     const gp_Pnt&           point )
+{
+  switch ( elem->GetType() )
+  {
+  case SMDSAbs_Volume:
+    return GetDistance( dynamic_cast<const SMDS_MeshVolume*>( elem ), point);
+  case SMDSAbs_Face:
+    return GetDistance( dynamic_cast<const SMDS_MeshFace*>( elem ), point);
+  case SMDSAbs_Edge:
+    return GetDistance( dynamic_cast<const SMDS_MeshEdge*>( elem ), point);
+  case SMDSAbs_Node:
+    return point.Distance( SMESH_TNodeXYZ( elem ));
+  }
+  return -1;
+}
+
+//=======================================================================
+/*!
  * \brief Return minimal distance from a point to a face
  *
  * Currently we ignore non-planarity and 2nd order of face
@@ -1384,6 +1410,68 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshFace* face,
   }
   }
   return badDistance;
+}
+
+//=======================================================================
+/*!
+ * \brief Return minimal distance from a point to an edge
+ */
+//=======================================================================
+
+double SMESH_MeshAlgos::GetDistance( const SMDS_MeshEdge* edge, const gp_Pnt& point )
+{
+  throw SALOME_Exception(LOCALIZED("not implemented so far"));
+}
+
+//=======================================================================
+/*!
+ * \brief Return minimal distance from a point to a volume
+ *
+ * Currently we ignore non-planarity and 2nd order
+ */
+//=======================================================================
+
+double SMESH_MeshAlgos::GetDistance( const SMDS_MeshVolume* volume, const gp_Pnt& point )
+{
+  SMDS_VolumeTool vTool( volume );
+  vTool.SetExternalNormal();
+  const int iQ = volume->IsQuadratic() ? 2 : 1;
+
+  double n[3], bc[3];
+  double minDist = 1e100, dist;
+  for ( int iF = 0; iF < vTool.NbFaces(); ++iF )
+  {
+    // skip a facet with normal not "looking at" the point
+    if ( !vTool.GetFaceNormal( iF, n[0], n[1], n[2] ) ||
+         !vTool.GetFaceBaryCenter( iF, bc[0], bc[1], bc[2] ))
+      continue;
+    gp_XYZ bcp = point.XYZ() - gp_XYZ( bc[0], bc[1], bc[2] );
+    if ( gp_XYZ( n[0], n[1], n[2] ) * bcp < 1e-6 )
+      continue;
+
+    // find distance to a facet
+    const SMDS_MeshNode** nodes = vTool.GetFaceNodes( iF );
+    switch ( vTool.NbFaceNodes( iF ) / iQ ) {
+    case 3:
+    {
+      SMDS_FaceOfNodes tmpFace( nodes[0], nodes[ 1*iQ ], nodes[ 2*iQ ] );
+      dist = GetDistance( &tmpFace, point );
+      break;
+    }
+    case 4:
+    {
+      SMDS_FaceOfNodes tmpFace( nodes[0], nodes[ 1*iQ ], nodes[ 2*iQ ], nodes[ 3*iQ ]);
+      dist = GetDistance( &tmpFace, point );
+      break;
+    }
+    default:
+      vector<const SMDS_MeshNode *> nvec( nodes, nodes + vTool.NbFaceNodes( iF ));
+      SMDS_PolygonalFaceOfNodes tmpFace( nvec );
+      dist = GetDistance( &tmpFace, point );
+    }
+    minDist = Min( minDist, dist );
+  }
+  return minDist;
 }
 
 //================================================================================

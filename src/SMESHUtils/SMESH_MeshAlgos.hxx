@@ -101,7 +101,16 @@ namespace SMESH_MeshAlgos
   bool IsOut( const SMDS_MeshElement* element, const gp_Pnt& point, double tol );
 
   SMESHUtils_EXPORT
+  double GetDistance( const SMDS_MeshElement* elem, const gp_Pnt& point );
+
+  SMESHUtils_EXPORT
+  double GetDistance( const SMDS_MeshEdge* edge, const gp_Pnt& point );
+
+  SMESHUtils_EXPORT
   double GetDistance( const SMDS_MeshFace* face, const gp_Pnt& point );
+
+  SMESHUtils_EXPORT
+  double GetDistance( const SMDS_MeshVolume* volume, const gp_Pnt& point );
 
   SMESHUtils_EXPORT
   void GetBarycentricCoords( const gp_XY& point,
