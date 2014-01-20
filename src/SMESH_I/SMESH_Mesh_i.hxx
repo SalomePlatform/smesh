@@ -538,7 +538,7 @@ public:
   /*!
    * Returns three components of normal of given mesh face (or an empty array in KO case)
    */
-  SMESH::double_array* GetFaceNormal(CORBA::Long faceId);
+  SMESH::double_array* GetFaceNormal(CORBA::Long faceId, CORBA::Boolean normalized);
 
   /*!
    * Returns an element based on all given nodes.

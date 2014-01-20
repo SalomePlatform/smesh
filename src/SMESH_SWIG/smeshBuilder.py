@@ -2431,8 +2431,8 @@ class Mesh:
     ## Returns three components of normal of given mesh face
     #  (or an empty array in KO case)
     #  @ingroup l1_meshinfo
-    def GetFaceNormal(self, faceId):
-        return self.mesh.GetFaceNormal(faceId)
+    def GetFaceNormal(self, faceId, normalized=False):
+        return self.mesh.GetFaceNormal(faceId,normalized)
 
     ## Returns an element based on all given nodes.
     #  @ingroup l1_meshinfo

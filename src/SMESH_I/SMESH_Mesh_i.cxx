@@ -4048,7 +4048,8 @@ SMESH::long_array* SMESH_Mesh_i::GetElemFaceNodes(CORBA::Long  elemId,
 //purpose  : Returns three components of normal of given mesh face.
 //=======================================================================
 
-SMESH::double_array* SMESH_Mesh_i::GetFaceNormal(CORBA::Long  elemId)
+SMESH::double_array* SMESH_Mesh_i::GetFaceNormal(CORBA::Long    elemId,
+                                                 CORBA::Boolean normalized)
 {
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
@@ -4058,7 +4059,7 @@ SMESH::double_array* SMESH_Mesh_i::GetFaceNormal(CORBA::Long  elemId)
   if ( SMESHDS_Mesh* mesh = _impl->GetMeshDS() )
   {
     gp_XYZ normal;
-    if ( SMESH_MeshAlgos::FaceNormal( mesh->FindElement(elemId), normal, /*normalized=*/true ))
+    if ( SMESH_MeshAlgos::FaceNormal( mesh->FindElement(elemId), normal, normalized ))
     {
       aResult->length( 3 );
       aResult[ 0 ] = normal.X();

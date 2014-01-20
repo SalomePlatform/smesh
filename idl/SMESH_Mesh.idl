@@ -931,7 +931,7 @@ module SMESH
     /*!
      * Returns three components of normal of given mesh face (or an empty array in KO case)
      */
-    double_array GetFaceNormal(in long faceId);
+    double_array GetFaceNormal(in long faceId, in boolean normalized);
 
     /*!
      * Returns an element based on all given nodes.
