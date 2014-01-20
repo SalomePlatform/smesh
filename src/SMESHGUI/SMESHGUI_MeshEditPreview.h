@@ -27,8 +27,10 @@
 #ifndef SMESHGUI_MESHEDITPREVIEW_H
 #define SMESHGUI_MESHEDITPREVIEW_H
 
-// SMESH includes
 #include "SMESH_SMESHGUI.hxx"
+#include <vector>
+#include <gp_Ax1.hxx>
+#include <gp_Pnt.hxx>
 
 class SVTK_ViewWindow;
 class vtkUnstructuredGrid;
@@ -49,14 +51,27 @@ class SMESHGUI_EXPORT SMESHGUI_MeshEditPreview
   vtkUnstructuredGrid* myGrid;
   SALOME_Actor*        myPreviewActor;
 
+  std::vector<gp_Pnt>  myUnitArrowPnts;
+  int                  myNbArrows;
+
 public:
   SMESHGUI_MeshEditPreview( SVTK_ViewWindow* );
   ~SMESHGUI_MeshEditPreview();
 
   void                 SetData( const SMESH::MeshPreviewStruct* );
+
   void                 SetVisibility( bool );
   void                 SetColor( double, double, double );
+
+  void                 SetArrowShapeAndNb( int    nbArrows,
+                                           double headLength,
+                                           double headRadius,
+                                           double start=0.);
+  void                 SetArrows( const gp_Ax1* axes,
+                                  double        length);
+
   SALOME_Actor*        GetActor() const;
+  vtkUnstructuredGrid* GetGrid() const;
 };
 
 #endif // SMESHGUI_MESHEDITPREVIEW_H

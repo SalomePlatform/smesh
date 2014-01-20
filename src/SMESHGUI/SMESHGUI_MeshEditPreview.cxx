@@ -53,6 +53,8 @@
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
+#include <gp_Ax3.hxx>
+
 //================================================================================
 /*!
  * \brief Constructor
@@ -226,6 +228,98 @@ void SMESHGUI_MeshEditPreview::SetData (const SMESH::MeshPreviewStruct* previewD
 
 //================================================================================
 /*!
+ * \brief Set shape of an arrow of a unit length and nb of arrows
+ */
+//================================================================================
+
+void SMESHGUI_MeshEditPreview::SetArrowShapeAndNb( int    nbArrows,
+                                                   double headLength,
+                                                   double headRadius,
+                                                   double start)
+{
+  const int theNbPoints = 10; // in one arrow
+  myUnitArrowPnts.reserve( theNbPoints );
+  myUnitArrowPnts.clear();
+
+  // unit arrow || OZ
+
+  for ( int i = 0; i < theNbPoints - 2; ++i )
+  {
+    double angle = i * 2 * M_PI / ( theNbPoints - 2 );
+    myUnitArrowPnts.push_back( gp_Pnt( headRadius * Cos( angle ),
+                                       headRadius * Sin( angle ),
+                                       1. - headLength ));
+  }
+  myUnitArrowPnts.push_back( gp_Pnt( 0, 0, start ));
+  myUnitArrowPnts.push_back( gp_Pnt( 0, 0, 1 ));
+
+
+  // nodes of all arrows
+
+  vtkPoints* aPoints = vtkPoints::New();
+  aPoints->SetNumberOfPoints( theNbPoints * nbArrows );
+  for ( int iP = 0, iA = 0; iA < nbArrows; ++iA )
+    for ( int i = 0; i < theNbPoints; ++i, ++iP )
+      aPoints->SetPoint( iP,
+                         myUnitArrowPnts[i].X(),
+                         myUnitArrowPnts[i].Y(),
+                         myUnitArrowPnts[i].Z()  );
+  myGrid->SetPoints(aPoints);
+  aPoints->Delete();
+
+  // connectivity of all arrows
+
+  const int theNbCells = ( theNbPoints - 1 ); // in one arrow
+  myGrid->Allocate( theNbCells  * nbArrows );
+  for ( int nP = 0, iA = 0; iA < nbArrows; ++iA, nP += theNbPoints )
+  {
+    vtkIdType conn[3] = { theNbPoints - 1 + nP, // arrow end
+                          theNbPoints - 3 + nP, // point on a circle
+                          nP };                 // point on a circle
+    for ( int i = 0; i < theNbCells-1; ++i )
+    {
+      myGrid->InsertNextCell( VTK_TRIANGLE, 3, conn );
+      conn[1] = conn[2];
+      conn[2] = conn[2] + 1;
+    }
+    conn[1] = theNbPoints - 2 + nP;
+    myGrid->InsertNextCell( VTK_LINE, 2, conn );
+  }
+
+  myNbArrows = nbArrows;
+}
+
+//================================================================================
+/*!
+ * \brief Set data to show moved/rotated/scaled arrows
+ *  \param [in] axes - location and direction of the arrows
+ *  \param [in] length - length of arrows
+ */
+//================================================================================
+
+void SMESHGUI_MeshEditPreview::SetArrows( const gp_Ax1* axes,
+                                          double        length )
+{
+  vtkPoints* aPoints = myGrid->GetPoints();
+
+  for ( int iP = 0, iA = 0; iA < myNbArrows; ++iA )
+  {
+    gp_Trsf trsf;
+    trsf.SetTransformation( gp_Ax3( axes[iA].Location(), axes[iA].Direction() ), gp::XOY() );
+
+    for ( size_t i = 0; i < myUnitArrowPnts.size(); ++i, ++iP )
+    {
+      gp_Pnt p = myUnitArrowPnts[i].Scaled( gp::Origin(), length );
+      p.Transform( trsf );
+      aPoints->SetPoint( iP, p.X(), p.Y(), p.Z() );
+    }
+  }
+
+  myGrid->Modified();
+}
+
+//================================================================================
+/*!
  * \brief Set visibility
  */
 //================================================================================
@@ -252,7 +346,19 @@ void SMESHGUI_MeshEditPreview::SetColor(double R, double G, double B)
  * \brief Get preview actor
  */
 //================================================================================
+
 SALOME_Actor* SMESHGUI_MeshEditPreview::GetActor() const
 { 
   return myPreviewActor;
+}
+
+//================================================================================
+/*!
+ * \brief Returns the priewed vtkUnstructuredGrid
+ */
+//================================================================================
+
+vtkUnstructuredGrid* SMESHGUI_MeshEditPreview::GetGrid() const
+{
+  return myGrid;
 }
