@@ -69,8 +69,8 @@ bool SMESHGUI_XmlHandler::startDocument()
 
   Reimplemented from QXmlDefaultHandler.
 */
-bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&, 
-                                        const QString& qName, 
+bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
+                                        const QString& qName,
                                         const QXmlAttributes& atts)
 {
   if (qName == "meshers")
@@ -80,22 +80,22 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
   }
   else if (qName == "meshers-group") // group of hypotheses and algorithms
   {
-//    if (atts.value("server-lib") != "")
+    //    if (atts.value("server-lib") != "")
     {
       myPluginName = atts.value("name");
       myServerLib  = atts.value("server-lib");
       myClientLib  = atts.value("gui-lib");
-/* It's Need to tranlate lib name for WIN32 or X platform
- * (only client lib, because server lib translates in SMESH_Gen_i::createHypothesis
- *  for normal work of *.py files )
- */
+      /* It's Need to tranlate lib name for WIN32 or X platform
+       * (only client lib, because server lib translates in SMESH_Gen_i::createHypothesis
+       *  for normal work of *.py files )
+       */
       if( !myClientLib.isEmpty() )
       {
 #ifdef WIN32
-      //myServerLib += ".dll";
+        //myServerLib += ".dll";
         myClientLib += ".dll";
 #else
-      //myServerLib = "lib" + myServerLib + ".so";
+        //myServerLib = "lib" + myServerLib + ".so";
         myClientLib = "lib" + myClientLib + ".so";
 #endif
       }
@@ -158,7 +158,7 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
           attr[ i ] = aStr.split( ',', QString::SkipEmptyParts );
         }
       }
-      
+
       if ( !aHypAlType.contains( BAD_HYP_FLAG ) ) {
         HypothesisData* aHypData =
           new HypothesisData (aHypAlType, myPluginName, myServerLib, myClientLib,
@@ -189,9 +189,9 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
       bool badSet = hypos.contains( BAD_HYP_FLAG ) || algos.contains( BAD_HYP_FLAG );
 
       if ( !badSet )
-	myListOfHypothesesSets.append( new HypothesesSet ( atts.value("name"), 
-							   hypos.split( ',', QString::SkipEmptyParts ),
-							   algos.split( ',', QString::SkipEmptyParts ) ) );
+        myListOfHypothesesSets.append( new HypothesesSet ( atts.value("name"),
+                                                           hypos.split( ',', QString::SkipEmptyParts ),
+                                                           algos.split( ',', QString::SkipEmptyParts ) ) );
     }
   }
   else if ( qName == "python-wrap" ||

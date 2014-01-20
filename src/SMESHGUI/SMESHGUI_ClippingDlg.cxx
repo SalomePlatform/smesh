@@ -762,22 +762,22 @@ void rotationToNormal ( double theRotation[2],
   switch ( theOrientation ) {
   case 0:
   case 1:
-  	theDir[0][1] = anU[0];
-  	theDir[0][2] = aV[0];
-  	theDir[1][0] = anU[1];
-  	theDir[1][2] = aV[1];
+    theDir[0][1] = anU[0];
+    theDir[0][2] = aV[0];
+    theDir[1][0] = anU[1];
+    theDir[1][2] = aV[1];
     break;
   case 2:
-  	theDir[0][2] = anU[0];
-  	theDir[0][0] = aV[0];
-  	theDir[1][1] = anU[1];
-  	theDir[1][0] = aV[1];
+    theDir[0][2] = anU[0];
+    theDir[0][0] = aV[0];
+    theDir[1][1] = anU[1];
+    theDir[1][0] = aV[1];
     break;
   case 3:
-  	theDir[0][0] = anU[0];
-  	theDir[0][1] = aV[0];
-  	theDir[1][2] = anU[1];
-  	theDir[1][1] = aV[1];
+    theDir[0][0] = anU[0];
+    theDir[0][1] = aV[0];
+    theDir[1][2] = anU[1];
+    theDir[1][1] = aV[1];
     break;
   }
 
@@ -799,12 +799,12 @@ bool SMESHGUI_ClippingDlg::AddPlane ( SMESH::TActorList       theActorList,
 
   int anOrientation;
   if ( thePlane->PlaneMode == SMESH::Absolute )
-   anOrientation = thePlane->myAbsoluteOrientation;
+    anOrientation = thePlane->myAbsoluteOrientation;
   else if ( thePlane->PlaneMode == SMESH::Relative )
-   anOrientation = thePlane->myRelativeOrientation + 1;
+    anOrientation = thePlane->myRelativeOrientation + 1;
 
   if ( anOrientation == 0 ) {
-  	// compute a direction for plane in absolute mode
+    // compute a direction for plane in absolute mode
     double znam = sqrt( thePlane->Dx*thePlane->Dx + thePlane->Dy*thePlane->Dy + thePlane->Dz*thePlane->Dz );
     double aRotation = acos( thePlane->Dy/znam )/aCoeff;
     if ( thePlane->Dy >= 0.0 && thePlane->Dz >= 0.0 )      thePlane->myAngle[0] = 90.0 + aRotation;
@@ -905,10 +905,10 @@ bool SMESHGUI_ClippingDlg::AddPlane ( SMESH::TActorList       theActorList,
   for ( ; anIter != theActorList.end(); anIter++ )
     if( vtkActor* aVTKActor = *anIter )
       if( SMESH_Actor* anActor = SMESH_Actor::SafeDownCast( aVTKActor ) ) {
-      	if( thePlane->IsOpenGLClipping )
+        if( thePlane->IsOpenGLClipping )
           anActor->AddOpenGLClippingPlane( thePlane->InvertPlane() );
-      	else
-      		anActor->AddClippingPlane( thePlane );
+        else
+          anActor->AddClippingPlane( thePlane );
       }
 
   return true;
@@ -1169,7 +1169,7 @@ void SMESHGUI_ClippingDlg::updateActorItem( QListWidgetItem* theItem,
 
         SMESH::ComputeBounds( anActorList, myBounds );
         myPreviewWidget->PlaceWidget( myBounds[0], myBounds[1], myBounds[2],
-        		                          myBounds[3], myBounds[4], myBounds[5] );
+                                      myBounds[3], myBounds[4], myBounds[5] );
       }
     }
   }
@@ -1367,7 +1367,7 @@ void SMESHGUI_ClippingDlg::onSelectPlane ( int theIndex )
   myIsSelectPlane = false;
   SMESH::ComputeBounds( aPlaneData.ActorList, myBounds );
   myPreviewWidget->PlaceWidget( myBounds[0], myBounds[1], myBounds[2],
-  		                          myBounds[3], myBounds[4], myBounds[5] );
+                                myBounds[3], myBounds[4], myBounds[5] );
   SetCurrentPlaneParam();
 
   // Actors
@@ -1454,9 +1454,9 @@ void SMESHGUI_ClippingDlg::SetCurrentPlaneParam()
   double aRot[2] = { getRotation1(), getRotation2() };
   int anOrient;
   if ( aPlane->PlaneMode == SMESH::Absolute )
-  	anOrient = CBAbsoluteOrientation->currentIndex();
+    anOrient = CBAbsoluteOrientation->currentIndex();
   else if ( aPlane->PlaneMode == SMESH::Relative )
-  	anOrient = CBRelativeOrientation->currentIndex() + 1;
+    anOrient = CBRelativeOrientation->currentIndex() + 1;
 
   if ( aPlane->PlaneMode == SMESH::Relative ) {
     aPlane->myAngle[0] = aRot[0];
@@ -1466,7 +1466,7 @@ void SMESHGUI_ClippingDlg::SetCurrentPlaneParam()
   }
 
   if ( anOrient == 0 ) {
-  	// compute a direction for plane in absolute mode
+    // compute a direction for plane in absolute mode
     double znam = sqrt( aPlane->Dx*aPlane->Dx + aPlane->Dy*aPlane->Dy + aPlane->Dz*aPlane->Dz );
     double aRotation = acos( aPlane->Dy/znam )/aCoeff;
     if ( aPlane->Dy >= 0.0 && aPlane->Dz >= 0.0 )     aRot[0] = 90.0 + aRotation;
@@ -1508,7 +1508,7 @@ void SMESHGUI_ClippingDlg::SetCurrentPlaneParam()
     anOrigin[1] = aPlane->Y;
     anOrigin[2] = aPlane->Z;
   }
-  
+
   if( anIsOk ) {
     aPlane->SetNormal( aNormal );
     aPlane->SetOrigin( anOrigin );
@@ -1614,7 +1614,7 @@ void SMESHGUI_ClippingDlg::setBoundsForPreviewWidget()
     if( anOrigin[2] < aBounds[4] ) {
       myBounds[4] = anOrigin[2]; isBoundsChanged = true; }
     if( anOrigin[2] > aBounds[5] ) {
-    	myBounds[5] = anOrigin[2]; isBoundsChanged = true; }
+        myBounds[5] = anOrigin[2]; isBoundsChanged = true; }
   }
 
   if( isBoundsChanged )
@@ -1803,10 +1803,10 @@ void SMESHGUI_ClippingDlg::ClickOnApply()
       for( ; anIter3 != anActorList.end(); anIter3++ )
         if( vtkActor* aVTKActor = *anIter3 )
           if( SMESH_Actor* anActor = SMESH_Actor::SafeDownCast( aVTKActor ) ) {
-          	if( anOrientedPlane->IsOpenGLClipping )
+            if( anOrientedPlane->IsOpenGLClipping )
               anActor->AddOpenGLClippingPlane( anOrientedPlane->InvertPlane() );
-          	else
-          		anActor->AddClippingPlane( anOrientedPlane );
+            else
+              anActor->AddClippingPlane( anOrientedPlane );
           }
 
       SMESH::ClippingPlaneInfo aClippingPlaneInfo;
@@ -1820,7 +1820,7 @@ void SMESHGUI_ClippingDlg::ClickOnApply()
     anAllActors->InitTraversal();
     while( vtkActor* aVTKActor = anAllActors->GetNextActor() )
       if( SMESH_Actor* anActor = SMESH_Actor::SafeDownCast( aVTKActor ) ) {
-      	anSMESHActor = anActor;
+        anSMESHActor = anActor;
         anActor->SetOpenGLClippingPlane();
       }
 

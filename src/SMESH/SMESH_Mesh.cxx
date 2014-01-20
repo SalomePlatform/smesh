@@ -143,7 +143,7 @@ SMESH_Mesh::SMESH_Mesh():
 namespace
 {
 #ifndef WIN32
- void deleteMeshDS(SMESHDS_Mesh* meshDS)
+  void deleteMeshDS(SMESHDS_Mesh* meshDS)
   {
     //cout << "deleteMeshDS( " << meshDS << endl;
     delete meshDS;
@@ -152,18 +152,18 @@ namespace
   static void* deleteMeshDS(void* meshDS)
   {
     //cout << "deleteMeshDS( " << meshDS << endl;
-	SMESHDS_Mesh* m = (SMESHDS_Mesh*)meshDS;
-	if(m) { 
-	  delete m;	  
-	}
-   return 0;
+    SMESHDS_Mesh* m = (SMESHDS_Mesh*)meshDS;
+    if(m) {
+      delete m;
+    }
+    return 0;
   }
 #endif
 }
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -207,7 +207,7 @@ SMESH_Mesh::~SMESH_Mesh()
   _myDocument = 0;
 
   if ( _myMeshDS ) {
-    // delete _myMeshDS, in a thread in order not to block closing a study with large meshes	
+    // delete _myMeshDS, in a thread in order not to block closing a study with large meshes
 #ifndef WIN32
     boost::thread aThread(boost::bind( & deleteMeshDS, _myMeshDS ));
 #else

@@ -1392,13 +1392,13 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
   }
   // check that tab enable, if algorithm building needed algo is one less than dimension
   if ( algoData && myIsOnGeometry && !algoData->InputTypes.isEmpty() &&
-     ( aDim > SMESH::DIM_0D ) && !isAccessibleDim( aDim - 1 ) ){
+       ( aDim > SMESH::DIM_0D ) && !isAccessibleDim( aDim - 1 ) ){
     myDlg->enableTab( aDim - 1 );
   }
   if ( (myDlg->currentMeshType() != MT_ANY) &&
-	   (( !algoData && ( aDim > SMESH::DIM_0D ) && isAccessibleDim( aDim - 1 )) ||
-       ( algoData && myIsOnGeometry && algoData->InputTypes.isEmpty() &&
-       ( aDim > SMESH::DIM_0D ) && isAccessibleDim( aDim - 1 ) ) ) ){
+       (( !algoData && ( aDim > SMESH::DIM_0D ) && isAccessibleDim( aDim - 1 )) ||
+        ( algoData && myIsOnGeometry && algoData->InputTypes.isEmpty() &&
+          ( aDim > SMESH::DIM_0D ) && isAccessibleDim( aDim - 1 ) ) ) ){
     for (int i = aDim - 1; i >= SMESH::DIM_0D; i--){
       if ( isAccessibleDim( i ) ) myDlg->disableTab( i );
     }
@@ -1406,7 +1406,7 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
   // check that algorithms of other dimentions are compatible with
   // the selected one
 
-   // 2 loops: backward and forward from algo dimension
+  // 2 loops: backward and forward from algo dimension
   for ( int forward = false; forward <= true; ++forward )
   {
     int dim = aDim + 1, lastDim = SMESH::DIM_3D, dir = 1;
