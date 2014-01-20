@@ -58,6 +58,7 @@ struct FaceQuadStruct
     };
     StdMeshers_FaceSidePtr grid;
     int                    from, to;     // indices of grid points used by the quad
+    int                    di;           // +1 or -1 depending on IsReversed()
     std::set<int>          forced_nodes; // indices of forced grid points
     std::vector<Contact>   contacts;     // contacts with sides of other quads
     int                    nbNodeOut;    // nb of missing nodes on an opposite shorter side
@@ -71,7 +72,7 @@ struct FaceQuadStruct
     int  ToQuadIndex( int sideNodeIndex ) const;
     bool IsForced( int nodeIndex ) const;
     bool IsReversed() const { return nbNodeOut ? false : to < from; }
-    bool Reverse();
+    bool Reverse(bool keepGrid);
     int  NbPoints() const { return Abs( to - from ); }
     double Param( int nodeIndex ) const;
     double Length( int from=-1, int to=-1) const;
@@ -105,6 +106,7 @@ struct FaceQuadStruct
     bool More() const { return uvPtr != uvEnd; }
     void Next() { uvPtr += dPtr; ++counter; }
     UVPtStruct& UVPt() const { return (UVPtStruct&) *uvPtr; }
+    UVPtStruct& operator[](int i) { return (UVPtStruct&) uvPtr[ i*dPtr]; }
     int  Count() const { return counter; }
   };
 
@@ -117,7 +119,7 @@ struct FaceQuadStruct
 
   FaceQuadStruct ( const TopoDS_Face& F = TopoDS_Face(), const std::string& nm="main" );
   UVPtStruct& UVPt( int i, int j ) { return uv_grid[ i + j * iSize ]; }
-  void  shift    ( size_t nb, bool keepUnitOri );
+  void  shift    ( size_t nb, bool keepUnitOri, bool keepGrid=false );
   int & nbNodeOut( int iSide ) { return side[ iSide ].nbNodeOut; }
   bool  findCell ( const gp_XY& uv, int & i, int & j );
   bool  isNear   ( const gp_XY& uv, int & i, int & j, int nbLoops=1 );
@@ -211,6 +213,8 @@ protected:
   bool addEnforcedNodes();
 
   int splitQuad(FaceQuadStruct::Ptr quad, int i, int j);
+
+  void shiftQuad(FaceQuadStruct::Ptr& quad, const int num );
 
   typedef std::map< StdMeshers_FaceSidePtr, std::vector< FaceQuadStruct::Ptr > > TQuadsBySide;
   void updateSideUV( FaceQuadStruct::Side&  side,
