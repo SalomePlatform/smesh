@@ -810,6 +810,9 @@ module SMESH
     EntityType GetElementGeomType( in long id )
       raises (SALOME::SALOME_Exception);
 
+    GeometryType GetElementShape( in long id )
+      raises (SALOME::SALOME_Exception);
+
     long_array GetSubMeshElementsId(in long ShapeID)
       raises (SALOME::SALOME_Exception);
 

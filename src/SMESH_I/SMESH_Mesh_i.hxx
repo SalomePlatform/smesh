@@ -368,6 +368,9 @@ public:
   SMESH::EntityType GetElementGeomType( CORBA::Long id )
     throw (SALOME::SALOME_Exception);
 
+  SMESH::GeometryType GetElementShape( CORBA::Long id )
+    throw (SALOME::SALOME_Exception);
+
   /*!
    * Returns ID of elements for given submesh
    */

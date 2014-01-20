@@ -3469,6 +3469,25 @@ SMESH::EntityType SMESH_Mesh_i::GetElementGeomType( const CORBA::Long id )
 
 //=============================================================================
 /*!
+ *
+ */
+//=============================================================================
+
+SMESH::GeometryType SMESH_Mesh_i::GetElementShape( const CORBA::Long id )
+  throw (SALOME::SALOME_Exception)
+{
+  if ( _preMeshInfo )
+    _preMeshInfo->FullLoadFromFile();
+
+  const SMDS_MeshElement* e = _impl->GetMeshDS()->FindElement(id);
+  if ( !e )
+    THROW_SALOME_CORBA_EXCEPTION( "invalid element id", SALOME::BAD_PARAM );
+
+  return ( SMESH::GeometryType ) e->GetGeomType();
+}
+
+//=============================================================================
+/*!
  * Returns ID of elements for given submesh
  */
 //=============================================================================
