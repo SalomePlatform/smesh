@@ -3076,14 +3076,20 @@ class Mesh:
             pass
         # axis
         if isinstance( startHexPoint, geomBuilder.GEOM._objref_GEOM_Object):
-            startHexPoint = self.geompyD.PointCoordinates( startHexPoint )
+            startHexPoint = self.smeshpyD.GetPointStruct( startHexPoint )
+        elif isinstance( startHexPoint, list ):
+            startHexPoint = SMESH.PointStruct( startHexPoint[0],
+                                               startHexPoint[1],
+                                               startHexPoint[2])
         if isinstance( facetNormal, geomBuilder.GEOM._objref_GEOM_Object):
-            facetNormal = self.geompyD.VectorCoordinates( facetNormal )
-        axis = SMESH.AxisStruct( startHexPoint[0], startHexPoint[1], startHexPoint[2],
-                                 facetNormal[0],   facetNormal[1],   facetNormal[2])
-        self.mesh.SetParameters( axis.parameters )
+            facetNormal = self.smeshpyD.GetDirStruct( facetNormal )
+        elif isinstance( facetNormal, list ):
+            facetNormal = self.smeshpyD.MakeDirStruct( facetNormal[0],
+                                                       facetNormal[1],
+                                                       facetNormal[2])
+        self.mesh.SetParameters( startHexPoint.parameters + facetNormal.PS.parameters )
 
-        self.editor.SplitHexahedraIntoPrisms(elems, method, axis, allDomains)
+        self.editor.SplitHexahedraIntoPrisms(elems, startHexPoint, facetNormal, method, allDomains)
 
     ## Splits quadrangle faces near triangular facets of volumes
     #

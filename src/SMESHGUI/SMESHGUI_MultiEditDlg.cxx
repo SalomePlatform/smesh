@@ -1635,16 +1635,18 @@ bool SMESHGUI_SplitVolumesDlg::process (SMESH::SMESH_MeshEditor_ptr theEditor,
       aParameters << myDirSpin[2]->text();
       myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
 
-      SMESH::AxisStruct_var axis = new SMESH::AxisStruct;
-      axis->x  = myPointSpin[0]->GetValue();
-      axis->y  = myPointSpin[1]->GetValue();
-      axis->z  = myPointSpin[2]->GetValue();
-      axis->vx = myDirSpin[0]->GetValue();
-      axis->vy = myDirSpin[1]->GetValue();
-      axis->vz = myDirSpin[2]->GetValue();
+      SMESH::PointStruct_var point = new SMESH::PointStruct;
+      point->x  = myPointSpin[0]->GetValue();
+      point->y  = myPointSpin[1]->GetValue();
+      point->z  = myPointSpin[2]->GetValue();
+      SMESH::DirStruct_var norm = new SMESH::DirStruct;
+      norm->PS.x = myDirSpin[0]->GetValue();
+      norm->PS.y = myDirSpin[1]->GetValue();
+      norm->PS.z = myDirSpin[2]->GetValue();
 
-      theEditor->SplitHexahedraIntoPrisms( obj,  myGroupChoice->checkedId()+1,
-                                           axis, myAllDomainsChk->isChecked() );
+      theEditor->SplitHexahedraIntoPrisms( obj, point, norm,
+                                           myGroupChoice->checkedId()+1,
+                                           myAllDomainsChk->isChecked() );
     }
     else
     {

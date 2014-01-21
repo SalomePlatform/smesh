@@ -2028,22 +2028,23 @@ void SMESH_MeshEditor_i::SplitVolumesIntoTetra (SMESH::SMESH_IDSource_ptr elems,
  */
 //================================================================================
 
-void SMESH_MeshEditor_i::SplitHexahedraIntoPrisms (SMESH::SMESH_IDSource_ptr elems,
-                                                   CORBA::Short              methodFlags,
-                                                   const SMESH::AxisStruct & facetToSplitNormal,
-                                                   CORBA::Boolean            allDomains)
+void SMESH_MeshEditor_i::SplitHexahedraIntoPrisms (SMESH::SMESH_IDSource_ptr  elems,
+                                                   const SMESH::PointStruct & startHexPoint,
+                                                   const SMESH::DirStruct&    facetToSplitNormal,
+                                                   CORBA::Short               methodFlags,
+                                                   CORBA::Boolean             allDomains)
   throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
   prepareIdSource( elems );
 
-  gp_Ax1 facetNorm( gp_Pnt( facetToSplitNormal.x,
-                            facetToSplitNormal.y,
-                            facetToSplitNormal.z ),
-                    gp_Dir( facetToSplitNormal.vx,
-                            facetToSplitNormal.vy,
-                            facetToSplitNormal.vz ));
+  gp_Ax1 facetNorm( gp_Pnt( startHexPoint.x,
+                            startHexPoint.y,
+                            startHexPoint.z ),
+                    gp_Dir( facetToSplitNormal.PS.x,
+                            facetToSplitNormal.PS.y,
+                            facetToSplitNormal.PS.z ));
   TIDSortedElemSet elemSet;
   SMESH::long_array_var anElementsId = elems->GetIDs();
   SMDS_MeshElement::GeomFilter filter( SMDSGeom_HEXA );
@@ -2070,8 +2071,11 @@ void SMESH_MeshEditor_i::SplitHexahedraIntoPrisms (SMESH::SMESH_IDSource_ptr ele
   declareMeshModified( /*isReComputeSafe=*/true ); // it does not influence Compute()
 
   TPythonDump() << this << ".SplitHexahedraIntoPrisms( "
-                << elems << ", " << methodFlags<< ", "
-                << facetToSplitNormal<< ", " << allDomains << " )";
+                << elems << ", "
+                << startHexPoint << ", "
+                << facetToSplitNormal<< ", "
+                << methodFlags<< ", "
+                << allDomains << " )";
 
   SMESH_CATCH( SMESH::throwCorbaException );
 }

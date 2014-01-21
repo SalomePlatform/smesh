@@ -326,9 +326,10 @@ module SMESH
     /*!
      * \brief Split hexahedra into triangular prisms
      *  \param elems - elements to split
+     *  \param startHexPoint - a point used to find a hexahedron for which \a facetToSplitNormal
+     *         gives a normal vector defining facets to split into triangles.
      *  \param facetToSplitNormal - normal used to find a facet of hexahedron
-     *         to split into triangles. Location of this vector is used to 
-     *         find a hexahedron whose facets are tested using direction of this vector.
+     *         to split into triangles.
      *  \param methodFlags - flags passing splitting method:
      *         1 - split the hexahedron into 2 prisms
      *         2 - split the hexahedron into 4 prisms
@@ -336,10 +337,11 @@ module SMESH
      *         to \a facetToSplitNormal location are split, else \a facetToSplitNormal
      *         is used to find the facet to split in all domains present in \a elems.
      */
-    void SplitHexahedraIntoPrisms(in SMESH_IDSource    elems, 
-                                  in short             methodFlags,
-                                  in SMESH::AxisStruct facetToSplitNormal,
-                                  in boolean           allDomains)
+    void SplitHexahedraIntoPrisms(in SMESH_IDSource     elems, 
+                                  in SMESH::PointStruct startHexPoint,
+                                  in SMESH::DirStruct   facetToSplitNormal,
+                                  in short              methodFlags,
+                                  in boolean            allDomains)
       raises (SALOME::SALOME_Exception);
 
 

@@ -386,7 +386,7 @@ namespace {
         "ExtrusionSweepObject2D","ExtrusionSweepObject2DMakeGroups",
         "Translate","TranslateMakeGroups","TranslateMakeMesh",
         "TranslateObject","TranslateObjectMakeGroups", "TranslateObjectMakeMesh",
-        "ExtrusionAlongPathX","ExtrusionAlongPathObjX"
+        "ExtrusionAlongPathX","ExtrusionAlongPathObjX","SplitHexahedraIntoPrisms"
         ,"" }; // <- mark of the end
       methodsAcceptingList.Insert( methodNames );
     }
@@ -2376,7 +2376,7 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       "GetLastCreatedElems",
       "MirrorMakeMesh","MirrorObjectMakeMesh","TranslateMakeMesh","TranslateObjectMakeMesh",
       "Scale","ScaleMakeMesh","RotateMakeMesh","RotateObjectMakeMesh","MakeBoundaryMesh",
-      "MakeBoundaryElements", "SplitVolumesIntoTetra",
+      "MakeBoundaryElements", "SplitVolumesIntoTetra","SplitHexahedraIntoPrisms",
       "DoubleElements","DoubleNodes","DoubleNode","DoubleNodeGroup","DoubleNodeGroups",
       "DoubleNodeElem","DoubleNodeElemInRegion","DoubleNodeElemGroup",
       "DoubleNodeElemGroupInRegion","DoubleNodeElemGroups","DoubleNodeElemGroupsInRegion",
