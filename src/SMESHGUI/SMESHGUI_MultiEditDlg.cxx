@@ -1698,6 +1698,7 @@ void SMESHGUI_SplitVolumesDlg::on3d2dChanged(int isPrism)
   }
   SMESHGUI_MultiEditDlg::on3d2dChanged( !myEntityType );
   myEntityType = 1; // == VOLUME
+  onSelectionDone();
 }
 
 //================================================================================
@@ -1788,6 +1789,8 @@ void SMESHGUI_SplitVolumesDlg::onSelectionDone()
     }
     updateButtons();
   }
+
+  myCriterionGrp->setEnabled( !myMesh->_is_nil() && nbElemsInMesh() > 0 );
 }
 
 //================================================================================
