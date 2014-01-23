@@ -317,17 +317,25 @@ bool StdMeshers_Quadrangle_2D::computeTriangles(SMESH_Mesh&         aMesh,
   if ( !setNormalizedGrid( quad ))
     return false;
 
-  if ( quad->nbNodeOut( QUAD_BOTTOM_SIDE ))
-  {
-    splitQuad( quad, 0, 1 );
-  }
   if ( quad->nbNodeOut( QUAD_TOP_SIDE    ))
   {
     splitQuad( quad, 0, quad->jSize-2 );
   }
+  if ( quad->nbNodeOut( QUAD_BOTTOM_SIDE )) // this should not happen
+  {
+    splitQuad( quad, 0, 1 );
+  }
   FaceQuadStruct::Ptr newQuad = myQuadList.back();
   if ( quad != newQuad ) // split done
   {
+    {
+      FaceQuadStruct::Ptr botQuad = // a bottom part
+        ( quad->side[ QUAD_LEFT_SIDE ].from == 0 ) ? quad : newQuad;
+      if ( botQuad->nbNodeOut( QUAD_LEFT_SIDE ) > 0 )
+        botQuad->side[ QUAD_LEFT_SIDE ].to += botQuad->nbNodeOut( QUAD_LEFT_SIDE );
+      else if ( botQuad->nbNodeOut( QUAD_RIGHT_SIDE ) > 0 )
+        botQuad->side[ QUAD_RIGHT_SIDE ].to += botQuad->nbNodeOut( QUAD_RIGHT_SIDE );
+    }
     // make quad be a greatest one
     if ( quad->side[ QUAD_LEFT_SIDE ].NbPoints() == 2 ||
          quad->side[ QUAD_RIGHT_SIDE ].NbPoints() == 2  )
