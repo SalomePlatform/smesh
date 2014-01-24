@@ -477,7 +477,7 @@ void SMESHGUI_CopyMeshDlg::SelectionIntoArgument()
 
   // get selected mesh
   SALOME_ListIO aList;
-  mySelectionMgr->selectedObjects(aList,SVTK_Viewer::Type());
+  mySelectionMgr->selectedObjects(aList);
   int nbSel = aList.Extent();
   if (nbSel != 1)
     return;
