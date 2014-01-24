@@ -823,7 +823,7 @@ void SMESHGUI_ExtrusionDlg::SelectionIntoArgument()
   }
   // get selected mesh
   SALOME_ListIO aList;
-  mySelectionMgr->selectedObjects(aList, SVTK_Viewer::Type());
+  mySelectionMgr->selectedObjects(aList);
   int nbSel = SMESH::GetNameOfSelectedIObjects(mySelectionMgr, aString);
   if (nbSel != 1)
     return;

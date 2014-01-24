@@ -712,8 +712,8 @@ void SMESHGUI_RevolutionDlg::SelectionIntoArgument()
     return;
 
   // get selected mesh
-  const SALOME_ListIO& aList = mySelector->StoredIObjects();
-
+  SALOME_ListIO aList;
+  mySelectionMgr->selectedObjects(aList);
   int nbSel = aList.Extent();
   if (nbSel != 1) 
     return;

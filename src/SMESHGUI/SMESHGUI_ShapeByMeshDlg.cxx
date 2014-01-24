@@ -420,7 +420,7 @@ void SMESHGUI_ShapeByMeshOp::onSelectionDone()
 
   try {
     SALOME_ListIO aList;
-    selectionMgr()->selectedObjects(aList, SVTK_Viewer::Type());
+    selectionMgr()->selectedObjects(aList);
     if (!myIsMultipleAllowed && aList.Extent() != 1)
       return;
 

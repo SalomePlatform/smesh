@@ -947,7 +947,7 @@ void SMESHGUI_AddQuadraticElementDlg::SelectionIntoArgument()
 
     // get selected mesh
     SALOME_ListIO aList;
-    mySelectionMgr->selectedObjects(aList,SVTK_Viewer::Type());
+    mySelectionMgr->selectedObjects(aList);
 
     if (aList.Extent() != 1)
     {
