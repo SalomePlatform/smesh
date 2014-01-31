@@ -213,12 +213,16 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh&         aMesh,
   const TopoDS_Face& F = TopoDS::Face(aShape);
   aMesh.GetSubMesh( F );
 
+  // do not initialize my fields before this as StdMeshers_ViscousLayers2D
+  // can call Compute() recursively
+  SMESH_ProxyMesh::Ptr proxyMesh = StdMeshers_ViscousLayers2D::Compute( aMesh, F );
+  if ( !proxyMesh )
+    return false;
+
+  myProxyMesh = proxyMesh;
+
   SMESH_MesherHelper helper (aMesh);
   myHelper = &helper;
-
-  myProxyMesh = StdMeshers_ViscousLayers2D::Compute( aMesh, F );
-  if ( !myProxyMesh )
-    return false;
 
   _quadraticMesh = myHelper->IsQuadraticSubMesh(aShape);
   myNeedSmooth = false;
@@ -463,7 +467,7 @@ bool StdMeshers_Quadrangle_2D::computeQuadDominant(SMESH_Mesh&         aMesh,
   int nbright = (int) uv_e1.size();
   int nbleft  = (int) uv_e3.size();
 
-  if (quad->nbNodeOut(0) && nbvertic == 2)
+  if (quad->nbNodeOut(0) && nbvertic == 2) // this should not occure
   {
     // Down edge is out
     // 
@@ -657,7 +661,7 @@ bool StdMeshers_Quadrangle_2D::computeQuadDominant(SMESH_Mesh&         aMesh,
   }
 
   // right or left boundary quadrangles
-  if (quad->nbNodeOut( QUAD_RIGHT_SIDE ) && nbhoriz == 2)
+  if (quad->nbNodeOut( QUAD_RIGHT_SIDE ) && nbhoriz == 2) // this should not occure
   {
     int g = 0; // last processed node in the grid
     int stop = nbright - 1;
@@ -733,9 +737,7 @@ bool StdMeshers_Quadrangle_2D::computeQuadDominant(SMESH_Mesh&         aMesh,
 //      MESSAGE("left edge is out");
       int g = nbvertic - 1; // last processed node in the grid
       int stop = 0;
-      i = nbleft - 1;
-      if (quad->side[3].from != stop ) stop++;
-      if (quad->side[3].to   != i    ) i--;
+      i = quad->side[ QUAD_LEFT_SIDE ].to-1; // nbleft - 1;
       for (; i > stop; i--) {
         const SMDS_MeshNode *a, *b, *c, *d;
         a = uv_e3[i].node;
@@ -3949,7 +3951,8 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
   TopoDS_Shape triaVertex = helper.GetMeshDS()->IndexToShape( myTriaVertexID );
   if ( !triaVertex.IsNull() &&
        triaVertex.ShapeType() == TopAbs_VERTEX &&
-       helper.IsSubShape( triaVertex, theFace ))
+       helper.IsSubShape( triaVertex, theFace ) &&
+       ( vertexByAngle.size() != 4 || vertexByAngle.begin()->first < 5 * M_PI/180. ))
     nbCorners = 3;
   else
     triaVertex.Nullify();
