@@ -389,6 +389,7 @@ namespace VISCOUS_2D
     TSideVector                 _faceSideVec; // wires (StdMeshers_FaceSide) of _face
     vector<_PolyLine>           _polyLineVec; // fronts to advance
     bool                        _is2DIsotropic; // is same U and V resoulution of _face
+    vector<TopoDS_Face>         _clearedFaces; // FACEs whose mesh was removed by shrink()
 
     double                      _fPowN; // to compute thickness of layers
     double                      _thickness; // required or possible layers thickness
@@ -633,25 +634,31 @@ bool _ViscousBuilder2D::findEdgesWithLayers(const TopoDS_Shape& theShapeHypAssig
   // collect all EDGEs to ignore defined by hyp
   int nbMyEdgesIgnored = getEdgesToIgnore( _hyp, _face, getMeshDS(), _ignoreShapeIds );
 
-  // check all EDGEs of the _face
-  int totalNbEdges = 0;
+  // get all shared EDGEs
+  TopTools_MapOfShape sharedEdges;
   TopTools_IndexedDataMapOfShapeListOfShape facesOfEdgeMap;
   TopExp::MapShapesAndAncestors( theShapeHypAssignedTo,
                                  TopAbs_EDGE, TopAbs_FACE, facesOfEdgeMap);
+  for ( int iE = 1; iE <= facesOfEdgeMap.Extent(); ++iE )
+    if ( facesOfEdgeMap( iE ).Extent() > 1 )
+      sharedEdges.Add( facesOfEdgeMap.FindKey( iE ));
+
+  // check all EDGEs of the _face
+  int totalNbEdges = 0;
   for ( size_t iWire = 0; iWire < _faceSideVec.size(); ++iWire )
   {
     StdMeshers_FaceSidePtr wire = _faceSideVec[ iWire ];
     totalNbEdges += wire->NbEdges();
     for ( int iE = 0; iE < wire->NbEdges(); ++iE )
     {
-      const TopTools_ListOfShape& faceList = facesOfEdgeMap.FindFromKey( wire->Edge( iE ));
-      if ( faceList.Extent() > 1 )
+      if ( sharedEdges.Contains( wire->Edge( iE )))
       {
         // ignore internal EDGEs (shared by several FACEs)
         const TGeomID edgeID = wire->EdgeID( iE );
         _ignoreShapeIds.insert( edgeID );
 
         // check if ends of an EDGE are to be added to _noShrinkVert
+        const TopTools_ListOfShape& faceList = facesOfEdgeMap.FindFromKey( wire->Edge( iE ));
         TopTools_ListIteratorOfListOfShape faceIt( faceList );
         for ( ; faceIt.More(); faceIt.Next() )
         {
@@ -682,7 +689,8 @@ bool _ViscousBuilder2D::findEdgesWithLayers(const TopoDS_Shape& theShapeHypAssig
               while ( const TopoDS_Shape* edge = edgeIt->next() )
                 if ( !edge->IsSame( wire->Edge( iE )) &&
                      _helper.IsSubShape( *edge, neighbourFace ) &&
-                     neighbourIgnoreEdges.count( getMeshDS()->ShapeToIndex( *edge )))
+                     ( neighbourIgnoreEdges.count( getMeshDS()->ShapeToIndex( *edge )) ||
+                       sharedEdges.Contains( *edge )))
                 {
                   _noShrinkVert.insert( getMeshDS()->ShapeToIndex( vertex ));
                   break;
@@ -1480,10 +1488,19 @@ bool _ViscousBuilder2D::shrink()
     if ( nbAdvancable == 0 )
       continue;
 
-    const TopoDS_Edge&        E = L._wire->Edge      ( L._edgeInd );
-    const int            edgeID = L._wire->EdgeID    ( L._edgeInd );
-    const double        edgeLen = L._wire->EdgeLength( L._edgeInd );
-    Handle(Geom2d_Curve) pcurve = L._wire->Curve2d   ( L._edgeInd );
+    const TopoDS_Vertex&  V1 = L._wire->FirstVertex( L._edgeInd );
+    const TopoDS_Vertex&  V2 = L._wire->LastVertex ( L._edgeInd );
+    const int           v1ID = getMeshDS()->ShapeToIndex( V1 );
+    const int           v2ID = getMeshDS()->ShapeToIndex( V2 );
+    const bool isShrinkableL = ! _noShrinkVert.count( v1ID ) && L._leftLine->_advancable;
+    const bool isShrinkableR = ! _noShrinkVert.count( v2ID ) && L._rightLine->_advancable;
+    if ( !isShrinkableL && !isShrinkableR )
+      continue;
+
+    const TopoDS_Edge&        E = L._wire->Edge       ( L._edgeInd );
+    const int            edgeID = L._wire->EdgeID     ( L._edgeInd );
+    const double        edgeLen = L._wire->EdgeLength ( L._edgeInd );
+    Handle(Geom2d_Curve) pcurve = L._wire->Curve2d    ( L._edgeInd );
     const bool     edgeReversed = ( E.Orientation() == TopAbs_REVERSED );
 
     SMESH_MesherHelper helper( *_mesh ); // to create nodes and edges on E
@@ -1499,10 +1516,12 @@ bool _ViscousBuilder2D::shrink()
       {
         adjFace = TopoDS::Face( *f );
         SMESH_ProxyMesh::Ptr pm = _ProxyMeshHolder::FindProxyMeshOfFace( adjFace, *_mesh );
-        if ( !pm || pm->NbProxySubMeshes() == 0 )
+        if ( !pm || pm->NbProxySubMeshes() == 0 /*|| !pm->GetProxySubMesh( E )*/)
         {
           // There are no viscous layers on an adjacent FACE, clear it's 2D mesh
           removeMeshFaces( adjFace );
+          // if ( removeMeshFaces( adjFace ))
+          //   _clearedFaces.push_back( adjFace ); // to re-compute after all
         }
         else
         {
@@ -1512,7 +1531,7 @@ bool _ViscousBuilder2D::shrink()
           //
           const vector<UVPtStruct>& points = L._wire->GetUVPtStruct();
           int iPFrom = L._firstPntInd, iPTo = L._lastPntInd;
-          if ( L._leftLine->_advancable )
+          if ( isShrinkableL )
           {
             vector<gp_XY>& uvVec = L._lEdges.front()._uvRefined;
             for ( int i = 0; i < _hyp->GetNumberLayers(); ++i ) {
@@ -1521,7 +1540,7 @@ bool _ViscousBuilder2D::shrink()
               uvVec.push_back ( pcurve->Value( uvPt.param ).XY() );
             }
           }
-          if ( L._rightLine->_advancable )
+          if ( isShrinkableR )
           {
             vector<gp_XY>& uvVec = L._lEdges.back()._uvRefined;
             for ( int i = 0; i < _hyp->GetNumberLayers(); ++i ) {
@@ -1532,8 +1551,8 @@ bool _ViscousBuilder2D::shrink()
           }
           // make proxy sub-mesh data of present nodes
           //
-          if ( L._leftLine->_advancable )  iPFrom += _hyp->GetNumberLayers();
-          if ( L._rightLine->_advancable ) iPTo   -= _hyp->GetNumberLayers();
+          if ( isShrinkableL ) iPFrom += _hyp->GetNumberLayers();
+          if ( isShrinkableR ) iPTo   -= _hyp->GetNumberLayers();
           UVPtStructVec nodeDataVec( & points[ iPFrom ], & points[ iPTo + 1 ]);
 
           double normSize = nodeDataVec.back().normParam - nodeDataVec.front().normParam;
@@ -1605,6 +1624,8 @@ bool _ViscousBuilder2D::shrink()
       if ( !L2->_advancable &&
            !toShrinkForAdjacent( adjFace, E, L._wire->FirstVertex( L._edgeInd + isR )))
         continue;
+      if ( isR ? !isShrinkableR : !isShrinkableL )
+        continue;
 
       double & u = isR ? u2 : u1; // param to move
       double  u0 = isR ? ul : uf; // init value of the param to move
@@ -1641,17 +1662,17 @@ bool _ViscousBuilder2D::shrink()
           length1D = Abs( u - curveInt.Point( 1 ).ParamOnFirst() );
           double maxDist2d = 2 * L2->_lEdges[ iLSeg2 ]._length2D;
           isConvex = ( length1D < maxDist2d * len1dTo2dRatio );
-                                                  /*  |L  seg2     
-                                                   *  |  o---o--- 
-                                                   *  | /    |    
-                                                   *  |/     |  L2
-                                                   *  x------x---      */
+          /*                                          |L  seg2
+           *                                          |  o---o---
+           *                                          | /    |
+           *                                          |/     |  L2
+           *                                          x------x---      */
         }
-        if ( !isConvex ) { /* concave VERTEX */   /*  o-----o--- 
-                                                   *   \    |    
+        if ( !isConvex ) { /* concave VERTEX */   /*  o-----o---
+                                                   *   \    |
                                                    *    \   |  L2
-                                                   *     x--x--- 
-                                                   *    /        
+                                                   *     x--x---
+                                                   *    /
                                                    * L /               */
           length2D = L2->_lEdges[ iFSeg2 ]._length2D;
           //if ( L2->_advancable ) continue;
@@ -1737,7 +1758,7 @@ bool _ViscousBuilder2D::shrink()
       {
         const SMDS_MeshElement* segment = segIt->next();
         if ( segment->getshapeId() != edgeID ) continue;
-        
+
         const int nbNodes = segment->NbNodes();
         for ( int i = 0; i < nbNodes; ++i )
         {
@@ -1808,16 +1829,16 @@ bool _ViscousBuilder2D::shrink()
       }
       // concatenate nodeDataVec and nodeDataForAdjacent
       nodeDataVec.insert(( isRShrinkedForAdjacent ? nodeDataVec.end() : nodeDataVec.begin() ),
-                          nodeDataForAdjacent.begin(), nodeDataForAdjacent.end() );
+                         nodeDataForAdjacent.begin(), nodeDataForAdjacent.end() );
     }
 
     // Extend nodeDataVec by a node located at the end of not shared _LayerEdge
     /*      n - to add to nodeDataVec
-     *      o-----o--- 
-     *      |\    |    
+     *      o-----o---
+     *      |\    |
      *      | o---o---
      *      | |x--x--- L2
-     *      | /        
+     *      | /
      *      |/ L
      *      x
      *     /    */
@@ -1855,7 +1876,7 @@ bool _ViscousBuilder2D::shrink()
       nodeDataVec.insert(( isR ? nodeDataVec.end() : nodeDataVec.begin() ), ptOfNode );
 
       // recompute normParam of nodes in nodeDataVec
-      newLength = GCPnts_AbscissaPoint::Length( curve, 
+      newLength = GCPnts_AbscissaPoint::Length( curve,
                                                 nodeDataVec.front().param,
                                                 nodeDataVec.back().param);
       for ( size_t iP = 1; iP < nodeDataVec.size(); ++iP )
@@ -1891,6 +1912,9 @@ bool _ViscousBuilder2D::toShrinkForAdjacent( const TopoDS_Face&   adjFace,
                                              const TopoDS_Edge&   E,
                                              const TopoDS_Vertex& V)
 {
+  if ( _noShrinkVert.count( getMeshDS()->ShapeToIndex( V )))
+    return false;
+
   TopoDS_Shape hypAssignedTo;
   if ( const StdMeshers_ViscousLayers2D* vlHyp = findHyp( *_mesh, adjFace, &hypAssignedTo ))
   {
@@ -1934,18 +1958,18 @@ bool _ViscousBuilder2D::refine()
     if ( !L._advancable ) continue;
 
     // replace an inactive (1st) _LayerEdge with an active one of a neighbour _PolyLine
-    size_t iLE = 0, nbLE = L._lEdges.size();
+    //size_t iLE = 0, nbLE = L._lEdges.size();
     const bool leftEdgeShared  = L.IsCommonEdgeShared( *L._leftLine );
     const bool rightEdgeShared = L.IsCommonEdgeShared( *L._rightLine );
     if ( /*!L._leftLine->_advancable &&*/ leftEdgeShared )
     {
       L._lEdges[0] = L._leftLine->_lEdges.back();
-      iLE += int( !L._leftLine->_advancable );
+      //iLE += int( !L._leftLine->_advancable );
     }
     if ( !L._rightLine->_advancable && rightEdgeShared )
     {
       L._lEdges.back() = L._rightLine->_lEdges[0];
-      --nbLE;
+      //--nbLE;
     }
 
     // limit length of neighbour _LayerEdge's to avoid sharp change of layers thickness
@@ -1989,6 +2013,9 @@ bool _ViscousBuilder2D::refine()
     // cerr << "import smesh" << endl << "mesh = smesh.Mesh()"<< endl;
 
     // calculate intermediate UV on _LayerEdge's ( _LayerEdge::_uvRefined )   
+    size_t iLE = 0, nbLE = L._lEdges.size();
+    if ( ! L._lEdges[0]._uvRefined.empty() )     ++iLE;
+    if ( ! L._lEdges.back()._uvRefined.empty() ) --nbLE;
     for ( ; iLE < nbLE; ++iLE )
     {
       _LayerEdge& LE = L._lEdges[iLE];
@@ -2029,14 +2056,21 @@ bool _ViscousBuilder2D::refine()
 
     // Create layers of faces
     
+    const TopoDS_Vertex&  V1 = L._wire->FirstVertex( L._edgeInd );
+    const TopoDS_Vertex&  V2 = L._wire->LastVertex ( L._edgeInd );
+    const int           v1ID = getMeshDS()->ShapeToIndex( V1 );
+    const int           v2ID = getMeshDS()->ShapeToIndex( V2 );
+    const bool isShrinkableL = ! _noShrinkVert.count( v1ID );
+    const bool isShrinkableR = ! _noShrinkVert.count( v2ID );
+
     bool hasLeftNode     = ( !L._leftLine->_rightNodes.empty() && leftEdgeShared  );
     bool hasRightNode    = ( !L._rightLine->_leftNodes.empty() && rightEdgeShared );
     bool hasOwnLeftNode  = ( !L._leftNodes.empty() );
     bool hasOwnRightNode = ( !L._rightNodes.empty() );
     bool isClosedEdge    = ( outerNodes.front() == outerNodes.back() );
     size_t iS,
-      iN0 = ( hasLeftNode || hasOwnLeftNode || isClosedEdge ),
-      nbN = innerNodes.size() - ( hasRightNode || hasOwnRightNode );
+      iN0 = ( hasLeftNode || hasOwnLeftNode || isClosedEdge || !isShrinkableL ),
+      nbN = innerNodes.size() - ( hasRightNode || hasOwnRightNode || !isShrinkableR);
     L._leftNodes .reserve( _hyp->GetNumberLayers() );
     L._rightNodes.reserve( _hyp->GetNumberLayers() );
     int cur = 0, prev = -1; // to take into account orientation of _face
@@ -2081,8 +2115,10 @@ bool _ViscousBuilder2D::refine()
       if ( hasOwnRightNode )   innerNodes.back()  = L._rightNodes[ iF ];
       else if ( hasRightNode ) innerNodes.back()  = L._rightLine->_leftNodes[ iF ];
       if ( isClosedEdge )      innerNodes.front() = innerNodes.back(); // circle
-      if ( !hasOwnLeftNode )  L._leftNodes.push_back( innerNodes.front() );
-      if ( !hasOwnRightNode ) L._rightNodes.push_back( innerNodes.back() );
+      if ( !isShrinkableL )    innerNodes.front() = outerNodes.front();
+      if ( !isShrinkableR )    innerNodes.back()  = outerNodes.back();
+      if ( !hasOwnLeftNode )   L._leftNodes.push_back( innerNodes.front() );
+      if ( !hasOwnRightNode )  L._rightNodes.push_back( innerNodes.back() );
 
       // create faces
       for ( size_t i = 1; i < innerNodes.size(); ++i )
@@ -2136,6 +2172,14 @@ bool _ViscousBuilder2D::refine()
     edgeSM->SetUVPtStructVec( nodeDataVec );
 
   } // loop on _PolyLine's
+
+  // re-compute FACEs whose mesh was removed by shrink()
+  for ( size_t i = 0; i < _clearedFaces.size(); ++i )
+  {
+    SMESH_subMesh* sm = _mesh->GetSubMesh( _clearedFaces[i] );
+    if ( sm->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE )
+      sm->ComputeStateEngine( SMESH_subMesh::COMPUTE );
+  }
 
   return true;
 }
