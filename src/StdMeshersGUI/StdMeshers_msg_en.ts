@@ -529,6 +529,30 @@
         <source>AXIS_Z</source>
         <translation>Axis Z</translation>
     </message>
+    <message>
+        <source>INVALID_AXES_DIR</source>
+        <translation>Invalid directions of axes</translation>
+    </message>
+    <message>
+        <source>FIXED_POINT</source>
+        <translation>Fixed Point</translation>
+    </message>
+    <message>
+        <source>AXES_DIRECTION</source>
+        <translation>Directions of Axes</translation>
+    </message>
+    <message>
+        <source>ORTHOGONAL_AXES</source>
+        <translation>Orthogonal Axes</translation>
+    </message>
+    <message>
+        <source>OPTIMAL_AXES</source>
+        <translation>Optimal Axes</translation>
+    </message>
+    <message>
+        <source>RESET_AXES</source>
+        <translation>Reset</translation>
+    </message>
 </context>
 <context>
     <name>StdMeshersGUI::GridAxisTab</name>

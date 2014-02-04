@@ -79,6 +79,13 @@ public:
   bool IsGridBySpacing(const int axis) const throw ( SALOME_Exception );
 
   /*!
+   * Set/unset a fixed point, at which a node will be created provided that grid
+   * is defined by spacing in all directions
+   */
+  void SetFixedPoint(const double p[3], bool toUnset);
+  bool GetFixedPoint(double p[3]);
+
+  /*!
    * \brief Computes node coordinates by spacing functions
    *  \param x0 - lower coordinate
    *  \param x1 - upper coordinate
@@ -101,13 +108,21 @@ public:
                       std::vector<double>& zNodes,
                       const Bnd_Box&       bndBox) const throw ( SALOME_Exception );
 
+  /*!
+   * \brief Set custom direction of axes
+   */
   void SetAxisDirs(const double* the9DirComps) throw ( SALOME_Exception );
   const double* GetAxisDirs() const { return _axisDirs; }
-
+  /*!
+   * \brief Returns axes at which number of hexahedra is maximal
+   */
+  static void ComputeOptimalAxesDirs(const TopoDS_Shape& shape,
+                                     const bool          isOrthogonal,
+                                     double              dirCoords[9]);
   /*!
    * Set size threshold. A polyhedral cell got by cutting an initial
    * hexahedron by geometry boundary is considered small and is removed if
-   * it's size is \athreshold times less than the size of the initial hexahedron. 
+   * it's size is \athreshold times less than the size of the initial hexahedron.
    */
   void SetSizeThreshold(const double threshold) throw ( SALOME_Exception );
   /*!
@@ -150,7 +165,8 @@ public:
   std::vector<std::string> _spaceFunctions[3];
   std::vector<double>      _internalPoints[3];
 
-  double _axisDirs[9];
+  double _axisDirs  [9];
+  double _fixedPoint[3];
 
   double _sizeThreshold;
   bool   _toAddEdges;

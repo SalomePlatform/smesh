@@ -50,3 +50,40 @@ print "nb hexahedra",mesh.NbHexas()
 print "nb tetrahedra",mesh.NbTetras()
 print "nb polyhedra",mesh.NbPolyhedrons()
 print
+
+# Example of customization of dirtections of the grid axes
+
+# make a box with non-orthogonal edges
+xDir = geompy.MakeVectorDXDYDZ( 1.0, 0.1, 0.0, "xDir" )
+yDir = geompy.MakeVectorDXDYDZ(-0.1, 1.0, 0.0, "yDir"  )
+zDir = geompy.MakeVectorDXDYDZ( 0.2, 0.3, 1.0, "zDir"  )
+face = geompy.MakePrismVecH( xDir, yDir, 1.0 )
+box  = geompy.MakePrismVecH( face, zDir, 1.0, theName="box" )
+
+spc = "0.1" # spacing
+
+# default axes
+mesh = smesh.Mesh( box, "custom axes")
+algo = mesh.BodyFitted()
+algo.SetGrid( spc, spc, spc, 10000 )
+mesh.Compute()
+print "Default axes"
+print "   nb hex:",mesh.NbHexas()
+
+# set axes using edges of the box
+algo.SetAxesDirs( xDir, [-0.1,1,0], zDir )
+mesh.Compute()
+print "Manual axes"
+print "   nb hex:",mesh.NbHexas()
+
+# set optimal orthogonal axes
+algo.SetOptimalAxesDirs( isOrthogonal=True )
+mesh.Compute()
+print "Optimal orthogonal axes"
+print "   nb hex:",mesh.NbHexas()
+
+# set optimal non-orthogonal axes
+algo.SetOptimalAxesDirs( isOrthogonal=False )
+mesh.Compute()
+print "Optimal non-orthogonal axes"
+print "   nb hex:",mesh.NbHexas()

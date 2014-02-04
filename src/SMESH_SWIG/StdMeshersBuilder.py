@@ -597,7 +597,7 @@ class StdMeshersBuilder_Quadrangle(Mesh_Algorithm):
     #                    must be created by the mesher. Shapes can be of any type,
     #                    vertices of given shapes define positions of enforced nodes.
     #                    Only vertices successfully projected to the face are used.
-    #  @param enfPoint: list of points giving positions of enforced nodes.
+    #  @param enfPoints: list of points giving positions of enforced nodes.
     #                    Point can be defined either as SMESH.PointStruct's
     #                    ([SMESH.PointStruct(x1,y1,z1), SMESH.PointStruct(x2,y2,z2),...])
     #                    or triples of values ([[x1,y1,z1], [x2,y2,z2], ...]).
@@ -1415,7 +1415,7 @@ class StdMeshersBuilder_Cartesian_3D(Mesh_Algorithm):
         if not self.mesh.IsUsedHypothesis( self.hyp, self.geom ):
             self.mesh.AddHypothesis( self.hyp, self.geom )
 
-        for axis, gridDef in enumerate( [xGridDef, yGridDef, zGridDef]):
+        for axis, gridDef in enumerate( [xGridDef, yGridDef, zGridDef] ):
             if not gridDef: raise ValueError, "Empty grid definition"
             if isinstance( gridDef, str ):
                 self.hyp.SetGridSpacing( [gridDef], [], axis )
@@ -1428,6 +1428,64 @@ class StdMeshersBuilder_Cartesian_3D(Mesh_Algorithm):
                 self.hyp.SetGridSpacing( gridDef[0], gridDef[1], axis )
         self.hyp.SetSizeThreshold( sizeThreshold )
         return self.hyp
+
+    ## Defines custom directions of axes of the grid
+    #  @param xAxis either SMESH.DirStruct or a vector, or 3 vector components
+    #  @param yAxis either SMESH.DirStruct or a vector, or 3 vector components
+    #  @param zAxis either SMESH.DirStruct or a vector, or 3 vector components
+    def SetAxesDirs( self, xAxis, yAxis, zAxis ):
+        import GEOM
+        if hasattr( xAxis, "__getitem__" ):
+            xAxis = self.mesh.smeshpyD.MakeDirStruct( xAxis[0],xAxis[1],xAxis[2] )
+        elif isinstance( xAxis, GEOM._objref_GEOM_Object ):
+            xAxis = self.mesh.smeshpyD.GetDirStruct( xAxis )
+        if hasattr( yAxis, "__getitem__" ):
+            yAxis = self.mesh.smeshpyD.MakeDirStruct( yAxis[0],yAxis[1],yAxis[2] )
+        elif isinstance( yAxis, GEOM._objref_GEOM_Object ):
+            yAxis = self.mesh.smeshpyD.GetDirStruct( yAxis )
+        if hasattr( zAxis, "__getitem__" ):
+            zAxis = self.mesh.smeshpyD.MakeDirStruct( zAxis[0],zAxis[1],zAxis[2] )
+        elif isinstance( zAxis, GEOM._objref_GEOM_Object ):
+            zAxis = self.mesh.smeshpyD.GetDirStruct( zAxis )
+        if not self.hyp:
+            self.hyp = self.Hypothesis("CartesianParameters3D")
+        if not self.mesh.IsUsedHypothesis( self.hyp, self.geom ):
+            self.mesh.AddHypothesis( self.hyp, self.geom )
+        self.hyp.SetAxesDirs( xAxis, yAxis, zAxis )
+        return self.hyp
+
+    ## Automatically defines directions of axes of the grid at which
+    #  a number of generated hexahedra is maximal
+    #  @param isOrthogonal defines whether the axes mush be orthogonal
+    def SetOptimalAxesDirs(self, isOrthogonal=True):
+        if not self.hyp:
+            self.hyp = self.Hypothesis("CartesianParameters3D")
+        if not self.mesh.IsUsedHypothesis( self.hyp, self.geom ):
+            self.mesh.AddHypothesis( self.hyp, self.geom )
+        x,y,z = self.hyp.ComputeOptimalAxesDirs( self.geom, isOrthogonal )
+        self.hyp.SetAxesDirs( x,y,z )
+        return self.hyp
+
+    ## Sets/unsets a fixed point. The algorithm makes a plane of the grid pass
+    #  through the fixed point in each direction at which the grid is defined
+    #  by spacing
+    #  @param p coordinates of the fixed point. Either SMESH.PointStruct or
+    #         3 components of coordinates.
+    #  @param toUnset defines whether the fixed point is defined or removed.
+    def SetFixedPoint( self, p, toUnset=False ):
+        import SMESH
+        if toUnset:
+            if not self.hyp: return
+            p = SMESH.PointStruct(0,0,0)
+        if hasattr( p, "__getitem__" ):
+            p = SMESH.PointStruct( p[0],p[1],p[2] )
+        if not self.hyp:
+            self.hyp = self.Hypothesis("CartesianParameters3D")
+        if not self.mesh.IsUsedHypothesis( self.hyp, self.geom ):
+            self.mesh.AddHypothesis( self.hyp, self.geom )
+        self.hyp.SetFixedPoint( p, toUnset )
+        return self.hyp
+        
 
     pass # end of StdMeshersBuilder_Cartesian_3D class
 

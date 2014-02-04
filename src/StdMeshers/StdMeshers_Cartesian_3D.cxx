@@ -37,12 +37,17 @@
 #include <Utils_ExceptHandlers.hxx>
 #include <Basics_OCCTVersion.hxx>
 
+#include <GEOMUtils.hxx>
+
 #include <BRepAdaptor_Curve.hxx>
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepBndLib.hxx>
 #include <BRepBuilderAPI_Copy.hxx>
+#include <BRepBuilderAPI_MakeFace.hxx>
 #include <BRepTools.hxx>
+#include <BRep_Builder.hxx>
 #include <BRep_Tool.hxx>
+#include <Bnd_B3d.hxx>
 #include <Bnd_Box.hxx>
 #include <ElSLib.hxx>
 #include <GCPnts_UniformDeflection.hxx>
@@ -67,6 +72,7 @@
 #include <TopLoc_Location.hxx>
 #include <TopTools_MapOfShape.hxx>
 #include <TopoDS.hxx>
+#include <TopoDS_Compound.hxx>
 #include <TopoDS_Face.hxx>
 #include <TopoDS_TShape.hxx>
 #include <gp_Cone.hxx>
@@ -218,12 +224,9 @@ namespace
    */
   struct GridPlanes
   {
-    double _factor;
     gp_XYZ _uNorm, _vNorm, _zNorm;
     vector< gp_XYZ > _origins; // origin points of all planes in one direction
     vector< double > _zProjs;  // projections of origins to _zNorm
-
-    gp_XY GetUV( const gp_Pnt& p, const gp_Pnt& origin );
   };
   // --------------------------------------------------------------------------
   /*!
@@ -276,6 +279,9 @@ namespace
     gp_XYZ             _axes  [3]; // axis directions
     vector< GridLine > _lines [3]; //  in 3 directions
     double             _tol, _minCellSize;
+    gp_XYZ             _origin;
+    gp_Mat             _invB; // inverted basis of _axes
+    //bool               _isOrthogonalAxes;
 
     vector< const SMDS_MeshNode* >    _nodes; // mesh nodes at grid nodes
     vector< const F_IntersectPoint* > _gridIntP; // grid node intersection with geometry
@@ -301,7 +307,8 @@ namespace
                         const vector<double>& yCoords,
                         const vector<double>& zCoords,
                         const double*         axesDirs,
-                        const TopoDS_Shape&   shape );
+                        const Bnd_Box&        bndBox );
+    void ComputeUVW(const gp_XYZ& p, double uvw[3]);
     void ComputeNodes(SMESH_MesherHelper& helper);
   };
 #ifdef ELLIPSOLID_WORKAROUND
@@ -646,7 +653,7 @@ namespace
   inline void locateValue( int & i, double val, const vector<double>& values,
                            int& di, double tol )
   {
-    val += values[0]; // input \a val is measured from 0.
+    //val += values[0]; // input \a val is measured from 0.
     if ( i > values.size()-2 )
       i = values.size()-2;
     else
@@ -722,16 +729,6 @@ namespace
   }
   //================================================================================
   /*
-   * Returns parameters of a point in i-th plane
-   */
-  gp_XY GridPlanes::GetUV( const gp_Pnt& p, const gp_Pnt& origin )
-  {
-    gp_Vec v( origin, p );
-    return gp_XY( v.Dot( _uNorm ) * _factor,
-                  v.Dot( _vNorm ) * _factor );
-  }
-  //================================================================================
-  /*
    * Adds face IDs
    */
   void B_IntersectPoint::Add( const vector< TGeomID >& fIDs,
@@ -793,11 +790,12 @@ namespace
                             const vector<double>& yCoords,
                             const vector<double>& zCoords,
                             const double*         axesDirs,
-                            const TopoDS_Shape&   shape)
+                            const Bnd_Box&        shapeBox)
   {
     _coords[0] = xCoords;
     _coords[1] = yCoords;
     _coords[2] = zCoords;
+
     _axes[0].SetCoord( axesDirs[0],
                        axesDirs[1],
                        axesDirs[2]);
@@ -807,6 +805,16 @@ namespace
     _axes[2].SetCoord( axesDirs[6],
                        axesDirs[7],
                        axesDirs[8]);
+    _axes[0].Normalize();
+    _axes[1].Normalize();
+    _axes[2].Normalize();
+
+    _invB.SetCols( _axes[0], _axes[1], _axes[2] );
+    _invB.Invert();
+
+    // _isOrthogonalAxes = ( Abs( _axes[0] * _axes[1] ) < 1e-20 &&
+    //                       Abs( _axes[1] * _axes[2] ) < 1e-20 &&
+    //                       Abs( _axes[2] * _axes[0] ) < 1e-20 );
 
     // compute tolerance
     _minCellSize = Precision::Infinite();
@@ -821,21 +829,37 @@ namespace
     }
     if ( _minCellSize < Precision::Confusion() )
       throw SMESH_ComputeError (COMPERR_ALGO_FAILED,
-                                SMESH_Comment("Too small cell size: ") << _tol );
+                                SMESH_Comment("Too small cell size: ") << _minCellSize );
     _tol = _minCellSize / 1000.;
 
-    // attune grid extremities to shape bounding box computed by vertices
-    Bnd_Box shapeBox;
-    for ( TopExp_Explorer vExp( shape, TopAbs_VERTEX ); vExp.More(); vExp.Next() )
-      shapeBox.Add( BRep_Tool::Pnt( TopoDS::Vertex( vExp.Current() )));
-    
+    // attune grid extremities to shape bounding box
+
     double sP[6]; // aXmin, aYmin, aZmin, aXmax, aYmax, aZmax
     shapeBox.Get(sP[0],sP[1],sP[2],sP[3],sP[4],sP[5]);
     double* cP[6] = { &_coords[0].front(), &_coords[1].front(), &_coords[2].front(),
                       &_coords[0].back(),  &_coords[1].back(),  &_coords[2].back() };
     for ( int i = 0; i < 6; ++i )
       if ( fabs( sP[i] - *cP[i] ) < _tol )
-        *cP[i] = sP[i] + _tol/1000. * ( i < 3 ? +1 : -1 );
+        *cP[i] = sP[i];// + _tol/1000. * ( i < 3 ? +1 : -1 );
+
+    for ( int iDir = 0; iDir < 3; ++iDir )
+    {
+      if ( _coords[iDir][0] - sP[iDir] > _tol )
+      {
+        _minCellSize = Min( _minCellSize, _coords[iDir][0] - sP[iDir] );
+        _coords[iDir].insert( _coords[iDir].begin(), sP[iDir] + _tol/1000.);
+      }
+      if ( sP[iDir+3] - _coords[iDir].back() > _tol  )
+      {
+        _minCellSize = Min( _minCellSize, sP[iDir+3] - _coords[iDir].back() );
+        _coords[iDir].push_back( sP[iDir+3] - _tol/1000.);
+      }
+    }
+    _tol = _minCellSize / 1000.;
+
+    _origin = ( _coords[0][0] * _axes[0] +
+                _coords[1][0] * _axes[1] +
+                _coords[2][0] * _axes[2] );
 
     // create lines
     for ( int iDir = 0; iDir < 3; ++iDir ) // loop on 3 line directions
@@ -843,15 +867,32 @@ namespace
       LineIndexer li = GetLineIndexer( iDir );
       _lines[iDir].resize( li.NbLines() );
       double len = _coords[ iDir ].back() - _coords[iDir].front();
-      gp_Vec dir( iDir==0, iDir==1, iDir==2 );
       for ( ; li.More(); ++li )
       {
         GridLine& gl = _lines[iDir][ li.LineIndex() ];
-        gl._line.SetLocation(gp_Pnt(_coords[0][li.I()], _coords[1][li.J()], _coords[2][li.K()])); 
-        gl._line.SetDirection( dir );
+        gl._line.SetLocation( _coords[0][li.I()] * _axes[0] +
+                              _coords[1][li.J()] * _axes[1] +
+                              _coords[2][li.K()] * _axes[2] );
+        gl._line.SetDirection( _axes[ iDir ]);
         gl._length = len;
       }
     }
+  }
+  //================================================================================
+  /*
+   * Computes coordinates of a point in the grid CS
+   */
+  void Grid::ComputeUVW(const gp_XYZ& P, double UVW[3])
+  {
+    // gp_XYZ p = P - _origin;
+    // UVW[ 0 ] = p.X() * _invB( 1, 1 ) + p.Y() * _invB( 1, 2 ) + p.Z() * _invB( 1, 3 );
+    // UVW[ 1 ] = p.X() * _invB( 2, 1 ) + p.Y() * _invB( 2, 2 ) + p.Z() * _invB( 2, 3 );
+    // UVW[ 2 ] = p.X() * _invB( 3, 1 ) + p.Y() * _invB( 3, 2 ) + p.Z() * _invB( 3, 3 );
+    // UVW[ 0 ] += _coords[0][0];
+    // UVW[ 1 ] += _coords[1][0];
+    // UVW[ 2 ] += _coords[2][0];
+    gp_XYZ p = P * _invB;
+    p.Coord( UVW[0], UVW[1], UVW[2] );
   }
   //================================================================================
   /*
@@ -882,12 +923,16 @@ namespace
         nIndex0 = NodeIndex( li.I(), li.J(), li.K() );
 
         GridLine& line = _lines[ iDir ][ li.LineIndex() ];
+        const gp_XYZ lineLoc = line._line.Location().XYZ();
+        const gp_XYZ lineDir = line._line.Direction().XYZ();
         line.RemoveExcessIntPoints( _tol );
         multiset< F_IntersectPoint >& intPnts = _lines[ iDir ][ li.LineIndex() ]._intPoints;
         multiset< F_IntersectPoint >::iterator ip = intPnts.begin();
 
         bool isOut = true;
-        const double* nodeCoord = & coords[0], *coord0 = nodeCoord, *coordEnd = coord0 + coords.size();
+        const double* nodeCoord = & coords[0];
+        const double* coord0    = nodeCoord;
+        const double* coordEnd  = coord0 + coords.size();
         double nodeParam = 0;
         for ( ; ip != intPnts.end(); ++ip )
         {
@@ -910,10 +955,11 @@ namespace
           // create a mesh node on a GridLine at ip if it does not coincide with a grid node
           if ( nodeParam > ip->_paramOnLine + _tol )
           {
-            li.SetIndexOnLine( 0 );
-            double xyz[3] = { _coords[0][ li.I() ], _coords[1][ li.J() ], _coords[2][ li.K() ]};
-            xyz[ li._iConst ] += ip->_paramOnLine;
-            ip->_node = helper.AddNode( xyz[0], xyz[1], xyz[2] );
+            // li.SetIndexOnLine( 0 );
+            // double xyz[3] = { _coords[0][ li.I() ], _coords[1][ li.J() ], _coords[2][ li.K() ]};
+            // xyz[ li._iConst ] += ip->_paramOnLine;
+            gp_XYZ xyz = lineLoc + ip->_paramOnLine * lineDir;
+            ip->_node = helper.AddNode( xyz.X(), xyz.Y(), xyz.Z() );
             ip->_indexOnLine = nodeCoord-coord0-1;
           }
           // create a mesh node at ip concident with a grid node
@@ -922,9 +968,10 @@ namespace
             int nodeIndex = nIndex0 + nShift * ( nodeCoord-coord0 );
             if ( !_nodes[ nodeIndex ] )
             {
-              li.SetIndexOnLine( nodeCoord-coord0 );
-              double xyz[3] = { _coords[0][ li.I() ], _coords[1][ li.J() ], _coords[2][ li.K() ]};
-              _nodes   [ nodeIndex ] = helper.AddNode( xyz[0], xyz[1], xyz[2] );
+              //li.SetIndexOnLine( nodeCoord-coord0 );
+              //double xyz[3] = { _coords[0][ li.I() ], _coords[1][ li.J() ], _coords[2][ li.K() ]};
+              gp_XYZ xyz = lineLoc + nodeParam * lineDir;
+              _nodes   [ nodeIndex ] = helper.AddNode( xyz.X(), xyz.Y(), xyz.Z() );
               _gridIntP[ nodeIndex ] = & * ip;
             }
             if ( _gridIntP[ nodeIndex ] )
@@ -951,7 +998,13 @@ namespace
         {
           size_t nodeIndex = NodeIndex( x, y, z );
           if ( !isNodeOut[ nodeIndex ] && !_nodes[ nodeIndex] )
-            _nodes[ nodeIndex ] = helper.AddNode( _coords[0][x], _coords[1][y], _coords[2][z] );
+          {
+            //_nodes[ nodeIndex ] = helper.AddNode( _coords[0][x], _coords[1][y], _coords[2][z] );
+            gp_XYZ xyz = ( _coords[0][x] * _axes[0] +
+                           _coords[1][y] * _axes[1] +
+                           _coords[2][z] * _axes[2] );
+            _nodes[ nodeIndex ] = helper.AddNode( xyz.X(), xyz.Y(), xyz.Z() );
+          }
         }
 
 #ifdef _MY_DEBUG_
@@ -1000,72 +1053,72 @@ namespace
    */
   bool FaceGridIntersector::IsInGrid(const Bnd_Box& gridBox)
   {
-    double x0,y0,z0, x1,y1,z1;
-    const Bnd_Box& faceBox = GetFaceBndBox();
-    faceBox.Get(x0,y0,z0, x1,y1,z1);
+    // double x0,y0,z0, x1,y1,z1;
+    // const Bnd_Box& faceBox = GetFaceBndBox();
+    // faceBox.Get(x0,y0,z0, x1,y1,z1);
 
-    if ( !gridBox.IsOut( gp_Pnt( x0,y0,z0 )) &&
-         !gridBox.IsOut( gp_Pnt( x1,y1,z1 )))
-      return true;
+    // if ( !gridBox.IsOut( gp_Pnt( x0,y0,z0 )) &&
+    //      !gridBox.IsOut( gp_Pnt( x1,y1,z1 )))
+    //   return true;
 
-    double X0,Y0,Z0, X1,Y1,Z1;
-    gridBox.Get(X0,Y0,Z0, X1,Y1,Z1);
-    double faceP[6] = { x0,y0,z0, x1,y1,z1 };
-    double gridP[6] = { X0,Y0,Z0, X1,Y1,Z1 };
-    gp_Dir axes[3]  = { gp::DX(), gp::DY(), gp::DZ() };
-    for ( int iDir = 0; iDir < 6; ++iDir )
-    {
-      if ( iDir < 3  && gridP[ iDir ] <= faceP[ iDir ] ) continue;
-      if ( iDir >= 3 && gridP[ iDir ] >= faceP[ iDir ] ) continue;
+    // double X0,Y0,Z0, X1,Y1,Z1;
+    // gridBox.Get(X0,Y0,Z0, X1,Y1,Z1);
+    // double faceP[6] = { x0,y0,z0, x1,y1,z1 };
+    // double gridP[6] = { X0,Y0,Z0, X1,Y1,Z1 };
+    // gp_Dir axes[3]  = { gp::DX(), gp::DY(), gp::DZ() };
+    // for ( int iDir = 0; iDir < 6; ++iDir )
+    // {
+    //   if ( iDir < 3  && gridP[ iDir ] <= faceP[ iDir ] ) continue;
+    //   if ( iDir >= 3 && gridP[ iDir ] >= faceP[ iDir ] ) continue;
 
-      // check if the face intersects a side of a gridBox
+    //   // check if the face intersects a side of a gridBox
 
-      gp_Pnt p = iDir < 3 ? gp_Pnt( X0,Y0,Z0 ) : gp_Pnt( X1,Y1,Z1 );
-      gp_Ax1 norm( p, axes[ iDir % 3 ] );
-      if ( iDir < 3 ) norm.Reverse();
+    //   gp_Pnt p = iDir < 3 ? gp_Pnt( X0,Y0,Z0 ) : gp_Pnt( X1,Y1,Z1 );
+    //   gp_Ax1 norm( p, axes[ iDir % 3 ] );
+    //   if ( iDir < 3 ) norm.Reverse();
 
-      gp_XYZ O = norm.Location().XYZ(), N = norm.Direction().XYZ();
+    //   gp_XYZ O = norm.Location().XYZ(), N = norm.Direction().XYZ();
 
-      TopLoc_Location loc = _face.Location();
-      Handle(Poly_Triangulation) aPoly = BRep_Tool::Triangulation(_face,loc);
-      if ( !aPoly.IsNull() )
-      {
-        if ( !loc.IsIdentity() )
-        {
-          norm.Transform( loc.Transformation().Inverted() );
-          O = norm.Location().XYZ(), N = norm.Direction().XYZ();
-        }
-        const double deflection = aPoly->Deflection();
+    //   TopLoc_Location loc = _face.Location();
+    //   Handle(Poly_Triangulation) aPoly = BRep_Tool::Triangulation(_face,loc);
+    //   if ( !aPoly.IsNull() )
+    //   {
+    //     if ( !loc.IsIdentity() )
+    //     {
+    //       norm.Transform( loc.Transformation().Inverted() );
+    //       O = norm.Location().XYZ(), N = norm.Direction().XYZ();
+    //     }
+    //     const double deflection = aPoly->Deflection();
 
-        const TColgp_Array1OfPnt& nodes = aPoly->Nodes();
-        for ( int i = nodes.Lower(); i <= nodes.Upper(); ++i )
-          if (( nodes( i ).XYZ() - O ) * N > _grid->_tol + deflection )
-            return false;
-      }
-      else
-      {
-        BRepAdaptor_Surface surf( _face );
-        double u0, u1, v0, v1, du, dv, u, v;
-        BRepTools::UVBounds( _face, u0, u1, v0, v1);
-        if ( surf.GetType() == GeomAbs_Plane ) {
-          du = u1 - u0, dv = v1 - v0;
-        }
-        else {
-          du = surf.UResolution( _grid->_minCellSize / 10. );
-          dv = surf.VResolution( _grid->_minCellSize / 10. );
-        }
-        for ( u = u0, v = v0; u <= u1 && v <= v1; u += du, v += dv )
-        {
-          gp_Pnt p = surf.Value( u, v );
-          if (( p.XYZ() - O ) * N > _grid->_tol )
-          {
-            TopAbs_State state = GetCurveFaceIntersector()->ClassifyUVPoint(gp_Pnt2d( u, v ));
-            if ( state == TopAbs_IN || state == TopAbs_ON )
-              return false;
-          }
-        }
-      }
-    }
+    //     const TColgp_Array1OfPnt& nodes = aPoly->Nodes();
+    //     for ( int i = nodes.Lower(); i <= nodes.Upper(); ++i )
+    //       if (( nodes( i ).XYZ() - O ) * N > _grid->_tol + deflection )
+    //         return false;
+    //   }
+    //   else
+    //   {
+    //     BRepAdaptor_Surface surf( _face );
+    //     double u0, u1, v0, v1, du, dv, u, v;
+    //     BRepTools::UVBounds( _face, u0, u1, v0, v1);
+    //     if ( surf.GetType() == GeomAbs_Plane ) {
+    //       du = u1 - u0, dv = v1 - v0;
+    //     }
+    //     else {
+    //       du = surf.UResolution( _grid->_minCellSize / 10. );
+    //       dv = surf.VResolution( _grid->_minCellSize / 10. );
+    //     }
+    //     for ( u = u0, v = v0; u <= u1 && v <= v1; u += du, v += dv )
+    //     {
+    //       gp_Pnt p = surf.Value( u, v );
+    //       if (( p.XYZ() - O ) * N > _grid->_tol )
+    //       {
+    //         TopAbs_State state = GetCurveFaceIntersector()->ClassifyUVPoint(gp_Pnt2d( u, v ));
+    //         if ( state == TopAbs_IN || state == TopAbs_ON )
+    //           return false;
+    //       }
+    //     }
+    //   }
+    // }
     return true;
   }
   //=============================================================================
@@ -1139,7 +1192,7 @@ namespace
         if ( _bndBox.IsOut( gridLine._line )) continue;
 
         intersector._intPoints.clear();
-        (intersector.*interFunction)( gridLine );
+        (intersector.*interFunction)( gridLine ); // <- intersection with gridLine
         for ( size_t i = 0; i < intersector._intPoints.size(); ++i )
           _intersections.push_back( make_pair( &gridLine, intersector._intPoints[i] ));
       }
@@ -1188,7 +1241,7 @@ namespace
    */
   void FaceLineIntersector::IntersectWithCylinder(const GridLine& gridLine)
   {
-    IntAna_IntConicQuad linCylinder( gridLine._line,_cylinder);
+    IntAna_IntConicQuad linCylinder( gridLine._line, _cylinder );
     if ( linCylinder.IsDone() && linCylinder.NbPoints() > 0 )
     {
       _w = linCylinder.ParamOnConic(1);
@@ -1644,6 +1697,23 @@ namespace
 
       } // loop on _edgeIntPnts
     }
+    else if ( 3 < _nbCornerNodes && _nbCornerNodes < 8 ) // _nbIntNodes == 0
+    {
+      _Link split;
+      // create sub-links (_splits) of whole links
+      for ( int iLink = 0; iLink < 12; ++iLink )
+      {
+        _Link& link = _hexLinks[ iLink ];
+        link._splits.clear();
+        if ( link._nodes[ 0 ]->Node() && link._nodes[ 1 ]->Node() )
+        {
+          split._nodes[ 0 ] = link._nodes[0];
+          split._nodes[ 1 ] = link._nodes[1];
+          link._splits.push_back( split );
+        }
+      }
+    }
+
   }
   //================================================================================
   /*!
@@ -1877,8 +1947,8 @@ namespace
             {
               curLink = freeLinks[ iL ];
               freeLinks[ iL ] = 0;
-              polygon._links.push_back( *curLink );
               --nbFreeLinks;
+              polygon._links.push_back( *curLink );
             }
         } while ( curLink );
       }
@@ -1983,16 +2053,23 @@ namespace
 
       } // if there are intersections with EDGEs
 
-      if ( polygon._links.size() < 3 ||
+      if ( polygon._links.size() < 2 ||
            polygon._links[0].LastNode() != polygon._links.back().FirstNode() )
         return; // closed polygon not found -> invalid polyhedron
 
-      // add polygon to its links
-      for ( size_t iL = 0; iL < polygon._links.size(); ++iL )
+      if ( polygon._links.size() == 2 )
       {
-        polygon._links[ iL ]._link->_faces.reserve( 2 );
-        polygon._links[ iL ]._link->_faces.push_back( &polygon );
-        polygon._links[ iL ].Reverse();
+        _polygons.pop_back();
+      }
+      else
+      {
+        // add polygon to its links
+        for ( size_t iL = 0; iL < polygon._links.size(); ++iL )
+        {
+          polygon._links[ iL ]._link->_faces.reserve( 2 );
+          polygon._links[ iL ]._link->_faces.push_back( &polygon );
+          polygon._links[ iL ].Reverse();
+        }
       }
     } // while ( nbFreeLinks > 0 )
 
@@ -2096,12 +2173,12 @@ namespace
       if ( hex )
       {
         intHexInd[ nbIntHex++ ] = i;
-        if ( hex->_nbIntNodes > 0 ) continue;
-        init( hex->_i, hex->_j, hex->_k );
+        if ( hex->_nbIntNodes > 0 ) continue; // treat intersected hex later
+        this->init( hex->_i, hex->_j, hex->_k );
       }
       else
       {    
-        init( i );
+        this->init( i );
       }
       if ( _nbCornerNodes == 8 && ( _nbBndNodes < _nbCornerNodes || !isInHole() ))
       {
@@ -2124,7 +2201,10 @@ namespace
       {
         // all intersection of hex with geometry are at grid nodes
         hex = new Hexahedron( *this );
-        hex->init( i );
+        //hex->init( i );
+        hex->_i = _i;
+        hex->_j = _j;
+        hex->_k = _k;
         intHexInd.push_back(0);
         intHexInd[ nbIntHex++ ] = i;
       }
@@ -2168,39 +2248,27 @@ namespace
     // Prepare planes for intersecting with EDGEs
     GridPlanes pln[3];
     {
-      gp_XYZ origPnt = ( _grid->_coords[0][0] * _grid->_axes[0] +
-                         _grid->_coords[1][0] * _grid->_axes[1] +
-                         _grid->_coords[2][0] * _grid->_axes[2] );
       for ( int iDirZ = 0; iDirZ < 3; ++iDirZ ) // iDirZ gives normal direction to planes
       {
         GridPlanes& planes = pln[ iDirZ ];
         int iDirX = ( iDirZ + 1 ) % 3;
         int iDirY = ( iDirZ + 2 ) % 3;
-        planes._uNorm  = ( _grid->_axes[ iDirY ] ^ _grid->_axes[ iDirZ ] ).Normalized();
-        planes._vNorm  = ( _grid->_axes[ iDirZ ] ^ _grid->_axes[ iDirX ] ).Normalized();
+        // planes._uNorm  = ( _grid->_axes[ iDirY ] ^ _grid->_axes[ iDirZ ] ).Normalized();
+        // planes._vNorm  = ( _grid->_axes[ iDirZ ] ^ _grid->_axes[ iDirX ] ).Normalized();
         planes._zNorm  = ( _grid->_axes[ iDirX ] ^ _grid->_axes[ iDirY ] ).Normalized();
-        double   uvDot = planes._uNorm * planes._vNorm;
-        planes._factor = sqrt( 1. - uvDot * uvDot );
-        planes._origins.resize( _grid->_coords[ iDirZ ].size() );
         planes._zProjs.resize ( _grid->_coords[ iDirZ ].size() );
-        planes._origins[0] = origPnt;
         planes._zProjs [0] = 0;
         const double       zFactor = _grid->_axes[ iDirZ ] * planes._zNorm;
         const vector< double > & u = _grid->_coords[ iDirZ ];
-        for ( int i = 1; i < planes._origins.size(); ++i )
+        for ( int i = 1; i < planes._zProjs.size(); ++i )
         {
-          planes._origins[i] = origPnt + _grid->_axes[ iDirZ ] * ( u[i] - u[0] );
           planes._zProjs [i] = zFactor * ( u[i] - u[0] );
         }
       }
     }
     const double deflection = _grid->_minCellSize / 20.;
     const double tol        = _grid->_tol;
-    // int facets[6] = { SMESH_Block::ID_F0yz, SMESH_Block::ID_F1yz,
-    //                   SMESH_Block::ID_Fx0z, SMESH_Block::ID_Fx1z,
-    //                   SMESH_Block::ID_Fxy0, SMESH_Block::ID_Fxy1 };
     E_IntersectPoint ip;
-    //ip._faceIDs.reserve(2);
 
     // Intersect EDGEs with the planes
     map< TGeomID, vector< TGeomID > >::const_iterator e2fIt = edge2faceIDsMap.begin();
@@ -2209,6 +2277,8 @@ namespace
       const TGeomID  edgeID = e2fIt->first;
       const TopoDS_Edge & E = TopoDS::Edge( _grid->_shapes( edgeID ));
       BRepAdaptor_Curve curve( E );
+      TopoDS_Vertex v1 = helper.IthVertex( 0, E, false ); 
+      TopoDS_Vertex v2 = helper.IthVertex( 1, E, false ); 
 
       ip._faceIDs = e2fIt->second;
       ip._shapeID = edgeID;
@@ -2226,34 +2296,34 @@ namespace
         int      iDirY = ( iDirZ + 2 ) % 3;
         double    xLen = _grid->_coords[ iDirX ].back() - _grid->_coords[ iDirX ][0];
         double    yLen = _grid->_coords[ iDirY ].back() - _grid->_coords[ iDirY ][0];
-        double zFactor = _grid->_axes[ iDirZ ] * planes._zNorm;
+        double    zLen = _grid->_coords[ iDirZ ].back() - _grid->_coords[ iDirZ ][0];
+        //double zFactor = _grid->_axes[ iDirZ ] * planes._zNorm;
         int dIJK[3], d000[3] = { 0,0,0 };
+        double o[3] = { _grid->_coords[0][0],
+                        _grid->_coords[1][0],
+                        _grid->_coords[2][0] };
 
         // locate the 1st point of a segment within the grid
         gp_XYZ p1     = discret.Value( 1 ).XYZ();
         double u1     = discret.Parameter( 1 );
-        double zProj1 = planes._zNorm * ( p1 - planes._origins[0] );
-        gp_Pnt orig   = planes._origins[0] + planes._zNorm * zProj1;
-        gp_XY uv      = planes.GetUV( p1, orig );
-        int iX1       = int( uv.X() / xLen * ( _grid->_coords[ iDirX ].size() - 1. ));
-        int iY1       = int( uv.Y() / yLen * ( _grid->_coords[ iDirY ].size() - 1. ));
-        int iZ1       = int( zProj1 / planes._zProjs.back() * ( planes._zProjs.size() - 1. ));
-        locateValue( iX1, uv.X(), _grid->_coords[ iDirX ], dIJK[ iDirX ], tol );
-        locateValue( iY1, uv.Y(), _grid->_coords[ iDirY ], dIJK[ iDirY ], tol );
-        locateValue( iZ1, zProj1, planes._zProjs         , dIJK[ iDirZ ], tol );
+        double zProj1 = planes._zNorm * ( p1 - _grid->_origin );
+
+        _grid->ComputeUVW( p1, ip._uvw );
+        int iX1 = int(( ip._uvw[iDirX] - o[iDirX]) / xLen * (_grid->_coords[ iDirX ].size() - 1));
+        int iY1 = int(( ip._uvw[iDirY] - o[iDirY]) / yLen * (_grid->_coords[ iDirY ].size() - 1));
+        int iZ1 = int(( ip._uvw[iDirZ] - o[iDirZ]) / zLen * (_grid->_coords[ iDirZ ].size() - 1));
+        locateValue( iX1, ip._uvw[iDirX], _grid->_coords[ iDirX ], dIJK[ iDirX ], tol );
+        locateValue( iY1, ip._uvw[iDirY], _grid->_coords[ iDirY ], dIJK[ iDirY ], tol );
+        locateValue( iZ1, ip._uvw[iDirZ], _grid->_coords[ iDirZ ], dIJK[ iDirZ ], tol );
 
         int ijk[3]; // grid index where a segment intersect a plane
         ijk[ iDirX ] = iX1;
         ijk[ iDirY ] = iY1;
         ijk[ iDirZ ] = iZ1;
-        ip._uvw[ iDirX ] = uv.X()           + _grid->_coords[ iDirX ][0];
-        ip._uvw[ iDirY ] = uv.Y()           + _grid->_coords[ iDirY ][0];
-        ip._uvw[ iDirZ ] = zProj1 / zFactor + _grid->_coords[ iDirZ ][0];
 
         // add the 1st vertex point to a hexahedron
         if ( iDirZ == 0 )
         {
-          //ip._shapeID = _grid->_shapes.Add( helper.IthVertex( 0, curve.Edge(),/*CumOri=*/false));
           ip._point   = p1;
           _grid->_edgeIntP.push_back( ip );
           if ( !addIntersection( _grid->_edgeIntP.back(), hexes, ijk, d000 ))
@@ -2264,7 +2334,7 @@ namespace
           // locate the 2nd point of a segment within the grid
           gp_XYZ p2     = discret.Value( iP ).XYZ();
           double u2     = discret.Parameter( iP );
-          double zProj2 = planes._zNorm * ( p2 - planes._origins[0] );
+          double zProj2 = planes._zNorm * ( p2 - _grid->_origin );
           int iZ2       = iZ1;
           locateValue( iZ2, zProj2, planes._zProjs, dIJK[ iDirZ ], tol );
 
@@ -2275,14 +2345,11 @@ namespace
           {
             ip._point = findIntPoint( u1, zProj1, u2, zProj2,
                                       planes._zProjs[ iZ ],
-                                      curve, planes._zNorm, planes._origins[0] );
-            gp_XY uv  = planes.GetUV( ip._point, planes._origins[ iZ ]);
-            locateValue( ijk[ iDirX ], uv.X(), _grid->_coords[ iDirX ], dIJK[ iDirX ], tol );
-            locateValue( ijk[ iDirY ], uv.Y(), _grid->_coords[ iDirY ], dIJK[ iDirY ], tol );
+                                      curve, planes._zNorm, _grid->_origin );
+            _grid->ComputeUVW( ip._point.XYZ(), ip._uvw );
+            locateValue( ijk[iDirX], ip._uvw[iDirX], _grid->_coords[iDirX], dIJK[iDirX], tol );
+            locateValue( ijk[iDirY], ip._uvw[iDirY], _grid->_coords[iDirY], dIJK[iDirY], tol );
             ijk[ iDirZ ] = iZ;
-            ip._uvw[ iDirX ] = uv.X()                         + _grid->_coords[ iDirX ][0];
-            ip._uvw[ iDirY ] = uv.Y()                         + _grid->_coords[ iDirY ][0];
-            ip._uvw[ iDirZ ] = planes._zProjs[ iZ ] / zFactor + _grid->_coords[ iDirZ ][0];
 
             // add ip to hex "above" the plane
             _grid->_edgeIntP.push_back( ip );
@@ -2303,15 +2370,11 @@ namespace
         // add the 2nd vertex point to a hexahedron
         if ( iDirZ == 0 )
         {
-          orig = planes._origins[0] + planes._zNorm * zProj1;
-          uv   = planes.GetUV( p1, orig );
-          locateValue( ijk[ iDirX ], uv.X(), _grid->_coords[ iDirX ], dIJK[ iDirX ], tol );
-          locateValue( ijk[ iDirY ], uv.Y(), _grid->_coords[ iDirY ], dIJK[ iDirY ], tol );
-          ijk[ iDirZ ] = iZ1;
-          ip._uvw[ iDirX ] = uv.X()           + _grid->_coords[ iDirX ][0];
-          ip._uvw[ iDirY ] = uv.Y()           + _grid->_coords[ iDirY ][0];
-          ip._uvw[ iDirZ ] = zProj1 / zFactor + _grid->_coords[ iDirZ ][0];
           ip._point = p1;
+          _grid->ComputeUVW( p1, ip._uvw );
+          locateValue( ijk[iDirX], ip._uvw[iDirX], _grid->_coords[iDirX], dIJK[iDirX], tol );
+          locateValue( ijk[iDirY], ip._uvw[iDirY], _grid->_coords[iDirY], dIJK[iDirY], tol );
+          ijk[ iDirZ ] = iZ1;
           _grid->_edgeIntP.push_back( ip );
           if ( !addIntersection( _grid->_edgeIntP.back(), hexes, ijk, d000 ))
             _grid->_edgeIntP.pop_back();
@@ -2356,8 +2419,6 @@ namespace
    *  \param [in] origin - the plane origin
    *  \return gp_Pnt - the found intersection point
    */
-  //================================================================================
-
   gp_Pnt Hexahedron::findIntPoint( double u1, double proj1,
                                    double u2, double proj2,
                                    double proj,
@@ -2381,7 +2442,7 @@ namespace
 
   //================================================================================
   /*!
-   * \brief Returns index of a hexahedron sub-entities holding a point
+   * \brief Returns indices of a hexahedron sub-entities holding a point
    *  \param [in] ip - intersection point
    *  \param [out] facets - 0-3 facets holding a point
    *  \param [out] sub - index of a vertex or an edge holding a point
@@ -2466,7 +2527,7 @@ namespace
     };
     for ( int i = 0; i < 4; ++i )
     {
-      if ( 0 <= hexIndex[i] && hexIndex[i] < hexes.size() && hexes[ hexIndex[i] ] )
+      if ( /*0 <= hexIndex[i] &&*/ hexIndex[i] < hexes.size() && hexes[ hexIndex[i] ] )
       {
         Hexahedron* h = hexes[ hexIndex[i] ];
         // check if ip is really inside the hex
@@ -2789,6 +2850,90 @@ namespace
     return false;
   }
 
+  //================================================================================
+  /*!
+   * \brief computes exact bounding box with axes parallel to given ones
+   */
+  //================================================================================
+
+  void getExactBndBox( const vector< TopoDS_Shape >& faceVec,
+                       const double*                 axesDirs,
+                       Bnd_Box&                      shapeBox )
+  {
+    BRep_Builder b;
+    TopoDS_Compound allFacesComp;
+    b.MakeCompound( allFacesComp );
+    for ( size_t iF = 0; iF < faceVec.size(); ++iF )
+      b.Add( allFacesComp, faceVec[ iF ] );
+
+    double sP[6]; // aXmin, aYmin, aZmin, aXmax, aYmax, aZmax
+    shapeBox.Get(sP[0],sP[1],sP[2],sP[3],sP[4],sP[5]);
+    double farDist = 0;
+    for ( int i = 0; i < 6; ++i )
+      farDist = Max( farDist, 10 * sP[i] );
+
+    gp_XYZ axis[3] = { gp_XYZ( axesDirs[0], axesDirs[1], axesDirs[2] ),
+                       gp_XYZ( axesDirs[3], axesDirs[4], axesDirs[5] ),
+                       gp_XYZ( axesDirs[6], axesDirs[7], axesDirs[8] ) };
+    axis[0].Normalize();
+    axis[1].Normalize();
+    axis[2].Normalize();
+
+    gp_Mat basis( axis[0], axis[1], axis[2] );
+    gp_Mat bi = basis.Inverted();
+
+    gp_Pnt pMin, pMax;
+    for ( int iDir = 0; iDir < 3; ++iDir )
+    {
+      gp_XYZ axis0 = axis[ iDir ];
+      gp_XYZ axis1 = axis[ ( iDir + 1 ) % 3 ];
+      gp_XYZ axis2 = axis[ ( iDir + 2 ) % 3 ];
+      for ( int isMax = 0; isMax < 2; ++isMax )
+      {
+        double shift = isMax ? farDist : -farDist;
+        gp_XYZ orig = shift * axis0;
+        gp_XYZ norm = axis1 ^ axis2;
+        gp_Pln pln( orig, norm );
+        norm = pln.Axis().Direction().XYZ();
+        BRepBuilderAPI_MakeFace plane( pln, -farDist, farDist, -farDist, farDist );
+
+        gp_Pnt& pAxis = isMax ? pMax : pMin;
+        gp_Pnt pPlane, pFaces;
+        double dist = GEOMUtils::GetMinDistance( plane, allFacesComp, pPlane, pFaces );
+        if ( dist < 0 )
+        {
+          Bnd_B3d bb;
+          gp_XYZ corner;
+          for ( int i = 0; i < 2; ++i ) {
+            corner.SetCoord( 1, sP[ i*3 ]);
+            for ( int j = 0; j < 2; ++j ) {
+              corner.SetCoord( 2, sP[ i*3 + 1 ]);
+              for ( int k = 0; k < 2; ++k )
+              {
+                corner.SetCoord( 3, sP[ i*3 + 2 ]);
+                corner *= bi;
+                bb.Add( corner );
+              }
+            }
+          }
+          corner = isMax ? bb.CornerMax() : bb.CornerMin();
+          pAxis.SetCoord( iDir+1, corner.Coord( iDir+1 ));
+        }
+        else
+        {
+          gp_XYZ pf = pFaces.XYZ() * bi;
+          pAxis.SetCoord( iDir+1, pf.Coord( iDir+1 ) );
+        }
+      }
+    } // loop on 3 axes
+
+    shapeBox.SetVoid();
+    shapeBox.Add( pMin );
+    shapeBox.Add( pMax );
+
+    return;
+  }
+
 } // namespace
 
 //=============================================================================
@@ -2826,14 +2971,19 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
     vector< TopoDS_Shape > faceVec;
     {
       TopTools_MapOfShape faceMap;
-      for ( TopExp_Explorer fExp( theShape, TopAbs_FACE ); fExp.More(); fExp.Next() )
-        if ( faceMap.Add( fExp.Current() )) // skip a face shared by two solids
+      TopExp_Explorer fExp;
+      for ( fExp.Init( theShape, TopAbs_FACE ); fExp.More(); fExp.Next() )
+        if ( !faceMap.Add( fExp.Current() ))
+          faceMap.Remove( fExp.Current() ); // remove a face shared by two solids
+
+      for ( fExp.ReInit(); fExp.More(); fExp.Next() )
+        if ( faceMap.Contains( fExp.Current() ))
           faceVec.push_back( fExp.Current() );
     }
-    Bnd_Box shapeBox;
     vector<FaceGridIntersector> facesItersectors( faceVec.size() );
     map< TGeomID, vector< TGeomID > > edge2faceIDsMap;
     TopExp_Explorer eExp;
+    Bnd_Box shapeBox;
     for ( int i = 0; i < faceVec.size(); ++i )
     {
       facesItersectors[i]._face   = TopoDS::Face    ( faceVec[i] );
@@ -2850,32 +3000,13 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
         }
     }
 
+    getExactBndBox( faceVec, _hyp->GetAxisDirs(), shapeBox );
+
     vector<double> xCoords, yCoords, zCoords;
     _hyp->GetCoordinates( xCoords, yCoords, zCoords, shapeBox );
 
-    grid.SetCoordinates( xCoords, yCoords, zCoords, _hyp->GetAxisDirs(), theShape );
+    grid.SetCoordinates( xCoords, yCoords, zCoords, _hyp->GetAxisDirs(), shapeBox );
 
-    // check if the grid encloses the shape
-    if ( !_hyp->IsGridBySpacing(0) ||
-         !_hyp->IsGridBySpacing(1) ||
-         !_hyp->IsGridBySpacing(2) )
-    {
-      Bnd_Box gridBox;
-      gridBox.Add( gp_Pnt( xCoords[0], yCoords[0], zCoords[0] ));
-      gridBox.Add( gp_Pnt( xCoords.back(), yCoords.back(), zCoords.back() ));
-      double x0,y0,z0, x1,y1,z1;
-      shapeBox.Get(x0,y0,z0, x1,y1,z1);
-      if ( gridBox.IsOut( gp_Pnt( x0,y0,z0 )) ||
-           gridBox.IsOut( gp_Pnt( x1,y1,z1 )))
-        for ( size_t i = 0; i < facesItersectors.size(); ++i )
-        {
-          if ( !facesItersectors[i].IsInGrid( gridBox ))
-            return error("The grid doesn't enclose the geometry");
-#ifdef ELLIPSOLID_WORKAROUND
-          delete facesItersectors[i]._surfaceInt, facesItersectors[i]._surfaceInt = 0;
-#endif
-        }
-    }
     if ( _computeCanceled ) return false;
 
 #ifdef WITH_TBB

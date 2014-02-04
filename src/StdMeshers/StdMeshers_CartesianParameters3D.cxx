@@ -32,10 +32,24 @@
 
 #include "utilities.h"
 
+#include <map>
 #include <limits>
 
+#include <BRepGProp.hxx>
+#include <BRep_Tool.hxx>
 #include <Bnd_Box.hxx>
+#include <GProp_GProps.hxx>
+#include <GeomLib_IsPlanarSurface.hxx>
+#include <Geom_Surface.hxx>
 #include <Precision.hxx>
+#include <TopExp_Explorer.hxx>
+#include <TopLoc_Location.hxx>
+#include <TopTools_MapIteratorOfMapOfShape.hxx>
+#include <TopTools_MapOfShape.hxx>
+#include <TopoDS.hxx>
+#include <TopoDS_Face.hxx>
+#include <gp_Dir.hxx>
+#include <gp_Pln.hxx>
 #include <gp_Vec.hxx>
 
 using namespace std;
@@ -66,12 +80,33 @@ StdMeshers_CartesianParameters3D::StdMeshers_CartesianParameters3D(int         h
   _axisDirs[6] = 0.;
   _axisDirs[7] = 0.;
   _axisDirs[8] = 1.;
+
+  _fixedPoint[0] = 0.;
+  _fixedPoint[1] = 0.;
+  _fixedPoint[2] = 0.;
+  SetFixedPoint( _fixedPoint, /*toUnset=*/true );
 }
 
 
 namespace
 {
   const char* axisName[3] = { "X", "Y", "Z" };
+
+  typedef std::pair< double, std::pair< double, double > > TCooTriple;
+
+#define gpXYZ( cTriple ) gp_XYZ( (cTriple).first, (cTriple).second.first, (cTriple).second.second )
+
+  //================================================================================
+  /*!
+   * \brief Compare two normals
+   */
+  //================================================================================
+
+  bool sameDir( const TCooTriple& n1, const TCooTriple& n2 )
+  {
+    gp_XYZ xyz1 = gpXYZ( n1 ), xyz2 = gpXYZ( n2 );
+    return ( xyz1 - xyz2 ).Modulus() < 0.01;
+  }
 
   //================================================================================
   /*!
@@ -176,6 +211,36 @@ void StdMeshers_CartesianParameters3D::SetGridSpacing(std::vector<string>& xSpac
   if ( changed )
     NotifySubMeshesHypothesisModification();
 }
+
+//=======================================================================
+//function : SetFixedPoint
+//purpose  : * Set/unset a fixed point, at which a node will be created provided that grid
+//           * is defined by spacing in all directions
+//=======================================================================
+
+void StdMeshers_CartesianParameters3D::SetFixedPoint(const double p[3], bool toUnset)
+{
+  if ( toUnset != Precision::IsInfinite( _fixedPoint[0] ))
+    NotifySubMeshesHypothesisModification();
+
+  if ( toUnset )
+    _fixedPoint[0] = Precision::Infinite();
+  else
+    std::copy( &p[0], &p[0]+3, &_fixedPoint[0] );
+}
+
+//=======================================================================
+//function : GetFixedPoint
+//purpose  : Returns either false or (true + point coordinates)
+//=======================================================================
+
+bool StdMeshers_CartesianParameters3D::GetFixedPoint(double p[3])
+{
+  if ( Precision::IsInfinite( _fixedPoint[0] ))
+    return false;
+  std::copy( &_fixedPoint[0], &_fixedPoint[0]+3, &p[0] );
+}
+
 
 //=======================================================================
 //function : SetSizeThreshold
@@ -323,8 +388,198 @@ void StdMeshers_CartesianParameters3D::GetCoordinates(std::vector<double>& xNode
 }
 
 //=======================================================================
+//function : ComputeOptimalAxesDirs
+//purpose  : Returns axes at which number of hexahedra is maximal
+//=======================================================================
+
+void StdMeshers_CartesianParameters3D::
+ComputeOptimalAxesDirs(const TopoDS_Shape& shape,
+                       const bool          isOrthogonal,
+                       double              dirCoords[9])
+{
+  for ( int i = 0; i < 9; ++i ) dirCoords[i] = 0.;
+  dirCoords[0] = dirCoords[4] = dirCoords[8] = 1.;
+
+  if ( shape.IsNull() ) return;
+
+  TopLoc_Location loc;
+  TopExp_Explorer exp;
+
+  // get external FACEs of the shape
+  TopTools_MapOfShape faceMap;
+  for ( exp.Init( shape, TopAbs_FACE ); exp.More(); exp.Next() )
+    if ( !faceMap.Add( exp.Current() ))
+      faceMap.Remove( exp.Current() );
+
+  // sort areas of planar faces by normal direction
+
+  std::multimap< TCooTriple, double > areasByNormal;
+
+  TopTools_MapIteratorOfMapOfShape fIt ( faceMap );
+  for ( ; fIt.More(); fIt.Next() )
+  {
+    const TopoDS_Face&   face = TopoDS::Face( fIt.Key() );
+    Handle(Geom_Surface) surf = BRep_Tool::Surface( face, loc );
+    if ( surf.IsNull() ) continue;
+
+    GeomLib_IsPlanarSurface check( surf, 1e-5 );
+    if ( !check.IsPlanar() ) continue;
+
+    GProp_GProps SProps;
+    BRepGProp::SurfaceProperties( face, SProps );
+    double area = SProps.Mass();
+
+    gp_Pln pln  = check.Plan();
+    gp_Dir norm = pln.Axis().Direction().Transformed( loc );
+    if ( norm.X() < -1e-3 ) { // negative X
+      norm.Reverse();
+    } else if ( norm.X() < 1e-3 ) { // zero X
+      if ( norm.Y() < -1e-3 ) { // negative Y
+        norm.Reverse();
+      } else if ( norm.Y() < 1e-3 ) { // zero X && zero Y
+        if ( norm.Y() < -1e-3 ) // negative Z
+          norm.Reverse();
+      }
+    }
+    TCooTriple coo3( norm.X(), make_pair( norm.Y(), norm.Z() ));
+    areasByNormal.insert( make_pair( coo3, area ));
+  }
+
+  // group coplanar normals and sort groups by sum area
+
+  std::multimap< double, vector< const TCooTriple* > > normsByArea;
+  std::multimap< TCooTriple, double >::iterator norm2a = areasByNormal.begin();
+  const TCooTriple*           norm1 = 0;
+  double                      sumArea = 0;
+  vector< const TCooTriple* > norms;
+  for ( int iF = 1; norm2a != areasByNormal.end(); ++norm2a, ++iF )
+  {
+
+    if ( !norm1 || !sameDir( *norm1, norm2a->first ))
+    {
+      if ( !norms.empty() )
+      {
+        normsByArea.insert( make_pair( sumArea, norms ));
+        norms.clear();
+      }
+      norm1   = & norm2a->first;
+      sumArea = norm2a->second;
+      norms.push_back( norm1 );
+    }
+    else
+    {
+      sumArea += norm2a->second;
+      norms.push_back( & norm2a->first );
+    }
+    if ( iF == areasByNormal.size() )
+      normsByArea.insert( make_pair( sumArea, norms ));
+  }
+
+  // try to set dirs by planar faces
+
+  gp_XYZ normDirs[3]; // normals to largest planes
+
+  if ( !normsByArea.empty() )
+  {
+    norm1 = normsByArea.rbegin()->second[0];
+    normDirs[0] = gpXYZ( *norm1 );
+
+    if ( normsByArea.size() == 1 )
+    {
+      normDirs[1] = normDirs[0];
+      if ( Abs( normDirs[0].Y() ) < 1e-100 &&
+           Abs( normDirs[0].Z() ) < 1e-100 ) // normDirs[0] || OX
+        normDirs[1].SetY( normDirs[0].Y() + 1. );
+      else
+        normDirs[1].SetX( normDirs[0].X() + 1. );
+    }
+    else
+    {
+      // look for 2 other directions
+      gp_XYZ testDir = normDirs[0], minDir, maxDir;
+      for ( int is2nd = 0; is2nd < 2; ++is2nd )
+      {
+        double maxMetric = 0, minMetric = 1e100;
+        std::multimap< double, vector< const TCooTriple* > >::iterator a2n;
+        for ( a2n = normsByArea.begin(); a2n != normsByArea.end(); ++a2n )
+        {
+          gp_XYZ n = gpXYZ( *( a2n->second[0]) );
+          double dot = Abs( n * testDir );
+          double metric = ( 1. - dot ) * ( isOrthogonal ? 1 : a2n->first );
+          if ( metric > maxMetric )
+          {
+            maxDir = n;
+            maxMetric = metric;
+          }
+          if ( metric < minMetric )
+          {
+            minDir = n;
+            minMetric = metric;
+          }
+        }
+        if ( is2nd )
+        {
+          normDirs[2] = minDir;
+        }
+        else
+        {
+          normDirs[1] = maxDir;
+          normDirs[2] = normDirs[0] ^ normDirs[1];
+          if ( isOrthogonal || normsByArea.size() < 3 )
+            break;
+          testDir = normDirs[2];
+        }
+      }
+    }
+    if ( isOrthogonal || normsByArea.size() == 1 )
+    {
+      normDirs[2] = normDirs[0] ^ normDirs[1];
+      normDirs[1] = normDirs[2] ^ normDirs[0];
+    }
+  }
+  else
+  {
+    return;
+  }
+
+  gp_XYZ dirs[3];
+  dirs[0] = normDirs[0] ^ normDirs[1];
+  dirs[1] = normDirs[1] ^ normDirs[2];
+  dirs[2] = normDirs[2] ^ normDirs[0];
+
+  dirs[0].Normalize();
+  dirs[1].Normalize();
+  dirs[2].Normalize();
+
+  // Select dirs for X, Y and Z axes
+  int iX = ( Abs( dirs[0].X() ) > Abs( dirs[1].X() )) ? 0 : 1;
+  if ( Abs( dirs[iX].X() ) < Abs( dirs[2].X() ))
+    iX = 2;
+  int iY = ( iX == 0 ) ? 1 : (( Abs( dirs[0].Y() ) > Abs( dirs[1].Y() )) ? 0 : 1 );
+  if ( Abs( dirs[iY].Y() ) < Abs( dirs[2].Y() ) && iX != 2 )
+    iY = 2;
+  int iZ = 3 - iX - iY;
+
+  if ( dirs[iX].X() < 0 ) dirs[iX].Reverse();
+  if ( dirs[iY].Y() < 0 ) dirs[iY].Reverse();
+  gp_XYZ zDir = dirs[iX] ^ dirs[iY];
+  if ( dirs[iZ] * zDir < 0 )
+    dirs[iZ].Reverse();
+
+  dirCoords[0] = dirs[iX].X();
+  dirCoords[1] = dirs[iX].Y();
+  dirCoords[2] = dirs[iX].Z();
+  dirCoords[3] = dirs[iY].X();
+  dirCoords[4] = dirs[iY].Y();
+  dirCoords[5] = dirs[iY].Z();
+  dirCoords[6] = dirs[iZ].X();
+  dirCoords[7] = dirs[iZ].Y();
+  dirCoords[8] = dirs[iZ].Z();
+}
+
+//=======================================================================
 //function : SetAxisDirs
-//purpose  : Sets directions of axes
+//purpose  : Sets custom direction of axes
 //=======================================================================
 
 void StdMeshers_CartesianParameters3D::SetAxisDirs(const double* the9DirComps)
@@ -348,6 +603,10 @@ void StdMeshers_CartesianParameters3D::SetAxisDirs(const double* the9DirComps)
        x.IsParallel( z, M_PI / 180. ) ||
        y.IsParallel( z, M_PI / 180. ))
     throw SALOME_Exception("Parallel axis directions");
+
+  gp_Vec normXY = x ^ y, normYZ = y ^ z;
+  if ( normXY.IsParallel( normYZ, M_PI / 180. ))
+    throw SALOME_Exception("Axes lie in one plane");
 
   bool isChanged = false;
   for ( int i = 0; i < 9; ++i )
@@ -450,6 +709,14 @@ std::ostream & StdMeshers_CartesianParameters3D::SaveTo(std::ostream & save)
   }
   save << _toAddEdges << " ";
 
+  save.setf( save.scientific );
+  save.precision( 12 );
+  for ( int i = 0; i < 9; ++i )
+    save << _axisDirs[i] << " ";
+
+  for ( int i = 0; i < 3; ++i )
+    save << _fixedPoint[i] << " ";
+
   return save;
 }
 
@@ -500,7 +767,13 @@ std::istream & StdMeshers_CartesianParameters3D::LoadFrom(std::istream & load)
     }
   }
 
-  load >> _toAddEdges;
+  ok = ( load >> _toAddEdges );
+
+  for ( int i = 0; i < 9 && ok; ++i )
+    ok = ( load >> _axisDirs[i]);
+
+  for ( int i = 0; i < 3 && ok ; ++i )
+    ok = ( load >> _fixedPoint[i]);
 
   return load;
 }

@@ -225,6 +225,102 @@ void StdMeshers_CartesianParameters3D_i::GetGridSpacing(SMESH::string_array_out 
 }
 
 //=======================================================================
+//function : SetAxesDirs
+//purpose  : Set custom direction of axes
+//=======================================================================
+
+void StdMeshers_CartesianParameters3D_i::SetAxesDirs(const SMESH::DirStruct& xDir,
+                                                     const SMESH::DirStruct& yDir,
+                                                     const SMESH::DirStruct& zDir)
+  throw (SALOME::SALOME_Exception)
+{
+  double coords[9];
+  coords[0] = xDir.PS.x;
+  coords[1] = xDir.PS.y;
+  coords[2] = xDir.PS.z;
+  coords[3] = yDir.PS.x;
+  coords[4] = yDir.PS.y;
+  coords[5] = yDir.PS.z;
+  coords[6] = zDir.PS.x;
+  coords[7] = zDir.PS.y;
+  coords[8] = zDir.PS.z;
+  try {
+    this->GetImpl()->SetAxisDirs(coords);
+
+    SMESH::TPythonDump() << _this() << ".SetAxesDirs( "
+                         << xDir << ", "
+                         << yDir << ", "
+                         << zDir << " )";
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+  }
+}
+
+//=======================================================================
+//function : GetAxesDirs
+//purpose  : Returns direction of axes
+//=======================================================================
+
+void StdMeshers_CartesianParameters3D_i::GetAxesDirs(SMESH::DirStruct& xDir,
+                                                     SMESH::DirStruct& yDir,
+                                                     SMESH::DirStruct& zDir)
+{
+  const double* coords = GetImpl()->GetAxisDirs();
+  xDir.PS.x = coords[0];
+  xDir.PS.y = coords[1];
+  xDir.PS.z = coords[2];
+  yDir.PS.x = coords[3];
+  yDir.PS.y = coords[4];
+  yDir.PS.z = coords[5];
+  zDir.PS.x = coords[6];
+  zDir.PS.y = coords[7];
+  zDir.PS.z = coords[8];
+}
+
+//=======================================================================
+//function : SetFixedPoint
+//purpose  : * Set/unset a fixed point, at which a node will be created provided that grid
+//           * is defined by spacing in all directions
+//=======================================================================
+
+void StdMeshers_CartesianParameters3D_i::SetFixedPoint(const SMESH::PointStruct& ps,
+                                                       CORBA::Boolean            toUnset)
+{
+  double p[3] = { ps.x, ps.y, ps.z };
+  GetImpl()->SetFixedPoint( p, toUnset );
+
+  if ( toUnset )
+    SMESH::TPythonDump() << _this() << ".SetFixedPoint([0,0,0], True)";
+  else
+    SMESH::TPythonDump() << _this() << ".SetFixedPoint(" << p << ", " << toUnset << " )";
+}
+
+//=======================================================================
+//function : GetFixedPoint
+//purpose  : Returns a fixed point
+//=======================================================================
+
+CORBA::Boolean StdMeshers_CartesianParameters3D_i::GetFixedPoint(SMESH::PointStruct& ps)
+{
+  double p[3];
+  if ( GetImpl()->GetFixedPoint( p ) )
+  {
+    ps.x = p[0];
+    ps.y = p[1];
+    ps.z = p[2];
+    return true;
+  }
+  else
+  {
+    ps.x = 0.;
+    ps.y = 0.;
+    ps.z = 0.;
+  }
+  return false;
+}
+
+//=======================================================================
 //function : SetToAddEdges
 //purpose  : Enables implementation of geometrical edges into the mesh.
 //=======================================================================
@@ -248,13 +344,44 @@ CORBA::Boolean StdMeshers_CartesianParameters3D_i::GetToAddEdges()
 
 //=======================================================================
 //function : IsGridBySpacing
-//purpose  : Return true if the grid is defined by spacing functions and 
+//purpose  : Return true if the grid is defined by spacing functions and
 //           not by node coordinates
 //=======================================================================
 
 CORBA::Boolean StdMeshers_CartesianParameters3D_i::IsGridBySpacing(CORBA::Short axis)
 {
   return this->GetImpl()->IsGridBySpacing(axis);
+}
+
+//=======================================================================
+//function : ComputeOptimalAxesDirs
+//purpose  : Returns axes at which number of hexahedra is maximal
+//=======================================================================
+
+void StdMeshers_CartesianParameters3D_i::
+ComputeOptimalAxesDirs(GEOM::GEOM_Object_ptr go,
+                       CORBA::Boolean        isOrthogonal,
+                       SMESH::DirStruct&     xDir,
+                       SMESH::DirStruct&     yDir,
+                       SMESH::DirStruct&     zDir)
+  throw (SALOME::SALOME_Exception)
+{
+  TopoDS_Shape shape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape( go );
+  if ( shape.IsNull() )
+    THROW_SALOME_CORBA_EXCEPTION( "Null shape", SALOME::BAD_PARAM );
+
+  double c[9];
+  ::StdMeshers_CartesianParameters3D::ComputeOptimalAxesDirs( shape, isOrthogonal, c );
+
+  xDir.PS.x = c[0];
+  xDir.PS.y = c[1];
+  xDir.PS.z = c[2];
+  yDir.PS.x = c[3];
+  yDir.PS.y = c[4];
+  yDir.PS.z = c[5];
+  zDir.PS.x = c[6];
+  zDir.PS.y = c[7];
+  zDir.PS.z = c[8];
 }
 
 //=======================================================================
@@ -268,13 +395,13 @@ StdMeshers_CartesianParameters3D_i::ComputeCoordinates(CORBA::Double            
                                                        const SMESH::string_array& spaceFuns,
                                                        const SMESH::double_array& points,
                                                        const char*                axisName )
-    throw (SALOME::SALOME_Exception)
+  throw (SALOME::SALOME_Exception)
 {
   vector<string> xFuns;
   vector<double> xPoints, coords;
   _array2vec( spaceFuns, xFuns, (const char*) );
   _array2vec( points, xPoints, );
-  
+
   try {
     this->GetImpl()->ComputeCoordinates( x0, x1, xFuns, xPoints, coords, axisName );
   }

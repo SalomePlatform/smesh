@@ -942,8 +942,9 @@ module StdMeshers
   /*!
    * interface of "Body fitting Parameters" hypothesis.
    * This hypothesis specifies 
-   * - Definition of the Cartesian grid
    * - Size threshold
+   * - Definition of the Cartesian grid
+   * - Direction of grid axes
    */
   interface StdMeshers_CartesianParameters3D : SMESH::SMESH_Hypothesis
   {
@@ -965,8 +966,8 @@ module StdMeshers
     /*!
      * Set coordinates of nodes along an axis (countered from zero)
      */
-    void SetGrid(in SMESH::double_array coords,
-                 in short               axis) raises (SALOME::SALOME_Exception);
+    void SetGrid(in SMESH::double_array  coords,
+                 in short                axis) raises (SALOME::SALOME_Exception);
     SMESH::double_array GetGrid(in short axis) raises (SALOME::SALOME_Exception);
 
     /*!
@@ -986,12 +987,38 @@ module StdMeshers
                         out SMESH::double_array internalPoints,
                         in short                axis) raises (SALOME::SALOME_Exception);
     /*!
+     * Set custom direction of axes
+     */
+    void SetAxesDirs(in SMESH::DirStruct x,
+                     in SMESH::DirStruct y,
+                     in SMESH::DirStruct z ) raises (SALOME::SALOME_Exception);
+    void GetAxesDirs(out SMESH::DirStruct x,
+                     out SMESH::DirStruct y,
+                     out SMESH::DirStruct z );
+    /*!
+     * Set/unset a fixed point, at which a node will be created provided that grid
+     * is defined by spacing in all directions
+     */
+    void SetFixedPoint(in SMESH::PointStruct p, in boolean toUnset);
+    boolean GetFixedPoint(out SMESH::PointStruct p);
+
+    /*!
      * Enables implementation of geometrical edges into the mesh. If this feature
      * is disabled, sharp edges of the shape are lost ("smoothed") in the mesh if
      * they don't coincide with the grid lines
      */
     void SetToAddEdges(in boolean toAdd);
     boolean GetToAddEdges();
+
+    /*!
+     * Returns axes at which a number of generated hexahedra is maximal
+     */
+    void ComputeOptimalAxesDirs(in GEOM::GEOM_Object shape,
+                                in boolean           isOrthogonal,
+                                out SMESH::DirStruct x,
+                                out SMESH::DirStruct y,
+                                out SMESH::DirStruct z ) 
+      raises (SALOME::SALOME_Exception);
 
     /*!
      * \brief Computes node coordinates by spacing functions

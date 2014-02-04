@@ -83,6 +83,22 @@ class STDMESHERS_I_EXPORT StdMeshers_CartesianParameters3D_i:
   void GetGridSpacing(SMESH::string_array_out xSpaceFunctions,
                       SMESH::double_array_out xInternalPoints,
                       CORBA::Short            axis) throw (SALOME::SALOME_Exception);
+  /*!
+   * Set custom direction of axes
+   */
+  void SetAxesDirs(const SMESH::DirStruct& x,
+                   const SMESH::DirStruct& y,
+                   const SMESH::DirStruct& z) throw (SALOME::SALOME_Exception);
+  void GetAxesDirs(SMESH::DirStruct& x,
+                   SMESH::DirStruct& y,
+                   SMESH::DirStruct& z);
+  /*!
+   * Set/unset a fixed point, at which a node will be created provided that grid
+   * is defined by spacing in all directions
+   */
+  void SetFixedPoint(const ::SMESH::PointStruct& p, CORBA::Boolean toUnset);
+  CORBA::Boolean GetFixedPoint(::SMESH::PointStruct& p);
+
 
   /*!
    * \brief Enables implementation of geometrical edges into the mesh. If this feature
@@ -98,6 +114,14 @@ class STDMESHERS_I_EXPORT StdMeshers_CartesianParameters3D_i:
    */
   CORBA::Boolean IsGridBySpacing(CORBA::Short axis);
 
+  /*!
+   * Returns axes at which number of hexahedra is maximal
+   */
+  void ComputeOptimalAxesDirs(GEOM::GEOM_Object_ptr shape,
+                              CORBA::Boolean        isOrthogonal,
+                              SMESH::DirStruct&     x,
+                              SMESH::DirStruct&     y,
+                              SMESH::DirStruct&     z) throw (SALOME::SALOME_Exception);
   /*!
    * \brief Computes node coordinates by spacing functions
    *  \param x0 - lower coordinate

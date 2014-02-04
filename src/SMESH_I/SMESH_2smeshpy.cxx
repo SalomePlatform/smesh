@@ -2632,6 +2632,8 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
     hyp->SetConvMethodAndType( "SetGrid", "Cartesian_3D");
     for ( int iArg = 0; iArg < 4; ++iArg )
       hyp->setCreationArg( iArg+1, "[]");
+    hyp->AddAccumulativeMethod( "SetGrid" );
+    hyp->AddAccumulativeMethod( "SetGridSpacing" );
   }
   else
   {
@@ -3114,7 +3116,9 @@ void _pyComplexParamHypo::Process( const Handle(_pyCommand)& theCommand)
         myCurCrMethod->myArgs[ iArg ] += "]";
       }
       myArgCommands.push_back( theCommand );
-      rememberCmdOfParameter( theCommand );
+      //rememberCmdOfParameter( theCommand ); -- these commands are marked as
+      //                                  accumulative, else, if the creation
+      //                 is not converted, commands for axes 1 and 2 are lost
       return;
     }
   }

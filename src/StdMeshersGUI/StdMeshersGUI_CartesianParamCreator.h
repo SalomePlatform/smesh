@@ -42,6 +42,7 @@
 class QAbstractItemModel;
 class QButtonGroup;
 class QCheckBox;
+class QGroupBox;
 class QLineEdit;
 class QListWidget;
 class QListWidgetItem;
@@ -51,6 +52,7 @@ class QStyleOptionViewItem;
 class QTreeWidget;
 class QTreeWidgetItem;
 class QWidget;
+class SMESHGUI_MeshEditPreview;
 class SMESHGUI_SpinBox;
 
 namespace StdMeshersGUI
@@ -78,6 +80,9 @@ namespace StdMeshersGUI
     bool isGridBySpacing() const;
     SMESH::double_array* getCoordinates();
     void getSpacing(SMESH::string_array_out funs, SMESH::double_array_out points) const;
+
+  signals:
+    void gridModeChanged(int);
 
   private slots:
     void onInsert();
@@ -126,19 +131,40 @@ public:
   StdMeshersGUI_CartesianParamCreator( const QString& aHypType );
   virtual ~StdMeshersGUI_CartesianParamCreator();
 
-  virtual bool    checkParams( QString& ) const;
-  virtual QString helpPage() const;
+  virtual bool     checkParams( QString& ) const;
+  virtual QString  helpPage() const;
 
 protected:
   virtual QFrame*  buildFrame();
   virtual void     retrieveParams() const;
   virtual QString  storeParams() const;
 
+private slots:
+  bool             updateAxesPreview();
+  void             onOrthogonalAxes(bool);
+  void             onAxisDirChange(const QString&);
+  void             onSelectionChange();
+  void             onOptimalAxes(bool);
+  void             onResetAxes(bool);
+  void             onGridModeChanged(int);
+
 private:
   QLineEdit*                  myName;
   SMESHGUI_SpinBox*           myThreshold;
   QCheckBox*                  myAddEdges;
+
   StdMeshersGUI::GridAxisTab* myAxisTabs[3];
+  QGroupBox*                  myFixedPointGrp;
+  SMESHGUI_SpinBox*           myPointSpin[3];
+  QCheckBox*                  myOrthogonalChk;
+  QButtonGroup*               myAxisBtnGrp;
+  SMESHGUI_SpinBox*           myXDirSpin[3];
+  SMESHGUI_SpinBox*           myYDirSpin[3];
+  SMESHGUI_SpinBox*           myZDirSpin[3];
+  SMESHGUI_MeshEditPreview*   myAxesPreview;
+  double                      myOrigin[3];
+  double                      myAxesLen;
+  int                         myDirTic[3];
 };
 
 #endif // STDMESHERSGUI_CartesianParamCreator_H
