@@ -32,9 +32,10 @@
 #include <gp_Ax1.hxx>
 #include <gp_Pnt.hxx>
 
-class SVTK_ViewWindow;
-class vtkUnstructuredGrid;
 class SALOME_Actor;
+class SVTK_ViewWindow;
+class vtkTextActor;
+class vtkUnstructuredGrid;
 
 namespace SMESH
 {
@@ -51,8 +52,8 @@ class SMESHGUI_EXPORT SMESHGUI_MeshEditPreview
   vtkUnstructuredGrid* myGrid;
   SALOME_Actor*        myPreviewActor;
 
-  std::vector<gp_Pnt>  myUnitArrowPnts;
-  int                  myNbArrows;
+  std::vector<gp_Pnt>        myUnitArrowPnts;
+  std::vector<vtkTextActor*> myLabelActors;
 
 public:
   SMESHGUI_MeshEditPreview( SVTK_ViewWindow* );
@@ -63,10 +64,11 @@ public:
   void                 SetVisibility( bool );
   void                 SetColor( double, double, double );
 
-  void                 SetArrowShapeAndNb( int    nbArrows,
-                                           double headLength,
-                                           double headRadius,
-                                           double start=0.);
+  void                 SetArrowShapeAndNb( int         nbArrows,
+                                           double      headLength,
+                                           double      headRadius,
+                                           double      start=0.,
+                                           const char* labels=0);
   void                 SetArrows( const gp_Ax1* axes,
                                   double        length);
 

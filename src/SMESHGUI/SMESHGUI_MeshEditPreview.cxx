@@ -28,23 +28,26 @@
 #include "SMESHGUI_MeshEditPreview.h"
 
 #include "SMESHGUI_VTKUtils.h"
-
-#include <SMESH_Actor.h>
-#include <SMESH_ActorUtils.h>
+#include "SMESH_Actor.h"
+#include "SMESH_ActorUtils.h"
 
 // SALOME GUI includes
-#include <VTKViewer_CellLocationsArray.h>
+#include <SVTK_Renderer.h>
 #include <SVTK_ViewWindow.h>
+#include <VTKViewer_CellLocationsArray.h>
 
 // VTK includes
-#include <vtkPoints.h>
-#include <vtkIdList.h>
 #include <vtkCellArray.h>
+#include <vtkCoordinate.h>
+#include <vtkDataSetMapper.h>
+#include <vtkIdList.h>
+#include <vtkPoints.h>
+#include <vtkProperty.h>
+#include <vtkRenderer.h>
+#include <vtkTextActor.h>
+#include <vtkTextMapper.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkUnstructuredGridWriter.h>
-#include <vtkDataSetMapper.h>
-#include <vtkProperty.h>
 
 // Qt includes
 #include <QColor>
@@ -88,7 +91,6 @@ SMESHGUI_MeshEditPreview::SMESHGUI_MeshEditPreview(SVTK_ViewWindow* theViewWindo
   aMapper->Delete();
 
   myViewWindow->AddActor(myPreviewActor);
-
 }
 
 //================================================================================
@@ -104,6 +106,12 @@ SMESHGUI_MeshEditPreview::~SMESHGUI_MeshEditPreview()
   myViewWindow->RemoveActor(myPreviewActor);
   myPreviewActor->Delete();
 
+  for ( size_t iA = 0; iA < myLabelActors.size(); ++iA )
+    if ( myLabelActors[iA] )
+    {
+      myPreviewActor->GetRenderer()->RemoveActor( myLabelActors[iA] );
+      myLabelActors[iA]->Delete();
+    }
 }
 
 //================================================================================
@@ -232,10 +240,11 @@ void SMESHGUI_MeshEditPreview::SetData (const SMESH::MeshPreviewStruct* previewD
  */
 //================================================================================
 
-void SMESHGUI_MeshEditPreview::SetArrowShapeAndNb( int    nbArrows,
-                                                   double headLength,
-                                                   double headRadius,
-                                                   double start)
+void SMESHGUI_MeshEditPreview::SetArrowShapeAndNb( int         nbArrows,
+                                                   double      headLength,
+                                                   double      headRadius,
+                                                   double      start,
+                                                   const char* labels)
 {
   const int theNbPoints = 10; // in one arrow
   myUnitArrowPnts.reserve( theNbPoints );
@@ -286,7 +295,28 @@ void SMESHGUI_MeshEditPreview::SetArrowShapeAndNb( int    nbArrows,
     myGrid->InsertNextCell( VTK_LINE, 2, conn );
   }
 
-  myNbArrows = nbArrows;
+  myLabelActors.resize( nbArrows, ( vtkTextActor*) NULL );
+  char label[] = "X";
+  if ( labels )
+    for ( int iP = 0, iA = 0; iA < nbArrows; ++iA )
+    {
+      label[0] = labels[iA];
+      vtkTextMapper* text = vtkTextMapper::New();
+      text->SetInput( label );
+      vtkCoordinate* coord = vtkCoordinate::New();
+
+      myLabelActors[iA] = vtkTextActor::New();
+      //myLabelActors[iA]->SetMapper( text );
+      myLabelActors[iA]->SetInput( label );
+      myLabelActors[iA]->SetTextScaleModeToNone();
+      myLabelActors[iA]->PickableOff();
+      myLabelActors[iA]->GetPositionCoordinate()->SetReferenceCoordinate( coord );
+
+      text->Delete();
+      coord->Delete();
+
+      myPreviewActor->GetRenderer()->AddActor(myLabelActors[iA]);
+    }
 }
 
 //================================================================================
@@ -302,7 +332,7 @@ void SMESHGUI_MeshEditPreview::SetArrows( const gp_Ax1* axes,
 {
   vtkPoints* aPoints = myGrid->GetPoints();
 
-  for ( int iP = 0, iA = 0; iA < myNbArrows; ++iA )
+  for ( int iP = 0, iA = 0; iA < myLabelActors.size(); ++iA )
   {
     gp_Trsf trsf;
     trsf.SetTransformation( gp_Ax3( axes[iA].Location(), axes[iA].Direction() ), gp::XOY() );
@@ -313,6 +343,14 @@ void SMESHGUI_MeshEditPreview::SetArrows( const gp_Ax1* axes,
       p.Transform( trsf );
       aPoints->SetPoint( iP, p.X(), p.Y(), p.Z() );
     }
+    if ( myLabelActors[iA] )
+      if ( vtkCoordinate* aCoord =
+           myLabelActors[iA]->GetPositionCoordinate()->GetReferenceCoordinate() )
+      {
+        double p[3];
+        aPoints->GetPoint( iP-1, p );
+        aCoord->SetValue( p );
+      }
   }
 
   myGrid->Modified();
@@ -327,6 +365,9 @@ void SMESHGUI_MeshEditPreview::SetArrows( const gp_Ax1* axes,
 void SMESHGUI_MeshEditPreview::SetVisibility (bool theVisibility)
 {
   myPreviewActor->SetVisibility(theVisibility);
+  for ( size_t iA = 0; iA < myLabelActors.size(); ++iA )
+    if ( myLabelActors[iA] )
+      myLabelActors[iA]->SetVisibility(theVisibility);
   SMESH::RepaintCurrentView();
 }
 
