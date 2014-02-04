@@ -49,6 +49,7 @@
 #include <TopoDS.hxx>
 #include <TopoDS_Face.hxx>
 #include <gp_Dir.hxx>
+#include <gp_Mat.hxx>
 #include <gp_Pln.hxx>
 #include <gp_Vec.hxx>
 
@@ -234,7 +235,7 @@ void StdMeshers_CartesianParameters3D::SetFixedPoint(const double p[3], bool toU
 //purpose  : Returns either false or (true + point coordinates)
 //=======================================================================
 
-bool StdMeshers_CartesianParameters3D::GetFixedPoint(double p[3])
+bool StdMeshers_CartesianParameters3D::GetFixedPoint(double p[3]) const
 {
   if ( Precision::IsInfinite( _fixedPoint[0] ))
     return false;
@@ -294,15 +295,36 @@ bool StdMeshers_CartesianParameters3D::IsGridBySpacing(const int axis) const
 //purpose  : Computes node coordinates by spacing functions
 //=======================================================================
 
-void StdMeshers_CartesianParameters3D::ComputeCoordinates(const double         x0,
-                                                          const double         x1,
-                                                          vector<std::string>& spaceFuns,
-                                                          vector<double>&      points,
-                                                          vector<double>&      coords,
-                                                          const std::string&   axis )
+void StdMeshers_CartesianParameters3D::ComputeCoordinates(const double    x0,
+                                                          const double    x1,
+                                                          vector<string>& theSpaceFuns,
+                                                          vector<double>& thePoints,
+                                                          vector<double>& coords,
+                                                          const string&   axis,
+                                                          const double*   xForced )
   throw ( SALOME_Exception )
 {
-  checkGridSpacing( spaceFuns, points, axis );
+  checkGridSpacing( theSpaceFuns, thePoints, axis );
+
+  vector<string> spaceFuns = theSpaceFuns;
+  vector<double> points    = thePoints;
+
+  bool forced = false;
+  if (( forced = ( xForced && ( x0 < *xForced ) && ( *xForced < x1 ))))
+  {
+    // divide a range at xForced
+
+    // find a range to insert xForced
+    double pos = ( *xForced - x0 ) / ( x1 - x0 );
+    int iR = 1;
+    while ( pos > points[ iR ] ) ++iR;
+
+    // insert xForced
+    vector<double>::iterator pntIt = points.begin() + iR;
+    points.insert( pntIt, pos );
+    vector<string>::iterator funIt = spaceFuns.begin() + iR;
+    spaceFuns.insert( funIt, spaceFuns[ iR-1 ]);
+  }
 
   coords.clear();
   for ( size_t i = 0; i < spaceFuns.size(); ++i )
@@ -345,6 +367,28 @@ void StdMeshers_CartesianParameters3D::ComputeCoordinates(const double         x
     if ( fabs( coords.back() - p1 ) > 0.5 * lastCellLen )
       coords.push_back ( p1 );
   }
+
+  // correct coords if a forced point is too close to a neighbor node
+  if ( forced )
+  {
+    int iF = 0;
+    double minLen = ( x1 - x0 );
+    for ( size_t i = 1; i < coords.size(); ++i )
+    {
+      if ( !iF && Abs( coords[i] - *xForced ) < 1e-20 )
+        iF = i++; // xForced found
+      else
+        minLen = Min( minLen, coords[i] - coords[i-1] );
+    }
+    const double tol = minLen * 1e-3;
+    int iRem = -1;
+    if (( iF > 1 ) && ( coords[iF] - coords[iF-1] < tol ))
+      iRem = iF-1;
+    else if (( iF < coords.size()-2 ) && ( coords[iF+1] - coords[iF] < tol ))
+      iRem = iF+1;
+    if ( iRem > 0 )
+      coords.erase( coords.begin() + iRem );
+  }
 }
 
 //=======================================================================
@@ -370,19 +414,45 @@ void StdMeshers_CartesianParameters3D::GetCoordinates(std::vector<double>& xNode
     bndBox.Get(x0,y0,z0, x1,y1,z1);
   }
 
+  double fp[3], *pfp[3] = { NULL, NULL, NULL };
+  if ( GetFixedPoint( fp ))
+  {
+    // convert fp into a basis defined by _axisDirs
+    gp_XYZ axis[3] = { gp_XYZ( _axisDirs[0], _axisDirs[1], _axisDirs[2] ),
+                       gp_XYZ( _axisDirs[3], _axisDirs[4], _axisDirs[5] ),
+                       gp_XYZ( _axisDirs[6], _axisDirs[7], _axisDirs[8] ) };
+    axis[0].Normalize();
+    axis[1].Normalize();
+    axis[2].Normalize();
+
+    gp_Mat basis( axis[0], axis[1], axis[2] );
+    gp_Mat bi = basis.Inverted();
+
+    gp_XYZ p( fp[0], fp[1], fp[2] );
+    p *= bi;
+    p.Coord( fp[0], fp[1], fp[2] );
+
+    pfp[0] = & fp[0];
+    pfp[1] = & fp[1];
+    pfp[2] = & fp[2];
+  }
+
   StdMeshers_CartesianParameters3D* me = const_cast<StdMeshers_CartesianParameters3D*>(this);
   if ( IsGridBySpacing(0) )
-    ComputeCoordinates( x0, x1, me->_spaceFunctions[0], me->_internalPoints[0], xNodes, "X" );
+    ComputeCoordinates
+      ( x0, x1, me->_spaceFunctions[0], me->_internalPoints[0], xNodes, "X", pfp[0] );
   else
     xNodes = _coords[0];
 
   if ( IsGridBySpacing(1) )
-    ComputeCoordinates( y0, y1, me->_spaceFunctions[1], me->_internalPoints[1], yNodes, "Y" );
+    ComputeCoordinates
+      ( y0, y1, me->_spaceFunctions[1], me->_internalPoints[1], yNodes, "Y", pfp[1] );
   else
     yNodes = _coords[1];
 
   if ( IsGridBySpacing(2) )
-    ComputeCoordinates( z0, z1, me->_spaceFunctions[2], me->_internalPoints[2], zNodes, "Z" );
+    ComputeCoordinates
+      ( z0, z1, me->_spaceFunctions[2], me->_internalPoints[2], zNodes, "Z", pfp[2] );
   else
     zNodes = _coords[2];
 }

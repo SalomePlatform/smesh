@@ -1470,15 +1470,17 @@ class StdMeshersBuilder_Cartesian_3D(Mesh_Algorithm):
     #  through the fixed point in each direction at which the grid is defined
     #  by spacing
     #  @param p coordinates of the fixed point. Either SMESH.PointStruct or
-    #         3 components of coordinates.
+    #         a vertex or 3 components of coordinates.
     #  @param toUnset defines whether the fixed point is defined or removed.
     def SetFixedPoint( self, p, toUnset=False ):
-        import SMESH
+        import SMESH, GEOM
         if toUnset:
             if not self.hyp: return
             p = SMESH.PointStruct(0,0,0)
-        if hasattr( p, "__getitem__" ):
+        elif hasattr( p, "__getitem__" ):
             p = SMESH.PointStruct( p[0],p[1],p[2] )
+        elif isinstance( p, GEOM._objref_GEOM_Object ):
+            p = self.mesh.smeshpyD.GetPointStruct( p )
         if not self.hyp:
             self.hyp = self.Hypothesis("CartesianParameters3D")
         if not self.mesh.IsUsedHypothesis( self.hyp, self.geom ):

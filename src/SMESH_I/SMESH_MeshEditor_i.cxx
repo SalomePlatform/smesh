@@ -5253,13 +5253,6 @@ SMESH::long_array* SMESH_MeshEditor_i::FindElementsByPoint(CORBA::Double      x,
   for ( int i = 0; i < foundElems.size(); ++i )
     res[i] = foundElems[i]->GetID();
 
-  if ( !myIsPreviewMode ) // call from tui
-    TPythonDump() << "res = " << this << ".FindElementsByPoint( "
-                  << x << ", "
-                  << y << ", "
-                  << z << ", "
-                  << type << " )";
-
   return res._retn();
 
   SMESH_CATCH( SMESH::throwCorbaException );
@@ -5320,14 +5313,6 @@ SMESH_MeshEditor_i::FindAmongElementsByPoint(SMESH::SMESH_IDSource_ptr elementID
   res->length( foundElems.size() );
   for ( int i = 0; i < foundElems.size(); ++i )
     res[i] = foundElems[i]->GetID();
-
-  if ( !myIsPreviewMode ) // call from tui
-    TPythonDump() << "res = " << this << ".FindAmongElementsByPoint( "
-                  << elementIDs << ", "
-                  << x << ", "
-                  << y << ", "
-                  << z << ", "
-                  << type << " )";
 
   return res._retn();
 

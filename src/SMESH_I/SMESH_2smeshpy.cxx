@@ -372,7 +372,7 @@ namespace {
    */
   //================================================================================
 
-  void StructToList( Handle( _pyCommand)& theCommand )
+  void StructToList( Handle( _pyCommand)& theCommand, const bool checkMethod=true )
   {
     static TStringSet methodsAcceptingList;
     if ( methodsAcceptingList.empty() ) {
@@ -390,7 +390,7 @@ namespace {
         ,"" }; // <- mark of the end
       methodsAcceptingList.Insert( methodNames );
     }
-    if ( methodsAcceptingList.Contains( theCommand->GetMethod() ))
+    if ( !checkMethod || methodsAcceptingList.Contains( theCommand->GetMethod() ))
     {
       for ( int i = theCommand->GetNbArgs(); i > 0; --i )
       {
@@ -3159,13 +3159,23 @@ void _pyComplexParamHypo::Flush()
     for ( ; cmd != myUnusedCommands.end(); ++cmd )
       if ((*cmd)->GetMethod() == "SetObjectEntry" )
         (*cmd)->Clear();
+
+    if ( GetAlgoType() == "Cartesian_3D" )
+    {
+      _pyID algo = myCreationCmd->GetObject();
+      for ( cmd = myProcessedCmds.begin(); cmd != myProcessedCmds.end(); ++cmd )
+      {
+        StructToList( *cmd, /*checkMethod=*/false );
+        (*cmd)->SetObject( algo );
+      }
+    }
   }
 }
 
 //================================================================================
 /*!
  * \brief Convert methods of 1D hypotheses to my own methods
-  * \param theCommand - The called hypothesis method
+ * \param theCommand - The called hypothesis method
  */
 //================================================================================
 

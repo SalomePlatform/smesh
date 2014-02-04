@@ -83,7 +83,7 @@ public:
    * is defined by spacing in all directions
    */
   void SetFixedPoint(const double p[3], bool toUnset);
-  bool GetFixedPoint(double p[3]);
+  bool GetFixedPoint(double p[3]) const;
 
   /*!
    * \brief Computes node coordinates by spacing functions
@@ -98,7 +98,8 @@ public:
                                  std::vector<std::string>& spaceFuns,
                                  std::vector<double>&      points,
                                  std::vector<double>&      coords,
-                                 const std::string&        axis ) throw (SALOME_Exception);
+                                 const std::string&        axis,
+                                 const double*             xForced=0) throw (SALOME_Exception);
   /*!
    * Return coordinates of node positions along the three axes.
    * If the grid is defined by spacing functions, the coordinates are computed

@@ -83,7 +83,7 @@
 #include <gp_Sphere.hxx>
 #include <gp_Torus.hxx>
 
-#undef WITH_TBB
+//#undef WITH_TBB
 #ifdef WITH_TBB
 #include <tbb/parallel_for.h>
 //#include <tbb/enumerable_thread_specific.h>

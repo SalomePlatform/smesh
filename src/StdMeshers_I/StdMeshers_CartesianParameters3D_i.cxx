@@ -290,10 +290,7 @@ void StdMeshers_CartesianParameters3D_i::SetFixedPoint(const SMESH::PointStruct&
   double p[3] = { ps.x, ps.y, ps.z };
   GetImpl()->SetFixedPoint( p, toUnset );
 
-  if ( toUnset )
-    SMESH::TPythonDump() << _this() << ".SetFixedPoint([0,0,0], True)";
-  else
-    SMESH::TPythonDump() << _this() << ".SetFixedPoint(" << p << ", " << toUnset << " )";
+  SMESH::TPythonDump() << _this() << ".SetFixedPoint( " << ps << ", " << toUnset << " )";
 }
 
 //=======================================================================
