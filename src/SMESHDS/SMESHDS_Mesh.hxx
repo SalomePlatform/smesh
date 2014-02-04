@@ -61,7 +61,8 @@ class SMDS_BallElement;
 class SMESHDS_GroupBase;
 class DownIdType;
 
-class SMESHDS_EXPORT SMESHDS_Mesh:public SMDS_Mesh{
+class SMESHDS_EXPORT SMESHDS_Mesh : public SMDS_Mesh
+{
 public:
   SMESHDS_Mesh(int theMeshID, bool theIsEmbeddedMode);
   bool IsEmbeddedMode();
@@ -603,14 +604,9 @@ private:
     it->second->AddNode( aNode ); // add aNode to submesh
   }
   
-  /*int HashCode( const TopoDS_Shape& S, const Standard_Integer theUpper ) const
-  {
-      return S.HashCode(2147483647);
-  }*/ 
-
   typedef std::list<const SMESHDS_Hypothesis*> THypList;
 
-  typedef NCollection_DataMap< TopoDS_Shape, THypList > ShapeToHypothesis;
+  typedef NCollection_DataMap< TopoDS_Shape, THypList, SMESHDS_Hasher > ShapeToHypothesis;
 
   ShapeToHypothesis          myShapeToHypothesis;
 
