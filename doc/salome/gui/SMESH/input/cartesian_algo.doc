@@ -81,7 +81,7 @@ This dialog allows to define
     the <b> Fixed Point</b>. If no directions are defined by spacing,
     <b> Fixed Point</b> is disabled.</li>
   <li> <b> Directions of Axes</b>. You can set up almost any
-    directions of grid axes that can help in generation as many as
+    directions of grid axes that can help in generation of as many as
     possible hexahedral elements.
     <ul>
       <li><b> Orthogonal Axes </b> check-box, if activated, keeps the
