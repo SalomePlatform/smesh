@@ -1912,7 +1912,7 @@ class Mesh:
     def RemoveGroupWithContents(self, group):
         self.mesh.RemoveGroupWithContents(group)
 
-    ## Gets the list of groups existing in the mesh
+    ## Gets the list of groups existing in the mesh in the order of creation (starting from the oldest one)
     #  @return a sequence of SMESH_GroupBase
     #  @ingroup l2_grps_create
     def GetGroups(self):
