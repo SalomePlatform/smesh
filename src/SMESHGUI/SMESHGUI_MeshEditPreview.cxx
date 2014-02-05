@@ -103,15 +103,15 @@ SMESHGUI_MeshEditPreview::~SMESHGUI_MeshEditPreview()
 {
   myGrid->Delete();
 
-  myViewWindow->RemoveActor(myPreviewActor);
-  myPreviewActor->Delete();
-
   for ( size_t iA = 0; iA < myLabelActors.size(); ++iA )
     if ( myLabelActors[iA] )
     {
       myPreviewActor->GetRenderer()->RemoveActor( myLabelActors[iA] );
       myLabelActors[iA]->Delete();
     }
+
+  myViewWindow->RemoveActor(myPreviewActor);
+  myPreviewActor->Delete();
 }
 
 //================================================================================
