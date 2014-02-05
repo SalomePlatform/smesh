@@ -181,7 +181,23 @@
 // of auto-color picking up
 #define SIMPLE_AUTOCOLOR
 
-//namespace{
+// REMOVE the code about MPLMathText_Disabler if it does not complite at porting to ParaView-4.1
+#include <vtkMatplotlibMathTextUtilities.h>
+namespace
+{
+  // Creation of this class disables vtkMatplotlibMathTextUtilities
+  struct MPLMathText_Disabler : protected vtkMatplotlibMathTextUtilities
+  {
+    MPLMathText_Disabler()
+    {
+      vtkMatplotlibMathTextUtilities::MPLMathTextAvailable =
+        vtkMatplotlibMathTextUtilities::UNAVAILABLE;
+    }
+  };
+} 
+
+namespace
+{
   // Declarations
   //=============================================================
   void ImportMeshesFromFile(SMESH::SMESH_Gen_ptr theComponentMesh,
@@ -194,7 +210,6 @@
   void SetDisplayEntity(int theCommandID);
 
   void Control( int theCommandID );
-
 
   // Definitions
   //=============================================================
@@ -1698,190 +1713,190 @@
     QString RefType = CheckTypeObject(selected.First());
     SALOME_ListIteratorOfListIO It(selected);
     for ( ; It.More(); It.Next())
-      {
-        Handle(SALOME_InteractiveObject) IObject = It.Value();
-        QString Type = CheckTypeObject(IObject);
-        if (Type.compare(RefType) != 0)
-          return "Heterogeneous Selection";
-      }
+    {
+      Handle(SALOME_InteractiveObject) IObject = It.Value();
+      QString Type = CheckTypeObject(IObject);
+      if (Type.compare(RefType) != 0)
+        return "Heterogeneous Selection";
+    }
 
     return RefType;
   }
 
+} //namespace
 
-  void SMESHGUI::OnEditDelete()
+void SMESHGUI::OnEditDelete()
+{
+  // VSR 17/11/04: check if all objects selected belong to SMESH component --> start
+  LightApp_SelectionMgr* aSel = SMESHGUI::selectionMgr();
+  SALOME_ListIO selected; aSel->selectedObjects( selected, QString::null, false );
+
+  _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+  _PTR(StudyBuilder) aStudyBuilder = aStudy->NewBuilder();
+  _PTR(GenericAttribute) anAttr;
+  _PTR(AttributeIOR) anIOR;
+
+  int objectCount = 0;
+  QString aNameList;
+  QString aParentComponent = QString::null;
+  Handle(SALOME_InteractiveObject) anIO;
+  for( SALOME_ListIteratorOfListIO anIt( selected ); anIt.More(); anIt.Next() )
   {
-    // VSR 17/11/04: check if all objects selected belong to SMESH component --> start
-    LightApp_SelectionMgr* aSel = SMESHGUI::selectionMgr();
-    SALOME_ListIO selected; aSel->selectedObjects( selected, QString::null, false );
-
-    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-    _PTR(StudyBuilder) aStudyBuilder = aStudy->NewBuilder();
-    _PTR(GenericAttribute) anAttr;
-    _PTR(AttributeIOR) anIOR;
-
-    int objectCount = 0;
-    QString aNameList;
-    QString aParentComponent = QString::null;
-    Handle(SALOME_InteractiveObject) anIO;
-    for( SALOME_ListIteratorOfListIO anIt( selected ); anIt.More(); anIt.Next() )
-    {
-      anIO = anIt.Value();
-      QString cur = anIO->getComponentDataType();
-      _PTR(SObject) aSO = aStudy->FindObjectID(anIO->getEntry());
-      if (aSO) {
-        // check if object is reference
-        _PTR(SObject) aRefSObj;
-        aNameList.append("\n    - ");
-        if ( aSO->ReferencedObject( aRefSObj ) ) {
-          QString aRefName = QString::fromStdString ( aRefSObj->GetName() );
-          aNameList.append( aRefName );
-          cur = QString::fromStdString ( aRefSObj->GetFatherComponent()->ComponentDataType() );
-        }
-        else
-          aNameList.append(anIO->getName());
-        objectCount++;
+    anIO = anIt.Value();
+    QString cur = anIO->getComponentDataType();
+    _PTR(SObject) aSO = aStudy->FindObjectID(anIO->getEntry());
+    if (aSO) {
+      // check if object is reference
+      _PTR(SObject) aRefSObj;
+      aNameList.append("\n    - ");
+      if ( aSO->ReferencedObject( aRefSObj ) ) {
+        QString aRefName = QString::fromStdString ( aRefSObj->GetName() );
+        aNameList.append( aRefName );
+        cur = QString::fromStdString ( aRefSObj->GetFatherComponent()->ComponentDataType() );
       }
-
-      if( aParentComponent.isNull() )
-        aParentComponent = cur;
-      else if( !aParentComponent.isEmpty() && aParentComponent!=cur )
-        aParentComponent = "";
+      else
+        aNameList.append(anIO->getName());
+      objectCount++;
     }
 
-    if ( objectCount == 0 )
-      return; // No Valid Objects Selected
-
-    if ( aParentComponent != SMESHGUI::GetSMESHGUI()->name() )  {
-      SUIT_MessageBox::warning( SMESHGUI::desktop(),
-                                QObject::tr("ERR_ERROR"),
-                                QObject::tr("NON_SMESH_OBJECTS_SELECTED").arg( SMESHGUI::GetSMESHGUI()->moduleName() ) );
-      return;
-    }
-    // VSR 17/11/04: check if all objects selected belong to SMESH component <-- finish
-    if (SUIT_MessageBox::warning
-        (SMESHGUI::desktop(),
-         QObject::tr("SMESH_WRN_WARNING"),
-         QObject::tr("SMESH_REALLY_DELETE").arg( objectCount ).arg( aNameList ),
-         SUIT_MessageBox::Yes | SUIT_MessageBox::No,
-         SUIT_MessageBox::Yes) != SUIT_MessageBox::Yes)
-      return;
-
-    SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
-
-    // Put the whole hierarchy of sub-objects of the selected SO's into a list and
-    // then treat them all starting from the deepest objects (at list back)
-    std::list< _PTR(SObject) > listSO;
-    SALOME_ListIteratorOfListIO It(selected);
-    for( ; It.More(); It.Next()) // loop on selected IO's
-    {
-      Handle(SALOME_InteractiveObject) IObject = It.Value();
-      if(IObject->hasEntry()) {
-        _PTR(SObject) aSO = aStudy->FindObjectID(IObject->getEntry());
-
-        // disable removal of "SMESH" component object
-        if(aSO->FindAttribute(anAttr, "AttributeIOR")){
-          anIOR = anAttr;
-          if ( engineIOR() == anIOR->Value().c_str() )
-            continue;
-        }
-        //Check the referenced object
-        _PTR(SObject) aRefSObject;
-        if ( aSO && aSO->ReferencedObject( aRefSObject ) )
-          aSO = aRefSObject; // Delete main Object instead of reference
-
-        listSO.push_back( aSO );
-        std::list< _PTR(SObject) >::iterator itSO = --listSO.end();
-        for ( ; itSO != listSO.end(); ++itSO ) {
-          _PTR(ChildIterator) it = aStudy->NewChildIterator( *itSO );
-          for (it->InitEx(false); it->More(); it->Next())
-            listSO.push_back( it->Value() );
-        }
-      }
-    }
-    // Check if none of objects to delete is referred from outside
-    std::list< _PTR(SObject) >::reverse_iterator ritSO;
-    for ( ritSO = listSO.rbegin(); ritSO != listSO.rend(); ++ritSO )
-    {
-      _PTR(SObject) SO = *ritSO;
-      if ( !SO ) continue;
-      std::vector<_PTR(SObject)> aReferences = aStudy->FindDependances( *ritSO  );
-      for (size_t i = 0; i < aReferences.size(); i++) {
-        _PTR(SComponent) aComponent = aReferences[i]->GetFatherComponent();
-        std::string type = aComponent->ComponentDataType();
-        if ( type != "SMESH" )
-        {
-          SUIT_MessageBox::warning( anApp->desktop(),
-                                    QObject::tr("WRN_WARNING"),
-                                    QObject::tr("DEP_OBJECT") );
-          return; // outside SMESH, there is an object depending on a SMESH object 
-        }
-      }
-    }
-
-    // Call mesh->Clear() to prevent loading mesh from file caused by hypotheses removal
-    for( It.Initialize( selected ); It.More(); It.Next()) // loop on selected IO's
-    {
-      Handle(SALOME_InteractiveObject) IObject = It.Value();
-      SMESH::SMESH_Mesh_var mesh = SMESH::IObjectToInterface< SMESH::SMESH_Mesh >( IObject );
-      if ( !mesh->_is_nil() )
-        mesh->Clear();
-    }
-
-    // Treat SO's in the list starting from the back
-    aStudyBuilder->NewCommand();  // There is a transaction
-    for ( ritSO = listSO.rbegin(); ritSO != listSO.rend(); ++ritSO )
-    {
-      _PTR(SObject) SO = *ritSO;
-      if ( !SO ) continue;
-      std::string anEntry = SO->GetID();
-
-      /** Erase graphical object and remove all its data **/
-      if(SO->FindAttribute(anAttr, "AttributeIOR")) {
-        SMESH::RemoveVisualObjectWithActors( anEntry.c_str(), true);
-      }
-      /** Remove an object from data structures **/
-      SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SMESH::SObjectToObject( SO ));
-      SMESH::SMESH_subMesh_var   aSubMesh = SMESH::SMESH_subMesh::_narrow( SMESH::SObjectToObject( SO ));
-      if ( !aGroup->_is_nil() ) {                          // DELETE GROUP
-        SMESH::SMESH_Mesh_var aMesh = aGroup->GetMesh();
-        aMesh->RemoveGroup( aGroup );
-      }
-      else if ( !aSubMesh->_is_nil() ) {                   // DELETE SUBMESH
-        SMESH::SMESH_Mesh_var aMesh = aSubMesh->GetFather();
-        aMesh->RemoveSubMesh( aSubMesh );
-
-        _PTR(SObject) aMeshSO = SMESH::FindSObject(aMesh);
-        if (aMeshSO)
-          SMESH::ModifiedMesh(aMeshSO, false, aMesh->NbNodes()==0);
-      }
-      else {
-        Handle(SALOME_InteractiveObject) IObject = new SALOME_InteractiveObject
-          ( anEntry.c_str(), engineIOR().toLatin1().data(), SO->GetName().c_str() );
-        QString objType = CheckTypeObject(IObject);
-        if ( objType == "Hypothesis" || objType == "Algorithm" ) {// DELETE HYPOTHESIS
-          SMESH::RemoveHypothesisOrAlgorithmOnMesh(IObject);
-          aStudyBuilder->RemoveObjectWithChildren( SO );
-        }
-        else {// default action: remove SObject from the study
-              // san - it's no use opening a transaction here until UNDO/REDO is provided in SMESH
-              //SUIT_Operation *op = new SALOMEGUI_ImportOperation(myActiveStudy);
-              //op->start();
-          aStudyBuilder->RemoveObjectWithChildren( SO );
-          //op->finish();
-        }
-      }
-    } /* listSO back loop */
-
-    aStudyBuilder->CommitCommand();
-
-    /* Clear any previous selection */
-    SALOME_ListIO l1;
-    aSel->setSelectedObjects( l1 );
-
-    SMESHGUI::GetSMESHGUI()->updateObjBrowser();
+    if( aParentComponent.isNull() )
+      aParentComponent = cur;
+    else if( !aParentComponent.isEmpty() && aParentComponent!=cur )
+      aParentComponent = "";
   }
-//} namespace
+
+  if ( objectCount == 0 )
+    return; // No Valid Objects Selected
+
+  if ( aParentComponent != SMESHGUI::GetSMESHGUI()->name() )  {
+    SUIT_MessageBox::warning( SMESHGUI::desktop(),
+                              QObject::tr("ERR_ERROR"),
+                              QObject::tr("NON_SMESH_OBJECTS_SELECTED").arg( SMESHGUI::GetSMESHGUI()->moduleName() ) );
+    return;
+  }
+  // VSR 17/11/04: check if all objects selected belong to SMESH component <-- finish
+  if (SUIT_MessageBox::warning
+      (SMESHGUI::desktop(),
+       QObject::tr("SMESH_WRN_WARNING"),
+       QObject::tr("SMESH_REALLY_DELETE").arg( objectCount ).arg( aNameList ),
+       SUIT_MessageBox::Yes | SUIT_MessageBox::No,
+       SUIT_MessageBox::Yes) != SUIT_MessageBox::Yes)
+    return;
+
+  SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
+
+  // Put the whole hierarchy of sub-objects of the selected SO's into a list and
+  // then treat them all starting from the deepest objects (at list back)
+  std::list< _PTR(SObject) > listSO;
+  SALOME_ListIteratorOfListIO It(selected);
+  for( ; It.More(); It.Next()) // loop on selected IO's
+  {
+    Handle(SALOME_InteractiveObject) IObject = It.Value();
+    if(IObject->hasEntry()) {
+      _PTR(SObject) aSO = aStudy->FindObjectID(IObject->getEntry());
+
+      // disable removal of "SMESH" component object
+      if(aSO->FindAttribute(anAttr, "AttributeIOR")){
+        anIOR = anAttr;
+        if ( engineIOR() == anIOR->Value().c_str() )
+          continue;
+      }
+      //Check the referenced object
+      _PTR(SObject) aRefSObject;
+      if ( aSO && aSO->ReferencedObject( aRefSObject ) )
+        aSO = aRefSObject; // Delete main Object instead of reference
+
+      listSO.push_back( aSO );
+      std::list< _PTR(SObject) >::iterator itSO = --listSO.end();
+      for ( ; itSO != listSO.end(); ++itSO ) {
+        _PTR(ChildIterator) it = aStudy->NewChildIterator( *itSO );
+        for (it->InitEx(false); it->More(); it->Next())
+          listSO.push_back( it->Value() );
+      }
+    }
+  }
+  // Check if none of objects to delete is referred from outside
+  std::list< _PTR(SObject) >::reverse_iterator ritSO;
+  for ( ritSO = listSO.rbegin(); ritSO != listSO.rend(); ++ritSO )
+  {
+    _PTR(SObject) SO = *ritSO;
+    if ( !SO ) continue;
+    std::vector<_PTR(SObject)> aReferences = aStudy->FindDependances( *ritSO  );
+    for (size_t i = 0; i < aReferences.size(); i++) {
+      _PTR(SComponent) aComponent = aReferences[i]->GetFatherComponent();
+      std::string type = aComponent->ComponentDataType();
+      if ( type != "SMESH" )
+      {
+        SUIT_MessageBox::warning( anApp->desktop(),
+                                  QObject::tr("WRN_WARNING"),
+                                  QObject::tr("DEP_OBJECT") );
+        return; // outside SMESH, there is an object depending on a SMESH object
+      }
+    }
+  }
+
+  // Call mesh->Clear() to prevent loading mesh from file caused by hypotheses removal
+  for( It.Initialize( selected ); It.More(); It.Next()) // loop on selected IO's
+  {
+    Handle(SALOME_InteractiveObject) IObject = It.Value();
+    SMESH::SMESH_Mesh_var mesh = SMESH::IObjectToInterface< SMESH::SMESH_Mesh >( IObject );
+    if ( !mesh->_is_nil() )
+      mesh->Clear();
+  }
+
+  // Treat SO's in the list starting from the back
+  aStudyBuilder->NewCommand();  // There is a transaction
+  for ( ritSO = listSO.rbegin(); ritSO != listSO.rend(); ++ritSO )
+  {
+    _PTR(SObject) SO = *ritSO;
+    if ( !SO ) continue;
+    std::string anEntry = SO->GetID();
+
+    /** Erase graphical object and remove all its data **/
+    if(SO->FindAttribute(anAttr, "AttributeIOR")) {
+      SMESH::RemoveVisualObjectWithActors( anEntry.c_str(), true);
+    }
+    /** Remove an object from data structures **/
+    SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SMESH::SObjectToObject( SO ));
+    SMESH::SMESH_subMesh_var   aSubMesh = SMESH::SMESH_subMesh::_narrow( SMESH::SObjectToObject( SO ));
+    if ( !aGroup->_is_nil() ) {                          // DELETE GROUP
+      SMESH::SMESH_Mesh_var aMesh = aGroup->GetMesh();
+      aMesh->RemoveGroup( aGroup );
+    }
+    else if ( !aSubMesh->_is_nil() ) {                   // DELETE SUBMESH
+      SMESH::SMESH_Mesh_var aMesh = aSubMesh->GetFather();
+      aMesh->RemoveSubMesh( aSubMesh );
+
+      _PTR(SObject) aMeshSO = SMESH::FindSObject(aMesh);
+      if (aMeshSO)
+        SMESH::ModifiedMesh(aMeshSO, false, aMesh->NbNodes()==0);
+    }
+    else {
+      Handle(SALOME_InteractiveObject) IObject = new SALOME_InteractiveObject
+        ( anEntry.c_str(), engineIOR().toLatin1().data(), SO->GetName().c_str() );
+      QString objType = CheckTypeObject(IObject);
+      if ( objType == "Hypothesis" || objType == "Algorithm" ) {// DELETE HYPOTHESIS
+        SMESH::RemoveHypothesisOrAlgorithmOnMesh(IObject);
+        aStudyBuilder->RemoveObjectWithChildren( SO );
+      }
+      else {// default action: remove SObject from the study
+        // san - it's no use opening a transaction here until UNDO/REDO is provided in SMESH
+        //SUIT_Operation *op = new SALOMEGUI_ImportOperation(myActiveStudy);
+        //op->start();
+        aStudyBuilder->RemoveObjectWithChildren( SO );
+        //op->finish();
+      }
+    }
+  } /* listSO back loop */
+
+  aStudyBuilder->CommitCommand();
+
+  /* Clear any previous selection */
+  SALOME_ListIO l1;
+  aSel->setSelectedObjects( l1 );
+
+  SMESHGUI::GetSMESHGUI()->updateObjBrowser();
+}
 
 extern "C" {
   SMESHGUI_EXPORT CAM_Module* createModule()
@@ -1939,6 +1954,8 @@ SalomeApp_Module( "SMESH" )
 
   /* load resources for all available meshers */
   SMESH::InitAvailableHypotheses();
+
+  MPLMathText_Disabler d; // disable vtkMatplotlibMathTextUtilities
 }
 
 //=============================================================================
