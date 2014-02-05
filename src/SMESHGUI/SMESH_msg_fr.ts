@@ -4,102 +4,6 @@
 <context>
     <name>@default</name>
     <message>
-        <source>TB_ADD1D</source>
-        <translation type="unfinished">Mesh Toolbar</translation>
-    </message>
-    <message>
-        <source>TB_INFO</source>
-        <translation type="unfinished">Information Toolbar</translation>
-    </message>
-    <message>
-        <source>TB_GROUP</source>
-        <translation type="unfinished">Group Toolbar</translation>
-    </message>
-    <message>
-        <source>TB_MEASUREM</source>
-        <translation type="unfinished">Measurements Toolbar</translation>
-    </message>
-    <message>
-        <source>TB_CTRL3D</source>
-        <translation type="unfinished">Volume Controls Toolbar</translation>
-    </message>
-    <message>
-        <source>TB_CTRL2D</source>
-        <translation type="unfinished">Face Controls Toolbar</translation>
-    </message>
-    <message>
-        <source>TB_CTRL1D</source>
-        <translation type="unfinished">Edge Controls Toolbar</translation>
-    </message>
-    <message>
-        <source>TB_CTRL0D</source>
-        <translation type="unfinished">Node Controls Toolbar</translation>
-    </message>
-    <message>
-        <source>TB_TRANSFORM</source>
-        <translation type="unfinished">Transformation Toolbar</translation>
-    </message>
-    <message>
-        <source>TB_RENUMBER</source>
-        <translation type="unfinished">Renumbering Toolbar</translation>
-    </message>
-    <message>
-        <source>TB_REM</source>
-        <translation type="unfinished">Remove Toolbar</translation>
-    </message>
-    <message>
-        <source>TB_ADDNON</source>
-        <translation type="unfinished">Add Non Linear Element Toolbar</translation>
-    </message>
-    <message>
-        <source>TB_ADD</source>
-        <translation type="unfinished">Add Element Toolbar</translation>
-    </message>
-    <message>
-        <source>COMPERR_BAD_PARMETERS</source>
-        <translation type="unfinished">Invalid input parameters</translation>
-    </message>
-    <message>
-        <source>SMESH_GIGABYTE</source>
-        <translation type="unfinished">%1 GB</translation>
-    </message>
-    <message>
-        <source>SMESH_FREERAM</source>
-        <translation type="unfinished">Free RAM</translation>
-    </message>
-    <message>
-        <source>STB_BIQUADRATIC_TRIANGLE</source>
-        <translation type="unfinished">BiQuadratic Triangle</translation>
-    </message>
-    <message>
-        <source>TOP_BIQUADRATIC_TRIANGLE</source>
-        <translation type="unfinished">BiQuadratic Triangle</translation>
-    </message>
-    <message>
-        <source>MEN_BIQUADRATIC_TRIANGLE</source>
-        <translation type="unfinished">BiQuadratic Triangle</translation>
-    </message>
-    <message>
-        <source>SMESH_BIQUADRATIC_TRIANGLES</source>
-        <translation type="unfinished">BiQuadratic Triangles</translation>
-    </message>
-    <message>
-        <source>SMESH_BIQUADRATIC_TRIANGLE</source>
-        <translation type="unfinished">BiQuadratic Triangle</translation>
-    </message>
-    <message>
-        <source>SMESH_AUTO_DIM</source>
-        <translation type="unfinished">Automatically define space dimension</translation>
-    </message>
-    <message>
-        <source>SMESH_ADD_BIQUADRATIC_TRIANGLE_TITLE</source>
-        <translation type="unfinished">Add BiQuadratic Triangle</translation>
-    </message>
-    <message>
-        <source>COMPERR_WARNING</source>
-        <translation type="unfinished">Warning</translation>
-    </message>
-    <message>
         <source>SMESH_EXPORT_MESH</source>
         <translation>Exporter le maillage</translation>
     </message>
@@ -220,6 +124,10 @@
         <translation>std::exception</translation>
     </message>
     <message>
+        <source>COMPERR_WARNING</source>
+        <translation>Attention</translation>
+    </message>
+    <message>
         <source>COMPERR_UNKNOWN</source>
         <translation>Erreur inconnue</translation>
     </message>
@@ -230,6 +138,10 @@
     <message>
         <source>COMPERR_NO_MESH_ON_SHAPE</source>
         <translation>Aucun élément n&apos;est associé à une sous-shape</translation>
+    </message>
+    <message>
+        <source>COMPERR_BAD_PARMETERS</source>
+        <translation>Paramètres d&apos;entrée invalides</translation>
     </message>
     <message>
         <source>EDITERR_NO_MEDIUM_ON_GEOM</source>
@@ -806,43 +718,43 @@
     </message>
     <message>
         <source>MEN_BASIC_PROPERTIES</source>
-        <translation type="unfinished">Basic Properties</translation>
+        <translation>Propriétés basiques</translation>
     </message>
     <message>
         <source>MEN_MEASURE_LENGTH</source>
-        <translation type="unfinished">Length</translation>
+        <translation>Longueur</translation>
     </message>
     <message>
         <source>STB_MEASURE_LENGTH</source>
-        <translation type="unfinished">Calculate sum of length of all 1D elements of the selected object(s)</translation>
+        <translation>Calcul de la somme des longueurs de tous les éléments 1D des objets sélectionnés</translation>
     </message>
     <message>
         <source>TOP_MEASURE_LENGTH</source>
-        <translation type="unfinished">Length</translation>
+        <translation>Longueur</translation>
     </message>
     <message>
         <source>MEN_MEASURE_AREA</source>
-        <translation type="unfinished">Area</translation>
+        <translation>Surface</translation>
     </message>
     <message>
         <source>STB_MEASURE_AREA</source>
-        <translation type="unfinished">Calculate sum of area of all 2D elements of the selected object(s)</translation>
+        <translation>Calcul de la somme des surfaces de tous les éléments 2D des objets sélectionnés</translation>
     </message>
     <message>
         <source>TOP_MEASURE_AREA</source>
-        <translation type="unfinished">Area</translation>
+        <translation>Surface</translation>
     </message>
      <message>
         <source>MEN_MEASURE_VOLUME</source>
-        <translation type="unfinished">Volume</translation>
+        <translation>Volume</translation>
     </message>
     <message>
         <source>STB_MEASURE_VOLUME</source>
-        <translation type="unfinished">Calculate sum of volume of all 3D elements of the selected object(s)</translation>
+        <translation>Calcul de la somme des volumes de tous les éléments 3D des objets sélectionnés</translation>
     </message>
     <message>
         <source>TOP_MEASURE_VOLUME</source>
-        <translation type="unfinished">Volume</translation>
+        <translation>Volume</translation>
     </message>
     <message>
         <source>MEN_MOVE</source>
@@ -962,7 +874,7 @@
     </message>
     <message>
         <source>MEN_OVERALL_MESH_QUALITY</source>
-        <translation type="unfinished">Overall Mesh Quality</translation>
+        <translation>Qualité du maillage global</translation>
     </message>
     <message>
         <source>MEN_DISTRIBUTION_CTRL</source>
@@ -1366,6 +1278,10 @@ Merci de les corriger, puis essayez de nouveau</translation>
         <translation>Ajouter un triangle quadratique</translation>
     </message>
     <message>
+        <source>SMESH_ADD_BIQUADRATIC_TRIANGLE_TITLE</source>
+        <translation>Ajouter un triangle biquadratique</translation>
+    </message>
+    <message>
         <source>SMESH_ADD_SUBMESH</source>
         <translation>Construction d&apos;un sous-maillage</translation>
     </message>
@@ -1400,6 +1316,10 @@ Merci de les corriger, puis essayez de nouveau</translation>
     <message>
         <source>SMESH_AUTO_GROUPS</source>
         <translation>Créer les groupes automatiquement</translation>
+    </message>
+    <message>
+        <source>SMESH_AUTO_DIM</source>
+        <translation>Définition automatique des dimensions spatiales</translation>
     </message>
     <message>
         <source>SMESH_REQUIRED_GROUPS</source>
@@ -2517,6 +2437,26 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <translation>Quadrangle biquadratique</translation>
     </message>
     <message>
+        <source>SMESH_BIQUADRATIC_TRIANGLE</source>
+        <translation>Triangle biquadratique</translation>
+    </message>
+    <message>
+        <source>SMESH_BIQUADRATIC_TRIANGLES</source>
+        <translation>Triangles biquadratiques</translation>
+    </message>
+    <message>
+        <source>MEN_BIQUADRATIC_TRIANGLE</source>
+        <translation>Triangle biquadratique</translation>
+    </message>
+    <message>
+        <source>TOP_BIQUADRATIC_TRIANGLE</source>
+        <translation>Triangle biquadratique</translation>
+    </message>
+    <message>
+        <source>STB_BIQUADRATIC_TRIANGLE</source>
+        <translation>Triangle biquadratique</translation>
+    </message>
+    <message>
         <source>SMESH_QUADRATIC_TETRAHEDRON</source>
         <translation>Tétraèdre quadratique</translation>
     </message>
@@ -3478,12 +3418,44 @@ Utilisez le menu "Visualiser une entité" pour les afficher.
         <translation>Cône</translation>
     </message>
     <message>
-        <source>TB_ADD_REMOVE</source>
-        <translation>Ajouter/supprimer la barre d&apos;outils</translation>
+        <source>TB_ADD</source>
+        <translation>Barre d&apos;ajout d&apos;éléments</translation>
     </message>
     <message>
-        <source>TB_CTRL</source>
-        <translation>Barre d&apos;outils des contrôles</translation>
+        <source>TB_ADDNON</source>
+        <translation>Barre d&apos;ajout d&apos;éléments non linéaires</translation>
+    </message>
+    <message>
+        <source>TB_REM</source>
+        <translation>Barre de suppression</translation>
+    </message>
+    <message>
+        <source>TB_RENUMBER</source>
+        <translation>Barre de renumérotation</translation>
+    </message>
+    <message>
+        <source>TB_TRANSFORM</source>
+        <translation>Barre des transformations</translation>
+    </message>
+    <message>
+        <source>TB_CTRL0D</source>
+        <translation>Barre des contrôles des nœuds</translation>
+    </message>
+    <message>
+        <source>TB_CTRL1D</source>
+        <translation>Barre des contrôles des arêtes</translation>
+    </message>
+    <message>
+        <source>TB_CTRL2D</source>
+        <translation>Barre des contrôles des faces</translation>
+    </message>
+    <message>
+        <source>TB_CTRL3D</source>
+        <translation>Barre des contrôles des volumes</translation>
+    </message>
+    <message>
+        <source>TB_MEASUREM</source>
+        <translation>Barre des mesures</translation>
     </message>
     <message>
         <source>TB_DISP_MODE</source>
@@ -3495,6 +3467,18 @@ Utilisez le menu "Visualiser une entité" pour les afficher.
     </message>
     <message>
         <source>TB_MESH</source>
+        <translation>Barre de maillage</translation>
+    </message>
+    <message>
+        <source>TB_GROUP</source>
+        <translation>Barre des groupes</translation>
+    </message>
+    <message>
+        <source>TB_INFO</source>
+        <translation>Barre d'information</translation>
+    </message>
+    <message>
+        <source>TB_ADD1D</source>
         <translation>Barre de maillage</translation>
     </message>
     <message>
@@ -4087,7 +4071,7 @@ Utilisez le menu "Visualiser une entité" pour les afficher.
     </message>
     <message>
         <source>UPDATE_DESTINATION</source>
-        <translation type="unfinished">Update Destination</translation>
+        <translation>Mettre à jour la destination</translation>
     </message>
     <message>
         <source>VOLUME_3D_ELEMENTS</source>
@@ -4221,12 +4205,20 @@ avec le paramètre &apos;%1&apos; des préférences du module Mesh.</translation
 Il ne peut pas être supprimé.</translation>
     </message>
     <message>
+        <source>SMESH_FREERAM</source>
+        <translation>RAM libre</translation>
+    </message>
+    <message>
+        <source>SMESH_GIGABYTE</source>
+        <translation>%1 GB</translation>
+    </message>
+    <message>
         <source>MEN_SORT_CHILD_ITEMS</source>
-        <translation type="unfinished">Sort children</translation>
+        <translation>Trier les enfants</translation>
     </message>
     <message>
         <source>STB_SORT_CHILD_ITEMS</source>
-        <translation type="unfinished">Sort child items</translation>
+        <translation>Trier les items enfants</translation>
     </message>
 </context>
 <context>
@@ -4246,10 +4238,6 @@ Il ne peut pas être supprimé.</translation>
 </context>
 <context>
     <name>SMESHGUI</name>
-    <message>
-        <source>PREF_PREVIEW_COLOR</source>
-        <translation type="unfinished">Preview color</translation>
-    </message>
     <message>
         <source>NOT_A_VTK_VIEWER</source>
         <translation>Cette commande n&apos;est disponible qu&apos;à partir d&apos;une fenêtre VTK.
@@ -4293,7 +4281,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_INCREMENTAL_LIMIT</source>
-        <translation type="unfinished">Incremental limit check</translation>
+        <translation>Vérification de la limite incrémentale</translation>
     </message>
     <message>
         <source>PREF_BACKFACE</source>
@@ -4364,6 +4352,10 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
         <translation>Remplir</translation>
     </message>
     <message>
+        <source>PREF_PREVIEW_COLOR</source>
+        <translation">Couleur de prévisualisation</translation>
+    </message>
+    <message>
         <source>PREF_NOTIFY_MODE</source>
         <translation>Montrer la notification sur le résultat de calcul</translation>
     </message>
@@ -4409,7 +4401,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_DUMP_CTRL_INFO</source>
-        <translation type="unfinished">Dump controls information</translation>
+        <translation>Copier les informations des contrôles</translation>
     </message>
     <message>
         <source>PREF_GPP_NODES_LIMIT</source>
@@ -4417,7 +4409,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_CTRL_LIMIT</source>
-        <translation type="unfinished">Automatic controls compute limit</translation>
+        <translation>Contrôle automatique des limites du calcul</translation>
     </message>
     <message>
         <source>SMESH_PREF_GROUP_PRECISION</source>
@@ -4616,10 +4608,6 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
 <context>
     <name>SMESHGUI_AddQuadraticElementDlg</name>
     <message>
-        <source>SMESH_ADD_BIQUADRATIC_TRIANGLE</source>
-        <translation type="unfinished">Add BiQuadratic Triangle</translation>
-    </message>
-    <message>
         <source>SMESH_ADD_QUADRATIC_EDGE</source>
         <translation>Ajouter une arête quadratique</translation>
     </message>
@@ -4654,6 +4642,10 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     <message>
         <source>SMESH_ADD_QUADRATIC_TRIANGLE</source>
         <translation>Ajouter un triangle quadratique</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_BIQUADRATIC_TRIANGLE</source>
+        <translation>Ajouter un triangle biquadratique</translation>
     </message>
     <message>
         <source>SMESH_CORNER_NODES</source>
@@ -4729,10 +4721,6 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
 <context>
     <name>SMESHGUI_ComputeDlg</name>
     <message>
-        <source>GROUP_OF_BAD_MESH</source>
-        <translation type="unfinished">Bad Mesh to Group</translation>
-    </message>
-    <message>
         <source>CAPTION</source>
         <translation>Le calcul du maillage a échoué</translation>
     </message>
@@ -4767,6 +4755,25 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     <message>
         <source>SHOW_BAD_MESH</source>
         <translation>Montrer le maillage incorrect</translation>
+    </message>
+    <message>
+        <source>GROUP_OF_BAD_MESH</source>
+        <translation>Grouper les mauvais éléments</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_ComputeDlg_QThreadQDialog</name>
+    <message>
+        <source>CANCEL</source>
+        <translation>Annuler</translation>
+    </message>
+    <message>
+        <source>CANCELING</source>
+        <translation>Annulation...</translation>
+    </message>
+    <message>
+        <source>TITLE</source>
+        <translation>Calcul</translation>
     </message>
 </context>
 <context>
@@ -4952,12 +4959,12 @@ Vérifiez l&apos;espace de disque disponible et vos droits d&apos;écriture dans
 <context>
     <name>SMESHGUI_CuttingOfQuadsDlg</name>
     <message>
-        <source>TO_4_TRIA</source>
-        <translation type="unfinished">Cut into 4 triangles</translation>
-    </message>
-    <message>
         <source>CAPTION</source>
         <translation>Découpe des quadrangles</translation>
+    </message>
+    <message>
+        <source>TO_4_TRIA</source>
+        <translation>Découpe en 4 triangles</translation>
     </message>
 </context>
 <context>
@@ -5000,11 +5007,11 @@ Choisissez un groupe et essayez de nouveau</translation>
     </message>
     <message>
         <source>SHOW_NODES_IDS</source>
-        <translation type="unfinished">Show double nodes IDs</translation>
+        <translation>Afficher les IDs des nœuds doubles</translation>
     </message>
     <message>
         <source>SHOW_ELEMS_IDS</source>
-        <translation type="unfinished">Show double elements IDs</translation>
+        <translation>Afficher les IDs des éléments doubles</translation>
     </message>
     <message>
         <source>EXCLUDE_GROUPS</source>
@@ -5325,22 +5332,6 @@ Vérifiez la validité des informations données</translation>
 <context>
     <name>SMESHGUI_FilterTable</name>
     <message>
-        <source>ENTITY_TYPE_24</source>
-        <translation type="unfinished">BALL</translation>
-    </message>
-    <message>
-        <source>ENTITY_TYPE_23</source>
-        <translation type="unfinished">QPOLYEDRE</translation>
-    </message>
-    <message>
-        <source>ENTITY_TYPE_1</source>
-        <translation type="unfinished">POINT1</translation>
-    </message>
-    <message>
-        <source>CONNECTED_ELEMS</source>
-        <translation type="unfinished">Elements of a domain</translation>
-    </message>
-    <message>
         <source>ADD</source>
         <translation>Ajouter</translation>
     </message>
@@ -5419,6 +5410,10 @@ Vérifiez la validité des informations données</translation>
     <message>
         <source>COPLANAR_FACES</source>
         <translation>Faces coplanaires</translation>
+    </message>
+    <message>
+        <source>CONNECTED_ELEMS</source>
+        <translation>Eléments d&apos;un domaine</translation>
     </message>
   <message>
     <source>NUMBEROFNODESINELEMENT</source>
@@ -5597,6 +5592,10 @@ Entrez une valeur correcte et essayez de nouveau</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_0</source>
+        <translation>NONE</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_1</source>
         <translation>POINT1</translation>
     </message>
     <message>
@@ -5617,70 +5616,78 @@ Entrez une valeur correcte et essayez de nouveau</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_6</source>
-        <translation>QUAD4</translation>
+        <translation>TRIA7</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_7</source>
-        <translation>QUAD8</translation>
+        <translation>QUAD4</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_8</source>
-        <translation>QUAD9</translation>
+        <translation>QUAD8</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_9</source>
-        <translation>TETRA4</translation>
+        <translation>QUAD9</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_10</source>
-        <translation>TETRA10</translation>
+        <translation>POLYGON</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_11</source>
-        <translation>PYRA5</translation>
+        <translation>QPOLYGON</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_12</source>
-        <translation>PYRA13</translation>
+        <translation>TETRA4</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_13</source>
-        <translation>PENTA6</translation>
+        <translation>TETRA10</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_14</source>
-        <translation>PENTA15</translation>
+        <translation>PYRA5</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_15</source>
-        <translation>HEXA8</translation>
+        <translation>PYRA13</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_16</source>
-        <translation>HEXA20</translation>
+        <translation>HEXA8</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_17</source>
-        <translation>HEXA27</translation>
+        <translation>HEXA20</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_18</source>
-        <translation>OCTA12</translation>
+        <translation>HEXA27</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_19</source>
-        <translation>POLYGONE</translation>
+        <translation>PENTA6</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_20</source>
-        <translation>POLYEDRE</translation>
+        <translation>PENTA15</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_21</source>
-        <translation>NONE</translation>
+        <translation>OCTA12</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_22</source>
+        <translation>POLYEDRE</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_23</source>
+        <translation>QPOLYEDRE</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_24</source>
         <translation>BALL</translation>
     </message>
     <message>
@@ -5973,7 +5980,7 @@ Indiquez-les et essayez de nouveau</translation>
     </message>
     <message>
         <source>MESH_TYPE</source>
-        <translation type="unfinished">Mesh type</translation>
+        <translation>Type de maillage</translation>
     </message>
     <message>
         <source>NAME</source>
@@ -5997,9 +6004,9 @@ Voulez-vous éditer ce sous-maillage?</translation>
     </message>
     <message>
         <source>GEOMETRY_OBJECT_IS_NOT_DEFINED</source>
-        <translation type="unfinished">Geometry object is not defined.
-Do you want to create an empty mesh 
-without algorithms and hypotheses? </translation>
+        <translation>La géométrie n&apos;est pas définie.
+Voulez-vous créer un maillage vide
+sans algorithme ni hypothèse ? </translation>
     </message>
     <message>
         <source>GEOMETRY_OBJECT_IS_NULL</source>
@@ -6032,23 +6039,23 @@ Spécifiez-le et essayez de nouveau</translation>
     </message>
     <message>
         <source>MT_ANY</source>
-        <translation type="unfinished">Any</translation>
+        <translation>Tout type</translation>
     </message>
     <message>
         <source>MT_HEXAHEDRAL</source>
-        <translation type="unfinished">Hexahedral</translation>
+        <translation>Hexahèdre</translation>
     </message>
     <message>
         <source>MT_TETRAHEDRAL</source>
-        <translation type="unfinished">Tetrahedral</translation>
+        <translation>Tetrahèdre</translation>
     </message>
     <message>
         <source>MT_TRIANGULAR</source>
-        <translation type="unfinished">Triangular</translation>
+        <translation>Triangulaire</translation>
     </message>
     <message>
         <source>MT_QUADRILATERAL</source>
-        <translation>Quadrilaterial</translation>
+        <translation>Quadrilatères</translation>
     </message>
     <message>
         <source>NAME_OF_MESH_IS_EMPTY</source>
@@ -6644,14 +6651,6 @@ Il y a trop peu de points dans le fichier </translation>
         <translation>Relative</translation>
     </message>
     <message>
-        <source>RESET</source>
-        <translation>Réinitialiser</translation>
-    </message>
-    <message>
-        <source>INVERT</source>
-        <translation>Inverser</translation>
-    </message>
-    <message>
         <source>BASE_POINT</source>
         <translation>Le point fondamental</translation>
     </message>
@@ -6659,13 +6658,17 @@ Il y a trop peu de points dans le fichier </translation>
         <source>DIRECTION</source>
         <translation>Direction</translation>
     </message>
+    <message>
+        <source>RESET</source>
+        <translation>Réinitialiser</translation>
+    </message>
+    <message>
+        <source>INVERT</source>
+        <translation>Inverser</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_DuplicateNodesDlg</name>
-    <message>
-        <source>DUPLICATION_ONLY_ELEMS</source>
-        <translation type="unfinished">Duplicate elements only</translation>
-    </message>
     <message>
         <source>DUPLICATION_MODE</source>
         <translation>Mode de duplication</translation>
@@ -6685,6 +6688,10 @@ Il y a trop peu de points dans le fichier </translation>
     <message>
         <source>DUPLICATION_WITH_ELEMS</source>
         <translation>Avec duplication des éléments de frontière</translation>
+    </message>
+    <message>
+        <source>DUPLICATION_ONLY_ELEMS</source>
+        <translation>Avec duplication des éléments de frontière seulement</translation>
     </message>
     <message>
         <source>GROUP_ELEMS_TO_DUPLICATE</source>
@@ -6942,15 +6949,15 @@ en raison de leurs types incompatibles:
     </message>
     <message>
         <source>ELEM_INFO</source>
-        <translation>Infos sur les éléments</translation>
+        <translation>Informations sur les éléments</translation>
     </message>
     <message>
         <source>ADDITIONAL_INFO</source>
-        <translation>Infos détaillées</translation>
+        <translation>Informations détaillées</translation>
     </message>
     <message>
         <source>CTRL_INFO</source>
-        <translation type="unfinished">Quality Info</translation>
+        <translation>Informations sur la qualité</translation>
     </message>
     <message>
         <source>NODE_MODE</source>
@@ -7322,90 +7329,90 @@ en raison de leurs types incompatibles:
     <name>SMESHGUI_CtrlInfo</name>
     <message>
         <source>CTRL_INFO</source>
-        <translation type="unfinished">Quality information</translation>
+        <translation>Informations sur la qualité</translation>
     </message>
     <message>
         <source>NAME_LAB</source>
-        <translation type="unfinished">Name:</translation>
+        <translation>Nom:</translation>
     </message>
     <message>
         <source>VALUE</source>
-        <translation type="unfinished">Value</translation>
+        <translation>Valeur</translation>
     </message>
     <message>
         <source>BUT_COMPUTE</source>
-        <translation type="unfinished">Compute</translation>
+        <translation>Calculer</translation>
     </message>
     <message>
         <source>NODES_INFO</source>
-        <translation type="unfinished">Nodes Information:</translation>
+        <translation>Informations des nœuds:</translation>
     </message>
     <message>
         <source>NUMBER_OF_THE_FREE_NODES</source>
-        <translation type="unfinished">Number of the free nodes</translation>
-    </message>
-    <message>
-        <source>NUMBER_OF_THE_DOUBLE_NODES</source>
-        <translation type="unfinished">Number of the double nodes</translation>
+        <translation>Nombre de nœuds libres</translation>
     </message>
     <message>
         <source>DOUBLE_NODES_TOLERANCE</source>
         <translation>Tolérance des nœuds doubles</translation>
     </message>
     <message>
+        <source>NUMBER_OF_THE_DOUBLE_NODES</source>
+        <translation>Nombre de nœuds doubles</translation>
+    </message>
+    <message>
         <source>EDGES_INFO</source>
-        <translation type="unfinished">Edges Information:</translation>
+        <translation>Informations des arêtes:</translation>
     </message>
     <message>
         <source>NUMBER_OF_THE_DOUBLE_EDGES</source>
-        <translation type="unfinished">Number of the double edges</translation>
+        <translation>Nombre d&apos;arêtes doubles</translation>
     </message>
     <message>
         <source>FACES_INFO</source>
-        <translation type="unfinished">Faces Information:</translation>
+        <translation>Informations des faces:</translation>
     </message>
     <message>
         <source>NUMBER_OF_THE_DOUBLE_FACES</source>
-        <translation type="unfinished">Number of the double faces</translation>
+        <translation>Nombre de faces doubles</translation>
     </message>   
     <message>
         <source>ASPECT_RATIO_HISTOGRAM</source>
-        <translation type="unfinished">Aspect Ratio histogram</translation>
+        <translation>Histogramme du rapport de forme</translation>
     </message>
     <message>
         <source>VOLUMES_INFO</source>
-        <translation type="unfinished">Volumes Information:</translation>
+        <translation>Informations des volumes:</translation>
     </message>
     <message>
         <source>NUMBER_OF_THE_DOUBLE_VOLUMES</source>
-        <translation type="unfinished">Number of the double volumes</translation>
+        <translation>Nombre de volumes doubles</translation>
     </message>
     <message>
         <source>NUMBER_OF_THE_OVER_CONSTRAINED</source>
-        <translation type="unfinished">Number of the over-constrained</translation>
+        <translation>Nombre de sur-contraintes</translation>
     </message>
     <message>
         <source>ASPECT_RATIO_3D_HISTOGRAM</source>
-        <translation type="unfinished">Aspect Ratio 3D histogram</translation>
+        <translation>Histogramme du rapport de forme 3D</translation>
     </message>
 </context>
 <context>
     <name>SMESHGUI_CtrlInfoDlg</name>
     <message>
-        <source>SAVE_INFO</source>
-        <translation type="unfinished">Save info</translation>
-    </message>
-    <message>
-        <source>TEXT_FILES</source>
-        <translation type="unfinished">Text files (*.txt)</translation>
+        <source>CTRL_INFO</source>
+        <translation>Informations sur la qualité</translation>
     </message>
     <message>
         <source>BUT_DUMP_MESH</source>
-        <translation type="unfinished">&amp;Dump</translation>
+        <translation>&amp;Dumper</translation>
     </message>
     <message>
-        <source>CTRL_INFO</source>
-        <translation type="unfinished">Quality Info</translation>
+        <source>TEXT_FILES</source>
+        <translation>Fichiers texte (*.txt)</translation>
+    </message>
+    <message>
+        <source>SAVE_INFO</source>
+        <translation>Sauvegarder les informations</translation>
     </message>
 </context>
 <context>
@@ -7451,27 +7458,27 @@ en raison de leurs types incompatibles:
     <name>SMESHGUI_BasicProperties</name>
     <message>
         <source>PROPERTY</source>
-        <translation type="unfinished">Property</translation>
+        <translation>Propriété</translation>
     </message>
     <message>
         <source>LENGTH</source>
-        <translation type="unfinished">Length</translation>
+        <translation>Longueur</translation>
     </message>
     <message>
         <source>AREA</source>
-        <translation type="unfinished">Area</translation>
+        <translation>Surface</translation>
     </message>
     <message>
         <source>VOLUME</source>
-        <translation type="unfinished">Volume</translation>
+        <translation>Volume</translation>
     </message>
     <message>
         <source>SOURCE_MESH_SUBMESH_GROUP</source>
-        <translation type="unfinished">Source (mesh, sub-mesh or group)</translation>
+        <translation>Source (maillage, sous-maillage ou groupe)</translation>
     </message>
     <message>
         <source>COMPUTE</source>
-        <translation type="unfinished">Compute</translation>
+        <translation>Calculer</translation>
     </message>
 </context>
 <context>
@@ -7505,7 +7512,7 @@ en raison de leurs types incompatibles:
     </message>
     <message>
         <source>BASIC_PROPERTIES</source>
-        <translation type="unfinished">Basic Properties</translation>
+        <translation>Propriétés basiques</translation>
     </message>
 </context>
 <context>
@@ -7696,21 +7703,6 @@ en raison de leurs types incompatibles:
     <message>
         <source>SHRINK</source>
         <translation>Coef de réduction:</translation>
-    </message>
-</context>
-<context>
-    <name>SMESHGUI_ComputeDlg_QThreadQDialog</name>
-    <message>
-        <source>TITLE</source>
-        <translation type="unfinished">Compute</translation>
-    </message>
-    <message>
-        <source>CANCELING</source>
-        <translation type="unfinished">Canceling...</translation>
-    </message>
-    <message>
-        <source>CANCEL</source>
-        <translation type="unfinished">Cancel</translation>
     </message>
 </context>
 </TS>

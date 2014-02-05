@@ -6054,7 +6054,7 @@ Please specify it and try again</translation>
     </message>
     <message>
         <source>MT_QUADRILATERAL</source>
-        <translation>Quadrilaterial</translation>
+        <translation>Quadrilateral</translation>
     </message>
     <message>
         <source>NAME_OF_MESH_IS_EMPTY</source>
