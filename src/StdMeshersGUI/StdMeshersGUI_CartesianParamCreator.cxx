@@ -916,7 +916,7 @@ QFrame* StdMeshersGUI_CartesianParamCreator::buildFrame()
   }
 
   // Show axes
-  myAxesLen = 1;
+  myAxesLen = 120; // default trihedron size is 100
   myOrigin[0] = myOrigin[1] = myOrigin[2] = 0.;
   TopoDS_Shape shape;
   QString shapeEntry = getMainShapeEntry();
