@@ -3092,9 +3092,11 @@ void _pyComplexParamHypo::Process( const Handle(_pyCommand)& theCommand)
   {
     // CartesianParameters3D hyp
 
-    if ( theCommand->GetMethod() == "SetSizeThreshold" )
+    if ( theCommand->GetMethod() == "SetSizeThreshold"  ||
+         theCommand->GetMethod() == "SetToAddEdges" )
     {
-      setCreationArg( 4, theCommand->GetArg( 1 ));
+      int iEdges = ( theCommand->GetMethod().Value( 4 ) == 'T' );
+      setCreationArg( 4+iEdges, theCommand->GetArg( 1 ));
       myArgCommands.push_back( theCommand );
       return;
     }

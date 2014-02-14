@@ -83,7 +83,7 @@
 #include <gp_Sphere.hxx>
 #include <gp_Torus.hxx>
 
-//#undef WITH_TBB
+#undef WITH_TBB
 #ifdef WITH_TBB
 #include <tbb/parallel_for.h>
 //#include <tbb/enumerable_thread_specific.h>
@@ -179,7 +179,7 @@ namespace
 
     B_IntersectPoint(): _node(NULL) {}
     void Add( const vector< TGeomID >& fIDs, const SMDS_MeshNode* n=0 ) const;
-    bool HasCommonFace( const B_IntersectPoint * other ) const;
+    int HasCommonFace( const B_IntersectPoint * other, int avoidFace=-1 ) const;
     bool IsOnFace( int faceID ) const;
     virtual ~B_IntersectPoint() {}
   };
@@ -442,8 +442,10 @@ namespace
     {
       const SMDS_MeshNode*       _node; // mesh node at hexahedron corner
       const B_IntersectPoint* _intPoint;
+      bool                _isUsedInFace;
 
-      _Node(const SMDS_MeshNode* n=0, const B_IntersectPoint* ip=0):_node(n), _intPoint(ip) {} 
+      _Node(const SMDS_MeshNode* n=0, const B_IntersectPoint* ip=0)
+        :_node(n), _intPoint(ip), _isUsedInFace(0) {} 
       const SMDS_MeshNode*    Node() const
       { return ( _intPoint && _intPoint->_node ) ? _intPoint->_node : _node; }
       const F_IntersectPoint* FaceIntPnt() const
@@ -463,9 +465,10 @@ namespace
           _intPoint->Add( ip->_faceIDs );
         }
       }
-      bool IsLinked( const B_IntersectPoint* other ) const
+      int IsLinked( const B_IntersectPoint* other,
+                    int                     avoidFace=-1 ) const // returns id of a common face
       {
-        return _intPoint && _intPoint->HasCommonFace( other );
+        return _intPoint ? _intPoint->HasCommonFace( other, avoidFace ) : 0;
       }
       bool IsOnFace( int faceID ) const // returns true if faceID is found
       {
@@ -502,9 +505,9 @@ namespace
         return _OrientedLink(&_link->_splits[_reverse ? NbResultLinks()-i-1 : i],_reverse);
       }
       _Node* FirstNode() const { return _link->_nodes[ _reverse ]; }
-      _Node* LastNode() const { return _link->_nodes[ !_reverse ]; }
+      _Node* LastNode()  const { return _link->_nodes[ !_reverse ]; }
       operator bool() const { return _link; }
-      vector< TGeomID > GetNotUsedFace(const set<TGeomID>& usedIDs ) const // returns a supporting FACEs
+      vector< TGeomID > GetNotUsedFace(const set<TGeomID>& usedIDs ) const // returns supporting FACEs
       {
         vector< TGeomID > faces;
         const B_IntersectPoint *ip0, *ip1;
@@ -517,6 +520,11 @@ namespace
               faces.push_back( ip0->_faceIDs[i] );
         }
         return faces;
+      }
+      bool HasEdgeNodes() const
+      {
+        return ( dynamic_cast< const E_IntersectPoint* >( _link->_nodes[0]->_intPoint ) ||
+                 dynamic_cast< const E_IntersectPoint* >( _link->_nodes[1]->_intPoint ));
       }
     };
     // --------------------------------------------------------------------------------
@@ -593,13 +601,16 @@ namespace
                           vector< Hexahedron* >&  hexes,
                           int ijk[], int dIJK[] );
     bool findChain( _Node* n1, _Node* n2, _Face& quad, vector<_Node*>& chainNodes );
+    bool closePolygon( _Face* polygon, vector<_Node*>& chainNodes ) const;
     int  addElements(SMESH_MesherHelper& helper);
+    bool is1stNodeOut( int iLink ) const;
     bool isInHole() const;
     bool checkPolyhedronSize() const;
     bool addHexa ();
     bool addTetra();
     bool addPenta();
     bool addPyra ();
+    bool debugDumpLink( _Link* link );
     _Node* FindEqualNode( vector< _Node >&        nodes,
                           const E_IntersectPoint* ip,
                           const double            tol2 )
@@ -725,7 +736,8 @@ namespace
         return ( ipBef->_transition == Trans_OUT );
       return ( ipBef->_transition != Trans_OUT );
     }
-    return prevIsOut; // _transition == Trans_TANGENT
+    // _transition == Trans_TANGENT
+    return !prevIsOut;
   }
   //================================================================================
   /*
@@ -749,15 +761,16 @@ namespace
   }
   //================================================================================
   /*
-   * Returns \c true if \a other B_IntersectPoint holds the same face ID
+   * Returns index of a common face if any, else zero
    */
-  bool B_IntersectPoint::HasCommonFace( const B_IntersectPoint * other ) const
+  int B_IntersectPoint::HasCommonFace( const B_IntersectPoint * other, int avoidFace ) const
   {
     if ( other )
       for ( size_t i = 0; i < other->_faceIDs.size(); ++i )
-        if ( IsOnFace( other->_faceIDs[i] ) )
-          return true;
-    return false;
+        if ( avoidFace != other->_faceIDs[i] &&
+             IsOnFace   ( other->_faceIDs[i] ))
+          return other->_faceIDs[i];
+    return 0;
   }
   //================================================================================
   /*
@@ -1582,11 +1595,11 @@ namespace
         _Link& link = _hexLinks[ iLink ];
         link._splits.clear();
         split._nodes[ 0 ] = link._nodes[0];
-        bool isOut = ( ! link._nodes[0]->Node() );
-        //int iEnd = link._intNodes.size() - bool( link._nodes[1]->_intPoint );
+        bool isOut = ( ! link._nodes[0]->Node() ); // is1stNodeOut( iLink );
+        bool checkTransition;
         for ( size_t i = 0; i < link._intNodes.size(); ++i )
         {
-          if ( link._intNodes[i].Node() )
+          if ( link._intNodes[i].Node() ) // intersection non-coinsident with a grid node
           {
             if ( split._nodes[ 0 ]->Node() && !isOut )
             {
@@ -1594,11 +1607,19 @@ namespace
               link._splits.push_back( split );
             }
             split._nodes[ 0 ] = &link._intNodes[i];
+            checkTransition = true;
           }
-          switch ( link._intNodes[i].FaceIntPnt()->_transition ) {
-          case Trans_OUT: isOut = true; break;
-          case Trans_IN : isOut = false; break;
-          default:; // isOut remains the same
+          else // FACE intersection coinsident with a grid node
+          {
+            checkTransition = ( link._nodes[0]->Node() );
+          }
+          if ( checkTransition )
+          {
+            switch ( link._intNodes[i].FaceIntPnt()->_transition ) {
+            case Trans_OUT: isOut = true; break;
+            case Trans_IN : isOut = false; break;
+            default:; // isOut remains the same
+            }
           }
         }
         if ( link._nodes[ 1 ]->Node() && split._nodes[ 0 ]->Node() && !isOut )
@@ -1744,9 +1765,10 @@ namespace
       return;
 
     _polygons.clear();
-    _polygons.reserve( 10 );
+    _polygons.reserve( 20 );
 
-    // create polygons from quadrangles and get their nodes
+    // Create polygons from quadrangles
+    // --------------------------------
 
     _Link polyLink;
     vector< _OrientedLink > splits;
@@ -1788,6 +1810,11 @@ namespace
             _vertexNodes.push_back( quad._edgeNodes[ iP ]);
         }
       }
+#ifdef _DEBUG_
+      for ( size_t iP = 0; iP < quad._edgeNodes.size(); ++iP )
+        quad._edgeNodes[ iP ]._isUsedInFace = false;
+#endif
+      int nbUsedEdgeNodes = 0;
 
       while ( nbSplits > 0 )
       {
@@ -1815,8 +1842,8 @@ namespace
           n1 = split.FirstNode();
           if ( n1 != n2 )
           {
-            // try to connect to intersections with EDGES
-            if ( quad._edgeNodes.size() > 0  &&
+            // try to connect to intersections with EDGEs
+            if ( quad._edgeNodes.size() > nbUsedEdgeNodes  &&
                  findChain( n2, n1, quad, chainNodes ))
             {
               for ( size_t i = 1; i < chainNodes.size(); ++i )
@@ -1825,6 +1852,13 @@ namespace
                 polyLink._nodes[1] = chainNodes[i];
                 polygon->_polyLinks.push_back( polyLink );
                 polygon->_links.push_back( _OrientedLink( &polygon->_polyLinks.back() ));
+                nbUsedEdgeNodes += polyLink._nodes[1]->_isUsedInFace;
+              }
+              if ( chainNodes.back() != n1 )
+              {
+                n2 = chainNodes.back();
+                --iS;
+                continue;
               }
             }
             // try to connect to a split ending on the same FACE
@@ -1870,7 +1904,11 @@ namespace
 
         if ( nFirst != n2 ) // close a polygon
         {
-          findChain( n2, nFirst, quad, chainNodes );
+          if ( !findChain( n2, nFirst, quad, chainNodes ))
+          {
+            if ( !closePolygon( polygon, chainNodes ))
+              ;//chainNodes.push_back( nFirst );
+          }
           for ( size_t i = 1; i < chainNodes.size(); ++i )
           {
             polyLink._nodes[0] = chainNodes[i-1];
@@ -1892,7 +1930,8 @@ namespace
 
     }  // loop on 6 sides of a hexahedron
 
-    // create polygons closing holes in a polyhedron
+    // Create polygons closing holes in a polyhedron
+    // ----------------------------------------------
 
     // add polygons to their links
     for ( size_t iP = 0; iP < _polygons.size(); ++iP )
@@ -1915,7 +1954,7 @@ namespace
           freeLinks.push_back( & polygon._links[ iL ]);
     }
     int nbFreeLinks = freeLinks.size();
-    if ( 0 < nbFreeLinks && nbFreeLinks < 3 ) return;
+    if ( nbFreeLinks < 3 ) return;
 
     set<TGeomID> usedFaceIDs;
 
@@ -1958,22 +1997,42 @@ namespace
         // get a remaining link to start from, one lying on minimal
         // nb of FACEs
         {
-          map< vector< TGeomID >, int > facesOfLink;
-          map< vector< TGeomID >, int >::iterator f2l;
+          vector< pair< TGeomID, int > > facesOfLink[3];
+          pair< TGeomID, int > faceOfLink( -1, -1 );
+          vector< TGeomID > faces;
           for ( size_t iL = 0; iL < freeLinks.size(); ++iL )
             if ( freeLinks[ iL ] )
             {
-              f2l = facesOfLink.insert
-                ( make_pair( freeLinks[ iL ]->GetNotUsedFace( usedFaceIDs ), iL )).first;
-              if ( f2l->first.size() == 1 )
-                break;
+              faces = freeLinks[ iL ]->GetNotUsedFace( usedFaceIDs );
+              if ( faces.size() == 1 )
+              {
+                faceOfLink = make_pair( faces[0], iL );
+                if ( !freeLinks[ iL ]->HasEdgeNodes() )
+                  break;
+                facesOfLink[0].push_back( faceOfLink );
+              }
+              else if ( facesOfLink[0].empty() )
+              {
+                faceOfLink = make_pair(( faces.empty() ? -1 : faces[0]), iL );
+                facesOfLink[ 1 + faces.empty() ].push_back( faceOfLink );
+              }
             }
-          f2l = facesOfLink.begin();
-          if ( f2l->first.empty() )
-            return;
-          curFace = f2l->first[0];
-          curLink = freeLinks[ f2l->second ];
-          freeLinks[ f2l->second ] = 0;
+          for ( int i = 0; faceOfLink.second < 0 && i < 3; ++i )
+            if ( !facesOfLink[i].empty() )
+              faceOfLink = facesOfLink[i][0];
+
+          if ( faceOfLink.first < 0 ) // all faces used
+          {
+            for ( size_t i = 0; i < facesOfLink[2].size() && faceOfLink.first < 1; ++i )
+            {
+              curLink = freeLinks[ facesOfLink[2][i].second ];
+              faceOfLink.first = curLink->FirstNode()->IsLinked( curLink->FirstNode()->_intPoint );
+            }
+            usedFaceIDs.clear();
+          }
+          curFace = faceOfLink.first;
+          curLink = freeLinks[ faceOfLink.second ];
+          freeLinks[ faceOfLink.second ] = 0;
         }
         usedFaceIDs.insert( curFace );
         polygon._links.push_back( *curLink );
@@ -2059,6 +2118,17 @@ namespace
 
       if ( polygon._links.size() == 2 )
       {
+        if ( freeLinks.back() == &polygon._links.back() )
+        {
+          freeLinks.back() = 0;
+          --nbFreeLinks;
+        }
+        vector< _Face*>& polygs1 = polygon._links.front()._link->_faces;
+        vector< _Face*>& polygs2 = polygon._links.back()._link->_faces;
+        _Face* polyg1 = ( polygs1.empty() ? 0 : polygs1[0] );
+        _Face* polyg2 = ( polygs2.empty() ? 0 : polygs2[0] );
+        if ( polyg1 ) polygs2.push_back( polyg1 );
+        if ( polyg2 ) polygs1.push_back( polyg2 );
         _polygons.pop_back();
       }
       else
@@ -2131,7 +2201,7 @@ namespace
         multiset< F_IntersectPoint >::const_iterator ip = line._intPoints.begin();
         for ( ; ip != line._intPoints.end(); ++ip )
         {
-          //if ( !ip->_node ) continue;
+          // if ( !ip->_node ) continue; // intersection at a grid node
           lineInd.SetIndexOnLine( ip->_indexOnLine );
           for ( int iL = 0; iL < 4; ++iL ) // loop on 4 cells sharing a link
           {
@@ -2173,14 +2243,16 @@ namespace
       if ( hex )
       {
         intHexInd[ nbIntHex++ ] = i;
-        if ( hex->_nbIntNodes > 0 ) continue; // treat intersected hex later
+        if ( hex->_nbIntNodes > 0 || ! hex->_edgeIntPnts.empty())
+          continue; // treat intersected hex later
         this->init( hex->_i, hex->_j, hex->_k );
       }
       else
       {    
         this->init( i );
       }
-      if ( _nbCornerNodes == 8 && ( _nbBndNodes < _nbCornerNodes || !isInHole() ))
+      if (( _nbCornerNodes == 8 ) &&
+          ( _nbBndNodes < _nbCornerNodes || !isInHole() ))
       {
         // order of _hexNodes is defined by enum SMESH_Block::TShapeID
         SMDS_MeshElement* el =
@@ -2557,24 +2629,123 @@ namespace
   {
     chn.clear();
     chn.push_back( n1 );
-    bool found = false;
+    for ( size_t iP = 0; iP < quad._edgeNodes.size(); ++iP )
+      if ( !quad._edgeNodes[ iP ]._isUsedInFace &&
+           n1->IsLinked( quad._edgeNodes[ iP ]._intPoint ) &&
+           n2->IsLinked( quad._edgeNodes[ iP ]._intPoint ))
+      {
+        chn.push_back( & quad._edgeNodes[ iP ]);
+        chn.push_back( n2 );
+        quad._edgeNodes[ iP ]._isUsedInFace = true;
+        return true;
+      }
+    bool found;
     do
     {
       found = false;
       for ( size_t iP = 0; iP < quad._edgeNodes.size(); ++iP )
-        if (( std::find( ++chn.begin(), chn.end(), & quad._edgeNodes[iP]) == chn.end()) &&
-            chn.back()->IsLinked( quad._edgeNodes[ iP ]._intPoint ))
+        if ( !quad._edgeNodes[ iP ]._isUsedInFace &&
+             chn.back()->IsLinked( quad._edgeNodes[ iP ]._intPoint ))
         {
           chn.push_back( & quad._edgeNodes[ iP ]);
-          found = true;
+          found = quad._edgeNodes[ iP ]._isUsedInFace = true;
           break;
         }
-    } while ( found && chn.back() != n2 );
+    } while ( found && ! chn.back()->IsLinked( n2->_intPoint ) );
 
-    if ( chn.back() != n2 )
+    if ( chn.back() != n2 && chn.back()->IsLinked( n2->_intPoint ))
       chn.push_back( n2 );
 
-    return chn.size() > 2;
+    return chn.size() > 1;
+  }
+  //================================================================================
+  /*!
+   * \brief Try to heal a polygon whose ends are not connected
+   */
+  bool Hexahedron::closePolygon( _Face* polygon, vector<_Node*>& chainNodes ) const
+  {
+    int i = -1, nbLinks = polygon->_links.size();
+    if ( nbLinks < 3 )
+      return false;
+    vector< _OrientedLink > newLinks;
+    // find a node lying on the same FACE as the last one
+    _Node*   node = polygon->_links.back().LastNode();
+    int avoidFace = node->IsLinked( polygon->_links.back().FirstNode()->_intPoint );
+    for ( i = nbLinks - 2; i >= 0; --i )
+      if ( node->IsLinked( polygon->_links[i].FirstNode()->_intPoint, avoidFace ))
+        break;
+    if ( i >= 0 )
+    {
+      for ( ; i < nbLinks; ++i )
+        newLinks.push_back( polygon->_links[i] );
+    }
+    else
+    {
+      // find a node lying on the same FACE as the first one
+      node      = polygon->_links[0].FirstNode();
+      avoidFace = node->IsLinked( polygon->_links[0].LastNode()->_intPoint );
+      for ( i = 1; i < nbLinks; ++i )
+        if ( node->IsLinked( polygon->_links[i].LastNode()->_intPoint, avoidFace ))
+          break;
+      if ( i < nbLinks )
+        for ( nbLinks = i + 1, i = 0; i < nbLinks; ++i )
+          newLinks.push_back( polygon->_links[i] );
+    }
+    if ( newLinks.size() > 1 )
+    {
+      polygon->_links.swap( newLinks );
+      chainNodes.clear();
+      chainNodes.push_back( polygon->_links.back().LastNode() );
+      chainNodes.push_back( polygon->_links[0].FirstNode() );
+      return true;
+    }
+    return false;
+  }
+  //================================================================================
+  /*!
+   * \brief Checks transition at the 1st node of a link
+   */
+  bool Hexahedron::is1stNodeOut( int iLink ) const
+  {
+    if ( !_hexLinks[ iLink ]._nodes[0]->Node() ) // no node
+      return true;
+    if ( !_hexLinks[ iLink ]._nodes[0]->_intPoint ) // no intersection with geometry
+      return false;
+    switch ( _hexLinks[ iLink ]._nodes[0]->FaceIntPnt()->_transition ) {
+    case Trans_OUT: return true;
+    case Trans_IN : return false;
+    default: ; // tangent transition
+    }
+
+    // ijk of a GridLine corresponding to the link
+    int   iDir = iLink / 4;
+    int indSub = iLink % 4;
+    LineIndexer li = _grid->GetLineIndexer( iDir );
+    li.SetIJK( _i,_j,_k );
+    size_t lineIndex[4] = { li.LineIndex  (),
+                            li.LineIndex10(),
+                            li.LineIndex01(),
+                            li.LineIndex11() };
+    GridLine& line = _grid->_lines[ iDir ][ lineIndex[ indSub ]];
+
+    // analyze transition of previous ip
+    bool isOut = true;
+    multiset< F_IntersectPoint >::const_iterator ip = line._intPoints.begin();
+    for ( ; ip != line._intPoints.end(); ++ip )
+    {
+      if ( &(*ip) == _hexLinks[ iLink ]._nodes[0]->_intPoint )
+        break;
+      switch ( ip->_transition ) {
+      case Trans_OUT: isOut = true;
+      case Trans_IN : isOut = false;
+      default:;
+      }
+    }
+#ifdef _DEBUG_
+    if ( ip == line._intPoints.end() )
+      cout << "BUG: Wrong GridLine. IKJ = ( "<< _i << " " << _j << " " << _k << " )" << endl;
+#endif
+    return isOut;
   }
   //================================================================================
   /*!
@@ -2728,7 +2899,9 @@ namespace
 
       // find a top node above the base node
       _Link* link = _polygons[0]._links[iL]._link;
-      ASSERT( link->_faces.size() > 1 );
+      //ASSERT( link->_faces.size() > 1 );
+      if ( link->_faces.size() < 2 )
+        return debugDumpLink( link );
       // a quadrangle sharing <link> with _polygons[0]
       _Face* quad = link->_faces[ bool( link->_faces[0] == & _polygons[0] )];
       for ( int i = 0; i < 4; ++i )
@@ -2757,7 +2930,9 @@ namespace
     nodes[2] = _polygons[0]._links[2].FirstNode();
 
     _Link* link = _polygons[0]._links[0]._link;
-    ASSERT( link->_faces.size() > 1 );
+    //ASSERT( link->_faces.size() > 1 );
+    if ( link->_faces.size() < 2 )
+      return debugDumpLink( link );
 
     // a triangle sharing <link> with _polygons[0]
     _Face* tria = link->_faces[ bool( link->_faces[0] == & _polygons[0] )];
@@ -2795,7 +2970,9 @@ namespace
 
       // find a top node above the base node
       _Link* link = _polygons[ iTri ]._links[iL]._link;
-      ASSERT( link->_faces.size() > 1 );
+      //ASSERT( link->_faces.size() > 1 );
+      if ( link->_faces.size() < 2 )
+        return debugDumpLink( link );
       // a quadrangle sharing <link> with a base triangle
       _Face* quad = link->_faces[ bool( link->_faces[0] == & _polygons[ iTri ] )];
       if ( quad->_links.size() != 4 ) return false;
@@ -2835,6 +3012,8 @@ namespace
 
     _Link* link = _polygons[iQuad]._links[0]._link;
     ASSERT( link->_faces.size() > 1 );
+    if ( link->_faces.size() < 2 )
+      return debugDumpLink( link );
 
     // a triangle sharing <link> with a base quadrangle
     _Face* tria = link->_faces[ bool( link->_faces[0] == & _polygons[ iQuad ] )];
@@ -2847,6 +3026,20 @@ namespace
         return true;
       }
 
+    return false;
+  }
+  //================================================================================
+  /*!
+   * \brief Dump a link and return \c false
+   */
+  bool Hexahedron::debugDumpLink( Hexahedron::_Link* link )
+  {
+#ifdef _DEBUG_
+    gp_Pnt p1 = link->_nodes[0]->Point(), p2 = link->_nodes[1]->Point();
+    cout << "BUG: not shared link. IKJ = ( "<< _i << " " << _j << " " << _k << " )" << endl
+         << "n1 (" << p1.X() << ", "<< p1.Y() << ", "<< p1.Z() << " )" << endl
+         << "n2 (" << p2.X() << ", "<< p2.Y() << ", "<< p2.Z() << " )" << endl;
+#endif
     return false;
   }
 
@@ -2964,6 +3157,8 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
 
   _computeCanceled = false;
 
+  SMESH_MesherHelper helper( theMesh );
+
   try
   {
     Grid grid;
@@ -2992,12 +3187,16 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
       shapeBox.Add( facesItersectors[i].GetFaceBndBox() );
 
       if ( _hyp->GetToAddEdges() )
+      {
+        helper.SetSubShape( faceVec[i] );
         for ( eExp.Init( faceVec[i], TopAbs_EDGE ); eExp.More(); eExp.Next() )
         {
           const TopoDS_Edge& edge = TopoDS::Edge( eExp.Current() );
-          if ( !SMESH_Algo::isDegenerated( edge ))
+          if ( !SMESH_Algo::isDegenerated( edge ) &&
+               !helper.IsRealSeam( edge ))
             edge2faceIDsMap[ grid._shapes.Add( edge )].push_back( facesItersectors[i]._faceID );
         }
+      }
     }
 
     getExactBndBox( faceVec, _hyp->GetAxisDirs(), shapeBox );
@@ -3037,7 +3236,6 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
     for ( size_t i = 0; i < facesItersectors.size(); ++i )
       facesItersectors[i].StoreIntersections();
 
-    SMESH_MesherHelper helper( theMesh );
     TopExp_Explorer solidExp (theShape, TopAbs_SOLID);
     helper.SetSubShape( solidExp.Current() );
     helper.SetElementsOnShape( true );

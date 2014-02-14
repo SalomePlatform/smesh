@@ -1400,18 +1400,17 @@ class StdMeshersBuilder_Cartesian_3D(Mesh_Algorithm):
     #    Examples:
     #    - "10.5" - defines a grid with a constant spacing
     #    - [["1", "1+10*t", "11"] [0.1, 0.6]] - defines different spacing in 3 ranges.
-    #  @param yGridDef defines the grid along the Y asix the same way as \a xGridDef does
-    #  @param zGridDef defines the grid along the Z asix the same way as \a xGridDef does
+    #  @param yGridDef defines the grid along the Y asix the same way as \a xGridDef does.
+    #  @param zGridDef defines the grid along the Z asix the same way as \a xGridDef does.
     #  @param sizeThreshold (> 1.0) defines a minimal size of a polyhedron so that
-    #         a polyhedron of size less than hexSize/sizeThreshold is not created
-    #  @param UseExisting if ==true - searches for the existing hypothesis created with
-    #                     the same parameters, else (default) - creates a new one
-    def SetGrid(self, xGridDef, yGridDef, zGridDef, sizeThreshold=4.0, UseExisting=False):
+    #         a polyhedron of size less than hexSize/sizeThreshold is not created.
+    #  @param implEdges enables implementation of geometrical edges into the mesh.
+    def SetGrid(self, xGridDef, yGridDef, zGridDef, sizeThreshold=4.0, implEdges=False):
         if not self.hyp:
             compFun = lambda hyp, args: False
             self.hyp = self.Hypothesis("CartesianParameters3D",
                                        [xGridDef, yGridDef, zGridDef, sizeThreshold],
-                                       UseExisting=UseExisting, CompareMethod=compFun)
+                                       UseExisting=False, CompareMethod=compFun)
         if not self.mesh.IsUsedHypothesis( self.hyp, self.geom ):
             self.mesh.AddHypothesis( self.hyp, self.geom )
 
@@ -1427,6 +1426,7 @@ class StdMeshersBuilder_Cartesian_3D(Mesh_Algorithm):
             else:
                 self.hyp.SetGridSpacing( gridDef[0], gridDef[1], axis )
         self.hyp.SetSizeThreshold( sizeThreshold )
+        self.hyp.SetToAddEdges( implEdges )
         return self.hyp
 
     ## Defines custom directions of axes of the grid
