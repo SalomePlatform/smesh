@@ -69,7 +69,8 @@ namespace SMESH
   QStringList GetAvailableHypotheses( const bool, 
                                       const int = -1, 
                                       const bool = false,
-                                      const bool = true);
+                                      const bool = true,
+                                      const bool = false);
   SMESHGUI_EXPORT
   QStringList GetHypothesesSets( int, const QString& );
 

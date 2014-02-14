@@ -149,16 +149,20 @@ void SMESHGUI_MeshTab::setAvailableHyps( const int theId, const QStringList& the
   myAvailableHyps[ theId ] = theHyps;
 
   bool enable = ! theHyps.isEmpty();
-  if ( theId == Algo )
+  if ( theId == Algo ) // fill list of algos
   {
     myHyp[ Algo ]->clear();
-    myHyp[ Algo ]->addItem( tr( "NONE" ) );
-    myHyp[ Algo ]->addItems( theHyps );
-    myHyp[ Algo ]->setCurrentIndex( 0 );
+    if ( enable )
+    {
+      myHyp[ Algo ]->addItem( tr( "NONE" ) );
+      myHyp[ Algo ]->addItems( theHyps );
+      myHyp[ Algo ]->setCurrentIndex( 0 );
+    }
   }
-  else {
+  else // enable buttons
+  {
     myCreateHyp[ theId ]->setEnabled( enable );
-    myEditHyp[ theId ]->setEnabled( false );
+    myEditHyp  [ theId ]->setEnabled( false );
   }
   myHyp[ theId ]->setEnabled( enable );
 }
@@ -166,21 +170,30 @@ void SMESHGUI_MeshTab::setAvailableHyps( const int theId, const QStringList& the
 //================================================================================
 /*!
  * \brief Sets existing hypothesis
-  * \param theId - identifier of hypothesis (main or additional, see HypType enumeration)
-  * \param theHyps - list of available hypothesis names
- * 
+ * \param theId - identifier of hypothesis (main or additional, see HypType enumeration)
+ * \param theHyps - list of available hypothesis names
+ * \param theDefaultAvlbl - \c true means that the algorithm can with w/o hypothesis
+ *                          with some default parameters
+ *
  * Sets existing main or additional hypothesis for this tab
  */
 //================================================================================
-void SMESHGUI_MeshTab::setExistingHyps( const int theId, const QStringList& theHyps )
+void SMESHGUI_MeshTab::setExistingHyps( const int          theId,
+                                        const QStringList& theHyps,
+                                        bool               theDefaultAvlbl)
 {
   if ( theId != Algo )
   {
+    bool enable = ! myAvailableHyps[ theId ].isEmpty();
     myHyp[ theId ]->clear();
-    myHyp[ theId ]->addItem( tr( "NONE" ) );
-    myHyp[ theId ]->addItems( theHyps );
-    myHyp[ theId ]->setCurrentIndex( 0 );
-    myHyp[ theId ]->setEnabled( !theHyps.isEmpty() );
+    if ( enable )
+    {
+      QString none = tr( theDefaultAvlbl ? "DEFAULT" : ( theId == AddHyp ) ? "NONE" : "NONE" );
+      myHyp[ theId ]->addItem( none );
+      myHyp[ theId ]->addItems( theHyps );
+      myHyp[ theId ]->setCurrentIndex( 0 );
+    }
+    myHyp    [ theId ]->setEnabled( enable );
     myEditHyp[ theId ]->setEnabled( false );
   }
 }
@@ -188,9 +201,9 @@ void SMESHGUI_MeshTab::setExistingHyps( const int theId, const QStringList& theH
 //================================================================================
 /*!
  * \brief Adds hypothesis in combo box of available ones
-  * \param theId - identifier of hypothesis (main or additional, see HypType enumeration)
-  * \param theHyp - name of hypothesis to be added
- * 
+ * \param theId - identifier of hypothesis (main or additional, see HypType enumeration)
+ * \param theHyp - name of hypothesis to be added
+ *
  * Adds hypothesis in combo box of available ones. This method is called by operation
  * after creation of new hypothesis.
  */

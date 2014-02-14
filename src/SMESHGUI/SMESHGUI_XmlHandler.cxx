@@ -123,9 +123,11 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
     if (atts.value("type") != "")
     {
       QString aHypAlType = atts.value("type");
-      QString aLabel = atts.value("label-id");
-      QString anIcon = atts.value("icon-id");
-      bool isAux = atts.value("auxiliary") == "true";
+      QString     aLabel = atts.value("label-id");
+      QString     anIcon = atts.value("icon-id");
+      bool isAuxOrNeedHyp = ( qName == "hypothesis" ?
+                              atts.value("auxiliary") == "true" :
+                              atts.value("need-hyp" ) == "true" );
       bool isNeedGeom = true, isSupportSubmeshes = false;
       QString aNeedGeom = atts.value("need-geom");
       if ( !aNeedGeom.isEmpty() )
@@ -133,6 +135,11 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
       QString suppSub = atts.value("support-submeshes");
       if ( !suppSub.isEmpty() )
         isSupportSubmeshes = (suppSub == "true");
+      QString context = atts.value("context");
+      if ( context.isEmpty() )
+        context = "ANY";
+      else
+        context = context.toUpper();
 
       QString aDimStr = atts.value("dim");
       aDimStr = aDimStr.remove( ' ' );
@@ -162,7 +169,7 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
       if ( !aHypAlType.contains( BAD_HYP_FLAG ) ) {
         HypothesisData* aHypData =
           new HypothesisData (aHypAlType, myPluginName, myServerLib, myClientLib,
-                              aLabel, anIcon, aDim, isAux,
+                              aLabel, anIcon, context, aDim, isAuxOrNeedHyp,
                               attr[ HYPOS ], attr[ OPT_HYPOS ], attr[ INPUT ], attr[ OUTPUT ],
                               isNeedGeom, isSupportSubmeshes );
 

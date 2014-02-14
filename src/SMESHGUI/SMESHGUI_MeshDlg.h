@@ -119,7 +119,7 @@ public:
   virtual ~SMESHGUI_MeshTab();
   
   void                         setAvailableHyps( const int, const QStringList& );
-  void                         setExistingHyps( const int, const QStringList& );
+  void                         setExistingHyps( const int, const QStringList&, bool=false);
   void                         addHyp( const int, const QString& );
   void                         renameHyp( const int, const int, const QString& );
   void                         setCurrentHyp( const int, const int );

@@ -111,6 +111,9 @@ private:
   bool                           createMesh( QString&, QStringList& );
   bool                           createSubMesh( QString&, QStringList& );
   bool                           editMeshOrSubMesh( QString& );
+  bool                           checkSubMeshConcurrency( SMESH::SMESH_Mesh_ptr    mesh,
+                                                          SMESH::SMESH_subMesh_ptr submesh,
+                                                          bool                     askUser=false);
 
   int                            currentHyp( const int, const int ) const;
   bool                           isAccessibleDim( const int ) const;
@@ -135,6 +138,7 @@ private:
   bool                           myToCreate;
   bool                           myIsMesh;
   bool                           myIsOnGeometry; //!< TRUE if edited mesh accotiated with geometrical object
+  bool                           myHasConcurrentSubBefore;
 
   TDim2Type2HypList              myExistingHyps; //!< all hypothesis of SMESH module
   TDim2Type2HypList              myObjHyps;      //!< hypothesis assigned to the current 

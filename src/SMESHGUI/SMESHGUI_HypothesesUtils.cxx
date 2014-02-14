@@ -266,23 +266,28 @@ namespace SMESH
   }
 
 
-  QStringList GetAvailableHypotheses( const bool isAlgo, 
-                                      const int theDim,                          
+  QStringList GetAvailableHypotheses( const bool isAlgo,
+                                      const int  theDim,
                                       const bool isAux,
-                                      const bool isNeedGeometry)
+                                      const bool isNeedGeometry,
+                                      const bool isSubMesh)
   {
     QStringList aHypList;
 
     // Init list of available hypotheses, if needed
     InitAvailableHypotheses();
     bool checkGeometry = ( !isNeedGeometry && isAlgo );
+    const char* context = isSubMesh ? "LOCAL" : "GLOBAL";
     // fill list of hypotheses/algorithms
     THypothesisDataMap& pMap = isAlgo ? myAlgorithmsMap : myHypothesesMap;
     THypothesisDataMap::ConstIterator anIter;
     for ( anIter = pMap.begin(); anIter != pMap.end(); anIter++ ) {
       HypothesisData* aData = anIter.value();
       if(!aData || aData->Label.isEmpty()) continue;
-      if ( ( theDim < 0 || aData->Dim.contains( theDim ) ) && aData->IsAux == isAux) {
+      if (( theDim < 0 || aData->Dim.contains( theDim )) &&
+          ( isAlgo || aData->IsAuxOrNeedHyp == isAux ) &&
+          ( aData->Context == "ANY" || aData->Context == context ))
+      {
         if (checkGeometry) {
           if (aData->IsNeedGeometry == isNeedGeometry)
             aHypList.append(anIter.key());
@@ -384,7 +389,7 @@ namespace SMESH
     isAuxiliary = false;
     if ( !algoData )
       return false;
-    if ( algoData->NeededHypos.contains( hypType ))
+    if ( algoData->BasicHypos.contains( hypType ))
       return true;
     if ( algoData->OptionalHypos.contains( hypType)) {
       isAuxiliary = true;

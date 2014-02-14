@@ -33,14 +33,15 @@ written in Python.
     <br>
   </li>
   <li>Apply \subpage basic_meshing_algos_page "meshing algorithms" and
-    \subpage about_hypo_page "hypotheses" which will be used at computation of
+    \subpage about_hypo_page "hypotheses" which will be used to compute
     this mesh.
 
     "Create mesh" dialog box contains several tab pages titled \b 3D,
     \b 2D, \b 1D and \b 0D. The title of each page reflects the
     dimension of the CAD model (geometry) the algorithms listed on
-    this page affect. For example, \b 3D page lists the algorithms
-    that affect 3D geometrical objects (solids).
+    this page affect and the maximal dimension of elements the algorithms
+    generate. For example, \b 3D page lists the algorithms that affect
+    3D geometrical objects (solids).
 
     \note
     - Some page(s) can be disabled if the source geometrical
@@ -86,9 +87,24 @@ written in Python.
     <em>"Edit Hypothesis" button</em>
     </center>
 
-    Most standard 2D and 3D algorithms can work without hypotheses
-    using some default parameters. The use of additional hypotheses
-    is optional (i.e. you may leave "None" in this box).
+    Most 2D and 3D algorithms can work without hypotheses using some
+    default meshing parameters. Some algorithms does not require any
+    hypothesis. After selection of an algorithm "Hypothesis" field of
+    the dialog can contain:
+    <ul>
+      <li> <em><Default></em> if the algorithm can work using default
+      parameters.</li>
+      <li> <em><None></em> if the algorithm requires a hypothesis defining
+      its parameters.</li>
+      <li> Nothing if the algorithm has no parameters to tune.</li>
+    </ul>
+    After selection of an algorithm "Add. Hypothesis" field of
+    the dialog can contain:
+    <ul>
+      <li> <em><None></em> if the algorithm can be additionally tuned
+      using an additional hypothesis.</li>
+      <li> Nothing if the algorithm has no additional parameters to tune.</li>
+    </ul>
 
     Proceed in the same way with 2D and 1D Algorithms and Hypotheses that
     will be used to mesh faces and edges of your geometry. (Note

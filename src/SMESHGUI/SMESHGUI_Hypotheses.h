@@ -173,7 +173,7 @@ class HypothesisData
 public:
   HypothesisData( const QString&, const QString&, const QString&,
                   const QString&, const QString&, const QString&,
-                  const QList<int>&, const bool,
+                  const QString&, const QList<int>&, const bool,
                   const QStringList&, const QStringList&,
                   const QStringList&, const QStringList&,
                   const bool=true, const bool supportSub=false );
@@ -184,13 +184,15 @@ public:
   QString ClientLibName;   //!< client library name
   QString Label;           //!< label
   QString IconId;          //!< icon identifier
+  QString Context;         //!< ["GLOBAL","LOCAL","ANY"(default)]
   QList<int> Dim;          //!< list of supported dimensions (see SMESH::Dimension enumeration)
-  bool IsAux;              //!< TRUE if given hypothesis is auxiliary one, FALSE otherwise
+  bool IsAuxOrNeedHyp;     //!< TRUE if given hypothesis is auxiliary one, FALSE otherwise
+  //!<                          TRUE if given algorithm can't work w/o hypotheses
   bool IsNeedGeometry;     //!< TRUE if the algorithm works with shapes only, FALSE otherwise
   bool IsSupportSubmeshes; //!< TRUE if the algo building all-dim elems supports submeshes
 
   // for algorithm only: dependencies algo <-> algo and algo -> hypos
-  QStringList NeededHypos;  //!< list of obligatory hypotheses
+  QStringList BasicHypos;   //!< list of basic hypotheses
   QStringList OptionalHypos;//!< list of optional hypotheses
   QStringList InputTypes;   //!< list of element types required as a prerequisite
   QStringList OutputTypes;  //!< list of types of generated elements
