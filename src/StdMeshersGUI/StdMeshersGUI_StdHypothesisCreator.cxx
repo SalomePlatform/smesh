@@ -744,23 +744,23 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
         h->SetEdges( idsWg->GetListOfIDs(), params[3].myValue.toInt() );
       }
     }
-    else if( hypType()=="QuadrangleParams" )
-    {
-      StdMeshers::StdMeshers_QuadrangleParams_var h =
-        StdMeshers::StdMeshers_QuadrangleParams::_narrow( hypothesis() );
-      StdMeshersGUI_SubShapeSelectorWdg* w1 =
-        widget< StdMeshersGUI_SubShapeSelectorWdg >( 0 );
-      StdMeshersGUI_QuadrangleParamWdg* w2 =
-        widget< StdMeshersGUI_QuadrangleParamWdg >( 1 );
-      if (w1 && w2) {
-        if (w1->GetListSize() > 0) {
-          h->SetTriaVertex(w1->GetListOfIDs()[0]); // getlist must be called once
-          const char * entry = w1->GetMainShapeEntry();
-          h->SetObjectEntry(entry);
-        }
-        h->SetQuadType(StdMeshers::QuadType(w2->GetType()));
-      }
-    }
+    // else if( hypType()=="QuadrangleParams" )
+    // {
+    //   StdMeshers::StdMeshers_QuadrangleParams_var h =
+    //     StdMeshers::StdMeshers_QuadrangleParams::_narrow( hypothesis() );
+    //   StdMeshersGUI_SubShapeSelectorWdg* w1 =
+    //     widget< StdMeshersGUI_SubShapeSelectorWdg >( 0 );
+    //   StdMeshersGUI_QuadrangleParamWdg* w2 =
+    //     widget< StdMeshersGUI_QuadrangleParamWdg >( 1 );
+    //   if (w1 && w2) {
+    //     if (w1->GetListSize() > 0) {
+    //       h->SetTriaVertex(w1->GetListOfIDs()[0]); // getlist must be called once
+    //       const char * entry = w1->GetMainShapeEntry();
+    //       h->SetObjectEntry(entry);
+    //     }
+    //     h->SetQuadType(StdMeshers::QuadType(w2->GetType()));
+    //   }
+    // }
   }
   return valueStr;
 }
@@ -1242,6 +1242,7 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     customWidgets()->append (0);
 
     QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
+    QString aSubEntry  = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
     if ( !aMainEntry.isEmpty() )
     {
       item.myName = tr( "TO_IGNORE_FACES_OR_NOT" );
@@ -1262,8 +1263,8 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       StdMeshersGUI_SubShapeSelectorWdg* idsWg =
         new StdMeshersGUI_SubShapeSelectorWdg(0,TopAbs_FACE);
 
-      idsWg->SetGeomShapeEntry( aMainEntry );
       idsWg->SetMainShapeEntry( aMainEntry );
+      idsWg->SetGeomShapeEntry( aSubEntry.isEmpty() ? aMainEntry : aSubEntry );
       idsWg->SetListOfIDs( h->GetFaces() );
       idsWg->showPreview( true );
       customWidgets()->append ( idsWg );
@@ -1293,6 +1294,7 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     customWidgets()->append (0);
 
     QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
+    QString aSubEntry  = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
     if ( !aMainEntry.isEmpty() )
     {
       item.myName = tr("TO_IGNORE_EDGES_OR_NOT");
@@ -1313,53 +1315,53 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       StdMeshersGUI_SubShapeSelectorWdg* idsWg =
         new StdMeshersGUI_SubShapeSelectorWdg(0,TopAbs_EDGE);
 
-      idsWg->SetGeomShapeEntry( aMainEntry );
       idsWg->SetMainShapeEntry( aMainEntry );
+      idsWg->SetGeomShapeEntry( aSubEntry.isEmpty() ? aMainEntry : aSubEntry );
       idsWg->SetListOfIDs( h->GetEdges() );
       idsWg->showPreview( true );
       customWidgets()->append ( idsWg );
     }
   }
-  else if (hypType() == "QuadrangleParams")
-  {
-    StdMeshers::StdMeshers_QuadrangleParams_var h =
-      StdMeshers::StdMeshers_QuadrangleParams::_narrow(hyp);
+  // else if (hypType() == "QuadrangleParams")
+  // {
+  //   StdMeshers::StdMeshers_QuadrangleParams_var h =
+  //     StdMeshers::StdMeshers_QuadrangleParams::_narrow(hyp);
 
-    item.myName = tr("SMESH_BASE_VERTEX");
-    p.append(item);
+  //   item.myName = tr("SMESH_BASE_VERTEX");
+  //   p.append(item);
 
-    StdMeshersGUI_SubShapeSelectorWdg* aDirectionWidget =
-      new StdMeshersGUI_SubShapeSelectorWdg(0, TopAbs_VERTEX);
-    aDirectionWidget->SetMaxSize(1);
-    QString anEntry = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
-    QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
-    if (anEntry == "")
-      anEntry = h->GetObjectEntry();
-    aDirectionWidget->SetGeomShapeEntry(anEntry);
-    aDirectionWidget->SetMainShapeEntry(aMainEntry);
-    if (!isCreation()) {
-      SMESH::long_array_var aVec = new SMESH::long_array;
-      int vertID = h->GetTriaVertex();
-      if (vertID > 0) {
-        aVec->length(1);
-        aVec[0] = vertID;
-        aDirectionWidget->SetListOfIDs(aVec);
-      }
-    }
-    aDirectionWidget->showPreview(true);
+  //   StdMeshersGUI_SubShapeSelectorWdg* aDirectionWidget =
+  //     new StdMeshersGUI_SubShapeSelectorWdg(0, TopAbs_VERTEX);
+  //   aDirectionWidget->SetMaxSize(1);
+  //   QString anEntry = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
+  //   QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
+  //   if (anEntry == "")
+  //     anEntry = h->GetObjectEntry();
+  //   aDirectionWidget->SetGeomShapeEntry(anEntry);
+  //   aDirectionWidget->SetMainShapeEntry(aMainEntry);
+  //   if (!isCreation()) {
+  //     SMESH::long_array_var aVec = new SMESH::long_array;
+  //     int vertID = h->GetTriaVertex();
+  //     if (vertID > 0) {
+  //       aVec->length(1);
+  //       aVec[0] = vertID;
+  //       aDirectionWidget->SetListOfIDs(aVec);
+  //     }
+  //   }
+  //   aDirectionWidget->showPreview(true);
 
-    item.myName = tr("SMESH_QUAD_TYPE");
-    p.append(item);
+  //   item.myName = tr("SMESH_QUAD_TYPE");
+  //   p.append(item);
 
-    StdMeshersGUI_QuadrangleParamWdg* aTypeWidget =
-      new StdMeshersGUI_QuadrangleParamWdg();
-    if (!isCreation()) {
-      aTypeWidget->SetType(int(h->GetQuadType()));
-    }
+  //   StdMeshersGUI_QuadrangleParamWdg* aTypeWidget =
+  //     new StdMeshersGUI_QuadrangleParamWdg();
+  //   if (!isCreation()) {
+  //     aTypeWidget->SetType(int(h->GetQuadType()));
+  //   }
 
-    customWidgets()->append(aDirectionWidget);
-    customWidgets()->append(aTypeWidget);
-  }
+  //   customWidgets()->append(aDirectionWidget);
+  //   customWidgets()->append(aTypeWidget);
+  // }
   else
     res = false;
   return res;
@@ -1591,13 +1593,11 @@ bool StdMeshersGUI_StdHypothesisCreator::getParamFromCustomWidget( StdParam & pa
     param.myValue = w->GetValue();
     return true;
   }
-  if ( widget->inherits( "StdMeshersGUI_QuadrangleParamWdg" ))
-  {
-    //const StdMeshersGUI_QuadrangleParamWdg * w =
-    //  static_cast<const StdMeshersGUI_QuadrangleParamWdg*>( widget );
-    param.myValue = "QuadType";
-    return true;
-  }
+  // if ( widget->inherits( "StdMeshersGUI_QuadrangleParamWdg" ))
+  // {
+  //   param.myValue = "QuadType";
+  //   return true;
+  // }
   if ( widget->inherits( "StdMeshersGUI_FixedPointsParamWdg" ))
   {
     const StdMeshersGUI_FixedPointsParamWdg * w =
