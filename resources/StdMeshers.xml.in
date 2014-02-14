@@ -89,12 +89,14 @@
                 label-id ="Propagation of 1D Hyp. on Opposite Edges"
                 icon-id  ="mesh_hypo_length.png"
                 dim      ="1"
+                context  ="LOCAL"
                 auxiliary="true"/>
 
     <hypothesis type     ="PropagOfDistribution"
                 label-id ="Propagation of Node Distribution on Opposite Edges"
                 icon-id  ="mesh_hypo_length.png"
                 dim      ="1"
+                context  ="LOCAL"
                 auxiliary="true"/>
 
     <hypothesis type     ="AutomaticLength"
@@ -117,6 +119,7 @@
                 label-id ="Quadratic Mesh"
                 icon-id  ="mesh_algo_quad.png"
                 dim      ="1"
+                context  ="GLOBAL"
                 auxiliary="true"/>                
 
     <hypothesis type     ="MaxElementArea"
@@ -128,6 +131,7 @@
                 label-id ="Not Conform Mesh Allowed"
                 icon-id  ="mesh_hypo_length.png"
                 dim      ="1,2,3"
+                context  ="GLOBAL"
                 auxiliary="true"/>                
 
     <hypothesis type     ="MaxElementVolume"
@@ -200,6 +204,7 @@
     <hypothesis type     ="CartesianParameters3D"
                 label-id ="Body Fitting Parameters"
                 icon-id  ="mesh_hypo_length.png"
+                context  ="GLOBAL"
                 dim      ="3"/>
 
   </hypotheses>
@@ -211,6 +216,7 @@
 	       icon-id  ="mesh_algo_regular.png"
                hypos    ="SegmentLengthAroundVertex"
                output   ="VERTEX"
+               need-hyp ="true"
                dim      ="0"/>
 
     <algorithm type     ="Regular_1D"
@@ -220,6 +226,7 @@
                opt-hypos="Propagation,PropagOfDistribution,QuadraticMesh"
                input    ="VERTEX"
                output   ="EDGE"
+               need-hyp ="true"
                dim      ="1">
       <python-wrap>
         <algo>Regular_1D=Segment()</algo>
@@ -245,6 +252,7 @@
                opt-hypos="Propagation,PropagOfDistribution,QuadraticMesh"
                input    ="VERTEX"
                output   ="EDGE"
+               need-hyp ="true"
                dim      ="1">
       <python-wrap>
         <algo>CompositeSegment_1D=Segment(algo=smeshBuilder.COMPOSITE)</algo>
@@ -298,7 +306,7 @@
                dim      ="2">
       <python-wrap>
         <algo>Quadrangle_2D=Quadrangle(algo=smeshBuilder.QUADRANGLE)</algo>
-        <hypo>QuadrangleParams=QuadrangleParameters(SetQuadType(),SetTriaVertex())</hypo>
+        <hypo>QuadrangleParams=QuadrangleParameters(SetQuadType(),SetTriaVertex(),SetEnforcedNodes(1),SetEnforcedNodes(2))</hypo>
         <hypo>ViscousLayers2D=ViscousLayers2D(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetIgnoreEdges())</hypo>
       </python-wrap>
     </algorithm>
@@ -322,6 +330,7 @@
                icon-id ="mesh_algo_regular.png"
                hypos   ="ProjectionSource1D"
                output  ="EDGE"
+               need-hyp="true"
                dim     ="1">
       <python-wrap>
         <algo>Projection_1D=Projection1D()</algo>
@@ -335,6 +344,7 @@
                input   ="EDGE"
                hypos   ="ProjectionSource2D"
                output  ="QUAD,TRIA"
+               need-hyp="true"
                dim     ="2">
       <python-wrap>
         <algo>Projection_2D=Projection2D()</algo>
@@ -347,6 +357,7 @@
                icon-id ="mesh_algo_quad.png"
                hypos   ="ProjectionSource2D"
                output  ="QUAD,TRIA"
+               need-hyp="true"
                dim     ="2">
       <python-wrap>
         <algo>Projection_1D2D=Projection1D2D()</algo>
@@ -359,6 +370,7 @@
                icon-id ="mesh_algo_hexa.png"
                hypos   ="ProjectionSource3D"
                input   ="QUAD,TRIA"
+               need-hyp="true"
                dim     ="3">
       <python-wrap>
         <algo>Projection_3D=Projection3D()</algo>
@@ -371,6 +383,7 @@
                icon-id ="mesh_algo_regular.png"
                hypos   ="ImportSource1D"
                output  ="EDGE"
+               need-hyp="true"
                dim     ="1">
       <python-wrap>
         <algo>Import_1D=UseExisting1DElements()</algo>
@@ -384,6 +397,7 @@
                hypos            ="ImportSource2D"
                output           ="QUAD,TRIA"
                support-submeshes="false"
+               need-hyp         ="true"
                dim              ="2">
       <python-wrap>
         <algo>Import_1D2D=UseExisting2DElements()</algo>
@@ -408,6 +422,7 @@
                hypos   ="NumberOfLayers, LayerDistribution"
                input   ="QUAD,TRIA"
                output  ="HEXA,PENTA,OCTA,POLYHEDRON"
+               need-hyp="true"
                dim     ="3">
       <python-wrap>
         <algo>RadialPrism_3D=Prism('RadialPrism_3D')</algo>
@@ -456,6 +471,8 @@
                hypos            ="CartesianParameters3D"
                support-submeshes="false"
                output           ="HEXA"
+               need-hyp         ="true"
+               context          ="GLOBAL"
                dim              ="3">
       <python-wrap>
         <algo>Cartesian_3D=BodyFitted()</algo>
