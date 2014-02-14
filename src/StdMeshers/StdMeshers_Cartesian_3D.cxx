@@ -1907,7 +1907,7 @@ namespace
           if ( !findChain( n2, nFirst, quad, chainNodes ))
           {
             if ( !closePolygon( polygon, chainNodes ))
-              ;//chainNodes.push_back( nFirst );
+              chainNodes.push_back( nFirst );
           }
           for ( size_t i = 1; i < chainNodes.size(); ++i )
           {
@@ -1954,7 +1954,7 @@ namespace
           freeLinks.push_back( & polygon._links[ iL ]);
     }
     int nbFreeLinks = freeLinks.size();
-    if ( nbFreeLinks < 3 ) return;
+    if ( nbFreeLinks > 0 && nbFreeLinks < 3 ) return;
 
     set<TGeomID> usedFaceIDs;
 
@@ -1968,7 +1968,8 @@ namespace
 
       _OrientedLink* curLink = 0;
       _Node*         curNode;
-      if ( !hasEdgeIntersections )
+      if (( !hasEdgeIntersections ) ||
+          ( nbFreeLinks < 4 && _vertexNodes.empty() ))
       {
         // get a remaining link to start from
         for ( size_t iL = 0; iL < freeLinks.size() && !curLink; ++iL )
@@ -2102,12 +2103,15 @@ namespace
                 // TODO: to reorder _vertexNodes within polygon, if there are several ones
               }
           }
-          polyLink._nodes[0] = polygon._links[0].LastNode();
-          polyLink._nodes[1] = curNode;
-          polygon._polyLinks.push_back( polyLink );
-          polygon._links.push_back( _OrientedLink( &polygon._polyLinks.back() ));
-          freeLinks.push_back( &polygon._links.back() );
-          ++nbFreeLinks;
+          // if ( polygon._links.size() > 1 )
+          {
+            polyLink._nodes[0] = polygon._links[0].LastNode();
+            polyLink._nodes[1] = curNode;
+            polygon._polyLinks.push_back( polyLink );
+            polygon._links.push_back( _OrientedLink( &polygon._polyLinks.back() ));
+            freeLinks.push_back( &polygon._links.back() );
+            ++nbFreeLinks;
+          }
         }
 
       } // if there are intersections with EDGEs
