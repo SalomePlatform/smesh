@@ -27,6 +27,7 @@
 #include "StdMeshersGUI_StdHypothesisCreator.h"
 #include "StdMeshersGUI_NbSegmentsCreator.h"
 #include "StdMeshersGUI_CartesianParamCreator.h"
+#include "StdMeshersGUI_QuadrangleParamWdg.h"
 
 //=============================================================================
 /*! GetHypothesisCreator
@@ -42,6 +43,8 @@ extern "C"
       return new StdMeshersGUI_NbSegmentsCreator();
     else if ( aHypType=="CartesianParameters3D" )
       return new StdMeshersGUI_CartesianParamCreator( aHypType );
+    else if ( aHypType=="QuadrangleParams" )
+      return new StdMeshersGUI_QuadrangleParamCreator( aHypType );
     else
       return new StdMeshersGUI_StdHypothesisCreator( aHypType );
   }
