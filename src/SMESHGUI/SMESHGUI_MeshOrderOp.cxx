@@ -295,7 +295,8 @@ bool SMESHGUI_MeshOrderMgr::SetMeshOrder( const  ListListId& theListListIds )
       _PTR(SObject) aSmObj = smIter->Value();
       SMESH::SMESH_subMesh_var sm =
         SMESH::SObjectToInterface<SMESH::SMESH_subMesh>( aSmObj );
-      mapOfSubMesh[ sm->GetId() ] = SMESH::SMESH_subMesh::_duplicate(sm);
+      if ( !sm->_is_nil() )
+        mapOfSubMesh[ sm->GetId() ] = SMESH::SMESH_subMesh::_duplicate(sm);
     }
   }
 

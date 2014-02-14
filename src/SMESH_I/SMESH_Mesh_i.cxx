@@ -5100,7 +5100,36 @@ void findCommonSubMesh (list<const SMESH_subMesh*>& theSubMeshList,
   //theCommon.insert( theSubMesh );
 }
 
+//-----------------------------------------------------------------------------
+bool isSubMeshInList ( int smID, const TListOfListOfInt& smLists )
+{
+  TListOfListOfInt::const_iterator listsIt = smLists.begin();
+  for ( ; listsIt != smLists.end(); ++listsIt )
+  {
+    const TListOfInt& smIDs = *listsIt;
+    if ( std::find( smIDs.begin(), smIDs.end(), smID ) != smIDs.end() )
+      return true;
+  }
+  return false;
+}
+
 } // namespace
+
+//=============================================================================
+/*!
+ * \brief Return \c true if a meshing order not yet set for a concurrent sub-mesh
+ */
+//=============================================================================
+
+CORBA::Boolean SMESH_Mesh_i::IsUnorderedSubMesh(CORBA::Long submeshID)
+{
+  TListOfListOfInt anOrder = GetImpl().GetMeshOrder(); // already defined order
+  if ( isSubMeshInList( submeshID, anOrder ))
+    return false;
+
+  TListOfListOfInt allConurrent = findConcurrentSubMeshes();
+  return isSubMeshInList( submeshID, allConurrent );
+}
 
 //=============================================================================
 /*!
@@ -5115,14 +5144,37 @@ SMESH::submesh_array_array* SMESH_Mesh_i::GetMeshOrder()
   SMESHDS_Mesh* aMeshDS = _impl->GetMeshDS();
   if ( !aMeshDS )
     return aResult._retn();
-  
-  ::SMESH_Mesh& mesh = GetImpl();
-  TListOfListOfInt anOrder = mesh.GetMeshOrder(); // is there already defined order?
-  if ( !anOrder.size() ) {
 
+  TListOfListOfInt      anOrder = GetImpl().GetMeshOrder(); // already defined order
+  TListOfListOfInt allConurrent = findConcurrentSubMeshes();
+  anOrder.splice( anOrder.end(), allConurrent );
+
+  int listIndx = 0;
+  TListOfListOfInt::iterator listIt = anOrder.begin();
+  for(; listIt != anOrder.end(); listIt++, listIndx++ )
+    unionLists( *listIt,  anOrder, listIndx + 1 );
+
+  // convert submesh ids into interface instances
+  //  and dump command into python
+  convertMeshOrder( anOrder, aResult, false );
+
+  return aResult._retn();
+}
+
+//=============================================================================
+/*!
+ * \brief Finds concurrent sub-meshes
+ */
+//=============================================================================
+
+TListOfListOfInt SMESH_Mesh_i::findConcurrentSubMeshes()
+{
+  TListOfListOfInt anOrder;
+  ::SMESH_Mesh& mesh = GetImpl();
+  {
     // collect submeshes and detect concurrent algorithms and hypothesises
     TDimHypList dimHypListArr[4]; // dimHyp list for each shape dimension
-    
+
     map<int, ::SMESH_subMesh*>::iterator i_sm = _mapSubMesh.begin();
     for ( ; i_sm != _mapSubMesh.end(); i_sm++ ) {
       ::SMESH_subMesh* sm = (*i_sm).second;
@@ -5194,11 +5246,8 @@ SMESH::submesh_array_array* SMESH_Mesh_i::GetMeshOrder()
     for(; listIt != anOrder.end(); listIt++, listIndx++ )
       unionLists( *listIt,  anOrder, listIndx + 1 );
   }
-  // convert submesh ids into interface instances
-  //  and dump command into python
-  convertMeshOrder( anOrder, aResult, false );
 
-  return aResult._retn();
+  return anOrder;
 }
 
 //=============================================================================
@@ -5287,7 +5336,8 @@ void SMESH_Mesh_i::convertMeshOrder (const TListOfListOfInt&     theIdsOrder,
     SMESH::submesh_array_var aResSubSet = new SMESH::submesh_array();
     aResSubSet->length(aSubOrder.size());
     TListOfInt::const_iterator subIt = aSubOrder.begin();
-    for( int j = 0; subIt != aSubOrder.end(); subIt++ ) {
+    int j;
+    for( j = 0; subIt != aSubOrder.end(); subIt++ ) {
       if ( _mapSubMeshIor.find(*subIt) == _mapSubMeshIor.end() )
         continue;
       SMESH::SMESH_subMesh_var subMesh =
@@ -5301,7 +5351,8 @@ void SMESH_Mesh_i::convertMeshOrder (const TListOfListOfInt&     theIdsOrder,
     }
     if ( theIsDump )
       aPythonDump << " ]";
-    theResOrder[ listIndx++ ] = aResSubSet;
+    if ( j > 1 )
+      theResOrder[ listIndx++ ] = aResSubSet;
   }
   // correct number of lists
   theResOrder.length( listIndx );

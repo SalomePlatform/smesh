@@ -828,6 +828,11 @@ module SMESH
      */
 
     /*!
+     * \brief Return \c true if a meshing order not yet set for a concurrent sub-mesh
+     */
+    boolean IsUnorderedSubMesh(in long submeshID);
+
+    /*!
      * \brief Return submesh objects list in meshing order
      */
     submesh_array_array GetMeshOrder();

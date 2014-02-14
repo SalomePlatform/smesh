@@ -586,6 +586,10 @@ public:
   SMESH::string_array* GetLastParameters();
 
   /*!
+   * \brief Return \c true if a meshing order not yet set for a concurrent sub-mesh
+   */
+  CORBA::Boolean IsUnorderedSubMesh(CORBA::Long submeshID);
+  /*!
    * \brief Return submesh objects list in meshing order
    */
   virtual SMESH::submesh_array_array* GetMeshOrder();
@@ -652,6 +656,11 @@ private:
   void convertMeshOrder(const TListOfListOfInt&     theIdsOrder,
                         SMESH::submesh_array_array& theSubMeshOrder,
                         const bool                  theIsDump);
+
+  /*!
+   * \brief Finds concurrent sub-meshes
+   */
+  TListOfListOfInt findConcurrentSubMeshes();
 
 private:
 
