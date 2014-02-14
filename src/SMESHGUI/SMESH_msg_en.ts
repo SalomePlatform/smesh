@@ -6002,10 +6002,15 @@ Please specify them and try again</translation>
         <translation>No sense in creating a submesh ignored by global algorithm &quot;%1&quot;</translation>
     </message>
     <message>
-        <source>GEOMETRY_OBJECT_IS_NOT_DEFINED</source>
+        <source>GEOMETRY_OBJECT_IS_NOT_DEFINED_MESH</source>
         <translation>Geometry object is not defined.
 Do you want to create an empty mesh 
 without algorithms and hypotheses? </translation>
+    </message>
+    <message>
+        <source>GEOMETRY_OBJECT_IS_NOT_DEFINED_SUBMESH</source>
+        <translation>Geometry object is not defined.
+Please specify it and try again</translation>
     </message>
     <message>
         <source>GEOMETRY_OBJECT_IS_NULL</source>
@@ -6070,6 +6075,14 @@ Please enter valid name and try again</translation>
         <source>THERE_IS_NO_OBJECT_FOR_EDITING</source>
         <translation>There is no object for editing. Please
 select mesh or sub-mesh and try again</translation>
+    </message>
+    <message>
+        <source>CONCURRENT_SUBMESH_APPEARS</source>
+        <translation> 
+The assigned algorithm has the same priority as one assigned to an 
+adjacent sub-mesh, hence it's undefined which algorithm to use for
+meshing boundary shared by two sub-meshes. Would you like to set
+the order of sub-mesh computation? </translation>
     </message>
 </context>
 <context>
@@ -6232,6 +6245,14 @@ It is impossible to read point coordinates from file</translation>
     <message>
         <source>NONE</source>
         <translation>&lt;None&gt;</translation>
+    </message>
+    <message>
+        <source>DEFAULT</source>
+        <translation>&lt;Default&gt;</translation>
+    </message>
+    <message>
+        <source>SELECT</source>
+        <translation>&lt;Select&gt;</translation>
     </message>
 </context>
 <context>

@@ -493,6 +493,29 @@
     </message>
 </context>
 <context>
+    <name>StdMeshersGUI_QuadrangleParamCreator</name>
+    <message>
+        <source>POINTS</source>
+        <translation>Points</translation>
+    </message>
+    <message>
+        <source>SHAPES</source>
+        <translation>Vertices</translation>
+    </message>
+    <message>
+        <source>TRANSITION</source>
+        <translation>Transition</translation>
+    </message>
+    <message>
+        <source>ENF_NODES</source>
+        <translation>Enforced nodes</translation>
+    </message>
+    <message>
+        <source></source>
+        <translation></translation>
+    </message>
+</context>
+<context>
     <name>StdMeshersGUI_LayerDistributionParamWdg</name>
     <message>
         <source>CHANGE_TYPE</source>

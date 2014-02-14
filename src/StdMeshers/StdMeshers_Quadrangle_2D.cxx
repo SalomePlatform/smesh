@@ -42,8 +42,10 @@
 #include "StdMeshers_QuadrangleParams.hxx"
 #include "StdMeshers_ViscousLayers2D.hxx"
 
+#include <BRepBndLib.hxx>
 #include <BRepClass_FaceClassifier.hxx>
 #include <BRep_Tool.hxx>
+#include <Bnd_Box.hxx>
 #include <GeomAPI_ProjectPointOnSurf.hxx>
 #include <Geom_Surface.hxx>
 #include <NCollection_DefineArray2.hxx>
@@ -3736,6 +3738,8 @@ void StdMeshers_Quadrangle_2D::smooth (FaceQuadStruct::Ptr quad)
 
   // Get nodes to smooth
 
+  // TODO: do not smooth fixed nodes
+
   typedef map< const SMDS_MeshNode*, TSmoothNode, TIDCompare > TNo2SmooNoMap;
   TNo2SmooNoMap smooNoMap;
 
@@ -4205,6 +4209,9 @@ bool StdMeshers_Quadrangle_2D::getEnforcedUV()
   surf->Bounds( u1,u2,v1,v2 );
   GeomAPI_ProjectPointOnSurf project;
   project.Init(surf, u1,u2, v1,v2, tol );
+  Bnd_Box bbox;
+  BRepBndLib::Add( face, bbox );
+  double farTol = 0.01 * sqrt( bbox.SquareExtent() );
 
   for ( size_t iP = 0; iP < points.size(); ++iP )
   {
@@ -4217,7 +4224,7 @@ bool StdMeshers_Quadrangle_2D::getEnforcedUV()
            << points[ iP ].X() << ", "<< points[ iP ].Y() << ", "<< points[ iP ].Z() << " )");
       continue;
     }
-    if ( project.LowerDistance() > tol*1000 )
+    if ( project.LowerDistance() > farTol )
     {
       if ( isStrictCheck && iP < nbPoints )
         return error
