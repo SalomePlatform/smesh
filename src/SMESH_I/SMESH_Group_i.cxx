@@ -411,9 +411,9 @@ CORBA::Long SMESH_Group_i::AddFrom( SMESH::SMESH_IDSource_ptr theSource )
   long prevNb = Size();
   SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( GetGroupDS() );
   if (aGroupDS) {
-    SMDS_ElemIteratorPtr elemIt = SMESH_Mesh_i::GetElements( theSource, GetType() );
-    while ( elemIt->more() )
-      aGroupDS->SMDSGroup().Add( elemIt->next() );
+    if ( SMDS_ElemIteratorPtr elemIt = SMESH_Mesh_i::GetElements( theSource, GetType() ))
+      while ( elemIt->more() )
+        aGroupDS->SMDSGroup().Add( elemIt->next() );
   }
 
   // Update Python script
