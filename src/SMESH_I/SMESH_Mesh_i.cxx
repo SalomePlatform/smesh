@@ -81,8 +81,6 @@
 #include <TopTools_MapOfShape.hxx>
 #include <TopoDS_Compound.hxx>
 
-#include "SMESH_TryCatch.hxx" // include after OCCT headers!
-
 // STL Includes
 #include <algorithm>
 #include <string>
@@ -90,6 +88,11 @@
 #include <sstream>
 
 #include <sys/stat.h>
+
+// to pass CORBA exception through SMESH_TRY
+#define SMY_OWN_CATCH catch( SALOME::SALOME_Exception& se ) { throw se; }
+
+#include "SMESH_TryCatch.hxx" // include after OCCT headers!
 
 #ifdef _DEBUG_
 static int MYDEBUG = 0;
@@ -1504,7 +1507,7 @@ SMESH_Mesh_i::CutListOfGroups(const SMESH::ListOfGroups& theMainGroups,
     if ( aType == SMESH::ALL )
       aType = aGrp->GetType();
     else if ( aType != aGrp->GetType() )
-      THROW_SALOME_CORBA_EXCEPTION("UnionListOfGroups(): different group types",
+      THROW_SALOME_CORBA_EXCEPTION("CreateDimGroup(): different group types",
                                    SALOME::BAD_PARAM);
     if ( SMESH_GroupBase_i* grp_i = SMESH::DownCast< SMESH_GroupBase_i* >( aGrp ))
       if ( SMESHDS_GroupBase* grpDS = grp_i->GetGroupDS() )
@@ -1522,7 +1525,7 @@ SMESH_Mesh_i::CutListOfGroups(const SMESH::ListOfGroups& theMainGroups,
     if ( CORBA::is_nil( aGrp ) )
       continue;
     if ( aType != aGrp->GetType() )
-      THROW_SALOME_CORBA_EXCEPTION("UnionListOfGroups(): different group types",
+      THROW_SALOME_CORBA_EXCEPTION("CreateDimGroup(): different group types",
                                    SALOME::BAD_PARAM);
     if ( SMESH_GroupBase_i* grp_i = SMESH::DownCast< SMESH_GroupBase_i* >( aGrp ))
       if ( SMESHDS_GroupBase* grpDS = grp_i->GetGroupDS() )
