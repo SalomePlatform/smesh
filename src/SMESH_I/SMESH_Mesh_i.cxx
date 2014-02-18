@@ -1507,7 +1507,7 @@ SMESH_Mesh_i::CutListOfGroups(const SMESH::ListOfGroups& theMainGroups,
     if ( aType == SMESH::ALL )
       aType = aGrp->GetType();
     else if ( aType != aGrp->GetType() )
-      THROW_SALOME_CORBA_EXCEPTION("CreateDimGroup(): different group types",
+      THROW_SALOME_CORBA_EXCEPTION("CutListOfGroups(): different group types",
                                    SALOME::BAD_PARAM);
     if ( SMESH_GroupBase_i* grp_i = SMESH::DownCast< SMESH_GroupBase_i* >( aGrp ))
       if ( SMESHDS_GroupBase* grpDS = grp_i->GetGroupDS() )
@@ -1525,7 +1525,7 @@ SMESH_Mesh_i::CutListOfGroups(const SMESH::ListOfGroups& theMainGroups,
     if ( CORBA::is_nil( aGrp ) )
       continue;
     if ( aType != aGrp->GetType() )
-      THROW_SALOME_CORBA_EXCEPTION("CreateDimGroup(): different group types",
+      THROW_SALOME_CORBA_EXCEPTION("CutListOfGroups(): different group types",
                                    SALOME::BAD_PARAM);
     if ( SMESH_GroupBase_i* grp_i = SMESH::DownCast< SMESH_GroupBase_i* >( aGrp ))
       if ( SMESHDS_GroupBase* grpDS = grp_i->GetGroupDS() )
