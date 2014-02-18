@@ -53,7 +53,20 @@
 #include <math.h>
 #include <limits>
 
+// SALOME KERNEL includes
 #include <Basics_Utils.hxx>
+// SALOME GUI includes
+#include <Plot2d_PlotItems.h>
+
+Plot2d_QwtLegendLabel* getLegendLabel( QwtPlotCurve* plotCurve )
+{
+  const QVariant itemInfo = plotCurve->plot()->itemToInfo( plotCurve );
+  QwtLegend* legend = dynamic_cast<QwtLegend*>( plotCurve->plot()->legend() );
+  QWidget* widget = legend->legendWidget( itemInfo );
+  QwtLegendLabel* label = dynamic_cast<QwtLegendLabel*>( widget );
+  if( Plot2d_QwtLegendLabel* anItem = (Plot2d_QwtLegendLabel*)label )
+    return anItem;
+}
 
 StdMeshersGUI_DistrPreview::StdMeshersGUI_DistrPreview( QWidget* p, StdMeshers::StdMeshers_NumberOfSegments_ptr h )
 : QwtPlot( p ),
@@ -68,31 +81,49 @@ StdMeshersGUI_DistrPreview::StdMeshersGUI_DistrPreview( QWidget* p, StdMeshers::
   Kernel_Utils::Localizer loc;
   myHypo = StdMeshers::StdMeshers_NumberOfSegments::_duplicate( h );
   myVars.ChangeValue( 1 ) = new Expr_NamedUnknown( "t" );
+
+  QwtAbstractLegend* absLegend = legend();
+  QwtLegend* legend = 0;
+  if ( !absLegend ) {
+    legend = new Plot2d_QwtLegend( this );
+    legend->setFrameStyle( QFrame::Box | QFrame::Sunken );
+  }
+  else
+    legend = dynamic_cast<QwtLegend*>( absLegend );
+  if( legend )
+    insertLegend( legend, QwtPlot::BottomLegend );
+
   myDensity = new QwtPlotCurve( QString() );
   myDensity->attach( this );
+  QPen densityPen = QPen( Qt::red, 1 );
+  myDensity->setPen( QPen( Qt::red, 1 ) );
+  if( Plot2d_QwtLegendLabel* anItem = getLegendLabel( myDensity ) ) {
+    anItem->setPen( densityPen );
+    anItem->repaint();
+  }
+
   myDistr = new QwtPlotCurve( QString() );
   myDistr->attach( this );
+  QPen distrPen = QPen( Qt::blue, 1 );
+  QwtSymbol* distrSymbol = new QwtSymbol( QwtSymbol::XCross, QBrush( Qt::blue ),
+		                                  QPen( Qt::blue ), QSize( 5, 5 ) );
+  myDistr->setPen( distrPen );
+  myDistr->setSymbol( distrSymbol );
+  if( Plot2d_QwtLegendLabel* anItem = getLegendLabel( myDistr ) ) {
+    anItem->setPen( distrPen );
+    anItem->setSymbol( distrSymbol );
+    anItem->repaint();
+  }
+
   myMsg = new QwtPlotMarker();
   myMsg->attach( this );
   myMsg->setValue( 0.5, 0.5 );
   QwtText mt = myMsg->label();
-  mt.setBackgroundPen( QPen( Qt::red, 1 ) );
+  mt.setBorderPen( QPen( Qt::red, 1 ) );
   QFont f = mt.font();
   f.setPointSize( 14 ); //f.setBold( true );
   mt.setFont( f );
   myMsg->setLabel( mt );
-  myDensity->setPen( QPen( Qt::red, 1 ) );
-
-  QColor dc = Qt::blue;
-  myDistr->setPen( QPen( dc, 1 ) );
-  myDistr->setSymbol( QwtSymbol( QwtSymbol::XCross, QBrush( dc ), QPen( dc ), QSize( 5, 5 ) ) );
-
-  QwtLegend* l = legend();
-  if ( !l ) {
-    l = new QwtLegend( this );
-    l->setFrameStyle( QFrame::Box | QFrame::Sunken );
-  }
-  insertLegend( l, QwtPlot::BottomLegend );
 
   enableAxis(QwtPlot::yLeft, false);
   enableAxis(QwtPlot::yRight, true);
@@ -109,7 +140,7 @@ StdMeshersGUI_DistrPreview::StdMeshersGUI_DistrPreview( QWidget* p, StdMeshers::
   myDistr->setTitle( tr( "SMESH_DISTR" ) );
   
   QwtPlotGrid* aGrid = new QwtPlotGrid();
-  QPen aMajPen = aGrid->majPen();
+  QPen aMajPen = aGrid->majorPen();
   aMajPen.setStyle( Qt::DashLine );
   aGrid->setPen( aMajPen );
 
@@ -304,7 +335,7 @@ void StdMeshersGUI_DistrPreview::update()
     std::max( 0.0, max_y )
 #endif
     );
-  myDensity->setData( x, y, size );
+  myDensity->setSamples( x, y, size );
   if( x )
     delete[] x;
   if( y )
@@ -319,7 +350,7 @@ void StdMeshersGUI_DistrPreview::update()
     x[i] = distr[i];
     y[i] = 0;
   }
-  myDistr->setData( x, y, size );
+  myDistr->setSamples( x, y, size );
   delete[] x;
   delete[] y;
   x = y = 0;
@@ -338,8 +369,8 @@ void StdMeshersGUI_DistrPreview::showError()
 {
   setAxisScale( myDensity->xAxis(), 0.0, 1.0 );
   setAxisScale( myDensity->yAxis(), 0.0, 1.0 );
-  myDensity->setData( 0, 0, 0 );
-  myDistr->setData( 0, 0, 0 );
+  myDensity->setSamples( 0, 0, 0 );
+  myDistr->setSamples( 0, 0, 0 );
   QwtText mt = myMsg->label();
   mt.setText( tr( "SMESH_INVALID_FUNCTION" ) );
   myMsg->setLabel( mt );
