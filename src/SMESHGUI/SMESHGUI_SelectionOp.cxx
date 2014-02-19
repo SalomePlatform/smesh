@@ -318,7 +318,9 @@ int SMESHGUI_SelectionOp::typeById( const QString& str, const EntityType objtype
           GEOM::GEOM_Object_var obj = GEOM::GEOM_Object::_narrow(
             dynamic_cast<SALOMEDS_SObject*>( sobj.get() )->GetObject() );
           if( !CORBA::is_nil( obj ) )
-            res = SMESHGUI_Dialog::prefix( "GEOM" ) + obj->GetType();
+            // as decoding of type id is not realized in LightApp_Dialog,
+            //make all GEOM objects have same type id
+            res = SMESHGUI_Dialog::prefix( "GEOM" );// + obj->GetType();
         }
       }
       else
