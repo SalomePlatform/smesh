@@ -1313,7 +1313,7 @@ void SMESH_ActorDef::SetShrinkFactor(double theValue){
   Modified();
 }
 
-void SMESH_ActorDef::SetShrink(){
+void SMESH_ActorDef::SetShrink() {
   if(!myIsShrinkable) return;
 
   myBaseActor->SetShrink();
@@ -2207,7 +2207,10 @@ SMESH_ActorDef::SetOpenGLClippingPlane()
   my3DExtActor->SetPlaneCollection( myPlaneCollection );
   my3DExtActor->SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
 
-  Modified();
+  if(IsShrunk())
+    SetShrink();
+  else  
+    Modified();
 }
 
 void

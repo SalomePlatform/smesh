@@ -161,7 +161,8 @@ class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
   VTKViewer_PolyDataMapper *myMapper;
   TVisualObjPtr myVisualObj;
 
-  vtkPlaneCollection* myPlaneCollection;
+  vtkSmartPointer<vtkPlaneCollection> myPlaneCollection;
+  
   vtkProperty *myProperty;
   EReperesent myRepresentation;
 

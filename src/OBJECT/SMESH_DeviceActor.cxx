@@ -142,7 +142,6 @@ SMESH_DeviceActor
   if(MYDEBUG) MESSAGE("~SMESH_DeviceActor - "<<this);
 
   myMapper->Delete();
-  myPlaneCollection->Delete();
 
   myProperty->Delete();
 
