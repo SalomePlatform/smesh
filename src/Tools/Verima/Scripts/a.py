@@ -1,7 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 
 ###
-### Copyright EDF R&D 2012
+### Copyright EDF R&D 2012-2014
 ###
 ### Gérald NICOLAS
 ### (33/0)1.47.65.56.94

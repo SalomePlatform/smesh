@@ -36,7 +36,7 @@ master_doc = 'index'
 
 # General substitutions.
 project = 'MGCleaner Plug-in'
-copyright = '2013, CEA'
+copyright = '2013-2014, CEA'
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.

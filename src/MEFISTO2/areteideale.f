@@ -1,11 +1,11 @@
 c  MEFISTO : library to compute 2D triangulation from segmented boundaries
 c
-c Copyright (C) 2006-2013  CEA/DEN, EDF R&D, OPEN CASCADE
+c Copyright (C) 2006-2014  CEA/DEN, EDF R&D, OPEN CASCADE
 c
 c This library is free software; you can redistribute it and/or
 c modify it under the terms of the GNU Lesser General Public
 c License as published by the Free Software Foundation; either
-c version 2.1 of the License.
+c version 2.1 of the License, or (at your option) any later version.
 c
 c This library is distributed in the hope that it will be useful,
 c but WITHOUT ANY WARRANTY; without even the implied warranty of
