@@ -4224,15 +4224,19 @@ It can&apos;t be deleted </translation>
     <name>SMESHGUI_Dialog</name>
     <message>
         <source>DLG_MESH</source>
-        <translation>meshes</translation>
+        <translation>mesh(s)</translation>
     </message>
     <message>
         <source>DLG_HYPO</source>
-        <translation>hypotheses</translation>
+        <translation>hypothesis(s)</translation>
     </message>
     <message>
         <source>DLG_ALGO</source>
-        <translation>algorithms</translation>
+        <translation>algorithm(s)</translation>
+    </message>
+    <message>
+        <source>DLG_GEOM</source>
+        <translation>object(s)</translation>
     </message>
 </context>
 <context>

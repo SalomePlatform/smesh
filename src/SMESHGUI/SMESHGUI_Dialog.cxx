@@ -46,9 +46,10 @@ SMESHGUI_Dialog::SMESHGUI_Dialog( QWidget* parent, const bool modal,
 : LightApp_Dialog( parent == 0 ? desktop() : parent, "", modal, allowResize, flags )
 {
   int pr = prefix( "SMESH" );
-  typeName( pr + SMESH::MESH ) = tr( "DLG_MESH" );
+  typeName( pr + SMESH::MESH       ) = tr( "DLG_MESH" );
   typeName( pr + SMESH::HYPOTHESIS ) = tr( "DLG_HYPO" );
-  typeName( pr + SMESH::ALGORITHM ) = tr( "DLG_ALGO" );
+  typeName( pr + SMESH::ALGORITHM  ) = tr( "DLG_ALGO" );
+  typeName( prefix( "GEOM" )       ) = tr( "DLG_GEOM" );
   setButtonText(1, tr("SMESH_BUT_APPLY_AND_CLOSE")); //rename OK to Apply and Close
   if ( flags & Close )
     setButtonPosition( Right, Close );
