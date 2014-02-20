@@ -54,6 +54,8 @@
 #include <Geom2d_BSplineCurve.hxx>
 #include <Geom2d_BezierCurve.hxx>
 #include <Geom2d_TrimmedCurve.hxx>
+#include <GeomAPI_ProjectPointOnSurf.hxx>
+#include <GeomLib.hxx>
 #include <Geom_BSplineCurve.hxx>
 #include <Geom_BSplineSurface.hxx>
 #include <Geom_BezierCurve.hxx>
@@ -277,7 +279,7 @@ namespace
   {
     vector< double >   _coords[3]; // coordinates of grid nodes
     gp_XYZ             _axes  [3]; // axis directions
-    vector< GridLine > _lines [3]; //  in 3 directions
+    vector< GridLine > _lines [3]; //    in 3 directions
     double             _tol, _minCellSize;
     gp_XYZ             _origin;
     gp_Mat             _invB; // inverted basis of _axes
@@ -288,6 +290,8 @@ namespace
 
     list< E_IntersectPoint >          _edgeIntP; // intersections with EDGEs
     TopTools_IndexedMapOfShape        _shapes;
+
+    SMESH_MesherHelper*               _helper;
 
     size_t CellIndex( size_t i, size_t j, size_t k ) const
     {
@@ -603,7 +607,7 @@ namespace
     bool findChain( _Node* n1, _Node* n2, _Face& quad, vector<_Node*>& chainNodes );
     bool closePolygon( _Face* polygon, vector<_Node*>& chainNodes ) const;
     int  addElements(SMESH_MesherHelper& helper);
-    bool is1stNodeOut( int iLink ) const;
+    bool is1stNodeOut( _Link& link ) const;
     bool isInHole() const;
     bool checkPolyhedronSize() const;
     bool addHexa ();
@@ -1618,7 +1622,11 @@ namespace
             switch ( link._intNodes[i].FaceIntPnt()->_transition ) {
             case Trans_OUT: isOut = true; break;
             case Trans_IN : isOut = false; break;
-            default:; // isOut remains the same
+            default:
+              if ( !link._intNodes[i].Node() && i == 0 )
+                isOut = is1stNodeOut( link );
+              else
+                  ; // isOut remains the same
             }
           }
         }
@@ -1703,7 +1711,10 @@ namespace
           }
           break;
         }
-        default: // inside a hex
+        } // switch( nbFacets )
+
+        if ( nbFacets == 0 ||
+             _grid->_shapes( _edgeIntPnts[ iP ]->_shapeID ).ShapeType() == TopAbs_VERTEX )
         {
           equalNode = FindEqualNode( _vertexNodes, _edgeIntPnts[ iP ], tol2 );
           if ( equalNode ) {
@@ -1714,8 +1725,6 @@ namespace
             ++_nbIntNodes;
           }
         }
-        } // switch( nbFacets )
-
       } // loop on _edgeIntPnts
     }
     else if ( 3 < _nbCornerNodes && _nbCornerNodes < 8 ) // _nbIntNodes == 0
@@ -2401,9 +2410,11 @@ namespace
         if ( iDirZ == 0 )
         {
           ip._point   = p1;
+          ip._shapeID = _grid->_shapes.Add( v1 );
           _grid->_edgeIntP.push_back( ip );
           if ( !addIntersection( _grid->_edgeIntP.back(), hexes, ijk, d000 ))
             _grid->_edgeIntP.pop_back();
+          ip._shapeID = edgeID;
         }
         for ( int iP = 2; iP <= discret.NbPoints(); ++iP )
         {
@@ -2446,6 +2457,7 @@ namespace
         // add the 2nd vertex point to a hexahedron
         if ( iDirZ == 0 )
         {
+          ip._shapeID = _grid->_shapes.Add( v2 );
           ip._point = p1;
           _grid->ComputeUVW( p1, ip._uvw );
           locateValue( ijk[iDirX], ip._uvw[iDirX], _grid->_coords[iDirX], dIJK[iDirX], tol );
@@ -2454,6 +2466,7 @@ namespace
           _grid->_edgeIntP.push_back( ip );
           if ( !addIntersection( _grid->_edgeIntP.back(), hexes, ijk, d000 ))
             _grid->_edgeIntP.pop_back();
+          ip._shapeID = edgeID;
         }
       } // loop on 3 grid directions
     } // loop on EDGEs
@@ -2709,46 +2722,86 @@ namespace
   /*!
    * \brief Checks transition at the 1st node of a link
    */
-  bool Hexahedron::is1stNodeOut( int iLink ) const
+  bool Hexahedron::is1stNodeOut( _Link& link /*int iLink*/ ) const
   {
-    if ( !_hexLinks[ iLink ]._nodes[0]->Node() ) // no node
-      return true;
-    if ( !_hexLinks[ iLink ]._nodes[0]->_intPoint ) // no intersection with geometry
-      return false;
-    switch ( _hexLinks[ iLink ]._nodes[0]->FaceIntPnt()->_transition ) {
-    case Trans_OUT: return true;
-    case Trans_IN : return false;
-    default: ; // tangent transition
-    }
-
-    // ijk of a GridLine corresponding to the link
-    int   iDir = iLink / 4;
-    int indSub = iLink % 4;
-    LineIndexer li = _grid->GetLineIndexer( iDir );
-    li.SetIJK( _i,_j,_k );
-    size_t lineIndex[4] = { li.LineIndex  (),
-                            li.LineIndex10(),
-                            li.LineIndex01(),
-                            li.LineIndex11() };
-    GridLine& line = _grid->_lines[ iDir ][ lineIndex[ indSub ]];
-
-    // analyze transition of previous ip
-    bool isOut = true;
-    multiset< F_IntersectPoint >::const_iterator ip = line._intPoints.begin();
-    for ( ; ip != line._intPoints.end(); ++ip )
+    // new version is for the case: tangent transition at the 1st node
+    bool isOut = false;
+    if ( link._intNodes.size() > 1 )
     {
-      if ( &(*ip) == _hexLinks[ iLink ]._nodes[0]->_intPoint )
-        break;
-      switch ( ip->_transition ) {
-      case Trans_OUT: isOut = true;
-      case Trans_IN : isOut = false;
-      default:;
+      // check transition at the next intersection
+      switch ( link._intNodes[1].FaceIntPnt()->_transition ) {
+      case Trans_OUT: return false;
+      case Trans_IN : return true;
+      default: ; // tangent transition
       }
     }
-#ifdef _DEBUG_
-    if ( ip == line._intPoints.end() )
-      cout << "BUG: Wrong GridLine. IKJ = ( "<< _i << " " << _j << " " << _k << " )" << endl;
-#endif
+    gp_Pnt p1 = link._nodes[0]->Point();
+    gp_Pnt p2 = link._nodes[1]->Point();
+    gp_Pnt testPnt = 0.8 * p1.XYZ() + 0.2 * p2.XYZ();
+
+    TGeomID          faceID = link._intNodes[0]._intPoint->_faceIDs[0];
+    const TopoDS_Face& face = TopoDS::Face( _grid->_shapes( faceID ));
+    TopLoc_Location loc;
+    GeomAPI_ProjectPointOnSurf& proj =
+      _grid->_helper->GetProjector( face, loc, 0.1*_grid->_tol );
+    testPnt.Transform( loc );
+    proj.Perform( testPnt );
+    if ( proj.IsDone() &&
+         proj.NbPoints() > 0 &&
+         proj.LowerDistance() > _grid->_tol )
+    {
+      Quantity_Parameter u,v;
+      proj.LowerDistanceParameters( u,v );
+      gp_Dir normal;
+      if ( GeomLib::NormEstim( BRep_Tool::Surface( face, loc ),
+                               gp_Pnt2d( u,v ),
+                               0.1*_grid->_tol,
+                               normal ) < 3 )
+      {
+        if ( face.Orientation() == TopAbs_REVERSED )
+          normal.Reverse();
+        gp_Vec v( proj.NearestPoint(), testPnt );
+        return v * normal > 0;
+      }
+    }
+    //     if ( !_hexLinks[ iLink ]._nodes[0]->Node() ) // no node
+    //       return true;
+    //     if ( !_hexLinks[ iLink ]._nodes[0]->_intPoint ) // no intersection with geometry
+    //       return false;
+    //     switch ( _hexLinks[ iLink ]._nodes[0]->FaceIntPnt()->_transition ) {
+    //     case Trans_OUT: return true;
+    //     case Trans_IN : return false;
+    //     default: ; // tangent transition
+    //     }
+
+//     // ijk of a GridLine corresponding to the link
+//     int   iDir = iLink / 4;
+//     int indSub = iLink % 4;
+//     LineIndexer li = _grid->GetLineIndexer( iDir );
+//     li.SetIJK( _i,_j,_k );
+//     size_t lineIndex[4] = { li.LineIndex  (),
+//                             li.LineIndex10(),
+//                             li.LineIndex01(),
+//                             li.LineIndex11() };
+//     GridLine& line = _grid->_lines[ iDir ][ lineIndex[ indSub ]];
+
+//     // analyze transition of previous ip
+//     bool isOut = true;
+//     multiset< F_IntersectPoint >::const_iterator ip = line._intPoints.begin();
+//     for ( ; ip != line._intPoints.end(); ++ip )
+//     {
+//       if ( &(*ip) == _hexLinks[ iLink ]._nodes[0]->_intPoint )
+//         break;
+//       switch ( ip->_transition ) {
+//       case Trans_OUT: isOut = true;
+//       case Trans_IN : isOut = false;
+//       default:;
+//       }
+//     }
+// #ifdef _DEBUG_
+//     if ( ip == line._intPoints.end() )
+//       cout << "BUG: Wrong GridLine. IKJ = ( "<< _i << " " << _j << " " << _k << " )" << endl;
+// #endif
     return isOut;
   }
   //================================================================================
@@ -3166,6 +3219,7 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
   try
   {
     Grid grid;
+    grid._helper = &helper;
 
     vector< TopoDS_Shape > faceVec;
     {
