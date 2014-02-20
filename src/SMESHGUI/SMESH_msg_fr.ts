@@ -4353,7 +4353,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_PREVIEW_COLOR</source>
-        <translation">Couleur de prévisualisation</translation>
+        <translation>Couleur de prévisualisation</translation>
     </message>
     <message>
         <source>PREF_NOTIFY_MODE</source>
