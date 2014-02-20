@@ -118,7 +118,7 @@ private:
   int                            currentHyp( const int, const int ) const;
   bool                           isAccessibleDim( const int ) const;
   void                           setCurrentHyp( const int, const int, const int );
-  void                           setDefaultName() const;
+  void                           setDefaultName( const QString& prefix="" ) const;
   SMESH::SMESH_Hypothesis_var    getAlgo( const int );
   void                           readMesh();
   QString                        name( _PTR(SObject) ) const;

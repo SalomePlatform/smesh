@@ -1637,9 +1637,6 @@ bool SMESHGUI_MeshOp::createMesh( QString& theMess, QStringList& theEntryList )
 {
   theMess = "";
 
-  //QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
-  //QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
-
   QStringList aList;
   myDlg->selectedObject( SMESHGUI_MeshDlg::Geom, aList );
   if ( aList.isEmpty() )
@@ -1659,8 +1656,20 @@ bool SMESHGUI_MeshOp::createMesh( QString& theMess, QStringList& theEntryList )
     }
     return true;
   }
+  QString namePrefix;
+  if ( aList.count() > 1 )
+  {
+    namePrefix = myDlg->objectText( SMESHGUI_MeshDlg::Obj );
+    int i = namePrefix.length() - 1;
+    while ( i > 0 && namePrefix[i].isDigit() )
+      --i;
+    if ( i < namePrefix.length() - 1 )
+      namePrefix.chop( namePrefix.length() - 1 - i );
+    else
+      namePrefix += "_";
+  }
   QStringList::Iterator it = aList.begin();
-  for ( ; it!=aList.end(); it++)
+  for ( int i = 0; it!=aList.end(); it++, ++i )
   {
     QString aGeomEntry = *it;
     _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.toLatin1().data() );
@@ -1679,8 +1688,9 @@ bool SMESHGUI_MeshOp::createMesh( QString& theMess, QStringList& theEntryList )
       return false;
     _PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshVar.in() );
     if ( aMeshSO ) {
-      SMESH::SetName( aMeshSO, myDlg->objectText( SMESHGUI_MeshDlg::Obj ) );
       theEntryList.append( aMeshSO->GetID().c_str() );
+      if ( i > 0 ) setDefaultName( namePrefix );
+      SMESH::SetName( aMeshSO, myDlg->objectText( SMESHGUI_MeshDlg::Obj ) );
     }
 
     for ( int aDim = SMESH::DIM_0D; aDim <= SMESH::DIM_3D; aDim++ ) {
@@ -1896,13 +1906,17 @@ void SMESHGUI_MeshOp::setCurrentHyp( const int theDim,
  * Generates and sets default mesh/submesh name(Mesh_1, Mesh_2, etc.)
  */
 //================================================================================
-void SMESHGUI_MeshOp::setDefaultName() const
+void SMESHGUI_MeshOp::setDefaultName( const QString& thePrefix ) const
 {
   QString aResName;
 
   _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
   int i = 1;
-  QString aPrefix = tr( myIsMesh ? "SMESH_OBJECT_MESH" : "SMESH_SUBMESH" ) + "_";
+
+  QString aPrefix = thePrefix;
+  if ( aPrefix.isEmpty() )
+    aPrefix = tr( myIsMesh ? "SMESH_OBJECT_MESH" : "SMESH_SUBMESH" ) + "_";
+
   _PTR(SObject) anObj;
   do
   {
