@@ -101,4 +101,9 @@ StdMeshers_RadialPrism_3D_i::~StdMeshers_RadialPrism_3D_i()
   MESSAGE( "StdMeshers_RadialPrism_3D_i::GetImpl" );
   return ( ::StdMeshers_RadialPrism_3D* )myBaseImpl;
 }
+//-----------------------------------------------------------------------------
 
+CORBA::Boolean StdMeshers_RadialPrism_3D_i::IsApplicable( const TopoDS_Shape &S, CORBA::Boolean toCheckAll )
+{
+  return ::StdMeshers_RadialPrism_3D::IsApplicable( S, toCheckAll );
+}

@@ -287,9 +287,9 @@ namespace
 //=============================================================================
 /*!
  * Generates hexahedron mesh on hexaedron like form using algorithm from
- * "Application de l'interpolation transfinie à la création de maillages
+ * "Application de l'interpolation transfinie ï¿½ la crï¿½ation de maillages
  *  C0 ou G1 continus sur des triangles, quadrangles, tetraedres, pentaedres
- *  et hexaedres déformés."
+ *  et hexaedres dï¿½formï¿½s."
  * Alain PERONNET - 8 janvier 1999
  */
 //=============================================================================
@@ -740,6 +740,33 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh, SMESH_MesherHelper* aHelper
   algo->Compute( aMesh, aHelper );
   return error( algo->GetComputeError());
 }
+
+//================================================================================
+/*!
+ * \brief Return true if applied compute mesh on this shape
+ */
+//================================================================================
+
+bool StdMeshers_Hexa_3D::IsApplicable( const TopoDS_Shape & aShape, bool toCheckAll )
+{
+  TopoDS_Vertex theVertex0, theVertex1;
+  TopTools_IndexedMapOfOrientedShape theShapeIDMap;
+  bool isCurShellApp;
+  int nbFoundShells = 0;
+  bool isEmpty = true;
+  for ( TopExp_Explorer exp0( aShape, TopAbs_SOLID ); exp0.More(); exp0.Next() ){
+    nbFoundShells = 0;
+    for (TopExp_Explorer exp1( exp0.Current(), TopAbs_SHELL ); exp1.More(); exp1.Next(), ++nbFoundShells){
+      TopoDS_Shell shell = TopoDS::Shell(exp1.Current());
+      isCurShellApp = SMESH_Block::FindBlockShapes(shell, theVertex0, theVertex1, theShapeIDMap );
+      if( ( toCheckAll && !isCurShellApp ) || nbFoundShells == 1 ) return false;
+      isEmpty = false;
+    }
+    if( !toCheckAll && isCurShellApp ) return true;
+  }
+  if( toCheckAll && !isEmpty) return true;
+  return false;
+};
 
 //=======================================================================
 //function : ComputePentahedralMesh

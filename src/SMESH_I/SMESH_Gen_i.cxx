@@ -355,20 +355,20 @@ SMESH_Gen_i::~SMESH_Gen_i()
   if ( myShapeReader )
     delete myShapeReader;
 }
-
 //=============================================================================
 /*!
- *  SMESH_Gen_i::createHypothesis
+ *  SMESH_Gen_i::getHypothesisCreator
  *
- *  Create hypothesis of given type
+ *  Get hypothesis creator
  */
 //=============================================================================
-SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName,
-                                                          const char* theLibName)
+GenericHypothesisCreator_i* SMESH_Gen_i::getHypothesisCreator(const char* theHypName,
+                                                              const char* theLibName,
+                                                              std::string& thePlatformLibName)
   throw (SALOME::SALOME_Exception)
 {
-  /* It's Need to tranlate lib name for WIN32 or X platform */
   std::string aPlatformLibName;
+  /* It's Need to tranlate lib name for WIN32 or X platform */
   if ( theLibName && theLibName[0] != '\0'  )
   {
     int libNameLen = strlen(theLibName);
@@ -395,14 +395,13 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
 #endif
     }
   }
+  thePlatformLibName = aPlatformLibName;
 
   Unexpect aCatch(SALOME_SalomeException);
   if(MYDEBUG) MESSAGE( "Create Hypothesis <" << theHypName << "> from " << aPlatformLibName);
 
-  // create a new hypothesis object servant
-  SMESH_Hypothesis_i* myHypothesis_i = 0;
-  SMESH::SMESH_Hypothesis_var hypothesis_i;
-
+  typedef GenericHypothesisCreator_i* (*GetHypothesisCreator)(const char* );
+  GenericHypothesisCreator_i* aCreator;
   try
   {
     // check, if creator for this hypothesis type already exists
@@ -424,7 +423,6 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
 
       // get method, returning hypothesis creator
       if(MYDEBUG) MESSAGE("Find GetHypothesisCreator() method ...");
-      typedef GenericHypothesisCreator_i* (*GetHypothesisCreator)(const char* theHypName);
       GetHypothesisCreator procHandle =
         (GetHypothesisCreator)GetProc( libHandle, "GetHypothesisCreator" );
       if (!procHandle)
@@ -435,26 +433,47 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
 
       // get hypothesis creator
       if(MYDEBUG) MESSAGE("Get Hypothesis Creator for " << theHypName);
-      GenericHypothesisCreator_i* aCreator = procHandle(theHypName);
+      aCreator = procHandle(theHypName);
       if (!aCreator)
       {
         throw(SALOME_Exception(LOCALIZED("no such a hypothesis in this plugin")));
       }
-
       // map hypothesis creator to a hypothesis name
       myHypCreatorMap[string(theHypName)] = aCreator;
+      return aCreator;
     }
-
-    // create a new hypothesis object, store its ref. in studyContext
-    if(MYDEBUG) MESSAGE("Create Hypothesis " << theHypName);
-    myHypothesis_i =
-      myHypCreatorMap[string(theHypName)]->Create(myPoa, GetCurrentStudyID(), &myGen);
-    myHypothesis_i->SetLibName(aPlatformLibName.c_str()); // for persistency assurance
+    else
+    {
+      return myHypCreatorMap[string(theHypName)];
+    }
   }
   catch (SALOME_Exception& S_ex)
   {
     THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
   }
+  return aCreator;
+}
+
+//=============================================================================
+/*!
+ *  SMESH_Gen_i::createHypothesis
+ *
+ *  Create hypothesis of given type
+ */
+//=============================================================================
+SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName,
+                                                          const char* theLibName)
+{
+  SMESH_Hypothesis_i* myHypothesis_i = 0;
+  SMESH::SMESH_Hypothesis_var hypothesis_i;
+  std::string aPlatformLibName;
+  typedef GenericHypothesisCreator_i* (*GetHypothesisCreator)(const char* );
+  GenericHypothesisCreator_i* aCreator = getHypothesisCreator(theHypName, theLibName, aPlatformLibName);
+  // create a new hypothesis object, store its ref. in studyContext
+  if(MYDEBUG) MESSAGE("Create Hypothesis " << theHypName);
+  myHypothesis_i =
+      myHypCreatorMap[string(theHypName)]->Create(myPoa, GetCurrentStudyID(), &myGen);
+  myHypothesis_i->SetLibName(aPlatformLibName.c_str()); // for persistency assurance
 
   if (!myHypothesis_i)
     return hypothesis_i._retn();
@@ -5040,6 +5059,29 @@ void SMESH_Gen_i::Move( const SMESH::sobject_list& what,
       useCaseBuilder->InsertBefore( sobj, objAfter ); // insert at given row
     else
       useCaseBuilder->AppendTo( where, sobj );        // append to the end of list
+  }
+}
+//=================================================================================
+// function : IsApplicable
+// purpose  : Return true if algorithm can be applied
+//=================================================================================
+CORBA::Boolean SMESH_Gen_i::IsApplicable ( const char*           theAlgoType,
+                                           const char*           theLibName,
+                                           GEOM::GEOM_Object_ptr theGeomObject,
+                                           CORBA::Boolean        toCheckAll)
+{
+  std::string aPlatformLibName;
+  typedef GenericHypothesisCreator_i* (*GetHypothesisCreator)(const char*);
+  GenericHypothesisCreator_i* aCreator = getHypothesisCreator(theAlgoType, theLibName, aPlatformLibName);
+  if (aCreator)
+  {
+    TopoDS_Shape shape = GeomObjectToShape( theGeomObject );
+    return aCreator->IsApplicable( shape, toCheckAll );
+  }
+  else
+  {
+    if(MYDEBUG) { MESSAGE( "Shape not defined"); }
+    return false;
   }
 }
 

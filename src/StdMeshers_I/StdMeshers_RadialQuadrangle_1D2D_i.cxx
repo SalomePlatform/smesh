@@ -66,3 +66,9 @@ StdMeshers_RadialQuadrangle_1D2D_i::~StdMeshers_RadialQuadrangle_1D2D_i()
   return ( ::StdMeshers_RadialQuadrangle_1D2D* )myBaseImpl;
 }
 
+//-----------------------------------------------------------------------------
+
+CORBA::Boolean StdMeshers_RadialQuadrangle_1D2D_i::IsApplicable( const TopoDS_Shape &S, CORBA::Boolean toCheckAll )
+{
+  return ::StdMeshers_RadialQuadrangle_1D2D::IsApplicable( S, toCheckAll );
+}

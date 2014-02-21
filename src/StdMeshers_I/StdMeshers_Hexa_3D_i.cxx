@@ -83,3 +83,16 @@ StdMeshers_Hexa_3D_i::~StdMeshers_Hexa_3D_i()
   MESSAGE( "StdMeshers_Hexa_3D_i::GetImpl" );
   return ( ::StdMeshers_Hexa_3D* )myBaseImpl;
 }
+
+//=============================================================================
+/*!
+ *  StdMeshers_Hexa_3D_i::IsApplicable
+ *
+ *  Method return true if algorithm is applicable
+ */
+//=============================================================================
+
+CORBA::Boolean StdMeshers_Hexa_3D_i::IsApplicable( const TopoDS_Shape &S, CORBA::Boolean toCheckAll )
+{
+  return ::StdMeshers_Hexa_3D::IsApplicable( S, toCheckAll );
+}

@@ -155,6 +155,8 @@ public:
                                    const TopoDS_Shape& aShape,
                                    const bool          considerMesh=false);
 
+  static bool IsApplicable(const TopoDS_Shape & aShape, bool toCheckAll);
+
 protected:
 
   bool checkNbEdgesForEvaluate(SMESH_Mesh& aMesh,

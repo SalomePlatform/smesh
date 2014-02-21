@@ -595,13 +595,20 @@ public:
   void Move( const SMESH::sobject_list& what,
              SALOMEDS::SObject_ptr where,
              CORBA::Long row );
+  CORBA::Boolean IsApplicable ( const char*           theAlgoType,
+                                const char*           theLibName,
+                                GEOM::GEOM_Object_ptr theShapeObject,
+                                CORBA::Boolean        toCheckAll);
 
 private:
+  // Get hypothesis creator
+  GenericHypothesisCreator_i* getHypothesisCreator( const char*  theHypName,
+                                                    const char*  theLibName,
+                                                    std::string& thePlatformLibName)
+  throw ( SALOME::SALOME_Exception );
   // Create hypothesis of given type
   SMESH::SMESH_Hypothesis_ptr createHypothesis( const char* theHypName,
-                                                const char* theLibName)
-    throw ( SALOME::SALOME_Exception );
-
+                                                const char* theLibName);
   // Create empty mesh on shape
   SMESH::SMESH_Mesh_ptr createMesh()
     throw ( SALOME::SALOME_Exception );

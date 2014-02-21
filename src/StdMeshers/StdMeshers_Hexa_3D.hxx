@@ -54,6 +54,7 @@ public:
   virtual bool Evaluate(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape,
                         MapShapeNbElems& aResMap);
 
+  static bool IsApplicable(const TopoDS_Shape & aShape, bool toCheckAll);
 protected:
 
   const StdMeshers_ViscousLayers* _viscousLayersHyp;

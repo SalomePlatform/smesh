@@ -85,3 +85,16 @@ StdMeshers_Quadrangle_2D_i::~StdMeshers_Quadrangle_2D_i()
   return ( ::StdMeshers_Quadrangle_2D* )myBaseImpl;
 }
 
+//=============================================================================
+/*!
+ *  StdMeshers_Quadrangle_2D_i::IsApplicable
+ *
+ *  Method return true if algorithm is applicable
+ */
+//=============================================================================
+
+CORBA::Boolean StdMeshers_Quadrangle_2D_i::IsApplicable( const TopoDS_Shape &S, CORBA::Boolean toCheckAll )
+{
+  return ::StdMeshers_Quadrangle_2D::IsApplicable( S, toCheckAll );
+}
+

@@ -1281,3 +1281,23 @@ bool StdMeshers_RadialQuadrangle_1D2D::Evaluate(SMESH_Mesh& aMesh,
   return false;
 
 }
+
+//================================================================================
+/*!
+ * \brief Return true if applied compute mesh on this shape
+ */
+//================================================================================
+
+bool StdMeshers_RadialQuadrangle_1D2D::IsApplicable( const TopoDS_Shape & aShape, bool toCheckAll )
+{
+  int nbFoundFaces = 0;
+  for (TopExp_Explorer exp( aShape, TopAbs_FACE ); exp.More(); exp.Next(), ++nbFoundFaces ){
+    TopoDS_Edge CircEdge, LinEdge1, LinEdge2;
+    int nbe = analyseFace( TopoDS_Shape( exp.Current() ), CircEdge, LinEdge1, LinEdge2 );
+    Handle(Geom_Circle) aCirc = Handle(Geom_Circle)::DownCast( getCurve( CircEdge ));
+    if( toCheckAll && ( nbe > 3 || nbe < 1 || aCirc.IsNull() )) return false;
+    if( !toCheckAll && ( nbe <= 3 && nbe >= 1 && !aCirc.IsNull() )) return true;
+  }
+  if( toCheckAll && nbFoundFaces != 0 ) return true;
+  return false;
+};

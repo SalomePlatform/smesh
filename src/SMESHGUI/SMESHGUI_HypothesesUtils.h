@@ -72,7 +72,7 @@ namespace SMESH
                                       const bool = true,
                                       const bool = false);
   SMESHGUI_EXPORT
-  QStringList GetHypothesesSets( int, const QString& );
+  QStringList GetHypothesesSets( int );
 
   SMESHGUI_EXPORT
   HypothesesSet* GetHypothesesSet( const QString& );
@@ -96,6 +96,10 @@ namespace SMESH
   SMESH::SMESH_Hypothesis_ptr CreateHypothesis( const QString&,
                                                 const QString&,
                                                 const bool = false );
+  SMESHGUI_EXPORT
+  bool IsApplicable( const QString&,
+                     GEOM::GEOM_Object_ptr,
+                     const bool = false );
 
   SMESHGUI_EXPORT
   bool AddHypothesisOnMesh( SMESH::SMESH_Mesh_ptr, SMESH::SMESH_Hypothesis_ptr );

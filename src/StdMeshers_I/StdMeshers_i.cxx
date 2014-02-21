@@ -80,11 +80,21 @@
 #include "StdMeshers_ViscousLayers2D_i.hxx"
 #include "StdMeshers_CartesianParameters3D_i.hxx"
 
-template <class T> class StdHypothesisCreator_i:public HypothesisCreator_i<T>
+namespace SMESH {
+  class ApplicableToAny
+  {
+  public:
+    static CORBA::Boolean IsApplicable( const TopoDS_Shape &S, CORBA::Boolean toCheckAll ){ return true; }
+  };
+};
+template <class T, class TIsApplicable = SMESH::ApplicableToAny> class StdHypothesisCreator_i:public HypothesisCreator_i<T>
 {
 public:
   // as we have 'module StdMeshers' in SMESH_BasicHypothesis.idl
   virtual std::string GetModuleName() { return "StdMeshers"; }
+  virtual CORBA::Boolean IsApplicable( const TopoDS_Shape & S, CORBA::Boolean toCheckAll ) {
+    return TIsApplicable::IsApplicable( S, toCheckAll );
+  }
 };
 
 //=============================================================================
@@ -203,9 +213,9 @@ STDMESHERS_I_EXPORT
       aCreator = new StdHypothesisCreator_i<StdMeshers_MEFISTO_2D_i>;
 #endif
     else if (strcmp(aHypName, "Quadrangle_2D") == 0)
-      aCreator = new StdHypothesisCreator_i<StdMeshers_Quadrangle_2D_i>;
+      aCreator = new StdHypothesisCreator_i<StdMeshers_Quadrangle_2D_i, StdMeshers_Quadrangle_2D_i>;
     else if (strcmp(aHypName, "Hexa_3D") == 0)
-      aCreator = new StdHypothesisCreator_i<StdMeshers_Hexa_3D_i>;
+      aCreator = new StdHypothesisCreator_i<StdMeshers_Hexa_3D_i, StdMeshers_Hexa_3D_i>;
     else if (strcmp(aHypName, "Projection_1D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_Projection_1D_i>;
     else if (strcmp(aHypName, "Projection_1D2D") == 0)
@@ -217,7 +227,7 @@ STDMESHERS_I_EXPORT
     else if (strcmp(aHypName, "Prism_3D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_Prism_3D_i>;
     else if (strcmp(aHypName, "RadialPrism_3D") == 0)
-      aCreator = new StdHypothesisCreator_i<StdMeshers_RadialPrism_3D_i>;
+      aCreator = new StdHypothesisCreator_i<StdMeshers_RadialPrism_3D_i, StdMeshers_RadialPrism_3D_i>;
     else if (strcmp(aHypName, "SegmentAroundVertex_0D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_SegmentAroundVertex_0D_i>;
     else if (strcmp(aHypName, "CompositeSegment_1D") == 0)
@@ -227,7 +237,7 @@ STDMESHERS_I_EXPORT
     else if (strcmp(aHypName, "UseExisting_2D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_UseExisting_2D_i>;
     else if (strcmp(aHypName, "RadialQuadrangle_1D2D") == 0)
-      aCreator = new StdHypothesisCreator_i<StdMeshers_RadialQuadrangle_1D2D_i>;
+      aCreator = new StdHypothesisCreator_i<StdMeshers_RadialQuadrangle_1D2D_i, StdMeshers_RadialQuadrangle_1D2D_i>;
     else if (strcmp(aHypName, "Import_1D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_Import_1D_i>;
     else if (strcmp(aHypName, "Import_1D2D") == 0)

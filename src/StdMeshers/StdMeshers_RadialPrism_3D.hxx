@@ -55,6 +55,8 @@ public:
   virtual bool Evaluate(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape,
                         MapShapeNbElems& aResMap);
 
+  static bool IsApplicable(const TopoDS_Shape & aShape, bool toCheckAll);
+
 protected:
 
   typedef std::vector<const SMDS_MeshNode* >            TNodeColumn;

@@ -904,6 +904,35 @@ bool StdMeshers_Quadrangle_2D::Evaluate(SMESH_Mesh&         aMesh,
   return true;
 }
 
+//================================================================================
+/*!
+ * \brief Return true if applied compute mesh on this shape
+ */
+//================================================================================
+
+bool StdMeshers_Quadrangle_2D::IsApplicable( const TopoDS_Shape & aShape, bool toCheckAll )
+{
+  int nbFoundFaces = 0;
+  for (TopExp_Explorer exp( aShape, TopAbs_FACE ); exp.More(); exp.Next(), ++nbFoundFaces ){
+    TopoDS_Face aFace = TopoDS::Face(exp.Current());
+    if ( aFace.Orientation() >= TopAbs_INTERNAL ) aFace.Orientation( TopAbs_FORWARD );
+
+    list< TopoDS_Edge > aWire;
+    list< int > nbEdgesInWire;
+    int nbWire = SMESH_Block::GetOrderedEdges (aFace, aWire, nbEdgesInWire);
+
+    int nbNoDegenEdges = 0;
+    list<TopoDS_Edge>::iterator edge = aWire.begin();
+      for ( ; edge != aWire.end(); ++edge ){
+        if ( !SMESH_Algo::isDegenerated( *edge ))
+          ++nbNoDegenEdges;
+      }
+      if( toCheckAll && (nbWire != 1 || nbNoDegenEdges <= 3 ) ) return false;
+      if( !toCheckAll && nbWire == 1 && nbNoDegenEdges > 3 ) return true;
+  }
+  if( toCheckAll && nbFoundFaces != 0) return true;
+  return false;
+};
 
 //================================================================================
 /*!

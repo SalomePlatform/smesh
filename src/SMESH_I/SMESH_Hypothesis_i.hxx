@@ -134,6 +134,7 @@ public:
                                      ::SMESH_Gen*            theGenImpl) = 0;
   // return the name of IDL module
   virtual std::string GetModuleName() = 0;
+  virtual bool IsApplicable( const TopoDS_Shape &S, bool toCheckAll ) {return true;}
 };
 
 //=============================================================================

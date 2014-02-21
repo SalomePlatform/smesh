@@ -58,6 +58,9 @@ public:
 
   // Get implementation
   ::StdMeshers_Quadrangle_2D* GetImpl();
+
+  // Method return true if algorithm is applicable
+  static CORBA::Boolean IsApplicable(const TopoDS_Shape &S, CORBA::Boolean toCheckAll);
 };
 
 #endif

@@ -58,6 +58,9 @@ public:
 
   // Get implementation
   ::StdMeshers_Hexa_3D* GetImpl();
+
+  // Method return true if algorithm is applicable
+  static CORBA::Boolean IsApplicable(const TopoDS_Shape &S, CORBA::Boolean toCheckAll);
 };
 
 #endif

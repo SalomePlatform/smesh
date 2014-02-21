@@ -59,6 +59,8 @@ public:
    */
   virtual void SubmeshRestored(SMESH_subMesh* subMesh);
   
+  static bool IsApplicable(const TopoDS_Shape & aShape, bool toCheckAll);
+
 protected:
 
   bool computeLayerPositions(const gp_Pnt&      p1,

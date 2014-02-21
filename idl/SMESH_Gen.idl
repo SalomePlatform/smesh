@@ -417,6 +417,13 @@ module SMESH
     void Move( in sobject_list what, 
 	       in SALOMEDS::SObject where, 
 	       in long row );
+    /*!
+     * Return true if algorithm can be applied
+     */
+    boolean IsApplicable( in string             theAlgoType,
+                          in string             theLibName,
+                          in GEOM::GEOM_Object  theShapeObject,
+                          in boolean            toCheckAll );
   };
 
 };

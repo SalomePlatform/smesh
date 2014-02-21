@@ -132,6 +132,7 @@ private:
   void                           selectObject( _PTR(SObject) ) const;
   void                           createMeshTypeList( QStringList& );
   void                           setAvailableMeshType( const QStringList& );
+  void                           setFilteredAlgoData( const int, const int );
 private:
   SMESHGUI_MeshDlg*              myDlg;
   SMESHGUI_ShapeByMeshOp*        myShapeByMeshOp;
@@ -145,7 +146,7 @@ private:
                                                  //   edited mesh/sub-mesh
   // hypdata corresponding to hypotheses present in myDlg
   THypDataList                   myAvailableHypData[4][NbHypTypes];
-
+  THypDataList                   myFilteredAlgoData[4];
   bool                           myIgnoreAlgoSelection;
   HypothesesSet* myHypoSet;
   int myDim, myType, myMaxShapeDim;

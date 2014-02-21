@@ -84,7 +84,7 @@ namespace SMESH
   typedef IMap<QString,HypothesisData*> THypothesisDataMap;
   THypothesisDataMap myHypothesesMap;
   THypothesisDataMap myAlgorithmsMap;
-  
+
   // BUG 0020378
   //typedef QMap<QString,SMESHGUI_GenericHypothesisCreator*> THypCreatorMap;
   //THypCreatorMap myHypCreatorMap;
@@ -220,16 +220,16 @@ namespace SMESH
           if (ok) {
 
             THypothesisDataMap::ConstIterator it1 = aXmlHandler->myHypothesesMap.begin();
-            
+
             for( ;it1 != aXmlHandler->myHypothesesMap.end(); it1++)
               myHypothesesMap.insert( it1.key(), it1.value() );
-            
+
             it1 = aXmlHandler->myAlgorithmsMap.begin();
             for( ;it1 != aXmlHandler->myAlgorithmsMap.end(); it1++)
               myAlgorithmsMap.insert( it1.key(), it1.value() );
-            
+
             QList<HypothesesSet*>::iterator it;
-            for ( it = aXmlHandler->myListOfHypothesesSets.begin(); 
+            for ( it = aXmlHandler->myListOfHypothesesSets.begin();
                   it != aXmlHandler->myListOfHypothesesSets.end();
                   ++it )
             {
@@ -301,7 +301,7 @@ namespace SMESH
   }
 
 
-  QStringList GetHypothesesSets(int maxDim, const QString& MeshType)
+  QStringList GetHypothesesSets(int maxDim)
   {
     QStringList aSetNameList;
 
@@ -309,37 +309,14 @@ namespace SMESH
     InitAvailableHypotheses();
     QList<HypothesesSet*>::iterator hypoSet;
     for ( hypoSet  = myListOfHypothesesSets.begin();
-          hypoSet != myListOfHypothesesSets.end();
-          ++hypoSet ) {
+        hypoSet != myListOfHypothesesSets.end();
+        ++hypoSet ) {
       HypothesesSet* aSet = *hypoSet;
-      bool isAvailable = false;
-      if ( !MeshType.isEmpty() )
+      if ( aSet && ( aSet->count( true ) || aSet->count( false )) &&
+          aSet->maxDim() <= maxDim)
       {
-        if ( aSet->maxDim() != maxDim)
-          continue;
-        aSet->init( true );
-        while ( aSet->next(), aSet->more() )
-        {
-          if ( HypothesisData* hypData = SMESH::GetHypothesisData( aSet->current() ) )
-          {
-            QStringList::const_iterator inElemType = hypData->OutputTypes.begin();
-            for ( ; inElemType != hypData->OutputTypes.end(); inElemType++ )
-            {
-              if ( *inElemType == MeshType ){
-                isAvailable = true;
-                break;
-              }
-            }
-          }
-          if ( isAvailable ) break;
-        }
+        aSetNameList.append( mangledHypoSetName( aSet ));
       }
-      else if ( aSet && ( aSet->count( true ) || aSet->count( false )) &&
-                aSet->maxDim() <= maxDim)
-      {
-        isAvailable = true;
-      }
-      if ( isAvailable ) aSetNameList.append( mangledHypoSetName( aSet ));
     }
     aSetNameList.removeDuplicates();
     aSetNameList.sort();
@@ -348,7 +325,7 @@ namespace SMESH
     QStringList reversedNames;
     for ( int i = 0; i < aSetNameList.count(); ++i )
       reversedNames.prepend( aSetNameList[i] );
-    
+
     return reversedNames;
   }
 
@@ -356,7 +333,7 @@ namespace SMESH
   {
     QString name = demangledHypoSetName( theSetName );
     QList<HypothesesSet*>::iterator hypoSet;
-    for ( hypoSet  = myListOfHypothesesSets.begin(); 
+    for ( hypoSet  = myListOfHypothesesSets.begin();
           hypoSet != myListOfHypothesesSets.end();
           ++hypoSet ) {
       HypothesesSet* aSet = *hypoSet;
@@ -433,7 +410,7 @@ namespace SMESH
 
       // 2. Get names of plugin libraries
       HypothesisData* aHypData = GetHypothesisData(aHypType);
-      if (!aHypData) 
+      if (!aHypData)
         return aCreator;
 
       QString aClientLibName = aHypData->ClientLibName;
@@ -450,7 +427,7 @@ namespace SMESH
 #ifdef WIN32
             const char* anError = "Can't load client meshers plugin library";
 #else
-            const char* anError = dlerror();      
+            const char* anError = dlerror();
 #endif
             INFOS(anError); // always display this kind of error !
           }
@@ -480,7 +457,7 @@ namespace SMESH
 
               //rnv : This dynamic property of the QObject stores the name of the plugin.
               //      It is used to obtain plugin root dir environment variable
-              //      in the SMESHGUI_HypothesisDlg class. Plugin root dir environment 
+              //      in the SMESHGUI_HypothesisDlg class. Plugin root dir environment
               //      variable is used to display documentation.
               aCreator->setProperty(PLUGIN_NAME,aHypData->PluginName);
             }
@@ -500,7 +477,7 @@ namespace SMESH
                                                const QString& aHypName,
                                                const bool isAlgo)
   {
-    if(MYDEBUG) MESSAGE("Create " << aHypType.toLatin1().data() << 
+    if(MYDEBUG) MESSAGE("Create " << aHypType.toLatin1().data() <<
                         " with name " << aHypName.toLatin1().data());
     HypothesisData* aHypData = GetHypothesisData(aHypType);
     QString aServLib = aHypData->ServerLibName;
@@ -523,6 +500,17 @@ namespace SMESH
     }
 
     return SMESH::SMESH_Hypothesis::_nil();
+  }
+  bool IsApplicable(const QString&        aHypType,
+                    GEOM::GEOM_Object_ptr theGeomObject,
+                    const bool            toCheckAll)
+  {
+    HypothesisData* aHypData = GetHypothesisData(aHypType);
+    QString aServLib = aHypData->ServerLibName;
+    return SMESHGUI::GetSMESHGen()->IsApplicable( aHypType.toLatin1().data(),
+                                                  aServLib.toLatin1().data(),
+                                                  theGeomObject,
+                                                  toCheckAll);
   }
 
 
@@ -653,7 +641,7 @@ namespace SMESH
         if (!aSubMesh->_is_nil())
           aMesh = aSubMesh->GetFather();
 
-        if (!aMesh->_is_nil()) {    
+        if (!aMesh->_is_nil()) {
           if (aMesh->HasShapeToMesh() && !aShapeObject->_is_nil()) {
             res = aMesh->RemoveHypothesis(aShapeObject, anHyp);
             if (res < SMESH::HYP_UNKNOWN_FATAL) {
@@ -661,14 +649,14 @@ namespace SMESH
               if (meshSO)
                 SMESH::ModifiedMesh(meshSO, false, aMesh->NbNodes()==0);
             }
-            
+
           }
           else if(!aMesh->HasShapeToMesh()){
             res = aMesh->RemoveHypothesis(aShapeObject, anHyp);
             if (res < SMESH::HYP_UNKNOWN_FATAL) {
               _PTR(SObject) meshSO = SMESH::FindSObject(aMesh);
               if (meshSO)
-                SMESH::ModifiedMesh(meshSO, false, aMesh->NbNodes()==0);              
+                SMESH::ModifiedMesh(meshSO, false, aMesh->NbNodes()==0);
             }
           }
           if (res > SMESH::HYP_OK) {
@@ -730,7 +718,7 @@ namespace SMESH
       QString msg;
       if ( !hasAlgo )
         msg = QObject::tr( "STATE_ALGO_MISSING" );
-      else 
+      else
         switch( error.state ) {
           CASE2MESSAGE( HYP_MISSING );
           CASE2MESSAGE( HYP_NOTCONFORM );
