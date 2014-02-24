@@ -32,6 +32,9 @@
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_SpinBox.h"
 
+#include <QtxDoubleSpinSlider.h>
+#include <QtxIntSpinSlider.h>
+
 #include <SMESH_Actor.h>
 #include <SMESH_ActorUtils.h>
 
@@ -463,69 +466,38 @@ SMESHGUI_ClippingDlg::SMESHGUI_ClippingDlg( SMESHGUI* theModule, SVTK_ViewWindow
   CBRelativeOrientation->addItem( tr("ALONG_ZX") );
   GroupParametersLayout->addWidget( CBRelativeOrientation, 0, 1 );
 
-  TLValueDistance = new QLabel( GroupParameters );
-  TLValueDistance->setObjectName( "TLValueDistance" );
-  TLValueDistance->setAlignment( Qt::AlignCenter );
-  TLValueDistance->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
-  QFont fnt = TLValueDistance->font(); fnt.setBold( true ); TLValueDistance->setFont( fnt );
-  GroupParametersLayout->addWidget( TLValueDistance, 1, 1 );
-
   TextLabelDistance = new QLabel( tr("SMESH_DISTANCE"), GroupParameters );
   TextLabelDistance->setObjectName( "TextLabelDistance" );
-  GroupParametersLayout->addWidget( TextLabelDistance, 2, 0 );
+  GroupParametersLayout->addWidget( TextLabelDistance, 1, 0 );
 
-  SliderDistance = new QSlider( Qt::Horizontal, GroupParameters );
-  SliderDistance->setObjectName( "SliderDistance" );
-  SliderDistance->setMinimumSize( 300, 0 );
-  SliderDistance->setMinimum( 0 );
-  SliderDistance->setMaximum( 100 );
-  SliderDistance->setSingleStep( 1 );
-  SliderDistance->setPageStep( 10 );
-  SliderDistance->setTracking( false );
-  GroupParametersLayout->addWidget( SliderDistance, 2, 1 );
-
-  TLValueRotation1 = new QLabel( GroupParameters );
-  TLValueRotation1->setObjectName( "TLValueRotation1" );
-  TLValueRotation1->setAlignment( Qt::AlignCenter );
-  TLValueRotation1->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
-  TLValueRotation1->setFont( fnt );
-  GroupParametersLayout->addWidget( TLValueRotation1, 3, 1 );
+  SpinSliderDistance = new QtxDoubleSpinSlider( 0., 1., 0.01, GroupParameters );
+  SpinSliderDistance->setObjectName( "SpinSliderDistance" );
+  SpinSliderDistance->setPrecision( precision );
+  QFont fnt = SpinSliderDistance->font(); fnt.setBold( true ); SpinSliderDistance->setFont( fnt );
+  GroupParametersLayout->addWidget( SpinSliderDistance, 1, 1 );
+  
+  QString aUnitRot = "\xB0";
 
   TextLabelRotation1 = new QLabel( tr("ROTATION_AROUND_X_Y2Z"), GroupParameters );
   TextLabelRotation1->setObjectName( "TextLabelRotation1" );
-  GroupParametersLayout->addWidget( TextLabelRotation1, 4, 0 );
+  GroupParametersLayout->addWidget( TextLabelRotation1, 2, 0 );
 
-  SliderRotation1 = new QSlider( Qt::Horizontal, GroupParameters );
-  SliderRotation1->setObjectName( "SliderRotation1" );
-  SliderRotation1->setMinimumSize( 300, 0 );
-  SliderRotation1->setMinimum( -180 );
-  SliderRotation1->setMaximum( 180 );
-  SliderRotation1->setSingleStep( 1 );
-  SliderRotation1->setPageStep( 10 );
-  SliderRotation1->setTracking(false);
-  GroupParametersLayout->addWidget( SliderRotation1, 4, 1 );
-
-  TLValueRotation2 = new QLabel( GroupParameters );
-  TLValueRotation2->setObjectName( "TLValueRotation2" );
-  TLValueRotation2->setAlignment( Qt::AlignCenter );
-  TLValueRotation2->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
-  TLValueRotation2->setFont( fnt );
-  GroupParametersLayout->addWidget( TLValueRotation2, 5, 1 );
+  SpinSliderRotation1 = new QtxIntSpinSlider( -180, 180, 1, GroupParameters );
+  SpinSliderRotation1->setObjectName( "SpinSliderRotation1" );
+  SpinSliderRotation1->setUnit( aUnitRot );
+  SpinSliderRotation1->setFont( fnt );
+  GroupParametersLayout->addWidget( SpinSliderRotation1, 2, 1 );
 
   TextLabelRotation2 = new QLabel(tr("ROTATION_AROUND_Y_X2Z"), GroupParameters);
   TextLabelRotation2->setObjectName( "TextLabelRotation2" );
   TextLabelRotation2->setObjectName( "TextLabelRotation2" );
-  GroupParametersLayout->addWidget( TextLabelRotation2, 6, 0 );
+  GroupParametersLayout->addWidget( TextLabelRotation2, 3, 0 );
 
-  SliderRotation2 = new QSlider( Qt::Horizontal, GroupParameters );
-  SliderRotation2->setObjectName( "SliderRotation2" );
-  SliderRotation2->setMinimumSize( 300, 0 );
-  SliderRotation2->setMinimum( -180 );
-  SliderRotation2->setMaximum( 180 );
-  SliderRotation2->setSingleStep( 1 );
-  SliderRotation2->setPageStep( 10 );
-  SliderRotation2->setTracking(false);
-  GroupParametersLayout->addWidget( SliderRotation2, 6, 1 );
+  SpinSliderRotation2 = new QtxIntSpinSlider( -180, 180, 1, GroupParameters );
+  SpinSliderRotation2->setObjectName( "SpinSliderRotation2" );
+  SpinSliderRotation2->setUnit( aUnitRot );
+  SpinSliderRotation2->setFont( fnt );
+  GroupParametersLayout->addWidget( SpinSliderRotation2, 3, 1 );
 
   /***************************************************************/
   QWidget* CheckBoxWidget = new QWidget( this );
@@ -598,12 +570,9 @@ SMESHGUI_ClippingDlg::SMESHGUI_ClippingDlg( SMESHGUI* theModule, SVTK_ViewWindow
   connect( CBAbsoluteOrientation, SIGNAL ( activated ( int ) ), this, SLOT( onSelectAbsoluteOrientation( int ) ) ) ;
 
   connect( CBRelativeOrientation, SIGNAL( activated( int ) ), this, SLOT( onSelectRelativeOrientation( int ) ) );
-  connect( SliderDistance,   SIGNAL( sliderMoved( int ) ),  this, SLOT( SliderDistanceHasMoved( int ) ) );
-  connect( SliderDistance,   SIGNAL( valueChanged( int ) ),  this, SLOT( SliderDistanceHasMoved( int ) ) );
-  connect( SliderRotation1,   SIGNAL( sliderMoved( int ) ),  this, SLOT( SliderRotation1HasMoved( int ) ) );
-  connect( SliderRotation1,   SIGNAL( valueChanged( int ) ),  this, SLOT( SliderRotation1HasMoved( int ) ) );
-  connect( SliderRotation2,   SIGNAL( sliderMoved( int ) ),  this, SLOT( SliderRotation2HasMoved( int ) ) );
-  connect( SliderRotation2,   SIGNAL( valueChanged( int ) ),  this, SLOT( SliderRotation2HasMoved( int ) ) );
+  connect( SpinSliderDistance, SIGNAL( valueChanged( double ) ),  this, SLOT( SetCurrentPlaneParam() ) );
+  connect( SpinSliderRotation1, SIGNAL( valueChanged( int ) ), this, SLOT( SetCurrentPlaneParam() ) );
+  connect( SpinSliderRotation2, SIGNAL( valueChanged( int ) ), this, SLOT( SetCurrentPlaneParam() ) );
 
   connect( PreviewCheckBox, SIGNAL( toggled( bool ) ), this, SLOT( OnPreviewToggle( bool ) ) );
   connect( AutoApplyCheckBox, SIGNAL( toggled( bool ) ), this, SLOT( onAutoApply( bool ) ) );
@@ -652,7 +621,7 @@ SMESHGUI_ClippingDlg::~SMESHGUI_ClippingDlg()
 */
 double SMESHGUI_ClippingDlg::getDistance() const
 {
-  return TLValueDistance->text().toDouble();
+  return SpinSliderDistance->value();
 }
 
 /*!
@@ -660,7 +629,7 @@ double SMESHGUI_ClippingDlg::getDistance() const
 */
 void SMESHGUI_ClippingDlg::setDistance( const double theDistance )
 {
-  SliderDistance->setValue( theDistance*100 );
+  SpinSliderDistance->setValue( theDistance*100 );
 }
 
 /*!
@@ -668,7 +637,7 @@ void SMESHGUI_ClippingDlg::setDistance( const double theDistance )
 */
 double SMESHGUI_ClippingDlg::getRotation1() const
 {
-  return TLValueRotation1->text().remove("\xB0").toInt();
+  return SpinSliderRotation1->value();
 }
 
 /*!
@@ -676,7 +645,7 @@ double SMESHGUI_ClippingDlg::getRotation1() const
 */
 double SMESHGUI_ClippingDlg::getRotation2() const
 {
-  return TLValueRotation2->text().remove("\xB0").toInt();
+  return SpinSliderRotation2->value();
 }
 
 /*!
@@ -684,8 +653,8 @@ double SMESHGUI_ClippingDlg::getRotation2() const
 */
 void SMESHGUI_ClippingDlg::setRotation (const double theRot1, const double theRot2)
 {
-  SliderRotation1->setValue( theRot1 );
-  SliderRotation2->setValue( theRot2 );
+  SpinSliderRotation1->setValue( int(floor(theRot1)) );
+  SpinSliderRotation2->setValue( int(floor(theRot2)) );
 }
 
 /*!
@@ -1008,13 +977,10 @@ void SMESHGUI_ClippingDlg::initParam()
 
   CBAbsoluteOrientation->setCurrentIndex(0);
 
-  TLValueDistance->setText( "0.5" );
-  TLValueRotation1->setText( "0\xB0" );
-  TLValueRotation2->setText( "0\xB0" );
+  SpinSliderDistance->setValue( 0.5 );
+  SpinSliderRotation1->setValue( 0 );
+  SpinSliderRotation2->setValue( 0 );
   CBRelativeOrientation->setCurrentIndex( 0 );
-  SliderDistance->setValue( 50 );
-  SliderRotation1->setValue( 0 );
-  SliderRotation2->setValue( 0 );
 }
 
 /*!
@@ -1066,9 +1032,9 @@ void SMESHGUI_ClippingDlg::synchronize()
   }
   else if ( CurrentMode == SMESH::Relative ) {
     CBRelativeOrientation->setEnabled( anIsControlsEnable );
-    SliderDistance->setEnabled( anIsControlsEnable );
-    SliderRotation1->setEnabled( anIsControlsEnable );
-    SliderRotation2->setEnabled( anIsControlsEnable );
+    SpinSliderDistance->setEnabled( anIsControlsEnable );
+    SpinSliderRotation1->setEnabled( anIsControlsEnable );
+    SpinSliderRotation2->setEnabled( anIsControlsEnable );
   }
 }
 
@@ -1698,10 +1664,8 @@ void SMESHGUI_ClippingDlg::absolutePlaneToRelative ( double theOrigin[3], double
   else if( aDirection[0] < 0 && aDirection[1] < 0 && aDirection[2] < 0 && aRot[0] > 0 ) {
     aRot[0] = aRotation1 + 270.0; aRot[1] = aRotation2 + 90.0; }
 
-  SliderRotation1HasMoved( qRound( aRot[0] ) );
-  SliderRotation1->setValue( qRound( aRot[0] ) );
-  SliderRotation2HasMoved( qRound( aRot[1] ) );
-  SliderRotation2->setValue( qRound( aRot[1] ) );
+  SpinSliderRotation1->setValue( qRound( aRot[0] ) );
+  SpinSliderRotation2->setValue( qRound( aRot[1] ) );
 
   int aCurPlaneIndex = ComboBoxPlanes->currentIndex();
   const SMESH::TPlaneData& aPlaneData = myPlanes[ aCurPlaneIndex ];
@@ -1717,8 +1681,7 @@ void SMESHGUI_ClippingDlg::absolutePlaneToRelative ( double theOrigin[3], double
   else if( aDist < 0.0 )
     aDist = 0.0;
 
-  SliderDistanceHasMoved( qRound( aDist*100 ) );
-  SliderDistance->setValue( qRound( aDist*100 ) );
+  SpinSliderDistance->setValue( qRound( aDist*100 ) );
   return;
 }
 
@@ -1849,34 +1812,6 @@ void SMESHGUI_ClippingDlg::ClickOnHelp()
                                                                  platform)).
                              arg(myHelpFileName));
   }
-}
-
-/*!
-  SLOT: Called when value of slider distance change
-*/
-void SMESHGUI_ClippingDlg::SliderDistanceHasMoved( int value )
-{
-  double new_value = value/100.;
-  TLValueDistance->setText( QString("%1").arg( new_value ) );
-  SetCurrentPlaneParam();
-}
-
-/*!
-  SLOT: Called when value of slider rotation1 change
-*/
-void SMESHGUI_ClippingDlg::SliderRotation1HasMoved( int value )
-{
-  TLValueRotation1->setText( QString("%1\xB0").arg( value ) );
-  SetCurrentPlaneParam();
-}
-
-/*!
-  SLOT: Called when value of slider rotation2 change
-*/
-void SMESHGUI_ClippingDlg::SliderRotation2HasMoved( int value )
-{
-  TLValueRotation2->setText( QString("%1\xB0").arg( value ) );
-  SetCurrentPlaneParam();
 }
 
 void SMESHGUI_ClippingDlg::onSelectAbsoluteOrientation( int mode )

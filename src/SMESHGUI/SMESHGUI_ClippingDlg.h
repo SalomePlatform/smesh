@@ -60,6 +60,8 @@ class SALOME_Actor;
 class SMESHGUI;
 class SMESH_Actor;
 class QtxDoubleSpinBox;
+class QtxDoubleSpinSlider;
+class QtxIntSpinSlider;
 class vtkActor;
 class vtkDataSetMapper;
 class vtkPlaneSource;
@@ -224,12 +226,9 @@ private:
   QLabel*                 TextLabelDistance;
   QLabel*                 TextLabelRotation1;
   QLabel*                 TextLabelRotation2;
-  QLabel*                 TLValueDistance;
-  QLabel*                 TLValueRotation1;
-  QLabel*                 TLValueRotation2;
-  QSlider*                SliderDistance;
-  QSlider*                SliderRotation1;
-  QSlider*                SliderRotation2;
+  QtxDoubleSpinSlider*    SpinSliderDistance;
+  QtxIntSpinSlider*       SpinSliderRotation1;
+  QtxIntSpinSlider*       SpinSliderRotation2;
   QComboBox*              CBRelativeOrientation;
 
   QCheckBox*              PreviewCheckBox;
@@ -266,9 +265,6 @@ public slots:
   void ClickOnApply();
   void ClickOnHelp();
 
-  void SliderDistanceHasMoved(int);
-  void SliderRotation1HasMoved(int);
-  void SliderRotation2HasMoved(int);
   void onSelectAbsoluteOrientation( int );
   void onSelectRelativeOrientation( int );
   void onReset();
