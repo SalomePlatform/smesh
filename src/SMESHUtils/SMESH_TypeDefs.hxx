@@ -72,6 +72,30 @@ namespace SMESHUtils
     TVECTOR v2( vec );
     vec.swap( v2 );
   }
+  /*!
+   * \brief Auto pointer
+   */
+  template <typename TOBJ>
+  struct Deleter
+  {
+    TOBJ* _obj;
+    Deleter( TOBJ* obj ): _obj( obj ) {}
+    ~Deleter() { delete _obj; _obj = 0; }
+  private:
+    Deleter( const Deleter& );
+  };
+  /*!
+   * \brief Auto pointer to array
+   */
+  template <typename TOBJ>
+  struct ArrayDeleter
+  {
+    TOBJ* _obj;
+    ArrayDeleter( TOBJ* obj ): _obj( obj ) {}
+    ~ArrayDeleter() { delete [] _obj; _obj = 0; }
+  private:
+    ArrayDeleter( const ArrayDeleter& );
+  };
 }
 
 //=======================================================================
@@ -170,47 +194,5 @@ typedef const SMDS_MeshNode* SMDS_MeshNodePtr;
 DEFINE_BASECOLLECTION (SMESH_BaseCollectionNodePtr, SMDS_MeshNodePtr)
 DEFINE_SEQUENCE(SMESH_SequenceOfNode,
                 SMESH_BaseCollectionNodePtr, SMDS_MeshNodePtr)
-
-// --------------------------------------------------------------------------------
-// #include "SMESHDS_DataMapOfShape.hxx"
-
-// #include <NCollection_DefineIndexedMap.hxx>
-
-// #include <TopoDS_Shape.hxx>
-
-///  Class SMESH_IndexedMapOfShape
-
-// DEFINE_BASECOLLECTION (SMESH_BaseCollectionShape, TopoDS_Shape)
-// DEFINE_INDEXEDMAP (SMESH_IndexedMapOfShape, SMESH_BaseCollectionShape, TopoDS_Shape)
-
-///  Class SMESH_IndexedDataMapOfShapeIndexedMapOfShape
-
-// DEFINE_BASECOLLECTION (SMESH_BaseCollectionIndexedMapOfShape, SMESH_IndexedMapOfShape)
-// DEFINE_INDEXEDDATAMAP (SMESH_IndexedDataMapOfShapeIndexedMapOfShape,
-//                        SMESH_BaseCollectionIndexedMapOfShape, TopoDS_Shape,
-//                        SMESH_IndexedMapOfShape)
-
-// --------------------------------------------------------------------------------
-// class SMESH_DataMapOfElemPtrSequenceOfElemPtr
-
-// SMESHUtils_EXPORT 
-// inline Standard_Integer HashCode(SMDS_MeshElementPtr theElem,
-//                                  const Standard_Integer theUpper)
-// {
-//   void* anElem = (void*) theElem;
-//   return HashCode(anElem,theUpper);
-// }
-
-// SMESHUtils_EXPORT 
-// inline Standard_Boolean IsEqual(SMDS_MeshElementPtr theOne,
-//                                 SMDS_MeshElementPtr theTwo)
-// {
-//   return theOne == theTwo;
-// }
-
-// DEFINE_BASECOLLECTION (SMESH_BaseCollectionSequenceOfElemPtr, SMESH_SequenceOfElemPtr)
-// DEFINE_DATAMAP (SMESH_DataMapOfElemPtrSequenceOfElemPtr,
-//                 SMESH_BaseCollectionSequenceOfElemPtr,
-//                 SMDS_MeshElementPtr, SMESH_SequenceOfElemPtr)
 
 #endif
