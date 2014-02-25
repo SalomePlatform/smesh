@@ -25,7 +25,6 @@
 //           Moved here from SMESH_Quadrangle_2D_i.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #ifndef _SMESH_QUADRANGLE_2D_I_HXX_
 #define _SMESH_QUADRANGLE_2D_I_HXX_
@@ -47,11 +46,11 @@ class STDMESHERS_I_EXPORT StdMeshers_Quadrangle_2D_i:
   public virtual POA_StdMeshers::StdMeshers_Quadrangle_2D,
   public virtual SMESH_2D_Algo_i
 {
-public:
+ public:
   // Constructor
   StdMeshers_Quadrangle_2D_i( PortableServer::POA_ptr thePOA,
-                         int                     theStudyId,
-                         ::SMESH_Gen*            theGenImpl );
+                              int                     theStudyId,
+                              ::SMESH_Gen*            theGenImpl );
 
   // Destructor
   virtual ~StdMeshers_Quadrangle_2D_i();
@@ -59,7 +58,7 @@ public:
   // Get implementation
   ::StdMeshers_Quadrangle_2D* GetImpl();
 
-  // Method return true if algorithm is applicable
+  // Return true if the algorithm is applicable to a shape
   static CORBA::Boolean IsApplicable(const TopoDS_Shape &S, CORBA::Boolean toCheckAll);
 };
 

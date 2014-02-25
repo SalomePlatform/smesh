@@ -743,7 +743,10 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh, SMESH_MesherHelper* aHelper
 
 //================================================================================
 /*!
- * \brief Return true if applied compute mesh on this shape
+ * \brief Return true if the algorithm can mesh this shape
+ *  \param [in] aShape - shape to check
+ *  \param [in] toCheckAll - if true, this check returns OK if all shapes are OK,
+ *              else, returns OK if all at least one shape is OK
  */
 //================================================================================
 
@@ -753,19 +756,24 @@ bool StdMeshers_Hexa_3D::IsApplicable( const TopoDS_Shape & aShape, bool toCheck
   TopTools_IndexedMapOfOrientedShape theShapeIDMap;
   bool isCurShellApp;
   int nbFoundShells = 0;
-  bool isEmpty = true;
-  for ( TopExp_Explorer exp0( aShape, TopAbs_SOLID ); exp0.More(); exp0.Next() ){
-    nbFoundShells = 0;
+  TopExp_Explorer exp0( aShape, TopAbs_SOLID );
+  if ( !exp0.More() ) return false;
+  for ( ; exp0.More(); exp0.Next() )
+  {
+    nbFoundShells = 1;
+    isCurShellApp = false;
     for (TopExp_Explorer exp1( exp0.Current(), TopAbs_SHELL ); exp1.More(); exp1.Next(), ++nbFoundShells){
-      TopoDS_Shell shell = TopoDS::Shell(exp1.Current());
+      if ( nbFoundShells == 2 ) {
+        if ( toCheckAll ) return false;
+        break;
+      }
+      const TopoDS_Shell& shell = TopoDS::Shell(exp1.Current());
       isCurShellApp = SMESH_Block::FindBlockShapes(shell, theVertex0, theVertex1, theShapeIDMap );
-      if( ( toCheckAll && !isCurShellApp ) || nbFoundShells == 1 ) return false;
-      isEmpty = false;
+      if ( toCheckAll && !isCurShellApp ) return false;
     }
     if( !toCheckAll && isCurShellApp ) return true;
   }
-  if( toCheckAll && !isEmpty) return true;
-  return false;
+  return toCheckAll;
 };
 
 //=======================================================================

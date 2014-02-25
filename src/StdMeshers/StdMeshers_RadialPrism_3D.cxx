@@ -601,7 +601,10 @@ bool StdMeshers_RadialPrism_3D::Evaluate(SMESH_Mesh& aMesh,
 
 //================================================================================
 /*!
- * \brief Return true if applied compute mesh on this shape
+ * \brief Return true if the algorithm can mesh this shape
+ *  \param [in] aShape - shape to check
+ *  \param [in] toCheckAll - if true, this check returns OK if all shapes are OK,
+ *              else, returns OK if all at least one shape is OK
  */
 //================================================================================
 
@@ -609,39 +612,40 @@ bool StdMeshers_RadialPrism_3D::IsApplicable( const TopoDS_Shape & aShape, bool 
 {
   bool isCurShellApp;
   int nbFoundSolids = 0;
-  for (TopExp_Explorer exp( aShape, TopAbs_SOLID ); exp.More(); exp.Next(), ++nbFoundSolids ){
-#if OCC_VERSION_LARGE > 0x06050400
-    TopoDS_Shell outerShell = BRepClass3d::OuterShell( TopoDS::Solid( exp.Current() ));
-#else
-    TopoDS_Shell outerShell = BRepTools::OuterShell( TopoDS::Solid( exp.Current() ));
-#endif
-    TopoDS_Shape innerShell;
+  for (TopExp_Explorer exp( aShape, TopAbs_SOLID ); exp.More(); exp.Next(), ++nbFoundSolids )
+  {
+    TopoDS_Shape shell[2];
     int nbShells = 0;
-    for ( TopoDS_Iterator It (exp.Current()); It.More(); It.Next(), ++nbShells )
-      if ( !outerShell.IsSame( It.Value() ))
-        innerShell = It.Value();
-    if ( nbShells != 2 ) { nbFoundSolids--; continue; }
+    for ( TopoDS_Iterator It (exp.Current()); It.More(); It.Next() )
+    {
+      nbShells++;
+      if ( nbShells > 2 ) {
+        if ( toCheckAll ) return false;
+        break;
+      }
+      shell[ nbShells-1 ] = It.Value();
+    }
+    if ( nbShells != 2 ) continue;
 
-    int nbFaces1 = SMESH_MesherHelper:: Count( innerShell, TopAbs_FACE, 0 );
-    int nbFaces2 = SMESH_MesherHelper:: Count( outerShell, TopAbs_FACE, 0 );
+    int nbFaces1 = SMESH_MesherHelper:: Count( shell[0], TopAbs_FACE, 0 );
+    int nbFaces2 = SMESH_MesherHelper:: Count( shell[1], TopAbs_FACE, 0 );
     if ( nbFaces1 != nbFaces2 ){
       if( toCheckAll ) return false;
       continue;
     }
-    int nbEdges1 = SMESH_MesherHelper:: Count( innerShell, TopAbs_EDGE, 0 );
-    int nbEdges2 = SMESH_MesherHelper:: Count( outerShell, TopAbs_EDGE, 0 );
+    int nbEdges1 = SMESH_MesherHelper:: Count( shell[0], TopAbs_EDGE, 0 );
+    int nbEdges2 = SMESH_MesherHelper:: Count( shell[1], TopAbs_EDGE, 0 );
     if ( nbEdges1 != nbEdges2 ){
       if( toCheckAll ) return false;
       continue;
     }
-    int nbVertices1 = SMESH_MesherHelper:: Count( innerShell, TopAbs_VERTEX, 0 );
-    int nbVertices2 = SMESH_MesherHelper:: Count( outerShell, TopAbs_VERTEX, 0 );
+    int nbVertices1 = SMESH_MesherHelper:: Count( shell[0], TopAbs_VERTEX, 0 );
+    int nbVertices2 = SMESH_MesherHelper:: Count( shell[1], TopAbs_VERTEX, 0 );
     if ( nbVertices1 != nbVertices2 ){
       if( toCheckAll ) return false;
       continue;
     }
     if ( !toCheckAll ) return true;
   }
-  if( toCheckAll && nbFoundSolids != 0) return true;
-  return false;
+  return ( toCheckAll && nbFoundSolids != 0);
 };

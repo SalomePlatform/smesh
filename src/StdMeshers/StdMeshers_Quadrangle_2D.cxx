@@ -906,32 +906,39 @@ bool StdMeshers_Quadrangle_2D::Evaluate(SMESH_Mesh&         aMesh,
 
 //================================================================================
 /*!
- * \brief Return true if applied compute mesh on this shape
+ * \brief Return true if the algorithm can mesh this shape
+ *  \param [in] aShape - shape to check
+ *  \param [in] toCheckAll - if true, this check returns OK if all shapes are OK,
+ *              else, returns OK if all at least one shape is OK
  */
 //================================================================================
 
 bool StdMeshers_Quadrangle_2D::IsApplicable( const TopoDS_Shape & aShape, bool toCheckAll )
 {
   int nbFoundFaces = 0;
-  for (TopExp_Explorer exp( aShape, TopAbs_FACE ); exp.More(); exp.Next(), ++nbFoundFaces ){
+  for (TopExp_Explorer exp( aShape, TopAbs_FACE ); exp.More(); exp.Next(), ++nbFoundFaces )
+  {
     TopoDS_Face aFace = TopoDS::Face(exp.Current());
     if ( aFace.Orientation() >= TopAbs_INTERNAL ) aFace.Orientation( TopAbs_FORWARD );
 
     list< TopoDS_Edge > aWire;
     list< int > nbEdgesInWire;
     int nbWire = SMESH_Block::GetOrderedEdges (aFace, aWire, nbEdgesInWire);
+    if ( nbWire != 1 ) {
+      if ( toCheckAll ) return false;
+      continue;
+    }
 
     int nbNoDegenEdges = 0;
     list<TopoDS_Edge>::iterator edge = aWire.begin();
-      for ( ; edge != aWire.end(); ++edge ){
-        if ( !SMESH_Algo::isDegenerated( *edge ))
-          ++nbNoDegenEdges;
-      }
-      if( toCheckAll && (nbWire != 1 || nbNoDegenEdges <= 3 ) ) return false;
-      if( !toCheckAll && nbWire == 1 && nbNoDegenEdges > 3 ) return true;
+    for ( ; edge != aWire.end(); ++edge ) {
+      if ( !SMESH_Algo::isDegenerated( *edge ))
+        ++nbNoDegenEdges;
+    }
+    if ( toCheckAll  && nbNoDegenEdges <  3 ) return false;
+    if ( !toCheckAll && nbNoDegenEdges >= 3 ) return true;
   }
-  if( toCheckAll && nbFoundFaces != 0) return true;
-  return false;
+  return ( toCheckAll && nbFoundFaces != 0 );
 };
 
 //================================================================================

@@ -25,7 +25,6 @@
 //           Moved here from SMESH_Prism_3D_i.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #ifndef _SMESH_Prism_3D_I_HXX_
 #define _SMESH_Prism_3D_I_HXX_
@@ -57,6 +56,9 @@ public:
 
   // Get implementation
   ::StdMeshers_Prism_3D* GetImpl();
+
+  // Return true if the algorithm is applicable to a shape
+  static CORBA::Boolean IsApplicable(const TopoDS_Shape &S, CORBA::Boolean toCheckAll);
 };
 
 // ======================================================
@@ -78,7 +80,7 @@ public:
   // Get implementation
   ::StdMeshers_RadialPrism_3D* GetImpl();
 
-  // Method return true if algorithm is applicable
+  // Return true if the algorithm is applicable to a shape
   static CORBA::Boolean IsApplicable(const TopoDS_Shape &S, CORBA::Boolean toCheckAll);
 };
 

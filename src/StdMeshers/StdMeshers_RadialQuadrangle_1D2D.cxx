@@ -1293,10 +1293,11 @@ bool StdMeshers_RadialQuadrangle_1D2D::IsApplicable( const TopoDS_Shape & aShape
   int nbFoundFaces = 0;
   for (TopExp_Explorer exp( aShape, TopAbs_FACE ); exp.More(); exp.Next(), ++nbFoundFaces ){
     TopoDS_Edge CircEdge, LinEdge1, LinEdge2;
-    int nbe = analyseFace( TopoDS_Shape( exp.Current() ), CircEdge, LinEdge1, LinEdge2 );
+    int nbe = analyseFace( exp.Current(), CircEdge, LinEdge1, LinEdge2 );
     Handle(Geom_Circle) aCirc = Handle(Geom_Circle)::DownCast( getCurve( CircEdge ));
-    if( toCheckAll && ( nbe > 3 || nbe < 1 || aCirc.IsNull() )) return false;
-    if( !toCheckAll && ( nbe <= 3 && nbe >= 1 && !aCirc.IsNull() )) return true;
+    bool ok = ( nbe <= 3 && nbe >= 1 && !aCirc.IsNull() );
+    if( toCheckAll  && !ok ) return false;
+    if( !toCheckAll && ok  ) return true;
   }
   if( toCheckAll && nbFoundFaces != 0 ) return true;
   return false;

@@ -25,7 +25,6 @@
 //           Moved here from SMESH_Quadrangle_2D_i.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #include "StdMeshers_Quadrangle_2D_i.hxx"
 #include "SMESH_Gen.hxx"
@@ -44,17 +43,17 @@ using namespace std;
 //=============================================================================
 
 StdMeshers_Quadrangle_2D_i::StdMeshers_Quadrangle_2D_i( PortableServer::POA_ptr thePOA,
-                                              int                     theStudyId,
-                                              ::SMESH_Gen*            theGenImpl )
-     : SALOME::GenericObj_i( thePOA ), 
-       SMESH_Hypothesis_i( thePOA ), 
-       SMESH_Algo_i( thePOA ),
-       SMESH_2D_Algo_i( thePOA )
+                                                        int                     theStudyId,
+                                                        ::SMESH_Gen*            theGenImpl )
+  : SALOME::GenericObj_i( thePOA ),
+    SMESH_Hypothesis_i( thePOA ),
+    SMESH_Algo_i( thePOA ),
+    SMESH_2D_Algo_i( thePOA )
 {
   MESSAGE( "StdMeshers_Quadrangle_2D_i::StdMeshers_Quadrangle_2D_i" );
   myBaseImpl = new ::StdMeshers_Quadrangle_2D( theGenImpl->GetANewId(),
-                                          theStudyId,
-                                          theGenImpl );
+                                               theStudyId,
+                                               theGenImpl );
 }
 
 //=============================================================================
@@ -62,7 +61,7 @@ StdMeshers_Quadrangle_2D_i::StdMeshers_Quadrangle_2D_i( PortableServer::POA_ptr 
  *  StdMeshers_Quadrangle_2D_i::~StdMeshers_Quadrangle_2D_i
  *
  *  Destructor
- *  
+ *
  */
 //=============================================================================
 
@@ -89,11 +88,12 @@ StdMeshers_Quadrangle_2D_i::~StdMeshers_Quadrangle_2D_i()
 /*!
  *  StdMeshers_Quadrangle_2D_i::IsApplicable
  *
- *  Method return true if algorithm is applicable
+ *  Return true if the algorithm is applicable to a shape
  */
 //=============================================================================
 
-CORBA::Boolean StdMeshers_Quadrangle_2D_i::IsApplicable( const TopoDS_Shape &S, CORBA::Boolean toCheckAll )
+CORBA::Boolean StdMeshers_Quadrangle_2D_i::IsApplicable( const TopoDS_Shape &S,
+                                                         CORBA::Boolean toCheckAll )
 {
   return ::StdMeshers_Quadrangle_2D::IsApplicable( S, toCheckAll );
 }

@@ -432,9 +432,11 @@ public:
     * \param helper - helper initialized by mesh and shape to add prisms to
    */
   static void AddPrisms( std::vector<const TNodeColumn*> & nodeColumns,
-                         SMESH_MesherHelper*          helper);
+                         SMESH_MesherHelper*               helper);
 
-private:
+  static bool IsApplicable(const TopoDS_Shape & aShape, bool toCheckAll);
+
+ private:
 
   /*!
    * \brief Analyse shape geometry and mesh.

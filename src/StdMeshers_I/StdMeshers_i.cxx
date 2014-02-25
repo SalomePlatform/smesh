@@ -84,7 +84,9 @@ namespace SMESH {
   class ApplicableToAny
   {
   public:
-    static CORBA::Boolean IsApplicable( const TopoDS_Shape &S, CORBA::Boolean toCheckAll ){ return true; }
+    static CORBA::Boolean IsApplicable( const TopoDS_Shape &S, CORBA::Boolean toCheckAll ) {
+      return true;
+    }
   };
 };
 template <class T, class TIsApplicable = SMESH::ApplicableToAny> class StdHypothesisCreator_i:public HypothesisCreator_i<T>
@@ -223,9 +225,9 @@ STDMESHERS_I_EXPORT
     else if (strcmp(aHypName, "Projection_2D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_Projection_2D_i>;
     else if (strcmp(aHypName, "Projection_3D") == 0)
-      aCreator = new StdHypothesisCreator_i<StdMeshers_Projection_3D_i>;
+      aCreator = new StdHypothesisCreator_i<StdMeshers_Projection_3D_i, StdMeshers_Hexa_3D_i>;
     else if (strcmp(aHypName, "Prism_3D") == 0)
-      aCreator = new StdHypothesisCreator_i<StdMeshers_Prism_3D_i>;
+      aCreator = new StdHypothesisCreator_i<StdMeshers_Prism_3D_i, StdMeshers_Prism_3D_i>;
     else if (strcmp(aHypName, "RadialPrism_3D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_RadialPrism_3D_i, StdMeshers_RadialPrism_3D_i>;
     else if (strcmp(aHypName, "SegmentAroundVertex_0D") == 0)

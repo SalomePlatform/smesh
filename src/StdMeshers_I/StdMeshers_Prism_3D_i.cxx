@@ -25,7 +25,6 @@
 //           Moved here from SMESH_Prism_3D_i.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #include "StdMeshers_Prism_3D_i.hxx"
 #include "SMESH_Gen.hxx"
@@ -42,12 +41,12 @@ using namespace std;
 //=============================================================================
 
 StdMeshers_Prism_3D_i::StdMeshers_Prism_3D_i( PortableServer::POA_ptr thePOA,
-                                  int                     theStudyId,
-                                  ::SMESH_Gen*            theGenImpl )
-     : SALOME::GenericObj_i( thePOA ), 
-       SMESH_Hypothesis_i( thePOA ), 
-       SMESH_Algo_i( thePOA ),
-       SMESH_3D_Algo_i( thePOA )
+                                              int                     theStudyId,
+                                              ::SMESH_Gen*            theGenImpl )
+  : SALOME::GenericObj_i( thePOA ),
+    SMESH_Hypothesis_i( thePOA ),
+    SMESH_Algo_i( thePOA ),
+    SMESH_3D_Algo_i( thePOA )
 {
   MESSAGE( "StdMeshers_Prism_3D_i::StdMeshers_Prism_3D_i" );
   myBaseImpl = new ::StdMeshers_Prism_3D( theGenImpl->GetANewId(),
@@ -67,6 +66,13 @@ StdMeshers_Prism_3D_i::~StdMeshers_Prism_3D_i()
   MESSAGE( "StdMeshers_Prism_3D_i::GetImpl" );
   return ( ::StdMeshers_Prism_3D* )myBaseImpl;
 }
+//-----------------------------------------------------------------------------
+
+CORBA::Boolean StdMeshers_Prism_3D_i::IsApplicable( const TopoDS_Shape &S,
+                                                    CORBA::Boolean toCheckAll )
+{
+  return ::StdMeshers_Prism_3D::IsApplicable( S, toCheckAll );
+}
 
 
 //=============================================================================
@@ -76,17 +82,17 @@ StdMeshers_Prism_3D_i::~StdMeshers_Prism_3D_i()
 //=============================================================================
 
 StdMeshers_RadialPrism_3D_i::StdMeshers_RadialPrism_3D_i( PortableServer::POA_ptr thePOA,
-                                  int                     theStudyId,
-                                  ::SMESH_Gen*            theGenImpl )
-     : SALOME::GenericObj_i( thePOA ), 
-       SMESH_Hypothesis_i( thePOA ), 
-       SMESH_Algo_i( thePOA ),
-       SMESH_3D_Algo_i( thePOA )
+                                                          int                     theStudyId,
+                                                          ::SMESH_Gen*            theGenImpl )
+  : SALOME::GenericObj_i( thePOA ),
+    SMESH_Hypothesis_i( thePOA ),
+    SMESH_Algo_i( thePOA ),
+    SMESH_3D_Algo_i( thePOA )
 {
   MESSAGE( "StdMeshers_RadialPrism_3D_i::StdMeshers_RadialPrism_3D_i" );
   myBaseImpl = new ::StdMeshers_RadialPrism_3D( theGenImpl->GetANewId(),
-                                    theStudyId,
-                                    theGenImpl );
+                                                theStudyId,
+                                                theGenImpl );
 }
 //-----------------------------------------------------------------------------
 
@@ -103,7 +109,8 @@ StdMeshers_RadialPrism_3D_i::~StdMeshers_RadialPrism_3D_i()
 }
 //-----------------------------------------------------------------------------
 
-CORBA::Boolean StdMeshers_RadialPrism_3D_i::IsApplicable( const TopoDS_Shape &S, CORBA::Boolean toCheckAll )
+CORBA::Boolean StdMeshers_RadialPrism_3D_i::IsApplicable( const TopoDS_Shape &S,
+                                                          CORBA::Boolean toCheckAll )
 {
   return ::StdMeshers_RadialPrism_3D::IsApplicable( S, toCheckAll );
 }

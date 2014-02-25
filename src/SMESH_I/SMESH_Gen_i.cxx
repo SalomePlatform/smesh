@@ -93,7 +93,7 @@
 #include "SMESH_Mesh_i.hxx"
 #include "SMESH_PreMeshInfo.hxx"
 #include "SMESH_PythonDump.hxx"
-//#include "memoire.h"
+#include "SMESH_TryCatch.hxx" // to include after OCC headers!
 
 #include CORBA_SERVER_HEADER(SMESH_Group)
 #include CORBA_SERVER_HEADER(SMESH_Filter)
@@ -5070,27 +5070,33 @@ CORBA::Boolean SMESH_Gen_i::IsApplicable ( const char*           theAlgoType,
                                            GEOM::GEOM_Object_ptr theGeomObject,
                                            CORBA::Boolean        toCheckAll)
 {
+  SMESH_TRY;
+
   std::string aPlatformLibName;
   typedef GenericHypothesisCreator_i* (*GetHypothesisCreator)(const char*);
   GenericHypothesisCreator_i* aCreator = getHypothesisCreator(theAlgoType, theLibName, aPlatformLibName);
   if (aCreator)
   {
     TopoDS_Shape shape = GeomObjectToShape( theGeomObject );
-    return aCreator->IsApplicable( shape, toCheckAll );
+    if ( !shape.IsNull() )
+      return aCreator->IsApplicable( shape, toCheckAll );
   }
   else
   {
-    if(MYDEBUG) { MESSAGE( "Shape not defined"); }
     return false;
   }
+
+  SMESH_CATCH( SMESH::doNothing );
+  return true;
 }
 
 //=================================================================================
 // function : importData
 // purpose  : imports mesh data file (the med one) into the SMESH internal data structure
 //=================================================================================
-Engines::ListOfIdentifiers* SMESH_Gen_i::importData(
-  CORBA::Long studyId, Engines::DataContainer_ptr data, const Engines::ListOfOptions& options)
+Engines::ListOfIdentifiers* SMESH_Gen_i::importData(CORBA::Long                   studyId,
+                                                    Engines::DataContainer_ptr    data,
+                                                    const Engines::ListOfOptions& options)
 {
   Engines::ListOfIdentifiers_var aResultIds = new Engines::ListOfIdentifiers;
   list<string> aResultList;
