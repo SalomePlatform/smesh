@@ -2654,6 +2654,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CopyMesh(SMESH::SMESH_IDSource_ptr meshPart,
   SMESH::array_of_ElementType_var srcElemTypes = meshPart->GetTypes();
   if ( SMESH::DownCast<SMESH_Mesh_i*>( meshPart ))
   {
+    srcMesh_i->Load();
     srcElemIt = srcMeshDS->elementsIterator();
     srcNodeIt = srcMeshDS->nodesIterator();
   }
@@ -2720,10 +2721,15 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CopyMesh(SMESH::SMESH_IDSource_ptr meshPart,
       const SMDS_MeshElement * newElem;
       switch ( elem->GetEntityType() ) {
       case SMDSEntity_Polyhedra:
-        newElem = editor.GetMeshDS()->
-          AddPolyhedralVolumeWithID( nodes,
-                                     static_cast<const SMDS_VtkVolume*>(elem)->GetQuantities(),
-                                     ID);
+        if ( toKeepIDs )
+          newElem = editor.GetMeshDS()->
+            AddPolyhedralVolumeWithID( nodes,
+                                       static_cast<const SMDS_VtkVolume*>(elem)->GetQuantities(),
+                                       ID);
+        else
+          newElem = editor.GetMeshDS()->
+            AddPolyhedralVolume( nodes,
+                                 static_cast<const SMDS_VtkVolume*>(elem)->GetQuantities());
         break;
       case SMDSEntity_Ball:
         newElem = editor.AddElement( nodes, SMDSAbs_Ball, false, ID,
