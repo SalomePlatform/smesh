@@ -2606,14 +2606,16 @@ void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theI
       if ( isAvailableChoiceAlgo )
         setCurrentHyp( dim, Algo, anCurrentAvailableAlgo );
     }
-    int aDimNotGeometry = ( myIsOnGeometry ) ? SMESH::DIM_0D : SMESH::DIM_3D;
     if ( !myIsOnGeometry )
-      for ( int i = SMESH::DIM_0D; i <= SMESH::DIM_3D; i++ ){
-        myDlg->disableTab( i );
+      for ( int i = SMESH::DIM_0D; i <= SMESH::DIM_3D; i++ ) {
+        if ( i < SMESH::DIM_3D ) myDlg->disableTab( i );
+        else                     myDlg->enableTab( i );
       }
-    for ( int i = aDimNotGeometry; i <= myMaxShapeDim; i++ ) {
-      myDlg->enableTab( i );
-    }
+    else
+      for ( int i = SMESH::DIM_0D; i <= SMESH::DIM_3D; i++ ) {
+        if ( i > myMaxShapeDim ) myDlg->disableTab( i );
+        else                     myDlg->enableTab( i );
+      }
     myDlg->setCurrentTab( theTabIndex );
   }
   else
