@@ -1399,20 +1399,22 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
 
   QStringList anAvailable;
 
-  // check that tab enable, if algorithm building needed algo is one less than dimension
-  if ( algoData && myIsOnGeometry && !algoData->InputTypes.isEmpty() &&
-       ( aDim > SMESH::DIM_0D ) && !isAccessibleDim( aDim - 1 ) ){
-    myDlg->enableTab( aDim - 1 );
-  }
-  if ( (myDlg->currentMeshType() != MT_ANY) &&
-       (( !algoData && ( aDim > SMESH::DIM_0D ) && isAccessibleDim( aDim - 1 )) ||
-        ( algoData && myIsOnGeometry && algoData->InputTypes.isEmpty() &&
-          ( aDim > SMESH::DIM_0D ) && isAccessibleDim( aDim - 1 ) ) ) ){
-    for (int i = aDim - 1; i >= SMESH::DIM_0D; i--){
-      if ( isAccessibleDim( i ) ) {
-        myDlg->disableTab( i );
-        setCurrentHyp(i, Algo, -1);
-      }
+  // check that tab enabled of one less dimension
+  if ( aDim > SMESH::DIM_0D )
+  {
+    if ( isAccessibleDim( aDim - 1 ) )
+    {
+      if (( myDlg->currentMeshType() != MT_ANY ) &&
+          ( !algoData || ( myIsOnGeometry && algoData->InputTypes.isEmpty() )))
+        for (int i = aDim - 1; i >= SMESH::DIM_0D; i--)
+          if ( isAccessibleDim( i ) ) {
+            myDlg->disableTab( i );
+            setCurrentHyp(i, Algo, -1);
+          }
+    }
+    else if ( algoData && myIsOnGeometry && !algoData->InputTypes.isEmpty() )
+    {
+      myDlg->enableTab( aDim - 1 );
     }
   }
 

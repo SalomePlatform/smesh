@@ -281,20 +281,16 @@ namespace SMESH
     // fill list of hypotheses/algorithms
     THypothesisDataMap& pMap = isAlgo ? myAlgorithmsMap : myHypothesesMap;
     THypothesisDataMap::ConstIterator anIter;
-    for ( anIter = pMap.begin(); anIter != pMap.end(); anIter++ ) {
+    for ( anIter = pMap.begin(); anIter != pMap.end(); anIter++ )
+    {
       HypothesisData* aData = anIter.value();
-      if(!aData || aData->Label.isEmpty()) continue;
-      if (( theDim < 0 || aData->Dim.contains( theDim )) &&
-          ( isAlgo || aData->IsAuxOrNeedHyp == isAux ) &&
-          ( aData->Context == "ANY" || aData->Context == context ))
+      if (( aData && !aData->Label.isEmpty() ) &&
+          ( theDim < 0              || aData->Dim.contains( theDim )) &&
+          ( isAlgo                  || aData->IsAuxOrNeedHyp == isAux ) &&
+          ( aData->Context == "ANY" || aData->Context == context ) &&
+          ( !checkGeometry          || aData->IsNeedGeometry == isNeedGeometry ))
       {
-        if (checkGeometry) {
-          if (aData->IsNeedGeometry == isNeedGeometry)
-            aHypList.append(anIter.key());
-        }
-        else {
-          aHypList.append(anIter.key());
-        }
+        aHypList.append(anIter.key());
       }
     }
     return aHypList;
