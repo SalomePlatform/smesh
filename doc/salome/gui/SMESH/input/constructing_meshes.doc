@@ -92,16 +92,16 @@ written in Python.
     hypothesis. After selection of an algorithm "Hypothesis" field of
     the dialog can contain:
     <ul>
-      <li> <em><Default></em> if the algorithm can work using default
+      <li> <em>\<Default\></em> if the algorithm can work using default
       parameters.</li>
-      <li> <em><None></em> if the algorithm requires a hypothesis defining
+      <li> <em>\<None\></em> if the algorithm requires a hypothesis defining
       its parameters.</li>
       <li> Nothing if the algorithm has no parameters to tune.</li>
     </ul>
     After selection of an algorithm "Add. Hypothesis" field of
     the dialog can contain:
     <ul>
-      <li> <em><None></em> if the algorithm can be additionally tuned
+      <li> <em>\<None\></em> if the algorithm can be additionally tuned
       using an additional hypothesis.</li>
       <li> Nothing if the algorithm has no additional parameters to tune.</li>
     </ul>
