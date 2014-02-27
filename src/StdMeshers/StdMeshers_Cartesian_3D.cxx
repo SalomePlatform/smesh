@@ -1934,6 +1934,22 @@ namespace
         }
       } // while ( nbSplits > 0 )
 
+      if ( quad._edgeNodes.size() > nbUsedEdgeNodes )
+      {
+        // make _vertexNodes from not used _edgeNodes
+        const double tol = 0.05 * Min( Min( _sideLength[0], _sideLength[1] ), _sideLength[0] );
+        for ( size_t iP = 0; iP < quad._edgeNodes.size(); ++iP )
+        {
+          if ( quad._edgeNodes[ iP ]._isUsedInFace ) continue;
+          _Node* equalNode =
+            FindEqualNode( _vertexNodes, quad._edgeNodes[ iP ].EdgeIntPnt(), tol*tol );
+          if ( equalNode )
+            equalNode->Add( quad._edgeNodes[ iP ].EdgeIntPnt() );
+          else
+            _vertexNodes.push_back( quad._edgeNodes[ iP ]);
+        }
+      }
+
       if ( polygon->_links.size() < 3 )
         _polygons.pop_back();
 
