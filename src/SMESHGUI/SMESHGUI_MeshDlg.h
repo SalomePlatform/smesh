@@ -76,6 +76,7 @@ public:
   int                          getActiveObject();
   void                         setAvailableMeshType(const QStringList& );
   int                          currentMeshType();
+  void                         setCurrentMeshType( const int );
 
 signals:
   void                         hypoSet( const QString& );

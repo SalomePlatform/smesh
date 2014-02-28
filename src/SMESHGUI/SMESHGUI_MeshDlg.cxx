@@ -668,5 +668,12 @@ int SMESHGUI_MeshDlg::currentMeshType( )
 {
   return myMeshType->currentIndex( );
 }
-
-
+//================================================================================
+/*!
+ * \brief Set current index types of mesh
+ */
+//================================================================================
+void SMESHGUI_MeshDlg::setCurrentMeshType( const int theIndex )
+{
+  myMeshType->setCurrentIndex( theIndex );
+}

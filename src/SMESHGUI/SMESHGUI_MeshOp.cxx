@@ -688,10 +688,13 @@ void SMESHGUI_MeshOp::selectionDone()
       myDlg->adjustSize();
       readMesh();
     }
+    int curIndex = myDlg->currentMeshType( );
     QStringList TypeMeshList;
     createMeshTypeList( TypeMeshList );
     setAvailableMeshType( TypeMeshList );
-    setFilteredAlgoData( myMaxShapeDim, myDlg->currentMeshType( ));
+    curIndex =( curIndex >= TypeMeshList.count() ) ? 0 : curIndex;
+    myDlg->setCurrentMeshType( curIndex );
+    setFilteredAlgoData( myMaxShapeDim, curIndex);
   }
   catch ( const SALOME::SALOME_Exception& S_ex )
   {
@@ -1421,7 +1424,7 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
   // check that algorithms of other dimentions are compatible with
   // the selected one
   if ( !algoData ) { // all algos becomes available
-    if (myDlg->currentMeshType() == MT_ANY)
+    if (myDlg->currentMeshType() == MT_ANY || aDim == SMESH::DIM_1D || aDim == SMESH::DIM_0D)
       availableHyps( aDim, Algo, anAvailable, myAvailableHypData[ aDim ][ Algo ]);
     else{
       anAvailable.clear();

@@ -760,18 +760,20 @@ bool StdMeshers_Hexa_3D::IsApplicable( const TopoDS_Shape & aShape, bool toCheck
   if ( !exp0.More() ) return false;
   for ( ; exp0.More(); exp0.Next() )
   {
-    nbFoundShells = 1;
+    nbFoundShells = 0;
     isCurShellApp = false;
-    for (TopExp_Explorer exp1( exp0.Current(), TopAbs_SHELL ); exp1.More(); exp1.Next(), ++nbFoundShells){
-      if ( nbFoundShells == 2 ) {
-        if ( toCheckAll ) return false;
-        break;
-      }
-      const TopoDS_Shell& shell = TopoDS::Shell(exp1.Current());
-      isCurShellApp = SMESH_Block::FindBlockShapes(shell, theVertex0, theVertex1, theShapeIDMap );
-      if ( toCheckAll && !isCurShellApp ) return false;
-    }
-    if( !toCheckAll && isCurShellApp ) return true;
+    TopExp_Explorer exp1( exp0.Current(), TopAbs_SHELL );
+    for ( ; exp1.More(); exp1.Next(), ++nbFoundShells)
+      if ( nbFoundShells == 2 ) break;
+    if ( nbFoundShells == 2){
+      if ( toCheckAll ) return false;
+      continue;
+    }   
+    exp1.Init( exp0.Current(), TopAbs_SHELL );
+    const TopoDS_Shell& shell = TopoDS::Shell(exp1.Current());
+    isCurShellApp = SMESH_Block::FindBlockShapes(shell, theVertex0, theVertex1, theShapeIDMap );
+    if ( toCheckAll && !isCurShellApp ) return false;
+    if ( !toCheckAll && isCurShellApp ) return true;
   }
   return toCheckAll;
 };

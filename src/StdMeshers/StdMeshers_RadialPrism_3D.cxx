@@ -625,7 +625,10 @@ bool StdMeshers_RadialPrism_3D::IsApplicable( const TopoDS_Shape & aShape, bool 
       }
       shell[ nbShells-1 ] = It.Value();
     }
-    if ( nbShells != 2 ) continue;
+    if ( nbShells != 2 ) { 
+      if ( toCheckAll ) return false;  
+      continue; 
+    }
 
     int nbFaces1 = SMESH_MesherHelper:: Count( shell[0], TopAbs_FACE, 0 );
     int nbFaces2 = SMESH_MesherHelper:: Count( shell[1], TopAbs_FACE, 0 );
