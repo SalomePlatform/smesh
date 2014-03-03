@@ -909,7 +909,7 @@ bool StdMeshers_Quadrangle_2D::Evaluate(SMESH_Mesh&         aMesh,
  * \brief Return true if the algorithm can mesh this shape
  *  \param [in] aShape - shape to check
  *  \param [in] toCheckAll - if true, this check returns OK if all shapes are OK,
- *              else, returns OK if all at least one shape is OK
+ *              else, returns OK if at least one shape is OK
  */
 //================================================================================
 
@@ -939,7 +939,7 @@ bool StdMeshers_Quadrangle_2D::IsApplicable( const TopoDS_Shape & aShape, bool t
     if ( !toCheckAll && nbNoDegenEdges >= 3 ) return true;
   }
   return ( toCheckAll && nbFoundFaces != 0 );
-};
+}
 
 //================================================================================
 /*!

@@ -746,7 +746,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh, SMESH_MesherHelper* aHelper
  * \brief Return true if the algorithm can mesh this shape
  *  \param [in] aShape - shape to check
  *  \param [in] toCheckAll - if true, this check returns OK if all shapes are OK,
- *              else, returns OK if all at least one shape is OK
+ *              else, returns OK if at least one shape is OK
  */
 //================================================================================
 
@@ -765,7 +765,7 @@ bool StdMeshers_Hexa_3D::IsApplicable( const TopoDS_Shape & aShape, bool toCheck
     TopExp_Explorer exp1( exp0.Current(), TopAbs_SHELL );
     for ( ; exp1.More(); exp1.Next(), ++nbFoundShells)
       if ( nbFoundShells == 2 ) break;
-    if ( nbFoundShells == 2){
+    if ( nbFoundShells != 1 ) {
       if ( toCheckAll ) return false;
       continue;
     }   
