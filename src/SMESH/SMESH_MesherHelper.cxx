@@ -1423,8 +1423,15 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
       return getMediumNodeOnComposedWire(n1,n2,force3d);
     }
     E = TopoDS::Edge(meshDS->IndexToShape( edgeID = pos.first ));
-    u[0] = GetNodeU(E,n1,n2, force3d ? 0 : &uvOK[0]);
-    u[1] = GetNodeU(E,n2,n1, force3d ? 0 : &uvOK[1]);
+    try {
+      u[0] = GetNodeU(E,n1,n2, force3d ? 0 : &uvOK[0]);
+      u[1] = GetNodeU(E,n2,n1, force3d ? 0 : &uvOK[1]);
+    }
+    catch ( Standard_Failure& f )
+    {
+      // issue 22502 / a node is on VERTEX not belonging to E
+      return getMediumNodeOnComposedWire(n1,n2,force3d);
+    }
   }
 
   if ( !force3d & uvOK[0] && uvOK[1] )
