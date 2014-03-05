@@ -2848,25 +2848,6 @@ void SMESH_Mesh_i::ExportSTL (const char *file, const bool isascii)
   _impl->ExportSTL(file, isascii);
 }
 
-namespace // utils used by ExportPartToMED()
-{
-  // remover of 0d elements temporary added by ExportPartToMED()
-  struct OdRemover
-  {
-    std::vector< const SMDS_MeshElement* > _0dElems;
-    SMESHDS_Mesh*                          _mesh;
-    OdRemover( SMESHDS_Mesh* mesh ): _mesh( mesh ) {}
-    ~OdRemover() {
-      for ( size_t i = 0; i < _0dElems.size(); ++i )
-        if ( _0dElems[i] )
-        {
-          SMESHDS_SubMesh* sm = _mesh->MeshElements( _0dElems[i]->getshapeId() );
-          _mesh->RemoveFreeElement( _0dElems[i], sm, false );
-        }
-    }
-  };
-}
-
 //================================================================================
 /*!
  * \brief Export a part of mesh to a med file
@@ -2921,29 +2902,6 @@ void SMESH_Mesh_i::ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
 
   SMESHDS_Mesh* meshDS = _impl->GetMeshDS();
 
-  OdRemover a0dRemover( meshDS );
-  if ( have0dField )
-  {
-    // temporary add 0D elements on all nodes on vertices
-    for ( int i = 1; i <= meshDS->MaxShapeIndex(); ++i )
-    {
-      if ( meshDS->IndexToShape( i ).ShapeType() != TopAbs_VERTEX )
-        continue;
-      if ( SMESHDS_SubMesh* sm = meshDS->MeshElements(i) ) {
-        SMDS_NodeIteratorPtr nIt= sm->GetNodes();
-        while (nIt->more())
-        {
-          const SMDS_MeshNode* n = nIt->next();
-          if ( n->NbInverseElements( SMDSAbs_0DElement ) == 0 )
-          {
-            a0dRemover._0dElems.push_back( meshDS->Add0DElement( n ));
-            sm->AddElement( a0dRemover._0dElems.back() );
-          }
-        }
-      }
-    }
-  }
-
   // write mesh
 
   string aMeshName = "Mesh";
@@ -2952,8 +2910,8 @@ void SMESH_Mesh_i::ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
        SMESH::DownCast< SMESH_Mesh_i* >( meshPart ))
   {
     aMeshName = prepareMeshNameAndGroups(file, overwrite);
-    _impl->ExportMED( file, aMeshName.c_str(), auto_groups, version, 0, autoDimension );
-
+    _impl->ExportMED( file, aMeshName.c_str(), auto_groups,
+                      version, 0, autoDimension, have0dField);
     meshDS = _impl->GetMeshDS();
   }
   else
@@ -2972,8 +2930,8 @@ void SMESH_Mesh_i::ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
       }
     }
     SMESH_MeshPartDS* partDS = new SMESH_MeshPartDS( meshPart );
-    _impl->ExportMED( file, aMeshName.c_str(), auto_groups, version, partDS, autoDimension );
-
+    _impl->ExportMED( file, aMeshName.c_str(), auto_groups,
+                      version, partDS, autoDimension, have0dField);
     meshDS = tmpDSDeleter._obj = partDS;
   }
 
@@ -2984,6 +2942,7 @@ void SMESH_Mesh_i::ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
     DriverMED_W_Field fieldWriter;
     fieldWriter.SetFile( file );
     fieldWriter.SetMeshName( aMeshName );
+    fieldWriter.AddODOnVertices( have0dField );
 
     exportMEDFields( fieldWriter, meshDS, fields, geomAssocFields );
   }

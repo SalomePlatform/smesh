@@ -41,6 +41,8 @@ class MESHDRIVERMED_EXPORT DriverMED_W_Field: public Driver_SMESHDS_Mesh
 
   DriverMED_W_Field();
 
+  void AddODOnVertices(bool toAdd) { _addODOnVertices = toAdd; }
+
   bool Set(SMESHDS_Mesh *      mesh,
            const std::string & fieldName,
            SMDSAbs_ElementType type,
@@ -72,6 +74,7 @@ class MESHDRIVERMED_EXPORT DriverMED_W_Field: public Driver_SMESHDS_Mesh
   std::vector< double >      _dblValues;
   std::vector< int >         _intValues;
   int                        _dt, _it;
+  bool                       _addODOnVertices;
 
   std::vector< const SMDS_MeshElement* >              _elemsByGeom[SMDSEntity_Last];
   std::vector< std::pair< SMDSAbs_EntityType, int > > _nbElemsByGeom;

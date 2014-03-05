@@ -30,9 +30,11 @@
 #include "DriverMED_Family.h"
 #include "MED_Factory.hxx"
 #include "MED_Utilities.hxx"
+#include "SMDS_IteratorOnIterators.hxx"
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
 #include "SMDS_PolyhedralVolumeOfNodes.hxx"
+#include "SMDS_SetIterator.hxx"
 #include "SMESHDS_Mesh.hxx"
 
 #include <utilities.h>
@@ -421,7 +423,6 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     if (myDoGroupOfBalls && nbBalls) myBallsDefaultFamilyId = REST_BALL_FAMILY;
 
     MESSAGE("Perform - aFamilyInfo");
-    //cout << " DriverMED_Family::MakeFamilies() " << endl;
     list<DriverMED_FamilyPtr> aFamilies;
     if (myAllSubMeshes) {
       aFamilies = DriverMED_Family::MakeFamilies
@@ -442,7 +443,6 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
          myDoGroupOf0DElems && nb0DElements,
          myDoGroupOfBalls   && nbBalls);
     }
-    //cout << " myMed->SetFamilyInfo() " << endl;
     list<DriverMED_FamilyPtr>::iterator aFamsIter;
     for (aFamsIter = aFamilies.begin(); aFamsIter != aFamilies.end(); aFamsIter++)
     {
@@ -463,7 +463,6 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     const EConnectivite theConnMode    = eNOD;
 
     TInt aNbNodes = myMesh->NbNodes();
-    //cout << " myMed->CrNodeInfo() aNbNodes = " << aNbNodes << endl;
     PNodeInfo aNodeInfo = myMed->CrNodeInfo(aMeshInfo, aNbNodes,
                                             theMode, theSystem, theIsElemNum, theIsElemNames);
 
@@ -514,6 +513,22 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     bool polyTypesSupported = myMed->CrPolygoneInfo(aMeshInfo,eMAILLE,ePOLYGONE,0,0);
     TInt nbPolygonNodes = 0, nbPolyhedronNodes = 0, nbPolyhedronFaces = 0;
 
+    // nodes on VERTEXes where 0D elements are absent
+    std::vector<const SMDS_MeshElement*> nodesOf0D;
+    std::vector< SMDS_ElemIteratorPtr > iterVec;
+    SMDS_ElemIteratorPtr iterVecIter;
+    if ( myAddODOnVertices && getNodesOfMissing0DOnVert( myMesh, nodesOf0D ))
+    {
+      iterVec.resize(2);
+      iterVec[0] = myMesh->elementsIterator( SMDSAbs_0DElement );
+      iterVec[1] = SMDS_ElemIteratorPtr
+        ( new SMDS_ElementVectorIterator( nodesOf0D.begin(), nodesOf0D.end() ));
+
+      typedef SMDS_IteratorOnIterators
+        < const SMDS_MeshElement *, std::vector< SMDS_ElemIteratorPtr > > TItIterator;
+      iterVecIter = SMDS_ElemIteratorPtr( new TItIterator( iterVec ));
+    }
+
     // collect info on all geom types
 
     list< TElemTypeData > aTElemTypeDatas;
@@ -524,7 +539,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 #endif
     aTElemTypeDatas.push_back(TElemTypeData(anEntity,
                                             ePOINT1,
-                                            nbElemInfo.Nb0DElements(),
+                                            nbElemInfo.Nb0DElements() + nodesOf0D.size(),
                                             SMDSAbs_0DElement));
 #ifdef _ELEMENTS_BY_DIM_
     anEntity = eSTRUCT_ELEMENT;
@@ -873,6 +888,8 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 
         TInt aNbNodes = MED::GetNbNodes(aElemTypeData->_geomType);
         elemIterator = myMesh->elementsIterator( aElemTypeData->_smdsType );
+        if ( aElemTypeData->_smdsType == SMDSAbs_0DElement && ! nodesOf0D.empty() )
+          elemIterator = iterVecIter;
         while ( elemIterator->more() )
         {
           const SMDS_MeshElement* anElem = elemIterator->next();
@@ -920,4 +937,32 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
   myGroups.clear();
   mySubMeshes.clear();
   return aResult;
+}
+
+//================================================================================
+/*!
+ * \brief Returns nodes on VERTEXes where 0D elements are absent
+ */
+//================================================================================
+
+bool DriverMED_W_SMESHDS_Mesh::
+getNodesOfMissing0DOnVert(SMESHDS_Mesh*                         meshDS,
+                          std::vector<const SMDS_MeshElement*>& nodes)
+{
+  nodes.clear();
+  for ( int i = 1; i <= meshDS->MaxShapeIndex(); ++i )
+  {
+    if ( meshDS->IndexToShape( i ).ShapeType() != TopAbs_VERTEX )
+      continue;
+    if ( SMESHDS_SubMesh* sm = meshDS->MeshElements(i) ) {
+      SMDS_NodeIteratorPtr nIt= sm->GetNodes();
+      while (nIt->more())
+      {
+        const SMDS_MeshNode* n = nIt->next();
+        if ( n->NbInverseElements( SMDSAbs_0DElement ) == 0 )
+          nodes.push_back( n );
+      }
+    }
+  }
+  return !nodes.empty();
 }

@@ -27,6 +27,7 @@
 #include "DriverMED_W_Field.h"
 
 #include "DriverMED.hxx"
+#include "DriverMED_W_SMESHDS_Mesh.h"
 #include "MED_Factory.hxx"
 #include "MED_Utilities.hxx"
 #include "MED_Wrapper.hxx"
@@ -108,6 +109,20 @@ bool DriverMED_W_Field::Set(SMESHDS_Mesh *      mesh,
 
       _nbElemsByGeom.push_back( make_pair( geom, nbElems + _nbElemsByGeom.back().second ));
     }
+    // add nodes of missing 0D elements on VERTEXes
+    if ( _addODOnVertices && _elemType == SMDSAbs_0DElement )
+    {
+      std::vector< const SMDS_MeshElement* >& nodes = _elemsByGeom[SMDSEntity_Node];
+      if ( nodes.empty() )
+        DriverMED_W_SMESHDS_Mesh::getNodesOfMissing0DOnVert( myMesh, nodes );
+      if ( !nodes.empty() )
+      {
+        if ( _nbElemsByGeom.size() == 1 )
+          _nbElemsByGeom.push_back( make_pair( SMDSEntity_0D, 0));
+        _nbElemsByGeom.push_back( make_pair( SMDSEntity_Node,
+                                             nodes.size() + _nbElemsByGeom.back().second ));
+      }
+    }
 
     // sort elements by their geometry
     int iGeoType, nbGeomTypes = _nbElemsByGeom.size() - 1;
@@ -119,6 +134,7 @@ bool DriverMED_W_Field::Set(SMESHDS_Mesh *      mesh,
         nbElems  = _nbElemsByGeom[iG].second - _nbElemsByGeom[iG-1].second;
         _elemsByGeom[ iGeoType ].reserve( nbElems );
       }
+      iGeoType = _nbElemsByGeom[1].first; // for missing 0D
       if ( _elemsByGeom[ iGeoType ].empty() )
       {
         nbElems = mesh->GetMeshInfo().NbElements( _elemType );
@@ -282,6 +298,14 @@ Driver_Mesh::Status DriverMED_W_Field::Perform()
         fieldInfo->myCompNames[i] = ' ';
   }
   medFile->SetFieldInfo( fieldInfo );
+
+  // specific treatment of added 0D elements
+  if ( _nbElemsByGeom.size()   == 3 &&
+       _nbElemsByGeom[1].first == SMDSEntity_0D )
+  {
+    _nbElemsByGeom[1].second += _nbElemsByGeom[2].second;
+    _nbElemsByGeom.resize( 2 );
+  }
 
   // create a time stamp
   MED::TGeom2Size type2nb;

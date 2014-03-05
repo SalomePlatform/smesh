@@ -35,6 +35,7 @@
 #include <string>
 #include <list>
 #include <map>
+#include <vector>
 
 class SMESHDS_Mesh;
 class SMESHDS_GroupBase;
@@ -49,10 +50,9 @@ class MESHDRIVERMED_EXPORT DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
   virtual void SetFile(const std::string& theFileName);
   void SetFile(const std::string& theFileName, MED::EVersion theId);
   void SetAutoDimension(bool toFindOutDimension) { myAutoDimension = toFindOutDimension; }
+
   static std::string GetVersionString(const MED::EVersion theVersion, int theNbDigits=2);
 
-  /*! sets file name; only for usage with Add(), not Write()
-   */
   void AddGroupOfNodes();
   void AddGroupOfEdges();
   void AddGroupOfFaces();
@@ -65,6 +65,10 @@ class MESHDRIVERMED_EXPORT DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
   void AddGroup(SMESHDS_GroupBase * theGroup);
   void AddAllSubMeshes();
   void AddSubMesh(SMESHDS_SubMesh* theSubMesh, int theID);
+  void AddODOnVertices(bool toAdd) { myAddODOnVertices = toAdd; }
+
+  static bool getNodesOfMissing0DOnVert(SMESHDS_Mesh*                         mesh,
+                                        std::vector<const SMDS_MeshElement*>& nodes);
 
   /*! add one mesh
    */
@@ -83,6 +87,7 @@ class MESHDRIVERMED_EXPORT DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
   bool myDoGroupOf0DElems;
   bool myDoGroupOfBalls;
   bool myAutoDimension;
+  bool myAddODOnVertices;
 };
 
 #endif

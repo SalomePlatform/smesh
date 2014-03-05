@@ -1289,7 +1289,8 @@ void SMESH_Mesh::ExportMED(const char *        file,
                            bool                theAutoGroups,
                            int                 theVersion,
                            const SMESHDS_Mesh* meshPart,
-                           bool                theAutoDimension)
+                           bool                theAutoDimension,
+                           bool                theAddODOnVertices)
   throw(SALOME_Exception)
 {
   SMESH_TRY;
@@ -1298,6 +1299,7 @@ void SMESH_Mesh::ExportMED(const char *        file,
   myWriter.SetFile         ( file, MED::EVersion(theVersion) );
   myWriter.SetMesh         ( meshPart ? (SMESHDS_Mesh*) meshPart : _myMeshDS   );
   myWriter.SetAutoDimension( theAutoDimension );
+  myWriter.AddODOnVertices ( theAddODOnVertices );
   if ( !theMeshName ) 
     myWriter.SetMeshId     ( _id         );
   else {

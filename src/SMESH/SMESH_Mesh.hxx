@@ -236,7 +236,8 @@ public:
                  bool                theAutoGroups = true, 
                  int                 theVersion = 0,
                  const SMESHDS_Mesh* theMeshPart = 0,
-                 bool                theAutoDimension = false)
+                 bool                theAutoDimension = false,
+                 bool                theAddODOnVertices = false)
     throw(SALOME_Exception);
 
   void ExportDAT(const char *        file,
