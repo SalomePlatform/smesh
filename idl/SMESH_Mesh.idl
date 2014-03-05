@@ -613,39 +613,47 @@ module SMESH
      * - auto_groups : boolean parameter for creating/not creating
      *                 the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
      *                 the typical use is auto_groups=false.
-     * - version : define the version of format of MED file, that will be created
+     * - version : defines the version of format of MED file, that will be created
      * - overwrite : boolean parameter for overwriting/not overwriting the file, if it exists
-     * - autoDimension: if @c True (default), a space dimension of a MED mesh can be either
+     * - autoDimension : if @c true, a space dimension of a MED mesh can be either
      *         - 1D if all mesh nodes lie on OX coordinate axis, or
      *         - 2D if all mesh nodes lie on XOY coordinate plane, or
      *         - 3D in the rest cases.
-     *
-     *         If @a autoDimension is @c False, the space dimension is always 3.
+     *         If @a autoDimension is @c false, the space dimension is always 3.
      */
     void ExportToMEDX( in string      file, 
                        in boolean     auto_groups, 
                        in MED_VERSION version, 
                        in boolean     overwrite,
-                       in boolean     autoDimension ) raises (SALOME::SALOME_Exception);
+                       in boolean     autoDimension) raises (SALOME::SALOME_Exception);
 
     /*!
-     * Export a part of Mesh into a MED file
+     * Export a [part of] Mesh into a MED file
      * @params
      * - meshPart : a part of mesh to store
      * - file : name of the MED file
      * - version : define the version of format of MED file, that will be created
      * - overwrite : boolean parameter for overwriting/not overwriting the file, if it exists
-     * - autoDimension: if @c True, a space dimension for export is defined by mesh 
+     * - autoDimension : if @c True, a space dimension for export is defined by mesh 
      *                 configuration; for example a planar mesh lying on XOY plane
      *                 will be exported as a mesh in 2D space. 
      *                 If @a autoDimension == @c False, the space dimension is 3.
+     * - fields : list of GEOM fields defined on the shape to mesh.
+     * - geomAssocFields : each character of this string means a need to export a 
+     *         corresponding field; correspondence between fields and characters is following:
+     *         - 'v' stands for _vertices_ field;
+     *         - 'e' stands for _edges_ field;
+     *         - 'f' stands for _faces_ field;
+     *         - 's' stands for _solids_ field.
      */
-    void ExportPartToMED( in SMESH_IDSource meshPart, 
-                          in string         file, 
-                          in boolean        auto_groups,
-                          in MED_VERSION    version,
-                          in boolean        overwrite,
-                          in boolean        autoDimension ) raises (SALOME::SALOME_Exception);
+    void ExportPartToMED( in SMESH_IDSource     meshPart,
+                          in string             file,
+                          in boolean            auto_groups,
+                          in MED_VERSION        version,
+                          in boolean            overwrite,
+                          in boolean            autoDimension,
+                          in GEOM::ListOfFields fields,
+                          in string             geomAssocFields ) raises (SALOME::SALOME_Exception);
 
     /*!
      * Export Mesh to a MED Format file

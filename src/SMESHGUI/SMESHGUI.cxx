@@ -44,6 +44,7 @@
 #include "SMESHGUI_DuplicateNodesDlg.h"
 #include "SMESHGUI_ExtrusionAlongPathDlg.h"
 #include "SMESHGUI_ExtrusionDlg.h"
+#include "SMESHGUI_FieldSelectorWdg.h"
 #include "SMESHGUI_FileInfoDlg.h"
 #include "SMESHGUI_FileValidator.h"
 #include "SMESHGUI_FilterDlg.h"
@@ -212,7 +213,12 @@ namespace
   void Control( int theCommandID );
 
   // Definitions
-  //=============================================================
+  //================================================================================
+  /*!
+   * \brief Reads meshes from file
+   */
+  //================================================================================
+
   void ImportMeshesFromFile( SMESH::SMESH_Gen_ptr theComponentMesh,
                              int theCommandID )
   {
@@ -611,6 +617,8 @@ namespace
     if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
       anInitialPath = QDir::currentPath();
 
+    QList< QPair< GEOM::ListOfFields_var, QString > > aFieldList;
+
     // Get a file name to write in and additional otions
     if ( isUNV || isDAT || isGMF ) // Export w/o options
     {
@@ -696,8 +704,13 @@ namespace
       QStringList checkBoxes;
       checkBoxes << QObject::tr("SMESH_AUTO_GROUPS") << QObject::tr("SMESH_AUTO_DIM");
 
+      SMESHGUI_FieldSelectorWdg* fieldSelWdg = new SMESHGUI_FieldSelectorWdg();
+      QList< QWidget* > wdgList;
+      if ( fieldSelWdg->GetAllFeilds( aMeshList, aFieldList ))
+        wdgList.append( fieldSelWdg );
+
       SalomeApp_CheckFileDlg* fd =
-        new SalomeApp_CheckFileDlg ( SMESHGUI::desktop(), false, checkBoxes, true, true );
+        new SalomeApp_CheckFileDlg ( SMESHGUI::desktop(), false, checkBoxes, true, true, wdgList );
       fd->setWindowTitle( aTitle );
       fd->setNameFilters( filters );
       fd->selectNameFilter( aDefaultFilter );
@@ -787,6 +800,9 @@ namespace
       }
       toCreateGroups = fd->IsChecked(0);
       toFindOutDim   = fd->IsChecked(1);
+      fieldSelWdg->GetSelectedFeilds();
+      if ( !fieldSelWdg->parent() )
+        delete fieldSelWdg;
       delete fd;
     }
     else
@@ -823,12 +839,16 @@ namespace
           {
             SMESH::SMESH_IDSource_var aMeshOrGroup = (*aMeshIter).first;
             SMESH::SMESH_Mesh_var        aMeshItem = aMeshOrGroup->GetMesh();
-            if ( aMeshOrGroup->_is_equivalent( aMeshItem ))
+            const GEOM::ListOfFields&       fields = aFieldList[ aMeshIndex ].first.in();
+            const QString&            geoAssFields = aFieldList[ aMeshIndex ].second;
+            const bool                   hasFields = ( fields.length() || !geoAssFields.isEmpty() );
+            if ( !hasFields && aMeshOrGroup->_is_equivalent( aMeshItem ))
               aMeshItem->ExportToMEDX( aFilename.toUtf8().data(), toCreateGroups,
                                        aFormat, toOverwrite && aMeshIndex == 0, toFindOutDim );
             else
               aMeshItem->ExportPartToMED( aMeshOrGroup, aFilename.toUtf8().data(), toCreateGroups,
-                                          aFormat, toOverwrite && aMeshIndex == 0, toFindOutDim );
+                                          aFormat, toOverwrite && aMeshIndex == 0, toFindOutDim,
+                                          fields, geoAssFields.toLatin1().data() );
           }
         }
         else if ( isSAUV )

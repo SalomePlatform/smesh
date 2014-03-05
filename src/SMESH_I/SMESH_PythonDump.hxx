@@ -224,6 +224,9 @@ namespace SMESH
     operator<<(const GEOM::ListOfGO& theList);
 
     TPythonDump&
+    operator<<(const GEOM::ListOfGBO& theList);
+
+    TPythonDump&
     operator<<(const SMESH::ListOfIDSources& theList);
 
     static const char* SMESHGenName() { return "smeshgen"; }

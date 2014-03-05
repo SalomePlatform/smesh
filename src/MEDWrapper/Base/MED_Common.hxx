@@ -59,7 +59,7 @@ namespace MED{
 
   typedef enum {eFULL_INTERLACE, eNO_INTERLACE} EModeSwitch;
 
-  typedef enum {eFLOAT64=6, eINT=26} ETypeChamp;
+  typedef enum {eFLOAT64=6, eINT=24, eLONG=26 } ETypeChamp;
 
   typedef enum {eNON_STRUCTURE, eSTRUCTURE} EMaillage;
 

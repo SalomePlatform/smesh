@@ -536,6 +536,11 @@ namespace SMESH
     DumpArray( theList, *this );
     return *this;
   }
+  TPythonDump& TPythonDump::operator<<(const GEOM::ListOfGBO& theList)
+  {
+    DumpArray( theList, *this );
+    return *this;
+  }
   TPythonDump& TPythonDump::operator<<(const SMESH::ListOfIDSources& theList)
   {
     DumpArray( theList, *this );

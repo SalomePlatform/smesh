@@ -67,6 +67,7 @@ SET(MeshDriverMED_HEADERS
   DriverMED_R_SMESHDS_Mesh.h
   DriverMED_W_SMESHDS_Mesh.h
   DriverMED_Family.h
+  DriverMED_W_Field.h
   SMESH_DriverMED.hxx
 )
 
@@ -77,6 +78,7 @@ SET(MeshDriverMED_SOURCES
   DriverMED_R_SMESHDS_Mesh.cxx
   DriverMED_W_SMESHDS_Mesh.cxx
   DriverMED_Family.cxx
+  DriverMED_W_Field.cxx
 )
 
 # --- rules ---

@@ -1963,9 +1963,9 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
       TCollection_AsciiString newMethod = method;
       newMethod.Remove( 7, 6 );
       theCommand->SetMethod( newMethod );
-      // make the 1st arg be the last one (or last but one for ExportMED())
+      // make the 1st arg be the last one (or last but three for ExportMED())
       _pyID partID = theCommand->GetArg( 1 );
-      int nbArgs = theCommand->GetNbArgs() - (newMethod == "ExportMED");
+      int nbArgs = theCommand->GetNbArgs() - 3 * (newMethod == "ExportMED");
       for ( int i = 2; i <= nbArgs; ++i )
         theCommand->SetArg( i-1, theCommand->GetArg( i ));
       theCommand->SetArg( nbArgs, partID );

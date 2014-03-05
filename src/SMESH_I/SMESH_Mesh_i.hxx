@@ -47,6 +47,8 @@ class SMESH_GroupBase_i;
 class SMESH_subMesh_i;
 class SMESH_PreMeshInfo;
 class SMESH_MeshEditor_i;
+class DriverMED_W_Field;
+class SMESHDS_Mesh;
 
 class SMESH_I_EXPORT SMESH_Mesh_i:
   public virtual POA_SMESH::SMESH_Mesh,
@@ -255,7 +257,9 @@ public:
                        CORBA::Boolean            auto_groups,
                        SMESH::MED_VERSION        version,
                        CORBA::Boolean            overwrite,
-                       CORBA::Boolean            autoDim=true) throw (SALOME::SALOME_Exception);
+                       CORBA::Boolean            autoDim,
+                       const GEOM::ListOfFields& fields,
+                       const char*               geomAssocFields) throw (SALOME::SALOME_Exception);
   void ExportPartToDAT(SMESH::SMESH_IDSource_ptr meshPart,
                        const char*               file) throw (SALOME::SALOME_Exception);
   void ExportPartToUNV(SMESH::SMESH_IDSource_ptr meshPart,
@@ -650,6 +654,13 @@ private:
    */
   void checkGroupNames();
 
+  /*
+   * Write GEOM fields to MED file
+   */
+  void exportMEDFields( DriverMED_W_Field &       writer,
+                        SMESHDS_Mesh*             meshDS,
+                        const GEOM::ListOfFields& fields,
+                        const char*               geomAssocFields);
   /*!
    * Convert submesh ids into submesh interfaces
    */

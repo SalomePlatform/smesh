@@ -74,8 +74,7 @@ enum SMDSAbs_ElementOrder {
 };
 
 /*!
- * Enumeration of entity type uses in mesh info array,
- *  and should be synchronised with enum in SMDS  
+ * Enumeration of entity type used in mesh info array
  */
 enum SMDSAbs_EntityType {
   SMDSEntity_Node,

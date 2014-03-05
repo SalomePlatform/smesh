@@ -38,7 +38,6 @@ using namespace std;
 //=======================================================================
 SMDS_Mesh0DElement::SMDS_Mesh0DElement (const SMDS_MeshNode * node)
 {
-  MESSAGE("SMDS_Mesh0DElement " << GetID());
   myNode = node;
 }
 

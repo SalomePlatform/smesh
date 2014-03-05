@@ -1563,18 +1563,20 @@ class Mesh:
             if not geom:
                 geom = self.mesh.GetShapeToMesh()
             pass
-        hyp_name = hyp.GetName()
-        lib_name = hyp.GetLibName()
+        hyp_name = GetName( hyp )
         geom_name = ""
         if geom:
             geom_name = geom.GetName()
         isApplicable = True
-        isAlgo = hyp._narrow( SMESH_Algo )
         if self.mesh.HasShapeToMesh():
-            isApplicable = self.smeshpyD.IsApplicable(hyp_name, lib_name, geom, not geom.IsSame( self.mesh.GetShapeToMesh() ) )
+            hyp_type     = hyp.GetName()
+            lib_name     = hyp.GetLibName()
+            isSubMesh    = ( not geom.IsSame( self.mesh.GetShapeToMesh() ))
+            isApplicable = self.smeshpyD.IsApplicable(hyp_name, lib_name, geom, isSubMesh)
         if isApplicable:
             AssureGeomPublished( self, geom, "shape for %s" % hyp.GetName())
             status = self.mesh.AddHypothesis(geom, hyp)
+            isAlgo = hyp._narrow( SMESH_Algo )
             TreatHypoStatus( status, hyp_name, geom_name, isAlgo )
             return status
         else:
@@ -1649,17 +1651,24 @@ class Mesh:
     #         - 1D if all mesh nodes lie on OX coordinate axis, or
     #         - 2D if all mesh nodes lie on XOY coordinate plane, or
     #         - 3D in the rest cases.
-    #
     #         If @a autoDimension is @c False, the space dimension is always 3.
+    #  @param fields : list of GEOM fields defined on the shape to mesh.
+    #  @param geomAssocFields : each character of this string means a need to export a 
+    #         corresponding field; correspondence between fields and characters is following:
+    #         - 'v' stands for _vertices_ field;
+    #         - 'e' stands for _edges_ field;
+    #         - 'f' stands for _faces_ field;
+    #         - 's' stands for _solids_ field.
     #  @ingroup l2_impexp
     def ExportMED(self, f, auto_groups=0, version=MED_V2_2,
-                  overwrite=1, meshPart=None, autoDimension=True):
-        if meshPart:
+                  overwrite=1, meshPart=None, autoDimension=True, fields=[], geomAssocFields=''):
+        if meshPart or fields or geomAssocFields:
             unRegister = genObjUnRegister()
             if isinstance( meshPart, list ):
                 meshPart = self.GetIDSource( meshPart, SMESH.ALL )
                 unRegister.set( meshPart )
-            self.mesh.ExportPartToMED( meshPart, f, auto_groups, version, overwrite, autoDimension)
+            self.mesh.ExportPartToMED( meshPart, f, auto_groups, version, overwrite, autoDimension,
+                                       fields, geomAssocFields)
         else:
             self.mesh.ExportToMEDX(f, auto_groups, version, overwrite, autoDimension)
 

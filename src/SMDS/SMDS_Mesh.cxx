@@ -2944,6 +2944,11 @@ SMDS_ElemIteratorPtr SMDS_Mesh::elementGeomIterator(SMDSAbs_GeometryType type) c
 
 SMDS_ElemIteratorPtr SMDS_Mesh::elementEntityIterator(SMDSAbs_EntityType type) const
 {
+  if ( type == SMDSEntity_Node )
+  {
+    typedef ElemVecIterator<const SMDS_MeshElement*, SMDS_MeshNode*> TIterator;
+    return SMDS_ElemIteratorPtr( new TIterator(myNodes));
+  }
   // naturally always sorted by ID
   typedef ElemVecIterator
     < const SMDS_MeshElement*, SMDS_MeshCell*, SMDS_MeshElement::EntityFilter > TIterator;

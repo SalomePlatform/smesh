@@ -26,7 +26,9 @@
 
 #include "SMESH_PreMeshInfo.hxx"
 
+#include "DriverMED.hxx"
 #include "DriverMED_R_SMESHDS_Mesh.h"
+#include "MED_Factory.hxx"
 #include "SMDS_EdgePosition.hxx"
 #include "SMDS_FacePosition.hxx"
 #include "SMDS_SpacePosition.hxx"
@@ -37,8 +39,6 @@
 #include "SMESH_Group_i.hxx"
 #include "SMESH_Mesh_i.hxx"
 #include "SMESH_subMesh_i.hxx"
-
-#include <MED_Factory.hxx>
 
 #include <HDFarray.hxx>
 #include <HDFdataset.hxx>
@@ -228,52 +228,15 @@ namespace
     static map< MED::EGeometrieElement, SMDSAbs_EntityType> med2smeshTypes;
     if ( med2smeshTypes.empty() )
     {
-      med2smeshTypes[ MED::ePOINT1   ] = SMDSEntity_0D                ;
-      med2smeshTypes[ MED::eSEG2     ] = SMDSEntity_Edge              ;
-      med2smeshTypes[ MED::eSEG3     ] = SMDSEntity_Quad_Edge         ;
-      med2smeshTypes[ MED::eTRIA3    ] = SMDSEntity_Triangle          ;
-      med2smeshTypes[ MED::eTRIA6    ] = SMDSEntity_Quad_Triangle     ;
-      med2smeshTypes[ MED::eTRIA7    ] = SMDSEntity_BiQuad_Triangle   ;
-      med2smeshTypes[ MED::eQUAD4    ] = SMDSEntity_Quadrangle        ;
-      med2smeshTypes[ MED::eQUAD8    ] = SMDSEntity_Quad_Quadrangle   ;
-      med2smeshTypes[ MED::eQUAD9    ] = SMDSEntity_BiQuad_Quadrangle ;
-      med2smeshTypes[ MED::eTETRA4   ] = SMDSEntity_Tetra             ;
-      med2smeshTypes[ MED::ePYRA5    ] = SMDSEntity_Pyramid           ;
-      med2smeshTypes[ MED::ePENTA6   ] = SMDSEntity_Penta             ;
-      med2smeshTypes[ MED::eHEXA8    ] = SMDSEntity_Hexa              ;
-      med2smeshTypes[ MED::eOCTA12   ] = SMDSEntity_Hexagonal_Prism   ;
-      med2smeshTypes[ MED::eTETRA10  ] = SMDSEntity_Quad_Tetra        ;
-      med2smeshTypes[ MED::ePYRA13   ] = SMDSEntity_Quad_Pyramid      ;
-      med2smeshTypes[ MED::ePENTA15  ] = SMDSEntity_Quad_Penta        ;
-      med2smeshTypes[ MED::eHEXA20   ] = SMDSEntity_Quad_Hexa         ;
-      med2smeshTypes[ MED::eHEXA27   ] = SMDSEntity_TriQuad_Hexa      ;
-      med2smeshTypes[ MED::ePOLYGONE ] = SMDSEntity_Polygon           ;
-      med2smeshTypes[ MED::ePOLYEDRE ] = SMDSEntity_Polyhedra         ;
-      med2smeshTypes[ MED::eNONE     ] = SMDSEntity_Node              ;
-      med2smeshTypes[ MED::eBALL     ] = SMDSEntity_Ball              ;
+      for  ( int iG = 0; iG < SMDSEntity_Last; ++iG )
+      {
+        SMDSAbs_EntityType    smdsType = (SMDSAbs_EntityType) iG;
+        MED::EGeometrieElement medType =
+          (MED::EGeometrieElement) DriverMED::GetMedGeoType( smdsType );
+        med2smeshTypes.insert( make_pair( medType, smdsType ));
+      }
     }
     return med2smeshTypes;
-  }
-
-  //================================================================================
-  /*!
-   * \brief Return a vector<MED::EGeometrieElement> intended to retrieve
-   *        MED::EGeometrieElement by SMDSAbs_EntityType
-   */
-  //================================================================================
-
-  const vector<MED::EGeometrieElement>& mesh2medElemType()
-  {
-    static vector<MED::EGeometrieElement> mesh2medElemTypes;
-    if ( mesh2medElemTypes.empty() )
-    {
-      mesh2medElemTypes.resize( SMDSEntity_Last + 1 );
-      Tmed2smeshElemTypeMap::const_iterator me2sme    = med2smeshElemTypeMap().begin();
-      Tmed2smeshElemTypeMap::const_iterator me2smeEnd = med2smeshElemTypeMap().end();
-      for ( ; me2sme != me2smeEnd; ++me2sme )
-        mesh2medElemTypes[ me2sme->second ] = me2sme->first;
-    }
-    return mesh2medElemTypes;
   }
 
   //================================================================================
@@ -289,14 +252,14 @@ namespace
     // we use med identification of element (MED::EGeometrieElement) types
     // but not enum SMDSAbs_EntityType because values of SMDSAbs_EntityType may
     // change at insertion of new items in the middle.
-    const vector<MED::EGeometrieElement>& medTypes = mesh2medElemType();
+    //const vector<MED::EGeometrieElement>& medTypes = mesh2medElemType();
 
     vector<int> data;
 
     for ( size_t i = 0; i < meshInfo->length(); ++i )
       if ( meshInfo[i] > 0 )
       {
-        data.push_back( medTypes[ i ] );
+        data.push_back( DriverMED::GetMedGeoType( SMDSAbs_EntityType( i ))); //medTypes[ i ] );
         data.push_back( meshInfo[ i ] );
       }
 

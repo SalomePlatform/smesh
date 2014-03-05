@@ -26,6 +26,7 @@
 #include "SMESH_Mesh_i.hxx"
 
 #include "DriverMED_R_SMESHDS_Mesh.h"
+#include "DriverMED_W_Field.h"
 #include "DriverMED_W_SMESHDS_Mesh.h"
 #include "MED_Factory.hxx"
 #include "SMDS_EdgePosition.hxx"
@@ -2719,12 +2720,12 @@ void SMESH_Mesh_i::ExportToMEDX (const char*        file,
     _preMeshInfo->FullLoadFromFile();
 
   string aMeshName = prepareMeshNameAndGroups(file, overwrite);
+  _impl->ExportMED( file, aMeshName.c_str(), auto_groups, theVersion, 0, autoDimension );
+
   TPythonDump() << SMESH::SMESH_Mesh_var(_this()) << ".ExportToMEDX( r'"
                 << file << "', " << auto_groups << ", "
                 << theVersion << ", " << overwrite << ", "
                 << autoDimension << " )";
-
-  _impl->ExportMED( file, aMeshName.c_str(), auto_groups, theVersion, 0, autoDimension );
 
   SMESH_CATCH( SMESH::throwCorbaException );
 }
@@ -2847,26 +2848,113 @@ void SMESH_Mesh_i::ExportSTL (const char *file, const bool isascii)
   _impl->ExportSTL(file, isascii);
 }
 
+namespace // utils used by ExportPartToMED()
+{
+  // remover of 0d elements temporary added by ExportPartToMED()
+  struct OdRemover
+  {
+    std::vector< const SMDS_MeshElement* > _0dElems;
+    SMESHDS_Mesh*                          _mesh;
+    OdRemover( SMESHDS_Mesh* mesh ): _mesh( mesh ) {}
+    ~OdRemover() {
+      for ( size_t i = 0; i < _0dElems.size(); ++i )
+        if ( _0dElems[i] )
+        {
+          SMESHDS_SubMesh* sm = _mesh->MeshElements( _0dElems[i]->getshapeId() );
+          _mesh->RemoveFreeElement( _0dElems[i], sm, false );
+        }
+    }
+  };
+}
+
 //================================================================================
 /*!
  * \brief Export a part of mesh to a med file
  */
 //================================================================================
 
-void SMESH_Mesh_i::ExportPartToMED(::SMESH::SMESH_IDSource_ptr meshPart,
-                                   const char*                 file,
-                                   CORBA::Boolean              auto_groups,
-                                   ::SMESH::MED_VERSION        version,
-                                   ::CORBA::Boolean            overwrite,
-                                   ::CORBA::Boolean            autoDimension)
+void SMESH_Mesh_i::ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
+                                   const char*               file,
+                                   CORBA::Boolean            auto_groups,
+                                   SMESH::MED_VERSION        version,
+                                   CORBA::Boolean            overwrite,
+                                   CORBA::Boolean            autoDimension,
+                                   const GEOM::ListOfFields& fields,
+                                   const char*               geomAssocFields)
   throw (SALOME::SALOME_Exception)
 {
-  Unexpect aCatch(SALOME_SalomeException);
-  TPythonDump pyDump;
+  SMESH_TRY;
+  if ( _preMeshInfo )
+    _preMeshInfo->FullLoadFromFile();
 
-  if ( SMESH_Mesh_i * mesh = SMESH::DownCast< SMESH_Mesh_i* >( meshPart ))
+  // check fields
+  bool have0dField = false;
+  if ( fields.length() > 0 )
   {
-    mesh->ExportToMEDX( file, auto_groups, version, autoDimension );
+    GEOM::GEOM_Object_var shapeToMesh = GetShapeToMesh();
+    if ( shapeToMesh->_is_nil() )
+      THROW_SALOME_CORBA_EXCEPTION( "No shape to mesh", SALOME::INTERNAL_ERROR );
+
+    for ( size_t i = 0; i < fields.length(); ++i )
+    {
+      if ( fields[i]->GetDataType() == GEOM::FDT_String )
+        THROW_SALOME_CORBA_EXCEPTION
+          ( "Export of string fields is not supported", SALOME::BAD_PARAM);
+      GEOM::GEOM_Object_var fieldShape = fields[i]->GetShape();
+      if ( fieldShape->_is_nil() )
+        THROW_SALOME_CORBA_EXCEPTION( "Null shape under a field", SALOME::INTERNAL_ERROR );
+      if ( !fieldShape->IsSame( shapeToMesh ) )
+        THROW_SALOME_CORBA_EXCEPTION
+          ( "Field defined not on shape", SALOME::BAD_PARAM);
+      if ( fields[i]->GetDimension() == 0 )
+        have0dField = true;
+    }
+    if ( geomAssocFields )
+      for ( int i = 0; geomAssocFields[i]; ++i )
+        switch ( geomAssocFields[i] ) {
+        case 'v':case 'e':case 'f':case 's': break;
+        case 'V':case 'E':case 'F':case 'S': break;
+        default: THROW_SALOME_CORBA_EXCEPTION
+            ( "geomAssocFields can include only [vefs] characters", SALOME::BAD_PARAM);
+        }
+  }
+
+  SMESHDS_Mesh* meshDS = _impl->GetMeshDS();
+
+  OdRemover a0dRemover( meshDS );
+  if ( have0dField )
+  {
+    // temporary add 0D elements on all nodes on vertices
+    for ( int i = 1; i <= meshDS->MaxShapeIndex(); ++i )
+    {
+      if ( meshDS->IndexToShape( i ).ShapeType() != TopAbs_VERTEX )
+        continue;
+      if ( SMESHDS_SubMesh* sm = meshDS->MeshElements(i) ) {
+        SMDS_NodeIteratorPtr nIt= sm->GetNodes();
+        while (nIt->more())
+        {
+          const SMDS_MeshNode* n = nIt->next();
+          if ( n->NbInverseElements( SMDSAbs_0DElement ) == 0 )
+          {
+            a0dRemover._0dElems.push_back( meshDS->Add0DElement( n ));
+            sm->AddElement( a0dRemover._0dElems.back() );
+          }
+        }
+      }
+    }
+  }
+
+  // write mesh
+
+  string aMeshName = "Mesh";
+  SMESHUtils::Deleter< SMESH_MeshPartDS > tmpDSDeleter(0);
+  if ( CORBA::is_nil( meshPart ) ||
+       SMESH::DownCast< SMESH_Mesh_i* >( meshPart ))
+  {
+    aMeshName = prepareMeshNameAndGroups(file, overwrite);
+    _impl->ExportMED( file, aMeshName.c_str(), auto_groups, version, 0, autoDimension );
+
+    meshDS = _impl->GetMeshDS();
   }
   else
   {
@@ -2875,7 +2963,6 @@ void SMESH_Mesh_i::ExportPartToMED(::SMESH::SMESH_IDSource_ptr meshPart,
 
     PrepareForWriting(file, overwrite);
 
-    string aMeshName = "Mesh";
     SALOMEDS::Study_var aStudy = _gen_i->GetCurrentStudy();
     if ( !aStudy->_is_nil() ) {
       SALOMEDS::SObject_wrap SO = _gen_i->ObjectToSObject( aStudy, meshPart );
@@ -2884,13 +2971,286 @@ void SMESH_Mesh_i::ExportPartToMED(::SMESH::SMESH_IDSource_ptr meshPart,
         aMeshName = name;
       }
     }
-    SMESH_MeshPartDS partDS( meshPart );
-    _impl->ExportMED( file, aMeshName.c_str(), auto_groups, version, &partDS, autoDimension );
+    SMESH_MeshPartDS* partDS = new SMESH_MeshPartDS( meshPart );
+    _impl->ExportMED( file, aMeshName.c_str(), auto_groups, version, partDS, autoDimension );
+
+    meshDS = tmpDSDeleter._obj = partDS;
   }
-  pyDump << SMESH::SMESH_Mesh_var(_this()) << ".ExportPartToMED( "
-         << meshPart << ", r'" << file << "', "
-         << auto_groups << ", " << version << ", " << overwrite << ", "
-         << autoDimension << " )";
+
+  // write fields
+
+  if ( _impl->HasShapeToMesh() )
+  {
+    DriverMED_W_Field fieldWriter;
+    fieldWriter.SetFile( file );
+    fieldWriter.SetMeshName( aMeshName );
+
+    exportMEDFields( fieldWriter, meshDS, fields, geomAssocFields );
+  }
+
+  // dump
+  GEOM::ListOfGBO_var goList = new GEOM::ListOfGBO;
+  goList->length( fields.length() );
+  for ( size_t i = 0; i < fields.length(); ++i )
+  {
+    GEOM::GEOM_BaseObject_var gbo = GEOM::GEOM_BaseObject::_narrow( fields[i] );
+    goList[i] = gbo;
+  }
+  TPythonDump() << _this() << ".ExportPartToMED( "
+                << meshPart << ", r'" << file << "', "
+                << auto_groups << ", " << version << ", " << overwrite << ", "
+                << autoDimension << ", " << goList
+                << ", '" << ( geomAssocFields ? geomAssocFields : "" ) << "'" << " )";
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+}
+
+//================================================================================
+/*!
+ * Write GEOM fields to MED file
+ */
+//================================================================================
+
+void SMESH_Mesh_i::exportMEDFields( DriverMED_W_Field&        fieldWriter,
+                                    SMESHDS_Mesh*             meshDS,
+                                    const GEOM::ListOfFields& fields,
+                                    const char*               geomAssocFields)
+{
+#define METH "SMESH_Mesh_i::exportMEDFields() "
+
+  if (( fields.length() < 1 ) &&
+      ( !geomAssocFields || !geomAssocFields[0] ))
+    return;
+
+  std::vector< double > dblVals( meshDS->MaxShapeIndex()+1 );
+  std::vector< int >    intVals( meshDS->MaxShapeIndex()+1 );
+  std::vector< int >    subIdsByDim[ 4 ];
+  const double noneDblValue = 0.;
+  const double noneIntValue = 0;
+
+  for ( size_t iF = 0; iF < fields.length(); ++iF )
+  {
+    // set field data
+
+    int dim = fields[ iF ]->GetDimension();
+    SMDSAbs_ElementType elemType;
+    TopAbs_ShapeEnum    shapeType;
+    switch ( dim ) {
+    case 0: elemType = SMDSAbs_0DElement; shapeType = TopAbs_VERTEX; break;
+    case 1: elemType = SMDSAbs_Edge;      shapeType = TopAbs_EDGE;   break;
+    case 2: elemType = SMDSAbs_Face;      shapeType = TopAbs_FACE;   break;
+    case 3: elemType = SMDSAbs_Volume;    shapeType = TopAbs_SOLID;  break;
+    default:
+      continue; // skip fields on whole shape
+    }
+    GEOM::field_data_type dataType = fields[ iF ]->GetDataType();
+    if ( dataType == GEOM::FDT_String )
+      continue;
+    GEOM::ListOfLong_var stepIDs = fields[ iF ]->GetSteps();
+    if ( stepIDs->length() < 1 )
+      continue;
+    GEOM::string_array_var comps = fields[ iF ]->GetComponents();
+    if ( comps->length() < 1 )
+      continue;
+    CORBA::String_var       name = fields[ iF ]->GetName();
+
+    if ( !fieldWriter.Set( meshDS,
+                           name.in(),
+                           elemType,
+                           comps->length(),
+                           ( dataType == GEOM::FDT_Int )))
+      continue;
+
+    for ( size_t iC = 0; iC < comps->length(); ++iC )
+      fieldWriter.SetCompName( iC, comps[ iC ].in() );
+
+    // find sub-shape IDs
+
+    std::vector< int >& subIds = subIdsByDim[ dim ];
+    if ( subIds.empty() )
+      for ( int id = 1; id <= meshDS->MaxShapeIndex(); ++id )
+        if ( meshDS->IndexToShape( id ).ShapeType() == shapeType )
+          subIds.push_back( id );
+
+    // write steps
+
+    SMDS_ElemIteratorPtr elemIt = fieldWriter.GetOrderedElems();
+    if ( !elemIt )
+      continue;
+
+    for ( size_t iS = 0; iS < stepIDs->length(); ++iS )
+    {
+      GEOM::GEOM_FieldStep_var step = fields[ iF ]->GetStep( stepIDs[ iS ]);
+      if ( step->_is_nil() )
+        continue;
+
+      CORBA::Long stamp = step->GetStamp();
+      CORBA::Long id    = step->GetID();
+      fieldWriter.SetDtIt( int( stamp ), int( id ));
+
+      // fill dblVals or intVals
+      switch ( dataType )
+      {
+      case GEOM::FDT_Double:
+      {
+        GEOM::GEOM_DoubleFieldStep_var dblStep = GEOM::GEOM_DoubleFieldStep::_narrow( step );
+        if ( dblStep->_is_nil() ) continue;
+        GEOM::ListOfDouble_var vv = dblStep->GetValues();
+        if ( vv->length() != subIds.size() )
+          THROW_SALOME_CORBA_EXCEPTION( METH "BUG: wrong nb subIds", SALOME::INTERNAL_ERROR );
+        for ( size_t i = 0; i < vv->length(); ++i )
+          dblVals[ subIds[ i ]] = vv[ i ];
+        break;
+      }
+      case GEOM::FDT_Int:
+      {
+        GEOM::GEOM_IntFieldStep_var intStep = GEOM::GEOM_IntFieldStep::_narrow( step );
+        if ( intStep->_is_nil() ) continue;
+        GEOM::ListOfLong_var vv = intStep->GetValues();
+        if ( vv->length() != subIds.size() )
+          THROW_SALOME_CORBA_EXCEPTION( METH "BUG: wrong nb subIds", SALOME::INTERNAL_ERROR );
+        for ( size_t i = 0; i < vv->length(); ++i )
+          intVals[ subIds[ i ]] = (int) vv[ i ];
+        break;
+      }
+      case GEOM::FDT_Bool:
+      {
+        GEOM::GEOM_BoolFieldStep_var boolStep = GEOM::GEOM_BoolFieldStep::_narrow( step );
+        if ( boolStep->_is_nil() ) continue;
+        GEOM::short_array_var vv = boolStep->GetValues();
+        if ( vv->length() != subIds.size() )
+          THROW_SALOME_CORBA_EXCEPTION( METH "BUG: wrong nb subIds", SALOME::INTERNAL_ERROR );
+        for ( size_t i = 0; i < vv->length(); ++i )
+          intVals[ subIds[ i ]] = (int) vv[ i ];
+        break;
+      }
+      default: continue;
+      }
+
+      // pass values to fieldWriter
+      elemIt = fieldWriter.GetOrderedElems();
+      if ( dataType == GEOM::FDT_Double )
+        while ( elemIt->more() )
+        {
+          const SMDS_MeshElement* e = elemIt->next();
+          const int shapeID = e->getshapeId();
+          if ( shapeID < 1 || shapeID >= dblVals.size() )
+            fieldWriter.AddValue( noneDblValue );
+          else
+            fieldWriter.AddValue( dblVals[ shapeID ]);
+        }
+      else
+        while ( elemIt->more() )
+        {
+          const SMDS_MeshElement* e = elemIt->next();
+          const int shapeID = e->getshapeId();
+          if ( shapeID < 1 || shapeID >= intVals.size() )
+            fieldWriter.AddValue( noneIntValue );
+          else
+            fieldWriter.AddValue( intVals[ shapeID ]);
+        }
+
+      // write a step
+      fieldWriter.Perform();
+      SMESH_ComputeErrorPtr res = fieldWriter.GetError();
+      if ( res && res->IsKO() )
+      {
+        if ( res->myComment.empty() )
+        { THROW_SALOME_CORBA_EXCEPTION( METH "Fatal error", SALOME::INTERNAL_ERROR ); }
+        else
+        { THROW_SALOME_CORBA_EXCEPTION( res->myComment.c_str(), SALOME::INTERNAL_ERROR ); }
+      }
+
+    } // loop on steps
+  } // loop on fields
+
+  if ( !geomAssocFields || !geomAssocFields[0] )
+    return;
+
+  // write geomAssocFields
+
+  std::vector< int > shapeDim( TopAbs_SHAPE + 1 );
+  shapeDim[ TopAbs_COMPOUND  ] = 3;
+  shapeDim[ TopAbs_COMPSOLID ] = 3;
+  shapeDim[ TopAbs_SOLID     ] = 3;
+  shapeDim[ TopAbs_SHELL     ] = 2;
+  shapeDim[ TopAbs_FACE      ] = 2;
+  shapeDim[ TopAbs_WIRE      ] = 1;
+  shapeDim[ TopAbs_EDGE      ] = 1;
+  shapeDim[ TopAbs_VERTEX    ] = 0;
+  shapeDim[ TopAbs_SHAPE     ] = 3;
+
+  for ( int iF = 0; geomAssocFields[ iF ]; ++iF )
+  {
+    std::vector< std::string > compNames;
+    switch ( geomAssocFields[ iF ]) {
+    case 'v': case 'V':
+      fieldWriter.Set( meshDS, "_vertices_", SMDSAbs_Node, /*nbComps=*/2, /*isInt=*/true );
+      compNames.push_back( "dim" );
+      break;
+    case 'e': case 'E':
+      fieldWriter.Set( meshDS, "_edges_", SMDSAbs_Edge, /*nbComps=*/1, /*isInt=*/true );
+      break;
+    case 'f': case 'F':
+      fieldWriter.Set( meshDS, "_faces_", SMDSAbs_Face, /*nbComps=*/1, /*isInt=*/true );
+      break;
+    case 's': case 'S':
+      fieldWriter.Set( meshDS, "_solids_", SMDSAbs_Volume, /*nbComps=*/1, /*isInt=*/true );
+      break;
+    default: continue;
+    }
+    compNames.push_back( "id" );
+    for ( size_t iC = 0; iC < compNames.size(); ++iC )
+      fieldWriter.SetCompName( iC, compNames[ iC ].c_str() );
+
+    fieldWriter.SetDtIt( -1, -1 );
+
+    SMDS_ElemIteratorPtr elemIt = fieldWriter.GetOrderedElems();
+    if ( !elemIt )
+      continue;
+
+    if ( compNames.size() == 2 ) // _vertices_
+      while ( elemIt->more() )
+      {
+        const SMDS_MeshElement* e = elemIt->next();
+        const int shapeID = e->getshapeId();
+        if ( shapeID < 1 )
+        {
+          fieldWriter.AddValue( -1 );
+          fieldWriter.AddValue( -1 );
+        }
+        else
+        {
+          const TopoDS_Shape& S = meshDS->IndexToShape( shapeID );
+          fieldWriter.AddValue( S.IsNull() ? -1 : shapeDim[ S.ShapeType() ]);
+          fieldWriter.AddValue( shapeID );
+        }
+      }
+    else
+      while ( elemIt->more() )
+      {
+        const SMDS_MeshElement* e = elemIt->next();
+        const int shapeID = e->getshapeId();
+        if ( shapeID < 1 )
+          fieldWriter.AddValue( -1 );
+        else
+          fieldWriter.AddValue( shapeID );
+      }
+
+    // write a step
+    fieldWriter.Perform();
+    SMESH_ComputeErrorPtr res = fieldWriter.GetError();
+    if ( res && res->IsKO() )
+    {
+      if ( res->myComment.empty() )
+      { THROW_SALOME_CORBA_EXCEPTION( METH "Fatal error", SALOME::INTERNAL_ERROR ); }
+      else
+      { THROW_SALOME_CORBA_EXCEPTION( res->myComment.c_str(), SALOME::INTERNAL_ERROR ); }
+    }
+
+  } // loop on geomAssocFields
+
+#undef METH
 }
 
 //================================================================================

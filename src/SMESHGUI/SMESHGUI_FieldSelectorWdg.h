@@ -19,27 +19,43 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+#ifndef STDMESHERSGUI_FieldSelectorWdg_H
+#define STDMESHERSGUI_FieldSelectorWdg_H
 
-// Declarations needed for usage of DriverMED
+#include "SMESH_SMESHGUI.hxx"
 
-#include "SMDSAbs_ElementType.hxx"
+#include <SALOMEconfig.h>
+#include CORBA_CLIENT_HEADER(SMESH_Mesh)
+#include CORBA_CLIENT_HEADER(GEOM_Gen)
 
-#include <boost/shared_ptr.hpp>
+#include <QGroupBox>
 
-class DriverMED_Family;
-typedef boost::shared_ptr<DriverMED_Family> DriverMED_FamilyPtr;
+class QTreeWidget;
+class QTreeWidgetItem;
 
-namespace DriverMED
+/*!
+ * \brief Widget listing all fields available for export to MED file
+ */
+class SMESHGUI_EXPORT SMESHGUI_FieldSelectorWdg : public QGroupBox
 {
-  // Implemetation is in DriverMED_W_Field.cxx
+  Q_OBJECT
 
-  /*
-   * Returns MED element geom type (MED::EGeometrieElement) by SMDS type
-   */
-  int GetMedGeoType( SMDSAbs_EntityType smdsType );
+ public:
+  SMESHGUI_FieldSelectorWdg( QWidget* = 0 );
+
+  bool GetAllFeilds(const QList< QPair< SMESH::SMESH_IDSource_var, QString > >& meshes,
+                    QList< QPair< GEOM::ListOfFields_var,          QString > >& fields);
+
+  bool GetSelectedFeilds();
+
+ private slots:
   
-  /*
-   * Returns SMDS element geom type by MED type (MED::EGeometrieElement)
-   */
-  SMDSAbs_EntityType GetSMDSType( int medType );
-}
+  void onItemCheck(QTreeWidgetItem * item, int column);
+
+ private:
+
+  QList< QPair< GEOM::ListOfFields_var, QString > > * myFields;
+  QTreeWidget*                                        myTree;
+};
+
+#endif // STDMESHERSGUI_FieldSelectorWdg_H

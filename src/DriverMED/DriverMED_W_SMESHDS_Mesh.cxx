@@ -483,7 +483,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       int aNodeID = aCoordHelperPtr->GetID();
       aNodeInfo->SetElemNum( iNode, aNodeID );
 #ifdef _EDF_NODE_IDS_
-      aNodeIdMap[aNodeID] = iNode+1;
+      aNodeIdMap.insert( aNodeIdMap.end(), make_pair( aNodeID, iNode+1 ));
 #endif
       // family number
       const SMDS_MeshNode* aNode = aCoordHelperPtr->GetNode();

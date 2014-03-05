@@ -4221,6 +4221,13 @@ It can&apos;t be deleted </translation>
     </message>
 </context>
 <context>
+    <name>SMESHGUI_FieldSelectorWdg</name>
+    <message>
+        <source>FIELDS_TO_EXPORT</source>
+        <translation>Export Fields</translation>
+    </message>
+</context>
+<context>
     <name>SMESHGUI_Dialog</name>
     <message>
         <source>DLG_MESH</source>

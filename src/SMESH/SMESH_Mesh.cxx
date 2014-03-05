@@ -1268,6 +1268,19 @@ bool SMESH_Mesh::HasDuplicatedGroupNamesMED()
 //================================================================================
 /*!
  * \brief Export the mesh to a med file
+ *  \param [in] file - name of the MED file
+ *  \param [in] theMeshName - name of this mesh
+ *  \param [in] theAutoGroups - boolean parameter for creating/not creating
+ *              the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
+ *              the typical use is auto_groups=false.
+ *  \param [in] theVersion - defines the version of format of MED file, that will be created
+ *  \param [in] meshPart - mesh data to export
+ *  \param [in] theAutoDimension - if \c true, a space dimension of a MED mesh can be either
+     *         - 1D if all mesh nodes lie on OX coordinate axis, or
+     *         - 2D if all mesh nodes lie on XOY coordinate plane, or
+     *         - 3D in the rest cases.
+     *         If \a theAutoDimension is \c false, the space dimension is always 3.
+ *  \return int - mesh index in the file
  */
 //================================================================================
 
