@@ -208,7 +208,7 @@ class Mesh_Algorithm:
                 pass
             self.subm = mesh.mesh.GetSubMesh(geom, algo.GetName())
         self.algo = algo
-        status = mesh.AddHypothesis(self.geom, self.algo)
+        status = mesh.AddHypothesis(self.algo, self.geom)
         return
 
     def CompareHyp (self, hyp, args):
