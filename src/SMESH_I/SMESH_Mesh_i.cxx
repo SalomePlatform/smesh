@@ -1912,8 +1912,11 @@ void SMESH_Mesh_i::CheckGeomModif()
     }
     else
     {
-      gr_i->changeLocalId( id );
       g->GetGroupDS()->SetColor( data._color );
+      gr_i->changeLocalId( id );
+      _mapGroups[ id ] = i2g->second;
+      if ( data._oldID != id )
+        _mapGroups.erase( i2g );
     }
   }
 
