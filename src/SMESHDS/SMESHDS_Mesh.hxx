@@ -50,13 +50,16 @@ class SMDS_MeshVolume   ;
 class SMDS_Mesh0DElement;
 class SMDS_BallElement;
 
-#include <NCollection_DataMap.hxx>
 #include <map>
+
 /*
  * Using of native hash_map isn't portable and don't work on WIN32 platform.
  * So this functionality implement on new NCollection_DataMap technology
  */
+#include <NCollection_DataMap.hxx>
 #include "SMESHDS_DataMapOfShape.hxx"
+typedef std::list<const SMESHDS_Hypothesis*>                          THypList;
+typedef NCollection_DataMap< TopoDS_Shape, THypList, SMESHDS_Hasher > ShapeToHypothesis;
 
 class SMESHDS_GroupBase;
 class DownIdType;
@@ -570,8 +573,11 @@ public:
   bool HasHypothesis(const TopoDS_Shape & S);
   const std::list<const SMESHDS_Hypothesis*>& GetHypothesis(const TopoDS_Shape & S) const;
   bool IsUsedHypothesis(const SMESHDS_Hypothesis * H) const;
+  const ShapeToHypothesis & GetHypotheses() const { return myShapeToHypothesis; }
+
   SMESHDS_Script * GetScript();
   void ClearScript();
+
   int ShapeToIndex(const TopoDS_Shape & aShape) const;
   const TopoDS_Shape& IndexToShape(int ShapeIndex) const;
   int MaxShapeIndex() const { return myIndexToShape.Extent(); }
@@ -604,10 +610,6 @@ private:
     it->second->AddNode( aNode ); // add aNode to submesh
   }
   
-  typedef std::list<const SMESHDS_Hypothesis*> THypList;
-
-  typedef NCollection_DataMap< TopoDS_Shape, THypList, SMESHDS_Hasher > ShapeToHypothesis;
-
   ShapeToHypothesis          myShapeToHypothesis;
 
   int                        myMeshID, myPersistentID;

@@ -640,7 +640,7 @@ void SMESH_Gen_i::setCurrentStudy( SALOMEDS::Study_ptr theStudy,
           SALOMEDS::SObject_wrap so = anIter->Value();
           CORBA::Object_var     ior = SObjectToObject( so );
           if ( SMESH_Mesh_i*   mesh = SMESH::DownCast<SMESH_Mesh_i*>( ior ))
-            mesh->CheckGeomGroupModif();
+            mesh->CheckGeomModif();
         }
       }
     }
@@ -1742,7 +1742,7 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
     ASSERT( meshServant );
     if ( meshServant ) {
       // NPAL16168: "geometrical group edition from a submesh don't modifiy mesh computation"
-      meshServant->CheckGeomGroupModif();
+      meshServant->CheckGeomModif();
       // get local TopoDS_Shape
       TopoDS_Shape myLocShape;
       if(theMesh->HasShapeToMesh())
@@ -1824,7 +1824,7 @@ SMESH::MeshPreviewStruct* SMESH_Gen_i::Precompute( SMESH::SMESH_Mesh_ptr theMesh
     ASSERT( meshServant );
     if ( meshServant ) {
       // NPAL16168: "geometrical group edition from a submesh don't modifiy mesh computation"
-      meshServant->CheckGeomGroupModif();
+      meshServant->CheckGeomModif();
       // get local TopoDS_Shape
       TopoDS_Shape myLocShape;
       if(theMesh->HasShapeToMesh())
@@ -2020,7 +2020,7 @@ SMESH::long_array* SMESH_Gen_i::Evaluate(SMESH::SMESH_Mesh_ptr theMesh,
     ASSERT( meshServant );
     if ( meshServant ) {
       // NPAL16168: "geometrical group edition from a submesh don't modifiy mesh computation"
-      meshServant->CheckGeomGroupModif();
+      meshServant->CheckGeomModif();
       // get local TopoDS_Shape
       TopoDS_Shape myLocShape;
       if(theMesh->HasShapeToMesh())

@@ -125,6 +125,7 @@ SMESH_Mesh_i::SMESH_Mesh_i( PortableServer::POA_ptr thePOA,
   _editor        = NULL;
   _previewEditor = NULL;
   _preMeshInfo   = NULL;
+  _mainShapeTick = 0;
 }
 
 //=============================================================================
@@ -198,6 +199,7 @@ void SMESH_Mesh_i::SetShape( GEOM::GEOM_Object_ptr theShapeObject )
   // to track changes of GEOM groups
   SMESH::SMESH_Mesh_var mesh = _this();
   addGeomGroupData( theShapeObject, mesh );
+  _mainShapeTick = theShapeObject->GetTick();
 }
 
 //================================================================================
@@ -280,7 +282,7 @@ void SMESH_Mesh_i::Clear() throw (SALOME::SALOME_Exception)
 
   try {
     _impl->Clear();
-    CheckGeomGroupModif(); // issue 20145
+    //CheckGeomGroupModif(); // issue 20145
   }
   catch(SALOME_Exception & S_ex) {
     THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
@@ -1780,22 +1782,152 @@ TopoDS_Shape SMESH_Mesh_i::newGroupShape( TGeomGroupData & groupData)
 
 namespace
 {
-  //=============================================================================
+  //-----------------------------------------------------------------------------
   /*!
    * \brief Storage of shape and index used in CheckGeomGroupModif()
    */
-  //=============================================================================
   struct TIndexedShape
   {
     int          _index;
     TopoDS_Shape _shape;
     TIndexedShape( int i, const TopoDS_Shape& s ):_index(i), _shape(s) {}
   };
+  //-----------------------------------------------------------------------------
+  /*!
+   * \brief Data to re-create a group on geometry
+   */
+  struct TGroupOnGeomData
+  {
+    int                 _oldID;
+    int                 _shapeID;
+    SMDSAbs_ElementType _type;
+    std::string         _name;
+    Quantity_Color      _color;
+  };
 }
+
+//=============================================================================
+/*!
+ * \brief Update data if geometry changes
+ *
+ * Issue 0022501
+ */
+//=============================================================================
+
+void SMESH_Mesh_i::CheckGeomModif()
+{
+  if ( !_impl->HasShapeToMesh() ) return;
+
+  SALOMEDS::Study_var study = _gen_i->GetCurrentStudy();
+  if ( study->_is_nil() ) return;
+
+  GEOM::GEOM_Object_var mainGO = _gen_i->ShapeToGeomObject( _impl->GetShapeToMesh() );
+  if ( mainGO->_is_nil() ) return;
+
+  if ( mainGO->GetType() == GEOM_GROUP )
+  {
+    CheckGeomGroupModif();
+    return;
+  }
+  if ( mainGO->GetTick() == _mainShapeTick )
+    return;
+
+  GEOM_Client* geomClient = _gen_i->GetShapeReader();
+  if ( !geomClient ) return;
+  GEOM::GEOM_Gen_var geomGen = _gen_i->GetGeomEngine();
+  if ( geomGen->_is_nil() ) return;
+
+  CORBA::String_var ior = geomGen->GetStringFromIOR( mainGO );
+  geomClient->RemoveShapeFromBuffer( ior.in() );
+
+  // Update data taking into account that
+  // all sub-shapes change but IDs of sub-shapes remain
+
+  _impl->Clear();
+  TopoDS_Shape newShape = _gen_i->GeomObjectToShape( mainGO );
+  if ( newShape.IsNull() )
+    return;
+
+  _mainShapeTick = mainGO->GetTick();
+
+  SMESHDS_Mesh * meshDS = _impl->GetMeshDS();
+
+  // store data of groups on geometry
+  vector< TGroupOnGeomData > groupsData;
+  const set<SMESHDS_GroupBase*>& groups = meshDS->GetGroups();
+  groupsData.reserve( groups.size() );
+  set<SMESHDS_GroupBase*>::const_iterator g = groups.begin();
+  for ( ; g != groups.end(); ++g )
+    if ( const SMESHDS_GroupOnGeom* group = dynamic_cast< SMESHDS_GroupOnGeom* >( *g ))
+    {
+      TGroupOnGeomData data;
+      data._oldID   = group->GetID();
+      data._shapeID = meshDS->ShapeToIndex( group->GetShape() );
+      data._type    = group->GetType();
+      data._name    = group->GetStoreName();
+      data._color   = group->GetColor();
+      groupsData.push_back( data );
+    }
+  // store assigned hypotheses
+  vector< pair< int, THypList > > ids2Hyps;
+  const ShapeToHypothesis & hyps = meshDS->GetHypotheses();
+  for ( ShapeToHypothesis::Iterator s2hyps( hyps ); s2hyps.More(); s2hyps.Next() )
+  {
+    const TopoDS_Shape& s = s2hyps.Key();
+    const THypList&  hyps = s2hyps.ChangeValue();
+    ids2Hyps.push_back( make_pair( meshDS->ShapeToIndex( s ), hyps ));
+  }
+
+  // change shape to mesh
+  _impl->ShapeToMesh( TopoDS_Shape() );
+  _impl->ShapeToMesh( newShape );
+
+  // re-assign hypotheses
+  for ( size_t i = 0; i < ids2Hyps.size(); ++i )
+  {
+    const TopoDS_Shape& s = meshDS->IndexToShape( ids2Hyps[i].first );
+    const THypList&  hyps = ids2Hyps[i].second;
+    THypList::const_iterator h = hyps.begin();
+    for ( ; h != hyps.end(); ++h )
+      _impl->AddHypothesis( s, (*h)->GetID() );
+  }
+
+  // restore groups
+  for ( size_t i = 0; i < groupsData.size(); ++i )
+  {
+    const TGroupOnGeomData& data = groupsData[i];
+
+    map<int, SMESH::SMESH_GroupBase_ptr>::iterator i2g = _mapGroups.find( data._oldID );
+    if ( i2g == _mapGroups.end() ) continue;
+
+    SMESH_GroupBase_i* gr_i = SMESH::DownCast<SMESH_GroupBase_i*>( i2g->second );
+    if ( !gr_i ) continue;
+
+    int id;
+    SMESH_Group* g = _impl->AddGroup( data._type, data._name.c_str(), id,
+                                      meshDS->IndexToShape( data._shapeID ));
+    if ( !g )
+    {
+      _mapGroups.erase( i2g );
+    }
+    else
+    {
+      gr_i->changeLocalId( id );
+      g->GetGroupDS()->SetColor( data._color );
+    }
+  }
+
+  // update _mapSubMesh
+  map<int, ::SMESH_subMesh*>::iterator i_sm = _mapSubMesh.begin();
+  for ( ; i_sm != _mapSubMesh.end(); ++i_sm )
+    i_sm->second = _impl->GetSubMesh( meshDS->IndexToShape( i_sm->first ));
+
+}
+
 //=============================================================================
 /*!
  * \brief Update objects depending on changed geom groups
- * 
+ *
  * NPAL16168: geometrical group edition from a submesh don't modifiy mesh computation
  * issue 0020210: Update of a smesh group after modification of the associated geom group
  */

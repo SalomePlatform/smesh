@@ -441,6 +441,12 @@ public:
   void checkMeshLoaded();
 
   /*!
+   * \brief Update data if geometry changes
+   *
+   * Issue 0022501
+   */
+  void CheckGeomModif();
+  /*!
    * \brief Update hypotheses assigned to geom groups if the latter change
    *
    * NPAL16168: "geometrical group edition from a submesh don't modifiy mesh computation"
@@ -702,6 +708,7 @@ private:
     CORBA::Object_var _smeshObject; // SMESH object depending on GEOM group
   };
   std::list<TGeomGroupData> _geomGroupData;
+  int                       _mainShapeTick; // to track modifications of the meshed shape
 
   /*!
    * Remember GEOM group data
