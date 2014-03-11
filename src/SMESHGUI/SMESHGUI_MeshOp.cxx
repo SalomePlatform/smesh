@@ -41,6 +41,7 @@
 #include <GEOMBase.h>
 #include <GeometryGUI.h>
 #include <GEOM_wrap.hxx>
+#include <GEOMImpl_Types.hxx>
 
 // SALOME GUI includes
 #include <SalomeApp_Tools.h>
@@ -2535,33 +2536,40 @@ void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theI
   int anCurrentAvailableAlgo = 0;
   bool isNone = true;
   switch ( theIndex ) {
-  case MT_ANY:{
+  case MT_ANY:
     anCompareType = "ANY";
     aDim = SMESH::DIM_3D;
-  }
-  break;
-  case MT_TRIANGULAR:{
+    break;
+  case MT_TRIANGULAR:
     aDim = SMESH::DIM_2D;
     anCompareType = "TRIA";
-  }
-  break;
-  case MT_QUADRILATERAL:{
+    break;
+  case MT_QUADRILATERAL:
     aDim = SMESH::DIM_2D;
     anCompareType = "QUAD";
-  }
-  break;
-  case MT_TETRAHEDRAL:{
+    break;
+  case MT_TETRAHEDRAL:
     aDim = SMESH::DIM_3D;
     anCompareType = "TETRA";
-  }
-  break;
-  case MT_HEXAHEDRAL:{
+    break;
+  case MT_HEXAHEDRAL:
     aDim = SMESH::DIM_3D;
     anCompareType = "HEXA";
-  }
-  break;
+    break;
   default:;
   }
+
+  bool toCheckIsApplicableToAll = !myIsMesh;
+  GEOM::GEOM_Object_var aGeomVar;
+  QString anEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
+  if ( _PTR(SObject) so = studyDS()->FindObjectID( anEntry.toLatin1().data() ))
+  {
+    CORBA::Object_var obj = _CAST( SObject,so )->GetObject();
+    aGeomVar = GEOM::GEOM_Object::_narrow( obj );
+    if ( !aGeomVar->_is_nil() && toCheckIsApplicableToAll )
+      toCheckIsApplicableToAll = ( aGeomVar->GetType() == GEOM_GROUP );
+  }
+
   if ( anCompareType == "ANY" )
   {
     for ( int dim = SMESH::DIM_2D; dim <= SMESH::DIM_3D; dim++ )
@@ -2572,7 +2580,7 @@ void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theI
       availableHyps( dim, Algo, anAvailableAlgs, anAvailableAlgsData );
       //return current algo in current tab and set new algorithm list
       HypothesisData* algoCur;
-      if ( !isNone && !myAvailableHypData[dim][Algo].empty() ){
+      if ( !isNone && !myAvailableHypData[dim][Algo].empty() ) {
         algoCur = myAvailableHypData[dim][Algo].at( currentHyp( dim, Algo ) );
       }
       myAvailableHypData[dim][Algo].clear();
@@ -2580,19 +2588,14 @@ void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theI
       for (int i = 0 ; i < anAvailableAlgsData.count(); i++)
       {
         HypothesisData* curAlgo = anAvailableAlgsData.at(i);
-        QString anEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
-        GEOM::GEOM_Object_var aGeomVar = GEOM::GEOM_Object::_nil();
-        if ( _PTR(SObject) pGeom = studyDS()->FindObjectID( anEntry.toLatin1().data() ))
-        {
-          aGeomVar= GEOM::GEOM_Object::_narrow( _CAST( SObject,pGeom )->GetObject() );
-        }
         if ( aGeomVar->_is_nil() ||
-           ( !aGeomVar->_is_nil() && SMESH::IsApplicable( curAlgo->TypeName, aGeomVar, !myIsMesh ))){
+             SMESH::IsApplicable( curAlgo->TypeName, aGeomVar, toCheckIsApplicableToAll ))
+        {
           anAvailableAlgs.append( curAlgo->Label );
           myAvailableHypData[dim][Algo].append( curAlgo );
         }
       }
-      if ( !isNone && algoCur ){
+      if ( !isNone && algoCur ) {
         for (int i = 0 ; i < myAvailableHypData[dim][Algo].count(); i++)
         {
           HypothesisData* algoAny = myAvailableHypData[dim][Algo].at(i);
@@ -2603,7 +2606,7 @@ void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theI
           }
         }
       }
-      else if ( !isNone ){
+      else if ( !isNone ) {
         isAvailableChoiceAlgo = true;
         anCurrentAvailableAlgo = currentHyp( dim, Algo );
       }
@@ -2657,27 +2660,22 @@ void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theI
         QStringList::const_iterator inElemType = algoIn->OutputTypes.begin();
         for ( ; inElemType != algoIn->OutputTypes.end(); inElemType++ )
         {
-          if ( *inElemType == anCurrentCompareType ){
+          if ( *inElemType == anCurrentCompareType ) {
             isAvailableAlgo = true;
             break;
           }
         }
-        if ( isAvailableAlgo || algoIn->OutputTypes.count()==0 ){
-          QString anEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
-          GEOM::GEOM_Object_var aGeomVar = GEOM::GEOM_Object::_nil();
-          if ( _PTR(SObject) pGeom = studyDS()->FindObjectID( anEntry.toLatin1().data() ))
-          {
-            aGeomVar= GEOM::GEOM_Object::_narrow( _CAST( SObject,pGeom )->GetObject() );
-          }
+        if ( isAvailableAlgo || algoIn->OutputTypes.count()==0 ) {
           if ( aGeomVar->_is_nil() || myMaxShapeDim != dim ||
-             ( !aGeomVar->_is_nil() && SMESH::IsApplicable( algoIn->TypeName, aGeomVar, !myIsMesh ))){
+               SMESH::IsApplicable( algoIn->TypeName, aGeomVar, toCheckIsApplicableToAll ))
+          {
             anAvailableAlgs.append( algoIn->Label );
             myAvailableHypData[dim][Algo].append( algoIn );
             myFilteredAlgoData[dim].append( algoIn );
           }
         }
         //algorithm will be active, if the chosen algorithm available in the current mesh type
-        if ( !isNoneAlg &&  isAvailableAlgo && algoIn->Label == anCurrentAlgo ){
+        if ( !isNoneAlg &&  isAvailableAlgo && algoIn->Label == anCurrentAlgo ) {
           isAvailableChoiceAlgo = true;
           anCurrentAvailableAlgo = anAvailableAlgs.count() - 1 ;
         }
@@ -2700,7 +2698,7 @@ void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theI
         }
       }
     }
-    else if ( !isNone ){
+    else if ( !isNone ) {
       if ( aDim == SMESH::DIM_2D){
         myDlg->disableTab( SMESH::DIM_3D );
         setCurrentHyp( SMESH::DIM_3D, Algo, -1);

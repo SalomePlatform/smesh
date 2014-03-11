@@ -1563,25 +1563,24 @@ class Mesh:
             if not geom:
                 geom = self.mesh.GetShapeToMesh()
             pass
-        hyp_name = GetName( hyp )
-        geom_name = ""
-        if geom:
-            geom_name = geom.GetName()
         isApplicable = True
         if self.mesh.HasShapeToMesh():
             hyp_type     = hyp.GetName()
             lib_name     = hyp.GetLibName()
             isSubMesh    = ( not geom.IsSame( self.mesh.GetShapeToMesh() ))
-            isApplicable = self.smeshpyD.IsApplicable(hyp_name, lib_name, geom, isSubMesh)
+            isApplicable = self.smeshpyD.IsApplicable(hyp_type, lib_name, geom, isSubMesh)
         if isApplicable:
             AssureGeomPublished( self, geom, "shape for %s" % hyp.GetName())
             status = self.mesh.AddHypothesis(geom, hyp)
-            isAlgo = hyp._narrow( SMESH_Algo )
-            TreatHypoStatus( status, hyp_name, geom_name, isAlgo )
-            return status
         else:
-            TreatHypoStatus( HYP_BAD_GEOMETRY, hyp_name, geom_name, isAlgo )
-            return HYP_BAD_GEOMETRY
+            status = HYP_BAD_GEOMETRY
+        hyp_name = GetName( hyp )
+        geom_name = ""
+        if geom:
+            geom_name = geom.GetName()
+        isAlgo = hyp._narrow( SMESH_Algo )
+        TreatHypoStatus( status, hyp_name, geom_name, isAlgo )
+        return status
 
     ## Return True if an algorithm of hypothesis is assigned to a given shape
     #  @param hyp a hypothesis to check

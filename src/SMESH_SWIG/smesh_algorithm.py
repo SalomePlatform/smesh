@@ -195,17 +195,11 @@ class Mesh_Algorithm:
         if geom is None and mesh.mesh.HasShapeToMesh():
             raise RuntimeError, "Attemp to create " + algo + " algoritm on None shape"
         self.mesh = mesh
-        name = ""
         if not geom or geom.IsSame( mesh.geom ):
             self.geom = mesh.geom
         else:
             self.geom = geom
             AssureGeomPublished( mesh, geom )
-            try:
-                name = GetName(geom)
-                pass
-            except:
-                pass
             self.subm = mesh.mesh.GetSubMesh(geom, algo.GetName())
         self.algo = algo
         status = mesh.AddHypothesis(self.algo, self.geom)
