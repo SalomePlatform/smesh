@@ -3927,6 +3927,8 @@ TPCurveOnHorFaceAdaptor::TPCurveOnHorFaceAdaptor( const TSideFace*   sideFace,
     const int Z = isTop ? sideFace->ColumnHeight() - 1 : 0;
     map<double, const SMDS_MeshNode* > u2nodes;
     sideFace->GetNodesAtZ( Z, u2nodes );
+    if ( u2nodes.empty() )
+      return;
 
     SMESH_MesherHelper helper( *sideFace->GetMesh() );
     helper.SetSubShape( horFace );
@@ -3991,7 +3993,7 @@ gp_Pnt2d StdMeshers_PrismAsBlock::TPCurveOnHorFaceAdaptor::Value(const Standard_
   map< double, gp_XY >::const_iterator i1 = myUVmap.upper_bound( U );
 
   if ( i1 == myUVmap.end() )
-    return myUVmap.rbegin()->second;
+    return myUVmap.empty() ? gp_XY(0,0) : myUVmap.rbegin()->second;
 
   if ( i1 == myUVmap.begin() )
     return (*i1).second;
