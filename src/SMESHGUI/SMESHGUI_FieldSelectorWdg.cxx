@@ -113,6 +113,19 @@ GetAllFeilds(const QList< QPair< SMESH::SMESH_IDSource_var, QString > >& meshes,
         fields = fieldOp->GetFields( shape );
         for ( size_t iF = 0; iF < fields->length(); ++iF )
         {
+          GEOM::field_data_type dataType = fields[ iF ]->GetDataType();
+          if ( dataType == GEOM::FDT_String )
+            continue;
+          GEOM::ListOfLong_var stepIDs = fields[ iF ]->GetSteps();
+          if ( stepIDs->length() < 1 )
+            continue;
+          GEOM::string_array_var comps = fields[ iF ]->GetComponents();
+          if ( comps->length() < 1 )
+            continue;
+          CORBA::Short dim = fields[iF]->GetDimension();
+          if ( dim < 0 )
+            continue; // "whole shape" field ignored
+
           CORBA::String_var name = fields[iF]->GetName();
           createItem( myTree, name.in(), iF, meshItem );
         }
