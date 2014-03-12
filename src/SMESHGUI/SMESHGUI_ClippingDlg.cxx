@@ -629,7 +629,7 @@ double SMESHGUI_ClippingDlg::getDistance() const
 */
 void SMESHGUI_ClippingDlg::setDistance( const double theDistance )
 {
-  SpinSliderDistance->setValue( theDistance*100 );
+  SpinSliderDistance->setValue( theDistance );
 }
 
 /*!
@@ -1133,9 +1133,13 @@ void SMESHGUI_ClippingDlg::updateActorItem( QListWidgetItem* theItem,
         else if( theItem->checkState() == Qt::Unchecked && anIsPushed )
           anActorList.remove( anActor );
 
-        SMESH::ComputeBounds( anActorList, myBounds );
-        myPreviewWidget->PlaceWidget( myBounds[0], myBounds[1], myBounds[2],
-                                      myBounds[3], myBounds[4], myBounds[5] );
+        if( SMESH::ComputeBounds( anActorList, myBounds ) ) {
+          myPreviewWidget->On();
+          myPreviewWidget->PlaceWidget( myBounds[0], myBounds[1], myBounds[2],
+                                        myBounds[3], myBounds[4], myBounds[5] );
+        }
+        else
+          myPreviewWidget->Off();
       }
     }
   }
@@ -1244,9 +1248,14 @@ void SMESHGUI_ClippingDlg::ClickOnNew()
 
     bool anIsBlocked = ActorList->blockSignals( true );
 
-    SMESH::ComputeBounds( anActorList, myBounds );
-    myPreviewWidget->PlaceWidget( myBounds[0],myBounds[1],myBounds[2],
-                                  myBounds[3],myBounds[4],myBounds[5] );
+    if( SMESH::ComputeBounds( anActorList, myBounds ) ) {
+      myPreviewWidget->On();
+      myPreviewWidget->PlaceWidget( myBounds[0], myBounds[1], myBounds[2],
+                                    myBounds[3], myBounds[4], myBounds[5] );
+    }
+    else
+      myPreviewWidget->Off();
+
     synchronize();
     SetCurrentPlaneParam();
 
@@ -1331,9 +1340,15 @@ void SMESHGUI_ClippingDlg::onSelectPlane ( int theIndex )
     }
   }
   myIsSelectPlane = false;
-  SMESH::ComputeBounds( aPlaneData.ActorList, myBounds );
-  myPreviewWidget->PlaceWidget( myBounds[0], myBounds[1], myBounds[2],
-                                myBounds[3], myBounds[4], myBounds[5] );
+
+  if( SMESH::ComputeBounds( aPlaneData.ActorList, myBounds ) ) {
+    myPreviewWidget->On();
+    myPreviewWidget->PlaceWidget( myBounds[0], myBounds[1], myBounds[2],
+                                  myBounds[3], myBounds[4], myBounds[5] );
+  }
+  else
+    myPreviewWidget->Off();
+
   SetCurrentPlaneParam();
 
   // Actors
@@ -1779,11 +1794,9 @@ void SMESHGUI_ClippingDlg::ClickOnApply()
       aClippingPlaneInfoList.push_back( aClippingPlaneInfo );
     }
 
-    SMESH_Actor* anSMESHActor;
     anAllActors->InitTraversal();
     while( vtkActor* aVTKActor = anAllActors->GetNextActor() )
       if( SMESH_Actor* anActor = SMESH_Actor::SafeDownCast( aVTKActor ) ) {
-        anSMESHActor = anActor;
         anActor->SetOpenGLClippingPlane();
       }
 
