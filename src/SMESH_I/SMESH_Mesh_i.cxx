@@ -1709,6 +1709,9 @@ void SMESH_Mesh_i::addGeomGroupData(GEOM::GEOM_Object_ptr theGeomObj,
     groupData._indices.insert( ids[i] );
   // SMESH object
   groupData._smeshObject = CORBA::Object::_duplicate( theSmeshObj );
+  // shape index in SMESHDS
+  // TopoDS_Shape shape = _gen_i->GeomObjectToShape( theGeomObj );
+  // groupData._dsID = shape.IsNull() ? 0 : _impl->GetSubMesh( shape )->GetId();
 }
 
 //================================================================================
@@ -1824,13 +1827,12 @@ void SMESH_Mesh_i::CheckGeomModif()
   GEOM::GEOM_Object_var mainGO = _gen_i->ShapeToGeomObject( _impl->GetShapeToMesh() );
   if ( mainGO->_is_nil() ) return;
 
-  if ( mainGO->GetType() == GEOM_GROUP )
+  if ( mainGO->GetType() == GEOM_GROUP ||
+       mainGO->GetTick() == _mainShapeTick )
   {
     CheckGeomGroupModif();
     return;
   }
-  if ( mainGO->GetTick() == _mainShapeTick )
-    return;
 
   GEOM_Client* geomClient = _gen_i->GetShapeReader();
   if ( !geomClient ) return;
@@ -1841,7 +1843,7 @@ void SMESH_Mesh_i::CheckGeomModif()
   geomClient->RemoveShapeFromBuffer( ior.in() );
 
   // Update data taking into account that
-  // all sub-shapes change but IDs of sub-shapes remain
+  // all sub-shapes change but IDs of sub-shapes remain (except for geom groups)
 
   _impl->Clear();
   TopoDS_Shape newShape = _gen_i->GeomObjectToShape( mainGO );
@@ -1879,8 +1881,30 @@ void SMESH_Mesh_i::CheckGeomModif()
   }
 
   // change shape to mesh
+  int oldNbSubShapes = meshDS->MaxShapeIndex();
   _impl->ShapeToMesh( TopoDS_Shape() );
   _impl->ShapeToMesh( newShape );
+
+  // re-add shapes of geom groups
+  list<TGeomGroupData>::iterator data = _geomGroupData.begin();
+  for ( ; data != _geomGroupData.end(); ++data )
+  {
+    TopoDS_Shape newShape = newGroupShape( *data );
+    if ( !newShape.IsNull() )
+    {
+      if ( meshDS->ShapeToIndex( newShape ) > 0 ) // a group reduced to one sub-shape
+      {
+        TopoDS_Compound compound;
+        BRep_Builder().MakeCompound( compound );
+        BRep_Builder().Add( compound, newShape );
+        newShape = compound;
+      }
+      _impl->GetSubMesh( newShape );
+    }
+  }
+  if ( oldNbSubShapes != meshDS->MaxShapeIndex() )
+    THROW_SALOME_CORBA_EXCEPTION( "SMESH_Mesh_i::CheckGeomModif() bug",
+                                  SALOME::INTERNAL_ERROR );
 
   // re-assign hypotheses
   for ( size_t i = 0; i < ids2Hyps.size(); ++i )
