@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>MacMesh for Salome</title>
+  </head>
+    <h1>The multi-purpose Salome plug-in for regular 2D meshing </h1>
+    <ul>
+      <li>Consider reading <a href="MacMesh.v.10avr.pdf">
+          User manual </a> to learn how to use the plug-in</li>
+      <li>Type <em><font color="brown">import PressureValve</font></em> in the Python console of
+        Salome to run a sample script</li>
+      <li> <a href="../../../../../../@SALOME_INSTALL_SCRIPT_PYTHON@/PressureValve.py">
+          Download the sample script</a></li>
+      <li>Python files of the plugin are located in <br><font color="brown">
+        ${SMESH_ROOT_DIR}/@MACMESH_INSTALL_PY@ </font> directory</li>
+    </ul>
+    <img src="snap.jpg" width="100%">
+  </body>
+</html>
