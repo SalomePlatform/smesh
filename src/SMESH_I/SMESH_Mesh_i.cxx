@@ -199,7 +199,8 @@ void SMESH_Mesh_i::SetShape( GEOM::GEOM_Object_ptr theShapeObject )
   // to track changes of GEOM groups
   SMESH::SMESH_Mesh_var mesh = _this();
   addGeomGroupData( theShapeObject, mesh );
-  _mainShapeTick = theShapeObject->GetTick();
+  if ( !CORBA::is_nil( theShapeObject ))
+    _mainShapeTick = theShapeObject->GetTick();
 }
 
 //================================================================================
