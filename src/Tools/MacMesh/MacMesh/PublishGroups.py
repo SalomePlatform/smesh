@@ -1,7 +1,36 @@
+# Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+
+# Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+# CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+
+
 # 
-import geompy, smesh, SMESH
+import SMESH
 import math
 import Config
+
+from salome.geom import geomBuilder
+geompy = geomBuilder.New( Config.theStudy )
+
+from salome.smesh import smeshBuilder
+smesh = smeshBuilder.New( Config.theStudy )
+
 ##########################################################################################################
 
 def PublishGroups ():
@@ -37,7 +66,8 @@ def PublishGroups ():
                 geompy.addToStudyInFather(FinalCompound,GroupGEO[-1],'GR_'+group)
                 
                 # Mesh groups definition
-                Criterion = smesh.Filter.Criterion(18,39,0,'GR_'+group,'GR_'+group,39,39,1e-06,smesh.EDGE,7)
+                Criterion = smesh.GetCriterion(SMESH.EDGE, SMESH.FT_BelongToGeom,'=',GroupGEO[-1],Tolerance=1e-06)
+                #Criterion = smesh.Filter.Criterion(18,39,0,'GR_'+group,'GR_'+group,39,39,1e-06,smesh.EDGE,7)
                 MeshCompound.MakeGroupByCriterion(group,Criterion)
         
         StudyBuilder = Config.theStudy.NewBuilder()
@@ -119,18 +149,22 @@ def RevolveMesh(MainMesh,**args):
         # Removing the _rotated prefix from the rotated FACE groups
         for GR in Rev3DMeshGroups:
                 CurrentName = GR.GetName()
-                if CurrentName=='LOFAC_rotated' :
-                        GR.SetName('VOL')
-                else :
+                if CurrentName.endswith( "_rotated"):
+                        if CurrentName.startswith( 'LOFAC_' ):
+                                GR.SetName('VOL')
+                        else:
+                                GR.SetName(CurrentName[:-8])
+                elif CurrentName == 'LOFAC_top':
+                        GR.SetName('HIFAC')
                         #Index = [ GR_Names[i] in CurrentName for i in range(0,len(GR_Names)) ].index(True)
                         #GR.SetName(GR_Names[Index])
-                        GR.SetName(CurrentName[:-8])
 
         # Creating the upper face group HIFAC
         ALLFAC = MainMesh.CreateEmptyGroup( SMESH.FACE, 'ALLFAC' )
         ALLFAC.AddFrom(MainMesh.GetMesh())
 
-        HIFAC = MainMesh.GetMesh().CutListOfGroups( [ ALLFAC ], [LOFAC] + [ MeshGroup for MeshGroup in Rev3DMeshGroups if not(MeshGroup.GetName()=='VOL') ], 'HIFAC' )
+        #HIFAC = MainMesh.GetMesh().CutListOfGroups( [ ALLFAC ], [LOFAC] + [ MeshGroup for MeshGroup in Rev3DMeshGroups if not(MeshGroup.GetName()=='VOL') ], 'HIFAC' )
+        #HIFAC = MainMesh.GetMesh().CutListOfGroups( [ ALLFAC ], [LOFAC] + [ MeshGroup for MeshGroup in Rev3DMeshGroups if ( not(MeshGroup.GetName()=='VOL') and MeshGroup.GetType() == SMESH.FACE )], 'HIFAC' )
 
         # Scaling down the mesh to meter units
         if not(Scale==1.):
@@ -182,21 +216,22 @@ def ExtrudeMesh(MainMesh,**args):
                 if CurrentName in GR_Names and not(CurrentName=='LOFAC'):  # Meaning that this is an old edge group
                         GR.SetName(CurrentName+'_EDGE')
 
-        # Removing the _rotated prefix from the rotated FACE groups
+        # Removing the _extruded suffix from the extruded FACE groups
         for GR in Ext3DMeshGroups:
                 CurrentName = GR.GetName()
-                if CurrentName=='LOFAC_extruded' :
-                        GR.SetName('VOL')
-                else :
-                        #Index = [ GR_Names[i] in CurrentName for i in range(0,len(GR_Names)) ].index(True)
-                        #GR.SetName(GR_Names[Index])
-                        GR.SetName(CurrentName[:-9])
+                if CurrentName.endswith( "_extruded"):
+                        if CurrentName.startswith( 'LOFAC_' ):
+                                GR.SetName('VOL')
+                        else:
+                                GR.SetName(CurrentName[:-9])
+                elif CurrentName == 'LOFAC_top':
+                        GR.SetName('HIFAC')
 
         # Creating the upper face group HIFAC
         ALLFAC = MainMesh.CreateEmptyGroup( SMESH.FACE, 'ALLFAC' )
         ALLFAC.AddFrom(MainMesh.GetMesh())
 
-        HIFAC = MainMesh.GetMesh().CutListOfGroups( [ ALLFAC ], [LOFAC] + [ MeshGroup for MeshGroup in Ext3DMeshGroups if not(MeshGroup.GetName()=='VOL') ], 'HIFAC' )
+        #HIFAC = MainMesh.GetMesh().CutListOfGroups( [ ALLFAC ], [LOFAC] + [ MeshGroup for MeshGroup in Ext3DMeshGroups if not(MeshGroup.GetName()=='VOL') ], 'HIFAC' )
 
         # Scaling down the mesh to meter units
         if not(Scale==1.):
