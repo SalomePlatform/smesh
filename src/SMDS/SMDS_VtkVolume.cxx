@@ -567,7 +567,7 @@ int SMDS_VtkVolume::NbCornerNodes() const
   case VTK_TRIQUADRATIC_HEXAHEDRON: return 8;
   default:;
   }
-  return grid->GetCell(myVtkID)->GetNumberOfPoints();
+  return NbNodes();
 }
 
 SMDSAbs_EntityType SMDS_VtkVolume::GetEntityType() const
