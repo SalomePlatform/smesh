@@ -3070,7 +3070,7 @@ void SMESH_Mesh_i::ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
   {
     aMeshName = prepareMeshNameAndGroups(file, overwrite);
     _impl->ExportMED( file, aMeshName.c_str(), auto_groups,
-                      version, 0, autoDimension, have0dField);
+                      version, 0, autoDimension, /*addODOnVertices=*/have0dField);
     meshDS = _impl->GetMeshDS();
   }
   else
@@ -3090,7 +3090,7 @@ void SMESH_Mesh_i::ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
     }
     SMESH_MeshPartDS* partDS = new SMESH_MeshPartDS( meshPart );
     _impl->ExportMED( file, aMeshName.c_str(), auto_groups,
-                      version, partDS, autoDimension, have0dField);
+                      version, partDS, autoDimension, /*addODOnVertices=*/have0dField);
     meshDS = tmpDSDeleter._obj = partDS;
   }
 
@@ -3176,7 +3176,7 @@ void SMESH_Mesh_i::exportMEDFields( DriverMED_W_Field&        fieldWriter,
                            name.in(),
                            elemType,
                            comps->length(),
-                           ( dataType == GEOM::FDT_Int )))
+                           /*isIntData=*/false ))//( dataType == GEOM::FDT_Int )))
       continue;
 
     for ( size_t iC = 0; iC < comps->length(); ++iC )
@@ -3263,9 +3263,9 @@ void SMESH_Mesh_i::exportMEDFields( DriverMED_W_Field&        fieldWriter,
           const SMDS_MeshElement* e = elemIt->next();
           const int shapeID = e->getshapeId();
           if ( shapeID < 1 || shapeID >= intVals.size() )
-            fieldWriter.AddValue( noneIntValue );
+            fieldWriter.AddValue( (double) noneIntValue );
           else
-            fieldWriter.AddValue( intVals[ shapeID ]);
+            fieldWriter.AddValue( (double) intVals[ shapeID ]);
         }
 
       // write a step
@@ -3303,17 +3303,17 @@ void SMESH_Mesh_i::exportMEDFields( DriverMED_W_Field&        fieldWriter,
     std::vector< std::string > compNames;
     switch ( geomAssocFields[ iF ]) {
     case 'v': case 'V':
-      fieldWriter.Set( meshDS, "_vertices_", SMDSAbs_Node, /*nbComps=*/2, /*isInt=*/true );
+      fieldWriter.Set( meshDS, "_vertices_", SMDSAbs_Node, /*nbComps=*/2, /*isInt=*/false );
       compNames.push_back( "dim" );
       break;
     case 'e': case 'E':
-      fieldWriter.Set( meshDS, "_edges_", SMDSAbs_Edge, /*nbComps=*/1, /*isInt=*/true );
+      fieldWriter.Set( meshDS, "_edges_", SMDSAbs_Edge, /*nbComps=*/1, /*isInt=*/false );
       break;
     case 'f': case 'F':
-      fieldWriter.Set( meshDS, "_faces_", SMDSAbs_Face, /*nbComps=*/1, /*isInt=*/true );
+      fieldWriter.Set( meshDS, "_faces_", SMDSAbs_Face, /*nbComps=*/1, /*isInt=*/false );
       break;
     case 's': case 'S':
-      fieldWriter.Set( meshDS, "_solids_", SMDSAbs_Volume, /*nbComps=*/1, /*isInt=*/true );
+      fieldWriter.Set( meshDS, "_solids_", SMDSAbs_Volume, /*nbComps=*/1, /*isInt=*/false );
       break;
     default: continue;
     }
@@ -3334,14 +3334,14 @@ void SMESH_Mesh_i::exportMEDFields( DriverMED_W_Field&        fieldWriter,
         const int shapeID = e->getshapeId();
         if ( shapeID < 1 )
         {
-          fieldWriter.AddValue( -1 );
-          fieldWriter.AddValue( -1 );
+          fieldWriter.AddValue( (double) -1 );
+          fieldWriter.AddValue( (double) -1 );
         }
         else
         {
           const TopoDS_Shape& S = meshDS->IndexToShape( shapeID );
-          fieldWriter.AddValue( S.IsNull() ? -1 : shapeDim[ S.ShapeType() ]);
-          fieldWriter.AddValue( shapeID );
+          fieldWriter.AddValue( (double) ( S.IsNull() ? -1 : shapeDim[ S.ShapeType() ]));
+          fieldWriter.AddValue( (double) shapeID );
         }
       }
     else
@@ -3350,9 +3350,9 @@ void SMESH_Mesh_i::exportMEDFields( DriverMED_W_Field&        fieldWriter,
         const SMDS_MeshElement* e = elemIt->next();
         const int shapeID = e->getshapeId();
         if ( shapeID < 1 )
-          fieldWriter.AddValue( -1 );
+          fieldWriter.AddValue( (double) -1 );
         else
-          fieldWriter.AddValue( shapeID );
+          fieldWriter.AddValue( (double) shapeID );
       }
 
     // write a step
