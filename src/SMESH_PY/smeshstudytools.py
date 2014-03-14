@@ -18,6 +18,16 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
+## \package smeshstudytools Python API to access SMESH objects in the study.
+
+## \defgroup smeshstudytools Accessing SMESH object in the study
+#  \{ 
+#  \details
+#  Module \b smeshstudytools provides a new class SMeshStudyTools to facilitate the
+#  use of mesh objects in Salome study.
+#  \}
+
 """
 This module provides a new class :class:`SMeshStudyTools` to facilitate the
 use of mesh objects in Salome study.
@@ -31,6 +41,15 @@ from salome.kernel.deprecation import is_called_by_sphinx
 if not is_called_by_sphinx():
   from salome.gui import helper
 
+## This class provides several methods to manipulate mesh objects in Salome
+#  study. The parameter \em studyEditor defines a \b StudyEditor
+#  object used to access the study. If \b None, the method returns a 
+#  \b StudyEditor object on the current study.
+#
+#  \b editor
+#  This instance attribute contains the underlying \b StudyEditor object. 
+#  It can be used to access the study but the attribute itself should not be modified.
+#  \ingroup smeshstudytools
 class SMeshStudyTools:
     """
     This class provides several methods to manipulate mesh objects in Salome
@@ -56,13 +75,18 @@ class SMeshStudyTools:
         self.editor = studyEditor
         self.smeshGui = None
 
+    ## This function updates the tools so that it works on the
+    #  specified study.
     def updateStudy(self, studyId=None):
         """
         This function updates the tools so that it works on the
         specified study.
         """
         self.editor = getStudyEditor(studyId)
-        
+
+    ## Get the mesh item owning the mesh group \em meshGroupItem.
+    #  \param  meshGroupItem (SObject) mesh group belonging to the searched mesh.
+    #  \return The SObject corresponding to the mesh, or None if it was not found.        
     def getMeshFromGroup(self, meshGroupItem):
         """
         Get the mesh item owning the mesh group `meshGroupItem`.
@@ -81,20 +105,22 @@ class SMeshStudyTools:
             meshItem = salome.ObjectToSObject(meshObj)
         return meshItem
 
-
+    ## Returns the MESH object currently selected in the active study.
     def getMeshObjectSelected(self):
-        '''
+        """
         Returns the MESH object currently selected in the active study.
-        '''
+        """
         sobject, entry = helper.getSObjectSelected()
         meshObject = self.getMeshObjectFromEntry(entry)
         return meshObject
 
+    ## Returns the MESH object associated to the specified entry,
+    #  (the entry is the identifier of an item in the objects browser).
     def getMeshObjectFromEntry(self, entry):
-        '''
+        """
         Returns the MESH object associated to the specified entry,
         (the entry is the identifier of an item in the objects browser).
-        '''
+        """
         if entry is None:
             return None
         import SMESH
@@ -103,12 +129,14 @@ class SMeshStudyTools:
 
         meshObject=smesh.IDToObject(entry)
         return meshObject
-
+    
+    ## Returns the SMESH object associated to the specified \em SObject,
+    #  (the SObject is an item in the objects browser).
     def getMeshObjectFromSObject(self, sobject):
-        '''
+        """
         Returns the SMESH object associated to the specified SObject,
         (the SObject is an item in the objects browser).
-        '''
+        """
         if sobject is None:
             return None
         
@@ -116,11 +144,13 @@ class SMeshStudyTools:
         meshObject = obj._narrow(SMESH.SMESH_Mesh)
         return meshObject
 
+    ## Display the SMESH object associated to the specified \em entry
+    #  (the entry is the identifier of an item in the objects browser).
     def displayMeshObjectFromEntry(self,entry):
-        '''
+        """
         Display the SMESH object associated to the specified entry
         (the entry is the identifier of an item in the objects browser).    
-        '''
+        """
         if self.smeshGui is None:
             self.smeshGui = salome.ImportComponentGUI("SMESH")
 

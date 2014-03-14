@@ -30,7 +30,7 @@ SET(kernel_file "${KERNEL_ROOT_DIR}/bin/salome/prepare_generating_doc.py")
 
 SALOME_ACCUMULATE_ENVIRONMENT(SMESH_MeshersList NOCHECK ${DOC_SMESH_MeshersList})
 
-SET(_cmd_options ${smesh_file} -d -o tmp/smeshBuilder.py StdMeshers)
+SET(_cmd_options ${smesh_file} -d -o tmp1/smeshBuilder.py StdMeshers)
 SALOME_GENERATE_ENVIRONMENT_SCRIPT(_cmd env_script "${PYTHON_EXECUTABLE}" "${_cmd_options}")            
 
 ADD_CUSTOM_TARGET(usr_docs ${CMAKE_COMMAND} -E make_directory tmp1
@@ -38,6 +38,7 @@ ADD_CUSTOM_TARGET(usr_docs ${CMAKE_COMMAND} -E make_directory tmp1
   COMMAND ${PYTHON_EXECUTABLE} ${kernel_file} -o tmp2/smeshBuilder.py ${CMAKE_SOURCE_DIR}/src/SMESH_SWIG/smeshBuilder.py
   COMMAND ${PYTHON_EXECUTABLE} ${kernel_file} -o tmp2/smesh_algorithm.py ${CMAKE_SOURCE_DIR}/src/SMESH_SWIG/smesh_algorithm.py
   COMMAND ${PYTHON_EXECUTABLE} ${kernel_file} -o tmp2/StdMeshersBuilder.py ${CMAKE_SOURCE_DIR}/src/SMESH_SWIG/StdMeshersBuilder.py
+  COMMAND ${PYTHON_EXECUTABLE} ${kernel_file} -o tmp2/smeshstudytools.py ${CMAKE_SOURCE_DIR}/src/SMESH_PY/smeshstudytools.py
   COMMAND ${_cmd}
   COMMAND ${DOXYGEN_EXECUTABLE} doxyfile_py
   COMMAND ${DOXYGEN_EXECUTABLE} doxyfile

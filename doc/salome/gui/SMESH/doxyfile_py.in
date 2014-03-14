@@ -102,6 +102,7 @@ EXAMPLE_RECURSIVE      = NO
 INPUT             = tmp2/smeshBuilder.py \
                     tmp2/smesh_algorithm.py \
                     tmp2/StdMeshersBuilder.py \
+                    tmp2/smeshstudytools.py \
                     tmp1/smeshBuilder.py
 FILE_PATTERNS     = 
 IMAGE_PATH        = @CMAKE_CURRENT_SOURCE_DIR@/images
