@@ -752,16 +752,12 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh, SMESH_MesherHelper* aHelper
 
 bool StdMeshers_Hexa_3D::IsApplicable( const TopoDS_Shape & aShape, bool toCheckAll )
 {
-  TopoDS_Vertex theVertex0, theVertex1;
-  TopTools_IndexedMapOfOrientedShape theShapeIDMap;
-  bool isCurShellApp;
-  int nbFoundShells = 0;
   TopExp_Explorer exp0( aShape, TopAbs_SOLID );
   if ( !exp0.More() ) return false;
+
   for ( ; exp0.More(); exp0.Next() )
   {
-    nbFoundShells = 0;
-    isCurShellApp = false;
+    int nbFoundShells = 0;
     TopExp_Explorer exp1( exp0.Current(), TopAbs_SHELL );
     for ( ; exp1.More(); exp1.Next(), ++nbFoundShells)
       if ( nbFoundShells == 2 ) break;
@@ -769,11 +765,11 @@ bool StdMeshers_Hexa_3D::IsApplicable( const TopoDS_Shape & aShape, bool toCheck
       if ( toCheckAll ) return false;
       continue;
     }   
-    exp1.Init( exp0.Current(), TopAbs_SHELL );
-    const TopoDS_Shell& shell = TopoDS::Shell(exp1.Current());
-    isCurShellApp = SMESH_Block::FindBlockShapes(shell, theVertex0, theVertex1, theShapeIDMap );
-    if ( toCheckAll && !isCurShellApp ) return false;
-    if ( !toCheckAll && isCurShellApp ) return true;
+    exp1.Init( exp0.Current(), TopAbs_FACE );
+    int nbEdges = SMESH_MesherHelper::Count( exp1.Current(), TopAbs_EDGE, /*ignoreSame=*/true );
+    bool ok = ( nbEdges > 3 );
+    if ( toCheckAll && !ok ) return false;
+    if ( !toCheckAll && ok ) return true;
   }
   return toCheckAll;
 };
