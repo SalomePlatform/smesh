@@ -2689,9 +2689,8 @@ void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theI
         setCurrentHyp( dim, Algo, -1 );
     }
 
-    int aMaxShapeDim = ( myMaxShapeDim != aDim) ? aDim : myMaxShapeDim;
     if ( isNone || isReqDisBound ) {
-      for ( int i = SMESH::DIM_0D; i <= aMaxShapeDim; i++ ) {
+      for ( int i = SMESH::DIM_0D; i <= myMaxShapeDim; i++ ) {
         if ( aDim != i ) {
           myDlg->disableTab( i );
           setCurrentHyp(i, Algo, -1);
@@ -2733,7 +2732,7 @@ void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theI
       isAvailable = false;
       if ( HypothesisData* algoDataIn = SMESH::GetHypothesisData( currentHypoSet->current() ))
       {
-        for (int i = SMESH::DIM_0D; i <= SMESH::DIM_3D; i++)
+        for (int i = SMESH::DIM_0D; i <= myMaxShapeDim; i++)
         {
           for (int j = 0; j < myAvailableHypData[i][Algo].count(); ++j) {
             HypothesisData* aCurAlgo =  hypData( i, Algo, j );
