@@ -4631,6 +4631,9 @@ int StdMeshers_Quadrangle_2D::splitQuad(FaceQuadStruct::Ptr quad, int I, int J)
 
     return QUAD_TOP_SIDE;
   }
+
+  myQuadList.pop_back();
+  return -1;
 }
 
 //================================================================================
