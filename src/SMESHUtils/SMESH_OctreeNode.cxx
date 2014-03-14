@@ -235,7 +235,7 @@ bool SMESH_OctreeNode::NodesAround(const gp_XYZ &node,
 //       if ( dist2Nodes.size() > 1 ) // leave only closest node in dist2Nodes
 //         dist2Nodes.erase( ++dist2Nodes.begin(), dist2Nodes.end());
 
-      return ( sqrt( minDist) <= precision * 1e-12 );
+      return ( sqrt( minDist) <= precision * ( 1 + 1e-12 ));
     }
   }
   return false;

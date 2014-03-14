@@ -2157,7 +2157,7 @@ void SMESH_MeshEditor::SplitVolumes (const TFacetOfElem & theElems,
       helper.SetIsQuadratic( false );
     }
     vector<const SMDS_MeshNode*> nodes( volTool.GetNodes(),
-                                        volTool.GetNodes() + elem->NbCornerNodes() );
+                                        volTool.GetNodes() + elem->NbNodes() );
     helper.SetElementsOnShape( true );
     if ( splitMethod._baryNode )
     {

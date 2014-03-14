@@ -1,0 +1,115 @@
+# Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+
+# Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+# CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+
+##################################################################
+# Header for salome initialization ###############################
+
+import sys, salome, math, os
+sys.path.append( os.path.join( os.getenv('SMESH_ROOT_DIR'), '@MACMESH_INSTALL_PY@'))
+
+import Config, GenFunctions
+
+Config.theStudy = salome.myStudy; 
+
+from MacObject import *
+from SharpAngle import *
+from CentralUnrefine import *
+from PublishGroups import *
+from CompositeBox import *
+from CompositeBoxF import *
+
+
+
+##################################################################
+# Mesh name ######################################################
+
+Config.StudyName = "SRV_X."
+
+##################################################################
+# Definition of geometrical parameters ###########################
+
+X = 1.0         # Valve initial opening
+
+Config.StudyName += str(X)+"mm"
+
+R = 7.5         # Upstream pipe radius
+T = 5.0         # Upstream pipe thickness
+H = 20.0        # Upstream pipe height
+J = 6.0         # Jet distance
+E = 60.0        # Exit extent
+
+##################################################################
+# Definition of meshing parameters ###############################
+
+d = 0.1         # Meshing element size at the inner corner
+Nl = 1          # Number of levels in the local refinement
+##################################################################
+Bloc = []
+
+# Object No. 1 #
+Bloc.append( SharpAngleOut(0.,0.,X,1.5*X,X,d,'NE',Nl,
+              groups=['PH','PV_IN','VH',None,None,None])  )
+
+# Object No. 2 #
+Bloc.append( CompositeBox(X/2.+0.5*(R-X/2.),0.5*(X+X/2.)-X/2.,R-X/2.,X+X/2.,
+              groups=[None,'VH',None,'AXIS']           )  )
+
+# Object No. 3 #
+Bloc.append( CompositeBoxF((0.,-X/2.),(R,-X/2.),(R,-H),(0.,-H),
+              groups=['IN',None,'PV_IN','AXIS']           )  )
+
+# Object No. 4 #
+Bloc.append( SharpAngleOut(-T,0.,X,X,X,d,'NW',Nl,
+              groups=['PH','PV_OUT',None,None,None,None])  )
+              
+# Object No. 5 #
+Bloc.append( SharpAngleOut(-T,X,X,X,X,d,'SW',Nl,
+              groups=['VH','VV',None,None,None,None])  )
+              
+if X < T :
+        gap = T-X
+        Bloc.append( MacObject('CompBoxF',[(-X/2.-gap/2.,X/2.),(gap,X)],
+              ['auto'],groups=['PH','VH',None,None]    )  )
+              
+# Object No. 6 #
+Bloc.append( MacObject('CompBoxF',[(-T-X/2.-(J-X/2.)/2.,X/2.),(J-X/2.,2.*X)],
+              ['auto'],groups=[None,None,None,None]    )  )    
+
+# Object No. 7 #
+Bloc.append( CentralUnrefine(-T-J,X/2.,2.*E-J,E,'EW',
+              groups=[None,None,None,'OUT_V','OUT_H_HI','OUT_H_LO'])) 
+
+# Object No. 8 #
+Bloc.append( CompositeBox(-T-J/2.,-X/2.-0.5*((E-X)/2.-X/2.),J,(E-X)/2.-X/2.,
+              groups=['OUT_H_LO',None,None,'PV_OUT']   )  )
+               
+# Object No. 9 #
+Bloc.append( CompositeBox(-T-J/2.,X+X/2.+0.5*((E-X)/2.-X/2.),J,(E-X)/2.-X/2.,
+              groups=[None,'OUT_H_HI',None,'VV'] )  )
+                                                                                  
+SRVMesh = PublishGroups()
+
+RealLocalMeshing = Bloc[0][0].GeoPar[1][0]/Bloc[0][0].DirectionalMeshParams[0]
+ExtrusionAngle = 2. * math.asin(RealLocalMeshing/(2*R))*180./math.pi
+print "\nThe mesh will be revolved with an angle of :",ExtrusionAngle
+
+RevolveMesh(SRVMesh, Center=[R+0.01,0,0], Direction=[0,1,0], AngleDeg=ExtrusionAngle, Scale=0.001)
+
