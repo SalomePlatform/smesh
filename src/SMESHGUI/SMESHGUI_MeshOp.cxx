@@ -2702,7 +2702,7 @@ void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theI
         myDlg->disableTab( SMESH::DIM_3D );
         setCurrentHyp( SMESH::DIM_3D, Algo, -1);
       }
-      for ( int i = aMaxShapeDim; i > SMESH::DIM_0D; i-- )
+      for ( int i = myMaxShapeDim; i > SMESH::DIM_0D; i-- )
       {
         isReqDisBound = ( currentHyp( i, Algo ) < 0 ) ? true :
             myAvailableHypData[i][Algo].at( currentHyp( i, Algo ) )->InputTypes.isEmpty();
