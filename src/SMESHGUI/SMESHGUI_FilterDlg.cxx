@@ -1149,7 +1149,7 @@ bool SMESHGUI_FilterTable::IsValid (const bool theMess, const int theEntityType)
       if (aTable->text(i, 2).isEmpty())
         errMsg = tr( "ERROR" );
     }
-    else
+    else // check correctness of a numeric value
     {
       bool aRes = false;
       bool isSignalsBlocked = aTable->signalsBlocked();
@@ -1159,10 +1159,6 @@ bool SMESHGUI_FilterTable::IsValid (const bool theMess, const int theEntityType)
 
       if (!aRes && aTable->isEditable(i, 2))
         errMsg = tr( "ERROR" );
-      else if (aType == SMESH::EDGE &&
-               GetCriterionType(i, aType) == SMESH::FT_MultiConnection &&
-               aThreshold == 1)
-        errMsg = tr( "MULTIEDGES_ERROR" );
     }
 
     if (!errMsg.isEmpty()) {
@@ -1814,7 +1810,7 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
   case SMESH::FT_EqualVolumes: break;
 
   case SMESH::FT_MultiConnection:
-  case SMESH::FT_MultiConnection2D: anIsIntCriterion = true; break;
+  case SMESH::FT_MultiConnection2D: anIsIntCriterion = true; nbCompareSigns = 3; break;
 
   case SMESH::FT_Length:
   case SMESH::FT_Length2D: anIsDoubleCriterion = true; break;
