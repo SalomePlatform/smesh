@@ -1,4 +1,4 @@
-# "Use Existing Elements" example
+# "Import 2D Elements from Another Mesh" example
 
 import salome
 salome.salome_init()

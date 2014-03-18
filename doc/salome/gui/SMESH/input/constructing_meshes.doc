@@ -347,26 +347,29 @@ By default, the information box is always shown after mesh computation operation
 <br><br>
 
 \anchor use_existing_anchor
-<h2>"Use existing edges" and "Use existing faces" algorithms</h2>
+<h2>"Use Edges to be Created Manually" and "Use Faces to be Created Manually" algorithms</h2>
 
 It is possible to create a 1D or a 2D mesh in a python script
 (using <em>AddNode, AddEdge</em> and <em>AddFace</em> commands) and
 then use such sub-meshes in the construction of a 2D or a 3D mesh. For
-this, there exist two algorithms: <b>Use existing edges</b> and <b>Use
-  existing faces</b>.
-For example, you want to use standard algorithms to generate 1D and 3D
+this, there exist two algorithms: <b>Use Edges to be Created
+Manually</b> and <b>Use Faces to be Created Manually</b>.
+Imagine, you want to use standard algorithms to generate 1D and 3D
 meshes and to create 2D mesh by your python code. Then you
 <ol>
   <li> create a mesh object, assign a 1D algorithm,</li>
   <li> invoke \b Compute command, which computes a 1D mesh,</li>
-  <li> assign <b>Use existing faces</b> and a 3D algorithm,</li>
+  <li> assign <b>Use Faces to be Created Manually</b> and a 3D algorithm,</li>
   <li> run your python code, which creates a 2D mesh,</li>
   <li> invoke \b Compute command, which computes a 3D mesh.</li>
 </ol>
+\warning <b>Use Edges to be Created Manually</b> and <b>Use Faces to
+be Created Manually</b> algorithms should be assigned _before_
+mesh generation by the Python code.
 
 Consider trying a sample script demonstrating the usage of 
-\ref tui_use_existing_faces "Use existing faces" algorithm for
-construction of a 2D mesh using Python commands.
+\ref tui_use_existing_faces "Use Faces to be Created Manually"
+algorithm for construction of a 2D mesh using Python commands.
 
 \image html use_existing_face_sample_mesh.png
 <em> Mesh computed by \ref tui_use_existing_faces "the sample script"

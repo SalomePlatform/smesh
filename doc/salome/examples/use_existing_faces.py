@@ -1,4 +1,4 @@
-# Use existing faces algorithm
+# Usage of "Use Faces to be Created Manually" algorithm
 
 
 import salome
@@ -109,8 +109,8 @@ mesh.Compute()
 
 # compute 2D mesh
 mesh.Quadrangle()
-mesh.UseExistingFaces(f1) # UseExistingFaces() allows using my2DMeshing()
-mesh.UseExistingFaces(f2)
+mesh.UseExistingFaces(f1) # UseExistingFaces() allows using my2DMeshing();
+mesh.UseExistingFaces(f2) # assign UseExistingFaces() BEFORE calling my2DMeshing()!
 my2DMeshing( f1 )
 my2DMeshing( f2 )
 assert mesh.Compute()

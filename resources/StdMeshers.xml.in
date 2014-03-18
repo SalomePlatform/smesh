@@ -379,7 +379,7 @@
     </algorithm>
 
     <algorithm type    ="Import_1D"
-               label-id="Use Existing 1D Elements"
+               label-id="Import 1D Elements from Another Mesh"
                icon-id ="mesh_algo_regular.png"
                hypos   ="ImportSource1D"
                output  ="EDGE"
@@ -392,7 +392,7 @@
     </algorithm>
 
     <algorithm type             ="Import_1D2D"
-               label-id         ="Use Existing 2D Elements"
+               label-id         ="Import 2D Elements from Another Mesh"
                icon-id          ="mesh_algo_quad.png"
                hypos            ="ImportSource2D"
                output           ="QUAD,TRIA"
@@ -431,7 +431,7 @@
     </algorithm>
 
     <algorithm type    ="UseExisting_1D"
-               label-id="Use Existing Edges"
+               label-id="Use Edges to be Created Manually"
                icon-id ="mesh_algo_regular.png"
                input   ="VERTEX"
                output  ="EDGE"
@@ -442,7 +442,7 @@
     </algorithm>
 
     <algorithm type    ="UseExisting_2D"
-               label-id="Use Existing Faces"
+               label-id="Use Faces to be Created Manually"
                icon-id ="mesh_algo_quad.png"
                input   ="EDGE"
                output  ="QUAD,TRIA"

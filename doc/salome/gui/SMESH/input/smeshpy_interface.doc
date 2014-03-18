@@ -24,7 +24,7 @@ Note that these functions either encapsulate the python programming interface of
 The functions are distributed in the python package \b salome.smesh.
 
 \note
-The main package \bsalome contains other sub-packages that are distributed with the other 
+The main package \b salome contains other sub-packages that are distributed with the other 
 SALOME modules. For example, the KERNEL module provides the python package \b salome.kernel 
 and GEOM the package \b salome.geom.
 

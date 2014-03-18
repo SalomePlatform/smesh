@@ -1,8 +1,9 @@
 /*!
 
-\page import_algos_page Use Existing Elements Algorithms
+\page import_algos_page "Import nD Elements from Another Mesh" Algorithms
 
-\n <em>Use Existing Elements </em>algorithms allow to define the mesh of a geometrical
+\n <em>Import nD Elements from Another Mesh </em>algorithms allow to
+define the mesh of a geometrical 
 object by importing suitably located mesh elements from another
 mesh. The mesh elements to import from the other mesh should be contained in
 groups. If several groups are used to mesh the same geometry, validity of
@@ -17,13 +18,14 @@ part, by storing meshes of parts in files and then fusing them
 together using these algorithms.
 <br>
 
-<b>Use Existing 1D Elements</b> algorithm allows to define the mesh of
-a geometrical edge (or group of edges)
+<b>Import 1D Elements from Another Mesh</b> algorithm allows to define
+the mesh of a geometrical edge (or group of edges)
 by importing mesh edges contained in a group (or groups) from another mesh.
-\n To apply this algorithm select the edge to be meshed (indicated in
+<br> 
+To apply this algorithm select the edge to be meshed (indicated in
 the field \b Geometry of <b>Create mesh</b> dialog box),
-<b>Use existing 1D elements</b> in the list of 1D algorithms and click the
-<em>"Add Hypothesis"</em> button.
+<b>Import 1D Elements from Another Mesh</b> in the list of 1D
+algorithms and click the <em>"Add Hypothesis"</em> button.
 The following dialog box will appear:
 
 \image html hyp_source_edges.png
@@ -38,16 +40,16 @@ mesh. In this case <b>To copy groups</b> checkbox allows to create
 the same groups as in the imported source mesh.</li>
 </ul>
 
-<b>Use Existing 2D Elements</b> algorithm allows to define the mesh of
-a geometrical face (or group of faces)
+<b>Import 2D Elements from Another Mesh</b> algorithm allows to define
+the mesh of a geometrical face (or group of faces) 
 by importing mesh faces contained in a group (or groups) from another
 (or this) mesh. 1D elements on the boundary of the geometrical face
 (if not yet present) are also created by the algorithm in conformity 
-with the created 2D elements.
-\n To apply this algorithm select the geometrical face to be meshed (indicated in
+with the created 2D elements.<br>
+To apply this algorithm select the geometrical face to be meshed (indicated in
 the field \b Geometry of <b>Create mesh</b> dialog box),
-<b>Use existing 2D elements</b> in the list of 2D algorithms and click the
-<em>"Add Hypothesis"</em> button.
+<b>Import 2D Elements from Another Mesh</b> in the list of 2D
+algorithms and click the <em>"Add Hypothesis"</em> button.
 The following dialog box will appear:
 
 \image html hyp_source_faces.png
@@ -63,7 +65,7 @@ the same groups as in the imported source mesh.</li>
 </ul>
 
 <br><b>See Also</b> a sample TUI Script of a 
-\ref tui_import "Use Existing Elements Algorithms".
+\ref tui_import "Import 2D Elements from Another Mesh".
 
 */
 

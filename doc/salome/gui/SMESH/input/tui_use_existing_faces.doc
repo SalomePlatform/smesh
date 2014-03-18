@@ -1,9 +1,9 @@
 /*!
 
-\page tui_use_existing_faces Use existing faces algorithm
+\page tui_use_existing_faces Usage of "Use Faces to be Created Manually" algorithm
 
-This sample demonstrates how to use <b>Use existing faces</b> algorithm,
-which is actulally just a stub allowing to use your own 2D algoritm
+This sample demonstrates how to use <b>Use Faces to be Created Manually</b> algorithm,
+which is actually just a stub allowing to use your own 2D algorithm
 implemented in Python.
 
 \tui_script{use_existing_faces.py}
