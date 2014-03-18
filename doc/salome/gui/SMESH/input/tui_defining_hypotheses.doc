@@ -37,7 +37,7 @@ This page provides example codes of \ref tui_defining_meshing_algos
     <li> \ref tui_quadrangle_parameters "Quadrangle Parameters" hypothesis </li>
   </ul>
 </li>
-<li>\ref tui_import "Import 2D Elements from Another Mesh" algorithm</li>
+<li>\ref tui_import "Import 1D-2D Elements from Another Mesh" algorithm</li>
 </ul>
 <br>
 
@@ -124,7 +124,7 @@ This page provides example codes of \ref tui_defining_meshing_algos
 \tui_script{defining_hypotheses_ex15.py}
 
 \anchor tui_import
-<h2>"Import 2D Elements from Another Mesh" example </h2>
+<h2>"Import 1D-2D Elements from Another Mesh" example </h2>
 \tui_script{defining_hypotheses_ex16.py}
 
 \anchor tui_viscous_layers

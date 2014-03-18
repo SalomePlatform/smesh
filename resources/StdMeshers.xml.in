@@ -392,7 +392,7 @@
     </algorithm>
 
     <algorithm type             ="Import_1D2D"
-               label-id         ="Import 2D Elements from Another Mesh"
+               label-id         ="Import 1D-2D Elements from Another Mesh"
                icon-id          ="mesh_algo_quad.png"
                hypos            ="ImportSource2D"
                output           ="QUAD,TRIA"
