@@ -90,6 +90,7 @@ StdMeshers_Quadrangle_2D::StdMeshers_Quadrangle_2D (int hypId, int studyId,
     myTrianglePreference(false),
     myTriaVertexID(-1),
     myNeedSmooth(false),
+    myCheckOri(false),
     myParams( NULL ),
     myQuadType(QUAD_STANDARD),
     myHelper( NULL )
@@ -228,6 +229,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh&         aMesh,
 
   _quadraticMesh = myHelper->IsQuadraticSubMesh(aShape);
   myNeedSmooth = false;
+  myCheckOri   = false;
 
   FaceQuadStruct::Ptr quad = CheckNbEdges( aMesh, F, /*considerMesh=*/true );
   if (!quad)
@@ -293,6 +295,9 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh&         aMesh,
 
   if ( res == COMPUTE_OK && myNeedSmooth )
     smooth( quad );
+
+  if ( res == COMPUTE_OK )
+    res = check();
 
   return ( res == COMPUTE_OK );
 }
@@ -918,21 +923,17 @@ bool StdMeshers_Quadrangle_2D::IsApplicable( const TopoDS_Shape & aShape, bool t
   int nbFoundFaces = 0;
   for (TopExp_Explorer exp( aShape, TopAbs_FACE ); exp.More(); exp.Next(), ++nbFoundFaces )
   {
-    TopoDS_Face aFace = TopoDS::Face(exp.Current());
-    if ( aFace.Orientation() >= TopAbs_INTERNAL ) aFace.Orientation( TopAbs_FORWARD );
-
-    list< TopoDS_Edge > aWire;
-    list< int > nbEdgesInWire;
-    int nbWire = SMESH_Block::GetOrderedEdges (aFace, aWire, nbEdgesInWire);
+    const TopoDS_Shape& aFace = exp.Current();
+    int nbWire = SMESH_MesherHelper::Count( aFace, TopAbs_WIRE, false );
     if ( nbWire != 1 ) {
       if ( toCheckAll ) return false;
       continue;
     }
 
     int nbNoDegenEdges = 0;
-    list<TopoDS_Edge>::iterator edge = aWire.begin();
-    for ( ; edge != aWire.end(); ++edge ) {
-      if ( !SMESH_Algo::isDegenerated( *edge ))
+    TopExp_Explorer eExp( aFace, TopAbs_EDGE );
+    for ( ; eExp.More() && nbNoDegenEdges < 3; eExp.Next() ) {
+      if ( !SMESH_Algo::isDegenerated( TopoDS::Edge( eExp.Current() )))
         ++nbNoDegenEdges;
     }
     if ( toCheckAll  && nbNoDegenEdges <  3 ) return false;
@@ -979,7 +980,7 @@ FaceQuadStruct::Ptr StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         
   if ( F.Orientation() >= TopAbs_INTERNAL ) F.Orientation( TopAbs_FORWARD );
   const bool ignoreMediumNodes = _quadraticMesh;
 
-  // verify 1 wire only, with 4 edges
+  // verify 1 wire only
   list< TopoDS_Edge > edges;
   list< int > nbEdgesInWire;
   int nbWire = SMESH_Block::GetOrderedEdges (F, edges, nbEdgesInWire);
@@ -3687,6 +3688,18 @@ namespace // data for smoothing
     double d = v1 ^ v2;
     return d > 1e-100;
   }
+  //================================================================================
+  /*!
+   * \brief Returns area of a triangle
+   */
+  //================================================================================
+
+  double getArea( const gp_UV uv1, const gp_UV uv2, const gp_UV uv3 )
+  {
+    gp_XY v1 = uv1 - uv2, v2 = uv3 - uv2;
+    double a = v2 ^ v1;
+    return a;
+  }
 }
 
 //================================================================================
@@ -3929,6 +3942,141 @@ void StdMeshers_Quadrangle_2D::smooth (FaceQuadStruct::Ptr quad)
   }
 }
 
+//================================================================================
+/*!
+ * \brief Checks validity of generated faces
+ */
+//================================================================================
+
+bool StdMeshers_Quadrangle_2D::check()
+{
+  const bool isOK = true;
+  if ( !myCheckOri || myQuadList.empty() || !myQuadList.front() || !myHelper )
+    return isOK;
+
+  TopoDS_Face      geomFace = TopoDS::Face( myHelper->GetSubShape() );
+  SMESHDS_Mesh*    meshDS   = myHelper->GetMeshDS();
+  SMESHDS_SubMesh* fSubMesh = meshDS->MeshElements( geomFace );
+  bool toCheckUV;
+  if ( geomFace.Orientation() >= TopAbs_INTERNAL ) geomFace.Orientation( TopAbs_FORWARD );
+
+  // Get a reference orientation sign
+
+  double okSign;
+  {
+    TError err;
+    TSideVector wireVec =
+      StdMeshers_FaceSide::GetFaceWires( geomFace, *myHelper->GetMesh(), true, err );
+    StdMeshers_FaceSidePtr wire = wireVec[0];
+
+    // find a right angle VERTEX
+    int iVertex;
+    double maxAngle = 0;
+    for ( int i = 0; i < wire->NbEdges(); ++i )
+    {
+      int iPrev = myHelper->WrapIndex( i-1, wire->NbEdges() );
+      const TopoDS_Edge& e1 = wire->Edge( iPrev );
+      const TopoDS_Edge& e2 = wire->Edge( i );
+      double angle = myHelper->GetAngle( e1, e2, geomFace );
+      if ( maxAngle < angle && angle < 0.9 * M_PI )
+      {
+        maxAngle = angle;
+        iVertex = i;
+      }
+    }
+    if ( maxAngle == 0 ) return isOK;
+
+    // get a sign of 2D area of a corner face
+
+    int iPrev = myHelper->WrapIndex( iVertex-1, wire->NbEdges() );
+    const TopoDS_Edge& e1 = wire->Edge( iPrev );
+    const TopoDS_Edge& e2 = wire->Edge( iVertex );
+
+    gp_Vec2d v1, v2; gp_Pnt2d p;
+    double u[2];
+    {
+      bool rev = ( e1.Orientation() == TopAbs_REVERSED );
+      Handle(Geom2d_Curve) c = BRep_Tool::CurveOnSurface( e1, geomFace, u[0], u[1] );
+      c->D1( u[ !rev ], p, v1 );
+      if ( !rev )
+        v1.Reverse();
+    }
+    {
+      bool rev = ( e2.Orientation() == TopAbs_REVERSED );
+      Handle(Geom2d_Curve) c = BRep_Tool::CurveOnSurface( e2, geomFace, u[0], u[1] );
+      c->D1( u[ rev ], p, v2 );
+      if ( rev )
+        v2.Reverse();
+    }
+
+    okSign = v2 ^ v1;
+  }
+
+  // Look for incorrectly oriented faces
+
+  std::list<const SMDS_MeshElement*> badFaces;
+
+  const SMDS_MeshNode* nn [ 8 ]; // 8 is just for safety
+  gp_UV                uv [ 8 ];
+  SMDS_ElemIteratorPtr fIt = fSubMesh->GetElements();
+  while ( fIt->more() ) // loop on faces bound to a FACE
+  {
+    const SMDS_MeshElement* f = fIt->next();
+
+    const int nbN = f->NbCornerNodes();
+    for ( int i = 0; i < nbN; ++i )
+      nn[ i ] = f->GetNode( i );
+
+    const SMDS_MeshNode* nInFace = 0;
+    if ( myHelper->HasSeam() )
+      for ( int i = 0; i < nbN && !nInFace; ++i )
+        if ( !myHelper->IsSeamShape( nn[i]->getshapeId() ))
+          nInFace = nn[i];
+
+    for ( int i = 0; i < nbN; ++i )
+      uv[ i ] = myHelper->GetNodeUV( geomFace, nn[i], nInFace, &toCheckUV );
+
+    switch ( nbN ) {
+    case 4:
+    {
+      double sign1 = getArea( uv[0], uv[1], uv[2] );
+      double sign2 = getArea( uv[0], uv[2], uv[3] );
+      if ( sign1 * sign2 < 0 )
+      {
+        sign2 = getArea( uv[1], uv[2], uv[3] );
+        sign1 = getArea( uv[1], uv[3], uv[0] );
+        if ( sign1 * sign2 < 0 )
+          continue; // this should not happen
+      }
+      if ( sign1 * okSign < 0 )
+        badFaces.push_back ( f );
+      break;
+    }
+    case 3:
+    {
+      double sign = getArea( uv[0], uv[1], uv[2] );
+      if ( sign * okSign < 0 )
+        badFaces.push_back ( f );
+      break;
+    }
+    default:;
+    }
+  }
+
+  if ( !badFaces.empty() )
+  {
+    SMESH_subMesh* fSM = myHelper->GetMesh()->GetSubMesh( geomFace );
+    SMESH_ComputeErrorPtr& err = fSM->GetComputeError();
+    err.reset ( new SMESH_ComputeError( COMPERR_ALGO_FAILED,
+                                        "Inverted elements generated"));
+    err->myBadElements.swap( badFaces );
+
+    return !isOK;
+  }
+
+  return isOK;
+}
+
 /*//================================================================================
 /*!
  * \brief Finds vertices at the most sharp face corners
@@ -4042,6 +4190,9 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
     double lastAngle = ( --a2v, a2v->first );
     isThereVariants  = ( lostAngle * 1.1 >= lastAngle );
   }
+
+  myCheckOri = ( vertexByAngle.size() > nbCorners ||
+                 vertexByAngle.begin()->first < 5.* M_PI/180 );
 
   // make theWire begin from a corner vertex or triaVertex
   if ( nbCorners == 3 )

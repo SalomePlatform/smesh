@@ -132,7 +132,7 @@ struct FaceQuadStruct
 
 class STDMESHERS_EXPORT StdMeshers_Quadrangle_2D: public SMESH_2D_Algo
 {
-public:
+ public:
   StdMeshers_Quadrangle_2D(int hypId, int studyId, SMESH_Gen* gen);
   virtual ~StdMeshers_Quadrangle_2D();
 
@@ -157,7 +157,7 @@ public:
 
   static bool IsApplicable(const TopoDS_Shape & aShape, bool toCheckAll);
 
-protected:
+ protected:
 
   bool checkNbEdgesForEvaluate(SMESH_Mesh& aMesh,
                                const TopoDS_Shape & aShape,
@@ -166,7 +166,7 @@ protected:
                                bool& IsQuadratic);
 
   bool setNormalizedGrid(FaceQuadStruct::Ptr quad);
-  
+
   void splitQuadFace(SMESHDS_Mesh *       theMeshDS,
                      const int            theFaceID,
                      const SMDS_MeshNode* theNode1,
@@ -203,6 +203,8 @@ protected:
 
   void smooth (FaceQuadStruct::Ptr quad);
 
+  bool check();
+
   int getCorners(const TopoDS_Face&          theFace,
                  SMESH_Mesh &                theMesh,
                  std::list<TopoDS_Edge>&     theWire,
@@ -225,12 +227,12 @@ protected:
                      int *                  iNext=NULL);
 
 
-  // Fields
+ protected: // Fields
 
   bool myQuadranglePreference;
   bool myTrianglePreference;
   int  myTriaVertexID;
-  bool myNeedSmooth;
+  bool myNeedSmooth, myCheckOri;
   const StdMeshers_QuadrangleParams* myParams;
   StdMeshers_QuadType                myQuadType;
 

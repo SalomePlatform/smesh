@@ -111,6 +111,7 @@ std::string SMESH_ComputeError::CommonName() const
   _case2char(COMPERR_WARNING         );
   _case2char(COMPERR_CANCELED        );
   _case2char(COMPERR_NO_MESH_ON_SHAPE);
+  _case2char(COMPERR_BAD_PARMETERS   );
   default:;
   }
   return "";
