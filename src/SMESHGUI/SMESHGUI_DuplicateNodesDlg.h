@@ -83,6 +83,8 @@ private slots:
 
   void                    onDeactivate();
 
+  void                    updateButtons();
+
 private:
   QLineEdit*              myCurrentLineEdit;
   
@@ -98,8 +100,8 @@ private:
   QLineEdit*              myLineEdit1;
   QLineEdit*              myLineEdit2;
   QLineEdit*              myLineEdit3;
-  QCheckBox*              myCheckBoxNewElemGroup;
-  QCheckBox*              myCheckBoxNewNodeGroup;
+  QCheckBox*              myCheckBox1;
+  QCheckBox*              myCheckBox2;
 
   QPushButton*            myButtonOk;
   QPushButton*            myButtonApply;

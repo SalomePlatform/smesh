@@ -923,12 +923,15 @@ public:
    * The nodes of the internal faces at the boundaries of the groups are doubled.
    * In option, the internal faces are replaced by flat elements.
    * Triangles are transformed in prisms, and quadrangles in hexahedrons.
-   * @param theDomains - list of groups of volumes
-   * @param createJointElems - if TRUE, create the elements
-   * @return TRUE if operation has been completed successfully, FALSE otherwise
+   * \param theDomains - list of groups of volumes
+   * \param createJointElems - if TRUE, create the elements
+   * \param onAllBoundaries - if TRUE, the nodes and elements are also create on
+   *        the boundary between \a theDomains and the rest mesh
+   * \return TRUE if operation has been completed successfully, FALSE otherwise
    */
   CORBA::Boolean DoubleNodesOnGroupBoundaries( const SMESH::ListOfGroups& theDomains,
-                                               CORBA::Boolean createJointElems )
+                                               CORBA::Boolean             createJointElems,
+                                               CORBA::Boolean             onAllBoundaries )
     throw (SALOME::SALOME_Exception);
   /*!
    * \brief Double nodes on some external faces and create flat elements.

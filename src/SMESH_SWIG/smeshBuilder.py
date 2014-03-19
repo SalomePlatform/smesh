@@ -4503,9 +4503,11 @@ class Mesh:
     # Triangles are transformed in prisms, and quadrangles in hexahedrons.
     # @param theDomains - list of groups of volumes
     # @param createJointElems - if TRUE, create the elements
+    # @param onAllBoundaries - if TRUE, the nodes and elements are also created on
+    #        the boundary between \a theDomains and the rest mesh
     # @return TRUE if operation has been completed successfully, FALSE otherwise
-    def DoubleNodesOnGroupBoundaries(self, theDomains, createJointElems ):
-       return self.editor.DoubleNodesOnGroupBoundaries( theDomains, createJointElems )
+    def DoubleNodesOnGroupBoundaries(self, theDomains, createJointElems, onAllBoundaries=False ):
+       return self.editor.DoubleNodesOnGroupBoundaries( theDomains, createJointElems, onAllBoundaries )
 
     ## Double nodes on some external faces and create flat elements.
     # Flat elements are mainly used by some types of mechanic calculations.

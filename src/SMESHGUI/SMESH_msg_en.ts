@@ -6753,6 +6753,10 @@ It is impossible to read point coordinates from file</translation>
         <translation>Duplicate elements only</translation>
     </message>
     <message>
+        <source>DUPLICATION_GROUP_BOUNDARY</source>
+        <translation>Duplicate nodes on group boundaries</translation>
+    </message>
+    <message>
         <source>GROUP_ELEMS_TO_DUPLICATE</source>
         <translation>Group of elements to duplicate</translation>
     </message>
@@ -6765,12 +6769,24 @@ It is impossible to read point coordinates from file</translation>
         <translation>Group of elements to replace nodes with new ones</translation>
     </message>
     <message>
+        <source>GROUP_VOLUME_GROUPS</source>
+        <translation>Groups of volumes</translation>
+    </message>
+    <message>
         <source>CONSTRUCT_NEW_GROUP_NODES</source>
         <translation>Construct group with newly created nodes</translation>
     </message>
     <message>
         <source>CONSTRUCT_NEW_GROUP_ELEMENTS</source>
         <translation>Construct group with newly created elements</translation>
+    </message>
+    <message>
+        <source>CREATE_JOINT_ELEMENTS</source>
+        <translation>Create joint elements</translation>
+    </message>
+    <message>
+        <source>ON_ALL_BOUNDARIES</source>
+        <translation>On all boundaries</translation>
     </message>
 </context>
 <context>

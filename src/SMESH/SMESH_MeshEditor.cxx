@@ -10563,7 +10563,12 @@ double SMESH_MeshEditor::OrientedAngle(const gp_Pnt& p0, const gp_Pnt& p1, const
   gp_Vec v2(p0, g2);
   gp_Vec n1 = vref.Crossed(v1);
   gp_Vec n2 = vref.Crossed(v2);
-  return n2.AngleWithRef(n1, vref);
+  try {
+    return n2.AngleWithRef(n1, vref);
+  }
+  catch ( Standard_Failure ) {
+  }
+  return Max( v1.Magnitude(), v2.Magnitude() );
 }
 
 /*!
@@ -10576,13 +10581,16 @@ double SMESH_MeshEditor::OrientedAngle(const gp_Pnt& p0, const gp_Pnt& p1, const
  * If there is no shared faces between the group #n and the group #p in the list, the group j_n_p is not created.
  * All the flat elements are gathered into the group named "joints3D" (or "joints2D" in 2D situation).
  * The flat element of the multiple junctions between the simple junction are stored in a group named "jointsMultiples".
- * @param theElems - list of groups of volumes, where a group of volume is a set of
- * SMDS_MeshElements sorted by Id.
- * @param createJointElems - if TRUE, create the elements
- * @return TRUE if operation has been completed successfully, FALSE otherwise
+ * \param theElems - list of groups of volumes, where a group of volume is a set of
+ *        SMDS_MeshElements sorted by Id.
+ * \param createJointElems - if TRUE, create the elements
+ * \param onAllBoundaries - if TRUE, the nodes and elements are also created on
+ *        the boundary between \a theDomains and the rest mesh
+ * \return TRUE if operation has been completed successfully, FALSE otherwise
  */
 bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSortedElemSet>& theElems,
-                                                     bool createJointElems)
+                                                     bool                                 createJointElems,
+                                                     bool                                 onAllBoundaries)
 {
   MESSAGE("----------------------------------------------");
   MESSAGE("SMESH_MeshEditor::doubleNodesOnGroupBoundaries");
@@ -10611,15 +10619,20 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
 
   MESSAGE(".. Number of domains :"<<theElems.size());
 
+  TIDSortedElemSet theRestDomElems;
+  const int iRestDom  = -1;
+  const int idom0     = onAllBoundaries ? iRestDom : 0;
+  const int nbDomains = theElems.size();
+
   // Check if the domains do not share an element
-  for (int idom = 0; idom < theElems.size()-1; idom++)
+  for (int idom = 0; idom < nbDomains-1; idom++)
     {
 //       MESSAGE("... Check of domain #" << idom);
       const TIDSortedElemSet& domain = theElems[idom];
       TIDSortedElemSet::const_iterator elemItr = domain.begin();
       for (; elemItr != domain.end(); ++elemItr)
         {
-          SMDS_MeshElement* anElem = (SMDS_MeshElement*) *elemItr;
+          const SMDS_MeshElement* anElem = *elemItr;
           int idombisdeb = idom + 1 ;
           for (int idombis = idombisdeb; idombis < theElems.size(); idombis++) // check if the element belongs to a domain further in the list
           {
@@ -10635,7 +10648,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
         }
     }
 
-  for (int idom = 0; idom < theElems.size(); idom++)
+  for (int idom = 0; idom < nbDomains; idom++)
     {
 
       // --- build a map (face to duplicate --> volume to modify)
@@ -10648,7 +10661,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
       TIDSortedElemSet::const_iterator elemItr = domain.begin();
       for (; elemItr != domain.end(); ++elemItr)
         {
-          SMDS_MeshElement* anElem = (SMDS_MeshElement*) *elemItr;
+          const SMDS_MeshElement* anElem = *elemItr;
           if (!anElem)
             continue;
           int vtkId = anElem->getVtkId();
@@ -10661,26 +10674,30 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
             {
               int smdsId = meshDS->fromVtkToSmds(neighborsVtkIds[n]);
               const SMDS_MeshElement* elem = meshDS->FindElement(smdsId);
-              if (! domain.count(elem)) // neighbor is in another domain : face is shared
+              if (elem && ! domain.count(elem)) // neighbor is in another domain : face is shared
                 {
                   bool ok = false ;
-                  for (int idombis = 0; idombis < theElems.size(); idombis++) // check if the neighbor belongs to another domain of the list
+                  for (int idombis = 0; idombis < theElems.size() && !ok; idombis++) // check if the neighbor belongs to another domain of the list
                   {
                     // MESSAGE("Domain " << idombis);
                     const TIDSortedElemSet& domainbis = theElems[idombis];
                     if ( domainbis.count(elem)) ok = true ; // neighbor is in a correct domain : face is kept
                   }
-                  if ( ok ) // the characteristics of the face is stored
+                  if ( ok || onAllBoundaries ) // the characteristics of the face is stored
                   {
                     DownIdType face(downIds[n], downTypes[n]);
-                    if (!faceDomains.count(face))
-                      faceDomains[face] = emptyMap; // create an empty entry for face
                     if (!faceDomains[face].count(idom))
                       {
                         faceDomains[face][idom] = vtkId; // volume associated to face in this domain
                         celldom[vtkId] = idom;
                         //MESSAGE("       cell with a border " << vtkId << " domain " << idom);
                       }
+                    if ( !ok )
+                    {
+                      theRestDomElems.insert( elem );
+                      faceDomains[face][iRestDom] = neighborsVtkIds[n];
+                      celldom[neighborsVtkIds[n]] = iRestDom;
+                    }
                   }
                 }
             }
@@ -10694,14 +10711,14 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
   //     explore the nodes of the face and see if they belong to a cell in the domain,
   //     which has only a node or an edge on the border (not a shared face)
 
-  for (int idomain = 0; idomain < theElems.size(); idomain++)
+  for (int idomain = idom0; idomain < nbDomains; idomain++)
     {
       //MESSAGE("Domain " << idomain);
-      const TIDSortedElemSet& domain = theElems[idomain];
+      const TIDSortedElemSet& domain = (idomain == iRestDom) ? theRestDomElems : theElems[idomain];
       itface = faceDomains.begin();
       for (; itface != faceDomains.end(); ++itface)
         {
-          std::map<int, int> domvol = itface->second;
+          const std::map<int, int>& domvol = itface->second;
           if (!domvol.count(idomain))
             continue;
           DownIdType face = itface->first;
@@ -10730,8 +10747,6 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
                                 //no cells created after BuildDownWardConnectivity
                     }
                   DownIdType aCell(downId, vtkType);
-                  if (!cellDomains.count(aCell))
-                    cellDomains[aCell] = emptyMap; // create an empty entry for cell
                   cellDomains[aCell][idomain] = vtkId;
                   celldom[vtkId] = idomain;
                   //MESSAGE("       cell " << vtkId << " domain " << idomain);
@@ -10753,12 +10768,12 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
   std::map<int, std::vector<int> > mutipleNodesToFace; // nodes multi domains with domain order to transform in Face (junction between 3 or more 2D domains)
 
   MESSAGE(".. Duplication of the nodes");
-  for (int idomain = 0; idomain < theElems.size(); idomain++)
+  for (int idomain = idom0; idomain < nbDomains; idomain++)
     {
       itface = faceDomains.begin();
       for (; itface != faceDomains.end(); ++itface)
         {
-          std::map<int, int> domvol = itface->second;
+          const std::map<int, int>& domvol = itface->second;
           if (!domvol.count(idomain))
             continue;
           DownIdType face = itface->first;
@@ -10770,15 +10785,12 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
           for (; itn != oldNodes.end(); ++itn)
             {
               int oldId = *itn;
-              //MESSAGE("-+-+-a node " << oldId);
-              if (!nodeDomains.count(oldId))
-                nodeDomains[oldId] = emptyMap; // create an empty entry for node
               if (nodeDomains[oldId].empty())
                 {
                   nodeDomains[oldId][idomain] = oldId; // keep the old node in the first domain
                   //MESSAGE("-+-+-b     oldNode " << oldId << " domain " << idomain);
                 }
-              std::map<int, int>::iterator itdom = domvol.begin();
+              std::map<int, int>::const_iterator itdom = domvol.begin();
               for (; itdom != domvol.end(); ++itdom)
                 {
                   int idom = itdom->first;
@@ -10816,7 +10828,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
     }
 
   MESSAGE(".. Creation of elements");
-  for (int idomain = 0; idomain < theElems.size(); idomain++)
+  for (int idomain = idom0; idomain < nbDomains; idomain++)
     {
       itface = faceDomains.begin();
       for (; itface != faceDomains.end(); ++itface)
@@ -10885,11 +10897,12 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
                               for (int id=0; id < doms.size(); id++)
                                 {
                                   int idom = doms[id];
+                                  const TIDSortedElemSet& domain = (idom == iRestDom) ? theRestDomElems : theElems[idom];
                                   for (int ivol=0; ivol<nbvol; ivol++)
                                     {
                                       int smdsId = meshDS->fromVtkToSmds(vtkVolIds[ivol]);
                                       SMDS_MeshElement* elem = (SMDS_MeshElement*)meshDS->FindElement(smdsId);
-                                      if (theElems[idom].count(elem))
+                                      if (domain.count(elem))
                                         {
                                           SMDS_VtkVolume* svol = dynamic_cast<SMDS_VtkVolume*>(elem);
                                           domvol[idom] = svol;
@@ -11070,7 +11083,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
   feDom.clear();
 
   MESSAGE(".. Modification of elements");
-  for (int idomain = 0; idomain < theElems.size(); idomain++)
+  for (int idomain = idom0; idomain < nbDomains; idomain++)
     {
       std::map<int, std::map<int, int> >::const_iterator itnod = nodeDomains.begin();
       for (; itnod != nodeDomains.end(); ++itnod)

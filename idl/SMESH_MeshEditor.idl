@@ -1275,10 +1275,13 @@ module SMESH
      * Triangles are transformed in prisms, and quadrangles in hexahedrons.
      * \param theDomains - list of groups of volumes
      * \param createJointElems - if TRUE, create the elements
+     * \param onAllBoundaries - if TRUE, the nodes and elements are also created on
+     *        the boundary between \a theDomains and the rest mesh
      * \return TRUE if operation has been completed successfully, FALSE otherwise
      */
     boolean DoubleNodesOnGroupBoundaries( in ListOfGroups theDomains,
-                                          in boolean createJointElems ) 
+                                          in boolean      createJointElems,
+                                          in boolean      onAllBoundaries) 
       raises (SALOME::SALOME_Exception);
 
     /*!

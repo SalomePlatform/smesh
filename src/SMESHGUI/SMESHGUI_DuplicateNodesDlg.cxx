@@ -110,6 +110,7 @@ SMESHGUI_DuplicateNodesDlg::SMESHGUI_DuplicateNodesDlg( SMESHGUI* theModule )
   QPixmap iconWithoutElem (aResMgr->loadPixmap("SMESH", tr("ICON_SMESH_DUPLICATE_NODES")));
   QPixmap iconWithElem (aResMgr->loadPixmap("SMESH", tr("ICON_SMESH_DUPLICATE_NODES_WITH_ELEM")));
   QPixmap iconElemOnly (aResMgr->loadPixmap("SMESH", tr("ICON_SMESH_DUPLICATE_ELEM_ONLY")));
+  QPixmap iconGrpBoundary (aResMgr->loadPixmap("SMESH", tr("ICON_SMESH_DUPLICATE_GROUP_BOUNDARY")));
   QPixmap iconSelect (aResMgr->loadPixmap("SMESH", tr("ICON_SELECT")));
 
   // Main layout
@@ -130,13 +131,17 @@ SMESHGUI_DuplicateNodesDlg::SMESHGUI_DuplicateNodesDlg( SMESHGUI* theModule )
   aRadioButton2->setIcon(iconWithElem);
   QRadioButton* aRadioButton3 = new QRadioButton(aConstructorsBox);
   aRadioButton3->setIcon(iconElemOnly);
+  QRadioButton* aRadioButton4 = new QRadioButton(aConstructorsBox);
+  aRadioButton4->setIcon(iconGrpBoundary);
   
   aConstructorsBoxLayout->addWidget(aRadioButton1);
   aConstructorsBoxLayout->addWidget(aRadioButton2);
   aConstructorsBoxLayout->addWidget(aRadioButton3);
+  aConstructorsBoxLayout->addWidget(aRadioButton4);
   myGroupConstructors->addButton(aRadioButton1, 0);
   myGroupConstructors->addButton(aRadioButton2, 1);
   myGroupConstructors->addButton(aRadioButton3, 2);
+  myGroupConstructors->addButton(aRadioButton4, 3);
 
   // Arguments
   myGroupArguments = new QGroupBox(this);
@@ -162,8 +167,8 @@ SMESHGUI_DuplicateNodesDlg::SMESHGUI_DuplicateNodesDlg( SMESHGUI* theModule )
   myLineEdit3 = new QLineEdit(myGroupArguments);
   myLineEdit3->setReadOnly(true);
 
-  myCheckBoxNewElemGroup = new QCheckBox(tr("CONSTRUCT_NEW_GROUP_ELEMENTS"), myGroupArguments);
-  myCheckBoxNewNodeGroup = new QCheckBox(tr("CONSTRUCT_NEW_GROUP_NODES"), myGroupArguments);
+  myCheckBox1 = new QCheckBox(tr("CONSTRUCT_NEW_GROUP_ELEMENTS"), myGroupArguments);
+  myCheckBox2 = new QCheckBox(tr("CONSTRUCT_NEW_GROUP_NODES"), myGroupArguments);
 
   aGroupArgumentsLayout->addWidget(myTextLabel1,    0, 0);
   aGroupArgumentsLayout->addWidget(mySelectButton1, 0, 1);
@@ -174,8 +179,8 @@ SMESHGUI_DuplicateNodesDlg::SMESHGUI_DuplicateNodesDlg( SMESHGUI* theModule )
   aGroupArgumentsLayout->addWidget(myTextLabel3,    2, 0);
   aGroupArgumentsLayout->addWidget(mySelectButton3, 2, 1);
   aGroupArgumentsLayout->addWidget(myLineEdit3,     2, 2);
-  aGroupArgumentsLayout->addWidget(myCheckBoxNewElemGroup, 3, 0);
-  aGroupArgumentsLayout->addWidget(myCheckBoxNewNodeGroup, 4, 0);
+  aGroupArgumentsLayout->addWidget(myCheckBox1, 3, 0);
+  aGroupArgumentsLayout->addWidget(myCheckBox2, 4, 0);
   aGroupArgumentsLayout->setRowStretch(5, 1);
   
   // Buttons
@@ -207,8 +212,8 @@ SMESHGUI_DuplicateNodesDlg::SMESHGUI_DuplicateNodesDlg( SMESHGUI* theModule )
   aMainLayout->addWidget(myGroupArguments);
   aMainLayout->addWidget(aGroupButtons);
   
-  myCheckBoxNewElemGroup->setChecked(true);
-  myCheckBoxNewNodeGroup->setChecked(true);
+  myCheckBox1->setChecked(true);
+  myCheckBox2->setChecked(true);
 
   // Initialize the dialog
   Init();
@@ -222,6 +227,8 @@ SMESHGUI_DuplicateNodesDlg::SMESHGUI_DuplicateNodesDlg( SMESHGUI* theModule )
   connect(mySelectButton1, SIGNAL (clicked()), this, SLOT(onEditCurrentArgument()));
   connect(mySelectButton2, SIGNAL (clicked()), this, SLOT(onEditCurrentArgument()));
   connect(mySelectButton3, SIGNAL (clicked()), this, SLOT(onEditCurrentArgument()));
+
+  connect(myCheckBox2,    SIGNAL(stateChanged(int)), SLOT(updateButtons()));
 
   connect(myButtonOk,     SIGNAL(clicked()), this, SLOT(onOk()));
   connect(myButtonClose,  SIGNAL(clicked()), this, SLOT(reject()));
@@ -298,8 +305,9 @@ void SMESHGUI_DuplicateNodesDlg::onConstructorsClicked (int constructorId)
       myTextLabel1->setText(tr("GROUP_NODES_TO_DUPLICATE"));
       myTextLabel2->setText(tr("GROUP_NODES_TO_REPLACE"));
 
-      myCheckBoxNewElemGroup->hide();
-      myCheckBoxNewNodeGroup->show();
+      myCheckBox1->hide();
+      myCheckBox2->show();
+      myCheckBox2->setText( tr("CONSTRUCT_NEW_GROUP_NODES"));
       
       // Hide the third field
       myTextLabel2->show();
@@ -319,8 +327,10 @@ void SMESHGUI_DuplicateNodesDlg::onConstructorsClicked (int constructorId)
       myTextLabel2->setText(tr("GROUP_NODES_NOT_DUPLICATE"));
       myTextLabel3->setText(tr("GROUP_ELEMS_TO_REPLACE"));
       
-      myCheckBoxNewElemGroup->show();
-      myCheckBoxNewNodeGroup->show();
+      myCheckBox1->show();
+      myCheckBox2->show();
+      myCheckBox1->setText( tr("CONSTRUCT_NEW_GROUP_ELEMENTS"));
+      myCheckBox2->setText( tr("CONSTRUCT_NEW_GROUP_NODES"));
 
       // Show the third field
       myTextLabel2->show();
@@ -338,8 +348,30 @@ void SMESHGUI_DuplicateNodesDlg::onConstructorsClicked (int constructorId)
       myGroupArguments->setTitle(tr("DUPLICATION_ONLY_ELEMS"));
       myTextLabel1->setText(tr("GROUP_ELEMS_TO_DUPLICATE"));
       
-      myCheckBoxNewElemGroup->show();
-      myCheckBoxNewNodeGroup->hide();
+      myCheckBox1->show();
+      myCheckBox1->setText( tr("CONSTRUCT_NEW_GROUP_ELEMENTS"));
+      myCheckBox2->hide();
+
+      // Hide the second and the third field
+      myTextLabel2->hide();
+      mySelectButton2->hide();
+      myLineEdit2->hide();
+      myTextLabel3->hide();
+      mySelectButton3->hide();
+      myLineEdit3->hide();
+
+      break;
+    }
+  case 3:
+    {
+      // Set text to the group of arguments and to all the labels
+      myGroupArguments->setTitle(tr("DUPLICATION_GROUP_BOUNDARY"));
+      myTextLabel1->setText(tr("GROUP_VOLUME_GROUPS"));
+      
+      myCheckBox1->show();
+      myCheckBox2->show();
+      myCheckBox1->setText( tr("CREATE_JOINT_ELEMENTS"));
+      myCheckBox2->setText( tr("ON_ALL_BOUNDARIES"));
 
       // Hide the second and the third field
       myTextLabel2->hide();
@@ -367,8 +399,8 @@ bool SMESHGUI_DuplicateNodesDlg::onApply()
 
   BusyLocker lock( myBusy );
  
-  bool toCreateElemGroup = myCheckBoxNewElemGroup->isChecked();
-  bool toCreateNodeGroup = myCheckBoxNewNodeGroup->isChecked();
+  bool toCreateElemGroup = myCheckBox1->isChecked();
+  bool toCreateNodeGroup = myCheckBox2->isChecked();
   int operationMode      = myGroupConstructors->checkedId();
   
   // Apply changes
@@ -451,14 +483,28 @@ bool SMESHGUI_DuplicateNodesDlg::onApply()
       }
       break;
     }
+    case 3:
+    {
+      bool createJointElems = myCheckBox1->isChecked();
+      bool onAllBoundaries  = myCheckBox2->isChecked();
+
+      SMESH::ListOfGroups_var g1 = new SMESH::ListOfGroups();
+      g1->length( myGroups1.count() );
+      for ( int i = 0; i < myGroups1.count(); i++ )
+        g1[i] = myGroups1[i];
+
+      result = aMeshEditor->DoubleNodesOnGroupBoundaries( g1.in(), createJointElems, onAllBoundaries );
+
+      break;
     }
+    } // switch( operationMode )
   }
   catch (const SALOME::SALOME_Exception& S_ex) {
     SalomeApp_Tools::QtCatchCorbaException(S_ex);
   }
   catch ( const std::exception& exc ) {
     INFOS( "Follow exception was cought:\n\t" << exc.what() );
-  } 
+  }
   catch (...) {
     INFOS( "Unknown exception was cought !!!" );
   }
@@ -553,6 +599,9 @@ void SMESHGUI_DuplicateNodesDlg::onSelectionChanged()
       case 2:
         ok = ( aGroupType != SMESH::NODE );
         break;
+      case 3:
+        ok = ( aGroupType == SMESH::VOLUME );
+        break;
       }
     }
     if ( ok ) aGroups << aGroup;
@@ -575,8 +624,15 @@ void SMESHGUI_DuplicateNodesDlg::onSelectionChanged()
     else if ( myCurrentLineEdit == myLineEdit3 ) myGroups3.clear();
     myCurrentLineEdit->clear();
   }
-
   // Enable/disable "Apply and Close" and "Apply" buttons
+  updateButtons();
+}
+
+/*!
+ * \brief Enable/disable "Apply and Close" and "Apply" buttons
+ */
+void SMESHGUI_DuplicateNodesDlg::updateButtons()
+{
   bool isDataValid = isValid();
   myButtonOk->setEnabled( isDataValid );
   myButtonApply->setEnabled( isDataValid );
@@ -610,11 +666,14 @@ void SMESHGUI_DuplicateNodesDlg::onEditCurrentArgument()
 */
 bool SMESHGUI_DuplicateNodesDlg::isValid()
 {
-  return myGroupConstructors->checkedId() == 1 ?
-    ( !myGroups1.isEmpty() && !myGroups3.isEmpty()  ) :
-    ( !myGroups1.isEmpty() );
+  switch( myGroupConstructors->checkedId() )
+  {
+  case 1:  return ( !myGroups1.isEmpty() && !myGroups3.isEmpty()  );
+  case 3:  return ( myGroups1.count() > ( myCheckBox2->isChecked() ? 0 : 1 ));
+  default: return !myGroups1.isEmpty();
+  }
+  return false;
 }
-
 
 /*!
   \brief SLOT called when dialog shoud be deativated.

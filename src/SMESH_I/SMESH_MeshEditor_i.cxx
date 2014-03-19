@@ -6875,18 +6875,21 @@ CORBA::Boolean SMESH_MeshEditor_i::Make2DMeshFrom3D()
  * If there is no shared faces between the group #n and the group #p in the list, the group j_n_p is not created.
  * All the flat elements are gathered into the group named "joints3D" (or "joints2D" in 2D situation).
  * The flat element of the multiple junctions between the simple junction are stored in a group named "jointsMultiples".
- * @param theDomains - list of groups of volumes
- * @param createJointElems - if TRUE, create the elements
- * @return TRUE if operation has been completed successfully, FALSE otherwise
+ * \param theDomains - list of groups of volumes
+ * \param createJointElems - if TRUE, create the elements
+ * \param onAllBoundaries - if TRUE, the nodes and elements are also created on
+ *        the boundary between \a theDomains and the rest mesh
+ * \return TRUE if operation has been completed successfully, FALSE otherwise
  */
 //================================================================================
 
 CORBA::Boolean
 SMESH_MeshEditor_i::DoubleNodesOnGroupBoundaries( const SMESH::ListOfGroups& theDomains,
-                                                  CORBA::Boolean             createJointElems )
+                                                  CORBA::Boolean             createJointElems,
+                                                  CORBA::Boolean             onAllBoundaries )
   throw (SALOME::SALOME_Exception)
 {
-  bool aResult = false;
+  bool isOK = false;
 
   SMESH_TRY;
   initData();
@@ -6894,10 +6897,11 @@ SMESH_MeshEditor_i::DoubleNodesOnGroupBoundaries( const SMESH::ListOfGroups& the
   SMESHDS_Mesh* aMeshDS = getMeshDS();
 
   // MESSAGE("theDomains.length = "<<theDomains.length());
-  if ( theDomains.length() <= 1 )
+  if ( theDomains.length() <= 1 && !onAllBoundaries )
     THROW_SALOME_CORBA_EXCEPTION("At least 2 groups are required.", SALOME::BAD_PARAM);
+
   vector<TIDSortedElemSet> domains;
-  domains.clear();
+  domains.resize( theDomains.length() );
 
   for ( int i = 0, n = theDomains.length(); i < n; i++ )
   {
@@ -6906,26 +6910,25 @@ SMESH_MeshEditor_i::DoubleNodesOnGroupBoundaries( const SMESH::ListOfGroups& the
     {
 //      if ( aGrp->GetType() != SMESH::VOLUME )
 //        THROW_SALOME_CORBA_EXCEPTION("Not a volume group", SALOME::BAD_PARAM);
-      TIDSortedElemSet domain;
-      domain.clear();
-      domains.push_back(domain);
       SMESH::long_array_var anIDs = aGrp->GetIDs();
       arrayToSet( anIDs, aMeshDS, domains[ i ], SMDSAbs_All );
     }
   }
 
-  aResult = getEditor().DoubleNodesOnGroupBoundaries( domains, createJointElems );
+  isOK = getEditor().DoubleNodesOnGroupBoundaries( domains, createJointElems, onAllBoundaries );
   // TODO publish the groups of flat elements in study
 
-  declareMeshModified( /*isReComputeSafe=*/ !aResult );
+  declareMeshModified( /*isReComputeSafe=*/ !isOK );
 
   // Update Python script
   TPythonDump() << "isDone = " << this << ".DoubleNodesOnGroupBoundaries( " << &theDomains
-      << ", " << createJointElems << " )";
+                << ", " << createJointElems << ", " << onAllBoundaries << " )";
 
   SMESH_CATCH( SMESH::throwCorbaException );
 
-  return aResult;
+  myMesh_i->CreateGroupServants(); // publish created groups if any
+
+  return isOK;
 }
 
 //================================================================================

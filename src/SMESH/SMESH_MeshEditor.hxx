@@ -553,7 +553,8 @@ public:
   double OrientedAngle(const gp_Pnt& p0, const gp_Pnt& p1, const gp_Pnt& g1, const gp_Pnt& g2);
 
   bool DoubleNodesOnGroupBoundaries( const std::vector<TIDSortedElemSet>& theElems,
-                                     bool createJointElems);
+                                     bool                                 createJointElems,
+                                     bool                                 onAllBoundaries);
 
   bool CreateFlatElementsOnFacesGroups( const std::vector<TIDSortedElemSet>& theElems );
 

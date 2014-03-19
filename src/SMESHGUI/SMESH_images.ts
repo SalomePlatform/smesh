@@ -435,9 +435,13 @@
             <source>ICON_SMESH_DUPLICATE_NODES_WITH_ELEM</source>
             <translation>mesh_duplicate_nodes_with_elem.png</translation>
         </message>
-	    <message>
+        <message>
             <source>ICON_SMESH_DUPLICATE_ELEM_ONLY</source>
             <translation>mesh_duplicate_elem_only.png</translation>
+        </message>
+        <message>
+            <source>ICON_SMESH_DUPLICATE_GROUP_BOUNDARY</source>
+            <translation>mesh_duplicate_group_boundary.png</translation>
         </message>
         <message>
             <source>ICON_SMESH_TREE_ALGO</source>
