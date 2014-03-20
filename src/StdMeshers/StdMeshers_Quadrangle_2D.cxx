@@ -3971,7 +3971,7 @@ bool StdMeshers_Quadrangle_2D::check()
 
     // find a right angle VERTEX
     int iVertex;
-    double maxAngle = 0;
+    double maxAngle = -1e100;
     for ( int i = 0; i < wire->NbEdges(); ++i )
     {
       int iPrev = myHelper->WrapIndex( i-1, wire->NbEdges() );
@@ -3984,7 +3984,7 @@ bool StdMeshers_Quadrangle_2D::check()
         iVertex = i;
       }
     }
-    if ( maxAngle == 0 ) return isOK;
+    if ( maxAngle < -2*M_PI ) return isOK;
 
     // get a sign of 2D area of a corner face
 
@@ -4010,6 +4010,9 @@ bool StdMeshers_Quadrangle_2D::check()
     }
 
     okSign = v2 ^ v1;
+
+    if ( maxAngle < 0 )
+      okSign *= -1;
   }
 
   // Look for incorrectly oriented faces
