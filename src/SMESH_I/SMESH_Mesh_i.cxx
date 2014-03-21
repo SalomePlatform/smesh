@@ -41,10 +41,12 @@
 #include "SMESHDS_Group.hxx"
 #include "SMESHDS_GroupOnGeom.hxx"
 #include "SMESH_Controls.hxx"
+#include "SMESH_File.hxx"
 #include "SMESH_Filter_i.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Group.hxx"
 #include "SMESH_Group_i.hxx"
+#include "SMESH_Mesh.hxx"
 #include "SMESH_MeshAlgos.hxx"
 #include "SMESH_MeshEditor.hxx"
 #include "SMESH_MeshEditor_i.hxx"
@@ -54,12 +56,9 @@
 #include "SMESH_PythonDump.hxx"
 #include "SMESH_subMesh_i.hxx"
 
-#include <OpUtil.hxx>
 #include <SALOMEDS_Attributes_wrap.hxx>
 #include <SALOMEDS_wrap.hxx>
-#include <SALOME_NamingService.hxx>
 #include <Utils_ExceptHandlers.hxx>
-#include <Utils_SINGLETON.hxx>
 #include <utilities.h>
 
 #include <GEOMImpl_Types.hxx>
@@ -67,15 +66,8 @@
 
 // OCCT Includes
 #include <BRep_Builder.hxx>
-#include <OSD_Directory.hxx>
-#include <OSD_File.hxx>
-#include <OSD_Path.hxx>
-#include <OSD_Protection.hxx>
-#include <Standard_OutOfMemory.hxx>
-#include <TColStd_MapIteratorOfMapOfInteger.hxx>
+#include <Standard_ErrorHandler.hxx>
 #include <TColStd_MapOfInteger.hxx>
-#include <TColStd_SequenceOfInteger.hxx>
-#include <TCollection_AsciiString.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopTools_MapIteratorOfMapOfShape.hxx>
@@ -84,11 +76,8 @@
 
 // STL Includes
 #include <algorithm>
-#include <string>
 #include <iostream>
 #include <sstream>
-
-#include <sys/stat.h>
 
 // to pass CORBA exception through SMESH_TRY
 #define SMY_OWN_CATCH catch( SALOME::SALOME_Exception& se ) { throw se; }
@@ -404,14 +393,7 @@ SMESH_Mesh_i::ImportMEDFile( const char* theFileName, const char* theMeshName )
   _medFileInfo->major    = major;
   _medFileInfo->minor    = minor;
   _medFileInfo->release  = release;
-#ifdef WIN32
-  struct _stati64 d;
-  if ( ::_stati64( theFileName, &d ) != -1 )
-#else
-  struct stat64 d;
-  if ( ::stat64( theFileName, &d ) != -1 )
-#endif
-    _medFileInfo->fileSize = d.st_size;
+  _medFileInfo->fileSize = SMESH_File( theFileName ).size();
 
   return ConvertDriverMEDReadStatus(status);
 }
@@ -2773,44 +2755,36 @@ CORBA::Boolean SMESH_Mesh_i::HasDuplicatedGroupNamesMED()
 
 void SMESH_Mesh_i::PrepareForWriting (const char* file, bool overwrite)
 {
-  TCollection_AsciiString aFullName ((char*)file);
-  OSD_Path aPath (aFullName);
-  OSD_File aFile (aPath);
-  if (aFile.Exists()) {
+  SMESH_File aFile( file );
+  SMESH_Comment msg;
+  if (aFile.exists()) {
     // existing filesystem node
-    if (aFile.KindOfFile() == OSD_FILE) {
-      if (aFile.IsWriteable()) {
-        if (overwrite) {
-          aFile.Reset();
-          aFile.Remove();
-        }
-        if (aFile.Failed()) {
-          TCollection_AsciiString msg ("File ");
-          msg += aFullName + " cannot be replaced.";
-          THROW_SALOME_CORBA_EXCEPTION(msg.ToCString(), SALOME::BAD_PARAM);
+    if ( !aFile.isDirectory() ) {
+      if ( aFile.openForWriting() ) {
+        if ( overwrite && ! aFile.remove()) {
+          msg << "Can't replace " << aFile.getName();
         }
       } else {
-        TCollection_AsciiString msg ("File ");
-        msg += aFullName + " cannot be overwritten.";
-        THROW_SALOME_CORBA_EXCEPTION(msg.ToCString(), SALOME::BAD_PARAM);
+        msg << "Can't write into " << aFile.getName();
       }
     } else {
-      TCollection_AsciiString msg ("Location ");
-      msg += aFullName + " is not a file.";
-      THROW_SALOME_CORBA_EXCEPTION(msg.ToCString(), SALOME::BAD_PARAM);
+      msg << "Location " << aFile.getName() << " is not a file";
     }
-  } else {
+  }
+  else {
     // nonexisting file; check if it can be created
-    aFile.Reset();
-    aFile.Build(OSD_WriteOnly, OSD_Protection());
-    if (aFile.Failed()) {
-      TCollection_AsciiString msg ("You cannot create the file ");
-      msg += aFullName + ". Check the directory existance and access rights.";
-      THROW_SALOME_CORBA_EXCEPTION(msg.ToCString(), SALOME::BAD_PARAM);
-    } else {
-      aFile.Close();
-      aFile.Remove();
+    if ( !aFile.openForWriting() ) {
+      msg << "You cannot create the file "
+          << aFile.getName()
+          << ". Check the directory existance and access rights";
     }
+    aFile.remove();
+  }
+
+  if ( !msg.empty() )
+  {
+    msg << ".";
+    THROW_SALOME_CORBA_EXCEPTION(msg.c_str(), SALOME::BAD_PARAM);
   }
 }
 
@@ -4164,17 +4138,11 @@ SMESH::long_array* SMESH_Mesh_i::GetNodeInverseElements(const CORBA::Long id)
 
   // find inverse elements
   SMDS_ElemIteratorPtr eIt = aNode->GetInverseElementIterator();
-  TColStd_SequenceOfInteger IDs;
-  while(eIt->more()) {
+  aResult->length( aNode->NbInverseElements() );  
+  for( int i = 0; eIt->more(); ++i )
+  {
     const SMDS_MeshElement* elem = eIt->next();
-    IDs.Append(elem->GetID());
-  }
-  if(IDs.Length()>0) {
-    aResult->length(IDs.Length());
-    int i = 1;
-    for(; i<=IDs.Length(); i++) {
-      aResult[i-1] = IDs.Value(i);
-    }
+    aResult[ i ] = elem->GetID();
   }
   return aResult._retn();
 }

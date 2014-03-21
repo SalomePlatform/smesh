@@ -42,23 +42,29 @@ class SMESHUtils_EXPORT SMESH_File
 {
 public:
 
-  SMESH_File(const std::string& name, bool open=true);
+  SMESH_File(const std::string& name, bool openForReading=true);
 
   ~SMESH_File();
 
   std::string getName() const { return _name; }
 
-  bool open();
+  const std::string& error() const { return _error; }
 
   void close();
 
   bool remove();
 
-  int size() const;
+  long size();
+
+  bool exists();
+
+  bool isDirectory();
 
   // ------------------------
   // Access to file contents
   // ------------------------
+
+  bool open(); // for reading
 
   operator const char*() const { return _pos; }
 
@@ -67,6 +73,8 @@ public:
   void operator +=(int posDelta) { _pos+=posDelta; }
 
   bool eof() const { return _pos >= _end; }
+
+  const char* end() const { return _end; }
 
   const char* getPos() const { return _pos; }
 
@@ -78,10 +86,31 @@ public:
 
   bool getInts(std::vector<int>& ids);
 
+  // ------------------------
+  // Writting a binary file
+  // ------------------------
+
+  bool openForWriting(); // binary writing only
+
+  template <typename T>
+    bool write( const T* values, size_t nbTValues )
+  {
+    return writeRaw((const void*) values, nbTValues * sizeof(T));
+  }
+
+  template <typename T>
+    bool write( const T& value )
+  {
+    return writeRaw((const void*) & value, sizeof(T));
+  }
+
+  bool writeRaw(const void* data, size_t size);
+
 private:
 
   std::string _name; //!< file name
   int         _size; //!< file size
+  std::string _error;
 #ifdef WIN32
   HANDLE      _file, _mapObj;
 #else

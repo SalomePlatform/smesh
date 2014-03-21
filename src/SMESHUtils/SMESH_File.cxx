@@ -24,12 +24,6 @@
 #include "SMESH_File.hxx"
 #include "utilities.h"
 
-#include <OSD_File.hxx>
-#include <OSD_Path.hxx>
-#include <Standard_ProgramError.hxx>
-#include <Standard_ErrorHandler.hxx>
-#include <Standard_Failure.hxx>
-
 #include <fcntl.h>
 #include <sys/stat.h>
 
@@ -39,6 +33,10 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #endif
+
+#include <boost/filesystem.hpp>
+
+namespace boofs = boost::filesystem;
 
 //================================================================================
 /*!
@@ -133,6 +131,16 @@ void SMESH_File::close()
     _pos = _end = 0;
     _size = -1;
   }
+  else if ( _file >= 0 )
+  {
+#ifdef WIN32
+    CloseHandle(_file);
+    _file = INVALID_HANDLE_VALUE;
+#else
+    ::close(_file);
+    _file = -1;
+#endif
+  }
 }
 
 //================================================================================
@@ -144,15 +152,12 @@ void SMESH_File::close()
 bool SMESH_File::remove()
 {
   close();
-  try {
-    OSD_Path filePath(TCollection_AsciiString((char*)_name.data()));
-    OSD_File(filePath).Remove();
-  }
-  catch ( Standard_ProgramError ) {
-    MESSAGE("Can't remove file: " << _name << " ; file does not exist or permission denied");
-    return false;
-  }
-  return true;
+
+  boost::system::error_code err;
+  boofs::remove( _name, err );
+  _error = err.message();
+
+  return !err;
 }
 
 //================================================================================
@@ -161,21 +166,45 @@ bool SMESH_File::remove()
  */
 //================================================================================
 
-int SMESH_File::size() const
+long SMESH_File::size()
 {
-  if ( _size >= 0 ) return _size; // size of open file
+  if ( _size >= 0 ) return _size; // size of an open file
 
-  int size = -1;
-  int file = ::open( _name.data(), O_RDONLY );
-  if ( file > 0 )
-  {
-    struct stat status;
-    int err = fstat( file, &status);
-    if ( !err )
-      size = status.st_size;
-    ::close( file );
-  }
-  return size;
+  boost::system::error_code err;
+  uintmax_t size = boofs::file_size( _name, err );
+  _error = err.message();
+
+  return err ? -1 : (long) size;
+}
+
+//================================================================================
+/*!
+ * \brief Check existence
+ */
+//================================================================================
+
+bool SMESH_File::exists()
+{
+  boost::system::error_code err;
+  bool res = boofs::exists( _name, err );
+  _error = err.message();
+
+  return err ? false : res;
+}
+
+//================================================================================
+/*!
+ * \brief Check existence
+ */
+//================================================================================
+
+bool SMESH_File::isDirectory()
+{
+  boost::system::error_code err;
+  bool res = boofs::is_directory( _name, err );
+  _error = err.message();
+
+  return err ? false : res;
 }
 
 //================================================================================
@@ -237,4 +266,57 @@ bool SMESH_File::getInts(std::vector<int>& ints)
     ints[ i++ ] = strtol( _pos, (char**)&_pos, 10 );
   }
   return ( i == ints.size() );
+}
+
+//================================================================================
+/*!
+ * \brief Open for binary writing only.
+ */
+//================================================================================
+
+bool SMESH_File::openForWriting()
+{
+#ifdef WIN32
+
+  _file = CreateFile( _name.c_str(),          // name of the write
+                      GENERIC_WRITE,          // open for writing
+                      0,                      // do not share
+                      NULL,                   // default security
+                      OPEN_ALWAYS,            // CREATE NEW or OPEN EXISTING
+                      FILE_ATTRIBUTE_NORMAL,  // normal file
+                      NULL);                  // no attr. template
+  return ( _file != INVALID_HANDLE_VALUE );
+
+#else
+
+  _file = ::open( _name.c_str(),
+                  O_WRONLY | O_CREAT,
+                  S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH ); // rw-r--r--
+  return _file >= 0;
+
+#endif
+}
+
+//================================================================================
+/*!
+ * \brief Write binary data
+ */
+//================================================================================
+
+bool SMESH_File::writeRaw(const void* data, size_t size)
+{
+#ifdef WIN32
+
+  DWORD nbWritten = 0;
+  BOOL err = WriteFile( _file, data, size, & nbWritten, NULL);
+
+  return (( err == FALSE ) &&
+          ( nbWritten == (DWORD) size ));
+
+#else
+
+  ssize_t nbWritten = ::write( _file, data, size );
+  return ( nbWritten == size );
+
+#endif
 }

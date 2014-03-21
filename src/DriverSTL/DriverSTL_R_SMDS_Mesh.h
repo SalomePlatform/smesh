@@ -27,7 +27,7 @@
 
 #include "Driver_SMDS_Mesh.h"
 
-#include <Standard_TypeDef.hxx>
+class SMESH_File;
 
 class MESHDRIVERSTL_EXPORT DriverSTL_R_SMDS_Mesh: public Driver_SMDS_Mesh
 {
@@ -38,8 +38,8 @@ class MESHDRIVERSTL_EXPORT DriverSTL_R_SMDS_Mesh: public Driver_SMDS_Mesh
   
  private:
   // PRIVATE METHODS
-  Status           readAscii() const;
-  Status           readBinary() const;
+  Status           readAscii (SMESH_File& file) const;
+  Status           readBinary(SMESH_File& file) const;
   
  private:
   // PRIVATE FIELDS

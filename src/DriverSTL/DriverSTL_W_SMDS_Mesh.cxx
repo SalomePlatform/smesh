@@ -20,9 +20,6 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-#include <stdio.h>
-#include <limits>
-
 #include "DriverSTL_W_SMDS_Mesh.h"
 
 #include "SMDS_FaceOfNodes.hxx"
@@ -32,16 +29,15 @@
 #include "SMDS_MeshNode.hxx"
 #include "SMDS_SetIterator.hxx"
 #include "SMDS_VolumeTool.hxx"
+#include "SMESH_File.hxx"
 #include "SMESH_TypeDefs.hxx"
 
-#include <OSD_File.hxx>
-#include <OSD_Path.hxx>
-#include <OSD_Protection.hxx>
-#include <TCollection_AsciiString.hxx>
-#include <gp_XYZ.hxx>
 #include <Basics_Utils.hxx>
 
-#include "utilities.h"
+//#include "utilities.h"
+
+#include <limits>
+
 
 // definition des constantes 
 static const int LABEL_SIZE = 80;
@@ -147,7 +143,7 @@ SMDS_ElemIteratorPtr DriverSTL_W_SMDS_Mesh::getFaces() const
 
 // static methods
 
-static void writeInteger( const Standard_Integer& theVal, OSD_File& ofile )
+static void writeInteger( const Standard_Integer& theVal, SMESH_File& ofile )
 {
   union {
     Standard_Integer i;
@@ -162,16 +158,15 @@ static void writeInteger( const Standard_Integer& theVal, OSD_File& ofile )
   entier |= (u.c[2] & 0xFF) << 0x10;
   entier |= (u.c[3] & 0xFF) << 0x18;
 
-  ofile.Write((char *)&entier,sizeof(u.c));
+  ofile.write( entier );
 }
 
-static void writeFloat  ( const Standard_ShortReal& theVal,
-                         OSD_File& ofile)
+static void writeFloat( const Standard_ShortReal& theVal, SMESH_File& ofile)
 {
   union {
     Standard_ShortReal f;
     char c[4]; 
-  }u;
+  } u;
 
   u.f = theVal;
 
@@ -182,7 +177,7 @@ static void writeFloat  ( const Standard_ShortReal& theVal,
   entier |= (u.c[2] & 0xFF) << 0x10;
   entier |= (u.c[3] & 0xFF) << 0x18;
 
-  ofile.Write((char *)&entier,sizeof(u.c));
+  ofile.write( entier );
 }
 
 static gp_XYZ getNormale( const SMDS_MeshNode* n1,
@@ -287,19 +282,18 @@ static int getTriangles( const SMDS_MeshElement* face,
 Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::writeAscii() const
 {
   Status aResult = DRS_OK;
-  TCollection_AsciiString aFileName( (char *)myFile.c_str() );
-  if ( aFileName.IsEmpty() ) {
+  if ( myFile.empty() ) {
     fprintf(stderr, ">> ERREOR : invalid file name \n");
     return DRS_FAIL;
   }
 
-  OSD_File aFile = OSD_File(OSD_Path(aFileName));
-  aFile.Build(OSD_WriteOnly,OSD_Protection());
+  SMESH_File aFile( myFile, /*openForReading=*/false );
+  aFile.openForWriting();
 
-  char sval[16];
-  TCollection_AsciiString buf = TCollection_AsciiString ("solid\n");
-  aFile.Write (buf,buf.Length());buf.Clear();
+  std::string buf("solid\n");
+  aFile.writeRaw( buf.c_str(), buf.size() );
 
+  char sval[128];
   const SMDS_MeshNode* triaNodes[2048];
 
   SMDS_ElemIteratorPtr itFaces = getFaces();
@@ -313,45 +307,25 @@ Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::writeAscii() const
       gp_XYZ normale = getNormale( triaNodes[iN],
                                    triaNodes[iN+1],
                                    triaNodes[iN+2] );
+      sprintf (sval,
+               " facet normal % 12e % 12e % 12e\n"
+               "   outer loop\n" ,
+               normale.X(), normale.Y(), normale.Z());
+      aFile.writeRaw ( sval, 70 );
 
-      buf += " facet normal "; 
-      sprintf (sval,"% 12e",normale.X());
-      buf += sval;
-      buf += " "; 
-      sprintf (sval,"% 12e",normale.Y());
-      buf += sval;
-      buf += " "; 
-      sprintf (sval,"% 12e",normale.Z());
-      buf += sval;
-      buf += '\n';
-      aFile.Write (buf,buf.Length());buf.Clear();
-      buf += "   outer loop\n"; 
-      aFile.Write (buf,buf.Length());buf.Clear();
-      
-      for ( int jN = 0; jN < 3; ++jN, ++iN ) {
-        const SMDS_MeshNode* node = triaNodes[iN];
-        buf += "     vertex "; 
-        sprintf (sval,"% 12e",node->X());
-        buf += sval;
-        buf += " "; 
-        sprintf (sval,"% 12e",node->Y());
-        buf += sval;
-        buf += " "; 
-        sprintf (sval,"% 12e",node->Z());
-        buf += sval;
-        buf += '\n';
-        aFile.Write (buf,buf.Length());buf.Clear();
+      for ( int jN = 0; jN < 3; ++jN, ++iN )
+      {
+        SMESH_TNodeXYZ node = triaNodes[iN];
+        sprintf (sval,
+                 "     vertex % 12e % 12e % 12e\n",
+                 node.X(), node.Y(), node.Z() );
+        aFile.writeRaw ( sval, 54 );
       }
-      buf += "   endloop\n"; 
-      aFile.Write (buf,buf.Length());buf.Clear();
-      buf += " endfacet\n"; 
-      aFile.Write (buf,buf.Length());buf.Clear();
+      aFile.writeRaw ("   endloop\n"
+                      " endfacet\n", 21 );
     } 
   }
-  buf += "endsolid\n";
-  aFile.Write (buf,buf.Length());buf.Clear();
-  
-  aFile.Close ();
+  aFile.writeRaw ("endsolid\n" , 9 );
 
   return aResult;
 }
@@ -366,14 +340,14 @@ Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::writeAscii() const
 Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::writeBinary() const
 {
   Status aResult = DRS_OK;
-  TCollection_AsciiString aFileName( (char *)myFile.c_str() );
-  if ( aFileName.IsEmpty() ) {
+
+  if ( myFile.empty() ) {
     fprintf(stderr, ">> ERREOR : invalid filename \n");
     return DRS_FAIL;
   }
 
-  OSD_File aFile = OSD_File(OSD_Path(aFileName));
-  aFile.Build(OSD_WriteOnly,OSD_Protection());
+  SMESH_File aFile( myFile );
+  aFile.openForWriting();
 
   // we first count the number of triangles
   int nbTri = myVolumeTrias.size();
@@ -384,12 +358,11 @@ Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::writeBinary() const
       nbTri += getNbTriangles( aFace );
     }
   }
-  // char sval[80]; -- avoid writing not initialized memory
-  TCollection_AsciiString sval(LABEL_SIZE-1,' ');
-  aFile.Write((Standard_Address)sval.ToCString(),LABEL_SIZE);
+  std::string sval( LABEL_SIZE, ' ' );
+  aFile.write( sval.c_str(), LABEL_SIZE );
 
   // write number of triangles
-  writeInteger(nbTri,aFile);  
+  writeInteger( nbTri, aFile );  
 
   // Loop writing nodes
 
@@ -419,10 +392,9 @@ Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::writeBinary() const
         writeFloat(node->Y(),aFile);
         writeFloat(node->Z(),aFile);
       }
-      aFile.Write (&dum,2);
-    } 
+      aFile.writeRaw ( &dum, 2 );
+    }
   }
-  aFile.Close ();
 
   return aResult;
 }
