@@ -21,8 +21,8 @@
 // Created   : Wed Mar 10 11:23:25 2010
 // Author    : Edward AGAPOV (eap)
 //
+
 #include "SMESH_File.hxx"
-#include "utilities.h"
 
 #include <fcntl.h>
 #include <sys/stat.h>

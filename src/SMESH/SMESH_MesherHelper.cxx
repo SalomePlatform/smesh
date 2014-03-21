@@ -478,7 +478,10 @@ bool SMESH_MesherHelper::toCheckPosOnShape(int shapeID ) const
 
 void SMESH_MesherHelper::setPosOnShapeValidity(int shapeID, bool ok ) const
 {
-  ((SMESH_MesherHelper*)this)->myNodePosShapesValidity.insert( make_pair( shapeID, ok));
+  std::map< int,bool >::iterator sh_ok = 
+    ((SMESH_MesherHelper*)this)->myNodePosShapesValidity.insert( make_pair( shapeID, ok)).first;
+  if ( !ok )
+    sh_ok->second = ok;
 }
 
 //=======================================================================
@@ -661,9 +664,10 @@ bool SMESH_MesherHelper::CheckNodeUV(const TopoDS_Face&   F,
                                      const bool           force,
                                      double               distXYZ[4]) const
 {
-  int shapeID = n->getshapeId();
+  int  shapeID = n->getshapeId();
   bool infinit = ( Precision::IsInfinite( uv.X() ) || Precision::IsInfinite( uv.Y() ));
-  if ( force || toCheckPosOnShape( shapeID ) || infinit )
+  bool zero    = ( uv.X() == 0. && uv.Y() == 0. );
+  if ( force || toCheckPosOnShape( shapeID ) || infinit || zero )
   {
     // check that uv is correct
     TopLoc_Location loc;
@@ -898,7 +902,8 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
 {
   int  shapeID = n->getshapeId();
   bool infinit = Precision::IsInfinite( u );
-  if ( force || toCheckPosOnShape( shapeID ) || infinit )
+  bool zero    = ( u == 0. );
+  if ( force || toCheckPosOnShape( shapeID ) || infinit || zero )
   {
     TopLoc_Location loc; double f,l;
     Handle(Geom_Curve) curve = BRep_Tool::Curve( E,loc,f,l );
