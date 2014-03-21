@@ -222,6 +222,7 @@ bool SMESH_OctreeNode::NodesAround(const gp_XYZ &node,
     }
     else if ( NbNodes() > 0 )
     {
+      size_t nbFoundBefore = dist2Nodes.size();
       double minDist = precision * precision;
       gp_Pnt p1 ( node.X(), node.Y(), node.Z() );
       TIDSortedNodeSet::iterator nIt = myNodes.begin();
@@ -235,7 +236,7 @@ bool SMESH_OctreeNode::NodesAround(const gp_XYZ &node,
 //       if ( dist2Nodes.size() > 1 ) // leave only closest node in dist2Nodes
 //         dist2Nodes.erase( ++dist2Nodes.begin(), dist2Nodes.end());
 
-      return ( sqrt( minDist) <= precision * ( 1 + 1e-12 ));
+      return ( nbFoundBefore < dist2Nodes.size() );
     }
   }
   return false;
