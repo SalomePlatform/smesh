@@ -2041,6 +2041,10 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <translation>Quadratique</translation>
     </message>
     <message>
+        <source>SMESH_MESHINFO_ORDER3</source>
+        <translation type="unfinished">Bi-Quadratic</translation>
+    </message>
+    <message>
         <source>SMESH_MESHINFO_HEXAPRISM</source>
         <translation>Prismes hexagonaux</translation>
     </message>
@@ -6839,6 +6843,10 @@ en raison de leurs types incompatibles:
     <message>
         <source>QUADRATIC_LAB</source>
         <translation>Quadratique</translation>
+    </message>
+    <message>
+        <source>BI_QUADRATIC_LAB</source>
+        <translation type="unfinished">Bi-Quadratic</translation>
     </message>
     <message>
         <source>0D_LAB</source>

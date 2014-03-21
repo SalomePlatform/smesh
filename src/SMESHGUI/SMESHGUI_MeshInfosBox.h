@@ -59,16 +59,20 @@ private:
   QLabel* myNbTrai;
   QLabel* myNbLinTrai;
   QLabel* myNbQuadTrai;
+  QLabel* myNbBiQuadTrai;
   QLabel* myNbQuad;
   QLabel* myNbLinQuad;
   QLabel* myNbQuadQuad;
+  QLabel* myNbBiQuadQuad;
   QLabel* myNbFace;
   QLabel* myNbLinFace;
   QLabel* myNbQuadFace;
+  QLabel* myNbBiQuadFace;
   QLabel* myNbPolyg;
   QLabel* myNbHexa;
   QLabel* myNbLinHexa;
   QLabel* myNbQuadHexa;
+  QLabel* myNbBiQuadHexa;
   QLabel* myNbTetra;
   QLabel* myNbLinTetra;
   QLabel* myNbQuadTetra;
@@ -81,6 +85,7 @@ private:
   QLabel* myNbVolum;
   QLabel* myNbLinVolum;
   QLabel* myNbQuadVolum;
+  QLabel* myNbBiQuadVolum;
   QLabel* myNbHexaPrism;
   QLabel* myNbPolyh;
 };

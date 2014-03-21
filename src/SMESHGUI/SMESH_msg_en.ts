@@ -2041,6 +2041,10 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Quadratic</translation>
     </message>
     <message>
+        <source>SMESH_MESHINFO_ORDER3</source>
+        <translation>Bi-Quadratic</translation>
+    </message>
+    <message>
         <source>SMESH_MESHINFO_HEXAPRISM</source>
         <translation>Hexagonal prisms</translation>
     </message>
@@ -6914,6 +6918,10 @@ as they are of improper type:
     <message>
         <source>QUADRATIC_LAB</source>
         <translation>Quadratic</translation>
+    </message>
+    <message>
+        <source>BI_QUADRATIC_LAB</source>
+        <translation>Bi-Quadratic</translation>
     </message>
     <message>
         <source>0D_LAB</source>

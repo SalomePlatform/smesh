@@ -619,8 +619,8 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent, bool ForEval)
 
   // add all widgets to aFrame
   QVBoxLayout* aLay = new QVBoxLayout(aFrame);
-  aLay->setMargin( 0 );
-  aLay->setSpacing( 0 );
+  aLay->setMargin( MARGIN );
+  aLay->setSpacing( SPACING );
   aLay->addWidget( aPixGrp );
   aLay->addWidget( nameBox );
   aLay->addWidget( myBriefInfo );

@@ -108,7 +108,8 @@ class SMESHGUI_EXPORT SMESHGUI_MeshInfo : public QFrame
     iSingle = 1,
     iTotal  = iSingle,
     iLinear,
-    iQuadratic
+    iQuadratic,
+    iBiQuadratic
   };
 
   typedef QList<QWidget*> wlist;

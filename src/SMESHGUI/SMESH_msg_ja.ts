@@ -2012,6 +2012,10 @@
       <translation>二次</translation>
     </message>
     <message>
+        <source>SMESH_MESHINFO_ORDER3</source>
+        <translation type="unfinished">Bi-Quadratic</translation>
+    </message>
+    <message>
       <source>SMESH_MESHINFO_HEXAPRISM</source>
       <translation>六角形プリズム</translation>
     </message>
@@ -6717,6 +6721,10 @@
     <message>
       <source>QUADRATIC_LAB</source>
       <translation>二次</translation>
+    </message>
+    <message>
+        <source>BI_QUADRATIC_LAB</source>
+        <translation type="unfinished">Bi-Quadratic</translation>
     </message>
     <message>
       <source>0D_LAB</source>

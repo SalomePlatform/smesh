@@ -63,15 +63,15 @@ SMESHGUI_MeshInfosBox::SMESHGUI_MeshInfosBox(const bool full, QWidget* theParent
   my0DElem(0),
   myBall(0),
   myNbEdge(0), myNbLinEdge(0), myNbQuadEdge(0),
-  myNbTrai(0), myNbLinTrai(0), myNbQuadTrai(0),
-  myNbQuad(0), myNbLinQuad(0), myNbQuadQuad(0),
-  myNbFace(0), myNbLinFace(0), myNbQuadFace(0),
+  myNbTrai(0), myNbLinTrai(0), myNbQuadTrai(0), myNbBiQuadTrai(0),
+  myNbQuad(0), myNbLinQuad(0), myNbQuadQuad(0), myNbBiQuadQuad(0),
+  myNbFace(0), myNbLinFace(0), myNbQuadFace(0), myNbBiQuadFace(0),
   myNbPolyg(0),
-  myNbHexa(0), myNbLinHexa(0), myNbQuadHexa(0),
+  myNbHexa(0), myNbLinHexa(0), myNbQuadHexa(0), myNbBiQuadHexa(0),
   myNbTetra(0),myNbLinTetra(0),myNbQuadTetra(0),
   myNbPyra(0), myNbLinPyra(0), myNbQuadPyra(0),
   myNbPrism(0),myNbLinPrism(0), myNbQuadPrism(0),
-  myNbVolum(0), myNbLinVolum(0), myNbQuadVolum(0),
+  myNbVolum(0), myNbLinVolum(0), myNbQuadVolum(0), myNbBiQuadVolum(0),
   myNbHexaPrism(0),
   myNbPolyh(0)
 {
@@ -101,6 +101,10 @@ SMESHGUI_MeshInfosBox::SMESHGUI_MeshInfosBox(const bool full, QWidget* theParent
   lab = new QLabel(tr("SMESH_MESHINFO_ORDER2"), this );
   lab->setMinimumWidth(100); lab->setFont( italic );
   l->addWidget( lab, row, 3 );
+  // --
+  lab = new QLabel(tr("SMESH_MESHINFO_ORDER3"), this );
+  lab->setMinimumWidth(100); lab->setFont( italic );
+  l->addWidget( lab, row, 4 );
 
   if ( myFull )
   {
@@ -163,44 +167,53 @@ SMESHGUI_MeshInfosBox::SMESHGUI_MeshInfosBox(const bool full, QWidget* theParent
     // --
     lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_FACES")), this);
     lab->setFont( bold );
-    l->addWidget( lab,           row, 0 );
+    l->addWidget( lab,            row, 0 );
     // --
-    myNbFace     = new QLabel( this );
-    l->addWidget( myNbFace,      row, 1 );
+    myNbFace       = new QLabel( this );
+    l->addWidget( myNbFace,       row, 1 );
     // --
-    myNbLinFace  = new QLabel( this );
-    l->addWidget( myNbLinFace,   row, 2 );
+    myNbLinFace    = new QLabel( this );
+    l->addWidget( myNbLinFace,    row,  2 );
     // --
-    myNbQuadFace = new QLabel( this );
-    l->addWidget( myNbQuadFace,  row, 3 );
+    myNbQuadFace   = new QLabel( this );
+    l->addWidget( myNbQuadFace,   row, 3 );
+    // --
+    myNbBiQuadFace = new QLabel( this );
+    l->addWidget( myNbBiQuadFace, row, 4 );
     // --
     row++;                       // increment row count
     // ... triangles
     lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_TRIANGLES")), this );
-    l->addWidget( lab,           row, 0 );
+    l->addWidget( lab,            row, 0 );
     // --
-    myNbTrai     = new QLabel( this );
-    l->addWidget( myNbTrai,      row, 1 );
+    myNbTrai       = new QLabel( this );
+    l->addWidget( myNbTrai,       row, 1 );
     // --
-    myNbLinTrai  = new QLabel( this );
-    l->addWidget( myNbLinTrai,   row, 2 );
+    myNbLinTrai    = new QLabel( this );
+    l->addWidget( myNbLinTrai,    row, 2 );
     // --
-    myNbQuadTrai = new QLabel( this );
-    l->addWidget( myNbQuadTrai,  row, 3 );
+    myNbQuadTrai   = new QLabel( this );
+    l->addWidget( myNbQuadTrai,   row, 3 );
+    // --
+    myNbBiQuadTrai = new QLabel( this );
+    l->addWidget( myNbBiQuadTrai, row, 4 );
     // --
     row++;                       // increment row count
     // ... quadrangles
     lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_QUADRANGLES")), this );
-    l->addWidget( lab,           row, 0 );
+    l->addWidget( lab,            row, 0 );
     // --
-    myNbQuad     = new QLabel( this );
-    l->addWidget( myNbQuad,      row, 1 );
+    myNbQuad       = new QLabel( this );
+    l->addWidget( myNbQuad,       row, 1 );
     // --
-    myNbLinQuad  = new QLabel( this );
-    l->addWidget( myNbLinQuad,   row, 2 );
+    myNbLinQuad    = new QLabel( this );
+    l->addWidget( myNbLinQuad,    row, 2 );
     // --
-    myNbQuadQuad = new QLabel( this );
-    l->addWidget( myNbQuadQuad,  row, 3 );
+    myNbQuadQuad   = new QLabel( this );
+    l->addWidget( myNbQuadQuad,   row, 3 );
+    // --
+    myNbBiQuadQuad = new QLabel( this );
+    l->addWidget( myNbBiQuadQuad, row, 4 );
     // --
     row++;                       // increment row count
     // ... poligones
@@ -216,16 +229,19 @@ SMESHGUI_MeshInfosBox::SMESHGUI_MeshInfosBox(const bool full, QWidget* theParent
     // --
     lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_VOLUMES")), this);
     lab->setFont( bold );
-    l->addWidget( lab,           row, 0 );
+    l->addWidget( lab,             row, 0 );
     // --
-    myNbVolum     = new QLabel( this );
-    l->addWidget( myNbVolum,     row, 1 );
+    myNbVolum       = new QLabel( this );
+    l->addWidget( myNbVolum,       row, 1 );
     // --
-    myNbLinVolum  = new QLabel( this );
-    l->addWidget( myNbLinVolum,  row, 2 );
+    myNbLinVolum    = new QLabel( this );
+    l->addWidget( myNbLinVolum,    row, 2 );
     // --
-    myNbQuadVolum = new QLabel( this );
-    l->addWidget( myNbQuadVolum, row, 3 );
+    myNbQuadVolum   = new QLabel( this );
+    l->addWidget( myNbQuadVolum,   row, 3 );
+    // --
+    myNbBiQuadVolum = new QLabel( this );
+    l->addWidget( myNbBiQuadVolum, row, 4 );
     // --
     row++;                       // increment row count
     // ... tetras
@@ -244,16 +260,19 @@ SMESHGUI_MeshInfosBox::SMESHGUI_MeshInfosBox(const bool full, QWidget* theParent
     row++;                       // increment row count
     // ... hexas
     lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_HEXAS")), this );
-    l->addWidget( lab,           row, 0 );
+    l->addWidget( lab,            row, 0 );
     // --
-    myNbHexa      = new QLabel( this );
-    l->addWidget( myNbHexa,      row, 1 );
+    myNbHexa       = new QLabel( this );
+    l->addWidget( myNbHexa,       row, 1 );
     // --
-    myNbLinHexa   = new QLabel( this );
-    l->addWidget( myNbLinHexa,   row, 2 );
+    myNbLinHexa    = new QLabel( this );
+    l->addWidget( myNbLinHexa,    row, 2 );
     // --
-    myNbQuadHexa  = new QLabel( this );
-    l->addWidget( myNbQuadHexa,  row, 3 );
+    myNbQuadHexa   = new QLabel( this );
+    l->addWidget( myNbQuadHexa,   row, 3 );
+    // --
+    myNbBiQuadHexa = new QLabel( this );
+    l->addWidget( myNbBiQuadHexa, row, 4 );
     // --
     row++;                       // increment row count
     // ... pyras
@@ -349,31 +368,37 @@ SMESHGUI_MeshInfosBox::SMESHGUI_MeshInfosBox(const bool full, QWidget* theParent
     row = l->rowCount();         // retrieve current row count
     // --
     lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_FACES")), this);
-    l->addWidget( lab,           row, 0 );
+    l->addWidget( lab,            row, 0 );
     // --
-    myNbFace      = new QLabel( this );
-    l->addWidget( myNbFace,      row, 1 );
+    myNbFace       = new QLabel( this );
+    l->addWidget( myNbFace,       row, 1 );
     // --
-    myNbLinFace   = new QLabel( this );
-    l->addWidget( myNbLinFace,   row, 2 );
+    myNbLinFace    = new QLabel( this );
+    l->addWidget( myNbLinFace,    row, 2 );
     // --
-    myNbQuadFace  = new QLabel( this );
-    l->addWidget( myNbQuadFace,  row, 3 );
+    myNbQuadFace   = new QLabel( this );
+    l->addWidget( myNbQuadFace,   row, 3 );
+    // --
+    myNbBiQuadFace = new QLabel( this );
+    l->addWidget( myNbBiQuadFace, row, 4 );
 
     // volumes
     row = l->rowCount();         // retrieve current row count
     // --
     lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_VOLUMES")), this);
-    l->addWidget( lab,           row, 0 );
+    l->addWidget( lab,             row, 0 );
     // --
-    myNbVolum     = new QLabel( this );
-    l->addWidget( myNbVolum,     row, 1 );
+    myNbVolum       = new QLabel( this );
+    l->addWidget( myNbVolum,       row, 1 );
     // --
-    myNbLinVolum  = new QLabel( this );
-    l->addWidget( myNbLinVolum,  row, 2 );
+    myNbLinVolum    = new QLabel( this );
+    l->addWidget( myNbLinVolum,    row, 2 );
     // --
-    myNbQuadVolum = new QLabel( this );
-    l->addWidget( myNbQuadVolum, row, 3 );
+    myNbQuadVolum   = new QLabel( this );
+    l->addWidget( myNbQuadVolum,   row, 3 );
+    // --
+    myNbBiQuadVolum = new QLabel( this );
+    l->addWidget( myNbBiQuadVolum, row, 4 );
   }
 }
 
@@ -386,89 +411,90 @@ SMESHGUI_MeshInfosBox::SMESHGUI_MeshInfosBox(const bool full, QWidget* theParent
 void SMESHGUI_MeshInfosBox::SetMeshInfo(const SMESH::long_array& theInfo)
 {
   // nodes
-  myNbNode     ->setText( QString("%1").arg( theInfo[SMDSEntity_Node] ));
+  myNbNode       ->setText( QString("%1").arg( theInfo[SMDSEntity_Node] ));
 
   //0D elements
-  my0DElem     ->setText( QString("%1").arg( theInfo[SMDSEntity_0D] ));
+  my0DElem       ->setText( QString("%1").arg( theInfo[SMDSEntity_0D] ));
 
   //balls
-  myBall       ->setText( QString("%1").arg( theInfo[SMDSEntity_Ball] ));
+  myBall         ->setText( QString("%1").arg( theInfo[SMDSEntity_Ball] ));
 
   // edges
-  myNbEdge     ->setText( QString("%1").arg( theInfo[SMDSEntity_Edge] +
-                                             theInfo[SMDSEntity_Quad_Edge] ));
-  myNbLinEdge  ->setText( QString("%1").arg( theInfo[SMDSEntity_Edge] ));
-  myNbQuadEdge ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Edge] ));
+  myNbEdge       ->setText( QString("%1").arg( theInfo[SMDSEntity_Edge] +
+                                               theInfo[SMDSEntity_Quad_Edge] ));
+  myNbLinEdge    ->setText( QString("%1").arg( theInfo[SMDSEntity_Edge] ));
+  myNbQuadEdge   ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Edge] ));
 
   // faces
-  myNbFace     ->setText( QString("%1").arg( theInfo[SMDSEntity_Triangle] +
-                                             theInfo[SMDSEntity_Quad_Triangle] +
-                                             theInfo[SMDSEntity_BiQuad_Triangle] +
-                                             theInfo[SMDSEntity_Quadrangle] +
-                                             theInfo[SMDSEntity_Quad_Quadrangle] +
-                                             theInfo[SMDSEntity_BiQuad_Quadrangle] +
-                                             theInfo[SMDSEntity_Polygon] ));
-  myNbLinFace  ->setText( QString("%1").arg( theInfo[SMDSEntity_Triangle] +
-                                             theInfo[SMDSEntity_Quadrangle] +
-                                             theInfo[SMDSEntity_Polygon] ));
-  myNbQuadFace ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Triangle] +
-                                             theInfo[SMDSEntity_Quad_Quadrangle] +
-                                             theInfo[SMDSEntity_BiQuad_Quadrangle] ));
+  myNbFace       ->setText( QString("%1").arg( theInfo[SMDSEntity_Triangle] +
+                                               theInfo[SMDSEntity_Quad_Triangle] +
+                                               theInfo[SMDSEntity_BiQuad_Triangle] +
+                                               theInfo[SMDSEntity_Quadrangle] +
+                                               theInfo[SMDSEntity_Quad_Quadrangle] +
+                                               theInfo[SMDSEntity_BiQuad_Quadrangle] +
+                                               theInfo[SMDSEntity_Polygon] ));
+  myNbLinFace    ->setText( QString("%1").arg( theInfo[SMDSEntity_Triangle] +
+                                               theInfo[SMDSEntity_Quadrangle] +
+                                               theInfo[SMDSEntity_Polygon] ));
+  myNbQuadFace   ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Triangle] +
+                                               theInfo[SMDSEntity_Quad_Quadrangle] ));
+  myNbBiQuadFace ->setText( QString("%1").arg( theInfo[SMDSEntity_BiQuad_Triangle] +
+                                               theInfo[SMDSEntity_BiQuad_Quadrangle] ));
 
   // volumes
-  myNbVolum    ->setText( QString("%1").arg( theInfo[SMDSEntity_Tetra] +
-                                             theInfo[SMDSEntity_Quad_Tetra] +
-                                             theInfo[SMDSEntity_Pyramid] +
-                                             theInfo[SMDSEntity_Quad_Pyramid] +
-                                             theInfo[SMDSEntity_Hexa] +
-                                             theInfo[SMDSEntity_Quad_Hexa] +
-                                             theInfo[SMDSEntity_TriQuad_Hexa] +
-                                             theInfo[SMDSEntity_Penta] +
-                                             theInfo[SMDSEntity_Quad_Penta] +
-                                             theInfo[SMDSEntity_Hexagonal_Prism] +
-                                             theInfo[SMDSEntity_Polyhedra] ));
-  myNbLinVolum ->setText( QString("%1").arg( theInfo[SMDSEntity_Tetra] +
-                                             theInfo[SMDSEntity_Pyramid] +
-                                             theInfo[SMDSEntity_Hexa] +
-                                             theInfo[SMDSEntity_Penta] +
-                                             theInfo[SMDSEntity_Polyhedra] ));
-  myNbQuadVolum->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Tetra] +
-                                             theInfo[SMDSEntity_Quad_Pyramid] +
-                                             theInfo[SMDSEntity_Quad_Hexa] +
-                                             theInfo[SMDSEntity_TriQuad_Hexa] +
-                                             theInfo[SMDSEntity_Quad_Penta] ));
+  myNbVolum      ->setText( QString("%1").arg( theInfo[SMDSEntity_Tetra] +
+                                               theInfo[SMDSEntity_Quad_Tetra] +
+                                               theInfo[SMDSEntity_Pyramid] +
+                                               theInfo[SMDSEntity_Quad_Pyramid] +
+                                               theInfo[SMDSEntity_Hexa] +
+                                               theInfo[SMDSEntity_Quad_Hexa] +
+                                               theInfo[SMDSEntity_TriQuad_Hexa] +
+                                               theInfo[SMDSEntity_Penta] +
+                                               theInfo[SMDSEntity_Quad_Penta] +
+                                               theInfo[SMDSEntity_Hexagonal_Prism] +
+                                               theInfo[SMDSEntity_Polyhedra] ));
+  myNbLinVolum   ->setText( QString("%1").arg( theInfo[SMDSEntity_Tetra] +
+                                               theInfo[SMDSEntity_Pyramid] +
+                                               theInfo[SMDSEntity_Hexa] +
+                                               theInfo[SMDSEntity_Penta] +
+                                               theInfo[SMDSEntity_Polyhedra] ));
+  myNbQuadVolum  ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Tetra] +
+                                               theInfo[SMDSEntity_Quad_Pyramid] +
+                                               theInfo[SMDSEntity_Quad_Hexa] +
+                                               theInfo[SMDSEntity_Quad_Penta] ));
+  myNbBiQuadVolum->setText( QString("%1").arg( theInfo[SMDSEntity_TriQuad_Hexa] ));
 
   if ( myFull )
   {
     // triangles
-    myNbTrai     ->setText( QString("%1").arg( theInfo[SMDSEntity_Triangle] +
-                                               theInfo[SMDSEntity_Quad_Triangle] +
-                                               theInfo[SMDSEntity_BiQuad_Triangle] ));
-    myNbLinTrai  ->setText( QString("%1").arg( theInfo[SMDSEntity_Triangle] ));
-    myNbQuadTrai ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Triangle] +
-                                               theInfo[SMDSEntity_BiQuad_Triangle] ));
+    myNbTrai       ->setText( QString("%1").arg( theInfo[SMDSEntity_Triangle] +
+                                                 theInfo[SMDSEntity_Quad_Triangle] +
+                                                 theInfo[SMDSEntity_BiQuad_Triangle] ));
+    myNbLinTrai    ->setText( QString("%1").arg( theInfo[SMDSEntity_Triangle] ));
+    myNbQuadTrai   ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Triangle] ));
+    myNbBiQuadTrai ->setText( QString("%1").arg( theInfo[SMDSEntity_BiQuad_Triangle] ));
     // quadrangles
-    myNbQuad     ->setText( QString("%1").arg( theInfo[SMDSEntity_Quadrangle] +
-                                               theInfo[SMDSEntity_Quad_Quadrangle] +
-                                               theInfo[SMDSEntity_BiQuad_Quadrangle] ));
-    myNbLinQuad  ->setText( QString("%1").arg( theInfo[SMDSEntity_Quadrangle] ));
-    myNbQuadQuad ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Quadrangle] +
-                                               theInfo[SMDSEntity_BiQuad_Quadrangle]));
+    myNbQuad       ->setText( QString("%1").arg( theInfo[SMDSEntity_Quadrangle] +
+                                                 theInfo[SMDSEntity_Quad_Quadrangle] +
+                                                 theInfo[SMDSEntity_BiQuad_Quadrangle] ));
+    myNbLinQuad    ->setText( QString("%1").arg( theInfo[SMDSEntity_Quadrangle] ));
+    myNbQuadQuad   ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Quadrangle] ));
+    myNbBiQuadQuad ->setText( QString("%1").arg( theInfo[SMDSEntity_BiQuad_Quadrangle]));
     // poligones
-    myNbPolyg    ->setText( QString("%1").arg( theInfo[SMDSEntity_Polygon] ));
+    myNbPolyg      ->setText( QString("%1").arg( theInfo[SMDSEntity_Polygon] ));
 
     // tetras
-    myNbTetra    ->setText( QString("%1").arg( theInfo[SMDSEntity_Tetra] +
-                                               theInfo[SMDSEntity_Quad_Tetra] ));
-    myNbLinTetra ->setText( QString("%1").arg( theInfo[SMDSEntity_Tetra] ));
-    myNbQuadTetra->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Tetra] ));
+    myNbTetra      ->setText( QString("%1").arg( theInfo[SMDSEntity_Tetra] +
+                                                 theInfo[SMDSEntity_Quad_Tetra] ));
+    myNbLinTetra   ->setText( QString("%1").arg( theInfo[SMDSEntity_Tetra] ));
+    myNbQuadTetra  ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Tetra] ));
     // hexas
-    myNbHexa     ->setText( QString("%1").arg( theInfo[SMDSEntity_Hexa] +
-                                               theInfo[SMDSEntity_TriQuad_Hexa],
-                                               theInfo[SMDSEntity_Quad_Hexa] ));
-    myNbLinHexa  ->setText( QString("%1").arg( theInfo[SMDSEntity_Hexa] ));
-    myNbQuadHexa ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Hexa] +
-                                               theInfo[SMDSEntity_TriQuad_Hexa] ));
+    myNbHexa       ->setText( QString("%1").arg( theInfo[SMDSEntity_Hexa] +
+                                                 theInfo[SMDSEntity_TriQuad_Hexa],
+                                                 theInfo[SMDSEntity_Quad_Hexa] ));
+    myNbLinHexa    ->setText( QString("%1").arg( theInfo[SMDSEntity_Hexa] ));
+    myNbQuadHexa   ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Hexa] ));
+    myNbBiQuadHexa ->setText( QString("%1").arg( theInfo[SMDSEntity_TriQuad_Hexa] ));
     // pyras
     myNbPyra     ->setText( QString("%1").arg( theInfo[SMDSEntity_Pyramid] +
                                                theInfo[SMDSEntity_Quad_Pyramid] ));
