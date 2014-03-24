@@ -7579,7 +7579,7 @@
       <translation>サイズ</translation>
     </message>
     <message>
-      <source>ORIENTATION_SCALE</source>
+      <source>SCALE_FACTOR</source>
       <translation>スケール:</translation>
     </message>
     <message>

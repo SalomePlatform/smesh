@@ -230,7 +230,7 @@ namespace SMESH
       for (int i = 0, iEnd = theIds.size(); i < iEnd; i++){
         anIds->InsertId(0,theIds[i]);
         vtkIdType anId = myBallPolyData->InsertNextCell(VTK_POLY_VERTEX,anIds);
-        double d = theDiameter;
+        double d = theDiameter * theActor->GetBallScale();
         aScalars->SetTuple(anId,&d);
         anIds->Reset();
       }

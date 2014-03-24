@@ -159,6 +159,8 @@ later sessions with this module.
   - <b>Size of 0D elements</b> - specifies default size of 0D elements.
   - <b>Size of ball elements</b> - specifies default size of discrete
     elements (balls).
+  - <b>Scale factor of ball elements</b> - specifies default scale factor of discrete
+    elements (balls).
   - <b>Line width</b> - allows to define the width of 1D elements (edges).
   - <b>Outline width</b> - allows to define the width of borders of
     2D and 3D elements (shown in the Shading mode).

@@ -143,10 +143,11 @@ SMESH_ActorDef::SMESH_ActorDef()
   if ( mgr && mgr->booleanValue( "SMESH", "use_precision", false ) )
     myControlsPrecision = mgr->integerValue( "SMESH", "controls_precision", -1);
 
-  double aElem0DSize   = SMESH::GetFloat("SMESH:elem0d_size",5);
-  double aBallElemSize = SMESH::GetFloat("SMESH:ball_elem_size",10);
-  double aLineWidth    = SMESH::GetFloat("SMESH:element_width",1);
-  double aOutlineWidth = SMESH::GetFloat("SMESH:outline_width",1);
+  double aElem0DSize    = SMESH::GetFloat("SMESH:elem0d_size",5);
+  double aBallElemSize  = SMESH::GetFloat("SMESH:ball_elem_size",10);
+  double aBallElemScale = SMESH::GetFloat("SMESH:ball_elem_scale",1);
+  double aLineWidth     = SMESH::GetFloat("SMESH:element_width",1);
+  double aOutlineWidth  = SMESH::GetFloat("SMESH:outline_width",1);
 
   SMESH::LabelFont aFamilyNd = SMESH::FntTimes;
   bool aBoldNd    = true;
@@ -566,6 +567,7 @@ SMESH_ActorDef::SMESH_ActorDef()
 #endif
 
   SetBallSize(aBallElemSize);
+  SetBallScale(aBallElemScale);
   Set0DSize(aElem0DSize);
 }
 
@@ -2104,6 +2106,16 @@ void SMESH_ActorDef::SetBallSize(double theVal){
 
 double SMESH_ActorDef::GetBallSize(){
   return myBallProp->GetPointSize();
+}
+
+int SMESH_ActorDef::GetBallScale()
+{
+  return myBallActor->GetBallScale();
+}
+
+void SMESH_ActorDef::SetBallScale( int theVal )
+{
+  myBallActor->SetBallScale( theVal );
 }
 
 int SMESH_ActorDef::GetObjDimension( const int theObjId )

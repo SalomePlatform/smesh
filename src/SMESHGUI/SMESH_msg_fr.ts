@@ -4568,6 +4568,10 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
         <translation>Taille des éléments particulaires</translation>
     </message>
     <message>
+        <source>PREF_BALL_SCALE</source>
+        <translation>Facteur d&apos;échelle des éléments particulaires</translation>
+    </message>
+    <message>
         <source>PREF_WIDTH</source>
         <translation>Epaisseur de ligne</translation>
     </message>
@@ -7701,7 +7705,7 @@ en raison de leurs types incompatibles:
         <translation>Taille:</translation>
     </message>
     <message>
-        <source>ORIENTATION_SCALE</source>
+        <source>SCALE_FACTOR</source>
         <translation>Echelle:</translation>
     </message>
     <message>

@@ -83,6 +83,8 @@ public:
   QColor            ballColor() const;
   void              setBallSize( int );
   int               ballSize() const;
+  void              setBallScale( int );
+  int               ballScale() const;
 
   void              setOrientationColor( const QColor& );
   QColor            orientationColor() const;
@@ -132,6 +134,7 @@ private:
   // - balls
   QtxColorButton*         myBallColor;
   QtxIntSpinBox*          myBallSize;
+  QtxIntSpinBox*          myBallScale;
   // - orientation vectors
   QtxColorButton*         myOrientationColor;
   QtxIntSpinBox*          myOrientationSize;

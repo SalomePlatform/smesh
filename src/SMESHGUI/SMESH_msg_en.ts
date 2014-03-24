@@ -4578,6 +4578,10 @@ Please, create VTK viewer and try again</translation>
         <translation>Size of ball elements</translation>
     </message>
     <message>
+        <source>PREF_BALL_SCALE</source>
+        <translation>Scale factor of ball elements</translation>
+    </message>
+    <message>
         <source>PREF_WIDTH</source>
         <translation>Line width</translation>
     </message>
@@ -7776,7 +7780,7 @@ as they are of improper type:
         <translation>Size:</translation>
     </message>
     <message>
-        <source>ORIENTATION_SCALE</source>
+        <source>SCALE_FACTOR</source>
         <translation>Scale:</translation>
     </message>
     <message>

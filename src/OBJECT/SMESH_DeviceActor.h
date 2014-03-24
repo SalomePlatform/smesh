@@ -148,11 +148,13 @@ class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
 
   void SetMarkerEnabled( bool );
   void SetBallEnabled( bool );
+  void SetBallScale( int );
   void SetMarkerStd( VTK::MarkerType, VTK::MarkerScale );
   void SetMarkerTexture( int, VTK::MarkerTexture );
   VTK::MarkerType GetMarkerType();
   VTK::MarkerScale GetMarkerScale();
   int GetMarkerTexture();
+  int GetBallScale();
 
  protected:
   void Init(TVisualObjPtr theVisualObj, vtkImplicitBoolean* theImplicitBoolean);

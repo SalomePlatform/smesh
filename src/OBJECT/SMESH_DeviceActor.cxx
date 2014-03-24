@@ -960,6 +960,16 @@ void SMESH_DeviceActor::SetBallEnabled( bool theBallEnabled ) {
 }
 
 /*!
+ * Set point marker scale factor
+ * \param theBallScale integer value which specifies a scale factor of ball element
+ */
+void SMESH_DeviceActor::SetBallScale( int theBallScale )
+{
+  myMapper->SetBallScale( theBallScale );
+  myMapper->Modified();
+}
+
+/*!
  * Set standard point marker
  * \param theMarkerType type of the marker
  */
@@ -1003,6 +1013,15 @@ VTK::MarkerScale SMESH_DeviceActor::GetMarkerScale()
 int SMESH_DeviceActor::GetMarkerTexture()
 {
   return myMapper->GetMarkerTexture();
+}
+
+/*!
+ * Get scale factor of ball element
+ * \return scale factor of ball element
+ */
+int SMESH_DeviceActor::GetBallScale()
+{
+  return myMapper->GetBallScale();
 }
 
 void SMESH_DeviceActor::SetCoincident3DAllowed(bool theFlag) {

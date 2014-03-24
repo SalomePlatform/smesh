@@ -41,6 +41,7 @@ shown.
 - \b Balls:
   - \b Color - color of discrete ball elements.
   - \b Size - size of discrete ball elements.
+  - \b Scale - scale factor of discrete ball elements.
 - <b>Orientation vectors</b>:
   - \b Color - color of orientation vectors.
   - \b Scale - size of orientation vectors.

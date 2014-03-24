@@ -1316,6 +1316,7 @@ namespace
         int deltaF = 0, deltaV = 0;
         int elem0dSize   = 1;
         int ballSize     = 1;
+        int ballScale    = 1;
         int edgeWidth    = 1;
         int outlineWidth = 1;
         double shrinkCoef = 0.0;
@@ -1360,6 +1361,7 @@ namespace
             anActor->GetBallColor( color[0], color[1], color[2] );
             ballColor.setRgbF( color[0], color[1], color[2] );
             ballSize = qMax( (int)anActor->GetBallSize(), 1 ); // minimum allowed size is 1
+            ballScale = qMax( (int)anActor->GetBallScale(), 1 ); // minimum allowed size is 1
             // outlines: color
             anActor->GetOutlineColor( color[0], color[1], color[2] );
             outlineColor.setRgbF( color[0], color[1], color[2] );
@@ -1416,6 +1418,7 @@ namespace
         // balls: color, size
         dlg.setBallColor( ballColor );
         dlg.setBallSize( ballSize );
+        dlg.setBallScale( ballScale );
         // orientation: color, scale, 3d flag
         dlg.setOrientationColor( orientationColor );
         dlg.setOrientationSize( int( orientationScale * 100. ) );
@@ -1442,6 +1445,7 @@ namespace
           elem0dSize       = dlg.elem0dSize();
           ballColor        = dlg.ballColor();
           ballSize         = dlg.ballSize();
+          ballScale        = dlg.ballScale();
           orientationColor = dlg.orientationColor();
           orientationScale = dlg.orientationSize() / 100.;
           orientation3d    = dlg.orientation3d();
@@ -1485,6 +1489,7 @@ namespace
             // balls: color, size
             anActor->SetBallColor( ballColor.redF(), ballColor.greenF(), ballColor.blueF() );
             anActor->SetBallSize( ballSize );
+            anActor->SetBallScale( ballScale );
             // orientation: color, scale, 3d flag
             anActor->SetFacesOrientationColor( orientationColor.redF(), orientationColor.greenF(), orientationColor.blueF() );
             anActor->SetFacesOrientationScale( orientationScale );
@@ -5053,6 +5058,8 @@ void SMESHGUI::createPreferences()
                              LightApp_Preferences::IntSpin, "SMESH", "elem0d_size");
   int ballSize = addPreference(tr("PREF_BALL_SIZE"), elemGroup,
                              LightApp_Preferences::IntSpin, "SMESH", "ball_elem_size");
+  int ballScale = addPreference(tr("PREF_BALL_SCALE"), elemGroup,
+                             LightApp_Preferences::IntSpin, "SMESH", "ball_elem_scale");
   int elemW  = addPreference(tr("PREF_WIDTH"), elemGroup,
                              LightApp_Preferences::IntSpin, "SMESH", "element_width");
   int outW  = addPreference(tr("PREF_OUTLINE_WIDTH"), elemGroup,
@@ -5065,6 +5072,9 @@ void SMESHGUI::createPreferences()
 
   setPreferenceProperty( ballSize, "min", 1 );
   setPreferenceProperty( ballSize, "max", 10 );
+
+  setPreferenceProperty( ballScale, "min", 1 );
+  setPreferenceProperty( ballScale, "max", 10 );
 
   setPreferenceProperty( elemW, "min", 1 );
   setPreferenceProperty( elemW, "max", 5 );
@@ -5738,6 +5748,7 @@ void SMESHGUI::storeVisualParameters (int savePoint)
                   sizeStr << QString::number((int)aSmeshActor->Get0DSize());
                   sizeStr << "ball";
                   sizeStr << QString::number((int)aSmeshActor->GetBallSize());
+                  sizeStr << QString::number((int)aSmeshActor->GetBallScale());
                   sizeStr << "shrink";
                   sizeStr << QString::number(aSmeshActor->GetShrinkFactor());
                   sizeStr << "orientation";
@@ -6322,6 +6333,7 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
               int outlineWidth = -1;
               int elem0dSize = -1;
               int ballSize = -1;
+              int ballScale = -1;
               double shrinkSize = -1;
               double orientationSize = -1;
               bool orientation3d = false;
@@ -6349,11 +6361,16 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
                   i++;
                 }
                 else if ( type == "ball" ) {
-                  // ball size is given as single integer value
+                  // balls are specified by two values: size:scale, where
+                  // - size - is a integer value specifying size
+                  // - scale - is a integer value specifying scale factor
                   if ( i+1 >= sizes.count() ) break;                    // format error
-                  int v = sizes[i+1].toInt( &bOk ); if ( !bOk ) break;  // format error
-                  ballSize = v;
-                  i++;
+                  int v1 = sizes[i+1].toInt( &bOk ); if ( !bOk ) break;  // format error
+                  if ( i+2 >= sizes.count() ) break;                          // format error
+                  int v2 = sizes[i+2].toInt( &bOk ); if ( !bOk ) break;       // format error
+                  ballSize = v1;
+                  ballScale = v2;
+                  i += 2;
                 }
                 else if ( type == "shrink" ) {
                   // shrink factor is given as single floating point value
@@ -6389,6 +6406,9 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
               // ball size
               if ( ballSize > 0 )
                 aSmeshActor->SetBallSize( ballSize );
+              // ball scale
+              if ( ballScale > 0 )
+                aSmeshActor->SetBallScale( ballScale );
               // shrink factor
               if ( shrinkSize > 0 )
                 aSmeshActor->SetShrinkFactor( shrinkSize );
