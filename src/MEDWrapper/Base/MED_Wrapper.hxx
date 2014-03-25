@@ -1002,14 +1002,14 @@ namespace MED
 
     template<class Y>
     SharedPtr(SharedPtr<Y> const & r):
-      boost::shared_ptr<TWrapper>(r,boost::detail::dynamic_cast_tag())
+      boost::shared_ptr<TWrapper>(boost::dynamic_pointer_cast<TWrapper,Y>(r))
     {}
 
     template<class Y>
     SharedPtr& 
     operator=(SharedPtr<Y> const & r)
     {
-      boost::shared_ptr<TWrapper>(r,boost::detail::dynamic_cast_tag()).swap(*this);
+      SharedPtr<TWrapper>(r).swap(*this);
       return *this;
     }
 

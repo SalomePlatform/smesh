@@ -48,7 +48,7 @@ namespace MED
     //! Construct the class by any specialisation of the class
     template<class Y>
     SharedPtr(SharedPtr<Y> const & r):
-      boost::shared_ptr<T>(r,boost::detail::dynamic_cast_tag())
+      boost::shared_ptr<T>(boost::dynamic_pointer_cast<T,Y>(r))
     {}
 
     //! Copy-constructor
@@ -56,7 +56,7 @@ namespace MED
     SharedPtr& 
     operator=(SharedPtr<Y> const & r)
     {
-      boost::shared_ptr<T>(r,boost::detail::dynamic_cast_tag()).swap(*this);
+      SharedPtr<T>(r).swap(*this);
       return *this;
     }
 
