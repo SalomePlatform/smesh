@@ -490,7 +490,7 @@ void SMESHGUI_MeshInfosBox::SetMeshInfo(const SMESH::long_array& theInfo)
     myNbQuadTetra  ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Tetra] ));
     // hexas
     myNbHexa       ->setText( QString("%1").arg( theInfo[SMDSEntity_Hexa] +
-                                                 theInfo[SMDSEntity_TriQuad_Hexa],
+                                                 theInfo[SMDSEntity_TriQuad_Hexa] +
                                                  theInfo[SMDSEntity_Quad_Hexa] ));
     myNbLinHexa    ->setText( QString("%1").arg( theInfo[SMDSEntity_Hexa] ));
     myNbQuadHexa   ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Hexa] ));
