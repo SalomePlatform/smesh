@@ -67,6 +67,7 @@ SET(SMESH_RESOURCES_FILES
   mesh_line_n.png
   mesh_line.png
   mesh_move_node.png
+  mesh_move_without_node.png
   mesh_octahedron.png
   mesh_orientation.png
   mesh.png

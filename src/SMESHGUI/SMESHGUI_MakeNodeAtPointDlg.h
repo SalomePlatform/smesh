@@ -32,10 +32,12 @@
 #include "SMESHGUI_Dialog.h"
 #include "SMESHGUI_SelectionOp.h"
 
+class QButtonGroup;
+class QCheckBox;
 class QGroupBox;
 class QLineEdit;
 class QPushButton;
-class QCheckBox;
+class QRadioButton;
 class SMESHGUI_SpinBox;
 class SMESHGUI_MeshEditPreview;
 class SMESHGUI_MakeNodeAtPointDlg;
@@ -70,8 +72,11 @@ private slots:
   void                           redisplayPreview();
   void                           onTextChange( const QString& );
   void                           onUpdateDestination();
+  void                           onDestCoordChanged();
 
 private:
+  int                           GetConstructorId();
+
   SMESHGUI_MakeNodeAtPointDlg*  myDlg;
 
   SUIT_SelectionFilter*         myFilter;
@@ -80,6 +85,7 @@ private:
   SMESH_Actor*                  myMeshActor;
   bool                          myNoPreview;
   bool                          myUpdateDestination;
+  bool                          myDestCoordChanged;
 };
 
 /*!
@@ -96,21 +102,29 @@ public:
 private:
   QWidget*                      createMainFrame( QWidget* );
 
-  QPushButton*                  myCoordBtn;
+  QWidget*                      myMainFrame;
+
+  QButtonGroup*                 myButtonGroup;
+  QRadioButton*                 myRButNodeToMove;
+  QRadioButton*                 myRButMoveWithoutNode;
+  QPushButton*                  myDestBtn;
   QPushButton*                  myUpdateBtn;
-  SMESHGUI_SpinBox*             myX;
-  SMESHGUI_SpinBox*             myY;
-  SMESHGUI_SpinBox*             myZ;
+  QGroupBox*                    myDestinationGrp;
   QGroupBox*                    myNodeToMoveGrp;
   QPushButton*                  myIdBtn;
   QLineEdit*                    myId;
   SMESHGUI_SpinBox*             myCurrentX;
   SMESHGUI_SpinBox*             myCurrentY;
   SMESHGUI_SpinBox*             myCurrentZ;
-  SMESHGUI_SpinBox*             myDX;
-  SMESHGUI_SpinBox*             myDY;
-  SMESHGUI_SpinBox*             myDZ;
-  QCheckBox*                    myAutoSearchChkBox;
+  SMESHGUI_SpinBox*             myDestinationX;
+  SMESHGUI_SpinBox*             myDestinationY;
+  SMESHGUI_SpinBox*             myDestinationZ;
+  QLabel*                       myDestDXLabel;
+  QLabel*                       myDestDYLabel;
+  QLabel*                       myDestDZLabel;
+  SMESHGUI_SpinBox*             myDestDX;
+  SMESHGUI_SpinBox*             myDestDY;
+  SMESHGUI_SpinBox*             myDestDZ;
   QCheckBox*                    myPreviewChkBox;
 
   QString                       myHelpFileName;
@@ -119,6 +133,7 @@ private:
 
 private slots:
   void                          ButtonToggled( bool );
+  void                          ConstructorsClicked( int );
 };
 
 #endif // SMESHGUI_MAKENODEATPOINTDLG_H

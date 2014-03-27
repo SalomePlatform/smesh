@@ -152,6 +152,10 @@
             <translation>mesh_move_node.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_MOVE_WITHOUT_NODE</source>
+            <translation>mesh_move_without_node.png</translation>
+        </message>
+        <message>
             <source>ICON_DLG_NODE</source>
             <translation>mesh_vertex.png</translation>
         </message>
