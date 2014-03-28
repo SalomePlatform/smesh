@@ -453,6 +453,8 @@ void SMESHGUI_SymmetryDlg::ConstructorsClicked (int constructorId)
   onDisplaySimulation(true);
 
   QApplication::instance()->processEvents();
+  myEditCurrentArgument->hide();
+  myEditCurrentArgument->show();
   updateGeometry();
   resize(100,100);
 }

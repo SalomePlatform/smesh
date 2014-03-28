@@ -141,6 +141,8 @@ private:
   QMap<int, QLineEdit*>               mySelEdit;
   QMap<int, QLabel*>                  mySelLbl;
 
+  QWidget*                            myMainFrame;
+
   QLineEdit*                          myName;
   QPushButton*                        myOpenBtn;
   QPushButton*                        myNewBtn;
