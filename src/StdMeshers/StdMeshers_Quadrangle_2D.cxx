@@ -5244,6 +5244,7 @@ FaceQuadStruct::Side& FaceQuadStruct::Side::operator=(const Side& otherSide)
         oSide->contacts[iOC].other_side = this;
       }
   }
+  return *this;
 }
 
 //================================================================================
@@ -5290,6 +5291,7 @@ bool FaceQuadStruct::Side::Reverse(bool keepGrid)
       grid->Reverse();
     }
   }
+  return (bool)grid;
 }
 
 //================================================================================

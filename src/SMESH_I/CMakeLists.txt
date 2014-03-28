@@ -80,6 +80,7 @@ SET(_link_LIBRARIES
   SMDS
   SMESHDS
   SMESHControls
+  MeshDriverMED
 )
 
 # --- headers ---
