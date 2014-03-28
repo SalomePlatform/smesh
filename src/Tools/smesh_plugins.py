@@ -24,6 +24,7 @@ import salome_pluginsmanager
 from spadderPlugin import runSpadderPlugin
 from meshcut_plugin import MeshCut
 from yamsplug_plugin import YamsLct
+from zcracks_plugin import ZcracksLct
 from MGCleanerplug_plugin import MGCleanerLct
 from blocFissure.ihm.fissureCoude_plugin import fissureCoudeDlg
 
@@ -46,3 +47,6 @@ salome_pluginsmanager.AddFunction('ReMesh with MGCleaner',
 salome_pluginsmanager.AddFunction('Meshed Pipe with a crack',
                                   'Create a mesh with blocFissure tool',
                                   fissureCoudeDlg)
+salome_pluginsmanager.AddFunction('Run Zcrack',
+                                  'Run Zcrack',
+                                  ZcracksLct)

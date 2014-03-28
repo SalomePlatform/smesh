@@ -1,9 +1,10 @@
-# Copyright (C) 2012-2014  EDF R&D
+# -*- coding: utf-8 -*-
+# Copyright (C) 2006-2013  EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
-# version 2.1 of the License, or (at your option) any later version.
+# version 2.1 of the License.
 #
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -17,23 +18,21 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-ADD_SUBDIRECTORY(MeshCut)
-ADD_SUBDIRECTORY(padder)
-ADD_SUBDIRECTORY(Verima)
-ADD_SUBDIRECTORY(blocFissure)
-ADD_SUBDIRECTORY(MacMesh)
+import SalomePyQt
+sgPyQt = SalomePyQt.SalomePyQt()
+import eficasSalome
 
-IF(SALOME_BUILD_GUI)
-  ADD_SUBDIRECTORY(MGCleanerPlug)
-  ADD_SUBDIRECTORY(YamsPlug)
-  ADD_SUBDIRECTORY(ZCracksPlug)
-ENDIF(SALOME_BUILD_GUI)
+class EficasForZcracks(eficasSalome.MyEficas):
+    """
+    """
+    def __init__(self, fichier = None, version = None):
+        eficasSalome.MyEficas.__init__(self, sgPyQt.getDesktop(),
+                                       "ZCRACKS",
+                                       fichier, version = version)
+        #sgPyQt.createView(custom_appli.widgetname, self)
 
-# scripts / static
-SET(plugin_SCRIPTS
-  smesh_plugins.py 
-)
 
-# --- rules ---
-
-SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS})
+def ZcracksLct(context):
+  
+  window=EficasForZcracks()
+  window.show()
