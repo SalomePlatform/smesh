@@ -47,6 +47,9 @@ salome_pluginsmanager.AddFunction('Meshed Pipe with a crack',
                                   'Create a mesh with blocFissure tool',
                                   fissureCoudeDlg)
 
+# ZCracks plugin requires the module EFICAS to be installed
+# thus it is first tested if this module is available before
+# adding the plugin to salome_pluginsmanager
 enable_zcracks = True
 try:
   import eficasSalome
