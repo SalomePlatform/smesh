@@ -384,9 +384,12 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
         #print "init_smesh"
         self.SetCurrentStudy(theStudy,geompyD)
 
-    ## Creates an empty Mesh. This mesh can have an underlying geometry.
-    #  @param obj the Geometrical object on which the mesh is built. If not defined,
-    #             the mesh will have no underlying geometry.
+    ## Creates a mesh. This can be either an empty mesh, possibly having an underlying geometry,
+    #  or a mesh wrapping a CORBA mesh given as a parameter.
+    #  @param obj either (1) a CORBA mesh (SMESH._objref_SMESH_Mesh) got e.g. by calling
+    #         salome.myStudy.FindObjectID("0:1:2:3").GetObject() or
+    #         (2) a Geometrical object for meshing or
+    #         (3) none.
     #  @param name the name for the new mesh.
     #  @return an instance of Mesh class.
     #  @ingroup l2_construct
