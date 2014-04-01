@@ -226,6 +226,7 @@ public:
 protected:
   void             contextMenuEvent( QContextMenuEvent* e );
   void             information( const QList<long>& );
+  void             nodeInfo( const SMDS_MeshNode*, int, int, QTreeWidgetItem* );
   void             clearInternal();
 
 private slots:
