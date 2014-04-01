@@ -759,10 +759,10 @@ SMESH_ElementSearcherImpl::FindClosestTo( const gp_Pnt&       point,
     {
       gp_Pnt boxCenter = 0.5 * ( _ebbTree->getBox()->CornerMin() +
                                  _ebbTree->getBox()->CornerMax() );
-      double radius;
+      double radius = -1;
       if ( _ebbTree->getBox()->IsOut( point.XYZ() ))
         radius = point.Distance( boxCenter ) - 0.5 * _ebbTree->maxSize();
-      else
+      if ( radius < 0 )
         radius = _ebbTree->maxSize() / pow( 2., _ebbTree->getHeight()) / 2;
       while ( suspectElems.empty() )
       {
