@@ -22,6 +22,12 @@
 
 #include "DriverSTL_W_SMDS_Mesh.h"
 
+#ifdef WIN32
+#define NOMINMAX
+#endif
+
+#include <Basics_Utils.hxx>
+
 #include "SMDS_FaceOfNodes.hxx"
 #include "SMDS_IteratorOnIterators.hxx"
 #include "SMDS_Mesh.hxx"
@@ -31,8 +37,6 @@
 #include "SMDS_VolumeTool.hxx"
 #include "SMESH_File.hxx"
 #include "SMESH_TypeDefs.hxx"
-
-#include <Basics_Utils.hxx>
 
 //#include "utilities.h"
 

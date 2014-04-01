@@ -171,7 +171,7 @@ long SMESH_File::size()
   if ( _size >= 0 ) return _size; // size of an open file
 
   boost::system::error_code err;
-  uintmax_t size = boofs::file_size( _name, err );
+  boost::uintmax_t size = boofs::file_size( _name, err );
   _error = err.message();
 
   return err ? -1 : (long) size;
