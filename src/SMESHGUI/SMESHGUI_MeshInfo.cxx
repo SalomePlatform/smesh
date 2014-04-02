@@ -1865,7 +1865,7 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
             const SMDS_MeshNode** aNodeIds = vtool.GetFaceNodes( face_id );
             const int nbNodes = vtool.NbFaceNodes( face_id );
             for( int node_id = 0; node_id < nbNodes; node_id++ ) {
-              const SMDS_MeshNode* node = actor()->GetObject()->GetMesh()->FindNode( aNodeIds[node_id]->GetID() );
+              const SMDS_MeshNode* node = aNodeIds[node_id];
               nodeInfo( node, uniqueNodes.indexOf(node) + 1, aVtkVolume->NbUniqueNodes(), faceItem );
             }
           }
