@@ -74,7 +74,6 @@ SET(_link_LIBRARIES
   ${GEOM_GEOMObject}
   SMESHFiltersSelection
   SMDS
-  SMESHEngine
   SMESHControls
   SMESHObject
 )
