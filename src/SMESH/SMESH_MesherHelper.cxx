@@ -2932,7 +2932,7 @@ namespace { // Structures used by FixQuadraticElements()
 //=======================================================================
 
 #define __DMP__(txt) \
-  //cout << txt
+  // cout << txt
 #define MSG(txt) __DMP__(txt<<endl)
 #define MSGBEG(txt) __DMP__(txt)
 
@@ -3340,27 +3340,11 @@ namespace { // Structures used by FixQuadraticElements()
 
   gp_Vec QFace::LinkNorm(const int i, SMESH_MesherHelper* /*uvHelper*/) const
   {
-    gp_Vec norm, vecOut;
-//     if ( uvHelper ) {
-//       TopoDS_Face face = TopoDS::Face( uvHelper->GetSubShape());
-//       const SMDS_MeshNode* inFaceNode = uvHelper->GetNodeUVneedInFaceNode() ? GetNodeInFace() : 0;
-//       gp_XY uv1 = uvHelper->GetNodeUV( face, _sides[i]->node1(), inFaceNode );
-//       gp_XY uv2 = uvHelper->GetNodeUV( face, _sides[i]->node2(), inFaceNode );
-//       norm.SetCoord( uv1.Y() - uv2.Y(), uv2.X() - uv1.X(), 0 );
+    gp_Vec   norm = _normal ^ gp_Vec( XYZ(_sides[i]->node1()), XYZ(_sides[i]->node2()));
+    gp_XYZ    pIn = ( _sides[ (i+1)%3 ]->MiddlePnt() +
+                      _sides[ (i+2)%3 ]->MiddlePnt() ) / 2.;
+    gp_Vec vecOut = ( _sides[i]->MiddlePnt() - pIn );
 
-//       const QLink* otherLink = _sides[(i + 1) % _sides.size()];
-//       const SMDS_MeshNode* otherNode =
-//         otherLink->node1() == _sides[i]->node1() ? otherLink->node2() : otherLink->node1();
-//       gp_XY pIn = uvHelper->GetNodeUV( face, otherNode, inFaceNode );
-//       vecOut.SetCoord( uv1.X() - pIn.X(), uv1.Y() - pIn.Y(), 0 );
-//     }
-//     else {
-      norm = _normal ^ gp_Vec( XYZ(_sides[i]->node1()), XYZ(_sides[i]->node2()));
-      gp_XYZ pIn = ( XYZ( _sides[0]->node1() ) +
-                     XYZ( _sides[0]->node2() ) +
-                     XYZ( _sides[1]->node1() )) / 3.;
-      vecOut.SetXYZ( _sides[i]->MiddlePnt() - pIn );
-      //}
     if ( norm * vecOut < 0 )
       norm.Reverse();
     double mag2 = norm.SquareMagnitude();
@@ -3414,10 +3398,26 @@ namespace { // Structures used by FixQuadraticElements()
     int iL1 = (iL + 1) % 3, iL2 = (iL + 2) % 3; // indices of the two other links of triangle
     TLinkInSet link1 = theLinks.find( _sides[iL1] );
     TLinkInSet link2 = theLinks.find( _sides[iL2] );
-    if ( link1 == theLinks.end() || link2 == theLinks.end() )
-      return thePrevLen;
-    const QFace* f1 = link1->NextFace( this ); // adjacent faces
-    const QFace* f2 = link2->NextFace( this );
+
+    const QFace *f1 = 0, *f2 = 0;  // adjacent faces
+    bool isBndLink1 = true, isBndLink2 = true;
+    if ( link1 != theLinks.end() && link2 != theLinks.end() )
+    {
+      f1 = link1->NextFace( this );
+      f2 = link2->NextFace( this );
+
+      isBndLink1 = ( theLink->MediumPos() > (*link1)->MediumPos() );
+      isBndLink2 = ( theLink->MediumPos() > (*link2)->MediumPos() );
+      if ( theStep == theFirstStep ) // (issue 22541) quad-dominant mesh
+      {
+        if ( !isBndLink1 && !f1 )
+          f1 = (*link1)->GetContinuesFace( this ); // get a quadrangle face
+        if ( !isBndLink2 && !f2 )
+          f2 = (*link2)->GetContinuesFace( this );
+      }
+    }
+    else if ( _sides.size() < 4 )
+      return thePrevLen;      
 
     // propagate to adjacent faces till limit step or boundary
     double len1 = thePrevLen + (theLink->MiddlePnt() - _sides[iL1]->MiddlePnt()).Modulus();
@@ -3426,7 +3426,7 @@ namespace { // Structures used by FixQuadraticElements()
     gp_Vec linkDir2(0,0,0);
     try {
       OCC_CATCH_SIGNALS;
-      if ( f1 && theLink->MediumPos() <= (*link1)->MediumPos() )
+      if ( f1 && !isBndLink1 )
         len1 = f1->MoveByBoundary
           ( *link1, theRefVec, theLinks, theFaceHelper, len1, theStep-1, &linkDir1, theSign);
       else
@@ -3437,7 +3437,7 @@ namespace { // Structures used by FixQuadraticElements()
     }
     try {
       OCC_CATCH_SIGNALS;
-      if ( f2 && theLink->MediumPos() <= (*link2)->MediumPos() )
+      if ( f2 && !isBndLink2 )
         len2 = f2->MoveByBoundary
           ( *link2, theRefVec, theLinks, theFaceHelper, len2, theStep-1, &linkDir2, theSign);
       else
@@ -3460,7 +3460,7 @@ namespace { // Structures used by FixQuadraticElements()
 
       MSG(string(theStep,'.')<<" Move "<< theLink->_mediumNode->GetID()<<
           " by " << refProj * ( 1 - r ) << " following " <<
-          (choose1 ? *link1->_qlink : *link2->_qlink));
+          (choose1 ? *link1->_qlink : *link2->_qlink)); // warning: link1 can be invalid
 
       if ( theLinkNorm ) *theLinkNorm = linkNorm;
     }
