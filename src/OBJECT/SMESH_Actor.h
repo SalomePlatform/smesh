@@ -101,8 +101,8 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
   virtual void SetBallSize(double size) = 0;
   virtual double GetBallSize() = 0;
 
-  virtual void SetBallScale(int size) = 0;
-  virtual int GetBallScale() = 0;
+  virtual void SetBallScale(double size) = 0;
+  virtual double GetBallScale() = 0;
 
   enum EReperesent { ePoint, eEdge, eSurface};
   

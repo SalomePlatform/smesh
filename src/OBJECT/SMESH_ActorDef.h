@@ -144,8 +144,8 @@ class SMESH_ActorDef : public SMESH_Actor
   virtual void SetBallSize(double size);
   virtual double GetBallSize();
 
-  virtual void SetBallScale(int size);
-  virtual int GetBallScale();
+  virtual void SetBallScale(double size);
+  virtual double GetBallScale();
 
   virtual int GetNodeObjId(int theVtkID);
   virtual double* GetNodeCoord(int theObjID);

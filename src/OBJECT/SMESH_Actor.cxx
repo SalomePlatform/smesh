@@ -145,7 +145,7 @@ SMESH_ActorDef::SMESH_ActorDef()
 
   double aElem0DSize    = SMESH::GetFloat("SMESH:elem0d_size",5);
   double aBallElemSize  = SMESH::GetFloat("SMESH:ball_elem_size",10);
-  double aBallElemScale = SMESH::GetFloat("SMESH:ball_elem_scale",1);
+  double aBallElemScale = SMESH::GetFloat("SMESH:ball_elem_scale",1.0);
   double aLineWidth     = SMESH::GetFloat("SMESH:element_width",1);
   double aOutlineWidth  = SMESH::GetFloat("SMESH:outline_width",1);
 
@@ -2108,12 +2108,12 @@ double SMESH_ActorDef::GetBallSize(){
   return myBallProp->GetPointSize();
 }
 
-int SMESH_ActorDef::GetBallScale()
+double SMESH_ActorDef::GetBallScale()
 {
   return myBallActor->GetBallScale();
 }
 
-void SMESH_ActorDef::SetBallScale( int theVal )
+void SMESH_ActorDef::SetBallScale( double theVal )
 {
   myBallActor->SetBallScale( theVal );
 }
