@@ -1700,6 +1700,9 @@ void SMESHGUI_SplitVolumesDlg::on3d2dChanged(int isPrism)
   }
   SMESHGUI_MultiEditDlg::on3d2dChanged( !myEntityType );
   myEntityType = 1; // == VOLUME
+  myChoiceWidget->hide();
+  myChoiceWidget->show();
+  resize(minimumSizeHint());
   onSelectionDone();
 }
 

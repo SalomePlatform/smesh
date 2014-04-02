@@ -46,3 +46,18 @@ salome_pluginsmanager.AddFunction('ReMesh with MGCleaner',
 salome_pluginsmanager.AddFunction('Meshed Pipe with a crack',
                                   'Create a mesh with blocFissure tool',
                                   fissureCoudeDlg)
+
+# ZCracks plugin requires the module EFICAS to be installed
+# thus it is first tested if this module is available before
+# adding the plugin to salome_pluginsmanager
+enable_zcracks = True
+try:
+  import eficasSalome
+except:
+  enable_zcracks = False
+
+if enable_zcracks:
+  from zcracks_plugin import ZcracksLct
+  salome_pluginsmanager.AddFunction('Run Zcrack',
+                                    'Run Zcrack',
+                                    ZcracksLct)

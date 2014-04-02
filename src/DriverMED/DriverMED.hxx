@@ -23,6 +23,7 @@
 // Declarations needed for usage of DriverMED
 
 #include "SMDSAbs_ElementType.hxx"
+#include "SMESH_DriverMED.hxx"
 
 #include <boost/shared_ptr.hpp>
 
@@ -36,10 +37,10 @@ namespace DriverMED
   /*
    * Returns MED element geom type (MED::EGeometrieElement) by SMDS type
    */
-  int GetMedGeoType( SMDSAbs_EntityType smdsType );
+  MESHDRIVERMED_EXPORT int GetMedGeoType( SMDSAbs_EntityType smdsType );
   
   /*
    * Returns SMDS element geom type by MED type (MED::EGeometrieElement)
    */
-  SMDSAbs_EntityType GetSMDSType( int medType );
+  MESHDRIVERMED_EXPORT SMDSAbs_EntityType GetSMDSType( int medType );
 }

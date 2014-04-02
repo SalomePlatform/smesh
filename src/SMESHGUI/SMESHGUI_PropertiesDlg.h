@@ -38,6 +38,7 @@ class QGroupBox;
 class QtxColorButton;
 class QtxBiColorTool;
 class QtxIntSpinBox;
+class QtxDoubleSpinBox;
 class VTKViewer_MarkerWidget;
 
 class SMESHGUI_EXPORT SMESHGUI_PropertiesDlg : public SMESHGUI_Dialog
@@ -83,8 +84,8 @@ public:
   QColor            ballColor() const;
   void              setBallSize( int );
   int               ballSize() const;
-  void              setBallScale( int );
-  int               ballScale() const;
+  void              setBallScale( double );
+  double            ballScale() const;
 
   void              setOrientationColor( const QColor& );
   QColor            orientationColor() const;
@@ -134,7 +135,7 @@ private:
   // - balls
   QtxColorButton*         myBallColor;
   QtxIntSpinBox*          myBallSize;
-  QtxIntSpinBox*          myBallScale;
+  QtxDoubleSpinBox*       myBallScale;
   // - orientation vectors
   QtxColorButton*         myOrientationColor;
   QtxIntSpinBox*          myOrientationSize;

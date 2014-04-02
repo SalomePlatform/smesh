@@ -487,6 +487,9 @@ void SMESHGUI_ExtrusionDlg::ConstructorsClicked (int constructorId)
   if (CheckBoxMesh->isChecked())
     onSelectMesh(true);
 
+  myEditCurrentArgument->hide();
+  myEditCurrentArgument->show();
+
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
 }
 

@@ -425,6 +425,8 @@ void SMESHGUI_ScaleDlg::ConstructorsClicked (int constructorId)
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
 
   QApplication::instance()->processEvents();
+  myEditCurrentArgument->hide();
+  myEditCurrentArgument->show();
   updateGeometry();
   resize(100,100);
 }

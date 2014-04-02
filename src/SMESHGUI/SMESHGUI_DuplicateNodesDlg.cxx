@@ -384,7 +384,9 @@ void SMESHGUI_DuplicateNodesDlg::onConstructorsClicked (int constructorId)
       break;
     }
   }
-  
+  myGroupArguments->hide();
+  myGroupArguments->show();
+  this->resize(this->sizeHint().width(), this->minimumSizeHint().height());
   // Process selection
   onSelectionChanged();
 }

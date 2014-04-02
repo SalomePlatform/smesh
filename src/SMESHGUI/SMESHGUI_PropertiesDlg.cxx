@@ -34,6 +34,7 @@
 #include <QtxBiColorTool.h>
 #include <QtxColorButton.h>
 #include <QtxIntSpinBox.h>
+#include <QtxDoubleSpinBox.h>
 #include <VTKViewer_MarkerWidget.h>
 #include <SUIT_Session.h>
 #include <LightApp_Application.h>
@@ -158,7 +159,7 @@ SMESHGUI_PropertiesDlg::SMESHGUI_PropertiesDlg( const VTK::MarkerMap& customMark
   QLabel* ballSizeLab = new QLabel( tr( "SIZE" ), myBallGrp );
   myBallSize = new QtxIntSpinBox( myBallGrp );
   QLabel* ballScaleLab = new QLabel( tr( "SCALE_FACTOR" ), myBallGrp );
-  myBallScale = new QtxIntSpinBox( myBallGrp );
+  myBallScale = new QtxDoubleSpinBox( 1e-2, 1e7, 0.5, myBallGrp );
   hl = new QHBoxLayout( myBallGrp );
   hl->setMargin( MARGIN );
   hl->setSpacing( SPACING );
@@ -248,7 +249,6 @@ SMESHGUI_PropertiesDlg::SMESHGUI_PropertiesDlg( const VTK::MarkerMap& customMark
   myNodeMarker->setCustomMarkers( customMarkers );
   myElem0dSize->setRange( 1, 10 );
   myBallSize->setRange( 1, 10 );
-  myBallScale->setRange( 1, 10 );
   myEdgeWidth->setRange( 1, 5 );
   myOutlineWidth->setRange( 1, 5 );
   myShrinkSize->setRange( 20, 100 );
@@ -540,7 +540,7 @@ int SMESHGUI_PropertiesDlg::ballSize() const
   \brief Set discrete elements (balls) scale factor
   \param size discrete elements (balls) scale factor
 */
-void SMESHGUI_PropertiesDlg::setBallScale( int size )
+void SMESHGUI_PropertiesDlg::setBallScale( double size )
 {
   myBallScale->setValue( size );
 }
@@ -549,7 +549,7 @@ void SMESHGUI_PropertiesDlg::setBallScale( int size )
   \brief Get discrete elements (balls) scale factor
   \return current discrete elements (balls) scale factor
 */
-int SMESHGUI_PropertiesDlg::ballScale() const
+double SMESHGUI_PropertiesDlg::ballScale() const
 {
   return myBallScale->value();
 }

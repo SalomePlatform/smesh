@@ -961,9 +961,9 @@ void SMESH_DeviceActor::SetBallEnabled( bool theBallEnabled ) {
 
 /*!
  * Set point marker scale factor
- * \param theBallScale integer value which specifies a scale factor of ball element
+ * \param theBallScale double value which specifies a scale factor of ball element
  */
-void SMESH_DeviceActor::SetBallScale( int theBallScale )
+void SMESH_DeviceActor::SetBallScale( double theBallScale )
 {
   myMapper->SetBallScale( theBallScale );
   myMapper->Modified();
@@ -1019,7 +1019,7 @@ int SMESH_DeviceActor::GetMarkerTexture()
  * Get scale factor of ball element
  * \return scale factor of ball element
  */
-int SMESH_DeviceActor::GetBallScale()
+double SMESH_DeviceActor::GetBallScale()
 {
   return myMapper->GetBallScale();
 }

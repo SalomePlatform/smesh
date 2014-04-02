@@ -29,6 +29,7 @@
 #include "SMDS_EdgePosition.hxx"
 #include "SMDS_FacePosition.hxx"
 #include "SMDS_Mesh.hxx"
+#include "SMESH_Gen_i.hxx"
 #include "SMESHDS_Mesh.hxx"
 #include "SMESHGUI.h"
 #include "SMESHGUI_FilterUtils.h"
@@ -1838,66 +1839,34 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
         // connectivity
         QTreeWidgetItem* conItem = createItem( elemItem, Bold );
         conItem->setText( 0, SMESHGUI_ElemInfo::tr( "CONNECTIVITY" ) );
-        SMDS_ElemIteratorPtr nodeIt = e->nodesIterator();
-        for ( int idx = 1; nodeIt->more(); idx++ ) {
-          const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
-          // node number and ID
-          QTreeWidgetItem* nodeItem = createItem( conItem, Bold );
-          nodeItem->setText( 0, QString( "%1 %2 / %3" ).arg( SMESHGUI_ElemInfo::tr( "NODE" ) ).arg( idx ).arg( e->NbNodes() ) );
-          nodeItem->setText( 1, QString( "#%1" ).arg( node->GetID() ) );
-          nodeItem->setData( 1, TypeRole, ElemConnectivity );
-          nodeItem->setData( 1, IdRole, node->GetID() );
-          nodeItem->setExpanded( false );
-          // node coordinates
-          QTreeWidgetItem* coordItem = createItem( nodeItem );
-          coordItem->setText( 0, SMESHGUI_ElemInfo::tr( "COORDINATES" ) );
-          QTreeWidgetItem* xItem = createItem( coordItem );
-          xItem->setText( 0, "X" );
-          xItem->setText( 1, QString::number( node->X(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
-          QTreeWidgetItem* yItem = createItem( coordItem );
-          yItem->setText( 0, "Y" );
-          yItem->setText( 1, QString::number( node->Y(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
-          QTreeWidgetItem* zItem = createItem( coordItem );
-          zItem->setText( 0, "Z" );
-          zItem->setText( 1, QString::number( node->Z(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
-          // node connectivity
-          QTreeWidgetItem* nconItem = createItem( nodeItem );
-          nconItem->setText( 0, SMESHGUI_ElemInfo::tr( "CONNECTIVITY" ) );
-          Connectivity connectivity = nodeConnectivity( node );
-          if ( !connectivity.isEmpty() ) {
-            QString con = formatConnectivity( connectivity, SMDSAbs_0DElement );
-            if ( !con.isEmpty() ) {
-              QTreeWidgetItem* i = createItem( nconItem );
-              i->setText( 0, SMESHGUI_ElemInfo::tr( "0D_ELEMENTS" ) );
-              i->setText( 1, con );
-            }
-            con = formatConnectivity( connectivity, SMDSAbs_Edge );
-            if ( !con.isEmpty() ) {
-              QTreeWidgetItem* i = createItem( nconItem );
-              i->setText( 0, SMESHGUI_ElemInfo::tr( "EDGES" ) );
-              i->setText( 1, con );
-              i->setData( 1, TypeRole, NodeConnectivity );
-            }
-            con = formatConnectivity( connectivity, SMDSAbs_Ball );
-            if ( !con.isEmpty() ) {
-              QTreeWidgetItem* i = createItem( nconItem );
-              i->setText( 0, SMESHGUI_ElemInfo::tr( "BALL_ELEMENTS" ) );
-              i->setText( 1, con );
-              i->setData( 1, TypeRole, NodeConnectivity );
-            }
-            con = formatConnectivity( connectivity, SMDSAbs_Face );
-            if ( !con.isEmpty() ) {
-              QTreeWidgetItem* i = createItem( nconItem );
-              i->setText( 0, SMESHGUI_ElemInfo::tr( "FACES" ) );
-              i->setText( 1, con );
-              i->setData( 1, TypeRole, NodeConnectivity );
-            }
-            con = formatConnectivity( connectivity, SMDSAbs_Volume );
-            if ( !con.isEmpty() ) {
-              QTreeWidgetItem* i = createItem( nconItem );
-              i->setText( 0, SMESHGUI_ElemInfo::tr( "VOLUMES" ) );
-              i->setText( 1, con );
-              i->setData( 1, TypeRole, NodeConnectivity );
+
+
+        if( e->GetGeomType() != SMDSGeom_POLYHEDRA ) {
+          SMDS_ElemIteratorPtr nodeIt = e->nodesIterator();
+          for ( int idx = 1; nodeIt->more(); idx++ ) {
+            const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
+            nodeInfo( node, idx, e->NbNodes(), conItem );
+          }
+        }
+        else {
+          const SMDS_VtkVolume* aVtkVolume = dynamic_cast<const SMDS_VtkVolume*>(e);
+          SMDS_ElemIteratorPtr nodeIt = aVtkVolume->uniqueNodesIterator();
+          QList<const SMDS_MeshElement*> uniqueNodes;
+          while ( nodeIt->more() )
+            uniqueNodes.append( nodeIt->next() );
+
+          SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();
+          SMESH_Mesh_i* mesh_i = SMESH::DownCast< SMESH_Mesh_i* >( aMesh );
+          const int nbFaces = mesh_i->ElemNbFaces( e->GetID() );
+          for( int i = 0; i < nbFaces; i++ ) {
+            QTreeWidgetItem* faceItem = createItem( conItem, Bold );
+            faceItem->setText( 0, QString( "%1 %2 / %3" ).arg( SMESHGUI_ElemInfo::tr( "FACE" ) ).arg( i + 1 ).arg( nbFaces ) );
+        	faceItem->setExpanded( true );
+
+        	SMESH::long_array_var anNodeIds = mesh_i->GetElemFaceNodes( e->GetID(), i );
+        	for( CORBA::Long node_id = 0, n = anNodeIds->length(); node_id < n; node_id++ ) {
+              const SMDS_MeshNode* node = actor()->GetObject()->GetMesh()->FindNode( anNodeIds[node_id] );
+              nodeInfo( node, uniqueNodes.indexOf(node) + 1, aVtkVolume->NbUniqueNodes(), faceItem );
             }
           }
         }
@@ -2077,6 +2046,77 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
   }
 }
 
+/*!
+  \brief Show node information
+  \param node mesh node for showing
+  \param index index of current node
+  \param nbNodes number of unique nodes in element
+  \param parentItem parent item of tree
+*/
+void SMESHGUI_TreeElemInfo::nodeInfo( const SMDS_MeshNode* node, int index,
+                                      int nbNodes, QTreeWidgetItem* parentItem )
+{
+  int precision   = SMESHGUI::resourceMgr()->integerValue( "SMESH", "length_precision", 6 );
+  // node number and ID
+  QTreeWidgetItem* nodeItem = createItem( parentItem, Bold );
+  nodeItem->setText( 0, QString( "%1 %2 / %3" ).arg( SMESHGUI_ElemInfo::tr( "NODE" ) ).arg( index ).arg( nbNodes ) );
+  nodeItem->setText( 1, QString( "#%1" ).arg( node->GetID() ) );
+  nodeItem->setData( 1, TypeRole, ElemConnectivity );
+  nodeItem->setData( 1, IdRole, node->GetID() );
+  nodeItem->setExpanded( false );
+  // node coordinates
+  QTreeWidgetItem* coordItem = createItem( nodeItem );
+  coordItem->setText( 0, SMESHGUI_ElemInfo::tr( "COORDINATES" ) );
+  QTreeWidgetItem* xItem = createItem( coordItem );
+  xItem->setText( 0, "X" );
+  xItem->setText( 1, QString::number( node->X(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
+  QTreeWidgetItem* yItem = createItem( coordItem );
+  yItem->setText( 0, "Y" );
+  yItem->setText( 1, QString::number( node->Y(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
+  QTreeWidgetItem* zItem = createItem( coordItem );
+  zItem->setText( 0, "Z" );
+  zItem->setText( 1, QString::number( node->Z(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
+  // node connectivity
+  QTreeWidgetItem* nconItem = createItem( nodeItem );
+  nconItem->setText( 0, SMESHGUI_ElemInfo::tr( "CONNECTIVITY" ) );
+  Connectivity connectivity = nodeConnectivity( node );
+  if ( !connectivity.isEmpty() ) {
+	QString con = formatConnectivity( connectivity, SMDSAbs_0DElement );
+	if ( !con.isEmpty() ) {
+	  QTreeWidgetItem* i = createItem( nconItem );
+	  i->setText( 0, SMESHGUI_ElemInfo::tr( "0D_ELEMENTS" ) );
+	  i->setText( 1, con );
+	}
+	con = formatConnectivity( connectivity, SMDSAbs_Edge );
+	if ( !con.isEmpty() ) {
+	  QTreeWidgetItem* i = createItem( nconItem );
+	  i->setText( 0, SMESHGUI_ElemInfo::tr( "EDGES" ) );
+	  i->setText( 1, con );
+	  i->setData( 1, TypeRole, NodeConnectivity );
+	}
+	con = formatConnectivity( connectivity, SMDSAbs_Ball );
+	if ( !con.isEmpty() ) {
+	  QTreeWidgetItem* i = createItem( nconItem );
+	  i->setText( 0, SMESHGUI_ElemInfo::tr( "BALL_ELEMENTS" ) );
+	  i->setText( 1, con );
+	  i->setData( 1, TypeRole, NodeConnectivity );
+	}
+	con = formatConnectivity( connectivity, SMDSAbs_Face );
+	if ( !con.isEmpty() ) {
+		  QTreeWidgetItem* i = createItem( nconItem );
+	  i->setText( 0, SMESHGUI_ElemInfo::tr( "FACES" ) );
+	  i->setText( 1, con );
+	  i->setData( 1, TypeRole, NodeConnectivity );
+	}
+	con = formatConnectivity( connectivity, SMDSAbs_Volume );
+	if ( !con.isEmpty() ) {
+	  QTreeWidgetItem* i = createItem( nconItem );
+	  i->setText( 0, SMESHGUI_ElemInfo::tr( "VOLUMES" ) );
+	  i->setText( 1, con );
+	  i->setData( 1, TypeRole, NodeConnectivity );
+	}
+  }
+}
 /*!
   \brief Internal clean-up (reset widget)
 */

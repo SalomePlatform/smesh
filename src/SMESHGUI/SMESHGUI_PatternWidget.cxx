@@ -42,7 +42,7 @@ SMESHGUI_PatternWidget::SMESHGUI_PatternWidget( QWidget* parent )
   : QFrame( parent )
 {
   myMinU = myMinV = myMaxU = myMaxV = 0;
-  setMinimumHeight( 150 );
+  //setMinimumHeight( 150 );
 }
 
 //=================================================================================

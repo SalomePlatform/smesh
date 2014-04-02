@@ -451,7 +451,8 @@ void SMESHGUI_TranslationDlg::ConstructorsClicked (int constructorId)
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
 
   onDisplaySimulation(true);
-
+  myEditCurrentArgument->hide();
+  myEditCurrentArgument->show();
   QApplication::instance()->processEvents();
   updateGeometry();
   resize(100,100);

@@ -119,13 +119,13 @@ SMESHGUI_MeshPatternDlg::SMESHGUI_MeshPatternDlg( SMESHGUI* theModule )
   aDlgLay->setMargin( MARGIN );
   aDlgLay->setSpacing( SPACING );
 
-  QWidget* aMainFrame = createMainFrame  ( this );
+  myMainFrame = createMainFrame  ( this );
   QWidget* aBtnFrame  = createButtonFrame( this );
 
-  aDlgLay->addWidget( aMainFrame );
+  aDlgLay->addWidget( myMainFrame );
   aDlgLay->addWidget( aBtnFrame );
 
-  aDlgLay->setStretchFactor( aMainFrame, 1 );
+  aDlgLay->setStretchFactor( myMainFrame, 1 );
 
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
@@ -1201,11 +1201,16 @@ void SMESHGUI_MeshPatternDlg::onTypeChanged (int theType)
     myNode2Lbl->show();
     myNode2   ->show();
   }
-
   mySelInput = Mesh;
   activateSelection();
   updateWgState();
   displayPreview();
+  myPicture2d->hide();
+  myPicture2d->show();
+  myPicture2d->resize(minimumSizeHint());
+  myMainFrame->hide();
+  myMainFrame->show();
+  resize(minimumSizeHint());
 }
 
 //=======================================================================
@@ -1331,8 +1336,10 @@ void SMESHGUI_MeshPatternDlg::onModeToggled (bool on)
 {
   on ? myRefineGrp->show() : myRefineGrp->hide();
   on ? myGeomGrp->hide()   : myGeomGrp->show();
-
+  myMainFrame->hide();
+  myMainFrame->show();
   displayPreview();
+  resize(minimumSizeHint());
 }
 
 //=======================================================================

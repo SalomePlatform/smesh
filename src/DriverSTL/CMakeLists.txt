@@ -45,6 +45,7 @@ SET(_link_LIBRARIES
   ${KERNEL_SALOMEBasics}
   MeshDriver
   SMDS
+  SMESHUtils
 )
 
 SET(_link_LIBRARIES_bin
