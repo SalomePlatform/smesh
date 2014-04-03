@@ -339,7 +339,7 @@ bool StdMeshers_Quadrangle_2D::computeTriangles(SMESH_Mesh&         aMesh,
   FaceQuadStruct::Ptr newQuad = myQuadList.back();
   if ( quad != newQuad ) // split done
   {
-    {
+    { // update left side limit till where to make triangles
       FaceQuadStruct::Ptr botQuad = // a bottom part
         ( quad->side[ QUAD_LEFT_SIDE ].from == 0 ) ? quad : newQuad;
       if ( botQuad->nbNodeOut( QUAD_LEFT_SIDE ) > 0 )
@@ -359,12 +359,33 @@ bool StdMeshers_Quadrangle_2D::computeTriangles(SMESH_Mesh&         aMesh,
   {
     splitQuad( quad, quad->iSize-2, 0 );
   }
-  if ( quad->nbNodeOut( QUAD_LEFT_SIDE    ))
+  if ( quad->nbNodeOut( QUAD_LEFT_SIDE  ))
   {
     splitQuad( quad, 1, 0 );
+
+    if ( quad->nbNodeOut( QUAD_TOP_SIDE ))
+    {
+      newQuad = myQuadList.back();
+      if ( newQuad == quad ) // too narrow to split
+      {
+        // update left side limit till where to make triangles
+        quad->side[ QUAD_LEFT_SIDE ].to--;
+      }
+      else
+      {
+        FaceQuadStruct::Ptr leftQuad =
+          ( quad->side[ QUAD_BOTTOM_SIDE ].from == 0 ) ? quad : newQuad;
+        leftQuad->nbNodeOut( QUAD_TOP_SIDE ) = 0;
+      }
+    }
   }
 
-  return computeQuadDominant( aMesh, aFace );
+  if ( ! computeQuadDominant( aMesh, aFace ))
+    return false;
+
+  // try to fix zero-area triangles near straight-angle corners
+
+  return true;
 }
 
 //================================================================================
@@ -591,17 +612,50 @@ bool StdMeshers_Quadrangle_2D::computeQuadDominant(SMESH_Mesh&         aMesh,
       iup = nbhoriz - 1;
 
       int stop = 0;
-      // if left edge is out, we will stop at a second node
-      //if (quad->nbNodeOut(3)) stop++;
-      if ( quad->nbNodeOut( QUAD_RIGHT_SIDE ))
-        quad->UVPt( nbhoriz-1, 0 ).node = uv_e1[ nbright-2 ].node;
-      if ( quad->nbNodeOut( QUAD_LEFT_SIDE ))
-        quad->UVPt( 0, 0 ).node = uv_e3[ nbleft-2 ].node;
+      if ( quad->side[3].grid->Edge(0).IsNull() ) // left side is simulated one
+      {
+        // quad divided at I but not at J, as nbvertic==nbright==2
+        stop++; // we stop at a second node
+      }
+      else
+      {
+        if ( quad->nbNodeOut( QUAD_RIGHT_SIDE ))
+          quad->UVPt( nbhoriz-1, 0 ).node = uv_e1[ nbright-2 ].node;
+        if ( quad->nbNodeOut( QUAD_LEFT_SIDE ))
+          quad->UVPt( 0, 0 ).node = uv_e3[ nbleft-2 ].node;
 
+        if ( nbright > 2 ) // there was a split at J
+          quad->nbNodeOut( QUAD_LEFT_SIDE ) = 0;
+      }
+      const SMDS_MeshNode *a, *b, *c, *d;
+      i = nbup - 1;
+      // avoid creating zero-area triangles near a straight-angle corner
+      {
+        a = uv_e2[i].node;
+        b = uv_e2[i-1].node;
+        c = uv_e1[nbright-2].node;
+        SMESH_TNodeXYZ pa( a ), pb( b ), pc( c );
+        double area = 0.5 * (( pb - pa ) ^ ( pc - pa )).Modulus();
+        if ( Abs( area ) < 1e-20 )
+        {
+          --g;
+          d = quad->UVPt( g, nbvertic-2 ).node;
+          if ( myTrianglePreference )
+          {
+            if ( SMDS_MeshFace* face = myHelper->AddFace(a, d, c))
+              meshDS->SetMeshElementOnShape(face, geomFaceID);
+          }
+          else
+          {
+            if ( SMDS_MeshFace* face = myHelper->AddFace(a, b, d, c))
+              meshDS->SetMeshElementOnShape(face, geomFaceID);
+            --i;
+          }
+        }
+      }
       // for each node of the up edge find nearest node
       // in the first row of the regular grid and link them
-      for (i = nbup - 1; i > stop; i--) {
-        const SMDS_MeshNode *a, *b, *c, *d;
+      for ( ; i > stop; i--) {
         a = uv_e2[i].node;
         b = uv_e2[i - 1].node;
         gp_Pnt pb (b->X(), b->Y(), b->Z());
@@ -745,8 +799,34 @@ bool StdMeshers_Quadrangle_2D::computeQuadDominant(SMESH_Mesh&         aMesh,
       int g = nbvertic - 1; // last processed node in the grid
       int stop = 0;
       i = quad->side[ QUAD_LEFT_SIDE ].to-1; // nbleft - 1;
-      for (; i > stop; i--) {
-        const SMDS_MeshNode *a, *b, *c, *d;
+
+      const SMDS_MeshNode *a, *b, *c, *d;
+      // avoid creating zero-area triangles near a straight-angle corner
+      {
+        a = uv_e3[i].node;
+        b = uv_e3[i-1].node;
+        c = quad->UVPt( 1, g ).node;
+        SMESH_TNodeXYZ pa( a ), pb( b ), pc( c );
+        double area = 0.5 * (( pb - pa ) ^ ( pc - pa )).Modulus();
+        if ( Abs( area ) < 1e-20 )
+        {
+          --g;
+          d = quad->UVPt( 1, g ).node;
+          if ( myTrianglePreference )
+          {
+            if ( SMDS_MeshFace* face = myHelper->AddFace(a, d, c))
+              meshDS->SetMeshElementOnShape(face, geomFaceID);
+          }
+          else
+          {
+            if ( SMDS_MeshFace* face = myHelper->AddFace(a, b, d, c))
+              meshDS->SetMeshElementOnShape(face, geomFaceID);
+            --i;
+          }
+        }
+      }
+      for (; i > stop; i--) // loop on nodes on the left side
+      {
         a = uv_e3[i].node;
         b = uv_e3[i - 1].node;
         gp_Pnt pb (b->X(), b->Y(), b->Z());
@@ -756,12 +836,13 @@ bool StdMeshers_Quadrangle_2D::computeQuadDominant(SMESH_Mesh&         aMesh,
         if (i == stop + 1) { // down bondary reached
           c = quad->uv_grid[nbhoriz*jlow + 1].node;
           near = jlow;
-        } else {
+        }
+        else {
           double mind = RealLast();
           for (int k = g; k >= jlow; k--) {
             const SMDS_MeshNode *nk;
             if (k > jup)
-              nk = uv_e2[1].node;
+              nk = quad->uv_grid[nbhoriz*jup + 1].node; //uv_e2[1].node;
             else
               nk = quad->uv_grid[nbhoriz*k + 1].node;
             gp_Pnt pnk (nk->X(), nk->Y(), nk->Z());
@@ -782,11 +863,10 @@ bool StdMeshers_Quadrangle_2D::computeQuadDominant(SMESH_Mesh&         aMesh,
         }
         else { // make quadrangle
           if (near + 1 > jup)
-            d = uv_e2[1].node;
+            d = quad->uv_grid[nbhoriz*jup + 1].node; //uv_e2[1].node;
           else
             d = quad->uv_grid[nbhoriz*(near + 1) + 1].node;
-          //SMDS_MeshFace* face = meshDS->AddFace(a, b, c, d);
-          if (!myTrianglePreference){
+          if (!myTrianglePreference) {
             SMDS_MeshFace* face = myHelper->AddFace(a, b, c, d);
             if (face) meshDS->SetMeshElementOnShape(face, geomFaceID);
           }
@@ -798,7 +878,7 @@ bool StdMeshers_Quadrangle_2D::computeQuadDominant(SMESH_Mesh&         aMesh,
             for (int k = near + 1; k < g; k++) {
               c = quad->uv_grid[nbhoriz*k + 1].node;
               if (k + 1 > jup)
-                d = uv_e2[1].node;
+                d = quad->uv_grid[nbhoriz*jup + 1].node; //uv_e2[1].node;
               else
                 d = quad->uv_grid[nbhoriz*(k + 1) + 1].node;
               SMDS_MeshFace* face = myHelper->AddFace(a, c, d);
@@ -4707,7 +4787,7 @@ int StdMeshers_Quadrangle_2D::splitQuad(FaceQuadStruct::Ptr quad, int I, int J)
   myQuadList.push_back( FaceQuadStruct::Ptr( newQuad ));
 
   vector<UVPtStruct> points;
-  if ( I > 0 )
+  if ( I > 0 && I <= quad->iSize-2 )
   {
     points.reserve( quad->jSize );
     for ( int jP = 0; jP < quad->jSize; ++jP )
@@ -4746,7 +4826,7 @@ int StdMeshers_Quadrangle_2D::splitQuad(FaceQuadStruct::Ptr quad, int I, int J)
 
     return QUAD_LEFT_SIDE;
   }
-  else if ( J > 0 ) //// split horizontally, a new quad is below an old one
+  else if ( J > 0  && J <= quad->jSize-2 ) //// split horizontally, a new quad is below an old one
   {
     points.reserve( quad->iSize );
     for ( int iP = 0; iP < quad->iSize; ++iP )
