@@ -1200,10 +1200,11 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
   }
   else // ( force3d || F.IsNull() )
   {
-    P = ( SMESH_TNodeXYZ( n1 ) +
-          SMESH_TNodeXYZ( n2 ) +
-          SMESH_TNodeXYZ( n3 ) +
-          SMESH_TNodeXYZ( n4 ) ) / 4;
+    P = calcTFI (0.5, 0.5,
+                 SMESH_TNodeXYZ(n1),  SMESH_TNodeXYZ(n2),
+                 SMESH_TNodeXYZ(n3),  SMESH_TNodeXYZ(n4), 
+                 SMESH_TNodeXYZ(n12), SMESH_TNodeXYZ(n23),
+                 SMESH_TNodeXYZ(n34), SMESH_TNodeXYZ(n41));
     centralNode = meshDS->AddNode( P.X(), P.Y(), P.Z() );
 
     if ( !F.IsNull() ) // force3d
