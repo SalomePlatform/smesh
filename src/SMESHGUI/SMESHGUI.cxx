@@ -182,21 +182,6 @@
 // of auto-color picking up
 #define SIMPLE_AUTOCOLOR
 
-// REMOVE the code about MPLMathText_Disabler if it does not complite at porting to ParaView-4.1
-#include <vtkMatplotlibMathTextUtilities.h>
-namespace
-{
-  // Creation of this class disables vtkMatplotlibMathTextUtilities
-  struct MPLMathText_Disabler : protected vtkMatplotlibMathTextUtilities
-  {
-    MPLMathText_Disabler()
-    {
-      vtkMatplotlibMathTextUtilities::MPLMathTextAvailable =
-        vtkMatplotlibMathTextUtilities::UNAVAILABLE;
-    }
-  };
-} 
-
 namespace
 {
   // Declarations
@@ -1979,8 +1964,6 @@ SalomeApp_Module( "SMESH" )
 
   /* load resources for all available meshers */
   SMESH::InitAvailableHypotheses();
-
-  MPLMathText_Disabler d; // disable vtkMatplotlibMathTextUtilities
 }
 
 //=============================================================================
