@@ -87,7 +87,7 @@
 
 #include <limits>
 
-#undef WITH_TBB
+//#undef WITH_TBB
 #ifdef WITH_TBB
 #include <tbb/parallel_for.h>
 //#include <tbb/enumerable_thread_specific.h>
@@ -228,7 +228,7 @@ namespace
    */
   struct GridPlanes
   {
-    gp_XYZ _uNorm, _vNorm, _zNorm;
+    gp_XYZ           _zNorm;
     vector< gp_XYZ > _origins; // origin points of all planes in one direction
     vector< double > _zProjs;  // projections of origins to _zNorm
   };
@@ -285,7 +285,6 @@ namespace
     double             _tol, _minCellSize;
     gp_XYZ             _origin;
     gp_Mat             _invB; // inverted basis of _axes
-    //bool               _isOrthogonalAxes;
 
     vector< const SMDS_MeshNode* >    _nodes; // mesh nodes at grid nodes
     vector< const F_IntersectPoint* > _gridIntP; // grid node intersection with geometry
@@ -367,7 +366,6 @@ namespace
 
     FaceGridIntersector(): _grid(0), _surfaceInt(0) {}
     void Intersect();
-    bool IsInGrid(const Bnd_Box& gridBox);
 
     void StoreIntersections()
     {
@@ -871,10 +869,6 @@ namespace
     _invB.SetCols( _axes[0], _axes[1], _axes[2] );
     _invB.Invert();
 
-    // _isOrthogonalAxes = ( Abs( _axes[0] * _axes[1] ) < 1e-20 &&
-    //                       Abs( _axes[1] * _axes[2] ) < 1e-20 &&
-    //                       Abs( _axes[2] * _axes[0] ) < 1e-20 );
-
     // compute tolerance
     _minCellSize = Precision::Infinite();
     for ( int iDir = 0; iDir < 3; ++iDir ) // loop on 3 line directions
@@ -943,13 +937,6 @@ namespace
    */
   void Grid::ComputeUVW(const gp_XYZ& P, double UVW[3])
   {
-    // gp_XYZ p = P - _origin;
-    // UVW[ 0 ] = p.X() * _invB( 1, 1 ) + p.Y() * _invB( 1, 2 ) + p.Z() * _invB( 1, 3 );
-    // UVW[ 1 ] = p.X() * _invB( 2, 1 ) + p.Y() * _invB( 2, 2 ) + p.Z() * _invB( 2, 3 );
-    // UVW[ 2 ] = p.X() * _invB( 3, 1 ) + p.Y() * _invB( 3, 2 ) + p.Z() * _invB( 3, 3 );
-    // UVW[ 0 ] += _coords[0][0];
-    // UVW[ 1 ] += _coords[1][0];
-    // UVW[ 2 ] += _coords[2][0];
     gp_XYZ p = P * _invB;
     p.Coord( UVW[0], UVW[1], UVW[2] );
   }
@@ -985,7 +972,7 @@ namespace
         const gp_XYZ lineLoc = line._line.Location().XYZ();
         const gp_XYZ lineDir = line._line.Direction().XYZ();
         line.RemoveExcessIntPoints( _tol );
-        multiset< F_IntersectPoint >& intPnts = _lines[ iDir ][ li.LineIndex() ]._intPoints;
+        multiset< F_IntersectPoint >& intPnts = line._intPoints;
         multiset< F_IntersectPoint >::iterator ip = intPnts.begin();
 
         bool isOut = true;
@@ -1108,80 +1095,6 @@ namespace
 
   //=============================================================================
   /*
-   * Checks if the face is encosed by the grid
-   */
-  bool FaceGridIntersector::IsInGrid(const Bnd_Box& gridBox)
-  {
-    // double x0,y0,z0, x1,y1,z1;
-    // const Bnd_Box& faceBox = GetFaceBndBox();
-    // faceBox.Get(x0,y0,z0, x1,y1,z1);
-
-    // if ( !gridBox.IsOut( gp_Pnt( x0,y0,z0 )) &&
-    //      !gridBox.IsOut( gp_Pnt( x1,y1,z1 )))
-    //   return true;
-
-    // double X0,Y0,Z0, X1,Y1,Z1;
-    // gridBox.Get(X0,Y0,Z0, X1,Y1,Z1);
-    // double faceP[6] = { x0,y0,z0, x1,y1,z1 };
-    // double gridP[6] = { X0,Y0,Z0, X1,Y1,Z1 };
-    // gp_Dir axes[3]  = { gp::DX(), gp::DY(), gp::DZ() };
-    // for ( int iDir = 0; iDir < 6; ++iDir )
-    // {
-    //   if ( iDir < 3  && gridP[ iDir ] <= faceP[ iDir ] ) continue;
-    //   if ( iDir >= 3 && gridP[ iDir ] >= faceP[ iDir ] ) continue;
-
-    //   // check if the face intersects a side of a gridBox
-
-    //   gp_Pnt p = iDir < 3 ? gp_Pnt( X0,Y0,Z0 ) : gp_Pnt( X1,Y1,Z1 );
-    //   gp_Ax1 norm( p, axes[ iDir % 3 ] );
-    //   if ( iDir < 3 ) norm.Reverse();
-
-    //   gp_XYZ O = norm.Location().XYZ(), N = norm.Direction().XYZ();
-
-    //   TopLoc_Location loc = _face.Location();
-    //   Handle(Poly_Triangulation) aPoly = BRep_Tool::Triangulation(_face,loc);
-    //   if ( !aPoly.IsNull() )
-    //   {
-    //     if ( !loc.IsIdentity() )
-    //     {
-    //       norm.Transform( loc.Transformation().Inverted() );
-    //       O = norm.Location().XYZ(), N = norm.Direction().XYZ();
-    //     }
-    //     const double deflection = aPoly->Deflection();
-
-    //     const TColgp_Array1OfPnt& nodes = aPoly->Nodes();
-    //     for ( int i = nodes.Lower(); i <= nodes.Upper(); ++i )
-    //       if (( nodes( i ).XYZ() - O ) * N > _grid->_tol + deflection )
-    //         return false;
-    //   }
-    //   else
-    //   {
-    //     BRepAdaptor_Surface surf( _face );
-    //     double u0, u1, v0, v1, du, dv, u, v;
-    //     BRepTools::UVBounds( _face, u0, u1, v0, v1);
-    //     if ( surf.GetType() == GeomAbs_Plane ) {
-    //       du = u1 - u0, dv = v1 - v0;
-    //     }
-    //     else {
-    //       du = surf.UResolution( _grid->_minCellSize / 10. );
-    //       dv = surf.VResolution( _grid->_minCellSize / 10. );
-    //     }
-    //     for ( u = u0, v = v0; u <= u1 && v <= v1; u += du, v += dv )
-    //     {
-    //       gp_Pnt p = surf.Value( u, v );
-    //       if (( p.XYZ() - O ) * N > _grid->_tol )
-    //       {
-    //         TopAbs_State state = GetCurveFaceIntersector()->ClassifyUVPoint(gp_Pnt2d( u, v ));
-    //         if ( state == TopAbs_IN || state == TopAbs_ON )
-    //           return false;
-    //       }
-    //     }
-    //   }
-    // }
-    return true;
-  }
-  //=============================================================================
-  /*
    * Intersects TopoDS_Face with all GridLine's
    */
   void FaceGridIntersector::Intersect()
@@ -1195,31 +1108,39 @@ namespace
     typedef void (FaceLineIntersector::* PIntFun )(const GridLine& gridLine);
     PIntFun interFunction;
 
+    bool isDirect = true;
     BRepAdaptor_Surface surf( _face );
     switch ( surf.GetType() ) {
     case GeomAbs_Plane:
       intersector._plane = surf.Plane();
       interFunction = &FaceLineIntersector::IntersectWithPlane;
+      isDirect = intersector._plane.Direct();
       break;
     case GeomAbs_Cylinder:
       intersector._cylinder = surf.Cylinder();
       interFunction = &FaceLineIntersector::IntersectWithCylinder;
+      isDirect = intersector._cylinder.Direct();
       break;
     case GeomAbs_Cone:
       intersector._cone = surf.Cone();
       interFunction = &FaceLineIntersector::IntersectWithCone;
+      //isDirect = intersector._cone.Direct();
       break;
     case GeomAbs_Sphere:
       intersector._sphere = surf.Sphere();
       interFunction = &FaceLineIntersector::IntersectWithSphere;
+      isDirect = intersector._sphere.Direct();
       break;
     case GeomAbs_Torus:
       intersector._torus = surf.Torus();
       interFunction = &FaceLineIntersector::IntersectWithTorus;
+      //isDirect = intersector._torus.Direct();
       break;
     default:
       interFunction = &FaceLineIntersector::IntersectWithSurface;
     }
+    if ( !isDirect )
+      std::swap( intersector._transOut, intersector._transIn );
 
     _intersections.clear();
     for ( int iDir = 0; iDir < 3; ++iDir ) // loop on 3 line directions
@@ -2399,7 +2320,6 @@ namespace
             }
             const int iLink = iL + iDir * 4;
             hex->_hexLinks[iLink]._fIntPoints.push_back( &(*ip) );
-            //hex->_hexLinks[iLink]._fIntNodes.push_back( _Node( 0, &(*ip) ));
             hex->_nbFaceIntNodes += bool( ip->_node );
           }
         }
@@ -2449,7 +2369,6 @@ namespace
       {
         // all intersection of hex with geometry are at grid nodes
         hex = new Hexahedron( *this );
-        //hex->init( i );
         hex->_i = _i;
         hex->_j = _j;
         hex->_k = _k;
@@ -2501,8 +2420,6 @@ namespace
         GridPlanes& planes = pln[ iDirZ ];
         int iDirX = ( iDirZ + 1 ) % 3;
         int iDirY = ( iDirZ + 2 ) % 3;
-        // planes._uNorm  = ( _grid->_axes[ iDirY ] ^ _grid->_axes[ iDirZ ] ).Normalized();
-        // planes._vNorm  = ( _grid->_axes[ iDirZ ] ^ _grid->_axes[ iDirX ] ).Normalized();
         planes._zNorm  = ( _grid->_axes[ iDirX ] ^ _grid->_axes[ iDirY ] ).Normalized();
         planes._zProjs.resize ( _grid->_coords[ iDirZ ].size() );
         planes._zProjs [0] = 0;
@@ -2545,7 +2462,6 @@ namespace
         double    xLen = _grid->_coords[ iDirX ].back() - _grid->_coords[ iDirX ][0];
         double    yLen = _grid->_coords[ iDirY ].back() - _grid->_coords[ iDirY ][0];
         double    zLen = _grid->_coords[ iDirZ ].back() - _grid->_coords[ iDirZ ][0];
-        //double zFactor = _grid->_axes[ iDirZ ] * planes._zNorm;
         int dIJK[3], d000[3] = { 0,0,0 };
         double o[3] = { _grid->_coords[0][0],
                         _grid->_coords[1][0],
@@ -2636,28 +2552,6 @@ namespace
       } // loop on 3 grid directions
     } // loop on EDGEs
 
-    // Create nodes at found intersections
-    // const E_IntersectPoint* eip;
-    // for ( size_t i = 0; i < hexes.size(); ++i )
-    // {
-    //   Hexahedron* h = hexes[i];
-    //   if ( !h ) continue;
-    //   for ( int iF = 0; iF < 6; ++iF )
-    //   {
-    //     _Face& quad = h->_hexQuads[ iF ];
-    //     for ( size_t iP = 0; iP < quad._eIntNodes.size(); ++iP )
-    //       if ( !quad._eIntNodes[ iP ]._node )
-    //         if (( eip = quad._eIntNodes[ iP ].EdgeIntPnt() ))
-    //           quad._eIntNodes[ iP ]._intPoint->_node = helper.AddNode( eip->_point.X(),
-    //                                                                    eip->_point.Y(),
-    //                                                                    eip->_point.Z() );
-    //   }
-    //   for ( size_t iP = 0; iP < hexes[i]->_vIntNodes.size(); ++iP )
-    //     if (( eip = h->_vIntNodes[ iP ].EdgeIntPnt() ))
-    //       h->_vIntNodes[ iP ]._intPoint->_node = helper.AddNode( eip->_point.X(),
-    //                                                                eip->_point.Y(),
-    //                                                                eip->_point.Z() );
-    // }
   }
 
   //================================================================================
@@ -2929,44 +2823,6 @@ namespace
         return v * normal > 0;
       }
     }
-    //     if ( !_hexLinks[ iLink ]._nodes[0]->Node() ) // no node
-    //       return true;
-    //     if ( !_hexLinks[ iLink ]._nodes[0]->_intPoint ) // no intersection with geometry
-    //       return false;
-    //     switch ( _hexLinks[ iLink ]._nodes[0]->FaceIntPnt()->_transition ) {
-    //     case Trans_OUT: return true;
-    //     case Trans_IN : return false;
-    //     default: ; // tangent transition
-    //     }
-
-//     // ijk of a GridLine corresponding to the link
-//     int   iDir = iLink / 4;
-//     int indSub = iLink % 4;
-//     LineIndexer li = _grid->GetLineIndexer( iDir );
-//     li.SetIJK( _i,_j,_k );
-//     size_t lineIndex[4] = { li.LineIndex  (),
-//                             li.LineIndex10(),
-//                             li.LineIndex01(),
-//                             li.LineIndex11() };
-//     GridLine& line = _grid->_lines[ iDir ][ lineIndex[ indSub ]];
-
-//     // analyze transition of previous ip
-//     bool isOut = true;
-//     multiset< F_IntersectPoint >::const_iterator ip = line._intPoints.begin();
-//     for ( ; ip != line._intPoints.end(); ++ip )
-//     {
-//       if ( &(*ip) == _hexLinks[ iLink ]._nodes[0]->_intPoint )
-//         break;
-//       switch ( ip->_transition ) {
-//       case Trans_OUT: isOut = true;
-//       case Trans_IN : isOut = false;
-//       default:;
-//       }
-//     }
-// #ifdef _DEBUG_
-//     if ( ip == line._intPoints.end() )
-//       cout << "BUG: Wrong GridLine. IKJ = ( "<< _i << " " << _j << " " << _k << " )" << endl;
-// #endif
     return isOut;
   }
   //================================================================================
@@ -3121,7 +2977,6 @@ namespace
 
       // find a top node above the base node
       _Link* link = _polygons[0]._links[iL]._link;
-      //ASSERT( link->_faces.size() > 1 );
       if ( !link->_faces[0] || !link->_faces[1] )
         return debugDumpLink( link );
       // a quadrangle sharing <link> with _polygons[0]
@@ -3152,8 +3007,7 @@ namespace
     nodes[2] = _polygons[0]._links[2].FirstNode();
 
     _Link* link = _polygons[0]._links[0]._link;
-    //ASSERT( link->_faces.size() > 1 );
-      if ( !link->_faces[0] || !link->_faces[1] )
+    if ( !link->_faces[0] || !link->_faces[1] )
       return debugDumpLink( link );
 
     // a triangle sharing <link> with _polygons[0]
@@ -3192,7 +3046,6 @@ namespace
 
       // find a top node above the base node
       _Link* link = _polygons[ iTri ]._links[iL]._link;
-      //ASSERT( link->_faces.size() > 1 );
       if ( !link->_faces[0] || !link->_faces[1] )
         return debugDumpLink( link );
       // a quadrangle sharing <link> with a base triangle
@@ -3233,7 +3086,6 @@ namespace
     nodes[3] = _polygons[iQuad]._links[3].FirstNode();
 
     _Link* link = _polygons[iQuad]._links[0]._link;
-    //ASSERT( link->_faces.size() > 1 );
     if ( !link->_faces[0] || !link->_faces[1] )
       return debugDumpLink( link );
 
