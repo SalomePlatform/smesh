@@ -87,7 +87,7 @@
 
 #include <limits>
 
-//#undef WITH_TBB
+// #undef WITH_TBB
 #ifdef WITH_TBB
 #include <tbb/parallel_for.h>
 //#include <tbb/enumerable_thread_specific.h>
@@ -562,7 +562,7 @@ namespace
         }
         else if ( _link->_faces[0] == f )
         {
-          _link->_faces[0];
+          _link->_faces[0] = 0;
           if ( _link->_faces[1] )
           {
             _link->_faces[0] = _link->_faces[1];
@@ -2015,8 +2015,7 @@ namespace
       }
       else // there are intersections with EDGEs
       {
-        // get a remaining link to start from, one lying on minimal
-        // nb of FACEs
+        // get a remaining link to start from, one lying on minimal nb of FACEs
         {
           vector< pair< TGeomID, int > > facesOfLink[3];
           pair< TGeomID, int > faceOfLink( -1, -1 );
@@ -2059,7 +2058,7 @@ namespace
         polygon._links.push_back( *curLink );
         --nbFreeLinks;
 
-        // find all links bounding a FACE of curLink
+        // find all links lying on a curFace
         do
         {
           // go forward from curLink
@@ -2148,7 +2147,8 @@ namespace
         if ( polygon._links.back().NbFaces() > 0 )
           polygon._links.front().AddFace( polygon._links.back()._link->_faces[0] );
 
-        _polygons.pop_back();
+        if ( iPolygon == _polygons.size()-1 )
+          _polygons.pop_back();
       }
       else // polygon._links.size() >= 2
       {
@@ -2178,10 +2178,16 @@ namespace
             if ( iL2 == polygon._links.size() )
               coplanarPolyg = 0;
           }
-          if ( 0 /*coplanarPolyg*/ ) // coplanar polygon found
+          if ( coplanarPolyg ) // coplanar polygon found
           {
             freeLinks.resize( freeLinks.size() - polygon._polyLinks.size() );
             nbFreeLinks -= polygon._polyLinks.size();
+
+            // an artificial E_IntersectPoint used to mark nodes of coplanarPolyg
+            // as lying on curFace while they are not at intersection with geometry
+            E_IntersectPoint* ip = & _grid->_edgeIntP.back();
+            ip->_faceIDs.resize(1);
+            ip->_faceIDs[0] = curFace;
 
             // fill freeLinks with links not shared by coplanarPolyg and polygon
             for ( size_t iL = 0; iL < polygon._links.size(); ++iL )
@@ -2208,9 +2214,23 @@ namespace
                 for ( size_t iL2 = 0; iL2 < p->_links.size(); ++iL2 )
                   if ( p->_links[ iL2 ]._link == coplanarPolyg->_links[ iL ]._link )
                   {
-                    freeLinks.push_back( & p->_links[ iL2 ] );
+                    // set links of coplanarPolyg in place of used freeLinks
+                    // to re-create coplanarPolyg next
+                    size_t iL3 = 0;
+                    for ( ; iL3 < freeLinks.size() && freeLinks[ iL3 ]; ++iL3 );
+                    if ( iL3 < freeLinks.size() )
+                      freeLinks[ iL3 ] = ( & p->_links[ iL2 ] );
+                    else
+                      freeLinks.push_back( & p->_links[ iL2 ] );
                     ++nbFreeLinks;
-                    freeLinks.back()->RemoveFace( coplanarPolyg );
+                    freeLinks[ iL3 ]->RemoveFace( coplanarPolyg );
+                    //  mark nodes of coplanarPolyg as lying on curFace
+                    for ( int iN = 0; iN < 2; ++iN )
+                    {
+                      _Node* n = freeLinks[ iL3 ]->_link->_nodes[ iN ];
+                      if ( n->_intPoint ) n->_intPoint->Add( ip->_faceIDs );
+                      else                n->_intPoint = ip;
+                    }
                     break;
                   }
               }
@@ -2232,7 +2252,7 @@ namespace
             usedFaceIDs.erase( curFace );
             continue;
           } // if ( coplanarPolyg )
-        } // if ( hasEdgeIntersections )
+        } // if ( hasEdgeIntersections ) - search for coplanarPolyg
 
         iPolygon = _polygons.size();
 
@@ -2552,6 +2572,11 @@ namespace
       } // loop on 3 grid directions
     } // loop on EDGEs
 
+    // add an artificial E_IntersectPoint used in Hexahedron::ComputeElements()
+    ip._shapeID = -1;
+    ip._faceIDs.clear();
+    ip._node = 0;
+    _grid->_edgeIntP.push_back( ip );
   }
 
   //================================================================================
@@ -2794,6 +2819,9 @@ namespace
       default: ; // tangent transition
       }
     }
+    if ( !link._nodes[1]->Node() )
+      return true;
+
     gp_Pnt p1 = link._nodes[0]->Point();
     gp_Pnt p2 = link._nodes[1]->Point();
     gp_Pnt testPnt = 0.8 * p1.XYZ() + 0.2 * p2.XYZ();
