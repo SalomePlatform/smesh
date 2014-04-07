@@ -2006,6 +2006,14 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
             addCmd->Clear();
             theCommand->Clear();
           }
+          else
+          {
+            // mesh.AddHypothesis(geom, hyp) --> mesh.AddHypothesis(hyp, geom=0)
+            addCmd->RemoveArgs();
+            addCmd->SetArg( 1, hypID );
+            if ( isLocal )
+              addCmd->SetArg( 2, geomID );
+          }
         }
         else
         {
