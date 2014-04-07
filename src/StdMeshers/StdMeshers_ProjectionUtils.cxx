@@ -1428,7 +1428,8 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face&    face1,
               // move edge2Beg to place before edge2End
               edges2.splice( edge2End, edges2, edge2Beg++ );
 
-            if ( sameVertexUV( *edge2Beg, face2, 0, v0f1UV, vTolUV ))
+            if ( edge2Beg != edges2.end() &&
+                 sameVertexUV( *edge2Beg, face2, 0, v0f1UV, vTolUV ))
             {
               if ( iW1 == 0 ) OK = true; // OK is for the first wire
               // reverse edges2 if needed

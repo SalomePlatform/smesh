@@ -2082,13 +2082,9 @@ void SMESHGUI_MeshOp::readMesh()
     }
 
     // Get name of geometry object
-    GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj );
-    if ( !aGeomVar->_is_nil() )
-    {
-      _PTR(SObject) aGeomSO = studyDS()->FindObjectID( aGeomVar->GetStudyEntry() );
-      QString aShapeName = name( aGeomSO );
-      myDlg->setObjectText( SMESHGUI_MeshDlg::Geom, aShapeName );
-    }
+    CORBA::String_var name = SMESH::GetGeomName( pObj );
+    if ( name.in() )
+      myDlg->setObjectText( SMESHGUI_MeshDlg::Geom, name.in() );
   }
 
   // Get hypotheses and algorithms assigned to the mesh/sub-mesh

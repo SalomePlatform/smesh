@@ -901,7 +901,9 @@ void SMESHGUI_BaseComputeOp::computeMesh()
 
     // NPAL16631: if ( !memoryLack )
     {
-      SMESH::ModifiedMesh(aMeshSObj, !computeFailed, myMesh->NbNodes() == 0);
+      SMESH::ModifiedMesh( aMeshSObj,
+                           !computeFailed && aHypErrors.isEmpty(),
+                           myMesh->NbNodes() == 0);
       update( UF_ObjBrowser | UF_Model );
 
       // SHOW MESH

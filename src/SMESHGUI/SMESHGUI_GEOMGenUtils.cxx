@@ -108,6 +108,40 @@ namespace SMESH
     return GEOM::GEOM_Object::_nil();
   }
 
+  SMESHGUI_EXPORT char* GetGeomName( _PTR(SObject) smeshSO )
+  {
+    if (!smeshSO)
+      return 0;
+
+    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+    if (!aStudy)
+      return 0;
+
+    _PTR(ChildIterator) anIter (aStudy->NewChildIterator( smeshSO ));
+    for ( ; anIter->More(); anIter->Next()) {
+      _PTR(SObject) aSObject = anIter->Value();
+      _PTR(SObject) aRefSOClient;
+      GEOM::GEOM_Object_var aMeshShape;
+
+      if (aSObject->ReferencedObject(aRefSOClient)) {
+        SALOMEDS_SObject* aRefSO = _CAST(SObject,aRefSOClient);
+        aMeshShape = GEOM::GEOM_Object::_narrow(aRefSO->GetObject());
+        aSObject = aRefSOClient;
+      }
+      else {
+        SALOMEDS_SObject* aSO = _CAST(SObject,aSObject);
+        aMeshShape = GEOM::GEOM_Object::_narrow(aSO->GetObject());
+      }
+
+      if (!aMeshShape->_is_nil())
+      {
+        std::string name = aSObject->GetName();
+        return CORBA::string_dup( name.c_str() );
+      }
+    }
+    return 0;
+  }
+
   GEOM::GEOM_Object_ptr GetSubShape (GEOM::GEOM_Object_ptr theMainShape,
                                      long                  theID)
   {
