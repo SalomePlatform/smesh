@@ -100,7 +100,7 @@ public :
   bool                            isActiveStudyLocked();
 
   static bool                     automaticUpdate(unsigned int requestedSize = 0, bool* limitExceeded = 0);
-  static bool                     automaticUpdate( SMESH::SMESH_Mesh_ptr, int*, bool*, int* );
+  static bool                     automaticUpdate( SMESH::SMESH_IDSource_ptr, int*, bool*, int*, long* );
 
   static void                     Modified( bool = true );
 

@@ -2012,8 +2012,8 @@ bool SMESHGUI::automaticUpdate(unsigned int requestedSize, bool* limitExceeded)
  *
  */
 //=============================================================================
-bool SMESHGUI::automaticUpdate( SMESH::SMESH_Mesh_ptr theMesh,
-                                int* entities, bool* limitExceeded, int* hidden )
+bool SMESHGUI::automaticUpdate( SMESH::SMESH_IDSource_ptr theMesh,
+                                int* entities, bool* limitExceeded, int* hidden, long* nbElements )
 {
   SUIT_ResourceMgr* resMgr = SUIT_Session::session()->resourceMgr();
   if ( !resMgr )
@@ -2023,8 +2023,23 @@ bool SMESHGUI::automaticUpdate( SMESH::SMESH_Mesh_ptr theMesh,
   long updateLimit = resMgr->integerValue( "SMESH", "update_limit", 500000 );
   bool incrementalLimit = resMgr->booleanValue( "SMESH", "incremental_limit", false );
 
-  long requestedSize = theMesh->NbElements();
+  SMESH::long_array_var info = theMesh->GetMeshInfo();
+  long nbOdElems = info[SMDSEntity_0D];
+  long nbEdges   = info[SMDSEntity_Edge] + info[SMDSEntity_Quad_Edge];
+  long nbFaces   = info[SMDSEntity_Triangle]   + info[SMDSEntity_Quad_Triangle]   + info[SMDSEntity_BiQuad_Triangle] + 
+                   info[SMDSEntity_Quadrangle] + info[SMDSEntity_Quad_Quadrangle] + info[SMDSEntity_BiQuad_Quadrangle] + 
+                   info[SMDSEntity_Polygon];
+  long nbVolumes = info[SMDSEntity_Tetra]   + info[SMDSEntity_Quad_Tetra] + 
+                   info[SMDSEntity_Hexa]    + info[SMDSEntity_Quad_Hexa] + info[SMDSEntity_TriQuad_Hexa] + 
+                   info[SMDSEntity_Pyramid] + info[SMDSEntity_Quad_Pyramid] + 
+                   info[SMDSEntity_Penta]   + info[SMDSEntity_Quad_Penta] + 
+                   info[SMDSEntity_Polyhedra] + 
+                   info[SMDSEntity_Hexagonal_Prism];
+  long nbBalls   = info[SMDSEntity_Ball];
 
+  long requestedSize = nbOdElems + nbBalls + nbEdges + nbFaces + nbVolumes;
+  *nbElements = requestedSize;
+  
   *entities = SMESH_Actor::eAllEntity;
   *hidden   = 0;
 
@@ -2033,11 +2048,6 @@ bool SMESHGUI::automaticUpdate( SMESH::SMESH_Mesh_ptr theMesh,
   if ( limitExceeded ) *limitExceeded = autoUpdate && exceeded;
 
   if ( incrementalLimit ) {
-    long nbOdElems = theMesh->Nb0DElements();
-    long nbEdges   = theMesh->NbEdges();
-    long nbFaces   = theMesh->NbFaces();
-    long nbVolumes = theMesh->NbVolumes();
-    long nbBalls   = theMesh->NbBalls();
     long total     = 0;
 
     if ( nbOdElems > 0 ) {
