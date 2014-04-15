@@ -648,7 +648,16 @@ bool StdMeshers_Quadrangle_2D::computeQuadDominant(SMESH_Mesh&         aMesh,
           else
           {
             if ( SMDS_MeshFace* face = myHelper->AddFace(a, b, d, c))
+            {
               meshDS->SetMeshElementOnShape(face, geomFaceID);
+              SMESH_ComputeErrorPtr& err = aMesh.GetSubMesh( aFace )->GetComputeError();
+              if ( !err || err->IsOK() || err->myName < COMPERR_WARNING )
+              {
+                err.reset( new SMESH_ComputeError( COMPERR_WARNING,
+                                                   "Bad quality quad created"));
+                err->myBadElements.push_back( face );
+              }
+            }
             --i;
           }
         }
@@ -820,7 +829,16 @@ bool StdMeshers_Quadrangle_2D::computeQuadDominant(SMESH_Mesh&         aMesh,
           else
           {
             if ( SMDS_MeshFace* face = myHelper->AddFace(a, b, d, c))
+            {
               meshDS->SetMeshElementOnShape(face, geomFaceID);
+              SMESH_ComputeErrorPtr& err = aMesh.GetSubMesh( aFace )->GetComputeError();
+              if ( !err || err->IsOK() || err->myName < COMPERR_WARNING )
+              {
+                err.reset( new SMESH_ComputeError( COMPERR_WARNING,
+                                                   "Bad quality quad created"));
+                err->myBadElements.push_back( face );
+              }
+            }
             --i;
           }
         }
