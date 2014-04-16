@@ -3551,7 +3551,7 @@ namespace { // Structures used by FixQuadraticElements()
     }
     else if ( _faces.size() > 1 ) // not found, set NULL by the first face
     {
-      _faces.insert( ++_faces.begin(), 0 );
+      _faces.insert( ++_faces.begin(), (QFace*) 0 );
     }
   }
   //================================================================================

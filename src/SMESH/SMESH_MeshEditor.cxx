@@ -1174,7 +1174,7 @@ int SMESH_MeshEditor::Reorient2D (TIDSortedElemSet &       theFaces,
     avoidSet.clear();
     avoidSet.insert(theFace);
 
-    NLink link( theFace->GetNode( 0 ), 0 );
+    NLink link( theFace->GetNode( 0 ), (SMDS_MeshNode *) 0 );
 
     const int nbNodes = theFace->NbCornerNodes();
     for ( int i = 0; i < nbNodes; ++i ) // loop on links of theFace
