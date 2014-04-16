@@ -4205,7 +4205,9 @@ void _ViscousBuilder::fixBadFaces(const TopoDS_Face&          F,
       trias [iSide].first  = badTrias[iTia];
       trias [iSide].second = SMESH_MeshAlgos::FindFaceInSet( n1, n2, emptySet, involvedFaces,
                                                              & i1, & i2 );
-      if ( ! trias[iSide].second || trias[iSide].second->NbCornerNodes() != 3 )
+      if (( ! trias[iSide].second ) ||
+          ( trias[iSide].second->NbCornerNodes() != 3 ) ||
+          ( ! sm->Contains( trias[iSide].second )))
         continue;
 
       // aspect ratio of an adjacent tria
