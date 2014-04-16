@@ -1615,7 +1615,7 @@ namespace
     };
   const int theHexTo4Prisms_FB[6*4+1] = // front-back
     {
-      0, 3, 8, 1, 2, 9,    3, 7, 8, 2, 6, 9,    7, 4, 8, 6, 5, 9,   4, 0, 8, 5, 1, 9,    -1
+      0, 3, 9, 1, 2, 8,    3, 7, 9, 2, 6, 8,    7, 4, 9, 6, 5, 8,   4, 0, 9, 5, 1, 8,    -1
     };
 
   const int theHexTo2Prisms_BT_1[6*2+1] =
