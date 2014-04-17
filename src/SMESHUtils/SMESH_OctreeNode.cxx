@@ -30,6 +30,7 @@
 #include "SMESH_OctreeNode.hxx"
 
 #include "SMDS_SetIterator.hxx"
+#include "SMESH_TypeDefs.hxx"
 #include <gp_Pnt.hxx>
 
 using namespace std;
@@ -167,7 +168,7 @@ void SMESH_OctreeNode::NodesAround (const SMDS_MeshNode * Node,
                                     list<const SMDS_MeshNode*>* Result,
                                     const double precision)
 {
-  gp_XYZ p(Node->X(), Node->Y(), Node->Z());
+  SMESH_TNodeXYZ p(Node);
   if (isInside(p, precision))
   {
     if (isLeaf())
@@ -191,7 +192,7 @@ void SMESH_OctreeNode::NodesAround (const SMDS_MeshNode * Node,
  *  \param node - node to find nodes closest to
  *  \param dist2Nodes - map of found nodes and their distances
  *  \param precision - radius of a sphere to check nodes inside
- *  \retval bool - true if an exact overlapping found
+ *  \retval bool - true if an exact overlapping found !!!
  */
 //================================================================================
 
@@ -204,7 +205,6 @@ bool SMESH_OctreeNode::NodesAround(const gp_XYZ &node,
   else if ( precision == 0. )
     precision = maxSize() / 2;
 
-  //gp_XYZ p(node->X(), node->Y(), node->Z());
   if (isInside(node, precision))
   {
     if (!isLeaf())
@@ -222,21 +222,20 @@ bool SMESH_OctreeNode::NodesAround(const gp_XYZ &node,
     }
     else if ( NbNodes() > 0 )
     {
-      size_t nbFoundBefore = dist2Nodes.size();
       double minDist = precision * precision;
-      gp_Pnt p1 ( node.X(), node.Y(), node.Z() );
       TIDSortedNodeSet::iterator nIt = myNodes.begin();
       for ( ; nIt != myNodes.end(); ++nIt )
       {
-        gp_Pnt p2 ( (*nIt)->X(), (*nIt)->Y(), (*nIt)->Z() );
-        double dist2 = p1.SquareDistance( p2 );
+        SMESH_TNodeXYZ p2( *nIt );
+        double dist2 = ( node - p2 ).SquareModulus();
         if ( dist2 < minDist )
-          dist2Nodes.insert( make_pair( minDist = dist2, *nIt ));
+          dist2Nodes.insert( make_pair( minDist = dist2, p2._node ));
       }
 //       if ( dist2Nodes.size() > 1 ) // leave only closest node in dist2Nodes
 //         dist2Nodes.erase( ++dist2Nodes.begin(), dist2Nodes.end());
 
-      return ( nbFoundBefore < dist2Nodes.size() );
+      // true if an exact overlapping found
+      return ( sqrt( minDist ) <= precision * 1e-12 );
     }
   }
   return false;

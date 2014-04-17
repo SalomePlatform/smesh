@@ -280,7 +280,8 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
         {
           // find a pre-existing node
           dist2foundNodes.clear();
-          if ( existingNodeOcTr.NodesAround( SMESH_TNodeXYZ( *node ), dist2foundNodes, groupTol ))
+          existingNodeOcTr.NodesAround( SMESH_TNodeXYZ( *node ), dist2foundNodes, groupTol );
+          if ( !dist2foundNodes.empty() )
             (*n2nIt).second = dist2foundNodes.begin()->second;
         }
         if ( !n2nIt->second )
