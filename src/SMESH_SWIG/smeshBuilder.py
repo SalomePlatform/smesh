@@ -4629,6 +4629,19 @@ class Mesh:
     def GetSkew(self, elemId):
         return self._valueFromFunctor(SMESH.FT_Skew, elemId)
 
+    ## Return minimal and maximal value of a given functor.
+    #  @param funType a functor type, an item of SMESH.FunctorType enum
+    #         (one of SMESH.FunctorType._items)
+    #  @return tuple (min,max)
+    #  @ingroup l1_measurements
+    def GetMinMax(self, funType):
+        fun = self._getFunctor( funType )
+        if fun:
+            hist = fun.GetHistogram( 1, False )
+            if hist:
+                return hist[0].min, hist[0].max
+        return None
+
     pass # end of Mesh class
 
 ## Helper class for wrapping of SMESH.SMESH_Pattern CORBA class
