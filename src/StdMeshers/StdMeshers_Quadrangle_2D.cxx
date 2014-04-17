@@ -3848,7 +3848,7 @@ void StdMeshers_Quadrangle_2D::updateDegenUV(FaceQuadStruct::Ptr quad)
       uv1.v = uv2.v = 0.5 * ( uv1.v + uv2.v );
     }
 
-  else if ( quad->side.size() == 4 && myQuadType == QUAD_STANDARD)
+  else if ( quad->side.size() == 4 /*&& myQuadType == QUAD_STANDARD*/)
 
     // Set number of nodes on a degenerated side to be same as on an opposite side
     // ----------------------------------------------------------------------------
