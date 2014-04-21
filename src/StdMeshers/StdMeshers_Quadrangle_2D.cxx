@@ -4076,7 +4076,8 @@ bool StdMeshers_Quadrangle_2D::check()
       const TopoDS_Edge& e1 = wire->Edge( iPrev );
       const TopoDS_Edge& e2 = wire->Edge( i );
       double angle = myHelper->GetAngle( e1, e2, geomFace );
-      if ( maxAngle < angle && 5.* M_PI/180 < angle )
+      if (( maxAngle < angle ) &&
+          ( 5.* M_PI/180 < angle && angle < 85.* M_PI/180  ))
       {
         maxAngle = angle;
         iVertex = i;
