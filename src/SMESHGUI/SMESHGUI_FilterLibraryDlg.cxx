@@ -30,6 +30,9 @@
 #include "SMESHGUI.h"
 #include "SMESHGUI_FilterUtils.h"
 #include "SMESHGUI_FilterDlg.h"
+#include "SMESHGUI_VTKUtils.h"
+
+#include <GEOMBase.h>
 
 // SALOME GUI includes
 #include <SUIT_Session.h>
@@ -37,8 +40,9 @@
 #include <SUIT_FileDlg.h>
 #include <SUIT_MessageBox.h>
 #include <SUIT_ResourceMgr.h>
-
 #include <LightApp_Application.h>
+#include <LightApp_SelectionMgr.h>
+#include <SALOME_ListIO.hxx>
 
 // Qt includes
 #include <QApplication>
@@ -233,12 +237,15 @@ QWidget* SMESHGUI_FilterLibraryDlg::createMainFrame (QWidget* theParent)
   connect(myDeleteBtn, SIGNAL(clicked()), this, SLOT(onDeleteBtnPressed()));
 
   connect(myName, SIGNAL(textChanged(const QString&)),
-           this, SLOT(onFilterNameChanged(const QString&)));
+          this, SLOT(onFilterNameChanged(const QString&)));
 
   connect(myTable, SIGNAL(EntityTypeChanged(const int)),
-           this, SLOT(onEntityTypeChanged(const int)));
+          this, SLOT(onEntityTypeChanged(const int)));
 
   connect(myTable, SIGNAL(NeedValidation()), this, SLOT(onNeedValidation()));
+
+  LightApp_SelectionMgr* selMgr = SMESH::GetSelectionMgr( mySMESHGUI );
+  connect( selMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionDone()));
 
   return aMainFrame;
 }
@@ -1175,6 +1182,73 @@ void SMESHGUI_FilterLibraryDlg::onNeedValidation()
       myLibrary->Replace(myCurrFilterName.toLatin1().constData(),
                          myName->text().toLatin1().constData(),
                          aFilter);
+    }
+  }
+}
+
+
+//=======================================================================
+// name    : SMESHGUI_FilterLibraryDlg::onSelectionDone
+// Purpose : SLOT called when selection changed.
+//           If current cell corresponds to the threshold value of
+//           BelongToGeom criterion name of selected object is set in this cell
+//=======================================================================
+
+void SMESHGUI_FilterLibraryDlg::onSelectionDone()
+{
+  SALOME_ListIO aList;
+  if( LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr() )
+    aSel->selectedObjects( aList );
+
+  int aRow, aCol;
+  if (aList.Extent() != 1 || !myTable->CurrentCell(aRow, aCol))
+    return;
+
+  const int type = myTable->GetCriterionType(aRow);
+  QList<int> types; 
+  types << SMESH::FT_BelongToGeom     << SMESH::FT_BelongToPlane 
+        << SMESH::FT_BelongToCylinder << SMESH::FT_BelongToGenSurface
+        << SMESH::FT_LyingOnGeom      << SMESH::FT_CoplanarFaces
+        << SMESH::FT_ConnectedElements;
+  if ( !types.contains( type ))
+    return;
+
+  Handle(SALOME_InteractiveObject) anIO = aList.First();
+  switch ( type )
+  {
+  case SMESH::FT_CoplanarFaces: // get ID of a selected mesh face
+    {
+      QString aString;
+      int nbElems = SMESH::GetNameOfSelectedElements(SMESH::GetSelector(), anIO, aString);
+      if (nbElems == 1)
+        myTable->SetThreshold(aRow, aString);
+      break;
+    }
+  case SMESH::FT_ConnectedElements: // get either VERTEX or a node ID
+    {
+      GEOM::GEOM_Object_var anObj = SMESH::IObjectToInterface<GEOM::GEOM_Object>(anIO);
+      if (!anObj->_is_nil())
+      {
+        myTable->SetThreshold(aRow, GEOMBase::GetName(anObj));
+        myTable->SetID       (aRow, anIO->getEntry());
+      }
+      else
+      {
+        QString aString;
+        int nbElems = SMESH::GetNameOfSelectedElements(SMESH::GetSelector(), anIO, aString);
+        if (nbElems == 1)
+          myTable->SetThreshold(aRow, aString);
+      }
+      break;
+    }
+  default: // get a GEOM object
+    {
+      GEOM::GEOM_Object_var anObj = SMESH::IObjectToInterface<GEOM::GEOM_Object>(anIO);
+      if (!anObj->_is_nil())
+      {
+        myTable->SetThreshold(aRow, GEOMBase::GetName(anObj));
+        myTable->SetID       (aRow, anIO->getEntry());
+      }
     }
   }
 }

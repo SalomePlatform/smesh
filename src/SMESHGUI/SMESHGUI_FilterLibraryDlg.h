@@ -98,6 +98,7 @@ private slots:
   void                        onFilterNameChanged( const QString& );
   void                        onEntityTypeChanged( const int );
   void                        onNeedValidation();
+  void                        onSelectionDone();
 
 private:
   void                        construct( const QList<int>&, const int ); 
