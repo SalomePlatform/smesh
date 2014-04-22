@@ -54,6 +54,7 @@
 #include <Geom2d_Line.hxx>
 #include <Geom2d_TrimmedCurve.hxx>
 #include <GeomAdaptor_Curve.hxx>
+#include <GeomLib.hxx>
 #include <Geom_Circle.hxx>
 #include <Geom_Curve.hxx>
 #include <Geom_Line.hxx>
@@ -1811,45 +1812,36 @@ bool _ViscousBuilder::setEdgeData(_LayerEdge&         edge,
       totalNbFaces++;
       F = TopoDS::Face( s );
 
-      // IDEA: if there is a problem with finding a normal,
-      // we can compute an area-weighted sum of normals of all faces sharing the node
       gp_XY uv = helper.GetNodeUV( F, node, 0, &normOK );
       Handle(Geom_Surface) surface = BRep_Tool::Surface( F );
-      surface->D1( uv.X(), uv.Y(), p, du,dv );
-      geomNorm = du ^ dv;
-      double size2 = geomNorm.SquareMagnitude();
-      if ( size2 < 1e-10 ) // singularity
       {
-        SMDS_ElemIteratorPtr fIt = node->GetInverseElementIterator(SMDSAbs_Face);
-        while ( fIt->more() )
+        gp_Dir normal;
+        if ( GeomLib::NormEstim( surface, uv, 1e-10, normal ) < 3 )
         {
-          const SMDS_MeshElement* f = fIt->next();
-          if ( editor.FindShape( f ) == *id )
-          {
-            SMESH_MeshAlgos::FaceNormal( f, (gp_XYZ&) geomNorm.XYZ(), /*normalized=*/false );
-            size2 = geomNorm.SquareMagnitude();
-            break;
-          }
+          geomNorm = normal;
+          normOK = true;
         }
-        // double ddu = 0, ddv = 0;
-        // if ( du.SquareMagnitude() > dv.SquareMagnitude() )
-        //   ddu = 1e-3;
-        // else
-        //   ddv = 1e-3;
-        // surface->D1( uv.X()+ddu, uv.Y()+ddv, p, du,dv );
-        // geomNorm = du ^ dv;
-        // size2 = geomNorm.SquareMagnitude();
-        // if ( size2 < 1e-10 )
-        // {
-        //   surface->D1( uv.X()-ddu, uv.Y()-ddv, p, du,dv );
-        //   geomNorm = du ^ dv;
-        //   size2 = geomNorm.SquareMagnitude();
-        // }
+        else // hard singularity
+        {
+          SMDS_ElemIteratorPtr fIt = node->GetInverseElementIterator(SMDSAbs_Face);
+          while ( fIt->more() )
+          {
+            const SMDS_MeshElement* f = fIt->next();
+            if ( editor.FindShape( f ) == *id )
+            {
+              SMESH_MeshAlgos::FaceNormal( f, (gp_XYZ&) geomNorm.XYZ(), /*normalized=*/false );
+              if ( helper.IsReversedSubMesh( F ))
+                geomNorm.Reverse();
+              break;
+            }
+          }
+          double size2 = geomNorm.SquareMagnitude();
+          if ( size2 > numeric_limits<double>::min() )
+            geomNorm /= sqrt( size2 );
+          else
+            normOK = false;
+        }
       }
-      if ( size2 > numeric_limits<double>::min() )
-        geomNorm /= sqrt( size2 );
-      else
-        normOK = false;
       if ( helper.GetSubShapeOri( data._solid, F ) != TopAbs_REVERSED )
         geomNorm.Reverse();
       edge._normal += geomNorm.XYZ();

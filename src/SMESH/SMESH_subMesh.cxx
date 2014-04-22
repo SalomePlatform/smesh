@@ -2122,7 +2122,7 @@ TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * theGen,
     theAlgo->GetUsedHypothesis( *_father, _subShape, ignoreAuxiliaryHyps ); // copy
 
   // put in a compound all shapes with the same hypothesis assigned
-  // and a good ComputState
+  // and a good ComputeState
 
   TopoDS_Compound aCompound;
   BRep_Builder aBuilder;
