@@ -331,7 +331,7 @@ void SMESHGUI_ShapeByMeshOp::commitOperation()
 
       TopAbs_ShapeEnum aGroupType = TopAbs_SHAPE;
 
-      std::map<double, GEOM::GEOM_Object_wrap> aGeomObjectsMap;
+      std::map<int, GEOM::GEOM_Object_wrap> aGeomObjectsMap;
       GEOM::GEOM_Object_wrap aGeomObject;
 
       GEOM::GEOM_Object_var aMeshShape = myMesh->GetShapeToMesh();
@@ -343,7 +343,7 @@ void SMESHGUI_ShapeByMeshOp::commitOperation()
 
         if (aGeomObject->_is_nil()) continue;
 
-        double anId = aShapesOp->GetSubShapeIndex(aMeshShape, aGeomObject);
+        int anId = aShapesOp->GetSubShapeIndex(aMeshShape, aGeomObject);
         if (aShapesOp->IsDone() && !aGeomObjectsMap.count(anId) )
         {
           aGeomObjectsMap[anId] = aGeomObject;
@@ -372,13 +372,13 @@ void SMESHGUI_ShapeByMeshOp::commitOperation()
         aGeomObjects->length( aNumberOfGO );
 
         int i = 0;
-        std::map<double, GEOM::GEOM_Object_wrap>::iterator anIter;
+        std::map<int, GEOM::GEOM_Object_wrap>::iterator anIter;
         for (anIter = aGeomObjectsMap.begin(); anIter!=aGeomObjectsMap.end(); anIter++)
-          aGeomObjects[i++] = (*anIter).second.in();
+          aGeomObjects[i++] = GEOM::GEOM_Object::_duplicate( (*anIter).second.in() );
 
         //create geometry group
         aGeomObject = aGroupOp->CreateGroup(aMeshShape, aGroupType);
-        aGroupOp->UnionList(myGeomObj, aGeomObjects);
+        aGroupOp->UnionList(aGeomObject, aGeomObjects);
 
         if (!aGroupOp->IsDone())
           return;
