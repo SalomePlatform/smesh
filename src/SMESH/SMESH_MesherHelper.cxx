@@ -1436,6 +1436,7 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
     catch ( Standard_Failure& f )
     {
       // issue 22502 / a node is on VERTEX not belonging to E
+      // issue 22568 / both nodes are on non-connected VERTEXes
       return getMediumNodeOnComposedWire(n1,n2,force3d);
     }
   }
@@ -1535,67 +1536,108 @@ const SMDS_MeshNode* SMESH_MesherHelper::getMediumNodeOnComposedWire(const SMDS_
                                                                      const SMDS_MeshNode* n2,
                                                                      bool                 force3d)
 {
-  gp_Pnt middle = 0.5 * XYZ(n1) + 0.5 * XYZ(n2);
+  SMESH_TNodeXYZ p1( n1 ), p2( n2 );
+  gp_Pnt      middle = 0.5 * p1 + 0.5 * p2;
   SMDS_MeshNode* n12 = AddNode( middle.X(), middle.Y(), middle.Z() );
 
   // To find position on edge and 3D position for n12,
   // project <middle> to 2 edges and select projection most close to <middle>
 
-  double u = 0, distMiddleProj = Precision::Infinite(), distXYZ[4];
-  int iOkEdge = 0;
-  TopoDS_Edge edges[2];
+  TopoDS_Edge bestEdge;
+  double u = 0, distMiddleProj = Precision::Infinite(), distXYZ[4], f,l;
+
+  // get shapes under the nodes
+  TopoDS_Shape shape[2];
+  int nbShapes = 0;
   for ( int is2nd = 0; is2nd < 2; ++is2nd )
   {
-    // get an edge
     const SMDS_MeshNode* n = is2nd ? n2 : n1;
-    TopoDS_Shape shape = GetSubShapeByNode( n, GetMeshDS() );
-    if ( shape.IsNull() || shape.ShapeType() != TopAbs_EDGE )
-      continue;
+    TopoDS_Shape S = GetSubShapeByNode( n, GetMeshDS() );
+    if ( !S.IsNull() )
+      shape[ nbShapes++ ] = S;
+  }
+  // get EDGEs
+  vector< TopoDS_Shape > edges;
+  for ( int iS = 0; iS < nbShapes; ++iS )
+  {
+    switch ( shape[iS].ShapeType() ) {
+    case TopAbs_EDGE:
+    {
+      edges.push_back( shape[iS] );
+      break;
+    }
+    case TopAbs_VERTEX:
+    {
+      TopoDS_Shape edge;
+      if ( nbShapes == 2 && iS==0 && shape[1-iS].ShapeType() == TopAbs_VERTEX )
+        edge = GetCommonAncestor( shape[iS], shape[1-iS], *myMesh, TopAbs_EDGE );
 
-    // project to get U of projection and distance from middle to projection
-    TopoDS_Edge edge = edges[ is2nd ] = TopoDS::Edge( shape );
-    double node2MiddleDist = middle.Distance( XYZ(n) );
-    double foundU = GetNodeU( edge, n );
-    CheckNodeU( edge, n12, foundU, 2*BRep_Tool::Tolerance(edge), /*force=*/true, distXYZ );
-    if ( distXYZ[0] < node2MiddleDist )
+      if ( edge.IsNull() )
+      {
+        PShapeIteratorPtr eIt = GetAncestors( shape[iS], *myMesh, TopAbs_EDGE );
+        while( const TopoDS_Shape* e = eIt->next() )
+          edges.push_back( *e );
+      }
+      break;
+    }
+    case TopAbs_FACE:
+    {
+      if ( nbShapes == 1 || shape[1-iS].ShapeType() < TopAbs_EDGE )
+        for ( TopExp_Explorer e( shape[iS], TopAbs_EDGE ); e.More(); e.Next() )
+          edges.push_back( e.Current() );
+      break;
+    }
+    default:
+      continue;
+    }
+  }
+  // project to get U of projection and distance from middle to projection
+  for ( size_t iE = 0; iE < edges.size(); ++iE )
+  {
+    const TopoDS_Edge& edge = TopoDS::Edge( edges[ iE ]);
+    distXYZ[0] = distMiddleProj;
+    double testU = 0;
+    CheckNodeU( edge, n12, testU, 2 * BRep_Tool::Tolerance(edge), /*force=*/true, distXYZ );
+    if ( distXYZ[0] < distMiddleProj )
     {
       distMiddleProj = distXYZ[0];
-      u = foundU;
-      iOkEdge = is2nd;
+      u = testU;
+      bestEdge = edge;
     }
   }
-  if ( Precision::IsInfinite( distMiddleProj ))
+  // {
+  //   // both projections failed; set n12 on the edge of n1 with U of a common vertex
+  //   TopoDS_Vertex vCommon;
+  //   if ( TopExp::CommonVertex( edges[0], edges[1], vCommon ))
+  //     u = BRep_Tool::Parameter( vCommon, edges[0] );
+  //   else
+  //   {
+  //     double f,l, u0 = GetNodeU( edges[0], n1 );
+  //     BRep_Tool::Range( edges[0],f,l );
+  //     u = ( fabs(u0-f) < fabs(u0-l) ) ? f : l;
+  //   }
+  //   iOkEdge = 0;
+  //   distMiddleProj = 0;
+  // }
+
+  if ( !bestEdge.IsNull() )
   {
-    // both projections failed; set n12 on the edge of n1 with U of a common vertex
-    TopoDS_Vertex vCommon;
-    if ( TopExp::CommonVertex( edges[0], edges[1], vCommon ))
-      u = BRep_Tool::Parameter( vCommon, edges[0] );
-    else
+    // move n12 to position of a successfull projection
+    //double tol = BRep_Tool::Tolerance(edges[ iOkEdge ]);
+    if ( !force3d /*&& distMiddleProj > 2*tol*/ )
     {
-      double f,l, u0 = GetNodeU( edges[0], n1 );
-      BRep_Tool::Range( edges[0],f,l );
-      u = ( fabs(u0-f) < fabs(u0-l) ) ? f : l;
+      TopLoc_Location loc;
+      Handle(Geom_Curve) curve = BRep_Tool::Curve( bestEdge,loc,f,l );
+      gp_Pnt p = curve->Value( u ).Transformed( loc );
+      GetMeshDS()->MoveNode( n12, p.X(), p.Y(), p.Z() );
     }
-    iOkEdge = 0;
-    distMiddleProj = 0;
-  }
-
-  // move n12 to position of a successfull projection
-  double tol = BRep_Tool::Tolerance(edges[ iOkEdge ]);
-  if ( !force3d && distMiddleProj > 2*tol )
-  {
-    TopLoc_Location loc; double f,l;
-    Handle(Geom_Curve) curve = BRep_Tool::Curve( edges[iOkEdge],loc,f,l );
-    gp_Pnt p = curve->Value( u );
-    GetMeshDS()->MoveNode( n12, p.X(), p.Y(), p.Z() );
-  }
-
-  //if ( mySetElemOnShape ) node is not elem!
-  {
-    int edgeID = GetMeshDS()->ShapeToIndex( edges[iOkEdge] );
-    if ( edgeID != n12->getshapeId() )
-      GetMeshDS()->UnSetNodeOnShape( n12 );
-    GetMeshDS()->SetNodeOnEdge(n12, edgeID, u);
+    //if ( mySetElemOnShape ) node is not elem!
+    {
+      int edgeID = GetMeshDS()->ShapeToIndex( bestEdge );
+      if ( edgeID != n12->getshapeId() )
+        GetMeshDS()->UnSetNodeOnShape( n12 );
+      GetMeshDS()->SetNodeOnEdge(n12, edgeID, u);
+    }
   }
   myTLinkNodeMap.insert( make_pair( SMESH_TLink(n1,n2), n12 ));
 
