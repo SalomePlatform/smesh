@@ -1,6 +1,6 @@
 /*!
 
-\page padder_userguide_page Use the padder SMESH Plugin
+\page padder_userguide_page Use the SpherePadder SMESH Plugin
 
 -# \ref S1_PADDER
 -# \ref S2_PADDER
@@ -135,15 +135,17 @@ SMESH and publish the resulting mesh in the SALOME study:
 \image html padder_image12.png
 
 Note that the final ED mesh contains as many groups as the input
-meshes. Their names have been specified in the input dialog. For the
-moment, the DE mesh is shown as a set of points of equal size:
+meshes. Their names have been specified in the input dialog. 
 
-\image html padder_image13.png
+A new functionality has been added to SpherePadder allowing to mesh
+curved geometries. Circular objects with concave boundaries such as 
+shown here:
 
-In the next version, the PointSprite (sphere-like) mode will be used
-to show the MED_BALL elements with their real diameters. Then the
-above example should look like on the following capture (realized in
-module GEOM for illustration):
+\image html padder_curvedgeom.png
+
+can be "padded" with spherical discrete elements. Henceforward, 
+the PointSprite (sphere-like) mode is used to show the MED_BALL 
+elements with their real diameters:
 
 \image html padder_sphererendering.png
 
