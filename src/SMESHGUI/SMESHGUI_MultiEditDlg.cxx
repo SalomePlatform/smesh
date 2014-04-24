@@ -739,7 +739,7 @@ void SMESHGUI_MultiEditDlg::updateButtons()
   bool isListBoxNonEmpty = myListBox->count() > 0;
   bool isToAll = myToAllChk->isChecked();
   myFilterBtn->setEnabled(!isToAll);
-  myRemoveBtn->setEnabled(isListBoxNonEmpty && !isToAll);
+  myRemoveBtn->setEnabled(myListBox->selectedItems().count() && !isToAll);
   mySortBtn->setEnabled(isListBoxNonEmpty &&!isToAll);
 
   const SALOME_ListIO& aList = mySelector->StoredIObjects();
@@ -859,6 +859,8 @@ void SMESHGUI_MultiEditDlg::onListSelectionChanged()
   mySelector->AddOrRemoveIndex(anActor->getIO(),anIndexes,false);
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->highlight(anActor->getIO(),true,true);
+
+  myRemoveBtn->setEnabled( anIndexes.Extent() );
 }
 
 //=======================================================================
