@@ -419,7 +419,7 @@ void StdMeshers_RadialQuadrangle_1D2D::SubmeshRestored(SMESH_subMesh* faceSubMes
 
 //=======================================================================
 //function : Compute
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
@@ -428,9 +428,8 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
   SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
 
   myHelper = new SMESH_MesherHelper( aMesh );
-  myHelper->IsQuadraticSubMesh( aShape );
   // to delete helper at exit from Compute()
-  auto_ptr<SMESH_MesherHelper> helperDeleter( myHelper );
+  SMESHUtils::Deleter<SMESH_MesherHelper> helperDeleter( myHelper );
 
   TNodeDistributor* algo1d = TNodeDistributor::GetDistributor(aMesh);
 
@@ -438,8 +437,9 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
   int nbe = analyseFace( aShape, CircEdge, LinEdge1, LinEdge2 );
   Handle(Geom_Circle) aCirc = Handle(Geom_Circle)::DownCast( getCurve( CircEdge ));
   if( nbe>3 || nbe < 1 || aCirc.IsNull() )
-    return error("The face must be a full circle or a part of circle (i.e. the number of edges is less or equal to 3 and one of them is a circle curve)");
-  
+    return error("The face must be a full circle or a part of circle (i.e. the number "
+                 "of edges is less or equal to 3 and one of them is a circle curve)");
+
   gp_Pnt P0, P1;
   // points for rotation
   TColgp_SequenceOfPnt Points;
@@ -465,6 +465,8 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
     map< double, const SMDS_MeshNode* > theNodes;
     if ( !GetSortedNodesOnEdge(aMesh.GetMeshDS(),CircEdge,true,theNodes))
       return error("Circular edge is incorrectly meshed");
+
+    myHelper->IsQuadraticSubMesh( aShape );
 
     CNodes.clear();
     map< double, const SMDS_MeshNode* >::iterator itn = theNodes.begin();
@@ -539,6 +541,8 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
     map< double, const SMDS_MeshNode* > theNodes;
     if ( !GetSortedNodesOnEdge(aMesh.GetMeshDS(),CircEdge,true,theNodes) )
       return error("Circular edge is incorrectly meshed");
+
+    myHelper->IsQuadraticSubMesh( aShape );
 
     map< double, const SMDS_MeshNode* >::iterator itn = theNodes.begin();
     CNodes.clear();
@@ -675,6 +679,8 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
     map< double, const SMDS_MeshNode* > theNodes;
     if ( !GetSortedNodesOnEdge(aMesh.GetMeshDS(),CircEdge,true,theNodes))
       return error("Circular edge is incorrectly meshed");
+
+    myHelper->IsQuadraticSubMesh( aShape );
 
     const SMDS_MeshNode* NF = theNodes.begin()->second;
     const SMDS_MeshNode* NL = theNodes.rbegin()->second;
