@@ -157,6 +157,46 @@ namespace {
       return algo;
     }
   };
+  //=======================================================================
+  /*!
+   * \brief Returns already computed EDGEs
+   */
+  void getPrecomputedEdges( SMESH_MesherHelper&    theHelper,
+                            const TopoDS_Shape&    theShape,
+                            vector< TopoDS_Edge >& theEdges)
+  {
+    theEdges.clear();
+
+    SMESHDS_Mesh* meshDS = theHelper.GetMeshDS();
+    SMESHDS_SubMesh* sm;
+
+    TopTools_IndexedMapOfShape edges;
+    TopExp::MapShapes( theShape, TopAbs_EDGE, edges );
+    for ( int iE = 1; iE <= edges.Extent(); ++iE )
+    {
+      const TopoDS_Shape edge = edges( iE );
+      if (( ! ( sm = meshDS->MeshElements( edge ))) ||
+          ( sm->NbElements() == 0 ))
+        continue;
+
+      // there must not be FACEs meshed with triangles and sharing a computed EDGE
+      // as the precomputed EDGEs are used for propagation other to 'vertical' EDGEs
+      bool faceFound = false;
+      PShapeIteratorPtr faceIt =
+        theHelper.GetAncestors( edge, *theHelper.GetMesh(), TopAbs_FACE );
+      while ( const TopoDS_Shape* face = faceIt->next() )
+
+        if (( sm = meshDS->MeshElements( *face )) &&
+            ( sm->NbElements() > 0 ) &&
+            ( !theHelper.IsSameElemGeometry( sm, SMDSGeom_QUADRANGLE ) ))
+        {
+          faceFound;
+          break;
+        }
+      if ( !faceFound )
+        theEdges.push_back( TopoDS::Edge( edge ));
+    }
+  }
 
   //================================================================================
   /*!
@@ -623,6 +663,21 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
              compute( prism ));
   }
 
+  // find propagation chains from already computed EDGEs
+  vector< TopoDS_Edge > computedEdges;
+  getPrecomputedEdges( helper, theShape, computedEdges );
+  myPropagChains = new TopTools_IndexedMapOfShape[ computedEdges.size() + 1 ];
+  SMESHUtils::ArrayDeleter< TopTools_IndexedMapOfShape > pcDel( myPropagChains );
+  for ( size_t i = 0, nb = 0; i < computedEdges.size(); ++i )
+  {
+    StdMeshers_ProjectionUtils::GetPropagationEdge( &theMesh, TopoDS_Edge(),
+                                                    computedEdges[i], myPropagChains + nb );
+    if ( myPropagChains[ nb ].Extent() < 2 ) // an empty map is a termination sign
+      myPropagChains[ nb ].Clear();
+    else
+      nb++;
+  }
+
   TopTools_MapOfShape meshedSolids;
   list< Prism_3D::TPrismTopo > meshedPrism;
   TopTools_ListIteratorOfListOfShape solidIt;
@@ -650,7 +705,11 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
                !compute( prism ))
             return false;
 
-          meshedFaces.push_front( prism.myTop );
+          SMESHDS_SubMesh* smDS = theMesh.GetMeshDS()->MeshElements( prism.myTop );
+          if ( !myHelper->IsSameElemGeometry( smDS, SMDSGeom_QUADRANGLE ))
+          {
+            meshedFaces.push_front( prism.myTop );
+          }
           meshedPrism.push_back( prism );
         }
       }
@@ -691,6 +750,7 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
               prism.myBottom  = candidateF;
               mySetErrorToSM = false;
               if ( !myHelper->IsSubShape( candidateF, prismIt->myShape3D ) &&
+                   myHelper->IsSubShape( candidateF, solid ) &&
                    !myHelper->GetMesh()->GetSubMesh( candidateF )->IsMeshComputed() &&
                    initPrism( prism, solid ) &&
                    project2dMesh( prismIt->myBottom, candidateF))
@@ -698,8 +758,12 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
                 mySetErrorToSM = true;
                 if ( !compute( prism ))
                   return false;
-                meshedFaces.push_front( prism.myTop );
-                meshedFaces.push_front( prism.myBottom );
+                SMESHDS_SubMesh* smDS = theMesh.GetMeshDS()->MeshElements( prism.myTop );
+                if ( !myHelper->IsSameElemGeometry( smDS, SMDSGeom_QUADRANGLE ))
+                {
+                  meshedFaces.push_front( prism.myTop );
+                  meshedFaces.push_front( prism.myBottom );
+                }
                 meshedPrism.push_back( prism );
                 meshedSolids.Add( solid );
               }
@@ -1187,7 +1251,7 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
   SMESHDS_Mesh* meshDS = myHelper->GetMeshDS();
   DBGOUT( endl << "COMPUTE Prism " << meshDS->ShapeToIndex( thePrism.myShape3D ));
 
-  TProjction1dAlgo* projector1D = TProjction1dAlgo::instance( this );
+  TProjction1dAlgo*      projector1D = TProjction1dAlgo::instance( this );
   StdMeshers_Quadrangle_2D* quadAlgo = TQuadrangleAlgo::instance( this, myHelper );
 
   SMESH_HypoFilter hyp1dFilter( SMESH_HypoFilter::IsAlgo(),/*not=*/true);
@@ -1252,8 +1316,17 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
         SMESH_subMesh*    srcSM = mesh->GetSubMesh( srcE );
         if ( !srcSM->IsMeshComputed() ) {
           DBGOUT( "COMPUTE V edge " << srcSM->GetId() );
-          srcSM->ComputeSubMeshStateEngine( SMESH_subMesh::COMPUTE );
-          srcSM->ComputeStateEngine       ( SMESH_subMesh::COMPUTE );
+          TopoDS_Edge prpgSrcE = findPropagationSource( srcE );
+          if ( !prpgSrcE.IsNull() ) {
+            srcSM->ComputeSubMeshStateEngine( SMESH_subMesh::COMPUTE );
+            projector1D->myHyp.SetSourceEdge( prpgSrcE );
+            projector1D->Compute( *mesh, srcE );
+            srcSM->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+          }
+          else {
+            srcSM->ComputeSubMeshStateEngine( SMESH_subMesh::COMPUTE );
+            srcSM->ComputeStateEngine       ( SMESH_subMesh::COMPUTE );
+          }
           if ( !srcSM->IsMeshComputed() )
             return toSM( error( "Can't compute 1D mesh" ));
         }
@@ -1462,6 +1535,21 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
   }
 
   return true;
+}
+
+//=======================================================================
+/*!
+ * \brief Returns a source EDGE of propagation to a given EDGE
+ */
+//=======================================================================
+
+TopoDS_Edge StdMeshers_Prism_3D::findPropagationSource( const TopoDS_Edge& E )
+{
+  for ( size_t i = 0; !myPropagChains[i].IsEmpty(); ++i )
+    if ( myPropagChains[i].Contains( E ))
+      return TopoDS::Edge( myPropagChains[i].FindKey( 1 ));
+
+  return TopoDS_Edge();
 }
 
 //=======================================================================

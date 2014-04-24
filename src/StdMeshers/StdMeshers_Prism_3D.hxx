@@ -461,6 +461,11 @@ public:
   bool computeWalls(const Prism_3D::TPrismTopo& thePrism);
 
   /*!
+   * \brief Returns a source EDGE of propagation to a given EDGE
+   */
+  TopoDS_Edge findPropagationSource( const TopoDS_Edge& E );
+
+  /*!
    * \brief Find correspondence between bottom and top nodes.
    *  If elements on the bottom and top faces are topologically different,
    *  and projection is possible and allowed, perform the projection
@@ -513,6 +518,8 @@ private:
   // map of bottom nodes to the column of nodes above them
   // (the column includes the bottom node)
   TNode2ColumnMap         myBotToColumnMap;
+
+  TopTools_IndexedMapOfShape* myPropagChains;
 
 }; // class StdMeshers_Prism_3D
 

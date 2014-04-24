@@ -44,6 +44,7 @@ class SMESH_Hypothesis;
 class SMESH_Mesh;
 class SMESH_subMesh;
 class TopTools_IndexedDataMapOfShapeListOfShape;
+class TopTools_IndexedMapOfShape;
 class TopoDS_Shape;
 
 /*!
@@ -156,11 +157,14 @@ namespace StdMeshers_ProjectionUtils
    * \brief Return an oriented propagation edge
    * \param aMesh - mesh
    * \param fromEdge - start edge for propagation
+   * \param chain - return, if provided, a propagation chain passed till
+   *        anEdge; if anEdge.IsNull() then a full propagation chain is returned
    * \retval pair<int,TopoDS_Edge> - propagation step and found edge
    */
-  std::pair<int,TopoDS_Edge> GetPropagationEdge( SMESH_Mesh*        aMesh,
-                                                 const TopoDS_Edge& anEdge,
-                                                 const TopoDS_Edge& fromEdge);
+  std::pair<int,TopoDS_Edge> GetPropagationEdge( SMESH_Mesh*                 aMesh,
+                                                 const TopoDS_Edge&          anEdge,
+                                                 const TopoDS_Edge&          fromEdge,
+                                                 TopTools_IndexedMapOfShape* chain=0);
 
   /*!
    * \brief Find corresponding nodes on two faces

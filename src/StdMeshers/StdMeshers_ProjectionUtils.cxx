@@ -1613,79 +1613,87 @@ TopoDS_Vertex StdMeshers_ProjectionUtils::GetNextVertex(const TopoDS_Edge&   edg
 /*
  * Return a propagation edge
  *  \param aMesh - mesh
- *  \param theEdge - edge to find by propagation
+ *  \param anEdge - edge to find by propagation
  *  \param fromEdge - start edge for propagation
+ *  \param chain - return, if !NULL, a propagation chain passed till
+ *         anEdge; if anEdge.IsNull() then a full propagation chain is returned;
+ *         fromEdge is the 1st in the chain
  *  \retval pair<int,TopoDS_Edge> - propagation step and found edge
  */
 //================================================================================
 
 pair<int,TopoDS_Edge>
-StdMeshers_ProjectionUtils::GetPropagationEdge( SMESH_Mesh*        aMesh,
-                                                const TopoDS_Edge& theEdge,
-                                                const TopoDS_Edge& fromEdge)
+StdMeshers_ProjectionUtils::GetPropagationEdge( SMESH_Mesh*                 aMesh,
+                                                const TopoDS_Edge&          anEdge,
+                                                const TopoDS_Edge&          fromEdge,
+                                                TopTools_IndexedMapOfShape* chain)
 {
-  TopTools_IndexedMapOfShape aChain;
+  TopTools_IndexedMapOfShape locChain;
+  TopTools_IndexedMapOfShape& aChain = chain ? *chain : locChain;
   int step = 0;
+
+  //TopTools_IndexedMapOfShape checkedWires;
+  BRepTools_WireExplorer aWE;
+  TopoDS_Shape fourEdges[4];
 
   // List of edges, added to chain on the previous cycle pass
   TopTools_ListOfShape listPrevEdges;
-  listPrevEdges.Append(fromEdge);
+  listPrevEdges.Append( fromEdge );
+  aChain.Add( fromEdge );
 
   // Collect all edges pass by pass
-  while (listPrevEdges.Extent() > 0) {
+  while (listPrevEdges.Extent() > 0)
+  {
     step++;
     // List of edges, added to chain on this cycle pass
     TopTools_ListOfShape listCurEdges;
 
     // Find the next portion of edges
     TopTools_ListIteratorOfListOfShape itE (listPrevEdges);
-    for (; itE.More(); itE.Next()) {
-      TopoDS_Shape anE = itE.Value();
+    for (; itE.More(); itE.Next())
+    {
+      const TopoDS_Shape& anE = itE.Value();
 
       // Iterate on faces, having edge <anE>
       TopTools_ListIteratorOfListOfShape itA (aMesh->GetAncestors(anE));
-      for (; itA.More(); itA.Next()) {
-        TopoDS_Shape aW = itA.Value();
+      for (; itA.More(); itA.Next())
+      {
+        const TopoDS_Shape& aW = itA.Value();
 
         // There are objects of different type among the ancestors of edge
-        if (aW.ShapeType() == TopAbs_WIRE) {
-          TopoDS_Shape anOppE;
-
-          BRepTools_WireExplorer aWE (TopoDS::Wire(aW));
-          Standard_Integer nb = 1, found = 0;
-          TopTools_Array1OfShape anEdges (1,4);
-          for (; aWE.More(); aWE.Next(), nb++) {
-            if (nb > 4) {
-              found = 0;
+        if ( aW.ShapeType() == TopAbs_WIRE /*&& checkedWires.Add( aW )*/)
+        {
+          Standard_Integer nb = 0, found = -1;
+          for ( aWE.Init( TopoDS::Wire( aW )); aWE.More(); aWE.Next() ) {
+            if (nb+1 > 4) {
+              found = -1;
               break;
             }
-            anEdges(nb) = aWE.Current();
-            if (anEdges(nb).IsSame(anE)) found = nb;
+            fourEdges[ nb ] = aWE.Current();
+            if ( aWE.Current().IsSame( anE )) found = nb;
+            nb++;
           }
-
-          if (nb == 5 && found > 0) {
+          if (nb == 4 && found >= 0) {
             // Quadrangle face found, get an opposite edge
-            Standard_Integer opp = found + 2;
-            if (opp > 4) opp -= 4;
-            anOppE = anEdges(opp);
+            TopoDS_Shape& anOppE = fourEdges[( found + 2 ) % 4 ];
 
             // add anOppE to aChain if ...
-            if (!aChain.Contains(anOppE)) { // ... anOppE is not in aChain
+            int prevChainSize = aChain.Extent();
+            if ( aChain.Add(anOppE) > prevChainSize ) { // ... anOppE is not in aChain
               // Add found edge to the chain oriented so that to
               // have it co-directed with a forward MainEdge
               TopAbs_Orientation ori = anE.Orientation();
-              if ( anEdges(opp).Orientation() == anEdges(found).Orientation() )
+              if ( anOppE.Orientation() == fourEdges[found].Orientation() )
                 ori = TopAbs::Reverse( ori );
               anOppE.Orientation( ori );
-              if ( anOppE.IsSame( theEdge ))
+              if ( anOppE.IsSame( anEdge ))
                 return make_pair( step, TopoDS::Edge( anOppE ));
-              aChain.Add(anOppE);
               listCurEdges.Append(anOppE);
             }
-          } // if (nb == 5 && found > 0)
+          } // if (nb == 4 && found >= 0)
         } // if (aF.ShapeType() == TopAbs_WIRE)
-      } // for (; itF.More(); itF.Next())
-    } // for (; itE.More(); itE.Next())
+      } // loop on ancestors of anE
+    } // loop on listPrevEdges
 
     listPrevEdges = listCurEdges;
   } // while (listPrevEdges.Extent() > 0)
