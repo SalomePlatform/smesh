@@ -4771,6 +4771,7 @@ LightApp_Selection* SMESHGUI::createSelection() const
 void SMESHGUI::windows( QMap<int, int>& aMap ) const
 {
   aMap.insert( SalomeApp_Application::WT_ObjectBrowser, Qt::LeftDockWidgetArea );
+  aMap.insert( SalomeApp_Application::WT_NoteBook, Qt::LeftDockWidgetArea );
   aMap.insert( SalomeApp_Application::WT_PyConsole, Qt::BottomDockWidgetArea );
 }
 
