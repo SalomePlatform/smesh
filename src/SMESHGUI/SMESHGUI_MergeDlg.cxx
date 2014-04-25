@@ -682,6 +682,8 @@ bool SMESHGUI_MergeDlg::ClickOnApply()
   
   ListCoincident->clear();
   
+  myEditCurrentArgument = (QWidget*)LineEditMesh;
+
   SMESH::UpdateView();
   SMESHGUI::Modified();
   
@@ -1139,7 +1141,7 @@ void SMESHGUI_MergeDlg::SelectionIntoArgument()
     if (!myActor)
       myActor = SMESH::FindActorByObject(myMesh);
     
-    if ( myActor && myTypeId ==1 ) {
+    if ( myActor && myTypeId == 1 && mySelector->IsSelectionEnabled() ) {
       mySubMeshOrGroup = SMESH::SMESH_IDSource::_nil();
       mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
       
