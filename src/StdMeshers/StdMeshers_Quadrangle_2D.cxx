@@ -1134,45 +1134,28 @@ FaceQuadStruct::Ptr StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         
     {
       list< TopoDS_Edge > sideEdges;
       TopoDS_Vertex nextSideV = corners[( iSide + 1 - nbUsedDegen ) % corners.size() ];
-      while ( edgeIt != edges.end() &&
-              !nextSideV.IsSame( myHelper->IthVertex( 0, *edgeIt )))
+      bool nextSideVReached = false;
+      do
       {
-        if ( SMESH_Algo::isDegenerated( *edgeIt ) )
+        const TopoDS_Edge& edge = *edgeIt;
+        if ( SMESH_Algo::isDegenerated( edge ) && myNeedSmooth )
         {
-          if ( myNeedSmooth )
-          {
-            ++edgeIt; // no side on the degenerated EDGE
-          }
-          else
-          {
-            if ( sideEdges.empty() )
-            {
-              ++nbUsedDegen;
-              sideEdges.push_back( *edgeIt++ ); // a degenerated side
-              break;
-            }
-            else
-            {
-              break; // do not append a degenerated EDGE to a regular side
-            }
-          }
+          // no side on a degenerated EDGE
         }
         else
         {
-          sideEdges.push_back( *edgeIt++ );
+          sideEdges.push_back( edge );
+          nextSideVReached = nextSideV.IsSame( myHelper->IthVertex( 1, edge ));
         }
+        ++edgeIt;
       }
+      while ( edgeIt != edges.end() && !nextSideVReached );
+
       if ( !sideEdges.empty() )
       {
-        quad->side.push_back( StdMeshers_FaceSide::New( F, sideEdges, &aMesh, iSide < QUAD_TOP_SIDE,
-                                                        ignoreMediumNodes, myProxyMesh ));
-        ++iSide;
-      }
-      else if ( !SMESH_Algo::isDegenerated( *edgeIt ) && // closed EDGE
-                myHelper->IthVertex( 0, *edgeIt ).IsSame( myHelper->IthVertex( 1, *edgeIt )))
-      {
-        quad->side.push_back( StdMeshers_FaceSide::New( F, *edgeIt++, &aMesh, iSide < QUAD_TOP_SIDE,
-                                                        ignoreMediumNodes, myProxyMesh));
+        quad->side.push_back
+          ( StdMeshers_FaceSide::New( F, sideEdges, &aMesh, iSide < QUAD_TOP_SIDE,
+                                      ignoreMediumNodes, myProxyMesh ));
         ++iSide;
       }
       if ( quad->side.size() == 4 )
@@ -4281,7 +4264,7 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
   if ( nbCorners == 3 )
     vMap.Add( triaVertex );
   multimap<double, TopoDS_Vertex>::reverse_iterator a2v = vertexByAngle.rbegin();
-  for ( ; a2v != vertexByAngle.rend() && vMap.Extent() < nbCorners; ++a2v )
+  for ( int iC = 0; a2v != vertexByAngle.rend() && iC < nbCorners; ++a2v, ++iC )
     vMap.Add( (*a2v).second );
 
   // check if there are possible variations in choosing corners
