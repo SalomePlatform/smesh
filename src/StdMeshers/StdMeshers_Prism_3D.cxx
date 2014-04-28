@@ -212,6 +212,7 @@ namespace {
     quad->side[ QUAD_TOP_SIDE  ].grid->Reverse();
     quad->side[ QUAD_LEFT_SIDE ].grid->Reverse();
     int edgeIndex = 0;
+    bool isComposite = false;
     for ( size_t i = 0; i < quad->side.size(); ++i )
     {
       StdMeshers_FaceSidePtr quadSide = quad->side[i];
@@ -219,7 +220,7 @@ namespace {
         if ( botE.IsSame( quadSide->Edge( iE )))
         {
           if ( quadSide->NbEdges() > 1 )
-            return false;
+            isComposite = true; //return false;
           edgeIndex = i;
           i = quad->side.size(); // to quit from the outer loop
           break;
@@ -230,7 +231,7 @@ namespace {
 
     quad->face = TopoDS::Face( face );
 
-    return true;
+    return isComposite;
   }
 
   //================================================================================
@@ -906,9 +907,9 @@ bool StdMeshers_Prism_3D::getWallFaces( Prism_3D::TPrismTopo & thePrism,
             return toSM( error(TCom("Side face #") << shapeID( face )
                                << " not meshable with quadrangles"));
           if ( ! setBottomEdge( *edge, quadList.back(), face ))
-            return toSM( error(TCom("Composite 'horizontal' edges are not supported")));
-          thePrism.myWallQuads.push_back( quadList );
-          faceMap.Add( face );
+            ; //return toSM( error(TCom("Composite 'horizontal' edges are not supported")));
+          if ( faceMap.Add( face ))
+            thePrism.myWallQuads.push_back( quadList );
           break;
         }
       }
