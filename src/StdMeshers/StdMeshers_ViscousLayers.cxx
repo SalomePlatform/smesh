@@ -2379,8 +2379,8 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
     else
     {
       // smooth on FACE's
-      int step = 0, badNb = 0; moved = true;
-      while (( ++step <= 5 && moved ) || improved )
+      int step = 0, stepLimit = 5, badNb = 0; moved = true;
+      while (( ++step <= stepLimit && moved ) || improved )
       {
         dumpFunction(SMESH_Comment("smooth")<<data._index<<"_Fa"<<sInd
                      <<"_InfStep"<<nbSteps<<"_"<<step); // debug
@@ -2390,6 +2390,10 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
         for ( int i = iBeg; i < iEnd; ++i )
           moved |= data._edges[i]->Smooth(badNb);
         improved = ( badNb < oldBadNb );
+
+        // issue 22576. no bad faces but still there are intersections to fix
+        if ( improved && badNb == 0 )
+          stepLimit = step + 3;
 
         dumpFunctionEnd();
       }
