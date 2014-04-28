@@ -1169,9 +1169,13 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       RETURN_BAD_RESULT("Different nb of vertices");
   }
 
-  if ( vMap1.Extent() == 1 ) {
+  if ( vMap1.Extent() == 1 || vMap2.Extent() == 1 ) {
     InsertAssociation( vMap1(1), vMap2(1), theMap );
     if ( theShape1.ShapeType() == TopAbs_EDGE ) {
+      if ( vMap1.Extent() == 2 )
+        InsertAssociation( vMap1(2), vMap2(1), theMap );
+      else if ( vMap2.Extent() == 2 )
+        InsertAssociation( vMap2(2), vMap1(1), theMap );
       InsertAssociation( theShape1, theShape2, theMap );
       return true;
     }

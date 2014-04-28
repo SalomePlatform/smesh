@@ -1487,7 +1487,7 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
           // compute nodes on VERTEXes
           SMESH_subMeshIteratorPtr smIt = tgtSM->getDependsOnIterator(/*includeSelf=*/false);
           while ( smIt->more() )
-            smIt->next()->ComputeSubMeshStateEngine( SMESH_subMesh::COMPUTE );
+            smIt->next()->ComputeStateEngine( SMESH_subMesh::COMPUTE );
           // project segments
           DBGOUT( "COMPUTE H edge (proj) " << tgtSM->GetId());
           projector1D->myHyp.SetSourceEdge( TopoDS::Edge( srcSM->GetSubShape() ));
