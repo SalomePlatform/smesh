@@ -1138,14 +1138,25 @@ FaceQuadStruct::Ptr StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         
       do
       {
         const TopoDS_Edge& edge = *edgeIt;
-        if ( SMESH_Algo::isDegenerated( edge ) && myNeedSmooth )
+        nextSideVReached = nextSideV.IsSame( myHelper->IthVertex( 1, edge ));
+        if ( SMESH_Algo::isDegenerated( edge ))
         {
-          // no side on a degenerated EDGE
+          if ( !myNeedSmooth ) // need to make a side on a degen edge
+          {
+            if ( sideEdges.empty() )
+            {
+              sideEdges.push_back( edge );
+              ++nbUsedDegen;
+            }
+            else
+            {
+              break;
+            }
+          }
         }
         else
         {
           sideEdges.push_back( edge );
-          nextSideVReached = nextSideV.IsSame( myHelper->IthVertex( 1, edge ));
         }
         ++edgeIt;
       }
