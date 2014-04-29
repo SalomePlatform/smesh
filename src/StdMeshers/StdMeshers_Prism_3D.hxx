@@ -109,6 +109,7 @@ namespace Prism_3D
     bool                     myNotQuadOnTop;
 
     void Clear();
+    void SetUpsideDown();
   };
 }
 
@@ -471,7 +472,8 @@ public:
    *  and projection is possible and allowed, perform the projection
     * \retval bool - is a success or not
    */
-  bool assocOrProjBottom2Top( const gp_Trsf & bottomToTopTrsf );
+  bool assocOrProjBottom2Top( const gp_Trsf & bottomToTopTrsf,
+                              const Prism_3D::TPrismTopo& thePrism);
 
   /*!
    * \brief Remove quadrangles from the top face and

@@ -1800,7 +1800,8 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
     eE.Next();
     // edge 1
     if ( !assocMap.IsBound( e2, /*is2nd=*/true ))
-      RETURN_BAD_RESULT("Association not found for edge " << meshDS2->ShapeToIndex( e2 ));
+      continue;
+      //RETURN_BAD_RESULT("Association not found for edge " << meshDS2->ShapeToIndex( e2 ));
     TopoDS_Edge e1 = TopoDS::Edge( assocMap( e2, /*is2nd=*/true ));
     if ( !helper1.IsSubShape( e1, face1 ))
       RETURN_BAD_RESULT("Wrong association, edge " << meshDS1->ShapeToIndex( e1 ) <<
@@ -1844,7 +1845,11 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
   // get 2 matching vertices
   TopoDS_Vertex V2 = TopExp::FirstVertex( TopoDS::Edge( edge2 ));
   if ( !assocMap.IsBound( V2, /*is2nd=*/true ))
-    RETURN_BAD_RESULT("Association not found for vertex " << meshDS2->ShapeToIndex( V2 ));
+  {
+    V2 = TopExp::LastVertex( TopoDS::Edge( edge2 ));
+    if ( !assocMap.IsBound( V2, /*is2nd=*/true ))
+      RETURN_BAD_RESULT("Association not found for vertex " << meshDS2->ShapeToIndex( V2 ));
+  }
   TopoDS_Vertex V1 = TopoDS::Vertex( assocMap( V2, /*is2nd=*/true ));
 
   // nodes on vertices

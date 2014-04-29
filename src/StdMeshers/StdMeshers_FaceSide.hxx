@@ -220,7 +220,7 @@ public:
    */
   int NbEdges() const { return myEdge.size(); }
   /*!
-   * \brief Return i-th wrapped edge (count starts from zero)
+   * \brief Return i-th edge (count starts from zero)
    */
   const TopoDS_Edge& Edge(int i) const { return myEdge[i]; }
   /*!
