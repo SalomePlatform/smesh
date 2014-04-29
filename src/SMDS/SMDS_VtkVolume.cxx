@@ -719,6 +719,6 @@ int SMDS_VtkVolume::NbUniqueNodes() const
  */
 SMDS_ElemIteratorPtr SMDS_VtkVolume::uniqueNodesIterator() const
 {
-  MESSAGE("uniqueNodesIterator");
+  //MESSAGE("uniqueNodesIterator");
   return SMDS_ElemIteratorPtr(new SMDS_VtkCellIterator(SMDS_Mesh::_meshList[myMeshId], myVtkID, GetEntityType()));
 }

@@ -114,6 +114,8 @@ Driver_Mesh::Status DriverSTL_R_SMDS_Mesh::Perform()
   SMESH_File file( myFile, /*open=*/false );
   if ( !file.open() ) {
     fprintf(stderr, ">> ERROR : cannot open file %s \n", myFile.c_str());
+    if ( file.error().empty() )
+      fprintf(stderr, ">> ERROR : %s \n", file.error().c_str());
     return DRS_FAIL;
   }
 

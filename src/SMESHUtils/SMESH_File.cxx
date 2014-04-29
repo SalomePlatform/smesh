@@ -78,7 +78,7 @@ bool SMESH_File::open()
     bool ok = ( _file != INVALID_HANDLE_VALUE );
 #else
     _file = ::open(_name.data(), O_RDONLY );
-    bool ok = ( _file > 0 );
+    bool ok = ( _file >= 0 );
 #endif
     if ( ok )
     {
