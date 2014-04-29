@@ -835,6 +835,7 @@ void SMESHGUI_MergeDlg::onDetect()
 
   ListCoincident->selectAll();
   updateControls();
+  SMESH::UpdateView();
 }
 
 //=================================================================================
@@ -845,6 +846,10 @@ void SMESHGUI_MergeDlg::onSelectGroup()
 {
   if (myIsBusy || !myActor)
     return;
+
+  if( ListCoincident->count() != ListCoincident->selectedItems().count() )
+    SelectAllCB->setChecked( false );
+
   myEditCurrentArgument = (QWidget*)ListCoincident;
 
   myIsBusy = true;
@@ -994,6 +999,11 @@ void SMESHGUI_MergeDlg::onRemoveGroup()
   updateControls();
   SMESH::UpdateView();
   myIsBusy = false;
+
+  if( ListCoincident->count() == 0 ) {
+    myEditCurrentArgument = (QWidget*)LineEditMesh;
+    SelectAllCB->setChecked( false );
+  }
 }
 
 //=================================================================================
@@ -1050,6 +1060,11 @@ void SMESHGUI_MergeDlg::onRemoveElement()
   
   myIsBusy = false;
   onEditGroup();
+
+  if( ListCoincident->count() == 0 ) {
+    myEditCurrentArgument = (QWidget*)LineEditMesh;
+    SelectAllCB->setChecked( false );
+  }
 }
 
 //=================================================================================
@@ -1294,12 +1309,14 @@ void SMESHGUI_MergeDlg::onTypeChanged (int id)
       GroupCoincidentWidget->show();
       SMESH::SetPointRepresentation(true);
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-        aViewWindow->SetSelectionMode(NodeSelection);
+        if( mySelector->IsSelectionEnabled() )
+          aViewWindow->SetSelectionMode(NodeSelection);
     }
     else {
       GroupCoincident->show();
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-        aViewWindow->SetSelectionMode(CellSelection);
+        if( mySelector->IsSelectionEnabled() )
+          aViewWindow->SetSelectionMode(CellSelection);
     }
     GroupEdit->show();
     break;
