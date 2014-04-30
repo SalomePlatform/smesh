@@ -160,7 +160,7 @@ long SMESH_Gen_i::GetBallElementsGroupsTag()
 bool SMESH_Gen_i::CanPublishInStudy(CORBA::Object_ptr theIOR)
 {
   if(MYDEBUG) MESSAGE("CanPublishInStudy - "<<!CORBA::is_nil(myCurrentStudy));
-  if(CORBA::is_nil(myCurrentStudy))
+  if( GetCurrentStudyID() < 0 )
     return false;
   
   SMESH::SMESH_Mesh_var aMesh       = SMESH::SMESH_Mesh::_narrow(theIOR);

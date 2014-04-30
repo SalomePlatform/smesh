@@ -658,6 +658,8 @@ void SMESH_Gen_i::setCurrentStudy( SALOMEDS::Study_ptr theStudy,
 SALOMEDS::Study_ptr SMESH_Gen_i::GetCurrentStudy()
 {
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::GetCurrentStudy: study Id = " << GetCurrentStudyID() );
+  if ( GetCurrentStudyID() < 0 )
+    return SALOMEDS::Study::_nil();
   return SALOMEDS::Study::_duplicate( myCurrentStudy );
 }
 
@@ -1052,13 +1054,18 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMEDorSAUV( const char* theFileNa
   aPythonDump << "([";
 
   if (theStatus == SMESH::DRS_OK) {
-    SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder();
-    aStudyBuilder->NewCommand();  // There is a transaction
+    SALOMEDS::StudyBuilder_var aStudyBuilder;
+    if ( GetCurrentStudyID() > -1 )
+    {
+      aStudyBuilder = myCurrentStudy->NewBuilder();
+      aStudyBuilder->NewCommand();  // There is a transaction
+    }
     aResult->length( aNames.size() );
     int i = 0;
 
     // Iterate through all meshes and create mesh objects
-    for ( list<string>::iterator it = aNames.begin(); it != aNames.end(); it++ ) {
+    for ( list<string>::iterator it = aNames.begin(); it != aNames.end(); it++ )
+    {
       // Python Dump
       if (i > 0) aPythonDump << ", ";
 
@@ -1091,7 +1098,8 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMEDorSAUV( const char* theFileNa
       aResult[i++] = SMESH::SMESH_Mesh::_duplicate( mesh );
       meshServant->GetImpl().GetMeshDS()->Modified();
     }
-    aStudyBuilder->CommitCommand();
+    if ( !aStudyBuilder->_is_nil() )
+      aStudyBuilder->CommitCommand();
   }
 
   // Update Python script
