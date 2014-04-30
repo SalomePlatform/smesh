@@ -1147,6 +1147,7 @@ FaceQuadStruct::Ptr StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         
             {
               sideEdges.push_back( edge );
               ++nbUsedDegen;
+              nextSideVReached = true;
             }
             else
             {
