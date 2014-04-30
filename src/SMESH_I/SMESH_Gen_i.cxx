@@ -953,6 +953,29 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateEmptyMesh()
   return mesh._retn();
 }
 
+namespace
+{
+  //================================================================================
+  /*!
+   * \brief Throws an exception in case if the file can't be read
+   */
+  //================================================================================
+
+  void checkFileReadable( const char* theFileName ) throw ( SALOME::SALOME_Exception )
+  {
+    SMESH_File f ( theFileName );
+    if ( !f )
+    {
+      if ( !f.error().empty() )
+        THROW_SALOME_CORBA_EXCEPTION( f.error().c_str(), SALOME::BAD_PARAM);
+
+      THROW_SALOME_CORBA_EXCEPTION
+        (( SMESH_Comment("Can't open for reading the file ") << theFileName ).c_str(),
+         SALOME::BAD_PARAM );
+    }
+  }
+}
+
 //=============================================================================
 /*!
  *  SMESH_Gen_i::CreateMeshFromUNV
@@ -965,7 +988,8 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromUNV( const char* theFileName 
   throw ( SALOME::SALOME_Exception )
 {
   Unexpect aCatch(SALOME_SalomeException);
-  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::CreateMeshesFromUNV" );
+
+  checkFileReadable( theFileName );
 
   SMESH::SMESH_Mesh_var aMesh = createMesh();
   string aFileName;
@@ -1082,10 +1106,11 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMEDorSAUV( const char* theFileNa
 
 SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
                                                      SMESH::DriverMED_ReadStatus& theStatus)
-     throw ( SALOME::SALOME_Exception )
+  throw ( SALOME::SALOME_Exception )
 {
   Unexpect aCatch(SALOME_SalomeException);
-  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::CreateMeshFromMED" );
+  checkFileReadable( theFileName );
+
   SMESH::mesh_array* result = CreateMeshesFromMEDorSAUV(theFileName, theStatus, "CreateMeshesFromMED", theFileName);
   return result;
 }
@@ -1103,7 +1128,8 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromSAUV( const char* theFileName,
      throw ( SALOME::SALOME_Exception )
 {
   Unexpect aCatch(SALOME_SalomeException);
-  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::CreateMeshFromSAUV" );
+  checkFileReadable( theFileName );
+
   std::string sauvfilename(theFileName);
   std::string medfilename(theFileName);
   medfilename += ".med";
@@ -1142,7 +1168,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromSTL( const char* theFileName 
   throw ( SALOME::SALOME_Exception )
 {
   Unexpect aCatch(SALOME_SalomeException);
-  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::CreateMeshesFromSTL" );
+  checkFileReadable( theFileName );
 
   SMESH::SMESH_Mesh_var aMesh = createMesh();
   //string aFileName;
@@ -1184,6 +1210,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromCGNS( const char* theFileName,
   throw ( SALOME::SALOME_Exception )
 {
   Unexpect aCatch(SALOME_SalomeException);
+  checkFileReadable( theFileName );
 
   SMESH::mesh_array_var aResult = new SMESH::mesh_array();
 
@@ -1271,6 +1298,7 @@ SMESH_Gen_i::CreateMeshesFromGMF( const char*             theFileName,
     throw ( SALOME::SALOME_Exception )
 {
   Unexpect aCatch(SALOME_SalomeException);
+  checkFileReadable( theFileName );
 
   SMESH::SMESH_Mesh_var aMesh = createMesh();
 #ifdef WIN32

@@ -105,6 +105,10 @@ bool SMESH_File::open()
 #endif
       }
     }
+    else if ( _error.empty() )
+    {
+      _error = "Can't open for reading an existing file " + _name;
+    }
   }
   return _pos;
 }
