@@ -125,24 +125,17 @@ int SMDS_Mesh::CheckMemory(const bool doNotRaise) throw (std::bad_alloc)
 /// Create a new mesh object
 ///////////////////////////////////////////////////////////////////////////////
 SMDS_Mesh::SMDS_Mesh()
-        :myParent(NULL),
-         myNodeIDFactory(new SMDS_MeshNodeIDFactory()),
-         myElementIDFactory(new SMDS_MeshElementIDFactory()),
-         myHasConstructionEdges(false), myHasConstructionFaces(false),
-         myHasInverseElements(true),
-         myNodeMin(0), myNodeMax(0),
-         myNodePool(0), myEdgePool(0), myFacePool(0), myVolumePool(0),myBallPool(0),
-         myModified(false), myModifTime(0), myCompactTime(0),
-         xmin(0), xmax(0), ymin(0), ymax(0), zmin(0), zmax(0)
+  :myParent(NULL),
+   myNodeIDFactory(new SMDS_MeshNodeIDFactory()),
+   myElementIDFactory(new SMDS_MeshElementIDFactory()),
+   myHasConstructionEdges(false), myHasConstructionFaces(false),
+   myHasInverseElements(true),
+   myNodeMin(0), myNodeMax(0),
+   myNodePool(0), myEdgePool(0), myFacePool(0), myVolumePool(0),myBallPool(0),
+   myModified(false), myModifTime(0), myCompactTime(0),
+   xmin(0), xmax(0), ymin(0), ymax(0), zmin(0), zmax(0)
 {
   myMeshId = _meshList.size();         // --- index of the mesh to push back in the vector
-  MESSAGE("myMeshId=" << myMeshId);
-  MESSAGE("sizeof(SMDS_MeshElement) " << sizeof(SMDS_MeshElement) );
-  MESSAGE("sizeof(SMDS_MeshNode) " << sizeof(SMDS_MeshNode) );
-  MESSAGE("sizeof(SMDS_MeshCell) " << sizeof(SMDS_MeshCell) );
-  MESSAGE("sizeof(SMDS_VtkVolume) " << sizeof(SMDS_VtkVolume) );
-  MESSAGE("sizeof(SMDS_Position) " << sizeof(SMDS_Position) );
-  MESSAGE("sizeof(SMDS_SpacePosition) " << sizeof(SMDS_SpacePosition) );
   myNodeIDFactory->SetMesh(this);
   myElementIDFactory->SetMesh(this);
   _meshList.push_back(this);

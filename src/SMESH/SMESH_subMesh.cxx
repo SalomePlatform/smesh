@@ -116,8 +116,6 @@ SMESH_subMesh::SMESH_subMesh(int                  Id,
 
 SMESH_subMesh::~SMESH_subMesh()
 {
-  MESSAGE("SMESH_subMesh::~SMESH_subMesh");
-  // ****
   deleteOwnListeners();
 }
 
