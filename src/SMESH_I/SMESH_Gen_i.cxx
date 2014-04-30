@@ -2905,8 +2905,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
   //  ASSERT( theComponent->GetStudy()->StudyId() == myCurrentStudy->StudyId() )
   // san -- in case <myCurrentStudy> differs from theComponent's study,
   // use that of the component
-  if ( myCurrentStudy->_is_nil() ||
-    theComponent->GetStudy()->StudyId() != myCurrentStudy->StudyId() )
+  if ( theComponent->GetStudy()->StudyId() != GetCurrentStudyID() )
     SetCurrentStudy( theComponent->GetStudy() );
 
   // Store study contents as a set of python commands
@@ -3955,8 +3954,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 {
   INFOS( "SMESH_Gen_i::Load" );
 
-  if ( myCurrentStudy->_is_nil() ||
-       theComponent->GetStudy()->StudyId() != myCurrentStudy->StudyId() )
+  if ( theComponent->GetStudy()->StudyId() != GetCurrentStudyID() )
     SetCurrentStudy( theComponent->GetStudy() );
 
   /*  if( !theComponent->_is_nil() )
