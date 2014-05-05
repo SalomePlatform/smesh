@@ -36,13 +36,13 @@ of a given face.
 \anchor hypo_quad_params_anchor
 <h2>Quadrangle parameters</h2>
 
-\image html hypo_quad_params_dialog.png "Quadrangle parameters creation/edition dialog"
+\image html hypo_quad_params_dialog.png "Quadrangle parameters: Transition"
 
 <b>Quadrangle parameters</b> is a hypothesis for Quadrangle (Mapping) algorithm.
 
 <b>Transition</b> tab is used to define the algorithm of transition
 between opposite sides of faces with a different number of
-segments on opposite sides. The following types of transition
+segments on them. The following types of transition
 algorithms are available:
 
 - <b>Standard</b> is the default case, when both triangles and quadrangles
@@ -80,7 +80,7 @@ algorithm for meshing of trilateral faces. In this case it is
 necessary to select the vertex, which will be used as the fourth edge
 (degenerated).
 
-\image html hypo_quad_params_dialog_vert.png "Base Vertex tab of Quadrangle parameters creation/edition dialog"
+\image html hypo_quad_params_dialog_vert.png "Quadrangle parameters: Base Vertex"
 
 \image html hypo_quad_params_1.png "A face built from 3 edges"
 
@@ -98,9 +98,9 @@ shows the good (left) and the bad (right) results of meshing.
 
 \image html hypo_quad_params_res_2.png "The resulting meshes"
 
-\image html hypo_quad_params_dialog_enf.png "Enforced nodes tab of Quadrangle parameters creation/edition dialog"
+\image html hypo_quad_params_dialog_enf.png "Quadrangle parameters: Enforced nodes"
 
-<b>Enforced nodes</b> tab allows for defining points where the
+<b>Enforced nodes</b> tab allows defining points, where the
 algorithm should create nodes. There are two ways to define positions
 of the enforced nodes.
 <ul>
@@ -113,22 +113,30 @@ of the enforced nodes.
     projected to the meshed face and located close enough to the
     meshed face will be used to create the enforced nodes.</li>
 </ul>
-Algorithm of creation of the enforced nodes is following.
 
-\image html hypo_quad_params_enfnodes_algo.png "Steps of the algorithm of creation of the enforced nodes"
-<ol>
-  <li> Left image: Positions of nodes are computed without taking into
+Let us see how the algorithm works:
+
+
+<ul>
+  <li> Initially positions of nodes are computed without taking into
   account the enforced vertex (yellow point).</li> 
-  <li> Middle image: A node closest to the enforced vertex is
+\image html hypo_quad_params_enfnodes_algo1.png "Initial mesh"
+
+  <li> Then the node closest to the enforced vertex is
     detected. Extreme nodes of the row and column of the detected node
     are used to create virtual edges (yellow lines) ending at the
     enforced vertex. </li>
-  <li> Right image: The meshed face is thus divided by the virtual
+\image html hypo_quad_params_enfnodes_algo2.png "Creation of virtual edges"
+	
+  <li> Consequently, the meshed face is divided by the virtual
     edges into four quadrilateral sub-domains each of which is meshed
-    as usually: the nodes of the row and column of detected node are
+    as usually: the nodes of the row and column of the detected node are
     moved to the virtual edges and the quadrilateral elements are
     constructed. 
-</ol>
+	
+\image html hypo_quad_params_enfnodes_algo3.png "Final mesh"	
+
+</ul>
 If there are several enforced vertices, the algorithm is applied
 recursively to the formed sub-domains.
 

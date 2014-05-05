@@ -32,6 +32,10 @@ The created groups can be later:
 - \subpage using_operations_on_groups_page "Subjected to Boolean operations"
 - \subpage deleting_groups_page "Deleted"
 
+If sub-meshes or groups container item has more than one child sub-object, it is possible to sort the children in ascending order. For this, select the parent object in the Object Browser and choose <b>Sort children</b> context menu item.
+
+\image html smesh_sort.png "Sorting of sub-objects"
+
 An important tool, providing filters for creation of \b Standalone
 groups is \ref selection_filter_library_page.
 

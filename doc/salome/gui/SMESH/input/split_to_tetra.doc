@@ -19,70 +19,50 @@ The following dialog box will appear:
 \image html split_into_tetra.png
 
 <br>
-<b>Target element type</b> group of radio-buttons allows to select
-a type of operation. If \b Tetrahedron button is checked, then the
-operation will split volumes of any type into tetrahedra.
-If \b Prism button is checked, then the operation will split hexahedra
-into prisms, and the dialog will look as follows:
-
-\image html split_into_prisms.png
+First it is possible to select the type of operation:
+- If \b Tetrahedron button is checked, the operation will split volumes of any type into tetrahedra.
+- If \b Prism button is checked, the operation will split hexahedra into prisms.
 
 <ul>
-<li>The main list contains list of volumes to split. You can click on
+<li>The main list contains the list of volumes to split. You can click on
   a volume in the 3D viewer and it will be highlighted (lock Shift
   keyboard button to select several volumes). Click \b Add button and
   the ID of this volume will be added to the list. To remove the
   selected element or elements from the list click \b Remove button. <b>Sort
-    list</b> button allows to sort the list of IDs. \b Filter button allows to
-  apply a definite filter to the selection of volumes.
+    list</b> button allows to sort the list of IDs. \b Filter button allows applying a filter to the selection of volumes.
   <br><b>Note:</b> If you split not all adjacent non-tetrahedral
   volumes, your mesh becomes non-conform.</li> 
-<li><b>Apply to all</b> radio button allows to split all
+  
+<li><b>Apply to all</b> radio button allows splitting all
   volumes of the currently selected mesh.</li>
+  
+<li>If \b Tetrahedron element type is selected, <b> Split hexahedron </b> group allows specifying the number of tetrahedra  a hexahedron will be split into. If the chosen method does not allow to get a conform mesh, a generic solution is applied: an additional node is created at the gravity center of a hexahedron, serving an apex of tetrahedra, all quadrangle sides of the hexahedron are split into two triangles each serving a base of a new tetrahedron.</li> 
+
+<li>If \Prism element type is selected, the <b>Split hexahedron</b> group looks as follows:
+
+\image html split_into_prisms.png
+
+<ul>
+<li><b>Into 2 (or 4) prisms</b> allows to specify the number of prisms a hexahedron will be split into.</li> 
+<li> <b> Facet to split </b> group allows to specify the side (facet) of the hexahedron, which is split into triangles.  This facet is defined by a point and a direction. The algorithm finds a hexahedron closest to the specified point and splits a facet whose normal is closest to the specified direction. Then the splitting is propagated from that hexahedron to all adjacent hexahedra. 
+The point and the direction by which the first split hexahedron is found can be specified:
+<ul>
+ <li> by input of coordinates in <b> Hexa location </b> and <b> Facet normal </b> fields, or </li>
+ <li> by clicking <b>Selection</b> button and selecting in the viewer the element whose barycenter will be used as the start point and whose direction will be used as a normal to facet to split into triangles. Switch this button
+off to return to selection of volumes to split.</li>
 </ul>
-
-<ul>
-<li><b> Split hexahedron </b> group allows to specify a method of
-  splitting hexahedra.
-
-<ul>
-<li><b>Into N tetrahedra/prisms</b> allows to specify the number of
-  tetrahedra or prisms a hexahedron will be split into. If the
-  specified method does not allow to get a conform mesh, a generic
-  solution is applied: an additional node is created at the gravity
-  center of a hexahedron, serving an apex of tetrahedra, all
-  quadrangle sides of the hexahedron are split into two triangles each
-  serving a base of a new tetrahedron.</li> 
-<li> <b> Facet to split </b> group allows to specify a side (facet) of a
-  hexahedron to split into triangles when splitting into prisms.
-  The facet to split is defined by specifying a point and a direction
-  close to normal of the facet. The operation finds a hexahedron most
-  close to the specified point and splits a facet whose normal is most
-  close to the specified direction. Then the splitting is propagated
-  from that hexahedron to all adjacent hexahedra.
-  <ul> 
-    <li> <b> Hexa location </b> allows to specify a <em> start
-        point </em> by which a first split hexahedron is found. <em>
-        Selection button</em> switches to selection of the element whose
-      barycenter will be used the start point and whose direction will be
-      used as a normal to facet to split into triangles. To return to
-      selection of volumes to split it is necessary to switch this button
-      off. </li>
-    <li> <b> Facet normal </b> allows to specify a direction of the
-    normal to hexahedron facet to split into triangles.</li>
-  </ul>
-<li><b> All domains </b> - if it is off the operation stops as all
+    
+<li> If <b> All domains </b> option is off, the operation stops when all
   hehexedra adjacent to the start hexahedron are split into
   prisms. Else the operation tries to continue splitting starting from
   another hexahedron closest to the <b> Hexa location</b>. </li>
 </li>
 </ul>
 
-<li><b>Select from</b> a set of fields allows to choose a sub-mesh or an
-  existing group whose elements will be added to the list as you ckick
-  \b Add button.</li>
+<li><b>Select from</b> set of fields allows choosing a sub-mesh or an
+  existing group whose elements will be added to the list as you click \b Add button.</li>
 </ul>
 
-<li>Click the \b Apply or <b>Apply and Close</b> button to confirm the operation.</li>
+<li>Click \b Apply or <b>Apply and Close</b> button to confirm the operation.</li>
 </ol>
 */
