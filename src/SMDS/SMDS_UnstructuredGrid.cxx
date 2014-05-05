@@ -1081,8 +1081,11 @@ SMDS_MeshCell* SMDS_UnstructuredGrid::extrudeVolumeFromFace(int vtkVolId,
               double *coords = this->GetPoint(oldId);
               SMDS_MeshNode *newNode = _mesh->AddNode(coords[0], coords[1], coords[2]);
               newId = newNode->getVtkId();
-              std::map<long, int> emptyMap;
-              nodeQuadDomains[oldId] = emptyMap;
+              if (! nodeQuadDomains.count(oldId))
+                {
+                  std::map<long, int> emptyMap;
+                  nodeQuadDomains[oldId] = emptyMap;
+                }
               nodeQuadDomains[oldId][dom1_2] = newId;
             }
           orderedNodes.push_back(newId);
