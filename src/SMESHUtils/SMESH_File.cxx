@@ -45,7 +45,13 @@ namespace boofs = boost::filesystem;
 //================================================================================
 
 SMESH_File::SMESH_File(const std::string& name, bool open)
-  :_name(name), _size(-1), _file(0), _map(0), _pos(0), _end(0)
+  :_name(name), _size(-1), 
+#ifdef WIN32
+   _file(INVALID_HANDLE_VALUE),
+#else
+   _file(-1),
+#endif
+   _map(0), _pos(0), _end(0)
 {
   if ( open ) this->open();
 }
@@ -138,11 +144,15 @@ void SMESH_File::close()
   else if ( _file >= 0 )
   {
 #ifdef WIN32
-    CloseHandle(_file);
-    _file = INVALID_HANDLE_VALUE;
+    if(_file != INVALID_HANDLE_VALUE) {
+      CloseHandle(_file);
+      _file = INVALID_HANDLE_VALUE;
+    }
 #else
-    ::close(_file);
-    _file = -1;
+    if(_file != -1) {
+      ::close(_file);
+      _file = -1;
+    }
 #endif
   }
 }
