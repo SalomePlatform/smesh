@@ -35,7 +35,7 @@ creation of narrow 2D elements.
 
 \image html adaptive1d_sample_mesh.png "Adaptive hypothesis and Netgen 2D algorithm - the size of mesh segments reflects the size of geometrical features"
 
-<b>See Also</b> a \ref tui_1d_adaptive "sample TUI Script" that creates mesh of the above image.
+<b>See Also</b> a \ref tui_1d_adaptive "sample TUI Script" that uses Adaptive hypothesis.
 
 <br>
 \anchor arithmetic_1d_anchor
