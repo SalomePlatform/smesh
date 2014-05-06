@@ -40,7 +40,7 @@ class TableMaillages (TableDeBase):
             if self.dejaRemplie():
                print "table Maillage deja initialisee"
                return
-            self.insereLigneAutoId(('Fiche_7566_TUNNEL', '/home/H77945/CAS_TEST/MAILLEUR/FICHE_7566_TUNNEL/Fiche_7566_TUNNEL.py', '/tmp/Fiche_7566_TUNNEL.med', 3,3,10,10,10,10, 'Maillage d un tunnel'))
+#            self.insereLigneAutoId(('Fiche_7566_TUNNEL', '/home/H77945/CAS_TEST/MAILLEUR/FICHE_7566_TUNNEL/Fiche_7566_TUNNEL.py', '/tmp/Fiche_7566_TUNNEL.med', 3,3,10,10,10,10, 'Maillage d un tunnel'))
 #            self.insereLigneAutoId(('Fiche_7957_AILETTE', '/home/H77945/CAS_TEST/MAILLEUR/FICHE_7957_AILETTE/Fiche_7957_AILETTE.py', '/tmp/Fiche_7957_AILETTE.med', 1,2,10,10,10,10, 'Maillage d une attache d aillette'))
         
         def construitListeMaillages(self):
