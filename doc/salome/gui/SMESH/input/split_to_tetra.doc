@@ -38,7 +38,7 @@ First it is possible to select the type of operation:
   
 <li>If \b Tetrahedron element type is selected, <b> Split hexahedron </b> group allows specifying the number of tetrahedra  a hexahedron will be split into. If the chosen method does not allow to get a conform mesh, a generic solution is applied: an additional node is created at the gravity center of a hexahedron, serving an apex of tetrahedra, all quadrangle sides of the hexahedron are split into two triangles each serving a base of a new tetrahedron.</li> 
 
-<li>If \Prism element type is selected, the <b>Split hexahedron</b> group looks as follows:
+<li>If \b Prism element type is selected, the <b>Split hexahedron</b> group looks as follows:
 
 \image html split_into_prisms.png
 
