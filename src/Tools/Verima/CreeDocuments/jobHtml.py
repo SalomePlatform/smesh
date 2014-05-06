@@ -6,13 +6,14 @@ import os
 
 dir=os.path.dirname(os.path.abspath(__file__))
 FichierEntete=os.path.join(dir,'templatesHtml/entete.html')
-FichierMailleur=os.path.join(dir,'templatesHtml/mailleur.html')
+FichierMaillageEntete=os.path.join(dir,'templatesHtml/maillageEntete.html')
 FichierJob=os.path.join(dir,'templatesHtml/job.html')
-#FichierJob=os.path.join(dir,'templatesHtml/jobIncomplet.html')
 FichierTableau=os.path.join(dir,'templatesHtml/tableau.html')
 FichierLigne=os.path.join(dir,'templatesHtml/ligne.html')
 FichierFinTableau=os.path.join(dir,'templatesHtml/tableauFin.html')
 FichierSansGroupe=os.path.join(dir,'templatesHtml/sansGroupe.html')
+FichierGroupeRatio=os.path.join(dir,'templatesHtml/groupeRatio.html')
+FichierGroupeTaille=os.path.join(dir,'templatesHtml/groupeTaille.html')
 
 
 def compte_all(texte, subString):
@@ -50,8 +51,8 @@ def CreeEntete(dico):
     texteRetour=FormateTexte(texteIni,dico)
     return texteRetour
 
-def CreeMailleur(dico):
-    texteIni=open(FichierMailleur).read()
+def CreeMaillage(dico):
+    texteIni=open(FichierMaillageEntete).read()
     texteRetour=FormateTexte(texteIni,dico)
     return texteRetour
 
@@ -60,9 +61,19 @@ def CreeJob(dico):
     texteRetour=FormateTexte(texte,dico)
     return texteRetour
 
+def CreeGroupeTaille(dico):
+    texte=open(FichierGroupeTaille).read()
+    texteRetour=FormateTexte(texte,dico)
+    return texteRetour
+
+def CreeGroupeRatio(dico):
+    texte=open(FichierGroupeRatio).read()
+    texteRetour=FormateTexte(texte,dico)
+    return texteRetour
+
+
 def CreeMailleOuGroupe(dico,nb):
     texteIni=open(FichierTableau).read()
-
     texteLigneIni=open(FichierLigne).read()
     for i in range (2,nb+1) :
         texteLigne=FormateLigne(texteLigneIni,i)
@@ -91,17 +102,17 @@ class Document:
     def creeDocument(self,monFichier):
       EcritFichier(self.monTexte,monFichier)
 
-    def initEntete(self,version, versionRef,machine):
+    def initEntete(self,version, machine):
       self.dicoEntete["VERSIONTEST"]=version
-      self.dicoEntete["VERSIONREF"]=versionRef
       self.dicoEntete["MACHINE"]=machine
       self.monTexte=CreeEntete(self.dicoEntete)
 
-    def initMailleur(self,mailleurName):
-      dicoMailleur={}
-      dicoMailleur["MAILLEUR"]=mailleurName
-      texteMailleur=CreeMailleur(dicoMailleur)
-      self.monTexte+=texteMailleur
+    def initMaillage(self,maillageName,mailleurName,versionRefName,dicoMaillage):
+      dicoMaillage["MAILLEUR"]=mailleurName
+      dicoMaillage["MAILLAGE"]=maillageName
+      dicoMaillage["VERSIONREF"]=versionRefName
+      texteMaillageEntete=CreeMaillage(dicoMaillage)
+      self.monTexte+=texteMaillageEntete
 
     def initJob(self,dicoJob):
       texteMailleur=CreeJob(dicoJob)
@@ -115,5 +126,12 @@ class Document:
       texteNoGroupe=open(FichierSansGroupe).read()
       self.monTexte+=texteNoGroupe
 
+    def CreeGroupeTaille(self,dico):
+      texteGroupeTaille=CreeGroupeTaille(dico)
+      self.monTexte+=texteGroupeTaille
+
+    def CreeGroupeRatios(self,dico):
+      texteGroupeRatio=CreeGroupeRatio(dico)
+      self.monTexte+=texteGroupeRatio
 
 #

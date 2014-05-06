@@ -24,11 +24,18 @@ class TableGroupesRef (TableDeBase):
             return listeGroupes
 
 
-        def remplit(self):
-            self.insereLigne(('FRONT_07',2))
-            self.insereLigne(('FOND_07',2))
-            self.insereLigne(('PAROI_07',2))
-            self.insereLigne(('ROCHE_07',2))
-            self.insereLigne(('FOND_16',2))
-            self.insereLigne(('PAROI_16',2))
-            self.insereLigne(('ROCHE_16',2))
+#        def remplit(self):
+            
+# Groupe pour le script du tunnel (fiche 7566)
+#            self.insereLigne(('FRONT_07',1))
+#            self.insereLigne(('FOND_07',1))
+#            self.insereLigne(('PAROI_07',1))
+#            self.insereLigne(('ROCHE_07',1))
+#            self.insereLigne(('FOND_16',1))
+#            self.insereLigne(('PAROI_16',1))
+#            self.insereLigne(('ROCHE_16',1))
+# Groupe pour le script de l'attache d'une ailette (fiche 7957)
+#            self.insereLigne(('RAIN_JONC',2))
+#            self.insereLigne(('EXT_CRAN',2))
+#            self.insereLigne(('ENV_E',2))
+#            self.insereLigne(('ENV_I',2))

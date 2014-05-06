@@ -3,8 +3,6 @@
 import os
 import logging
 
-
-
 # -----------------------------------------------------------------------------
 # --- satistiques maillage
 
@@ -18,12 +16,13 @@ def getGroupesRef(fichierMed):
       return liste
 
 
-def getStatsMaillage(maillage,fichierStatMaillage):
+def getStatsMaillage(maillage,fichierMed):
   """
   """
   logging.info('start')
 
   OK = False
+  fichier=fichierMed.replace('.med','.res')
   if maillage is not None:
     mesures = maillage.GetMeshInfo()
     txt=""
@@ -32,8 +31,7 @@ def getStatsMaillage(maillage,fichierStatMaillage):
       txt += str(SMESH.EntityType._item(i))+ " " +str(mesures[SMESH.EntityType._item(i)]) + "\n"
 
     from utiles import writeFile
-    writeFile(fichierStatMaillage,txt)
-
+    writeFile(fichier,txt)
 
 
 def getStatsGroupes(maillage,fichierMedResult):
@@ -67,17 +65,5 @@ def getStatsStatSurGroupes(maillage,groupe,fichierStatGroupe):
   from utiles import writeFile
   writeFile(fichierStatGroupe,txt)
 
-def genHistogram(aMesh, aCriterion, nbIntervals, isLog, aFile,theStudy):
-  import SMESH,SALOMEDS
-  from salome.smesh import smeshBuilder
-  smesh = smeshBuilder.New(theStudy)
-  aFunctor = smesh.GetFunctor(aCriterion)
-  aFunctor.SetMesh(aMesh.GetMesh())
-  histogram = aFunctor.GetHistogram(nbIntervals,isLog)
-  f = open(aFile, 'w')
-  for tranche in histogram:
-    f.write(str(tranche.min) + " " + str(tranche.max) +  " " + str(tranche.nbEvents) + "\n")
-    pass
-  f.close()
 
 

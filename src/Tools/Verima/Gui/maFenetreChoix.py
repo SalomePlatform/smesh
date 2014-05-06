@@ -23,6 +23,8 @@ class MaFenetreChoix(Ui_Choix ,QtGui.QDialog):
       self.connect(self.PBMachine,SIGNAL("clicked()"),self.MachinePush)
       self.connect(self.PBGroupe,SIGNAL("clicked()"),self.GroupePush)
       self.connect(self.PBRatio,SIGNAL("clicked()"),self.RatioPush)
+      self.connect(self.PBGroupeRatio,SIGNAL("clicked()"),self.GroupeRatioPush)
+      self.connect(self.PBGroupeTaille,SIGNAL("clicked()"),self.GroupeTaillePush)
       self.connect(self.PBPerf,SIGNAL("clicked()"),self.PerfPush)
       self.connect(self.PBMaille,SIGNAL("clicked()"),self.MaillePush)
       self.connect(self.PBTaille,SIGNAL("clicked()"),self.TaillePush)
@@ -43,6 +45,15 @@ class MaFenetreChoix(Ui_Choix ,QtGui.QDialog):
   def RatioPush(self):
       editor=TableEditor(self.db.maTableRatios,self)
       editor.exec_()
+      
+  def GroupeRatioPush(self):
+      editor=TableEditor(self.db.maTableGroupeRatios,self)
+      editor.exec_()
+
+  def GroupeTaillePush(self):
+      editor=TableEditor(self.db.maTableGroupeTailles,self)
+      editor.exec_()
+      
       
   def PerfPush(self):
       editor=TableEditor(self.db.maTablePerfs,self)

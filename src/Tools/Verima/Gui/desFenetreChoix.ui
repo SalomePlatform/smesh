@@ -6,152 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>421</width>
-    <height>633</height>
+    <width>440</width>
+    <height>708</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Verification de Maillage</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <widget class="QGroupBox" name="groupBox">
-     <property name="title">
-      <string>Tables </string>
-     </property>
-     <widget class="QPushButton" name="PBMailleur">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>30</y>
-        <width>271</width>
-        <height>28</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Table Mailleurs</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="PBMaillage">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>70</y>
-        <width>271</width>
-        <height>28</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Table Maillages</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="PBVersion">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>110</y>
-        <width>271</width>
-        <height>28</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Table Versions</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="PBMachine">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>150</y>
-        <width>271</width>
-        <height>28</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Table Machines</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="PBPerf">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>390</y>
-        <width>271</width>
-        <height>28</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Table Performances</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="PBGroupe">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>270</y>
-        <width>271</width>
-        <height>28</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Table Groupes</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="PBMaille">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>230</y>
-        <width>271</width>
-        <height>28</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Table Mailles</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="PBRatio">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>310</y>
-        <width>271</width>
-        <height>28</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Table Ratios</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="PBGroupesRef">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>190</y>
-        <width>271</width>
-        <height>28</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Table Groupes Référence</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="PBTaille">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>350</y>
-        <width>271</width>
-        <height>28</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Table Tailles</string>
-      </property>
-     </widget>
-    </widget>
-   </item>
-   <item row="1" column="0">
+   <item row="2" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -159,6 +22,121 @@
      <property name="standardButtons">
       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Tables </string>
+     </property>
+     <widget class="QWidget" name="layoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>310</y>
+        <width>311</width>
+        <height>269</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="1" column="0">
+        <widget class="QPushButton" name="PBMaille">
+         <property name="text">
+          <string>Table Mailles</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QPushButton" name="PBRatio">
+         <property name="text">
+          <string>Table Ratios</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="0">
+        <widget class="QPushButton" name="PBPerf">
+         <property name="text">
+          <string>Table Performances</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0">
+        <widget class="QPushButton" name="PBGroupeRatio">
+         <property name="text">
+          <string>Table Groupe Ratios</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QPushButton" name="PBGroupe">
+         <property name="text">
+          <string>Table Groupes</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QPushButton" name="PBTaille">
+         <property name="text">
+          <string>Table Tailles</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QPushButton" name="PBGroupeTaille">
+         <property name="text">
+          <string>Table Groupe Tailles</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="layoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>50</y>
+        <width>301</width>
+        <height>211</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QPushButton" name="PBMailleur">
+         <property name="text">
+          <string>Table Mailleurs</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="PBMaillage">
+         <property name="text">
+          <string>Table Maillages</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="PBMachine">
+         <property name="text">
+          <string>Table Machines</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="PBVersion">
+         <property name="text">
+          <string>Table Versions</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="PBGroupesRef">
+         <property name="text">
+          <string>Table Groupes Référence</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
   </layout>

@@ -4,13 +4,13 @@ from tableDeBase import TableDeBase
 class TableTailles (TableDeBase):
       def __init__(self):
           TableDeBase.__init__(self,"Tailles")
-          self.setField(('Maillage','Version','Machine','TailleMax','TailleMin','Quartile1','Mediane','Quartile3','Moyenne'))
-          self.setTypeField(('int','int','str','float','float','float','float','float','float'),('idMaillage','idVersion','Machine'))
+          self.setField(('Maillage','Version','TailleMax','TailleMin','Quartile1','Mediane','Quartile3','Moyenne'))
+          self.setTypeField(('int','int','str','float','float','float','float','float','float'),('idMaillage','idVersion'))
 
       def createSqlTable(self):
           query=QtSql.QSqlQuery()
 
-          texteQuery ="create table Tailles(idMaillage int, idVersion int, Machine varchar(10),"
+          texteQuery ="create table Tailles(idMaillage int, idVersion int, "
           texteQuery+="TailleMax float, TailleMin float, "
           texteQuery+="Q1 float, "
           texteQuery+="Mediane float, "
@@ -18,21 +18,19 @@ class TableTailles (TableDeBase):
           texteQuery+="Moyenne float, "
           texteQuery+="foreign key (idMaillage) references Maillages(id)," 
           texteQuery+="foreign key (idVersion) references Versions(id)," 
-          texteQuery+="foreign key (Machine) references Machines(nomMachine)," 
-          texteQuery+="primary key (idMaillage,idVersion,Machine));"
+          texteQuery+="primary key (idMaillage,idVersion));"
 
           print "Creation de TableTailles : " , query.exec_(texteQuery)
 
-      def getVal(self,idMaillage, idVersion, Machine, Entite):
+      def getVal(self,idMaillage, idVersion, Entite):
           query=QtSql.QSqlQuery()
           texteQuery ='select '+ str(Entite) + ' from Tailles where idMaillage='+str(idMaillage)
           texteQuery+=' and  idVersion='+str(idVersion)
-          texteQuery+=" and Machine='" + str(Machine) +"';"
           query.exec_(texteQuery)
           nb=0
           val=0                          # Valeur si l enregistrement n existe pas
           while (query.next()) :
-              val=query.value(0).toInt()[0]
+              val=query.value(0).toFloat()[0]
               nb=nb+1
           if nb > 1 : print "Double valeur de Reference dans la table des mailles"
           return val

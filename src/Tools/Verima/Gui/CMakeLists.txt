@@ -27,6 +27,7 @@ SET(plugin_SCRIPTS
   monEditor.py
   monNomBase.py
   visualiseDatabase.py
+  __init__.py
 )
 
 # --- resources ---
@@ -47,6 +48,6 @@ PYQT4_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_files})
 
 # --- rules ---
 
-SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS})
+SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS}/Gui)
 
-SALOME_INSTALL_SCRIPTS("${_pyuic_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS})
+SALOME_INSTALL_SCRIPTS("${_pyuic_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS}/Gui)

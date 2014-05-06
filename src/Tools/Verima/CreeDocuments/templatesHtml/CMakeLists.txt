@@ -22,16 +22,16 @@
 # scripts / static
 SET(plugin_HTML_FILES
   entete.html
+  groupeRatio.html
+  groupeTaille.html
   job.html
-  jobIncomplet.html
   ligne.html
-  mailleur.html
+  maillageEntete.html
   sansGroupe.html
-  tableauComplet.html
   tableauFin.html
   tableau.html
  )
 
 # --- rules ---
 
-SALOME_INSTALL_SCRIPTS("${plugin_HTML_FILES}" ${SALOME_SMESH_INSTALL_PLUGINS})
+SALOME_INSTALL_SCRIPTS("${plugin_HTML_FILES}" ${SALOME_SMESH_INSTALL_PLUGINS}/CreeDocuments/templatesHtml)
