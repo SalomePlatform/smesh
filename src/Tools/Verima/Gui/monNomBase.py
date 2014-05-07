@@ -1,7 +1,7 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtSql import *
-from nomBase import Ui_LEDataBaseName
+from nomBase_ui import Ui_LEDataBaseName
 
 
 class DataBaseName(Ui_LEDataBaseName,QDialog):

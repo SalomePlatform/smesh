@@ -1,4 +1,4 @@
-from desFenetreChoix import Ui_Choix
+from desFenetreChoix_ui import Ui_Choix
 from PyQt4  import *
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *

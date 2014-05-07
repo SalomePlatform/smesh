@@ -3,7 +3,7 @@
 from PyQt4  import *
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from Gui.myMain import Ui_Gestion
+from Gui.myMain_ui import Ui_Gestion
 import sys
 
 
