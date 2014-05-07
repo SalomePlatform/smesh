@@ -148,7 +148,13 @@
 
       \image html hypo_sets.png
       List of sets of hypotheses. Tag <em>[custom]</em> is
-      automatically added to the sets defined by the user
+      automatically added to the sets defined by the user.
+      
+      \note \a Automatic in the names of pre-defined sets of
+      hypotheses means only that initially \ref
+      automatic_length_anchor "Automatic Length" hypothesis was
+      included in these sets, and not that these sets are suitable for
+      meshing any geometry.
   </li>
 </ol>
 
