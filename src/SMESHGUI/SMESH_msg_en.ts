@@ -744,7 +744,7 @@
         <source>TOP_MEASURE_AREA</source>
         <translation>Area</translation>
     </message>
-     <message>
+    <message>
         <source>MEN_MEASURE_VOLUME</source>
         <translation>Volume</translation>
     </message>
@@ -2304,7 +2304,7 @@ Check algorithm documentation for supported geometry</translation>
         <source>PREF_NUMBERING_NODE</source>
         <translation>Nodes: Color</translation>
     </message>
-     <message>
+    <message>
         <source>PREF_NUMBERING_ELEM</source>
         <translation>Edges: Color</translation>
     </message>
@@ -4320,7 +4320,7 @@ Please, create VTK viewer and try again</translation>
     <message>
         <source>PREF_PRE_SELECTION</source>
         <translation>Pre-selection color</translation>
-    </message>    
+    </message>
     <message>
         <source>PREF_COLOR</source>
         <translation>Color</translation>
@@ -4600,6 +4600,10 @@ Please, create VTK viewer and try again</translation>
         <source>ALLOW_ELEM_LIST_MODIF</source>
         <translation>Enable manual edition</translation>
     </message>
+    <message>
+        <source>SELECT_ALL</source>
+        <translation>Select All</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_Add0DElemsOnAllNodesDlg</name>
@@ -4857,11 +4861,11 @@ Do you want to restore original submesh priority?</translation>
         <source>RADIOBTN_2</source>
         <translation>Convert to quadratic</translation>
     </message>
-      <message>
+    <message>
         <source>RADIOBTN_3</source>
         <translation>Convert to bi-quadratic</translation>
-      </message>
-      <message>
+    </message>
+    <message>
         <source>NON_CONFORM_WARNING</source>
         <translation>Warning: mesh can become non-conformal</translation>
     </message>
@@ -5433,10 +5437,10 @@ Please check input data and try again</translation>
         <source>CONNECTED_ELEMS</source>
         <translation>Elements of a domain</translation>
     </message>
-  <message>
-    <source>NUMBEROFNODESINELEMENT</source>
-    <translation>Number Of Nodes In Element</translation>
-  </message>
+    <message>
+        <source>NUMBEROFNODESINELEMENT</source>
+        <translation>Number Of Nodes In Element</translation>
+    </message>
     <message>
         <source>COPY_FROM</source>
         <translation>Copy from...</translation>
@@ -5815,13 +5819,6 @@ Please specify them and try again</translation>
     </message>
 </context>
 <context>
-    <name>SMESHGUI_GroupDlg</name>
-    <message>
-        <source>SELECT_ALL</source>
-        <translation>Select All</translation>
-    </message>
-</context>
-<context>
     <name>SMESHGUI_UnionGroupsDlg</name>
     <message>
         <source>UNION_OF_GROUPS</source>
@@ -6099,7 +6096,7 @@ select mesh or sub-mesh and try again</translation>
         <source>CONCURRENT_SUBMESH_APPEARS</source>
         <translation> 
 The assigned algorithm has the same priority as one assigned to an 
-adjacent sub-mesh, hence it's undefined which algorithm to use for
+adjacent sub-mesh, hence it&apos;s undefined which algorithm to use for
 meshing boundary shared by two sub-meshes. Would you like to set
 the order of sub-mesh computation? </translation>
     </message>
@@ -6870,7 +6867,7 @@ as they are of improper type:
     </message>
     <message>
         <source>SMESH_NOT_ONLY_GROUPS</source>
-        <translation>Can't process meshes and groups at once</translation>
+        <translation>Can&apos;t process meshes and groups at once</translation>
     </message>
     <message>
         <source>SMESH_ERR_NO_3D_ELEMENTS</source>
@@ -7237,8 +7234,8 @@ as they are of improper type:
 <context>
     <name>SMESHGUI_TreeElemInfo</name>
     <message>
-      <source>SHOW_ITEM_INFO</source>
-      <translation>Show info</translation>
+        <source>SHOW_ITEM_INFO</source>
+        <translation>Show info</translation>
     </message>
     <message>
         <source>PROPERTY</source>
@@ -7461,7 +7458,7 @@ as they are of improper type:
     <message>
         <source>NUMBER_OF_THE_DOUBLE_FACES</source>
         <translation>Number of the double faces</translation>
-    </message>   
+    </message>
     <message>
         <source>ASPECT_RATIO_HISTOGRAM</source>
         <translation>Aspect Ratio histogram</translation>

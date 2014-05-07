@@ -744,7 +744,7 @@
         <source>TOP_MEASURE_AREA</source>
         <translation>Surface</translation>
     </message>
-     <message>
+    <message>
         <source>MEN_MEASURE_VOLUME</source>
         <translation>Volume</translation>
     </message>
@@ -2042,7 +2042,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>SMESH_MESHINFO_ORDER3</source>
-        <translation type="unfinished">Bi-Quadratic</translation>
+        <translation>Bi-Quadratique</translation>
     </message>
     <message>
         <source>SMESH_MESHINFO_HEXAPRISM</source>
@@ -2304,7 +2304,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <source>PREF_NUMBERING_NODE</source>
         <translation>Nœuds: couleur</translation>
     </message>
-     <message>
+    <message>
         <source>PREF_NUMBERING_ELEM</source>
         <translation>Arêtes: couleur</translation>
     </message>
@@ -2780,9 +2780,9 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>SMESH_WRN_SIZE_INC_LIMIT_EXCEEDED</source>
-        <translation>La nouvelle taille de maillage (%1 éléments) dépasse l'actuelle taille limite de la mise à jour automatique (%2 éléments).
+        <translation>La nouvelle taille de maillage (%1 éléments) dépasse l&apos;actuelle taille limite de la mise à jour automatique (%2 éléments).
 Les éléments suivants ne sont pas affichés: %3.
-Utilisez le menu "Visualiser une entité" pour les afficher.
+Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
 </translation>
     </message>
     <message>
@@ -3479,7 +3479,7 @@ Utilisez le menu "Visualiser une entité" pour les afficher.
     </message>
     <message>
         <source>TB_INFO</source>
-        <translation>Barre d'information</translation>
+        <translation>Barre d&apos;information</translation>
     </message>
     <message>
         <source>TB_ADD1D</source>
@@ -4226,6 +4226,13 @@ Il ne peut pas être supprimé.</translation>
     </message>
 </context>
 <context>
+    <name>SMESHGUI_FieldSelectorWdg</name>
+    <message>
+        <source>FIELDS_TO_EXPORT</source>
+        <translation>Exporter les champs</translation>
+    </message>
+</context>
+<context>
     <name>SMESHGUI_Dialog</name>
     <message>
         <source>DLG_MESH</source>
@@ -4590,6 +4597,10 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
         <source>ALLOW_ELEM_LIST_MODIF</source>
         <translation>Edition manuelle</translation>
     </message>
+    <message>
+        <source>SELECT_ALL</source>
+        <translation>Tout sélectionner</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_Add0DElemsOnAllNodesDlg</name>
@@ -4847,11 +4858,11 @@ Voulez-vous restaurer la priorité initiale ?</translation>
         <source>RADIOBTN_2</source>
         <translation>Convertir à partir d&apos;éléments quadratiques</translation>
     </message>
-      <message>
+    <message>
         <source>RADIOBTN_3</source>
         <translation>Convertir en bi-quadratique</translation>
-      </message>
-      <message>
+    </message>
+    <message>
         <source>NON_CONFORM_WARNING</source>
         <translation>Attention: le maillage généré sera a priori non-conforme</translation>
     </message>
@@ -5423,10 +5434,10 @@ Vérifiez la validité des informations données</translation>
         <source>CONNECTED_ELEMS</source>
         <translation>Eléments d&apos;un domaine</translation>
     </message>
-  <message>
-    <source>NUMBEROFNODESINELEMENT</source>
-    <translation>Nombre de noeuds dans l&apos;élément</translation>
-  </message>
+    <message>
+        <source>NUMBEROFNODESINELEMENT</source>
+        <translation>Nombre de noeuds dans l&apos;élément</translation>
+    </message>
     <message>
         <source>COPY_FROM</source>
         <translation>Copier de...</translation>
@@ -5802,13 +5813,6 @@ Indiquez-les et essayez de nouveau</translation>
     <message>
         <source>UNION_OF_TWO_GROUPS</source>
         <translation>Union de deux groupes</translation>
-    </message>
-</context>
-<context>
-    <name>SMESHGUI_GroupDlg</name>
-    <message>
-        <source>SELECT_ALL</source>
-        <translation>Tout sélectionner</translation>
     </message>
 </context>
 <context>
@@ -6287,7 +6291,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
 </context>
 <context>
-    <name>SMESHGUI_CuttingIntoTetraDlg</name>
+    <name>SMESHGUI_SplitVolumesDlg</name>
     <message>
         <source>CAPTION</source>
         <translation>Diviser les volumes en tétraèdres</translation>
@@ -6307,6 +6311,34 @@ Il y a trop peu de points dans le fichier </translation>
     <message>
         <source>SPLIT_HEX_TO_24_TETRA</source>
         <translation>En 24 tétraèdres</translation>
+    </message>
+    <message>
+        <source>SPLIT_HEX_TO_2_PRISMS</source>
+        <translation>En 2 prismes</translation>
+    </message>
+    <message>
+        <source>SPLIT_HEX_TO_4_PRISMS</source>
+        <translation>En 4 Prismes</translation>
+    </message>
+    <message>
+        <source>TARGET_ELEM_TYPE</source>
+        <translation>Type des éléments ciblés</translation>
+    </message>
+    <message>
+        <source>FACET_TO_SPLIT</source>
+        <translation>Face à diviser</translation>
+    </message>
+    <message>
+        <source>START_POINT</source>
+        <translation>Localisation des hexas</translation>
+    </message>
+    <message>
+        <source>FACET_NORMAL</source>
+        <translation>Normal à la face</translation>
+    </message>
+    <message>
+        <source>ALL_DOMAINS</source>
+        <translation>Tous les domaines</translation>
     </message>
 </context>
 <context>
@@ -6850,7 +6882,7 @@ en raison de leurs types incompatibles:
     </message>
     <message>
         <source>BI_QUADRATIC_LAB</source>
-        <translation type="unfinished">Bi-Quadratic</translation>
+        <translation>Bi-Quadratique</translation>
     </message>
     <message>
         <source>0D_LAB</source>
@@ -7162,8 +7194,8 @@ en raison de leurs types incompatibles:
 <context>
     <name>SMESHGUI_TreeElemInfo</name>
     <message>
-      <source>SHOW_ITEM_INFO</source>
-      <translation>Show info</translation>
+        <source>SHOW_ITEM_INFO</source>
+        <translation>Show info</translation>
     </message>
     <message>
         <source>PROPERTY</source>
@@ -7386,7 +7418,7 @@ en raison de leurs types incompatibles:
     <message>
         <source>NUMBER_OF_THE_DOUBLE_FACES</source>
         <translation>Nombre de faces doubles</translation>
-    </message>   
+    </message>
     <message>
         <source>ASPECT_RATIO_HISTOGRAM</source>
         <translation>Histogramme du rapport de forme</translation>
