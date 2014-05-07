@@ -1,8 +1,8 @@
 /*!
 
-\page import_algos_page "Import Elements from Another Mesh" Algorithms
+\page import_algos_page Import Elements from Another Mesh Algorithms
 
-\n <em>Import nD Elements from Another Mesh </em>algorithms allow to
+\n <b>Import Elements from Another Mesh</b> algorithms allow to
 define the mesh of a geometrical 
 object by importing suitably located mesh elements from another
 mesh. The mesh elements to import from the other mesh should be contained in

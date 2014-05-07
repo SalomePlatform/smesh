@@ -10,9 +10,6 @@
   <li> \ref submesh_order_anchor "Changing sub-mesh priority" (optional)</li>
   <li> \ref compute_anchor "Computing the mesh"</li>
 </ul>
-Mesh can be \ref use_existing_anchor "computed using your own meshing algorithms" 
-written in Python.
-
 
 \anchor create_mesh_anchor
 <h2>Creation of a mesh object</h2>
@@ -32,6 +29,10 @@ written in Python.
     \image html createmesh-inv.png
     <br>
   </li>
+  <li>Select <b>Mesh Type</b> in the corresponding list from <b>Any, Hexahedral, Tetrahedral, Triangular </b> and \b Quadrilateral (there can be less items for lower dimensions). 
+  
+  Selection of a mesh type hides any algorithms that are not able to create elements of this type.</li>
+  
   <li>Apply \subpage basic_meshing_algos_page "meshing algorithms" and
     \subpage about_hypo_page "hypotheses" which will be used to compute
     this mesh.
@@ -87,23 +88,20 @@ written in Python.
     <em>"Edit Hypothesis" button</em>
     </center>
 
-    Most 2D and 3D algorithms can work without hypotheses using some
-    default meshing parameters. Some algorithms does not require any
-    hypothesis. After selection of an algorithm "Hypothesis" field of
+    Most 2D and 3D algorithms can work without hypotheses using default meshing parameters. Some algorithms do not require any hypotheses. After selection of an algorithm "Hypothesis" field of
     the dialog can contain:
     <ul>
       <li> <em>\<Default\></em> if the algorithm can work using default
       parameters.</li>
       <li> <em>\<None\></em> if the algorithm requires a hypothesis defining
       its parameters.</li>
-      <li> Nothing if the algorithm has no parameters to tune.</li>
+      <li> If the algorithm does not use hypotheses, this field is grayed.</li>
     </ul>
-    After selection of an algorithm "Add. Hypothesis" field of
-    the dialog can contain:
+    After selection of an algorithm <b>Add. Hypothesis</b> field can contain:
     <ul>
-      <li> <em>\<None\></em> if the algorithm can be additionally tuned
+      <li> <em>\<None\></em> if the algorithm can be tuned
       using an additional hypothesis.</li>
-      <li> Nothing if the algorithm has no additional parameters to tune.</li>
+      <li> If the algorithm does not use additional hypotheses, this field is grayed.</li>
     </ul>
 
     Proceed in the same way with 2D and 1D Algorithms and Hypotheses that
@@ -346,33 +344,6 @@ By default, the information box is always shown after mesh computation operation
 
 <br><br>
 
-\anchor use_existing_anchor
-<h2>"Use Edges to be Created Manually" and "Use Faces to be Created Manually" algorithms</h2>
 
-It is possible to create a 1D or a 2D mesh in a python script
-(using <em>AddNode, AddEdge</em> and <em>AddFace</em> commands) and
-then use such sub-meshes in the construction of a 2D or a 3D mesh. For
-this, there exist two algorithms: <b>Use Edges to be Created
-Manually</b> and <b>Use Faces to be Created Manually</b>.
-Imagine, you want to use standard algorithms to generate 1D and 3D
-meshes and to create 2D mesh by your python code. Then you
-<ol>
-  <li> create a mesh object, assign a 1D algorithm,</li>
-  <li> invoke \b Compute command, which computes a 1D mesh,</li>
-  <li> assign <b>Use Faces to be Created Manually</b> and a 3D algorithm,</li>
-  <li> run your python code, which creates a 2D mesh,</li>
-  <li> invoke \b Compute command, which computes a 3D mesh.</li>
-</ol>
-\warning <b>Use Edges to be Created Manually</b> and <b>Use Faces to
-be Created Manually</b> algorithms should be assigned _before_
-mesh generation by the Python code.
-
-Consider trying a sample script demonstrating the usage of 
-\ref tui_use_existing_faces "Use Faces to be Created Manually"
-algorithm for construction of a 2D mesh using Python commands.
-
-\image html use_existing_face_sample_mesh.png
-<em> Mesh computed by \ref tui_use_existing_faces "the sample script"
-  shown in a Shrink mode.</em>
 
 */

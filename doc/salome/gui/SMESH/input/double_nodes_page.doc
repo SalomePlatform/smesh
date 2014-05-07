@@ -110,30 +110,19 @@ This mode duplicates the given elements, i.e. creates new elements with the same
 
 Parameters to be defined in this mode:
 <ul>
-<li><b>Group of elements to duplicate</b> (<em>mandatory</em>): these
-  elements will be duplicated.</li> 
-<li><b>Construct group with newly created elements</b> option
-  (<em>checked by default</em>): if checked - the group of newly created
-  elements will be built. The name of the created group starts from
-  "DoubleElements".</li>
+  <li><b>Group of elements to duplicate</b> (<em>mandatory</em>): these
+    elements will be duplicated.</li>
+  <li><b>Construct group with newly created elements</b> option
+    (<em>checked by default</em>): if checked - the group of newly created
+    elements will be built. The name of the created group starts from
+    "DoubleElements".</li>
 </ul>
 
 <br>
 \anchor mode_group_boundary_anchor
 <h2>Duplicate nodes on group boundaries</h2>
 
-This mode duplicates nodes located on boundaries between given groups of
-volumes. If required, flat elements are created on the duplicated
-nodes: a triangular facet shared by two volumes of two groups generates
-a flat prism, a quadrangular facet generates a flat hexahedron.
-<br>
-The created flat volumes are stored in groups. These groups are named
-according to the position of the group in the list of groups: group
-"j_n_p" is a group of flat elements that are built between the group \#n
-and the group \#p in the group list. All the flat elements are gathered
-into the group named "joints3D". The flat element of the multiple
-junctions between the simple junction are stored in a group named
-"jointsMultiples".
+This mode duplicates nodes located on boundaries between given groups of volumes.
 
 <br>
 
@@ -141,13 +130,26 @@ junctions between the simple junction are stored in a group named
 
 Parameters to be defined in this mode:
 <ul>
-<li><b>Groups of volumes</b> (<em>mandatory</em>): list of volume
-  groups. These groups should be disjoint, i.e. should not share volumes.</li>
-<li><b>Create joint elements</b> : if checked - the flat elements are created.</li>
-<li><b>On all boundaries</b> : if checked - then the volumes not
-  included into the <b>Groups of volumes</b> are considered as another given
-  group. And thus nodes on boundary between <b>Groups of volumes</b> and the
-  rest mesh are also duplicated.</li>
+  <li><b>Groups of volumes</b> (<em>mandatory</em>): list of volume
+    groups. These groups should be disjoint, i.e. should not have shared
+    volumes.</li>
+  <li> If <b>Create joint elements</b> option is activated, flat
+    elements are created on the duplicated nodes: a triangular facet
+    shared by two volumes of two groups generates a flat prism, a
+    quadrangular facet generates a flat hexahedron.
+    <br>
+    The created flat volumes are stored in groups. These groups are named
+    according to the position of the group in the list of groups: group
+    "j_n_p" is a group of flat elements that are built between the group \#n
+    and the group \#p in the group list. All the flat elements are gathered
+    into the group named "joints3D". The flat element of the multiple
+    junctions between the simple junction are stored in a group named
+    "jointsMultiples".</li>
+  <li> If <b>On all boundaries</b> option is activated, the volumes,
+    which are not included into <b>Groups of volumes</b>, are considered
+    as another group and thus the nodes on the boundary
+    between <b>Groups of volumes</b> and the remaining mesh are also
+    duplicated.</li>
 </ul>
 
 <br><b>See Also</b> a sample TUI Script of a

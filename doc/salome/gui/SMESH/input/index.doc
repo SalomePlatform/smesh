@@ -25,7 +25,6 @@ It is possible to easily set parameters via the variables predefined in
 \subpage using_notebook_mesh_page "Salome notebook".
 
 Mesh module preferences are described in the \subpage mesh_preferences_page section of SALOME Mesh Help.
-Also, there is a possibility to \subpage arranging_study_objects_page "re-arrange sub-meshes and groups in the SALOME study".
 
 Almost all mesh module functionalities are accessible via
 \subpage smeshpy_interface_page "Mesh module Python interface".
