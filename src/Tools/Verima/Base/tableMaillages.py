@@ -40,9 +40,9 @@ class TableMaillages (TableDeBase):
             if self.dejaRemplie():
                print "table Maillage deja initialisee"
                return
-            self.insereLigneAutoId(('tetra', 'Scripts/script1.py', '/tmp/tetra.med', 2,3,5,5,5,5, 'essaiPN'))
-            self.insereLigneAutoId(('MASSIF_M', 'Scripts/excavation.py', '/tmp/MASSIF.new.med', 1,3,5,5,5,5, 'essaiGN'))
-
+#            self.insereLigneAutoId(('Fiche_7566_TUNNEL', '/home/H77945/CAS_TEST/MAILLEUR/FICHE_7566_TUNNEL/Fiche_7566_TUNNEL.py', '/tmp/Fiche_7566_TUNNEL.med', 3,3,10,10,10,10, 'Maillage d un tunnel'))
+#            self.insereLigneAutoId(('Fiche_7957_AILETTE', '/home/H77945/CAS_TEST/MAILLEUR/FICHE_7957_AILETTE/Fiche_7957_AILETTE.py', '/tmp/Fiche_7957_AILETTE.med', 1,2,10,10,10,10, 'Maillage d une attache d aillette'))
+        
         def construitListeMaillages(self):
             maQuery=QtSql.QSqlQuery()
             texteQuery="select id, nomScript,medResultat from Maillages;"
@@ -66,19 +66,35 @@ class TableMaillages (TableDeBase):
                    print "impossible de traiter le maillage : ", idM
             return  newListeMaillages
 
-        def getTousPourMaillage(self,idMailleur):
-            l1=[]; l2=[]; l3=[]
-            l4=[]; l5=[]; l6=[]
-            texteQuery="select id,nomMaillage,seuilCPU,seuilRatio,seuilTaille,seuilNbMaille from  Maillages where idMailleur= "+ str(idMailleur) +"  ;"
+        def getSeuilsPourMaillage(self,idMaillage):
+            texteQuery="select id,nomMaillage,seuilCPU,seuilRatio,seuilTaille,seuilNbMaille from  Maillages where id = "+ str(idMaillage) +"  ;"
             maQuery=QtSql.QSqlQuery()
-            #print texteQuery
             maQuery.exec_(texteQuery)
             while(maQuery.next()): 
-                 l1.append( maQuery.value(0).toInt()[0])
-                 l2.append( maQuery.value(1).toString())
-                 l3.append( maQuery.value(2).toInt()[0])
-                 l4.append( maQuery.value(3).toInt()[0])
-                 l5.append( maQuery.value(4).toInt()[0])
-                 l6.append( maQuery.value(5).toInt()[0])
+                 l1 = maQuery.value(0).toInt()[0]
+                 l2 = maQuery.value(1).toString()
+                 l3 = maQuery.value(2).toInt()[0]
+                 l4 = maQuery.value(3).toInt()[0]
+                 l5 = maQuery.value(4).toInt()[0]
+                 l6 = maQuery.value(5).toInt()[0]
             return l1,l2,l3,l4,l5,l6
 
+        def getTous(self):
+            maillagesIdListe=[]; maillagesNomListe=[]
+            texteQuery="select id,nomMaillage from  Maillages order by id;"
+            maQuery=QtSql.QSqlQuery()
+            maQuery.exec_(texteQuery)
+            while(maQuery.next()):
+                 maillagesIdListe.append( maQuery.value(0).toInt()[0])
+                 maillagesNomListe.append( maQuery.value(1).toString())
+            return maillagesIdListe, maillagesNomListe
+
+        def getMailleurId(self,idMaillage):
+            texteQuery="select idMailleur from  Maillages where id = "+ str(idMaillage) +"  ;"
+            maQuery=QtSql.QSqlQuery()
+            print texteQuery
+            print maQuery.exec_(texteQuery)
+            maQuery.exec_(texteQuery)
+            while(maQuery.next()): 
+                 idMailleur = maQuery.value(0).toInt()[0]
+            return idMailleur

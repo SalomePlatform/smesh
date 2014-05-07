@@ -14,9 +14,10 @@ from tableGroupes    import TableGroupes
 from tableMailles    import TableMailles
 from tableTailles    import TableTailles
 from tableRatios     import TableRatios
+from tableGroupeRatios     import TableGroupeRatios
+from tableGroupeTailles    import TableGroupeTailles
 from tablePerfs      import TablePerfs
 from Stats.job       import Job
-from Stats.ref       import Ref
 from CreeDocuments.jobHtml       import Document
 
 
@@ -54,6 +55,10 @@ class Base:
       self.maTableGroupes.createSqlTable()
       self.maTableRatios=TableRatios()
       self.maTableRatios.createSqlTable()
+      self.maTableGroupeRatios=TableGroupeRatios()
+      self.maTableGroupeRatios.createSqlTable()
+      self.maTableGroupeTailles=TableGroupeTailles()
+      self.maTableGroupeTailles.createSqlTable()
     
   def initialise(self):
       self.maTableMaillages=TableMaillages()
@@ -66,12 +71,13 @@ class Base:
       self.maTableGroupesRef=TableGroupesRef()
       self.maTablePerfs=TablePerfs()
       self.maTableRatios=TableRatios()
+      self.maTableGroupeRatios=TableGroupeRatios()
+      self.maTableGroupeTailles=TableGroupeTailles()
  
   def remplit(self):
       self.maTableMailleurs.remplit()
       self.maTableMaillages.remplit()
       self.maTableVersions.remplit()
-      #self.maTableVersions.creeVersion()
       self.maTableMachines.creeMachine()
       self.maTableGroupesRef.remplit()
 
@@ -91,6 +97,8 @@ class Base:
       self.maTableGroupes.exportToCSV()
       self.maTablePerfs.exportToCSV()
       self.maTableRatios.exportToCSV()
+      self.maTableGroupeRatios.exportToCSV()
+      self.maTableGroupeTailles.exportToCSV()
       if partiel==True: return
       self.maTableMailleurs.exportToCSV()
       self.maTableVersions.exportToCSV()
@@ -110,6 +118,8 @@ class Base:
       self.maTablePerfs.importFromCSV(folder,force)
       self.maTableRatios.importFromCSV(folder,force)
       self.maTableGroupesRef.importFromCSV(folder,force)
+      self.maTableGroupeRatios.importFromCSV(folder,force)
+      self.maTableGroupeTailles.importFromCSV(folder,force)
 
   def Structure(self):
       # jamais appelee. juste pour memoire
@@ -122,7 +132,6 @@ class Base:
       else        : paramMaillage=self.maTableMaillages.verifieListeMaillages(listeMaillage)
       # paramMaillage=(( id, script, fichier med),)
 
-      #version="Salome7.3"
       bOk,versionId,versionName = self.maTableVersions.chercheVersion(version)
       if bOk==False:
          self.maTableVersions.creeVersion(version)
@@ -149,115 +158,68 @@ class Base:
          print " Job : ", params[1]
          print " Version de salome : ", versionName 
 
-         #recherche si le Job a deja ete passe
-         if self.maTablePerfs.getVal(params[0],versionId,nomMachine) !=None and force==False:
-            print "job numero: " , params[0], "deja passe"
-            print ""
-            print "___________________________________________"
-            continue
 
-         # recherche de la reference du Job
-         maRef=Ref(self,params[0],versionId,nomMachine)
-         idVersionRef=self.maTableVersions.getVersionRef()
          idJob=params[0]
-         if maRef.existe==False and idVersionRef != versionId :
-            print "pas de reference pour le job : ", params[0]
-            print "pas de passage du job", 
-            continue
-
-
          mesGroupesRef=self.maTableGroupesRef.getVals(idJob)
          fichierGroupesRef=str(params[2]).replace('.med','_groupesRef.res')
          from Stats.utiles import writeFile
-         writeFile(fichierGroupesRef,",".join(mesGroupesRef))
-         monjob=Job(params,salomePath,versionId,nomMachine,mesGroupesRef)
+         if mesGroupesRef != [] :
+           writeFile(fichierGroupesRef,",".join(mesGroupesRef))
+         monjob=Job(params,salomePath,versionId,mesGroupesRef)
          print ""
          print "  Debut d execution"
          monjob.execute()
       
          # remplit Perfs
          self.maTablePerfs.insereOuRemplaceLigne((idJob,versionId,nomMachine,int(monjob.getCPU()),0),False)
-         if idVersionRef != versionId :
-            stop=maRef.verifieCpu(monjob.getCPU())
-            if stop :
-               print "                   Arret                "
-               print " Pb CPU: Seuil Atteint sur job : ", params[0]
-               print "________________________________________"
 
          # remplit la table Mailles
          listeColonnes,listeValues=monjob.getStatSurMailles()
-         print listeColonnes,listeValues
          i=0
          for col in listeColonnes :
-            lVal=[idJob,versionId,nomMachine,col]+[listeValues[i]]
+            lVal=[idJob,versionId,col]+[listeValues[i]]
             lVal=tuple(lVal)
             if str(listeValues[i]) != str(0): self.maTableMailles.insereOuRemplaceLigne(lVal,False)
             i+=1
-         if idVersionRef != versionId :
-            stop=maRef.verifieMailles(listeValues,listeColonnes)
-            if stop :
-               print "                   Arret                "
-               print " Pb sur le nombre de Maille : Seuil Atteint sur job : ", params[0]
-               print "_________________________________________________________________"
-               #exit()
-            else :
-               print "verification du Nb de Mailles effectuee"
 
          # remplit la table Tailles
          listeValues=monjob.getStatSurTailles()
-         lVal=[params[0],versionId,nomMachine]+listeValues
+         lVal=[params[0],versionId]+listeValues
          self.maTableTailles.insereOuRemplaceLigne(tuple(lVal),False)
-         if idVersionRef != versionId :
-            stop=maRef.verifieTailles(lVal)
-            if stop :
-               print "                   Arret                "
-               print " Pb sur la taille des mailles : Seuil Atteint sur job : ", params[0]
-               print "_________________________________________________________________"
-               #exit()
-            else :
-               print "verification du Nb de Mailles effectuee"
-
 
          # remplit la table Ratio
          maDim=self.maTableMaillages.getVal(params[0],'dimension')
-         if maDim == 3 :
-            listeValues=monjob.getStatSurRatios()
-            lVal=[params[0],versionId,nomMachine]+listeValues
-            self.maTableRatios.insereOuRemplaceLigne(tuple(lVal),False)
-            if idVersionRef != versionId :
-               stop=maRef.verifieRatios(lVal)
-               if stop :
-                  print "                   Arret                "
-                  print " Pb sur la taille des mailles : Seuil Atteint sur job : ", params[0]
-                  print "_________________________________________________________________"
-                  #exit()
-               else :
-                  print "verification du Nb de Mailles effectuee"
+         listeValues=monjob.getStatSurRatios()
+         lVal=[params[0],versionId]+listeValues
+         self.maTableRatios.insereOuRemplaceLigne(tuple(lVal),False)
 
          # remplit les Groupes
          for groupe in mesGroupesRef:
              listeColonnes,listeValues=monjob.getStatSurGroupes(groupe)
              i=0
              for col in listeColonnes :
-                lVal=[groupe,params[0],versionId,nomMachine,col]+[listeValues[i]]
+                lVal=[groupe,params[0],versionId,col]+[listeValues[i]]
                 lVal=tuple(lVal)
                 if str(listeValues[i]) != str(0): self.maTableGroupes.insereOuRemplaceLigne(lVal,False)
                 i=i+1
-             if idVersionRef != versionId :
-                stop=maRef.verifieMaillesPourGroupes(groupe,listeValues,listeColonnes)
-                stop=0
-                if stop :
-                   print "                   Arret                "
-                   print " Pb sur le nombre de Maille : Seuil Atteint sur job : ", params[0]
-                   print "_________________________________________________________________"
-                   #exit()
-         print "verification du Nb de Mailles sur les groupes reference effectuee"
-         print "_________________________________________________________________"
+
+         # remplit les Ratio Groupes
+         for groupe in mesGroupesRef:
+             listeValues=monjob.getStatSurRatiosGroupes(groupe)
+             if listeValues==['0','0','0','0','0','0'] : continue
+             lVal=[params[0],versionId,groupe]+listeValues
+             self.maTableGroupeRatios.insereOuRemplaceLigne(tuple(lVal),False)
+             listeValues=monjob.getStatSurTaillesGroupes(groupe)
+             lVal=[params[0],versionId,groupe]+listeValues
+             self.maTableGroupeTailles.insereOuRemplaceLigne(tuple(lVal),False)
+         monjob.menage()
+
 
   
-  def compare(self,version,versionRef,fichier):    
+  def compare(self,version,ListeVersionRefString,fichier):    
       print "_________________________________________________________________"
       print "Generation du rapport de comparaison" 
+      print version
       bOk,versionId,versionName = self.maTableVersions.chercheVersion(version)
       if bOk==False :
          print "version ", version , " inconnue dans la base"
@@ -266,75 +228,60 @@ class Base:
       versionCompName=versionName
       versionCompId=versionId
 
-      if versionRef==None:
-         idVersionRef=self.maTableVersions.getVersionRef()
-      bOk,versionId,versionName = self.maTableVersions.chercheVersion(idVersionRef)
-      if bOk==False :
-         print "version de référence ", versionRef , " inconnue dans la base"
-      versionRefName=versionName
-      versionRefId=versionId
-      print "Version de comparaison : ", versionRefName
+      listeVersionRefId=[]
+      listeVersionRefName=[]
+      ListeVersionRef=ListeVersionRefString.split(",")
+      for id in ListeVersionRef:
+          bOk,versionId,versionName = self.maTableVersions.chercheVersion(id)
+          if bOk==False :
+             print "version ", id , " inconnue dans la base"
+             exit()
+          listeVersionRefId.append(versionId)
+          listeVersionRefName.append(versionName)
 
       bOk,nomMachine = self.maTableMachines.chercheMachine()
       monDocument=Document()
-      monDocument.initEntete(versionName, versionRefName,nomMachine)
-      mailleursIdListe,mailleursNameListe=self.maTableMailleurs.getTous()
+      monDocument.initEntete(versionCompName, nomMachine)
+
+      maillagesIdListe, maillagesNameListe=self.maTableMaillages.getTous()
+      if len(maillagesIdListe) != len (listeVersionRefId):
+         print "Pas assez de version de reference"
+         exit()
       
       allEntitySurMaille=self.maTableMailles.getAllEntity()
       allEntitySurGroupe=self.maTableGroupes.getAllEntity()
-      # Boucle sur les mailleurs
-      for indexMailleur in range(len(mailleursNameListe)):
-          monDocument.initMailleur(mailleursNameListe[indexMailleur]) 
-          l1,l2,l3,l4,l5,l6=self.maTableMaillages.getTousPourMaillage(mailleursIdListe[indexMailleur])
-          maillagesIdListe=l1
-          maillagesNameListe=l2
-          maillagesSeuilCPUListe=l3
-          maillagesSeuilRatioListe=l4
-          maillagesSeuilTailleListe=l5
-          maillagesSeuilNbMailleListe=l6
+
+      # Boucle sur les maillages
+      for idMaillage in maillagesIdListe :
+          print idMaillage
+          versionRefId=listeVersionRefId[idMaillage - 1]
+          versionRefName=listeVersionRefName[idMaillage - 1]
+          mailleurId=self.maTableMaillages.getMailleurId(idMaillage)
+          mailleurName=self.maTableMailleurs.getName(mailleurId)
+
+          # Recuperation des seuils
+          l1,l2,l3,l4,l5,l6=self.maTableMaillages.getSeuilsPourMaillage(idMaillage)
+          monSeuilCPU=l3
+          monSeuilRatio=l4
+          monSeuilTaille=l5
+          monSeuilNbMaille=l6
+
+
+          # Et du temps CPU
           dicoMaillage={}
-      #   Boucle sur les maillages 
-          for indexMaillage in range(len(maillagesNameListe)):
-             idMaillage=maillagesIdListe[indexMaillage]
-             dicoMaillage["NOM"]=maillagesNameListe[indexMaillage]
-             dicoMaillage["NBCPU"]=self.maTablePerfs.getVal(idMaillage,versionCompId,nomMachine)
-             dicoMaillage["REFCPU"]=self.maTablePerfs.getVal(idMaillage,versionRefId,nomMachine)
-             dicoMaillage["DIFCPU"],dicoMaillage["DIFREL"],dicoMaillage["WARNING"]=self.calculDiffCPU(dicoMaillage["NBCPU"],dicoMaillage["REFCPU"],maillagesSeuilCPUListe[indexMaillage])
-  
-             dicoMaillage["RMAX"]=self.maTableRatios.getVal(idMaillage,versionCompId,nomMachine,'RatioMax')
-             dicoMaillage["RMAXREF"]=self.maTableRatios.getVal(idMaillage,versionRefId,nomMachine,'RatioMax')
-             dicoMaillage["RMIN"]=self.maTableRatios.getVal(idMaillage,versionCompId,nomMachine,'RatioMin')
-             dicoMaillage["RMINREF"]=self.maTableRatios.getVal(idMaillage,versionRefId,nomMachine,'RatioMin')
-             dicoMaillage["RMOY"]=self.maTableRatios.getVal(idMaillage,versionCompId,nomMachine,'Moyenne')
-             dicoMaillage["RMOYREF"]=self.maTableRatios.getVal(idMaillage,versionRefId,nomMachine,'Moyenne')
-             dicoMaillage["R1Q"]=self.maTableRatios.getVal(idMaillage,versionCompId,nomMachine,'Q1')
-             dicoMaillage["R1QREF"]=self.maTableRatios.getVal(idMaillage,versionRefId,nomMachine,'Q1')
-             dicoMaillage["RMED"]=self.maTableRatios.getVal(idMaillage,versionCompId,nomMachine,'Mediane')
-             dicoMaillage["RMEDREF"]=self.maTableRatios.getVal(idMaillage,versionRefId,nomMachine,'Mediane')
-             dicoMaillage["R3Q"]=self.maTableRatios.getVal(idMaillage,versionCompId,nomMachine,'Q3')
-             dicoMaillage["R3QREF"]=self.maTableRatios.getVal(idMaillage,versionRefId,nomMachine,'Q3')
-  
-             dicoMaillage["TMAX"]=self.maTableTailles.getVal(idMaillage,versionCompId,nomMachine,'TailleMax')
-             dicoMaillage["TMAXREF"]=self.maTableTailles.getVal(idMaillage,versionRefId,nomMachine,'TailleMax')
-             dicoMaillage["TMIN"]=self.maTableTailles.getVal(idMaillage,versionCompId,nomMachine,'TailleMin')
-             dicoMaillage["TMINREF"]=self.maTableTailles.getVal(idMaillage,versionRefId,nomMachine,'TailleMin')
-             dicoMaillage["TMOY"]=self.maTableTailles.getVal(idMaillage,versionCompId,nomMachine,'Moyenne')
-             dicoMaillage["TMOYREF"]=self.maTableTailles.getVal(idMaillage,versionRefId,nomMachine,'Moyenne')
-             dicoMaillage["T1Q"]=self.maTableTailles.getVal(idMaillage,versionCompId,nomMachine,'Q1')
-             dicoMaillage["T1QREF"]=self.maTableTailles.getVal(idMaillage,versionRefId,nomMachine,'Q1')
-             dicoMaillage["TMED"]=self.maTableTailles.getVal(idMaillage,versionCompId,nomMachine,'Mediane')
-             dicoMaillage["TMEDREF"]=self.maTableTailles.getVal(idMaillage,versionRefId,nomMachine,'Mediane')
-             dicoMaillage["T3Q"]=self.maTableTailles.getVal(idMaillage,versionCompId,nomMachine,'Q3')
-             dicoMaillage["T3QREF"]=self.maTableTailles.getVal(idMaillage,versionRefId,nomMachine,'Q3')
+          dicoMaillage["NBCPU"]=self.maTablePerfs.getVal(idMaillage,versionCompId,nomMachine)
+          dicoMaillage["REFCPU"]=self.maTablePerfs.getVal(idMaillage,versionRefId,nomMachine)
+          dicoMaillage["DIFCPU"],dicoMaillage["DIFREL"],dicoMaillage["WARNING"]=self.calculDiffCPU(dicoMaillage["NBCPU"],dicoMaillage["REFCPU"],monSeuilCPU)
+          monDocument.initMaillage(maillagesNameListe[idMaillage-1],mailleurName,versionRefName,dicoMaillage) 
 
-             monDocument.initJob(dicoMaillage)
+          # Boucle sur les Mailles
 
-             i=0
-             dico={}
-             dico["TITRE"]="Nombre de Mailles dans le maillage entier"
-             for nomColonne in allEntitySurMaille:
-                 val=self.maTableMailles.getVal(idMaillage,versionCompId,nomMachine,nomColonne)
-                 valRef=self.maTableMailles.getVal(idMaillage,versionRefId,nomMachine,nomColonne)
+          dico={}
+          dico["TITRE"]="Nombre de Mailles dans le maillage entier"
+          i=0
+          for nomColonne in allEntitySurMaille:
+                 val=self.maTableMailles.getVal(idMaillage,versionCompId,nomColonne)
+                 valRef=self.maTableMailles.getVal(idMaillage,versionRefId,nomColonne)
                  if val==0 and valRef==0 : continue
                  i=i+1
                  #print nomColonne;print val; print valRef
@@ -344,30 +291,127 @@ class Base:
                  dico[cMAIL]=nomColonne
                  dico[cREF]=valRef
                  dico[cNB]=val
-                 dico[cDIF],dico[cREL],dico[cWARN]=self.calculDiff(val,valRef,maillagesSeuilNbMailleListe[indexMaillage])
-             monDocument.initMaille(dico,i)
+                 dico[cDIF],dico[cREL],dico[cWARN]=self.calculDiff(val,valRef,monSeuilNbMaille)
+          monDocument.initMaille(dico,i)
 
-             # Boucle sur les groupes du maillage
-             mesGroupesRef=self.maTableGroupesRef.getVals(idMaillage)
-             if mesGroupesRef==[] : monDocument.addNoGroup()
-             for groupeId in mesGroupesRef:
-                 i=0
-                 dico={}
-                 dico["TITRE"]="Nombre de Mailles dans le groupe "+groupeId
-                 for nomColonne in allEntitySurGroupe:
-                     val=self.maTableGroupes.getVal(groupeId,idMaillage,versionCompId,nomMachine,nomColonne)
-                     valRef=self.maTableGroupes.getVal(groupeId,idMaillage,versionRefId,nomMachine,nomColonne)
-                     if val==0 and valRef==0 : continue
-                     i=i+1
-                     cMAIL="MAIL"+str(i); cREF="REF"+str(i)
-                     cNB="NB"+str(i); cDIF="DIF"+str(i); cREL="REL"+str(i)
-                     cWARN="WARN"+str(i);
-                     #print nomColonne," ",val," ",valRef
-                     dico[cMAIL]=nomColonne
-                     dico[cREF]=valRef
-                     dico[cNB]=val
-                     dico[cDIF],dico[cREL],dico[cWARN]=self.calculDiff(val,valRef,maillagesSeuilNbMailleListe[indexMaillage])
-                 monDocument.initMaille(dico,i)
+
+
+          #
+          dicoMaillage={}
+
+          dicoMaillage["RMAX"]=self.maTableRatios.getVal(idMaillage,versionCompId,'RatioMax')
+          dicoMaillage["RMAXREF"]=self.maTableRatios.getVal(idMaillage,versionRefId,'RatioMax')
+          dicoMaillage["DIFARMAX"],dicoMaillage["DIFRRMAX"],dicoMaillage["WRRMAX"]=self.calculDiff(dicoMaillage["RMAX"],dicoMaillage["RMAXREF"],monSeuilRatio)
+          dicoMaillage["RMIN"]=self.maTableRatios.getVal(idMaillage,versionCompId,'RatioMin')
+          dicoMaillage["RMINREF"]=self.maTableRatios.getVal(idMaillage,versionRefId,'RatioMin')
+          dicoMaillage["DIFARMIN"],dicoMaillage["DIFRRMIN"],dicoMaillage["WRRMIN"]=self.calculDiff(dicoMaillage["RMIN"],dicoMaillage["RMINREF"],monSeuilRatio)
+          dicoMaillage["RMOY"]=self.maTableRatios.getVal(idMaillage,versionCompId,'Moyenne')
+          dicoMaillage["RMOYREF"]=self.maTableRatios.getVal(idMaillage,versionRefId,'Moyenne')
+          dicoMaillage["DIFARMOY"],dicoMaillage["DIFRRMOY"],dicoMaillage["WRRMOY"]=self.calculDiff(dicoMaillage["RMOY"],dicoMaillage["RMOYREF"],monSeuilRatio)
+          dicoMaillage["R1Q"]=self.maTableRatios.getVal(idMaillage,versionCompId,'Q1')
+          dicoMaillage["R1QREF"]=self.maTableRatios.getVal(idMaillage,versionRefId,'Q1')
+          dicoMaillage["DIFAR1Q"],dicoMaillage["DIFRR1Q"],dicoMaillage["WRR1Q"]=self.calculDiff(dicoMaillage["R1Q"],dicoMaillage["R1QREF"],monSeuilRatio)
+          dicoMaillage["RMED"]=self.maTableRatios.getVal(idMaillage,versionCompId,'Mediane')
+          dicoMaillage["RMEDREF"]=self.maTableRatios.getVal(idMaillage,versionRefId,'Mediane')
+          dicoMaillage["DIFARMED"],dicoMaillage["DIFRRMED"],dicoMaillage["WRRMED"]=self.calculDiff(dicoMaillage["RMED"],dicoMaillage["RMEDREF"],monSeuilRatio)
+          dicoMaillage["R3Q"]=self.maTableRatios.getVal(idMaillage,versionCompId,'Q3')
+          dicoMaillage["R3QREF"]=self.maTableRatios.getVal(idMaillage,versionRefId,'Q3')
+          dicoMaillage["DIFAR3Q"],dicoMaillage["DIFRR3Q"],dicoMaillage["WRR3Q"]=self.calculDiff(dicoMaillage["R3Q"],dicoMaillage["R3QREF"],monSeuilRatio)
+ 
+          dicoMaillage["TMAX"]=self.maTableTailles.getVal(idMaillage,versionCompId,'TailleMax')
+          dicoMaillage["TMAXREF"]=self.maTableTailles.getVal(idMaillage,versionRefId,'TailleMax')
+          dicoMaillage["DIFATMAX"],dicoMaillage["DIFRTMAX"],dicoMaillage["WTMAX"]=self.calculDiff(dicoMaillage["TMAX"],dicoMaillage["TMAXREF"],monSeuilTaille)
+          dicoMaillage["TMIN"]=self.maTableTailles.getVal(idMaillage,versionCompId,'TailleMin')
+          dicoMaillage["TMINREF"]=self.maTableTailles.getVal(idMaillage,versionRefId,'TailleMin')
+          dicoMaillage["DIFATMIN"],dicoMaillage["DIFRTMIN"],dicoMaillage["WTMIN"]=self.calculDiff(dicoMaillage["TMIN"],dicoMaillage["TMINREF"],monSeuilTaille)
+          dicoMaillage["TMOY"]=self.maTableTailles.getVal(idMaillage,versionCompId,'Moyenne')
+          dicoMaillage["TMOYREF"]=self.maTableTailles.getVal(idMaillage,versionRefId,'Moyenne')
+          dicoMaillage["DIFATMOY"],dicoMaillage["DIFRTMOY"],dicoMaillage["WTMOY"]=self.calculDiff(dicoMaillage["TMOY"],dicoMaillage["TMOYREF"],monSeuilTaille)
+          dicoMaillage["T1Q"]=self.maTableTailles.getVal(idMaillage,versionCompId,'Q1')
+          dicoMaillage["T1QREF"]=self.maTableTailles.getVal(idMaillage,versionRefId,'Q1')
+          dicoMaillage["DIFAT1Q"],dicoMaillage["DIFRT1Q"],dicoMaillage["WT1Q"]=self.calculDiff(dicoMaillage["T1Q"],dicoMaillage["T1QREF"],monSeuilTaille)
+          dicoMaillage["TMED"]=self.maTableTailles.getVal(idMaillage,versionCompId,'Mediane')
+          dicoMaillage["TMEDREF"]=self.maTableTailles.getVal(idMaillage,versionRefId,'Mediane')
+          dicoMaillage["DIFATMED"],dicoMaillage["DIFRTMED"],dicoMaillage["WTMED"]=self.calculDiffCPU(dicoMaillage["TMED"],dicoMaillage["TMEDREF"],monSeuilTaille)
+          dicoMaillage["T3Q"]=self.maTableTailles.getVal(idMaillage,versionCompId,'Q3')
+          dicoMaillage["T3QREF"]=self.maTableTailles.getVal(idMaillage,versionRefId,'Q3')
+          dicoMaillage["DIFAT3Q"],dicoMaillage["DIFRT3Q"],dicoMaillage["WT3Q"]=self.calculDiffCPU(dicoMaillage["T3Q"],dicoMaillage["T3QREF"],monSeuilTaille)
+
+          #PNPNPN a revoir le initJob
+          monDocument.initJob(dicoMaillage)
+
+
+          # Boucle sur les groupes du maillage
+          mesGroupesRef=self.maTableGroupesRef.getVals(idMaillage)
+          if mesGroupesRef==[] : monDocument.addNoGroup()
+          for groupeId in mesGroupesRef:
+              i=0
+              dico={}
+              dico["TITRE"]="Nombre de Mailles dans le groupe "+groupeId
+              for nomColonne in allEntitySurGroupe:
+                  val=self.maTableGroupes.getVal(groupeId,idMaillage,versionCompId,nomColonne)
+                  valRef=self.maTableGroupes.getVal(groupeId,idMaillage,versionRefId,nomColonne)
+                  if val==0 and valRef==0 : continue
+                  i=i+1
+                  cMAIL="MAIL"+str(i); cREF="REF"+str(i)
+                  cNB="NB"+str(i); cDIF="DIF"+str(i); cREL="REL"+str(i)
+                  cWARN="WARN"+str(i);
+                  dico[cMAIL]=nomColonne
+                  dico[cREF]=valRef
+                  dico[cNB]=val
+                  dico[cDIF],dico[cREL],dico[cWARN]=self.calculDiff(val,valRef,monSeuilNbMaille)
+                  monDocument.initMaille(dico,i)
+
+
+              #
+              dico={}
+    
+              if self.maTableGroupeRatios.getVal(idMaillage,versionCompId,groupeId,'RatioMax') != 0 :
+                 dico["RMAX"]=self.maTableGroupeRatios.getVal(idMaillage,versionCompId,groupeId,'RatioMax')
+                 dico["RMAXREF"]=self.maTableGroupeRatios.getVal(idMaillage,versionRefId,groupeId,'RatioMax')
+                 dico["DIFARMAX"],dico["DIFRRMAX"],dico["WRRMAX"]=self.calculDiff(dico["RMAX"],dico["RMAXREF"],monSeuilRatio)
+                 dico["RMIN"]=self.maTableGroupeRatios.getVal(idMaillage,versionCompId,groupeId,'RatioMin')
+                 dico["RMINREF"]=self.maTableGroupeRatios.getVal(idMaillage,versionRefId,groupeId,'RatioMin')
+                 dico["DIFARMIN"],dico["DIFRRMIN"],dico["WRRMIN"]=self.calculDiff(dico["RMIN"],dico["RMINREF"],monSeuilRatio)
+                 dico["RMOY"]=self.maTableGroupeRatios.getVal(idMaillage,versionCompId,groupeId,'Moyenne')
+                 dico["RMOYREF"]=self.maTableGroupeRatios.getVal(idMaillage,versionRefId,groupeId,'Moyenne')
+                 dico["DIFARMOY"],dico["DIFRRMOY"],dico["WRRMOY"]=self.calculDiff(dico["RMOY"],dico["RMOYREF"],monSeuilRatio)
+                 dico["R1Q"]=self.maTableGroupeRatios.getVal(idMaillage,versionCompId,groupeId,'Q1')
+                 dico["R1QREF"]=self.maTableGroupeRatios.getVal(idMaillage,versionRefId,groupeId,'Q1')
+                 dico["DIFAR1Q"],dico["DIFRR1Q"],dico["WRR1Q"]=self.calculDiff(dico["R1Q"],dico["R1QREF"],monSeuilRatio)
+                 dico["RMED"]=self.maTableGroupeRatios.getVal(idMaillage,versionCompId,groupeId,'Mediane')
+                 dico["RMEDREF"]=self.maTableGroupeRatios.getVal(idMaillage,versionRefId,groupeId,'Mediane')
+                 dico["DIFARMED"],dico["DIFRRMED"],dico["WRRMED"]=self.calculDiff(dico["RMED"],dico["RMEDREF"],monSeuilRatio)
+                 dico["R3Q"]=self.maTableGroupeRatios.getVal(idMaillage,versionCompId,groupeId,'Q3')
+                 dico["R3QREF"]=self.maTableGroupeRatios.getVal(idMaillage,versionRefId,groupeId,'Q3')
+                 dico["DIFAR3Q"],dico["DIFRR3Q"],dico["WRR3Q"]=self.calculDiff(dico["R3Q"],dico["R3QREF"],monSeuilRatio)
+                 monDocument.CreeGroupeRatios(dico)
+     
+              dico={}
+              if self.maTableGroupeTailles.getVal(idMaillage,versionCompId,groupeId,'TailleMax') != 0:
+                 dico["TMAX"]=self.maTableGroupeTailles.getVal(idMaillage,versionCompId,groupeId,'TailleMax')
+                 dico["TMAXREF"]=self.maTableGroupeTailles.getVal(idMaillage,versionRefId,groupeId,'TailleMax')
+                 dico["DIFATMAX"],dico["DIFRTMAX"],dico["WTMAX"]=self.calculDiff(dico["TMAX"],dico["TMAXREF"],monSeuilTaille)
+                 dico["TMIN"]=self.maTableGroupeTailles.getVal(idMaillage,versionCompId,groupeId,'TailleMin')
+                 dico["TMINREF"]=self.maTableGroupeTailles.getVal(idMaillage,versionRefId,groupeId,'TailleMin')
+                 dico["DIFATMIN"],dico["DIFRTMIN"],dico["WTMIN"]=self.calculDiff(dico["TMIN"],dico["TMINREF"],monSeuilTaille)
+                 dico["TMOY"]=self.maTableGroupeTailles.getVal(idMaillage,versionCompId,groupeId,'Moyenne')
+                 dico["TMOYREF"]=self.maTableGroupeTailles.getVal(idMaillage,versionRefId,groupeId,'Moyenne')
+                 dico["DIFATMOY"],dico["DIFRTMOY"],dico["WTMOY"]=self.calculDiff(dico["TMOY"],dico["TMOYREF"],monSeuilTaille)
+                 dico["T1Q"]=self.maTableGroupeTailles.getVal(idMaillage,versionCompId,groupeId,'Q1')
+                 dico["T1QREF"]=self.maTableGroupeTailles.getVal(idMaillage,versionRefId,groupeId,'Q1')
+                 dico["DIFAT1Q"],dico["DIFRT1Q"],dico["WT1Q"]=self.calculDiff(dico["T1Q"],dico["T1QREF"],monSeuilTaille)
+                 dico["TMED"]=self.maTableGroupeTailles.getVal(idMaillage,versionCompId,groupeId,'Mediane')
+                 dico["TMEDREF"]=self.maTableGroupeTailles.getVal(idMaillage,versionRefId,groupeId,'Mediane')
+                 dico["DIFATMED"],dico["DIFRTMED"],dico["WTMED"]=self.calculDiffCPU(dico["TMED"],dico["TMEDREF"],monSeuilTaille)
+                 dico["T3Q"]=self.maTableGroupeTailles.getVal(idMaillage,versionCompId,groupeId,'Q3')
+                 dico["T3QREF"]=self.maTableGroupeTailles.getVal(idMaillage,versionRefId,groupeId,'Q3')
+                 dico["DIFAT3Q"],dico["DIFRT3Q"],dico["WT3Q"]=self.calculDiffCPU(dico["T3Q"],dico["T3QREF"],monSeuilTaille)
+                 monDocument.CreeGroupeTaille(dico)
+    
+    
+    
+
 
       monDocument.creeDocument(fichier)
 
@@ -384,6 +428,7 @@ class Base:
          return diff,diffRelStr,warning
          
   def calculDiff(self,nb,nbRef,seuil):    
+         #print nb,nbRef,seuil
          diff=nb-nbRef
          diffRel=((nb-nbRef)*100)/(nbRef*1.00)
          if diffRel > seuil or (-1*diffRel) > seuil  :

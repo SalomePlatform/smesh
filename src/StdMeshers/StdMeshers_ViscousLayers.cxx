@@ -479,6 +479,9 @@ namespace VISCOUS_3D
     bool makeLayer(_SolidData& data);
     bool setEdgeData(_LayerEdge& edge, const set<TGeomID>& subIds,
                      SMESH_MesherHelper& helper, _SolidData& data);
+    gp_XYZ getWeigthedNormal( const SMDS_MeshNode*         n,
+                              std::pair< TGeomID, gp_XYZ > fId2Normal[],
+                              const int                    nbFaces );
     bool findNeiborsOnEdge(const _LayerEdge*     edge,
                            const SMDS_MeshNode*& n1,
                            const SMDS_MeshNode*& n2,
@@ -1804,12 +1807,12 @@ bool _ViscousBuilder::setEdgeData(_LayerEdge&         edge,
 
     set<TGeomID>::iterator id = faceIds.begin();
     TopoDS_Face F;
+    std::pair< TGeomID, gp_XYZ > id2Norm[20];
     for ( ; id != faceIds.end(); ++id )
     {
       const TopoDS_Shape& s = getMeshDS()->IndexToShape( *id );
       if ( s.IsNull() || s.ShapeType() != TopAbs_FACE || !subIds.count( *id ))
         continue;
-      totalNbFaces++;
       F = TopoDS::Face( s );
 
       gp_XY uv = helper.GetNodeUV( F, node, 0, &normOK );
@@ -1844,12 +1847,22 @@ bool _ViscousBuilder::setEdgeData(_LayerEdge&         edge,
       }
       if ( helper.GetSubShapeOri( data._solid, F ) != TopAbs_REVERSED )
         geomNorm.Reverse();
+      id2Norm[ totalNbFaces ].first  = *id;
+      id2Norm[ totalNbFaces ].second = geomNorm.XYZ();
+      totalNbFaces++;
       edge._normal += geomNorm.XYZ();
     }
     if ( totalNbFaces == 0 )
       return error(SMESH_Comment("Can't get normal to node ") << node->GetID(), data._index);
 
-    edge._normal /= totalNbFaces;
+    if ( totalNbFaces < 3 )
+    {
+      edge._normal /= totalNbFaces;
+    }
+    else
+    {
+      edge._normal = getWeigthedNormal( node, id2Norm, totalNbFaces );
+    }
 
     switch ( posType )
     {
@@ -1949,6 +1962,87 @@ bool _ViscousBuilder::setEdgeData(_LayerEdge&         edge,
   edge.SetCosin( edge._cosin ); // to update edge._lenFactor
 
   return true;
+}
+
+//================================================================================
+/*!
+ * \brief Return normal at a node weighted with angles taken by FACEs
+ *  \param [in] n - the node
+ *  \param [in] fId2Normal - FACE ids and normals
+ *  \param [in] nbFaces - nb of FACEs meeting at the node
+ *  \return gp_XYZ - computed normal
+ */
+//================================================================================
+
+gp_XYZ _ViscousBuilder::getWeigthedNormal( const SMDS_MeshNode*         n,
+                                           std::pair< TGeomID, gp_XYZ > fId2Normal[],
+                                           const int                    nbFaces )
+{
+  gp_XYZ resNorm(0,0,0);
+  TopoDS_Shape V = SMESH_MesherHelper::GetSubShapeByNode( n, getMeshDS() );
+  if ( V.ShapeType() != TopAbs_VERTEX )
+  {
+    for ( int i = 0; i < nbFaces; ++i )
+      resNorm += fId2Normal[i].second / nbFaces ;
+    return resNorm;
+  }
+
+  double angles[30];
+  for ( int i = 0; i < nbFaces; ++i )
+  {
+    const TopoDS_Face& F = TopoDS::Face( getMeshDS()->IndexToShape( fId2Normal[i].first ));
+
+    // look for two EDGEs shared by F and other FACEs within fId2Normal
+    TopoDS_Edge ee[2];
+    int nbE = 0;
+    PShapeIteratorPtr eIt = SMESH_MesherHelper::GetAncestors( V, *_mesh, TopAbs_EDGE );
+    while ( const TopoDS_Shape* E = eIt->next() )
+    {
+      if ( !SMESH_MesherHelper::IsSubShape( *E, F ))
+        continue;
+      bool isSharedEdge = false;
+      for ( int j = 0; j < nbFaces && !isSharedEdge; ++j )
+      {
+        if ( i == j ) continue;
+        const TopoDS_Shape& otherF = getMeshDS()->IndexToShape( fId2Normal[j].first );
+        isSharedEdge = SMESH_MesherHelper::IsSubShape( *E, otherF );
+      }
+      if ( !isSharedEdge )
+        continue;
+      ee[ nbE ] = TopoDS::Edge( *E );
+      ee[ nbE ].Orientation( SMESH_MesherHelper::GetSubShapeOri( F, *E ));
+      if ( ++nbE == 2 )
+        break;
+    }
+
+    // get an angle between the two EDGEs
+    angles[i] = 0;
+    if ( nbE < 1 ) continue;
+    if ( nbE == 1 )
+    {
+      ee[ 1 ] == ee[ 0 ];
+    }
+    else
+    {
+      TopoDS_Vertex v10 = SMESH_MesherHelper::IthVertex( 1, ee[ 0 ]);
+      TopoDS_Vertex v01 = SMESH_MesherHelper::IthVertex( 0, ee[ 1 ]);
+      if ( !v10.IsSame( v01 ))
+        std::swap( ee[0], ee[1] );
+    }
+    angles[i] = SMESH_MesherHelper::GetAngle( ee[0], ee[1], F );
+  }
+
+  // compute a weighted normal
+  double sumAngle = 0;
+  for ( int i = 0; i < nbFaces; ++i )
+  {
+    angles[i] = ( angles[i] > 2*M_PI )  ?  0  :  M_PI - angles[i];
+    sumAngle += angles[i];
+  }
+  for ( int i = 0; i < nbFaces; ++i )
+    resNorm += angles[i] / sumAngle * fId2Normal[i].second;
+
+  return resNorm;
 }
 
 //================================================================================

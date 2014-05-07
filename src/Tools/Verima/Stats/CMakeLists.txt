@@ -21,13 +21,14 @@
 
 # scripts / static
 SET(plugin_SCRIPTS
+  __init__.py
+  getCritere.py
   getStats.py
   job.py
-  mean.py
-  ref.py
+  Type_Maille.py
   utiles.py
   ) 
 
 # --- rules ---
 
-SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS})
+SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS}/Verima/Stats)

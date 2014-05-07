@@ -3,8 +3,9 @@
 \page grouping_elements_page Grouping elements
 
 In Mesh module it is possible to create groups of mesh elements:
-nodes, edges, faces or volumes. One group contains elements of only
-one type. The following ways of creation are possible:
+nodes, edges, faces, volumes, 0D elements or balls. One group contains
+elements of only one type. The following ways of creation are
+possible:
 
 - by selecting the elements using filters and/or directly on the 
   presentation in the VTK viewer, and/or by using elements of other
@@ -32,7 +33,14 @@ The created groups can be later:
 - \subpage using_operations_on_groups_page "Subjected to Boolean operations"
 - \subpage deleting_groups_page "Deleted"
 
+In the Object Browser, if groups or sub-meshes container item has more
+than one child sub-object, it is possible to sort the children in
+ascending order. For this, select the parent object in the Object
+Browser and choose <b>Sort children</b> context menu item. 
+
+\image html smesh_sort.png "Sorting of sub-objects"
+
 An important tool, providing filters for creation of \b Standalone
-groups is \ref selection_filter_library_page.
+groups and groups <b>On Filter</b> is \ref selection_filter_library_page.
 
 */

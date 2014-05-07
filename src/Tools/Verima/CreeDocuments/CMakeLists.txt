@@ -23,10 +23,10 @@ ADD_SUBDIRECTORY(templatesHtml)
 
 # scripts / static
 SET(plugin_SCRIPTS
- creeHtml.py
+ __init__.py
  jobHtml.py
  )
 
 # --- rules ---
 
-SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS})
+SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS}/Verima/CreeDocuments)

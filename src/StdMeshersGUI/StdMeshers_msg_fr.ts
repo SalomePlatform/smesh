@@ -5,40 +5,39 @@
     <name>@default</name>
     <message>
         <source>SMESH_COMMON_RATIO</source>
-        <translation type="unfinished">Common Ratio</translation>
+        <translation>Taux de croissance</translation>
     </message>
     <message>
         <source>SMESH_GEOMETRIC_1D_TITLE</source>
-        <translation type="unfinished">Hypothesis Construction</translation>
+        <translation>Construction de l&apos;hypothèse</translation>
     </message>
     <message>
         <source>SMESH_GEOMETRIC_1D_HYPOTHESIS</source>
-        <translation type="unfinished">Geometric Progression</translation>
+        <translation>Progression géométrique</translation>
     </message>
     <message>
         <source>SMESH_EDGES_WITH_LAYERS</source>
-        <translation type="unfinished">Edges with layers</translation>
+        <translation>Arêtes avec couche limite</translation>
     </message>
     <message>
         <source>SMESH_FACES_WITH_LAYERS</source>
-        <translation type="unfinished">Faces with layers 
-(walls)</translation>
+        <translation>Faces avec couche limite (parois)</translation>
     </message>
     <message>
         <source>SMESH_ADAPTIVE1D_TITLE</source>
-        <translation type="unfinished">Hypothesis Construction</translation>
+        <translation>Construction de l&apos;hypothèse</translation>
     </message>
     <message>
         <source>SMESH_MAX_SIZE</source>
-        <translation type="unfinished">Max size</translation>
+        <translation>Taille max</translation>
     </message>
     <message>
         <source>SMESH_MIN_SIZE</source>
-        <translation type="unfinished">Min size</translation>
+        <translation>Taille min</translation>
     </message>
     <message>
         <source>SMESH_ADAPTIVE1D_HYPOTHESIS</source>
-        <translation type="unfinished">Adaptive</translation>
+        <translation>Adaptation géométrique</translation>
     </message>
     <message>
         <source>SMESH_ARITHMETIC_1D_HYPOTHESIS</source>
@@ -489,7 +488,7 @@
     <name>StdMeshersGUI_CartesianParamCreator</name>
     <message>
         <source>ADD_EDGES</source>
-        <translation type="unfinished">Implement Edges</translation>
+        <translation>Ajouter des arêtes</translation>
     </message>
     <message>
         <source>THRESHOLD</source>
@@ -506,6 +505,30 @@
     <message>
         <source>AXIS_Z</source>
         <translation>Axe Z</translation>
+    </message>
+    <message>
+        <source>INVALID_AXES_DIR</source>
+        <translation>Mauvaise direction des axes</translation>
+    </message>
+    <message>
+        <source>FIXED_POINT</source>
+        <translation>Point fixe</translation>
+    </message>
+    <message>
+        <source>AXES_DIRECTION</source>
+        <translation>Directions des axes</translation>
+    </message>
+    <message>
+        <source>ORTHOGONAL_AXES</source>
+        <translation>Axes orthogonaux</translation>
+    </message>
+    <message>
+        <source>OPTIMAL_AXES</source>
+        <translation>Axes optimaux</translation>
+    </message>
+    <message>
+        <source>RESET_AXES</source>
+        <translation>Réinitialiser</translation>
     </message>
 </context>
 <context>
@@ -531,15 +554,27 @@
     <name>StdMeshersGUI_StdHypothesisCreator</name>
     <message>
         <source>TO_IGNORE_EDGES</source>
-        <translation type="unfinished">Edges without layers (inlets and oulets)</translation>
+        <translation>Arêtes sans couches limites (entrées / sorties)</translation>
     </message>
     <message>
         <source>NOT_TO_IGNORE_EDGES</source>
-        <translation type="unfinished">Edges with layers (walls)</translation>
+        <translation>Arêtes avec couche limite (parois)</translation>
     </message>
     <message>
         <source>TO_IGNORE_EDGES_OR_NOT</source>
-        <translation type="unfinished">Specified edges are</translation>
+        <translation>Les arêtes sélectionnées sont</translation>
+    </message>
+    <message>
+        <source>TO_IGNORE_FACES_OR_NOT</source>
+        <translation>Les face sélectionnées sont</translation>
+    </message>
+    <message>
+        <source>NOT_TO_IGNORE_FACES</source>
+        <translation>Faces avec couche limite (parois)</translation>
+    </message>
+    <message>
+        <source>TO_IGNORE_FACES</source>
+        <translation>Faces sans couche limite (entrées / sorties)</translation>
     </message>
 </context>
 </TS>

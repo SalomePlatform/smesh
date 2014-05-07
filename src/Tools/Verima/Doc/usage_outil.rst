@@ -1,57 +1,64 @@
 Utilisation de l'outil
 ======================
+Introduction
+-------------
+Avant d'utiliser les différents scripts décrits ci-dessous, il faut préalablement taper dans un terminal la commande ./runSession dans le répertoire Salome où se situe le runSession. On peut trouver les différents scripts au niveau du répertoire : ./Salome-n°version/modules/SMESH_n°version/share/salome/plugins/smesh/Verima
+
 Création de la base
 --------------------
 
-La base de données ne doit, à priori, n'être créée qu'une unique fois. Cependant, relancer le script de création ne changera pas les informations contenues dans la base et n'a pas d'incidence sur la base ni sur son contenu. Le script va seulement éventuellement ajouter dans la base, les références de la machine sur laquelle il est exécuté.
+La base de données ne doit, à priori, n'être créée qu'une unique fois. Cependant, relancer le script de création ne changera pas les informations contenues dans la base et n'a pas d'incidence sur la base ni sur son contenu.
 
   * createDatabase.py
-
-	- Crée la structure de la base et le fichier myMeshDB.db
+        - Crée la structure de la base et le fichier myMeshDB.db
         - Si le fichier myMeshDB.db (c'est à dire si la base) existe déjà, le script ne modifie pas la structure des tables et n'affecte pas les enregistrements qu'elles contiennent déjà.
-        - Le script crée un enregistrement correspondant à la machine et à sa version d'OS (résultats de la commande uname). Si l'enregistrement existe déjà, la requête affiche l'erreur False et la database n'est pas touchée.  
         - Le script a un unique paramètre optionnel : le nom de la database. 
 
      .. code-block:: python
 
-          python createDatabase -d maBaseAMoi.db
+          python createDatabase.py -d maBaseAMoi.db
 
-Le jeu de test créé par défaut 
--------------------------------
+Initialisation d'un jeu de tests par défaut 
+-------------------------------------------
+Si on le souhaite, on peut initialiser un jeu de tests par défaut. Ce jeu de tests s'applique aux versions, aux mailleurs testés, aux scripts de maillage et enfin aux groupes de référence associés à ces maillages.
+Les quatres fichiers python se situent dans le répertoire Base.
 
-    * Pour les machines 
-        - la machine sur laquelle la base est créée est ajoutée.
+  * Pour les versions, il s'agit du fichier tableVersions. Dans la méthode "remplit", on renseigne :
+        - Le nom de la version
+	- Un commentaire
 
-    * Pour les mailleurs
-        - 1, Blsurf+Ghs3D
-        - 2, Tetra
+  * Pour les mailleurs, il s'agit du fichier tableMailleurs. Dans la méthode remplit, on renseigne :
+        - Le nom du mailleur
 
+  * Pour les scripts, il s'agit du fichier tableMaillages. Dans la méthode remplit, on renseigne :
+        - Le nom du cas test
+        - Le nom du script python
+	- Le nom du fichier med
+        - Le numéro de l'identifiant correspondant au mailleur testé
+        - La dimension maximale du maillage
+        - Les quatres seuils correspondant aux quatres critères à savoir le temps CPU, l'aspect ratio, la longueur et enfin le nombre d'entités
+	- Un commentaire
 
-    * Pour les scripts
-        -1,  script1 utilise le mailleur 2 dimension 2
-        -2,  excavation utilise le mailleur 1 dimension 3
+  * Pour les groupes de référence, il s'agit du fichier tableGroupesRef. Dans la méthode remplit, on renseigne :
+        - Le nom du groupe
+	- Le numéro d'identifiant correspondant au maillage
 
-    * Pour les versions
-        - Salome 7.3 comme version de référence
-        - lorsqu'on utilise une version de Salome, cette version sera créée dans la database. Il n'est pas nécessaire de créer une autre version que la version de référence.
-
-    * Pour les groupes de référence
-        - Seul le script excavation a des groupes de référence : il s'agit de FRONT_07 et FOND_07, PAROI_07 et ROCHE_07, FOND_16, PAROI_16 et ROCHE_16.
-
-    * Pour changer le jeu de test par défaut, il faut éditer dans la directory Base, les fichiers tableMailleurs, tableMaillages, tableGroupesRef et tableVersions  et modifier les méthodes "remplit". Par exemple, pour ajouter le mailleur "MonMailleur" :
-
-
-         .. code-block:: python
-
-          self.insereLigneAutoId(('MonMailleur'))
-
-
-
-
+Remarque : actuellement, le jeu par défaut porte : 
+  * sur les versions
+	- n°id=1,'Salome7.2.0'
+	- n°id=2,'Salome7.3.0'
+	- n°id=3,'Salome7.4.0'
+  * sur les mailleurs
+	- n°id=1,'BLSURF'
+	- n°id=2,'NETGEN1D2D'
+	- n°id=3,'GHS3D+BLSURF'
+	- n°id=4,'GHS3D+NETGEN1D2D'
+	- n°id=5,'NETGEN1D2D3D'
+  
 Ajouter un enregistrement à une table 
 -------------------------------------
 
-Lors d'une nouvelle version de Salome, de l'arrivée d'un nouveau cas test ou d'un nouveau mailleur, il sera nécessaire d'enrichir la base de données.  Aucun contrôle sur la cohérence des valeurs n'est effectué. 
+Lors d'une nouvelle version de Salome, de l'arrivée d'un nouveau cas test ou d'un nouveau mailleur, il sera nécessaire d'enrichir la base de données. Aucun contrôle sur la cohérence des valeurs n'est effectué. 
 
   * l'autoincrement
 
@@ -61,7 +68,7 @@ Lors d'une nouvelle version de Salome, de l'arrivée d'un nouveau cas test ou d'
  
   * ajoutEnreg.py
 
-        - Le script a deux paramètres : le nom de la databse (optionnel) et le nom de la table qu'il faut enrichir.
+        - Le script a deux paramètres : le nom de la database (optionnel) et le nom de la table qu'il faut enrichir.
           les valeurs des colonnes doivent être fournies dans l'ordre.
 
          .. code-block:: python
@@ -77,14 +84,12 @@ Lors d'une nouvelle version de Salome, de l'arrivée d'un nouveau cas test ou d'
           python ajoutEnreg -d maBaseAMoi.db -t TableMaillages  "monMaillage" "mesScripts/lanceMonMaillage" "/tmp/monFichierMed" 4 3 5 5 5 5 "essai pour mon Mailleur"
 
        
-
-
 Changement de la version de référence
 -------------------------------------
  
 A priori, cette fonction ne devrait pas être utilisée. mais ... Elle permet de changer la version de référence.
 
-  * changeRef.py
+  * changeVersion.py
 
          .. code-block:: python
 
@@ -103,13 +108,13 @@ Consultation des tables
 .. image:: images/visualisation.png
 
 
-Lancer un job de maillage particulier ou  l'ensemble des tests
+Lancer un job de maillage particulier ou l'ensemble des tests
 ----------------------------------------------------------------
 
    * le script passejob.py permet de passer l'ensemble des tests ou un cas particulier. il admet les options suivantes :
 
        - '-a' pour passer l ensemble des Tests (non activée par defaut)
-       - '-s' pour preciser le path du runAppli (par exemple ~/Appli). permet au job de trouver le runAppli
+       - '-s' pour preciser le path du runAppli (par exemple ~/Appli). Permet au job de trouver le runAppli
        - '-d' pour preciser le fichier dataBase
        - '-v' pour spécifier la version de Salome
        - si l'option -a n'est pas activée, il faut préciser l'identifiant du job à passer 
@@ -126,29 +131,28 @@ Modifier les scripts pour les intégrer dans le mécanisme de test
 
          .. code-block:: python
 
-            from Stats.getStats import getStatsMaillage, getStatsGroupes, genHistogram
+            from Stats.getStats import getStatsMaillage, getStatsGroupes
+            from Stats.getCritere import getStatsCritere
             # 
-            fichierStatMailles=fichierMedResult.replace('.med','.res')
-            fichierStatRatio=fichierMedResult.replace('.med','.ratio')
-            fichierStatTailles=fichierMedResult.replace('.med','.taille')
-            # 
-            getStatsMaillage(monMaillage,fichierStatMailles)
+            fichierMedResult = 'fichierMed.med'
+            getStatsMaillage(monMaillage,fichierMedResult)
             getStatsGroupes(monMaillage,fichierMedResult)
-            genHistogram(monMaillage, SMESH.FT_AspectRatio3D, 20, False, fichierStatRatio,theStudy)
-            genHistogram(monMaillage, SMESH.FT_MaxElementLength3D, 20, False, fichierStatTailles,theStudy)
-
-    * si le maillage est du 2D, on remplace SMESH.FT_MaxElementLength3D par SMESH.FT_MaxElementLength2D et on ne calcule pas l'aspect Ratio
+            getStatsCritere(dimMaillage,monMaillage,fichierMedResult,theStudy)
 
 Lancement du script de comparaison
 -----------------------------------
   * compareVersions.py
        - '-s' pour preciser le path du runAppli (par exemple ~/Appli). permet au job de trouver le runAppli
-       - '-v' pour spécifier la version de Salome a comparer
-       - '-r' pour spécifier une version de comparaison différente de la version de référence
+       - '-r' pour spécifier les numéros de versions de référence pour chacun des scripts
        - '-d' pour preciser le fichier dataBase
-       - '-f' pour spécifier le nom du fichier html produit (/tmp/toto.html par défaut -) )
+       - '-f' pour spécifier le nom du rapport html produit (/tmp/toto.html par défaut -) )
 
-   produit le rapport Html à ajouter à la newsletter
+         .. code-block:: python
+
+           python compareVersions.py -s ./runAppli -r 1,2,2 -d ./myMesh.db -f ./rapport.html
+ 
+
+   Ici, pour les scripts n°1, 2 et 3, les versions de référence sont, respectivement "Salome7.2.0", "Salome7.3.0" et "Salome 7.3.0".
 
 
 export/import de la base
@@ -162,7 +166,7 @@ export/import de la base
             * la table des machines
             * la table des groupes references
 
-    - les fichiers sont ranges dans la directory ExportDB+date. la premiere ligne de chaque fichier contient le nom des colonnes, puis les valeurs par ligne
+   - les fichiers sont ranges dans la directory ExportDB+date. la premiere ligne de chaque fichier contient le nom des colonnes, puis les valeurs par ligne
 
    - pour faire une vraie sauvegarde de la base (structure et donnees) il faut lancer sqlite3 et executer .dump
 
@@ -173,4 +177,40 @@ export/import de la base
     - admet l option  -p (pour partiel) qui n importe pas les tables a priori communes a tous  
     - admet l option  -f (pour force) qui pour les enregistrements qui existent déjà dans la base remplace 
       par les valeurs donnees dans le fichier
-  
+
+Critères de vérification
+========================
+Principe
+--------
+Le principe est simple.
+Pour chaque maillage, on définit des valeurs de référence associées au maillage. A chaque nouvelle version de Salome, on compare les résultats obtenus avec ces valeurs de référence pour le script étudié. On émet un warning à chaque fois que les écarts relatifs dépassent un certain seuil. 
+
+Critères
+--------
+Les critères de vérification portent sur :
+
+  * Le temps CPU
+
+  * Le nombre d'entités du maillage classé par type
+        - Le nombre de noeuds
+        - Le nombre de segments (maille 1D)
+        - Le nombre de triangles (maille 2D)
+        - Le nombre de quadrangles (maille 2D)
+        - Le nombre de tétraèdres (maille 2D)
+
+  * Le rapport de tailles de chaque élément du maillage (fonction GetAspectRatio)
+        - Pour un maillage 3D, on calcul le ratio des mailles 3D
+        - Pour un maillage 2D, on calcul le ratio des mailles 2D
+
+  * La longueur de chaque élément du maillage (fonction GetMaxElementLength)  
+        - Pour un maillage 3D, on calcul la longueur des mailles 3D
+        - Pour un maillage 2D, on calcul la longueur des mailles 2D
+
+Ces critères sont calculés sur tout le maillage et éventuellement sur des groupes de mailles de référence associés au maillage.
+
+Pour chaque maillage, les valeurs de référence sont calculées sur la base d'une version spécifique de Salome (qui peut être différente d'un maillage à l'autre).
+
+Pour le rapport de tailles et la longueur des mailles, on calcule systématiquement le maximun, le minimum, la moyenne, le 1er et 3ème quartile et enfin la médiane.
+
+Pour ces quatres critères, on définit un seuil à ne pas dépasser (qui peut être différent d'un critère à l'autre). Actuellement, au sein d'un même critère, les seuils sont identiques.
+

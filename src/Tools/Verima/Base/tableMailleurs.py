@@ -24,14 +24,18 @@ class TableMailleurs (TableDeBase):
             if self.dejaRemplie() :
                print "Table Mailleurs deja initialisee"
                return
-            self.insereLigneAutoId(('Blsurf+Ghs3D',))
-            self.insereLigneAutoId(('Tetra',))
+            self.insereLigneAutoId(('BLSURF',))
+            self.insereLigneAutoId(('NETGEN1D2D',))
+            self.insereLigneAutoId(('GHS3D+BLSURF',))
+            self.insereLigneAutoId(('GHS3D+NETGEN1D2D',))
+            self.insereLigneAutoId(('NETGEN1D2D3D',))
 
-        def insereLigneAutoId(self,valeurs):
+        def insereLigneAutoId(self,valeurs,debug=False):
           # difficulte a construire le texte avec une seule valeur
           texteQuery='insert into  Mailleurs (nomMailleur) values ("'+ str(valeurs[0])+ '");'
           maQuery=QtSql.QSqlQuery()
-          print texteQuery, " " , maQuery.exec_(texteQuery)
+          if debug  : print texteQuery, " " , maQuery.exec_(texteQuery)
+          else : maQuery.exec_(texteQuery) 
 
         def getTous(self):
             l1=[]
@@ -43,3 +47,13 @@ class TableMailleurs (TableDeBase):
                  l1.append( maQuery.value(0).toInt()[0])
                  l2.append( maQuery.value(1).toString())
             return l1,l2
+
+        def getName(self,mailleurId):
+            texteQuery="select  nomMailleur from  Mailleurs where id = " + str(mailleurId) + " ;"
+            maQuery=QtSql.QSqlQuery()
+            maQuery.exec_(texteQuery)
+            while(maQuery.next()): 
+                 mailleurName=maQuery.value(0).toString()
+            return mailleurName
+
+            

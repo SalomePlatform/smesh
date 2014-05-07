@@ -17,11 +17,9 @@ if __name__ == "__main__":
       p.add_option('-d',dest='database',default="myMesh.db",help='nom de la database')
       p.add_option('-f',dest='force',default=True,help='force la passage des jobs meme si l execution a deja eu lieu sur cette machine pour cette version de salome')
       options, args = p.parse_args()
-      if len(args) != 0  and options.all== True: 
-	 print "Enter -a ou un numero de job"
-         exit()
       if len(args) == 0  and options.all== False: 
 	 print "Enter -a ou un numero de job"
+         print 2
          exit()
       if options.salomePath==None : 
          print  "chemin du runAppli obligatoire"

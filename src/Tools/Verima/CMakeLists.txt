@@ -23,7 +23,6 @@ ADD_SUBDIRECTORY(CreeDocuments)
 IF(SALOME_BUILD_GUI)
   ADD_SUBDIRECTORY(Gui)
 ENDIF(SALOME_BUILD_GUI)
-ADD_SUBDIRECTORY(Scripts)
 ADD_SUBDIRECTORY(Stats)
 ADD_SUBDIRECTORY(Base)
 
@@ -32,7 +31,6 @@ ADD_SUBDIRECTORY(Base)
 # scripts / static
 SET(plugin_SCRIPTS
   ajoutEnreg.py
-  changeVersion.py
   compareVersions.py
   createDatabase.py
   lance.py
@@ -41,4 +39,4 @@ SET(plugin_SCRIPTS
 
 # --- rules ---
 
-SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS})
+SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS}/Verima)

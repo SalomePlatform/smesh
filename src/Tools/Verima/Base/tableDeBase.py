@@ -17,7 +17,7 @@ class TableDeBase :
         def getFields(self):
           return self.FieldStringList
     
-        def insereLigne(self,valeurs,debug=True):
+        def insereLigne(self,valeurs,debug=False):
           if self.verifieExitenceId(valeurs[0])!=0 :
 	     print "impossible d inserer " , valeurs, "dans ", self.nom
 	     print "l id est deja existant"
@@ -27,12 +27,13 @@ class TableDeBase :
           if debug : print texteQuery, " " , maQuery.exec_(texteQuery)
           else     : maQuery.exec_(texteQuery)
 
-        def insereLigneAutoId(self,valeurs):
+        def insereLigneAutoId(self,valeurs,debug=False):
           texteQuery='insert into ' + self.nom + self.cols+ " values "+ str(valeurs)+ ';'
           maQuery=QSqlQuery()
-          print texteQuery, " " , maQuery.exec_(texteQuery)
+          if debug : print texteQuery, " " , maQuery.exec_(texteQuery)
+          else     : maQuery.exec_(texteQuery)
 
-        def insereOuRemplaceLigne(self,valeurs,debug=True):
+        def insereOuRemplaceLigne(self,valeurs,debug=False):
           texteQuery='insert or replace into ' + self.nom + " values "+ str(valeurs)+ ';'
           maQuery=QSqlQuery()
           if debug : print texteQuery, " " , maQuery.exec_(texteQuery)

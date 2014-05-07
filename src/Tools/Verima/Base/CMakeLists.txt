@@ -26,6 +26,8 @@ SET(plugin_SCRIPTS
   importFromCSV.py
   tableDeBase.py
   tableGroupes.py
+  tableGroupeRatios.py
+  tableGroupeTailles.py
   tableGroupesRef.py
   tableMachines.py
   tableMaillages.py
@@ -36,13 +38,9 @@ SET(plugin_SCRIPTS
   tableTailles.py
   tableVersions.py
   versions.py
+  __init__.py
   ) 
-
-SET(plugin_DB
-  myMesh.db
-  )
 
 # --- rules ---
 
-SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS})
-SALOME_INSTALL_SCRIPTS("${plugin_DB}" ${SALOME_SMESH_INSTALL_PLUGINS})
+SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS}/Verima/Base)

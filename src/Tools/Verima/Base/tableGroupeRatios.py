@@ -1,16 +1,16 @@
 from PyQt4 import QtSql, QtCore
 from tableDeBase import TableDeBase
 
-class TableRatios (TableDeBase):
+class TableGroupeRatios (TableDeBase):
       def __init__(self):
-          TableDeBase.__init__(self,"Ratios")
-          self.setField(('Maillage','Version','RatioMax','RatioMin','Quartile1','Mediane','Quartile3','Moyenne'))
-          self.setTypeField(('int','int','float','float','float','float','float','float'),('idMaillage','idVersion','Machine'))
+          TableDeBase.__init__(self,"GroupesRatios")
+          self.setField(('Maillage','Version','Groupe','RatioMax','RatioMin','Quartile1','Mediane','Quartile3','Moyenne'))
+          self.setTypeField(('int','int','str','float','float','float','float','float','float'),('idMaillage','idVersion','Groupe'))
 
       def createSqlTable(self):
           query=QtSql.QSqlQuery()
 
-          texteQuery ="create table Ratios(idMaillage int, idVersion int, "
+          texteQuery ="create table GroupesRatios(idMaillage int, idVersion int,  Groupe varchar(40),"
           texteQuery+="RatioMax float, RatioMin float, "
           texteQuery+="Q1 float,"
           texteQuery+="Mediane float,"
@@ -18,14 +18,15 @@ class TableRatios (TableDeBase):
           texteQuery+="Moyenne float,"
           texteQuery+="foreign key (idMaillage) references Maillages(id)," 
           texteQuery+="foreign key (idVersion) references Versions(id)," 
-          texteQuery+="primary key (idMaillage,idVersion));"
+          texteQuery+="foreign key (Groupe) references GroupesRef(nomGroupe)," 
+          texteQuery+="primary key (idMaillage,idVersion,Groupe));"
+          print "Creation de TableGroupeRatios : " , query.exec_(texteQuery)
 
-          print "Creation de TableRatios : " , query.exec_(texteQuery)
-
-      def getVal(self,idMaillage, idVersion,  Entite):
+      def getVal(self,idMaillage, idVersion, Groupe, Entite):
           query=QtSql.QSqlQuery()
-          texteQuery ='select '+ str(Entite) + ' from Ratios where idMaillage='+str(idMaillage)
+          texteQuery ='select '+ str(Entite) + ' from GroupesRatios where idMaillage='+str(idMaillage)
           texteQuery+=' and  idVersion='+str(idVersion)
+          texteQuery+=" and Groupe='" + str(Groupe) +"';"
           query.exec_(texteQuery)
           nb=0
           val=0                          # Valeur si l enregistrement n existe pas

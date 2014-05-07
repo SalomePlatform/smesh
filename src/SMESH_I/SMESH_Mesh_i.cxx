@@ -5723,6 +5723,8 @@ TListOfListOfInt SMESH_Mesh_i::findConcurrentSubMeshes()
   {
     const SMESH::submesh_array& aSMArray = theSubMeshArray[i];
     TListOfInt subMeshIds;
+    if ( i > 0 )
+      aPythonDump << ", ";
     aPythonDump << "[ ";
     // Collect subMeshes which should be clear
     //  do it list-by-list, because modification of submesh order
