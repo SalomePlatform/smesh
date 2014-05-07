@@ -45,6 +45,8 @@
 #include "StdMeshers_FaceSide.hxx"
 
 #include <BRepAdaptor_Curve2d.hxx>
+#include <BRepAdaptor_Surface.hxx>
+#include <BRepLProp_SLProps.hxx>
 #include <BRep_Tool.hxx>
 #include <Bnd_B2d.hxx>
 #include <Bnd_B3d.hxx>
@@ -61,6 +63,7 @@
 #include <Geom_TrimmedCurve.hxx>
 #include <Precision.hxx>
 #include <Standard_ErrorHandler.hxx>
+#include <Standard_Failure.hxx>
 #include <TColStd_Array1OfReal.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
@@ -397,6 +400,8 @@ namespace VISCOUS_3D
     // edges of _n2eMap. We keep same data in two containers because
     // iteration over the map is 5 time longer than over the vector
     vector< _LayerEdge* >           _edges;
+    // edges on EDGE's with null _sWOL, whose _simplices are used to stop inflation
+    vector< _LayerEdge* >           _simplexTestEdges;
 
     // key:   an id of shape (EDGE or VERTEX) shared by a FACE with
     //        layers and a FACE w/o layers
@@ -490,6 +495,8 @@ namespace VISCOUS_3D
                        const set<TGeomID>& ingnoreShapes,
                        const _SolidData*   dataToCheckOri = 0,
                        const bool          toSort = false);
+    void findSimplexTestEdges( _SolidData&                    data,
+                               vector< vector<_LayerEdge*> >& edgesByGeom);
     bool sortEdges( _SolidData&                    data,
                     vector< vector<_LayerEdge*> >& edgesByGeom);
     void limitStepSize( _SolidData&             data,
@@ -797,23 +804,29 @@ namespace
     // get average dir of edges going fromV
     gp_XYZ edgeDir;
     //if ( edges.size() > 1 )
-      for ( size_t i = 0; i < edges.size(); ++i )
-      {
-        edgeDir = getEdgeDir( edges[i], fromV );
-        double size2 = edgeDir.SquareModulus();
-        if ( size2 > numeric_limits<double>::min() )
-          edgeDir /= sqrt( size2 );
-        else
-          ok = false;
-        dir += edgeDir;
-      }
+    for ( size_t i = 0; i < edges.size(); ++i )
+    {
+      edgeDir = getEdgeDir( edges[i], fromV );
+      double size2 = edgeDir.SquareModulus();
+      if ( size2 > numeric_limits<double>::min() )
+        edgeDir /= sqrt( size2 );
+      else
+        ok = false;
+      dir += edgeDir;
+    }
     gp_XYZ fromEdgeDir = getFaceDir( F, edges[0], node, helper, ok );
-    if ( edges.size() == 1 )
-      dir = fromEdgeDir;
-    else if ( dir.SquareModulus() < 0.1 ) // ~< 20 degrees
-      dir = fromEdgeDir + getFaceDir( F, edges[1], node, helper, ok );
-    else if ( dir * fromEdgeDir < 0 )
-      dir *= -1;
+    try {
+      if ( edges.size() == 1 )
+        dir = fromEdgeDir;
+      else if ( dir.SquareModulus() < 0.1 ) // ~< 20 degrees
+        dir = fromEdgeDir.Normalized() + getFaceDir( F, edges[1], node, helper, ok ).Normalized();
+      else if ( dir * fromEdgeDir < 0 )
+        dir *= -1;
+    }
+    catch ( Standard_Failure )
+    {
+      ok = false;
+    }
     if ( ok )
     {
       //dir /= edges.size();
@@ -1392,6 +1405,19 @@ bool _ViscousBuilder::findFacesWithLayers()
     }
   }
 
+  // add FACEs of other SOLIDs to _ignoreFaceIds
+  for ( size_t i = 0; i < _sdVec.size(); ++i )
+  {
+    shapes.Clear();
+    TopExp::MapShapes(_sdVec[i]._solid, TopAbs_FACE, shapes);
+
+    for ( exp.Init( _mesh->GetShapeToMesh(), TopAbs_FACE ); exp.More(); exp.Next() )
+    {
+      if ( !shapes.Contains( exp.Current() ))
+        _sdVec[i]._ignoreFaceIds.insert( getMeshDS()->ShapeToIndex( exp.Current() ));
+    }
+  }
+
   return true;
 }
 
@@ -1525,12 +1551,14 @@ bool _ViscousBuilder::makeLayer(_SolidData& data)
   if ( data._stepSize < 1. )
     data._epsilon *= data._stepSize;
 
-  // Put _LayerEdge's into the vector data._edges
+  // fill data._simplexTestEdges
+  findSimplexTestEdges( data, edgesByGeom );
 
+  // Put _LayerEdge's into the vector data._edges
   if ( !sortEdges( data, edgesByGeom ))
     return false;
 
-  // Set target nodes into _Simplex and _2NearEdges
+  // Set target nodes into _Simplex and _2NearEdges of _LayerEdge's
   TNode2Edge::iterator n2e;
   for ( size_t i = 0; i < data._edges.size(); ++i )
   {
@@ -1545,13 +1573,13 @@ bool _ViscousBuilder::makeLayer(_SolidData& data)
         n = (*n2e).second->_nodes.back();
         data._edges[i]->_2neibors->_edges[j] = n2e->second;
       }
-    else
-      for ( size_t j = 0; j < data._edges[i]->_simplices.size(); ++j )
-      {
-        _Simplex& s = data._edges[i]->_simplices[j];
-        s._nNext = data._n2eMap[ s._nNext ]->_nodes.back();
-        s._nPrev = data._n2eMap[ s._nPrev ]->_nodes.back();
-      }
+    //else
+    for ( size_t j = 0; j < data._edges[i]->_simplices.size(); ++j )
+    {
+      _Simplex& s = data._edges[i]->_simplices[j];
+      s._nNext = data._n2eMap[ s._nNext ]->_nodes.back();
+      s._nPrev = data._n2eMap[ s._nPrev ]->_nodes.back();
+    }
   }
 
   dumpFunctionEnd();
@@ -1615,6 +1643,94 @@ void _ViscousBuilder::limitStepSize( _SolidData& data, const double minSize)
 
 //================================================================================
 /*!
+ * Fill data._simplexTestEdges. These _LayerEdge's are used to stop inflation
+ * in the case where there are no _LayerEdge's on a curved convex FACE,
+ * as e.g. on a fillet surface with no internal nodes - issue 22580,
+ * so that collision of viscous internal faces is not detected by check of
+ * intersection of _LayerEdge's with the viscous internal faces.
+ */
+//================================================================================
+
+void _ViscousBuilder::findSimplexTestEdges( _SolidData&                    data,
+                                            vector< vector<_LayerEdge*> >& edgesByGeom)
+{
+  data._simplexTestEdges.clear();
+
+  SMESH_MesherHelper helper( *_mesh );
+
+  vector< vector<_LayerEdge*> * > ledgesOnEdges;
+  set< const SMDS_MeshNode* > usedNodes;
+
+  const double minCurvature = 1. / data._hyp->GetTotalThickness();
+
+  for ( size_t iS = 0; iS < edgesByGeom.size(); ++iS )
+  {
+    // look for a FACE with layers and w/o _LayerEdge's
+    const vector<_LayerEdge*>& eS = edgesByGeom[iS];
+    if ( !eS.empty() ) continue;
+    const TopoDS_Shape& S = getMeshDS()->IndexToShape( iS );
+    if ( S.IsNull() || S.ShapeType() != TopAbs_FACE ) continue;
+    if ( data._ignoreFaceIds.count( iS )) continue;
+
+    const TopoDS_Face& F = TopoDS::Face( S );
+
+    // look for _LayerEdge's on EDGEs with null _sWOL
+    ledgesOnEdges.clear();
+    TopExp_Explorer eExp( F, TopAbs_EDGE );
+    for ( ; eExp.More(); eExp.Next() )
+    {
+      TGeomID iE = getMeshDS()->ShapeToIndex( eExp.Current() );
+      vector<_LayerEdge*>& eE = edgesByGeom[iE];
+      if ( !eE.empty() && eE[0]->_sWOL.IsNull() )
+        ledgesOnEdges.push_back( & eE );
+    }
+    if ( ledgesOnEdges.empty() ) continue;
+
+    // check FACE convexity
+    const _LayerEdge* le = ledgesOnEdges[0]->back();
+    gp_XY uv = helper.GetNodeUV( F, le->_nodes[0] );
+    BRepAdaptor_Surface surf( F );
+    BRepLProp_SLProps surfProp( surf, uv.X(), uv.Y(), 2, 1e-6 );
+    if ( !surfProp.IsCurvatureDefined() )
+      continue;
+    double surfCurvature = Max( Abs( surfProp.MaxCurvature() ),
+                                Abs( surfProp.MinCurvature() ));
+    if ( surfCurvature < minCurvature )
+      continue;
+    gp_Dir minDir, maxDir;
+    surfProp.CurvatureDirections( maxDir, minDir );
+    if ( F.Orientation() == TopAbs_REVERSED ) {
+      maxDir.Reverse(); minDir.Reverse();
+    }
+    const gp_XYZ& inDir = le->_normal;
+    if ( inDir * maxDir.XYZ() < 0 &&
+         inDir * minDir.XYZ() < 0 )
+      continue;
+
+    // add _simplices to the _LayerEdge's
+    for ( size_t iE = 0; iE < ledgesOnEdges.size(); ++iE )
+    {
+      const vector<_LayerEdge*>& ledges = *ledgesOnEdges[iE];
+      for ( size_t iLE = 0; iLE < ledges.size(); ++iLE )
+      {
+        _LayerEdge* ledge = ledges[iLE];
+        const SMDS_MeshNode* srcNode = ledge->_nodes[0];
+        if ( !usedNodes.insert( srcNode ).second ) continue;
+
+        getSimplices( srcNode, ledge->_simplices, data._ignoreFaceIds, &data );
+        for ( size_t i = 0; i < ledge->_simplices.size(); ++i )
+        {
+          usedNodes.insert( ledge->_simplices[i]._nPrev );
+          usedNodes.insert( ledge->_simplices[i]._nNext );
+        }
+        data._simplexTestEdges.push_back( ledge );
+      }
+    }
+  }
+}
+
+//================================================================================
+/*!
  * \brief Separate shapes (and _LayerEdge's on them) to smooth from the rest ones
  */
 //================================================================================
@@ -1634,7 +1750,7 @@ bool _ViscousBuilder::sortEdges( _SolidData&                    data,
   {
     vector<_LayerEdge*>& eS = edgesByGeom[iS];
     if ( eS.empty() ) continue;
-    TopoDS_Shape S = getMeshDS()->IndexToShape( iS );
+    const TopoDS_Shape& S = getMeshDS()->IndexToShape( iS );
     bool needSmooth = false;
     switch ( S.ShapeType() )
     {
@@ -1857,7 +1973,7 @@ bool _ViscousBuilder::setEdgeData(_LayerEdge&         edge,
 
     if ( totalNbFaces < 3 )
     {
-      edge._normal /= totalNbFaces;
+      //edge._normal /= totalNbFaces;
     }
     else
     {
@@ -2181,7 +2297,7 @@ void _LayerEdge::Copy( _LayerEdge& other, SMESH_MesherHelper& helper )
 void _LayerEdge::SetCosin( double cosin )
 {
   _cosin = cosin;
-  _lenFactor = ( _cosin > 0.1 ) ?  1./sqrt(1-_cosin*_cosin) : 1.0;
+  _lenFactor = ( Abs( _cosin ) > 0.1 ) ?  1./sqrt(1-_cosin*_cosin) : 1.0;
 }
 
 //================================================================================
@@ -2512,6 +2628,24 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
       }
     }
   } // loop on shapes to smooth
+
+  // Check orientation of simplices of _simplexTestEdges
+  for ( size_t i = 0; i < data._simplexTestEdges.size(); ++i )
+  {
+    const _LayerEdge* edge = data._simplexTestEdges[i];
+    SMESH_TNodeXYZ tgtXYZ( edge->_nodes.back() );
+    for ( size_t j = 0; j < edge->_simplices.size(); ++j )
+      if ( !edge->_simplices[j].IsForward( edge->_nodes[0], &tgtXYZ ))
+      {
+#ifdef __myDEBUG
+        cout << "Bad simplex of _simplexTestEdges ("
+             << " "<< edge->_nodes[0]->GetID()<< " "<< tgtXYZ._node->GetID()
+             << " "<< edge->_simplices[j]._nPrev->GetID()
+             << " "<< edge->_simplices[j]._nNext->GetID() << " )" << endl;
+#endif
+        return false;
+      }
+  }
 
   // Check if the last segments of _LayerEdge intersects 2D elements;
   // checked elements are either temporary faces or faces on surfaces w/o the layers
