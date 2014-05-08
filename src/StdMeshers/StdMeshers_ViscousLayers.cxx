@@ -1627,7 +1627,7 @@ void _ViscousBuilder::limitStepSize( _SolidData&             data,
  */
 //================================================================================
 
-void _ViscousBuilder::limitStepSize( _SolidData& data, const double minSize)
+void _ViscousBuilder::limitStepSize( _SolidData& data, const double minSize )
 {
   if ( minSize < data._stepSize )
   {
@@ -1706,6 +1706,8 @@ void _ViscousBuilder::findSimplexTestEdges( _SolidData&                    data,
     if ( inDir * maxDir.XYZ() < 0 &&
          inDir * minDir.XYZ() < 0 )
       continue;
+
+    limitStepSize( data, 0.9 / surfCurvature );
 
     // add _simplices to the _LayerEdge's
     for ( size_t iE = 0; iE < ledgesOnEdges.size(); ++iE )
@@ -3099,19 +3101,19 @@ bool _ViscousBuilder::updateNormals( _SolidData&         data,
       if ( FF1[0].IsNull() || FF2[0].IsNull() )
         continue;
 
-//       // get a new normal for edge1
+      // get a new normal for edge1
       bool ok;
       gp_Vec dir1 = edge1->_normal, dir2 = edge2->_normal;
       if ( edge1->_cosin < 0 )
         dir1 = getFaceDir( FF1[0], E1, edge1->_nodes[0], helper, ok ).Normalized();
       if ( edge2->_cosin < 0 )
         dir2 = getFaceDir( FF2[0], E2, edge2->_nodes[0], helper, ok ).Normalized();
-      //      gp_Vec dir1 = getFaceDir( FF1[0], E1, edge1->_nodes[0], helper, ok );
-//       gp_Vec dir2 = getFaceDir( FF2[0], E2, edge2->_nodes[0], helper, ok2 );
-//       double wgt1 = ( edge1->_cosin + 1 ) / ( edge1->_cosin + edge2->_cosin + 2 );
-//       double wgt2 = ( edge2->_cosin + 1 ) / ( edge1->_cosin + edge2->_cosin + 2 );
-//       gp_Vec newNorm = wgt1 * dir1 + wgt2 * dir2;
-//       newNorm.Normalize();
+      // gp_Vec dir1 = getFaceDir( FF1[0], E1, edge1->_nodes[0], helper, ok );
+      // gp_Vec dir2 = getFaceDir( FF2[0], E2, edge2->_nodes[0], helper, ok2 );
+      // double wgt1 = ( edge1->_cosin + 1 ) / ( edge1->_cosin + edge2->_cosin + 2 );
+      // double wgt2 = ( edge2->_cosin + 1 ) / ( edge1->_cosin + edge2->_cosin + 2 );
+      // gp_Vec newNorm = wgt1 * dir1 + wgt2 * dir2;
+      // newNorm.Normalize();
 
       double wgt1 = ( edge1->_cosin + 1 ) / ( edge1->_cosin + edge2->_cosin + 2 );
       double wgt2 = ( edge2->_cosin + 1 ) / ( edge1->_cosin + edge2->_cosin + 2 );
@@ -3125,7 +3127,7 @@ bool _ViscousBuilder::updateNormals( _SolidData&         data,
       n1 = edge1->_2neibors->_edges[0]->_nodes[0];
       n2 = edge1->_2neibors->_edges[1]->_nodes[0];
       //if ( !findNeiborsOnEdge( edge1, n1, n2, data ))
-      //continue;
+      //  continue;
       edge1->SetDataByNeighbors( n1, n2, helper );
       gp_Vec dirInFace;
       if ( edge1->_cosin < 0 )
