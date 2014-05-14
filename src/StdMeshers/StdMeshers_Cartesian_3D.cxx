@@ -2010,10 +2010,12 @@ namespace
     while ( nbFreeLinks > 0 )
     {
       if ( iPolygon == _polygons.size() )
+      {
         _polygons.resize( _polygons.size() + 1 );
+        _polygons[ iPolygon ]._polyLinks.reserve( 20 );
+        _polygons[ iPolygon ]._links.reserve( 20 );
+      }
       _Face& polygon = _polygons[ iPolygon ];
-      polygon._polyLinks.reserve( 20 );
-      polygon._links.reserve( 20 );
 
       _OrientedLink* curLink = 0;
       _Node*         curNode;
@@ -2274,11 +2276,6 @@ namespace
                 _polygons[ iPolygon ]._polyLinks.clear();
                 break;
               }
-            if ( freeLinks.back() == &polygon._links.back() )
-            {
-              freeLinks.pop_back();
-              --nbFreeLinks;
-            }
             _polygons.pop_back();
             usedFaceIDs.erase( curFace );
             continue;
