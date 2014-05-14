@@ -114,5 +114,9 @@ algo=smesh.xxxx  ==> algo=smeshBuilder.xxxx
 
 See also SMESH User's Guide for more details
 
+WARNING:
+The smesh.py module works correctly only in the first created study.
+It does not work in the second, third, etc studies!
+
 ===============================================================================
 """
