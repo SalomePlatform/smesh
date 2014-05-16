@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS>
+<TS version="2.0" language="ja" sourcelanguage="en">
   <context>
     <name>@default</name>
     <message>
@@ -1401,7 +1401,7 @@
     </message>
     <message>
       <source>SMESH_BUT_OK</source>
-      <translation>わかりました(&amp;O)</translation>
+      <translation>OK</translation>
     </message>
     <message>
       <source>SMESH_BUT_OVERWRITE</source>
@@ -2012,8 +2012,8 @@
       <translation>二次</translation>
     </message>
     <message>
-        <source>SMESH_MESHINFO_ORDER3</source>
-        <translation type="unfinished">Bi-Quadratic</translation>
+      <source>SMESH_MESHINFO_ORDER3</source>
+      <translation>SMESH_MESHINFO_ORDER3</translation>
     </message>
     <message>
       <source>SMESH_MESHINFO_HEXAPRISM</source>
@@ -2861,7 +2861,7 @@
     </message>
     <message>
       <source>STB_CONV_TO_QUAD</source>
-      <translation>2次要素の追加</translation>
+      <translation>2次/1次要素への変換</translation>
     </message>
     <message>
       <source>STB_2D_FROM_3D</source>
@@ -3521,7 +3521,7 @@
     </message>
     <message>
       <source>TOP_CONV_TO_QUAD</source>
-      <translation>2次要素の追加</translation>
+      <translation>2次/1次要素への変換</translation>
     </message>
     <message>
       <source>TOP_2D_FROM_3D</source>
@@ -4181,6 +4181,13 @@
     </message>
   </context>
   <context>
+    <name>SMESHGUI_FieldSelectorWdg</name>
+    <message>
+      <source>FIELDS_TO_EXPORT</source>
+      <translation>FIELDS_TO_EXPORT</translation>
+    </message>
+  </context>
+  <context>
     <name>SMESHGUI_Dialog</name>
     <message>
       <source>DLG_MESH</source>
@@ -4193,6 +4200,10 @@
     <message>
       <source>DLG_ALGO</source>
       <translation>アルゴリズム</translation>
+    </message>
+    <message>
+      <source>DLG_GEOM</source>
+      <translation>DLG_GEOM</translation>
     </message>
   </context>
   <context>
@@ -4522,6 +4533,10 @@
       <translation>粒子状のコンポーネントのサイズ</translation>
     </message>
     <message>
+      <source>PREF_BALL_SCALE</source>
+      <translation>PREF_BALL_SCALE</translation>
+    </message>
+    <message>
       <source>PREF_WIDTH</source>
       <translation>線の太さ</translation>
     </message>
@@ -4539,6 +4554,10 @@
     <message>
       <source>ALLOW_ELEM_LIST_MODIF</source>
       <translation>手動で選択する</translation>
+    </message>
+    <message>
+      <source>SELECT_ALL</source>
+      <translation>すべて選択します。</translation>
     </message>
   </context>
   <context>
@@ -4788,15 +4807,15 @@
     </message>
     <message>
       <source>RADIOBTN_1</source>
-      <translation>次の構成要素に変換します。</translation>
+      <translation>1次要素に変換します。</translation>
     </message>
     <message>
       <source>RADIOBTN_2</source>
-      <translation>次の要素から変換します。</translation>
+      <translation>2次要素へ変換します。</translation>
     </message>
     <message>
       <source>RADIOBTN_3</source>
-      <translation>Bi quadratique への変換します。</translation>
+      <translation>4次要素へ変換します。</translation>
     </message>
     <message>
       <source>NON_CONFORM_WARNING</source>
@@ -5385,7 +5404,7 @@
     </message>
     <message>
       <source>FACES</source>
-      <translation>Faces</translation>
+      <translation>フェース</translation>
     </message>
     <message>
       <source>FILTER</source>
@@ -5724,13 +5743,6 @@
     </message>
   </context>
   <context>
-    <name>SMESHGUI_GroupDlg</name>
-    <message>
-      <source>SELECT_ALL</source>
-      <translation>すべて選択します。</translation>
-    </message>
-  </context>
-  <context>
     <name>SMESHGUI_UnionGroupsDlg</name>
     <message>
       <source>UNION_OF_GROUPS</source>
@@ -5906,6 +5918,10 @@
       <translation>メッシュ</translation>
     </message>
     <message>
+      <source>MESH_TYPE</source>
+      <translation>MESH_TYPE</translation>
+    </message>
+    <message>
       <source>NAME</source>
       <translation>名前</translation>
     </message>
@@ -5925,8 +5941,12 @@
       <translation>SubMeshを作成に効果がないことは、グローバルアルゴリズム"%1"によって無視されます。</translation>
     </message>
     <message>
-      <source>GEOMETRY_OBJECT_IS_NOT_DEFINED</source>
-      <translation>幾何学的オブジェクトが定義されてそれを言及し、もう一度やり直してください</translation>
+      <source>GEOMETRY_OBJECT_IS_NOT_DEFINED_MESH</source>
+      <translation>GEOMETRY_OBJECT_IS_NOT_DEFINED_MESH</translation>
+    </message>
+    <message>
+      <source>GEOMETRY_OBJECT_IS_NOT_DEFINED_SUBMESH</source>
+      <translation>GEOMETRY_OBJECT_IS_NOT_DEFINED_SUBMESH</translation>
     </message>
     <message>
       <source>GEOMETRY_OBJECT_IS_NULL</source>
@@ -5957,6 +5977,26 @@
       <translation>メッシュが null です。</translation>
     </message>
     <message>
+      <source>MT_ANY</source>
+      <translation>MT_ANY</translation>
+    </message>
+    <message>
+      <source>MT_HEXAHEDRAL</source>
+      <translation>MT_HEXAHEDRAL</translation>
+    </message>
+    <message>
+      <source>MT_TETRAHEDRAL</source>
+      <translation>MT_TETRAHEDRAL</translation>
+    </message>
+    <message>
+      <source>MT_TRIANGULAR</source>
+      <translation>MT_TRIANGULAR</translation>
+    </message>
+    <message>
+      <source>MT_QUADRILATERAL</source>
+      <translation>MT_QUADRILATERAL</translation>
+    </message>
+    <message>
       <source>NAME_OF_MESH_IS_EMPTY</source>
       <translation>メッシュの名前は空です有効な名前を入力し、もう一度やり直してください</translation>
     </message>
@@ -5967,6 +6007,10 @@
     <message>
       <source>THERE_IS_NO_OBJECT_FOR_EDITING</source>
       <translation>編集するオブジェクトはありません。メッシュまたはサブメッシュを選択し、もう一度やり直してください。</translation>
+    </message>
+    <message>
+      <source>CONCURRENT_SUBMESH_APPEARS</source>
+      <translation>CONCURRENT_SUBMESH_APPEARS</translation>
     </message>
   </context>
   <context>
@@ -6118,6 +6162,14 @@
       <source>NONE</source>
       <translation>&lt;None&gt;</translation>
     </message>
+    <message>
+      <source>DEFAULT</source>
+      <translation>DEFAULT</translation>
+    </message>
+    <message>
+      <source>SELECT</source>
+      <translation>SELECT</translation>
+    </message>
   </context>
   <context>
     <name>SMESHGUI_MultiEditDlg</name>
@@ -6163,26 +6215,54 @@
     </message>
   </context>
   <context>
-    <name>SMESHGUI_CuttingIntoTetraDlg</name>
+    <name>SMESHGUI_SplitVolumesDlg</name>
     <message>
       <source>CAPTION</source>
-      <translation>四面体にボリューム分割</translation>
+      <translation>CAPTION</translation>
     </message>
     <message>
       <source>SPLIT_METHOD</source>
-      <translation>分割、六面体</translation>
+      <translation>SPLIT_METHOD</translation>
     </message>
     <message>
       <source>SPLIT_HEX_TO_5_TETRA</source>
-      <translation>5 四面体で</translation>
+      <translation>SPLIT_HEX_TO_5_TETRA</translation>
     </message>
     <message>
       <source>SPLIT_HEX_TO_6_TETRA</source>
-      <translation>6 四面体で</translation>
+      <translation>SPLIT_HEX_TO_6_TETRA</translation>
     </message>
     <message>
       <source>SPLIT_HEX_TO_24_TETRA</source>
-      <translation>24 の四面体で</translation>
+      <translation>SPLIT_HEX_TO_24_TETRA</translation>
+    </message>
+    <message>
+      <source>SPLIT_HEX_TO_2_PRISMS</source>
+      <translation>SPLIT_HEX_TO_2_PRISMS</translation>
+    </message>
+    <message>
+      <source>SPLIT_HEX_TO_4_PRISMS</source>
+      <translation>SPLIT_HEX_TO_4_PRISMS</translation>
+    </message>
+    <message>
+      <source>TARGET_ELEM_TYPE</source>
+      <translation>TARGET_ELEM_TYPE</translation>
+    </message>
+    <message>
+      <source>FACET_TO_SPLIT</source>
+      <translation>FACET_TO_SPLIT</translation>
+    </message>
+    <message>
+      <source>START_POINT</source>
+      <translation>START_POINT</translation>
+    </message>
+    <message>
+      <source>FACET_NORMAL</source>
+      <translation>FACET_NORMAL</translation>
+    </message>
+    <message>
+      <source>ALL_DOMAINS</source>
+      <translation>ALL_DOMAINS</translation>
     </message>
   </context>
   <context>
@@ -6578,6 +6658,10 @@
       <translation>重複する要素のみ</translation>
     </message>
     <message>
+      <source>DUPLICATION_GROUP_BOUNDARY</source>
+      <translation>DUPLICATION_GROUP_BOUNDARY</translation>
+    </message>
+    <message>
       <source>GROUP_ELEMS_TO_DUPLICATE</source>
       <translation>グループ要素の重複</translation>
     </message>
@@ -6590,12 +6674,24 @@
       <translation>グループの要素を持つノードが置き換えられる</translation>
     </message>
     <message>
+      <source>GROUP_VOLUME_GROUPS</source>
+      <translation>GROUP_VOLUME_GROUPS</translation>
+    </message>
+    <message>
       <source>CONSTRUCT_NEW_GROUP_NODES</source>
       <translation>新しく作成したノードにグループを作成します。</translation>
     </message>
     <message>
       <source>CONSTRUCT_NEW_GROUP_ELEMENTS</source>
       <translation>新しく作成された要素のグループを作成します。</translation>
+    </message>
+    <message>
+      <source>CREATE_JOINT_ELEMENTS</source>
+      <translation>CREATE_JOINT_ELEMENTS</translation>
+    </message>
+    <message>
+      <source>ON_ALL_BOUNDARIES</source>
+      <translation>ON_ALL_BOUNDARIES</translation>
     </message>
   </context>
   <context>
@@ -6723,8 +6819,8 @@
       <translation>二次</translation>
     </message>
     <message>
-        <source>BI_QUADRATIC_LAB</source>
-        <translation type="unfinished">Bi-Quadratic</translation>
+      <source>BI_QUADRATIC_LAB</source>
+      <translation>BI_QUADRATIC_LAB</translation>
     </message>
     <message>
       <source>0D_LAB</source>
@@ -6878,7 +6974,7 @@
     </message>
     <message>
       <source>COORDINATES</source>
-      <translation>お問い合わせ</translation>
+      <translation>座標</translation>
     </message>
     <message>
       <source>CONNECTIVITY</source>
@@ -7580,7 +7676,7 @@
     </message>
     <message>
       <source>SCALE_FACTOR</source>
-      <translation>スケール:</translation>
+      <translation>SCALE_FACTOR</translation>
     </message>
     <message>
       <source>ORIENTATION_3D</source>

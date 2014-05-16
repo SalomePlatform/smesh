@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS>
+<TS version="2.0" language="ja" sourcelanguage="en">
   <context>
     <name>StdMeshersGUI_StdHypothesisCreator</name>
     <message>
@@ -15,6 +15,18 @@
       <source>TO_IGNORE_EDGES</source>
       <translation>エッジ層 (入り江および oulets) なし</translation>
     </message>
+    <message>
+      <source>TO_IGNORE_FACES_OR_NOT</source>
+      <translation>TO_IGNORE_FACES_OR_NOT</translation>
+    </message>
+    <message>
+      <source>NOT_TO_IGNORE_FACES</source>
+      <translation>NOT_TO_IGNORE_FACES</translation>
+    </message>
+    <message>
+      <source>TO_IGNORE_FACES</source>
+      <translation>TO_IGNORE_FACES</translation>
+    </message>
   </context>
   <context>
     <name>@default</name>
@@ -23,12 +35,20 @@
       <translation>算術 1 d</translation>
     </message>
     <message>
-      <source>SMESH_ARITHMETIC_1D_PARAM</source>
-      <translation>算術右</translation>
-    </message>
-    <message>
       <source>SMESH_ARITHMETIC_1D_TITLE</source>
       <translation>仮定の構成</translation>
+    </message>
+    <message>
+      <source>SMESH_GEOMETRIC_1D_HYPOTHESIS</source>
+      <translation>SMESH_GEOMETRIC_1D_HYPOTHESIS</translation>
+    </message>
+    <message>
+      <source>SMESH_GEOMETRIC_1D_TITLE</source>
+      <translation>SMESH_GEOMETRIC_1D_TITLE</translation>
+    </message>
+    <message>
+      <source>SMESH_COMMON_RATIO</source>
+      <translation>SMESH_COMMON_RATIO</translation>
     </message>
     <message>
       <source>SMESH_AUTOMATIC_LENGTH_HYPOTHESIS</source>
@@ -471,6 +491,29 @@
     </message>
   </context>
   <context>
+    <name>StdMeshersGUI_QuadrangleParamCreator</name>
+    <message>
+      <source>POINTS</source>
+      <translation>POINTS</translation>
+    </message>
+    <message>
+      <source>SHAPES</source>
+      <translation>SHAPES</translation>
+    </message>
+    <message>
+      <source>TRANSITION</source>
+      <translation>TRANSITION</translation>
+    </message>
+    <message>
+      <source>ENF_NODES</source>
+      <translation>ENF_NODES</translation>
+    </message>
+    <message>
+      <source/>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
     <name>StdMeshersGUI_LayerDistributionParamWdg</name>
     <message>
       <source>CHANGE_TYPE</source>
@@ -492,6 +535,10 @@
       <translation>しきい値</translation>
     </message>
     <message>
+      <source>ADD_EDGES</source>
+      <translation>ADD_EDGES</translation>
+    </message>
+    <message>
       <source>AXIS_X</source>
       <translation>X 軸</translation>
     </message>
@@ -502,6 +549,30 @@
     <message>
       <source>AXIS_Z</source>
       <translation>Z 軸</translation>
+    </message>
+    <message>
+      <source>INVALID_AXES_DIR</source>
+      <translation>INVALID_AXES_DIR</translation>
+    </message>
+    <message>
+      <source>FIXED_POINT</source>
+      <translation>FIXED_POINT</translation>
+    </message>
+    <message>
+      <source>AXES_DIRECTION</source>
+      <translation>AXES_DIRECTION</translation>
+    </message>
+    <message>
+      <source>ORTHOGONAL_AXES</source>
+      <translation>ORTHOGONAL_AXES</translation>
+    </message>
+    <message>
+      <source>OPTIMAL_AXES</source>
+      <translation>OPTIMAL_AXES</translation>
+    </message>
+    <message>
+      <source>RESET_AXES</source>
+      <translation>RESET_AXES</translation>
     </message>
   </context>
   <context>
