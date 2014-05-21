@@ -242,8 +242,6 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
   for ( TopExp_Explorer eF( aSh, TopAbs_FACE ); eF.More(); eF.Next() )
   {
     const TopoDS_Face& face = TopoDS::Face( eF.Current() );
-    // TopLoc_Location loc;
-    // Handle(Geom_Surface) surface = BRep_Tool::Surface( face, loc );
 
     // if ( surface->IsUPeriodic() || surface->IsVPeriodic() ||
     //      surface->IsUClosed()   || surface->IsVClosed() )
@@ -4214,6 +4212,8 @@ namespace { // Structures used by FixQuadraticElements()
                 nInSolid = n;
               else if ( subIDs.count( n->getshapeId() ))
                 nOnFace.push_back( n );
+              else
+                nInSolid = n;
             }
             if ( !nInSolid || nOnFace.size() != nbN - 1 )
               continue;
