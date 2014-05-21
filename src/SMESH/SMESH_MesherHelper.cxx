@@ -242,34 +242,41 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
   for ( TopExp_Explorer eF( aSh, TopAbs_FACE ); eF.More(); eF.Next() )
   {
     const TopoDS_Face& face = TopoDS::Face( eF.Current() );
-    TopLoc_Location loc;
-    Handle(Geom_Surface) surface = BRep_Tool::Surface( face, loc );
+    // TopLoc_Location loc;
+    // Handle(Geom_Surface) surface = BRep_Tool::Surface( face, loc );
 
     // if ( surface->IsUPeriodic() || surface->IsVPeriodic() ||
     //      surface->IsUClosed()   || surface->IsVClosed() )
     {
       //while ( surface->IsKind(STANDARD_TYPE(Geom_RectangularTrimmedSurface )))
       //surface = Handle(Geom_RectangularTrimmedSurface)::DownCast( surface )->BasisSurface();
-      GeomAdaptor_Surface surf( surface );
 
       for (TopExp_Explorer exp( face, TopAbs_EDGE ); exp.More(); exp.Next())
       {
         // look for a seam edge
-        const TopoDS_Edge& edge = TopoDS::Edge( exp.Current() );
+        TopoDS_Edge edge = TopoDS::Edge( exp.Current() );
         if ( BRep_Tool::IsClosed( edge, face )) {
           // initialize myPar1, myPar2 and myParIndex
           gp_Pnt2d uv1, uv2;
           BRep_Tool::UVPoints( edge, face, uv1, uv2 );
           if ( Abs( uv1.Coord(1) - uv2.Coord(1) ) < Abs( uv1.Coord(2) - uv2.Coord(2) ))
           {
+            double u1 = uv1.Coord(1);
+            edge.Reverse();
+            BRep_Tool::UVPoints( edge, face, uv1, uv2 );
+            double u2 = uv1.Coord(1);
             myParIndex |= U_periodic;
-            myPar1[0] = surf.FirstUParameter();
-            myPar2[0] = surf.LastUParameter();
+            myPar1[0] = Min( u1, u2 );
+            myPar2[0] = Max( u1, u2 );
           }
           else {
+            double v1 = uv1.Coord(2);
+            edge.Reverse();
+            BRep_Tool::UVPoints( edge, face, uv1, uv2 );
+            double v2 = uv1.Coord(2);
             myParIndex |= V_periodic;
-            myPar1[1] = surf.FirstVParameter();
-            myPar2[1] = surf.LastVParameter();
+            myPar1[1] = Min( v1, v2 );
+            myPar2[1] = Max( v1, v2 );
           }
           // store seam shape indices, negative if shape encounters twice
           int edgeID = meshDS->ShapeToIndex( edge );
@@ -287,13 +294,15 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
             myDegenShapeIds.insert( meshDS->ShapeToIndex( v.Current() ));
         }
       }
-      if ( !myDegenShapeIds.empty() && !myParIndex ) {
-        if ( surface->IsUPeriodic() || surface->IsUClosed() ) {
+      if ( !myDegenShapeIds.empty() && !myParIndex )
+      {
+        BRepAdaptor_Surface surf( face, false );
+        if ( surf.IsUPeriodic() || surf.IsUClosed() ) {
           myParIndex |= U_periodic;
           myPar1[0] = surf.FirstUParameter();
           myPar2[0] = surf.LastUParameter();
         }
-        else if ( surface->IsVPeriodic() || surface->IsVClosed() ) {
+        else if ( surf.IsVPeriodic() || surf.IsVClosed() ) {
           myParIndex |= V_periodic;
           myPar1[1] = surf.FirstVParameter();
           myPar2[1] = surf.LastVParameter();
@@ -513,8 +522,8 @@ gp_Pnt2d SMESH_MesherHelper::GetUVOnSeam( const gp_Pnt2d& uv1, const gp_Pnt2d& u
       double p1 = uv1.Coord( i );
       double dp1 = Abs( p1-myPar1[i-1]), dp2 = Abs( p1-myPar2[i-1]);
       if ( myParIndex == i ||
-           dp1 < ( myPar2[i-1] - myPar2[i-1] ) / 100. ||
-           dp2 < ( myPar2[i-1] - myPar2[i-1] ) / 100. )
+           dp1 < ( myPar2[i-1] - myPar1[i-1] ) / 100. ||
+           dp2 < ( myPar2[i-1] - myPar1[i-1] ) / 100. )
       {
         double p2 = uv2.Coord( i );
         double p1Alt = ( dp1 < dp2 ) ? myPar2[i-1] : myPar1[i-1];
@@ -544,7 +553,7 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
   {
     // node has position on face
     const SMDS_FacePosition* fpos =
-      static_cast<const SMDS_FacePosition*>(n->GetPosition());
+      static_cast<const SMDS_FacePosition*>( Pos );
     uv.SetCoord(fpos->GetUParameter(),fpos->GetVParameter());
     if ( check )
       uvOK = CheckNodeUV( F, n, uv.ChangeCoord(), 10*MaxTolerance( F ));
@@ -555,7 +564,7 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
     // corresponding edge from face, get pcurve for this
     // edge and retrieve value from this pcurve
     const SMDS_EdgePosition* epos =
-      static_cast<const SMDS_EdgePosition*>(n->GetPosition());
+      static_cast<const SMDS_EdgePosition*>( Pos );
     int edgeID = n->getshapeId();
     TopoDS_Edge E = TopoDS::Edge(GetMeshDS()->IndexToShape(edgeID));
     double f, l, u = epos->GetUParameter();
@@ -1457,7 +1466,6 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
           if ( myParIndex & U_periodic ) uv[1].SetCoord( 1, uv[0].Coord( 1 ));
           else                           uv[1].SetCoord( 2, uv[0].Coord( 2 ));
         }
-
         TopLoc_Location loc;
         Handle(Geom_Surface) S = BRep_Tool::Surface(F,loc);
         gp_XY UV = GetMiddleUV( S, uv[0], uv[1] );
@@ -2728,7 +2736,8 @@ double SMESH_MesherHelper::MaxTolerance( const TopoDS_Shape& shape )
 
 double SMESH_MesherHelper::GetAngle( const TopoDS_Edge & theE1,
                                      const TopoDS_Edge & theE2,
-                                     const TopoDS_Face & theFace)
+                                     const TopoDS_Face & theFace,
+                                     gp_Vec*             theFaceNormal)
 {
   double angle = 1e100;
   try
@@ -2768,16 +2777,33 @@ double SMESH_MesherHelper::GetAngle( const TopoDS_Edge & theE1,
     }
     if ( theFace.Orientation() == TopAbs_REVERSED )
       vecRef.Reverse();
+    if ( theFaceNormal ) *theFaceNormal = vecRef;
+
     c1->D1( p1, p, vec1 );
     c2->D1( p2, p, vec2 );
-    TopoDS_Face F = theFace;
-    if ( F.Orientation() == TopAbs_INTERNAL )
-      F.Orientation( TopAbs_FORWARD );
+    // TopoDS_Face F = theFace;
+    // if ( F.Orientation() == TopAbs_INTERNAL )
+    //   F.Orientation( TopAbs_FORWARD );
     if ( theE1.Orientation() /*GetSubShapeOri( F, theE1 )*/ == TopAbs_REVERSED )
       vec1.Reverse();
     if ( theE2.Orientation() /*GetSubShapeOri( F, theE2 )*/ == TopAbs_REVERSED )
       vec2.Reverse();
     angle = vec1.AngleWithRef( vec2, vecRef );
+
+    if ( Abs ( angle ) >= 0.99 * M_PI )
+    {
+      BRep_Tool::Range( theE1, f, l );
+      p1 += 1e-7 * ( p1-f < l-p1 ? +1. : -1. );
+      c1->D1( p1, p, vec1 );
+      if ( theE1.Orientation() == TopAbs_REVERSED )
+        vec1.Reverse();
+      BRep_Tool::Range( theE2, f, l );
+      p2 += 1e-7 * ( p2-f < l-p2 ? +1. : -1. );
+      c2->D1( p2, p, vec2 );
+      if ( theE2.Orientation() == TopAbs_REVERSED )
+        vec2.Reverse();
+      angle = vec1.AngleWithRef( vec2, vecRef );
+    }
   }
   catch (...)
   {
@@ -4136,9 +4162,11 @@ namespace { // Structures used by FixQuadraticElements()
       //BRepClass3d_SolidClassifier solidClassifier( shape );
 
       TIDSortedElemSet checkedVols, movedNodes;
-      for ( faceIt.ReInit(); faceIt.More(); faceIt.Next() ) // loop on FACEs of a SOLID
+      //for ( faceIt.ReInit(); faceIt.More(); faceIt.Next() ) // loop on FACEs of a SOLID
+      for ( size_t iF = 0; iF < concaveFaces.size(); ++iF ) // loop on concave FACEs
       {
-        const TopoDS_Shape& face = faceIt.Current();
+        //const TopoDS_Shape& face = faceIt.Current();
+        const TopoDS_Shape& face = concaveFaces[ iF ];
         SMESHDS_SubMesh*  faceSM = meshDS->MeshElements( face );
         if ( !faceSM ) continue;
 
@@ -4153,11 +4181,16 @@ namespace { // Structures used by FixQuadraticElements()
           if ( !vertexSM ) continue;
           nodeIt = vertexSM->GetNodes();
         }
+        // get ids of sub-shapes of the FACE
+        set< int > subIDs;
+        SMESH_subMeshIteratorPtr smIt =
+          theHelper.GetMesh()->GetSubMesh( face )->getDependsOnIterator(/*includeSelf=*/true);
+        while ( smIt->more() )
+          subIDs.insert( smIt->next()->GetId() );
 
         // find suspicious volumes adjacent to the FACE
         vector< const SMDS_MeshNode* >    nOnFace( 4 );
         const SMDS_MeshNode*              nInSolid;
-        //vector< const SMDS_MeshElement* > intersectedFaces;
         while ( nodeIt->more() )
         {
           const SMDS_MeshNode* n     = nodeIt->next();
@@ -4179,7 +4212,7 @@ namespace { // Structures used by FixQuadraticElements()
               n = *volNode;
               if ( n->GetPosition()->GetDim() == 3 )
                 nInSolid = n;
-              else
+              else if ( subIDs.count( n->getshapeId() ))
                 nOnFace.push_back( n );
             }
             if ( !nInSolid || nOnFace.size() != nbN - 1 )

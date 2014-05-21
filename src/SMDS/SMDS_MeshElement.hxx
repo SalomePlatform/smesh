@@ -154,7 +154,7 @@ public:
   struct Filter
   {
     virtual bool operator()(const SMDS_MeshElement* e) const = 0;
-    ~Filter() {}
+    virtual ~Filter() {}
   };
   struct NonNullFilter: public Filter
   {

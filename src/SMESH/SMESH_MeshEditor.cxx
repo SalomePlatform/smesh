@@ -8751,6 +8751,7 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d, const bool theT
   aHelper.SetIsQuadratic( true );
   aHelper.SetIsBiQuadratic( theToBiQuad );
   aHelper.SetElementsOnShape(true);
+  aHelper.ToFixNodeParameters( true );
 
   // convert elements assigned to sub-meshes
   int nbCheckedElems = 0;
