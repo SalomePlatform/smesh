@@ -45,9 +45,9 @@ using namespace std;
 //=============================================================================
 
 StdMeshers_LayerDistribution_i::StdMeshers_LayerDistribution_i( PortableServer::POA_ptr thePOA,
-                                                          int                     theStudyId,
-                                                          ::SMESH_Gen*            theGenImpl )
-  : SALOME::GenericObj_i( thePOA ), 
+                                                                int                     theStudyId,
+                                                                ::SMESH_Gen*            theGenImpl )
+  : SALOME::GenericObj_i( thePOA ),
     SMESH_Hypothesis_i( thePOA )
 {
   MESSAGE( "StdMeshers_LayerDistribution_i::StdMeshers_LayerDistribution_i" );
@@ -67,18 +67,20 @@ StdMeshers_LayerDistribution_i::StdMeshers_LayerDistribution_i( PortableServer::
 StdMeshers_LayerDistribution_i::~StdMeshers_LayerDistribution_i()
 {
   MESSAGE( "StdMeshers_LayerDistribution_i::~StdMeshers_LayerDistribution_i" );
+  if ( !myHyp->_is_nil() )
+    myHyp->UnRegister();
 }
 
 //=============================================================================
 /*!
  *  StdMeshers_LayerDistribution_i::SetLayerDistribution
  *
- 
+
  */
 //=============================================================================
 
 void StdMeshers_LayerDistribution_i::SetLayerDistribution(SMESH::SMESH_Hypothesis_ptr hyp1D)
-     throw ( SALOME::SALOME_Exception )
+  throw ( SALOME::SALOME_Exception )
 {
   ASSERT( myBaseImpl );
   try {
@@ -86,6 +88,7 @@ void StdMeshers_LayerDistribution_i::SetLayerDistribution(SMESH::SMESH_Hypothesi
     bool isNewHyp = ( hyp_i->GetImpl() != this->GetImpl()->GetLayerDistribution() );
     this->GetImpl()->SetLayerDistribution( hyp_i->GetImpl() );
     myHyp = SMESH::SMESH_Hypothesis::_duplicate( hyp1D );
+    myHyp->Register();
     // Remove SO of 1D hypothesis if it was published
     if (SMESH_Gen_i* gen = SMESH_Gen_i::GetSMESHGen())
     {
@@ -142,12 +145,13 @@ SMESH::SMESH_Hypothesis_ptr StdMeshers_LayerDistribution_i::GetLayerDistribution
 //================================================================================
 /*!
  * \brief Verify whether hypothesis supports given entity type 
-  * \param type - dimension (see SMESH::Dimension enumeration)
-  * \retval CORBA::Boolean - TRUE if dimension is supported, FALSE otherwise
+ *  \param type - dimension (see SMESH::Dimension enumeration)
+ *  \retval CORBA::Boolean - TRUE if dimension is supported, FALSE otherwise
  * 
  * Verify whether hypothesis supports given entity type (see SMESH::Dimension enumeration)
  */
 //================================================================================  
+
 CORBA::Boolean StdMeshers_LayerDistribution_i::IsDimSupported( SMESH::Dimension type )
 {
   return type == SMESH::DIM_3D;
@@ -156,7 +160,7 @@ CORBA::Boolean StdMeshers_LayerDistribution_i::IsDimSupported( SMESH::Dimension 
 //================================================================================
 /*!
  * \brief Write parameters in a string
-  * \retval char* - resulting string
+ *  \retval char* - resulting string
  */
 //================================================================================
 
@@ -182,7 +186,7 @@ char* StdMeshers_LayerDistribution_i::SaveTo()
 //================================================================================
 /*!
  * \brief Retrieve parameters from the string
-  * \param theStream - the input string
+ *  \param theStream - the input string
  */
 //================================================================================
 
