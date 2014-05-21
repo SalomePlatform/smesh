@@ -68,7 +68,8 @@ Add button to add the selected edges to the list.
 
 <b>Geometric Progression</b> hypothesis allows splitting edges into
 segments with a length that changes in geometric progression (Lk =
-Lk-1 * d) starting from a given <b>Start Length</b> and  <b>Common Ratio</b>.
+Lk-1 * d) starting from a given <b>Start Length</b> and with a given
+<b>Common Ratio</b>.
 
 The splitting direction is defined by the orientation of the
 underlying geometrical edge.
