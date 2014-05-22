@@ -17,15 +17,15 @@
     </message>
     <message>
       <source>TO_IGNORE_FACES_OR_NOT</source>
-      <translation>TO_IGNORE_FACES_OR_NOT</translation>
+      <translation>具体的に明記された面は</translation>
     </message>
     <message>
       <source>NOT_TO_IGNORE_FACES</source>
-      <translation>NOT_TO_IGNORE_FACES</translation>
+      <translation>レイヤ（壁）を伴う面</translation>
     </message>
     <message>
       <source>TO_IGNORE_FACES</source>
-      <translation>TO_IGNORE_FACES</translation>
+      <translation>レイヤ（入出口）を伴わない面</translation>
     </message>
   </context>
   <context>
@@ -40,15 +40,15 @@
     </message>
     <message>
       <source>SMESH_GEOMETRIC_1D_HYPOTHESIS</source>
-      <translation>SMESH_GEOMETRIC_1D_HYPOTHESIS</translation>
+      <translation>ジオメトリの進行</translation>
     </message>
     <message>
       <source>SMESH_GEOMETRIC_1D_TITLE</source>
-      <translation>SMESH_GEOMETRIC_1D_TITLE</translation>
+      <translation>仮定の構築</translation>
     </message>
     <message>
       <source>SMESH_COMMON_RATIO</source>
-      <translation>SMESH_COMMON_RATIO</translation>
+      <translation>標準比</translation>
     </message>
     <message>
       <source>SMESH_AUTOMATIC_LENGTH_HYPOTHESIS</source>
@@ -494,19 +494,19 @@
     <name>StdMeshersGUI_QuadrangleParamCreator</name>
     <message>
       <source>POINTS</source>
-      <translation>POINTS</translation>
+      <translation>点</translation>
     </message>
     <message>
       <source>SHAPES</source>
-      <translation>SHAPES</translation>
+      <translation>頂点</translation>
     </message>
     <message>
       <source>TRANSITION</source>
-      <translation>TRANSITION</translation>
+      <translation>推移</translation>
     </message>
     <message>
       <source>ENF_NODES</source>
-      <translation>ENF_NODES</translation>
+      <translation>強化された節点</translation>
     </message>
     <message>
       <source/>
@@ -536,7 +536,7 @@
     </message>
     <message>
       <source>ADD_EDGES</source>
-      <translation>ADD_EDGES</translation>
+      <translation>エッジの実行</translation>
     </message>
     <message>
       <source>AXIS_X</source>
@@ -552,27 +552,27 @@
     </message>
     <message>
       <source>INVALID_AXES_DIR</source>
-      <translation>INVALID_AXES_DIR</translation>
+      <translation>無効な軸方向</translation>
     </message>
     <message>
       <source>FIXED_POINT</source>
-      <translation>FIXED_POINT</translation>
+      <translation>固定点</translation>
     </message>
     <message>
       <source>AXES_DIRECTION</source>
-      <translation>AXES_DIRECTION</translation>
+      <translation>軸方向</translation>
     </message>
     <message>
       <source>ORTHOGONAL_AXES</source>
-      <translation>ORTHOGONAL_AXES</translation>
+      <translation>直交軸</translation>
     </message>
     <message>
       <source>OPTIMAL_AXES</source>
-      <translation>OPTIMAL_AXES</translation>
+      <translation>最適軸</translation>
     </message>
     <message>
       <source>RESET_AXES</source>
-      <translation>RESET_AXES</translation>
+      <translation>軸のリセット</translation>
     </message>
   </context>
   <context>

@@ -2013,7 +2013,7 @@
     </message>
     <message>
       <source>SMESH_MESHINFO_ORDER3</source>
-      <translation>SMESH_MESHINFO_ORDER3</translation>
+      <translation>2重2次の</translation>
     </message>
     <message>
       <source>SMESH_MESHINFO_HEXAPRISM</source>
@@ -4184,7 +4184,7 @@
     <name>SMESHGUI_FieldSelectorWdg</name>
     <message>
       <source>FIELDS_TO_EXPORT</source>
-      <translation>FIELDS_TO_EXPORT</translation>
+      <translation>場の出力</translation>
     </message>
   </context>
   <context>
@@ -4203,7 +4203,7 @@
     </message>
     <message>
       <source>DLG_GEOM</source>
-      <translation>DLG_GEOM</translation>
+      <translation>オブジェクト</translation>
     </message>
   </context>
   <context>
@@ -4534,7 +4534,7 @@
     </message>
     <message>
       <source>PREF_BALL_SCALE</source>
-      <translation>PREF_BALL_SCALE</translation>
+      <translation>ボール要素のスケールファクタ</translation>
     </message>
     <message>
       <source>PREF_WIDTH</source>
@@ -5919,7 +5919,7 @@
     </message>
     <message>
       <source>MESH_TYPE</source>
-      <translation>MESH_TYPE</translation>
+      <translation>メッシュタイプ</translation>
     </message>
     <message>
       <source>NAME</source>
@@ -5942,11 +5942,11 @@
     </message>
     <message>
       <source>GEOMETRY_OBJECT_IS_NOT_DEFINED_MESH</source>
-      <translation>GEOMETRY_OBJECT_IS_NOT_DEFINED_MESH</translation>
+      <translation>ジオメトリオブジェクトは定義されません．アルゴリズムや仮定なしにからのメッシュを作成したいですか？</translation>
     </message>
     <message>
       <source>GEOMETRY_OBJECT_IS_NOT_DEFINED_SUBMESH</source>
-      <translation>GEOMETRY_OBJECT_IS_NOT_DEFINED_SUBMESH</translation>
+      <translation>ジオメトリオブジェクトは定義されません．それを指定してもう一度お試しください．</translation>
     </message>
     <message>
       <source>GEOMETRY_OBJECT_IS_NULL</source>
@@ -5978,23 +5978,23 @@
     </message>
     <message>
       <source>MT_ANY</source>
-      <translation>MT_ANY</translation>
+      <translation>Any</translation>
     </message>
     <message>
       <source>MT_HEXAHEDRAL</source>
-      <translation>MT_HEXAHEDRAL</translation>
+      <translation>六面体</translation>
     </message>
     <message>
       <source>MT_TETRAHEDRAL</source>
-      <translation>MT_TETRAHEDRAL</translation>
+      <translation>四面体</translation>
     </message>
     <message>
       <source>MT_TRIANGULAR</source>
-      <translation>MT_TRIANGULAR</translation>
+      <translation>三角形</translation>
     </message>
     <message>
       <source>MT_QUADRILATERAL</source>
-      <translation>MT_QUADRILATERAL</translation>
+      <translation>四角形</translation>
     </message>
     <message>
       <source>NAME_OF_MESH_IS_EMPTY</source>
@@ -6010,7 +6010,7 @@
     </message>
     <message>
       <source>CONCURRENT_SUBMESH_APPEARS</source>
-      <translation>CONCURRENT_SUBMESH_APPEARS</translation>
+      <translation>その割り当てたアルゴリズムは隣接したサブメッシュに割り当てたものと同じ優先順位です．　したがって，2つのサブメッシュによって共有された境界をメッシュ分割するために用いるアルゴリズムは未定義です．サブメッシュ計算の順番を設定しますか？</translation>
     </message>
   </context>
   <context>
@@ -6164,11 +6164,11 @@
     </message>
     <message>
       <source>DEFAULT</source>
-      <translation>DEFAULT</translation>
+      <translation>&lt;Default&gt;</translation>
     </message>
     <message>
       <source>SELECT</source>
-      <translation>SELECT</translation>
+      <translation>&lt;Select&gt;</translation>
     </message>
   </context>
   <context>
@@ -6218,51 +6218,51 @@
     <name>SMESHGUI_SplitVolumesDlg</name>
     <message>
       <source>CAPTION</source>
-      <translation>CAPTION</translation>
+      <translation>分割ボリューム</translation>
     </message>
     <message>
       <source>SPLIT_METHOD</source>
-      <translation>SPLIT_METHOD</translation>
+      <translation>六面体の分割</translation>
     </message>
     <message>
       <source>SPLIT_HEX_TO_5_TETRA</source>
-      <translation>SPLIT_HEX_TO_5_TETRA</translation>
+      <translation>5四面体の中に</translation>
     </message>
     <message>
       <source>SPLIT_HEX_TO_6_TETRA</source>
-      <translation>SPLIT_HEX_TO_6_TETRA</translation>
+      <translation>6四面体の中に</translation>
     </message>
     <message>
       <source>SPLIT_HEX_TO_24_TETRA</source>
-      <translation>SPLIT_HEX_TO_24_TETRA</translation>
+      <translation>24四面体の中に</translation>
     </message>
     <message>
       <source>SPLIT_HEX_TO_2_PRISMS</source>
-      <translation>SPLIT_HEX_TO_2_PRISMS</translation>
+      <translation>2プリズム要素の中に</translation>
     </message>
     <message>
       <source>SPLIT_HEX_TO_4_PRISMS</source>
-      <translation>SPLIT_HEX_TO_4_PRISMS</translation>
+      <translation>4プリズム要素の中に</translation>
     </message>
     <message>
       <source>TARGET_ELEM_TYPE</source>
-      <translation>TARGET_ELEM_TYPE</translation>
+      <translation>対象要素タイプ</translation>
     </message>
     <message>
       <source>FACET_TO_SPLIT</source>
-      <translation>FACET_TO_SPLIT</translation>
+      <translation>分割のためのファセット</translation>
     </message>
     <message>
       <source>START_POINT</source>
-      <translation>START_POINT</translation>
+      <translation>六面体の場所</translation>
     </message>
     <message>
       <source>FACET_NORMAL</source>
-      <translation>FACET_NORMAL</translation>
+      <translation>ファセット標準</translation>
     </message>
     <message>
       <source>ALL_DOMAINS</source>
-      <translation>ALL_DOMAINS</translation>
+      <translation>すべてのドメイン</translation>
     </message>
   </context>
   <context>
@@ -6659,7 +6659,7 @@
     </message>
     <message>
       <source>DUPLICATION_GROUP_BOUNDARY</source>
-      <translation>DUPLICATION_GROUP_BOUNDARY</translation>
+      <translation>グループ境界上の節点をコピー</translation>
     </message>
     <message>
       <source>GROUP_ELEMS_TO_DUPLICATE</source>
@@ -6675,7 +6675,7 @@
     </message>
     <message>
       <source>GROUP_VOLUME_GROUPS</source>
-      <translation>GROUP_VOLUME_GROUPS</translation>
+      <translation>ボリュームのグループ</translation>
     </message>
     <message>
       <source>CONSTRUCT_NEW_GROUP_NODES</source>
@@ -6687,11 +6687,11 @@
     </message>
     <message>
       <source>CREATE_JOINT_ELEMENTS</source>
-      <translation>CREATE_JOINT_ELEMENTS</translation>
+      <translation>接合要素の作成</translation>
     </message>
     <message>
       <source>ON_ALL_BOUNDARIES</source>
-      <translation>ON_ALL_BOUNDARIES</translation>
+      <translation>すべての境界上の</translation>
     </message>
   </context>
   <context>
@@ -6820,7 +6820,7 @@
     </message>
     <message>
       <source>BI_QUADRATIC_LAB</source>
-      <translation>BI_QUADRATIC_LAB</translation>
+      <translation>2重二次の</translation>
     </message>
     <message>
       <source>0D_LAB</source>
@@ -7676,7 +7676,7 @@
     </message>
     <message>
       <source>SCALE_FACTOR</source>
-      <translation>SCALE_FACTOR</translation>
+      <translation>Scale:</translation>
     </message>
     <message>
       <source>ORIENTATION_3D</source>
