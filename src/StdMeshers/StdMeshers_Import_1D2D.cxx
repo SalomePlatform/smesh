@@ -97,6 +97,7 @@ StdMeshers_Import_1D2D::StdMeshers_Import_1D2D(int hypId, int studyId, SMESH_Gen
 
   _compatibleHypothesis.push_back("ImportSource2D");
   _requireDiscreteBoundary = false;
+  _supportSubmeshes = true;
 }
 
 //=============================================================================
