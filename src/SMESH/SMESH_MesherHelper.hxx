@@ -559,13 +559,20 @@ public:
   { return IsRealSeam( GetMeshDS()->ShapeToIndex( subShape)); }
   /*!
    * \brief Check if the shape set through IsQuadraticSubMesh() or SetSubShape()
-   *        has a seam edge
-    * \retval bool - true if it has
+   *        has a seam edge, i.e. an edge that has two parametric representations
+   *        on a surface
+   *  \retval bool - true if it has
    */
   bool HasSeam() const { return !mySeamShapeIds.empty(); }
   /*!
+   * \brief Check if the shape set through IsQuadraticSubMesh() or SetSubShape()
+   *        has a seam edge that encounters twice in a wire
+   *  \retval bool - true if it has
+   */
+  bool HasRealSeam() const { return HasSeam() && ( *mySeamShapeIds.begin() < 0 ); }
+  /*!
    * \brief Return index of periodic parametric direction of a closed face
-    * \retval int - 1 for U, 2 for V direction
+   *  \retval int - 1 for U, 2 for V direction
    */
   int GetPeriodicIndex() const { return myParIndex; }
   /*!

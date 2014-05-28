@@ -20,6 +20,7 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
+// ------------------------------------------------------------------
 #include "SMESH_TryCatch.hxx"
 
 void SMESH::throwSalomeEx(const char* txt)
@@ -31,4 +32,51 @@ void SMESH::doNothing(const char* txt)
 {
   MESSAGE( txt << " " << __FILE__ << ": " << __LINE__ );
 }
+// ------------------------------------------------------------------
+#include "SMESH_ComputeError.hxx"
 
+#define _case2char(err) case err: return #err;
+
+// Return SMESH_ComputeError::myName as text, to be used to dump errors in terminal
+std::string SMESH_ComputeError::CommonName() const
+{
+  switch( myName ) {
+  _case2char(COMPERR_OK              );
+  _case2char(COMPERR_BAD_INPUT_MESH  );
+  _case2char(COMPERR_STD_EXCEPTION   );
+  _case2char(COMPERR_OCC_EXCEPTION   );
+  _case2char(COMPERR_SLM_EXCEPTION   );
+  _case2char(COMPERR_EXCEPTION       );
+  _case2char(COMPERR_MEMORY_PB       );
+  _case2char(COMPERR_ALGO_FAILED     );
+  _case2char(COMPERR_BAD_SHAPE       );
+  _case2char(COMPERR_WARNING         );
+  _case2char(COMPERR_CANCELED        );
+  _case2char(COMPERR_NO_MESH_ON_SHAPE);
+  _case2char(COMPERR_BAD_PARMETERS   );
+  default:;
+  }
+  return "";
+}
+
+// Return the most severe error
+SMESH_ComputeErrorPtr SMESH_ComputeError::Worst( SMESH_ComputeErrorPtr er1,
+                                                 SMESH_ComputeErrorPtr er2 )
+{
+  if ( !er1 ) return er2;
+  if ( !er2 ) return er1;
+  // both not NULL
+  if ( er1->IsOK() ) return er2;
+  if ( er2->IsOK() ) return er1;
+  // both not OK
+  if ( !er1->IsKO() ) return er2;
+  if ( !er2->IsKO() ) return er1;
+  // both KO
+  bool hasInfo1 = er1->myComment.size() || !er1->myBadElements.empty();
+  bool hasInfo2 = er2->myComment.size() || !er2->myBadElements.empty();
+  if ( er1->myName == er2->myName ||
+       hasInfo1    != hasInfo2 )
+    return hasInfo1 < hasInfo2 ? er2 : er1;
+
+  return er1->myName == COMPERR_CANCELED ? er2 : er1;
+}

@@ -17,7 +17,7 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  File   : SMESH_Hypothesis.hxx
+//  File   : SMESH_ComputeError.hxx
 //  Author : Edward AGAPOV (eap)
 //  Module : SMESH
 //
@@ -89,32 +89,15 @@ struct SMESH_ComputeError
   bool IsKO()        const { return myName != COMPERR_OK && myName != COMPERR_WARNING; }
   bool IsCommon()    const { return myName < 0 && myName > COMPERR_LAST_ALGO_ERROR; }
   bool HasBadElems() const { return !myBadElements.empty(); }
-  inline std::string CommonName() const;
 
+  // not inline methods are implemented in   src/SMESHUtils/SMESH_TryCatch.cxx
+
+  // Return myName as text, to be used to dump errors in terminal
+  std::string CommonName() const;
+
+  // Return the most severe error
+  static SMESH_ComputeErrorPtr Worst( SMESH_ComputeErrorPtr er1,
+                                      SMESH_ComputeErrorPtr er2 );
 };
-
-#define _case2char(err) case err: return #err;
-
-// Return myName as text, to be used to dump errors in terminal
-std::string SMESH_ComputeError::CommonName() const
-{
-  switch( myName ) {
-  _case2char(COMPERR_OK              );
-  _case2char(COMPERR_BAD_INPUT_MESH  );
-  _case2char(COMPERR_STD_EXCEPTION   );
-  _case2char(COMPERR_OCC_EXCEPTION   );
-  _case2char(COMPERR_SLM_EXCEPTION   );
-  _case2char(COMPERR_EXCEPTION       );
-  _case2char(COMPERR_MEMORY_PB       );
-  _case2char(COMPERR_ALGO_FAILED     );
-  _case2char(COMPERR_BAD_SHAPE       );
-  _case2char(COMPERR_WARNING         );
-  _case2char(COMPERR_CANCELED        );
-  _case2char(COMPERR_NO_MESH_ON_SHAPE);
-  _case2char(COMPERR_BAD_PARMETERS   );
-  default:;
-  }
-  return "";
-}
 
 #endif

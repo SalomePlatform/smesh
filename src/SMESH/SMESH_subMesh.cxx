@@ -1553,7 +1553,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
             if ( !algo->NeedDiscreteBoundary() && !subFailed )
               _computeError =
                 SMESH_ComputeError::New(COMPERR_BAD_INPUT_MESH,
-                                        "Unexpected computed submesh",algo);
+                                        "Unexpected computed sub-mesh",algo);
             break; // goto exit
           }
         }
@@ -1587,8 +1587,8 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           {
             ret = algo->Compute((*_father), shape);
           }
-          if ( !_computeError || (/* !ret && */_computeError->IsOK() ) ) // algo can set _computeError of submesh
-            _computeError = algo->GetComputeError();
+          // algo can set _computeError of submesh
+          _computeError = SMESH_ComputeError::Worst( _computeError, algo->GetComputeError() );
         }
         catch ( ::SMESH_ComputeError& comperr ) {
           cout << " SMESH_ComputeError caught" << endl;

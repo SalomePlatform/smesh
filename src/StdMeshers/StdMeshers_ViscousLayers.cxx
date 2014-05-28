@@ -83,7 +83,7 @@
 #include <cmath>
 #include <limits>
 
-#define __myDEBUG
+//#define __myDEBUG
 
 using namespace std;
 
@@ -93,6 +93,8 @@ namespace VISCOUS_3D
   typedef int TGeomID;
 
   enum UIndex { U_TGT = 1, U_SRC, LEN_TGT };
+
+  const double theMinSmoothCosin = 0.1;
 
   /*!
    * \brief SMESH_ProxyMesh computed by _ViscousBuilder for a SOLID.
@@ -312,7 +314,8 @@ namespace VISCOUS_3D
     _2NearEdges() { _nodes[0]=_nodes[1]=0; _plnNorm = 0; }
     void reverse() {
       std::swap( _nodes[0], _nodes[1] );
-      std::swap( _wgt[0], _wgt[1] );
+      std::swap( _wgt  [0], _wgt  [1] );
+      std::swap( _edges[0], _edges[1] );
     }
   };
   //--------------------------------------------------------------------------------
@@ -348,7 +351,7 @@ namespace VISCOUS_3D
     void SetDataByNeighbors( const SMDS_MeshNode* n1,
                              const SMDS_MeshNode* n2,
                              SMESH_MesherHelper&  helper);
-    void InvalidateStep( int curStep );
+    void InvalidateStep( int curStep, bool restoreLength=false );
     bool Smooth(int& badNb);
     bool SmoothOnEdge(Handle(Geom_Surface)& surface,
                       const TopoDS_Face&    F,
@@ -364,9 +367,9 @@ namespace VISCOUS_3D
                        double&              dist,
                        const double&        epsilon) const;
     gp_Ax1 LastSegment(double& segLen) const;
-    bool IsOnEdge() const { return _2neibors; }
+    bool   IsOnEdge() const { return _2neibors; }
     gp_XYZ Copy( _LayerEdge& other, SMESH_MesherHelper& helper );
-    void SetCosin( double cosin );
+    void   SetCosin( double cosin );
   };
   struct _LayerEdgeCmp
   {
@@ -376,6 +379,31 @@ namespace VISCOUS_3D
       return cmpNodes ? ( e1->_nodes[0]->GetID() < e2->_nodes[0]->GetID()) : ( e1 < e2 );
     }
   };
+  //--------------------------------------------------------------------------------
+  /*!
+   * \brief Convex FACE whose radius of curvature is less than the thickness of 
+   *        layers. It is used to detect distortion of prisms based on a convex
+   *        FACE and to update normals to enable further increasing the thickness
+   */
+  struct _ConvexFace
+  {
+    TopoDS_Face                     _face;
+
+    // edges whose _simplices are used to detect prism destorsion
+    vector< _LayerEdge* >           _simplexTestEdges;
+
+    // map a sub-shape to it's index in _SolidData::_endEdgeOnShape vector
+    map< TGeomID, int >             _subIdToEdgeEnd;
+
+    bool                            _normalsFixed;
+
+    bool GetCenterOfCurvature( _LayerEdge*         ledge,
+                               BRepLProp_SLProps&  surfProp,
+                               SMESH_MesherHelper& helper,
+                               gp_Pnt &            center ) const;
+    bool CheckPrisms() const;
+  };
+
   //--------------------------------------------------------------------------------
 
   typedef map< const SMDS_MeshNode*, _LayerEdge*, TIDCompare > TNode2Edge;
@@ -402,8 +430,6 @@ namespace VISCOUS_3D
     // edges of _n2eMap. We keep same data in two containers because
     // iteration over the map is 5 time longer than over the vector
     vector< _LayerEdge* >           _edges;
-    // edges on EDGE's with null _sWOL, whose _simplices are used to stop inflation
-    vector< _LayerEdge* >           _simplexTestEdges;
 
     // key:   an id of shape (EDGE or VERTEX) shared by a FACE with
     //        layers and a FACE w/o layers
@@ -411,14 +437,18 @@ namespace VISCOUS_3D
     //       _LayerEdge's basing on nodes on key shape are inflated along the value shape
     map< TGeomID, TopoDS_Shape >     _shrinkShape2Shape;
 
+    // Convex FACEs whose radius of curvature is less than the thickness of layers
+    map< TGeomID, _ConvexFace >      _convexFaces;
+
     // FACE's WOL, srink on which is forbiden due to algo on the adjacent SOLID
     set< TGeomID >                   _noShrinkFaces;
 
-    // <EDGE to smooth on> to <it's curve>
+    // <EDGE to smooth on> to <it's curve> -- for analytic smooth
     map< TGeomID,Handle(Geom_Curve)> _edge2curve;
 
-    // end indices in _edges of _LayerEdge on one shape to smooth
-    vector< int >                    _endEdgeToSmooth;
+    // end indices in _edges of _LayerEdge on each shape, first go shapes to smooth
+    vector< int >                    _endEdgeOnShape;
+    int                              _nbShapesToSmooth;
 
     double                           _epsilon; // precision for SegTriaInter()
 
@@ -437,6 +467,56 @@ namespace VISCOUS_3D
                                        Handle(Geom_Surface)& surface,
                                        const TopoDS_Face&    F,
                                        SMESH_MesherHelper&   helper);
+
+    void SortOnEdge( const TopoDS_Edge&  E,
+                     const int           iFrom,
+                     const int           iTo,
+                     SMESH_MesherHelper& helper);
+
+    _ConvexFace* GetConvexFace( const TGeomID faceID )
+    {
+      map< TGeomID, _ConvexFace >::iterator id2face = _convexFaces.find( faceID );
+      return id2face == _convexFaces.end() ? 0 : & id2face->second;
+    }
+    void GetEdgesOnShape( size_t end, int &  iBeg, int &  iEnd )
+    {
+      iBeg = end > 0 ? _endEdgeOnShape[ end-1 ] : 0;
+      iEnd = _endEdgeOnShape[ end ];
+    }
+
+    bool GetShapeEdges(const TGeomID shapeID, size_t& edgeEnd, int* iBeg=0, int* iEnd=0 ) const;
+
+    void AddFacesToSmooth( const set< TGeomID >& faceIDs );
+  };
+  //--------------------------------------------------------------------------------
+  /*!
+   * \brief Container of centers of curvature at nodes on an EDGE bounding _ConvexFace
+   */
+  struct _CentralCurveOnEdge
+  {
+    bool                  _isDegenerated;
+    vector< gp_Pnt >      _curvaCenters;
+    vector< _LayerEdge* > _ledges;
+    vector< gp_XYZ >      _normals; // new normal for each of _ledges
+    vector< double >      _segLength2;
+
+    TopoDS_Edge           _edge;
+    TopoDS_Face           _adjFace;
+    bool                  _adjFaceToSmooth;
+
+    void Append( const gp_Pnt& center, _LayerEdge* ledge )
+    {
+      if ( _curvaCenters.size() > 0 )
+        _segLength2.push_back( center.SquareDistance( _curvaCenters.back() ));
+      _curvaCenters.push_back( center );
+      _ledges.push_back( ledge );
+      _normals.push_back( ledge->_normal );
+    }
+    bool FindNewNormal( const gp_Pnt& center, gp_XYZ& newNormal );
+    void SetShapes( const TopoDS_Edge&  edge,
+                    const _ConvexFace&  convFace,
+                    const _SolidData&   data,
+                    SMESH_MesherHelper& helper);
   };
   //--------------------------------------------------------------------------------
   /*!
@@ -445,7 +525,6 @@ namespace VISCOUS_3D
   struct _SmoothNode
   {
     const SMDS_MeshNode*         _node;
-    //vector<const SMDS_MeshNode*> _nodesAround;
     vector<_Simplex>             _simplices; // for quality check
 
     enum SmoothType { LAPLACIAN, CENTROIDAL, ANGULAR, TFI };
@@ -506,8 +585,7 @@ namespace VISCOUS_3D
                                vector< vector<_LayerEdge*> >& edgesByGeom);
     bool sortEdges( _SolidData&                    data,
                     vector< vector<_LayerEdge*> >& edgesByGeom);
-    void limitStepSizeByCurvature( _SolidData&                    data,
-                                   vector< vector<_LayerEdge*> >& edgesByGeom);
+    void limitStepSizeByCurvature( _SolidData&  data );
     void limitStepSize( _SolidData&             data,
                         const SMDS_MeshElement* face,
                         const double            cosin);
@@ -520,7 +598,10 @@ namespace VISCOUS_3D
                              Handle(Geom_Surface)& surface,
                              const TopoDS_Face&    F,
                              SMESH_MesherHelper&   helper);
-    bool updateNormals( _SolidData& data, SMESH_MesherHelper& helper );
+    bool updateNormals( _SolidData& data, SMESH_MesherHelper& helper, int stepNb );
+    bool updateNormalsOfConvexFaces( _SolidData&         data,
+                                     SMESH_MesherHelper& helper,
+                                     int                 stepNb );
     bool refine(_SolidData& data);
     bool shrink();
     bool prepareEdgeToShrink( _LayerEdge& edge, const TopoDS_Face& F,
@@ -568,11 +649,11 @@ namespace VISCOUS_3D
    * We can't use SMDS_FaceOfNodes since it's impossible to set it's ID which is
    * needed because SMESH_ElementSearcher internaly uses set of elements sorted by ID
    */
-  struct TmpMeshFace : public SMDS_MeshElement
+  struct _TmpMeshFace : public SMDS_MeshElement
   {
     vector<const SMDS_MeshNode* > _nn;
-    TmpMeshFace( const vector<const SMDS_MeshNode*>& nodes, int id):
-      SMDS_MeshElement(id), _nn(nodes) {}
+    _TmpMeshFace( const vector<const SMDS_MeshNode*>& nodes, int id, int faceID=-1):
+      SMDS_MeshElement(id), _nn(nodes) { setShapeId(faceID); }
     virtual const SMDS_MeshNode* GetNode(const int ind) const { return _nn[ind]; }
     virtual SMDSAbs_ElementType  GetType() const              { return SMDSAbs_Face; }
     virtual vtkIdType GetVtkType() const                      { return -1; }
@@ -585,11 +666,11 @@ namespace VISCOUS_3D
   /*!
    * \brief Class of temporary mesh face storing _LayerEdge it's based on
    */
-  struct TmpMeshFaceOnEdge : public TmpMeshFace
+  struct _TmpMeshFaceOnEdge : public _TmpMeshFace
   {
     _LayerEdge *_le1, *_le2;
-    TmpMeshFaceOnEdge( _LayerEdge* le1, _LayerEdge* le2, int ID ):
-      TmpMeshFace( vector<const SMDS_MeshNode*>(4), ID ), _le1(le1), _le2(le2)
+    _TmpMeshFaceOnEdge( _LayerEdge* le1, _LayerEdge* le2, int ID ):
+      _TmpMeshFace( vector<const SMDS_MeshNode*>(4), ID ), _le1(le1), _le2(le2)
     {
       _nn[0]=_le1->_nodes[0];
       _nn[1]=_le1->_nodes.back();
@@ -602,14 +683,14 @@ namespace VISCOUS_3D
    * \brief Retriever of node coordinates either directly of from a surface by node UV.
    * \warning Location of a surface is ignored
    */
-  struct NodeCoordHelper
+  struct _NodeCoordHelper
   {
     SMESH_MesherHelper&        _helper;
     const TopoDS_Face&         _face;
     Handle(Geom_Surface)       _surface;
-    gp_XYZ (NodeCoordHelper::* _fun)(const SMDS_MeshNode* n) const;
+    gp_XYZ (_NodeCoordHelper::* _fun)(const SMDS_MeshNode* n) const;
 
-    NodeCoordHelper(const TopoDS_Face& F, SMESH_MesherHelper& helper, bool is2D)
+    _NodeCoordHelper(const TopoDS_Face& F, SMESH_MesherHelper& helper, bool is2D)
       : _helper( helper ), _face( F )
     {
       if ( is2D )
@@ -618,9 +699,9 @@ namespace VISCOUS_3D
         _surface = BRep_Tool::Surface( _face, loc );
       }
       if ( _surface.IsNull() )
-        _fun = & NodeCoordHelper::direct;
+        _fun = & _NodeCoordHelper::direct;
       else
-        _fun = & NodeCoordHelper::byUV;
+        _fun = & _NodeCoordHelper::byUV;
     }
     gp_XYZ operator()(const SMDS_MeshNode* n) const { return (this->*_fun)( n ); }
 
@@ -636,6 +717,8 @@ namespace VISCOUS_3D
     }
   };
 } // namespace VISCOUS_3D
+
+
 
 //================================================================================
 // StdMeshers_ViscousLayers hypothesis
@@ -899,32 +982,10 @@ namespace
           cross = -cross;
         isConvex = ( cross > 0.1 ); //-1e-9 );
       }
-      // check if concavity is strong enough to care about it
-      //const double maxAngle = 5 * Standard_PI180;
       if ( !isConvex )
       {
         //cout << "Concave FACE " << helper.GetMeshDS()->ShapeToIndex( F ) << endl;
         return true;
-        // map< double, const SMDS_MeshNode* > u2nodes;
-        // if ( !SMESH_Algo::GetSortedNodesOnEdge( helper.GetMeshDS(), E,
-        //                                         /*ignoreMedium=*/true, u2nodes))
-        //   continue;
-        // map< double, const SMDS_MeshNode* >::iterator u2n = u2nodes.begin();
-        // gp_Pnt2d uvPrev = helper.GetNodeUV( F, u2n->second );
-        // double    uPrev = u2n->first;
-        // for ( ++u2n; u2n != u2nodes.end(); ++u2n )
-        // {
-        //   gp_Pnt2d uv = helper.GetNodeUV( F, u2n->second );
-        //   gp_Vec2d segmentDir( uvPrev, uv );
-        //   curve.D1( uPrev, p, drv1 );
-        //   try {
-        //     if ( fabs( segmentDir.Angle( drv1 )) > maxAngle )
-        //       return true;
-        //   }
-        //   catch ( ... ) {}
-        //   uvPrev = uv;
-        //   uPrev = u2n->first;
-        // }
       }
     }
     // check angles at VERTEXes
@@ -987,6 +1048,7 @@ namespace
   { if (py) { *py<< "  mesh.ChangeElemNodes( " << f->GetID()<<", [";
       for ( int i=1; i < f->NbNodes(); ++i ) *py << f->GetNode(i-1)->GetID()<<", ";
       *py << f->GetNode( f->NbNodes()-1 )->GetID() << " ])"<< endl; }}
+#define debugMsg( txt ) { cout << txt << " (line: " << __LINE__ << ")" << endl; }
 #else
   struct PyDump { void Finish() {} };
 #define dumpFunction(f) f
@@ -994,6 +1056,7 @@ namespace
 #define dumpCmd(txt)
 #define dumpFunctionEnd()
 #define dumpChangeNodes(f)
+#define debugMsg( txt ) {}
 #endif
 }
 
@@ -1568,11 +1631,12 @@ bool _ViscousBuilder::makeLayer(_SolidData& data)
         newNodes[ i ] = n2e->second->_nodes.back();
       }
       // create a temporary face
-      const SMDS_MeshElement* newFace = new TmpMeshFace( newNodes, --_tmpFaceID );
+      const SMDS_MeshElement* newFace =
+        new _TmpMeshFace( newNodes, --_tmpFaceID, face->getshapeId() );
       proxySub->AddElement( newFace );
 
       // compute inflation step size by min size of element on a convex surface
-      if ( faceMaxCosin > 0.1 )
+      if ( faceMaxCosin > theMinSmoothCosin )
         limitStepSize( data, face, faceMaxCosin );
     } // loop on 2D elements on a FACE
   } // loop on FACEs of a SOLID
@@ -1581,15 +1645,12 @@ bool _ViscousBuilder::makeLayer(_SolidData& data)
   if ( data._stepSize < 1. )
     data._epsilon *= data._stepSize;
 
-  // fill data._simplexTestEdges
-  findSimplexTestEdges( data, edgesByGeom );
-
-  // limit data._stepSize depending on surface curvature
-  limitStepSizeByCurvature( data, edgesByGeom );
-
   // Put _LayerEdge's into the vector data._edges
   if ( !sortEdges( data, edgesByGeom ))
     return false;
+
+  // limit data._stepSize depending on surface curvature and fill data._convexFaces
+  limitStepSizeByCurvature( data ); // !!! it must be before node substitution in _Simplex
 
   // Set target nodes into _Simplex and _2NearEdges of _LayerEdge's
   TNode2Edge::iterator n2e;
@@ -1676,18 +1737,19 @@ void _ViscousBuilder::limitStepSize( _SolidData& data, const double minSize )
 
 //================================================================================
 /*!
- * \brief Limit data._stepSize by evaluating curvature of shapes
+ * \brief Limit data._stepSize by evaluating curvature of shapes and fill data._convexFaces
  */
 //================================================================================
 
-void _ViscousBuilder::limitStepSizeByCurvature( _SolidData&                    data,
-                                                vector< vector<_LayerEdge*> >& edgesByGeom)
+void _ViscousBuilder::limitStepSizeByCurvature( _SolidData& data )
 {
-  const int nbTestPnt = 5;
+  const int nbTestPnt = 5; // on a FACE sub-shape
   const double minCurvature = 0.9 / data._hyp->GetTotalThickness();
 
   BRepLProp_SLProps surfProp( 2, 1e-6 );
   SMESH_MesherHelper helper( *_mesh );
+
+  data._convexFaces.clear();
 
   TopExp_Explorer face( data._solid, TopAbs_FACE );
   for ( ; face.More(); face.Next() )
@@ -1696,128 +1758,107 @@ void _ViscousBuilder::limitStepSizeByCurvature( _SolidData&                    d
     BRepAdaptor_Surface surface( F, false );
     surfProp.SetSurface( surface );
 
-    SMESH_subMesh *   sm = _mesh->GetSubMesh( F );
+    bool isTooCurved = false;
+    int iBeg, iEnd;
+
+    _ConvexFace cnvFace;
+    SMESH_subMesh *            sm = _mesh->GetSubMesh( F );
+    const TGeomID          faceID = sm->GetId();
+    if ( data._ignoreFaceIds.count( faceID )) continue;
+    const double        oriFactor = ( F.Orientation() == TopAbs_REVERSED ? +1. : -1. );
     SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(/*includeSelf=*/true);
     while ( smIt->more() )
     {
       sm = smIt->next();
-      const vector<_LayerEdge*>& ledges = edgesByGeom[ sm->GetId() ];
-      int step = Max( 1, int( ledges.size()) / nbTestPnt );
-      for ( size_t i = 0; i < ledges.size(); i += step )
+      const TGeomID subID = sm->GetId();
+      // find _LayerEdge's of a sub-shape
+      size_t edgesEnd;
+      if ( data.GetShapeEdges( subID, edgesEnd, &iBeg, &iEnd ))
+        cnvFace._subIdToEdgeEnd.insert( make_pair( subID, edgesEnd ));
+      else
+        continue;
+      // check concavity and curvature and limit data._stepSize
+      int nbLEdges = iEnd - iBeg;
+      int step = Max( 1, nbLEdges / nbTestPnt );
+      for ( ; iBeg < iEnd; iBeg += step )
       {
-        gp_XY uv = helper.GetNodeUV( F, ledges[i]->_nodes[0] );
+        gp_XY uv = helper.GetNodeUV( F, data._edges[ iBeg ]->_nodes[0] );
         surfProp.SetParameters( uv.X(), uv.Y() );
         if ( !surfProp.IsCurvatureDefined() )
           continue;
-        double surfCurvature = Max( Abs( surfProp.MaxCurvature() ),
-                                    Abs( surfProp.MinCurvature() ));
-        if ( surfCurvature < minCurvature )
-          continue;
-
-        gp_Dir minDir, maxDir;
-        surfProp.CurvatureDirections( maxDir, minDir );
-        if ( F.Orientation() == TopAbs_REVERSED ) {
-          maxDir.Reverse(); minDir.Reverse();
-        }
-        const gp_XYZ& inDir = ledges[i]->_normal;
-        if ( inDir * maxDir.XYZ() < 0 &&
-             inDir * minDir.XYZ() < 0 )
-          continue;
-
-        limitStepSize( data, 0.9 / surfCurvature );
-      }
-    }
-  }
-}
-
-//================================================================================
-/*!
- * Fill data._simplexTestEdges. These _LayerEdge's are used to stop inflation
- * in the case where there are no _LayerEdge's on a curved convex FACE,
- * as e.g. on a fillet surface with no internal nodes - issue 22580,
- * so that collision of viscous internal faces is not detected by check of
- * intersection of _LayerEdge's with the viscous internal faces.
- */
-//================================================================================
-
-void _ViscousBuilder::findSimplexTestEdges( _SolidData&                    data,
-                                            vector< vector<_LayerEdge*> >& edgesByGeom)
-{
-  data._simplexTestEdges.clear();
-
-  SMESH_MesherHelper helper( *_mesh );
-
-  vector< vector<_LayerEdge*> * > ledgesOnEdges;
-  set< const SMDS_MeshNode* > usedNodes;
-
-  const double minCurvature = 1. / data._hyp->GetTotalThickness();
-
-  for ( size_t iS = 1; iS < edgesByGeom.size(); ++iS )
-  {
-    // look for a FACE with layers and w/o _LayerEdge's
-    const vector<_LayerEdge*>& eS = edgesByGeom[iS];
-    if ( !eS.empty() ) continue;
-    const TopoDS_Shape& S = getMeshDS()->IndexToShape( iS );
-    if ( S.IsNull() || S.ShapeType() != TopAbs_FACE ) continue;
-    if ( data._ignoreFaceIds.count( iS )) continue;
-
-    const TopoDS_Face& F = TopoDS::Face( S );
-
-    // look for _LayerEdge's on EDGEs with null _sWOL
-    ledgesOnEdges.clear();
-    TopExp_Explorer eExp( F, TopAbs_EDGE );
-    for ( ; eExp.More(); eExp.Next() )
-    {
-      TGeomID iE = getMeshDS()->ShapeToIndex( eExp.Current() );
-      vector<_LayerEdge*>& eE = edgesByGeom[iE];
-      if ( !eE.empty() && eE[0]->_sWOL.IsNull() )
-        ledgesOnEdges.push_back( & eE );
-    }
-    if ( ledgesOnEdges.empty() ) continue;
-
-    // check FACE convexity
-    const _LayerEdge* le = ledgesOnEdges[0]->back();
-    gp_XY uv = helper.GetNodeUV( F, le->_nodes[0] );
-    BRepAdaptor_Surface surf( F );
-    BRepLProp_SLProps surfProp( surf, uv.X(), uv.Y(), 2, 1e-6 );
-    if ( !surfProp.IsCurvatureDefined() )
-      continue;
-    double surfCurvature = Max( Abs( surfProp.MaxCurvature() ),
-                                Abs( surfProp.MinCurvature() ));
-    if ( surfCurvature < minCurvature )
-      continue;
-    gp_Dir minDir, maxDir;
-    surfProp.CurvatureDirections( maxDir, minDir );
-    if ( F.Orientation() == TopAbs_REVERSED ) {
-      maxDir.Reverse(); minDir.Reverse();
-    }
-    const gp_XYZ& inDir = le->_normal;
-    if ( inDir * maxDir.XYZ() < 0 &&
-         inDir * minDir.XYZ() < 0 )
-      continue;
-
-    limitStepSize( data, 0.9 / surfCurvature );
-
-    // add _simplices to the _LayerEdge's
-    for ( size_t iE = 0; iE < ledgesOnEdges.size(); ++iE )
-    {
-      const vector<_LayerEdge*>& ledges = *ledgesOnEdges[iE];
-      for ( size_t iLE = 0; iLE < ledges.size(); ++iLE )
-      {
-        _LayerEdge* ledge = ledges[iLE];
-        const SMDS_MeshNode* srcNode = ledge->_nodes[0];
-        if ( !usedNodes.insert( srcNode ).second ) continue;
-
-        getSimplices( srcNode, ledge->_simplices, data._ignoreFaceIds, &data );
-        for ( size_t i = 0; i < ledge->_simplices.size(); ++i )
+        if ( surfProp.MaxCurvature() * oriFactor > minCurvature )
         {
-          usedNodes.insert( ledge->_simplices[i]._nPrev );
-          usedNodes.insert( ledge->_simplices[i]._nNext );
+          limitStepSize( data, 0.9 / surfProp.MaxCurvature() * oriFactor );
+          isTooCurved = true;
         }
-        data._simplexTestEdges.push_back( ledge );
+        if ( surfProp.MinCurvature() * oriFactor > minCurvature )
+        {
+          limitStepSize( data, 0.9 / surfProp.MinCurvature() * oriFactor );
+          isTooCurved = true;
+        }
+      }
+    } // loop on sub-shapes of the FACE
+
+    if ( !isTooCurved ) continue;
+
+    _ConvexFace & convFace =
+      data._convexFaces.insert( make_pair( faceID, cnvFace )).first->second;
+
+    convFace._face = F;
+    convFace._normalsFixed = false;
+
+    // Fill _ConvexFace::_simplexTestEdges. These _LayerEdge's are used to detect
+    // prism distortion.
+    map< TGeomID, int >::iterator id2end = convFace._subIdToEdgeEnd.find( faceID );
+    if ( id2end != convFace._subIdToEdgeEnd.end() )
+    {
+      // there are _LayerEdge's on the FACE it-self;
+      // select _LayerEdge's near EDGEs
+      data.GetEdgesOnShape( id2end->second, iBeg, iEnd );
+      for ( ; iBeg < iEnd; ++iBeg )
+      {
+        _LayerEdge* ledge = data._edges[ iBeg ];
+        for ( size_t j = 0; j < ledge->_simplices.size(); ++j )
+          if ( ledge->_simplices[j]._nNext->GetPosition()->GetDim() < 2 )
+          {
+            convFace._simplexTestEdges.push_back( ledge );
+            break;
+          }
       }
     }
-  }
+    else
+    {
+      // where there are no _LayerEdge's on a _ConvexFace,
+      // as e.g. on a fillet surface with no internal nodes - issue 22580,
+      // so that collision of viscous internal faces is not detected by check of
+      // intersection of _LayerEdge's with the viscous internal faces.
+
+      set< const SMDS_MeshNode* > usedNodes;
+
+      // look for _LayerEdge's with null _sWOL
+      map< TGeomID, int >::iterator id2end = convFace._subIdToEdgeEnd.begin();
+      for ( ; id2end != convFace._subIdToEdgeEnd.end(); ++id2end )
+      {
+        data.GetEdgesOnShape( id2end->second, iBeg, iEnd );
+        if ( iBeg >= iEnd || !data._edges[ iBeg ]->_sWOL.IsNull() )
+          continue;
+        for ( ; iBeg < iEnd; ++iBeg )
+        {
+          _LayerEdge* ledge = data._edges[ iBeg ];
+          const SMDS_MeshNode* srcNode = ledge->_nodes[0];
+          if ( !usedNodes.insert( srcNode ).second ) continue;
+
+          getSimplices( srcNode, ledge->_simplices, data._ignoreFaceIds, &data );
+          for ( size_t i = 0; i < ledge->_simplices.size(); ++i )
+          {
+            usedNodes.insert( ledge->_simplices[i]._nPrev );
+            usedNodes.insert( ledge->_simplices[i]._nNext );
+          }
+          convFace._simplexTestEdges.push_back( ledge );
+        }
+      }
+    }
+  } // loop on FACEs of data._solid
 }
 
 //================================================================================
@@ -1868,7 +1909,7 @@ bool _ViscousBuilder::sortEdges( _SolidData&                    data,
           double angle = dir1.Angle( dir2 );
           cosin = cos( angle );
         }
-        needSmooth = ( cosin > 0.1 );
+        needSmooth = ( cosin > theMinSmoothCosin );
       }
       break;
     }
@@ -1882,7 +1923,7 @@ bool _ViscousBuilder::sortEdges( _SolidData&                    data,
         if ( eE[0]->_sWOL.IsNull() )
         {
           for ( size_t i = 0; i < eE.size() && !needSmooth; ++i )
-            needSmooth = ( eE[i]->_cosin > 0.1 );
+            needSmooth = ( eE[i]->_cosin > theMinSmoothCosin );
         }
         else
         {
@@ -1895,7 +1936,7 @@ bool _ViscousBuilder::sortEdges( _SolidData&                    data,
             gp_Vec dir2 = getFaceDir( F2, E, eE[i]->_nodes[0], helper, ok );
             double angle = dir1.Angle( dir2 );
             double cosin = cos( angle );
-            needSmooth = ( cosin > 0.1 );
+            needSmooth = ( cosin > theMinSmoothCosin );
           }
         }
       }
@@ -1914,16 +1955,18 @@ bool _ViscousBuilder::sortEdges( _SolidData&                    data,
   } // loop on edgesByGeom
 
   data._edges.reserve( data._n2eMap.size() );
-  data._endEdgeToSmooth.clear();
+  data._endEdgeOnShape.clear();
 
   // first we put _LayerEdge's on shapes to smooth
+  data._nbShapesToSmooth = 0;
   list< TGeomID >::iterator gIt = shapesToSmooth.begin();
   for ( ; gIt != shapesToSmooth.end(); ++gIt )
   {
     vector<_LayerEdge*>& eVec = edgesByGeom[ *gIt ];
     if ( eVec.empty() ) continue;
     data._edges.insert( data._edges.end(), eVec.begin(), eVec.end() );
-    data._endEdgeToSmooth.push_back( data._edges.size() );
+    data._endEdgeOnShape.push_back( data._edges.size() );
+    data._nbShapesToSmooth++;
     eVec.clear();
   }
 
@@ -1931,8 +1974,10 @@ bool _ViscousBuilder::sortEdges( _SolidData&                    data,
   for ( size_t iS = 0; iS < edgesByGeom.size(); ++iS )
   {
     vector<_LayerEdge*>& eVec = edgesByGeom[iS];
+    if ( eVec.empty() ) continue;
     data._edges.insert( data._edges.end(), eVec.begin(), eVec.end() );
-    eVec.clear();
+    data._endEdgeOnShape.push_back( data._edges.size() );
+    //eVec.clear();
   }
 
   return ok;
@@ -2406,13 +2451,11 @@ void _LayerEdge::SetDataByNeighbors( const SMDS_MeshNode* n1,
   double avgLen = 0.5 * ( vec1.Modulus() + vec2.Modulus() );
   if ( _curvature ) delete _curvature;
   _curvature = _Curvature::New( avgNormProj, avgLen );
-#ifdef __myDEBUG
-//     if ( _curvature )
-//       cout << _nodes[0]->GetID()
-//            << " CURV r,k: " << _curvature->_r<<","<<_curvature->_k
-//            << " proj = "<<avgNormProj<< " len = " << avgLen << "| lenDelta(0) = "
-//            << _curvature->lenDelta(0) << endl;
-#endif
+  // if ( _curvature )
+  //   debugMsg( _nodes[0]->GetID()
+  //             << " CURV r,k: " << _curvature->_r<<","<<_curvature->_k
+  //             << " proj = "<<avgNormProj<< " len = " << avgLen << "| lenDelta(0) = "
+  //             << _curvature->lenDelta(0) );
 
   // Set _plnNorm
 
@@ -2545,11 +2588,6 @@ void _ViscousBuilder::makeGroupOfLE()
   for ( size_t i = 0 ; i < _sdVec.size(); ++i )
   {
     if ( _sdVec[i]._edges.empty() ) continue;
-//     string name = SMESH_Comment("_LayerEdge's_") << i;
-//     int id;
-//     SMESH_Group* g = _mesh->AddGroup(SMDSAbs_Edge, name.c_str(), id );
-//     SMESHDS_Group* gDS = (SMESHDS_Group*)g->GetGroupDS();
-//     SMESHDS_Mesh* mDS = _mesh->GetMeshDS();
 
     dumpFunction( SMESH_Comment("make_LayerEdge_") << i );
     for ( size_t j = 0 ; j < _sdVec[i]._edges.size(); ++j )
@@ -2558,7 +2596,6 @@ void _ViscousBuilder::makeGroupOfLE()
       for ( size_t iN = 1; iN < le->_nodes.size(); ++iN )
         dumpCmd(SMESH_Comment("mesh.AddEdge([ ") <<le->_nodes[iN-1]->GetID()
                 << ", " << le->_nodes[iN]->GetID() <<"])");
-      //gDS->SMDSGroup().Add( mDS->AddEdge( le->_nodes[iN-1], le->_nodes[iN]));
     }
     dumpFunctionEnd();
 
@@ -2573,10 +2610,6 @@ void _ViscousBuilder::makeGroupOfLE()
     }
     dumpFunctionEnd();
 
-//     name = SMESH_Comment("tmp_faces ") << i;
-//     g = _mesh->AddGroup(SMDSAbs_Face, name.c_str(), id );
-//     gDS = (SMESHDS_Group*)g->GetGroupDS();
-//     SMESH_MeshEditor editor( _mesh );
     dumpFunction( SMESH_Comment("makeTmpFaces_") << i );
     TopExp_Explorer fExp( _sdVec[i]._solid, TopAbs_FACE );
     for ( ; fExp.More(); fExp.Next() )
@@ -2591,8 +2624,6 @@ void _ViscousBuilder::makeGroupOfLE()
           for ( int j=0; j < e->NbCornerNodes(); ++j )
             cmd << e->GetNode(j)->GetID() << (j+1<e->NbCornerNodes() ? ",": "])");
           dumpCmd( cmd );
-          //vector<const SMDS_MeshNode*> nodes( e->begin_nodes(), e->end_nodes() );
-          //gDS->SMDSGroup().Add( editor.AddElement( nodes, e->GetType(), e->IsPoly()));
         }
       }
     }
@@ -2634,9 +2665,7 @@ bool _ViscousBuilder::inflate(_SolidData& data)
   if ( data._stepSize < 1. )
     data._epsilon = data._stepSize * 1e-7;
 
-#ifdef __myDEBUG
-  cout << "-- geomSize = " << geomSize << ", stepSize = " << data._stepSize << endl;
-#endif
+  debugMsg( "-- geomSize = " << geomSize << ", stepSize = " << data._stepSize );
 
   double avgThick = 0, curThick = 0, distToIntersection = Precision::Infinite();
   int nbSteps = 0, nbRepeats = 0;
@@ -2658,9 +2687,8 @@ bool _ViscousBuilder::inflate(_SolidData& data)
     }
     dumpFunctionEnd();
 
-    if ( !nbSteps )
-      if ( !updateNormals( data, helper ) )
-        return false;
+    if ( !updateNormals( data, helper, nbSteps ))
+      return false;
 
     // Improve and check quality
     if ( !smoothAndCheck( data, nbSteps, distToIntersection ))
@@ -2683,16 +2711,13 @@ bool _ViscousBuilder::inflate(_SolidData& data)
     for ( size_t i = 0; i < data._edges.size(); ++i )
       avgThick += data._edges[i]->_len;
     avgThick /= data._edges.size();
-#ifdef __myDEBUG
-    cout << "-- Thickness " << avgThick << " reached" << endl;
-#endif
+    debugMsg( "-- Thickness " << avgThick << " reached" );
 
     if ( distToIntersection < avgThick*1.5 )
     {
-#ifdef __myDEBUG
-      cout << "-- Stop inflation since distToIntersection( "<<distToIntersection<<" ) < avgThick( "
-           << avgThick << " ) * 1.5" << endl;
-#endif
+      debugMsg( "-- Stop inflation since "
+                << " distToIntersection( "<<distToIntersection<<" ) < avgThick( "
+                << avgThick << " ) * 1.5" );
       break;
     }
     // new step size
@@ -2700,10 +2725,23 @@ bool _ViscousBuilder::inflate(_SolidData& data)
     if ( data._stepSizeNodes[0] )
       data._stepSize = data._stepSizeCoeff *
         SMESH_TNodeXYZ(data._stepSizeNodes[0]).Distance(data._stepSizeNodes[1]);
-  }
+
+  } // while ( 1.01 * avgThick < tgtThick )
 
   if (nbSteps == 0 )
     return error("failed at the very first inflation step", data._index);
+
+  if ( 1.01 * avgThick < tgtThick )
+    if ( SMESH_subMesh* sm = _mesh->GetSubMeshContaining( data._index ))
+    {
+      SMESH_ComputeErrorPtr& smError = sm->GetComputeError();
+      if ( !smError || smError->IsOK() )
+        smError.reset
+          ( new SMESH_ComputeError (COMPERR_WARNING,
+                                    SMESH_Comment("Thickness ") << tgtThick <<
+                                    " of viscous layers not reached,"
+                                    " average reached thickness is " << avgThick ));
+    }
 
   return true;
 }
@@ -2718,7 +2756,7 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
                                      const int   nbSteps,
                                      double &    distToIntersection)
 {
-  if ( data._endEdgeToSmooth.empty() )
+  if ( data._nbShapesToSmooth == 0 )
     return true; // no shapes needing smoothing
 
   bool moved, improved;
@@ -2728,10 +2766,10 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
   TopoDS_Face F;
 
   int iBeg, iEnd = 0;
-  for ( size_t iS = 0; iS < data._endEdgeToSmooth.size(); ++iS )
+  for ( int iS = 0; iS < data._nbShapesToSmooth; ++iS )
   {
     iBeg = iEnd;
-    iEnd = data._endEdgeToSmooth[ iS ];
+    iEnd = data._endEdgeOnShape[ iS ];
 
     if ( !data._edges[ iBeg ]->_sWOL.IsNull() &&
          data._edges[ iBeg ]->_sWOL.ShapeType() == TopAbs_FACE )
@@ -2766,7 +2804,6 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
           dumpCmd( SMESH_Comment("# end step ")<<step);
         }
         while ( moved && step++ < 5 );
-        //cout << " NB STEPS: " << step << endl;
       }
       dumpFunctionEnd();
     }
@@ -2813,22 +2850,17 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
     }
   } // loop on shapes to smooth
 
-  // Check orientation of simplices of _simplexTestEdges
-  for ( size_t i = 0; i < data._simplexTestEdges.size(); ++i )
+  // Check orientation of simplices of _ConvexFace::_simplexTestEdges
+  map< TGeomID, _ConvexFace >::iterator id2face = data._convexFaces.begin();
+  for ( ; id2face != data._convexFaces.end(); ++id2face )
   {
-    const _LayerEdge* edge = data._simplexTestEdges[i];
-    SMESH_TNodeXYZ tgtXYZ( edge->_nodes.back() );
-    for ( size_t j = 0; j < edge->_simplices.size(); ++j )
-      if ( !edge->_simplices[j].IsForward( edge->_nodes[0], &tgtXYZ ))
-      {
-#ifdef __myDEBUG
-        cout << "Bad simplex of _simplexTestEdges ("
-             << " "<< edge->_nodes[0]->GetID()<< " "<< tgtXYZ._node->GetID()
-             << " "<< edge->_simplices[j]._nPrev->GetID()
-             << " "<< edge->_simplices[j]._nNext->GetID() << " )" << endl;
-#endif
-        return false;
-      }
+    _ConvexFace & convFace = (*id2face).second;
+    if ( !convFace._simplexTestEdges.empty() &&
+         convFace._simplexTestEdges[0]->_nodes[0]->GetPosition()->GetDim() == 2 )
+      continue; // _simplexTestEdges are based on FACE -- already checked while smoothing
+
+    if ( !convFace.CheckPrisms() )
+      return false;
   }
 
   // Check if the last segments of _LayerEdge intersects 2D elements;
@@ -2841,21 +2873,23 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
   distToIntersection = Precision::Infinite();
   double dist;
   const SMDS_MeshElement* intFace = 0;
-#ifdef __myDEBUG
   const SMDS_MeshElement* closestFace = 0;
   int iLE = 0;
-#endif
   for ( size_t i = 0; i < data._edges.size(); ++i )
   {
     if ( data._edges[i]->FindIntersection( *searcher, dist, data._epsilon, &intFace ))
       return false;
     if ( distToIntersection > dist )
     {
+      // ignore intersection of a _LayerEdge based on a _ConvexFace with a face
+      // lying on this _ConvexFace
+      if ( _ConvexFace* convFace = data.GetConvexFace( intFace->getshapeId() ))
+        if ( convFace->_subIdToEdgeEnd.count ( data._edges[i]->_nodes[0]->getshapeId() ))
+          continue;
+
       distToIntersection = dist;
-#ifdef __myDEBUG
       iLE = i;
       closestFace = intFace;
-#endif
     }
   }
 #ifdef __myDEBUG
@@ -2893,24 +2927,7 @@ Handle(Geom_Curve) _SolidData::CurveForSmooth( const TopoDS_Edge&    E,
   if ( i2curve == _edge2curve.end() )
   {
     // sort _LayerEdge's by position on the EDGE
-    {
-      map< double, _LayerEdge* > u2edge;
-      for ( int i = iFrom; i < iTo; ++i )
-        u2edge.insert( make_pair( helper.GetNodeU( E, _edges[i]->_nodes[0] ), _edges[i] ));
-
-      ASSERT( u2edge.size() == iTo - iFrom );
-      map< double, _LayerEdge* >::iterator u2e = u2edge.begin();
-      for ( int i = iFrom; i < iTo; ++i, ++u2e )
-        _edges[i] = u2e->second;
-
-      // set _2neibors according to the new order
-      for ( int i = iFrom; i < iTo-1; ++i )
-        if ( _edges[i]->_2neibors->_nodes[1] != _edges[i+1]->_nodes.back() )
-          _edges[i]->_2neibors->reverse();
-      if ( u2edge.size() > 1 &&
-           _edges[iTo-1]->_2neibors->_nodes[0] != _edges[iTo-2]->_nodes.back() )
-        _edges[iTo-1]->_2neibors->reverse();
-    }
+    SortOnEdge( E, iFrom, iTo, helper );
 
     SMESHDS_SubMesh* smDS = helper.GetMeshDS()->MeshElements( eIndex );
 
@@ -2999,6 +3016,121 @@ Handle(Geom_Curve) _SolidData::CurveForSmooth( const TopoDS_Edge&    E,
     return res;
   }
   return i2curve->second;
+}
+
+//================================================================================
+/*!
+ * \brief Sort _LayerEdge's by a parameter on a given EDGE
+ */
+//================================================================================
+
+void _SolidData::SortOnEdge( const TopoDS_Edge&  E,
+                             const int           iFrom,
+                             const int           iTo,
+                             SMESH_MesherHelper& helper)
+{
+  map< double, _LayerEdge* > u2edge;
+  for ( int i = iFrom; i < iTo; ++i )
+    u2edge.insert( make_pair( helper.GetNodeU( E, _edges[i]->_nodes[0] ), _edges[i] ));
+
+  ASSERT( u2edge.size() == iTo - iFrom );
+  map< double, _LayerEdge* >::iterator u2e = u2edge.begin();
+  for ( int i = iFrom; i < iTo; ++i, ++u2e )
+    _edges[i] = u2e->second;
+
+  // set _2neibors according to the new order
+  for ( int i = iFrom; i < iTo-1; ++i )
+    if ( _edges[i]->_2neibors->_nodes[1] != _edges[i+1]->_nodes.back() )
+      _edges[i]->_2neibors->reverse();
+  if ( u2edge.size() > 1 &&
+       _edges[iTo-1]->_2neibors->_nodes[0] != _edges[iTo-2]->_nodes.back() )
+    _edges[iTo-1]->_2neibors->reverse();
+}
+
+//================================================================================
+/*!
+ * \brief Return index corresponding to the shape in _endEdgeOnShape
+ */
+//================================================================================
+
+bool _SolidData::GetShapeEdges(const TGeomID shapeID,
+                               size_t &      edgesEnd,
+                               int*          iBeg,
+                               int*          iEnd ) const
+{
+  int beg = 0, end = 0;
+  for ( edgesEnd = 0; edgesEnd < _endEdgeOnShape.size(); ++edgesEnd )
+  {
+    end = _endEdgeOnShape[ edgesEnd ];
+    TGeomID sID = _edges[ beg ]->_nodes[0]->getshapeId();
+    if ( sID == shapeID )
+    {
+      if ( iBeg ) *iBeg = beg;
+      if ( iEnd ) *iEnd = end;
+      return true;
+    }
+    beg = end;
+  }
+  return false;
+}
+
+//================================================================================
+/*!
+ * \brief Add faces for smoothing
+ */
+//================================================================================
+
+void _SolidData::AddFacesToSmooth( const set< TGeomID >& faceIDs )
+{
+  // convert faceIDs to indices in _endEdgeOnShape
+  set< size_t > iEnds;
+  size_t end;
+  set< TGeomID >::const_iterator fId = faceIDs.begin();
+  for ( ; fId != faceIDs.end(); ++fId )
+    if ( GetShapeEdges( *fId, end ) && end >= _nbShapesToSmooth )
+      iEnds.insert( end );
+
+  set< size_t >::iterator endsIt = iEnds.begin();
+
+  // "add" by move of _nbShapesToSmooth
+  int nbFacesToAdd = faceIDs.size();
+  while ( endsIt != iEnds.end() && *endsIt == _nbShapesToSmooth )
+  {
+    ++endsIt;
+    ++_nbShapesToSmooth;
+    --nbFacesToAdd;
+  }
+  if ( endsIt == iEnds.end() )
+    return;
+
+  // Move _LayerEdge's on FACEs just after _nbShapesToSmooth
+
+  vector< _LayerEdge* > nonSmoothLE, smoothLE;
+  size_t lastSmooth = *iEnds.rbegin();
+  int iBeg, iEnd;
+  for ( size_t i = _nbShapesToSmooth; i <= lastSmooth; ++i )
+  {
+    vector< _LayerEdge* > & edgesVec = iEnds.count(i) ? smoothLE : nonSmoothLE;
+    iBeg = i ? _endEdgeOnShape[ i-1 ] : 0;
+    iEnd = _endEdgeOnShape[ i ];
+    edgesVec.insert( edgesVec.end(), _edges.begin() + iBeg, _edges.begin() + iEnd ); 
+  }
+
+  iBeg = _nbShapesToSmooth ? _endEdgeOnShape[ _nbShapesToSmooth-1 ] : 0;
+  std::copy( smoothLE.begin(),    smoothLE.end(),    &_edges[ iBeg ] );
+  std::copy( nonSmoothLE.begin(), nonSmoothLE.end(), &_edges[ iBeg + smoothLE.size()]);
+
+  // update _endEdgeOnShape
+  for ( size_t i = _nbShapesToSmooth; i < _endEdgeOnShape.size(); ++i )
+  {
+    TGeomID curShape = _edges[ iBeg ]->_nodes[0]->getshapeId();
+    while ( ++iBeg < _edges.size() &&
+            curShape == _edges[ iBeg ]->_nodes[0]->getshapeId() );
+
+    _endEdgeOnShape[ i ] = iBeg;
+  }
+
+  _nbShapesToSmooth += nbFacesToAdd;
 }
 
 //================================================================================
@@ -3145,8 +3277,12 @@ bool _ViscousBuilder::smoothAnalyticEdge( _SolidData&           data,
 //================================================================================
 
 bool _ViscousBuilder::updateNormals( _SolidData&         data,
-                                     SMESH_MesherHelper& helper )
+                                     SMESH_MesherHelper& helper,
+                                     int                 stepNb )
 {
+  if ( stepNb > 0 )
+    return updateNormalsOfConvexFaces( data, helper, stepNb );
+
   // make temporary quadrangles got by extrusion of
   // mesh edges along _LayerEdge._normal's
 
@@ -3171,21 +3307,10 @@ bool _ViscousBuilder::updateNormals( _SolidData&         data,
           extrudedLinks.erase( link_isnew.first );
           continue; // already extruded and will no more encounter
         }
-        // look for a _LayerEdge containg tgt2
-//         _LayerEdge* neiborEdge = 0;
-//         size_t di = 0; // check _edges[i+di] and _edges[i-di]
-//         while ( !neiborEdge && ++di <= data._edges.size() )
-//         {
-//           if ( i+di < data._edges.size() && data._edges[i+di]->_nodes.back() == tgt2 )
-//             neiborEdge = data._edges[i+di];
-//           else if ( di <= i && data._edges[i-di]->_nodes.back() == tgt2 )
-//             neiborEdge = data._edges[i-di];
-//         }
-//         if ( !neiborEdge )
-//           return error("updateNormals(): neighbor _LayerEdge not found", data._index);
+        // a _LayerEdge containg tgt2
         _LayerEdge* neiborEdge = edge->_2neibors->_edges[j];
 
-        TmpMeshFaceOnEdge* f = new TmpMeshFaceOnEdge( edge, neiborEdge, --_tmpFaceID );
+        _TmpMeshFaceOnEdge* f = new _TmpMeshFaceOnEdge( edge, neiborEdge, --_tmpFaceID );
         tmpFaces.push_back( f );
 
         dumpCmd(SMESH_Comment("mesh.AddFace([ ")
@@ -3218,7 +3343,7 @@ bool _ViscousBuilder::updateNormals( _SolidData&         data,
     if ( !edge->IsOnEdge() || !edge->_sWOL.IsNull() ) continue;
     if ( edge->FindIntersection( *searcher, dist, eps, &face ))
     {
-      const TmpMeshFaceOnEdge* f = (const TmpMeshFaceOnEdge*) face;
+      const _TmpMeshFaceOnEdge* f = (const _TmpMeshFaceOnEdge*) face;
       set< _LayerEdge*, _LayerEdgeCmp > & ee = edge2CloseEdge[ edge ];
       ee.insert( f->_le1 );
       ee.insert( f->_le2 );
@@ -3308,8 +3433,6 @@ bool _ViscousBuilder::updateNormals( _SolidData&         data,
       const SMDS_MeshNode *n1, *n2;
       n1 = edge1->_2neibors->_edges[0]->_nodes[0];
       n2 = edge1->_2neibors->_edges[1]->_nodes[0];
-      //if ( !findNeiborsOnEdge( edge1, n1, n2, data ))
-      //  continue;
       edge1->SetDataByNeighbors( n1, n2, helper );
       gp_Vec dirInFace;
       if ( edge1->_cosin < 0 )
@@ -3320,7 +3443,7 @@ bool _ViscousBuilder::updateNormals( _SolidData&         data,
       edge1->SetCosin( cos( angle ));
 
       // limit data._stepSize
-      if ( edge1->_cosin > 0.1 )
+      if ( edge1->_cosin > theMinSmoothCosin )
       {
         SMDS_ElemIteratorPtr fIt = edge1->_nodes[0]->GetInverseElementIterator(SMDSAbs_Face);
         while ( fIt->more() )
@@ -3355,8 +3478,6 @@ bool _ViscousBuilder::updateNormals( _SolidData&         data,
           _LayerEdge* nextEdge = neighbor->_2neibors->_edges[iNext];
           if ( nextEdge == prevEdge )
             nextEdge = neighbor->_2neibors->_edges[ ++iNext ];
-//           const double&  wgtPrev = neighbor->_2neibors->_wgt[1-iNext];
-//           const double&  wgtNext = neighbor->_2neibors->_wgt[iNext];
           double r = double(step-1)/nbSteps;
           if ( !nextEdge->_2neibors )
             r = 0.5;
@@ -3387,6 +3508,489 @@ bool _ViscousBuilder::updateNormals( _SolidData&         data,
     delete tmpFaces[i];
 
   return true;
+}
+
+//================================================================================
+/*!
+ * \brief Modify normals of _LayerEdge's on _ConvexFace's
+ */
+//================================================================================
+
+bool _ViscousBuilder::updateNormalsOfConvexFaces( _SolidData&         data,
+                                                  SMESH_MesherHelper& helper,
+                                                  int                 stepNb )
+{
+  SMESHDS_Mesh* meshDS = helper.GetMeshDS();
+  bool isOK;
+
+  map< TGeomID, _ConvexFace >::iterator id2face = data._convexFaces.begin();
+  for ( ; id2face != data._convexFaces.end(); ++id2face )
+  {
+    _ConvexFace & convFace = (*id2face).second;
+    if ( convFace._normalsFixed )
+      continue; // already fixed
+    if ( convFace.CheckPrisms() )
+      continue; // nothing to fix
+
+    convFace._normalsFixed = true;
+
+    BRepAdaptor_Surface surface ( convFace._face, false );
+    BRepLProp_SLProps   surfProp( surface, 2, 1e-6 );
+
+    // check if the convex FACE is of spherical shape
+
+    Bnd_B3d centersBox; // bbox of centers of curvature of _LayerEdge's on VERTEXes
+    Bnd_B3d nodesBox;
+    gp_Pnt  center;
+    int     iBeg, iEnd;
+
+    map< TGeomID, int >::iterator id2end = convFace._subIdToEdgeEnd.begin();
+    for ( ; id2end != convFace._subIdToEdgeEnd.end(); ++id2end )
+    {
+      data.GetEdgesOnShape( id2end->second, iBeg, iEnd );
+
+      if ( meshDS->IndexToShape( id2end->first ).ShapeType() == TopAbs_VERTEX )
+      {
+        _LayerEdge* ledge = data._edges[ iBeg ];
+        if ( convFace.GetCenterOfCurvature( ledge, surfProp, helper, center ))
+          centersBox.Add( center );
+      }
+      for ( ; iBeg < iEnd; ++iBeg )
+        nodesBox.Add( SMESH_TNodeXYZ( data._edges[ iBeg ]->_nodes[0] ));
+    }
+    if ( centersBox.IsVoid() )
+    {
+      debugMsg( "Error: centersBox.IsVoid()" );
+      return false;
+    }
+    const bool isSpherical =
+      ( centersBox.SquareExtent() < 1e-6 * nodesBox.SquareExtent() );
+
+    int nbEdges = helper.Count( convFace._face, TopAbs_EDGE, /*ignoreSame=*/false );
+    vector < _CentralCurveOnEdge > centerCurves( nbEdges );
+
+    if ( isSpherical )
+    {
+      // set _LayerEdge::_normal as average of all normals
+
+      // WARNING: different density of nodes on EDGEs is not taken into account that
+      // can lead to an improper new normal
+
+      gp_XYZ avgNormal( 0,0,0 );
+      nbEdges = 0;
+      id2end = convFace._subIdToEdgeEnd.begin();
+      for ( ; id2end != convFace._subIdToEdgeEnd.end(); ++id2end )
+      {
+        data.GetEdgesOnShape( id2end->second, iBeg, iEnd );
+        // set data of _CentralCurveOnEdge
+        const TopoDS_Shape& S = meshDS->IndexToShape( id2end->first );
+        if ( S.ShapeType() == TopAbs_EDGE )
+        {
+          _CentralCurveOnEdge& ceCurve = centerCurves[ nbEdges++ ];
+          ceCurve.SetShapes( TopoDS::Edge(S), convFace, data, helper );
+          if ( !data._edges[ iBeg ]->_sWOL.IsNull() )
+            ceCurve._adjFace.Nullify();
+          else
+            ceCurve._ledges.insert( ceCurve._ledges.end(),
+                                    &data._edges[ iBeg ], &data._edges[ iEnd ]);
+        }
+        // summarize normals
+        for ( ; iBeg < iEnd; ++iBeg )
+          avgNormal += data._edges[ iBeg ]->_normal;
+      }
+      avgNormal.Normalize();
+
+      // compute new _LayerEdge::_cosin on EDGEs
+      double avgCosin = 0;
+      int     nbCosin = 0;
+      gp_Vec inFaceDir;
+      for ( size_t iE = 0; iE < centerCurves.size(); ++iE )
+      {
+        _CentralCurveOnEdge& ceCurve = centerCurves[ iE ];
+        if ( ceCurve._adjFace.IsNull() )
+          continue;
+        for ( size_t iLE = 0; iLE < ceCurve._ledges.size(); ++iLE )
+        {
+          const SMDS_MeshNode* node = ceCurve._ledges[ iLE ]->_nodes[0];
+          inFaceDir = getFaceDir( ceCurve._adjFace, ceCurve._edge, node, helper, isOK );
+          if ( isOK )
+          {
+            double angle = inFaceDir.Angle( avgNormal ); // [0,PI]
+            ceCurve._ledges[ iLE ]->_cosin = Cos( angle );
+            avgCosin += ceCurve._ledges[ iLE ]->_cosin;
+            nbCosin++;
+          }
+        }
+      }
+      if ( nbCosin > 0 )
+        avgCosin /= nbCosin;
+
+      // set _LayerEdge::_normal = avgNormal
+      id2end = convFace._subIdToEdgeEnd.begin();
+      for ( ; id2end != convFace._subIdToEdgeEnd.end(); ++id2end )
+      {
+        data.GetEdgesOnShape( id2end->second, iBeg, iEnd );
+        const TopoDS_Shape& S = meshDS->IndexToShape( id2end->first );
+        if ( S.ShapeType() != TopAbs_EDGE )
+          for ( int i = iBeg; i < iEnd; ++i )
+            data._edges[ i ]->_cosin = avgCosin;
+
+        for ( ; iBeg < iEnd; ++iBeg )
+          data._edges[ iBeg ]->_normal = avgNormal;
+      }
+    }
+    else // if ( isSpherical )
+    {
+      // We suppose that centers of curvature at all points of the FACE
+      // lie on some curve, let's call it "central curve". For all _LayerEdge's
+      // having a common center of curvature we define the same new normal
+      // as a sum of normals of _LayerEdge's on EDGEs among them.
+
+      // get all centers of curvature for each EDGE
+
+      helper.SetSubShape( convFace._face );
+      _LayerEdge* vertexLEdges[2], **edgeLEdge, **edgeLEdgeEnd;
+
+      TopExp_Explorer edgeExp( convFace._face, TopAbs_EDGE );
+      for ( int iE = 0; edgeExp.More(); edgeExp.Next(), ++iE )
+      {
+        const TopoDS_Edge& edge = TopoDS::Edge( edgeExp.Current() );
+
+        // set adjacent FACE
+        centerCurves[ iE ].SetShapes( edge, convFace, data, helper );
+
+        // get _LayerEdge's of the EDGE
+        TGeomID edgeID = meshDS->ShapeToIndex( edge );
+        id2end = convFace._subIdToEdgeEnd.find( edgeID );
+        if ( id2end == convFace._subIdToEdgeEnd.end() )
+        {
+          // no _LayerEdge's on EDGE, use _LayerEdge's on VERTEXes
+          for ( int iV = 0; iV < 2; ++iV )
+          {
+            TopoDS_Vertex v = helper.IthVertex( iV, edge );
+            TGeomID     vID = meshDS->ShapeToIndex( v );
+            int  end = convFace._subIdToEdgeEnd[ vID ];
+            int iBeg = end > 0 ? data._endEdgeOnShape[ end-1 ] : 0;
+            vertexLEdges[ iV ] = data._edges[ iBeg ];
+          }
+          edgeLEdge    = &vertexLEdges[0];
+          edgeLEdgeEnd = edgeLEdge + 2;
+
+          centerCurves[ iE ]._adjFace.Nullify();
+        }
+        else
+        {
+          data.GetEdgesOnShape( id2end->second, iBeg, iEnd );
+          if ( id2end->second >= data._nbShapesToSmooth )
+            data.SortOnEdge( edge, iBeg, iEnd, helper );
+          edgeLEdge    = &data._edges[ iBeg ];
+          edgeLEdgeEnd = edgeLEdge + iEnd - iBeg;
+          vertexLEdges[0] = data._edges[ iBeg   ]->_2neibors->_edges[0];
+          vertexLEdges[1] = data._edges[ iEnd-1 ]->_2neibors->_edges[1];
+
+          if ( ! data._edges[ iBeg ]->_sWOL.IsNull() )
+            centerCurves[ iE ]._adjFace.Nullify();
+        }
+
+        // Get curvature centers
+
+        centersBox.Clear();
+
+        if ( edgeLEdge[0]->IsOnEdge() &&
+             convFace.GetCenterOfCurvature( vertexLEdges[0], surfProp, helper, center ))
+        { // 1st VERTEX
+          centerCurves[ iE ].Append( center, vertexLEdges[0] );
+          centersBox.Add( center );
+        }
+        for ( ; edgeLEdge < edgeLEdgeEnd; ++edgeLEdge )
+          if ( convFace.GetCenterOfCurvature( *edgeLEdge, surfProp, helper, center ))
+          { // EDGE or VERTEXes
+            centerCurves[ iE ].Append( center, *edgeLEdge );
+            centersBox.Add( center );
+          }
+        if ( edgeLEdge[-1]->IsOnEdge() &&
+             convFace.GetCenterOfCurvature( vertexLEdges[1], surfProp, helper, center ))
+        { // 2nd VERTEX
+          centerCurves[ iE ].Append( center, vertexLEdges[1] );
+          centersBox.Add( center );
+        }
+        centerCurves[ iE ]._isDegenerated =
+          ( centersBox.IsVoid() || centersBox.SquareExtent() < 1e-6 * nodesBox.SquareExtent() );
+
+      } // loop on EDGES of convFace._face to set up data of centerCurves
+
+      // Compute new normals for _LayerEdge's on EDGEs
+
+      double avgCosin = 0;
+      int     nbCosin = 0;
+      gp_Vec inFaceDir;
+      for ( size_t iE1 = 0; iE1 < centerCurves.size(); ++iE1 )
+      {
+        _CentralCurveOnEdge& ceCurve = centerCurves[ iE1 ];
+        if ( ceCurve._isDegenerated )
+          continue;
+        const vector< gp_Pnt >& centers = ceCurve._curvaCenters;
+        vector< gp_XYZ > &   newNormals = ceCurve._normals;
+        for ( size_t iC1 = 0; iC1 < centers.size(); ++iC1 )
+        {
+          isOK = false;
+          for ( size_t iE2 = 0; iE2 < centerCurves.size() && !isOK; ++iE2 )
+          {
+            if ( iE1 != iE2 )
+              isOK = centerCurves[ iE2 ].FindNewNormal( centers[ iC1 ], newNormals[ iC1 ]);
+          }
+          if ( isOK && !ceCurve._adjFace.IsNull() )
+          {
+            // compute new _LayerEdge::_cosin
+            const SMDS_MeshNode* node = ceCurve._ledges[ iC1 ]->_nodes[0];
+            inFaceDir = getFaceDir( ceCurve._adjFace, ceCurve._edge, node, helper, isOK );
+            if ( isOK )
+            {
+              double angle = inFaceDir.Angle( newNormals[ iC1 ] ); // [0,PI]
+              ceCurve._ledges[ iC1 ]->_cosin = Cos( angle );
+              avgCosin += ceCurve._ledges[ iC1 ]->_cosin;
+              nbCosin++;
+            }
+          }
+        }
+      }
+      // set new normals to _LayerEdge's of NOT degenerated central curves
+      for ( size_t iE = 0; iE < centerCurves.size(); ++iE )
+      {
+        if ( centerCurves[ iE ]._isDegenerated )
+          continue;
+        for ( size_t iLE = 0; iLE < centerCurves[ iE ]._ledges.size(); ++iLE )
+          centerCurves[ iE ]._ledges[ iLE ]->_normal = centerCurves[ iE ]._normals[ iLE ];
+      }
+      // set new normals to _LayerEdge's of     degenerated central curves
+      for ( size_t iE = 0; iE < centerCurves.size(); ++iE )
+      {
+        if ( !centerCurves[ iE ]._isDegenerated ||
+             centerCurves[ iE ]._ledges.size() < 3 )
+          continue;
+        // new normal is an average of new normals at VERTEXes that
+        // was computed on non-degenerated _CentralCurveOnEdge's
+        gp_XYZ newNorm = ( centerCurves[ iE ]._ledges.front()->_normal +
+                           centerCurves[ iE ]._ledges.back ()->_normal );
+        double sz = newNorm.Modulus();
+        if ( sz < 1e-200 )
+          continue;
+        newNorm /= sz;
+        double newCosin = ( 0.5 * centerCurves[ iE ]._ledges.front()->_cosin +
+                            0.5 * centerCurves[ iE ]._ledges.back ()->_cosin );
+        for ( size_t iLE = 1, nb = centerCurves[ iE ]._ledges.size() - 1; iLE < nb; ++iLE )
+        {
+          centerCurves[ iE ]._ledges[ iLE ]->_normal = newNorm;
+          centerCurves[ iE ]._ledges[ iLE ]->_cosin  = newCosin;
+        }
+      }
+
+      // Find new normals for _LayerEdge's based on FACE
+
+      if ( nbCosin > 0 )
+        avgCosin /= nbCosin;
+      const TGeomID faceID = meshDS->ShapeToIndex( convFace._face );
+      map< TGeomID, int >::iterator id2end = convFace._subIdToEdgeEnd.find( faceID );
+      if ( id2end != convFace._subIdToEdgeEnd.end() )
+      {
+        int iE = 0;
+        gp_XYZ newNorm;
+        data.GetEdgesOnShape( id2end->second, iBeg, iEnd );
+        for ( ; iBeg < iEnd; ++iBeg )
+        {
+          _LayerEdge* ledge = data._edges[ iBeg ];
+          if ( !convFace.GetCenterOfCurvature( ledge, surfProp, helper, center ))
+            continue;
+          for ( size_t i = 0; i < centerCurves.size(); ++i, ++iE )
+          {
+            iE = iE % centerCurves.size();
+            if ( centerCurves[ iE ]._isDegenerated )
+              continue;
+            newNorm.SetCoord( 0,0,0 );
+            if ( centerCurves[ iE ].FindNewNormal( center, newNorm ))
+            {
+              ledge->_normal = newNorm;
+              ledge->_cosin  = avgCosin;
+              break;
+            }
+          }
+        }
+      }
+
+    } // not a quasi-spherical FACE
+
+    // Update _LayerEdge's data according to a new normal
+
+    dumpFunction(SMESH_Comment("updateNormalsOfConvexFaces")<<data._index
+                 <<"_F"<<meshDS->ShapeToIndex( convFace._face ));
+
+    id2end = convFace._subIdToEdgeEnd.begin();
+    for ( ; id2end != convFace._subIdToEdgeEnd.end(); ++id2end )
+    {
+      data.GetEdgesOnShape( id2end->second, iBeg, iEnd );
+      for ( ; iBeg < iEnd; ++iBeg )
+      {
+        _LayerEdge* & ledge = data._edges[ iBeg ];
+        double len = ledge->_len;
+        ledge->InvalidateStep( stepNb + 1, /*restoreLength=*/true );
+        ledge->SetCosin( ledge->_cosin );
+        ledge->SetNewLength( len, helper );
+      }
+
+    } // loop on sub-shapes of convFace._face
+
+    // Find FACEs adjacent to convFace._face that got necessity to smooth
+    // as a result of normals modification
+
+    set< TGeomID > adjFacesToSmooth;
+    for ( size_t iE = 0; iE < centerCurves.size(); ++iE )
+    {
+      if ( centerCurves[ iE ]._adjFace.IsNull() ||
+           centerCurves[ iE ]._adjFaceToSmooth )
+        continue;
+      for ( size_t iLE = 0; iLE < centerCurves[ iE ]._ledges.size(); ++iLE )
+      {
+        if ( centerCurves[ iE ]._ledges[ iLE ]->_cosin > theMinSmoothCosin )
+        {
+          adjFacesToSmooth.insert( meshDS->ShapeToIndex( centerCurves[ iE ]._adjFace ));
+          break;
+        }
+      }
+    }
+    data.AddFacesToSmooth( adjFacesToSmooth );
+
+    dumpFunctionEnd();
+
+
+  } // loop on data._convexFaces
+
+  return true;
+}
+
+//================================================================================
+/*!
+ * \brief Finds a center of curvature of a surface at a _LayerEdge
+ */
+//================================================================================
+
+bool _ConvexFace::GetCenterOfCurvature( _LayerEdge*         ledge,
+                                        BRepLProp_SLProps&  surfProp,
+                                        SMESH_MesherHelper& helper,
+                                        gp_Pnt &            center ) const
+{
+  gp_XY uv = helper.GetNodeUV( _face, ledge->_nodes[0] );
+  surfProp.SetParameters( uv.X(), uv.Y() );
+  if ( !surfProp.IsCurvatureDefined() )
+    return false;
+
+  const double oriFactor = ( _face.Orientation() == TopAbs_REVERSED ? +1. : -1. );
+  double surfCurvatureMax = surfProp.MaxCurvature() * oriFactor;
+  double surfCurvatureMin = surfProp.MinCurvature() * oriFactor;
+  if ( surfCurvatureMin > surfCurvatureMax )
+    center = surfProp.Value().Translated( surfProp.Normal().XYZ() / surfCurvatureMin * oriFactor );
+  else
+    center = surfProp.Value().Translated( surfProp.Normal().XYZ() / surfCurvatureMax * oriFactor );
+
+  return true;
+}
+
+//================================================================================
+/*!
+ * \brief Check that prisms are not distorted
+ */
+//================================================================================
+
+bool _ConvexFace::CheckPrisms() const
+{
+  for ( size_t i = 0; i < _simplexTestEdges.size(); ++i )
+  {
+    const _LayerEdge* edge = _simplexTestEdges[i];
+    SMESH_TNodeXYZ tgtXYZ( edge->_nodes.back() );
+    for ( size_t j = 0; j < edge->_simplices.size(); ++j )
+      if ( !edge->_simplices[j].IsForward( edge->_nodes[0], &tgtXYZ ))
+      {
+        debugMsg( "Bad simplex of _simplexTestEdges ("
+                  << " "<< edge->_nodes[0]->GetID()<< " "<< tgtXYZ._node->GetID()
+                  << " "<< edge->_simplices[j]._nPrev->GetID()
+                  << " "<< edge->_simplices[j]._nNext->GetID() << " )" );
+        return false;
+      }
+  }
+  return true;
+}
+
+//================================================================================
+/*!
+ * \brief Try to compute a new normal by interpolating normals of _LayerEdge's
+ *        stored in this _CentralCurveOnEdge.
+ *  \param [in] center - curvature center of a point of another _CentralCurveOnEdge.
+ *  \param [in,out] newNormal - current normal at this point, to be redefined
+ *  \return bool - true if succeeded.
+ */
+//================================================================================
+
+bool _CentralCurveOnEdge::FindNewNormal( const gp_Pnt& center, gp_XYZ& newNormal )
+{
+  if ( this->_isDegenerated )
+    return false;
+
+  // find two centers the given one lies between
+
+  for ( size_t i = 0, nb = _curvaCenters.size()-1;  i < nb;  ++i )
+  {
+    double sl2 = 1.001 * _segLength2[ i ];
+
+    double d1 = center.SquareDistance( _curvaCenters[ i ]);
+    if ( d1 > sl2 )
+      continue;
+    
+    double d2 = center.SquareDistance( _curvaCenters[ i+1 ]);
+    if ( d2 > sl2 || d2 + d1 < 1e-100 )
+      continue;
+
+    d1 = Sqrt( d1 );
+    d2 = Sqrt( d2 );
+    double r = d1 / ( d1 + d2 );
+    gp_XYZ norm = (( 1. - r ) * _ledges[ i   ]->_normal +
+                   (      r ) * _ledges[ i+1 ]->_normal );
+    norm.Normalize();
+
+    newNormal += norm;
+    double sz = newNormal.Modulus();
+    if ( Abs ( sz ) < 1e-200 )
+      break;
+    newNormal /= sz;
+    return true;
+  }
+  return false;
+}
+
+//================================================================================
+/*!
+ * \brief Set shape members
+ */
+//================================================================================
+
+void _CentralCurveOnEdge::SetShapes( const TopoDS_Edge&  edge,
+                                     const _ConvexFace&  convFace,
+                                     const _SolidData&   data,
+                                     SMESH_MesherHelper& helper)
+{
+  _edge = edge;
+
+  PShapeIteratorPtr fIt = helper.GetAncestors( edge, *helper.GetMesh(), TopAbs_FACE );
+  while ( const TopoDS_Shape* F = fIt->next())
+    if ( !convFace._face.IsSame( *F ))
+    {
+      _adjFace = TopoDS::Face( *F );
+      _adjFaceToSmooth = false;
+      // _adjFace already in a smoothing queue ?
+      size_t end;
+      TGeomID adjFaceID = helper.GetMeshDS()->ShapeToIndex( *F );
+      if ( data.GetShapeEdges( adjFaceID, end ))
+        _adjFaceToSmooth = ( end < data._nbShapesToSmooth );
+      break;
+    }
 }
 
 //================================================================================
@@ -3444,14 +4048,7 @@ bool _LayerEdge::FindIntersection( SMESH_ElementSearcher&   searcher,
     }
   }
   if ( iFace != -1 && face ) *face = suspectFaces[iFace];
-//   if ( distance && iFace > -1 )
-//   {
-//     // distance is used to limit size of inflation step which depends on
-//     // whether the intersected face bears viscous layers or not
-//     bool faceHasVL = suspectFaces[iFace]->GetID() < 1;
-//     if ( faceHasVL )
-//       *distance /= 2;
-//   }
+
   if ( segmentIntersected )
   {
 #ifdef __myDEBUG
@@ -3586,32 +4183,6 @@ bool _LayerEdge::SegTriaInter( const gp_Ax1&        lastSegment,
   /* calculate t, ray intersects triangle */
   t = (edge2 * qvec) * inv_det;
 
-  //   if (det < EPSILON)
-  //     return false;
-
-  //   /* calculate distance from vert0 to ray origin */
-  //   gp_XYZ tvec = orig - vert0;
-
-  //   /* calculate U parameter and test bounds */
-  //   double u = tvec * pvec;
-  //   if (u < 0.0 || u > det)
-//     return 0;
-
-//   /* prepare to test V parameter */
-//   gp_XYZ qvec = tvec ^ edge1;
-
-//   /* calculate V parameter and test bounds */
-//   double v = dir * qvec;
-//   if (v < 0.0 || u + v > det)
-//     return 0;
-
-//   /* calculate t, scale parameters, ray intersects triangle */
-//   double t = edge2 * qvec;
-//   double inv_det = 1.0 / det;
-//   t *= inv_det;
-//   //u *= inv_det;
-//   //v *= inv_det;
-
   return true;
 }
 
@@ -3705,18 +4276,7 @@ bool _LayerEdge::Smooth(int& badNb)
     newPos += _normal * _curvature->lenDelta( _len );
 
   gp_Pnt prevPos( _pos[ _pos.size()-2 ]);
-//   if ( _cosin < -0.1)
-//   {
-//     // Avoid decreasing length of edge on concave surface
-//     //gp_Vec oldMove( _pos[ _pos.size()-2 ], _pos.back() );
-//     gp_Vec newMove( prevPos, newPos );
-//     newPos = _pos.back() + newMove.XYZ();
-//   }
-//   else if ( _cosin > 0.3 )
-//   {
-//     // Avoid increasing length of edge too much
 
-//   }
   // count quality metrics (orientation) of tetras around _tgtNode
   int nbOkBefore = 0;
   SMESH_TNodeXYZ tgtXYZ( _nodes.back() );
@@ -3797,10 +4357,13 @@ void _LayerEdge::SetNewLength( double len, SMESH_MesherHelper& helper )
  */
 //================================================================================
 
-void _LayerEdge::InvalidateStep( int curStep )
+void _LayerEdge::InvalidateStep( int curStep, bool restoreLength )
 {
   if ( _pos.size() > curStep )
   {
+    if ( restoreLength )
+      _len -= ( _pos[ curStep-1 ] - _pos.back() ).Modulus();
+
     _pos.resize( curStep );
     gp_Pnt nXYZ = _pos.back();
     SMDS_MeshNode* n = const_cast< SMDS_MeshNode*>( _nodes.back() );
@@ -4420,54 +4983,9 @@ bool _ViscousBuilder::prepareEdgeToShrink( _LayerEdge&            edge,
     edge._normal.SetCoord( uvDir.X(),uvDir.Y(), 0);
     edge._len = uvLen;
 
-    // // IMPORTANT to have src nodes NOT yet REPLACED by tgt nodes in shrinked faces
-    // vector<const SMDS_MeshElement*> faces;
-    // multimap< double, const SMDS_MeshNode* > proj2node;
-    // SMDS_ElemIteratorPtr fIt = srcNode->GetInverseElementIterator(SMDSAbs_Face);
-    // while ( fIt->more() )
-    // {
-    //   const SMDS_MeshElement* f = fIt->next();
-    //   if ( faceSubMesh->Contains( f ))
-    //     faces.push_back( f );
-    // }
-    // for ( size_t i = 0; i < faces.size(); ++i )
-    // {
-    //   const int nbNodes = faces[i]->NbCornerNodes();
-    //   for ( int j = 0; j < nbNodes; ++j )
-    //   {
-    //     const SMDS_MeshNode* n = faces[i]->GetNode(j);
-    //     if ( n == srcNode ) continue;
-    //     if ( n->GetPosition()->GetTypeOfPosition() != SMDS_TOP_FACE &&
-    //          ( faces.size() > 1 || nbNodes > 3 ))
-    //       continue;
-    //     gp_Pnt2d uv = helper.GetNodeUV( F, n );
-    //     gp_Vec2d uvDirN( srcUV, uv );
-    //     double proj = uvDirN * uvDir;
-    //     proj2node.insert( make_pair( proj, n ));
-    //   }
-    // }
-
-    // multimap< double, const SMDS_MeshNode* >::iterator p2n = proj2node.begin(), p2nEnd;
-    // const double       minProj = p2n->first;
-    // const double projThreshold = 1.1 * uvLen;
-    // if ( minProj > projThreshold )
-    // {
-    //   // tgtNode is located so that it does not make faces with wrong orientation
-    //   return true;
-    // }
     edge._pos.resize(1);
     edge._pos[0].SetCoord( tgtUV.X(), tgtUV.Y(), 0 );
 
-    // store most risky nodes in _simplices
-    // p2nEnd = proj2node.lower_bound( projThreshold );
-    // int nbSimpl = ( std::distance( p2n, p2nEnd ) + 1) / 2;
-    // edge._simplices.resize( nbSimpl );
-    // for ( int i = 0; i < nbSimpl; ++i )
-    // {
-    //   edge._simplices[i]._nPrev = p2n->second;
-    //   if ( ++p2n != p2nEnd )
-    //     edge._simplices[i]._nNext = p2n->second;
-    // }
     // set UV of source node to target node
     SMDS_FacePosition* pos = static_cast<SMDS_FacePosition*>( tgtNode->GetPosition() );
     pos->SetUParameter( srcUV.X() );
@@ -4514,59 +5032,6 @@ bool _ViscousBuilder::prepareEdgeToShrink( _LayerEdge&            edge,
     pos->SetUParameter( uSrc );
   }
   return true;
-
-  //================================================================================
-  /*!
-   * \brief Compute positions (UV) to set to a node on edge moved during shrinking
-   */
-  //================================================================================
-  
-  // Compute UV to follow during shrinking
-
-//   const SMDS_MeshNode* srcNode = edge._nodes[0];
-//   const SMDS_MeshNode* tgtNode = edge._nodes.back();
-
-//   gp_XY srcUV = helper.GetNodeUV( F, srcNode );
-//   gp_XY tgtUV = helper.GetNodeUV( F, tgtNode );
-//   gp_Vec2d uvDir( srcUV, tgtUV );
-//   double uvLen = uvDir.Magnitude();
-//   uvDir /= uvLen;
-
-//   // Select shrinking step such that not to make faces with wrong orientation.
-//   // IMPORTANT to have src nodes NOT yet REPLACED by tgt nodes in shrinked faces
-//   const double minStepSize = uvLen / 20;
-//   double stepSize = uvLen;
-//   SMDS_ElemIteratorPtr fIt = srcNode->GetInverseElementIterator(SMDSAbs_Face);
-//   while ( fIt->more() )
-//   {
-//     const SMDS_MeshElement* f = fIt->next();
-//     if ( !faceSubMesh->Contains( f )) continue;
-//     const int nbNodes = f->NbCornerNodes();
-//     for ( int i = 0; i < nbNodes; ++i )
-//     {
-//       const SMDS_MeshNode* n = f->GetNode(i);
-//       if ( n->GetPosition()->GetTypeOfPosition() != SMDS_TOP_FACE || n == srcNode)
-//         continue;
-//       gp_XY uv = helper.GetNodeUV( F, n );
-//       gp_Vec2d uvDirN( srcUV, uv );
-//       double proj = uvDirN * uvDir;
-//       if ( proj < stepSize && proj > minStepSize )
-//         stepSize = proj;
-//     }
-//   }
-//   stepSize *= 0.8;
-
-//   const int nbSteps = ceil( uvLen / stepSize );
-//   gp_XYZ srcUV0( srcUV.X(), srcUV.Y(), 0 );
-//   gp_XYZ tgtUV0( tgtUV.X(), tgtUV.Y(), 0 );
-//   edge._pos.resize( nbSteps );
-//   edge._pos[0] = tgtUV0;
-//   for ( int i = 1; i < nbSteps; ++i )
-//   {
-//     double r = i / double( nbSteps );
-//     edge._pos[i] = (1-r) * tgtUV0 + r * srcUV0;
-//   }
-//   return true;
 }
 
 //================================================================================
@@ -4584,7 +5049,7 @@ void _ViscousBuilder::fixBadFaces(const TopoDS_Face&          F,
   SMESH::Controls::AspectRatio qualifier;
   SMESH::Controls::TSequenceOfXYZ points(3), points1(3), points2(3);
   const double maxAspectRatio = is2D ? 4. : 2;
-  NodeCoordHelper xyz( F, helper, is2D );
+  _NodeCoordHelper xyz( F, helper, is2D );
 
   // find bad triangles
 
