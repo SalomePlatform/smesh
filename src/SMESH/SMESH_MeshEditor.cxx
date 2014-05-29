@@ -6453,7 +6453,9 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
 
   // Sort existing groups by types and collect their names
 
-  // to store an old group and a generated new ones
+  // containers to store an old group and generated new ones;
+  // 1st new group is for result elems of different type than a source one;
+  // 2nd new group is for same type result elems ("top" group at extrusion)
   using boost::tuple;
   using boost::make_tuple;
   typedef tuple< SMESHDS_GroupBase*, SMESHDS_Group*, SMESHDS_Group* > TOldNewGroup;
@@ -6483,6 +6485,11 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
 
   // Loop on nodes and elements to add them in new groups
 
+  // is there elements of different types generated from one source element;
+  // it is false for transformations and true for sweeping
+  bool isTwoTypesResult = false;
+
+  vector< const SMDS_MeshElement* > resultElems;
   for ( int isNodes = 0; isNodes < 2; ++isNodes )
   {
     const SMESH_SequenceOfElemPtr& gens  = isNodes ? nodeGens : elemGens;
@@ -6505,7 +6512,7 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
         continue;
       }
       // collect all elements made by the iElem-th sourceElem
-      list< const SMDS_MeshElement* > resultElems;
+      resultElems.clear();
       if ( const SMDS_MeshElement* resElem = elems( iElem ))
         if ( resElem != sourceElem )
           resultElems.push_back( resElem );
@@ -6523,12 +6530,12 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
       }
       else
       {
-        list< const SMDS_MeshElement* >::reverse_iterator resElemIt = resultElems.rbegin();
+        vector< const SMDS_MeshElement* >::reverse_iterator resElemIt = resultElems.rbegin();
         for ( ; resElemIt != resultElems.rend() ; ++resElemIt )
           if ( (*resElemIt)->GetType() == sourceElem->GetType() )
           {
             topElem = *resElemIt;
-            resultElems.erase( --(resElemIt.base()) ); // erase *resElemIt
+            *resElemIt = 0; // erase *resElemIt
             break;
           }
       }
@@ -6542,15 +6549,19 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
         {
           // fill in a new group
           SMDS_MeshGroup & newGroup = gOldNew->get<1>()->SMDSGroup();
-          list< const SMDS_MeshElement* >::iterator resLast = resultElems.end(), resElemIt;
+          vector< const SMDS_MeshElement* >::iterator resLast = resultElems.end(), resElemIt;
           for ( resElemIt = resultElems.begin(); resElemIt != resLast; ++resElemIt )
-            newGroup.Add( *resElemIt );
+            if ( *resElemIt )
+              newGroup.Add( *resElemIt );
 
           // fill a "top" group
           if ( topElem )
           {
             SMDS_MeshGroup & newTopGroup = gOldNew->get<2>()->SMDSGroup();
             newTopGroup.Add( topElem );
+
+            if ( !newGroup.IsEmpty() )
+              isTwoTypesResult = true;
           }
         }
       }
@@ -6565,7 +6576,6 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
     SMESHDS_GroupBase* oldGroupDS =   orderedOldNewGroups[i]->get<0>();
     SMESHDS_Group*   newGroups[2] = { orderedOldNewGroups[i]->get<1>(),
                                       orderedOldNewGroups[i]->get<2>() };
-    const int nbNewGroups = !newGroups[0]->IsEmpty() + !newGroups[1]->IsEmpty();
     for ( int is2nd = 0; is2nd < 2; ++is2nd )
     {
       SMESHDS_Group* newGroupDS = newGroups[ is2nd ];
@@ -6579,11 +6589,21 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
         newGroupDS->SetType( newGroupDS->GetElements()->next()->GetType() );
 
         // make a name
-        const bool isTop = ( nbNewGroups == 2 &&
+        const bool isTop = ( isTwoTypesResult &&
                              newGroupDS->GetType() == oldGroupDS->GetType() &&
                              is2nd );
 
         string name = oldGroupDS->GetStoreName();
+        { // remove trailing whitespaces (issue 22599)
+          size_t size = name.size();
+          while ( size > 1 && isspace( name[ size-1 ]))
+            --size;
+          if ( size != name.size() )
+          {
+            name.resize( size );
+            oldGroupDS->SetStoreName( name.c_str() );
+          }
+        }
         if ( !targetMesh ) {
           string suffix = ( isTop ? "top": postfix.c_str() );
           name += "_";

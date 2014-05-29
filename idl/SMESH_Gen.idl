@@ -363,7 +363,7 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
 
     /*!
-     * Return indeces of faces, edges and vertices of given sub-shapes
+     * Return indices of faces, edges and vertices of given sub-shapes
      * within theMainObject
      */
     long_array GetSubShapesId( in GEOM::GEOM_Object theMainObject,
