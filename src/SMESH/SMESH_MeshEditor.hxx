@@ -605,11 +605,14 @@ public:
    * \param nodeGens - nodes making corresponding myLastCreatedNodes
    * \param elemGens - elements making corresponding myLastCreatedElems
    * \param postfix - to append to names of new groups
+   * \param targetMesh - mesh to create groups in
+   * \param topPresent - is there "top" elements that are created by sweeping
    */
   PGroupIDs generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
                            const SMESH_SequenceOfElemPtr& elemGens,
                            const std::string&             postfix,
-                           SMESH_Mesh*                    targetMesh=0);
+                           SMESH_Mesh*                    targetMesh=0,
+                           const bool                     topPresent=true);
   /*!
    * \brief Create elements by sweeping an element
    * \param elem - element to sweep

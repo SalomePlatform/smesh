@@ -6428,7 +6428,7 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
 
   if ( ( theMakeGroups && theCopy ) ||
        ( theMakeGroups && theTargetMesh ) )
-    newGroupIDs = generateGroups( srcNodes, srcElems, groupPostfix, theTargetMesh );
+    newGroupIDs = generateGroups( srcNodes, srcElems, groupPostfix, theTargetMesh, false );
 
   return newGroupIDs;
 }
@@ -6436,9 +6436,11 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
 //=======================================================================
 /*!
  * \brief Create groups of elements made during transformation
- * \param nodeGens - nodes making corresponding myLastCreatedNodes
- * \param elemGens - elements making corresponding myLastCreatedElems
- * \param postfix - to append to names of new groups
+ *  \param nodeGens - nodes making corresponding myLastCreatedNodes
+ *  \param elemGens - elements making corresponding myLastCreatedElems
+ *  \param postfix - to append to names of new groups
+ *  \param targetMesh - mesh to create groups in
+ *  \param topPresent - is there "top" elements that are created by sweeping
  */
 //=======================================================================
 
@@ -6446,7 +6448,8 @@ SMESH_MeshEditor::PGroupIDs
 SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
                                  const SMESH_SequenceOfElemPtr& elemGens,
                                  const std::string&             postfix,
-                                 SMESH_Mesh*                    targetMesh)
+                                 SMESH_Mesh*                    targetMesh,
+                                 const bool                     topPresent)
 {
   PGroupIDs newGroupIDs( new list<int> );
   SMESH_Mesh* mesh = targetMesh ? targetMesh : GetMesh();
@@ -6485,10 +6488,6 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
 
   // Loop on nodes and elements to add them in new groups
 
-  // is there elements of different types generated from one source element;
-  // it is false for transformations and true for sweeping
-  bool isTwoTypesResult = false;
-
   vector< const SMDS_MeshElement* > resultElems;
   for ( int isNodes = 0; isNodes < 2; ++isNodes )
   {
@@ -6521,9 +6520,8 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
           if ( resElem != sourceElem )
             resultElems.push_back( resElem );
 
-      // there must be a top element
       const SMDS_MeshElement* topElem = 0;
-      if ( isNodes )
+      if ( isNodes ) // there must be a top element
       {
         topElem = resultElems.back();
         resultElems.pop_back();
@@ -6539,7 +6537,6 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
             break;
           }
       }
-
       // add resultElems to groups originted from ones the sourceElem belongs to
       list< TOldNewGroup >::iterator gOldNew, gLast = groupsOldNew.end();
       for ( gOldNew = groupsOldNew.begin(); gOldNew != gLast; ++gOldNew )
@@ -6559,10 +6556,7 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
           {
             SMDS_MeshGroup & newTopGroup = gOldNew->get<2>()->SMDSGroup();
             newTopGroup.Add( topElem );
-
-            if ( !newGroup.IsEmpty() )
-              isTwoTypesResult = true;
-          }
+         }
         }
       }
     } // loop on created elements
@@ -6589,7 +6583,7 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
         newGroupDS->SetType( newGroupDS->GetElements()->next()->GetType() );
 
         // make a name
-        const bool isTop = ( isTwoTypesResult &&
+        const bool isTop = ( topPresent &&
                              newGroupDS->GetType() == oldGroupDS->GetType() &&
                              is2nd );
 
