@@ -1012,8 +1012,11 @@ namespace
   }
   //--------------------------------------------------------------------------------
   // DEBUG. Dump intermediate node positions into a python script
+  // HOWTO use: run python commands written in a console to see
+  //  construction steps of viscous layers
 #ifdef __myDEBUG
   ofstream* py;
+  int       theNbFunc;
   struct PyDump {
     PyDump() {
       const char* fname = "/tmp/viscous.py";
@@ -1024,19 +1027,20 @@ namespace
           << "smesh  = smeshBuilder.New(salome.myStudy)" << endl
           << "meshSO = smesh.GetCurrentStudy().FindObjectID('0:1:2:3')" << endl
           << "mesh   = smesh.Mesh( meshSO.GetObject() )"<<endl;
+      theNbFunc = 0;
     }
     void Finish() {
       if (py)
         *py << "mesh.MakeGroup('Viscous Prisms',SMESH.VOLUME,SMESH.FT_ElemGeomType,'=',SMESH.Geom_PENTA)"<<endl;
       delete py; py=0;
     }
-    ~PyDump() { Finish(); }
+    ~PyDump() { Finish(); cout << "NB FUNCTIONS: " << theNbFunc << endl; }
   };
 #define dumpFunction(f) { _dumpFunction(f, __LINE__);}
 #define dumpMove(n)     { _dumpMove(n, __LINE__);}
 #define dumpCmd(txt)    { _dumpCmd(txt, __LINE__);}
   void _dumpFunction(const string& fun, int ln)
-  { if (py) *py<< "def "<<fun<<"(): # "<< ln <<endl; cout<<fun<<"()"<<endl;}
+  { if (py) *py<< "def "<<fun<<"(): # "<< ln <<endl; cout<<fun<<"()"<<endl; ++theNbFunc; }
   void _dumpMove(const SMDS_MeshNode* n, int ln)
   { if (py) *py<< "  mesh.MoveNode( "<<n->GetID()<< ", "<< n->X()
                << ", "<<n->Y()<<", "<< n->Z()<< ")\t\t # "<< ln <<endl; }
@@ -3598,7 +3602,13 @@ bool _ViscousBuilder::updateNormalsOfConvexFaces( _SolidData&         data,
         for ( ; iBeg < iEnd; ++iBeg )
           avgNormal += data._edges[ iBeg ]->_normal;
       }
-      avgNormal.Normalize();
+      double normSize = avgNormal.SquareModulus();
+      if ( normSize < 1e-200 )
+      {
+        debugMsg( "updateNormalsOfConvexFaces(): zero avgNormal" );
+        return false;
+      }
+      avgNormal /= Sqrt( normSize );
 
       // compute new _LayerEdge::_cosin on EDGEs
       double avgCosin = 0;
@@ -3957,7 +3967,7 @@ bool _CentralCurveOnEdge::FindNewNormal( const gp_Pnt& center, gp_XYZ& newNormal
 
     newNormal += norm;
     double sz = newNormal.Modulus();
-    if ( Abs ( sz ) < 1e-200 )
+    if ( sz < 1e-200 )
       break;
     newNormal /= sz;
     return true;
@@ -4739,6 +4749,7 @@ bool _ViscousBuilder::shrink()
         dumpChangeNodes( f );
 
     // Replace source nodes by target nodes in mesh faces to shrink
+    dumpFunction(SMESH_Comment("replNodesOnFace")<<f2sd->first); // debug
     const SMDS_MeshNode* nodes[20];
     for ( size_t i = 0; i < lEdges.size(); ++i )
     {
@@ -4758,6 +4769,7 @@ bool _ViscousBuilder::shrink()
           nodes[iN] = ( n == srcNode ? tgtNode : n );
         }
         helper.GetMeshDS()->ChangeElementNodes( f, nodes, f->NbNodes() );
+        dumpChangeNodes( f );
       }
     }
 
@@ -4767,6 +4779,7 @@ bool _ViscousBuilder::shrink()
     // Create _SmoothNode's on face F
     vector< _SmoothNode > nodesToSmooth( smoothNodes.size() );
     {
+      dumpFunction(SMESH_Comment("fixUVOnFace")<<f2sd->first); // debug
       const bool sortSimplices = isConcaveFace;
       for ( size_t i = 0; i < smoothNodes.size(); ++i )
       {
@@ -4907,6 +4920,17 @@ bool _ViscousBuilder::shrink()
           }
         }
       }
+      // TODO: check effect of this additional smooth
+      // additional laplacian smooth to increase allowed shrink step
+      // for ( int st = 1; st; --st )
+      // {
+      //   dumpFunction(SMESH_Comment("shrinkFace")<<f2sd->first<<"_st"<<++smooStep); // debug
+      //   for ( size_t i = 0; i < nodesToSmooth.size(); ++i )
+      //   {
+      //     nodesToSmooth[i].Smooth( badNb,surface,helper,refSign,
+      //                              _SmoothNode::LAPLACIAN,/*set3D=*/false);
+      //   }
+      // }
     } // while ( shrinked )
 
     // No wrongly shaped faces remain; final smooth. Set node XYZ.
@@ -4980,7 +5004,7 @@ bool _ViscousBuilder::prepareEdgeToShrink( _LayerEdge&            edge,
     gp_Vec2d uvDir( srcUV, tgtUV );
     double uvLen = uvDir.Magnitude();
     uvDir /= uvLen;
-    edge._normal.SetCoord( uvDir.X(),uvDir.Y(), 0);
+    edge._normal.SetCoord( uvDir.X(),uvDir.Y(), 0 );
     edge._len = uvLen;
 
     edge._pos.resize(1);
@@ -5210,7 +5234,7 @@ bool _LayerEdge::SetNewLength2d( Handle(Geom_Surface)& surface,
     const double kSafe = Max( 0.5, 1. - 0.1 * _simplices.size() );
 
     // Select shrinking step such that not to make faces with wrong orientation.
-    double stepSize = uvLen;
+    double stepSize = 1e100;
     for ( size_t i = 0; i < _simplices.size(); ++i )
     {
       // find intersection of 2 lines: curUV-tgtUV and that connecting simplex nodes
@@ -5225,7 +5249,7 @@ bool _LayerEdge::SetNewLength2d( Handle(Geom_Surface)& surface,
         stepSize = Min( step, stepSize );
     }
     gp_Pnt2d newUV;
-    if ( uvLen - stepSize < _len / 200. )
+    if ( uvLen <= stepSize )
     {
       newUV = tgtUV;
       _pos.clear();
