@@ -4635,12 +4635,22 @@ class Mesh:
     ## Return minimal and maximal value of a given functor.
     #  @param funType a functor type, an item of SMESH.FunctorType enum
     #         (one of SMESH.FunctorType._items)
+    #  @param meshPart a part of mesh (group, sub-mesh) to treat
     #  @return tuple (min,max)
     #  @ingroup l1_measurements
-    def GetMinMax(self, funType):
+    def GetMinMax(self, funType, meshPart=None):
+        unRegister = genObjUnRegister()
+        if isinstance( meshPart, list ):
+            meshPart = self.GetIDSource( meshPart, SMESH.ALL )
+            unRegister.set( meshPart )
+        if isinstance( meshPart, Mesh ):
+            meshPart = meshPart.mesh
         fun = self._getFunctor( funType )
         if fun:
-            hist = fun.GetHistogram( 1, False )
+            if meshPart:
+                hist = fun.GetLocalHistogram( 1, False, meshPart )
+            else:
+                hist = fun.GetHistogram( 1, False )
             if hist:
                 return hist[0].min, hist[0].max
         return None
