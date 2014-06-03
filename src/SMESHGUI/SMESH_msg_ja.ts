@@ -253,7 +253,7 @@
     </message>
     <message>
       <source>MEN_COMPUTE</source>
-      <translation>計算します。</translation>
+      <translation>メッシュを作成</translation>
     </message>
     <message>
       <source>MEN_PRECOMPUTE</source>
@@ -277,7 +277,7 @@
     </message>
     <message>
       <source>MEN_CONV_TO_QUAD</source>
-      <translation>2次要素の追加</translation>
+      <translation>2次/1次要素への変換</translation>
     </message>
     <message>
       <source>MEN_2D_FROM_3D</source>
@@ -1405,7 +1405,7 @@
     </message>
     <message>
       <source>SMESH_BUT_OVERWRITE</source>
-      <translation>書換え(&amp;w)</translation>
+      <translation>上書き(&amp;w)</translation>
     </message>
     <message>
       <source>SMESH_BUT_APPLY_AND_CLOSE</source>
@@ -2837,7 +2837,7 @@
     </message>
     <message>
       <source>STB_COMPUTE</source>
-      <translation>計算します。</translation>
+      <translation>メッシュを作成します。</translation>
     </message>
     <message>
       <source>STB_PRECOMPUTE</source>
@@ -3497,7 +3497,7 @@
     </message>
     <message>
       <source>TOP_COMPUTE</source>
-      <translation>計算します。</translation>
+      <translation>メッシュを作成</translation>
     </message>
     <message>
       <source>TOP_PRECOMPUTE</source>
@@ -4795,7 +4795,7 @@
     <name>SMESHGUI_ConvToQuadDlg</name>
     <message>
       <source>CAPTION</source>
-      <translation>2次要素の追加</translation>
+      <translation>2次/1次要素への変換</translation>
     </message>
     <message>
       <source>MEDIUMNDS</source>
