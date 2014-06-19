@@ -24,6 +24,8 @@
 #ifndef SMESH_ComputeError_HeaderFile
 #define SMESH_ComputeError_HeaderFile
 
+#include "SMESH_Utils.hxx"
+
 #include <string>
 #include <list>
 #include <boost/shared_ptr.hpp>
@@ -67,7 +69,7 @@ enum SMESH_ComputeErrorName
  */
 // =============================================================
 
-struct SMESH_ComputeError
+struct SMESHUtils_EXPORT SMESH_ComputeError
 {
   int               myName; //!< SMESH_ComputeErrorName or anything algo specific
   std::string       myComment;

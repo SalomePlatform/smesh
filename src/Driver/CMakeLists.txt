@@ -39,6 +39,7 @@ SET(_link_LIBRARIES
   ${CAS_TKernel}
   ${CAS_TKTopAlgo}
   SMESHDS
+  SMESHUtils
 )
 
 # --- headers ---
