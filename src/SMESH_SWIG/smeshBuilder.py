@@ -1520,7 +1520,7 @@ class Mesh:
             smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), False, True )
             salome.sg.updateObjBrowser(1)
 
-    ## Computes a tetrahedral mesh using AutomaticLength + MEFISTO + NETGEN
+    ## Computes a tetrahedral mesh using AutomaticLength + MEFISTO + Tetrahedron
     #  @param fineness [0.0,1.0] defines mesh fineness
     #  @return True or False
     #  @ingroup l3_algos_basic
@@ -1533,8 +1533,7 @@ class Mesh:
             self.Triangle().LengthFromEdges()
             pass
         if dim > 2 :
-            from salome.NETGENPlugin.NETGENPluginBuilder import NETGEN
-            self.Tetrahedron(NETGEN)
+            self.Tetrahedron()
             pass
         return self.Compute()
 
