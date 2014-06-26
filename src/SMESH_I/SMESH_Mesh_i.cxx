@@ -1547,7 +1547,7 @@ SMESH_Mesh_i::CutListOfGroups(const SMESH::ListOfGroups& theMainGroups,
 
   // Update Python script
   pyDump << aResGrp << " = " << SMESH::SMESH_Mesh_var( _this() )
-         << ".CutListOfGroups( " << theMainGroups
+         << ".CutListOfGroups( " << theMainGroups << ", "
          << theToolGroups << ", '" << theName << "' )";
 
   SMESH_CATCH( SMESH::throwCorbaException );
