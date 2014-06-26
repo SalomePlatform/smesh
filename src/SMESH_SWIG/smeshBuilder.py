@@ -456,7 +456,9 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
     #  @return SMESH.AxisStruct
     #  @ingroup l1_auxiliary
     def GetAxisStruct(self,theObj):
+        import GEOM
         edges = self.geompyD.SubShapeAll( theObj, geomBuilder.geomBuilder.ShapeType["EDGE"] )
+        axis = None
         if len(edges) > 1:
             vertex1, vertex2 = self.geompyD.SubShapeAll( edges[0], geomBuilder.geomBuilder.ShapeType["VERTEX"] )
             vertex3, vertex4 = self.geompyD.SubShapeAll( edges[1], geomBuilder.geomBuilder.ShapeType["VERTEX"] )
@@ -468,14 +470,18 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
             v2 = [vertex4[0]-vertex3[0], vertex4[1]-vertex3[1], vertex4[2]-vertex3[2]]
             normal = [ v1[1]*v2[2]-v2[1]*v1[2], v1[2]*v2[0]-v2[2]*v1[0], v1[0]*v2[1]-v2[0]*v1[1] ]
             axis = AxisStruct(vertex1[0], vertex1[1], vertex1[2], normal[0], normal[1], normal[2])
-            return axis
+            axis._mirrorType = SMESH.SMESH_MeshEditor.PLANE
         elif len(edges) == 1:
             vertex1, vertex2 = self.geompyD.SubShapeAll( edges[0], geomBuilder.geomBuilder.ShapeType["VERTEX"] )
             p1 = self.geompyD.PointCoordinates( vertex1 )
             p2 = self.geompyD.PointCoordinates( vertex2 )
             axis = AxisStruct(p1[0], p1[1], p1[2], p2[0]-p1[0], p2[1]-p1[1], p2[2]-p1[2])
-            return axis
-        return None
+            axis._mirrorType = SMESH.SMESH_MeshEditor.AXIS
+        elif theObj.GetShapeType() == GEOM.VERTEX:
+            x,y,z = self.geompyD.PointCoordinates( theObj )
+            axis = AxisStruct( x,y,z, 1,0,0,)
+            axis._mirrorType = SMESH.SMESH_MeshEditor.POINT
+        return axis
 
     # From SMESH_Gen interface:
     # ------------------------
@@ -3930,12 +3936,14 @@ class Mesh:
     #  @param MakeGroups forces the generation of new groups from existing ones (if Copy)
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     #  @ingroup l2_modif_trsf
-    def Mirror(self, IDsOfElements, Mirror, theMirrorType, Copy=0, MakeGroups=False):
+    def Mirror(self, IDsOfElements, Mirror, theMirrorType=None, Copy=0, MakeGroups=False):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Mirror, geomBuilder.GEOM._objref_GEOM_Object)):
-            Mirror = self.smeshpyD.GetAxisStruct(Mirror)
-        self.mesh.SetParameters(Mirror.parameters)
+            Mirror        = self.smeshpyD.GetAxisStruct(Mirror)
+            theMirrorType = Mirror._mirrorType
+        else:
+            self.mesh.SetParameters(Mirror.parameters)
         if Copy and MakeGroups:
             return self.editor.MirrorMakeGroups(IDsOfElements, Mirror, theMirrorType)
         self.editor.Mirror(IDsOfElements, Mirror, theMirrorType, Copy)
@@ -3950,12 +3958,14 @@ class Mesh:
     #  @param NewMeshName a name of the new mesh to create
     #  @return instance of Mesh class
     #  @ingroup l2_modif_trsf
-    def MirrorMakeMesh(self, IDsOfElements, Mirror, theMirrorType, MakeGroups=0, NewMeshName=""):
+    def MirrorMakeMesh(self, IDsOfElements, Mirror, theMirrorType=0, MakeGroups=0, NewMeshName=""):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Mirror, geomBuilder.GEOM._objref_GEOM_Object)):
-            Mirror = self.smeshpyD.GetAxisStruct(Mirror)
-        self.mesh.SetParameters(Mirror.parameters)
+            Mirror        = self.smeshpyD.GetAxisStruct(Mirror)
+            theMirrorType = Mirror._mirrorType
+        else:
+            self.mesh.SetParameters(Mirror.parameters)
         mesh = self.editor.MirrorMakeMesh(IDsOfElements, Mirror, theMirrorType,
                                           MakeGroups, NewMeshName)
         return Mesh(self.smeshpyD,self.geompyD,mesh)
@@ -3969,12 +3979,14 @@ class Mesh:
     #  @param MakeGroups forces the generation of new groups from existing ones (if Copy)
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     #  @ingroup l2_modif_trsf
-    def MirrorObject (self, theObject, Mirror, theMirrorType, Copy=0, MakeGroups=False):
+    def MirrorObject (self, theObject, Mirror, theMirrorType=None, Copy=0, MakeGroups=False):
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
         if ( isinstance( Mirror, geomBuilder.GEOM._objref_GEOM_Object)):
-            Mirror = self.smeshpyD.GetAxisStruct(Mirror)
-        self.mesh.SetParameters(Mirror.parameters)
+            Mirror        = self.smeshpyD.GetAxisStruct(Mirror)
+            theMirrorType = Mirror._mirrorType
+        else:
+            self.mesh.SetParameters(Mirror.parameters)
         if Copy and MakeGroups:
             return self.editor.MirrorObjectMakeGroups(theObject, Mirror, theMirrorType)
         self.editor.MirrorObject(theObject, Mirror, theMirrorType, Copy)
@@ -3989,12 +4001,14 @@ class Mesh:
     #  @param NewMeshName the name of the new mesh to create
     #  @return instance of Mesh class
     #  @ingroup l2_modif_trsf
-    def MirrorObjectMakeMesh (self, theObject, Mirror, theMirrorType,MakeGroups=0, NewMeshName=""):
+    def MirrorObjectMakeMesh (self, theObject, Mirror, theMirrorType=0,MakeGroups=0,NewMeshName=""):
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
-        if (isinstance(Mirror, geomBuilder.GEOM._objref_GEOM_Object)):
-            Mirror = self.smeshpyD.GetAxisStruct(Mirror)
-        self.mesh.SetParameters(Mirror.parameters)
+        if ( isinstance( Mirror, geomBuilder.GEOM._objref_GEOM_Object)):
+            Mirror        = self.smeshpyD.GetAxisStruct(Mirror)
+            theMirrorType = Mirror._mirrorType
+        else:
+            self.mesh.SetParameters(Mirror.parameters)
         mesh = self.editor.MirrorObjectMakeMesh(theObject, Mirror, theMirrorType,
                                                 MakeGroups, NewMeshName)
         return Mesh( self.smeshpyD,self.geompyD,mesh )
