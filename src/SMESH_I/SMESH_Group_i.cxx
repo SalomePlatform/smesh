@@ -774,6 +774,9 @@ SMESH_PredicatePtr SMESH_GroupOnFilter_i::GetPredicate( SMESH::Filter_ptr filter
 
 void SMESH_GroupOnFilter_i::SetFilter(SMESH::Filter_ptr theFilter)
 {
+  if ( myFilter->_is_equivalent( theFilter ))
+    return;
+
   if ( myPreMeshInfo )
     myPreMeshInfo->FullLoadFromFile();
 
