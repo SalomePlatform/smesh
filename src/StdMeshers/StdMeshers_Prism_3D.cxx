@@ -190,7 +190,7 @@ namespace {
             ( sm->NbElements() > 0 ) &&
             ( !theHelper.IsSameElemGeometry( sm, SMDSGeom_QUADRANGLE ) ))
         {
-          faceFound;
+          faceFound = true;
           break;
         }
       if ( !faceFound )
@@ -1263,34 +1263,36 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
   TProjction1dAlgo*      projector1D = TProjction1dAlgo::instance( this );
   StdMeshers_Quadrangle_2D* quadAlgo = TQuadrangleAlgo::instance( this, myHelper );
 
-  SMESH_HypoFilter hyp1dFilter( SMESH_HypoFilter::IsAlgo(),/*not=*/true);
-  hyp1dFilter.And( SMESH_HypoFilter::HasDim( 1 ));
-  hyp1dFilter.And( SMESH_HypoFilter::IsMoreLocalThan( thePrism.myShape3D, *mesh ));
+  // SMESH_HypoFilter hyp1dFilter( SMESH_HypoFilter::IsAlgo(),/*not=*/true);
+  // hyp1dFilter.And( SMESH_HypoFilter::HasDim( 1 ));
+  // hyp1dFilter.And( SMESH_HypoFilter::IsMoreLocalThan( thePrism.myShape3D, *mesh ));
 
   // Discretize equally 'vertical' EDGEs
   // -----------------------------------
   // find source FACE sides for projection: either already computed ones or
   // the 'most composite' ones
-  multimap< int, int > wgt2quad;
-  for ( size_t iW = 0; iW != thePrism.myWallQuads.size(); ++iW )
+  const size_t nbWalls = thePrism.myWallQuads.size();
+  vector< int > wgt( nbWalls, 0 ); // "weight" of a wall
+  for ( size_t iW = 0; iW != nbWalls; ++iW )
   {
     Prism_3D::TQuadList::const_iterator quad = thePrism.myWallQuads[iW].begin();
-    int wgt = 0; // "weight"
     for ( ; quad != thePrism.myWallQuads[iW].end(); ++quad )
     {
       StdMeshers_FaceSidePtr lftSide = (*quad)->side[ QUAD_LEFT_SIDE ];
       for ( int i = 0; i < lftSide->NbEdges(); ++i )
       {
-        ++wgt;
+        ++wgt[ iW ];
         const TopoDS_Edge& E = lftSide->Edge(i);
         if ( mesh->GetSubMesh( E )->IsMeshComputed() )
-          wgt += 10;
-        else if ( mesh->GetHypothesis( E, hyp1dFilter, true )) // local hypothesis!
-          wgt += 100;
+        {
+          wgt[ iW ] += 100;
+          wgt[ myHelper->WrapIndex( iW+1, nbWalls)] += 10;
+          wgt[ myHelper->WrapIndex( iW-1, nbWalls)] += 10;
+        }
+        // else if ( mesh->GetHypothesis( E, hyp1dFilter, true )) // local hypothesis!
+        //   wgt += 100;
       }
     }
-    wgt2quad.insert( make_pair( wgt, iW ));
-
     // in quadratic mesh, pass ignoreMediumNodes to quad sides
     if ( myHelper->GetIsQuadratic() )
     {
@@ -1300,6 +1302,9 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
           (*quad)->side[ i ].grid->SetIgnoreMediumNodes( true );
     }
   }
+  multimap< int, int > wgt2quad;
+  for ( size_t iW = 0; iW != nbWalls; ++iW )
+    wgt2quad.insert( make_pair( wgt[ iW ], iW ));
 
   // Project 'vertical' EDGEs, from left to right
   multimap< int, int >::reverse_iterator w2q = wgt2quad.rbegin();
@@ -1348,7 +1353,11 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
       {
         const TopoDS_Edge& tgtE = rgtSide->Edge(i);
         SMESH_subMesh*    tgtSM = mesh->GetSubMesh( tgtE );
-        if (( isTgtEdgeComputed[ i ] = tgtSM->IsMeshComputed() )) {
+        if ( !( isTgtEdgeComputed[ i ] = tgtSM->IsMeshComputed() )) {
+          tgtSM->ComputeSubMeshStateEngine( SMESH_subMesh::COMPUTE );
+          tgtSM->ComputeStateEngine       ( SMESH_subMesh::COMPUTE );
+        }
+        if ( tgtSM->IsMeshComputed() ) {
           ++nbTgtMeshed;
           nbTgtSegments += tgtSM->GetSubMeshDS()->NbElements();
         }
@@ -1357,16 +1366,33 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
       {
         if ( nbTgtSegments != nbSrcSegments )
         {
-          for ( int i = 0; i < lftSide->NbEdges(); ++i )
-            addBadInputElements( meshDS->MeshElements( lftSide->Edge( i )));
+          bool badMeshRemoved = false;
+          // remove just computed segments
           for ( int i = 0; i < rgtSide->NbEdges(); ++i )
-            addBadInputElements( meshDS->MeshElements( rgtSide->Edge( i )));
-          return toSM( error( TCom("Different nb of segment on logically vertical edges #")
-                              << shapeID( lftSide->Edge(0) ) << " and #"
-                              << shapeID( rgtSide->Edge(0) ) << ": "
-                              << nbSrcSegments << " != " << nbTgtSegments ));
+            if ( !isTgtEdgeComputed[ i ])
+            {
+              const TopoDS_Edge& tgtE = rgtSide->Edge(i);
+              SMESH_subMesh*    tgtSM = mesh->GetSubMesh( tgtE );
+              tgtSM->ComputeStateEngine( SMESH_subMesh::CLEAN );
+              badMeshRemoved = true;
+              nbTgtMeshed--;
+            }
+          if ( !badMeshRemoved )
+          {
+            for ( int i = 0; i < lftSide->NbEdges(); ++i )
+              addBadInputElements( meshDS->MeshElements( lftSide->Edge( i )));
+            for ( int i = 0; i < rgtSide->NbEdges(); ++i )
+              addBadInputElements( meshDS->MeshElements( rgtSide->Edge( i )));
+            return toSM( error( TCom("Different nb of segment on logically vertical edges #")
+                                << shapeID( lftSide->Edge(0) ) << " and #"
+                                << shapeID( rgtSide->Edge(0) ) << ": "
+                                << nbSrcSegments << " != " << nbTgtSegments ));
+          }
         }
-        continue;
+        else // if ( nbTgtSegments == nbSrcSegments )
+        {
+          continue;
+        }
       }
       // Compute 'vertical projection'
       if ( nbTgtMeshed == 0 )
@@ -1408,13 +1434,22 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
             // new nodes are on different EDGEs; put one of them on VERTEX
             const int      edgeIndex = rgtSide->EdgeIndex( srcNodeStr[ iN-1 ].normParam );
             const double vertexParam = rgtSide->LastParameter( edgeIndex );
-            const gp_Pnt           p = BRep_Tool::Pnt( rgtSide->LastVertex( edgeIndex ));
+            TopoDS_Vertex     vertex = rgtSide->LastVertex( edgeIndex );
+            const SMDS_MeshNode*  vn = SMESH_Algo::VertexNode( vertex, meshDS );
+            const gp_Pnt           p = BRep_Tool::Pnt( vertex );
             const int         isPrev = ( Abs( srcNodeStr[ iN-1 ].normParam - vertexParam ) <
                                          Abs( srcNodeStr[ iN   ].normParam - vertexParam ));
             meshDS->UnSetNodeOnShape( newNodes[ iN-isPrev ] );
-            meshDS->SetNodeOnVertex ( newNodes[ iN-isPrev ], rgtSide->LastVertex( edgeIndex ));
+            meshDS->SetNodeOnVertex ( newNodes[ iN-isPrev ], vertex );
             meshDS->MoveNode        ( newNodes[ iN-isPrev ], p.X(), p.Y(), p.Z() );
             id2type.first = newNodes[ iN-(1-isPrev) ]->getshapeId();
+            if ( vn )
+            {
+              SMESH_MeshEditor::TListOfListOfNodes lln( 1, list< const SMDS_MeshNode* >() );
+              lln.back().push_back ( vn );
+              lln.back().push_front( newNodes[ iN-isPrev ] ); // to keep 
+              SMESH_MeshEditor( mesh ).MergeNodes( lln );
+            }
           }
           SMDS_MeshElement* newEdge = myHelper->AddEdge( newNodes[ iN-1 ], newNodes[ iN ] );
           meshDS->SetMeshElementOnShape( newEdge, id2type.first );
