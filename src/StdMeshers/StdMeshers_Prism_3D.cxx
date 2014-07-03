@@ -65,15 +65,16 @@
 using namespace std;
 
 #define RETURN_BAD_RESULT(msg) { MESSAGE(")-: Error: " << msg); return false; }
-#define gpXYZ(n) gp_XYZ(n->X(),n->Y(),n->Z())
-#define SHOWYXZ(msg, xyz) // {\
-// gp_Pnt p (xyz); \
-// cout << msg << " ("<< p.X() << "; " <<p.Y() << "; " <<p.Z() << ") " <<endl;\
-// }
+#define gpXYZ(n) SMESH_TNodeXYZ(n)
+
 #ifdef _DEBUG_
 #define DBGOUT(msg) //cout << msg << endl;
+#define SHOWYXZ(msg, xyz)                                               \
+  // { gp_Pnt p (xyz);                                                     \
+  //   cout << msg << " ("<< p.X() << "; " <<p.Y() << "; " <<p.Z() << ") " <<endl; }
 #else
 #define DBGOUT(msg)
+#define SHOWYXZ(msg, xyz)
 #endif
 
 namespace TAssocTool = StdMeshers_ProjectionUtils;
@@ -1857,7 +1858,7 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top( const gp_Trsf & bottomToTopTrsf
 
   if ( !botSMDS || botSMDS->NbElements() == 0 )
   {
-    _gen->Compute( *myHelper->GetMesh(), botSM->GetSubShape() );
+    _gen->Compute( *myHelper->GetMesh(), botSM->GetSubShape(), /*aShapeOnly=*/true );
     botSMDS = botSM->GetSubMeshDS();
     if ( !botSMDS || botSMDS->NbElements() == 0 )
       return toSM( error(TCom("No elements on face #") << botSM->GetId() ));
@@ -3760,8 +3761,8 @@ gp_Pnt StdMeshers_PrismAsBlock::TSideFace::Value(const Standard_Real U,
     }
     if ( !edge.IsNull() )
     {
-      double u1 = myHelper.GetNodeU( edge, nn[0] );
-      double u3 = myHelper.GetNodeU( edge, nn[2] );
+      double u1 = myHelper.GetNodeU( edge, nn[0], nn[2] );
+      double u3 = myHelper.GetNodeU( edge, nn[2], nn[0] );
       double u = u1 * ( 1 - hR ) + u3 * hR;
       TopLoc_Location loc; double f,l;
       Handle(Geom_Curve) curve = BRep_Tool::Curve( edge,loc,f,l );
