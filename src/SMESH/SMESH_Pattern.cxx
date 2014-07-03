@@ -4018,26 +4018,41 @@ bool SMESH_Pattern::MakeMesh(SMESH_Mesh* theMesh,
           map< double, const SMDS_MeshNode* >::iterator u2n    = ++paramsOfNodes.begin();
           map< double, const SMDS_MeshNode* >::iterator u2nEnd = --paramsOfNodes.end();
           TPoint* p;
-          const double tolFact = ( paramsOfNodes.size() == points.size() ) ? 0.3 : 0.05;
-          while ( u2n != u2nEnd && pItF != points.end() )
+          if ( paramsOfNodes.size() == points.size() )
           {
-            const double         u = u2n->first;
-            const SMDS_MeshNode* n = u2n->second;
-            const double       tol = ( (++u2n)->first - u ) * tolFact;
-            do
+            for ( ; u2n != u2nEnd; ++u2n )
             {
               p = ( isForward ? *pItF : *pItR );
-              if ( Abs( u - p->myU ) < tol )
-              {
-                int pIndex = p - &myPoints[0];
-                if ( !nodesVector [ pIndex ] )
-                  nodesVector [ pIndex ] = n;
-                ++pItF;
-                ++pItR;
-                break;
-              }
+              int pIndex = p - &myPoints[0];
+              if ( !nodesVector [ pIndex ] )
+                nodesVector [ pIndex ] = u2n->second;
+              ++pItF;
+              ++pItR;
             }
-            while ( p->myU < u && ( ++pItF, ++pItR != points.rend() ));
+          }
+          else
+          {
+            const double tolFact = 0.05;
+            while ( u2n != u2nEnd && pItF != points.end() )
+            {
+              const double         u = u2n->first;
+              const SMDS_MeshNode* n = u2n->second;
+              const double       tol = ( (++u2n)->first - u ) * tolFact;
+              do
+              {
+                p = ( isForward ? *pItF : *pItR );
+                if ( Abs( u - p->myU ) < tol )
+                {
+                  int pIndex = p - &myPoints[0];
+                  if ( !nodesVector [ pIndex ] )
+                    nodesVector [ pIndex ] = n;
+                  ++pItF;
+                  ++pItR;
+                  break;
+                }
+              }
+              while ( p->myU < u && ( ++pItF, ++pItR != points.rend() ));
+            }
           }
           break;
         }
