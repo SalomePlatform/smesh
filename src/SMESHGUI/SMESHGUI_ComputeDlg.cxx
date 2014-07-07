@@ -916,7 +916,7 @@ void SMESHGUI_BaseComputeOp::computeMesh()
       long nbElements = 0;
       if ( !memoryLack )
       {
-	// List of objects that will be updated automatically
+        // List of objects that will be updated automatically
         QList< QPair< SMESH::SMESH_IDSource_var, _PTR(SObject) > > aListToUpdate;
         SMESH::SMESH_IDSource_var aMeshObj = SMESH::SObjectToInterface<SMESH::SMESH_IDSource>( aMeshSObj );
         // put Mesh into list
@@ -949,60 +949,60 @@ void SMESHGUI_BaseComputeOp::computeMesh()
         // update mesh, sub-mesh and groups, if it's possible
         QList< QPair< SMESH::SMESH_IDSource_var, _PTR(SObject) > >::iterator anIter;
         for( anIter = aListToUpdate.begin(); anIter != aListToUpdate.end(); anIter++ ) {
-	  SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow( SMESH::SObjectToObject( (*anIter).second ));
-	  if ( getSMESHGUI()->automaticUpdate( (*anIter).first, &entities, &limitExceeded, &hidden, &nbElements ) )
-	  {
-	    try {
+          SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow( SMESH::SObjectToObject( (*anIter).second ));
+          if ( getSMESHGUI()->automaticUpdate( (*anIter).first, &entities, &limitExceeded, &hidden, &nbElements ) )
+          {
+            try {
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
-	      OCC_CATCH_SIGNALS;
+              OCC_CATCH_SIGNALS;
 #endif
-	      bool toDisplay = false;
+              bool toDisplay = false;
 
-	      if ( !aMesh->_is_nil() ) { // display a mesh only
-		toDisplay = true;
-		SMESH_Actor *anActor = SMESH::FindActorByObject( aMesh );
-		if ( !anActor ) anActor = SMESH::CreateActor( (*anIter).second->GetStudy(), (*anIter).second->GetID().c_str(), true );    
-		if ( anActor ) // actor is not created for an empty mesh
-		{
-		  anActor->SetEntityMode( entities );
-		  SMESH::DisplayActor( SMESH::GetActiveWindow(), anActor );
-		}
-	      }
-	      Handle(SALOME_InteractiveObject) anIO = new SALOME_InteractiveObject
-		( (*anIter).second->GetID().c_str(), "SMESH", (*anIter).second->GetName().c_str() );
-	      SMESH::Update(anIO, toDisplay);
+              if ( !aMesh->_is_nil() ) { // display a mesh only
+                toDisplay = true;
+                SMESH_Actor *anActor = SMESH::FindActorByObject( aMesh );
+                if ( !anActor ) anActor = SMESH::CreateActor( (*anIter).second->GetStudy(), (*anIter).second->GetID().c_str(), true );    
+                if ( anActor ) // actor is not created for an empty mesh
+                {
+                  anActor->SetEntityMode( entities );
+                  SMESH::DisplayActor( SMESH::GetActiveWindow(), anActor );
+                }
+              }
+              Handle(SALOME_InteractiveObject) anIO = new SALOME_InteractiveObject
+                ( (*anIter).second->GetID().c_str(), "SMESH", (*anIter).second->GetName().c_str() );
+              SMESH::Update(anIO, toDisplay);
 
-	      if ( limitExceeded && !aMesh->_is_nil() )
-	      {
-		QStringList hiddenMsg;
-		if ( hidden & SMESH_Actor::e0DElements ) hiddenMsg << tr( "SMESH_ELEMS0D" );
-		if ( hidden & SMESH_Actor::eEdges )      hiddenMsg << tr( "SMESH_EDGES" );
-		if ( hidden & SMESH_Actor::eFaces )      hiddenMsg << tr( "SMESH_FACES" );
-		if ( hidden & SMESH_Actor::eVolumes )    hiddenMsg << tr( "SMESH_VOLUMES" );
-		if ( hidden & SMESH_Actor::eBallElem )   hiddenMsg << tr( "SMESH_BALLS" );
-		SUIT_MessageBox::warning( desktop(),
-					  tr( "SMESH_WRN_WARNING" ),
-					  tr( "SMESH_WRN_SIZE_INC_LIMIT_EXCEEDED" ).arg( nbElements ).arg( limitSize ).arg( hiddenMsg.join(", ") ) );
-	      }
-	    }
-	    catch (...) {
+              if ( limitExceeded && !aMesh->_is_nil() )
+              {
+                QStringList hiddenMsg;
+                if ( hidden & SMESH_Actor::e0DElements ) hiddenMsg << tr( "SMESH_ELEMS0D" );
+                if ( hidden & SMESH_Actor::eEdges )      hiddenMsg << tr( "SMESH_EDGES" );
+                if ( hidden & SMESH_Actor::eFaces )      hiddenMsg << tr( "SMESH_FACES" );
+                if ( hidden & SMESH_Actor::eVolumes )    hiddenMsg << tr( "SMESH_VOLUMES" );
+                if ( hidden & SMESH_Actor::eBallElem )   hiddenMsg << tr( "SMESH_BALLS" );
+                SUIT_MessageBox::warning( desktop(),
+                                          tr( "SMESH_WRN_WARNING" ),
+                                          tr( "SMESH_WRN_SIZE_INC_LIMIT_EXCEEDED" ).arg( nbElements ).arg( limitSize ).arg( hiddenMsg.join(", ") ) );
+              }
+            }
+            catch (...) {
 #ifdef _DEBUG_
-	      MESSAGE ( "Exception thrown during mesh visualization" );
+              MESSAGE ( "Exception thrown during mesh visualization" );
 #endif
-	      if ( SMDS_Mesh::CheckMemory(true) ) { // has memory to show warning?
-		SMESH::OnVisuException();
-	      }
-	      else {
-		memoryLack = true;
-	      }
-	    }
-	  }
-	  else if ( limitExceeded && !aMesh->_is_nil() )
-	  {
-	    SUIT_MessageBox::warning( desktop(),
-				      tr( "SMESH_WRN_WARNING" ),
-				      tr( "SMESH_WRN_SIZE_LIMIT_EXCEEDED" ).arg( nbElements ).arg( limitSize ) );
-	  }
+              if ( SMDS_Mesh::CheckMemory(true) ) { // has memory to show warning?
+                SMESH::OnVisuException();
+              }
+              else {
+                memoryLack = true;
+              }
+            }
+          }
+          else if ( limitExceeded && !aMesh->_is_nil() )
+          {
+            SUIT_MessageBox::warning( desktop(),
+                                      tr( "SMESH_WRN_WARNING" ),
+                                      tr( "SMESH_WRN_SIZE_LIMIT_EXCEEDED" ).arg( nbElements ).arg( limitSize ) );
+          }
         }
       }
       LightApp_SelectionMgr *Sel = selectionMgr();

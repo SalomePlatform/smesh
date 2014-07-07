@@ -529,6 +529,8 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
     TShapePairsList::iterator s1_s2 = shapesQueue.begin();
     for ( ; s1_s2 != shapesQueue.end(); ++s1_s2 )
     {
+      if ( theMap.IsBound( s1_s2->first )) // avoid re-binding for a seam edge
+        continue; // to avoid this:           Forward seam -> Reversed seam
       InsertAssociation( s1_s2->first, s1_s2->second, theMap );
       TopoDS_Iterator s1It( s1_s2->first), s2It( s1_s2->second );
       for ( ; s1It.More(); s1It.Next(), s2It.Next() )

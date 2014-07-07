@@ -1464,7 +1464,7 @@ int SMESH_Block::GetShapeIDByParams ( const gp_XYZ& theCoord )
 /*!
  * \brief Return number of wires and a list of oredered edges.
  *  \param theFace - the face to process
- *  \param theEdges - all ordered edges of theFace (outer edges goes first).
+ *  \param theEdges - all ordered edges of theFace (outer edges go first).
  *  \param theNbEdgesInWires - nb of edges (== nb of vertices in closed wire) in each wire
  *  \param theFirstVertex - the vertex of the outer wire to set first in the returned
  *         list ( theFirstVertex may be NULL )

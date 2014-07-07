@@ -334,6 +334,12 @@ private:
   void clearMesh(SMESH_Mesh* theMesh) const;
   // clear mesh elements existing on myShape in theMesh
 
+  bool findExistingNodes( SMESH_Mesh*                           mesh,
+                          const TopoDS_Shape&                   S,
+                          const std::list< TPoint* > &          points,
+                          std::vector< const SMDS_MeshNode* > & nodes);
+  // fills nodes vector with nodes existing on a given shape
+
   static SMESHDS_SubMesh * getSubmeshWithElements(SMESH_Mesh*         theMesh,
                                                   const TopoDS_Shape& theShape);
   // return submesh containing elements bound to theShape in theMesh

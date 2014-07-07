@@ -410,7 +410,7 @@ bool SMESH_Algo::GetSortedNodesOnEdge(const SMESHDS_Mesh*                   theM
     return false;
 
   SMESHDS_SubMesh * eSubMesh = theMesh->MeshElements( theEdge );
-  if ( !eSubMesh || ( eSubMesh->NbElements()==0 && eSubMesh->NbNodes() == 0))
+  if ( !eSubMesh || ( /*eSubMesh->NbElements()==0 && */ eSubMesh->NbNodes() == 0))
     return false; // edge is not meshed
 
   int nbNodes = 0;

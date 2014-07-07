@@ -897,12 +897,12 @@ namespace
         if ( SMESH_Algo::isDegenerated( e )) continue;
         TopExp::Vertices( e, VV[0], VV[1], /*CumOri=*/true );
         if ( VV[1].IsSame( fromV )) {
+          nbEdges += edges[ 0 ].IsNull();
           edges[ 0 ] = e;
-          nbEdges++;
         }
         else if ( VV[0].IsSame( fromV )) {
+          nbEdges += edges[ 1 ].IsNull();
           edges[ 1 ] = e;
-          nbEdges++;
         }
       }
     }
@@ -940,7 +940,7 @@ namespace
     }
     else if ( nbEdges == 1 )
     {
-      dir = getFaceDir( faceFrw, edges[0], node, helper, ok );
+      dir = getFaceDir( faceFrw, edges[ edges[0].IsNull() ], node, helper, ok );
       if ( cosin ) *cosin = 1.;
     }
     else
