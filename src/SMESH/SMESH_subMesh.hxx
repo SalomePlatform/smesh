@@ -139,16 +139,22 @@ class SMESH_EXPORT SMESH_subMesh
   /*!
    * \brief Return an event listener data
     * \param listener - the listener whose data is
+    * \param myOwn - if \c true, returns a listener set by this sub-mesh,
+    *        else returns a listener listening to events of this sub-mesh
     * \retval EventListenerData* - found data, maybe NULL
    */
-  EventListenerData* GetEventListenerData(EventListener* listener) const;
+  EventListenerData* GetEventListenerData(EventListener* listener,
+                                          const bool     myOwn=false) const;
 
   /*!
    * \brief Return an event listener data
     * \param listenerName - the listener name
+    * \param myOwn - if \c true, returns a listener set by this sub-mesh,
+    *        else returns a listener listening to events of this sub-mesh
     * \retval EventListenerData* - found data, maybe NULL
    */
-  EventListenerData* GetEventListenerData(const std::string& listenerName) const;
+  EventListenerData* GetEventListenerData(const std::string& listenerName,
+                                          const bool         myOwn=false) const;
 
   /*!
    * \brief Unregister the listener and delete it and it's data

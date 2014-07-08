@@ -2299,16 +2299,31 @@ void SMESH_subMesh::setEventListener(EventListener*     listener,
 /*!
  * \brief Return an event listener data
  * \param listener - the listener whose data is
+ * \param myOwn - if \c true, returns a listener set by this sub-mesh,
+ *        else returns a listener listening to events of this sub-mesh
  * \retval EventListenerData* - found data, maybe NULL
  */
 //================================================================================
 
-EventListenerData* SMESH_subMesh::GetEventListenerData(EventListener* listener) const
+EventListenerData* SMESH_subMesh::GetEventListenerData(EventListener* listener,
+                                                       const bool     myOwn) const
 {
-  map< EventListener*, EventListenerData* >::const_iterator l_d =
-    _eventListeners.find( listener );
-  if ( l_d != _eventListeners.end() )
-    return l_d->second;
+  if ( myOwn )
+  {
+    list< OwnListenerData >::const_iterator d;
+    for ( d = _ownListeners.begin(); d != _ownListeners.end(); ++d )
+    {
+      if ( d->myListener == listener && _father->MeshExists( d->myMeshID ))
+        return d->mySubMesh->GetEventListenerData( listener, !myOwn );
+    }
+  }
+  else
+  {
+    map< EventListener*, EventListenerData* >::const_iterator l_d =
+      _eventListeners.find( listener );
+    if ( l_d != _eventListeners.end() )
+      return l_d->second;
+  }
   return 0;
 }
 
@@ -2316,16 +2331,31 @@ EventListenerData* SMESH_subMesh::GetEventListenerData(EventListener* listener) 
 /*!
  * \brief Return an event listener data
  * \param listenerName - the listener name
+ * \param myOwn - if \c true, returns a listener set by this sub-mesh,
+ *        else returns a listener listening to events of this sub-mesh
  * \retval EventListenerData* - found data, maybe NULL
  */
 //================================================================================
 
-EventListenerData* SMESH_subMesh::GetEventListenerData(const string& listenerName) const
+EventListenerData* SMESH_subMesh::GetEventListenerData(const string& listenerName,
+                                                       const bool    myOwn) const
 {
-  map< EventListener*, EventListenerData* >::const_iterator l_d = _eventListeners.begin();
-  for ( ; l_d != _eventListeners.end(); ++l_d )
-    if ( listenerName == l_d->first->GetName() )
-      return l_d->second;
+  if ( myOwn )
+  {
+    list< OwnListenerData >::const_iterator d;
+    for ( d = _ownListeners.begin(); d != _ownListeners.end(); ++d )
+    {
+      if ( _father->MeshExists( d->myMeshID ) && listenerName == d->myListener->GetName())
+        return d->mySubMesh->GetEventListenerData( listenerName, !myOwn );
+    }
+  }
+  else
+  {
+    map< EventListener*, EventListenerData* >::const_iterator l_d = _eventListeners.begin();
+    for ( ; l_d != _eventListeners.end(); ++l_d )
+      if ( listenerName == l_d->first->GetName() )
+        return l_d->second;
+  }
   return 0;
 }
 

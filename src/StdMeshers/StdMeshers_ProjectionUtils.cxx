@@ -2383,9 +2383,21 @@ void StdMeshers_ProjectionUtils::SetEventListener(SMESH_subMesh* subMesh,
       }
       else
       {
-        subMesh->SetEventListener( getSrcSubMeshListener(),
-                                   SMESH_subMeshEventListenerData::MakeData( subMesh ),
-                                   srcShapeSM );
+        if ( SMESH_subMeshEventListenerData* data =
+             srcShapeSM->GetEventListenerData( getSrcSubMeshListener() ))
+        {
+          bool alreadyIn =
+            (std::find( data->mySubMeshes.begin(),
+                        data->mySubMeshes.end(), subMesh ) != data->mySubMeshes.end() );
+          if ( !alreadyIn )
+            data->mySubMeshes.push_back( subMesh );
+        }
+        else
+        {
+          subMesh->SetEventListener( getSrcSubMeshListener(),
+                                     SMESH_subMeshEventListenerData::MakeData( subMesh ),
+                                     srcShapeSM );
+        }
       }
     }
   }
