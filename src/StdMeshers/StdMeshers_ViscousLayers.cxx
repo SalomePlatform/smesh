@@ -922,7 +922,7 @@ namespace
 
       // get angle between the 2 edges
       gp_Vec faceNormal;
-      double angle = helper.GetAngle( edges[0], edges[1], faceFrw, &faceNormal );
+      double angle = helper.GetAngle( edges[0], edges[1], faceFrw, fromV, &faceNormal );
       if ( Abs( angle ) < 5 * M_PI/180 )
       {
         dir = ( faceNormal.XYZ() ^ edgeDir[0].Reversed()) + ( faceNormal.XYZ() ^ edgeDir[1] );
@@ -1004,7 +1004,8 @@ namespace
         while ( SMESH_Algo::isDegenerated( wires[iW]->Edge( iE2 )))
           iE2 = ( iE2 + 1 ) % nbEdges;
         double angle = helper.GetAngle( wires[iW]->Edge( iE1 ),
-                                        wires[iW]->Edge( iE2 ), F );
+                                        wires[iW]->Edge( iE2 ), F,
+                                        wires[iW]->FirstVertex( iE2 ));
         if ( angle < -5. * M_PI / 180. )
           return true;
       }
@@ -2283,12 +2284,19 @@ gp_XYZ _ViscousBuilder::getFaceNormal(const SMDS_MeshNode* node,
   isOK = false;
 
   Handle(Geom_Surface) surface = BRep_Tool::Surface( face );
-  if ( GeomLib::NormEstim( surface, uv, 1e-10, normal ) < 3 )
+  int pointKind = GeomLib::NormEstim( surface, uv, 1e-5, normal );
+  enum { REGULAR = 0, QUASYSINGULAR, CONICAL, IMPOSSIBLE };
+  if ( pointKind < IMPOSSIBLE )
   {
-    normal;
+    if ( pointKind != REGULAR && !shiftInside )
+    {
+      gp_XYZ normShift = getFaceNormal( node, face, helper, isOK, /*shiftInside=*/true );
+      if ( normShift * normal.XYZ() < 0. )
+        normal = normShift;
+    }
     isOK = true;
   }
-  else // hard singularity
+  else // hard singularity, to call with shiftInside=true ?
   {
     const TGeomID faceID = helper.GetMeshDS()->ShapeToIndex( face );
 
@@ -2371,12 +2379,10 @@ gp_XYZ _ViscousBuilder::getWeigthedNormal( const SMDS_MeshNode*         n,
     }
     else
     {
-      TopoDS_Vertex v10 = SMESH_MesherHelper::IthVertex( 1, ee[ 0 ]);
-      TopoDS_Vertex v01 = SMESH_MesherHelper::IthVertex( 0, ee[ 1 ]);
-      if ( !v10.IsSame( v01 ))
+      if ( !V.IsSame( SMESH_MesherHelper::IthVertex( 0, ee[ 1 ] )))
         std::swap( ee[0], ee[1] );
     }
-    angles[i] = SMESH_MesherHelper::GetAngle( ee[0], ee[1], F );
+    angles[i] = SMESH_MesherHelper::GetAngle( ee[0], ee[1], F, TopoDS::Vertex( V ));
   }
 
   // compute a weighted normal

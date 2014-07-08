@@ -4070,7 +4070,7 @@ bool StdMeshers_Quadrangle_2D::check()
       int iPrev = myHelper->WrapIndex( i-1, wire->NbEdges() );
       const TopoDS_Edge& e1 = wire->Edge( iPrev );
       const TopoDS_Edge& e2 = wire->Edge( i );
-      double angle = myHelper->GetAngle( e1, e2, geomFace );
+      double angle = myHelper->GetAngle( e1, e2, geomFace, wire->FirstVertex( i ));
       if (( maxAngle < angle ) &&
           ( 5.* M_PI/180 < angle && angle < 175.* M_PI/180  ))
       {
@@ -4224,7 +4224,7 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
     TopoDS_Vertex v = helper.IthVertex( 0, *edge );
     if ( !theConsiderMesh || SMESH_Algo::VertexNode( v, helper.GetMeshDS() ))
     {
-      double angle = SMESH_MesherHelper::GetAngle( prevE, *edge, theFace );
+      double angle = SMESH_MesherHelper::GetAngle( prevE, *edge, theFace, v );
       vertexByAngle.insert( make_pair( angle, v ));
       angleByVertex.Bind( v, angle );
     }

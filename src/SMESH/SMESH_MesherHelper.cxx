@@ -2732,24 +2732,22 @@ double SMESH_MesherHelper::MaxTolerance( const TopoDS_Shape& shape )
  */
 //================================================================================
 
-double SMESH_MesherHelper::GetAngle( const TopoDS_Edge & theE1,
-                                     const TopoDS_Edge & theE2,
-                                     const TopoDS_Face & theFace,
-                                     gp_Vec*             theFaceNormal)
+double SMESH_MesherHelper::GetAngle( const TopoDS_Edge &   theE1,
+                                     const TopoDS_Edge &   theE2,
+                                     const TopoDS_Face &   theFace,
+                                     const TopoDS_Vertex & theCommonV,
+                                     gp_Vec*               theFaceNormal)
 {
   double angle = 1e100;
   try
   {
-    TopoDS_Vertex vCommon;
-    if ( !TopExp::CommonVertex( theE1, theE2, vCommon ))
-      return angle;
     double f,l;
     Handle(Geom_Curve)     c1 = BRep_Tool::Curve( theE1, f,l );
     Handle(Geom_Curve)     c2 = BRep_Tool::Curve( theE2, f,l );
     Handle(Geom2d_Curve) c2d1 = BRep_Tool::CurveOnSurface( theE1, theFace, f,l );
     Handle(Geom_Surface) surf = BRep_Tool::Surface( theFace );
-    double                 p1 = BRep_Tool::Parameter( vCommon, theE1 );
-    double                 p2 = BRep_Tool::Parameter( vCommon, theE2 );
+    double                 p1 = BRep_Tool::Parameter( theCommonV, theE1 );
+    double                 p2 = BRep_Tool::Parameter( theCommonV, theE2 );
     if ( c1.IsNull() || c2.IsNull() )
       return angle;
     gp_XY uv = c2d1->Value( p1 ).XY();
@@ -2758,10 +2756,10 @@ double SMESH_MesherHelper::GetAngle( const TopoDS_Edge & theE1,
     gp_Vec vec1, vec2, vecRef = du ^ dv;
     int  nbLoops = 0;
     double p1tmp = p1;
-    while ( vecRef.SquareMagnitude() < std::numeric_limits<double>::min() )
+    while ( vecRef.SquareMagnitude() < 1e-25 )
     {
       double dp = ( l - f ) / 1000.;
-      p1tmp += dp * (( Abs( p1 - f ) > Abs( p1 - l )) ? +1. : -1.);
+      p1tmp += dp * (( Abs( p1 - f ) > Abs( p1 - l )) ? -1. : +1.);
       uv = c2d1->Value( p1tmp ).XY();
       surf->D1( uv.X(), uv.Y(), p, du, dv );
       vecRef = du ^ dv;

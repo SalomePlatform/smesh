@@ -218,7 +218,8 @@ class SMESH_EXPORT SMESH_MesherHelper
   static double MaxTolerance( const TopoDS_Shape& shape );
 
   static double GetAngle( const TopoDS_Edge & E1, const TopoDS_Edge & E2,
-                          const TopoDS_Face & F, gp_Vec* faceNormal=0);
+                          const TopoDS_Face & F,  const TopoDS_Vertex & V,
+                          gp_Vec* faceNormal=0);
 
   static bool IsClosedEdge( const TopoDS_Edge& anEdge );
 

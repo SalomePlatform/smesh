@@ -427,10 +427,10 @@ namespace {
    */
   //================================================================================
 
-  double normAngle(const TopoDS_Edge & E1, const TopoDS_Edge & E2, const TopoDS_Face & F)
-  {
-    return SMESH_MesherHelper::GetAngle( E1, E2, F ) / ( 0.5 * M_PI );
-  }
+  // double normAngle(const TopoDS_Edge & E1, const TopoDS_Edge & E2, const TopoDS_Face & F)
+  // {
+  //   return SMESH_MesherHelper::GetAngle( E1, E2, F ) / ( 0.5 * M_PI );
+  // }
 
   //================================================================================
   /*!
