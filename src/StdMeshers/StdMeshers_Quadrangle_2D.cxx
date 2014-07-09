@@ -67,9 +67,7 @@
 #ifndef StdMeshers_Array2OfNode_HeaderFile
 #define StdMeshers_Array2OfNode_HeaderFile
 typedef const SMDS_MeshNode* SMDS_MeshNodePtr;
-DEFINE_BASECOLLECTION (StdMeshers_BaseCollectionNodePtr, SMDS_MeshNodePtr)
-DEFINE_ARRAY2(StdMeshers_Array2OfNode,
-              StdMeshers_BaseCollectionNodePtr, SMDS_MeshNodePtr)
+typedef NCollection_Array2<SMDS_MeshNodePtr> StdMeshers_Array2OfNode;
 #endif
 
 using namespace std;

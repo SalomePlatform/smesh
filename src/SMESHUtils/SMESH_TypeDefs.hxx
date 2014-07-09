@@ -183,7 +183,6 @@ class SMDS_MeshElement;
 
 typedef const SMDS_MeshElement* SMDS_MeshElementPtr;
 
-DEFINE_BASECOLLECTION (SMESH_BaseCollectionElemPtr, SMDS_MeshElementPtr)
 DEFINE_SEQUENCE (SMESH_SequenceOfElemPtr, SMESH_BaseCollectionElemPtr, SMDS_MeshElementPtr)
 
 
@@ -191,7 +190,6 @@ DEFINE_SEQUENCE (SMESH_SequenceOfElemPtr, SMESH_BaseCollectionElemPtr, SMDS_Mesh
 // class SMESH_SequenceOfNode
 typedef const SMDS_MeshNode* SMDS_MeshNodePtr;
 
-DEFINE_BASECOLLECTION (SMESH_BaseCollectionNodePtr, SMDS_MeshNodePtr)
 DEFINE_SEQUENCE(SMESH_SequenceOfNode,
                 SMESH_BaseCollectionNodePtr, SMDS_MeshNodePtr)
 
