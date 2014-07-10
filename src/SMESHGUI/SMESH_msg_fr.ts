@@ -1322,6 +1322,10 @@ Merci de les corriger, puis essayez de nouveau</translation>
         <translation>Définition automatique des dimensions spatiales</translation>
     </message>
     <message>
+        <source>SMESH_AUTOMATIC_PRESENTATION</source>
+        <translation type="unfinished">Random input ID</translation>
+    </message>
+    <message>
         <source>SMESH_REQUIRED_GROUPS</source>
         <translation>Créer les groupes des types nécessaires</translation>
     </message>
@@ -1416,6 +1420,10 @@ Merci de les corriger, puis essayez de nouveau</translation>
     <message>
         <source>SMESH_BUT_APPLY_AND_CLOSE</source>
         <translation>App&amp;liquer et fermer</translation>
+    </message>
+    <message>
+        <source>SMESH_BUT_GET_NEXT_SHAPE</source>
+        <translation type="unfinished">Get next shape</translation>
     </message>
     <message>
         <source>SMESH_BUT_REMOVE</source>

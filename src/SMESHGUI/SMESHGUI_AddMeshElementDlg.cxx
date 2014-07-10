@@ -413,14 +413,26 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI*          theMo
 
   Reverse = (myElementType == SMDSAbs_Face || myElementType == SMDSAbs_Volume ) ? new QCheckBox(tr("SMESH_REVERSE"), GroupC1) : 0;
 
+  AutomaticPresentation = (myGeomType == SMDSEntity_Quadrangle || myGeomType == SMDSEntity_Polygon ||
+                           myGeomType == SMDSEntity_Pyramid    || myGeomType == SMDSEntity_Hexa    ||
+                           myGeomType == SMDSEntity_Penta      || myGeomType == SMDSEntity_Hexagonal_Prism ) ? new QCheckBox(tr("SMESH_AUTOMATIC_PRESENTATION"), GroupC1) : 0;
+  if ( AutomaticPresentation ) {
+    GetNextPresentationButton = new QPushButton(tr("SMESH_BUT_GET_NEXT_SHAPE"), GroupC1);
+    GetNextPresentationButton->setAutoDefault(false);
+  }
   DiameterSpinBox = ( myGeomType == SMDSEntity_Ball ) ? new SMESHGUI_SpinBox(GroupC1) : 0;
   QLabel* diameterLabel = DiameterSpinBox ? new QLabel( tr("BALL_DIAMETER"),GroupC1) : 0;
 
   GroupC1Layout->addWidget(TextLabelC1A1,    0, 0);
   GroupC1Layout->addWidget(SelectButtonC1A1, 0, 1);
   GroupC1Layout->addWidget(LineEditC1A1,     0, 2);
+  if ( AutomaticPresentation ) {
+    AutomaticPresentation->setChecked(true);
+    GroupC1Layout->addWidget(AutomaticPresentation, 1, 0, 1, 2);
+    GroupC1Layout->addWidget(GetNextPresentationButton, 1, 2, 1, 1);
+  }
   if ( Reverse ) {
-    GroupC1Layout->addWidget(Reverse, 1, 0, 1, 3);
+    GroupC1Layout->addWidget(Reverse, 2, 0, 1, 3);
   }
   if ( DiameterSpinBox ) {
     GroupC1Layout->addWidget(diameterLabel,   1, 0);
@@ -506,22 +518,25 @@ void SMESHGUI_AddMeshElementDlg::Init()
   myActor = 0;
 
   /* signals and slots connections */
-  connect(buttonOk,        SIGNAL(clicked()),                     SLOT(ClickOnOk()));
-  connect(buttonCancel,    SIGNAL(clicked()),                     SLOT(reject()));
-  connect(buttonApply,     SIGNAL(clicked()),                     SLOT(ClickOnApply()));
-  connect(buttonHelp,      SIGNAL(clicked()),                     SLOT(ClickOnHelp()));
+  connect(buttonOk,                SIGNAL(clicked()),                     SLOT(ClickOnOk()));
+  connect(buttonCancel,            SIGNAL(clicked()),                     SLOT(reject()));
+  connect(buttonApply,             SIGNAL(clicked()),                     SLOT(ClickOnApply()));
+  connect(buttonHelp,              SIGNAL(clicked()),                     SLOT(ClickOnHelp()));
 
-  connect(SelectButtonC1A1,SIGNAL(clicked()),                     SLOT(SetEditCurrentArgument()));
-  connect(LineEditC1A1,    SIGNAL(textChanged(const QString&)),   SLOT(onTextChange(const QString&)));
-  connect(mySMESHGUI,      SIGNAL(SignalDeactivateActiveDialog()),SLOT(DeactivateActiveDialog()));
-  connect(mySelectionMgr,  SIGNAL(currentSelectionChanged()),     SLOT(SelectionIntoArgument()));
+  connect(SelectButtonC1A1,        SIGNAL(clicked()),                     SLOT(SetEditCurrentArgument()));
+  connect(LineEditC1A1,            SIGNAL(textChanged(const QString&)),   SLOT(onTextChange(const QString&)));
+  connect(mySMESHGUI,              SIGNAL(SignalDeactivateActiveDialog()),SLOT(DeactivateActiveDialog()));
+  connect(mySelectionMgr,          SIGNAL(currentSelectionChanged()),     SLOT(SelectionIntoArgument()));
   /* to close dialog if study frame change */
-  connect(mySMESHGUI,      SIGNAL(SignalStudyFrameChanged()),     SLOT(reject()));
-  connect(mySMESHGUI,      SIGNAL(SignalCloseAllDialogs()),       SLOT(reject()));    
+  connect(mySMESHGUI,              SIGNAL(SignalStudyFrameChanged()),     SLOT(reject()));
+  connect(mySMESHGUI,              SIGNAL(SignalCloseAllDialogs()),       SLOT(reject()));
 
   if (Reverse)
-    connect(Reverse,       SIGNAL(stateChanged(int)),             SLOT(CheckBox(int)));
-
+    connect(Reverse,               SIGNAL(stateChanged(int)),             SLOT(CheckBox(int)));
+  if (AutomaticPresentation) {
+    connect(AutomaticPresentation, SIGNAL(stateChanged(int)),             SLOT(SelectionIntoArgument()));
+    connect(GetNextPresentationButton, SIGNAL(clicked()),                 SLOT(GetNextShapePresentation()));
+  }
   // set selection mode
   SMESH::SetPointRepresentation(true);
 
@@ -649,6 +664,8 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
     
     buttonOk->setEnabled(false);
     buttonApply->setEnabled(false);
+    if ( AutomaticPresentation )
+      GetNextPresentationButton->setEnabled(false);
 
     myEditCurrentArgument->setText("");
 
@@ -721,6 +738,8 @@ void SMESHGUI_AddMeshElementDlg::onTextChange (const QString& theNewText)
 
   buttonOk->setEnabled(false);
   buttonApply->setEnabled(false);
+  if ( AutomaticPresentation )
+    GetNextPresentationButton->setEnabled(false);
 
   mySimulation->SetVisibility(false);
 
@@ -762,6 +781,8 @@ void SMESHGUI_AddMeshElementDlg::onTextChange (const QString& theNewText)
   if(myNbOkNodes) {
     buttonOk->setEnabled(true);
     buttonApply->setEnabled(true);
+    if ( AutomaticPresentation && AutomaticPresentation->isChecked() )
+      GetNextPresentationButton->setEnabled(true);
     displaySimulation();
   }
 
@@ -781,6 +802,7 @@ void SMESHGUI_AddMeshElementDlg::SelectionIntoArgument()
   myActor = 0;
 
   myBusy = true;
+  QString anOldEditArgument = myEditCurrentArgument->text();
   myEditCurrentArgument->setText("");
   myBusy = false;
 
@@ -789,6 +811,8 @@ void SMESHGUI_AddMeshElementDlg::SelectionIntoArgument()
 
   buttonOk->setEnabled(false);
   buttonApply->setEnabled(false);
+  if ( AutomaticPresentation )
+    GetNextPresentationButton->setEnabled(false);
 
   mySimulation->SetVisibility(false);
   //  SMESH::SetPointRepresentation(true);
@@ -832,14 +856,34 @@ void SMESHGUI_AddMeshElementDlg::SelectionIntoArgument()
 
   // get selected nodes
   QString aString = "";
-  int nbNodes = SMESH::GetNameOfSelectedNodes(mySelector,myActor->getIO(),aString);
-  myBusy = true;
-  myEditCurrentArgument->setText(aString);
-  myBusy = false;
-  if (myIsPoly && myElementType == SMDSAbs_Face && nbNodes >= 3 ) {
-    myNbNodes = nbNodes;
-  } else if (myNbNodes != nbNodes && myNbNodes != 1) {
-    return;
+  int nbNodes = 0;
+  while ( aString == "" || anOldEditArgument == aString ) {
+    if ( AutomaticPresentation && AutomaticPresentation->isChecked() ) {
+      nbNodes = SMESH::GetNameOfSelectedSortedNodes( myGeomType , mySelector, myActor, myShift, aString );
+    }
+    else
+      nbNodes = SMESH::GetNameOfSelectedNodes( mySelector, myActor->getIO(), aString );
+    if ( aString!= "" && myNbNodes == nbNodes && anOldEditArgument == aString && AutomaticPresentation && AutomaticPresentation->isChecked()) {
+      myShift++;
+      if ( myShift > nbNodes ) {
+        myEditCurrentArgument->setText(aString);
+        myShift = 0;
+        break;
+      }
+      continue;
+    }
+    myBusy = true;
+    myEditCurrentArgument->setText(aString);
+    myBusy = false;
+    if (myIsPoly && myElementType == SMDSAbs_Face && nbNodes >= 3 )
+      myNbNodes = nbNodes;
+    else if (myNbNodes != nbNodes && myNbNodes != 1) {
+      myShift = 0;
+      return;
+    }
+    if ( !AutomaticPresentation || !AutomaticPresentation->isChecked() ||
+       ( myIsPoly && nbNodes < 3 ) )
+      break;
   }
 
   // OK
@@ -847,6 +891,8 @@ void SMESHGUI_AddMeshElementDlg::SelectionIntoArgument()
 
   buttonOk->setEnabled(true);
   buttonApply->setEnabled(true);
+  if ( AutomaticPresentation && AutomaticPresentation->isChecked() )
+    GetNextPresentationButton->setEnabled(true);
 
   displaySimulation();
 }
@@ -894,6 +940,16 @@ void SMESHGUI_AddMeshElementDlg::SetEditCurrentArgument()
     myEditCurrentArgument = LineEditC1A1;
   }
   SelectionIntoArgument();
+}
+
+//=================================================================================
+// function : GetNextShapePresentation()
+// purpose  :
+//=================================================================================
+void SMESHGUI_AddMeshElementDlg::GetNextShapePresentation()
+{
+  myShift++;
+  SetEditCurrentArgument();
 }
 
 //=================================================================================

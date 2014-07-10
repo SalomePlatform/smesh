@@ -1316,6 +1316,10 @@
       <translation>自動的に空間の寸法を定義します。</translation>
     </message>
     <message>
+        <source>SMESH_AUTOMATIC_PRESENTATION</source>
+        <translation type="unfinished">Random input ID</translation>
+    </message>
+    <message>
       <source>SMESH_REQUIRED_GROUPS</source>
       <translation>必要な種類のグループを作成します。</translation>
     </message>
@@ -1410,6 +1414,10 @@
     <message>
       <source>SMESH_BUT_APPLY_AND_CLOSE</source>
       <translation>適用して閉じる(&amp;p)</translation>
+    </message>
+    <message>
+        <source>SMESH_BUT_GET_NEXT_SHAPE</source>
+        <translation type="unfinished">Get next shape</translation>
     </message>
     <message>
       <source>SMESH_BUT_REMOVE</source>
