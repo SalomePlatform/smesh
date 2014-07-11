@@ -75,7 +75,7 @@ private:
   void                        Init();
   void                        enterEvent( QEvent* );       /* mouse enter the QWidget */
   void                        keyPressEvent( QKeyEvent* );
-  void                        displaySimulation();
+  void                        displaySimulation(int = -1, int = -1);
   void                        UpdateTable( bool = true );
   bool                        IsValid();
   void                        updateButtons();
