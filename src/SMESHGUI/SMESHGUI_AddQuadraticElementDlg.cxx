@@ -933,40 +933,36 @@ void SMESHGUI_AddQuadraticElementDlg::SelectionIntoArgument()
 
   QString aCurrentEntry = myEntry;
 
+  // clear
+  myActor = 0;
   if ( myCurrentLineEdit )
-  {
-    // clear
-    myActor = 0;
-
     myCurrentLineEdit->setText("");
 
-    if (!GroupButtons->isEnabled()) // inactive
-      return;
+  if (!GroupButtons->isEnabled()) // inactive
+    return;
 
-    mySimulation->SetVisibility(false);
+  mySimulation->SetVisibility(false);
 
-    // get selected mesh
-    SALOME_ListIO aList;
-    mySelectionMgr->selectedObjects(aList);
+  // get selected mesh
+  SALOME_ListIO aList;
+  mySelectionMgr->selectedObjects(aList);
 
-    if (aList.Extent() != 1)
-    {
-      UpdateTable();
-      updateButtons();
-      return;
-    }
-
-    Handle(SALOME_InteractiveObject) anIO = aList.First();
-    myEntry = anIO->getEntry();
-    myMesh = SMESH::GetMeshByIO(anIO);
-    if (myMesh->_is_nil()) {
-      updateButtons();
-      return;
-    }
-
-    myActor = SMESH::FindActorByEntry(anIO->getEntry());
-
+  if (aList.Extent() != 1)
+  {
+    UpdateTable();
+    updateButtons();
+    return;
   }
+
+  Handle(SALOME_InteractiveObject) anIO = aList.First();
+  myEntry = anIO->getEntry();
+  myMesh = SMESH::GetMeshByIO(anIO);
+  if (myMesh->_is_nil()) {
+    updateButtons();
+    return;
+  }
+
+  myActor = SMESH::FindActorByEntry(anIO->getEntry());
 
   // process groups
   if ( !myMesh->_is_nil() && myEntry != aCurrentEntry ) {
