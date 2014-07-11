@@ -552,19 +552,30 @@ SMESHGUI_AddQuadraticElementDlg::SMESHGUI_AddQuadraticElementDlg( SMESHGUI* theM
   myCenterNode->setValidator(new SMESHGUI_IdValidator(this, 1));
 
   myReverseCB = new QCheckBox(tr("SMESH_REVERSE"), GroupArguments);
+  myAutomaticPresentation = (myGeomType == SMDSEntity_Quad_Quadrangle || myGeomType == SMDSEntity_BiQuad_Quadrangle ||
+                             myGeomType == SMDSEntity_Quad_Pyramid    || myGeomType == SMDSEntity_Quad_Penta        ||
+                             myGeomType == SMDSEntity_Quad_Hexa       || myGeomType == SMDSEntity_TriQuad_Hexa ) ? new QCheckBox(tr("SMESH_AUTOMATIC_PRESENTATION"), GroupArguments) : 0;
+  if ( myAutomaticPresentation ) {
+    myNextPresentationButton = new QPushButton(tr("SMESH_BUT_GET_NEXT_SHAPE"), GroupArguments);
+    myNextPresentationButton->setAutoDefault(false);
+  }
 
   aGroupArgumentsLayout->addWidget(aCornerNodesLabel,     0, 0);
   aGroupArgumentsLayout->addWidget(myCornerSelectButton,  0, 1);
   aGroupArgumentsLayout->addWidget(myCornerNodes,         0, 2);
-  aGroupArgumentsLayout->addWidget(myTable,               1, 0, 1, 3);
-  aGroupArgumentsLayout->addWidget(myMidFaceLabel,        2, 0);
-  aGroupArgumentsLayout->addWidget(myMidFaceSelectButton, 2, 1);
-  aGroupArgumentsLayout->addWidget(myMidFaceNodes,        2, 2);
-  aGroupArgumentsLayout->addWidget(myCenterLabel,         3, 0);
-  aGroupArgumentsLayout->addWidget(myCenterSelectButton,  3, 1);
-  aGroupArgumentsLayout->addWidget(myCenterNode,          3, 2);
-  aGroupArgumentsLayout->addWidget(myReverseCB,           4, 0, 1, 3);
-
+  if ( myAutomaticPresentation ) {
+    myAutomaticPresentation->setChecked(true);
+    aGroupArgumentsLayout->addWidget(myAutomaticPresentation,  1, 0, 1, 2);
+    aGroupArgumentsLayout->addWidget(myNextPresentationButton, 1, 2, 1, 1);
+  }
+  aGroupArgumentsLayout->addWidget(myTable,               2, 0, 1, 3);
+  aGroupArgumentsLayout->addWidget(myMidFaceLabel,        3, 0);
+  aGroupArgumentsLayout->addWidget(myMidFaceSelectButton, 3, 1);
+  aGroupArgumentsLayout->addWidget(myMidFaceNodes,        3, 2);
+  aGroupArgumentsLayout->addWidget(myCenterLabel,         4, 0);
+  aGroupArgumentsLayout->addWidget(myCenterSelectButton,  4, 1);
+  aGroupArgumentsLayout->addWidget(myCenterNode,          4, 2);
+  aGroupArgumentsLayout->addWidget(myReverseCB,           5, 0, 1, 3);
     /***************************************************************/
   GroupGroups = new QGroupBox( tr( "SMESH_ADD_TO_GROUP" ), this );
   GroupGroups->setCheckable( true );
@@ -759,7 +770,10 @@ void SMESHGUI_AddQuadraticElementDlg::Init()
   connect(mySMESHGUI, SIGNAL (SignalDeactivateActiveDialog()), SLOT(DeactivateActiveDialog()));
   connect(mySMESHGUI, SIGNAL (SignalStudyFrameChanged()), SLOT(reject()));
   connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), SLOT(reject()));
-
+  if (myAutomaticPresentation) {
+    connect(myAutomaticPresentation, SIGNAL(stateChanged(int)), SLOT(SetCurrentSelection()));
+    connect(myNextPresentationButton, SIGNAL(clicked()), SLOT(SetCurrentSelection()));
+  }
   myCurrentLineEdit = myCornerNodes;
 
   // set selection mode
@@ -1025,7 +1039,6 @@ void SMESHGUI_AddQuadraticElementDlg::onTextChange (const QString& theNewText)
     if ( myCurrentLineEdit == myCornerNodes )
       UpdateTable( allOk );
   }
-
   updateButtons();
   displaySimulation();
 }
@@ -1041,11 +1054,13 @@ void SMESHGUI_AddQuadraticElementDlg::SelectionIntoArgument()
   BusyLocker lock( myBusy );
 
   QString aCurrentEntry = myEntry;
-
+  QString anOldEditArgument = "";
   // clear
   myActor = 0;
-  if ( myCurrentLineEdit )
+  if ( myCurrentLineEdit ) {
+    anOldEditArgument = myCurrentLineEdit->text();
     myCurrentLineEdit->setText("");
+  }
 
   if (!GroupButtons->isEnabled()) // inactive
     return;
@@ -1111,18 +1126,42 @@ void SMESHGUI_AddQuadraticElementDlg::SelectionIntoArgument()
     updateButtons();
     return;
   }
-
+  if ( myAutomaticPresentation )
+    myNextPresentationButton->setEnabled(false);
   // get selected nodes
   QString aString = "";
-  int nbNodes = SMESH::GetNameOfSelectedNodes(mySelector,myActor->getIO(),aString);
-
+  int nbNodes = 0;
+  while ( aString == "" || anOldEditArgument == aString ) {
+    if ( myAutomaticPresentation && myAutomaticPresentation->isChecked() ) {
+      nbNodes = SMESH::GetNameOfSelectedSortedNodes( myGeomType , mySelector, myActor, myShift, aString );
+    }
+    else
+      nbNodes = SMESH::GetNameOfSelectedNodes( mySelector, myActor->getIO(), aString );
+    if ( aString!= "" && myNbCorners == nbNodes && anOldEditArgument == aString && myAutomaticPresentation && myAutomaticPresentation->isChecked()) {
+      myShift++;
+      if ( myShift > nbNodes ) {
+        myShift = 0;
+        break;
+      }
+      continue;
+    }
+    if (myNbCorners != nbNodes && myNbCorners != 1) {
+      myShift = 0;
+      break;
+    }
+    if ( !myAutomaticPresentation || !myAutomaticPresentation->isChecked() )
+      break;
+  }
   if ( myCurrentLineEdit )
   {
-    if ( myCurrentLineEdit != myCenterNode || nbNodes == 1 )
+    if ( myCurrentLineEdit != myCenterNode || nbNodes == 1)
       myCurrentLineEdit->setText(aString);
 
-    if ( myCurrentLineEdit == myCornerNodes )
+    if ( myCurrentLineEdit == myCornerNodes ) {
       UpdateTable();
+      if ( myAutomaticPresentation && myAutomaticPresentation->isChecked() && myNbCorners == nbNodes)
+        myNextPresentationButton->setEnabled(true);
+    }
   }
   else if ( myTable->isEnabled() && nbNodes == 1 )
   {
@@ -1130,7 +1169,6 @@ void SMESHGUI_AddQuadraticElementDlg::SelectionIntoArgument()
     if ( theCol == 1 )
       myTable->item(theRow, 1)->setText(aString);
   }
-
   updateButtons();
   displaySimulation();
 }
@@ -1219,12 +1257,16 @@ void SMESHGUI_AddQuadraticElementDlg::SetCurrentSelection()
   QPushButton* send = (QPushButton*)sender();
   myCurrentLineEdit = 0;
 
-  if (send == myCornerSelectButton)
+  if (send == myCornerSelectButton || (QCheckBox*)sender() == myAutomaticPresentation)
     myCurrentLineEdit = myCornerNodes;
   else if ( send == myMidFaceSelectButton )
     myCurrentLineEdit = myMidFaceNodes;
   else if ( send == myCenterSelectButton )
     myCurrentLineEdit = myCenterNode;
+  else if (send == myNextPresentationButton ) {
+    myShift++;
+    myCurrentLineEdit = myCornerNodes;
+  }
 
   if ( myCurrentLineEdit )
   {
