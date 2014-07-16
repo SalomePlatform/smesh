@@ -1735,6 +1735,8 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
     case CHECK_COMPUTE_STATE:
       if ( IsMeshComputed() )
         _computeState = COMPUTE_OK;
+      else if ( _computeError && _computeError->IsKO() )
+        _computeState = FAILED_TO_COMPUTE;
       break;
     default:
       ASSERT(0);

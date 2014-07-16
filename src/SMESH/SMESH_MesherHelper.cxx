@@ -2328,11 +2328,12 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap &            theParam2
           while ( ++u_n != sortedBaseNN.end() && !isNodeInSubMesh( u_n->second, faceSubMesh ));
           sortedBaseNN.erase( sortedBaseNN.begin(), u_n );
         }
-        if ( u_n = --sortedBaseNN.end(), !isNodeInSubMesh( u_n->second, faceSubMesh ))
-        {
-          while ( u_n != sortedBaseNN.begin() && !isNodeInSubMesh( (--u_n)->second, faceSubMesh ));
-          sortedBaseNN.erase( ++u_n, sortedBaseNN.end() );
-        }
+        if ( !sortedBaseNN.empty() )
+          if ( u_n = --sortedBaseNN.end(), !isNodeInSubMesh( u_n->second, faceSubMesh ))
+          {
+            while ( u_n != sortedBaseNN.begin() && !isNodeInSubMesh( (--u_n)->second, faceSubMesh ));
+            sortedBaseNN.erase( ++u_n, sortedBaseNN.end() );
+          }
         if ( sortedBaseNN.empty() ) continue;
       }
 
@@ -2349,7 +2350,7 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap &            theParam2
         u2nn->second.push_back( u_n->second );
       }
     }
-    if ( theParam2ColumnMap.empty() )
+    if ( theParam2ColumnMap.size() < 2 )
       return false;
   }
 

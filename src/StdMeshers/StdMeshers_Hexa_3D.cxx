@@ -371,8 +371,9 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
     for ( int i = 0; i < 6; ++i )
     {
       const TopoDS_Face& sideF = aCubeSide[i]._quad->face;
-      if ( !SMESH_MesherHelper::IsSameElemGeometry( meshDS->MeshElements( sideF ),
-                                                    SMDSGeom_QUADRANGLE,
+      const SMESHDS_SubMesh* smDS =
+        proxymesh ? proxymesh->GetSubMesh( sideF ) : meshDS->MeshElements( sideF );
+      if ( !SMESH_MesherHelper::IsSameElemGeometry( smDS, SMDSGeom_QUADRANGLE,
                                                     /*nullSubMeshRes=*/false ))
       {
         SMESH_ComputeErrorPtr err = ComputePentahedralMesh(aMesh, aShape, proxymesh.get());

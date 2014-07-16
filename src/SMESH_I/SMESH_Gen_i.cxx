@@ -1460,8 +1460,11 @@ SMESH::compute_error_array* SMESH_Gen_i::GetComputeErrors( SMESH::SMESH_Mesh_ptr
         // if ( sm->GetSubShape().ShapeType() == TopAbs_VERTEX )
         //   break;
         SMESH_ComputeErrorPtr error = sm->GetComputeError();
-        if ( error && !error->IsOK() && error->myAlgo )
+        if ( error && !error->IsOK() )
         {
+          if ( !( error->myAlgo ) &&
+               !( error->myAlgo = sm->GetAlgo() ))
+            continue;
           SMESH::ComputeError & errStruct = error_array[ nbErr++ ];
           errStruct.code       = -( error->myName < 0 ? error->myName + 1: error->myName ); // -1 -> 0
           errStruct.comment    = error->myComment.c_str();
