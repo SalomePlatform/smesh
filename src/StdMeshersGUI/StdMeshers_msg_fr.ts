@@ -136,6 +136,10 @@
         <translation>La fonction n&apos;est pas valide</translation>
     </message>
     <message>
+        <source>SMESH_GRADING1D_PARAM</source>
+        <translation type="unfinished">Grading</translation>
+    </message>
+    <message>
         <source>SMESH_LAYERS_DISTRIBUTION</source>
         <translation>Hypothèse 1D </translation>
     </message>

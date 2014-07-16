@@ -151,6 +151,10 @@
         <translation>Function is invalid</translation>
     </message>
     <message>
+        <source>SMESH_GRADING1D_PARAM</source>
+        <translation>Grading</translation>
+    </message>
+    <message>
         <source>SMESH_LAYERS_DISTRIBUTION</source>
         <translation>1D Hypothesis</translation>
     </message>

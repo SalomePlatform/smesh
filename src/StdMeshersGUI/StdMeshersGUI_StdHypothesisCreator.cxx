@@ -609,6 +609,8 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
       h->SetMaxSize( params[1].myValue.toDouble() );
       h->SetVarParameter( params[0].text(), "SetDeflection" );
       h->SetDeflection( params[2].myValue.toDouble() );
+      h->SetVarParameter( params[0].text(), "SetGrading" );
+      h->SetGrading( params[3].myValue.toDouble() );
     }
     else if( hypType()=="AutomaticLength" )
     {
@@ -1048,6 +1050,11 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     if(!initVariableName( hyp, item, "SetDeflection" )) 
       item.myValue = h->GetDeflection();
     p.append( item );
+
+    item.myName = tr( "SMESH_GRADING1D_PARAM" );
+    if(!initVariableName( hyp, item, "SetGrading" ))
+      item.myValue = h->GetGrading();
+    p.append( item );
   }
   else if( hypType()=="AutomaticLength" )
   {
@@ -1421,7 +1428,10 @@ void StdMeshersGUI_StdHypothesisCreator::attuneStdWidget (QWidget* w, const int)
     }
     else if( hypType()=="Adaptive1D" )
     {
-      sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "length_precision" );
+      if (sb->objectName() == tr("SMESH_GRADING1D_PARAM"))
+        sb->RangeStepAndValidator( 0.0, 2.0, 0.1, "length_precision" );
+      else
+        sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "length_precision" );
     }
     else if( hypType().startsWith( "ViscousLayers" ))
     {

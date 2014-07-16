@@ -31,8 +31,8 @@ creation of narrow 2D elements.
 
 - <b>Min size</b> parameter limits the minimal segment size. 
 - <b>Max size</b> parameter defines the length of segments on straight edges. 
-- \b Deflection parameter gives maximal distance of a segment from a curved edge.
-
+- <b>Deflection</b> parameter gives maximal distance of a segment from a curved edge.
+- <b>Grading</b> parameter defines how much size of adjacent elements can differ.
 \image html adaptive1d_sample_mesh.png "Adaptive hypothesis and Netgen 2D algorithm - the size of mesh segments reflects the size of geometrical features"
 
 <b>See Also</b> a \ref tui_1d_adaptive "sample TUI Script" that uses Adaptive hypothesis.
