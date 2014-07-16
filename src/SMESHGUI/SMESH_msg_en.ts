@@ -1322,10 +1322,6 @@ Please enter correct values and try again</translation>
         <translation>Automatically define space dimension</translation>
     </message>
     <message>
-        <source>SMESH_AUTOMATIC_PRESENTATION</source>
-        <translation>Random input ID</translation>
-    </message>
-    <message>
         <source>SMESH_REQUIRED_GROUPS</source>
         <translation>Create groups of required entities</translation>
     </message>
@@ -1420,10 +1416,6 @@ Please enter correct values and try again</translation>
     <message>
         <source>SMESH_BUT_APPLY_AND_CLOSE</source>
         <translation>A&amp;pply and Close</translation>
-    </message>
-    <message>
-        <source>SMESH_BUT_GET_NEXT_SHAPE</source>
-        <translation>Get next shape</translation>
     </message>
     <message>
         <source>SMESH_BUT_REMOVE</source>

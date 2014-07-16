@@ -90,7 +90,6 @@ private:
   int                         myElementType;
   int                         myNbNodes;
   bool                        myIsPoly;
-  int                         myShift;
   
   SMESH::SMESH_Mesh_var       myMesh;
   SMESH_Actor*                myActor;
@@ -111,10 +110,8 @@ private:
   QGroupBox*                  GroupC1;
   QLabel*                     TextLabelC1A1;
   QPushButton*                SelectButtonC1A1;
-  QPushButton*                GetNextPresentationButton;
   QLineEdit*                  LineEditC1A1;
   QCheckBox*                  Reverse;
-  QCheckBox*                  AutomaticPresentation;
   SMESHGUI_SpinBox*           DiameterSpinBox;
   
   QString                     myHelpFileName;
@@ -127,7 +124,6 @@ private slots:
   void                        ClickOnOk();
   void                        ClickOnApply();
   void                        ClickOnHelp();
-  void                        GetNextShapePresentation();
   void                        SetEditCurrentArgument();
   void                        SelectionIntoArgument();
   void                        DeactivateActiveDialog();

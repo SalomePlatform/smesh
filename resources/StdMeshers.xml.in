@@ -236,7 +236,7 @@
         <hypo>GeometricProgression=GeometricProgression(SetStartLength(),SetCommonRatio(),SetReversedEdges())</hypo>
         <hypo>StartEndLength=StartEndLength(SetStartLength(),SetEndLength(),SetReversedEdges())</hypo>
         <hypo>Deflection1D=Deflection1D(SetDeflection())</hypo>
-        <hypo>Adaptive1D=Adaptive(SetMinSize(),SetMaxSize(),SetDeflection(),SetGrading())</hypo>
+        <hypo>Adaptive1D=Adaptive(SetMinSize(),SetMaxSize(),SetDeflection())</hypo>
         <hypo>AutomaticLength=AutomaticLength(SetFineness())</hypo>
         <hypo>FixedPoints1D=FixedPoints1D(SetPoints(),SetNbSegments(),SetReversedEdges())</hypo>
         <hypo>Propagation=Propagation()</hypo>
@@ -262,7 +262,7 @@
         <hypo>GeometricProgression=GeometricProgression(SetStartLength(),SetCommonRatio(),SetReversedEdges())</hypo>
         <hypo>StartEndLength=StartEndLength(SetStartLength(),SetEndLength(),SetReversedEdges())</hypo>
         <hypo>Deflection1D=Deflection1D(SetDeflection())</hypo>
-        <hypo>Adaptive1D=Adaptive(SetMinSize(),SetMaxSize(),SetDeflection(),SetGrading())</hypo>
+        <hypo>Adaptive1D=Adaptive(SetMinSize(),SetMaxSize(),SetDeflection())</hypo>
         <hypo>AutomaticLength=AutomaticLength(SetFineness())</hypo>
         <hypo>FixedPoints1D=FixedPoints1D(SetPoints(),SetNbSegments(),SetReversedEdges())</hypo>
         <hypo>Propagation=Propagation()</hypo>

@@ -29,11 +29,8 @@
 
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
-#include "SMESH_TypeDefs.hxx"
-#include "SMDS_MeshNode.hxx"
 
 #include "SMESHGUI_Utils.h"
-
 #include <SMESH_Object.h>
 
 // SALOME KERNEL includes
@@ -61,15 +58,7 @@ class SMESH_Actor;
 class SALOME_Actor;
 
 class vtkActor;
-class SMDS_Mesh;
-class SMDS_MeshNode;
-class gp_Pln;
-class gp_Lin;
-class gp_Dir;
-class gp_Pnt2d;
-class gp_Vec2d;
-class Handle(Geom_Line);
-class Handle(Geom_Plane);
+
 namespace SMESH
 {
   //----------------------------------------------------------------------------
@@ -172,12 +161,6 @@ SMESHGUI_EXPORT
 
   //----------------------------------------------------------------------------
 SMESHGUI_EXPORT  
-  int GetNameOfSelectedSortedNodes( SMDSAbs_EntityType,
-                                    SVTK_Selector*,
-                                    SMESH_Actor*,
-                                    int,
-                                    QString& );
-SMESHGUI_EXPORT
   int GetNameOfSelectedNodes( SVTK_Selector*,
                               const Handle(SALOME_InteractiveObject)&,
                               QString& );
@@ -231,44 +214,6 @@ SMESHGUI_EXPORT
                            double theDirection[3],
                            double thePos[3],
                            double& theDist );
-  typedef std::pair<SMESH_TNodeXYZ, double> TNodeOfDist;
-  typedef std::pair<SMESH_TNodeXYZ, std::pair<double, double> > TNodeOfAngleAndDist, TNodeOfDistToPlaneAndDist;
-  typedef std::pair<int, std::pair<double, double> > TIdOfDistToPlaneAndDist;
-  bool CreatePlaneOnThreePoints( const gp_Pnt& thePoint1,
-                                 const gp_Pnt& thePoint2,
-                                 const gp_Pnt& thePoint3,
-                                 gp_Pln& thePlane );
-
-  void FindNbLowestPoint( std::list<gp_Pnt2d> theList, gp_Pnt2d& theNode );
-  bool IsNotPlaneIntersection( std::vector<SMESH_TNodeXYZ>& theVector,
-                               const gp_Pln& thePlane );
-  bool GetCorrectSequenceOfId( std::vector<SMESH_TNodeXYZ>& theVector );
-  void GetCorrectSequenceTwoPlaneOfId( std::vector<SMESH_TNodeXYZ>& thePlane1,
-                                       std::vector<SMESH_TNodeXYZ>& thePlane2,
-                                       std::list<int>& theResultListId );
-  void GetSortedNodesOnPolygon( std::vector<SMESH_TNodeXYZ>& theVectorOfNode,
-                                std::list<int>& theResultListId );
-  void GetSortedNodesOnPyramid( std::vector<SMESH_TNodeXYZ>& theVectorOfNode,
-                                std::list<int>& theResultListId );
-  void GetSortedNodesOnPrism( std::vector<SMESH_TNodeXYZ>& theVectorOfNode,
-                              std::list<int>& theResultListId );
-  bool Get2BasePlane( std::vector<SMESH_TNodeXYZ>& theVector,
-                      std::vector<SMESH_TNodeXYZ>& thePlane1,
-                      std::vector<SMESH_TNodeXYZ>& thePlane2);
-  bool GetNextCombination ( std::vector<int> & theVector1,
-                            std::vector<int> & theVector2,
-                            int theNbPoint );
-  static bool CompareNodeOfAngleAndDist ( const TNodeOfAngleAndDist& first,
-                                          const TNodeOfAngleAndDist& second );
-  static bool CompareNodeOfDist ( const TNodeOfAngleAndDist& first,
-                                  const TNodeOfAngleAndDist& second );
-  static bool CompareDistOfPlane ( const TNodeOfDistToPlaneAndDist& first,
-                                   const TNodeOfDistToPlaneAndDist& second );
-  static bool CompareDistOfPlaneById ( const TIdOfDistToPlaneAndDist& first,
-                                       const TIdOfDistToPlaneAndDist& second );
-  static bool CompareDistForCorrectPlane ( const TNodeOfDist& first,
-                                           const TNodeOfDist& second );
-
  SMESHGUI_EXPORT
    void RemoveVisualObjectWithActors( const char* theEntry, bool fromAllViews = false );
 };

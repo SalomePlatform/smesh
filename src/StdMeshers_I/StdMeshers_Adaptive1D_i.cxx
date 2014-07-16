@@ -153,37 +153,6 @@ CORBA::Double StdMeshers_Adaptive1D_i::GetDeflection()
 }
 
 //=======================================================================
-//function : SetGrading
-//purpose  : Sets how much size of adjacent elements can differ.
-//=======================================================================
-
-void StdMeshers_Adaptive1D_i::SetGrading( CORBA::Double theValue )
-  throw ( SALOME::SALOME_Exception )
-{
-  ASSERT( myBaseImpl );
-  try {
-    this->GetImpl()->SetGrading( theValue );
-  }
-  catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
-  }
-
-  // Update Python script
-  SMESH::TPythonDump() << _this() << ".SetGrading( " << SMESH::TVar(theValue) << " )";
-}
-
-//=======================================================================
-//function : GetGrading
-//purpose  : Returns grading
-//=======================================================================
-
-CORBA::Double StdMeshers_Adaptive1D_i::GetGrading()
-{
-  ASSERT( myBaseImpl );
-  return this->GetImpl()->GetGrading();
-}
-
-//=======================================================================
 //function : GetImpl
 //purpose  : Get implementation
 //=======================================================================

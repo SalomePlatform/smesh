@@ -75,7 +75,7 @@ private:
   void                        Init();
   void                        enterEvent( QEvent* );       /* mouse enter the QWidget */
   void                        keyPressEvent( QKeyEvent* );
-  void                        displaySimulation(int = -1, int = -1);
+  void                        displaySimulation();
   void                        UpdateTable( bool = true );
   bool                        IsValid();
   void                        updateButtons();
@@ -88,7 +88,6 @@ private:
   int                         myNbMidFaceNodes;
   int                         myNbCenterNodes;
   bool                        myBusy;
-  int                         myShift;
   SVTK_Selector*              mySelector;
   
   SMESH::SMESH_Mesh_var       myMesh;
@@ -113,8 +112,6 @@ private:
   QPushButton*                myCenterSelectButton;
   QLineEdit*                  myCenterNode;
   QTableWidget*               myTable;
-  QCheckBox*                  myAutomaticPresentation;
-  QPushButton*                myNextPresentationButton;
   QCheckBox*                  myReverseCB;
   
   QGroupBox*                  GroupGroups;

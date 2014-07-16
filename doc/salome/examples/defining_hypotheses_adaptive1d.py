@@ -19,14 +19,12 @@ shape = geompy.MakeCut( shape, tool, theName="shape" )
 # Parameters of Adaptive hypothesis. minSize and maxSize are such that they do not limit
 # size of segments because size of geometrical features lies within [2.-100.] range, hence
 # size of segments is defined by deflection parameter and size of geometrical features only.
-# grading is defined how much size of adjacent elements can differ.
 minSize = 0.1
 maxSize = 200
 deflection = 0.05
-grading = 0.7
 
 mesh = smesh.Mesh( shape )
-mesh.Segment().Adaptive( minSize, maxSize, deflection, grading )
+mesh.Segment().Adaptive( minSize, maxSize, deflection )
 mesh.Triangle().MaxElementArea( 300 )
 mesh.Compute()
 

@@ -70,12 +70,6 @@ class STDMESHERS_I_EXPORT StdMeshers_Adaptive1D_i:
   void SetDeflection( CORBA::Double theLength ) throw (SALOME::SALOME_Exception);
   CORBA::Double GetDeflection();
 
-  /*!
-   * Sets <grading> parameter value,
-  // * i.e. a maximal allowed distance between a segment and an edge.
-   */
-  void SetGrading( CORBA::Double theLength ) throw (SALOME::SALOME_Exception);
-  CORBA::Double GetGrading();
 
   /*!
    * Returns implementation

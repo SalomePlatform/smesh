@@ -942,7 +942,6 @@ StdMeshers_Adaptive1D::StdMeshers_Adaptive1D(int         hypId,
   myMinSize       = 1e-10;
   myMaxSize       = 1e+10;
   myDeflection    = 1e-2;
-  myGrading       = 1e-2;
   myAlgo          = NULL;
   _name           = "Adaptive1D";
   _param_algo_dim = 1; // is used by SMESH_Regular_1D
@@ -965,20 +964,6 @@ void StdMeshers_Adaptive1D::SetDeflection(double value)
   if (myDeflection != value)
   {
     myDeflection = value;
-    NotifySubMeshesHypothesisModification();
-  }
-}
-//=======================================================================
-//function : SetGrading
-//purpose  :
-void StdMeshers_Adaptive1D::SetGrading(double value)
-  throw(SALOME_Exception)
-{
-  if (value <= std::numeric_limits<double>::min() )
-    throw SALOME_Exception("Grading must be greater that zero");
-  if (myGrading != value)
-  {
-    myGrading = value;
     NotifySubMeshesHypothesisModification();
   }
 }
@@ -1017,7 +1002,7 @@ void StdMeshers_Adaptive1D::SetMaxSize(double maxSize)
 //purpose  : Persistence
 ostream & StdMeshers_Adaptive1D::SaveTo(ostream & save)
 {
-  save << myMinSize << " " << myMaxSize << " " << myDeflection << " " << myGrading;
+  save << myMinSize << " " << myMaxSize << " " << myDeflection;
   save << " " << -1 << " " << -1; // preview addition of parameters
   return save;
 }
@@ -1027,7 +1012,7 @@ ostream & StdMeshers_Adaptive1D::SaveTo(ostream & save)
 istream & StdMeshers_Adaptive1D::LoadFrom(istream & load)
 {
   int dummyParam;
-  bool isOK = (load >> myMinSize >> myMaxSize >> myDeflection >> myGrading >> dummyParam >> dummyParam);
+  bool isOK = (load >> myMinSize >> myMaxSize >> myDeflection >> dummyParam >> dummyParam);
   if (!isOK)
     load.clear(ios::badbit | load.rdstate());
   return load;
@@ -1097,7 +1082,6 @@ bool StdMeshers_Adaptive1D::SetParametersByDefaults(const TDefaults&  dflts,
   myMinSize = dflts._elemLength / 10;
   myMaxSize = dflts._elemLength * 2;
   myDeflection = myMinSize / 7;
-  myGrading = 0.7;
   return true;
 }
 
@@ -1161,7 +1145,7 @@ bool AdaptiveAlgo::Compute(SMESH_Mesh &         theMesh,
 
   myMesh = &theMesh;
   SMESH_MesherHelper helper( theMesh );
-  const double grading = myHyp->GetGrading();
+  const double grading = 0.7;
 
   TopTools_IndexedMapOfShape edgeMap, faceMap;
   TopExp::MapShapes( theShape,                 TopAbs_EDGE, edgeMap );

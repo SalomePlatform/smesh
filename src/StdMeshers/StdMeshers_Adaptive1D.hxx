@@ -59,13 +59,6 @@ class STDMESHERS_EXPORT StdMeshers_Adaptive1D : public SMESH_Hypothesis
   void SetDeflection(double value) throw(SALOME_Exception);
   double GetDeflection() const { return myDeflection; }
   
-  /*!
-   * Sets <grading> parameter value,
-   * i.e. how much size of adjacent elements can differ
-   */
-  void SetGrading(double value) throw(SALOME_Exception);
-  double GetGrading() const { return myGrading; }
-
   virtual std::ostream & SaveTo(std::ostream & save);
   virtual std::istream & LoadFrom(std::istream & load);
 
@@ -90,7 +83,7 @@ class STDMESHERS_EXPORT StdMeshers_Adaptive1D : public SMESH_Hypothesis
 
 protected:
 
-  double myMinSize, myMaxSize, myDeflection, myGrading;
+  double myMinSize, myMaxSize, myDeflection;
   SMESH_Algo* myAlgo; // StdMeshers_AdaptiveAlgo_1D implemented in cxx file
 };
 

@@ -433,13 +433,6 @@ module StdMeshers
      */
     void SetDeflection(in double deflection) raises (SALOME::SALOME_Exception);
     double GetDeflection();
-    
-    /*!
-     * Sets <grading> parameter value, 
-     * i.e. how much size of adjacent elements can differ
-     */
-    void SetGrading(in double grading) raises (SALOME::SALOME_Exception);
-    double GetGrading();
   };
 
   /*!

@@ -183,23 +183,20 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
     #  @param minSize defines the minimal allowed segment length
     #  @param maxSize defines the maximal allowed segment length
     #  @param deflection defines the maximal allowed distance from a segment to an edge
-    #  @param grading defines how much size of adjacent elements can differ
     #  @param UseExisting if ==true - searches for an existing hypothesis created with
     #                     the same parameters, else (default) - creates a new one
     #  @return an instance of StdMeshers_Adaptive1D hypothesis
     #  @ingroup l3_hypos_1dhyps
-    def Adaptive(self, minSize, maxSize, deflection, grading, UseExisting=False):
+    def Adaptive(self, minSize, maxSize, deflection, UseExisting=False):
         from salome.smesh.smeshBuilder import IsEqual
         compFun = lambda hyp, args: ( IsEqual(hyp.GetMinSize(), args[0]) and \
                                       IsEqual(hyp.GetMaxSize(), args[1]) and \
-                                      IsEqual(hyp.GetDeflection(), args[2]) and \
-                                      IsEqual(hyp.GetGrading(), args[3]))
-        hyp = self.Hypothesis("Adaptive1D", [minSize, maxSize, deflection, grading],
+                                      IsEqual(hyp.GetDeflection(), args[2]))
+        hyp = self.Hypothesis("Adaptive1D", [minSize, maxSize, deflection],
                               UseExisting=UseExisting, CompareMethod=compFun)
         hyp.SetMinSize(minSize)
         hyp.SetMaxSize(maxSize)
         hyp.SetDeflection(deflection)
-        hyp.SetGrading(grading)
         return hyp
 
     ## Defines "Arithmetic1D" hypothesis to cut an edge in several segments with a length

@@ -36,7 +36,6 @@
 
 #include <SMESH_Actor.h>
 #include <SMESH_ActorUtils.h>
-#include <SMESH_DeviceActor.h>
 #include <SMESH_FaceOrientationFilter.h>
 #include <SMDS_Mesh.hxx>
 
@@ -53,8 +52,6 @@
 #include <SVTK_ViewWindow.h>
 
 #include <SALOME_ListIO.hxx>
-#include <SALOME_ListIteratorOfListIO.hxx>
-#include <VTKViewer_PolyDataMapper.h>
 
 #include <SalomeApp_Application.h>
 
@@ -68,14 +65,12 @@
 #include <TColStd_MapOfInteger.hxx>
 
 // VTK includes
-#include <vtkCell.h>
 #include <vtkIdList.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkDataSetMapper.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
 #include <vtkCellType.h>
-#include <vtkCellData.h>
 
 // Qt includes
 #include <QComboBox>
@@ -126,14 +121,7 @@ namespace SMESH
     SALOME_Actor* myPreviewActor;
     vtkDataSetMapper* myMapper;
     vtkUnstructuredGrid* myGrid;
-
-    SALOME_Actor* myCornerActor;
-    VTKViewer_PolyDataMapper* myCornerMapper;
-    vtkPolyData* myCornerPolyData;
-
-    SALOME_Actor* mySelectCornerActor;
-    VTKViewer_PolyDataMapper* mySelectCornerMapper;
-    vtkPolyData* mySelectCornerPolyData;
+    //vtkProperty* myBackProp, *myProp;
 
     //double myRGB[3], myBackRGB[3];
 
@@ -198,45 +186,6 @@ namespace SMESH
       anOrientationProp->Delete();
 
       myVTKViewWindow->AddActor(myFaceOrientation);
-
-      // Create and display actor with corner nodes
-      myCornerPolyData = vtkPolyData::New();
-      myCornerPolyData->Allocate();
-      myCornerMapper = VTKViewer_PolyDataMapper::New();
-      myCornerMapper->SetInputData(myCornerPolyData);
-      myCornerMapper->SetMarkerEnabled(true);
-
-      myCornerActor = SALOME_Actor::New();
-      myCornerActor->PickableOff();
-      myCornerActor->VisibilityOff();
-      myCornerActor->SetMapper(myCornerMapper);
-
-      vtkProperty* myCornerProp = vtkProperty::New();
-      myCornerProp->SetColor( 50 / 255. , 100 / 255. , 0 / 255. );
-      myCornerActor->SetProperty( myCornerProp );
-      myCornerProp->Delete();
-
-      myVTKViewWindow->AddActor(myCornerActor);
-
-      // Create and display actor with selected corner nodes
-      mySelectCornerPolyData = vtkPolyData::New();
-      mySelectCornerPolyData->Allocate();
-      mySelectCornerMapper = VTKViewer_PolyDataMapper::New();
-      mySelectCornerMapper->SetInputData(mySelectCornerPolyData);
-      mySelectCornerMapper->SetMarkerEnabled(true);
-
-      mySelectCornerActor = SALOME_Actor::New();
-      mySelectCornerActor->PickableOff();
-      mySelectCornerActor->VisibilityOff();
-      mySelectCornerActor->SetMapper(mySelectCornerMapper);
-
-      vtkProperty* mySelectCornerProp = vtkProperty::New();
-      mySelectCornerProp->SetColor( ffc.red() / 255. , ffc.green() / 255. , ffc.blue() / 255. );
-      mySelectCornerActor->SetProperty( mySelectCornerProp );
-      mySelectCornerProp->Delete();
-
-      myVTKViewWindow->AddActor(mySelectCornerActor);
-
     }
 
     typedef std::vector<vtkIdType> TVTKIds;
@@ -269,76 +218,26 @@ namespace SMESH
 
       myPreviewActor->GetMapper()->Update();
       myPreviewActor->SetRepresentation( theMode );
-    }
-    void SetCornerNodes (SMESH_Actor*       theActor,
-                         TVTKIds&           theIds)
-    {
-      vtkUnstructuredGrid *aGrid = theActor->GetUnstructuredGrid();
-
-      myCornerMapper->SetMarkerStd(theActor->GetMarkerType(), theActor->GetMarkerScale());
-
-      myCornerPolyData->Reset();
-      myCornerPolyData->DeleteCells();
-      myCornerPolyData->SetPoints(aGrid->GetPoints());
-
-      vtkIdList *anIds = vtkIdList::New();
-      for (int i = 0, iEnd = theIds.size(); i < iEnd; i++) {
-        anIds->InsertId(i,theIds[i]);
-        myCornerPolyData->InsertNextCell(VTK_VERTEX, anIds);
-        anIds->Reset();
-      }
-      anIds->Delete();
-      myCornerPolyData->Modified();
-      myCornerActor->GetMapper()->Update();
-      myCornerActor->SetRepresentation(SMESH_Actor::ePoint);
-    }
-    void SetSelectedNodes (SMESH_Actor*       theActor,
-                           TVTKIds&           theIds)
-    {
-      vtkUnstructuredGrid *aGrid = theActor->GetUnstructuredGrid();
-
-      mySelectCornerMapper->SetMarkerStd(theActor->GetMarkerType(), theActor->GetMarkerScale());
-
-      mySelectCornerPolyData->Reset();
-      mySelectCornerPolyData->DeleteCells();
-      mySelectCornerPolyData->SetPoints(aGrid->GetPoints());
-
-      vtkIdList *anIds = vtkIdList::New();
-      for (int i = 0, iEnd = theIds.size(); i < iEnd; i++) {
-        anIds->InsertId(i,theIds[i]);
-        mySelectCornerPolyData->InsertNextCell(VTK_VERTEX, anIds);
-        anIds->Reset();
-      }
-      anIds->Delete();
-      mySelectCornerPolyData->Modified();
-      mySelectCornerActor->GetMapper()->Update();
-      mySelectCornerActor->SetRepresentation(SMESH_Actor::ePoint);
+      SetVisibility(true, theActor->GetFacesOriented());
     }
 
-    void SetVisibility ( bool theVisibility,
-                         bool theCornerVisibility = false,
-                         bool theSelectCornerVisibility = false,
-                         bool theShowOrientation = false )
+
+    void SetVisibility (bool theVisibility, bool theShowOrientation = false)
     {
       myPreviewActor->SetVisibility(theVisibility);
       myFaceOrientation->SetVisibility(theShowOrientation);
-      myCornerActor->SetVisibility(theCornerVisibility);
-      mySelectCornerActor->SetVisibility(theSelectCornerVisibility);
       RepaintCurrentView();
     }
+
 
     ~TElementSimulationQuad()
     {
       if (FindVtkViewWindow(myApplication->activeViewManager(), myViewWindow)) {
         myVTKViewWindow->RemoveActor(myPreviewActor);
         myVTKViewWindow->RemoveActor(myFaceOrientation);
-        myVTKViewWindow->RemoveActor(myCornerActor);
-        myVTKViewWindow->RemoveActor(mySelectCornerActor);
       }
       myPreviewActor->Delete();
       myFaceOrientation->Delete();
-      myCornerActor->Delete();
-      mySelectCornerActor->Delete();
 
       myMapper->RemoveAllInputs();
       myMapper->Delete();
@@ -349,14 +248,6 @@ namespace SMESH
       myFaceOrientationDataMapper->Delete();
 
       myGrid->Delete();
-
-      myCornerMapper->RemoveAllInputs();
-      myCornerMapper->Delete();
-      myCornerPolyData->Delete();
-
-      mySelectCornerMapper->RemoveAllInputs();
-      mySelectCornerMapper->Delete();
-      mySelectCornerPolyData->Delete();
 
 //       myProp->Delete();
 //       myBackProp->Delete();
@@ -552,30 +443,19 @@ SMESHGUI_AddQuadraticElementDlg::SMESHGUI_AddQuadraticElementDlg( SMESHGUI* theM
   myCenterNode->setValidator(new SMESHGUI_IdValidator(this, 1));
 
   myReverseCB = new QCheckBox(tr("SMESH_REVERSE"), GroupArguments);
-  myAutomaticPresentation = (myGeomType == SMDSEntity_Quad_Quadrangle || myGeomType == SMDSEntity_BiQuad_Quadrangle ||
-                             myGeomType == SMDSEntity_Quad_Pyramid    || myGeomType == SMDSEntity_Quad_Penta        ||
-                             myGeomType == SMDSEntity_Quad_Hexa       || myGeomType == SMDSEntity_TriQuad_Hexa ) ? new QCheckBox(tr("SMESH_AUTOMATIC_PRESENTATION"), GroupArguments) : 0;
-  if ( myAutomaticPresentation ) {
-    myNextPresentationButton = new QPushButton(tr("SMESH_BUT_GET_NEXT_SHAPE"), GroupArguments);
-    myNextPresentationButton->setAutoDefault(false);
-  }
 
   aGroupArgumentsLayout->addWidget(aCornerNodesLabel,     0, 0);
   aGroupArgumentsLayout->addWidget(myCornerSelectButton,  0, 1);
   aGroupArgumentsLayout->addWidget(myCornerNodes,         0, 2);
-  if ( myAutomaticPresentation ) {
-    myAutomaticPresentation->setChecked(true);
-    aGroupArgumentsLayout->addWidget(myAutomaticPresentation,  1, 0, 1, 2);
-    aGroupArgumentsLayout->addWidget(myNextPresentationButton, 1, 2, 1, 1);
-  }
-  aGroupArgumentsLayout->addWidget(myTable,               2, 0, 1, 3);
-  aGroupArgumentsLayout->addWidget(myMidFaceLabel,        3, 0);
-  aGroupArgumentsLayout->addWidget(myMidFaceSelectButton, 3, 1);
-  aGroupArgumentsLayout->addWidget(myMidFaceNodes,        3, 2);
-  aGroupArgumentsLayout->addWidget(myCenterLabel,         4, 0);
-  aGroupArgumentsLayout->addWidget(myCenterSelectButton,  4, 1);
-  aGroupArgumentsLayout->addWidget(myCenterNode,          4, 2);
-  aGroupArgumentsLayout->addWidget(myReverseCB,           5, 0, 1, 3);
+  aGroupArgumentsLayout->addWidget(myTable,               1, 0, 1, 3);
+  aGroupArgumentsLayout->addWidget(myMidFaceLabel,        2, 0);
+  aGroupArgumentsLayout->addWidget(myMidFaceSelectButton, 2, 1);
+  aGroupArgumentsLayout->addWidget(myMidFaceNodes,        2, 2);
+  aGroupArgumentsLayout->addWidget(myCenterLabel,         3, 0);
+  aGroupArgumentsLayout->addWidget(myCenterSelectButton,  3, 1);
+  aGroupArgumentsLayout->addWidget(myCenterNode,          3, 2);
+  aGroupArgumentsLayout->addWidget(myReverseCB,           4, 0, 1, 3);
+
     /***************************************************************/
   GroupGroups = new QGroupBox( tr( "SMESH_ADD_TO_GROUP" ), this );
   GroupGroups->setCheckable( true );
@@ -770,10 +650,7 @@ void SMESHGUI_AddQuadraticElementDlg::Init()
   connect(mySMESHGUI, SIGNAL (SignalDeactivateActiveDialog()), SLOT(DeactivateActiveDialog()));
   connect(mySMESHGUI, SIGNAL (SignalStudyFrameChanged()), SLOT(reject()));
   connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), SLOT(reject()));
-  if (myAutomaticPresentation) {
-    connect(myAutomaticPresentation, SIGNAL(stateChanged(int)), SLOT(SetCurrentSelection()));
-    connect(myNextPresentationButton, SIGNAL(clicked()), SLOT(SetCurrentSelection()));
-  }
+
   myCurrentLineEdit = myCornerNodes;
 
   // set selection mode
@@ -1039,6 +916,7 @@ void SMESHGUI_AddQuadraticElementDlg::onTextChange (const QString& theNewText)
     if ( myCurrentLineEdit == myCornerNodes )
       UpdateTable( allOk );
   }
+
   updateButtons();
   displaySimulation();
 }
@@ -1054,39 +932,41 @@ void SMESHGUI_AddQuadraticElementDlg::SelectionIntoArgument()
   BusyLocker lock( myBusy );
 
   QString aCurrentEntry = myEntry;
-  QString anOldEditArgument = "";
-  // clear
-  myActor = 0;
-  if ( myCurrentLineEdit ) {
-    anOldEditArgument = myCurrentLineEdit->text();
-    myCurrentLineEdit->setText("");
-  }
 
-  if (!GroupButtons->isEnabled()) // inactive
-    return;
-
-  mySimulation->SetVisibility(false);
-
-  // get selected mesh
-  SALOME_ListIO aList;
-  mySelectionMgr->selectedObjects(aList);
-
-  if (aList.Extent() != 1)
+  if ( myCurrentLineEdit )
   {
-    UpdateTable();
-    updateButtons();
-    return;
-  }
+    // clear
+    myActor = 0;
 
-  Handle(SALOME_InteractiveObject) anIO = aList.First();
-  myEntry = anIO->getEntry();
-  myMesh = SMESH::GetMeshByIO(anIO);
-  if (myMesh->_is_nil()) {
-    updateButtons();
-    return;
-  }
+    myCurrentLineEdit->setText("");
 
-  myActor = SMESH::FindActorByEntry(anIO->getEntry());
+    if (!GroupButtons->isEnabled()) // inactive
+      return;
+
+    mySimulation->SetVisibility(false);
+
+    // get selected mesh
+    SALOME_ListIO aList;
+    mySelectionMgr->selectedObjects(aList);
+
+    if (aList.Extent() != 1)
+    {
+      UpdateTable();
+      updateButtons();
+      return;
+    }
+
+    Handle(SALOME_InteractiveObject) anIO = aList.First();
+    myEntry = anIO->getEntry();
+    myMesh = SMESH::GetMeshByIO(anIO);
+    if (myMesh->_is_nil()) {
+      updateButtons();
+      return;
+    }
+
+    myActor = SMESH::FindActorByEntry(anIO->getEntry());
+
+  }
 
   // process groups
   if ( !myMesh->_is_nil() && myEntry != aCurrentEntry ) {
@@ -1126,42 +1006,18 @@ void SMESHGUI_AddQuadraticElementDlg::SelectionIntoArgument()
     updateButtons();
     return;
   }
-  if ( myAutomaticPresentation )
-    myNextPresentationButton->setEnabled(false);
+
   // get selected nodes
   QString aString = "";
-  int nbNodes = 0;
-  while ( aString == "" || anOldEditArgument == aString ) {
-    if ( myAutomaticPresentation && myAutomaticPresentation->isChecked() ) {
-      nbNodes = SMESH::GetNameOfSelectedSortedNodes( myGeomType , mySelector, myActor, myShift, aString );
-    }
-    else
-      nbNodes = SMESH::GetNameOfSelectedNodes( mySelector, myActor->getIO(), aString );
-    if ( aString!= "" && myNbCorners == nbNodes && anOldEditArgument == aString && myAutomaticPresentation && myAutomaticPresentation->isChecked()) {
-      myShift++;
-      if ( myShift > nbNodes ) {
-        myShift = 0;
-        break;
-      }
-      continue;
-    }
-    if (myNbCorners != nbNodes && myNbCorners != 1) {
-      myShift = 0;
-      break;
-    }
-    if ( !myAutomaticPresentation || !myAutomaticPresentation->isChecked() )
-      break;
-  }
+  int nbNodes = SMESH::GetNameOfSelectedNodes(mySelector,myActor->getIO(),aString);
+
   if ( myCurrentLineEdit )
   {
-    if ( myCurrentLineEdit != myCenterNode || nbNodes == 1)
+    if ( myCurrentLineEdit != myCenterNode || nbNodes == 1 )
       myCurrentLineEdit->setText(aString);
 
-    if ( myCurrentLineEdit == myCornerNodes ) {
+    if ( myCurrentLineEdit == myCornerNodes )
       UpdateTable();
-      if ( myAutomaticPresentation && myAutomaticPresentation->isChecked() && myNbCorners == nbNodes)
-        myNextPresentationButton->setEnabled(true);
-    }
   }
   else if ( myTable->isEnabled() && nbNodes == 1 )
   {
@@ -1169,6 +1025,7 @@ void SMESHGUI_AddQuadraticElementDlg::SelectionIntoArgument()
     if ( theCol == 1 )
       myTable->item(theRow, 1)->setText(aString);
   }
+
   updateButtons();
   displaySimulation();
 }
@@ -1178,10 +1035,9 @@ void SMESHGUI_AddQuadraticElementDlg::SelectionIntoArgument()
 // purpose  :
 //=================================================================================
 
-void SMESHGUI_AddQuadraticElementDlg::displaySimulation(int theRow, int theCol)
+void SMESHGUI_AddQuadraticElementDlg::displaySimulation()
 {
-  bool isValid = IsValid();
-  if ( ( isValid || myTable->isEnabled() ) && myActor )
+  if ( IsValid() )
   {
     SMESH::TElementSimulationQuad::TVTKIds anIds;
 
@@ -1189,6 +1045,7 @@ void SMESHGUI_AddQuadraticElementDlg::displaySimulation(int theRow, int theCol)
     int anID;
     bool ok;
     int aDisplayMode = VTK_SURFACE;
+
     if ( myGeomType == SMDSEntity_Quad_Edge )
     {
       anIds.push_back( myActor->GetObject()->GetNodeVTKId( myTable->item(0, 0)->text().toInt() ) );
@@ -1212,33 +1069,20 @@ void SMESHGUI_AddQuadraticElementDlg::displaySimulation(int theRow, int theCol)
         }
         anIds.push_back( myActor->GetObject()->GetNodeVTKId(anID) );
       }
-      if ( myNbMidFaceNodes && isValid)
+      if ( myNbMidFaceNodes )
       {
         QStringList aListId = myMidFaceNodes->text().split(" ", QString::SkipEmptyParts);
         for (int i = 0; i < aListId.count(); i++)
           anIds.push_back( myActor->GetObject()->GetNodeVTKId( aListId[ i ].toInt() ));
       }
-      if ( myNbCenterNodes && isValid)
+      if ( myNbCenterNodes )
       {
         QStringList aListId = myCenterNode->text().split(" ", QString::SkipEmptyParts);
         anIds.push_back( myActor->GetObject()->GetNodeVTKId( aListId[ 0 ].toInt() ));
       }
     }
-    if ( isValid )
-      mySimulation->SetPosition(myActor,myGeomType,anIds,aDisplayMode,myReverseCB->isChecked());
-    mySimulation->SetCornerNodes(myActor, anIds);
-    if ( theCol == 1 ) {
-      anIds.clear();
-      anIds.push_back( myActor->GetObject()->GetNodeVTKId( myTable->item(theRow, 0)->text().toInt() ) );
-      anIds.push_back( myActor->GetObject()->GetNodeVTKId( myTable->item(theRow, 2)->text().toInt() ) );
-      bool ok;
-      int anID;
-      anID = myTable->item(theRow, 1)->text().toInt(&ok);
-      if (ok)
-        anIds.push_back(myActor->GetObject()->GetNodeVTKId(anID));
-      mySimulation->SetSelectedNodes(myActor, anIds);
-    }
-    mySimulation->SetVisibility(isValid, true, true, myActor->GetFacesOriented());
+
+    mySimulation->SetPosition(myActor,myGeomType,anIds,aDisplayMode,myReverseCB->isChecked());
   }
   else
   {
@@ -1257,16 +1101,12 @@ void SMESHGUI_AddQuadraticElementDlg::SetCurrentSelection()
   QPushButton* send = (QPushButton*)sender();
   myCurrentLineEdit = 0;
 
-  if (send == myCornerSelectButton || (QCheckBox*)sender() == myAutomaticPresentation)
+  if (send == myCornerSelectButton)
     myCurrentLineEdit = myCornerNodes;
   else if ( send == myMidFaceSelectButton )
     myCurrentLineEdit = myMidFaceNodes;
   else if ( send == myCenterSelectButton )
     myCurrentLineEdit = myCenterNode;
-  else if (send == myNextPresentationButton ) {
-    myShift++;
-    myCurrentLineEdit = myCornerNodes;
-  }
 
   if ( myCurrentLineEdit )
   {
@@ -1464,7 +1304,7 @@ void SMESHGUI_AddQuadraticElementDlg::UpdateTable( bool theConersValidity )
 void SMESHGUI_AddQuadraticElementDlg::onCellDoubleClicked( int theRow, int theCol )
 {
   myCurrentLineEdit = 0;
-  displaySimulation(theRow, theCol);
+  displaySimulation();
   updateButtons();
 }
 
@@ -1476,7 +1316,7 @@ void SMESHGUI_AddQuadraticElementDlg::onCellDoubleClicked( int theRow, int theCo
 void SMESHGUI_AddQuadraticElementDlg::onCellTextChange(int theRow, int theCol)
 {
   myCurrentLineEdit = 0;
-  displaySimulation(theRow, theCol);
+  displaySimulation();
   updateButtons();
 }
 
