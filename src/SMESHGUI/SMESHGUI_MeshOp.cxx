@@ -1396,7 +1396,6 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
 
   const bool isSubmesh = ( myToCreate ? !myIsMesh : myDlg->isObjectShown( SMESHGUI_MeshDlg::Mesh ));
 
-  // if ( aDim >= SMESH::DIM_2D ) myAvailableHypData[ aDim ][ Algo ] = myFilteredAlgoData[aDim];
   HypothesisData* algoData = hypData( aDim, Algo, theIndex );
   HypothesisData* algoByDim[4];
   algoByDim[ aDim ] = algoData;
@@ -2568,7 +2567,7 @@ void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theI
 
   if ( anCompareType == "ANY" )
   {
-    for ( int dim = SMESH::DIM_2D; dim <= SMESH::DIM_3D; dim++ )
+    for ( int dim = SMESH::DIM_3D; dim >= SMESH::DIM_2D; dim-- )
     {
       isNone = currentHyp( dim, Algo ) < 0;
       isAvailableChoiceAlgo = false;
@@ -2581,30 +2580,35 @@ void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theI
       }
       myAvailableHypData[dim][Algo].clear();
       anAvailableAlgs.clear();
-      for (int i = 0 ; i < anAvailableAlgsData.count(); i++)
+      if ( dim != SMESH::DIM_2D || currentHyp( SMESH::DIM_3D, Algo ) < 0 ||
+           myAvailableHypData[SMESH::DIM_3D][Algo].empty() ||
+           !myAvailableHypData[SMESH::DIM_3D][Algo].at( currentHyp( SMESH::DIM_3D, Algo ) )->InputTypes.isEmpty() )
       {
-        HypothesisData* curAlgo = anAvailableAlgsData.at(i);
-        if ( aGeomVar->_is_nil() ||
-             SMESH::IsApplicable( curAlgo->TypeName, aGeomVar, toCheckIsApplicableToAll ))
+        for (int i = 0 ; i < anAvailableAlgsData.count(); i++)
         {
-          anAvailableAlgs.append( curAlgo->Label );
-          myAvailableHypData[dim][Algo].append( curAlgo );
-        }
-      }
-      if ( !isNone && algoCur ) {
-        for (int i = 0 ; i < myAvailableHypData[dim][Algo].count(); i++)
-        {
-          HypothesisData* algoAny = myAvailableHypData[dim][Algo].at(i);
-          if ( algoAny->Label == algoCur->Label ){
-            isAvailableChoiceAlgo = true;
-            anCurrentAvailableAlgo = i;
-            break;
+          HypothesisData* curAlgo = anAvailableAlgsData.at(i);
+          if ( aGeomVar->_is_nil() ||
+              SMESH::IsApplicable( curAlgo->TypeName, aGeomVar, toCheckIsApplicableToAll ))
+          {
+            anAvailableAlgs.append( curAlgo->Label );
+            myAvailableHypData[dim][Algo].append( curAlgo );
           }
         }
-      }
-      else if ( !isNone ) {
-        isAvailableChoiceAlgo = true;
-        anCurrentAvailableAlgo = currentHyp( dim, Algo );
+        if ( !isNone && algoCur ) {
+          for (int i = 0 ; i < myAvailableHypData[dim][Algo].count(); i++)
+          {
+            HypothesisData* algoAny = myAvailableHypData[dim][Algo].at(i);
+            if ( algoAny->Label == algoCur->Label ){
+              isAvailableChoiceAlgo = true;
+              anCurrentAvailableAlgo = i;
+              break;
+            }
+          }
+        }
+        else if ( !isNone ) {
+          isAvailableChoiceAlgo = true;
+          anCurrentAvailableAlgo = currentHyp( dim, Algo );
+        }
       }
       myDlg->tab( dim )->setAvailableHyps( Algo, anAvailableAlgs );
       if ( isAvailableChoiceAlgo )
@@ -2730,11 +2734,24 @@ void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theI
       {
         for (int i = SMESH::DIM_0D; i <= myMaxShapeDim; i++)
         {
-          for (int j = 0; j < myAvailableHypData[i][Algo].count(); ++j) {
-            HypothesisData* aCurAlgo =  hypData( i, Algo, j );
-            if ( aCurAlgo->Label == algoDataIn->Label ){
-              isAvailable = true;
-              break;
+          if ( myAvailableHypData[i][Algo].count() == 0 ) {
+            availableHyps( i, Algo, anAvailableAlgs, anAvailableAlgsData );
+            for ( int i = 0 ; i < anAvailableAlgsData.count(); i++ )
+            {
+              HypothesisData* aCurAlgo = anAvailableAlgsData.at( i );
+              if ( aCurAlgo->Label == algoDataIn->Label ){
+                isAvailable = true;
+                break;
+              }
+            }
+          }
+          else {
+            for (int j = 0; j < myAvailableHypData[i][Algo].count(); ++j) {
+              HypothesisData* aCurAlgo = hypData( i, Algo, j );
+              if ( aCurAlgo->Label == algoDataIn->Label ){
+                isAvailable = true;
+                break;
+              }
             }
           }
           if ( isAvailable ) break;
