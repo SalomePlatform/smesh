@@ -2736,9 +2736,9 @@ void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theI
         {
           if ( myAvailableHypData[i][Algo].count() == 0 ) {
             availableHyps( i, Algo, anAvailableAlgs, anAvailableAlgsData );
-            for ( int i = 0 ; i < anAvailableAlgsData.count(); i++ )
+            for ( int j = 0 ; j < anAvailableAlgsData.count(); j++ )
             {
-              HypothesisData* aCurAlgo = anAvailableAlgsData.at( i );
+              HypothesisData* aCurAlgo = anAvailableAlgsData.at( j );
               if ( aCurAlgo->Label == algoDataIn->Label ){
                 isAvailable = true;
                 break;
