@@ -854,17 +854,26 @@ namespace
     return dir.XYZ();
   }
   //--------------------------------------------------------------------------------
+  gp_XYZ getFaceDir( const TopoDS_Face& F, const TopoDS_Vertex& fromV,
+                     const SMDS_MeshNode* node, SMESH_MesherHelper& helper, bool& ok,
+                     double* cosin=0);
+  //--------------------------------------------------------------------------------
   gp_XYZ getFaceDir( const TopoDS_Face& F, const TopoDS_Edge& fromE,
                      const SMDS_MeshNode* node, SMESH_MesherHelper& helper, bool& ok)
   {
+    double f,l;
+    Handle(Geom_Curve) c = BRep_Tool::Curve( fromE, f, l );
+    if ( c.IsNull() )
+    {
+      TopoDS_Vertex v = helper.IthVertex( 0, fromE );
+      return getFaceDir( F, v, node, helper, ok );
+    }
     gp_XY uv = helper.GetNodeUV( F, node, 0, &ok );
     Handle(Geom_Surface) surface = BRep_Tool::Surface( F );
     gp_Pnt p; gp_Vec du, dv, norm;
     surface->D1( uv.X(),uv.Y(), p, du,dv );
     norm = du ^ dv;
 
-    double f,l;
-    Handle(Geom_Curve) c = BRep_Tool::Curve( fromE, f, l );
     double u = helper.GetNodeU( fromE, node, 0, &ok );
     c->D1( u, p, du );
     TopAbs_Orientation o = helper.GetSubShapeOri( F.Oriented(TopAbs_FORWARD), fromE);
@@ -888,7 +897,7 @@ namespace
   //--------------------------------------------------------------------------------
   gp_XYZ getFaceDir( const TopoDS_Face& F, const TopoDS_Vertex& fromV,
                      const SMDS_MeshNode* node, SMESH_MesherHelper& helper,
-                     bool& ok, double* cosin=0)
+                     bool& ok, double* cosin)
   {
     TopoDS_Face faceFrw = F;
     faceFrw.Orientation( TopAbs_FORWARD );
@@ -2354,9 +2363,19 @@ gp_XYZ _ViscousBuilder::getFaceNormal(const SMDS_MeshNode* node,
   Handle(Geom_Surface) surface = BRep_Tool::Surface( face );
   int pointKind = GeomLib::NormEstim( surface, uv, 1e-5, normal );
   enum { REGULAR = 0, QUASYSINGULAR, CONICAL, IMPOSSIBLE };
+
+  if ( pointKind == IMPOSSIBLE &&
+       node->GetPosition()->GetDim() == 2 ) // node inside the FACE
+  {
+    // probably NormEstim() failed due to a too high tolerance
+    pointKind = GeomLib::NormEstim( surface, uv, 1e-20, normal );
+    isOK = ( pointKind < IMPOSSIBLE );
+  }
   if ( pointKind < IMPOSSIBLE )
   {
-    if ( pointKind != REGULAR && !shiftInside )
+    if ( pointKind != REGULAR &&
+         !shiftInside &&
+         node->GetPosition()->GetDim() < 2 ) // FACE boundary
     {
       gp_XYZ normShift = getFaceNormal( node, face, helper, isOK, /*shiftInside=*/true );
       if ( normShift * normal.XYZ() < 0. )
@@ -2364,7 +2383,8 @@ gp_XYZ _ViscousBuilder::getFaceNormal(const SMDS_MeshNode* node,
     }
     isOK = true;
   }
-  else // hard singularity, to call with shiftInside=true ?
+
+  if ( !isOK ) // hard singularity, to call with shiftInside=true ?
   {
     const TGeomID faceID = helper.GetMeshDS()->ShapeToIndex( face );
 
@@ -2377,7 +2397,9 @@ gp_XYZ _ViscousBuilder::getFaceNormal(const SMDS_MeshNode* node,
         isOK = SMESH_MeshAlgos::FaceNormal( f, (gp_XYZ&) normal.XYZ(), /*normalized=*/true );
         if ( isOK )
         {
-          if ( helper.IsReversedSubMesh( face ))
+          TopoDS_Face ff = face;
+          ff.Orientation( TopAbs_FORWARD );
+          if ( helper.IsReversedSubMesh( ff ))
             normal.Reverse();
           break;
         }
