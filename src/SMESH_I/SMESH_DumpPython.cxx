@@ -1209,6 +1209,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
     if ( theNames.IsBound( anEntry ))
     {
       aGUIName = theNames.Find(anEntry);
+      aGUIName.RemoveAll('\''); // remove a quote from a name (issue 22360)
       setNamePart += nt + aSMESHGen + ".SetName(" + aName;
       if ( anEntry2AccessorMethod.IsBound( anEntry ) )
         setNamePart += helper + "." + anEntry2AccessorMethod( anEntry );

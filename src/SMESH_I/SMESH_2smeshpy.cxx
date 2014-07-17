@@ -3163,23 +3163,28 @@ void _pyComplexParamHypo::Process( const Handle(_pyCommand)& theCommand)
 
 void _pyComplexParamHypo::Flush()
 {
+  list < Handle(_pyCommand) >::iterator cmd;
   if ( IsWrapped() )
   {
-    list < Handle(_pyCommand) >::iterator cmd = myUnusedCommands.begin();
-    for ( ; cmd != myUnusedCommands.end(); ++cmd )
+    for ( cmd = myUnusedCommands.begin(); cmd != myUnusedCommands.end(); ++cmd )
       if ((*cmd)->GetMethod() == "SetObjectEntry" )
         (*cmd)->Clear();
-
-    if ( GetAlgoType() == "Cartesian_3D" )
-    {
-      _pyID algo = myCreationCmd->GetObject();
-      for ( cmd = myProcessedCmds.begin(); cmd != myProcessedCmds.end(); ++cmd )
-      {
-        StructToList( *cmd, /*checkMethod=*/false );
-        (*cmd)->SetObject( algo );
-      }
-    }
   }
+
+  // if ( GetAlgoType() == "Cartesian_3D" )
+  // {
+  //   _pyID algo = myCreationCmd->GetObject();
+  //   for ( cmd = myProcessedCmds.begin(); cmd != myProcessedCmds.end(); ++cmd )
+  //   {
+  //     if ( IsWrapped() )
+  //     {
+  //       StructToList( *cmd, /*checkMethod=*/false );
+  //       const _AString & method = (*cmd)->GetMethod();
+  //       if ( method == "SetFixedPoint" )
+  //         (*cmd)->SetObject( algo );
+  //     }
+  //   }
+  // }
 }
 
 //================================================================================
