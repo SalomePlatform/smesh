@@ -849,6 +849,7 @@ namespace
     gp_Vec dir;
     double f,l; gp_Pnt p;
     Handle(Geom_Curve) c = BRep_Tool::Curve( E, f, l );
+    if ( c.IsNull() ) return gp_XYZ( 1e100, 1e100, 1e100 );
     double u = helper.GetNodeU( E, atNode );
     c->D1( u, p, dir );
     return dir.XYZ();
@@ -1652,22 +1653,43 @@ bool _ViscousBuilder::makeLayer(_SolidData& data)
     while ( eIt->more() )
     {
       const SMDS_MeshElement* face = eIt->next();
+      double          faceMaxCosin = -1;
+      _LayerEdge*     maxCosinEdge = 0;
+      int             nbDegenNodes = 0;
+
       newNodes.resize( face->NbCornerNodes() );
-      double faceMaxCosin = -1;
-      _LayerEdge* maxCosinEdge = 0;
-      for ( int i = 0 ; i < face->NbCornerNodes(); ++i )
+      for ( size_t i = 0 ; i < newNodes.size(); ++i )
       {
-        const SMDS_MeshNode* n = face->GetNode(i);
+        const SMDS_MeshNode* n = face->GetNode( i );
+        const int      shapeID = n->getshapeId();
+        const bool onDegenShap = helper.IsDegenShape( shapeID );
+        const bool onDegenEdge = ( onDegenShap && n->GetPosition()->GetDim() == 1 );
+        if ( onDegenShap )
+        {
+          if ( onDegenEdge )
+          {
+            // substitute n on a degenerated EDGE with a node on a corresponding VERTEX
+            const TopoDS_Shape& E = getMeshDS()->IndexToShape( shapeID );
+            TopoDS_Vertex       V = helper.IthVertex( 0, TopoDS::Edge( E ));
+            if ( const SMDS_MeshNode* vN = SMESH_Algo::VertexNode( V, getMeshDS() )) {
+              n = vN;
+              nbDegenNodes++;
+            }
+          }
+          else
+          {
+            nbDegenNodes++;
+          }
+        }
         TNode2Edge::iterator n2e = data._n2eMap.insert( make_pair( n, (_LayerEdge*)0 )).first;
         if ( !(*n2e).second )
         {
           // add a _LayerEdge
           _LayerEdge* edge = new _LayerEdge();
-          n2e->second = edge;
           edge->_nodes.push_back( n );
-          const int   shapeID = n->getshapeId();
-          const bool noShrink = data._noShrinkShapes.count( shapeID );
+          n2e->second = edge;
           edgesByGeom[ shapeID ].push_back( edge );
+          const bool noShrink = data._noShrinkShapes.count( shapeID );
 
           SMESH_TNodeXYZ xyz( n );
 
@@ -1702,7 +1724,13 @@ bool _ViscousBuilder::makeLayer(_SolidData& data)
           }
         }
         newNodes[ i ] = n2e->second->_nodes.back();
+
+        if ( onDegenEdge )
+          data._n2eMap.insert( make_pair( face->GetNode( i ), n2e->second ));
       }
+      if ( newNodes.size() - nbDegenNodes < 2 )
+        continue;
+
       // create a temporary face
       const SMDS_MeshElement* newFace =
         new _TmpMeshFace( newNodes, --_tmpFaceID, face->getshapeId() );
@@ -1711,6 +1739,7 @@ bool _ViscousBuilder::makeLayer(_SolidData& data)
       // compute inflation step size by min size of element on a convex surface
       if ( faceMaxCosin > theMinSmoothCosin )
         limitStepSize( data, face, maxCosinEdge );
+
     } // loop on 2D elements on a FACE
   } // loop on FACEs of a SOLID
 
@@ -1730,16 +1759,17 @@ bool _ViscousBuilder::makeLayer(_SolidData& data)
   const SMDS_MeshNode* nn[2];
   for ( size_t i = 0; i < data._edges.size(); ++i )
   {
-    if ( data._edges[i]->IsOnEdge() )
+    _LayerEdge* edge = data._edges[i];
+    if ( edge->IsOnEdge() )
     {
       // get neighbor nodes
-      bool hasData = ( data._edges[i]->_2neibors->_edges[0] );
+      bool hasData = ( edge->_2neibors->_edges[0] );
       if ( hasData ) // _LayerEdge is a copy of another one
       {
-        nn[0] = data._edges[i]->_2neibors->srcNode(0);
-        nn[1] = data._edges[i]->_2neibors->srcNode(1);
+        nn[0] = edge->_2neibors->srcNode(0);
+        nn[1] = edge->_2neibors->srcNode(1);
       }
-      else if ( !findNeiborsOnEdge( data._edges[i], nn[0],nn[1], data ))
+      else if ( !findNeiborsOnEdge( edge, nn[0],nn[1], data ))
       {
         return false;
       }
@@ -1748,17 +1778,36 @@ bool _ViscousBuilder::makeLayer(_SolidData& data)
       {
         if (( n2e = data._n2eMap.find( nn[j] )) == data._n2eMap.end() )
           return error("_LayerEdge not found by src node", data._index);
-        data._edges[i]->_2neibors->_edges[j] = n2e->second;
+        edge->_2neibors->_edges[j] = n2e->second;
       }
       if ( !hasData )
-        data._edges[i]->SetDataByNeighbors( nn[0], nn[1], helper);
+        edge->SetDataByNeighbors( nn[0], nn[1], helper);
     }
 
-    for ( size_t j = 0; j < data._edges[i]->_simplices.size(); ++j )
+    for ( size_t j = 0; j < edge->_simplices.size(); ++j )
     {
-      _Simplex& s = data._edges[i]->_simplices[j];
+      _Simplex& s = edge->_simplices[j];
       s._nNext = data._n2eMap[ s._nNext ]->_nodes.back();
       s._nPrev = data._n2eMap[ s._nPrev ]->_nodes.back();
+    }
+
+    // For an _LayerEdge on a degenerated EDGE, copy some data from
+    // a corresponding _LayerEdge on a VERTEX
+    // (issue 52453, pb on a downloaded SampleCase2-Tet-netgen-mephisto.hdf)
+    if ( helper.IsDegenShape( edge->_nodes[0]->getshapeId() ))
+    {
+      // Generally we should not get here
+      const TopoDS_Shape& E = getMeshDS()->IndexToShape( edge->_nodes[0]->getshapeId() );
+      if ( E.ShapeType() != TopAbs_EDGE )
+        continue;
+      TopoDS_Vertex V = helper.IthVertex( 0, TopoDS::Edge( E ));
+      const SMDS_MeshNode* vN = SMESH_Algo::VertexNode( V, getMeshDS() );
+      if (( n2e = data._n2eMap.find( vN )) == data._n2eMap.end() )
+        continue;
+      const _LayerEdge* vEdge = n2e->second;
+      edge->_normal    = vEdge->_normal;
+      edge->_lenFactor = vEdge->_lenFactor;
+      edge->_cosin     = vEdge->_cosin;
     }
   }
 
@@ -1975,7 +2024,9 @@ bool _ViscousBuilder::sortEdges( _SolidData&                    data,
     {
     case TopAbs_EDGE: {
 
-      bool isShrinkEdge = !eS[0]->_sWOL.IsNull();
+      if ( SMESH_Algo::isDegenerated( TopoDS::Edge( S )))
+        break;
+      //bool isShrinkEdge = !eS[0]->_sWOL.IsNull();
       for ( TopoDS_Iterator vIt( S ); vIt.More() && !needSmooth; vIt.Next() )
       {
         TGeomID iV = getMeshDS()->ShapeToIndex( vIt.Value() );
@@ -2551,11 +2602,11 @@ void _LayerEdge::SetDataByNeighbors( const SMDS_MeshNode* n1,
 
   // Set _curvature
 
-  double sumLen = vec1.Modulus() + vec2.Modulus();
+  double      sumLen = vec1.Modulus() + vec2.Modulus();
   _2neibors->_wgt[0] = 1 - vec1.Modulus() / sumLen;
   _2neibors->_wgt[1] = 1 - vec2.Modulus() / sumLen;
   double avgNormProj = 0.5 * ( _normal * vec1 + _normal * vec2 );
-  double avgLen = 0.5 * ( vec1.Modulus() + vec2.Modulus() );
+  double      avgLen = 0.5 * ( vec1.Modulus() + vec2.Modulus() );
   if ( _curvature ) delete _curvature;
   _curvature = _Curvature::New( avgNormProj, avgLen );
   // if ( _curvature )
@@ -2569,10 +2620,13 @@ void _LayerEdge::SetDataByNeighbors( const SMDS_MeshNode* n1,
   if ( _sWOL.IsNull() )
   {
     TopoDS_Shape S = helper.GetSubShapeByNode( _nodes[0], helper.GetMeshDS() );
-    gp_XYZ dirE = getEdgeDir( TopoDS::Edge( S ), _nodes[0], helper );
+    TopoDS_Edge  E = TopoDS::Edge( S );
+    // if ( SMESH_Algo::isDegenerated( E ))
+    //   return;
+    gp_XYZ dirE    = getEdgeDir( E, _nodes[0], helper );
     gp_XYZ plnNorm = dirE ^ _normal;
-    double proj0 = plnNorm * vec1;
-    double proj1 = plnNorm * vec2;
+    double proj0   = plnNorm * vec1;
+    double proj1   = plnNorm * vec2;
     if ( fabs( proj0 ) > 1e-10 || fabs( proj1 ) > 1e-10 )
     {
       if ( _2neibors->_plnNorm ) delete _2neibors->_plnNorm;
@@ -4841,6 +4895,7 @@ bool _ViscousBuilder::refine(_SolidData& data)
   helper.SetElementsOnShape(true);
 
   vector< vector<const SMDS_MeshNode*>* > nnVec;
+  set< vector<const SMDS_MeshNode*>* >    nnSet;
   set< int > degenEdgeInd;
   vector<const SMDS_MeshElement*> degenVols;
 
@@ -4856,19 +4911,25 @@ bool _ViscousBuilder::refine(_SolidData& data)
       const SMDS_MeshElement* face = fIt->next();
       const int            nbNodes = face->NbCornerNodes();
       nnVec.resize( nbNodes );
+      nnSet.clear();
       degenEdgeInd.clear();
       int nbZ = 0;
-      SMDS_ElemIteratorPtr nIt = face->nodesIterator();
+      SMDS_NodeIteratorPtr nIt = face->nodeIterator();
       for ( int iN = 0; iN < nbNodes; ++iN )
       {
-        const SMDS_MeshNode* n = static_cast<const SMDS_MeshNode*>( nIt->next() );
+        const SMDS_MeshNode* n = nIt->next();
         nnVec[ iN ] = & data._n2eMap[ n ]->_nodes;
         if ( nnVec[ iN ]->size() < 2 )
           degenEdgeInd.insert( iN );
         else
           nbZ = nnVec[ iN ]->size();
+
+        if ( helper.HasDegeneratedEdges() )
+          nnSet.insert( nnVec[ iN ]);
       }
       if ( nbZ == 0 )
+        continue;
+      if ( 0 < nnSet.size() && nnSet.size() < 3 )
         continue;
 
       switch ( nbNodes )

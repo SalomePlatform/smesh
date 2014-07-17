@@ -130,6 +130,7 @@ class SMESH_EXPORT SMESH_MesherHelper
    * \param node - the node
    * \param meshDS - mesh DS
    * \retval TopoDS_Shape - found support shape
+   * \sa SMESH_Algo::VertexNode( const TopoDS_Vertex&, SMESHDS_Mesh* )
    */
   static TopoDS_Shape GetSubShapeByNode(const SMDS_MeshNode* node,
                                         const SMESHDS_Mesh*  meshDS);

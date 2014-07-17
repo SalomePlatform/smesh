@@ -594,6 +594,7 @@ bool SMESH_Algo::isDegenerated( const TopoDS_Edge & E )
  * \param V - the vertex
  * \param meshDS - mesh
  * \retval const SMDS_MeshNode* - found node or NULL
+ * \sa SMESH_MesherHelper::GetSubShapeByNode( const SMDS_MeshNode*, SMESHDS_Mesh* )
  */
 //================================================================================
 
