@@ -210,13 +210,15 @@ namespace {
    * \brief Returns a local 1D hypothesis used for theEdge
    */
   const SMESH_Hypothesis* getLocal1DHyp (SMESH_Mesh&         theMesh,
-                                         const TopoDS_Shape& theEdge)
+                                         const TopoDS_Shape& theEdge,
+                                         TopoDS_Shape*       theSssignedTo=0)
   {
     static SMESH_HypoFilter hypo;
     hypo.Init( hypo.HasDim( 1 )).
       AndNot ( hypo.IsAlgo() ).
-      AndNot ( hypo.IsAssignedTo( theMesh.GetMeshDS()->ShapeToMesh() ));
-    return theMesh.GetHypothesis( theEdge, hypo, true );
+      AndNot ( hypo.IsAssignedTo( theMesh.GetShapeToMesh() ));
+
+    return theMesh.GetHypothesis( theEdge, hypo, true, theSssignedTo );
   }
   //=============================================================================
   /*!
@@ -257,6 +259,10 @@ namespace {
     if (theMainEdge.ShapeType() != TopAbs_EDGE) return true;
 
     SMESH_Mesh* mesh = theMainSubMesh->GetFather();
+
+    TopoDS_Shape shapeOfHyp1D; // shape to which an hyp being propagated is assigned
+    const SMESH_Hypothesis* hyp1D = getLocal1DHyp( *mesh, theMainEdge, &shapeOfHyp1D );
+    SMESH_HypoFilter moreLocalCheck( SMESH_HypoFilter::IsMoreLocalThan( shapeOfHyp1D, *mesh ));
 
     PropagationMgrData* chainData = getData( theMainSubMesh );
     chainData->SetState( HAS_PROPAG_HYP );
@@ -355,7 +361,8 @@ namespace {
         if ( oppData->State() == WAIT_PROPAG_HYP ) // ... anOppE is not in any chain
         {
           oppData->SetSource( theMainSubMesh );
-          if ( !getLocal1DHyp( *mesh, anOppE )) // ... no 1d hyp on anOppE
+          if ( ! (hyp1D = getLocal1DHyp( *mesh, anOppE, &shapeOfHyp1D )) || //...no 1d hyp on anOppE
+               ! (moreLocalCheck.IsOk( hyp1D, shapeOfHyp1D ))) // ... or hyp1D is "more global"
           {
             oppData->myForward = data->myForward;
             if ( edges[ edgeIndex ].Orientation() == anOppE.Orientation() )
