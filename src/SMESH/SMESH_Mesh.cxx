@@ -2206,16 +2206,37 @@ bool SMESH_Mesh::SortByMeshOrder(list<SMESH_subMesh*>& theListToSort) const
   map< int, TPosInList > sortedPos;
   TPosInList smBeg = theListToSort.begin(), smEnd = theListToSort.end();
   TListOfListOfInt::const_iterator listIdsIt = _mySubMeshOrder.begin();
-  for( ; listIdsIt != _mySubMeshOrder.end(); listIdsIt++) {
+  for( ; listIdsIt != _mySubMeshOrder.end(); listIdsIt++)
+  {
     const TListOfInt& listOfId = *listIdsIt;
+    // convert sm ids to sm's
+    vector<SMESH_subMesh*> smVec;
     TListOfInt::const_iterator idIt = listOfId.begin();
     for ( ; idIt != listOfId.end(); idIt++ ) {
       if ( SMESH_subMesh * sm = GetSubMeshContaining( *idIt )) {
-        TPosInList smPos = find( smBeg, smEnd, sm );
-        if ( smPos != smEnd ) {
-          onlyOrderedList.push_back( sm );
-          sortedPos[ distance( smBeg, smPos )] = smPos;
+        if ( sm->GetSubMeshDS() && sm->GetSubMeshDS()->IsComplexSubmesh() )
+        {
+          SMESHDS_SubMeshIteratorPtr smdsIt = sm->GetSubMeshDS()->GetSubMeshIterator();
+          while ( smdsIt->more() )
+          {
+            const SMESHDS_SubMesh* smDS = smdsIt->next();
+            if (( sm = GetSubMeshContaining( smDS->GetID() )))
+              smVec.push_back( sm );
+          }
         }
+        else
+        {
+          smVec.push_back( sm );
+        }
+      }
+    }
+    // find smVec items in theListToSort
+    for ( size_t i = 0; i < smVec.size(); ++i )
+    {
+      TPosInList smPos = find( smBeg, smEnd, smVec[i] );
+      if ( smPos != smEnd ) {
+        onlyOrderedList.push_back( smVec[i] );
+        sortedPos[ distance( smBeg, smPos )] = smPos;
       }
     }
   }
