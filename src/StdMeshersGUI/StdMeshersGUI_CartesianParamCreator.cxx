@@ -58,6 +58,7 @@
 #include <QApplication>
 #include <QButtonGroup>
 #include <QCheckBox>
+#include <QFontMetrics>
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
@@ -677,6 +678,22 @@ namespace
     dirs[( iOk+2 ) % 3] = dirs[ iOk ] ^ dirs[ ( iOk+1 ) % 3 ];
     dirs[( iOk+1 ) % 3] = dirs[ ( iOk+2 ) % 3 ] ^ dirs[ iOk ];
   }
+
+  //================================================================================
+  /*!
+   * \brief Returns a minimal width of a SpinBox depending on a precision type
+   */
+  //================================================================================
+
+  int getMinWidth( const char* precisionType )
+  {
+    int nb = SMESHGUI::resourceMgr()->integerValue( "SMESH", precisionType, -3 );
+    QString s;
+    s.fill('0', qAbs(nb)+7 );
+    QLineEdit le;
+    QFontMetrics metrics( le.font() );
+    return metrics.width( s );
+  }
 }
 
 //================================================================================
@@ -858,7 +875,9 @@ QFrame* StdMeshersGUI_CartesianParamCreator::buildFrame()
   axisLbl[2] = new QLabel( tr( "AXIS_Z"), axesDirGrp );
   QLabel* dLbl[3];
   myAxisBtnGrp = new QButtonGroup( axesDirGrp );
-  SMESHGUI_SpinBox** spins[3] = { &myXDirSpin[0], &myYDirSpin[0], &myZDirSpin[0] };
+  // get spin width
+  const char * const precisionType = "len_tol_precision";
+  int minWidth = getMinWidth( precisionType );
   for ( int i = 0; i < 3; ++i )
   {
     QPushButton* axisBtn = new QPushButton( QIcon(aPix), "", axesDirGrp );
@@ -867,9 +886,12 @@ QFrame* StdMeshersGUI_CartesianParamCreator::buildFrame()
     myXDirSpin[i] = new SMESHGUI_SpinBox( axesDirGrp );
     myYDirSpin[i] = new SMESHGUI_SpinBox( axesDirGrp );
     myZDirSpin[i] = new SMESHGUI_SpinBox( axesDirGrp );
-    myXDirSpin[i]->RangeStepAndValidator( -1, 1, 0.1, "len_tol_precision" );
-    myYDirSpin[i]->RangeStepAndValidator( -1, 1, 0.1, "len_tol_precision" );
-    myZDirSpin[i]->RangeStepAndValidator( -1, 1, 0.1, "len_tol_precision" );
+    myXDirSpin[i]->RangeStepAndValidator( -1, 1, 0.1, precisionType );
+    myYDirSpin[i]->RangeStepAndValidator( -1, 1, 0.1, precisionType );
+    myZDirSpin[i]->RangeStepAndValidator( -1, 1, 0.1, precisionType );
+    myXDirSpin[i]->setMinimumWidth( minWidth );
+    myYDirSpin[i]->setMinimumWidth( minWidth );
+    myZDirSpin[i]->setMinimumWidth( minWidth );
     dLbl[0] = new QLabel( tr("SMESH_DX"), axesDirGrp );
     dLbl[1] = new QLabel( tr("SMESH_DY"), axesDirGrp );
     dLbl[2] = new QLabel( tr("SMESH_DZ"), axesDirGrp );
