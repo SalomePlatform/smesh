@@ -994,9 +994,9 @@ bool StdMeshers_RadialQuadrangle_1D2D::computeLayerPositions(const gp_Pnt&      
     if ( !edge.IsNull() )
     {
       // find a hyp usable by TNodeDistributor
-      SMESH_HypoFilter hypKind;
-      TNodeDistributor::GetDistributor(*mesh)->InitCompatibleHypoFilter(hypKind,/*ignoreAux=*/1);
-      hyp1D = mesh->GetHypothesis( edge, hypKind, /*fromAncestors=*/true);
+      const SMESH_HypoFilter* hypKind =
+        TNodeDistributor::GetDistributor(*mesh)->GetCompatibleHypoFilter(/*ignoreAux=*/true);
+      hyp1D = mesh->GetHypothesis( edge, *hypKind, /*fromAncestors=*/true);
     }
   }
   if ( hyp1D ) // try to compute with hyp1D

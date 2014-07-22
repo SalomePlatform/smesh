@@ -288,24 +288,24 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
     // Apply all-dimensional algorithms supporing sub-meshes
     // ======================================================
 
+    std::vector< SMESH_subMesh* > smVec;
     for ( aShapeDim = 0; aShapeDim < 4; ++aShapeDim )
     {
       // ------------------------------------------------
       // sort list of sub-meshes according to mesh order
       // ------------------------------------------------
-      aMesh.SortByMeshOrder( smWithAlgoSupportingSubmeshes[ aShapeDim ] );
+      smVec.assign( smWithAlgoSupportingSubmeshes[ aShapeDim ].begin(),
+                    smWithAlgoSupportingSubmeshes[ aShapeDim ].end() );
+      aMesh.SortByMeshOrder( smVec );
 
       // ------------------------------------------------------------
       // compute sub-meshes with local uni-dimensional algos under
       // sub-meshes with all-dimensional algos
       // ------------------------------------------------------------
-      list< SMESH_subMesh* >::iterator subIt, subEnd;
-      subIt  = smWithAlgoSupportingSubmeshes[ aShapeDim ].begin();
-      subEnd = smWithAlgoSupportingSubmeshes[ aShapeDim ].end();
       // start from lower shapes
-      for ( ; subIt != subEnd; ++subIt )
+      for ( size_t i = 0; i < smVec.size(); ++i )
       {
-        sm = *subIt;
+        sm = smVec[i];
 
         // get a shape the algo is assigned to
         if ( !GetAlgo( aMesh, sm->GetSubShape(), & algoShape ))
@@ -343,10 +343,9 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
       // --------------------------------
       // apply the all-dimensional algos
       // --------------------------------
-      subIt  = smWithAlgoSupportingSubmeshes[ aShapeDim ].begin();
-      for ( ; subIt != subEnd; ++subIt )
+      for ( size_t i = 0; i < smVec.size(); ++i )
       {
-        sm = *subIt;
+        sm = smVec[i];
         if ( sm->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE)
         {
           const TopAbs_ShapeEnum shapeType = sm->GetSubShape().ShapeType();
@@ -494,18 +493,18 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
     // ------------------------------------------------------------
     // sort list of meshes according to mesh order
     // ------------------------------------------------------------
-    aMesh.SortByMeshOrder( smWithAlgoSupportingSubmeshes );
+    std::vector< SMESH_subMesh* > smVec( smWithAlgoSupportingSubmeshes.begin(),
+                                         smWithAlgoSupportingSubmeshes.end() );
+    aMesh.SortByMeshOrder( smVec );
 
     // ------------------------------------------------------------
     // compute sub-meshes under shapes with algos that DO NOT require
     // Discreteized boundaries and DO support sub-meshes
     // ------------------------------------------------------------
-    list< SMESH_subMesh* >::iterator subIt, subEnd;
-    subIt  = smWithAlgoSupportingSubmeshes.begin();
-    subEnd = smWithAlgoSupportingSubmeshes.end();
     // start from lower shapes
-    for ( ; subIt != subEnd; ++subIt ) {
-      sm = *subIt;
+    for ( size_t i = 0; i < smVec.size(); ++i )
+    {
+      sm = smVec[i];
 
       // get a shape the algo is assigned to
       TopoDS_Shape algoShape;
@@ -538,9 +537,9 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
     // ----------------------------------------------------------
     // apply the algos that do not require Discreteized boundaries
     // ----------------------------------------------------------
-    for ( subIt = smWithAlgoSupportingSubmeshes.begin(); subIt != subEnd; ++subIt )
+    for ( size_t i = 0; i < smVec.size(); ++i )
     {
-      sm = *subIt;
+      sm = smVec[i];
       sm->Evaluate(aResMap);
       if ( aShapesId )
         aShapesId->insert( sm->GetId() );

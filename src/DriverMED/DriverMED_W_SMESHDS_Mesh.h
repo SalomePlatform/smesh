@@ -79,7 +79,7 @@ class MESHDRIVERMED_EXPORT DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
   MED::EVersion myMedVersion;
   std::list<SMESHDS_GroupBase*> myGroups;
   bool myAllSubMeshes;
-  std::map<int,SMESHDS_SubMesh*> mySubMeshes;
+  std::vector<SMESHDS_SubMesh*> mySubMeshes;
   bool myDoGroupOfNodes;
   bool myDoGroupOfEdges;
   bool myDoGroupOfFaces;

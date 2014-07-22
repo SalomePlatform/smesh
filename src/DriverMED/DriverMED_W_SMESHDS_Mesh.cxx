@@ -101,7 +101,7 @@ void DriverMED_W_SMESHDS_Mesh::AddAllSubMeshes()
 
 void DriverMED_W_SMESHDS_Mesh::AddSubMesh(SMESHDS_SubMesh* theSubMesh, int theID)
 {
-  mySubMeshes[theID] = theSubMesh;
+  mySubMeshes.push_back( theSubMesh );
 }
 
 void DriverMED_W_SMESHDS_Mesh::AddGroupOfNodes()
@@ -292,6 +292,20 @@ namespace
 //       return elem_famNum->second;
     return aDefaultFamilyId;
   }
+
+  //================================================================================
+  /*!
+   * \brief Returns iterator on sub-meshes
+   */
+  //================================================================================
+
+  SMESHDS_SubMeshIteratorPtr getIterator( std::vector<SMESHDS_SubMesh*>& mySubMeshes )
+  {
+    return SMESHDS_SubMeshIteratorPtr
+      ( new SMDS_SetIterator
+        < const SMESHDS_SubMesh*, std::vector< SMESHDS_SubMesh* >::iterator >( mySubMeshes.begin(),
+                                                                               mySubMeshes.end() ));
+  }
 }
 
 Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
@@ -435,7 +449,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
          myDoGroupOfBalls   && nbBalls);
     } else {
       aFamilies = DriverMED_Family::MakeFamilies
-        (mySubMeshes, myGroups,
+        (getIterator( mySubMeshes ), myGroups,
          myDoGroupOfNodes   && nbNodes,
          myDoGroupOfEdges   && nbEdges,
          myDoGroupOfFaces   && nbFaces,

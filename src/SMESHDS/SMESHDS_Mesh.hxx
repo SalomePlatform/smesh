@@ -35,6 +35,8 @@
 #include <TopTools_IndexedMapOfShape.hxx>
 #include <TopoDS_Shape.hxx>
 
+#include <map>
+
 class TopoDS_Solid ;
 class TopoDS_Shell ;
 class TopoDS_Face  ;
@@ -49,8 +51,6 @@ class SMDS_MeshFace     ;
 class SMDS_MeshVolume   ;
 class SMDS_Mesh0DElement;
 class SMDS_BallElement;
-
-#include <map>
 
 /*
  * Using of native hash_map isn't portable and don't work on WIN32 platform.
@@ -566,9 +566,7 @@ public:
   SMESHDS_SubMesh * MeshElements(const TopoDS_Shape & S) const;
   SMESHDS_SubMesh * MeshElements(const int Index) const;
   std::list<int> SubMeshIndices() const;
-  const std::map<int,SMESHDS_SubMesh*>& SubMeshes() const
-  { return myShapeIndexToSubMesh; }
-  const TopoDS_Shape& GetCurrentSubShape() const { return myCurSubShape; }
+  SMESHDS_SubMeshIteratorPtr SubMeshes() const;
 
   bool HasHypothesis(const TopoDS_Shape & S);
   const std::list<const SMESHDS_Hypothesis*>& GetHypothesis(const TopoDS_Shape & S) const;
@@ -601,22 +599,14 @@ public:
   ~SMESHDS_Mesh();
   
 private:
-  void addNodeToSubmesh( const SMDS_MeshNode* aNode, int Index )
-  {
-    //Update or build submesh
-    std::map<int,SMESHDS_SubMesh*>::iterator it = myShapeIndexToSubMesh.find( Index );
-    if ( it == myShapeIndexToSubMesh.end() )
-      it = myShapeIndexToSubMesh.insert( std::make_pair(Index, new SMESHDS_SubMesh(this, Index) )).first;
-    it->second->AddNode( aNode ); // add aNode to submesh
-  }
-  
+
   ShapeToHypothesis          myShapeToHypothesis;
 
   int                        myMeshID, myPersistentID;
   TopoDS_Shape               myShape;
 
-  typedef std::map<int,SMESHDS_SubMesh*> TShapeIndexToSubMesh;
-  TShapeIndexToSubMesh myShapeIndexToSubMesh;
+  class SubMeshHolder;
+  SubMeshHolder*             mySubMeshHolder;
 
   TopTools_IndexedMapOfShape myIndexToShape;
 
@@ -626,14 +616,8 @@ private:
   SMESHDS_Script*            myScript;
   bool                       myIsEmbeddedMode;
 
-  // optimize addition of nodes/elements to submeshes by, SetNodeInVolume() etc:
-  // avoid search of submeshes in maps
   bool add( const SMDS_MeshElement* elem, SMESHDS_SubMesh* subMesh );
   SMESHDS_SubMesh* getSubmesh( const TopoDS_Shape & shape);
-  SMESHDS_SubMesh* getSubmesh( const int            Index );
-  int                        myCurSubID;
-  TopoDS_Shape               myCurSubShape;
-  SMESHDS_SubMesh*           myCurSubMesh;
 };
 
 

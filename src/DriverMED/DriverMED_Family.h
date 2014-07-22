@@ -69,7 +69,7 @@ class MESHDRIVERMED_EXPORT DriverMED_Family
   */
   static 
   DriverMED_FamilyPtrList
-  MakeFamilies (const SMESHDS_SubMeshPtrMap& theSubMeshes,
+  MakeFamilies (SMESHDS_SubMeshIteratorPtr      theSubMeshes,
                 const SMESHDS_GroupBasePtrList& theGroups,
                 const bool doGroupOfNodes,
                 const bool doGroupOfEdges,

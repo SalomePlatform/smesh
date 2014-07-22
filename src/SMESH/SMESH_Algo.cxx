@@ -178,6 +178,7 @@ const SMESH_Algo::Features& SMESH_Algo::GetFeatures( const std::string& algoType
 SMESH_Algo::SMESH_Algo (int hypId, int studyId, SMESH_Gen * gen)
   : SMESH_Hypothesis(hypId, studyId, gen)
 {
+  _compatibleAllHypFilter = _compatibleNoAuxHypFilter = NULL;
   _onlyUnaryInput = _requireDiscreteBoundary = _requireShape = true;
   _quadraticMesh = _supportSubmeshes = false;
   _error = COMPERR_OK;
@@ -193,6 +194,8 @@ SMESH_Algo::SMESH_Algo (int hypId, int studyId, SMESH_Gen * gen)
 
 SMESH_Algo::~SMESH_Algo()
 {
+  delete _compatibleNoAuxHypFilter;
+  // delete _compatibleAllHypFilter; -- _compatibleNoAuxHypFilter does it!!!
 }
 
 //=============================================================================
@@ -263,10 +266,9 @@ SMESH_Algo::GetUsedHypothesis(SMESH_Mesh &         aMesh,
 {
   SMESH_Algo* me = const_cast< SMESH_Algo* >( this );
   me->_usedHypList.clear();
-  SMESH_HypoFilter filter;
-  if ( InitCompatibleHypoFilter( filter, ignoreAuxiliary ))
+  if ( const SMESH_HypoFilter* filter = GetCompatibleHypoFilter( ignoreAuxiliary ))
   {
-    aMesh.GetHypotheses( aShape, filter, me->_usedHypList, true );
+    aMesh.GetHypotheses( aShape, *filter, me->_usedHypList, true );
     if ( ignoreAuxiliary && _usedHypList.size() > 1 )
       me->_usedHypList.clear(); //only one compatible hypothesis allowed
   }
@@ -288,9 +290,8 @@ SMESH_Algo::GetAppliedHypothesis(SMESH_Mesh &         aMesh,
 {
   SMESH_Algo* me = const_cast< SMESH_Algo* >( this );
   me->_appliedHypList.clear();
-  SMESH_HypoFilter filter;
-  if ( InitCompatibleHypoFilter( filter, ignoreAuxiliary ))
-    aMesh.GetHypotheses( aShape, filter, me->_appliedHypList, false );
+  if ( const SMESH_HypoFilter* filter = GetCompatibleHypoFilter( ignoreAuxiliary ))
+    aMesh.GetHypotheses( aShape, *filter, me->_appliedHypList, false );
 
   return _appliedHypList;
 }
@@ -457,27 +458,35 @@ bool SMESH_Algo::GetSortedNodesOnEdge(const SMESHDS_Mesh*                   theM
 
 //================================================================================
 /*!
- * \brief Make filter recognize only compatible hypotheses
- * \param theFilter - the filter to initialize
- * \param ignoreAuxiliary - make filter ignore compatible auxiliary hypotheses
+ * \brief Returns the filter recognizing only compatible hypotheses
+ *  \param ignoreAuxiliary - make filter ignore auxiliary hypotheses
+ *  \retval SMESH_HypoFilter* - the filter that can be NULL
  */
 //================================================================================
 
-bool SMESH_Algo::InitCompatibleHypoFilter( SMESH_HypoFilter & theFilter,
-                                           const bool         ignoreAuxiliary) const
+const SMESH_HypoFilter*
+SMESH_Algo::GetCompatibleHypoFilter(const bool ignoreAuxiliary) const
 {
   if ( !_compatibleHypothesis.empty() )
   {
-    theFilter.Init( theFilter.HasName( _compatibleHypothesis[0] ));
-    for ( int i = 1; i < _compatibleHypothesis.size(); ++i )
-      theFilter.Or( theFilter.HasName( _compatibleHypothesis[ i ] ));
+    if ( !_compatibleAllHypFilter )
+    {
+      SMESH_HypoFilter* filter = new SMESH_HypoFilter();
+      filter->Init( filter->HasName( _compatibleHypothesis[0] ));
+      for ( int i = 1; i < _compatibleHypothesis.size(); ++i )
+        filter->Or( filter->HasName( _compatibleHypothesis[ i ] ));
 
-    if ( ignoreAuxiliary )
-      theFilter.AndNot( theFilter.IsAuxiliary() );
+      SMESH_HypoFilter* filterNoAux = new SMESH_HypoFilter( filter );
+      filterNoAux->AndNot( filterNoAux->IsAuxiliary() );
 
-    return true;
+      // _compatibleNoAuxHypFilter will detele _compatibleAllHypFilter!!!
+      SMESH_Algo* me = const_cast< SMESH_Algo* >( this );
+      me->_compatibleAllHypFilter   = filter;
+      me->_compatibleNoAuxHypFilter = filterNoAux;
+    }
+    return ignoreAuxiliary ? _compatibleNoAuxHypFilter : _compatibleAllHypFilter;
   }
-  return false;
+  return 0;
 }
 
 //================================================================================

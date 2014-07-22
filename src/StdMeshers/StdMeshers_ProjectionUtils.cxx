@@ -2132,7 +2132,7 @@ bool StdMeshers_ProjectionUtils::MakeComputed(SMESH_subMesh * sm, const int iter
           mesh->GetHypotheses( shape, hypoFilter, hyps, true, &assignedTo );
         if ( nbAlgos > 1 ) // concurrent algos
         {
-          list<SMESH_subMesh*> smList; // where an algo is assigned
+          vector<SMESH_subMesh*> smList; // where an algo is assigned
           list< TopoDS_Shape >::iterator shapeIt = assignedTo.begin();
           for ( ; shapeIt != assignedTo.end(); ++shapeIt )
             smList.push_back( mesh->GetSubMesh( *shapeIt ));

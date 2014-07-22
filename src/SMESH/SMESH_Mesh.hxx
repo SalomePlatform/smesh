@@ -182,8 +182,8 @@ public:
    */
   void NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* theChangedHyp);
 
-  const std::list < SMESH_subMesh * >&
-  GetSubMeshUsingHypothesis(SMESHDS_Hypothesis * anHyp) throw(SALOME_Exception);
+  // const std::list < SMESH_subMesh * >&
+  // GetSubMeshUsingHypothesis(SMESHDS_Hypothesis * anHyp) throw(SALOME_Exception);
   /*!
    * \brief Return True if anHyp is used to mesh aSubShape
    */
@@ -322,7 +322,7 @@ public:
   const TListOfListOfInt& GetMeshOrder() const;
 
   // sort submeshes according to stored mesh order
-  bool SortByMeshOrder(std::list<SMESH_subMesh*>& theListToSort) const;
+  bool SortByMeshOrder(std::vector<SMESH_subMesh*>& theListToSort) const;
 
   // return true if given order of sub-meshes is OK
   bool IsOrderOK( const SMESH_subMesh* smBefore,
@@ -333,8 +333,8 @@ public:
 private:
 
   void fillAncestorsMap(const TopoDS_Shape& theShape);
-  std::list<SMESH_subMesh*> getAncestorsSubMeshes
-    (const TopoDS_Shape& theSubShape) const;
+  void getAncestorsSubMeshes(const TopoDS_Shape&            theSubShape,
+                             std::vector< SMESH_subMesh* >& theSubMeshes) const;
   
 protected:
   int                        _id;           // id given by creator (unique within the creator instance)
@@ -342,12 +342,14 @@ protected:
   int                        _groupId;      // id generator for group objects
   int                        _nbSubShapes;  // initial nb of subshapes in the shape to mesh
   bool                       _isShapeToMesh;// set to true when a shape is given (only once)
-  std::list <SMESH_subMesh*> _subMeshesUsingHypothesisList;
+  //std::list <SMESH_subMesh*> _subMeshesUsingHypothesisList;
   SMESHDS_Document *         _myDocument;
   SMESHDS_Mesh *             _myMeshDS;
   SMESH_Gen *                _gen;
-  std::map <int, SMESH_subMesh*> _mapSubMesh;
-  std::map <int, SMESH_Group*>   _mapGroup;
+  std::map <int, SMESH_Group*> _mapGroup;
+
+  class SubMeshHolder;
+  SubMeshHolder*             _subMeshHolder;
   
   bool                       _isAutoColor;
   bool                       _isModified; //!< modified since last total re-compute, issue 0020693
@@ -356,11 +358,13 @@ protected:
   
   TopTools_IndexedDataMapOfShapeListOfShape _mapAncestors;
 
+  mutable std::vector<SMESH_subMesh*> _ancestorSubMeshes; // to speed up GetHypothes[ei]s()
+
   TListOfListOfInt           _mySubMeshOrder;
 
   // Struct calling methods at CORBA API implementation level, used to
-  // 1) make an upper level be consistent with a lower one when group removal
-  // is invoked by hyp modification (issue 0020918)
+  // 1) make an upper level (SMESH_I) be consistent with a lower one (SMESH)
+  // when group removal is invoked by hyp modification (issue 0020918)
   // 2) to forget not loaded mesh data at hyp modification
   TCallUp*                    _callUp;
 

@@ -145,7 +145,7 @@ DriverMED_Family
 //=============================================================================
 DriverMED_FamilyPtrList 
 DriverMED_Family
-::MakeFamilies(const SMESHDS_SubMeshPtrMap& theSubMeshes,
+::MakeFamilies(SMESHDS_SubMeshIteratorPtr      theSubMeshes,
                const SMESHDS_GroupBasePtrList& theGroups,
                const bool doGroupOfNodes,
                const bool doGroupOfEdges,
@@ -170,11 +170,10 @@ DriverMED_Family
   int aElemFamId = FIRST_ELEM_FAMILY;
 
   // Process sub-meshes
-  SMESHDS_SubMeshPtrMap::const_iterator aSMIter = theSubMeshes.begin();
-  for (; aSMIter != theSubMeshes.end(); aSMIter++)
+  while ( theSubMeshes->more() )
   {
-    const int anId = aSMIter->first;
-    SMESHDS_SubMesh* aSubMesh = aSMIter->second;
+    SMESHDS_SubMesh* aSubMesh = const_cast< SMESHDS_SubMesh* >( theSubMeshes->next() );
+    const int anId = aSubMesh->GetID();
     if ( aSubMesh->IsComplexSubmesh() )
       continue; // submesh containing other submeshs
     DriverMED_FamilyPtrList aSMFams = SplitByType(aSubMesh,anId);

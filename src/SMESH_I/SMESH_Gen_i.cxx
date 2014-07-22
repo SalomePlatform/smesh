@@ -3696,7 +3696,8 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                 myLocMesh.ShapeToMesh( nullShape ); // remove shape referring data
               }
 
-              if ( !mySMESHDSMesh->SubMeshes().empty() )
+              SMESHDS_SubMeshIteratorPtr smIt = mySMESHDSMesh->SubMeshes();
+              if ( smIt->more() )
               {
                 // Store submeshes
                 // ----------------
@@ -3706,52 +3707,9 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                 // each element belongs to one or none submesh,
                 // so for each node/element, we store a submesh ID
 
-                // Make maps of submesh IDs of elements sorted by element IDs
-                // typedef int TElemID;
-                // typedef int TSubMID;
-                // map< TElemID, TSubMID > eId2smId, nId2smId;
-                const map<int,SMESHDS_SubMesh*>& aSubMeshes = mySMESHDSMesh->SubMeshes();
-                map<int,SMESHDS_SubMesh*>::const_iterator itSubM ( aSubMeshes.begin() );
-                // SMDS_NodeIteratorPtr itNode;
-                // SMDS_ElemIteratorPtr itElem;
-                // for ( itSubM = aSubMeshes.begin(); itSubM != aSubMeshes.end() ; itSubM++ )
-                // {
-                //   TSubMID          aSubMeID = itSubM->first;
-                //   SMESHDS_SubMesh* aSubMesh = itSubM->second;
-                //   if ( aSubMesh->IsComplexSubmesh() )
-                //     continue; // sub-mesh containing other sub-meshes
-                //   // nodes
-                //   for ( itNode = aSubMesh->GetNodes(); itNode->more(); ++hint)
-                //     nId2smId.insert( nId2smId.back(), make_pair( itNode->next()->GetID(), aSubMeID ));
-                //   // elements
-                //   for ( itElem = aSubMesh->GetElements(); itElem->more(); ++hint)
-                //     hint = eId2smId.insert( eId2smId.back(), make_pair( itElem->next()->GetID(), aSubMeID ));
-                // }
-
-                // // Care of elements that are not on submeshes
-                // if ( mySMESHDSMesh->NbNodes() != nId2smId.size() ) {
-                //   for ( itNode = mySMESHDSMesh->nodesIterator(); itNode->more(); )
-                //     /*  --- stl_map.h says : */
-                //     /*  A %map relies on unique keys and thus a %pair is only inserted if its */
-                //     /*  first element (the key) is not already present in the %map.           */
-                //     nId2smId.insert( make_pair( itNode->next()->GetID(), 0 ));
-                // }
-                // int nbElems = mySMESHDSMesh->GetMeshInfo().NbElements();
-                // if ( nbElems != eId2smId.size() ) {
-                //   for ( itElem = mySMESHDSMesh->elementsIterator(); itElem->more(); )
-                //     eId2smId.insert( make_pair( itElem->next()->GetID(), 0 ));
-                // }
-
                 // Store submesh IDs
                 for ( int isNode = 0; isNode < 2; ++isNode )
                 {
-                  // map< TElemID, TSubMID >& id2smId = isNode ? nId2smId : eId2smId;
-                  // if ( id2smId.empty() ) continue;
-                  // map< TElemID, TSubMID >::const_iterator id_smId = id2smId.begin();
-                  // // make and fill array of submesh IDs
-                  // int* smIDs = new int [ id2smId.size() ];
-                  // for ( int i = 0; id_smId != id2smId.end(); ++id_smId, ++i )
-                  //   smIDs[ i ] = id_smId->second;
                   SMDS_ElemIteratorPtr eIt =
                     mySMESHDSMesh->elementsIterator( isNode ? SMDSAbs_Node : SMDSAbs_All );
                   int nbElems = isNode ? mySMESHDSMesh->NbNodes() : mySMESHDSMesh->GetMeshInfo().NbElements();
@@ -3790,15 +3748,15 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                 int nbEdgeNodes = 0, nbFaceNodes = 0;
                 list<SMESHDS_SubMesh*> aEdgeSM, aFaceSM;
                 // loop on SMESHDS_SubMesh'es
-                for ( itSubM = aSubMeshes.begin(); itSubM != aSubMeshes.end() ; itSubM++ )
+                while ( smIt->more() )
                 {
-                  SMESHDS_SubMesh* aSubMesh = (*itSubM).second;
+                  SMESHDS_SubMesh* aSubMesh = const_cast< SMESHDS_SubMesh* >( smIt->next() );
                   if ( aSubMesh->IsComplexSubmesh() )
                     continue; // submesh containing other submeshs
                   int nbNodes = aSubMesh->NbNodes();
                   if ( nbNodes == 0 ) continue;
 
-                  int aShapeID = (*itSubM).first;
+                  int aShapeID = aSubMesh->GetID();
                   if ( aShapeID < 1 || aShapeID > mySMESHDSMesh->MaxShapeIndex() )
                     continue;
                   int aShapeType = mySMESHDSMesh->IndexToShape( aShapeID ).ShapeType();

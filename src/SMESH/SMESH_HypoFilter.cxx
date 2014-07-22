@@ -185,6 +185,7 @@ bool SMESH_HypoFilter::IsMoreLocalThanPredicate::IsOk(const SMESH_Hypothesis* aH
 //=======================================================================
 
 SMESH_HypoFilter::SMESH_HypoFilter()
+  : myNbPredicates(0)
 {
 }
 
@@ -194,6 +195,7 @@ SMESH_HypoFilter::SMESH_HypoFilter()
 //=======================================================================
 
 SMESH_HypoFilter::SMESH_HypoFilter( SMESH_HypoPredicate* aPredicate, bool notNegate )
+  : myNbPredicates(0)
 {
   add( notNegate ? AND : AND_NOT, aPredicate );
 }
@@ -352,15 +354,14 @@ SMESH_HypoPredicate* SMESH_HypoFilter::HasType(const int theHypType)
 bool SMESH_HypoFilter::IsOk (const SMESH_Hypothesis* aHyp,
                              const TopoDS_Shape&     aShape) const
 {
-  if ( myPredicates.empty() )
+  if ( IsEmpty() )
     return true;
 
-  bool ok = ( myPredicates.front()->_logical_op <= AND_NOT );
-  list<SMESH_HypoPredicate*>::const_iterator pred = myPredicates.begin();
-  for ( ; pred != myPredicates.end(); ++pred )
+  bool ok = ( myPredicates[0]->_logical_op <= AND_NOT );
+  for ( int i = 0; i < myNbPredicates; ++i )
   {
-    bool ok2 = (*pred)->IsOk( aHyp, aShape );
-    switch ( (*pred)->_logical_op ) {
+    bool ok2 = myPredicates[i]->IsOk( aHyp, aShape );
+    switch ( myPredicates[i]->_logical_op ) {
     case AND:     ok = ok && ok2; break;
     case AND_NOT: ok = ok && !ok2; break;
     case OR:      ok = ok || ok2; break;
@@ -378,10 +379,11 @@ bool SMESH_HypoFilter::IsOk (const SMESH_Hypothesis* aHyp,
 
 SMESH_HypoFilter & SMESH_HypoFilter::Init  ( SMESH_HypoPredicate* aPredicate, bool notNegate )
 {
-  list<SMESH_HypoPredicate*>::const_iterator pred = myPredicates.begin();
-  for ( ; pred != myPredicates.end(); ++pred )
+  SMESH_HypoPredicate** pred = &myPredicates[0];
+  SMESH_HypoPredicate** end  = &myPredicates[myNbPredicates];
+  for ( ; pred != end; ++pred )
     delete *pred;
-  myPredicates.clear();
+  myNbPredicates = 0;
 
   add( notNegate ? AND : AND_NOT, aPredicate );
   return *this;
@@ -395,7 +397,11 @@ SMESH_HypoFilter & SMESH_HypoFilter::Init  ( SMESH_HypoPredicate* aPredicate, bo
 
 SMESH_HypoFilter::~SMESH_HypoFilter()
 {
-  Init(0);
+  SMESH_HypoPredicate** pred = &myPredicates[0];
+  SMESH_HypoPredicate** end  = &myPredicates[myNbPredicates];
+  for ( ; pred != end; ++pred )
+    delete *pred;
+  myNbPredicates = 0;
 }
 
 

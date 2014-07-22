@@ -218,13 +218,12 @@ class SMESH_EXPORT SMESH_Algo : public SMESH_Hypothesis
                        const TopoDS_Shape & aShape,
                        const bool           ignoreAuxiliary=true) const;
   /*!
-   * \brief Make the filter recognize only compatible hypotheses
-   * \param theFilter - the filter to initialize
-   * \param ignoreAuxiliary - make filter ignore compatible auxiliary hypotheses
-   * \retval bool - true if the algo has compatible hypotheses
+   * \brief Returns the filter recognizing only compatible hypotheses
+   *  \param ignoreAuxiliary - make filter ignore compatible auxiliary hypotheses
+   *  \retval SMESH_HypoFilter* - the filter that can be NULL
    */
-  bool InitCompatibleHypoFilter( SMESH_HypoFilter & theFilter,
-                                 const bool         ignoreAuxiliary) const;
+  const SMESH_HypoFilter* GetCompatibleHypoFilter(const bool ignoreAuxiliary) const;
+
   /*!
    * \brief Just return false as the algorithm does not hold parameters values
    */
@@ -408,9 +407,12 @@ public:
 
 protected:
 
+  const SMESH_HypoFilter *              _compatibleAllHypFilter;
+  const SMESH_HypoFilter *              _compatibleNoAuxHypFilter;
   std::vector<std::string>              _compatibleHypothesis;
   std::list<const SMESHDS_Hypothesis *> _appliedHypList;
   std::list<const SMESHDS_Hypothesis *> _usedHypList;
+  
 
   // Algo features influencing which Compute() and how is called:
   // in what turn and with what input shape.

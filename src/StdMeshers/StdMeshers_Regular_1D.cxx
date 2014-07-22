@@ -1336,12 +1336,11 @@ StdMeshers_Regular_1D::GetUsedHypothesis(SMESH_Mesh &         aMesh,
   _usedHypList.clear();
   _mainEdge.Nullify();
 
-  SMESH_HypoFilter auxiliaryFilter, compatibleFilter;
-  auxiliaryFilter.Init( SMESH_HypoFilter::IsAuxiliary() );
-  InitCompatibleHypoFilter( compatibleFilter, /*ignoreAux=*/true );
+  SMESH_HypoFilter auxiliaryFilter( SMESH_HypoFilter::IsAuxiliary() );
+  const SMESH_HypoFilter* compatibleFilter = GetCompatibleHypoFilter(/*ignoreAux=*/true );
 
   // get non-auxiliary assigned directly to aShape
-  int nbHyp = aMesh.GetHypotheses( aShape, compatibleFilter, _usedHypList, false );
+  int nbHyp = aMesh.GetHypotheses( aShape, *compatibleFilter, _usedHypList, false );
 
   if (nbHyp == 0 && aShape.ShapeType() == TopAbs_EDGE)
   {
@@ -1352,7 +1351,7 @@ StdMeshers_Regular_1D::GetUsedHypothesis(SMESH_Mesh &         aMesh,
     {
       // Propagation of 1D hypothesis from <aMainEdge> on this edge;
       // get non-auxiliary assigned to _mainEdge
-      nbHyp = aMesh.GetHypotheses( _mainEdge, compatibleFilter, _usedHypList, true );
+      nbHyp = aMesh.GetHypotheses( _mainEdge, *compatibleFilter, _usedHypList, true );
     }
   }
 

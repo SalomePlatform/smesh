@@ -518,14 +518,12 @@ int SMESH_MeshEditor::FindShape (const SMDS_MeshElement * theElem)
   }
   else
   {
-    const map<int,SMESHDS_SubMesh*>& id2sm = GetMeshDS()->SubMeshes();
-    map<int,SMESHDS_SubMesh*>::const_iterator id_sm = id2sm.begin();
-    for ( ; id_sm != id2sm.end(); ++id_sm )
-      if ( id_sm->second->Contains( theElem ))
-        return id_sm->first;
+    SMESHDS_SubMeshIteratorPtr smIt = GetMeshDS()->SubMeshes();
+    while ( const SMESHDS_SubMesh* sm = smIt->next() )
+      if ( sm->Contains( theElem ))
+        return sm->GetID();
   }
 
-  //MESSAGE ("::FindShape() - SHAPE NOT FOUND")
   return 0;
 }
 

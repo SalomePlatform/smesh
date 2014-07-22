@@ -59,7 +59,7 @@ class SMESH_EXPORT SMESH_HypoFilter: public SMESH_HypoPredicate
   // Create and add predicates.
   // Added predicates will be destroyed by filter when it dies
   SMESH_HypoFilter();
-  SMESH_HypoFilter( SMESH_HypoPredicate* aPredicate, bool notNegate = true );
+  explicit SMESH_HypoFilter( SMESH_HypoPredicate* aPredicate, bool notNegate = true );
   // notNegate==false means !aPredicate->IsOk()
   SMESH_HypoFilter & Init  ( SMESH_HypoPredicate* aPredicate, bool notNegate = true );
   SMESH_HypoFilter & And   ( SMESH_HypoPredicate* aPredicate );
@@ -80,7 +80,7 @@ class SMESH_EXPORT SMESH_HypoFilter: public SMESH_HypoPredicate
   static SMESH_HypoPredicate* HasDim(const int theDim);
   static SMESH_HypoPredicate* HasType(const int theHypType);
 
-  bool IsEmpty() const { return myPredicates.empty(); }
+  bool IsEmpty() const { return myNbPredicates == 0; }
 
   /*!
    * \brief check aHyp or/and aShape it is assigned to
@@ -90,7 +90,7 @@ class SMESH_EXPORT SMESH_HypoFilter: public SMESH_HypoPredicate
   /*!
    * \brief return true if contains no predicates
    */
-  bool IsAny() const { return myPredicates.empty(); }
+  bool IsAny() const { return myNbPredicates > 0; }
 
   ~SMESH_HypoFilter();
 
@@ -98,7 +98,9 @@ class SMESH_EXPORT SMESH_HypoFilter: public SMESH_HypoPredicate
  protected:
   // fields
 
-  std::list<SMESH_HypoPredicate*> myPredicates;
+  //std::list<SMESH_HypoPredicate*> myPredicates;
+  SMESH_HypoPredicate* myPredicates[100];
+  int                  myNbPredicates;
 
   // private methods
 
@@ -111,7 +113,7 @@ class SMESH_EXPORT SMESH_HypoFilter: public SMESH_HypoPredicate
   {
     if ( pred ) {
       pred->_logical_op = bool_op;
-      myPredicates.push_back( pred );
+      myPredicates[ myNbPredicates++ ] = pred;
     }
   }
 
