@@ -74,12 +74,20 @@ public:
   void DeleteAll()
   {
     for ( size_t i = 0; i < myVec.size(); ++i )
-      delete myVec[i];
+      if ( SUBMESH* sm = myVec[i] )
+      {
+        myVec[i] = 0; // avoid access via Get(i)
+        delete sm;
+      }
     myVec.clear();
 
     typename std::map< int, SUBMESH* >::iterator i2sm = myMap.begin();
     for ( ; i2sm != myMap.end(); ++i2sm )
-      delete i2sm->second;
+      if ( SUBMESH* sm = i2sm->second )
+      {
+        i2sm->second = 0; // avoid access via Get(i)
+        delete sm;
+      }
     myMap.clear();
   }
   int GetMinID() const

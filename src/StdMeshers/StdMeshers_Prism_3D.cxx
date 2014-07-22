@@ -1203,6 +1203,9 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
         // create a node
         node = meshDS->AddNode( coords.X(), coords.Y(), coords.Z() );
         meshDS->SetNodeInVolume( node, volumeID );
+
+        if ( _computeCanceled )
+          return false;
       }
     } // loop on bottom nodes
   }
