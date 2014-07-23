@@ -35,6 +35,7 @@
 
 #include <BRepAdaptor_Curve.hxx>
 #include <BRepAdaptor_Surface.hxx>
+#include <BRepBndLib.hxx>
 #include <BRepMesh_IncrementalMesh.hxx>
 #include <BRep_Tool.hxx>
 #include <Bnd_B3d.hxx>
@@ -276,28 +277,6 @@ namespace // internal utils
     Bnd_B3d*      buildRootBox();
   private:
     vector< int > _elementIDs;
-  };
-  //================================================================================
-  /*!
-   * \brief BRepMesh_IncrementalMesh with access to its protected Bnd_Box
-   */
-  struct IncrementalMesh : public BRepMesh_IncrementalMesh
-  {
-    IncrementalMesh(const TopoDS_Shape& shape,
-                    const Standard_Real deflection,
-                    const bool          relative):
-      BRepMesh_IncrementalMesh( shape, deflection, relative )
-    {
-    }
-    Bnd_B3d GetBox() const
-    {
-      Standard_Real TXmin, TYmin, TZmin, TXmax, TYmax, TZmax;
-      myBox.Get(TXmin, TYmin, TZmin, TXmax, TYmax, TZmax);
-      Bnd_B3d bb;
-      bb.Add( gp_XYZ( TXmin, TYmin, TZmin ));
-      bb.Add( gp_XYZ( TXmax, TYmax, TZmax ));
-      return bb;
-    }
   };
   //================================================================================
   /*!
@@ -1152,10 +1131,19 @@ bool AdaptiveAlgo::Compute(SMESH_Mesh &         theMesh,
   TopExp::MapShapes( theMesh.GetShapeToMesh(), TopAbs_FACE, faceMap );
 
   // Triangulate the shape with the given deflection ?????????
+  {
+    BRepMesh_IncrementalMesh im( theMesh.GetShapeToMesh(), myHyp->GetDeflection(), /*isRelatif=*/0);
+  }
+
+  // get a bnd box
   Bnd_B3d box;
   {
-    IncrementalMesh im( theMesh.GetShapeToMesh(), myHyp->GetDeflection(), /*Relatif=*/false);
-    box = im.GetBox();
+    Bnd_Box aBox;
+    BRepBndLib::Add( theMesh.GetShapeToMesh(), aBox);
+    Standard_Real TXmin, TYmin, TZmin, TXmax, TYmax, TZmax;
+    aBox.Get(TXmin, TYmin, TZmin, TXmax, TYmax, TZmax);
+    box.Add( gp_XYZ( TXmin, TYmin, TZmin ));
+    box.Add( gp_XYZ( TXmax, TYmax, TZmax ));
   }
   // *theProgress = 0.3;
 
