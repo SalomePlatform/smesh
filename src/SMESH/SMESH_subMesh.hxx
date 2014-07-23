@@ -88,6 +88,9 @@ class SMESH_EXPORT SMESH_subMesh
   SMESH_subMeshIteratorPtr getDependsOnIterator(const bool includeSelf,
                                                 const bool complexShapeFirst=false) const;
 
+  const std::vector< SMESH_subMesh * > & GetAncestors() const;
+  void ClearAncestors();
+
   const TopoDS_Shape & GetSubShape() const;
 
   enum compute_state
@@ -325,6 +328,7 @@ protected:
 
   std::map < int, SMESH_subMesh * >_mapDepend;
   bool                  _dependenceAnalysed;
+  std::vector< SMESH_subMesh * >   _ancestors;
 
   SMESH_Algo *          _algo; // the algorithm found by last *StateEngine() call
   algo_state            _algoState;

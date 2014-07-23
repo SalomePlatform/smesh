@@ -47,13 +47,14 @@
 #include <BRep_Builder.hxx>
 #include <BRep_Tool.hxx>
 #include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
 #include <TopTools_IndexedMapOfShape.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
+#include <TopTools_ListOfShape.hxx>
 #include <TopoDS.hxx>
 #include <TopoDS_Compound.hxx>
-#include <gp_Pnt.hxx>
-#include <TopExp_Explorer.hxx>
 #include <TopoDS_Iterator.hxx>
+#include <gp_Pnt.hxx>
 
 #include <Standard_OutOfMemory.hxx>
 #include <Standard_ErrorHandler.hxx>
@@ -195,7 +196,10 @@ SMESH_subMesh *SMESH_subMesh::GetFirstToCompute()
 SMESH_Algo* SMESH_subMesh::GetAlgo() const
 {
   if ( !_algo )
-    ((SMESH_subMesh*)this)->_algo = _father->GetGen()->GetAlgo(*_father, _subShape);
+  {
+    SMESH_subMesh* me = const_cast< SMESH_subMesh* >( this );
+    me->_algo = _father->GetGen()->GetAlgo( me );
+  }
   return _algo;
 }
 
@@ -735,7 +739,7 @@ SMESH_Hypothesis::Hypothesis_Status
       SMESH_HypoFilter filter( SMESH_HypoFilter::HasType( algo->GetType() ));
       filter.Or( SMESH_HypoFilter::HasType( algo->GetType()+1 ));
       filter.Or( SMESH_HypoFilter::HasType( algo->GetType()+2 ));
-      if ( SMESH_Algo * curAlgo = (SMESH_Algo*)_father->GetHypothesis(_subShape, filter, true ))
+      if ( SMESH_Algo * curAlgo = (SMESH_Algo*)_father->GetHypothesis( this, filter, true ))
         if ( !curAlgo->NeedDiscreteBoundary() )
           algoRequiringCleaning = curAlgo;
     }
@@ -964,7 +968,7 @@ SMESH_Hypothesis::Hypothesis_Status
         f.Init(   SMESH_HypoFilter::IsAlgo() );
         f.And(    SMESH_HypoFilter::IsApplicableTo( _subShape ));
         f.AndNot( SMESH_HypoFilter::Is( algo ));
-        const SMESH_Hypothesis * prevAlgo = _father->GetHypothesis( _subShape, f, true );
+        const SMESH_Hypothesis * prevAlgo = _father->GetHypothesis( this, f, true );
         if (prevAlgo &&
             string(algo->GetName()) != string(prevAlgo->GetName()) )
           modifiedHyp = true;
@@ -1023,7 +1027,7 @@ SMESH_Hypothesis::Hypothesis_Status
           f.Init(   SMESH_HypoFilter::IsAlgo() );
           f.And(    SMESH_HypoFilter::IsApplicableTo( _subShape ));
           f.AndNot( SMESH_HypoFilter::Is( algo ));
-          const SMESH_Hypothesis* prevAlgo = _father->GetHypothesis( _subShape, f, true );
+          const SMESH_Hypothesis* prevAlgo = _father->GetHypothesis( this, f, true );
           if (prevAlgo &&
               string(algo->GetName()) != string(prevAlgo->GetName()) )
             modifiedHyp = true;
@@ -1089,21 +1093,22 @@ SMESH_Hypothesis::Hypothesis_Status
   {
     // is algo hidden?
     SMESH_Gen* gen = _father->GetGen();
-    TopTools_ListIteratorOfListOfShape it( _father->GetAncestors( _subShape ));
-    for ( ; ( ret == SMESH_Hypothesis::HYP_OK && it.More()); it.Next() ) {
-      if ( SMESH_Algo* upperAlgo = gen->GetAlgo( *_father, it.Value() ))
+    const std::vector< SMESH_subMesh * > & ancestors = GetAncestors();
+    for ( size_t iA = 0; ( ret == SMESH_Hypothesis::HYP_OK && iA < ancestors.size()); ++iA ) {
+      if ( SMESH_Algo* upperAlgo = ancestors[ iA ]->GetAlgo() )
         if ( !upperAlgo->NeedDiscreteBoundary() && !upperAlgo->SupportSubmeshes())
           ret = SMESH_Hypothesis::HYP_HIDDEN_ALGO;
     }
     // is algo hiding?
     if ( ret == SMESH_Hypothesis::HYP_OK &&
          !algo->NeedDiscreteBoundary()    &&
-         !algo->SupportSubmeshes()) {
+         !algo->SupportSubmeshes())
+    {
       TopoDS_Shape algoAssignedTo, otherAssignedTo;
-      gen->GetAlgo( *_father, _subShape, &algoAssignedTo );
+      gen->GetAlgo( this, &algoAssignedTo );
       map<int, SMESH_subMesh*>::reverse_iterator i_sm = _mapDepend.rbegin();
       for ( ; ( ret == SMESH_Hypothesis::HYP_OK && i_sm != _mapDepend.rend()) ; ++i_sm )
-        if ( gen->GetAlgo( *_father, i_sm->second->_subShape, &otherAssignedTo ) &&
+        if ( gen->GetAlgo( i_sm->second, &otherAssignedTo ) &&
              SMESH_MesherHelper::IsSubShape( /*sub=*/otherAssignedTo, /*main=*/algoAssignedTo ))
           ret = SMESH_Hypothesis::HYP_HIDING_ALGO;
     }
@@ -1177,16 +1182,16 @@ bool SMESH_subMesh::IsConform(const SMESH_Algo* theAlgo)
   for (; itsub.More(); itsub.Next())
   {
     // loop on adjacent subShapes
-    TopTools_ListIteratorOfListOfShape it( _father->GetAncestors( itsub.Value() ));
-    for (; it.More(); it.Next())
+    const std::vector< SMESH_subMesh * > & ancestors = GetAncestors();
+    for ( size_t iA = 0; iA < ancestors.size(); ++iA )
     {
-      const TopoDS_Shape& adjacent = it.Value();
+      const TopoDS_Shape& adjacent = ancestors[ iA ]->GetSubShape();
       if ( _subShape.IsSame( adjacent )) continue;
       if ( adjacent.ShapeType() != _subShape.ShapeType())
         break;
 
       // check algo attached to smAdjacent
-      SMESH_Algo * algo = gen->GetAlgo((*_father), adjacent);
+      SMESH_Algo * algo = ancestors[ iA ]->GetAlgo();
       if (algo &&
           !algo->NeedDiscreteBoundary() &&
           algo->OnlyUnaryInput())
@@ -2035,12 +2040,10 @@ void SMESH_subMesh::ComputeSubMeshStateEngine(int event, const bool includeSelf)
 
 void SMESH_subMesh::updateDependantsState(const compute_event theEvent)
 {
-  TopTools_ListIteratorOfListOfShape it( _father->GetAncestors( _subShape ));
-  for (; it.More(); it.Next())
+  const std::vector< SMESH_subMesh * > & ancestors = GetAncestors();
+  for ( size_t iA = 0; iA < ancestors.size(); ++iA )
   {
-    const TopoDS_Shape& ancestor = it.Value();
-    if ( SMESH_subMesh *aSubMesh = _father->GetSubMeshContaining(ancestor))
-      aSubMesh->ComputeStateEngine( theEvent );
+    ancestors[ iA ]->ComputeStateEngine( theEvent );
   }
 }
 
@@ -2054,19 +2057,17 @@ void SMESH_subMesh::cleanDependants()
 {
   int dimToClean = SMESH_Gen::GetShapeDim( _subShape ) + 1;
 
-  TopTools_ListIteratorOfListOfShape it( _father->GetAncestors( _subShape ));
-  for (; it.More(); it.Next())
+  const std::vector< SMESH_subMesh * > & ancestors = GetAncestors();
+  for ( size_t iA = 0; iA < ancestors.size(); ++iA )
   {
-    const TopoDS_Shape& ancestor = it.Value();
-    if ( SMESH_Gen::GetShapeDim( ancestor ) == dimToClean ) {
+    const TopoDS_Shape& ancestor = ancestors[ iA ]->GetSubShape();
+    if ( SMESH_Gen::GetShapeDim( ancestor ) == dimToClean )
+    {
       // PAL8021. do not go upper than SOLID, else ComputeStateEngine(CLEAN)
       // will erase mesh on other shapes in a compound
-      if ( ancestor.ShapeType() >= TopAbs_SOLID ) {
-        SMESH_subMesh *aSubMesh = _father->GetSubMeshContaining(ancestor);
-        if (aSubMesh &&
-            !aSubMesh->IsEmpty() ) // prevent infinite CLEAN via event lesteners
-          aSubMesh->ComputeStateEngine(CLEAN);
-      }
+      if ( ancestor.ShapeType() >= TopAbs_SOLID &&
+           !ancestors[ iA ]->IsEmpty() )  // prevent infinite CLEAN via event lesteners
+        ancestors[ iA ]->ComputeStateEngine(CLEAN);
     }
   }
 }
@@ -2142,7 +2143,7 @@ TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * theGen,
     }
     else if ( subMesh->GetComputeState() == READY_TO_COMPUTE )
     {
-      SMESH_Algo* anAlgo = theGen->GetAlgo( *_father, S );
+      SMESH_Algo* anAlgo = theGen->GetAlgo( subMesh );
       if (strcmp( anAlgo->GetName(), theAlgo->GetName()) == 0 && // same algo
           anAlgo->GetUsedHypothesis( *_father, S, ignoreAuxiliaryHyps ) == aUsedHyp) // same hyps
         aBuilder.Add( aCompound, S );
@@ -2574,6 +2575,44 @@ SMESH_subMeshIteratorPtr SMESH_subMesh::getDependsOnIterator(const bool includeS
     return SMESH_subMeshIteratorPtr
       ( new _Iterator( new SMDS_mapIterator<TMap>( me->DependsOn() ), prepend, append ));
   }
+}
+
+//================================================================================
+/*!
+ * \brief Returns ancestor sub-meshes. Finds them if not yet found.
+ */
+//================================================================================
+
+const std::vector< SMESH_subMesh * > & SMESH_subMesh::GetAncestors() const
+{
+  if ( _ancestors.empty() &&
+       !_subShape.IsSame( _father->GetShapeToMesh() ))
+  {
+    const TopTools_ListOfShape& ancShapes = _father->GetAncestors( _subShape );
+
+    SMESH_subMesh* me = const_cast< SMESH_subMesh* >( this );
+    me->_ancestors.reserve( ancShapes.Extent() );
+
+    TopTools_MapOfShape map;
+   
+    for ( TopTools_ListIteratorOfListOfShape it( ancShapes ); it.More(); it.Next() )
+      if ( SMESH_subMesh* sm = _father->GetSubMeshContaining( it.Value() ))
+        if ( map.Add( it.Value() ))
+          me->_ancestors.push_back( sm );
+  }
+
+  return _ancestors;
+}
+
+//================================================================================
+/*!
+ * \brief Clears the vector of ancestor sub-meshes
+ */
+//================================================================================
+
+void SMESH_subMesh::ClearAncestors()
+{
+  _ancestors.clear();
 }
 
 //================================================================================

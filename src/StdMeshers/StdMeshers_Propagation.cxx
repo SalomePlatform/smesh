@@ -209,23 +209,22 @@ namespace {
   /*!
    * \brief Returns a local 1D hypothesis used for theEdge
    */
-  const SMESH_Hypothesis* getLocal1DHyp (SMESH_Mesh&         theMesh,
-                                         const TopoDS_Shape& theEdge,
+  const SMESH_Hypothesis* getLocal1DHyp (SMESH_subMesh*      theSubMesh,
+                                         //const TopoDS_Shape& theEdge,
                                          TopoDS_Shape*       theSssignedTo=0)
   {
     static SMESH_HypoFilter hypo;
     hypo.Init( hypo.HasDim( 1 )).
       AndNot ( hypo.IsAlgo() ).
-      AndNot ( hypo.IsAssignedTo( theMesh.GetShapeToMesh() ));
+      AndNot ( hypo.IsAssignedTo( theSubMesh->GetFather()->GetShapeToMesh() ));
 
-    return theMesh.GetHypothesis( theEdge, hypo, true, theSssignedTo );
+    return theSubMesh->GetFather()->GetHypothesis( theSubMesh, hypo, true, theSssignedTo );
   }
   //=============================================================================
   /*!
    * \brief Returns a propagation hypothesis assigned to theEdge
    */
-  const SMESH_Hypothesis* getProagationHyp (SMESH_Mesh&         theMesh,
-                                            const TopoDS_Shape& theEdge)
+  const SMESH_Hypothesis* getProagationHyp (SMESH_subMesh* theSubMesh)
   {
     static SMESH_HypoFilter propagHypFilter;
     if ( propagHypFilter.IsEmpty() )
@@ -234,7 +233,7 @@ namespace {
         Init( SMESH_HypoFilter::HasName( StdMeshers_Propagation::GetName ())).
         Or  ( SMESH_HypoFilter::HasName( StdMeshers_PropagOfDistribution::GetName ()));
     }
-    return theMesh.GetHypothesis( theEdge, propagHypFilter, true );
+    return theSubMesh->GetFather()->GetHypothesis( theSubMesh, propagHypFilter, true );
   }
   //================================================================================
   /*!
@@ -261,13 +260,13 @@ namespace {
     SMESH_Mesh* mesh = theMainSubMesh->GetFather();
 
     TopoDS_Shape shapeOfHyp1D; // shape to which an hyp being propagated is assigned
-    const SMESH_Hypothesis* hyp1D = getLocal1DHyp( *mesh, theMainEdge, &shapeOfHyp1D );
+    const SMESH_Hypothesis* hyp1D = getLocal1DHyp( theMainSubMesh, &shapeOfHyp1D );
     SMESH_HypoFilter moreLocalCheck( SMESH_HypoFilter::IsMoreLocalThan( shapeOfHyp1D, *mesh ));
 
     PropagationMgrData* chainData = getData( theMainSubMesh );
     chainData->SetState( HAS_PROPAG_HYP );
 
-    if ( const SMESH_Hypothesis * propagHyp = getProagationHyp( *mesh, theMainEdge ))
+    if ( const SMESH_Hypothesis * propagHyp = getProagationHyp( theMainSubMesh ))
       chainData->myIsPropagOfDistribution =
         ( StdMeshers_PropagOfDistribution::GetName() == propagHyp->GetName() );
 
@@ -278,6 +277,8 @@ namespace {
 
     TopTools_MapOfShape checkedShapes;
     checkedShapes.Add( theMainEdge );
+
+    vector<TopoDS_Edge> edges;
 
     list<SMESH_subMesh*>::iterator smIt = chain.begin();
     for ( ; smIt != chain.end(); ++smIt )
@@ -295,9 +296,8 @@ namespace {
           continue;
 
         // Get ordered edges and find index of anE in a sequence
+        edges.clear();
         BRepTools_WireExplorer aWE (TopoDS::Wire(itA.Value()));
-        vector<TopoDS_Edge> edges;
-        edges.reserve(4);
         int edgeIndex = 0;
         for (; aWE.More(); aWE.Next()) {
           TopoDS_Edge edge = aWE.Current();
@@ -361,7 +361,7 @@ namespace {
         if ( oppData->State() == WAIT_PROPAG_HYP ) // ... anOppE is not in any chain
         {
           oppData->SetSource( theMainSubMesh );
-          if ( ! (hyp1D = getLocal1DHyp( *mesh, anOppE, &shapeOfHyp1D )) || //...no 1d hyp on anOppE
+          if ( ! (hyp1D = getLocal1DHyp( oppSM, &shapeOfHyp1D )) || //...no 1d hyp on anOppE
                ! (moreLocalCheck.IsOk( hyp1D, shapeOfHyp1D ))) // ... or hyp1D is "more global"
           {
             oppData->myForward = data->myForward;
@@ -373,8 +373,8 @@ namespace {
             DBGMSG( "set IN_CHAIN on " << oppSM->GetId() );
             if ( oppSM->GetAlgoState() != SMESH_subMesh::HYP_OK )
               // make oppSM check algo state
-              if ( SMESH_Algo* algo = mesh->GetGen()->GetAlgo( *mesh, anOppE ))
-                oppSM->AlgoStateEngine(SMESH_subMesh::ADD_FATHER_ALGO,algo);
+              if ( SMESH_Algo* algo = oppSM->GetAlgo() )
+                oppSM->AlgoStateEngine(SMESH_subMesh::ADD_FATHER_ALGO, algo);
           }
           else {
             oppData->SetState( LAST_IN_CHAIN );
@@ -490,7 +490,7 @@ namespace {
     submesh->SetEventListener( getListener(), data, submesh );
 
     const SMESH_Hypothesis * propagHyp =
-      getProagationHyp( *submesh->GetFather(), submesh->GetSubShape() );
+      getProagationHyp( submesh );
     if ( propagHyp )
     {
       data->myIsPropagOfDistribution =
@@ -556,11 +556,10 @@ namespace {
 
     case WAIT_PROPAG_HYP: { // propagation hyp or local 1D hyp is missing
       // --------------------------------------------------------
-      bool hasPropagHyp = ( isPropagHyp ||
-                            getProagationHyp( *subMesh->GetFather(), subMesh->GetSubShape()) );
+      bool hasPropagHyp = ( isPropagHyp || getProagationHyp( subMesh ));
       if ( !hasPropagHyp )
         return;
-      bool hasLocal1DHyp =  getLocal1DHyp( *subMesh->GetFather(), subMesh->GetSubShape());
+      bool hasLocal1DHyp =  getLocal1DHyp( subMesh );
       if ( !hasLocal1DHyp )
         return;
       if ( event == SMESH_subMesh::ADD_HYP ||
@@ -577,7 +576,7 @@ namespace {
       switch ( event ) {
       case SMESH_subMesh::REMOVE_HYP:
       case SMESH_subMesh::REMOVE_FATHER_HYP: // remove propagation hyp
-        if ( isPropagHyp && !getProagationHyp( *subMesh->GetFather(), subMesh->GetSubShape()) )
+        if ( isPropagHyp && !getProagationHyp( subMesh ))
         {
           DBGMSG( "REMOVE_HYP propagation from HAS_PROPAG_HYP " << subMesh->GetId() );
           // clear propagation chain

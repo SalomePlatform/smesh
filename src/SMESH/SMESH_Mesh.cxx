@@ -773,7 +773,30 @@ const SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const TopoDS_Shape &    aSubS
                                                    const bool              andAncestors,
                                                    TopoDS_Shape*           assignedTo) const
 {
+  return GetHypothesis( const_cast< SMESH_Mesh* >(this)->GetSubMesh( aSubShape ),
+                        aFilter, andAncestors, assignedTo );
+}
+
+//=======================================================================
+/*!
+ * \brief Return the hypothesis assigned to the shape of a sub-mesh
+ *  \param aSubMesh     - the sub-mesh to check
+ *  \param aFilter      - the hypothesis filter
+ *  \param andAncestors - flag to check hypos assigned to ancestors of the shape
+ *  \param assignedTo   - to return the shape the found hypo is assigned to
+ *  \retval SMESH_Hypothesis* - the first hypo passed through aFilter
+ */
+//=======================================================================
+
+const SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const SMESH_subMesh *   aSubMesh,
+                                                   const SMESH_HypoFilter& aFilter,
+                                                   const bool              andAncestors,
+                                                   TopoDS_Shape*           assignedTo) const
+{
+  if ( !aSubMesh ) return 0;
+
   {
+    const TopoDS_Shape & aSubShape = aSubMesh->GetSubShape();
     const list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(aSubShape);
     list<const SMESHDS_Hypothesis*>::const_iterator hyp = hypList.begin();
     for ( ; hyp != hypList.end(); hyp++ ) {
@@ -787,9 +810,12 @@ const SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const TopoDS_Shape &    aSubS
   if ( andAncestors )
   {
     // user sorted submeshes of ancestors, according to stored submesh priority
-    getAncestorsSubMeshes( aSubShape, _ancestorSubMeshes );
-    vector<SMESH_subMesh*>::const_iterator smIt = _ancestorSubMeshes.begin(); 
-    for ( ; smIt != _ancestorSubMeshes.end(); smIt++ )
+    std::vector< SMESH_subMesh * > & ancestors =
+      const_cast< std::vector< SMESH_subMesh * > & > ( aSubMesh->GetAncestors() );
+    SortByMeshOrder( ancestors );
+
+    vector<SMESH_subMesh*>::const_iterator smIt = ancestors.begin(); 
+    for ( ; smIt != ancestors.end(); smIt++ )
     {
       const TopoDS_Shape& curSh = (*smIt)->GetSubShape();
       const list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(curSh);
@@ -808,7 +834,7 @@ const SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const TopoDS_Shape &    aSubS
 
 //================================================================================
 /*!
- * \brief Return hypothesis assigned to the shape
+ * \brief Return hypotheses assigned to the shape
   * \param aSubShape - the shape to check
   * \param aFilter - the hypothesis filter
   * \param aHypList - the list of the found hypotheses
@@ -823,6 +849,29 @@ int SMESH_Mesh::GetHypotheses(const TopoDS_Shape &                aSubShape,
                               const bool                          andAncestors,
                               list< TopoDS_Shape > *              assignedTo/*=0*/) const
 {
+  return GetHypotheses( const_cast< SMESH_Mesh* >(this)->GetSubMesh( aSubShape ),
+                        aFilter, aHypList, andAncestors, assignedTo );
+}
+
+//================================================================================
+/*!
+ * \brief Return hypotheses assigned to the shape of a sub-mesh
+  * \param aSubShape - the sub-mesh to check
+  * \param aFilter - the hypothesis filter
+  * \param aHypList - the list of the found hypotheses
+  * \param andAncestors - flag to check hypos assigned to ancestors of the shape
+  * \retval int - number of unique hypos in aHypList
+ */
+//================================================================================
+
+int SMESH_Mesh::GetHypotheses(const SMESH_subMesh *               aSubMesh,
+                              const SMESH_HypoFilter&             aFilter,
+                              list <const SMESHDS_Hypothesis * >& aHypList,
+                              const bool                          andAncestors,
+                              list< TopoDS_Shape > *              assignedTo/*=0*/) const
+{
+  if ( !aSubMesh ) return 0;
+
   set<string> hypTypes; // to exclude same type hypos from the result list
   int nbHyps = 0;
 
@@ -840,6 +889,7 @@ int SMESH_Mesh::GetHypotheses(const TopoDS_Shape &                aSubShape,
 
   // get hypos from aSubShape
   {
+    const TopoDS_Shape & aSubShape = aSubMesh->GetSubShape();
     const list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(aSubShape);
     for ( hyp = hypList.begin(); hyp != hypList.end(); hyp++ )
       if ( aFilter.IsOk (cSMESH_Hyp( *hyp ), aSubShape) &&
@@ -857,16 +907,15 @@ int SMESH_Mesh::GetHypotheses(const TopoDS_Shape &                aSubShape,
   // get hypos from ancestors of aSubShape
   if ( andAncestors )
   {
-    TopTools_MapOfShape map;
-
     // user sorted submeshes of ancestors, according to stored submesh priority
-    getAncestorsSubMeshes( aSubShape, _ancestorSubMeshes );
-    vector<SMESH_subMesh*>::const_iterator smIt = _ancestorSubMeshes.begin();
-    for ( ; smIt != _ancestorSubMeshes.end(); smIt++ )
+    std::vector< SMESH_subMesh * > & ancestors =
+      const_cast< std::vector< SMESH_subMesh * > & > ( aSubMesh->GetAncestors() );
+    SortByMeshOrder( ancestors );
+
+    vector<SMESH_subMesh*>::const_iterator smIt = ancestors.begin();
+    for ( ; smIt != ancestors.end(); smIt++ )
     {
       const TopoDS_Shape& curSh = (*smIt)->GetSubShape();
-      if ( !map.Add( curSh ))
-        continue;
       const list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(curSh);
       for ( hyp = hypList.begin(); hyp != hypList.end(); hyp++ )
         if (( aFilter.IsOk( cSMESH_Hyp( *hyp ), curSh ))         &&
@@ -1047,9 +1096,7 @@ bool SMESH_Mesh::IsUsedHypothesis(SMESHDS_Hypothesis * anHyp,
   if ( !aSubMesh || !aSubMesh->IsApplicableHypotesis( hyp ))
     return false;
 
-  const TopoDS_Shape & aSubShape = const_cast<SMESH_subMesh*>( aSubMesh )->GetSubShape();
-
-  SMESH_Algo *algo = _gen->GetAlgo(*this, aSubShape );
+  SMESH_Algo *algo = aSubMesh->GetAlgo();
 
   // algorithm
   if (anHyp->GetType() > SMESHDS_Hypothesis::PARAM_ALGO)
@@ -1062,7 +1109,7 @@ bool SMESH_Mesh::IsUsedHypothesis(SMESHDS_Hypothesis * anHyp,
     const SMESH_HypoFilter* hypoKind;
     if (( hypoKind = algo->GetCompatibleHypoFilter( !hyp->IsAuxiliary() ))) {
       list <const SMESHDS_Hypothesis * > usedHyps;
-      if ( GetHypotheses( aSubShape, *hypoKind, usedHyps, true ))
+      if ( GetHypotheses( aSubMesh, *hypoKind, usedHyps, true ))
         return ( find( usedHyps.begin(), usedHyps.end(), anHyp ) != usedHyps.end() );
     }
   }
@@ -1134,7 +1181,7 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
     {
       // check if hyp is used by algo
       usedHyps.clear();
-      if ( GetHypotheses( aSubShape, *compatibleHypoKind, usedHyps, true ) &&
+      if ( GetHypotheses( aSubMesh, *compatibleHypoKind, usedHyps, true ) &&
            find( usedHyps.begin(), usedHyps.end(), hyp ) != usedHyps.end() )
       {
         aSubMesh->AlgoStateEngine(SMESH_subMesh::MODIF_HYP,
@@ -2138,7 +2185,10 @@ void SMESH_Mesh::fillAncestorsMap(const TopoDS_Shape& theShape)
         while ( ancIt.More() && ancIt.Value().ShapeType() >= memberType )
           ancIt.Next();
         if ( ancIt.More() )
+        {
           ancList.InsertBefore( theShape, ancIt );
+          GetSubMesh( des.Current() )->ClearAncestors(); // to re-fill _ancestors
+        }
       }
   }
   {

@@ -232,7 +232,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
       if ( aShapesId && aShapeDim > (int)aDim )
         continue;
 
-      SMESH_Algo* algo = GetAlgo( aMesh, aSubShape, &algoShape );
+      SMESH_Algo* algo = GetAlgo( smToCompute, &algoShape );
       if ( algo && !algo->NeedDiscreteBoundary() )
       {
         if ( algo->SupportSubmeshes() )
@@ -308,7 +308,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
         sm = smVec[i];
 
         // get a shape the algo is assigned to
-        if ( !GetAlgo( aMesh, sm->GetSubShape(), & algoShape ))
+        if ( !GetAlgo( sm, & algoShape ))
           continue; // strange...
 
         // look for more local algos
@@ -331,7 +331,8 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
             .And( SMESH_HypoFilter::IsApplicableTo( aSubShape ))
             .And( SMESH_HypoFilter::IsMoreLocalThan( algoShape, aMesh ));
 
-          if ( SMESH_Algo* subAlgo = (SMESH_Algo*) aMesh.GetHypothesis( aSubShape, filter, true )) {
+          if ( SMESH_Algo* subAlgo = (SMESH_Algo*) aMesh.GetHypothesis( smToCompute, filter, true))
+          {
             if ( ! subAlgo->NeedDiscreteBoundary() ) continue;
             SMESH_Hypothesis::Hypothesis_Status status;
             if ( subAlgo->CheckHypothesis( aMesh, aSubShape, status ))
@@ -477,7 +478,7 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
       const int aShapeDim = GetShapeDim( aSubShape );
       if ( aShapeDim < 1 ) break;
       
-      SMESH_Algo* algo = GetAlgo( aMesh, aSubShape );
+      SMESH_Algo* algo = GetAlgo( smToCompute );
       if ( algo && !algo->NeedDiscreteBoundary() ) {
         if ( algo->SupportSubmeshes() ) {
           smWithAlgoSupportingSubmeshes.push_front( smToCompute );
@@ -508,7 +509,7 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
 
       // get a shape the algo is assigned to
       TopoDS_Shape algoShape;
-      if ( !GetAlgo( aMesh, sm->GetSubShape(), & algoShape ))
+      if ( !GetAlgo( sm, & algoShape ))
         continue; // strange...
 
       // look for more local algos
@@ -525,7 +526,8 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
           .And( SMESH_HypoFilter::IsApplicableTo( aSubShape ))
           .And( SMESH_HypoFilter::IsMoreLocalThan( algoShape, aMesh ));
 
-        if ( SMESH_Algo* subAlgo = (SMESH_Algo*) aMesh.GetHypothesis( aSubShape, filter, true )) {
+        if ( SMESH_Algo* subAlgo = (SMESH_Algo*) aMesh.GetHypothesis( smToCompute, filter, true ))
+        {
           if ( ! subAlgo->NeedDiscreteBoundary() ) continue;
           SMESH_Hypothesis::Hypothesis_Status status;
           if ( subAlgo->CheckHypothesis( aMesh, aSubShape, status ))
@@ -1013,6 +1015,23 @@ SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_Mesh &         aMesh,
                                const TopoDS_Shape & aShape,
                                TopoDS_Shape*        assignedTo)
 {
+  return GetAlgo( aMesh.GetSubMesh( aShape ), assignedTo );
+}
+
+//=============================================================================
+/*!
+ * Finds algo to mesh a sub-mesh. Optionally returns a shape the found algo is bound to
+ */
+//=============================================================================
+
+SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_subMesh * aSubMesh,
+                               TopoDS_Shape*   assignedTo)
+{
+  if ( !aSubMesh ) return 0;
+
+  const TopoDS_Shape & aShape = aSubMesh->GetSubShape();
+  SMESH_Mesh&          aMesh  = *aSubMesh->GetFather();
+
   SMESH_HypoFilter filter( SMESH_HypoFilter::IsAlgo() );
   filter.And( filter.IsApplicableTo( aShape ));
 
@@ -1020,7 +1039,7 @@ SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_Mesh &         aMesh,
 
   TopoDS_Shape assignedToShape;
   SMESH_Algo* algo =
-    (SMESH_Algo*) aMesh.GetHypothesis( aShape, filter, true, &assignedToShape );
+    (SMESH_Algo*) aMesh.GetHypothesis( aSubMesh, filter, true, &assignedToShape );
 
   if ( algo &&
        aShape.ShapeType() == TopAbs_FACE &&
@@ -1035,7 +1054,7 @@ SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_Mesh &         aMesh,
     filter.AndNot( filter.Is( algo ));
     TopoDS_Shape assignedToShape2;
     SMESH_Algo* algo2 =
-      (SMESH_Algo*) aMesh.GetHypothesis( aShape, filter, true, &assignedToShape2 );
+      (SMESH_Algo*) aMesh.GetHypothesis( aSubMesh, filter, true, &assignedToShape2 );
     if ( algo2 &&                                                  // algo found
          !assignedToShape2.IsSame( aMesh.GetShapeToMesh() ) &&     // algo is local
          ( SMESH_MesherHelper::GetGroupType( assignedToShape2 ) == // algo of the same level

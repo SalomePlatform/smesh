@@ -148,6 +148,17 @@ public:
                     const bool                               andAncestors,
                     std::list< TopoDS_Shape > *              assignedTo=0) const;
 
+  const SMESH_Hypothesis * GetHypothesis(const SMESH_subMesh *   aSubMesh,
+                                         const SMESH_HypoFilter& aFilter,
+                                         const bool              andAncestors,
+                                         TopoDS_Shape*           assignedTo=0) const;
+  
+  int GetHypotheses(const SMESH_subMesh *                    aSubMesh,
+                    const SMESH_HypoFilter&                  aFilter,
+                    std::list< const SMESHDS_Hypothesis * >& aHypList,
+                    const bool                               andAncestors,
+                    std::list< TopoDS_Shape > *              assignedTo=0) const;
+
   SMESH_Hypothesis * GetHypothesis(const int aHypID) const;
 
   const std::list<SMESHDS_Command*> & GetLog() throw(SALOME_Exception);

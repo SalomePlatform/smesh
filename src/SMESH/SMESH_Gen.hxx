@@ -147,6 +147,7 @@ public:
   { return GetShapeDim( aShape.ShapeType() ); }
 
   SMESH_Algo* GetAlgo(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape, TopoDS_Shape* assignedTo=0);
+  SMESH_Algo* GetAlgo(SMESH_subMesh * aSubMesh, TopoDS_Shape* assignedTo=0);
 
   static bool IsGlobalHypothesis(const SMESH_Hypothesis* theHyp, SMESH_Mesh& aMesh);
 

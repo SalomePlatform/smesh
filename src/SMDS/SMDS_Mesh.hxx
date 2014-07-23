@@ -774,7 +774,7 @@ protected:
   bool registerElement(int ID, SMDS_MeshElement * element);
 
   void addChildrenWithNodes(std::set<const SMDS_MeshElement*>& setOfChildren,
-                            const SMDS_MeshElement * element,
+                            const SMDS_MeshElement *           element,
                             std::set<const SMDS_MeshElement*>& nodes);
 
   inline void adjustmyCellsCapacity(int ID)
@@ -818,8 +818,8 @@ protected:
   //! SMDS_MeshCells refer to vtk cells (vtk id != index in myCells),store reference to this mesh, and sub-shape
   SetOfCells             myCells;
 
-  //! for cells only: index = ID for SMDS users, value = ID in vtkUnstructuredGrid
-  //std::vector<int>       myCellIdSmdsToVtk;
+  //! a buffer to speed up elements addition by excluding some memory allocation
+  std::vector<vtkIdType> myNodeIds;
 
   //! for cells only: index = ID in vtkUnstructuredGrid, value = ID for SMDS users
   std::vector<int>       myCellIdVtkToSmds;
