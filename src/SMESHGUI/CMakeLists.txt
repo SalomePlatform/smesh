@@ -146,6 +146,7 @@ SET(_moc_HEADERS
 
 # header files / no moc processing
 SET(_other_HEADERS
+  SMESHGUI_Operations.h
   SMESHGUI_Utils.h
   SMESHGUI_HypothesesUtils.h
   SMESHGUI_Selection.h
