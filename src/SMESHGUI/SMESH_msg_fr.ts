@@ -6746,6 +6746,10 @@ Il y a trop peu de points dans le fichier </translation>
         <translation>Groupe des éléments dont les nœuds sont à remplacer</translation>
     </message>
     <message>
+        <source>GROUP_VOLUME_GROUPS</source>
+        <translation>Groupes (faces ou volumes)</translation>
+    </message>
+    <message>
         <source>CONSTRUCT_NEW_GROUP_NODES</source>
         <translation>Construire un groupe avec les nœuds nouvellement créés</translation>
     </message>

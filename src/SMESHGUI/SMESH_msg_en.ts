@@ -6775,7 +6775,7 @@ It is impossible to read point coordinates from file</translation>
     </message>
     <message>
         <source>GROUP_VOLUME_GROUPS</source>
-        <translation>Groups of volumes</translation>
+        <translation>Groups (faces or volumes)</translation>
     </message>
     <message>
         <source>CONSTRUCT_NEW_GROUP_NODES</source>
