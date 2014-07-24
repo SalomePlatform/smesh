@@ -996,14 +996,29 @@ SMESH_subMesh *SMESH_Mesh::GetSubMesh(const TopoDS_Shape & aSubShape)
         fillAncestorsMap( _myMeshDS->IndexToShape( ++_nbSubShapes ));
     }
   }
-//   if ( !index )
-//     return NULL; // neither sub-shape nor a group
+  // if ( !index )
+  //   return NULL; // neither sub-shape nor a group
 
   SMESH_subMesh* aSubMesh = _subMeshHolder->Get( index );
   if ( !aSubMesh )
   {
     aSubMesh = new SMESH_subMesh(index, this, _myMeshDS, aSubShape);
     _subMeshHolder->Add( index, aSubMesh );
+
+    // include non-computable sub-meshes in SMESH_subMesh::_ancestors of sub-submeshes
+    switch ( aSubShape.ShapeType() ) {
+    case TopAbs_COMPOUND:
+    case TopAbs_WIRE:
+    case TopAbs_SHELL:
+      for ( TopoDS_Iterator subIt( aSubShape ); subIt.More(); subIt.Next() )
+      {
+        SMESH_subMesh* sm = GetSubMesh( subIt.Value() );
+        SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(/*inclideSelf=*/true);
+        while ( smIt->more() )
+          smIt->next()->ClearAncestors();
+      }
+    default:;
+    }
   }
   return aSubMesh;
 }
@@ -1157,6 +1172,9 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
   const SMESH_HypoFilter* compatibleHypoKind;
   list <const SMESHDS_Hypothesis * > usedHyps;
 
+  // keep sub-meshes not to miss ones whose state can change due to notifying others
+  vector< SMESH_subMesh* > smToNotify;
+
   SMESH_subMeshIteratorPtr smIt( _subMeshHolder->GetIterator() );
   while ( smIt->more() )
   {
@@ -1184,11 +1202,17 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
       if ( GetHypotheses( aSubMesh, *compatibleHypoKind, usedHyps, true ) &&
            find( usedHyps.begin(), usedHyps.end(), hyp ) != usedHyps.end() )
       {
-        aSubMesh->AlgoStateEngine(SMESH_subMesh::MODIF_HYP,
-                                  const_cast< SMESH_Hypothesis*>( hyp ));
+        smToNotify.push_back( aSubMesh );
       }
     }
   }
+
+  for ( size_t i = 0; i < smToNotify.size(); ++i )
+  {
+    smToNotify[i]->AlgoStateEngine(SMESH_subMesh::MODIF_HYP,
+                                   const_cast< SMESH_Hypothesis*>( hyp ));
+  }
+
   HasModificationsToDiscard(); // to reset _isModified flag if mesh becomes empty
   GetMeshDS()->Modified();
 }
@@ -2185,12 +2209,10 @@ void SMESH_Mesh::fillAncestorsMap(const TopoDS_Shape& theShape)
         while ( ancIt.More() && ancIt.Value().ShapeType() >= memberType )
           ancIt.Next();
         if ( ancIt.More() )
-        {
           ancList.InsertBefore( theShape, ancIt );
-          GetSubMesh( des.Current() )->ClearAncestors(); // to re-fill _ancestors
-        }
       }
   }
+  else // else added for 52457: Addition of hypotheses is 8 time longer than meshing
   {
     for ( desType = TopAbs_VERTEX; desType > TopAbs_COMPOUND; desType-- )
       for ( ancType = desType - 1; ancType >= TopAbs_COMPOUND; ancType-- )
@@ -2202,9 +2224,11 @@ void SMESH_Mesh::fillAncestorsMap(const TopoDS_Shape& theShape)
   // visit COMPOUNDs inside a COMPOUND that are not reachable by TopExp_Explorer
   if ( theShape.ShapeType() == TopAbs_COMPOUND )
   {
-    for ( TopoDS_Iterator sIt(theShape); sIt.More(); sIt.Next() )
-      if ( sIt.Value().ShapeType() == TopAbs_COMPOUND )
-        fillAncestorsMap( sIt.Value() );
+    TopoDS_Iterator sIt(theShape);
+    if ( sIt.More() && sIt.Value().ShapeType() == TopAbs_COMPOUND )
+      for ( ; sIt.More(); sIt.Next() )
+        if ( sIt.Value().ShapeType() == TopAbs_COMPOUND )
+          fillAncestorsMap( sIt.Value() );
   }
 }
 
