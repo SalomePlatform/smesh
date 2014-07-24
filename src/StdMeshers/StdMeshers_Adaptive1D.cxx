@@ -39,6 +39,7 @@
 #include <BRepMesh_IncrementalMesh.hxx>
 #include <BRep_Tool.hxx>
 #include <Bnd_B3d.hxx>
+#include <Bnd_Box.hxx>
 #include <GCPnts_AbscissaPoint.hxx>
 #include <GeomAdaptor_Curve.hxx>
 #include <Geom_Curve.hxx>
