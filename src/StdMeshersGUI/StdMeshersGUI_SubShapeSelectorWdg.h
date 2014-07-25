@@ -58,7 +58,7 @@ public:
   ~StdMeshersGUI_SubShapeSelectorWdg();
 
   SMESH::long_array_var          GetListOfIDs();
-  void                           SetListOfIDs( SMESH::long_array_var );
+  bool                           SetListOfIDs( SMESH::long_array_var );
 
   void                           SetGeomShapeEntry( const QString& theEntry );
   const char*                    GetGeomShapeEntry() { return myEntry.toLatin1().data();}
@@ -69,7 +69,8 @@ public:
   TopoDS_Shape                   GetGeomShape() { return myGeomShape; }
   TopoDS_Shape                   GetMainShape() { return myMainShape; }
 
-  QList<int>                     GetCorrectedListOfIDs( bool fromSubshapeToMainshape = true );
+  QList<int>                     GetCorrectedListOfIDs( bool fromSubshapeToMainshape,
+                                                        bool* isOK=0);
 
   static GEOM::GEOM_Object_var   GetGeomObjectByEntry( const QString& );
   static TopoDS_Shape            GetTopoDSByEntry( const QString& );

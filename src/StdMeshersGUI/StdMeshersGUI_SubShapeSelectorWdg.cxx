@@ -515,9 +515,9 @@ SMESH::long_array_var StdMeshersGUI_SubShapeSelectorWdg::GetListOfIDs()
 
 //=================================================================================
 // function : SetListOfIds
-// purpose  : Called to set the list of SubShapes IDs
+// purpose  : Called to set the list of SubShapes IDs. Returns false if any ID is invalid
 //=================================================================================
-void StdMeshersGUI_SubShapeSelectorWdg::SetListOfIDs( SMESH::long_array_var theIds)
+bool StdMeshersGUI_SubShapeSelectorWdg::SetListOfIDs( SMESH::long_array_var theIds)
 {
   mySelectedIDs.clear();
   myListOfIDs.clear();
@@ -525,8 +525,10 @@ void StdMeshersGUI_SubShapeSelectorWdg::SetListOfIDs( SMESH::long_array_var theI
   for ( int i = 0; i < size; i++ )
     mySelectedIDs.append( theIds[ i ] );
 
-  mySelectedIDs = GetCorrectedListOfIDs( false );
+  bool isOk;
+  mySelectedIDs = GetCorrectedListOfIDs( false, &isOk );
   onAdd();
+  return isOk;
 }
 
 //=================================================================================
@@ -556,35 +558,74 @@ const char* StdMeshersGUI_SubShapeSelectorWdg::GetMainShapeEntry()
 // function : GetCorrectedListOfIds
 // purpose  : Called to convert the list of IDs from sub-shape IDs to main shape IDs
 //=================================================================================
-QList<int> StdMeshersGUI_SubShapeSelectorWdg::GetCorrectedListOfIDs( bool fromSubshapeToMainshape )
+QList<int>
+StdMeshersGUI_SubShapeSelectorWdg::GetCorrectedListOfIDs( bool fromSubshapeToMainshape,
+                                                          bool* isOK )
 {
-  if ( ( myMainShape.IsNull() || myGeomShape.IsNull() ) &&  fromSubshapeToMainshape )
+  if (( myMainShape.IsNull() || myGeomShape.IsNull() ) &&  fromSubshapeToMainshape )
     return myListOfIDs;
-  else   if ( ( myMainShape.IsNull() || myGeomShape.IsNull() ) &&  !fromSubshapeToMainshape )
+  else if (( myMainShape.IsNull() /*||*/&& myGeomShape.IsNull() ) &&  !fromSubshapeToMainshape )
     return mySelectedIDs;
 
-  QList<int> aList;
-  TopTools_IndexedMapOfShape   aGeomMap;
-  TopTools_IndexedMapOfShape   aMainMap;
-  TopExp::MapShapes(myGeomShape, aGeomMap);
-  TopExp::MapShapes(myMainShape, aMainMap);
+  if ( !fromSubshapeToMainshape ) // called from SetListOfIDs
+  {
+    if ( myMainShape.IsNull() )
+      std::swap( myMainShape, myGeomShape );
+  }
 
-  if ( fromSubshapeToMainshape ) { // convert indexes from sub-shape to mainshape
+  QList<int> aList;
+  TopTools_IndexedMapOfShape aGeomMap, aMainMap;
+  TopExp::MapShapes(myMainShape, aMainMap);
+  if ( !myGeomShape.IsNull() )
+    TopExp::MapShapes(myGeomShape, aGeomMap);
+
+  bool ok = true;
+  if ( fromSubshapeToMainshape ) // convert indexes from sub-shape to mainshape
+  {
     int size = myListOfIDs.size();
     for (int i = 0; i < size; i++) {
-      TopoDS_Shape aSubShape = aGeomMap.FindKey( myListOfIDs.at(i) );
-      int index = aMainMap.FindIndex( aSubShape );
+      int index = myListOfIDs.at(i);
+      if ( aGeomMap.Extent() < index )
+      {
+        ok = false;
+      }
+      else
+      {
+        TopoDS_Shape aSubShape = aGeomMap.FindKey( index );
+        if ( mySubShType != aSubShape.ShapeType() )
+          ok = false;
+        if ( !aMainMap.Contains( aSubShape ))
+          ok = false;
+        else
+          index = aMainMap.FindIndex( aSubShape );
+      }
       aList.append( index );
     }
     myIsNotCorrected = false;
-  } else { // convert indexes from main shape to sub-shape
+  }
+  else // convert indexes from main shape to sub-shape, or just check indices
+  {
     int size = mySelectedIDs.size();
     for (int i = 0; i < size; i++) {
-      TopoDS_Shape aSubShape = aMainMap.FindKey( mySelectedIDs.at(i) );
-      int index = aGeomMap.FindIndex( aSubShape );
+      int index = mySelectedIDs.at(i);
+      if ( aMainMap.Extent() < index )
+      {
+        ok = false;
+      }
+      else
+      {
+        TopoDS_Shape aSubShape = aMainMap.FindKey( index );
+        if ( mySubShType != aSubShape.ShapeType() )
+          ok = false;
+        if ( !aGeomMap.Contains( aSubShape ) && !aGeomMap.IsEmpty() )
+          ok = false;
+        else
+          index = aGeomMap.FindIndex( aSubShape );
+      }
       aList.append( index );
     }
   }
+  if ( isOK ) *isOK = ok;
 
   return aList;
 }

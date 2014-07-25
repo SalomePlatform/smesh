@@ -184,6 +184,30 @@ SMESHGUI_EXPORT
   // type to use instead of SMESH_IDSource_var for automatic UnRegister()
   typedef SALOME::GenericObj_wrap<SMESH_IDSource> SMESH_IDSource_wrap;
 
+  /*!
+   * \brief Class usefull to convert a string returned from a CORBA call
+   *        to other string types w/o memory leak.
+   *
+   *        Usage (of instantiations): QString s = toQStr( objVar->GetName() );
+   *                              std::string ss = toStdStr( objVar->GetName() );
+   */
+  template < class _STRING >
+  class toStrT : public _STRING {
+    CORBA::String_var myStr;
+  public:
+    toStrT( char* s ): myStr(s), _STRING( s )
+    {}
+    operator const char*() const
+    { return myStr.in(); }
+  };
+  // Instantiations:
+  struct toQStr : public toStrT< QString > {
+    toQStr( char* s ): toStrT< QString >(s) {}
+  };
+  class toStdStr : public toStrT< std::string > {
+    toStdStr( char* s ): toStrT< std::string >(s) {}
+  };
+
 }
 
 #endif // SMESHGUI_UTILS_H

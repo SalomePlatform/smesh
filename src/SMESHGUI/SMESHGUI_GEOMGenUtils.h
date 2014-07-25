@@ -38,6 +38,8 @@
 #include CORBA_SERVER_HEADER(GEOM_Gen)
 
 class SALOMEDSClient_SObject;
+class Handle_SALOME_InteractiveObject;
+class QString;
 
 namespace SMESH
 {
@@ -50,6 +52,9 @@ namespace SMESH
   SMESHGUI_EXPORT char* GetGeomName( _PTR(SObject) smeshSO );
 
   SMESHGUI_EXPORT GEOM::GEOM_Object_ptr GetSubShape( GEOM::GEOM_Object_ptr, long );
+
+  SMESHGUI_EXPORT bool GetGeomEntries( Handle_SALOME_InteractiveObject& hypIO,
+                                       QString& subGeom, QString& meshGeom);
 }
 
 #endif // SMESHGUI_GEOMGENUTILS_H

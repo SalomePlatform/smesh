@@ -27,6 +27,22 @@
         <source>TO_IGNORE_FACES</source>
         <translation>Faces without layers (inlets and oulets)</translation>
     </message>
+    <message>
+        <source>BAD_FACES_WARNING</source>
+        <translation>
+Specified faces are not sub-shapes of the shape of 
+mesh/sub-mesh.
+Consider creating another hypothesis instead of using
+this one for this mesh/sub-mesh.</translation>
+    </message>
+    <message>
+        <source>BAD_EDGES_WARNING</source>
+        <translation>
+Specified edges are not sub-shapes of the shape of 
+mesh/sub-mesh.
+Consider creating another hypothesis instead of using
+this one for this mesh/sub-mesh.</translation>
+    </message>
 </context>
 <context>
     <name>@default</name>

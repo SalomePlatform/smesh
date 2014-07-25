@@ -36,6 +36,7 @@ class HypothesesSet;
 class SMESHGUI_MeshDlg;
 class SMESHGUI_ShapeByMeshOp;
 class HypothesisData;
+class SMESHGUI_GenericHypothesisCreator;
 
 /*!
  * \brief Operation for mech creation or editing
@@ -126,6 +127,7 @@ private:
                                        const THypList& ) const;
   SMESH::SMESH_Hypothesis_var    getInitParamsHypothesis( const QString&,
                                                           const QString& ) const;
+  void                           initHypCreator( SMESHGUI_GenericHypothesisCreator* aCreator );
   bool                           isSubshapeOk() const;
   char*                          isSubmeshIgnored() const;
   _PTR(SObject)                  getSubmeshByGeom() const;

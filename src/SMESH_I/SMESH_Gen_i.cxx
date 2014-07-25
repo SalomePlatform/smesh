@@ -280,7 +280,7 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
                           PortableServer::ObjectId* contId,
                           const char*               instanceName,
                           const char*               interfaceName )
-     : Engines_Component_i( orb, poa, contId, instanceName, interfaceName )
+  : Engines_Component_i( orb, poa, contId, instanceName, interfaceName )
 {
   MESSAGE( "SMESH_Gen_i::SMESH_Gen_i : standard constructor" );
 
@@ -472,7 +472,7 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
   // create a new hypothesis object, store its ref. in studyContext
   if(MYDEBUG) MESSAGE("Create Hypothesis " << theHypName);
   myHypothesis_i =
-      myHypCreatorMap[string(theHypName)]->Create(myPoa, GetCurrentStudyID(), &myGen);
+    myHypCreatorMap[string(theHypName)]->Create(myPoa, GetCurrentStudyID(), &myGen);
   myHypothesis_i->SetLibName(aPlatformLibName.c_str()); // for persistency assurance
 
   if (!myHypothesis_i)
@@ -495,7 +495,7 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
  */
 //=============================================================================
 SMESH::SMESH_Mesh_ptr SMESH_Gen_i::createMesh()
-     throw ( SALOME::SALOME_Exception )
+  throw ( SALOME::SALOME_Exception )
 {
   Unexpect aCatch(SALOME_SalomeException);
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::createMesh" );
@@ -673,7 +673,7 @@ SALOMEDS::Study_ptr SMESH_Gen_i::GetCurrentStudy()
 StudyContext* SMESH_Gen_i::GetCurrentStudyContext()
 {
   if ( !CORBA::is_nil( myCurrentStudy ) &&
-      myStudyContextMap.find( GetCurrentStudyID() ) != myStudyContextMap.end() )
+       myStudyContextMap.find( GetCurrentStudyID() ) != myStudyContextMap.end() )
     return myStudyContextMap[ myCurrentStudy->StudyId() ];
   else
     return 0;
@@ -689,7 +689,7 @@ StudyContext* SMESH_Gen_i::GetCurrentStudyContext()
 
 SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::CreateHypothesis( const char* theHypName,
                                                            const char* theLibName )
-     throw ( SALOME::SALOME_Exception )
+  throw ( SALOME::SALOME_Exception )
 {
   Unexpect aCatch(SALOME_SalomeException);
   // Create hypothesis/algorithm
@@ -801,6 +801,97 @@ SMESH_Gen_i::GetHypothesisParameterValues (const char*           theHypType,
   }
 
   return SMESH::SMESH_Hypothesis::_nil();
+}
+
+//=============================================================================
+/*!
+ * Returns \c True if a hypothesis is assigned to a sole sub-mesh in a current Study
+ *  \param [in] theHyp - the hypothesis of interest
+ *  \param [out] theMesh - the sole mesh using \a theHyp
+ *  \param [out] theShape - the sole geometry \a theHyp is assigned to
+ *  \return boolean - \c True if \a theMesh and \a theShape are sole using \a theHyp
+ *
+ * If two meshes on same shape have theHyp assigned to the same sub-shape, they are
+ * considered as SAME sub-mesh => result is \c true.
+ * This method ids used to initialize SMESHGUI_GenericHypothesisCreator with
+ * a shape to which an hyp being edited is assigned.
+ */
+//=============================================================================
+
+CORBA::Boolean SMESH_Gen_i::GetSoleSubMeshUsingHyp( SMESH::SMESH_Hypothesis_ptr theHyp,
+                                                    SMESH::SMESH_Mesh_out       theMesh,
+                                                    GEOM::GEOM_Object_out       theShape)
+{
+  if ( GetCurrentStudyID() < 0 || CORBA::is_nil( theHyp ))
+    return false;
+
+  // get Mesh component SO
+  CORBA::String_var compDataType = ComponentDataType();
+  SALOMEDS::SComponent_wrap comp = myCurrentStudy->FindComponent( compDataType.in() );
+  if ( CORBA::is_nil( comp ))
+    return false;
+
+  // look for child SO of meshes
+  SMESH::SMESH_Mesh_var foundMesh;
+  TopoDS_Shape          foundShape;
+  bool                  isSole = true;
+  SALOMEDS::ChildIterator_wrap meshIter = myCurrentStudy->NewChildIterator( comp );
+  for ( ; meshIter->More() && isSole; meshIter->Next() )
+  {
+    SALOMEDS::SObject_wrap curSO = meshIter->Value();
+    CORBA::Object_var        obj = SObjectToObject( curSO );
+    SMESH_Mesh_i*         mesh_i = SMESH::DownCast< SMESH_Mesh_i* >( obj );
+    if ( ! mesh_i )
+      continue;
+
+    // look for a sole shape where theHyp is assigned
+    bool isHypFound = false;
+    const ShapeToHypothesis & s2hyps = mesh_i->GetImpl().GetMeshDS()->GetHypotheses();
+    ShapeToHypothesis::Iterator s2hypsIt( s2hyps );
+    for ( ; s2hypsIt.More() && isSole; s2hypsIt.Next() )
+    {
+      const THypList& hyps = s2hypsIt.Value();
+      THypList::const_iterator h = hyps.begin();
+      for ( ; h != hyps.end(); ++h )
+        if ( (*h)->GetID() == theHyp->GetId() )
+          break;
+      if ( h != hyps.end()) // theHyp found
+      {
+        isHypFound = true;
+        if ( ! foundShape.IsNull() &&
+             ! foundShape.IsSame( s2hypsIt.Key() )) // not a sole sub-shape
+        {
+          foundShape.Nullify();
+          isSole = false;
+          break;
+        }
+        foundShape = s2hypsIt.Key();
+      }
+    } // loop on assigned hyps
+
+    if ( isHypFound && !foundShape.IsNull() ) // a mesh using theHyp is found
+    {
+      if ( !foundMesh->_is_nil() ) // not a sole mesh
+      {
+        GEOM::GEOM_Object_var s1 = mesh_i   ->GetShapeToMesh();
+        GEOM::GEOM_Object_var s2 = foundMesh->GetShapeToMesh();
+        if ( ! ( isSole = s1->IsSame( s2 )))
+          break;
+      }
+      foundMesh = SMESH::SMESH_Mesh::_narrow( obj );
+    }
+
+  } // loop on meshes
+
+  if ( isSole &&
+       ! foundMesh->_is_nil() &&
+       ! foundShape.IsNull() )
+  {
+    theMesh  = foundMesh._retn();
+    theShape = ShapeToGeomObject( foundShape );
+    return ( !theMesh->_is_nil() && !theShape->_is_nil() );
+  }
+  return false;
 }
 
 //=============================================================================
@@ -5062,10 +5153,18 @@ void SMESH_Gen_i::Move( const SMESH::sobject_list& what,
       useCaseBuilder->AppendTo( where, sobj );        // append to the end of list
   }
 }
-//=================================================================================
-// function : IsApplicable
-// purpose  : Return true if algorithm can be applied
-//=================================================================================
+//================================================================================
+/*!
+ * \brief Returns true if algorithm can be used to mesh a given geometry
+ *  \param [in] theAlgoType - the algorithm type
+ *  \param [in] theLibName - a name of the Plug-in library implementing the algorithm
+ *  \param [in] theGeomObject - the geometry to mesh
+ *  \param [in] toCheckAll - if \c True, returns \c True if all shapes are meshable,
+ *         else, returns \c True if at least one shape is meshable
+ *  \return CORBA::Boolean - can or can't
+ */
+//================================================================================
+
 CORBA::Boolean SMESH_Gen_i::IsApplicable ( const char*           theAlgoType,
                                            const char*           theLibName,
                                            GEOM::GEOM_Object_ptr theGeomObject,
@@ -5075,7 +5174,8 @@ CORBA::Boolean SMESH_Gen_i::IsApplicable ( const char*           theAlgoType,
 
   std::string aPlatformLibName;
   typedef GenericHypothesisCreator_i* (*GetHypothesisCreator)(const char*);
-  GenericHypothesisCreator_i* aCreator = getHypothesisCreator(theAlgoType, theLibName, aPlatformLibName);
+  GenericHypothesisCreator_i* aCreator =
+    getHypothesisCreator(theAlgoType, theLibName, aPlatformLibName);
   if (aCreator)
   {
     TopoDS_Shape shape = GeomObjectToShape( theGeomObject );

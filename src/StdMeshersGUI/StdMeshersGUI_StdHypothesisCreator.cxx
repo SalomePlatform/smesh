@@ -47,6 +47,7 @@
 
 // SALOME GUI includes
 #include <SUIT_ResourceMgr.h>
+#include <SUIT_MessageBox.h>
 
 // IDL includes
 #include <SALOMEconfig.h>
@@ -1265,8 +1266,15 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
 
       idsWg->SetMainShapeEntry( aMainEntry );
       idsWg->SetGeomShapeEntry( aSubEntry.isEmpty() ? aMainEntry : aSubEntry );
-      idsWg->SetListOfIDs( h->GetFaces() );
-      idsWg->showPreview( true );
+      if ( idsWg->SetListOfIDs( h->GetFaces() ))
+      {
+        idsWg->showPreview( true );
+      }
+      else
+      {
+        SUIT_MessageBox::warning( dlg(),tr( "SMESH_WRN_WARNING" ),tr( "BAD_FACES_WARNING" ));
+        idsWg->setEnabled( false );
+      }
       customWidgets()->append ( idsWg );
     }
   }
@@ -1317,8 +1325,15 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
 
       idsWg->SetMainShapeEntry( aMainEntry );
       idsWg->SetGeomShapeEntry( aSubEntry.isEmpty() ? aMainEntry : aSubEntry );
-      idsWg->SetListOfIDs( h->GetEdges() );
-      idsWg->showPreview( true );
+      if ( idsWg->SetListOfIDs( h->GetEdges() ))
+      {
+        idsWg->showPreview( true );
+      }
+      else
+      {
+        SUIT_MessageBox::warning( dlg(),tr( "SMESH_WRN_WARNING" ),tr( "BAD_EDGES_WARNING" ));
+        idsWg->setEnabled( false );
+      }
       customWidgets()->append ( idsWg );
     }
   }

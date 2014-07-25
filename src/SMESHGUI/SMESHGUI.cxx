@@ -83,6 +83,7 @@
 #include "SMESHGUI_TransparencyDlg.h"
 
 #include "SMESHGUI_FilterUtils.h"
+#include "SMESHGUI_GEOMGenUtils.h"
 #include "SMESHGUI_GroupUtils.h"
 #include "SMESHGUI_HypothesesUtils.h"
 #include "SMESHGUI_MeshUtils.h"
@@ -3093,15 +3094,26 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         Handle(SALOME_InteractiveObject) anIObject = selected.First();
         SMESH::SMESH_Hypothesis_var aHypothesis = SMESH::IObjectToInterface<SMESH::SMESH_Hypothesis>(anIObject);
 
-        /* Look for all mesh objects that have this hypothesis affected in order to flag as ModifiedMesh */
-        /* At end below '...->updateObjBrowser(true)' will change icon of mesh objects                   */
-        /* Warning : however by internal mechanism all subMeshes icons are changed !                     */
         if ( !aHypothesis->_is_nil() )
         {
-          // BUG 0020378
-          //SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHypothesis->GetName());
-          SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHypothesis->GetName());
-          if (aCreator) {
+          SMESHGUI_GenericHypothesisCreator* aCreator =
+            SMESH::GetHypothesisCreator( SMESH::toQStr( aHypothesis->GetName() ));
+          if (aCreator)
+          {
+            // set geometry of mesh and sub-mesh to aCreator
+            aSel->selectedObjects( selected, "",  /*convertReferences=*/false);
+            if ( selected.Extent() == 1 )
+            {
+              QString subGeomID, meshGeomID;
+              Handle(SALOME_InteractiveObject) hypIO = selected.First();
+              if ( SMESH::GetGeomEntries( hypIO, subGeomID, meshGeomID ))
+              {
+                if ( subGeomID.isEmpty() ) subGeomID = meshGeomID;
+                aCreator->setShapeEntry( subGeomID );
+                aCreator->setMainShapeEntry( meshGeomID );
+              }
+            }
+
             aCreator->edit( aHypothesis.in(), anIObject->getName(), desktop(), this, SLOT( onHypothesisEdit( int ) ) );
           }
           else

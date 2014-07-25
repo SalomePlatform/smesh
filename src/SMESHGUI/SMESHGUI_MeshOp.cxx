@@ -398,7 +398,8 @@ char* SMESHGUI_MeshOp::isSubmeshIgnored() const
       THypList    algoList;
       existingHyps(3, Algo, pMesh, algoNames, algoList);
       if (!algoList.empty()) {
-        HypothesisData* algo = SMESH::GetHypothesisData( algoList[0].first->GetName() );
+        HypothesisData* algo =
+          SMESH::GetHypothesisData( SMESH::toQStr( algoList[0].first->GetName() ));
         if ( algo &&
              algo->InputTypes.empty() && // builds all dimensions it-self
              !algo->IsSupportSubmeshes )
@@ -412,7 +413,8 @@ char* SMESHGUI_MeshOp::isSubmeshIgnored() const
 //       if ( !geom->_is_nil() && geom->GetShapeType() >= GEOM::FACE ) { // WIRE, EDGE as well
         existingHyps(2, Algo, pMesh, algoNames, algoList);
         if (!algoList.empty()) {
-          HypothesisData* algo = SMESH::GetHypothesisData( algoList[0].first->GetName() );
+          HypothesisData* algo =
+            SMESH::GetHypothesisData( SMESH::toQStr( algoList[0].first->GetName() ));
           if ( algo &&
                algo->InputTypes.empty() && // builds all dimensions it-self
                !algo->IsSupportSubmeshes )
@@ -1033,6 +1035,71 @@ SMESHGUI_MeshOp::getInitParamsHypothesis( const QString& aHypType,
 
 //================================================================================
 /*!
+ * \brief initialize a hypothesis creator
+ */
+//================================================================================
+
+void SMESHGUI_MeshOp::initHypCreator( SMESHGUI_GenericHypothesisCreator* theCreator )
+{
+  if ( !theCreator ) return;
+
+  // Set shapes, of mesh and sub-mesh if any
+
+  // get Entry of the Geom object
+  QString aGeomEntry = "";
+  QString aMeshEntry = "";
+  QString anObjEntry = "";
+  aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
+  aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
+  anObjEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Obj );
+
+  if ( myToCreate && myIsMesh )
+    aMeshEntry = aGeomEntry;
+
+  if ( aMeshEntry != aGeomEntry ) { // Get Geom object from Mesh of a sub-mesh being edited
+    _PTR(SObject) pObj = studyDS()->FindObjectID( aMeshEntry.toLatin1().data() );
+    GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj );
+    aMeshEntry = ( aGeomVar->_is_nil() ) ? QString() : SMESH::toQStr( aGeomVar->GetStudyEntry() );
+  }
+
+  if ( aMeshEntry == "" && aGeomEntry == "" ) { // get geom of an object being edited
+    _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
+    bool isMesh;
+    GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj, &isMesh );
+    if ( !aGeomVar->_is_nil() )
+    {
+      aGeomEntry = SMESH::toQStr( aGeomVar->GetStudyEntry() );
+      if ( isMesh )
+        aMeshEntry = aGeomEntry;
+    }
+  }
+
+  if ( anObjEntry != "" && aGeomEntry != "" && aMeshEntry == "" ) {
+    // take geometry from submesh being created
+    _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
+    if ( pObj ) {
+      // if current object is sub-mesh
+      SMESH::SMESH_subMesh_var aSubMeshVar =
+        SMESH::SMESH_subMesh::_narrow( _CAST( SObject,pObj )->GetObject() );
+      if ( !aSubMeshVar->_is_nil() ) {
+        SMESH::SMESH_Mesh_var aMeshVar =  aSubMeshVar->GetFather();
+        if ( !aMeshVar->_is_nil() ) {
+          _PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshVar );
+          GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( aMeshSO );
+          if ( !aGeomVar->_is_nil() )
+            aMeshEntry = SMESH::toQStr( aGeomVar->GetStudyEntry() );
+        }
+      }
+    }
+  }
+
+  theCreator->setShapeEntry( aGeomEntry );
+  if ( aMeshEntry != "" )
+    theCreator->setMainShapeEntry( aMeshEntry );
+}
+
+//================================================================================
+/*!
  * \Brief Returns tab dimention
   * \param tab - the tab in the dlg
   * \param dlg - my dialogue
@@ -1138,64 +1205,17 @@ void SMESHGUI_MeshOp::createHypothesis(const int theDim,
     SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(theTypeName);
 
     // Create hypothesis
-    if (aCreator) {
+    if (aCreator)
+    {
       // Get parameters appropriate to initialize a new hypothesis
       SMESH::SMESH_Hypothesis_var initParamHyp =
         getInitParamsHypothesis(theTypeName, aData->ServerLibName);
 
       removeCustomFilters(); // Issue 0020170
 
-      // Get Entry of the Geom object
-      QString aGeomEntry = "";
-      QString aMeshEntry = "";
-      QString anObjEntry = "";
-      aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
-      aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
-      anObjEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Obj );
+      // set shapes, of mesh and sub-mesh if any
+      initHypCreator( aCreator );
 
-      if ( myToCreate && myIsMesh )
-        aMeshEntry = aGeomEntry;
-
-      if ( aMeshEntry != aGeomEntry ) { // Get Geom object from Mesh of a sub-mesh being edited
-        _PTR(SObject) pObj = studyDS()->FindObjectID( aMeshEntry.toLatin1().data() );
-        GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj );
-        aMeshEntry = ( aGeomVar->_is_nil() ) ? "" : aMeshEntry = aGeomVar->GetStudyEntry();
-      }
-
-      if ( aMeshEntry == "" && aGeomEntry == "" ) { // get geom of an object being edited
-        _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
-        bool isMesh;
-        GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj, &isMesh );
-        if ( !aGeomVar->_is_nil() )
-        {
-          aGeomEntry = aGeomVar->GetStudyEntry();
-          if ( isMesh )
-            aMeshEntry = aGeomEntry;
-        }
-      }
-
-      if ( anObjEntry != "" && aGeomEntry != "" && aMeshEntry == "" ) {
-        // take geometry from submesh being created
-        _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
-        if ( pObj ) {
-          // if current object is sub-mesh
-          SMESH::SMESH_subMesh_var aSubMeshVar =
-            SMESH::SMESH_subMesh::_narrow( _CAST( SObject,pObj )->GetObject() );
-          if ( !aSubMeshVar->_is_nil() ) {
-            SMESH::SMESH_Mesh_var aMeshVar =  aSubMeshVar->GetFather();
-            if ( !aMeshVar->_is_nil() ) {
-              _PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshVar );
-              GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( aMeshSO );
-              if ( !aGeomVar->_is_nil() )
-                aMeshEntry = aGeomVar->GetStudyEntry();
-            }
-          }
-        }
-      }
-
-      aCreator->setShapeEntry( aGeomEntry );
-      if ( aMeshEntry != "" )
-        aCreator->setMainShapeEntry( aMeshEntry );
       myDlg->setEnabled( false );
       aCreator->create(initParamHyp, aHypName, myDlg, this, SLOT( onHypoCreated( int ) ) );
       dialog = true;
@@ -1270,67 +1290,22 @@ void SMESHGUI_MeshOp::onEditHyp( const int theHypType, const int theIndex )
   if ( aHyp->_is_nil() )
     return;
 
-  SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHyp->GetName());
+  SMESHGUI_GenericHypothesisCreator* aCreator =
+    SMESH::GetHypothesisCreator( SMESH::toQStr( aHyp->GetName() ));
   if ( aCreator )
   {
-    // Get initial parameters
+    // set initial parameters
     SMESH::SMESH_Hypothesis_var initParamHyp =
-      getInitParamsHypothesis( aHyp->GetName(), aHyp->GetLibName());
+      getInitParamsHypothesis( SMESH::toQStr( aHyp->GetName() ),
+                               SMESH::toQStr( aHyp->GetLibName() ));
     aCreator->setInitParamsHypothesis( initParamHyp );
 
-    // Get Entry of the Geom object
-    QString aGeomEntry = "";
-    QString aMeshEntry = "";
-    QString anObjEntry = "";
-    aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
-    aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
-    anObjEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Obj );
+    // set shapes, of mesh and sub-mesh if any
+    initHypCreator( aCreator );
 
-    if ( myToCreate && myIsMesh )
-      aMeshEntry = aGeomEntry;
-
-    if ( aMeshEntry != aGeomEntry ) { // Get Geom object from Mesh of a sub-mesh being edited
-      _PTR(SObject) pObj = studyDS()->FindObjectID( aMeshEntry.toLatin1().data() );
-      GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj );
-      aMeshEntry = ( aGeomVar->_is_nil() ) ? "" : aMeshEntry = aGeomVar->GetStudyEntry();
-    }
-
-    if ( aMeshEntry == "" && aGeomEntry == "" ) { // get geom of an object being edited
-      _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
-      bool isMesh;
-      GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj, &isMesh );
-      if ( !aGeomVar->_is_nil() )
-      {
-        aGeomEntry = aGeomVar->GetStudyEntry();
-        if ( isMesh )
-          aMeshEntry = aGeomEntry;
-      }
-    }
-
-    if ( anObjEntry != "" && aGeomEntry != "" && aMeshEntry == "" ) {
-      // take geometry from submesh being created
-      _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
-      if ( pObj ) {
-        // if current object is sub-mesh
-        SMESH::SMESH_subMesh_var aSubMeshVar =
-          SMESH::SMESH_subMesh::_narrow( _CAST( SObject,pObj )->GetObject() );
-        if ( !aSubMeshVar->_is_nil() ) {
-          SMESH::SMESH_Mesh_var aMeshVar =  aSubMeshVar->GetFather();
-          if ( !aMeshVar->_is_nil() ) {
-            _PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshVar );
-            GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( aMeshSO );
-            if ( !aGeomVar->_is_nil() )
-              aMeshEntry = aGeomVar->GetStudyEntry();
-          }
-        }
-      }
-    }
-
-    aCreator->setShapeEntry( aGeomEntry );
-    if ( aMeshEntry != "" )
-      aCreator->setMainShapeEntry( aMeshEntry );
     removeCustomFilters(); // Issue 0020170
     myDlg->setEnabled( false );
+
     aCreator->edit( aHyp.in(), aHypItem.second, dlg(), this, SLOT( onHypoEdited( int ) ) );
   }
 }
@@ -1521,10 +1496,10 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
       if ( !myToCreate && !curAlgo && !curHyp->_is_nil() ) { // edition, algo not selected
         // try to find algo by selected hypothesis in order to keep it selected
         bool algoDeselectedByUser = ( theDim < 0 && aDim == dim );
-        CORBA::String_var curHypType = curHyp->GetName();
+        QString curHypType = SMESH::toQStr( curHyp->GetName() );
         if ( !algoDeselectedByUser &&
-            myObjHyps[ dim ][ type ].count() > 0 &&
-            !strcmp( curHypType, myObjHyps[ dim ][ type ].first().first->GetName()) )
+             myObjHyps[ dim ][ type ].count() > 0 &&
+             curHypType == SMESH::toQStr( myObjHyps[ dim ][ type ].first().first->GetName()) )
         {
           HypothesisData* hypData = SMESH::GetHypothesisData( curHyp->GetName() );
           for (int i = 0; i < myAvailableHypData[ dim ][ Algo ].count(); ++i) {
@@ -1994,8 +1969,7 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
   for ( ; anIter != aHypVarList.end(); anIter++)
   {
     SMESH::SMESH_Hypothesis_var aHypVar = (*anIter).first;
-    CORBA::String_var aName = aHypVar->GetName();
-    if ( !aHypVar->_is_nil() && !strcmp(aHypName.toLatin1().data(), aName) )
+    if ( !aHypVar->_is_nil() && aHypName == SMESH::toQStr( aHypVar->GetName() ))
     {
       anAlgoVar = aHypVar;
       break;
@@ -2038,8 +2012,7 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
     for ( anIter = aNewHypVarList.begin(); anIter != aNewHypVarList.end(); ++anIter )
     {
       SMESH::SMESH_Hypothesis_var aHypVar = (*anIter).first;
-      CORBA::String_var aName = aHypVar->GetName();
-      if ( !aHypVar->_is_nil() && !strcmp(aHypName.toLatin1().data(), aName) )
+      if ( !aHypVar->_is_nil() && aHypName == SMESH::toQStr( aHypVar->GetName() ))
       {
         anAlgoVar = aHypVar;
         break;
@@ -2430,7 +2403,7 @@ void SMESHGUI_MeshOp::onPublishShapeByMeshDlg(SUIT_Operation* op)
     GEOM::GEOM_Object_var aGeomVar = myShapeByMeshOp->GetShape();
     if ( !aGeomVar->_is_nil() )
     {
-      QString ID = aGeomVar->GetStudyEntry();
+      QString ID = SMESH::toQStr( aGeomVar->GetStudyEntry() );
       if ( _PTR(SObject) aGeomSO = studyDS()->FindObjectID( ID.toLatin1().data() )) {
         selectObject( aGeomSO );
         selectionDone();

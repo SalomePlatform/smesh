@@ -27,6 +27,7 @@
 //
 #include "SMESHGUI_GEOMGenUtils.h"
 #include "SMESHGUI_Utils.h"
+#include "SMESHGUI.h"
 
 // SALOME GEOM includes
 #include <GeometryGUI.h>
@@ -38,6 +39,8 @@
 // IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_CLIENT_HEADER(SMESH_Mesh)
+
+#include <QString>
 
 namespace SMESH
 {
@@ -156,4 +159,86 @@ namespace SMESH
     GEOM::GEOM_Object_wrap subShape = aShapesOp->GetSubShape (theMainShape,theID);
     return subShape._retn();
   }
+
+  //================================================================================
+  /*!
+   * \brief Return entries of sub-mesh geometry and mesh geometry by an IO of assigned
+   *        hypothesis
+   *  \param [in] hypIO - IO of hyp which is a reference SO to a hyp SO
+   *  \param [out] subGeom - found entry of a sub-mesh if any
+   *  \param [out] meshGeom - found entry of a mesh
+   *  \return bool - \c true if any geometry has been found
+   */
+  //================================================================================
+
+  bool GetGeomEntries( Handle(SALOME_InteractiveObject)& hypIO,
+                       QString&                          subGeom,
+                       QString&                          meshGeom )
+  {
+    subGeom.clear();
+    meshGeom.clear();
+    if ( hypIO.IsNull() ) return false;
+
+    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+    if ( !aStudy ) return false;
+
+    _PTR(SObject) hypSO = aStudy->FindObjectID( hypIO->getEntry() );
+    if ( !hypSO ) return false;
+
+    // Depth() is a number of fathers
+    if ( hypSO->Depth() == 4 ) // hypSO is not a reference to a hyp but a hyp it-self
+    {
+      SMESH::SMESH_Hypothesis_var hyp =
+        SMESH::SObjectToInterface< SMESH::SMESH_Hypothesis >( hypSO );
+      SMESH::SMESH_Mesh_var mesh;
+      GEOM::GEOM_Object_var geom;
+      SMESH::SMESH_Gen_var  gen = SMESHGUI::GetSMESHGUI()->GetSMESHGen();
+      if ( !gen || !gen->GetSoleSubMeshUsingHyp( hyp, mesh.out(), geom.out() ))
+        return false;
+
+      subGeom = toQStr( geom->GetStudyEntry() );
+
+      geom  = mesh->GetShapeToMesh();
+      if ( geom->_is_nil() )
+        return false;
+      meshGeom = toQStr( geom->GetStudyEntry() );
+    }
+    else
+    {
+      _PTR(SObject) appliedSO = hypSO->GetFather(); // "Applied hypotheses" folder
+      if ( !appliedSO ) return false;
+
+      _PTR(SObject) subOrMeshSO = appliedSO->GetFather(); // mesh or sub-mesh SO
+      if ( !subOrMeshSO ) return false;
+
+      bool isMesh;
+      GEOM::GEOM_Object_var geom = GetShapeOnMeshOrSubMesh( subOrMeshSO, &isMesh );
+      if ( geom->_is_nil() )
+        return false;
+
+      if ( isMesh )
+      {
+        meshGeom = toQStr( geom->GetStudyEntry() );
+        return !meshGeom.isEmpty();
+      }
+
+      subGeom = toQStr( geom->GetStudyEntry() );
+
+      _PTR(SObject) subFolderSO = subOrMeshSO->GetFather(); // "SubMeshes on ..." folder
+      if ( !subFolderSO ) return false;
+
+      _PTR(SObject) meshSO = subFolderSO->GetFather(); // mesh SO
+      if ( !meshSO ) return false;
+
+      geom = GetShapeOnMeshOrSubMesh( meshSO );
+      if ( geom->_is_nil() )
+        return false;
+
+      meshGeom = toQStr( geom->GetStudyEntry() );
+    }
+
+    return !meshGeom.isEmpty() && !subGeom.isEmpty();
+  }
+
+
 } // end of namespace SMESH

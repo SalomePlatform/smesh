@@ -174,6 +174,17 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
 
     /*!
+     * Returns \c True if a hypothesis is assigned to a sole sub-mesh in a current Study
+     *  \param [in] theHyp - the hypothesis of interest
+     *  \param [out] theMesh - the sole mesh using \a theHyp
+     *  \param [out] theShape - the sole geometry \a theHyp is assigned to
+     *  \return boolean - \c True if \a theMesh and \a theShape are sole using \a theHyp
+     */
+    boolean GetSoleSubMeshUsingHyp( in SMESH_Hypothesis   theHyp,
+                                    out SMESH_Mesh        theMesh,
+                                    out GEOM::GEOM_Object theShape);
+
+    /*!
      * Sets number of segments per diagonal of boundary box of geometry by which
      * default segment length of appropriate 1D hypotheses is defined
      */
@@ -407,18 +418,22 @@ module SMESH
 
     /*!
      * \brief Moves objects to the specified position
+     *  \param what objects being moved
+     *  \param where parent object where objects are moved to
+     *  \param row position in the parent object's children list at which objects are moved
      *
      * This function is used in the drag-n-drop functionality.
-     *
-     * \param what objects being moved
-     * \param where parent object where objects are moved to
-     * \param row position in the parent object's children list at which objects are moved
      */
-    void Move( in sobject_list what, 
-	       in SALOMEDS::SObject where, 
+    void Move( in sobject_list what,
+	       in SALOMEDS::SObject where,
 	       in long row );
     /*!
-     * Return true if algorithm can be applied
+     * Returns true if algorithm can be used to mesh a given geometry
+     *  \param theAlgoType - the algorithm type
+     *  \param theLibName - a name of the Plug-in library implementing the algorithm
+     *  \param theShapeObject - the geometry to mesh
+     *  \param toCheckAll - if \c True, returns \c True if all shapes are meshable,
+     *         else, returns \c True if at least one shape is meshable
      */
     boolean IsApplicable( in string             theAlgoType,
                           in string             theLibName,

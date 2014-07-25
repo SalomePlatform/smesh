@@ -205,6 +205,13 @@ public:
                                                             CORBA::Boolean        byMesh)
     throw ( SALOME::SALOME_Exception );
 
+  /*
+   * Returns True if a hypothesis is assigned to a sole sub-mesh in a current Study
+   */
+  CORBA::Boolean GetSoleSubMeshUsingHyp( SMESH::SMESH_Hypothesis_ptr theHyp,
+                                         SMESH::SMESH_Mesh_out       theMesh,
+                                         GEOM::GEOM_Object_out       theShape);
+
   // Preferences
   // ------------
   /*!
