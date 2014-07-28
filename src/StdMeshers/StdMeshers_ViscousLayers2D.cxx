@@ -1571,8 +1571,45 @@ bool _ViscousBuilder2D::shrink()
           myEdgeSM->SetUVPtStructVec( nodeDataVec );
 
           existingNodesFound = true;
+          break;
         }
       } // loop on FACEs sharing E
+
+    // Commented as a case with a seam EDGE (issue 0052461) is hard to support
+    // because SMESH_ProxyMesh can't hold different sub-meshes for two
+    // 2D representations of the seam. But such a case is not a real practice one.
+    // Check if L is an already shrinked seam
+    // if ( adjFace.IsNull() && _helper.IsRealSeam( edgeID ))
+    // {
+    //   for ( int iL2 = iL1-1; iL2 > -1; --iL2 )
+    //   {
+    //     _PolyLine& L2 = _polyLineVec[ iL2 ];
+    //     if ( edgeID == L2._wire->EdgeID( L2._edgeInd ))
+    //     {
+    //       // copy layer nodes
+    //       const int seamPar = _helper.GetPeriodicIndex();
+    //       vector<gp_XY>& uvVec = L._lEdges.front()._uvRefined;
+    //       if ( isShrinkableL )
+    //       {
+    //         L._leftNodes = L2._rightNodes;
+    //         uvVec = L2._lEdges.back()._uvRefined;
+    //       }
+    //       if ( isShrinkableR )
+    //       {
+    //         L._rightNodes = L2._leftNodes;
+    //         uvVec = L2._lEdges.front()._uvRefined;
+    //       }
+    //       for ( size_t i = 0; i < uvVec.size(); ++i )
+    //       {
+    //         gp_XY & uv = uvVec[i];
+    //         uv.SetCoord( seamPar, _helper.GetOtherParam( uv.Coord( seamPar )));
+    //       }
+
+    //       existingNodesFound = true;
+    //       break;
+    //     }
+    //   }
+    // }
 
     if ( existingNodesFound )
       continue; // nothing more to do in this case
@@ -1912,7 +1949,7 @@ bool _ViscousBuilder2D::toShrinkForAdjacent( const TopoDS_Face&   adjFace,
                                              const TopoDS_Edge&   E,
                                              const TopoDS_Vertex& V)
 {
-  if ( _noShrinkVert.count( getMeshDS()->ShapeToIndex( V )))
+  if ( _noShrinkVert.count( getMeshDS()->ShapeToIndex( V )) || adjFace.IsNull() )
     return false;
 
   TopoDS_Shape hypAssignedTo;

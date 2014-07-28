@@ -275,7 +275,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh&         aMesh,
                "two opposite sides should have same number of segments, "
                "but actual number of segments is different on all sides. "
                "'Standard' transion has been used.");
-      else
+      else if ( ! ( n1 == n3 && n2 == n4 ))
         error( COMPERR_WARNING,
                "To use 'Reduced' transition, "
                "two opposite sides should have an even difference in number of segments. "
