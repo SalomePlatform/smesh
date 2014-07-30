@@ -984,6 +984,8 @@ SMESH_subMesh *SMESH_Mesh::GetSubMesh(const TopoDS_Shape & aSubShape)
   throw(SALOME_Exception)
 {
   int index = _myMeshDS->ShapeToIndex(aSubShape);
+  if ( !index && aSubShape.IsNull() )
+    return 0;
 
   // for submeshes on GEOM Group
   if (( !index || index > _nbSubShapes ) && aSubShape.ShapeType() == TopAbs_COMPOUND ) {

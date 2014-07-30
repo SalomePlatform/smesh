@@ -53,6 +53,7 @@
 #include <SUIT_ResourceMgr.h>
 #include <SUIT_Session.h>
 #include <SUIT_MessageBox.h>
+#include <SUIT_OverrideCursor.h>
 
 #include <SalomeApp_Tools.h>
 #include <SalomeApp_Application.h>
@@ -923,6 +924,8 @@ bool SMESHGUI_GroupDlg::onApply()
   SMESH::SMESH_GroupBase_var resultGroup;
   bool isCreation, isConversion = false;
     
+  SUIT_OverrideCursor wc;
+
   if (myGrpTypeId == 0)  // standalone
   {
     if (!mySelectAll->isChecked() && !myElements->count() && myAllowElemsModif->isChecked())

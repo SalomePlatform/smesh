@@ -267,6 +267,7 @@ SMESH::Histogram* NumericalFunctor_i::GetLocalHistogram(CORBA::Short            
        SMESH::DownCast< SMESH::Filter_i* >( object ))
   {
     elemIt = SMESH_Mesh_i::GetElements( object, GetElementType() );
+    if ( !elemIt ) return histogram._retn();
   }
   else
   {
