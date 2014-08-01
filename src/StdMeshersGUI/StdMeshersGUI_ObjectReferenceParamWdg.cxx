@@ -210,8 +210,8 @@ void StdMeshersGUI_ObjectReferenceParamWdg::SetObject(CORBA::Object_ptr obj)
     myObjNameLineEdit->setStyleSheet("");
     myObjects.push_back( CORBA::Object::_duplicate( obj ));
     myParamValue = sobj->GetID().c_str();
-    emit contentModified();
   }
+  emit contentModified();
 }
 
 //================================================================================
