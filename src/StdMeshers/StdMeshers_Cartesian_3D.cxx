@@ -3021,10 +3021,10 @@ namespace
     list< int >         nbEdges;
     int nbW = SMESH_Block::GetOrderedEdges (face, edges, nbEdges);
     if ( nbW > 1 ) {
-      // select a WIRE
+      // select a WIRE - remove EDGEs of irrelevant WIREs from edges
       list< TopoDS_Edge >::iterator e = edges.begin(), eEnd = e;
       list< int >::iterator nE = nbEdges.begin();
-      for ( ; nbW ; ++nE, --nbW )
+      for ( ; nbW > 0; ++nE, --nbW )
       {
         std::advance( eEnd, *nE );
         for ( ; e != eEnd; ++e )
@@ -3037,13 +3037,14 @@ namespace
                 ( std::find( &nShapeIds[0], nShapeIdsEnd, id ) != nShapeIdsEnd ))
             {
               edges.erase( eEnd, edges.end() ); // remove rest wires
-              e = eEnd;
+              e = eEnd = edges.end();
+              --e;
               nbW = 0;
               break;
             }
           }
         if ( nbW > 0 )
-          edges.erase( edges.begin(), eEnd ); // remove a current wire
+          edges.erase( edges.begin(), eEnd ); // remove a current irrelevant wire
       }
     }
     // rotate edges to have the first one at least partially out of the hexa
