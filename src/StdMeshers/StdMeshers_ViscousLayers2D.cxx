@@ -1023,7 +1023,7 @@ void _ViscousBuilder2D::adjustCommonEdge( _PolyLine& LL, _PolyLine& LR )
       // Remove _LayerEdge's intersecting the normAvg to avoid collisions
       // during inflate().
       //
-      // find max length of the VERTEX based _LayerEdge whose direction is normAvg
+      // find max length of the VERTEX-based _LayerEdge whose direction is normAvg
       double maxLen2D       = _thickness * EL._len2dTo3dRatio;
       const gp_XY& pCommOut = ER._uvOut;
       gp_XY        pCommIn  = pCommOut + normAvg * maxLen2D;
@@ -2010,89 +2010,64 @@ bool _ViscousBuilder2D::refine()
     }
 
     // limit length of neighbour _LayerEdge's to avoid sharp change of layers thickness
+
     vector< double > segLen( L._lEdges.size() );
     segLen[0] = 0.0;
-    for ( size_t i = 1; i < segLen.size(); ++i )
+
+    // check if length modification is usefull: look for _LayerEdge's
+    // with length limited due to collisions
+    bool lenLimited = false;
+    for ( size_t iLE = 1; ( iLE < L._lEdges.size()-1 && !lenLimited ); ++iLE )
+      lenLimited = L._lEdges[ iLE ]._isBlocked;
+
+    if ( lenLimited )
     {
-      // accumulate length of segments
-      double sLen = (L._lEdges[i-1]._uvOut - L._lEdges[i]._uvOut ).Modulus();
-      segLen[i] = segLen[i-1] + sLen;
-    }
-    for ( int isR = 0; isR < 2; ++isR )
-    {
-      size_t iF = 0, iL = L._lEdges.size()-1;
-      size_t *i = isR ? &iL : &iF;
-      _LayerEdge* prevLE = & L._lEdges[ *i ];
-      double weight = 0;
-      for ( ++iF, --iL; iF < L._lEdges.size()-1; ++iF, --iL )
+      for ( size_t i = 1; i < segLen.size(); ++i )
       {
-        _LayerEdge& LE = L._lEdges[*i];
-        if ( prevLE->_length2D > 0 )
+        // accumulate length of segments
+        double sLen = (L._lEdges[i-1]._uvOut - L._lEdges[i]._uvOut ).Modulus();
+        segLen[i] = segLen[i-1] + sLen;
+      }
+      const double totSegLen = segLen.back();
+      // normalize the accumulated length
+      for ( size_t iS = 1; iS < segLen.size(); ++iS )
+        segLen[iS] /= totSegLen;
+
+      for ( int isR = 0; isR < 2; ++isR )
+      {
+        size_t iF = 0, iL = L._lEdges.size()-1;
+        size_t *i = isR ? &iL : &iF;
+        _LayerEdge* prevLE = & L._lEdges[ *i ];
+        double weight = 0;
+        for ( ++iF, --iL; iF < L._lEdges.size()-1; ++iF, --iL )
         {
-          gp_XY tangent ( LE._normal2D.Y(), -LE._normal2D.X() );
-          weight += Abs( tangent * ( prevLE->_uvIn - LE._uvIn )) / segLen.back();
-          // gp_XY prevTang( LE._uvOut - prevLE->_uvOut );
-          // gp_XY prevNorm( -prevTang.Y(), prevTang.X() );
-          gp_XY prevNorm = LE._normal2D;
-          double prevProj = prevNorm * ( prevLE->_uvIn - prevLE->_uvOut );
-          if ( prevProj > 0 ) {
-            prevProj /= prevNorm.Modulus();
-            if ( LE._length2D < prevProj )
-              weight += 0.75 * ( 1 - weight ); // length decrease is more preferable
-            LE._length2D  = weight * LE._length2D + ( 1 - weight ) * prevProj;
-            LE._uvIn = LE._uvOut + LE._normal2D * LE._length2D;
+          _LayerEdge& LE = L._lEdges[*i];
+          if ( prevLE->_length2D > 0 )
+          {
+            gp_XY tangent ( LE._normal2D.Y(), -LE._normal2D.X() );
+            weight += Abs( tangent * ( prevLE->_uvIn - LE._uvIn )) / totSegLen;
+            // gp_XY prevTang( LE._uvOut - prevLE->_uvOut );
+            // gp_XY prevNorm( -prevTang.Y(), prevTang.X() );
+            gp_XY prevNorm = LE._normal2D;
+            double prevProj = prevNorm * ( prevLE->_uvIn - prevLE->_uvOut );
+            if ( prevProj > 0 ) {
+              prevProj /= prevNorm.Modulus();
+              if ( LE._length2D < prevProj )
+                weight += 0.75 * ( 1 - weight ); // length decrease is more preferable
+              LE._length2D  = weight * LE._length2D + ( 1 - weight ) * prevProj;
+              LE._uvIn = LE._uvOut + LE._normal2D * LE._length2D;
+            }
           }
+          prevLE = & LE;
         }
-        prevLE = & LE;
       }
     }
     // DEBUG:  to see _uvRefined. cout can be redirected to hide NETGEN output
     // cerr << "import smesh" << endl << "mesh = smesh.Mesh()"<< endl;
 
-    // calculate intermediate UV on _LayerEdge's ( _LayerEdge::_uvRefined )   
-    size_t iLE = 0, nbLE = L._lEdges.size();
-    if ( ! L._lEdges[0]._uvRefined.empty() )     ++iLE;
-    if ( ! L._lEdges.back()._uvRefined.empty() ) --nbLE;
-    for ( ; iLE < nbLE; ++iLE )
-    {
-      _LayerEdge& LE = L._lEdges[iLE];
-      if ( fabs( LE._length2D - prevLen2D ) > LE._length2D / 100. )
-      {
-        calcLayersHeight( LE._length2D, layersHeight );
-        prevLen2D = LE._length2D;
-      }
-      for ( size_t i = 0; i < layersHeight.size(); ++i )
-        LE._uvRefined.push_back( LE._uvOut + LE._normal2D * layersHeight[i] );
-
-      // DEBUG:  to see _uvRefined
-      // for ( size_t i = 0; i < LE._uvRefined.size(); ++i )
-      // {
-      //   gp_XY uv = LE._uvRefined[i];
-      //   gp_Pnt p = _surface->Value( uv.X(), uv.Y() );
-      //   cerr << "mesh.AddNode( " << p.X() << ", "  << p.Y() << ", "  << p.Z() << " )" << endl;
-      // }
-    }
-
-    // nodes to create 1 layer of faces
-    vector< const SMDS_MeshNode* > outerNodes( L._lastPntInd - L._firstPntInd + 1 );
-    vector< const SMDS_MeshNode* > innerNodes( L._lastPntInd - L._firstPntInd + 1 );
-
-    // initialize outerNodes by nodes of the L._wire
     const vector<UVPtStruct>& points = L._wire->GetUVPtStruct();
-    for ( int i = L._firstPntInd; i <= L._lastPntInd; ++i )
-      outerNodes[ i-L._firstPntInd ] = points[i].node;
 
-    // compute normalized [0;1] node parameters of outerNodes
-    vector< double > normPar( L._lastPntInd - L._firstPntInd + 1 );
-    const double
-      normF    = L._wire->FirstParameter( L._edgeInd ),
-      normL    = L._wire->LastParameter ( L._edgeInd ),
-      normDist = normL - normF;
-    for ( int i = L._firstPntInd; i <= L._lastPntInd; ++i )
-      normPar[ i - L._firstPntInd ] = ( points[i].normParam - normF ) / normDist;
-
-    // Create layers of faces
-    
+    // analyse extremities of the _PolyLine to find existing nodes
     const TopoDS_Vertex&  V1 = L._wire->FirstVertex( L._edgeInd );
     const TopoDS_Vertex&  V2 = L._wire->LastVertex ( L._edgeInd );
     const int           v1ID = getMeshDS()->ShapeToIndex( V1 );
@@ -2104,28 +2079,81 @@ bool _ViscousBuilder2D::refine()
     bool hasRightNode    = ( !L._rightLine->_leftNodes.empty() && rightEdgeShared );
     bool hasOwnLeftNode  = ( !L._leftNodes.empty() );
     bool hasOwnRightNode = ( !L._rightNodes.empty() );
-    bool isClosedEdge    = ( outerNodes.front() == outerNodes.back() );
-    size_t iS,
+    bool isClosedEdge    = ( points[ L._firstPntInd ].node == points[ L._lastPntInd ].node );
+    const size_t
+      nbN = L._lastPntInd - L._firstPntInd + 1,
       iN0 = ( hasLeftNode || hasOwnLeftNode || isClosedEdge || !isShrinkableL ),
-      nbN = innerNodes.size() - ( hasRightNode || hasOwnRightNode || !isShrinkableR);
-    L._leftNodes .reserve( _hyp->GetNumberLayers() );
-    L._rightNodes.reserve( _hyp->GetNumberLayers() );
-    int cur = 0, prev = -1; // to take into account orientation of _face
-    if ( isReverse ) std::swap( cur, prev );
-    for ( int iF = 0; iF < _hyp->GetNumberLayers(); ++iF ) // loop on layers of faces
+      iNE = nbN - ( hasRightNode || hasOwnRightNode || !isShrinkableR );
+
+    // update _uvIn of end _LayerEdge's by existing nodes
+    const SMDS_MeshNode *nL = 0, *nR = 0;
+    if ( hasOwnLeftNode )    nL = L._leftNodes.back();
+    else if ( hasLeftNode )  nL = L._leftLine->_rightNodes.back();
+    if ( hasOwnRightNode )   nR = L._rightNodes.back();
+    else if ( hasRightNode ) nR = L._rightLine->_leftNodes.back();
+    if ( nL )
+      L._lEdges[0]._uvIn = _helper.GetNodeUV( _face, nL, points[ L._firstPntInd + 1 ].node );
+    if ( nR )
+      L._lEdges.back()._uvIn = _helper.GetNodeUV( _face, nR, points[ L._lastPntInd - 1 ].node );
+
+    // compute normalized [0;1] node parameters of nodes on a _PolyLine
+    vector< double > normPar( nbN );
+    const double
+      normF    = L._wire->FirstParameter( L._edgeInd ),
+      normL    = L._wire->LastParameter ( L._edgeInd ),
+      normDist = normL - normF;
+    for ( int i = L._firstPntInd; i <= L._lastPntInd; ++i )
+      normPar[ i - L._firstPntInd ] = ( points[i].normParam - normF ) / normDist;
+
+    // Calculate UV of most inner nodes
+
+    vector< gp_XY > innerUV( nbN );
+
+    // check if innerUV should be interpolated between _LayerEdge::_uvIn's
+    const size_t nbLE = L._lEdges.size();
+    bool needInterpol = ( nbN != nbLE );
+    if ( !needInterpol )
     {
-      // get accumulated length of intermediate segments
+      // more check: compare length of inner and outer end segments
+      double lenIn, lenOut;
+      for ( int isR = 0; isR < 2 && !needInterpol; ++isR )
+      {
+        const _Segment& segIn = isR ? L._segments.back() : L._segments[0];
+        const gp_XY&   uvIn1  = segIn.p1();
+        const gp_XY&   uvIn2  = segIn.p2();
+        const gp_XY&   uvOut1 = L._lEdges[ isR ? nbLE-1 : 0 ]._uvOut;
+        const gp_XY&   uvOut2 = L._lEdges[ isR ? nbLE-2 : 1 ]._uvOut;
+        if ( _is2DIsotropic )
+        {
+          lenIn  = ( uvIn1  - uvIn2  ).Modulus();
+          lenOut = ( uvOut1 - uvOut2 ).Modulus();
+        }
+        else
+        {
+          lenIn  = _surface->Value( uvIn1.X(), uvIn1.Y() )
+            .Distance( _surface->Value( uvIn2.X(), uvIn2.Y() ));
+          lenOut  = _surface->Value( uvOut1.X(), uvOut1.Y() )
+            .Distance( _surface->Value( uvOut2.X(), uvOut2.Y() ));
+        }
+        needInterpol = ( lenIn < 0.66 * lenOut );
+      }
+    }
+
+    if ( needInterpol )
+    {
+      // compute normalized accumulated length of inner segments
+      size_t iS;
       if ( _is2DIsotropic )
         for ( iS = 1; iS < segLen.size(); ++iS )
         {
-          double sLen = (L._lEdges[iS-1]._uvRefined[iF] - L._lEdges[iS]._uvRefined[iF] ).Modulus();
+          double sLen = ( L._lEdges[iS-1]._uvIn - L._lEdges[iS]._uvIn ).Modulus();
           segLen[iS] = segLen[iS-1] + sLen;
         }
       else
         for ( iS = 1; iS < segLen.size(); ++iS )
         {
-          const gp_XY& uv1 = L._lEdges[iS-1]._uvRefined[iF];
-          const gp_XY& uv2 = L._lEdges[iS  ]._uvRefined[iF];
+          const gp_XY& uv1 = L._lEdges[iS-1]._uvIn;
+          const gp_XY& uv2 = L._lEdges[iS  ]._uvIn;
           gp_Pnt p1 = _surface->Value( uv1.X(), uv1.Y() );
           gp_Pnt p2 = _surface->Value( uv2.X(), uv2.Y() );
           double sLen = p1.Distance( p2 );
@@ -2135,15 +2163,48 @@ bool _ViscousBuilder2D::refine()
       for ( iS = 1; iS < segLen.size(); ++iS )
         segLen[iS] /= segLen.back();
 
-      // create innerNodes of a current layer
+      // calculate UV of most inner nodes according to the normalized node parameters
       iS = 0;
-      for ( size_t i = iN0; i < nbN; ++i )
+      for ( size_t i = 0; i < innerUV.size(); ++i )
       {
         while ( normPar[i] > segLen[iS+1] )
           ++iS;
         double r = ( normPar[i] - segLen[iS] ) / ( segLen[iS+1] - segLen[iS] );
-        gp_XY uv = r * L._lEdges[iS+1]._uvRefined[iF] + (1-r) * L._lEdges[iS]._uvRefined[iF];
-        gp_Pnt p = _surface->Value( uv.X(), uv.Y() );
+        innerUV[ i ] = r * L._lEdges[iS+1]._uvIn + (1-r) * L._lEdges[iS]._uvIn;
+      }
+    }
+    else // ! needInterpol
+    {
+      for ( size_t i = 0; i < nbLE; ++i )
+        innerUV[ i ] = L._lEdges[i]._uvIn;
+    }
+
+    // normalized height of layers
+    calcLayersHeight( 1., layersHeight );
+
+    // Create layers of faces
+
+    // nodes to create 1 layer of faces
+    vector< const SMDS_MeshNode* > outerNodes( nbN );
+    vector< const SMDS_MeshNode* > innerNodes( nbN );
+
+    // initialize outerNodes by nodes of the L._wire
+    for ( int i = L._firstPntInd; i <= L._lastPntInd; ++i )
+      outerNodes[ i-L._firstPntInd ] = points[i].node;
+
+    L._leftNodes .reserve( _hyp->GetNumberLayers() );
+    L._rightNodes.reserve( _hyp->GetNumberLayers() );
+    int cur = 0, prev = -1; // to take into account orientation of _face
+    if ( isReverse ) std::swap( cur, prev );
+    for ( int iF = 0; iF < _hyp->GetNumberLayers(); ++iF ) // loop on layers of faces
+    {
+      // create innerNodes of a current layer
+      for ( size_t i = iN0; i < iNE; ++i )
+      {
+        gp_XY uvOut = points[ L._firstPntInd + i ].UV();
+        gp_XY& uvIn = innerUV[ i ];
+        gp_XY    uv = layersHeight[ iF ] * uvIn + ( 1.-layersHeight[ iF ]) * uvOut;
+        gp_Pnt    p = _surface->Value( uv.X(), uv.Y() );
         innerNodes[i] = _helper.AddNode( p.X(), p.Y(), p.Z(), /*id=*/0, uv.X(), uv.Y() );
       }
       // use nodes created for adjacent _PolyLine's
@@ -2165,6 +2226,7 @@ bool _ViscousBuilder2D::refine()
 
       outerNodes.swap( innerNodes );
     }
+
     // faces between not shared _LayerEdge's (at concave VERTEX)
     for ( int isR = 0; isR < 2; ++isR )
     {
