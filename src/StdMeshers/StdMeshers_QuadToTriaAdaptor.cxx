@@ -25,7 +25,6 @@
 #include "StdMeshers_QuadToTriaAdaptor.hxx"
 
 #include "SMDS_SetIterator.hxx"
-
 #include "SMESHDS_GroupBase.hxx"
 #include "SMESH_Algo.hxx"
 #include "SMESH_Group.hxx"
@@ -41,6 +40,7 @@
 #include <TopoDS.hxx>
 #include <gp_Lin.hxx>
 #include <gp_Pln.hxx>
+
 #include "utilities.h"
 
 #include <string>
@@ -119,7 +119,7 @@ namespace
     bool tooClose = ( angle < 15. * M_PI / 180. );
 
     // Check if pyramids collide
-    if ( !tooClose && baI * baJ > 0 )
+    if ( !tooClose && ( baI * baJ > 0 ) && ( nI * nJ > 0 ))
     {
       // find out if nI points outside of PrmI or inside
       int dInd = baseNodesIndI[1] - baseNodesIndI[0];
@@ -1290,7 +1290,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh&                   
             nodesToMove.insert( aNode1 );
             nodesToMove.insert( aNode2 );
           }
-          // fix intersections that could appear after apex movement
+          // fix intersections that can appear after apex movement
           MergeAdjacent( PrmI, nodesToMove );
           MergeAdjacent( PrmJ, nodesToMove );
 
