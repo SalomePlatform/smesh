@@ -1155,9 +1155,10 @@ bool SMESHGUI_GroupDlg::onApply()
 
       if ( aMeshGroupSO )
       {
-        if(SMESH_Actor *anActor = SMESH::FindActorByEntry(aMeshGroupSO->GetID().c_str())) {
+        if ( SMESH_Actor *anActor = SMESH::FindActorByEntry(aMeshGroupSO->GetID().c_str()))
+        {
+          Handle(SALOME_InteractiveObject) anIO = anActor->getIO();
           if ( isConversion ) { // need to reset TVisualObj and actor
-            Handle(SALOME_InteractiveObject) anIO = anActor->getIO();
             SMESH::RemoveVisualObjectWithActors( anIO->getEntry(), true );
             SMESH::Update( anIO,true);
             myActorsList.clear();
@@ -1183,12 +1184,14 @@ bool SMESHGUI_GroupDlg::onApply()
             anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B, delta ); break;          
             break;
           }
+          // update a visible group accoding to a changed contents
+          if ( !isConversion && anActor->GetVisibility() )
+            SMESH::Update( anIO, true );
         }
       }
     }
     SMESHGUI::Modified();
     mySMESHGUI->updateObjBrowser(true);
-    SMESH::UpdateView(); // asv: fix of BUG PAL5515
     mySelectionMgr->clearSelected();
 
     if( LightApp_Application* anApp =
