@@ -29,6 +29,7 @@
 #include "SMESHDS_Group.hxx"
 #include "SMESHDS_Mesh.hxx"
 #include "SMESH_Comment.hxx"
+#include "SMESH_TypeDefs.hxx"
 
 #include <gp_XYZ.hxx>
 
@@ -76,7 +77,9 @@ namespace
     }
     bool IsStructured() const { return ( _type == CGNS_ENUMV( Structured )); }
     int IndexSize() const { return IsStructured() ? _meshDim : 1; }
-    string ReadZonesConnection(int file, int base, const map< string, TZoneData >& zonesByName);
+    string ReadZonesConnection(int file, int base,
+                               const map< string, TZoneData >& zonesByName,
+                               SMESHDS_Mesh*                   mesh);
     void ReplaceNodes( cgsize_t* ids, int nbIds, int idShift = 0 ) const;
 
     // Methods for a structured zone
@@ -207,6 +210,37 @@ namespace
 
   //================================================================================
   /*!
+   * \brief Checks if the two arrays of node IDs describe nodes with equal coordinates
+   */
+  //================================================================================
+
+  bool isEqualNodes( const int* nIds1, const int* nIds2, int nbNodes, SMESHDS_Mesh* mesh )
+  {
+    if ( nbNodes > 0 )
+    {
+      SMESH_TNodeXYZ nn1[2], nn2[2];
+      nn1[0] = mesh->FindNode( nIds1[0] );
+      nn2[0] = mesh->FindNode( nIds2[0] );
+      if ( !nn1[0]._node || !nn2[0]._node )
+        return false;
+      double dist1 = ( nn1[0] - nn2[0] ).Modulus();
+      double dist2 = 0, tol = 1e-7;
+      if ( nbNodes > 1 )
+      {
+        nn1[1] = mesh->FindNode( nIds1[1] );
+        nn2[1] = mesh->FindNode( nIds2[1] );
+        if ( !nn1[1]._node || !nn2[1]._node )
+          return false;
+        dist2 = ( nn1[1] - nn2[1] ).Modulus();
+        tol   = 1e-5 * ( nn1[0] - nn1[1] ).Modulus();
+      }
+      return ( dist1 < tol & dist2 < tol );
+    }
+    return false;
+  }
+
+  //================================================================================
+  /*!
    * \brief Reads zone interface connectivity
    *  \param file - file to read
    *  \param base - base to read
@@ -220,7 +254,8 @@ namespace
 
   string TZoneData::ReadZonesConnection( int                             file,
                                          int                             base,
-                                         const map< string, TZoneData >& zonesByName)
+                                         const map< string, TZoneData >& zonesByName,
+                                         SMESHDS_Mesh*                   mesh)
   {
     string error;
 
@@ -276,6 +311,26 @@ namespace
                      _nodeReplacementMap[ node2 ] == node1 )
                   continue; // this interface already read
               }
+            }
+            // check if range and donorRange describe the same nodes
+            {
+              int ids1[2], ids2[2], nbN = 0;
+              TPointRangeIterator rangeIt1bis( range, _meshDim );
+              index1 = rangeIt1bis.Next();
+              index2 = T * ( index1 - begin1 ) + begin2;
+              ids1[0] = NodeID( index1 );
+              ids2[0] = zone2.NodeID( index2 );
+              ++nbN;
+              if ( rangeIt1bis.More() )
+              {
+                index1 = rangeIt1bis.Next();
+                index2 = T * ( index1 - begin1 ) + begin2;
+                ids1[1] = NodeID( index1 );
+                ids2[1] = zone2.NodeID( index2 );
+                ++nbN;
+              }
+              if ( !isEqualNodes( &ids1[0], &ids2[0], nbN, mesh ))
+                continue;
             }
             while ( rangeIt1.More() )
             {
@@ -338,7 +393,7 @@ namespace
           {
             for ( int isThisZone = 0; isThisZone < 2; ++isThisZone )
             {
-              const TZoneData&            zone = isThisZone ? *this : zone2;
+              const TZoneData&           zone = isThisZone ? *this : zone2;
               CGNS_ENUMT(PointSetType_t) type = isThisZone ? ptype : donorPtype;
               vector< cgsize_t >&      points = isThisZone ? ids : donorIds;
               if ( type == CGNS_ENUMV( PointRange ))
@@ -361,8 +416,10 @@ namespace
                   points[i] += zone._nodeIdShift;
               }
             }
-            for ( size_t i = 0; i < ids.size() && i < donorIds.size(); ++i )
-              _nodeReplacementMap.insert( make_pair( ids[i], donorIds[i] ));
+            size_t nbN = std::min( ids.size(), donorIds.size());
+            if ( isEqualNodes( &ids[0], &donorIds[0], nbN, mesh ))
+              for ( size_t i = 0; i < nbN; ++i )
+                _nodeReplacementMap.insert( make_pair( ids[i], donorIds[i] ));
           }
           else
           {
@@ -710,7 +767,7 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
 
     // Read connectivity between zones. Nodes of the zone interface will be
     // replaced withing the zones read later
-    string err = zone.ReadZonesConnection( _fn, cgnsBase, zonesByName );
+    string err = zone.ReadZonesConnection( _fn, cgnsBase, zonesByName, myMesh );
     if ( !err.empty() )
       addMessage( err );
 
