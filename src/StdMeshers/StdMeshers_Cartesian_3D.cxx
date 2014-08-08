@@ -100,17 +100,6 @@ using namespace std;
 //#define _MY_DEBUG_
 #endif
 
-#if OCC_VERSION_LARGE <= 0x06050300
-// workaround is required only for OCCT6.5.3 and older (see OCC22809)
-#define ELLIPSOLID_WORKAROUND
-#endif
-
-#ifdef ELLIPSOLID_WORKAROUND
-#include <BRepIntCurveSurface_Inter.hxx>
-#include <BRepTopAdaptor_TopolTool.hxx>
-#include <BRepAdaptor_HSurface.hxx>
-#endif
-
 //=============================================================================
 /*!
  * Constructor
@@ -317,41 +306,6 @@ namespace
     void ComputeUVW(const gp_XYZ& p, double uvw[3]);
     void ComputeNodes(SMESH_MesherHelper& helper);
   };
-#ifdef ELLIPSOLID_WORKAROUND
-  // --------------------------------------------------------------------------
-  /*!
-   * \brief struct temporary replacing IntCurvesFace_Intersector until
-   *        OCCT bug 0022809 is fixed
-   *        http://tracker.dev.opencascade.org/view.php?id=22809
-   */
-  struct TMP_IntCurvesFace_Intersector
-  {
-    BRepAdaptor_Surface                       _surf;
-    double                                    _tol;
-    BRepIntCurveSurface_Inter                 _intcs;
-    vector<IntCurveSurface_IntersectionPoint> _points;
-    BRepTopAdaptor_TopolTool                  _clsf;
-
-    TMP_IntCurvesFace_Intersector(const TopoDS_Face& face, const double tol)
-      :_surf( face ), _tol( tol ), _clsf( new BRepAdaptor_HSurface(_surf) ) {}
-    Bnd_Box Bounding() const { Bnd_Box b; BRepBndLib::Add (_surf.Face(), b); return b; }
-    void Perform( const gp_Lin& line, const double w0, const double w1 )
-    {
-      _points.clear();
-      for ( _intcs.Init( _surf.Face(), line, _tol ); _intcs.More(); _intcs.Next() )
-        if ( w0 <= _intcs.W() && _intcs.W() <= w1 )
-          _points.push_back( _intcs.Point() );
-    }
-    bool IsDone() const { return true; }
-    int  NbPnt()  const { return _points.size(); }
-    IntCurveSurface_TransitionOnCurve Transition( const int i ) const { return _points[ i-1 ].Transition(); }
-    double       WParameter( const int i ) const { return _points[ i-1 ].W(); }
-    TopAbs_State ClassifyUVPoint(const gp_Pnt2d& p) { return _clsf.Classify( p, _tol ); }
-  };
-#define __IntCurvesFace_Intersector TMP_IntCurvesFace_Intersector
-#else
-#define __IntCurvesFace_Intersector IntCurvesFace_Intersector
-#endif
   // --------------------------------------------------------------------------
   /*!
    * \brief Intersector of TopoDS_Face with all GridLine's
@@ -362,7 +316,7 @@ namespace
     TGeomID     _faceID;
     Grid*       _grid;
     Bnd_Box     _bndBox;
-    __IntCurvesFace_Intersector* _surfaceInt;
+    IntCurvesFace_Intersector* _surfaceInt;
     vector< std::pair< GridLine*, F_IntersectPoint > > _intersections;
 
     FaceGridIntersector(): _grid(0), _surfaceInt(0) {}
@@ -383,11 +337,11 @@ namespace
       GetCurveFaceIntersector();
       return _bndBox;
     }
-    __IntCurvesFace_Intersector* GetCurveFaceIntersector()
+    IntCurvesFace_Intersector* GetCurveFaceIntersector()
     {
       if ( !_surfaceInt )
       {
-        _surfaceInt = new __IntCurvesFace_Intersector( _face, Precision::PConfusion() );
+        _surfaceInt = new IntCurvesFace_Intersector( _face, Precision::PConfusion() );
         _bndBox     = _surfaceInt->Bounding();
         if ( _bndBox.IsVoid() )
           BRepBndLib::Add (_face, _bndBox);
@@ -412,7 +366,7 @@ namespace
     gp_Cone     _cone;
     gp_Sphere   _sphere;
     gp_Torus    _torus;
-    __IntCurvesFace_Intersector* _surfaceInt;
+    IntCurvesFace_Intersector* _surfaceInt;
 
     vector< F_IntersectPoint > _intPoints;
 
