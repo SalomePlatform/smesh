@@ -1,49 +1,66 @@
 /*!
 
-\page reorient_faces_page Reorient faces by vector
+\page reorient_faces_page Reorient faces
 
-\n This operation allows changing orientation of a set of neighboring
-faces. The desired orientation is defined by a vector. Since the direction
-of face normals in the set can be even opposite, it is necessary to
-specify a control face whose normal will be compared with the vector. This
-face can be either specified explicitly or found by proximity to
-a given point.
+\n This operation allows changing orientation of faces two ways.
+<ol>
+<li> To reorient a set of neighboring faces by defining the desired
+  orientation by a vector. <br> Since the direction of face normals in
+  the set can be even opposite, it is necessary to specify a control
+  face whose normal will be compared with the vector. This face can be
+  either <ul>
+    <li> found by proximity to a given point or </li> 
+    <li> specified explicitly. </li> 
+</ul> </li>
+<li> To reorient faces with relation to adjacent volumes. </li>
+</ol>
 
 Orientation of a face is changed by reverting the order of its nodes.
 
 <em>To change orientation of faces:</em>
 <ol>
-<li>In the \b Modification menu select <b>Reorient faces by
-    vector</b> item or click <em>Reorient faces by
-    vector</em> button in the toolbar.
+<li>In the \b Modification menu select <b>Reorient faces</b>
+  item or click <em>Reorient faces</em> button in the toolbar.
 
 <center>
 \image html reorient_faces_face.png
-<em>"Reorient faces by vector" button</em>
+<em>"Reorient faces" button</em>
 </center>
 
 The following dialog box will appear:
 
 <center>
-\image html reorient_2d_point.png
-\image html reorient_2d_face.png
+\image html reorient_2d_point.png "First mode: to reorient adjacent faces according to a vector. The control face is found by point."
+<br>
+\image html reorient_2d_face.png "Second mode: to reorient adjacent faces according to a vector. The control face is explicitly given."
+<br>
+\image html reorient_2d_volume.png "Third mode: to reorient faces with relation to adjacent volumes."
 </center>
 
 <li>In this dialog
 <ul>
-<li>Specify the way of selection of the control face: by point or
-  explicitly.</li>
-<li>Select the \b Object (mesh, sub-mesh or a group of faces) containing faces to reorient in the Object Browser or in the 3D Viewer.</li>
-<li>Specify the coordinates of the \b Point by which the control face
-  will be found or of the control \b Face itself. You can easy specify the \b
-  Point by either picking a node in the 3D Viewer or selecting a vertex
-  in the Object Browser. It is possible to pick the  \b Face by mouse in
-  the 3D Viewer or enter its ID.</li>
-<li>Set up the \b Direction vector to be compared with the normal of the
-  control face. If you pick a node in the 3D Viewer then the \b Direction
-  vector will go from the coordinate system origin to the selected node.
-  If you pick two nodes (holding Shift button) then the \b Direction vector
-  will go from the first to the second node.</li>
+<li>Specify either of the tree operation modes.</li>
+<li>Select the \b Object (mesh, sub-mesh or group)
+  containing faces to reorient, in the Object Browser or in the 3D
+  Viewer.</li>
+<li>To reorient according to vector: <ul>
+    <li>Specify the coordinates of the \b Point by which the control face
+      will be found or the control \b Face itself. You can easy specify the \b
+      Point by either picking a node in the 3D Viewer or selecting a vertex
+      in the Object Browser. It is possible to pick the \b Face by mouse in
+      the 3D Viewer or enter its ID.</li>
+    <li>Set up the \b Direction vector to be compared with the normal of the
+      control face. If you pick a node in the 3D Viewer then the \b Direction
+      vector will go from the coordinate system origin to the selected node.
+      If you pick two nodes (holding Shift button) then the \b Direction vector
+      will go from the first to the second node.</li> </ul> </li>
+<li>To reorient according to volumes: <ul>
+    <li>Select an object (mesh, sub-mesh or group) containing
+      reference \b Volumes, in the Object Browser or in the 3D
+      Viewer.</li>
+    <li>Specify whether face normals should point outside or inside
+      the reference volumes using <b>Face normal outside volume</b>
+      check-box.</li></ul> </li>
 </ul>
 </li>
 
@@ -51,6 +68,6 @@ The following dialog box will appear:
 </ol>
 
 <br><b>See Also</b> a sample TUI Script of a
-\ref tui_reorient_faces "Reorient faces by vector" operation. 
+\ref tui_reorient_faces "Reorient faces" operation. 
 
 */

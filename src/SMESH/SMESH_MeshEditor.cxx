@@ -1243,6 +1243,92 @@ int SMESH_MeshEditor::Reorient2D (TIDSortedElemSet &       theFaces,
   return nbReori;
 }
 
+//================================================================================
+/*!
+ * \brief Reorient faces basing on orientation of adjacent volumes.
+ * \param theFaces - faces to reorient. If empty, all mesh faces are treated.
+ * \param theVolumes - reference volumes.
+ * \param theOutsideNormal - to orient faces to have their normal
+ *        pointing either \a outside or \a inside the adjacent volumes.
+ * \return number of reoriented faces.
+ */
+//================================================================================
+
+int SMESH_MeshEditor::Reorient2DBy3D (TIDSortedElemSet & theFaces,
+                                      TIDSortedElemSet & theVolumes,
+                                      const bool         theOutsideNormal)
+{
+  int nbReori = 0;
+
+  SMDS_ElemIteratorPtr faceIt;
+  if ( theFaces.empty() )
+    faceIt = GetMeshDS()->elementsIterator( SMDSAbs_Face );
+  else
+    faceIt = elemSetIterator( theFaces );
+
+  vector< const SMDS_MeshNode* > faceNodes;
+  TIDSortedElemSet checkedVolumes;
+  set< const SMDS_MeshNode* > faceNodesSet;
+  SMDS_VolumeTool volumeTool;
+
+  while ( faceIt->more() ) // loop on given faces
+  {
+    const SMDS_MeshElement* face = faceIt->next();
+    if ( face->GetType() != SMDSAbs_Face )
+      continue;
+
+    const int nbCornersNodes = face->NbCornerNodes();
+    faceNodes.assign( face->begin_nodes(), face->end_nodes() );
+
+    checkedVolumes.clear();
+    SMDS_ElemIteratorPtr vIt = faceNodes[ 0 ]->GetInverseElementIterator( SMDSAbs_Volume );
+    while ( vIt->more() )
+    {
+      const SMDS_MeshElement* volume = vIt->next();
+
+      if ( !checkedVolumes.insert( volume ).second )
+        continue;
+      if ( !theVolumes.empty() && !theVolumes.count( volume ))
+        continue;
+
+      // is volume adjacent?
+      bool allNodesCommon = true;
+      for ( int iN = 1; iN < nbCornersNodes && allNodesCommon; ++iN )
+        allNodesCommon = ( volume->GetNodeIndex( faceNodes[ iN ]) > -1 );
+      if ( !allNodesCommon )
+        continue;
+
+      // get nodes of a corresponding volume facet
+      faceNodesSet.clear();
+      faceNodesSet.insert( faceNodes.begin(), faceNodes.end() );
+      volumeTool.Set( volume );
+      int facetID = volumeTool.GetFaceIndex( faceNodesSet );
+      if ( facetID < 0 ) continue;
+      volumeTool.SetExternalNormal();
+      const SMDS_MeshNode** facetNodes = volumeTool.GetFaceNodes( facetID );
+
+      // compare order of faceNodes and facetNodes
+      const int iQ = 1 + ( nbCornersNodes < faceNodes.size() );
+      int iNN[2];
+      for ( int i = 0; i < 2; ++i )
+      {
+        const SMDS_MeshNode* n = facetNodes[ i*iQ ];
+        for ( int iN = 0; iN < nbCornersNodes; ++iN )
+          if ( faceNodes[ iN ] == n )
+          {
+            iNN[ i ] = iN;
+            break;
+          }
+      }
+      bool isOutside = Abs( iNN[0]-iNN[1] ) == 1 ? iNN[0] < iNN[1] : iNN[0] > iNN[1];
+      if ( isOutside != theOutsideNormal )
+        nbReori += Reorient( face );
+    }
+  }  // loop on given faces
+
+  return nbReori;
+}
+
 //=======================================================================
 //function : getBadRate
 //purpose  :

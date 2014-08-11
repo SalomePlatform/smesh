@@ -2964,6 +2964,37 @@ class Mesh:
             theFace = -1
         return self.editor.Reorient2D( the2DObject, theDirection, theFace, thePoint )
 
+    ## Reorient faces according to adjacent volumes.
+    #  @param the2DObject is a mesh, sub-mesh, group or list of
+    #         either IDs of faces or face groups.
+    #  @param the3DObject is a mesh, sub-mesh, group or list of IDs of volumes.
+    #  @param theOutsideNormal to orient faces to have their normals
+    #         pointing either \a outside or \a inside the adjacent volumes.
+    #  @return number of reoriented faces.
+    #  @ingroup l2_modif_changori
+    def Reorient2DBy3D(self, the2DObject, the3DObject, theOutsideNormal=True ):
+        unRegister = genObjUnRegister()
+        # check the2DObject
+        if not isinstance( the2DObject, list ):
+            the2DObject = [ the2DObject ]
+        elif the2DObject and isinstance( the2DObject[0], int ):
+            the2DObject = self.GetIDSource( the2DObject, SMESH.FACE )
+            unRegister.set( the2DObject )
+            the2DObject = [ the2DObject ]
+        for i,obj2D in enumerate( the2DObject ):
+            if isinstance( obj2D, Mesh ):
+                the2DObject[i] = obj2D.GetMesh()
+            if isinstance( obj2D, list ):
+                the2DObject[i] = self.GetIDSource( obj2D, SMESH.FACE )
+                unRegister.set( the2DObject[i] )
+        # check the3DObject
+        if isinstance( the3DObject, Mesh ):
+            the3DObject = the3DObject.GetMesh()
+        if isinstance( the3DObject, list ):
+            the3DObject = self.GetIDSource( the3DObject, SMESH.VOLUME )
+            unRegister.set( the3DObject )
+        return self.editor.Reorient2DBy3D( the2DObject, the3DObject, theOutsideNormal )
+
     ## Fuses the neighbouring triangles into quadrangles.
     #  @param IDsOfElements The triangles to be fused,
     #  @param theCriterion  is a numerical functor, in terms of enum SMESH.FunctorType, used to

@@ -2369,7 +2369,7 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       "AddNode","Add0DElement","AddEdge","AddFace","AddPolygonalFace","AddBall",
       "AddVolume","AddPolyhedralVolume","AddPolyhedralVolumeByFaces",
       "MoveNode", "MoveClosestNodeToPoint",
-      "InverseDiag","DeleteDiag","Reorient","ReorientObject",
+      "InverseDiag","DeleteDiag","Reorient","ReorientObject","Reorient2DBy3D",
       "TriToQuad","TriToQuadObject", "QuadTo4Tri", "SplitQuad","SplitQuadObject",
       "BestSplit","Smooth","SmoothObject","SmoothParametric","SmoothParametricObject",
       "ConvertToQuadratic","ConvertFromQuadratic","RenumberNodes","RenumberElements",

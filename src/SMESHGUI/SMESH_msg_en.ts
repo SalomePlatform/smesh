@@ -470,15 +470,15 @@
     </message>
     <message>
         <source>TOP_REORIENT_2D</source>
-        <translation>Reorient faces by vector</translation>
+        <translation>Reorient faces</translation>
     </message>
     <message>
         <source>MEN_REORIENT_2D</source>
-        <translation>Reorient faces by vector</translation>
+        <translation>Reorient faces</translation>
     </message>
     <message>
         <source>STB_REORIENT_2D</source>
-        <translation>Reorient faces by vector</translation>
+        <translation>Reorient faces</translation>
     </message>
     <message>
         <source>TOP_FIND_ELEM</source>
@@ -7656,7 +7656,7 @@ as they are of improper type:
     <name>SMESHGUI_ReorientFacesDlg</name>
     <message>
         <source>CAPTION</source>
-        <translation>Reorient faces by vector</translation>
+        <translation>Reorient faces</translation>
     </message>
     <message>
         <source>REORIENT_FACES</source>
@@ -7686,6 +7686,14 @@ as they are of improper type:
         <source>ORIENTATION</source>
         <translation>Orientation</translation>
     </message>
+    <message>
+        <source>VOLUMES</source>
+        <translation>Volumes</translation>
+    </message>
+    <message>
+        <source>OUTSIDE_VOLUME_NORMAL</source>
+        <translation>Face normal outside volume</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_ReorientFacesOp</name>
@@ -7694,8 +7702,16 @@ as they are of improper type:
         <translation>No object selected</translation>
     </message>
     <message>
+        <source>NO_VOLUME_OBJECT_SELECTED</source>
+        <translation>No volume object selected</translation>
+    </message>
+    <message>
         <source>NO_FACES</source>
         <translation>Object includes no faces</translation>
+    </message>
+    <message>
+        <source>NO_VOLUMES</source>
+        <translation>Volume object includes no volumes</translation>
     </message>
     <message>
         <source>ZERO_SIZE_VECTOR</source>

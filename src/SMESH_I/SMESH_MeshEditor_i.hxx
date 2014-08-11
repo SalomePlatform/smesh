@@ -203,6 +203,18 @@ public:
                          const SMESH::DirStruct&   theDirection,
                          CORBA::Long               theFace,
                          const SMESH::PointStruct& thePoint) throw (SALOME::SALOME_Exception);
+  /*!
+   * \brief Reorient faces basing on orientation of adjacent volumes.
+   * \param faces - a list of objects containing face to reorient
+   * \param volumes - an object containing volumes.
+   * \param outsideNormal - to orient faces to have their normal
+   *        pointing either \a outside or \a inside the adjacent volumes.
+   * \return number of reoriented faces.
+   */
+  CORBA::Long Reorient2DBy3D(const SMESH::ListOfIDSources & faces,
+                             SMESH::SMESH_IDSource_ptr      volumes,
+                             CORBA::Boolean                 outsideNormal)
+    throw (SALOME::SALOME_Exception);
 
   // Split/Join faces
   CORBA::Boolean TriToQuad       (const SMESH::long_array &   IDsOfElements,

@@ -1,4 +1,4 @@
-# Reorient faces by vector
+# Reorient faces
 
 
 import salome
@@ -52,3 +52,20 @@ mesh.Reorient2D( group, smesh.MakeDirStruct( -10, 1, 10 ), [0,0,0])
 #
 # FaceOrPoint - a SMESH.PointStruct structure
 mesh.Reorient2D( localAlgo.GetSubMesh().GetIDs(), [10,1,0], SMESH.PointStruct(0,0,0))
+
+
+# Use Reorient2DBy3D() to orient faces of 2 geom faces to have their normal pointing inside volumes
+
+mesh3D = smesh.Mesh( box, '3D mesh')
+mesh3D.AutomaticHexahedralization(0.5)
+group0 = mesh3D.Group( faces[0] )
+group1 = mesh3D.Group( faces[1] )
+
+# pass group0 and ids of faces of group1 to inverse
+nbRev = mesh3D.Reorient2DBy3D([ group0, group1.GetIDs() ], mesh3D, theOutsideNormal=False)
+print "Nb reoriented faces:", nbRev
+
+# orient the reversed faces back
+nbRev = mesh3D.Reorient2DBy3D( mesh3D, mesh3D, theOutsideNormal=True)
+print "Nb re-reoriented faces:", nbRev
+

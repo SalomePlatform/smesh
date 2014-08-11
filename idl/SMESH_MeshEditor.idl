@@ -238,12 +238,23 @@ module SMESH
      * \param theFace - ID of face whose orientation is checked.
      *        It can be < 1 then \a thePoint is used to find a face.
      * \param thePoint - is used to find a face if \a theFace < 1.
-     * \return number of reoriented elements.
+     * \return number of reoriented faces.
      */
     long Reorient2D(in SMESH_IDSource the2Dgroup,
                     in DirStruct      theDirection,
                     in long           theFace,
                     in PointStruct    thePoint) raises (SALOME::SALOME_Exception);
+    /*!
+     * \brief Reorient faces basing on orientation of adjacent volumes.
+     * \param faces - a list of objects containing face to reorient
+     * \param volumes - an object containing volumes.
+     * \param outsideNormal - to orient faces to have their normal 
+     *        pointing either \a outside or \a inside the adjacent volumes.
+     * \return number of reoriented faces.
+     */
+    long Reorient2DBy3D(in ListOfIDSources faces,
+                        in SMESH_IDSource  volumes,
+                        in boolean         outsideNormal) raises (SALOME::SALOME_Exception);
 
     /*!
      * \brief Fuse neighbour triangles into quadrangles.

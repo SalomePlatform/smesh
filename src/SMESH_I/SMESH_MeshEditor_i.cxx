@@ -1645,7 +1645,7 @@ CORBA::Long SMESH_MeshEditor_i::Reorient2D(SMESH::SMESH_IDSource_ptr the2Dgroup,
   TIDSortedElemSet elements;
   prepareIdSource( the2Dgroup );
   if ( !idSourceToSet( the2Dgroup, getMeshDS(), elements, SMDSAbs_Face, /*emptyIfIsMesh=*/1))
-    THROW_SALOME_CORBA_EXCEPTION("No faces in given group", SALOME::BAD_PARAM);
+    return 0;//THROW_SALOME_CORBA_EXCEPTION("No faces in given group", SALOME::BAD_PARAM);
 
 
   const SMDS_MeshElement* face = 0;
@@ -1703,6 +1703,55 @@ CORBA::Long SMESH_MeshEditor_i::Reorient2D(SMESH::SMESH_IDSource_ptr the2Dgroup,
                 << theDirection << ", "
                 << theFace << ", "
                 << thePoint << " )";
+
+  return nbReori;
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+  return 0;
+}
+
+//=======================================================================
+//function : Reorient2DBy3D
+//purpose  : Reorient faces basing on orientation of adjacent volumes.
+//=======================================================================
+
+CORBA::Long SMESH_MeshEditor_i::Reorient2DBy3D(const SMESH::ListOfIDSources& faceGroups,
+                                               SMESH::SMESH_IDSource_ptr     volumeGroup,
+                                               CORBA::Boolean                outsideNormal)
+  throw (SALOME::SALOME_Exception)
+{
+  SMESH_TRY;
+  initData();
+
+  TIDSortedElemSet volumes;
+  prepareIdSource( volumeGroup );
+  if ( !idSourceToSet( volumeGroup, getMeshDS(), volumes, SMDSAbs_Volume, /*emptyIfIsMesh=*/1))
+      THROW_SALOME_CORBA_EXCEPTION("No volumes in a given object", SALOME::BAD_PARAM);
+
+  int nbReori = 0;
+  for ( size_t i = 0; i < faceGroups.length(); ++i )
+  {
+    SMESH::SMESH_IDSource_ptr faceGrp = faceGroups[i].in();
+    prepareIdSource( faceGrp );
+
+    TIDSortedElemSet faces;
+    if ( !idSourceToSet( faceGrp, getMeshDS(), faces, SMDSAbs_Face, /*emptyIfIsMesh=*/1) &&
+         faceGroups.length() == 1 )
+      ; //THROW_SALOME_CORBA_EXCEPTION("No faces in a given object", SALOME::BAD_PARAM);
+
+    nbReori += getEditor().Reorient2DBy3D( faces, volumes, outsideNormal );
+
+    if ( faces.empty() ) // all faces in the mesh treated
+      break;
+  }
+
+  if ( nbReori ) {
+    declareMeshModified( /*isReComputeSafe=*/false );
+  }
+  TPythonDump() << this << ".Reorient2DBy3D( "
+                << faceGroups << ", "
+                << volumeGroup << ", "
+                << outsideNormal << " )";
 
   return nbReori;
 

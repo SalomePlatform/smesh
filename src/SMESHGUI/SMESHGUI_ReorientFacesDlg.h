@@ -33,12 +33,13 @@
 #include "SMESHGUI_SelectionOp.h"
 
 class QButtonGroup;
+class QCheckBox;
 class QLineEdit;
 class SMESHGUI_SpinBox;
 class SMESHGUI_ReorientFacesDlg;
 
 /*!
- * \brief Operation to reorient faces acoording to vector
+ * \brief Operation to reorient faces acoording to some criterion
  */
 class SMESHGUI_EXPORT SMESHGUI_ReorientFacesOp: public SMESHGUI_SelectionOp
 {
@@ -76,6 +77,7 @@ private:
   int                           mySelectionMode;
 
   SMESH::SMESH_IDSource_var     myObject;
+  SMESH::SMESH_IDSource_var     myVolumeObj;
 };
 
 /*!
@@ -98,6 +100,9 @@ private:
   QButtonGroup*                 myConstructorGrp;
   QFrame*                       myFaceFrm;
   QFrame*                       myPointFrm;
+  QFrame*                       myDirFrm;
+  QFrame*                       myVolumFrm;
+  QCheckBox*                    myOutsideChk;
   SMESHGUI_SpinBox*             myX;
   SMESHGUI_SpinBox*             myY;
   SMESHGUI_SpinBox*             myZ;

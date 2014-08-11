@@ -126,6 +126,12 @@ public:
   // Reverse theFaces whose orientation to be same as that of theFace
   // oriented according to theDirection. Return nb of reoriented faces
 
+  int Reorient2DBy3D (TIDSortedElemSet & theFaces,
+                      TIDSortedElemSet & theVolumes,
+                      const bool         theOutsideNormal);
+  // Reorient faces basing on orientation of adjacent volumes.
+  // Return nb of reoriented faces
+
   /*!
    * \brief Fuse neighbour triangles into quadrangles.
    * \param theElems     - The triangles to be fused.

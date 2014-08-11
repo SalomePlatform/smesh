@@ -92,8 +92,8 @@
 #define SPACING 6
 #define MARGIN  11
 
-enum { CONSTRUCTOR_POINT=0, CONSTRUCTOR_FACE,
-       EObject, EPoint, EFace, EDirection };
+enum { CONSTRUCTOR_POINT=0, CONSTRUCTOR_FACE, CONSTRUCTOR_VOLUME,
+       EObject, EPoint, EFace, EDirection, EVolumes };
 
 //=======================================================================
 /*!
@@ -131,6 +131,7 @@ QWidget* SMESHGUI_ReorientFacesDlg::createMainFrame (QWidget* theParent)
 
   QPixmap iconReoriPoint (resMgr()->loadPixmap("SMESH", tr("ICON_DLG_REORIENT2D_POINT")));
   QPixmap iconReoriFace  (resMgr()->loadPixmap("SMESH", tr("ICON_DLG_REORIENT2D_FACE")));
+  QPixmap iconReoriVolum (resMgr()->loadPixmap("SMESH", tr("ICON_DLG_REORIENT2D_VOLUME")));
 
   QGroupBox* aConstructorBox = new QGroupBox(tr("REORIENT_FACES"), aFrame);
   myConstructorGrp = new QButtonGroup(aConstructorBox);
@@ -149,6 +150,11 @@ QWidget* SMESHGUI_ReorientFacesDlg::createMainFrame (QWidget* theParent)
   aConstructorGrpLayout->addWidget(aFaceBut);
   myConstructorGrp->addButton(aFaceBut, CONSTRUCTOR_FACE);
 
+  QRadioButton* aVolBut= new QRadioButton(aConstructorBox);
+  aVolBut->setIcon(iconReoriVolum);
+  aConstructorGrpLayout->addWidget(aVolBut);
+  myConstructorGrp->addButton(aVolBut, CONSTRUCTOR_VOLUME);
+
   // Create other controls
 
   setObjectPixmap( "SMESH", tr( "ICON_SELECT" ) );
@@ -157,17 +163,22 @@ QWidget* SMESHGUI_ReorientFacesDlg::createMainFrame (QWidget* theParent)
   createObject( tr("POINT")    , aFrame, EPoint );
   createObject( tr("FACE")     , aFrame, EFace );
   createObject( tr("DIRECTION"), aFrame, EDirection );
+  createObject( tr("VOLUMES"),   aFrame, EVolumes );
   setNameIndication( EObject, OneName );
   setNameIndication( EFace, OneName );
   setReadOnly( EFace, false );
   if ( QLineEdit* le = qobject_cast<QLineEdit*>( objectWg( EFace, Control ) ))
     le->setValidator( new SMESHGUI_IdValidator( this,1 ));
 
-  const int width = aFaceBut->fontMetrics().width( tr("DIRECTION"));
+  int width = aFaceBut->fontMetrics().width( tr("DIRECTION"));
   objectWg( EDirection, Label )->setFixedWidth( width );
   objectWg( EObject   , Label )->setFixedWidth( width );
   objectWg( EPoint    , Label )->setFixedWidth( width );
   objectWg( EFace     , Label )->setFixedWidth( width );
+  objectWg( EVolumes  , Label )->setFixedWidth( width );
+
+  myOutsideChk = new QCheckBox( tr("OUTSIDE_VOLUME_NORMAL"), aFrame);
+  myOutsideChk->setChecked( true );
 
   QLabel* aXLabel = new QLabel(tr("SMESH_X"), aFrame);
   myX = new SMESHGUI_SpinBox(aFrame);
@@ -197,6 +208,15 @@ QWidget* SMESHGUI_ReorientFacesDlg::createMainFrame (QWidget* theParent)
   myDY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
   myDZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
 
+  width = Max( aFaceBut->fontMetrics().width( tr("SMESH_X")),
+               aFaceBut->fontMetrics().width( tr("SMESH_DX")));
+  aXLabel->setFixedWidth( width );
+  aYLabel->setFixedWidth( width );
+  aZLabel->setFixedWidth( width );
+  aDXLabel->setFixedWidth( width );
+  aDYLabel->setFixedWidth( width );
+  aDZLabel->setFixedWidth( width );
+
   // Layouting
 
   QGroupBox* anObjectGrp = new QGroupBox(tr("FACES"), aFrame);
@@ -213,12 +233,12 @@ QWidget* SMESHGUI_ReorientFacesDlg::createMainFrame (QWidget* theParent)
   objectWg( EPoint, Control )->hide();
   aPointGrpLayout->addWidget( objectWg( EPoint, Label ) );
   aPointGrpLayout->addWidget( objectWg( EPoint, Btn ) );
-  aPointGrpLayout->addWidget( aXLabel );
-  aPointGrpLayout->addWidget( myX     );
-  aPointGrpLayout->addWidget( aYLabel );
-  aPointGrpLayout->addWidget( myY     );
-  aPointGrpLayout->addWidget( aZLabel );
-  aPointGrpLayout->addWidget( myZ     );
+  aPointGrpLayout->addWidget( aXLabel, 0 );
+  aPointGrpLayout->addWidget( myX,     1 );
+  aPointGrpLayout->addWidget( aYLabel, 0 );
+  aPointGrpLayout->addWidget( myY,     1 );
+  aPointGrpLayout->addWidget( aZLabel, 0 );
+  aPointGrpLayout->addWidget( myZ,     1 );
 
   myFaceFrm = new QFrame(aFrame);
   QHBoxLayout* aFaceGrpLayout = new QHBoxLayout(myFaceFrm);
@@ -227,25 +247,35 @@ QWidget* SMESHGUI_ReorientFacesDlg::createMainFrame (QWidget* theParent)
   aFaceGrpLayout->addWidget( objectWg( EFace, Btn ) );
   aFaceGrpLayout->addWidget( objectWg( EFace, Control ) );
 
-  QFrame* aDirectFrm = new QFrame(aFrame);
-  QHBoxLayout* aDirectGrpLayout = new QHBoxLayout(aDirectFrm);
+  myVolumFrm = new QFrame(aFrame);
+  QGridLayout* aVolumGrpLayout = new QGridLayout(myVolumFrm);
+  aVolumGrpLayout->setMargin(0);
+  aVolumGrpLayout->setSpacing(SPACING);
+  aVolumGrpLayout->addWidget( objectWg( EVolumes, Label ),   0, 0 );
+  aVolumGrpLayout->addWidget( objectWg( EVolumes, Btn ),     0, 1 );
+  aVolumGrpLayout->addWidget( objectWg( EVolumes, Control ), 0, 2 );
+  aVolumGrpLayout->addWidget( myOutsideChk,                  1, 0, 1, 3 );
+
+  myDirFrm = new QFrame(aFrame);
+  QHBoxLayout* aDirectGrpLayout = new QHBoxLayout(myDirFrm);
   aDirectGrpLayout->setMargin(0);
   objectWg( EDirection, Control )->hide();
   aDirectGrpLayout->addWidget( objectWg( EDirection, Label ) );
   aDirectGrpLayout->addWidget( objectWg( EDirection, Btn ) );
-  aDirectGrpLayout->addWidget(aDXLabel );
-  aDirectGrpLayout->addWidget(myDX );
-  aDirectGrpLayout->addWidget(aDYLabel );
-  aDirectGrpLayout->addWidget(myDY );
-  aDirectGrpLayout->addWidget(aDZLabel );
-  aDirectGrpLayout->addWidget(myDZ );
+  aDirectGrpLayout->addWidget( aDXLabel, 0 );
+  aDirectGrpLayout->addWidget( myDX,     1 );
+  aDirectGrpLayout->addWidget( aDYLabel, 0 );
+  aDirectGrpLayout->addWidget( myDY,     1 );
+  aDirectGrpLayout->addWidget( aDZLabel, 0 );
+  aDirectGrpLayout->addWidget( myDZ,     1 );
   
 
   QGroupBox* anOrientGrp = new QGroupBox(tr("ORIENTATION"), aFrame);
   QVBoxLayout* anOrientGrpLayout = new QVBoxLayout ( anOrientGrp );
   anOrientGrpLayout->addWidget(myPointFrm);
   anOrientGrpLayout->addWidget(myFaceFrm);
-  anOrientGrpLayout->addWidget(aDirectFrm);
+  anOrientGrpLayout->addWidget(myVolumFrm);
+  anOrientGrpLayout->addWidget(myDirFrm);
   
 
   QVBoxLayout* aLay = new QVBoxLayout(aFrame);
@@ -269,14 +299,26 @@ void SMESHGUI_ReorientFacesDlg::constructorChange(int id)
   if ( id == CONSTRUCTOR_FACE )
   {
     myPointFrm->hide();
+    myVolumFrm->hide();
     myFaceFrm->show();
+    myDirFrm->show();
     activateObject( EFace );
   }
-  else
+  else if ( id == CONSTRUCTOR_POINT )
   {
     myFaceFrm->hide();
+    myVolumFrm->hide();
     myPointFrm->show();
+    myDirFrm->show();
     activateObject( EPoint );
+  }
+  else // CONSTRUCTOR_VOLUME
+  {
+    myFaceFrm->hide();
+    myPointFrm->hide();
+    myDirFrm->hide();
+    myVolumFrm->show();
+    activateObject( EVolumes );
   }
 }
 
@@ -373,6 +415,7 @@ void SMESHGUI_ReorientFacesOp::onActivateObject( int what )
     SMESH::SetPickable();
     break;
   case EObject:
+  case EVolumes:
     SMESH::SetPointRepresentation(false);
     setSelectionMode( ActorSelection );
     break;
@@ -406,6 +449,14 @@ SUIT_SelectionFilter* SMESHGUI_ReorientFacesOp::createFilter( const int what ) c
       filters.append( new SMESH_TypeFilter( SMESH::GROUP_FACE ));
       return new SMESH_LogicalFilter( filters, SMESH_LogicalFilter::LO_OR );
     }
+  case EVolumes:
+    {
+      QList<SUIT_SelectionFilter*> filters;
+      filters.append( new SMESH_TypeFilter( SMESH::MESH ));
+      filters.append( new SMESH_TypeFilter( SMESH::SUBMESH_SOLID ));
+      filters.append( new SMESH_TypeFilter( SMESH::GROUP_VOLUME ));
+      return new SMESH_LogicalFilter( filters, SMESH_LogicalFilter::LO_OR );
+    }
   case EPoint:
     {
       QList<SUIT_SelectionFilter*> filters;
@@ -432,6 +483,12 @@ void SMESHGUI_ReorientFacesOp::selectionDone()
 {
   if ( !myDlg->isVisible() || !myDlg->isEnabled() )
     return;
+
+  if ( mySelectionMode == EVolumes )
+  {
+    SMESHGUI_SelectionOp::selectionDone();
+    return;
+  }
 
   myDlg->clearSelection( mySelectionMode );
 
@@ -603,29 +660,45 @@ bool SMESHGUI_ReorientFacesOp::onApply()
 
   try {
     SUIT_OverrideCursor wc;
+
     SMESH::SMESH_Mesh_var aMesh = myObject->GetMesh();
     if ( aMesh->_is_nil() ) return false;
-
-    SMESH::DirStruct direction;
-    direction.PS.x = myDlg->myDX->GetValue();
-    direction.PS.y = myDlg->myDY->GetValue();
-    direction.PS.z = myDlg->myDZ->GetValue();
-
-    long face = myDlg->objectText( EFace ).toInt();
-    if ( myDlg->myConstructorGrp->checkedId() == CONSTRUCTOR_POINT )
-      face = -1;
-
-    SMESH::PointStruct point;
-    point.x = myDlg->myX->GetValue();
-    point.y = myDlg->myY->GetValue();
-    point.z = myDlg->myZ->GetValue();
 
     SMESH::SMESH_MeshEditor_var aMeshEditor = aMesh->GetMeshEditor();
     if (aMeshEditor->_is_nil()) return false;
 
-    aMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+    int aResult = 0;
+    if ( myDlg->myConstructorGrp->checkedId() == CONSTRUCTOR_VOLUME )
+    {
+      SMESH::ListOfIDSources_var faceGroups = new SMESH::ListOfIDSources;
+      faceGroups->length(1);
+      faceGroups[0] = myObject;
 
-    int aResult = aMeshEditor->Reorient2D( myObject, direction, face, point );
+      bool outsideNormal = myDlg->myOutsideChk->isChecked();
+
+      aResult = aMeshEditor->Reorient2DBy3D( faceGroups, myVolumeObj, outsideNormal );
+    }
+    else
+    {
+      SMESH::DirStruct direction;
+      direction.PS.x = myDlg->myDX->GetValue();
+      direction.PS.y = myDlg->myDY->GetValue();
+      direction.PS.z = myDlg->myDZ->GetValue();
+
+      long face = myDlg->objectText( EFace ).toInt();
+      if ( myDlg->myConstructorGrp->checkedId() == CONSTRUCTOR_POINT )
+        face = -1;
+
+      SMESH::PointStruct point;
+      point.x = myDlg->myX->GetValue();
+      point.y = myDlg->myY->GetValue();
+      point.z = myDlg->myZ->GetValue();
+
+      aMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+
+      aResult = aMeshEditor->Reorient2D( myObject, direction, face, point );
+    }
+
     if (aResult)
     {
       SALOME_ListIO aList;
@@ -673,6 +746,27 @@ bool SMESHGUI_ReorientFacesOp::isValid( QString& msg )
     return false;
   }
 
+  // check volume object
+  if ( myDlg->myConstructorGrp->checkedId() == CONSTRUCTOR_VOLUME )
+  {
+    objectEntry = myDlg->selectedObject( EVolumes );
+    _PTR(SObject) pSObject = studyDS()->FindObjectID( objectEntry.toLatin1().data() );
+    myVolumeObj = SMESH::SObjectToInterface< SMESH::SMESH_IDSource>( pSObject );
+    if ( myVolumeObj->_is_nil() )
+    {
+      msg = tr("NO_VOLUME_OBJECT_SELECTED");
+      return false;
+    }
+    bool hasVolumes = false;
+    types = myVolumeObj->GetTypes();
+    for ( size_t i = 0; i < types->length() && !hasVolumes; ++i )
+      hasVolumes = ( types[i] == SMESH::VOLUME );
+    if ( !hasVolumes )
+    {
+      msg = tr("NO_VOLUMES");
+      return false;
+    }
+  }
   // check vector
   gp_Vec vec( myDlg->myDX->GetValue(),
               myDlg->myDY->GetValue(),

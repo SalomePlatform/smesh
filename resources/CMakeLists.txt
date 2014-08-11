@@ -205,6 +205,7 @@ SET(SMESH_RESOURCES_FILES
   mesh_min_dist.png
   reorient_faces_point.png
   reorient_faces_face.png
+  reorient_faces_volume.png
   mesh_ball.png
   mesh_measure_basic_props.png
   mesh_measure_length.png

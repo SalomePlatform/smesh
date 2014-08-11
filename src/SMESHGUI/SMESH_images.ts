@@ -428,6 +428,10 @@
             <translation>reorient_faces_face.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_REORIENT2D_VOLUME</source>
+            <translation>reorient_faces_volume.png</translation>
+        </message>
+        <message>
             <source>ICON_REORIENT_2D</source>
             <translation>reorient_faces_face.png</translation>
         </message>
