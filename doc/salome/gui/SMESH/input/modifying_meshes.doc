@@ -36,7 +36,7 @@ with consequent transformation of all adjacent elements and edges.</li>
 <li>\subpage uniting_set_of_triangles_page "Unite several adjacent triangles".</li>
 <li>\subpage changing_orientation_of_elements_page "Change orientation"
  of the selected elements.</li>
-<li>\subpage reorient_faces_page "Reorient faces by vector".</li>
+<li>\subpage reorient_faces_page "Reorient faces".</li>
 <li>\subpage cutting_quadrangles_page "Cut a quadrangle" into two triangles.</li>
 <li>\subpage split_to_tetra_page "Split" volumic elements into tetrahedra or prisms.</li>
 <li>\subpage smoothing_page "Smooth" elements, reducung distortions in

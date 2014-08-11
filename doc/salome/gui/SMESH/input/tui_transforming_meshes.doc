@@ -68,7 +68,7 @@
 
 <br>
 \anchor tui_reorient_faces
-<h3>Reorient faces by vector</h3>
+<h3>Reorient faces</h3>
 \tui_script{transforming_meshes_ex13.py}
 
 */
