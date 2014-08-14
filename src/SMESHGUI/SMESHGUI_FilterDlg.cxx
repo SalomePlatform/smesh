@@ -2654,7 +2654,9 @@ SMESHGUI_FilterDlg::SMESHGUI_FilterDlg( SMESHGUI*         theModule,
 : QDialog( SMESH::GetDesktop( theModule ) ),
   mySMESHGUI( theModule ),
   mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-  myInitSourceWgOnApply( true )
+  myInitSourceWgOnApply( true ),
+  myInsertEnabled( true ),
+  myDiffSourcesEnabled( true )
 {
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     mySelector = aViewWindow->GetSelector();
@@ -2671,7 +2673,9 @@ SMESHGUI_FilterDlg::SMESHGUI_FilterDlg( SMESHGUI*   theModule,
 : QDialog( SMESH::GetDesktop( theModule ) ),
   mySMESHGUI( theModule ),
   mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-  myInitSourceWgOnApply( true )
+  myInitSourceWgOnApply( true ),
+  myInsertEnabled( true ),
+  myDiffSourcesEnabled( true )
 {
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     mySelector = aViewWindow->GetSelector();
@@ -2730,6 +2734,7 @@ QWidget* SMESHGUI_FilterDlg::createMainFrame (QWidget* theParent)
   int rows = aLay->rowCount();
   int cols = aLay->columnCount();
 
+  // This line looks strange when all additional parameters and mySetInViewer are hidden
   QFrame* aLine = new QFrame(aGrp);
   aLine->setFrameStyle(QFrame::HLine | QFrame::Sunken);
   aLay->addWidget(aLine, rows++, 0, 1, cols);
@@ -3216,6 +3221,21 @@ void SMESHGUI_FilterDlg::SetSourceWg (QWidget* theWg,
 }
 
 //=======================================================================
+//function : EnableFiltering
+//purpose  : Enables "Insert filter in the viewer"
+//           and different "Source"s (Mesh, Initial Selection, Current Group)
+//=======================================================================
+
+void SMESHGUI_FilterDlg::SetEnabled( bool setInViewer, bool diffSources )
+{
+  myInsertEnabled = setInViewer;
+  myDiffSourcesEnabled = diffSources;
+
+  mySetInViewer->setVisible( myInsertEnabled );
+  mySourceGrp->button(0)->parentWidget()->setVisible( myDiffSourcesEnabled );
+}
+
+//=======================================================================
 // name    : SMESHGUI_FilterDlg::SetMesh
 // Purpose : Set mesh
 //=======================================================================
@@ -3397,8 +3417,10 @@ void SMESHGUI_FilterDlg::insertFilterInViewer()
     SMESH::ElementType anEntType = (SMESH::ElementType)myTable->GetType();
 
     if (myFilter[ myTable->GetType() ]->_is_nil() ||
-         myFilter[ myTable->GetType() ]->GetPredicate()->_is_nil() ||
-         !mySetInViewer->isChecked()) {
+        myFilter[ myTable->GetType() ]->GetPredicate()->_is_nil() ||
+        !mySetInViewer->isChecked() ||
+        !myInsertEnabled )
+    {
       SMESH::RemoveFilter(getFilterId(anEntType), aSelector);
     }
     else {
@@ -3423,7 +3445,7 @@ void SMESHGUI_FilterDlg::filterSource (const int theType,
 
   int aSourceId = mySourceGrp->checkedId();
 
-  if (aSourceId == Mesh)
+  if (aSourceId == Mesh || !myDiffSourcesEnabled )
   {
     if (myMesh->_is_nil())
       return;

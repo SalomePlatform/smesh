@@ -447,16 +447,17 @@ void SMESHGUI_GroupDlg::initDialog( bool create)
   mySMESHGUI->SetActiveDialogBox(this);
   mySMESHGUI->SetState(800);
 
+  SalomeApp_Study* aStudy = dynamic_cast<SalomeApp_Study*>( mySMESHGUI->application()->activeStudy() );
   mySelectionMode = grpNoSelection;
-  myMeshFilter = new SMESH_TypeFilter(SMESH::MESH);
+
+  myMeshFilter    = new SMESH_TypeFilter(SMESH::MESH);
   mySubMeshFilter = new SMESH_LogicalFilter(QList<SUIT_SelectionFilter*>(),
                                             SMESH_LogicalFilter::LO_OR,
                                             /*takeOwnership=*/true);
-  myGroupFilter = new SMESH_LogicalFilter(QList<SUIT_SelectionFilter*>(),
-                                          SMESH_LogicalFilter::LO_OR,
-                                          /*takeOwnership=*/true);
-  SalomeApp_Study* aStudy = dynamic_cast<SalomeApp_Study*>( mySMESHGUI->application()->activeStudy() );
-  myGeomFilter = new GEOM_SelectionFilter( aStudy, true );
+  myGroupFilter   = new SMESH_LogicalFilter(QList<SUIT_SelectionFilter*>(),
+                                            SMESH_LogicalFilter::LO_OR,
+                                            /*takeOwnership=*/true);
+  myGeomFilter    = new GEOM_SelectionFilter( aStudy, true );
 
   connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), this, SLOT(onDeactivate()));
   connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()),        this, SLOT(reject()));
@@ -1648,7 +1649,7 @@ void SMESHGUI_GroupDlg::onSelectGroup(bool on)
 
 //=================================================================================
 // function : (onSelectGeomGroup)
-// purpose  : Called when group type changed. on == "on group" or "on filter"
+// purpose  : Called when group type changed. on == "on geometry" or "on filter"
 //=================================================================================
 void SMESHGUI_GroupDlg::onSelectGeomGroup(bool on)
 {
@@ -1659,7 +1660,7 @@ void SMESHGUI_GroupDlg::onSelectGeomGroup(bool on)
     else if (mySelectGroup->isChecked()) {
       mySelectGroup->setChecked(false);
     }
-    if ( myGrpTypeId == 1 ) { // on group
+    if ( myGrpTypeId == 1 ) { // on geometry
       myCurrentLineEdit = myGeomGroupLine;
       updateGeomPopup();
     }
@@ -1747,9 +1748,13 @@ void SMESHGUI_GroupDlg::setFilters()
     myFilterDlg->Init( aType );
   }
 
+  bool isStandalone = ( sender() == myFilterBtn );
+  myFilterDlg->SetEnabled( /*setInViewer=*/isStandalone,
+                           /*diffSources=*/isStandalone );
   myFilterDlg->SetMesh( myMesh );
   myFilterDlg->SetSelection();
   myFilterDlg->SetSourceWg( myElements, false );
+
 
   myFilterDlg->show();
 }

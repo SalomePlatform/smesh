@@ -229,6 +229,7 @@ public:
   void                      SetSelection();
   void                      SetMesh (SMESH::SMESH_Mesh_var);
   void                      SetSourceWg( QWidget*, const bool initOnApply = true );
+  void                      SetEnabled( bool setInViewer, bool diffSources );
 
   static SMESH::Filter::Criterion createCriterion();
 
@@ -297,6 +298,8 @@ private:
   SVTK_Selector*            mySelector;
   SMESH::SMESH_Mesh_var     myMesh;
   bool                      myInitSourceWgOnApply;
+  bool                      myInsertEnabled;
+  bool                      myDiffSourcesEnabled;
   QWidget*                  mySourceWg;
 
   SALOME_DataMapOfIOMapOfInteger myIObjects;
