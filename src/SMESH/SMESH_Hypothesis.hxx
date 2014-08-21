@@ -63,7 +63,8 @@ public:
     HYP_BAD_DIM,      // bad dimension
     HYP_BAD_SUBSHAPE, // shape is neither the main one, nor its sub-shape, nor a group
     HYP_BAD_GEOMETRY, // shape geometry mismatches algorithm's expectation
-    HYP_NEED_SHAPE    // algorithm can work on shape only
+    HYP_NEED_SHAPE,   // algorithm can work on shape only
+    HYP_INCOMPAT_HYPS // several additional hypotheses are incompatible one with other
   };
   static bool IsStatusFatal(Hypothesis_Status theStatus)
   { return theStatus >= HYP_UNKNOWN_FATAL; }

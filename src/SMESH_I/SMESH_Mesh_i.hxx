@@ -86,21 +86,22 @@ public:
   void ClearSubMesh(CORBA::Long ShapeID)
     throw (SALOME::SALOME_Exception);
 
-  SMESH::Hypothesis_Status AddHypothesis(GEOM::GEOM_Object_ptr aSubShapeObject,
-                                         SMESH::SMESH_Hypothesis_ptr anHyp)
+  SMESH::Hypothesis_Status AddHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
+                                         SMESH::SMESH_Hypothesis_ptr anHyp,
+                                         CORBA::String_out           anErrorText)
     throw (SALOME::SALOME_Exception);
 
-  SMESH::Hypothesis_Status RemoveHypothesis(GEOM::GEOM_Object_ptr aSubShapeObject,
+  SMESH::Hypothesis_Status RemoveHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
                                             SMESH::SMESH_Hypothesis_ptr anHyp)
     throw (SALOME::SALOME_Exception);
 
-  SMESH::ListOfHypothesis* GetHypothesisList(GEOM::GEOM_Object_ptr aSubShapeObject)
+  SMESH::ListOfHypothesis* GetHypothesisList(GEOM::GEOM_Object_ptr aSubShape)
     throw (SALOME::SALOME_Exception);
 
   SMESH::submesh_array* GetSubMeshes()
     throw (SALOME::SALOME_Exception);
 
-  SMESH::SMESH_subMesh_ptr GetSubMesh(GEOM::GEOM_Object_ptr aSubShapeObject, const char* theName)
+  SMESH::SMESH_subMesh_ptr GetSubMesh(GEOM::GEOM_Object_ptr aSubShape, const char* theName)
     throw (SALOME::SALOME_Exception);
 
   void RemoveSubMesh( SMESH::SMESH_subMesh_ptr theSubMesh )
@@ -404,10 +405,11 @@ public:
 
   // Internal methods not available through CORBA
   // They are called by corresponding interface methods
-  SMESH_Hypothesis::Hypothesis_Status addHypothesis(GEOM::GEOM_Object_ptr aSubShapeObject,
-                                                    SMESH::SMESH_Hypothesis_ptr anHyp);
+  SMESH_Hypothesis::Hypothesis_Status addHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
+                                                    SMESH::SMESH_Hypothesis_ptr anHyp,
+                                                    std::string*                anErrorText=0);
 
-  SMESH_Hypothesis::Hypothesis_Status removeHypothesis(GEOM::GEOM_Object_ptr aSubShapeObject,
+  SMESH_Hypothesis::Hypothesis_Status removeHypothesis(GEOM::GEOM_Object_ptr aSubShape,
                                                        SMESH::SMESH_Hypothesis_ptr anHyp);
 
   static SMESH::Hypothesis_Status

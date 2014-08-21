@@ -256,6 +256,7 @@ namespace VISCOUS_2D
     _PolyLine*           _rightLine;
     int                  _firstPntInd; // index in vector<UVPtStruct> of _wire
     int                  _lastPntInd;
+    int                  _index;       // index in _ViscousBuilder2D::_polyLineVec
 
     vector< _LayerEdge > _lEdges;      /* _lEdges[0] is usually is not treated
                                           as it is equal to the last one of the _leftLine */
@@ -325,6 +326,7 @@ namespace VISCOUS_2D
   //--------------------------------------------------------------------------------
 
   typedef map< const SMDS_MeshNode*, _LayerEdge*, TIDCompare > TNode2Edge;
+  typedef StdMeshers_ViscousLayers2D                           THypVL;
   
   //--------------------------------------------------------------------------------
   /*!
@@ -335,14 +337,17 @@ namespace VISCOUS_2D
   public:
     _ViscousBuilder2D(SMESH_Mesh&                       theMesh,
                       const TopoDS_Face&                theFace,
-                      const StdMeshers_ViscousLayers2D* theHyp);
+                      vector< const THypVL* > &         theHyp,
+                      vector< TopoDS_Shape > &          theHypShapes);
     SMESH_ComputeErrorPtr GetError() const { return _error; }
     // does it's job
-    SMESH_ProxyMesh::Ptr  Compute(const TopoDS_Shape& theShapeHypAssignedTo);
+    SMESH_ProxyMesh::Ptr  Compute();
 
   private:
 
-    bool findEdgesWithLayers(const TopoDS_Shape& theShapeHypAssignedTo);
+    friend class ::StdMeshers_ViscousLayers2D;
+
+    bool findEdgesWithLayers();
     bool makePolyLines();
     bool inflate();
     bool fixCollisions();
@@ -362,8 +367,12 @@ namespace VISCOUS_2D
                            GeomAPI_ProjectPointOnSurf* faceProj);
     void adjustCommonEdge( _PolyLine& LL, _PolyLine& LR );
     void calcLayersHeight(const double    totalThick,
-                          vector<double>& heights);
+                          vector<double>& heights,
+                          const THypVL*   hyp);
     bool removeMeshFaces(const TopoDS_Shape& face);
+
+    const THypVL*     getLineHypothesis(int iPL);
+    double            getLineThickness (int iPL);
 
     bool              error( const string& text );
     SMESHDS_Mesh*     getMeshDS() { return _mesh->GetMeshDS(); }
@@ -377,7 +386,8 @@ namespace VISCOUS_2D
     // input data
     SMESH_Mesh*                 _mesh;
     TopoDS_Face                 _face;
-    const StdMeshers_ViscousLayers2D* _hyp;
+    vector< const THypVL* >     _hyps;
+    vector< TopoDS_Shape >      _hypShapes;
 
     // result data
     SMESH_ProxyMesh::Ptr        _proxyMesh;
@@ -388,11 +398,12 @@ namespace VISCOUS_2D
     SMESH_MesherHelper          _helper;
     TSideVector                 _faceSideVec; // wires (StdMeshers_FaceSide) of _face
     vector<_PolyLine>           _polyLineVec; // fronts to advance
+    vector< const THypVL* >     _hypOfEdge; // a hyp per an EDGE of _faceSideVec
     bool                        _is2DIsotropic; // is same U and V resoulution of _face
     vector<TopoDS_Face>         _clearedFaces; // FACEs whose mesh was removed by shrink()
 
-    double                      _fPowN; // to compute thickness of layers
-    double                      _thickness; // required or possible layers thickness
+    //double                      _fPowN; // to compute thickness of layers
+    double                      _maxThickness; // max possible layers thickness
 
     // sub-shapes of _face 
     set<TGeomID>                _ignoreShapeIds; // ids of EDGEs w/o layers
@@ -409,15 +420,32 @@ namespace VISCOUS_2D
   /*!
    * \brief Returns StdMeshers_ViscousLayers2D for the FACE
    */
-  const StdMeshers_ViscousLayers2D* findHyp(SMESH_Mesh&        theMesh,
-                                            const TopoDS_Face& theFace,
-                                            TopoDS_Shape*      assignedTo=0)
+  bool findHyps(SMESH_Mesh&                                   theMesh,
+                const TopoDS_Face&                            theFace,
+                vector< const StdMeshers_ViscousLayers2D* > & theHyps,
+                vector< TopoDS_Shape > &                      theAssignedTo)
   {
+    theHyps.clear();
+    theAssignedTo.clear();
     SMESH_HypoFilter hypFilter
       ( SMESH_HypoFilter::HasName( StdMeshers_ViscousLayers2D::GetHypType() ));
-    const SMESH_Hypothesis * hyp =
-      theMesh.GetHypothesis( theFace, hypFilter, /*ancestors=*/true, assignedTo );
-    return dynamic_cast< const StdMeshers_ViscousLayers2D* > ( hyp );
+    list< const SMESHDS_Hypothesis * > hypList;
+    list< TopoDS_Shape >               hypShapes;
+    int nbHyps = theMesh.GetHypotheses
+      ( theFace, hypFilter, hypList, /*ancestors=*/true, &hypShapes );
+    if ( nbHyps )
+    {
+      theHyps.reserve( nbHyps );
+      theAssignedTo.reserve( nbHyps );
+      list< const SMESHDS_Hypothesis * >::iterator hyp = hypList.begin();
+      list< TopoDS_Shape >::iterator               shape = hypShapes.begin();
+      for ( ; hyp != hypList.end(); ++hyp, ++shape )
+      {
+        theHyps.push_back( static_cast< const StdMeshers_ViscousLayers2D* > ( *hyp ));
+        theAssignedTo.push_back( *shape );
+      }
+    }
+    return nbHyps;
   }
 
   //================================================================================
@@ -436,7 +464,7 @@ namespace VISCOUS_2D
                         const SMESHDS_Mesh*               theMesh,
                         set< int > &                      theEdgeIds)
   {
-    int nbToEdgesIgnore = 0;
+    int nbEdgesToIgnore = 0;
     vector<TGeomID> ids = theHyp->GetBndShapes();
     if ( theHyp->IsToIgnoreShapes() ) // EDGEs to ignore are given
     {
@@ -448,20 +476,20 @@ namespace VISCOUS_2D
              SMESH_MesherHelper::IsSubShape( E, theFace ))
         {
           theEdgeIds.insert( ids[i] );
-          ++nbToEdgesIgnore;
+          ++nbEdgesToIgnore;
         }
       }
     }
     else // EDGEs to make the Viscous Layers on are given
     {
       TopExp_Explorer E( theFace, TopAbs_EDGE );
-      for ( ; E.More(); E.Next(), ++nbToEdgesIgnore )
+      for ( ; E.More(); E.Next(), ++nbEdgesToIgnore )
         theEdgeIds.insert( theMesh->ShapeToIndex( E.Current() ));
 
       for ( size_t i = 0; i < ids.size(); ++i )
-        nbToEdgesIgnore -= theEdgeIds.erase( ids[i] );
+        nbEdgesToIgnore -= theEdgeIds.erase( ids[i] );
     }
-    return nbToEdgesIgnore;
+    return nbEdgesToIgnore;
   }
 
 } // namespace VISCOUS_2D
@@ -489,12 +517,12 @@ StdMeshers_ViscousLayers2D::Compute(SMESH_Mesh&        theMesh,
 {
   SMESH_ProxyMesh::Ptr pm;
 
-  TopoDS_Shape hypAssignedTo;
-  const StdMeshers_ViscousLayers2D* vlHyp = VISCOUS_2D::findHyp( theMesh, theFace, &hypAssignedTo );
-  if ( vlHyp )
+  vector< const StdMeshers_ViscousLayers2D* > hyps;
+  vector< TopoDS_Shape >                      hypShapes;
+  if ( VISCOUS_2D::findHyps( theMesh, theFace, hyps, hypShapes ))
   {
-    VISCOUS_2D::_ViscousBuilder2D builder( theMesh, theFace, vlHyp );
-    pm = builder.Compute( hypAssignedTo );
+    VISCOUS_2D::_ViscousBuilder2D builder( theMesh, theFace, hyps, hypShapes );
+    pm = builder.Compute();
     SMESH_ComputeErrorPtr error = builder.GetError();
     if ( error && !error->IsOK() )
       theMesh.GetSubMesh( theFace )->GetComputeError() = error;
@@ -508,6 +536,38 @@ StdMeshers_ViscousLayers2D::Compute(SMESH_Mesh&        theMesh,
     pm.reset( new SMESH_ProxyMesh( theMesh ));
   }
   return pm;
+}
+// --------------------------------------------------------------------------------
+SMESH_ComputeErrorPtr
+StdMeshers_ViscousLayers2D::CheckHypothesis(SMESH_Mesh&                          theMesh,
+                                            const TopoDS_Shape&                  theShape,
+                                            SMESH_Hypothesis::Hypothesis_Status& theStatus)
+{
+  SMESH_ComputeErrorPtr error = SMESH_ComputeError::New(COMPERR_OK);
+  theStatus = SMESH_Hypothesis::HYP_OK;
+
+  TopExp_Explorer exp( theShape, TopAbs_FACE );
+  for ( ; exp.More() && theStatus == SMESH_Hypothesis::HYP_OK; exp.Next() )
+  {
+    const TopoDS_Face& face = TopoDS::Face( exp.Current() );
+    vector< const StdMeshers_ViscousLayers2D* > hyps;
+    vector< TopoDS_Shape >                      hypShapes;
+    if ( VISCOUS_2D::findHyps( theMesh, face, hyps, hypShapes ))
+    {
+      VISCOUS_2D::_ViscousBuilder2D builder( theMesh, face, hyps, hypShapes );
+      builder._faceSideVec =
+        StdMeshers_FaceSide::GetFaceWires( face, theMesh, true, error,
+                                           SMESH_ProxyMesh::Ptr(),
+                                           /*theCheckVertexNodes=*/false);
+      if ( error->IsOK() && !builder.findEdgesWithLayers())
+      {
+        error = builder.GetError();
+        if ( error && !error->IsOK() )
+          theStatus = SMESH_Hypothesis::HYP_INCOMPAT_HYPS;
+      }
+    }
+  }
+  return error;
 }
 // --------------------------------------------------------------------------------
 void StdMeshers_ViscousLayers2D::RestoreListeners() const
@@ -547,19 +607,22 @@ using namespace VISCOUS_2D;
  */
 //================================================================================
 
-_ViscousBuilder2D::_ViscousBuilder2D(SMESH_Mesh&                       theMesh,
-                                     const TopoDS_Face&                theFace,
-                                     const StdMeshers_ViscousLayers2D* theHyp):
-  _mesh( &theMesh ), _face( theFace ), _hyp( theHyp ), _helper( theMesh )
+_ViscousBuilder2D::_ViscousBuilder2D(SMESH_Mesh&               theMesh,
+                                     const TopoDS_Face&        theFace,
+                                     vector< const THypVL* > & theHyps,
+                                     vector< TopoDS_Shape > &  theAssignedTo):
+  _mesh( &theMesh ), _face( theFace ), _helper( theMesh )
 {
+  _hyps.swap( theHyps );
+  _hypShapes.swap( theAssignedTo );
+
   _helper.SetSubShape( _face );
   _helper.SetElementsOnShape( true );
 
   _face.Orientation( TopAbs_FORWARD ); // 2D logic works only in this case
   _surface = BRep_Tool::Surface( _face );
 
-  if ( _hyp )
-    _fPowN = pow( _hyp->GetStretchFactor(), _hyp->GetNumberLayers() );
+  _error = SMESH_ComputeError::New(COMPERR_OK);
 
   _nbLE = 0;
 }
@@ -593,14 +656,14 @@ bool _ViscousBuilder2D::error(const string& text )
  */
 //================================================================================
 
-SMESH_ProxyMesh::Ptr _ViscousBuilder2D::Compute(const TopoDS_Shape& theShapeHypAssignedTo)
+SMESH_ProxyMesh::Ptr _ViscousBuilder2D::Compute()
 {
-  _error       = SMESH_ComputeError::New(COMPERR_OK);
-  _faceSideVec = StdMeshers_FaceSide::GetFaceWires( _face, *_mesh, true, _error );
+  _faceSideVec = StdMeshers_FaceSide::GetFaceWires( _face, *_mesh, true, _error);
+
   if ( !_error->IsOK() )
     return _proxyMesh;
 
-  if ( !findEdgesWithLayers(theShapeHypAssignedTo) ) // analysis of a shape
+  if ( !findEdgesWithLayers() ) // analysis of a shape
     return _proxyMesh;
 
   if ( ! makePolyLines() ) // creation of fronts
@@ -629,21 +692,79 @@ SMESH_ProxyMesh::Ptr _ViscousBuilder2D::Compute(const TopoDS_Shape& theShapeHypA
  */
 //================================================================================
 
-bool _ViscousBuilder2D::findEdgesWithLayers(const TopoDS_Shape& theShapeHypAssignedTo)
+bool _ViscousBuilder2D::findEdgesWithLayers()
 {
-  // collect all EDGEs to ignore defined by hyp
-  int nbMyEdgesIgnored = getEdgesToIgnore( _hyp, _face, getMeshDS(), _ignoreShapeIds );
+  // collect all EDGEs to ignore defined by _hyps
+  typedef std::pair< set<TGeomID>, const THypVL* > TEdgesOfHyp;
+  vector< TEdgesOfHyp > ignoreEdgesOfHyp( _hyps.size() );
+  for ( size_t i = 0; i < _hyps.size(); ++i )
+  {
+    ignoreEdgesOfHyp[i].second = _hyps[i];
+    getEdgesToIgnore( _hyps[i], _face, getMeshDS(), ignoreEdgesOfHyp[i].first );
+  }
 
   // get all shared EDGEs
   TopTools_MapOfShape sharedEdges;
+  TopTools_IndexedMapOfShape hypFaces; // faces with VL hyps
+  for ( size_t i = 0; i < _hypShapes.size(); ++i )
+    TopExp::MapShapes( _hypShapes[i], TopAbs_FACE, hypFaces );
   TopTools_IndexedDataMapOfShapeListOfShape facesOfEdgeMap;
-  TopExp::MapShapesAndAncestors( theShapeHypAssignedTo,
-                                 TopAbs_EDGE, TopAbs_FACE, facesOfEdgeMap);
+  for ( int iF = 1; iF <= hypFaces.Extent(); ++iF )
+    TopExp::MapShapesAndAncestors( hypFaces(iF), TopAbs_EDGE, TopAbs_FACE, facesOfEdgeMap);
   for ( int iE = 1; iE <= facesOfEdgeMap.Extent(); ++iE )
     if ( facesOfEdgeMap( iE ).Extent() > 1 )
       sharedEdges.Add( facesOfEdgeMap.FindKey( iE ));
 
-  // check all EDGEs of the _face
+  // fill _hypOfEdge
+  if ( _hyps.size() > 1 )
+  {
+    // check if two hypotheses define different parameters for the same EDGE
+    for ( size_t iWire = 0; iWire < _faceSideVec.size(); ++iWire )
+    {
+      StdMeshers_FaceSidePtr wire = _faceSideVec[ iWire ];
+      for ( int iE = 0; iE < wire->NbEdges(); ++iE )
+      {
+        const THypVL* hyp = 0;
+        const TGeomID edgeID = wire->EdgeID( iE );
+        if ( !sharedEdges.Contains( wire->Edge( iE )))
+        {
+          for ( size_t i = 0; i < ignoreEdgesOfHyp.size(); ++i )
+            if ( ! ignoreEdgesOfHyp[i].first.count( edgeID ))
+            {
+              if ( hyp )
+                return error(SMESH_Comment("Several hypotheses define "
+                                           "Viscous Layers on the edge #") << edgeID );
+              hyp = ignoreEdgesOfHyp[i].second;
+            }
+        }
+        _hypOfEdge.push_back( hyp );
+        if ( !hyp )
+          _ignoreShapeIds.insert( edgeID );
+      }
+      // check if two hypotheses define different number of viscous layers for
+      // adjacent EDGEs
+      const THypVL *hyp, *prevHyp = _hypOfEdge.back();
+      size_t iH = _hypOfEdge.size() - wire->NbEdges();
+      for ( ; iH < _hypOfEdge.size(); ++iH )
+      {
+        hyp = _hypOfEdge[ iH ];
+        if ( hyp && prevHyp &&
+             hyp->GetNumberLayers() != prevHyp->GetNumberLayers() )
+        {
+          return error("Two hypotheses define different number of "
+                       "viscous layers on adjacent edges");
+        }
+        prevHyp = hyp;
+      }
+    }
+  }
+  else if ( _hyps.size() == 1 )
+  {
+    _ignoreShapeIds.swap( ignoreEdgesOfHyp[0].first );
+  }
+
+  // check all EDGEs of the _face to fill _ignoreShapeIds and _noShrinkVert
+
   int totalNbEdges = 0;
   for ( size_t iWire = 0; iWire < _faceSideVec.size(); ++iWire )
   {
@@ -674,9 +795,9 @@ bool _ViscousBuilder2D::findEdgesWithLayers(const TopoDS_Shape& theShapeHypAssig
           for ( ; hyp != allHyps.end() && !viscHyp; ++hyp )
             viscHyp = dynamic_cast<const StdMeshers_ViscousLayers2D*>( *hyp );
 
-          set<TGeomID> neighbourIgnoreEdges;
-          if (viscHyp)
-            getEdgesToIgnore( viscHyp, neighbourFace, getMeshDS(), neighbourIgnoreEdges );
+          // set<TGeomID> neighbourIgnoreEdges;
+          // if (viscHyp)
+          //   getEdgesToIgnore( viscHyp, neighbourFace, getMeshDS(), neighbourIgnoreEdges );
 
           for ( int iV = 0; iV < 2; ++iV )
           {
@@ -688,12 +809,22 @@ bool _ViscousBuilder2D::findEdgesWithLayers(const TopoDS_Shape& theShapeHypAssig
               PShapeIteratorPtr edgeIt = _helper.GetAncestors( vertex, *_mesh, TopAbs_EDGE );
               while ( const TopoDS_Shape* edge = edgeIt->next() )
                 if ( !edge->IsSame( wire->Edge( iE )) &&
-                     _helper.IsSubShape( *edge, neighbourFace ) &&
-                     ( neighbourIgnoreEdges.count( getMeshDS()->ShapeToIndex( *edge )) ||
-                       sharedEdges.Contains( *edge )))
+                     _helper.IsSubShape( *edge, neighbourFace ))
                 {
-                  _noShrinkVert.insert( getMeshDS()->ShapeToIndex( vertex ));
-                  break;
+                  const TGeomID neighbourID = getMeshDS()->ShapeToIndex( *edge );
+                  bool hasVL = !sharedEdges.Contains( *edge );
+                  if ( hasVL )
+                  {
+                    hasVL = false;
+                    for ( hyp = allHyps.begin(); hyp != allHyps.end() && !hasVL; ++hyp )
+                      if ( viscHyp = dynamic_cast<const THypVL*>( *hyp ))
+                        hasVL = viscHyp->IsShapeWithLayers( neighbourID );
+                  }
+                  if ( !hasVL )
+                  {
+                    _noShrinkVert.insert( getMeshDS()->ShapeToIndex( vertex ));
+                    break;
+                  }
                 }
             }
           }
@@ -702,18 +833,20 @@ bool _ViscousBuilder2D::findEdgesWithLayers(const TopoDS_Shape& theShapeHypAssig
     }
   }
 
+  int nbMyEdgesIgnored = _ignoreShapeIds.size();
+
   // add VERTEXes w/o layers to _ignoreShapeIds (this is used by toShrinkForAdjacent())
-  for ( size_t iWire = 0; iWire < _faceSideVec.size(); ++iWire )
-  {
-    StdMeshers_FaceSidePtr wire = _faceSideVec[ iWire ];
-    for ( int iE = 0; iE < wire->NbEdges(); ++iE )
-    {
-      TGeomID edge1 = wire->EdgeID( iE );
-      TGeomID edge2 = wire->EdgeID( iE+1 );
-      if ( _ignoreShapeIds.count( edge1 ) && _ignoreShapeIds.count( edge2 ))
-        _ignoreShapeIds.insert( getMeshDS()->ShapeToIndex( wire->LastVertex( iE )));
-    }
-  }
+  // for ( size_t iWire = 0; iWire < _faceSideVec.size(); ++iWire )
+  // {
+  //   StdMeshers_FaceSidePtr wire = _faceSideVec[ iWire ];
+  //   for ( int iE = 0; iE < wire->NbEdges(); ++iE )
+  //   {
+  //     TGeomID edge1 = wire->EdgeID( iE );
+  //     TGeomID edge2 = wire->EdgeID( iE+1 );
+  //     if ( _ignoreShapeIds.count( edge1 ) && _ignoreShapeIds.count( edge2 ))
+  //       _ignoreShapeIds.insert( getMeshDS()->ShapeToIndex( wire->LastVertex( iE )));
+  //   }
+  // }
 
   return ( nbMyEdgesIgnored < totalNbEdges );
 }
@@ -772,6 +905,7 @@ bool _ViscousBuilder2D::makePolyLines()
     for ( int iE = 0; iE < wire->NbEdges(); ++iE )
     {
       _PolyLine& L  = _polyLineVec[ iPoLine++ ];
+      L._index      = iPoLine-1;
       L._wire       = wire.get();
       L._edgeInd    = iE;
       L._advancable = !_ignoreShapeIds.count( wire->EdgeID( iE ));
@@ -846,13 +980,16 @@ bool _ViscousBuilder2D::makePolyLines()
   // Evaluate max possible _thickness if required layers thickness seems too high
   // ----------------------------------------------------------------------------
 
-  _thickness = _hyp->GetTotalThickness();
+  _maxThickness = _hyps[0]->GetTotalThickness();
+  for ( size_t iH = 1; iH < _hyps.size(); ++iH )
+    _maxThickness = Max( _maxThickness, _hyps[iH]->GetTotalThickness() );
+
   _SegmentTree::box_type faceBndBox2D;
   for ( iPoLine = 0; iPoLine < _polyLineVec.size(); ++iPoLine )
     faceBndBox2D.Add( *_polyLineVec[ iPoLine]._segTree->getBox() );
-  double boxTol = 1e-3 * sqrt( faceBndBox2D.SquareExtent() );
-  //
-  if ( _thickness * maxLen2dTo3dRatio > sqrt( faceBndBox2D.SquareExtent() ) / 10 )
+  const double boxTol = 1e-3 * sqrt( faceBndBox2D.SquareExtent() );
+
+  if ( _maxThickness * maxLen2dTo3dRatio > sqrt( faceBndBox2D.SquareExtent() ) / 10 )
   {
     vector< const _Segment* > foundSegs;
     double maxPossibleThick = 0;
@@ -885,7 +1022,7 @@ bool _ViscousBuilder2D::makePolyLines()
       }
     }
     if ( maxPossibleThick > 0. )
-      _thickness = Min( _hyp->GetTotalThickness(), maxPossibleThick );
+      _maxThickness = Min( _maxThickness, maxPossibleThick );
   }
 
   // Adjust _LayerEdge's at _PolyLine's extremities
@@ -930,13 +1067,14 @@ bool _ViscousBuilder2D::makePolyLines()
   for ( iPoLine = 0; iPoLine < _polyLineVec.size(); ++iPoLine )
   {
     lineBoxes[ iPoLine ] = *_polyLineVec[ iPoLine ]._segTree->getBox();
-    lineBoxes[ iPoLine ].Enlarge( maxLen2dTo3dRatio * _thickness * 
+    lineBoxes[ iPoLine ].Enlarge( maxLen2dTo3dRatio * getLineThickness( iPoLine ) * 
                                   ( _polyLineVec[ iPoLine ]._advancable ? 2. : 1.2 ));
   }
   // _reachableLines
   for ( iPoLine = 0; iPoLine < _polyLineVec.size(); ++iPoLine )
   {
     _PolyLine& L1 = _polyLineVec[ iPoLine ];
+    const double thick1 = getLineThickness( iPoLine );
     for ( size_t iL2 = 0; iL2 < _polyLineVec.size(); ++iL2 )
     {
       _PolyLine& L2 = _polyLineVec[ iL2 ];
@@ -950,7 +1088,7 @@ bool _ViscousBuilder2D::makePolyLines()
       {
         _LayerEdge& LE = L1._lEdges[iLE];
         if ( !lineBoxes[ iL2 ].IsOut ( LE._uvOut,
-                                       LE._uvOut + LE._normal2D *_thickness * LE._len2dTo3dRatio ))
+                                       LE._uvOut + LE._normal2D * thick1 * LE._len2dTo3dRatio ))
         {
           L1._reachableLines.push_back( & L2 );
           break;
@@ -1024,9 +1162,9 @@ void _ViscousBuilder2D::adjustCommonEdge( _PolyLine& LL, _PolyLine& LR )
       // during inflate().
       //
       // find max length of the VERTEX-based _LayerEdge whose direction is normAvg
-      double maxLen2D       = _thickness * EL._len2dTo3dRatio;
-      const gp_XY& pCommOut = ER._uvOut;
-      gp_XY        pCommIn  = pCommOut + normAvg * maxLen2D;
+      double       maxLen2D  = _maxThickness * EL._len2dTo3dRatio;
+      const gp_XY& pCommOut  = ER._uvOut;
+      gp_XY        pCommIn   = pCommOut + normAvg * maxLen2D;
       _Segment segCommon( pCommOut, pCommIn );
       _SegmentIntersection intersection;
       vector< const _Segment* > foundSegs;
@@ -1067,7 +1205,7 @@ void _ViscousBuilder2D::adjustCommonEdge( _PolyLine& LL, _PolyLine& LR )
         _SegmentIntersection lastIntersection;
         for ( ; iLE < L._lEdges.size(); ++iLE, eIt += dIt )
         {
-          gp_XY uvIn = eIt->_uvOut + eIt->_normal2D * _thickness * eIt->_len2dTo3dRatio;
+          gp_XY uvIn = eIt->_uvOut + eIt->_normal2D * _maxThickness * eIt->_len2dTo3dRatio;
           _Segment segOfEdge( eIt->_uvOut, uvIn );
           if ( !intersection.Compute( segCommon, segOfEdge ))
             break;
@@ -1148,7 +1286,7 @@ void _ViscousBuilder2D::setLayerEdgeData( _LayerEdge&                 lEdge,
     gp_Vec faceNorm = du ^ dv;
     gp_Vec normal   = faceNorm ^ tangent;
     normal.Normalize();
-    p = pOut.XYZ() + normal.XYZ() * /*1e-2 * */_hyp->GetTotalThickness() / _hyp->GetNumberLayers();
+    p = pOut.XYZ() + normal.XYZ() * /*1e-2 * */_hyps[0]->GetTotalThickness() / _hyps[0]->GetNumberLayers();
     faceProj->Perform( p );
     if ( !faceProj->IsDone() || faceProj->NbPoints() < 1 )
       return setLayerEdgeData( lEdge, u, pcurve, curve, p, reverse, NULL );
@@ -1205,7 +1343,7 @@ bool _ViscousBuilder2D::inflate()
 {
   // Limit size of inflation step by geometry size found by
   // itersecting _LayerEdge's with _Segment's
-  double minSize = _thickness, maxSize = 0;
+  double minSize = _maxThickness, maxSize = 0;
   vector< const _Segment* > foundSegs;
   _SegmentIntersection intersection;
   for ( size_t iL1 = 0; iL1 < _polyLineVec.size(); ++iL1 )
@@ -1233,29 +1371,30 @@ bool _ViscousBuilder2D::inflate()
     }
   }
   if ( minSize > maxSize ) // no collisions possible
-    maxSize = _thickness;
+    maxSize = _maxThickness;
 #ifdef __myDEBUG
   cout << "-- minSize = " << minSize << ", maxSize = " << maxSize << endl;
 #endif
 
   double curThick = 0, stepSize = minSize;
   int nbSteps = 0;
-  if ( maxSize > _thickness )
-    maxSize = _thickness;
+  if ( maxSize > _maxThickness )
+    maxSize = _maxThickness;
   while ( curThick < maxSize )
   {
     curThick += stepSize * 1.25;
-    if ( curThick > _thickness )
-      curThick = _thickness;
+    if ( curThick > _maxThickness )
+      curThick = _maxThickness;
 
     // Elongate _LayerEdge's
     for ( size_t iL = 0; iL < _polyLineVec.size(); ++iL )
     {
       _PolyLine& L = _polyLineVec[ iL ];
       if ( !L._advancable ) continue;
+      const double lineThick = Min( curThick, getLineThickness( iL ));
       bool lenChange = false;
       for ( size_t iLE = L.FirstLEdge(); iLE < L._lEdges.size(); ++iLE )
-        lenChange |= L._lEdges[iLE].SetNewLength( curThick );
+        lenChange |= L._lEdges[iLE].SetNewLength( lineThick );
       // for ( int k=0; k<L._segments.size(); ++k)
       //   cout << "( " << L._segments[k].p1().X() << ", " <<L._segments[k].p1().Y() << " ) "
       //        << "( " << L._segments[k].p2().X() << ", " <<L._segments[k].p2().Y() << " ) "
@@ -1270,7 +1409,7 @@ bool _ViscousBuilder2D::inflate()
     {
       break; // no more inflating possible
     }
-    stepSize = Max( stepSize , _thickness / 10. );
+    stepSize = Max( stepSize , _maxThickness / 10. );
     nbSteps++;
   }
 
@@ -1533,26 +1672,28 @@ bool _ViscousBuilder2D::shrink()
           int iPFrom = L._firstPntInd, iPTo = L._lastPntInd;
           if ( isShrinkableL )
           {
+            const THypVL* hyp = getLineHypothesis( L._leftLine->_index );
             vector<gp_XY>& uvVec = L._lEdges.front()._uvRefined;
-            for ( int i = 0; i < _hyp->GetNumberLayers(); ++i ) {
+            for ( int i = 0; i < hyp->GetNumberLayers(); ++i ) {
               const UVPtStruct& uvPt = points[ iPFrom + i + 1 ];
               L._leftNodes.push_back( uvPt.node );
               uvVec.push_back ( pcurve->Value( uvPt.param ).XY() );
             }
+            iPFrom += hyp->GetNumberLayers();
           }
           if ( isShrinkableR )
           {
+            const THypVL* hyp = getLineHypothesis( L._rightLine->_index );
             vector<gp_XY>& uvVec = L._lEdges.back()._uvRefined;
-            for ( int i = 0; i < _hyp->GetNumberLayers(); ++i ) {
+            for ( int i = 0; i < hyp->GetNumberLayers(); ++i ) {
               const UVPtStruct& uvPt = points[ iPTo - i - 1 ];
               L._rightNodes.push_back( uvPt.node );
               uvVec.push_back ( pcurve->Value( uvPt.param ).XY() );
             }
+            iPTo -= hyp->GetNumberLayers();
           }
           // make proxy sub-mesh data of present nodes
           //
-          if ( isShrinkableL ) iPFrom += _hyp->GetNumberLayers();
-          if ( isShrinkableR ) iPTo   -= _hyp->GetNumberLayers();
           UVPtStructVec nodeDataVec( & points[ iPFrom ], & points[ iPTo + 1 ]);
 
           double normSize = nodeDataVec.back().normParam - nodeDataVec.front().normParam;
@@ -1723,14 +1864,14 @@ bool _ViscousBuilder2D::shrink()
             ( isR ? L._leftLine->_lEdges.back() : L._rightLine->_lEdges.front() );
           length2D = neighborLE._length2D;
           if ( length2D == 0 )
-            length2D = _thickness * nearLE._len2dTo3dRatio;
+            length2D = _maxThickness * nearLE._len2dTo3dRatio;
         }
       }
 
       // move u to the internal boundary of layers
       //  u --> u
       //  x-x-x-x-----x-----x----
-      double maxLen3D = Min( _thickness, edgeLen / ( 1 + nbAdvancable ));
+      double maxLen3D = Min( _maxThickness, edgeLen / ( 1 + nbAdvancable ));
       double maxLen2D = maxLen3D * nearLE._len2dTo3dRatio;
       if ( !length2D ) length2D = length1D / len1dTo2dRatio;
       if ( Abs( length2D ) > maxLen2D )
@@ -1746,7 +1887,8 @@ bool _ViscousBuilder2D::shrink()
 
       // compute params of layers on L
       vector<double> heights;
-      calcLayersHeight( u - u0, heights );
+      const THypVL* hyp = getLineHypothesis( L2->_index );
+      calcLayersHeight( u - u0, heights, hyp );
       //
       vector< double > params( heights.size() );
       for ( size_t i = 0; i < params.size(); ++i )
@@ -1756,13 +1898,13 @@ bool _ViscousBuilder2D::shrink()
       //  x-x-x-x---
       vector< const SMDS_MeshNode* >& layersNode = isR ? L._rightNodes : L._leftNodes;
       vector<gp_XY>& nodeUV = ( isR ? L._lEdges.back() : L._lEdges[0] )._uvRefined;
-      nodeUV.resize    ( _hyp->GetNumberLayers() );
-      layersNode.resize( _hyp->GetNumberLayers() );
+      nodeUV.resize    ( hyp->GetNumberLayers() );
+      layersNode.resize( hyp->GetNumberLayers() );
       const SMDS_MeshNode* vertexNode = nodeDataVec[ iPEnd ].node;
       const SMDS_MeshNode *  prevNode = vertexNode;
       for ( size_t i = 0; i < params.size(); ++i )
       {
-        gp_Pnt p        = curve.Value( params[i] );
+        const gp_Pnt p  = curve.Value( params[i] );
         layersNode[ i ] = helper.AddNode( p.X(), p.Y(), p.Z(), /*id=*/0, params[i] );
         nodeUV    [ i ] = pcurve->Value( params[i] ).XY();
         helper.AddEdge( prevNode, layersNode[ i ] );
@@ -1773,7 +1915,7 @@ bool _ViscousBuilder2D::shrink()
       if ( !L2->_advancable )
       {
         isRShrinkedForAdjacent = isR;
-        nodeDataForAdjacent.resize( _hyp->GetNumberLayers() );
+        nodeDataForAdjacent.resize( hyp->GetNumberLayers() );
 
         size_t iFrw = 0, iRev = nodeDataForAdjacent.size()-1, *i = isR ? &iRev : &iFrw;
         nodeDataForAdjacent[ *i ] = points[ isR ? L._lastPntInd : L._firstPntInd ];
@@ -1890,11 +2032,11 @@ bool _ViscousBuilder2D::shrink()
       {
         // refine the not shared _LayerEdge
         vector<double> layersHeight;
-        calcLayersHeight( LE2._length2D, layersHeight );
+        calcLayersHeight( LE2._length2D, layersHeight, getLineHypothesis( L2._index ));
 
         vector<gp_XY>& nodeUV2 = LE2._uvRefined;
-        nodeUV2.resize    ( _hyp->GetNumberLayers() );
-        layerNodes2.resize( _hyp->GetNumberLayers() );
+        nodeUV2.resize    ( layersHeight.size() );
+        layerNodes2.resize( layersHeight.size() );
         for ( size_t i = 0; i < layersHeight.size(); ++i )
         {
           gp_XY uv = LE2._uvOut + LE2._normal2D * layersHeight[i];
@@ -1952,12 +2094,13 @@ bool _ViscousBuilder2D::toShrinkForAdjacent( const TopoDS_Face&   adjFace,
   if ( _noShrinkVert.count( getMeshDS()->ShapeToIndex( V )) || adjFace.IsNull() )
     return false;
 
-  TopoDS_Shape hypAssignedTo;
-  if ( const StdMeshers_ViscousLayers2D* vlHyp = findHyp( *_mesh, adjFace, &hypAssignedTo ))
+  vector< const StdMeshers_ViscousLayers2D* > hyps;
+  vector< TopoDS_Shape >                      hypShapes;
+  if ( VISCOUS_2D::findHyps( *_mesh, adjFace, hyps, hypShapes ))
   {
-    VISCOUS_2D::_ViscousBuilder2D builder( *_mesh, adjFace, vlHyp );
+    VISCOUS_2D::_ViscousBuilder2D builder( *_mesh, adjFace, hyps, hypShapes );
     builder._faceSideVec = StdMeshers_FaceSide::GetFaceWires( adjFace, *_mesh, true, _error );
-    builder.findEdgesWithLayers( hypAssignedTo );
+    builder.findEdgesWithLayers();
 
     PShapeIteratorPtr edgeIt = _helper.GetAncestors( V, *_mesh, TopAbs_EDGE );
     while ( const TopoDS_Shape* edgeAtV = edgeIt->next() )
@@ -2180,7 +2323,8 @@ bool _ViscousBuilder2D::refine()
     }
 
     // normalized height of layers
-    calcLayersHeight( 1., layersHeight );
+    const THypVL* hyp = getLineHypothesis( iL );
+    calcLayersHeight( 1., layersHeight, hyp);
 
     // Create layers of faces
 
@@ -2192,11 +2336,11 @@ bool _ViscousBuilder2D::refine()
     for ( int i = L._firstPntInd; i <= L._lastPntInd; ++i )
       outerNodes[ i-L._firstPntInd ] = points[i].node;
 
-    L._leftNodes .reserve( _hyp->GetNumberLayers() );
-    L._rightNodes.reserve( _hyp->GetNumberLayers() );
+    L._leftNodes .reserve( hyp->GetNumberLayers() );
+    L._rightNodes.reserve( hyp->GetNumberLayers() );
     int cur = 0, prev = -1; // to take into account orientation of _face
     if ( isReverse ) std::swap( cur, prev );
-    for ( int iF = 0; iF < _hyp->GetNumberLayers(); ++iF ) // loop on layers of faces
+    for ( int iF = 0; iF < hyp->GetNumberLayers(); ++iF ) // loop on layers of faces
     {
       // create innerNodes of a current layer
       for ( size_t i = iN0; i < iNE; ++i )
@@ -2360,6 +2504,30 @@ bool _ViscousBuilder2D::removeMeshFaces(const TopoDS_Shape& face)
 
 //================================================================================
 /*!
+ * \brief Returns a hypothesis for a _PolyLine
+ */
+//================================================================================
+
+const StdMeshers_ViscousLayers2D* _ViscousBuilder2D::getLineHypothesis(int iPL)
+{
+  return iPL < (int)_hypOfEdge.size() ? _hypOfEdge[ iPL ] : _hyps[0];
+}
+
+//================================================================================
+/*!
+ * \brief Returns a layers thickness for a _PolyLine
+ */
+//================================================================================
+
+double _ViscousBuilder2D::getLineThickness(int iPL)
+{
+  if ( const StdMeshers_ViscousLayers2D* h = getLineHypothesis( iPL ))
+    return Min( _maxThickness, h->GetTotalThickness() );
+  return _maxThickness;
+}
+
+//================================================================================
+/*!
  * \brief Creates a _ProxyMeshOfFace and store it in a sub-mesh of FACE
  */
 //================================================================================
@@ -2384,21 +2552,23 @@ _ProxyMeshOfFace* _ViscousBuilder2D::getProxyMesh()
 //================================================================================
 
 void _ViscousBuilder2D::calcLayersHeight(const double    totalThick,
-                                         vector<double>& heights)
+                                         vector<double>& heights,
+                                         const THypVL*   hyp)
 {
-  heights.resize( _hyp->GetNumberLayers() );
+  const double fPowN = pow( hyp->GetStretchFactor(), hyp->GetNumberLayers() );
+  heights.resize( hyp->GetNumberLayers() );
   double h0;
-  if ( _fPowN - 1 <= numeric_limits<double>::min() )
-    h0 = totalThick / _hyp->GetNumberLayers();
+  if ( fPowN - 1 <= numeric_limits<double>::min() )
+    h0 = totalThick / hyp->GetNumberLayers();
   else
-    h0 = totalThick * ( _hyp->GetStretchFactor() - 1 )/( _fPowN - 1 );
+    h0 = totalThick * ( hyp->GetStretchFactor() - 1 )/( fPowN - 1 );
 
   double hSum = 0, hi = h0;
-  for ( int i = 0; i < _hyp->GetNumberLayers(); ++i )
+  for ( int i = 0; i < hyp->GetNumberLayers(); ++i )
   {
     hSum += hi;
     heights[ i ] = hSum;
-    hi *= _hyp->GetStretchFactor();
+    hi *= hyp->GetStretchFactor();
   }
 }
 

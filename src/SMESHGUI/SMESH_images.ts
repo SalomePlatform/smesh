@@ -300,6 +300,14 @@
             <translation>mesh_hypo_edit.png</translation>
         </message>
         <message>
+            <source>ICON_PLUS</source>
+            <translation>mesh_plus.png</translation>
+        </message>
+        <message>
+            <source>ICON_MINUS</source>
+            <translation>mesh_minus.png</translation>
+        </message>
+        <message>
             <source>ICON_INTERSECT</source>
             <translation>mesh_intersectGroups.png</translation>
         </message>

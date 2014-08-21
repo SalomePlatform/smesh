@@ -91,21 +91,25 @@ namespace SMESH
 
   QList<HypothesesSet*> myListOfHypothesesSets;
 
-  void processHypothesisStatus(const int theHypStatus,
+  void processHypothesisStatus(const int                   theHypStatus,
                                SMESH::SMESH_Hypothesis_ptr theHyp,
-                               const bool theIsAddition)
+                               const bool                  theIsAddition,
+                               const char*                 theError = 0)
   {
     if (theHypStatus > SMESH::HYP_OK) {
       // get Hyp name
       QString aHypName ("NULL Hypothesis");
       if (!CORBA::is_nil(theHyp)) {
         _PTR(SObject) Shyp = SMESH::FindSObject(theHyp);
-        if (Shyp)
+        if (Shyp) {
           // name in study
           aHypName = Shyp->GetName().c_str();
-        else
+        }
+        else {
           // label in xml file
-          aHypName = GetHypothesisData(theHyp->GetName())->Label;
+          CORBA::String_var hypType = theHyp->GetName();
+          aHypName = GetHypothesisData( hypType.in() )->Label;
+        }
       }
 
       // message
@@ -116,12 +120,22 @@ namespace SMESH
       else
         aMsg = (isFatal ? "SMESH_CANT_RM_HYP"  : "SMESH_RM_HYP_WRN");
 
-      aMsg = QObject::tr(aMsg.toLatin1().data()).arg(aHypName) +
+      aMsg = QObject::tr(aMsg.toLatin1().data()).arg(aHypName);
+
+      if ( theError && theError[0] )
+      {
+        aMsg += theError;
+      }
+      else
+      {
         QObject::tr(QString("SMESH_HYP_%1").arg(theHypStatus).toLatin1().data());
 
-      if ( theHypStatus == SMESH::HYP_HIDDEN_ALGO ) // PAL18501
-        aMsg = aMsg.arg( GetHypothesisData(theHyp->GetName())->Dim[0] );
-
+        if ( theHypStatus == SMESH::HYP_HIDDEN_ALGO ) { // PAL18501
+          CORBA::String_var hypType = theHyp->GetName();
+          if ( HypothesisData* hd = GetHypothesisData( hypType.in() ))
+            aMsg = aMsg.arg( hd->Dim[0] );
+        }
+      }
       SUIT_MessageBox::warning(SMESHGUI::desktop(),
                                QObject::tr("SMESH_WRN_WARNING"),
                                aMsg);
@@ -520,7 +534,8 @@ namespace SMESH
       _PTR(SObject) SM = SMESH::FindSObject(aMesh);
       GEOM::GEOM_Object_var aShapeObject = SMESH::GetShapeOnMeshOrSubMesh(SM);
       try {
-        res = aMesh->AddHypothesis(aShapeObject, aHyp);
+        CORBA::String_var error;
+        res = aMesh->AddHypothesis(aShapeObject, aHyp, error.out());
         if (res < SMESH::HYP_UNKNOWN_FATAL) {
           _PTR(SObject) aSH = SMESH::FindSObject(aHyp);
           if (SM && aSH) {
@@ -529,7 +544,7 @@ namespace SMESH
         }
         if (res > SMESH::HYP_OK) {
           wc.suspend();
-          processHypothesisStatus(res, aHyp, true);
+          processHypothesisStatus(res, aHyp, true, error.in() );
           wc.resume();
         }
       }
@@ -554,8 +569,10 @@ namespace SMESH
         SMESH::SMESH_Mesh_var aMesh = aSubMesh->GetFather();
         _PTR(SObject) SsubM = SMESH::FindSObject(aSubMesh);
         GEOM::GEOM_Object_var aShapeObject = SMESH::GetShapeOnMeshOrSubMesh(SsubM);
-        if (!aMesh->_is_nil() && SsubM && !aShapeObject->_is_nil()) {
-          res = aMesh->AddHypothesis(aShapeObject, aHyp);
+        if (!aMesh->_is_nil() && SsubM && !aShapeObject->_is_nil())
+        {
+          CORBA::String_var error;
+          res = aMesh->AddHypothesis( aShapeObject, aHyp, error.out() );
           if (res < SMESH::HYP_UNKNOWN_FATAL)  {
             _PTR(SObject) meshSO = SMESH::FindSObject(aMesh);
             if (meshSO)
@@ -563,7 +580,7 @@ namespace SMESH
           }
           if (res > SMESH::HYP_OK) {
             wc.suspend();
-            processHypothesisStatus(res, aHyp, true);
+            processHypothesisStatus( res, aHyp, true, error.in() );
             wc.resume();
           }
         }

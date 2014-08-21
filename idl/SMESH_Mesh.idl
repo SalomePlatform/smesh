@@ -88,19 +88,19 @@ module SMESH
   typedef sequence<log_block> log_array;
 
   struct PointStruct { double x;
-  		       double y;
-  		       double z; } ;
+                       double y;
+                       double z; } ;
 
   typedef sequence<PointStruct> nodes_array;
 
   struct DirStruct   { PointStruct PS ; } ;          // analog to OCCT gp_Vec
 
   struct AxisStruct  { double x;
-  		       double y;
-  		       double z;
-  		       double vx;
-  		       double vy;
-  		       double vz; } ;
+                       double y;
+                       double z;
+                       double vx;
+                       double vy;
+                       double vz; } ;
   /*!
    * Node location on a shape
    */
@@ -215,7 +215,8 @@ module SMESH
     HYP_BAD_DIM,      // bad dimension
     HYP_BAD_SUBSHAPE, // shape is neither the main one, nor its sub-shape, nor a group
     HYP_BAD_GEOMETRY, // geometry mismatches algorithm's expectation
-    HYP_NEED_SHAPE    // algorithm can work on shape only
+    HYP_NEED_SHAPE,   // algorithm can work on shape only
+    HYP_INCOMPAT_HYPS // several additional hypotheses are incompatible one with other
   };
 
   /*!
@@ -389,7 +390,7 @@ module SMESH
      * Create a group
      */
     SMESH_Group CreateGroup( in ElementType elem_type,
-			     in string      name )
+                             in string      name )
       raises (SALOME::SALOME_Exception);
 
     /*!
@@ -508,31 +509,29 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
-     * Add hypothesis to the mesh, under a particular Sub-shape
+     * Add hypothesis to the mesh, under a particular sub-shape
      * (or the main shape itself)
-     * The Add method is only used to prepare the build of the mesh and store
+     * This method is only used to prepare the build of the mesh and store
      * the algorithms and associated parameters.
-     * Actual job of mesh the shape is done by MESH_Gen.
+     * Actual job of meshing the shape is done by SMESH_Gen::Compute()
      * @params
-     * - aSubShape : sub-shape obtained by a shape explode in GEOM
+     * - aSubObject : sub-shape obtained by a shape explode in GEOM
      *   (or main shape)
-     * - anHyp : hypothesis object
+     * - anHyp : an hypothesis object
      * @return
-     * - OK if the hypothesis is compatible with the sub-shape
-     *   (and all previous hypothesis on the sub-shape)
-     * - NOK if the hypothesis is not compatible with the sub-shape
-     *   (or one previous hypothesis on the sub-shape)
-     * raises exception if hypothesis has not been created
+     * - An enum item explaining what's up
+     * - anErrorText: an optional textual description of a problem (if any)
      */
     Hypothesis_Status AddHypothesis(in GEOM::GEOM_Object aSubObject,
-				    in SMESH_Hypothesis anHyp)
+                                    in SMESH_Hypothesis  anHyp,
+                                    out string           anErrorText)
       raises (SALOME::SALOME_Exception);
 
     /*!
      * Remove an hypothesis previouly added with AddHypothesis.
      */
     Hypothesis_Status RemoveHypothesis(in GEOM::GEOM_Object aSubObject,
-				       in SMESH_Hypothesis anHyp)
+                                       in SMESH_Hypothesis anHyp)
       raises (SALOME::SALOME_Exception);
 
     /*!

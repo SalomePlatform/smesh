@@ -141,7 +141,8 @@ public:
                                   SMESH_Mesh &         theMesh,
                                   const bool           theIgnoreMediumNodes,
                                   TError &             theError,
-                                  SMESH_ProxyMesh::Ptr theProxyMesh = SMESH_ProxyMesh::Ptr());
+                                  SMESH_ProxyMesh::Ptr theProxyMesh = SMESH_ProxyMesh::Ptr(),
+                                  const bool           theCheckVertexNodes=true);
   /*!
    * \brief Change orientation of side geometry
    */

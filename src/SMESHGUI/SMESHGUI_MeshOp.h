@@ -96,12 +96,12 @@ private:
                                                 QStringList&,
                                                 THypDataList&,
                                                 HypothesisData* = 0 ) const;
-  static void                    existingHyps( const int, 
+  void                           existingHyps( const int, 
                                                const int, 
                                                _PTR(SObject),
                                                QStringList&, 
                                                THypList&,
-                                               HypothesisData* = 0 );
+                                               HypothesisData* = 0 ) const;
   HypothesisData*                hypData( const int,
                                           const int,
                                           const int ); // access to myAvailableHypData
@@ -117,6 +117,8 @@ private:
                                                           bool                     askUser=false);
 
   int                            currentHyp( const int, const int ) const;
+  bool                           isSelectedHyp( int, int, int ) const;
+  int                            nbDlgHypTypes( const int ) const;
   bool                           isAccessibleDim( const int ) const;
   void                           setCurrentHyp( const int, const int, const int );
   void                           setDefaultName( const QString& prefix="" ) const;
@@ -135,7 +137,9 @@ private:
   void                           createMeshTypeList( QStringList& );
   void                           setAvailableMeshType( const QStringList& );
   void                           setFilteredAlgoData( const int, const int );
+
 private:
+
   SMESHGUI_MeshDlg*              myDlg;
   SMESHGUI_ShapeByMeshOp*        myShapeByMeshOp;
   bool                           myToCreate;

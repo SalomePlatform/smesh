@@ -112,7 +112,7 @@ StdMeshers_Regular_1D::~StdMeshers_Regular_1D()
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -127,13 +127,18 @@ bool StdMeshers_Regular_1D::CheckHypothesis( SMESH_Mesh&         aMesh,
   const list <const SMESHDS_Hypothesis * > & hyps =
     GetUsedHypothesis(aMesh, aShape, /*ignoreAuxiliaryHyps=*/false);
 
+  const SMESH_HypoFilter & propagFilter = StdMeshers_Propagation::GetFilter();
+
   // find non-auxiliary hypothesis
   const SMESHDS_Hypothesis *theHyp = 0;
+  set< string > propagTypes;
   list <const SMESHDS_Hypothesis * >::const_iterator h = hyps.begin();
   for ( ; h != hyps.end(); ++h ) {
     if ( static_cast<const SMESH_Hypothesis*>(*h)->IsAuxiliary() ) {
       if ( strcmp( "QuadraticMesh", (*h)->GetName() ) == 0 )
         _quadraticMesh = true;
+      if ( propagFilter.IsOk( static_cast< const SMESH_Hypothesis*>( *h ), aShape ))
+        propagTypes.insert( (*h)->GetName() );
     }
     else {
       if ( !theHyp )
@@ -293,11 +298,48 @@ bool StdMeshers_Regular_1D::CheckHypothesis( SMESH_Mesh&         aMesh,
     ASSERT(_adaptiveHyp);
     _hypType = ADAPTIVE;
     _onlyUnaryInput = false;
+    aStatus = SMESH_Hypothesis::HYP_OK;
   }
   else
+  {
     aStatus = SMESH_Hypothesis::HYP_INCOMPATIBLE;
+  }
 
-  return ( _hypType != NONE );
+  if ( propagTypes.size() > 1 && aStatus == HYP_OK )
+  {
+    // detect concurrent Propagation hyps
+    _usedHypList.clear();
+    list< TopoDS_Shape > assignedTo;
+    if ( aMesh.GetHypotheses( aShape, propagFilter, _usedHypList, true, &assignedTo ) > 1 )
+    {
+      // find most simple shape and a hyp on it
+      int simpleShape = TopAbs_COMPOUND;
+      const SMESHDS_Hypothesis* localHyp = 0;
+      list< TopoDS_Shape >::iterator            shape = assignedTo.begin();
+      list< const SMESHDS_Hypothesis *>::iterator hyp = _usedHypList.begin();
+      for ( ; shape != assignedTo.end(); ++shape )
+        if ( shape->ShapeType() > simpleShape )
+        {
+          simpleShape = shape->ShapeType();
+          localHyp = (*hyp);
+        }
+      // check if there a different hyp on simpleShape
+      shape = assignedTo.begin();
+      hyp = _usedHypList.begin();
+      for ( ; hyp != _usedHypList.end(); ++hyp, ++shape )
+        if ( shape->ShapeType() == simpleShape &&
+             !localHyp->IsSameName( **hyp ))
+        {
+          aStatus = HYP_INCOMPAT_HYPS;
+          return error( SMESH_Comment("Hypotheses of both \"")
+                        << StdMeshers_Propagation::GetName() << "\" and \""
+                        << StdMeshers_PropagOfDistribution::GetName()
+                        << "\" types can't be applied to the same edge");
+        }
+    }
+  }
+
+  return ( aStatus == SMESH_Hypothesis::HYP_OK );
 }
 
 static bool computeParamByFunc(Adaptor3d_Curve& C3d, double first, double last,

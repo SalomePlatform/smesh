@@ -2,7 +2,7 @@
 
 \page constructing_submeshes_page Constructing sub-meshes
 
-Sub-mesh is a mesh on a geometrical sub-object created with algorithms
+Sub-mesh is a mesh on a geometrical sub-object created with meshing algorithms
 and/or hypotheses other than the algorithms and hypotheses assigned to
 the parent mesh on the parent geometrical object.
 
@@ -52,7 +52,7 @@ The following dialog box will appear:
 \par
 It allows to define the \b Name, the parent \b Mesh and the \b
 Geometry (e.g. a face if the parent mesh has been built on box) of the
-sub-mesh. You can define algorithms and hypotheses in the same way as
+sub-mesh. You can select meshing algorithms and hypotheses in the same way as
 in \ref constructing_meshes_page "Create mesh" menu.
 
 \par
@@ -93,11 +93,13 @@ displayed as follows:
 \par
 It contains:
 <ul>
-<li>a reference to the geometrical object on the basis of which the sub-mesh has been constructed;</li>
+<li>a sub-mesh name (\a SubMeshFace1)
+<li>a reference to the geometrical object on the basis of which the
+  sub-mesh has been constructed (<em>Cylindrical Face_1</em>);</li>
 <li><b>Applied hypotheses</b> folder containing the references to the
-hypotheses applied to the construction of the sub-mesh;</li>
+hypotheses selected at the construction of the sub-mesh;</li>
 <li><b>Applied algorithms</b> folder containing the references to the
-algorithms applied to the construction of the sub-mesh.</li>
+algorithms selected at the construction of the sub-mesh.</li>
 </ul>
 
 <br><b>See Also</b> a sample TUI Script of a 

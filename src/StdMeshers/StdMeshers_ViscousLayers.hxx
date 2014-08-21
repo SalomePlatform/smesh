@@ -28,6 +28,7 @@
 
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_ProxyMesh.hxx"
+#include "SMESH_ComputeError.hxx"
 
 #include <vector>
 
@@ -39,7 +40,7 @@ class STDMESHERS_EXPORT StdMeshers_ViscousLayers : public SMESH_Hypothesis
 public:
   StdMeshers_ViscousLayers(int hypId, int studyId, SMESH_Gen* gen);
 
-  // Set boundary shapes, faces in 3D, edges in 2D, either to exclude from
+  // Set boundary shapes (faces in 3D, edges in 2D) either to exclude from
   // treatment or to make the Viscous Layers on
   void SetBndShapes(const std::vector<int>& shapeIds, bool toIgnore);
   std::vector<int> GetBndShapes() const { return _shapeIds; }
@@ -62,6 +63,15 @@ public:
   SMESH_ProxyMesh::Ptr Compute(SMESH_Mesh&         theMesh,
                                const TopoDS_Shape& theShape,
                                const bool          toMakeN2NMap=false) const;
+
+  // Checks compatibility of assigned StdMeshers_ViscousLayers hypotheses 
+  static SMESH_ComputeErrorPtr
+    CheckHypothesis(SMESH_Mesh&                          aMesh,
+                    const TopoDS_Shape&                  aShape,
+                    SMESH_Hypothesis::Hypothesis_Status& aStatus);
+
+  // Checks if viscous layers should be constructed on a shape
+  bool IsShapeWithLayers(int shapeIndex) const;
 
   virtual std::ostream & SaveTo(std::ostream & save);
   virtual std::istream & LoadFrom(std::istream & load);

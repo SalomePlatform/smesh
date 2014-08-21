@@ -93,7 +93,7 @@ computations.
   and edges, just hide the mesh to avoid this. To avoid a long wait when a
   geometry with many faces (or edges) is displayed, the number of faces
   (edges) shown at a time is limited by the value of "Sub-shapes
-  preview chunk size" preference (in Preferences/Mesh/General tab).<br>
+  preview chunk size" preference (in Preferences/Mesh/General tab).
 
   If faces/edges without layers are specified, the element layers are
   not constructed on geometrical faces shared by several solids in 3D
@@ -106,6 +106,15 @@ computations.
   possibly being internal faces/edges within the whole model.
   \image html viscous_layers_on_submesh.png 2D viscous layers constructed on boundary edges of a sub-mesh on a disk face.
 
+  If you use \b several hypotheses to define viscous layers on faces of
+  one solid, keep in mind the following. Each hypothesis defines a set
+  of faces with viscous layers (even if you specify faces without
+  layers). The sets of faces with viscous layers defined by several
+  hypotheses should not intersect, else the module won't add an
+  hypothesis that is incompatible with another one. <br>
+  Also you can't define different number of layers on adjacent faces
+  of a solid.<br>
+  This logic is also valid for the 2D hypothesis.
 </li>
 </ul>
 

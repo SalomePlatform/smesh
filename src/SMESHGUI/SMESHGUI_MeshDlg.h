@@ -38,11 +38,12 @@
 #include <QMap>
 
 class SMESHGUI_MeshTab;
-class QTabWidget;
-class QComboBox;
-class QToolButton;
-class QMenu;
 class QAction;
+class QComboBox;
+class QListWidget;
+class QMenu;
+class QTabWidget;
+class QToolButton;
 
 /*!
  * \brief Dialog for mech creation or editing
@@ -89,7 +90,7 @@ private slots:
   void                         onGeomSelectionButton( bool );
   void                         onChangedMeshType( const int );
 
-private:
+ private:
   QMap<int, SMESHGUI_MeshTab*> myTabs;
   QTabWidget*                  myTabWg;
   QToolButton*                 myHypoSetButton;
@@ -98,23 +99,26 @@ private:
 };
 
 /*!
- * \brief Tab for tab widget containing controls for definition of 
+ * \brief Tab for tab widget containing controls for definition of
  * algorithms and hypotheses
-*/ 
+ */
 
 class SMESHGUI_EXPORT SMESHGUI_MeshTab : public QFrame
 {
   Q_OBJECT
-      
-public:      
+
+    public:
   /*! To differ main algorithms, hypotheses and additional ones*/
   enum HypType
-  { 
+  {
     Algo = 0, //!< algorithms
     MainHyp,  //!< main hypothesis
-    AddHyp    //!< additional hypothesis
-  };            
-      
+    AddHyp,    //!< additional hypothesis
+    MoreAddHyp //! since several additional hypothesis are possible, the 2-nd, 3-d etc
+    // additional hypotheses are coded as being of HypType (AddHyp + 1), (AddHyp + 2) etc.
+    // Nb of HypType's after MainHyp is returned by SMESHGUI_MeshTab::nbAddHypTypes()
+  };
+
 public:      
   SMESHGUI_MeshTab( QWidget* );
   virtual ~SMESHGUI_MeshTab();
@@ -122,9 +126,10 @@ public:
   void                         setAvailableHyps( const int, const QStringList& );
   void                         setExistingHyps( const int, const QStringList&, bool=false);
   void                         addHyp( const int, const QString& );
-  void                         renameHyp( const int, const int, const QString& );
+  //void                         renameHyp( const int, const int, const QString& );
   void                         setCurrentHyp( const int, const int );
   int                          currentHyp( const int ) const;
+  int                          nbAddHypTypes() const;
   void                         reset();
 
 signals:  
@@ -139,14 +144,24 @@ private slots:
   void                         onCreateHyp();  
   void                         onEditHyp();
   void                         onHyp( int );
-  
-private:  
-  QMap<int, QComboBox*>        myHyp;
-  QMap<int, QToolButton*>      myCreateHyp;
-  QMap<int, QToolButton*>      myEditHyp;
-  
-  QMap<int, QStringList>       myAvailableHyps;
-  QMap<int, QStringList>       myExistingHyps;
+  void                         onMoreAddHyp();
+  void                         onLessAddHyp();
+
+private:
+
+  void                         addItem( const QString& txt, const int type, const int index );
+  int                          getCurrentIndex( const int type, const bool curByType=false) const;
+
+  QMap<int, QStringList>       myAvailableHypTypes;
+
+  QMap<int, QComboBox*>        myHypCombo;
+  QMap<int, QToolButton*>      myCreateHypBtn;
+  QMap<int, QToolButton*>      myEditHypBtn;
+
+  QToolButton*                 myMoreAddHypBtn;
+  QToolButton*                 myLessAddHypBtn;
+  QListWidget*                 myAddHypList; // 2-nd, etc. additional hyps
+
 };
 
 #endif // SMESHGUI_MESHDLG_H

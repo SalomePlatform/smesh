@@ -103,3 +103,14 @@ bool SMESHDS_Hypothesis::operator==(const SMESHDS_Hypothesis& other) const
   ((SMESHDS_Hypothesis*)&other)->SaveTo(otherSave);
   return mySave.str() == otherSave.str();
 }
+
+//================================================================================
+/*!
+ * \brief Compare types of hypotheses
+ */
+//================================================================================
+
+bool SMESHDS_Hypothesis::IsSameName( const SMESHDS_Hypothesis& other) const
+{
+  return _name == other._name;
+}

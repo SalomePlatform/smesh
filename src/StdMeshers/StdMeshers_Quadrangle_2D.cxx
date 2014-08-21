@@ -199,7 +199,9 @@ bool StdMeshers_Quadrangle_2D::CheckHypothesis
     }
   }
 
-  return isOk;
+  error( StdMeshers_ViscousLayers2D::CheckHypothesis( aMesh, aShape, aStatus ));
+
+  return aStatus == HYP_OK;
 }
 
 //=============================================================================

@@ -48,6 +48,7 @@ class SMESHDS_EXPORT SMESHDS_Hypothesis
   virtual std::ostream & SaveTo(std::ostream & save)=0;
   virtual std::istream & LoadFrom(std::istream & load)=0;
 
+  bool IsSameName( const SMESHDS_Hypothesis& other) const;
   virtual bool operator==(const SMESHDS_Hypothesis& other) const;
   bool operator!=(const SMESHDS_Hypothesis& other) const { return !(*this==other); }
 

@@ -35,6 +35,7 @@
 
 #include <TopoDS_Edge.hxx>
 
+class SMESH_HypoFilter;
 
 // =======================================================================
 /*!
@@ -42,7 +43,7 @@
  */
 // =======================================================================
 
-class STDMESHERS_EXPORT StdMeshers_Propagation:public SMESH_Hypothesis
+class STDMESHERS_EXPORT StdMeshers_Propagation : public SMESH_Hypothesis
 {
  public:
   StdMeshers_Propagation(int hypId, int studyId, SMESH_Gen * gen);
@@ -52,6 +53,12 @@ class STDMESHERS_EXPORT StdMeshers_Propagation:public SMESH_Hypothesis
   virtual std::istream & LoadFrom(std::istream & load);
 
   static std::string GetName ();
+
+  /*!
+   * \brief Returns a filter selecting both StdMeshers_Propagation and
+   *        StdMeshers_PropagOfDistribution hypotheses
+   */
+  static const SMESH_HypoFilter& GetFilter();
 
   /*!
    * \brief Set EventListener managing propagation of hypotheses

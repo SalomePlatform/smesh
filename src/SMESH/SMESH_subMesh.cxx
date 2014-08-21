@@ -670,11 +670,17 @@ bool SMESH_subMesh::IsApplicableHypotesis(const SMESH_Hypothesis* theHypothesis,
   return false;
 }
 
-//=============================================================================
+//================================================================================
 /*!
- *
+ * \brief Treats modification of hypotheses definition
+ *  \param [in] event - what happens
+ *  \param [in] anHyp - a hypothesis
+ *  \return SMESH_Hypothesis::Hypothesis_Status - a treatment result.
+ * 
+ * Optional description of a problematic situation (if any) can be retrieved
+ * via GetComputeError().
  */
-//=============================================================================
+//================================================================================
 
 SMESH_Hypothesis::Hypothesis_Status
   SMESH_subMesh::AlgoStateEngine(int event, SMESH_Hypothesis * anHyp)
@@ -753,7 +759,7 @@ SMESH_Hypothesis::Hypothesis_Status
     if ( ! CanAddHypothesis( anHyp )) // check dimension
       return SMESH_Hypothesis::HYP_BAD_DIM;
 
-    if ( /*!anHyp->IsAuxiliary() &&*/ getSimilarAttached( _subShape, anHyp ) )
+    if ( !anHyp->IsAuxiliary() && getSimilarAttached( _subShape, anHyp ) )
       return SMESH_Hypothesis::HYP_ALREADY_EXIST;
 
     if ( !meshDS->AddHypothesis(_subShape, anHyp))
@@ -781,6 +787,9 @@ SMESH_Hypothesis::Hypothesis_Status
   // ------------------
   if (!isApplicableHyp)
     return ret; // not applicable hypotheses do not change algo state
+
+  if (( algo = GetAlgo()))
+    algo->InitComputeError();
 
   switch (_algoState)
   {
@@ -946,7 +955,7 @@ SMESH_Hypothesis::Hypothesis_Status
           // ret should be fatal: anHyp was not added
           ret = SMESH_Hypothesis::HYP_INCOMPATIBLE;
       }
-      else if (!_father->IsUsedHypothesis(  anHyp, this ))
+      else if (!_father->IsUsedHypothesis( anHyp, this ))
         ret = SMESH_Hypothesis::HYP_INCOMPATIBLE;
 
       if (SMESH_Hypothesis::IsStatusFatal( ret ))
@@ -1114,6 +1123,11 @@ SMESH_Hypothesis::Hypothesis_Status
     }
   }
 
+  if ( _algo ) { // get an error description set by _algo->CheckHypothesis()
+    _computeError = _algo->GetComputeError();
+    _algo->InitComputeError();
+  }
+
   bool stateChange = ( _algoState != oldAlgoState );
 
   if ( stateChange && _algoState == HYP_OK ) // hyp becomes OK
@@ -1141,8 +1155,8 @@ SMESH_Hypothesis::Hypothesis_Status
     ComputeSubMeshStateEngine( CHECK_COMPUTE_STATE );
   }
 
-  if (stateChange || modifiedHyp)
-    ComputeStateEngine(MODIF_ALGO_STATE);
+  if ( stateChange || modifiedHyp )
+    ComputeStateEngine( MODIF_ALGO_STATE );
 
   _realComputeCost = ( _algoState == HYP_OK ) ? computeCost() : 0;
 
@@ -1213,14 +1227,24 @@ void SMESH_subMesh::setAlgoState(algo_state state)
   _algoState = state;
 }
 
-//=============================================================================
+//================================================================================
 /*!
+ * \brief Send an event to sub-meshes
+ *  \param [in] event - the event
+ *  \param [in] anHyp - an hypothesis
+ *  \param [in] exitOnFatal - to stop iteration on sub-meshes if a sub-mesh
+ *              reports a fatal result
+ *  \return SMESH_Hypothesis::Hypothesis_Status - the worst result
  *
+ * Optional description of a problematic situation (if any) can be retrieved
+ * via GetComputeError().
  */
-//=============================================================================
+//================================================================================
+
 SMESH_Hypothesis::Hypothesis_Status
-  SMESH_subMesh::SubMeshesAlgoStateEngine(int event,
-                                          SMESH_Hypothesis * anHyp)
+  SMESH_subMesh::SubMeshesAlgoStateEngine(int                event,
+                                          SMESH_Hypothesis * anHyp,
+                                          bool               exitOnFatal)
 {
   SMESH_Hypothesis::Hypothesis_Status ret = SMESH_Hypothesis::HYP_OK;
   //EAP: a wire (dim==1) should notify edges (dim==1)
@@ -1229,10 +1253,16 @@ SMESH_Hypothesis::Hypothesis_Status
   {
     SMESH_subMeshIteratorPtr smIt = getDependsOnIterator(false,false);
     while ( smIt->more() ) {
-      SMESH_Hypothesis::Hypothesis_Status ret2 =
-        smIt->next()->AlgoStateEngine(event, anHyp);
+      SMESH_subMesh* sm = smIt->next();
+      SMESH_Hypothesis::Hypothesis_Status ret2 = sm->AlgoStateEngine(event, anHyp);
       if ( ret2 > ret )
+      {
         ret = ret2;
+        _computeError = sm->_computeError;
+        sm->_computeError.reset();
+        if ( exitOnFatal && SMESH_Hypothesis::IsStatusFatal( ret ))
+          break;
+      }
     }
   }
   return ret;

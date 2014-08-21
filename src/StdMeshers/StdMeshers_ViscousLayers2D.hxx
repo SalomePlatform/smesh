@@ -35,9 +35,10 @@ class STDMESHERS_EXPORT StdMeshers_ViscousLayers2D : public StdMeshers_ViscousLa
 {
 public:
   StdMeshers_ViscousLayers2D(int hypId, int studyId, SMESH_Gen* gen);
-
-  // Computes temporary 2D mesh to be used by 2D algorithm.
-  // Return SMESH_ProxyMesh for the given FACE, or NULL in case of error
+  /*!
+   * \brief Computes temporary 2D mesh to be used by 2D algorithm.
+   *        Return SMESH_ProxyMesh for the given FACE, or NULL in case of error
+   */
   static SMESH_ProxyMesh::Ptr Compute(SMESH_Mesh&        theMesh,
                                       const TopoDS_Face& theShape);
   /*!
@@ -47,12 +48,18 @@ public:
   void RestoreListeners() const;
 
   /*!
+   * \brief Checks compatibility of assigned StdMeshers_ViscousLayers2D hypotheses
+   */
+  static SMESH_ComputeErrorPtr CheckHypothesis(SMESH_Mesh&         aMesh,
+                                               const TopoDS_Shape& aShape,
+                                               Hypothesis_Status&  aStatus);
+  /*!
    * \brief Initialize my parameter values by the mesh built on the geometry
-    * \param theMesh - the built mesh
-    * \param theShape - the geometry of interest
-    * \retval bool - true if parameter values have been successfully defined
-    *
-    * Just return false as this hypothesis does not have parameters values
+   * \param theMesh - the built mesh
+   * \param theShape - the geometry of interest
+   * \retval bool - true if parameter values have been successfully defined
+   *
+   * Just return false as this hypothesis does not have parameters values
    */
   virtual bool SetParametersByMesh(const SMESH_Mesh* theMesh, const TopoDS_Shape& theShape);
 

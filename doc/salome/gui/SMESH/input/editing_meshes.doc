@@ -2,11 +2,11 @@
 
 \page editing_meshes_page Editing Meshes
 
-\n After you have created a mesh or submesh with definite applied
-hypotheses and algorithms you can edit your mesh by \b assigning new
-hypotheses and algorithms or \b unassigning the applied hypotheses and
-algorithms. The editing proceeds in the same way as <b>Mesh
-Creation</b>.
+\n After you have created a mesh or sub-mesh with definite applied
+meshing algorithms and hypotheses you can edit your mesh by \b assigning other
+algorithms and/or hypotheses or \b unassigning the applied hypotheses and
+algorithms. The editing proceeds in the same way as 
+\ref create_mesh_anchor "Mesh Creation".
 
 \image html createmesh-inv3.png
 

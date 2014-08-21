@@ -138,6 +138,8 @@ class SMESH_EXPORT SMESH_Algo : public SMESH_Hypothesis
     * \param aShape - the shape
     * \param aStatus - check result
     * \retval bool - true if hypothesis is well defined
+    *
+    * Textual description of a problem can be stored in _comment field.
    */
   virtual bool CheckHypothesis(SMESH_Mesh&                          aMesh,
                                const TopoDS_Shape&                  aShape,

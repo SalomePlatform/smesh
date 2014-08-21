@@ -549,6 +549,7 @@ SMESH::Hypothesis_Status SMESH_Mesh_i::ConvertHypothesisStatus
   RETURNCASE( HYP_BAD_SUBSHAPE  );
   RETURNCASE( HYP_BAD_GEOMETRY  );
   RETURNCASE( HYP_NEED_SHAPE    );
+  RETURNCASE( HYP_INCOMPAT_HYPS );
   default:;
   }
   return SMESH::HYP_UNKNOWN_FATAL;
@@ -564,33 +565,31 @@ SMESH::Hypothesis_Status SMESH_Mesh_i::ConvertHypothesisStatus
  */
 //=============================================================================
 
-SMESH::Hypothesis_Status SMESH_Mesh_i::AddHypothesis(GEOM::GEOM_Object_ptr       aSubShapeObject,
-                                                     SMESH::SMESH_Hypothesis_ptr anHyp)
+SMESH::Hypothesis_Status
+SMESH_Mesh_i::AddHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
+                            SMESH::SMESH_Hypothesis_ptr anHyp,
+                            CORBA::String_out           anErrorText)
   throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
   if ( _preMeshInfo )
     _preMeshInfo->ForgetOrLoad();
 
-  SMESH_Hypothesis::Hypothesis_Status status = addHypothesis( aSubShapeObject, anHyp );
+  std::string error;
+  SMESH_Hypothesis::Hypothesis_Status status = addHypothesis( aSubShape, anHyp, &error );
+  anErrorText = error.c_str();
 
   SMESH::SMESH_Mesh_var mesh( _this() );
   if ( !SMESH_Hypothesis::IsStatusFatal(status) )
   {
     SALOMEDS::Study_var study = _gen_i->GetCurrentStudy();
-    _gen_i->AddHypothesisToShape( study, mesh, aSubShapeObject, anHyp );
+    _gen_i->AddHypothesisToShape( study, mesh, aSubShape, anHyp );
   }
   if(MYDEBUG) MESSAGE( " AddHypothesis(): status = " << status );
 
   // Update Python script
-  //if(_impl->HasShapeToMesh())
-  {
-    TPythonDump() << "status = " << mesh << ".AddHypothesis( "
-                  << aSubShapeObject << ", " << anHyp << " )";
-  }
-  // else {
-  //   TPythonDump() << "status = " << mesh << ".AddHypothesis( "<< anHyp << " )";
-  // }
+  TPythonDump() << "status = " << mesh << ".AddHypothesis( "
+                << aSubShape << ", " << anHyp << " )";
 
   return ConvertHypothesisStatus(status);
 }
@@ -602,12 +601,13 @@ SMESH::Hypothesis_Status SMESH_Mesh_i::AddHypothesis(GEOM::GEOM_Object_ptr      
 //=============================================================================
 
 SMESH_Hypothesis::Hypothesis_Status
-SMESH_Mesh_i::addHypothesis(GEOM::GEOM_Object_ptr       aSubShapeObject,
-                            SMESH::SMESH_Hypothesis_ptr anHyp)
+SMESH_Mesh_i::addHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
+                            SMESH::SMESH_Hypothesis_ptr anHyp,
+                            std::string*                anErrorText)
 {
   if(MYDEBUG) MESSAGE("addHypothesis");
 
-  if (CORBA::is_nil( aSubShapeObject ) && HasShapeToMesh())
+  if (CORBA::is_nil( aSubShape ) && HasShapeToMesh())
     THROW_SALOME_CORBA_EXCEPTION("bad Sub-shape reference",SALOME::BAD_PARAM);
 
   if (CORBA::is_nil( anHyp ))
@@ -619,21 +619,27 @@ SMESH_Mesh_i::addHypothesis(GEOM::GEOM_Object_ptr       aSubShapeObject,
     TopoDS_Shape myLocSubShape;
     //use PseudoShape in case if mesh has no shape
     if(HasShapeToMesh())
-      myLocSubShape = _gen_i->GeomObjectToShape( aSubShapeObject);
+      myLocSubShape = _gen_i->GeomObjectToShape( aSubShape);
     else              
       myLocSubShape = _impl->GetShapeToMesh();
     
     const int hypId = anHyp->GetId();
-    status = _impl->AddHypothesis(myLocSubShape, hypId);
-    if ( !SMESH_Hypothesis::IsStatusFatal(status) ) {
+    std::string error;
+    status = _impl->AddHypothesis( myLocSubShape, hypId, &error );
+    if ( !SMESH_Hypothesis::IsStatusFatal(status) )
+    {
       _mapHypo[hypId] = SMESH::SMESH_Hypothesis::_duplicate( anHyp );
       anHyp->Register();
       // assure there is a corresponding submesh
       if ( !_impl->IsMainShape( myLocSubShape )) {
         int shapeId = _impl->GetMeshDS()->ShapeToIndex( myLocSubShape );
         if ( _mapSubMesh_i.find( shapeId ) == _mapSubMesh_i.end() )
-          SMESH::SMESH_subMesh_var( createSubMesh( aSubShapeObject ));
+          SMESH::SMESH_subMesh_var( createSubMesh( aSubShape ));
       }
+    }
+    else if ( anErrorText )
+    {
+      *anErrorText = error;
     }
   }
   catch(SALOME_Exception & S_ex)
@@ -649,7 +655,7 @@ SMESH_Mesh_i::addHypothesis(GEOM::GEOM_Object_ptr       aSubShapeObject,
  */
 //=============================================================================
 
-SMESH::Hypothesis_Status SMESH_Mesh_i::RemoveHypothesis(GEOM::GEOM_Object_ptr aSubShapeObject,
+SMESH::Hypothesis_Status SMESH_Mesh_i::RemoveHypothesis(GEOM::GEOM_Object_ptr aSubShape,
                                                         SMESH::SMESH_Hypothesis_ptr anHyp)
   throw(SALOME::SALOME_Exception)
 {
@@ -657,18 +663,18 @@ SMESH::Hypothesis_Status SMESH_Mesh_i::RemoveHypothesis(GEOM::GEOM_Object_ptr aS
   if ( _preMeshInfo )
     _preMeshInfo->ForgetOrLoad();
 
-  SMESH_Hypothesis::Hypothesis_Status status = removeHypothesis( aSubShapeObject, anHyp );
+  SMESH_Hypothesis::Hypothesis_Status status = removeHypothesis( aSubShape, anHyp );
   SMESH::SMESH_Mesh_var mesh = _this();
 
   if ( !SMESH_Hypothesis::IsStatusFatal(status) )
   {
     SALOMEDS::Study_var study = _gen_i->GetCurrentStudy();
-    _gen_i->RemoveHypothesisFromShape( study, mesh, aSubShapeObject, anHyp );
+    _gen_i->RemoveHypothesisFromShape( study, mesh, aSubShape, anHyp );
   }
   // Update Python script
   if(_impl->HasShapeToMesh())
     TPythonDump() << "status = " << mesh << ".RemoveHypothesis( "
-                  << aSubShapeObject << ", " << anHyp << " )";
+                  << aSubShape << ", " << anHyp << " )";
   else
     TPythonDump() << "status = " << mesh << ".RemoveHypothesis( "
                   << anHyp << " )";
@@ -683,12 +689,12 @@ SMESH::Hypothesis_Status SMESH_Mesh_i::RemoveHypothesis(GEOM::GEOM_Object_ptr aS
 //=============================================================================
 
 SMESH_Hypothesis::Hypothesis_Status
-SMESH_Mesh_i::removeHypothesis(GEOM::GEOM_Object_ptr       aSubShapeObject,
+SMESH_Mesh_i::removeHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
                                SMESH::SMESH_Hypothesis_ptr anHyp)
 {
   if(MYDEBUG) MESSAGE("removeHypothesis()");
 
-  if (CORBA::is_nil( aSubShapeObject ) && HasShapeToMesh())
+  if (CORBA::is_nil( aSubShape ) && HasShapeToMesh())
     THROW_SALOME_CORBA_EXCEPTION("bad Sub-shape reference", SALOME::BAD_PARAM);
 
   if (CORBA::is_nil( anHyp ))
@@ -700,7 +706,7 @@ SMESH_Mesh_i::removeHypothesis(GEOM::GEOM_Object_ptr       aSubShapeObject,
     TopoDS_Shape myLocSubShape;
     //use PseudoShape in case if mesh has no shape
     if( _impl->HasShapeToMesh() )
-      myLocSubShape = _gen_i->GeomObjectToShape( aSubShapeObject );
+      myLocSubShape = _gen_i->GeomObjectToShape( aSubShape );
     else
       myLocSubShape = _impl->GetShapeToMesh();
 
@@ -726,18 +732,18 @@ SMESH_Mesh_i::removeHypothesis(GEOM::GEOM_Object_ptr       aSubShapeObject,
 //=============================================================================
 
 SMESH::ListOfHypothesis *
-SMESH_Mesh_i::GetHypothesisList(GEOM::GEOM_Object_ptr aSubShapeObject)
+SMESH_Mesh_i::GetHypothesisList(GEOM::GEOM_Object_ptr aSubShape)
 throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
   if (MYDEBUG) MESSAGE("GetHypothesisList");
-  if (_impl->HasShapeToMesh() && CORBA::is_nil(aSubShapeObject))
+  if (_impl->HasShapeToMesh() && CORBA::is_nil(aSubShape))
     THROW_SALOME_CORBA_EXCEPTION("bad Sub-shape reference", SALOME::BAD_PARAM);
 
   SMESH::ListOfHypothesis_var aList = new SMESH::ListOfHypothesis();
 
   try {
-    TopoDS_Shape myLocSubShape = _gen_i->GeomObjectToShape(aSubShapeObject);
+    TopoDS_Shape myLocSubShape = _gen_i->GeomObjectToShape(aSubShape);
     if ( myLocSubShape.IsNull() && !_impl->HasShapeToMesh() )
       myLocSubShape = _impl->GetShapeToMesh();
     const list<const SMESHDS_Hypothesis*>& aLocalList = _impl->GetHypothesisList( myLocSubShape );
@@ -803,18 +809,18 @@ SMESH::submesh_array* SMESH_Mesh_i::GetSubMeshes() throw (SALOME::SALOME_Excepti
  */
 //=============================================================================
 
-SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::GetSubMesh(GEOM::GEOM_Object_ptr aSubShapeObject,
+SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::GetSubMesh(GEOM::GEOM_Object_ptr aSubShape,
                                                   const char*           theName )
      throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  if (CORBA::is_nil(aSubShapeObject))
+  if (CORBA::is_nil(aSubShape))
     THROW_SALOME_CORBA_EXCEPTION("bad Sub-shape reference", SALOME::BAD_PARAM);
 
   SMESH::SMESH_subMesh_var subMesh;
   SMESH::SMESH_Mesh_var    aMesh = _this();
   try {
-    TopoDS_Shape myLocSubShape = _gen_i->GeomObjectToShape(aSubShapeObject);
+    TopoDS_Shape myLocSubShape = _gen_i->GeomObjectToShape(aSubShape);
 
     //Get or Create the SMESH_subMesh object implementation
 
@@ -830,16 +836,16 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::GetSubMesh(GEOM::GEOM_Object_ptr aSubShap
 
     // create a new subMesh object servant if there is none for the shape
     if ( subMesh->_is_nil() )
-      subMesh = createSubMesh( aSubShapeObject );
+      subMesh = createSubMesh( aSubShape );
     if ( _gen_i->CanPublishInStudy( subMesh ))
     {
       SALOMEDS::Study_var study = _gen_i->GetCurrentStudy();
       SALOMEDS::SObject_wrap aSO =
-        _gen_i->PublishSubMesh( study, aMesh, subMesh, aSubShapeObject, theName );
+        _gen_i->PublishSubMesh( study, aMesh, subMesh, aSubShape, theName );
       if ( !aSO->_is_nil()) {
         // Update Python script
         TPythonDump() << aSO << " = " << aMesh << ".GetSubMesh( "
-                      << aSubShapeObject << ", '" << theName << "' )";
+                      << aSubShape << ", '" << theName << "' )";
       }
     }
   }
@@ -863,7 +869,7 @@ void SMESH_Mesh_i::RemoveSubMesh( SMESH::SMESH_subMesh_ptr theSubMesh )
   if ( theSubMesh->_is_nil() )
     return;
 
-  GEOM::GEOM_Object_var aSubShapeObject;
+  GEOM::GEOM_Object_var aSubShape;
   SALOMEDS::Study_var aStudy = _gen_i->GetCurrentStudy();
   if ( !aStudy->_is_nil() )  {
     // Remove submesh's SObject
@@ -875,10 +881,10 @@ void SMESH_Mesh_i::RemoveSubMesh( SMESH::SMESH_subMesh_ptr theSubMesh )
            anObj->ReferencedObject( aRef.inout() ))
       {
         CORBA::Object_var obj = aRef->GetObject();
-        aSubShapeObject = GEOM::GEOM_Object::_narrow( obj );
+        aSubShape = GEOM::GEOM_Object::_narrow( obj );
       }
-      // if ( aSubShapeObject->_is_nil() ) // not published shape (IPAL13617)
-      //   aSubShapeObject = theSubMesh->GetSubShape();
+      // if ( aSubShape->_is_nil() ) // not published shape (IPAL13617)
+      //   aSubShape = theSubMesh->GetSubShape();
 
       SALOMEDS::StudyBuilder_var builder = aStudy->NewBuilder();
       builder->RemoveObjectWithChildren( anSO );
@@ -888,7 +894,7 @@ void SMESH_Mesh_i::RemoveSubMesh( SMESH::SMESH_subMesh_ptr theSubMesh )
     }
   }
 
-  if ( removeSubMesh( theSubMesh, aSubShapeObject.in() ))
+  if ( removeSubMesh( theSubMesh, aSubShape.in() ))
     if ( _preMeshInfo )
       _preMeshInfo->ForgetOrLoad();
 

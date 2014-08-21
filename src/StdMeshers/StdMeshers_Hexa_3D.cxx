@@ -124,23 +124,17 @@ bool StdMeshers_Hexa_3D::CheckHypothesis
     return true;
   }
 
+  // only StdMeshers_ViscousLayers can be used
   aStatus = HYP_OK;
   for ( ; h != hyps.end(); ++h )
   {
-    string hypName = (*h)->GetName();
-    if ( find( _compatibleHypothesis.begin(),_compatibleHypothesis.end(),hypName )
-         != _compatibleHypothesis.end() )
-    {
-      _viscousLayersHyp = dynamic_cast< const StdMeshers_ViscousLayers*> ( *h );
-    }
-    else
-    {
-      aStatus = HYP_INCOMPATIBLE;
-    }
+    if ( !(_viscousLayersHyp = dynamic_cast< const StdMeshers_ViscousLayers*> ( *h )))
+      break;
   }
-
   if ( !_viscousLayersHyp )
     aStatus = HYP_INCOMPATIBLE;
+  else
+    error( _viscousLayersHyp->CheckHypothesis( aMesh, aShape, aStatus ));
 
   return aStatus == HYP_OK;
 }

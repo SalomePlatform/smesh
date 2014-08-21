@@ -29,10 +29,14 @@
     \image html createmesh-inv.png
     <br>
   </li>
-  <li>Select <b>Mesh Type</b> in the corresponding list from <b>Any, Hexahedral, Tetrahedral, Triangular </b> and \b Quadrilateral (there can be less items for lower dimensions). 
-  
-  Selection of a mesh type hides any algorithms that are not able to create elements of this type.</li>
-  
+  <li> To filter off irrelevant meshing algorithms, you can
+    select <b>Mesh Type</b> in the corresponding list from <b>Any,
+      Hexahedral, Tetrahedral, Triangular </b> and \b Quadrilateral (there
+    can be less items for the geometry of lower dimensions).
+
+    Selection of a mesh type hides all meshing algorithms that can not
+    generate elements of this type.</li>
+
   <li>Apply \subpage basic_meshing_algos_page "meshing algorithms" and
     \subpage about_hypo_page "hypotheses" which will be used to compute
     this mesh.
@@ -42,7 +46,8 @@
     dimension of the CAD model (geometry) the algorithms listed on
     this page affect and the maximal dimension of elements the algorithms
     generate. For example, \b 3D page lists the algorithms that affect
-    3D geometrical objects (solids).
+    3D geometrical objects (solids) and generate 3D mesh elements
+    (tetrahedra, hexahedra etc.)
 
     \note
     - Some page(s) can be disabled if the source geometrical
@@ -65,7 +70,6 @@
     it is "Mesh_1". Then select the geometrical object you wish to
     mesh in the Object Browser and click "Select" button near \b Geometry
     field (if the name of the object has not yet appeared in \b Geometry field).
-
     <center>
     \image html image120.png
     <em>"Select" button</em>
@@ -74,21 +78,22 @@
     Now you can define 3D Algorithm and 3D Hypotheses, which will be
     applied to the solids of your geometrical object. Click the <em>"Add
       Hypothesis"</em>  button to add a hypothesis.
-
     <center>
     \image html image121.png
     <em>"Add Hypothesis" button</em>
     </center>
+    Click the <em>"Plus"</em> button to enable adding more additional hypotheses.
 
     Click the <em>"Edit Hypothesis"</em> button to change the values for the
     current hypothesis.
-
     <center>
     \image html image122.png
     <em>"Edit Hypothesis" button</em>
     </center>
 
-    Most 2D and 3D algorithms can work without hypotheses using default meshing parameters. Some algorithms do not require any hypotheses. After selection of an algorithm "Hypothesis" field of
+    Most 2D and 3D algorithms can work without hypotheses using
+    default meshing parameters. Some algorithms do not require any
+    hypotheses. After selection of an algorithm "Hypothesis" field of
     the dialog can contain:
     <ul>
       <li> <em>\<Default\></em> if the algorithm can work using default
@@ -109,7 +114,10 @@
     that any object has edges, even if their existence is not
     apparent, for example, a sphere has 4 edges). Note that the
     choice of hypotheses and lower dimension algorithms depends on
-    the higher dimension algorithm. 
+    the higher dimension algorithm.
+
+    If you wish you can select different algorithms and/or hypotheses
+    for meshing some parts of your CAD model by \ref constructing_submeshes_page.
 
     Some algorithms generate mesh of several dimensions, while others
     produce mesh of only one dimension. In the latter case there must
@@ -128,8 +136,9 @@
 
     It contains: 
     <ul>
+      <li>a mesh name (<em>Mesh_mechanic</em>);
       <li>a reference to the geometrical object on the basis of
-        which the mesh has been constructed;</li> 
+        which the mesh has been constructed (\a mechanic);</li> 
       <li><b>Applied hypotheses</b> folder containing the references
         to the hypotheses applied at the construction of the mesh;</li>
       <li><b>Applied algorithms</b> folder containing the references

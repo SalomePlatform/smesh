@@ -44,6 +44,8 @@ SET(SMESH_RESOURCES_FILES
   mesh_hypo_segment.png
   mesh_hypo_volume.png
   mesh_hypo_edit.png
+  mesh_plus.png
+  mesh_minus.png
   mesh_info.png
   advanced_mesh_info.png
   standard_mesh_info.png

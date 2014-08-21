@@ -122,6 +122,9 @@ bool StdMeshers_MEFISTO_2D::CheckHypothesis
   _edgeLength = 0;
   _maxElementArea = 0;
 
+  if ( !error( StdMeshers_ViscousLayers2D::CheckHypothesis( aMesh, aShape, aStatus )))
+    return false;
+
   list <const SMESHDS_Hypothesis * >::const_iterator itl;
   const SMESHDS_Hypothesis *theHyp;
 

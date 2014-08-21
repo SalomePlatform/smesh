@@ -114,7 +114,17 @@ TopoDS_Edge StdMeshers_Propagation::GetPropagationSource(SMESH_Mesh&         the
   return PropagationMgr::GetSource( theMesh.GetSubMeshContaining( theEdge ),
                                     isPropagOfDistribution);
 }
-
+const SMESH_HypoFilter& StdMeshers_Propagation::GetFilter()
+{
+  static SMESH_HypoFilter propagHypFilter;
+  if ( propagHypFilter.IsEmpty() )
+  {
+    propagHypFilter.
+      Init( SMESH_HypoFilter::HasName( StdMeshers_Propagation::GetName ())).
+      Or  ( SMESH_HypoFilter::HasName( StdMeshers_PropagOfDistribution::GetName ()));
+  }
+  return propagHypFilter;
+}
 //=============================================================================
 //=============================================================================
 // PROPAGATION MANAGEMENT
@@ -226,14 +236,8 @@ namespace {
    */
   const SMESH_Hypothesis* getProagationHyp (SMESH_subMesh* theSubMesh)
   {
-    static SMESH_HypoFilter propagHypFilter;
-    if ( propagHypFilter.IsEmpty() )
-    {
-      propagHypFilter.
-        Init( SMESH_HypoFilter::HasName( StdMeshers_Propagation::GetName ())).
-        Or  ( SMESH_HypoFilter::HasName( StdMeshers_PropagOfDistribution::GetName ()));
-    }
-    return theSubMesh->GetFather()->GetHypothesis( theSubMesh, propagHypFilter, true );
+    return theSubMesh->GetFather()->GetHypothesis
+      ( theSubMesh, StdMeshers_Propagation::GetFilter(), true );
   }
   //================================================================================
   /*!

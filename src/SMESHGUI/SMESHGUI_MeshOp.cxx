@@ -610,8 +610,8 @@ void SMESHGUI_MeshOp::selectionDone()
           myDlg->objectWg( SMESHGUI_MeshDlg::Geom, SMESHGUI_MeshDlg::Btn )->hide();
           myDlg->updateGeometry();
           myDlg->adjustSize();
-          readMesh();
           myIsMesh = submeshVar->_is_nil();
+          readMesh();
         }
         else
           myDlg->reset();
@@ -873,7 +873,11 @@ void SMESHGUI_MeshOp::availableHyps( const int       theDim,
  *  \param theAlgoData - to select hypos able to be used by this algo (optional)
  *
  * Gets existing (i.e. already created) hypotheses or algorithm in accordance with
- * input parameters
+ * input parameters.
+ *
+ * WARNING: when using this method to get hyps existing in Mesh component,
+ *          call availableHyps() before in order to get only hyps of available types
+ *          that was filtered by availableHyps()
  */
 //================================================================================
 void SMESHGUI_MeshOp::existingHyps( const int       theDim,
@@ -881,7 +885,7 @@ void SMESHGUI_MeshOp::existingHyps( const int       theDim,
                                     _PTR(SObject)   theFather,
                                     QStringList&    theHyps,
                                     THypList&       theHypList,
-                                    HypothesisData* theAlgoData)
+                                    HypothesisData* theAlgoData) const
 {
   // Clear hypoheses list
   theHyps.clear();
@@ -890,19 +894,20 @@ void SMESHGUI_MeshOp::existingHyps( const int       theDim,
   if ( !theFather )
     return;
 
-  const bool isAux  = ( theHypType == AddHyp );
-
   _PTR(SObject)          aHypRoot;
   _PTR(GenericAttribute) anAttr;
   _PTR(AttributeName)    aName;
   _PTR(AttributeIOR)     anIOR;
 
-  bool isMesh = !_CAST( SComponent, theFather );
+  const bool isMesh = !_CAST( SComponent, theFather );
   int aPart = -1;
   if ( isMesh )
     aPart = theHypType == Algo ? SMESH::Tag_RefOnAppliedAlgorithms : SMESH::Tag_RefOnAppliedHypothesis;
   else
     aPart = theHypType == Algo ? SMESH::Tag_AlgorithmsRoot : SMESH::Tag_HypothesisRoot;
+
+  const bool isAux   = ( theHypType == AddHyp );
+  const bool allHyps = ( !isMesh && theHypType != Algo && theDim > -1);
 
   if ( theFather->FindSubObject( aPart, aHypRoot ) )
   {
@@ -931,9 +936,10 @@ void SMESHGUI_MeshOp::existingHyps( const int       theDim,
             CORBA::String_var hypType = aHypVar->GetName();
             HypothesisData* aData = SMESH::GetHypothesisData( hypType.in() );
             if ( !aData) continue;
-            if ( ( theDim == -1 || aData->Dim.contains( theDim ) ) &&
-                 ( isCompatible ( theAlgoData, aData, theHypType )) &&
-                 ( theHypType == Algo || isAux == aData->IsAuxOrNeedHyp ))
+            if (( theDim == -1 || aData->Dim.contains( theDim ) ) &&
+                ( isCompatible ( theAlgoData, aData, theHypType )) &&
+                ( theHypType == Algo || isAux == aData->IsAuxOrNeedHyp ) &&
+                ( !allHyps || myAvailableHypData[theDim][theHypType].count(aData) ))
             {
               std::string aHypName = aName->Value();
               theHyps.append( aHypName.c_str() );
@@ -1173,6 +1179,8 @@ void SMESHGUI_MeshOp::createHypothesis(const int theDim,
 
   myDim = theDim;
   myType = theType;
+
+  // get a unique hyp name
   QStringList aHypNames;
   TDim2Type2HypList::const_iterator aDimIter = myExistingHyps.begin();
   for ( ; aDimIter != myExistingHyps.end(); aDimIter++) {
@@ -1481,13 +1489,14 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
   {
     if ( !isAccessibleDim( dim ))
       continue;
-    for ( int type = MainHyp; type < NbHypTypes; type++ )
+    for ( int dlgType = MainHyp; dlgType < nbDlgHypTypes(dim); dlgType++ )
     {
+      const int type = Min( dlgType, AddHyp );
       myAvailableHypData[ dim ][ type ].clear();
       QStringList anAvailable, anExisting;
 
       HypothesisData* curAlgo = algoByDim[ dim ];
-      int hypIndex = currentHyp( dim, type );
+      int hypIndex = currentHyp( dim, dlgType );
 
       SMESH::SMESH_Hypothesis_var curHyp;
       if ( hypIndex >= 0 && hypIndex < myExistingHyps[ dim ][ type ].count() )
@@ -1521,8 +1530,8 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
           if ( !isCompatible( curAlgo, hypData, type ))
             curHyp = SMESH::SMESH_Hypothesis::_nil();
         }
-        existingHyps( dim, type, pObj, anExisting, myExistingHyps[ dim ][ type ], curAlgo);
         availableHyps( dim, type, anAvailable, myAvailableHypData[ dim ][ type ], curAlgo);
+        existingHyps( dim, type, pObj, anExisting, myExistingHyps[ dim ][ type ], curAlgo);
         defaulHypAvlbl = (type == MainHyp && !curAlgo->IsAuxOrNeedHyp );
       }
       // set list of hypotheses
@@ -1701,14 +1710,19 @@ bool SMESHGUI_MeshOp::createMesh( QString& theMess, QStringList& theEntryList )
       SMESH::SetName( aMeshSO, myDlg->objectText( SMESHGUI_MeshDlg::Obj ) );
     }
 
-    for ( int aDim = SMESH::DIM_0D; aDim <= SMESH::DIM_3D; aDim++ ) {
+    for ( int aDim = SMESH::DIM_0D; aDim <= SMESH::DIM_3D; aDim++ )
+    {
       if ( !isAccessibleDim( aDim )) continue;
 
       // assign hypotheses
-      for ( int aHypType = MainHyp; aHypType <= AddHyp; aHypType++ ) {
-        int aHypIndex = currentHyp( aDim, aHypType );
-        if ( aHypIndex >= 0 && aHypIndex < myExistingHyps[ aDim ][ aHypType ].count() ) {
-          SMESH::SMESH_Hypothesis_var aHypVar = myExistingHyps[ aDim ][ aHypType ][ aHypIndex ].first;
+      for ( int dlgType = MainHyp; dlgType < nbDlgHypTypes(aDim); dlgType++ )
+      {
+        const int aHypIndex = currentHyp( aDim, dlgType );
+        const int  aHypType = Min( dlgType, AddHyp );
+        if ( aHypIndex >= 0 && aHypIndex < myExistingHyps[ aDim ][ aHypType ].count() )
+        {
+          SMESH::SMESH_Hypothesis_var aHypVar =
+            myExistingHyps[ aDim ][ aHypType ][ aHypIndex ].first;
           if ( !aHypVar->_is_nil() )
             SMESH::AddHypothesisOnMesh( aMeshVar, aHypVar );
         }
@@ -1838,9 +1852,10 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess, QStringList& theEntryList
     if ( !anAlgoVar->_is_nil() )
       SMESH::AddHypothesisOnSubMesh( aSubMeshVar, anAlgoVar );
     // assign hypotheses
-    for ( int aHypType = MainHyp; aHypType <= AddHyp; aHypType++ )
+    for ( int dlgType = MainHyp; dlgType < nbDlgHypTypes(aDim); dlgType++ )
     {
-      int aHypIndex = currentHyp( aDim, aHypType );
+      const int aHypIndex = currentHyp( aDim, dlgType );
+      const int  aHypType = Min( dlgType, AddHyp );
       if ( aHypIndex >= 0 && aHypIndex < myExistingHyps[ aDim ][ aHypType ].count() )
       {
         SMESH::SMESH_Hypothesis_var aHypVar =
@@ -1874,6 +1889,36 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess, QStringList& theEntryList
 int SMESHGUI_MeshOp::currentHyp( const int theDim, const int theHypType ) const
 {
   return myDlg->tab( theDim )->currentHyp( theHypType ) - 1;
+}
+
+//================================================================================
+/*!
+ * \brief Checks if a hypothesis is selected
+ */
+//================================================================================
+
+bool SMESHGUI_MeshOp::isSelectedHyp( int theDim, int theHypType, int theIndex) const
+{
+  if ( theHypType < AddHyp ) // only one hyp can be selected
+    return currentHyp( theDim, theHypType ) == theIndex;
+
+  for ( int dlgHypType = AddHyp; dlgHypType < nbDlgHypTypes( theDim ); ++dlgHypType )
+    if ( currentHyp( theDim, dlgHypType ) == theIndex )
+      return true;
+
+  return false;
+}
+
+//================================================================================
+/*!
+ * \brief Returns nb of HypType's taking into account possible several
+ *        selected additional hypotheses which are coded as additional HypType's.
+ */
+//================================================================================
+
+int SMESHGUI_MeshOp::nbDlgHypTypes( const int dim ) const
+{
+  return NbHypTypes + myDlg->tab( dim )->nbAddHypTypes();
 }
 
 //================================================================================
@@ -2074,11 +2119,11 @@ void SMESHGUI_MeshOp::readMesh()
       SMESH::SMESH_Hypothesis_var aVar = myObjHyps[ dim ][ Algo ].first().first;
       HypothesisData* algoData = SMESH::GetHypothesisData( aVar->GetName() );
       aHypIndex = myAvailableHypData[ dim ][ Algo ].indexOf ( algoData );
-//       if ( aHypIndex < 0 && algoData ) {
-//         // assigned algo is incompatible with other algorithms
-//         myAvailableHypData[ dim ][ Algo ].push_back( algoData );
-//         aHypIndex = myAvailableHypData[ dim ][ hypType ].count() - 1;
-//       }
+      //       if ( aHypIndex < 0 && algoData ) {
+      //         // assigned algo is incompatible with other algorithms
+      //         myAvailableHypData[ dim ][ Algo ].push_back( algoData );
+      //         aHypIndex = myAvailableHypData[ dim ][ hypType ].count() - 1;
+      //       }
       algoFound = ( aHypIndex > -1 );
     }
     setCurrentHyp( dim, Algo, aHypIndex );
@@ -2095,23 +2140,26 @@ void SMESHGUI_MeshOp::readMesh()
     {
       // get hypotheses
       existingHyps( dim, hypType, pObj, anExisting, myObjHyps[ dim ][ hypType ] );
-      // find index of requered hypothesis among existing ones for this dimension and type
-      int aHypIndex = -1;
-      if ( myObjHyps[ dim ][ hypType ].count() > 0 ) {
-        aHypIndex = find( myObjHyps[ dim ][ hypType ].first().first,
-                          myExistingHyps[ dim ][ hypType ] );
+      for ( int i = 0, nb = myObjHyps[ dim ][ hypType ].count(); i < nb; ++i )
+      {
+        // find index of required hypothesis among existing ones for this dimension and type
+        int aHypIndex = find( myObjHyps[ dim ][ hypType ][ i ].first,
+                              myExistingHyps[ dim ][ hypType ] );
         if ( aHypIndex < 0 ) {
           // assigned hypothesis is incompatible with the algorithm
           if ( currentHyp( dim, Algo ) < 0 )
           { // none algo selected; it is edition for sure, of submesh maybe
             hypWithoutAlgo = true;
-            myExistingHyps[ dim ][ hypType ].push_back( myObjHyps[ dim ][ hypType ].first() );
+            myExistingHyps[ dim ][ hypType ].push_back( myObjHyps[ dim ][ hypType ][ i ] );
+            anExisting.push_back( myObjHyps[ dim ][ hypType ][ i ].second );
             aHypIndex = myExistingHyps[ dim ][ hypType ].count() - 1;
             myDlg->tab( dim )->setExistingHyps( hypType, anExisting );
           }
         }
+        setCurrentHyp( dim, hypType + i, aHypIndex );
+
+        if ( hypType == MainHyp ) break; // only one main hyp allowed
       }
-      setCurrentHyp( dim, hypType, aHypIndex );
     }
   }
   // make available other hyps of same type as one without algo
@@ -2122,8 +2170,8 @@ void SMESHGUI_MeshOp::readMesh()
 //================================================================================
 /*!
  * \brief Gets name of object
-  * \param theSO - SObject
-  * \retval QString - name of object
+ * \param theSO - SObject
+ * \retval QString - name of object
  *
  * Gets name of object
  */
@@ -2249,37 +2297,38 @@ bool SMESHGUI_MeshOp::editMeshOrSubMesh( QString& theMess )
       myObjHyps[ dim ][ Algo ].append( THypItem( anAlgoVar, aName) );
     }
 
-    // assign hypotheses
+    // remove deselected hypotheses
     for ( int hypType = MainHyp; hypType <= AddHyp; hypType++ )
     {
-      int aNewHypIndex = currentHyp( dim, hypType );
-      int anOldHypIndex = -1;
-
-      // remove old hypotheses
-      if ( myObjHyps[ dim ][ hypType ].count() > 0 )
+      for ( int i = 0, nb = myObjHyps[ dim ][ hypType ].count(); i < nb; ++i )
       {
-        anOldHypIndex = find( myObjHyps[ dim ][ hypType ].first().first,
-                              myExistingHyps[ dim ][ hypType ] );
-        if ( aNewHypIndex != anOldHypIndex || // different hyps
-             anOldHypIndex == -1 )            // hyps of different algos
+        SMESH::SMESH_Hypothesis_var hyp = myObjHyps[ dim ][ hypType ][ i ].first;
+        int hypIndex = this->find( hyp, myExistingHyps[ dim ][ hypType ]);
+        if ( !isSelectedHyp( dim, hypType, hypIndex ) && !hyp->_is_nil() )
         {
-          SMESH::RemoveHypothesisOrAlgorithmOnMesh
-            ( pObj, myObjHyps[ dim ][ hypType ].first().first );
-          myObjHyps[ dim ][ hypType ].clear();
+          SMESH::RemoveHypothesisOrAlgorithmOnMesh( pObj, hyp );
         }
       }
-
-      // assign new hypotheses
-      if ( aNewHypIndex != anOldHypIndex && aNewHypIndex > -1 )
+    }
+    // assign newly selected hypotheses
+    for ( int dlgType = MainHyp; dlgType < nbDlgHypTypes(dim); dlgType++ )
+    {
+      const int curIndex = currentHyp( dim, dlgType );
+      const int  hypType = Min( dlgType, AddHyp );
+      if ( curIndex >= 0 && curIndex < myExistingHyps[ dim ][ hypType ].count() )
       {
-        if ( isMesh )
-          SMESH::AddHypothesisOnMesh
-            (aMeshVar, myExistingHyps[ dim ][ hypType ][ aNewHypIndex ].first );
-        else if ( !aSubMeshVar->_is_nil() )
-          SMESH::AddHypothesisOnSubMesh
-            ( aSubMeshVar, myExistingHyps[ dim ][ hypType ][ aNewHypIndex ].first );
+        SMESH::SMESH_Hypothesis_var hyp = myExistingHyps[ dim ][ hypType ][ curIndex ].first;
+
+        bool isAssigned = ( this->find( hyp, myObjHyps[ dim ][ hypType ]) >= 0 );
+        if ( !isAssigned )
+        {
+          if ( isMesh )
+            SMESH::AddHypothesisOnMesh (aMeshVar, hyp );
+          else if ( !aSubMeshVar->_is_nil() )
+            SMESH::AddHypothesisOnSubMesh ( aSubMeshVar, hyp );
+        }
       }
-      // reread all hypotheses of mesh if necessary
+      // reread all hypotheses of mesh
       QStringList anExisting;
       existingHyps( dim, hypType, pObj, anExisting, myObjHyps[ dim ][ hypType ] );
     }

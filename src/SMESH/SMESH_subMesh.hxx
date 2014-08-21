@@ -218,10 +218,10 @@ public:
     AlgoStateEngine(int event, SMESH_Hypothesis * anHyp);
 
   SMESH_Hypothesis::Hypothesis_Status
-    SubMeshesAlgoStateEngine(int event, SMESH_Hypothesis * anHyp);
+    SubMeshesAlgoStateEngine(int event, SMESH_Hypothesis * anHyp, bool exitOnFatal=false);
 
   algo_state             GetAlgoState() const    { return _algoState; }
-  compute_state          GetComputeState() const { return _computeState; };
+  compute_state          GetComputeState() const { return _computeState; }
   SMESH_ComputeErrorPtr& GetComputeError()       { return _computeError; }
 
   void DumpAlgoState(bool isMain);

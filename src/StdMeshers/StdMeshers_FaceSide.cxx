@@ -1012,7 +1012,8 @@ TSideVector StdMeshers_FaceSide::GetFaceWires(const TopoDS_Face&   theFace,
                                               SMESH_Mesh &         theMesh,
                                               const bool           theIgnoreMediumNodes,
                                               TError &             theError,
-                                              SMESH_ProxyMesh::Ptr theProxyMesh)
+                                              SMESH_ProxyMesh::Ptr theProxyMesh,
+                                              const bool           theCheckVertexNodes)
 {
   list< TopoDS_Edge > edges, internalEdges;
   list< int > nbEdgesInWires;
@@ -1037,17 +1038,18 @@ TSideVector StdMeshers_FaceSide::GetFaceWires(const TopoDS_Face&   theFace,
     // as StdMeshers_FaceSide::GetUVPtStruct() requires
     if ( wireEdges.front().Orientation() != TopAbs_INTERNAL ) // Issue 0020676
     {
-      while ( !SMESH_Algo::VertexNode( TopExp::FirstVertex( wireEdges.front(), true),
-                                       theMesh.GetMeshDS()))
-      {
-        wireEdges.splice(wireEdges.end(), wireEdges,
-                         wireEdges.begin(), ++wireEdges.begin());
-        if ( from->IsSame( wireEdges.front() )) {
-          theError = TError
-            ( new SMESH_ComputeError(COMPERR_BAD_INPUT_MESH,"No nodes on vertices"));
-          return TSideVector(0);
+      if ( theCheckVertexNodes )
+        while ( !SMESH_Algo::VertexNode( TopExp::FirstVertex( wireEdges.front(), true),
+                                         theMesh.GetMeshDS()))
+        {
+          wireEdges.splice(wireEdges.end(), wireEdges,
+                           wireEdges.begin(), ++wireEdges.begin());
+          if ( from->IsSame( wireEdges.front() )) {
+            theError = TError
+              ( new SMESH_ComputeError(COMPERR_BAD_INPUT_MESH,"No nodes on vertices"));
+            return TSideVector(0);
+          }
         }
-      }
     }
     else if ( *nbE > 1 ) // Issue 0020676 (Face_pb_netgen.brep) - several internal edges in a wire
     {

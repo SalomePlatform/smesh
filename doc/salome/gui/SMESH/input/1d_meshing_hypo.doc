@@ -183,27 +183,47 @@ You can set the type of distribution for this hypothesis in the
 <br><b>Equidistant Distribution</b> - all segments will have the same
 length, you define only the <b>Number of Segments</b>.
 
-<br><b>Scale Distribution</b> - length of segments gradually changes depending on the <b>Scale Factor</b>, which is a ratio of the first segment length to the last segment length.
+<br><b>Scale Distribution</b> - length of segments gradually changes
+depending on the <b>Scale Factor</b>, which is a ratio of the first
+segment length to the last segment length.<br>
+Length of segments changes in geometric progression with the common
+ratio (A) depending on the <b>Scale Factor</b> (S) and <b>Number of
+Segments</b> (N) as follows: <code> A = S**(1/(N-1))</code>. For an
+edge of length L, length of the first segment is 
+<code>L * (1 - A)/(1 - A**N)</code>.
+
 
 \image html a-nbsegments2.png
 
-<br><b>Distribution with Table Density</b> - you input a number of
-pairs <b>t - F(t)</b>, where \b t ranges from 0 to 1,  and the module computes the
-formula, which will rule the change of length of segments and shows
-the curve in the plot. You can select the <b>Conversion mode</b> from
-\b Exponent and <b>Cut negative</b>.
-
-\image html distributionwithtabledensity.png
-
 <br><b>Distribution with Analytic Density</b> - you input the formula,
 which will rule the change of length of segments and the module shows
-the curve in the plot.
+in the plot the density function curve in red and the node
+distribution as blue crosses.
 
 \image html distributionwithanalyticdensity.png
+
+<br>
+\anchor analyticdensity_anchor
+The node distribution is computed so that to have the density function
+integral on the range between two nodes equal for all segments.
+\image html analyticdensity.png
+
+<br><b>Distribution with Table Density</b> - you input a number of
+pairs <b>t - F(t)</b>, where \b t ranges from 0 to 1, and the module computes the
+formula, which will rule the change of length of segments and shows
+in the plot the density function curve in red and the node
+distribution as blue crosses. The node distribution is computed the
+same way as for 
+\ref analyticdensity_anchor "Distribution with Analytic Density". You
+can select the <b>Conversion mode</b> from\b Exponent and <b>Cut
+negative</b>. 
+
+\image html distributionwithtabledensity.png
 
 <b>See Also</b> a sample TUI Script of a 
 \ref tui_deflection_1d "Defining Number of Segments" hypothesis
 operation.
+
 
 <br>
 \anchor start_and_end_length_anchor

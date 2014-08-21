@@ -32,16 +32,19 @@
 #include <SUIT_ResourceMgr.h>
 
 // Qt includes
-#include <QVBoxLayout>
-#include <QGridLayout>
-#include <QLabel>
-#include <QTabWidget>
-#include <QGroupBox>
-#include <QToolButton>
 #include <QComboBox>
-#include <QMenu>
 #include <QCursor>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QLabel>
+#include <QListWidget>
+#include <QMenu>
 #include <QPushButton>
+#include <QTabWidget>
+#include <QToolButton>
+#include <QVBoxLayout>
+
+#include <Standard_Integer.hxx>
 
 #define SPACING 6
 #define MARGIN  11
@@ -65,62 +68,81 @@ SMESHGUI_MeshTab::SMESHGUI_MeshTab( QWidget* theParent )
   SUIT_ResourceMgr* aResMgr = SUIT_Session::session()->resourceMgr();
   QIcon aCreateIcon( aResMgr->loadPixmap( "SMESH", tr( "ICON_HYPO" ) ) );
   QIcon aEditIcon( aResMgr->loadPixmap( "SMESH", tr( "ICON_HYPO_EDIT" ) ) );
+  QIcon aPlusIcon( aResMgr->loadPixmap( "SMESH", tr( "ICON_PLUS" ) ) );
+  QIcon aMinusIcon( aResMgr->loadPixmap( "SMESH", tr( "ICON_MINUS" ) ) );
   
   // Algorifm
   QLabel* anAlgoLbl = new QLabel( tr( "ALGORITHM" ), this );
-  myHyp[ Algo ] = new QComboBox( this );
+  myHypCombo[ Algo ] = new QComboBox( this );
   
   // Hypothesis
   QLabel* aHypLbl = new QLabel( tr( "HYPOTHESIS" ), this );
-  myHyp[ MainHyp ] = new QComboBox( this );
-  myHyp[ MainHyp ]->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed );
-  myCreateHyp[ MainHyp ] = new QToolButton( this );
-  myCreateHyp[ MainHyp ]->setIcon( aCreateIcon );
-  myEditHyp[ MainHyp ] = new QToolButton( this );
-  myEditHyp[ MainHyp ]->setIcon( aEditIcon );
-  
+  myHypCombo[ MainHyp ] = new QComboBox( this );
+  myHypCombo[ MainHyp ]->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed );
+  myCreateHypBtn[ MainHyp ] = new QToolButton( this );
+  myCreateHypBtn[ MainHyp ]->setIcon( aCreateIcon );
+  myEditHypBtn[ MainHyp ] = new QToolButton( this );
+  myEditHypBtn[ MainHyp ]->setIcon( aEditIcon );
+
   // Line
   QFrame* aLine = new QFrame( this );
   aLine->setFrameStyle( QFrame::HLine | QFrame::Sunken );
-  
+
   // Add. hypothesis
   QLabel* anAddHypLbl = new QLabel( tr( "ADD_HYPOTHESIS" ), this );
-  myHyp[ AddHyp ] = new QComboBox( this );
-  myHyp[ AddHyp ]->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed );
-  myCreateHyp[ AddHyp ] = new QToolButton( this );
-  myCreateHyp[ AddHyp ]->setIcon( aCreateIcon );
-  myEditHyp[ AddHyp ] = new QToolButton( this );
-  myEditHyp[ AddHyp ]->setIcon( aEditIcon );
-  
+  myHypCombo[ AddHyp ] = new QComboBox( this );
+  myHypCombo[ AddHyp ]->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed );
+  myCreateHypBtn[ AddHyp ] = new QToolButton( this );
+  myCreateHypBtn[ AddHyp ]->setIcon( aCreateIcon );
+  myEditHypBtn[ AddHyp ] = new QToolButton( this );
+  myEditHypBtn[ AddHyp ]->setIcon( aEditIcon );
+  myEditHypBtn[ MoreAddHyp ] = new QToolButton( this );
+  myEditHypBtn[ MoreAddHyp ]->setIcon( aEditIcon );
+
+  myAddHypList = new QListWidget( this );
+  myMoreAddHypBtn = new QToolButton( this );
+  myMoreAddHypBtn->setIcon( aPlusIcon );
+  myLessAddHypBtn = new QToolButton( this );
+  myLessAddHypBtn->setIcon( aMinusIcon );
+
   // Fill layout
   QGridLayout* aLay = new QGridLayout( this );
   aLay->setMargin( MARGIN );
   aLay->setSpacing( SPACING );
 
   aLay->addWidget( anAlgoLbl, 0, 0 );
-  aLay->addWidget( myHyp[ Algo ], 0, 1 );
+  aLay->addWidget( myHypCombo[ Algo ], 0, 1 );
   aLay->addWidget( aHypLbl, 1, 0 );
-  aLay->addWidget( myHyp[ MainHyp ], 1, 1 );
-  aLay->addWidget( myCreateHyp[ MainHyp ], 1, 2 );
-  aLay->addWidget( myEditHyp[ MainHyp ], 1, 3 );
+  aLay->addWidget( myHypCombo[ MainHyp ], 1, 1 );
+  aLay->addWidget( myCreateHypBtn[ MainHyp ], 1, 2 );
+  aLay->addWidget( myEditHypBtn[ MainHyp ], 1, 3 );
   aLay->addWidget( aLine, 2, 0, 1, 4 );
   aLay->addWidget( anAddHypLbl, 3, 0 );
-  aLay->addWidget( myHyp[ AddHyp ], 3, 1 );
-  aLay->addWidget( myCreateHyp[ AddHyp ], 3, 2 );
-  aLay->addWidget( myEditHyp[ AddHyp ], 3, 3 );
-  aLay->addItem( new QSpacerItem( 0, 0, QSizePolicy::Fixed, QSizePolicy::Expanding ), 4, 0 );
-    
+  aLay->addWidget( myHypCombo[ AddHyp ], 3, 1 );
+  aLay->addWidget( myCreateHypBtn[ AddHyp ], 3, 2 );
+  aLay->addWidget( myEditHypBtn[ AddHyp ], 3, 3 );
+  aLay->addWidget( myAddHypList, 4, 1, 2, 1 );
+  aLay->addWidget( myMoreAddHypBtn, 4, 2 );
+  aLay->addWidget( myEditHypBtn[ MoreAddHyp ], 4, 3 );
+  aLay->addWidget( myLessAddHypBtn, 5, 2 );
+  aLay->addItem( new QSpacerItem( 0, 0, QSizePolicy::Fixed, QSizePolicy::Expanding ), 6, 0 );
+
   // Connect signals and slots
   for ( int i = MainHyp; i <= AddHyp; i++ )
   {
-    connect( myCreateHyp[ i ], SIGNAL( clicked() )       ,  SLOT( onCreateHyp() ) );
-    connect( myEditHyp[ i ]  , SIGNAL( clicked() )       ,  SLOT( onEditHyp() ) );
-    connect( myHyp[ i ]      , SIGNAL( activated( int ) ),  SLOT( onHyp( int ) ) );
+    connect( myCreateHypBtn[ i ], SIGNAL( clicked() )       ,  SLOT( onCreateHyp() ) );
+    connect( myEditHypBtn[ i ]  , SIGNAL( clicked() )       ,  SLOT( onEditHyp() ) );
+    connect( myHypCombo[ i ]    , SIGNAL( activated( int ) ),  SLOT( onHyp( int ) ) );
   }
-  connect( myHyp[ Algo ], SIGNAL( activated( int ) ), SLOT( onHyp( int ) ) );
-  
+  connect( myHypCombo[ Algo ], SIGNAL( activated( int ) ), SLOT( onHyp( int ) ) );
+
+  connect( myAddHypList, SIGNAL( currentRowChanged( int ) ), SLOT( onHyp( int ) ) );
+  connect( myEditHypBtn[ MoreAddHyp ], SIGNAL( clicked() ), SLOT( onEditHyp() ) );
+  connect( myMoreAddHypBtn, SIGNAL( clicked() ), SLOT( onMoreAddHyp() ));
+  connect( myLessAddHypBtn, SIGNAL( clicked() ), SLOT( onLessAddHyp() ));
+
   // Initialize controls
-  
+
   setAvailableHyps( Algo, QStringList() );
   setAvailableHyps( MainHyp, QStringList() );
   setAvailableHyps( AddHyp, QStringList() );
@@ -137,6 +159,49 @@ SMESHGUI_MeshTab::~SMESHGUI_MeshTab()
 
 //================================================================================
 /*!
+ * \brief Adds an item in a control corresponding to \a type
+ *  \param [in] txt - item text
+ *  \param [in] type - HypType
+ *  \param [in] index - index of item in a list of items
+ */
+//================================================================================
+
+void SMESHGUI_MeshTab::addItem( const QString& txt, const int type, const int index )
+{
+  if ( type <= AddHyp )
+  {
+    myHypCombo[ type ]->addItem( txt, QVariant( index ));
+  }
+  else
+  {
+    QListWidgetItem* item = new QListWidgetItem( txt, myAddHypList );
+    item->setData( Qt::UserRole, QVariant( index ));
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Returns index of hyp of a given type
+ */
+//================================================================================
+
+int SMESHGUI_MeshTab::getCurrentIndex( const int type, const bool curByType ) const
+{
+  if ( type <= AddHyp )
+  {
+    return myHypCombo[ type ]->itemData( myHypCombo[ type ]->currentIndex() ).toInt();
+  }
+  else
+  {
+    int row = curByType ? ( type - AddHyp - 1 ) : myAddHypList->currentRow();
+    if ( QListWidgetItem* item = myAddHypList->item( row ))
+      return item->data( Qt::UserRole ).toInt();
+  }
+  return -1;
+}
+
+//================================================================================
+/*!
  * \brief Sets available hypothesis or algorithms
   * \param theId - identifier of hypothesis (main or additional, see HypType enumeration)
   * \param theHyps - list of available hypothesis names
@@ -146,25 +211,26 @@ SMESHGUI_MeshTab::~SMESHGUI_MeshTab()
 //================================================================================
 void SMESHGUI_MeshTab::setAvailableHyps( const int theId, const QStringList& theHyps )
 {
-  myAvailableHyps[ theId ] = theHyps;
+  myAvailableHypTypes[ theId ] = theHyps;
 
   bool enable = ! theHyps.isEmpty();
   if ( theId == Algo ) // fill list of algos
   {
-    myHyp[ Algo ]->clear();
+    myHypCombo[ Algo ]->clear();
     if ( enable )
     {
-      myHyp[ Algo ]->addItem( tr( "NONE" ) );
-      myHyp[ Algo ]->addItems( theHyps );
-      myHyp[ Algo ]->setCurrentIndex( 0 );
+      addItem( tr( "NONE"), Algo, 0 );
+      for ( int i = 0, nbHyp = theHyps.count(); i < nbHyp; ++i )
+        addItem( theHyps[i], Algo, i+1 );
+      myHypCombo[ Algo ]->setCurrentIndex( 0 );
     }
   }
   else // enable buttons
   {
-    myCreateHyp[ theId ]->setEnabled( enable );
-    myEditHyp  [ theId ]->setEnabled( false );
+    myCreateHypBtn[ theId ]->setEnabled( enable );
+    myEditHypBtn  [ theId ]->setEnabled( false );
   }
-  myHyp[ theId ]->setEnabled( enable );
+  myHypCombo[ theId ]->setEnabled( enable );
 }
 
 //================================================================================
@@ -172,7 +238,7 @@ void SMESHGUI_MeshTab::setAvailableHyps( const int theId, const QStringList& the
  * \brief Sets existing hypothesis
  * \param theId - identifier of hypothesis (main or additional, see HypType enumeration)
  * \param theHyps - list of available hypothesis names
- * \param theDefaultAvlbl - \c true means that the algorithm can with w/o hypothesis
+ * \param theDefaultAvlbl - \c true means that the algorithm can work w/o hypothesis
  *                          with some default parameters
  *
  * Sets existing main or additional hypothesis for this tab
@@ -184,17 +250,25 @@ void SMESHGUI_MeshTab::setExistingHyps( const int          theId,
 {
   if ( theId != Algo )
   {
-    bool enable = ! myAvailableHyps[ theId ].isEmpty();
-    myHyp[ theId ]->clear();
+    bool enable = ! myAvailableHypTypes[ theId ].isEmpty();
+    myHypCombo[ theId ]->clear();
     if ( enable )
     {
       QString none = tr( theDefaultAvlbl ? "DEFAULT" : ( theId == AddHyp ) ? "NONE" : "NONE" );
-      myHyp[ theId ]->addItem( none );
-      myHyp[ theId ]->addItems( theHyps );
-      myHyp[ theId ]->setCurrentIndex( 0 );
+      addItem( none, theId, 0 );
+      for ( int i = 0, nbHyp = theHyps.count(); i < nbHyp; ++i )
+        addItem( theHyps[i], theId, i+1 );
+      myHypCombo[ theId ]->setCurrentIndex( 0 );
     }
-    myHyp    [ theId ]->setEnabled( enable );
-    myEditHyp[ theId ]->setEnabled( false );
+    myHypCombo  [ theId ]->setEnabled( enable );
+    myEditHypBtn[ theId ]->setEnabled( false );
+    if ( theId == AddHyp )
+    {
+      myAddHypList->clear();
+      myEditHypBtn[ MoreAddHyp ]->setEnabled( false );
+      myMoreAddHypBtn->setEnabled( false );
+      myLessAddHypBtn->setEnabled( false );
+    }
   }
 }
 
@@ -210,46 +284,70 @@ void SMESHGUI_MeshTab::setExistingHyps( const int          theId,
 //================================================================================
 void SMESHGUI_MeshTab::addHyp( const int theId, const QString& theHyp )
 {
-  myHyp[ theId ]->addItem( theHyp );
-  myHyp[ theId ]->setCurrentIndex( myHyp[ theId ]->count() - 1 );
-  myEditHyp[ theId ]->setEnabled( true );
-  myHyp[ theId ]->setEnabled( true );
+  int index = myHypCombo[ theId ]->count();
+  if ( theId == AddHyp )
+    index += myAddHypList->count();
+  addItem( theHyp, theId, index );
+  myHypCombo[ theId ]->setCurrentIndex( myHypCombo[ theId ]->count() - 1 );
+  myEditHypBtn[ theId ]->setEnabled( true );
+  myHypCombo[ theId ]->setEnabled( true );
+  if ( theId == AddHyp )
+    myMoreAddHypBtn->setEnabled( true );
 }
 
 //================================================================================
 /*!
  * \brief Renames hypothesis
-  * \param theId - identifier of hypothesis (main or additional, see HypType enumeration)
-  * \param theIndex - index of hypothesis to be renamed
-  * \param theNewName - new name of hypothesis to be renamed
- * 
+ * \param theId - identifier of hypothesis (main or additional, see HypType enumeration)
+ * \param theIndex - index of hypothesis to be renamed
+ * \param theNewName - new name of hypothesis to be renamed
+ *
  * Renames hypothesis
  */
 //================================================================================
-void SMESHGUI_MeshTab::renameHyp( const int theId, 
-                                  const int theIndex, 
-                                  const QString& theNewName )
-{
-  if ( theIndex > 0 && theIndex < myHyp[ theId ]->count() )
-    myHyp[ theId ]->setItemText( theIndex, theNewName );
-}                                  
+// void SMESHGUI_MeshTab::renameHyp( const int theId,
+//                                   const int theIndex,
+//                                   const QString& theNewName )
+// {
+//   if ( theIndex > 0 && theIndex < myHypCombo[ theId ]->count() )
+//     myHypCombo[ theId ]->setItemText( theIndex, theNewName );
+// }
 
 //================================================================================
 /*!
- * \brief Sets current hypothesis 
-  * \param theId - identifier of hypothesis (main or additional, see HypType enumeration)
-  * \param theIndex - index of hypothesis to be set as current
- * 
- * Sets current hypothesis 
+ * \brief Sets current hypothesis
+ * \param theId - identifier of hypothesis (main or additional, see HypType enumeration)
+ * \param theIndex - index of hypothesis to be set as current
+ *
+ * Sets current hypothesis
  */
 //================================================================================
 void SMESHGUI_MeshTab::setCurrentHyp( const int theId, const int theIndex )
 {
-  if ( theIndex >= 0 && theIndex < myHyp[ theId ]->count() )
+  if ( theId <= AddHyp )
   {
-    myHyp[ theId ]->setCurrentIndex( theIndex );
-    if ( myEditHyp[ theId ] )
-      myEditHyp[ theId ]->setEnabled( theIndex > 0 );
+    if ( theIndex >= 0 && theIndex < myHypCombo[ theId ]->count() )
+    {
+      myHypCombo[ theId ]->setCurrentIndex( theIndex );
+      if ( myEditHypBtn[ theId ] )
+        myEditHypBtn[ theId ]->setEnabled( theIndex > 0 );
+      if ( theId == AddHyp )
+        myMoreAddHypBtn      ->setEnabled( theIndex > 0 );
+    }
+  }
+  else // more than one additional hyp assigned
+  {
+    // move a hyp from myHypCombo[ AddHyp ] to myAddHypList
+    for ( int i = 1, nb = myHypCombo[ AddHyp ]->count(); i < nb; ++i )
+    {
+      int curIndex = myHypCombo[ AddHyp ]->itemData( i ).toInt();
+      if ( theIndex == curIndex )
+      {
+        addItem( myHypCombo[ AddHyp ]->itemText( i ), theId, theIndex );
+        myHypCombo[ AddHyp ]->removeItem( i );
+        break;
+      }
+    }
   }
 }
 
@@ -260,11 +358,26 @@ void SMESHGUI_MeshTab::setCurrentHyp( const int theId, const int theIndex )
   * \retval int - index of current hypothesis
  * 
  * Gets current hypothesis
+ * Use theId > AddHyp to get more than selected addetional hyps (see nbAddHypTypes()).
  */
 //================================================================================
 int SMESHGUI_MeshTab::currentHyp( const int theId ) const
 {
-  return myHyp[ theId ]->currentIndex();
+  return getCurrentIndex( theId, /*curByType=*/true );
+}
+
+//================================================================================
+/*!
+ * \brief Returns nb of selected supplementary additional hypotheses
+ * 
+ * Access to their indices is via currentHyp( AddHyp + i ) where i is within the
+ * range 0 <= i < this->nbAddHypTypes()
+ */
+//================================================================================
+
+int SMESHGUI_MeshTab::nbAddHypTypes() const
+{
+  return myAddHypList->count();
 }
 
 //================================================================================
@@ -277,12 +390,12 @@ int SMESHGUI_MeshTab::currentHyp( const int theId ) const
 //================================================================================
 void SMESHGUI_MeshTab::onCreateHyp()
 {
-  bool isMainHyp = sender() == myCreateHyp[ MainHyp ];
+  bool isMainHyp = ( sender() == myCreateHypBtn[ MainHyp ]);
 
   QMenu aPopup( this );
   
   QStringList aHypNames = isMainHyp ? 
-    myAvailableHyps[ MainHyp ] : myAvailableHyps[ AddHyp ];
+    myAvailableHypTypes[ MainHyp ] : myAvailableHypTypes[ AddHyp ];
 
   QList<QAction*> actions;
   for ( int i = 0, n = aHypNames.count(); i < n; i++ )
@@ -304,8 +417,12 @@ void SMESHGUI_MeshTab::onCreateHyp()
 void SMESHGUI_MeshTab::onEditHyp()
 {
   const QObject* aSender = sender();
-  int aHypType = aSender == myEditHyp[ MainHyp ] ? MainHyp : AddHyp;
-  emit editHyp( aHypType, myHyp[ aHypType ]->currentIndex() - 1 );  // - 1 because there is NONE on the top
+  int aHypType = MainHyp;
+  for ( ; aHypType <= MoreAddHyp; ++aHypType )
+    if ( aSender == myEditHypBtn[ aHypType ])
+      break;
+  emit editHyp( Min( aHypType, AddHyp ),
+                getCurrentIndex( aHypType ) - 1 );  // - 1 because there is NONE on the top
 }
 
 //================================================================================
@@ -320,11 +437,66 @@ void SMESHGUI_MeshTab::onEditHyp()
 void SMESHGUI_MeshTab::onHyp( int theIndex )
 {
   const QObject* aSender = sender();
-  if ( aSender == myHyp[ Algo ] )
+  if ( aSender == myHypCombo[ Algo ] )
+  {
     emit selectAlgo( theIndex - 1 ); // - 1 because there is NONE on the top
-  else {
-    int anIndex = aSender == myHyp[ MainHyp ] ? MainHyp : AddHyp;
-    myEditHyp[ anIndex ]->setEnabled( theIndex > 0 );
+  }
+  else if ( aSender == myAddHypList )
+  {
+    myEditHypBtn[ MoreAddHyp ]->setEnabled( theIndex >= 0 );
+    myLessAddHypBtn           ->setEnabled( theIndex >= 0 );
+  }
+  else
+  {
+    int type = ( aSender == myHypCombo[ MainHyp ] ? MainHyp : AddHyp );
+    myEditHypBtn[ type ]->setEnabled( theIndex > 0 );
+
+    if ( type == AddHyp )
+      myMoreAddHypBtn   ->setEnabled( theIndex > 0 );
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Adds a current additional hyp to myAddHypList
+ * 
+ * SLOT called when myMoreAddHypBtn ("plus") clicked
+ */
+//================================================================================
+
+void SMESHGUI_MeshTab::onMoreAddHyp()
+{
+  int hypIndex = currentHyp( AddHyp );
+  if ( hypIndex > 0 )
+  {
+    // move a hyp from myHypCombo[ AddHyp ] to myAddHypList
+    int comboIndex = myHypCombo[ AddHyp ]->currentIndex();
+    addItem( myHypCombo[ AddHyp ]->itemText( comboIndex ), MoreAddHyp, hypIndex );
+
+    myHypCombo[ AddHyp ]->removeItem( comboIndex );
+    myHypCombo[ AddHyp ]->setCurrentIndex( 0 );
+
+    myMoreAddHypBtn->setEnabled( false );
+    myEditHypBtn[ AddHyp ]->setEnabled( false );
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Removes a current additional hyp from myAddHypList
+ * 
+ * SLOT called when myLessAddHypBtn ("minus") clicked
+ */
+//================================================================================
+
+void SMESHGUI_MeshTab::onLessAddHyp()
+{
+  if ( QListWidgetItem * item = myAddHypList->currentItem() )
+  {
+    // move a hyp from myAddHypList to myHypCombo[ AddHyp ]
+    int hypIndex = item->data( Qt::UserRole ).toInt();
+    addItem( item->text(), AddHyp, hypIndex );
+    delete item;//myAddHypList->takeItem( myAddHypList->currentRow() );
   }
 }
 
@@ -334,14 +506,14 @@ void SMESHGUI_MeshTab::onHyp( int theIndex )
  *
  * Resets all tab fields
  */
-//================================================================================  
+//================================================================================
 void SMESHGUI_MeshTab::reset()
 {
   for ( int i = Algo; i <= AddHyp; i++ )
   {
-    myHyp[ i ]->setCurrentIndex( 0 );
-    if ( myEditHyp[ i ] )
-      myEditHyp[ i ]->setEnabled( false );
+    myHypCombo[ i ]->setCurrentIndex( 0 );
+    if ( myEditHypBtn[ i ] )
+      myEditHypBtn[ i ]->setEnabled( false );
   }
 }
 

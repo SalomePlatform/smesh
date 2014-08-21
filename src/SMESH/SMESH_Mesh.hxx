@@ -126,7 +126,7 @@ public:
                                   bool        theMakeRequiredGroups = true );
 
   SMESH_Hypothesis::Hypothesis_Status
-  AddHypothesis(const TopoDS_Shape & aSubShape, int anHypId)
+  AddHypothesis(const TopoDS_Shape & aSubShape, int anHypId, std::string* error=0)
     throw(SALOME_Exception);
   
   SMESH_Hypothesis::Hypothesis_Status

@@ -214,7 +214,7 @@ class Mesh_Algorithm:
 
     ## Private method
     def Hypothesis (self, hyp, args=[], so="libStdMeshersEngine.so",
-                    UseExisting=0, CompareMethod=""):
+                    UseExisting=0, CompareMethod="", toAdd=True):
         from salome.smesh.smeshBuilder import TreatHypoStatus, GetName
         hypo = None
         if UseExisting:
@@ -243,8 +243,9 @@ class Mesh_Algorithm:
         geomName=""
         if self.geom:
             geomName = GetName(self.geom)
-        status = self.mesh.mesh.AddHypothesis(self.geom, hypo)
-        TreatHypoStatus( status, GetName(hypo), geomName, 0 )
+        if toAdd:
+            status = self.mesh.mesh.AddHypothesis(self.geom, hypo)
+            TreatHypoStatus( status, GetName(hypo), geomName, 0, self.mesh )
         return hypo
 
     ## Returns entry of the shape to mesh in the study
@@ -275,11 +276,13 @@ class Mesh_Algorithm:
         if faces and isinstance( faces[0], geomBuilder.GEOM._objref_GEOM_Object ):
             faces = [ self.mesh.geompyD.GetSubShapeID(self.mesh.geom, f) for f in faces ]
         hyp = self.Hypothesis("ViscousLayers",
-                              [thickness, numberOfLayers, stretchFactor, faces])
+                              [thickness, numberOfLayers, stretchFactor, faces, isFacesToIgnore],
+                              toAdd=False)
         hyp.SetTotalThickness(thickness)
         hyp.SetNumberLayers(numberOfLayers)
         hyp.SetStretchFactor(stretchFactor)
         hyp.SetFaces(faces, isFacesToIgnore)
+        self.mesh.AddHypothesis( hyp, self.geom )
         return hyp
 
     ## Defines "ViscousLayers2D" hypothesis to give parameters of layers of quadrilateral
@@ -303,12 +306,13 @@ class Mesh_Algorithm:
         if edges and isinstance( edges[0], geomBuilder.GEOM._objref_GEOM_Object ):
             edges = [ self.mesh.geompyD.GetSubShapeID(self.mesh.geom, f) for f in edges ]
         hyp = self.Hypothesis("ViscousLayers2D",
-                              [thickness, numberOfLayers, stretchFactor,
-                               edges, isEdgesToIgnore])
+                              [thickness, numberOfLayers, stretchFactor, edges, isEdgesToIgnore],
+                              toAdd=False)
         hyp.SetTotalThickness(thickness)
         hyp.SetNumberLayers(numberOfLayers)
         hyp.SetStretchFactor(stretchFactor)
         hyp.SetEdges(edges, isEdgesToIgnore)
+        self.mesh.AddHypothesis( hyp, self.geom )
         return hyp
 
     ## Transform a list of either edges or tuples (edge, 1st_vertex_of_edge)

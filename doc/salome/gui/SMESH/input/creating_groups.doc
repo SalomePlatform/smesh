@@ -40,31 +40,26 @@ the following ways:
   mesh. For this, turn on the <b>Select All</b> check box. In this mode
   all controls, which allow selecting the entities in other ways, are
   disabled.</li>
-<li>By applying the Filter. The <b>Set filter</b> button allows to
-  define the filter for selection of the elements for your group. See more
-  about filters on the 
-  \ref selection_filter_library_page "Selection filter library" page.<br>
-  If the <b>Enable manual edition</b> check box is turned off, the 
-  filter entirely defines the group contents. In this mode, the filter is
-  applied to all elements of the mesh. If there are no entities
-  corresponding to the filter, the \b Apply button is disabled.<br>
-  If the <b>Enable manual edition</b> check box is turned on, the defined
-  filter can be used to for selection of entities for the group.</li>
 <li>By choosing entities manually with the mouse in the 3D Viewer. For
   this, turn on the <b>Enable manual edition</b> check box. You can
   click on an element in the 3D viewer and it will be highlighted. After
   that click the \b Add button and the ID of this element will be
-  added to the list.</li>
-<li>By adding entities from either a submesh or an existing
+  added to the list.<br>
+  The <b>Set filter</b> button allows to define the filter for
+  selection of the elements for your group. See more about filters on
+  the \ref selection_filter_library_page "Selection filter library"
+  page.</li> 
+<li>By adding entities from either a sub-mesh or an existing
   group.  For this, turn on the <b>Enable manual edition</b> check
-  box. <b>Select from</b> set of fields allows to select a submesh or
+  box. <b>Select from</b> set of fields allows to select a sub-mesh or
   a group of the appropriate type.</li>
 </ul>
 In the <b>manual edition</b> mode you can
 <ul>
-<li>click the \b Remove button to remove the selected elements from the list</li>
+<li>click the \b Remove button to remove the selected list items from
+  the list.</li>
 <li>click the <b>Sort List</b> button to sort the list of IDs of 
-mesh elements.</li>
+  mesh elements.</li>
 </ul>
 
 \image html creategroup.png

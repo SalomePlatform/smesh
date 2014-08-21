@@ -207,12 +207,15 @@ def GetName(obj):
     raise RuntimeError, "Null or invalid object"
 
 ## Prints error message if a hypothesis was not assigned.
-def TreatHypoStatus(status, hypName, geomName, isAlgo):
+def TreatHypoStatus(status, hypName, geomName, isAlgo, mesh):
     if isAlgo:
         hypType = "algorithm"
     else:
         hypType = "hypothesis"
         pass
+    reason = ""
+    if hasattr( status, "__getitem__" ):
+        status,reason = status[0],status[1]
     if status == HYP_UNKNOWN_FATAL :
         reason = "for unknown reason"
     elif status == HYP_INCOMPATIBLE :
@@ -235,17 +238,24 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo):
     elif status == HYP_HIDING_ALGO:
         reason = "it hides algorithms of lower dimensions by generating elements of all dimensions"
     elif status == HYP_NEED_SHAPE:
-        reason = "Algorithm can't work without shape"
+        reason = "algorithm can't work without shape"
+    elif status == HYP_INCOMPAT_HYPS:
+        pass
     else:
         return
-    hypName = '"' + hypName + '"'
-    geomName= '"' + geomName+ '"'
-    if status < HYP_UNKNOWN_FATAL and not geomName =='""':
-        print hypName, "was assigned to",    geomName,"but", reason
-    elif not geomName == '""':
-        print hypName, "was not assigned to",geomName,":", reason
+    where = geomName
+    if where:
+        where = '"%s"' % geomName
+        if mesh:
+            meshName = GetName( mesh )
+            if meshName and meshName != NO_NAME:
+                where = '"%s" in "%s"' % ( geomName, meshName )
+    if status < HYP_UNKNOWN_FATAL and where:
+        print '"%s" was assigned to %s but %s' %( hypName, where, reason )
+    elif where:
+        print '"%s" was not assigned to %s : %s' %( hypName, where, reason )
     else:
-        print hypName, "was not assigned:", reason
+        print '"%s" was not assigned : %s' %( hypName, reason )
         pass
 
 ## Private method. Add geom (sub-shape of the main shape) into the study if not yet there
@@ -1592,7 +1602,7 @@ class Mesh:
         if geom:
             geom_name = geom.GetName()
         isAlgo = hyp._narrow( SMESH_Algo )
-        TreatHypoStatus( status, hyp_name, geom_name, isAlgo )
+        TreatHypoStatus( status, hyp_name, geom_name, isAlgo, self )
         return status
 
     ## Return True if an algorithm of hypothesis is assigned to a given shape
@@ -1878,7 +1888,7 @@ class Mesh:
     #  @param UnaryOp FT_LogicalNOT or FT_Undefined
     #  @param Tolerance the tolerance used by FT_BelongToGeom, FT_BelongToSurface,
     #         FT_LyingOnGeom, FT_CoplanarFaces criteria
-    #  @return SMESH_Group
+    #  @return SMESH_GroupOnFilter
     #  @ingroup l2_grps_create
     def MakeGroup(self,
                   groupName,
@@ -1895,7 +1905,7 @@ class Mesh:
     ## Creates a mesh group by the given criterion
     #  @param groupName the name of the mesh group
     #  @param Criterion the instance of Criterion class
-    #  @return SMESH_Group
+    #  @return SMESH_GroupOnFilter
     #  @ingroup l2_grps_create
     def MakeGroupByCriterion(self, groupName, Criterion):
         aFilterMgr = self.smeshpyD.CreateFilterManager()
@@ -1910,7 +1920,7 @@ class Mesh:
     ## Creates a mesh group by the given criteria (list of criteria)
     #  @param groupName the name of the mesh group
     #  @param theCriteria the list of criteria
-    #  @return SMESH_Group
+    #  @return SMESH_GroupOnFilter
     #  @ingroup l2_grps_create
     def MakeGroupByCriteria(self, groupName, theCriteria):
         aFilterMgr = self.smeshpyD.CreateFilterManager()
@@ -1923,12 +1933,13 @@ class Mesh:
     ## Creates a mesh group by the given filter
     #  @param groupName the name of the mesh group
     #  @param theFilter the instance of Filter class
-    #  @return SMESH_Group
+    #  @return SMESH_GroupOnFilter
     #  @ingroup l2_grps_create
     def MakeGroupByFilter(self, groupName, theFilter):
-        group = self.CreateEmptyGroup(theFilter.GetElementType(), groupName)
-        theFilter.SetMesh( self.mesh )
-        group.AddFrom( theFilter )
+        #group = self.CreateEmptyGroup(theFilter.GetElementType(), groupName)
+        #theFilter.SetMesh( self.mesh )
+        #group.AddFrom( theFilter )
+        group = self.GroupOnFilter( theFilter.GetElementType(), groupName, theFilter )
         return group
 
     ## Removes a group
