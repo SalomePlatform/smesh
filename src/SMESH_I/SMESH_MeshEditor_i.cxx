@@ -307,33 +307,56 @@ namespace MeshEditor_I {
    */
   //================================================================================
 
+  enum IDSource_Error { IDSource_OK, IDSource_INVALID, IDSource_EMPTY };
+
   bool idSourceToSet(SMESH::SMESH_IDSource_ptr  theIDSource,
                      const SMESHDS_Mesh*        theMeshDS,
                      TIDSortedElemSet&          theElemSet,
                      const SMDSAbs_ElementType  theType,
-                     const bool                 emptyIfIsMesh=false)
+                     const bool                 emptyIfIsMesh = false,
+                     IDSource_Error*            error = 0)
 
   {
-    if ( CORBA::is_nil( theIDSource ) )
-      return false;
-    if ( emptyIfIsMesh && SMESH::DownCast<SMESH_Mesh_i*>( theIDSource ))
-      return true;
+    if ( error ) *error = IDSource_OK;
 
+    if ( CORBA::is_nil( theIDSource ) )
+    {
+      if ( error ) *error = IDSource_INVALID;
+      return false;
+    }
+    if ( emptyIfIsMesh && SMESH::DownCast<SMESH_Mesh_i*>( theIDSource ))
+    {
+      if ( error && theMeshDS->GetMeshInfo().NbElements( theType ) == 0 )
+        *error = IDSource_EMPTY;
+      return true;
+    }
     SMESH::long_array_var anIDs = theIDSource->GetIDs();
     if ( anIDs->length() == 0 )
+    {
+      if ( error ) *error = IDSource_EMPTY;
       return false;
+    }
     SMESH::array_of_ElementType_var types = theIDSource->GetTypes();
     if ( types->length() == 1 && types[0] == SMESH::NODE ) // group of nodes
     {
       if ( theType == SMDSAbs_All || theType == SMDSAbs_Node )
+      {
         arrayToSet( anIDs, theMeshDS, theElemSet, SMDSAbs_Node );
+      }
       else
+      {
+        if ( error ) *error = IDSource_INVALID;
         return false;
+      }
     }
     else
     {
       arrayToSet( anIDs, theMeshDS, theElemSet, theType);
-      return bool(anIDs->length()) == bool(theElemSet.size());
+      if ( bool(anIDs->length()) != bool(theElemSet.size()))
+      {
+        if ( error ) *error = IDSource_INVALID;
+        return false;
+      }
     }
     return true;
   }
@@ -1644,8 +1667,12 @@ CORBA::Long SMESH_MeshEditor_i::Reorient2D(SMESH::SMESH_IDSource_ptr the2Dgroup,
 
   TIDSortedElemSet elements;
   prepareIdSource( the2Dgroup );
-  if ( !idSourceToSet( the2Dgroup, getMeshDS(), elements, SMDSAbs_Face, /*emptyIfIsMesh=*/1))
-    return 0;//THROW_SALOME_CORBA_EXCEPTION("No faces in given group", SALOME::BAD_PARAM);
+  IDSource_Error error;
+  idSourceToSet( the2Dgroup, getMeshDS(), elements, SMDSAbs_Face, /*emptyIfIsMesh=*/1, &error );
+  if ( error == IDSource_EMPTY )
+    return 0;
+  if ( error == IDSource_INVALID )
+    THROW_SALOME_CORBA_EXCEPTION("No faces in given group", SALOME::BAD_PARAM);
 
 
   const SMDS_MeshElement* face = 0;
@@ -1725,8 +1752,8 @@ CORBA::Long SMESH_MeshEditor_i::Reorient2DBy3D(const SMESH::ListOfIDSources& fac
 
   TIDSortedElemSet volumes;
   prepareIdSource( volumeGroup );
-  if ( !idSourceToSet( volumeGroup, getMeshDS(), volumes, SMDSAbs_Volume, /*emptyIfIsMesh=*/1))
-      THROW_SALOME_CORBA_EXCEPTION("No volumes in a given object", SALOME::BAD_PARAM);
+  IDSource_Error volsError;
+  idSourceToSet( volumeGroup, getMeshDS(), volumes, SMDSAbs_Volume, /*emptyIfMesh=*/1, &volsError);
 
   int nbReori = 0;
   for ( size_t i = 0; i < faceGroups.length(); ++i )
@@ -1735,13 +1762,16 @@ CORBA::Long SMESH_MeshEditor_i::Reorient2DBy3D(const SMESH::ListOfIDSources& fac
     prepareIdSource( faceGrp );
 
     TIDSortedElemSet faces;
-    if ( !idSourceToSet( faceGrp, getMeshDS(), faces, SMDSAbs_Face, /*emptyIfIsMesh=*/1) &&
-         faceGroups.length() == 1 )
-      ; //THROW_SALOME_CORBA_EXCEPTION("No faces in a given object", SALOME::BAD_PARAM);
+    IDSource_Error error;
+    idSourceToSet( faceGrp, getMeshDS(), faces, SMDSAbs_Face, /*emptyIfIsMesh=*/1, &error );
+    if ( error == IDSource_INVALID && faceGroups.length() == 1 )
+      THROW_SALOME_CORBA_EXCEPTION("No faces in a given object", SALOME::BAD_PARAM);
+    if ( error == IDSource_OK && volsError != IDSource_OK )
+      THROW_SALOME_CORBA_EXCEPTION("No volumes in a given object", SALOME::BAD_PARAM);
 
     nbReori += getEditor().Reorient2DBy3D( faces, volumes, outsideNormal );
 
-    if ( faces.empty() ) // all faces in the mesh treated
+    if ( error != IDSource_EMPTY && faces.empty() ) // all faces in the mesh treated
       break;
   }
 

@@ -70,47 +70,6 @@ StdMeshers_Import_1D::StdMeshers_Import_1D(int hypId, int studyId, SMESH_Gen * g
   _compatibleHypothesis.push_back("ImportSource1D");
 }
 
-//=============================================================================
-/*!
- * Check presence of a hypothesis
- */
-//=============================================================================
-
-bool StdMeshers_Import_1D::CheckHypothesis
-                         (SMESH_Mesh&                          aMesh,
-                          const TopoDS_Shape&                  aShape,
-                          SMESH_Hypothesis::Hypothesis_Status& aStatus)
-{
-  _sourceHyp = 0;
-
-  const list <const SMESHDS_Hypothesis * >&hyps = GetUsedHypothesis(aMesh, aShape);
-  if ( hyps.size() == 0 )
-  {
-    aStatus = SMESH_Hypothesis::HYP_MISSING;
-    return false;  // can't work with no hypothesis
-  }
-
-  if ( hyps.size() > 1 )
-  {
-    aStatus = SMESH_Hypothesis::HYP_ALREADY_EXIST;
-    return false;
-  }
-
-  const SMESHDS_Hypothesis *theHyp = hyps.front();
-
-  string hypName = theHyp->GetName();
-
-  if (hypName == _compatibleHypothesis.front())
-  {
-    _sourceHyp = (StdMeshers_ImportSource1D *)theHyp;
-    aStatus = SMESH_Hypothesis::HYP_OK;
-    return true;
-  }
-
-  aStatus = SMESH_Hypothesis::HYP_INCOMPATIBLE;
-  return true;
-}
-
 //================================================================================
 namespace // INTERNAL STUFF
 //================================================================================
@@ -346,7 +305,7 @@ namespace // INTERNAL STUFF
         bool rmGroups = (d->_copyGroupSubM.erase( sm ) && d->_copyGroupSubM.empty()) || rmMesh;
         if ( rmMesh )
           d->removeImportedMesh( sm->GetFather()->GetMeshDS() );
-        if ( rmGroups && data )
+        if ( rmGroups && data && data->myType == SRC_HYP )
           d->removeGroups( sm, data->_srcHyp );
       }
   }
@@ -383,7 +342,7 @@ namespace // INTERNAL STUFF
           // remove imported mesh and groups
           d->removeImportedMesh( sm->GetFather()->GetMeshDS() );
 
-          if ( data )
+          if ( data && data->myType == SRC_HYP )
             d->removeGroups( sm, data->_srcHyp );
 
           // clear the rest submeshes
@@ -395,7 +354,7 @@ namespace // INTERNAL STUFF
             {
               SMESH_subMesh* subM = *sub;
               _ListenerData* hypData = (_ListenerData*) subM->GetEventListenerData( get() );
-              if ( hypData )
+              if ( hypData && hypData->myType == SRC_HYP )
                 d->removeGroups( sm, hypData->_srcHyp );
 
               subM->ComputeStateEngine( SMESH_subMesh::CLEAN );
@@ -408,7 +367,7 @@ namespace // INTERNAL STUFF
         if ( sm->GetSubShape().ShapeType() == TopAbs_FACE )
           sm->ComputeSubMeshStateEngine( SMESH_subMesh::CLEAN );
       }
-      if ( data )
+      if ( data && data->myType == SRC_HYP )
         d->trackHypParams( sm, data->_srcHyp );
       d->_n2n.clear();
       d->_e2e.clear();
@@ -633,6 +592,48 @@ namespace // INTERNAL STUFF
 
 } // namespace
 
+//=============================================================================
+/*!
+ * Check presence of a hypothesis
+ */
+//=============================================================================
+
+bool StdMeshers_Import_1D::CheckHypothesis
+                         (SMESH_Mesh&                          aMesh,
+                          const TopoDS_Shape&                  aShape,
+                          SMESH_Hypothesis::Hypothesis_Status& aStatus)
+{
+  _sourceHyp = 0;
+
+  const list <const SMESHDS_Hypothesis * >&hyps = GetUsedHypothesis(aMesh, aShape);
+  if ( hyps.size() == 0 )
+  {
+    aStatus = SMESH_Hypothesis::HYP_MISSING;
+    return false;  // can't work with no hypothesis
+  }
+
+  if ( hyps.size() > 1 )
+  {
+    aStatus = SMESH_Hypothesis::HYP_ALREADY_EXIST;
+    return false;
+  }
+
+  const SMESHDS_Hypothesis *theHyp = hyps.front();
+
+  string hypName = theHyp->GetName();
+
+  if (hypName == _compatibleHypothesis.front())
+  {
+    _sourceHyp = (StdMeshers_ImportSource1D *)theHyp;
+    aStatus = _sourceHyp->GetGroups().empty() ? HYP_BAD_PARAMETER : HYP_OK;
+    if ( aStatus == HYP_BAD_PARAMETER )
+      _Listener::waitHypModification( aMesh.GetSubMesh( aShape ));
+    return aStatus == HYP_OK;
+  }
+
+  aStatus = SMESH_Hypothesis::HYP_INCOMPATIBLE;
+  return false;
+}
 
 //=============================================================================
 /*!

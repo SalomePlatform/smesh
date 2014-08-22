@@ -52,7 +52,7 @@ class STDMESHERS_EXPORT StdMeshers_Propagation : public SMESH_Hypothesis
   virtual std::ostream & SaveTo(std::ostream & save);
   virtual std::istream & LoadFrom(std::istream & load);
 
-  static std::string GetName ();
+  static std::string GetName();
 
   /*!
    * \brief Returns a filter selecting both StdMeshers_Propagation and

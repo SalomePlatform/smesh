@@ -1908,26 +1908,17 @@ class Mesh:
     #  @return SMESH_GroupOnFilter
     #  @ingroup l2_grps_create
     def MakeGroupByCriterion(self, groupName, Criterion):
-        aFilterMgr = self.smeshpyD.CreateFilterManager()
-        aFilter = aFilterMgr.CreateFilter()
-        aCriteria = []
-        aCriteria.append(Criterion)
-        aFilter.SetCriteria(aCriteria)
-        group = self.MakeGroupByFilter(groupName, aFilter)
-        aFilterMgr.UnRegister()
-        return group
+        return self.MakeGroupByCriteria( groupName, [Criterion] )
 
     ## Creates a mesh group by the given criteria (list of criteria)
     #  @param groupName the name of the mesh group
     #  @param theCriteria the list of criteria
+    #  @param binOp binary operator used when binary operator of criteria is undefined
     #  @return SMESH_GroupOnFilter
     #  @ingroup l2_grps_create
-    def MakeGroupByCriteria(self, groupName, theCriteria):
-        aFilterMgr = self.smeshpyD.CreateFilterManager()
-        aFilter = aFilterMgr.CreateFilter()
-        aFilter.SetCriteria(theCriteria)
+    def MakeGroupByCriteria(self, groupName, theCriteria, binOp=SMESH.FT_LogicalAND):
+        aFilter = self.smeshpyD.GetFilterFromCriteria( theCriteria, binOp )
         group = self.MakeGroupByFilter(groupName, aFilter)
-        aFilterMgr.UnRegister()
         return group
 
     ## Creates a mesh group by the given filter
@@ -2589,7 +2580,7 @@ class Mesh:
 
     ## Get measure structure specifying bounding box data of the specified object(s)
     #  @param IDs single source object or list of source objects or list of nodes/elements IDs
-    #  @param isElem if @a objects is a list of IDs, @c True value in this parameters specifies that @a objects are elements,
+    #  @param isElem if @a IDs is a list of IDs, @c True value in this parameters specifies that @a objects are elements,
     #  @c False specifies that @a objects are nodes
     #  @return Measure structure
     #  @sa BoundingBox()

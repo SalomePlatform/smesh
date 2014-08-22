@@ -226,6 +226,8 @@ namespace {
     static SMESH_HypoFilter hypo;
     hypo.Init( hypo.HasDim( 1 )).
       AndNot ( hypo.IsAlgo() ).
+      AndNot ( hypo.HasName( StdMeshers_Propagation::GetName() )).
+      AndNot ( hypo.HasName( StdMeshers_PropagOfDistribution::GetName() )).
       AndNot ( hypo.IsAssignedTo( theSubMesh->GetFather()->GetShapeToMesh() ));
 
     return theSubMesh->GetFather()->GetHypothesis( theSubMesh, hypo, true, theSssignedTo );

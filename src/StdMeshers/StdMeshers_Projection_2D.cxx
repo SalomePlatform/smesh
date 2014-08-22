@@ -488,10 +488,13 @@ namespace {
     map<const SMDS_MeshNode* , const SMDS_MeshNode*> src2tgtNodes;
     map<const SMDS_MeshNode* , const SMDS_MeshNode*>::iterator srcN_tgtN;
 
+    bool tgtEdgesMeshed = false;
     for ( TopExp_Explorer srcExp( srcFace, TopAbs_EDGE); srcExp.More(); srcExp.Next() )
     {
       const TopoDS_Shape& srcEdge = srcExp.Current();
       const TopoDS_Shape& tgtEdge = shape2ShapeMap( srcEdge, /*isSrc=*/true );
+      tgtEdgesMeshed != tgtMesh->GetSubMesh( tgtEdge )->IsEmpty();
+
       if ( srcMesh->GetSubMesh( srcEdge )->IsEmpty() ||
            tgtMesh->GetSubMesh( tgtEdge )->IsEmpty() )
         continue;
@@ -544,6 +547,31 @@ namespace {
           src2tgtNodes.insert( make_pair( u_sn->second, u_tn->second ));
       }
     }
+    // check nodes on VERTEXes for a case of not meshes EDGEs
+    for ( TopExp_Explorer srcExp( srcFace, TopAbs_VERTEX); srcExp.More(); srcExp.Next() )
+    {
+      const TopoDS_Shape&  srcV = srcExp.Current();
+      const TopoDS_Shape&  tgtV = shape2ShapeMap( srcV, /*isSrc=*/true );
+      const SMDS_MeshNode* srcN = SMESH_Algo::VertexNode( TopoDS::Vertex( srcV ), srcMeshDS );
+      const SMDS_MeshNode* tgtN = SMESH_Algo::VertexNode( TopoDS::Vertex( tgtV ), srcMeshDS );
+      if ( !srcN )
+        continue;
+      if ( !tgtN || tgtV.ShapeType() != TopAbs_VERTEX )
+        return false;
+
+      if ( !tgtV.IsPartner( srcV ))
+      {
+        // check that transformation is OK by three nodes
+        gp_Pnt p0S = SMESH_TNodeXYZ( srcN );
+        gp_Pnt p0T = SMESH_TNodeXYZ( tgtN );
+        if ( p0T.SquareDistance( p0S.Transformed( trsf )) > tol )
+        {
+          return false;
+        }
+      }
+      src2tgtNodes.insert( make_pair( srcN, tgtN ));
+    }
+
 
     // Make new faces
 
@@ -551,6 +579,10 @@ namespace {
     SMESH_MesherHelper helper( *tgtMesh );
     helper.SetSubShape( tgtFace );
     helper.IsQuadraticSubMesh( tgtFace );
+
+    SMESHDS_SubMesh* srcSubDS = srcMeshDS->MeshElements( srcFace );
+    if ( !tgtEdgesMeshed && srcSubDS->NbElements() )
+      helper.SetIsQuadratic( srcSubDS->GetElements()->next()->IsQuadratic() );
 
     SMESH_MesherHelper srcHelper( *srcMesh );
     srcHelper.SetSubShape( srcFace );
@@ -563,7 +595,6 @@ namespace {
     if ( isReverse )
       std::swap( tri1, tri2 ), std::swap( quad1, quad3 );
 
-    SMESHDS_SubMesh*   srcSubDS = srcMeshDS->MeshElements( srcFace );
     SMDS_ElemIteratorPtr elemIt = srcSubDS->GetElements();
     vector< const SMDS_MeshNode* > tgtNodes;
     while ( elemIt->more() ) // loop on all mesh faces on srcFace

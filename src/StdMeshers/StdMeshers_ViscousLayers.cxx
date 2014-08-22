@@ -83,7 +83,7 @@
 #include <cmath>
 #include <limits>
 
-//#define __myDEBUG
+#define __myDEBUG
 
 using namespace std;
 
@@ -3218,7 +3218,7 @@ bool _ViscousBuilder::inflate(_SolidData& data)
       }
     }
     avgThick /= data._edges.size();
-    debugMsg( "-- Thickness " << avgThick*100 << "% reached" );
+    debugMsg( "-- Thickness " << curThick << " ("<< avgThick*100 << "%) reached" );
 
     if ( distToIntersection < tgtThick*avgThick*1.5 )
     {
@@ -3247,7 +3247,7 @@ bool _ViscousBuilder::inflate(_SolidData& data)
           ( new SMESH_ComputeError (COMPERR_WARNING,
                                     SMESH_Comment("Thickness ") << tgtThick <<
                                     " of viscous layers not reached,"
-                                    " average reached thickness is " << avgThick*100 << "%."));
+                                    " average reached thickness is " << avgThick*tgtThick));
     }
 
 

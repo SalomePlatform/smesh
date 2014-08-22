@@ -1003,19 +1003,20 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
   }
   else {
     // --- retrieve nodes ID
+    myNodeIds.resize(12);
     myNodeIds[0] = n1->getVtkId();
-    myNodeIds[0] = n6->getVtkId();
-    myNodeIds[0] = n5->getVtkId();
-    myNodeIds[0] = n4->getVtkId();
-    myNodeIds[0] = n3->getVtkId();
-    myNodeIds[0] = n2->getVtkId();
+    myNodeIds[1] = n6->getVtkId();
+    myNodeIds[2] = n5->getVtkId();
+    myNodeIds[3] = n4->getVtkId();
+    myNodeIds[4] = n3->getVtkId();
+    myNodeIds[5] = n2->getVtkId();
 
-    myNodeIds[0] = n7->getVtkId();
-    myNodeIds[0] = n12->getVtkId();
-    myNodeIds[0] = n11->getVtkId();
-    myNodeIds[0] = n10->getVtkId();
-    myNodeIds[0] = n9->getVtkId();
-    myNodeIds[0] = n8->getVtkId();
+    myNodeIds[6] = n7->getVtkId();
+    myNodeIds[7] = n12->getVtkId();
+    myNodeIds[8] = n11->getVtkId();
+    myNodeIds[9] = n10->getVtkId();
+    myNodeIds[10] = n9->getVtkId();
+    myNodeIds[11] = n8->getVtkId();
 
     SMDS_VtkVolume *volvtk = myVolumePool->getNew();
     volvtk->init(myNodeIds, this);
