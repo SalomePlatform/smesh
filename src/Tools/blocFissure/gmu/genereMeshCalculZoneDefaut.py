@@ -9,8 +9,19 @@ from salome.smesh import smeshBuilder
 
 def genereMeshCalculZoneDefaut(facefiss, minSize, maxSize):
   """
-  TODO: a completer
-  """
+  -Permet de générer un maillage sur l'objet géométrique 'facefiss' via
+   l'algorithme NETGEN_1D2D :
+      -SetMaxSize     = dimension max d'un élément (maxSize)
+      -SetSecondOrder = élément quadratique (Y=1, N=0)
+      -SetOptimize    = élément régulier (Y=1, N=0)
+      -SetFineness    = finesse du maillage
+       [very_coarse, coarse, moderate, fine, very_fine, custom]
+       [0,           1,      2,        3,    4,         5     ]
+      -SetMinSize     = dimension min d'un élément (minSize)
+      -SetQuadAllowed = permission quadrangle dans maillage triangle
+  -On récupère les coordonnées de chaque noeud de la fissure qu'on stocke
+   dans une liste sous la forme : [X0, Y0, Z0, ..., Xn, Yn, Zn]"""
+   
   logging.info('start')
 
   meshFissure = smesh.Mesh(facefiss)

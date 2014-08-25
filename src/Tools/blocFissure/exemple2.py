@@ -80,12 +80,13 @@ dicoParams = dict(nomCas            = 'angleCube2',
                   maillageSain      = 'boite.med',
                   brepFaceFissure   = "disk.brep",
                   edgeFissIds       = [4],
-                  lgInfluence       = 20,
+                  lgInfluence       = 50,
                   meshBrep          = (5,10),
-                  rayonPipe         = 10,
+                  rayonPipe         = 15,
+                  lenSegPipe        = 20,
                   nbSegRad          = 5,
-                  nbSegCercle       = 8,
-                  areteFaceFissure  = 10)
+                  nbSegCercle       = 12,
+                  areteFaceFissure  = 2)
 
 execInstance = casStandard(dicoParams)
 

@@ -4,10 +4,13 @@ import logging
 from geomsmesh import smesh
 import SMESH
 
+from listOfExtraFunctions import lookForCorner
+from fusionMaillageAttributionDefaut import fusionMaillageDefaut
+
 # -----------------------------------------------------------------------------
 # --- peau interne du defaut dans le maillage sain
 
-def peauInterne(fichierMaillage, nomZones):
+def peauInterne(fichierMaillage, shapeDefaut, nomZones):
   """
   Retrouve les groupes de défaut dans le maillage sain modifié par CreateHoleSkin (CreeZoneDefautMaillage)
   On récupère le volume et la peau de la zone de défaut, les éventuelles faces et arêtes internes de cette zone.
@@ -41,6 +44,13 @@ def peauInterne(fichierMaillage, nomZones):
   nbAdded, maillageSain, DefautBoundary = maillageSain.MakeBoundaryElements( SMESH.BND_2DFROM3D, 'DefBound', '', 0, [ zoneDefaut ])
   internal = maillageSain.GetMesh().CutListOfGroups( [ DefautBoundary ], [ zoneDefaut_skin ], 'internal' )
   internalBoundary = smesh.CopyMesh( internal, 'internalBoundary', 0, 0)
+  
+  maillageDefautCible = smesh.CopyMesh(zoneDefaut_skin, 'maillageCible', 0, 0)
+  listOfCorner = lookForCorner(maillageDefautCible)
+  print "listOfCorner = ", listOfCorner
+  if len(listOfCorner) > 0:
+      print " /!\ SUITE DU SCRIPT EN CONSTRUCTION /!\\"
+      zoneDefaut_skin, internalBoundary = fusionMaillageDefaut(maillageSain, maillageDefautCible, internalBoundary, zoneDefaut_skin, shapeDefaut, listOfCorner)
 
   return maillageSain, internalBoundary, zoneDefaut, zoneDefaut_skin, zoneDefaut_internalFaces, zoneDefaut_internalEdges
 

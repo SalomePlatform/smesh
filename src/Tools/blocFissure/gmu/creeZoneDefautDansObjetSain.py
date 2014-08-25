@@ -7,7 +7,7 @@ import SALOMEDS
 
 from creeZoneDefautMaillage import creeZoneDefautMaillage
 from peauInterne import peauInterne
-from quadranglesToShape import quadranglesToShape
+from quadranglesToShapeNoCorner import quadranglesToShapeNoCorner
 from creeZoneDefautFilling import creeZoneDefautFilling
 from creeZoneDefautGeom import creeZoneDefautGeom
 from getCentreFondFiss import getCentreFondFiss
@@ -18,7 +18,7 @@ from getCentreFondFiss import getCentreFondFiss
 def creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure,
                                 shapeFissureParams, maillageFissureParams):
   """
-  TODO: a compléter
+  #TODO: a compléter
   """
   logging.info('start')
   
@@ -62,7 +62,7 @@ def creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure,
   maillageSain.ExportMED( fichierMaillageSain, 0, SMESH.MED_V2_2, 1 )
   logging.debug("fichier maillage sain %s", fichierMaillageSain)
   [maillageSain, internalBoundary, zoneDefaut, zoneDefaut_skin, zoneDefaut_internalFaces, zoneDefaut_internalEdges] = \
-    peauInterne(fichierMaillageSain, nomZones)
+    peauInterne(fichierMaillageSain, shapeDefaut, nomZones)
 
   facesDefaut = []
   centresDefaut = []
@@ -71,7 +71,9 @@ def creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure,
   isPlane = False
   if isHexa and not isPlane:
     meshQuad =  smesh.CopyMesh( zoneDefaut_skin, 'meshQuad', 0, 0)
-    fillings, noeuds_bords, bordsPartages, fillconts, idFilToCont  = quadranglesToShape(meshQuad, shapeFissureParams, centreFondFiss)
+    
+    fillings, noeuds_bords, bordsPartages, fillconts, idFilToCont = quadranglesToShapeNoCorner(meshQuad, shapeFissureParams, centreFondFiss)
+    
     for filling in fillings:
       [faceDefaut, centreDefaut, normalDefaut, extrusionDefaut] = \
         creeZoneDefautFilling(filling, shapeDefaut, lgExtrusion)
@@ -82,7 +84,7 @@ def creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure,
   else:
     [facesDefaut, centreDefaut, normalDefaut, extrusionDefaut] = \
       creeZoneDefautGeom( geometrieSaine, shapeDefaut, origShapes, verticesShapes, dmoyen, lgExtrusion)
-    bordsPartages =[]
+    bordsPartages = []
     for face in facesDefaut:
       bordsPartages.append([None,None]) # TODO : traitement des arêtes vives ?
     fillconts = facesDefaut

@@ -82,12 +82,13 @@ def insereFissureGenerale(maillagesSains,
   #fichierMaillageSain = nomRep + '/' + nomFicSain + '.med'
   fichierMaillageFissure = nomRep + '/' + nomFicFissure + '.med'
 
-  facesDefaut              = elementsDefaut[0] # fillings des faces en peau 
+  # fillings des faces en peau
+  facesDefaut = elementsDefaut[0]
   #centresDefaut            = elementsDefaut[1]
   #normalsDefaut            = elementsDefaut[2]
   #extrusionsDefaut         = elementsDefaut[3]
   dmoyen                   = elementsDefaut[4]
-  bordsPartages            = elementsDefaut[5]
+  bordsPartages = elementsDefaut[5]
   fillconts                = elementsDefaut[6]
   idFilToCont              = elementsDefaut[7]
   maillageSain             = elementsDefaut[8]
@@ -172,7 +173,7 @@ def insereFissureGenerale(maillagesSains,
   #     il peut y avoir plusieurs faces externes, dont certaines sont découpées par la fissure
   #     liste de faces externes : facesDefaut
   #     liste de partitions face externe - fissure : partitionPeauFissFond (None quand pas d'intersection)
-  
+
   partitionsPeauFissFond = []
   ipart = 0
   for filling in facesDefaut: 
@@ -190,18 +191,27 @@ def insereFissureGenerale(maillagesSains,
     else:
       partitionsPeauFissFond.append(None)
     ipart = ipart +1
+ 
   
-  # --- arêtes vives détectées (dans quadranglesToShape)
-   
+  # --- arêtes vives détectées (dans quadranglesToShapeNoCorner
+  #                             et quadranglesToShapeWithCorner)
+  
   aretesVives = []
   aretesVivesCoupees = []
   ia = 0
   for a in bordsPartages:
-    if a[0] is not None:
-      aretesVives.append(a[0])
-      name = "areteVive%d"%ia
-      geompy.addToStudy(a[0], name)
-      ia += 1
+    if not isinstance(a, list):
+        aretesVives.append(a)
+        name = "areteVive%d"%ia
+        geompy.addToStudy(a, name)
+        ia += 1
+    else:
+        if a[0] is not None:
+            aretesVives.append(a[0])
+            name = "areteVive%d"%ia
+            geompy.addToStudy(a[0], name)
+            ia += 1
+
   aretesVivesC = None
   if len(aretesVives) > 0:
     aretesVivesC =geompy.MakeCompound(aretesVives)
@@ -228,7 +238,7 @@ def insereFissureGenerale(maillagesSains,
   
   for ifil, partitionPeauFissFond in enumerate(partitionsPeauFissFond):
     fillingFaceExterne = facesDefaut[ifil]
-    fillingSansDecoupe = fillconts[idFilToCont[ifil]]
+    #fillingSansDecoupe = fillconts[idFilToCont[ifil]]
     if partitionPeauFissFond is not None:
       logging.debug("traitement partitionPeauFissFond %s", ifil)
       # -----------------------------------------------------------------------
@@ -1210,7 +1220,7 @@ def insereFissureGenerale(maillagesSains,
   grpEdgesPipeFissureExterne = meshFaceFiss.GroupOnGeom(edgesPipeFissureExterneC,'edgesPipeFissureExterne',SMESH.EDGE)
 
   # --- maillage faces de peau
-  
+    
   boutFromIfil = [None for i in range(nbFacesFilling)]
   if idFillingFromBout[0] != idFillingFromBout[1]: # repérage des extremites du pipe quand elles débouchent sur des faces différentes
     boutFromIfil[idFillingFromBout[0]] = 0

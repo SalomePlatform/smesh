@@ -9,7 +9,7 @@ from geomsmesh import geompy
 def creeZoneDefautFilling(filling, shapeDefaut, lgExtrusion=50):
   """
   Construction CAO de la zone à remailler, quand on utilise un filling,
-  après appel creeZoneDefautMaillage et quadranglesToShape
+  après appel creeZoneDefautMaillage et quadranglesToShapeNoCorner
   @param filling : la CAO de la peau du défaut reconstituée
   @param shapeDefaut : objet géométrique représentant la fissure
   (selon les cas, un point central, ou une shape plus complexe,
