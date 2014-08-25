@@ -380,10 +380,13 @@ void SMESH_MesherHelper::AddTLinkNode(const SMDS_MeshNode* n1,
  */
 //================================================================================
 
-void SMESH_MesherHelper::AddTLinks(const SMDS_MeshEdge* edge)
+bool SMESH_MesherHelper::AddTLinks(const SMDS_MeshEdge* edge)
 {
-  if ( edge->IsQuadratic() )
+  if ( edge && edge->IsQuadratic() )
     AddTLinkNode(edge->GetNode(0), edge->GetNode(1), edge->GetNode(2));
+  else
+    return false;
+  return true;
 }
 
 //================================================================================
@@ -392,8 +395,9 @@ void SMESH_MesherHelper::AddTLinks(const SMDS_MeshEdge* edge)
  */
 //================================================================================
 
-void SMESH_MesherHelper::AddTLinks(const SMDS_MeshFace* f)
+bool SMESH_MesherHelper::AddTLinks(const SMDS_MeshFace* f)
 {
+  bool isQuad = true;
   if ( !f->IsPoly() )
     switch ( f->NbNodes() ) {
     case 7:
@@ -417,7 +421,9 @@ void SMESH_MesherHelper::AddTLinks(const SMDS_MeshFace* f)
       AddTLinkNode(f->GetNode(2),f->GetNode(3),f->GetNode(6));
       AddTLinkNode(f->GetNode(3),f->GetNode(0),f->GetNode(7)); break;
     default:;
+      isQuad = false;
     }
+  return isQuad;
 }
 
 //================================================================================
@@ -426,7 +432,7 @@ void SMESH_MesherHelper::AddTLinks(const SMDS_MeshFace* f)
  */
 //================================================================================
 
-void SMESH_MesherHelper::AddTLinks(const SMDS_MeshVolume* volume)
+bool SMESH_MesherHelper::AddTLinks(const SMDS_MeshVolume* volume)
 {
   if ( volume->IsQuadratic() )
   {
@@ -460,7 +466,9 @@ void SMESH_MesherHelper::AddTLinks(const SMDS_MeshVolume* volume)
                          nFCenter ));
       }
     }
+    return true;
   }
+  return false;
 }
 
 //================================================================================
