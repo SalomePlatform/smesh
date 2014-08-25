@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Insertion de fissure dans un maillage sain</string>
   </property>
   <property name="toolTip">
    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Insertion d'un maillage de fissure dans un maillage hexaédrique sain.&lt;/p&gt;&lt;p&gt;Le maillage sain est fourni sous forme de fichier Med.&lt;/p&gt;&lt;p&gt;La face de fissure est décrite par une géométrie dans un fichier brep.&lt;/p&gt;&lt;p&gt;La ou les arêtes de fond de fissure sont données par leurs index dans la face de fissure.&lt;/p&gt;&lt;p&gt;La procédure identfie des mailles saines à enlever et remailler, construit un maillage régulier rayonnant autour de la ligne de fond de fissure, reconstitue les faces externes en triangles, complète la zone à remailler en tétraèdres.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>

@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>826</width>
-    <height>540</height>
+    <width>959</width>
+    <height>618</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Génération de coude avec fissure</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_8">
    <item row="0" column="0">
@@ -978,9 +978,6 @@
    </item>
   </layout>
   <zorder>verticalSpacer_2</zorder>
-  <zorder>horizontalSpacer</zorder>
-  <zorder>lb_calcul</zorder>
-  <zorder>horizontalSpacer_9</zorder>
  </widget>
  <resources/>
  <connections>
