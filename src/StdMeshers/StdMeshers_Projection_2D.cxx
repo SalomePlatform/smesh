@@ -553,7 +553,7 @@ namespace {
       const TopoDS_Shape&  srcV = srcExp.Current();
       const TopoDS_Shape&  tgtV = shape2ShapeMap( srcV, /*isSrc=*/true );
       const SMDS_MeshNode* srcN = SMESH_Algo::VertexNode( TopoDS::Vertex( srcV ), srcMeshDS );
-      const SMDS_MeshNode* tgtN = SMESH_Algo::VertexNode( TopoDS::Vertex( tgtV ), srcMeshDS );
+      const SMDS_MeshNode* tgtN = SMESH_Algo::VertexNode( TopoDS::Vertex( tgtV ), tgtMeshDS );
       if ( !srcN )
         continue;
       if ( !tgtN || tgtV.ShapeType() != TopAbs_VERTEX )

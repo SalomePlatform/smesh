@@ -1596,7 +1596,7 @@ class Mesh:
             AssureGeomPublished( self, geom, "shape for %s" % hyp.GetName())
             status = self.mesh.AddHypothesis(geom, hyp)
         else:
-            status = HYP_BAD_GEOMETRY
+            status = HYP_BAD_GEOMETRY,""
         hyp_name = GetName( hyp )
         geom_name = ""
         if geom:
@@ -1876,7 +1876,12 @@ class Mesh:
     #  @ingroup l2_grps_create
     def MakeGroupByIds(self, groupName, elementType, elemIDs):
         group = self.mesh.CreateGroup(elementType, groupName)
-        group.Add(elemIDs)
+        if hasattr( elemIDs, "GetIDs" ):
+            if hasattr( elemIDs, "SetMesh" ):
+                elemIDs.SetMesh( self.GetMesh() )
+            group.AddFrom( elemIDs )
+        else:
+            group.Add(elemIDs)
         return group
 
     ## Creates a mesh group by the given conditions

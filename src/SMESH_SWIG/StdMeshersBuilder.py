@@ -385,7 +385,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
             algo = self.mesh.smeshpyD.CreateHypothesis("SegmentAroundVertex_0D", "libStdMeshersEngine.so")
             pass
         status = self.mesh.mesh.AddHypothesis(self.geom, algo)
-        TreatHypoStatus(status, "SegmentAroundVertex_0D", name, True)
+        TreatHypoStatus(status, "SegmentAroundVertex_0D", name, True, self.mesh)
         #
         from salome.smesh.smeshBuilder import IsEqual
         comFun = lambda hyp, args: IsEqual(hyp.GetLength(), args[0])
