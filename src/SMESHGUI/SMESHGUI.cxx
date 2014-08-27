@@ -4103,21 +4103,21 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( SMESHOp::OpUpdate,           viewId,      -1 );
 
   // ----- create toolbars --------------
-  int meshTb       = createTool( tr( "TB_MESH" ) ),
-      info         = createTool( tr( "TB_INFO" ) ),
-      groupTb      = createTool( tr( "TB_GROUP" ) ),
-      ctrl0dTb     = createTool( tr( "TB_CTRL0D" ) ),
-      ctrl1dTb     = createTool( tr( "TB_CTRL1D" ) ),
-      ctrl2dTb     = createTool( tr( "TB_CTRL2D" ) ),
-      ctrl3dTb     = createTool( tr( "TB_CTRL3D" ) ),
-      addElemTb    = createTool( tr( "TB_ADD" ) ),
-      addNonElemTb = createTool( tr( "TB_ADDNON" ) ),
-      remTb        = createTool( tr( "TB_REM" ) ),
-      renumbTb     = createTool( tr( "TB_RENUMBER" ) ),  
-      transformTb  = createTool( tr( "TB_TRANSFORM" ) ),  
-      modifyTb     = createTool( tr( "TB_MODIFY" ) ),
-      measuremTb   = createTool( tr( "TB_MEASUREM" ) ),
-      dispModeTb   = createTool( tr( "TB_DISP_MODE" ) );
+  int meshTb       = createTool( tr( "TB_MESH" ),      QString( "SMESHMeshToolbar" ) ),
+      info         = createTool( tr( "TB_INFO" ),      QString( "SMESHInformationToolbar" ) ),
+      groupTb      = createTool( tr( "TB_GROUP" ),     QString( "SMESHGroupToolbar" ) ),
+      ctrl0dTb     = createTool( tr( "TB_CTRL0D" ),    QString( "SMESHNodeControlsToolbar" ) ),
+      ctrl1dTb     = createTool( tr( "TB_CTRL1D" ),    QString( "SMESHEdgeControlsToolbar" ) ),
+      ctrl2dTb     = createTool( tr( "TB_CTRL2D" ),    QString( "SMESHFaceControlsToolbar" ) ),
+      ctrl3dTb     = createTool( tr( "TB_CTRL3D" ),    QString( "SMESHVolumeControlsToolbar" ) ),
+      addElemTb    = createTool( tr( "TB_ADD" ),       QString( "SMESHAddElementToolbar" ) ),
+      addNonElemTb = createTool( tr( "TB_ADDNON" ),    QString( "SMESHAddElementToolbar" ) ),
+      remTb        = createTool( tr( "TB_REM" ),       QString( "SMESHRemoveToolbar" ) ),
+      renumbTb     = createTool( tr( "TB_RENUMBER" ),  QString( "SMESHRenumberingToolbar" ) ),  
+      transformTb  = createTool( tr( "TB_TRANSFORM" ), QString( "SMESHTransformationToolbar" ) ),  
+      modifyTb     = createTool( tr( "TB_MODIFY" ),    QString( "SMESHModificationToolbar" ) ),
+      measuremTb   = createTool( tr( "TB_MEASUREM" ),  QString( "SMESHMeasurementsToolbar" ) ),
+      dispModeTb   = createTool( tr( "TB_DISP_MODE" ), QString( "SMESHDisplayModeToolbar" ) );
 
   createTool( SMESHOp::OpCreateMesh,        meshTb );
   createTool( SMESHOp::OpCreateSubMesh,     meshTb );
