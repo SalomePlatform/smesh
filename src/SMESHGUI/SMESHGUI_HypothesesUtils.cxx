@@ -128,7 +128,7 @@ namespace SMESH
       }
       else
       {
-        QObject::tr(QString("SMESH_HYP_%1").arg(theHypStatus).toLatin1().data());
+        aMsg += QObject::tr(QString("SMESH_HYP_%1").arg(theHypStatus).toLatin1().data());
 
         if ( theHypStatus == SMESH::HYP_HIDDEN_ALGO ) { // PAL18501
           CORBA::String_var hypType = theHyp->GetName();

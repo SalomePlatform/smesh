@@ -139,6 +139,7 @@ bool StdMeshers_Projection_2D::CheckHypothesis(SMESH_Mesh&                      
            !SMESH_MesherHelper::IsSubShape( edge, _sourceHypo->GetSourceFace() ))
       {
         theStatus = HYP_BAD_PARAMETER;
+        error("Invalid source vertices");
         SCRUTE((edge.IsNull()));
         SCRUTE((SMESH_MesherHelper::IsSubShape( edge, srcMesh )));
         SCRUTE((SMESH_MesherHelper::IsSubShape( edge, _sourceHypo->GetSourceFace() )));
@@ -151,6 +152,7 @@ bool StdMeshers_Projection_2D::CheckHypothesis(SMESH_Mesh&                      
         if ( edge.IsNull() || !SMESH_MesherHelper::IsSubShape( edge, tgtMesh ))
         {
           theStatus = HYP_BAD_PARAMETER;
+          error("Invalid target vertices");
           SCRUTE((edge.IsNull()));
           SCRUTE((SMESH_MesherHelper::IsSubShape( edge, tgtMesh )));
         }
@@ -159,6 +161,7 @@ bool StdMeshers_Projection_2D::CheckHypothesis(SMESH_Mesh&                      
                   !SMESH_MesherHelper::IsSubShape( edge, theShape ))
         {
           theStatus = HYP_BAD_PARAMETER;
+          error("Invalid target vertices");
           SCRUTE((SMESH_MesherHelper::IsSubShape( edge, theShape )));
         }
       }
@@ -168,6 +171,7 @@ bool StdMeshers_Projection_2D::CheckHypothesis(SMESH_Mesh&                      
          ( srcMesh == tgtMesh && theShape == _sourceHypo->GetSourceFace() ))
     {
       theStatus = HYP_BAD_PARAMETER;
+      error("Invalid source face");
       SCRUTE((SMESH_MesherHelper::IsSubShape( _sourceHypo->GetSourceFace(), srcMesh )));
       SCRUTE((srcMesh == tgtMesh));
       SCRUTE(( theShape == _sourceHypo->GetSourceFace() ));
