@@ -11,3 +11,4 @@ from blocFissure.materielCasTests import ellipse_probleme
 from blocFissure.materielCasTests import disque_perce
 from blocFissure.materielCasTests import ellipse_disque
 from blocFissure.materielCasTests import vis
+from blocFissure.materielCasTests import cubeFin
