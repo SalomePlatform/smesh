@@ -1179,7 +1179,7 @@ def insereFissureGenerale(maillagesSains,
     aretesVivesC = geompy.MakeCompound(aretesVivesCoupees)
     meshAretesVives = smesh.Mesh(aretesVivesC)
     algo1d = meshAretesVives.Segment()
-    hypo1d = algo1d.LocalLength(dmoyen/3.0,[],1e-07)
+    hypo1d = algo1d.LocalLength(dmoyen,[],1e-07)
     putName(algo1d.GetSubMesh(), "aretesVives")
     putName(algo1d, "algo1d_aretesVives")
     putName(hypo1d, "hypo1d_aretesVives")

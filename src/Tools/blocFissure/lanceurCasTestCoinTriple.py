@@ -11,9 +11,9 @@ initLog.setVerbose()
 
 from blocFissure.casStandard import casStandard
 
-dicoParams = dict(nomCas            = 'casTestCoinTripleOlivier',
-                  maillageSain      = '/local00/home/I48174/Documents/tubulure_simple/blocFissure/materielCoinSymetrie/cubeTestCoinTriple.med',
-                  brepFaceFissure   = "/local00/home/I48174/Documents/tubulure_simple/blocFissure/materielCoinSymetrie/fissureTestCoinTriple.brep",
+dicoParams = dict(nomCas            = 'casTestCoinTriple',
+                  maillageSain      = '/local00/home/B27118/projets/blocFissure/blocFissure/materielCoinSymetrie/cubeTestCoinTriple.med',
+                  brepFaceFissure   = "/local00/home/B27118/projets/blocFissure/blocFissure/materielCoinSymetrie/fissureTestCoinTriple.brep",
                   edgeFissIds       = [4],
                   lgInfluence       = 50,
                   meshBrep          = (5,10),
@@ -21,7 +21,7 @@ dicoParams = dict(nomCas            = 'casTestCoinTripleOlivier',
                   lenSegPipe        = 7,
                   nbSegRad          = 5,
                   nbSegCercle       = 10,
-                  areteFaceFissure  = 10)
+                  areteFaceFissure  = 20)
 
 execInstance = casStandard(dicoParams)
 

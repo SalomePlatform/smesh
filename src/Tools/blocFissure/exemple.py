@@ -6,7 +6,7 @@ from blocFissure.gmu import initLog
 initLog.setDebug()
 #initLog.setVerbose()
 
-from blocFissure.casStandard import casStandard
+from blocFissure.gmu.casStandard import casStandard
 
 dicoParams = dict(nomCas            = 'angleCube',
                   maillageSain      = os.path.join(gmu.pathBloc, 'materielCasTests/CubeAngle.med'),

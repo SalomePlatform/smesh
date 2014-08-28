@@ -7,7 +7,7 @@ from blocFissure.gmu import initLog
 initLog.setVerbose()
 
 from blocFissure.gmu import geomsmesh
-from blocFissure.casStandard import casStandard
+from blocFissure.gmu.casStandard import casStandard
 
 problemes = []
 
@@ -111,12 +111,25 @@ cas=24
 from blocFissure.CasTests.vis_1 import vis_1
 problemes.append(vis_1(cas))
 
+cas=25
+from blocFissure.CasTests import cubeCoin
+problemes.append(casStandard(cubeCoin.dicoParams, cubeCoin.referencesMaillageFissure, cas))
+
+cas=26
+from blocFissure.CasTests import cubeMilieu
+problemes.append(casStandard(cubeMilieu.dicoParams, cubeMilieu.referencesMaillageFissure, cas))
+
+cas=27
+from blocFissure.CasTests import cubeTransverse
+problemes.append(casStandard(cubeTransverse.dicoParams, cubeTransverse.referencesMaillageFissure, cas))
+
+
 # ---tous les cas en sequence, ou les cas selectionnés ...
-runall = True
+runall = False
 if runall:
-  torun = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,]
-else: #prob 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24   
-  torun = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,]
+  torun = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,]
+else: #prob 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27   
+  torun = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1,]
   
 for i in range(len(problemes)):
   if torun[i]:

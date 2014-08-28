@@ -74,7 +74,7 @@ from blocFissure.gmu import initLog
 #initLog.setDebug()
 initLog.setVerbose()
 
-from blocFissure.casStandard import casStandard
+from blocFissure.gmu.casStandard import casStandard
 
 dicoParams = dict(nomCas            = 'angleCube2',
                   maillageSain      = 'boite.med',

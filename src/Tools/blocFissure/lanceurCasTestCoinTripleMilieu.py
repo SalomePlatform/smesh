@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 
 import sys
 import salome
@@ -11,9 +11,9 @@ initLog.setVerbose()
 
 from blocFissure.casStandard import casStandard
 
-dicoParams = dict(nomCas            = 'casTestCoinTriple',
-                  maillageSain      = '/local00/home/I48174/Documents/tubulure_simple/blocFissure/materielCoinSymetrie/cubeTestCoinTriple.med',
-                  brepFaceFissure   = "/local00/home/I48174/Documents/tubulure_simple/blocFissure/materielCoinSymetrie/fissureMilieuTestCoinTriple.brep",
+dicoParams = dict(nomCas            = 'casTestCoinTripleMilieu',
+                  maillageSain      = '/local00/home/B27118/projets/blocFissure/blocFissure/materielCoinSymetrie/cubeTestCoinTriple.med',
+                  brepFaceFissure   = "/local00/home/B27118/projets/blocFissure/blocFissure/materielCoinSymetrie/fissureMilieuTestCoinTriple.brep",
                   edgeFissIds       = [4],
                   lgInfluence       = 50,
                   meshBrep          = (5,10),
