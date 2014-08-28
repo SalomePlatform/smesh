@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import logging
+
 from blocFissure import gmu
 from blocFissure.gmu.initEtude import initEtude
 from blocFissure.gmu.getStatsMaillageFissure import getStatsMaillageFissure
@@ -60,7 +62,7 @@ class fissureGenerique():
 # ---------------------------------------------------------------------------
 
   def executeProbleme(self, step=-1):
-    print "executeProbleme", self.nomCas
+    logging.info(" --- executeProbleme %s", self.nomCas)
     if step == 0:
       return
 
