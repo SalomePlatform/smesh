@@ -50,7 +50,6 @@ class fissureCoude_8(fissureCoude):
     pointIn_x   : optionnel coordonnées x d'un point dans le solide, pas trop loin du centre du fond de fissure (idem y,z)
     externe     : True : fissure face externe, False : fissure face interne
     """
-#    logging.info("setParamShapeFissure %s", self.nomCas)
     self.shapeFissureParams = dict(profondeur  = 8,
                                    rayonPipe   = 1,
                                    lenSegPipe  = 1.5,

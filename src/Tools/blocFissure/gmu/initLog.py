@@ -22,6 +22,11 @@ def setUnitTests():
                       level=logging.CRITICAL)
   logging.critical('start UnitTests')
   
+def setPerfTests():
+  logging.basicConfig(format='%(relativeCreated)d %(funcName)s[%(lineno)d] %(message)s',
+                      level=logging.CRITICAL)
+  logging.info('start PerfTests')
+  
   #logging.basicConfig(filename='myapp.log',
   #                    format='%(asctime)s %(message)s',
   #                    datefmt='%m/%d/%Y %I:%M:%S %p',
