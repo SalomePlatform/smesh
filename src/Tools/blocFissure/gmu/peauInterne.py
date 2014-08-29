@@ -21,7 +21,7 @@ def peauInterne(fichierMaillage, shapeDefaut, nomZones):
   groups = maillageSain.GetGroups()
   zoneDefaut = None
   for grp in groups:
-    #print " ",grp.GetName()
+    logging.debug("groupe %s",grp.GetName())
     if grp.GetName() == nomZones + "_vol":
       zoneDefaut = grp
       break
@@ -47,9 +47,9 @@ def peauInterne(fichierMaillage, shapeDefaut, nomZones):
   
   maillageDefautCible = smesh.CopyMesh(zoneDefaut_skin, 'maillageCible', 0, 0)
   listOfCorner = lookForCorner(maillageDefautCible)
-  print "listOfCorner = ", listOfCorner
+  logging.debug("listOfCorner = %s", listOfCorner)
   if len(listOfCorner) > 0:
-      print " /!\ SUITE DU SCRIPT EN CONSTRUCTION /!\\"
+      logging.info("présence de coins à la surface externe de la zone à reconstruire")
       zoneDefaut_skin, internalBoundary = fusionMaillageDefaut(maillageSain, maillageDefautCible, internalBoundary, zoneDefaut_skin, shapeDefaut, listOfCorner)
 
   return maillageSain, internalBoundary, zoneDefaut, zoneDefaut_skin, zoneDefaut_internalFaces, zoneDefaut_internalEdges

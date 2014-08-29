@@ -2,7 +2,7 @@
 """
 Created on Tue Jun 24 09:14:13 2014
 
-@author: I48174
+@author: I48174 (Olivier HOAREAU)
 """
 
 import logging
@@ -48,16 +48,19 @@ def fusionMaillageDefaut(maillageSain, maillageDefautCible, maillageInterneCible
         # A partir des lignes de la face,
         # on recrée un objet GEOM temporaire par filling.
         filling = geompy.MakeFilling(geompy.MakeCompound(setOfLines), 2, 5, 0.0001, 0.0001, 0, GEOM.FOM_Default, True)
-        geompy.addToStudy(filling, 'filling_{0}'.format(i + 1))
+        #logging.debug("face de filling")
+        #geompy.addToStudy(filling, 'filling_{0}'.format(i + 1))
         
-        tmpPartition = geompy.MakePartition([filling], [shapeDefaut], [], [], geompy.ShapeType["FACE"], 0, [], 0, True)
+        tmpPartition = geompy.MakePartition([filling], [shapeDefaut], [], [], geompy.ShapeType["FACE"], 0, [], 0)
         tmpExplodeRef = geompy.ExtractShapes(filling, geompy.ShapeType["EDGE"], True)
         tmpExplodeNum = geompy.ExtractShapes(tmpPartition, geompy.ShapeType["EDGE"], True)
         if len(tmpExplodeRef) == len(tmpExplodeNum):
+            logging.debug("face de filling non coupee")
             geompy.addToStudy(filling, "faceNonCoupee_{0}".format(i + 1))
             facesNonCoupees.append(filling)
             maillagesNonCoupes.append(listOfNewMeshes[i])
         else:
+            logging.debug("face de filling coupee")
             geompy.addToStudy(filling, "faceCoupee_{0}".format(i + 1))
             facesCoupees.append(filling)
             maillagesCoupes.append(listOfNewMeshes[i])

@@ -79,7 +79,7 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   facePorteFissure =  shapeDefaut
   WirePorteFondFissure = wiretube
   fillingFaceExterne = facesDefaut[0]
-  print fillingFaceExterne
+  logging.debug("fillingFaceExterne %s", fillingFaceExterne)
   geompy.addToStudy(fillingFaceExterne, "fillingFaceExterne")
   edgesFilling = geompy.ExtractShapes(fillingFaceExterne, geompy.ShapeType["EDGE"], False)
 

@@ -2,7 +2,7 @@
 """
 Created on Mon Jun 23 14:49:36 2014
 
-@author: I48174
+@author: I48174 (Olivier HOAREAU)
 """
 
 import logging
@@ -14,10 +14,11 @@ def lookForCorner(maillageAScanner):
     """ Cette fonction permet de scanner la liste de noeuds qui composent le
         maillage passé en paramètre. On recherche un ou plusieurs coins, ce
         qui implique les caractéristiques suivantes:
-            - le noeud doit appartenir au moins à trois éléments distinctes
-            - chaque élément doit appartenir à un ensemble distincte
+            - le noeud doit appartenir au moins à trois éléments distincts
+            - chaque élément doit appartenir à un ensemble distinct
         La fonction renvoie une liste de coins par l'intermédiaire de l'IDs
-        chaque noeud. La liste contient en général au maximum deux coins. """
+        chaque noeud. La liste contient en général au maximum deux coins.
+    """
     
     logging.info("start")
     
@@ -27,19 +28,16 @@ def lookForCorner(maillageAScanner):
         # On parcours la liste de noeuds
         listOfElements = maillageAScanner.GetNodeInverseElements(ND)
         if len(listOfElements) >=3:
-            # On teste le nombre d'éléments qui partage le même noeud
+            # On teste le nombre d'éléments qui partagent le même noeud
             # --- Filtre selon le critère 'coplanar' --- #
             listOfCriterion = [smesh.GetCriterion(SMESH.FACE, SMESH.FT_CoplanarFaces, \
-            SMESH.FT_Undefined, elem, SMESH.FT_Undefined, SMESH.FT_Undefined, 30) \
-            for elem in listOfElements]
-            listOfFilters = [smesh.GetFilterFromCriteria([criteria]) \
-            for criteria in listOfCriterion]
-            # ------------------------------------------ #
-            listOfSets = [maillageAScanner.GetIdsFromFilter(filter) \
-            for filter in listOfFilters]
+                               SMESH.FT_Undefined, elem, SMESH.FT_Undefined, SMESH.FT_Undefined, 30) \
+                               for elem in listOfElements]
+            listOfFilters = [smesh.GetFilterFromCriteria([criteria]) for criteria in listOfCriterion]
+            listOfSets = [maillageAScanner.GetIdsFromFilter(filter) for filter in listOfFilters]
             if listOfSets.count(listOfSets[0]) == len(listOfSets):
                 # Si toutes les listes d'éléments sont similaires, on retourne
-                # au début pour éviter de travailler sur des éléments inutils.
+                # au début pour éviter de travailler sur des éléments inutiles.
                 # Exemple : un noeud appartenant à 4 éléments sur la même face.
                 continue
             for s in listOfSets:
@@ -56,7 +54,7 @@ def createLinesFromMesh(maillageSupport):
     
     """ Cette fonction permet de générer une liste de lignes à partir du 
         maillage support passé en paramètre. On démarre à partir d'un coin
-        simple et on parcourt tout les noeuds pour former un ligne. Soit la
+        simple et on parcourt tout les noeuds pour former une ligne. Soit la
         figure ci-dessous :
             
             1_____4_____7    On part du coin N1, et on cherche les noeuds
@@ -69,7 +67,8 @@ def createLinesFromMesh(maillageSupport):
             |     |     |    dernière ligne, à savoir le noeud N9, on considère
             3_____6_____9    que toutes les lignes sont créées.
             
-        La fonction retourne une liste de lignes utilisées par la suite. """
+        La fonction retourne une liste de lignes utilisées par la suite.
+    """
     
     logging.info("start")
     
@@ -173,7 +172,8 @@ def createNewMeshesFromCorner(maillageSupport, listOfCorners):
     """ Cette fonction permet de générer un nouveau maillage plus facile à
         utiliser. On démarre d'un coin et on récupère les trois éléments
         auquel le noeud appartient. Grâce à un filtre 'coplanar' sur les trois
-        éléments, on peut générer des faces distinctes. """
+        éléments, on peut générer des faces distinctes.
+    """
     
     logging.info("start")
     
@@ -184,9 +184,8 @@ def createNewMeshesFromCorner(maillageSupport, listOfCorners):
         for i, elem in enumerate(elems):
             # --- Filtre selon le critère 'coplanar' --- #
             critere = smesh.GetCriterion(SMESH.FACE, SMESH.FT_CoplanarFaces, \
-            SMESH.FT_Undefined, elem, SMESH.FT_Undefined, SMESH.FT_Undefined, 30)
+                                         SMESH.FT_Undefined, elem, SMESH.FT_Undefined, SMESH.FT_Undefined, 30)
             filtre = smesh.GetFilterFromCriteria([critere])
-            # ------------------------------------------ #
             grp = maillageSupport.GroupOnFilter(SMESH.FACE, 'grp', filtre)
             # On copie le maillage en fonction du filtre
             msh = smesh.CopyMesh(grp, 'new_{0}'.format(i + 1), False, True)

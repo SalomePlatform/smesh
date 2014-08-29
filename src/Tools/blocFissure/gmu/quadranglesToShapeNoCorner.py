@@ -50,7 +50,6 @@ def quadranglesToShapeNoCorner(meshQuad, shapeFissureParams, centreFondFiss):
     idStart = idNode # le noeud de coin
     elemStart = elem # l'élément quadrangle au coin
     xyz = meshQuad.GetNodeXYZ(idStart)
-    print "xyz = ", xyz
     logging.debug("idStart %s, coords %s", idStart, str(xyz))
   
     nodelines =[] # on va constituer une liste de lignes de points
@@ -128,9 +127,9 @@ def quadranglesToShapeNoCorner(meshQuad, shapeFissureParams, centreFondFiss):
       logging.debug("nodeline %s", nodeline)
       logging.debug("elemline %s", elemline)
       nodelines.append(nodeline)
-    print "nodelines = ", nodelines
+    logging.debug("nodelines = %s", nodelines)
     longueur = [len(val) for val in nodelines]
-    print "longueur = ", longueur
+    logging.debug("longueur = %s", longueur)
     # on a constitué une liste de lignes de points connexes
     logging.debug("dimensions [%s, %s]", len(nodelines),  len(nodeline))   
     
@@ -305,7 +304,7 @@ def quadranglesToShapeNoCorner(meshQuad, shapeFissureParams, centreFondFiss):
       noeuds_bords.append(noeudsBords)
       idFilToCont.append(icont)
       bords_Partages += bordsPartages
-      print "bords_Partages = ", bords_Partages
+      logging.debug("bords_Partages = %s", bords_Partages)
       pass # --- loop on mats
     # --- reconstruction des faces continues à partir des listes de noeuds
     #     les courbes doivent suivre la courbure pour éviter les oscillations
