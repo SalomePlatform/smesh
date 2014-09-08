@@ -33,14 +33,18 @@ from whichSideMulti import whichSideMulti
 from whichSideVertex import whichSideVertex
 from projettePointSurCourbe import projettePointSurCourbe
 from prolongeWire import prolongeWire
-#from getCentreFondFiss import getCentreFondFiss
+from restreintFaceFissure import restreintFaceFissure
+from partitionneFissureParPipe import partitionneFissureParPipe
+from construitPartitionsPeauFissure import construitPartitionsPeauFissure
+from compoundFromList import compoundFromList
+from identifieElementsGeometriquesPeau import identifieElementsGeometriquesPeau
 
 # -----------------------------------------------------------------------------
 # --- procédure complète fissure générale
 
-def insereFissureGenerale(maillagesSains,
-                          shapesFissure, shapeFissureParams,
-                          maillageFissureParams, elementsDefaut, step=-1):
+def construitFissureGenerale(maillagesSains,
+                             shapesFissure, shapeFissureParams,
+                             maillageFissureParams, elementsDefaut, step=-1):
   """
   TODO: a completer
   """
@@ -78,6 +82,8 @@ def insereFissureGenerale(maillagesSains,
     isPointInterne = True
   if isPointInterne:
     pointInterne = geompy.MakeVertex(pointIn_x, pointIn_y, pointIn_z)
+  else:
+    pointInterne = None
 
   #fichierMaillageSain = nomRep + '/' + nomFicSain + '.med'
   fichierMaillageFissure = nomRep + '/' + nomFicFissure + '.med'
@@ -101,72 +107,21 @@ def insereFissureGenerale(maillagesSains,
   centreFondFiss           = elementsDefaut[15]
   tgtCentre                = elementsDefaut[16]
 
-  # --- restriction de la face de fissure au domaine solide :
-  #     partition face fissure étendue par fillings, on garde la plus grande face
-
-  partShapeDefaut = geompy.MakePartition([shapeDefaut], facesDefaut, [], [], geompy.ShapeType["FACE"], 0, [], 0)
-  geompy.addToStudy(partShapeDefaut, 'partShapeDefaut')
-  facesPartShapeDefaut = geompy.ExtractShapes(partShapeDefaut, geompy.ShapeType["FACE"], False)
-  if isPointInterne:
-    distfaces = [(geompy.MinDistance(face,pointInterne), i, face) for i, face in enumerate(facesPartShapeDefaut)]
-    distfaces.sort()
-    logging.debug("selection de la face la plus proche du point interne, distance=%s",distfaces[0][0])
-    facesPortFissure = distfaces[0][2]
-  else:
-    facesPartShapeDefautSorted, minSurf, maxSurf = sortFaces(facesPartShapeDefaut) # la face de fissure dans le volume doit être la plus grande
-    logging.debug("surfaces faces fissure étendue, min %s, max %s", minSurf, maxSurf)
-    facesPortFissure = facesPartShapeDefautSorted[-1] #= global
-  
-  geompy.addToStudy(facesPortFissure, "facesPortFissure")
-
   O, OX, OY, OZ = triedreBase()
+
+  # --- restriction de la face de fissure au domaine solide :
+  #     partition face fissure étendue par fillings, on garde la face interne
   
-  # -----------------------------------------------------------------------------
+  facesPortFissure = restreintFaceFissure(shapeDefaut, facesDefaut, pointInterne)
+ 
   # --- pipe de fond de fissure, prolongé, partition face fissure par pipe
   #     identification des edges communes pipe et face fissure
   
-  if geompy.NumberOfFaces(shapeDefaut) == 1:
-    plan = geompy.MakePlane(centreFondFiss, tgtCentre, 10000)
-    shapeDefaut = geompy.MakePartition([shapeDefaut], [plan], [], [], geompy.ShapeType["FACE"], 0, [], 0) #= local
-    #fondFissCoupe = geompy.GetInPlaceByHistory(shapeDefaut, fondFiss) #= inutile
-    geompy.addToStudy(shapeDefaut, 'shapeDefaut_coupe')
-    #geompy.addToStudyInFather(shapeDefaut, fondFissCoupe, 'fondFiss_coupe')
+  (fissPipe, edgesPipeFiss, edgesFondFiss, wirePipeFiss, wireFondFiss) = partitionneFissureParPipe(shapesFissure, elementsDefaut, rayonPipe)
+  edgesFondFiss, edgesIdByOrientation = orderEdgesFromWire(wireFondFiss)
+  for i,edge in enumerate(edgesFondFiss):
+    geompy.addToStudyInFather(wireFondFiss, edge, "edgeFondFiss%d"%i)
   
-  extrem, norms = findWireEndVertices(fondFiss, True)
-  logging.debug("extrem: %s, norm: %s",extrem, norms)
-  cercle = geompy.MakeCircle(extrem[0], norms[0], rayonPipe)
-  cercle = geompy.MakeRotation(cercle, norms[0], math.pi/3.0 ) # éviter d'avoir l'arête de couture du pipe presque confondue avec la face fissure
-  geompy.addToStudy(cercle, 'cercle')
-  fondFissProlonge = prolongeWire(fondFiss, extrem, norms, 2*rayonPipe)
-  pipeFiss = geompy.MakePipe(cercle, fondFissProlonge)
-  geompy.addToStudy(pipeFiss, 'pipeFiss')
-  partFissPipe = geompy.MakePartition([shapeDefaut, pipeFiss], [], [], [], geompy.ShapeType["FACE"], 0, [], 1)
-  geompy.addToStudy(partFissPipe, 'partFissPipe')
-  fissPipe = geompy.GetInPlaceByHistory(partFissPipe, shapeDefaut) #= global
-  geompy.addToStudy(fissPipe, 'fissPipe')
-  partPipe = geompy.GetInPlaceByHistory(partFissPipe, pipeFiss) #= local
-  geompy.addToStudy(partPipe, 'partPipe')
-  
-  edgesPipeFiss = geompy.GetSharedShapesMulti([fissPipe, partPipe], geompy.ShapeType["EDGE"]) #= global
-  for i, edge in enumerate(edgesPipeFiss):
-    name = "edgePipe%d"%i
-    geompy.addToStudyInFather(fissPipe, edge, name)
-  try:
-    wirePipeFiss = geompy.MakeWire(edgesPipeFiss) #= global
-  except:
-    wirePipeFiss = geompy.MakeCompound(edgesPipeFiss)
-    logging.debug("wirePipeFiss construit sous forme de compound")
-  geompy.addToStudy(wirePipeFiss, "wirePipeFiss")
-  
-  wireFondFiss = geompy.GetInPlace(partFissPipe,fondFiss)
-  edgesFondFiss = geompy.GetSharedShapesMulti([fissPipe, wireFondFiss], geompy.ShapeType["EDGE"])
-  for i, edge in enumerate(edgesFondFiss):
-    name = "edgeFondFiss%d"%i
-    geompy.addToStudyInFather(fissPipe, edge, name)
-  wireFondFiss = geompy.MakeWire(edgesFondFiss) #= global
-  geompy.addToStudy(wireFondFiss,"wireFondFiss")  
-
-  # -----------------------------------------------------------------------------
   # --- peau et face de fissure
   #
   # --- partition peau défaut - face de fissure prolongée - wire de fond de fissure prolongée
@@ -174,54 +129,22 @@ def insereFissureGenerale(maillagesSains,
   #     liste de faces externes : facesDefaut
   #     liste de partitions face externe - fissure : partitionPeauFissFond (None quand pas d'intersection)
 
-  partitionsPeauFissFond = [] #= global
-  ipart = 0
-  for filling in facesDefaut: 
-    part = geompy.MakePartition([fissPipe, filling], [], [], [], geompy.ShapeType["FACE"], 0, [], 0)
-    isPart = checkDecoupePartition([fissPipe, filling], part)
-    if isPart: # on recrée la partition avec toutes les faces filling en outil pour avoir une face de fissure correcte
-      otherFD = [fd for fd in facesDefaut if fd != filling]
-      if len(otherFD) > 0:
-        fissPipePart = geompy.MakePartition([fissPipe], otherFD, [], [], geompy.ShapeType["FACE"], 0, [], 0)
-      else:
-        fissPipePart = fissPipe
-      part = geompy.MakePartition([fissPipePart, filling], [], [], [], geompy.ShapeType["FACE"], 0, [], 0)
-      partitionsPeauFissFond.append(part)
-      geompy.addToStudy( part, 'partitionPeauFissFond%d'%ipart )
-    else:
-      partitionsPeauFissFond.append(None)
-    ipart = ipart +1
- 
-  
+  partitionsPeauFissFond = construitPartitionsPeauFissure(facesDefaut, fissPipe)
+    
   # --- arêtes vives détectées (dans quadranglesToShapeNoCorner
   #                             et quadranglesToShapeWithCorner)
-  
-  aretesVives = []
-  aretesVivesCoupees = []  #= global
-  ia = 0
-  for a in bordsPartages:
-    if not isinstance(a, list):
-        aretesVives.append(a)
-        name = "areteVive%d"%ia
-        geompy.addToStudy(a, name)
-        ia += 1
-    else:
-        if a[0] is not None:
-            aretesVives.append(a[0])
-            name = "areteVive%d"%ia
-            geompy.addToStudy(a[0], name)
-            ia += 1
-
-  aretesVivesC = None #= global
-  if len(aretesVives) > 0:
-    aretesVivesC =geompy.MakeCompound(aretesVives)
     
+  aretesVivesCoupees = []  #= global
+  
+  aretesVivesC = compoundFromList(bordsPartages, "areteVive")
+ 
   # -------------------------------------------------------
   # --- inventaire des faces de peau coupées par la fissure
   #     pour chaque face de peau : 0, 1 ou 2 faces débouchante du fond de fissure
   #                                0, 1 ou plus edges de la face de fissure externe au pipe
   
   nbFacesFilling = len(partitionsPeauFissFond)
+  
   ptEdgeFond = [ []  for i in range(nbFacesFilling)] # pour chaque face [points edge fond de fissure aux débouchés du pipe]
   fsPipePeau = [ []  for i in range(nbFacesFilling)] # pour chaque face [faces du pipe débouchantes]
   edRadFPiPo = [ []  for i in range(nbFacesFilling)] # pour chaque face [edge radiale des faces du pipe débouchantes ]
@@ -238,392 +161,24 @@ def insereFissureGenerale(maillagesSains,
   
   for ifil, partitionPeauFissFond in enumerate(partitionsPeauFissFond):
     if partitionPeauFissFond is not None:
-      fillingFaceExterne = facesDefaut[ifil]
-      #fillingSansDecoupe = fillconts[idFilToCont[ifil]]
-      logging.debug("traitement partitionPeauFissFond %s", ifil)
-      # -----------------------------------------------------------------------
-      # --- identification edges fond de fissure, edges pipe sur la face de fissure,
-      #     edges prolongées
+      dataPPFF,aretesVivesCoupees = identifieElementsGeometriquesPeau(ifil, partitionPeauFissFond, edgesPipeFiss,
+                                                                      edgesFondFiss, wireFondFiss, aretesVivesC,
+                                                                      facesDefaut, centreFondFiss, rayonPipe,
+                                                                      aretesVivesCoupees)
       
-      edgesPipeC = geompy.GetInPlace(partitionPeauFissFond, geompy.MakeCompound(edgesPipeFiss)) #= local
-      geompy.addToStudyInFather(partitionPeauFissFond, edgesPipeC, "edgesPipeFiss")
-      edgesFondC = geompy.GetInPlace(partitionPeauFissFond, geompy.MakeCompound(edgesFondFiss)) #= local
-      geompy.addToStudyInFather(partitionPeauFissFond, edgesFondC, "edgesFondFiss")
-      
-      if aretesVivesC is None: #= global facesInside facesOnside
-        [edgesInside, edgesOutside, edgesOnside] = extractionOrientee(fillingFaceExterne, partitionPeauFissFond, centreFondFiss, "EDGE", 1.e-3)
-        [facesInside, facesOutside, facesOnside] = extractionOrientee(fillingFaceExterne, partitionPeauFissFond, centreFondFiss, "FACE", 1.e-3)
-      else:
-        [edgesInside, edgesOutside, edgesOnside] = extractionOrienteeMulti(facesDefaut, ifil, partitionPeauFissFond, centreFondFiss, "EDGE", 1.e-3)
-        [facesInside, facesOutside, facesOnside] = extractionOrienteeMulti(facesDefaut, ifil, partitionPeauFissFond, centreFondFiss, "FACE", 1.e-3)
-        
-      edgesPipeIn = geompy.GetSharedShapesMulti([edgesPipeC, geompy.MakeCompound(edgesInside)], geompy.ShapeType["EDGE"]) #= global
-      verticesPipePeau = [] #= global
-
-      for i, edge in enumerate(edgesPipeIn):
-        try:
-          vertices = geompy.GetSharedShapesMulti([edge, geompy.MakeCompound(facesOnside)], geompy.ShapeType["VERTEX"])
-          verticesPipePeau.append(vertices[0])
-          name = "edgePipeIn%d"%i
-          geompy.addToStudyInFather(partitionPeauFissFond, edge, name)
-          name = "verticePipePeau%d"%i
-          geompy.addToStudyInFather(partitionPeauFissFond, vertices[0], name)
-          logging.debug("edgePipeIn%s coupe les faces OnSide", i)
-        except:
-          logging.debug("edgePipeIn%s ne coupe pas les faces OnSide", i)
-      #edgesFondOut = []     #= inutile
-      edgesFondIn =[] #= global
-      if len(verticesPipePeau) > 0: # au moins une extrémité du pipe sur cette face de peau  
-        #tmp = geompy.GetSharedShapesMulti([edgesFondC, geompy.MakeCompound(edgesOutside)], geompy.ShapeType["EDGE"])
-        #edgesFondOut = [ ed for ed in tmp if geompy.MinDistance(ed, geompy.MakeCompound(facesOnside)) < 1.e-3] 
-        tmp = geompy.GetSharedShapesMulti([edgesFondC, geompy.MakeCompound(edgesInside)], geompy.ShapeType["EDGE"])
-        edgesFondIn = [ ed for ed in tmp if geompy.MinDistance(ed, geompy.MakeCompound(facesOnside)) < 1.e-3]
-
-      verticesEdgesFondIn = [] # les points du fond de fissure au débouché du pipe sur la peau (indice de edgesFondIn)
-      pipexts = []             # les segments de pipe associés au points de fond de fissure débouchants (même indice)
-      cercles = []             # les cercles de generation des pipes débouchant (même indice)
-      facesFissExt = []        # les faces de la fissure externe associés au points de fond de fissure débouchants (même indice)
-      edgesFissExtPeau = []    # edges des faces de fissure externe sur la peau (même indice)
-      edgesFissExtPipe = []    # edges des faces de fissure externe sur le pipe (même indice)
-      #logging.debug("edgesFondIn %s", edgesFondIn)
-
-      edgesFondFiss, edgesIdByOrientation = orderEdgesFromWire(wireFondFiss)
-      for i,edge in enumerate(edgesFondFiss):
-        geompy.addToStudyInFather(wireFondFiss, edge, "edgeFondFiss%d"%i)
-
-      for iedf, edge in enumerate(edgesFondIn):
-        name = "edgeFondIn%d"%iedf
-        geompy.addToStudyInFather(partitionPeauFissFond, edge, name)
-        dist = [ geompy.MinDistance(pt, edge) for pt in verticesPipePeau]
-        ptPeau = verticesPipePeau[dist.index(min(dist))] # le point de verticesPipePeau a distance minimale de l'edge
-        [u, PointOnEdge, EdgeInWireIndex]  = geompy.MakeProjectionOnWire(ptPeau, wireFondFiss)
-        logging.debug("u:%s, EdgeInWireIndex: %s, len(edgesFondFiss): %s", u, EdgeInWireIndex, len(edgesFondFiss))
-        localEdgeInFondFiss = edgesFondFiss[EdgeInWireIndex]
-        centre = PointOnEdge
-        centre2 = geompy.MakeVertexOnCurve(localEdgeInFondFiss, u)
-        geompy.addToStudyInFather(partitionPeauFissFond, centre2, "centre2_%d"%iedf)
-        verticesEdgesFondIn.append(centre)
-        name = "verticeEdgesFondIn%d"%iedf
-        geompy.addToStudyInFather(partitionPeauFissFond, centre, name)
-        norm = geompy.MakeTangentOnCurve(localEdgeInFondFiss, u)
-        geompy.addToStudyInFather(partitionPeauFissFond, centre, "norm%d"%iedf)
-        cercle = geompy.MakeCircle(centre, norm, rayonPipe)
-        geompy.addToStudyInFather(partitionPeauFissFond, cercle, "cerclorig%d"%iedf)
-        [vertex] = geompy.ExtractShapes(cercle, geompy.ShapeType["VERTEX"], False)
-        vec1 = geompy.MakeVector(centre, vertex)
-        vec2 = geompy.MakeVector(centre, ptPeau)
-        angle = geompy.GetAngleRadians(vec1, vec2)
-        # cas général : on reconstitue une portion de pipe, avec l'arête de couture qui coincide
-        #   avec la face de fissure, au niveau du débouché sur la face externe
-        # cas dégénéré : le pipe débouche perpendiculairement à une surface plane à l'origine.
-        #   La partition filling / pipe reconstruit échoue.
-        #   - Si on partitionne le filling avec un simple pipe obtenu par extrusion droite du cercle,
-        #     cela donne un point en trop sur le cercle.
-        #   - Si on prend une vraie surface plane (pas un filling), on peut faire la partition avec 
-        #     les pipes reconstruits              
-        logging.debug("angle=%s", angle)
-        #if abs(angle) > 1.e-7:
-        sommetAxe = geompy.MakeTranslationVector(centre, norm)
-        pm = produitMixte(centre, vertex, ptPeau, sommetAxe)
-        if pm > 0:  # ajout de pi a (-)angle pour éviter des points confondus (partition échoue) dans les cas dégénérés
-          cercle = geompy.MakeRotation(cercle, norm, angle + math.pi)
-        else:
-          cercle = geompy.MakeRotation(cercle, norm, -angle + math.pi)
-        name = "cercle%d"%iedf
-        geompy.addToStudyInFather(partitionPeauFissFond, cercle, name)
-        cercles.append(cercle)
-
-        # --- estimation de la longueur du pipe necessaire de part et d'autre du point de sortie
-        if aretesVivesC is None:
-          faceTestPeau = fillingFaceExterne
-        else:
-          faceTestPeau = facesDefaut[ifil]
-        sideCentre = whichSide(faceTestPeau, centre)
-        locPt0 = geompy.MakeVertexOnCurve(localEdgeInFondFiss, 0.0)
-        locPt1 = geompy.MakeVertexOnCurve(localEdgeInFondFiss, 1.0)
-        sidePt0 = whichSide(faceTestPeau, locPt0)
-        sidePt1 = whichSide(faceTestPeau, locPt1)
-        logging.debug("position centre cercle: %s, extremité edge u0: %s, u1: %s", sideCentre, sidePt0, sidePt1) 
-        normFace = geompy.GetNormal(faceTestPeau, ptPeau)
-        inclPipe = abs(geompy.GetAngleRadians(norm, normFace))
-        lgp = max(rayonPipe/2., abs(3*rayonPipe*math.tan(inclPipe)))
-        logging.debug("angle inclinaison Pipe en sortie: %s degres, lgp: %s", inclPipe*180/math.pi, lgp)
-        
-        # --- position des points extremite du pipe sur l'edge debouchante
-        #     il faut la distance curviligne ofp du point central par rapport à une extrémité de l'edge débouchante
-        locEdgePart = geompy.MakePartition([localEdgeInFondFiss],[centre], [], [], geompy.ShapeType["EDGE"], 0, [], 0)
-        edgesLoc = geompy.ExtractShapes(locEdgePart, geompy.ShapeType["EDGE"], False)
-        edgesLocSorted =[(geompy.MinDistance(edge, locPt0), kk, edge) for kk, edge in enumerate(edgesLoc)]
-        edgesLocSorted.sort()
-        ofp = geompy.BasicProperties(edgesLocSorted[0][2])[0] # distance curviligne centre locPt0
-        logging.debug("distance curviligne centre extremite0: %s", ofp)
-        p1 = geompy.MakeVertexOnCurveByLength(localEdgeInFondFiss, ofp +lgp, locPt0)
-        p2 = geompy.MakeVertexOnCurveByLength(localEdgeInFondFiss, ofp -lgp, locPt0)
-        geompy.addToStudyInFather(wireFondFiss, p1, "p1_%d"%iedf)
-        geompy.addToStudyInFather(wireFondFiss, p2, "p2_%d"%iedf)
-
-        edgePart = geompy.MakePartition([localEdgeInFondFiss], [p1,p2], [], [], geompy.ShapeType["EDGE"], 0, [], 0)
-        edps = geompy.ExtractShapes(edgePart, geompy.ShapeType["EDGE"], True)
-        for edp in edps:
-          if geompy.MinDistance(centre, edp) < 1.e-3:
-            pipext = geompy.MakePipe(cercle, edp)
-            name = "pipeExt%d"%iedf
-            geompy.addToStudyInFather(partitionPeauFissFond, pipext, name)
-            pipexts.append(pipext)
-
-        for face in facesInside:
-          logging.debug("recherche edges communes entre une face inside et (faces onside, edges pipe et fond débouchante)")
-          edgesPeauFis = []
-          edgesPipeFis = []
-          edgesPipeFnd = []
-          try:
-            edgesPeauFis = geompy.GetSharedShapesMulti([geompy.MakeCompound(facesOnside), face], geompy.ShapeType["EDGE"])
-            logging.debug("    faces onside %s",edgesPeauFis)
-            edgesPipeFis = geompy.GetSharedShapesMulti([geompy.MakeCompound(edgesPipeIn), face], geompy.ShapeType["EDGE"])
-            logging.debug("    edgesPipeIn %s", edgesPipeFis)
-            edgesPipeFnd = geompy.GetSharedShapesMulti([geompy.MakeCompound(edgesFondIn), face], geompy.ShapeType["EDGE"])
-            logging.debug("    edgesFondIn %s ", edgesPipeFnd)
-          except:
-            logging.debug("  pb edges communes %s %s %s",edgesPeauFis, edgesPipeFis, edgesPipeFnd)
-            pass
-          if (len(edgesPeauFis) > 0) and (len(edgesPipeFis) > 0) and (len(edgesPipeFnd) == 0):
-            dist = geompy.MinDistance(geompy.MakeCompound(edgesPeauFis), ptPeau)
-            logging.debug("    test distance extrémité reference %s", dist)
-            if dist < 1.e-3: # c'est la face de fissure externe associée
-              logging.debug("    face %s inside ajoutée", i)
-              facesFissExt.append(face)
-              name="faceFissExt%d"%iedf
-              geompy.addToStudyInFather(partitionPeauFissFond, face, name)
-              dist = 1.
-              for ipe, edpe in enumerate(edgesPeauFis):
-                for ipi, edpi in enumerate(edgesPipeFis):
-                  dist = geompy.MinDistance(edpe, edpi)
-                  if dist < 1.e-3:
-                    edgesFissExtPeau.append(edpe)
-                    name="edgesFissExtPeau%d"%iedf
-                    geompy.addToStudyInFather(partitionPeauFissFond, edpe, name)
-                    edgesFissExtPipe.append(edpi)
-                    name="edgesFissExtPipe%d"%iedf
-                    geompy.addToStudyInFather(partitionPeauFissFond, edpi, name)
-                    break
-                if dist < 1.e-3:
-                  break
-
-      if len(verticesPipePeau) == 0: # aucune extrémité du pipe sur cette face de peau
-                                     # il faut recenser les edges de fissure sur la face de peau
-        j = 0
-        for face in facesInside:
-          edgesPeauFis = []
-          edgesPipeFis = []
-          edgesPipeFnd = []
-          try:
-            edgesPeauFis = geompy.GetSharedShapesMulti([geompy.MakeCompound(facesOnside), face], geompy.ShapeType["EDGE"])
-            edgesPipeFis = geompy.GetSharedShapesMulti([geompy.MakeCompound(edgesPipeIn), face], geompy.ShapeType["EDGE"])
-            edgesPipeFnd = geompy.GetSharedShapesMulti([geompy.MakeCompound(edgesFondIn), face], geompy.ShapeType["EDGE"])
-          except:
-            pass
-          if (len(edgesPeauFis) > 0) and (len(edgesPipeFis) > 0) and (len(edgesPipeFnd) == 0):
-            edgesFissExtPeau.append(edgesPeauFis[0])
-            name="edgesFissExtPeau%d"%j
-            geompy.addToStudyInFather(partitionPeauFissFond, edgesPeauFis[0], name)
-            j += 1
-     
-      # -----------------------------------------------------------------------
-      # --- identification faces de peau : face de peau percée du pipe, extrémités du pipe
-      #     La partition avec le pipe peut créer un vertex (et un edge) de trop sur le cercle projeté,
-      #     quand le cercle est très proche de la face.
-      #     dans ce cas, la projection du cercle sur la face suivie d'une partition permet
-      #     d'éviter le point en trop
-      
-      facesAndFond = facesOnside
-      facesAndFond.append(wireFondFiss)
-      try:
-        partitionPeauByPipe = geompy.MakePartition(facesAndFond, pipexts, [], [], geompy.ShapeType["FACE"], 0, [], 1)
-      except:
-        logging.debug("probleme partition face pipe, contournement avec MakeSection")
-        sections = []
-        for pipext in pipexts:
-          sections.append(geompy.MakeSection(facesOnside[0], pipext))
-        partitionPeauByPipe = geompy.MakePartition(facesAndFond, sections, [], [], geompy.ShapeType["FACE"], 0, [], 1)
-        
-      # contrôle edge en trop sur edges circulaires
-      if len(verticesPipePeau) > 0: # --- au moins une extrémité du pipe sur cette face de peau
-        edgeEnTrop = []
-        outilPart = pipexts
-        facesPeau = geompy.ExtractShapes(partitionPeauByPipe, geompy.ShapeType["FACE"], False)
-        facesPeauSorted, minsur, maxsurf = sortFaces(facesPeau)
-        for i, face in enumerate(facesPeauSorted[:-1]): # on ne teste que la ou les petites faces "circulaires"
-          nbv = geompy.NumberOfEdges(face)
-          logging.debug("nombre d'edges sur face circulaire: %s", nbv)
-          if nbv > 3:
-            edgeEnTrop.append(True) # TODO : distinguer les cas avec deux faces circulaires dont l'une est correcte
-          else:
-            edgeEnTrop.append(False)
-        refaire = sum(edgeEnTrop)
-        if refaire > 0:
-          dc = [(geompy.MinDistance(verticesEdgesFondIn[0], fac), i)  for i, fac in enumerate(facesPeauSorted[:-1])]
-          dc.sort()
-          logging.debug("dc sorted: %s", dc)
-          i0 = dc[0][1] # indice de facesPeauSorted qui correspond à verticesEdgesFondIn[0], donc 0 pour cercles
-          direct = (i0 == 0)
-          for i, bad in enumerate(edgeEnTrop):
-            if direct:
-              j = i
-            else:
-              j = 1-i
-            if bad:
-              outilPart[j] = geompy.MakeProjection(cercles[j],facesOnside[0])
-            pass
-          partitionPeauByPipe = geompy.MakePartition(facesAndFond, outilPart, [], [], geompy.ShapeType["FACE"], 0, [], 1)
-          pass
-          
-      name="partitionPeauByPipe%d"%ifil
-      geompy.addToStudy(partitionPeauByPipe, name)
-      [edgesPeauFondIn, edgesPeauFondOut, edgesPeauFondOn] = extractionOrientee(fillingFaceExterne, partitionPeauByPipe, centreFondFiss, "EDGE", 1.e-3)
-      [facesPeauFondIn, facesPeauFondOut, facesPeauFondOn] = extractionOrientee(fillingFaceExterne, partitionPeauByPipe, centreFondFiss, "FACE", 1.e-3)
-        
-      if len(verticesPipePeau) > 0: # --- au moins une extrémité du pipe sur cette face de peau
-        facesPeauSorted, minsur, maxsurf = sortFaces(facesPeauFondOn)
-        facePeau = facesPeauSorted[-1] # la plus grande face
-      else:
-        facePeau =geompy.MakePartition(facesPeauFondOn, [], [], [], geompy.ShapeType["FACE"], 0, [], 1)
-      name="facePeau%d"%ifil
-      geompy.addToStudy(facePeau, name)
-      
-      facesPipePeau = [None for i in range(len(edgesFissExtPipe))]
-      endsEdgeFond = [None for i in range(len(edgesFissExtPipe))]
-      edgeRadFacePipePeau = [None for i in range(len(edgesFissExtPipe))]
-      
-      edgesListees = []
-      edgesCircPeau = []
-      verticesCircPeau = []
-      if len(verticesPipePeau) > 0: # --- au moins une extrémité du pipe sur cette face de peau
-        
-        for face in facesPeauSorted[:-1]: # la ou les faces débouchantes, pas la grande face de peau
-          logging.debug("examen face debouchante circulaire")
-          for i,efep in enumerate(edgesFissExtPipe):
-            dist = geompy.MinDistance(face, efep)
-            logging.debug("  distance face circulaire edge %s", dist)
-            if dist < 1e-3:
-              for ik, edpfi in enumerate(edgesPeauFondIn):
-                if geompy.MinDistance(face, edpfi) < 1e-3:
-                  break
-              sharedVertices = geompy.GetSharedShapesMulti([face, edgesPeauFondIn[ik]], geompy.ShapeType["VERTEX"])
-              nameFace = "facePipePeau%d"%i
-              nameVert = "endEdgeFond%d"%i
-              nameEdge = "edgeRadFacePipePeau%d"%i
-              facesPipePeau[i] = face
-              endsEdgeFond[i] = sharedVertices[0]
-              geompy.addToStudy(face, nameFace)
-              geompy.addToStudy(sharedVertices[0], nameVert)
-              edgesFace = geompy.ExtractShapes(face, geompy.ShapeType["EDGE"], True)
-              for edge in edgesFace:
-                if geompy.MinDistance(edge, sharedVertices[0]) < 1e-3:
-                  edgeRadFacePipePeau[i] = edge
-                  geompy.addToStudy(edge, nameEdge)
-                  break
-                pass
-              pass
-            pass
-          pass
-        
-        # --- edges circulaires de la face de peau et points de jonction de la face externe de fissure
-        logging.debug("facesPipePeau: %s", facesPipePeau)
-        edgesCircPeau = [None for i in range(len(facesPipePeau))]
-        verticesCircPeau = [None for i in range(len(facesPipePeau))]        
-        for i,fcirc in enumerate(facesPipePeau):
-          edges = geompy.GetSharedShapesMulti([facePeau, fcirc], geompy.ShapeType["EDGE"])
-          grpEdgesCirc = geompy.CreateGroup(facePeau, geompy.ShapeType["EDGE"])
-          geompy.UnionList(grpEdgesCirc, edges)
-          edgesCircPeau[i] = grpEdgesCirc
-          name = "edgeCirc%d"%i
-          geompy.addToStudyInFather(facePeau, grpEdgesCirc, name)
-          edgesListees = edgesListees + edges
-          vertices = geompy.GetSharedShapesMulti([facePeau, fcirc], geompy.ShapeType["VERTEX"])
-          grpVertCircPeau = geompy.CreateGroup(facePeau, geompy.ShapeType["VERTEX"])
-          geompy.UnionList(grpVertCircPeau, vertices)
-          verticesCircPeau[i] = grpVertCircPeau
-          name = "pointEdgeCirc%d"%i
-          geompy.addToStudyInFather(facePeau, grpVertCircPeau, name)
-          pass
-        pass # --- au moins une extrémité du pipe sur cette face de peau
-
-      # --- edges de bord de la face de peau
-
-      edgesFilling = geompy.ExtractShapes(fillingFaceExterne, geompy.ShapeType["EDGE"], False)
-      edgesBords = []
-      for i, edge in enumerate(edgesFilling):
-        edgepeau = geompy.GetInPlace(facePeau, edge)
-        name = "edgepeau%d"%i
-        geompy.addToStudyInFather(facePeau,edgepeau, name)
-        logging.debug("edgepeau %s", geompy.ShapeInfo(edgepeau))
-        if geompy.ShapeInfo(edgepeau)['EDGE'] > 1:
-          logging.debug("  EDGES multiples")
-          edgs = geompy.ExtractShapes(edgepeau, geompy.ShapeType["EDGE"], False)
-          edgesBords += edgs
-          edgesListees += edgs
-        else:
-          logging.debug("  EDGE")
-          edgesBords.append(edgepeau)
-          edgesListees.append(edgepeau)
-      groupEdgesBordPeau = geompy.CreateGroup(facePeau, geompy.ShapeType["EDGE"])
-      geompy.UnionList(groupEdgesBordPeau, edgesBords)
-      bordsVifs = None
-      if aretesVivesC is not None:
-        bordsVifs = geompy.GetInPlace(facePeau, aretesVivesC)
-      if bordsVifs is not None:
-        geompy.addToStudyInFather(facePeau, bordsVifs, "bordsVifs")
-        groupEdgesBordPeau = geompy.CutGroups(groupEdgesBordPeau, bordsVifs)
-        grptmp = None
-        if len(aretesVivesCoupees) > 0:
-          grpC = geompy.MakeCompound(aretesVivesCoupees)
-          grptmp = geompy.GetInPlace(facePeau, grpC)
-        if grptmp is not None:
-          grpnew = geompy.CutGroups(bordsVifs, grptmp) # ce qui est nouveau dans bordsVifs
-        else:
-          grpnew = bordsVifs
-        if grpnew is not None:
-          edv = geompy.ExtractShapes(grpnew, geompy.ShapeType["EDGE"], False)
-          aretesVivesCoupees += edv
-      logging.debug("aretesVivesCoupees %s",aretesVivesCoupees)
-      geompy.addToStudyInFather(facePeau, groupEdgesBordPeau , "EdgesBords")
-        
-      # ---  edges de la face de peau partagées avec la face de fissure
-      
-      edgesPeau = geompy.ExtractShapes(facePeau, geompy.ShapeType["EDGE"], False)
-      edges = substractSubShapes(facePeau, edgesPeau, edgesListees)
-      edgesFissurePeau = []
-      if len(verticesPipePeau) > 0: # --- au moins une extrémité du pipe sur cette face de peau
-        edgesFissurePeau = [None for i in range(len(verticesCircPeau))] # edges associés aux extrémités du pipe, en premier
-        for edge in edges:
-          for i, grpVert in enumerate(verticesCircPeau):
-            if (geompy.MinDistance(grpVert, edge) < 1.e-3) and (edge not in edgesFissurePeau):
-              edgesFissurePeau[i] = edge
-              name = "edgeFissurePeau%d"%i
-              geompy.addToStudyInFather(facePeau,  edge, name)
-        for edge in edges: # on ajoute après les edges manquantes
-          if edge not in edgesFissurePeau:
-            edgesFissurePeau.append(edge)
-      else:
-        for i, edge in enumerate(edges):
-          edgesFissurePeau.append(edge)
-          name = "edgeFissurePeau%d"%i
-          geompy.addToStudyInFather(facePeau,  edge, name)
-        
-
-      ptEdgeFond[ifil] = endsEdgeFond        # pour chaque face [points edge fond de fissure aux débouchés du pipe]
-      fsPipePeau[ifil] = facesPipePeau       # pour chaque face [faces du pipe débouchantes]
-      edRadFPiPo[ifil] = edgeRadFacePipePeau # pour chaque face [edge radiale des faces du pipe débouchantes ]
-      fsFissuExt[ifil] = facesFissExt        # pour chaque face [faces de fissure externes au pipe]
-      edFisExtPe[ifil] = edgesFissExtPeau    # pour chaque face [edge en peau des faces de fissure externes (pas subshape facePeau)]
-      edFisExtPi[ifil] = edgesFissExtPipe    # pour chaque face [edge commun au pipe des faces de fissure externes]
-      facesPeaux[ifil] = facePeau            # pour chaque face : la face de peau finale a mailler (percee des faces débouchantes)
-      edCircPeau[ifil] = edgesCircPeau       # pour chaque face de peau : [groupe subshapes edges circulaires aux débouchés du pipe]
-      ptCircPeau[ifil] = verticesCircPeau    # pour chaque face de peau : [groupe subshapes points sur edges circulaires aux débouchés du pipe]
-      gpedgeBord[ifil] = groupEdgesBordPeau  # pour chaque face de peau : groupe subshape des edges aux bords liés à la partie saine
-      gpedgeVifs[ifil] = bordsVifs           # pour chaque face de peau : groupe subshape des edges aux bords correspondant à des arêtes vives
-      edFissPeau[ifil] = edgesFissurePeau    # pour chaque face de peau : [subshape edge en peau des faces de fissure externes]
-      ptFisExtPi[ifil] = verticesPipePeau    # pour chaque face de peau : [point commun edFissPeau edCircPeau]
+      ptEdgeFond[ifil] = dataPPFF['endsEdgeFond']
+      fsPipePeau[ifil] = dataPPFF['facesPipePeau']
+      edRadFPiPo[ifil] = dataPPFF['edgeRadFacePipePeau']
+      fsFissuExt[ifil] = dataPPFF['facesFissExt']
+      edFisExtPe[ifil] = dataPPFF['edgesFissExtPeau']
+      edFisExtPi[ifil] = dataPPFF['edgesFissExtPipe']
+      facesPeaux[ifil] = dataPPFF['facePeau']
+      edCircPeau[ifil] = dataPPFF['edgesCircPeau']
+      ptCircPeau[ifil] = dataPPFF['verticesCircPeau']
+      gpedgeBord[ifil] = dataPPFF['groupEdgesBordPeau']
+      gpedgeVifs[ifil] = dataPPFF['bordsVifs']
+      edFissPeau[ifil] = dataPPFF['edgesFissurePeau']
+      ptFisExtPi[ifil] = dataPPFF['verticesPipePeau']
 
   # -----------------------------------------------------------------------
   # fin de la boucle sur les faces de filling

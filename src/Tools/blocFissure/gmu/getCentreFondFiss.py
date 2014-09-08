@@ -9,14 +9,14 @@ publie = False
 def getCentreFondFiss(shapesFissure):
   """
   identification du centre de fond de fissure,
-  transformation fond de fissure en edge unique (seulement pour la procédure insereFissureGenerale).
+  transformation fond de fissure en edge unique (seulement pour la procédure construitFissureGenerale).
   On distingue le cas d'utilisation de la procédure insereFissureLongue par le nombre d'éléments de shapesFissure.
   """
   global publie
   logging.debug("start")
   
   fondFiss          = shapesFissure[4] # groupe d'edges de fond de fissure
-  if len(shapesFissure) == 6:          # procédure insereFissureGenerale, et edge fond de fissure fournie explicitement
+  if len(shapesFissure) == 6:          # procédure construitFissureGenerale, et edge fond de fissure fournie explicitement
     edgeFondExt     = shapesFissure[5]
   else:
     edgeFondExt     = None
@@ -24,7 +24,7 @@ def getCentreFondFiss(shapesFissure):
   if len(shapesFissure) > 6:           # procédure insereFissureLongue (fissure plane, plusieurs edges sur le fond de fissure)
     centreFondFiss = shapesFissure[1]
     tgtCentre = None
-  else:                                # procédure insereFissureGenerale, détermination edge unique et milieu de l'edge
+  else:                                # procédure construitFissureGenerale, détermination edge unique et milieu de l'edge
     if geompy.NumberOfEdges(fondFiss) > 1:
       if geompy.NbShapes(fondFiss, geompy.ShapeType["WIRE"]) > 0: # wire
         aWire = fondFiss

@@ -18,7 +18,7 @@ from blocFissure.gmu.fissureGenerique import fissureGenerique
 from blocFissure.gmu.triedreBase import triedreBase
 from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
 from blocFissure.gmu.creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
-from blocFissure.gmu.insereFissureGenerale import insereFissureGenerale
+from blocFissure.gmu.construitFissureGenerale import construitFissureGenerale
 
 O, OX, OY, OZ = triedreBase()
 
@@ -47,7 +47,7 @@ class ellipse_1(fissureGenerique):
   # ---------------------------------------------------------------------------
   def setParamShapeFissure(self):
     """
-    paramètres de la fissure pour méthode insereFissureGenerale
+    paramètres de la fissure pour méthode construitFissureGenerale
     lgInfluence : distance autour de la shape de fissure a remailler (A ajuster selon le maillage)
     rayonPipe   : le rayon du pile maillé en hexa autour du fond de fissure
     convexe     : optionnel, True : la face est convexe (vue de l'exterieur) sert si on ne donne pas de point interne
@@ -93,9 +93,9 @@ class ellipse_1(fissureGenerique):
   def genereMaillageFissure(self, geometriesSaines, maillagesSains,
                             shapesFissure, shapeFissureParams,
                             maillageFissureParams, elementsDefaut, step):
-    maillageFissure = insereFissureGenerale(maillagesSains,
-                                            shapesFissure, shapeFissureParams,
-                                            maillageFissureParams, elementsDefaut, step)
+    maillageFissure = construitFissureGenerale(maillagesSains,
+                                               shapesFissure, shapeFissureParams,
+                                               maillageFissureParams, elementsDefaut, step)
     return maillageFissure
 
   # ---------------------------------------------------------------------------

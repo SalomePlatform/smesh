@@ -16,7 +16,7 @@ from fissureGenerique import fissureGenerique
 from triedreBase import triedreBase
 from genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
 from creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
-from insereFissureGenerale import insereFissureGenerale
+from construitFissureGenerale import construitFissureGenerale
 from sortEdges import sortEdges
 
 O, OX, OY, OZ = triedreBase()
@@ -651,9 +651,9 @@ class fissureCoude(fissureGenerique):
   def genereMaillageFissure(self, geometriesSaines, maillagesSains,
                             shapesFissure, shapeFissureParams,
                             maillageFissureParams, elementsDefaut, step):
-    maillageFissure = insereFissureGenerale(maillagesSains,
-                                            shapesFissure, shapeFissureParams,
-                                            maillageFissureParams, elementsDefaut, step)
+    maillageFissure = construitFissureGenerale(maillagesSains,
+                                               shapesFissure, shapeFissureParams,
+                                               maillageFissureParams, elementsDefaut, step)
     return maillageFissure
 
   # ---------------------------------------------------------------------------

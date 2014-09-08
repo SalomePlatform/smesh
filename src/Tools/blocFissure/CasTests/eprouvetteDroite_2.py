@@ -18,7 +18,7 @@ from eprouvetteDroite import eprouvetteDroite
 from blocFissure.gmu.triedreBase import triedreBase
 from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
 from blocFissure.gmu.creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
-from blocFissure.gmu.insereFissureGenerale import insereFissureGenerale
+from blocFissure.gmu.construitFissureGenerale import construitFissureGenerale
 
 O, OX, OY, OZ = triedreBase()
 

@@ -13,7 +13,7 @@ class cubeAngle2(cubeAngle):
   # ---------------------------------------------------------------------------
   def setParamShapeFissure(self):
     """
-    paramètres de la fissure pour méthode insereFissureGenerale
+    paramètres de la fissure pour méthode construitFissureGenerale
     lgInfluence : distance autour de la shape de fissure a remailler (A ajuster selon le maillage)
     rayonPipe   : le rayon du pile maillé en hexa autour du fond de fissure
     """

@@ -2,9 +2,6 @@
 
 import os
 import initLog
-#initLog.setDebug()
-#initLog.setVerbose()
-#initLog.setRelease()
 
 # --- calcul path blocFissure
 
