@@ -81,6 +81,7 @@
 #include "SMESHGUI_SymmetryDlg.h"
 #include "SMESHGUI_TranslationDlg.h"
 #include "SMESHGUI_TransparencyDlg.h"
+#include "SMESHGUI_DisplayEntitiesDlg.h"
 
 #include "SMESHGUI_FilterUtils.h"
 #include "SMESHGUI_GEOMGenUtils.h"
@@ -2516,6 +2517,13 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     ::SetDisplayEntity(theCommandID);
   break;
 
+  // Choose entities to be displayed
+  case SMESHOp::OpDEChoose:
+    {
+      ( new SMESHGUI_DisplayEntitiesDlg( SMESHGUI::desktop() ) )->exec();
+      break;
+    }
+
   case SMESHOp::OpOrientationOnFaces:
     {
       LightApp_SelectionMgr* mgr = selectionMgr();
@@ -3903,7 +3911,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpDEFaces,      "FACES",   "ICON_DLG_TRIANGLE", 0, true );
   createSMESHAction( SMESHOp::OpDEVolumes,    "VOLUMES", "ICON_DLG_TETRAS", 0, true );
   createSMESHAction( SMESHOp::OpDEBalls,      "BALLS",   "ICON_DLG_BALL", 0, true );
-  createSMESHAction( SMESHOp::OpDEAllEntity,  "ALL" );
+  createSMESHAction( SMESHOp::OpDEChoose,     "CHOOSE",  "ICON_DLG_CHOOSE", 0, false );
+  createSMESHAction( SMESHOp::OpDEAllEntity,  "ALL",     "ICON_DLG_CHOOSE_ALL", 0, false );
   createSMESHAction( SMESHOp::OpOrientationOnFaces, "FACE_ORIENTATION", "", 0, true );
 
   createSMESHAction( SMESHOp::OpRepresentationLines, "LINE_REPRESENTATION", "", 0, true );
@@ -4433,6 +4442,11 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( action( SMESHOp::OpDEBalls ), anId, -1 );
   popupMgr()->setRule( action( SMESHOp::OpDEBalls ), aDiffElemsInVTK + "&& isVisible &&" + hasBalls, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( SMESHOp::OpDEBalls ), "{'BallElem'} in entityMode", QtxPopupMgr::ToggleRule );
+
+  popupMgr()->insert( separator(), anId, -1 );
+
+  popupMgr()->insert( action( SMESHOp::OpDEChoose ), anId, -1 );
+  popupMgr()->setRule( action( SMESHOp::OpDEChoose ), aClient + "&&" + aType + "&&" + isNotEmpty, QtxPopupMgr::VisibleRule );
 
   popupMgr()->insert( separator(), anId, -1 );
 

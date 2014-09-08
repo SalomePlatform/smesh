@@ -200,7 +200,8 @@ namespace SMESHOp {
     OpDEFaces                = 6042,   // POPUP MENU - DISPLAY ENTITY - FACES
     OpDEVolumes              = 6043,   // POPUP MENU - DISPLAY ENTITY - VOLUMES
     OpDEBalls                = 6044,   // POPUP MENU - DISPLAY ENTITY - BALLS
-    OpDEAllEntity            = 6045,   // POPUP MENU - DISPLAY ENTITY - ALL ENTITY
+    OpDEAllEntity            = 6045,   // POPUP MENU - DISPLAY ENTITY - ALL ENTITIES
+    OpDEChoose               = 6046,   // POPUP MENU - DISPLAY ENTITY - CHOOSE ENTITIES
     // Representation -----------------//--------------------------------
     OpRepresentationLines    = 6050,   // POPUP MENU - 2D QUADRATIC - LINES
     OpRepresentationArcs     = 6051,   // POPUP MENU - 2D QUADRATIC - ARCS

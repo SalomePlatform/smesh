@@ -397,6 +397,10 @@
         <translation>Edges</translation>
     </message>
     <message>
+        <source>MEN_CHOOSE</source>
+        <translation>Choose...</translation>
+    </message>
+    <message>
         <source>MEN_EDIT</source>
         <translation>Edit</translation>
     </message>
@@ -7803,6 +7807,13 @@ as they are of improper type:
     <message>
         <source>SHRINK</source>
         <translation>Shrink coef:</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_DisplayEntitiesDlg</name>
+    <message>
+        <source>WRN_AT_LEAST_ONE</source>
+        <translation>At least one entity type should be chosen!</translation>
     </message>
 </context>
 </TS>

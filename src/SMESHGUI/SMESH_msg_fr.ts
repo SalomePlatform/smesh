@@ -397,6 +397,10 @@
         <translation>Arêtes</translation>
     </message>
     <message>
+        <source>MEN_CHOOSE</source>
+        <translation type="unfinished">Choose...</translation>
+    </message>
+    <message>
         <source>MEN_EDIT</source>
         <translation>Edition</translation>
     </message>
@@ -7751,6 +7755,13 @@ en raison de leurs types incompatibles:
     <message>
         <source>SHRINK</source>
         <translation>Coef de réduction:</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_DisplayEntitiesDlg</name>
+    <message>
+        <source>WRN_AT_LEAST_ONE</source>
+        <translation type="unfinished">At least one entity type should be chosen!</translation>
     </message>
 </context>
 </TS>
