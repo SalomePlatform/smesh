@@ -1566,111 +1566,124 @@ namespace
 
   void Control( int theCommandID )
   {
+    SMESH_Actor::eControl aControl = SMESH_Actor::eNone;
+    switch ( theCommandID ){
+    case SMESHOp::OpFreeNode:
+      aControl = SMESH_Actor::eFreeNodes;
+      break;
+    case SMESHOp::OpEqualNode:
+      aControl = SMESH_Actor::eCoincidentNodes;
+      break;
+    case SMESHOp::OpFreeEdge:
+      aControl = SMESH_Actor::eFreeEdges;
+      break;
+    case SMESHOp::OpFreeBorder:
+      aControl = SMESH_Actor::eFreeBorders;
+      break;
+    case SMESHOp::OpLength:
+      aControl = SMESH_Actor::eLength;
+      break;
+    case SMESHOp::OpConnection:
+      aControl = SMESH_Actor::eMultiConnection;
+      break;
+    case SMESHOp::OpEqualEdge:
+      aControl = SMESH_Actor::eCoincidentElems1D;
+      break;
+    case SMESHOp::OpFreeFace:
+      aControl = SMESH_Actor::eFreeFaces;
+      break;
+    case SMESHOp::OpBareBorderFace:
+      aControl = SMESH_Actor::eBareBorderFace;
+      break;
+    case SMESHOp::OpOverConstrainedFace:
+      aControl = SMESH_Actor::eOverConstrainedFace;
+      break;
+    case SMESHOp::OpLength2D:
+      aControl = SMESH_Actor::eLength2D;
+      break;
+    case SMESHOp::OpConnection2D:
+      aControl = SMESH_Actor::eMultiConnection2D;
+      break;
+    case SMESHOp::OpArea:
+      aControl = SMESH_Actor::eArea;
+      break;
+    case SMESHOp::OpTaper:
+      aControl = SMESH_Actor::eTaper;
+      break;
+    case SMESHOp::OpAspectRatio:
+      aControl = SMESH_Actor::eAspectRatio;
+      break;
+    case SMESHOp::OpMinimumAngle:
+      aControl = SMESH_Actor::eMinimumAngle;
+      break;
+    case SMESHOp::OpWarpingAngle:
+      aControl = SMESH_Actor::eWarping;
+      break;
+    case SMESHOp::OpSkew:
+      aControl = SMESH_Actor::eSkew;
+      break;
+    case SMESHOp::OpMaxElementLength2D:
+      aControl = SMESH_Actor::eMaxElementLength2D;
+      break;
+    case SMESHOp::OpEqualFace:
+      aControl = SMESH_Actor:: eCoincidentElems2D;
+      break;
+    case SMESHOp::OpAspectRatio3D:
+      aControl = SMESH_Actor::eAspectRatio3D;
+      break;
+    case SMESHOp::OpVolume:
+      aControl = SMESH_Actor::eVolume3D;
+      break;
+    case SMESHOp::OpMaxElementLength3D:
+      aControl = SMESH_Actor::eMaxElementLength3D;
+      break;
+    case SMESHOp::OpBareBorderVolume:
+      aControl = SMESH_Actor::eBareBorderVolume;
+      break;
+    case SMESHOp::OpOverConstrainedVolume:
+      aControl = SMESH_Actor::eOverConstrainedVolume;
+      break;
+    case SMESHOp::OpEqualVolume:
+      aControl = SMESH_Actor::eCoincidentElems3D;
+      break;
+    }
+    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
     LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
     SALOME_ListIO selected;
     if( aSel )
       aSel->selectedObjects( selected );
 
     if( !selected.IsEmpty() ){
-      Handle(SALOME_InteractiveObject) anIO = selected.First();
-      if(!anIO.IsNull()){
-        SMESH_Actor::eControl aControl = SMESH_Actor::eNone;
-        if(SMESH_Actor *anActor = SMESH::FindActorByEntry(anIO->getEntry())) {
-          switch ( theCommandID ){
-          case SMESHOp::OpFreeNode:
-            aControl = SMESH_Actor::eFreeNodes;
-            break;
-          case SMESHOp::OpEqualNode:
-            aControl = SMESH_Actor::eCoincidentNodes;
-            break;
-          case SMESHOp::OpFreeEdge:
-            aControl = SMESH_Actor::eFreeEdges;
-            break;
-          case SMESHOp::OpFreeBorder:
-            aControl = SMESH_Actor::eFreeBorders;
-            break;
-          case SMESHOp::OpLength:
-            aControl = SMESH_Actor::eLength;
-            break;
-          case SMESHOp::OpConnection:
-            aControl = SMESH_Actor::eMultiConnection;
-            break;
-          case SMESHOp::OpEqualEdge:
-            aControl = SMESH_Actor::eCoincidentElems1D;
-            break;
-          case SMESHOp::OpFreeFace:
-            aControl = SMESH_Actor::eFreeFaces;
-            break;
-          case SMESHOp::OpBareBorderFace:
-            aControl = SMESH_Actor::eBareBorderFace;
-            break;
-          case SMESHOp::OpOverConstrainedFace:
-            aControl = SMESH_Actor::eOverConstrainedFace;
-            break;
-          case SMESHOp::OpLength2D:
-            aControl = SMESH_Actor::eLength2D;
-            break;
-          case SMESHOp::OpConnection2D:
-            aControl = SMESH_Actor::eMultiConnection2D;
-            break;
-          case SMESHOp::OpArea:
-            aControl = SMESH_Actor::eArea;
-            break;
-          case SMESHOp::OpTaper:
-            aControl = SMESH_Actor::eTaper;
-            break;
-          case SMESHOp::OpAspectRatio:
-            aControl = SMESH_Actor::eAspectRatio;
-            break;
-          case SMESHOp::OpMinimumAngle:
-            aControl = SMESH_Actor::eMinimumAngle;
-            break;
-          case SMESHOp::OpWarpingAngle:
-            aControl = SMESH_Actor::eWarping;
-            break;
-          case SMESHOp::OpSkew:
-            aControl = SMESH_Actor::eSkew;
-            break;
-          case SMESHOp::OpMaxElementLength2D:
-            aControl = SMESH_Actor::eMaxElementLength2D;
-            break;
-          case SMESHOp::OpEqualFace:
-            aControl = SMESH_Actor:: eCoincidentElems2D;
-            break;
-          case SMESHOp::OpAspectRatio3D:
-            aControl = SMESH_Actor::eAspectRatio3D;
-            break;
-          case SMESHOp::OpVolume:
-            aControl = SMESH_Actor::eVolume3D;
-            break;
-          case SMESHOp::OpMaxElementLength3D:
-            aControl = SMESH_Actor::eMaxElementLength3D;
-            break;
-          case SMESHOp::OpBareBorderVolume:
-            aControl = SMESH_Actor::eBareBorderVolume;
-            break;
-          case SMESHOp::OpOverConstrainedVolume:
-            aControl = SMESH_Actor::eOverConstrainedVolume;
-            break;
-          case SMESHOp::OpEqualVolume:
-            aControl = SMESH_Actor::eCoincidentElems3D;
-            break;
-          }
-
-          anActor->SetControlMode(aControl);
-          anActor->GetScalarBarActor()->SetTitle( functorToString( anActor->GetFunctor() ).toLatin1().constData() );
-          SMESH::RepaintCurrentView();
+      SALOME_ListIteratorOfListIO It(selected);
+      for ( ; It.More(); It.Next())
+      {
+        Handle(SALOME_InteractiveObject) anIO = It.Value();
+        if(!anIO.IsNull()){
+          _PTR(SObject) SO = aStudy->FindObjectID( It.Value()->getEntry() );
+          if ( SO ) {
+            CORBA::Object_var aObject = SMESH::SObjectToObject( SO );
+            SMESH::SMESH_Mesh_var      aMesh    = SMESH::SMESH_Mesh::_narrow( aObject );
+            SMESH::SMESH_subMesh_var   aSubMesh = SMESH::SMESH_subMesh::_narrow( aObject );
+            SMESH::SMESH_GroupBase_var aGroup   = SMESH::SMESH_GroupBase::_narrow( aObject );
+            if ( !aMesh->_is_nil() || !aSubMesh->_is_nil() || !aGroup->_is_nil() ) {
+              if(SMESH_Actor *anActor = SMESH::FindActorByEntry(anIO->getEntry())) {
+                anActor->SetControlMode(aControl);
+                anActor->GetScalarBarActor()->SetTitle( functorToString( anActor->GetFunctor() ).toLatin1().constData() );
+                SMESH::RepaintCurrentView();
 #ifndef DISABLE_PLOT2DVIEWER
-          if(anActor->GetPlot2Histogram()) {
-            SPlot2d_Histogram* aHistogram = anActor->UpdatePlot2Histogram();
-            QString functorName = functorToString( anActor->GetFunctor());
-            QString aHistogramName("%1 : %2");
-            aHistogramName = aHistogramName.arg(anIO->getName()).arg(functorName);
-            aHistogram->setName(aHistogramName);
-            aHistogram->setHorTitle(functorName);
-            SMESH::ProcessIn2DViewers(anActor);
-          }
+                if(anActor->GetPlot2Histogram()) {
+                  SPlot2d_Histogram* aHistogram = anActor->UpdatePlot2Histogram();
+                  QString functorName = functorToString( anActor->GetFunctor());
+                  QString aHistogramName("%1 : %2");
+                  aHistogramName = aHistogramName.arg(anIO->getName()).arg(functorName);
+                  aHistogram->setName(aHistogramName);
+                  aHistogram->setHorTitle(functorName);
+                  SMESH::ProcessIn2DViewers(anActor);
+                }
 #endif
+              }
+            }
+          }
         }
       }
     }
@@ -3530,19 +3543,10 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       LightApp_SelectionMgr* mgr = selectionMgr();
       SALOME_ListIO selected; mgr->selectedObjects( selected );
 
-      if ( selected.Extent() == 1 && selected.First()->hasEntry() ) {
-        _PTR(SObject) SO = aStudy->FindObjectID( selected.First()->getEntry() );
-        if ( SO ) {
-          CORBA::Object_var aObject = SMESH::SObjectToObject( SO );
-          SMESH::SMESH_Mesh_var      aMesh    = SMESH::SMESH_Mesh::_narrow( aObject );
-          SMESH::SMESH_subMesh_var   aSubMesh = SMESH::SMESH_subMesh::_narrow( aObject );
-          SMESH::SMESH_GroupBase_var aGroup   = SMESH::SMESH_GroupBase::_narrow( aObject );
-          if ( !aMesh->_is_nil() || !aSubMesh->_is_nil() || !aGroup->_is_nil() ) {
-            SUIT_OverrideCursor wc;
-            ::Control( theCommandID );
-            break;
-          }
-        }
+      if( !selected.IsEmpty() ) {
+        SUIT_OverrideCursor wc;
+        ::Control( theCommandID );
+        break;
       }
       SUIT_MessageBox::warning(desktop(),
                                tr( "SMESH_WRN_WARNING" ),
@@ -3927,6 +3931,23 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   createSMESHAction( SMESHOp::OpSortChild, "SORT_CHILD_ITEMS" );
 
+  QList<int> aCtrlActions;
+  aCtrlActions << SMESHOp::OpFreeNode << SMESHOp::OpEqualNode                           // node controls
+               << SMESHOp::OpFreeEdge << SMESHOp::OpFreeBorder
+               << SMESHOp::OpLength << SMESHOp::OpConnection << SMESHOp::OpEqualEdge    // edge controls
+               << SMESHOp::OpFreeFace << SMESHOp::OpLength2D << SMESHOp::OpConnection2D
+               << SMESHOp::OpArea << SMESHOp::OpTaper << SMESHOp::OpAspectRatio
+               << SMESHOp::OpMinimumAngle << SMESHOp::OpWarpingAngle << SMESHOp::OpSkew
+               << SMESHOp::OpMaxElementLength2D << SMESHOp::OpBareBorderFace
+               << SMESHOp::OpOverConstrainedFace << SMESHOp::OpEqualFace                // face controls
+               << SMESHOp::OpAspectRatio3D << SMESHOp::OpVolume
+               << SMESHOp::OpMaxElementLength3D << SMESHOp::OpBareBorderVolume
+               << SMESHOp::OpOverConstrainedVolume << SMESHOp::OpEqualVolume;           // volume controls
+  QActionGroup* aCtrlGroup = new QActionGroup( application()->desktop() );
+  aCtrlGroup->setExclusive( true );
+  for( int i = 0; i < aCtrlActions.size(); i++ )
+    aCtrlGroup->addAction( action( aCtrlActions[i] ) );
+
   // ----- create menu --------------
   int fileId    = createMenu( tr( "MEN_FILE" ),    -1,  1 ),
       editId    = createMenu( tr( "MEN_EDIT" ),    -1,  3 ),
@@ -4030,6 +4051,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( SMESHOp::OpBareBorderVolume,      volumeId, -1 );
   createMenu( SMESHOp::OpOverConstrainedVolume, volumeId, -1 );
   createMenu( SMESHOp::OpEqualVolume,           volumeId, -1 );
+  createMenu( separator(),                      ctrlId,   -1 );
+  createMenu( SMESHOp::OpReset,                 ctrlId,   -1 );
   createMenu( separator(),                      ctrlId,   -1 );
   createMenu( SMESHOp::OpOverallMeshQuality,    ctrlId,   -1 );
 

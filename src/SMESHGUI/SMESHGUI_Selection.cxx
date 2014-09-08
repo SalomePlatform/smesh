@@ -80,8 +80,10 @@ void SMESHGUI_Selection::init( const QString& client, LightApp_SelectionMgr* mgr
       return;
     _PTR(Study) aStudy = aSStudy->studyDS();
 
-    for( int i=0, n=count(); i<n; i++ )
+    for( int i=0, n=count(); i<n; i++ ) {
       myTypes.append( typeName( type( entry( i ), aStudy ) ) );
+      myControls.append( controlMode( i ) );
+    }
   }
 }
 
@@ -122,7 +124,6 @@ QVariant SMESHGUI_Selection::parameter( const int ind, const QString& p ) const
   else if ( p=="labeledTypes" )         val = QVariant( labeledTypes( ind ) );
   else if ( p=="shrinkMode" )           val = QVariant( shrinkMode( ind ) );
   else if ( p=="entityMode" )           val = QVariant( entityMode( ind ) );
-  else if ( p=="controlMode" )          val = QVariant( controlMode( ind ) );
   else if ( p=="isNumFunctor" )         val = QVariant( isNumFunctor( ind ) );
   else if ( p=="displayMode" )          val = QVariant( displayMode( ind ) );
   else if ( p=="isComputable" )         val = QVariant( isComputable( ind ) );
@@ -141,6 +142,21 @@ QVariant SMESHGUI_Selection::parameter( const int ind, const QString& p ) const
     return val;
   else
     return LightApp_Selection::parameter( ind, p );
+}
+
+//=======================================================================
+//function : parameter
+//purpose  :
+//=======================================================================
+QVariant SMESHGUI_Selection::parameter( const QString& p ) const
+{
+  QVariant val;
+  if ( p=="controlMode" ) val = QVariant( controlMode() );
+
+  if ( val.isValid() )
+    return val;
+  else
+    return LightApp_Selection::parameter( p );
 }
 
 //=======================================================================
@@ -316,6 +332,23 @@ QString SMESHGUI_Selection::controlMode( int ind ) const
     }
   }
   return mode;
+}
+
+//=======================================================================
+//function : controlMode
+//purpose  : gets global control mode; return SMESH_Actor::eControl
+//=======================================================================
+QString SMESHGUI_Selection::controlMode() const
+{
+  if( myControls.count() > 0 ) {
+    QString mode = myControls[0];
+    for( int ind = 1; ind < myControls.count(); ind++ ) {
+      if( mode != myControls[ind] )
+        return "eNone";
+    }
+    return mode;
+  }
+  return "eNone";
 }
 
 bool SMESHGUI_Selection::isNumFunctor( int ind ) const
