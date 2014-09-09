@@ -3134,11 +3134,14 @@ bool RangeOfIds::SetRangeStr( const TCollection_AsciiString& theStr )
   myIds.Clear();
 
   TCollection_AsciiString aStr = theStr;
-  aStr.RemoveAll( ' ' );
-  aStr.RemoveAll( '\t' );
+  //aStr.RemoveAll( ' ' );
+  //aStr.RemoveAll( '\t' );
+  for ( int i = 1; i <= aStr.Length(); ++i )
+    if ( isspace( aStr.Value( i )))
+      aStr.SetValue( i, ',');
 
   for ( int aPos = aStr.Search( ",," ); aPos != -1; aPos = aStr.Search( ",," ) )
-    aStr.Remove( aPos, 2 );
+    aStr.Remove( aPos, 1 );
 
   TCollection_AsciiString tmpStr = aStr.Token( ",", 1 );
   int i = 1;

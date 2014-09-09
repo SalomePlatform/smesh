@@ -63,15 +63,15 @@ typedef std::list<TListOfInt> TListOfListOfInt;
 
 class SMESH_EXPORT SMESH_Mesh
 {
-public:
-  SMESH_Mesh(int               theLocalId, 
-             int               theStudyId, 
+ public:
+  SMESH_Mesh(int               theLocalId,
+             int               theStudyId,
              SMESH_Gen*        theGen,
              bool              theIsEmbeddedMode,
              SMESHDS_Document* theDocument);
-  
+
   virtual ~SMESH_Mesh();
-  
+
   /*!
    * \brief Set geometry to be meshed
    */

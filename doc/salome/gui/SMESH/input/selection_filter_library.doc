@@ -237,7 +237,7 @@ See also \ref filter_double_elements "Double Elements quality control".
 <b>Bad oriented volume</b> selects mesh volumes, which are incorrectly oriented from
 the point of view of MED convention.
 </li><li>
-<b>Over-constrained volumes</b> selects mesh volumes having only one border shared 
+<b>Over-constrained volumes</b> selects mesh volumes having only one facet shared 
 with other volumes.
 See also \ref over_constrained_volumes_page "Over-constrained volumes quality control".
 </li><li>
