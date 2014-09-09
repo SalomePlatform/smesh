@@ -161,7 +161,7 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
       for ( int i = 0; i < NB_ATTRIBUTES; ++i ) {
         QString aStr = atts.value( name[i] );
         if ( !aStr.isEmpty() ) {
-          aStr.remove( ' ' );
+          aStr = aStr.trimmed();
           attr[ i ] = aStr.split( ',', QString::SkipEmptyParts );
         }
       }
