@@ -1,17 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import math
 
-from geomsmesh import geompy
-
-from extractionOrientee import extractionOrientee
-from extractionOrienteeMulti import extractionOrienteeMulti
-from orderEdgesFromWire import orderEdgesFromWire
-from produitMixte import produitMixte
-from whichSide import whichSide
-from sortFaces import sortFaces
-from substractSubShapes import substractSubShapes
 from identifieElementsFissure import identifieElementsFissure
 from identifieElementsDebouchants import identifieElementsDebouchants
 from trouveEdgesFissPeau import trouveEdgesFissPeau
@@ -60,8 +50,8 @@ def identifieElementsGeometriquesPeau(ifil, partitionPeauFissFond, edgesPipeFiss
   
   (endsEdgeFond, facesPipePeau, edgeRadFacePipePeau,
    edgesCircPeau, verticesCircPeau, groupEdgesBordPeau,
-   bordsVifs, edgesFissurePeau) = identifieEdgesPeau(edgesFissExtPipe, verticesPipePeau, facePeau, facesPeauSorted,
-                                                     edgesPeauFondIn, fillingFaceExterne, aretesVivesC, aretesVivesCoupees)
+   bordsVifs, edgesFissurePeau, aretesVivesCoupees) = identifieEdgesPeau(edgesFissExtPipe, verticesPipePeau, facePeau, facesPeauSorted,
+                                                                         edgesPeauFondIn, fillingFaceExterne, aretesVivesC, aretesVivesCoupees)
   
   dataPPFF = dict(endsEdgeFond        = endsEdgeFond,        # pour chaque face [points edge fond de fissure aux débouchés du pipe]
                   facesPipePeau       = facesPipePeau,       # pour chaque face [face

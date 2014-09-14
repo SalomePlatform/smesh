@@ -134,4 +134,4 @@ def identifieEdgesPeau(edgesFissExtPipe,verticesPipePeau, facePeau, facesPeauSor
       
   return (endsEdgeFond, facesPipePeau, edgeRadFacePipePeau,
           edgesCircPeau, verticesCircPeau, groupEdgesBordPeau,
-          bordsVifs, edgesFissurePeau)
+          bordsVifs, edgesFissurePeau, aretesVivesCoupees)
