@@ -2148,9 +2148,9 @@ TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * theGen,
   if ( mainShape.IsSame( _subShape ))
     return _subShape;
 
-  const bool ignoreAuxiliaryHyps = false;
+  const bool skipAuxHyps = false;
   list<const SMESHDS_Hypothesis*> aUsedHyp =
-    theAlgo->GetUsedHypothesis( *_father, _subShape, ignoreAuxiliaryHyps ); // copy
+    theAlgo->GetUsedHypothesis( *_father, _subShape, skipAuxHyps ); // copy
 
   // put in a compound all shapes with the same hypothesis assigned
   // and a good ComputeState
@@ -2161,11 +2161,13 @@ TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * theGen,
 
   theSubs.clear();
 
-  TopExp_Explorer anExplorer( mainShape, _subShape.ShapeType() );
-  for ( ; anExplorer.More(); anExplorer.Next() )
+  SMESH_subMeshIteratorPtr smIt = _father->GetSubMesh( mainShape )->getDependsOnIterator(false);
+  while ( smIt->more() )
   {
-    const TopoDS_Shape& S = anExplorer.Current();
-    SMESH_subMesh* subMesh = _father->GetSubMesh( S );
+    SMESH_subMesh* subMesh = smIt->next();
+    const TopoDS_Shape&  S = subMesh->_subShape;
+    if ( S.ShapeType() != this->_subShape.ShapeType() )
+      continue;
     theSubs.push_back( subMesh );
     if ( subMesh == this )
     {
@@ -2173,12 +2175,14 @@ TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * theGen,
     }
     else if ( subMesh->GetComputeState() == READY_TO_COMPUTE )
     {
-      SMESH_Algo* anAlgo = theGen->GetAlgo( subMesh );
-      if (strcmp( anAlgo->GetName(), theAlgo->GetName()) == 0 && // same algo
-          anAlgo->GetUsedHypothesis( *_father, S, ignoreAuxiliaryHyps ) == aUsedHyp) // same hyps
+      SMESH_Algo* anAlgo = subMesh->GetAlgo();
+      if (( anAlgo->IsSameName( *theAlgo )) && // same algo
+          ( anAlgo->GetUsedHypothesis( *_father, S, skipAuxHyps ) == aUsedHyp )) // same hyps
+      {
         aBuilder.Add( aCompound, S );
-      if ( !subMesh->SubMeshesComputed() )
-        theSubComputed = false;
+        if ( !subMesh->SubMeshesComputed() )
+          theSubComputed = false;
+      }
     }
   }
 
