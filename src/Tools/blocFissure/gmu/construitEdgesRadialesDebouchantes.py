@@ -3,6 +3,7 @@
 import logging
 
 from geomsmesh import geompy
+import GEOM
 from sortEdges import sortEdges
 
 def construitEdgesRadialesDebouchantes(idisklim, idiskout, gptsdisks, raydisks,
@@ -48,6 +49,9 @@ def construitEdgesRadialesDebouchantes(idisklim, idiskout, gptsdisks, raydisks,
   for i, nappes in enumerate(listNappes):
     if facesDebouchantes[i]:
       for k, face in enumerate(facesPipePeau):
+        #logging.debug('i, k, face, nappes[0] %s %s %s %s', i, k, face, nappes[0])
+        #geompy.addToStudy(nappes[0], 'lanappe')
+        #geompy.addToStudy(face, 'laface')
         edge = geompy.MakeSection(face, nappes[0])
         if geompy.NbShapes(edge, geompy.ShapeType["EDGE"]) > 0:
           idFacesDebouchantes[i] = k

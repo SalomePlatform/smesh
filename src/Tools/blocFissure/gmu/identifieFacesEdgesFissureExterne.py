@@ -13,7 +13,7 @@ def identifieFacesEdgesFissureExterne(fsFissuExt, edFisExtPe, edFisExtPi, edgesP
   facesFissExt = []
   edgesFissExtPeau = []
   edgesFissExtPipe = []
-  for ifil in len(fsFissuExt): # TODO: éliminer les doublons (comparer tous les vertices triés, avec mesure de distance ?)
+  for ifil in range(len(fsFissuExt)): # TODO: éliminer les doublons (comparer tous les vertices triés, avec mesure de distance ?)
     facesFissExt += fsFissuExt[ifil]
     edgesFissExtPeau += edFisExtPe[ifil]
     edgesFissExtPipe += edFisExtPi[ifil]

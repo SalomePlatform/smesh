@@ -4,6 +4,7 @@ import logging
 
 from geomsmesh import geompy
 from geomsmesh import smesh
+import SMESH
 
 from putName import putName
   
@@ -30,6 +31,7 @@ def mailleAretesEtJonction(internalBoundary, aretesVivesCoupees, dmoyen):
 
   # --- maillage des éventuelles arêtes vives entre faces reconstruites
   
+  grpAretesVives = None
   if len(aretesVivesCoupees) > 0:
     aretesVivesC = geompy.MakeCompound(aretesVivesCoupees)
     meshAretesVives = smesh.Mesh(aretesVivesC)

@@ -54,7 +54,7 @@ def identifieElementsGeometriquesPeau(ifil, partitionPeauFissFond, edgesPipeFiss
                                                                          edgesPeauFondIn, fillingFaceExterne, aretesVivesC, aretesVivesCoupees)
   
   dataPPFF = dict(endsEdgeFond        = endsEdgeFond,        # pour chaque face [points edge fond de fissure aux débouchés du pipe]
-                  facesPipePeau       = facesPipePeau,       # pour chaque face [face
+                  facesPipePeau       = facesPipePeau,       # pour chaque face [faces du pipe débouchantes]
                   edgeRadFacePipePeau = edgeRadFacePipePeau, # pour chaque face [edge radiale des faces du pipe débouchantes ]
                   facesFissExt        = facesFissExt,        # pour chaque face [faces de fissure externes au pipe]
                   edgesFissExtPeau    = edgesFissExtPeau,    # pour chaque face [edge en peau des faces de fissure externes (pas subshape facePeau)]

@@ -5,6 +5,7 @@ import logging
 from geomsmesh import geompy
 from geomsmesh import smesh
 from salome.smesh import smeshBuilder
+import SMESH
 
 from putName import putName
   

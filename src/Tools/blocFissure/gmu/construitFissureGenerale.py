@@ -154,8 +154,8 @@ def construitFissureGenerale(maillagesSains,
   nbFacesFilling = len(partitionsPeauFissFond)
   
   ptEdgeFond = [ []  for i in range(nbFacesFilling)] # pour chaque face [points edge fond de fissure aux débouchés du pipe]
-  facesPipePeau = [ []  for i in range(nbFacesFilling)] # pour chaque face [faces du pipe débouchantes]
-  edgeRadFacePipePeau = [ []  for i in range(nbFacesFilling)] # pour chaque face [edge radiale des faces du pipe débouchantes ]
+  fsPipePeau = [ []  for i in range(nbFacesFilling)] # pour chaque face [faces du pipe débouchantes]
+  edRadFPiPo = [ []  for i in range(nbFacesFilling)] # pour chaque face [edge radiale des faces du pipe débouchantes ]
   fsFissuExt = [ []  for i in range(nbFacesFilling)] # pour chaque face [faces de fissure externes au pipe]
   edFisExtPe = [ []  for i in range(nbFacesFilling)] # pour chaque face [edge en peau des faces de fissure externes (pas subshape facePeau)]
   edFisExtPi = [ []  for i in range(nbFacesFilling)] # pour chaque face [edge commun au pipe des faces de fissure externes]
@@ -174,8 +174,8 @@ def construitFissureGenerale(maillagesSains,
                                                                       facesDefaut, centreFondFiss, rayonPipe,
                                                                       aretesVivesCoupees)      
       ptEdgeFond[ifil] = dataPPFF['endsEdgeFond']
-      facesPipePeau[ifil] = dataPPFF['facesPipePeau']
-      edgeRadFacePipePeau[ifil] = dataPPFF['edgeRadFacePipePeau']
+      fsPipePeau[ifil] = dataPPFF['facesPipePeau']
+      edRadFPiPo[ifil] = dataPPFF['edgeRadFacePipePeau']
       fsFissuExt[ifil] = dataPPFF['facesFissExt']
       edFisExtPe[ifil] = dataPPFF['edgesFissExtPeau']
       edFisExtPi[ifil] = dataPPFF['edgesFissExtPipe']
@@ -187,6 +187,11 @@ def construitFissureGenerale(maillagesSains,
       edFissPeau[ifil] = dataPPFF['edgesFissurePeau']
       ptFisExtPi[ifil] = dataPPFF['verticesPipePeau']
 
+  facesPipePeau = []
+  edgeRadFacePipePeau = []
+  for ifil in range(nbFacesFilling):
+    facesPipePeau += fsPipePeau[ifil]
+    edgeRadFacePipePeau += edRadFPiPo[ifil]
   
   for i, avc in enumerate(aretesVivesCoupees):
     name = "areteViveCoupee%d"%i
