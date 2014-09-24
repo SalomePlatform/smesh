@@ -101,7 +101,7 @@ namespace VISCOUS_3D
   const double theSmoothThickToElemSizeRatio = 0.3;
 
   // what part of thickness is allowed till intersection
-  // defined by SALOME_TESTS/Grids/smesh/viscous_layers_00/A5
+  // (defined by SALOME_TESTS/Grids/smesh/viscous_layers_00/A5)
   const double theThickToIntersection = 1.5;
 
   bool needSmoothing( double cosin, double tgtThick, double elemSize )

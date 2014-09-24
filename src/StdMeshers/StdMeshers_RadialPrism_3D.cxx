@@ -239,7 +239,7 @@ bool StdMeshers_RadialPrism_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& a
     }
 
     // Find matching nodes of in and out faces
-    TNodeNodeMap nodeIn2OutMap;
+    ProjectionUtils::TNodeNodeMap nodeIn2OutMap;
     if ( ! ProjectionUtils::FindMatchingNodesOnFaces( inFace, &aMesh, outFace, &aMesh,
                                                       shape2ShapeMap, nodeIn2OutMap ))
       return error(COMPERR_BAD_INPUT_MESH,SMESH_Comment("Mesh on faces #")

@@ -66,6 +66,7 @@
 #include <TopoDS_Shape.hxx>
 #include <gp_Pnt.hxx>
 #include <gp_Vec.hxx>
+#include <math_Gauss.hxx>
 
 #include <numeric>
 #include <limits>
@@ -98,7 +99,7 @@ namespace HERE = StdMeshers_ProjectionUtils;
 
 namespace {
 
-  static SMESHDS_Mesh* theMeshDS[2] = { 0, 0 }; // used to debug only
+  static SMESHDS_Mesh* theMeshDS[2] = { 0, 0 }; // used for debug only
   long shapeIndex(const TopoDS_Shape& S)
   {
     if ( theMeshDS[0] && theMeshDS[1] )
@@ -2400,5 +2401,231 @@ void StdMeshers_ProjectionUtils::SetEventListener(SMESH_subMesh* subMesh,
         }
       }
     }
+  }
+}
+
+namespace StdMeshers_ProjectionUtils
+{
+
+  //================================================================================
+  /*!
+   * \brief Computes transformation beween two sets of 2D points using
+   *        a least square approximation
+   *
+   * See "Surface Mesh Projection For Hexahedral Mesh Generation By Sweeping"
+   * by X.Roca, J.Sarrate, A.Huerta. (2.2)
+   */
+  //================================================================================
+
+  bool TrsfFinder2D::Solve( const vector< gp_XY >& srcPnts,
+                            const vector< gp_XY >& tgtPnts )
+  {
+    // find gravity centers
+    gp_XY srcGC( 0,0 ), tgtGC( 0,0 );
+    for ( size_t i = 0; i < srcPnts.size(); ++i )
+    {
+      srcGC += srcPnts[i];
+      tgtGC += tgtPnts[i];
+    }
+    srcGC /= srcPnts.size();
+    tgtGC /= tgtPnts.size();
+
+    // find trsf
+
+    math_Matrix mat (1,4,1,4, 0.);
+    math_Vector vec (1,4, 0.);
+
+    // cout << "m1 = smesh.Mesh('src')" << endl
+    //      << "m2 = smesh.Mesh('tgt')" << endl;
+    double xx = 0, xy = 0, yy = 0;
+    for ( size_t i = 0; i < srcPnts.size(); ++i )
+    {
+      gp_XY srcUV = srcPnts[i] - srcGC;
+      gp_XY tgtUV = tgtPnts[i] - tgtGC;
+      xx += srcUV.X() * srcUV.X();
+      yy += srcUV.Y() * srcUV.Y();
+      xy += srcUV.X() * srcUV.Y();
+      vec( 1 ) += srcUV.X() * tgtUV.X();
+      vec( 2 ) += srcUV.Y() * tgtUV.X();
+      vec( 3 ) += srcUV.X() * tgtUV.Y();
+      vec( 4 ) += srcUV.Y() * tgtUV.Y();
+      // cout << "m1.AddNode( " << srcUV.X() << ", " << srcUV.Y() << ", 0 )" << endl
+      //      << "m2.AddNode( " << tgtUV.X() << ", " << tgtUV.Y() << ", 0 )" << endl;
+    }
+    mat( 1,1 ) = mat( 3,3 ) = xx;
+    mat( 2,2 ) = mat( 4,4 ) = yy;
+    mat( 1,2 ) = mat( 2,1 ) = mat( 3,4 ) = mat( 4,3 ) = xy;
+
+    math_Gauss solver( mat );
+    if ( !solver.IsDone() )
+      return false;
+    solver.Solve( vec );
+    if ( vec.Norm2() < gp::Resolution() )
+      return false;
+    // cout << vec( 1 ) << "\t " << vec( 2 ) << endl
+    //      << vec( 3 ) << "\t " << vec( 4 ) << endl;
+
+    _trsf.SetTranslation( tgtGC );
+    _srcOrig = srcGC;
+
+    gp_Mat2d& M = const_cast< gp_Mat2d& >( _trsf.HVectorialPart());
+    M( 1,1 ) = vec( 1 );
+    M( 2,1 ) = vec( 2 );
+    M( 1,2 ) = vec( 3 );
+    M( 2,2 ) = vec( 4 );
+
+    return true;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Transforms a 2D points using a found transformation
+   */
+  //================================================================================
+
+  gp_XY TrsfFinder2D::Transform( const gp_Pnt2d& srcUV ) const
+  {
+    gp_XY uv = srcUV.XY() - _srcOrig ;
+    _trsf.Transforms( uv );
+    return uv;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Computes transformation beween two sets of 3D points using
+   *        a least square approximation
+   *
+   * See "Surface Mesh Projection For Hexahedral Mesh Generation By Sweeping"
+   * by X.Roca, J.Sarrate, A.Huerta. (2.4)
+   */
+  //================================================================================
+
+  bool TrsfFinder3D::Solve( const vector< gp_XYZ > & srcPnts,
+                            const vector< gp_XYZ > & tgtPnts )
+  {
+    // find gravity center
+    gp_XYZ srcGC( 0,0,0 ), tgtGC( 0,0,0 );
+    for ( size_t i = 0; i < srcPnts.size(); ++i )
+    {
+      srcGC += srcPnts[i];
+      tgtGC += tgtPnts[i];
+    }
+    srcGC /= srcPnts.size();
+    tgtGC /= tgtPnts.size();
+
+    gp_XYZ srcOrig = 2 * srcGC - tgtGC;
+    gp_XYZ tgtOrig = srcGC;
+
+    // find trsf
+
+    math_Matrix mat (1,9,1,9, 0.);
+    math_Vector vec (1,9, 0.);
+
+    double xx = 0, yy = 0, zz = 0;
+    double xy = 0, xz = 0, yz = 0;
+    for ( size_t i = 0; i < srcPnts.size(); ++i )
+    {
+      gp_XYZ src = srcPnts[i] - srcOrig;
+      gp_XYZ tgt = tgtPnts[i] - tgtOrig;
+      xx += src.X() * src.X();
+      yy += src.Y() * src.Y();
+      zz += src.Z() * src.Z();
+      xy += src.X() * src.Y();
+      xz += src.X() * src.Z();
+      yz += src.Y() * src.Z();
+      vec( 1 ) += src.X() * tgt.X();
+      vec( 2 ) += src.Y() * tgt.X();
+      vec( 3 ) += src.Z() * tgt.X();
+      vec( 4 ) += src.X() * tgt.Y();
+      vec( 5 ) += src.Y() * tgt.Y();
+      vec( 6 ) += src.Z() * tgt.Y();
+      vec( 7 ) += src.X() * tgt.Z();
+      vec( 8 ) += src.Y() * tgt.Z();
+      vec( 9 ) += src.Z() * tgt.Z();
+    }
+    mat( 1,1 ) = mat( 4,4 ) = mat( 7,7 ) = xx;
+    mat( 2,2 ) = mat( 5,5 ) = mat( 8,8 ) = yy;
+    mat( 3,3 ) = mat( 6,6 ) = mat( 9,9 ) = zz;
+    mat( 1,2 ) = mat( 2,1 ) = mat( 4,5 ) = mat( 5,4 ) = mat( 7,8 ) = mat( 8,7 ) = xy;
+    mat( 1,3 ) = mat( 3,1 ) = mat( 4,6 ) = mat( 6,4 ) = mat( 7,9 ) = mat( 9,7 ) = xz;
+    mat( 2,3 ) = mat( 3,2 ) = mat( 5,6 ) = mat( 6,5 ) = mat( 8,9 ) = mat( 9,8 ) = yz;
+
+    math_Gauss solver( mat );
+    if ( !solver.IsDone() )
+      return false;
+    solver.Solve( vec );
+    if ( vec.Norm2() < gp::Resolution() )
+      return false;
+    // cout << endl
+    //      << vec( 1 ) << "\t " << vec( 2 ) << "\t " << vec( 3 ) << endl
+    //      << vec( 4 ) << "\t " << vec( 5 ) << "\t " << vec( 6 ) << endl
+    //      << vec( 7 ) << "\t " << vec( 8 ) << "\t " << vec( 9 ) << endl;
+
+    _srcOrig = srcOrig;
+    _trsf.SetTranslation( tgtOrig );
+
+    gp_Mat& M = const_cast< gp_Mat& >( _trsf.HVectorialPart() );
+    M.SetRows( gp_XYZ( vec( 1 ), vec( 2 ), vec( 3 )),
+               gp_XYZ( vec( 4 ), vec( 5 ), vec( 6 )),
+               gp_XYZ( vec( 7 ), vec( 8 ), vec( 9 )));
+    return true;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Transforms a 3D point using a found transformation
+   */
+  //================================================================================
+
+  gp_XYZ TrsfFinder3D::Transform( const gp_Pnt& srcP ) const
+  {
+    gp_XYZ p = srcP.XYZ() - _srcOrig;
+    _trsf.Transforms( p );
+    return p;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Transforms a 3D vector using a found transformation
+   */
+  //================================================================================
+
+  gp_XYZ TrsfFinder3D::TransformVec( const gp_Vec& v ) const
+  {
+    return v.XYZ().Multiplied( _trsf.HVectorialPart() );
+  }
+  //================================================================================
+  /*!
+   * \brief Inversion
+   */
+  //================================================================================
+
+  bool TrsfFinder3D::Invert()
+  {
+    if (( _trsf.Form() == gp_Translation ) &&
+        ( _srcOrig.X() != 0 || _srcOrig.Y() != 0 || _srcOrig.Z() != 0 ))
+    {
+      // seems to be defined via Solve()
+      gp_XYZ newSrcOrig = _trsf.TranslationPart();
+      gp_Mat& M = const_cast< gp_Mat& >( _trsf.HVectorialPart() );
+      const double D = M.Determinant();
+      if ( D < 1e-3 * ( newSrcOrig - _srcOrig ).Modulus() )
+      {
+#ifdef _DEBUG_
+        cerr << "TrsfFinder3D::Invert()"
+             << "D " << M.Determinant() << " IsSingular " << M.IsSingular() << endl;
+#endif
+        return false;
+      }
+      gp_Mat Minv = M.Inverted();
+      _trsf.SetTranslation( _srcOrig );
+      _srcOrig = newSrcOrig;
+      M = Minv;
+    }
+    else
+    {
+      _trsf.Invert();
+    }
+    return true;
   }
 }

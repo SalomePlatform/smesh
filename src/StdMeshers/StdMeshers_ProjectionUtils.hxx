@@ -30,10 +30,14 @@
 
 #include "SMESH_StdMeshers.hxx"
 
+#include "SMDS_MeshElement.hxx"
+
 #include <TopTools_DataMapOfShapeShape.hxx>
 #include <TopoDS_Edge.hxx>
-#include <TopoDS_Vertex.hxx>
 #include <TopoDS_Face.hxx>
+#include <TopoDS_Vertex.hxx>
+#include <gp_Trsf.hxx>
+#include <gp_Trsf2d.hxx>
 
 #include <list>
 #include <map>
@@ -77,7 +81,54 @@ namespace StdMeshers_ProjectionUtils
 {
   typedef StdMeshers_ShapeShapeBiDirectionMap                  TShapeShapeMap;
   typedef TopTools_IndexedDataMapOfShapeListOfShape            TAncestorMap;
-  typedef std::map<const SMDS_MeshNode*, const SMDS_MeshNode*> TNodeNodeMap;
+  typedef std::map<const SMDS_MeshNode*, const SMDS_MeshNode*,
+                   TIDCompare>                                 TNodeNodeMap;
+
+
+  /*!
+   * \brief Finds transformation beween two sets of 2D points using
+   *        a least square approximation
+   */
+  class TrsfFinder2D
+  {
+    gp_Trsf2d _trsf;
+    gp_XY     _srcOrig;
+  public:
+    TrsfFinder2D(): _srcOrig(0,0) {}
+
+    void Set( const gp_Trsf2d& t ) { _trsf = t; } // it's an alternative to Solve()
+
+    bool Solve( const std::vector< gp_XY >& srcPnts,
+                const std::vector< gp_XY >& tgtPnts );
+
+    gp_XY Transform( const gp_Pnt2d& srcUV ) const;
+
+    bool IsIdentity() const { return ( _trsf.Form() == gp_Identity ); }
+  };
+  /*!
+   * \brief Finds transformation beween two sets of 3D points using
+   *        a least square approximation
+   */
+  class TrsfFinder3D
+  {
+    gp_Trsf _trsf;
+    gp_XYZ  _srcOrig;
+  public:
+    TrsfFinder3D(): _srcOrig(0,0,0) {}
+
+    void Set( const gp_Trsf& t ) { _trsf = t; } // it's an alternative to Solve()
+
+    bool Solve( const std::vector< gp_XYZ > & srcPnts,
+                const std::vector< gp_XYZ > & tgtPnts );
+
+    gp_XYZ Transform( const gp_Pnt& srcP ) const;
+
+    gp_XYZ TransformVec( const gp_Vec& v ) const;
+
+    bool IsIdentity() const { return ( _trsf.Form() == gp_Identity ); }
+
+    bool Invert();
+  };
 
   /*!
    * \brief Looks for association of all sub-shapes of two shapes
