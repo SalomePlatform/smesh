@@ -196,7 +196,7 @@ namespace {
    */
   //================================================================================
 
-  bool isOldNode( const SMDS_MeshNode* node/*, const bool is1DComputed*/ )
+  bool isOldNode( const SMDS_MeshNode* node )
   {
     // old nodes are shared by edges and new ones are shared
     // only by faces created by mapper
@@ -404,23 +404,30 @@ namespace {
   //================================================================================
   /*!
    * \brief Compose TSideVector for both FACEs keeping matching order of EDGEs
+   *        and fill src2tgtNodes map
    */
   //================================================================================
 
-  bool getWires(const TopoDS_Face&                 tgtFace,
-                const TopoDS_Face&                 srcFace,
-                SMESH_Mesh *                       tgtMesh,
-                SMESH_Mesh *                       srcMesh,
-                const TAssocTool::TShapeShapeMap&  shape2ShapeMap,
-                TSideVector&                       srcWires,
-                TSideVector&                       tgtWires,
-                const bool                         is1DComputed)
+  TError getWires(const TopoDS_Face&                 tgtFace,
+                  const TopoDS_Face&                 srcFace,
+                  SMESH_Mesh *                       tgtMesh,
+                  SMESH_Mesh *                       srcMesh,
+                  const TAssocTool::TShapeShapeMap&  shape2ShapeMap,
+                  TSideVector&                       srcWires,
+                  TSideVector&                       tgtWires,
+                  TAssocTool::TNodeNodeMap&          src2tgtNodes,
+                  bool&                              is1DComputed)
   {
+    SMESHDS_Mesh* tgtMeshDS = tgtMesh->GetMeshDS();
+    SMESHDS_Mesh* srcMeshDS = srcMesh->GetMeshDS();
+
+    src2tgtNodes.clear();
+
     // get ordered src EDGEs
     TError err;
     srcWires = StdMeshers_FaceSide::GetFaceWires( srcFace, *srcMesh,/*skipMediumNodes=*/0, err);
     if ( err && !err->IsOK() )
-      return false;
+      return err;
 
     // make corresponding sequence of tgt EDGEs
     tgtWires.resize( srcWires.size() );
@@ -431,13 +438,14 @@ namespace {
       TopTools_IndexedMapOfShape edgeMap; // to detect seam edges
       for ( int iE = 0; iE < srcWire->NbEdges(); ++iE )
       {
-        TopoDS_Edge E = TopoDS::Edge( shape2ShapeMap( srcWire->Edge( iE ), /*isSrc=*/true));
+        TopoDS_Edge srcE = srcWire->Edge( iE );
+        TopoDS_Edge tgtE = TopoDS::Edge( shape2ShapeMap( srcE, /*isSrc=*/true));
         // reverse a seam edge encountered for the second time
-        const int index = edgeMap.Add( E );
+        const int index = edgeMap.Add( tgtE );
         if ( index < edgeMap.Extent() ) // E is a seam
         {
           // check which of edges to reverse, E or one already being in tgtEdges
-          if ( are2dConnected( tgtEdges.back(), E, tgtFace ))
+          if ( are2dConnected( tgtEdges.back(), tgtE, tgtFace ))
           {
             list< TopoDS_Edge >::iterator eIt = tgtEdges.begin();
             std::advance( eIt, index-1 );
@@ -445,30 +453,70 @@ namespace {
           }
           else
           {
-            E.Reverse();
+            tgtE.Reverse();
           }
         }
         if ( srcWire->NbEdges() == 1 && tgtMesh == srcMesh ) // circle
         {
           // try to verify ori by propagation
-          pair<int,TopoDS_Edge> nE = StdMeshers_ProjectionUtils::GetPropagationEdge
-            ( srcMesh, E, srcWire->Edge( iE ));
+          pair<int,TopoDS_Edge> nE =
+            StdMeshers_ProjectionUtils::GetPropagationEdge( srcMesh, tgtE, srcE );
           if ( !nE.second.IsNull() )
-            E = nE.second;
+            tgtE = nE.second;
         }
-        tgtEdges.push_back( E );
-      }
+        tgtEdges.push_back( tgtE );
+
+
+        // Fill map of src to tgt nodes with nodes on edges
+
+        if ( srcMesh->GetSubMesh( srcE )->IsEmpty() ||
+             tgtMesh->GetSubMesh( tgtE )->IsEmpty() )
+        {
+          // add nodes on VERTEXes for a case of not meshes EDGEs
+          const TopoDS_Shape&  srcV = SMESH_MesherHelper::IthVertex( 0, srcE );
+          const TopoDS_Shape&  tgtV = shape2ShapeMap( srcV, /*isSrc=*/true );
+          const SMDS_MeshNode* srcN = SMESH_Algo::VertexNode( TopoDS::Vertex( srcV ), srcMeshDS );
+          const SMDS_MeshNode* tgtN = SMESH_Algo::VertexNode( TopoDS::Vertex( tgtV ), tgtMeshDS );
+          if ( srcN && tgtN )
+            src2tgtNodes.insert( make_pair( srcN, tgtN ));
+        }
+        else
+        {
+          map< double, const SMDS_MeshNode* > srcNodes, tgtNodes;
+          if (( ! SMESH_Algo::GetSortedNodesOnEdge( srcMeshDS, TopoDS::Edge( srcE ),
+                                                    /*ignoreMediumNodes = */true,
+                                                    srcNodes ))
+              ||
+              ( ! SMESH_Algo::GetSortedNodesOnEdge( tgtMeshDS, TopoDS::Edge( tgtE ),
+                                                    /*ignoreMediumNodes = */true,
+                                                    tgtNodes ))
+              )
+            return SMESH_ComputeError::New( COMPERR_BAD_INPUT_MESH,
+                                            "Invalid node parameters on edges");
+
+          if (( srcNodes.size() != tgtNodes.size() ) && tgtNodes.size() > 0 )
+            return SMESH_ComputeError::New( COMPERR_BAD_INPUT_MESH,
+                                            "Different number of nodes on edges");
+          if ( !tgtNodes.empty() )
+          {
+            map< double, const SMDS_MeshNode* >::iterator u_tn = tgtNodes.begin();
+            map< double, const SMDS_MeshNode* >::iterator u_sn = srcNodes.begin();
+            for ( ; u_tn != tgtNodes.end(); ++u_tn, ++u_sn)
+              src2tgtNodes.insert( make_pair( u_sn->second, u_tn->second ));
+
+            is1DComputed = true;
+          }
+        }
+      } // loop on EDGEs of a WIRE
+
       tgtWires[ iW ].reset( new StdMeshers_FaceSide( tgtFace, tgtEdges, tgtMesh,
                                                      /*theIsForward = */ true,
                                                      /*theIgnoreMediumNodes = */false));
-      if ( is1DComputed &&
-           srcWires[iW]->GetUVPtStruct().size() !=
-           tgtWires[iW]->GetUVPtStruct().size())
-        return false;
-    }
-    return true;
+    } // loop on WIREs
+
+    return TError();
   }
-                             
+
   //================================================================================
   /*!
    * \brief Preform projection in case if tgtFace.IsPartner( srcFace ) and in case
@@ -481,7 +529,8 @@ namespace {
                       const TSideVector&                 tgtWires,
                       const TSideVector&                 srcWires,
                       const TAssocTool::TShapeShapeMap&  shape2ShapeMap,
-                      TAssocTool::TNodeNodeMap&          src2tgtNodes)
+                      TAssocTool::TNodeNodeMap&          src2tgtNodes,
+                      const bool                         is1DComputed)
   {
     SMESH_Mesh *    tgtMesh = tgtWires[0]->GetMesh();
     SMESH_Mesh *    srcMesh = srcWires[0]->GetMesh();
@@ -561,61 +610,6 @@ namespace {
         return false;
     }
 
-    // Fill map of src to tgt nodes with nodes on edges
-
-    src2tgtNodes.clear();
-    TAssocTool::TNodeNodeMap::iterator srcN_tgtN;
-
-    bool tgtEdgesMeshed = false;
-    for ( TopExp_Explorer srcExp( srcFace, TopAbs_EDGE); srcExp.More(); srcExp.Next() )
-    {
-      const TopoDS_Shape& srcEdge = srcExp.Current();
-      const TopoDS_Shape& tgtEdge = shape2ShapeMap( srcEdge, /*isSrc=*/true );
-      tgtEdgesMeshed != tgtMesh->GetSubMesh( tgtEdge )->IsEmpty();
-
-      if ( srcMesh->GetSubMesh( srcEdge )->IsEmpty() ||
-           tgtMesh->GetSubMesh( tgtEdge )->IsEmpty() )
-        continue;
-
-      map< double, const SMDS_MeshNode* > srcNodes, tgtNodes;
-      if (( ! SMESH_Algo::GetSortedNodesOnEdge( srcMeshDS,
-                                                TopoDS::Edge( srcEdge ),
-                                                /*ignoreMediumNodes = */true,
-                                                srcNodes ))
-           ||
-          ( ! SMESH_Algo::GetSortedNodesOnEdge( tgtMeshDS,
-                                                TopoDS::Edge( tgtEdge ),
-                                                /*ignoreMediumNodes = */true,
-                                                tgtNodes ))
-           ||
-          (( srcNodes.size() != tgtNodes.size() ) && tgtNodes.size() > 0 )
-          )
-        return false;
-
-      if ( !tgtNodes.empty() )
-      {
-        map< double, const SMDS_MeshNode* >::iterator u_tn = tgtNodes.begin();
-        map< double, const SMDS_MeshNode* >::iterator u_sn = srcNodes.begin();
-        for ( ; u_tn != tgtNodes.end(); ++u_tn, ++u_sn)
-          src2tgtNodes.insert( make_pair( u_sn->second, u_tn->second ));
-      }
-    }
-    // check nodes on VERTEXes for a case of not meshes EDGEs
-    for ( TopExp_Explorer srcExp( srcFace, TopAbs_VERTEX); srcExp.More(); srcExp.Next() )
-    {
-      const TopoDS_Shape&  srcV = srcExp.Current();
-      const TopoDS_Shape&  tgtV = shape2ShapeMap( srcV, /*isSrc=*/true );
-      const SMDS_MeshNode* srcN = SMESH_Algo::VertexNode( TopoDS::Vertex( srcV ), srcMeshDS );
-      const SMDS_MeshNode* tgtN = SMESH_Algo::VertexNode( TopoDS::Vertex( tgtV ), tgtMeshDS );
-      if ( !srcN )
-        continue;
-      if ( !tgtN || tgtV.ShapeType() != TopAbs_VERTEX )
-        return false;
-
-      src2tgtNodes.insert( make_pair( srcN, tgtN ));
-    }
-
-
     // Make new faces
 
     // prepare the helper to adding quadratic elements if necessary
@@ -623,13 +617,14 @@ namespace {
     helper.IsQuadraticSubMesh( tgtFace );
 
     SMESHDS_SubMesh* srcSubDS = srcMeshDS->MeshElements( srcFace );
-    if ( !tgtEdgesMeshed && srcSubDS->NbElements() )
+    if ( !is1DComputed && srcSubDS->NbElements() )
       helper.SetIsQuadratic( srcSubDS->GetElements()->next()->IsQuadratic() );
 
     SMESH_MesherHelper srcHelper( *srcMesh );
     srcHelper.SetSubShape( srcFace );
 
     const SMDS_MeshNode* nullNode = 0;
+    TAssocTool::TNodeNodeMap::iterator srcN_tgtN;
 
     // indices of nodes to create properly oriented faces
     bool isReverse = ( !trsf.IsIdentity() );
@@ -747,8 +742,8 @@ namespace {
                              const TSideVector&                 tgtWires,
                              const TSideVector&                 srcWires,
                              const TAssocTool::TShapeShapeMap&  shape2ShapeMap,
-                             const bool                         is1DComputed,
-                             TAssocTool::TNodeNodeMap&          src2tgtNodes)
+                             TAssocTool::TNodeNodeMap&          src2tgtNodes,
+                             const bool                         is1DComputed)
   {
     SMESH_Mesh * tgtMesh = tgtWires[0]->GetMesh();
     SMESH_Mesh * srcMesh = srcWires[0]->GetMesh();
@@ -831,33 +826,6 @@ namespace {
 
     // 2) Projection
 
-    src2tgtNodes.clear();
-    TAssocTool::TNodeNodeMap::iterator srcN_tgtN;
-
-    // fill src2tgtNodes in with nodes on EDGEs
-    for ( size_t iW = 0; iW < srcWires.size(); ++iW )
-      if ( is1DComputed )
-      {
-        const vector<UVPtStruct>& srcUVs = srcWires[iW]->GetUVPtStruct();
-        const vector<UVPtStruct>& tgtUVs = tgtWires[iW]->GetUVPtStruct();
-        for ( size_t i = 0; i < srcUVs.size(); ++i )
-          src2tgtNodes.insert( make_pair( srcUVs[i].node, tgtUVs[i].node ));
-      }
-      else
-      {
-        for ( int iE = 0; iE < srcWires[iW]->NbEdges(); ++iE )
-        {
-          TopoDS_Vertex srcV = srcWires[iW]->FirstVertex(iE);
-          TopoDS_Vertex tgtV = tgtWires[iW]->FirstVertex(iE);
-          const SMDS_MeshNode* srcNode = SMESH_Algo::VertexNode( srcV, srcMesh->GetMeshDS() );
-          const SMDS_MeshNode* tgtNode = SMESH_Algo::VertexNode( tgtV, tgtMesh->GetMeshDS() );
-          if ( tgtNode && srcNode )
-            src2tgtNodes.insert( make_pair( srcNode, tgtNode ));
-        }
-      }
-
-    // make elements
-
     SMESHDS_SubMesh* srcSubDS = srcMesh->GetMeshDS()->MeshElements( srcFace );
 
     SMESH_MesherHelper helper( *tgtMesh );
@@ -874,6 +842,7 @@ namespace {
     srcHelper.SetSubShape( srcFace );
 
     const SMDS_MeshNode* nullNode = 0;
+    TAssocTool::TNodeNodeMap::iterator srcN_tgtN;
 
     SMDS_ElemIteratorPtr elemIt = srcSubDS->GetElements();
     vector< const SMDS_MeshNode* > tgtNodes;
@@ -938,7 +907,8 @@ namespace {
    */
   //================================================================================
 
-  void fixDistortedFaces( SMESH_MesherHelper& helper )
+  void fixDistortedFaces( SMESH_MesherHelper& helper,
+                          TSideVector&        )
   {
     // Detect bad faces
 
@@ -995,17 +965,40 @@ namespace {
       for ( faceIt = smDS->GetElements(); faceIt->more(); )
         faces.insert( faces.end(), faceIt->next() );
 
+      // choose smoothing algo
+      //SMESH_MeshEditor:: SmoothMethod algo = SMESH_MeshEditor::CENTROIDAL;
+      bool isConcaveBoundary = false;
+      TError err;
+      TSideVector tgtWires =
+        StdMeshers_FaceSide::GetFaceWires( F, *helper.GetMesh(),/*skipMediumNodes=*/0, err);
+      for ( size_t iW = 0; iW < tgtWires.size() && !isConcaveBoundary; ++iW )
+      {
+        TopoDS_Edge prevEdge = tgtWires[iW]->Edge( tgtWires[iW]->NbEdges() - 1 );
+        for ( int iE = 0; iE < tgtWires[iW]->NbEdges() && !isConcaveBoundary; ++iE )
+        {
+          double angle = helper.GetAngle( prevEdge, tgtWires[iW]->Edge( iE ),
+                                          F,        tgtWires[iW]->FirstVertex( iE ));
+          isConcaveBoundary = ( angle < -5. * M_PI / 180. );
+
+          prevEdge = tgtWires[iW]->Edge( iE );
+        }
+      }
+      SMESH_MeshEditor:: SmoothMethod algo =
+        isConcaveBoundary ? SMESH_MeshEditor::CENTROIDAL : SMESH_MeshEditor::LAPLACIAN;
+
+      // smoothing
       set<const SMDS_MeshNode*> fixedNodes;
-      editor.Smooth( faces, fixedNodes, SMESH_MeshEditor::CENTROIDAL, 5 );
+      editor.Smooth( faces, fixedNodes, algo, /*nbIterations=*/ 10,
+                     /*theTgtAspectRatio=*/1.0, /*the2D=*/false);
     }
   }
-  
+
 } // namespace
 
 
 //=======================================================================
 //function : Compute
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theShape)
@@ -1072,22 +1065,13 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   // Projection
   // ===========
 
-  // find out if EDGEs are meshed or not
-  bool is1DComputed = false;
-  SMESH_subMeshIteratorPtr smIt = tgtSubMesh->getDependsOnIterator(/*includeSelf=*/false,
-                                                                   /*complexShapeFirst=*/true);
-  while ( smIt->more() && !is1DComputed )
-  {
-    SMESH_subMesh* sm = smIt->next();
-    if ( sm->GetSubShape().ShapeType() == TopAbs_EDGE )
-      is1DComputed = sm->IsMeshComputed();
-  }
-
   // get ordered src and tgt EDGEs
   TSideVector srcWires, tgtWires;
-  if ( !getWires( tgtFace, srcFace, tgtMesh, srcMesh,
-                  shape2ShapeMap, srcWires, tgtWires, is1DComputed ))
-    return false;
+  bool is1DComputed = false; // if any tgt EDGE is meshed
+  TError err = getWires( tgtFace, srcFace, tgtMesh, srcMesh,
+                         shape2ShapeMap, srcWires, tgtWires, _src2tgtNodes, is1DComputed );
+  if ( err && !err->IsOK() )
+    return error( err );
 
   bool done = false;
 
@@ -1095,13 +1079,13 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   {
     // try to project from the same face with different location
     done = projectPartner( tgtFace, srcFace, tgtWires, srcWires,
-                           shape2ShapeMap, _src2tgtNodes );
+                           shape2ShapeMap, _src2tgtNodes, is1DComputed );
   }
   if ( !done )
   {
     // projection in case if the faces are similar in 2D space
     done = projectBy2DSimilarity( tgtFace, srcFace, tgtWires, srcWires,
-                                  shape2ShapeMap, is1DComputed, _src2tgtNodes);
+                                  shape2ShapeMap, _src2tgtNodes, is1DComputed);
   }
 
   SMESH_MesherHelper helper( theMesh );
@@ -1213,7 +1197,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
     // -------------------------------------------------------------------------
     // mapper doesn't take care of nodes already existing on edges and vertices,
-    // so we must merge nodes created by it with existing ones 
+    // so we must merge nodes created by it with existing ones
     // -------------------------------------------------------------------------
 
     SMESH_MeshEditor::TListOfListOfNodes groupsOfNodes;
@@ -1221,7 +1205,8 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     // Make groups of nodes to merge
 
     // loop on EDGE and VERTEX sub-meshes of a target FACE
-    smIt = tgtSubMesh->getDependsOnIterator(/*includeSelf=*/false,/*complexShapeFirst=*/false);
+    SMESH_subMeshIteratorPtr smIt = tgtSubMesh->getDependsOnIterator(/*includeSelf=*/false,
+                                                                     /*complexShapeFirst=*/false);
     while ( smIt->more() )
     {
       SMESH_subMesh*     sm = smIt->next();
@@ -1229,7 +1214,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
       if ( !smDS || smDS->NbNodes() == 0 )
         continue;
       //if ( !is1DComputed && sm->GetSubShape().ShapeType() == TopAbs_EDGE )
-      //break;
+      //  break;
 
       if ( helper.IsDegenShape( sm->GetId() ) ) // to merge all nodes on degenerated
       {
@@ -1375,7 +1360,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     // boundary -- fix bad faces by smoothing
     // ----------------------------------------------------------------
 
-    fixDistortedFaces( helper );
+    fixDistortedFaces( helper, tgtWires );
 
     // ----------------------------------------------------------------
     // The mapper can't create quadratic elements, so convert if needed
