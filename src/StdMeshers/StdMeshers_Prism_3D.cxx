@@ -987,6 +987,7 @@ bool StdMeshers_Prism_3D::getWallFaces( Prism_3D::TPrismTopo & thePrism,
     // find wall FACEs adjacent to each of thePrism.myWallQuads by the top side EDGE
     if ( totalNbFaces - faceMap.Extent() > 2 )
     {
+      const int nbFoundWalls = faceMap.Extent();
       for ( size_t i = 0; i < thePrism.myWallQuads.size(); ++i )
       {
         StdMeshers_FaceSidePtr topSide = thePrism.myWallQuads[i].back()->side[ QUAD_TOP_SIDE ];
@@ -1013,6 +1014,9 @@ bool StdMeshers_Prism_3D::getWallFaces( Prism_3D::TPrismTopo & thePrism,
             }
           }
       }
+      if ( nbFoundWalls == faceMap.Extent() )
+        return toSM( error("Failed to find wall faces"));
+
     }
   } // while ( totalNbFaces - faceMap.Extent() > 2 )
 
