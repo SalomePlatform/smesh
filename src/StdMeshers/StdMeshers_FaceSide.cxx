@@ -43,6 +43,7 @@
 #include <BRep_Tool.hxx>
 #include <GCPnts_AbscissaPoint.hxx>
 #include <Geom2dAdaptor_Curve.hxx>
+#include <Geom_Line.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopoDS.hxx>
@@ -151,21 +152,26 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face&   theFace,
       myMissingVertexNodes = true;
 
     // check if the edge has a non-uniform parametrization (issue 0020705)
-    if ( !myC2d[i].IsNull() && myEdgeLength[i] > DBL_MIN)
+    if ( !myC2d[i].IsNull() )
     {
-      Geom2dAdaptor_Curve A2dC( myC2d[i],
-                                std::min( myFirst[i], myLast[i] ),
-                                std::max( myFirst[i], myLast[i] ));
-      double p2 = myFirst[i]+(myLast[i]-myFirst[i])/2., p4 = myFirst[i]+(myLast[i]-myFirst[i])/4.;
-      double d2 = GCPnts_AbscissaPoint::Length( A2dC, myFirst[i], p2 );
-      double d4 = GCPnts_AbscissaPoint::Length( A2dC, myFirst[i], p4 );
-      //cout<<"len = "<<len<<"  d2 = "<<d2<<"  fabs(2*d2/len-1.0) = "<<fabs(2*d2/len-1.0)<<endl;
-      myIsUniform[i] = !( fabs(2*d2/myEdgeLength[i]-1.0) > 0.01 || fabs(2*d4/d2-1.0) > 0.01 );
-      //if ( !myIsUniform[i] ) to implement Value3d(u)
+      if ( myEdgeLength[i] > DBL_MIN)
       {
-        double fp,lp;
-        Handle(Geom_Curve) C3d = BRep_Tool::Curve(myEdge[i],fp,lp);
-        myC3dAdaptor[i].Load( C3d, fp,lp );
+        Geom2dAdaptor_Curve A2dC( myC2d[i],
+                                  std::min( myFirst[i], myLast[i] ),
+                                  std::max( myFirst[i], myLast[i] ));
+        double p2 = myFirst[i]+(myLast[i]-myFirst[i])/2., p4 = myFirst[i]+(myLast[i]-myFirst[i])/4.;
+        double d2 = GCPnts_AbscissaPoint::Length( A2dC, myFirst[i], p2 );
+        double d4 = GCPnts_AbscissaPoint::Length( A2dC, myFirst[i], p4 );
+        //cout<<"len = "<<len<<"  d2 = "<<d2<<"  fabs(2*d2/len-1.0) = "<<fabs(2*d2/len-1.0)<<endl;
+        myIsUniform[i] = !( fabs(2*d2/myEdgeLength[i]-1.0) > 0.01 || fabs(2*d4/d2-1.0) > 0.01 );
+        Handle(Geom_Curve) C3d = BRep_Tool::Curve(myEdge[i],d2,d4);
+        myC3dAdaptor[i].Load( C3d, d2,d4 );
+      }
+      else
+      {
+        const TopoDS_Vertex& V = TopoDS::Vertex( vExp.Value() );
+        Handle(Geom_Curve) C3d = new Geom_Line( BRep_Tool::Pnt( V ), gp::DX() );
+        myC3dAdaptor[i].Load( C3d, 0, 0.5 * BRep_Tool::Tolerance( V ));
       }
     }
     // reverse a proxy submesh
@@ -988,7 +994,7 @@ gp_Pnt StdMeshers_FaceSide::Value3d(double U) const
   double     r = ( U - prevU )/ ( myNormPar[ i ] - prevU );
 
   double par = myFirst[i] * ( 1 - r ) + myLast[i] * r;
-    
+
   // check parametrization of curve
   if( !myIsUniform[i] )
   {

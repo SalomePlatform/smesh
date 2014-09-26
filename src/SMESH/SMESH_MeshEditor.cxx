@@ -10392,6 +10392,7 @@ namespace {
     }
     void Perform(const gp_Pnt& aPnt, double theTol)
     {
+      theTol *= theTol;
       _state = TopAbs_OUT;
       _extremum.Perform(aPnt);
       if ( _extremum.IsDone() )
