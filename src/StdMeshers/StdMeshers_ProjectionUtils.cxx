@@ -51,6 +51,7 @@
 #include <BRep_Builder.hxx>
 #include <BRep_Tool.hxx>
 #include <Bnd_Box.hxx>
+#include <Geom2d_Curve.hxx>
 #include <TopAbs.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
@@ -1452,8 +1453,10 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face&    face1,
         edge1End = edge1Beg;
         std::advance( edge1End, *nbE1 );
         // UV on face1 to find on face2
-        v0f1UV = BRep_Tool::Parameters( TopExp::FirstVertex(*edge1Beg,true), face1 );
-        v1f1UV = BRep_Tool::Parameters( TopExp::LastVertex (*edge1Beg,true), face1 );
+        TopoDS_Vertex v01 = SMESH_MesherHelper::IthVertex(0,*edge1Beg);
+        TopoDS_Vertex v11 = SMESH_MesherHelper::IthVertex(1,*edge1Beg);
+        v0f1UV = BRep_Tool::Parameters( v01, face1 );
+        v1f1UV = BRep_Tool::Parameters( v11, face1 );
         v0f1UV.ChangeCoord() += dUV;
         v1f1UV.ChangeCoord() += dUV;
         //
@@ -1478,9 +1481,30 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face&    face1,
                  sameVertexUV( *edge2Beg, face2, 0, v0f1UV, vTolUV ))
             {
               if ( iW1 == 0 ) OK = true; // OK is for the first wire
+
               // reverse edges2 if needed
-              if ( !sameVertexUV( *edge2Beg, face2, 1, v1f1UV, vTolUV ))
-                reverseEdges( edges2 , *nbE2, std::distance( edges2.begin(),edge2Beg ));
+              if ( SMESH_MesherHelper::IsClosedEdge( *edge1Beg ))
+              {
+                double f,l;
+                Handle(Geom2d_Curve) c1 = BRep_Tool::CurveOnSurface( *edge1Beg, face1,f,l );
+                if (  edge1Beg->Orientation() == TopAbs_REVERSED )
+                  std::swap( f,l );
+                gp_Pnt2d uv1 = dUV + c1->Value( f * 0.8 + l * 0.2 ).XY();
+
+                Handle(Geom2d_Curve) c2 = BRep_Tool::CurveOnSurface( *edge2Beg, face2,f,l );
+                if (  edge2Beg->Orientation() == TopAbs_REVERSED )
+                  std::swap( f,l );
+                gp_Pnt2d uv2 = c2->Value( f * 0.8 + l * 0.2 );
+
+                if ( uv1.Distance( uv2 ) > vTolUV )
+                  edge2Beg->Reverse();
+              }
+              else
+              {
+                if ( !sameVertexUV( *edge2Beg, face2, 1, v1f1UV, vTolUV ))
+                  reverseEdges( edges2 , *nbE2, std::distance( edges2.begin(),edge2Beg ));
+              }
+
               // put wire2 at a right place within edges2
               if ( iW1 != iW2 ) {
                 list< TopoDS_Edge >::iterator place2 = edges2.begin();

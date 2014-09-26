@@ -438,8 +438,11 @@ namespace {
       TopTools_IndexedMapOfShape edgeMap; // to detect seam edges
       for ( int iE = 0; iE < srcWire->NbEdges(); ++iE )
       {
-        TopoDS_Edge srcE = srcWire->Edge( iE );
-        TopoDS_Edge tgtE = TopoDS::Edge( shape2ShapeMap( srcE, /*isSrc=*/true));
+        TopoDS_Edge     srcE = srcWire->Edge( iE );
+        TopoDS_Edge     tgtE = TopoDS::Edge( shape2ShapeMap( srcE, /*isSrc=*/true));
+        TopoDS_Shape srcEbis = shape2ShapeMap( tgtE, /*isSrc=*/false );
+        if ( srcE.Orientation() != srcEbis.Orientation() )
+          tgtE.Reverse();
         // reverse a seam edge encountered for the second time
         const int index = edgeMap.Add( tgtE );
         if ( index < edgeMap.Extent() ) // E is a seam
