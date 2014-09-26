@@ -4768,6 +4768,8 @@ bool SMESHGUI::deactivateModule( SUIT_Study* study )
 
 void SMESHGUI::studyClosed( SUIT_Study* s )
 {
+  if( !s )
+    return;
   SMESH::RemoveVisuData( s->id() );
   SalomeApp_Module::studyClosed( s );
 }
