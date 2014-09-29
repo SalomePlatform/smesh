@@ -51,6 +51,7 @@
 #include <BRep_Tool.hxx>
 #include <Bnd_B2d.hxx>
 #include <GeomAPI_ProjectPointOnSurf.hxx>
+#include <GeomLib_IsPlanarSurface.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopTools_DataMapIteratorOfDataMapOfShapeShape.hxx>
@@ -935,13 +936,23 @@ namespace {
       for ( size_t i = 0; i < nodes.size(); ++n, ++i )
         nodes[ i ] = *n;
 
-      // get UVs
+      // avoid elems on degenarate shapes as UV on them can be wrong
+      if ( helper.HasDegeneratedEdges() )
+      {
+        bool isOnDegen = false;
+        for ( size_t i = 0; ( i < nodes.size() && !isOnDegen ); ++i )
+          isOnDegen = helper.IsDegenShape( nodes[ i ]->getshapeId() );
+        if ( isOnDegen )
+          continue;
+      }
+      // prepare to getting UVs
       const SMDS_MeshNode* inFaceNode = 0;
       if ( helper.HasSeam() )
         for ( size_t i = 0; ( i < nodes.size() && !inFaceNode ); ++i )
           if ( !helper.IsSeamShape( nodes[ i ]->getshapeId() ))
             inFaceNode = nodes[ i ];
 
+      // get UVs
       uv.resize( nodes.size() );
       for ( size_t i = 0; i < nodes.size(); ++i )
         uv[ i ] = helper.GetNodeUV( F, nodes[ i ], inFaceNode );
@@ -989,10 +1000,15 @@ namespace {
       SMESH_MeshEditor:: SmoothMethod algo =
         isConcaveBoundary ? SMESH_MeshEditor::CENTROIDAL : SMESH_MeshEditor::LAPLACIAN;
 
+      // smooth in 2D or 3D?
+      TopLoc_Location loc;
+      Handle(Geom_Surface) surface = BRep_Tool::Surface( F, loc );
+      bool isPlanar = GeomLib_IsPlanarSurface( surface ).IsPlanar();
+
       // smoothing
       set<const SMDS_MeshNode*> fixedNodes;
       editor.Smooth( faces, fixedNodes, algo, /*nbIterations=*/ 10,
-                     /*theTgtAspectRatio=*/1.0, /*the2D=*/false);
+                     /*theTgtAspectRatio=*/1.0, /*the2D=*/!isPlanar);
     }
   }
 
