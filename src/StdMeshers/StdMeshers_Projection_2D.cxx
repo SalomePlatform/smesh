@@ -486,15 +486,10 @@ namespace {
         }
         else
         {
+          const bool skipMediumNodes = true;
           map< double, const SMDS_MeshNode* > srcNodes, tgtNodes;
-          if (( ! SMESH_Algo::GetSortedNodesOnEdge( srcMeshDS, TopoDS::Edge( srcE ),
-                                                    /*ignoreMediumNodes = */true,
-                                                    srcNodes ))
-              ||
-              ( ! SMESH_Algo::GetSortedNodesOnEdge( tgtMeshDS, TopoDS::Edge( tgtE ),
-                                                    /*ignoreMediumNodes = */true,
-                                                    tgtNodes ))
-              )
+          if ( !SMESH_Algo::GetSortedNodesOnEdge( srcMeshDS, srcE, skipMediumNodes, srcNodes) ||
+               !SMESH_Algo::GetSortedNodesOnEdge( tgtMeshDS, tgtE, skipMediumNodes, tgtNodes ))
             return SMESH_ComputeError::New( COMPERR_BAD_INPUT_MESH,
                                             "Invalid node parameters on edges");
 
@@ -504,10 +499,18 @@ namespace {
           if ( !tgtNodes.empty() )
           {
             map< double, const SMDS_MeshNode* >::iterator u_tn = tgtNodes.begin();
-            map< double, const SMDS_MeshNode* >::iterator u_sn = srcNodes.begin();
-            for ( ; u_tn != tgtNodes.end(); ++u_tn, ++u_sn)
-              src2tgtNodes.insert( make_pair( u_sn->second, u_tn->second ));
-
+            if ( srcE.Orientation() == tgtE.Orientation() )
+            {
+              map< double, const SMDS_MeshNode* >::iterator u_sn = srcNodes.begin();
+              for ( ; u_tn != tgtNodes.end(); ++u_tn, ++u_sn)
+                src2tgtNodes.insert( make_pair( u_sn->second, u_tn->second ));
+            }
+            else
+            {
+              map< double, const SMDS_MeshNode* >::reverse_iterator u_sn = srcNodes.rbegin();
+              for ( ; u_tn != tgtNodes.end(); ++u_tn, ++u_sn)
+                src2tgtNodes.insert( make_pair( u_sn->second, u_tn->second ));
+            }
             is1DComputed = true;
           }
         }
@@ -551,6 +554,11 @@ namespace {
       gp_Trsf srcTrsf = srcFace.Location();
       gp_Trsf tgtTrsf = tgtFace.Location();
       trsf.Set( srcTrsf.Inverted() * tgtTrsf );
+      // check
+      gp_Pnt srcP = BRep_Tool::Pnt( srcWires[0]->FirstVertex() );
+      gp_Pnt tgtP = BRep_Tool::Pnt( tgtWires[0]->FirstVertex() );
+      if ( tgtP.Distance( trsf.Transform( srcP )) > tol )
+        trsf.Set( tgtTrsf.Inverted() * srcTrsf );
     }
     else
     {
