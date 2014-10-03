@@ -64,6 +64,7 @@
 #include <Utils_CorbaException.hxx>
 #include <SALOMEDS_wrap.hxx>
 #include <SALOME_GenericObj_i.hh>
+#include <Basics_OCCTVersion.hxx>
 
 #include <BRepAdaptor_Surface.hxx>
 #include <BRep_Tool.hxx>
@@ -4746,9 +4747,16 @@ SMESH_MeshEditor_i::scale(SMESH::SMESH_IDSource_ptr  theObject,
   };
   double tol = std::numeric_limits<double>::max();
   gp_Trsf aTrsf;
+
+#if OCC_VERSION_LARGE > 0x06070100
+  aTrsf.SetValues( S[0], 0,    0,    thePoint.x * (1-S[0]),
+                   0,    S[1], 0,    thePoint.y * (1-S[1]),
+                   0,    0,    S[2], thePoint.z * (1-S[2]) );
+#else
   aTrsf.SetValues( S[0], 0,    0,    thePoint.x * (1-S[0]),
                    0,    S[1], 0,    thePoint.y * (1-S[1]),
                    0,    0,    S[2], thePoint.z * (1-S[2]),   tol, tol);
+#endif
 
   TIDSortedElemSet  copyElements;
   TIDSortedElemSet* workElements = &elements;
