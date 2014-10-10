@@ -594,14 +594,24 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
       Handle(Geom_Surface) S = BRep_Tool::Surface(F,loc);
       Standard_Boolean isUPeriodic = S->IsUPeriodic();
       Standard_Boolean isVPeriodic = S->IsVPeriodic();
+      gp_Pnt2d newUV = uv;
       if ( isUPeriodic || isVPeriodic ) {
         Standard_Real UF,UL,VF,VL;
         S->Bounds(UF,UL,VF,VL);
-        if(isUPeriodic)
-          uv.SetX( uv.X() + ShapeAnalysis::AdjustToPeriod(uv.X(),UF,UL));
-        if(isVPeriodic)
-          uv.SetY( uv.Y() + ShapeAnalysis::AdjustToPeriod(uv.Y(),VF,VL));
+        if ( isUPeriodic )
+          newUV.SetX( uv.X() + ShapeAnalysis::AdjustToPeriod(uv.X(),UF,UL));
+        if ( isVPeriodic )
+          newUV.SetY( uv.Y() + ShapeAnalysis::AdjustToPeriod(uv.Y(),VF,VL));
       }
+      if ( n2 )
+      {
+        gp_Pnt2d uv2 = GetNodeUV( F, n2, 0, check );
+        if ( isUPeriodic && Abs( uv.X()-uv2.X() ) < Abs( newUV.X()-uv2.X() ))
+          newUV.SetX( uv.X() );
+        if ( isVPeriodic && Abs( uv.Y()-uv2.Y() ) < Abs( newUV.Y()-uv2.Y() ))
+          newUV.SetY( uv.Y() );
+      }
+      uv = newUV;
     }
   }
   else if(Pos->GetTypeOfPosition()==SMDS_TOP_VERTEX)
