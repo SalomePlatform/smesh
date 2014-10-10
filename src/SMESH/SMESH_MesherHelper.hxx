@@ -118,6 +118,11 @@ class SMESH_EXPORT SMESH_MesherHelper
   static bool IsStructured( SMESH_subMesh* faceSM );
 
   /*!
+   * \brief Return true if 2D mesh on FACE is distored
+   */
+  static bool IsDistorted2D( SMESH_subMesh* faceSM );
+
+  /*!
    * \brief Returns true if given node is medium
     * \param n - node to check
     * \param typeToCheck - type of elements containing the node to ask about node status

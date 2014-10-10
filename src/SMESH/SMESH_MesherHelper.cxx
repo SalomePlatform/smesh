@@ -242,40 +242,44 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
   for ( TopExp_Explorer eF( aSh, TopAbs_FACE ); eF.More(); eF.Next() )
   {
     const TopoDS_Face& face = TopoDS::Face( eF.Current() );
+    BRepAdaptor_Surface surf( face, false );
+    if ( surf.IsUPeriodic() || surf.IsUClosed() ) {
+      myParIndex |= U_periodic;
+      myPar1[0] = surf.FirstUParameter();
+      myPar2[0] = surf.LastUParameter();
+    }
+    if ( surf.IsVPeriodic() || surf.IsVClosed() ) {
+      myParIndex |= V_periodic;
+      myPar1[1] = surf.FirstVParameter();
+      myPar2[1] = surf.LastVParameter();
+    }
 
-    // if ( surface->IsUPeriodic() || surface->IsVPeriodic() ||
-    //      surface->IsUClosed()   || surface->IsVClosed() )
+    for (TopExp_Explorer exp( face, TopAbs_EDGE ); exp.More(); exp.Next())
     {
-      //while ( surface->IsKind(STANDARD_TYPE(Geom_RectangularTrimmedSurface )))
-      //surface = Handle(Geom_RectangularTrimmedSurface)::DownCast( surface )->BasisSurface();
-
-      for (TopExp_Explorer exp( face, TopAbs_EDGE ); exp.More(); exp.Next())
+      // look for a "seam" edge, actually an edge on period boundary
+      const TopoDS_Edge& edge = TopoDS::Edge( exp.Current() );
+      if ( myParIndex )
       {
-        // look for a seam edge
-        TopoDS_Edge edge = TopoDS::Edge( exp.Current() );
-        if ( BRep_Tool::IsClosed( edge, face )) {
-          // initialize myPar1, myPar2 and myParIndex
+        bool isSeam = BRep_Tool::IsClosed( edge, face );
+        if ( !isSeam )
+        {
           gp_Pnt2d uv1, uv2;
           BRep_Tool::UVPoints( edge, face, uv1, uv2 );
-          if ( Abs( uv1.Coord(1) - uv2.Coord(1) ) < Abs( uv1.Coord(2) - uv2.Coord(2) ))
+          const double du = Abs( uv1.Coord(1) - uv2.Coord(1) );
+          const double dv = Abs( uv1.Coord(2) - uv2.Coord(2) );
+          if      ( du < Precision::PConfusion() )
           {
-            double u1 = uv1.Coord(1);
-            edge.Reverse();
-            BRep_Tool::UVPoints( edge, face, uv1, uv2 );
-            double u2 = uv1.Coord(1);
-            myParIndex |= U_periodic;
-            myPar1[0] = Min( u1, u2 );
-            myPar2[0] = Max( u1, u2 );
+            isSeam = ( Abs( uv1.Coord(1) - myPar1[0] ) < Precision::PConfusion() ||
+                       Abs( uv1.Coord(1) - myPar2[0] ) < Precision::PConfusion() );
           }
-          else {
-            double v1 = uv1.Coord(2);
-            edge.Reverse();
-            BRep_Tool::UVPoints( edge, face, uv1, uv2 );
-            double v2 = uv1.Coord(2);
-            myParIndex |= V_periodic;
-            myPar1[1] = Min( v1, v2 );
-            myPar2[1] = Max( v1, v2 );
+          else if ( dv < Precision::PConfusion() )
+          {
+            isSeam = ( Abs( uv1.Coord(2) - myPar1[1] ) < Precision::PConfusion() ||
+                       Abs( uv1.Coord(2) - myPar2[1] ) < Precision::PConfusion() );
           }
+        }
+        if ( isSeam )
+        {
           // store seam shape indices, negative if shape encounters twice
           int edgeID = meshDS->ShapeToIndex( edge );
           mySeamShapeIds.insert( IsSeamShape( edgeID ) ? -edgeID : edgeID );
@@ -284,27 +288,12 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
             mySeamShapeIds.insert( IsSeamShape( vertexID ) ? -vertexID : vertexID );
           }
         }
-
-        // look for a degenerated edge
-        if ( SMESH_Algo::isDegenerated( edge )) {
-          myDegenShapeIds.insert( meshDS->ShapeToIndex( edge ));
-          for ( TopExp_Explorer v( edge, TopAbs_VERTEX ); v.More(); v.Next() )
-            myDegenShapeIds.insert( meshDS->ShapeToIndex( v.Current() ));
-        }
       }
-      if ( !myDegenShapeIds.empty() && !myParIndex )
-      {
-        BRepAdaptor_Surface surf( face, false );
-        if ( surf.IsUPeriodic() || surf.IsUClosed() ) {
-          myParIndex |= U_periodic;
-          myPar1[0] = surf.FirstUParameter();
-          myPar2[0] = surf.LastUParameter();
-        }
-        else if ( surf.IsVPeriodic() || surf.IsVClosed() ) {
-          myParIndex |= V_periodic;
-          myPar1[1] = surf.FirstVParameter();
-          myPar2[1] = surf.LastVParameter();
-        }
+      // look for a degenerated edge
+      if ( SMESH_Algo::isDegenerated( edge )) {
+        myDegenShapeIds.insert( meshDS->ShapeToIndex( edge ));
+        for ( TopExp_Explorer v( edge, TopAbs_VERTEX ); v.More(); v.Next() )
+          myDegenShapeIds.insert( meshDS->ShapeToIndex( v.Current() ));
       }
     }
   }
@@ -2539,6 +2528,75 @@ bool SMESH_MesherHelper::IsStructured( SMESH_subMesh* faceSM )
     return false;
 
   return true;
+}
+
+//=======================================================================
+//function : IsDistorted2D
+//purpose  : Return true if 2D mesh on FACE is ditorted
+//=======================================================================
+
+bool SMESH_MesherHelper::IsDistorted2D( SMESH_subMesh* faceSM )
+{
+  if ( !faceSM || faceSM->GetSubShape().ShapeType() != TopAbs_FACE )
+    return false;
+
+  bool haveBadFaces = false;
+
+  SMESH_MesherHelper helper( *faceSM->GetFather() );
+  helper.SetSubShape( faceSM->GetSubShape() );
+
+  const TopoDS_Face&  F = TopoDS::Face( faceSM->GetSubShape() );
+  SMESHDS_SubMesh* smDS = helper.GetMeshDS()->MeshElements( F );
+  if ( !smDS || smDS->NbElements() == 0 ) return false;
+
+  SMDS_ElemIteratorPtr faceIt = smDS->GetElements();
+  double prevArea2D = 0;
+  vector< const SMDS_MeshNode* > nodes;
+  vector< gp_XY >                uv;
+  while ( faceIt->more() && !haveBadFaces )
+  {
+    const SMDS_MeshElement* face = faceIt->next();
+
+    // get nodes
+    nodes.resize( face->NbCornerNodes() );
+    SMDS_MeshElement::iterator n = face->begin_nodes();
+    for ( size_t i = 0; i < nodes.size(); ++n, ++i )
+      nodes[ i ] = *n;
+
+    // avoid elems on degenarate shapes as UV on them can be wrong
+    if ( helper.HasDegeneratedEdges() )
+    {
+      bool isOnDegen = false;
+      for ( size_t i = 0; ( i < nodes.size() && !isOnDegen ); ++i )
+        isOnDegen = helper.IsDegenShape( nodes[ i ]->getshapeId() );
+      if ( isOnDegen )
+        continue;
+    }
+    // prepare to getting UVs
+    const SMDS_MeshNode* inFaceNode = 0;
+    if ( helper.HasSeam() )
+      for ( size_t i = 0; ( i < nodes.size() && !inFaceNode ); ++i )
+        if ( !helper.IsSeamShape( nodes[ i ]->getshapeId() ))
+          inFaceNode = nodes[ i ];
+
+    // get UVs
+    uv.resize( nodes.size() );
+    for ( size_t i = 0; i < nodes.size(); ++i )
+      uv[ i ] = helper.GetNodeUV( F, nodes[ i ], inFaceNode );
+
+    // compare orientation of triangles
+    for ( int iT = 0, nbT = nodes.size()-2; iT < nbT; ++iT )
+    {
+      gp_XY v1 = uv[ iT+1 ] - uv[ 0 ];
+      gp_XY v2 = uv[ iT+2 ] - uv[ 0 ];
+      double area2D = v2 ^ v1;
+      if (( haveBadFaces = ( area2D * prevArea2D < 0 )))
+        break;
+      prevArea2D = area2D;
+    }
+  }
+
+  return haveBadFaces;
 }
 
 //================================================================================

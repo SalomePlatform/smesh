@@ -920,79 +920,24 @@ namespace {
   //================================================================================
 
   void fixDistortedFaces( SMESH_MesherHelper& helper,
-                          TSideVector&        )
+                          TSideVector&        tgtWires )
   {
-    // Detect bad faces
+    SMESH_subMesh* faceSM = helper.GetMesh()->GetSubMesh( helper.GetSubShape() );
 
-    bool haveBadFaces = false;
-
-    const TopoDS_Face&  F = TopoDS::Face( helper.GetSubShape() );
-    SMESHDS_SubMesh* smDS = helper.GetMeshDS()->MeshElements( F );
-    if ( !smDS || smDS->NbElements() == 0 ) return;
-
-    SMDS_ElemIteratorPtr faceIt = smDS->GetElements();
-    double prevArea2D = 0;
-    vector< const SMDS_MeshNode* > nodes;
-    vector< gp_XY >                uv;
-    while ( faceIt->more() && !haveBadFaces )
-    {
-      const SMDS_MeshElement* face = faceIt->next();
-
-      // get nodes
-      nodes.resize( face->NbCornerNodes() );
-      SMDS_MeshElement::iterator n = face->begin_nodes();
-      for ( size_t i = 0; i < nodes.size(); ++n, ++i )
-        nodes[ i ] = *n;
-
-      // avoid elems on degenarate shapes as UV on them can be wrong
-      if ( helper.HasDegeneratedEdges() )
-      {
-        bool isOnDegen = false;
-        for ( size_t i = 0; ( i < nodes.size() && !isOnDegen ); ++i )
-          isOnDegen = helper.IsDegenShape( nodes[ i ]->getshapeId() );
-        if ( isOnDegen )
-          continue;
-      }
-      // prepare to getting UVs
-      const SMDS_MeshNode* inFaceNode = 0;
-      if ( helper.HasSeam() )
-        for ( size_t i = 0; ( i < nodes.size() && !inFaceNode ); ++i )
-          if ( !helper.IsSeamShape( nodes[ i ]->getshapeId() ))
-            inFaceNode = nodes[ i ];
-
-      // get UVs
-      uv.resize( nodes.size() );
-      for ( size_t i = 0; i < nodes.size(); ++i )
-        uv[ i ] = helper.GetNodeUV( F, nodes[ i ], inFaceNode );
-
-      // compare orientation of triangles
-      for ( int iT = 0, nbT = nodes.size()-2; iT < nbT; ++iT )
-      {
-        gp_XY v1 = uv[ iT+1 ] - uv[ 0 ];
-        gp_XY v2 = uv[ iT+2 ] - uv[ 0 ];
-        double area2D = v2 ^ v1;
-        if (( haveBadFaces = ( area2D * prevArea2D < 0 )))
-          break;
-        prevArea2D = area2D;
-      }
-    }
-
-    // Fix faces
-
-    if ( haveBadFaces )
+    if ( helper.IsDistorted2D( faceSM ))
     {
       SMESH_MeshEditor editor( helper.GetMesh() );
+      SMESHDS_SubMesh* smDS = faceSM->GetSubMeshDS();
+      const TopoDS_Face&  F = TopoDS::Face( faceSM->GetSubShape() );
 
       TIDSortedElemSet faces;
+      SMDS_ElemIteratorPtr faceIt = smDS->GetElements();
       for ( faceIt = smDS->GetElements(); faceIt->more(); )
         faces.insert( faces.end(), faceIt->next() );
 
       // choose smoothing algo
       //SMESH_MeshEditor:: SmoothMethod algo = SMESH_MeshEditor::CENTROIDAL;
       bool isConcaveBoundary = false;
-      TError err;
-      TSideVector tgtWires =
-        StdMeshers_FaceSide::GetFaceWires( F, *helper.GetMesh(),/*skipMediumNodes=*/0, err);
       for ( size_t iW = 0; iW < tgtWires.size() && !isConcaveBoundary; ++iW )
       {
         TopoDS_Edge prevEdge = tgtWires[iW]->Edge( tgtWires[iW]->NbEdges() - 1 );
