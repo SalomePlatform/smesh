@@ -1954,6 +1954,7 @@ bool MultiConnection2D::Value::operator<(const MultiConnection2D::Value& x) cons
 }
 
 void MultiConnection2D::GetValues(MValues& theValues){
+  if ( !myMesh ) return;
   SMDS_FaceIteratorPtr anIter = myMesh->facesIterator();
   for(; anIter->more(); ){
     const SMDS_MeshFace* anElem = anIter->next();

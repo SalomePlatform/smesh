@@ -1555,7 +1555,7 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
         hypIndex = this->find( curHyp, myExistingHyps[ dim ][ type ]);
       else
         hypIndex = -1;
-      if ( !isSubmesh && hypIndex < 0 && anExisting.count() == 1 ) {
+      if ( !isSubmesh && myToCreate && hypIndex < 0 && anExisting.count() == 1 ) {
         // none is yet selected => select the sole existing if it is not optional
         CORBA::String_var hypTypeName = myExistingHyps[ dim ][ type ].first().first->GetName();
         bool isOptional = true;
