@@ -53,6 +53,7 @@
 
 #include <Basics_Utils.hxx>
 
+using namespace StdMeshers;
 using namespace std;
 
 const double PRECISION = 1e-7;

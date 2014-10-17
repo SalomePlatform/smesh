@@ -37,7 +37,8 @@
 #include <Expr_Array1OfNamedUnknown.hxx>
 #include <TColStd_Array1OfReal.hxx>
 
-
+namespace StdMeshers
+{
 class STDMESHERS_EXPORT Function 
 {
 public:
@@ -114,5 +115,5 @@ bool buildDistribution( const TCollection_AsciiString& f, const int conv, const 
 STDMESHERS_EXPORT
 bool buildDistribution( const std::vector<double>& f, const int conv, const double start, const double end,
                         const int nbSeg, std::vector<double>& data, const double eps );
-
+}
 #endif

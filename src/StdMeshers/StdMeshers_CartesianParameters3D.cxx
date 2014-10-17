@@ -329,7 +329,7 @@ void StdMeshers_CartesianParameters3D::ComputeCoordinates(const double    x0,
   coords.clear();
   for ( size_t i = 0; i < spaceFuns.size(); ++i )
   {
-    FunctionExpr fun( spaceFuns[i].c_str(), /*convMode=*/-1 );
+    StdMeshers::FunctionExpr fun( spaceFuns[i].c_str(), /*convMode=*/-1 );
 
     const double p0 = x0 * ( 1. - points[i])   + x1 * points[i];
     const double p1 = x0 * ( 1. - points[i+1]) + x1 * points[i+1];
