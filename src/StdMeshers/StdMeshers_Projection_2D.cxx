@@ -1047,7 +1047,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
   bool done = false;
 
- if ( !done )
+  if ( !done )
   {
     // try to project from the same face with different location
     done = projectPartner( tgtFace, srcFace, tgtWires, srcWires,

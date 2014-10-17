@@ -2574,11 +2574,13 @@ bool SMESH_MesherHelper::IsDistorted2D( SMESH_subMesh* faceSM )
     }
     // prepare to getting UVs
     const SMDS_MeshNode* inFaceNode = 0;
-    if ( helper.HasSeam() )
+    if ( helper.HasSeam() ) {
       for ( size_t i = 0; ( i < nodes.size() && !inFaceNode ); ++i )
         if ( !helper.IsSeamShape( nodes[ i ]->getshapeId() ))
           inFaceNode = nodes[ i ];
-
+      if ( !inFaceNode )
+        continue;
+    }
     // get UVs
     uv.resize( nodes.size() );
     for ( size_t i = 0; i < nodes.size(); ++i )
