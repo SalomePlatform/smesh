@@ -254,25 +254,49 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
       myPar2[1] = surf.LastVParameter();
     }
 
+    gp_Pnt2d uv1, uv2;
     for (TopExp_Explorer exp( face, TopAbs_EDGE ); exp.More(); exp.Next())
     {
-      // look for a "seam" edge, actually an edge on period boundary
-      const TopoDS_Edge& edge = TopoDS::Edge( exp.Current() );
+      // look for a "seam" edge, a real seam or an edge on period boundary
+      TopoDS_Edge edge = TopoDS::Edge( exp.Current() );
       if ( myParIndex )
       {
+        BRep_Tool::UVPoints( edge, face, uv1, uv2 );
+        const double du = Abs( uv1.Coord(1) - uv2.Coord(1) );
+        const double dv = Abs( uv1.Coord(2) - uv2.Coord(2) );
+
         bool isSeam = BRep_Tool::IsClosed( edge, face );
-        if ( !isSeam )
+        if ( isSeam ) // real seam - having two pcurves on face
         {
-          gp_Pnt2d uv1, uv2;
-          BRep_Tool::UVPoints( edge, face, uv1, uv2 );
-          const double du = Abs( uv1.Coord(1) - uv2.Coord(1) );
-          const double dv = Abs( uv1.Coord(2) - uv2.Coord(2) );
-          if      ( du < Precision::PConfusion() )
+          // pcurve can lie not on pediod boundary (22582, mesh_Quadratic_01/C9)
+          if ( du < dv )
+          {
+            double u1 = uv1.Coord(1);
+            edge.Reverse();
+            BRep_Tool::UVPoints( edge, face, uv1, uv2 );
+            double u2 = uv1.Coord(1);
+            myPar1[0] = Min( u1, u2 );
+            myPar2[0] = Max( u1, u2 );
+          }
+          else
+          {
+            double v1 = uv1.Coord(2);
+            edge.Reverse();
+            BRep_Tool::UVPoints( edge, face, uv1, uv2 );
+            double v2 = uv1.Coord(2);
+            myPar1[1] = Min( v1, v2 );
+            myPar2[1] = Max( v1, v2 );
+          }
+        }
+        else //if ( !isSeam )
+        {
+          // one pcurve but on period boundary (22772, mesh_Quadratic_01/D1)
+          if      (( myParIndex & U_periodic ) && du < Precision::PConfusion() )
           {
             isSeam = ( Abs( uv1.Coord(1) - myPar1[0] ) < Precision::PConfusion() ||
                        Abs( uv1.Coord(1) - myPar2[0] ) < Precision::PConfusion() );
           }
-          else if ( dv < Precision::PConfusion() )
+          else if (( myParIndex & V_periodic ) && dv < Precision::PConfusion() )
           {
             isSeam = ( Abs( uv1.Coord(2) - myPar1[1] ) < Precision::PConfusion() ||
                        Abs( uv1.Coord(2) - myPar2[1] ) < Precision::PConfusion() );
