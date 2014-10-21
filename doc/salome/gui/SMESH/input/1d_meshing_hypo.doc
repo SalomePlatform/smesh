@@ -257,15 +257,14 @@ hypothesis operation.
 \anchor automatic_length_anchor
 <h2>Automatic Length</h2>
 
-This hypothesis is automatically applied when you select <b>Assign a
-set of hypotheses</b> option in Create Mesh menu.
-
-\image html automaticlength.png
-
 The dialog box prompts you to define the quality of the future mesh by
 only one parameter, which is \b Fineness, ranging from 0 (coarse mesh,
 low number of elements) to 1 (extremely fine mesh, great number of
-elements). Compare one and the same object (sphere) meshed with
+elements). 
+
+\image html automaticlength.png
+
+Compare one and the same object (sphere) meshed with
 minimum and maximum value of this parameter.
 
 \image html image147.gif "Example of a very rough mesh. Automatic Length works for 0."

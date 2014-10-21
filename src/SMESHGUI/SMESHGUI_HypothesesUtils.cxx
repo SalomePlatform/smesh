@@ -469,7 +469,7 @@ namespace SMESH
               //      It is used to obtain plugin root dir environment variable
               //      in the SMESHGUI_HypothesisDlg class. Plugin root dir environment
               //      variable is used to display documentation.
-              aCreator->setProperty(PLUGIN_NAME,aHypData->PluginName);
+              aCreator->setProperty(SMESH::Plugin_Name(),aHypData->PluginName);
             }
           }
         }

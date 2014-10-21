@@ -363,14 +363,35 @@ bool SMESHGUI_MeshOp::isSubshapeOk() const
       // skl for NPAL14695 - implementation of searching of mainObj
       GEOM::GEOM_Object_var mainObj = op->GetMainShape(aSubGeomVar); /* _var not _wrap as
                                                                         mainObj already exists! */
-      while(1) {
-        if (mainObj->_is_nil())
-          return false;
+      while( !mainObj->_is_nil()) {
         CORBA::String_var entry1 = mainObj->GetEntry();
         CORBA::String_var entry2 = mainGeom->GetEntry();
         if (std::string( entry1.in() ) == entry2.in() )
           return true;
         mainObj = op->GetMainShape(mainObj);
+      }
+      if ( aSubGeomVar->GetShapeType() == GEOM::COMPOUND )
+      {
+        // is aSubGeomVar a compound of sub-shapes?
+        GEOM::GEOM_IShapesOperations_wrap sop = geomGen->GetIShapesOperations(aStudy->StudyId());
+        if (sop->_is_nil()) return false;
+        GEOM::ListOfLong_var ids = sop->GetAllSubShapesIDs( aSubGeomVar,
+                                                            GEOM::SHAPE,/*sorted=*/false);
+        if ( ids->length() > 0 )
+        {
+          ids->length( 1 );
+          GEOM::GEOM_Object_var compSub = geomGen->AddSubShape( aSubGeomVar, ids );
+          if ( !compSub->_is_nil() )
+          {
+            GEOM::ListOfGO_var shared = sop->GetSharedShapes( mainGeom,
+                                                              compSub,
+                                                              compSub->GetShapeType() );
+            geomGen->RemoveObject( compSub );
+            if ( shared->length() > 0 )
+              geomGen->RemoveObject( shared[0] );
+            return ( shared->length() > 0 );
+          }
+        }
       }
     }
   }

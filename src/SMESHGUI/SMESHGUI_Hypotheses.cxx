@@ -670,7 +670,7 @@ void SMESHGUI_HypothesisDlg::onHelp()
   if (app) {
     QString name = "SMESH";
     if(myCreator) {
-      QVariant pluginName = myCreator->property( PLUGIN_NAME );
+      QVariant pluginName = myCreator->property( SMESH::Plugin_Name() );
       if( pluginName.isValid() ) {
         QString rootDir = pluginName.toString() + "PLUGIN_ROOT_DIR";
         QString varValue = QString( getenv(rootDir.toLatin1().constData()));

@@ -58,8 +58,6 @@ class SALOMEDSClient_SObject;
 class algo_error_array;
 
 
-#define PLUGIN_NAME "PLUGIN_NAME"
-
 namespace SMESH
 {
   SMESHGUI_EXPORT
@@ -119,6 +117,11 @@ namespace SMESH
 
   SMESHGUI_EXPORT
   QString GetMessageOnAlgoStateErrors( const algo_error_array& );
+
+  SMESHGUI_EXPORT
+  // name of proprty saving plug-in of a hypothesis
+  static const char* Plugin_Name() { return "PLUGIN_NAME"; }
+
 }
 
 #endif // SMESHGUI_HYPOTHESESUTILS_H
