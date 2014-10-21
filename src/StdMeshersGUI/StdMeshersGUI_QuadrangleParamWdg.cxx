@@ -29,7 +29,6 @@
 #include <GEOMBase.h>
 #include <LightApp_SelectionMgr.h>
 #include <SALOME_ListIO.hxx>
-#include <SALOME_ListIteratorOfListIO.hxx>
 #include <SUIT_ResourceMgr.h>
 
 // Qt includes

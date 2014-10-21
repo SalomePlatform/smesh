@@ -28,7 +28,7 @@
 #include <SalomeApp_Application.h>
 #include <SUIT_Session.h>
 
-#include <SALOME_ListIteratorOfListIO.hxx>
+#include <SALOME_ListIO.hxx>
 #include <GEOM_Client.hxx>
 #include <SMESHGUI_Utils.h>
 #include <boost/shared_ptr.hpp>
@@ -96,7 +96,7 @@ LightApp_SelectionMgr*  GeomSelectionTools::selectionMgr()
  */
 SALOME_ListIO* GeomSelectionTools::getSelectedSalomeObjects()
 {
-  SALOME_ListIO* selected;
+  SALOME_ListIO* selected = new SALOME_ListIO;
   LightApp_SelectionMgr* aSel = selectionMgr();
   aSel->selectedObjects( *selected, NULL, false );
   return selected;

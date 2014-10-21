@@ -48,7 +48,6 @@
 
 #include <SVTK_ViewWindow.h>
 #include <SALOME_ListIO.hxx>
-#include <SALOME_ListIteratorOfListIO.hxx>
 
 // Qt includes
 #include <QApplication>

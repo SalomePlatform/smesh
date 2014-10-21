@@ -62,8 +62,6 @@
 #include <SalomeApp_DoubleSpinBox.h>
 
 #include <SALOME_ListIO.hxx>
-#include <SALOME_ListIteratorOfListIO.hxx>
-#include <SALOME_DataMapIteratorOfDataMapOfIOMapOfInteger.hxx>
 
 #include <SVTK_ViewWindow.h>
 

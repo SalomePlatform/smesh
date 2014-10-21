@@ -43,7 +43,6 @@
 #include <SVTK_ViewModel.h>
 
 #include <SALOME_ListIO.hxx>
-#include <SALOME_ListIteratorOfListIO.hxx>
 
 // SALOME KERNEL includes 
 #include <SALOMEDS_SObject.hxx>

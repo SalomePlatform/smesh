@@ -37,7 +37,7 @@
 #include <SUIT_ResourceMgr.h>
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
-#include <SALOME_ListIteratorOfListIO.hxx>
+#include <SALOME_ListIO.hxx>
 
 const int MARGIN  = 9;
 const int SPACING = 6;

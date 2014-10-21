@@ -133,7 +133,6 @@
 #include <QtxFontEdit.h>
 
 #include <SALOME_ListIO.hxx>
-#include <SALOME_ListIteratorOfListIO.hxx>
 
 #ifndef DISABLE_PLOT2DVIEWER
 #include <SPlot2d_ViewModel.h>

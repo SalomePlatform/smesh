@@ -59,7 +59,6 @@
 #include <QKeyEvent>
 #include <QListWidget>
 #include <QButtonGroup>
-#include <SALOME_ListIteratorOfListIO.hxx>
 #include <QComboBox>
 #include <QtxColorButton.h>
 

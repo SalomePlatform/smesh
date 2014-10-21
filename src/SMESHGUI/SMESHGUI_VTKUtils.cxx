@@ -47,7 +47,6 @@
 #include <SUIT_ResourceMgr.h>
 
 #include <SALOME_ListIO.hxx>
-#include <SALOME_ListIteratorOfListIO.hxx>
 
 #include <SVTK_Selector.h>
 #include <SVTK_ViewModel.h>
