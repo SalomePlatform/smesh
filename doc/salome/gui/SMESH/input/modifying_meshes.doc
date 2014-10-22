@@ -12,8 +12,6 @@ nodes to polyhedrons at an arbitrary place in the mesh.</li>
 elements (used in quadratic meshes) from quadratic nodes to quadratic polyhedrons at an arbitrary place in the mesh.</li>
 <li>\subpage removing_nodes_and_elements_page "Remove" any existing
 mesh elements.</li>
-<li>\subpage renumbering_nodes_and_elements_page "Renumber" nodes and
-elements of the mesh.</li>
 <li>\subpage translation_page "Translate" in the indicated direction the mesh or some of
 its elements.</li>
 <li>\subpage rotation_page "Rotate" by the indicated axis and angle

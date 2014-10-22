@@ -3866,8 +3866,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpRemoveOrphanNodes, "REMOVE_ORPHAN_NODES",   "ICON_DLG_REM_ORPHAN_NODES" );
   createSMESHAction( SMESHOp::OpClearMesh,         "CLEAR_MESH",            "ICON_CLEAR_MESH" );
 
-  createSMESHAction( SMESHOp::OpRenumberingNodes,    "RENUM_NODES",     "ICON_DLG_RENUMBERING_NODES" );
-  createSMESHAction( SMESHOp::OpRenumberingElements, "RENUM_ELEMENTS",  "ICON_DLG_RENUMBERING_ELEMENTS" );
+  //createSMESHAction( SMESHOp::OpRenumberingNodes,    "RENUM_NODES",     "ICON_DLG_RENUMBERING_NODES" );
+  //createSMESHAction( SMESHOp::OpRenumberingElements, "RENUM_ELEMENTS",  "ICON_DLG_RENUMBERING_ELEMENTS" );
 
   createSMESHAction( SMESHOp::OpTranslation,            "TRANS",           "ICON_SMESH_TRANSLATION_VECTOR" );
   createSMESHAction( SMESHOp::OpRotation,               "ROT",             "ICON_DLG_MESH_ROTATION" );
@@ -3976,7 +3976,7 @@ void SMESHGUI::initialize( CAM_Application* app )
       volumeId = createMenu( tr( "MEN_VOLUME_CTRL" ), ctrlId, -1, 10 ),
       addId    = createMenu( tr( "MEN_ADD" ),    modifyId, 402 ),
       removeId = createMenu( tr( "MEN_REMOVE" ), modifyId, 403 ),
-      renumId  = createMenu( tr( "MEN_RENUM" ),  modifyId, 404 ),
+    //renumId  = createMenu( tr( "MEN_RENUM" ),  modifyId, 404 ),
       transfId = createMenu( tr( "MEN_TRANSF" ), modifyId, 405 ),
       basicPropId = createMenu( tr( "MEN_BASIC_PROPERTIES" ), measureId, -1, 10 );
 
@@ -4098,8 +4098,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( separator(),                  removeId, -1 );
   createMenu( SMESHOp::OpClearMesh,         removeId, -1 );
 
-  createMenu( SMESHOp::OpRenumberingNodes,    renumId, -1 );
-  createMenu( SMESHOp::OpRenumberingElements, renumId, -1 );
+  //createMenu( SMESHOp::OpRenumberingNodes,    renumId, -1 );
+  //createMenu( SMESHOp::OpRenumberingElements, renumId, -1 );
 
   createMenu( SMESHOp::OpTranslation,    transfId, -1 );
   createMenu( SMESHOp::OpRotation,       transfId, -1 );
@@ -4144,7 +4144,7 @@ void SMESHGUI::initialize( CAM_Application* app )
       addElemTb    = createTool( tr( "TB_ADD" ),       QString( "SMESHAddElementToolbar" ) ),
       addNonElemTb = createTool( tr( "TB_ADDNON" ),    QString( "SMESHAddElementToolbar" ) ),
       remTb        = createTool( tr( "TB_REM" ),       QString( "SMESHRemoveToolbar" ) ),
-      renumbTb     = createTool( tr( "TB_RENUMBER" ),  QString( "SMESHRenumberingToolbar" ) ),  
+    //renumbTb     = createTool( tr( "TB_RENUMBER" ),  QString( "SMESHRenumberingToolbar" ) ),  
       transformTb  = createTool( tr( "TB_TRANSFORM" ), QString( "SMESHTransformationToolbar" ) ),  
       modifyTb     = createTool( tr( "TB_MODIFY" ),    QString( "SMESHModificationToolbar" ) ),
       measuremTb   = createTool( tr( "TB_MEASUREM" ),  QString( "SMESHMeasurementsToolbar" ) ),
@@ -4232,8 +4232,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( SMESHOp::OpRemoveOrphanNodes, remTb );
   createTool( SMESHOp::OpClearMesh,         remTb );
 
-  createTool( SMESHOp::OpRenumberingNodes,    renumbTb );
-  createTool( SMESHOp::OpRenumberingElements, renumbTb );
+  //createTool( SMESHOp::OpRenumberingNodes,    renumbTb );
+  //createTool( SMESHOp::OpRenumberingElements, renumbTb );
 
   createTool( SMESHOp::OpTranslation,    transformTb );
   createTool( SMESHOp::OpRotation,       transformTb );

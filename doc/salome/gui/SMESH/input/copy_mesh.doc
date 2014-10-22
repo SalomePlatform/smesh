@@ -42,9 +42,6 @@ selection_filter_library_page "Selection filter library" page.</li>
 <ul>
 <li>activate <b>Generate groups</b> checkbox to copy the groups of
 elements of the source mesh to the newly created mesh.</li>
-<li>activate <b>Preserve IDs of elements</b> checkbox to keep
-the IDs of new nodes and elements the same as the IDs of source nodes
-and elements.</li>
 </ul>
 </li>
 

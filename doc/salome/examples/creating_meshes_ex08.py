@@ -32,8 +32,8 @@ newMesh = smesh.CopyMesh( mesh, "whole mesh copy")
 # 2. copy a group of 2D elements along with groups
 newMesh = smesh.CopyMesh( fGroup,  "face group copy with groups",toCopyGroups=True)
 
-# 3. copy a group of nodes with preseving their ids
-newMesh = smesh.CopyMesh( nGroup, "node group copy", toKeepIDs=True)
+# 3. copy a group of nodes
+newMesh = smesh.CopyMesh( nGroup, "node group copy")
 
 # 4. copy some faces
 faceIds = fGroup.GetIDs()[-10:]

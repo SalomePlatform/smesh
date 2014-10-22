@@ -166,9 +166,10 @@ SMESHGUI_CopyMeshDlg::SMESHGUI_CopyMeshDlg( SMESHGUI* theModule )
   myCopyGroupsCheck = new QCheckBox(tr("SMESH_MAKE_GROUPS"), GroupArguments);
   myCopyGroupsCheck->setChecked(false);
 
-  // CheckBox for keeping ids
+  // CheckBox for keeping ids ( OBSOLETE )
   myKeepIdsCheck = new QCheckBox(tr("SMESH_KEEP_IDS"), GroupArguments);
   myKeepIdsCheck->setChecked(true);
+  myKeepIdsCheck->hide();
 
   // layout
   GroupArgumentsLayout->addWidget(myTextLabelElements,  0, 0);
@@ -178,7 +179,7 @@ SMESHGUI_CopyMeshDlg::SMESHGUI_CopyMeshDlg( SMESHGUI* theModule )
   GroupArgumentsLayout->addWidget(meshNameLabel,        2, 0);
   GroupArgumentsLayout->addWidget(myMeshNameEdit,       2, 1, 1, 5);
   GroupArgumentsLayout->addWidget(myCopyGroupsCheck,    3, 0, 1, 6);
-  GroupArgumentsLayout->addWidget(myKeepIdsCheck,       4, 0, 1, 6);
+  // GroupArgumentsLayout->addWidget(myKeepIdsCheck,       4, 0, 1, 6);
 
   /***************************************************************/
   GroupButtons = new QGroupBox(this);
