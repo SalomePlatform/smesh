@@ -387,8 +387,11 @@ bool SMESHGUI_MeshOp::isSubshapeOk() const
                                                               compSub,
                                                               compSub->GetShapeType() );
             geomGen->RemoveObject( compSub );
-            if ( shared->length() > 0 )
+            compSub->UnRegister();
+            if ( shared->length() > 0 ) {
               geomGen->RemoveObject( shared[0] );
+              shared[0]->UnRegister();
+            }
             return ( shared->length() > 0 );
           }
         }

@@ -3456,7 +3456,7 @@ class Mesh:
 
     ##
     # @brief Creates missing boundary elements around either the whole mesh or 
-    #    groups of 2D elements
+    #    groups of elements
     #  @param dimension - defines type of boundary elements to create
     #  @param groupName - a name of group to store all boundary elements in,
     #    "" means not to create the group
@@ -3464,7 +3464,7 @@ class Mesh:
     #    mesh + created boundary elements; "" means not to create the new mesh
     #  @param toCopyAll - if true, the whole initial mesh will be copied into
     #    the new mesh else only boundary elements will be copied into the new mesh
-    #  @param groups - groups of 2D elements to make boundary around
+    #  @param groups - groups of elements to make boundary around
     #  @retval tuple( long, mesh, groups )
     #                 long - number of added boundary elements
     #                 mesh - the mesh where elements were added to
