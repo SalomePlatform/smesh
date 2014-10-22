@@ -404,8 +404,8 @@ bool SMESHGUI_MeshOp::isSubshapeOk() const
 
 //================================================================================
 /*!
- * \brief Return name of the algorithm that does not support submeshes and makes
- * submesh creation useless
+ * \brief Return name of the algorithm that does not support sub-meshes and makes
+ * sub-mesh creation useless
  *  \retval char* - string is to be deleted!!!
  */
 //================================================================================
