@@ -274,7 +274,14 @@ class Mesh_Algorithm:
         if not "ViscousLayers" in self.GetCompatibleHypothesis():
             raise TypeError, "ViscousLayers are not supported by %s"%self.algo.GetName()
         if faces and isinstance( faces[0], geomBuilder.GEOM._objref_GEOM_Object ):
-            faces = [ self.mesh.geompyD.GetSubShapeID(self.mesh.geom, f) for f in faces ]
+            import GEOM
+            faceIDs = []
+            for f in faces:
+                if self.mesh.geompyD.ShapeIdToType( f.GetType() ) == "GROUP":
+                    faceIDs += f.GetSubShapeIndices()
+                else:
+                    faceIDs += [self.mesh.geompyD.GetSubShapeID(self.mesh.geom, f)]
+            faces = faceIDs
         hyp = self.Hypothesis("ViscousLayers",
                               [thickness, numberOfLayers, stretchFactor, faces, isFacesToIgnore],
                               toAdd=False)

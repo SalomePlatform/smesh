@@ -3020,7 +3020,8 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
 
   SMESH::Predicate_ptr aPrevPredicate = SMESH::Predicate::_nil();
   int aPrevBinary = SMESH::FT_Undefined;
-  aBinaries.back() = SMESH::FT_Undefined;
+  if ( !aBinaries.empty() )
+    aBinaries.back() = SMESH::FT_Undefined;
 
   for ( aPredIter = aPredicates.begin(), aBinaryIter = aBinaries.begin();
         aPredIter != aPredicates.end() && aBinaryIter != aBinaries.end();

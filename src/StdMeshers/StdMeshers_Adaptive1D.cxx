@@ -1179,6 +1179,7 @@ bool AdaptiveAlgo::Compute(SMESH_Mesh &         theMesh,
       eData.AddPoint( eData.myPoints.end(), eData.myC3d.LastParameter() );
     }
   }
+  if ( myEdges.empty() ) return true;
   if ( _computeCanceled ) return false;
 
   // Take into account size of already existing segments
