@@ -87,7 +87,7 @@
 #include <limits>
 
 #ifdef _DEBUG_
-#define __myDEBUG
+//#define __myDEBUG
 //#define __NOT_INVALIDATE_BAD_SMOOTH
 #endif
 
@@ -365,7 +365,7 @@ namespace VISCOUS_3D
     void InvalidateStep( int curStep, bool restoreLength=false );
     void ChooseSmooFunction(const set< TGeomID >& concaveVertices,
                             const TNode2Edge&     n2eMap);
-    bool Smooth(int& badNb, const int step, const bool isConcaveFace);
+    int  Smooth(const int step, const bool isConcaveFace, const bool findBest);
     bool SmoothOnEdge(Handle(Geom_Surface)& surface,
                       const TopoDS_Face&    F,
                       SMESH_MesherHelper&   helper);
@@ -2039,7 +2039,7 @@ bool _ViscousBuilder::makeLayer(_SolidData& data)
 
   // Create temporary faces and _LayerEdge's
 
-  dumpFunction(SMESH_Comment("makeLayers_")<<data._index); 
+  dumpFunction(SMESH_Comment("makeLayers_")<<data._index);
 
   data._stepSize = Precision::Infinite();
   data._stepSizeNodes[0] = 0;
@@ -3588,6 +3588,7 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
     return true; // no shapes needing smoothing
 
   bool moved, improved;
+  vector< _LayerEdge* > badSmooEdges;
 
   SMESH_MesherHelper helper(*_mesh);
   Handle(Geom_Surface) surface;
@@ -3655,22 +3656,46 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
 
       const bool isConcaveFace = data._concaveFaces.count( sInd );
 
-      int step = 0, stepLimit = 5, badNb = 0; moved = true;
-      while (( ++step <= stepLimit && moved ) || improved )
+      int step = 0, stepLimit = 5, badNb = 0;
+      while (( ++step <= stepLimit ) || improved )
       {
         dumpFunction(SMESH_Comment("smooth")<<data._index<<"_Fa"<<sInd
                      <<"_InfStep"<<nbSteps<<"_"<<step); // debug
         int oldBadNb = badNb;
-        badNb = 0;
-        moved = false;
-        if ( step % 2 )
+        badSmooEdges.clear();
+
+        if ( step % 2 ) {
           for ( int i = iBeg; i < iEnd; ++i ) // iterate forward
-            moved |= data._edges[i]->Smooth( badNb, step, isConcaveFace );
-        else
+            if ( data._edges[i]->Smooth( step, isConcaveFace, false ))
+              badSmooEdges.push_back( data._edges[i] );
+        }
+        else {
           for ( int i = iEnd-1; i >= iBeg; --i ) // iterate backward
-            moved |= data._edges[i]->Smooth( badNb, step, isConcaveFace );
+            if ( data._edges[i]->Smooth( step, isConcaveFace, false ))
+              badSmooEdges.push_back( data._edges[i] );
+        }
+        badNb = badSmooEdges.size();
         improved = ( badNb < oldBadNb );
 
+        if ( !badSmooEdges.empty() && step >= stepLimit / 2 )
+        {
+          // look for the best smooth of _LayerEdge's neighboring badSmooEdges
+          vector<_Simplex> simplices;
+          for ( size_t i = 0; i < badSmooEdges.size(); ++i )
+          {
+            _LayerEdge* ledge = badSmooEdges[i];
+            _Simplex::GetSimplices( ledge->_nodes[0], simplices, data._ignoreFaceIds );
+            for ( size_t iS = 0; iS < simplices.size(); ++iS )
+            {
+              TNode2Edge::iterator n2e = data._n2eMap.find( simplices[iS]._nNext );
+              if ( n2e != data._n2eMap.end()) {
+                _LayerEdge* ledge2 = n2e->second;
+                if ( ledge2->_nodes[0]->getshapeId() == sInd )
+                  ledge2->Smooth( step, isConcaveFace, /*findBest=*/true );
+              }
+            }
+          }
+        }
         // issue 22576 -- no bad faces but still there are intersections to fix
         // if ( improved && badNb == 0 )
         //   stepLimit = step + 3;
@@ -5305,11 +5330,10 @@ bool _LayerEdge::SmoothOnEdge(Handle(Geom_Surface)& surface,
  */
 //================================================================================
 
-bool _LayerEdge::Smooth(int& badNb, const int step, const bool isConcaveFace )
+int _LayerEdge::Smooth(const int step, const bool isConcaveFace, const bool findBest )
 {
-  bool moved = false;
   if ( _simplices.size() < 2 )
-    return moved; // _LayerEdge inflated along EDGE or FACE
+    return 0; // _LayerEdge inflated along EDGE or FACE
 
   const gp_XYZ& curPos ( _pos.back() );
   const gp_XYZ& prevPos( _pos[ _pos.size()-2 ]);
@@ -5325,7 +5349,7 @@ bool _LayerEdge::Smooth(int& badNb, const int step, const bool isConcaveFace )
   int nbBad = _simplices.size() - nbOkBefore;
 
   // compute new position for the last _pos using different _funs
-  gp_XYZ newPos, bestNewPos;
+  gp_XYZ newPos;
   for ( int iFun = -1; iFun < theNbSmooFuns; ++iFun )
   {
     if ( iFun < 0 )
@@ -5376,7 +5400,6 @@ bool _LayerEdge::Smooth(int& badNb, const int step, const bool isConcaveFace )
 
     n->setXYZ( newPos.X(), newPos.Y(), newPos.Z());
     _pos.back() = newPos;
-    moved = true;
     dumpMoveComm( n, _funNames[ iFun < 0 ? smooFunID() : iFun ]);
 
     nbBad = _simplices.size() - nbOkAfter;
@@ -5394,12 +5417,12 @@ bool _LayerEdge::Smooth(int& badNb, const int step, const bool isConcaveFace )
       continue; // look for a better function
     }
 
-    break;
+    if ( !findBest )
+      break;
 
   } // loop on smoothing functions
 
-  badNb += nbBad;
-  return moved;
+  return nbBad;
 }
 
 //================================================================================
