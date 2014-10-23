@@ -44,6 +44,7 @@
 #include "SMESH_subMeshEventListener.hxx"
 #include "StdMeshers_FaceSide.hxx"
 
+#include <Adaptor3d_HSurface.hxx>
 #include <BRepAdaptor_Curve2d.hxx>
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepLProp_SLProps.hxx>
@@ -75,6 +76,8 @@
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <gp_Ax1.hxx>
+#include <gp_Cone.hxx>
+#include <gp_Sphere.hxx>
 #include <gp_Vec.hxx>
 #include <gp_XY.hxx>
 
@@ -84,7 +87,7 @@
 #include <limits>
 
 #ifdef _DEBUG_
-//#define __myDEBUG
+#define __myDEBUG
 //#define __NOT_INVALIDATE_BAD_SMOOTH
 #endif
 
@@ -699,9 +702,13 @@ namespace VISCOUS_3D
                          SMESH_MesherHelper&  helper,
                          bool&                isOK,
                          bool                 shiftInside=false);
-    gp_XYZ getWeigthedNormal( const SMDS_MeshNode*         n,
-                              std::pair< TGeomID, gp_XYZ > fId2Normal[],
-                              int                          nbFaces );
+    bool getFaceNormalAtSingularity(const gp_XY&        uv,
+                                    const TopoDS_Face&  face,
+                                    SMESH_MesherHelper& helper,
+                                    gp_Dir&             normal );
+    gp_XYZ getWeigthedNormal( const SMDS_MeshNode*             n,
+                              std::pair< TopoDS_Face, gp_XYZ > fId2Normal[],
+                              int                              nbFaces );
     bool findNeiborsOnEdge(const _LayerEdge*     edge,
                            const SMDS_MeshNode*& n1,
                            const SMDS_MeshNode*& n2,
@@ -1261,6 +1268,43 @@ namespace VISCOUS_3D
       }
     }
     return done;
+  }
+  //================================================================================
+  /*!
+   * \brief Return direction of axis or revolution of a surface
+   */
+  //================================================================================
+
+  bool getRovolutionAxis( const Adaptor3d_Surface& surface,
+                          gp_Dir &                 axis )
+  {
+    switch ( surface.GetType() ) {
+    case GeomAbs_Cone:
+    {
+      gp_Cone cone = surface.Cone();
+      axis = cone.Axis().Direction();
+      break;
+    }
+    case GeomAbs_Sphere:
+    {
+      gp_Sphere sphere = surface.Sphere();
+      axis = sphere.Position().Direction();
+      break;
+    }
+    case GeomAbs_SurfaceOfRevolution:
+    {
+      axis = surface.AxeOfRevolution().Direction();
+      break;
+    }
+    //case GeomAbs_SurfaceOfExtrusion:
+    case GeomAbs_OffsetSurface:
+    {
+      Handle(Adaptor3d_HSurface) base = surface.BasisSurface();
+      return getRovolutionAxis( base->Surface(), axis );
+    }
+    default: return false;
+    }
+    return true;
   }
 
   //--------------------------------------------------------------------------------
@@ -1963,14 +2007,16 @@ bool _ViscousBuilder::makeLayer(_SolidData& data)
   subIds = data._noShrinkShapes;
   TopExp_Explorer exp( data._solid, TopAbs_FACE );
   for ( ; exp.More(); exp.Next() )
+  {
+    SMESH_subMesh* fSubM = _mesh->GetSubMesh( exp.Current() );
+    if ( ! data._ignoreFaceIds.count( fSubM->GetId() ))
     {
-      SMESH_subMesh* fSubM = _mesh->GetSubMesh( exp.Current() );
-      if ( ! data._ignoreFaceIds.count( fSubM->GetId() ))
-        faceIds.insert( fSubM->GetId() );
+      faceIds.insert( fSubM->GetId() );
       SMESH_subMeshIteratorPtr subIt = fSubM->getDependsOnIterator(/*includeSelf=*/true);
       while ( subIt->more() )
         subIds.insert( subIt->next()->GetId() );
     }
+  }
 
   // make a map to find new nodes on sub-shapes shared with other SOLID
   map< TGeomID, TNode2Edge* >::iterator s2ne;
@@ -2614,7 +2660,7 @@ bool _ViscousBuilder::setEdgeData(_LayerEdge&         edge,
   SMESH_MeshEditor editor(_mesh);
 
   const SMDS_MeshNode* node = edge._nodes[0]; // source node
-  SMDS_TypeOfPosition posType = node->GetPosition()->GetTypeOfPosition();
+  const SMDS_TypeOfPosition posType = node->GetPosition()->GetTypeOfPosition();
 
   edge._len       = 0;
   edge._2neibors  = 0;
@@ -2628,13 +2674,41 @@ bool _ViscousBuilder::setEdgeData(_LayerEdge&         edge,
   edge._normal.SetCoord(0,0,0);
 
   int totalNbFaces = 0;
+  TopoDS_Face F;
+  std::pair< TopoDS_Face, gp_XYZ > face2Norm[20];
   gp_Vec geomNorm;
   bool normOK = true;
+
+  // get geom FACEs the node lies on
+  {
+    set<TGeomID> faceIds;
+    if  ( posType == SMDS_TOP_FACE )
+    {
+      faceIds.insert( node->getshapeId() );
+    }
+    else
+    {
+      SMDS_ElemIteratorPtr fIt = node->GetInverseElementIterator(SMDSAbs_Face);
+      while ( fIt->more() )
+        faceIds.insert( editor.FindShape(fIt->next()));
+    }
+    set<TGeomID>::iterator id = faceIds.begin();
+    for ( ; id != faceIds.end(); ++id )
+    {
+      const TopoDS_Shape& s = getMeshDS()->IndexToShape( *id );
+      if ( s.IsNull() || s.ShapeType() != TopAbs_FACE || !subIds.count( *id ))
+        continue;
+      F = TopoDS::Face( s );
+      face2Norm[ totalNbFaces ].first = F;
+      totalNbFaces++;
+    }
+  }
 
   const TGeomID shapeInd = node->getshapeId();
   map< TGeomID, TopoDS_Shape >::const_iterator s2s = data._shrinkShape2Shape.find( shapeInd );
   const bool onShrinkShape ( s2s != data._shrinkShape2Shape.end() );
 
+  // find _normal
   if ( onShrinkShape ) // one of faces the node is on has no layers
   {
     TopoDS_Shape vertEdge = getMeshDS()->IndexToShape( s2s->first ); // vertex or edge
@@ -2658,54 +2732,35 @@ bool _ViscousBuilder::setEdgeData(_LayerEdge&         edge,
   }
   else // layers are on all faces of SOLID the node is on
   {
-    // find indices of geom faces the node lies on
-    set<TGeomID> faceIds;
-    if  ( posType == SMDS_TOP_FACE )
+    int nbOkNorms = 0;
+    for ( int iF = 0; iF < totalNbFaces; ++iF )
     {
-      faceIds.insert( node->getshapeId() );
-    }
-    else
-    {
-      SMDS_ElemIteratorPtr fIt = node->GetInverseElementIterator(SMDSAbs_Face);
-      while ( fIt->more() )
-        faceIds.insert( editor.FindShape(fIt->next()));
-    }
-
-    set<TGeomID>::iterator id = faceIds.begin();
-    TopoDS_Face F;
-    std::pair< TGeomID, gp_XYZ > id2Norm[20];
-    for ( ; id != faceIds.end(); ++id )
-    {
-      const TopoDS_Shape& s = getMeshDS()->IndexToShape( *id );
-      if ( s.IsNull() || s.ShapeType() != TopAbs_FACE || !subIds.count( *id ))
-        continue;
-      F = TopoDS::Face( s );
+      F = TopoDS::Face( face2Norm[ iF ].first );
       geomNorm = getFaceNormal( node, F, helper, normOK );
       if ( !normOK ) continue;
+      nbOkNorms++;
 
       if ( helper.GetSubShapeOri( data._solid, F ) != TopAbs_REVERSED )
         geomNorm.Reverse();
-      id2Norm[ totalNbFaces ].first  = *id;
-      id2Norm[ totalNbFaces ].second = geomNorm.XYZ();
-      totalNbFaces++;
+      face2Norm[ iF ].second = geomNorm.XYZ();
       edge._normal += geomNorm.XYZ();
     }
-    if ( totalNbFaces == 0 )
+    if ( nbOkNorms == 0 )
       return error(SMESH_Comment("Can't get normal to node ") << node->GetID(), data._index);
 
-    if ( normOK && edge._normal.Modulus() < 1e-3 && totalNbFaces > 1 )
+    if ( edge._normal.Modulus() < 1e-3 && nbOkNorms > 1 )
     {
       // opposite normals, re-get normals at shifted positions (IPAL 52426)
       edge._normal.SetCoord( 0,0,0 );
-      for ( int i = 0; i < totalNbFaces; ++i )
+      for ( int iF = 0; iF < totalNbFaces; ++iF )
       {
-        const TopoDS_Face& F = TopoDS::Face( getMeshDS()->IndexToShape( id2Norm[i].first ));
+        const TopoDS_Face& F = face2Norm[iF].first;
         geomNorm = getFaceNormal( node, F, helper, normOK, /*shiftInside=*/true );
         if ( helper.GetSubShapeOri( data._solid, F ) != TopAbs_REVERSED )
           geomNorm.Reverse();
         if ( normOK )
-          id2Norm[ i ].second = geomNorm.XYZ();
-        edge._normal += id2Norm[ i ].second;
+          face2Norm[ iF ].second = geomNorm.XYZ();
+        edge._normal += face2Norm[ iF ].second;
       }
     }
 
@@ -2715,44 +2770,46 @@ bool _ViscousBuilder::setEdgeData(_LayerEdge&         edge,
     }
     else
     {
-      edge._normal = getWeigthedNormal( node, id2Norm, totalNbFaces );
+      edge._normal = getWeigthedNormal( node, face2Norm, totalNbFaces );
     }
+  }
 
-    switch ( posType )
-    {
-    case SMDS_TOP_FACE:
-      edge._cosin = 0; break;
-
-    case SMDS_TOP_EDGE: {
-      TopoDS_Edge E = TopoDS::Edge( helper.GetSubShapeByNode( node, getMeshDS()));
-      gp_Vec inFaceDir = getFaceDir( F, E, node, helper, normOK );
-      double angle = inFaceDir.Angle( edge._normal ); // [0,PI]
-      edge._cosin = Cos( angle );
-      //cout << "Cosin on EDGE " << edge._cosin << " node " << node->GetID() << endl;
-      break;
-    }
-    case SMDS_TOP_VERTEX: {
-      TopoDS_Vertex V = TopoDS::Vertex( helper.GetSubShapeByNode( node, getMeshDS()));
-      gp_Vec inFaceDir = getFaceDir( F, V, node, helper, normOK );
-      double angle = inFaceDir.Angle( edge._normal ); // [0,PI]
-      edge._cosin = Cos( angle );
-      if ( totalNbFaces > 2 || helper.IsSeamShape( node->getshapeId() ))
-        for ( int iF = totalNbFaces-2; iF >=0; --iF )
-        {
-          F = TopoDS::Face( getMeshDS()->IndexToShape( id2Norm[ iF ].first ));
-          inFaceDir = getFaceDir( F, V, node, helper, normOK );
-          if ( normOK ) {
-            double angle = inFaceDir.Angle( edge._normal );
-            edge._cosin = Max( edge._cosin, Cos( angle ));
-          }
+  // set _cosin
+  switch ( posType )
+  {
+  case SMDS_TOP_FACE: {
+    edge._cosin = 0;
+    break;
+  }
+  case SMDS_TOP_EDGE: {
+    TopoDS_Edge E    = TopoDS::Edge( helper.GetSubShapeByNode( node, getMeshDS()));
+    gp_Vec inFaceDir = getFaceDir( F, E, node, helper, normOK );
+    double angle     = inFaceDir.Angle( edge._normal ); // [0,PI]
+    edge._cosin      = Cos( angle );
+    //cout << "Cosin on EDGE " << edge._cosin << " node " << node->GetID() << endl;
+    break;
+  }
+  case SMDS_TOP_VERTEX: {
+    TopoDS_Vertex V  = TopoDS::Vertex( helper.GetSubShapeByNode( node, getMeshDS()));
+    gp_Vec inFaceDir = getFaceDir( F, V, node, helper, normOK );
+    double angle     = inFaceDir.Angle( edge._normal ); // [0,PI]
+    edge._cosin      = Cos( angle );
+    if ( totalNbFaces > 2 || helper.IsSeamShape( node->getshapeId() ))
+      for ( int iF = totalNbFaces-2; iF >=0; --iF )
+      {
+        F = face2Norm[ iF ].first;
+        inFaceDir = getFaceDir( F, V, node, helper, normOK );
+        if ( normOK ) {
+          double angle = inFaceDir.Angle( edge._normal );
+          edge._cosin = Max( edge._cosin, Cos( angle ));
         }
-      //cout << "Cosin on VERTEX " << edge._cosin << " node " << node->GetID() << endl;
-      break;
-    }
-    default:
-      return error(SMESH_Comment("Invalid shape position of node ")<<node, data._index);
-    }
-  } // case _sWOL.IsNull()
+      }
+    //cout << "Cosin on VERTEX " << edge._cosin << " node " << node->GetID() << endl;
+    break;
+  }
+  default:
+    return error(SMESH_Comment("Invalid shape position of node ")<<node, data._index);
+  }
 
   double normSize = edge._normal.SquareModulus();
   if ( normSize < numeric_limits<double>::min() )
@@ -2887,6 +2944,15 @@ gp_XYZ _ViscousBuilder::getFaceNormal(const SMDS_MeshNode* node,
   isOK = false;
 
   Handle(Geom_Surface) surface = BRep_Tool::Surface( face );
+
+  if ( !shiftInside &&
+       helper.IsDegenShape( node->getshapeId() ) &&
+       getFaceNormalAtSingularity( uv, face, helper, normal ))
+  {
+    isOK = true;
+    return normal.XYZ();
+  }
+
   int pointKind = GeomLib::NormEstim( surface, uv, 1e-5, normal );
   enum { REGULAR = 0, QUASYSINGULAR, CONICAL, IMPOSSIBLE };
 
@@ -2937,6 +3003,55 @@ gp_XYZ _ViscousBuilder::getFaceNormal(const SMDS_MeshNode* node,
 
 //================================================================================
 /*!
+ * \brief Try to get normal at a singularity of a surface basing on it's nature
+ */
+//================================================================================
+
+bool _ViscousBuilder::getFaceNormalAtSingularity( const gp_XY&        uv,
+                                                  const TopoDS_Face&  face,
+                                                  SMESH_MesherHelper& helper,
+                                                  gp_Dir&             normal )
+{
+  BRepAdaptor_Surface surface( face );
+  gp_Dir axis;
+  if ( !getRovolutionAxis( surface, axis ))
+    return false;
+
+  double f,l, d, du, dv;
+  f = surface.FirstUParameter();
+  l = surface.LastUParameter();
+  d = ( uv.X() - f ) / ( l - f );
+  du = ( d < 0.5 ? +1. : -1 ) * 1e-5 * ( l - f );
+  f = surface.FirstVParameter();
+  l = surface.LastVParameter();
+  d = ( uv.Y() - f ) / ( l - f );
+  dv = ( d < 0.5 ? +1. : -1 ) * 1e-5 * ( l - f );
+
+  gp_Dir refDir;
+  gp_Pnt2d testUV = uv;
+  enum { REGULAR = 0, QUASYSINGULAR, CONICAL, IMPOSSIBLE };
+  double tol = 1e-5;
+  Handle(Geom_Surface) geomsurf = surface.Surface().Surface();
+  for ( int iLoop = 0; true ; ++iLoop )
+  {
+    testUV.SetCoord( testUV.X() + du, testUV.Y() + dv );
+    if ( GeomLib::NormEstim( geomsurf, testUV, tol, refDir ) == REGULAR )
+      break;
+    if ( iLoop > 20 )
+      return false;
+    tol /= 10.;
+  }
+
+  if ( axis * refDir < 0. )
+    axis.Reverse();
+
+  normal = axis;
+
+  return true;
+}
+
+//================================================================================
+/*!
  * \brief Return a normal at a node weighted with angles taken by FACEs
  *  \param [in] n - the node
  *  \param [in] fId2Normal - FACE ids and normals
@@ -2945,9 +3060,9 @@ gp_XYZ _ViscousBuilder::getFaceNormal(const SMDS_MeshNode* node,
  */
 //================================================================================
 
-gp_XYZ _ViscousBuilder::getWeigthedNormal( const SMDS_MeshNode*         n,
-                                           std::pair< TGeomID, gp_XYZ > fId2Normal[],
-                                           int                          nbFaces )
+gp_XYZ _ViscousBuilder::getWeigthedNormal( const SMDS_MeshNode*             n,
+                                           std::pair< TopoDS_Face, gp_XYZ > fId2Normal[],
+                                           int                              nbFaces )
 {
   gp_XYZ resNorm(0,0,0);
   TopoDS_Shape V = SMESH_MesherHelper::GetSubShapeByNode( n, getMeshDS() );
@@ -2959,13 +3074,13 @@ gp_XYZ _ViscousBuilder::getWeigthedNormal( const SMDS_MeshNode*         n,
   }
 
   // exclude equal normals
-  int nbUniqNorms = nbFaces;
+  //int nbUniqNorms = nbFaces;
   for ( int i = 0; i < nbFaces; ++i )
     for ( int j = i+1; j < nbFaces; ++j )
       if ( fId2Normal[i].second.IsEqual( fId2Normal[j].second, 0.1 ))
       {
         fId2Normal[i].second.SetCoord( 0,0,0 );
-        --nbUniqNorms;
+        //--nbUniqNorms;
         break;
       }
   //if ( nbUniqNorms < 3 )
@@ -2978,7 +3093,7 @@ gp_XYZ _ViscousBuilder::getWeigthedNormal( const SMDS_MeshNode*         n,
   double angles[30];
   for ( int i = 0; i < nbFaces; ++i )
   {
-    const TopoDS_Face& F = TopoDS::Face( getMeshDS()->IndexToShape( fId2Normal[i].first ));
+    const TopoDS_Face& F = fId2Normal[i].first;
 
     // look for two EDGEs shared by F and other FACEs within fId2Normal
     TopoDS_Edge ee[2];
@@ -2992,7 +3107,7 @@ gp_XYZ _ViscousBuilder::getWeigthedNormal( const SMDS_MeshNode*         n,
       for ( int j = 0; j < nbFaces && !isSharedEdge; ++j )
       {
         if ( i == j ) continue;
-        const TopoDS_Shape& otherF = getMeshDS()->IndexToShape( fId2Normal[j].first );
+        const TopoDS_Shape& otherF = fId2Normal[j].first;
         isSharedEdge = SMESH_MesherHelper::IsSubShape( *E, otherF );
       }
       if ( !isSharedEdge )

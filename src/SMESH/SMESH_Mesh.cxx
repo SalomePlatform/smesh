@@ -226,7 +226,7 @@ SMESH_Mesh::~SMESH_Mesh()
 
 bool SMESH_Mesh::MeshExists( int meshId ) const
 {
-  return _myDocument ? _myDocument->GetMesh( meshId ) : false;
+  return _myDocument ? bool( _myDocument->GetMesh( meshId )) : false;
 }
 
 //=============================================================================
