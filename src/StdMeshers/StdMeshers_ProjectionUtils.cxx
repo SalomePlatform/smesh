@@ -658,7 +658,6 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       TopoDS_Shape F1, F2;
 
       // get a face sharing edge1 (F1)
-      TopoDS_Shape FF2[2];
       TopTools_ListIteratorOfListOfShape ancestIt1( edgeToFace1.FindFromKey( edge1 ));
       for ( ; F1.IsNull() && ancestIt1.More(); ancestIt1.Next() )
         if ( ancestIt1.Value().ShapeType() == TopAbs_FACE )
@@ -668,6 +667,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
         RETURN_BAD_RESULT(" Face1 not found");
 
       // get 2 faces sharing edge2 (one of them is F2)
+      TopoDS_Shape FF2[2];
       TopTools_ListIteratorOfListOfShape ancestIt2( edgeToFace2.FindFromKey( edge2 ));
       for ( int i = 0; FF2[1].IsNull() && ancestIt2.More(); ancestIt2.Next() )
         if ( ancestIt2.Value().ShapeType() == TopAbs_FACE )

@@ -179,13 +179,13 @@ bool StdMeshers_RadialPrism_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& a
   // ----------------------------------
 
   ProjectionUtils::TShapeShapeMap shape2ShapeMaps[2];
-  if ( !ProjectionUtils::FindSubShapeAssociation( innerShell, &aMesh,
-                                                  outerShell, &aMesh,
-                                                  shape2ShapeMaps[0])
-       &&
-       !ProjectionUtils::FindSubShapeAssociation( innerShell.Reversed(), &aMesh,
-                                                  outerShell, &aMesh,
-                                                  shape2ShapeMaps[1]))
+  bool mapOk1 = ProjectionUtils::FindSubShapeAssociation( innerShell, &aMesh,
+                                                          outerShell, &aMesh,
+                                                          shape2ShapeMaps[0]);
+  bool mapOk2 = ProjectionUtils::FindSubShapeAssociation( innerShell.Reversed(), &aMesh,
+                                                          outerShell, &aMesh,
+                                                          shape2ShapeMaps[1]);
+  if ( !mapOk1 && !mapOk2 )
     return error(COMPERR_BAD_SHAPE,"Topology of inner and outer shells seems different" );
 
   int iMap;
