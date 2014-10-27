@@ -168,8 +168,8 @@ The direction of the splitting is defined by the orientation of the
 underlying geometrical edge. <b>"Reverse Edges"</b> list box allows to
 specify the edges for which the splitting should be made in the
 direction opposing to their orientation. This list box is enabled only
-if the geometry object is selected for the meshing. In this case the
-user can select edges to be reversed either by directly picking them
+if the geometry object is selected for the meshing. In this case it is 
+possible to select edges to be reversed either by directly picking them
 in the 3D viewer or by selecting the edges or groups of edges in the
 Object Browser.
 
@@ -212,7 +212,7 @@ integral on the range between two nodes equal for all segments.
 pairs <b>t - F(t)</b>, where \b t ranges from 0 to 1, and the module computes the
 formula, which will rule the change of length of segments and shows
 in the plot the density function curve in red and the node
-distribution as blue crosses. The node distribution is computed the
+distribution as blue crosses. The node distribution is computed in the
 same way as for 
 \ref analyticdensity_anchor "Distribution with Analytic Density". You
 can select the <b>Conversion mode</b> from\b Exponent and <b>Cut
@@ -238,10 +238,10 @@ constructed on them.
 
 The direction of the splitting is defined by the orientation of the
 underlying geometrical edge. <b>"Reverse Edges"</b> list box allows to
-specify the edges for which the splitting should be made in the
+specify the edges, for which the splitting should be made in the
 direction opposing to their orientation. This list box is enabled only
-if the geometry object is selected for the meshing. In this case the
-user can select edges to be reversed either by directly picking them
+if the geometry object is selected for the meshing. In this case it is 
+possible to select edges to be reversed either by directly picking them
 in the 3D viewer or by selecting the edges or groups of edges in the
 Object Browser.
 

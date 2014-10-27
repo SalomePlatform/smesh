@@ -2,20 +2,20 @@
 
 \page reorient_faces_page Reorient faces
 
-\n This operation allows changing orientation of faces two ways.
-<ol>
-<li> To reorient a set of neighboring faces by defining the desired
-  orientation by a vector. <br> Since the direction of face normals in
+\n This operation allows changing the orientation of a set faces in the following ways:
+<ul>
+<li> The new orientation of a set of neighboring faces can be defined  
+  by a vector. <br> Since the direction of face normals in
   the set can be even opposite, it is necessary to specify a control
-  face whose normal will be compared with the vector. This face can be
-  either <ul>
-    <li> found by proximity to a given point or </li> 
+  face, the normal to which will be compared with the vector. This face can be
+  either: <ul>
+    <li> found by proximity to a given point, or </li> 
     <li> specified explicitly. </li> 
 </ul> </li>
-<li> To reorient faces with relation to adjacent volumes. </li>
-</ol>
+<li> Alternatively, the faces can be oriented relatively to the adjacent volumes. </li>
+</ul>
 
-Orientation of a face is changed by reverting the order of its nodes.
+The orientation of a face is changed by reverting the order of its nodes.
 
 <em>To change orientation of faces:</em>
 <ol>
@@ -30,22 +30,17 @@ Orientation of a face is changed by reverting the order of its nodes.
 The following dialog box will appear:
 
 <center>
-\image html reorient_2d_point.png "First mode: to reorient adjacent faces according to a vector. The control face is found by point."
+\image html reorient_2d_point.png "The orientation of adjacent faces is chosen according to a vector. The control face is found by point."
 <br>
-\image html reorient_2d_face.png "Second mode: to reorient adjacent faces according to a vector. The control face is explicitly given."
-<br>
-\image html reorient_2d_volume.png "Third mode: to reorient faces with relation to adjacent volumes."
-</center>
 
 <li>In this dialog
 <ul>
-<li>Specify either of the tree operation modes.</li>
 <li>Select the \b Object (mesh, sub-mesh or group)
   containing faces to reorient, in the Object Browser or in the 3D
   Viewer.</li>
 <li>To reorient according to vector: <ul>
     <li>Specify the coordinates of the \b Point by which the control face
-      will be found or the control \b Face itself. You can easy specify the \b
+      will be found. You can easy specify the \b
       Point by either picking a node in the 3D Viewer or selecting a vertex
       in the Object Browser. It is possible to pick the \b Face by mouse in
       the 3D Viewer or enter its ID.</li>
@@ -54,7 +49,19 @@ The following dialog box will appear:
       vector will go from the coordinate system origin to the selected node.
       If you pick two nodes (holding Shift button) then the \b Direction vector
       will go from the first to the second node.</li> </ul> </li>
-<li>To reorient according to volumes: <ul>
+
+
+
+\image html reorient_2d_face.png "The orientation of adjacent faces is chosen according to a vector. The control face is explicitly given."
+<br>
+
+<li>In the second mode it is possible to directly input the \b Face ID in the corresponding field. </li>
+
+\image html reorient_2d_volume.png "The orientation of faces is chosen with relation to adjacent volumes."
+</center>
+
+
+<li>In the third mode, the faces can be reoriented according to volumes: <ul>
     <li>Select an object (mesh, sub-mesh or group) containing
       reference \b Volumes, in the Object Browser or in the 3D
       Viewer.</li>
