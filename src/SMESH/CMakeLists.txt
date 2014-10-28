@@ -58,6 +58,7 @@ SET(_link_LIBRARIES
   ${CAS_TKG2d}
   ${CAS_TKCDF}
   ${GEOM_NMTTools}
+  ${GEOM_GEOMUtils}
   ${Boost_LIBRARIES}
   SMESHDS
   SMESHControls

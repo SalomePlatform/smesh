@@ -55,8 +55,10 @@
 #include "DriverCGNS_Write.hxx"
 #endif
 
+#include <GEOMUtils.hxx>
+
 #undef _Precision_HeaderFile
-#include <BRepBndLib.hxx>
+//#include <BRepBndLib.hxx>
 #include <BRepPrimAPI_MakeBox.hxx>
 #include <Bnd_Box.hxx>
 #include <TColStd_MapOfInteger.hxx>
@@ -327,7 +329,7 @@ double SMESH_Mesh::GetShapeDiagonalSize(const TopoDS_Shape & aShape)
 {
   if ( !aShape.IsNull() ) {
     Bnd_Box Box;
-    BRepBndLib::Add(aShape, Box);
+    GEOMUtils::PreciseBoundingBox(aShape, Box);
     return sqrt( Box.SquareExtent() );
   }
   return 0;

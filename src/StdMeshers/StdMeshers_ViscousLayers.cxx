@@ -5386,7 +5386,7 @@ int _LayerEdge::Smooth(const int step, const bool isConcaveFace, const bool find
     // get worse?
     if ( nbOkAfter < nbOkBefore )
       continue;
-    if (( isConcaveFace ) &&
+    if (( isConcaveFace || findBest ) &&
         ( nbOkAfter == nbOkBefore ) &&
         //( iFun > -1 || nbOkAfter < _simplices.size() ) &&
         ( minVolAfter <= minVolBefore ))
