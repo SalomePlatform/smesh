@@ -120,8 +120,7 @@ namespace SMESH
 
   SMESHGUI_EXPORT
   // name of proprty saving plug-in of a hypothesis
-  static const char* Plugin_Name() { return "PLUGIN_NAME"; }
-
+  const char* Plugin_Name() { return "PLUGIN_NAME"; }
 }
 
 #endif // SMESHGUI_HYPOTHESESUTILS_H
