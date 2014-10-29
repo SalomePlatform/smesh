@@ -1550,8 +1550,8 @@ void ConnectedElements_i::SetThreshold ( const char*                            
       if ( sobj->_is_nil() )
         THROW_SALOME_CORBA_EXCEPTION
           ( "ConnectedElements_i::SetThreshold(): invalid vertex study entry", SALOME::BAD_PARAM );
-      CORBA::Object_var         obj = sobj->GetObject();
-      GEOM::GEOM_Object_wrap vertex = GEOM::GEOM_Object::_narrow( obj );
+      CORBA::Object_var        obj = sobj->GetObject();
+      GEOM::GEOM_Object_var vertex = GEOM::GEOM_Object::_narrow( obj );
       if ( vertex->_is_nil() )
         THROW_SALOME_CORBA_EXCEPTION
           ( "ConnectedElements_i::SetThreshold(): no GEOM_Object in SObject", SALOME::BAD_PARAM );
