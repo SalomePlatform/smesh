@@ -586,6 +586,7 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
     SMESH::long_array_var anIdList = new SMESH::long_array;
     anIdList->length( 1 );
     anIdList[0] = -1;
+    const bool onlyNodesInMesh = ( myMesh->NbElements() == 0 );
 
     switch (myElementType) {
     case SMDSAbs_0DElement:
@@ -645,8 +646,10 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
     mySelectionMgr->setSelectedObjects( aList, false );
 
     mySimulation->SetVisibility(false);
+    if ( onlyNodesInMesh )
+      myActor->SetRepresentation( SMESH_Actor::eEdge ); // wireframe
     SMESH::UpdateView();
-    
+
     buttonOk->setEnabled(false);
     buttonApply->setEnabled(false);
 
