@@ -126,8 +126,9 @@ vtkIdType getCellType( const SMDSAbs_ElementType theType,
 {
   switch( theType ) 
   {
+  case SMDSAbs_Ball:              return VTK_VERTEX;
   case SMDSAbs_Node:              return VTK_VERTEX;
-  case SMDSAbs_Edge: 
+  case SMDSAbs_Edge:
     if( theNbNodes == 2 )         return VTK_LINE;
     else if ( theNbNodes == 3 )   return VTK_QUADRATIC_EDGE;
     else return VTK_EMPTY_CELL;

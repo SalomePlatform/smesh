@@ -330,7 +330,8 @@ double SMESH_Mesh::GetShapeDiagonalSize(const TopoDS_Shape & aShape)
   if ( !aShape.IsNull() ) {
     Bnd_Box Box;
     GEOMUtils::PreciseBoundingBox(aShape, Box);
-    return sqrt( Box.SquareExtent() );
+    if ( !Box.IsVoid() )
+      return sqrt( Box.SquareExtent() );
   }
   return 0;
 }
