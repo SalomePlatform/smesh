@@ -463,9 +463,7 @@ void SMESHGUI_Add0DElemsOnAllNodesOp::onSelTypeChange(int selType)
 
 //================================================================================
 /*!
- * \brief Install 
- * 
- * 
+ * \brief Install filters
  */
 //================================================================================
 

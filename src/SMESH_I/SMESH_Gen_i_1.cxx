@@ -43,6 +43,8 @@
 #include <TCollection_AsciiString.hxx>
 #include <TopoDS_Solid.hxx>
 
+#include <cctype>
+
 #ifdef _DEBUG_
 static int MYDEBUG = 0;
 //static int VARIABLE_DEBUG = 0;
@@ -341,9 +343,15 @@ void SMESH_Gen_i::SetName(SALOMEDS::SObject_ptr theSObject,
     SALOMEDS::GenericAttribute_wrap   anAttr =
       aStudyBuilder->FindOrCreateAttribute( theSObject, "AttributeName" );
     SALOMEDS::AttributeName_wrap aNameAttr = anAttr;
-    if ( theName && strlen( theName ) != 0 )
-      aNameAttr->SetValue( theName );
-    else {
+    if ( theName && theName[0] ) {
+      std::string name( theName ); // trim trailing white spaces
+      for ( size_t i = name.size()-1; i > 0; --i )
+        if ( isspace( name[i] )) name[i] = '\0';
+        else                     break;
+      aNameAttr->SetValue( name.c_str() );
+    }
+    else
+    {
       CORBA::String_var curName = aNameAttr->Value();
       if ( strlen( curName.in() ) == 0 ) {
         SMESH_Comment aName(theDefaultName);
@@ -355,7 +363,7 @@ void SMESH_Gen_i::SetName(SALOMEDS::SObject_ptr theSObject,
 
 //=======================================================================
 //function : SetPixMap
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 void SMESH_Gen_i::SetPixMap(SALOMEDS::SObject_ptr theSObject,
