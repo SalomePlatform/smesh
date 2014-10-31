@@ -1954,7 +1954,10 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
       break;
     }
     case 3: {
+      int oldValue = aCompareItem->value();
       aCompareItem->setItems(getCompare());
+      if ( oldValue >= 0 )
+        aCompareItem->setValue( oldValue );
       break;
     }
     }
