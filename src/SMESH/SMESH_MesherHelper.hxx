@@ -221,6 +221,8 @@ class SMESH_EXPORT SMESH_MesherHelper
 
   static bool IsSubShape( const TopoDS_Shape& shape, SMESH_Mesh* aMesh );
 
+  static bool IsBlock( const TopoDS_Shape& shape );
+
   static double MaxTolerance( const TopoDS_Shape& shape );
 
   static double GetAngle( const TopoDS_Edge & E1, const TopoDS_Edge & E2,

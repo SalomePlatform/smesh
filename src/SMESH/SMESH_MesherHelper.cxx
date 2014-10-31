@@ -2804,6 +2804,28 @@ bool SMESH_MesherHelper::IsSubShape( const TopoDS_Shape& shape, SMESH_Mesh* aMes
     (shape.ShapeType() == TopAbs_COMPOUND && aMesh->GetMeshDS()->IsGroupOfSubShapes( shape ));
 }
 
+//=======================================================================
+//function : IsBlock
+//purpose  : 
+//=======================================================================
+
+bool SMESH_MesherHelper::IsBlock( const TopoDS_Shape& shape )
+{
+  if ( shape.IsNull() )
+    return false;
+
+  TopoDS_Shell shell;
+  TopExp_Explorer exp( shape, TopAbs_SHELL );
+  if ( !exp.More() ) return false;
+  shell = TopoDS::Shell( exp.Current() );
+  if ( exp.Next(), exp.More() ) return false;
+
+  TopoDS_Vertex v;
+  TopTools_IndexedMapOfOrientedShape map;
+  return SMESH_Block::FindBlockShapes( shell, v, v, map );
+}
+
+
 //================================================================================
 /*!
  * \brief Return maximal tolerance of shape

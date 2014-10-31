@@ -687,6 +687,7 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
 
   TopTools_MapOfShape meshedSolids;
   list< Prism_3D::TPrismTopo > meshedPrism;
+  list< TopoDS_Face > suspectSourceFaces;
   TopTools_ListIteratorOfListOfShape solidIt;
 
   while ( meshedSolids.Extent() < nbSolids )
@@ -717,6 +718,10 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
           {
             meshedFaces.push_front( prism.myTop );
           }
+          else
+          {
+            suspectSourceFaces.push_back( prism.myTop );
+          }
           meshedPrism.push_back( prism );
         }
       }
@@ -746,6 +751,10 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
               solidList.Remove( solidIt );
               continue; // already computed prism
             }
+            if ( myHelper->IsBlock( solid )) {
+              solidIt.Next();
+              continue; // too trivial
+            }
             // find a source FACE of the SOLID: it's a FACE sharing a bottom EDGE with wFace
             const TopoDS_Edge& wEdge = (*wQuad)->side[ QUAD_TOP_SIDE ].grid->Edge(0);
             PShapeIteratorPtr faceIt = myHelper->GetAncestors( wEdge, *myHelper->GetMesh(),
@@ -760,6 +769,7 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
                    myHelper->IsSubShape( candidateF, solid ) &&
                    !myHelper->GetMesh()->GetSubMesh( candidateF )->IsMeshComputed() &&
                    initPrism( prism, solid ) &&
+                   !myHelper->GetMesh()->GetSubMesh( prism.myTop )->IsMeshComputed() &&
                    project2dMesh( prismIt->myBottom, candidateF))
               {
                 mySetErrorToSM = true;
@@ -789,31 +799,49 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
         break; // to compute prisms with avident sources
     }
 
+    if ( meshedFaces.empty() )
+    {
+      meshedFaces.splice( meshedFaces.end(), suspectSourceFaces );
+    }
+
     // find FACEs with local 1D hyps, which has to be computed by now,
     // or at least any computed FACEs
-    for ( int iF = 1; ( meshedFaces.empty() && iF < faceToSolids.Extent() ); ++iF )
+    if ( meshedFaces.empty() )
     {
-      const TopoDS_Face&               face = TopoDS::Face( faceToSolids.FindKey( iF ));
-      const TopTools_ListOfShape& solidList = faceToSolids.FindFromKey( face );
-      if ( solidList.IsEmpty() ) continue;
-      SMESH_subMesh*                 faceSM = theMesh.GetSubMesh( face );
-      if ( !faceSM->IsEmpty() )
+      int prevNbFaces = 0;
+      for ( int iF = 1; iF <= faceToSolids.Extent(); ++iF )
       {
-        meshedFaces.push_back( face ); // lower priority
-      }
-      else
-      {
-        bool allSubMeComputed = true;
-        SMESH_subMeshIteratorPtr smIt = faceSM->getDependsOnIterator(false,true);
-        while ( smIt->more() && allSubMeComputed )
-          allSubMeComputed = smIt->next()->IsMeshComputed();
-        if ( allSubMeComputed )
+        const TopoDS_Face&               face = TopoDS::Face( faceToSolids.FindKey( iF ));
+        const TopTools_ListOfShape& solidList = faceToSolids.FindFromKey( face );
+        if ( solidList.IsEmpty() ) continue;
+        SMESH_subMesh*                 faceSM = theMesh.GetSubMesh( face );
+        if ( !faceSM->IsEmpty() )
         {
-          faceSM->ComputeStateEngine( SMESH_subMesh::COMPUTE );
-          if ( !faceSM->IsEmpty() )
-            meshedFaces.push_front( face ); // higher priority
-          else
-            faceSM->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+          int nbFaces = faceSM->GetSubMeshDS()->NbElements();
+          if ( prevNbFaces < nbFaces )
+          {
+            if ( !meshedFaces.empty() ) meshedFaces.pop_back();
+            meshedFaces.push_back( face ); // lower priority
+            prevNbFaces = nbFaces;
+          }
+        }
+        else
+        {
+          bool allSubMeComputed = true;
+          SMESH_subMeshIteratorPtr smIt = faceSM->getDependsOnIterator(false,true);
+          while ( smIt->more() && allSubMeComputed )
+            allSubMeComputed = smIt->next()->IsMeshComputed();
+          if ( allSubMeComputed )
+          {
+            faceSM->ComputeStateEngine( SMESH_subMesh::COMPUTE );
+            if ( !faceSM->IsEmpty() ) {
+              meshedFaces.push_front( face ); // higher priority
+              break;
+            }
+            else {
+              faceSM->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+            }
+          }
         }
       }
     }
@@ -1512,6 +1540,8 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
         SMESH_subMesh*    topSM = mesh->GetSubMesh( topE );
         SMESH_subMesh*    srcSM = botSM;
         SMESH_subMesh*    tgtSM = topSM;
+        srcSM->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+        tgtSM->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
         if ( !srcSM->IsMeshComputed() && tgtSM->IsMeshComputed() )
           std::swap( srcSM, tgtSM );
 
@@ -1521,7 +1551,6 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
           srcSM->ComputeSubMeshStateEngine( SMESH_subMesh::COMPUTE ); // nodes on VERTEXes
           srcSM->ComputeStateEngine( SMESH_subMesh::COMPUTE );        // segments on the EDGE
         }
-        srcSM->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
 
         if ( tgtSM->IsMeshComputed() &&
              tgtSM->GetSubMeshDS()->NbNodes() != srcSM->GetSubMeshDS()->NbNodes() )
