@@ -1756,6 +1756,19 @@ namespace
     return RefType;
   }
 
+  uint randomize( uint size )
+  {
+    static bool initialized = false;
+    if ( !initialized ) {
+      qsrand( QDateTime::currentDateTime().toTime_t() );
+      initialized = true;
+    }
+    uint v = qrand();
+    v = uint( (double)( v ) / RAND_MAX * size );
+    v = qMax( uint(0), qMin ( v, size-1 ) );
+    return v;
+  }
+  
 } //namespace
 
 void SMESHGUI::OnEditDelete()
@@ -6939,7 +6952,7 @@ SALOMEDS::Color SMESHGUI::getPredefinedUniqueColor()
       }
     }
   }
-  static int currentColor = 0;
+  static int currentColor = randomize( colors.size() );
 
   SALOMEDS::Color color;
   color.R = (double)colors[currentColor].red()   / 255.0;
