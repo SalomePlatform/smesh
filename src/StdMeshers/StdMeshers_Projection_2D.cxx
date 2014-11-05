@@ -706,7 +706,12 @@ namespace {
 
     if ( !tgtFace.IsPartner( srcFace ) )
     {
+      SMESH_MesherHelper edgeHelper( *tgtMesh );
+      edgeHelper.ToFixNodeParameters( true );
+      helper.ToFixNodeParameters( true );
+
       int nbOkPos = 0;
+      bool toCheck = true;
       const double tol2d = 1e-12;
       srcN_tgtN = src2tgtNodes.begin();
       for ( ; srcN_tgtN != src2tgtNodes.end(); ++srcN_tgtN )
@@ -716,11 +721,11 @@ namespace {
         {
         case SMDS_TOP_FACE:
         {
+          if ( nbOkPos < 10 ) break;
           gp_XY uv = helper.GetNodeUV( tgtFace, n ), uvBis = uv;
           if (( helper.CheckNodeUV( tgtFace, n, uv, tol )) &&
-              (( uv - uvBis ).SquareModulus() < tol2d )    &&
-              ( ++nbOkPos > 10 ))
-            return true;
+              (( uv - uvBis ).SquareModulus() < tol2d ))
+            ++nbOkPos;
           else
             nbOkPos = 0;
           break;
@@ -728,10 +733,8 @@ namespace {
         case SMDS_TOP_EDGE:
         {
           const TopoDS_Edge & tgtE = TopoDS::Edge( tgtMeshDS->IndexToShape( n->getshapeId() ));
-          double u = helper.GetNodeU( tgtE, n ), uBis = u;
-          if (( !helper.CheckNodeU( tgtE, n, u, tol )) ||
-              (( u - uBis ) < tol2d ))
-            nbOkPos = 0;
+          edgeHelper.SetSubShape( tgtE );
+          edgeHelper.GetNodeU( tgtE, n, 0, &toCheck );
           break;
         }
         default:;
