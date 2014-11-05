@@ -117,17 +117,17 @@ public:
   _pyCommand( const _AString& theString, int theNb=-1 )
     : myString( theString ), myOrderNb( theNb ) {};
   _AString & GetString() { return myString; }
-  int GetOrderNb() const { return myOrderNb; }
+  int  GetOrderNb() const { return myOrderNb; }
   void SetOrderNb( int theNb ) { myOrderNb = theNb; }
   typedef void* TAddr;
   TAddr GetAddress() const { return (void*) this; }
-  int Length() const { return myString.Length(); }
+  int  Length() const { return myString.Length(); }
   void Clear() { myString.Clear(); myBegPos.Clear(); myArgs.Clear(); }
   bool IsEmpty() const { return myString.IsEmpty(); }
   _AString GetIndentation();
   const _AString & GetResultValue();
   int GetNbResultValues();
-  const _AString& GetResultValue(int res);
+  const _AString & GetResultValue(int res);
   const _AString & GetObject();
   const _AString & GetMethod();
   const _AString & GetArg( int index );
@@ -183,11 +183,11 @@ public:
   const _pyID& GetID() { return myID.IsEmpty() ? myCreationCmd->GetResultValue() : myID; }
   static _pyID FatherID(const _pyID & childID);
   const Handle(_pyCommand)& GetCreationCmd() { return myCreationCmd; }
-  int GetNbCalls() const { return myProcessedCmds.size(); }
+  int  GetNbCalls() const { return myProcessedCmds.size(); }
   bool IsInStudy() const { return myIsPublished; }
   virtual void SetRemovedFromStudy(const bool isRemoved) { myIsPublished = !isRemoved; }
   void SetCreationCmd( Handle(_pyCommand) cmd ) { myCreationCmd = cmd; }
-  int GetCommandNb() { return myCreationCmd->GetOrderNb(); }
+  int  GetCommandNb() { return myCreationCmd->GetOrderNb(); }
   void AddProcessedCmd( const Handle(_pyCommand) & cmd )
   { if (myProcessedCmds.empty() || myProcessedCmds.back()!=cmd) myProcessedCmds.push_back( cmd );}
   std::list< Handle(_pyCommand) >& GetProcessedCmds() { return myProcessedCmds; }
