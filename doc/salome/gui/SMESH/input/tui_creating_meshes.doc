@@ -19,6 +19,11 @@
 \tui_script{creating_meshes_ex03.py}
 
 <br>
+\anchor tui_editing_while_meshing
+<h2>Intermediate edition while meshing</h2>
+\tui_script{a3DmeshOnModified2Dmesh.py}
+
+<br>
 \anchor tui_editing_mesh
 <h2>Editing a mesh</h2>
 \tui_script{creating_meshes_ex04.py}

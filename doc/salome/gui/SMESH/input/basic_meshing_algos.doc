@@ -52,15 +52,15 @@ geometrical objects.
 
 There is also a number of more specific algorithms:
 <ul>
+<li>\subpage prism_3d_algo_page "for meshing prismatic shapes"</li>
 <li>\subpage projection_algos_page "for meshing by projection of another mesh"</li>
 <li>\subpage import_algos_page "for meshing by importing elements from another mesh"</li>
 <li>\subpage radial_prism_algo_page "for meshing geometrical objects with cavities"</li>
-<li>\subpage segments_around_vertex_algo_page "for defining the local size of elements around a certain node"</li>
-<li>\subpage prism_3d_algo_page "for meshing prismatic shapes"</li>
 <li>\subpage radial_quadrangle_1D2D_algo_page "for meshing special 2d faces (circles and part of circles)"</li>
 <li>\subpage use_existing_page "Use Edges to be Created Manually" and 
 \ref use_existing_page "Use Faces to be Created Manually" algorithms can be
 used to create a 1D or a 2D mesh in a python script.</li>
+<li>\subpage segments_around_vertex_algo_page "for defining the local size of elements around a certain node"</li>
 </ul>
 
 \ref constructing_meshes_page "Constructing meshes" page describes in

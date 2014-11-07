@@ -4251,11 +4251,11 @@ void BelongToGeom::init()
     myIsSubshape = IsSubShape(aMap, myShape);
   }
 
-  if (!myIsSubshape)
+  //if (!myIsSubshape) // to be always ready to check an element not bound to geometry
   {
     myElementsOnShapePtr.reset(new ElementsOnShape());
     myElementsOnShapePtr->SetTolerance(myTolerance);
-    myElementsOnShapePtr->SetAllNodes(true); // belong, while false means "lays on"
+    myElementsOnShapePtr->SetAllNodes(true); // "belong", while false means "lays on"
     myElementsOnShapePtr->SetMesh(myMeshDS);
     myElementsOnShapePtr->SetShape(myShape, myType);
   }
@@ -4296,36 +4296,43 @@ bool BelongToGeom::IsSatisfy (long theId)
   {
     if( const SMDS_MeshNode* aNode = myMeshDS->FindNode( theId ) )
     {
+      if ( aNode->getshapeId() < 1 )
+        return myElementsOnShapePtr->IsSatisfy(theId);
+
       const SMDS_PositionPtr& aPosition = aNode->GetPosition();
       SMDS_TypeOfPosition aTypeOfPosition = aPosition->GetTypeOfPosition();
       switch( aTypeOfPosition )
       {
-      case SMDS_TOP_VERTEX : return IsContains( myMeshDS,myShape,aNode,TopAbs_VERTEX );
-      case SMDS_TOP_EDGE   : return IsContains( myMeshDS,myShape,aNode,TopAbs_EDGE );
-      case SMDS_TOP_FACE   : return IsContains( myMeshDS,myShape,aNode,TopAbs_FACE );
-      case SMDS_TOP_3DSPACE: return IsContains( myMeshDS,myShape,aNode,TopAbs_SHELL );
+      case SMDS_TOP_VERTEX : return ( IsContains( myMeshDS,myShape,aNode,TopAbs_VERTEX ));
+      case SMDS_TOP_EDGE   : return ( IsContains( myMeshDS,myShape,aNode,TopAbs_EDGE ));
+      case SMDS_TOP_FACE   : return ( IsContains( myMeshDS,myShape,aNode,TopAbs_FACE ));
+      case SMDS_TOP_3DSPACE: return ( IsContains( myMeshDS,myShape,aNode,TopAbs_SOLID ) ||
+                                      IsContains( myMeshDS,myShape,aNode,TopAbs_SHELL ));
       }
     }
   }
   else
   {
-    if( const SMDS_MeshElement* anElem = myMeshDS->FindElement( theId ) )
+    if ( const SMDS_MeshElement* anElem = myMeshDS->FindElement( theId ))
     {
+      if ( anElem->getshapeId() < 1 )
+        return myElementsOnShapePtr->IsSatisfy(theId);
+
       if( myType == SMDSAbs_All )
       {
-        return IsContains( myMeshDS,myShape,anElem,TopAbs_EDGE ) ||
-               IsContains( myMeshDS,myShape,anElem,TopAbs_FACE ) ||
-               IsContains( myMeshDS,myShape,anElem,TopAbs_SHELL )||
-               IsContains( myMeshDS,myShape,anElem,TopAbs_SOLID );
+        return ( IsContains( myMeshDS,myShape,anElem,TopAbs_EDGE ) ||
+                 IsContains( myMeshDS,myShape,anElem,TopAbs_FACE ) ||
+                 IsContains( myMeshDS,myShape,anElem,TopAbs_SOLID )||
+                 IsContains( myMeshDS,myShape,anElem,TopAbs_SHELL ));
       }
       else if( myType == anElem->GetType() )
       {
         switch( myType )
         {
-        case SMDSAbs_Edge  : return IsContains( myMeshDS,myShape,anElem,TopAbs_EDGE );
-        case SMDSAbs_Face  : return IsContains( myMeshDS,myShape,anElem,TopAbs_FACE );
-        case SMDSAbs_Volume: return IsContains( myMeshDS,myShape,anElem,TopAbs_SHELL )||
-                                    IsContains( myMeshDS,myShape,anElem,TopAbs_SOLID );
+        case SMDSAbs_Edge  : return ( IsContains( myMeshDS,myShape,anElem,TopAbs_EDGE ));
+        case SMDSAbs_Face  : return ( IsContains( myMeshDS,myShape,anElem,TopAbs_FACE ));
+        case SMDSAbs_Volume: return ( IsContains( myMeshDS,myShape,anElem,TopAbs_SOLID )||
+                                      IsContains( myMeshDS,myShape,anElem,TopAbs_SHELL ));
         }
       }
     }

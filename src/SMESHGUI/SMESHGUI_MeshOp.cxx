@@ -247,8 +247,9 @@ void SMESHGUI_MeshOp::startOperation()
     myDlg->activateObject( myIsMesh ? SMESHGUI_MeshDlg::Geom : SMESHGUI_MeshDlg::Mesh );
   }
   else
+  {
     myDlg->activateObject( SMESHGUI_MeshDlg::Obj );
-
+  }
   myDlg->setCurrentTab( SMESH::DIM_3D );
 
   QStringList TypeMeshList;
@@ -2614,11 +2615,11 @@ void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theI
 
   bool toCheckIsApplicableToAll = !myIsMesh;
   GEOM::GEOM_Object_var aGeomVar;
-  QString anEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
+  QString anEntry =
+    myDlg->selectedObject( myToCreate ? SMESHGUI_MeshDlg::Geom : SMESHGUI_MeshDlg::Obj );
   if ( _PTR(SObject) so = studyDS()->FindObjectID( anEntry.toLatin1().data() ))
   {
-    CORBA::Object_var obj = _CAST( SObject,so )->GetObject();
-    aGeomVar = GEOM::GEOM_Object::_narrow( obj );
+    aGeomVar = SMESH::GetGeom( so );
     if ( !aGeomVar->_is_nil() && toCheckIsApplicableToAll )
       toCheckIsApplicableToAll = ( aGeomVar->GetType() == GEOM_GROUP );
   }

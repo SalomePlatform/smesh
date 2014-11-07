@@ -9,6 +9,7 @@
   <li> \ref preview_anchor "Previewing the mesh" (optional)</li>
   <li> \ref submesh_order_anchor "Changing sub-mesh priority" (optional)</li>
   <li> \ref compute_anchor "Computing the mesh"</li>
+  <li> \ref edit_anchor "Editing the mesh" (optional)</li>
 </ul>
 
 \anchor create_mesh_anchor
@@ -357,8 +358,29 @@ computation reporting. There are the following possibilities: always
 show the information box, show only if an error occurs or never. 
 By default, the information box is always shown after mesh computation operation.
 
-<br><br>
+<p><p>
+\anchor edit_anchor
+<h2>Editing the mesh</h2>
 
+It is possible to \ref modifying_meshes_page "edit the mesh" of
+lower dimension before generation of mesh of higher dimension.
 
+For example you can generate 2D mesh, modify it using e.g. 
+\ref pattern_mapping_page, and then generate 3D mesh basing on the
+modified 2D mesh. The workflow is following:
+- Define 1D and 2D meshing algorithms.
+- Compute the mesh. 2D mesh is generated.
+- Apply \ref pattern_mapping_page.
+- Define 3D meshing algorithms without modifying 1D and 2D algorithms
+and hypotheses.
+- Compute the mesh. 3D mesh is generated.
+
+\note Nodes and elements added \ref adding_nodes_and_elements_page
+"manually" can't be used in this workflow because the manually created
+entities are not attached to any geometry and thus (usually) can't be
+found by a mesher paving some geometry.
+
+<b>See Also</b> a sample TUI Script demonstrates the possibility of 
+\ref tui_editing_while_meshing "Intermediate edition while meshing"
 
 */

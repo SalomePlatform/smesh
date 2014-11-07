@@ -4280,16 +4280,17 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
     vMap.Add( (*a2v).second );
 
   // check if there are possible variations in choosing corners
-  bool isThereVariants = false;
+  bool haveVariants = false;
   if ( vertexByAngle.size() > nbCorners )
   {
     double lostAngle = a2v->first;
     double lastAngle = ( --a2v, a2v->first );
-    isThereVariants  = ( lostAngle * 1.1 >= lastAngle );
+    haveVariants  = ( lostAngle * 1.1 >= lastAngle );
   }
 
+  const double angleTol = 5.* M_PI/180;
   myCheckOri = ( vertexByAngle.size() > nbCorners ||
-                 vertexByAngle.begin()->first < 5.* M_PI/180 );
+                 vertexByAngle.begin()->first < angleTol );
 
   // make theWire begin from a corner vertex or triaVertex
   if ( nbCorners == 3 )
@@ -4306,9 +4307,10 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
   vector< double >      angles;
   vector< TopoDS_Edge > edgeVec;
   vector< int >         cornerInd, nbSeg;
-  angles.reserve( vertexByAngle.size() );
+  int nbSegTot = 0;
+  angles .reserve( vertexByAngle.size() );
   edgeVec.reserve( vertexByAngle.size() );
-  nbSeg.reserve( vertexByAngle.size() );
+  nbSeg  .reserve( vertexByAngle.size() );
   cornerInd.reserve( nbCorners );
   for ( edge = theWire.begin(); edge != theWire.end(); ++edge )
   {
@@ -4321,105 +4323,219 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
       theVertices.push_back( v );
       cornerInd.push_back( angles.size() );
     }
-    angles.push_back( angleByVertex.IsBound( v ) ? angleByVertex( v ) : -M_PI );
+    angles .push_back( angleByVertex.IsBound( v ) ? angleByVertex( v ) : -M_PI );
     edgeVec.push_back( *edge );
-    if ( theConsiderMesh && isThereVariants )
+    if ( theConsiderMesh && haveVariants )
     {
       if ( SMESHDS_SubMesh* sm = helper.GetMeshDS()->MeshElements( *edge ))
         nbSeg.push_back( sm->NbNodes() + 1 );
       else
         nbSeg.push_back( 0 );
+      nbSegTot += nbSeg.back();
     }
   }
 
-  // refine the result vector - make sides elual by length if
+  // refine the result vector - make sides equal by length if
   // there are several equal angles
-  if ( isThereVariants )
+  if ( haveVariants )
   {
     if ( nbCorners == 3 )
       angles[0] = 2 * M_PI; // not to move the base triangle VERTEX
 
-    set< int > refinedCorners;
+    // here we refer to VERTEX'es and EDGEs by indices in angles and edgeVec vectors
+    typedef int TGeoIndex;
+
+    // for each vertex find a vertex till which there are nbSegHalf segments
+    const int nbSegHalf = ( nbSegTot % 2 || nbCorners == 3 ) ? 0 : nbSegTot / 2;
+    vector< TGeoIndex > halfDivider( angles.size(), -1 );
+    int nbHalfDividers = 0;
+    if ( nbSegHalf )
+    {
+      // get min angle of corners
+      double minAngle = 10.;
+      for ( size_t iC = 0; iC < cornerInd.size(); ++iC )
+        minAngle = Min( minAngle, angles[ cornerInd[ iC ]]);
+
+      // find halfDivider's
+      for ( TGeoIndex iV1 = 0; iV1 < TGeoIndex( angles.size() ); ++iV1 )
+      {
+        int nbSegs = 0;
+        TGeoIndex iV2 = iV1;
+        do {
+          nbSegs += nbSeg[ iV2 ];
+          iV2 = helper.WrapIndex( iV2 + 1, nbSeg.size() );
+        } while ( nbSegs < nbSegHalf );
+
+        if ( nbSegs == nbSegHalf &&
+             angles[ iV1 ] + angleTol >= minAngle &&
+             angles[ iV2 ] + angleTol >= minAngle )
+        {
+          halfDivider[ iV1 ] = iV2;
+          ++nbHalfDividers;
+        }
+      }
+    }
+
+    set< TGeoIndex > refinedCorners, treatedCorners;
     for ( size_t iC = 0; iC < cornerInd.size(); ++iC )
     {
-      int iV = cornerInd[iC];
-      if ( !refinedCorners.insert( iV ).second )
+      TGeoIndex iV = cornerInd[iC];
+      if ( !treatedCorners.insert( iV ).second )
         continue;
-      list< int > equalVertices;
-      equalVertices.push_back( iV );
+      list< TGeoIndex > equVerts; // inds of vertices that can become corners
+      equVerts.push_back( iV );
       int nbC[2] = { 0, 0 };
       // find equal angles backward and forward from the iV-th corner vertex
       for ( int isFwd = 0; isFwd < 2; ++isFwd )
       {
-        int     dV = isFwd ? +1 : -1;
-        int iCNext = helper.WrapIndex( iC + dV, cornerInd.size() );
-        int iVNext = helper.WrapIndex( iV + dV, angles.size() );
+        int           dV = isFwd ? +1 : -1;
+        int       iCNext = helper.WrapIndex( iC + dV, cornerInd.size() );
+        TGeoIndex iVNext = helper.WrapIndex( iV + dV, angles.size() );
         while ( iVNext != iV )
         {
-          bool equal = Abs( angles[iV] - angles[iVNext] ) < 0.1 * angles[iV];
+          bool equal = Abs( angles[iV] - angles[iVNext] ) < angleTol;
           if ( equal )
-            equalVertices.insert( isFwd ? equalVertices.end() : equalVertices.begin(), iVNext );
+            equVerts.insert( isFwd ? equVerts.end() : equVerts.begin(), iVNext );
           if ( iVNext == cornerInd[ iCNext ])
           {
             if ( !equal )
+            {
+              if ( angles[iV] < angles[iVNext] )
+                refinedCorners.insert( iVNext );
               break;
+            }
             nbC[ isFwd ]++;
-            refinedCorners.insert( cornerInd[ iCNext ] );
+            treatedCorners.insert( cornerInd[ iCNext ] );
             iCNext = helper.WrapIndex( iCNext + dV, cornerInd.size() );
           }
           iVNext = helper.WrapIndex( iVNext + dV, angles.size() );
         }
+        if ( iVNext == iV )
+          break; // all angles equal
       }
-      // move corners to make sides equal by length
-      int nbEqualV  = equalVertices.size();
-      int nbExcessV = nbEqualV - ( 1 + nbC[0] + nbC[1] );
-      if ( nbExcessV > 0 )
+
+      const bool allCornersSame = ( nbC[0] == 3 );
+      if ( allCornersSame && nbHalfDividers > 0 )
       {
-        // calculate normalized length of each side enclosed between neighbor equalVertices
-        vector< double > curLengths;
-        double totalLen = 0;
-        vector< int > evVec( equalVertices.begin(), equalVertices.end() );
-        int   iEV = 0;
-        int    iE = cornerInd[ helper.WrapIndex( iC - nbC[0] - 1, cornerInd.size() )];
-        int iEEnd = cornerInd[ helper.WrapIndex( iC + nbC[1] + 1, cornerInd.size() )];
-        while ( curLengths.size() < nbEqualV + 1 )
+        // select two halfDivider's as corners
+        TGeoIndex hd1, hd2 = -1;
+        int iC2;
+        for ( iC2 = 0; iC2 < cornerInd.size() && hd2 < 0; ++iC2 )
         {
-          curLengths.push_back( totalLen );
+          hd1 = cornerInd[ iC2 ];
+          hd2 = halfDivider[ hd1 ];
+          if ( std::find( equVerts.begin(), equVerts.end(), hd2 ) == equVerts.end() )
+            hd2 = -1; // hd2-th vertex can't become a corner
+          else
+            break;
+        }
+        if ( hd2 >= 0 )
+        {
+          angles[ hd1 ] = 2 * M_PI; // make hd1-th vertex no more "equal"
+          angles[ hd2 ] = 2 * M_PI;
+          refinedCorners.insert( hd1 );
+          refinedCorners.insert( hd2 );
+          treatedCorners = refinedCorners;
+          // update cornerInd
+          equVerts.push_front( equVerts.back() );
+          equVerts.push_back( equVerts.front() );
+          list< TGeoIndex >::iterator hdPos =
+            std::find( equVerts.begin(), equVerts.end(), hd2 );
+          if ( hdPos == equVerts.end() ) break;
+          cornerInd[ helper.WrapIndex( iC2 + 0, cornerInd.size()) ] = hd1;
+          cornerInd[ helper.WrapIndex( iC2 + 1, cornerInd.size()) ] = *( --hdPos );
+          cornerInd[ helper.WrapIndex( iC2 + 2, cornerInd.size()) ] = hd2;
+          cornerInd[ helper.WrapIndex( iC2 + 3, cornerInd.size()) ] = *( ++hdPos, ++hdPos );
+
+          theVertices[ 0 ] = helper.IthVertex( 0, edgeVec[ cornerInd[0] ]);
+          theVertices[ 1 ] = helper.IthVertex( 0, edgeVec[ cornerInd[1] ]);
+          theVertices[ 2 ] = helper.IthVertex( 0, edgeVec[ cornerInd[2] ]);
+          theVertices[ 3 ] = helper.IthVertex( 0, edgeVec[ cornerInd[3] ]);
+          iC = -1;
+          continue;
+        }
+      }
+
+      // move corners to make sides equal by length
+      int nbEqualV  = equVerts.size();
+      int nbExcessV = nbEqualV - ( 1 + nbC[0] + nbC[1] );
+      if ( nbExcessV > 0 ) // there is nbExcessV vertices that can become corners
+      {
+        // calculate normalized length of each "side" enclosed between neighbor equVerts
+        vector< double > accuLength;
+        double totalLen = 0;
+        vector< TGeoIndex > evVec( equVerts.begin(), equVerts.end() );
+        int          iEV = 0;
+        TGeoIndex    iE = cornerInd[ helper.WrapIndex( iC - nbC[0] - 1, cornerInd.size() )];
+        TGeoIndex iEEnd = cornerInd[ helper.WrapIndex( iC + nbC[1] + 1, cornerInd.size() )];
+        while ( accuLength.size() < nbEqualV + int( !allCornersSame ) )
+        {
+          // accumulate length of edges before iEV-th equal vertex
+          accuLength.push_back( totalLen );
           do {
-            curLengths.back() += SMESH_Algo::EdgeLength( edgeVec[ iE ]);
+            accuLength.back() += SMESH_Algo::EdgeLength( edgeVec[ iE ]);
             iE = helper.WrapIndex( iE + 1, edgeVec.size());
-            if ( iEV < evVec.size() && iE == evVec[ iEV++ ] )
-              break;
+            if ( iEV < evVec.size() && iE == evVec[ iEV ] ) {
+              iEV++;
+              break; // equal vertex reached
+            }
           }
           while( iE != iEEnd );
-          totalLen = curLengths.back();
+          totalLen = accuLength.back();
         }
-        curLengths.resize( equalVertices.size() );
-        for ( size_t iS = 0; iS < curLengths.size(); ++iS )
-          curLengths[ iS ] /= totalLen;
+        accuLength.resize( equVerts.size() );
+        for ( size_t iS = 0; iS < accuLength.size(); ++iS )
+          accuLength[ iS ] /= totalLen;
 
-        // find equalVertices most close to the ideal sub-division of all sides
+        // find equVerts most close to the ideal sub-division of all sides
         int iBestEV = 0;
         int iCorner = helper.WrapIndex( iC - nbC[0], cornerInd.size() );
-        int nbSides = 2 + nbC[0] + nbC[1];
+        int nbSides = Min( nbCorners, 2 + nbC[0] + nbC[1] );
         for ( int iS = 1; iS < nbSides; ++iS, ++iBestEV )
         {
           double idealLen = iS / double( nbSides );
-          double d, bestDist = 1.;
-          for ( iEV = iBestEV; iEV < curLengths.size(); ++iEV )
-            if (( d = Abs( idealLen - curLengths[ iEV ])) < bestDist )
+          double d, bestDist = 2.;
+          for ( iEV = iBestEV; iEV < accuLength.size(); ++iEV )
+          {
+            d = Abs( idealLen - accuLength[ iEV ]);
+
+            // take into account presence of a coresponding halfDivider
+            const double cornerWgt = 0.5  / nbSides;
+            const double vertexWgt = 0.25 / nbSides;
+            TGeoIndex hd = halfDivider[ evVec[ iEV ]];
+            if ( hd < 0 )
+              d += vertexWgt;
+            else if( refinedCorners.count( hd ))
+              d -= cornerWgt;
+            else
+              d -= vertexWgt;
+
+            // choose vertex with the best d
+            if ( d < bestDist )
             {
               bestDist = d;
               iBestEV  = iEV;
             }
+          }
           if ( iBestEV > iS-1 + nbExcessV )
             iBestEV = iS-1 + nbExcessV;
           theVertices[ iCorner ] = helper.IthVertex( 0, edgeVec[ evVec[ iBestEV ]]);
+          refinedCorners.insert( evVec[ iBestEV ]);
           iCorner = helper.WrapIndex( iCorner + 1, cornerInd.size() );
         }
+
+      } // if ( nbExcessV > 0 )
+      else
+      {
+        refinedCorners.insert( cornerInd[ iC ]);
       }
-    }
-  }
+    } // loop on cornerInd
+
+    // make theWire begin from the cornerInd[0]-th EDGE
+    while ( !theWire.front().IsSame( edgeVec[ cornerInd[0] ]))
+      theWire.splice( theWire.begin(), theWire, --theWire.end() );
+
+  } // if ( haveVariants )
 
   return nbCorners;
 }
