@@ -82,20 +82,25 @@ namespace SMESH
     return GEOM::GEOM_Object::_nil();
   }
 
-  GEOM::GEOM_Object_ptr GetGeom (_PTR(SObject) theSO)
+  GEOM::GEOM_Object_var GetGeom (_PTR(SObject) theSO)
   {
+    GEOM::GEOM_Object_var aMeshShape;
     if (!theSO)
-      return GEOM::GEOM_Object::_nil();
+      return aMeshShape;
+
+    CORBA::Object_var obj = _CAST( SObject,theSO )->GetObject();
+    aMeshShape = GEOM::GEOM_Object::_narrow( obj );
+    if ( !aMeshShape->_is_nil() )
+      return aMeshShape;
 
     _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
     if (!aStudy)
-      return GEOM::GEOM_Object::_nil();
+      return aMeshShape;
 
     _PTR(ChildIterator) anIter (aStudy->NewChildIterator(theSO));
     for ( ; anIter->More(); anIter->Next()) {
       _PTR(SObject) aSObject = anIter->Value();
       _PTR(SObject) aRefSOClient;
-      GEOM::GEOM_Object_var aMeshShape;
 
       if (aSObject->ReferencedObject(aRefSOClient)) {
         SALOMEDS_SObject* aRefSO = _CAST(SObject,aRefSOClient);
@@ -104,11 +109,10 @@ namespace SMESH
         SALOMEDS_SObject* aSO = _CAST(SObject,aSObject);
         aMeshShape = GEOM::GEOM_Object::_narrow(aSO->GetObject());
       }
-
-      if (!aMeshShape->_is_nil())
-        return aMeshShape._retn();
+      if ( !aMeshShape->_is_nil() )
+        return aMeshShape;
     }
-    return GEOM::GEOM_Object::_nil();
+    return aMeshShape;
   }
 
   SMESHGUI_EXPORT char* GetGeomName( _PTR(SObject) smeshSO )

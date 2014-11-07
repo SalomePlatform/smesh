@@ -511,10 +511,14 @@ namespace SMESH
 
     return SMESH::SMESH_Hypothesis::_nil();
   }
+
   bool IsApplicable(const QString&        aHypType,
                     GEOM::GEOM_Object_ptr theGeomObject,
                     const bool            toCheckAll)
   {
+    if ( getenv("NO_LIMIT_ALGO_BY_SHAPE")) // allow a workaround for a case if
+      return true;                         // IsApplicable() returns false due to a bug
+
     HypothesisData* aHypData = GetHypothesisData(aHypType);
     QString aServLib = aHypData->ServerLibName;
     return SMESHGUI::GetSMESHGen()->IsApplicable( aHypType.toLatin1().data(),
