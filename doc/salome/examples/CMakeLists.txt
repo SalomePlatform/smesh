@@ -17,8 +17,10 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+# examples that cant be used for testing because they use external mesher plug-ins
 SET(BAD_TESTS
   3dmesh.py
+  a3DmeshOnModified2Dmesh.py
   creating_meshes_ex01.py
   creating_meshes_ex03.py
   creating_meshes_ex05.py
@@ -39,14 +41,14 @@ SET(BAD_TESTS
   quality_controls_ex20.py
   quality_controls_ex21.py
   quality_controls_ex22.py
-  viewing_meshes_ex01.py 
-)
+  viewing_meshes_ex01.py
+  )
 
 SET(GOOD_TESTS
-  cartesian_algo.py 
-  creating_meshes_ex02.py 
-  creating_meshes_ex04.py 
-  creating_meshes_ex06.py 
+  cartesian_algo.py
+  creating_meshes_ex02.py
+  creating_meshes_ex04.py
+  creating_meshes_ex06.py
   creating_meshes_ex07.py 
   creating_meshes_ex08.py 
   defining_hypotheses_ex01.py 

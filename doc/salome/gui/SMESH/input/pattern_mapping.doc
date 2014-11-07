@@ -14,7 +14,7 @@ The smp file contains 4 sections:
 
 -# The first line indicates the total number of pattern nodes (N).
 -# The next N lines describe nodes coordinates. Each line contains 2
-node coordinates for a 2D pattern or 3 node cordinates for a 3D pattern.
+node coordinates for a 2D pattern or 3 node coordinates for a 3D pattern.
 Note, that node coordinates of a 3D pattern can be defined only by relative values in range [0;1].
 -# The key-points line contains the indices of the nodes to be mapped on geometrical
 vertices (for a 2D pattern only). Index n refers to the node described 
@@ -89,7 +89,7 @@ An example of a simple 3D pattern smp file:
 
 <br><h2>Application of pattern mapping</h2>
 
-<em>To apply pattern mapping to a geometrical object:</em>
+<em>To apply pattern mapping to a geometrical object or mesh elements:</em>
 
 From the \b Modification menu choose the <b>Pattern Mapping</b> item or click 
 <em>"Pattern mapping"</em> button in the toolbar.
@@ -113,16 +113,17 @@ created manually or generated automatically from an existing mesh or submesh.</l
      boundaries of the pattern must also be equal to the number of vertices
      on internal boundaries of the face;</li>
 <li> \b Vertex to which the first key-point should be mapped;</li>
+</ul>
 Alternatively, it is possible to select <b>Refine selected mesh elements</b> 
-checkbox and apply the pattern to
+check-box and apply the pattern to <ul>
 <li> <b>Mesh Face</b> instead of a geometric Face</li>
 <li> and select \b Node instead of vertex.</li>
-
-Additionally it is possible to:
-<li> <b>Reverse the order of key-points</b> By default, the vertices of
-     a face are ordered counterclockwise.<li>
+</ul>
+Additionally it is possible to: <ul>
+<li> <b>Reverse the order of key-points</b>. By default, the vertices of
+     a face are ordered counterclockwise.</li>
 <li> Enable to <b> Create polygons near boundary</b> </li>
-<li> and <b>Create polyhedrons near boundary</b><li>  
+<li> and <b>Create polyhedrons near boundary</b></li>
 </ul>
 
 \n For a <b>3D pattern</b>
@@ -133,21 +134,27 @@ In this dialog you should specify:
 <ul>
 <li> \b Pattern, which can be loaded from .smp pattern file previously
 created manually or generated automatically from an existing mesh or submesh.</li>
-   <li> A 3D block (Solid) object;</li>
-   <li> Two vertices that specify the order of nodes in the resulting mesh.</li>
+<li> A 3D block (Solid) object.</li>
+<li> Two vertices that specify the order of nodes in the resulting
+  mesh.</li>
+</ul>
 Alternatively, it is possible to select <b>Refine selected mesh elements</b> 
 checkbox and apply the pattern to
+<ul>
 <li> One or several <b>Mesh volumes</b> instead of a geometric 3D
 object</li>
 <li> and select two /b Nodes instead of vertices.</li> 
+</ul>
 Additionally it is possible to:
+<ul>
 <li> Enable to <b> Create polygons near boundary</b> </li>
-<li> and <b>Create polyhedrons near boundary</b><li>
+<li> and <b>Create polyhedrons near boundary</b></li>
 </ul>
 
-\n Automatic Generation 
+<br>
+<h3> Automatic Generation </h3>
 
-To generate a pattern automatically from an existing mesh or submesh,
+To generate a pattern automatically from an existing mesh or sub-mesh,
 click \b New button.
 
 The following dialog box will appear:

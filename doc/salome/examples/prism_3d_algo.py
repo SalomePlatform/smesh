@@ -1,9 +1,14 @@
 # Use 3D extrusion meshing algorithm
 
-import salome, smesh, SMESH, geompy
-
+import salome
 salome.salome_init()
-smesh.SetCurrentStudy( salome.myStudy )
+
+from salome.geom import geomBuilder
+geompy = geomBuilder.New(salome.myStudy)
+
+import SMESH
+from salome.smesh import smeshBuilder
+smesh =  smeshBuilder.New(salome.myStudy)
 
 OX = geompy.MakeVectorDXDYDZ(1,0,0)
 OY = geompy.MakeVectorDXDYDZ(0,1,0)
