@@ -35,7 +35,7 @@
       Hexahedral, Tetrahedral, Triangular </b> and \b Quadrilateral (there
     can be less items for the geometry of lower dimensions).
 
-    Selection of a mesh type hides all meshing algorithms that can not
+    Selection of a mesh type hides all meshing algorithms that cannot
     generate elements of this type.</li>
 
   <li>Apply \subpage basic_meshing_algos_page "meshing algorithms" and
@@ -160,10 +160,10 @@
       List of sets of hypotheses. Tag <em>[custom]</em> is
       automatically added to the sets defined by the user.
       
-      \note \a Automatic in the names of pre-defined sets of
-      hypotheses means only that initially \ref
-      automatic_length_anchor "Automatic Length" hypothesis was
-      included in these sets, and not that these sets are suitable for
+      \note \a "Automatic" in the names of predefined sets of
+      hypotheses came from previous versions of SALOME where
+      \ref automatic_length_anchor "Automatic Length" hypothesis 
+      was included in these sets, and not that these sets are suitable for
       meshing any geometry.
   </li>
 </ol>

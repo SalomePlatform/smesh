@@ -143,8 +143,8 @@ Parameters to be defined in this mode:
     The created flat volumes (or faces) are stored in groups. These groups are named
     according to the position of the group in the list of groups: group
     "j_n_p" is a group of flat elements that are built between the group \#n
-    and the group \#p in the group list. All the flat elements are gathered
-    into the group named "joints3D" (correspondingly "joints2D"). The flat element of the multiple
+    and the group \#p in the group list. All flat elements are gathered
+    into the group named "joints3D" (correspondingly "joints2D"). The flat elements of multiple
     junctions between the simple junction are stored in a group named
     "jointsMultiples".</li>
   <li> If <b>On all boundaries</b> option is activated, the volumes (or faces),
