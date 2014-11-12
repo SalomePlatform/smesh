@@ -568,6 +568,7 @@ namespace {
       vector< gp_XYZ > srcPnts, tgtPnts;
       srcPnts.reserve( totNbSeg );
       tgtPnts.reserve( totNbSeg );
+      gp_XYZ srcBC( 0,0,0 ), tgtBC( 0,0,0 );
       for ( size_t iW = 0; iW < srcWires.size(); ++iW )
       {
         const double minSegLen = srcWires[iW]->Length() / totNbSeg;
@@ -584,6 +585,8 @@ namespace {
             tgtPnts.push_back( tgtWires[iW]->Value3d( tgtU ).XYZ() );
             srcU += srcDu;
             tgtU += tgtDu;
+            srcBC += srcPnts.back();
+            tgtBC += tgtPnts.back();
           }
         }
       }
@@ -596,6 +599,8 @@ namespace {
       const int nbTestPnt = 20;
       const size_t  iStep = Max( 1, int( srcPnts.size() / nbTestPnt ));
       // check boundary
+      gp_Pnt trsfTgt = trsf.Transform( srcBC / srcPnts.size() );
+      trsfIsOK = ( trsfTgt.SquareDistance( tgtBC / tgtPnts.size() ) < tol*tol );
       for ( size_t i = 0; ( i < srcPnts.size() && trsfIsOK ); i += iStep )
       {
         gp_Pnt trsfTgt = trsf.Transform( srcPnts[i] );
@@ -606,8 +611,8 @@ namespace {
       {
         BRepAdaptor_Surface srcSurf( srcFace );
         gp_Pnt srcP =
-          srcSurf.Value( 0.5 * ( srcSurf.FirstUParameter() + srcSurf.LastUParameter() ),
-                         0.5 * ( srcSurf.FirstVParameter() + srcSurf.LastVParameter() ));
+          srcSurf.Value( 0.321 * ( srcSurf.FirstUParameter() + srcSurf.LastUParameter() ),
+                         0.123 * ( srcSurf.FirstVParameter() + srcSurf.LastVParameter() ));
         gp_Pnt tgtTrsfP = trsf.Transform( srcP );
         TopLoc_Location loc;
         GeomAPI_ProjectPointOnSurf& proj = helper.GetProjector( tgtFace, loc, 0.1*tol );
@@ -888,10 +893,9 @@ namespace {
           case SMDS_TOP_EDGE: {
             TopoDS_Shape srcEdge = srcHelper.GetSubShapeByNode( srcNode, srcHelper.GetMeshDS() );
             TopoDS_Edge  tgtEdge = TopoDS::Edge( shape2ShapeMap( srcEdge, /*isSrc=*/true ));
-            tgtMeshDS->SetNodeOnEdge( n, TopoDS::Edge( tgtEdge ));
-            double U = srcHelper.GetNodeU( TopoDS::Edge( srcEdge ), srcNode );
+            double U = Precision::Infinite();
             helper.CheckNodeU( tgtEdge, n, U, Precision::PConfusion());
-            n->SetPosition(SMDS_PositionPtr(new SMDS_EdgePosition( U )));
+            tgtMeshDS->SetNodeOnEdge( n, TopoDS::Edge( tgtEdge ), U );
             break;
           }
           case SMDS_TOP_VERTEX: {
@@ -922,12 +926,12 @@ namespace {
    */
   //================================================================================
 
-  void fixDistortedFaces( SMESH_MesherHelper& helper,
+  bool fixDistortedFaces( SMESH_MesherHelper& helper,
                           TSideVector&        tgtWires )
   {
     SMESH_subMesh* faceSM = helper.GetMesh()->GetSubMesh( helper.GetSubShape() );
 
-    if ( helper.IsDistorted2D( faceSM ))
+    if ( helper.IsDistorted2D( faceSM, /*checkUV=*/false ))
     {
       SMESH_MeshEditor editor( helper.GetMesh() );
       SMESHDS_SubMesh* smDS = faceSM->GetSubMeshDS();
@@ -965,7 +969,12 @@ namespace {
       set<const SMDS_MeshNode*> fixedNodes;
       editor.Smooth( faces, fixedNodes, algo, /*nbIterations=*/ 10,
                      /*theTgtAspectRatio=*/1.0, /*the2D=*/!isPlanar);
+
+      helper.ToFixNodeParameters( true );
+
+      return !helper.IsDistorted2D( faceSM, /*checkUV=*/true );
     }
+    return true;
   }
 
 } // namespace
@@ -1048,25 +1057,28 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   if ( err && !err->IsOK() )
     return error( err );
 
-  bool done = false;
+  bool projDone = false;
 
-  if ( !done )
+  if ( !projDone )
   {
     // try to project from the same face with different location
-    done = projectPartner( tgtFace, srcFace, tgtWires, srcWires,
-                           shape2ShapeMap, _src2tgtNodes, is1DComputed );
+    projDone = projectPartner( tgtFace, srcFace, tgtWires, srcWires,
+                               shape2ShapeMap, _src2tgtNodes, is1DComputed );
   }
-  if ( !done )
+  if ( !projDone )
   {
     // projection in case if the faces are similar in 2D space
-    done = projectBy2DSimilarity( tgtFace, srcFace, tgtWires, srcWires,
-                                  shape2ShapeMap, _src2tgtNodes, is1DComputed);
+    projDone = projectBy2DSimilarity( tgtFace, srcFace, tgtWires, srcWires,
+                                      shape2ShapeMap, _src2tgtNodes, is1DComputed);
   }
 
   SMESH_MesherHelper helper( theMesh );
   helper.SetSubShape( tgtFace );
 
-  if ( !done )
+  // it will remove mesh built on edges and vertices in failure case
+  MeshCleaner cleaner( tgtSubMesh );
+
+  if ( !projDone )
   {
     _src2tgtNodes.clear();
     // --------------------
@@ -1165,10 +1177,6 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     mapper.MakeMesh( tgtMesh, toCreatePolygons, toCreatePolyedrs );
     if ( mapper.GetErrorCode() != SMESH_Pattern::ERR_OK )
       return error("Can't make mesh by source mesh pattern");
-
-    // it will remove mesh built by pattern mapper on edges and vertices
-    // in failure case
-    MeshCleaner cleaner( tgtSubMesh );
 
     // -------------------------------------------------------------------------
     // mapper doesn't take care of nodes already existing on edges and vertices,
@@ -1329,14 +1337,6 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     if ( nbFaceBeforeMerge != nbFaceAtferMerge && !helper.HasDegeneratedEdges() )
       return error(COMPERR_BAD_INPUT_MESH, "Probably invalid node parameters on geom faces");
 
-
-    // ----------------------------------------------------------------
-    // The mapper can create distorted faces by placing nodes out of the FACE
-    // boundary -- fix bad faces by smoothing
-    // ----------------------------------------------------------------
-
-    fixDistortedFaces( helper, tgtWires );
-
     // ----------------------------------------------------------------
     // The mapper can't create quadratic elements, so convert if needed
     // ----------------------------------------------------------------
@@ -1355,10 +1355,17 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
       editor.ConvertToQuadratic(/*theForce3d=*/false, tgtFaces, false);
     }
 
-    cleaner.Release(); // not to remove mesh
-
   } // end of projection using Pattern mapping
 
+
+  if ( !projDone || is1DComputed )
+    // ----------------------------------------------------------------
+    // The mapper can create distorted faces by placing nodes out of the FACE
+    // boundary, also bad face can be created if EDGEs already discretized
+    // --> fix bad faces by smoothing
+    // ----------------------------------------------------------------
+    if ( !fixDistortedFaces( helper, tgtWires ))
+      return error("Invalid mesh generated");
 
   // ---------------------------
   // Check elements orientation
@@ -1404,6 +1411,8 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
         RETURN_BAD_RESULT("Pb of SMESH_MeshEditor::Reorient()");
     }
   }
+
+  cleaner.Release(); // not to remove mesh
 
   return true;
 }

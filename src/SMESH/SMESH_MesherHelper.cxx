@@ -941,7 +941,7 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
   int  shapeID = n->getshapeId();
   bool infinit = Precision::IsInfinite( u );
   bool zero    = ( u == 0. );
-  if ( force || toCheckPosOnShape( shapeID ) || infinit || zero )
+  if ( force || infinit || zero || toCheckPosOnShape( shapeID ))
   {
     TopLoc_Location loc; double f,l;
     Handle(Geom_Curve) curve = BRep_Tool::Curve( E,loc,f,l );
@@ -958,7 +958,7 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
       gp_Pnt nodePnt = SMESH_TNodeXYZ( n );
       if ( !loc.IsIdentity() ) nodePnt.Transform( loc.Transformation().Inverted() );
       gp_Pnt curvPnt;
-      double dist = u;
+      double dist = 2*tol;
       if ( !infinit )
       {
         curvPnt = curve->Value( u );
@@ -2559,7 +2559,8 @@ bool SMESH_MesherHelper::IsStructured( SMESH_subMesh* faceSM )
 //purpose  : Return true if 2D mesh on FACE is ditorted
 //=======================================================================
 
-bool SMESH_MesherHelper::IsDistorted2D( SMESH_subMesh* faceSM )
+bool SMESH_MesherHelper::IsDistorted2D( SMESH_subMesh* faceSM,
+                                        bool           checkUV)
 {
   if ( !faceSM || faceSM->GetSubShape().ShapeType() != TopAbs_FACE )
     return false;
@@ -2577,6 +2578,7 @@ bool SMESH_MesherHelper::IsDistorted2D( SMESH_subMesh* faceSM )
   double prevArea2D = 0;
   vector< const SMDS_MeshNode* > nodes;
   vector< gp_XY >                uv;
+  bool* toCheckUV = checkUV ? & checkUV : 0;
   while ( faceIt->more() && !haveBadFaces )
   {
     const SMDS_MeshElement* face = faceIt->next();
@@ -2608,7 +2610,7 @@ bool SMESH_MesherHelper::IsDistorted2D( SMESH_subMesh* faceSM )
     // get UVs
     uv.resize( nodes.size() );
     for ( size_t i = 0; i < nodes.size(); ++i )
-      uv[ i ] = helper.GetNodeUV( F, nodes[ i ], inFaceNode );
+      uv[ i ] = helper.GetNodeUV( F, nodes[ i ], inFaceNode, toCheckUV );
 
     // compare orientation of triangles
     for ( int iT = 0, nbT = nodes.size()-2; iT < nbT; ++iT )
