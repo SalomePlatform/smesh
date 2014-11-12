@@ -120,7 +120,7 @@ class SMESH_EXPORT SMESH_MesherHelper
   /*!
    * \brief Return true if 2D mesh on FACE is distored
    */
-  static bool IsDistorted2D( SMESH_subMesh* faceSM );
+  static bool IsDistorted2D( SMESH_subMesh* faceSM, bool checkUV=false );
 
   /*!
    * \brief Returns true if given node is medium

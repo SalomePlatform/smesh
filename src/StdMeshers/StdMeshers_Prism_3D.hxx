@@ -482,7 +482,9 @@ public:
    * \brief Analyse shape geometry and mesh.
     * If there are triangles on one of faces, it becomes 'bottom'
    */
-  bool initPrism(Prism_3D::TPrismTopo& thePrism, const TopoDS_Shape& theSolid);
+  bool initPrism(Prism_3D::TPrismTopo& thePrism,
+                 const TopoDS_Shape&   theSolid,
+                 const bool            selectBottom = true);
 
   /*!
    * \brief Fill thePrism.myWallQuads and thePrism.myTopEdges
@@ -556,6 +558,7 @@ private:
 
   bool myProjectTriangles;
   bool mySetErrorToSM;
+  bool myUseBlock;
 
   StdMeshers_PrismAsBlock myBlock;
   SMESH_MesherHelper*     myHelper;

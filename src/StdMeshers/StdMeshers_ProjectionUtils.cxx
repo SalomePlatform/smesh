@@ -1942,97 +1942,109 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
 
   // 2. face sets
 
-  set<const SMDS_MeshElement*> Elems1, Elems2;
-  for ( int is2 = 0; is2 < 2; ++is2 )
+  int assocRes;
+  for ( int iAttempt = 0; iAttempt < 2; ++iAttempt )
   {
-    set<const SMDS_MeshElement*> & elems = is2 ? Elems2 : Elems1;
-    SMESHDS_SubMesh*                  sm = is2 ? SM2 : SM1;
-    SMESH_MesherHelper*           helper = is2 ? &helper2 : &helper1;
-    const TopoDS_Face &             face = is2 ? face2 : face1;
-    SMDS_ElemIteratorPtr eIt = sm->GetElements();
-
-    if ( !helper->IsRealSeam( is2 ? edge2 : edge1 ))
+    set<const SMDS_MeshElement*> Elems1, Elems2;
+    for ( int is2 = 0; is2 < 2; ++is2 )
     {
-      while ( eIt->more() ) elems.insert( eIt->next() );
-    }
-    else
-    {
-      // the only suitable edge is seam, i.e. it is a sphere.
-      // FindMatchingNodes() will not know which way to go from any edge.
-      // So we ignore all faces having nodes on edges or vertices except
-      // one of faces sharing current start nodes
+      set<const SMDS_MeshElement*> & elems = is2 ? Elems2 : Elems1;
+      SMESHDS_SubMesh*                  sm = is2 ? SM2 : SM1;
+      SMESH_MesherHelper*           helper = is2 ? &helper2 : &helper1;
+      const TopoDS_Face &             face = is2 ? face2 : face1;
+      SMDS_ElemIteratorPtr eIt = sm->GetElements();
 
-      // find a face to keep
-      const SMDS_MeshElement* faceToKeep = 0;
-      const SMDS_MeshNode* vNode = is2 ? vNode2 : vNode1;
-      const SMDS_MeshNode* eNode = is2 ? eNode2[0] : eNode1[0];
-      TIDSortedElemSet inSet, notInSet;
-
-      const SMDS_MeshElement* f1 =
-        SMESH_MeshAlgos::FindFaceInSet( vNode, eNode, inSet, notInSet );
-      if ( !f1 ) RETURN_BAD_RESULT("The first face on seam not found");
-      notInSet.insert( f1 );
-
-      const SMDS_MeshElement* f2 =
-        SMESH_MeshAlgos::FindFaceInSet( vNode, eNode, inSet, notInSet );
-      if ( !f2 ) RETURN_BAD_RESULT("The second face on seam not found");
-
-      // select a face with less UV of vNode
-      const SMDS_MeshNode* notSeamNode[2] = {0, 0};
-      for ( int iF = 0; iF < 2; ++iF ) {
-        const SMDS_MeshElement* f = ( iF ? f2 : f1 );
-        for ( int i = 0; !notSeamNode[ iF ] && i < f->NbNodes(); ++i ) {
-          const SMDS_MeshNode* node = f->GetNode( i );
-          if ( !helper->IsSeamShape( node->getshapeId() ))
-            notSeamNode[ iF ] = node;
-        }
+      if ( !helper->IsRealSeam( is2 ? edge2 : edge1 ))
+      {
+        while ( eIt->more() ) elems.insert( elems.end(), eIt->next() );
       }
-      gp_Pnt2d uv1 = helper->GetNodeUV( face, vNode, notSeamNode[0] );
-      gp_Pnt2d uv2 = helper->GetNodeUV( face, vNode, notSeamNode[1] );
-      if ( uv1.X() + uv1.Y() > uv2.X() + uv2.Y() )
-        faceToKeep = f2;
       else
-        faceToKeep = f1;
+      {
+        // the only suitable edge is seam, i.e. it is a sphere.
+        // FindMatchingNodes() will not know which way to go from any edge.
+        // So we ignore all faces having nodes on edges or vertices except
+        // one of faces sharing current start nodes
 
-      // fill elem set
-      elems.insert( faceToKeep );
-      while ( eIt->more() ) {
-        const SMDS_MeshElement* f = eIt->next();
-        int nbNodes = f->NbNodes();
-        if ( f->IsQuadratic() )
-          nbNodes /= 2;
-        bool onBnd = false;
-        for ( int i = 0; !onBnd && i < nbNodes; ++i ) {
-          const SMDS_MeshNode* node = f->GetNode( i );
-          onBnd = ( node->GetPosition()->GetTypeOfPosition() != SMDS_TOP_FACE);
+        // find a face to keep
+        const SMDS_MeshElement* faceToKeep = 0;
+        const SMDS_MeshNode* vNode = is2 ? vNode2 : vNode1;
+        const SMDS_MeshNode* eNode = is2 ? eNode2[0] : eNode1[0];
+        TIDSortedElemSet inSet, notInSet;
+
+        const SMDS_MeshElement* f1 =
+          SMESH_MeshAlgos::FindFaceInSet( vNode, eNode, inSet, notInSet );
+        if ( !f1 ) RETURN_BAD_RESULT("The first face on seam not found");
+        notInSet.insert( f1 );
+
+        const SMDS_MeshElement* f2 =
+          SMESH_MeshAlgos::FindFaceInSet( vNode, eNode, inSet, notInSet );
+        if ( !f2 ) RETURN_BAD_RESULT("The second face on seam not found");
+
+        // select a face with less UV of vNode
+        const SMDS_MeshNode* notSeamNode[2] = {0, 0};
+        for ( int iF = 0; iF < 2; ++iF ) {
+          const SMDS_MeshElement* f = ( iF ? f2 : f1 );
+          for ( int i = 0; !notSeamNode[ iF ] && i < f->NbNodes(); ++i ) {
+            const SMDS_MeshNode* node = f->GetNode( i );
+            if ( !helper->IsSeamShape( node->getshapeId() ))
+              notSeamNode[ iF ] = node;
+          }
         }
-        if ( !onBnd )
-          elems.insert( f );
-      }
-      // add also faces adjacent to faceToKeep
-      int nbNodes = faceToKeep->NbNodes();
-      if ( faceToKeep->IsQuadratic() ) nbNodes /= 2;
-      notInSet.insert( f1 );
-      notInSet.insert( f2 );
-      for ( int i = 0; i < nbNodes; ++i ) {
-        const SMDS_MeshNode* n1 = faceToKeep->GetNode( i );
-        const SMDS_MeshNode* n2 = faceToKeep->GetNode(( i+1 ) % nbNodes );
-        f1 = SMESH_MeshAlgos::FindFaceInSet( n1, n2, inSet, notInSet );
-        if ( f1 )
-          elems.insert( f1 );
-      }
-    } // case on a sphere
-  } // loop on 2 faces
+        gp_Pnt2d uv1 = helper->GetNodeUV( face, vNode, notSeamNode[0] );
+        gp_Pnt2d uv2 = helper->GetNodeUV( face, vNode, notSeamNode[1] );
+        if ( uv1.X() + uv1.Y() > uv2.X() + uv2.Y() )
+          faceToKeep = f2;
+        else
+          faceToKeep = f1;
 
-  //  int quadFactor = (*Elems1.begin())->IsQuadratic() ? 2 : 1;
+        // fill elem set
+        elems.insert( faceToKeep );
+        while ( eIt->more() ) {
+          const SMDS_MeshElement* f = eIt->next();
+          int nbNodes = f->NbNodes();
+          if ( f->IsQuadratic() )
+            nbNodes /= 2;
+          bool onBnd = false;
+          for ( int i = 0; !onBnd && i < nbNodes; ++i ) {
+            const SMDS_MeshNode* node = f->GetNode( i );
+            onBnd = ( node->GetPosition()->GetTypeOfPosition() != SMDS_TOP_FACE);
+          }
+          if ( !onBnd )
+            elems.insert( f );
+        }
+        // add also faces adjacent to faceToKeep
+        int nbNodes = faceToKeep->NbNodes();
+        if ( faceToKeep->IsQuadratic() ) nbNodes /= 2;
+        notInSet.insert( f1 );
+        notInSet.insert( f2 );
+        for ( int i = 0; i < nbNodes; ++i ) {
+          const SMDS_MeshNode* n1 = faceToKeep->GetNode( i );
+          const SMDS_MeshNode* n2 = faceToKeep->GetNode(( i+1 ) % nbNodes );
+          f1 = SMESH_MeshAlgos::FindFaceInSet( n1, n2, inSet, notInSet );
+          if ( f1 )
+            elems.insert( f1 );
+        }
+      } // case on a sphere
+    } // loop on 2 faces
 
-  node1To2Map.clear();
-  int res = SMESH_MeshEditor::FindMatchingNodes( Elems1, Elems2,
-                                                 vNode1, vNode2,
-                                                 eNode1[0], eNode2[0],
-                                                 node1To2Map);
-  if ( res != SMESH_MeshEditor::SEW_OK )
-    RETURN_BAD_RESULT("FindMatchingNodes() result " << res );
+    node1To2Map.clear();
+    assocRes = SMESH_MeshEditor::FindMatchingNodes( Elems1, Elems2,
+                                                    vNode1, vNode2,
+                                                    eNode1[0], eNode2[0],
+                                                    node1To2Map);
+    if (( assocRes != SMESH_MeshEditor::SEW_OK ) &&
+        ( eNode1[1] || eNode2[1] )) // there is another node to try (on a closed EDGE)
+    {
+      node1To2Map.clear();
+      if ( eNode1[1] ) std::swap( eNode1[0], eNode1[1] );
+      else             std::swap( eNode2[0], eNode2[1] );
+      continue; // one more attempt
+    }
+
+    break;
+  }
+  if ( assocRes != SMESH_MeshEditor::SEW_OK )
+    RETURN_BAD_RESULT("FindMatchingNodes() result " << assocRes );
 
   // On a sphere, add matching nodes on the edge
 
