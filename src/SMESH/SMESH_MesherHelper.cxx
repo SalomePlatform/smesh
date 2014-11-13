@@ -2464,7 +2464,7 @@ namespace
 
 //=======================================================================
 //function : IsStructured
-//purpose  : Return true if 2D mesh on FACE is structured
+//purpose  : Return true if 2D mesh on FACE is a structured rectangle
 //=======================================================================
 
 bool SMESH_MesherHelper::IsStructured( SMESH_subMesh* faceSM )

@@ -412,7 +412,8 @@ struct StdMeshers_Sweeper
   std::vector< TNodeColumn* > myIntColumns; // internal nodes
 
   bool ComputeNodes( SMESH_MesherHelper& helper,
-                     const double        tol );
+                     const double        tol,
+                     const bool          allowHighBndError );
 
 private:
 
@@ -528,6 +529,11 @@ public:
    * \brief Compute tolerance to pass to StdMeshers_Sweeper
    */
   double getSweepTolerance( const Prism_3D::TPrismTopo& thePrism );
+
+  /*!
+   * \brief Defines if it's safe to use the block approach
+   */
+  bool isSimpleBottom( const Prism_3D::TPrismTopo& thePrism );
 
   /*!
    * \brief Project mesh faces from a source FACE of one prism to
