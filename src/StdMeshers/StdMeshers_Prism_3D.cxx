@@ -661,12 +661,14 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
 
   Prism_3D::TPrismTopo prism;
   myPropagChains = 0;
+  bool selectBottom = meshedFaces.empty();
 
   if ( nbSolids == 1 )
   {
+    TopoDS_Shape solid = TopExp_Explorer( theShape, TopAbs_SOLID ).Current();
     if ( !meshedFaces.empty() )
       prism.myBottom = meshedFaces.front();
-    return ( initPrism( prism, TopExp_Explorer( theShape, TopAbs_SOLID ).Current() ) &&
+    return ( initPrism( prism, solid, selectBottom ) &&
              compute( prism ));
   }
 
@@ -689,7 +691,6 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
   list< Prism_3D::TPrismTopo > meshedPrism;
   list< TopoDS_Face > suspectSourceFaces;
   TopTools_ListIteratorOfListOfShape solidIt;
-  bool selectBottom = false;
 
   while ( meshedSolids.Extent() < nbSolids )
   {
@@ -1105,7 +1106,9 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
 
   // Assure the bottom is meshed
   SMESH_subMesh * botSM = myHelper->GetMesh()->GetSubMesh( thePrism.myBottom );
-  if ( ! NSProjUtils::MakeComputed( botSM ))
+  if (( botSM->IsEmpty() ) &&
+      ( ! botSM->GetAlgo() ||
+        ! _gen->Compute( *botSM->GetFather(), botSM->GetSubShape(), /*shapeOnly=*/true )))
     return error( COMPERR_BAD_INPUT_MESH,
                   TCom( "No mesher defined to compute the face #")
                   << shapeID( thePrism.myBottom ));
@@ -1157,6 +1160,7 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
   // use transformation (issue 0020680, IPAL0052499)
   StdMeshers_Sweeper sweeper;
   double tol;
+  bool allowHighBndError;
 
   if ( !myUseBlock )
   {
@@ -1178,9 +1182,10 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
       sweeper.myIntColumns.push_back( & bot_column->second );
 
     tol = getSweepTolerance( thePrism );
+    allowHighBndError = !isSimpleBottom( thePrism );
   }
 
-  if ( !myUseBlock && sweeper.ComputeNodes( *myHelper, tol ))
+  if ( !myUseBlock && sweeper.ComputeNodes( *myHelper, tol, allowHighBndError ))
   {
   }
   else // use block approach
@@ -2298,6 +2303,44 @@ double StdMeshers_Prism_3D::getSweepTolerance( const Prism_3D::TPrismTopo& thePr
 }
 
 //=======================================================================
+//function : isSimpleQuad
+//purpose  : check if the bottom FACE is meshable with nice qudrangles,
+//           if so the block aproach can work rather fast.
+//           This is a temporary mean caused by problems in StdMeshers_Sweeper
+//=======================================================================
+
+bool StdMeshers_Prism_3D::isSimpleBottom( const Prism_3D::TPrismTopo& thePrism )
+{
+  // analyse angles between edges
+  double nbConcaveAng = 0, nbConvexAng = 0;
+  TopoDS_Face reverseBottom = TopoDS::Face( thePrism.myBottom.Reversed() ); // see initPrism()
+  TopoDS_Vertex commonV;
+  const list< TopoDS_Edge >& botEdges = thePrism.myBottomEdges;
+  list< TopoDS_Edge >::const_iterator edge = botEdges.begin();
+  for ( ; edge != botEdges.end(); ++edge )
+  {
+    if ( SMESH_Algo::isDegenerated( *edge ))
+      return false;
+    TopoDS_Edge e1 = *edge++;
+    TopoDS_Edge e2 = ( edge == botEdges.end() ? botEdges.front() : *edge );
+    if ( ! TopExp::CommonVertex( e1, e2,  commonV ))
+    {
+      e2 = botEdges.front();
+      if ( ! TopExp::CommonVertex( e1, e2,  commonV ))
+        break;
+    }
+    double angle = myHelper->GetAngle( e1, e2, reverseBottom, commonV );
+    if ( angle < -5 * M_PI/180 )
+      if ( ++nbConcaveAng > 1 )
+        return false;
+    if ( angle > 85 * M_PI/180 )
+      if ( ++nbConvexAng > 4 )
+        return false;
+  }
+  return true;
+}
+
+//=======================================================================
 //function : project2dMesh
 //purpose  : Project mesh faces from a source FACE of one prism (theSrcFace)
 //           to a source FACE of another prism (theTgtFace)
@@ -2835,17 +2878,18 @@ void StdMeshers_PrismAsBlock::Clear()
 //=======================================================================
 
 bool StdMeshers_Prism_3D::initPrism(Prism_3D::TPrismTopo& thePrism,
-                                    const TopoDS_Shape&   shape3D,
+                                    const TopoDS_Shape&   theShape3D,
                                     const bool            selectBottom)
 {
-  myHelper->SetSubShape( shape3D );
+  myHelper->SetSubShape( theShape3D );
 
-  SMESH_subMesh* mainSubMesh = myHelper->GetMesh()->GetSubMeshContaining( shape3D );
+  SMESH_subMesh* mainSubMesh = myHelper->GetMesh()->GetSubMeshContaining( theShape3D );
   if ( !mainSubMesh ) return toSM( error(COMPERR_BAD_INPUT_MESH,"Null submesh of shape3D"));
 
   // detect not-quad FACE sub-meshes of the 3D SHAPE
   list< SMESH_subMesh* > notQuadGeomSubMesh;
   list< SMESH_subMesh* > notQuadElemSubMesh;
+  list< SMESH_subMesh* > meshedSubMesh;
   int nbFaces = 0;
   //
   SMESH_subMesh* anyFaceSM = 0;
@@ -2867,10 +2911,14 @@ bool StdMeshers_Prism_3D::initPrism(Prism_3D::TPrismTopo& thePrism,
     if ( nbWires != 1 || nbEdgesInWires.front() != 4 )
       notQuadGeomSubMesh.push_back( sm );
 
-    // look for not quadrangle mesh elements
-    if ( SMESHDS_SubMesh* smDS = sm->GetSubMeshDS() )
-      if ( !myHelper->IsSameElemGeometry( smDS, SMDSGeom_QUADRANGLE ))
+    // look for a not structured sub-mesh
+    if ( !sm->IsEmpty() )
+    {
+      meshedSubMesh.push_back( sm );
+      if ( !myHelper->IsSameElemGeometry( sm->GetSubMeshDS(), SMDSGeom_QUADRANGLE ) ||
+           !myHelper->IsStructured      ( sm ))
         notQuadElemSubMesh.push_back( sm );
+    }
   }
 
   int nbNotQuadMeshed = notQuadElemSubMesh.size();
@@ -2953,25 +3001,32 @@ bool StdMeshers_Prism_3D::initPrism(Prism_3D::TPrismTopo& thePrism,
   }
   if ( !botSM ) // find a proper bottom
   {
-    // composite walls or not prism shape
-    for ( TopExp_Explorer f( shape3D, TopAbs_FACE ); f.More(); f.Next() )
+    bool savedSetErrorToSM = mySetErrorToSM;
+    mySetErrorToSM = false; // ingore errors in initPrism()
+
+    // search among meshed FACEs
+    list< SMESH_subMesh* >::iterator sm = meshedSubMesh.begin();
+    for ( ; !botSM && sm != meshedSubMesh.end(); ++sm )
+    {
+      thePrism.Clear();
+      botSM             = *sm;
+      thePrism.myBottom = TopoDS::Face( botSM->GetSubShape() );
+      if ( !initPrism( thePrism, theShape3D, /*selectBottom=*/false ))
+        botSM = NULL;
+    }
+    // search among all FACEs
+    for ( TopExp_Explorer f( theShape3D, TopAbs_FACE ); !botSM && f.More(); f.Next() )
     {
       int minNbFaces = 2 + myHelper->Count( f.Current(), TopAbs_EDGE, false);
-      if ( nbFaces >= minNbFaces)
-      {
-        thePrism.Clear();
-        thePrism.myBottom = TopoDS::Face( f.Current() );
-        if ( initPrism( thePrism, shape3D, /*selectBottom=*/false ))
-        {
-          botSM = myHelper->GetMesh()->GetSubMesh( thePrism.myBottom );
-          topSM = myHelper->GetMesh()->GetSubMesh( thePrism.myTop );
-          if ( botSM->IsEmpty() && !topSM->IsEmpty() )
-            thePrism.SetUpsideDown();
-          return true;
-        }
-      }
+      if ( nbFaces < minNbFaces) continue;
+      thePrism.Clear();
+      thePrism.myBottom = TopoDS::Face( f.Current() );
+      botSM             = myHelper->GetMesh()->GetSubMesh( thePrism.myBottom );
+      if ( !initPrism( thePrism, theShape3D, /*selectBottom=*/false ))
+        botSM = NULL;
     }
-    return toSM( error( COMPERR_BAD_SHAPE ));
+    mySetErrorToSM = savedSetErrorToSM;
+    return botSM ? true : toSM( error( COMPERR_BAD_SHAPE ));
   }
 
   // find vertex 000 - the one with smallest coordinates (for easy DEBUG :-)
@@ -2990,11 +3045,11 @@ bool StdMeshers_Prism_3D::initPrism(Prism_3D::TPrismTopo& thePrism,
     }
   }
 
-  thePrism.myShape3D = shape3D;
+  thePrism.myShape3D = theShape3D;
   if ( thePrism.myBottom.IsNull() )
     thePrism.myBottom  = TopoDS::Face( botSM->GetSubShape() );
-  thePrism.myBottom.Orientation( myHelper->GetSubShapeOri( shape3D, thePrism.myBottom ));
-  thePrism.myTop.   Orientation( myHelper->GetSubShapeOri( shape3D, thePrism.myTop ));
+  thePrism.myBottom.Orientation( myHelper->GetSubShapeOri( theShape3D, thePrism.myBottom ));
+  thePrism.myTop.   Orientation( myHelper->GetSubShapeOri( theShape3D, thePrism.myTop ));
 
   // Get ordered bottom edges
   TopoDS_Face reverseBottom = // to have order of top EDGEs as in the top FACE
@@ -4491,7 +4546,8 @@ void StdMeshers_Sweeper::applyBoundaryError(const vector< gp_XYZ >& bndPoints,
 //================================================================================
 
 bool StdMeshers_Sweeper::ComputeNodes( SMESH_MesherHelper& helper,
-                                       const double        tol)
+                                       const double        tol,
+                                       const bool          allowHighBndError)
 {
   const size_t zSize = myBndColumns[0]->size();
   const size_t zSrc = 0, zTgt = zSize-1;
@@ -4609,6 +4665,9 @@ bool StdMeshers_Sweeper::ComputeNodes( SMESH_MesherHelper& helper,
 
     bndErrorIsSmall = ( sumError < tol );
   }
+
+  if ( !bndErrorIsSmall && !allowHighBndError )
+    return false;
 
   // compute final points on the central layer
   std::vector< double > int2BndDist( myBndColumns.size() ); // work array of applyBoundaryError()
