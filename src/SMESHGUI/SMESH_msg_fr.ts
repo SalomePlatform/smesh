@@ -398,7 +398,7 @@
     </message>
     <message>
         <source>MEN_CHOOSE</source>
-        <translation type="unfinished">Choose...</translation>
+        <translation>Choisir...</translation>
     </message>
     <message>
         <source>MEN_EDIT</source>
@@ -7761,7 +7761,7 @@ en raison de leurs types incompatibles:
     <name>SMESHGUI_DisplayEntitiesDlg</name>
     <message>
         <source>WRN_AT_LEAST_ONE</source>
-        <translation type="unfinished">At least one entity type should be chosen!</translation>
+        <translation>Au moins une entité devrait être choisie!</translation>
     </message>
 </context>
 </TS>
