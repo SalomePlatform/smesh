@@ -726,7 +726,7 @@ namespace {
         {
         case SMDS_TOP_FACE:
         {
-          if ( nbOkPos < 10 ) break;
+          if ( nbOkPos > 10 ) break;
           gp_XY uv = helper.GetNodeUV( tgtFace, n ), uvBis = uv;
           if (( helper.CheckNodeUV( tgtFace, n, uv, tol )) &&
               (( uv - uvBis ).SquareModulus() < tol2d ))
