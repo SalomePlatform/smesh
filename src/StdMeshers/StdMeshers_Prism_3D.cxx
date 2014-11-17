@@ -49,6 +49,7 @@
 #include <Bnd_B3d.hxx>
 #include <Geom2dAdaptor_Curve.hxx>
 #include <Geom2d_Line.hxx>
+#include <GeomLib_IsPlanarSurface.hxx>
 #include <Geom_Curve.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
@@ -2214,11 +2215,11 @@ bool StdMeshers_Prism_3D::projectBottomToTop( const gp_Trsf &             bottom
     case 3: {
       newFace = myHelper->AddFace(nodes[0], nodes[1], nodes[2]);
       break;
-      }
+    }
     case 4: {
       newFace = myHelper->AddFace( nodes[0], nodes[1], nodes[2], nodes[3] );
       break;
-      }
+    }
     default:
       newFace = meshDS->AddPolygonalFace( nodes );
     }
@@ -2226,7 +2227,42 @@ bool StdMeshers_Prism_3D::projectBottomToTop( const gp_Trsf &             bottom
       meshDS->SetMeshElementOnShape( newFace, topFaceID );
   }
 
-  myHelper->SetElementsOnShape( oldSetElemsOnShape );  
+  myHelper->SetElementsOnShape( oldSetElemsOnShape );
+
+  // Check the projected mesh
+
+  if ( thePrism.myNbEdgesInWires.size() > 1 && // there are holes
+       topHelper.IsDistorted2D( topSM, /*checkUV=*/false ))
+  {
+    SMESH_MeshEditor editor( topHelper.GetMesh() );
+
+    // smooth in 2D or 3D?
+    TopLoc_Location loc;
+    Handle(Geom_Surface) surface = BRep_Tool::Surface( topFace, loc );
+    bool isPlanar = GeomLib_IsPlanarSurface( surface ).IsPlanar();
+
+    bool isFixed = false;
+    set<const SMDS_MeshNode*> fixedNodes;
+    for ( int iAttemp = 0; !isFixed && iAttemp < 10; ++iAttemp )
+    {
+      TIDSortedElemSet faces;
+      for ( faceIt = topSMDS->GetElements(); faceIt->more(); )
+        faces.insert( faces.end(), faceIt->next() );
+
+      SMESH_MeshEditor::SmoothMethod algo =
+        iAttemp ? SMESH_MeshEditor::CENTROIDAL : SMESH_MeshEditor::LAPLACIAN;
+
+      // smoothing
+      editor.Smooth( faces, fixedNodes, algo, /*nbIterations=*/ 10,
+                     /*theTgtAspectRatio=*/1.0, /*the2D=*/!isPlanar);
+
+      isFixed = !topHelper.IsDistorted2D( topSM, /*checkUV=*/true );
+    }
+    if ( !isFixed )
+      return toSM( error( TCom("Projection from face #") << botSM->GetId()
+                          << " to face #" << topSM->GetId()
+                          << " failed: inverted elements created"));
+  }
 
   return true;
 }
