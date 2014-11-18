@@ -2353,7 +2353,7 @@ bool StdMeshers_Prism_3D::isSimpleBottom( const Prism_3D::TPrismTopo& thePrism )
   TopoDS_Vertex commonV;
   const list< TopoDS_Edge >& botEdges = thePrism.myBottomEdges;
   list< TopoDS_Edge >::const_iterator edge = botEdges.begin();
-  for ( ; edge != botEdges.end(); ++edge )
+  while ( edge != botEdges.end() )
   {
     if ( SMESH_Algo::isDegenerated( *edge ))
       return false;
