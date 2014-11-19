@@ -168,6 +168,7 @@
 #include <SALOMEDSClient_StudyBuilder.hxx>
 #include <SALOMEDS_Study.hxx>
 #include <SALOMEDS_SObject.hxx>
+#include "utilities.h"
 
 // OCCT includes
 #include <Standard_ErrorHandler.hxx>
