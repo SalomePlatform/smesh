@@ -1320,7 +1320,17 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
   // clear data
   myBotToColumnMap.clear();
   myBlock.Clear();
-        
+
+  // update state of sub-meshes (mostly in order to erase improper errors)
+  SMESH_subMesh* sm = myHelper->GetMesh()->GetSubMesh( thePrism.myShape3D );
+  SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(/*includeSelf=*/false);
+  while ( smIt->more() )
+  {
+    sm = smIt->next();
+    sm->GetComputeError().reset();
+    sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+  }
+
   return true;
 }
 

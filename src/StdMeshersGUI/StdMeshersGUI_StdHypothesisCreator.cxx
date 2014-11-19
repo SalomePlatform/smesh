@@ -408,7 +408,7 @@ bool StdMeshersGUI_StdHypothesisCreator::checkParams( QString& msg ) const
       srcV = w1->GetValue();
       tgtV = w2->GetValue();
       ok = (( srcV.isEmpty()  && tgtV.isEmpty() ) ||
-            ( !srcV.isEmpty() && !tgtV.isEmpty() && srcV != tgtV ));
+            ( !srcV.isEmpty() && !tgtV.isEmpty() /*&& srcV != tgtV*/ ));
       if ( !ok ) {
         w1->SetObject( CORBA::Object::_nil() );
         w2->SetObject( CORBA::Object::_nil() );

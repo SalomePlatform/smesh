@@ -550,7 +550,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       // ----------------------------------------------------------------------
     case TopAbs_EDGE: { // TopAbs_EDGE
       // ----------------------------------------------------------------------
-      if ( theMap.Extent() != 2 )
+      if ( theMap.Extent() != 1 )
         RETURN_BAD_RESULT("Wrong map extent " << theMap.Extent() );
       TopoDS_Edge edge1 = TopoDS::Edge( theShape1 );
       TopoDS_Edge edge2 = TopoDS::Edge( theShape2 );
