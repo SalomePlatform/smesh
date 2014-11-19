@@ -26,15 +26,15 @@
 #include "SMESHGUI_MeshOp.h"
 
 #include "SMESHGUI.h"
-#include "SMESHGUI_MeshDlg.h"
-#include "SMESHGUI_ShapeByMeshDlg.h"
-#include "SMESHGUI_HypothesesUtils.h"
-#include "SMESHGUI_Hypotheses.h"
-#include "SMESHGUI_Utils.h"
 #include "SMESHGUI_GEOMGenUtils.h"
-
-#include <SMESH_TypeFilter.hxx>
-#include <SMESH_NumberFilter.hxx>
+#include "SMESHGUI_Hypotheses.h"
+#include "SMESHGUI_HypothesesUtils.h"
+#include "SMESHGUI_MeshDlg.h"
+#include "SMESHGUI_Operations.h"
+#include "SMESHGUI_ShapeByMeshDlg.h"
+#include "SMESHGUI_Utils.h"
+#include "SMESH_NumberFilter.hxx"
+#include "SMESH_TypeFilter.hxx"
 
 // SALOME GEOM includes
 #include <GEOM_SelectionFilter.h>
@@ -2408,7 +2408,7 @@ bool SMESHGUI_MeshOp::checkSubMeshConcurrency(SMESH::SMESH_Mesh_ptr    mesh,
         myDlg->setEnabled( false ); // disactivate selection
         selectionMgr()->clearFilters();
         selectObject( meshSO );
-        SMESHGUI::GetSMESHGUI()->OnGUIEvent( 713 ); // MESH_ORDER
+        SMESHGUI::GetSMESHGUI()->OnGUIEvent( SMESHOp::OpMeshOrder ); // MESH_ORDER
         qApp->processEvents();
 
         myDlg->setEnabled( true );

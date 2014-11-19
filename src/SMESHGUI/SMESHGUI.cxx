@@ -92,14 +92,14 @@
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
 
-#include <SMESH_version.h>
+#include "SMESH_version.h"
 
 #include "SMESH_ControlsDef.hxx"
-#include <SMESH_Actor.h>
-#include <SMESH_ActorUtils.h>
-#include <SMESH_Client.hxx>
-#include <SMESH_ScalarBarActor.h>
-#include <SMESH_TypeFilter.hxx>
+#include "SMESH_Actor.h"
+#include "SMESH_ActorUtils.h"
+#include "SMESH_Client.hxx"
+#include "SMESH_ScalarBarActor.h"
+#include "SMESH_TypeFilter.hxx"
 
 // SALOME GUI includes
 #include <SalomeApp_Application.h>
