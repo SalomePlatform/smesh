@@ -732,7 +732,7 @@ namespace {
               (( uv - uvBis ).SquareModulus() < tol2d ))
             ++nbOkPos;
           else
-            nbOkPos = 0;
+            nbOkPos = -((int) src2tgtNodes.size() );
           break;
         }
         case SMDS_TOP_EDGE:

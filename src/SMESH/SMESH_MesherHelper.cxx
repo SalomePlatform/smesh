@@ -2575,7 +2575,7 @@ bool SMESH_MesherHelper::IsDistorted2D( SMESH_subMesh* faceSM,
   if ( !smDS || smDS->NbElements() == 0 ) return false;
 
   SMDS_ElemIteratorPtr faceIt = smDS->GetElements();
-  double prevArea2D = 0;
+  double prevArea = 0;
   vector< const SMDS_MeshNode* > nodes;
   vector< gp_XY >                uv;
   bool* toCheckUV = checkUV ? & checkUV : 0;
@@ -2613,15 +2613,15 @@ bool SMESH_MesherHelper::IsDistorted2D( SMESH_subMesh* faceSM,
       uv[ i ] = helper.GetNodeUV( F, nodes[ i ], inFaceNode, toCheckUV );
 
     // compare orientation of triangles
+    double faceArea = 0;
     for ( int iT = 0, nbT = nodes.size()-2; iT < nbT; ++iT )
     {
       gp_XY v1 = uv[ iT+1 ] - uv[ 0 ];
       gp_XY v2 = uv[ iT+2 ] - uv[ 0 ];
-      double area2D = v2 ^ v1;
-      if (( haveBadFaces = ( area2D * prevArea2D < 0 )))
-        break;
-      prevArea2D = area2D;
+      faceArea += v2 ^ v1;
     }
+    haveBadFaces = ( faceArea * prevArea < 0 );
+    prevArea = faceArea;
   }
 
   return haveBadFaces;
