@@ -313,6 +313,11 @@ module SMESH
      * happen if mesh data is not yet fully loaded from the file of study.
      */
     boolean IsMeshInfoCorrect();
+
+    /*!
+     * Returns mesh unstructed grid information.
+     */
+    SALOMEDS::TMPFile GetVtkUgStream();
   };
 
   interface SMESH_Group;

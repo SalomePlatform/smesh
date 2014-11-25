@@ -95,6 +95,10 @@ class SMESH_I_EXPORT SMESH_GroupBase_i:
    * happen if mesh data is not yet fully loaded from the file of study.
    */
   virtual bool IsMeshInfoCorrect();
+  /*!
+   * Returns mesh unstructed grid information.
+   */
+  virtual SALOMEDS::TMPFile* GetVtkUgStream();
 
   // Internal C++ interface
   int GetLocalID() const { return myLocalID; }

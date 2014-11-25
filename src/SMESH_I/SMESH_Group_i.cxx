@@ -749,6 +749,17 @@ bool SMESH_GroupBase_i::IsMeshInfoCorrect()
   return myPreMeshInfo ? myPreMeshInfo->IsMeshInfoCorrect() : true;
 }
 
+//=======================================================================
+//function : GetVtkUgStream
+//purpose  : Return data vtk unstructured grid (not implemented)
+//=======================================================================
+
+SALOMEDS::TMPFile* SMESH_GroupBase_i::GetVtkUgStream()
+{
+  SALOMEDS::TMPFile_var SeqFile;
+  return SeqFile._retn();
+}
+
 //================================================================================
 /*!
  * \brief Retrieves the predicate from the filter

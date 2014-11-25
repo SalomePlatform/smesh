@@ -79,6 +79,8 @@
 #include <iostream>
 #include <sstream>
 
+#include <vtkUnstructuredGridWriter.h>
+
 // to pass CORBA exception through SMESH_TRY
 #define SMY_OWN_CATCH catch( SALOME::SALOME_Exception& se ) { throw se; }
 
@@ -5047,6 +5049,37 @@ void SMESH_Mesh_i::CollectMeshInfo(const SMDS_ElemIteratorPtr theItr,
   if (!theItr) return;
   while (theItr->more())
     theInfo[ theItr->next()->GetEntityType() ]++;
+}
+//=============================================================================
+/*
+ * Returns mesh unstructed grid information.
+ */
+//=============================================================================
+
+SALOMEDS::TMPFile* SMESH_Mesh_i::GetVtkUgStream()
+{
+  SALOMEDS::TMPFile_var SeqFile;
+  if ( SMESHDS_Mesh* aMeshDS = _impl->GetMeshDS() ) {
+    SMDS_UnstructuredGrid* aGrid = aMeshDS->getGrid();
+    if(aGrid) {
+      vtkUnstructuredGridWriter* aWriter = vtkUnstructuredGridWriter::New();
+      aWriter->WriteToOutputStringOn();
+      aWriter->SetInputData(aGrid);
+      aWriter->SetFileTypeToBinary();
+      aWriter->Write();
+      char* str = aWriter->GetOutputString();
+      int size = aWriter->GetOutputStringLength();
+      
+      //Allocate octect buffer of required size
+      CORBA::Octet* OctetBuf = SALOMEDS::TMPFile::allocbuf(size);
+      //Copy ostrstream content to the octect buffer
+      memcpy(OctetBuf, str, size);
+      //Create and return TMPFile
+      SeqFile = new SALOMEDS::TMPFile(size, size, OctetBuf, 1);
+      aWriter->Delete();
+    }
+  }
+  return SeqFile._retn();
 }
 
 //=============================================================================

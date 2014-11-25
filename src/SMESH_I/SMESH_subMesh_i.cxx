@@ -607,3 +607,14 @@ bool SMESH_subMesh_i::IsMeshInfoCorrect()
 {
   return _preMeshInfo ? _preMeshInfo->IsMeshInfoCorrect() : true;
 }
+
+//=======================================================================
+//function : GetVtkUgStream
+//purpose  : Return data vtk unstructured grid (not implemented)
+//=======================================================================
+
+SALOMEDS::TMPFile* SMESH_subMesh_i::GetVtkUgStream()
+{
+  SALOMEDS::TMPFile_var SeqFile;
+  return SeqFile._retn();
+}

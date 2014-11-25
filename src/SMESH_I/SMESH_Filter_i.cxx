@@ -2517,6 +2517,17 @@ SMESH::SMESH_Mesh_ptr Filter_i::GetMesh()
   return SMESH_Mesh::_duplicate( myMesh );
 }
 
+//=======================================================================
+//function : GetVtkUgStream
+//purpose  : Return data vtk unstructured grid (not implemented)
+//=======================================================================
+
+SALOMEDS::TMPFile* Filter_i::GetVtkUgStream()
+{
+  SALOMEDS::TMPFile_var SeqFile;
+  return SeqFile._retn();
+}
+
 //================================================================================
 /*!
  * \brief Stores an object to be notified on change of predicate

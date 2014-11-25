@@ -650,6 +650,10 @@ public:
    * happen if mesh data is not yet fully loaded from the file of study.
    */
   bool IsMeshInfoCorrect();
+   /*!
+    * Returns mesh unstructed grid information.
+    */
+   virtual SALOMEDS::TMPFile* GetVtkUgStream();
 
   std::map<int, SMESH_subMesh_i*> _mapSubMesh_i; //NRI
   std::map<int, ::SMESH_subMesh*> _mapSubMesh;   //NRI
