@@ -860,7 +860,7 @@ void SMESHGUI_ExtrusionDlg::SelectionIntoArgument()
       else
         return;
     } else {
-      // get indices of selcted elements
+      // get indices of selected elements
       TColStd_IndexedMapOfInteger aMapIndex;
       mySelector->GetIndex(IO,aMapIndex);
       aNbElements = aMapIndex.Extent();
