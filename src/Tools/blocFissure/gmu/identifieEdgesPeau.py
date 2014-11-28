@@ -3,8 +3,9 @@
 import logging
 
 from geomsmesh import geompy
-from geomsmesh import geomPublishDebug
-from geomsmesh import geomPublishDebugInFather
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 
 from substractSubShapes import substractSubShapes
 
@@ -39,13 +40,13 @@ def identifieEdgesPeau(edgesFissExtPipe,verticesPipePeau, facePeau, facesPeauSor
           nameEdge = "edgeRadFacePipePeau%d"%i
           facesPipePeau[i] = face
           endsEdgeFond[i] = sharedVertices[0]
-          geomPublishDebug(face, nameFace)
-          geomPublishDebug(sharedVertices[0], nameVert)
+          geomPublish(initLog.debug, face, nameFace)
+          geomPublish(initLog.debug, sharedVertices[0], nameVert)
           edgesFace = geompy.ExtractShapes(face, geompy.ShapeType["EDGE"], True)
           for edge in edgesFace:
             if geompy.MinDistance(edge, sharedVertices[0]) < 1e-3:
               edgeRadFacePipePeau[i] = edge
-              geomPublishDebug(edge, nameEdge)
+              geomPublish(initLog.debug, edge, nameEdge)
               break
             pass
           pass
@@ -62,14 +63,14 @@ def identifieEdgesPeau(edgesFissExtPipe,verticesPipePeau, facePeau, facesPeauSor
       geompy.UnionList(grpEdgesCirc, edges)
       edgesCircPeau[i] = grpEdgesCirc
       name = "edgeCirc%d"%i
-      geomPublishDebugInFather(facePeau, grpEdgesCirc, name)
+      geomPublishInFather(initLog.debug, facePeau, grpEdgesCirc, name)
       edgesListees = edgesListees + edges
       vertices = geompy.GetSharedShapesMulti([facePeau, fcirc], geompy.ShapeType["VERTEX"])
       grpVertCircPeau = geompy.CreateGroup(facePeau, geompy.ShapeType["VERTEX"])
       geompy.UnionList(grpVertCircPeau, vertices)
       verticesCircPeau[i] = grpVertCircPeau
       name = "pointEdgeCirc%d"%i
-      geomPublishDebugInFather(facePeau, grpVertCircPeau, name)
+      geomPublishInFather(initLog.debug, facePeau, grpVertCircPeau, name)
       pass
     pass # --- au moins une extrémité du pipe sur cette face de peau
 
@@ -80,7 +81,7 @@ def identifieEdgesPeau(edgesFissExtPipe,verticesPipePeau, facePeau, facesPeauSor
   for i, edge in enumerate(edgesFilling):
     edgepeau = geompy.GetInPlace(facePeau, edge)
     name = "edgepeau%d"%i
-    geomPublishDebugInFather(facePeau,edgepeau, name)
+    geomPublishInFather(initLog.debug, facePeau,edgepeau, name)
     logging.debug("edgepeau %s", geompy.ShapeInfo(edgepeau))
     if geompy.ShapeInfo(edgepeau)['EDGE'] > 1:
       logging.debug("  EDGES multiples")
@@ -97,7 +98,7 @@ def identifieEdgesPeau(edgesFissExtPipe,verticesPipePeau, facePeau, facesPeauSor
   if aretesVivesC is not None:
     bordsVifs = geompy.GetInPlace(facePeau, aretesVivesC)
   if bordsVifs is not None:
-    geomPublishDebugInFather(facePeau, bordsVifs, "bordsVifs")
+    geomPublishInFather(initLog.debug, facePeau, bordsVifs, "bordsVifs")
     groupEdgesBordPeau = geompy.CutGroups(groupEdgesBordPeau, bordsVifs)
     grptmp = None
     if len(aretesVivesCoupees) > 0:
@@ -111,7 +112,7 @@ def identifieEdgesPeau(edgesFissExtPipe,verticesPipePeau, facePeau, facesPeauSor
       edv = geompy.ExtractShapes(grpnew, geompy.ShapeType["EDGE"], False)
       aretesVivesCoupees += edv
   logging.debug("aretesVivesCoupees %s",aretesVivesCoupees)
-  geomPublishDebugInFather(facePeau, groupEdgesBordPeau , "EdgesBords")
+  geomPublishInFather(initLog.debug, facePeau, groupEdgesBordPeau , "EdgesBords")
     
   # ---  edges de la face de peau partagées avec la face de fissure
   
@@ -125,7 +126,7 @@ def identifieEdgesPeau(edgesFissExtPipe,verticesPipePeau, facePeau, facesPeauSor
         if (geompy.MinDistance(grpVert, edge) < 1.e-3) and (edge not in edgesFissurePeau):
           edgesFissurePeau[i] = edge
           name = "edgeFissurePeau%d"%i
-          geomPublishDebugInFather(facePeau,  edge, name)
+          geomPublishInFather(initLog.debug, facePeau,  edge, name)
     for edge in edges: # on ajoute après les edges manquantes
       if edge not in edgesFissurePeau:
         edgesFissurePeau.append(edge)
@@ -133,7 +134,7 @@ def identifieEdgesPeau(edgesFissExtPipe,verticesPipePeau, facePeau, facesPeauSor
     for i, edge in enumerate(edges):
       edgesFissurePeau.append(edge)
       name = "edgeFissurePeau%d"%i
-      geomPublishDebugInFather(facePeau,  edge, name)
+      geomPublishInFather(initLog.debug, facePeau,  edge, name)
       
   return (endsEdgeFond, facesPipePeau, edgeRadFacePipePeau,
           edgesCircPeau, verticesCircPeau, groupEdgesBordPeau,

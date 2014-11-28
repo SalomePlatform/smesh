@@ -2,7 +2,7 @@
 
 import logging
 logging.info('start')
-from initLog import getLogLevel
+import initLog
 
 import salome
 salome.salome_init()
@@ -15,11 +15,11 @@ smesh = smeshBuilder.New(salome.myStudy)
 
 logging.debug("initialisation de geompy et smesh OK")
 
-def geomPublishDebug(aShape, aName):
-  if getLogLevel() <= 1:
+def geomPublish(level,aShape, aName):
+  if initLog.getLogLevel() <= level:
     geompy.addToStudy(aShape, aName)
     
-def geomPublishDebugInFather(aFather, aShape, aName):
-  if getLogLevel() <= 1:
+def geomPublishInFather(level, aFather, aShape, aName):
+  if initLog.getLogLevel() <= level:
     geompy.addToStudyInFather(aFather, aShape, aName)
     

@@ -1,41 +1,48 @@
 # -*- coding: utf-8 -*-
 
 import logging
-loglevel = 3
+
+debug = 10
+info = 20
+warning = 30
+error = 40
+critical = 50
+
+loglevel = warning
 
 def setDebug():
   global loglevel
   logging.basicConfig(format='%(relativeCreated)d %(funcName)s[%(lineno)d] %(message)s',
                       level=logging.DEBUG)
-  loglevel = 1
+  loglevel = debug
   logging.info('start Debug %s', loglevel)
 
 def setVerbose():
   global loglevel
   logging.basicConfig(format='%(relativeCreated)d %(funcName)s[%(lineno)d] %(message)s',
                       level=logging.INFO)
-  loglevel = 2
+  loglevel = info
   logging.info('start Verbose %s', loglevel)
 
 def setRelease():
   global loglevel
   logging.basicConfig(format='%(funcName)s[%(lineno)d] %(message)s',
                       level=logging.WARNING)
-  loglevel = 3
+  loglevel = warning
   logging.warning('start Release %s', loglevel)
   
 def setUnitTests():
   global loglevel
   logging.basicConfig(format='%(funcName)s[%(lineno)d] %(message)s',
                       level=logging.CRITICAL)
-  loglevel = 4
+  loglevel = critical
   logging.critical('start UnitTests %s', loglevel)
   
 def setPerfTests():
   global loglevel
   logging.basicConfig(format='%(relativeCreated)d %(funcName)s[%(lineno)d] %(message)s',
                       level=logging.CRITICAL)
-  loglevel = 5
+  loglevel = critical
   logging.info('start PerfTests %s', loglevel)
   
 def getLogLevel():
