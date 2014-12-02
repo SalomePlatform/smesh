@@ -307,7 +307,7 @@ bool StdMeshers_Projection_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aS
       }
     }
     // Find matching nodes of tgt and src faces
-    TNodeNodeMap faceMatchingNodes;
+    TAssocTool::TNodeNodeMap faceMatchingNodes;
     if ( ! TAssocTool::FindMatchingNodesOnFaces( srcFace, srcMesh, tgtFace, tgtMesh, 
                                                  shape2ShapeMap, faceMatchingNodes ))
       return error(COMPERR_BAD_INPUT_MESH,SMESH_Comment("Mesh on faces #")

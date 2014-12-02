@@ -204,7 +204,7 @@ SMESHGUI_EXPORT
   struct toQStr : public toStrT< QString > {
     toQStr( char* s ): toStrT< QString >(s) {}
   };
-  class toStdStr : public toStrT< std::string > {
+  struct toStdStr : public toStrT< std::string > {
     toStdStr( char* s ): toStrT< std::string >(s) {}
   };
 

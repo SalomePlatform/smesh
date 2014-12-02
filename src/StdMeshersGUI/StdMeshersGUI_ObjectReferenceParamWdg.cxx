@@ -35,7 +35,6 @@
 #include <LightApp_SelectionMgr.h>
 #include <SVTK_ViewWindow.h>
 #include <SALOME_ListIO.hxx>
-#include <SALOME_ListIteratorOfListIO.hxx>
 
 // SALOME KERNEL incldues
 #include <SALOMEDSClient_SObject.hxx>

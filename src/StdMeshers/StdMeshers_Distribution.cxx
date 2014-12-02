@@ -43,6 +43,8 @@
 
 using namespace std;
 
+namespace StdMeshers {
+
 Function::Function( const int conv )
 : myConv( conv )
 {
@@ -344,4 +346,5 @@ bool buildDistribution( const Function& func, const double start, const double e
 
   data[nbSeg] = end;
   return true;
+}
 }

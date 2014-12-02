@@ -171,6 +171,7 @@ void SMESHGUI_MeshTab::addItem( const QString& txt, const int type, const int in
   if ( type <= AddHyp )
   {
     myHypCombo[ type ]->addItem( txt, QVariant( index ));
+    myHypCombo[ type ]->setMaxVisibleItems( qMax( 10, myHypCombo[ type ]->count() ) );
   }
   else
   {

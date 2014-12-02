@@ -485,7 +485,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     if self.SP_Ridge.value()        != 45.0  : self.commande+=" --ridge_angle %f"%self.SP_Ridge.value()
     if self.SP_MaxSize.value()      != 100   : self.commande+=" --max_size %f"   %self.SP_MaxSize.value()
     if self.SP_MinSize.value()      != 5     : self.commande+=" --min_size %f"   %self.SP_MinSize.value()
-    if self.SP_Gradation.value()    != 1.3   : self.commande+=" --gradation %f"  %self.SP_MaxSize.value()
+    if self.SP_Gradation.value()    != 1.3   : self.commande+=" --gradation %f"  %self.SP_Gradation.value()
     if self.SP_Memory.value()       != 0     : self.commande+=" --max_memory %d" %self.SP_Memory.value()
     if self.SP_Verbosity.value()    != 3     : self.commande+=" --verbose %d" %self.SP_Verbosity.value()
 

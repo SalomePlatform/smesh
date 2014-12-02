@@ -142,6 +142,7 @@ SET(_moc_HEADERS
   SMESHGUI_PropertiesDlg.h
   SMESHGUI_Add0DElemsOnAllNodesDlg.h
   SMESHGUI_FieldSelectorWdg.h
+  SMESHGUI_DisplayEntitiesDlg.h
 )
 
 # header files / no moc processing
@@ -249,6 +250,7 @@ SET(_other_SOURCES
   SMESHGUI_MeshEditPreview.cxx
   SMESHGUI_FileValidator.cxx
   SMESHGUI_FieldSelectorWdg.cxx
+  SMESHGUI_DisplayEntitiesDlg.cxx
 )
 
 # sources / to compile

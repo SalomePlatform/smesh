@@ -467,23 +467,22 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
   SMESH_Hypothesis_i* myHypothesis_i = 0;
   SMESH::SMESH_Hypothesis_var hypothesis_i;
   std::string aPlatformLibName;
-  typedef GenericHypothesisCreator_i* (*GetHypothesisCreator)(const char* );
-  GenericHypothesisCreator_i* aCreator = getHypothesisCreator(theHypName, theLibName, aPlatformLibName);
+  GenericHypothesisCreator_i* aCreator =
+    getHypothesisCreator(theHypName, theLibName, aPlatformLibName);
+
   // create a new hypothesis object, store its ref. in studyContext
-  if(MYDEBUG) MESSAGE("Create Hypothesis " << theHypName);
-  myHypothesis_i =
-    myHypCreatorMap[string(theHypName)]->Create(myPoa, GetCurrentStudyID(), &myGen);
-  myHypothesis_i->SetLibName(aPlatformLibName.c_str()); // for persistency assurance
+  myHypothesis_i = aCreator->Create(myPoa, GetCurrentStudyID(), &myGen);
+  if (myHypothesis_i)
+  {
+    myHypothesis_i->SetLibName(aPlatformLibName.c_str()); // for persistency assurance
+    myHypCreatorMap[ myHypothesis_i->GetName() ] = aCreator;
 
-  if (!myHypothesis_i)
-    return hypothesis_i._retn();
-
-  // activate the CORBA servant of hypothesis
-  hypothesis_i = myHypothesis_i->_this();
-  int nextId = RegisterObject( hypothesis_i );
-  if(MYDEBUG) { MESSAGE( "Add hypo to map with id = "<< nextId ); }
-  else        { nextId = 0; } // avoid "unused variable" warning in release mode
-
+    // activate the CORBA servant of hypothesis
+    hypothesis_i = myHypothesis_i->_this();
+    int nextId = RegisterObject( hypothesis_i );
+    if(MYDEBUG) { MESSAGE( "Add hypo to map with id = "<< nextId ); }
+    else        { nextId = 0; } // avoid "unused variable" warning in release mode
+  }
   return hypothesis_i._retn();
 }
 

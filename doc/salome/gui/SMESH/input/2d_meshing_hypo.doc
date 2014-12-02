@@ -113,10 +113,9 @@ of the enforced nodes.
     projected to the meshed face and located close enough to the
     meshed face will be used to create the enforced nodes.</li>
 </ul>
+\note <b>Enforced nodes</b> can't be created at \b Reduced transition type.
 
 Let us see how the algorithm works:
-
-
 <ul>
   <li> Initially positions of nodes are computed without taking into
   account the enforced vertex (yellow point).</li> 

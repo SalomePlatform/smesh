@@ -34,6 +34,8 @@ SET(SMESH_RESOURCES_FILES
   mesh_aspect_3d.png
   mesh_biquad_quadrangle.png
   mesh_biquad_triangle.png
+  mesh_choose.png
+  mesh_choose_all.png
   mesh_clear.png
   mesh_compute.png
   mesh_diagonal.png

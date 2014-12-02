@@ -30,6 +30,7 @@
 #include "SMESH_StdMeshers.hxx"
 
 #include "SMESH_Algo.hxx"
+#include "StdMeshers_ProjectionUtils.hxx"
 
 class StdMeshers_ProjectionSource2D;
 
@@ -59,9 +60,12 @@ public:
    */
   virtual void SetEventListener(SMESH_subMesh* whenSetToSubMesh);
   
-protected:
 
-  const StdMeshers_ProjectionSource2D* _sourceHypo;
+ protected:
+
+  const StdMeshers_ProjectionSource2D*     _sourceHypo;
+
+  StdMeshers_ProjectionUtils::TNodeNodeMap _src2tgtNodes;
 
 };
 

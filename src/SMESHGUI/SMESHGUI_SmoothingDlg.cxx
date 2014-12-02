@@ -596,20 +596,21 @@ void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
 
       if (myNbOkElements < 1)
         return;
-      
+
       QStringList elements;
       for ( int i = 0; i < myNbOkElements; ++i )
         elements << QString::number( aMapIndex( i+1 ) );
       aString = elements.join(" ");
     }
-  } else if (myEditCurrentArgument == LineEditNodes && !myMesh->_is_nil() && myIO == IO ) {
+  } else if (myEditCurrentArgument == LineEditNodes && !myMesh->_is_nil() && myIO->isSame(IO) )
+  {
     myNbOkNodes = SMESH::GetNameOfSelectedNodes(mySelector, IO, aString);
   }
 
   myEditCurrentArgument->setText(aString);
   myEditCurrentArgument->repaint();
   myEditCurrentArgument->setEnabled(false); // to update lineedit IPAL 19809
-  myEditCurrentArgument->setEnabled(true); 
+  myEditCurrentArgument->setEnabled(true);
 
   if (myNbOkElements && (myNbOkNodes || LineEditNodes->text().trimmed().isEmpty())) {
     buttonOk->setEnabled(true);

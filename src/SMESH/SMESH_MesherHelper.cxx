@@ -242,40 +242,68 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
   for ( TopExp_Explorer eF( aSh, TopAbs_FACE ); eF.More(); eF.Next() )
   {
     const TopoDS_Face& face = TopoDS::Face( eF.Current() );
+    BRepAdaptor_Surface surf( face, false );
+    if ( surf.IsUPeriodic() || surf.IsUClosed() ) {
+      myParIndex |= U_periodic;
+      myPar1[0] = surf.FirstUParameter();
+      myPar2[0] = surf.LastUParameter();
+    }
+    if ( surf.IsVPeriodic() || surf.IsVClosed() ) {
+      myParIndex |= V_periodic;
+      myPar1[1] = surf.FirstVParameter();
+      myPar2[1] = surf.LastVParameter();
+    }
 
-    // if ( surface->IsUPeriodic() || surface->IsVPeriodic() ||
-    //      surface->IsUClosed()   || surface->IsVClosed() )
+    gp_Pnt2d uv1, uv2;
+    for (TopExp_Explorer exp( face, TopAbs_EDGE ); exp.More(); exp.Next())
     {
-      //while ( surface->IsKind(STANDARD_TYPE(Geom_RectangularTrimmedSurface )))
-      //surface = Handle(Geom_RectangularTrimmedSurface)::DownCast( surface )->BasisSurface();
-
-      for (TopExp_Explorer exp( face, TopAbs_EDGE ); exp.More(); exp.Next())
+      // look for a "seam" edge, a real seam or an edge on period boundary
+      TopoDS_Edge edge = TopoDS::Edge( exp.Current() );
+      if ( myParIndex )
       {
-        // look for a seam edge
-        TopoDS_Edge edge = TopoDS::Edge( exp.Current() );
-        if ( BRep_Tool::IsClosed( edge, face )) {
-          // initialize myPar1, myPar2 and myParIndex
-          gp_Pnt2d uv1, uv2;
-          BRep_Tool::UVPoints( edge, face, uv1, uv2 );
-          if ( Abs( uv1.Coord(1) - uv2.Coord(1) ) < Abs( uv1.Coord(2) - uv2.Coord(2) ))
+        BRep_Tool::UVPoints( edge, face, uv1, uv2 );
+        const double du = Abs( uv1.Coord(1) - uv2.Coord(1) );
+        const double dv = Abs( uv1.Coord(2) - uv2.Coord(2) );
+
+        bool isSeam = BRep_Tool::IsClosed( edge, face );
+        if ( isSeam ) // real seam - having two pcurves on face
+        {
+          // pcurve can lie not on pediod boundary (22582, mesh_Quadratic_01/C9)
+          if ( du < dv )
           {
             double u1 = uv1.Coord(1);
             edge.Reverse();
             BRep_Tool::UVPoints( edge, face, uv1, uv2 );
             double u2 = uv1.Coord(1);
-            myParIndex |= U_periodic;
             myPar1[0] = Min( u1, u2 );
             myPar2[0] = Max( u1, u2 );
           }
-          else {
+          else
+          {
             double v1 = uv1.Coord(2);
             edge.Reverse();
             BRep_Tool::UVPoints( edge, face, uv1, uv2 );
             double v2 = uv1.Coord(2);
-            myParIndex |= V_periodic;
             myPar1[1] = Min( v1, v2 );
             myPar2[1] = Max( v1, v2 );
           }
+        }
+        else //if ( !isSeam )
+        {
+          // one pcurve but on period boundary (22772, mesh_Quadratic_01/D1)
+          if      (( myParIndex & U_periodic ) && du < Precision::PConfusion() )
+          {
+            isSeam = ( Abs( uv1.Coord(1) - myPar1[0] ) < Precision::PConfusion() ||
+                       Abs( uv1.Coord(1) - myPar2[0] ) < Precision::PConfusion() );
+          }
+          else if (( myParIndex & V_periodic ) && dv < Precision::PConfusion() )
+          {
+            isSeam = ( Abs( uv1.Coord(2) - myPar1[1] ) < Precision::PConfusion() ||
+                       Abs( uv1.Coord(2) - myPar2[1] ) < Precision::PConfusion() );
+          }
+        }
+        if ( isSeam )
+        {
           // store seam shape indices, negative if shape encounters twice
           int edgeID = meshDS->ShapeToIndex( edge );
           mySeamShapeIds.insert( IsSeamShape( edgeID ) ? -edgeID : edgeID );
@@ -284,27 +312,12 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
             mySeamShapeIds.insert( IsSeamShape( vertexID ) ? -vertexID : vertexID );
           }
         }
-
-        // look for a degenerated edge
-        if ( SMESH_Algo::isDegenerated( edge )) {
-          myDegenShapeIds.insert( meshDS->ShapeToIndex( edge ));
-          for ( TopExp_Explorer v( edge, TopAbs_VERTEX ); v.More(); v.Next() )
-            myDegenShapeIds.insert( meshDS->ShapeToIndex( v.Current() ));
-        }
       }
-      if ( !myDegenShapeIds.empty() && !myParIndex )
-      {
-        BRepAdaptor_Surface surf( face, false );
-        if ( surf.IsUPeriodic() || surf.IsUClosed() ) {
-          myParIndex |= U_periodic;
-          myPar1[0] = surf.FirstUParameter();
-          myPar2[0] = surf.LastUParameter();
-        }
-        else if ( surf.IsVPeriodic() || surf.IsVClosed() ) {
-          myParIndex |= V_periodic;
-          myPar1[1] = surf.FirstVParameter();
-          myPar2[1] = surf.LastVParameter();
-        }
+      // look for a degenerated edge
+      if ( SMESH_Algo::isDegenerated( edge )) {
+        myDegenShapeIds.insert( meshDS->ShapeToIndex( edge ));
+        for ( TopExp_Explorer v( edge, TopAbs_VERTEX ); v.More(); v.Next() )
+          myDegenShapeIds.insert( meshDS->ShapeToIndex( v.Current() ));
       }
     }
   }
@@ -380,10 +393,13 @@ void SMESH_MesherHelper::AddTLinkNode(const SMDS_MeshNode* n1,
  */
 //================================================================================
 
-void SMESH_MesherHelper::AddTLinks(const SMDS_MeshEdge* edge)
+bool SMESH_MesherHelper::AddTLinks(const SMDS_MeshEdge* edge)
 {
-  if ( edge->IsQuadratic() )
+  if ( edge && edge->IsQuadratic() )
     AddTLinkNode(edge->GetNode(0), edge->GetNode(1), edge->GetNode(2));
+  else
+    return false;
+  return true;
 }
 
 //================================================================================
@@ -392,8 +408,9 @@ void SMESH_MesherHelper::AddTLinks(const SMDS_MeshEdge* edge)
  */
 //================================================================================
 
-void SMESH_MesherHelper::AddTLinks(const SMDS_MeshFace* f)
+bool SMESH_MesherHelper::AddTLinks(const SMDS_MeshFace* f)
 {
+  bool isQuad = true;
   if ( !f->IsPoly() )
     switch ( f->NbNodes() ) {
     case 7:
@@ -417,7 +434,9 @@ void SMESH_MesherHelper::AddTLinks(const SMDS_MeshFace* f)
       AddTLinkNode(f->GetNode(2),f->GetNode(3),f->GetNode(6));
       AddTLinkNode(f->GetNode(3),f->GetNode(0),f->GetNode(7)); break;
     default:;
+      isQuad = false;
     }
+  return isQuad;
 }
 
 //================================================================================
@@ -426,7 +445,7 @@ void SMESH_MesherHelper::AddTLinks(const SMDS_MeshFace* f)
  */
 //================================================================================
 
-void SMESH_MesherHelper::AddTLinks(const SMDS_MeshVolume* volume)
+bool SMESH_MesherHelper::AddTLinks(const SMDS_MeshVolume* volume)
 {
   if ( volume->IsQuadratic() )
   {
@@ -460,7 +479,9 @@ void SMESH_MesherHelper::AddTLinks(const SMDS_MeshVolume* volume)
                          nFCenter ));
       }
     }
+    return true;
   }
+  return false;
 }
 
 //================================================================================
@@ -586,14 +607,24 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
       Handle(Geom_Surface) S = BRep_Tool::Surface(F,loc);
       Standard_Boolean isUPeriodic = S->IsUPeriodic();
       Standard_Boolean isVPeriodic = S->IsVPeriodic();
+      gp_Pnt2d newUV = uv;
       if ( isUPeriodic || isVPeriodic ) {
         Standard_Real UF,UL,VF,VL;
         S->Bounds(UF,UL,VF,VL);
-        if(isUPeriodic)
-          uv.SetX( uv.X() + ShapeAnalysis::AdjustToPeriod(uv.X(),UF,UL));
-        if(isVPeriodic)
-          uv.SetY( uv.Y() + ShapeAnalysis::AdjustToPeriod(uv.Y(),VF,VL));
+        if ( isUPeriodic )
+          newUV.SetX( uv.X() + ShapeAnalysis::AdjustToPeriod(uv.X(),UF,UL));
+        if ( isVPeriodic )
+          newUV.SetY( uv.Y() + ShapeAnalysis::AdjustToPeriod(uv.Y(),VF,VL));
       }
+      if ( n2 )
+      {
+        gp_Pnt2d uv2 = GetNodeUV( F, n2, 0, check );
+        if ( isUPeriodic && Abs( uv.X()-uv2.X() ) < Abs( newUV.X()-uv2.X() ))
+          newUV.SetX( uv.X() );
+        if ( isVPeriodic && Abs( uv.Y()-uv2.Y() ) < Abs( newUV.Y()-uv2.Y() ))
+          newUV.SetY( uv.Y() );
+      }
+      uv = newUV;
     }
   }
   else if(Pos->GetTypeOfPosition()==SMDS_TOP_VERTEX)
@@ -910,7 +941,7 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
   int  shapeID = n->getshapeId();
   bool infinit = Precision::IsInfinite( u );
   bool zero    = ( u == 0. );
-  if ( force || toCheckPosOnShape( shapeID ) || infinit || zero )
+  if ( force || infinit || zero || toCheckPosOnShape( shapeID ))
   {
     TopLoc_Location loc; double f,l;
     Handle(Geom_Curve) curve = BRep_Tool::Curve( E,loc,f,l );
@@ -927,7 +958,7 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
       gp_Pnt nodePnt = SMESH_TNodeXYZ( n );
       if ( !loc.IsIdentity() ) nodePnt.Transform( loc.Transformation().Inverted() );
       gp_Pnt curvPnt;
-      double dist = u;
+      double dist = 2*tol;
       if ( !infinit )
       {
         curvPnt = curve->Value( u );
@@ -2433,7 +2464,7 @@ namespace
 
 //=======================================================================
 //function : IsStructured
-//purpose  : Return true if 2D mesh on FACE is structured
+//purpose  : Return true if 2D mesh on FACE is a structured rectangle
 //=======================================================================
 
 bool SMESH_MesherHelper::IsStructured( SMESH_subMesh* faceSM )
@@ -2521,6 +2552,79 @@ bool SMESH_MesherHelper::IsStructured( SMESH_subMesh* faceSM )
     return false;
 
   return true;
+}
+
+//=======================================================================
+//function : IsDistorted2D
+//purpose  : Return true if 2D mesh on FACE is ditorted
+//=======================================================================
+
+bool SMESH_MesherHelper::IsDistorted2D( SMESH_subMesh* faceSM,
+                                        bool           checkUV)
+{
+  if ( !faceSM || faceSM->GetSubShape().ShapeType() != TopAbs_FACE )
+    return false;
+
+  bool haveBadFaces = false;
+
+  SMESH_MesherHelper helper( *faceSM->GetFather() );
+  helper.SetSubShape( faceSM->GetSubShape() );
+
+  const TopoDS_Face&  F = TopoDS::Face( faceSM->GetSubShape() );
+  SMESHDS_SubMesh* smDS = helper.GetMeshDS()->MeshElements( F );
+  if ( !smDS || smDS->NbElements() == 0 ) return false;
+
+  SMDS_ElemIteratorPtr faceIt = smDS->GetElements();
+  double prevArea = 0;
+  vector< const SMDS_MeshNode* > nodes;
+  vector< gp_XY >                uv;
+  bool* toCheckUV = checkUV ? & checkUV : 0;
+  while ( faceIt->more() && !haveBadFaces )
+  {
+    const SMDS_MeshElement* face = faceIt->next();
+
+    // get nodes
+    nodes.resize( face->NbCornerNodes() );
+    SMDS_MeshElement::iterator n = face->begin_nodes();
+    for ( size_t i = 0; i < nodes.size(); ++n, ++i )
+      nodes[ i ] = *n;
+
+    // avoid elems on degenarate shapes as UV on them can be wrong
+    if ( helper.HasDegeneratedEdges() )
+    {
+      bool isOnDegen = false;
+      for ( size_t i = 0; ( i < nodes.size() && !isOnDegen ); ++i )
+        isOnDegen = helper.IsDegenShape( nodes[ i ]->getshapeId() );
+      if ( isOnDegen )
+        continue;
+    }
+    // prepare to getting UVs
+    const SMDS_MeshNode* inFaceNode = 0;
+    if ( helper.HasSeam() ) {
+      for ( size_t i = 0; ( i < nodes.size() && !inFaceNode ); ++i )
+        if ( !helper.IsSeamShape( nodes[ i ]->getshapeId() ))
+          inFaceNode = nodes[ i ];
+      if ( !inFaceNode )
+        continue;
+    }
+    // get UVs
+    uv.resize( nodes.size() );
+    for ( size_t i = 0; i < nodes.size(); ++i )
+      uv[ i ] = helper.GetNodeUV( F, nodes[ i ], inFaceNode, toCheckUV );
+
+    // compare orientation of triangles
+    double faceArea = 0;
+    for ( int iT = 0, nbT = nodes.size()-2; iT < nbT; ++iT )
+    {
+      gp_XY v1 = uv[ iT+1 ] - uv[ 0 ];
+      gp_XY v2 = uv[ iT+2 ] - uv[ 0 ];
+      faceArea += v2 ^ v1;
+    }
+    haveBadFaces = ( faceArea * prevArea < 0 );
+    prevArea = faceArea;
+  }
+
+  return haveBadFaces;
 }
 
 //================================================================================
@@ -2701,6 +2805,28 @@ bool SMESH_MesherHelper::IsSubShape( const TopoDS_Shape& shape, SMESH_Mesh* aMes
     // PAL16202
     (shape.ShapeType() == TopAbs_COMPOUND && aMesh->GetMeshDS()->IsGroupOfSubShapes( shape ));
 }
+
+//=======================================================================
+//function : IsBlock
+//purpose  : 
+//=======================================================================
+
+bool SMESH_MesherHelper::IsBlock( const TopoDS_Shape& shape )
+{
+  if ( shape.IsNull() )
+    return false;
+
+  TopoDS_Shell shell;
+  TopExp_Explorer exp( shape, TopAbs_SHELL );
+  if ( !exp.More() ) return false;
+  shell = TopoDS::Shell( exp.Current() );
+  if ( exp.Next(), exp.More() ) return false;
+
+  TopoDS_Vertex v;
+  TopTools_IndexedMapOfOrientedShape map;
+  return SMESH_Block::FindBlockShapes( shell, v, v, map );
+}
+
 
 //================================================================================
 /*!

@@ -62,8 +62,6 @@
 #include <SalomeApp_DoubleSpinBox.h>
 
 #include <SALOME_ListIO.hxx>
-#include <SALOME_ListIteratorOfListIO.hxx>
-#include <SALOME_DataMapIteratorOfDataMapOfIOMapOfInteger.hxx>
 
 #include <SVTK_ViewWindow.h>
 
@@ -1956,7 +1954,10 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
       break;
     }
     case 3: {
+      int oldValue = aCompareItem->value();
       aCompareItem->setItems(getCompare());
+      if ( oldValue >= 0 )
+        aCompareItem->setValue( oldValue );
       break;
     }
     }

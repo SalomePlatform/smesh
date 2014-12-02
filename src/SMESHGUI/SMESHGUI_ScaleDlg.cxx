@@ -49,7 +49,6 @@
 #include <SVTK_ViewModel.h>
 #include <SVTK_ViewWindow.h>
 #include <SALOME_ListIO.hxx>
-#include <SALOME_ListIteratorOfListIO.hxx>
 
 // SALOME KERNEL includes
 #include <SALOMEDSClient.hxx>

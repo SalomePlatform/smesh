@@ -47,7 +47,7 @@ namespace SMESH
 
   SMESHGUI_EXPORT GEOM::GEOM_Object_var GetShapeOnMeshOrSubMesh( _PTR(SObject), bool* isMesh=0 );
 
-  SMESHGUI_EXPORT GEOM::GEOM_Object_ptr GetGeom( _PTR(SObject) );
+  SMESHGUI_EXPORT GEOM::GEOM_Object_var GetGeom( _PTR(SObject) );
 
   SMESHGUI_EXPORT char* GetGeomName( _PTR(SObject) smeshSO );
 

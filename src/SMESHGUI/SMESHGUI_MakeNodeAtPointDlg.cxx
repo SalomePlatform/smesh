@@ -716,17 +716,17 @@ void SMESHGUI_MakeNodeAtPointOp::redisplayPreview()
                 myDlg->myDestinationZ->SetValue(z);
               }
               if ( myDestCoordChanged ) {
-                dx = myDlg->myDestinationX->GetValue() - myDlg->myCurrentX->GetValue();
-                dy = myDlg->myDestinationY->GetValue() - myDlg->myCurrentY->GetValue();
-                dz = myDlg->myDestinationZ->GetValue() - myDlg->myCurrentZ->GetValue();
+                dx = myDlg->myDestinationX->GetValue() - x;
+                dy = myDlg->myDestinationY->GetValue() - y;
+                dz = myDlg->myDestinationZ->GetValue() - z;
                 myDlg->myDestDX->SetValue(dx);
                 myDlg->myDestDY->SetValue(dy);
                 myDlg->myDestDZ->SetValue(dz);
               }
               else {
-                dx = myDlg->myDestDX->GetValue() + myDlg->myCurrentX->GetValue();;
-                dy = myDlg->myDestDY->GetValue() + myDlg->myCurrentY->GetValue();;
-                dz = myDlg->myDestDZ->GetValue() + myDlg->myCurrentZ->GetValue();;
+                dx = myDlg->myDestDX->GetValue() + x;
+                dy = myDlg->myDestDY->GetValue() + y;
+                dz = myDlg->myDestDZ->GetValue() + z;
                 myDlg->myDestinationX->SetValue(dx);
                 myDlg->myDestinationY->SetValue(dy);
                 myDlg->myDestinationZ->SetValue(dz);

@@ -51,6 +51,7 @@
 #include <BRep_Builder.hxx>
 #include <BRep_Tool.hxx>
 #include <Bnd_Box.hxx>
+#include <Geom2d_Curve.hxx>
 #include <TopAbs.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
@@ -66,6 +67,7 @@
 #include <TopoDS_Shape.hxx>
 #include <gp_Pnt.hxx>
 #include <gp_Vec.hxx>
+#include <math_Gauss.hxx>
 
 #include <numeric>
 #include <limits>
@@ -98,7 +100,7 @@ namespace HERE = StdMeshers_ProjectionUtils;
 
 namespace {
 
-  static SMESHDS_Mesh* theMeshDS[2] = { 0, 0 }; // used to debug only
+  static SMESHDS_Mesh* theMeshDS[2] = { 0, 0 }; // used for debug only
   long shapeIndex(const TopoDS_Shape& S)
   {
     if ( theMeshDS[0] && theMeshDS[1] )
@@ -548,7 +550,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       // ----------------------------------------------------------------------
     case TopAbs_EDGE: { // TopAbs_EDGE
       // ----------------------------------------------------------------------
-      if ( theMap.Extent() != 2 )
+      if ( theMap.Extent() != 1 )
         RETURN_BAD_RESULT("Wrong map extent " << theMap.Extent() );
       TopoDS_Edge edge1 = TopoDS::Edge( theShape1 );
       TopoDS_Edge edge2 = TopoDS::Edge( theShape2 );
@@ -656,7 +658,6 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       TopoDS_Shape F1, F2;
 
       // get a face sharing edge1 (F1)
-      TopoDS_Shape FF2[2];
       TopTools_ListIteratorOfListOfShape ancestIt1( edgeToFace1.FindFromKey( edge1 ));
       for ( ; F1.IsNull() && ancestIt1.More(); ancestIt1.Next() )
         if ( ancestIt1.Value().ShapeType() == TopAbs_FACE )
@@ -666,6 +667,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
         RETURN_BAD_RESULT(" Face1 not found");
 
       // get 2 faces sharing edge2 (one of them is F2)
+      TopoDS_Shape FF2[2];
       TopTools_ListIteratorOfListOfShape ancestIt2( edgeToFace2.FindFromKey( edge2 ));
       for ( int i = 0; FF2[1].IsNull() && ancestIt2.More(); ancestIt2.Next() )
         if ( ancestIt2.Value().ShapeType() == TopAbs_FACE )
@@ -1244,8 +1246,9 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
   double minDist = std::numeric_limits<double>::max();
   for ( int nbChecked=0; edge1 != allBndEdges1.end() && nbChecked++ < 10; ++edge1 )
   {
-    TopExp::Vertices( TopoDS::Edge( edge1->Oriented(TopAbs_FORWARD)), VV1[0], VV1[1]);
-    if ( VV1[0].IsSame( VV1[1] ))
+    TopoDS_Vertex edge1VV[2];
+    TopExp::Vertices( TopoDS::Edge( edge1->Oriented(TopAbs_FORWARD)), edge1VV[0], edge1VV[1]);
+    if ( edge1VV[0].IsSame( edge1VV[1] ))
       continue;//RETURN_BAD_RESULT("Only closed edges");
 
     // find vertices closest to 2 linked vertices of shape 1
@@ -1253,7 +1256,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
     TopoDS_Vertex edge2VV[2];
     for ( int i1 = 0; i1 < 2; ++i1 )
     {
-      gp_Pnt p1 = BRep_Tool::Pnt( VV1[ i1 ]);
+      gp_Pnt p1 = BRep_Tool::Pnt( edge1VV[ i1 ]);
       p1.Scale( gc[0], scale );
       p1.Translate( vec01 );
       if ( !i1 ) {
@@ -1289,6 +1292,8 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       }
     }
     if ( dist2[0] + dist2[1] < minDist ) {
+      VV1[0] = edge1VV[0];
+      VV1[1] = edge1VV[1];
       VV2[0] = edge2VV[0];
       VV2[1] = edge2VV[1];
       minDist = dist2[0] + dist2[1];
@@ -1448,8 +1453,10 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face&    face1,
         edge1End = edge1Beg;
         std::advance( edge1End, *nbE1 );
         // UV on face1 to find on face2
-        v0f1UV = BRep_Tool::Parameters( TopExp::FirstVertex(*edge1Beg,true), face1 );
-        v1f1UV = BRep_Tool::Parameters( TopExp::LastVertex (*edge1Beg,true), face1 );
+        TopoDS_Vertex v01 = SMESH_MesherHelper::IthVertex(0,*edge1Beg);
+        TopoDS_Vertex v11 = SMESH_MesherHelper::IthVertex(1,*edge1Beg);
+        v0f1UV = BRep_Tool::Parameters( v01, face1 );
+        v1f1UV = BRep_Tool::Parameters( v11, face1 );
         v0f1UV.ChangeCoord() += dUV;
         v1f1UV.ChangeCoord() += dUV;
         //
@@ -1474,9 +1481,30 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face&    face1,
                  sameVertexUV( *edge2Beg, face2, 0, v0f1UV, vTolUV ))
             {
               if ( iW1 == 0 ) OK = true; // OK is for the first wire
+
               // reverse edges2 if needed
-              if ( !sameVertexUV( *edge2Beg, face2, 1, v1f1UV, vTolUV ))
-                reverseEdges( edges2 , *nbE2, std::distance( edges2.begin(),edge2Beg ));
+              if ( SMESH_MesherHelper::IsClosedEdge( *edge1Beg ))
+              {
+                double f,l;
+                Handle(Geom2d_Curve) c1 = BRep_Tool::CurveOnSurface( *edge1Beg, face1,f,l );
+                if (  edge1Beg->Orientation() == TopAbs_REVERSED )
+                  std::swap( f,l );
+                gp_Pnt2d uv1 = dUV + c1->Value( f * 0.8 + l * 0.2 ).XY();
+
+                Handle(Geom2d_Curve) c2 = BRep_Tool::CurveOnSurface( *edge2Beg, face2,f,l );
+                if (  edge2Beg->Orientation() == TopAbs_REVERSED )
+                  std::swap( f,l );
+                gp_Pnt2d uv2 = c2->Value( f * 0.8 + l * 0.2 );
+
+                if ( uv1.Distance( uv2 ) > vTolUV )
+                  edge2Beg->Reverse();
+              }
+              else
+              {
+                if ( !sameVertexUV( *edge2Beg, face2, 1, v1f1UV, vTolUV ))
+                  reverseEdges( edges2 , *nbE2, std::distance( edges2.begin(),edge2Beg ));
+              }
+
               // put wire2 at a right place within edges2
               if ( iW1 != iW2 ) {
                 list< TopoDS_Edge >::iterator place2 = edges2.begin();
@@ -1914,97 +1942,109 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
 
   // 2. face sets
 
-  set<const SMDS_MeshElement*> Elems1, Elems2;
-  for ( int is2 = 0; is2 < 2; ++is2 )
+  int assocRes;
+  for ( int iAttempt = 0; iAttempt < 2; ++iAttempt )
   {
-    set<const SMDS_MeshElement*> & elems = is2 ? Elems2 : Elems1;
-    SMESHDS_SubMesh*                  sm = is2 ? SM2 : SM1;
-    SMESH_MesherHelper*           helper = is2 ? &helper2 : &helper1;
-    const TopoDS_Face &             face = is2 ? face2 : face1;
-    SMDS_ElemIteratorPtr eIt = sm->GetElements();
-
-    if ( !helper->IsRealSeam( is2 ? edge2 : edge1 ))
+    set<const SMDS_MeshElement*> Elems1, Elems2;
+    for ( int is2 = 0; is2 < 2; ++is2 )
     {
-      while ( eIt->more() ) elems.insert( eIt->next() );
-    }
-    else
-    {
-      // the only suitable edge is seam, i.e. it is a sphere.
-      // FindMatchingNodes() will not know which way to go from any edge.
-      // So we ignore all faces having nodes on edges or vertices except
-      // one of faces sharing current start nodes
+      set<const SMDS_MeshElement*> & elems = is2 ? Elems2 : Elems1;
+      SMESHDS_SubMesh*                  sm = is2 ? SM2 : SM1;
+      SMESH_MesherHelper*           helper = is2 ? &helper2 : &helper1;
+      const TopoDS_Face &             face = is2 ? face2 : face1;
+      SMDS_ElemIteratorPtr eIt = sm->GetElements();
 
-      // find a face to keep
-      const SMDS_MeshElement* faceToKeep = 0;
-      const SMDS_MeshNode* vNode = is2 ? vNode2 : vNode1;
-      const SMDS_MeshNode* eNode = is2 ? eNode2[0] : eNode1[0];
-      TIDSortedElemSet inSet, notInSet;
-
-      const SMDS_MeshElement* f1 =
-        SMESH_MeshAlgos::FindFaceInSet( vNode, eNode, inSet, notInSet );
-      if ( !f1 ) RETURN_BAD_RESULT("The first face on seam not found");
-      notInSet.insert( f1 );
-
-      const SMDS_MeshElement* f2 =
-        SMESH_MeshAlgos::FindFaceInSet( vNode, eNode, inSet, notInSet );
-      if ( !f2 ) RETURN_BAD_RESULT("The second face on seam not found");
-
-      // select a face with less UV of vNode
-      const SMDS_MeshNode* notSeamNode[2] = {0, 0};
-      for ( int iF = 0; iF < 2; ++iF ) {
-        const SMDS_MeshElement* f = ( iF ? f2 : f1 );
-        for ( int i = 0; !notSeamNode[ iF ] && i < f->NbNodes(); ++i ) {
-          const SMDS_MeshNode* node = f->GetNode( i );
-          if ( !helper->IsSeamShape( node->getshapeId() ))
-            notSeamNode[ iF ] = node;
-        }
+      if ( !helper->IsRealSeam( is2 ? edge2 : edge1 ))
+      {
+        while ( eIt->more() ) elems.insert( elems.end(), eIt->next() );
       }
-      gp_Pnt2d uv1 = helper->GetNodeUV( face, vNode, notSeamNode[0] );
-      gp_Pnt2d uv2 = helper->GetNodeUV( face, vNode, notSeamNode[1] );
-      if ( uv1.X() + uv1.Y() > uv2.X() + uv2.Y() )
-        faceToKeep = f2;
       else
-        faceToKeep = f1;
+      {
+        // the only suitable edge is seam, i.e. it is a sphere.
+        // FindMatchingNodes() will not know which way to go from any edge.
+        // So we ignore all faces having nodes on edges or vertices except
+        // one of faces sharing current start nodes
 
-      // fill elem set
-      elems.insert( faceToKeep );
-      while ( eIt->more() ) {
-        const SMDS_MeshElement* f = eIt->next();
-        int nbNodes = f->NbNodes();
-        if ( f->IsQuadratic() )
-          nbNodes /= 2;
-        bool onBnd = false;
-        for ( int i = 0; !onBnd && i < nbNodes; ++i ) {
-          const SMDS_MeshNode* node = f->GetNode( i );
-          onBnd = ( node->GetPosition()->GetTypeOfPosition() != SMDS_TOP_FACE);
+        // find a face to keep
+        const SMDS_MeshElement* faceToKeep = 0;
+        const SMDS_MeshNode* vNode = is2 ? vNode2 : vNode1;
+        const SMDS_MeshNode* eNode = is2 ? eNode2[0] : eNode1[0];
+        TIDSortedElemSet inSet, notInSet;
+
+        const SMDS_MeshElement* f1 =
+          SMESH_MeshAlgos::FindFaceInSet( vNode, eNode, inSet, notInSet );
+        if ( !f1 ) RETURN_BAD_RESULT("The first face on seam not found");
+        notInSet.insert( f1 );
+
+        const SMDS_MeshElement* f2 =
+          SMESH_MeshAlgos::FindFaceInSet( vNode, eNode, inSet, notInSet );
+        if ( !f2 ) RETURN_BAD_RESULT("The second face on seam not found");
+
+        // select a face with less UV of vNode
+        const SMDS_MeshNode* notSeamNode[2] = {0, 0};
+        for ( int iF = 0; iF < 2; ++iF ) {
+          const SMDS_MeshElement* f = ( iF ? f2 : f1 );
+          for ( int i = 0; !notSeamNode[ iF ] && i < f->NbNodes(); ++i ) {
+            const SMDS_MeshNode* node = f->GetNode( i );
+            if ( !helper->IsSeamShape( node->getshapeId() ))
+              notSeamNode[ iF ] = node;
+          }
         }
-        if ( !onBnd )
-          elems.insert( f );
-      }
-      // add also faces adjacent to faceToKeep
-      int nbNodes = faceToKeep->NbNodes();
-      if ( faceToKeep->IsQuadratic() ) nbNodes /= 2;
-      notInSet.insert( f1 );
-      notInSet.insert( f2 );
-      for ( int i = 0; i < nbNodes; ++i ) {
-        const SMDS_MeshNode* n1 = faceToKeep->GetNode( i );
-        const SMDS_MeshNode* n2 = faceToKeep->GetNode(( i+1 ) % nbNodes );
-        f1 = SMESH_MeshAlgos::FindFaceInSet( n1, n2, inSet, notInSet );
-        if ( f1 )
-          elems.insert( f1 );
-      }
-    } // case on a sphere
-  } // loop on 2 faces
+        gp_Pnt2d uv1 = helper->GetNodeUV( face, vNode, notSeamNode[0] );
+        gp_Pnt2d uv2 = helper->GetNodeUV( face, vNode, notSeamNode[1] );
+        if ( uv1.X() + uv1.Y() > uv2.X() + uv2.Y() )
+          faceToKeep = f2;
+        else
+          faceToKeep = f1;
 
-  //  int quadFactor = (*Elems1.begin())->IsQuadratic() ? 2 : 1;
+        // fill elem set
+        elems.insert( faceToKeep );
+        while ( eIt->more() ) {
+          const SMDS_MeshElement* f = eIt->next();
+          int nbNodes = f->NbNodes();
+          if ( f->IsQuadratic() )
+            nbNodes /= 2;
+          bool onBnd = false;
+          for ( int i = 0; !onBnd && i < nbNodes; ++i ) {
+            const SMDS_MeshNode* node = f->GetNode( i );
+            onBnd = ( node->GetPosition()->GetTypeOfPosition() != SMDS_TOP_FACE);
+          }
+          if ( !onBnd )
+            elems.insert( f );
+        }
+        // add also faces adjacent to faceToKeep
+        int nbNodes = faceToKeep->NbNodes();
+        if ( faceToKeep->IsQuadratic() ) nbNodes /= 2;
+        notInSet.insert( f1 );
+        notInSet.insert( f2 );
+        for ( int i = 0; i < nbNodes; ++i ) {
+          const SMDS_MeshNode* n1 = faceToKeep->GetNode( i );
+          const SMDS_MeshNode* n2 = faceToKeep->GetNode(( i+1 ) % nbNodes );
+          f1 = SMESH_MeshAlgos::FindFaceInSet( n1, n2, inSet, notInSet );
+          if ( f1 )
+            elems.insert( f1 );
+        }
+      } // case on a sphere
+    } // loop on 2 faces
 
-  node1To2Map.clear();
-  int res = SMESH_MeshEditor::FindMatchingNodes( Elems1, Elems2,
-                                                 vNode1, vNode2,
-                                                 eNode1[0], eNode2[0],
-                                                 node1To2Map);
-  if ( res != SMESH_MeshEditor::SEW_OK )
-    RETURN_BAD_RESULT("FindMatchingNodes() result " << res );
+    node1To2Map.clear();
+    assocRes = SMESH_MeshEditor::FindMatchingNodes( Elems1, Elems2,
+                                                    vNode1, vNode2,
+                                                    eNode1[0], eNode2[0],
+                                                    node1To2Map);
+    if (( assocRes != SMESH_MeshEditor::SEW_OK ) &&
+        ( eNode1[1] || eNode2[1] )) // there is another node to try (on a closed EDGE)
+    {
+      node1To2Map.clear();
+      if ( eNode1[1] ) std::swap( eNode1[0], eNode1[1] );
+      else             std::swap( eNode2[0], eNode2[1] );
+      continue; // one more attempt
+    }
+
+    break;
+  }
+  if ( assocRes != SMESH_MeshEditor::SEW_OK )
+    RETURN_BAD_RESULT("FindMatchingNodes() result " << assocRes );
 
   // On a sphere, add matching nodes on the edge
 
@@ -2400,5 +2440,231 @@ void StdMeshers_ProjectionUtils::SetEventListener(SMESH_subMesh* subMesh,
         }
       }
     }
+  }
+}
+
+namespace StdMeshers_ProjectionUtils
+{
+
+  //================================================================================
+  /*!
+   * \brief Computes transformation beween two sets of 2D points using
+   *        a least square approximation
+   *
+   * See "Surface Mesh Projection For Hexahedral Mesh Generation By Sweeping"
+   * by X.Roca, J.Sarrate, A.Huerta. (2.2)
+   */
+  //================================================================================
+
+  bool TrsfFinder2D::Solve( const vector< gp_XY >& srcPnts,
+                            const vector< gp_XY >& tgtPnts )
+  {
+    // find gravity centers
+    gp_XY srcGC( 0,0 ), tgtGC( 0,0 );
+    for ( size_t i = 0; i < srcPnts.size(); ++i )
+    {
+      srcGC += srcPnts[i];
+      tgtGC += tgtPnts[i];
+    }
+    srcGC /= srcPnts.size();
+    tgtGC /= tgtPnts.size();
+
+    // find trsf
+
+    math_Matrix mat (1,4,1,4, 0.);
+    math_Vector vec (1,4, 0.);
+
+    // cout << "m1 = smesh.Mesh('src')" << endl
+    //      << "m2 = smesh.Mesh('tgt')" << endl;
+    double xx = 0, xy = 0, yy = 0;
+    for ( size_t i = 0; i < srcPnts.size(); ++i )
+    {
+      gp_XY srcUV = srcPnts[i] - srcGC;
+      gp_XY tgtUV = tgtPnts[i] - tgtGC;
+      xx += srcUV.X() * srcUV.X();
+      yy += srcUV.Y() * srcUV.Y();
+      xy += srcUV.X() * srcUV.Y();
+      vec( 1 ) += srcUV.X() * tgtUV.X();
+      vec( 2 ) += srcUV.Y() * tgtUV.X();
+      vec( 3 ) += srcUV.X() * tgtUV.Y();
+      vec( 4 ) += srcUV.Y() * tgtUV.Y();
+      // cout << "m1.AddNode( " << srcUV.X() << ", " << srcUV.Y() << ", 0 )" << endl
+      //      << "m2.AddNode( " << tgtUV.X() << ", " << tgtUV.Y() << ", 0 )" << endl;
+    }
+    mat( 1,1 ) = mat( 3,3 ) = xx;
+    mat( 2,2 ) = mat( 4,4 ) = yy;
+    mat( 1,2 ) = mat( 2,1 ) = mat( 3,4 ) = mat( 4,3 ) = xy;
+
+    math_Gauss solver( mat );
+    if ( !solver.IsDone() )
+      return false;
+    solver.Solve( vec );
+    if ( vec.Norm2() < gp::Resolution() )
+      return false;
+    // cout << vec( 1 ) << "\t " << vec( 2 ) << endl
+    //      << vec( 3 ) << "\t " << vec( 4 ) << endl;
+
+    _trsf.SetTranslation( tgtGC );
+    _srcOrig = srcGC;
+
+    gp_Mat2d& M = const_cast< gp_Mat2d& >( _trsf.HVectorialPart());
+    M( 1,1 ) = vec( 1 );
+    M( 2,1 ) = vec( 2 );
+    M( 1,2 ) = vec( 3 );
+    M( 2,2 ) = vec( 4 );
+
+    return true;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Transforms a 2D points using a found transformation
+   */
+  //================================================================================
+
+  gp_XY TrsfFinder2D::Transform( const gp_Pnt2d& srcUV ) const
+  {
+    gp_XY uv = srcUV.XY() - _srcOrig ;
+    _trsf.Transforms( uv );
+    return uv;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Computes transformation beween two sets of 3D points using
+   *        a least square approximation
+   *
+   * See "Surface Mesh Projection For Hexahedral Mesh Generation By Sweeping"
+   * by X.Roca, J.Sarrate, A.Huerta. (2.4)
+   */
+  //================================================================================
+
+  bool TrsfFinder3D::Solve( const vector< gp_XYZ > & srcPnts,
+                            const vector< gp_XYZ > & tgtPnts )
+  {
+    // find gravity center
+    gp_XYZ srcGC( 0,0,0 ), tgtGC( 0,0,0 );
+    for ( size_t i = 0; i < srcPnts.size(); ++i )
+    {
+      srcGC += srcPnts[i];
+      tgtGC += tgtPnts[i];
+    }
+    srcGC /= srcPnts.size();
+    tgtGC /= tgtPnts.size();
+
+    gp_XYZ srcOrig = 2 * srcGC - tgtGC;
+    gp_XYZ tgtOrig = srcGC;
+
+    // find trsf
+
+    math_Matrix mat (1,9,1,9, 0.);
+    math_Vector vec (1,9, 0.);
+
+    double xx = 0, yy = 0, zz = 0;
+    double xy = 0, xz = 0, yz = 0;
+    for ( size_t i = 0; i < srcPnts.size(); ++i )
+    {
+      gp_XYZ src = srcPnts[i] - srcOrig;
+      gp_XYZ tgt = tgtPnts[i] - tgtOrig;
+      xx += src.X() * src.X();
+      yy += src.Y() * src.Y();
+      zz += src.Z() * src.Z();
+      xy += src.X() * src.Y();
+      xz += src.X() * src.Z();
+      yz += src.Y() * src.Z();
+      vec( 1 ) += src.X() * tgt.X();
+      vec( 2 ) += src.Y() * tgt.X();
+      vec( 3 ) += src.Z() * tgt.X();
+      vec( 4 ) += src.X() * tgt.Y();
+      vec( 5 ) += src.Y() * tgt.Y();
+      vec( 6 ) += src.Z() * tgt.Y();
+      vec( 7 ) += src.X() * tgt.Z();
+      vec( 8 ) += src.Y() * tgt.Z();
+      vec( 9 ) += src.Z() * tgt.Z();
+    }
+    mat( 1,1 ) = mat( 4,4 ) = mat( 7,7 ) = xx;
+    mat( 2,2 ) = mat( 5,5 ) = mat( 8,8 ) = yy;
+    mat( 3,3 ) = mat( 6,6 ) = mat( 9,9 ) = zz;
+    mat( 1,2 ) = mat( 2,1 ) = mat( 4,5 ) = mat( 5,4 ) = mat( 7,8 ) = mat( 8,7 ) = xy;
+    mat( 1,3 ) = mat( 3,1 ) = mat( 4,6 ) = mat( 6,4 ) = mat( 7,9 ) = mat( 9,7 ) = xz;
+    mat( 2,3 ) = mat( 3,2 ) = mat( 5,6 ) = mat( 6,5 ) = mat( 8,9 ) = mat( 9,8 ) = yz;
+
+    math_Gauss solver( mat );
+    if ( !solver.IsDone() )
+      return false;
+    solver.Solve( vec );
+    if ( vec.Norm2() < gp::Resolution() )
+      return false;
+    // cout << endl
+    //      << vec( 1 ) << "\t " << vec( 2 ) << "\t " << vec( 3 ) << endl
+    //      << vec( 4 ) << "\t " << vec( 5 ) << "\t " << vec( 6 ) << endl
+    //      << vec( 7 ) << "\t " << vec( 8 ) << "\t " << vec( 9 ) << endl;
+
+    _srcOrig = srcOrig;
+    _trsf.SetTranslation( tgtOrig );
+
+    gp_Mat& M = const_cast< gp_Mat& >( _trsf.HVectorialPart() );
+    M.SetRows( gp_XYZ( vec( 1 ), vec( 2 ), vec( 3 )),
+               gp_XYZ( vec( 4 ), vec( 5 ), vec( 6 )),
+               gp_XYZ( vec( 7 ), vec( 8 ), vec( 9 )));
+    return true;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Transforms a 3D point using a found transformation
+   */
+  //================================================================================
+
+  gp_XYZ TrsfFinder3D::Transform( const gp_Pnt& srcP ) const
+  {
+    gp_XYZ p = srcP.XYZ() - _srcOrig;
+    _trsf.Transforms( p );
+    return p;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Transforms a 3D vector using a found transformation
+   */
+  //================================================================================
+
+  gp_XYZ TrsfFinder3D::TransformVec( const gp_Vec& v ) const
+  {
+    return v.XYZ().Multiplied( _trsf.HVectorialPart() );
+  }
+  //================================================================================
+  /*!
+   * \brief Inversion
+   */
+  //================================================================================
+
+  bool TrsfFinder3D::Invert()
+  {
+    if (( _trsf.Form() == gp_Translation ) &&
+        ( _srcOrig.X() != 0 || _srcOrig.Y() != 0 || _srcOrig.Z() != 0 ))
+    {
+      // seems to be defined via Solve()
+      gp_XYZ newSrcOrig = _trsf.TranslationPart();
+      gp_Mat& M = const_cast< gp_Mat& >( _trsf.HVectorialPart() );
+      const double D = M.Determinant();
+      if ( D < 1e-3 * ( newSrcOrig - _srcOrig ).Modulus() )
+      {
+#ifdef _DEBUG_
+        cerr << "TrsfFinder3D::Invert()"
+             << "D " << M.Determinant() << " IsSingular " << M.IsSingular() << endl;
+#endif
+        return false;
+      }
+      gp_Mat Minv = M.Inverted();
+      _trsf.SetTranslation( _srcOrig );
+      _srcOrig = newSrcOrig;
+      M = Minv;
+    }
+    else
+    {
+      _trsf.Invert();
+    }
+    return true;
   }
 }

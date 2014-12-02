@@ -43,7 +43,6 @@
 // SALOME GUI includes
 #include <SALOME_ListIO.hxx>
 #include <LightApp_SelectionMgr.h>
-#include <SALOME_ListIteratorOfListIO.hxx>
 
 // SUIT Includes
 #include <SUIT_ResourceMgr.h>

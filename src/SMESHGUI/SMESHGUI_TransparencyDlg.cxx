@@ -40,7 +40,6 @@
 #include <SUIT_ResourceMgr.h>
 
 #include <SALOME_ListIO.hxx>
-#include <SALOME_ListIteratorOfListIO.hxx>
 
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>

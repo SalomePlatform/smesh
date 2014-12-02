@@ -40,7 +40,7 @@ import SMESH
 #    @code
 #    meshMethod = "MyAlgorithm"
 #    @endcode
-#    then an instance of @c MyPlugin_Algorithm can be created by the direct invokation of the function
+#    then an instance of @c MyPlugin_Algorithm can be created by the direct invocation of the function
 #    of smesh.Mesh class:
 #    @code
 #    my_algo = mesh.MyAlgorithm()
@@ -257,7 +257,7 @@ class Mesh_Algorithm:
 
     ## Defines "ViscousLayers" hypothesis to give parameters of layers of prisms to build
     #  near mesh boundary. This hypothesis can be used by several 3D algorithms:
-    #  NETGEN 3D, GHS3D, Hexahedron(i,j,k)
+    #  NETGEN 3D, MG-Tetra, Hexahedron(i,j,k)
     #  @param thickness total thickness of layers of prisms
     #  @param numberOfLayers number of layers of prisms
     #  @param stretchFactor factor (>1.0) of growth of layer thickness towards inside of mesh
@@ -274,7 +274,14 @@ class Mesh_Algorithm:
         if not "ViscousLayers" in self.GetCompatibleHypothesis():
             raise TypeError, "ViscousLayers are not supported by %s"%self.algo.GetName()
         if faces and isinstance( faces[0], geomBuilder.GEOM._objref_GEOM_Object ):
-            faces = [ self.mesh.geompyD.GetSubShapeID(self.mesh.geom, f) for f in faces ]
+            import GEOM
+            faceIDs = []
+            for f in faces:
+                if self.mesh.geompyD.ShapeIdToType( f.GetType() ) == "GROUP":
+                    faceIDs += f.GetSubShapeIndices()
+                else:
+                    faceIDs += [self.mesh.geompyD.GetSubShapeID(self.mesh.geom, f)]
+            faces = faceIDs
         hyp = self.Hypothesis("ViscousLayers",
                               [thickness, numberOfLayers, stretchFactor, faces, isFacesToIgnore],
                               toAdd=False)
@@ -287,7 +294,7 @@ class Mesh_Algorithm:
 
     ## Defines "ViscousLayers2D" hypothesis to give parameters of layers of quadrilateral
     #  elements to build near mesh boundary. This hypothesis can be used by several 2D algorithms:
-    #  NETGEN 2D, NETGEN 1D-2D, Quadrangle (mapping), MEFISTO, BLSURF
+    #  NETGEN 2D, NETGEN 1D-2D, Quadrangle (mapping), MEFISTO, MG-CADSurf
     #  @param thickness total thickness of layers of quadrilaterals
     #  @param numberOfLayers number of layers
     #  @param stretchFactor factor (>1.0) of growth of layer thickness towards inside of mesh

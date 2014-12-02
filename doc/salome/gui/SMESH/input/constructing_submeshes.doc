@@ -2,9 +2,21 @@
 
 \page constructing_submeshes_page Constructing sub-meshes
 
-Sub-mesh is a mesh on a geometrical sub-object created with meshing algorithms
-and/or hypotheses other than the algorithms and hypotheses assigned to
-the parent mesh on the parent geometrical object.
+Sub-mesh is a mesh on a geometrical sub-object (sub-shape) used to assign
+different meshing algorithms and/or hypotheses than the algorithms and
+hypotheses assigned to the parent mesh on the parent geometrical
+object, that allows getting a local mesh refinement.
+
+A sub-shape to create a sub-mesh on should be retrieved from the shape
+of the parent mesh one of the following ways: <ul>
+<li> In Geometry module, via <em>New Entity > Explode</em> menu.</li>
+<li> In Geometry module, by creation of a group (<em>New Entity >
+    Group > Create Group</em> menu).</li> 
+<li> In Mesh module, by
+  \ref subshape_by_mesh_elem "selecting a mesh element" generated on a
+  sub-shape of interest. This way is accessible if the mesh is
+  already computed.</li> 
+</ul>
 
 If a geometrical sub-object belongs to several geometrical objects
 having different meshes or sub-meshes, it will be meshed with the
@@ -56,6 +68,7 @@ sub-mesh. You can select meshing algorithms and hypotheses in the same way as
 in \ref constructing_meshes_page "Create mesh" menu.
 
 \par
+\anchor subshape_by_mesh_elem
 If the parent mesh is already computed, then you can define the
 \b Geometry by picking mesh elements computed on a sub-shape of interest
 in the 3D Viewer, i.e. you do not have to extract this sub-shape
@@ -77,12 +90,13 @@ Browser.
 \image html find_geom_by_mesh_elem.png
 
 \par
-In this dialog, <b> Element Type </b> defines kind of element to pick in the
-Viewer. 
+In this dialog, <b> Element Type </b> defines a kind of element to pick in the
+Viewer.
 Instead of picking an element in the Viewer, you can type its
 ID in <b> Element ID</b> field. 
-<b> Geometry name </b> field allows defining a name of the sub-shape.
-
+<b> Geometry name </b> field allows defining a name of the sub-shape
+with which the sub-shape will appear in the Object Browser (if not yet
+there).
 
 \par
 In the Object Browser the structure of the new sub-mesh will be

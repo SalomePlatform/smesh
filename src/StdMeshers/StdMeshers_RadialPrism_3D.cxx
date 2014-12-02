@@ -57,11 +57,7 @@
 #include <TopoDS_Solid.hxx>
 #include <gp.hxx>
 #include <gp_Pnt.hxx>
-#if OCC_VERSION_LARGE > 0x06050400
 #include <BRepClass3d.hxx>
-#else
-#include <BRepTools.hxx>
-#endif
 
 using namespace std;
 
@@ -169,11 +165,7 @@ bool StdMeshers_RadialPrism_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& a
 
   // get 2 shells
   TopoDS_Solid solid = TopoDS::Solid( aShape );
-#if OCC_VERSION_LARGE > 0x06050400
   TopoDS_Shell outerShell = BRepClass3d::OuterShell( solid );
-#else
-  TopoDS_Shell outerShell = BRepTools::OuterShell( solid );
-#endif
   TopoDS_Shape innerShell;
   int nbShells = 0;
   for ( TopoDS_Iterator It (solid); It.More(); It.Next(), ++nbShells )
@@ -187,13 +179,13 @@ bool StdMeshers_RadialPrism_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& a
   // ----------------------------------
 
   ProjectionUtils::TShapeShapeMap shape2ShapeMaps[2];
-  if ( !ProjectionUtils::FindSubShapeAssociation( innerShell, &aMesh,
-                                                  outerShell, &aMesh,
-                                                  shape2ShapeMaps[0])
-       &&
-       !ProjectionUtils::FindSubShapeAssociation( innerShell.Reversed(), &aMesh,
-                                                  outerShell, &aMesh,
-                                                  shape2ShapeMaps[1]))
+  bool mapOk1 = ProjectionUtils::FindSubShapeAssociation( innerShell, &aMesh,
+                                                          outerShell, &aMesh,
+                                                          shape2ShapeMaps[0]);
+  bool mapOk2 = ProjectionUtils::FindSubShapeAssociation( innerShell.Reversed(), &aMesh,
+                                                          outerShell, &aMesh,
+                                                          shape2ShapeMaps[1]);
+  if ( !mapOk1 && !mapOk2 )
     return error(COMPERR_BAD_SHAPE,"Topology of inner and outer shells seems different" );
 
   int iMap;
@@ -239,7 +231,7 @@ bool StdMeshers_RadialPrism_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& a
     }
 
     // Find matching nodes of in and out faces
-    TNodeNodeMap nodeIn2OutMap;
+    ProjectionUtils::TNodeNodeMap nodeIn2OutMap;
     if ( ! ProjectionUtils::FindMatchingNodesOnFaces( inFace, &aMesh, outFace, &aMesh,
                                                       shape2ShapeMap, nodeIn2OutMap ))
       return error(COMPERR_BAD_INPUT_MESH,SMESH_Comment("Mesh on faces #")
@@ -439,11 +431,7 @@ bool StdMeshers_RadialPrism_3D::Evaluate(SMESH_Mesh& aMesh,
 {
   // get 2 shells
   TopoDS_Solid solid = TopoDS::Solid( aShape );
-#if OCC_VERSION_LARGE > 0x06050400
   TopoDS_Shell outerShell = BRepClass3d::OuterShell( solid );
-#else
-  TopoDS_Shell outerShell = BRepTools::OuterShell( solid );
-#endif
   TopoDS_Shape innerShell;
   int nbShells = 0;
   for ( TopoDS_Iterator It (solid); It.More(); It.Next(), ++nbShells )

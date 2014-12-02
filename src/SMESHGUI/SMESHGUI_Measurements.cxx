@@ -36,7 +36,7 @@
 #include <SUIT_OverrideCursor.h>
 #include <SUIT_ResourceMgr.h>
 #include <SVTK_ViewWindow.h>
-#include <SALOME_ListIteratorOfListIO.hxx>
+#include <SALOME_ListIO.hxx>
 
 #include <QButtonGroup>
 #include <QGridLayout>

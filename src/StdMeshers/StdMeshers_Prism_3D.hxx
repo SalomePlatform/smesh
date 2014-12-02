@@ -56,6 +56,10 @@ namespace Prism_3D
   struct TNode;
   struct TPrismTopo;
 }
+namespace StdMeshers_ProjectionUtils
+{
+  class TrsfFinder3D;
+}
 class SMESHDS_SubMesh;
 class TopoDS_Edge;
 
@@ -398,7 +402,43 @@ private:
 
 }; // class StdMeshers_PrismAsBlock
 
-// =============================================
+// ===============================================
+/*!
+ * \brief Tool building internal nodes in a prism
+ */
+struct StdMeshers_Sweeper
+{
+  std::vector< TNodeColumn* > myBndColumns; // boundary nodes
+  std::vector< TNodeColumn* > myIntColumns; // internal nodes
+
+  bool ComputeNodes( SMESH_MesherHelper& helper,
+                     const double        tol,
+                     const bool          allowHighBndError );
+
+private:
+
+  gp_XYZ bndPoint( int iP, int z ) const
+  { return SMESH_TNodeXYZ( (*myBndColumns[ iP ])[ z ]); }
+
+  gp_XYZ intPoint( int iP, int z ) const
+  { return SMESH_TNodeXYZ( (*myIntColumns[ iP ])[ z ]); }
+
+  static bool projectIntPoints(const std::vector< gp_XYZ >& fromBndPoints,
+                               const std::vector< gp_XYZ >& toBndPoints,
+                               const std::vector< gp_XYZ >& fromIntPoints,
+                               std::vector< gp_XYZ >&       toIntPoints,
+                               StdMeshers_ProjectionUtils::TrsfFinder3D& trsf,
+                               std::vector< gp_XYZ > *      bndError);
+
+  static void applyBoundaryError(const std::vector< gp_XYZ >& bndPoints,
+                                 const std::vector< gp_XYZ >& bndError1,
+                                 const std::vector< gp_XYZ >& bndError2,
+                                 const double                 r,
+                                 std::vector< gp_XYZ >&       toIntPoints,
+                                 std::vector< double >&       int2BndDist);
+};
+
+// ===============================================
 /*!
  * \brief Algo building prisms on a prism shape
  */
@@ -443,7 +483,9 @@ public:
    * \brief Analyse shape geometry and mesh.
     * If there are triangles on one of faces, it becomes 'bottom'
    */
-  bool initPrism(Prism_3D::TPrismTopo& thePrism, const TopoDS_Shape& theSolid);
+  bool initPrism(Prism_3D::TPrismTopo& thePrism,
+                 const TopoDS_Shape&   theSolid,
+                 const bool            selectBottom = true);
 
   /*!
    * \brief Fill thePrism.myWallQuads and thePrism.myTopEdges
@@ -480,7 +522,18 @@ public:
    *        create triangles there by projection from the bottom
     * \retval bool - a success or not
    */
-  bool projectBottomToTop( const gp_Trsf & bottomToTopTrsf );
+  bool projectBottomToTop( const gp_Trsf & bottomToTopTrsf,
+                           const Prism_3D::TPrismTopo& thePrism );
+
+  /*!
+   * \brief Compute tolerance to pass to StdMeshers_Sweeper
+   */
+  double getSweepTolerance( const Prism_3D::TPrismTopo& thePrism );
+
+  /*!
+   * \brief Defines if it's safe to use the block approach
+   */
+  bool isSimpleBottom( const Prism_3D::TPrismTopo& thePrism );
 
   /*!
    * \brief Project mesh faces from a source FACE of one prism to
@@ -511,6 +564,7 @@ private:
 
   bool myProjectTriangles;
   bool mySetErrorToSM;
+  bool myUseBlock;
 
   StdMeshers_PrismAsBlock myBlock;
   SMESH_MesherHelper*     myHelper;

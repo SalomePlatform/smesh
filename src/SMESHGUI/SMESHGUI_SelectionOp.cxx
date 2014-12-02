@@ -43,7 +43,6 @@
 #include <SVTK_ViewModel.h>
 
 #include <SALOME_ListIO.hxx>
-#include <SALOME_ListIteratorOfListIO.hxx>
 
 // SALOME KERNEL includes 
 #include <SALOMEDS_SObject.hxx>
@@ -428,7 +427,7 @@ void SMESHGUI_SelectionOp::selected( QStringList& names,
       {
         _PTR(SObject) obj = _study->studyDS()->FindObjectID( anIt.Value()->getEntry() );
         if( obj )
-          names.append( obj->GetName().c_str() );
+          names.append( QString( obj->GetName().c_str() ).trimmed() );
       }
     }
   }

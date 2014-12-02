@@ -49,6 +49,7 @@ public:
 
   virtual void            init( const QString&, LightApp_SelectionMgr* );
   virtual QVariant        parameter( const int, const QString& ) const;
+  virtual QVariant        parameter( const QString& ) const;
   virtual bool            processOwner( const LightApp_DataOwner* );
 
   // got from object, not from actor
@@ -74,6 +75,7 @@ public:
   virtual QString         shrinkMode( int ) const;
   virtual QList<QVariant> entityMode( int ) const;
   virtual QString         controlMode( int ) const;
+  virtual QString         controlMode() const;
   virtual bool            isNumFunctor( int ) const;
   virtual QString         facesOrientationMode( int ) const;
   virtual QString         groupType( int ) const;
@@ -87,6 +89,7 @@ public:
 
 private:
   QStringList             myTypes;
+  QStringList             myControls;
   QList<SMESH_Actor*>     myActors;
 };
 

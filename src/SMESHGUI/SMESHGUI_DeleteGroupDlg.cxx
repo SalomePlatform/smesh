@@ -43,7 +43,6 @@
 #include <LightApp_SelectionMgr.h>
 
 #include <SALOME_ListIO.hxx>
-#include <SALOME_ListIteratorOfListIO.hxx>
 
 #include <SVTK_Selection.h>
 #include <SVTK_ViewWindow.h>

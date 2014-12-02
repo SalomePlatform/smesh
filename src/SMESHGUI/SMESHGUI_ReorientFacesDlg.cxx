@@ -46,7 +46,6 @@
 // SALOME GUI includes
 #include <LightApp_SelectionMgr.h>
 #include <SALOME_ListIO.hxx>
-#include <SALOME_ListIteratorOfListIO.hxx>
 #include <SUIT_Desktop.h>
 #include <SUIT_MessageBox.h>
 #include <SUIT_OverrideCursor.h>

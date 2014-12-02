@@ -1954,6 +1954,7 @@ bool MultiConnection2D::Value::operator<(const MultiConnection2D::Value& x) cons
 }
 
 void MultiConnection2D::GetValues(MValues& theValues){
+  if ( !myMesh ) return;
   SMDS_FaceIteratorPtr anIter = myMesh->facesIterator();
   for(; anIter->more(); ){
     const SMDS_MeshFace* anElem = anIter->next();
@@ -3134,11 +3135,14 @@ bool RangeOfIds::SetRangeStr( const TCollection_AsciiString& theStr )
   myIds.Clear();
 
   TCollection_AsciiString aStr = theStr;
-  aStr.RemoveAll( ' ' );
-  aStr.RemoveAll( '\t' );
+  //aStr.RemoveAll( ' ' );
+  //aStr.RemoveAll( '\t' );
+  for ( int i = 1; i <= aStr.Length(); ++i )
+    if ( isspace( aStr.Value( i )))
+      aStr.SetValue( i, ',');
 
   for ( int aPos = aStr.Search( ",," ); aPos != -1; aPos = aStr.Search( ",," ) )
-    aStr.Remove( aPos, 2 );
+    aStr.Remove( aPos, 1 );
 
   TCollection_AsciiString tmpStr = aStr.Token( ",", 1 );
   int i = 1;
@@ -4247,11 +4251,11 @@ void BelongToGeom::init()
     myIsSubshape = IsSubShape(aMap, myShape);
   }
 
-  if (!myIsSubshape)
+  //if (!myIsSubshape) // to be always ready to check an element not bound to geometry
   {
     myElementsOnShapePtr.reset(new ElementsOnShape());
     myElementsOnShapePtr->SetTolerance(myTolerance);
-    myElementsOnShapePtr->SetAllNodes(true); // belong, while false means "lays on"
+    myElementsOnShapePtr->SetAllNodes(true); // "belong", while false means "lays on"
     myElementsOnShapePtr->SetMesh(myMeshDS);
     myElementsOnShapePtr->SetShape(myShape, myType);
   }
@@ -4292,36 +4296,43 @@ bool BelongToGeom::IsSatisfy (long theId)
   {
     if( const SMDS_MeshNode* aNode = myMeshDS->FindNode( theId ) )
     {
+      if ( aNode->getshapeId() < 1 )
+        return myElementsOnShapePtr->IsSatisfy(theId);
+
       const SMDS_PositionPtr& aPosition = aNode->GetPosition();
       SMDS_TypeOfPosition aTypeOfPosition = aPosition->GetTypeOfPosition();
       switch( aTypeOfPosition )
       {
-      case SMDS_TOP_VERTEX : return IsContains( myMeshDS,myShape,aNode,TopAbs_VERTEX );
-      case SMDS_TOP_EDGE   : return IsContains( myMeshDS,myShape,aNode,TopAbs_EDGE );
-      case SMDS_TOP_FACE   : return IsContains( myMeshDS,myShape,aNode,TopAbs_FACE );
-      case SMDS_TOP_3DSPACE: return IsContains( myMeshDS,myShape,aNode,TopAbs_SHELL );
+      case SMDS_TOP_VERTEX : return ( IsContains( myMeshDS,myShape,aNode,TopAbs_VERTEX ));
+      case SMDS_TOP_EDGE   : return ( IsContains( myMeshDS,myShape,aNode,TopAbs_EDGE ));
+      case SMDS_TOP_FACE   : return ( IsContains( myMeshDS,myShape,aNode,TopAbs_FACE ));
+      case SMDS_TOP_3DSPACE: return ( IsContains( myMeshDS,myShape,aNode,TopAbs_SOLID ) ||
+                                      IsContains( myMeshDS,myShape,aNode,TopAbs_SHELL ));
       }
     }
   }
   else
   {
-    if( const SMDS_MeshElement* anElem = myMeshDS->FindElement( theId ) )
+    if ( const SMDS_MeshElement* anElem = myMeshDS->FindElement( theId ))
     {
+      if ( anElem->getshapeId() < 1 )
+        return myElementsOnShapePtr->IsSatisfy(theId);
+
       if( myType == SMDSAbs_All )
       {
-        return IsContains( myMeshDS,myShape,anElem,TopAbs_EDGE ) ||
-               IsContains( myMeshDS,myShape,anElem,TopAbs_FACE ) ||
-               IsContains( myMeshDS,myShape,anElem,TopAbs_SHELL )||
-               IsContains( myMeshDS,myShape,anElem,TopAbs_SOLID );
+        return ( IsContains( myMeshDS,myShape,anElem,TopAbs_EDGE ) ||
+                 IsContains( myMeshDS,myShape,anElem,TopAbs_FACE ) ||
+                 IsContains( myMeshDS,myShape,anElem,TopAbs_SOLID )||
+                 IsContains( myMeshDS,myShape,anElem,TopAbs_SHELL ));
       }
       else if( myType == anElem->GetType() )
       {
         switch( myType )
         {
-        case SMDSAbs_Edge  : return IsContains( myMeshDS,myShape,anElem,TopAbs_EDGE );
-        case SMDSAbs_Face  : return IsContains( myMeshDS,myShape,anElem,TopAbs_FACE );
-        case SMDSAbs_Volume: return IsContains( myMeshDS,myShape,anElem,TopAbs_SHELL )||
-                                    IsContains( myMeshDS,myShape,anElem,TopAbs_SOLID );
+        case SMDSAbs_Edge  : return ( IsContains( myMeshDS,myShape,anElem,TopAbs_EDGE ));
+        case SMDSAbs_Face  : return ( IsContains( myMeshDS,myShape,anElem,TopAbs_FACE ));
+        case SMDSAbs_Volume: return ( IsContains( myMeshDS,myShape,anElem,TopAbs_SOLID )||
+                                      IsContains( myMeshDS,myShape,anElem,TopAbs_SHELL ));
         }
       }
     }

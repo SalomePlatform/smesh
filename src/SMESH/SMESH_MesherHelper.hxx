@@ -118,6 +118,11 @@ class SMESH_EXPORT SMESH_MesherHelper
   static bool IsStructured( SMESH_subMesh* faceSM );
 
   /*!
+   * \brief Return true if 2D mesh on FACE is distored
+   */
+  static bool IsDistorted2D( SMESH_subMesh* faceSM, bool checkUV=false );
+
+  /*!
    * \brief Returns true if given node is medium
     * \param n - node to check
     * \param typeToCheck - type of elements containing the node to ask about node status
@@ -167,15 +172,15 @@ class SMESH_EXPORT SMESH_MesherHelper
    *   a0   p0    a1
    */
   inline static gp_XY calcTFI(double x, double y,
-                              const gp_XY a0,const gp_XY a1,const gp_XY a2,const gp_XY a3,
-                              const gp_XY p0,const gp_XY p1,const gp_XY p2,const gp_XY p3);
+                              const gp_XY& a0,const gp_XY& a1,const gp_XY& a2,const gp_XY& a3,
+                              const gp_XY& p0,const gp_XY& p1,const gp_XY& p2,const gp_XY& p3);
 
   /*!
    * \brief Same as "gp_XY calcTFI(...)" but in 3D
    */
   inline static gp_XYZ calcTFI(double x, double y,
-                               const gp_XYZ a0,const gp_XYZ a1,const gp_XYZ a2,const gp_XYZ a3,
-                               const gp_XYZ p0,const gp_XYZ p1,const gp_XYZ p2,const gp_XYZ p3);
+                               const gp_XYZ& a0,const gp_XYZ& a1,const gp_XYZ& a2,const gp_XYZ& a3,
+                               const gp_XYZ& p0,const gp_XYZ& p1,const gp_XYZ& p2,const gp_XYZ& p3);
   /*!
    * \brief Count nb of sub-shapes
     * \param shape - the shape
@@ -215,6 +220,8 @@ class SMESH_EXPORT SMESH_MesherHelper
   static bool IsSubShape( const TopoDS_Shape& shape, const TopoDS_Shape& mainShape );
 
   static bool IsSubShape( const TopoDS_Shape& shape, SMESH_Mesh* aMesh );
+
+  static bool IsBlock( const TopoDS_Shape& shape );
 
   static double MaxTolerance( const TopoDS_Shape& shape );
 
@@ -637,9 +644,9 @@ public:
   void AddTLinkNodeMap(const TLinkNodeMap& aMap)
     { myTLinkNodeMap.insert(aMap.begin(), aMap.end()); }
 
-  void AddTLinks(const SMDS_MeshEdge*   edge);
-  void AddTLinks(const SMDS_MeshFace*   face);
-  void AddTLinks(const SMDS_MeshVolume* vol);
+  bool AddTLinks(const SMDS_MeshEdge*   edge);
+  bool AddTLinks(const SMDS_MeshFace*   face);
+  bool AddTLinks(const SMDS_MeshVolume* vol);
 
   /**
    * Returns myTLinkNodeMap
@@ -725,8 +732,8 @@ public:
 //=======================================================================
 inline gp_XY
 SMESH_MesherHelper::calcTFI(double x, double y,
-                            const gp_XY a0,const gp_XY a1,const gp_XY a2,const gp_XY a3,
-                            const gp_XY p0,const gp_XY p1,const gp_XY p2,const gp_XY p3)
+                            const gp_XY& a0,const gp_XY& a1,const gp_XY& a2,const gp_XY& a3,
+                            const gp_XY& p0,const gp_XY& p1,const gp_XY& p2,const gp_XY& p3)
 {
   return
     ((1 - y) * p0 + x * p1 + y * p2 + (1 - x) * p3 ) -
@@ -735,8 +742,8 @@ SMESH_MesherHelper::calcTFI(double x, double y,
 //=======================================================================
 inline gp_XYZ
 SMESH_MesherHelper::calcTFI(double x, double y,
-                            const gp_XYZ a0,const gp_XYZ a1,const gp_XYZ a2,const gp_XYZ a3,
-                            const gp_XYZ p0,const gp_XYZ p1,const gp_XYZ p2,const gp_XYZ p3)
+                            const gp_XYZ& a0,const gp_XYZ& a1,const gp_XYZ& a2,const gp_XYZ& a3,
+                            const gp_XYZ& p0,const gp_XYZ& p1,const gp_XYZ& p2,const gp_XYZ& p3)
 {
   return
     ((1 - y) * p0 + x * p1 + y * p2 + (1 - x) * p3 ) -

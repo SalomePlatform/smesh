@@ -506,8 +506,9 @@ void SMESHGUI_MeshInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
     long nb2DLinear      = info[SMDSEntity_Triangle]        + info[SMDSEntity_Quadrangle] + info[SMDSEntity_Polygon];
     long nb2DQuadratic   = info[SMDSEntity_Quad_Triangle]   + info[SMDSEntity_Quad_Quadrangle];
     long nb2DBiQuadratic = info[SMDSEntity_BiQuad_Triangle] + info[SMDSEntity_BiQuad_Quadrangle];
+    long nb2DTotal       = nb2DLinear + nb2DQuadratic + nb2DBiQuadratic;
 
-    myWidgets[i2D][iTotal]                  ->setProperty( "text", QString::number( nb2DLinear + nb2DQuadratic ));
+    myWidgets[i2D][iTotal]                  ->setProperty( "text", QString::number( nb2DTotal ));
     myWidgets[i2D][iLinear]                 ->setProperty( "text", QString::number( nb2DLinear ) );
     myWidgets[i2D][iQuadratic]              ->setProperty( "text", QString::number( nb2DQuadratic ) );
     myWidgets[i2D][iBiQuadratic]            ->setProperty( "text", QString::number( nb2DBiQuadratic ) );
@@ -524,10 +525,11 @@ void SMESHGUI_MeshInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
     long nbHexahedrons   = info[SMDSEntity_Hexa]    + info[SMDSEntity_Quad_Hexa] + info[SMDSEntity_TriQuad_Hexa];
     long nbPyramids      = info[SMDSEntity_Pyramid] + info[SMDSEntity_Quad_Pyramid];
     long nbPrisms        = info[SMDSEntity_Penta]   + info[SMDSEntity_Quad_Penta];
-    long nb3DLinear      = info[SMDSEntity_Tetra]      + info[SMDSEntity_Hexa] + info[SMDSEntity_Pyramid] + info[SMDSEntity_Penta] + info[SMDSEntity_Polyhedra] + info[SMDSEntity_Hexagonal_Prism];
+    long nb3DLinear      = info[SMDSEntity_Tetra]   + info[SMDSEntity_Hexa] + info[SMDSEntity_Pyramid] + info[SMDSEntity_Penta] + info[SMDSEntity_Polyhedra] + info[SMDSEntity_Hexagonal_Prism];
     long nb3DQuadratic   = info[SMDSEntity_Quad_Tetra] + info[SMDSEntity_Quad_Hexa] + info[SMDSEntity_Quad_Pyramid] + info[SMDSEntity_Quad_Penta];
     long nb3DBiQuadratic = info[SMDSEntity_TriQuad_Hexa];
-    myWidgets[i3D][iTotal]                  ->setProperty( "text", QString::number( nb3DLinear + nb3DQuadratic ) );
+    long nb3DTotal       = nb3DLinear + nb3DQuadratic + nb3DBiQuadratic;
+    myWidgets[i3D][iTotal]                  ->setProperty( "text", QString::number( nb3DTotal ) );
     myWidgets[i3D][iLinear]                 ->setProperty( "text", QString::number( nb3DLinear ) );
     myWidgets[i3D][iQuadratic]              ->setProperty( "text", QString::number( nb3DQuadratic ) );
     myWidgets[i3D][iBiQuadratic]            ->setProperty( "text", QString::number( nb3DBiQuadratic ) );
@@ -546,7 +548,7 @@ void SMESHGUI_MeshInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
     myWidgets[i3DPrisms][iQuadratic]        ->setProperty( "text", QString::number( info[SMDSEntity_Quad_Penta] ) );
     myWidgets[i3DHexaPrisms][iTotal]        ->setProperty( "text", QString::number( info[SMDSEntity_Hexagonal_Prism] ) );
     myWidgets[i3DPolyhedrons][iTotal]       ->setProperty( "text", QString::number( info[SMDSEntity_Polyhedra] ) );
-    long nbElemTotal       = info[SMDSEntity_0D] + info[SMDSEntity_Ball] + nbEdges + nb2DLinear + nb2DQuadratic + nb2DBiQuadratic + nb3DLinear + nb3DQuadratic + nb3DBiQuadratic;
+    long nbElemTotal       = info[SMDSEntity_0D] + info[SMDSEntity_Ball] + nbEdges + nb2DTotal + nb3DTotal;
     long nbElemLinerial    = info[SMDSEntity_Edge] + nb2DLinear + nb3DLinear;
     long nbElemQuadratic   = info[SMDSEntity_Quad_Edge] + nb2DQuadratic + nb3DQuadratic;
     long nbElemBiQuadratic = nb2DBiQuadratic + nb3DBiQuadratic;

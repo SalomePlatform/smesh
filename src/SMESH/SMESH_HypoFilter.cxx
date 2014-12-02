@@ -157,8 +157,9 @@ void SMESH_HypoFilter::IsMoreLocalThanPredicate::findPreferable()
 bool SMESH_HypoFilter::IsMoreLocalThanPredicate::IsOk(const SMESH_Hypothesis* aHyp,
                                                       const TopoDS_Shape&     aShape) const
 {
-  if ( aShape.IsSame( _mesh.GetShapeToMesh() ))
-    return false; // aHyp is global
+  if ( aShape.IsSame( _mesh.GetShapeToMesh() ) ||  // aHyp is global
+       aShape.IsSame( _shape ))
+    return false;
 
   if ( SMESH_MesherHelper::IsSubShape( aShape, /*mainShape=*/_shape ))
     return true;

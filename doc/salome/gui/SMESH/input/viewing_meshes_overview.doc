@@ -33,7 +33,7 @@ viewer.</li>
 <li>\subpage display_mode_page "Display Mode" - allows to select between
 Wireframe, Shading and Nodes presentation.</li>
 <li>\subpage display_entity_page "Display Entity" - allows to display
-Faces, Edges or both.</li>
+entities by types (Faces, Edges, Volumes etc.).</li>
 <li><b>2D Quadratic</b> - allows to select between the representation
 of quadratic edges as broken <b>lines</b> or as <b>arcs</b></li>
 <li><b>Orientation of faces</b> - shows vectors of orientation of

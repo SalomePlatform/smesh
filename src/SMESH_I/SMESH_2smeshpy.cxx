@@ -1793,10 +1793,29 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
       list< Handle(_pyHypothesis) >::iterator hyp;
       if ( !myLastComputeCmd.IsNull() )
       {
-        for ( hyp = myHypos.begin(); hyp != myHypos.end(); ++hyp )
-          (*hyp)->ComputeDiscarded( myLastComputeCmd );
+        // check if the previously computed mesh has been edited,
+        // if so then we do not clear the previous Compute()
+        bool toClear = true;
+        if ( myLastComputeCmd->GetMethod() == "Compute" )
+        {
+          list< Handle(_pyMeshEditor)>::iterator e = myEditors.begin();
+          for ( ; e != myEditors.end() && toClear; ++e )
+          {
+            list< Handle(_pyCommand)>& cmds = (*e)->GetProcessedCmds();
+            list< Handle(_pyCommand) >::reverse_iterator cmd = cmds.rbegin();
+            if ( cmd != cmds.rend() &&
+                 (*cmd)->GetOrderNb() > myLastComputeCmd->GetOrderNb() )
+              toClear = false;
+          }
+        }
+        if ( toClear )
+        {
+          // clear hyp commands called before myLastComputeCmd
+          for ( hyp = myHypos.begin(); hyp != myHypos.end(); ++hyp )
+            (*hyp)->ComputeDiscarded( myLastComputeCmd );
 
-        myLastComputeCmd->Clear();
+          myLastComputeCmd->Clear();
+        }
       }
       myLastComputeCmd = theCommand;
 
@@ -1961,7 +1980,7 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
       //
       // remove "PartTo" from the method
       TCollection_AsciiString newMethod = method;
-      newMethod.Remove( 7, 6 );
+      newMethod.Remove( /*where=*/7, /*howmany=*/6 );
       theCommand->SetMethod( newMethod );
       // make the 1st arg be the last one (or last but three for ExportMED())
       _pyID partID = theCommand->GetArg( 1 );

@@ -128,7 +128,7 @@ namespace SMESH
       }
       else
       {
-        QObject::tr(QString("SMESH_HYP_%1").arg(theHypStatus).toLatin1().data());
+        aMsg += QObject::tr(QString("SMESH_HYP_%1").arg(theHypStatus).toLatin1().data());
 
         if ( theHypStatus == SMESH::HYP_HIDDEN_ALGO ) { // PAL18501
           CORBA::String_var hypType = theHyp->GetName();
@@ -469,7 +469,7 @@ namespace SMESH
               //      It is used to obtain plugin root dir environment variable
               //      in the SMESHGUI_HypothesisDlg class. Plugin root dir environment
               //      variable is used to display documentation.
-              aCreator->setProperty(PLUGIN_NAME,aHypData->PluginName);
+              aCreator->setProperty(SMESH::Plugin_Name(),aHypData->PluginName);
             }
           }
         }
@@ -511,10 +511,14 @@ namespace SMESH
 
     return SMESH::SMESH_Hypothesis::_nil();
   }
+
   bool IsApplicable(const QString&        aHypType,
                     GEOM::GEOM_Object_ptr theGeomObject,
                     const bool            toCheckAll)
   {
+    if ( getenv("NO_LIMIT_ALGO_BY_SHAPE")) // allow a workaround for a case if
+      return true;                         // IsApplicable() returns false due to a bug
+
     HypothesisData* aHypData = GetHypothesisData(aHypType);
     QString aServLib = aHypData->ServerLibName;
     return SMESHGUI::GetSMESHGen()->IsApplicable( aHypType.toLatin1().data(),

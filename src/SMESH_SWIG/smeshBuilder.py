@@ -627,7 +627,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
     #                  pass result of Mesh.GetIDSource( list_of_ids, type ) as meshPart
     #  @param meshName a name of the new mesh
     #  @param toCopyGroups to create in the new mesh groups the copied elements belongs to
-    #  @param toKeepIDs to preserve IDs of the copied elements or not
+    #  @param toKeepIDs to preserve order of the copied elements or not
     #  @return an instance of Mesh class
     def CopyMesh( self, meshPart, meshName, toCopyGroups=False, toKeepIDs=False):
         if (isinstance( meshPart, Mesh )):
@@ -1596,7 +1596,7 @@ class Mesh:
             AssureGeomPublished( self, geom, "shape for %s" % hyp.GetName())
             status = self.mesh.AddHypothesis(geom, hyp)
         else:
-            status = HYP_BAD_GEOMETRY
+            status = HYP_BAD_GEOMETRY,""
         hyp_name = GetName( hyp )
         geom_name = ""
         if geom:
@@ -1876,7 +1876,12 @@ class Mesh:
     #  @ingroup l2_grps_create
     def MakeGroupByIds(self, groupName, elementType, elemIDs):
         group = self.mesh.CreateGroup(elementType, groupName)
-        group.Add(elemIDs)
+        if hasattr( elemIDs, "GetIDs" ):
+            if hasattr( elemIDs, "SetMesh" ):
+                elemIDs.SetMesh( self.GetMesh() )
+            group.AddFrom( elemIDs )
+        else:
+            group.Add(elemIDs)
         return group
 
     ## Creates a mesh group by the given conditions
@@ -3451,7 +3456,7 @@ class Mesh:
 
     ##
     # @brief Creates missing boundary elements around either the whole mesh or 
-    #    groups of 2D elements
+    #    groups of elements
     #  @param dimension - defines type of boundary elements to create
     #  @param groupName - a name of group to store all boundary elements in,
     #    "" means not to create the group
@@ -3459,7 +3464,7 @@ class Mesh:
     #    mesh + created boundary elements; "" means not to create the new mesh
     #  @param toCopyAll - if true, the whole initial mesh will be copied into
     #    the new mesh else only boundary elements will be copied into the new mesh
-    #  @param groups - groups of 2D elements to make boundary around
+    #  @param groups - groups of elements to make boundary around
     #  @retval tuple( long, mesh, groups )
     #                 long - number of added boundary elements
     #                 mesh - the mesh where elements were added to
@@ -3472,12 +3477,12 @@ class Mesh:
         if mesh: mesh = self.smeshpyD.Mesh(mesh)
         return nb, mesh, group
 
-    ## Renumber mesh nodes
+    ## Renumber mesh nodes (Obsolete, does nothing)
     #  @ingroup l2_modif_renumber
     def RenumberNodes(self):
         self.editor.RenumberNodes()
 
-    ## Renumber mesh elements
+    ## Renumber mesh elements (Obsole, does nothing)
     #  @ingroup l2_modif_renumber
     def RenumberElements(self):
         self.editor.RenumberElements()

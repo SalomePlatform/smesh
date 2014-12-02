@@ -40,7 +40,6 @@
 #include <QtxComboBox.h>
 #include <SALOME_InteractiveObject.hxx>
 #include <SALOME_ListIO.hxx>
-#include <SALOME_ListIteratorOfListIO.hxx>
 #include <SUIT_ResourceMgr.h>
 #include <SalomeApp_IntSpinBox.h>
 #include <SalomeApp_Tools.h>

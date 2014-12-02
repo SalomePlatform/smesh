@@ -385,7 +385,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
             algo = self.mesh.smeshpyD.CreateHypothesis("SegmentAroundVertex_0D", "libStdMeshersEngine.so")
             pass
         status = self.mesh.mesh.AddHypothesis(self.geom, algo)
-        TreatHypoStatus(status, "SegmentAroundVertex_0D", name, True)
+        TreatHypoStatus(status, "SegmentAroundVertex_0D", name, True, self.mesh)
         #
         from salome.smesh.smeshBuilder import IsEqual
         comFun = lambda hyp, args: IsEqual(hyp.GetLength(), args[0])
@@ -830,12 +830,13 @@ class StdMeshersBuilder_Projection2D(Mesh_Algorithm):
             from salome.smesh.smeshBuilder import AssureGeomPublished
             AssureGeomPublished( self.mesh, geom )
         hyp = self.Hypothesis("ProjectionSource2D", [face,mesh,srcV1,tgtV1,srcV2,tgtV2],
-                              UseExisting=0)
+                              UseExisting=0, toAdd=False)
         # it does not seem to be useful to reuse the existing "SourceFace" hypothesis
                               #UseExisting=UseExisting, CompareMethod=self.CompareSourceFace)
         hyp.SetSourceFace( face )
         hyp.SetSourceMesh( mesh )
         hyp.SetVertexAssociation( srcV1, srcV2, tgtV1, tgtV2 )
+        self.mesh.AddHypothesis(hyp, self.geom)
         return hyp
 
     pass # end of StdMeshersBuilder_Projection2D class

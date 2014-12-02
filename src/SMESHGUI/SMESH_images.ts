@@ -256,6 +256,14 @@
             <translation>mesh_triangle.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_CHOOSE</source>
+            <translation>mesh_choose.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_CHOOSE_ALL</source>
+            <translation>mesh_choose_all.png</translation>
+        </message>
+        <message>
             <source>ICON_EDIT_GROUP</source>
             <translation>mesh_edit_group.png</translation>
         </message>

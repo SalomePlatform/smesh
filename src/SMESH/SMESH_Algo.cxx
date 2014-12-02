@@ -522,9 +522,7 @@ GeomAbs_Shape SMESH_Algo::Continuity(TopoDS_Edge E1,
   Standard_Real tol = BRep_Tool::Tolerance( V );
   Standard_Real angTol = 2e-3;
   try {
-#if OCC_VERSION_LARGE > 0x06010000
     OCC_CATCH_SIGNALS;
-#endif
     return BRepLProp::Continuity(C1, C2, u1, u2, tol, angTol);
   }
   catch (Standard_Failure) {
