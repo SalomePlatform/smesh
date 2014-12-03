@@ -50,6 +50,7 @@
 #include <Basics_OCCTVersion.hxx>
 
 #include "utilities.h"
+#include "chrono.hxx"
 
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>

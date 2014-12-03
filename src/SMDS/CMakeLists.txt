@@ -41,7 +41,6 @@ SET(_link_LIBRARIES
 
 # header files / no moc processing
 SET(SMDS_HEADERS
-  chrono.hxx
   ObjectPool.hxx
   SMDS_TypeOfPosition.hxx
   SMDSAbs_ElementType.hxx

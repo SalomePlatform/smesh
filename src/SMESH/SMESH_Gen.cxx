@@ -70,7 +70,6 @@ SMESH_Gen::SMESH_Gen()
   _segmentation = _nbSegments = 10;
   SMDS_Mesh::_meshList.clear();
   MESSAGE(SMDS_Mesh::_meshList.size());
-  //_counters = new counters(100);
   _compute_canceled = false;
   _sm_current = NULL;
   //vtkDebugLeaks::SetExitError(0);

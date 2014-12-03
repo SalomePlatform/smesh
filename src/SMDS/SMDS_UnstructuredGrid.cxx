@@ -24,6 +24,7 @@
 #include "SMDS_MeshVolume.hxx"
 
 #include "utilities.h"
+#include "chrono.hxx"
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
