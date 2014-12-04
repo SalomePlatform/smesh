@@ -23,6 +23,7 @@
 SET(plugin_SCRIPTS
   __init__.py
   cubeAngle.py
+  cubeFin.py
   decoupeCylindre.py
   disque_perce.py
   ellipse_disque.py

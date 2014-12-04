@@ -24,6 +24,9 @@ SET(plugin_SCRIPTS
   __init__.py
   cubeAngle2.py
   cubeAngle.py
+  cubeCoin.py
+  cubeMilieu.py
+  cubeTransverse.py
   cylindre_2.py
   cylindre.py
   disquePerce.py

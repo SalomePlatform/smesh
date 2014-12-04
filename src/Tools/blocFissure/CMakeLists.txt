@@ -30,7 +30,6 @@ ENDIF(SALOME_BUILD_GUI)
 # scripts / static
 SET(plugin_SCRIPTS
   __init__.py
-  casStandard.py
   exemple.py
   exemple2.py
 )
