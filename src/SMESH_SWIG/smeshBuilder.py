@@ -3391,7 +3391,7 @@ class Mesh:
     #  @param theSubMesh a group or a sub-mesh to convert; WARNING: in this case the mesh can become not conformal
     #  @param theToBiQuad If True, converts the mesh to bi-quadratic
     #  @ingroup l2_modif_tofromqu
-    def ConvertToQuadratic(self, theForce3d, theSubMesh=None, theToBiQuad=False):
+    def ConvertToQuadratic(self, theForce3d=False, theSubMesh=None, theToBiQuad=False):
         if isinstance( theSubMesh, Mesh ):
             theSubMesh = theSubMesh.mesh
         if theToBiQuad:

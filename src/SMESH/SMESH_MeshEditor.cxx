@@ -11247,6 +11247,14 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
         }
     }
 
+  // Remove empty groups (issue 0022812)
+  std::map<std::string, SMESH_Group*>::iterator name_group = mapOfJunctionGroups.begin();
+  for ( ; name_group != mapOfJunctionGroups.end(); ++name_group )
+  {
+    if ( name_group->second && name_group->second->GetGroupDS()->IsEmpty() )
+      myMesh->RemoveGroup( name_group->second->GetGroupDS()->GetID() );
+  }
+
   meshDS->CleanDownWardConnectivity(); // Mesh has been modified, downward connectivity is no more usable, free memory
   grid->BuildLinks();
 

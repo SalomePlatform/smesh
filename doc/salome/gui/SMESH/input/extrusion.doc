@@ -3,8 +3,11 @@
 \page extrusion_page Extrusion
 
 \n Extrusion is used to build mesh elements of plus one
-dimension than the input ones. Any node, segment or 2D element can be
-extruded. Each type of elements has a corresponding type of extruded elements:
+dimension than the input ones. Boundary elements around elements of
+plus one dimension are additionally created. All created elements
+can be automatically grouped.
+<p>Any node, segment or 2D element can be extruded. Each type of
+elements is extruded into a corresponding type of result elements:
 <table>
 <tr><td><b>Extruded element</b></td><td><b> Result element </b></td></tr>
 <tr><td>Node              </td><td> Segment </td></tr>

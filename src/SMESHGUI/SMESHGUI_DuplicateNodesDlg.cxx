@@ -602,7 +602,7 @@ void SMESHGUI_DuplicateNodesDlg::onSelectionChanged()
         break;
       case 3:
         ok = ( aGroupType == SMESH::VOLUME || 
-	       aGroupType == SMESH::FACE );
+               aGroupType == SMESH::FACE );
         break;
       }
     }
