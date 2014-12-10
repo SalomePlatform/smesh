@@ -2,6 +2,9 @@
 
 import logging
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 from orderEdgesFromWire import orderEdgesFromWire
 
 # -----------------------------------------------------------------------------
@@ -23,15 +26,14 @@ def prolongeWire(aWire, extrem, norms, long):
     dists = [(geompy.MinDistance(v, aWire), i , v) for i, v in enumerate(exts)]
     dists.sort()
     v2 = dists[-1][-1]
-    #v2 = geompy.MakeTranslationVectorDistance(v1, norms[i], long)
     edge = geompy.MakeEdge(v1, v2)
     edges.append(edge)
     edgesBout.append(edge)
     name = "extrem%d"%i
-    geompy.addToStudy(edge,name)
+    geomPublish(initLog.debug, edge, name)
   try:
     wireProlonge = geompy.MakeWire(edges)
-    geompy.addToStudy(wireProlonge, "wireProlonge")
+    geomPublish(initLog.debug, wireProlonge, "wireProlonge")
   except:
     logging.warning("probleme MakeWire, approche pas a pas")
     if uneSeuleEdge:
@@ -49,8 +51,8 @@ def prolongeWire(aWire, extrem, norms, long):
     wireProlonge = edgesBout[i0]
     for i in range(len(edgelist)):
       wireProlonge = geompy.MakeWire([wireProlonge, edgelist[accessList[i]]])
-      geompy.addToStudy(wireProlonge, "wireProlonge_%d"%i)
+      geomPublish(initLog.debug, wireProlonge, "wireProlonge_%d"%i)
     wireProlonge = geompy.MakeWire([wireProlonge,edgesBout[i1]])
-    geompy.addToStudy(wireProlonge, "wireNonProlonge")
+    geomPublish(initLog.debug, wireProlonge, "wireProlonge")
     logging.warning("prolongation wire pas a pas OK")
   return wireProlonge

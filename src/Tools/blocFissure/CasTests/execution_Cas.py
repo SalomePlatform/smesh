@@ -4,9 +4,20 @@ import sys, traceback
 import logging
 from blocFissure import gmu
 from blocFissure.gmu import initLog
+
+# -----------------------------------------------------------------------------------------------
 #initLog.setDebug()
 initLog.setVerbose()
+#initLog.setRelease()
 #initLog.setPerfTests()
+
+# ---tous les cas en sequence, ou les cas selectionnés ...
+runall = True
+if runall:
+  torun = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,]
+else: #prob 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27   
+  torun = [ 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,]
+# -----------------------------------------------------------------------------------------------
 
 from blocFissure.gmu import geomsmesh
 from blocFissure.gmu.casStandard import casStandard
@@ -125,13 +136,6 @@ cas=27
 from blocFissure.CasTests import cubeTransverse
 problemes.append(casStandard(cubeTransverse.dicoParams, cubeTransverse.referencesMaillageFissure, cas))
 
-
-# ---tous les cas en sequence, ou les cas selectionnés ...
-runall = True
-if runall:
-  torun = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,]
-else: #prob 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27   
-  torun = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,]
   
 for i in range(len(problemes)):
   if torun[i]:
