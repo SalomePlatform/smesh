@@ -60,7 +60,7 @@ class faceGauche_2(fissureGenerique):
 
     shellFiss = geompy.ImportFile(os.path.join(gmu.pathBloc, "materielCasTests/faceGauche2FissCoupe.brep"), "BREP")
     fondFiss = geompy.CreateGroup(shellFiss, geompy.ShapeType["EDGE"])
-    geompy.UnionIDs(fondFiss, [12, 4])
+    geompy.UnionIDs(fondFiss, [14, 7])
     geompy.addToStudy( shellFiss, 'shellFiss' )
     geompy.addToStudyInFather( shellFiss, fondFiss, 'fondFiss' )
 

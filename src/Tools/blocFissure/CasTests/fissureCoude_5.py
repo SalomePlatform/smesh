@@ -75,7 +75,7 @@ class fissureCoude_5(fissureCoude):
                                       nomFicSain    = self.nomCas,
                                       nomFicFissure = 'fissure_' + self.nomCas,
                                       nbsegRad      = 5,
-                                      nbsegCercle   = 6,
+                                      nbsegCercle   = 8,
                                       areteFaceFissure = 5)
 
   # ---------------------------------------------------------------------------
