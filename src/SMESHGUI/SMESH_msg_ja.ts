@@ -396,8 +396,8 @@
       <translation>エッジ</translation>
     </message>
     <message>
-        <source>MEN_CHOOSE</source>
-        <translation type="unfinished">Choose...</translation>
+      <source>MEN_CHOOSE</source>
+      <translation type="unfinished">Choose...</translation>
     </message>
     <message>
       <source>MEN_EDIT</source>
@@ -5432,7 +5432,7 @@
     </message>
     <message>
       <source>ID</source>
-      <translation>ID</translation>
+      <translation type="unfinished">ID</translation>
     </message>
     <message>
       <source>INSERT</source>
@@ -7588,6 +7588,14 @@
       <source>ORIENTATION</source>
       <translation>方向</translation>
     </message>
+    <message>
+      <source>VOLUMES</source>
+      <translation type="unfinished">Volumes</translation>
+    </message>
+    <message>
+      <source>OUTSIDE_VOLUME_NORMAL</source>
+      <translation type="unfinished">Face normal outside volume</translation>
+    </message>
   </context>
   <context>
     <name>SMESHGUI_ReorientFacesOp</name>
@@ -7596,8 +7604,16 @@
       <translation>選択したオブジェクトがありません。</translation>
     </message>
     <message>
+      <source>NO_VOLUME_OBJECT_SELECTED</source>
+      <translation type="unfinished">No volume object selected</translation>
+    </message>
+    <message>
       <source>NO_FACES</source>
       <translation>オブジェクトに顔が含まれていません。</translation>
+    </message>
+    <message>
+      <source>NO_VOLUMES</source>
+      <translation type="unfinished">Volume object includes no volumes</translation>
     </message>
     <message>
       <source>ZERO_SIZE_VECTOR</source>

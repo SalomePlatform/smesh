@@ -27,6 +27,22 @@
       <source>TO_IGNORE_FACES</source>
       <translation>レイヤ（入出口）を伴わない面</translation>
     </message>
+    <message>
+      <source>BAD_FACES_WARNING</source>
+      <translation type="unfinished">
+Specified faces are not sub-shapes of the shape of 
+mesh/sub-mesh.
+Consider creating another hypothesis instead of using
+this one for this mesh/sub-mesh.</translation>
+    </message>
+    <message>
+      <source>BAD_EDGES_WARNING</source>
+      <translation type="unfinished">
+Specified edges are not sub-shapes of the shape of 
+mesh/sub-mesh.
+Consider creating another hypothesis instead of using
+this one for this mesh/sub-mesh.</translation>
+    </message>
   </context>
   <context>
     <name>@default</name>
