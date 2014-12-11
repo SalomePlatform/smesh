@@ -7,6 +7,9 @@ Created on Tue Jun 24 09:14:13 2014
 
 import logging
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 import GEOM
 
 from listOfExtraFunctions import createNewMeshesFromCorner
@@ -62,7 +65,7 @@ def quadranglesToShapeWithCorner(meshQuad, shapeDefaut, shapeFissureParams, cent
         # A partir des lignes de chaque face,
         # on recrée un objet GEOM temporaire par filling.
         filling = geompy.MakeFilling(geompy.MakeCompound(face), 2, 5, 0.0001, 0.0001, 0, GEOM.FOM_Default, True)
-        geompy.addToStudy(filling, 'filling_{0}'.format(i + 1)) 
+        geomPublish(initLog.debug, filling, 'filling_{0}'.format(i + 1)) 
         tmpFillings.append(filling)
 
     for face in setOfNodes:
@@ -81,10 +84,10 @@ def quadranglesToShapeWithCorner(meshQuad, shapeDefaut, shapeFissureParams, cent
         tmpExplodeRef = geompy.ExtractShapes(filling, geompy.ShapeType["EDGE"], True)
         tmpExplodeNum = geompy.ExtractShapes(tmpPartition, geompy.ShapeType["EDGE"], True)
         if len(tmpExplodeRef) == len(tmpExplodeNum):
-            geompy.addToStudy(filling, "faceNonCoupee_{0}".format(i + 1))
+            geomPublish(initLog.debug, filling, "faceNonCoupee_{0}".format(i + 1))
             facesNonCoupees.append(filling)
         else:
-            geompy.addToStudy(filling, "faceCoupee_{0}".format(i + 1))
+            geomPublish(initLog.debug, filling, "faceCoupee_{0}".format(i + 1))
             facesCoupees.append(filling)
     fillings = facesCoupees, facesNonCoupees
     
@@ -93,21 +96,21 @@ def quadranglesToShapeWithCorner(meshQuad, shapeDefaut, shapeFissureParams, cent
         tmpExplodeRef = geompy.ExtractShapes(shapeDefaut, geompy.ShapeType["EDGE"], True) + geompy.ExtractShapes(shapeDefaut, geompy.ShapeType["VERTEX"], True)
         tmpExplodeNum = geompy.ExtractShapes(tmpPartition, geompy.ShapeType["EDGE"], True) + geompy.ExtractShapes(tmpPartition, geompy.ShapeType["VERTEX"], True)
         if len(tmpExplodeRef) == len(tmpExplodeNum):
-            geompy.addToStudy(filling, "areteNonCoupee_{0}".format(i + 1))
+            geomPublish(initLog.debug, filling, "areteNonCoupee_{0}".format(i + 1))
             aretesNonCoupees.append(filling)
         else:
-            geompy.addToStudy(filling, "areteCoupee_{0}".format(i + 1))
+            geomPublish(initLog.debug, filling, "areteCoupee_{0}".format(i + 1))
             aretesCoupees.append(filling)
     bords_Partages = aretesCoupees, aretesNonCoupees
     
 # TODO: A enlever
 #    for i, face in enumerate(setOfLines):
 #        for j, line in enumerate(face):
-#            geompy.addToStudy(line, 'face{0}_ligne{1}'.format(i + 1, j + 1))
+#            geomPublish(initLog.debug, line, 'face{0}_ligne{1}'.format(i + 1, j + 1))
 
  #TODO: A enlever
 #    for i, filling in enumerate(fillings[0]):
-#        geompy.addToStudy(filling, 'filling_{0}'.format(i + 1))
+#        geomPublish(initLog.debug, filling, 'filling_{0}'.format(i + 1))
 #        for j, line in enumerate(setOfLines[i]):
 #            geompy.addToStudyInFather(filling, line, 'line_{0}'.format(j + 1))
     

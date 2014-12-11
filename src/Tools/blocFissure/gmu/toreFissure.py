@@ -2,6 +2,9 @@
 
 import logging
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 import math
 from triedreBase import triedreBase
 
@@ -28,11 +31,11 @@ def toreFissure(minRad,allonge,rayTore):
   Arc_1 = geompy.MakeArc(Vertex_1, Vertex_2, Vertex_3)
   generatrice = geompy.MakeScaleAlongAxes(Arc_1, O, 1, allonge, 1)
 
-  #geompy.addToStudy( Vertex_1, 'Vertex_1' )
-  #geompy.addToStudy( Vertex_2, 'Vertex_2' )
-  #geompy.addToStudy( Vertex_3, 'Vertex_3' )
-  #geompy.addToStudy( Arc_1, 'Arc_1' )
-  #geompy.addToStudy( generatrice, 'generatrice' )
+  #geomPublish(initLog.debug,  Vertex_1, 'Vertex_1' )
+  #geomPublish(initLog.debug,  Vertex_2, 'Vertex_2' )
+  #geomPublish(initLog.debug,  Vertex_3, 'Vertex_3' )
+  #geomPublish(initLog.debug,  Arc_1, 'Arc_1' )
+  #geomPublish(initLog.debug,  generatrice, 'generatrice' )
 
   # --- face circulaire sur la generatrice, pour extrusion
 
@@ -41,10 +44,10 @@ def toreFissure(minRad,allonge,rayTore):
   Translation_1 = geompy.MakeTranslation(Rotation_1, minRad, 0, 0)
   FaceGenFiss = geompy.MakeFaceWires([Translation_1], 1)
 
-  #geompy.addToStudy( Circle_1, 'Circle_1' )
-  #geompy.addToStudy( Rotation_1, 'Rotation_1' )
-  #geompy.addToStudy( Translation_1, 'Translation_1' )
-  #geompy.addToStudy( FaceGenFiss, 'FaceGenFiss' )
+  #geomPublish(initLog.debug,  Circle_1, 'Circle_1' )
+  #geomPublish(initLog.debug,  Rotation_1, 'Rotation_1' )
+  #geomPublish(initLog.debug,  Translation_1, 'Translation_1' )
+  #geomPublish(initLog.debug,  FaceGenFiss, 'FaceGenFiss' )
 
   # --- tore extrude
 
@@ -56,14 +59,14 @@ def toreFissure(minRad,allonge,rayTore):
   Line_1 = geompy.MakeLineTwoPnt(Vertex_1, Scale_1_vertex_3)
   FaceFissure = geompy.MakeFaceWires([generatrice, Line_1], 1)
 
-  #geompy.addToStudyInFather( generatrice, Scale_1_vertex_3, 'Scale_1:vertex_3' )
-  #geompy.addToStudy( Line_1, 'Line_1' )
-  #geompy.addToStudy( FaceFissure, 'FaceFissure' )
+  #geomPublishInFather(initLog.debug, generatrice, Scale_1_vertex_3, 'Scale_1:vertex_3' )
+  #geomPublish(initLog.debug,  Line_1, 'Line_1' )
+  #geomPublish(initLog.debug,  FaceFissure, 'FaceFissure' )
 
   # --- tore coupe en 2 demi tore de section 1/2 disque
 
   Plane_1 = geompy.MakePlane(O, OZ, 2000)
   Pipe1Part = geompy.MakePartition([Pipe_1], [Plane_1], [], [], geompy.ShapeType["SOLID"], 0, [], 1)
-  geompy.addToStudy(Pipe1Part , 'Pipe1Part' )
+  geomPublish(initLog.debug, Pipe1Part , 'Pipe1Part' )
 
   return generatrice, FaceGenFiss, Pipe_1, FaceFissure, Plane_1, Pipe1Part

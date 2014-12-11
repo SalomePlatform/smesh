@@ -2,6 +2,9 @@
 
 import logging
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 
 from toreFissure import toreFissure
 from ellipsoideDefaut import ellipsoideDefaut
@@ -40,12 +43,12 @@ def genereElemsFissureElliptique(shapeFissureParams):
   plane1 = rotTrans(Plane_1, orientation, centreDefaut, vecteurDefaut)
   ellipsoide1 = rotTrans(ellipsoide, orientation, centreDefaut, vecteurDefaut)
 
-  geompy.addToStudy( pipe0, 'pipe0' )
-  geompy.addToStudy( gener1, 'gener1' )
-  geompy.addToStudy( pipe1, 'pipe1' )
-  geompy.addToStudy( facefis1, 'facefis1' )
-  geompy.addToStudy( plane1, 'plane1' )
-  geompy.addToStudy( ellipsoide1, 'ellipsoide1' )
+  geomPublish(initLog.debug,  pipe0, 'pipe0' )
+  geomPublish(initLog.debug,  gener1, 'gener1' )
+  geomPublish(initLog.debug,  pipe1, 'pipe1' )
+  geomPublish(initLog.debug,  facefis1, 'facefis1' )
+  geomPublish(initLog.debug,  plane1, 'plane1' )
+  geomPublish(initLog.debug,  ellipsoide1, 'ellipsoide1' )
 
   shapeDefaut = facefis1
   xyz_defaut = geompy.PointCoordinates(centreDefaut)

@@ -3,6 +3,9 @@
 import logging
 import salome
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 from geomsmesh import smesh
 from salome.smesh import smeshBuilder
 import SMESH
@@ -80,7 +83,7 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   WirePorteFondFissure = wiretube
   fillingFaceExterne = facesDefaut[0]
   logging.debug("fillingFaceExterne %s", fillingFaceExterne)
-  geompy.addToStudy(fillingFaceExterne, "fillingFaceExterne")
+  geomPublish(initLog.debug, fillingFaceExterne, "fillingFaceExterne")
   edgesFilling = geompy.ExtractShapes(fillingFaceExterne, geompy.ShapeType["EDGE"], False)
 
   O, OX, OY, OZ = triedreBase()
@@ -90,7 +93,7 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
 
   # --- partition peau defaut - face de fissure prolongee - wire de fond de fissure prolongée
   partitionPeauFissFond = geompy.MakePartition([facePorteFissure, WirePorteFondFissure, fillingFaceExterne], [], [], [], geompy.ShapeType["FACE"], 0, [], 0)
-  geompy.addToStudy( partitionPeauFissFond, 'partitionPeauFissFond' )
+  geomPublish(initLog.debug,  partitionPeauFissFond, 'partitionPeauFissFond' )
 
   edges = geompy.ExtractShapes(WirePorteFondFissure, geompy.ShapeType["EDGE"], False)
 
@@ -103,39 +106,39 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
       lgmax = lg
       imax = i
   edgemax = edges[imax]
-  geompy.addToStudy(edgemax, 'edgemax')
+  geomPublish(initLog.debug, edgemax, 'edgemax')
   centreFondFiss = geompy.MakeVertexOnCurve(edgemax, 0.5)
-  geompy.addToStudy(centreFondFiss, 'centreFondFiss')
+  geomPublish(initLog.debug, centreFondFiss, 'centreFondFiss')
   tangentFondFiss = geompy.MakeTangentOnCurve(edgemax, 0.5)
-  geompy.addToStudy(tangentFondFiss, 'tangentFondFiss')
+  geomPublish(initLog.debug, tangentFondFiss, 'tangentFondFiss')
 
   bord1FondFiss = geompy.MakeVertexOnCurve(edgemax, 0.0)
-  geompy.addToStudy(bord1FondFiss, 'bord1FondFiss')
+  geomPublish(initLog.debug, bord1FondFiss, 'bord1FondFiss')
   tangentBord1FondFiss = geompy.MakeTangentOnCurve(edgemax, 0.0)
-  geompy.addToStudy(tangentBord1FondFiss, 'tangentBord1FondFiss')
+  geomPublish(initLog.debug, tangentBord1FondFiss, 'tangentBord1FondFiss')
 
   bord2FondFiss = geompy.MakeVertexOnCurve(edgemax, 1.0)
-  geompy.addToStudy(bord2FondFiss, 'bord2FondFiss')
+  geomPublish(initLog.debug, bord2FondFiss, 'bord2FondFiss')
   tangentBord2FondFiss = geompy.MakeTangentOnCurve(edgemax, 1.0)
-  geompy.addToStudy(tangentBord2FondFiss, 'tangentBord2FondFiss')
+  geomPublish(initLog.debug, tangentBord2FondFiss, 'tangentBord2FondFiss')
 
   planBord1 = geompy.MakePlane(bord1FondFiss, tangentBord1FondFiss, 3*rayonPipe)
   planBord2 = geompy.MakePlane(bord2FondFiss, tangentBord2FondFiss, 3*rayonPipe)
-  geompy.addToStudy(planBord1, 'planBord1')
-  geompy.addToStudy(planBord2, 'planBord2')
+  geomPublish(initLog.debug, planBord1, 'planBord1')
+  geomPublish(initLog.debug, planBord2, 'planBord2')
 
   [edgesInside, edgesOutside, edgesOnside] = extractionOrientee(fillingFaceExterne, partitionPeauFissFond, centreFondFiss, "EDGE", 1.e-3)
   [facesInside, facesOutside, facesOnside] = extractionOrientee(fillingFaceExterne, partitionPeauFissFond, centreFondFiss, "FACE", 1.e-3)
 
   # --- partition peau -face fissure - pipe fond de fissure prolongé
   partitionPeauFissByPipe = geompy.MakePartition([facesInside[0], facesOnside[0]], [pipefiss], [], [], geompy.ShapeType["FACE"], 0, [], 0)
-  geompy.addToStudy( partitionPeauFissByPipe, 'partitionPeauFissByPipe' )
+  geomPublish(initLog.debug,  partitionPeauFissByPipe, 'partitionPeauFissByPipe' )
 
   # --- identification face de peau
   [facesPeauFissInside, facesPeauFissOutside, facesPeauFissOnside] = extractionOrientee(fillingFaceExterne, partitionPeauFissByPipe, centreFondFiss, "FACE", 0.1, "peauFiss_bord_")
   facesPeauSorted, minsur, maxsurf = sortFaces(facesPeauFissOnside) # 4 demi disques, une grande face
   facePeau = facesPeauSorted[-1] # la plus grande face
-  geompy.addToStudyInFather(partitionPeauFissByPipe, facePeau, "facePeau")
+  geomPublishInFather(initLog.debug,partitionPeauFissByPipe, facePeau, "facePeau")
 
   # --- identification edges de bord face peau
   edgesBords = []
@@ -144,7 +147,7 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
     edgesBords.append(edgepeau)
   groupEdgesBordPeau = geompy.CreateGroup(facePeau, geompy.ShapeType["EDGE"])
   geompy.UnionList(groupEdgesBordPeau, edgesBords)
-  geompy.addToStudyInFather(facePeau, groupEdgesBordPeau , "EdgesBords")
+  geomPublishInFather(initLog.debug,facePeau, groupEdgesBordPeau , "EdgesBords")
 
   # --- identification face fissure externe au pipe et edge commune peau fissure
   for face in facesPeauFissInside:
@@ -153,9 +156,9 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
       if sharedEdges is not None:
         faceFiss = face
         edgePeauFiss = sharedEdges[0]
-        geompy.addToStudyInFather(partitionPeauFissByPipe, faceFiss, "faceFiss")
-        geompy.addToStudyInFather(faceFiss, edgePeauFiss, "edgePeauFiss")
-        geompy.addToStudyInFather(facePeau, edgePeauFiss, "edgePeauFiss")
+        geomPublishInFather(initLog.debug,partitionPeauFissByPipe, faceFiss, "faceFiss")
+        geomPublishInFather(initLog.debug,faceFiss, edgePeauFiss, "edgePeauFiss")
+        geomPublishInFather(initLog.debug,facePeau, edgePeauFiss, "edgePeauFiss")
         break
     except:
       pass
@@ -168,16 +171,16 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   verticesDemiCerclesPeau = []
   for i, edge in enumerate(demiCerclesPeau):
     name = "demiCerclePeau_%d"%i
-    geompy.addToStudyInFather(facePeau, edge, name)
+    geomPublishInFather(initLog.debug,facePeau, edge, name)
     verticesDemiCerclesPeau += geompy.ExtractShapes(edge, geompy.ShapeType["VERTEX"], False)
   verticesDemiCerclesPeau = eliminateDoubles(facePeau, verticesDemiCerclesPeau)
   for i, vertex in enumerate(verticesDemiCerclesPeau):
     name = "verticesDemiCerclesPeau_%d"%i
-    geompy.addToStudyInFather(facePeau, vertex, name)
+    geomPublishInFather(initLog.debug,facePeau, vertex, name)
   verticesOutCercles = substractSubShapes(facePeau, verticesDemiCerclesPeau, verticesEdgePeauFiss)
   for i, vertex in enumerate(verticesOutCercles):
     name = "verticesOutCercles_%d"%i
-    geompy.addToStudyInFather(facePeau, vertex, name)
+    geomPublishInFather(initLog.debug,facePeau, vertex, name)
 
   # --- demi cercles  regroupés
   groupsDemiCerclesPeau = []
@@ -189,7 +192,7 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
     group = geompy.CreateGroup(facePeau, geompy.ShapeType["EDGE"])
     geompy.UnionList(group, demis)
     name = "Cercle%d"%i
-    geompy.addToStudyInFather(facePeau, group , name)
+    geomPublishInFather(initLog.debug,facePeau, group , name)
     groupsDemiCerclesPeau.append(group)
 
   # --- identification edges commune pipe face fissure externe au pipe
@@ -200,10 +203,10 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
     if geompy.GetSubShapeID(partitionPeauFissByPipe, edge) != edgePeauFissId:
       edgesFaceFissPipe.append(edge)
       name = "edgeFaceFissPipe_%d"%len(edgesFaceFissPipe)
-      geompy.addToStudyInFather(faceFiss, edge, name)
+      geomPublishInFather(initLog.debug,faceFiss, edge, name)
   groupEdgesFaceFissPipe = geompy.CreateGroup(faceFiss, geompy.ShapeType["EDGE"])
   geompy.UnionList(groupEdgesFaceFissPipe, edgesFaceFissPipe)
-  geompy.addToStudyInFather(faceFiss, groupEdgesFaceFissPipe, "edgesFaceFissPipe")
+  geomPublishInFather(initLog.debug,faceFiss, groupEdgesFaceFissPipe, "edgesFaceFissPipe")
 
   # -----------------------------------------------------------------------------
   # --- pipe de fond de fissure
@@ -240,29 +243,29 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   #pipeFondFiss = pipesSorted[-1]
   #pipeFondFiss = geompy.MakePartition([pipeFondFiss], [planfiss, wireFondFiss, planBord1, planBord2], [], [], geompy.ShapeType["SOLID"], 0, [], 0)
 
-  geompy.addToStudy( disque, 'disque')
-  geompy.addToStudy( wireFondFiss, 'wireFondFiss')
-  geompy.addToStudy( pipeFondFiss, 'pipeFondFiss')
+  geomPublish(initLog.debug,  disque, 'disque')
+  geomPublish(initLog.debug,  wireFondFiss, 'wireFondFiss')
+  geomPublish(initLog.debug,  pipeFondFiss, 'pipeFondFiss')
 
   VerticesEndFondFiss = findWireEndVertices(wireFondFiss)
   for i, v in enumerate(VerticesEndFondFiss):
     name = "vertexEndFondFiss_%d"%i
-    geompy.addToStudyInFather(wireFondFiss, v, name)
+    geomPublishInFather(initLog.debug,wireFondFiss, v, name)
   VerticesEndPipeFiss = []
   for v in VerticesEndFondFiss:
     VerticesEndPipeFiss.append(geompy.GetInPlace(pipeFondFiss, v))
   for i, v in enumerate(VerticesEndPipeFiss):
     name = "vertexEndPipeFiss_%d"%i
-    geompy.addToStudyInFather(pipeFondFiss, v, name)
+    geomPublishInFather(initLog.debug,pipeFondFiss, v, name)
 
-  geompy.addToStudyInFather(pipeFondFiss, VerticesEndPipeFiss[0], "PFOR")
-  geompy.addToStudyInFather(pipeFondFiss, VerticesEndPipeFiss[1], "PFEX")
+  geomPublishInFather(initLog.debug,pipeFondFiss, VerticesEndPipeFiss[0], "PFOR")
+  geomPublishInFather(initLog.debug,pipeFondFiss, VerticesEndPipeFiss[1], "PFEX")
   if geompy.MinDistance(VerticesEndPipeFiss[0], verticesOutCercles[0]) > geompy.MinDistance(VerticesEndPipeFiss[0], verticesOutCercles[1]):
     a = verticesOutCercles[0]
     verticesOutCercles[0] = verticesOutCercles[1]
     verticesOutCercles[1] = a
-  geompy.addToStudyInFather(facePeau, verticesOutCercles[0], "THOR")
-  geompy.addToStudyInFather(facePeau, verticesOutCercles[1], "THEX")
+  geomPublishInFather(initLog.debug,facePeau, verticesOutCercles[0], "THOR")
+  geomPublishInFather(initLog.debug,facePeau, verticesOutCercles[1], "THEX")
 
   [facesPipeInside, facesPipeOutside, facesPipeOnside] = extractionOrientee(fillingFaceExterne, pipeFondFiss, centreFondFiss, "FACE", 0.1, "pipe_bord_")
   [edgesPipeInside, edgesPipeOutside, edgesPipeOnside] = extractionOrientee(fillingFaceExterne, pipeFondFiss, centreFondFiss, "EDGE", 0.1, "pipe_bord_")
@@ -275,7 +278,7 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
 
   centre = geompy.MakeVertexOnSurface(planfiss, 0.5, 0.5)
   refpoint = geompy.MakeTranslationVector(centre, geompy.GetNormal(planfiss,centre))
-  geompy.addToStudy(refpoint, 'refpoint')
+  geomPublish(initLog.debug, refpoint, 'refpoint')
   [facesPipeInplan, facesPipeOutplan, facesPipeOnplan] = extractionOrientee(planfiss, pipeFondFiss, refpoint, "FACE", 0.1, "pipe_plan_")
   [edgesPipeInplan, edgesPipeOutplan, edgesPipeOnplan] = extractionOrientee(planfiss, pipeFondFiss, refpoint, "EDGE", 0.1, "pipe_plan_")
 
@@ -315,7 +318,7 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
       generFiss.append(edge)
   groupGenerFiss = geompy.CreateGroup(pipeFondFiss, geompy.ShapeType["EDGE"])
   geompy.UnionList(groupGenerFiss, generFiss)
-  geompy.addToStudyInFather(pipeFondFiss, groupGenerFiss, "GenFiss")
+  geomPublishInFather(initLog.debug,pipeFondFiss, groupGenerFiss, "GenFiss")
 
   # --- demi cercles externes regroupés
   groupsDemiCerclesPipe = []
@@ -327,7 +330,7 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
     group = geompy.CreateGroup(pipeFondFiss, geompy.ShapeType["EDGE"])
     geompy.UnionList(group, demis)
     name = "Cercle%d"%i
-    geompy.addToStudyInFather(pipeFondFiss, group , name)
+    geomPublishInFather(initLog.debug,pipeFondFiss, group , name)
     groupsDemiCerclesPipe.append(group)
 
   # --- faces fissure dans le pipe
@@ -344,12 +347,12 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
         logging.debug("face found")
         facesFissinPipe.append(face)
         name = "faceFissInPipe_%d"%i
-        geompy.addToStudyInFather(pipeFondFiss, face, name)
+        geomPublishInFather(initLog.debug,pipeFondFiss, face, name)
         break
   groupFaceFissInPipe = geompy.CreateGroup(pipeFondFiss, geompy.ShapeType["FACE"])
   geompy.UnionList(groupFaceFissInPipe, facesFissinPipe)
   name = "FaceFissInPipe"
-  geompy.addToStudyInFather(pipeFondFiss, groupFaceFissInPipe , name)
+  geomPublishInFather(initLog.debug,pipeFondFiss, groupFaceFissInPipe , name)
 
   # --- edges de fond de fissure
 
@@ -359,11 +362,11 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
     logging.debug("  edge %s ", anEdge)
     edgesFondFiss.append(anEdge)
     name ="edgeFondFissure_%d"%i
-    geompy.addToStudyInFather(pipeFondFiss, anEdge, name)
+    geomPublishInFather(initLog.debug,pipeFondFiss, anEdge, name)
   groupEdgeFondFiss = geompy.CreateGroup(pipeFondFiss, geompy.ShapeType["EDGE"])
   geompy.UnionList(groupEdgeFondFiss, edgesFondFiss)
   name = "FONDFISS"
-  geompy.addToStudyInFather(pipeFondFiss, groupEdgeFondFiss , name)
+  geomPublishInFather(initLog.debug,pipeFondFiss, groupEdgeFondFiss , name)
 
   # -------------------------------------------------------------------------
   # --- maillage

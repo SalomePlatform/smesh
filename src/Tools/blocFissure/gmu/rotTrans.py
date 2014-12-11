@@ -2,6 +2,9 @@
 
 import logging
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 import math
 from triedreBase import triedreBase
 O, OX, OY, OZ = triedreBase()
@@ -48,9 +51,9 @@ def rotTrans(objet, orientation, point, normal, trace = False):
   logging.debug("alpha",alpha)
   logging.debug("beta",beta)
   if trace:
-    geompy.addToStudy( rot1, 'rot1' )
-    geompy.addToStudy( axe2, 'axe2' )
-    geompy.addToStudy( rot2, 'rot2' )
+    geomPublish(initLog.debug,  rot1, 'rot1' )
+    geomPublish(initLog.debug,  axe2, 'axe2' )
+    geomPublish(initLog.debug,  rot2, 'rot2' )
 
   xyz = geompy.PointCoordinates(point)
   trans = geompy.MakeTranslation(rot2, xyz[0], xyz[1], xyz[2])

@@ -2,6 +2,9 @@
 
 import logging
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 
 # -----------------------------------------------------------------------------
 # --- partition volume sain et bloc, face du bloc recevant la fissure
@@ -26,8 +29,8 @@ def partitionVolumeSain(volumeSain,boiteDefaut):
     partieSaine = b
   faceBloc = geompy.GetShapesOnShapeAsCompound(volumeSain, volDefaut, geompy.ShapeType["FACE"], GEOM.ST_ON)
 
-  geompy.addToStudy( volumeSainPart, 'volumeSainPart' )
-  geompy.addToStudyInFather( volumeSainPart, partieSaine, 'partieSaine' )
-  geompy.addToStudyInFather( volumeSainPart, volDefaut, 'volDefaut' )
-  geompy.addToStudyInFather( volDefaut, faceBloc, 'faceBloc' )
+  geomPublish(initLog.debug,  volumeSainPart, 'volumeSainPart' )
+  geomPublishInFather(initLog.debug, volumeSainPart, partieSaine, 'partieSaine' )
+  geomPublishInFather(initLog.debug, volumeSainPart, volDefaut, 'volDefaut' )
+  geomPublishInFather(initLog.debug, volDefaut, faceBloc, 'faceBloc' )
   return volumeSainPart, partieSaine, volDefaut, faceBloc

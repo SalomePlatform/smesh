@@ -3,6 +3,9 @@
 import logging
 import salome
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 from geomsmesh import smesh
 import SMESH
 import math
@@ -98,12 +101,12 @@ def insereFissureElliptique(geometriesSaines, maillagesSains,
   #plane1 = self.rotTrans(Plane_1, orientation, centreDefaut, normalDefaut)
   #ellipsoide1 = self.rotTrans(ellipsoide, orientation, centreDefaut, normalDefaut)
 
-  #geompy.addToStudy( pipe0, 'pipe0' )
-  #geompy.addToStudy( gener1, 'gener1' )
-  #geompy.addToStudy( pipe1, 'pipe1' )
-  #geompy.addToStudy( facefis1, 'facefis1' )
-  #geompy.addToStudy( plane1, 'plane1' )
-  #geompy.addToStudy( ellipsoide1, 'ellipsoide1' )
+  #geomPublish(initLog.debug,  pipe0, 'pipe0' )
+  #geomPublish(initLog.debug,  gener1, 'gener1' )
+  #geomPublish(initLog.debug,  pipe1, 'pipe1' )
+  #geomPublish(initLog.debug,  facefis1, 'facefis1' )
+  #geomPublish(initLog.debug,  plane1, 'plane1' )
+  #geomPublish(initLog.debug,  ellipsoide1, 'ellipsoide1' )
 
   # --- partition du bloc défaut par génératrice, tore et plan fissure
   if step == 7:

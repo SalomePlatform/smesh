@@ -2,6 +2,9 @@
 
 import logging
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 from prolongeVertices import prolongeVertices
 
 # -----------------------------------------------------------------------------
@@ -42,57 +45,57 @@ def creeZoneDefautGeom(objetSain, shapeDefaut, origShapes, verticesShapes, dmoye
     curves.append(curve)
     if trace:
       name="poly_%d"%aShape
-      geompy.addToStudy(curve, name)
+      geomPublish(initLog.debug, curve, name)
     #
     cdg = geompy.MakeCDG(curve)
     cdgs.append(cdg)
     if trace:
       name="cdgpoly_%d"%aShape
-      geompy.addToStudy(cdg, name)
+      geomPublish(initLog.debug, cdg, name)
     #
     projCdg = geompy.MakeProjection(cdg, face)
     projs.append(projCdg)
     if trace:
       name="projCdg_%d"%aShape
-      geompy.addToStudy(projCdg, name)
+      geomPublish(initLog.debug, projCdg, name)
     #
     normal = geompy.GetNormal(face, projCdg)
     normals.append(normal)
     if trace:
       name="normal_%d"%aShape
-      geompy.addToStudy(normal, name)
+      geomPublish(initLog.debug, normal, name)
     #
     extrusion = geompy.MakePrismVecH2Ways(curve, normal, 10)
     extrusions.append(extrusion)
     if trace:
       name="extrusion_%d"%aShape
-      geompy.addToStudy(extrusion, name)
+      geomPublish(initLog.debug, extrusion, name)
     #
     verticesProlongees = prolongeVertices(vertices)
     #
     curveprol = geompy.MakePolyline(verticesProlongees, False)
     if trace:
       name="polyProl_%d"%aShape
-      geompy.addToStudy(curveprol, name)
+      geomPublish(initLog.debug, curveprol, name)
     #
     extruprol = geompy.MakePrismVecH2Ways(curveprol, normal, 10)
     if trace:
       name="extruProl_%d"%aShape
-      geompy.addToStudy(extruprol, name)
+      geomPublish(initLog.debug, extruprol, name)
     #
     partition = geompy.MakePartition([face], [extruprol], [], [], geompy.ShapeType["FACE"], 0, [], 0)
     partitions.append(partition)
     if trace:
       name="partition_%d"%aShape
-      geompy.addToStudy(partition, name)
+      geomPublish(initLog.debug, partition, name)
     pass
   #
 
   centreSphere = geompy.MakeCDG(shapeDefaut)
-  geompy.addToStudy(centreSphere, "cdg_defaut")
+  geomPublish(initLog.debug, centreSphere, "cdg_defaut")
   ccurves = geompy.MakeCompound(curves)
   gravCenter = geompy.MakeCDG(ccurves)
-  geompy.addToStudy(gravCenter, "cdg_curves")
+  geomPublish(initLog.debug, gravCenter, "cdg_curves")
   for i in range(len(partitions)):
     if trace:
       logging.debug(" --- original shape %s", origShapes[i])
@@ -114,7 +117,7 @@ def creeZoneDefautGeom(objetSain, shapeDefaut, origShapes, verticesShapes, dmoye
         if d == minDist:
           aFace = facesToSort[j]
           name="decoupe_%d"%origShapes[i]
-          geompy.addToStudy(aFace, name)
+          geomPublish(initLog.debug, aFace, name)
           decoupes.append(aFace)
           break
         pass
@@ -123,7 +126,7 @@ def creeZoneDefautGeom(objetSain, shapeDefaut, origShapes, verticesShapes, dmoye
   facesDefaut = decoupes[0]
   if len(decoupes) > 1:
     facesDefaut = geompy.MakePartition(decoupes, [], [], [], geompy.ShapeType["FACE"], 0, [], 0)
-  geompy.addToStudy(facesDefaut, "facesDefaut")
+  geomPublish(initLog.debug, facesDefaut, "facesDefaut")
 
   shells=[]
   if len(decoupes) > 1: # plusieurs faces de defaut
@@ -159,7 +162,7 @@ def creeZoneDefautGeom(objetSain, shapeDefaut, origShapes, verticesShapes, dmoye
           theFaces[k:k+1] = []
       theShell = geompy.MakeShell(aShell)
       name = "theShell%d"%len(shells)
-      geompy.addToStudy(theShell,name)
+      geomPublish(initLog.debug, theShell,name)
       shells.append(theShell)
     #
     distances = []
@@ -175,7 +178,7 @@ def creeZoneDefautGeom(objetSain, shapeDefaut, origShapes, verticesShapes, dmoye
     subFaces = [facesDefaut]
     theShellDefaut = geompy.MakeShell(subFaces)
   if trace:
-    geompy.addToStudy(theShellDefaut,"theShellDefaut")
+    geomPublish(initLog.debug, theShellDefaut,"theShellDefaut")
 
   theFaces = geompy.ExtractShapes(theShellDefaut, geompy.ShapeType["FACE"], True)
   distances = []
@@ -188,10 +191,10 @@ def creeZoneDefautGeom(objetSain, shapeDefaut, origShapes, verticesShapes, dmoye
 
   centreDefaut = geompy.MakeProjection(centreSphere, theFaces[index])
   if trace:
-    geompy.addToStudy(centreDefaut, "centreDefaut")
+    geomPublish(initLog.debug, centreDefaut, "centreDefaut")
   normalDefaut = geompy.GetNormal(subFaces[index], centreDefaut)
   if trace:
-    geompy.addToStudy(normalDefaut, "normalDefaut")
+    geomPublish(initLog.debug, normalDefaut, "normalDefaut")
   extrusionDefaut = geompy.MakePrismVecH(theShellDefaut, normalDefaut, -lgExtrusion)
   info = geompy.ShapeInfo(extrusionDefaut)
   logging.debug("shape info %s", info)
@@ -202,6 +205,6 @@ def creeZoneDefautGeom(objetSain, shapeDefaut, origShapes, verticesShapes, dmoye
       solid0 = geompy.MakeFuse(solid0, solids[i])
     extrusionDefaut = solid0
   if trace:
-    geompy.addToStudy(extrusionDefaut, "extrusionDefaut")
+    geomPublish(initLog.debug, extrusionDefaut, "extrusionDefaut")
 
   return facesDefaut, centreDefaut, normalDefaut, extrusionDefaut

@@ -2,6 +2,9 @@
 
 import logging
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 
 def compoundFromList(elements, nom=None):
   """
@@ -21,7 +24,7 @@ def compoundFromList(elements, nom=None):
     for i,a in enumerate(shapeList):
       nom = nom +"%d"%i
       logging.debug('nom: %s',nom)
-      geompy.addToStudy(a, nom)
+      geomPublish(initLog.debug, a, nom)
 
   shapeCompound = None
   if len(shapeList) > 0:

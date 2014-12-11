@@ -2,6 +2,9 @@
 
 import logging
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 
 # -----------------------------------------------------------------------------
 # --- construction d'une shape de dectection des éléments à modifier suite à la la duplication des noeuds de la face fissure (d'un coté de la face)
@@ -30,6 +33,6 @@ def shapeSurFissure(facesFissure):
     normal = geompy.GetNormal(face, vertex)
     extrusionFaceFissure = geompy.MakePrismVecH(facesFissure, normal, 100)
     
-  geompy.addToStudy(extrusionFaceFissure, "extrusionFaceFissure")
+  geomPublish(initLog.debug, extrusionFaceFissure, "extrusionFaceFissure")
   return extrusionFaceFissure, normal
 

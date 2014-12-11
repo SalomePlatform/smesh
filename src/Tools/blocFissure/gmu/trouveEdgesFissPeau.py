@@ -3,6 +3,9 @@
 import logging
 
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 
 def trouveEdgesFissPeau(facesInside, facesOnside, edgesPipeIn, edgesFondIn, partitionPeauFissFond, edgesFissExtPeau):
   """
@@ -24,6 +27,6 @@ def trouveEdgesFissPeau(facesInside, facesOnside, edgesPipeIn, edgesFondIn, part
     if (len(edgesPeauFis) > 0) and (len(edgesPipeFis) > 0) and (len(edgesPipeFnd) == 0):
       edgesFissExtPeau.append(edgesPeauFis[0])
       name="edgesFissExtPeau%d"%j
-      geompy.addToStudyInFather(partitionPeauFissFond, edgesPeauFis[0], name)
+      geomPublishInFather(initLog.debug,partitionPeauFissFond, edgesPeauFis[0], name)
       j += 1
   return edgesFissExtPeau

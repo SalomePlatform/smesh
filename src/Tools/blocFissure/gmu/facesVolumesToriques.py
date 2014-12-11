@@ -2,6 +2,9 @@
 
 import logging
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 from extractionOrientee import extractionOrientee
 from getSubshapeIds import getSubshapeIds
 
@@ -43,11 +46,11 @@ def facesVolumesToriques(tore, plan, facesDefaut):
 
   #[facetore1,facetore2] = geompy.GetShapesOnShape(pipe0, tore, geompy.ShapeType["FACE"], GEOM.ST_ON)
 
-  geompy.addToStudyInFather( tore, facetore1, 'facetore1' )
-  geompy.addToStudyInFather( tore, facetore2, 'facetore2' )
+  geomPublishInFather(initLog.debug, tore, facetore1, 'facetore1' )
+  geomPublishInFather(initLog.debug, tore, facetore2, 'facetore2' )
 
   [volumeTore1, volumeTore2] = geompy.ExtractShapes(tore, geompy.ShapeType["SOLID"], True)
-  geompy.addToStudyInFather( tore, volumeTore1, 'volumeTore1' )
-  geompy.addToStudyInFather( tore, volumeTore2, 'volumeTore2' )
+  geomPublishInFather(initLog.debug, tore, volumeTore1, 'volumeTore1' )
+  geomPublishInFather(initLog.debug, tore, volumeTore2, 'volumeTore2' )
 
   return facetore1, facetore2, volumeTore1, volumeTore2

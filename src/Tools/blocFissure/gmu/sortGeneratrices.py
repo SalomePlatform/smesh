@@ -2,6 +2,9 @@
 
 import logging
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 
 # -----------------------------------------------------------------------------
 # --- tri par longueur des 3 generatrices
@@ -36,8 +39,8 @@ def sortGeneratrices(tore, geners):
       gencnt= genx[i]
     pass
 
-  geompy.addToStudyInFather( tore, genext, 'genext' )
-  geompy.addToStudyInFather( tore, genint, 'genint' )
-  geompy.addToStudyInFather( tore, gencnt, 'gencnt' )
+  geomPublishInFather(initLog.debug, tore, genext, 'genext' )
+  geomPublishInFather(initLog.debug, tore, genint, 'genint' )
+  geomPublishInFather(initLog.debug, tore, gencnt, 'gencnt' )
 
   return genext, genint, gencnt

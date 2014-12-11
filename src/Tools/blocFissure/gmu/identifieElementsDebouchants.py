@@ -4,6 +4,9 @@ import logging
 import math
 
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 
 from produitMixte import produitMixte
 from whichSide import whichSide
@@ -29,7 +32,7 @@ def identifieElementsDebouchants(ifil, facesDefaut, partitionPeauFissFond,
   #logging.debug("edgesFondIn %s", edgesFondIn)
   for iedf, edge in enumerate(edgesFondIn):
     name = "edgeFondIn%d"%iedf
-    geompy.addToStudyInFather(partitionPeauFissFond, edge, name)
+    geomPublishInFather(initLog.debug, partitionPeauFissFond, edge, name)
     dist = [ geompy.MinDistance(pt, edge) for pt in verticesPipePeau]
     ptPeau = verticesPipePeau[dist.index(min(dist))] # le point de verticesPipePeau a distance minimale de l'edge
     [u, PointOnEdge, EdgeInWireIndex]  = geompy.MakeProjectionOnWire(ptPeau, wireFondFiss)
@@ -37,14 +40,14 @@ def identifieElementsDebouchants(ifil, facesDefaut, partitionPeauFissFond,
     localEdgeInFondFiss = edgesFondFiss[EdgeInWireIndex]
     centre = PointOnEdge
     centre2 = geompy.MakeVertexOnCurve(localEdgeInFondFiss, u)
-    geompy.addToStudyInFather(partitionPeauFissFond, centre2, "centre2_%d"%iedf)
+    geomPublishInFather(initLog.debug, partitionPeauFissFond, centre2, "centre2_%d"%iedf)
     verticesEdgesFondIn.append(centre)
     name = "verticeEdgesFondIn%d"%iedf
-    geompy.addToStudyInFather(partitionPeauFissFond, centre, name)
+    geomPublishInFather(initLog.debug, partitionPeauFissFond, centre, name)
     norm = geompy.MakeTangentOnCurve(localEdgeInFondFiss, u)
-    geompy.addToStudyInFather(partitionPeauFissFond, centre, "norm%d"%iedf)
+    geomPublishInFather(initLog.debug, partitionPeauFissFond, centre, "norm%d"%iedf)
     cercle = geompy.MakeCircle(centre, norm, rayonPipe)
-    geompy.addToStudyInFather(partitionPeauFissFond, cercle, "cerclorig%d"%iedf)
+    geomPublishInFather(initLog.debug, partitionPeauFissFond, cercle, "cerclorig%d"%iedf)
     [vertex] = geompy.ExtractShapes(cercle, geompy.ShapeType["VERTEX"], False)
     vec1 = geompy.MakeVector(centre, vertex)
     vec2 = geompy.MakeVector(centre, ptPeau)
@@ -66,7 +69,7 @@ def identifieElementsDebouchants(ifil, facesDefaut, partitionPeauFissFond,
     else:
       cercle = geompy.MakeRotation(cercle, norm, -angle + math.pi)
     name = "cercle%d"%iedf
-    geompy.addToStudyInFather(partitionPeauFissFond, cercle, name)
+    geomPublishInFather(initLog.debug,partitionPeauFissFond, cercle, name)
     cercles.append(cercle)
 
     # --- estimation de la longueur du pipe necessaire de part et d'autre du point de sortie
@@ -95,8 +98,8 @@ def identifieElementsDebouchants(ifil, facesDefaut, partitionPeauFissFond,
     logging.debug("distance curviligne centre extremite0: %s", ofp)
     p1 = geompy.MakeVertexOnCurveByLength(localEdgeInFondFiss, ofp +lgp, locPt0)
     p2 = geompy.MakeVertexOnCurveByLength(localEdgeInFondFiss, ofp -lgp, locPt0)
-    geompy.addToStudyInFather(wireFondFiss, p1, "p1_%d"%iedf)
-    geompy.addToStudyInFather(wireFondFiss, p2, "p2_%d"%iedf)
+    geomPublishInFather(initLog.debug, wireFondFiss, p1, "p1_%d"%iedf)
+    geomPublishInFather(initLog.debug, wireFondFiss, p2, "p2_%d"%iedf)
 
     edgePart = geompy.MakePartition([localEdgeInFondFiss], [p1,p2], [], [], geompy.ShapeType["EDGE"], 0, [], 0)
     edps = geompy.ExtractShapes(edgePart, geompy.ShapeType["EDGE"], True)
@@ -104,7 +107,7 @@ def identifieElementsDebouchants(ifil, facesDefaut, partitionPeauFissFond,
       if geompy.MinDistance(centre, edp) < 1.e-3:
         pipext = geompy.MakePipe(cercle, edp)
         name = "pipeExt%d"%iedf
-        geompy.addToStudyInFather(partitionPeauFissFond, pipext, name)
+        geomPublishInFather(initLog.debug, partitionPeauFissFond, pipext, name)
         pipexts.append(pipext)
 
     for ifa, face in enumerate(facesInside):
@@ -129,7 +132,7 @@ def identifieElementsDebouchants(ifil, facesDefaut, partitionPeauFissFond,
           logging.debug("    face %s inside ajoutée", ifa)
           facesFissExt.append(face)
           name="faceFissExt%d"%iedf
-          geompy.addToStudyInFather(partitionPeauFissFond, face, name)
+          geomPublishInFather(initLog.debug, partitionPeauFissFond, face, name)
           dist = 1.
           for ipe, edpe in enumerate(edgesPeauFis):
             for ipi, edpi in enumerate(edgesPipeFis):
@@ -137,10 +140,10 @@ def identifieElementsDebouchants(ifil, facesDefaut, partitionPeauFissFond,
               if dist < 1.e-3:
                 edgesFissExtPeau.append(edpe)
                 name="edgesFissExtPeau%d"%iedf
-                geompy.addToStudyInFather(partitionPeauFissFond, edpe, name)
+                geomPublishInFather(initLog.debug, partitionPeauFissFond, edpe, name)
                 edgesFissExtPipe.append(edpi)
                 name="edgesFissExtPipe%d"%iedf
-                geompy.addToStudyInFather(partitionPeauFissFond, edpi, name)
+                geomPublishInFather(initLog.debug, partitionPeauFissFond, edpi, name)
                 break
             if dist < 1.e-3:
               break

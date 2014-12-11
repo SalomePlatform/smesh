@@ -3,6 +3,9 @@
 import logging
 import salome
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 import GEOM
 from geomsmesh import smesh
 from salome.smesh import smeshBuilder
@@ -105,7 +108,7 @@ def insereFissureGenerale(maillagesSains,
   #     partition face fissure étendue par fillings, on garde la plus grande face
 
   partShapeDefaut = geompy.MakePartition([shapeDefaut], facesDefaut, [], [], geompy.ShapeType["FACE"], 0, [], 0)
-  geompy.addToStudy(partShapeDefaut, 'partShapeDefaut')
+  geomPublish(initLog.debug, partShapeDefaut, 'partShapeDefaut')
   facesPartShapeDefaut = geompy.ExtractShapes(partShapeDefaut, geompy.ShapeType["FACE"], False)
   if isPointInterne:
     distfaces = [(geompy.MinDistance(face,pointInterne), i, face) for i, face in enumerate(facesPartShapeDefaut)]
@@ -117,7 +120,7 @@ def insereFissureGenerale(maillagesSains,
     logging.debug("surfaces faces fissure étendue, min %s, max %s", minSurf, maxSurf)
     facesPortFissure = facesPartShapeDefautSorted[-1] #= global
   
-  geompy.addToStudy(facesPortFissure, "facesPortFissure")
+  geomPublish(initLog.debug, facesPortFissure, "facesPortFissure")
 
   O, OX, OY, OZ = triedreBase()
   
@@ -129,42 +132,42 @@ def insereFissureGenerale(maillagesSains,
     plan = geompy.MakePlane(centreFondFiss, tgtCentre, 10000)
     shapeDefaut = geompy.MakePartition([shapeDefaut], [plan], [], [], geompy.ShapeType["FACE"], 0, [], 0) #= local
     #fondFissCoupe = geompy.GetInPlaceByHistory(shapeDefaut, fondFiss) #= inutile
-    geompy.addToStudy(shapeDefaut, 'shapeDefaut_coupe')
-    #geompy.addToStudyInFather(shapeDefaut, fondFissCoupe, 'fondFiss_coupe')
+    geomPublish(initLog.debug, shapeDefaut, 'shapeDefaut_coupe')
+    #geomPublishInFather(initLog.debug,shapeDefaut, fondFissCoupe, 'fondFiss_coupe')
   
   extrem, norms = findWireEndVertices(fondFiss, True)
   logging.debug("extrem: %s, norm: %s",extrem, norms)
   cercle = geompy.MakeCircle(extrem[0], norms[0], rayonPipe)
   cercle = geompy.MakeRotation(cercle, norms[0], math.pi/3.0 ) # éviter d'avoir l'arête de couture du pipe presque confondue avec la face fissure
-  geompy.addToStudy(cercle, 'cercle')
+  geomPublish(initLog.debug, cercle, 'cercle')
   fondFissProlonge = prolongeWire(fondFiss, extrem, norms, 2*rayonPipe)
   pipeFiss = geompy.MakePipe(cercle, fondFissProlonge)
-  geompy.addToStudy(pipeFiss, 'pipeFiss')
+  geomPublish(initLog.debug, pipeFiss, 'pipeFiss')
   partFissPipe = geompy.MakePartition([shapeDefaut, pipeFiss], [], [], [], geompy.ShapeType["FACE"], 0, [], 1)
-  geompy.addToStudy(partFissPipe, 'partFissPipe')
+  geomPublish(initLog.debug, partFissPipe, 'partFissPipe')
   fissPipe = geompy.GetInPlaceByHistory(partFissPipe, shapeDefaut) #= global
-  geompy.addToStudy(fissPipe, 'fissPipe')
+  geomPublish(initLog.debug, fissPipe, 'fissPipe')
   partPipe = geompy.GetInPlaceByHistory(partFissPipe, pipeFiss) #= local
-  geompy.addToStudy(partPipe, 'partPipe')
+  geomPublish(initLog.debug, partPipe, 'partPipe')
   
   edgesPipeFiss = geompy.GetSharedShapesMulti([fissPipe, partPipe], geompy.ShapeType["EDGE"]) #= global
   for i, edge in enumerate(edgesPipeFiss):
     name = "edgePipe%d"%i
-    geompy.addToStudyInFather(fissPipe, edge, name)
+    geomPublishInFather(initLog.debug,fissPipe, edge, name)
   try:
     wirePipeFiss = geompy.MakeWire(edgesPipeFiss) #= global
   except:
     wirePipeFiss = geompy.MakeCompound(edgesPipeFiss)
     logging.debug("wirePipeFiss construit sous forme de compound")
-  geompy.addToStudy(wirePipeFiss, "wirePipeFiss")
+  geomPublish(initLog.debug, wirePipeFiss, "wirePipeFiss")
   
   wireFondFiss = geompy.GetInPlace(partFissPipe,fondFiss)
   edgesFondFiss = geompy.GetSharedShapesMulti([fissPipe, wireFondFiss], geompy.ShapeType["EDGE"])
   for i, edge in enumerate(edgesFondFiss):
     name = "edgeFondFiss%d"%i
-    geompy.addToStudyInFather(fissPipe, edge, name)
+    geomPublishInFather(initLog.debug,fissPipe, edge, name)
   wireFondFiss = geompy.MakeWire(edgesFondFiss) #= global
-  geompy.addToStudy(wireFondFiss,"wireFondFiss")  
+  geomPublish(initLog.debug, wireFondFiss,"wireFondFiss")  
 
   # -----------------------------------------------------------------------------
   # --- peau et face de fissure
@@ -187,7 +190,7 @@ def insereFissureGenerale(maillagesSains,
         fissPipePart = fissPipe
       part = geompy.MakePartition([fissPipePart, filling], [], [], [], geompy.ShapeType["FACE"], 0, [], 0)
       partitionsPeauFissFond.append(part)
-      geompy.addToStudy( part, 'partitionPeauFissFond%d'%ipart )
+      geomPublish(initLog.debug,  part, 'partitionPeauFissFond%d'%ipart )
     else:
       partitionsPeauFissFond.append(None)
     ipart = ipart +1
@@ -203,13 +206,13 @@ def insereFissureGenerale(maillagesSains,
     if not isinstance(a, list):
         aretesVives.append(a)
         name = "areteVive%d"%ia
-        geompy.addToStudy(a, name)
+        geomPublish(initLog.debug, a, name)
         ia += 1
     else:
         if a[0] is not None:
             aretesVives.append(a[0])
             name = "areteVive%d"%ia
-            geompy.addToStudy(a[0], name)
+            geomPublish(initLog.debug, a[0], name)
             ia += 1
 
   aretesVivesC = None #= global
@@ -246,9 +249,9 @@ def insereFissureGenerale(maillagesSains,
       #     edges prolongées
       
       edgesPipeC = geompy.GetInPlace(partitionPeauFissFond, geompy.MakeCompound(edgesPipeFiss)) #= local
-      geompy.addToStudyInFather(partitionPeauFissFond, edgesPipeC, "edgesPipeFiss")
+      geomPublishInFather(initLog.debug,partitionPeauFissFond, edgesPipeC, "edgesPipeFiss")
       edgesFondC = geompy.GetInPlace(partitionPeauFissFond, geompy.MakeCompound(edgesFondFiss)) #= local
-      geompy.addToStudyInFather(partitionPeauFissFond, edgesFondC, "edgesFondFiss")
+      geomPublishInFather(initLog.debug,partitionPeauFissFond, edgesFondC, "edgesFondFiss")
       
       if aretesVivesC is None: #= global facesInside facesOnside
         [edgesInside, edgesOutside, edgesOnside] = extractionOrientee(fillingFaceExterne, partitionPeauFissFond, centreFondFiss, "EDGE", 1.e-3)
@@ -265,9 +268,9 @@ def insereFissureGenerale(maillagesSains,
           vertices = geompy.GetSharedShapesMulti([edge, geompy.MakeCompound(facesOnside)], geompy.ShapeType["VERTEX"])
           verticesPipePeau.append(vertices[0])
           name = "edgePipeIn%d"%i
-          geompy.addToStudyInFather(partitionPeauFissFond, edge, name)
+          geomPublishInFather(initLog.debug,partitionPeauFissFond, edge, name)
           name = "verticePipePeau%d"%i
-          geompy.addToStudyInFather(partitionPeauFissFond, vertices[0], name)
+          geomPublishInFather(initLog.debug,partitionPeauFissFond, vertices[0], name)
           logging.debug("edgePipeIn%s coupe les faces OnSide", i)
         except:
           logging.debug("edgePipeIn%s ne coupe pas les faces OnSide", i)
@@ -289,11 +292,11 @@ def insereFissureGenerale(maillagesSains,
 
       edgesFondFiss, edgesIdByOrientation = orderEdgesFromWire(wireFondFiss)
       for i,edge in enumerate(edgesFondFiss):
-        geompy.addToStudyInFather(wireFondFiss, edge, "edgeFondFiss%d"%i)
+        geomPublishInFather(initLog.debug,wireFondFiss, edge, "edgeFondFiss%d"%i)
 
       for iedf, edge in enumerate(edgesFondIn):
         name = "edgeFondIn%d"%iedf
-        geompy.addToStudyInFather(partitionPeauFissFond, edge, name)
+        geomPublishInFather(initLog.debug,partitionPeauFissFond, edge, name)
         dist = [ geompy.MinDistance(pt, edge) for pt in verticesPipePeau]
         ptPeau = verticesPipePeau[dist.index(min(dist))] # le point de verticesPipePeau a distance minimale de l'edge
         [u, PointOnEdge, EdgeInWireIndex]  = geompy.MakeProjectionOnWire(ptPeau, wireFondFiss)
@@ -301,14 +304,14 @@ def insereFissureGenerale(maillagesSains,
         localEdgeInFondFiss = edgesFondFiss[EdgeInWireIndex]
         centre = PointOnEdge
         centre2 = geompy.MakeVertexOnCurve(localEdgeInFondFiss, u)
-        geompy.addToStudyInFather(partitionPeauFissFond, centre2, "centre2_%d"%iedf)
+        geomPublishInFather(initLog.debug,partitionPeauFissFond, centre2, "centre2_%d"%iedf)
         verticesEdgesFondIn.append(centre)
         name = "verticeEdgesFondIn%d"%iedf
-        geompy.addToStudyInFather(partitionPeauFissFond, centre, name)
+        geomPublishInFather(initLog.debug,partitionPeauFissFond, centre, name)
         norm = geompy.MakeTangentOnCurve(localEdgeInFondFiss, u)
-        geompy.addToStudyInFather(partitionPeauFissFond, centre, "norm%d"%iedf)
+        geomPublishInFather(initLog.debug,partitionPeauFissFond, centre, "norm%d"%iedf)
         cercle = geompy.MakeCircle(centre, norm, rayonPipe)
-        geompy.addToStudyInFather(partitionPeauFissFond, cercle, "cerclorig%d"%iedf)
+        geomPublishInFather(initLog.debug,partitionPeauFissFond, cercle, "cerclorig%d"%iedf)
         [vertex] = geompy.ExtractShapes(cercle, geompy.ShapeType["VERTEX"], False)
         vec1 = geompy.MakeVector(centre, vertex)
         vec2 = geompy.MakeVector(centre, ptPeau)
@@ -330,7 +333,7 @@ def insereFissureGenerale(maillagesSains,
         else:
           cercle = geompy.MakeRotation(cercle, norm, -angle + math.pi)
         name = "cercle%d"%iedf
-        geompy.addToStudyInFather(partitionPeauFissFond, cercle, name)
+        geomPublishInFather(initLog.debug,partitionPeauFissFond, cercle, name)
         cercles.append(cercle)
 
         # --- estimation de la longueur du pipe necessaire de part et d'autre du point de sortie
@@ -359,8 +362,8 @@ def insereFissureGenerale(maillagesSains,
         logging.debug("distance curviligne centre extremite0: %s", ofp)
         p1 = geompy.MakeVertexOnCurveByLength(localEdgeInFondFiss, ofp +lgp, locPt0)
         p2 = geompy.MakeVertexOnCurveByLength(localEdgeInFondFiss, ofp -lgp, locPt0)
-        geompy.addToStudyInFather(wireFondFiss, p1, "p1_%d"%iedf)
-        geompy.addToStudyInFather(wireFondFiss, p2, "p2_%d"%iedf)
+        geomPublishInFather(initLog.debug,wireFondFiss, p1, "p1_%d"%iedf)
+        geomPublishInFather(initLog.debug,wireFondFiss, p2, "p2_%d"%iedf)
 
         edgePart = geompy.MakePartition([localEdgeInFondFiss], [p1,p2], [], [], geompy.ShapeType["EDGE"], 0, [], 0)
         edps = geompy.ExtractShapes(edgePart, geompy.ShapeType["EDGE"], True)
@@ -368,7 +371,7 @@ def insereFissureGenerale(maillagesSains,
           if geompy.MinDistance(centre, edp) < 1.e-3:
             pipext = geompy.MakePipe(cercle, edp)
             name = "pipeExt%d"%iedf
-            geompy.addToStudyInFather(partitionPeauFissFond, pipext, name)
+            geomPublishInFather(initLog.debug,partitionPeauFissFond, pipext, name)
             pipexts.append(pipext)
 
         for face in facesInside:
@@ -393,7 +396,7 @@ def insereFissureGenerale(maillagesSains,
               logging.debug("    face %s inside ajoutée", i)
               facesFissExt.append(face)
               name="faceFissExt%d"%iedf
-              geompy.addToStudyInFather(partitionPeauFissFond, face, name)
+              geomPublishInFather(initLog.debug,partitionPeauFissFond, face, name)
               dist = 1.
               for ipe, edpe in enumerate(edgesPeauFis):
                 for ipi, edpi in enumerate(edgesPipeFis):
@@ -401,10 +404,10 @@ def insereFissureGenerale(maillagesSains,
                   if dist < 1.e-3:
                     edgesFissExtPeau.append(edpe)
                     name="edgesFissExtPeau%d"%iedf
-                    geompy.addToStudyInFather(partitionPeauFissFond, edpe, name)
+                    geomPublishInFather(initLog.debug,partitionPeauFissFond, edpe, name)
                     edgesFissExtPipe.append(edpi)
                     name="edgesFissExtPipe%d"%iedf
-                    geompy.addToStudyInFather(partitionPeauFissFond, edpi, name)
+                    geomPublishInFather(initLog.debug,partitionPeauFissFond, edpi, name)
                     break
                 if dist < 1.e-3:
                   break
@@ -425,7 +428,7 @@ def insereFissureGenerale(maillagesSains,
           if (len(edgesPeauFis) > 0) and (len(edgesPipeFis) > 0) and (len(edgesPipeFnd) == 0):
             edgesFissExtPeau.append(edgesPeauFis[0])
             name="edgesFissExtPeau%d"%j
-            geompy.addToStudyInFather(partitionPeauFissFond, edgesPeauFis[0], name)
+            geomPublishInFather(initLog.debug,partitionPeauFissFond, edgesPeauFis[0], name)
             j += 1
      
       # -----------------------------------------------------------------------
@@ -478,7 +481,7 @@ def insereFissureGenerale(maillagesSains,
           pass
           
       name="partitionPeauByPipe%d"%ifil
-      geompy.addToStudy(partitionPeauByPipe, name)
+      geomPublish(initLog.debug, partitionPeauByPipe, name)
       [edgesPeauFondIn, edgesPeauFondOut, edgesPeauFondOn] = extractionOrientee(fillingFaceExterne, partitionPeauByPipe, centreFondFiss, "EDGE", 1.e-3)
       [facesPeauFondIn, facesPeauFondOut, facesPeauFondOn] = extractionOrientee(fillingFaceExterne, partitionPeauByPipe, centreFondFiss, "FACE", 1.e-3)
         
@@ -488,7 +491,7 @@ def insereFissureGenerale(maillagesSains,
       else:
         facePeau =geompy.MakePartition(facesPeauFondOn, [], [], [], geompy.ShapeType["FACE"], 0, [], 1)
       name="facePeau%d"%ifil
-      geompy.addToStudy(facePeau, name)
+      geomPublish(initLog.debug, facePeau, name)
       
       facesPipePeau = [None for i in range(len(edgesFissExtPipe))]
       endsEdgeFond = [None for i in range(len(edgesFissExtPipe))]
@@ -514,13 +517,13 @@ def insereFissureGenerale(maillagesSains,
               nameEdge = "edgeRadFacePipePeau%d"%i
               facesPipePeau[i] = face
               endsEdgeFond[i] = sharedVertices[0]
-              geompy.addToStudy(face, nameFace)
-              geompy.addToStudy(sharedVertices[0], nameVert)
+              geomPublish(initLog.debug, face, nameFace)
+              geomPublish(initLog.debug, sharedVertices[0], nameVert)
               edgesFace = geompy.ExtractShapes(face, geompy.ShapeType["EDGE"], True)
               for edge in edgesFace:
                 if geompy.MinDistance(edge, sharedVertices[0]) < 1e-3:
                   edgeRadFacePipePeau[i] = edge
-                  geompy.addToStudy(edge, nameEdge)
+                  geomPublish(initLog.debug, edge, nameEdge)
                   break
                 pass
               pass
@@ -537,14 +540,14 @@ def insereFissureGenerale(maillagesSains,
           geompy.UnionList(grpEdgesCirc, edges)
           edgesCircPeau[i] = grpEdgesCirc
           name = "edgeCirc%d"%i
-          geompy.addToStudyInFather(facePeau, grpEdgesCirc, name)
+          geomPublishInFather(initLog.debug,facePeau, grpEdgesCirc, name)
           edgesListees = edgesListees + edges
           vertices = geompy.GetSharedShapesMulti([facePeau, fcirc], geompy.ShapeType["VERTEX"])
           grpVertCircPeau = geompy.CreateGroup(facePeau, geompy.ShapeType["VERTEX"])
           geompy.UnionList(grpVertCircPeau, vertices)
           verticesCircPeau[i] = grpVertCircPeau
           name = "pointEdgeCirc%d"%i
-          geompy.addToStudyInFather(facePeau, grpVertCircPeau, name)
+          geomPublishInFather(initLog.debug,facePeau, grpVertCircPeau, name)
           pass
         pass # --- au moins une extrémité du pipe sur cette face de peau
 
@@ -555,7 +558,7 @@ def insereFissureGenerale(maillagesSains,
       for i, edge in enumerate(edgesFilling):
         edgepeau = geompy.GetInPlace(facePeau, edge)
         name = "edgepeau%d"%i
-        geompy.addToStudyInFather(facePeau,edgepeau, name)
+        geomPublishInFather(initLog.debug,facePeau,edgepeau, name)
         logging.debug("edgepeau %s", geompy.ShapeInfo(edgepeau))
         if geompy.ShapeInfo(edgepeau)['EDGE'] > 1:
           logging.debug("  EDGES multiples")
@@ -572,7 +575,7 @@ def insereFissureGenerale(maillagesSains,
       if aretesVivesC is not None:
         bordsVifs = geompy.GetInPlace(facePeau, aretesVivesC)
       if bordsVifs is not None:
-        geompy.addToStudyInFather(facePeau, bordsVifs, "bordsVifs")
+        geomPublishInFather(initLog.debug,facePeau, bordsVifs, "bordsVifs")
         groupEdgesBordPeau = geompy.CutGroups(groupEdgesBordPeau, bordsVifs)
         grptmp = None
         if len(aretesVivesCoupees) > 0:
@@ -586,7 +589,7 @@ def insereFissureGenerale(maillagesSains,
           edv = geompy.ExtractShapes(grpnew, geompy.ShapeType["EDGE"], False)
           aretesVivesCoupees += edv
       logging.debug("aretesVivesCoupees %s",aretesVivesCoupees)
-      geompy.addToStudyInFather(facePeau, groupEdgesBordPeau , "EdgesBords")
+      geomPublishInFather(initLog.debug,facePeau, groupEdgesBordPeau , "EdgesBords")
         
       # ---  edges de la face de peau partagées avec la face de fissure
       
@@ -600,7 +603,7 @@ def insereFissureGenerale(maillagesSains,
             if (geompy.MinDistance(grpVert, edge) < 1.e-3) and (edge not in edgesFissurePeau):
               edgesFissurePeau[i] = edge
               name = "edgeFissurePeau%d"%i
-              geompy.addToStudyInFather(facePeau,  edge, name)
+              geomPublishInFather(initLog.debug,facePeau,  edge, name)
         for edge in edges: # on ajoute après les edges manquantes
           if edge not in edgesFissurePeau:
             edgesFissurePeau.append(edge)
@@ -608,7 +611,7 @@ def insereFissureGenerale(maillagesSains,
         for i, edge in enumerate(edges):
           edgesFissurePeau.append(edge)
           name = "edgeFissurePeau%d"%i
-          geompy.addToStudyInFather(facePeau,  edge, name)
+          geomPublishInFather(initLog.debug,facePeau,  edge, name)
         
 
       ptEdgeFond[ifil] = endsEdgeFond        # pour chaque face [points edge fond de fissure aux débouchés du pipe]
@@ -631,7 +634,7 @@ def insereFissureGenerale(maillagesSains,
   
   for i, avc in enumerate(aretesVivesCoupees):
     name = "areteViveCoupee%d"%i
-    geompy.addToStudy(avc, name)
+    geomPublish(initLog.debug, avc, name)
   
   # --- identification des faces et edges de fissure externe pour maillage
   
@@ -667,9 +670,9 @@ def insereFissureGenerale(maillagesSains,
     edgesPeauFissureExterneC = geompy.MakeCompound(edgesFissExtPeau)
     edgesPipeFissureExterneC = geompy.MakeCompound(edgesFissExtPipe)
   wirePipeFissureExterne = geompy.MakeWire(geompy.ExtractShapes(edgesPipeFissureExterneC, geompy.ShapeType["EDGE"], False))
-  geompy.addToStudy(faceFissureExterne, "faceFissureExterne")
-  geompy.addToStudyInFather(faceFissureExterne, edgesPeauFissureExterneC, "edgesPeauFissureExterne")
-  geompy.addToStudyInFather(faceFissureExterne, edgesPipeFissureExterneC, "edgesPipeFissureExterne")
+  geomPublish(initLog.debug, faceFissureExterne, "faceFissureExterne")
+  geomPublishInFather(initLog.debug,faceFissureExterne, edgesPeauFissureExterneC, "edgesPeauFissureExterne")
+  geomPublishInFather(initLog.debug,faceFissureExterne, edgesPipeFissureExterneC, "edgesPipeFissureExterne")
   
   logging.debug("---------------------------- Preparation Maillage du Pipe --------------")
   # -----------------------------------------------------------------------
@@ -734,11 +737,11 @@ def insereFissureGenerale(maillagesSains,
       origins.append(vertpx)
       normals.append(norm)
 #      name = "vertcx%d"%i
-#      geompy.addToStudyInFather(wireFondFiss, vertcx, name)
+#      geomPublishInFather(initLog.debug,wireFondFiss, vertcx, name)
 #      name = "vertpx%d"%i
-#      geompy.addToStudyInFather(wireFondFiss, vertpx, name)
+#      geomPublishInFather(initLog.debug,wireFondFiss, vertpx, name)
 #      name = "plan%d"%i
-#      geompy.addToStudyInFather(wireFondFiss, plan, name)
+#      geomPublishInFather(initLog.debug,wireFondFiss, plan, name)
 
   # --- maillage du pipe étendu, sans tenir compte de l'intersection avec la face de peau
       
@@ -854,18 +857,18 @@ def insereFissureGenerale(maillagesSains,
           #logging.debug("extremité %s, indices retenus interne %s, externe %s",i, idfin, iddeb)
           comp = geompy.MakeCompound(raydisks[k][iddeb:idfin])
           name='compoundRay%d'%k
-          geompy.addToStudy(comp, name)
+          geomPublish(initLog.debug, comp, name)
         else:
           idfin = min(len(gptsdisks), numout+1)
           iddeb = min(idfin-3, idisk) # il faut 3 rayons pour faire un filling qui suive le fond de fissure
           #logging.debug("extremité %s, indices retenus interne %s, externe %s",i, idfin, iddeb)
           comp = geompy.MakeCompound(raydisks[k][iddeb:idfin])
           name='compoundRay%d'%k
-          geompy.addToStudy(comp, name)
+          geomPublish(initLog.debug, comp, name)
         nappe = geompy.MakeFilling(comp, 2, 5, 0.0001, 0.0001, 0, GEOM.FOM_Default)
         nappes.append(nappe)
         name='nappe%d'%k
-        geompy.addToStudy(nappe, name)
+        geomPublish(initLog.debug, nappe, name)
         facesDebouchantes[i] = True
     listNappes.append(nappes)
       
@@ -914,13 +917,13 @@ def insereFissureGenerale(maillagesSains,
                 ednouv.append(ed)
             logging.debug("  edges issues de la partition: %s", ednouv)
             for ii, ed in enumerate(ednouv):
-              geompy.addToStudy(ed, "ednouv%d"%ii)
+              geomPublish(initLog.debug, ed, "ednouv%d"%ii)
             [edsorted, minl,maxl] = sortEdges(ednouv)
             logging.debug("  longueur edge trouvée: %s", maxl) 
             edge = edsorted[-1]
           edges.append(edge)
           name = 'edgeEndPipe%d'%k
-          geompy.addToStudy(edge, name)
+          geomPublish(initLog.debug, edge, name)
       listEdges.append(edges)
 
   # --- création des points du maillage du pipe sur la face de peau
@@ -932,9 +935,9 @@ def insereFissureGenerale(maillagesSains,
         id = -1  # si id vaut 1, on prend le dernier élément de la liste (1 ou 2 extrémités débouchent sur la face)
       centre = ptEdgeFond[idFillingFromBout[i]][id]
       name = "centre%d"%id
-      geompy.addToStudy(centre, name)
+      geomPublish(initLog.debug, centre, name)
       vertPipePeau = ptFisExtPi[idFillingFromBout[i]][id]
-      geompy.addToStudyInFather(centre, vertPipePeau, "vertPipePeau")
+      geomPublishInFather(initLog.debug,centre, vertPipePeau, "vertPipePeau")
       grpsEdgesCirc = edCircPeau[idFillingFromBout[i]] # liste de groupes
       edgesCirc = []
       for grpEdgesCirc in grpsEdgesCirc:
@@ -961,7 +964,7 @@ def insereFissureGenerale(maillagesSains,
         else:
           bout = geompy.MakeVertexOnCurve(distEdgeCirc[0][2], u)
         name ="bout%d"%k
-        geompy.addToStudyInFather(centre, bout, name)
+        geomPublishInFather(initLog.debug,centre, bout, name)
         # enregistrement des points dans la structure
         points = []
         for j in range(nbsegRad +1):
@@ -1238,7 +1241,7 @@ def insereFissureGenerale(maillagesSains,
       edgesFilling = geompy.ExtractShapes(filling, geompy.ShapeType["EDGE"], False)
       groupEdgesBordPeau = geompy.CreateGroup(filling, geompy.ShapeType["EDGE"])
       geompy.UnionList(groupEdgesBordPeau, edgesFilling)
-      geompy.addToStudyInFather(filling, groupEdgesBordPeau , "EdgesBords")
+      geomPublishInFather(initLog.debug,filling, groupEdgesBordPeau , "EdgesBords")
       
       meshFacePeau = smesh.Mesh(facesDefaut[ifil])
       

@@ -2,6 +2,9 @@
 
 import logging
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 
 # -----------------------------------------------------------------------------
 # --- identification des faces tore et fissure dans le solide hors tore du bloc partitionné
@@ -21,9 +24,9 @@ def facesToreInBloc(blocp, facefissoutore, facetore1, facetore2):
   blocFaceTore1 = geompy.GetInPlaceByHistory(blocp, facetore1)
   blocFaceTore2 = geompy.GetInPlaceByHistory(blocp, facetore2)
 
-  geompy.addToStudyInFather(blocp, blocFaceFiss,'blocFaceFiss')
-  geompy.addToStudyInFather(blocp, blocFaceTore1,'blocFaceTore1')
-  geompy.addToStudyInFather(blocp, blocFaceTore2,'blocFaceTore2')
+  geomPublishInFather(initLog.debug, blocp, blocFaceFiss,'blocFaceFiss')
+  geomPublishInFather(initLog.debug, blocp, blocFaceTore1,'blocFaceTore1')
+  geomPublishInFather(initLog.debug, blocp, blocFaceTore2,'blocFaceTore2')
 
   return blocFaceFiss, blocFaceTore1, blocFaceTore2
 

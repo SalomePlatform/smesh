@@ -2,6 +2,9 @@
 
 import logging
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 from sortFaces import sortFaces
 
 def restreintFaceFissure(shapeDefaut, facesDefaut, pointInterne):
@@ -11,7 +14,7 @@ def restreintFaceFissure(shapeDefaut, facesDefaut, pointInterne):
   """
   logging.info('start')
   partShapeDefaut = geompy.MakePartition([shapeDefaut], facesDefaut, [], [], geompy.ShapeType["FACE"], 0, [], 0)
-  geompy.addToStudy(partShapeDefaut, 'partShapeDefaut')
+  geomPublish(initLog.debug, partShapeDefaut, 'partShapeDefaut')
   facesPartShapeDefaut = geompy.ExtractShapes(partShapeDefaut, geompy.ShapeType["FACE"], False)
   if pointInterne is not None:
     distfaces = [(geompy.MinDistance(face,pointInterne), i, face) for i, face in enumerate(facesPartShapeDefaut)]
@@ -23,5 +26,5 @@ def restreintFaceFissure(shapeDefaut, facesDefaut, pointInterne):
     logging.debug("surfaces faces fissure étendue, min %s, max %s", minSurf, maxSurf)
     facesPortFissure = facesPartShapeDefautSorted[-1]
   
-  geompy.addToStudy(facesPortFissure, "facesPortFissure")
+  geomPublish(initLog.debug, facesPortFissure, "facesPortFissure")
   return facesPortFissure

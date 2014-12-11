@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from geomsmesh import geompy, smesh
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 
 import math
 import GEOM
@@ -69,22 +72,22 @@ class fissureCoude(fissureGenerique):
     Rotation_2 = geompy.MakeRotation(OZ, OY, angleCoude*math.pi/180.0)
     tube_2 = geompy.MakePrismVecH(Rotation_1, Rotation_2, -l_tube_p2)
     plan_y = geompy.MakePlaneLCS(None, 100000, 3)
-    geompy.addToStudy( plan_y, "plan_y" )
-    geompy.addToStudy( tube_1, "tube_1" )
-    geompy.addToStudy( coude, "coude" )
-    geompy.addToStudy( tube_2, "tube_2" )
+    geomPublish(initLog.debug,  plan_y, "plan_y" )
+    geomPublish(initLog.debug,  tube_1, "tube_1" )
+    geomPublish(initLog.debug,  coude, "coude" )
+    geomPublish(initLog.debug,  tube_2, "tube_2" )
 
     P1 = O
-    geompy.addToStudy( P1, "P1" )
+    geompy.addToStudy(P1, "P1" )
     op2 = geompy.MakeVertex(0, 0, -l_tube_p1)
     P2 = geompy.MakeRotation(op2, axe, angleCoude*math.pi/180.0)
     P2 = geompy.MakeTranslationVectorDistance(P2, Rotation_2, -l_tube_p2)
-    geompy.addToStudy( P2, "P2" )
+    geompy.addToStudy(P2, "P2" )
 
     # --- tube coude sain
 
     geometrieSaine = geompy.MakePartition([tube_1, coude, tube_2, P1, P2], [plan_y], [], [], geompy.ShapeType["SOLID"], 0, [], 1)
-    geompy.addToStudy( geometrieSaine, self.nomCas )
+    geomPublish(initLog.debug,  geometrieSaine, self.nomCas )
     [P1, P2] = geompy.RestoreGivenSubShapes(geometrieSaine, [P1, P2], GEOM.FSM_GetInPlaceByHistory, False, True)
 
     xmin = -de -r_cintr -l_tube_p2
@@ -123,19 +126,19 @@ class fissureCoude(fissureGenerique):
     grped = geompy.CutGroups(grpedy0, long_p1)
     grped = geompy.CutGroups(grped, long_p2)
     ep = geompy.CutGroups(grped, long_coude)
-    geompy.addToStudyInFather( geometrieSaine, long_p1, 'long_p1' )
-    geompy.addToStudyInFather( geometrieSaine, ep, 'ep' )
-    geompy.addToStudyInFather( geometrieSaine, long_coude, 'long_coude' )
-    geompy.addToStudyInFather( geometrieSaine, circ_g, 'circ_g' )
-    geompy.addToStudyInFather( geometrieSaine, circ_d, 'circ_d' )
-    geompy.addToStudyInFather( geometrieSaine, long_p2, 'long_p2' )
+    geomPublishInFather(initLog.debug, geometrieSaine, long_p1, 'long_p1' )
+    geomPublishInFather(initLog.debug, geometrieSaine, ep, 'ep' )
+    geomPublishInFather(initLog.debug, geometrieSaine, long_coude, 'long_coude' )
+    geomPublishInFather(initLog.debug, geometrieSaine, circ_g, 'circ_g' )
+    geomPublishInFather(initLog.debug, geometrieSaine, circ_d, 'circ_d' )
+    geomPublishInFather(initLog.debug, geometrieSaine, long_p2, 'long_p2' )
 
     # --- face extremite tube (EXTUBE)
 
     facesIds = geompy.GetShapesOnPlaneIDs(geometrieSaine, geompy.ShapeType["FACE"], OZ, GEOM.ST_ON)
     EXTUBE = geompy.CreateGroup(geometrieSaine, geompy.ShapeType["FACE"])
     geompy.UnionIDs(EXTUBE, facesIds)
-    geompy.addToStudyInFather( geometrieSaine, EXTUBE, 'EXTUBE' )
+    geomPublishInFather(initLog.debug, geometrieSaine, EXTUBE, 'EXTUBE' )
 
     # --- edge bord extremite tube (BORDTU)
 
@@ -147,17 +150,17 @@ class fissureCoude(fissureGenerique):
         edgesIds.append(edge)
     BORDTU = geompy.CreateGroup(geometrieSaine, geompy.ShapeType["EDGE"])
     geompy.UnionIDs(BORDTU, edgesIds)
-    geompy.addToStudyInFather( geometrieSaine, BORDTU, 'BORDTU' )
+    geomPublishInFather(initLog.debug, geometrieSaine, BORDTU, 'BORDTU' )
 
     # --- face origine tube (CLGV)
 
     pp2 = geompy.MakeTranslationVectorDistance(P2, Rotation_2, 10)
     vec2 = geompy.MakeVector(P2, pp2)
-    #geompy.addToStudy(vec2, 'vec2')
+    #geomPublish(initLog.debug, vec2, 'vec2')
     facesIds = geompy.GetShapesOnPlaneIDs(geometrieSaine, geompy.ShapeType["FACE"], vec2, GEOM.ST_ON)
     CLGV = geompy.CreateGroup(geometrieSaine, geompy.ShapeType["FACE"])
     geompy.UnionIDs(CLGV, facesIds)
-    geompy.addToStudyInFather( geometrieSaine, CLGV, 'CLGV' )
+    geomPublishInFather(initLog.debug, geometrieSaine, CLGV, 'CLGV' )
 
     # --- peau tube interieur (PEAUINT)
 
@@ -167,11 +170,11 @@ class fissureCoude(fissureGenerique):
     extru2 = geompy.MakePrismVecH(rot1, Rotation_2, -l_tube_p2)
     interne = geompy.MakeFuse(extru1, revol1)
     interne = geompy.MakeFuse(extru2, interne)
-    geompy.addToStudy(interne, 'interne')
+    geomPublish(initLog.debug, interne, 'interne')
     facesIds = geompy.GetShapesOnShapeIDs(interne, geometrieSaine, geompy.ShapeType["FACE"], GEOM.ST_ONIN)
     PEAUINT = geompy.CreateGroup(geometrieSaine, geompy.ShapeType["FACE"])
     geompy.UnionIDs(PEAUINT, facesIds)
-    geompy.addToStudyInFather( geometrieSaine, PEAUINT, 'PEAUINT' )
+    geomPublishInFather(initLog.debug, geometrieSaine, PEAUINT, 'PEAUINT' )
 
     # --- peau tube exterieur (PEAUEXT)
 
@@ -182,18 +185,18 @@ class fissureCoude(fissureGenerique):
     extru2 = geompy.MakePrismVecH(rot1, Rotation_2, -l_tube_p2)
     externe = geompy.MakeFuse(extru1, revol1)
     externe = geompy.MakeFuse(extru2, externe)
-    geompy.addToStudy(externe, 'externe')
+    geomPublish(initLog.debug, externe, 'externe')
     facesIds = geompy.GetShapesOnShapeIDs(externe, geometrieSaine, geompy.ShapeType["FACE"], GEOM.ST_ON)
     PEAUEXT = geompy.CreateGroup(geometrieSaine, geompy.ShapeType["FACE"])
     geompy.UnionIDs(PEAUEXT, facesIds)
-    geompy.addToStudyInFather( geometrieSaine, PEAUEXT, 'PEAUEXT' )
+    geomPublishInFather(initLog.debug, geometrieSaine, PEAUEXT, 'PEAUEXT' )
 
     # --- solide sain
 
     volIds = geompy.SubShapeAllIDs(geometrieSaine, geompy.ShapeType["SOLID"])
     COUDE = geompy.CreateGroup(geometrieSaine, geompy.ShapeType["SOLID"])
     geompy.UnionIDs(COUDE, volIds)
-    geompy.addToStudyInFather( geometrieSaine, COUDE, 'COUDSAIN' )
+    geomPublishInFather(initLog.debug, geometrieSaine, COUDE, 'COUDSAIN' )
 
     geometriesSaines = [geometrieSaine, long_p1, ep, long_coude, circ_g, circ_d, long_p2, P1, P2, EXTUBE, BORDTU, CLGV, PEAUINT, PEAUEXT, COUDE]
 
@@ -340,7 +343,7 @@ class fissureCoude(fissureGenerique):
 
     azimut = -azimut # axe inverse / ASCOUF
     axe = geompy.MakeTranslation(OY, -r_cintr, 0, -l_tube_p1)
-    geompy.addToStudy(axe,"axe")
+    geomPublish(initLog.debug, axe,"axe")
     
     if not lgInfluence:
       lgInfluence = profondeur
@@ -377,8 +380,8 @@ class fissureCoude(fissureGenerique):
       pi = geompy.MakeVertex(rayint, 0, 0)      
       pbl = geompy.MakeRotation(pb, OZ, angle)
       pbr = geompy.MakeRotation(pb, OZ, -angle)
-      geompy.addToStudy(pbl,"pbl")
-      geompy.addToStudy(pbr,"pbr")
+      geomPublish(initLog.debug, pbl,"pbl")
+      geomPublish(initLog.debug, pbr,"pbr")
       pal = geompy.MakeTranslationVector(pbl, OZ)
       par = geompy.MakeTranslationVector(pbr, OZ)
       axl = geompy.MakeVector(pbl,pal)
@@ -409,7 +412,7 @@ class fissureCoude(fissureGenerique):
       wire2 = geompy.MakeInterpol(points[2*nbp:3*nbp+1])     
       #wiretube = geompy.MakeInterpol(points)
       wiretube=geompy.MakeWire([wire0,wire1,wire2])
-      geompy.addToStudy(wiretube,"wiretube")
+      geomPublish(initLog.debug, wiretube,"wiretube")
       
       pe = geompy.MakeVertex(rayext, 0, 0)
       pe = geompy.MakeRotation(pe, OZ, azimut*math.pi/180.)
@@ -417,22 +420,22 @@ class fissureCoude(fissureGenerique):
       pe = geompy.MakeRotation(pe, axe, alpha*math.pi/180.)
      
       arce = geompy.MakeArc(points[0], pe, points[-1])
-      geompy.addToStudy(arce,"arce")
+      geomPublish(initLog.debug, arce,"arce")
       
       facefiss = geompy.MakeFaceWires([arce, wiretube], 1)
-      geompy.addToStudy( facefiss, 'facefissPlace' )
+      geomPublish(initLog.debug,  facefiss, 'facefissPlace' )
       
       pc = geompy.MakeVertex((raybor + rayint)/2.0, 0, 0)
       centre = geompy.MakeRotation(pc, OZ, azimut*math.pi/180.)
       centre = geompy.MakeTranslation(centre, 0, 0, -l_tube_p1)
       centre = geompy.MakeRotation(centre, axe, alpha*math.pi/180.)
-      geompy.addToStudy( centre, 'centrefissPlace' )
+      geomPublish(initLog.debug,  centre, 'centrefissPlace' )
       
       wiretube = geompy.GetInPlace(facefiss, wiretube)
-      geompy.addToStudy(wiretube, 'wiretubePlace' )
+      geomPublish(initLog.debug, wiretube, 'wiretubePlace' )
       try:
         edgetube = geompy.MakeEdgeWire(wiretube)
-        geompy.addToStudy(edgetube,"edgetube")
+        geomPublish(initLog.debug, edgetube,"edgetube")
       except:
         logging.debug("erreur MakeEdgeWire sur fond de fissure, on fait sans")
         edgetube = None
@@ -485,10 +488,10 @@ class fissureCoude(fissureGenerique):
         points.append(pt)
       curves.append(geompy.MakeInterpol(points))
       point0 = points[0]
-      geompy.addToStudy(curves[-1],"curve0")
+      geomPublish(initLog.debug, curves[-1],"curve0")
 #      for i, pt in enumerate(points):
 #        name = "point%d"%i
-#        geompy.addToStudyInFather(curves[-1], pt, name)
+#        geomPublishInFather(initLog.debug,curves[-1], pt, name)
 
       points = []
       nbp = 3*nbp1
@@ -506,10 +509,10 @@ class fissureCoude(fissureGenerique):
         pt = geompy.MakeRotation(pi, axe, angi)
         points.append(pt)
       curves.append(geompy.MakeInterpol(points))
-      geompy.addToStudy(curves[-1],"curve1")
+      geomPublish(initLog.debug, curves[-1],"curve1")
 #      for i, pt in enumerate(points):
 #        name = "point%d"%i
-#        geompy.addToStudyInFather(curves[-1], pt, name)
+#        geomPublishInFather(initLog.debug,curves[-1], pt, name)
 
       points = []
       nbp = 3*nbp1
@@ -529,16 +532,16 @@ class fissureCoude(fissureGenerique):
         points.append(pt)
       curves.append(geompy.MakeInterpol(points))
       point1 = points[-1]
-      geompy.addToStudy(curves[-1],"curve2")
+      geomPublish(initLog.debug, curves[-1],"curve2")
 #      for i, pt in enumerate(points):
 #        name = "point%d"%i
-#        geompy.addToStudyInFather(curves[-1], pt, name)
+#        geomPublishInFather(initLog.debug,curves[-1], pt, name)
       
       wiretube = geompy.MakeWire(curves)
-      geompy.addToStudy(wiretube,"wiretube")
+      geomPublish(initLog.debug, wiretube,"wiretube")
       try:
         edgetube = geompy.MakeEdgeWire(wiretube)
-        geompy.addToStudy(edgetube,"edgetube")
+        geomPublish(initLog.debug, edgetube,"edgetube")
       except:
         logging.debug("erreur MakeEdgeWire sur fond de fissure, on fait sans")
         edgetube = None
@@ -553,21 +556,21 @@ class fissureCoude(fissureGenerique):
         pts.append(pt)
       pts.append(point1)
       arce = geompy.MakeInterpol(pts)
-      geompy.addToStudy(arce,"arce")
+      geomPublish(initLog.debug, arce,"arce")
       
       facefiss = geompy.MakeFaceWires([arce, wiretube], 0)
-      geompy.addToStudy( facefiss, 'facefissPlace' )
+      geomPublish(initLog.debug,  facefiss, 'facefissPlace' )
       
       pc = geompy.MakeTranslation(pb, 0.5*prof*cosaz, 0.5*prof*sinaz, 0.)
       centre = geompy.MakeRotation(pc, axe, alfrd)
-      geompy.addToStudy( centre, 'centrefissPlace' )
+      geomPublish(initLog.debug,  centre, 'centrefissPlace' )
       
       edges = geompy.ExtractShapes(facefiss, geompy.ShapeType["EDGE"], True)
       edgesTriees, minl, maxl = sortEdges(edges)
       edges = edgesTriees[:-1] # la plus grande correspond à arce, on l'elimine
       wiretube = geompy.MakeWire(edges)
       #wiretube = edgesTriees[-1]
-      geompy.addToStudy(wiretube, 'wiretubePlace' )
+      geomPublish(initLog.debug, wiretube, 'wiretubePlace' )
 
     # ---------------------------------------------------------
 
@@ -612,7 +615,7 @@ class fissureCoude(fissureGenerique):
       arci = geompy.MakePosition(arco, originLCS, localLCS, "arci")
       arce = geompy.MakePosition(lino, originLCS, localLCS, "arce")
       facefiss = geompy.MakeFaceWires([arce, arci], 0)
-      geompy.addToStudy( facefiss, 'facefissPlace' )
+      geomPublish(initLog.debug,  facefiss, 'facefissPlace' )
       edges = geompy.ExtractShapes(facefiss, geompy.ShapeType["EDGE"], True)
       edgesTriees, minl, maxl = sortEdges(edges)
       edgetube = edgesTriees[-1] # la plus grande correspond à arci
@@ -620,7 +623,7 @@ class fissureCoude(fissureGenerique):
       
       pc = geompy.MakeTranslation(pb, 0.5*prof*cosaz, 0.5*prof*sinaz, 0.)
       centre = geompy.MakeRotation(pc, axe, alfrd)
-      geompy.addToStudy( centre, 'centrefissPlace' )
+      geomPublish(initLog.debug,  centre, 'centrefissPlace' )
 
     coordsNoeudsFissure = genereMeshCalculZoneDefaut(facefiss, profondeur/2. ,profondeur)
 

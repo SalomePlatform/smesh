@@ -3,6 +3,9 @@
 import logging
 import salome
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 import GEOM
 from geomsmesh import smesh
 from salome.smesh import smeshBuilder
@@ -130,7 +133,7 @@ def construitFissureGenerale(maillagesSains,
   (fissPipe, edgesPipeFiss, edgesFondFiss, wirePipeFiss, wireFondFiss) = partitionneFissureParPipe(shapesFissure, elementsDefaut, rayonPipe)
   edgesFondFiss, edgesIdByOrientation = orderEdgesFromWire(wireFondFiss)
   for i,edge in enumerate(edgesFondFiss):
-    geompy.addToStudyInFather(wireFondFiss, edge, "edgeFondFiss%d"%i)
+    geomPublishInFather(initLog.debug, wireFondFiss, edge, "edgeFondFiss%d"%i)
   
   # --- peau et face de fissure
   #
@@ -195,7 +198,7 @@ def construitFissureGenerale(maillagesSains,
   
   for i, avc in enumerate(aretesVivesCoupees):
     name = "areteViveCoupee%d"%i
-    geompy.addToStudy(avc, name)
+    geomPublish(initLog.debug, avc, name)
   
   # --- identification des faces et edges de fissure externe pour maillage
   

@@ -2,6 +2,9 @@
 
 import logging
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 
 # -----------------------------------------------------------------------------
 # --- faces fissure dans et hors tore, et edges face hors tore
@@ -24,18 +27,18 @@ def facesFissure(blocp, faceFissure, extrusionDefaut, genint):
     facefissintore = f1
     facefissoutore = f0
 
-  geompy.addToStudyInFather(faceFissure, facefissintore,'facefissintore')
-  geompy.addToStudyInFather(faceFissure, facefissoutore,'facefissoutore')
+  geomPublishInFather(initLog.debug, faceFissure, facefissintore,'facefissintore')
+  geomPublishInFather(initLog.debug, faceFissure, facefissoutore,'facefissoutore')
 
   edgeint = geompy.GetShapesOnShape(extrusionDefaut, facefissoutore, geompy.ShapeType["EDGE"], GEOM.ST_IN)
   edgeext = geompy.GetShapesOnShape(extrusionDefaut, facefissoutore, geompy.ShapeType["EDGE"], GEOM.ST_ON)
 
   for i in range(len(edgeint)):
     name = "edgeint_%d"%i
-    geompy.addToStudyInFather(facefissoutore, edgeint[i],name)
+    geomPublishInFather(initLog.debug, facefissoutore, edgeint[i],name)
   for i in range(len(edgeext)):
     name = "edgeext_%d"%i
-    geompy.addToStudyInFather(facefissoutore, edgeext[i],name)
+    geomPublishInFather(initLog.debug, facefissoutore, edgeext[i],name)
 
   reverext = []
   if len(edgeext) > 1:

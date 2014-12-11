@@ -3,6 +3,10 @@
 import logging
 
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
+
 from extractionOrientee import extractionOrientee
 from extractionOrienteeMulti import extractionOrienteeMulti
  
@@ -19,9 +23,9 @@ def identifieElementsFissure(ifil, facesDefaut, partitionPeauFissFond,
   logging.info('start')
 
   edgesPipeC = geompy.GetInPlace(partitionPeauFissFond, geompy.MakeCompound(edgesPipeFiss))
-  geompy.addToStudyInFather(partitionPeauFissFond, edgesPipeC, "edgesPipeFiss")
+  geomPublishInFather(initLog.debug, partitionPeauFissFond, edgesPipeC, "edgesPipeFiss")
   edgesFondC = geompy.GetInPlace(partitionPeauFissFond, geompy.MakeCompound(edgesFondFiss))
-  geompy.addToStudyInFather(partitionPeauFissFond, edgesFondC, "edgesFondFiss")
+  geomPublishInFather(initLog.debug, partitionPeauFissFond, edgesFondC, "edgesFondFiss")
   
   if aretesVivesC is None:
     [edgesInside, edgesOutside, edgesOnside] = extractionOrientee(fillingFaceExterne, partitionPeauFissFond, centreFondFiss, "EDGE", 1.e-3)
@@ -38,9 +42,9 @@ def identifieElementsFissure(ifil, facesDefaut, partitionPeauFissFond,
       vertices = geompy.GetSharedShapesMulti([edge, geompy.MakeCompound(facesOnside)], geompy.ShapeType["VERTEX"])
       verticesPipePeau.append(vertices[0])
       name = "edgePipeIn%d"%i
-      geompy.addToStudyInFather(partitionPeauFissFond, edge, name)
+      geomPublishInFather(initLog.debug, partitionPeauFissFond, edge, name)
       name = "verticePipePeau%d"%i
-      geompy.addToStudyInFather(partitionPeauFissFond, vertices[0], name)
+      geomPublishInFather(initLog.debug, partitionPeauFissFond, vertices[0], name)
       logging.debug("edgePipeIn%s coupe les faces OnSide", i)
     except:
       logging.debug("edgePipeIn%s ne coupe pas les faces OnSide", i)

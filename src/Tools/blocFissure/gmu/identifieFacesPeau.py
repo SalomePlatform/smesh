@@ -3,6 +3,9 @@
 import logging
 
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 
 from sortFaces import sortFaces
 from extractionOrientee import extractionOrientee
@@ -62,7 +65,7 @@ def identifieFacesPeau(ifil, verticesPipePeau, facesOnside, wireFondFiss,
       pass
       
   name="partitionPeauByPipe%d"%ifil
-  geompy.addToStudy(partitionPeauByPipe, name)
+  geomPublish(initLog.debug, partitionPeauByPipe, name)
   [edgesPeauFondIn, edgesPeauFondOut, edgesPeauFondOn] = extractionOrientee(fillingFaceExterne, partitionPeauByPipe, centreFondFiss, "EDGE", 1.e-3)
   [facesPeauFondIn, facesPeauFondOut, facesPeauFondOn] = extractionOrientee(fillingFaceExterne, partitionPeauByPipe, centreFondFiss, "FACE", 1.e-3)
     
@@ -73,6 +76,6 @@ def identifieFacesPeau(ifil, verticesPipePeau, facesOnside, wireFondFiss,
     facePeau =geompy.MakePartition(facesPeauFondOn, [], [], [], geompy.ShapeType["FACE"], 0, [], 1)
     facesPeauSorted = [facePeau]
   name="facePeau%d"%ifil
-  geompy.addToStudy(facePeau, name)
+  geomPublish(initLog.debug, facePeau, name)
 
   return (facePeau, facesPeauSorted, edgesPeauFondIn)

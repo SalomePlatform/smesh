@@ -2,6 +2,9 @@
 
 import logging
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 import bisect
 
 publie = False
@@ -35,7 +38,7 @@ def getCentreFondFiss(shapesFissure):
       edgeFondExt = fondFiss
       aWire = geompy.MakeWire([fondFiss], 1e-07)
     if not publie:
-      geompy.addToStudy(aWire, "wireFondFissExt")
+      geomPublish(initLog.debug, aWire, "wireFondFissExt")
         
     lgWire = geompy.BasicProperties(aWire)[0]
     edges = geompy.ExtractShapes(aWire, geompy.ShapeType["EDGE"], True)
@@ -61,7 +64,7 @@ def getCentreFondFiss(shapesFissure):
         centreFondFiss = geompy.MakeVertexOnCurve(edges[iedr], 1.0 - lgOnEdge/lgEdges[iedr])
     else: # on ne sait pas comment est orientée l'edge unique, mais ça n'a pas d'importance
       centreFondFiss = geompy.MakeVertexOnCurve(edges[iedr], lgOnEdge/lgEdges[iedr])
-    geompy.addToStudyInFather(aWire, centreFondFiss, "centreFondFiss")
+    geomPublishInFather(initLog.debug,aWire, centreFondFiss, "centreFondFiss")
     tgtCentre = geompy.MakeTangentOnCurve(edges[iedr], lgOnEdge/ lgEdges[iedr])
     
     if edgeFondExt is None: # fond de fissure non fourni explicitement sous forme d'edge
@@ -71,7 +74,7 @@ def getCentreFondFiss(shapesFissure):
         logging.debug("erreur MakeEdgeWire sur fond de fissure, on fait sans")
         edgeFondExt = None
     if not publie and edgeFondExt is not None:
-      geompy.addToStudy(edgeFondExt, "edgeFondExt")
+      geomPublish(initLog.debug, edgeFondExt, "edgeFondExt")
   
   publie = True
   return edgeFondExt, centreFondFiss, tgtCentre

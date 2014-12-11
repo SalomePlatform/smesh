@@ -2,6 +2,9 @@
 
 import logging
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 import GEOM
 import math
 import numpy as np
@@ -40,6 +43,7 @@ def quadranglesToShapeNoCorner(meshQuad, shapeFissureParams, centreFondFiss):
   
   allNodeIds = meshQuad.GetNodesId()
   while len(allNodeIds):
+    logging.debug("len(allNodeIds): %s ", len(allNodeIds))
     nodeIds = allNodeIds
     for idNode in nodeIds: # rechercher un coin
       elems = meshQuad.GetNodeInverseElements(idNode)
@@ -227,23 +231,23 @@ def quadranglesToShapeNoCorner(meshQuad, shapeFissureParams, centreFondFiss):
           if i == 0:
             noeudsBords[0].append(node)
             #name = "bord0_%d"%k
-            #geompy.addToStudy( node, name )
+            #geomPublish(initLog.debug,  node, name )
           if i == (nbLignes -1):
             noeudsBords[2].append(node)
             #name = "bord2_%d"%k
-            #geompy.addToStudy( node, name )
+            #geomPublish(initLog.debug,  node, name )
           if j == 0:
             noeudsBords[1].append(node)
             #name = "bord1_%d"%k
-            #geompy.addToStudy( node, name )
+            #geomPublish(initLog.debug,  node, name )
           if j == (nbCols -1):
             noeudsBords[3].append(node)
             #name = "bord3_%d"%k
-            #geompy.addToStudy( node, name )
+            #geomPublish(initLog.debug,  node, name )
             k += 1
         curve = geompy.MakeInterpol(nodeList, False, False)
         #name = "curve_%d"%i
-        #geompy.addToStudy( curve, name )
+        #geomPublish(initLog.debug,  curve, name )
         if len(curvconts) == 0 or len(curves) > 0: # éliminer les doublons de la surface sans découpe 
           curvconts.append(nodeList)
         curves.append(curve)
@@ -293,11 +297,11 @@ def quadranglesToShapeNoCorner(meshQuad, shapeFissureParams, centreFondFiss):
           vecteurDefaut = geompy.MakeVector(vertex, cdg)
      
       if vecteurDefaut is not None:
-        geompy.addToStudy(normal, "normFillOrig%d"%iface)
-        geompy.addToStudy(vecteurDefaut, "fromInterieur%d"%iface)
+        geomPublish(initLog.debug, normal, "normFillOrig%d"%iface)
+        geomPublish(initLog.debug, vecteurDefaut, "fromInterieur%d"%iface)
         if geompy.GetAngleRadians(vecteurDefaut, normal) > math.pi/2.0:
           filling = geompy.ChangeOrientation(filling)
-      geompy.addToStudy( filling, "filling%d"%iface )
+      geomPublish(initLog.debug,  filling, "filling%d"%iface )
       #geompy.ExportBREP(filling, "filling.brep")
       iface = iface+1
       fillings.append(filling)
@@ -318,7 +322,7 @@ def quadranglesToShapeNoCorner(meshQuad, shapeFissureParams, centreFondFiss):
         curve = geompy.MakeInterpol(nodes, False, False)
         curves.append(curve)
       fillcont = geompy.MakeFilling(geompy.MakeCompound(curves), 2, 5, 0.0001, 0.0001, 0, GEOM.FOM_Default, True)
-    geompy.addToStudy( fillcont, "filcont%d"%icont )
+    geomPublish(initLog.debug,  fillcont, "filcont%d"%icont )
     fillconts.append(fillcont)
     icont = icont+1   
     pass   # --- loop while there are remaining nodes

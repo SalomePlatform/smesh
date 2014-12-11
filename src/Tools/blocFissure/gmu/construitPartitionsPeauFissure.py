@@ -2,6 +2,9 @@
 
 import logging
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 from checkDecoupePartition import checkDecoupePartition
 
   # -----------------------------------------------------------------------------
@@ -35,7 +38,7 @@ def construitPartitionsPeauFissure(facesDefaut, fissPipe):
         fissPipePart = fissPipe
       part = geompy.MakePartition([fissPipePart, filling], [], [], [], geompy.ShapeType["FACE"], 0, [], 0)
       partitionsPeauFissFond.append(part)
-      geompy.addToStudy( part, 'partitionPeauFissFond%d'%ipart )
+      geomPublish(initLog.debug, part, 'partitionPeauFissFond%d'%ipart )
     else:
       partitionsPeauFissFond.append(None)
     ipart = ipart +1

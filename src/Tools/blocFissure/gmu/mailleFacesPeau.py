@@ -3,6 +3,9 @@
 import logging
 
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 from geomsmesh import smesh
 from salome.smesh import smeshBuilder
 import SMESH
@@ -34,7 +37,7 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut,
       edgesFilling = geompy.ExtractShapes(filling, geompy.ShapeType["EDGE"], False)
       groupEdgesBordPeau = geompy.CreateGroup(filling, geompy.ShapeType["EDGE"])
       geompy.UnionList(groupEdgesBordPeau, edgesFilling)
-      geompy.addToStudyInFather(filling, groupEdgesBordPeau , "EdgesBords")
+      geomPublishInFather(initLog.debug,filling, groupEdgesBordPeau , "EdgesBords")
       
       meshFacePeau = smesh.Mesh(facesDefaut[ifil])
       

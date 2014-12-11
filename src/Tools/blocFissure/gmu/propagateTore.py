@@ -2,6 +2,9 @@
 
 import logging
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 
 # -----------------------------------------------------------------------------
 # --- recherche et classement des edges du tore par propagate
@@ -18,7 +21,7 @@ def propagateTore(tore):
   lencomp = []
   compounds = geompy.Propagate(tore)
   for i in range(len(compounds)):
-    #geompy.addToStudyInFather( tore, compounds[i], 'edges' )
+    #geomPublishInFather(initLog.debug, tore, compounds[i], 'edges' )
     props = geompy.BasicProperties(compounds[i])
     lencomp.append(props[0])
     pass
@@ -35,10 +38,10 @@ def propagateTore(tore):
     else:
       circles.append(compounds[i])
 
-  geompy.addToStudyInFather( tore, diams[0], 'diams0' )
-  geompy.addToStudyInFather( tore, diams[1], 'diams1' )
-  geompy.addToStudyInFather( tore, circles[0], 'circles0' )
-  geompy.addToStudyInFather( tore, circles[1], 'circles1' )
-  geompy.addToStudyInFather( tore, geners[0], 'geners' )
+  geomPublishInFather(initLog.debug, tore, diams[0], 'diams0' )
+  geomPublishInFather(initLog.debug, tore, diams[1], 'diams1' )
+  geomPublishInFather(initLog.debug, tore, circles[0], 'circles0' )
+  geomPublishInFather(initLog.debug, tore, circles[1], 'circles1' )
+  geomPublishInFather(initLog.debug, tore, geners[0], 'geners' )
 
   return diams, circles, geners

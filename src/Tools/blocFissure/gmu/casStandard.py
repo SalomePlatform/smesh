@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import os
-from blocFissure import gmu
-from blocFissure.gmu.geomsmesh import geompy, smesh
+from geomsmesh import geompy, smesh
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 
 import math
 import GEOM
@@ -13,13 +15,13 @@ import SMESH
 #import NETGENPlugin
 import logging
 
-from blocFissure.gmu.fissureGenerique import fissureGenerique
+from fissureGenerique import fissureGenerique
 
-from blocFissure.gmu.initEtude import initEtude
-from blocFissure.gmu.triedreBase import triedreBase
-from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
-from blocFissure.gmu.creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
-from blocFissure.gmu.construitFissureGenerale import construitFissureGenerale
+from initEtude import initEtude
+from triedreBase import triedreBase
+from genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
+from creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
+from construitFissureGenerale import construitFissureGenerale
 
 O, OX, OY, OZ = triedreBase()
 
@@ -97,8 +99,8 @@ class casStandard(fissureGenerique):
     shellFiss = geompy.ImportFile( self.dicoParams['brepFaceFissure'], "BREP")
     fondFiss = geompy.CreateGroup(shellFiss, geompy.ShapeType["EDGE"])
     geompy.UnionIDs(fondFiss, self.dicoParams['edgeFissIds'] )
-    geompy.addToStudy( shellFiss, 'shellFiss' )
-    geompy.addToStudyInFather( shellFiss, fondFiss, 'fondFiss' )
+    geomPublish(initLog.debug, shellFiss, 'shellFiss' )
+    geomPublishInFather(initLog.debug, shellFiss, fondFiss, 'fondFiss' )
 
 
     coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, self.dicoParams['meshBrep'][0] ,self.dicoParams['meshBrep'][1])

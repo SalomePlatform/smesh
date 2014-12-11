@@ -3,6 +3,9 @@
 import logging
 
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 
 def identifieFacesEdgesFissureExterne(fsFissuExt, edFisExtPe, edFisExtPi, edgesPipeFiss):
   """
@@ -42,8 +45,8 @@ def identifieFacesEdgesFissureExterne(fsFissuExt, edFisExtPe, edFisExtPi, edgesP
     edgesPeauFissureExterneC = geompy.MakeCompound(edgesFissExtPeau)
     edgesPipeFissureExterneC = geompy.MakeCompound(edgesFissExtPipe)
   wirePipeFissureExterne = geompy.MakeWire(geompy.ExtractShapes(edgesPipeFissureExterneC, geompy.ShapeType["EDGE"], False))
-  geompy.addToStudy(faceFissureExterne, "faceFissureExterne")
-  geompy.addToStudyInFather(faceFissureExterne, edgesPeauFissureExterneC, "edgesPeauFissureExterne")
-  geompy.addToStudyInFather(faceFissureExterne, edgesPipeFissureExterneC, "edgesPipeFissureExterne")
+  geomPublish(initLog.debug, faceFissureExterne, "faceFissureExterne")
+  geomPublishInFather(initLog.debug, faceFissureExterne, edgesPeauFissureExterneC, "edgesPeauFissureExterne")
+  geomPublishInFather(initLog.debug, faceFissureExterne, edgesPipeFissureExterneC, "edgesPipeFissureExterne")
   
   return (faceFissureExterne, edgesPipeFissureExterneC, wirePipeFissureExterne, edgesPeauFissureExterneC)

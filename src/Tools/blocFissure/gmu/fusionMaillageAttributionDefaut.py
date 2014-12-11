@@ -8,6 +8,9 @@ Created on Tue Jun 24 09:14:13 2014
 import logging
 from geomsmesh import geompy
 from geomsmesh import smesh
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 import GEOM
 import SMESH
 
@@ -49,19 +52,19 @@ def fusionMaillageDefaut(maillageSain, maillageDefautCible, maillageInterneCible
         # on recrée un objet GEOM temporaire par filling.
         filling = geompy.MakeFilling(geompy.MakeCompound(setOfLines), 2, 5, 0.0001, 0.0001, 0, GEOM.FOM_Default, True)
         #logging.debug("face de filling")
-        #geompy.addToStudy(filling, 'filling_{0}'.format(i + 1))
+        #geomPublish(initLog.debug, filling, 'filling_{0}'.format(i + 1))
         
         tmpPartition = geompy.MakePartition([filling], [shapeDefaut], [], [], geompy.ShapeType["FACE"], 0, [], 0)
         tmpExplodeRef = geompy.ExtractShapes(filling, geompy.ShapeType["EDGE"], True)
         tmpExplodeNum = geompy.ExtractShapes(tmpPartition, geompy.ShapeType["EDGE"], True)
         if len(tmpExplodeRef) == len(tmpExplodeNum):
             logging.debug("face de filling non coupee")
-            geompy.addToStudy(filling, "faceNonCoupee_{0}".format(i + 1))
+            geompy.addToStudy( filling, "faceNonCoupee_{0}".format(i + 1)) # doit etre publie pour critere OK plus bas
             facesNonCoupees.append(filling)
             maillagesNonCoupes.append(listOfNewMeshes[i])
         else:
             logging.debug("face de filling coupee")
-            geompy.addToStudy(filling, "faceCoupee_{0}".format(i + 1))
+            geompy.addToStudy( filling, "faceCoupee_{0}".format(i + 1))
             facesCoupees.append(filling)
             maillagesCoupes.append(listOfNewMeshes[i])
         

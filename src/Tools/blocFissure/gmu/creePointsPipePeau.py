@@ -3,6 +3,9 @@
 import logging
 
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 from projettePointSurCourbe import projettePointSurCourbe
 
 def creePointsPipePeau(listEdges, idFacesDebouchantes, idFillingFromBout,
@@ -20,9 +23,9 @@ def creePointsPipePeau(listEdges, idFacesDebouchantes, idFillingFromBout,
         idf = -1  # si idf vaut 1, on prend le dernier élément de la liste (1 ou 2 extrémités débouchent sur la face)
       centre = ptEdgeFond[idFillingFromBout[i]][idf]
       name = "centre%d"%idf
-      geompy.addToStudy(centre, name)
+      geomPublish(initLog.debug, centre, name)
       vertPipePeau = ptFisExtPi[idFillingFromBout[i]][idf]
-      geompy.addToStudyInFather(centre, vertPipePeau, "vertPipePeau")
+      geomPublishInFather(initLog.debug, centre, vertPipePeau, "vertPipePeau")
       grpsEdgesCirc = edCircPeau[idFillingFromBout[i]] # liste de groupes
       edgesCirc = []
       for grpEdgesCirc in grpsEdgesCirc:
@@ -48,7 +51,7 @@ def creePointsPipePeau(listEdges, idFacesDebouchantes, idFillingFromBout,
         else:
           bout = geompy.MakeVertexOnCurve(distEdgeCirc[0][2], u)
         name ="bout%d"%k
-        geompy.addToStudyInFather(centre, bout, name)
+        geomPublishInFather(initLog.debug, centre, bout, name)
         # enregistrement des points dans la structure
         points = []
         for j in range(nbsegRad +1):

@@ -2,6 +2,9 @@
 
 import logging
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 
 from whichSide import whichSide
 
@@ -32,19 +35,19 @@ def extractionOrientee(face, obj, ref, shapeType, tol, prefix=""):
       shapesInside.append(shape)
       if trace:
         name = prefix + "_Inside%d"%i
-        geompy.addToStudyInFather(obj, shape, name)
+        geomPublishInFather(initLog.debug, obj, shape, name)
       i+=1
     elif side == -sideRef:
       shapesOutside.append(shape)
       if trace:
         name = prefix + "_Outside%d"%j
-        geompy.addToStudyInFather(obj, shape, name)
+        geomPublishInFather(initLog.debug, obj, shape, name)
       j+=1
     elif side == 0:
       shapesOnside.append(shape)
       if trace:
         name = prefix + "_Onside%d"%k
-        geompy.addToStudyInFather(obj, shape, name)
+        geomPublishInFather(initLog.debug, obj, shape, name)
       k+=1
     logging.debug("--- shape was %s", name)
   return [shapesInside, shapesOutside, shapesOnside]

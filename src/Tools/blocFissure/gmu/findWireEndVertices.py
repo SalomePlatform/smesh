@@ -2,6 +2,9 @@
 
 import logging
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 
 # -----------------------------------------------------------------------------
 # --- trouver les vertices extremites d'un wire
@@ -44,11 +47,11 @@ def findWireEndVertices(aWire, getNormals=False):
     else:
       idsubs[subid] = [sub]
       name='vertex%d'%i
-      geompy.addToStudyInFather(aWire, sub, name)
+      geomPublishInFather(initLog.debug, aWire, sub, name)
       if getNormals:
         idnorm[subid] = normals[i]
         name='norm%d'%i
-        geompy.addToStudyInFather(aWire, normals[i], name)
+        geomPublishInFather(initLog.debug, aWire, normals[i], name)
   logging.debug("idsubs: %s", idsubs)
   for k, v in idsubs.iteritems():
     if len(v) == 1:

@@ -2,6 +2,9 @@
 
 import logging
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 
 # -----------------------------------------------------------------------------
 # --- partition du bloc defaut par generatrice, tore et plan fissure
@@ -29,10 +32,10 @@ def partitionBlocDefaut(volDefaut, facesDefaut, gener, pipe,
   faceFissure = geompy.GetInPlaceByHistory(volDefautPart, facefis)
   #ellipsoidep =geompy.GetInPlaceByHistory(volDefautPart, ellipsoide)
 
-  geompy.addToStudy( volDefautPart, 'volDefautPart' )
-  geompy.addToStudyInFather( volDefautPart, tore, 'tore' )
-  geompy.addToStudyInFather( volDefautPart, faceFissure, 'FACE1' )
-  #geompy.addToStudyInFather( volDefautPart, gencnt, 'generatrice' )
+  geomPublish(initLog.debug,  volDefautPart, 'volDefautPart' )
+  geomPublishInFather(initLog.debug, volDefautPart, tore, 'tore' )
+  geomPublishInFather(initLog.debug, volDefautPart, faceFissure, 'FACE1' )
+  #geomPublishInFather(initLog.debug, volDefautPart, gencnt, 'generatrice' )
 
   solids = geompy.ExtractShapes(blocp, geompy.ShapeType["SOLID"], True)
   vols = []
@@ -47,13 +50,13 @@ def partitionBlocDefaut(volDefaut, facesDefaut, gener, pipe,
   imaxvol = vols.index(maxvol)
   ellipsoidep = solids[imaxvol]
 
-  geompy.addToStudyInFather( volDefautPart, blocp, 'bloc' )
-  geompy.addToStudyInFather( volDefautPart, ellipsoidep, 'ellipsoide' )
+  geomPublishInFather(initLog.debug, volDefautPart, blocp, 'bloc' )
+  geomPublishInFather(initLog.debug, volDefautPart, ellipsoidep, 'ellipsoide' )
 
   sharedFaces = geompy.GetSharedShapesMulti([blocp, ellipsoidep], geompy.ShapeType["FACE"])
   for i in range(len(sharedFaces)):
     name = "faceCommuneEllipsoideBloc_%d"%i
-    geompy.addToStudyInFather(blocp, sharedFaces[i], name)
+    geomPublishInFather(initLog.debug,blocp, sharedFaces[i], name)
 
   #sharedEdges = geompy.GetSharedShapesMulti([blocp, ellipsoidep], geompy.ShapeType["EDGE"])
   allSharedEdges = geompy.GetSharedShapesMulti([blocp, ellipsoidep], geompy.ShapeType["EDGE"])
@@ -63,7 +66,7 @@ def partitionBlocDefaut(volDefaut, facesDefaut, gener, pipe,
       sharedEdges.append(allSharedEdges[i])
   for i in range(len(sharedEdges)):
     name = "edgeCommuneEllipsoideBloc_%d"%i
-    geompy.addToStudyInFather(blocp, sharedEdges[i], name)
+    geomPublishInFather(initLog.debug,blocp, sharedEdges[i], name)
 
   facesExternes = []
   facesExtBloc = []
@@ -75,14 +78,14 @@ def partitionBlocDefaut(volDefaut, facesDefaut, gener, pipe,
     faceExt = geompy.GetInPlace(ellipsoidep, faces[i])
     if faceExt is not None:
       name = "faceExterne_e%d"%i
-      geompy.addToStudyInFather(ellipsoidep, faceExt, name)
+      geomPublishInFather(initLog.debug,ellipsoidep, faceExt, name)
       facesExternes.append(faceExt)
       facesExtElli.append(faceExt)
 
     faceExt = geompy.GetInPlace(blocp, faces[i])
     if faceExt is not None:
       name = "faceExterne_b%d"%i
-      geompy.addToStudyInFather(blocp, faceExt, name)
+      geomPublishInFather(initLog.debug,blocp, faceExt, name)
       facesExternes.append(faceExt)
       facesExtBloc.append(faceExt)
     else:
@@ -93,12 +96,12 @@ def partitionBlocDefaut(volDefaut, facesDefaut, gener, pipe,
       #extrusionFace = geompy.MakePrismVecH2Ways(faces[i], normal, 0.1)
       #extrusionFace = geompy.MakeScaleTransform(extrusionFace, vertex, 1.01)
       name = "extrusionFace_b%d"%i
-      geompy.addToStudyInFather(blocp, extrusionFace, name)
+      geomPublishInFather(initLog.debug,blocp, extrusionFace, name)
       #facesExt = geompy.GetShapesOnShape(extrusionFace, blocp, geompy.ShapeType["FACE"], GEOM.ST_ONIN)
       facesExt = geompy.GetShapesOnShape(extrusionFace, blocp, geompy.ShapeType["FACE"], GEOM.ST_ON)
       for j in range(len(facesExt)):
         name = "faceExterne_b%d_%d"%(i,j)
-        geompy.addToStudyInFather(blocp, facesExt[j], name)
+        geomPublishInFather(initLog.debug,blocp, facesExt[j], name)
         facesExternes.append(facesExt[j])
         facesExtBloc.append(facesExt[j])
 
@@ -120,7 +123,7 @@ def partitionBlocDefaut(volDefaut, facesDefaut, gener, pipe,
             pass
           if len(allSharedEdges) > 0:
             name = "faceExterne_b%d_%d"%(i,j)
-            geompy.addToStudyInFather(blocp, facesBloc[i], name)
+            geomPublishInFather(initLog.debug,blocp, facesBloc[i], name)
             facesExternes.append(facesBloc[i])
             facesExtBloc.append(facesBloc[i])
 
@@ -136,7 +139,7 @@ def partitionBlocDefaut(volDefaut, facesDefaut, gener, pipe,
         aretesInternes += shared
   for i in range(len(aretesInternes)):
     name = "aretesInternes_%d"%i
-    geompy.addToStudyInFather(blocp, aretesInternes[i], name)
+    geomPublishInFather(initLog.debug,blocp, aretesInternes[i], name)
 
   edgesBords = []
   for faceExtB in facesExtBloc:
@@ -150,7 +153,7 @@ def partitionBlocDefaut(volDefaut, facesDefaut, gener, pipe,
       if not isInterne:
         edgesBords.append(edges[i])
         name = "edgeBord%d"%i
-        geompy.addToStudyInFather(blocp,edges[i] , name)
+        geomPublishInFather(initLog.debug,blocp,edges[i] , name)
   group = None
   if len(edgesBords) > 0:
     group = geompy.CreateGroup(blocp, geompy.ShapeType["EDGE"])

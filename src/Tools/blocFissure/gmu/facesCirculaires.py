@@ -2,6 +2,9 @@
 
 import logging
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 
 # -----------------------------------------------------------------------------
 # --- TORE
@@ -20,10 +23,10 @@ def facesCirculaires(bloc, tore):
 
   faces = geompy.GetShapesOnShape(bloc, tore, geompy.ShapeType["FACE"], GEOM.ST_ON)
 
-  geompy.addToStudyInFather( tore, faces[0], 'face0' )
-  geompy.addToStudyInFather( tore, faces[1], 'face1' )
-  geompy.addToStudyInFather( tore, faces[2], 'face2' )
-  geompy.addToStudyInFather( tore, faces[3], 'face3' )
+  geomPublishInFather(initLog.debug, tore, faces[0], 'face0' )
+  geomPublishInFather(initLog.debug, tore, faces[1], 'face1' )
+  geomPublishInFather(initLog.debug, tore, faces[2], 'face2' )
+  geomPublishInFather(initLog.debug, tore, faces[3], 'face3' )
 
   centres = [None, None, None, None]
   [v1,centres[0],v3] = geompy.ExtractShapes(faces[0], geompy.ShapeType["VERTEX"], True)
@@ -31,10 +34,10 @@ def facesCirculaires(bloc, tore):
   [v1,centres[2],v3] = geompy.ExtractShapes(faces[2], geompy.ShapeType["VERTEX"], True)
   [v1,centres[3],v3] = geompy.ExtractShapes(faces[3], geompy.ShapeType["VERTEX"], True)
 
-  geompy.addToStudyInFather( faces[0], centres[0], 'centre0' )
-  geompy.addToStudyInFather( faces[1], centres[1], 'centre1' )
-  geompy.addToStudyInFather( faces[2], centres[2], 'centre2' )
-  geompy.addToStudyInFather( faces[3], centres[3], 'centre3' )
+  geomPublishInFather(initLog.debug, faces[0], centres[0], 'centre0' )
+  geomPublishInFather(initLog.debug, faces[1], centres[1], 'centre1' )
+  geomPublishInFather(initLog.debug, faces[2], centres[2], 'centre2' )
+  geomPublishInFather(initLog.debug, faces[3], centres[3], 'centre3' )
 
   alledges = [None, None, None, None]
   alledges[0] = geompy.ExtractShapes(faces[0], geompy.ShapeType["EDGE"], True)
@@ -60,7 +63,7 @@ def facesCirculaires(bloc, tore):
           dicoedge[edgid] = edgesface[j]
           edges.append(edgesface[j])
           named = 'edge_' + str(i) + '_' +str(j)
-          geompy.addToStudyInFather( faces[i], edgesface[j], named)
+          geomPublishInFather(initLog.debug, faces[i], edgesface[j], named)
           vertices = geompy.ExtractShapes(edgesface[j], geompy.ShapeType["VERTEX"], False)
           #firstVertex = geompy.GetFirstVertex(edgesface[j])
           if geompy.GetSubShapeID(tore, vertices[0]) != geompy.GetSubShapeID(tore, centres[i]):

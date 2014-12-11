@@ -3,6 +3,9 @@
 import logging
 
 from geomsmesh import geompy
+from geomsmesh import geomPublish
+from geomsmesh import geomPublishInFather
+import initLog
 import GEOM
 from sortEdges import sortEdges
 
@@ -30,18 +33,18 @@ def construitEdgesRadialesDebouchantes(idisklim, idiskout, gptsdisks, raydisks,
           #logging.debug("extremité %s, indices retenus interne %s, externe %s",i, idfin, iddeb)
           comp = geompy.MakeCompound(raydisks[k][iddeb:idfin])
           name='compoundRay%d'%k
-          geompy.addToStudy(comp, name)
+          geomPublish(initLog.debug, comp, name)
         else:
           idfin = min(len(gptsdisks), numout+1)
           iddeb = min(idfin-3, idisk) # il faut 3 rayons pour faire un filling qui suive le fond de fissure
           #logging.debug("extremité %s, indices retenus interne %s, externe %s",i, idfin, iddeb)
           comp = geompy.MakeCompound(raydisks[k][iddeb:idfin])
           name='compoundRay%d'%k
-          geompy.addToStudy(comp, name)
+          geomPublish(initLog.debug, comp, name)
         nappe = geompy.MakeFilling(comp, 2, 5, 0.0001, 0.0001, 0, GEOM.FOM_Default)
         nappes.append(nappe)
         name='nappe%d'%k
-        geompy.addToStudy(nappe, name)
+        geomPublish(initLog.debug, nappe, name)
         facesDebouchantes[i] = True
     listNappes.append(nappes)
       
@@ -50,8 +53,8 @@ def construitEdgesRadialesDebouchantes(idisklim, idiskout, gptsdisks, raydisks,
     if facesDebouchantes[i]:
       for k, face in enumerate(facesPipePeau):
         #logging.debug('i, k, face, nappes[0] %s %s %s %s', i, k, face, nappes[0])
-        #geompy.addToStudy(nappes[0], 'lanappe')
-        #geompy.addToStudy(face, 'laface')
+        #geomPublish(initLog.debug, nappes[0], 'lanappe')
+        #geomPublish(initLog.debug, face, 'laface')
         edge = geompy.MakeSection(face, nappes[0])
         if geompy.NbShapes(edge, geompy.ShapeType["EDGE"]) > 0:
           idFacesDebouchantes[i] = k
@@ -93,13 +96,13 @@ def construitEdgesRadialesDebouchantes(idisklim, idiskout, gptsdisks, raydisks,
                 ednouv.append(ed)
             logging.debug("  edges issues de la partition: %s", ednouv)
             for ii, ed in enumerate(ednouv):
-              geompy.addToStudy(ed, "ednouv%d"%ii)
+              geomPublish(initLog.debug, ed, "ednouv%d"%ii)
             [edsorted, minl,maxl] = sortEdges(ednouv)
             logging.debug("  longueur edge trouvée: %s", maxl) 
             edge = edsorted[-1]
           edges.append(edge)
           name = 'edgeEndPipe%d'%k
-          geompy.addToStudy(edge, name)
+          geomPublish(initLog.debug, edge, name)
       listEdges.append(edges)
       
   return (listEdges, idFacesDebouchantes)
