@@ -519,7 +519,7 @@ QString SMESHGUI_GroupDlg::GetDefaultName(const QString& theOperation)
   bool isUnique = false;
   while (!isUnique) {
     aName = theOperation + "_" + QString::number(++aNumber);
-    isUnique = (aSet.count(aName.toUtf8().data()) == 0);
+    isUnique = (aSet.count(std::string(SMESH::toUtf8(aName))) == 0);
   }
 
   return aName;
@@ -535,7 +535,7 @@ void  SMESHGUI_GroupDlg::setDefaultName() const
   do
   {
     aResName = aPrefix + QString::number( i++ );
-    anObj = aStudy->FindObject( aResName.toUtf8().data() );
+    anObj = aStudy->FindObject( SMESH::toUtf8(aResName) );
   }
   while ( anObj );
   myName->setText(aResName); 
@@ -594,14 +594,14 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup,
 
   myNameChanged = true;
   myName->blockSignals(true);
-  myName->setText(QString::fromUtf8(theGroup->GetName()));
+  myName->setText(SMESH::fromUtf8(theGroup->GetName()));
   myName->blockSignals(false);
   myName->home(false);
 
   SALOMEDS::Color aColor = theGroup->GetColor();
   setGroupColor( aColor );
 
-  myMeshGroupLine->setText(QString::fromUtf8(theGroup->GetName()));
+  myMeshGroupLine->setText(SMESH::fromUtf8(theGroup->GetName()));
 
   int aType = 0;
   switch(theGroup->GetType()) {
@@ -686,7 +686,7 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup,
   {
     myNameChanged = true;
     myName->blockSignals(true);
-    myName->setText(QString::fromUtf8(theGroup->GetName()));
+    myName->setText(SMESH::fromUtf8(theGroup->GetName()));
     myName->blockSignals(false);
   }
 
@@ -1041,7 +1041,7 @@ bool SMESHGUI_GroupDlg::onApply()
 
       if (myGeomObjects->length() == 1) {
         myGroupOnGeom = myMesh->CreateGroupFromGEOM(aType,
-                                                    myName->text().toUtf8().data(),
+                                                    SMESH::toUtf8(myName->text()),
                                                     myGeomObjects[0]);
       }
       else {
@@ -1083,11 +1083,11 @@ bool SMESHGUI_GroupDlg::onApply()
           aNewGeomGroupName += myName->text();
           SALOMEDS::SObject_var aNewGroupSO =
             geomGen->AddInStudy(aSMESHGen->GetCurrentStudy(), aGroupVar,
-                                aNewGeomGroupName.toUtf8().data(), aMeshShape);
+                                SMESH::toUtf8(aNewGeomGroupName), aMeshShape);
         }
 
         myGroupOnGeom = myMesh->CreateGroupFromGEOM(aType,
-                                                    myName->text().toUtf8().data(),
+                                                    SMESH::toUtf8(myName->text()),
                                                     aGroupVar);
       }
       resultGroup = SMESH::SMESH_GroupBase::_narrow( myGroupOnGeom );
@@ -1110,7 +1110,7 @@ bool SMESHGUI_GroupDlg::onApply()
         return false;
 
       myGroupOnFilter = myMesh->CreateGroupFromFilter(aType,
-                                                      myName->text().toUtf8().data(),
+                                                      SMESH::toUtf8(myName->text()),
                                                       myFilter);
 
       resultGroup = SMESH::SMESH_GroupBase::_narrow( myGroupOnFilter );
@@ -1151,7 +1151,7 @@ bool SMESHGUI_GroupDlg::onApply()
     }
     else
     {
-      resultGroup->SetName(myName->text().toUtf8().data());
+      resultGroup->SetName(SMESH::toUtf8(myName->text()));
 
       if ( aMeshGroupSO )
       {
@@ -1166,7 +1166,7 @@ bool SMESHGUI_GroupDlg::onApply()
             if ( !anActor ) return false;
             myActorsList.append( anActor );
           }
-          anActor->setName(myName->text().toUtf8().data());
+          anActor->setName(SMESH::toUtf8(myName->text()));
           QColor c;
           int delta;
           switch ( myTypeId ) {

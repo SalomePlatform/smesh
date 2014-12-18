@@ -52,6 +52,10 @@
 
 #include CORBA_SERVER_HEADER(SMESH_Group)
 
+//VSR: uncomment below macro to support unicode text properly in SALOME
+//     current commented out due to regressions
+//#define PAL22528_UNICODE
+
 namespace SMESH
 {
   SUIT_Desktop*
@@ -391,4 +395,27 @@ namespace SMESH
     return n;
   }
   
+  QString fromUtf8( const char* txt )
+  {
+#ifdef PAL22528_UNICODE
+    return QString::fromUtf8( txt );
+#else
+    return QString( txt );
+#endif
+  }
+
+  QString fromUtf8( const std::string& txt )
+  {
+    return fromUtf8( txt.c_str() );
+  }
+
+  const char* toUtf8( const QString& txt )
+  {
+#ifdef PAL22528_UNICODE
+    return txt.toUtf8().constData();
+#else
+    return txt.toLatin1().constData();
+#endif
+  }
+
 } // end of namespace SMESH

@@ -208,6 +208,9 @@ SMESHGUI_EXPORT
     toStdStr( char* s ): toStrT< std::string >(s) {}
   };
 
+  QString fromUtf8( const char* txt );
+  QString fromUtf8( const std::string& txt );
+  const char* toUtf8( const QString& txt );
 }
 
 #endif // SMESHGUI_UTILS_H
