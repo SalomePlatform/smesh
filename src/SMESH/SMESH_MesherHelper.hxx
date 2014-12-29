@@ -671,11 +671,14 @@ public:
    *  \param uv2 - UV within a face
    *  \retval gp_Pnt2d - selected UV
    */
-  gp_Pnt2d GetUVOnSeam( const gp_Pnt2d& uv1, const gp_Pnt2d& uv2 ) const;
+  gp_Pnt2d getUVOnSeam( const gp_Pnt2d& uv1, const gp_Pnt2d& uv2 ) const;
 
   const SMDS_MeshNode* getMediumNodeOnComposedWire(const SMDS_MeshNode* n1,
                                                    const SMDS_MeshNode* n2,
                                                    bool                 force3d);
+
+  double getFaceMaxTol( const TopoDS_Shape& face ) const;
+
  private:
 
   // Forbiden copy constructor
@@ -710,9 +713,11 @@ public:
   double          myPar1[2], myPar2[2]; // U and V bounds of a closed periodic surface
   int             myParIndex;     // bounds' index (1-U, 2-V, 3-both)
 
-  typedef std::map< int, GeomAPI_ProjectPointOnSurf* > TID2ProjectorOnSurf;
-  TID2ProjectorOnSurf myFace2Projector;
+  std::map< int, double > myFaceMaxTol;
+
+  typedef std::map< int, GeomAPI_ProjectPointOnSurf* >  TID2ProjectorOnSurf;
   typedef std::map< int, GeomAPI_ProjectPointOnCurve* > TID2ProjectorOnCurve;
+  TID2ProjectorOnSurf  myFace2Projector;
   TID2ProjectorOnCurve myEdge2Projector;
 
   TopoDS_Shape    myShape;

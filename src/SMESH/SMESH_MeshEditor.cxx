@@ -10228,6 +10228,7 @@ bool SMESH_MeshEditor::doubleNodes( SMESHDS_Mesh*     theMeshDS,
       {
         // duplicate node
         aNewNode = theMeshDS->AddNode( aCurrNode->X(), aCurrNode->Y(), aCurrNode->Z() );
+        copyPosition( aCurrNode, aNewNode );
         theNodeNodeMap[ aCurrNode ] = aNewNode;
         myLastCreatedNodes.Append( aNewNode );
       }
@@ -10240,10 +10241,8 @@ bool SMESH_MeshEditor::doubleNodes( SMESHDS_Mesh*     theMeshDS,
     if ( theIsDoubleElem )
       AddElement(newNodes, anElem->GetType(), anElem->IsPoly());
     else
-      {
-      MESSAGE("ChangeElementNodes");
       theMeshDS->ChangeElementNodes( anElem, &newNodes[ 0 ], anElem->NbNodes() );
-      }
+
     res = true;
   }
   return res;
@@ -10254,8 +10253,8 @@ bool SMESH_MeshEditor::doubleNodes( SMESHDS_Mesh*     theMeshDS,
   \brief Creates a hole in a mesh by doubling the nodes of some particular elements
   \param theNodes - identifiers of nodes to be doubled
   \param theModifiedElems - identifiers of elements to be updated by the new (doubled)
-         nodes. If list of element identifiers is empty then nodes are doubled but
-         they not assigned to elements
+  nodes. If list of element identifiers is empty then nodes are doubled but
+  they not assigned to elements
   \return TRUE if operation has been completed successfully, FALSE otherwise
 */
 //================================================================================
@@ -10291,6 +10290,7 @@ bool SMESH_MeshEditor::DoubleNodes( const std::list< int >& theListOfNodes,
     const SMDS_MeshNode* aNewNode = aMeshDS->AddNode( aNode->X(), aNode->Y(), aNode->Z() );
     if ( aNewNode )
     {
+      copyPosition( aNode, aNewNode );
       anOldNodeToNewNode[ aNode ] = aNewNode;
       myLastCreatedNodes.Append( aNewNode );
     }
@@ -10909,6 +10909,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
                         }
                       double *coords = grid->GetPoint(oldId);
                       SMDS_MeshNode *newNode = meshDS->AddNode(coords[0], coords[1], coords[2]);
+                      copyPosition( meshDS->FindNodeVtk( oldId ), newNode );
                       int newId = newNode->getVtkId();
                       nodeDomains[oldId][idom] = newId; // cloned node for other domains
                       //MESSAGE("-+-+-c     oldNode " << oldId << " domain " << idomain << " newNode " << newId << " domain " << idom << " size=" <<nodeDomains[oldId].size());
@@ -11322,6 +11323,7 @@ bool SMESH_MeshEditor::CreateFlatElementsOnFacesGroups(const std::vector<TIDSort
               if (!clonedNodes.count(node))
                 {
                   clone = meshDS->AddNode(node->X(), node->Y(), node->Z());
+                  copyPosition( node, clone );
                   clonedNodes[node] = clone;
                 }
               else
@@ -11338,6 +11340,7 @@ bool SMESH_MeshEditor::CreateFlatElementsOnFacesGroups(const std::vector<TIDSort
                   if (!intermediateNodes.count(node))
                     {
                       inter = meshDS->AddNode(node->X(), node->Y(), node->Z());
+                      copyPosition( node, inter );
                       intermediateNodes[node] = inter;
                     }
                   else
@@ -12281,4 +12284,46 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
     }
   }
   return nbAddedBnd;
+}
+
+//================================================================================
+/*!
+ * \brief Copy node position and set \a to node on the same geometry
+ */
+//================================================================================
+
+void SMESH_MeshEditor::copyPosition( const SMDS_MeshNode* from,
+                                     const SMDS_MeshNode* to )
+{
+  if ( !from || !to ) return;
+
+  SMDS_PositionPtr pos = from->GetPosition();
+  if ( !pos || from->getshapeId() < 1 ) return;
+
+  switch ( pos->GetTypeOfPosition() )
+  {
+  case SMDS_TOP_3DSPACE: break;
+
+  case SMDS_TOP_FACE:
+  {
+    const SMDS_FacePosition* fPos = static_cast< const SMDS_FacePosition* >( pos );
+    GetMeshDS()->SetNodeOnFace( to, from->getshapeId(),
+                                fPos->GetUParameter(), fPos->GetVParameter() );
+    break;
+  }
+  case SMDS_TOP_EDGE:
+  {
+    // WARNING: it is dangerous to set equal nodes on one EDGE!!!!!!!!
+    const SMDS_EdgePosition* ePos = static_cast< const SMDS_EdgePosition* >( pos );
+    GetMeshDS()->SetNodeOnEdge( to, from->getshapeId(), ePos->GetUParameter() );
+    break;
+  }
+  case SMDS_TOP_VERTEX:
+  {
+    GetMeshDS()->SetNodeOnVertex( to, from->getshapeId() );
+    break;
+  }
+  case SMDS_TOP_UNSPEC:
+  default:;
+  }
 }
