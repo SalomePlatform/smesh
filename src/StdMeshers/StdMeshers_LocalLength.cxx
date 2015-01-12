@@ -216,6 +216,8 @@ bool StdMeshers_LocalLength::SetParametersByMesh(const SMESH_Mesh*   theMesh,
   {
     const TopoDS_Edge& edge = TopoDS::Edge( edgeMap( iE ));
     Handle(Geom_Curve) C = BRep_Tool::Curve( edge, L, UMin, UMax );
+    if ( C.IsNull() )
+      continue;
     GeomAdaptor_Curve AdaptCurve(C, UMin, UMax);
 
     vector< double > params;

@@ -393,12 +393,13 @@ SMESH_DeviceActor
       vtkUnsignedCharArray* aCellTypesArray = vtkUnsignedCharArray::New();
       aCellTypesArray->SetNumberOfComponents( 1 );
       aCellTypesArray->Allocate( aNbCells * aCellTypesArray->GetNumberOfComponents() );
-      
+
       vtkIdList *anIdList = vtkIdList::New();
       anIdList->SetNumberOfIds(2);
-      
+
       Length2D::TValues::const_iterator anIter = aValues.begin();
-      for(vtkIdType aVtkId = 0; anIter != aValues.end(); anIter++,aVtkId++){
+      aNbCells = 0;
+      for(; anIter != aValues.end(); anIter++){
         const Length2D::Value& aValue = *anIter;
         int aNode[2] = {
           myVisualObj->GetNodeVTKId(aValue.myPntId[0]),
@@ -409,27 +410,30 @@ SMESH_DeviceActor
           anIdList->SetId( 1, aNode[1] );
           aConnectivity->InsertNextCell( anIdList );
           aCellTypesArray->InsertNextValue( VTK_LINE );
-          aScalars->SetValue(aVtkId,aValue.myLength);
+          aScalars->SetValue(aNbCells,aValue.myLength);
+          aNbCells++;
         }
       }
-      
+      aCellTypesArray->SetNumberOfTuples( aNbCells );
+      aScalars->SetNumberOfTuples( aNbCells );
+
       VTKViewer_CellLocationsArray* aCellLocationsArray = VTKViewer_CellLocationsArray::New();
       aCellLocationsArray->SetNumberOfComponents( 1 );
       aCellLocationsArray->SetNumberOfTuples( aNbCells );
-      
+
       aConnectivity->InitTraversal();
       for( vtkIdType idType = 0, *pts, npts; aConnectivity->GetNextCell( npts, pts ); idType++ )
         aCellLocationsArray->SetValue( idType, aConnectivity->GetTraversalLocation( npts ) );
-      
-      aDataSet->SetCells( aCellTypesArray, aCellLocationsArray,aConnectivity );
+
+      aDataSet->SetCells( aCellTypesArray, aCellLocationsArray, aConnectivity );
       SetUnstructuredGrid(aDataSet);
 
       aDataSet->GetCellData()->SetScalars(aScalars);
       aScalars->Delete();
-      
+
       theLookupTable->SetRange(aScalars->GetRange());
       theLookupTable->Build();
-      
+
       myMergeFilter->SetScalarsData(aDataSet);
       aDataSet->Delete();
     }
@@ -449,16 +453,17 @@ SMESH_DeviceActor
       vtkIdType aCellsSize = 3*aNbCells;
       vtkCellArray* aConnectivity = vtkCellArray::New();
       aConnectivity->Allocate( aCellsSize, 0 );
-      
+
       vtkUnsignedCharArray* aCellTypesArray = vtkUnsignedCharArray::New();
       aCellTypesArray->SetNumberOfComponents( 1 );
       aCellTypesArray->Allocate( aNbCells * aCellTypesArray->GetNumberOfComponents() );
-      
+
       vtkIdList *anIdList = vtkIdList::New();
       anIdList->SetNumberOfIds(2);
-      
+
       MultiConnection2D::MValues::const_iterator anIter = aValues.begin();
-      for(vtkIdType aVtkId = 0; anIter != aValues.end(); anIter++,aVtkId++){
+      aNbCells = 0;
+      for(; anIter != aValues.end(); anIter++){
         const MultiConnection2D::Value& aValue = (*anIter).first;
         int aNode[2] = {
           myVisualObj->GetNodeVTKId(aValue.myPntId[0]),
@@ -469,27 +474,30 @@ SMESH_DeviceActor
           anIdList->SetId( 1, aNode[1] );
           aConnectivity->InsertNextCell( anIdList );
           aCellTypesArray->InsertNextValue( VTK_LINE );
-          aScalars->SetValue(aVtkId,(*anIter).second);
+          aScalars->SetValue( aNbCells,(*anIter).second);
+          aNbCells++;
         }
       }
-      
+      aCellTypesArray->SetNumberOfTuples( aNbCells );
+      aScalars->SetNumberOfTuples( aNbCells );
+
       VTKViewer_CellLocationsArray* aCellLocationsArray = VTKViewer_CellLocationsArray::New();
       aCellLocationsArray->SetNumberOfComponents( 1 );
       aCellLocationsArray->SetNumberOfTuples( aNbCells );
-      
+
       aConnectivity->InitTraversal();
       for( vtkIdType idType = 0, *pts, npts; aConnectivity->GetNextCell( npts, pts ); idType++ )
         aCellLocationsArray->SetValue( idType, aConnectivity->GetTraversalLocation( npts ) );
-      
+
       aDataSet->SetCells( aCellTypesArray, aCellLocationsArray,aConnectivity );
       SetUnstructuredGrid(aDataSet);
 
       aDataSet->GetCellData()->SetScalars(aScalars);
       aScalars->Delete();
-      
+
       theLookupTable->SetRange(aScalars->GetRange());
       theLookupTable->Build();
-      
+
       myMergeFilter->SetScalarsData(aDataSet);
       aDataSet->Delete();
     }

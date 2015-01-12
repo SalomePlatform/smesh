@@ -3,15 +3,18 @@
 \page extrusion_page Extrusion
 
 \n Extrusion is used to build mesh elements of plus one
-dimension than the input ones. Any node, segment or 2D element can be
-extruded. Each type of elements has a corresponding type of extruded elements:
+dimension than the input ones. Boundary elements around elements of
+plus one dimension are additionally created. All created elements
+can be automatically grouped.
+<p>Any node, segment or 2D element can be extruded. Each type of
+elements is extruded into a corresponding type of result elements:
 <table>
-<tr><td><b>Extruded element</b></td><td><b> Result elements </b></td></tr>
-<tr><td>Node              </td><td> Segments </td></tr>
-<tr><td>Segment           </td><td> Quadrilaterals </td></tr>
-<tr><td>Triangle          </td><td> Pentahedrons </td></tr>
-<tr><td>Quadrilateral     </td><td> Hexahedrons </td></tr>
-<tr><td>Polygon           </td><td> Polyhedrons </td></tr>
+<tr><td><b>Extruded element</b></td><td><b> Result element </b></td></tr>
+<tr><td>Node              </td><td> Segment </td></tr>
+<tr><td>Segment           </td><td> Quadrilateral </td></tr>
+<tr><td>Triangle          </td><td> Pentahedron </td></tr>
+<tr><td>Quadrilateral     </td><td> Hexahedron </td></tr>
+<tr><td>Polygon           </td><td> Polyhedron </td></tr>
 <tr><td>Hexagonal polygon </td><td> Hexagonal prism </td></tr>
 </table>
 
@@ -35,7 +38,8 @@ The following dialog common for line and planar elements will appear:
 
 <li>In this dialog:
 <ul>
-  <li>Select the type of elements which will be extruded (0D, 1D or 2D).</li>
+  <li>Select the type of elements which will be extruded (nodes, 1D or
+  2D elements).</li>
   <li>Specify the IDs of the elements which will be extruded by one
     following means:
     <ul>
@@ -62,9 +66,15 @@ The following dialog common for line and planar elements will appear:
     <li>specify the distance of extrusion along the vector.</li>
   </ul>
   <li>Specify the number of steps.</li>
-  <li>If you activate <b>Generate Groups</b> check-box, the created
-    elements contained in groups will be included into new groups named
-    by pattern "<old group name>_extruded" and "<old group name>_top".</li>
+  <li>If you activate <b>Generate Groups</b> check-box, the <em>result elements</em>
+    created from <em>extruded elements</em> contained in groups will be
+    included into new groups named by pattern "<old group
+    name>_extruded" and "<old group name>_top". For example if an
+    extruded quadrangle is included in \a Group_1 group then result
+    hexahedra will be included in \a Group_1_extruded group and a
+    quadrangle created at the "top" of extruded mesh will
+    be included in \a Group_1_top group. <br>This check-box is active
+    only if there are some groups in the mesh.</li>
 </ul>
 
 <li>Click \b Apply or <b> Apply and Close</b>  button to confirm the operation.</li>

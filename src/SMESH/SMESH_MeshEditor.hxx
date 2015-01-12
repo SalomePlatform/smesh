@@ -686,6 +686,9 @@ public:
                     std::map< const SMDS_MeshNode*, const SMDS_MeshNode* >& theNodeNodeMap,
                     const bool                                              theIsDoubleElem );
 
+  void copyPosition( const SMDS_MeshNode* from,
+                     const SMDS_MeshNode* to );
+
 private:
 
   SMESH_Mesh *            myMesh;

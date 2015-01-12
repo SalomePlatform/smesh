@@ -213,7 +213,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
     existingNodes.insert( n );
   }
 
-  // get EDGESs and their ids and get existing nodes on EDGEs
+  // get EDGEs and their ids and get existing nodes on EDGEs
   vector< TopoDS_Edge > edges;
   for ( exp.Init( theShape, TopAbs_EDGE ); exp.More(); exp.Next() )
   {
