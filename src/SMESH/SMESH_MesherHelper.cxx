@@ -713,9 +713,11 @@ bool SMESH_MesherHelper::CheckNodeUV(const TopoDS_Face&   F,
                                      double               distXYZ[4]) const
 {
   int  shapeID = n->getshapeId();
-  bool infinit = ( Precision::IsInfinite( uv.X() ) || Precision::IsInfinite( uv.Y() ));
-  bool zero    = ( uv.X() == 0. && uv.Y() == 0. );
-  if ( force || toCheckPosOnShape( shapeID ) || infinit || zero )
+  bool infinit;
+  if (( infinit = ( Precision::IsInfinite( uv.X() ) || Precision::IsInfinite( uv.Y() ))) ||
+      ( force ) ||
+      ( uv.X() == 0. && uv.Y() == 0. ) ||
+      ( toCheckPosOnShape( shapeID )))
   {
     // check that uv is correct
     TopLoc_Location loc;
@@ -949,9 +951,11 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
                                     double               distXYZ[4]) const
 {
   int  shapeID = n->getshapeId();
-  bool infinit = Precision::IsInfinite( u );
-  bool zero    = ( u == 0. );
-  if ( force || infinit || zero || toCheckPosOnShape( shapeID ))
+  bool infinit;
+  if (( infinit = Precision::IsInfinite( u )) ||
+      ( force ) ||
+      ( u == 0. ) ||
+      ( toCheckPosOnShape( shapeID )))
   {
     TopLoc_Location loc; double f,l;
     Handle(Geom_Curve) curve = BRep_Tool::Curve( E,loc,f,l );
@@ -1050,7 +1054,10 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
 //           set a medium node on
 //param    : useCurSubShape - if true, returns the shape set via SetSubShape()
 //           if any
-// calling GetMediumPos() with useCurSubShape=true is OK only for the
+//param    : expectedSupport - shape type corresponding to element being created,
+//                             e.g TopAbs_EDGE if SMDSAbs_Edge is created
+//                             basing on \a n1 and \a n2
+// Calling GetMediumPos() with useCurSubShape=true is OK only for the
 // case where the lower dim mesh is already constructed and converted to quadratic,
 // else, nodes on EDGEs are assigned to FACE, for example.
 //=======================================================================
@@ -1058,7 +1065,8 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
 std::pair<int, TopAbs_ShapeEnum>
 SMESH_MesherHelper::GetMediumPos(const SMDS_MeshNode* n1,
                                  const SMDS_MeshNode* n2,
-                                 const bool           useCurSubShape)
+                                 const bool           useCurSubShape,
+                                 TopAbs_ShapeEnum     expectedSupport)
 {
   if ( useCurSubShape && !myShape.IsNull() )
     return std::make_pair( myShapeID, myShape.ShapeType() );
@@ -1077,17 +1085,19 @@ SMESH_MesherHelper::GetMediumPos(const SMDS_MeshNode* n1,
     shapeID = n2->getshapeId();
     shape = GetSubShapeByNode( n1, GetMeshDS() );
   }
-  else
+  else // 2 different shapes
   {
     const SMDS_TypeOfPosition Pos1 = n1->GetPosition()->GetTypeOfPosition();
     const SMDS_TypeOfPosition Pos2 = n2->GetPosition()->GetTypeOfPosition();
 
     if ( Pos1 == SMDS_TOP_3DSPACE || Pos2 == SMDS_TOP_3DSPACE )
     {
+      // in SOLID
     }
     else if ( Pos1 == SMDS_TOP_FACE || Pos2 == SMDS_TOP_FACE )
     {
-      if ( Pos1 != SMDS_TOP_FACE || Pos2 != SMDS_TOP_FACE )
+      // in FACE or SOLID
+      if ( Pos1 != SMDS_TOP_FACE || Pos2 != SMDS_TOP_FACE ) // not 2 FACEs
       {
         if ( Pos1 != SMDS_TOP_FACE ) std::swap( n1,n2 );
         TopoDS_Shape F = GetSubShapeByNode( n1, GetMeshDS() );
@@ -1112,7 +1122,7 @@ SMESH_MesherHelper::GetMediumPos(const SMDS_MeshNode* n1,
       shape = GetCommonAncestor( V1, V2, *myMesh, TopAbs_EDGE );
       if ( shape.IsNull() ) shape = GetCommonAncestor( V1, V2, *myMesh, TopAbs_FACE );
     }
-    else // VERTEX and EDGE
+    else // on VERTEX and EDGE
     {
       if ( Pos1 != SMDS_TOP_VERTEX ) std::swap( n1,n2 );
       TopoDS_Shape V = GetSubShapeByNode( n1, GetMeshDS() );
@@ -1128,7 +1138,41 @@ SMESH_MesherHelper::GetMediumPos(const SMDS_MeshNode* n1,
   {
     if ( shapeID < 1 )
       shapeID = GetMeshDS()->ShapeToIndex( shape );
-    shapeType = shape.ShapeType();
+    shapeType = shape.ShapeType(); // EDGE or FACE
+
+    if ( expectedSupport < shapeType &&
+         expectedSupport != TopAbs_SHAPE &&
+         !myShape.IsNull() &&
+         myShape.ShapeType() == expectedSupport )
+    {
+      // e.g. a side of triangle connects nodes on the same EDGE but does not
+      // lie on this EDGE (an arc with a coarse mesh)
+      // =>  shapeType == TopAbs_EDGE, expectedSupport == TopAbs_FACE;
+      // hope that myShape is a right shape, return it if the found shape
+      // has converted elements of corresponding dim (segments in our example)
+      int nbConvertedElems = 0;
+      SMDSAbs_ElementType type = ( shapeType == TopAbs_FACE ? SMDSAbs_Face : SMDSAbs_Edge );
+      for ( int iN = 0; iN < 2; ++iN )
+      {
+        const SMDS_MeshNode* n = iN ? n2 : n1;
+        SMDS_ElemIteratorPtr it = n->GetInverseElementIterator( type );
+        while ( it->more() )
+        {
+          const SMDS_MeshElement* elem = it->next();
+          if ( elem->getshapeId() == shapeID &&
+               elem->IsQuadratic() )
+          {
+            ++nbConvertedElems;
+            break;
+          }
+        }
+      }
+      if ( nbConvertedElems == 2 )
+      {
+        shapeType = myShape.ShapeType();
+        shapeID   = myShapeID;
+      }
+    }
   }
   return make_pair( shapeID, shapeType );
 }
@@ -1199,11 +1243,11 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
       }
       else
       {
-        PShapeIteratorPtr it = GetAncestors(shape, *GetMesh(), TopAbs_FACE );
+        PShapeIteratorPtr it = GetAncestors( shape, *GetMesh(), TopAbs_FACE );
         while ( const TopoDS_Shape* face = it->next() )
         {
           faceID = meshDS->ShapeToIndex( *face );
-          itMapWithIdFace = faceId2nbNodes.insert( std::make_pair( faceID, 0 ) ).first;
+          itMapWithIdFace = faceId2nbNodes.insert( std::make_pair( faceID, 0 )).first;
           itMapWithIdFace->second++;
         }
       }
@@ -1431,7 +1475,8 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
 
 const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
                                                        const SMDS_MeshNode* n2,
-                                                       bool                 force3d)
+                                                       bool                 force3d,
+                                                       TopAbs_ShapeEnum     expectedSupport)
 {
   // Find existing node
 
@@ -1457,7 +1502,7 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
   bool uvOK[2] = { false, false };
   const bool useCurSubShape = ( !myShape.IsNull() && myShape.ShapeType() == TopAbs_EDGE );
 
-  pair<int, TopAbs_ShapeEnum> pos = GetMediumPos( n1, n2, useCurSubShape );
+  pair<int, TopAbs_ShapeEnum> pos = GetMediumPos( n1, n2, useCurSubShape, expectedSupport );
 
   // get positions of the given nodes on shapes
   if ( pos.second == TopAbs_FACE )
@@ -1776,9 +1821,9 @@ SMDS_MeshFace* SMESH_MesherHelper::AddFace(const SMDS_MeshNode* n1,
       elem = meshDS->AddFace(n1, n2, n3);
   }
   else {
-    const SMDS_MeshNode* n12 = GetMediumNode(n1,n2,force3d);
-    const SMDS_MeshNode* n23 = GetMediumNode(n2,n3,force3d);
-    const SMDS_MeshNode* n31 = GetMediumNode(n3,n1,force3d);
+    const SMDS_MeshNode* n12 = GetMediumNode( n1, n2, force3d, TopAbs_FACE );
+    const SMDS_MeshNode* n23 = GetMediumNode( n2, n3, force3d, TopAbs_FACE );
+    const SMDS_MeshNode* n31 = GetMediumNode( n3, n1, force3d, TopAbs_FACE );
     if(myCreateBiQuadratic)
     {
      const SMDS_MeshNode* nCenter = GetCentralNode(n1, n2, n3, n12, n23, n31, force3d);
@@ -1842,10 +1887,10 @@ SMDS_MeshFace* SMESH_MesherHelper::AddFace(const SMDS_MeshNode* n1,
       elem = meshDS->AddFace(n1, n2, n3, n4);
   }
   else {
-    const SMDS_MeshNode* n12 = GetMediumNode(n1,n2,force3d);
-    const SMDS_MeshNode* n23 = GetMediumNode(n2,n3,force3d);
-    const SMDS_MeshNode* n34 = GetMediumNode(n3,n4,force3d);
-    const SMDS_MeshNode* n41 = GetMediumNode(n4,n1,force3d);
+    const SMDS_MeshNode* n12 = GetMediumNode( n1, n2, force3d, TopAbs_FACE );
+    const SMDS_MeshNode* n23 = GetMediumNode( n2, n3, force3d, TopAbs_FACE );
+    const SMDS_MeshNode* n34 = GetMediumNode( n3, n4, force3d, TopAbs_FACE );
+    const SMDS_MeshNode* n41 = GetMediumNode( n4, n1, force3d, TopAbs_FACE );
     if(myCreateBiQuadratic)
     {
      const SMDS_MeshNode* nCenter = GetCentralNode(n1, n2, n3, n4, n12, n23, n34, n41, force3d);
@@ -1892,7 +1937,7 @@ SMDS_MeshFace* SMESH_MesherHelper::AddPolygonalFace (const vector<const SMDS_Mes
     {
       const SMDS_MeshNode* n1 = nodes[i];
       const SMDS_MeshNode* n2 = nodes[(i+1)%nodes.size()];
-      const SMDS_MeshNode* n12 = GetMediumNode(n1,n2,force3d);
+      const SMDS_MeshNode* n12 = GetMediumNode( n1, n2, force3d, TopAbs_FACE );
       newNodes.push_back( n1 );
       newNodes.push_back( n12 );
     }
@@ -1930,20 +1975,20 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
       elem = meshDS->AddVolume(n1, n2, n3, n4, n5, n6);
   }
   else {
-    const SMDS_MeshNode* n12 = GetMediumNode(n1,n2,force3d);
-    const SMDS_MeshNode* n23 = GetMediumNode(n2,n3,force3d);
-    const SMDS_MeshNode* n31 = GetMediumNode(n3,n1,force3d);
+    const SMDS_MeshNode* n12 = GetMediumNode( n1, n2, force3d, TopAbs_SOLID );
+    const SMDS_MeshNode* n23 = GetMediumNode( n2, n3, force3d, TopAbs_SOLID );
+    const SMDS_MeshNode* n31 = GetMediumNode( n3, n1, force3d, TopAbs_SOLID );
 
-    const SMDS_MeshNode* n45 = GetMediumNode(n4,n5,force3d);
-    const SMDS_MeshNode* n56 = GetMediumNode(n5,n6,force3d);
-    const SMDS_MeshNode* n64 = GetMediumNode(n6,n4,force3d);
+    const SMDS_MeshNode* n45 = GetMediumNode( n4, n5, force3d, TopAbs_SOLID );
+    const SMDS_MeshNode* n56 = GetMediumNode( n5, n6, force3d, TopAbs_SOLID );
+    const SMDS_MeshNode* n64 = GetMediumNode( n6, n4, force3d, TopAbs_SOLID );
 
-    const SMDS_MeshNode* n14 = GetMediumNode(n1,n4,force3d);
-    const SMDS_MeshNode* n25 = GetMediumNode(n2,n5,force3d);
-    const SMDS_MeshNode* n36 = GetMediumNode(n3,n6,force3d);
+    const SMDS_MeshNode* n14 = GetMediumNode( n1, n4, force3d, TopAbs_SOLID );
+    const SMDS_MeshNode* n25 = GetMediumNode( n2, n5, force3d, TopAbs_SOLID );
+    const SMDS_MeshNode* n36 = GetMediumNode( n3, n6, force3d, TopAbs_SOLID );
 
     if(id)
-      elem = meshDS->AddVolumeWithID(n1, n2, n3, n4, n5, n6, 
+      elem = meshDS->AddVolumeWithID(n1, n2, n3, n4, n5, n6,
                                      n12, n23, n31, n45, n56, n64, n14, n25, n36, id);
     else
       elem = meshDS->AddVolume(n1, n2, n3, n4, n5, n6,
@@ -1964,7 +2009,7 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
                                                const SMDS_MeshNode* n2,
                                                const SMDS_MeshNode* n3,
                                                const SMDS_MeshNode* n4,
-                                               const int id, 
+                                               const int id,
                                                const bool force3d)
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
@@ -1976,13 +2021,13 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
       elem = meshDS->AddVolume(n1, n2, n3, n4);
   }
   else {
-    const SMDS_MeshNode* n12 = GetMediumNode(n1,n2,force3d);
-    const SMDS_MeshNode* n23 = GetMediumNode(n2,n3,force3d);
-    const SMDS_MeshNode* n31 = GetMediumNode(n3,n1,force3d);
+    const SMDS_MeshNode* n12 = GetMediumNode( n1, n2, force3d, TopAbs_SOLID );
+    const SMDS_MeshNode* n23 = GetMediumNode( n2, n3, force3d, TopAbs_SOLID );
+    const SMDS_MeshNode* n31 = GetMediumNode( n3, n1, force3d, TopAbs_SOLID );
 
-    const SMDS_MeshNode* n14 = GetMediumNode(n1,n4,force3d);
-    const SMDS_MeshNode* n24 = GetMediumNode(n2,n4,force3d);
-    const SMDS_MeshNode* n34 = GetMediumNode(n3,n4,force3d);
+    const SMDS_MeshNode* n14 = GetMediumNode( n1, n4, force3d, TopAbs_SOLID );
+    const SMDS_MeshNode* n24 = GetMediumNode( n2, n4, force3d, TopAbs_SOLID );
+    const SMDS_MeshNode* n34 = GetMediumNode( n3, n4, force3d, TopAbs_SOLID );
 
     if(id)
       elem = meshDS->AddVolumeWithID(n1, n2, n3, n4, n12, n23, n31, n14, n24, n34, id);
@@ -2005,7 +2050,7 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
                                                const SMDS_MeshNode* n3,
                                                const SMDS_MeshNode* n4,
                                                const SMDS_MeshNode* n5,
-                                               const int id, 
+                                               const int id,
                                                const bool force3d)
 {
   SMDS_MeshVolume* elem = 0;
@@ -2016,15 +2061,15 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
       elem = GetMeshDS()->AddVolume(n1, n2, n3, n4, n5);
   }
   else {
-    const SMDS_MeshNode* n12 = GetMediumNode(n1,n2,force3d);
-    const SMDS_MeshNode* n23 = GetMediumNode(n2,n3,force3d);
-    const SMDS_MeshNode* n34 = GetMediumNode(n3,n4,force3d);
-    const SMDS_MeshNode* n41 = GetMediumNode(n4,n1,force3d);
+    const SMDS_MeshNode* n12 = GetMediumNode( n1, n2, force3d, TopAbs_SOLID );
+    const SMDS_MeshNode* n23 = GetMediumNode( n2, n3, force3d, TopAbs_SOLID );
+    const SMDS_MeshNode* n34 = GetMediumNode( n3, n4, force3d, TopAbs_SOLID );
+    const SMDS_MeshNode* n41 = GetMediumNode( n4, n1, force3d, TopAbs_SOLID );
 
-    const SMDS_MeshNode* n15 = GetMediumNode(n1,n5,force3d);
-    const SMDS_MeshNode* n25 = GetMediumNode(n2,n5,force3d);
-    const SMDS_MeshNode* n35 = GetMediumNode(n3,n5,force3d);
-    const SMDS_MeshNode* n45 = GetMediumNode(n4,n5,force3d);
+    const SMDS_MeshNode* n15 = GetMediumNode( n1, n5, force3d, TopAbs_SOLID );
+    const SMDS_MeshNode* n25 = GetMediumNode( n2, n5, force3d, TopAbs_SOLID );
+    const SMDS_MeshNode* n35 = GetMediumNode( n3, n5, force3d, TopAbs_SOLID );
+    const SMDS_MeshNode* n45 = GetMediumNode( n4, n5, force3d, TopAbs_SOLID );
 
     if(id)
       elem = GetMeshDS()->AddVolumeWithID ( n1,  n2,  n3,  n4,  n5,
@@ -2044,7 +2089,7 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
 
 //=======================================================================
 //function : AddVolume
-//purpose  : Creates bi-quadratic, quadratic or linear hexahedron
+//purpose  : Creates tri-quadratic, quadratic or linear hexahedron
 //=======================================================================
 
 SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
@@ -2067,28 +2112,28 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
       elem = meshDS->AddVolume(n1, n2, n3, n4, n5, n6, n7, n8);
   }
   else {
-    const SMDS_MeshNode* n12 = GetMediumNode(n1,n2,force3d);
-    const SMDS_MeshNode* n23 = GetMediumNode(n2,n3,force3d);
-    const SMDS_MeshNode* n34 = GetMediumNode(n3,n4,force3d);
-    const SMDS_MeshNode* n41 = GetMediumNode(n4,n1,force3d);
+    const SMDS_MeshNode* n12 = GetMediumNode( n1, n2, force3d, TopAbs_SOLID );
+    const SMDS_MeshNode* n23 = GetMediumNode( n2, n3, force3d, TopAbs_SOLID );
+    const SMDS_MeshNode* n34 = GetMediumNode( n3, n4, force3d, TopAbs_SOLID );
+    const SMDS_MeshNode* n41 = GetMediumNode( n4, n1, force3d, TopAbs_SOLID );
 
-    const SMDS_MeshNode* n56 = GetMediumNode(n5,n6,force3d);
-    const SMDS_MeshNode* n67 = GetMediumNode(n6,n7,force3d);
-    const SMDS_MeshNode* n78 = GetMediumNode(n7,n8,force3d);
-    const SMDS_MeshNode* n85 = GetMediumNode(n8,n5,force3d);
+    const SMDS_MeshNode* n56 = GetMediumNode( n5, n6, force3d, TopAbs_SOLID );
+    const SMDS_MeshNode* n67 = GetMediumNode( n6, n7, force3d, TopAbs_SOLID );
+    const SMDS_MeshNode* n78 = GetMediumNode( n7, n8, force3d, TopAbs_SOLID );
+    const SMDS_MeshNode* n85 = GetMediumNode( n8, n5, force3d, TopAbs_SOLID );
 
-    const SMDS_MeshNode* n15 = GetMediumNode(n1,n5,force3d);
-    const SMDS_MeshNode* n26 = GetMediumNode(n2,n6,force3d);
-    const SMDS_MeshNode* n37 = GetMediumNode(n3,n7,force3d);
-    const SMDS_MeshNode* n48 = GetMediumNode(n4,n8,force3d);
+    const SMDS_MeshNode* n15 = GetMediumNode( n1, n5, force3d, TopAbs_SOLID );
+    const SMDS_MeshNode* n26 = GetMediumNode( n2, n6, force3d, TopAbs_SOLID );
+    const SMDS_MeshNode* n37 = GetMediumNode( n3, n7, force3d, TopAbs_SOLID );
+    const SMDS_MeshNode* n48 = GetMediumNode( n4, n8, force3d, TopAbs_SOLID );
     if(myCreateBiQuadratic)
     {
-      const SMDS_MeshNode* n1234 = GetCentralNode(n1,n2,n3,n4,n12,n23,n34,n41,force3d);
-      const SMDS_MeshNode* n1256 = GetCentralNode(n1,n2,n5,n6,n12,n26,n56,n15,force3d);
-      const SMDS_MeshNode* n2367 = GetCentralNode(n2,n3,n6,n7,n23,n37,n67,n26,force3d);
-      const SMDS_MeshNode* n3478 = GetCentralNode(n3,n4,n7,n8,n34,n48,n78,n37,force3d);
-      const SMDS_MeshNode* n1458 = GetCentralNode(n1,n4,n5,n8,n41,n48,n15,n85,force3d);
-      const SMDS_MeshNode* n5678 = GetCentralNode(n5,n6,n7,n8,n56,n67,n78,n85,force3d);
+      const SMDS_MeshNode* n1234 = GetCentralNode( n1,n2,n3,n4,n12,n23,n34,n41,force3d );
+      const SMDS_MeshNode* n1256 = GetCentralNode( n1,n2,n5,n6,n12,n26,n56,n15,force3d );
+      const SMDS_MeshNode* n2367 = GetCentralNode( n2,n3,n6,n7,n23,n37,n67,n26,force3d );
+      const SMDS_MeshNode* n3478 = GetCentralNode( n3,n4,n7,n8,n34,n48,n78,n37,force3d );
+      const SMDS_MeshNode* n1458 = GetCentralNode( n1,n4,n5,n8,n41,n48,n15,n85,force3d );
+      const SMDS_MeshNode* n5678 = GetCentralNode( n5,n6,n7,n8,n56,n67,n78,n85,force3d );
 
       vector<gp_XYZ> pointsOnShapes( SMESH_Block::ID_Shell );
 
@@ -2109,9 +2154,9 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
       pointsOnShapes[ SMESH_Block::ID_Ex11 ] = SMESH_TNodeXYZ( n78 );
       pointsOnShapes[ SMESH_Block::ID_E0y1 ] = SMESH_TNodeXYZ( n12 );
       pointsOnShapes[ SMESH_Block::ID_E1y1 ] = SMESH_TNodeXYZ( n56 );
-      pointsOnShapes[ SMESH_Block::ID_E00z ] = SMESH_TNodeXYZ( n41 );    
-      pointsOnShapes[ SMESH_Block::ID_E10z ] = SMESH_TNodeXYZ( n85 );    
-      pointsOnShapes[ SMESH_Block::ID_E01z ] = SMESH_TNodeXYZ( n23 );    
+      pointsOnShapes[ SMESH_Block::ID_E00z ] = SMESH_TNodeXYZ( n41 );
+      pointsOnShapes[ SMESH_Block::ID_E10z ] = SMESH_TNodeXYZ( n85 );
+      pointsOnShapes[ SMESH_Block::ID_E01z ] = SMESH_TNodeXYZ( n23 );
       pointsOnShapes[ SMESH_Block::ID_E11z ] = SMESH_TNodeXYZ( n67 );
 
       pointsOnShapes[ SMESH_Block::ID_Fxy0 ] = SMESH_TNodeXYZ( n3478 );
@@ -2226,7 +2271,7 @@ SMESH_MesherHelper::AddPolyhedralVolume (const std::vector<const SMDS_MeshNode*>
 //         if ( n1->GetPosition()->GetTypeOfPosition() != SMDS_TOP_3DSPACE &&
 //              n2->GetPosition()->GetTypeOfPosition() != SMDS_TOP_3DSPACE )
         {
-          const SMDS_MeshNode* n12 = GetMediumNode(n1,n2,force3d);
+          const SMDS_MeshNode* n12 = GetMediumNode( n1, n2, force3d, TopAbs_SOLID );
           newNodes.push_back( n12 );
           newQuantities.back()++;
         }
@@ -2351,10 +2396,38 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap &            theParam2
     for ( int iE = 0; edge != theBaseSide.end(); ++edge, ++iE )
     {
       map< double, const SMDS_MeshNode*> sortedBaseNN;
-      SMESH_Algo::GetSortedNodesOnEdge( theMesh, *edge,/*noMedium=*/true, sortedBaseNN);
+      SMESH_Algo::GetSortedNodesOnEdge( theMesh, *edge,/*noMedium=*/true, sortedBaseNN );
+
+      map< double, const SMDS_MeshNode*>::iterator u_n;
+      // pb with mesh_Projection_2D_00/A1 fixed by adding expectedSupport arg to GetMediumPos()
+      // so the following solution is commented (hope forever :)
+      //
+      // SMESH_Algo::GetSortedNodesOnEdge( theMesh, *edge,/*noMedium=*/true, sortedBaseNN,
+      // // SMDSAbs_Edge here is needed to be coherent with
+      // // StdMeshers_FaceSide used by Quadrangle to get nodes
+      // // on EDGE; else pb in mesh_Projection_2D_00/A1 where a
+      // // medium node on EDGE is medium in a triangle but not
+      // // in a segment
+      // SMDSAbs_Edge );
+      // if ( faceSubMesh->GetElements()->next()->IsQuadratic() )
+      //   // filter off nodes medium in faces on theFace (same pb with mesh_Projection_2D_00/A1)
+      //   for ( u_n = sortedBaseNN.begin(); u_n != sortedBaseNN.end() ;     )
+      //   {
+      //     const SMDS_MeshNode* node = u_n->second;
+      //     SMDS_ElemIteratorPtr faceIt = node->GetInverseElementIterator( SMDSAbs_Face );
+      //     if ( faceIt->more() && node ) {
+      //       const SMDS_MeshElement* face = faceIt->next();
+      //       if ( faceSubMesh->Contains( face ) && face->IsMediumNode( node ))
+      //         node = 0;
+      //     }
+      //     if ( !node )
+      //       sortedBaseNN.erase( u_n++ );
+      //     else
+      //       ++u_n;
+      //   }
       if ( sortedBaseNN.empty() ) continue;
 
-      map< double, const SMDS_MeshNode*>::iterator u_n = sortedBaseNN.begin();
+      u_n = sortedBaseNN.begin();
       if ( theProxyMesh ) // from sortedBaseNN remove nodes not shared by faces of faceSubMesh
       {
         const SMDS_MeshNode* n1 = (++sortedBaseNN.begin())->second;
@@ -4222,7 +4295,7 @@ namespace { // Structures used by FixQuadraticElements()
                 continue;
               gp_XYZ edgeDir  = SMESH_TNodeXYZ( nOnEdge[0] ) - SMESH_TNodeXYZ( nOnEdge[1] );
               gp_XYZ edgeNorm = faceNorm ^ edgeDir;
-              n = theHelper.GetMediumNode( nOnEdge[0], nOnEdge[1], true );
+              n = theHelper.GetMediumNode( nOnEdge[0], nOnEdge[1], true ); // find n, not create 
               gp_XYZ pN0     = SMESH_TNodeXYZ( nOnEdge[0] );
               gp_XYZ pMedium = SMESH_TNodeXYZ( n );                   // on-edge node location
               gp_XYZ pFaceN  = SMESH_TNodeXYZ( nOnFace );             // on-face node location

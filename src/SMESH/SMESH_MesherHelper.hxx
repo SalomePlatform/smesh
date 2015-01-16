@@ -594,10 +594,14 @@ public:
    *  \param force3d - true means node creation at the middle between the
    *                   two given nodes, else node position is found on its
    *                   supporting geometrical shape, if any.
+   *  \param expectedSupport - shape type corresponding to element being created
+   *                           , e.g TopAbs_EDGE if SMDSAbs_Edge is created
+   *                           basing on \a n1 and \a n2
    */
   const SMDS_MeshNode* GetMediumNode(const SMDS_MeshNode* n1,
                                      const SMDS_MeshNode* n2,
-                                     const bool force3d);
+                                     const bool           force3d,
+                                     TopAbs_ShapeEnum     expectedSupport=TopAbs_SHAPE);
   /*!
    * \brief Return existing or create a new central node for a quardilateral
    *       quadratic face given its 8 nodes.
@@ -631,7 +635,8 @@ public:
    */
   std::pair<int, TopAbs_ShapeEnum> GetMediumPos(const SMDS_MeshNode* n1,
                                                 const SMDS_MeshNode* n2,
-                                                const bool           useCurSubShape=false);
+                                                const bool           useCurSubShape=false,
+                                                TopAbs_ShapeEnum     expectedSupport=TopAbs_SHAPE);
   /*!
    * \brief Add a link in my data structure
    */
