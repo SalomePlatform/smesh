@@ -579,7 +579,7 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
     const SMDS_FacePosition* fpos = static_cast<const SMDS_FacePosition*>( Pos );
     uv.SetCoord( fpos->GetUParameter(), fpos->GetVParameter() );
     if ( check )
-      uvOK = CheckNodeUV( F, n, uv.ChangeCoord(), 10*getFaceMaxTol( F ));
+      uvOK = CheckNodeUV( F, n, uv.ChangeCoord(), 2.*getFaceMaxTol( F )); // 2. from 22830
   }
   else if ( Pos->GetTypeOfPosition() == SMDS_TOP_EDGE )
   {
@@ -595,7 +595,7 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
     if ( validU ) uv = C2d->Value( u );
     else          uv.SetCoord( Precision::Infinite(),0.);
     if ( check || !validU )
-      uvOK = CheckNodeUV( F, n, uv.ChangeCoord(), 10*getFaceMaxTol( F ),/*force=*/ !validU );
+      uvOK = CheckNodeUV( F, n, uv.ChangeCoord(), 2.*getFaceMaxTol( F ),/*force=*/ !validU );
 
     // for a node on a seam EDGE select one of UVs on 2 pcurves
     if ( n2 && IsSeamShape( edgeID ))
@@ -691,10 +691,10 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
   }
   else
   {
-    uvOK = CheckNodeUV( F, n, uv.ChangeCoord(), 10*getFaceMaxTol( F ));
+    uvOK = CheckNodeUV( F, n, uv.ChangeCoord(), 2.*getFaceMaxTol( F ));
   }
 
-  if ( check )
+  if ( check && !uvOK )
     *check = uvOK;
 
   return uv.XY();
@@ -1415,21 +1415,20 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
 
   TopoDS_Face F;
   gp_XY       uvAvg;
-  bool        badTria=false;
 
   if ( shapeType == TopAbs_FACE )
   {
     F = TopoDS::Face( meshDS->IndexToShape( faceID ));
-    bool check;
-    gp_XY uv1  = GetNodeUV( F, n1, n23, &check );
-    gp_XY uv2  = GetNodeUV( F, n2, n31, &check );
-    gp_XY uv3  = GetNodeUV( F, n3, n12, &check );
-    gp_XY uv12 = GetNodeUV( F, n12, n3, &check );
-    gp_XY uv23 = GetNodeUV( F, n23, n1, &check );
-    gp_XY uv31 = GetNodeUV( F, n31, n2, &check );
+    bool checkOK = true, badTria = false;
+    gp_XY uv1  = GetNodeUV( F, n1, n23, &checkOK );
+    gp_XY uv2  = GetNodeUV( F, n2, n31, &checkOK );
+    gp_XY uv3  = GetNodeUV( F, n3, n12, &checkOK );
+    gp_XY uv12 = GetNodeUV( F, n12, n3, &checkOK );
+    gp_XY uv23 = GetNodeUV( F, n23, n1, &checkOK );
+    gp_XY uv31 = GetNodeUV( F, n31, n2, &checkOK );
     uvAvg = GetCenterUV( uv1,uv2,uv3, uv12,uv23,uv31, &badTria );
-    if ( badTria )
-      force3d = false;
+    if ( badTria || !checkOK )
+      force3d = true;
   }
 
   // Create a central node
@@ -1499,7 +1498,7 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
   int faceID = -1, edgeID = -1;
   TopoDS_Edge E; double u [2];
   TopoDS_Face F; gp_XY  uv[2];
-  bool uvOK[2] = { false, false };
+  bool uvOK[2] = { true, true };
   const bool useCurSubShape = ( !myShape.IsNull() && myShape.ShapeType() == TopAbs_EDGE );
 
   pair<int, TopAbs_ShapeEnum> pos = GetMediumPos( n1, n2, useCurSubShape, expectedSupport );
@@ -4990,17 +4989,28 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
       // nodes
       nodes.assign( tria->begin_nodes(), tria->end_nodes() );
       // UV
+      bool uvOK = true, badTria;
       for ( int i = 0; i < 6; ++i )
       {
-        uv[ i ] = GetNodeUV( F, nodes[i], nodes[(i+1)%3], &checkUV );
+        uv[ i ] = GetNodeUV( F, nodes[i], nodes[(i+1)%3], &uvOK );
         // as this method is used after mesh generation, UV of nodes is not
         // updated according to bending links, so we update 
         if ( nodes[i]->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE )
           CheckNodeUV( F, nodes[i], uv[ i ], 2*tol, /*force=*/true );
       }
       // move the central node
-      gp_XY uvCent = GetCenterUV( uv[0], uv[1], uv[2], uv[3], uv[4], uv[5] );
-      gp_Pnt p = surf->Value( uvCent.X(), uvCent.Y() ).Transformed( loc );
+      gp_Pnt p;
+      if ( !uvOK || badTria )
+      {
+        p = ( SMESH_TNodeXYZ( nodes[3] ) +
+              SMESH_TNodeXYZ( nodes[4] ) +
+              SMESH_TNodeXYZ( nodes[5] )) / 3;
+      }
+      else
+      {
+        gp_XY uvCent = GetCenterUV( uv[0], uv[1], uv[2], uv[3], uv[4], uv[5], &badTria );
+        p = surf->Value( uvCent.X(), uvCent.Y() ).Transformed( loc );
+      }
       GetMeshDS()->MoveNode( tria->GetNode(6), p.X(), p.Y(), p.Z() );
     }
   }
