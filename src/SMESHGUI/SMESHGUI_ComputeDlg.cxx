@@ -61,6 +61,7 @@
 #include <SALOMEDS_SObject.hxx>
 #include <SALOMEDSClient_SObject.hxx>
 #include <SALOMEDS_wrap.hxx>
+#include "utilities.h"
 
 #include CORBA_SERVER_HEADER(SMESH_Group)
 
