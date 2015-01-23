@@ -9,9 +9,9 @@ used for meshing entities (1D, 2D, 3D) composing geometrical objects.
 <li>For meshing of 1D entities (<b>edges</b>):</li>
 
 <ul>
-<li>Wire Discretization meshing algorithm - splits a wire into a
-number of mesh segments following any 1D hypothesis.</li>
-<li>Composite Side Discretization algorithm - allows to apply any 1D
+<li>Wire Discretization meshing algorithm - splits an edge into a
+number of mesh segments following an 1D hypothesis.</li>
+<li>Composite Side Discretization algorithm - allows to apply an 1D
 hypothesis to a whole side of a geometrical face even if it is
 composed of several edges provided that they form C1 curve, have the
 same hypotheses assigned and form one side in all faces of the main

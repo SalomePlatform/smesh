@@ -323,12 +323,14 @@ public:
    * \param theEdge - The geometrical edge of interest
    * \param theNodes - The resulting map
    * \param ignoreMediumNodes - to store medium nodes of quadratic elements or not
+   * \param typeToCheck - type of elements to check for medium nodes
    * \retval bool - false if not all parameters are OK
    */
   static bool GetSortedNodesOnEdge(const SMESHDS_Mesh*                        theMesh,
                                    const TopoDS_Edge&                         theEdge,
                                    const bool                                 ignoreMediumNodes,
-                                   std::map< double, const SMDS_MeshNode* > & theNodes);
+                                   std::map< double, const SMDS_MeshNode* > & theNodes,
+                                   const SMDSAbs_ElementType                  typeToCheck = SMDSAbs_All);
   /*!
    * Moved to SMESH_MesherHelper
    */

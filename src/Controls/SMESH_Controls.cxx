@@ -1526,7 +1526,7 @@ SMDSAbs_ElementType Length::GetType() const
 */
 //================================================================================
 
-double Length2D::GetValue( long theElementId)
+double Length2D::GetValue( long theElementId )
 {
   TSequenceOfXYZ P;
 
@@ -1558,7 +1558,7 @@ double Length2D::GetValue( long theElementId)
         double L1 = getDistance(P( 1 ),P( 2 ));
         double L2 = getDistance(P( 2 ),P( 3 ));
         double L3 = getDistance(P( 3 ),P( 1 ));
-        aVal = Max(L1,Max(L2,L3));
+        aVal = Min(L1,Min(L2,L3));
         break;
       }
       else if (len == 4){ // quadrangles
@@ -1566,14 +1566,14 @@ double Length2D::GetValue( long theElementId)
         double L2 = getDistance(P( 2 ),P( 3 ));
         double L3 = getDistance(P( 3 ),P( 4 ));
         double L4 = getDistance(P( 4 ),P( 1 ));
-        aVal = Max(Max(L1,L2),Max(L3,L4));
+        aVal = Min(Min(L1,L2),Min(L3,L4));
         break;
       }
       if (len == 6){ // quadratic triangles
         double L1 = getDistance(P( 1 ),P( 2 )) + getDistance(P( 2 ),P( 3 ));
         double L2 = getDistance(P( 3 ),P( 4 )) + getDistance(P( 4 ),P( 5 ));
         double L3 = getDistance(P( 5 ),P( 6 )) + getDistance(P( 6 ),P( 1 ));
-        aVal = Max(L1,Max(L2,L3));
+        aVal = Min(L1,Min(L2,L3));
         //cout<<"L1="<<L1<<" L2="<<L2<<"L3="<<L3<<" aVal="<<aVal<<endl;
         break;
       }
@@ -1582,7 +1582,7 @@ double Length2D::GetValue( long theElementId)
         double L2 = getDistance(P( 3 ),P( 4 )) + getDistance(P( 4 ),P( 5 ));
         double L3 = getDistance(P( 5 ),P( 6 )) + getDistance(P( 6 ),P( 7 ));
         double L4 = getDistance(P( 7 ),P( 8 )) + getDistance(P( 8 ),P( 1 ));
-        aVal = Max(Max(L1,L2),Max(L3,L4));
+        aVal = Min(Min(L1,L2),Min(L3,L4));
         break;
       }
     case SMDSAbs_Volume:
@@ -1593,7 +1593,7 @@ double Length2D::GetValue( long theElementId)
         double L4 = getDistance(P( 1 ),P( 4 ));
         double L5 = getDistance(P( 2 ),P( 4 ));
         double L6 = getDistance(P( 3 ),P( 4 ));
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
+        aVal = Min(Min(Min(L1,L2),Min(L3,L4)),Min(L5,L6));
         break;
       }
       else if (len == 5){ // piramids
@@ -1606,8 +1606,8 @@ double Length2D::GetValue( long theElementId)
         double L7 = getDistance(P( 3 ),P( 5 ));
         double L8 = getDistance(P( 4 ),P( 5 ));
 
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-        aVal = Max(aVal,Max(L7,L8));
+        aVal = Min(Min(Min(L1,L2),Min(L3,L4)),Min(L5,L6));
+        aVal = Min(aVal,Min(L7,L8));
         break;
       }
       else if (len == 6){ // pentaidres
@@ -1621,8 +1621,8 @@ double Length2D::GetValue( long theElementId)
         double L8 = getDistance(P( 2 ),P( 5 ));
         double L9 = getDistance(P( 3 ),P( 6 ));
 
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-        aVal = Max(aVal,Max(Max(L7,L8),L9));
+        aVal = Min(Min(Min(L1,L2),Min(L3,L4)),Min(L5,L6));
+        aVal = Min(aVal,Min(Min(L7,L8),L9));
         break;
       }
       else if (len == 8){ // hexaider
@@ -1639,9 +1639,9 @@ double Length2D::GetValue( long theElementId)
         double L11= getDistance(P( 3 ),P( 7 ));
         double L12= getDistance(P( 4 ),P( 8 ));
 
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-        aVal = Max(aVal,Max(Max(L7,L8),Max(L9,L10)));
-        aVal = Max(aVal,Max(L11,L12));
+        aVal = Min(Min(Min(L1,L2),Min(L3,L4)),Min(L5,L6));
+        aVal = Min(aVal,Min(Min(L7,L8),Min(L9,L10)));
+        aVal = Min(aVal,Min(L11,L12));
         break;
 
       }
@@ -1653,7 +1653,7 @@ double Length2D::GetValue( long theElementId)
         double L4 = getDistance(P( 1 ),P( 8 )) + getDistance(P( 8 ),P( 4 ));
         double L5 = getDistance(P( 2 ),P( 9 )) + getDistance(P( 9 ),P( 4 ));
         double L6 = getDistance(P( 3 ),P( 10 )) + getDistance(P( 10 ),P( 4 ));
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
+        aVal = Min(Min(Min(L1,L2),Min(L3,L4)),Min(L5,L6));
         break;
       }
       else if (len == 13){ // quadratic piramids
@@ -1665,8 +1665,8 @@ double Length2D::GetValue( long theElementId)
         double L6 = getDistance(P( 2 ),P( 11 )) + getDistance(P( 11 ),P( 5 ));
         double L7 = getDistance(P( 3 ),P( 12 )) + getDistance(P( 12 ),P( 5 ));
         double L8 = getDistance(P( 4 ),P( 13 )) + getDistance(P( 13 ),P( 5 ));
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-        aVal = Max(aVal,Max(L7,L8));
+        aVal = Min(Min(Min(L1,L2),Min(L3,L4)),Min(L5,L6));
+        aVal = Min(aVal,Min(L7,L8));
         break;
       }
       else if (len == 15){ // quadratic pentaidres
@@ -1679,8 +1679,8 @@ double Length2D::GetValue( long theElementId)
         double L7 = getDistance(P( 1 ),P( 13 )) + getDistance(P( 13 ),P( 4 ));
         double L8 = getDistance(P( 2 ),P( 14 )) + getDistance(P( 14 ),P( 5 ));
         double L9 = getDistance(P( 3 ),P( 15 )) + getDistance(P( 15 ),P( 6 ));
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-        aVal = Max(aVal,Max(Max(L7,L8),L9));
+        aVal = Min(Min(Min(L1,L2),Min(L3,L4)),Min(L5,L6));
+        aVal = Min(aVal,Min(Min(L7,L8),L9));
         break;
       }
       else if (len == 20){ // quadratic hexaider
@@ -1696,9 +1696,9 @@ double Length2D::GetValue( long theElementId)
         double L10= getDistance(P( 2 ),P( 18 )) + getDistance(P( 18 ),P( 6 ));
         double L11= getDistance(P( 3 ),P( 19 )) + getDistance(P( 19 ),P( 7 ));
         double L12= getDistance(P( 4 ),P( 20 )) + getDistance(P( 20 ),P( 8 ));
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-        aVal = Max(aVal,Max(Max(L7,L8),Max(L9,L10)));
-        aVal = Max(aVal,Max(L11,L12));
+        aVal = Min(Min(Min(L1,L2),Min(L3,L4)),Min(L5,L6));
+        aVal = Min(aVal,Min(Min(L7,L8),Min(L9,L10)));
+        aVal = Min(aVal,Min(L11,L12));
         break;
 
       }
@@ -1706,7 +1706,7 @@ double Length2D::GetValue( long theElementId)
     default: aVal=-1;
     }
 
-    if (aVal <0){
+    if (aVal < 0 ) {
       return 0.;
     }
 
@@ -1724,7 +1724,7 @@ double Length2D::GetValue( long theElementId)
 
 double Length2D::GetBadRate( double Value, int /*nbNodes*/ ) const
 {
-  // meaningless as it is not quality control functor
+  // meaningless as it is not a quality control functor
   return Value;
 }
 
@@ -3999,7 +3999,41 @@ void ElementsOnShape::SetAllNodes (bool theAllNodes)
 
 void ElementsOnShape::SetMesh (const SMDS_Mesh* theMesh)
 {
-  myMesh = theMesh;
+  myMeshModifTracer.SetMesh( theMesh );
+  if ( myMeshModifTracer.IsMeshModified())
+  {
+    size_t nbNodes = theMesh ? theMesh->NbNodes() : 0;
+    if ( myNodeIsChecked.size() == nbNodes )
+    {
+      std::fill( myNodeIsChecked.begin(), myNodeIsChecked.end(), false );
+    }
+    else
+    {
+      SMESHUtils::FreeVector( myNodeIsChecked );
+      SMESHUtils::FreeVector( myNodeIsOut );
+      myNodeIsChecked.resize( nbNodes, false );
+      myNodeIsOut.resize( nbNodes );
+    }
+  }
+}
+
+bool ElementsOnShape::getNodeIsOut( const SMDS_MeshNode* n, bool& isOut )
+{
+  if ( n->GetID() >= (int) myNodeIsChecked.size() ||
+       !myNodeIsChecked[ n->GetID() ])
+    return false;
+
+  isOut = myNodeIsOut[ n->GetID() ];
+  return true;
+}
+
+void ElementsOnShape::setNodeIsOut( const SMDS_MeshNode* n, bool  isOut )
+{
+  if ( n->GetID() < (int) myNodeIsChecked.size() )
+  {
+    myNodeIsChecked[ n->GetID() ] = true;
+    myNodeIsOut    [ n->GetID() ] = isOut;
+  }
 }
 
 void ElementsOnShape::SetShape (const TopoDS_Shape&       theShape,
@@ -4008,7 +4042,7 @@ void ElementsOnShape::SetShape (const TopoDS_Shape&       theShape,
   myType  = theType;
   myShape = theShape;
   if ( myShape.IsNull() ) return;
-  
+
   TopTools_IndexedMapOfShape shapesMap;
   TopAbs_ShapeEnum shapeTypes[4] = { TopAbs_SOLID, TopAbs_FACE, TopAbs_EDGE, TopAbs_VERTEX };
   TopExp_Explorer sub;
@@ -4026,6 +4060,16 @@ void ElementsOnShape::SetShape (const TopoDS_Shape&       theShape,
   myClassifiers.resize( shapesMap.Extent() );
   for ( int i = 0; i < shapesMap.Extent(); ++i )
     myClassifiers[ i ] = new TClassifier( shapesMap( i+1 ), myToler );
+
+  if ( theType == SMDSAbs_Node )
+  {
+    SMESHUtils::FreeVector( myNodeIsChecked );
+    SMESHUtils::FreeVector( myNodeIsOut );
+  }
+  else
+  {
+    std::fill( myNodeIsChecked.begin(), myNodeIsChecked.end(), false );
+  }
 }
 
 void ElementsOnShape::clearClassifiers()
@@ -4037,23 +4081,30 @@ void ElementsOnShape::clearClassifiers()
 
 bool ElementsOnShape::IsSatisfy (long elemId)
 {
+  const SMDS_Mesh*        mesh = myMeshModifTracer.GetMesh();
   const SMDS_MeshElement* elem =
-    ( myType == SMDSAbs_Node ? myMesh->FindNode( elemId ) : myMesh->FindElement( elemId ));
+    ( myType == SMDSAbs_Node ? mesh->FindNode( elemId ) : mesh->FindElement( elemId ));
   if ( !elem || myClassifiers.empty() )
     return false;
 
   for ( size_t i = 0; i < myClassifiers.size(); ++i )
   {
     SMDS_ElemIteratorPtr aNodeItr = elem->nodesIterator();
-    bool isSatisfy = myAllNodesFlag;
+    bool isSatisfy = myAllNodesFlag, isNodeOut;
     
     gp_XYZ centerXYZ (0, 0, 0);
 
     while (aNodeItr->more() && (isSatisfy == myAllNodesFlag))
     {
-      SMESH_TNodeXYZ aPnt ( aNodeItr->next() );
-      centerXYZ += aPnt;
-      isSatisfy = ! myClassifiers[i]->IsOut( aPnt );
+      const SMDS_MeshNode* n = (const SMDS_MeshNode*) aNodeItr->next();
+      if ( !getNodeIsOut( n, isNodeOut ))
+      {
+        SMESH_TNodeXYZ aPnt( n );
+        centerXYZ += aPnt;
+        isNodeOut = myClassifiers[i]->IsOut( aPnt );
+        setNodeIsOut( n, isNodeOut );
+      }
+      isSatisfy = !isNodeOut;
     }
 
     // Check the center point for volumes MantisBug 0020168

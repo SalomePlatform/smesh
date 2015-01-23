@@ -516,8 +516,18 @@ bool SMESHGUI_RevolutionDlg::ClickOnApply()
     aParameters << SpinBox_NbSteps->text();
     aParameters << SpinBox_Tolerance->text();
 
+    bool meshHadNewTypeBefore = true;
+
     try {
       SUIT_OverrideCursor aWaitCursor;
+
+      // is it necessary to switch on the next Display Mode?
+      SMESH::ElementType newType = (SMESH::ElementType)( SMESH::FACE + GetConstructorId() );
+      SMESH::array_of_ElementType_var oldTypes = myMesh->GetTypes();
+      meshHadNewTypeBefore = false;
+      for ( size_t i = 0; i < oldTypes->length() && !meshHadNewTypeBefore; ++i )
+        meshHadNewTypeBefore = ( oldTypes[i] >= newType );
+
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
       
       myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
@@ -552,14 +562,30 @@ bool SMESHGUI_RevolutionDlg::ClickOnApply()
     } catch (...) {
     }
 
+    if ( myActor && !meshHadNewTypeBefore )
+    {
+      unsigned int aMode = myActor->GetEntityMode();
+      switch ( GetConstructorId() ) {
+      case 0-1: // extrude node -> edges
+        myActor->SetRepresentation(SMESH_Actor::eEdge);
+        myActor->SetEntityMode( aMode |= SMESH_Actor::eEdges ); break;
+      case 1-1: // edge -> faces
+        myActor->SetRepresentation(SMESH_Actor::eSurface);
+        myActor->SetEntityMode( aMode |= SMESH_Actor::eFaces ); break;
+      case 2-1: // faces -> volumes
+        myActor->SetRepresentation(SMESH_Actor::eSurface);
+        myActor->SetEntityMode( aMode |= SMESH_Actor::eVolumes ); break;
+      }
+    }
     SMESH::UpdateView();
     SMESH::Update(myIO, SMESH::eDisplay);
     if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() )
       mySMESHGUI->updateObjBrowser(true); // new groups may appear
     Init(false);
-    ConstructorsClicked(GetConstructorId());
+    mySelectionMgr->clearSelected();
     mySelectedObject = SMESH::SMESH_IDSource::_nil();
     SelectionIntoArgument();
+    ConstructorsClicked(GetConstructorId());
 
     SMESHGUI::Modified();
   }

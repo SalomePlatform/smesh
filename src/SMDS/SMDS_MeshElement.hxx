@@ -79,7 +79,7 @@ public:
   virtual int NbNodes() const;
   virtual int NbEdges() const;
   virtual int NbFaces() const;
-  inline int GetID() const { return myID; };
+  inline int GetID() const { return myID; }
 
   ///Return the type of the current element
   virtual SMDSAbs_ElementType GetType() const = 0;

@@ -151,48 +151,56 @@ SMESH_VisualObjDef::~SMESH_VisualObjDef()
 //=================================================================================
 vtkIdType SMESH_VisualObjDef::GetNodeObjId( int theVTKID )
 {
-        if (myLocalGrid)
-        {
-                TMapOfIds::const_iterator i = myVTK2SMDSNodes.find(theVTKID);
-                return i == myVTK2SMDSNodes.end() ? -1 : i->second;
-        }
-  return this->GetMesh()->FindNodeVtk(theVTKID)->GetID();
+  if (myLocalGrid)
+  {
+    TMapOfIds::const_iterator i = myVTK2SMDSNodes.find(theVTKID);
+    return i == myVTK2SMDSNodes.end() ? -1 : i->second;
+  }
+  const SMDS_MeshNode* aNode = 0;
+  if( this->GetMesh() )
+    aNode = this->GetMesh()->FindNodeVtk( theVTKID );
+
+  return aNode ? aNode->GetID() : -1;
 }
 
 vtkIdType SMESH_VisualObjDef::GetNodeVTKId( int theObjID )
 {
-        if (myLocalGrid)
-        {
-                TMapOfIds::const_iterator i = mySMDS2VTKNodes.find(theObjID);
+  if (myLocalGrid)
+  {
+    TMapOfIds::const_iterator i = mySMDS2VTKNodes.find(theObjID);
     return i == mySMDS2VTKNodes.end() ? -1 : i->second;
-        }
+  }
 
-        const SMDS_MeshNode* aNode = 0;
-        if( this->GetMesh() ) {
-          aNode = this->GetMesh()->FindNode(theObjID);
-        }
-        return aNode ? aNode->getVtkId() : -1;
+  const SMDS_MeshNode* aNode = 0;
+  if( this->GetMesh() ) {
+    aNode = this->GetMesh()->FindNode(theObjID);
+  }
+  return aNode ? aNode->getVtkId() : -1;
 }
 
 vtkIdType SMESH_VisualObjDef::GetElemObjId( int theVTKID )
 {
-        if (myLocalGrid)
-        {
-                TMapOfIds::const_iterator i = myVTK2SMDSElems.find(theVTKID);
-                return i == myVTK2SMDSElems.end() ? -1 : i->second;
-        }
+  if (myLocalGrid)
+  {
+    TMapOfIds::const_iterator i = myVTK2SMDSElems.find(theVTKID);
+    return i == myVTK2SMDSElems.end() ? -1 : i->second;
+  }
   return this->GetMesh()->fromVtkToSmds(theVTKID);
 }
 
 vtkIdType SMESH_VisualObjDef::GetElemVTKId( int theObjID )
 {
-        if (myLocalGrid)
-        {
-                TMapOfIds::const_iterator i = mySMDS2VTKElems.find(theObjID);
-                return i == mySMDS2VTKElems.end() ? -1 : i->second;
-        }
-  return this->GetMesh()->FindElement(theObjID)->getVtkId();
-  //return this->GetMesh()->fromSmdsToVtk(theObjID);
+  if (myLocalGrid)
+  {
+    TMapOfIds::const_iterator i = mySMDS2VTKElems.find(theObjID);
+    return i == mySMDS2VTKElems.end() ? -1 : i->second;
+  }
+
+  const SMDS_MeshElement* e = 0;
+  if ( this->GetMesh() )
+    e = this->GetMesh()->FindElement(theObjID);
+
+  return e ? e->getVtkId() : -1;
 }
 
 //=================================================================================

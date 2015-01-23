@@ -39,7 +39,8 @@ with consequent transformation of all adjacent elements and edges.</li>
 <li>\subpage split_to_tetra_page "Split" volumic elements into tetrahedra or prisms.</li>
 <li>\subpage smoothing_page "Smooth" elements, reducung distortions in
 them by adjusting the locations of element corners.</li>
-<li>Create an \subpage extrusion_page "extrusion" along a vector.</li>
+<li>Create an \subpage extrusion_page "extrusion" along a vector or by
+normal to a discretized surface.</li>
 <li>Create an \subpage extrusion_along_path_page "extrusion along a path".</li>
 <li>Create an edge or a surface by \subpage revolution_page "revolution"
 of the selected node or edge.</li>

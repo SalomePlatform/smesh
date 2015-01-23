@@ -37,6 +37,7 @@
 // IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 class QButtonGroup;
 class QRadioButton;
@@ -74,6 +75,8 @@ private:
   void                             keyPressEvent( QKeyEvent* );
   int                              GetConstructorId();
   void                             getExtrusionVector(SMESH::DirStruct& aVector);
+  void                             extrusionByNormal(SMESH::SMESH_MeshEditor_ptr meshEditor,
+                                                     const bool                  makeGroups=false);
   
   bool                             isValid();
   bool                             isValuesValid();
@@ -98,11 +101,12 @@ private:
   // widgets
   QGroupBox*                       ConstructorsBox;
   QButtonGroup*                    GroupConstructors;
-  QRadioButton*                    RadioButton0;
-  QRadioButton*                    RadioButton1;
-  QRadioButton*                    RadioButton2;
-  QRadioButton*                    RadioButton3;
-  QRadioButton*                    RadioButton4;
+  QRadioButton*                    Contructor_RBut0;
+  QRadioButton*                    Contructor_RBut1;
+  QRadioButton*                    Contructor_RBut2;
+  QRadioButton*                    ExtrMethod_RBut0;
+  QRadioButton*                    ExtrMethod_RBut1;
+  QRadioButton*                    ExtrMethod_RBut2;
 
   QGroupBox*                       GroupArguments;
   QGroupBox*                       GroupDimensions;
@@ -129,6 +133,8 @@ private:
   SMESHGUI_SpinBox*                SpinBox_VDist;
   QLabel*                          TextLabelNbSteps;
   SalomeApp_IntSpinBox*            SpinBox_NbSteps;
+  QCheckBox*                       ByAverageNormalCheck;
+  QCheckBox*                       UseInputElemsOnlyCheck;
   QCheckBox*                       MakeGroupsCheck;
 
   QGroupBox*                       GroupButtons;

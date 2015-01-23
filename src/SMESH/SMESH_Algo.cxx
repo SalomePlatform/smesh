@@ -403,7 +403,8 @@ bool SMESH_Algo::GetNodeParamOnEdge(const SMESHDS_Mesh* theMesh,
 bool SMESH_Algo::GetSortedNodesOnEdge(const SMESHDS_Mesh*                   theMesh,
                                       const TopoDS_Edge&                    theEdge,
                                       const bool                            ignoreMediumNodes,
-                                      map< double, const SMDS_MeshNode* > & theNodes)
+                                      map< double, const SMDS_MeshNode* > & theNodes,
+                                      const SMDSAbs_ElementType             typeToCheck)
 {
   theNodes.clear();
 
@@ -423,11 +424,8 @@ bool SMESH_Algo::GetSortedNodesOnEdge(const SMESHDS_Mesh*                   theM
     while ( nIt->more() )
     {
       const SMDS_MeshNode* node = nIt->next();
-      if ( ignoreMediumNodes ) {
-        SMDS_ElemIteratorPtr elemIt = node->GetInverseElementIterator();
-        if ( elemIt->more() && elemIt->next()->IsMediumNode( node ))
-          continue;
-      }
+      if ( ignoreMediumNodes && SMESH_MesherHelper::IsMedium( node, typeToCheck ))
+        continue;
       const SMDS_PositionPtr& pos = node->GetPosition();
       if ( pos->GetTypeOfPosition() != SMDS_TOP_EDGE )
         return false;

@@ -3387,7 +3387,7 @@ class Mesh:
     #  them with quadratic with the same id.
     #  @param theForce3d new node creation method:
     #         0 - the medium node lies at the geometrical entity from which the mesh element is built
-    #         1 - the medium node lies at the middle of the line segments connecting start and end node of a mesh element
+    #         1 - the medium node lies at the middle of the line segments connecting two nodes of a mesh element
     #  @param theSubMesh a group or a sub-mesh to convert; WARNING: in this case the mesh can become not conformal
     #  @param theToBiQuad If True, converts the mesh to bi-quadratic
     #  @ingroup l2_modif_tofromqu
@@ -3661,6 +3661,44 @@ class Mesh:
         self.editor.AdvancedExtrusion(IDsOfElements, StepVector, NbOfSteps,
                                       ExtrFlags, SewTolerance)
         return []
+
+    ## Generates new elements by extrusion along the normal to a discretized surface or wire
+    #  @param Elements container of elements to extrude;
+    #         it can be Mesh, Group, Sub-mesh, Filter or list of IDs;
+    #         Only faces can be extruded so far. Sub-mesh sould be a sub-mesh on geom faces.
+    #  @param StepSize length of one extrusion step (the total extrusion
+    #         length will be \a NbOfSteps * \a StepSize ).
+    #  @param NbOfSteps number of extrusion steps.
+    #  @param ByAverageNormal if True each node is translated by \a StepSize
+    #         along the average of the normal vectors to the faces sharing the node;
+    #         else each node is translated along the same average normal till
+    #         intersection with the plane got by translation of the face sharing
+    #         the node along its own normal by \a StepSize.
+    #  @param UseInputElemsOnly to use only \a Elements when computing extrusion direction
+    #         for every node of \a Elements.
+    #  @param MakeGroups forces generation of new groups from existing ones.
+    #  @param Dim dimension of elements to extrude: 2 - faces or 1 - edges. Extrusion of edges
+    #         is not yet implemented. This parameter is used if \a Elements contains
+    #         both faces and edges, i.e. \a Elements is a Mesh.
+    #  @return the list of created groups (SMESH_GroupBase) if \a MakeGroups=True,
+    #          empty list otherwise.
+    #  @ingroup l2_modif_extrurev
+    def ExtrusionByNormal(self, Elements, StepSize, NbOfSteps,
+                          ByAverageNormal=False, UseInputElemsOnly=True, MakeGroups=False, Dim = 2):
+        unRegister = genObjUnRegister()
+        if isinstance( Elements, Mesh ):
+            Elements = Elements.GetMesh()
+        if isinstance( Elements, list ):
+            if not Elements:
+                raise RuntimeError, "List of element IDs is empty!"
+            if not isinstance( Elements[0], int ):
+                raise RuntimeError, "List must contain element IDs and not %s"% Elements[0]
+            Elements = self.GetIDSource( Elements, SMESH.ALL )
+            unRegister.set( Elements )
+        StepSize,NbOfSteps,Parameters,hasVars = ParseParameters(StepSize,NbOfSteps)
+        self.mesh.SetParameters(Parameters)
+        return self.editor.ExtrusionByNormal(Elements, StepSize, NbOfSteps,
+                                             UseInputElemsOnly, ByAverageNormal, MakeGroups, Dim)
 
     ## Generates new elements by extrusion of the elements which belong to the object
     #  @param theObject the object which elements should be processed.

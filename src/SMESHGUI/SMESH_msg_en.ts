@@ -1694,6 +1694,10 @@ Do you want to continue ?</translation>
         <translation>Extrusion Along Vector</translation>
     </message>
     <message>
+        <source>SMESH_EXTRUSION_BY_NORMAL</source>
+        <translation>Extrusion By Normal</translation>
+    </message>
+    <message>
         <source>SMESH_FACE</source>
         <translation>Face</translation>
     </message>
@@ -5140,6 +5144,14 @@ Please select a group and try again</translation>
     <message>
         <source>EXTRUSION_ALONG_LINE</source>
         <translation>Extrusion along a line</translation>
+    </message>
+    <message>
+        <source>BY_AVERAGE_NORMAL</source>
+        <translation>Along average normal</translation>
+    </message>
+    <message>
+        <source>USE_INPUT_ELEMS_ONLY</source>
+        <translation>Use only input elements</translation>
     </message>
 </context>
 <context>

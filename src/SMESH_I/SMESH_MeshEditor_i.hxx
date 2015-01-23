@@ -42,6 +42,7 @@ class SMESH_Mesh_i;
 
 namespace MeshEditor_I {
   struct TPreviewMesh;
+  struct ExtrusionParams;
 }
 
 class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
@@ -357,6 +358,14 @@ public:
   void ExtrusionSweepObject2D(SMESH::SMESH_IDSource_ptr theObject,
                               const SMESH::DirStruct &  StepVector,
                               CORBA::Long               NbOfSteps)
+    throw (SALOME::SALOME_Exception);
+  SMESH::ListOfGroups* ExtrusionByNormal(SMESH::SMESH_IDSource_ptr object,
+                                         CORBA::Double             stepSize,
+                                         CORBA::Long               nbOfSteps,
+                                         CORBA::Boolean            byAverageNormal,
+                                         CORBA::Boolean            useInputElemsOnly,
+                                         CORBA::Boolean            makeGroups,
+                                         CORBA::Short              dim)
     throw (SALOME::SALOME_Exception);
   void AdvancedExtrusion(const SMESH::long_array & theIDsOfElements,
                          const SMESH::DirStruct &  theStepVector,
@@ -1025,11 +1034,9 @@ private: //!< private methods
                                      const bool                MakeGroups,
                                      const SMDSAbs_ElementType ElementType=SMDSAbs_All)
     throw (SALOME::SALOME_Exception);
-  SMESH::ListOfGroups* extrusionSweep(const SMESH::long_array & IDsOfElements,
-                                      const SMESH::DirStruct &  StepVector,
-                                      CORBA::Long               NbOfSteps,
-                                      bool                      MakeGroups,
-                                      const SMDSAbs_ElementType ElementType=SMDSAbs_All)
+  SMESH::ListOfGroups* extrusionSweep(const SMESH::long_array &      IDsOfElements,
+                                      MeshEditor_I::ExtrusionParams& params,
+                                      const SMDSAbs_ElementType      ElementType=SMDSAbs_All)
     throw (SALOME::SALOME_Exception);
   SMESH::ListOfGroups* advancedExtrusion(const SMESH::long_array & theIDsOfElements,
                                          const SMESH::DirStruct &  theStepVector,

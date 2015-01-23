@@ -240,33 +240,98 @@ public:
   // by theAngle by theNbSteps
 
   /*!
-   * Auxilary flag for advanced extrusion.
+   * Flags of extrusion.
    * BOUNDARY: create or not boundary for result of extrusion
    * SEW:      try to use existing nodes or create new nodes in any case
+   * GROUPS:   to create groups
+   * BY_AVG_NORMAL: step size is measured along average normal to elements,
+   *                else step size is measured along average normal of any element
+   * USE_INPUT_ELEMS_ONLY: to use only input elements to compute extrusion direction
+   *                       for ExtrusionByNormal()
    */
   enum ExtrusionFlags {
     EXTRUSION_FLAG_BOUNDARY = 0x01,
-    EXTRUSION_FLAG_SEW = 0x02
-  };
-  
-  /*!
-   * special structure for control of extrusion functionality
-   */
-  struct ExtrusParam {
-    gp_Dir myDir; // direction of extrusion
-    Handle(TColStd_HSequenceOfReal) mySteps; // magnitudes for each step
-    SMESH_SequenceOfNode myNodes; // nodes for using in sewing
+    EXTRUSION_FLAG_SEW = 0x02,
+    EXTRUSION_FLAG_GROUPS = 0x04,
+    EXTRUSION_FLAG_BY_AVG_NORMAL = 0x08,
+    EXTRUSION_FLAG_USE_INPUT_ELEMS_ONLY = 0x10
   };
 
   /*!
-   * Create new node in the mesh with given coordinates
-   * (auxiliary for advanced extrusion)
+   * Generator of nodes for extrusion functionality
    */
-  const SMDS_MeshNode* CreateNode(const double x,
-                                  const double y,
-                                  const double z,
-                                  const double tolnode,
-                                  SMESH_SequenceOfNode& aNodes);
+  class ExtrusParam {
+    gp_Dir                          myDir;   // direction of extrusion
+    Handle(TColStd_HSequenceOfReal) mySteps; // magnitudes for each step
+    SMESH_SequenceOfNode            myNodes; // nodes for using in sewing
+    int                             myFlags; // see ExtrusionFlags
+    double                          myTolerance; // tolerance for sewing nodes
+    const TIDSortedElemSet*         myElemsToUse; // elements to use for extrusion by normal
+
+    int (ExtrusParam::*myMakeNodesFun)(SMESHDS_Mesh*                     mesh,
+                                       const SMDS_MeshNode*              srcNode,
+                                       std::list<const SMDS_MeshNode*> & newNodes,
+                                       const bool                        makeMediumNodes);
+
+  public:
+    ExtrusParam( const gp_Vec&  theStep,
+                 const int      theNbSteps,
+                 const int      theFlags = 0,
+                 const double   theTolerance = 1e-6);
+    ExtrusParam( const gp_Dir&                   theDir,
+                 Handle(TColStd_HSequenceOfReal) theSteps,
+                 const int                       theFlags = 0,
+                 const double                    theTolerance = 1e-6);
+    ExtrusParam( const double theStep,
+                 const int    theNbSteps,
+                 const int    theFlags,
+                 const int    theDim); // for extrusion by normal
+
+    SMESH_SequenceOfNode& ChangeNodes() { return myNodes; }
+    int& Flags()                   { return myFlags; }
+    bool ToMakeBoundary()    const { return myFlags & EXTRUSION_FLAG_BOUNDARY; }
+    bool ToMakeGroups()      const { return myFlags & EXTRUSION_FLAG_GROUPS; }
+    bool ToUseInpElemsOnly() const { return myFlags & EXTRUSION_FLAG_USE_INPUT_ELEMS_ONLY; }
+    int  NbSteps()           const { return mySteps->Length(); }
+
+    // stores elements to use for extrusion by normal, depending on
+    // state of EXTRUSION_FLAG_USE_INPUT_ELEMS_ONLY flag
+    void SetElementsToUse( const TIDSortedElemSet& elems );
+
+    // creates nodes and returns number of nodes added in \a newNodes
+    int MakeNodes( SMESHDS_Mesh*                     mesh,
+                   const SMDS_MeshNode*              srcNode,
+                   std::list<const SMDS_MeshNode*> & newNodes,
+                   const bool                        makeMediumNodes)
+    {
+      return (this->*myMakeNodesFun)( mesh, srcNode, newNodes, makeMediumNodes );
+    }
+  private:
+
+    int makeNodesByDir( SMESHDS_Mesh*                     mesh,
+                        const SMDS_MeshNode*              srcNode,
+                        std::list<const SMDS_MeshNode*> & newNodes,
+                        const bool                        makeMediumNodes);
+    int makeNodesByDirAndSew( SMESHDS_Mesh*                     mesh,
+                              const SMDS_MeshNode*              srcNode,
+                              std::list<const SMDS_MeshNode*> & newNodes,
+                              const bool                        makeMediumNodes);
+    int makeNodesByNormal2D( SMESHDS_Mesh*                     mesh,
+                             const SMDS_MeshNode*              srcNode,
+                             std::list<const SMDS_MeshNode*> & newNodes,
+                             const bool                        makeMediumNodes);
+    int makeNodesByNormal1D( SMESHDS_Mesh*                     mesh,
+                             const SMDS_MeshNode*              srcNode,
+                             std::list<const SMDS_MeshNode*> & newNodes,
+                             const bool                        makeMediumNodes);
+    // step iteration
+    void   beginStepIter( bool withMediumNodes );
+    bool   moreSteps();
+    double nextStep();
+    std::vector< double > myCurSteps;
+    bool                  myWithMediumNodes;
+    int                   myNextStep;
+  };
 
   /*!
    * Generate new elements by extrusion of theElements
@@ -284,8 +349,7 @@ public:
                             const gp_Vec&        theStep,
                             const int            theNbSteps,
                             TTElemOfElemListMap& newElemsMap,
-                            const bool           theMakeGroups,
-                            const int            theFlags = EXTRUSION_FLAG_BOUNDARY,
+                            const int            theFlags,
                             const double         theTolerance = 1.e-6);
   
   /*!
@@ -300,10 +364,7 @@ public:
    */
   PGroupIDs ExtrusionSweep (TIDSortedElemSet &   theElems,
                             ExtrusParam&         theParams,
-                            TTElemOfElemListMap& newElemsMap,
-                            const bool           theMakeGroups,
-                            const int            theFlags,
-                            const double         theTolerance);
+                            TTElemOfElemListMap& newElemsMap);
 
 
   // Generate new elements by extrusion of theElements 

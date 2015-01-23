@@ -2180,10 +2180,6 @@ namespace
 void SMESH_MeshEditor::SplitVolumes (const TFacetOfElem & theElems,
                                      const int            theMethodFlags)
 {
-  // std-like iterator on coordinates of nodes of mesh element
-  typedef SMDS_StdIterator< SMESH_TNodeXYZ, SMDS_ElemIteratorPtr > NXyzIterator;
-  NXyzIterator xyzEnd;
-
   SMDS_VolumeTool    volTool;
   SMESH_MesherHelper helper( *GetMesh()), fHelper(*GetMesh());
   fHelper.ToFixNodeParameters( true );
@@ -4339,6 +4335,29 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
       }
     }
   }
+  else if ( elem->GetType() == SMDSAbs_Edge )
+  {
+    // orient a new face same as adjacent one
+    int i1, i2;
+    const SMDS_MeshElement* e;
+    TIDSortedElemSet dummy;
+    if (( e = SMESH_MeshAlgos::FindFaceInSet( nextNod[0], prevNod[0], dummy,dummy, &i1, &i2 )) ||
+        ( e = SMESH_MeshAlgos::FindFaceInSet( prevNod[1], nextNod[1], dummy,dummy, &i1, &i2 )) ||
+        ( e = SMESH_MeshAlgos::FindFaceInSet( prevNod[0], prevNod[1], dummy,dummy, &i1, &i2 )))
+    {
+      // there is an adjacent face, check order of nodes in it
+      bool sameOrder = ( Abs( i2 - i1 ) == 1 ) ? ( i2 > i1 ) : ( i2 < i1 );
+      if ( sameOrder )
+      {
+        std::swap( itNN[0],    itNN[1] );
+        std::swap( prevNod[0], prevNod[1] );
+        std::swap( nextNod[0], nextNod[1] );
+        if ( nbSame > 0 )
+          sames[0] = 1 - sames[0];
+        iNotSameNode = 1 - iNotSameNode;
+      }
+    }
+  }
 
   int iSameNode = 0, iBeforeSame = 0, iAfterSame = 0, iOpposSame = 0;
   if ( nbSame > 0 ) {
@@ -4444,11 +4463,11 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
                 return; // medium node on axis
               }
               else if(sames[0]==0)
-                aNewElem = aMesh->AddFace(prevNod[0], nextNod[1], prevNod[1],
-                                          nextNod[2], midlNod[1], prevNod[2]);
+                aNewElem = aMesh->AddFace(prevNod[0], prevNod[1], nextNod[1],
+                                          prevNod[2], midlNod[1], nextNod[2] );
               else // sames[0]==1
-                aNewElem = aMesh->AddFace(prevNod[0], nextNod[0], prevNod[1],
-                                          midlNod[0], nextNod[2], prevNod[2]);
+                aNewElem = aMesh->AddFace(prevNod[0], prevNod[1], nextNod[0],
+                                          prevNod[2], nextNod[2], midlNod[0]);
             }
           }
           else if ( nbDouble == 3 )
@@ -4614,8 +4633,8 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
 
       default:
         break;
-      }
-    }
+      } // switch ( baseType )
+    } // scope
 
     if ( !aNewElem && elem->GetType() == SMDSAbs_Face ) // try to create a polyherdal prism
     {
@@ -4669,7 +4688,8 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
           polyedre_nodes.resize( prevNbNodes );
       }
       aNewElem = aMesh->AddPolyhedralVolume (polyedre_nodes, quantities);
-    }
+
+    } //  // try to create a polyherdal prism
 
     if ( aNewElem ) {
       newElems.push_back( aNewElem );
@@ -4681,7 +4701,7 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
     for ( iNode = 0; iNode < nbNodes; iNode++ )
       prevNod[ iNode ] = nextNod[ iNode ];
 
-  } // for steps
+  } // loop on steps
 }
 
 //=======================================================================
@@ -5218,50 +5238,328 @@ SMESH_MeshEditor::RotationSweep(TIDSortedElemSet & theElems,
   return newGroupIDs;
 }
 
+//=======================================================================
+//function : ExtrusParam
+//purpose  : standard construction
+//=======================================================================
 
-//=======================================================================
-//function : CreateNode
-//purpose  :
-//=======================================================================
-const SMDS_MeshNode* SMESH_MeshEditor::CreateNode(const double x,
-                                                  const double y,
-                                                  const double z,
-                                                  const double tolnode,
-                                                  SMESH_SequenceOfNode& aNodes)
+SMESH_MeshEditor::ExtrusParam::ExtrusParam( const gp_Vec&  theStep,
+                                            const int      theNbSteps,
+                                            const int      theFlags,
+                                            const double   theTolerance):
+  myDir( theStep ),
+  myFlags( theFlags ),
+  myTolerance( theTolerance ),
+  myElemsToUse( NULL )
 {
-  // myLastCreatedElems.Clear();
-  // myLastCreatedNodes.Clear();
+  mySteps = new TColStd_HSequenceOfReal;
+  const double stepSize = theStep.Magnitude();
+  for (int i=1; i<=theNbSteps; i++ )
+    mySteps->Append( stepSize );
 
-  gp_Pnt P1(x,y,z);
-  SMESHDS_Mesh * aMesh = myMesh->GetMeshDS();
-
-  // try to search in sequence of existing nodes
-  // if aNodes.Length()>0 we 'nave to use given sequence
-  // else - use all nodes of mesh
-  if(aNodes.Length()>0) {
-    int i;
-    for(i=1; i<=aNodes.Length(); i++) {
-      gp_Pnt P2(aNodes.Value(i)->X(),aNodes.Value(i)->Y(),aNodes.Value(i)->Z());
-      if(P1.Distance(P2)<tolnode)
-        return aNodes.Value(i);
-    }
+  if (( theFlags & EXTRUSION_FLAG_SEW ) &&
+      ( theTolerance > 0 ))
+  {
+    myMakeNodesFun = & SMESH_MeshEditor::ExtrusParam::makeNodesByDirAndSew;
   }
-  else {
-    SMDS_NodeIteratorPtr itn = aMesh->nodesIterator();
-    while(itn->more()) {
-      const SMDS_MeshNode* aN = static_cast<const SMDS_MeshNode*> (itn->next());
-      gp_Pnt P2(aN->X(),aN->Y(),aN->Z());
-      if(P1.Distance(P2)<tolnode)
-        return aN;
-    }
+  else
+  {
+    myMakeNodesFun = & SMESH_MeshEditor::ExtrusParam::makeNodesByDir;
   }
-
-  // create new node and return it
-  const SMDS_MeshNode* NewNode = aMesh->AddNode(x,y,z);
-  //myLastCreatedNodes.Append(NewNode);
-  return NewNode;
 }
 
+//=======================================================================
+//function : ExtrusParam
+//purpose  : steps are given explicitly
+//=======================================================================
+
+SMESH_MeshEditor::ExtrusParam::ExtrusParam( const gp_Dir&                   theDir,
+                                            Handle(TColStd_HSequenceOfReal) theSteps,
+                                            const int                       theFlags,
+                                            const double                    theTolerance):
+  myDir( theDir ),
+  mySteps( theSteps ),
+  myFlags( theFlags ),
+  myTolerance( theTolerance ),
+  myElemsToUse( NULL )
+{
+  if (( theFlags & EXTRUSION_FLAG_SEW ) &&
+      ( theTolerance > 0 ))
+  {
+    myMakeNodesFun = & SMESH_MeshEditor::ExtrusParam::makeNodesByDirAndSew;
+  }
+  else
+  {
+    myMakeNodesFun = & SMESH_MeshEditor::ExtrusParam::makeNodesByDir;
+  }
+}
+
+//=======================================================================
+//function : ExtrusParam
+//purpose  : for extrusion by normal
+//=======================================================================
+
+SMESH_MeshEditor::ExtrusParam::ExtrusParam( const double theStepSize,
+                                            const int    theNbSteps,
+                                            const int    theFlags,
+                                            const int    theDim ):
+  myDir( 1,0,0 ),
+  mySteps( new TColStd_HSequenceOfReal ),
+  myFlags( theFlags ),
+  myTolerance( 0 ),
+  myElemsToUse( NULL )
+{
+  for (int i = 0; i < theNbSteps; i++ )
+    mySteps->Append( theStepSize );
+
+  if ( theDim == 1 )
+  {
+    myMakeNodesFun = & SMESH_MeshEditor::ExtrusParam::makeNodesByNormal1D;
+  }
+  else
+  {
+    myMakeNodesFun = & SMESH_MeshEditor::ExtrusParam::makeNodesByNormal2D;
+  }
+}
+
+//=======================================================================
+//function : ExtrusParam::SetElementsToUse
+//purpose  : stores elements to use for extrusion by normal, depending on
+//           state of EXTRUSION_FLAG_USE_INPUT_ELEMS_ONLY flag
+//=======================================================================
+
+void SMESH_MeshEditor::ExtrusParam::SetElementsToUse( const TIDSortedElemSet& elems )
+{
+  myElemsToUse = ToUseInpElemsOnly() ? & elems : 0;
+}
+
+//=======================================================================
+//function : ExtrusParam::beginStepIter
+//purpose  : prepare iteration on steps
+//=======================================================================
+
+void SMESH_MeshEditor::ExtrusParam::beginStepIter( bool withMediumNodes )
+{
+  myWithMediumNodes = withMediumNodes;
+  myNextStep = 1;
+  myCurSteps.clear();
+}
+//=======================================================================
+//function : ExtrusParam::moreSteps
+//purpose  : are there more steps?
+//=======================================================================
+
+bool SMESH_MeshEditor::ExtrusParam::moreSteps()
+{
+  return myNextStep <= mySteps->Length() || !myCurSteps.empty();
+}
+//=======================================================================
+//function : ExtrusParam::nextStep
+//purpose  : returns the next step
+//=======================================================================
+
+double SMESH_MeshEditor::ExtrusParam::nextStep()
+{
+  double res = 0;
+  if ( !myCurSteps.empty() )
+  {
+    res = myCurSteps.back();
+    myCurSteps.pop_back();
+  }
+  else if ( myNextStep <= mySteps->Length() )
+  {
+    myCurSteps.push_back( mySteps->Value( myNextStep ));
+    ++myNextStep;
+    if ( myWithMediumNodes )
+    {
+      myCurSteps.back() /= 2.;
+      myCurSteps.push_back( myCurSteps.back() );
+    }
+    res = nextStep();
+  }
+  return res;
+}
+
+//=======================================================================
+//function : ExtrusParam::makeNodesByDir
+//purpose  : create nodes for standard extrusion
+//=======================================================================
+
+int SMESH_MeshEditor::ExtrusParam::
+makeNodesByDir( SMESHDS_Mesh*                     mesh,
+                const SMDS_MeshNode*              srcNode,
+                std::list<const SMDS_MeshNode*> & newNodes,
+                const bool                        makeMediumNodes)
+{
+  gp_XYZ p = SMESH_TNodeXYZ( srcNode );
+
+  int nbNodes = 0;
+  for ( beginStepIter( makeMediumNodes ); moreSteps(); ++nbNodes ) // loop on steps
+  {
+    p += myDir.XYZ() * nextStep();
+    const SMDS_MeshNode * newNode = mesh->AddNode( p.X(), p.Y(), p.Z() );
+    newNodes.push_back( newNode );
+  }
+  return nbNodes;
+}
+
+//=======================================================================
+//function : ExtrusParam::makeNodesByDirAndSew
+//purpose  : create nodes for standard extrusion with sewing
+//=======================================================================
+
+int SMESH_MeshEditor::ExtrusParam::
+makeNodesByDirAndSew( SMESHDS_Mesh*                     mesh,
+                      const SMDS_MeshNode*              srcNode,
+                      std::list<const SMDS_MeshNode*> & newNodes,
+                      const bool                        makeMediumNodes)
+{
+  gp_XYZ P1 = SMESH_TNodeXYZ( srcNode );
+
+  int nbNodes = 0;
+  for ( beginStepIter( makeMediumNodes ); moreSteps(); ++nbNodes ) // loop on steps
+  {
+    P1 += myDir.XYZ() * nextStep();
+
+    // try to search in sequence of existing nodes
+    // if myNodes.Length()>0 we 'nave to use given sequence
+    // else - use all nodes of mesh
+    const SMDS_MeshNode * node = 0;
+    if ( myNodes.Length() > 0 ) {
+      int i;
+      for(i=1; i<=myNodes.Length(); i++) {
+        gp_XYZ P2 = SMESH_TNodeXYZ( myNodes.Value(i) );
+        if (( P1 - P2 ).SquareModulus() < myTolerance * myTolerance )
+        {
+          node = myNodes.Value(i);
+          break;
+        }
+      }
+    }
+    else {
+      SMDS_NodeIteratorPtr itn = mesh->nodesIterator();
+      while(itn->more()) {
+        SMESH_TNodeXYZ P2( itn->next() );
+        if (( P1 - P2 ).SquareModulus() < myTolerance * myTolerance )
+        {
+          node = P2._node;
+          break;
+        }
+      }
+    }
+
+    if ( !node )
+      node = mesh->AddNode( P1.X(), P1.Y(), P1.Z() );
+
+    newNodes.push_back( node );
+
+  } // loop on steps
+
+  return nbNodes;
+}
+
+//=======================================================================
+//function : ExtrusParam::makeNodesByNormal2D
+//purpose  : create nodes for extrusion using normals of faces
+//=======================================================================
+
+int SMESH_MeshEditor::ExtrusParam::
+makeNodesByNormal2D( SMESHDS_Mesh*                     mesh,
+                     const SMDS_MeshNode*              srcNode,
+                     std::list<const SMDS_MeshNode*> & newNodes,
+                     const bool                        makeMediumNodes)
+{
+  const bool alongAvgNorm = ( myFlags & EXTRUSION_FLAG_BY_AVG_NORMAL );
+
+  gp_XYZ p = SMESH_TNodeXYZ( srcNode );
+
+  // get normals to faces sharing srcNode
+  vector< gp_XYZ > norms, baryCenters;
+  gp_XYZ norm, avgNorm( 0,0,0 );
+  SMDS_ElemIteratorPtr faceIt = srcNode->GetInverseElementIterator( SMDSAbs_Face );
+  while ( faceIt->more() )
+  {
+    const SMDS_MeshElement* face = faceIt->next();
+    if ( myElemsToUse && !myElemsToUse->count( face ))
+      continue;
+    if ( SMESH_MeshAlgos::FaceNormal( face, norm, /*normalized=*/true ))
+    {
+      norms.push_back( norm );
+      avgNorm += norm;
+      if ( !alongAvgNorm )
+      {
+        gp_XYZ bc(0,0,0);
+        int nbN = 0;
+        for ( SMDS_ElemIteratorPtr nIt = face->nodesIterator(); nIt->more(); ++nbN )
+          bc += SMESH_TNodeXYZ( nIt->next() );
+        baryCenters.push_back( bc / nbN );
+      }
+    }
+  }
+
+  if ( norms.empty() ) return 0;
+
+  double normSize = avgNorm.Modulus();
+  if ( normSize < std::numeric_limits<double>::min() )
+    return 0;
+
+  if ( myFlags & EXTRUSION_FLAG_BY_AVG_NORMAL ) // extrude along avgNorm
+  {
+    myDir = avgNorm;
+    return makeNodesByDir( mesh, srcNode, newNodes, makeMediumNodes );
+  }
+
+  avgNorm /= normSize;
+
+  int nbNodes = 0;
+  for ( beginStepIter( makeMediumNodes ); moreSteps(); ++nbNodes ) // loop on steps
+  {
+    gp_XYZ pNew = p;
+    double stepSize = nextStep();
+
+    if ( norms.size() > 1 )
+    {
+      for ( size_t iF = 0; iF < norms.size(); ++iF ) // loop on faces
+      {
+        // translate plane of a face
+        baryCenters[ iF ] += norms[ iF ] * stepSize;
+
+        // find point of intersection of the face plane located at baryCenters[ iF ]
+        // and avgNorm located at pNew
+        double d    = -( norms[ iF ] * baryCenters[ iF ]); // d of plane equation ax+by+cz+d=0
+        double dot  = ( norms[ iF ] * avgNorm );
+        if ( dot < std::numeric_limits<double>::min() )
+          dot = stepSize * 1e-3;
+        double step = -( norms[ iF ] * pNew + d ) / dot;
+        pNew += step * avgNorm;
+      }
+    }
+    else
+    {
+      pNew += stepSize * avgNorm;
+    }
+    p = pNew;
+
+    const SMDS_MeshNode * newNode = mesh->AddNode( p.X(), p.Y(), p.Z() );
+    newNodes.push_back( newNode );
+  }
+  return nbNodes;
+}
+
+//=======================================================================
+//function : ExtrusParam::makeNodesByNormal1D
+//purpose  : create nodes for extrusion using normals of edges
+//=======================================================================
+
+int SMESH_MeshEditor::ExtrusParam::
+makeNodesByNormal1D( SMESHDS_Mesh*                     mesh,
+                     const SMDS_MeshNode*              srcNode,
+                     std::list<const SMDS_MeshNode*> & newNodes,
+                     const bool                        makeMediumNodes)
+{
+  throw SALOME_Exception("Extrusion 1D by Normal not implemented");
+  return 0;
+}
 
 //=======================================================================
 //function : ExtrusionSweep
@@ -5273,20 +5571,11 @@ SMESH_MeshEditor::ExtrusionSweep (TIDSortedElemSet &   theElems,
                                   const gp_Vec&        theStep,
                                   const int            theNbSteps,
                                   TTElemOfElemListMap& newElemsMap,
-                                  const bool           theMakeGroups,
                                   const int            theFlags,
                                   const double         theTolerance)
 {
-  ExtrusParam aParams;
-  aParams.myDir = gp_Dir(theStep);
-  aParams.myNodes.Clear();
-  aParams.mySteps = new TColStd_HSequenceOfReal;
-  int i;
-  for(i=1; i<=theNbSteps; i++)
-    aParams.mySteps->Append(theStep.Magnitude());
-
-  return
-    ExtrusionSweep(theElems,aParams,newElemsMap,theMakeGroups,theFlags,theTolerance);
+  ExtrusParam aParams( theStep, theNbSteps, theFlags, theTolerance );
+  return ExtrusionSweep( theElems, aParams, newElemsMap );
 }
 
 
@@ -5298,10 +5587,7 @@ SMESH_MeshEditor::ExtrusionSweep (TIDSortedElemSet &   theElems,
 SMESH_MeshEditor::PGroupIDs
 SMESH_MeshEditor::ExtrusionSweep (TIDSortedElemSet &   theElems,
                                   ExtrusParam&         theParams,
-                                  TTElemOfElemListMap& newElemsMap,
-                                  const bool           theMakeGroups,
-                                  const int            theFlags,
-                                  const double         theTolerance)
+                                  TTElemOfElemListMap& newElemsMap)
 {
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();
@@ -5311,7 +5597,8 @@ SMESH_MeshEditor::ExtrusionSweep (TIDSortedElemSet &   theElems,
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
-  int nbsteps = theParams.mySteps->Length();
+  const int nbSteps = theParams.NbSteps();
+  theParams.SetElementsToUse( theElems );
 
   TNodeOfNodeListMap mapNewNodes;
   //TNodeOfNodeVecMap mapNewNodes;
@@ -5323,14 +5610,16 @@ SMESH_MeshEditor::ExtrusionSweep (TIDSortedElemSet &   theElems,
                                      myMesh->NbVolumes(ORDER_QUADRATIC) );
   // loop on theElems
   TIDSortedElemSet::iterator itElem;
-  for ( itElem = theElems.begin(); itElem != theElems.end(); itElem++ ) {
+  for ( itElem = theElems.begin(); itElem != theElems.end(); itElem++ )
+  {
     // check element type
     const SMDS_MeshElement* elem = *itElem;
     if ( !elem  || elem->GetType() == SMDSAbs_Volume )
       continue;
 
+    const size_t nbNodes = elem->NbNodes();
     vector<TNodeOfNodeListMapItr> & newNodesItVec = mapElemNewNodes[ elem ];
-    newNodesItVec.reserve( elem->NbNodes() );
+    newNodesItVec.reserve( nbNodes );
 
     // loop on elem nodes
     SMDS_ElemIteratorPtr itN = elem->nodesIterator();
@@ -5359,55 +5648,33 @@ SMESH_MeshEditor::ExtrusionSweep (TIDSortedElemSet &   theElems,
               needMediumNodes = true;
           }
         }
-
-        double coord[] = { node->X(), node->Y(), node->Z() };
-        for ( int i = 0; i < nbsteps; i++ )
+        // create nodes for all steps
+        if ( theParams.MakeNodes( GetMeshDS(), node, listNewNodes, needMediumNodes ))
         {
-          if ( needMediumNodes ) // create a medium node
+          list<const SMDS_MeshNode*>::iterator newNodesIt = listNewNodes.begin();
+          for ( ; newNodesIt != listNewNodes.end(); ++newNodesIt )
           {
-            double x = coord[0] + theParams.myDir.X()*theParams.mySteps->Value(i+1)/2.;
-            double y = coord[1] + theParams.myDir.Y()*theParams.mySteps->Value(i+1)/2.;
-            double z = coord[2] + theParams.myDir.Z()*theParams.mySteps->Value(i+1)/2.;
-            if( theFlags & EXTRUSION_FLAG_SEW ) {
-              const SMDS_MeshNode * newNode = CreateNode(x, y, z,
-                                                         theTolerance, theParams.myNodes);
-              listNewNodes.push_back( newNode );
-            }
-            else {
-              const SMDS_MeshNode * newNode = aMesh->AddNode(x, y, z);
-              myLastCreatedNodes.Append(newNode);
-              srcNodes.Append( node );
-              listNewNodes.push_back( newNode );
-            }
-          }
-          // create a corner node
-          coord[0] = coord[0] + theParams.myDir.X()*theParams.mySteps->Value(i+1);
-          coord[1] = coord[1] + theParams.myDir.Y()*theParams.mySteps->Value(i+1);
-          coord[2] = coord[2] + theParams.myDir.Z()*theParams.mySteps->Value(i+1);
-          if( theFlags & EXTRUSION_FLAG_SEW ) {
-            const SMDS_MeshNode * newNode = CreateNode(coord[0], coord[1], coord[2],
-                                                       theTolerance, theParams.myNodes);
-            listNewNodes.push_back( newNode );
-          }
-          else {
-            const SMDS_MeshNode * newNode = aMesh->AddNode( coord[0], coord[1], coord[2] );
-            myLastCreatedNodes.Append(newNode);
+            myLastCreatedNodes.Append( *newNodesIt );
             srcNodes.Append( node );
-            listNewNodes.push_back( newNode );
           }
+        }
+        else
+        {
+          break; // newNodesItVec will be shorter than nbNodes
         }
       }
       newNodesItVec.push_back( nIt );
     }
     // make new elements
-    sweepElement( elem, newNodesItVec, newElemsMap[elem], nbsteps, srcElems );
+    if ( newNodesItVec.size() == nbNodes )
+      sweepElement( elem, newNodesItVec, newElemsMap[elem], nbSteps, srcElems );
   }
 
-  if( theFlags & EXTRUSION_FLAG_BOUNDARY ) {
-    makeWalls( mapNewNodes, newElemsMap, mapElemNewNodes, theElems, nbsteps, srcElems );
+  if ( theParams.ToMakeBoundary() ) {
+    makeWalls( mapNewNodes, newElemsMap, mapElemNewNodes, theElems, nbSteps, srcElems );
   }
   PGroupIDs newGroupIDs;
-  if ( theMakeGroups )
+  if ( theParams.ToMakeGroups() )
     newGroupIDs = generateGroups( srcNodes, srcElems, "extruded");
 
   return newGroupIDs;

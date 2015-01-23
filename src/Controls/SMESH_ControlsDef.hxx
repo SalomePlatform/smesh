@@ -867,14 +867,18 @@ namespace SMESH{
         double                      myTol;
       };
       void clearClassifiers();
+      bool getNodeIsOut( const SMDS_MeshNode* n, bool& isOut );
+      void setNodeIsOut( const SMDS_MeshNode* n, bool  isOut );
 
       std::vector< TClassifier* > myClassifiers;
-      const SMDS_Mesh*            myMesh;
       SMDSAbs_ElementType         myType;
       TopoDS_Shape                myShape;
       double                      myToler;
       bool                        myAllNodesFlag;
 
+      TMeshModifTracer            myMeshModifTracer;
+      std::vector<bool>           myNodeIsChecked;
+      std::vector<bool>           myNodeIsOut;
     };
 
     typedef boost::shared_ptr<ElementsOnShape> ElementsOnShapePtr;

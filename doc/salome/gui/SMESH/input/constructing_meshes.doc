@@ -314,8 +314,14 @@ click "Compute" button of the toolbar.
 </center>
 
 After the mesh computation finishes, the Mesh Computation information
-box appears. In case of a success, the box shows
-information on number of entities of different types in the mesh.
+box appears. If you close this box and click "Compute" button again,
+without previously changing hypotheses and/or algorithms, the mesh is
+NOT re-computed and the Mesh Computation information box with
+the same contents is shown. (To fully re-compute the mesh, invoke \ref
+clear_mesh_anchor "Clear Mesh Data" command before).
+
+In case of a success, the box shows information on number of entities
+of different types in the mesh.
 
 \image html meshcomputationsucceed.png
 

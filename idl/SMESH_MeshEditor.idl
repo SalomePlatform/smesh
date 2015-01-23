@@ -587,6 +587,14 @@ module SMESH
                                                   in DirStruct      StepVector,
                                                   in long           NbOfSteps) 
       raises (SALOME::SALOME_Exception);
+    ListOfGroups ExtrusionByNormal(in SMESH_IDSource theObject,
+                                   in double         stepSize,
+                                   in long           nbOfSteps,
+                                   in boolean        byAverageNormal,
+                                   in boolean        useInputElemsOnly,
+                                   in boolean        makeGroups,
+                                   in short          dim)
+      raises (SALOME::SALOME_Exception);
 
     enum Extrusion_Error {
       EXTR_OK,
