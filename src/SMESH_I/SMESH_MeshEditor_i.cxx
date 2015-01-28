@@ -3126,7 +3126,7 @@ SMESH_MeshEditor_i::ExtrusionByNormal(SMESH::SMESH_IDSource_ptr object,
                 << ", " << dim
                 << " )";
   }
-  return aGroups;
+  return aGroups ? aGroups : new SMESH::ListOfGroups;
 }
 
 //=======================================================================
