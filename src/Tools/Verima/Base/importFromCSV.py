@@ -24,6 +24,7 @@ if __name__ == "__main__":
          exit()
 
       maBase=Base(options.database)
+      maBase.create()
       maBase.initialise()
       maBase.importFromCSV(folder,options.partiel,options.force)
       maBase.close()

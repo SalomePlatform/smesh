@@ -4,8 +4,8 @@ from tableDeBase import TableDeBase
 class TablePerfs (TableDeBase):
       def __init__(self):
           TableDeBase.__init__(self,"Perfs")
-          self.setField(('Maillage','Version','NbSecCpu','Memoire'))
-          self.setTypeField(('int','int','int','int'),('idMaillage','idVersion','Machine'))
+          self.setField(('Maillage','Version','Machine','NbSecCpu','Memoire'))
+          self.setTypeField(('int','int','str','int','int'),('idMaillage','idVersion','Machine'))
 
       def createSqlTable(self):
           query=QtSql.QSqlQuery()
