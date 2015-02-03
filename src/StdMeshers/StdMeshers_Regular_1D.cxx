@@ -968,13 +968,13 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     {
       if ( Abs( param - Un ) < 0.2 * Abs( param - theParams.back() ))
       {
-        compensateError( a1, eltSize, U1, Un, theLength, theC3d, theParams );
+        compensateError( a1, Abs(eltSize), U1, Un, theLength, theC3d, theParams );
       }
       else if ( Abs( Un - theParams.back() ) <
-                0.2 * Abs( theParams.back() - *(--theParams.rbegin())))
+                0.2 * Abs( theParams.back() - *(++theParams.rbegin())))
       {
         theParams.pop_back();
-        compensateError( a1, an, U1, Un, theLength, theC3d, theParams );
+        compensateError( a1, Abs(an), U1, Un, theLength, theC3d, theParams );
       }
     }
     if (theReverse) theParams.reverse(); // NPAL18025
@@ -1170,10 +1170,13 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
     }
     if ( !_mainEdge.IsNull() ) {
       // take into account reversing the edge the hypothesis is propagated from
+      // (_mainEdge.Orientation() marks mutual orientation of EDGEs in propagation chain)
       reversed = ( _mainEdge.Orientation() == TopAbs_REVERSED );
-      int mainID = meshDS->ShapeToIndex(_mainEdge);
-      if ( std::find( _revEdgesIDs.begin(), _revEdgesIDs.end(), mainID) != _revEdgesIDs.end())
-        reversed = !reversed;
+      if ( !_isPropagOfDistribution ) {
+        int mainID = meshDS->ShapeToIndex(_mainEdge);
+        if ( std::find( _revEdgesIDs.begin(), _revEdgesIDs.end(), mainID) != _revEdgesIDs.end())
+          reversed = !reversed;
+      }
     }
     // take into account this edge reversing
     if ( std::find( _revEdgesIDs.begin(), _revEdgesIDs.end(), shapeID) != _revEdgesIDs.end())

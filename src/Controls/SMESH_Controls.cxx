@@ -4087,39 +4087,39 @@ bool ElementsOnShape::IsSatisfy (long elemId)
   if ( !elem || myClassifiers.empty() )
     return false;
 
-  for ( size_t i = 0; i < myClassifiers.size(); ++i )
+  bool isSatisfy = myAllNodesFlag, isNodeOut;
+
+  gp_XYZ centerXYZ (0, 0, 0);
+
+  SMDS_ElemIteratorPtr aNodeItr = elem->nodesIterator();
+  while (aNodeItr->more() && (isSatisfy == myAllNodesFlag))
   {
-    SMDS_ElemIteratorPtr aNodeItr = elem->nodesIterator();
-    bool isSatisfy = myAllNodesFlag, isNodeOut;
-    
-    gp_XYZ centerXYZ (0, 0, 0);
+    SMESH_TNodeXYZ aPnt( aNodeItr->next() );
+    centerXYZ += aPnt;
 
-    while (aNodeItr->more() && (isSatisfy == myAllNodesFlag))
+    isNodeOut = true;
+    if ( !getNodeIsOut( aPnt._node, isNodeOut ))
     {
-      const SMDS_MeshNode* n = (const SMDS_MeshNode*) aNodeItr->next();
-      if ( !getNodeIsOut( n, isNodeOut ))
-      {
-        SMESH_TNodeXYZ aPnt( n );
-        centerXYZ += aPnt;
+      for ( size_t i = 0; i < myClassifiers.size() && isNodeOut; ++i )
         isNodeOut = myClassifiers[i]->IsOut( aPnt );
-        setNodeIsOut( n, isNodeOut );
-      }
-      isSatisfy = !isNodeOut;
-    }
 
-    // Check the center point for volumes MantisBug 0020168
-    if (isSatisfy &&
-        myAllNodesFlag &&
-        myClassifiers[i]->ShapeType() == TopAbs_SOLID)
-    {
-      centerXYZ /= elem->NbNodes();
-      isSatisfy = ! myClassifiers[i]->IsOut( centerXYZ );
+      setNodeIsOut( aPnt._node, isNodeOut );
     }
-    if ( isSatisfy )
-      return true;
+    isSatisfy = !isNodeOut;
   }
 
-  return false;
+  // Check the center point for volumes MantisBug 0020168
+  if (isSatisfy &&
+      myAllNodesFlag &&
+      myClassifiers[0]->ShapeType() == TopAbs_SOLID)
+  {
+    centerXYZ /= elem->NbNodes();
+    isSatisfy = false;
+    for ( size_t i = 0; i < myClassifiers.size() && !isSatisfy; ++i )
+      isSatisfy = ! myClassifiers[i]->IsOut( centerXYZ );
+  }
+
+  return isSatisfy;
 }
 
 TopAbs_ShapeEnum ElementsOnShape::TClassifier::ShapeType() const

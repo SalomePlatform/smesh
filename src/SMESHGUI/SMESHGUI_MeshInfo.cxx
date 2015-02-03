@@ -3340,7 +3340,8 @@ void SMESHGUI_CtrlInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
       // free nodes
       computeFreeNodesInfo();
       // double nodes
-      computeDoubleNodesInfo();
+      if ( Max( (int)mesh->NbNodes(), (int)mesh->NbElements() ) <= ctrlLimit )
+        computeDoubleNodesInfo();
     }
     else {
       myButtons[0]->setEnabled( true );
