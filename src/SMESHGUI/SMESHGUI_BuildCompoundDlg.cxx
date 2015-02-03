@@ -333,8 +333,10 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
       SMESH::UpdateView();
 
       _PTR(SObject) aSO = SMESH::FindSObject(aCompoundMesh.in());
-      if ( SMESH_Actor* anActor = SMESH::CreateActor(aSO->GetStudy(), aSO->GetID().c_str()) )
+      if ( SMESH_Actor* anActor = SMESH::CreateActor(aSO->GetStudy(), aSO->GetID().c_str()) ) {
         SMESH::DisplayActor(SMESH::GetActiveWindow(), anActor);
+        SMESH::UpdateView();
+      }
     }// end IPAL21468
 
     if( LightApp_Application* anApp =
