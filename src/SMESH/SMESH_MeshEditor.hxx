@@ -260,7 +260,7 @@ public:
   /*!
    * Generator of nodes for extrusion functionality
    */
-  class ExtrusParam {
+  class SMESH_EXPORT ExtrusParam {
     gp_Dir                          myDir;   // direction of extrusion
     Handle(TColStd_HSequenceOfReal) mySteps; // magnitudes for each step
     SMESH_SequenceOfNode            myNodes; // nodes for using in sewing

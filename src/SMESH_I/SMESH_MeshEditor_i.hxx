@@ -45,7 +45,7 @@ namespace MeshEditor_I {
   struct ExtrusionParams;
 }
 
-class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
+class SMESH_I_EXPORT SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
 {
 public:
   SMESH_MeshEditor_i(SMESH_Mesh_i * theMesh, bool isPreview);
