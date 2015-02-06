@@ -536,6 +536,12 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
             notebook = salome_notebook.NoteBook( theStudy )
         else:
             notebook = salome_notebook.NoteBook( salome_notebook.PseudoStudyForNoteBook() )
+        if theStudy:
+            sb = theStudy.NewBuilder()
+            sc = theStudy.FindComponent("SMESH")
+            if sc: sb.LoadWith(sc, self)
+            pass
+        pass
 
     ## Gets the current study
     #  @ingroup l1_auxiliary
