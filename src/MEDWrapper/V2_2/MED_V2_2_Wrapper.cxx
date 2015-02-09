@@ -24,11 +24,8 @@
 #include "MED_Algorithm.hxx"
 #include "MED_Utilities.hxx"
 
-extern "C"
-{
 #include <med.h>
 #include <med_err.h>
-}
 
 #ifdef _DEBUG_
 static int MYDEBUG = 0;
