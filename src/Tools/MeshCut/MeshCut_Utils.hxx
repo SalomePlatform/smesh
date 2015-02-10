@@ -20,10 +20,7 @@
 #ifndef __MESHCUT_UTILS_HXX__
 #define __MESHCUT_UTILS_HXX__
 
-extern "C"
-  {
 #include <med.h>
-  }
 
 #include <string>
 #include <vector>

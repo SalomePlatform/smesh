@@ -27,9 +27,9 @@
 #include <stdio.h>
 #include <sstream>
 
+#include <med.h>
 extern "C"
 {
-#include <med.h>
 #ifndef WIN32
   #include <unistd.h>
 #endif
