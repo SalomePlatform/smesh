@@ -714,17 +714,18 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
       StdMeshers::StdMeshers_ViscousLayers_var h =
         StdMeshers::StdMeshers_ViscousLayers::_narrow( hypothesis() );
 
-      h->SetVarParameter( params[0].text(), "SetTotalThickness" );
+      h->SetVarParameter  ( params[0].text(), "SetTotalThickness" );
       h->SetTotalThickness( params[0].myValue.toDouble() );
-      h->SetVarParameter( params[1].text(), "SetNumberLayers" );
+      h->SetVarParameter  ( params[1].text(), "SetNumberLayers" );
       h->SetNumberLayers  ( params[1].myValue.toInt() );
-      h->SetVarParameter( params[2].text(), "SetStretchFactor" );
+      h->SetVarParameter  ( params[2].text(), "SetStretchFactor" );
       h->SetStretchFactor ( params[2].myValue.toDouble() );
+      h->SetMethod (( StdMeshers::VLExtrusionMethod ) params[3].myValue.toInt() );
 
-      if ( StdMeshersGUI_SubShapeSelectorWdg* idsWg = 
-           widget< StdMeshersGUI_SubShapeSelectorWdg >( 4 ))
+      if ( StdMeshersGUI_SubShapeSelectorWdg* idsWg =
+           widget< StdMeshersGUI_SubShapeSelectorWdg >( 5 ))
       {
-        h->SetFaces( idsWg->GetListOfIDs(), params[3].myValue.toInt() );
+        h->SetFaces( idsWg->GetListOfIDs(), params[4].myValue.toInt() );
       }
     }
     else if( hypType()=="ViscousLayers2D" )
@@ -732,11 +733,11 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
       StdMeshers::StdMeshers_ViscousLayers2D_var h =
         StdMeshers::StdMeshers_ViscousLayers2D::_narrow( hypothesis() );
 
-      h->SetVarParameter( params[0].text(), "SetTotalThickness" );
+      h->SetVarParameter  ( params[0].text(), "SetTotalThickness" );
       h->SetTotalThickness( params[0].myValue.toDouble() );
-      h->SetVarParameter( params[1].text(), "SetNumberLayers" );
+      h->SetVarParameter  ( params[1].text(), "SetNumberLayers" );
       h->SetNumberLayers  ( params[1].myValue.toInt() );
-      h->SetVarParameter( params[2].text(), "SetStretchFactor" );
+      h->SetVarParameter  ( params[2].text(), "SetStretchFactor" );
       h->SetStretchFactor ( params[2].myValue.toDouble() );
 
       if ( StdMeshersGUI_SubShapeSelectorWdg* idsWg =
@@ -1241,6 +1242,20 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       item.myValue = h->GetStretchFactor();
     p.append( item );
     customWidgets()->append (0);
+
+    item.myName = tr( "EXTRUSION_METHOD" );
+    p.append( item );
+    StdMeshersGUI_RadioButtonsGrpWdg* methodWdg = new StdMeshersGUI_RadioButtonsGrpWdg("");
+    methodWdg->setButtonLabels ( QStringList()
+                                 << tr("EXTMETH_SURF_OFFSET_SMOOTH")
+                                 << tr("EXTMETH_FACE_OFFSET")
+                                 << tr("EXTMETH_NODE_OFFSET"),
+                                 QStringList()
+                                 << tr("ICON_EXTMETH_SURF_OFFSET_SMOOTH")
+                                 << tr("ICON_EXTMETH_FACE_OFFSET")
+                                 << tr("ICON_EXTMETH_NODE_OFFSET"));
+    methodWdg->setChecked( (int) h->GetMethod() );
+    customWidgets()->append( methodWdg );
 
     QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
     QString aSubEntry  = SMESHGUI_GenericHypothesisCreator::getShapeEntry();

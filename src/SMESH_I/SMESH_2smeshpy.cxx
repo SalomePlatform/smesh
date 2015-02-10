@@ -2777,7 +2777,7 @@ void _pyHypothesis::Process( const Handle(_pyCommand)& theCommand)
           myArgCommands.push_back( theCommand );
         usedCommand = true;
         while ( crMethod.myArgs.size() < i+1 )
-          crMethod.myArgs.push_back( "[]" );
+          crMethod.myArgs.push_back( "None" );
         crMethod.myArgs[ i ] = theCommand->GetArg( crMethod.myArgNb[i] );
       }
     }

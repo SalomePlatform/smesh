@@ -321,7 +321,7 @@
                dim      ="3">
       <python-wrap>
         <algo>Hexa_3D=Hexahedron(algo=smeshBuilder.Hexa)</algo>
-        <hypo>ViscousLayers=ViscousLayers(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetIgnoreFaces())</hypo>
+        <hypo>ViscousLayers=ViscousLayers(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetFaces(1),SetFaces(2),SetMethod())</hypo>
       </python-wrap>
     </algorithm>
 

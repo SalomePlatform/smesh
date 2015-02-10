@@ -65,6 +65,9 @@ class STDMESHERS_I_EXPORT StdMeshers_ViscousLayers_i:
   void SetStretchFactor(::CORBA::Double factor) throw ( SALOME::SALOME_Exception );
   ::CORBA::Double GetStretchFactor();
 
+  void SetMethod( ::StdMeshers::VLExtrusionMethod how );
+  ::StdMeshers::VLExtrusionMethod GetMethod();
+
   // Get implementation
   ::StdMeshers_ViscousLayers* GetImpl();
 

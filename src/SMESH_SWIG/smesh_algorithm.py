@@ -23,7 +23,7 @@
 
 import salome
 from salome.geom import geomBuilder
-import SMESH
+import SMESH, StdMeshers
 
 ## The base class to define meshing algorithms
 #
@@ -266,9 +266,22 @@ class Mesh_Algorithm:
     #         the value of \a isFacesToIgnore parameter.
     #  @param isFacesToIgnore if \c True, the Viscous layers are not generated on the
     #         faces specified by the previous parameter (\a faces).
+    #  @param extrMethod extrusion method defines how position of nodes are found during
+    #         prism construction and how creation of distorted and intersecting prisms is
+    #         prevented. Possible values are:
+    #       - StdMeshers.SURF_OFFSET_SMOOTH (default) method extrudes nodes along normal
+    #         to underlying geometrical surface. Smoothing of internal surface of
+    #         element layers can be used to avoid creation of invalid prisms.
+    #       - StdMeshers.FACE_OFFSET method extrudes nodes along average normal of
+    #         surrounding mesh faces till intersection with a neighbor mesh face
+    #         translated along its own normal by the layers thickness. Thickness
+    #         of layers can be limited to avoid creation of invalid prisms.
+    #       - StdMeshers.NODE_OFFSET method extrudes nodes along average normal of
+    #         surrounding mesh faces by the layers thickness. Thickness of
+    #         layers can be limited to avoid creation of invalid prisms.
     #  @ingroup l3_hypos_additi
     def ViscousLayers(self, thickness, numberOfLayers, stretchFactor,
-                      faces=[], isFacesToIgnore=True ):
+                      faces=[], isFacesToIgnore=True, extrMethod=StdMeshers.SURF_OFFSET_SMOOTH ):
         if not isinstance(self.algo, SMESH._objref_SMESH_3D_Algo):
             raise TypeError, "ViscousLayers are supported by 3D algorithms only"
         if not "ViscousLayers" in self.GetCompatibleHypothesis():
@@ -285,10 +298,11 @@ class Mesh_Algorithm:
         hyp = self.Hypothesis("ViscousLayers",
                               [thickness, numberOfLayers, stretchFactor, faces, isFacesToIgnore],
                               toAdd=False)
-        hyp.SetTotalThickness(thickness)
-        hyp.SetNumberLayers(numberOfLayers)
-        hyp.SetStretchFactor(stretchFactor)
-        hyp.SetFaces(faces, isFacesToIgnore)
+        hyp.SetTotalThickness( thickness )
+        hyp.SetNumberLayers( numberOfLayers )
+        hyp.SetStretchFactor( stretchFactor )
+        hyp.SetFaces( faces, isFacesToIgnore )
+        hyp.SetMethod( extrMethod )
         self.mesh.AddHypothesis( hyp, self.geom )
         return hyp
 

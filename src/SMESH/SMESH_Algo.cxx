@@ -566,7 +566,7 @@ bool SMESH_Algo::IsStraight( const TopoDS_Edge & E,
   if ( v1Len < std::numeric_limits< double >::min() )
     return false; // E seems closed
   const double tol = Min( 10 * curve.Tolerance(), v1Len * 1e-2 );
-  const int nbSamples = 7;
+  const double nbSamples = 7;
   for ( int i = 0; i < nbSamples; ++i )
   {
     const double  r = ( i + 1 ) / nbSamples;

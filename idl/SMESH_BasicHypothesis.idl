@@ -858,6 +858,21 @@ module StdMeshers
   };
 
   /*!
+   * Method of computing translation of a node at Viscous Layers construction
+   */
+  enum VLExtrusionMethod { 
+    // node is translated along normal to a surface with possible further smoothing
+    SURF_OFFSET_SMOOTH,
+    // node is translated along the average normal of surrounding faces till
+    // intersection with a neighbor face translated along its own normal 
+    // by the layers thickness
+    FACE_OFFSET,
+    // node is translated along the average normal of surrounding faces
+    // by the layers thickness
+    NODE_OFFSET
+  };
+
+  /*!
    * interface of "Viscous Layers" hypothesis.
    * This hypothesis specifies parameters of layers of prisms to build
    * near mesh boundary. This hypothesis can be used by several 3D algorithms:
@@ -896,6 +911,9 @@ module StdMeshers
      */
     void SetStretchFactor(in double factor) raises (SALOME::SALOME_Exception);
     double GetStretchFactor();
+
+    void SetMethod( in VLExtrusionMethod how );
+    VLExtrusionMethod GetMethod();
   };
 
   /*!

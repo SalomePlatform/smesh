@@ -38,7 +38,8 @@ class STDMESHERSGUI_EXPORT StdMeshersGUI_RadioButtonsGrpWdg : public QGroupBox
 public:
   StdMeshersGUI_RadioButtonsGrpWdg (const QString& title);
 
-  void setButtonLabels( const QStringList& buttonLabels );
+  void setButtonLabels( const QStringList& buttonLabels,
+                        const QStringList& buttonIcons=QStringList());
 
   void setChecked(int id);
 

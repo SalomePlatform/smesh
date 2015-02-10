@@ -75,12 +75,29 @@ computations.
 
 \image html viscous_layers_hyp.png
 
+\image html viscous_layers_2d_hyp.png
+
 <ul>
 <li><b>Name</b> - allows to define the name of the hypothesis.</li>
 <li><b>Total thickness</b> - gives the total thickness of element layers.</li>
 <li><b>Number of layers</b> - defines the number of element layers.</li>
 <li><b>Stretch factor</b> - defines the growth factor of element height
   from the mesh boundary inwards.</li>
+<li><b>Extrusion method</b> (available in 3D only) - defines how
+  position of nodes are found during prism construction and how
+  creation of distorted and intersecting prisms is prevented.
+<ul><li><b>Surface offset + smooth</b> method extrudes nodes along normal
+    to underlying geometrical surface. Smoothing of internal surface of
+    element layers is possible to avoid creation of invalid prisms.</li>
+  <li><b>Face offset</b> method extrudes nodes along average normal of
+    surrounding mesh faces till intersection with a neighbor mesh face
+    translated along its own normal by the layers thickness. Thickness
+    of layers can be limited to avoid creation of invalid prisms.</li>
+  <li><b>Node offset</b> method extrudes nodes along average normal of
+    surrounding mesh faces by the layers thickness. Thickness of
+    layers can be limited to avoid creation of invalid prisms.</li> 
+\image html viscous_layers_extrusion_method.png "Prisms created by the tree extrusion methods at the same other parameters"
+</ul></li>
 <li><b>Specified Faces/Edges are</b> - defines how the shapes specified by
   the next parameter are used.
 <li><b> Faces/Edges with/without layers</b> - 
@@ -90,10 +107,14 @@ computations.
   Faces (or edges) can be selected either in the Object Browser or in
   the VTK Viewer.
   \note A mesh shown in the 3D Viewer can prevent selection of faces
-  and edges, just hide the mesh to avoid this. To avoid a long wait when a
+  and edges, just hide the mesh to avoid this. Sometimes a face to
+  select is hidden by other faces, in this case consider creating a
+  group of faces you want to select in the Geometry module.<br>
+  To avoid a long wait when a
   geometry with many faces (or edges) is displayed, the number of faces
   (edges) shown at a time is limited by the value of "Sub-shapes
   preview chunk size" preference (in Preferences/Mesh/General tab).
+
 
   If faces/edges without layers are specified, the element layers are
   not constructed on geometrical faces shared by several solids in 3D

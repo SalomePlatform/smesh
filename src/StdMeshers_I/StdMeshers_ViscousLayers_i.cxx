@@ -230,6 +230,33 @@ throw ( SALOME::SALOME_Exception )
   return GetImpl()->GetStretchFactor();
 }
 
+//================================================================================
+/*!
+ * \brief Set Method of computing translation of a node
+ */
+//================================================================================
+
+void StdMeshers_ViscousLayers_i::SetMethod( ::StdMeshers::VLExtrusionMethod how )
+{
+  GetImpl()->SetMethod( ::StdMeshers_ViscousLayers::ExtrusionMethod( how ));
+  const char* methNames[3] = { "SURF_OFFSET_SMOOTH",
+                               "FACE_OFFSET",
+                               "NODE_OFFSET" };
+  if ( how >= 0 && how < 3 )
+    SMESH::TPythonDump() << _this() << ".SetMethod( StdMeshers." << methNames[ how ]<< " )";
+}
+
+//================================================================================
+/*!
+ * \brief Return Method of computing translation of a node
+ */
+//================================================================================
+
+::StdMeshers::VLExtrusionMethod StdMeshers_ViscousLayers_i::GetMethod()
+{
+  return (::StdMeshers::VLExtrusionMethod) GetImpl()->GetMethod();
+}
+
 //=============================================================================
 /*!
  *  Get implementation

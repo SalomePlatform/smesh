@@ -43,8 +43,9 @@ QUADRANGLE  = "Quadrangle_2D"
 ## Algorithm type: Radial Quadrangle 1D-2D algorithm, see StdMeshersBuilder_RadialQuadrangle1D2D
 RADIAL_QUAD = "RadialQuadrangle_1D2D"
 
-# import items of enum QuadType
+# import items of enums
 for e in StdMeshers.QuadType._items: exec('%s = StdMeshers.%s'%(e,e))
+for e in StdMeshers.VLExtrusionMethod._items: exec('%s = StdMeshers.%s'%(e,e))
 
 #----------------------
 # Algorithms

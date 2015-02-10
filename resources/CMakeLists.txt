@@ -215,6 +215,9 @@ SET(SMESH_RESOURCES_FILES
   mesh_measure_length.png
   mesh_measure_area.png
   mesh_measure_volume.png
+  mesh_extmeth_node_offset.png
+  mesh_extmeth_surf_offset_smooth.png
+  mesh_extmeth_face_offset.png
 )
 
 INSTALL(FILES ${SMESH_RESOURCES_FILES} DESTINATION ${SALOME_SMESH_INSTALL_RES_DATA})

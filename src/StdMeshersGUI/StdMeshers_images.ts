@@ -283,4 +283,19 @@
             <translation>mesh_quadrangle_reduced.png</translation>
         </message>
     </context>
+    <context>
+    <name>StdMeshersGUI_StdHypothesisCreator</name>
+        <message>
+            <source>ICON_EXTMETH_SURF_OFFSET_SMOOTH</source>
+            <translation>mesh_extmeth_surf_offset_smooth.png</translation>
+        </message>
+        <message>
+            <source>ICON_EXTMETH_NODE_OFFSET</source>
+            <translation>mesh_extmeth_node_offset.png</translation>
+        </message>
+        <message>
+            <source>ICON_EXTMETH_FACE_OFFSET</source>
+            <translation>mesh_extmeth_face_offset.png</translation>
+        </message>
+    </context>
 </TS>

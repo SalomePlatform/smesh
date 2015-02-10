@@ -43,6 +43,22 @@ mesh/sub-mesh.
 Consider creating another hypothesis instead of using
 this one for this mesh/sub-mesh.</translation>
     </message>
+    <message>
+        <source>EXTMETH_SURF_OFFSET_SMOOTH</source>
+        <translation>Surface offset + smooth</translation>
+    </message>
+    <message>
+        <source>EXTRUSION_METHOD</source>
+        <translation>Extrusion method</translation>
+    </message>
+    <message>
+        <source>EXTMETH_NODE_OFFSET</source>
+        <translation>Node offset</translation>
+    </message>
+    <message>
+        <source>EXTMETH_FACE_OFFSET</source>
+        <translation>Face offset</translation>
+    </message>
 </context>
 <context>
     <name>@default</name>
