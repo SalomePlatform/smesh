@@ -1694,6 +1694,10 @@ Voulez-vous continuer ?</translation>
         <translation>Extrusion le long du vecteur</translation>
     </message>
     <message>
+        <source>SMESH_EXTRUSION_BY_NORMAL</source>
+        <translation>Extrusion par la normale</translation>
+    </message>
+    <message>
         <source>SMESH_FACE</source>
         <translation>Face</translation>
     </message>
@@ -4240,15 +4244,19 @@ Il ne peut pas être supprimé.</translation>
     <name>SMESHGUI_Dialog</name>
     <message>
         <source>DLG_MESH</source>
-        <translation>maillages</translation>
+        <translation>maillage(s)</translation>
     </message>
     <message>
         <source>DLG_HYPO</source>
-        <translation>hypothèses</translation>
+        <translation>hypothèse(s)</translation>
     </message>
     <message>
         <source>DLG_ALGO</source>
-        <translation>algorithmes</translation>
+        <translation>algorithme(s)</translation>
+    </message>
+    <message>
+        <source>DLG_GEOM</source>
+        <translation>objet(s)</translation>
     </message>
 </context>
 <context>
@@ -5138,6 +5146,14 @@ Choisissez un groupe et essayez de nouveau</translation>
         <source>EXTRUSION_ALONG_LINE</source>
         <translation>Extrusion suivant une ligne</translation>
     </message>
+    <message>
+        <source>BY_AVERAGE_NORMAL</source>
+        <translation>Suivant une normale moyenne</translation>
+    </message>
+    <message>
+        <source>USE_INPUT_ELEMS_ONLY</source>
+        <translation>Use only input elements</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_FilterDlg</name>
@@ -6025,6 +6041,11 @@ Voulez-vous créer un maillage vide
 sans algorithme ni hypothèse ? </translation>
     </message>
     <message>
+        <source>GEOMETRY_OBJECT_IS_NOT_DEFINED_SUBMESH</source>
+        <translation>L&apos;objet géométrique n&apos;est pas défini.
+Merci de le spécifier et essayer de nouveau</translation>
+    </message>
+    <message>
         <source>GEOMETRY_OBJECT_IS_NULL</source>
         <translation>L&apos;objet géométrique est nul</translation>
     </message>
@@ -6087,6 +6108,14 @@ Indiquez un nom valide et essayez de nouveau</translation>
         <source>THERE_IS_NO_OBJECT_FOR_EDITING</source>
         <translation>Il n&apos;y a pas d&apos;objet à éditer.
 Sélectionnez un maillage ou un sous-maillage et essayez de nouveau</translation>
+    </message>
+    <message>
+        <source>CONCURRENT_SUBMESH_APPEARS</source>
+        <translation> 
+L&apos;algorithme assigné a la même priorité que celui assigné à un
+sous-maillage adjacent; ainsi l'algorithme à utiliser pour mailler la
+frontière partagée par les deux sous-maillages n&apos;est pas défini.
+Voulez-vous définir l&apos;ordre de calcul des sous-maillages ?</translation>
     </message>
 </context>
 <context>
@@ -6249,6 +6278,14 @@ Il y a trop peu de points dans le fichier </translation>
     <message>
         <source>NONE</source>
         <translation>&lt;None&gt;</translation>
+    </message>
+    <message>
+        <source>DEFAULT</source>
+        <translation>&lt;Défaut&gt;</translation>
+    </message>
+    <message>
+        <source>SELECT</source>
+        <translation>&lt;Sélectionner&gt;</translation>
     </message>
 </context>
 <context>
@@ -6738,6 +6775,10 @@ Il y a trop peu de points dans le fichier </translation>
         <translation>Avec duplication des éléments de frontière seulement</translation>
     </message>
     <message>
+        <source>DUPLICATION_GROUP_BOUNDARY</source>
+        <translation>Avec duplication des nœuds des groupes de frontière</translation>
+    </message>
+    <message>
         <source>GROUP_ELEMS_TO_DUPLICATE</source>
         <translation>Groupe des éléments à dupliquer</translation>
     </message>
@@ -6760,6 +6801,14 @@ Il y a trop peu de points dans le fichier </translation>
     <message>
         <source>CONSTRUCT_NEW_GROUP_ELEMENTS</source>
         <translation>Construire un groupe avec les éléments nouvellement créés</translation>
+    </message>
+    <message>
+        <source>CREATE_JOINT_ELEMENTS</source>
+        <translation>Créer des éléments de joint</translation>
+    </message>
+    <message>
+        <source>ON_ALL_BOUNDARIES</source>
+        <translation>Sur toutes les frontières</translation>
     </message>
 </context>
 <context>
@@ -7654,6 +7703,14 @@ en raison de leurs types incompatibles:
         <source>ORIENTATION</source>
         <translation>Orientation</translation>
     </message>
+    <message>
+        <source>VOLUMES</source>
+        <translation>Volumes</translation>
+    </message>
+    <message>
+        <source>OUTSIDE_VOLUME_NORMAL</source>
+        <translation>Normale de face en dehors du volume</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_ReorientFacesOp</name>
@@ -7662,8 +7719,16 @@ en raison de leurs types incompatibles:
         <translation>Aucun objet sélectionné</translation>
     </message>
     <message>
+        <source>NO_VOLUME_OBJECT_SELECTED</source>
+        <translation>Aucun objet de volume sélectionné</translation>
+    </message>
+    <message>
         <source>NO_FACES</source>
         <translation>L&apos;objet ne contient pas de faces</translation>
+    </message>
+    <message>
+        <source>NO_VOLUMES</source>
+        <translation>L&apos;objet ne contient pas de volumes</translation>
     </message>
     <message>
         <source>ZERO_SIZE_VECTOR</source>
