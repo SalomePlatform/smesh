@@ -4175,7 +4175,7 @@ class Mesh:
 
     ## Scales the object
     #  @param theObject - the object to translate (mesh, submesh, or group)
-    #  @param thePoint - base point for scale
+    #  @param thePoint - base point for scale (SMESH.PointStruct or list of 3 coordinates)
     #  @param theScaleFact - list of 1-3 scale factors for axises
     #  @param Copy - allows copying the translated elements
     #  @param MakeGroups - forces the generation of new groups from existing
@@ -4189,6 +4189,8 @@ class Mesh:
         if ( isinstance( theObject, list )):
             theObject = self.GetIDSource(theObject, SMESH.ALL)
             unRegister.set( theObject )
+        if ( isinstance( thePoint, list )):
+            thePoint = PointStruct( thePoint[0], thePoint[1], thePoint[2] )
         if ( isinstance( theScaleFact, float )):
              theScaleFact = [theScaleFact]
         if ( isinstance( theScaleFact, int )):
@@ -4203,7 +4205,7 @@ class Mesh:
 
     ## Creates a new mesh from the translated object
     #  @param theObject - the object to translate (mesh, submesh, or group)
-    #  @param thePoint - base point for scale
+    #  @param thePoint - base point for scale (SMESH.PointStruct or list of 3 coordinates)
     #  @param theScaleFact - list of 1-3 scale factors for axises
     #  @param MakeGroups - forces the generation of new groups from existing ones
     #  @param NewMeshName - the name of the newly created mesh
@@ -4215,6 +4217,8 @@ class Mesh:
         if ( isinstance( theObject, list )):
             theObject = self.GetIDSource(theObject,SMESH.ALL)
             unRegister.set( theObject )
+        if ( isinstance( thePoint, list )):
+            thePoint = PointStruct( thePoint[0], thePoint[1], thePoint[2] )
         if ( isinstance( theScaleFact, float )):
              theScaleFact = [theScaleFact]
         if ( isinstance( theScaleFact, int )):

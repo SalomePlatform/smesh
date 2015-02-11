@@ -47,15 +47,16 @@
 // SALOME GUI includes
 #include <LightApp_SelectionMgr.h>
 #include <LightApp_UpdateFlags.h>
-#include <SALOME_ListIO.hxx>
-#include <SVTK_ViewWindow.h>
-#include <SVTK_ViewModel.h>
-#include <SalomeApp_Application.h>
-#include <SUIT_ResourceMgr.h>
-#include <SUIT_OverrideCursor.h>
-#include <SUIT_MessageBox.h>
-#include <SUIT_Desktop.h>
 #include <QtxComboBox.h>
+#include <SALOME_ListIO.hxx>
+#include <SUIT_Desktop.h>
+#include <SUIT_MessageBox.h>
+#include <SUIT_OverrideCursor.h>
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_Session.h>
+#include <SVTK_ViewModel.h>
+#include <SVTK_ViewWindow.h>
+#include <SalomeApp_Application.h>
 
 // SALOME KERNEL includes
 #include <SALOMEDS_SObject.hxx>
@@ -1223,6 +1224,7 @@ void SMESHGUI_BaseComputeOp::onPublishShape()
   GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
   SALOMEDS::Study_var study = SMESHGUI::GetSMESHGen()->GetCurrentStudy();
 
+  QStringList entryList;
   QList<int> rows;
   SMESH::getSelectedRows( table(), rows );
   int row;
@@ -1260,10 +1262,13 @@ void SMESHGUI_BaseComputeOp::onPublishShape()
         QString       shapeText = QString("%1 (%2)").arg( name.in() ).arg( entry.in() );
         table()->item( row, COL_SHAPE     )->setText( shapeText );
         table()->item( row, COL_PUBLISHED )->setText( entry.in() );
+        entryList.push_back( entry.in() );
       }
     }
   }
   getSMESHGUI()->getApp()->updateObjectBrowser();
+  getSMESHGUI()->getApp()->browseObjects( entryList, /*isApplyAndClose=*/true );
+
   currentCellChanged(); // to update buttons
 }
 

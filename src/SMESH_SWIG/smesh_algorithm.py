@@ -266,7 +266,7 @@ class Mesh_Algorithm:
     #         the value of \a isFacesToIgnore parameter.
     #  @param isFacesToIgnore if \c True, the Viscous layers are not generated on the
     #         faces specified by the previous parameter (\a faces).
-    #  @param extrMethod extrusion method defines how position of nodes are found during
+    #  @param extrMethod extrusion method defines how position of new nodes are found during
     #         prism construction and how creation of distorted and intersecting prisms is
     #         prevented. Possible values are:
     #       - StdMeshers.SURF_OFFSET_SMOOTH (default) method extrudes nodes along normal

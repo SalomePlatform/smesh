@@ -4842,9 +4842,16 @@ SMESH_MeshEditor_i::scale(SMESH::SMESH_IDSource_ptr  theObject,
   gp_Trsf aTrsf;
 
 #if OCC_VERSION_LARGE > 0x06070100
-  aTrsf.SetValues( S[0], 0,    0,    thePoint.x * (1-S[0]),
-                   0,    S[1], 0,    thePoint.y * (1-S[1]),
-                   0,    0,    S[2], thePoint.z * (1-S[2]) );
+  // fight against ortagonalization
+  // aTrsf.SetValues( S[0], 0,    0,    thePoint.x * (1-S[0]),
+  //                  0,    S[1], 0,    thePoint.y * (1-S[1]),
+  //                  0,    0,    S[2], thePoint.z * (1-S[2]) );
+  aTrsf.SetTranslation( gp_Vec( thePoint.x * (1-S[0]),
+                                thePoint.y * (1-S[1]),
+                                thePoint.z * (1-S[2])));
+  gp_Mat & M = ( gp_Mat& ) aTrsf.HVectorialPart();
+  M.SetDiagonal( S[0], S[1], S[2] );
+
 #else
   aTrsf.SetValues( S[0], 0,    0,    thePoint.x * (1-S[0]),
                    0,    S[1], 0,    thePoint.y * (1-S[1]),
