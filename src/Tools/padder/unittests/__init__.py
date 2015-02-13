@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2014  CEA/DEN, EDF R&D
+# Copyright (C) 2011-2015  EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -16,3 +16,4 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+

@@ -36,7 +36,7 @@ master_doc = 'index'
 
 # General substitutions.
 project = 'Verima Plug-in'
-copyright = '2007-2014 CEA/DEN, EDF R&D, OPEN CASCADE'
+copyright = '2007-2015 CEA/DEN, EDF R&D, OPEN CASCADE'
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.

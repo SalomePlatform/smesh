@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2007-2014  EDF R&D
+# Copyright (C) 2013-2015  EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -67,7 +67,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     self.PB_MeshFile.setIcon(icon)
     self.PB_MeshFile.setToolTip("source mesh from a file in disk")
     
-    #Ces parametres ne sont pas remis à rien par le clean
+    #Ces parametres ne sont pas remis ?? rien par le clean
     self.paramsFile= os.path.abspath(os.path.join(os.environ["HOME"],".MGCleaner.dat"))
     self.LE_ParamsFile.setText(self.paramsFile)
     self.LE_MeshFile.setText("")
