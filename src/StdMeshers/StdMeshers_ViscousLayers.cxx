@@ -2920,6 +2920,7 @@ bool _ViscousBuilder::setEdgeData(_LayerEdge&         edge,
   }
   else // !useGeometry - get _normal using surrounding mesh faces
   {
+    set<TGeomID> faceIds;
 
     SMDS_ElemIteratorPtr fIt = node->GetInverseElementIterator(SMDSAbs_Face);
     while ( fIt->more() )
@@ -2927,6 +2928,8 @@ bool _ViscousBuilder::setEdgeData(_LayerEdge&         edge,
       const SMDS_MeshElement* face = fIt->next();
       if ( eos.GetNormal( face, geomNorm ))
       {
+        if ( onShrinkShape && !faceIds.insert( face->getshapeId() ).second )
+          continue; // use only one mesh face on FACE
         edge._normal += geomNorm.XYZ();
         totalNbFaces++;
       }

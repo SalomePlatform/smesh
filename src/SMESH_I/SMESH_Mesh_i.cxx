@@ -4739,7 +4739,6 @@ SMESH_Mesh_i::MakeGroupsOfBadInputElements( int         theSubShapeID,
           SALOMEDS::SObject_wrap aSO =
             _gen_i->PublishGroup( study, mesh, groups[ iG ],
                                  GEOM::GEOM_Object::_nil(), theGroupName);
-          aSO->_is_nil(); // avoid "unused variable" warning
         }
         SMESH_GroupBase_i* grp_i = SMESH::DownCast< SMESH_GroupBase_i* >( groups[ iG ]);
         if ( !grp_i ) continue;

@@ -185,8 +185,8 @@ void StdMeshers_NumberOfSegments::SetScaleFactor(double scaleFactor)
     //throw SALOME_Exception(LOCALIZED("not a scale distribution"));
   if (scaleFactor < PRECISION)
     throw SALOME_Exception(LOCALIZED("scale factor must be positive"));
-  //if (fabs(scaleFactor - 1.0) < PRECISION)
-  //  throw SALOME_Exception(LOCALIZED("scale factor must not be equal to 1"));
+  if (fabs(scaleFactor - 1.0) < PRECISION)
+    _distrType = DT_Regular;
 
   if (fabs(_scaleFactor - scaleFactor) > PRECISION)
   {

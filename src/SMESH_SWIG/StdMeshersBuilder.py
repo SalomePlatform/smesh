@@ -144,7 +144,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
             reversedEdges, UseExisting = [], reversedEdges
         entry = self.MainShapeEntry()
         reversedEdgeInd = self.ReversedEdgeIndices(reversedEdges)
-        if s == []:
+        if not s:
             hyp = self.Hypothesis("NumberOfSegments", [n, reversedEdgeInd, entry],
                                   UseExisting=UseExisting,
                                   CompareMethod=self._compareNumberOfSegments)
@@ -152,7 +152,6 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
             hyp = self.Hypothesis("NumberOfSegments", [n,s, reversedEdgeInd, entry],
                                   UseExisting=UseExisting,
                                   CompareMethod=self._compareNumberOfSegments)
-            hyp.SetDistrType( 1 )
             hyp.SetScaleFactor(s)
         hyp.SetNumberOfSegments(n)
         hyp.SetReversedEdges( reversedEdgeInd )
@@ -1038,11 +1037,10 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
         if self.algoType != "RadialPrism_3D":
             print "Prism_3D algorith doesn't support any hyposesis"
             return None
-        if s == []:
+        if not s:
             hyp = self.OwnHypothesis("NumberOfSegments", [n])
         else:
             hyp = self.OwnHypothesis("NumberOfSegments", [n,s])
-            hyp.SetDistrType( 1 )
             hyp.SetScaleFactor(s)
         hyp.SetNumberOfSegments(n)
         return hyp
