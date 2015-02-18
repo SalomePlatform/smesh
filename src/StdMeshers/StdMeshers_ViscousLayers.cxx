@@ -2371,14 +2371,14 @@ void _ViscousBuilder::limitStepSizeByCurvature( _SolidData& data )
 
   for ( size_t iS = 0; iS < data._edgesOnShape.size(); ++iS )
   {
-    _EdgesOnShape& eos = data._edgesOnShape[iS];
-    if ( eos.ShapeType() != TopAbs_FACE ||
-         data._ignoreFaceIds.count( eos._shapeID ))
+    _EdgesOnShape& eof = data._edgesOnShape[iS];
+    if ( eof.ShapeType() != TopAbs_FACE ||
+         data._ignoreFaceIds.count( eof._shapeID ))
       continue;
 
-    TopoDS_Face        F = TopoDS::Face( eos._shape );
-    SMESH_subMesh *   sm = eos._subMesh;
-    const TGeomID faceID = eos._shapeID;
+    TopoDS_Face        F = TopoDS::Face( eof._shape );
+    SMESH_subMesh *   sm = eof._subMesh;
+    const TGeomID faceID = eof._shapeID;
 
     BRepAdaptor_Surface surface( F, false );
     surfProp.SetSurface( surface );
@@ -2393,18 +2393,18 @@ void _ViscousBuilder::limitStepSizeByCurvature( _SolidData& data )
       sm = smIt->next();
       const TGeomID subID = sm->GetId();
       // find _LayerEdge's of a sub-shape
-      size_t edgesEnd;
-      if ( _EdgesOnShape* eos = data.GetShapeEdges( subID ))
+      _EdgesOnShape* eos;
+      if (( eos = data.GetShapeEdges( subID )))
         cnvFace._subIdToEOS.insert( make_pair( subID, eos ));
       else
         continue;
       // check concavity and curvature and limit data._stepSize
       const double minCurvature =
-        1. / ( eos._hyp.GetTotalThickness() * ( 1+theThickToIntersection ));
-      size_t iStep = Max( 1, eos._edges.size() / nbTestPnt );
-      for ( size_t i = 0; i < eos._edges.size(); i += iStep )
+        1. / ( eos->_hyp.GetTotalThickness() * ( 1+theThickToIntersection ));
+      size_t iStep = Max( 1, eos->_edges.size() / nbTestPnt );
+      for ( size_t i = 0; i < eos->_edges.size(); i += iStep )
       {
-        gp_XY uv = helper.GetNodeUV( F, eos._edges[ i ]->_nodes[0] );
+        gp_XY uv = helper.GetNodeUV( F, eos->_edges[ i ]->_nodes[0] );
         surfProp.SetParameters( uv.X(), uv.Y() );
         if ( !surfProp.IsCurvatureDefined() )
           continue;
@@ -2458,8 +2458,8 @@ void _ViscousBuilder::limitStepSizeByCurvature( _SolidData& data )
       set< const SMDS_MeshNode* > usedNodes;
 
       // look for _LayerEdge's with null _sWOL
-      map< TGeomID, _EdgesOnShape* >::iterator id2oes = convFace._subIdToEOS.begin();
-      for ( ; id2oes != convFace._subIdToEOS.end(); ++id2oes )
+      id2eos = convFace._subIdToEOS.begin();
+      for ( ; id2eos != convFace._subIdToEOS.end(); ++id2eos )
       {
         _EdgesOnShape& eos = * id2eos->second;
         if ( !eos._sWOL.IsNull() )
@@ -4734,10 +4734,10 @@ bool _ViscousBuilder::updateNormalsOfConvexFaces( _SolidData&         data,
     Bnd_B3d nodesBox;
     gp_Pnt  center;
 
-    map< TGeomID, _EdgesOnShape* >::iterator id2oes = convFace._subIdToEOS.begin();
-    for ( ; id2oes != convFace._subIdToEOS.end(); ++id2oes )
+    map< TGeomID, _EdgesOnShape* >::iterator id2eos = convFace._subIdToEOS.begin();
+    for ( ; id2eos != convFace._subIdToEOS.end(); ++id2eos )
     {
-      _EdgesOnShape& eos = *(id2oes->second);
+      _EdgesOnShape& eos = *(id2eos->second);
       if ( eos.ShapeType() == TopAbs_VERTEX )
       {
         _LayerEdge* ledge = eos._edges[ 0 ];
@@ -4767,10 +4767,10 @@ bool _ViscousBuilder::updateNormalsOfConvexFaces( _SolidData&         data,
 
       gp_XYZ avgNormal( 0,0,0 );
       nbEdges = 0;
-      id2oes = convFace._subIdToEOS.begin();
-      for ( ; id2oes != convFace._subIdToEOS.end(); ++id2oes )
+      id2eos = convFace._subIdToEOS.begin();
+      for ( ; id2eos != convFace._subIdToEOS.end(); ++id2eos )
       {
-        _EdgesOnShape& eos = *(id2oes->second);
+        _EdgesOnShape& eos = *(id2eos->second);
         // set data of _CentralCurveOnEdge
         if ( eos.ShapeType() == TopAbs_EDGE )
         {
@@ -4820,10 +4820,10 @@ bool _ViscousBuilder::updateNormalsOfConvexFaces( _SolidData&         data,
         avgCosin /= nbCosin;
 
       // set _LayerEdge::_normal = avgNormal
-      id2oes = convFace._subIdToEOS.begin();
-      for ( ; id2oes != convFace._subIdToEOS.end(); ++id2oes )
+      id2eos = convFace._subIdToEOS.begin();
+      for ( ; id2eos != convFace._subIdToEOS.end(); ++id2eos )
       {
-        _EdgesOnShape& eos = *(id2oes->second);
+        _EdgesOnShape& eos = *(id2eos->second);
         if ( eos.ShapeType() != TopAbs_EDGE )
           for ( size_t i = 0; i < eos._edges.size(); ++i )
             eos._edges[ i ]->_cosin = avgCosin;
@@ -4981,12 +4981,12 @@ bool _ViscousBuilder::updateNormalsOfConvexFaces( _SolidData&         data,
       if ( nbCosin > 0 )
         avgCosin /= nbCosin;
       const TGeomID faceID = meshDS->ShapeToIndex( convFace._face );
-      map< TGeomID, _EdgesOnShape* >::iterator id2oes = convFace._subIdToEOS.find( faceID );
-      if ( id2oes != convFace._subIdToEOS.end() )
+      map< TGeomID, _EdgesOnShape* >::iterator id2eos = convFace._subIdToEOS.find( faceID );
+      if ( id2eos != convFace._subIdToEOS.end() )
       {
         int iE = 0;
         gp_XYZ newNorm;
-        _EdgesOnShape& eos = * ( id2oes->second );
+        _EdgesOnShape& eos = * ( id2eos->second );
         for ( size_t i = 0; i < eos._edges.size(); ++i )
         {
           _LayerEdge* ledge = eos._edges[ i ];
@@ -5015,10 +5015,10 @@ bool _ViscousBuilder::updateNormalsOfConvexFaces( _SolidData&         data,
     dumpFunction(SMESH_Comment("updateNormalsOfConvexFaces")<<data._index
                  <<"_F"<<meshDS->ShapeToIndex( convFace._face ));
 
-    id2oes = convFace._subIdToEOS.begin();
-    for ( ; id2oes != convFace._subIdToEOS.end(); ++id2oes )
+    id2eos = convFace._subIdToEOS.begin();
+    for ( ; id2eos != convFace._subIdToEOS.end(); ++id2eos )
     {
-      _EdgesOnShape& eos = * ( id2oes->second );
+      _EdgesOnShape& eos = * ( id2eos->second );
       for ( size_t i = 0; i < eos._edges.size(); ++i )
       {
         _LayerEdge* & ledge = eos._edges[ i ];
@@ -6603,7 +6603,8 @@ bool _ViscousBuilder::shrink()
     subEOS.clear();
     lEdges.clear();
     {
-      SMESH_subMeshIteratorPtr subIt = sm->getDependsOnIterator(/*includeSelf=*/false);
+      SMESH_subMeshIteratorPtr subIt = sm->getDependsOnIterator(/*includeSelf=*/false,
+                                                                /*complexFirst=*/true); //!!!
       while ( subIt->more() )
       {
         const TGeomID subID = subIt->next()->GetId();
@@ -6765,10 +6766,12 @@ bool _ViscousBuilder::shrink()
         int oldBadNb = badNb;
         badNb = 0;
         moved = false;
+        // '% 5' minimizes NB FUNCTIONS on viscous_layers_00/B2 case
+        _SmoothNode::SmoothType smooTy = ( smooStep % 5 ) ? smoothType : _SmoothNode::LAPLACIAN;
         for ( size_t i = 0; i < nodesToSmooth.size(); ++i )
         {
           moved |= nodesToSmooth[i].Smooth( badNb, surface, helper, refSign,
-                                            smoothType, /*set3D=*/isConcaveFace);
+                                            smooTy, /*set3D=*/isConcaveFace);
         }
         if ( badNb < oldBadNb )
           nbNoImpSteps = 0;
