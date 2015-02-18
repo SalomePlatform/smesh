@@ -86,10 +86,17 @@ geompy.addToStudy(Fillet_1, "Fillet_1")
 
 #Chamfer applying
 print "Chamfer creation..."
-Chamfer_1 = geompy.MakeChamferEdge(Fillet_1, 10, 10, 16, 50 )
-geompy.addToStudy(Chamfer_1, "Chamfer_1")
-Chamfer_2 = geompy.MakeChamferEdge(Chamfer_1, 10, 10, 21, 31 )
-geompy.addToStudy(Chamfer_2, "Chamfer_2")
+cyl_face = geompy.GetFaceNearPoint( Fillet_1, geompy.MakeVertex( 50, 0, 45 ), theName='cyl_face')
+cyl_face_id = geompy.GetSubShapeID( Fillet_1, cyl_face )
+top_face = geompy.GetFaceNearPoint( Fillet_1, geompy.MakeVertex( 60, 0, 90 ), theName='top_face')
+top_face_id = geompy.GetSubShapeID( Fillet_1, top_face )
+Chamfer_1 = geompy.MakeChamferEdge(Fillet_1, 10, 10, cyl_face_id, top_face_id, theName='Chamfer_1' )
+
+cyl_face = geompy.GetFaceNearPoint( Chamfer_1, geompy.MakeVertex( 80, 0, 85 ), theName='cyl_face')
+cyl_face_id = geompy.GetSubShapeID( Chamfer_1, cyl_face )
+top_face = geompy.GetFaceNearPoint( Chamfer_1, geompy.MakeVertex( 65, 0, 90 ), theName='top_face')
+top_face_id = geompy.GetSubShapeID( Chamfer_1, top_face )
+Chamfer_2 = geompy.MakeChamferEdge(Chamfer_1, 10, 10, cyl_face_id, top_face_id, theName='Chamfer_2' )
 
 #Import of the shape from "slots.brep"
 print "Import multi-rotation from the DATA_DIR/Shapes/Brep/slots.brep"
