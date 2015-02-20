@@ -113,3 +113,8 @@ localMesh(box_tetra2, 0)
 # -------------
 
 mixed.Compute()
+
+# Update object browser
+# ---------------------
+
+salome.sg.updateObjBrowser(1)

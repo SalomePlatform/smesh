@@ -90,3 +90,8 @@ if os.access(results+".xml", os.F_OK):
     print "Ok: tepal"
 else:
     print "KO: tepal"
+
+# Update object browser
+# ---------------------
+
+salome.sg.updateObjBrowser(1)

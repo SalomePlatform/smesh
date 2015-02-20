@@ -130,3 +130,8 @@ hexa.Compute()
 hexa.Group(group_a)
 hexa.Group(group_b)
 hexa.Group(group_1)
+
+# Update object browser
+# ---------------------
+
+salome.sg.updateObjBrowser(1)

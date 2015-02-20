@@ -145,3 +145,8 @@ local(gx+g_dx, gy-g_dy, gz     , 21)
 # -------------
 
 hexa.Compute()
+
+# Update object browser
+# ---------------------
+
+salome.sg.updateObjBrowser(1)

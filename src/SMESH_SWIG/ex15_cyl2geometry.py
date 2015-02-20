@@ -201,3 +201,8 @@ hexa.Hexahedron()
 # -------------
 
 hexa.Compute()
+
+# Update object browser
+# ---------------------
+
+salome.sg.updateObjBrowser(1)

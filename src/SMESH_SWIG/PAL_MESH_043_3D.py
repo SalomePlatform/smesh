@@ -89,5 +89,5 @@ smesh.SetName(hypNbSeg2, "NumberOfSegments_" + str(numberOfSegments2))
 mesh1.Compute()
 mesh2.Compute()
 
-# ---- udate object browser
-salome.sg.updateObjBrowser(1);
+# ---- update object browser
+salome.sg.updateObjBrowser(1)

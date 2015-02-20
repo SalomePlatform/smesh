@@ -90,8 +90,6 @@ print hypVolume.GetId()
 print hypVolume.GetMaxElementVolume()
 smesh.SetName(hypVolume, "MaxElementVolume_" + str(maxElementVolume))
 
-salome.sg.updateObjBrowser(1)
-
 print "-------------------------- compute the mesh of the boxe"
 ret = mesh.Compute()
 print ret
@@ -108,3 +106,5 @@ if ret != 0:
     print "Number of tetrahedrons: ", mesh.NbTetras()
 else:
     print "probleme when computing the mesh"
+
+salome.sg.updateObjBrowser(1)

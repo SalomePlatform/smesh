@@ -142,3 +142,8 @@ while m_i<m_n:
 # --------------------
 
 hexa.Compute()
+
+# Update object browser
+# ---------------------
+
+salome.sg.updateObjBrowser(1)

@@ -91,10 +91,6 @@ print hypLengthFromEdge.GetName()
 print hypLengthFromEdge.GetId()
 smesh.SetName(hypLengthFromEdge,"LengthFromEdge")
 
-
-salome.sg.updateObjBrowser(1)
-
-
 print "-------------------------- compute the skin flight"
 ret = mesh.Compute()
 print ret
@@ -110,3 +106,5 @@ if ret != 0:
     print "Number of volumes    : ", mesh.NbVolumes()
 else:
     print "probleme when computing the mesh"
+
+salome.sg.updateObjBrowser(1)

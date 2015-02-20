@@ -105,9 +105,6 @@ print hypVolume.GetId()
 print hypVolume.GetMaxElementVolume()
 smesh.SetName(hypVolume, "MaxElementVolume_" + str(maxElementVolume))
 
-
-salome.sg.updateObjBrowser(1)
-
 print "-------------------------- compute compshell"
 ret = mesh.Compute(mesh)
 print ret
@@ -125,3 +122,5 @@ if ret != 0:
     
 else:
     print "problem when computing the mesh"
+
+salome.sg.updateObjBrowser(1)

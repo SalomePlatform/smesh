@@ -82,9 +82,6 @@ print "-------------------------- Hexa_3D"
 hexa3D = mesh.Hexahedron()
 hexa3D.SetName("Hexa_3D")
 
-
-salome.sg.updateObjBrowser(1)
-
 print "-------------------------- compute compshell"
 ret = mesh.Compute()
 print ret
@@ -101,3 +98,5 @@ if ret != 0:
     print "Number of hexahedrons : ", mesh.NbHexas()
 else:
     print "problem when Computing the mesh"
+
+salome.sg.updateObjBrowser(1)

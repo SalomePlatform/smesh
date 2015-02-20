@@ -186,3 +186,8 @@ hexa.Compute()
 # --------------------
 
 hexa_groupe = hexa.Group(groupe)
+
+# Update object browser
+# ---------------------
+
+salome.sg.updateObjBrowser(1)

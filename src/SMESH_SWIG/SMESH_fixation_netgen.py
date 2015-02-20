@@ -61,8 +61,6 @@ netgen.SetMaxSize( 50 )
 netgen.SetFineness( smeshBuilder.Fine )
 #netgen.SetOptimize( 1 )
 
-salome.sg.updateObjBrowser(1)
-
 print "-------------------------- compute mesh"
 ret = mesh.Compute()
 print ret
@@ -77,3 +75,5 @@ if ret != 0:
     
 else:
     print "problem when computing the mesh"
+
+salome.sg.updateObjBrowser(1)

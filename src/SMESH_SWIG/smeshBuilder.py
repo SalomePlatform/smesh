@@ -1375,9 +1375,10 @@ class Mesh:
     #  @param discardModifs if True and the mesh has been edited since
     #         a last total re-compute and that may prevent successful partial re-compute,
     #         then the mesh is cleaned before Compute()
+    #  @param refresh if @c True, Object browser is automatically updated (when running in GUI)
     #  @return True or False
     #  @ingroup l2_construct
-    def Compute(self, geom=0, discardModifs=False):
+    def Compute(self, geom=0, discardModifs=False, refresh=False):
         if geom == 0 or not isinstance(geom, geomBuilder.GEOM._objref_GEOM_Object):
             if self.geom == 0:
                 geom = self.mesh.GetShapeToMesh()
@@ -1505,7 +1506,7 @@ class Mesh:
             smeshgui = salome.ImportComponentGUI("SMESH")
             smeshgui.Init(self.mesh.GetStudyId())
             smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), ok, (self.NbNodes()==0) )
-            salome.sg.updateObjBrowser(1)
+            if refresh: salome.sg.updateObjBrowser(1)
             pass
         return ok
 
@@ -1522,25 +1523,27 @@ class Mesh:
         return self.mesh.SetMeshOrder(submeshes)
 
     ## Removes all nodes and elements
+    #  @refresh if @c True, Object browser is automatically updated (when running in GUI)
     #  @ingroup l2_construct
-    def Clear(self):
+    def Clear(self, refresh=False):
         self.mesh.Clear()
         if ( salome.sg.hasDesktop() and 
-             salome.myStudyManager.GetStudyByID( self.mesh.GetStudyId() )):
+             salome.myStudyManager.GetStudyByID( self.mesh.GetStudyId() ) ):
             smeshgui = salome.ImportComponentGUI("SMESH")
             smeshgui.Init(self.mesh.GetStudyId())
             smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), False, True )
-            salome.sg.updateObjBrowser(1)
+            if refresh: salome.sg.updateObjBrowser(1)
 
     ## Removes all nodes and elements of indicated shape
+    #  @refresh if @c True, Object browser is automatically updated (when running in GUI)
     #  @ingroup l2_construct
-    def ClearSubMesh(self, geomId):
+    def ClearSubMesh(self, geomId, refresh=False):
         self.mesh.ClearSubMesh(geomId)
         if salome.sg.hasDesktop():
             smeshgui = salome.ImportComponentGUI("SMESH")
             smeshgui.Init(self.mesh.GetStudyId())
             smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), False, True )
-            salome.sg.updateObjBrowser(1)
+            if refresh: salome.sg.updateObjBrowser(1)
 
     ## Computes a tetrahedral mesh using AutomaticLength + MEFISTO + Tetrahedron
     #  @param fineness [0.0,1.0] defines mesh fineness

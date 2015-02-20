@@ -319,3 +319,8 @@ algo.Propagation()
 # ----------------
 
 hexa.Compute()
+
+# Update object browser
+# ---------------------
+
+salome.sg.updateObjBrowser(1)

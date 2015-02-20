@@ -132,3 +132,8 @@ tetra.Compute()
 # ------------------------
 
 tetra.Group(group)
+
+# Update object browser
+# ---------------------
+
+salome.sg.updateObjBrowser(1)

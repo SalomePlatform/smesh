@@ -257,3 +257,8 @@ local(cyl_x+d, cyl_y+d, box_dz, 10)
 # ----------------
 
 hexa.Compute()
+
+# Update object browser
+# ---------------------
+
+salome.sg.updateObjBrowser(1)
