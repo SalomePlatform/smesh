@@ -7104,6 +7104,10 @@ en raison de leurs types incompatibles:
         <translation>CENTRE DE GRAVITÉ</translation>
     </message>
     <message>
+        <source>NORMAL_VECTOR</source>
+        <translation>Normal</translation>
+    </message>
+    <message>
         <source>NODE</source>
         <translation>Nœud</translation>
     </message>

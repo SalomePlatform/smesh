@@ -1047,6 +1047,16 @@ SMESHGUI_ElemInfo::XYZ SMESHGUI_ElemInfo::gravityCenter( const SMDS_MeshElement*
 }
 
 /*!
+  \brief Calculate normal vector to the mesh face
+  \param element mesh face
+*/
+SMESHGUI_ElemInfo::XYZ SMESHGUI_ElemInfo::normal( const SMDS_MeshElement* element )
+{
+  gp_XYZ n = SMESH::getNormale( dynamic_cast<const SMDS_MeshFace*>( element ) );
+  return XYZ(n.X(), n.Y(), n.Z());
+}
+
+/*!
   \brief This slot is called from "Show Previous" button click.
   Shows information on the previous group of the items.
 */
@@ -1423,6 +1433,12 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
         // Gravity center
         XYZ gc = gravityCenter( e );
         myInfo->append( QString( "<b>%1:</b> (%2, %3, %4)" ).arg( SMESHGUI_ElemInfo::tr( "GRAVITY_CENTER" ) ).arg( gc.x() ).arg( gc.y() ).arg( gc.z() ) );
+        
+        // Normal vector
+        if( e->GetType() == SMDSAbs_Face ) {
+          XYZ gc = normal( e );
+          myInfo->append( QString( "<b>%1:</b> (%2, %3, %4)" ).arg( SMESHGUI_ElemInfo::tr( "NORMAL_VECTOR" ) ).arg( gc.x() ).arg( gc.y() ).arg( gc.z() ) );
+        }
 
         // Element position
         if ( e->GetType() >= SMDSAbs_Edge && e->GetType() <= SMDSAbs_Volume ) {
@@ -1967,6 +1983,23 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
         QTreeWidgetItem* zItem = createItem( gcItem );
         zItem->setText( 0, "Z" );
         zItem->setText( 1, QString::number( gc.z(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
+
+        // normal vector
+        if( e->GetType() == SMDSAbs_Face ) {
+          XYZ gc = normal( e );
+          QTreeWidgetItem* nItem = createItem( elemItem, Bold );
+          nItem->setText( 0, SMESHGUI_ElemInfo::tr( "NORMAL_VECTOR" ) );
+          QTreeWidgetItem* xItem = createItem( nItem );
+          xItem->setText( 0, "X" );
+          xItem->setText( 1, QString::number( gc.x(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
+          QTreeWidgetItem* yItem = createItem( nItem );
+          yItem->setText( 0, "Y" );
+          yItem->setText( 1, QString::number( gc.y(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
+          QTreeWidgetItem* zItem = createItem( nItem );
+          zItem->setText( 0, "Z" );
+          zItem->setText( 1, QString::number( gc.z(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
+        }
+
         // element position
         SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();
         if ( e->GetType() >= SMDSAbs_Edge && e->GetType() <= SMDSAbs_Volume ) {

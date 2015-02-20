@@ -6989,6 +6989,10 @@
       <translation>重心</translation>
     </message>
     <message>
+      <source>NORMAL_VECTOR</source>
+      <translation>通常</translation>
+    </message>
+    <message>
       <source>NODE</source>
       <translation>ノード</translation>
     </message>

@@ -158,6 +158,7 @@ protected:
   {
     double myX, myY, myZ;
     XYZ() { myX = myY = myZ = 0.0; }
+    XYZ(double x, double y, double z) { myX = x; myY = y; myZ = z; }
     void add( double x, double y, double z ) { myX += x; myY += y; myZ += z; }
     void divide( double a ) { if ( a != 0.) { myX /= a; myY /= a; myZ /= a; } }
     double x() const  { return myX; }
@@ -176,6 +177,7 @@ protected:
   Connectivity nodeConnectivity( const SMDS_MeshNode* );
   QString      formatConnectivity( Connectivity, int );
   XYZ          gravityCenter( const SMDS_MeshElement* );
+  XYZ          normal( const SMDS_MeshElement* );
 
 signals:
   void         itemInfo( int );

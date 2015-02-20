@@ -7103,6 +7103,10 @@ as they are of improper type:
         <translation>Gravity Center</translation>
     </message>
     <message>
+        <source>NORMAL_VECTOR</source>
+        <translation>Normal</translation>
+    </message>
+    <message>
         <source>NODE</source>
         <translation>Node</translation>
     </message>
