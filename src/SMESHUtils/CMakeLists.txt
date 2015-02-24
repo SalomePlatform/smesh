@@ -25,7 +25,6 @@ INCLUDE_DIRECTORIES(
   ${VTK_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
   ${PROJECT_SOURCE_DIR}/src/SMDS
-  ${PROJECT_SOURCE_DIR}/src/SMESHDS
 )
 
 # additional preprocessor / compiler flags
@@ -43,7 +42,7 @@ SET(_link_LIBRARIES
   ${CAS_TKGeomBase}
   ${CAS_TKGeomAlgo}
   ${Boost_LIBRARIES}
-  SMESHDS
+  SMDS
 )
 
 # --- headers ---
