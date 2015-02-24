@@ -29,7 +29,7 @@
 #include "SMESHGUI.h"
 #include "SMESHGUI_Selection.h"
 #include "SMESH_Type.h"
-
+#include "SMESH_MeshAlgos.hxx"
 #include <SMDS_MeshNode.hxx>
 #include <SMDS_MeshFace.hxx>
 
@@ -373,25 +373,7 @@ namespace SMESH
   gp_XYZ getNormale( const SMDS_MeshFace* theFace )
   {
     gp_XYZ n;
-    int aNbNode = theFace->NbNodes();
-    TColgp_Array1OfXYZ anArrOfXYZ(1,4);
-    SMDS_ElemIteratorPtr aNodeItr = theFace->nodesIterator();
-    int i = 1;
-    for ( ; aNodeItr->more() && i <= 4; i++ ) {
-      SMDS_MeshNode* aNode = (SMDS_MeshNode*)aNodeItr->next();
-      anArrOfXYZ.SetValue(i, gp_XYZ( aNode->X(), aNode->Y(), aNode->Z() ) );
-    }
-    
-    gp_XYZ q1 = anArrOfXYZ.Value(2) - anArrOfXYZ.Value(1);
-    gp_XYZ q2 = anArrOfXYZ.Value(3) - anArrOfXYZ.Value(1);
-    n  = q1 ^ q2;
-    if ( aNbNode > 3 ) {
-      gp_XYZ q3 = anArrOfXYZ.Value(4) - anArrOfXYZ.Value(1);
-      n += q2 ^ q3;
-    }
-    double len = n.Modulus();
-    if ( len > 0 )
-      n /= len;
+    SMESH_MeshAlgos::FaceNormal( theFace, n, /*normalized=*/true );
     return n;
   }
   
