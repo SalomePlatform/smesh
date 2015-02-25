@@ -1870,6 +1870,18 @@ int SMESH_Mesh::NbSubMesh() const throw(SALOME_Exception)
   return _myMeshDS->NbSubMesh();
 }
 
+//================================================================================
+/*!
+ * \brief Returns number of meshes in the Study, that is supposed to be
+ *        equal to SMESHDS_Document::NbMeshes()
+ */
+//================================================================================
+
+int SMESH_Mesh::NbMeshes() const // nb meshes in the Study
+{
+  return _myDocument->NbMeshes();
+}
+
 //=======================================================================
 //function : IsNotConformAllowed
 //purpose  : check if a hypothesis alowing notconform mesh is present

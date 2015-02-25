@@ -275,21 +275,16 @@ static SALOMEDS::SObject_ptr publish(SALOMEDS::Study_ptr   theStudy,
       SO = aStudyBuilder->NewObjectToTag( theFatherObject, theTag );
 
       // define the next tag after given one in the data tree to insert SObject
-      std::string anEntry;
-      int last2Pnt_pos = -1;
-      int tagAfter = -1;
-      CORBA::String_var entry;
       SALOMEDS::SObject_wrap curObj;
-      SALOMEDS::UseCaseIterator_wrap anUseCaseIter = useCaseBuilder->GetUseCaseIterator(theFatherObject);
-      for ( ; anUseCaseIter->More(); anUseCaseIter->Next() ) {
-        curObj = anUseCaseIter->Value();
-        entry = curObj->GetID();
-        anEntry = entry.in();
-        last2Pnt_pos = anEntry.rfind( ":" );
-        tagAfter = atoi( anEntry.substr( last2Pnt_pos+1 ).c_str() );
-        if ( tagAfter > theTag  ) {
-          objAfter = curObj;
-          break;
+      if ( theFatherObject->GetLastChildTag() > theTag )
+      {
+        SALOMEDS::UseCaseIterator_wrap anUseCaseIter = useCaseBuilder->GetUseCaseIterator(theFatherObject);
+        for ( ; anUseCaseIter->More(); anUseCaseIter->Next() ) {
+          curObj = anUseCaseIter->Value();
+          if ( curObj->Tag() > theTag  ) {
+            objAfter = curObj;
+            break;
+          }
         }
       }
     }
@@ -534,32 +529,6 @@ SALOMEDS::SComponent_ptr SMESH_Gen_i::PublishComponent(SALOMEDS::Study_ptr theSt
   return father._retn();
 }
 
-//=============================================================================
-/*!
- *  findMaxChildTag [ static internal ]
- *
- *  Finds maximum child tag for the given object
- */
-//=============================================================================
-
-static long findMaxChildTag( SALOMEDS::SObject_ptr theSObject )
-{
-  long aTag = 0;
-  if ( !theSObject->_is_nil() ) {
-    SALOMEDS::Study_var aStudy = theSObject->GetStudy();
-    if ( !aStudy->_is_nil() ) {
-      SALOMEDS::ChildIterator_wrap anIter = aStudy->NewChildIterator( theSObject );
-      for ( ; anIter->More(); anIter->Next() ) {
-        SALOMEDS::SObject_wrap anSO = anIter->Value();
-        long nTag = anSO->Tag();
-        if ( nTag > aTag )
-          aTag = nTag;
-      }
-    }
-  }
-  return aTag;
-}
-
 //=======================================================================
 //function : PublishMesh
 //purpose  : 
@@ -584,7 +553,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishMesh (SALOMEDS::Study_ptr   theStudy,
       return aMeshSO._retn();
 
     // Find correct free tag
-    long aTag = findMaxChildTag( father.in() );
+    long aTag = father->GetLastChildTag();
     if ( aTag <= GetAlgorithmsRootTag() )
       aTag = GetAlgorithmsRootTag() + 1;
     else

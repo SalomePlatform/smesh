@@ -327,7 +327,7 @@ protected:
   int                   _Id;
 
   std::map < int, SMESH_subMesh * >_mapDepend;
-  bool                  _dependenceAnalysed;
+  bool                             _dependenceAnalysed;
   std::vector< SMESH_subMesh * >   _ancestors;
 
   SMESH_Algo *          _algo; // the algorithm found by last *StateEngine() call

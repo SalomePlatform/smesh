@@ -3,12 +3,12 @@
 \page about_hypo_page About Hypotheses
 
 \b Hypotheses represent boundary conditions which will be taken into
-account at calculations of meshes or sub-meshes. 
-These hypotheses allow you to manage the level of detail of
-the resulting meshes or sub-meshes: when applying different hypotheses
+account by meshing algorithms.
+The hypotheses allow you to manage the level of detail of
+the resulting mesh: when applying different hypotheses
 with different parameters you can preset the quantity or size of
 elements which will compose your mesh. So, it will be possible to
-generate a coarse or a more refined mesh or sub-mesh.
+generate a coarse or a more refined mesh.
 
 In \b MESH there are the following Basic Hypotheses:
 <ul>
@@ -20,10 +20,11 @@ In \b MESH there are the following Basic Hypotheses:
 <li>\ref max_length_anchor "Max Size"</li>
 <li>\ref adaptive_1d_anchor "Adaptive"</li>
 <li>\ref arithmetic_1d_anchor "Arithmetic 1D"</li>
-<li>\ref geometric_1d_anchor "Geometric 1D"</li>
+<li>\ref geometric_1d_anchor "Geometric Progression"</li>
 <li>\ref start_and_end_length_anchor "Start and end length"</li>
 <li>\ref deflection_1d_anchor "Deflection 1D"</li>
 <li>\ref automatic_length_anchor "Automatic Length"</li>
+<li>\ref fixed_points_1d_anchor "Fixed points 1D"</li>
 </ul>
 <li>\subpage a2d_meshing_hypo_page "2D Hypotheses" (for meshing of <b>faces</b>):</li>
 <ul>
@@ -37,22 +38,17 @@ In \b MESH there are the following Basic Hypotheses:
 </ul>
 </ul>
 
-There also exist  
-\subpage additional_hypo_page "Additional Hypotheses" used together
-with other hypotheses:
+There also exist
+\subpage additional_hypo_page "Additional Hypotheses" that can be used together
+with main hypotheses:
 <ul>
 <li>\ref propagation_anchor "Propagation of 1D Hypothesis on opposite edges"</li>
 <li>\ref propagofdistribution_anchor "Propagation of Node Distribution on Opposite Edges"</li>
 <li>\ref viscous_layers_anchor "Viscous layers"</li>
 <li>\ref quadratic_mesh_anchor "Quadratic mesh"</li>
-<li>\ref non_conform_allowed_anchor "Non conform mesh allowed"</li>
 <li>\ref quadrangle_preference_anchor "Quadrangle preference"</li>
 </ul>
 
-The choice of a hypothesis depends on:
-<ul>
-<li>the algorithm, which will be selected for meshing of this geometrical object (shape)</li>
-<li>the geometrical object (shape) which will be meshed</li>
-</ul>
+The choice of a hypothesis depends on the selected algorithm.
 
 */

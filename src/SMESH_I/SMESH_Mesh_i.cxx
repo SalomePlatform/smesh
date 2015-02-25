@@ -161,6 +161,11 @@ SMESH_Mesh_i::~SMESH_Mesh_i()
   }
   _mapHypo.clear();
 
+  // clear cashed shapes if no more meshes remain; (the cash is blame,
+  // together with publishing, of spent time increasing in issue 22874)
+  if ( _impl->NbMeshes() == 1 )
+    _gen_i->GetShapeReader()->ClearClientBuffer();
+
   delete _editor; _editor = NULL;
   delete _previewEditor; _previewEditor = NULL;
   delete _impl; _impl = NULL;

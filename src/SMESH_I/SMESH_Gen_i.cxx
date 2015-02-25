@@ -474,8 +474,9 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
   myHypothesis_i = aCreator->Create(myPoa, GetCurrentStudyID(), &myGen);
   if (myHypothesis_i)
   {
-    myHypothesis_i->SetLibName(aPlatformLibName.c_str()); // for persistency assurance
-    myHypCreatorMap[ myHypothesis_i->GetName() ] = aCreator;
+    myHypothesis_i->SetLibName( aPlatformLibName.c_str() ); // for persistency assurance
+    CORBA::String_var hypName = myHypothesis_i->GetName();
+    myHypCreatorMap[ hypName.in() ] = aCreator;
 
     // activate the CORBA servant of hypothesis
     hypothesis_i = myHypothesis_i->_this();
@@ -2399,7 +2400,6 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
   typedef map<int, int> TIDsMap;
   typedef list<SMESH::SMESH_Group_var> TListOfNewGroups;
   typedef map< pair<string, SMESH::ElementType>, TListOfNewGroups > TGroupsMap;
-  typedef std::set<SMESHDS_GroupBase*> TGroups;
 
   TPythonDump* pPythonDump = new TPythonDump;
   TPythonDump& aPythonDump = *pPythonDump; // prevent dump of called methods
@@ -2416,7 +2416,7 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
 
       TGroupsMap aGroupsMap;
       TListOfNewGroups aListOfNewGroups;
-      SMESH_MeshEditor aNewEditor = ::SMESH_MeshEditor(&aLocMesh);
+      ::SMESH_MeshEditor aNewEditor(&aLocMesh);
       SMESH::ListOfGroups_var aListOfGroups = new SMESH::ListOfGroups();
 
       // loop on meshes
@@ -2524,6 +2524,8 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
                 }
               }
             } //elems loop
+
+            aNewEditor.CrearLastCreated(); // forget the history
 
             // copy orphan nodes
             SMDS_NodeIteratorPtr  itNodes = anInitMeshDS->nodesIterator();

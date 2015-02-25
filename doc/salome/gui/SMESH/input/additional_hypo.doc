@@ -5,37 +5,44 @@
 \n <b>Additional Hypotheses</b> can be applied as a supplement to the
 main hypotheses, introducing additional concepts to mesh creation.
 
-To define an <b>Additional Hypothesis</b> simply select it in
-<b>Create Mesh</b> menu. These hypotheses are actually changes in the
-rules of mesh creation and as such don't possess adjustable values.
+An <b>Additional Hypothesis</b> can be defined in the same way as any
+main hypothesis in \ref create_mesh_anchor "Create Mesh" or 
+\ref constructing_submeshes_page "Create Sub-Mesh" dialog.
 
-\anchor non_conform_allowed_anchor
-<h2>Non Conform mesh allowed hypothesis</h2>
+The following additional hypothesis are available:
+<ul> 
+<li>\ref propagation_anchor "Propagation of 1D Hypothesis on opposite edges" 
+  and \ref propagofdistribution_anchor "Propagation of Node Distribution on Opposite Edges"
+  hypotheses are useful for creation of quadrangle and hexahedral
+  meshes.</li>
+<li>\ref viscous_layers_anchor "Viscous Layers" and 
+  \ref viscous_layers_anchor "Viscous Layers 2D"
+  hypotheses allow creation of layers of highly stretched
+  elements near mesh boundary, which is beneficial for high quality
+  viscous computations.</li>
+<li>\ref quadratic_mesh_anchor "Quadratic Mesh" hypothesis allows
+  generation of second order meshes.</li> 
+<li>\ref quadrangle_preference_anchor "Quadrangle Preference"
+  enables generation of quadrangles.</li>
+</ul>
 
-<b>Non Conform mesh allowed</b> hypothesis allows to generate non-conform
-meshes (that is, meshes having some edges ending on an edge or face of
-adjacent elements).
-
-\anchor quadratic_mesh_anchor
-<h2>Quadratic Mesh</h2>
-
-Quadratic Mesh hypothesis allows to build a quadratic mesh (whose
-edges are not straight but curved lines and can be defined by three
-points: first, middle and last instead of an ordinary two).
-
-See \ref adding_quadratic_elements_page
-for more information about quadratic meshes.
 
 \anchor propagation_anchor
 <h2>Propagation of 1D Hypothesis on opposite edges</h2>
 
-<b>Propagation of 1D Hypothesis on opposite edges</b> allows to propagate a
-hypothesis onto an opposite edge. If a local hypothesis and
-propagation are defined on an edge of a quadrangular face, the
-opposite edge will have the same hypothesis, unless another hypothesis
-has been locally defined on the opposite edge.
- 
-<br><b>See Also</b> a sample TUI Script of a 
+<b>Propagation of 1D Hypothesis on opposite edges</b> allows to mesh
+opposite sides of a quadrangle face, and of other adjacent quadrangles,
+using the same hypothesis assigned to one edge only.<br>
+Thus you define a sub-mesh on an edge where you define 1D meshing
+parameters and a \b Propagation hypothesis. These local meshing
+parameters will be propagated via opposite sides of quadrangles to the
+whole geometry, or till an edge with other local meshing parameters.
+
+This hypothesis can be taken into account by 
+\ref a1d_algos_anchor "Wire Discretization" and 
+\ref a1d_algos_anchor "Composite Side Discretization" algorithms.
+
+<b>See Also</b> a sample TUI Script of a 
 \ref tui_propagation "Propagation hypothesis" operation
 
 \anchor propagofdistribution_anchor
@@ -48,25 +55,18 @@ opposite edge will have the same number of nodes and the same
 relations between segment lengths, unless another hypothesis
 has been locally defined on the opposite edge.
  
-<br><b>See Also</b> a sample TUI Script of a 
+This hypothesis can be taken into account by 
+\ref a1d_algos_anchor "Wire Discretization" and 
+\ref a1d_algos_anchor "Composite Side Discretization" algorithms.
+
+<b>See Also</b> a sample TUI Script of a 
 \ref tui_propagation "Propagation hypothesis" operation
-
-\anchor quadrangle_preference_anchor
-<h2>Quadrangle Preference</h2>
-
-This additional hypothesis can be used together with 2D triangulation algorithms.
-It allows 2D triangulation algorithms to build quadrangular meshes.
-
-When used with "Quadrangle (Mapping)" meshing algorithm, that is obsolete
- since introducing \ref hypo_quad_params_anchor "Quadrangle parameters" 
-hypothesis, this hypothesis has one restriction on its work: the total quantity of 
-segments on all four sides of the face must be even (divisible by 2).
 
 \anchor viscous_layers_anchor
 <h2>Viscous Layers and Viscous Layers 2D</h2>
 
 <b>Viscous Layers</b> and <b>Viscous Layers 2D </b> additional
-hypotheses can be used together with either some 3D algorithms, for example
+hypotheses can be used by several 3D algorithms, for example
 Hexahedron(i,j,k), or 2D algorithms, for example Triangle
 (MEFISTO), correspondingly. These hypotheses allow creation of layers
 of highly stretched elements, prisms in 3D and quadrilaterals in 2D,
@@ -143,5 +143,34 @@ computations.
 
 <br><b>See also</b> a sample TUI script of a \ref tui_viscous_layers
 "Viscous layers construction".
+
+
+\anchor quadratic_mesh_anchor
+<h2>Quadratic Mesh</h2>
+
+Quadratic Mesh hypothesis allows to build a quadratic mesh (in which
+links between element nodes are not straight but curved lines due to
+presence of an additional midside node).
+
+This 1D hypothesis can be taken into account by 
+\ref a1d_algos_anchor "Wire Discretization" and 
+\ref a1d_algos_anchor "Composite Side Discretization" algorithms. To
+make a quadratic mesh assign this hypothesis at 
+\ref constructing_meshes_page "mesh construction".
+
+See \ref adding_quadratic_elements_page
+for more information about quadratic meshes.
+
+
+\anchor quadrangle_preference_anchor
+<h2>Quadrangle Preference</h2>
+
+This additional hypothesis can be used together with 2D triangulation algorithms.
+It allows 2D triangulation algorithms to build quadrangular meshes.
+
+When used with "Quadrangle (Mapping)" meshing algorithm, that is obsolete
+ since introducing \ref hypo_quad_params_anchor "Quadrangle parameters" 
+hypothesis, this hypothesis has one restriction on its work: the total quantity of 
+segments on all four sides of the face must be even (divisible by 2).
 
 */

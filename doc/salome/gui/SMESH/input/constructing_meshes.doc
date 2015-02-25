@@ -2,14 +2,67 @@
 
 \page constructing_meshes_page Constructing meshes
 
-\n Construction of a mesh on some geometry consists of:
+To create a mesh on geometry, at first you create a mesh object by choosing
+- a geometrical shape produced in the Geometry module (<em>main shape</em>);
+- <em>meshing parameters</em>, including 
+  - \ref basic_meshing_algos_page "meshing algorithms" and
+  - \ref about_hypo_page "hypotheses" specifying constraints to be
+    taken into account by chosen meshing algorithms.
+
+Then you already can launch mesh generation by invoking \ref
+compute_anchor "Compute" command.
+
+\note Sometimes \a hypotheses term is used to refer to both algorithms
+and hypotheses.
+
+Generation of the mesh on the geometry is performed in the bottom-up
+flow: nodes on vertices are created first, then edges are divided into
+segments using nodes on vertices; the segments of the edges is then
+used while meshing faces; then the mesh of the faces is used while meshing
+solids. This automatically assures the conformity of the mesh.
+
+You are to choose a meshing algorithm for every dimension of
+sub-shapes up to the highest dimension you desire to generate. Note
+that some algorithms generate elements of several dimensions while
+others, of only one. But it's not necessary to define meshing
+parameters for all dimensions at once; you can start from 1D
+meshing parameters only, compute the 1D mesh, then define 2D meshing
+parameters and compute the 2D mesh (note that 1D mesh won't be
+re-computed).
+
+An algorithm of a certain dimension chosen at mesh creation is applied
+to discretize every sub-shape of this dimension. But you can
+specify a different algorithm or hypothesis to be applied to one or
+a group of sub-shapes by creating a \ref constructing_submeshes_page
+"sub-mesh". You can specify no algorithms at all at mesh object
+creation and specify the meshing parameters on sub-meshes only; then
+only sub-shapes for which you defined an algorithm and a needed
+hypothesis (if any) will be discretized.
+
+\n Construction of a mesh on some geometry includes at least two (mesh
+creation and computing) of the following steps:
 <ul>
-  <li> \ref create_mesh_anchor "Creating of a mesh object"</li>
-  <li> \ref evaluate_anchor "Evaluating mesh size" (optional)</li>
-  <li> \ref preview_anchor "Previewing the mesh" (optional)</li>
-  <li> \ref submesh_order_anchor "Changing sub-mesh priority" (optional)</li>
-  <li> \ref compute_anchor "Computing the mesh"</li>
-  <li> \ref edit_anchor "Editing the mesh" (optional)</li>
+  <li> \ref create_mesh_anchor "Creation of a mesh object" where you
+  can specify meshing parameters to apply to all sub-shapes of the
+  main shape.</li>
+  <li> \ref constructing_submeshes_page "Creation of sub-meshes"
+  (optional) where you can specify meshing parameters to apply to
+  selected sub-shapes.</li>
+  <li> \ref evaluate_anchor "Evaluating mesh size" (optional) can be
+  used to know approximate number of elements before actual generation
+  of them.</li>
+  <li> \ref preview_anchor "Previewing the mesh" (optional) can be
+  used to generate mesh of only lower dimension(s) in order to
+  visually estimate it before full mesh generation, which can be much
+  longer.</li>
+  <li> \ref submesh_order_anchor "Changing sub-mesh priority"
+  (optional) can be useful if there are concurrent sub-meshes
+  defined.</li>
+  <li> \ref compute_anchor "Computing the mesh" uses defined meshing
+  parameters to generate mesh elements.</li>
+  <li> \ref edit_anchor "Editing the mesh" (optional) can be used to
+  \ref modifying_meshes_page "modify" mesh of lower dimension before
+  \ref compute_anchor "computing" elements of upper dimension.</li>
 </ul>
 
 \anchor create_mesh_anchor
@@ -44,41 +97,48 @@
 
     "Create mesh" dialog box contains several tab pages titled \b 3D,
     \b 2D, \b 1D and \b 0D. The title of each page reflects the
-    dimension of the CAD model (geometry) the algorithms listed on
+    dimension of the sub-shapes the algorithms listed on
     this page affect and the maximal dimension of elements the algorithms
     generate. For example, \b 3D page lists the algorithms that affect
-    3D geometrical objects (solids) and generate 3D mesh elements
+    3D sub-shapes (solids) and generate 3D mesh elements
     (tetrahedra, hexahedra etc.)
 
+    As soon as you have selected an algorithm, you can create (or
+    select already created) a hypothesis. A set of accessible
+    hypotheses includes only hypotheses the selected algorithm can take
+    into account.
+
     \note
-    - Some page(s) can be disabled if the source geometrical
+    - Some page(s) can be disabled if the geometrical
     object does not include shapes (sub-shapes) of the corresponding
     dimension(s). For example, if the input object is a geometrical face,
     \b 3D page is disabled.
     - Some algorithms affect the geometry of several dimensions,
-    i.e. "1D-2D" or "1D-2D-3D". If such an algorithm is selected by the
-    user, the dialog box pages related to the corresponding lower level
-    dimensions are disabled.
+    i.e. 1D+2D or 1D+2D+3D. If such an algorithm is selected, the
+    dialog box pages related to the corresponding lower dimensions are
+    disabled.
     - \b 0D page does not refer to the 0D elements, but to 0D
     geometry (vertices). Mesh module does not provide algorithms that
     produce 0D elements. Currently \b 0D page provides only one
-    algorithm "Segments around vertex" that allows specyfying the required
+    algorithm "Segments around vertex" that allows specifying the required
     size of mesh edges about the selected vertex (or vertices).
 
     For example, you need to mesh a 3D object.
 
-    First, type the name of your mesh in the \b Name box, by default,
-    it is "Mesh_1". Then select the geometrical object you wish to
-    mesh in the Object Browser and click "Select" button near \b Geometry
-    field (if the name of the object has not yet appeared in \b Geometry field).
+    First, you can change a default name of your mesh in the \b Name
+    box. Then check that a selected geometrical object, whose name is
+    shown in \b Geometry field, is that you wish to mesh; if not, click
+    the right object in the Object Browser. Click "Select" button
+    near \b Geometry field if the name of the object has not yet
+    appeared in \b Geometry field.
     <center>
     \image html image120.png
     <em>"Select" button</em>
     </center>
 
     Now you can define 3D Algorithm and 3D Hypotheses, which will be
-    applied to the solids of your geometrical object. Click the <em>"Add
-      Hypothesis"</em>  button to add a hypothesis.
+    applied to discretize the solids of your geometrical object using
+    3D elements. Click the <em>"Add Hypothesis"</em>  button to add a hypothesis.
     <center>
     \image html image121.png
     <em>"Add Hypothesis" button</em>
@@ -117,8 +177,8 @@
     choice of hypotheses and lower dimension algorithms depends on
     the higher dimension algorithm.
 
-    If you wish you can select different algorithms and/or hypotheses
-    for meshing some parts of your CAD model by \ref constructing_submeshes_page.
+    If you wish you can select other algorithms and/or hypotheses
+    for meshing some sub-shapes of your CAD model by \ref constructing_submeshes_page.
 
     Some algorithms generate mesh of several dimensions, while others
     produce mesh of only one dimension. In the latter case there must
@@ -141,30 +201,35 @@
       <li>a reference to the geometrical object on the basis of
         which the mesh has been constructed (\a mechanic);</li> 
       <li><b>Applied hypotheses</b> folder containing the references
-        to the hypotheses applied at the construction of the mesh;</li>
+        to the hypotheses chosen at the construction of the mesh;</li>
       <li><b>Applied algorithms</b> folder containing the references
-        to the algorithms applied at the construction of the mesh.</li> 
+        to the algorithms chosen at the construction of the mesh.</li> 
     </ul>
 
     There is an alternative way to assign Algorithms and Hypotheses by
     clicking <b>Assign a set of hypotheses</b> button and selecting among
-    pre-defined sets of hypotheses. In addition to the standard
+    pre-defined sets of algorithms and hypotheses. In addition to the built-in
     sets of hypotheses, it is possible to create custom sets by editing
     CustomMeshers.xml file located in the home directory. CustomMeshers.xml
     file must describe sets of hypotheses in the
     same way as ${SMESH_ROOT_DIR}/share/salome/resources/smesh/StdMeshers.xml 
     file does (sets of hypotheses are enclosed between <hypotheses-set-group>
       tags).
-
+      
+      <center>
       \image html hypo_sets.png
       List of sets of hypotheses. Tag <em>[custom]</em> is
       automatically added to the sets defined by the user.
-      
-      \note \a "Automatic" in the names of predefined sets of
-      hypotheses came from previous versions of SALOME where
-      \ref automatic_length_anchor "Automatic Length" hypothesis 
-      was included in these sets, and not that these sets are suitable for
-      meshing any geometry.
+      </center>
+
+      \note 
+      - \a "Automatic" in the names of predefined sets of
+        hypotheses came from previous versions of SALOME where
+        \ref automatic_length_anchor "Automatic Length" hypothesis 
+        was included in these sets, and not that these sets are suitable for
+        meshing any geometry.
+      - The list of sets of hypotheses can be shorter than in the
+        above image depending on the geometry dimension.
   </li>
 </ol>
 
@@ -222,31 +287,31 @@ it is possible to change the priority of their computation, i.e. to
 change the priority of applying algorithms to the shared sub-shapes of
 the Mesh shape.
 
-<em>To change submesh priority:</em>
+<em>To change sub-mesh priority:</em>
 
-Choose "Change submesh priority" from the Mesh menu or a pop-up
-menu. The opened dialog shows a list of submeshes in the order of
+Choose "Change sub-mesh priority" from the Mesh menu or a pop-up
+menu. The opened dialog shows a list of sub-meshes in the order of
 their priority. 
 
-There is an example of submesh order modifications taking a Mesh created on a Box
+There is an example of sub-mesh order modifications taking a Mesh created on a Box
 shape. The main Mesh object:
 <ul>
   <li><i>1D</i> <b>Wire discretisation</b> with <b>Number of Segments</b>=20</li>
   <li><i>2D</i> <b>Triangle (Mefisto)</b> with Hypothesis<b>Max Element Area</b>
   </li>
 </ul>
-The first submesh object <b>Submesh_1</b> created on <b>Face_1</b> is:
+The first sub-mesh <b>Submesh_1</b> created on <b>Face_1</b> is:
 <ul>
   <li><i>1D</i> <b>Wire discretisation</b> with <b>Number of Segments</b>=4</li>
   <li><i>2D</i> <b>Triangle (Mefisto)</b> with Hypothesis <b>MaxElementArea</b>=1200</li>
 </ul>
-The second submesh object <b>Submesh_2</b> created on <b>Face_2</b> is:
+The second sub-mesh <b>Submesh_2</b> created on <b>Face_2</b> is:
 <ul>
   <li><i>1D</i> <b>Wire discretisation</b> with <b>Number of Segments</b>=8</li>
   <li><i>2D</i> <b>Triangle (Mefisto)</b> with Hypothesis <b>MaxElementArea</b>=1200</li>
 </ul>
 
-And the last submesh object <b>Submesh_3</b> created on <b>Face_3</b> is:
+And the last sub-mesh <b>Submesh_3</b> created on <b>Face_3</b> is:
 <ul>
   <li><i>1D</i> <b>Wire discretisation</b> with <b>Number of Segments</b>=12</li>
   <li><i>2D</i> <b>Triangle (Mefisto)</b> with Hypothesis <b>MaxElementArea</b>=1200</li>
@@ -254,7 +319,7 @@ And the last submesh object <b>Submesh_3</b> created on <b>Face_3</b> is:
 
 The sub-meshes become concurrent if they share sub-shapes that can be
 meshed with different algorithms (or different hypotheses). In the
-example, we have three submeshes with concurrent algorithms, because
+example, we have three sub-meshes with concurrent algorithms, because
 they have different hypotheses.
 
 The first mesh computation is made with:
@@ -284,15 +349,15 @@ As we can see, each mesh computation has a different number of result
 elements and a different mesh discretization on the shared edges (the edges 
 that are shared between <b>Face_1</b>, <b>Face_2</b> and <b>Face_3</b>)
 
-Additionally, submesh priority (the order of applied algorithms) can
+Additionally, sub-mesh priority (the order of applied algorithms) can
 be modified not only in a separate dialog box, but also in
 the <b>Preview</b>. This helps to preview different mesh results,
-modifying the order of submeshes. 
+modifying the order of sub-meshes. 
 <center>
 \image html mesh_order_preview.png
-<em>"Preview with submesh priority list box"</em></center>
+<em>"Preview with sub-mesh priority list box"</em></center>
 
-If there are no concurrent submeshes under the Mesh object, the user
+If there are no concurrent sub-meshes under the Mesh object, the user
 will see the following information.
 <center>
 \image html mesh_order_no_concurrent.png
@@ -315,7 +380,7 @@ click "Compute" button of the toolbar.
 
 After the mesh computation finishes, the Mesh Computation information
 box appears. If you close this box and click "Compute" button again,
-without previously changing hypotheses and/or algorithms, the mesh is
+without previously changing meshing parameters, the mesh is
 NOT re-computed and the Mesh Computation information box with
 the same contents is shown. (To fully re-compute the mesh, invoke \ref
 clear_mesh_anchor "Clear Mesh Data" command before).
@@ -325,12 +390,13 @@ of different types in the mesh.
 
 \image html meshcomputationsucceed.png
 
+\anchor meshing_failed_anchor
 If the mesh computation failed, the information about the cause of the
 failure is provided in \b Errors table.
 
 \image html meshcomputationfail.png
 
-After you select the error, <b>Show Sub-shape</b> button allows
+After you select an error, <b>Show Sub-shape</b> button allows
 visualizing in magenta the geometrical entity that causes the error.
 
 \image html failed_computation.png 
@@ -338,8 +404,8 @@ visualizing in magenta the geometrical entity that causes the error.
     Sub-shape</b> button</em>
 
 <b>Publish Sub-shape</b> button publishes the sub-shape, whose meshing
-has failed, in GEOM component as a child of the mesh geometry, which
-allows analyzing the problem geometry and creating a submesh on it in
+has failed, in the Geometry component as a child of the main shape, which
+allows analyzing the problematic geometry and creating a sub-mesh on it in
 order to locally tune the hypotheses.
 
 If the failure is caused by an invalid input mesh and the algorithm has

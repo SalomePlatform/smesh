@@ -11,7 +11,7 @@
 
 <b>Max Element Area</b> hypothesis is applied for meshing of faces
 composing your geometrical object. Definition of this hypothesis
-consists of setting the <b>maximum area</b> of mesh elements,
+consists of setting the <b>maximum area</b> of mesh faces,
 which will compose the mesh of these faces.
 
 \image html a-maxelarea.png
@@ -26,9 +26,9 @@ which will compose the mesh of these faces.
 \anchor length_from_edges_anchor
 <h2>Length from Edges</h2>
 
-<b>Length from edges</b> hypothesis builds 2D mesh elements having a
-maximum linear size calculated as an average segment length for a wire
-of a given face.
+<b>Length from edges</b> hypothesis defines maximum linear size of
+mesh faces as an average length of mesh edges approximating a boundary
+of a face being meshed.
 
 <b>See Also</b> a sample TUI Script of a 
 \ref tui_length_from_edges "Length from Edges" hypothesis operation.
@@ -41,7 +41,7 @@ of a given face.
 <b>Quadrangle parameters</b> is a hypothesis for Quadrangle (Mapping) algorithm.
 
 <b>Transition</b> tab is used to define the algorithm of transition
-between opposite sides of faces with a different number of
+between opposite sides of the face with a different number of
 segments on them. The following types of transition
 algorithms are available:
 
@@ -54,7 +54,7 @@ algorithms are available:
 - <b>Quadrangle preference</b> forces building only quadrangles in the
   transition area along the finer meshed sides. This hypothesis has a
   restriction: the total quantity of segments on all
-  four sides of the face must be even (divisible by 2).
+  four face sides must be even (divisible by 2).
   \note This type corresponds to <b>Quadrangle Preference</b> additional hypothesis,
   which is obsolete now.
 - <b>Quadrangle preference (reversed)</b> works in the same way and
@@ -63,9 +63,9 @@ algorithms are available:
 - <b>Reduced</b> type forces building only quadrangles and the transition
   between the sides is made gradually, layer by layer. This type has
   a limitation on the number of segments: one pair of opposite sides must have
-  the same number of segments, the other pair must have an even difference
-  between the numbers of segments on the sides. In addition, the number
-  of rows between sides with different discretization
+  the same number of segments, the other pair must have an even total
+  number of segments. In addition, the number of rows
+  between sides with different discretization
   should be enough for the transition. Following the fastest transition
   pattern, three segments become one (see the image below), hence
   the least number of face rows needed to reduce from Nmax segments
@@ -77,8 +77,8 @@ algorithms are available:
 
 <b>Base vertex</b> tab allows using Quadrangle (Mapping)
 algorithm for meshing of trilateral faces. In this case it is
-necessary to select the vertex, which will be used as the fourth edge
-(degenerated).
+necessary to select the vertex, which will be used as the forth
+degenerated side of quadrangle.
 
 \image html hypo_quad_params_dialog_vert.png "Quadrangle parameters: Base Vertex"
 

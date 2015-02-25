@@ -520,7 +520,8 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
         #return self.IsEmbeddedMode()
         return SMESH._objref_SMESH_Gen.IsEmbeddedMode(self)
 
-    ## Sets the current study
+    ## Sets the current study. Calling SetCurrentStudy( None ) allows to
+    #  switch OFF automatic pubilishing in the Study of mesh objects.
     #  @ingroup l1_auxiliary
     def SetCurrentStudy( self, theStudy, geompyD = None ):
         #self.SetCurrentStudy(theStudy)
@@ -601,14 +602,15 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
         if error.comment: print "*** CreateMeshesFromGMF() errors:\n", error.comment
         return Mesh(self, self.geompyD, aSmeshMesh), error
 
-    ## Concatenate the given meshes into one mesh.
-    #  @return an instance of Mesh class
+    ## Concatenate the given meshes into one mesh. All groups of input meshes will be
+    #  present in the new mesh.
     #  @param meshes the meshes to combine into one mesh
     #  @param uniteIdenticalGroups if true, groups with same names are united, else they are renamed
-    #  @param mergeNodesAndElements if true, equal nodes and elements aremerged
+    #  @param mergeNodesAndElements if true, equal nodes and elements are merged
     #  @param mergeTolerance tolerance for merging nodes
-    #  @param allGroups forces creation of groups of all elements
+    #  @param allGroups forces creation of groups corresponding to every input mesh
     #  @param name name of a new mesh
+    #  @return an instance of Mesh class
     def Concatenate( self, meshes, uniteIdenticalGroups,
                      mergeNodesAndElements = False, mergeTolerance = 1e-5, allGroups = False,
                      name = ""):
@@ -1523,7 +1525,7 @@ class Mesh:
         return self.mesh.SetMeshOrder(submeshes)
 
     ## Removes all nodes and elements
-    #  @refresh if @c True, Object browser is automatically updated (when running in GUI)
+    #  @param refresh if @c True, Object browser is automatically updated (when running in GUI)
     #  @ingroup l2_construct
     def Clear(self, refresh=False):
         self.mesh.Clear()
@@ -1535,7 +1537,8 @@ class Mesh:
             if refresh: salome.sg.updateObjBrowser(1)
 
     ## Removes all nodes and elements of indicated shape
-    #  @refresh if @c True, Object browser is automatically updated (when running in GUI)
+    #  @param refresh if @c True, Object browser is automatically updated (when running in GUI)
+    #  @param geomId the ID of a sub-shape to remove elements on
     #  @ingroup l2_construct
     def ClearSubMesh(self, geomId, refresh=False):
         self.mesh.ClearSubMesh(geomId)
