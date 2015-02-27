@@ -876,7 +876,7 @@ module StdMeshers
    * interface of "Viscous Layers" hypothesis.
    * This hypothesis specifies parameters of layers of prisms to build
    * near mesh boundary. This hypothesis can be used by several 3D algorithms:
-   * NETGEN 3D, GHS3D, Hexahedron(i,j,k)
+   * NETGEN 3D, Hexahedron(i,j,k), MG_Tetra
    */
   interface StdMeshers_ViscousLayers : SMESH::SMESH_Hypothesis
   {
@@ -907,7 +907,7 @@ module StdMeshers
     short GetNumberLayers();
 
     /*!
-     * Set factor (>1.0) of growth of layer thickness towards inside of mesh
+     * Set factor (>=1.0) of growth of layer thickness towards inside of mesh
      */
     void SetStretchFactor(in double factor) raises (SALOME::SALOME_Exception);
     double GetStretchFactor();
@@ -951,7 +951,7 @@ module StdMeshers
     short GetNumberLayers();
 
     /*!
-     * Set factor (>1.0) of growth of layer thickness towards inside of mesh
+     * Set factor (>=1.0) of growth of layer thickness towards inside of mesh
      */
     void SetStretchFactor(in double factor) raises (SALOME::SALOME_Exception);
     double GetStretchFactor();

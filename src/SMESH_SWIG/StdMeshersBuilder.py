@@ -1345,15 +1345,13 @@ class StdMeshersBuilder_UseExistingElements_1D2D(Mesh_Algorithm):
     #  @param UseExisting if ==true - searches for the existing hypothesis created with
     #                     the same parameters, else (default) - creates a new one
     def SourceFaces(self, groups, toCopyMesh=False, toCopyGroups=False, UseExisting=False):
-        for group in groups:
-            from salome.smesh.smeshBuilder import AssureGeomPublished
-            AssureGeomPublished( self.mesh, group )
         compFun = lambda hyp, args: ( hyp.GetSourceFaces() == args[0] and \
                                       hyp.GetCopySourceMesh() == args[1], args[2] )
         hyp = self.Hypothesis("ImportSource2D", [groups, toCopyMesh, toCopyGroups],
-                              UseExisting=UseExisting, CompareMethod=compFun)
+                              UseExisting=UseExisting, CompareMethod=compFun, toAdd=False)
         hyp.SetSourceFaces(groups)
         hyp.SetCopySourceMesh(toCopyMesh, toCopyGroups)
+        self.mesh.AddHypothesis(hyp, self.geom)
         return hyp
 
     pass # end of StdMeshersBuilder_UseExistingElements_1D2D class

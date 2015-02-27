@@ -58,10 +58,9 @@ same priority.
 
 If meshing parameters are defined on sub-meshes of the same priority,
 for example different 1D hypotheses are assigned to two faces sharing
-an edge, an arbitrary algorithm/hypothesis will be used for
-meshing. This indeterminacy can be fixed by 
-\ref submesh_order_anchor "Changing" mutual priority of such
-concurrent sub-meshes.
+an edge, the hypothesis assigned to a sub-shape with a lower ID will
+be used for meshing. You can \ref submesh_order_anchor "change" mutual
+priority of such concurrent sub-meshes. 
 
 
 \n Construction of a sub-mesh consists of:

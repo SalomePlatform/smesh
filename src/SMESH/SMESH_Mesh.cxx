@@ -1215,7 +1215,8 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
     // other possible changes are not interesting. (IPAL0052457 - assigning hyp performance pb)
     if ( aSubMesh->GetComputeState() != SMESH_subMesh::COMPUTE_OK &&
          aSubMesh->GetComputeState() != SMESH_subMesh::FAILED_TO_COMPUTE &&
-         aSubMesh->GetAlgoState()    != SMESH_subMesh::MISSING_HYP )
+         aSubMesh->GetAlgoState()    != SMESH_subMesh::MISSING_HYP &&
+         !hyp->DataDependOnParams() )
       continue;
 
     const TopoDS_Shape & aSubShape = aSubMesh->GetSubShape();

@@ -1590,7 +1590,7 @@ SMESH_ComputeErrorPtr _ViscousBuilder::CheckHypotheses( SMESH_Mesh&         mesh
 
 
   findSolidsWithLayers();
-  bool ok = findFacesWithLayers();
+  bool ok = findFacesWithLayers( true );
 
   // remove _MeshOfSolid's of _SolidData's
   for ( size_t i = 0; i < _sdVec.size(); ++i )

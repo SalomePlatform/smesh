@@ -79,13 +79,15 @@ public:
   virtual void NotifySubMeshesHypothesisModification();
   void  SetLibName(const char* theLibName);
 
-  //void  SetParameters(const char *theParameters);
-  //char* GetParameters() const;
+  /*!
+   * \brief The returned value is used by NotifySubMeshesHypothesisModification()
+   *        to decide to call subMesh->AlgoStateEngine( MODIF_HYP, hyp ) or not
+   *        if subMesh is ready to be computed (algo+hyp==OK)  but not yet computed.
+   *        True result is reasonable for example if EventListeners depend on
+   *        parameters of hypothesis.
+   */
+  virtual bool DataDependOnParams() const { return false; }
 
-  // void SetLastParameters(const char* theParameters);
-  // char* GetLastParameters() const;
-  // void ClearParameters();
-  
   /*!
    * \brief Initialize my parameter values by the mesh built on the geometry
    *  \param theMesh - the built mesh

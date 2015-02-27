@@ -44,15 +44,20 @@
 #include "Utils_SALOME_Exception.hxx"
 #include "utilities.h"
 
+#include <BRepClass_FaceClassifier.hxx>
+#include <BRepTools.hxx>
 #include <BRep_Builder.hxx>
 #include <BRep_Tool.hxx>
+#include <Bnd_B2d.hxx>
+#include <GeomAPI_ProjectPointOnSurf.hxx>
+#include <GeomAdaptor_Surface.hxx>
+#include <Precision.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopoDS.hxx>
 #include <TopoDS_Compound.hxx>
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Vertex.hxx>
-#include <Precision.hxx>
 
 #include <numeric>
 
@@ -187,8 +192,27 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
 
   Handle(Geom_Surface) surface = BRep_Tool::Surface( geomFace );
   const bool reverse = 
-    ( helper.GetSubShapeOri( tgtMesh->ShapeToMesh(), geomFace) == TopAbs_REVERSED );
+    ( helper.GetSubShapeOri( tgtMesh->ShapeToMesh(), geomFace ) == TopAbs_REVERSED );
   gp_Pnt p; gp_Vec du, dv;
+
+  BRepClass_FaceClassifier classifier;
+  Bnd_B2d bndBox2d;
+  {
+    Standard_Real umin,umax,vmin,vmax;
+    BRepTools::UVBounds(geomFace,umin,umax,vmin,vmax);
+    gp_XY pmin( umin,vmin ), pmax( umax,vmax );
+    bndBox2d.Add( pmin );
+    bndBox2d.Add( pmax );
+    if ( helper.HasSeam() )
+    {
+      const int i = helper.GetPeriodicIndex();
+      pmin.SetCoord( i, helper.GetOtherParam( pmin.Coord( i )));
+      pmax.SetCoord( i, helper.GetOtherParam( pmax.Coord( i )));
+      bndBox2d.Add( pmin );
+      bndBox2d.Add( pmax );
+    }
+    bndBox2d.Enlarge( 1e-2 * Sqrt( bndBox2d.SquareExtent() ));
+  }
 
   set<int> subShapeIDs;
   subShapeIDs.insert( shapeID );
@@ -244,7 +268,10 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
 
   StdMeshers_Import_1D::TNodeNodeMap* n2n;
   StdMeshers_Import_1D::TElemElemMap* e2e;
-  vector<const SMDS_MeshNode*> newNodes;
+  vector<TopAbs_State>         nodeState;
+  vector<const SMDS_MeshNode*> newNodes; // of a face
+  set   <const SMDS_MeshNode*> bndNodes; // nodes classified ON
+
   for ( size_t iG = 0; iG < srcGroups.size(); ++iG )
   {
     const SMESHDS_GroupBase* srcGroup = srcGroups[iG]->GetGroupDS();
@@ -257,58 +284,126 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
     const double groupTol = 0.5 * sqrt( getMinElemSize2( srcGroup ));
     minGroupTol = std::min( groupTol, minGroupTol );
 
+    GeomAdaptor_Surface S( surface );
+    const double clsfTol = Min( S.UResolution( 0.1 * groupTol ),
+                                S.VResolution( 0.1 * groupTol ));
+
+    StdMeshers_Import_1D::TNodeNodeMap::iterator n2nIt;
+    pair< StdMeshers_Import_1D::TNodeNodeMap::iterator, bool > it_isnew;
+
     SMDS_ElemIteratorPtr srcElems = srcGroup->GetElements();
-    SMDS_MeshNode *tmpNode = helper.AddNode(0,0,0);
-    gp_XY uv( Precision::Infinite(), Precision::Infinite() );
     while ( srcElems->more() ) // loop on group contents
     {
       const SMDS_MeshElement* face = srcElems->next();
+
       // find or create nodes of a new face
-      newNodes.resize( face->NbNodes() );
+      nodeState.resize( face->NbNodes() );
+      newNodes.resize( nodeState.size() );
       newNodes.back() = 0;
       int nbCreatedNodes = 0;
+      bool isOut = false, isIn = false; // if at least one node isIn - do not classify other nodes
       SMDS_MeshElement::iterator node = face->begin_nodes();
       for ( size_t i = 0; i < newNodes.size(); ++i, ++node )
       {
-        StdMeshers_Import_1D::TNodeNodeMap::iterator n2nIt =
-          n2n->insert( make_pair( *node, (SMDS_MeshNode*)0 )).first;
-        if ( n2nIt->second )
+        SMESH_TNodeXYZ nXYZ = *node;
+        nodeState[ i ] = TopAbs_UNKNOWN;
+
+        it_isnew = n2n->insert( make_pair( *node, (SMDS_MeshNode*)0 ));
+        n2nIt    = it_isnew.first;
+
+        const SMDS_MeshNode* & newNode = n2nIt->second;
+        if ( !it_isnew.second && !newNode )
+          break; // a node is mapped to NULL - it is OUT of the FACE
+
+        if ( newNode )
         {
-          if ( !subShapeIDs.count( n2nIt->second->getshapeId() )) // node already on an EDGE
-            break;
+          if ( !subShapeIDs.count( newNode->getshapeId() ))
+            break; // node is Imported onto other FACE
+          if ( !isIn && bndNodes.count( *node ))
+            nodeState[ i ] = TopAbs_ON;
         }
         else
         {
-          // find a pre-existing node
+          // find a node pre-existing on EDGE or VERTEX
           dist2foundNodes.clear();
-          existingNodeOcTr.NodesAround( SMESH_TNodeXYZ( *node ), dist2foundNodes, groupTol );
+          existingNodeOcTr.NodesAround( nXYZ, dist2foundNodes, groupTol );
           if ( !dist2foundNodes.empty() )
-            (*n2nIt).second = dist2foundNodes.begin()->second;
-        }
-        if ( !n2nIt->second )
-        {
-          // find out if node lies on theShape
-          tmpNode->setXYZ( (*node)->X(), (*node)->Y(), (*node)->Z());
-          uv.SetCoord( Precision::Infinite(), Precision::Infinite() );
-          if ( helper.CheckNodeUV( geomFace, tmpNode, uv, groupTol, /*force=*/true ))
           {
-            SMDS_MeshNode* newNode = tgtMesh->AddNode( (*node)->X(), (*node)->Y(), (*node)->Z());
-            n2nIt->second = newNode;
-            tgtMesh->SetNodeOnFace( newNode, shapeID, uv.X(), uv.Y() );
-            nbCreatedNodes++;
+            newNode = dist2foundNodes.begin()->second;
+            nodeState[ i ] = TopAbs_ON;
           }
         }
-        if ( !(newNodes[i] = n2nIt->second ))
+
+        if ( !newNode )
+        {
+          // find out if node lies on the surface of theShape
+          gp_XY uv( Precision::Infinite(), 0 );
+          isOut = ( !helper.CheckNodeUV( geomFace, *node, uv, groupTol, /*force=*/true ) ||
+                    bndBox2d.IsOut( uv ));
+          if ( !isOut && !isIn ) // classify
+          {
+            classifier.Perform( geomFace, uv, clsfTol );
+            nodeState[i] = classifier.State();
+            isOut = ( nodeState[i] == TopAbs_OUT );
+          }
+          if ( !isOut ) // create a new node
+          {
+            newNode = tgtMesh->AddNode( nXYZ.X(), nXYZ.Y(), nXYZ.Z());
+            tgtMesh->SetNodeOnFace( newNode, shapeID, uv.X(), uv.Y() );
+            nbCreatedNodes++;
+            if ( nodeState[i] == TopAbs_ON )
+              bndNodes.insert( *node );
+            else
+              isIn = true;
+          }
+        }
+        if ( !(newNodes[i] = newNode ) || isOut )
           break;
       }
+
       if ( !newNodes.back() )
         continue; // not all nodes of the face lie on theShape
+
+      if ( !isIn ) // if all nodes are on FACE boundary, a mesh face can be OUT
+      {
+        // check state of nodes created for other faces
+        for ( size_t i = 0; i < nodeState.size() && !isIn; ++i )
+        {
+          if ( nodeState[i] != TopAbs_UNKNOWN ) continue;
+          gp_XY uv = helper.GetNodeUV( geomFace, newNodes[i] );
+          classifier.Perform( geomFace, uv, clsfTol );
+          nodeState[i] = classifier.State();
+          isIn = ( nodeState[i] == TopAbs_IN );
+        }
+        if ( !isIn ) // classify face center
+        {
+          gp_XYZ gc( 0., 0., 0 );
+          for ( size_t i = 0; i < newNodes.size(); ++i )
+            gc += SMESH_TNodeXYZ( newNodes[i] );
+          gc /= newNodes.size();
+
+          TopLoc_Location loc;
+          GeomAPI_ProjectPointOnSurf& proj = helper.GetProjector( geomFace,
+                                                                  loc,
+                                                                  helper.MaxTolerance( geomFace ));
+          if ( !loc.IsIdentity() ) loc.Transformation().Inverted().Transforms( gc );
+          proj.Perform( gc );
+          if ( !proj.IsDone() || proj.NbPoints() < 1 )
+            continue;
+          Quantity_Parameter U,V;
+          proj.LowerDistanceParameters(U,V);
+          gp_XY uv( U,V );
+          classifier.Perform( geomFace, uv, clsfTol );
+          if ( classifier.State() != TopAbs_IN )
+            continue;
+        }
+      }
 
       // try to find already created face
       SMDS_MeshElement * newFace = 0;
       if ( nbCreatedNodes == 0 &&
            tgtMesh->FindElement(newNodes, SMDSAbs_Face, /*noMedium=*/false))
-        continue; // repeated face in source groups already created 
+        continue; // repeated face in source groups already created
 
       // check future face orientation
       const int nbCorners = face->NbCornerNodes();
@@ -319,7 +414,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
         gp_Vec geomNorm;
         do
         {
-          uv = helper.GetNodeUV( geomFace, newNodes[++iNode] );
+          gp_XY uv = helper.GetNodeUV( geomFace, newNodes[++iNode] );
           surface->D1( uv.X(),uv.Y(), p, du,dv );
           geomNorm = reverse ? dv^du : du^dv;
         }
@@ -384,8 +479,14 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
         // }
       }
     }
-    helper.GetMeshDS()->RemoveNode(tmpNode);
+    // Remove OUT nodes from n2n map
+    for ( n2nIt = n2n->begin(); n2nIt != n2n->end(); )
+      if ( !n2nIt->second )
+        n2n->erase( n2nIt++ );
+      else
+        ++n2nIt;
   }
+
 
   // ==========================================================
   // Put nodes on geom edges and create edges on them;

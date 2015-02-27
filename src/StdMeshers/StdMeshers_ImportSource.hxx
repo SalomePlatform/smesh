@@ -61,6 +61,7 @@ class STDMESHERS_EXPORT StdMeshers_ImportSource1D : public SMESH_Hypothesis
   virtual std::istream & LoadFrom(std::istream & load);
   virtual bool SetParametersByMesh(const SMESH_Mesh* theMesh, const TopoDS_Shape& theShape);
   virtual bool SetParametersByDefaults(const TDefaults& dflts, const SMESH_Mesh* theMesh=0);
+  virtual bool DataDependOnParams() const { return true; }
   void RestoreGroups(const std::vector<SMESH_Group*>& groups);
 
   void StoreResultGroups(const std::vector<SMESH_Group*>& groups,
