@@ -1,22 +1,39 @@
 /*!
 
-\page group_of_underlying_elements_page Create Group of Underlying Elements
+\page group_of_underlying_elements_page Group Based on Nodes of Other Groups
 
 
-To create groups of entities from existing groups of superior dimensions, in the \b Mesh menu select <b>Group of underlying entities</b>.<br>
+To create a standalone group of entities basing on nodes of existing
+reference groups, in the \b Mesh menu select <b>Group of underlying entities</b>.
 
 The following dialog box will appear:
 
 \image html dimgroup_dlg.png
 
-In this dialog box specify the name of the resulting group, types of entities and set of source groups.
+In this dialog box specify <ul>
+  <li> the resulting <b>Group name</b>, </li>
+  <li> the <b>Elements Type</b> of entities of the resulting group,</li>
+  <li> the criterion of inclusion of a mesh entity to the result group,
+    which is <b>Number of common nodes</b> of the entity and the
+    reference groups: <ul>
+      <li>\b All - include if all nodes are common;</li>
+      <li>\b Main - include if all corner nodes are common (meaningful for
+        a quadratic mesh) </li>
+      <li><b>At least one</b> - include if one or more node is common</li>
+      <li>\b Majority - include if half of nodes or more is common</li></ul>
+  </li>
+  <li> select reference groups,</li>
+  <li> <b>Include underlying entities only</b> option if activated
+  allows inclusion of an entity provided that it is based on nodes of
+  one element of a reference group.</li>
+</ul>
 
-In the figure below, there are two source Volume groups:
+In the figure below, there are two reference Volume groups:
 
 \image html dimgroup_src.png
-<center>Source groups</center>
+<center>Reference groups</center>
 
-In this case the following results for Faces, Edges and Nodes are obtained: 
+In this case the following results for Faces, Edges and Nodes are obtained:
 
 \image html dimgroup_2d.png
 <center>Faces</center>
@@ -27,8 +44,8 @@ In this case the following results for Faces, Edges and Nodes are obtained:
 \image html dimgroup_0d.png
 <center>Nodes</center>
 
-<b>See Also</b> a sample TUI Script of a 
-\ref tui_create_dim_group "Creating groups of entities from existing groups of superior dimensions"
+<b>See Also</b> a sample TUI Script of a
+\ref tui_create_dim_group "Creating groups basing on nodes of other groups"
 operation.
 
 */

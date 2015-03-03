@@ -1,13 +1,15 @@
 /*!
 
-\page building_compounds_page Building Compounds
+\page building_compounds_page Building Compound Meshes
 
 \n Compound Mesh is a combination of several meshes. All elements and
 groups present in input meshes are present in the compound
 mesh. Neither geometry nor hypotheses of initial meshes are used by
-the compound mesh.
+the compound mesh. No link between input meshes and a compound mesh is
+supported, so that modification of an input mesh does not lead to
+update of the compound mesh.
 
-<em>To Build a compound:</em>
+<em>To Build a compound mesh:</em>
 
 \par
 From the \b Mesh menu select <b>Build Compound</b> or click <em>"Build
@@ -24,23 +26,25 @@ The following dialog box will appear:
 \par
 <ul>
   <li>\b Name - allows selecting the name of the resulting \b Compound mesh.</li>
-  <li>\b Meshes - allows selecting the meshes which will be
-    concatenated. They can be chosen in the Object Browser while holding
-\b Ctrl button.</li>
+  <li><b>Meshes, sub-meshes, groups</b> - allows selecting the meshes,
+    sub-meshes and groups which will be concatenated. They can be
+    chosen in the Object Browser while holding \b Ctrl button.</li>
   <li><b>Processing identical groups</b> - allows selecting the method
-    of processing the namesake groups existing in the united meshes.
-\n They can be either</li>
-  <ul>
-    <li>\b United - all elements of Group1 of Mesh_1 and Group1 of Mesh_2
-      become the elements of Group1 of the Compound_Mesh, or</li>
-    <li>\b Renamed - Group1 of Mesh_1 becomes Group1_1 and Group1 of Mesh_2
-      becomes Group1_2.</li>
-  </ul>
-  See \ref grouping_elements_page "Creating Groups" for more information
-  about groups.
-  <li><b>Create common groups for initial meshes</b> check-box permits to
+    of processing the namesake groups existing in the input meshes.
+    They can be either <ul>
+      <li>\b United - all elements of Group1 of Mesh_1 and Group1 of Mesh_2
+        become the elements of Group1 of the Compound_Mesh, or</li>
+      <li>\b Renamed - Group1 of Mesh_1 becomes Group1_1 and Group1 of Mesh_2
+        becomes Group1_2.</li>
+    </ul>
+    See \ref grouping_elements_page "Creating Groups" for more information
+    about groups.</li>
+  <li><b>Create groups from input objects</b> check-box permits to
     automatically create groups corresponding to every initial mesh.
-  </li>
+
+\image html buildcompound_groups.png "Groups created from input meshes 'Box_large' and 'Box_small'"
+
+  <p></li>
   <li>You can choose to additionally
     \ref merging_nodes_page "Merge coincident nodes" 
     \ref merging_elements_page "and elements" in the compound mesh, in

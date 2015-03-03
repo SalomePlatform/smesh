@@ -37,14 +37,15 @@
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Group)
 
-class QPushButton;
-class QtxColorButton;
+class LightApp_SelectionMgr;
+class QCheckBox;
 class QComboBox;
-class QListWidget;
 class QGroupBox;
 class QLineEdit;
+class QListWidget;
+class QPushButton;
+class QtxColorButton;
 class SMESHGUI;
-class LightApp_SelectionMgr;
 class SVTK_Selector;
 
 /*
@@ -235,8 +236,11 @@ protected slots:
   virtual void                      onSelectionDone();
 
 private:
-  QComboBox*                        myCombo;
+  QComboBox*                        myTypeCombo;
+  QComboBox*                        myNbNoCombo;
   QListWidget*                      myListWg;
+  QCheckBox*                        myUnderlOnlyChk;
+  
   QList<SMESH::SMESH_GroupBase_var> myGroups;
 };
 

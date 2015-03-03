@@ -356,26 +356,26 @@ public:
     throw ( SALOME::SALOME_Exception );
 
   // Concatenate the given meshes into one mesh
-  SMESH::SMESH_Mesh_ptr ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
-                                          CORBA::Boolean           theUniteIdenticalGroups,
-                                          CORBA::Boolean           theMergeNodesAndElements,
-                                          CORBA::Double            theMergeTolerance,
-                                          CORBA::Boolean           theCommonGroups)
+  SMESH::SMESH_Mesh_ptr ConcatenateCommon(const SMESH::ListOfIDSources& meshesArray,
+                                          CORBA::Boolean                uniteIdenticalGroups,
+                                          CORBA::Boolean                mergeNodesAndElements,
+                                          CORBA::Double                 mergeTolerance,
+                                          CORBA::Boolean                commonGroups)
     throw ( SALOME::SALOME_Exception );
 
   // Concatenate the given meshes into one mesh
-  SMESH::SMESH_Mesh_ptr Concatenate(const SMESH::mesh_array& theMeshesArray,
-                                    CORBA::Boolean           theUniteIdenticalGroups,
-                                    CORBA::Boolean           theMergeNodesAndElements,
-                                    CORBA::Double            theMergeTolerance)
+  SMESH::SMESH_Mesh_ptr Concatenate(const SMESH::ListOfIDSources& meshesArray,
+                                    CORBA::Boolean                uniteIdenticalGroups,
+                                    CORBA::Boolean                mergeNodesAndElements,
+                                    CORBA::Double                 mergeTolerance)
     throw ( SALOME::SALOME_Exception );
 
   // Concatenate the given meshes into one mesh
   // Create the groups of all elements from initial meshes
-  SMESH::SMESH_Mesh_ptr ConcatenateWithGroups(const SMESH::mesh_array& theMeshesArray,
-                                              CORBA::Boolean           theUniteIdenticalGroups,
-                                              CORBA::Boolean           theMergeNodesAndElements,
-                                              CORBA::Double            theMergeTolerance)
+  SMESH::SMESH_Mesh_ptr ConcatenateWithGroups(const SMESH::ListOfIDSources& meshesArray,
+                                              CORBA::Boolean                uniteIdenticalGroups,
+                                              CORBA::Boolean                mergeNodesAndElements,
+                                              CORBA::Double                 mergeTolerance)
     throw ( SALOME::SALOME_Exception );
 
   // Get MED version of the file by its name

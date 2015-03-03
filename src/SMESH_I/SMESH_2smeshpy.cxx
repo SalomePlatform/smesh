@@ -888,18 +888,22 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
       if ( Type == "SMESH.FT_ElemGeomType" )
       {
         // set SMESH.GeometryType instead of a numerical Threshold
-        const int nbTypes = SMESH::Geom_BALL+1;
+        const int nbTypes = SMESH::Geom_LAST;
         const char* types[nbTypes] = {
           "Geom_POINT", "Geom_EDGE", "Geom_TRIANGLE", "Geom_QUADRANGLE", "Geom_POLYGON",
           "Geom_TETRA", "Geom_PYRAMID", "Geom_HEXA", "Geom_PENTA", "Geom_HEXAGONAL_PRISM",
           "Geom_POLYHEDRA", "Geom_BALL" };
         if ( -1 < iGeom && iGeom < nbTypes )
           Threshold = SMESH + types[ iGeom ];
+#ifdef _DEBUG_
+        // is types complete? (compilation failure mains that enum GeometryType changed)
+        int _assert[( sizeof(types) / sizeof(const char*) == nbTypes ) ? 1 : -1 ];
+#endif
       }
       if (Type == "SMESH.FT_EntityType")
       {
         // set SMESH.EntityType instead of a numerical Threshold
-        const int nbTypes = SMESH::Entity_Ball+1;
+        const int nbTypes = SMESH::Entity_Last;
         const char* types[nbTypes] = {
           "Entity_Node", "Entity_0D", "Entity_Edge", "Entity_Quad_Edge",
           "Entity_Triangle", "Entity_Quad_Triangle", "Entity_BiQuad_Triangle",
@@ -911,6 +915,10 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
           "Entity_Polyhedra", "Entity_Quad_Polyhedra", "Entity_Ball" };
         if ( -1 < iGeom && iGeom < nbTypes )
           Threshold = SMESH + types[ iGeom ];
+#ifdef _DEBUG_
+        // is types complete? (compilation failure mains that enum EntityType changed)
+        int _assert[( sizeof(types) / sizeof(const char*) == nbTypes ) ? 1 : -1 ];
+#endif
       }
     }
     if ( ThresholdID.Length() != 2 ) // neither '' nor ""

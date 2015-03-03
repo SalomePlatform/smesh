@@ -70,7 +70,7 @@ public:
 
   const SMESH_SequenceOfElemPtr& GetLastCreatedNodes() const { return myLastCreatedNodes; }
   const SMESH_SequenceOfElemPtr& GetLastCreatedElems() const { return myLastCreatedElems; }
-  void                           CrearLastCreated();
+  void                           ClearLastCreated();
   SMESH_ComputeErrorPtr &        GetError() { return myError; }
 
   /*!

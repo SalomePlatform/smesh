@@ -160,9 +160,11 @@ public:
                                           const char* theName )
     throw (SALOME::SALOME_Exception);
 
-  SMESH::SMESH_Group_ptr CreateDimGroup( const SMESH::ListOfGroups& theGroups,
-                                         SMESH::ElementType theElemType,
-                                         const char* theName )
+  SMESH::SMESH_Group_ptr CreateDimGroup( const SMESH::ListOfIDSources& theGroups,
+                                         SMESH::ElementType            theElemType,
+                                         const char*                   theName,
+                                         SMESH::NB_COMMON_NODES_ENUM   theNbCommonNodes,
+                                         CORBA::Boolean                theUnderlyingOnly )
     throw (SALOME::SALOME_Exception);
 
 

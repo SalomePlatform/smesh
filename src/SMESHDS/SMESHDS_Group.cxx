@@ -98,7 +98,17 @@ bool SMESHDS_Group::Contains (const SMDS_MeshElement* elem)
 
 bool SMESHDS_Group::Add (const int theID)
 {
-  const SMDS_MeshElement* aElem = findInMesh (theID);
+  return Add( findInMesh( theID ));
+}
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+
+bool SMESHDS_Group::Add (const SMDS_MeshElement* aElem )
+{
   if (!aElem || myGroup.Contains(aElem))
     return false;
 

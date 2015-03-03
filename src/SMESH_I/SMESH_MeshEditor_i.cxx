@@ -513,7 +513,7 @@ void SMESH_MeshEditor_i::initData(bool deleteSearchers)
       TSearchersDeleter::Delete();
   }
   getEditor().GetError().reset();
-  getEditor().CrearLastCreated();
+  getEditor().ClearLastCreated();
 }
 
 //================================================================================
@@ -712,7 +712,7 @@ SMESH::long_array* SMESH_MeshEditor_i::GetLastCreatedElems()
 void SMESH_MeshEditor_i::ClearLastCreated() throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
-  getEditor().CrearLastCreated();
+  getEditor().ClearLastCreated();
   SMESH_CATCH( SMESH::throwCorbaException );
 }
 

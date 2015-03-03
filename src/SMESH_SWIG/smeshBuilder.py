@@ -604,7 +604,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
 
     ## Concatenate the given meshes into one mesh. All groups of input meshes will be
     #  present in the new mesh.
-    #  @param meshes the meshes to combine into one mesh
+    #  @param meshes the meshes, sub-meshes and groups to combine into one mesh
     #  @param uniteIdenticalGroups if true, groups with same names are united, else they are renamed
     #  @param mergeNodesAndElements if true, equal nodes and elements are merged
     #  @param mergeTolerance tolerance for merging nodes
@@ -738,7 +738,9 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
                     if not name:
                         name = "%s_%s"%(aThreshold.GetShapeType(), id(aThreshold)%10000)
                     aCriterion.ThresholdID = self.geompyD.addToStudy( aThreshold, name )
-                    #raise RuntimeError, "Threshold shape must be published"
+            # or a name of GEOM object
+            elif isinstance( aThreshold, str ):
+                aCriterion.ThresholdStr = aThreshold
             else:
                 print "Error: The Threshold should be a shape."
                 return None
@@ -1960,7 +1962,8 @@ class Mesh:
     def RemoveGroupWithContents(self, group):
         self.mesh.RemoveGroupWithContents(group)
 
-    ## Gets the list of groups existing in the mesh in the order of creation (starting from the oldest one)
+    ## Gets the list of groups existing in the mesh in the order
+    #  of creation (starting from the oldest one)
     #  @return a sequence of SMESH_GroupBase
     #  @ingroup l2_grps_create
     def GetGroups(self):
@@ -1982,7 +1985,7 @@ class Mesh:
             names.append(group.GetName())
         return names
 
-    ## Produces a union of two groups
+    ## Produces a union of two groups.
     #  A new group is created. All mesh elements that are
     #  present in the initial groups are added to the new one
     #  @return an instance of SMESH_Group
@@ -1990,7 +1993,7 @@ class Mesh:
     def UnionGroups(self, group1, group2, name):
         return self.mesh.UnionGroups(group1, group2, name)
 
-    ## Produces a union list of groups
+    ## Produces a union list of groups.
     #  New group is created. All mesh elements that are present in
     #  initial groups are added to the new one
     #  @return an instance of SMESH_Group
@@ -1998,7 +2001,7 @@ class Mesh:
     def UnionListOfGroups(self, groups, name):
       return self.mesh.UnionListOfGroups(groups, name)
 
-    ## Prodices an intersection of two groups
+    ## Prodices an intersection of two groups.
     #  A new group is created. All mesh elements that are common
     #  for the two initial groups are added to the new one.
     #  @return an instance of SMESH_Group
@@ -2006,7 +2009,7 @@ class Mesh:
     def IntersectGroups(self, group1, group2, name):
         return self.mesh.IntersectGroups(group1, group2, name)
 
-    ## Produces an intersection of groups
+    ## Produces an intersection of groups.
     #  New group is created. All mesh elements that are present in all
     #  initial groups simultaneously are added to the new one
     #  @return an instance of SMESH_Group
@@ -2014,7 +2017,7 @@ class Mesh:
     def IntersectListOfGroups(self, groups, name):
       return self.mesh.IntersectListOfGroups(groups, name)
 
-    ## Produces a cut of two groups
+    ## Produces a cut of two groups.
     #  A new group is created. All mesh elements that are present in
     #  the main group but are not present in the tool group are added to the new one
     #  @return an instance of SMESH_Group
@@ -2022,22 +2025,35 @@ class Mesh:
     def CutGroups(self, main_group, tool_group, name):
         return self.mesh.CutGroups(main_group, tool_group, name)
 
-    ## Produces a cut of groups
+    ## Produces a cut of groups.
     #  A new group is created. All mesh elements that are present in main groups
     #  but do not present in tool groups are added to the new one
     #  @return an instance of SMESH_Group
     #  @ingroup l2_grps_operon
     def CutListOfGroups(self, main_groups, tool_groups, name):
-      return self.mesh.CutListOfGroups(main_groups, tool_groups, name)
+        return self.mesh.CutListOfGroups(main_groups, tool_groups, name)
 
-    ## Produces a group of elements of specified type using list of existing groups
-    #  A new group is created. System
-    #  1) extracts all nodes on which groups elements are built
-    #  2) combines all elements of specified dimension laying on these nodes
+    ##
+    #  Create a standalone group of entities basing on nodes of other groups.
+    #  \param groups - list of groups, sub-meshes or filters, of any type.
+    #  \param elemType - a type of elements to include to the new group.
+    #  \param name - a name of the new group.
+    #  \param nbCommonNodes - a criterion of inclusion of an element to the new group
+    #         basing on number of element nodes common with reference \a groups.
+    #         Meaning of possible values are:
+    #         - SMESH.ALL_NODES - include if all nodes are common,
+    #         - SMESH.MAIN - include if all corner nodes are common (meaningful for a quadratic mesh),
+    #         - SMESH.AT_LEAST_ONE - include if one or more node is common,
+    #         - SMEHS.MAJORITY - include if half of nodes or more are common.
+    #  \param underlyingOnly - if \c True (default), an element is included to the
+    #         new group provided that it is based on nodes of one element of \a groups.
     #  @return an instance of SMESH_Group
     #  @ingroup l2_grps_operon
-    def CreateDimGroup(self, groups, elem_type, name):
-      return self.mesh.CreateDimGroup(groups, elem_type, name)
+    def CreateDimGroup(self, groups, elemType, name,
+                       nbCommonNodes = SMESH.ALL_NODES, underlyingOnly = True):
+        if isinstance( groups, SMESH._objref_SMESH_IDSource ):
+            groups = [groups]
+        return self.mesh.CreateDimGroup(groups, elemType, name, nbCommonNodes, underlyingOnly)
 
 
     ## Convert group on geom into standalone group

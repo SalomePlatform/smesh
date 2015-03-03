@@ -80,9 +80,9 @@ private:
   SMESHGUI*               mySMESHGUI;     /* Current SMESHGUI object */
   LightApp_SelectionMgr*  mySelectionMgr; /* User shape selection */
 
-  SMESH::SMESH_Mesh_var   myMesh;
-  SUIT_SelectionFilter*   myMeshFilter;
-  SMESH::mesh_array_var   myMeshArray;
+  SMESH::SMESH_IDSource_var  myMesh;
+  SUIT_SelectionFilter*      myMeshFilter;
+  SMESH::ListOfIDSources_var myMeshArray;
 
   // Widgets
   QGroupBox*              GroupConstructors;

@@ -276,16 +276,16 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
 
     /*!
-     * Concatenate the given meshes into one mesh.
+     * Concatenate the given meshes or groups into one mesh.
      * Union groups with the same name and type if
      * theUniteIdenticalGroups flag is true.
      * Merge coincident nodes and elements if
      * theMergeNodesAndElements flag is true.
      */
-    SMESH_Mesh Concatenate(in mesh_array theMeshesArray,
-                           in boolean    theUniteIdenticalGroups,
-                           in boolean    theMergeNodesAndElements,
-                           in double     theMergeTolerance)
+    SMESH_Mesh Concatenate(in ListOfIDSources theMeshesArray,
+                           in boolean         theUniteIdenticalGroups,
+                           in boolean         theMergeNodesAndElements,
+                           in double          theMergeTolerance)
       raises ( SALOME::SALOME_Exception );
 
     /*!
@@ -296,10 +296,10 @@ module SMESH
      * theMergeNodesAndElements flag is true.
      * Create the groups of all elements from initial meshes.
      */
-    SMESH_Mesh ConcatenateWithGroups(in mesh_array theMeshesArray,
-                                     in boolean    theUniteIdenticalGroups,
-                                     in boolean    theMergeNodesAndElements,
-                                     in double     theMergeTolerance)
+    SMESH_Mesh ConcatenateWithGroups(in ListOfIDSources theMeshesArray,
+                                     in boolean         theUniteIdenticalGroups,
+                                     in boolean         theMergeNodesAndElements,
+                                     in double          theMergeTolerance)
       raises ( SALOME::SALOME_Exception );
 
     /*!

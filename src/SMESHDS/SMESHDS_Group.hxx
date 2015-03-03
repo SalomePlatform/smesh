@@ -60,6 +60,8 @@ class SMESHDS_EXPORT SMESHDS_Group : public SMESHDS_GroupBase
 
   bool Add (const int theID);
 
+  bool Add (const SMDS_MeshElement* theElem );
+
   bool Remove (const int theID);
 
   void Clear();

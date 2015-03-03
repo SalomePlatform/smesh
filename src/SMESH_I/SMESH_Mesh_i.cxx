@@ -1568,25 +1568,52 @@ SMESH_Mesh_i::CutListOfGroups(const SMESH::ListOfGroups& theMainGroups,
   return aResGrp._retn();
 }
 
+namespace // functions making checks according to SMESH::NB_COMMON_NODES_ENUM
+{
+  bool isAllNodesCommon(int nbChecked, int nbCommon, int nbNodes, int nbCorners,
+                        bool & toStopChecking )
+  {
+    toStopChecking = ( nbCommon < nbChecked );
+    return nbCommon == nbNodes;
+  }
+  bool isMainNodesCommon(int nbChecked, int nbCommon, int nbNodes, int nbCorners,
+                         bool & toStopChecking )
+  {
+    toStopChecking = ( nbCommon < nbChecked || nbChecked >= nbCorners );
+    return nbCommon == nbCorners;
+  }
+  bool isAtLeastOneNodeCommon(int nbChecked, int nbCommon, int nbNodes, int nbCorners,
+                              bool & toStopChecking )
+  {
+    return nbCommon > 0;
+  }
+  bool isMajorityOfNodesCommon(int nbChecked, int nbCommon, int nbNodes, int nbCorners,
+                               bool & toStopChecking )
+  {
+    return nbCommon >= nbNodes / 2;
+  }
+}
+
 //=============================================================================
 /*!
-  \brief Create groups of entities from existing groups of superior dimensions 
-  System
-  1) extract all nodes from each group,
-  2) combine all elements of specified dimension laying on these nodes.
-  \param theGroups list of source groups 
-  \param theElemType dimension of elements 
-  \param theName name of new group
-  \return pointer on new group
-  *
-  IMP 19939
+ * Create a group of entities basing on nodes of other groups.
+ *  \param [in] theGroups - list of either groups, sub-meshes or filters.
+ *  \param [in] anElemType - a type of elements to include to the new group.
+ *  \param [in] theName - a name of the new group.
+ *  \param [in] theNbCommonNodes - criterion of inclusion of an element to the new group.
+ *  \param [in] theUnderlyingOnly - if \c True, an element is included to the
+ *         new group provided that it is based on nodes of an element of \a aListOfGroups
+ *  \return SMESH_Group - the created group
 */
+// IMP 19939, bug 22010, IMP 22635
 //=============================================================================
 
 SMESH::SMESH_Group_ptr
-SMESH_Mesh_i::CreateDimGroup(const SMESH::ListOfGroups& theGroups, 
-                             SMESH::ElementType         theElemType, 
-                             const char*                theName )
+SMESH_Mesh_i::CreateDimGroup(const SMESH::ListOfIDSources& theGroups,
+                             SMESH::ElementType            theElemType,
+                             const char*                   theName,
+                             SMESH::NB_COMMON_NODES_ENUM   theNbCommonNodes,
+                             CORBA::Boolean                theUnderlyingOnly)
   throw (SALOME::SALOME_Exception)
 {
   SMESH::SMESH_Group_var aResGrp;
@@ -1602,6 +1629,17 @@ SMESH_Mesh_i::CreateDimGroup(const SMESH::ListOfGroups& theGroups,
 
   SMDSAbs_ElementType anElemType = (SMDSAbs_ElementType)theElemType;
 
+  bool (*isToInclude)(int nbChecked, int nbCommon, int nbNodes, int nbCorners, bool & toStop);
+  SMESH_Comment nbCoNoStr( "SMESH.");
+  switch ( theNbCommonNodes ) {
+  case SMESH::ALL_NODES   : isToInclude = isAllNodesCommon;        nbCoNoStr<<"ALL_NODES"   ;break;
+  case SMESH::MAIN        : isToInclude = isMainNodesCommon;       nbCoNoStr<<"MAIN"        ;break;
+  case SMESH::AT_LEAST_ONE: isToInclude = isAtLeastOneNodeCommon;  nbCoNoStr<<"AT_LEAST_ONE";break;
+  case SMESH::MAJORITY    : isToInclude = isMajorityOfNodesCommon; nbCoNoStr<<"MAJORITY"    ;break;
+  default: return aResGrp._retn();
+  }
+  int nbChecked, nbCommon, nbNodes, nbCorners;
+
   // Create a group
 
   TPythonDump pyDump;
@@ -1614,14 +1652,19 @@ SMESH_Mesh_i::CreateDimGroup(const SMESH::ListOfGroups& theGroups,
     SMESH::DownCast<SMESH_GroupBase_i*>( aResGrp )->GetGroupDS();
   SMDS_MeshGroup& resGroupCore = static_cast< SMESHDS_Group* >( groupBaseDS )->SMDSGroup();
 
+  vector<bool> isNodeInGroups;
+
   for ( int g = 0, n = theGroups.length(); g < n; g++ ) // loop on theGroups
   {
-    SMESH::SMESH_GroupBase_var aGrp = theGroups[ g ];
+    SMESH::SMESH_IDSource_var aGrp = theGroups[ g ];
     if ( CORBA::is_nil( aGrp ) )
       continue;
+    SMESH::SMESH_Mesh_var mesh = aGrp->GetMesh();
+    if ( mesh->_is_nil() || mesh->GetId() != this->GetId() )
+      continue;
 
-    groupBaseDS = SMESH::DownCast<SMESH_GroupBase_i*>( aGrp )->GetGroupDS();
-    SMDS_ElemIteratorPtr elIt = groupBaseDS->GetElements();
+    SMDS_ElemIteratorPtr elIt = GetElements( aGrp, SMESH::ALL );
+    if ( !elIt ) continue;
 
     if ( theElemType == SMESH::NODE ) // get all nodes of elements
     {
@@ -1632,30 +1675,93 @@ SMESH_Mesh_i::CreateDimGroup(const SMESH::ListOfGroups& theGroups,
           resGroupCore.Add( nIt->next() );
       }
     }
-    else // get elements of theElemType based on nodes of every element of group
+    // get elements of theElemType based on nodes of every element of group
+    else if ( theUnderlyingOnly )
     {
       while ( elIt->more() )
       {
-        const SMDS_MeshElement* el = elIt->next(); // an element of group
+        const SMDS_MeshElement* el = elIt->next(); // an element of ref group
         TIDSortedElemSet elNodes( el->begin_nodes(), el->end_nodes() );
         TIDSortedElemSet checkedElems;
-        SMDS_ElemIteratorPtr nIt = el->nodesIterator();
+        SMDS_NodeIteratorPtr nIt = el->nodeIterator();
         while ( nIt->more() )
         {
-          const SMDS_MeshNode* n = static_cast<const SMDS_MeshNode*>( nIt->next() );
+          const SMDS_MeshNode* n = nIt->next();
           SMDS_ElemIteratorPtr elOfTypeIt = n->GetInverseElementIterator( anElemType );
           // check nodes of elements of theElemType around el
           while ( elOfTypeIt->more() )
           {
             const SMDS_MeshElement* elOfType = elOfTypeIt->next();
             if ( !checkedElems.insert( elOfType ).second ) continue;
-
+            nbNodes   = elOfType->NbNodes();
+            nbCorners = elOfType->NbCornerNodes();
+            nbCommon  = 0;
+            bool toStopChecking = false;
             SMDS_ElemIteratorPtr nIt2 = elOfType->nodesIterator();
-            bool allNodesOK = true;
-            while ( nIt2->more() && allNodesOK )
-              allNodesOK = elNodes.count( nIt2->next() );
-            if ( allNodesOK )
-              resGroupCore.Add( elOfType );
+            for ( nbChecked = 1; nIt2->more() && !toStopChecking; ++nbChecked )
+              if ( elNodes.count( nIt2->next() ) &&
+                   isToInclude( nbChecked, ++nbCommon, nbNodes, nbCorners, toStopChecking ))
+              {
+                resGroupCore.Add( elOfType );
+                break;
+              }
+          }
+        }
+      }
+    }
+    // get all nodes of elements of groups
+    else
+    {
+      while ( elIt->more() )
+      {
+        const SMDS_MeshElement* el = elIt->next(); // an element of group
+        SMDS_NodeIteratorPtr nIt = el->nodeIterator();
+        while ( nIt->more() )
+        {
+          const SMDS_MeshNode* n = nIt->next();
+          if ( n->GetID() >= isNodeInGroups.size() )
+            isNodeInGroups.resize( n->GetID() + 1, false );
+          isNodeInGroups[ n->GetID() ] = true;
+        }
+      }
+    }
+  }
+
+  // Get elements of theElemType based on a certain number of nodes of elements of groups
+  if ( !theUnderlyingOnly && !isNodeInGroups.empty() )
+  {
+    const SMDS_MeshNode* n;
+    vector<bool> isElemChecked( aMeshDS->MaxElementID() + 1 );
+    const int isNodeInGroupsSize = isNodeInGroups.size();
+    for ( int iN = 0; iN < isNodeInGroupsSize; ++iN )
+    {
+      if ( !isNodeInGroups[ iN ] ||
+           !( n = aMeshDS->FindNode( iN )))
+        continue;
+
+      // check nodes of elements of theElemType around n
+      SMDS_ElemIteratorPtr elOfTypeIt = n->GetInverseElementIterator( anElemType );
+      while ( elOfTypeIt->more() )
+      {
+        const SMDS_MeshElement*  elOfType = elOfTypeIt->next();
+        vector<bool>::reference isChecked = isElemChecked[ elOfType->GetID() ];
+        if ( isChecked )
+          continue;
+        isChecked = true;
+
+        nbNodes   = elOfType->NbNodes();
+        nbCorners = elOfType->NbCornerNodes();
+        nbCommon  = 0;
+        bool toStopChecking = false;
+        SMDS_ElemIteratorPtr nIt = elOfType->nodesIterator();
+        for ( nbChecked = 1; nIt->more() && !toStopChecking; ++nbChecked )
+        {
+          const int nID = nIt->next()->GetID();
+          if ( nID < isNodeInGroupsSize && isNodeInGroups[ nID ] &&
+               isToInclude( nbChecked, ++nbCommon, nbNodes, nbCorners, toStopChecking ))
+          {
+            resGroupCore.Add( elOfType );
+            break;
           }
         }
       }
@@ -1665,7 +1771,8 @@ SMESH_Mesh_i::CreateDimGroup(const SMESH::ListOfGroups& theGroups,
   // Update Python script
   pyDump << aResGrp << " = " << SMESH::SMESH_Mesh_var( _this())
          << ".CreateDimGroup( "
-         << theGroups << ", " << theElemType << ", '" << theName << "' )";
+         << theGroups << ", " << theElemType << ", '" << theName << "', "
+         << nbCoNoStr << ", " << theUnderlyingOnly << ")";
 
   SMESH_CATCH( SMESH::throwCorbaException );
 
@@ -5168,7 +5275,7 @@ namespace /* Iterators used in SMESH_Mesh_i::GetElements(SMESH::SMESH_IDSource_v
           _elem = _mesh->FindNode( *_idPtr++ );
         }
         else if ((_elem = _mesh->FindElement( *_idPtr++ )) &&
-                 _elem->GetType() != _type )
+                 (_elem->GetType() != _type && _type != SMDSAbs_All ))
         {
           _elem = 0;
         }
@@ -5248,7 +5355,7 @@ SMDS_ElemIteratorPtr SMESH_Mesh_i::GetElements(SMESH::SMESH_IDSource_ptr theObje
     if ( sm )
     {
       elemIt = sm->GetElements();
-      if ( elemType != SMDSAbs_Node )
+      if ( elemType != SMDSAbs_Node && elemType != SMDSAbs_All )
       {
         typeOK = ( elemIt && elemIt->more() && elemIt->next()->GetType() == elemType );
         elemIt = typeOK ? sm->GetElements() : SMDS_ElemIteratorPtr();
@@ -5258,15 +5365,19 @@ SMDS_ElemIteratorPtr SMESH_Mesh_i::GetElements(SMESH::SMESH_IDSource_ptr theObje
   else if ( SMESH_GroupBase_i* group_i = SMESH::DownCast<SMESH_GroupBase_i*>( theObject ))
   {
     SMESHDS_GroupBase* groupDS = group_i->GetGroupDS();
-    if ( groupDS && ( groupDS->GetType() == elemType || elemType == SMDSAbs_Node ))
+    if ( groupDS && ( elemType == groupDS->GetType()  ||
+                      elemType == SMDSAbs_Node ||
+                      elemType == SMDSAbs_All ))
     {
       elemIt = groupDS->GetElements();
-      typeOK = ( groupDS->GetType() == elemType );
+      typeOK = ( groupDS->GetType() == elemType || elemType == SMDSAbs_All );
     }
   }
   else if ( SMESH::Filter_i* filter_i = SMESH::DownCast<SMESH::Filter_i*>( theObject ))
   {
-    if ( filter_i->GetElementType() == theType || elemType == SMDSAbs_Node )
+    if ( filter_i->GetElementType() == theType ||
+         elemType == SMDSAbs_Node ||
+         elemType == SMDSAbs_All)
     {
       SMESH::Predicate_i* pred_i = filter_i->GetPredicate_i();
       if ( pred_i && pred_i->GetPredicate() )
@@ -5274,7 +5385,7 @@ SMDS_ElemIteratorPtr SMESH_Mesh_i::GetElements(SMESH::SMESH_IDSource_ptr theObje
         SMDSAbs_ElementType filterType = SMDSAbs_ElementType( filter_i->GetElementType() );
         SMDS_ElemIteratorPtr allElemIt = meshDS->elementsIterator( filterType );
         elemIt = SMDS_ElemIteratorPtr( new PredicateIterator( allElemIt, pred_i->GetPredicate() ));
-        typeOK = ( filterType == elemType );
+        typeOK = ( filterType == elemType || elemType == SMDSAbs_All );
       }
     }
   }
@@ -5282,7 +5393,7 @@ SMDS_ElemIteratorPtr SMESH_Mesh_i::GetElements(SMESH::SMESH_IDSource_ptr theObje
   {
     SMESH::array_of_ElementType_var types = theObject->GetTypes();
     const bool                    isNodes = ( types->length() == 1 && types[0] == SMESH::NODE );
-    if ( isNodes && elemType != SMDSAbs_Node )
+    if ( isNodes && elemType != SMDSAbs_Node && elemType != SMDSAbs_All )
       return elemIt;
     if ( SMESH_MeshEditor_i::IsTemporaryIDSource( theObject ))
     {
@@ -5295,7 +5406,7 @@ SMDS_ElemIteratorPtr SMESH_Mesh_i::GetElements(SMESH::SMESH_IDSource_ptr theObje
       SMESH::long_array_var ids = theObject->GetIDs();
       elemIt = SMDS_ElemIteratorPtr( new IDSourceIterator( meshDS, ids._retn(), elemType ));
     }
-    typeOK = ( isNodes == ( elemType == SMDSAbs_Node ));
+    typeOK = ( isNodes == ( elemType == SMDSAbs_Node )) || ( elemType == SMDSAbs_All );
   }
 
   if ( elemIt && elemIt->more() && !typeOK )

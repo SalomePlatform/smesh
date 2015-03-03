@@ -30,37 +30,34 @@
 #include "SMESHGUI.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
-
-#include <SMESH_TypeFilter.hxx>
-
-// SALOME GUI includes
-#include <SUIT_ResourceMgr.h>
-#include <SUIT_Desktop.h>
-#include <SUIT_Session.h>
-#include <SUIT_MessageBox.h>
+#include "SMESH_TypeFilter.hxx"
 
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
+#include <QtxColorButton.h>
+#include <SALOMEDSClient_SObject.hxx>
+#include <SALOME_ListIO.hxx>
+#include <SUIT_Desktop.h>
+#include <SUIT_MessageBox.h>
+#include <SUIT_OverrideCursor.h>
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_Session.h>
 #include <SVTK_Selection.h>
 #include <SVTK_ViewWindow.h>
-#include <SALOME_ListIO.hxx>
-
-// SALOME KERNEL includes
-#include <SALOMEDSClient_SObject.hxx>
 
 // Qt includes
-#include <QHBoxLayout>
-#include <QVBoxLayout>
+#include <QButtonGroup>
+#include <QCheckBox>
+#include <QComboBox>
 #include <QGridLayout>
-#include <QPushButton>
 #include <QGroupBox>
+#include <QHBoxLayout>
+#include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
-#include <QKeyEvent>
 #include <QListWidget>
-#include <QButtonGroup>
-#include <QComboBox>
-#include <QtxColorButton.h>
+#include <QPushButton>
+#include <QVBoxLayout>
 
 #define SPACING 6
 #define MARGIN  11
@@ -110,7 +107,7 @@ QWidget* SMESHGUI_GroupOpDlg::createMainFrame( QWidget* theParent )
   aLay->setSpacing(SPACING);
   
   // ------------------------------------------------------
-  QGroupBox* aNameGrp = new QGroupBox(tr("NAME"), aMainGrp);
+  QGroupBox* aNameGrp = new QGroupBox(tr("RESULT"), aMainGrp);
   QHBoxLayout* aNameGrpLayout = new QHBoxLayout(aNameGrp);
   aNameGrpLayout->setMargin(MARGIN);
   aNameGrpLayout->setSpacing(SPACING);
@@ -312,6 +309,7 @@ bool SMESHGUI_GroupOpDlg::isValid( const QList<SMESH::SMESH_GroupBase_var>& theL
 */
 void SMESHGUI_GroupOpDlg::onOk()
 {
+  SUIT_OverrideCursor oc;
   setIsApplyAndClose( true );
   if ( onApply() )
     reject();
@@ -951,35 +949,55 @@ void SMESHGUI_CutGroupsDlg::onSelectionDone()
   \param theModule module
 */
 SMESHGUI_DimGroupDlg::SMESHGUI_DimGroupDlg( SMESHGUI* theModule )
-: SMESHGUI_GroupOpDlg( theModule )
+  : SMESHGUI_GroupOpDlg( theModule )
 {
   setWindowTitle( tr( "CREATE_GROUP_OF_UNDERLYING_ELEMS" ) );
   setHelpFileName( "group_of_underlying_elements_page.html" );
 
   QGroupBox* anArgGrp = getArgGrp();
 
-  QLabel* aLbl = new QLabel( tr( "ELEMENTS_TYPE" ), anArgGrp );
-  
-  myCombo = new QComboBox( anArgGrp );
-  static QStringList anItems;
-  if ( anItems.isEmpty() )
+  QLabel* aTypeLbl = new QLabel( tr( "ELEMENTS_TYPE" ), anArgGrp );
+
+  myTypeCombo = new QComboBox( anArgGrp );
+  QStringList anItems;
   {
-    anItems.append( tr( "NODE" ) );
-    anItems.append( tr( "EDGE" ) );
-    anItems.append( tr( "FACE" ) );
-    anItems.append( tr( "VOLUME" ) );
+    anItems.append( tr( "MESH_NODE" ) );
+    anItems.append( tr( "SMESH_EDGE" ) );
+    anItems.append( tr( "SMESH_FACE" ) );
+    anItems.append( tr( "SMESH_VOLUME" ) );
+    anItems.append( tr( "SMESH_ELEM0D" ) );
+    anItems.append( tr( "SMESH_BALL" ) );
   }
-  myCombo->addItems( anItems );
-  myCombo->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
-  
+  myTypeCombo->addItems( anItems );
+  myTypeCombo->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
+
+  QLabel* aNbNoLbl = new QLabel( tr( "NUMBER_OF_COMMON_NODES" ), anArgGrp );
+
+  myNbNoCombo = new QComboBox( anArgGrp );
+  anItems.clear();
+  {
+    anItems.append( tr( "ALL" ) );
+    anItems.append( tr( "MAIN" ) );
+    anItems.append( tr( "AT_LEAST_ONE" ) );
+    anItems.append( tr( "MAJORITY" ) );
+  }
+  myNbNoCombo->addItems( anItems );
+  myNbNoCombo->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
+
   myListWg = new QListWidget( anArgGrp );
+
+  myUnderlOnlyChk = new QCheckBox( tr("UNDERLYING_ENTITIES_ONLY"), anArgGrp );
+  myUnderlOnlyChk->setChecked( false );
 
   // layout
   QGridLayout* aLay = new QGridLayout( anArgGrp );
   aLay->setSpacing( SPACING );
-  aLay->addWidget( aLbl, 0, 0 );
-  aLay->addWidget( myCombo, 0, 1 );
-  aLay->addWidget( myListWg, 1, 0, 1, 2 );
+  aLay->addWidget( aTypeLbl,        0, 0 );
+  aLay->addWidget( myTypeCombo,     0, 1 );
+  aLay->addWidget( aNbNoLbl,        1, 0 );
+  aLay->addWidget( myNbNoCombo,     1, 1 );
+  aLay->addWidget( myListWg,        2, 0, 1, 2 );
+  aLay->addWidget( myUnderlOnlyChk, 3, 0 );
 }
 
 /*!
@@ -1007,7 +1025,7 @@ void SMESHGUI_DimGroupDlg::reset()
 */
 SMESH::ElementType SMESHGUI_DimGroupDlg::getElementType() const
 {
-  return (SMESH::ElementType)( myCombo->currentIndex() + 1 );
+  return (SMESH::ElementType)( myTypeCombo->currentIndex() + 1 );
 }
 
 /*!
@@ -1017,7 +1035,7 @@ SMESH::ElementType SMESHGUI_DimGroupDlg::getElementType() const
 */
 void SMESHGUI_DimGroupDlg::setElementType( const SMESH::ElementType& theElemType )
 {
-  myCombo->setCurrentIndex( theElemType - 1 );
+  myTypeCombo->setCurrentIndex( theElemType - 1 );
 }
 
 /*!
@@ -1047,10 +1065,19 @@ bool SMESHGUI_DimGroupDlg::onApply()
   QStringList anEntryList;
   try
   {
-    SMESH::ListOfGroups_var aList = convert( myGroups );
+    SMESH::ListOfIDSources_var aList = new SMESH::ListOfIDSources();
+    aList->length( myGroups.count() );
+    QList<SMESH::SMESH_GroupBase_var>::const_iterator anIter = myGroups.begin();
+    for ( int i = 0; anIter != myGroups.end(); ++anIter, ++i )
+      aList[ i ] = SMESH::SMESH_IDSource::_narrow( *anIter );
+
     SMESH::ElementType anElemType = getElementType();
-    SMESH::SMESH_Group_var aNewGrp = 
-      aMesh->CreateDimGroup( aList, anElemType, aName.toLatin1().constData() );
+    SMESH::NB_COMMON_NODES_ENUM aNbCoNodes =
+      (SMESH::NB_COMMON_NODES_ENUM) myNbNoCombo->currentIndex();
+
+    SMESH::SMESH_Group_var aNewGrp =
+      aMesh->CreateDimGroup( aList, anElemType, aName.toLatin1().constData(),
+                             aNbCoNodes, myUnderlOnlyChk->isChecked() );
     if ( !CORBA::is_nil( aNewGrp ) )
     {
       aNewGrp->SetColor(  getColor() );
@@ -1092,5 +1119,3 @@ void SMESHGUI_DimGroupDlg::onSelectionDone()
   myListWg->clear();
   myListWg->addItems( aNames );
 }
-
-

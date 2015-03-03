@@ -1,5 +1,4 @@
 # Building a compound of meshes
-# Note: it is a copy of 'SMESH_BuildCompound.py' from SMESH_SWIG
 
 import salome
 salome.salome_init()
@@ -69,11 +68,14 @@ Gsup2=Mesh_sup.Group(Fsup2, "Sup")
 Ginf2=Mesh_sup.Group(Finf2, "Inf")
 
 ## create compounds
-# create a compound of two meshes with renaming groups with the same names and
+# create a compound of two meshes with renaming namesake groups and
 # merging of elements with the given tolerance
-Compound1 = smesh.Concatenate([Mesh_inf.GetMesh(), Mesh_sup.GetMesh()], 0, 1, 1e-05)
-smesh.SetName(Compound1, 'Compound_with_RenamedGrps_and_MergeElems')
-# create a compound of two meshes with uniting groups with the same names and
+Compound1 = smesh.Concatenate([Mesh_inf, Mesh_sup], 0, 1, 1e-05,
+                              name='Compound_with_RenamedGrps_and_MergeElems')
+# create a compound of two meshes with uniting namesake groups and
 # creating groups of all elements
-Compound2 = smesh.Concatenate([Mesh_inf.GetMesh(), Mesh_sup.GetMesh()], 1, 0, 1e-05, True)
-smesh.SetName(Compound2, 'Compound_with_UniteGrps_and_GrpsOfAllElems')
+Compound2 = smesh.Concatenate([Mesh_inf, Mesh_sup], 1, 0, 1e-05, True,
+                              name='Compound_with_UniteGrps_and_GrpsOfAllElems')
+
+if salome.sg.hasDesktop():
+    salome.sg.updateObjBrowser(1)

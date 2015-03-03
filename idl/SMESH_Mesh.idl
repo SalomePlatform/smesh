@@ -150,7 +150,8 @@ module SMESH
     Geom_PENTA,
     Geom_HEXAGONAL_PRISM,
     Geom_POLYHEDRA,
-    Geom_BALL
+    Geom_BALL,
+    Geom_LAST
   };
   
   /*!
@@ -250,6 +251,14 @@ module SMESH
     string fileName; //!< name of file
     long   fileSize; //!< size of file
     long   major, minor, release; //!< MED file version
+  };
+
+  /*!
+   * Enumeration for CreateDimGroup()
+   */
+  enum NB_COMMON_NODES_ENUM
+  {
+    ALL_NODES, MAIN, AT_LEAST_ONE, MAJORITY
   };
 
   /*!
@@ -497,14 +506,21 @@ module SMESH
       raises (SALOME::SALOME_Exception);
       
     /*!
-     *  Create groups of entities from existing groups of superior dimensions 
-     *  New group is created. System 
-     *  1) extracts all nodes from each group,
-     *  2) combines all elements of specified dimension laying on these nodes.
+     *  Create a group of entities basing on nodes of other groups.
+     *  \param [in] aListOfGroups - list of either groups, sub-meshes or filters.
+     *  \param [in] anElemType - a type of elements to include to the new group.
+     *  \param [in] name - a name of the new group.
+     *  \param [in] nbCommonNodes - criterion of inclusion of an element to the new group.
+     *  \param [in] underlyingOnly - if \c True, an element is included to the 
+     *         new group provided that it is based on nodes of an element of
+     *         \a aListOfGroups
+     *  \return SMESH_Group - the created group
      */
-    SMESH_Group CreateDimGroup( in ListOfGroups aListOfGroups,
-                                in ElementType  anElemType,
-                                in string       name )
+    SMESH_Group CreateDimGroup( in ListOfIDSources      aListOfGroups,
+                                in ElementType          anElemType,
+                                in string               name,
+                                in NB_COMMON_NODES_ENUM nbCommonNodes,
+                                in boolean              underlyingOnly )
       raises (SALOME::SALOME_Exception);
 
     /*!

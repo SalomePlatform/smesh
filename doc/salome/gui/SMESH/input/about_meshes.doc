@@ -65,7 +65,7 @@ the <a href="http://www.code-aster.org/outils/med/html/connectivites.html">
 the element basing on elements of lower dimension is NOT supported.
 
 \anchor mesh_entities
-The mesh can include the following entities:
+The mesh can include the following entities (also referred as \a elements):
 <ul>
 <li>\b Node &mdash; an entity of a mesh defining a position in 3D
   space with coordinates (x, y, z).</li>

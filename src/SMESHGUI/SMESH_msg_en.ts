@@ -1038,7 +1038,7 @@
     </message>
     <message>
         <source>MEN_UNDERLYING_ELEMS</source>
-        <translation>Group of underlying entities</translation>
+        <translation>Group based on nodes of other groups</translation>
     </message>
     <message>
         <source>MEN_UPDATE</source>
@@ -3398,7 +3398,7 @@ Use Display Entity menu command to show them.
     </message>
     <message>
         <source>STB_UNDERLYING_ELEMS</source>
-        <translation>Create groups of entities from existing groups of superior dimensions</translation>
+        <translation>Create groups of entities basing on nodes of other groups</translation>
     </message>
     <message>
         <source>STB_UPDATE</source>
@@ -4050,7 +4050,7 @@ Use Display Entity menu command to show them.
     </message>
     <message>
         <source>TOP_UNDERLYING_ELEMS</source>
-        <translation>Create groups of entities from existing groups of superior dimensions</translation>
+        <translation>Create groups of entities basing on nodes of other groups</translation>
     </message>
     <message>
         <source>TOP_UPDATE</source>
@@ -4714,7 +4714,7 @@ Please, create VTK viewer and try again</translation>
     </message>
     <message>
         <source>CREATE_COMMON_GROUPS</source>
-        <translation>Create common groups for initial meshes</translation>
+        <translation>Create groups from input objects</translation>
     </message>
     <message>
         <source>MERGE_NODES_AND_ELEMENTS</source>
@@ -4722,7 +4722,7 @@ Please, create VTK viewer and try again</translation>
     </message>
     <message>
         <source>MESHES</source>
-        <translation>Meshes</translation>
+        <translation>Meshes, sub-meshes, groups</translation>
     </message>
     <message>
         <source>PROCESSING_IDENTICAL_GROUPS</source>
@@ -5810,8 +5810,8 @@ Please specify non-empty name and try again</translation>
 Please specify them and try again</translation>
     </message>
     <message>
-        <source>NAME</source>
-        <translation>Name</translation>
+        <source>RESULT</source>
+        <translation>Result</translation>
     </message>
     <message>
         <source>OBJECT_1</source>
@@ -5823,7 +5823,7 @@ Please specify them and try again</translation>
     </message>
     <message>
         <source>RESULT_NAME</source>
-        <translation>Result name</translation>
+        <translation>Group name</translation>
     </message>
     <message>
         <source>TOOL_OBJECT</source>
@@ -5845,27 +5845,35 @@ Please specify them and try again</translation>
     <name>SMESHGUI_DimGroupDlg</name>
     <message>
         <source>CREATE_GROUP_OF_UNDERLYING_ELEMS</source>
-        <translation>Create group of underlying entities</translation>
+        <translation>Group based on nodes of other groups</translation>
     </message>
     <message>
         <source>ELEMENTS_TYPE</source>
         <translation>Elements type</translation>
     </message>
     <message>
-        <source>NODE</source>
-        <translation>Node</translation>
+        <source>UNDERLYING_ENTITIES_ONLY</source>
+        <translation>Include underlying entities only</translation>
     </message>
     <message>
-        <source>EDGE</source>
-        <translation>Edge</translation>
+        <source>NUMBER_OF_COMMON_NODES</source>
+        <translation>Number of common nodes</translation>
     </message>
     <message>
-        <source>FACE</source>
-        <translation>Face</translation>
+        <source>ALL</source>
+        <translation>All</translation>
     </message>
     <message>
-        <source>VOLUME</source>
-        <translation>Volume</translation>
+        <source>MAIN</source>
+        <translation>Main</translation>
+    </message>
+    <message>
+        <source>AT_LEAST_ONE</source>
+        <translation>At least one</translation>
+    </message>
+    <message>
+        <source>MAJORITY</source>
+        <translation>Majority</translation>
     </message>
 </context>
 <context>

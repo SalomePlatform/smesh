@@ -3790,7 +3790,7 @@ string_array* FilterLibrary_i::GetAllNames()
 
 static const char** getFunctNames()
 {
-  static const char* functName[ SMESH::FT_Undefined + 1 ] = {
+  static const char* functName[] = {
     // IT's necessary to update this array according to enum FunctorType (SMESH_Filter.idl)
     // The order is IMPORTANT !!!
     "FT_AspectRatio",
@@ -3840,6 +3840,13 @@ static const char** getFunctNames()
     "FT_LogicalAND",
     "FT_LogicalOR",
     "FT_Undefined"};
+
+#ifdef _DEBUG_
+  // check if functName is complete, compilation failure mains that enum FunctorType changed
+  const int nbFunctors = sizeof(functName) / sizeof(const char*);
+  int _assert[( nbFunctors == SMESH::FT_Undefined + 1 ) ? 1 : -1 ];
+#endif
+
   return functName;
 }
 

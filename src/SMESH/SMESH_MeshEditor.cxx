@@ -131,7 +131,7 @@ SMESH_MeshEditor::SMESH_MeshEditor( SMESH_Mesh* theMesh )
  */
 //================================================================================
 
-void SMESH_MeshEditor::CrearLastCreated()
+void SMESH_MeshEditor::ClearLastCreated()
 {
   myLastCreatedNodes.Clear();
   myLastCreatedElems.Clear();
@@ -10338,7 +10338,7 @@ SMESH_MeshEditor::FindMatchingNodes(set<const SMDS_MeshElement*>& theSide1,
 
 void SMESH_MeshEditor::DoubleElements( const TIDSortedElemSet& theElements )
 {
-  CrearLastCreated();
+  ClearLastCreated();
   SMESHDS_Mesh* mesh = GetMeshDS();
 
   // get an element type and an iterator over elements
