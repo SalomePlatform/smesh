@@ -37,6 +37,8 @@ ADD_DEFINITIONS(
 SET(_link_LIBRARIES
   ${CAS_TKShHealing}
   ${CAS_TKPrim}
+  ${CAS_TKernel}
+  ${CAS_TKBRep}
   ${CAS_TKG2d}
   ${CAS_TKG3d}
   ${CAS_TKGeomBase}
