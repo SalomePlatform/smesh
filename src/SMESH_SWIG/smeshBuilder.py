@@ -3884,18 +3884,17 @@ class Mesh:
     #  @param HasAngles allows the shape to be rotated around the path
     #                   to get the resulting mesh in a helical fashion
     #  @param Angles list of angles
+    #  @param LinearVariation forces the computation of rotation angles as linear
+    #                         variation of the given Angles along path steps
     #  @param HasRefPoint allows using the reference point
     #  @param RefPoint the point around which the shape is rotated (the mass center of the
     #         shape by default). The User can specify any point as the Reference Point.
     #  @param MakeGroups forces the generation of new groups from existing ones
-    #  @param LinearVariation forces the computation of rotation angles as linear
-    #                         variation of the given Angles along path steps
     #  @return list of created groups (SMESH_GroupBase) and SMESH::Extrusion_Error
     #  @ingroup l2_modif_extrurev
     def ExtrusionAlongPathObjects(self, Nodes, Edges, Faces, PathMesh, PathShape=None,
-                                  NodeStart=1, HasAngles=False, Angles=[],
-                                  HasRefPoint=False, RefPoint=[0,0,0],
-                                  MakeGroups=False, LinearVariation=False):
+                                  NodeStart=1, HasAngles=False, Angles=[], LinearVariation=False,
+                                  HasRefPoint=False, RefPoint=[0,0,0], MakeGroups=False):
         unRegister = genObjUnRegister()
         Nodes = self._getIdSourceList( Nodes, SMESH.NODE, unRegister )
         Edges = self._getIdSourceList( Edges, SMESH.EDGE, unRegister )
@@ -4761,9 +4760,14 @@ class Mesh:
             self.functors[ funcType._v ] = fn
         return fn
 
-    def _valueFromFunctor(self, funcType, elemId):
+    ## Returns value of a functor for a given element
+    #  @param funcType an item of SMESH.FunctorType enum
+    #  @param elemId element or node ID
+    #  @param isElem @a elemId is ID of element or node
+    #  @return the functor value or zero in case of invalid arguments
+    def FunctorValue(self, funcType, elemId, isElem=True):
         fn = self._getFunctor( funcType )
-        if fn.GetElementType() == self.GetElementType(elemId, True):
+        if fn.GetElementType() == self.GetElementType(elemId, isElem):
             val = fn.GetValue(elemId)
         else:
             val = 0
@@ -4778,7 +4782,7 @@ class Mesh:
         if elemId == None:
             length = self.smeshpyD.GetLength(self)
         else:
-            length = self._valueFromFunctor(SMESH.FT_Length, elemId)
+            length = self.FunctorValue(SMESH.FT_Length, elemId)
         return length
 
     ## Get area of 2D element or sum of areas of all 2D mesh elements
@@ -4790,7 +4794,7 @@ class Mesh:
         if elemId == None:
             area = self.smeshpyD.GetArea(self)
         else:
-            area = self._valueFromFunctor(SMESH.FT_Area, elemId)
+            area = self.FunctorValue(SMESH.FT_Area, elemId)
         return area
 
     ## Get volume of 3D element or sum of volumes of all 3D mesh elements
@@ -4802,7 +4806,7 @@ class Mesh:
         if elemId == None:
             volume = self.smeshpyD.GetVolume(self)
         else:
-            volume = self._valueFromFunctor(SMESH.FT_Volume3D, elemId)
+            volume = self.FunctorValue(SMESH.FT_Volume3D, elemId)
         return volume
 
     ## Get maximum element length.
@@ -4814,7 +4818,7 @@ class Mesh:
             ftype = SMESH.FT_MaxElementLength3D
         else:
             ftype = SMESH.FT_MaxElementLength2D
-        return self._valueFromFunctor(ftype, elemId)
+        return self.FunctorValue(ftype, elemId)
 
     ## Get aspect ratio of 2D or 3D element.
     #  @param elemId mesh element ID
@@ -4825,35 +4829,35 @@ class Mesh:
             ftype = SMESH.FT_AspectRatio3D
         else:
             ftype = SMESH.FT_AspectRatio
-        return self._valueFromFunctor(ftype, elemId)
+        return self.FunctorValue(ftype, elemId)
 
     ## Get warping angle of 2D element.
     #  @param elemId mesh element ID
     #  @return element's warping angle value
     #  @ingroup l1_measurements
     def GetWarping(self, elemId):
-        return self._valueFromFunctor(SMESH.FT_Warping, elemId)
+        return self.FunctorValue(SMESH.FT_Warping, elemId)
 
     ## Get minimum angle of 2D element.
     #  @param elemId mesh element ID
     #  @return element's minimum angle value
     #  @ingroup l1_measurements
     def GetMinimumAngle(self, elemId):
-        return self._valueFromFunctor(SMESH.FT_MinimumAngle, elemId)
+        return self.FunctorValue(SMESH.FT_MinimumAngle, elemId)
 
     ## Get taper of 2D element.
     #  @param elemId mesh element ID
     #  @return element's taper value
     #  @ingroup l1_measurements
     def GetTaper(self, elemId):
-        return self._valueFromFunctor(SMESH.FT_Taper, elemId)
+        return self.FunctorValue(SMESH.FT_Taper, elemId)
 
     ## Get skew of 2D element.
     #  @param elemId mesh element ID
     #  @return element's skew value
     #  @ingroup l1_measurements
     def GetSkew(self, elemId):
-        return self._valueFromFunctor(SMESH.FT_Skew, elemId)
+        return self.FunctorValue(SMESH.FT_Skew, elemId)
 
     ## Return minimal and maximal value of a given functor.
     #  @param funType a functor type, an item of SMESH.FunctorType enum

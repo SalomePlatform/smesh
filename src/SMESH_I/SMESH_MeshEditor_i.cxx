@@ -2829,7 +2829,8 @@ SMESH_MeshEditor_i::ExtrusionAlongPathObjects(const SMESH::ListOfIDSources & the
                 << "SMESH.PointStruct( "
                 << ( theHasRefPoint ? theRefPoint.x : 0 ) << ", "
                 << ( theHasRefPoint ? theRefPoint.y : 0 ) << ", "
-                << ( theHasRefPoint ? theRefPoint.z : 0 ) << " ))";
+                << ( theHasRefPoint ? theRefPoint.z : 0 ) << " ), "
+                << theMakeGroups       << " )";
   }
 
   return aGroups._retn();
