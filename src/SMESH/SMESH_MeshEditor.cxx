@@ -4216,26 +4216,49 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
 
 }
 
-//=======================================================================
-//function : isReverse
-//purpose  : Return true if normal of prevNodes is not co-directied with
-//           gp_Vec(prevNodes[iNotSame],nextNodes[iNotSame]).
-//           iNotSame is where prevNodes and nextNodes are different.
-//           If result is true then future volume orientation is OK
-//=======================================================================
-
-static bool isReverse(const SMDS_MeshElement*             face,
-                      const vector<const SMDS_MeshNode*>& prevNodes,
-                      const vector<const SMDS_MeshNode*>& nextNodes,
-                      const int                           iNotSame)
+namespace
 {
+  //=======================================================================
+  //function : isReverse
+  //purpose  : Return true if normal of prevNodes is not co-directied with
+  //           gp_Vec(prevNodes[iNotSame],nextNodes[iNotSame]).
+  //           iNotSame is where prevNodes and nextNodes are different.
+  //           If result is true then future volume orientation is OK
+  //=======================================================================
 
-  SMESH_TNodeXYZ pP = prevNodes[ iNotSame ];
-  SMESH_TNodeXYZ pN = nextNodes[ iNotSame ];
-  gp_XYZ extrDir( pN - pP ), faceNorm;
-  SMESH_MeshAlgos::FaceNormal( face, faceNorm, /*normalized=*/false );
+  bool isReverse(const SMDS_MeshElement*             face,
+                 const vector<const SMDS_MeshNode*>& prevNodes,
+                 const vector<const SMDS_MeshNode*>& nextNodes,
+                 const int                           iNotSame)
+  {
 
-  return faceNorm * extrDir < 0.0;
+    SMESH_TNodeXYZ pP = prevNodes[ iNotSame ];
+    SMESH_TNodeXYZ pN = nextNodes[ iNotSame ];
+    gp_XYZ extrDir( pN - pP ), faceNorm;
+    SMESH_MeshAlgos::FaceNormal( face, faceNorm, /*normalized=*/false );
+
+    return faceNorm * extrDir < 0.0;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Assure that theElemSets[0] holds elements, not nodes
+   */
+  //================================================================================
+
+  void setElemsFirst( TIDSortedElemSet theElemSets[2] )
+  {
+    if ( !theElemSets[0].empty() &&
+         (*theElemSets[0].begin())->GetType() == SMDSAbs_Node )
+    {
+      std::swap( theElemSets[0], theElemSets[1] );
+    }
+    else if ( !theElemSets[1].empty() &&
+              (*theElemSets[1].begin())->GetType() != SMDSAbs_Node )
+    {
+      std::swap( theElemSets[0], theElemSets[1] );
+    }
+  }
 }
 
 //=======================================================================
@@ -5121,7 +5144,7 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
 //=======================================================================
 
 SMESH_MeshEditor::PGroupIDs
-SMESH_MeshEditor::RotationSweep(TIDSortedElemSet & theElems,
+SMESH_MeshEditor::RotationSweep(TIDSortedElemSet   theElemSets[2],
                                 const gp_Ax1&      theAxis,
                                 const double       theAngle,
                                 const int          theNbSteps,
@@ -5153,84 +5176,89 @@ SMESH_MeshEditor::RotationSweep(TIDSortedElemSet & theElems,
   const bool isQuadraticMesh = bool( myMesh->NbEdges(ORDER_QUADRATIC) +
                                      myMesh->NbFaces(ORDER_QUADRATIC) +
                                      myMesh->NbVolumes(ORDER_QUADRATIC) );
-  // loop on theElems
+  // loop on theElemSets
+  setElemsFirst( theElemSets );
   TIDSortedElemSet::iterator itElem;
-  for ( itElem = theElems.begin(); itElem != theElems.end(); itElem++ ) {
-    const SMDS_MeshElement* elem = *itElem;
-    if ( !elem || elem->GetType() == SMDSAbs_Volume )
-      continue;
-    vector<TNodeOfNodeListMapItr> & newNodesItVec = mapElemNewNodes[ elem ];
-    newNodesItVec.reserve( elem->NbNodes() );
+  for ( int is2ndSet = 0; is2ndSet < 2; ++is2ndSet )
+  {
+    TIDSortedElemSet& theElems = theElemSets[ is2ndSet ];
+    for ( itElem = theElems.begin(); itElem != theElems.end(); itElem++ ) {
+      const SMDS_MeshElement* elem = *itElem;
+      if ( !elem || elem->GetType() == SMDSAbs_Volume )
+        continue;
+      vector<TNodeOfNodeListMapItr> & newNodesItVec = mapElemNewNodes[ elem ];
+      newNodesItVec.reserve( elem->NbNodes() );
 
-    // loop on elem nodes
-    SMDS_ElemIteratorPtr itN = elem->nodesIterator();
-    while ( itN->more() )
-    {
-      // check if a node has been already sweeped
-      const SMDS_MeshNode* node = cast2Node( itN->next() );
-
-      gp_XYZ aXYZ( node->X(), node->Y(), node->Z() );
-      double coord[3];
-      aXYZ.Coord( coord[0], coord[1], coord[2] );
-      bool isOnAxis = ( aLine.SquareDistance( aXYZ ) <= aSqTol );
-
-      TNodeOfNodeListMapItr nIt =
-        mapNewNodes.insert( make_pair( node, list<const SMDS_MeshNode*>() )).first;
-      list<const SMDS_MeshNode*>& listNewNodes = nIt->second;
-      if ( listNewNodes.empty() )
+      // loop on elem nodes
+      SMDS_ElemIteratorPtr itN = elem->nodesIterator();
+      while ( itN->more() )
       {
-        // check if we are to create medium nodes between corner ones
-        bool needMediumNodes = false;
-        if ( isQuadraticMesh )
-        {
-          SMDS_ElemIteratorPtr it = node->GetInverseElementIterator();
-          while (it->more() && !needMediumNodes )
-          {
-            const SMDS_MeshElement* invElem = it->next();
-            if ( invElem != elem && !theElems.count( invElem )) continue;
-            needMediumNodes = ( invElem->IsQuadratic() && !invElem->IsMediumNode(node) );
-            if ( !needMediumNodes && invElem->GetEntityType() == SMDSEntity_BiQuad_Quadrangle )
-              needMediumNodes = true;
-          }
-        }
+        // check if a node has been already sweeped
+        const SMDS_MeshNode* node = cast2Node( itN->next() );
 
-        // make new nodes
-        const SMDS_MeshNode * newNode = node;
-        for ( int i = 0; i < theNbSteps; i++ ) {
-          if ( !isOnAxis ) {
-            if ( needMediumNodes )  // create a medium node
+        gp_XYZ aXYZ( node->X(), node->Y(), node->Z() );
+        double coord[3];
+        aXYZ.Coord( coord[0], coord[1], coord[2] );
+        bool isOnAxis = ( aLine.SquareDistance( aXYZ ) <= aSqTol );
+
+        TNodeOfNodeListMapItr nIt =
+          mapNewNodes.insert( make_pair( node, list<const SMDS_MeshNode*>() )).first;
+        list<const SMDS_MeshNode*>& listNewNodes = nIt->second;
+        if ( listNewNodes.empty() )
+        {
+          // check if we are to create medium nodes between corner ones
+          bool needMediumNodes = false;
+          if ( isQuadraticMesh )
+          {
+            SMDS_ElemIteratorPtr it = node->GetInverseElementIterator();
+            while (it->more() && !needMediumNodes )
             {
-              aTrsf2.Transforms( coord[0], coord[1], coord[2] );
+              const SMDS_MeshElement* invElem = it->next();
+              if ( invElem != elem && !theElems.count( invElem )) continue;
+              needMediumNodes = ( invElem->IsQuadratic() && !invElem->IsMediumNode(node) );
+              if ( !needMediumNodes && invElem->GetEntityType() == SMDSEntity_BiQuad_Quadrangle )
+                needMediumNodes = true;
+            }
+          }
+
+          // make new nodes
+          const SMDS_MeshNode * newNode = node;
+          for ( int i = 0; i < theNbSteps; i++ ) {
+            if ( !isOnAxis ) {
+              if ( needMediumNodes )  // create a medium node
+              {
+                aTrsf2.Transforms( coord[0], coord[1], coord[2] );
+                newNode = aMesh->AddNode( coord[0], coord[1], coord[2] );
+                myLastCreatedNodes.Append(newNode);
+                srcNodes.Append( node );
+                listNewNodes.push_back( newNode );
+                aTrsf2.Transforms( coord[0], coord[1], coord[2] );
+              }
+              else {
+                aTrsf.Transforms( coord[0], coord[1], coord[2] );
+              }
+              // create a corner node
               newNode = aMesh->AddNode( coord[0], coord[1], coord[2] );
               myLastCreatedNodes.Append(newNode);
               srcNodes.Append( node );
               listNewNodes.push_back( newNode );
-              aTrsf2.Transforms( coord[0], coord[1], coord[2] );
             }
             else {
-              aTrsf.Transforms( coord[0], coord[1], coord[2] );
+              listNewNodes.push_back( newNode );
+              // if ( needMediumNodes )
+              //   listNewNodes.push_back( newNode );
             }
-            // create a corner node
-            newNode = aMesh->AddNode( coord[0], coord[1], coord[2] );
-            myLastCreatedNodes.Append(newNode);
-            srcNodes.Append( node );
-            listNewNodes.push_back( newNode );
-          }
-          else {
-            listNewNodes.push_back( newNode );
-            // if ( needMediumNodes )
-            //   listNewNodes.push_back( newNode );
           }
         }
+        newNodesItVec.push_back( nIt );
       }
-      newNodesItVec.push_back( nIt );
+      // make new elements
+      sweepElement( elem, newNodesItVec, newElemsMap[elem], theNbSteps, srcElems );
     }
-    // make new elements
-    sweepElement( elem, newNodesItVec, newElemsMap[elem], theNbSteps, srcElems );
   }
 
   if ( theMakeWalls )
-    makeWalls( mapNewNodes, newElemsMap, mapElemNewNodes, theElems, theNbSteps, srcElems );
+    makeWalls( mapNewNodes, newElemsMap, mapElemNewNodes, theElemSets[0], theNbSteps, srcElems );
 
   PGroupIDs newGroupIDs;
   if ( theMakeGroups )
@@ -5568,7 +5596,7 @@ makeNodesByNormal1D( SMESHDS_Mesh*                     mesh,
 //=======================================================================
 
 SMESH_MeshEditor::PGroupIDs
-SMESH_MeshEditor::ExtrusionSweep (TIDSortedElemSet &   theElems,
+SMESH_MeshEditor::ExtrusionSweep (TIDSortedElemSet     theElems[2],
                                   const gp_Vec&        theStep,
                                   const int            theNbSteps,
                                   TTElemOfElemListMap& newElemsMap,
@@ -5586,7 +5614,7 @@ SMESH_MeshEditor::ExtrusionSweep (TIDSortedElemSet &   theElems,
 //=======================================================================
 
 SMESH_MeshEditor::PGroupIDs
-SMESH_MeshEditor::ExtrusionSweep (TIDSortedElemSet &   theElems,
+SMESH_MeshEditor::ExtrusionSweep (TIDSortedElemSet     theElemSets[2],
                                   ExtrusParam&         theParams,
                                   TTElemOfElemListMap& newElemsMap)
 {
@@ -5598,8 +5626,9 @@ SMESH_MeshEditor::ExtrusionSweep (TIDSortedElemSet &   theElems,
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
+  setElemsFirst( theElemSets );
   const int nbSteps = theParams.NbSteps();
-  theParams.SetElementsToUse( theElems );
+  theParams.SetElementsToUse( theElemSets[0] );
 
   TNodeOfNodeListMap mapNewNodes;
   //TNodeOfNodeVecMap mapNewNodes;
@@ -5611,68 +5640,72 @@ SMESH_MeshEditor::ExtrusionSweep (TIDSortedElemSet &   theElems,
                                      myMesh->NbVolumes(ORDER_QUADRATIC) );
   // loop on theElems
   TIDSortedElemSet::iterator itElem;
-  for ( itElem = theElems.begin(); itElem != theElems.end(); itElem++ )
+  for ( int is2ndSet = 0; is2ndSet < 2; ++is2ndSet )
   {
-    // check element type
-    const SMDS_MeshElement* elem = *itElem;
-    if ( !elem  || elem->GetType() == SMDSAbs_Volume )
-      continue;
-
-    const size_t nbNodes = elem->NbNodes();
-    vector<TNodeOfNodeListMapItr> & newNodesItVec = mapElemNewNodes[ elem ];
-    newNodesItVec.reserve( nbNodes );
-
-    // loop on elem nodes
-    SMDS_ElemIteratorPtr itN = elem->nodesIterator();
-    while ( itN->more() )
+    TIDSortedElemSet& theElems = theElemSets[ is2ndSet ];
+    for ( itElem = theElems.begin(); itElem != theElems.end(); itElem++ )
     {
-      // check if a node has been already sweeped
-      const SMDS_MeshNode* node = cast2Node( itN->next() );
-      TNodeOfNodeListMap::iterator nIt =
-        mapNewNodes.insert( make_pair( node, list<const SMDS_MeshNode*>() )).first;
-      list<const SMDS_MeshNode*>& listNewNodes = nIt->second;
-      if ( listNewNodes.empty() )
-      {
-        // make new nodes
+      // check element type
+      const SMDS_MeshElement* elem = *itElem;
+      if ( !elem  || elem->GetType() == SMDSAbs_Volume )
+        continue;
 
-        // check if we are to create medium nodes between corner ones
-        bool needMediumNodes = false;
-        if ( isQuadraticMesh )
+      const size_t nbNodes = elem->NbNodes();
+      vector<TNodeOfNodeListMapItr> & newNodesItVec = mapElemNewNodes[ elem ];
+      newNodesItVec.reserve( nbNodes );
+
+      // loop on elem nodes
+      SMDS_ElemIteratorPtr itN = elem->nodesIterator();
+      while ( itN->more() )
+      {
+        // check if a node has been already sweeped
+        const SMDS_MeshNode* node = cast2Node( itN->next() );
+        TNodeOfNodeListMap::iterator nIt =
+          mapNewNodes.insert( make_pair( node, list<const SMDS_MeshNode*>() )).first;
+        list<const SMDS_MeshNode*>& listNewNodes = nIt->second;
+        if ( listNewNodes.empty() )
         {
-          SMDS_ElemIteratorPtr it = node->GetInverseElementIterator();
-          while (it->more() && !needMediumNodes )
+          // make new nodes
+
+          // check if we are to create medium nodes between corner ones
+          bool needMediumNodes = false;
+          if ( isQuadraticMesh )
           {
-            const SMDS_MeshElement* invElem = it->next();
-            if ( invElem != elem && !theElems.count( invElem )) continue;
-            needMediumNodes = ( invElem->IsQuadratic() && !invElem->IsMediumNode(node) );
-            if ( !needMediumNodes && invElem->GetEntityType() == SMDSEntity_BiQuad_Quadrangle )
-              needMediumNodes = true;
+            SMDS_ElemIteratorPtr it = node->GetInverseElementIterator();
+            while (it->more() && !needMediumNodes )
+            {
+              const SMDS_MeshElement* invElem = it->next();
+              if ( invElem != elem && !theElems.count( invElem )) continue;
+              needMediumNodes = ( invElem->IsQuadratic() && !invElem->IsMediumNode(node) );
+              if ( !needMediumNodes && invElem->GetEntityType() == SMDSEntity_BiQuad_Quadrangle )
+                needMediumNodes = true;
+            }
+          }
+          // create nodes for all steps
+          if ( theParams.MakeNodes( GetMeshDS(), node, listNewNodes, needMediumNodes ))
+          {
+            list<const SMDS_MeshNode*>::iterator newNodesIt = listNewNodes.begin();
+            for ( ; newNodesIt != listNewNodes.end(); ++newNodesIt )
+            {
+              myLastCreatedNodes.Append( *newNodesIt );
+              srcNodes.Append( node );
+            }
+          }
+          else
+          {
+            break; // newNodesItVec will be shorter than nbNodes
           }
         }
-        // create nodes for all steps
-        if ( theParams.MakeNodes( GetMeshDS(), node, listNewNodes, needMediumNodes ))
-        {
-          list<const SMDS_MeshNode*>::iterator newNodesIt = listNewNodes.begin();
-          for ( ; newNodesIt != listNewNodes.end(); ++newNodesIt )
-          {
-            myLastCreatedNodes.Append( *newNodesIt );
-            srcNodes.Append( node );
-          }
-        }
-        else
-        {
-          break; // newNodesItVec will be shorter than nbNodes
-        }
+        newNodesItVec.push_back( nIt );
       }
-      newNodesItVec.push_back( nIt );
+      // make new elements
+      if ( newNodesItVec.size() == nbNodes )
+        sweepElement( elem, newNodesItVec, newElemsMap[elem], nbSteps, srcElems );
     }
-    // make new elements
-    if ( newNodesItVec.size() == nbNodes )
-      sweepElement( elem, newNodesItVec, newElemsMap[elem], nbSteps, srcElems );
   }
 
   if ( theParams.ToMakeBoundary() ) {
-    makeWalls( mapNewNodes, newElemsMap, mapElemNewNodes, theElems, nbSteps, srcElems );
+    makeWalls( mapNewNodes, newElemsMap, mapElemNewNodes, theElemSets[0], nbSteps, srcElems );
   }
   PGroupIDs newGroupIDs;
   if ( theParams.ToMakeGroups() )
@@ -5686,7 +5719,7 @@ SMESH_MeshEditor::ExtrusionSweep (TIDSortedElemSet &   theElems,
 //purpose  :
 //=======================================================================
 SMESH_MeshEditor::Extrusion_Error
-SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
+SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet     theElements[2],
                                        SMESH_subMesh*       theTrack,
                                        const SMDS_MeshNode* theN1,
                                        const bool           theHasAngles,
@@ -5715,7 +5748,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
   TNodeOfNodeListMap mapNewNodes;
 
   // 1. Check data
-  aNbE = theElements.size();
+  aNbE = theElements[0].size() + theElements[1].size();
   // nothing to do
   if ( !aNbE )
     return EXTR_NO_ELEMENTS;
@@ -5858,7 +5891,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
 //purpose  :
 //=======================================================================
 SMESH_MeshEditor::Extrusion_Error
-SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
+SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet     theElements[2],
                                        SMESH_Mesh*          theTrack,
                                        const SMDS_MeshNode* theN1,
                                        const bool           theHasAngles,
@@ -5886,7 +5919,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
   TNodeOfNodeListMap mapNewNodes;
 
   // 1. Check data
-  aNbE = theElements.size();
+  aNbE = theElements[0].size() + theElements[1].size();
   // nothing to do
   if ( !aNbE )
     return EXTR_NO_ELEMENTS;
@@ -5927,7 +5960,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
     }
 
     conn = nbEdgeConnectivity(theN1);
-    if(conn > 2)
+    if( conn != 1 )
       return EXTR_PATH_NOT_EDGE;
 
     aItE = theN1->GetInverseElementIterator();
@@ -6207,7 +6240,7 @@ SMESH_MeshEditor::MakeEdgePathPoints(std::list<double>&                aPrms,
 //purpose  : auxilary for ExtrusionAlongTrack
 //=======================================================================
 SMESH_MeshEditor::Extrusion_Error
-SMESH_MeshEditor::MakeExtrElements(TIDSortedElemSet&                 theElements,
+SMESH_MeshEditor::MakeExtrElements(TIDSortedElemSet                  theElemSets[2],
                                    list<SMESH_MeshEditor_PathPoint>& fullList,
                                    const bool                        theHasAngles,
                                    list<double>&                     theAngles,
@@ -6245,15 +6278,19 @@ SMESH_MeshEditor::MakeExtrElements(TIDSortedElemSet&                 theElements
     gp_XYZ aGC( 0.,0.,0. );
     TIDSortedElemSet newNodes;
 
-    itElem = theElements.begin();
-    for ( ; itElem != theElements.end(); itElem++ ) {
-      const SMDS_MeshElement* elem = *itElem;
+    for ( int is2ndSet = 0; is2ndSet < 2; ++is2ndSet )
+    {
+      TIDSortedElemSet& theElements = theElemSets[ is2ndSet ];
+      itElem = theElements.begin();
+      for ( ; itElem != theElements.end(); itElem++ ) {
+        const SMDS_MeshElement* elem = *itElem;
 
-      SMDS_ElemIteratorPtr itN = elem->nodesIterator();
-      while ( itN->more() ) {
-        const SMDS_MeshElement* node = itN->next();
-        if ( newNodes.insert( node ).second )
-          aGC += SMESH_TNodeXYZ( node );
+        SMDS_ElemIteratorPtr itN = elem->nodesIterator();
+        while ( itN->more() ) {
+          const SMDS_MeshElement* node = itN->next();
+          if ( newNodes.insert( node ).second )
+            aGC += SMESH_TNodeXYZ( node );
+        }
       }
     }
     aGC /= newNodes.size();
@@ -6263,144 +6300,149 @@ SMESH_MeshEditor::MakeExtrElements(TIDSortedElemSet&                 theElements
   // 4. Processing the elements
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
-  for ( itElem = theElements.begin(); itElem != theElements.end(); itElem++ ) {
-    // check element type
-    const SMDS_MeshElement* elem = *itElem;
-    SMDSAbs_ElementType   aTypeE = elem->GetType();
-    if ( !elem || ( aTypeE != SMDSAbs_Face && aTypeE != SMDSAbs_Edge ) )
-      continue;
+  setElemsFirst( theElemSets );
+  for ( int is2ndSet = 0; is2ndSet < 2; ++is2ndSet )
+  {
+    TIDSortedElemSet& theElements = theElemSets[ is2ndSet ];
+    for ( itElem = theElements.begin(); itElem != theElements.end(); itElem++ ) {
+      // check element type
+      const SMDS_MeshElement* elem = *itElem;
+      SMDSAbs_ElementType   aTypeE = elem->GetType();
+      if ( !elem /*|| ( aTypeE != SMDSAbs_Face && aTypeE != SMDSAbs_Edge )*/ )
+        continue;
 
-    vector<TNodeOfNodeListMapItr> & newNodesItVec = mapElemNewNodes[ elem ];
-    newNodesItVec.reserve( elem->NbNodes() );
+      vector<TNodeOfNodeListMapItr> & newNodesItVec = mapElemNewNodes[ elem ];
+      newNodesItVec.reserve( elem->NbNodes() );
 
-    // loop on elem nodes
-    int nodeIndex = -1;
-    SMDS_ElemIteratorPtr itN = elem->nodesIterator();
-    while ( itN->more() )
-    {
-      ++nodeIndex;
-      // check if a node has been already processed
-      const SMDS_MeshNode* node =
-        static_cast<const SMDS_MeshNode*>( itN->next() );
-      TNodeOfNodeListMap::iterator nIt = mapNewNodes.find( node );
-      if ( nIt == mapNewNodes.end() ) {
-        nIt = mapNewNodes.insert( make_pair( node, list<const SMDS_MeshNode*>() )).first;
-        list<const SMDS_MeshNode*>& listNewNodes = nIt->second;
+      // loop on elem nodes
+      int nodeIndex = -1;
+      SMDS_ElemIteratorPtr itN = elem->nodesIterator();
+      while ( itN->more() )
+      {
+        ++nodeIndex;
+        // check if a node has been already processed
+        const SMDS_MeshNode* node =
+          static_cast<const SMDS_MeshNode*>( itN->next() );
+        TNodeOfNodeListMap::iterator nIt = mapNewNodes.find( node );
+        if ( nIt == mapNewNodes.end() ) {
+          nIt = mapNewNodes.insert( make_pair( node, list<const SMDS_MeshNode*>() )).first;
+          list<const SMDS_MeshNode*>& listNewNodes = nIt->second;
 
-        // make new nodes
-        Standard_Real aAngle1x, aAngleT1T0, aTolAng;
-        gp_Pnt aP0x, aP1x, aPN0, aPN1, aV0x, aV1x;
-        gp_Ax1 anAx1, anAxT1T0;
-        gp_Dir aDT1x, aDT0x, aDT1T0;
+          // make new nodes
+          Standard_Real aAngle1x, aAngleT1T0, aTolAng;
+          gp_Pnt aP0x, aP1x, aPN0, aPN1, aV0x, aV1x;
+          gp_Ax1 anAx1, anAxT1T0;
+          gp_Dir aDT1x, aDT0x, aDT1T0;
 
-        aTolAng=1.e-4;
+          aTolAng=1.e-4;
 
-        aV0x = aV0;
-        aPN0 = SMESH_TNodeXYZ( node );
+          aV0x = aV0;
+          aPN0 = SMESH_TNodeXYZ( node );
 
-        const SMESH_MeshEditor_PathPoint& aPP0 = aPPs[0];
-        aP0x = aPP0.Pnt();
-        aDT0x= aPP0.Tangent();
-        //cout<<"j = 0   PP: Pnt("<<aP0x.X()<<","<<aP0x.Y()<<","<<aP0x.Z()<<")"<<endl;
+          const SMESH_MeshEditor_PathPoint& aPP0 = aPPs[0];
+          aP0x = aPP0.Pnt();
+          aDT0x= aPP0.Tangent();
+          //cout<<"j = 0   PP: Pnt("<<aP0x.X()<<","<<aP0x.Y()<<","<<aP0x.Z()<<")"<<endl;
 
-        for ( int j = 1; j < aNbTP; ++j ) {
-          const SMESH_MeshEditor_PathPoint& aPP1 = aPPs[j];
-          aP1x     = aPP1.Pnt();
-          aDT1x    = aPP1.Tangent();
-          aAngle1x = aPP1.Angle();
+          for ( int j = 1; j < aNbTP; ++j ) {
+            const SMESH_MeshEditor_PathPoint& aPP1 = aPPs[j];
+            aP1x     = aPP1.Pnt();
+            aDT1x    = aPP1.Tangent();
+            aAngle1x = aPP1.Angle();
 
-          gp_Trsf aTrsf, aTrsfRot, aTrsfRotT1T0;
-          // Translation
-          gp_Vec aV01x( aP0x, aP1x );
-          aTrsf.SetTranslation( aV01x );
+            gp_Trsf aTrsf, aTrsfRot, aTrsfRotT1T0;
+            // Translation
+            gp_Vec aV01x( aP0x, aP1x );
+            aTrsf.SetTranslation( aV01x );
 
-          // traslated point
-          aV1x = aV0x.Transformed( aTrsf );
-          aPN1 = aPN0.Transformed( aTrsf );
+            // traslated point
+            aV1x = aV0x.Transformed( aTrsf );
+            aPN1 = aPN0.Transformed( aTrsf );
 
-          // rotation 1 [ T1,T0 ]
-          aAngleT1T0=-aDT1x.Angle( aDT0x );
-          if (fabs(aAngleT1T0) > aTolAng) {
-            aDT1T0=aDT1x^aDT0x;
-            anAxT1T0.SetLocation( aV1x );
-            anAxT1T0.SetDirection( aDT1T0 );
-            aTrsfRotT1T0.SetRotation( anAxT1T0, aAngleT1T0 );
+            // rotation 1 [ T1,T0 ]
+            aAngleT1T0=-aDT1x.Angle( aDT0x );
+            if (fabs(aAngleT1T0) > aTolAng) {
+              aDT1T0=aDT1x^aDT0x;
+              anAxT1T0.SetLocation( aV1x );
+              anAxT1T0.SetDirection( aDT1T0 );
+              aTrsfRotT1T0.SetRotation( anAxT1T0, aAngleT1T0 );
 
-            aPN1 = aPN1.Transformed( aTrsfRotT1T0 );
-          }
+              aPN1 = aPN1.Transformed( aTrsfRotT1T0 );
+            }
 
-          // rotation 2
-          if ( theHasAngles ) {
-            anAx1.SetLocation( aV1x );
-            anAx1.SetDirection( aDT1x );
-            aTrsfRot.SetRotation( anAx1, aAngle1x );
+            // rotation 2
+            if ( theHasAngles ) {
+              anAx1.SetLocation( aV1x );
+              anAx1.SetDirection( aDT1x );
+              aTrsfRot.SetRotation( anAx1, aAngle1x );
 
-            aPN1 = aPN1.Transformed( aTrsfRot );
-          }
+              aPN1 = aPN1.Transformed( aTrsfRot );
+            }
 
-          // make new node
-          //MESSAGE("elem->IsQuadratic " << elem->IsQuadratic() << " " << elem->IsMediumNode(node));
-          if( elem->IsQuadratic() && !elem->IsMediumNode(node) ) {
-            // create additional node
-            double x = ( aPN1.X() + aPN0.X() )/2.;
-            double y = ( aPN1.Y() + aPN0.Y() )/2.;
-            double z = ( aPN1.Z() + aPN0.Z() )/2.;
-            const SMDS_MeshNode* newNode = aMesh->AddNode(x,y,z);
+            // make new node
+            //MESSAGE("elem->IsQuadratic " << elem->IsQuadratic() << " " << elem->IsMediumNode(node));
+            if( elem->IsQuadratic() && !elem->IsMediumNode(node) ) {
+              // create additional node
+              double x = ( aPN1.X() + aPN0.X() )/2.;
+              double y = ( aPN1.Y() + aPN0.Y() )/2.;
+              double z = ( aPN1.Z() + aPN0.Z() )/2.;
+              const SMDS_MeshNode* newNode = aMesh->AddNode(x,y,z);
+              myLastCreatedNodes.Append(newNode);
+              srcNodes.Append( node );
+              listNewNodes.push_back( newNode );
+            }
+            const SMDS_MeshNode* newNode = aMesh->AddNode( aPN1.X(), aPN1.Y(), aPN1.Z() );
             myLastCreatedNodes.Append(newNode);
             srcNodes.Append( node );
             listNewNodes.push_back( newNode );
+
+            aPN0 = aPN1;
+            aP0x = aP1x;
+            aV0x = aV1x;
+            aDT0x = aDT1x;
           }
-          const SMDS_MeshNode* newNode = aMesh->AddNode( aPN1.X(), aPN1.Y(), aPN1.Z() );
-          myLastCreatedNodes.Append(newNode);
-          srcNodes.Append( node );
-          listNewNodes.push_back( newNode );
-
-          aPN0 = aPN1;
-          aP0x = aP1x;
-          aV0x = aV1x;
-          aDT0x = aDT1x;
         }
-      }
 
-      else {
-        // if current elem is quadratic and current node is not medium
-        // we have to check - may be it is needed to insert additional nodes
-        if( elem->IsQuadratic() && !elem->IsMediumNode(node) ) {
-          list< const SMDS_MeshNode* > & listNewNodes = nIt->second;
-          if(listNewNodes.size()==aNbTP-1) {
-            vector<const SMDS_MeshNode*> aNodes(2*(aNbTP-1));
-            gp_XYZ P(node->X(), node->Y(), node->Z());
-            list< const SMDS_MeshNode* >::iterator it = listNewNodes.begin();
-            int i;
-            for(i=0; i<aNbTP-1; i++) {
-              const SMDS_MeshNode* N = *it;
-              double x = ( N->X() + P.X() )/2.;
-              double y = ( N->Y() + P.Y() )/2.;
-              double z = ( N->Z() + P.Z() )/2.;
-              const SMDS_MeshNode* newN = aMesh->AddNode(x,y,z);
-              srcNodes.Append( node );
-              myLastCreatedNodes.Append(newN);
-              aNodes[2*i] = newN;
-              aNodes[2*i+1] = N;
-              P = gp_XYZ(N->X(),N->Y(),N->Z());
-            }
-            listNewNodes.clear();
-            for(i=0; i<2*(aNbTP-1); i++) {
-              listNewNodes.push_back(aNodes[i]);
+        else {
+          // if current elem is quadratic and current node is not medium
+          // we have to check - may be it is needed to insert additional nodes
+          if( elem->IsQuadratic() && !elem->IsMediumNode(node) ) {
+            list< const SMDS_MeshNode* > & listNewNodes = nIt->second;
+            if(listNewNodes.size()==aNbTP-1) {
+              vector<const SMDS_MeshNode*> aNodes(2*(aNbTP-1));
+              gp_XYZ P(node->X(), node->Y(), node->Z());
+              list< const SMDS_MeshNode* >::iterator it = listNewNodes.begin();
+              int i;
+              for(i=0; i<aNbTP-1; i++) {
+                const SMDS_MeshNode* N = *it;
+                double x = ( N->X() + P.X() )/2.;
+                double y = ( N->Y() + P.Y() )/2.;
+                double z = ( N->Z() + P.Z() )/2.;
+                const SMDS_MeshNode* newN = aMesh->AddNode(x,y,z);
+                srcNodes.Append( node );
+                myLastCreatedNodes.Append(newN);
+                aNodes[2*i] = newN;
+                aNodes[2*i+1] = N;
+                P = gp_XYZ(N->X(),N->Y(),N->Z());
+              }
+              listNewNodes.clear();
+              for(i=0; i<2*(aNbTP-1); i++) {
+                listNewNodes.push_back(aNodes[i]);
+              }
             }
           }
         }
-      }
 
-      newNodesItVec.push_back( nIt );
+        newNodesItVec.push_back( nIt );
+      }
+      // make new elements
+      //sweepElement( aMesh, elem, newNodesItVec, newElemsMap[elem],
+      //              newNodesItVec[0]->second.size(), myLastCreatedElems );
+      sweepElement( elem, newNodesItVec, newElemsMap[elem], aNbTP-1, srcElems );
     }
-    // make new elements
-    //sweepElement( aMesh, elem, newNodesItVec, newElemsMap[elem],
-    //              newNodesItVec[0]->second.size(), myLastCreatedElems );
-    sweepElement( elem, newNodesItVec, newElemsMap[elem], aNbTP-1, srcElems );
   }
 
-  makeWalls( mapNewNodes, newElemsMap, mapElemNewNodes, theElements, aNbTP-1, srcElems );
+  makeWalls( mapNewNodes, newElemsMap, mapElemNewNodes, theElemSets[0], aNbTP-1, srcElems );
 
   if ( theMakeGroups )
     generateGroups( srcNodes, srcElems, "extruded");

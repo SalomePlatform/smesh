@@ -1077,14 +1077,35 @@ void SMESH_Mesh_i::RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup 
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
-  if ( theGroup->_is_nil() )
+  if ( theGroup->_is_nil() || theGroup->IsEmpty() )
     return;
+
+  vector<int> nodeIds; // to remove nodes becoming free
+  CORBA::Long elemID = theGroup->GetID( 1 );
+  int nbElemNodes = GetElemNbNodes( elemID );
+  if ( nbElemNodes > 0 )
+    nodeIds.reserve( theGroup->Size() * nbElemNodes );
 
   // Remove contents
   SMESH::SMESH_IDSource_var idSrc = SMESH::SMESH_IDSource::_narrow( theGroup );
   SMDS_ElemIteratorPtr     elemIt = GetElements( idSrc, theGroup->GetType() );
   while ( elemIt->more() )
+  {
+    const SMDS_MeshElement* e = elemIt->next();
+
+    SMDS_ElemIteratorPtr nIt = e->nodesIterator();
+    while ( nIt->more() )
+      nodeIds.push_back( nIt->next()->GetID() );
+
     _impl->GetMeshDS()->RemoveElement( elemIt->next() );
+  }
+
+  // Remove free nodes
+  if ( theGroup->GetType() != SMESH::NODE )
+    for ( size_t i = 0 ; i < nodeIds.size(); ++i )
+      if ( const SMDS_MeshNode* n = _impl->GetMeshDS()->FindNode( nodeIds[i] ))
+        if ( n->NbInverseElements() == 0 )
+          _impl->GetMeshDS()->RemoveFreeNode( n, /*sm=*/0 );
 
   TPythonDump pyDump; // Supress dump from RemoveGroup()
 
@@ -6021,6 +6042,8 @@ SMESH_MeshPartDS::SMESH_MeshPartDS(SMESH::SMESH_IDSource_ptr meshPart):
           }
     }
     myInfo = tmpInfo;
+
+    ShapeToMesh( _meshDS->ShapeToMesh() );
 
     _meshDS = 0; // to enforce iteration on _elements and _nodes
   }

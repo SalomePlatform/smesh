@@ -30,6 +30,7 @@
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 #include "SMESHGUI_PreviewDlg.h"
+#include "SMESHGUI_Utils.h"
 
 // SALOME GUI includes
 #include <SALOME_InteractiveObject.hxx>
@@ -59,13 +60,78 @@ class SalomeApp_IntSpinBox;
 
 //=================================================================================
 // class    : SMESHGUI_ExtrusionDlg
+// purpose  : A widget used to select both nodes, edges and faces for
+//            Extrusion and Revolution operations
+//=================================================================================
+
+class SMESHGUI_EXPORT SMESHGUI_3TypesSelector : public QWidget
+{
+  Q_OBJECT
+
+    public:
+
+  SMESHGUI_3TypesSelector( QWidget * parent = 0 );
+  ~SMESHGUI_3TypesSelector();
+
+  void Clear();
+  void SetEnabled( bool enable, SMESH::ElementType type );
+  bool IsAnythingSelected( SMESH::ElementType type = SMESH::ALL );
+  SMESH::ElementType GetSelected( SMESH::ListOfIDSources & nodes,
+                                  SMESH::ListOfIDSources & edges,
+                                  SMESH::ListOfIDSources & faces );
+  SMESH::SMESH_Mesh_var GetMesh() { return myMesh; }
+  SMESH_Actor*         GetActor() { return myActor; }
+  Handle(SALOME_InteractiveObject) GetIO() { return myIO; }
+  QButtonGroup* GetButtonGroup()  { return mySelectBtnGrp; }
+
+ signals:
+
+  void selectionChanged();
+
+ private slots:
+
+  void                            selectionIntoArgument();
+  void                            onTextChange( const QString& );
+  void                            onSelectMesh( bool on );
+  void                            setFilters();
+  void                            onSelectType( int iType );
+
+ private:
+
+  void                             addTmpIdSource( SMESH::long_array_var& ids,
+                                                   int iType, int index);
+
+  QGroupBox*                       myGroups   [3];
+  QLabel*                          myLabel    [3];
+  QLineEdit*                       myLineEdit [3];
+  QCheckBox*                       myMeshChk  [3];
+  QPushButton*                     myFilterBtn[3];
+  QButtonGroup*                    mySelectBtnGrp;
+  SMESHGUI_FilterDlg*              myFilterDlg;
+  SUIT_SelectionFilter*            myFilter   [3];
+  SMESHGUI_IdValidator*            myIdValidator;
+
+  bool                             myBusy;
+  SMESH::SMESH_Mesh_var            myMesh;
+  SMESH_Actor*                     myActor;
+  Handle(SALOME_InteractiveObject) myIO;
+  SMESH::ListOfIDSources_var       myIDSource[3];
+  QList<SMESH::IDSource_wrap>      myTmpIDSourceList;
+
+  LightApp_SelectionMgr*           mySelectionMgr;
+  SVTK_Selector*                   mySelector;
+};
+
+//=================================================================================
+// class    : SMESHGUI_ExtrusionDlg
 // purpose  :
 //=================================================================================
+
 class SMESHGUI_EXPORT SMESHGUI_ExtrusionDlg : public SMESHGUI_PreviewDlg
 {
   Q_OBJECT
 
-public:
+    public:
   SMESHGUI_ExtrusionDlg( SMESHGUI* );
   ~SMESHGUI_ExtrusionDlg();
 
@@ -81,39 +147,16 @@ private:
   bool                             isValid();
   bool                             isValuesValid();
   
-  SMESHGUI_IdValidator*            myIdValidator;
   LightApp_SelectionMgr*           mySelectionMgr;        /* User shape selection */
-  QWidget*                         myEditCurrentArgument; /* Current  argument editor */
-  int                              myNbOkElements;        /* to check when elements are defined */
   SVTK_Selector*                   mySelector;
 
-  SMESH::SMESH_IDSource_var        mySelectedObject;
-
-  bool                             myBusy;
-  SMESH::SMESH_Mesh_var            myMesh;
-  SMESH::long_array_var            myElementsId;
-  SMESH_Actor*                     myActor;
-  Handle(SALOME_InteractiveObject) myIO;
-  SUIT_SelectionFilter*            myMeshOrSubMeshOrGroupFilter0D;
-  SUIT_SelectionFilter*            myMeshOrSubMeshOrGroupFilter1D;
-  SUIT_SelectionFilter*            myMeshOrSubMeshOrGroupFilter2D;
-
   // widgets
-  QGroupBox*                       ConstructorsBox;
-  QButtonGroup*                    GroupConstructors;
-  QRadioButton*                    Contructor_RBut0;
-  QRadioButton*                    Contructor_RBut1;
-  QRadioButton*                    Contructor_RBut2;
+  SMESHGUI_3TypesSelector*         SelectorWdg;
   QRadioButton*                    ExtrMethod_RBut0;
   QRadioButton*                    ExtrMethod_RBut1;
   QRadioButton*                    ExtrMethod_RBut2;
 
   QGroupBox*                       GroupArguments;
-  QGroupBox*                       GroupDimensions;
-  QLabel*                          TextLabelElements;
-  QPushButton*                     SelectElementsButton;
-  QLineEdit*                       LineEditElements;
-  QCheckBox*                       CheckBoxMesh;
   QLabel*                          TextLabelVector;
   QLabel*                          TextLabelDistance;
   QPushButton*                     SelectVectorButton;
@@ -146,15 +189,11 @@ private:
   QString                          myHelpFileName;
   QString                          myIDs;
 
-  QPushButton*                     myFilterBtn;
-  SMESHGUI_FilterDlg*              myFilterDlg;
-
 protected slots:
   virtual void                    onDisplaySimulation( bool );
   virtual void                    reject();
    
 private slots:
-  void                            ConstructorsClicked( int );
   void                            CheckIsEnable();
   void                            ClickOnOk();
   bool                            ClickOnApply();
@@ -164,9 +203,6 @@ private slots:
   void                            SelectionIntoArgument();
   void                            DeactivateActiveDialog();
   void                            ActivateThisDialog();
-  void                            onTextChange( const QString& );
-  void                            onSelectMesh( bool );
-  void                            setFilters();
 };
 
 #endif // SMESHGUI_EXTRUSIONDLG_H

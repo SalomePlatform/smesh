@@ -2,16 +2,16 @@
 
 \page revolution_page Revolution
 
-\n Revolution is a type of surface meshing by generation from
-discretized lines. It is used to build mesh elements of plus one
-dimension than the swept ones. Each swept 1D element produces one or
-more quadrangles (or triangles if one node of a rotated element lays
-on the revolution axis).
+\n Revolution is used to build mesh elements of plus one
+dimension than the input ones.  Boundary elements around generated
+mesh of plus one dimension are additionally created. All created
+elements can be automatically grouped. Revolution can be used to create
+a \ref extrusion_struct "structured mesh from scratch".
 
 <em>To apply revolution:</em>
 <ol>
-<li>From the \b Modification menu choose the \b Revolution item or click
-<em>"Revolution"</em> button in the toolbar.
+  <li>From the \b Modification menu choose the \b Revolution item or click
+    <em>"Revolution"</em> button in the toolbar.
 
 \image html image92.png
 <center><em>"Revolution" button</em></center>
@@ -20,65 +20,91 @@ The following dialog common for line and planar elements will appear:
 
 \image html revolution1.png
 
-</li>
+  </li>
 
-<li>
-In this dialog you should specify:
-<ul>
-<li>the type of elements which will be extruded (1D or 2D),</li>
-<li>specify the IDs of the elements which will be revolved:
-
-
-<ul>
-<li><b>Select the whole mesh, submesh or group</b> activating this
-checkbox; or</li>
-<li>choose mesh elements with the mouse in the 3D Viewer. It is
-possible to select a whole area with a mouse frame; or</li> 
-<li>input the element IDs directly in <b>ID Elements</b> field. The selected elements will be highlighted in the
-viewer; or</li>
-<li>apply Filters. <b>Set filter</b> button allows to apply a filter to the selection of elements. See more
-about filters in the \ref selection_filter_library_page "Selection filter library" page.</li>
-</ul>
-</li>
-
-<li>specify the axis of revolution:
-<ul>
-<li>specify the cooordinates of the start \b Point of the vector of revolution;</li>
-<li>specify the \b Vector of revolution through the coordinates of its
-end point with respect to the coordinates of the start
-point. Alternatively, it is possible to specify the vector through the
-normal to the selected face.</li>
-</ul>
-</li>
-
-<li>specify the angle of revolution and the number of revolution steps,</li>
-<ul> <li> Angle by Step - the elements are extruded by the specified angle at each step (i.e. for Angle=30 and Number of Steps=2, the elements will be extruded 
- by 30 degrees twice for a total of 30*2=60)</li>
-
+  <li>In this dialog:
+    <ul>
+    <li>Use \a Selection button to specify what you are going to
+    select at a given moment, \b Nodes, \b Edges or \b Faces.
+\image html image120.png
+<center><em>"Selection" button</em></center>
+    </li>
+    <li>Specify \b Nodes, \b Edges and \b Faces, which will be revolved, by one
+      of following means:
+      <ul>
+        <li><b>Select the whole mesh, sub-mesh or group</b> activating this
+          checkbox.</li>
+        <li>Choose mesh elements with the mouse in the 3D Viewer. It is
+          possible to select a whole area with a mouse frame.</li>
+        <li>Input the element IDs directly in <b>Node IDs</b>, <b>Edge
+            IDs</b> and <b>Face IDs</b> fields. The selected elements will
+          be highlighted in the viewer, if the mesh is shown there.</li>
+        <li>Apply Filters. <b>Set filter</b> button allows to apply a
+          filter to the selection of elements. See more about filters in
+          the \ref filtering_elements "Selection filters" page.</li>
+      </ul>
+    </li>
+    <li>Specify the \b Axis of revolution:
+      <ul>
+        <li>Specify the cooordinates of the start \b Point of the
+          axis of revolution; either directly or by picking a node
+          in the Viewer (selection of nodes is activated as you click
+          the \a Selection button).</li>
+        <li>Specify the \b Vector of the axis in either of three ways:
+          <ul>
+            <li>directly adjust vector components;</li>
+            <li>click \a Selection button, chose <em>From Origin to
+                selected Point</em> in the opened menu and pick a node
+                in the Viewer; </li>
+            <li>click \a Selection button, chose <em>Normal to
+                selected Face</em> in the opened menu and pick a mesh
+                face in the Viewer.</li> 
+      </ul></ul>
+    </li>
+    <li>Specify the \b Angle of revolution and the <b>Number of
+        steps </b> of revolution,
+      <ul> 
+        <li> <b>Angle by Step</b> - the elements are revolved by the
+          specified angle at each step (i.e. for Angle=30 and Number of
+          Steps=2, the elements will be extruded by 30 degrees twice for a
+          total of 30*2=60)
 \image html revolutionsn2.png "Example of Revolution with Angle by Step"
-
-<li> Total Angle - the elements are extruded by the specified angle only once and the number of steps defines the number of iterations 
-(i.e.for Angle=30 and Number of Steps=2, the elements will be extruded by 30/2=15 degrees twice for a total of 30). </li>
-
+        </li>
+        <li> <b>Total Angle</b> - the elements are revolved by the
+          specified angle only once and the number of steps defines the
+          number of iterations (i.e. for Angle=30 and Number of Steps=2,
+          the elements will be revolved by 30/2=15 degrees twice for a
+          total of 30).
 \image html revolutionsn1.png "Example of Revolution with Total Angle"
+        </li>
+      </ul>
+    </li>
+    <li>Specify the \b Tolerance for the operation, which is used to
+      detect nodes lying on the axis of revolution.
+    </li>
+    <li>Activate  <b>Preview</b> check-box to see the result mesh in
+      the viewer.
+    </li>
+    <li>If you activate <b>Generate Groups</b> check-box, the <em>result elements</em>
+      created from <em>selected elements</em> contained in groups will be
+      included into new groups named by pattern "<old group
+      name>_rotated" and "<old group name>_top". For example if a
+      selected quadrangle is included in \a g_Faces group (see figures
+      below) then result hexahedra will be included in \a
+      g_Faces_rotated group and a quadrangle created at the "top" of
+      revolved mesh will be included in \a g_Faces_top group. <br> 
+\image html extrusion_groups.png
+\image html extrusion_groups_res.png
+    <p> This check-box is active only if there are some groups in the mesh.
+    </li>
+    </ul>
+  </li>
 
-</ul>
-</li>
-
-<li>specify the tolerance for the operation</li>
-
-<li>activate  <b>Preview</b> checkbox to show the  parameter-setting in the viewer </li>
-<li>activate  <b>Generate Groups</b> checkbox to copy the groups of
-elements of the source mesh to the newly created one. </li>
-</li>
-</ul>
-
-<li>Click \b Apply or <b> Apply and Close</b> button to confirm the
-operation.</li>
+  <li>Click \b Apply or <b> Apply and Close</b> button to confirm the
+    operation.</li>
 </ol>
 
-
-<br><b>See Also</b> a sample TUI Script of a 
+<br><b>See Also</b> a sample TUI Script of a
 \ref tui_revolution "Revolution" operation.
 
 */

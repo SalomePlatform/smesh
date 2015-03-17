@@ -80,7 +80,7 @@ namespace SMESHUtils
   struct Deleter
   {
     TOBJ* _obj;
-    Deleter( TOBJ* obj ): _obj( obj ) {}
+    Deleter( TOBJ* obj = (TOBJ*)NULL ): _obj( obj ) {}
     ~Deleter() { delete _obj; _obj = 0; }
   private:
     Deleter( const Deleter& );

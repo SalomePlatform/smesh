@@ -229,7 +229,7 @@ public:
   typedef std::map<const SMDS_MeshElement*, TVecOfNnlmiMap, TElemSort >    TElemOfVecOfNnlmiMap;
   typedef std::auto_ptr< std::list<int> > PGroupIDs;
 
-  PGroupIDs RotationSweep (TIDSortedElemSet & theElements,
+  PGroupIDs RotationSweep (TIDSortedElemSet   theElements[2],
                            const gp_Ax1&      theAxis,
                            const double       theAngle,
                            const int          theNbSteps,
@@ -345,7 +345,7 @@ public:
    * @param theTolerance - uses for comparing locations of nodes if flag
    *   EXTRUSION_FLAG_SEW is set
    */
-  PGroupIDs ExtrusionSweep (TIDSortedElemSet &   theElems,
+  PGroupIDs ExtrusionSweep (TIDSortedElemSet     theElems[2],
                             const gp_Vec&        theStep,
                             const int            theNbSteps,
                             TTElemOfElemListMap& newElemsMap,
@@ -362,7 +362,7 @@ public:
    *   EXTRUSION_FLAG_SEW is set
    * @param theParams - special structure for manage of extrusion
    */
-  PGroupIDs ExtrusionSweep (TIDSortedElemSet &   theElems,
+  PGroupIDs ExtrusionSweep (TIDSortedElemSet     theElems[2],
                             ExtrusParam&         theParams,
                             TTElemOfElemListMap& newElemsMap);
 
@@ -380,7 +380,7 @@ public:
     EXTR_CANT_GET_TANGENT
     };
   
-  Extrusion_Error ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
+  Extrusion_Error ExtrusionAlongTrack (TIDSortedElemSet     theElements[2],
                                        SMESH_subMesh*       theTrackPattern,
                                        const SMDS_MeshNode* theNodeStart,
                                        const bool           theHasAngles,
@@ -389,7 +389,7 @@ public:
                                        const bool           theHasRefPoint,
                                        const gp_Pnt&        theRefPoint,
                                        const bool           theMakeGroups);
-  Extrusion_Error ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
+  Extrusion_Error ExtrusionAlongTrack (TIDSortedElemSet     theElements[2],
                                        SMESH_Mesh*          theTrackPattern,
                                        const SMDS_MeshNode* theNodeStart,
                                        const bool           theHasAngles,
@@ -730,7 +730,7 @@ public:
                                      const TopoDS_Edge&                     aTrackEdge,
                                      bool                                   aFirstIsStart,
                                      std::list<SMESH_MeshEditor_PathPoint>& aLPP);
-  Extrusion_Error MakeExtrElements(TIDSortedElemSet&                      theElements,
+  Extrusion_Error MakeExtrElements(TIDSortedElemSet                       theElements[2],
                                    std::list<SMESH_MeshEditor_PathPoint>& theFullList,
                                    const bool                             theHasAngles,
                                    std::list<double>&                     theAngles,

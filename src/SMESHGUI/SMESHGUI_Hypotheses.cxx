@@ -35,10 +35,11 @@
 #include <utilities.h>
 
 // SALOME GUI includes
-#include <SUIT_Session.h>
-#include <SUIT_MessageBox.h>
-#include <SUIT_ResourceMgr.h>
 #include <LightApp_Application.h>
+#include <SUIT_MessageBox.h>
+#include <SUIT_OverrideCursor.h>
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_Session.h>
 #include <SalomeApp_IntSpinBox.h>
 
 // Qt includes
@@ -264,6 +265,7 @@ void SMESHGUI_GenericHypothesisCreator::onDialogFinished( int result )
   bool res = result==QDialog::Accepted;
   if( res )
   {
+    SUIT_OverrideCursor wc;
       /*QString paramValues = */storeParams();
       // No longer needed since NoteBook appears and "Value" OB field shows names of variable
 //       if ( !paramValues.isEmpty() ) {

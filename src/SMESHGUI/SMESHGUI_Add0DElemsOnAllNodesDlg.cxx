@@ -353,7 +353,7 @@ bool SMESHGUI_Add0DElemsOnAllNodesOp::onApply()
     return false;
 
   // get a mesh
-  SMESH::SMESH_IDSource_wrap meshObject;
+  SMESH::IDSource_wrap meshObject;
   SMESH::SMESH_Mesh_var      mesh;
   if ( !myIO.IsNull() )
   {

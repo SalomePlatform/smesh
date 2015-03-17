@@ -519,8 +519,8 @@ void SMESHGUI_MinDistance::secondEdited()
 void SMESHGUI_MinDistance::compute()
 {
   SUIT_OverrideCursor wc;
-  SMESH::SMESH_IDSource_wrap s1;
-  SMESH::SMESH_IDSource_wrap s2;
+  SMESH::IDSource_wrap s1;
+  SMESH::IDSource_wrap s2;
   bool isOrigin = mySecond->checkedId() == OriginTgt;
 
   // process first target
@@ -760,7 +760,8 @@ void SMESHGUI_BoundingBox::updateSelection()
 
   sourceEdited();
 
-  //selectionChanged();
+  if ( mySource->text().isEmpty() )
+    selectionChanged();
 }
 
 /*!
@@ -1206,6 +1207,9 @@ void SMESHGUI_BasicProperties::updateSelection()
   selMgr->installFilter( myFilter );
   
   connect( selMgr, SIGNAL( currentSelectionChanged() ), this, SLOT( selectionChanged() ) );
+
+  if ( mySource->text().isEmpty() )
+    selectionChanged();
 }
 
 /*!

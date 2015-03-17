@@ -3299,12 +3299,17 @@ bool SMESHGUI_FilterDlg::onApply()
     insertFilterInViewer();
 
     if (!myFilter[ aCurrType ]->GetPredicate()->_is_nil()) {
-      QList<int> aResultIds;
-      filterSource(aCurrType, aResultIds);
-      // select in viewer
-      selectInViewer(aCurrType, aResultIds);
+      // 
+      bool toFilter = (( SMESH::FindActorByObject( myMesh )) ||
+                       ( myInitSourceWgOnApply && mySourceWg ) ||
+                       ( mySourceGrp->checkedId() == Dialog && mySourceWg ));
+      if ( toFilter ) {
+        QList<int> aResultIds;
+        filterSource(aCurrType, aResultIds);
+        // select in viewer
+        selectInViewer(aCurrType, aResultIds);
+      }
     }
-
 
     myInsertState[ aCurrType ] = mySetInViewer->isChecked();
     myApplyToState[ aCurrType ] = mySourceGrp->checkedId();

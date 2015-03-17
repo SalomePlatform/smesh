@@ -309,7 +309,8 @@ bool SMESHGUI_CopyMeshDlg::ClickOnApply()
   try
   {
     SUIT_OverrideCursor aWaitCursor;
-    SMESH::SMESH_IDSource_wrap aPartToCopy;
+
+    SMESH::IDSource_wrap aPartToCopy;
     if ( myIdSourceCheck->isChecked())
     {
       aPartToCopy = mySelectedObject;

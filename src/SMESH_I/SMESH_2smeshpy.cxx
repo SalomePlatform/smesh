@@ -384,6 +384,7 @@ namespace {
         "ExtrusionSweepObjectMakeGroups","ExtrusionSweepObject0D",
         "ExtrusionSweepObject1D","ExtrusionSweepObject1DMakeGroups",
         "ExtrusionSweepObject2D","ExtrusionSweepObject2DMakeGroups",
+        "ExtrusionSweepObjects","RotationSweepObjects","ExtrusionAlongPathObjects",
         "Translate","TranslateMakeGroups","TranslateMakeMesh",
         "TranslateObject","TranslateObjectMakeGroups", "TranslateObjectMakeMesh",
         "ExtrusionAlongPathX","ExtrusionAlongPathObjX","SplitHexahedraIntoPrisms"
@@ -431,7 +432,8 @@ namespace {
         "ExportCGNS","ExportGMF",
         "Create0DElementsOnAllNodes","Reorient2D","QuadTo4Tri",
         "ScaleMakeGroups","Scale","ScaleMakeMesh",
-        "FindCoincidentNodesOnPartBut","DoubleElements"
+        "FindCoincidentNodesOnPartBut","DoubleElements",
+        "ExtrusionSweepObjects","RotationSweepObjects","ExtrusionAlongPathObjects"
         ,"" }; // <- mark of the end
       methodsAcceptingList.Insert( methodNames );
     }
@@ -2404,6 +2406,7 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       "ExtrusionSweep","AdvancedExtrusion","ExtrusionSweepObject","ExtrusionSweepObject1D",
       "ExtrusionSweepObject2D","ExtrusionAlongPath","ExtrusionAlongPathObject",
       "ExtrusionAlongPathX","ExtrusionAlongPathObject1D","ExtrusionAlongPathObject2D",
+      "ExtrusionSweepObjects","RotationSweepObjects","ExtrusionAlongPathObjects",
       "Mirror","MirrorObject","Translate","TranslateObject","Rotate","RotateObject",
       "FindCoincidentNodes","MergeNodes","FindEqualElements",
       "MergeElements","MergeEqualElements","SewFreeBorders","SewConformFreeBorders",

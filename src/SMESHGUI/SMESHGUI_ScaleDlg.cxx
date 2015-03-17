@@ -486,7 +486,7 @@ bool SMESHGUI_ScaleDlg::ClickOnApply()
           }
         else {
           SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
-          SMESH::SMESH_IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
+          SMESH::IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
           myMeshes[0]->SetParameters( aParameters.join( ":" ).toLatin1().constData() );
           aMeshEditor->Scale( src, aPoint, aScaleFact, false);
         }
@@ -503,7 +503,7 @@ bool SMESHGUI_ScaleDlg::ClickOnApply()
             }
           else {
             SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
-            SMESH::SMESH_IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
+            SMESH::IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
             myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
             groups = aMeshEditor->ScaleMakeGroups( src, aPoint, aScaleFact);
           }
@@ -518,7 +518,7 @@ bool SMESHGUI_ScaleDlg::ClickOnApply()
           }
           else {
             SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
-            SMESH::SMESH_IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
+            SMESH::IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
             myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
             aMeshEditor->Scale( src, aPoint, aScaleFact, true);
           }
@@ -541,7 +541,7 @@ bool SMESHGUI_ScaleDlg::ClickOnApply()
         else {
           SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
           myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
-          SMESH::SMESH_IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
+          SMESH::IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
           mesh = aMeshEditor->ScaleMakeMesh( src, aPoint, aScaleFact, makeGroups,
                                              LineEditNewMesh->text().toLatin1().data());
           if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
@@ -1147,7 +1147,7 @@ void SMESHGUI_ScaleDlg::onDisplaySimulation( bool toDisplayPreview ) {
           }
         else {
           SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditPreviewer();
-          SMESH::SMESH_IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
+          SMESH::IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
           aMeshEditor->Scale( src, aPoint, aScaleFact, copy);
           aMeshPreviewStruct << aMeshEditor->GetPreviewData();
         }

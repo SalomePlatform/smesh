@@ -182,7 +182,7 @@ SMESHGUI_EXPORT
 
 
   // type to use instead of SMESH_IDSource_var for automatic UnRegister()
-  typedef SALOME::GenericObj_wrap<SMESH_IDSource> SMESH_IDSource_wrap;
+  typedef SALOME::GenericObj_wrap<SMESH_IDSource> IDSource_wrap;
 
   /*!
    * \brief Class usefull to convert a string returned from a CORBA call

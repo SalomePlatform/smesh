@@ -286,7 +286,7 @@
     </message>
     <message>
         <source>MEN_MESH_ORDER</source>
-        <translation>Change submesh priority</translation>
+        <translation>Change sub-mesh priority</translation>
     </message>
     <message>
         <source>MEN_CREATE_GROUP</source>
@@ -1287,7 +1287,7 @@ Please enter correct values and try again</translation>
     </message>
     <message>
         <source>SMESH_ADD_SUBMESH</source>
-        <translation>SubMesh Construction</translation>
+        <translation>Sub-mesh Construction</translation>
     </message>
     <message>
         <source>SMESH_ADD_TETRAS</source>
@@ -1805,7 +1805,7 @@ add the exported data to its contents?</translation>
     </message>
     <message>
         <source>SMESH_HYP_10</source>
-        <translation>Hypothesis and submesh dimensions mismatch</translation>
+        <translation>Hypothesis and sub-mesh dimensions mismatch</translation>
     </message>
     <message>
         <source>SMESH_HYP_11</source>
@@ -1830,7 +1830,7 @@ Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>SMESH_HYP_4</source>
-        <translation>Submesh is ignored as there is another algorithm of upper dimension generating %1D elements</translation>
+        <translation>Sub-mesh is ignored as there is another algorithm of upper dimension generating %1D elements</translation>
     </message>
     <message>
         <source>SMESH_HYP_5</source>
@@ -1853,20 +1853,20 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Such dimention hypothesis is already assigned to the shape</translation>
     </message>
     <message>
-        <source>SMESH_ID_DIAGONAL</source>
-        <translation>Id Edges</translation>
+        <source>SMESH_ID_EDGES</source>
+        <translation>Edge IDs</translation>
     </message>
     <message>
         <source>SMESH_ID_ELEMENTS</source>
-        <translation>Id Elements</translation>
+        <translation>Element IDs</translation>
     </message>
     <message>
         <source>SMESH_ID_FACES</source>
-        <translation>Id Faces</translation>
+        <translation>Face IDs</translation>
     </message>
     <message>
         <source>SMESH_ID_NODES</source>
-        <translation>Id Nodes</translation>
+        <translation>Node IDs</translation>
     </message>
     <message>
         <source>SMESH_INCORRECT_INPUT</source>
@@ -1938,23 +1938,23 @@ Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>SMESH_MEN_SubMeshesOnCompound</source>
-        <translation>SubMeshes On Compound</translation>
+        <translation>Sub-meshes On Compound</translation>
     </message>
     <message>
         <source>SMESH_MEN_SubMeshesOnEdge</source>
-        <translation>SubMeshes On Edge</translation>
+        <translation>Sub-meshes On Edge</translation>
     </message>
     <message>
         <source>SMESH_MEN_SubMeshesOnFace</source>
-        <translation>SubMeshes On Face</translation>
+        <translation>Sub-meshes On Face</translation>
     </message>
     <message>
         <source>SMESH_MEN_SubMeshesOnSolid</source>
-        <translation>SubMeshes On Solid</translation>
+        <translation>Sub-meshes On Solid</translation>
     </message>
     <message>
         <source>SMESH_MEN_SubMeshesOnVertex</source>
-        <translation>SubMeshes On Vertex</translation>
+        <translation>Sub-meshes On Vertex</translation>
     </message>
     <message>
         <source>SMESH_AUTOMATIC</source>
@@ -2169,8 +2169,12 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Mesh</translation>
     </message>
     <message>
+        <source>SMESH_OBJECTS</source>
+        <translation>Objects</translation>
+    </message>
+    <message>
         <source>SMESH_OBJECT_MESHorSUBMESH</source>
-        <translation>Mesh or SubMesh</translation>
+        <translation>Mesh or Sub-mesh</translation>
     </message>
     <message>
         <source>SMESH_OPERATION_FAILED</source>
@@ -2587,11 +2591,11 @@ Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>SMESH_SUBMESH</source>
-        <translation>SubMesh</translation>
+        <translation>Sub-mesh</translation>
     </message>
     <message>
         <source>SMESH_SUBMESH_SELECTED</source>
-        <translation>%1 SubMeshes</translation>
+        <translation>%1 Sub-meshes</translation>
     </message>
     <message>
         <source>SMESH_SYMMETRY</source>
@@ -2914,7 +2918,7 @@ Use Display Entity menu command to show them.
     </message>
     <message>
         <source>STB_MESH_ORDER</source>
-        <translation>Change submesh priority</translation>
+        <translation>Change sub-mesh priority</translation>
     </message>
     <message>
         <source>STB_CREATE_GROUP</source>
@@ -3574,7 +3578,7 @@ Use Display Entity menu command to show them.
     </message>
     <message>
         <source>TOP_MESH_ORDER</source>
-        <translation>Change submesh priority</translation>
+        <translation>Change sub-mesh priority</translation>
     </message>
     <message>
         <source>TOP_CREATE_GROUP</source>
@@ -4833,9 +4837,9 @@ Please, create VTK viewer and try again</translation>
     <name>SMESHGUI_PrecomputeOp</name>
     <message>
         <source>CLEAR_SUBMESH_QUESTION</source>
-        <translation>Temporary submeshes on the selected geometry
+        <translation>Temporary sub-meshes on the selected geometry
 were created during preview operation.
-Do you want to remove all these submeshes?</translation>
+Do you want to remove all these sub-meshes?</translation>
     </message>
     <message>
         <source>SMESH_WRN_NOTHING_PREVIEW</source>
@@ -4843,8 +4847,8 @@ Do you want to remove all these submeshes?</translation>
     </message>
     <message>
         <source>SMESH_REJECT_MESH_ORDER</source>
-        <translation>The submesh priority changed during preview operation.
-Do you want to restore original submesh priority?</translation>
+        <translation>The sub-mesh priority changed during preview operation.
+Do you want to restore original sub-mesh priority?</translation>
     </message>
 </context>
 <context>
@@ -4940,7 +4944,7 @@ Please verify validity of entered information</translation>
     </message>
     <message>
         <source>MESH_OR_SUBMESH</source>
-        <translation>Mesh or SubMesh</translation>
+        <translation>Mesh or Sub-mesh</translation>
     </message>
     <message>
         <source>PATTERN</source>
@@ -5104,7 +5108,7 @@ Please select a group and try again</translation>
     </message>
     <message>
         <source>SMESH_PATH_MESH</source>
-        <translation>Mesh or submesh</translation>
+        <translation>Mesh or sub-mesh</translation>
     </message>
     <message>
         <source>SMESH_PATH_SHAPE</source>
@@ -6034,12 +6038,12 @@ Please specify them and try again</translation>
     </message>
     <message>
         <source>EDIT_SUBMESH_QUESTION</source>
-        <translation>A submesh on the selected geometry already exists.
- Do you want to edit this submesh?</translation>
+        <translation>A sub-mesh on the selected geometry already exists.
+ Do you want to edit this sub-mesh?</translation>
     </message>
     <message>
         <source>SUBMESH_NOT_ALLOWED</source>
-        <translation>No sense in creating a submesh ignored by global algorithm &quot;%1&quot;</translation>
+        <translation>No sense in creating a sub-mesh ignored by global algorithm &quot;%1&quot;</translation>
     </message>
     <message>
         <source>GEOMETRY_OBJECT_IS_NOT_DEFINED_MESH</source>
@@ -6108,7 +6112,7 @@ Please enter valid name and try again</translation>
     </message>
     <message>
         <source>NAME_OF_SUBMESH_IS_EMPTY</source>
-        <translation>Name of submesh is empty
+        <translation>Name of sub-mesh is empty
 Please enter valid name and try again</translation>
     </message>
     <message>
@@ -6415,8 +6419,8 @@ It is impossible to read point coordinates from file</translation>
         <translation>Preview</translation>
     </message>
     <message>
-        <source>REVOLUTION_1D</source>
-        <translation>Revolution of 1D elements</translation>
+        <source>REVOLUTION</source>
+        <translation>Revolution</translation>
     </message>
     <message>
         <source>REVOLUTION_2D</source>
@@ -6650,14 +6654,14 @@ It is impossible to read point coordinates from file</translation>
     <name>SMESHGUI_MeshOrderDlg</name>
     <message>
         <source>SMESH_MESHORDER_TITLE</source>
-        <translation>Order of submesh in meshing process</translation>
+        <translation>Order of sub-mesh in meshing process</translation>
     </message>
 </context>
 <context>
     <name>SMESHGUI_MeshOrderOp</name>
     <message>
         <source>SMESH_NO_CONCURENT_MESH</source>
-        <translation>No concurent submeshes detected</translation>
+        <translation>No concurent sub-meshes detected</translation>
     </message>
 </context>
 <context>

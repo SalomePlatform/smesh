@@ -163,11 +163,26 @@ namespace MED
 
 
     //---------------------------------------------------------------
-    TVWrapper::TVWrapper(const std::string& theFileName): 
+    TVWrapper::TVWrapper(const std::string& theFileName):
       myFile(new TFile(theFileName))
-    {}
-    
-    
+    {
+      TErr aRet;
+      myFile->Open( eLECTURE_ECRITURE, &aRet );
+      // if(aRet < 0)
+      //   myFile->Close();
+      //   myFile->Open( eLECTURE_AJOUT, &aRet );
+      // }
+      if(aRet < 0) {
+        myFile->Close();
+        myFile->Open( eLECTURE, &aRet );
+      }
+      if(aRet < 0) {
+        myFile->Close();
+        myFile->Open( eCREATION, &aRet );
+      }
+    }
+
+
     //----------------------------------------------------------------------------
     TInt
     TVWrapper
@@ -2871,5 +2886,5 @@ namespace MED
         EXCEPTION(std::runtime_error,"GetGrilleInfo - MEDmeshGridStructRd(...)");
     }
 
-  }  
+  }
 }

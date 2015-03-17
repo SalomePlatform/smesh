@@ -3,7 +3,7 @@
 \page extrusion_along_path_page Extrusion along Path
 
 \n In principle, <b>Extrusion along Path</b> works in the same way
-as \b Extrusion, the main difference is that we define not a vector,
+as \ref extrusion_page "Extrusion", the main difference is that we define not a vector,
 but a path of extrusion which must be a 1D mesh or 1D sub-mesh. 
 To get an idea of how this algorithm works, examine several examples,
 starting from the most simple case of extrusion along a straight edge.
@@ -77,75 +77,93 @@ path</b> item or click <em>"Extrusion along a path"</em> button in the toolbar.
 \image html image101.png
 <center><em>"Extrusion along a path" button</em></center>
 
-The following dialog common for line and planar elements will appear:
+The following dialog will appear:
 
 \image html extrusion_along_path_dlg.png
 </li>
 
 <li>In this dialog:
 <ul>
-<li>select the type of elements which will be extruded (1D or 2D),</li>
-<li>specify the <b>IDs of the elements</b> which will be extruded
-
-<ul>
-<li><b>Select the whole mesh, sub-mesh or group</b> activating the corresponding check-box; or</li>
-<li>Choose mesh elements with the mouse in the 3D Viewer. It is
-possible to select a whole area with a mouse frame; or</li> 
-<li>Input the element IDs directly in <b>ID Elements</b> field. The selected elements will be highlighted in the
-viewer; or</li>
-<li>apply Filters. <b>Set filter</b> button allows to apply a filter to the selection of elements. See more
-about filters in the \ref selection_filter_library_page "Selection filter library" page.</li>
-</ul>
-
-</li>
-<li>Define the \b Path along which the elements will be extruded.<br>
-  Path definition consists of several elements:
-  <ul>
-    <li><b>Mesh or submesh</b> - 1D mesh or sub-mesh, along which proceeds the extrusion</li>
-    <li><b>Start node</b> - the start node. It is used to define the direction of extrusion </li>
-  </ul>
-</li>
-<li>Activate <b>Generate Groups</b> check-box if it is necessary to  copy the groups of
-  elements of the source mesh to the newly created one. </li>
+    <li>Use \a Selection button to specify what you are going to
+    select at a given moment, \b Nodes, \b Edges or \b Faces.
+\image html image120.png
+<center><em>"Selection" button</em></center>
+    </li>
+    <li>Specify \b Nodes, \b Edges and \b Faces, which will be extruded, by one
+      of following means:
+      <ul>
+        <li><b>Select the whole mesh, sub-mesh or group</b> activating this
+          checkbox.</li>
+        <li>Choose mesh elements with the mouse in the 3D Viewer. It is
+          possible to select a whole area with a mouse frame.</li>
+        <li>Input the element IDs directly in <b>Node IDs</b>, <b>Edge
+            IDs</b> and <b>Face IDs</b> fields. The selected elements will
+          be highlighted in the viewer, if the mesh is shown there.</li>
+        <li>Apply Filters. <b>Set filter</b> button allows to apply a
+          filter to the selection of elements. See more about filters in
+          the \ref filtering_elements "Selection filters" page.</li>
+      </ul>
+    </li>
+    <li>Define the \b Path along which the elements will be extruded.<br>
+      Path definition consists of several elements:
+      <ul>
+        <li><b>Mesh or submesh</b> - 1D mesh or sub-mesh, along which
+        proceeds the extrusion.</li>
+        <li><b>Start node</b> - the start node. It is used to define
+        the direction of extrusion. </li>
+      </ul>
+    </li>
+  <li>If you activate <b>Generate Groups</b> check-box, the <em>result elements</em>
+    created from <em>selected elements</em> contained in groups will be
+    included into new groups named by pattern "<old group
+    name>_extruded" and "<old group name>_top". For example if a
+    selected quadrangle is included in \a g_Faces group (see figures
+    below) then result hexahedra will be included in \a
+    g_Faces_extruded group and a quadrangle created at the "top" of
+    extruded mesh will be included in \a g_Faces_top group. <br> 
+\image html extrusion_groups.png
+\image html extrusion_groups_res.png
+    <p> This check-box is active only if there are some groups in the mesh.
+  </li>
 </ul>
 </li>
 
 <li>There are two optional parameters, which can be very useful:
 <ul>
 <li>If the path of extrusion is curvilinear, at each iteration the
-extruded elements are rotated to keep its initial angularity to the
-curve. By default, the <b>Base Point</b> around which the elements are rotated is
-the mass center of the elements, however, you can specify any point as
-the <b>Base Point</b> and the elements will be rotated with respect to this
-point.<br>
-  Note that only the displacement of the <b>Base Point</b> exactly equals to the 
-  path, and all other extruded elements simply keep their position relatively to the <b>Base Point</b> at each iteration.
-</li>
-<li>The elements can also be rotated around the path to get the resulting
-mesh in a helical fashion. You can set the values of angles at the
-right, add them to the list of angles at the left by pressing the <em>"Add"</em>
-button and remove them from the list by pressing the <em>"Remove"</em> button. 
-
+  extruded elements are rotated to keep its initial angularity to the
+  curve. By default, the <b>Base Point</b> around which the elements
+  are rotated is the mass center of the elements, however, you can
+  specify any point as the <b>Base Point</b> and the elements will be
+  rotated with respect to this point.<br>
+  Note that only the displacement of the <b>Base Point</b> exactly
+  equals to the path, and all other extruded elements simply keep
+  their position relatively to the <b>Base Point</b> at each
+  iteration.</li>
+<li>The elements can also be rotated around the path to get the
+  resulting mesh in a helical fashion. You can set the values of
+  angles at the right, add them to the list of angles at the left by
+  pressing the <em>"Add"</em> button and remove them from the list by
+  pressing the <em>"Remove"</em> button.
 \image html add.png
 <center><em>"Add" button</em></center>
-
 \image html remove.png
 <center><em>"Remove" button</em></center>
 
-<b>Linear variation of the angles</b> option allows defining the angle of gradual rotation for the whole path. 
-At each step the elements will be rotated by <code>angle / nb. of steps</code>. 
-
+<b>Linear variation of the angles</b> option allows defining the angle
+of gradual rotation for the whole path. At each step the elements will
+be rotated by <code>angle / nb. of steps</code>.
 </li>
 </ul>
 </li>
 
 
-<li>Click \b Apply or <b> Apply and Close</b>  button to confirm the operation.
-Mesh edges will be extruded into
-faces, faces into volumes. The external surface of the resulting 3d
-mesh (if faces have been extruded) is covered with faces, and corners
-with edges. If the path is closed, the resulting mesh can contain
-duplicated nodes and faces, because no sewing is done.
+<li>Click \b Apply or <b> Apply and Close</b>  button to confirm the
+  operation. Mesh edges will be extruded into faces, faces into
+  volumes. The external surface of the resulting 3d mesh (if faces
+  have been extruded) is covered with faces, and corners with
+  edges. If the path is closed, the resulting mesh can contain
+  duplicated nodes and faces, because no sewing is done.
 </li>
 </ol>
 

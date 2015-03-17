@@ -1283,7 +1283,7 @@ bool SMESHGUI_CuttingOfQuadsDlg::process (SMESH::SMESH_MeshEditor_ptr theEditor,
     {
       if ( hasObj )
         return theEditor->QuadTo4Tri( obj ), true;
-      SMESH::SMESH_IDSource_wrap elems = theEditor->MakeIDSource( theIds, SMESH::FACE );
+      SMESH::IDSource_wrap elems = theEditor->MakeIDSource( theIds, SMESH::FACE );
       theEditor->QuadTo4Tri( elems );
       return true;
     }
@@ -1619,7 +1619,7 @@ bool SMESHGUI_SplitVolumesDlg::process (SMESH::SMESH_MeshEditor_ptr theEditor,
                                         const SMESH::long_array&    theIds,
                                         SMESH::SMESH_IDSource_ptr   theObj)
 {
-  SMESH::SMESH_IDSource_wrap obj = theObj;
+  SMESH::IDSource_wrap obj = theObj;
   if ( CORBA::is_nil( obj ))
     obj = theEditor->MakeIDSource( theIds, SMESH::VOLUME );
   else

@@ -1135,6 +1135,8 @@ bool SMESHGUI_GroupDlg::onApply()
     if( aMeshGroupSO )
       anEntryList.append( aMeshGroupSO->GetID().c_str() );
 
+    resultGroup->SetName(SMESH::toUtf8(myName->text().trimmed()));
+
     if ( isCreation )
     {
       SMESH::setFileType ( aMeshGroupSO, "COULEURGROUP" );
@@ -1151,8 +1153,6 @@ bool SMESHGUI_GroupDlg::onApply()
     }
     else
     {
-      resultGroup->SetName(SMESH::toUtf8(myName->text()));
-
       if ( aMeshGroupSO )
       {
         if ( SMESH_Actor *anActor = SMESH::FindActorByEntry(aMeshGroupSO->GetID().c_str()))

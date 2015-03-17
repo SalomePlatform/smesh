@@ -332,6 +332,11 @@ void SMESHGUI_RemoveElementsDlg::onTextChange(const QString& theNewText)
         aViewWindow->highlight(anIO,true,true);
     }
   }
+  else
+  {
+    QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
+    myNbOkElements = aListId.count();
+  }
   
   myBusy = false;
   updateButtons();

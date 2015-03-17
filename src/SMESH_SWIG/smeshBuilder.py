@@ -161,6 +161,9 @@ SMESH.PointStruct.__init__ = __initPointStruct
 # Substitute AxisStruct.__init__() to create SMESH.AxisStruct using notebook variables.
 # Parameters are stored in AxisStruct.parameters attribute
 def __initAxisStruct(ax,*args):
+    if len( args ) != 6:
+        raise RuntimeError,\
+              "Bad nb args (%s) passed in SMESH.AxisStruct(x,y,z,dx,dy,dz)"%(len( args ))
     ax.x, ax.y, ax.z, ax.vx, ax.vy, ax.vz, ax.parameters,hasVars = ParseParameters(*args)
     pass
 SMESH.AxisStruct.__init__ = __initAxisStruct
@@ -3515,6 +3518,56 @@ class Mesh:
     def RenumberElements(self):
         self.editor.RenumberElements()
 
+    ## Private method converting \a arg into a list of SMESH_IdSource's
+    def _getIdSourceList(self, arg, idType, unRegister):
+        if arg and isinstance( arg, list ):
+            if isinstance( arg[0], int ):
+                arg = self.GetIDSource( arg, idType )
+                unRegister.set( arg )
+            elif isinstance( arg[0], Mesh ):
+                arg[0] = arg[0].GetMesh()
+        elif isinstance( arg, Mesh ):
+            arg = arg.GetMesh()
+        if arg and isinstance( arg, SMESH._objref_SMESH_IDSource ):
+            arg = [arg]
+        return arg
+
+    ## Generates new elements by rotation of the given elements and nodes around the axis
+    #  @param nodes - nodes to revolve: a list including ids, groups, sub-meshes or a mesh
+    #  @param edges - edges to revolve: a list including ids, groups, sub-meshes or a mesh
+    #  @param faces - faces to revolve: a list including ids, groups, sub-meshes or a mesh
+    #  @param Axis the axis of rotation: AxisStruct, line (geom object) or [x,y,z,dx,dy,dz]
+    #  @param AngleInRadians the angle of Rotation (in radians) or a name of variable
+    #         which defines angle in degrees
+    #  @param NbOfSteps the number of steps
+    #  @param Tolerance tolerance
+    #  @param MakeGroups forces the generation of new groups from existing ones
+    #  @param TotalAngle gives meaning of AngleInRadians: if True then it is an angular size
+    #                    of all steps, else - size of each step
+    #  @return the list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
+    #  @ingroup l2_modif_extrurev
+    def RotationSweepObjects(self, nodes, edges, faces, Axis, AngleInRadians, NbOfSteps, Tolerance,
+                             MakeGroups=False, TotalAngle=False):
+        unRegister = genObjUnRegister()
+        nodes = self._getIdSourceList( nodes, SMESH.NODE, unRegister )
+        edges = self._getIdSourceList( edges, SMESH.EDGE, unRegister )
+        faces = self._getIdSourceList( faces, SMESH.FACE, unRegister )
+
+        if isinstance( Axis, geomBuilder.GEOM._objref_GEOM_Object):
+            Axis = self.smeshpyD.GetDirStruct( Axis )
+        if isinstance( Axis, list ):
+            Axis = SMESH.AxisStruct( *Axis )
+
+        AngleInRadians,AngleParameters,hasVars = ParseAngles(AngleInRadians)
+        NbOfSteps,Tolerance,Parameters,hasVars = ParseParameters(NbOfSteps,Tolerance)
+        Parameters = Axis.parameters + var_separator + AngleParameters + var_separator + Parameters
+        self.mesh.SetParameters(Parameters)
+        if TotalAngle and NbOfSteps:
+            AngleInRadians /= NbOfSteps
+        return self.editor.RotationSweepObjects( nodes, edges, faces,
+                                                 Axis, AngleInRadians,
+                                                 NbOfSteps, Tolerance, MakeGroups)
+
     ## Generates new elements by rotation of the elements around the axis
     #  @param IDsOfElements the list of ids of elements to sweep
     #  @param Axis the axis of rotation, AxisStruct or line(geom object)
@@ -3528,9 +3581,15 @@ class Mesh:
     #  @ingroup l2_modif_extrurev
     def RotationSweep(self, IDsOfElements, Axis, AngleInRadians, NbOfSteps, Tolerance,
                       MakeGroups=False, TotalAngle=False):
+        unRegister = genObjUnRegister()
         if IDsOfElements == []:
-            IDsOfElements = self.GetElementsId()
-        if ( isinstance( Axis, geomBuilder.GEOM._objref_GEOM_Object)):
+            IDsOfElements = self.mesh
+        if IDsOfElements and \
+               isinstance( IDsOfElements, list ) and \
+               isinstance( IDsOfElements[0], int ):
+            IDsOfElements = self.GetIDSource( IDsOfElements, SMESH.ALL )
+            unRegister.set( IDsOfElements )
+        if isinstance( Axis, geomBuilder.GEOM._objref_GEOM_Object):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
         AngleInRadians,AngleParameters,hasVars = ParseAngles(AngleInRadians)
         NbOfSteps,Tolerance,Parameters,hasVars = ParseParameters(NbOfSteps,Tolerance)
@@ -3538,11 +3597,8 @@ class Mesh:
         self.mesh.SetParameters(Parameters)
         if TotalAngle and NbOfSteps:
             AngleInRadians /= NbOfSteps
-        if MakeGroups:
-            return self.editor.RotationSweepMakeGroups(IDsOfElements, Axis,
-                                                       AngleInRadians, NbOfSteps, Tolerance)
-        self.editor.RotationSweep(IDsOfElements, Axis, AngleInRadians, NbOfSteps, Tolerance)
-        return []
+        return self.editor.RotationSweepObjects([],[IDsOfElements],[IDsOfElements], Axis,
+                                                AngleInRadians, NbOfSteps, Tolerance, MakeGroups)
 
     ## Generates new elements by rotation of the elements of object around the axis
     #  @param theObject object which elements should be sweeped.
@@ -3558,9 +3614,9 @@ class Mesh:
     #  @ingroup l2_modif_extrurev
     def RotationSweepObject(self, theObject, Axis, AngleInRadians, NbOfSteps, Tolerance,
                             MakeGroups=False, TotalAngle=False):
-        if ( isinstance( theObject, Mesh )):
+        if isinstance( theObject, Mesh ):
             theObject = theObject.GetMesh()
-        if ( isinstance( Axis, geomBuilder.GEOM._objref_GEOM_Object)):
+        if isinstance( Axis, geomBuilder.GEOM._objref_GEOM_Object):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
         AngleInRadians,AngleParameters,hasVars = ParseAngles(AngleInRadians)
         NbOfSteps,Tolerance,Parameters,hasVars = ParseParameters(NbOfSteps,Tolerance)
@@ -3568,11 +3624,8 @@ class Mesh:
         self.mesh.SetParameters(Parameters)
         if TotalAngle and NbOfSteps:
             AngleInRadians /= NbOfSteps
-        if MakeGroups:
-            return self.editor.RotationSweepObjectMakeGroups(theObject, Axis, AngleInRadians,
-                                                             NbOfSteps, Tolerance)
-        self.editor.RotationSweepObject(theObject, Axis, AngleInRadians, NbOfSteps, Tolerance)
-        return []
+        return self.editor.RotationSweepObjects([],[theObject],[theObject], Axis,
+                                                AngleInRadians, NbOfSteps, Tolerance )
 
     ## Generates new elements by rotation of the elements of object around the axis
     #  @param theObject object which elements should be sweeped.
@@ -3588,9 +3641,9 @@ class Mesh:
     #  @ingroup l2_modif_extrurev
     def RotationSweepObject1D(self, theObject, Axis, AngleInRadians, NbOfSteps, Tolerance,
                               MakeGroups=False, TotalAngle=False):
-        if ( isinstance( theObject, Mesh )):
+        if isinstance( theObject, Mesh ):
             theObject = theObject.GetMesh()
-        if ( isinstance( Axis, geomBuilder.GEOM._objref_GEOM_Object)):
+        if isinstance( Axis, geomBuilder.GEOM._objref_GEOM_Object):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
         AngleInRadians,AngleParameters,hasVars = ParseAngles(AngleInRadians)
         NbOfSteps,Tolerance,Parameters,hasVars = ParseParameters(NbOfSteps,Tolerance)
@@ -3598,11 +3651,8 @@ class Mesh:
         self.mesh.SetParameters(Parameters)
         if TotalAngle and NbOfSteps:
             AngleInRadians /= NbOfSteps
-        if MakeGroups:
-            return self.editor.RotationSweepObject1DMakeGroups(theObject, Axis, AngleInRadians,
-                                                               NbOfSteps, Tolerance)
-        self.editor.RotationSweepObject1D(theObject, Axis, AngleInRadians, NbOfSteps, Tolerance)
-        return []
+        return self.editor.RotationSweepObjects([],[theObject],[], Axis,
+                                                AngleInRadians, NbOfSteps, Tolerance)
 
     ## Generates new elements by rotation of the elements of object around the axis
     #  @param theObject object which elements should be sweeped.
@@ -3618,9 +3668,9 @@ class Mesh:
     #  @ingroup l2_modif_extrurev
     def RotationSweepObject2D(self, theObject, Axis, AngleInRadians, NbOfSteps, Tolerance,
                               MakeGroups=False, TotalAngle=False):
-        if ( isinstance( theObject, Mesh )):
+        if isinstance( theObject, Mesh ):
             theObject = theObject.GetMesh()
-        if ( isinstance( Axis, geomBuilder.GEOM._objref_GEOM_Object)):
+        if isinstance( Axis, geomBuilder.GEOM._objref_GEOM_Object):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
         AngleInRadians,AngleParameters,hasVars = ParseAngles(AngleInRadians)
         NbOfSteps,Tolerance,Parameters,hasVars = ParseParameters(NbOfSteps,Tolerance)
@@ -3628,11 +3678,37 @@ class Mesh:
         self.mesh.SetParameters(Parameters)
         if TotalAngle and NbOfSteps:
             AngleInRadians /= NbOfSteps
-        if MakeGroups:
-            return self.editor.RotationSweepObject2DMakeGroups(theObject, Axis, AngleInRadians,
-                                                             NbOfSteps, Tolerance)
-        self.editor.RotationSweepObject2D(theObject, Axis, AngleInRadians, NbOfSteps, Tolerance)
-        return []
+        return self.editor.RotationSweepObjects([],[],[theObject], Axis, AngleInRadians,
+                                                NbOfSteps, Tolerance)
+
+    ## Generates new elements by extrusion of the given elements and nodes
+    #  @param nodes - nodes to extrude: a list including ids, groups, sub-meshes or a mesh
+    #  @param edges - edges to extrude: a list including ids, groups, sub-meshes or a mesh
+    #  @param faces - faces to extrude: a list including ids, groups, sub-meshes or a mesh
+    #  @param StepVector vector or DirStruct or 3 vector components, defining
+    #         the direction and value of extrusion for one step (the total extrusion
+    #         length will be NbOfSteps * ||StepVector||)
+    #  @param NbOfSteps the number of steps
+    #  @param MakeGroups forces the generation of new groups from existing ones
+    #  @return the list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
+    #  @ingroup l2_modif_extrurev
+    def ExtrusionSweepObjects(self, nodes, edges, faces, StepVector, NbOfSteps, MakeGroups=False):
+        unRegister = genObjUnRegister()
+        nodes = self._getIdSourceList( nodes, SMESH.NODE, unRegister )
+        edges = self._getIdSourceList( edges, SMESH.EDGE, unRegister )
+        faces = self._getIdSourceList( faces, SMESH.FACE, unRegister )
+
+        if isinstance( StepVector, geomBuilder.GEOM._objref_GEOM_Object):
+            StepVector = self.smeshpyD.GetDirStruct(StepVector)
+        if isinstance( StepVector, list ):
+            StepVector = self.smeshpyD.MakeDirStruct(*StepVector)
+
+        NbOfSteps,Parameters,hasVars = ParseParameters(NbOfSteps)
+        Parameters = StepVector.PS.parameters + var_separator + Parameters
+        self.mesh.SetParameters(Parameters)
+
+        return self.editor.ExtrusionSweepObjects( nodes, edges, faces, StepVector, NbOfSteps, MakeGroups)
+
 
     ## Generates new elements by extrusion of the elements with given ids
     #  @param IDsOfElements the list of elements ids for extrusion
@@ -3646,7 +3722,13 @@ class Mesh:
     #  @ingroup l2_modif_extrurev
     def ExtrusionSweep(self, IDsOfElements, StepVector, NbOfSteps, MakeGroups=False, IsNodes = False):
         if IDsOfElements == []:
-            IDsOfElements = self.GetElementsId()
+            IDsOfElements = self.mesh
+        unRegister = genObjUnRegister()
+        if IDsOfElements and \
+               isinstance( IDsOfElements, list ) and \
+               isinstance( IDsOfElements[0], int ):
+            IDsOfElements = self.GetIDSource( IDsOfElements, SMESH.ALL )
+            unRegister.set( IDsOfElements )
         if isinstance( StepVector, geomBuilder.GEOM._objref_GEOM_Object):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
         if isinstance( StepVector, list ):
@@ -3654,46 +3736,14 @@ class Mesh:
         NbOfSteps,Parameters,hasVars = ParseParameters(NbOfSteps)
         Parameters = StepVector.PS.parameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
-        if MakeGroups:
-            if(IsNodes):
-                return self.editor.ExtrusionSweepMakeGroups0D(IDsOfElements, StepVector, NbOfSteps)
-            else:
-                return self.editor.ExtrusionSweepMakeGroups(IDsOfElements, StepVector, NbOfSteps)
-        if(IsNodes):
-            self.editor.ExtrusionSweep0D(IDsOfElements, StepVector, NbOfSteps)
-        else:
-            self.editor.ExtrusionSweep(IDsOfElements, StepVector, NbOfSteps)
-        return []
-
-    ## Generates new elements by extrusion of the elements with given ids
-    #  @param IDsOfElements is ids of elements
-    #  @param StepVector vector or DirStruct or 3 vector components, defining
-    #         the direction and value of extrusion for one step (the total extrusion
-    #         length will be NbOfSteps * ||StepVector||)
-    #  @param NbOfSteps the number of steps
-    #  @param ExtrFlags sets flags for extrusion
-    #  @param SewTolerance uses for comparing locations of nodes if flag
-    #         EXTRUSION_FLAG_SEW is set
-    #  @param MakeGroups forces the generation of new groups from existing ones
-    #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
-    #  @ingroup l2_modif_extrurev
-    def AdvancedExtrusion(self, IDsOfElements, StepVector, NbOfSteps,
-                          ExtrFlags, SewTolerance, MakeGroups=False):
-        if ( isinstance( StepVector, geomBuilder.GEOM._objref_GEOM_Object)):
-            StepVector = self.smeshpyD.GetDirStruct(StepVector)
-        if isinstance( StepVector, list ):
-            StepVector = self.smeshpyD.MakeDirStruct(*StepVector)
-        if MakeGroups:
-            return self.editor.AdvancedExtrusionMakeGroups(IDsOfElements, StepVector, NbOfSteps,
-                                                           ExtrFlags, SewTolerance)
-        self.editor.AdvancedExtrusion(IDsOfElements, StepVector, NbOfSteps,
-                                      ExtrFlags, SewTolerance)
-        return []
+        n,e,f = [],[],[]
+        if IsNodes: n = [IDsOfElements]
+        else      : e,f, = [IDsOfElements],[IDsOfElements]
+        return self.editor.ExtrusionSweepObjects(n,e,f, StepVector, NbOfSteps, MakeGroups)
 
     ## Generates new elements by extrusion along the normal to a discretized surface or wire
-    #  @param Elements container of elements to extrude;
-    #         it can be Mesh, Group, Sub-mesh, Filter or list of IDs;
-    #         Only faces can be extruded so far. Sub-mesh sould be a sub-mesh on geom faces.
+    #  @param Elements elements to extrude - a list including ids, groups, sub-meshes or a mesh
+    #         Only faces can be extruded so far. Sub-mesh should be a sub-mesh on geom faces.
     #  @param StepSize length of one extrusion step (the total extrusion
     #         length will be \a NbOfSteps * \a StepSize ).
     #  @param NbOfSteps number of extrusion steps.
@@ -3715,14 +3765,15 @@ class Mesh:
                           ByAverageNormal=False, UseInputElemsOnly=True, MakeGroups=False, Dim = 2):
         unRegister = genObjUnRegister()
         if isinstance( Elements, Mesh ):
-            Elements = Elements.GetMesh()
+            Elements = [ Elements.GetMesh() ]
         if isinstance( Elements, list ):
             if not Elements:
-                raise RuntimeError, "List of element IDs is empty!"
-            if not isinstance( Elements[0], int ):
-                raise RuntimeError, "List must contain element IDs and not %s"% Elements[0]
-            Elements = self.GetIDSource( Elements, SMESH.ALL )
-            unRegister.set( Elements )
+                raise RuntimeError, "Elements empty!"
+            if isinstance( Elements[0], int ):
+                Elements = self.GetIDSource( Elements, SMESH.ALL )
+                unRegister.set( Elements )
+        else:
+            Elements = [ Elements ]
         StepSize,NbOfSteps,Parameters,hasVars = ParseParameters(StepSize,NbOfSteps)
         self.mesh.SetParameters(Parameters)
         return self.editor.ExtrusionByNormal(Elements, StepSize, NbOfSteps,
@@ -3736,29 +3787,23 @@ class Mesh:
     #         length will be NbOfSteps * ||StepVector||)
     #  @param NbOfSteps the number of steps
     #  @param MakeGroups forces the generation of new groups from existing ones
-    #  @param  IsNodes is True if elements which belong to the object are nodes
+    #  @param  IsNodes is True if elements to extrude are nodes
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     #  @ingroup l2_modif_extrurev
     def ExtrusionSweepObject(self, theObject, StepVector, NbOfSteps, MakeGroups=False, IsNodes=False):
-        if ( isinstance( theObject, Mesh )):
+        if isinstance( theObject, Mesh ):
             theObject = theObject.GetMesh()
-        if ( isinstance( StepVector, geomBuilder.GEOM._objref_GEOM_Object)):
+        if isinstance( StepVector, geomBuilder.GEOM._objref_GEOM_Object):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
         if isinstance( StepVector, list ):
             StepVector = self.smeshpyD.MakeDirStruct(*StepVector)
         NbOfSteps,Parameters,hasVars = ParseParameters(NbOfSteps)
         Parameters = StepVector.PS.parameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
-        if MakeGroups:
-            if(IsNodes):
-                return self.editor.ExtrusionSweepObject0DMakeGroups(theObject, StepVector, NbOfSteps)
-            else:
-                return self.editor.ExtrusionSweepObjectMakeGroups(theObject, StepVector, NbOfSteps)
-        if(IsNodes):
-            self.editor.ExtrusionSweepObject0D(theObject, StepVector, NbOfSteps)
-        else:
-            self.editor.ExtrusionSweepObject(theObject, StepVector, NbOfSteps)
-        return []
+        n,e,f = [],[],[]
+        if IsNodes: n    = [theObject]
+        else      : e,f, = [theObject],[theObject]
+        return self.editor.ExtrusionSweepObjects(n,e,f, StepVector, NbOfSteps, MakeGroups)
 
     ## Generates new elements by extrusion of the elements which belong to the object
     #  @param theObject object which elements should be processed.
@@ -3780,10 +3825,8 @@ class Mesh:
         NbOfSteps,Parameters,hasVars = ParseParameters(NbOfSteps)
         Parameters = StepVector.PS.parameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
-        if MakeGroups:
-            return self.editor.ExtrusionSweepObject1DMakeGroups(theObject, StepVector, NbOfSteps)
-        self.editor.ExtrusionSweepObject1D(theObject, StepVector, NbOfSteps)
-        return []
+        return self.editor.ExtrusionSweepObjects([],[theObject],[],
+                                                 StepVector, NbOfSteps, MakeGroups)
 
     ## Generates new elements by extrusion of the elements which belong to the object
     #  @param theObject object which elements should be processed.
@@ -3805,12 +3848,72 @@ class Mesh:
         NbOfSteps,Parameters,hasVars = ParseParameters(NbOfSteps)
         Parameters = StepVector.PS.parameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
-        if MakeGroups:
-            return self.editor.ExtrusionSweepObject2DMakeGroups(theObject, StepVector, NbOfSteps)
-        self.editor.ExtrusionSweepObject2D(theObject, StepVector, NbOfSteps)
-        return []
+        return self.editor.ExtrusionSweepObjects([],[],[theObject],
+                                                 StepVector, NbOfSteps, MakeGroups)
 
+    ## Generates new elements by extrusion of the elements with given ids
+    #  @param IDsOfElements is ids of elements
+    #  @param StepVector vector or DirStruct or 3 vector components, defining
+    #         the direction and value of extrusion for one step (the total extrusion
+    #         length will be NbOfSteps * ||StepVector||)
+    #  @param NbOfSteps the number of steps
+    #  @param ExtrFlags sets flags for extrusion
+    #  @param SewTolerance uses for comparing locations of nodes if flag
+    #         EXTRUSION_FLAG_SEW is set
+    #  @param MakeGroups forces the generation of new groups from existing ones
+    #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
+    #  @ingroup l2_modif_extrurev
+    def AdvancedExtrusion(self, IDsOfElements, StepVector, NbOfSteps,
+                          ExtrFlags, SewTolerance, MakeGroups=False):
+        if isinstance( StepVector, geomBuilder.GEOM._objref_GEOM_Object):
+            StepVector = self.smeshpyD.GetDirStruct(StepVector)
+        if isinstance( StepVector, list ):
+            StepVector = self.smeshpyD.MakeDirStruct(*StepVector)
+        return self.editor.AdvancedExtrusion(IDsOfElements, StepVector, NbOfSteps,
+                                             ExtrFlags, SewTolerance, MakeGroups)
 
+    ## Generates new elements by extrusion of the given elements and nodes along the path.
+    #  The path of extrusion must be a meshed edge.
+    #  @param Nodes nodes to extrude: a list including ids, groups, sub-meshes or a mesh
+    #  @param Edges edges to extrude: a list including ids, groups, sub-meshes or a mesh
+    #  @param Faces faces to extrude: a list including ids, groups, sub-meshes or a mesh
+    #  @param PathMesh 1D mesh or 1D sub-mesh, along which proceeds the extrusion
+    #  @param PathShape shape (edge) defines the sub-mesh of PathMesh if PathMesh
+    #         contains not only path segments, else it can be None
+    #  @param NodeStart the first or the last node on the path. Defines the direction of extrusion
+    #  @param HasAngles allows the shape to be rotated around the path
+    #                   to get the resulting mesh in a helical fashion
+    #  @param Angles list of angles
+    #  @param HasRefPoint allows using the reference point
+    #  @param RefPoint the point around which the shape is rotated (the mass center of the
+    #         shape by default). The User can specify any point as the Reference Point.
+    #  @param MakeGroups forces the generation of new groups from existing ones
+    #  @param LinearVariation forces the computation of rotation angles as linear
+    #                         variation of the given Angles along path steps
+    #  @return list of created groups (SMESH_GroupBase) and SMESH::Extrusion_Error
+    #  @ingroup l2_modif_extrurev
+    def ExtrusionAlongPathObjects(self, Nodes, Edges, Faces, PathMesh, PathShape=None,
+                                  NodeStart=1, HasAngles=False, Angles=[],
+                                  HasRefPoint=False, RefPoint=[0,0,0],
+                                  MakeGroups=False, LinearVariation=False):
+        unRegister = genObjUnRegister()
+        Nodes = self._getIdSourceList( Nodes, SMESH.NODE, unRegister )
+        Edges = self._getIdSourceList( Edges, SMESH.EDGE, unRegister )
+        Faces = self._getIdSourceList( Faces, SMESH.FACE, unRegister )
+
+        if isinstance( RefPoint, geomBuilder.GEOM._objref_GEOM_Object):
+            RefPoint = self.smeshpyD.GetPointStruct(RefPoint)
+        if isinstance( RefPoint, list ):
+            RefPoint = SMESH.PointStruct( *RefPoint )
+        if isinstance( PathMesh, Mesh ):
+            PathMesh = PathMesh.GetMesh()
+        Angles,AnglesParameters,hasVars = ParseAngles(Angles)
+        Parameters = AnglesParameters + var_separator + RefPoint.parameters
+        self.mesh.SetParameters(Parameters)
+        return self.editor.ExtrusionAlongPathObjects(Nodes, Edges, Faces,
+                                                     PathMesh, PathShape, NodeStart,
+                                                     HasAngles, Angles, LinearVariation,
+                                                     HasRefPoint, RefPoint, MakeGroups)
 
     ## Generates new elements by extrusion of the given elements
     #  The path of extrusion must be a meshed edge.
@@ -3845,23 +3948,30 @@ class Mesh:
         Parameters = AnglesParameters + var_separator + RefPoint.parameters
         self.mesh.SetParameters(Parameters)
 
-        if (isinstance(Path, Mesh)): Path = Path.GetMesh()
+        if isinstance(Path, Mesh): Path = Path.GetMesh()
 
+        unRegister = genObjUnRegister()
         if isinstance(Base, list):
-            IDsOfElements = []
-            if Base == []: IDsOfElements = self.GetElementsId()
-            else: IDsOfElements = Base
-            return self.editor.ExtrusionAlongPathX(IDsOfElements, Path, NodeStart,
-                                                   HasAngles, Angles, LinearVariation,
-                                                   HasRefPoint, RefPoint, MakeGroups, ElemType)
-        else:
-            if isinstance(Base, Mesh): Base = Base.GetMesh()
-            if isinstance(Base, SMESH._objref_SMESH_Mesh) or isinstance(Base, SMESH._objref_SMESH_Group) or isinstance(Base, SMESH._objref_SMESH_subMesh):
-                return self.editor.ExtrusionAlongPathObjX(Base, Path, NodeStart,
-                                                          HasAngles, Angles, LinearVariation,
-                                                          HasRefPoint, RefPoint, MakeGroups, ElemType)
+            if Base:
+                Base = self.GetIDSource( Base, ElemType )
+                unRegister.set( Base )
             else:
-                raise RuntimeError, "Invalid Base for ExtrusionAlongPathX"
+                Base = self.mesh
+        else:
+            if isinstance(Base, Mesh):
+                Base = Base.GetMesh()
+        if isinstance(Base, SMESH._objref_SMESH_IDSource):
+            n,e,f = [],[],[]
+            if ElemType == SMESH.NODE: n = [Base]
+            if ElemType == SMESH.EDGE: e = [Base]
+            if ElemType == SMESH.FACE: f = [Base]
+            gr,er = self.editor.ExtrusionAlongPathObjects(n,e,f, Path, None, NodeStart,
+                                                          HasAngles, Angles, LinearVariation,
+                                                          HasRefPoint, RefPoint, MakeGroups)
+            if MakeGroups: return gr,er
+            return er
+        else:
+            raise RuntimeError, "Invalid Base for ExtrusionAlongPathX"
 
 
     ## Generates new elements by extrusion of the given elements
@@ -3887,28 +3997,26 @@ class Mesh:
                            MakeGroups=False, LinearVariation=False):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
-        if ( isinstance( RefPoint, geomBuilder.GEOM._objref_GEOM_Object)):
+        if isinstance( RefPoint, geomBuilder.GEOM._objref_GEOM_Object):
             RefPoint = self.smeshpyD.GetPointStruct(RefPoint)
             pass
-        if ( isinstance( PathMesh, Mesh )):
+        if isinstance( PathMesh, Mesh ):
             PathMesh = PathMesh.GetMesh()
         Angles,AnglesParameters,hasVars = ParseAngles(Angles)
         Parameters = AnglesParameters + var_separator + RefPoint.parameters
         self.mesh.SetParameters(Parameters)
-        if HasAngles and Angles and LinearVariation:
-            Angles = self.editor.LinearAnglesVariation( PathMesh, PathShape, Angles )
-            pass
-        if MakeGroups:
-            return self.editor.ExtrusionAlongPathMakeGroups(IDsOfElements, PathMesh,
-                                                            PathShape, NodeStart, HasAngles,
-                                                            Angles, HasRefPoint, RefPoint)
-        return self.editor.ExtrusionAlongPath(IDsOfElements, PathMesh, PathShape,
-                                              NodeStart, HasAngles, Angles, HasRefPoint, RefPoint)
+        n,e,f = [],[IDsOfElements],[IDsOfElements]
+        gr,er = self.editor.ExtrusionAlongPathObjects(n,e,f, PathMesh, PathShape,
+                                                      NodeStart, HasAngles, Angles,
+                                                      LinearVariation,
+                                                      HasRefPoint, RefPoint, MakeGroups)
+        if MakeGroups: return gr,er
+        return er
 
     ## Generates new elements by extrusion of the elements which belong to the object
     #  The path of extrusion must be a meshed edge.
     #  @param theObject the object which elements should be processed.
-    #                   It can be a mesh, a sub mesh or a group.
+    #                   It can be a mesh, a sub-mesh or a group.
     #  @param PathMesh mesh containing a 1D sub-mesh on the edge, along which the extrusion proceeds
     #  @param PathShape shape(edge) defines the sub-mesh for the path
     #  @param NodeStart the first or the last node on the edge. Defines the direction of extrusion
@@ -3927,25 +4035,21 @@ class Mesh:
     def ExtrusionAlongPathObject(self, theObject, PathMesh, PathShape, NodeStart,
                                  HasAngles, Angles, HasRefPoint, RefPoint,
                                  MakeGroups=False, LinearVariation=False):
-        if ( isinstance( theObject, Mesh )):
+        if isinstance( theObject, Mesh ):
             theObject = theObject.GetMesh()
-        if ( isinstance( RefPoint, geomBuilder.GEOM._objref_GEOM_Object)):
+        if isinstance( RefPoint, geomBuilder.GEOM._objref_GEOM_Object):
             RefPoint = self.smeshpyD.GetPointStruct(RefPoint)
-        if ( isinstance( PathMesh, Mesh )):
+        if isinstance( PathMesh, Mesh ):
             PathMesh = PathMesh.GetMesh()
         Angles,AnglesParameters,hasVars = ParseAngles(Angles)
         Parameters = AnglesParameters + var_separator + RefPoint.parameters
         self.mesh.SetParameters(Parameters)
-        if HasAngles and Angles and LinearVariation:
-            Angles = self.editor.LinearAnglesVariation( PathMesh, PathShape, Angles )
-            pass
-        if MakeGroups:
-            return self.editor.ExtrusionAlongPathObjectMakeGroups(theObject, PathMesh,
-                                                                  PathShape, NodeStart, HasAngles,
-                                                                  Angles, HasRefPoint, RefPoint)
-        return self.editor.ExtrusionAlongPathObject(theObject, PathMesh, PathShape,
-                                                    NodeStart, HasAngles, Angles, HasRefPoint,
-                                                    RefPoint)
+        n,e,f = [],[theObject],[theObject]
+        gr,er = self.editor.ExtrusionAlongPathObjects(n,e,f, PathMesh, PathShape, NodeStart,
+                                                      HasAngles, Angles, LinearVariation,
+                                                      HasRefPoint, RefPoint, MakeGroups)
+        if MakeGroups: return gr,er
+        return er
 
     ## Generates new elements by extrusion of the elements which belong to the object
     #  The path of extrusion must be a meshed edge.
@@ -3969,25 +4073,21 @@ class Mesh:
     def ExtrusionAlongPathObject1D(self, theObject, PathMesh, PathShape, NodeStart,
                                    HasAngles, Angles, HasRefPoint, RefPoint,
                                    MakeGroups=False, LinearVariation=False):
-        if ( isinstance( theObject, Mesh )):
+        if isinstance( theObject, Mesh ):
             theObject = theObject.GetMesh()
-        if ( isinstance( RefPoint, geomBuilder.GEOM._objref_GEOM_Object)):
+        if isinstance( RefPoint, geomBuilder.GEOM._objref_GEOM_Object):
             RefPoint = self.smeshpyD.GetPointStruct(RefPoint)
-        if ( isinstance( PathMesh, Mesh )):
+        if isinstance( PathMesh, Mesh ):
             PathMesh = PathMesh.GetMesh()
         Angles,AnglesParameters,hasVars = ParseAngles(Angles)
         Parameters = AnglesParameters + var_separator + RefPoint.parameters
         self.mesh.SetParameters(Parameters)
-        if HasAngles and Angles and LinearVariation:
-            Angles = self.editor.LinearAnglesVariation( PathMesh, PathShape, Angles )
-            pass
-        if MakeGroups:
-            return self.editor.ExtrusionAlongPathObject1DMakeGroups(theObject, PathMesh,
-                                                                    PathShape, NodeStart, HasAngles,
-                                                                    Angles, HasRefPoint, RefPoint)
-        return self.editor.ExtrusionAlongPathObject1D(theObject, PathMesh, PathShape,
-                                                      NodeStart, HasAngles, Angles, HasRefPoint,
-                                                      RefPoint)
+        n,e,f = [],[theObject],[]
+        gr,er = self.editor.ExtrusionAlongPathObjects(n,e,f, PathMesh, PathShape, NodeStart,
+                                                      HasAngles, Angles, LinearVariation,
+                                                      HasRefPoint, RefPoint, MakeGroups)
+        if MakeGroups: return gr,er
+        return er
 
     ## Generates new elements by extrusion of the elements which belong to the object
     #  The path of extrusion must be a meshed edge.
@@ -4020,16 +4120,12 @@ class Mesh:
         Angles,AnglesParameters,hasVars = ParseAngles(Angles)
         Parameters = AnglesParameters + var_separator + RefPoint.parameters
         self.mesh.SetParameters(Parameters)
-        if HasAngles and Angles and LinearVariation:
-            Angles = self.editor.LinearAnglesVariation( PathMesh, PathShape, Angles )
-            pass
-        if MakeGroups:
-            return self.editor.ExtrusionAlongPathObject2DMakeGroups(theObject, PathMesh,
-                                                                    PathShape, NodeStart, HasAngles,
-                                                                    Angles, HasRefPoint, RefPoint)
-        return self.editor.ExtrusionAlongPathObject2D(theObject, PathMesh, PathShape,
-                                                      NodeStart, HasAngles, Angles, HasRefPoint,
-                                                      RefPoint)
+        n,e,f = [],[],[theObject]
+        gr,er = self.editor.ExtrusionAlongPathObjects(n,e,f, PathMesh, PathShape, NodeStart,
+                                                      HasAngles, Angles, LinearVariation,
+                                                      HasRefPoint, RefPoint, MakeGroups)
+        if MakeGroups: return gr,er
+        return er
 
     ## Creates a symmetrical copy of mesh elements
     #  @param IDsOfElements list of elements ids
@@ -4360,7 +4456,9 @@ class Mesh:
         return self.editor.FindCoincidentNodesOnPartBut(SubMeshOrGroup, Tolerance,exceptNodes)
 
     ## Merges nodes
-    #  @param GroupsOfNodes a list of pairs of nodes IDs for merging (e.g. [[1,12],[25,4]])
+    #  @param GroupsOfNodes a list of pairs of nodes IDs for merging
+    #         (e.g. [[1,12],[25,4]], then nodes 12 and 4 will be removed and replaced
+    #         by nodes 1 and 25 correspondingly in all elements and groups
     #  @ingroup l2_modif_trsf
     def MergeNodes (self, GroupsOfNodes):
         self.editor.MergeNodes(GroupsOfNodes)
@@ -4369,13 +4467,17 @@ class Mesh:
     #  @param MeshOrSubMeshOrGroup Mesh or SubMesh, or Group of elements for searching
     #  @return the list of pairs of equal elements IDs (e.g. [[1,12],[25,4]])
     #  @ingroup l2_modif_trsf
-    def FindEqualElements (self, MeshOrSubMeshOrGroup):
-        if ( isinstance( MeshOrSubMeshOrGroup, Mesh )):
+    def FindEqualElements (self, MeshOrSubMeshOrGroup=None):
+        if not MeshOrSubMeshOrGroup:
+            MeshOrSubMeshOrGroup=self.mesh
+        elif isinstance( MeshOrSubMeshOrGroup, Mesh ):
             MeshOrSubMeshOrGroup = MeshOrSubMeshOrGroup.GetMesh()
-        return self.editor.FindEqualElements(MeshOrSubMeshOrGroup)
+        return self.editor.FindEqualElements( MeshOrSubMeshOrGroup )
 
     ## Merges elements in each given group.
-    #  @param GroupsOfElementsID a list of pairs of elements IDs for merging (e.g. [[1,12],[25,4]])
+    #  @param GroupsOfElementsID a list of pairs of elements IDs for merging
+    #        (e.g. [[1,12],[25,4]], then elements 12 and 4 will be removed and
+    #        replaced by elements 1 and 25 in all groups)
     #  @ingroup l2_modif_trsf
     def MergeElements(self, GroupsOfElementsID):
         self.editor.MergeElements(GroupsOfElementsID)

@@ -2413,6 +2413,7 @@ GetElementsId( SMESH_Mesh_ptr theMesh )
 {
   SMESH::long_array_var anArray = new SMESH::long_array;
   if(!CORBA::is_nil(theMesh) && myPredicate){
+    theMesh->Load();
     Controls::Filter::TIdSequence aSequence;
     GetElementsId(myPredicate,theMesh,aSequence);
     long i = 0, iEnd = aSequence.size();
