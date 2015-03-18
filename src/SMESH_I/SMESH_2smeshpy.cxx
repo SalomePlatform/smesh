@@ -2404,7 +2404,7 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       "ConvertToQuadratic","ConvertFromQuadratic","RenumberNodes","RenumberElements",
       "RotationSweep","RotationSweepObject","RotationSweepObject1D","RotationSweepObject2D",
       "ExtrusionSweep","AdvancedExtrusion","ExtrusionSweepObject","ExtrusionSweepObject1D",
-      "ExtrusionSweepObject2D","ExtrusionAlongPath","ExtrusionAlongPathObject",
+      "ExtrusionByNormal", "ExtrusionSweepObject2D","ExtrusionAlongPath","ExtrusionAlongPathObject",
       "ExtrusionAlongPathX","ExtrusionAlongPathObject1D","ExtrusionAlongPathObject2D",
       "ExtrusionSweepObjects","RotationSweepObjects","ExtrusionAlongPathObjects",
       "Mirror","MirrorObject","Translate","TranslateObject","Rotate","RotateObject",

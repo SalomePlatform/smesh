@@ -1097,7 +1097,7 @@ void SMESH_Mesh_i::RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup 
     while ( nIt->more() )
       nodeIds.push_back( nIt->next()->GetID() );
 
-    _impl->GetMeshDS()->RemoveElement( elemIt->next() );
+    _impl->GetMeshDS()->RemoveElement( e );
   }
 
   // Remove free nodes

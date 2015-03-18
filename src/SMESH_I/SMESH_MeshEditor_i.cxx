@@ -2607,6 +2607,7 @@ SMESH_MeshEditor_i::ExtrusionByNormal(const SMESH::ListOfIDSources& objects,
                 << ", " << TVar( stepSize )
                 << ", " << TVar( nbOfSteps )
                 << ", " << byAverageNormal
+                << ", " << useInputElemsOnly
                 << ", " << makeGroups
                 << ", " << dim
                 << " )";
