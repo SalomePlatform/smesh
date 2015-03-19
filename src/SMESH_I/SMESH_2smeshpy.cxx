@@ -2102,8 +2102,8 @@ bool _pyMesh::NeedMeshAccess( const Handle(_pyCommand)& theCommand )
   if ( sameMethods.empty() ) {
     const char * names[] =
       { "ExportDAT","ExportUNV","ExportSTL","ExportSAUV", "RemoveGroup","RemoveGroupWithContents",
-        "GetGroups","UnionGroups","IntersectGroups","CutGroups","GetLog","GetId","ClearLog",
-        "GetStudyId","HasDuplicatedGroupNamesMED","GetMEDMesh","NbNodes","NbElements",
+        "GetGroups","UnionGroups","IntersectGroups","CutGroups","CreateDimGroup","GetLog","GetId",
+        "ClearLog","GetStudyId","HasDuplicatedGroupNamesMED","GetMEDMesh","NbNodes","NbElements",
         "NbEdges","NbEdgesOfOrder","NbFaces","NbFacesOfOrder","NbTriangles",
         "NbTrianglesOfOrder","NbQuadrangles","NbQuadranglesOfOrder","NbPolygons","NbVolumes",
         "NbVolumesOfOrder","NbTetras","NbTetrasOfOrder","NbHexas","NbHexasOfOrder",

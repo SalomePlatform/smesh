@@ -39,6 +39,11 @@ module SMESH
   interface SMESH_MeshEditor
   {
    /*!
+    * Returns a mesh subject to edition
+    */
+    SMESH_Mesh GetMesh();
+
+   /*!
     * Return data of mesh edition preview which is computed provided
     * that the editor was obtained through SMESH_Mesh::GetMeshEditPreviewer()
     */

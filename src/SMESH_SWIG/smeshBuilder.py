@@ -1247,7 +1247,6 @@ class Mesh:
         for attrName in dir(self):
             attr = getattr( self, attrName )
             if isinstance( attr, algoCreator ):
-                #print "algoCreator ", attrName
                 setattr( self, attrName, attr.copy( self ))
                 pass
             pass
@@ -4734,6 +4733,22 @@ class Mesh:
         return None
 
     pass # end of Mesh class
+
+## class used to add to SMESH_MeshEditor methods removed from its CORBA API
+#
+class meshEditor(SMESH._objref_SMESH_MeshEditor):
+    def __init__(self):
+        self.mesh = None
+    def __getattr__(self, name ): # method called if an attribute not found
+        if not self.mesh:
+            self.mesh = Mesh( None, None, SMESH._objref_SMESH_MeshEditor.GetMesh(self))
+        if hasattr( self.mesh, name ):
+            return getattr( self.mesh, name )
+        if name == "ExtrusionAlongPathObjX":
+            return getattr( self.mesh, "ExtrusionAlongPathX" )
+        return None
+    pass
+omniORB.registerObjref(SMESH._objref_SMESH_MeshEditor._NP_RepositoryId, meshEditor)
 
 ## Helper class for wrapping of SMESH.SMESH_Pattern CORBA class
 #

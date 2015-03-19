@@ -57,6 +57,8 @@ public:
    */
   int GetMeshId() const { return myMesh->GetId(); }
 
+  SMESH::SMESH_Mesh_ptr GetMesh();
+
   // --- CORBA
 
   /*!
