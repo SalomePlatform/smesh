@@ -2458,8 +2458,8 @@ namespace MeshEditor_I
     ExtrusionParams(CORBA::Double  theStepSize,
                     CORBA::Long    theNbOfSteps,
                     CORBA::Short   theDim,
-                    CORBA::Boolean theUseInputElemsOnly,
                     CORBA::Boolean theByAverageNormal,
+                    CORBA::Boolean theUseInputElemsOnly,
                     CORBA::Boolean theMakeGroups ):
       ::SMESH_MeshEditor::ExtrusParam ( theStepSize, 
                                         theNbOfSteps,

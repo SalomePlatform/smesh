@@ -4738,14 +4738,16 @@ class Mesh:
 #
 class meshEditor(SMESH._objref_SMESH_MeshEditor):
     def __init__(self):
+        SMESH._objref_SMESH_MeshEditor.__init__(self)
         self.mesh = None
     def __getattr__(self, name ): # method called if an attribute not found
-        if not self.mesh:
+        if not self.mesh:         # look for name() method in Mesh class
             self.mesh = Mesh( None, None, SMESH._objref_SMESH_MeshEditor.GetMesh(self))
         if hasattr( self.mesh, name ):
             return getattr( self.mesh, name )
         if name == "ExtrusionAlongPathObjX":
             return getattr( self.mesh, "ExtrusionAlongPathX" )
+        print name, "NOT FOUND"
         return None
     pass
 omniORB.registerObjref(SMESH._objref_SMESH_MeshEditor._NP_RepositoryId, meshEditor)
