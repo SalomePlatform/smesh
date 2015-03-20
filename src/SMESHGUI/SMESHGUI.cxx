@@ -3766,7 +3766,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   // ----- create actions --------------
 
   //createSMESHAction(  SMESHOp::OpImportDAT, "IMPORT_DAT", "", (Qt::CTRL+Qt::Key_B) );
-  createSMESHAction( SMESHOp::OpImportUNV, "IMPORT_UNV", "", (Qt::CTRL+Qt::Key_U) );
+  createSMESHAction( SMESHOp::OpImportUNV, "IMPORT_UNV", "", (Qt::CTRL+Qt::Key_I) );
   createSMESHAction( SMESHOp::OpImportMED, "IMPORT_MED", "", (Qt::CTRL+Qt::Key_M) );
   //createSMESHAction(  114, "NUM" );
   createSMESHAction( SMESHOp::OpImportSTL, "IMPORT_STL"  );
@@ -4735,10 +4735,6 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
   // end of SMESH plugins loading
 
   // Reset actions accelerator keys
-  //action(SMESHOp::OpImportDAT)->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_B));
-  action(SMESHOp::OpImportUNV)->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_U));
-  action(SMESHOp::OpImportMED)->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_M));
-
   action(SMESHOp::OpDelete)->setEnabled(true); // Delete: Key_Delete
 
   //  0020210. Make SMESH_Gen update meshes at switching GEOM->SMESH
@@ -4770,10 +4766,6 @@ bool SMESHGUI::deactivateModule( SUIT_Study* study )
   EmitSignalCloseAllDialogs();
 
   // Unset actions accelerator keys
-  //action(SMESHOp::OpImportDAT)->setShortcut(QKeySequence());
-  action(SMESHOp::OpImportUNV)->setShortcut(QKeySequence());
-  action(SMESHOp::OpImportMED)->setShortcut(QKeySequence());
-
   action(SMESHOp::OpDelete)->setEnabled(false); // Delete: Key_Delete
 
   return SalomeApp_Module::deactivateModule( study );
