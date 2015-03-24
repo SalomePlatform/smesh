@@ -756,7 +756,8 @@ void BelongToGeom_i::SetGeom( const TopoDS_Shape& theShape )
   myBelongToGeomPtr->SetGeom( theShape );
 }
 
-void BelongToGeom_i::SetElementType(ElementType theType){
+void BelongToGeom_i::SetElementType(ElementType theType)
+{
   myBelongToGeomPtr->SetType(SMDSAbs_ElementType(theType));
   TPythonDump()<<this<<".SetElementType("<<theType<<")";
 }
@@ -777,17 +778,24 @@ void BelongToGeom_i::SetShapeName( const char* theName )
 void BelongToGeom_i::SetShape( const char* theID, const char* theName )
 {
   delete myShapeName;
-  myShapeName = strdup( theName );
   delete myShapeID;
-  if ( theID )
-    myShapeID = strdup( theID );
-  else
-    myShapeID = 0;
+  myShapeName = strdup( theName );
+  myShapeID   = strdup( theID );
+  bool hasName = ( theName && theName[0] );
+  bool hasID   = ( theID   && theID[0] );
 
-  if ( myShapeID && myShapeName == getShapeNameByID(myShapeID))
-    myBelongToGeomPtr->SetGeom( getShapeByID(myShapeID) );
+  TopoDS_Shape S;
+  if ( hasName && hasID )
+  {
+    S = getShapeByID( myShapeID );
+    if ( S.IsNull() )
+      S = getShapeByName( myShapeName );
+  }
   else
-    myBelongToGeomPtr->SetGeom( getShapeByName( myShapeName ) );
+  {
+    S = hasID ? getShapeByID( myShapeID ) : getShapeByName( myShapeName );
+  }
+  myBelongToGeomPtr->SetGeom( S );
 }
 
 char* BelongToGeom_i::GetShapeName()
@@ -862,17 +870,24 @@ void BelongToSurface_i::SetShapeName( const char* theName, ElementType theType )
 void BelongToSurface_i::SetShape( const char* theID,  const char* theName, ElementType theType )
 {
   delete myShapeName;
-  myShapeName = strdup( theName );
   delete myShapeID;
-  if ( theID )
-    myShapeID = strdup( theID );
+  myShapeName = strdup( theName );
+  myShapeID   = strdup( theID );
+  bool hasName = ( theName && theName[0] );
+  bool hasID   = ( theID   && theID[0] );
+
+  TopoDS_Shape S;
+  if ( hasName && hasID )
+  {
+    S = getShapeByID( myShapeID );
+    if ( S.IsNull() )
+      S = getShapeByName( myShapeName );
+  }
   else
-    myShapeID = 0;
-  
-  if ( myShapeID && myShapeName == getShapeNameByID(myShapeID))
-    myElementsOnSurfacePtr->SetSurface( getShapeByID(myShapeID), (SMDSAbs_ElementType)theType );
-  else
-    myElementsOnSurfacePtr->SetSurface( getShapeByName( myShapeName ), (SMDSAbs_ElementType)theType );
+  {
+    S = hasID ? getShapeByID( myShapeID ) : getShapeByName( myShapeName );
+  }
+  myElementsOnSurfacePtr->SetSurface( S, (SMDSAbs_ElementType)theType );
 }
 
 char* BelongToSurface_i::GetShapeName()
@@ -1032,17 +1047,24 @@ void LyingOnGeom_i::SetShapeName( const char* theName )
 void LyingOnGeom_i::SetShape( const char* theID, const char* theName )
 {
   delete myShapeName;
-  myShapeName = strdup( theName );
   delete myShapeID;
-  if ( theID )
-    myShapeID = strdup( theID );
+  myShapeName = strdup( theName );
+  myShapeID   = strdup( theID );
+  bool hasName = ( theName && theName[0] );
+  bool hasID   = ( theID   && theID[0] );
+
+  TopoDS_Shape S;
+  if ( hasName && hasID )
+  {
+    S = getShapeByID( myShapeID );
+    if ( S.IsNull() )
+      S = getShapeByName( myShapeName );
+  }
   else
-    myShapeID = 0;
-  
-  if ( myShapeID && myShapeName == getShapeNameByID(myShapeID))
-    myLyingOnGeomPtr->SetGeom( getShapeByID(myShapeID) );
-  else
-    myLyingOnGeomPtr->SetGeom( getShapeByName( myShapeName ) );
+  {
+    S = hasID ? getShapeByID( myShapeID ) : getShapeByName( myShapeName );
+  }
+  myLyingOnGeomPtr->SetGeom( S );
 }
 
 char* LyingOnGeom_i::GetShapeName()
