@@ -1,6 +1,6 @@
 /*!
 
-\page using_operations_on_groups_page Using operations on groups
+\page using_operations_on_groups_page Boolean operations on groups
 
 \n In MESH you can perform some Boolean operations on groups, which
 belong to one and the same mesh.

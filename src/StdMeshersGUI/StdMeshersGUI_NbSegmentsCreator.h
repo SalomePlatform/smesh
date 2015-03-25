@@ -96,6 +96,7 @@ private:
   QGroupBox*       myReversedEdgesBox;
 
   StdMeshersGUI_SubShapeSelectorWdg*    myDirectionWidget;
+  QWidget*                              myReversedEdgesHelper;
 };
 
 #endif // STDMESHERSGUI_NBSEGMENTSCREATOR_H

@@ -730,6 +730,17 @@ void SMESHGUI_GroupDlg::updateButtons()
     }
   }
 
+  bool meshHasGeom = ( myMesh->_is_nil() || myMesh->HasShapeToMesh() );
+  if ( myGrpTypeId != 1 )
+  {
+    myGrpTypeGroup->button(1)->setEnabled( meshHasGeom );
+  }
+  else
+  {
+    myGeomGroupBtn->setEnabled( meshHasGeom );
+    myGeomGroupLine->setEnabled( meshHasGeom );
+  }
+
   myOKBtn->setEnabled(enable);
   myApplyBtn->setEnabled(enable);
 }

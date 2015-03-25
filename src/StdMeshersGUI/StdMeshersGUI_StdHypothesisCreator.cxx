@@ -37,9 +37,10 @@
 #include "StdMeshersGUI_FixedPointsParamWdg.h"
 #include "StdMeshersGUI_LayerDistributionParamWdg.h"
 #include "StdMeshersGUI_ObjectReferenceParamWdg.h"
+#include "StdMeshersGUI_PropagationHelperWdg.h"
 #include "StdMeshersGUI_QuadrangleParamWdg.h"
-#include "StdMeshersGUI_SubShapeSelectorWdg.h"
 #include "StdMeshersGUI_RadioButtonsGrpWdg.h"
+#include "StdMeshersGUI_SubShapeSelectorWdg.h"
 
 #include <SALOMEDSClient_Study.hxx>
 
@@ -77,7 +78,7 @@ const double VALUE_MAX = 1.0e+15, // COORD_MAX
 //================================================================================
 
 StdMeshersGUI_StdHypothesisCreator::StdMeshersGUI_StdHypothesisCreator( const QString& type )
-: SMESHGUI_GenericHypothesisCreator( type )
+  : SMESHGUI_GenericHypothesisCreator( type ), myHelperWidget( 0 )
 {
 }
 
@@ -883,18 +884,7 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     item.myName = tr( "SMESH_REVERSED_EDGES" );
     p.append( item );
 
-    StdMeshersGUI_SubShapeSelectorWdg* aDirectionWidget =
-      new StdMeshersGUI_SubShapeSelectorWdg();
-    QString aGeomEntry = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
-    QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
-    if ( aGeomEntry == "" )
-      aGeomEntry = h->GetObjectEntry();
-
-    aDirectionWidget->SetGeomShapeEntry( aGeomEntry );
-    aDirectionWidget->SetMainShapeEntry( aMainEntry );
-    aDirectionWidget->SetListOfIDs( h->GetReversedEdges() );
-    aDirectionWidget->showPreview( true );
-    customWidgets()->append ( aDirectionWidget );
+    customWidgets()->append ( makeReverseEdgesWdg( h->GetReversedEdges(), h->GetObjectEntry() ));
   }
 
   else if( hypType()=="GeometricProgression" )
@@ -919,18 +909,7 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     item.myName = tr( "SMESH_REVERSED_EDGES" );
     p.append( item );
 
-    StdMeshersGUI_SubShapeSelectorWdg* aDirectionWidget =
-      new StdMeshersGUI_SubShapeSelectorWdg();
-    QString aGeomEntry = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
-    QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
-    if ( aGeomEntry == "" )
-      aGeomEntry = h->GetObjectEntry();
-
-    aDirectionWidget->SetGeomShapeEntry( aGeomEntry );
-    aDirectionWidget->SetMainShapeEntry( aMainEntry );
-    aDirectionWidget->SetListOfIDs( h->GetReversedEdges() );
-    aDirectionWidget->showPreview( true );
-    customWidgets()->append ( aDirectionWidget );
+    customWidgets()->append ( makeReverseEdgesWdg( h->GetReversedEdges(), h->GetObjectEntry() ));
   }
 
   else if( hypType()=="FixedPoints1D" )
@@ -953,17 +932,7 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     item.myName = tr( "SMESH_REVERSED_EDGES" );
     p.append( item );
 
-    StdMeshersGUI_SubShapeSelectorWdg* aDirectionWidget =
-      new StdMeshersGUI_SubShapeSelectorWdg();
-    QString anEntry = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
-    QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
-    if ( anEntry == "" )
-      anEntry = h->GetObjectEntry();
-    aDirectionWidget->SetGeomShapeEntry( anEntry );
-    aDirectionWidget->SetMainShapeEntry( aMainEntry );
-    aDirectionWidget->SetListOfIDs( h->GetReversedEdges() );
-    aDirectionWidget->showPreview( true );
-    customWidgets()->append ( aDirectionWidget );
+    customWidgets()->append ( makeReverseEdgesWdg( h->GetReversedEdges(), h->GetObjectEntry() ));
   }
 
 
@@ -976,7 +945,7 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     if(!initVariableName( hyp, item, "SetMaxElementArea" ))
       item.myValue = h->GetMaxElementArea();
     p.append( item );
-    
+
   }
   else if( hypType()=="MaxElementVolume" )
   {
@@ -995,13 +964,13 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
 
     item.myName = tr( "SMESH_START_LENGTH_PARAM" );
 
-    if(!initVariableName( hyp, item, "SetStartLength" )) 
+    if(!initVariableName( hyp, item, "SetStartLength" ))
       item.myValue = h->GetLength( true );
     p.append( item );
     customWidgets()->append(0);
 
     item.myName = tr( "SMESH_END_LENGTH_PARAM" );
-    if(!initVariableName( hyp, item, "SetEndLength" )) 
+    if(!initVariableName( hyp, item, "SetEndLength" ))
       item.myValue = h->GetLength( false );
     p.append( item );
     customWidgets()->append(0);
@@ -1009,17 +978,7 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     item.myName = tr( "SMESH_REVERSED_EDGES" );
     p.append( item );
 
-    StdMeshersGUI_SubShapeSelectorWdg* aDirectionWidget =
-      new StdMeshersGUI_SubShapeSelectorWdg();
-    QString anEntry = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
-    QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
-    if ( anEntry == "" )
-      anEntry = h->GetObjectEntry();
-    aDirectionWidget->SetGeomShapeEntry( anEntry );
-    aDirectionWidget->SetMainShapeEntry( aMainEntry );
-    aDirectionWidget->SetListOfIDs( h->GetReversedEdges() );
-    aDirectionWidget->showPreview( true );
-    customWidgets()->append ( aDirectionWidget );
+    customWidgets()->append ( makeReverseEdgesWdg( h->GetReversedEdges(), h->GetObjectEntry() ));
   }
   else if( hypType()=="Deflection1D" )
   {
@@ -1027,7 +986,7 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       StdMeshers::StdMeshers_Deflection1D::_narrow( hyp );
 
     item.myName = tr( "SMESH_DEFLECTION1D_PARAM" );
-    if(!initVariableName( hyp, item, "SetDeflection" )) 
+    if(!initVariableName( hyp, item, "SetDeflection" ))
       item.myValue = h->GetDeflection();
     p.append( item );
   }
@@ -1037,17 +996,17 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       StdMeshers::StdMeshers_Adaptive1D::_narrow( hyp );
 
     item.myName = tr( "SMESH_MIN_SIZE" );
-    if(!initVariableName( hyp, item, "SetMinSize" )) 
+    if(!initVariableName( hyp, item, "SetMinSize" ))
       item.myValue = h->GetMinSize();
     p.append( item );
 
     item.myName = tr( "SMESH_MAX_SIZE" );
-    if(!initVariableName( hyp, item, "SetMaxSize" )) 
+    if(!initVariableName( hyp, item, "SetMaxSize" ))
       item.myValue = h->GetMaxSize();
     p.append( item );
 
     item.myName = tr( "SMESH_DEFLECTION1D_PARAM" );
-    if(!initVariableName( hyp, item, "SetDeflection" )) 
+    if(!initVariableName( hyp, item, "SetDeflection" ))
       item.myValue = h->GetDeflection();
     p.append( item );
   }
@@ -1279,11 +1238,10 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       StdMeshersGUI_SubShapeSelectorWdg* idsWg =
         new StdMeshersGUI_SubShapeSelectorWdg(0,TopAbs_FACE);
 
-      idsWg->SetMainShapeEntry( aMainEntry );
-      idsWg->SetGeomShapeEntry( aSubEntry.isEmpty() ? aMainEntry : aSubEntry );
+      idsWg->SetGeomShapeEntry( aSubEntry, aMainEntry );
       if ( idsWg->SetListOfIDs( h->GetFaces() ))
       {
-        idsWg->showPreview( true );
+        idsWg->ShowPreview( true );
       }
       else
       {
@@ -1338,11 +1296,10 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       StdMeshersGUI_SubShapeSelectorWdg* idsWg =
         new StdMeshersGUI_SubShapeSelectorWdg(0,TopAbs_EDGE);
 
-      idsWg->SetMainShapeEntry( aMainEntry );
-      idsWg->SetGeomShapeEntry( aSubEntry.isEmpty() ? aMainEntry : aSubEntry );
+      idsWg->SetGeomShapeEntry( aSubEntry, aMainEntry );
       if ( idsWg->SetListOfIDs( h->GetEdges() ))
       {
-        idsWg->showPreview( true );
+        idsWg->ShowPreview( true );
       }
       else
       {
@@ -1352,46 +1309,6 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       customWidgets()->append ( idsWg );
     }
   }
-  // else if (hypType() == "QuadrangleParams")
-  // {
-  //   StdMeshers::StdMeshers_QuadrangleParams_var h =
-  //     StdMeshers::StdMeshers_QuadrangleParams::_narrow(hyp);
-
-  //   item.myName = tr("SMESH_BASE_VERTEX");
-  //   p.append(item);
-
-  //   StdMeshersGUI_SubShapeSelectorWdg* aDirectionWidget =
-  //     new StdMeshersGUI_SubShapeSelectorWdg(0, TopAbs_VERTEX);
-  //   aDirectionWidget->SetMaxSize(1);
-  //   QString anEntry = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
-  //   QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
-  //   if (anEntry == "")
-  //     anEntry = h->GetObjectEntry();
-  //   aDirectionWidget->SetGeomShapeEntry(anEntry);
-  //   aDirectionWidget->SetMainShapeEntry(aMainEntry);
-  //   if (!isCreation()) {
-  //     SMESH::long_array_var aVec = new SMESH::long_array;
-  //     int vertID = h->GetTriaVertex();
-  //     if (vertID > 0) {
-  //       aVec->length(1);
-  //       aVec[0] = vertID;
-  //       aDirectionWidget->SetListOfIDs(aVec);
-  //     }
-  //   }
-  //   aDirectionWidget->showPreview(true);
-
-  //   item.myName = tr("SMESH_QUAD_TYPE");
-  //   p.append(item);
-
-  //   StdMeshersGUI_QuadrangleParamWdg* aTypeWidget =
-  //     new StdMeshersGUI_QuadrangleParamWdg();
-  //   if (!isCreation()) {
-  //     aTypeWidget->SetType(int(h->GetQuadType()));
-  //   }
-
-  //   customWidgets()->append(aDirectionWidget);
-  //   customWidgets()->append(aTypeWidget);
-  // }
   else
     res = false;
   return res;
@@ -1727,4 +1644,35 @@ bool StdMeshersGUI_StdHypothesisCreator::initVariableName(SMESH::SMESH_Hypothesi
     theParams.myValue = aVaribaleName;
 
   return theParams.isVariable;
+}
+
+//================================================================================
+/*!
+ * \brief Creates two widgets used to define reversed edges for some 1D hypotheses
+ *  \param [in] edgeIDs - ids of reversed edges to set to the widgets
+ *  \param [in] shapeEntry - entry of a sub-shape of a sub-mesh if any
+ *  \return QWidget* - new StdMeshersGUI_SubShapeSelectorWdg; 
+ *          new StdMeshersGUI_PropagationHelperWdg is stored in \a myHelperWidget field.
+ */
+//================================================================================
+
+QWidget*
+StdMeshersGUI_StdHypothesisCreator::makeReverseEdgesWdg( SMESH::long_array_var edgeIDs,
+                                                         CORBA::String_var     shapeEntry) const
+{
+  QString aGeomEntry = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
+  QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
+  if ( aGeomEntry.isEmpty() && shapeEntry.in() )
+    aGeomEntry = shapeEntry.in();
+
+  StdMeshersGUI_SubShapeSelectorWdg* wdg = new StdMeshersGUI_SubShapeSelectorWdg();
+  wdg->SetGeomShapeEntry( aGeomEntry, aMainEntry );
+  wdg->SetListOfIDs( edgeIDs );
+  wdg->ShowPreview( true );
+
+  if ( !aGeomEntry.isEmpty() || !aMainEntry.isEmpty() )
+    const_cast<StdMeshersGUI_StdHypothesisCreator*>( this )->
+      myHelperWidget = new StdMeshersGUI_PropagationHelperWdg( wdg );
+
+  return wdg;
 }

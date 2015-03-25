@@ -15,9 +15,10 @@ quadratic meshes.
 <ol>
 <li>Select a mesh or a sub-mesh in the Object Browser or in the
 Viewer.</li>
-<li>From the Modification menu choose <b> Convert to/from Quadratic
-Mesh item </b>, or click <em>"Convert to/from quadratic"</em> button in the
-toolbar.
+<li>From the Modification menu or from the contextual menu in the
+  Object Browser choose <b> Convert to/from Quadratic Mesh</b> item,
+  or click <em>"Convert to/from quadratic"</em> button in the
+  toolbar.
 
 <center>
 \image html image154.png
@@ -33,16 +34,14 @@ The following dialog box will appear:
 
 <ul>
 <li>If it is necessary to convert a linear mesh to quadratic or a quadratic
-  mesh to linear. **Convert to bi-quadratic** option does the same as
-  **Convert to quadratic** except for that TRIA7, QUAD9 and HEXA27
-  elements are created instead of TRIA6, QUAD8, and HEXA20 elements
-  respectively. Note that the choice is available only if the selected
-  mesh (or sub-mesh) contains both quadratic and linear elements, else the
-  direction of conversion is selected automatically.</li>
+  mesh to linear. **Convert to bi-quadratic** creates some types of quadratic
+  elements with additional central nodes: TRIA7, QUAD9 and HEXA27
+  elements instead of TRIA6, QUAD8, and HEXA20 elements
+  respectively.</li>
 <li>If it is necessary to place **medium nodes** of the quadratic mesh **on the
-  geometry** (meshed object). This option is relevant for conversion to
+  geometry** (meshed shape). This option is relevant for conversion to
   quadratic provided that the mesh is based on a geometry (not imported
-  from file).</li> 
+  from file).</li>
 </ul>
 
 \image html image156.gif

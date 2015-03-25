@@ -38,6 +38,8 @@ SET(SMESH_RESOURCES_FILES
   mesh_choose_all.png
   mesh_clear.png
   mesh_compute.png
+  mesh_evaluate.png
+  mesh_order.png
   mesh_diagonal.png
   mesh_edit.png
   mesh_hexa.png

@@ -65,8 +65,9 @@ SMESH_PreviewActorsCollection::~SMESH_PreviewActorsCollection()
 }
 
 bool SMESH_PreviewActorsCollection::Init( const TopoDS_Shape& theShape,
-                                          TopAbs_ShapeEnum theType,
-                                          const QString& theEntry )
+                                          const TopoDS_Shape& theMainShape,
+                                          TopAbs_ShapeEnum    theType,
+                                          const QString&      theEntry )
 {
   SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();
 
@@ -82,17 +83,17 @@ bool SMESH_PreviewActorsCollection::Init( const TopoDS_Shape& theShape,
   if ( theShape.IsNull() )
     return false;
 
-  Handle( SALOME_InteractiveObject ) anIO = new SALOME_InteractiveObject();
-  anIO->setEntry( theEntry.toLatin1().constData() );
+  // Handle( SALOME_InteractiveObject ) anIO = new SALOME_InteractiveObject();
+  // anIO->setEntry( theEntry.toLatin1().constData() );
   
   // get indexes of seleted elements
-  TopExp::MapShapes( theShape, myMapOfShapes );
+  TopExp::MapShapes( theMainShape, myMapOfShapes );
   TopExp_Explorer exp( theShape, theType );
   QSet<int> indices;
   for ( ; exp.More(); exp.Next() )
     indices << myMapOfShapes.FindIndex( exp.Current() );
   myIndices = indices.toList();
-  qSort(myIndices);
+  //qSort(myIndices);
 
   // show current chunk
   showCurrentChunk();
@@ -112,9 +113,28 @@ GEOM_Actor* SMESH_PreviewActorsCollection::GetActorByIndex(int index)
   return myMapOfActors.value( index );
 }
 
+bool SMESH_PreviewActorsCollection::IsValidIndex( int index )
+{
+  return 0 < index && index <= myMapOfShapes.Extent();
+}
+
 int SMESH_PreviewActorsCollection::GetIndexByShape( const TopoDS_Shape& theShape )
 {
   return myMapOfShapes.FindIndex( theShape );
+}
+
+TopoDS_Shape SMESH_PreviewActorsCollection::GetShapeByIndex( int index )
+{
+  return IsValidIndex( index ) ? myMapOfShapes.FindKey( index ) : TopoDS_Shape();
+}
+
+void SMESH_PreviewActorsCollection::SetIndices( const QList<int>& indices)
+{
+  if ( myIndices != indices )
+  {
+    myIndices = indices;
+    showCurrentChunk();
+  }
 }
 
 void SMESH_PreviewActorsCollection::AddToRender(vtkRenderer* theRenderer)
@@ -229,7 +249,8 @@ void SMESH_PreviewActorsCollection::showCurrentChunk()
       myMapOfActors.insert(index, anActor);
     }
   }
-  mySelector->ClearIObjects();
+  if ( mySelector )
+    mySelector->ClearIObjects();
   if ( myRenderer )
     AddToRender( myRenderer );
 }

@@ -24,6 +24,7 @@
 
 #include "SMESHGUI.h"
 #include "SMESHGUI_SpinBox.h"
+#include "SMESHGUI_Utils.h"
 #include "StdMeshersGUI_SubShapeSelectorWdg.h"
 
 #include <GEOMBase.h>
@@ -194,8 +195,7 @@ void StdMeshersGUI_QuadrangleParamCreator::retrieveParams() const
   QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
   if ( anEntry.isEmpty() )
     anEntry = h->GetObjectEntry();
-  myVertexSelWdg->SetGeomShapeEntry(anEntry);
-  myVertexSelWdg->SetMainShapeEntry(aMainEntry);
+  myVertexSelWdg->SetGeomShapeEntry(anEntry,aMainEntry);
 
   if ( !isCreation())
   {
@@ -407,7 +407,7 @@ void StdMeshersGUI_QuadrangleParamCreator::onSelectionChanged()
 
 void StdMeshersGUI_QuadrangleParamCreator::onTabChanged(int i)
 {
-  myVertexSelWdg->showPreview( i == TAB_VERTEX );
+  myVertexSelWdg->ShowPreview( i == TAB_VERTEX );
 }
 
 //================================================================================

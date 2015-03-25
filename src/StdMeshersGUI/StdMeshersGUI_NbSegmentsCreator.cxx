@@ -25,8 +25,9 @@
 // SMESH includes
 //
 #include "StdMeshersGUI_NbSegmentsCreator.h"
-#include "StdMeshersGUI_DistrTable.h"
 #include "StdMeshersGUI_DistrPreview.h"
+#include "StdMeshersGUI_DistrTable.h"
+#include "StdMeshersGUI_PropagationHelperWdg.h"
 #include "StdMeshersGUI_SubShapeSelectorWdg.h"
 
 #include <SMESHGUI.h>
@@ -214,15 +215,21 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
   QString aMainEntry = getMainShapeEntry();
   if ( aGeomEntry == "" )
     aGeomEntry = h->GetObjectEntry();
-  myDirectionWidget->SetGeomShapeEntry( aGeomEntry );
-  myDirectionWidget->SetMainShapeEntry( aMainEntry );
+  myDirectionWidget->SetGeomShapeEntry( aGeomEntry, aMainEntry );
   myDirectionWidget->SetListOfIDs( h->GetReversedEdges() );
   edgeLay->addWidget( myDirectionWidget );
 
   lay->addWidget( myReversedEdgesBox );
-  lay->setStretchFactor( GroupC1, 2);
+  lay->setStretchFactor( GroupC1, 1);
   lay->setStretchFactor( myReversedEdgesBox, 1);
-  
+
+  if ( !aGeomEntry.isEmpty() || !aMainEntry.isEmpty() )
+  {
+    myReversedEdgesHelper = new StdMeshersGUI_PropagationHelperWdg( myDirectionWidget, fr );
+    lay->addWidget( myReversedEdgesHelper );
+    lay->setStretchFactor( myReversedEdgesHelper, 1 );
+  }
+
   connect( myNbSeg, SIGNAL( valueChanged( const QString& ) ), this, SLOT( onValueChanged() ) );
   connect( myDistr, SIGNAL( activated( int ) ), this, SLOT( onValueChanged() ) );
   connect( myTable, SIGNAL( valueChanged( int, int ) ), this, SLOT( onValueChanged() ) );
@@ -432,7 +439,9 @@ void StdMeshersGUI_NbSegmentsCreator::onValueChanged()
   myScale->setShown( distr==1 );
   myLScale->setShown( distr==1 );
   myReversedEdgesBox->setShown( !distr==0 );
-  myDirectionWidget->showPreview( !distr==0 );
+  myDirectionWidget->ShowPreview( !distr==0 );
+  if ( myReversedEdgesHelper )
+    myReversedEdgesHelper->setShown( !distr==0 );
 
   bool isFunc = distr==2 || distr==3;
   myPreview->setShown( isFunc );

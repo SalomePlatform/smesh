@@ -3803,8 +3803,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpCopyMesh,             "COPY_MESH",               "ICON_COPY_MESH" );
   createSMESHAction( SMESHOp::OpCompute,              "COMPUTE",                 "ICON_COMPUTE" );
   createSMESHAction( SMESHOp::OpPreCompute,           "PRECOMPUTE",              "ICON_PRECOMPUTE" );
-  createSMESHAction( SMESHOp::OpEvaluate,             "EVALUATE",                "ICON_COMPUTE" );
-  createSMESHAction( SMESHOp::OpMeshOrder,            "MESH_ORDER",              "ICON_COMPUTE" );
+  createSMESHAction( SMESHOp::OpEvaluate,             "EVALUATE",                "ICON_EVALUATE" );
+  createSMESHAction( SMESHOp::OpMeshOrder,            "MESH_ORDER",              "ICON_MESH_ORDER");
   createSMESHAction( SMESHOp::OpCreateGroup,          "CREATE_GROUP",            "ICON_CREATE_GROUP" );
   createSMESHAction( SMESHOp::OpCreateGeometryGroup,  "CREATE_GEO_GROUP",        "ICON_CREATE_GEO_GROUP" );
   createSMESHAction( SMESHOp::OpConstructGroup,       "CONSTRUCT_GROUP",         "ICON_CONSTRUCT_GROUP" );

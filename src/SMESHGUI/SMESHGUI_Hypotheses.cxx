@@ -151,7 +151,7 @@ void SMESHGUI_GenericHypothesisCreator::editHypothesis( SMESH::SMESH_Hypothesis_
   }
   else {
     emit finished( QDialog::Accepted );
-        delete myDlg;
+    delete myDlg;
   }
 }
 
@@ -246,6 +246,12 @@ QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
       GroupC1Layout->addWidget( w, i, 1 );
       changeWidgets().append( w );
     }
+  }
+  if ( QWidget* w = getHelperWidget() )
+  {
+    w->setParent( fr );
+    w->move( QPoint( 0, 0 ) );
+    lay->addWidget( w );
   }
 
   return fr;
@@ -514,6 +520,17 @@ QWidget* SMESHGUI_GenericHypothesisCreator::getCustomWidget( const StdParam & /*
 {
   return 0;
 }
+//================================================================================
+/*!
+ * \brief Returns a widget representing not a hypothesis parameter but some helper widget
+ */
+//================================================================================
+
+QWidget* SMESHGUI_GenericHypothesisCreator::getHelperWidget() const
+{
+  return 0;
+}
+
 bool SMESHGUI_GenericHypothesisCreator::getParamFromCustomWidget( StdParam&, QWidget* ) const
 {
   return false;

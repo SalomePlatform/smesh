@@ -82,6 +82,7 @@ SET(_moc_HEADERS
   StdMeshersGUI_SubShapeSelectorWdg.h
   StdMeshersGUI_CartesianParamCreator.h
   StdMeshersGUI_RadioButtonsGrpWdg.h
+  StdMeshersGUI_PropagationHelperWdg.h
 )
 
 # header files / no moc processing
@@ -111,6 +112,7 @@ SET(_other_SOURCES
   StdMeshersGUI_SubShapeSelectorWdg.cxx
   StdMeshersGUI_CartesianParamCreator.cxx
   StdMeshersGUI_RadioButtonsGrpWdg.cxx
+  StdMeshersGUI_PropagationHelperWdg.cxx
 )
 
 # sources / to compile

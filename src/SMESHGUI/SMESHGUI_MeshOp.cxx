@@ -658,7 +658,7 @@ void SMESHGUI_MeshOp::selectionDone()
           {
             selectionMgr()->clearFilters();
             selectObject( pSubmesh );
-            SMESHGUI::GetSMESHGUI()->switchToOperation(704);
+            SMESHGUI::GetSMESHGUI()->switchToOperation( SMESHOp::OpEditMeshOrSubMesh );
             return;
           }
           else

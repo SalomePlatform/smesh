@@ -5167,7 +5167,7 @@ Please select valid object and try again</translation>
     </message>
     <message>
         <source>CURRENT_DIALOG</source>
-        <translation>Current Group</translation>
+        <translation>Current Dialog</translation>
     </message>
     <message>
         <source>EDGES_TLT</source>

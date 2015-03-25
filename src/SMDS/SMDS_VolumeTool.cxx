@@ -1510,28 +1510,21 @@ bool SMDS_VolumeTool::IsFreeFace( int faceIndex, const SMDS_MeshElement** otherV
 
   const SMDS_MeshNode** nodes = GetFaceNodes( faceIndex );
 
-  // a set of facet nodes w/o medium ones and w/o nodes[0]
-  set< const SMDS_MeshElement* > nodeSet;
   const int di = myVolume->IsQuadratic() ? 2 : 1;
-  for ( int i = di; i < myFaceNbNodes; i += di )
-    nodeSet.insert( nodes[i] );
+  const SMDS_MeshNode* n1 = nodes[di*0];
+  const SMDS_MeshNode* n2 = nodes[di*1];
+  const SMDS_MeshNode* n3 = nodes[di*2];
 
-  SMDS_ElemIteratorPtr eIt = nodes[0]->GetInverseElementIterator( SMDSAbs_Volume );
+  SMDS_ElemIteratorPtr eIt = n1->GetInverseElementIterator( SMDSAbs_Volume );
   SMDS_ElemIteratorPtr nIt;
   while ( eIt->more() ) {
     const SMDS_MeshElement* vol = eIt->next();
-    if ( vol != myVolume ) {
-      size_t nbShared = 0;
-      if ( const SMDS_VtkVolume* v = dynamic_cast< const SMDS_VtkVolume* >( vol ))
-        nIt = v->uniqueNodesIterator();
-      else
-        nIt = vol->nodesIterator();
-      while ( nIt->more() )
-        if (( nbShared += nodeSet.count( nIt->next() )) == nodeSet.size() )
-        {
-          if ( otherVol ) *otherVol = vol;
-          return !isFree;
-        }
+    if ( vol != myVolume &&
+         vol->GetNodeIndex( n2 ) >= 0 &&
+         vol->GetNodeIndex( n3 ) >= 0 )
+    {
+      if ( otherVol ) *otherVol = vol;
+      return !isFree;
     }
   }
   if ( otherVol ) *otherVol = 0;

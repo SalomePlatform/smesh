@@ -51,6 +51,8 @@ Mesh module provides several ways to create the mesh:
   <li>The whole mesh or its part (sub-mesh or group) can be 
     \subpage copy_mesh_page "copied" into a new mesh.
   </li>
+  <li>A new mesh can be created from a transformed, e.g. \ref
+    translation_page "translated", part of the mesh.</li>
 </ul>
 
 Meshes can be edited using the MESH functions destined for 
@@ -65,7 +67,7 @@ the <a href="http://www.code-aster.org/outils/med/html/connectivites.html">
 the element basing on elements of lower dimension is NOT supported.
 
 \anchor mesh_entities
-The mesh can include the following entities (also referred as \a elements):
+The mesh can include the following entities:
 <ul>
 <li>\b Node &mdash; an entity of a mesh defining a position in 3D
   space with coordinates (x, y, z).</li>

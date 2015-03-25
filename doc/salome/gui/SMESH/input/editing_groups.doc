@@ -25,11 +25,12 @@ a <em>group on filter</em>. For more information see
 modification of the group.</li>
 </ol>
 
+<br>
 \anchor convert_to_standalone
 <em>To convert an existing group on geometry or a group on filer into
-a standalone group of elements and modify:</em>
+a standalone group and modify its contents:</em>
 <ol>
-<li>Select your group on geometry (or on filter) in the
+<li>Select your group on geometry or on filter in the
 Object Browser and in the \b Mesh menu click the <b>Edit Group as
 Standalone</b> item.</li>
 

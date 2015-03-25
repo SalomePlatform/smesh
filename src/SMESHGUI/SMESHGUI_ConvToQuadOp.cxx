@@ -105,7 +105,7 @@ void SMESHGUI_ConvToQuadOp::startOperation()
 
   SMESHGUI_SelectionOp::startOperation();
 
-  myDlg->SetMediumNdsOnGeom( false );
+  myDlg->SetMediumNdsOnGeom( true );
   myDlg->activateObject( 0 );
   myDlg->ShowWarning( false );
   myDlg->show();

@@ -16,11 +16,11 @@ the current study. You can \b Add or \b Delete filters.
 \n In <b>Filter name</b> box you can specify the name for your
 filter. By default it is prefixed with the corresponding entity type.
 
-\anchor filtering_elements
-
 When we use filters during a group creation or another operation (by 
 clicking <b>Set Filters</b> button in the corresponding dialog), the
 menu for setting filters looks a bit differently (see the image below).
+
+\anchor filtering_elements
 
 Each filter can be applicable to \b Nodes, \b Edges, \b Faces or \b
 Volumes. You can combine many criteria in one filter, but they all

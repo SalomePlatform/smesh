@@ -24,7 +24,7 @@
 #define STDMESHERSGUI_SUBSHAPESELECTORWDG_H
 
 // SMESH includes
-#include <SMESHGUI.h>
+#include "SMESHGUI.h"
 #include "SMESH_StdMeshersGUI.hxx"
 #include "SMESH_SMESHGUI.hxx"
 
@@ -33,17 +33,14 @@
 #include <QStringList>
 #include <TopoDS_Shape.hxx>
 
-#include <SMESHGUI_VTKUtils.h>
+#include <string>
 
 class SMESHGUI;
 class LightApp_SelectionMgr;
 class SVTK_Selector;
 class QPushButton;
 class QLabel;
-class QLineEdit;
-class QCheckBox;
 class QListWidget;
-class SMESH_Actor;
 class SMESH_PreviewActorsCollection;
 class vtkRenderer;
 class SUIT_SelectionFilter;
@@ -60,29 +57,33 @@ public:
   SMESH::long_array_var          GetListOfIDs();
   bool                           SetListOfIDs( SMESH::long_array_var );
 
-  void                           SetGeomShapeEntry( const QString& theEntry );
-  const char*                    GetGeomShapeEntry() { return myEntry.toLatin1().data();}
+  void                           SetGeomShapeEntry( const QString& theEntry,
+                                                    const QString& theMainShapeEntry);
+  //QString                        GetGeomShapeEntry() { return myEntry; }
 
-  void                           SetMainShapeEntry( const QString& theEntry );
+  // void                           SetMainShapeEntry( const QString& theEntry );
   const char*                    GetMainShapeEntry();
 
   TopoDS_Shape                   GetGeomShape() { return myGeomShape; }
   TopoDS_Shape                   GetMainShape() { return myMainShape; }
 
-  QList<int>                     GetCorrectedListOfIDs( bool fromSubshapeToMainshape,
-                                                        bool* isOK=0);
+  // QList<int>                     GetCorrectedListOfIDs( bool fromSubshapeToMainshape,
+  //                                                       bool* isOK=0);
 
   static GEOM::GEOM_Object_var   GetGeomObjectByEntry( const QString& );
   static TopoDS_Shape            GetTopoDSByEntry( const QString& );
 
   QString                        GetValue() const { return myParamValue; }
 
-  void                           showPreview ( bool );
+  void                           ShowPreview( bool );
 
   int                            GetListSize() { return myListOfIDs.size(); }
 
-  void SetMaxSize(int aMaxSize) { myMaxSize = aMaxSize; }
-  //void SetSubShType(TopAbs_ShapeEnum aSubShType) { mySubShType = aSubShType; }
+  void                           SetMaxSize(int aMaxSize) { myMaxSize = aMaxSize; }
+
+  vtkRenderer*                   GetRenderer() { return myRenderer; }
+  SMESH_PreviewActorsCollection* GetActorCollection() { return myPreviewActor; }
+  void                           ClearSelected();
 
 private:
   void                           updateState();
@@ -94,7 +95,7 @@ private slots:
   void                           onRemove(); 
   void                           onPrevious(); 
   void                           onNext(); 
-  void                           SelectionIntoArgument();
+  void                           selectionIntoArgument();
   void                           onListSelectionChanged();
 
 private:
@@ -107,8 +108,8 @@ private:
   SMESH::SMESH_Mesh_var          myMesh;
   TopoDS_Shape                   myGeomShape; // shape whose sub-shapes are selected
   TopoDS_Shape                   myMainShape; // main shape of the mesh
-  QString                        myEntry;
-  QString                        myMainEntry;
+  std::string                    myEntry;
+  std::string                    myMainEntry;
   vtkRenderer*                   myRenderer;
   
   QListWidget*                   myListWidget;

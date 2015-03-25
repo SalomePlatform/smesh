@@ -76,6 +76,10 @@ be reversed either directly picking them in the 3D viewer or by
 selecting the edges or groups of edges in the Object Browser. Use \b
 Add button to add the selected edges to the list.
 
+\ref reversed_edges_helper_anchor "Helper" group assists you in
+defining <b>Reversed Edges</b> parameter.
+
+
 \image html a-arithmetic1d.png
 
 \image html b-ithmetic1d.png "Arithmetic 1D hypothesis - the size of mesh elements gradually increases"
@@ -101,6 +105,9 @@ selected for meshing. In this case it is possible to select edges to
 be reversed either directly picking them in the 3D viewer or by
 selecting the edges or groups of edges in the Object Browser. Use \b
 Add button to add the selected edges to the list.
+
+\ref reversed_edges_helper_anchor "Helper" group assists you in
+defining <b>Reversed Edges</b> parameter.
 
 \image html a-geometric1d.png
 
@@ -178,7 +185,7 @@ edges by a definite number of mesh segments with length depending on
 the selected type of distribution of nodes.
 
 The direction of the splitting is defined by the orientation of the
-underlying geometrical edge. <b>"Reverse Edges"</b> list box allows to
+underlying geometrical edge. <b>Reverse Edges</b> list box allows to
 specify the edges for which the splitting should be made in the
 direction opposing to their orientation. This list box is enabled only
 if the geometry object is selected for the meshing. In this case it is 
@@ -186,7 +193,8 @@ possible to select edges to be reversed either by directly picking them
 in the 3D viewer or by selecting the edges or groups of edges in the
 Object Browser.
 
-\image html image46.gif
+\ref reversed_edges_helper_anchor "Helper" group assists you in
+defining <b>Reversed Edges</b> parameter.
 
 You can set the type of node distribution for this hypothesis in the
 <b>Hypothesis Construction</b> dialog bog :
@@ -229,7 +237,7 @@ distribution as blue crosses. The node distribution is computed in the
 same way as for 
 \ref analyticdensity_anchor "Distribution with Analytic Density". You
 can select the <b>Conversion mode</b> from\b Exponent and <b>Cut
-negative</b>. 
+negative</b>.
 
 \image html distributionwithtabledensity.png
 
@@ -248,13 +256,17 @@ length. The length of medium segments changes with automatically chosen
 geometric progression.
 
 The direction of the splitting is defined by the orientation of the
-underlying geometrical edge. <b>"Reverse Edges"</b> list box allows to
+underlying geometrical edge. <b>Reverse Edges</b> list box allows to
 specify the edges, for which the splitting should be made in the
 direction opposing to their orientation. This list box is enabled only
 if the geometry object is selected for the meshing. In this case it is 
 possible to select edges to be reversed either by directly picking them
 in the 3D viewer or by selecting the edges or groups of edges in the
 Object Browser.
+
+\ref reversed_edges_helper_anchor "Helper" group assists you in
+defining <b>Reversed Edges</b> parameter.
+
 
 \image html a-startendlength.png
 
@@ -290,13 +302,13 @@ minimum and maximum value of this parameter.
 set of points parametrized on the edge (from 1 to 0) and a number of
 segments for each interval limited by the points.
 
-\image html hypo_fixedpnt_dlg.png 
+\image html hypo_fixedpnt_dlg.png
 
 It is possible to check in <b>Same Nb. Segments for all intervals</b> 
 option and to define one value for all intervals.
 
 The splitting direction is defined by the orientation of the
-underlying geometrical edge. <b>"Reverse Edges"</b> list box allows to
+underlying geometrical edge. <b>Reverse Edges</b> list box allows to
 specify the edges for which the splitting should be made in the
 direction opposite to their orientation. This list box is enabled only
 if the geometrical object is selected for meshing. In this case it is
@@ -304,9 +316,38 @@ possible to select the edges to be reversed either directly picking them in
 the 3D viewer or selecting the edges or groups of edges in the
 Object Browser.
 
+\ref reversed_edges_helper_anchor "Helper" group assists you in
+defining <b>Reversed Edges</b> parameter.
+
+
 \image html mesh_fixedpnt.png "Example of a sub-mesh on the edge built using Fixed points 1D hypothesis"
 
 <b>See Also</b> a sample TUI Script of a 
 \ref tui_fixed_points "Defining Fixed Points" hypothesis operation.
+
+\anchor reversed_edges_helper_anchor
+<h2>Reversed Edges Helper</h2>
+
+\image html rev_edges_helper_dlg.png
+
+\b Helper group assists you in defining <b>Reversed Edges</b>
+parameter of the hypotheses depending on edge direction.
+
+<b>Show whole geometry</b> check-box lets you see the whole
+geometrical model in the 3D Viewer. This can help you to understand
+location within the model of a set of edges shown in the Viewer.
+
+<b>Propagation chains</b> group helps you to define 
+<b>Reversed Edges</b> so that opposite edges of quadrilateral faces
+will be split in the logically same direction. When this group is
+activated, the list is filled with propagation chains found within the
+model. When you select a chain in the list, edges of the chain are
+shown in the Viewer with arrows so that you can chose a common
+direction for all chain edges. \b Reverse button inverses the common
+direction of chain edges. If \b Add button is active, this means that some
+edges of a chain have different direction and you can click \b Add
+button to add such edges to <b>Reversed Edges</b> list.
+
+\image html propagation_chain.png "The whole geometry and a propagation chain"
 
 */

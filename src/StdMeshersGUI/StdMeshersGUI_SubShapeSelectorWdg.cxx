@@ -24,28 +24,22 @@
 #include "StdMeshersGUI_SubShapeSelectorWdg.h"
 
 // SMESH Includes
-#include "SMESH_Type.h"
-#include "SMESHGUI_MeshUtils.h"
+#include "SMESHGUI_Utils.h"
+#include "SMESHGUI_VTKUtils.h"
 #include "SMESH_Actor.h"
-#include "SMESH_PreviewActorsCollection.h"
-#include "SMESH_ActorUtils.h"
-#include "SMESHGUI_GroupUtils.h"
 #include "SMESH_Gen_i.hxx"
-#include "SMESHGUI_GEOMGenUtils.h"
 #include "SMESH_LogicalFilter.hxx"
-
-// SVTK Includes
-#include <SVTK_ViewWindow.h>
-#include <SVTK_ViewModel.h>
-#include <SVTK_ViewWindow.h>
-#include <SVTK_Selector.h>
+#include "SMESH_PreviewActorsCollection.h"
+#include "SMESH_Type.h"
 
 // SALOME GUI includes
-#include <SALOME_ListIO.hxx>
 #include <LightApp_SelectionMgr.h>
-
-// SUIT Includes
+#include <SALOME_ListIO.hxx>
+#include <SUIT_OverrideCursor.h>
 #include <SUIT_ResourceMgr.h>
+#include <SVTK_Selector.h>
+#include <SVTK_ViewModel.h>
+#include <SVTK_ViewWindow.h>
 
 // GEOM Includes
 #include <GEOMBase.h>
@@ -61,11 +55,9 @@
 
 // OCCT includes
 #include <TColStd_MapOfInteger.hxx>
-#include <TColStd_IndexedMapOfInteger.hxx>
 #include <TopoDS_Shape.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
-#include <StdSelect_TypeOfEdge.hxx>
 
 
 #define SPACING 6
@@ -91,7 +83,7 @@ StdMeshersGUI_SubShapeSelectorWdg
   
   myListWidget   = new QListWidget( this );
   myAddButton    = new QPushButton( tr( "SMESH_BUT_ADD" ),    this );
-  myRemoveButton = new QPushButton( tr( "SMESH_BUT_REMOVE" ), this );      
+  myRemoveButton = new QPushButton( tr( "SMESH_BUT_REMOVE" ), this );
   myInfoLabel    = new QLabel( this );
   myPrevButton   = new QPushButton( "<<", this );
   myNextButton   = new QPushButton( ">>", this );
@@ -178,7 +170,7 @@ void StdMeshersGUI_SubShapeSelectorWdg::init()
   connect( myPrevButton,   SIGNAL(clicked()), SLOT(onPrevious()));
   connect( myNextButton,   SIGNAL(clicked()), SLOT(onNext()));
   
-  connect( mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
+  connect( mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(selectionIntoArgument()));
   connect( myListWidget,   SIGNAL(itemSelectionChanged()),    this, SLOT(onListSelectionChanged()));
 
   updateState();
@@ -208,7 +200,7 @@ void StdMeshersGUI_SubShapeSelectorWdg::setFilter()
  */
 //================================================================================
 
-void StdMeshersGUI_SubShapeSelectorWdg::showPreview( bool visible)
+void StdMeshersGUI_SubShapeSelectorWdg::ShowPreview( bool visible)
 {
   if ( !myPreviewActor )
     return;
@@ -223,11 +215,24 @@ void StdMeshersGUI_SubShapeSelectorWdg::showPreview( bool visible)
   }
 }
 
+//================================================================================
+/*!
+ * \brief Clears selected IDs. This is a workaround of a bug that
+ *        SUIT_SelectionMgr::clearSelected() does not emit currentSelectionChanged
+ */
+//================================================================================
+
+void StdMeshersGUI_SubShapeSelectorWdg::ClearSelected()
+{
+  mySelectedIDs.clear();
+  selectionIntoArgument();
+}
+
 //=================================================================================
-// function : SelectionIntoArgument()
+// function : selectionIntoArgument()
 // purpose  : Called when selection as changed or other case
 //=================================================================================
-void StdMeshersGUI_SubShapeSelectorWdg::SelectionIntoArgument()
+void StdMeshersGUI_SubShapeSelectorWdg::selectionIntoArgument()
 {
   if ( !myPreviewActor )
     return;
@@ -241,10 +246,11 @@ void StdMeshersGUI_SubShapeSelectorWdg::SelectionIntoArgument()
 
   if (nbSel > 0) {
     SALOME_ListIteratorOfListIO anIt (aList);
-    
-    for ( ; anIt.More(); anIt.Next()) { // Loop on selected objects
+
+    for ( ; anIt.More(); anIt.Next()) // Loop on selected objects
+    {
       Handle(SALOME_InteractiveObject) IO = anIt.Value();
-      
+
       GEOM::GEOM_Object_var aGeomObj = GetGeomObjectByEntry( IO->getEntry() );
       if ( !CORBA::is_nil( aGeomObj ) ) { // Selected Object From Study
         GEOM::GEOM_Object_var aGeomFatherObj = aGeomObj->GetMainShape();
@@ -253,7 +259,7 @@ void StdMeshersGUI_SubShapeSelectorWdg::SelectionIntoArgument()
         TopoDS_Shape shape;
         if ( !CORBA::is_nil( aGeomFatherObj ) ) {
           // Get Main Shape
-          GEOM::GEOM_Object_var aGeomMain = GetGeomObjectByEntry( myEntry );
+          GEOM::GEOM_Object_var aGeomMain = GetGeomObjectByEntry( myEntry.c_str() );
           if ( !CORBA::is_nil( aGeomMain ) && aGeomMain->GetType() == 37 ) {  // Main Shape is a Group
             GEOM::GEOM_Object_var aMainFatherObj = aGeomMain->GetMainShape();
             if ( !CORBA::is_nil( aMainFatherObj ) )
@@ -262,10 +268,11 @@ void StdMeshersGUI_SubShapeSelectorWdg::SelectionIntoArgument()
           aFatherEntry = aGeomFatherObj->GetStudyEntry();
         }
 
-        if ( aFatherEntry != "" && ( aFatherEntry == myEntry || aFatherEntry == aMainFatherEntry ) )
+        if (( ! aFatherEntry.isEmpty() ) &&
+            ( aFatherEntry == myEntry.c_str() || aFatherEntry == aMainFatherEntry ) )
         {
           if ( aGeomObj->GetType() == 37 /*GEOM_GROUP*/ ) { // Selected Group that belongs the main object
-            GEOMBase::GetShape(aGeomObj, shape); 
+            GEOMBase::GetShape(aGeomObj, shape);
             if ( !shape.IsNull() ) {
               TopExp_Explorer exp( shape, mySubShType );
               for ( ; exp.More(); exp.Next() ) {
@@ -340,7 +347,9 @@ void StdMeshersGUI_SubShapeSelectorWdg::onAdd()
   }
   onListSelectionChanged();
   myListWidget->blockSignals( false );
-  myAddButton->setEnabled( myMaxSize == -1 || myListOfIDs.size() < myMaxSize );
+
+  mySelectedIDs.clear();
+  myAddButton->setEnabled( false );
 }
          
 //=================================================================================
@@ -367,7 +376,7 @@ void StdMeshersGUI_SubShapeSelectorWdg::onRemove()
   onListSelectionChanged();
   myListWidget->blockSignals( false );
   
-  myAddButton->setEnabled( true );
+  myAddButton->setEnabled( !mySelectedIDs.isEmpty() );
 }
 
 void StdMeshersGUI_SubShapeSelectorWdg::onPrevious()
@@ -416,12 +425,26 @@ void StdMeshersGUI_SubShapeSelectorWdg::onListSelectionChanged()
 // function : setGeomShape
 // purpose  : Called to set geometry whose sub-shapes are selected
 //================================================================================
-void StdMeshersGUI_SubShapeSelectorWdg::SetGeomShapeEntry( const QString& theEntry )
+void StdMeshersGUI_SubShapeSelectorWdg::SetGeomShapeEntry( const QString& theEntry,
+                                                           const QString& theMainShapeEntry )
 {
-  if ( theEntry != "") {
+  if ( !theEntry.isEmpty() || theMainShapeEntry.isEmpty() )
+  {
     myParamValue = theEntry;
-    myEntry = theEntry;
-    myGeomShape = GetTopoDSByEntry( theEntry );
+    myEntry      = theEntry.toStdString();
+    myMainEntry  = theMainShapeEntry.toStdString();
+
+    if ( myMainEntry.empty() ) myMainEntry = myEntry;
+    if ( myEntry.empty() )     myEntry     = myMainEntry;
+    if ( myMainEntry.length() > myEntry.length() &&
+         theMainShapeEntry.startsWith( theEntry ))
+      std::swap( myMainEntry, myEntry );
+
+    myGeomShape = GetTopoDSByEntry( myEntry.c_str() );
+    if ( myEntry == myMainEntry )
+      myMainShape = myGeomShape;
+    else
+      myMainShape = GetTopoDSByEntry( myMainEntry.c_str() );
     updateState();
     myIsNotCorrected = true;
   }
@@ -444,9 +467,10 @@ void StdMeshersGUI_SubShapeSelectorWdg::updateState()
   myAddButton->setEnabled( mySelectedIDs.size() > 0 );
   
   if (state) {
+    SUIT_OverrideCursor wc;
     myPreviewActor = new SMESH_PreviewActorsCollection();
     myPreviewActor->SetSelector( mySelector );
-    myPreviewActor->Init( myGeomShape, mySubShType, myEntry );
+    myPreviewActor->Init( myGeomShape, myMainShape, mySubShType, myEntry.c_str() );
     myPreviewActor->SetShown( false );
     myIsShown = false;
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI )) {
@@ -499,16 +523,14 @@ SMESH::long_array_var StdMeshersGUI_SubShapeSelectorWdg::GetListOfIDs()
 {
   SMESH::long_array_var anArray = new SMESH::long_array;
 
-  if ( myMainEntry != "" && myIsNotCorrected )
-    myListOfIDs = GetCorrectedListOfIDs( true );
+  // if ( myMainEntry != "" && myIsNotCorrected )
+  //   myListOfIDs = GetCorrectedListOfIDs( true );
 
   int size = myListOfIDs.size();
   anArray->length( size );
-  if ( size ) {
-    for (int i = 0; i < size; i++) {
-        anArray[i] = myListOfIDs.at(i);
-    }
-  }
+  for (int i = 0; i < size; i++)
+    anArray[i] = myListOfIDs.at(i);
+
   return anArray;
 }
 
@@ -524,8 +546,24 @@ bool StdMeshersGUI_SubShapeSelectorWdg::SetListOfIDs( SMESH::long_array_var theI
   for ( int i = 0; i < size; i++ )
     mySelectedIDs.append( theIds[ i ] );
 
-  bool isOk;
-  mySelectedIDs = GetCorrectedListOfIDs( false, &isOk );
+  myListWidget->blockSignals( true );
+  myListWidget->clear();
+  myListWidget->blockSignals( false );
+
+  bool isOk = true;
+  if ( myPreviewActor )
+  {
+    for ( int i = 0; i < size && isOk; i++ )
+      isOk = myPreviewActor->IsValidIndex( theIds[ i ] );
+  }
+  else if ( !myMainShape.IsNull() )
+  {
+    TopTools_IndexedMapOfShape aMainMap;
+    TopExp::MapShapes(myMainShape, aMainMap);
+    for ( int i = 0; i < size && isOk; i++ )
+      isOk = ( theIds[ i ] > 0 && theIds[ i ] <= aMainMap.Extent() );
+  }
+  // mySelectedIDs = GetCorrectedListOfIDs( false, &isOk );
   onAdd();
   return isOk;
 }
@@ -534,12 +572,12 @@ bool StdMeshersGUI_SubShapeSelectorWdg::SetListOfIDs( SMESH::long_array_var theI
 // function : SetMainShapeEntry
 // purpose  : Called to set the Entry of main shape of the mesh
 //=================================================================================
-void StdMeshersGUI_SubShapeSelectorWdg::SetMainShapeEntry( const QString& theEntry )
-{
-  myMainEntry = theEntry;
-  myMainShape = GetTopoDSByEntry( theEntry );
-  myIsNotCorrected = true;
-}
+// void StdMeshersGUI_SubShapeSelectorWdg::SetMainShapeEntry( const QString& theEntry )
+// {
+//   myMainEntry = theEntry;
+//   myMainShape = GetTopoDSByEntry( theEntry );
+//   myIsNotCorrected = true;
+// }
 
 //=================================================================================
 // function : GetMainShapeEntry
@@ -547,87 +585,85 @@ void StdMeshersGUI_SubShapeSelectorWdg::SetMainShapeEntry( const QString& theEnt
 //=================================================================================
 const char* StdMeshersGUI_SubShapeSelectorWdg::GetMainShapeEntry()
 {
-  if ( myMainEntry == "")
-    return myEntry.toLatin1().data();
-
-  return myMainEntry.toLatin1().data();
+  if ( myMainEntry.empty() ) myMainEntry = "";
+  return myMainEntry.c_str();
 }
 
 //=================================================================================
 // function : GetCorrectedListOfIds
 // purpose  : Called to convert the list of IDs from sub-shape IDs to main shape IDs
 //=================================================================================
-QList<int>
-StdMeshersGUI_SubShapeSelectorWdg::GetCorrectedListOfIDs( bool fromSubshapeToMainshape,
-                                                          bool* isOK )
-{
-  if (( myMainShape.IsNull() || myGeomShape.IsNull() ) &&  fromSubshapeToMainshape )
-    return myListOfIDs;
-  else if (( myMainShape.IsNull() /*||*/&& myGeomShape.IsNull() ) &&  !fromSubshapeToMainshape )
-    return mySelectedIDs;
+// QList<int>
+// StdMeshersGUI_SubShapeSelectorWdg::GetCorrectedListOfIDs( bool fromSubshapeToMainshape,
+//                                                           bool* isOK )
+// {
+//   if (( myMainShape.IsNull() || myGeomShape.IsNull() ) &&  fromSubshapeToMainshape )
+//     return myListOfIDs;
+//   else if (( myMainShape.IsNull() /*||*/&& myGeomShape.IsNull() ) &&  !fromSubshapeToMainshape )
+//     return mySelectedIDs;
 
-  if ( !fromSubshapeToMainshape ) // called from SetListOfIDs
-  {
-    if ( myMainShape.IsNull() )
-      std::swap( myMainShape, myGeomShape );
-  }
+//   if ( !fromSubshapeToMainshape ) // called from SetListOfIDs
+//   {
+//     if ( myMainShape.IsNull() )
+//       std::swap( myMainShape, myGeomShape );
+//   }
 
-  QList<int> aList;
-  TopTools_IndexedMapOfShape aGeomMap, aMainMap;
-  TopExp::MapShapes(myMainShape, aMainMap);
-  if ( !myGeomShape.IsNull() )
-    TopExp::MapShapes(myGeomShape, aGeomMap);
+//   QList<int> aList;
+//   TopTools_IndexedMapOfShape aGeomMap, aMainMap;
+//   TopExp::MapShapes(myMainShape, aMainMap);
+//   if ( !myGeomShape.IsNull() )
+//     TopExp::MapShapes(myGeomShape, aGeomMap);
 
-  bool ok = true;
-  if ( fromSubshapeToMainshape ) // convert indexes from sub-shape to mainshape
-  {
-    int size = myListOfIDs.size();
-    for (int i = 0; i < size; i++) {
-      int index = myListOfIDs.at(i);
-      if ( aGeomMap.Extent() < index )
-      {
-        ok = false;
-      }
-      else
-      {
-        TopoDS_Shape aSubShape = aGeomMap.FindKey( index );
-        if ( mySubShType != aSubShape.ShapeType() )
-          ok = false;
-        if ( !aMainMap.Contains( aSubShape ))
-          ok = false;
-        else
-          index = aMainMap.FindIndex( aSubShape );
-      }
-      aList.append( index );
-    }
-    myIsNotCorrected = false;
-  }
-  else // convert indexes from main shape to sub-shape, or just check indices
-  {
-    int size = mySelectedIDs.size();
-    for (int i = 0; i < size; i++) {
-      int index = mySelectedIDs.at(i);
-      if ( aMainMap.Extent() < index )
-      {
-        ok = false;
-      }
-      else
-      {
-        TopoDS_Shape aSubShape = aMainMap.FindKey( index );
-        if ( mySubShType != aSubShape.ShapeType() )
-          ok = false;
-        if ( !aGeomMap.Contains( aSubShape ) && !aGeomMap.IsEmpty() )
-          ok = false;
-        else
-          index = aGeomMap.FindIndex( aSubShape );
-      }
-      aList.append( index );
-    }
-  }
-  if ( isOK ) *isOK = ok;
+//   bool ok = true;
+//   if ( fromSubshapeToMainshape ) // convert indexes from sub-shape to mainshape
+//   {
+//     int size = myListOfIDs.size();
+//     for (int i = 0; i < size; i++) {
+//       int index = myListOfIDs.at(i);
+//       if ( aGeomMap.Extent() < index )
+//       {
+//         ok = false;
+//       }
+//       else
+//       {
+//         TopoDS_Shape aSubShape = aGeomMap.FindKey( index );
+//         if ( mySubShType != aSubShape.ShapeType() )
+//           ok = false;
+//         if ( !aMainMap.Contains( aSubShape ))
+//           ok = false;
+//         else
+//           index = aMainMap.FindIndex( aSubShape );
+//       }
+//       aList.append( index );
+//     }
+//     myIsNotCorrected = false;
+//   }
+//   else // convert indexes from main shape to sub-shape, or just check indices
+//   {
+//     int size = mySelectedIDs.size();
+//     for (int i = 0; i < size; i++) {
+//       int index = mySelectedIDs.at(i);
+//       if ( aMainMap.Extent() < index )
+//       {
+//         ok = false;
+//       }
+//       else
+//       {
+//         TopoDS_Shape aSubShape = aMainMap.FindKey( index );
+//         if ( mySubShType != aSubShape.ShapeType() )
+//           ok = false;
+//         if ( !aGeomMap.Contains( aSubShape ) && !aGeomMap.IsEmpty() )
+//           ok = false;
+//         else
+//           index = aGeomMap.FindIndex( aSubShape );
+//       }
+//       aList.append( index );
+//     }
+//   }
+//   if ( isOK ) *isOK = ok;
 
-  return aList;
-}
+//   return aList;
+// }
 
 void StdMeshersGUI_SubShapeSelectorWdg::updateButtons()
 {

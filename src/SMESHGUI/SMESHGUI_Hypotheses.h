@@ -114,6 +114,7 @@ protected:
   virtual void                 attuneStdWidget( QWidget*, const int ) const;
   virtual QWidget*             getCustomWidget( const StdParam&, 
                                                 QWidget*, const int ) const;
+  virtual QWidget*             getHelperWidget() const;
   virtual bool                 getParamFromCustomWidget( StdParam&, QWidget* ) const;
   virtual void                 valueChanged( QWidget* );
   virtual QString              caption() const;

@@ -7,8 +7,9 @@
 <em>To make a copy of a mesh:</em>
 
 \par
-From the \b Mesh menu select <b>Copy Mesh</b> or click <em>"Copy Mesh"</em>
-button in the toolbar.
+From the contextual menu in the Object Browser of from the \b Mesh
+menu select <b>Copy Mesh</b> or click <em>"Copy Mesh"</em> button in
+the toolbar.
 
 \image html copy_mesh_icon.png
 <center><em>"Copy Mesh" button</em></center>
@@ -24,7 +25,7 @@ In the dialog:
 <li>specify the part of mesh to copy:
 
 <ul>
-<li><b>Select the whole mesh, submesh or group</b> by mouse activating
+<li><b>Select whole mesh, sub-mesh or group</b> by mouse activating
 this checkbox; or</li>
 <li>choose mesh elements with the mouse in the 3D Viewer. It is
 possible to select a whole area with a mouse frame; or</li> 
@@ -41,7 +42,7 @@ selection_filter_library_page "Selection filter library" page.</li>
 <li>specify the conditions of copying:
 <ul>
 <li>activate <b>Generate groups</b> checkbox to copy the groups of
-elements of the source mesh to the newly created mesh.</li>
+  the source mesh to the newly created mesh.</li>
 </ul>
 </li>
 

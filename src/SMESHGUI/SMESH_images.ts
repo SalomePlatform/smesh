@@ -40,6 +40,14 @@
             <translation>mesh_compute.png</translation>
         </message>
         <message>
+            <source>ICON_EVALUATE</source>
+            <translation>mesh_evaluate.png</translation>
+        </message>
+        <message>
+            <source>ICON_MESH_ORDER</source>
+            <translation>mesh_order.png</translation>
+        </message>
+        <message>
             <source>ICON_PRECOMPUTE</source>
             <translation>mesh_precompute.png</translation>
         </message>

@@ -628,4 +628,35 @@ this one for this mesh/sub-mesh.</translation>
         <translation>Step</translation>
     </message>
 </context>
+<context>
+    <name>StdMeshersGUI_PropagationHelperWdg</name>
+    <message>
+        <source>HELPER</source>
+        <translation>Helper</translation>
+    </message>
+    <message>
+        <source>SHOW_GEOMETRY</source>
+        <translation>Show whole geometry</translation>
+    </message>
+    <message>
+        <source>PROPAGATION_CHAINS</source>
+        <translation>Propagation chains</translation>
+    </message>
+    <message>
+        <source>ADD</source>
+        <translation>Add</translation>
+    </message>
+    <message>
+        <source>REVERSE</source>
+        <translation>Reverse</translation>
+    </message>
+    <message>
+        <source>NO_CHAINS</source>
+        <translation>(no chains)</translation>
+    </message>
+    <message>
+        <source>CHAIN_NUM_NB_EDGES</source>
+        <translation>Chain %1 (%2 edges)</translation>
+    </message>
+</context>
 </TS>

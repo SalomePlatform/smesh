@@ -138,7 +138,8 @@ creation and computing) of the following steps:
 
     Now you can define 3D Algorithm and 3D Hypotheses, which will be
     applied to discretize the solids of your geometrical object using
-    3D elements. Click the <em>"Add Hypothesis"</em>  button to add a hypothesis.
+    3D elements. Click the <em>"Add Hypothesis"</em> button to create
+    and add a hypothesis.
     <center>
     \image html image121.png
     <em>"Add Hypothesis" button</em>
