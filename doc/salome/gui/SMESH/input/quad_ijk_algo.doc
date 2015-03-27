@@ -1,0 +1,49 @@
+/*!
+
+\page quad_ijk_algo_page Quadrangle (Mapping) meshing algorithm
+
+<b>Quadrangle (Mapping)</b> meshing algorithm is intended for creating
+all-quadrangle and quad-dominant meshes on faces with no holes and
+bound by at least three edges.
+
+The algorithm can create mesh on any face but mesh quality and
+validity depends on two factors:
+- face shape (number of edges and concavity of boundary);
+- discretization of edges.
+
+\image html quad_mesh_invalid.png "Invalid mesh on quadrilateral concave faces"
+
+The algorithm uses <em>Transfinite Interpolation</em> technic in
+parametric space of a face to locate nodes inside the face.
+
+The algorithm treats any face as a quadrangle. If a face is bound by
+more than four edges, four most sharp vertices are considered as
+corners of the quadrangle and all edges between these vertices are
+treated as quadrangle sides. In the case of three edges, the vertex
+specified by the user is considered as a degenerated side of the
+quadrangle. 
+
+\image html quad_meshes.png "Algorithm generates a structured mesh on complex faces provided that edges are properly discretized"
+
+To get an all-quadrangle mesh you have to carefully define 1D
+hypotheses on edges of a face. To get a \b structured mesh you have to assure
+equal number of segments on opposite sides of the quadrangle. If this
+condition is not respected, the algorithm by default (with no
+hypothesis) creates \b quad-dominant mesh with triangles located near a
+side with maximal number of segments. But you can get an
+\b all-quadrangle mesh in this case by using 
+\ref hypo_quad_params_anchor "Quadrangle Parameters"
+hypothesis to specify how to make transition mesh between opposite
+sides with different number of segments, provided that certain
+conditions are respected. In any case total number of segments must be
+even. To use \a Reduced transition method there must be equal number
+of segments on one pair of opposite sides.
+
+The following hypotheses help in creation of quadrangle meshes. 
+- \ref propagation_anchor "Propagation" additional 1D hypotheses
+  help to get equal number of segments on opposite sides of the
+  quadrilateral face.
+- \ref a1d_algos_anchor "Composite Side Discretization" algorithm is useful
+  to discretize several C1 continues edges as one quadrangle side.
+
+*/

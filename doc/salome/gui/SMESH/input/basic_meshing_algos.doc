@@ -28,8 +28,8 @@ number of mesh segments following an 1D hypothesis.
 <ul>
 <li><em>Triangle (Mefisto)</em> meshing algorithm - splits faces
   into triangular elements.</li>
-<li><em>Quadrangle (Mapping)</em> meshing algorithm - splits faces
-  into quadrangular elements.</li>
+<li>\subpage quad_ijk_algo_page "Quadrangle (Mapping)" meshing
+  algorithm - splits faces into quadrangular elements.</li>
 </ul>
 
 \image html image123.gif "Example of a triangular 2D mesh"

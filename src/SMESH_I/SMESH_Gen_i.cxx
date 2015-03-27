@@ -747,7 +747,7 @@ SMESH_Gen_i::GetHypothesisParameterValues (const char*           theHypType,
     return SMESH::SMESH_Hypothesis::_nil();
   ::SMESH_Mesh* mesh = meshServant ? &meshServant->GetImpl() : (::SMESH_Mesh*)0;
 
-  // create a temporary hypothesis to know its dimention
+  // create a temporary hypothesis to know its dimension
   SMESH::SMESH_Hypothesis_var tmpHyp = this->createHypothesis( theHypType, theLibName );
   SMESH_Hypothesis_i* hypServant = SMESH::DownCast<SMESH_Hypothesis_i*>( tmpHyp );
   if ( !hypServant )
@@ -2427,6 +2427,7 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::ListOfIDSources& theMeshesArray,
   // loop on sub-meshes
   for ( int i = 0; i < theMeshesArray.length(); i++)
   {
+    if ( CORBA::is_nil( theMeshesArray[i] )) continue;
     SMESH::SMESH_Mesh_var anInitMesh = theMeshesArray[i]->GetMesh();
     if ( anInitMesh->_is_nil() ) continue;
     SMESH_Mesh_i* anInitImpl = SMESH::DownCast<SMESH_Mesh_i*>( anInitMesh );

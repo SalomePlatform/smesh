@@ -89,13 +89,15 @@ The following dialog box will appear:
 \par
 \image html createmesh-inv2.png
 
-\par
 It allows to define the \b Name, the parent \b Mesh and the \b
 Geometry (e.g. a face if the parent mesh has been built on box) of the
 sub-mesh. You can define meshing algorithms and hypotheses in the same way as
-in \ref constructing_meshes_page "Create mesh" dialog.
+in \ref constructing_meshes_page "Create mesh" dialog. 
 
-\par
+Later you can change applied hypotheses or their parameters in 
+\ref editing_meshes_page "Edit mesh/sub-mesh" dialog. Mesh entities
+generated using changed hypotheses are automatically removed.
+
 \anchor subshape_by_mesh_elem
 If the parent mesh is already computed, then you can define the
 \b Geometry by picking mesh elements computed on a sub-shape of interest
@@ -106,18 +108,14 @@ already down, then click it to release and then click it again. The
 following pop-up menu allowing to choose a way of geometry definition will
 appear.
 
-\par
 \image html choose_geom_selection_way.png
 
-\par
 <b>Direct geometry selection</b> enables selecting the sub-shape in the Object
 Browser.
 <b>Find geometry by mesh element selection</b> activates the following dialog.
 
-\par
 \image html find_geom_by_mesh_elem.png
 
-\par
 In this dialog, <b> Element Type </b> defines a kind of element to pick in the
 Viewer.
 Instead of picking an element in the Viewer, you can type its
@@ -126,22 +124,20 @@ ID in <b> Element ID</b> field.
 with which the sub-shape will appear in the Object Browser (if not yet
 there).
 
-\par
 In the Object Browser the structure of the new sub-mesh will be
 displayed as follows:
 
 \image html image10.jpg
 
-\par
 It contains:
 <ul>
 <li>a sub-mesh name (\a SubMeshFace1)
 <li>a reference to the geometrical object on the basis of which the
   sub-mesh has been constructed (<em>Cylindrical Face_1</em>);</li>
-<li><b>Applied hypotheses</b> folder containing the references to the
-hypotheses selected at the construction of the sub-mesh;</li>
-<li><b>Applied algorithms</b> folder containing the references to the
-algorithms selected at the construction of the sub-mesh.</li>
+<li><em>Applied hypotheses</em> folder containing the references to the
+hypotheses assigned to the sub-mesh;</li>
+<li><em>Applied algorithms</em> folder containing the references to the
+algorithms assigned to the sub-mesh.</li>
 </ul>
 
 <br><b>See Also</b> a sample TUI Script of a 

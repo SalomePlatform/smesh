@@ -10,6 +10,22 @@ with different parameters you can preset the quantity or size of
 elements which will compose your mesh. So, it will be possible to
 generate a coarse or a more refined mesh.
 
+The choice of a hypothesis depends on the selected algorithm.
+
+Hypotheses are created during creation and edition of 
+\ref constructing_meshes_page "meshes" and
+\ref constructing_submeshes_page "sub-mesh". 
+Once created a hypotheses can be reused during creation and
+edition of other meshes and sub-meshes. All created hypotheses and
+algorithms are present in the Object Browser in \a Hypotheses and
+\a Algorithms folders correspondingly. From the context menu of the
+hypothesis you can invoke a dialog for modification of its parameters,
+and \b Unassign command that will unassign the hypothesis from all
+the meshes and sub-meshes using it.
+Modification of any hypothesis parameter and unassignment of a
+hypothesis leads to automatic removal of elements generated with use
+of this hypothesis.
+
 In \b MESH there are the following Basic Hypotheses:
 <ul>
 <li>\subpage a1d_meshing_hypo_page "1D Hypotheses" (for meshing of 
@@ -39,8 +55,7 @@ In \b MESH there are the following Basic Hypotheses:
 </ul>
 
 There also exist
-\subpage additional_hypo_page "Additional Hypotheses" that can be used together
-with main hypotheses:
+\subpage additional_hypo_page "Additional Hypotheses":
 <ul>
 <li>\ref propagation_anchor "Propagation of 1D Hypothesis on opposite edges"</li>
 <li>\ref propagofdistribution_anchor "Propagation of Node Distribution on Opposite Edges"</li>
@@ -48,7 +63,5 @@ with main hypotheses:
 <li>\ref quadratic_mesh_anchor "Quadratic mesh"</li>
 <li>\ref quadrangle_preference_anchor "Quadrangle preference"</li>
 </ul>
-
-The choice of a hypothesis depends on the selected algorithm.
 
 */

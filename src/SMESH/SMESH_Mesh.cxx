@@ -58,7 +58,7 @@
 #include <GEOMUtils.hxx>
 
 #undef _Precision_HeaderFile
-//#include <BRepBndLib.hxx>
+#include <BRepBndLib.hxx>
 #include <BRepPrimAPI_MakeBox.hxx>
 #include <Bnd_Box.hxx>
 #include <TColStd_MapOfInteger.hxx>
@@ -72,11 +72,12 @@
 #include "SMESH_TryCatch.hxx" // include after OCCT headers!
 
 #include "Utils_ExceptHandlers.hxx"
+
 #ifndef WIN32
 #include <boost/thread/thread.hpp>
 #include <boost/bind.hpp>
 #else 
-#include <pthread.h> 
+include <pthread.h>
 #endif
 
 using namespace std;
@@ -179,6 +180,23 @@ namespace
 SMESH_Mesh::~SMESH_Mesh()
 {
   MESSAGE("SMESH_Mesh::~SMESH_Mesh");
+
+  // Unassign algorithms in order to have all SMESH_subMeshEventListenerData deleted (22874)
+  SMESHDS_SubMeshIteratorPtr smIt = _myMeshDS->SubMeshes();
+  while ( smIt->more() ) {
+    // avoid usual removal of elements while processing RemoveHypothesis( algo ) event
+    const_cast<SMESHDS_SubMesh*>( smIt->next() )->Clear();
+  }
+  const ShapeToHypothesis & hyps = _myMeshDS->GetHypotheses();
+  for ( ShapeToHypothesis::Iterator s2hyps( hyps ); s2hyps.More(); s2hyps.Next() )
+  {
+    const TopoDS_Shape& s = s2hyps.Key();
+    THypList         hyps = s2hyps.ChangeValue(); // copy
+    THypList::const_iterator h = hyps.begin();
+    for ( ; h != hyps.end(); ++h )
+      if ( (*h)->GetType() != SMESHDS_Hypothesis::PARAM_ALGO )
+        RemoveHypothesis( s, (*h)->GetID() );
+  }
 
   // issue 0020340: EDF 1022 SMESH : Crash with FindNodeClosestTo in a second new study
   //   Notify event listeners at least that something happens
@@ -329,7 +347,16 @@ double SMESH_Mesh::GetShapeDiagonalSize(const TopoDS_Shape & aShape)
 {
   if ( !aShape.IsNull() ) {
     Bnd_Box Box;
-    GEOMUtils::PreciseBoundingBox(aShape, Box);
+    // avoid too long waiting on large shapes. PreciseBoundingBox() was added
+    // to assure same result which else depends on presence of triangulation (IPAL52557).
+    const int maxNbFaces = 4000;
+    int nbFaces = 0;
+    for ( TopExp_Explorer f( aShape, TopAbs_FACE ); f.More() && nbFaces < maxNbFaces; f.Next() )
+      ++nbFaces;
+    if ( nbFaces < maxNbFaces )
+      GEOMUtils::PreciseBoundingBox(aShape, Box);
+    else
+      BRepBndLib::Add( aShape, Box);
     if ( !Box.IsVoid() )
       return sqrt( Box.SquareExtent() );
   }

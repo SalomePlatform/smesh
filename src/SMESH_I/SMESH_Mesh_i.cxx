@@ -105,7 +105,7 @@ int SMESH_Mesh_i::_idGenerator = 0;
 
 SMESH_Mesh_i::SMESH_Mesh_i( PortableServer::POA_ptr thePOA,
                             SMESH_Gen_i*            gen_i,
-                            CORBA::Long studyId )
+                            CORBA::Long             studyId )
 : SALOME::GenericObj_i( thePOA )
 {
   MESSAGE("SMESH_Mesh_i");
@@ -1077,14 +1077,17 @@ void SMESH_Mesh_i::RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup 
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
-  if ( theGroup->_is_nil() || theGroup->IsEmpty() )
+  if ( theGroup->_is_nil() )
     return;
 
   vector<int> nodeIds; // to remove nodes becoming free
-  CORBA::Long elemID = theGroup->GetID( 1 );
-  int nbElemNodes = GetElemNbNodes( elemID );
-  if ( nbElemNodes > 0 )
-    nodeIds.reserve( theGroup->Size() * nbElemNodes );
+  if ( !theGroup->IsEmpty() )
+  {
+    CORBA::Long elemID = theGroup->GetID( 1 );
+    int nbElemNodes = GetElemNbNodes( elemID );
+    if ( nbElemNodes > 0 )
+      nodeIds.reserve( theGroup->Size() * nbElemNodes );
+  }
 
   // Remove contents
   SMESH::SMESH_IDSource_var idSrc = SMESH::SMESH_IDSource::_narrow( theGroup );

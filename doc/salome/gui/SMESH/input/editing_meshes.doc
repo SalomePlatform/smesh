@@ -16,10 +16,13 @@ You can also change values for the current hypothesis by clicking the
 \image html image122.png
 <center><em>"Edit Hypothesis" button</em></center>
 
+Mesh entities generated before using changed hypotheses are automatically removed.
+
 See how the mesh constructed on a geometrical object
-changes if we apply different algorithms to it.
+changes if we apply different meshing parameters to it.
 
 \image html edit_mesh1.png "Example of a mesh with Max. Element area 2D hypothesis roughly corresponding to 1D hypotheses on edges"
+<br>
 
 \image html edit_mesh_change_value_hyp.png "And now the Max Element area is greatly reduced"
 

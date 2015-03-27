@@ -182,6 +182,12 @@ namespace MeshEditor_I {
     {
       GetMeshDS()->ClearMesh();
     }
+    void Remove( SMDSAbs_ElementType type )
+    {
+      SMDS_ElemIteratorPtr eIt = GetMeshDS()->elementsIterator( type );
+      while ( eIt->more() )
+        GetMeshDS()->RemoveFreeElement( eIt->next(), /*sm=*/0, /*fromGroups=*/false );
+    }
   };// struct TPreviewMesh
 
   static SMESH_NodeSearcher *    theNodeSearcher    = 0;
@@ -2398,6 +2404,10 @@ SMESH_MeshEditor_i::RotationSweepObjects(const SMESH::ListOfIDSources & theNodes
                 << TVar( theTolerance      ) << ", "
                 << theMakeGroups             << " )";
   }
+  else
+  {
+    getPreviewMesh()->Remove( SMDSAbs_Volume );
+  }
 
   return aGroups ? aGroups : new SMESH::ListOfGroups;
 
@@ -2551,6 +2561,10 @@ SMESH_MeshEditor_i::ExtrusionSweepObjects(const SMESH::ListOfIDSources & theNode
                 << TVar( theNbOfSteps ) << ", "
                 << theToMakeGroups      << " )";
   }
+  else
+  {
+    getPreviewMesh()->Remove( SMDSAbs_Volume );
+  }
 
   return aGroups ? aGroups : new SMESH::ListOfGroups;
 
@@ -2623,6 +2637,10 @@ SMESH_MeshEditor_i::ExtrusionByNormal(const SMESH::ListOfIDSources& objects,
                 << ", " << dim
                 << " )";
   }
+  else
+  {
+    getPreviewMesh()->Remove( SMDSAbs_Volume );
+  }
 
   declareMeshModified( /*isReComputeSafe=*/true ); // does not influence Compute()
 
@@ -2674,6 +2692,10 @@ SMESH_MeshEditor_i::AdvancedExtrusion(const SMESH::long_array & theIDsOfElements
                 << theExtrFlags << ", "
                 << theSewTolerance << ", "
                 << theMakeGroups << " )";
+  }
+  else
+  {
+    getPreviewMesh()->Remove( SMDSAbs_Volume );
   }
 
   return aGroups ? aGroups : new SMESH::ListOfGroups;
@@ -2843,6 +2865,10 @@ SMESH_MeshEditor_i::ExtrusionAlongPathObjects(const SMESH::ListOfIDSources & the
                 << ( theHasRefPoint ? theRefPoint.y : 0 ) << ", "
                 << ( theHasRefPoint ? theRefPoint.z : 0 ) << " ), "
                 << theMakeGroups       << " )";
+  }
+  else
+  {
+    getPreviewMesh()->Remove( SMDSAbs_Volume );
   }
 
   return aGroups._retn();
