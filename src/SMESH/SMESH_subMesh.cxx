@@ -2469,7 +2469,9 @@ void SMESH_subMesh::deleteOwnListeners()
   {
     if ( !_father->MeshExists( d->myMeshID ))
       continue;
-    if ( _father->GetId() == d->myMeshID && !_father->GetSubMeshContaining( d->mySubMeshID ))
+    if ( _father->GetId() == d->myMeshID &&
+         this->GetId()    != d->mySubMeshID &&
+         !_father->GetSubMeshContaining( d->mySubMeshID ))
       continue;
     d->mySubMesh->DeleteEventListener( d->myListener );
   }

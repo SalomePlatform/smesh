@@ -64,20 +64,21 @@
 
 StdMeshersGUI_PropagationHelperWdg::
 StdMeshersGUI_PropagationHelperWdg( StdMeshersGUI_SubShapeSelectorWdg* subSelectWdg,
-                                    QWidget*                           parent ):
+                                    QWidget*                           parent,
+                                    bool                               show ):
   QWidget( parent ), mySubSelectWdg( subSelectWdg ), myActor( 0 ), myModelActor( 0 )
 {
-  QGroupBox* helperBox      = new QGroupBox( tr("HELPER"), this );
-  QCheckBox* showGeomChkBox = new QCheckBox( tr("SHOW_GEOMETRY"), helperBox );
-  QGroupBox* chainBox       = new QGroupBox( tr("PROPAGATION_CHAINS"), helperBox );
-  chainBox->setCheckable( true );
-  chainBox->setChecked( false );
-  myListWidget              = new QListWidget( helperBox );
+  QGroupBox* helperBox = new QGroupBox( tr("HELPER"), this );
+  myShowGeomChkBox     = new QCheckBox( tr("SHOW_GEOMETRY"), helperBox );
+  myChainBox           = new QGroupBox( tr("PROPAGATION_CHAINS"), helperBox );
+  myChainBox->setCheckable( true );
+  myChainBox->setChecked( false );
+  myListWidget         = new QListWidget( helperBox );
   myListWidget->setSelectionMode( QAbstractItemView::SingleSelection );
-  myAddButton               = new QPushButton( tr("ADD"), helperBox );
-  myReverseButton           = new QPushButton( tr("REVERSE"), helperBox );
+  myAddButton          = new QPushButton( tr("ADD"), helperBox );
+  myReverseButton      = new QPushButton( tr("REVERSE"), helperBox );
 
-  QGridLayout* chainsLayout = new QGridLayout( chainBox );
+  QGridLayout* chainsLayout = new QGridLayout( myChainBox );
   chainsLayout->setMargin( MARGIN );
   chainsLayout->setSpacing( SPACING );
   chainsLayout->addWidget(myListWidget,    0, 0, 3, 3);
@@ -87,21 +88,22 @@ StdMeshersGUI_PropagationHelperWdg( StdMeshersGUI_SubShapeSelectorWdg* subSelect
   QVBoxLayout* helperLayout = new QVBoxLayout( helperBox );
   helperLayout->setMargin( MARGIN );
   helperLayout->setSpacing( SPACING );
-  helperLayout->addWidget( showGeomChkBox );
-  helperLayout->addWidget( chainBox );
+  helperLayout->addWidget( myShowGeomChkBox );
+  helperLayout->addWidget( myChainBox );
 
   QVBoxLayout* lay = new QVBoxLayout( this );
   lay->setMargin( 0 );
   lay->setSpacing( SPACING );
   lay->addWidget( helperBox );
 
-  connect( showGeomChkBox,  SIGNAL( toggled(bool)), SLOT( onShowGeometry(bool)));
-  connect( chainBox,        SIGNAL( toggled(bool)), SLOT( updateList(bool)));
+  connect( myShowGeomChkBox,SIGNAL( toggled(bool)), SLOT( onShowGeometry(bool)));
+  connect( myChainBox,        SIGNAL( toggled(bool)), SLOT( updateList(bool)));
   connect( myListWidget,    SIGNAL( itemSelectionChanged()), SLOT( onListSelectionChanged() ));
   connect( myAddButton,     SIGNAL( clicked(bool)), SLOT( onAdd() ));
   connect( myReverseButton, SIGNAL( clicked(bool)), SLOT( onReverse() ));
 
-  onListSelectionChanged();
+  if ( show )
+    onListSelectionChanged();
 }
 
 //================================================================================
@@ -124,6 +126,31 @@ StdMeshersGUI_PropagationHelperWdg::~StdMeshersGUI_PropagationHelperWdg()
     myModelActor->Delete();
     myModelActor = 0;
   }
+}
+
+//================================================================================
+/*!
+ * \brief Switch off all buttons and previews
+ */
+//================================================================================
+
+void StdMeshersGUI_PropagationHelperWdg::Clear()
+{
+  myShowGeomChkBox->setChecked( false );
+
+  myListWidget->blockSignals( true );
+  myListWidget->clear();
+  myListWidget->blockSignals( false );
+
+  myChainBox->blockSignals( true );
+  myChainBox->setChecked( false );
+  myChainBox->blockSignals( false );
+
+  if ( myActor )
+    myActor->SetVisibility( false );
+
+  if ( myModelActor )
+    myModelActor->SetVisibility( false );
 }
 
 //================================================================================

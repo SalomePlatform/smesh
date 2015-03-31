@@ -225,7 +225,7 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
 
   if ( !aGeomEntry.isEmpty() || !aMainEntry.isEmpty() )
   {
-    myReversedEdgesHelper = new StdMeshersGUI_PropagationHelperWdg( myDirectionWidget, fr );
+    myReversedEdgesHelper = new StdMeshersGUI_PropagationHelperWdg( myDirectionWidget, fr, false );
     lay->addWidget( myReversedEdgesHelper );
     lay->setStretchFactor( myReversedEdgesHelper, 1 );
   }
@@ -235,6 +235,8 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
   connect( myTable, SIGNAL( valueChanged( int, int ) ), this, SLOT( onValueChanged() ) );
   connect( myExpr,  SIGNAL( textChanged( const QString& ) ), this, SLOT( onValueChanged() ) );
   connect( myConv,  SIGNAL( buttonClicked( int ) ), this, SLOT( onValueChanged() ) );
+
+  onValueChanged();
 
   return fr;
 }
@@ -438,10 +440,12 @@ void StdMeshersGUI_NbSegmentsCreator::onValueChanged()
 
   myScale->setShown( distr==1 );
   myLScale->setShown( distr==1 );
-  myReversedEdgesBox->setShown( !distr==0 );
-  myDirectionWidget->ShowPreview( !distr==0 );
-  if ( myReversedEdgesHelper )
-    myReversedEdgesHelper->setShown( !distr==0 );
+  myReversedEdgesBox->setShown( distr!=0 );
+  if ( myReversedEdgesHelper ) {
+    myReversedEdgesHelper->Clear();
+    myReversedEdgesHelper->setShown( distr!=0 );
+  }
+  myDirectionWidget->ShowPreview( distr!=0 );
 
   bool isFunc = distr==2 || distr==3;
   myPreview->setShown( isFunc );

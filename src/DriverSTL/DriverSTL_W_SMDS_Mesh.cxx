@@ -305,7 +305,7 @@ Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::writeAscii() const
   {
     const SMDS_MeshElement* aFace = itFaces->next();
     int nbTria = getTriangles( aFace, triaNodes );
-    
+
     for ( int iT = 0, iN = 0; iT < nbTria; ++iT )
     {
       gp_XYZ normale = getNormale( triaNodes[iN],
@@ -315,7 +315,7 @@ Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::writeAscii() const
                " facet normal % 12e % 12e % 12e\n"
                "   outer loop\n" ,
                normale.X(), normale.Y(), normale.Z());
-      aFile.writeRaw ( sval, 70 );
+      aFile.writeRaw ( sval, 70 + strlen( sval + 70 )); // at least 70 but can be more (WIN)
 
       for ( int jN = 0; jN < 3; ++jN, ++iN )
       {
@@ -323,11 +323,11 @@ Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::writeAscii() const
         sprintf (sval,
                  "     vertex % 12e % 12e % 12e\n",
                  node.X(), node.Y(), node.Z() );
-        aFile.writeRaw ( sval, 54 );
+        aFile.writeRaw ( sval, 54 + strlen( sval + 54 ));
       }
       aFile.writeRaw ("   endloop\n"
                       " endfacet\n", 21 );
-    } 
+    }
   }
   aFile.writeRaw ("endsolid\n" , 9 );
 

@@ -30,6 +30,8 @@ class QListWidget;
 class StdMeshersGUI_SubShapeSelectorWdg;
 class vtkRenderer;
 class GEOM_Actor;
+class QCheckBox;
+class QGroupBox;
 
 /*!
  * \brief A widget showing a list of propagation chains of EDGEs.
@@ -43,8 +45,11 @@ class STDMESHERSGUI_EXPORT StdMeshersGUI_PropagationHelperWdg : public QWidget
 
  public:
   StdMeshersGUI_PropagationHelperWdg( StdMeshersGUI_SubShapeSelectorWdg* subSelectWdg,
-                                      QWidget* parent = 0 );
+                                      QWidget* parent = 0,
+                                      bool show = true);
   ~StdMeshersGUI_PropagationHelperWdg();
+
+  void                           Clear();
 
  private slots:
 
@@ -64,9 +69,11 @@ class STDMESHERSGUI_EXPORT StdMeshersGUI_PropagationHelperWdg : public QWidget
   GEOM_Actor*                        myActor;
   GEOM_Actor*                        myModelActor;
 
-  QListWidget*                   myListWidget;
-  QPushButton*                   myAddButton;
-  QPushButton*                   myReverseButton;
+  QListWidget*                       myListWidget;
+  QPushButton*                       myAddButton;
+  QPushButton*                       myReverseButton;
+  QCheckBox*                         myShowGeomChkBox;
+  QGroupBox*                         myChainBox;
 
   std::vector< std::vector<int> >    myChains;
 };

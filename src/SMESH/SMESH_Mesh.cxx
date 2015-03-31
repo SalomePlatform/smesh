@@ -181,22 +181,10 @@ SMESH_Mesh::~SMESH_Mesh()
 {
   MESSAGE("SMESH_Mesh::~SMESH_Mesh");
 
-  // Unassign algorithms in order to have all SMESH_subMeshEventListenerData deleted (22874)
+  // avoid usual removal of elements while processing RemoveHypothesis( algo ) event
   SMESHDS_SubMeshIteratorPtr smIt = _myMeshDS->SubMeshes();
-  while ( smIt->more() ) {
-    // avoid usual removal of elements while processing RemoveHypothesis( algo ) event
+  while ( smIt->more() )
     const_cast<SMESHDS_SubMesh*>( smIt->next() )->Clear();
-  }
-  const ShapeToHypothesis & hyps = _myMeshDS->GetHypotheses();
-  for ( ShapeToHypothesis::Iterator s2hyps( hyps ); s2hyps.More(); s2hyps.Next() )
-  {
-    const TopoDS_Shape& s = s2hyps.Key();
-    THypList         hyps = s2hyps.ChangeValue(); // copy
-    THypList::const_iterator h = hyps.begin();
-    for ( ; h != hyps.end(); ++h )
-      if ( (*h)->GetType() != SMESHDS_Hypothesis::PARAM_ALGO )
-        RemoveHypothesis( s, (*h)->GetID() );
-  }
 
   // issue 0020340: EDF 1022 SMESH : Crash with FindNodeClosestTo in a second new study
   //   Notify event listeners at least that something happens
@@ -2276,8 +2264,8 @@ void SMESH_Mesh::fillAncestorsMap(const TopoDS_Shape& theShape)
         TopTools_ListIteratorOfListOfShape ancIt (ancList);
         while ( ancIt.More() && ancIt.Value().ShapeType() >= memberType )
           ancIt.Next();
-        if ( ancIt.More() )
-          ancList.InsertBefore( theShape, ancIt );
+        if ( ancIt.More() ) ancList.InsertBefore( theShape, ancIt );
+        else                ancList.Append( theShape );
       }
   }
   else // else added for 52457: Addition of hypotheses is 8 time longer than meshing
