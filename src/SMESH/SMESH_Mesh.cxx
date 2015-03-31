@@ -77,7 +77,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/bind.hpp>
 #else 
-include <pthread.h>
+#include <pthread.h>
 #endif
 
 using namespace std;
