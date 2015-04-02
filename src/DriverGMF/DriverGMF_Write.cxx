@@ -121,7 +121,7 @@ Driver_Mesh::Status DriverGMF_Write::Perform()
 {
   Kernel_Utils::Localizer loc;
 
-  const int dim = 3, version = sizeof(long) == 4 ? 2 : 3;
+  const int dim = 3, version = sizeof(double) < 8 ? 1 : 2;
 
   int meshID = GmfOpenMesh( myFile.c_str(), GmfWrite, version, dim );
   if ( !meshID )

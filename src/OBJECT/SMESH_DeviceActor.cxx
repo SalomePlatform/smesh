@@ -516,17 +516,17 @@ SMESH_DeviceActor
   myVisualObj->UpdateFunctor(theFunctor);
 
   using namespace SMESH::Controls;
-  if ( dynamic_cast<FreeBorders          *>(theFunctor.get()) ||
-       dynamic_cast<FreeFaces            *>(theFunctor.get()) ||
-       dynamic_cast<BareBorderVolume     *>(theFunctor.get()) ||
-       dynamic_cast<BareBorderFace       *>(theFunctor.get()) ||
-       dynamic_cast<OverConstrainedVolume*>(theFunctor.get()) ||
-       dynamic_cast<CoincidentElements1D *>(theFunctor.get()) ||
-       dynamic_cast<CoincidentElements2D *>(theFunctor.get()) ||
-       dynamic_cast<CoincidentElements3D *>(theFunctor.get()) ||
-       dynamic_cast<OverConstrainedFace  *>(theFunctor.get()))
+  Predicate* aPredicate = 0;
+  if (( aPredicate =  dynamic_cast<FreeBorders          *>(theFunctor.get())) ||
+      ( aPredicate =  dynamic_cast<FreeFaces            *>(theFunctor.get())) ||
+      ( aPredicate =  dynamic_cast<BareBorderVolume     *>(theFunctor.get())) ||
+      ( aPredicate =  dynamic_cast<BareBorderFace       *>(theFunctor.get())) ||
+      ( aPredicate =  dynamic_cast<OverConstrainedVolume*>(theFunctor.get())) ||
+      ( aPredicate =  dynamic_cast<CoincidentElements1D *>(theFunctor.get())) ||
+      ( aPredicate =  dynamic_cast<CoincidentElements2D *>(theFunctor.get())) ||
+      ( aPredicate =  dynamic_cast<CoincidentElements3D *>(theFunctor.get())) ||
+      ( aPredicate =  dynamic_cast<OverConstrainedFace  *>(theFunctor.get())))
   {
-    Predicate* aPredicate = dynamic_cast<Predicate*>(theFunctor.get());
     myExtractUnstructuredGrid->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
     vtkUnstructuredGrid* aGrid = myVisualObj->GetUnstructuredGrid();
     vtkIdType aNbCells = aGrid->GetNumberOfCells();
@@ -588,10 +588,9 @@ SMESH_DeviceActor
     SetUnstructuredGrid(aDataSet);
     aDataSet->Delete();
   }
-  else if(dynamic_cast<FreeNodes      *>(theFunctor.get()) ||
-          dynamic_cast<CoincidentNodes*>(theFunctor.get()))
+  else if (( aPredicate = dynamic_cast<FreeNodes      *>(theFunctor.get())) ||
+           ( aPredicate = dynamic_cast<CoincidentNodes*>(theFunctor.get())))
   {
-    Predicate* aPredicate = dynamic_cast<Predicate*>(theFunctor.get());
     myExtractUnstructuredGrid->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
     vtkIdType aNbNodes = myVisualObj->GetNbEntities(SMDSAbs_Node);
     for( vtkIdType i = 0; i < aNbNodes; i++ ){

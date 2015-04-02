@@ -425,7 +425,7 @@ protected:
   bool _requireDiscreteBoundary;// GetDim()-1 mesh must be present. Default TRUE
   bool _requireShape;           // work with GetDim()-1 mesh bound to geom only. Default TRUE
   bool _supportSubmeshes;       // if !_requireDiscreteBoundary. Default FALSE
-  bool _neededLowerHyps[4];     // hyp dims needed by algo that !NeedDiscreteBoundary(). Df. FALSE
+  bool _neededLowerHyps[4];     // hyp dims needed by algo that !_requireDiscreteBoundary. Df. FALSE
 
   // indicates if quadratic mesh creation is required,
   // is usually set like this: _quadraticMesh = SMESH_MesherHelper::IsQuadraticSubMesh(shape)
