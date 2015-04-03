@@ -13,7 +13,7 @@
     </message>
     <message>
         <source>TO_IGNORE_EDGES</source>
-        <translation>Edges without layers (inlets and oulets)</translation>
+        <translation>Edges without layers (inlets and outlets)</translation>
     </message>
     <message>
         <source>TO_IGNORE_FACES_OR_NOT</source>
@@ -25,7 +25,7 @@
     </message>
     <message>
         <source>TO_IGNORE_FACES</source>
-        <translation>Faces without layers (inlets and oulets)</translation>
+        <translation>Faces without layers (inlets and outlets)</translation>
     </message>
     <message>
         <source>BAD_FACES_WARNING</source>
@@ -249,7 +249,7 @@ this one for this mesh/sub-mesh.</translation>
     <message>
         <source>SMESH_FACES_WO_LAYERS</source>
         <translation>Faces without layers
-(inlets and oulets)</translation>
+(inlets and outlets)</translation>
     </message>
     <message>
         <source>SMESH_EDGES_WO_LAYERS</source>
