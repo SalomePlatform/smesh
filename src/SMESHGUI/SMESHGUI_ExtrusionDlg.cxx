@@ -162,14 +162,17 @@ SMESHGUI_3TypesSelector::SMESHGUI_3TypesSelector( QWidget * parent ):
   aListOfFilters.append(new SMESH_TypeFilter (SMESH::GROUP_NODE));
   myFilter[0] = 
     new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR, /*takeOwnership=*/true);
+  aListOfFilters.append(0);
   aListOfFilters[0] = new SMESH_TypeFilter (SMESH::MESH);
   aListOfFilters[1] = new SMESH_TypeFilter (SMESH::SUBMESH_EDGE);
   aListOfFilters[2] = new SMESH_TypeFilter (SMESH::GROUP_EDGE);
+  aListOfFilters[3] = new SMESH_TypeFilter (SMESH::IDSOURCE_EDGE); // for sub-mesh on group of EDGEs
   myFilter[1] = 
     new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR, /*takeOwnership=*/true);
   aListOfFilters[0] = new SMESH_TypeFilter (SMESH::MESH);
   aListOfFilters[1] = new SMESH_TypeFilter (SMESH::SUBMESH_FACE);
   aListOfFilters[2] = new SMESH_TypeFilter (SMESH::GROUP_FACE);
+  aListOfFilters[3] = new SMESH_TypeFilter (SMESH::IDSOURCE_FACE); // for sub-mesh on group of FACEs
   myFilter[2] = 
     new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR, /*takeOwnership=*/true);
 
@@ -864,7 +867,7 @@ bool SMESHGUI_ExtrusionDlg::isValuesValid()
   }
   else if ( ExtrMethod_RBut2->isChecked() )
   {
-    aModule = (double)SpinBox_VDist->value();
+    aModule = Abs((double)SpinBox_VDist->value());
   }
   
   return aModule > 1.0E-38;

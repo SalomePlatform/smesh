@@ -3,7 +3,10 @@
 \page make_2dmesh_from_3d_page Generate boundary elements
 
 \n This functionality allows to generate mesh elements on the borders of
-elements of a higher dimension.
+elements of a higher dimension, for example, to create 2D elements
+around a block of 3D elements as in the following figure.
+
+\image html 2d_from_3d_example.png "Missing 2D elements were generated"
 
 <em>To generate border elements:</em>
 <ol>

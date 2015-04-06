@@ -2524,14 +2524,14 @@ SMESH_MeshEditor_i::ExtrusionSweepObjects(const SMESH::ListOfIDSources & theNode
     idSourceToSet( theFaces[i], getMeshDS(), elemsNodes[0], SMDSAbs_Face );
 
   TIDSortedElemSet* workElements = & elemsNodes[0], copyElements[2];
+  SMDSAbs_ElementType previewType = SMDSAbs_All; //SMDSAbs_Face;
   if ( myIsPreviewMode )
   {
-    SMDSAbs_ElementType previewType = SMDSAbs_All; //SMDSAbs_Face;
     // if ( (*elemsNodes.begin())->GetType() == SMDSAbs_Node )
     //   previewType = SMDSAbs_Edge;
 
     SMDSAbs_ElementType select = SMDSAbs_All, avoid = SMDSAbs_Volume;
-    TPreviewMesh * tmpMesh = getPreviewMesh();
+    TPreviewMesh * tmpMesh = getPreviewMesh( previewType );
     tmpMesh->Copy( elemsNodes[0], copyElements[0], select, avoid );
     tmpMesh->Copy( elemsNodes[1], copyElements[1], select, avoid );
     workElements = & copyElements[0];
@@ -2561,7 +2561,7 @@ SMESH_MeshEditor_i::ExtrusionSweepObjects(const SMESH::ListOfIDSources & theNode
   }
   else
   {
-    getPreviewMesh()->Remove( SMDSAbs_Volume );
+    getPreviewMesh( previewType )->Remove( SMDSAbs_Volume );
   }
 
   return aGroups ? aGroups : new SMESH::ListOfGroups;
@@ -2607,9 +2607,9 @@ SMESH_MeshEditor_i::ExtrusionByNormal(const SMESH::ListOfIDSources& objects,
     idSourceToSet( objects[i], getMeshDS(), elemsNodes[0], elemType );
 
   TIDSortedElemSet* workElements = & elemsNodes[0], copyElements[2];
+  SMDSAbs_ElementType previewType = SMDSAbs_Face;
   if ( myIsPreviewMode )
   {
-    SMDSAbs_ElementType previewType = SMDSAbs_Face;
     SMDSAbs_ElementType select = SMDSAbs_All, avoid = SMDSAbs_Volume;
     TPreviewMesh * tmpMesh = getPreviewMesh( previewType );
     tmpMesh->Copy( elemsNodes[0], copyElements[0], select, avoid );
@@ -2637,7 +2637,7 @@ SMESH_MeshEditor_i::ExtrusionByNormal(const SMESH::ListOfIDSources& objects,
   }
   else
   {
-    getPreviewMesh()->Remove( SMDSAbs_Volume );
+    getPreviewMesh( previewType )->Remove( SMDSAbs_Volume );
   }
 
   declareMeshModified( /*isReComputeSafe=*/true ); // does not influence Compute()

@@ -59,7 +59,10 @@ namespace SMESH{
     GROUP_0D,
     GROUP_BALL,
     COMPONENT,
-    IDSOURCE
+    IDSOURCE,
+    IDSOURCE_EDGE, // IDSource including edges
+    IDSOURCE_FACE,
+    IDSOURCE_VOLUME
   };
 };
 #endif

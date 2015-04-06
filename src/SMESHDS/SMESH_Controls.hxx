@@ -24,7 +24,8 @@
 #define _SMESH_CONTROLS_HXX_
 
 // This file is named incosistently with others, i.e. not SMESHDS_Controls.hxx,
-// because it was moved from ../Controls/SMESH_Controls.hxx
+// because it was moved from ../Controls/SMESH_Controls.hxx.
+// It was moved here for the sake of SMESHDS_GroupOnFilter
 
 #include "SMDSAbs_ElementType.hxx"
 

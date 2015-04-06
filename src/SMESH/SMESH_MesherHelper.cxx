@@ -302,10 +302,20 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
             isSeam = ( Abs( uv1.Coord(2) - myPar1[1] ) < Precision::PConfusion() ||
                        Abs( uv1.Coord(2) - myPar2[1] ) < Precision::PConfusion() );
           }
+          if ( isSeam ) // vertices are on period boundary, check a middle point (23032)
+          {
+            double f,l, r = 0.2345;
+            Handle(Geom2d_Curve) C2d = BRep_Tool::CurveOnSurface( edge, face, f, l );
+            uv2 = C2d->Value( f * r + l * ( 1.-r ));
+            if ( du < Precision::PConfusion() )
+              isSeam = ( Abs( uv1.Coord(1) - uv2.Coord(1) ) < Precision::PConfusion() );
+            else
+              isSeam = ( Abs( uv1.Coord(2) - uv2.Coord(2) ) < Precision::PConfusion() );
+          }
         }
         if ( isSeam )
         {
-          // store seam shape indices, negative if shape encounters twice
+          // store seam shape indices, negative if shape encounters twice ('real seam')
           mySeamShapeIds.insert( IsSeamShape( edgeID ) ? -edgeID : edgeID );
           for ( TopExp_Explorer v( edge, TopAbs_VERTEX ); v.More(); v.Next() ) {
             int vertexID = meshDS->ShapeToIndex( v.Current() );

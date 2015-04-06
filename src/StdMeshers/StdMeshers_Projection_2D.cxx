@@ -1088,20 +1088,22 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     // Check if node projection to a face is needed
     Bnd_B2d uvBox;
     SMDS_ElemIteratorPtr faceIt = srcSubMesh->GetSubMeshDS()->GetElements();
-    int nbFaceNodes = 0;
-    for ( ; nbFaceNodes < 3 && faceIt->more();  ) {
+    set< const SMDS_MeshNode* > faceNodes;
+    for ( ; faceNodes.size() < 3 && faceIt->more();  ) {
       const SMDS_MeshElement* face = faceIt->next();
       SMDS_ElemIteratorPtr nodeIt = face->nodesIterator();
       while ( nodeIt->more() ) {
         const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
-        if ( node->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE ) {
-          nbFaceNodes++;
+        if ( node->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE &&
+             faceNodes.insert( node ).second )
           uvBox.Add( helper.GetNodeUV( srcFace, node ));
-        }
       }
     }
-    const bool toProjectNodes =
-      ( nbFaceNodes > 0 && ( uvBox.IsVoid() || uvBox.SquareExtent() < DBL_MIN ));
+    bool toProjectNodes = false;
+    if ( faceNodes.size() == 1 )
+      toProjectNodes = ( uvBox.IsVoid() || uvBox.CornerMin().IsEqual( gp_XY(0,0), 1e-12 ));
+    else if ( faceNodes.size() > 1 )
+      toProjectNodes = ( uvBox.IsVoid() || uvBox.SquareExtent() < DBL_MIN );
 
     // Find the corresponding source and target vertex
     // and <theReverse> flag needed to call mapper.Apply()
@@ -1109,13 +1111,10 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     TopoDS_Vertex srcV1, tgtV1;
     bool reverse = false;
 
-    if ( _sourceHypo->HasVertexAssociation() ) {
-      srcV1 = _sourceHypo->GetSourceVertex(1);
-      tgtV1 = _sourceHypo->GetTargetVertex(1);
-    } else {
-      srcV1 = TopoDS::Vertex( TopExp_Explorer( srcFace, TopAbs_VERTEX ).Current() );
-      tgtV1 = TopoDS::Vertex( shape2ShapeMap( srcV1, /*isSrc=*/true ));
-    }
+    TopExp_Explorer vSrcExp( srcFace, TopAbs_VERTEX );
+    srcV1 = TopoDS::Vertex( vSrcExp.Current() );
+    tgtV1 = TopoDS::Vertex( shape2ShapeMap( srcV1, /*isSrc=*/true ));
+
     list< TopoDS_Edge > tgtEdges, srcEdges;
     list< int > nbEdgesInWires;
     SMESH_Block::GetOrderedEdges( tgtFace, tgtEdges, nbEdgesInWires, tgtV1 );
@@ -1127,7 +1126,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
       TopoDS_Shape srcE1bis = shape2ShapeMap( tgtE1 );
       reverse = ( ! srcE1.IsSame( srcE1bis ));
       if ( reverse &&
-           _sourceHypo->HasVertexAssociation() &&
+           //_sourceHypo->HasVertexAssociation() &&
            nbEdgesInWires.front() > 2 &&
            helper.IsRealSeam( tgtEdges.front() ))
       {
@@ -1136,11 +1135,30 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
         // we can't use only theReverse flag to correctly associate source
         // and target faces in the mapper. Thus we select srcV1 so that
         // GetOrderedEdges() to return EDGEs in a needed order
-        list< TopoDS_Edge >::iterator edge = srcEdges.begin();
-        for ( ; edge != srcEdges.end(); ++edge ) {
-          if ( srcE1bis.IsSame( *edge )) {
-            srcV1 = helper.IthVertex( 0, *edge );
-            break;
+        TopoDS_Face tgtFaceBis = tgtFace;
+        for ( vSrcExp.Next(); vSrcExp.More(); )
+        {
+          tgtFaceBis.Reverse();
+          tgtEdges.clear();
+          SMESH_Block::GetOrderedEdges( tgtFaceBis, tgtEdges, nbEdgesInWires, tgtV1 );
+          bool ok = true;
+          list< TopoDS_Edge >::iterator edgeS = srcEdges.begin(), edgeT = tgtEdges.begin();
+          for ( ; edgeS != srcEdges.end() && ok ; ++edgeS, ++edgeT )
+            ok = edgeS->IsSame( shape2ShapeMap( *edgeT ));
+          if ( ok )
+            break; // FOUND!
+
+          reverse = !reverse;
+          if ( reverse )
+          {
+            vSrcExp.Next();
+          }
+          else
+          {
+            srcV1 = TopoDS::Vertex( vSrcExp.Current() );
+            tgtV1 = TopoDS::Vertex( shape2ShapeMap( srcV1, /*isSrc=*/true ));
+            srcEdges.clear();
+            SMESH_Block::GetOrderedEdges( srcFace, srcEdges, nbEdgesInWires, srcV1 );
           }
         }
       }
@@ -1168,8 +1186,11 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     // Compute mesh on a target face
 
     mapper.Apply( tgtFace, tgtV1, reverse );
-    if ( mapper.GetErrorCode() != SMESH_Pattern::ERR_OK )
+    if ( mapper.GetErrorCode() != SMESH_Pattern::ERR_OK ) {
+      // std::ofstream file("/tmp/Pattern.smp" );
+      // mapper.Save( file );
       return error("Can't apply source mesh pattern to the face");
+    }
 
     // Create the mesh
 

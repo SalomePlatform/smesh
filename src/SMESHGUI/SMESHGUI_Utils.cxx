@@ -189,7 +189,7 @@ namespace SMESH
   }
 
   CORBA::Object_var SObjectToObject (_PTR(SObject) theSObject,
-                                     _PTR(Study)   theStudy)
+                                     _PTR(Study)   /*theStudy*/)
   {
     SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>
       (SUIT_Session::session()->activeApplication());
@@ -197,11 +197,11 @@ namespace SMESH
       _PTR(GenericAttribute) anAttr;
       if (theSObject->FindAttribute(anAttr, "AttributeIOR")) {
         _PTR(AttributeIOR) anIOR = anAttr;
-        CORBA::String_var aVal = anIOR->Value().c_str();
+        std::string aVal = anIOR->Value();
         // string_to_object() DOC: If the input string is not valid ...
         // a CORBA::SystemException is thrown.
-        if ( aVal && strlen( aVal ) > 0 )
-          return app->orb()->string_to_object(aVal);
+        if ( aVal.size() > 0 )
+          return app->orb()->string_to_object( aVal.c_str() );
       }
     }
     return CORBA::Object::_nil();
@@ -209,7 +209,7 @@ namespace SMESH
 
   CORBA::Object_var SObjectToObject (_PTR(SObject) theSObject)
   {
-    _PTR(Study) aStudy = GetActiveStudyDocument();
+    _PTR(Study) aStudy;// = GetActiveStudyDocument(); -- aStudy is not used
     return SObjectToObject(theSObject,aStudy);
   }
 

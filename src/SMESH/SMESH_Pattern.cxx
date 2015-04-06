@@ -716,7 +716,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
     {
       if ( isClosed && ( iE == 0 || iE == *nbEinW ))
       {
-        // new wire begins; put EDGEs in eVec
+        // new wire begins; put wire EDGEs in eVec
         list<TopoDS_Edge>::iterator eEnd = elIt;
         std::advance( eEnd, *nbEinW );
         eVec.assign( elIt, eEnd );
@@ -733,7 +733,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
       TopoDS_Shape v1 = TopExp::FirstVertex( edge, true ); // always FORWARD
       TopoDS_Shape v2 = TopExp::LastVertex( edge, true ); // always REVERSED
       // to make adjacent edges share key-point, we make v2 FORWARD too
-      // (as we have different points for same shape with different orienation)
+      // (as we have different points for same shape with different orientation)
       v2.Reverse();
 
       // on closed face we must have REVERSED some of seam vertices
@@ -745,7 +745,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
             v2.Reverse();
           }
         }
-        else { // on CLOSED edge (i.e. having one vertex with different orienations)
+        else { // on CLOSED edge (i.e. having one vertex with different orientations)
           for ( int is2 = 0; is2 < 2; ++is2 ) {
             TopoDS_Shape & v = is2 ? v2 : v1;
             if ( helper.IsRealSeam( v ) ) {
@@ -2516,7 +2516,7 @@ bool SMESH_Pattern::Apply (const TopoDS_Face&   theFace,
       list< TopoDS_Edge >& wire = (*wlIt);
       int nbEdges = wire.size();
       wlIt++;
-      if ( wlIt == wireList.end() || (*wlIt).size() != nbEdges ) // a unique size wire
+      if ( wlIt != wireList.end() && (*wlIt).size() != nbEdges ) // a unique size wire
       {
         // choose the best first edge of a wire
         setFirstEdge( wire, id1 );
