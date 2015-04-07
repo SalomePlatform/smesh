@@ -66,6 +66,17 @@ StdMeshers_Projection_3D_i::~StdMeshers_Projection_3D_i()
   return ( ::StdMeshers_Projection_3D* )myBaseImpl;
 }
 
+//================================================================================
+/*!
+ * \brief Return true if the algorithm is applicable to a shape
+ */
+//================================================================================
+
+CORBA::Boolean StdMeshers_Projection_3D_i::IsApplicable(const TopoDS_Shape &S,
+                                                        CORBA::Boolean toCheckAll)
+{
+  return ::StdMeshers_Projection_3D::IsApplicable( S, toCheckAll );
+}
 
 //=============================================================================
 /*!

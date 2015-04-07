@@ -756,6 +756,10 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
           TopoDS_Face nextFace1 = GetNextFace( edgeToFace1, *eIt1, face1 );
           TopoDS_Face nextFace2 = GetNextFace( edgeToFace2, *eIt2, face2 );
           if ( !nextFace1.IsNull() && !nextFace2.IsNull() ) {
+            if ( SMESH_MesherHelper::GetSubShapeOri( nextFace1, *eIt1 ) == eIt1->Orientation() )
+              nextFace1.Reverse();
+            if ( SMESH_MesherHelper::GetSubShapeOri( nextFace2, *eIt2 ) == eIt2->Orientation() )
+              nextFace2.Reverse();
             FE1.push_back( make_pair( nextFace1, *eIt1 ));
             FE2.push_back( make_pair( nextFace2, *eIt2 ));
           }
@@ -1170,11 +1174,11 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       if ( !VV1[1].IsNull() ) {
         InsertAssociation( VV1[0], VV2[0], theMap );
         InsertAssociation( VV1[1], VV2[1], theMap );
+        TShapeShapeMap::EAssocType asType = theMap._assocType;
+        theMap.SetAssocType( TShapeShapeMap::PROPAGATION );
         if ( FindSubShapeAssociation( theShape1, theMesh1, theShape2, theMesh2, theMap ))
-        {
-          theMap.SetAssocType( TShapeShapeMap::PROPAGATION );
           return true;
-        }
+        theMap._assocType = asType;
       }
     }
     break; // try by vertex closeness
@@ -1230,11 +1234,11 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       {
         InsertAssociation( VV1[0], VV1[0], theMap );
         InsertAssociation( VV1[1], VV1[1], theMap );
-        if (FindSubShapeAssociation( theShape1, theMesh1, theShape2, theMesh2, theMap ))
-        {
-          theMap.SetAssocType( TShapeShapeMap::COMMON_VERTEX );
+        TShapeShapeMap::EAssocType asType = theMap._assocType;
+        theMap.SetAssocType( TShapeShapeMap::COMMON_VERTEX );
+        if ( FindSubShapeAssociation( theShape1, theMesh1, theShape2, theMesh2, theMap ))
           return true;
-        }
+        theMap._assocType = asType;
       }
     }
   }
@@ -1593,20 +1597,21 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face&    face1,
               // reverse edges2 if needed
               if ( SMESH_MesherHelper::IsClosedEdge( *edge1Beg ))
               {
-                double f,l;
-                Handle(Geom2d_Curve) c1 = BRep_Tool::CurveOnSurface( *edge1Beg, face1,f,l );
-                if (  edge1Beg->Orientation() == TopAbs_REVERSED )
-                  std::swap( f,l );
-                gp_Pnt2d uv1 = dUV + c1->Value( f * 0.8 + l * 0.2 ).XY();
+                // Commented (so far?) as it's not checked if orientation must be same or reversed
+                // double f,l;
+                // Handle(Geom2d_Curve) c1 = BRep_Tool::CurveOnSurface( *edge1Beg, face1,f,l );
+                // if (  edge1Beg->Orientation() == TopAbs_REVERSED )
+                //   std::swap( f,l );
+                // gp_Pnt2d uv1 = dUV + c1->Value( f * 0.8 + l * 0.2 ).XY();
 
-                Handle(Geom2d_Curve) c2 = BRep_Tool::CurveOnSurface( *edge2Beg, face2,f,l );
-                if (  edge2Beg->Orientation() == TopAbs_REVERSED )
-                  std::swap( f,l );
-                gp_Pnt2d uv2 = c2->Value( f * 0.8 + l * 0.2 );
-                gp_Pnt2d uv3 = c2->Value( l * 0.8 + f * 0.2 );
+                // Handle(Geom2d_Curve) c2 = BRep_Tool::CurveOnSurface( *edge2Beg, face2,f,l );
+                // if (  edge2Beg->Orientation() == TopAbs_REVERSED )
+                //   std::swap( f,l );
+                // gp_Pnt2d uv2 = c2->Value( f * 0.8 + l * 0.2 );
+                // gp_Pnt2d uv3 = c2->Value( l * 0.8 + f * 0.2 );
 
-                if ( uv1.SquareDistance( uv2 ) > uv1.SquareDistance( uv3 ))
-                  edge2Beg->Reverse();
+                // if ( uv1.SquareDistance( uv2 ) > uv1.SquareDistance( uv3 ))
+                //   edge2Beg->Reverse();
               }
               else
               {

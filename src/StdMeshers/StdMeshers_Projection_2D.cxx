@@ -427,15 +427,44 @@ namespace {
     // get ordered src EDGEs
     TError err;
     srcWires = StdMeshers_FaceSide::GetFaceWires( srcFace, *srcMesh,/*skipMediumNodes=*/0, err);
-    if ( err && !err->IsOK() )
+    if ( err && !err->IsOK() || srcWires.empty() )
       return err;
+
+    SMESH_MesherHelper srcHelper( *srcMesh );
+    srcHelper.SetSubShape( srcFace );
 
     // make corresponding sequence of tgt EDGEs
     tgtWires.resize( srcWires.size() );
     for ( size_t iW = 0; iW < srcWires.size(); ++iW )
     {
-      list< TopoDS_Edge > tgtEdges;
+      // check ori
+      bool reverse = false;
       StdMeshers_FaceSidePtr srcWire = srcWires[iW];
+      // for ( int iE = 0; iE < srcWire->NbEdges(); ++iE )
+      // {
+      //   if ( srcHelper.IsRealSeam( srcWire->EdgeID( iE )))
+      //     continue;
+      //   TopoDS_Shape srcE = srcWire->Edge( iE );
+      //   TopoDS_Shape tgtE = shape2ShapeMap( srcE, /*isSrc=*/true);
+      //   if ( shape2ShapeMap._assocType == TShapeShapeMap::PROPAGATION ||
+      //        shape2ShapeMap._assocType == TShapeShapeMap::PROPAGATION)
+      //   {
+      //     reverse = false;
+      //   }
+      //   else if ( tgtMesh == srcMesh )
+      //   {
+      //     reverse = (( srcE.Orientation() == srcHelper.GetSubShapeOri( srcFace, srcE )) !=
+      //                ( tgtE.Orientation() == srcHelper.GetSubShapeOri( tgtFace, tgtE )));
+      //   }
+      //   else
+      //   {
+      //     TopoDS_Shape srcEbis = shape2ShapeMap( tgtE, /*isSrc=*/false );
+      //     reverse = ( srcE.Orientation() != srcEbis.Orientation() );
+      //   }
+      //   break;
+      // }
+
+      list< TopoDS_Edge > tgtEdges;
       TopTools_IndexedMapOfShape edgeMap; // to detect seam edges
       for ( int iE = 0; iE < srcWire->NbEdges(); ++iE )
       {
@@ -443,6 +472,7 @@ namespace {
         TopoDS_Edge     tgtE = TopoDS::Edge( shape2ShapeMap( srcE, /*isSrc=*/true));
         TopoDS_Shape srcEbis = shape2ShapeMap( tgtE, /*isSrc=*/false );
         if ( srcE.Orientation() != srcEbis.Orientation() )
+          //if ( reverse )
           tgtE.Reverse();
         // reverse a seam edge encountered for the second time
         const int index = edgeMap.Add( tgtE );
@@ -999,6 +1029,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     srcMesh = tgtMesh;
 
   SMESHDS_Mesh * meshDS = theMesh.GetMeshDS();
+  SMESH_MesherHelper helper( theMesh );
 
   // ---------------------------
   // Make sub-shapes association
@@ -1015,8 +1046,8 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   {
     if ( srcShape.ShapeType() == TopAbs_FACE )
     {
-      int nbE1 = SMESH_MesherHelper::Count( tgtFace, TopAbs_EDGE, /*ignoreSame=*/true );
-      int nbE2 = SMESH_MesherHelper::Count( srcShape, TopAbs_EDGE, /*ignoreSame=*/true );
+      int nbE1 = helper.Count( tgtFace, TopAbs_EDGE, /*ignoreSame=*/true );
+      int nbE2 = helper.Count( srcShape, TopAbs_EDGE, /*ignoreSame=*/true );
       if ( nbE1 != nbE2 )
         return error(COMPERR_BAD_SHAPE,
                      SMESH_Comment("Different number of edges in source and target faces: ")
@@ -1026,6 +1057,23 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   }
   TopoDS_Face srcFace = TopoDS::Face( shape2ShapeMap( tgtFace ).Oriented(TopAbs_FORWARD));
 
+  // orient faces
+  // if ( srcMesh == tgtMesh )
+  // {
+  //   TopoDS_Shape solid =
+  //     helper.GetCommonAncestor( srcFace, tgtFace, *tgtMesh, TopAbs_SOLID );
+  //   if ( !solid.IsNull() )
+  //   {
+  //     srcFace.Orientation( helper.GetSubShapeOri( solid, srcFace ));
+  //     tgtFace.Orientation( helper.GetSubShapeOri( solid, tgtFace ));
+  //   }
+  //   else if ( helper.NbAncestors( srcFace, *tgtMesh, TopAbs_SOLID ) == 1 &&
+  //             helper.NbAncestors( tgtFace, *tgtMesh, TopAbs_SOLID ) == 1 )
+  //   {
+  //     srcFace.Orientation( helper.GetSubShapeOri( tgtMesh->GetShapeToMesh(), srcFace ));
+  //     tgtFace.Orientation( helper.GetSubShapeOri( tgtMesh->GetShapeToMesh(), tgtFace ));
+  //   }
+  // }
   // ----------------------------------------------
   // Assure that mesh on a source Face is computed
   // ----------------------------------------------
@@ -1072,7 +1120,6 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
                                       shape2ShapeMap, _src2tgtNodes, is1DComputed);
   }
 
-  SMESH_MesherHelper helper( theMesh );
   helper.SetSubShape( tgtFace );
 
   // it will remove mesh built on edges and vertices in failure case
@@ -1308,8 +1355,8 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
              u2nodesOnSeam.size()            > 0 &&
              seam.ShapeType() == TopAbs_EDGE )
         {
-          int nbE1 = SMESH_MesherHelper::Count( tgtFace, TopAbs_EDGE, /*ignoreSame=*/true );
-          int nbE2 = SMESH_MesherHelper::Count( srcFace, TopAbs_EDGE, /*ignoreSame=*/true );
+          int nbE1 = helper.Count( tgtFace, TopAbs_EDGE, /*ignoreSame=*/true );
+          int nbE2 = helper.Count( srcFace, TopAbs_EDGE, /*ignoreSame=*/true );
           if ( nbE1 != nbE2 ) // 2 EDGEs are mapped to a seam EDGE
           {
             // find the 2 EDGEs of srcFace

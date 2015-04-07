@@ -225,7 +225,7 @@ STDMESHERS_I_EXPORT
     else if (strcmp(aHypName, "Projection_2D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_Projection_2D_i>;
     else if (strcmp(aHypName, "Projection_3D") == 0)
-      aCreator = new StdHypothesisCreator_i<StdMeshers_Projection_3D_i, StdMeshers_Hexa_3D_i>;
+      aCreator = new StdHypothesisCreator_i<StdMeshers_Projection_3D_i, StdMeshers_Projection_3D_i>;
     else if (strcmp(aHypName, "Prism_3D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_Prism_3D_i, StdMeshers_Prism_3D_i>;
     else if (strcmp(aHypName, "RadialPrism_3D") == 0)

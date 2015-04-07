@@ -37,6 +37,7 @@
 #include "StdMeshers_Projection_3D.hxx"
 
 class SMESH_Gen;
+class TopoDS_Shape;
 
 // ======================================================
 // Projection 3D algorithm
@@ -57,6 +58,9 @@ public:
 
   // Get implementation
   ::StdMeshers_Projection_3D* GetImpl();
+
+  // Return true if the algorithm is applicable to a shape
+  static CORBA::Boolean IsApplicable(const TopoDS_Shape &S, CORBA::Boolean toCheckAll);
 };
 
 // ======================================================

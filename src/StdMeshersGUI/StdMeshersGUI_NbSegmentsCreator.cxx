@@ -223,6 +223,7 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
   lay->setStretchFactor( GroupC1, 1);
   lay->setStretchFactor( myReversedEdgesBox, 1);
 
+  myReversedEdgesHelper = 0;
   if ( !aGeomEntry.isEmpty() || !aMainEntry.isEmpty() )
   {
     myReversedEdgesHelper = new StdMeshersGUI_PropagationHelperWdg( myDirectionWidget, fr, false );

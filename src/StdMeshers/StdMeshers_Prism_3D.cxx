@@ -2549,7 +2549,7 @@ namespace // utils used by StdMeshers_Prism_3D::IsApplicable()
       for ( iE = 0; iE < *nbE; ++e, ++iE )
         if ( SMESH_Algo::isDegenerated( *e ))
         {
-          ee.erase( e );
+          e = --ee.erase( e );
           --(*nbE);
           --iE;
         }

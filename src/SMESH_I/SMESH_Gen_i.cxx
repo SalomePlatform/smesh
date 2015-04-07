@@ -5140,8 +5140,7 @@ CORBA::Boolean SMESH_Gen_i::IsApplicable ( const char*           theAlgoType,
   if (aCreator)
   {
     TopoDS_Shape shape = GeomObjectToShape( theGeomObject );
-    if ( !shape.IsNull() )
-      return aCreator->IsApplicable( shape, toCheckAll );
+    return shape.IsNull() || aCreator->IsApplicable( shape, toCheckAll );
   }
   else
   {
@@ -5149,6 +5148,10 @@ CORBA::Boolean SMESH_Gen_i::IsApplicable ( const char*           theAlgoType,
   }
 
   SMESH_CATCH( SMESH::doNothing );
+
+#ifdef _DEBUG_
+  cout << "SMESH_Gen_i::IsApplicable(): exception in " << ( theAlgoType ? theAlgoType : "") << endl;
+#endif
   return true;
 }
 

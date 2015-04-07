@@ -57,7 +57,9 @@ public:
    */
   virtual void SetEventListener(SMESH_subMesh* whenSetToSubMesh);
   
-protected:
+  static bool IsApplicable(const TopoDS_Shape & aShape, bool toCheckAll);
+
+ protected:
 
   const StdMeshers_ProjectionSource3D* _sourceHypo;
 

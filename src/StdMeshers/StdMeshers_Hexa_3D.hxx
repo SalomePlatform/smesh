@@ -55,7 +55,8 @@ public:
                         MapShapeNbElems& aResMap);
 
   static bool IsApplicable(const TopoDS_Shape & aShape, bool toCheckAll);
-protected:
+
+ protected:
 
   const StdMeshers_ViscousLayers* _viscousLayersHyp;
 };

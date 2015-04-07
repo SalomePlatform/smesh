@@ -541,3 +541,39 @@ void StdMeshers_Projection_3D::SetEventListener(SMESH_subMesh* subMesh)
                                 _sourceHypo->GetSourceMesh() );
 }
   
+//================================================================================
+/*!
+ * \brief Return true if the algorithm can mesh this shape
+ *  \param [in] aShape - shape to check
+ *  \param [in] toCheckAll - if true, this check returns OK if all shapes are OK,
+ *              else, returns OK if at least one shape is OK
+ */
+//================================================================================
+
+bool StdMeshers_Projection_3D::IsApplicable(const TopoDS_Shape & aShape, bool toCheckAll)
+{
+  TopExp_Explorer exp0( aShape, TopAbs_SOLID );
+  if ( !exp0.More() ) return false;
+
+  TopTools_IndexedMapOfOrientedShape blockShapes;
+  TopoDS_Vertex v;
+  TopoDS_Shell shell;
+  for ( ; exp0.More(); exp0.Next() )
+  {
+    int nbFoundShells = 0;
+    TopExp_Explorer exp1( exp0.Current(), TopAbs_SHELL );
+    for ( ; exp1.More(); exp1.Next(), ++nbFoundShells )
+    {
+      shell = TopoDS::Shell( exp1.Current() );
+      if ( nbFoundShells == 2 ) break;
+    }
+    if ( nbFoundShells != 1 ) {
+      if ( toCheckAll ) return false;
+      continue;
+    }   
+    bool isBlock = SMESH_Block::FindBlockShapes( shell, v, v, blockShapes );
+    if ( toCheckAll && !isBlock ) return false;
+    if ( !toCheckAll && isBlock ) return true;
+  }
+  return toCheckAll;
+}
