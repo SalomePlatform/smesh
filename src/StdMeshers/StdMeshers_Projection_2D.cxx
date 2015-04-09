@@ -56,6 +56,7 @@
 #include <TopExp_Explorer.hxx>
 #include <TopTools_DataMapIteratorOfDataMapOfShapeShape.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
+#include <TopTools_MapOfShape.hxx>
 #include <TopoDS.hxx>
 #include <gp_Ax2.hxx>
 #include <gp_Ax3.hxx>
@@ -1183,6 +1184,8 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
         // and target faces in the mapper. Thus we select srcV1 so that
         // GetOrderedEdges() to return EDGEs in a needed order
         TopoDS_Face tgtFaceBis = tgtFace;
+        TopTools_MapOfShape checkedVMap( tgtEdges.size() );
+        checkedVMap.Add ( srcV1 );
         for ( vSrcExp.Next(); vSrcExp.More(); )
         {
           tgtFaceBis.Reverse();
@@ -1191,7 +1194,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
           bool ok = true;
           list< TopoDS_Edge >::iterator edgeS = srcEdges.begin(), edgeT = tgtEdges.begin();
           for ( ; edgeS != srcEdges.end() && ok ; ++edgeS, ++edgeT )
-            ok = edgeS->IsSame( shape2ShapeMap( *edgeT ));
+            ok = edgeT->IsSame( shape2ShapeMap( *edgeS, /*isSrc=*/true ));
           if ( ok )
             break; // FOUND!
 
@@ -1199,6 +1202,8 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
           if ( reverse )
           {
             vSrcExp.Next();
+            while ( vSrcExp.More() && !checkedVMap.Add( vSrcExp.Current() ))
+              vSrcExp.Next();
           }
           else
           {
@@ -1206,6 +1211,38 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
             tgtV1 = TopoDS::Vertex( shape2ShapeMap( srcV1, /*isSrc=*/true ));
             srcEdges.clear();
             SMESH_Block::GetOrderedEdges( srcFace, srcEdges, nbEdgesInWires, srcV1 );
+          }
+        }
+      }
+      // for the case: project to a closed face from a non-closed face w/o vertex assoc;
+      // avoid projecting to a seam from two EDGEs with different nb nodes on them
+      // ( test mesh_Projection_2D_01/B1 )
+      if ( !_sourceHypo->HasVertexAssociation() &&
+           nbEdgesInWires.front() > 2 &&
+           helper.IsRealSeam( tgtEdges.front() ))
+      {
+        TopoDS_Shape srcEdge1 = shape2ShapeMap( tgtEdges.front() );
+        list< TopoDS_Edge >::iterator srcEdge2 =
+          std::find( srcEdges.begin(), srcEdges.end(), srcEdge1);
+        list< TopoDS_Edge >::iterator srcEdge3 =
+          std::find( srcEdges.begin(), srcEdges.end(), srcEdge1.Reversed());
+        if ( srcEdge2 == srcEdges.end() || srcEdge3 == srcEdges.end() ) // srcEdge1 is not a seam
+        {
+          // find srcEdge2 which also will be projected to tgtEdges.front()
+          for ( srcEdge2 = srcEdges.begin(); srcEdge2 != srcEdges.end(); ++srcEdge2 )
+            if ( !srcEdge1.IsSame( *srcEdge2 ) &&
+                 tgtEdges.front().IsSame( shape2ShapeMap( *srcEdge2, /*isSrc=*/true )))
+              break;
+          // compare nb nodes on srcEdge1 and srcEdge2
+          if ( srcEdge2 != srcEdges.end() )
+          {
+            int nbN1 = 0, nbN2 = 0;
+            if ( SMESHDS_SubMesh* sm = srcMesh->GetMeshDS()->MeshElements( srcEdge1 ))
+              nbN1 = sm->NbNodes();
+            if ( SMESHDS_SubMesh* sm = srcMesh->GetMeshDS()->MeshElements( *srcEdge2 ))
+              nbN2 = sm->NbNodes();
+            if ( nbN1 != nbN2 )
+              srcV1 = helper.IthVertex( 1, srcEdges.front() );
           }
         }
       }

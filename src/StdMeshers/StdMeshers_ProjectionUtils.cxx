@@ -1410,7 +1410,7 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face&    face1,
       }
       if ( TopExp::FirstVertex( *edgeIt ).IsSame( TopExp::LastVertex( *edgeIt )) &&
            SMESH_Algo::isDegenerated( *edgeIt )) {
-        --edgeIt; // skip a degenerated edge (www.salome-platform.org/forum/forum_11/173031193)
+        --edgeIt; // skip a degenerated edge (test 3D_mesh_Projection_00/A3)
       }
       if ( !VV1[1].IsSame( TopExp::FirstVertex( *edgeIt, true ))) {
         CONT_BAD_RESULT("GetOrderedEdges() failed");
