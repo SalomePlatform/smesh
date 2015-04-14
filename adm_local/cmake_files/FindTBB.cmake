@@ -47,13 +47,59 @@ ELSE(MACHINE_IS_64)
   SET(PLT_SUFFIX ia32)
 ENDIF(MACHINE_IS_64)
 
-FIND_LIBRARY(TBB_LIBRARY_tbb NAMES tbb PATH_SUFFIXES lib/${PLT_SUFFIX}/cc4.1.0_libc2.4_kernel2.6.16.21 lib/${PLT_SUFFIX}/gcc4.4)
-FIND_LIBRARY(TBB_LIBRATY_tbbmalloc NAMES tbbmalloc PATH_SUFFIXES lib/${PLT_SUFFIX}/cc4.1.0_libc2.4_kernel2.6.16.21 lib/${PLT_SUFFIX}/gcc4.4)
+include(CheckCXXSourceCompiles)
 
-SET(TBB_LIBRARIES
-  ${TBB_LIBRARY_tbb}
-  ${TBB_LIBRATY_tbbmalloc}
-)
+FOREACH(_kernel cc4.1.0_libc2.4_kernel2.6.16.21 gcc4.4 gcc4.1)
+
+  FIND_LIBRARY(_tbb_library_tbb${_kernel}       NAMES tbb       PATH_SUFFIXES lib/${PLT_SUFFIX}/${_kernel})
+  FIND_LIBRARY(_tbb_library_tbbmalloc${_kernel} NAMES tbbmalloc PATH_SUFFIXES lib/${PLT_SUFFIX}/${_kernel})
+
+  SET(_tbb_libraries${_kernel} ${_tbb_library_tbb${_kernel}} ${_tbb_library_tbbmalloc${_kernel}})
+
+  IF(_tbb_libraries${_kernel})
+
+    SET(CMAKE_REQUIRED_INCLUDES_SAVE  ${CMAKE_REQUIRED_INCLUDES})
+    SET(CMAKE_REQUIRED_LIBRARIES_SAVE ${CMAKE_REQUIRED_LIBRARIES})
+    SET(CMAKE_REQUIRED_INCLUDES  "${CMAKE_REQUIRED_INCLUDES} ${TBB_INCLUDE_DIRS}")
+    SET(CMAKE_REQUIRED_LIBRARIES "${_tbb_libraries${_kernel}}")
+
+    CHECK_CXX_SOURCE_COMPILES("
+      #include <tbb/tbb.h>
+      using namespace tbb;
+      size_t testme(size_t n)
+      {
+        return n*n;
+      }
+      int main(int argc, char* argv[])
+      {
+        parallel_for<size_t>( 1, 10, 1, testme );
+      }
+      "
+      _tbb_link_ok${_kernel}
+      )
+    
+    SET(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES_SAVE})
+    SET(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES_SAVE})
+
+    IF(_tbb_link_ok${_kernel})
+      SET(_tbb_link_ok ${_tbb_link_ok${_kernel}})
+      SET(TBB_LIBRARY_tbb       ${_tbb_library_tbb${_kernel}}       CACHE FILEPATH "Path to a library")
+      SET(TBB_LIBRARY_tbbmalloc ${_tbb_library_tbbmalloc${_kernel}} CACHE FILEPATH "Path to a library")
+      SET(TBB_LIBRARIES ${TBB_LIBRARY_tbb} ${TBB_LIBRARY_tbbmalloc})
+    ENDIF()
+
+    UNSET(_tbb_link_ok${_kernel} CACHE)
+
+  ENDIF(_tbb_libraries${_kernel})
+
+  UNSET(_tbb_library_tbb${_kernel} CACHE)
+  UNSET(_tbb_library_tbbmalloc${_kernel} CACHE)
+
+  IF(_tbb_link_ok)
+    BREAK()
+  ENDIF()
+
+ENDFOREACH()
 
 INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(TBB REQUIRED_VARS TBB_INCLUDE_DIRS TBB_LIBRARY_tbb TBB_LIBRATY_tbbmalloc)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(TBB REQUIRED_VARS TBB_INCLUDE_DIRS TBB_LIBRARY_tbb TBB_LIBRARY_tbbmalloc)
