@@ -764,7 +764,7 @@ void BelongToMeshGroup_i::SetGroupID( const char* theID ) // IOR or StoreName
     CORBA::Object_var obj = SMESH_Gen_i::GetORB()->string_to_object( myID.c_str() );
     SetGroup( SMESH::SMESH_GroupBase::_narrow( obj ));
   }
-  else if ( strncmp( ":0", myID.c_str(), 2 ) == 0 ) // transient mode + GUI
+  else if ( strncmp( "0:", myID.c_str(), 2 ) == 0 ) // transient mode + GUI
   {
     SMESH_Gen_i* aSMESHGen     = SMESH_Gen_i::GetSMESHGen();
     SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();

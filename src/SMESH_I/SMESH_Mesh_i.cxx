@@ -1615,7 +1615,7 @@ namespace // functions making checks according to SMESH::NB_COMMON_NODES_ENUM
   bool isMajorityOfNodesCommon(int nbChecked, int nbCommon, int nbNodes, int nbCorners,
                                bool & toStopChecking )
   {
-    return nbCommon >= nbNodes / 2;
+    return nbCommon >= (nbNodes+1) / 2;
   }
 }
 

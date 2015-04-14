@@ -3718,7 +3718,7 @@ void SMESHGUI_FilterDlg::onSelectionDone()
       }
       break;
     }
-  case SMESH::FT_BelongToMeshGroup: // get a group name and IOR
+  case SMESH::FT_BelongToMeshGroup: // get a group Name and Entry
     {
       SMESH::SMESH_GroupBase_var grp = SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(anIO);
       if ( !grp->_is_nil() )
@@ -3732,13 +3732,8 @@ void SMESHGUI_FilterDlg::onSelectionDone()
         if ( !myGroup->_is_nil() && myGroup->IsInDependency( grp ))
           return; // avoid cyclic dependencies between Groups on Filter
 
-        SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>
-          ( SUIT_Session::session()->activeApplication() );
-        if( !app ) return;
-        CORBA::String_var IOR = app->orb()->object_to_string( grp );
-
         myTable->SetThreshold(aRow, SMESH::toQStr( grp->GetName() ));
-        myTable->SetID       (aRow, IOR.in() );
+        myTable->SetID       (aRow, anIO->getEntry() );
       }
     }
   default: // get a GEOM object
@@ -3747,7 +3742,7 @@ void SMESHGUI_FilterDlg::onSelectionDone()
       if (!anObj->_is_nil())
       {
         myTable->SetThreshold(aRow, GEOMBase::GetName(anObj));
-        myTable->SetID(aRow, anIO->getEntry());
+        myTable->SetID       (aRow, anIO->getEntry());
       }
     }
   }

@@ -306,6 +306,8 @@ namespace {
     //   - FT_EntityType            = 36
     // v 7.3.0: FT_Undefined == 46, new items:
     //   - FT_ConnectedElements     = 39
+    // v 7.6.0: FT_Undefined == 47, new items:
+    //   - FT_BelongToMeshGroup     = 22
     //
     // It's necessary to continue recording this history and to fill
     // undef2newItems (see below) accordingly.
@@ -326,6 +328,7 @@ namespace {
       undef2newItems[ 44 ].push_back( 37 );
       undef2newItems[ 45 ].push_back( 36 );
       undef2newItems[ 46 ].push_back( 39 );
+      undef2newItems[ 47 ].push_back( 22 );
 
       ASSERT( undef2newItems.rbegin()->first == SMESH::FT_Undefined );
     }

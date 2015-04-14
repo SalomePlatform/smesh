@@ -757,6 +757,13 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
                     raise ValueError, "Group type mismatches Element type"
                 aCriterion.ThresholdStr = aThreshold.GetName()
                 aCriterion.ThresholdID  = salome.orb.object_to_string( aThreshold )
+                study = self.GetCurrentStudy()
+                if study:
+                    so = study.FindObjectIOR( aCriterion.ThresholdID )
+                    if so:
+                        entry = so.GetID()
+                        if entry:
+                            aCriterion.ThresholdID = entry
             else:
                 raise TypeError, "The Threshold should be a Mesh Group"
         elif CritType == FT_RangeOfIds:
