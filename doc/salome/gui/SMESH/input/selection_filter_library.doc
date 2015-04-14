@@ -24,8 +24,8 @@ menu for setting filters looks a bit differently (see the image below).
 
 Each filter can be applicable to \b Nodes, \b Edges, \b Faces or \b
 Volumes. You can combine many criteria in one filter, but they all
-must be of the same <b>Entity type</b>.
-\n The \b Add button creates a new criterion at the end of the list of
+must be of the same <b>Entity type</b>. <br>
+The \b Add button creates a new criterion at the end of the list of
 criteria. The \b Insert button creates a new criterion before the
 selected criterion. The \b Remove button deletes the selected
 criterion. The \b Clear button deletes all criteria.
@@ -43,11 +43,11 @@ selection of elements in the Viewer to the current filter.
 <br>
 In the \b Source field you choose if the filter will be applied to
 the whole \b Mesh, the <b>Initial Selection</b> or the <b>Current
-Group</b>. If \b Mesh is chosen, the elements satisfying the filter
+Dialog</b>. If \b Mesh is chosen, the elements satisfying the filter
 will be selected in the 3D Viewer. If <b> Initial Selection</b> is
 chosen, the filter will be applied to the selected elements and the
 elements rejected by the filter will be deselected. If <b>Current
-Group</b> is chosen, the filter will be applied to the list of
+Dialog</b> is chosen, the filter will be applied to the list of
 elements in the current dialog and the elements rejected
 by the filter will be removed from the list.
 <br>
@@ -75,6 +75,9 @@ lies on the shape defined by the <b>Threshold Value</b>.
 If the threshold shape is a sub-shape of the main shape of the mesh the
 algorithm works faster, if this is any other
 shape, the algorithm works slower.
+</li><li>
+<b>Belong to Mesh Group</b> selects entities included into a mesh group
+defined by <b>Threshold Value</b>.
 </li><li>
 <b>Range of IDs</b> allows selection of entities with the specified
 IDs. 

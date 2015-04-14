@@ -1197,7 +1197,10 @@ bool SMESHGUI_GroupDlg::onApply()
           }
           // update a visible group accoding to a changed contents
           if ( !isConversion && anActor->GetVisibility() )
+          {
             SMESH::Update( anIO, true );
+            SMESH::RepaintCurrentView();
+          }
         }
       }
     }
@@ -1762,9 +1765,9 @@ void SMESHGUI_GroupDlg::setFilters()
   myFilterDlg->SetEnabled( /*setInViewer=*/isStandalone,
                            /*diffSources=*/isStandalone );
   myFilterDlg->SetMesh( myMesh );
+  myFilterDlg->SetGroup( myGroupOnFilter );
   myFilterDlg->SetSelection();
   myFilterDlg->SetSourceWg( myElements, false );
-
 
   myFilterDlg->show();
 }

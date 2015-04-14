@@ -1205,11 +1205,11 @@ void SMESHGUI_FilterLibraryDlg::onSelectionDone()
     return;
 
   const int type = myTable->GetCriterionType(aRow);
-  QList<int> types; 
-  types << SMESH::FT_BelongToGeom     << SMESH::FT_BelongToPlane 
-        << SMESH::FT_BelongToCylinder << SMESH::FT_BelongToGenSurface
-        << SMESH::FT_LyingOnGeom      << SMESH::FT_CoplanarFaces
-        << SMESH::FT_ConnectedElements;
+  QList<int> types;
+  types << SMESH::FT_BelongToGeom      << SMESH::FT_BelongToPlane 
+        << SMESH::FT_BelongToCylinder  << SMESH::FT_BelongToGenSurface
+        << SMESH::FT_LyingOnGeom       << SMESH::FT_CoplanarFaces
+        << SMESH::FT_ConnectedElements << SMESH::FT_BelongToMeshGroup;
   if ( !types.contains( type ))
     return;
 
@@ -1240,6 +1240,10 @@ void SMESHGUI_FilterLibraryDlg::onSelectionDone()
           myTable->SetThreshold(aRow, aString);
       }
       break;
+    }
+  case SMESH::FT_BelongToMeshGroup: // get a group name and IOR
+    {
+      myTable->SetThreshold(aRow, anIO->getName() );
     }
   default: // get a GEOM object
     {

@@ -1057,6 +1057,7 @@ void SMESH_Mesh_i::RemoveGroup( SMESH::SMESH_GroupBase_ptr theGroup )
       builder->RemoveObjectWithChildren( aGroupSO );
     }
   }
+  aGroup->Modified(/*removed=*/true); // notify dependent Filter with FT_BelongToMeshGroup criterion
 
   // Remove the group from SMESH data structures
   removeGroup( aGroup->GetLocalID() );

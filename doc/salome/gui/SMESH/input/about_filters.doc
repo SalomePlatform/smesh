@@ -11,7 +11,7 @@ Several criteria can be combined together by using logical operators \a
 AND and \a OR. In addition, applied filter criterion can be reverted
 using logical operator \a NOT.
 
-Mesh filters use the functionality of \ref quality_page "mesh quality controls"
+Some filtering criteria use the functionality of \ref quality_page "mesh quality controls"
 to filter mesh nodes / elements by specific characteristic (Area, Length, etc).
 
 The functinality of mesh filters is available in both GUI and TUI

@@ -5422,6 +5422,10 @@ Please check input data and try again</translation>
         <translation>Over-constrained faces</translation>
     </message>
     <message>
+        <source>BELONG_TO_MESH_GROUP</source>
+        <translation>Belong to Mesh Group</translation>
+    </message>
+    <message>
         <source>BELONG_TO_CYLINDER</source>
         <translation>Belong to Cylinder</translation>
     </message>

@@ -121,7 +121,13 @@ module SMESH
      * (corresponds to the "hue" parameter of the color - must be in range [0, 360])
      */
     long GetColorNumber();
-  }; 
+
+    /*!
+     * Returns \c true if \c this group depends on the \a other via
+     * FT_BelongToMeshGroup predicate or vice versa
+     */
+    boolean IsInDependency( in SMESH_GroupBase other );
+  };
 
   /*!
    * SMESH_Group: interface of a standalone group object
@@ -170,7 +176,7 @@ module SMESH
    */
   interface SMESH_GroupOnFilter : SMESH_GroupBase
   {
-    void   SetFilter( in Filter theFilter); 
+    void   SetFilter( in Filter theFilter) raises (SALOME::SALOME_Exception); 
     Filter GetFilter();
   };
 

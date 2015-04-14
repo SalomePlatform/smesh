@@ -3820,9 +3820,55 @@ void ManifoldPart::getFacesByLink( const ManifoldPart::Link& theLink,
   }
 }
 
+/*
+  Class       : BelongToMeshGroup
+  Description : Verify whether a mesh element is included into a mesh group
+*/
+BelongToMeshGroup::BelongToMeshGroup(): myGroup( 0 )
+{
+}
+
+void BelongToMeshGroup::SetGroup( SMESHDS_GroupBase* g )
+{
+  myGroup = g;
+}
+
+void BelongToMeshGroup::SetStoreName( const std::string& sn )
+{
+  myStoreName = sn;
+}
+
+void BelongToMeshGroup::SetMesh( const SMDS_Mesh* theMesh )
+{
+  if ( myGroup && myGroup->GetMesh() != theMesh )
+  {
+    myGroup = 0;
+  }
+  if ( !myGroup && !myStoreName.empty() )
+  {
+    if ( const SMESHDS_Mesh* aMesh = dynamic_cast<const SMESHDS_Mesh*>(theMesh))
+    {
+      const std::set<SMESHDS_GroupBase*>& grps = aMesh->GetGroups();
+      std::set<SMESHDS_GroupBase*>::const_iterator g = grps.begin();
+      for ( ; g != grps.end() && !myGroup; ++g )
+        if ( *g && myStoreName == (*g)->GetStoreName() )
+          myGroup = *g;
+    }
+  }
+}
+
+bool BelongToMeshGroup::IsSatisfy( long theElementId )
+{
+  return myGroup ? myGroup->Contains( theElementId ) : false;
+}
+
+SMDSAbs_ElementType BelongToMeshGroup::GetType() const
+{
+  return myGroup ? myGroup->GetType() : SMDSAbs_All;
+}
 
 /*
-   ElementsOnSurface
+  ElementsOnSurface
 */
 
 ElementsOnSurface::ElementsOnSurface()

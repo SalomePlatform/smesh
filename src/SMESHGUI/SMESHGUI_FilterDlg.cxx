@@ -56,10 +56,11 @@
 
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
-#include <SalomeApp_Tools.h>
-#include <SalomeApp_Study.h>
-#include <SalomeApp_IntSpinBox.h>
+#include <SalomeApp_Application.h>
 #include <SalomeApp_DoubleSpinBox.h>
+#include <SalomeApp_IntSpinBox.h>
+#include <SalomeApp_Study.h>
+#include <SalomeApp_Tools.h>
 
 #include <SALOME_ListIO.hxx>
 
@@ -1134,6 +1135,7 @@ bool SMESHGUI_FilterTable::IsValid (const bool theMess, const int theEntityType)
         errMsg = tr( "GROUPCOLOR_ERROR" );
     }
     else if (aCriterion == SMESH::FT_RangeOfIds ||
+             aCriterion == SMESH::FT_BelongToMeshGroup ||
              aCriterion == SMESH::FT_BelongToGeom ||
              aCriterion == SMESH::FT_BelongToPlane ||
              aCriterion == SMESH::FT_BelongToCylinder ||
@@ -1283,6 +1285,7 @@ void SMESHGUI_FilterTable::GetCriterion (const int                 theRow,
     }
   }
   else if ( aCriterionType != SMESH::FT_RangeOfIds &&
+            aCriterionType != SMESH::FT_BelongToMeshGroup &&
             aCriterionType != SMESH::FT_BelongToGeom &&
             aCriterionType != SMESH::FT_BelongToPlane &&
             aCriterionType != SMESH::FT_BelongToCylinder &&
@@ -1382,6 +1385,7 @@ void SMESHGUI_FilterTable::SetCriterion (const int                       theRow,
     }
   }
   else if (theCriterion.Type != SMESH::FT_RangeOfIds &&
+           theCriterion.Type != SMESH::FT_BelongToMeshGroup &&
            theCriterion.Type != SMESH::FT_BelongToGeom &&
            theCriterion.Type != SMESH::FT_BelongToPlane &&
            theCriterion.Type != SMESH::FT_BelongToCylinder &&
@@ -1398,6 +1402,7 @@ void SMESHGUI_FilterTable::SetCriterion (const int                       theRow,
            theCriterion.Type != SMESH::FT_OverConstrainedVolume &&
            theCriterion.Type != SMESH::FT_LinearOrQuadratic)
   {
+    // Numberic criterion
     aTable->item( theRow, 2 )->setText(QString("%1").arg(theCriterion.Threshold, 0, 'g', 15));
   }
   else
@@ -1813,13 +1818,15 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
   case SMESH::FT_Length:
   case SMESH::FT_Length2D: anIsDoubleCriterion = true; break;
 
+  case SMESH::FT_BelongToMeshGroup: break;
+
   case SMESH::FT_BelongToGeom:
   case SMESH::FT_BelongToPlane:
   case SMESH::FT_BelongToCylinder:
   case SMESH::FT_BelongToGenSurface:
-  case SMESH::FT_LyingOnGeom: nbCompareSigns = 1; isThresholdEditable = true; break;
+  case SMESH::FT_LyingOnGeom: nbCompareSigns = 0; isThresholdEditable = true; break;
 
-  case SMESH::FT_RangeOfIds: nbCompareSigns = 1; isThresholdEditable = true; break;
+  case SMESH::FT_RangeOfIds: nbCompareSigns = 0; isThresholdEditable = true; break;
 
   case SMESH::FT_BadOrientedVolume:
   case SMESH::FT_BareBorderVolume:
@@ -2162,6 +2169,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
     if (aCriteria.isEmpty())
     {
       aCriteria[ SMESH::FT_RangeOfIds         ] = tr("RANGE_OF_IDS");
+      aCriteria[ SMESH::FT_BelongToMeshGroup  ] = tr("BELONG_TO_MESH_GROUP");
       aCriteria[ SMESH::FT_BelongToGeom       ] = tr("BELONG_TO_GEOM");
       aCriteria[ SMESH::FT_BelongToPlane      ] = tr("BELONG_TO_PLANE");
       aCriteria[ SMESH::FT_BelongToCylinder   ] = tr("BELONG_TO_CYLINDER");
@@ -2183,6 +2191,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_MultiConnection    ] = tr("MULTI_BORDERS");
       aCriteria[ SMESH::FT_Length             ] = tr("LENGTH");
       aCriteria[ SMESH::FT_RangeOfIds         ] = tr("RANGE_OF_IDS");
+      aCriteria[ SMESH::FT_BelongToMeshGroup  ] = tr("BELONG_TO_MESH_GROUP");
       aCriteria[ SMESH::FT_BelongToGeom       ] = tr("BELONG_TO_GEOM");
       aCriteria[ SMESH::FT_BelongToPlane      ] = tr("BELONG_TO_PLANE");
       aCriteria[ SMESH::FT_BelongToCylinder   ] = tr("BELONG_TO_CYLINDER");
@@ -2211,6 +2220,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_MaxElementLength2D ] = tr("MAX_ELEMENT_LENGTH_2D");
       aCriteria[ SMESH::FT_FreeEdges          ] = tr("FREE_EDGES");
       aCriteria[ SMESH::FT_RangeOfIds         ] = tr("RANGE_OF_IDS");
+      aCriteria[ SMESH::FT_BelongToMeshGroup  ] = tr("BELONG_TO_MESH_GROUP");
       aCriteria[ SMESH::FT_BelongToGeom       ] = tr("BELONG_TO_GEOM");
       aCriteria[ SMESH::FT_BelongToPlane      ] = tr("BELONG_TO_PLANE");
       aCriteria[ SMESH::FT_BelongToCylinder   ] = tr("BELONG_TO_CYLINDER");
@@ -2238,6 +2248,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
     {
       aCriteria[ SMESH::FT_AspectRatio3D        ] = tr("ASPECT_RATIO_3D");
       aCriteria[ SMESH::FT_RangeOfIds           ] = tr("RANGE_OF_IDS");
+      aCriteria[ SMESH::FT_BelongToMeshGroup    ] = tr("BELONG_TO_MESH_GROUP");
       aCriteria[ SMESH::FT_BelongToGeom         ] = tr("BELONG_TO_GEOM");
       aCriteria[ SMESH::FT_LyingOnGeom          ] = tr("LYING_ON_GEOM");
       aCriteria[ SMESH::FT_BadOrientedVolume    ] = tr("BAD_ORIENTED_VOLUME");
@@ -2260,6 +2271,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
     if (aCriteria.isEmpty())
     {
       aCriteria[ SMESH::FT_RangeOfIds         ] = tr("RANGE_OF_IDS");
+      aCriteria[ SMESH::FT_BelongToMeshGroup  ] = tr("BELONG_TO_MESH_GROUP");
       aCriteria[ SMESH::FT_BelongToGeom       ] = tr("BELONG_TO_GEOM");
       aCriteria[ SMESH::FT_BelongToPlane      ] = tr("BELONG_TO_PLANE");
       aCriteria[ SMESH::FT_BelongToCylinder   ] = tr("BELONG_TO_CYLINDER");
@@ -2276,6 +2288,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
     {
       aCriteria[ SMESH::FT_BallDiameter       ] = tr("BALL_DIAMETER");
       aCriteria[ SMESH::FT_RangeOfIds         ] = tr("RANGE_OF_IDS");
+      aCriteria[ SMESH::FT_BelongToMeshGroup  ] = tr("BELONG_TO_MESH_GROUP");
       aCriteria[ SMESH::FT_BelongToGeom       ] = tr("BELONG_TO_GEOM");
       aCriteria[ SMESH::FT_BelongToPlane      ] = tr("BELONG_TO_PLANE");
       aCriteria[ SMESH::FT_BelongToCylinder   ] = tr("BELONG_TO_CYLINDER");
@@ -2291,6 +2304,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
     if (aCriteria.isEmpty())
     {
       aCriteria[ SMESH::FT_RangeOfIds         ] = tr("RANGE_OF_IDS");
+      aCriteria[ SMESH::FT_BelongToMeshGroup  ] = tr("BELONG_TO_MESH_GROUP");
       aCriteria[ SMESH::FT_BelongToGeom       ] = tr("BELONG_TO_GEOM");
       aCriteria[ SMESH::FT_BelongToPlane      ] = tr("BELONG_TO_PLANE");
       aCriteria[ SMESH::FT_BelongToCylinder   ] = tr("BELONG_TO_CYLINDER");
@@ -2306,6 +2320,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
     if (aCriteria.isEmpty())
     {
       aCriteria[ SMESH::FT_RangeOfIds         ] = tr("RANGE_OF_IDS");
+      aCriteria[ SMESH::FT_BelongToMeshGroup  ] = tr("BELONG_TO_MESH_GROUP");
       aCriteria[ SMESH::FT_BelongToGeom       ] = tr("BELONG_TO_GEOM");
       aCriteria[ SMESH::FT_LyingOnGeom        ] = tr("LYING_ON_GEOM");
       aCriteria[ SMESH::FT_LinearOrQuadratic  ] = tr("LINEAR");
@@ -2869,6 +2884,7 @@ void SMESHGUI_FilterDlg::Init (const QList<int>& theTypes, const bool setInViewe
   mySourceWg  = 0;
   myTypes     = theTypes;
   myMesh      = SMESH::SMESH_Mesh::_nil();
+  myGroup     = SMESH::SMESH_GroupOnFilter::_nil();
   myIObjects.Clear();
   myIsSelectionChanged = false;
   myToRestoreSelMode = false;
@@ -3147,8 +3163,7 @@ bool SMESHGUI_FilterDlg::isValid() const
       if (aType == SMESH::FT_BelongToCylinder ||
           aType == SMESH::FT_BelongToPlane    ||
           aType == SMESH::FT_BelongToGenSurface ) {
-        CORBA::Object_var anObject = SMESH::SObjectToObject(aList[ 0 ]);
-        //GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow(aList[ 0 ]->GetObject());
+        CORBA::Object_var     anObject = SMESH::SObjectToObject(aList[ 0 ]);
         GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow(anObject);
         if (!aGeomObj->_is_nil()) {
           TopoDS_Shape aFace;
@@ -3250,6 +3265,15 @@ void SMESHGUI_FilterDlg::SetMesh (SMESH::SMESH_Mesh_var theMesh)
   const bool isEnable = !(myMesh->_is_nil());
   myButtons[BTN_OK]->setEnabled(isEnable);
   myButtons[BTN_Apply]->setEnabled(isEnable);
+}
+
+//=======================================================================
+// name    : SMESHGUI_FilterDlg::SetGroup
+// Purpose : Set a group being edited
+//=======================================================================
+void SMESHGUI_FilterDlg::SetGroup(SMESH::SMESH_GroupOnFilter_var group)
+{
+  myGroup = group;
 }
 
 //=======================================================================
@@ -3659,10 +3683,10 @@ void SMESHGUI_FilterDlg::onSelectionDone()
 
   const int type = myTable->GetCriterionType(aRow);
   QList<int> types; 
-  types << SMESH::FT_BelongToGeom     << SMESH::FT_BelongToPlane 
-        << SMESH::FT_BelongToCylinder << SMESH::FT_BelongToGenSurface
-        << SMESH::FT_LyingOnGeom      << SMESH::FT_CoplanarFaces
-        << SMESH::FT_ConnectedElements;
+  types << SMESH::FT_BelongToGeom      << SMESH::FT_BelongToPlane 
+        << SMESH::FT_BelongToCylinder  << SMESH::FT_BelongToGenSurface
+        << SMESH::FT_LyingOnGeom       << SMESH::FT_CoplanarFaces
+        << SMESH::FT_ConnectedElements << SMESH::FT_BelongToMeshGroup;
   if ( !types.contains( type ))
     return;
 
@@ -3693,6 +3717,29 @@ void SMESHGUI_FilterDlg::onSelectionDone()
           myTable->SetThreshold(aRow, aString);
       }
       break;
+    }
+  case SMESH::FT_BelongToMeshGroup: // get a group name and IOR
+    {
+      SMESH::SMESH_GroupBase_var grp = SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(anIO);
+      if ( !grp->_is_nil() )
+      {
+        if ( !myMesh->_is_nil() )
+        {
+          SMESH::SMESH_Mesh_var mesh = grp->GetMesh();
+          if ( ! myMesh->_is_equivalent( mesh ))
+            return;
+        }
+        if ( !myGroup->_is_nil() && myGroup->IsInDependency( grp ))
+          return; // avoid cyclic dependencies between Groups on Filter
+
+        SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>
+          ( SUIT_Session::session()->activeApplication() );
+        if( !app ) return;
+        CORBA::String_var IOR = app->orb()->object_to_string( grp );
+
+        myTable->SetThreshold(aRow, SMESH::toQStr( grp->GetName() ));
+        myTable->SetID       (aRow, IOR.in() );
+      }
     }
   default: // get a GEOM object
     {
@@ -3784,6 +3831,23 @@ void SMESHGUI_FilterDlg::updateSelection()
     }
     myIsSelectionChanged = true;
 
+  }
+  else if ( aCriterionType == SMESH::FT_BelongToMeshGroup )
+  {
+    SMESH_TypeFilter* typeFilter = 0;
+    switch ( myTable->GetType() )
+    {
+    case SMESH::NODE   : typeFilter = new SMESH_TypeFilter( SMESH::GROUP_NODE   ); break;
+    case SMESH::ELEM0D : typeFilter = new SMESH_TypeFilter( SMESH::GROUP_0D     ); break;
+    case SMESH::BALL   : typeFilter = new SMESH_TypeFilter( SMESH::GROUP_BALL   ); break;
+    case SMESH::EDGE   : typeFilter = new SMESH_TypeFilter( SMESH::GROUP_EDGE   ); break;
+    case SMESH::FACE   : typeFilter = new SMESH_TypeFilter( SMESH::GROUP_FACE   ); break;
+    case SMESH::VOLUME : typeFilter = new SMESH_TypeFilter( SMESH::GROUP_VOLUME ); break;
+    case SMESH::ALL    : typeFilter = new SMESH_TypeFilter( SMESH::GROUP        ); break;
+    default            : typeFilter = 0;
+    }
+    if ( typeFilter )
+      mySelectionMgr->installFilter( typeFilter );
   }
   else if ( aCriterionType == SMESH::FT_ConnectedElements )
   {

@@ -423,6 +423,7 @@ namespace SMESH
       case FT_MultiConnection2D:     myStream<< "aMultiConnection2D";     break;
       case FT_Length:                myStream<< "aLength";                break;
       case FT_Length2D:              myStream<< "aLength2D";              break;
+      case FT_BelongToMeshGroup:     myStream<< "aBelongToMeshGroup";     break;
       case FT_BelongToGeom:          myStream<< "aBelongToGeom";          break;
       case FT_BelongToPlane:         myStream<< "aBelongToPlane";         break;
       case FT_BelongToCylinder:      myStream<< "aBelongToCylinder";      break;

@@ -228,6 +228,7 @@ public:
 
   void                      SetSelection();
   void                      SetMesh (SMESH::SMESH_Mesh_var);
+  void                      SetGroup (SMESH::SMESH_GroupOnFilter_var);
   void                      SetSourceWg( QWidget*, const bool initOnApply = true );
   void                      SetEnabled( bool setInViewer, bool diffSources );
 
@@ -297,6 +298,7 @@ private:
   LightApp_SelectionMgr*    mySelectionMgr;
   SVTK_Selector*            mySelector;
   SMESH::SMESH_Mesh_var     myMesh;
+  SMESH::SMESH_GroupOnFilter_var myGroup;
   bool                      myInitSourceWgOnApply;
   bool                      myInsertEnabled;
   bool                      myDiffSourcesEnabled;

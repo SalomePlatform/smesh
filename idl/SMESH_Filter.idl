@@ -61,6 +61,7 @@ module SMESH
     FT_MultiConnection2D,
     FT_Length,
     FT_Length2D,
+    FT_BelongToMeshGroup,
     FT_BelongToGeom,
     FT_BelongToPlane,
     FT_BelongToCylinder,
@@ -227,6 +228,17 @@ module SMESH
    * Verify whether there is another mesh volumes basing on the same nodes
    */
   interface EqualVolumes: Predicate {};
+
+  /*!
+  * Logical functor (predicate) "Belong To Mesh Group".
+  * Verify whether a mesh element is included into a mesh group
+  */
+  interface BelongToMeshGroup: Predicate
+  {
+    void SetGroup( in SMESH::SMESH_GroupBase theGroup );
+    void SetGroupID( in string theID ); // IOR or StoreName
+    SMESH::SMESH_GroupBase GetGroup();
+  };
 
   /*!
    * Logical functor (predicate) "Belong To Geometry".
@@ -559,59 +571,60 @@ module SMESH
     /*!
     *  Create numerical functors
     */
-    MinimumAngle      CreateMinimumAngle();
-    AspectRatio       CreateAspectRatio();
-    AspectRatio3D     CreateAspectRatio3D();
-    Warping           CreateWarping();
-    Taper             CreateTaper();
-    Skew              CreateSkew();
-    Area              CreateArea();
-    Volume3D          CreateVolume3D();
+    MinimumAngle       CreateMinimumAngle();
+    AspectRatio        CreateAspectRatio();
+    AspectRatio3D      CreateAspectRatio3D();
+    Warping            CreateWarping();
+    Taper              CreateTaper();
+    Skew               CreateSkew();
+    Area               CreateArea();
+    Volume3D           CreateVolume3D();
     MaxElementLength2D CreateMaxElementLength2D();
     MaxElementLength3D CreateMaxElementLength3D();
-    Length            CreateLength();
-    Length2D          CreateLength2D();
-    MultiConnection   CreateMultiConnection();
-    MultiConnection2D CreateMultiConnection2D();
-    BallDiameter      CreateBallDiameter();
+    Length             CreateLength();
+    Length2D           CreateLength2D();
+    MultiConnection    CreateMultiConnection();
+    MultiConnection2D  CreateMultiConnection2D();
+    BallDiameter       CreateBallDiameter();
     /*!
-    *  Create logical functors ( predicates )
-    */
-    BelongToGeom      CreateBelongToGeom();
-    BelongToPlane     CreateBelongToPlane();
-    BelongToCylinder  CreateBelongToCylinder();
+     *  Create logical functors ( predicates )
+     */
+    BelongToMeshGroup  CreateBelongToMeshGroup();
+    BelongToGeom       CreateBelongToGeom();
+    BelongToPlane      CreateBelongToPlane();
+    BelongToCylinder   CreateBelongToCylinder();
     BelongToGenSurface CreateBelongToGenSurface();
 
-    LyingOnGeom       CreateLyingOnGeom();
+    LyingOnGeom        CreateLyingOnGeom();
 
-    FreeBorders       CreateFreeBorders();
-    FreeEdges         CreateFreeEdges();
-    FreeNodes         CreateFreeNodes();
-    FreeFaces         CreateFreeFaces();
+    FreeBorders        CreateFreeBorders();
+    FreeEdges          CreateFreeEdges();
+    FreeNodes          CreateFreeNodes();
+    FreeFaces          CreateFreeFaces();
 
-    EqualNodes        CreateEqualNodes();
-    EqualEdges        CreateEqualEdges();
-    EqualFaces        CreateEqualFaces();
-    EqualVolumes      CreateEqualVolumes();
+    EqualNodes         CreateEqualNodes();
+    EqualEdges         CreateEqualEdges();
+    EqualFaces         CreateEqualFaces();
+    EqualVolumes       CreateEqualVolumes();
 
-    RangeOfIds        CreateRangeOfIds();
+    RangeOfIds         CreateRangeOfIds();
 
-    BadOrientedVolume CreateBadOrientedVolume();
-    BareBorderVolume  CreateBareBorderVolume();
-    BareBorderFace    CreateBareBorderFace();
+    BadOrientedVolume  CreateBadOrientedVolume();
+    BareBorderVolume   CreateBareBorderVolume();
+    BareBorderFace     CreateBareBorderFace();
     OverConstrainedVolume CreateOverConstrainedVolume();
     OverConstrainedFace   CreateOverConstrainedFace();
-    LinearOrQuadratic CreateLinearOrQuadratic();
+    LinearOrQuadratic  CreateLinearOrQuadratic();
 
-    GroupColor        CreateGroupColor();
-    ElemGeomType      CreateElemGeomType();
-    ElemEntityType    CreateElemEntityType();
-    CoplanarFaces     CreateCoplanarFaces();
-    ConnectedElements CreateConnectedElements();
+    GroupColor         CreateGroupColor();
+    ElemGeomType       CreateElemGeomType();
+    ElemEntityType     CreateElemEntityType();
+    CoplanarFaces      CreateCoplanarFaces();
+    ConnectedElements  CreateConnectedElements();
 
     /*!
-    *  Create comparators ( predicates )
-    */
+     *  Create comparators ( predicates )
+     */
     LessThan          CreateLessThan();
     MoreThan          CreateMoreThan();
     EqualTo           CreateEqualTo();

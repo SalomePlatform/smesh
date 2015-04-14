@@ -732,7 +732,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
 
         if CritType in [FT_BelongToGeom,     FT_BelongToPlane, FT_BelongToGenSurface,
                         FT_BelongToCylinder, FT_LyingOnGeom]:
-            # Checks that Threshold is GEOM object
+            # Check that Threshold is GEOM object
             if isinstance(aThreshold, geomBuilder.GEOM._objref_GEOM_Object):
                 aCriterion.ThresholdStr = GetName(aThreshold)
                 aCriterion.ThresholdID  = aThreshold.GetStudyEntry()
@@ -745,21 +745,28 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
             elif isinstance( aThreshold, str ):
                 aCriterion.ThresholdStr = aThreshold
             else:
-                print "Error: The Threshold should be a shape."
-                return None
+                raise TypeError, "The Threshold should be a shape."
             if isinstance(UnaryOp,float):
                 aCriterion.Tolerance = UnaryOp
                 UnaryOp = FT_Undefined
                 pass
+        elif CritType == FT_BelongToMeshGroup:
+            # Check that Threshold is a group
+            if isinstance(aThreshold, SMESH._objref_SMESH_GroupBase):
+                if aThreshold.GetType() != elementType:
+                    raise ValueError, "Group type mismatches Element type"
+                aCriterion.ThresholdStr = aThreshold.GetName()
+                aCriterion.ThresholdID  = salome.orb.object_to_string( aThreshold )
+            else:
+                raise TypeError, "The Threshold should be a Mesh Group"
         elif CritType == FT_RangeOfIds:
-            # Checks that Threshold is string
+            # Check that Threshold is string
             if isinstance(aThreshold, str):
                 aCriterion.ThresholdStr = aThreshold
             else:
-                print "Error: The Threshold should be a string."
-                return None
+                raise TypeError, "The Threshold should be a string."
         elif CritType == FT_CoplanarFaces:
-            # Checks the Threshold
+            # Check the Threshold
             if isinstance(aThreshold, int):
                 aCriterion.ThresholdID = str(aThreshold)
             elif isinstance(aThreshold, str):
@@ -768,10 +775,10 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
                     raise ValueError, "Invalid ID of mesh face: '%s'"%aThreshold
                 aCriterion.ThresholdID = aThreshold
             else:
-                raise ValueError,\
+                raise TypeError,\
                       "The Threshold should be an ID of mesh face and not '%s'"%aThreshold
         elif CritType == FT_ConnectedElements:
-            # Checks the Threshold
+            # Check the Threshold
             if isinstance(aThreshold, geomBuilder.GEOM._objref_GEOM_Object): # shape
                 aCriterion.ThresholdID = aThreshold.GetStudyEntry()
                 if not aCriterion.ThresholdID:
@@ -791,11 +798,11 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
                 else:
                     aCriterion.ThresholdStr = aThreshold # hope that it's point coordinates
             else:
-                raise ValueError,\
+                raise TypeError,\
                       "The Threshold should either a VERTEX, or a node ID, "\
                       "or a list of point coordinates and not '%s'"%aThreshold
         elif CritType == FT_ElemGeomType:
-            # Checks the Threshold
+            # Check the Threshold
             try:
                 aCriterion.Threshold = self.EnumToLong(aThreshold)
                 assert( aThreshold in SMESH.GeometryType._items )
@@ -803,12 +810,11 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
                 if isinstance(aThreshold, int):
                     aCriterion.Threshold = aThreshold
                 else:
-                    print "Error: The Threshold should be an integer or SMESH.GeometryType."
-                    return None
+                    raise TypeError, "The Threshold should be an integer or SMESH.GeometryType."
                 pass
             pass
         elif CritType == FT_EntityType:
-            # Checks the Threshold
+            # Check the Threshold
             try:
                 aCriterion.Threshold = self.EnumToLong(aThreshold)
                 assert( aThreshold in SMESH.EntityType._items )
@@ -816,18 +822,16 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
                 if isinstance(aThreshold, int):
                     aCriterion.Threshold = aThreshold
                 else:
-                    print "Error: The Threshold should be an integer or SMESH.EntityType."
-                    return None
+                    raise TypeError, "The Threshold should be an integer or SMESH.EntityType."
                 pass
             pass
         
         elif CritType == FT_GroupColor:
-            # Checks the Threshold
+            # Check the Threshold
             try:
                 aCriterion.ThresholdStr = self.ColorToString(aThreshold)
             except:
-                print "Error: The threshold value should be of SALOMEDS.Color type"
-                return None
+                raise TypeError, "The threshold value should be of SALOMEDS.Color type"
             pass
         elif CritType in [FT_FreeBorders, FT_FreeEdges, FT_FreeNodes, FT_FreeFaces,
                           FT_LinearOrQuadratic, FT_BadOrientedVolume,
@@ -845,7 +849,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
                 aThreshold = float(aThreshold)
                 aCriterion.Threshold = aThreshold
             except:
-                print "Error: The Threshold should be a number."
+                raise TypeError, "The Threshold should be a number."
                 return None
 
         if Threshold ==  FT_LogicalNOT or UnaryOp ==  FT_LogicalNOT:

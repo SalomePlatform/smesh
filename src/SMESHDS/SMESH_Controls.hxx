@@ -48,7 +48,7 @@ namespace SMESH{
 
     /*
       Class       : Functor
-      Description : Root of all Functors
+      Description : Root of all Functors defined in ../Controls/SMESH_ControlsDef.hxx
     */
     class SMESHCONTROLS_EXPORT Functor
     {

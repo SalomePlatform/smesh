@@ -54,6 +54,7 @@ class SMDS_Mesh;
 
 class SMESHDS_Mesh;
 class SMESHDS_SubMesh;
+class SMESHDS_GroupBase;
 
 class gp_Pnt;
 
@@ -763,8 +764,8 @@ namespace SMESH{
                               TMapOfLink&            theNonManifold,
                               SMDS_MeshFace*         theNextFace ) const;
 
-     void     getFacesByLink( const Link& theLink,
-                              TVectorOfFacePtr& theFaces ) const;
+      void     getFacesByLink( const Link& theLink,
+                               TVectorOfFacePtr& theFaces ) const;
 
     private:
       const SMDS_Mesh*      myMesh;
@@ -779,6 +780,27 @@ namespace SMESH{
     };
     typedef boost::shared_ptr<ManifoldPart> ManifoldPartPtr;
 
+    /*
+      Class       : BelongToMeshGroup
+      Description : Verify whether a mesh element is included into a mesh group
+    */
+    class SMESHCONTROLS_EXPORT BelongToMeshGroup : public virtual Predicate
+    {
+    public:
+      BelongToMeshGroup();
+      virtual void SetMesh( const SMDS_Mesh* theMesh );
+      virtual bool IsSatisfy( long theElementId );
+      virtual SMDSAbs_ElementType GetType() const;
+
+      void SetGroup( SMESHDS_GroupBase* g );
+      void SetStoreName( const std::string& sn );
+      const SMESHDS_GroupBase* GetGroup() const { return myGroup; }
+
+    private:
+      SMESHDS_GroupBase* myGroup;
+      std::string        myStoreName;
+    };
+    typedef boost::shared_ptr<BelongToMeshGroup> BelongToMeshGroupPtr;
 
     /*
       Class       : ElementsOnSurface
@@ -809,7 +831,6 @@ namespace SMESH{
       TMeshModifTracer      myMeshModifTracer;
       TColStd_MapOfInteger  myIds;
       SMDSAbs_ElementType   myType;
-      //Handle(Geom_Surface)  mySurf;
       TopoDS_Face           mySurf;
       double                myToler;
       bool                  myUseBoundaries;

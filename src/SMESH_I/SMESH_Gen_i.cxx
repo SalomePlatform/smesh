@@ -4073,6 +4073,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 
   list< pair< SMESH_Hypothesis_i*, string > >    hypDataList;
   list< pair< SMESH_Mesh_i*,       HDFgroup* > > meshGroupList;
+  list< SMESH::Filter_var >                      filters;
 
   // get total number of top-level groups
   int aNbGroups = aFile->nInternalObjects();
@@ -4715,6 +4716,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                 if ( strlen( persistStr ) > 0 ) {
                   filter = SMESH_GroupOnFilter_i::StringToFilter( persistStr );
                   predicate = SMESH_GroupOnFilter_i::GetPredicate( filter );
+                  filters.push_back( filter );
                 }
               }
 
@@ -4761,11 +4763,6 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                 Quantity_Color aColor( anRGB[0], anRGB[1], anRGB[2], Quantity_TOC_RGB );
                 aGroupBaseDS->SetColor( aColor );
               }
-
-              // Fill group with contents from MED file
-              // SMESHDS_Group* aGrp = dynamic_cast<SMESHDS_Group*>( aGroupBaseDS );
-              // if ( aGrp )
-              //   myReader.GetGroup( aGrp );
             }
           }
           aGroup->CloseOnDisk();
@@ -4823,6 +4820,13 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
       myLocMesh.GetSubMesh(myLocShape)->
         ComputeStateEngine (SMESH_subMesh::SUBMESH_RESTORED);
     }
+
+    // let filters detect dependency on mesh groups via FT_BelongToMeshGroup predicate (22877)
+    list< SMESH::Filter_var >::iterator f = filters.begin();
+    for ( ; f != filters.end(); ++f )
+      if ( SMESH::Filter_i * fi = SMESH::DownCast< SMESH::Filter_i*>( *f ))
+        fi->FindBaseObjects();
+
 
     // close mesh group
     if(aTopGroup)

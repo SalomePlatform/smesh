@@ -28,16 +28,15 @@
 #include "SMESHGUI_VTKUtils.h"
 
 #include "SMESHGUI.h"
-#include "SMESHGUI_Utils.h"
 #include "SMESHGUI_Filter.h"
-#include "SMESH_ControlsDef.hxx"
-
-#include <SMESH_Actor.h>
-#include <SMESH_ActorUtils.h>
-#include "SMESH_NodeLabelActor.h"
+#include "SMESHGUI_Utils.h"
+#include "SMDS_Mesh.hxx"
+#include "SMESH_Actor.h"
+#include "SMESH_ActorUtils.h"
 #include "SMESH_CellLabelActor.h"
-#include <SMESH_ObjectDef.h>
-#include <SMDS_Mesh.hxx>
+#include "SMESH_ControlsDef.hxx"
+#include "SMESH_NodeLabelActor.h"
+#include "SMESH_ObjectDef.h"
 
 // SALOME GUI includes
 #include <SUIT_Desktop.h>

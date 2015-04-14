@@ -48,7 +48,8 @@ class SMESH_PreMeshInfo;
 // ===========
 class SMESH_I_EXPORT SMESH_GroupBase_i:
   public virtual POA_SMESH::SMESH_GroupBase,
-  public virtual SALOME::GenericObj_i
+  public virtual SALOME::GenericObj_i,
+  public SMESH::NotifyerAndWaiter // defined in SMESH_Filter_i.hxx
 {
  public:
   SMESH_GroupBase_i(PortableServer::POA_ptr thePOA,
@@ -99,6 +100,13 @@ class SMESH_I_EXPORT SMESH_GroupBase_i:
    * Returns mesh unstructed grid information.
    */
   virtual SALOMEDS::TMPFile* GetVtkUgStream();
+
+  /*!
+   * Returns \c true if \c this group depends on the \a other via
+   * FT_BelongToMeshGroup predicate or vice versa
+   */
+  virtual CORBA::Boolean IsInDependency( SMESH::SMESH_GroupBase_ptr other );
+
 
   // Internal C++ interface
   int GetLocalID() const { return myLocalID; }
@@ -173,8 +181,7 @@ class SMESH_I_EXPORT SMESH_GroupOnGeom_i:
 
 class SMESH_I_EXPORT SMESH_GroupOnFilter_i:
   public virtual POA_SMESH::SMESH_GroupOnFilter,
-  public SMESH_GroupBase_i,
-  public SMESH::Filter_i::TPredicateChangeWaiter
+  public SMESH_GroupBase_i
 {
  public:
   SMESH_GroupOnFilter_i( PortableServer::POA_ptr thePOA,
@@ -189,13 +196,13 @@ class SMESH_I_EXPORT SMESH_GroupOnFilter_i:
   static SMESH_PredicatePtr GetPredicate( SMESH::Filter_ptr );
 
   // CORBA interface implementation
-  void SetFilter(SMESH::Filter_ptr theFilter);
+  void SetFilter(SMESH::Filter_ptr theFilter) throw (SALOME::SALOME_Exception);
   SMESH::Filter_ptr GetFilter();
   virtual SMESH::long_array* GetListOfID();
   virtual SMESH::long_array* GetMeshInfo();
 
-  // method of SMESH::Filter_i::TPredicateChangeWaiter
-  virtual void PredicateChanged();
+  // method of SMESH::NotifyerAndWaiter to update self when myFilter changes
+  virtual void OnBaseObjModified(NotifyerAndWaiter* filter, bool);
 
  private:
   SMESH::Filter_var myFilter;

@@ -31,6 +31,7 @@
 #include "SMDS_Mesh.hxx"
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
+#include "SMESHDS_GroupBase.hxx"
 #include "SMESHDS_Mesh.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Group_i.hxx"
@@ -720,6 +721,108 @@ OverConstrainedFace_i::OverConstrainedFace_i()
 FunctorType OverConstrainedFace_i::GetFunctorType()
 {
   return SMESH::FT_OverConstrainedFace;
+}
+
+/*
+  Class       : BelongToMeshGroup_i
+  Description : Verify whether a mesh element is included into a mesh group
+*/
+BelongToMeshGroup_i::BelongToMeshGroup_i()
+{
+  myBelongToMeshGroup = Controls::BelongToMeshGroupPtr( new Controls::BelongToMeshGroup() );
+  myFunctorPtr = myPredicatePtr = myBelongToMeshGroup;
+}
+
+BelongToMeshGroup_i::~BelongToMeshGroup_i()
+{
+  SetGroup( SMESH::SMESH_GroupBase::_nil() );
+}
+
+void BelongToMeshGroup_i::SetGroup( SMESH::SMESH_GroupBase_ptr theGroup )
+{
+  if ( myGroup->_is_equivalent( theGroup ))
+    return;
+
+  if ( ! myGroup->_is_nil() )
+    myGroup->UnRegister();
+
+  myGroup = SMESH_GroupBase::_duplicate( theGroup );
+
+  myBelongToMeshGroup->SetGroup( 0 );
+  if ( SMESH_GroupBase_i* gr_i = SMESH::DownCast< SMESH_GroupBase_i* >( myGroup ))
+  {
+    myBelongToMeshGroup->SetGroup( gr_i->GetGroupDS() );
+    myGroup->Register();
+  }
+}
+
+void BelongToMeshGroup_i::SetGroupID( const char* theID ) // IOR or StoreName
+{
+  myID = theID;
+  if ( strncmp( "IOR:", myID.c_str(), 4 ) == 0 ) // transient mode, no GUI
+  {
+    CORBA::Object_var obj = SMESH_Gen_i::GetORB()->string_to_object( myID.c_str() );
+    SetGroup( SMESH::SMESH_GroupBase::_narrow( obj ));
+  }
+  else if ( strncmp( ":0", myID.c_str(), 2 ) == 0 ) // transient mode + GUI
+  {
+    SMESH_Gen_i* aSMESHGen     = SMESH_Gen_i::GetSMESHGen();
+    SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();
+    if ( !aStudy->_is_nil() ) {
+      SALOMEDS::SObject_wrap aSObj = aStudy->FindObjectID( myID.c_str() );
+      if ( !aSObj->_is_nil() ) {
+        CORBA::Object_var obj = aSObj->GetObject();
+        SetGroup( SMESH::SMESH_GroupBase::_narrow( obj ));
+      }
+    }
+  }
+  else if ( !myID.empty() ) // persistent mode
+  {
+    myBelongToMeshGroup->SetStoreName( myID );
+  }
+}
+
+std::string BelongToMeshGroup_i::GetGroupID()
+{
+  if ( myGroup->_is_nil() )
+    SMESH::SMESH_GroupBase_var( GetGroup() );
+
+  if ( !myGroup->_is_nil() )
+    myID = SMESH_Gen_i::GetORB()->object_to_string( myGroup );
+
+  return myID;
+}
+
+SMESH::SMESH_GroupBase_ptr BelongToMeshGroup_i::GetGroup()
+{
+  if ( myGroup->_is_nil() && myBelongToMeshGroup->GetGroup() )
+  {
+    // search for a group in a current study
+    SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
+    if ( StudyContext*  sc = aSMESHGen->GetCurrentStudyContext() )
+    {
+      int id = 1;
+      std::string ior;
+      while (true)
+      {
+        ior = sc->getIORbyId( id++ );
+        if ( ior.empty() ) break;
+        CORBA::Object_var obj = aSMESHGen->GetORB()->string_to_object( ior.c_str() );
+        if ( SMESH_GroupBase_i* g_i = SMESH::DownCast<SMESH_GroupBase_i*>( obj ))
+          if ( g_i->GetGroupDS() == myBelongToMeshGroup->GetGroup() )
+          {
+            SetGroup( g_i->_this() );
+            break;
+          }
+      }
+    }
+  }
+  return SMESH::SMESH_GroupBase::_duplicate( myGroup );
+}
+
+FunctorType BelongToMeshGroup_i::GetFunctorType()
+{
+  return SMESH::FT_BelongToMeshGroup;
 }
 
 /*
@@ -1772,6 +1875,7 @@ Predicate_i* LogicalNOT_i::GetPredicate_i()
 }
 
 
+
 /*
   Class       : LogicalBinary_i
   Description : Base class for binary logical predicate
@@ -2020,6 +2124,14 @@ BallDiameter_ptr FilterManager_i::CreateBallDiameter()
   SMESH::BallDiameter_i* aServant = new SMESH::BallDiameter_i();
   SMESH::BallDiameter_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateBallDiameter()";
+  return anObj._retn();
+}
+
+BelongToMeshGroup_ptr FilterManager_i::CreateBelongToMeshGroup()
+{
+  SMESH::BelongToMeshGroup_i* aServant = new SMESH::BelongToMeshGroup_i();
+  SMESH::BelongToMeshGroup_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateBelongToMeshGroup()";
   return anObj._retn();
 }
 
@@ -2339,7 +2451,8 @@ Filter_i::~Filter_i()
   if(!CORBA::is_nil(myMesh))
     myMesh->UnRegister();
 
-  //TPythonDump()<<this<<".UnRegister()";
+  myPredicate = 0;
+  FindBaseObjects();
 }
 
 //=======================================================================
@@ -2361,9 +2474,7 @@ void Filter_i::SetPredicate( Predicate_ptr thePredicate )
       myPredicate->GetPredicate()->SetMesh( aMesh );
     TPythonDump()<<this<<".SetPredicate("<<myPredicate<<")";
   }
-  std::list<TPredicateChangeWaiter*>::iterator i = myWaiters.begin();
-  for ( ; i != myWaiters.end(); ++i )
-    (*i)->PredicateChanged();
+  NotifyerAndWaiter::Modified();
 }
 
 //=======================================================================
@@ -2550,28 +2661,35 @@ SALOMEDS::TMPFile* Filter_i::GetVtkUgStream()
   SALOMEDS::TMPFile_var SeqFile;
   return SeqFile._retn();
 }
-
-//================================================================================
-/*!
- * \brief Stores an object to be notified on change of predicate
- */
-//================================================================================
-
-void Filter_i::AddWaiter( TPredicateChangeWaiter* waiter )
+//=======================================================================
+// name    : getCriteria
+// Purpose : Retrieve criterions from predicate
+//=======================================================================
+static inline void getPrediacates( Predicate_i*                thePred,
+                                   std::vector<Predicate_i*> & thePredVec )
 {
-  if ( waiter )
-    myWaiters.push_back( waiter );
-}
+  const int aFType = thePred->GetFunctorType();
 
-//================================================================================
-/*!
- * \brief Removes an object to be notified on change of predicate
- */
-//================================================================================
-
-void Filter_i::RemoveWaiter( TPredicateChangeWaiter* waiter )
-{
-  myWaiters.remove( waiter );
+  switch ( aFType )
+  {
+  case FT_LogicalNOT:
+  {
+    Predicate_i* aPred = ( dynamic_cast<LogicalNOT_i*>( thePred ) )->GetPredicate_i();
+    getPrediacates( aPred, thePredVec );
+    break;
+  }
+  case FT_LogicalAND:
+  case FT_LogicalOR:
+  {
+    Predicate_i* aPred1 = ( dynamic_cast<LogicalBinary_i*>( thePred ) )->GetPredicate1_i();
+    Predicate_i* aPred2 = ( dynamic_cast<LogicalBinary_i*>( thePred ) )->GetPredicate2_i();
+    getPrediacates( aPred1, thePredVec );
+    getPrediacates( aPred2, thePredVec );
+    break;
+   }
+  default:;
+  }
+  thePredVec.push_back( thePred );
 }
 
 //=======================================================================
@@ -2581,7 +2699,7 @@ void Filter_i::RemoveWaiter( TPredicateChangeWaiter* waiter )
 static inline bool getCriteria( Predicate_i*                thePred,
                                 SMESH::Filter::Criteria_out theCriteria )
 {
-  int aFType = thePred->GetFunctorType();
+  const int aFType = thePred->GetFunctorType();
 
   switch ( aFType )
   {
@@ -2633,6 +2751,17 @@ static inline bool getCriteria( Predicate_i*                thePred,
   case FT_OverConstrainedVolume:
   case FT_OverConstrainedFace:
     {
+      return true;
+    }
+  case FT_BelongToMeshGroup:
+    {
+      BelongToMeshGroup_i* aPred = dynamic_cast<BelongToMeshGroup_i*>( thePred );
+      SMESH::SMESH_GroupBase_var grp = aPred->GetGroup();
+      if ( !grp->_is_nil() )
+      {
+        theCriteria[ i ].ThresholdStr = grp->GetName();
+        theCriteria[ i ].ThresholdID  = aPred->GetGroupID().c_str();
+      }
       return true;
     }
   case FT_BelongToGeom:
@@ -2872,6 +3001,13 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
         break;
       case SMESH::FT_EqualVolumes:
         aPredicate = aFilterMgr->CreateEqualVolumes();
+        break;
+      case SMESH::FT_BelongToMeshGroup:
+        {
+          SMESH::BelongToMeshGroup_ptr tmpPred = aFilterMgr->CreateBelongToMeshGroup();
+          tmpPred->SetGroupID( aThresholdID );
+          aPredicate = tmpPred;
+        }
         break;
       case SMESH::FT_BelongToGeom:
         {
@@ -3136,6 +3272,75 @@ Predicate_ptr Filter_i::GetPredicate()
   }
 }
 
+//================================================================================
+/*!
+ * \brief Find groups it depends on
+ */
+//================================================================================
+
+void Filter_i::FindBaseObjects()
+{
+  // release current groups
+  for ( size_t i = 0; i < myBaseGroups.size(); ++i )
+    if ( myBaseGroups[i] )
+    {
+      myBaseGroups[i]->RemoveModifWaiter( this );
+      myBaseGroups[i]->UnRegister();
+    }
+
+  // remember new groups
+  myBaseGroups.clear();
+  if ( myPredicate )
+  {
+    std::vector<Predicate_i*> predicates;
+    getPrediacates( myPredicate, predicates );
+    for ( size_t i = 0; i < predicates.size(); ++i )
+      if ( BelongToMeshGroup_i* bmg = dynamic_cast< BelongToMeshGroup_i* >( predicates[i] ))
+      {
+        SMESH::SMESH_GroupBase_var g = bmg->GetGroup();
+        SMESH_GroupBase_i* g_i = SMESH::DownCast< SMESH_GroupBase_i*>( g );
+        if ( g_i )
+        {
+          g_i->AddModifWaiter( this );
+          g_i->Register();
+          myBaseGroups.push_back( g_i );
+        }
+      }
+  }
+}
+
+//================================================================================
+/*!
+ * \brief When notified on removal of myBaseGroups[i], remove a reference to a
+ *        group from a predicate
+ */
+//================================================================================
+
+void Filter_i::OnBaseObjModified(NotifyerAndWaiter* group, bool removed)
+{
+  if ( !removed )
+    return; // a GroupOnFilter holding this filter is notified automatically
+
+  if ( myPredicate )
+  {
+    std::vector<Predicate_i*> predicates;
+    getPrediacates( myPredicate, predicates );
+    for ( size_t i = 0; i < predicates.size(); ++i )
+      if ( BelongToMeshGroup_i* bmg = dynamic_cast< BelongToMeshGroup_i* >( predicates[i] ))
+      {
+        SMESH::SMESH_GroupBase_var g = bmg->GetGroup();
+        SMESH_GroupBase_i* g_i = SMESH::DownCast< SMESH_GroupBase_i*>( g );
+        if ( g_i == group )
+        {
+          bmg->SetGroup( SMESH::SMESH_GroupBase::_nil() );
+          bmg->SetGroupID( "" );
+        }
+      }
+  }
+
+  FindBaseObjects(); // release and update myBaseGroups;
+}
+
 /*
                             FILTER LIBRARY
 */
@@ -3195,50 +3400,51 @@ static inline LDOMString toString( CORBA::Long theType )
 {
   switch ( theType )
   {
-    case FT_AspectRatio     : return "Aspect ratio";
-    case FT_Warping         : return "Warping";
-    case FT_MinimumAngle    : return "Minimum angle";
-    case FT_Taper           : return "Taper";
-    case FT_Skew            : return "Skew";
-    case FT_Area            : return "Area";
-    case FT_Volume3D        : return "Volume3D";
-    case FT_MaxElementLength2D: return "Max element length 2D";
-    case FT_MaxElementLength3D: return "Max element length 3D";
-    case FT_BelongToGeom    : return "Belong to Geom";
-    case FT_BelongToPlane   : return "Belong to Plane";
-    case FT_BelongToCylinder: return "Belong to Cylinder";
-    case FT_BelongToGenSurface: return "Belong to Generic Surface";
-    case FT_LyingOnGeom     : return "Lying on Geom";
-    case FT_BadOrientedVolume:return "Bad Oriented Volume";
-    case FT_BareBorderVolume: return "Volumes with bare border";
-    case FT_BareBorderFace  : return "Faces with bare border";
-    case FT_OverConstrainedVolume: return "Over-constrained Volumes";
-    case FT_OverConstrainedFace  : return "Over-constrained Faces";
-    case FT_RangeOfIds      : return "Range of IDs";
-    case FT_FreeBorders     : return "Free borders";
-    case FT_FreeEdges       : return "Free edges";
-    case FT_FreeFaces       : return "Free faces";
-    case FT_FreeNodes       : return "Free nodes";
-    case FT_EqualNodes      : return "Equal nodes";
-    case FT_EqualEdges      : return "Equal edges";
-    case FT_EqualFaces      : return "Equal faces";
-    case FT_EqualVolumes    : return "Equal volumes";
-    case FT_MultiConnection : return "Borders at multi-connections";
-    case FT_MultiConnection2D:return "Borders at multi-connections 2D";
-    case FT_Length          : return "Length";
-    case FT_Length2D        : return "Length 2D";
-    case FT_LessThan        : return "Less than";
-    case FT_MoreThan        : return "More than";
-    case FT_EqualTo         : return "Equal to";
-    case FT_LogicalNOT      : return "Not";
-    case FT_LogicalAND      : return "And";
-    case FT_LogicalOR       : return "Or";
-    case FT_GroupColor      : return "Color of Group";
-    case FT_LinearOrQuadratic : return "Linear or Quadratic";
-    case FT_ElemGeomType    : return "Element geomtry type";
-    case FT_EntityType      : return "Entity type";
-    case FT_Undefined       : return "";
-    default                 : return "";
+    case FT_AspectRatio           : return "Aspect ratio";
+    case FT_Warping               : return "Warping";
+    case FT_MinimumAngle          : return "Minimum angle";
+    case FT_Taper                 : return "Taper";
+    case FT_Skew                  : return "Skew";
+    case FT_Area                  : return "Area";
+    case FT_Volume3D              : return "Volume3D";
+    case FT_MaxElementLength2D    : return "Max element length 2D";
+    case FT_MaxElementLength3D    : return "Max element length 3D";
+    case FT_BelongToMeshGroup     : return "Belong to Mesh Group";
+    case FT_BelongToGeom          : return "Belong to Geom";
+    case FT_BelongToPlane         : return "Belong to Plane";
+    case FT_BelongToCylinder      : return "Belong to Cylinder";
+    case FT_BelongToGenSurface    : return "Belong to Generic Surface";
+    case FT_LyingOnGeom           : return "Lying on Geom";
+    case FT_BadOrientedVolume     : return "Bad Oriented Volume";
+    case FT_BareBorderVolume      : return "Volumes with bare border";
+    case FT_BareBorderFace        : return "Faces with bare border";
+    case FT_OverConstrainedVolume : return "Over-constrained Volumes";
+    case FT_OverConstrainedFace   : return "Over-constrained Faces";
+    case FT_RangeOfIds            : return "Range of IDs";
+    case FT_FreeBorders           : return "Free borders";
+    case FT_FreeEdges             : return "Free edges";
+    case FT_FreeFaces             : return "Free faces";
+    case FT_FreeNodes             : return "Free nodes";
+    case FT_EqualNodes            : return "Equal nodes";
+    case FT_EqualEdges            : return "Equal edges";
+    case FT_EqualFaces            : return "Equal faces";
+    case FT_EqualVolumes          : return "Equal volumes";
+    case FT_MultiConnection       : return "Borders at multi-connections";
+    case FT_MultiConnection2D     :return "Borders at multi-connections 2D";
+    case FT_Length                : return "Length";
+    case FT_Length2D              : return "Length 2D";
+    case FT_LessThan              : return "Less than";
+    case FT_MoreThan              : return "More than";
+    case FT_EqualTo               : return "Equal to";
+    case FT_LogicalNOT            : return "Not";
+    case FT_LogicalAND            : return "And";
+    case FT_LogicalOR             : return "Or";
+    case FT_GroupColor            : return "Color of Group";
+    case FT_LinearOrQuadratic     : return "Linear or Quadratic";
+    case FT_ElemGeomType          : return "Element geomtry type";
+    case FT_EntityType            : return "Entity type";
+    case FT_Undefined             : return "";
+    default                       : return "";
   }
 }
 
@@ -3257,6 +3463,7 @@ static inline SMESH::FunctorType toFunctorType( const LDOMString& theStr )
   else if ( theStr.equals( "Volume3D"                     ) ) return FT_Volume3D;
   else if ( theStr.equals( "Max element length 2D"        ) ) return FT_MaxElementLength2D;
   else if ( theStr.equals( "Max element length 3D"        ) ) return FT_MaxElementLength3D;
+  else if ( theStr.equals( "Belong to Mesh Group"         ) ) return FT_BelongToMeshGroup;
   else if ( theStr.equals( "Belong to Geom"               ) ) return FT_BelongToGeom;
   else if ( theStr.equals( "Belong to Plane"              ) ) return FT_BelongToPlane;
   else if ( theStr.equals( "Belong to Cylinder"           ) ) return FT_BelongToCylinder;
@@ -3838,6 +4045,7 @@ static const char** getFunctNames()
     "FT_MultiConnection2D",
     "FT_Length",
     "FT_Length2D",
+    "FT_BelongToMeshGroup",
     "FT_BelongToGeom",
     "FT_BelongToPlane",
     "FT_BelongToCylinder",
@@ -3865,7 +4073,7 @@ static const char** getFunctNames()
     "FT_Undefined"};
 
 #ifdef _DEBUG_
-  // check if functName is complete, compilation failure mains that enum FunctorType changed
+  // check if functName is complete, compilation failure means that enum FunctorType changed
   const int nbFunctors = sizeof(functName) / sizeof(const char*);
   int _assert[( nbFunctors == SMESH::FT_Undefined + 1 ) ? 1 : -1 ];
 #endif
@@ -3904,4 +4112,63 @@ SMESH::FunctorType SMESH::StringToFunctorType(const char* str)
   //ASSERT( strcmp( str, FunctorTypeToString( SMESH::FunctorType( ft ))) == 0 );
 
   return SMESH::FunctorType( ft );
+}
+
+//================================================================================
+/*!
+ * \brief calls OnBaseObjModified(), if who != this, and myWaiters[i]->Modified(who)
+ */
+//================================================================================
+
+void NotifyerAndWaiter::Modified( bool removed, NotifyerAndWaiter* who )
+{
+  if ( who != 0 && who != this )
+    OnBaseObjModified( who, removed );
+  else
+    who = this;
+
+  std::list<NotifyerAndWaiter*> waiters = myWaiters; // myWaiters can be changed by Modified()
+  std::list<NotifyerAndWaiter*>::iterator i = waiters.begin();
+  for ( ; i != waiters.end(); ++i )
+    (*i)->Modified( removed, who );
+}
+
+//================================================================================
+/*!
+ * \brief Stores an object to be notified on change of predicate
+ */
+//================================================================================
+
+void NotifyerAndWaiter::AddModifWaiter( NotifyerAndWaiter* waiter )
+{
+  if ( waiter )
+    myWaiters.push_back( waiter );
+}
+
+//================================================================================
+/*!
+ * \brief Removes an object to be notified on change of predicate
+ */
+//================================================================================
+
+void NotifyerAndWaiter::RemoveModifWaiter( NotifyerAndWaiter* waiter )
+{
+  myWaiters.remove( waiter );
+}
+
+//================================================================================
+/*!
+ * \brief Checks if a waiter is among myWaiters, maybe nested
+ */
+//================================================================================
+
+bool NotifyerAndWaiter::ContainModifWaiter( NotifyerAndWaiter* waiter )
+{
+  bool is = ( waiter == this );
+
+  std::list<NotifyerAndWaiter*>::iterator w = myWaiters.begin();
+  for ( ; !is && w != myWaiters.end(); ++w )
+    is = (*w)->ContainModifWaiter( waiter );
+
+  return is;
 }
