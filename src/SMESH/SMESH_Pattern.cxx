@@ -718,10 +718,10 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
       {
         // new wire begins; put wire EDGEs in eVec
         list<TopoDS_Edge>::iterator eEnd = elIt;
+        if ( iE == *nbEinW )
+          ++nbEinW;
         std::advance( eEnd, *nbEinW );
         eVec.assign( elIt, eEnd );
-        if ( iE > 0 )
-          ++nbEinW;
         iE = 0;
       }
       TopoDS_Edge & edge = *elIt;
