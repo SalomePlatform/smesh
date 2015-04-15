@@ -23,10 +23,11 @@ def triedreBase():
     OX = geompy.MakeVectorDXDYDZ(1, 0, 0)
     OY = geompy.MakeVectorDXDYDZ(0, 1, 0)
     OZ = geompy.MakeVectorDXDYDZ(0, 0, 1)
-  
-    geompy.addToStudy( O, 'O' )
-    geompy.addToStudy( OX, 'OX' )
-    geompy.addToStudy( OY, 'OY' )
-    geompy.addToStudy( OZ, 'OZ' )
+
+    if not geompy.myStudy.FindObjectByName( 'OX', geompy.ComponentDataType() ):
+      geompy.addToStudy( O, 'O' )
+      geompy.addToStudy( OX, 'OX' )
+      geompy.addToStudy( OY, 'OY' )
+      geompy.addToStudy( OZ, 'OZ' )
 
   return O, OX, OY, OZ
