@@ -4,11 +4,6 @@
 
 \n In SALOME 7.2, the Python interface for %Mesh has been slightly modified to offer new functionality:
 
-<ul>
-  <li>\subpage tui_execution_distribution_page</li>
-  <li>\subpage tui_auto_completion_documentation_page</li>
-</ul>
-
 \n Scripts generated for SALOME 6 and older versions must be adapted to work in SALOME 7.2 with full functionality.
 \n The compatibility mode allows old scripts to work in almost all cases, but with a warning.
 
