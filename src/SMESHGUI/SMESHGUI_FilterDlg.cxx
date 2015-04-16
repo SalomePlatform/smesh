@@ -1824,9 +1824,9 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
   case SMESH::FT_BelongToPlane:
   case SMESH::FT_BelongToCylinder:
   case SMESH::FT_BelongToGenSurface:
-  case SMESH::FT_LyingOnGeom: nbCompareSigns = 1; isThresholdEditable = true; break;
+  case SMESH::FT_LyingOnGeom: nbCompareSigns = 0; isThresholdEditable = true; break;
 
-  case SMESH::FT_RangeOfIds: nbCompareSigns = 1; isThresholdEditable = true; break;
+  case SMESH::FT_RangeOfIds: nbCompareSigns = 0; isThresholdEditable = true; break;
 
   case SMESH::FT_BadOrientedVolume:
   case SMESH::FT_BareBorderVolume:

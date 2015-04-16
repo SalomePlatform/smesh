@@ -70,7 +70,7 @@ using namespace std;
 
 namespace {
 
-  gp_XYZ XYZ(const SMDS_MeshNode* n) { return gp_XYZ(n->X(), n->Y(), n->Z()); }
+  inline SMESH_TNodeXYZ XYZ(const SMDS_MeshNode* n) { return SMESH_TNodeXYZ(n); }
 
   enum { U_periodic = 1, V_periodic = 2 };
 }
@@ -2743,38 +2743,80 @@ bool SMESH_MesherHelper::IsReversedSubMesh (const TopoDS_Face& theFace)
   if ( !aSubMeshDSFace )
     return isReversed;
 
+  // find an element on a bounday of theFace
+  SMDS_ElemIteratorPtr iteratorElem = aSubMeshDSFace->GetElements();
+  const SMDS_MeshNode* nn[2];
+  while ( iteratorElem->more() ) // loop on elements on theFace
+  {
+    const SMDS_MeshElement* elem = iteratorElem->next();
+    if ( ! elem ) continue;
+
+    // look for 2 nodes on EDGE
+    int nbNodes = elem->NbCornerNodes();
+    nn[0] = elem->GetNode( nbNodes-1 );
+    for ( int iN = 0; iN < nbNodes; ++iN )
+    {
+      nn[1] = elem->GetNode( iN );
+      if ( nn[0]->GetPosition()->GetDim() < 2 &&
+           nn[1]->GetPosition()->GetDim() < 2 )
+      {
+        TopoDS_Shape s0 = GetSubShapeByNode( nn[0], GetMeshDS() );
+        TopoDS_Shape s1 = GetSubShapeByNode( nn[1], GetMeshDS() );
+        TopoDS_Shape  E = GetCommonAncestor( s0, s1, *myMesh, TopAbs_EDGE );
+        if ( !E.IsNull() && !s0.IsSame( s1 ))
+        {
+          // is E seam edge?
+          int nb = 0;
+          for ( TopExp_Explorer exp( theFace, TopAbs_EDGE ); exp.More(); exp.Next() )
+            if ( E.IsSame( exp.Current() )) {
+              ++nb;
+              E = exp.Current(); // to know orientation
+            }
+          if ( nb == 1 )
+          {
+            bool ok = true;
+            double u0 = GetNodeU( TopoDS::Edge( E ), nn[0], nn[1], &ok );
+            double u1 = GetNodeU( TopoDS::Edge( E ), nn[1], nn[0], &ok );
+            if ( ok )
+            {
+              isReversed = ( u0 > u1 );
+              if ( E.Orientation() == TopAbs_REVERSED )
+                isReversed = !isReversed;
+              return isReversed;
+            }
+          }
+        }
+      }
+      nn[0] = nn[1];
+    }
+  }
+
   // find an element with a good normal
   gp_Vec Ne;
   bool normalOK = false;
   gp_XY uv;
-  SMDS_ElemIteratorPtr iteratorElem = aSubMeshDSFace->GetElements();
+  iteratorElem = aSubMeshDSFace->GetElements();
   while ( !normalOK && iteratorElem->more() ) // loop on elements on theFace
   {
     const SMDS_MeshElement* elem = iteratorElem->next();
-    if ( elem && elem->NbCornerNodes() > 2 )
+    if ( ! SMESH_MeshAlgos::FaceNormal( elem, const_cast<gp_XYZ&>( Ne.XYZ() ), /*normalized=*/0 ))
+      continue;
+    normalOK = true;
+
+    // get UV of a node inside theFACE
+    SMDS_ElemIteratorPtr nodesIt = elem->nodesIterator();
+    const SMDS_MeshNode* nInFace = 0;
+    int iPosDim = SMDS_TOP_VERTEX;
+    while ( nodesIt->more() ) // loop on nodes
     {
-      SMESH_TNodeXYZ nPnt[3];
-      SMDS_ElemIteratorPtr nodesIt = elem->nodesIterator();
-      int iNodeOnFace = 0, iPosDim = SMDS_TOP_VERTEX;
-      for ( int iN = 0; nodesIt->more() && iN < 3; ++iN) // loop on nodes
+      const SMDS_MeshNode* n = static_cast<const SMDS_MeshNode*>( nodesIt->next() );
+      if ( n->GetPosition()->GetTypeOfPosition() >= iPosDim )
       {
-        nPnt[ iN ] = nodesIt->next();
-        if ( nPnt[ iN ]._node->GetPosition()->GetTypeOfPosition() > iPosDim )
-        {
-          iNodeOnFace = iN;
-          iPosDim = nPnt[ iN ]._node->GetPosition()->GetTypeOfPosition();
-        }
-      }
-      // compute normal
-      gp_Vec v01( nPnt[0], nPnt[1] ), v02( nPnt[0], nPnt[2] );
-      if ( v01.SquareMagnitude() > RealSmall() &&
-           v02.SquareMagnitude() > RealSmall() )
-      {
-        Ne = v01 ^ v02;
-        if (( normalOK = ( Ne.SquareMagnitude() > RealSmall() )))
-          uv = GetNodeUV( theFace, nPnt[iNodeOnFace]._node, 0, &normalOK );
+        nInFace = n;
+        iPosDim = n->GetPosition()->GetTypeOfPosition();
       }
     }
+    uv = GetNodeUV( theFace, nInFace, 0, &normalOK );
   }
   if ( !normalOK )
     return isReversed;
@@ -2785,11 +2827,8 @@ bool SMESH_MesherHelper::IsReversedSubMesh (const TopoDS_Face& theFace)
   // if ( surf.IsNull() || surf->Continuity() < GeomAbs_C1 )
   // some surfaces not detected as GeomAbs_C1 are nevertheless correct for meshing
   if ( surf.IsNull() || surf->Continuity() < GeomAbs_C0 )
-    {
-      if (!surf.IsNull())
-        MESSAGE("surf->Continuity() < GeomAbs_C1 " << (surf->Continuity() < GeomAbs_C1));
-      return isReversed;
-    }
+    return isReversed;
+
   gp_Vec d1u, d1v; gp_Pnt p;
   surf->D1( uv.X(), uv.Y(), p, d1u, d1v );
   gp_Vec Nf = (d1u ^ d1v).Transformed( loc );
@@ -3217,6 +3256,11 @@ TopoDS_Shape SMESH_MesherHelper::GetCommonAncestor(const TopoDS_Shape& shape1,
   TopoDS_Shape commonAnc;
   if ( !shape1.IsNull() && !shape2.IsNull() )
   {
+    if ( shape1.ShapeType() == ancestorType && IsSubShape( shape2, shape1 ))
+      return shape1;
+    if ( shape2.ShapeType() == ancestorType && IsSubShape( shape1, shape2 ))
+      return shape2;
+
     PShapeIteratorPtr ancIt = GetAncestors( shape1, mesh, ancestorType );
     while ( const TopoDS_Shape* anc = ancIt->next() )
       if ( IsSubShape( shape2, *anc ))

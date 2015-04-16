@@ -3791,7 +3791,9 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
     for ( int iS = 0; iS < data._edgesOnShape.size(); ++iS )
     {
       _EdgesOnShape& eos = data._edgesOnShape[ iS ];
-      if ( !eos._toSmooth || eos.ShapeType() != shapeType )
+      if ( !eos._toSmooth ||
+           eos.ShapeType() != shapeType ||
+           eos._edges.empty() )
         continue;
 
       // already smoothed?
