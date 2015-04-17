@@ -1329,6 +1329,9 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
         // any visible actor of group or submesh of myMesh
         SetAppropriateActor();
 
+        setDefaultGroupColor();
+        setDefaultName();
+
         aString = aList.First()->getName();
         myMeshGroupLine->setText(aString);
         myMeshGroupLine->home( false );
