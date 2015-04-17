@@ -128,6 +128,17 @@ TopoDS_Shape SMESH_PreviewActorsCollection::GetShapeByIndex( int index )
   return IsValidIndex( index ) ? myMapOfShapes.FindKey( index ) : TopoDS_Shape();
 }
 
+int SMESH_PreviewActorsCollection::NbShapesOfType( TopAbs_ShapeEnum type )
+{
+  if ( type == TopAbs_SHAPE ) return myMapOfShapes.Extent();
+
+  int nb = 0;
+  for ( int i = 1; i <= myMapOfShapes.Extent(); ++i )
+    nb += ( myMapOfShapes(i).ShapeType() == type );
+
+  return nb;
+}
+
 void SMESH_PreviewActorsCollection::SetIndices( const QList<int>& indices)
 {
   if ( myIndices != indices )

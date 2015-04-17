@@ -61,6 +61,7 @@ public:
 
   int             GetIndexByShape( const TopoDS_Shape& );
   TopoDS_Shape    GetShapeByIndex( int i );
+  int             NbShapesOfType( TopAbs_ShapeEnum type );
 
   void            SetIndices( const QList<int>& indices);
   const QList<int>& GetIndices() const { return myIndices; }

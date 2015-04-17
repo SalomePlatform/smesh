@@ -174,15 +174,11 @@ void StdMeshersGUI_PropagationHelperWdg::onShowGeometry(bool toShow)
     BRep_Builder aBuilder;
     aBuilder.MakeCompound( aCompound );
     
-    SMESH_PreviewActorsCollection* previewActor = mySubSelectWdg->GetActorCollection();
-    if ( !previewActor ) return;
-    const QList<int>& egdeIDs = previewActor->GetIndices();
-    for ( QList<int>::const_iterator ieIt = egdeIDs.begin(); ieIt != egdeIDs.end(); ++ieIt )
-    {
-      TopoDS_Shape E = previewActor->GetShapeByIndex( *ieIt );
-      if ( !E.IsNull() && E.ShapeType() == TopAbs_EDGE )
-        aBuilder.Add( aCompound, E );
-    }
+    TopTools_MapOfShape edgesMap;
+    TopExp_Explorer edge( mainShape, TopAbs_EDGE );
+    for ( ; edge.More(); edge.Next() )
+      if ( edgesMap.Add( edge.Current() ))
+        aBuilder.Add( aCompound, edge.Current() );
 
     myModelActor = GEOM_Actor::New();
     myModelActor->SetShape( aCompound, 0, 0 );
@@ -233,12 +229,13 @@ bool StdMeshersGUI_PropagationHelperWdg::buildChains()
   typedef std::vector< TEdgeInWire > TWiresOfEdge;// WIREs including an EDGE
 
   std::vector< TWire > quadWires;
-  quadWires.reserve( egdeIDs.count() );
-  NCollection_DataMap< TGeomID, TWiresOfEdge > wiresOfEdge( egdeIDs.count() );
+  quadWires.reserve( previewActor->NbShapesOfType( TopAbs_FACE ));
+  NCollection_DataMap< TGeomID, TWiresOfEdge >
+    wiresOfEdge( previewActor->NbShapesOfType( TopAbs_EDGE ));
 
   TopExp_Explorer wire;
   TopTools_MapOfShape faceMap;
-  for ( TopExp_Explorer face( shape, TopAbs_FACE ); face.More(); face.Next() )
+  for ( TopExp_Explorer face( mainShape, TopAbs_FACE ); face.More(); face.Next() )
   {
     if ( !faceMap.Add( face.Current() )) continue;
 
@@ -277,6 +274,11 @@ bool StdMeshersGUI_PropagationHelperWdg::buildChains()
   // Find chains
 
   TColStd_IndexedMapOfInteger chain, chainedEdges;
+
+  TColStd_MapOfInteger shapeEdges;
+  if ( !shape.IsSame( mainShape ))
+    for ( QList<TGeomID>::const_iterator ieIt = egdeIDs.begin(); ieIt != egdeIDs.end(); ++ieIt )
+      shapeEdges.Add( *ieIt );
 
   // loop on all EDGEs in mainShape
   for ( QList<TGeomID>::const_iterator ieIt = egdeIDs.begin(); ieIt != egdeIDs.end(); ++ieIt )
@@ -319,9 +321,16 @@ bool StdMeshersGUI_PropagationHelperWdg::buildChains()
       myChains.push_back( std::vector< TGeomID >() );
       std::vector< TGeomID > & ch = myChains.back();
       for ( int iC = 1; iC <= chain.Extent(); ++iC )
-        ch.push_back( chain( iC ) );
+      {
+        TGeomID iE = chain( iC );
+        if ( shapeEdges.IsEmpty() || shapeEdges.Contains( Abs( iE )))
+          ch.push_back( iE );
+      }
+      if ( ch.size() < 2 )
+        myChains.pop_back();
     }
-  }
+  } // loop on egdeIDs
+
   return !myChains.empty();
 }
 
