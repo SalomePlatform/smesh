@@ -2116,6 +2116,14 @@ double SMESH_ActorDef::GetBallScale()
 void SMESH_ActorDef::SetBallScale( double theVal )
 {
   myBallActor->SetBallScale( theVal );
+  if(SMESH_SVTKActor* aCustom = SMESH_SVTKActor::SafeDownCast( myHighlightActor )) {
+    aCustom->SetBallScale(theVal);
+  }
+  if(SMESH_SVTKActor* aCustom = SMESH_SVTKActor::SafeDownCast( myPreHighlightActor )) {
+    aCustom->SetBallScale(theVal);
+  }
+
+  Modified();
 }
 
 int SMESH_ActorDef::GetObjDimension( const int theObjId )

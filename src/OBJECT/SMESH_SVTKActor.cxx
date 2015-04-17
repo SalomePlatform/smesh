@@ -197,6 +197,10 @@ void SMESH_SVTKActor::SetBallSize(float theSize) {
   myBallActor->GetProperty()->SetPointSize(theSize);
 }
 
+void SMESH_SVTKActor::SetBallScale(double theScale) {
+  myBallActor->SetBallScale(theScale);
+}
+
 void SMESH_SVTKActor::SetVisualObject(TVisualObjPtr theVisualObj) {
   myVisualObj = theVisualObj;
 }

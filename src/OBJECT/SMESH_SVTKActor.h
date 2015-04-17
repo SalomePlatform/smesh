@@ -43,6 +43,7 @@ public:
 
   vtkTypeMacro(SMESH_SVTKActor, SVTK_Actor);
 
+  void SetBallScale(double theSize);
   void SetBallSize(float theSize);
   void Set0DSize(float theSize);
 
