@@ -7,7 +7,9 @@ edges or combine them.
 
 \image html image56.jpg Only Faces
 
-\image html image58.gif Only Edges
+\image html image58.png Only Edges
+
+\image html image59.png Edges + Faces
 
 If the mesh contains a lot of elements, select <b>Choose...</b> item, 
 

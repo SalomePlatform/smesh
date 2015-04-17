@@ -4301,6 +4301,10 @@
       <translation>表示する項目</translation>
     </message>
     <message>
+      <source>QUADRATIC_REPRESENT_MODE_GROUP</source>
+      <translation>2 D の 2 次要素の表現</translation>
+    </message>
+    <message>
       <source>QUADRATIC_REPRESENT_MODE</source>
       <translation>2 D の 2 次要素の表現</translation>
     </message>
@@ -4309,8 +4313,12 @@
       <translation>最大角度</translation>
     </message>
     <message>
-      <source>PREF_DISPLAY_MODE</source>
+      <source>PREF_DISPLAY_MODE_GROUP</source>
       <translation>表示モード</translation>
+    </message>
+    <message>
+      <source>PREF_DISPLAY_MODE</source>
+      <translation>既定の表示モード</translation>
     </message>
     <message>
       <source>PREF_ELEMENTS</source>

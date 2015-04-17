@@ -2318,7 +2318,7 @@ Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>PREF_NUMBERING_ELEM</source>
-        <translation>Edges: Color</translation>
+        <translation>Elements: Color</translation>
     </message>
     <message>
         <source>PREF_NUMBERING_FONT</source>
@@ -4354,16 +4354,24 @@ Please, create VTK viewer and try again</translation>
         <translation>Display entity</translation>
     </message>
     <message>
-        <source>QUADRATIC_REPRESENT_MODE</source>
+        <source>QUADRATIC_REPRESENT_MODE_GROUP</source>
         <translation>Representation of the 2D quadratic elements</translation>
+    </message>
+    <message>
+        <source>QUADRATIC_REPRESENT_MODE</source>
+        <translation>Default mode of the 2D quadratic elements</translation>
     </message>
     <message>
         <source>MAX_ARC_ANGLE</source>
         <translation>Maximum angle</translation>
     </message>
     <message>
-        <source>PREF_DISPLAY_MODE</source>
+        <source>PREF_DISPLAY_MODE_GROUP</source>
         <translation>Display mode</translation>
+    </message>
+    <message>
+        <source>PREF_DISPLAY_MODE</source>
+        <translation>Default display mode</translation>
     </message>
     <message>
         <source>PREF_ELEMENTS</source>
@@ -4575,7 +4583,7 @@ Please, create VTK viewer and try again</translation>
     </message>
     <message>
         <source>PREF_COLOR_0D</source>
-        <translation>0D elements</translation>
+        <translation>0D element color</translation>
     </message>
     <message>
         <source>PREF_SIZE_0D</source>
@@ -4583,7 +4591,7 @@ Please, create VTK viewer and try again</translation>
     </message>
     <message>
         <source>PREF_BALL_COLOR</source>
-        <translation>Balls</translation>
+        <translation>Ball color</translation>
     </message>
     <message>
         <source>PREF_BALL_SIZE</source>

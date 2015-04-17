@@ -4930,7 +4930,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( doubleNodesTol, "max", 1000000.0 );
   setPreferenceProperty( doubleNodesTol, "step", 0.0000001 );
 
-  int dispgroup = addPreference( tr( "PREF_DISPLAY_MODE" ), genTab );
+  int dispgroup = addPreference( tr( "PREF_DISPLAY_MODE_GROUP" ), genTab );
   setPreferenceProperty( dispgroup, "columns", 2 );
   int dispmode = addPreference( tr( "PREF_DISPLAY_MODE" ), dispgroup, LightApp_Preferences::Selector, "SMESH", "display_mode" );
   QStringList modes;
@@ -4946,7 +4946,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( dispmode, "strings", modes );
   setPreferenceProperty( dispmode, "indexes", indices );
 
-  int arcgroup = addPreference( tr( "QUADRATIC_REPRESENT_MODE" ), genTab );
+  int arcgroup = addPreference( tr( "QUADRATIC_REPRESENT_MODE_GROUP" ), genTab );
   setPreferenceProperty( arcgroup, "columns", 2 );
   int quadraticmode = addPreference( tr( "QUADRATIC_REPRESENT_MODE" ), arcgroup, LightApp_Preferences::Selector, "SMESH", "quadratic_mode" );
   QStringList quadraticModes;

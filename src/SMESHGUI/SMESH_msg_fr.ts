@@ -2314,7 +2314,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>PREF_NUMBERING_ELEM</source>
-        <translation>Arêtes: couleur</translation>
+        <translation>Éléments: couleur</translation>
     </message>
     <message>
         <source>PREF_NUMBERING_FONT</source>
@@ -4351,6 +4351,10 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
         <translation>Eléments à visualiser</translation>
     </message>
     <message>
+        <source>QUADRATIC_REPRESENT_MODE_GROUP</source>
+        <translation>Mode des éléments quadratiques 2D par défaut</translation>
+    </message>
+    <message>
         <source>QUADRATIC_REPRESENT_MODE</source>
         <translation>Représentation des éléments quadratiques 2D</translation>
     </message>
@@ -4359,8 +4363,12 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
         <translation>Angle maximal</translation>
     </message>
     <message>
-        <source>PREF_DISPLAY_MODE</source>
+        <source>PREF_DISPLAY_MODE_GROUP</source>
         <translation>Mode de visualisation</translation>
+    </message>
+    <message>
+        <source>PREF_DISPLAY_MODE</source>
+        <translation>Mode de visualisation par défaut</translation>
     </message>
     <message>
         <source>PREF_ELEMENTS</source>
@@ -4572,7 +4580,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_COLOR_0D</source>
-        <translation>Eléments 0D</translation>
+        <translation>Couleur d&apos;elément 0D</translation>
     </message>
     <message>
         <source>PREF_SIZE_0D</source>
@@ -4580,7 +4588,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_BALL_COLOR</source>
-        <translation>Particulaires</translation>
+        <translation>Couleur des particulaires</translation>
     </message>
     <message>
         <source>PREF_BALL_SIZE</source>
