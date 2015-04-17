@@ -237,8 +237,11 @@ bool StdMeshersGUI_PropagationHelperWdg::buildChains()
   NCollection_DataMap< TGeomID, TWiresOfEdge > wiresOfEdge( egdeIDs.count() );
 
   TopExp_Explorer wire;
+  TopTools_MapOfShape faceMap;
   for ( TopExp_Explorer face( shape, TopAbs_FACE ); face.More(); face.Next() )
   {
+    if ( !faceMap.Add( face.Current() )) continue;
+
     wire.Init( face.Current(), TopAbs_WIRE );
     TopoDS_Shape W = wire.Current().Oriented( TopAbs_FORWARD );
 

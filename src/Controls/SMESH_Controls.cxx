@@ -68,6 +68,7 @@
 
 #include <set>
 #include <limits>
+#include <TopTools_MapOfShape.hxx>
 
 /*
                             AUXILIARY METHODS
@@ -4506,12 +4507,22 @@ void LyingOnGeom::init()
     myIsSubshape = false;
   }
   else {
-    TopTools_IndexedMapOfShape aMap;
-    TopExp::MapShapes(aMainShape, aMap);
-    myIsSubshape = IsSubShape(aMap, myShape);
+    myIsSubshape = myMeshDS->IsGroupOfSubShapes( myShape );
   }
 
-  if (!myIsSubshape)
+  if (myIsSubshape)
+  {
+    TopTools_IndexedMapOfShape shapes;
+    TopExp::MapShapes( myShape, shapes );
+    mySubShapesIDs.Clear();
+    for ( int i = 1; i <= shapes.Extent(); ++i )
+    {
+      int subID = myMeshDS->ShapeToIndex( shapes( i ));
+      if ( subID > 0 )
+        mySubShapesIDs.Add( subID );
+    }
+  }
+  else
   {
     myElementsOnShapePtr.reset(new ElementsOnShape());
     myElementsOnShapePtr->SetTolerance(myTolerance);
@@ -4531,43 +4542,22 @@ bool LyingOnGeom::IsSatisfy( long theId )
     return myElementsOnShapePtr->IsSatisfy(theId);
   }
 
-  // Case of submesh
-  if( myType == SMDSAbs_Node )
+  // Case of sub-mesh
+
+  const SMDS_MeshElement* elem =
+    ( myType == SMDSAbs_Node ) ? myMeshDS->FindNode( theId ) : myMeshDS->FindElement( theId );
+
+  if ( mySubShapesIDs.Contains( elem->getshapeId() ))
+    return true;
+
+  if ( elem->GetType() != SMDSAbs_Node )
   {
-    if( const SMDS_MeshNode* aNode = myMeshDS->FindNode( theId ) )
+    SMDS_ElemIteratorPtr nodeItr = elem->nodesIterator();
+    while ( nodeItr->more() )
     {
-      const SMDS_PositionPtr& aPosition = aNode->GetPosition();
-      SMDS_TypeOfPosition aTypeOfPosition = aPosition->GetTypeOfPosition();
-      switch( aTypeOfPosition )
-      {
-      case SMDS_TOP_VERTEX : return IsContains( myMeshDS,myShape,aNode,TopAbs_VERTEX );
-      case SMDS_TOP_EDGE   : return IsContains( myMeshDS,myShape,aNode,TopAbs_EDGE );
-      case SMDS_TOP_FACE   : return IsContains( myMeshDS,myShape,aNode,TopAbs_FACE );
-      case SMDS_TOP_3DSPACE: return IsContains( myMeshDS,myShape,aNode,TopAbs_SHELL );
-      }
-    }
-  }
-  else
-  {
-    if( const SMDS_MeshElement* anElem = myMeshDS->FindElement( theId ) )
-    {
-      if( myType == SMDSAbs_All )
-      {
-        return Contains( myMeshDS,myShape,anElem,TopAbs_EDGE ) ||
-               Contains( myMeshDS,myShape,anElem,TopAbs_FACE ) ||
-               Contains( myMeshDS,myShape,anElem,TopAbs_SHELL )||
-               Contains( myMeshDS,myShape,anElem,TopAbs_SOLID );
-      }
-      else if( myType == anElem->GetType() )
-      {
-        switch( myType )
-        {
-        case SMDSAbs_Edge  : return Contains( myMeshDS,myShape,anElem,TopAbs_EDGE );
-        case SMDSAbs_Face  : return Contains( myMeshDS,myShape,anElem,TopAbs_FACE );
-        case SMDSAbs_Volume: return Contains( myMeshDS,myShape,anElem,TopAbs_SHELL )||
-                                    Contains( myMeshDS,myShape,anElem,TopAbs_SOLID );
-        }
-      }
+      const SMDS_MeshElement* aNode = nodeItr->next();
+      if ( mySubShapesIDs.Contains( aNode->getshapeId() ))
+        return true;
     }
   }
 
@@ -4613,34 +4603,30 @@ bool LyingOnGeom::Contains( const SMESHDS_Mesh*     theMeshDS,
                             TopAbs_ShapeEnum        theFindShapeEnum,
                             TopAbs_ShapeEnum        theAvoidShapeEnum )
 {
-  if (IsContains(theMeshDS, theShape, theElem, theFindShapeEnum, theAvoidShapeEnum))
-    return true;
+  // if (IsContains(theMeshDS, theShape, theElem, theFindShapeEnum, theAvoidShapeEnum))
+  //   return true;
 
-  TopTools_IndexedMapOfShape aSubShapes;
-  TopExp::MapShapes( theShape, aSubShapes );
+  // TopTools_MapOfShape aSubShapes;
+  // TopExp_Explorer exp( theShape, theFindShapeEnum, theAvoidShapeEnum );
+  // for ( ; exp.More(); exp.Next() )
+  // {
+  //   const TopoDS_Shape& aShape = exp.Current();
+  //   if ( !aSubShapes.Add( aShape )) continue;
 
-  for (int i = 1; i <= aSubShapes.Extent(); i++)
-  {
-    const TopoDS_Shape& aShape = aSubShapes.FindKey(i);
+  //   if ( SMESHDS_SubMesh* aSubMesh = theMeshDS->MeshElements( aShape ))
+  //   {
+  //     if ( aSubMesh->Contains( theElem ))
+  //       return true;
 
-    if( SMESHDS_SubMesh* aSubMesh = theMeshDS->MeshElements( aShape ) ){
-      if( aSubMesh->Contains( theElem ) )
-        return true;
-
-      SMDS_NodeIteratorPtr aNodeIt = aSubMesh->GetNodes();
-      while ( aNodeIt->more() )
-      {
-        const SMDS_MeshNode* aNode = static_cast<const SMDS_MeshNode*>(aNodeIt->next());
-        SMDS_ElemIteratorPtr anElemIt = aNode->GetInverseElementIterator();
-        while ( anElemIt->more() )
-        {
-          const SMDS_MeshElement* anElement = static_cast<const SMDS_MeshElement*>(anElemIt->next());
-          if (anElement == theElem)
-            return true;
-        }
-      }
-    }
-  }
+  //     SMDS_ElemIteratorPtr nodeItr = theElem->nodesIterator();
+  //     while ( nodeItr->more() )
+  //     {
+  //       const SMDS_MeshElement* aNode = nodeItr->next();
+  //       if ( aSubMesh->Contains( aNode ))
+  //         return true;
+  //     }
+  //   }
+  // }
   return false;
 }
 

@@ -37,7 +37,6 @@
 #include <TColStd_SequenceOfInteger.hxx>
 #include <TCollection_AsciiString.hxx>
 #include <TopAbs.hxx>
-#include <TopTools_MapOfShape.hxx>
 #include <TopoDS_Face.hxx>
 #include <gp_XYZ.hxx>
 
@@ -974,6 +973,7 @@ namespace SMESH{
       virtual void                    init();
 
       TopoDS_Shape                    myShape;
+      TColStd_MapOfInteger            mySubShapesIDs;
       const SMESHDS_Mesh*             myMeshDS;
       SMDSAbs_ElementType             myType;
       bool                            myIsSubshape;
