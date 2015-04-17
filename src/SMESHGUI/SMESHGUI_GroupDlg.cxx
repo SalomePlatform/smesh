@@ -1330,7 +1330,8 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
         SetAppropriateActor();
 
         setDefaultGroupColor();
-        setDefaultName();
+        if (myName->text().isEmpty())
+          setDefaultName();
 
         aString = aList.First()->getName();
         myMeshGroupLine->setText(aString);
