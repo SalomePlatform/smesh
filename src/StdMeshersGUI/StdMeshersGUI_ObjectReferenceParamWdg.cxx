@@ -124,7 +124,7 @@ void StdMeshersGUI_ObjectReferenceParamWdg::init()
   myObjNameLineEdit = new QLineEdit(this);
   myObjNameLineEdit->setReadOnly(true);
   myObjNameLineEdit->setStyleSheet(myEmptyStyleSheet);
-  myObjNameLineEdit->setMinimumWidth(200);
+  myObjNameLineEdit->setMinimumWidth(150);
 
   aHBox->addWidget( mySelButton );
   aHBox->addWidget( myObjNameLineEdit );
