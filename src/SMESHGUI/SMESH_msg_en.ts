@@ -933,6 +933,10 @@
         <translation>Shading</translation>
     </message>
     <message>
+        <source>MEN_SHOW_SCALAR_BAR</source>
+        <translation>Show Scalar Bar</translation>
+    </message>
+    <message>
         <source>MEN_QUADRATIC_REPRESENT</source>
         <translation>2D Quadratic</translation>
     </message>
@@ -2582,6 +2586,10 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Sewing</translation>
     </message>
     <message>
+        <source>SMESH_SHOW_SCALAR_BAR</source>
+        <translation>Show Scalar Bar</translation>
+    </message>
+    <message>
         <source>SMESH_SMOOTHING</source>
         <translation>Smoothing</translation>
     </message>
@@ -3327,6 +3335,10 @@ Use Display Entity menu command to show them.
     <message>
         <source>STB_SHOW</source>
         <translation>Show</translation>
+    </message>
+    <message>
+        <source>STB_SHOW_SCALAR_BAR</source>
+        <translation>Show Scalar Bar</translation>
     </message>
     <message>
         <source>STB_SHRINK</source>

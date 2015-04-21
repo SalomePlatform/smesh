@@ -61,9 +61,10 @@ public:
   virtual QVariant        hasReference( int ) const;
   virtual QVariant        isVisible( int ) const;
 
-  virtual QString         quadratic2DMode(int ) const;
+  virtual QString         quadratic2DMode( int ) const;
 
-  virtual bool            isDistributionVisible(int ) const;
+  virtual bool            isDistributionVisible( int ) const;
+  virtual bool            isScalarBarVisible( int ) const;
   virtual bool            hasChildren( int ) const;
   virtual int             nbChildren( int ) const;
   virtual bool            isContainer( int ) const;

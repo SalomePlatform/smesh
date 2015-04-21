@@ -29,6 +29,7 @@ namespace SMESHOp {
     OpSelectFiltersLibrary   = 1010,   // MENU TOOLS - SELECTION FILTERS LIBRARY
     OpReset                  = 1020,   // RESET
     OpScalarBarProperties    = 1021,   // SCALAR BAR PROPERTIES
+    OpShowScalarBar          = 1022,   // SHOW SCALAR BAR
     OpSaveDistribution       = 1030,   // SAVE DISTRIBUTION
     OpShowDistribution       = 1031,   // SHOW DISTRIBUTION
 #ifndef DISABLE_PLOT2DVIEWER

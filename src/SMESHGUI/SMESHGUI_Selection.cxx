@@ -134,6 +134,7 @@ QVariant SMESHGUI_Selection::parameter( const int ind, const QString& p ) const
   else if ( p=="groupType" )            val = QVariant( groupType( ind ) );
   else if ( p=="quadratic2DMode")       val = QVariant( quadratic2DMode( ind ) );
   else if ( p=="isDistributionVisible") val = QVariant( isDistributionVisible( ind ) );
+  else if ( p=="isScalarBarVisible")    val = QVariant( isScalarBarVisible( ind ) );
   else if ( p=="hasChildren")           val = QVariant( hasChildren( ind ) );
   else if ( p=="nbChildren")            val = QVariant( nbChildren( ind ) );
   else if ( p=="isContainer")           val = QVariant( isContainer( ind ) );
@@ -256,6 +257,16 @@ bool SMESHGUI_Selection::isDistributionVisible(int ind) const {
   SMESH_Actor* actor = getActor( ind );
   return (actor && actor->GetScalarBarActor() && actor->GetScalarBarActor()->GetDistributionVisibility());
 } 
+
+//=======================================================================
+//function : isScalarBarVisible
+//purpose  : Visible/Invisible Scalar Bar
+//=======================================================================
+
+bool SMESHGUI_Selection::isScalarBarVisible(int ind) const {
+  SMESH_Actor* actor = getActor( ind );
+  return (actor && actor->GetScalarBarActor() && actor->GetScalarBarActor()->GetVisibility());
+}
 
 //=======================================================================
 //function : shrinkMode

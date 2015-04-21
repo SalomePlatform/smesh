@@ -932,6 +932,10 @@
       <translation>網かけ</translation>
     </message>
     <message>
+      <source>MEN_SHOW_SCALAR_BAR</source>
+      <translation type="unfinished">Show Scalar Bar</translation>
+    </message>
+    <message>
       <source>MEN_QUADRATIC_REPRESENT</source>
       <translation>二次 2D</translation>
     </message>
@@ -2268,6 +2272,10 @@
       <translation>分布を表示します。</translation>
     </message>
     <message>
+      <source>SMESH_SHOW_SCALAR_BAR</source>
+      <translation type="unfinished">Show Scalar Bar</translation>
+    </message>
+    <message>
       <source>SMESH_PRECISION</source>
       <translation>精度</translation>
     </message>
@@ -3246,6 +3254,10 @@
     <message>
       <source>STB_SHOW_DISTRIBUTION</source>
       <translation>分布を表示します。</translation>
+    </message>
+    <message>
+      <source>STB_SHOW_SCALAR_BAR</source>
+      <translation type="unfinished">Show Scalar Bar</translation>
     </message>
     <message>
       <source>STB_REVOLUTION</source>

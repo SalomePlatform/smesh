@@ -1187,7 +1187,7 @@ namespace
     }
   }
 
-  void ShowDistribution() {
+  void ShowElement(int theCommandID ) {
     LightApp_SelectionMgr* aSel = SMESHGUI::selectionMgr();
     SALOME_ListIO selected;
     if ( aSel )
@@ -1199,7 +1199,12 @@ namespace
         SMESH_Actor* anActor = SMESH::FindActorByEntry( anIO->getEntry() );
         if ( anActor && anActor->GetScalarBarActor() && anActor->GetControlMode() != SMESH_Actor::eNone ) {
           SMESH_ScalarBarActor *aScalarBarActor = anActor->GetScalarBarActor();
-          aScalarBarActor->SetDistributionVisibility(!aScalarBarActor->GetDistributionVisibility());
+          if ( theCommandID == SMESHOp::OpShowDistribution ) {
+            aScalarBarActor->SetDistributionVisibility(!aScalarBarActor->GetDistributionVisibility());
+          }
+          else if ( theCommandID == SMESHOp::OpShowScalarBar ) {
+            aScalarBarActor->SetVisibility( !aScalarBarActor->GetVisibility());
+          }
         }
       }
     }
@@ -1323,7 +1328,7 @@ namespace
         QColor orientationColor, outlineColor, volumeColor;
         int deltaF = 0, deltaV = 0;
         int elem0dSize   = 1;
-        int ballSize     = 1;
+        //int ballSize     = 1;
         double ballScale = 1.0;
         int edgeWidth    = 1;
         int outlineWidth = 1;
@@ -1368,7 +1373,7 @@ namespace
             // balls: color, size
             anActor->GetBallColor( color[0], color[1], color[2] );
             ballColor.setRgbF( color[0], color[1], color[2] );
-            ballSize = qMax( (int)anActor->GetBallSize(), 1 ); // minimum allowed size is 1
+            //ballSize = qMax( (int)anActor->GetBallSize(), 1 ); // minimum allowed size is 1
             ballScale = qMax( (double)anActor->GetBallScale(), 1e-2 ); // minimum allowed scale is 1e-2
             // outlines: color
             anActor->GetOutlineColor( color[0], color[1], color[2] );
@@ -1425,7 +1430,7 @@ namespace
         dlg.setElem0dSize( elem0dSize );
         // balls: color, size
         dlg.setBallColor( ballColor );
-        dlg.setBallSize( ballSize );
+        //dlg.setBallSize( ballSize );
         dlg.setBallScale( ballScale );
         // orientation: color, scale, 3d flag
         dlg.setOrientationColor( orientationColor );
@@ -1452,7 +1457,7 @@ namespace
           elem0dColor      = dlg.elem0dColor();
           elem0dSize       = dlg.elem0dSize();
           ballColor        = dlg.ballColor();
-          ballSize         = dlg.ballSize();
+         // ballSize         = dlg.ballSize();
           ballScale        = dlg.ballScale();
           orientationColor = dlg.orientationColor();
           orientationScale = dlg.orientationSize() / 100.;
@@ -1496,7 +1501,7 @@ namespace
             anActor->Set0DSize( elem0dSize );
             // balls: color, size
             anActor->SetBallColor( ballColor.redF(), ballColor.greenF(), ballColor.blueF() );
-            anActor->SetBallSize( ballSize );
+            // anActor->SetBallSize( ballSize );
             anActor->SetBallScale( ballScale );
             // orientation: color, scale, 3d flag
             anActor->SetFacesOrientationColor( orientationColor.redF(), orientationColor.greenF(), orientationColor.blueF() );
@@ -2482,6 +2487,12 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       SMESHGUI_Preferences_ScalarBarDlg::ScalarBarProperties( this );
       break;
     }
+  case SMESHOp::OpShowScalarBar:
+    {
+      // show/hide scalar bar
+      ::ShowElement(theCommandID);
+      break;
+    }
   case SMESHOp::OpSaveDistribution:
     {
       // dump control distribution data to the text file
@@ -2491,8 +2502,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
   case SMESHOp::OpShowDistribution:
     {
-      // show/ distribution
-      ::ShowDistribution();
+      // show/hide distribution
+      ::ShowElement(theCommandID);
       break;
     }
 
@@ -3921,6 +3932,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   createSMESHAction( SMESHOp::OpReset,               "RESET" );
   createSMESHAction( SMESHOp::OpScalarBarProperties, "SCALAR_BAR_PROP" );
+  createSMESHAction( SMESHOp::OpShowScalarBar,       "SHOW_SCALAR_BAR","",0, true  );
   createSMESHAction( SMESHOp::OpSaveDistribution,    "SAVE_DISTRIBUTION" );
   createSMESHAction( SMESHOp::OpShowDistribution,    "SHOW_DISTRIBUTION","",0, true );
 #ifndef DISABLE_PLOT2DVIEWER
@@ -4639,6 +4651,9 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   popupMgr()->insert( separator(), anId, -1 );
 
+  popupMgr()->insert( action( SMESHOp::OpShowScalarBar ), anId, -1 );
+  popupMgr()->setRule( action( SMESHOp::OpShowScalarBar ), aMeshInVTK + "&& controlMode <> 'eNone'", QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( SMESHOp::OpShowScalarBar ), aMeshInVTK + "&& controlMode <> 'eNone' && isScalarBarVisible", QtxPopupMgr::ToggleRule );
   popupMgr()->insert( action( SMESHOp::OpScalarBarProperties ), anId, -1 );
   popupMgr()->setRule( action( SMESHOp::OpScalarBarProperties ), aMeshInVTK + "&& controlMode <> 'eNone'", QtxPopupMgr::VisibleRule );
 
@@ -4651,7 +4666,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   popupMgr()->insert( action( SMESHOp::OpShowDistribution ), aSubId, -1 );
   popupMgr()->setRule( action( SMESHOp::OpShowDistribution ), aMeshInVTK + "&& isNumFunctor", QtxPopupMgr::VisibleRule );
-  popupMgr()->setRule( action( SMESHOp::OpShowDistribution ), aMeshInVTK + "&& isNumFunctor && isDistributionVisible", QtxPopupMgr::ToggleRule);
+  popupMgr()->setRule( action( SMESHOp::OpShowDistribution ), aMeshInVTK + "&& isNumFunctor && isScalarBarVisible && isDistributionVisible", QtxPopupMgr::ToggleRule);
 
 #ifndef DISABLE_PLOT2DVIEWER
   popupMgr()->insert( action( SMESHOp::OpPlotDistribution ), aSubId, -1 );
@@ -5129,8 +5144,10 @@ void SMESHGUI::createPreferences()
 
   int size0d = addPreference(tr("PREF_SIZE_0D"), elemGroup,
                              LightApp_Preferences::IntSpin, "SMESH", "elem0d_size");
-  int ballSize = addPreference(tr("PREF_BALL_SIZE"), elemGroup,
-                             LightApp_Preferences::IntSpin, "SMESH", "ball_elem_size");
+  /* int ballSize = addPreference(tr("PREF_BALL_SIZE"), elemGroup,
+                             LightApp_Preferences::IntSpin, "SMESH", "ball_elem_size"); */
+  int ballDiameter = addPreference(tr("PREF_BALL_DIAMETER"), elemGroup,
+                             LightApp_Preferences::IntSpin, "SMESH", "ball_elem_diameter");
   double ballScale = addPreference(tr("PREF_BALL_SCALE"), elemGroup,
                              LightApp_Preferences::DblSpin, "SMESH", "ball_elem_scale");
   int elemW  = addPreference(tr("PREF_WIDTH"), elemGroup,
@@ -5143,8 +5160,12 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( size0d, "min", 1 );
   setPreferenceProperty( size0d, "max", 10 );
 
-  setPreferenceProperty( ballSize, "min", 1 );
-  setPreferenceProperty( ballSize, "max", 10 );
+ // setPreferenceProperty( ballSize, "min", 1 );
+ // setPreferenceProperty( ballSize, "max", 10 );
+
+  setPreferenceProperty( ballDiameter, "min", 1e-7 );
+  setPreferenceProperty( ballDiameter, "max", 1e9 );
+  setPreferenceProperty( ballDiameter, "step", 0.1 );
 
   setPreferenceProperty( ballScale, "min", 1e-2 );
   setPreferenceProperty( ballScale, "max", 1e7 );
@@ -5821,7 +5842,8 @@ void SMESHGUI::storeVisualParameters (int savePoint)
                   sizeStr << "elem0d";
                   sizeStr << QString::number((int)aSmeshActor->Get0DSize());
                   sizeStr << "ball";
-                  sizeStr << QString::number((int)aSmeshActor->GetBallSize());
+                  //sizeStr << QString::number((int)aSmeshActor->GetBallSize());
+                  sizeStr << QString::number((double)aSmeshActor->GetBallSize());
                   sizeStr << QString::number((double)aSmeshActor->GetBallScale());
                   sizeStr << "shrink";
                   sizeStr << QString::number(aSmeshActor->GetShrinkFactor());
@@ -6406,7 +6428,8 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
               int lineWidth = -1;
               int outlineWidth = -1;
               int elem0dSize = -1;
-              int ballSize = -1;
+              //int ballSize = -1;
+              double ballDiameter = -1.0;
               double ballScale = -1.0;
               double shrinkSize = -1;
               double orientationSize = -1;
@@ -6439,10 +6462,12 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
                   // - size - is a integer value specifying size
                   // - scale - is a double value specifying scale factor
                   if ( i+1 >= sizes.count() ) break;                       // format error
-                  int v1 = sizes[i+1].toInt( &bOk ); if ( !bOk ) break;    // format error
+                  //int v1 = sizes[i+1].toInt( &bOk ); if ( !bOk ) break;    // format error
+                  double v1 = sizes[i+1].toInt( &bOk ); if ( !bOk ) break;    // format error
                   if ( i+2 >= sizes.count() ) break;                       // format error
                   double v2 = sizes[i+2].toDouble( &bOk ); if ( !bOk ) break; // format error
-                  ballSize = v1;
+                  //ballSize = v1;
+                  ballDiameter = v1;
                   ballScale = v2;
                   i += 2;
                 }
@@ -6478,8 +6503,11 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
               if ( elem0dSize > 0 )
                 aSmeshActor->Set0DSize( elem0dSize );
               // ball size
-              if ( ballSize > 0 )
-                aSmeshActor->SetBallSize( ballSize );
+              /*if ( ballSize > 0 )
+                aSmeshActor->SetBallSize( ballSize );*/
+              // ball diameter
+              if ( ballDiameter > 0 )
+                aSmeshActor->SetBallSize( ballDiameter );
               // ball scale
               if ( ballScale > 0.0 )
                 aSmeshActor->SetBallScale( ballScale );

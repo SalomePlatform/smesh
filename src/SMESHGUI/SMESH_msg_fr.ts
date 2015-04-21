@@ -933,6 +933,10 @@
         <translation>Ombrage</translation>
     </message>
     <message>
+        <source>MEN_SHOW_SCALAR_BAR</source>
+        <translation type="unfinished">Show Scalar Bar</translation>
+    </message>
+    <message>
         <source>MEN_QUADRATIC_REPRESENT</source>
         <translation>Quadratique 2D</translation>
     </message>
@@ -2578,6 +2582,10 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <translation>Couture</translation>
     </message>
     <message>
+        <source>SMESH_SHOW_SCALAR_BAR</source>
+        <translation type="unfinished">Show Scalar Bar</translation>
+    </message>
+    <message>
         <source>SMESH_SMOOTHING</source>
         <translation>Lissage</translation>
     </message>
@@ -3288,6 +3296,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     <message>
         <source>STB_SHOW_DISTRIBUTION</source>
         <translation>Afficher la distribution</translation>
+    </message>
+    <message>
+        <source>STB_SHOW_SCALAR_BAR</source>
+        <translation type="unfinished">Show Scalar Bar</translation>
     </message>
     <message>
         <source>STB_REVOLUTION</source>
