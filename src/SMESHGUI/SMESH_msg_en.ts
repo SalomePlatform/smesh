@@ -4606,6 +4606,10 @@ Please, create VTK viewer and try again</translation>
         <translation>Ball color</translation>
     </message>
     <message>
+        <source>PREF_BALL_DIAMETER</source>
+        <translation>Default diameter of ball elements</translation>
+    </message>
+    <message>
         <source>PREF_BALL_SIZE</source>
         <translation>Size of ball elements</translation>
     </message>

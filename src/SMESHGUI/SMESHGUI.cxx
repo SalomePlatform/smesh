@@ -5146,8 +5146,8 @@ void SMESHGUI::createPreferences()
                              LightApp_Preferences::IntSpin, "SMESH", "elem0d_size");
   /* int ballSize = addPreference(tr("PREF_BALL_SIZE"), elemGroup,
                              LightApp_Preferences::IntSpin, "SMESH", "ball_elem_size"); */
-  int ballDiameter = addPreference(tr("PREF_BALL_DIAMETER"), elemGroup,
-                             LightApp_Preferences::IntSpin, "SMESH", "ball_elem_diameter");
+  double ballDiameter = addPreference(tr("PREF_BALL_DIAMETER"), elemGroup,
+                             LightApp_Preferences::DblSpin, "SMESH", "ball_elem_diameter");
   double ballScale = addPreference(tr("PREF_BALL_SCALE"), elemGroup,
                              LightApp_Preferences::DblSpin, "SMESH", "ball_elem_scale");
   int elemW  = addPreference(tr("PREF_WIDTH"), elemGroup,

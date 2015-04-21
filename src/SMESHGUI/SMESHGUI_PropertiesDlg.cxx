@@ -156,8 +156,8 @@ SMESHGUI_PropertiesDlg::SMESHGUI_PropertiesDlg( const VTK::MarkerMap& customMark
   myBallGrp = new QGroupBox( tr( "BALLS" ), mainFrame() );
   QLabel* ballColorLab = new QLabel( tr( "COLOR" ), myBallGrp );
   myBallColor = new QtxColorButton( myBallGrp );
-  QLabel* ballSizeLab = new QLabel( tr( "SIZE" ), myBallGrp );
-  myBallSize = new QtxIntSpinBox( myBallGrp );
+  // QLabel* ballSizeLab = new QLabel( tr( "SIZE" ), myBallGrp );
+  // myBallSize = new QtxIntSpinBox( myBallGrp );
   QLabel* ballScaleLab = new QLabel( tr( "SCALE_FACTOR" ), myBallGrp );
   myBallScale = new QtxDoubleSpinBox( 1e-2, 1e7, 0.5, myBallGrp );
   hl = new QHBoxLayout( myBallGrp );
@@ -165,12 +165,12 @@ SMESHGUI_PropertiesDlg::SMESHGUI_PropertiesDlg( const VTK::MarkerMap& customMark
   hl->setSpacing( SPACING );
   hl->addWidget( ballColorLab );
   hl->addWidget( myBallColor );
-  hl->addWidget( ballSizeLab );
-  hl->addWidget( myBallSize );
+  // hl->addWidget( ballSizeLab );
+  // hl->addWidget( myBallSize );
   hl->addWidget( ballScaleLab );
   hl->addWidget( myBallScale );
   widthLab1 = qMax( widthLab1, ballColorLab->minimumSizeHint().width() );
-  widthLab2 = qMax( widthLab2, ballSizeLab->minimumSizeHint().width() );
+  // widthLab2 = qMax( widthLab2, ballSizeLab->minimumSizeHint().width() );
   
   // -- orientation vector controls
   myOrientationGrp = new QGroupBox( tr( "ORIENTATIONS" ), mainFrame() );
@@ -234,13 +234,13 @@ SMESHGUI_PropertiesDlg::SMESHGUI_PropertiesDlg( const VTK::MarkerMap& customMark
   myVolumeColor->label()->setMinimumWidth( widthLab2 );
   outlineWidthLab->setMinimumWidth( widthLab2 );
   elem0dSizeLab->setMinimumWidth( widthLab2 );
-  ballSizeLab->setMinimumWidth( widthLab2 );
+  // ballSizeLab->setMinimumWidth( widthLab2 );
   orientationScaleLab->setMinimumWidth( widthLab2 );
 
   myEdgeWidth->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed );
   myOutlineWidth->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed );
   myElem0dSize->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed );
-  myBallSize->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed );
+  // myBallSize->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed );
   myBallScale->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed );
   myOrientationSize->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed );
   myShrinkSize->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed );
@@ -248,7 +248,7 @@ SMESHGUI_PropertiesDlg::SMESHGUI_PropertiesDlg( const VTK::MarkerMap& customMark
   // initialize widgets
   myNodeMarker->setCustomMarkers( customMarkers );
   myElem0dSize->setRange( 1, 10 );
-  myBallSize->setRange( 1, 10 );
+  // myBallSize->setRange( 1, 10 );
   myEdgeWidth->setRange( 1, 5 );
   myOutlineWidth->setRange( 1, 5 );
   myShrinkSize->setRange( 20, 100 );
@@ -522,19 +522,19 @@ QColor SMESHGUI_PropertiesDlg::ballColor() const
   \brief Set discrete elements (balls) size
   \param size discrete elements (balls) size
 */
-void SMESHGUI_PropertiesDlg::setBallSize( int size )
+/*void SMESHGUI_PropertiesDlg::setBallSize( int size )
 {
   myBallSize->setValue( size );
-}
+}*/
 
 /*!
   \brief Get discrete elements (balls) size
   \return current discrete elements (balls) size
 */
-int SMESHGUI_PropertiesDlg::ballSize() const
+/*int SMESHGUI_PropertiesDlg::ballSize() const
 {
   return myBallSize->value();
-}
+}*/
 
 /*!
   \brief Set discrete elements (balls) scale factor

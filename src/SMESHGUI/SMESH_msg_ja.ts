@@ -4553,6 +4553,10 @@
       <translation>粒子</translation>
     </message>
     <message>
+      <source>PREF_BALL_DIAMETER</source>
+      <translation type="unfinished">Default diameter of ball elements</translation>
+    </message>
+    <message>
       <source>PREF_BALL_SIZE</source>
       <translation>粒子状のコンポーネントのサイズ</translation>
     </message>

@@ -44,6 +44,7 @@
     <parameter name="type_of_marker"               value="1"  />
     <parameter name="marker_scale"                 value="9"  />
     <parameter name="elem0d_size"                  value="5" />
+    <parameter name="ball_elem_diameter"           value="1" />
     <parameter name="ball_elem_size"               value="10" />
     <parameter name="ball_elem_scale"              value="1" />
     <parameter name="element_width"                value="1" />

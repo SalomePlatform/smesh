@@ -4603,6 +4603,10 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
         <translation>Couleur des particulaires</translation>
     </message>
     <message>
+        <source>PREF_BALL_DIAMETER</source>
+        <translation type="unfinished">Default diameter of ball elements</translation>
+    </message>
+    <message>
         <source>PREF_BALL_SIZE</source>
         <translation>Taille des éléments particulaires</translation>
     </message>

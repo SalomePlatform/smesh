@@ -169,7 +169,8 @@ namespace SMESH
       // Preview for the balls
       vtkProperty* aBallProp = vtkProperty::New();
       aBallProp->SetColor(ffc.red() / 255. , ffc.green() / 255. , ffc.blue() / 255.);
-      double aBallElemSize = SMESH::GetFloat("SMESH:ball_elem_size",10);
+      //double aBallElemSize = SMESH::GetFloat("SMESH:ball_elem_size",10);
+      double aBallElemSize = SMESH::GetFloat("SMESH:ball_elem_diameter",1);
       aBallProp->SetPointSize(aBallElemSize);
 
       myBallPolyData = vtkPolyData::New();
@@ -427,7 +428,7 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI*          theMo
     GroupC1Layout->addWidget(DiameterSpinBox, 1, 1, 1, 2);
 
     DiameterSpinBox->RangeStepAndValidator( 1e-7, 1e+9, 0.1 );
-    DiameterSpinBox->SetValue( 1. );
+    DiameterSpinBox->SetValue( SMESH::GetFloat("SMESH:ball_elem_diameter", 1) );
     connect( DiameterSpinBox, SIGNAL( valueChanged ( double ) ), this, SLOT( onDiameterChanged( ) ) );
   }
   /* Add to group ************************************************/
