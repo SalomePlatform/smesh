@@ -150,6 +150,8 @@
 #include <QApplication>
 #include <QMenu>
 #include <QTextStream>
+#include <QListView>
+#include <QTreeView>
 
 // BOOST includes
 #include <boost/shared_ptr.hpp>
@@ -715,6 +717,16 @@ namespace
       if ( !anInitialPath.isEmpty() )
         fd->setDirectory( anInitialPath );
       fd->selectFile(aMeshName);
+      
+      
+      QListView *lview = fd->findChild<QListView*>("listView");
+      if( lview ) {
+        lview->setMinimumHeight(200);
+      }
+      QTreeView *tview = fd->findChild<QTreeView*>("treeView");
+      if( tview ) {
+        tview->setMinimumHeight(200);
+      }
 
       SMESHGUI_FileValidator* fv = new SMESHGUI_FileValidator( fd );
       fd->setValidator( fv );
