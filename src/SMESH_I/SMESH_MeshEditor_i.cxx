@@ -477,7 +477,7 @@ void SMESH_MeshEditor_i::initData(bool deleteSearchers)
 /*!
  * \brief Increment mesh modif time and optionally record that the performed
  *        modification may influence futher mesh re-compute.
- *  \param [in] isReComputeSafe - true if the modification does not infulence
+ *  \param [in] isReComputeSafe - true if the modification does not influence
  *              futher mesh re-compute
  */
 //================================================================================
@@ -4797,6 +4797,8 @@ void SMESH_MeshEditor_i::convertToQuadratic(CORBA::Boolean            theForce3d
   throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
+  initData();
+
   TIDSortedElemSet elems;
   bool elemsOK;
   if ( !( elemsOK = CORBA::is_nil( theObject )))
@@ -4826,10 +4828,16 @@ void SMESH_MeshEditor_i::convertToQuadratic(CORBA::Boolean            theForce3d
 CORBA::Boolean SMESH_MeshEditor_i::ConvertFromQuadratic()
   throw (SALOME::SALOME_Exception)
 {
+  SMESH_TRY;
+  initData();
+
   CORBA::Boolean isDone = getEditor().ConvertFromQuadratic();
   TPythonDump() << this << ".ConvertFromQuadratic()";
   declareMeshModified( /*isReComputeSafe=*/!isDone );
   return isDone;
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+  return false;
 }
 
 //=======================================================================
@@ -4882,6 +4890,7 @@ void SMESH_MeshEditor_i::ConvertFromQuadraticObject(SMESH::SMESH_IDSource_ptr th
   throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
+  initData();
 
   TPythonDump pyDump;
 

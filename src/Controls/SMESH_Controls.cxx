@@ -3856,6 +3856,10 @@ void BelongToMeshGroup::SetMesh( const SMDS_Mesh* theMesh )
           myGroup = *g;
     }
   }
+  if ( myGroup )
+  {
+    myGroup->IsEmpty(); // make GroupOnFilter update its predicate
+  }
 }
 
 bool BelongToMeshGroup::IsSatisfy( long theElementId )

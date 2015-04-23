@@ -3301,12 +3301,13 @@ namespace { // Structures used by FixQuadraticElements()
     mutable vector<const QFace* > _faces;
     mutable gp_Vec                _nodeMove;
     mutable int                   _nbMoves;
+    mutable bool                  _is2dFixed; // is moved along surface or in 3D
 
     QLink(const SMDS_MeshNode* n1, const SMDS_MeshNode* n2, const SMDS_MeshNode* nm):
       SMESH_TLink( n1,n2 ), _mediumNode(nm), _nodeMove(0,0,0), _nbMoves(0) {
       _faces.reserve(4);
-      //if ( MediumPos() != SMDS_TOP_3DSPACE )
-        _nodeMove = MediumPnt() - MiddlePnt();
+      _nodeMove = MediumPnt() - MiddlePnt();
+      _is2dFixed = ( MediumPos() != SMDS_TOP_FACE );
     }
     void SetContinuesFaces() const;
     const QFace* GetContinuesFace( const QFace* face ) const;
@@ -3321,10 +3322,11 @@ namespace { // Structures used by FixQuadraticElements()
     const SMDS_MeshNode* EndPosNode(SMDS_TypeOfPosition pos) const
     { return EndPos(0) == pos ? node1() : EndPos(1) == pos ? node2() : 0; }
 
-    void Move(const gp_Vec& move, bool sum=false) const
-    { _nodeMove += move; _nbMoves += sum ? (_nbMoves==0) : 1; }
+    void Move(const gp_Vec& move, bool sum=false, bool is2dFixed=false) const
+    { _nodeMove += move; _nbMoves += sum ? (_nbMoves==0) : 1; _is2dFixed |= is2dFixed; }
     gp_XYZ Move() const { return _nodeMove.XYZ() / _nbMoves; }
     bool IsMoved() const { return (_nbMoves > 0 /*&& !IsStraight()*/); }
+    bool IsFixedOnSurface() const { return _is2dFixed; }
     bool IsStraight() const
     { return isStraightLink( (XYZ(node1())-XYZ(node2())).SquareModulus(),
                              _nodeMove.SquareMagnitude());
@@ -3803,7 +3805,7 @@ namespace { // Structures used by FixQuadraticElements()
       double r = thePrevLen / fullLen;
 
       gp_Vec move = linkNorm * refProj * ( 1 - r );
-      theLink->Move( move, true );
+      theLink->Move( move, /*sum=*/true );
 
       MSG(string(theStep,'.')<<" Move "<< theLink->_mediumNode->GetID()<<
           " by " << refProj * ( 1 - r ) << " following " <<
@@ -4794,7 +4796,7 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
         }
         else if ( error == ERR_TRI ) {  // chain contains continues triangles
           TSplitTriaResult res = splitTrianglesIntoChains( rawChain, chains, pos );
-          if ( res != _OK ) { // not quadrangles split into triangles
+          if ( res != _OK ) { // not 'quadrangles split into triangles' in chain
             fixTriaNearBoundary( rawChain, *this );
             break;
           }
@@ -4921,6 +4923,7 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
               gp_Vec x = x01.Normalized() + x12.Normalized();
               trsf.SetTransformation( gp_Ax3( gp::Origin(), link1->Normal(), x), gp_Ax3() );
               move.Transform(trsf);
+              (*link1)->Move( move, /*sum=*/false, /*is2dFixed=*/false );
             }
             else {
               // compute 3D displacement by 2D one
@@ -4945,8 +4948,8 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
                      "newUV: "<<newUV.X()<<", "<<newUV.Y()<<" \t");
               }
 #endif
+              (*link1)->Move( move, /*sum=*/false, /*is2dFixed=*/true );
             }
-            (*link1)->Move( move );
             MSG( "Move " << (*link1)->_mediumNode->GetID() << " following "
                  << chain.front()->_mediumNode->GetID() <<"-"
                  << chain.back ()->_mediumNode->GetID() <<
@@ -4965,11 +4968,28 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
   const bool toFixCentralNodes = ( myMesh->NbBiQuadQuadrangles() +
                                    myMesh->NbBiQuadTriangles() +
                                    myMesh->NbTriQuadraticHexas() );
+  double distXYZ[4];
+  faceHlp.ToFixNodeParameters( true );
 
   for ( pLink = links.begin(); pLink != links.end(); ++pLink ) {
     if ( pLink->IsMoved() )
     {
       gp_Pnt p = pLink->MiddlePnt() + pLink->Move();
+
+      // put on surface nodes on FACE but moved in 3D (23050)
+      if ( !pLink->IsFixedOnSurface() )
+      {
+        faceHlp.SetSubShape( pLink->_mediumNode->getshapeId() );
+        if ( faceHlp.GetSubShape().ShapeType() == TopAbs_FACE )
+        {
+          const_cast<SMDS_MeshNode*>( pLink->_mediumNode )->setXYZ( p.X(), p.Y(), p.Z());
+          p.Coord( distXYZ[1], distXYZ[2], distXYZ[3] );
+          gp_XY uv( Precision::Infinite(), 0 );
+          faceHlp.CheckNodeUV( TopoDS::Face( faceHlp.GetSubShape() ), pLink->_mediumNode,
+                               uv, /*tol=*/pLink->Move().Modulus(), /*force=*/true, distXYZ );
+          p.SetCoord( distXYZ[1], distXYZ[2], distXYZ[3] );
+        }
+      }
       GetMeshDS()->MoveNode( pLink->_mediumNode, p.X(), p.Y(), p.Z());
 
       // collect bi-quadratic elements
