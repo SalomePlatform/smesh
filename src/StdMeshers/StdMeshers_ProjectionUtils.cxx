@@ -2618,13 +2618,13 @@ namespace StdMeshers_ProjectionUtils
     // cout << vec( 1 ) << "\t " << vec( 2 ) << endl
     //      << vec( 3 ) << "\t " << vec( 4 ) << endl;
 
-    _trsf.SetTranslation( tgtGC );
+    _trsf.SetTranslationPart( tgtGC );
     _srcOrig = srcGC;
 
-    gp_Mat2d& M = const_cast< gp_Mat2d& >( _trsf.HVectorialPart());
+    gp_Mat2d& M = const_cast< gp_Mat2d& >( _trsf.VectorialPart());
     M( 1,1 ) = vec( 1 );
-    M( 2,1 ) = vec( 2 );
-    M( 1,2 ) = vec( 3 );
+    M( 2,1 ) = vec( 2 ); // | 1 3 | -- is it correct ????????
+    M( 1,2 ) = vec( 3 ); // | 2 4 |
     M( 2,2 ) = vec( 4 );
 
     return true;
@@ -2715,9 +2715,9 @@ namespace StdMeshers_ProjectionUtils
     //      << vec( 7 ) << "\t " << vec( 8 ) << "\t " << vec( 9 ) << endl;
 
     _srcOrig = srcOrig;
-    _trsf.SetTranslation( tgtOrig );
+    _trsf.SetTranslationPart( tgtOrig );
 
-    gp_Mat& M = const_cast< gp_Mat& >( _trsf.HVectorialPart() );
+    gp_Mat& M = const_cast< gp_Mat& >( _trsf.VectorialPart() );
     M.SetRows( gp_XYZ( vec( 1 ), vec( 2 ), vec( 3 )),
                gp_XYZ( vec( 4 ), vec( 5 ), vec( 6 )),
                gp_XYZ( vec( 7 ), vec( 8 ), vec( 9 )));
@@ -2745,7 +2745,7 @@ namespace StdMeshers_ProjectionUtils
 
   gp_XYZ TrsfFinder3D::TransformVec( const gp_Vec& v ) const
   {
-    return v.XYZ().Multiplied( _trsf.HVectorialPart() );
+    return v.XYZ().Multiplied( _trsf.VectorialPart() );
   }
   //================================================================================
   /*!
@@ -2760,7 +2760,7 @@ namespace StdMeshers_ProjectionUtils
     {
       // seems to be defined via Solve()
       gp_XYZ newSrcOrig = _trsf.TranslationPart();
-      gp_Mat& M = const_cast< gp_Mat& >( _trsf.HVectorialPart() );
+      gp_Mat& M = const_cast< gp_Mat& >( _trsf.VectorialPart() );
       const double D = M.Determinant();
       if ( D < 1e-3 * ( newSrcOrig - _srcOrig ).Modulus() )
       {
@@ -2771,7 +2771,7 @@ namespace StdMeshers_ProjectionUtils
         return false;
       }
       gp_Mat Minv = M.Inverted();
-      _trsf.SetTranslation( _srcOrig );
+      _trsf.SetTranslationPart( _srcOrig );
       _srcOrig = newSrcOrig;
       M = Minv;
     }

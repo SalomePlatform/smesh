@@ -60,6 +60,7 @@
 #include <TopoDS.hxx>
 #include <gp_Ax2.hxx>
 #include <gp_Ax3.hxx>
+#include <gp_GTrsf.hxx>
 
 
 using namespace std;
@@ -580,18 +581,24 @@ namespace {
 
     // transformation to get location of target nodes from source ones
     StdMeshers_ProjectionUtils::TrsfFinder3D trsf;
+    bool trsfIsOK = true;
     if ( tgtFace.IsPartner( srcFace ))
     {
-      gp_Trsf srcTrsf = srcFace.Location();
-      gp_Trsf tgtTrsf = tgtFace.Location();
-      trsf.Set( srcTrsf.Inverted() * tgtTrsf );
+      gp_GTrsf srcTrsf = srcFace.Location().Transformation();
+      gp_GTrsf tgtTrsf = tgtFace.Location().Transformation();
+      gp_GTrsf t = srcTrsf.Inverted().Multiplied( tgtTrsf );
+      trsf.Set( t );
       // check
       gp_Pnt srcP = BRep_Tool::Pnt( srcWires[0]->FirstVertex() );
       gp_Pnt tgtP = BRep_Tool::Pnt( tgtWires[0]->FirstVertex() );
-      if ( tgtP.Distance( trsf.Transform( srcP )) > tol )
-        trsf.Set( tgtTrsf.Inverted() * srcTrsf );
+      trsfIsOK = ( tgtP.Distance( trsf.Transform( srcP )) < tol );
+      if ( !trsfIsOK )
+      {
+        trsf.Set( tgtTrsf.Inverted().Multiplied( srcTrsf ));
+        trsfIsOK = ( tgtP.Distance( trsf.Transform( srcP )) < tol );
+      }
     }
-    else
+    if ( !trsfIsOK )
     {
       // Try to find the 3D transformation
 
@@ -626,7 +633,6 @@ namespace {
 
       // check trsf
 
-      bool trsfIsOK = true;
       const int nbTestPnt = 20;
       const size_t  iStep = Max( 1, int( srcPnts.size() / nbTestPnt ));
       // check boundary

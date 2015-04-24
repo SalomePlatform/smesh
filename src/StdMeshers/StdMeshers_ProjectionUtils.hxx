@@ -36,8 +36,8 @@
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Vertex.hxx>
-#include <gp_Trsf.hxx>
-#include <gp_Trsf2d.hxx>
+#include <gp_GTrsf.hxx>
+#include <gp_GTrsf2d.hxx>
 
 #include <list>
 #include <map>
@@ -97,12 +97,12 @@ namespace StdMeshers_ProjectionUtils
    */
   class TrsfFinder2D
   {
-    gp_Trsf2d _trsf;
-    gp_XY     _srcOrig;
+    gp_GTrsf2d _trsf;
+    gp_XY      _srcOrig;
   public:
     TrsfFinder2D(): _srcOrig(0,0) {}
 
-    void Set( const gp_Trsf2d& t ) { _trsf = t; } // it's an alternative to Solve()
+    void Set( const gp_GTrsf2d& t ) { _trsf = t; } // it's an alternative to Solve()
 
     bool Solve( const std::vector< gp_XY >& srcPnts,
                 const std::vector< gp_XY >& tgtPnts );
@@ -117,12 +117,12 @@ namespace StdMeshers_ProjectionUtils
    */
   class TrsfFinder3D
   {
-    gp_Trsf _trsf;
-    gp_XYZ  _srcOrig;
+    gp_GTrsf _trsf;
+    gp_XYZ   _srcOrig;
   public:
     TrsfFinder3D(): _srcOrig(0,0,0) {}
 
-    void Set( const gp_Trsf& t ) { _trsf = t; } // it's an alternative to Solve()
+    void Set( const gp_GTrsf& t ) { _trsf = t; } // it's an alternative to Solve()
 
     bool Solve( const std::vector< gp_XYZ > & srcPnts,
                 const std::vector< gp_XYZ > & tgtPnts );

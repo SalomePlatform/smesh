@@ -4985,9 +4985,9 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
           const_cast<SMDS_MeshNode*>( pLink->_mediumNode )->setXYZ( p.X(), p.Y(), p.Z());
           p.Coord( distXYZ[1], distXYZ[2], distXYZ[3] );
           gp_XY uv( Precision::Infinite(), 0 );
-          faceHlp.CheckNodeUV( TopoDS::Face( faceHlp.GetSubShape() ), pLink->_mediumNode,
-                               uv, /*tol=*/pLink->Move().Modulus(), /*force=*/true, distXYZ );
-          p.SetCoord( distXYZ[1], distXYZ[2], distXYZ[3] );
+          if ( faceHlp.CheckNodeUV( TopoDS::Face( faceHlp.GetSubShape() ), pLink->_mediumNode,
+                                    uv, /*tol=*/pLink->Move().Modulus(), /*force=*/true, distXYZ ))
+            p.SetCoord( distXYZ[1], distXYZ[2], distXYZ[3] );
         }
       }
       GetMeshDS()->MoveNode( pLink->_mediumNode, p.X(), p.Y(), p.Z());
