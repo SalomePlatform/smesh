@@ -1559,19 +1559,29 @@ void SMESHGUI_FilterTable::updateAdditionalWidget()
 
   ComboItem* anItem = ((ComboItem*)aTable->item(aRow, 0));
   int aCriterion = GetCriterionType(aRow);
-  bool toEnable = ((((ComboItem*)aTable->item(aRow, 1))->value() == SMESH::FT_EqualTo &&
-                   aCriterion != SMESH::FT_RangeOfIds &&
-                   aCriterion != SMESH::FT_FreeEdges &&
-                   aCriterion != SMESH::FT_FreeFaces &&
-                   aCriterion != SMESH::FT_BadOrientedVolume &&
-                   aCriterion != SMESH::FT_BareBorderFace &&
-                   aCriterion != SMESH::FT_BareBorderVolume &&
-                   aCriterion != SMESH::FT_OverConstrainedFace &&
-                   aCriterion != SMESH::FT_OverConstrainedVolume)
-                   ||
-                   aCriterion == SMESH::FT_CoplanarFaces ||
+  bool isDbl = ( aCriterion == SMESH::FT_AspectRatio        ||
+                 aCriterion == SMESH::FT_AspectRatio3D      ||
+                 aCriterion == SMESH::FT_Warping            ||
+                 aCriterion == SMESH::FT_MinimumAngle       ||
+                 aCriterion == SMESH::FT_Taper              ||
+                 aCriterion == SMESH::FT_Skew               ||
+                 aCriterion == SMESH::FT_Area               ||
+                 aCriterion == SMESH::FT_Volume3D           ||
+                 aCriterion == SMESH::FT_MaxElementLength2D ||
+                 aCriterion == SMESH::FT_MaxElementLength3D ||
+                 aCriterion == SMESH::FT_Length             ||
+                 aCriterion == SMESH::FT_Length2D           ||
+                 aCriterion == SMESH::FT_BallDiameter );
+
+  bool toEnable = (( isDbl && ((ComboItem*)aTable->item(aRow, 1))->value() == SMESH::FT_EqualTo) ||
+                   aCriterion == SMESH::FT_BelongToPlane                                         ||
+                   aCriterion == SMESH::FT_BelongToCylinder                                      ||
+                   aCriterion == SMESH::FT_BelongToGenSurface                                    ||
+                   aCriterion == SMESH::FT_BelongToGeom                                          ||
+                   aCriterion == SMESH::FT_LyingOnGeom                                           ||
+                   aCriterion == SMESH::FT_CoplanarFaces                                         ||
                    aCriterion == SMESH::FT_EqualNodes);
-  
+
   if (!myAddWidgets.contains(anItem))
   {
     myAddWidgets[ anItem ] = new AdditionalWidget(myWgStack);

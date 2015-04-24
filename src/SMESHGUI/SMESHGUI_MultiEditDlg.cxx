@@ -1079,7 +1079,7 @@ bool SMESHGUI_ChangeOrientationDlg::process (SMESH::SMESH_MeshEditor_ptr theEdit
 
 int SMESHGUI_ChangeOrientationDlg::nbElemsInMesh()
 {
-  return ( myFilterType = SMESH::FaceFilter ) ? myMesh->NbFaces() : myMesh->NbVolumes();
+  return ( myFilterType == SMESH::FaceFilter ) ? myMesh->NbFaces() : myMesh->NbVolumes();
 }
 
 /*!
