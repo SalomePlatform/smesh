@@ -134,6 +134,8 @@ StdMeshersGUI_SubShapeSelectorWdg::~StdMeshersGUI_SubShapeSelectorWdg()
     mySelectionMgr->removeFilter( myFilter );
   delete myFilter; myFilter=0;
 
+  mySelectionMgr->clearSelected();
+
   SUIT_SelectionFilter* filter;
   foreach( filter, myGeomFilters )
     delete filter;
