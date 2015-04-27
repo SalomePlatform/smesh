@@ -581,7 +581,7 @@ namespace {
 
     // transformation to get location of target nodes from source ones
     StdMeshers_ProjectionUtils::TrsfFinder3D trsf;
-    bool trsfIsOK = true;
+    bool trsfIsOK = false;
     if ( tgtFace.IsPartner( srcFace ))
     {
       gp_GTrsf srcTrsf = srcFace.Location().Transformation();
