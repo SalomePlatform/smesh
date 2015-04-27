@@ -2,14 +2,15 @@
 
 \page uniting_set_of_triangles_page Uniting a set of triangles
 
-\n In contrast to the previous operation this one allows to unite at
-once many triangles if they have adjacent edges.
+\n In MESH you can union many neighboring triangles (cells) into
+quadrangles by deletion of the common edge.
 
 <em>To union several triangles:</em>
 <ol>
-<li>Display a mesh or a sub-mesh in the 3D viewer.</li>
+<li>Select a mesh (and display it in the 3D Viewer if you are going to
+  pick elements by mouse).</li>
 <li>In the \b Modification menu select the <b>Union of triangles</b>
-item or click <em>"Union of triangles"</em> button in the toolbar.
+  item or click <em>"Union of triangles"</em> button in the toolbar.
 
 \image html image80.png
 <center><em>"Union of triangles" button</em></center>
@@ -20,20 +21,20 @@ The following dialog box will appear:
 
 <ul>
 <li><b>The main list</b> shall contain the triangles which will be
-united. You can click on an triangle in the 3D viewer and it will be
-highlighted. After that click the \b Add button and the ID of this
-triangle will be added to the list. To remove a selected element or
-elements from the list click the \b Remove button. The \b Sort button allows
-to sort the list of IDs. The <b>Set filter</b> button allows to apply a
-definite filter to selection of triangles.</li>
-<li><b>Apply to all</b> radio button allows to modify connectivity and
-type of all triangles of the currently displayed mesh or sub-mesh.</li>
+  united. You can click on a triangle in the 3D viewer and it will be
+  highlighted. After that click the \b Add button and the ID of this
+  triangle will be added to the list. To remove a selected element or
+  elements from the list click the \b Remove button. The \b Sort button allows
+  to sort the list of IDs. The <b>Filter</b> button allows to apply a
+  definite \ref filtering_elements "filter" to selection of triangles.</li>
+<li><b>Apply to all</b> radio button allows to apply the operation to
+  all triangles of the selected mesh.</li>
 <li><b>Preview</b> provides a preview in the viewer.</li>
 <li>\b Criterion menu allows to choose a quality criterion,
- which will be optimized to select triangles to unite.</li>
+  which will be optimized to select triangles to unite.</li>
 <li><b>Select from</b> set of fields allows to choose a sub-mesh or an
-existing group whose triangle elements will be automatically added to
-the list.</li>
+  existing group whose triangle elements then can be added to the
+  list.</li>
 </ul>
 
 </li>

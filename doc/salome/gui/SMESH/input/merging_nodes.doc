@@ -6,19 +6,18 @@ This functionality allows user to detect groups of coincident nodes
 with specified tolerance; each group of the coincident nodes can be
 then converted to the single node.
 
-\image html mergenodes_ico.png "Merge nodes button"
+\image html mergenodes_ico.png "Merge nodes menu button"
 
 <em>To merge nodes of your mesh:</em>
 <ol>
-<li>From the \b Modification choose \b Transformation and from its
-sub-menu select the <b>Merge nodes</b> item. The following dialog box
-shall appear:</li>
+<li>Choose \b Modification -> \b Transformation -> <b>Merge nodes</b>
+  menu item. The following dialog box shall appear:</li>
 <br>
 \image html mergenodes_auto.png
 <br>
 <ul>
 <li>\b Name is the name of the mesh whose nodes will be merged.</li>
-<li>\b Automatic or \b Manual Mode allows choosing how the nodes are
+<li>\b Automatic or \b Manual mode allows choosing how the nodes are
 processed.
 <li>\b Tolerance is a maximum distance between nodes sufficient for
 merging.</li>
@@ -34,20 +33,21 @@ will be merged. The nodes which belong to the groups specified in the
 <b>Exclude Groups</b> will be not taken into account.</li>
 </ul>
 </li><br>
-<li>If the \b Manual Mode is selected, additional controls are available:
+<li> The \b Manual mode gives you full control of what the operation will do.
+In this mode additional controls are available:
 <ul>
 <li>\b Detect button generates the list of coincident nodes for the given
 \b Tolerance.</li>
 <li><b>Coincident nodes</b> is a list of groups of nodes for
-merging. All nodes of each group will form one after the
-operation.
+  merging. As result of the operation all nodes of each group will be
+  replaces by the firts node of the group.
 <ul>
 <li>\b Remove button deletes the selected group from the list.</li>
 <li>\b Add button adds to the list a group of nodes selected in the
 viewer with pressed "Shift" key.</li>
 <li><b>Select all</b> checkbox selects all groups.</li>
 <li><b>Show double nodes IDs</b> checkbox shows/hides identifiers of
-nodes in the 3D viewer.</li>
+nodes of selected groups in the 3D viewer.</li>
 </ul>
 
 <br>
@@ -55,18 +55,18 @@ nodes in the 3D viewer.</li>
 <br>
 </li>
 <li><b>Edit selected group</b> list allows editing the selected
-group:
-<br><br>
-\image html add.png
-<center>adds to the group the node selected in the viewer.</center>
-<br>
-\image html remove.png
-<center>removes from the group the selected node.</center>
-<br>
-\image html sort.png
-<center>moves the selected node to the first position in the
-group. This means that all other nodes will be merged into this
-one.</center><br>
+  group:
+  <br><br>
+  \image html add.png
+  <center>adds to the group the nodes selected in the viewer.</center>
+  <br>
+  \image html remove.png
+  <center>removes from the group the selected nodes.</center>
+  <br>
+  \image html sort.png
+  <center>moves the selected node to the first position in the
+    group. This means that all other nodes of the group will be
+    replaced by this one.</center><br>
 </li>
 </ul>
 </li>

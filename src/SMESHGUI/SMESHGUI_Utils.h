@@ -210,7 +210,11 @@ SMESHGUI_EXPORT
 
   QString fromUtf8( const char* txt );
   QString fromUtf8( const std::string& txt );
-  const char* toUtf8( const QString& txt );
+  struct toUtf8: public std::string
+  {
+    toUtf8( const QString& txt );
+    operator const char*() const { return c_str(); }
+  };
 }
 
 #endif // SMESHGUI_UTILS_H

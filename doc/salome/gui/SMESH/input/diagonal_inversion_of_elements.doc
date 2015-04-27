@@ -1,6 +1,6 @@
 /*!
 
-\page diagonal_inversion_of_elements_page Diagonal inversion of elements
+\page diagonal_inversion_of_elements_page Diagonal inversion of two triangles
 
 \n In MESH you can inverse the diagonal (edge) of a pseudo-quadrangle
 formed by two neighboring triangles with one common edge.
@@ -18,7 +18,7 @@ The following dialog box shall appear:
 \image html diagonalinversion.png
  
 </li>
-<li>Enter the ID of the required edge in the \b Edge field or select
+<li>Enter IDs of nodes forming the required edge in the \b Edge field (the node IDs must be separated by a dash) or select
 this edge in the 3D viewer.</li>
 <li>Click the \b Apply or <b>Apply and Close</b> button.</li>
 </ol>

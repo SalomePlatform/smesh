@@ -3784,21 +3784,23 @@ SMESH_MeshEditor_i::scale(SMESH::SMESH_IDSource_ptr  theObject,
     (theScaleFact.length() == 1) ? theScaleFact[0] : theScaleFact[1],
     (theScaleFact.length() == 1) ? theScaleFact[0] : theScaleFact[2],
   };
-  double tol = std::numeric_limits<double>::max();
   gp_Trsf aTrsf;
 
 #if OCC_VERSION_LARGE > 0x06070100
-  // fight against ortagonalization
+  // fight against orthogonalization
   // aTrsf.SetValues( S[0], 0,    0,    thePoint.x * (1-S[0]),
   //                  0,    S[1], 0,    thePoint.y * (1-S[1]),
   //                  0,    0,    S[2], thePoint.z * (1-S[2]) );
-  aTrsf.SetTranslation( gp_Vec( thePoint.x * (1-S[0]),
-                                thePoint.y * (1-S[1]),
-                                thePoint.z * (1-S[2])));
-  gp_Mat & M = ( gp_Mat& ) aTrsf.HVectorialPart();
+  aTrsf.SetScale( gp::Origin(), 1.0 ); // set form which is used to make group names
+  gp_XYZ & loc = ( gp_XYZ& ) aTrsf.TranslationPart();
+  gp_Mat & M   = ( gp_Mat& ) aTrsf.HVectorialPart();
+  loc.SetCoord( thePoint.x * (1-S[0]),
+                thePoint.y * (1-S[1]),
+                thePoint.z * (1-S[2]));
   M.SetDiagonal( S[0], S[1], S[2] );
 
 #else
+  double tol = std::numeric_limits<double>::max();
   aTrsf.SetValues( S[0], 0,    0,    thePoint.x * (1-S[0]),
                    0,    S[1], 0,    thePoint.y * (1-S[1]),
                    0,    0,    S[2], thePoint.z * (1-S[2]),   tol, tol);

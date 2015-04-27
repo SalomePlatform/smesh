@@ -2,62 +2,45 @@
 
 \page changing_orientation_of_elements_page Changing orientation of elements
 
-\n Orientation of an element is switched by changing the order of its nodes.
+\n Orientation of an element is changed by changing the order of its nodes.
 
 <em>To change orientation of elements:</em>
 <ol>
-<li>Select a mesh.</li>
-<li>Display a mesh, a group or a sub-mesh if you plan to select
-  elements to reorient in the 3D viewer.</li>
-<li>In the \b Modification menu select the \b Orientation item or click
-<em>Orientation</em> button in the toolbar.
+  <li>Select a mesh (and display it in the 3D Viewer if you are going to pick elements by mouse).</li>
+  <li>In the \b Modification menu select the \b Orientation item or click
+    <em>Orientation</em> button in the toolbar.
 
-<center>
+    <center>
 \image html image79.png
 <em>"Orientation" button</em>
-</center>
+    </center>
 
-The following dialog box will appear:
+    The following dialog box will appear:
 
-<center>
+    <center>
 \image html orientaation1.png
-</center>
-<br>
-<ul>
-<li>Select <b>Element Type</b> to reorient: either \b Face or \b
-  Volume </li>
-<li><b>The main list</b> shall contain the elements which will be
-  reoriented. You can click on an element in the 3D viewer and it will
-  be highlighted. After that click the \b Add button and the ID of this
-  element will be added to the list. To remove a selected element or
-  elements from the list click the \b Remove button. The \b Sort button
-  allows to sort the list of elements IDs. <br>
-  The <b>Set filter</b> button allows to apply a definite filter to
-  selection of elements of your group. Depending on \a Source of
-  elements to filter selected in \ref filtering_elements "Filter"
-  dialog, the filter will be applied to different sets of elements.<ul>
-    <li> To all elements of the mesh - for \a Mesh source. All
-      elements satisfying the filter criteria will be highlighted in the
-      Viewer. You can adjust the selection and add the selected elements
-      to the <b>main list</b>.</li>
-    <li> To the elements selected in the Viewer - for <em>Initial
-        Selection</em> source. As a result, elements rejected by the
-        filter will be deselected.</li>
-    <li> To the elemets present in the <b>main list</b> -
-      for <em>Current Dialog</em> source.  As a result, elements rejected
-      by the filter will be remove from the list.</li> </ul>
-</li>
-<li><b>Apply to all</b> radio button allows to modify the orientation
-of all elements of the mesh.</li>
-<li><b>Select from</b> set of fields allows to choose a sub-mesh or a
-group whose elements can be added to the list.</li>
-</ul>
+    </center>
+    <ul>
+      <li>Select type of elements to reorient: \b Face or \b Volume.</li>
+      <li><b>The main list</b> shall contain the elements which will be
+        reoriented. You can click on an element in the 3D viewer and it will
+        be highlighted. After that click the \b Add button and the ID of this
+        element will be added to the list. To remove a selected element or
+        elements from the list click the \b Remove button. The \b Sort button
+        allows to sort the list of elements IDs. The <b>Set filter</b> button
+        allows to apply a definite \ref filtering_elements "filter" to
+        selection of elements.</li>
+      <li><b>Apply to all</b> radio button allows to modify the orientation
+        of all elements of the selected mesh.</li>
+      <li><b>Select from</b> set of fields allows to choose a sub-mesh or an
+        existing group whose elements then can be added to the list.</li>
+    </ul>
 
-</li>
-<li>Click the \b Apply or <b>Apply and Close</b> button to confirm the operation.</li>
+  </li>
+  <li>Click the \b Apply or <b>Apply and Close</b> button to confirm the operation.</li>
 </ol>
 
-<br><b>See Also</b> a sample TUI Script of a 
-\ref tui_orientation "Change Orientation" operation. 
+<br><b>See Also</b> a sample TUI Script of a
+\ref tui_orientation "Change Orientation" operation.
 
 */

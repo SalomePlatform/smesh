@@ -19,8 +19,9 @@ The following dialog box shall appear:
 \image html unionoftwotriangles.png
 
 </li>
-<li>Enter the ID of the required edge in the \b Edge  field or select
-this edge in the 3D viewer.</li>
+<li>Enter IDs of nodes forming the required edge in the \b Edge field
+  (the node IDs must be separated by a dash) or select this edge in
+  the 3D viewer.</li>
 <li>Click the \b Apply or <b>Apply and Close</b> button.</li>
 </ol>
 

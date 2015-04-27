@@ -391,12 +391,12 @@ namespace SMESH
     return fromUtf8( txt.c_str() );
   }
 
-  const char* toUtf8( const QString& txt )
+  toUtf8::toUtf8( const QString& txt )
   {
 #ifdef PAL22528_UNICODE
-    return txt.toUtf8().constData();
+    assign( txt.toUtf8().constData() );
 #else
-    return txt.toLatin1().constData();
+    assign( txt.toLatin1().constData() );
 #endif
   }
 

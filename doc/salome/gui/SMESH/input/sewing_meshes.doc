@@ -2,7 +2,7 @@
 
 \page sewing_meshes_page Sewing meshes
 
-\n In SMESH you can sew elements of  different meshes. The current
+\n In SMESH you can sew elements of a mesh. The current
 functionality allows you to sew:
 <ul>
 <li>\ref free_borders_anchor "Free borders"</li>
@@ -13,7 +13,7 @@ functionality allows you to sew:
 
 \image html sewing.png "Sewing button"
 
-<em>To sew elements of different meshes:</em>
+<em>To sew elements of a mesh:</em>
 <ol>
 <li>From the \b Modification menu choose the \b Transformation item
 and from its sub-menu select the \b Sewing item.</li>

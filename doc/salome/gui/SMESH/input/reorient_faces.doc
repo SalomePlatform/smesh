@@ -1,14 +1,15 @@
 /*!
 
-\page reorient_faces_page Reorient faces
+\page reorient_faces_page Orient faces
 
-\n This operation allows changing the orientation of a set faces in the following ways:
+\n This operation allows fixing the orientation of a set of faces in
+the following ways:
 <ul>
-<li>The new orientation of a set of neighboring faces can be defined  
-  by a vector. <br> Since the direction of face normals in
-  the set can be even opposite, it is necessary to specify a control
-  face, the normal to which will be compared with the vector. This face can be
-  either:
+<li>The desired orientation of a set of neighboring faces can be defined
+  by a vector giving a desired direction of a normal of a certain face. <br>
+  Since the direction of face normals in the set can be even opposite,
+  it is necessary to specify a \a control face, the normal to which
+  will be compared with the vector. This face can be either:
   <ul>
     <li>found by proximity to a given point, or</li> 
     <li>specified explicitly.</li> 
@@ -19,7 +20,7 @@
 
 The orientation of a face is changed by reverting the order of its nodes.
 
-<em>To change orientation of faces:</em>
+<em>To set orientation of faces:</em>
 <ol>
 <li>In the \b Modification menu select <b>Reorient faces</b>
   item or click <em>Reorient faces</em> button in the toolbar.
@@ -37,18 +38,20 @@ The orientation of a face is changed by reverting the order of its nodes.
   containing faces to reorient, in the Object Browser or in the 3D
   Viewer.</li>
 
-<li>To reorient according to vector:
+<li>To reorient by direction of the face normal:
     <ul>
     <li>Specify the coordinates of the \b Point by which the control face
-      will be found. You can easy specify the \b
-      Point by either picking a node in the 3D Viewer or selecting a vertex
-      in the Object Browser. It is possible to pick the \b Face by mouse in
-      the 3D Viewer or enter its ID.</li>
+      will be found. You can specify the \b Point by either picking a
+      node in the 3D Viewer or selecting a vertex in the Object
+      Browser.</li>
     <li>Set up the \b Direction vector to be compared with the normal of the
-      control face. If you pick a node in the 3D Viewer then the \b Direction
-      vector will go from the coordinate system origin to the selected node.
-      If you pick two nodes (holding Shift button) then the \b Direction vector
-      will go from the first to the second node.</li>
+      control face. There are following options: <ul>
+        <li>adjust vector components directly;</li>
+        <li>select a vertex in the Object Browser or a node in the 3D
+          Viewer; their coordinates will define vector components;</li>
+        <li> pick two nodes (holding Shift button), the \b Direction vector
+          will go from the first to the second node.</li>
+      </ul>
     </ul>
 
 <br>
@@ -58,7 +61,7 @@ The orientation of a face is changed by reverting the order of its nodes.
 
 </li>
 
-<li>In the second mode it is possible to directly input the \b Face ID in the corresponding field.
+<li>In the second mode it is possible to either pick the \b Face by mouse in the 3D Viewer or directly input the \b Face ID in the corresponding field.
 
 <center>
 \image html reorient_2d_face.png "The orientation of adjacent faces is chosen according to a vector. The control face is explicitly given."

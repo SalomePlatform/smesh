@@ -16,28 +16,24 @@ the current study. You can \b Add or \b Delete filters.
 \n In <b>Filter name</b> box you can specify the name for your
 filter. By default it is prefixed with the corresponding entity type.
 
-When we use filters during a group creation or another operation (by 
-clicking <b>Set Filters</b> button in the corresponding dialog), the
-menu for setting filters looks a bit differently (see the image below).
-
 \anchor filtering_elements
 
-Each filter can be applicable to \b Nodes, \b Edges, \b Faces or \b
-Volumes. You can combine many criteria in one filter, but they all
-must be of the same <b>Entity type</b>. <br>
+When we use filters during a group creation or another operation (by 
+clicking <b>Set Filter</b> button in the corresponding dialog), the
+menu for setting filters looks as shown below.
+
 The \b Add button creates a new criterion at the end of the list of
 criteria. The \b Insert button creates a new criterion before the
 selected criterion. The \b Remove button deletes the selected
 criterion. The \b Clear button deletes all criteria.
 \n Each <b>Entity type</b> has its specific list of criteria, however all
 filters have common syntax. For each criterion you should specify the
-<b>Threshold Value</b> and whether we search for the elements that should be
-\b More, \b Less or \b Equal to this \b Value. You can also reverse the
-sense of a criterion using \b Unary operator Not and you should
-specify logical relations between criteria using \b Binary operators
-Or and And.
-\n Some criteria should have the additional parameter of \b Tolerance.
-<br> 
+<b>Threshold Value</b> and for numerical criteria whether we search
+for the elements that should be \b More, \b Less or \b Equal to this
+\b Value. You can also reverse the sense of a criterion using \b Unary
+operator \a Not and you should specify logical relations between
+criteria using \b Binary operators \a Or and \a And.
+\n Some criteria have the additional parameter of \b Tolerance.<br> 
 Switching on <b>Insert filter in viewer</b> checkbox limits
 selection of elements in the Viewer to the current filter.
 <br>
@@ -64,11 +60,10 @@ created. You have to select the mesh and the button will be enabled.
 
 Some criteria are applicable to all <b>Entity types</b>:
 <ul><li>
-<b>Belong to Geom</b> selects entities whose all nodes
-lie on the shape defined by <b>Threshold Value</b>.
-If the threshold shape is a sub-shape of the main shape of the mesh
-the algorithm works faster, if this is any other
-shape the algorithm works slower.
+<b>Belong to Geom</b> selects entities whose all nodes lie on the
+shape defined by <b>Threshold Value</b>. If the threshold shape is a
+sub-shape of the main shape of the mesh the algorithm works faster, if
+this is any other shape the algorithm works slower.
 </li><li>
 <b>Lying on Geom</b> selects entities whose at least one node
 lies on the shape defined by the <b>Threshold Value</b>.
@@ -76,7 +71,7 @@ If the threshold shape is a sub-shape of the main shape of the mesh the
 algorithm works faster, if this is any other
 shape, the algorithm works slower.
 </li><li>
-<b>Belong to Mesh Group</b> selects entities included into a mesh group
+<b>Belong to Mesh Group</b> selects entities included into the mesh group
 defined by <b>Threshold Value</b>.
 </li><li>
 <b>Range of IDs</b> allows selection of entities with the specified
@@ -97,14 +92,17 @@ other parts. <b>Threshold Value</b> locating any element of the domain can be ei
 </li>
 </ul>
 
-Some criteria are applicable to all <b>Entity types</b>, except for
-<b>Nodes</b>
+Some criteria are applicable to all <b>Entity types</b> of dimension
+more than zero, i.e. to \b Edges, \b Faces and \b Volumes:
 <ul><li>
 <b>Linear</b> allows selection of Linear or Quadratic elements (if Unary is set to "Not")
 </li><li>
 <b>Geometry type</b> allows selection of elements by their geometric type
 defined by the <b>Threshold Value</b>. The list of available geometric
-types depends on the element entity type defined by the <b>Threshold Value</b>.
+types depends on the current entity type.
+</li><li>
+<b>Entity type</b> allows selection of elements by their type defined
+as combination of geometry type + number of nodes.
 </li>
 </ul>
 

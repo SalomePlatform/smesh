@@ -645,6 +645,9 @@ void SMESHGUI_MultiEditDlg::onFilterAccepted()
 //=======================================================================
 bool SMESHGUI_MultiEditDlg::isIdValid (const int theId) const
 {
+  if ( !myActor )
+    return true; // filter can't work w/o actor
+
   SVTK_Selector* aSelector = SMESH::GetSelector();
   Handle(SMESHGUI_Filter) aFilter =
     Handle(SMESHGUI_Filter)::DownCast(aSelector->GetFilter(myFilterType));

@@ -3,57 +3,62 @@
 \page merging_elements_page Merging Elements
 
 \n This functionality allows to merge coincident elements of a mesh
-selectable in the dialog box.
+object selectable in the dialog box. Two elements are considered coincident if they are based on the same set of nodes.
 
-\image html mergeelems_ico.png "Merge elements button"
+\image html mergeelems_ico.png "Merge elements menu button"
 
 <ol>
-<li>Choose in the main menu \b Modification -> \b Transformation -> <b>Merge elements</b> item. The following dialog box
-shall appear:</li>
+<li>Choose in the main menu \b Modification -> \b Transformation
+  -> <b>Merge elements</b> item. The following dialog box shall
+  appear:</li> 
 
 \image html mergeelems_auto.png
 <br>
 <ul>
-<li>\b Name is the name of the mesh whose elements will be merged.</li>
+<li>\b Name is the name of the mesh object whose elements will be
+  merged.</li> 
 <li>\b Automatic or \b Manual Mode allows choosing how the elements
-are processed.
+  are processed.
 </ul>
 
 <li><b>Automatic mode:</b>
 <ul>
-<li>In the \b Automatic Mode the elements created on the same nodes will be merged.</li>
+<li>In the \b Automatic Mode the elements created on the same nodes
+  will be merged.</li> 
 </ul>
 </li>
 
 <li>If the \b Manual Mode is selected, additional controls are
-available:
+  available:
 
 \image html mergeelems.png
 <br>
 <ul>
-<li>\b Detect button generates the list of coincident elements for the given \b Tolerance.</li>
+<li>\b Detect button generates the list of coincident elements found
+  in the selected object.</li>
 <li><b>Coincident elements</b> is a list of groups of elements for
-merging. All elements of each group will form one after the operation.
+  merging. As result of the operation all elements of each group will
+  be replaced by the firts element of the group.
 <ul>
 <li>\b Remove button deletes the selected group from the list.</li>
 <li>\b Add button adds to the list a group of elements selected in the
-viewer with pressed "Shift" key.</li>
+  viewer with pressed "Shift" key.</li>
 <li><b>Select all</b> checkbox selects all groups.</li>
 <li><b>Show double elements IDs</b> checkbox shows/hides identifiers of
-elements in the 3D viewer.</li>
+  elements of selected groups in the 3D viewer.</li>
 </ul></li>
 <li><b>Edit selected group</b> list allows editing the selected group:
 <br><br>
 \image html add.png
-<center>adds to the group the element selected in the viewer.</center>
+<center>adds to the group the elements selected in the viewer.</center>
 <br>
 \image html remove.png
-<center>removes from the group the selected element.</center>
+<center>removes from the group the selected elements.</center>
 <br>
 \image html sort.png
 <center>moves the selected element to the first position in the
-group. This means that all other elements will be merged into this
-one.</center>
+  group. This means that all other elements of the group will be
+  replaced by this one.</center>
 <br>
 </li>
 <li>To confirm your choice click \b Apply or <b>Apply and Close</b> button.</li>

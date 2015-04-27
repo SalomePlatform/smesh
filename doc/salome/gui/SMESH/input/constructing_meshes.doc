@@ -400,9 +400,11 @@ failure is provided in \b Errors table.
 After you select an error, <b>Show Sub-shape</b> button allows
 visualizing in magenta the geometrical entity that causes the error.
 
+<center>
 \image html failed_computation.png 
 <em>3D algorithm failed to compute mesh on a box shown using <b>Show
     Sub-shape</b> button</em>
+</center>
 
 <b>Publish Sub-shape</b> button publishes the sub-shape, whose meshing
 has failed, in the Geometry component as a child of the main shape, which
@@ -420,9 +422,11 @@ the visualization of faces and volumes (if any).
 <b>Bad Mesh to Group</b> button creates groups of bad mesh entities
 to facilitate their analysis.
 
+<center>
 \image html show_bad_mesh.png
 <em>Edges bounding a hole in the surface are shown in magenta using <b>Show
     bad Mesh</b> button</em>
+</center>
 
 \note Mesh Computation Information box does not appear if you set
 "Mesh computation/Show a computation result notification" preference 

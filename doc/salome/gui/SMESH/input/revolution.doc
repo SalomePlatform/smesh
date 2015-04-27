@@ -16,7 +16,7 @@ a \ref extrusion_struct "structured mesh from scratch".
 \image html image92.png
 <center><em>"Revolution" button</em></center>
 
-The following dialog common for line and planar elements will appear:
+The following dialog will appear:
 
 \image html revolution1.png
 
@@ -79,8 +79,8 @@ The following dialog common for line and planar elements will appear:
         </li>
       </ul>
     </li>
-    <li>Specify the \b Tolerance for the operation, which is used to
-      detect nodes lying on the axis of revolution.
+    <li>Specify the \b Tolerance, which is used to detect nodes lying
+      on the axis of revolution.
     </li>
     <li>Activate  <b>Preview</b> check-box to see the result mesh in
       the viewer.

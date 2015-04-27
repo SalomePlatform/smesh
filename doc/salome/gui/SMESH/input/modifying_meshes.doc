@@ -2,51 +2,57 @@
 
 \page modifying_meshes_page Modifying meshes
 
-Salome provides an extremely vast specter of mesh modification and
+Salome provides a vast specter of mesh modification and
 transformation operations, giving the possibility to:
 
 <ul>
 <li>\subpage adding_nodes_and_elements_page "Add" mesh elements from
-nodes to polyhedrons at an arbitrary place in the mesh.</li>
+  nodes to polyhedrons at an arbitrary place in the mesh.</li>
 <li>\subpage adding_quadratic_elements_page "Add quadratic" mesh
-elements (used in quadratic meshes) from quadratic nodes to quadratic polyhedrons at an arbitrary place in the mesh.</li>
+  elements from quadratic segments to quadratic hexahedrons at an
+  arbitrary place in the mesh.</li>
 <li>\subpage removing_nodes_and_elements_page "Remove" any existing
-mesh elements.</li>
-<li>\subpage translation_page "Translate" in the indicated direction the mesh or some of
-its elements.</li>
+  mesh elements and nodes.</li>
+<li>\subpage translation_page "Translate" in the indicated direction
+  the mesh or some of its elements.</li>
 <li>\subpage rotation_page "Rotate" by the indicated axis and angle
-the mesh or some of its elements.</li>
-<li>\subpage scale_page "Scale" the mesh or some of its
-elements.</li>
-<li>\subpage symmetry_page "Mirror" the mesh
-through a point or a vector of symmetry.</li>
-<li>\subpage double_nodes_page "Duplicate nodes or/and Elements". Duplication of nodes can be useful to emulate a crack in the model.</li>
+  the mesh or some of its elements.</li>
+<li>\subpage scale_page "Scale" the mesh or some of its elements.</li>
+<li>\subpage symmetry_page "Mirror" the mesh through a point, a vector
+  or a plane of symmetry.</li>
+<li>\subpage double_nodes_page "Duplicate nodes or/and Elements". 
+  Duplication of nodes can be useful to emulate a crack in the
+  model.</li>
 <li>Unite meshes by \subpage sewing_meshes_page "sewing" free borders,
-conform free borders, border to side or side elements.</li>
-<li>\subpage merging_nodes_page "Merge Nodes", considered coincident
-within the indicated tolerance.</li>
-<li>\subpage merging_elements_page "Merge Elements", considered coincident
-within the indicated tolerance.</li>
-<li>\subpage mesh_through_point_page "Move Nodes" to an arbitrary location
-with consequent transformation of all adjacent elements and edges.</li>
-<li>\subpage diagonal_inversion_of_elements_page "Invert an edge" between neighboring triangles.</li>
+  border to side or side elements.</li>
+<li>\subpage merging_nodes_page "Merge Nodes", coincident within the
+  indicated tolerance.</li>
+<li>\subpage merging_elements_page "Merge Elements" based on the same
+  nodes.</li>
+<li>\subpage mesh_through_point_page "Move Nodes" to an arbitrary
+  location with consequent transformation of all adjacent
+  elements.</li>
+<li>\subpage diagonal_inversion_of_elements_page "Invert an edge"
+  between neighboring triangles.</li>
 <li>\subpage uniting_two_triangles_page "Unite two triangles".</li>
 <li>\subpage uniting_set_of_triangles_page "Unite several adjacent triangles".</li>
 <li>\subpage changing_orientation_of_elements_page "Change orientation"
- of the selected elements.</li>
-<li>\subpage reorient_faces_page "Reorient faces".</li>
-<li>\subpage cutting_quadrangles_page "Cut a quadrangle" into two triangles.</li>
-<li>\subpage split_to_tetra_page "Split" volumic elements into tetrahedra or prisms.</li>
+  of the selected elements.</li>
+<li>\subpage reorient_faces_page "Orient faces" by several means.</li>
+<li>\subpage cutting_quadrangles_page "Cut a quadrangle" into two
+  triangles.</li>
+<li>\subpage split_to_tetra_page "Split" volumic elements into
+  tetrahedra or prisms.</li>
 <li>\subpage smoothing_page "Smooth" elements, reducung distortions in
-them by adjusting the locations of element corners.</li>
+  them by adjusting the locations of nodes.</li>
 <li>Create an \subpage extrusion_page "extrusion" along a vector or by
-normal to a discretized surface.</li>
+  normal to a discretized surface.</li>
 <li>Create an \subpage extrusion_along_path_page "extrusion along a path".</li>
-<li>Create an edge or a surface by \subpage revolution_page "revolution"
-of the selected node or edge.</li>
+<li>Create elements by \subpage revolution_page "revolution" of the
+  selected nodes and elements.</li>
 <li>Apply \subpage pattern_mapping_page "pattern mapping".</li>
-<li>\subpage convert_to_from_quadratic_mesh_page "Convert regular mesh to quadratic", 
-or vice versa.</li>
+<li>\subpage convert_to_from_quadratic_mesh_page "Convert linear mesh to quadratic", 
+  or vice versa.</li>
 <li>\subpage make_2dmesh_from_3d_page "Generate boundary elements".</li>
 <li>\subpage generate_flat_elements_page "Generate flat elements on group boundaries or on faces".</li>
 <li>\subpage cut_mesh_by_plane_page "Cut a tetrahedron mesh by a plane".</li>

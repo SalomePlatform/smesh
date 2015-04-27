@@ -6,7 +6,7 @@ This operation allows cutting one or several quadrangle elements into two or fou
 
 <em>To cut quadrangles:</em>
 
-1) Display a mesh, a 2D sub-mesh or a group of faces in the 3D viewer.
+1) Select a mesh (and display it in the 3D Viewer if you are going to pick elements by mouse).
 
 2) In the \b Modification menu select the <b>Cutting of quadrangles</b> item or
 click <em>"Cutting of quadrangles"</em> button in the toolbar.
@@ -25,8 +25,9 @@ keyboard button to select several quadrangles):
   - Click \b Add button and the ID of this quadrangle will be added to the list. 
   - To remove a selected element or elements from the list click \b Remove button. 
   - <b>Sort list</b> button allows sorting the list of IDs. 
-  - \b Filter button allows applying a definite filter to the selection of quadrangles.
-- <b>Apply to all</b> check box allows cutting all quadrangles of the selected mesh, sub-mesh or group.
+  - \b Filter button allows applying a definite \ref filtering_elements "filter" 
+    to the selection of quadrangles.
+- <b>Apply to all</b> check box allows cutting all quadrangles of the selected mesh.
 - \b Preview provides a preview of cutting in the viewer. It is disabled for <b>Cut into 4 triangles</b> as this cutting way implies no ambiguity.
 - \b Criterion defines the way of cutting:
   - <b>Cut into 4 triangles</b> allows cutting a quadrangle into four triangles by inserting a new node at the center of the quadrangle. The other options allow cutting a quadrangle into two triangles by connecting the nodes of a diagonal.
@@ -36,7 +37,7 @@ keyboard button to select several quadrangles):
     - <b>Aspect Ratio</b> cuts by the diagonal splitting the quadrangle into triangles with \ref aspect_ratio_page "Aspect Ratio" closer to 1
     - <b>Minimum Angle</b> cuts by the diagonal splitting the quadrangle into triangles with \ref minimum_angle_page "Minimum Angle" closer to 60 degrees.
     - <b>Skew</b> cuts by the diagonal splitting the quadrangle into triangles with \ref skew_page "Skew" closer to 0.0 degrees.
-- <b>Select from</b> allows choosing a sub-mesh or an existing group, whose quadrangle elements will be automatically added to the main list.
+- <b>Select from</b> allows choosing a sub-mesh or an existing group, whose quadrangle elements then can be added to the main list.
 
 3) Click the \b Apply or <b>Apply and Close</b> button to confirm the operation.
 
