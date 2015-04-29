@@ -2581,7 +2581,7 @@ bool SMESH_MesherHelper::IsStructured( SMESH_subMesh* faceSM )
   faceAnalyser.SetSubShape( faceSM->GetSubShape() );
 
   // rotate edges to get the first node being at corner
-  // (in principle it's not necessary but so far none SALOME algo can make
+  // (in principle it's not necessary because so far none SALOME algo can make
   //  such a structured mesh that all corner nodes are not on VERTEXes)
   bool isCorner     = false;
   int nbRemainEdges = nbEdgesInWires.front();
@@ -4824,12 +4824,14 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
           // mesure chain length and compute link position along the chain
           double chainLen = 0;
           vector< double > linkPos;
+          TChain savedChain; // backup
           MSGBEG( "Link medium nodes: ");
           TChain::iterator link0 = chain.begin(), link1 = chain.begin(), link2;
           for ( ++link1; link1 != chain.end(); ++link1, ++link0 ) {
             MSGBEG( (*link0)->_mediumNode->GetID() << "-" <<(*link1)->_mediumNode->GetID()<<" ");
             double len = ((*link0)->MiddlePnt() - (*link1)->MiddlePnt()).Modulus();
             while ( len < numeric_limits<double>::min() ) { // remove degenerated link
+              if ( savedChain.empty() ) savedChain = chain;
               link1 = chain.erase( link1 );
               if ( link1 == chain.end() )
                 break;
@@ -4839,9 +4841,16 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
             linkPos.push_back( chainLen );
           }
           MSG("");
-          if ( linkPos.size() < 2 )
-            continue;
-
+          if ( linkPos.size() <= 2 && savedChain.size() > 2 ) {
+            //continue;
+            linkPos.clear();
+            chainLen = 0;
+            chain = savedChain;
+            for ( link1 = chain.begin(); link1 != chain.end(); ++link1 ) {
+              chainLen += 1;
+              linkPos.push_back( chainLen );
+            }
+          }
           gp_Vec move0 = chain.front()->_nodeMove;
           gp_Vec move1 = chain.back ()->_nodeMove;
 
@@ -4920,8 +4929,12 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
               // transform to global
               gp_Vec x01( (*link0)->MiddlePnt(), (*link1)->MiddlePnt() );
               gp_Vec x12( (*link1)->MiddlePnt(), (*link2)->MiddlePnt() );
-              gp_Vec x = x01.Normalized() + x12.Normalized();
-              trsf.SetTransformation( gp_Ax3( gp::Origin(), link1->Normal(), x), gp_Ax3() );
+              try {
+                gp_Vec x = x01.Normalized() + x12.Normalized();
+                trsf.SetTransformation( gp_Ax3( gp::Origin(), link1->Normal(), x), gp_Ax3() );
+              } catch ( Standard_Failure ) {
+                trsf.Invert();
+              }
               move.Transform(trsf);
               (*link1)->Move( move, /*sum=*/false, /*is2dFixed=*/false );
             }

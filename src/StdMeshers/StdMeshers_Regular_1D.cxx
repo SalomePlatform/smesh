@@ -690,25 +690,28 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     if ( smDS->NbNodes() < 1 )
       return true; // 1 segment
 
-    vector< double > mainEdgeParams;
-    if ( ! SMESH_Algo::GetNodeParamOnEdge( theMesh.GetMeshDS(), mainEdge, mainEdgeParams ))
+    map< double, const SMDS_MeshNode* > mainEdgeParamsOfNodes;
+    if ( ! SMESH_Algo::GetSortedNodesOnEdge( theMesh.GetMeshDS(), mainEdge, _quadraticMesh,
+                                             mainEdgeParamsOfNodes, SMDSAbs_Edge ))
       return error("Bad node parameters on the source edge of Propagation Of Distribution");
 
-    vector< double > segLen( mainEdgeParams.size() - 1 );
+    vector< double > segLen( mainEdgeParamsOfNodes.size() - 1 );
     double totalLen = 0;
     BRepAdaptor_Curve mainEdgeCurve( mainEdge );
-    for ( size_t i = 1; i < mainEdgeParams.size(); ++i )
+    map< double, const SMDS_MeshNode* >::iterator
+      u_n2 = mainEdgeParamsOfNodes.begin(), u_n1 = u_n2++;
+    for ( size_t i = 1; i < mainEdgeParamsOfNodes.size(); ++i, ++u_n1, ++u_n2 )
     {
       segLen[ i-1 ] = GCPnts_AbscissaPoint::Length( mainEdgeCurve,
-                                                    mainEdgeParams[i-1],
-                                                    mainEdgeParams[i]);
+                                                    u_n1->first,
+                                                    u_n2->first);
       totalLen += segLen[ i-1 ];
     }
     for ( size_t i = 0; i < segLen.size(); ++i )
       segLen[ i ] *= theLength / totalLen;
 
-    size_t iSeg = theReverse ? segLen.size()-1 : 0;
-    size_t dSeg = theReverse ? -1 : +1;
+    size_t  iSeg = theReverse ? segLen.size()-1 : 0;
+    size_t  dSeg = theReverse ? -1 : +1;
     double param = theFirstU;
     int nbParams = 0;
     for ( int i = 0, nb = segLen.size()-1; i < nb; ++i, iSeg += dSeg )

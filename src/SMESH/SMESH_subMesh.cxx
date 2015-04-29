@@ -1861,10 +1861,13 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
       removeSubMeshElementsAndNodes();
       break;
     case SUBMESH_COMPUTED:      // allow retry compute
-      if (_algoState == HYP_OK)
-        _computeState = READY_TO_COMPUTE;
-      else
-        _computeState = NOT_READY;
+      if ( IsEmpty() ) // 23061
+      {
+        if (_algoState == HYP_OK)
+          _computeState = READY_TO_COMPUTE;
+        else
+          _computeState = NOT_READY;
+      }
       break;
     case SUBMESH_RESTORED:
       ComputeSubMeshStateEngine( SUBMESH_RESTORED );

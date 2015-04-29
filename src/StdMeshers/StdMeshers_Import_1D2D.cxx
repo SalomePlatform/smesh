@@ -307,6 +307,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
       {
         SMESH_TNodeXYZ nXYZ = *node;
         nodeState[ i ] = TopAbs_UNKNOWN;
+        newNodes [ i ] = 0;
 
         it_isnew = n2n->insert( make_pair( *node, (SMDS_MeshNode*)0 ));
         n2nIt    = it_isnew.first;
@@ -679,7 +680,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
         seamHelper.SetSubShape( edges[ iE ]);
         seamHelper.SetElementsOnShape( true );
 
-        if ( (*checkedFaces.begin())->IsQuadratic() )
+        if ( !checkedFaces.empty() && (*checkedFaces.begin())->IsQuadratic() )
           for ( set< const SMDS_MeshElement* >::iterator fIt = checkedFaces.begin();
                 fIt != checkedFaces.end(); ++fIt )
             seamHelper.AddTLinks( static_cast<const SMDS_MeshFace*>( *fIt ));
@@ -708,8 +709,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
     //   sm->SetIsAlwaysComputed( true );
     sm->ComputeStateEngine(SMESH_subMesh::CHECK_COMPUTE_STATE);
     if ( sm->GetComputeState() != SMESH_subMesh::COMPUTE_OK )
-      return error(SMESH_Comment("Failed to create segments on the edge ")
-                   << tgtMesh->ShapeToIndex( edges[iE ]));
+      return error(SMESH_Comment("Failed to create segments on the edge #") << sm->GetId());
   }
 
   // ============

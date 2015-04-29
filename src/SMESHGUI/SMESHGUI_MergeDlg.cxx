@@ -778,6 +778,7 @@ void SMESHGUI_MergeDlg::updateControls()
   bool enable = !(myMesh->_is_nil()) && (ListCoincident->count() || (myTypeId == 0));
   buttonOk->setEnabled(enable);
   buttonApply->setEnabled(enable);
+  DetectButton->setEnabled( !myMesh->_is_nil() );
 }
 
 //=================================================================================
@@ -1124,12 +1125,13 @@ void SMESHGUI_MergeDlg::SelectionIntoArgument()
   if (myEditCurrentArgument == (QWidget*)LineEditMesh) {
     QString aString = "";
     LineEditMesh->setText(aString);
-    
+
     ListCoincident->clear();
     ListEdit->clear();
     myActor = 0;
+    myMesh = SMESH::SMESH_Mesh::_nil();
     QString aCurrentEntry = myEntry;
-    
+
     int nbSel = SMESH::GetNameOfSelectedIObjects(mySelectionMgr, aString);
     if (nbSel != 1) {
       myIdPreview->SetPointsLabeled(false);
@@ -1142,20 +1144,20 @@ void SMESHGUI_MergeDlg::SelectionIntoArgument()
 
     SALOME_ListIO aList;
     mySelectionMgr->selectedObjects(aList);
-    
+
     Handle(SALOME_InteractiveObject) IO = aList.First();
     myEntry = IO->getEntry();
     myMesh = SMESH::GetMeshByIO(IO);
-    
+
     if (myMesh->_is_nil())
       return;
 
     LineEditMesh->setText(aString);
-    
+
     myActor = SMESH::FindActorByEntry(IO->getEntry());
     if (!myActor)
       myActor = SMESH::FindActorByObject(myMesh);
-    
+
     if ( myActor && myTypeId == 1 && mySelector->IsSelectionEnabled() ) {
       mySubMeshOrGroup = SMESH::SMESH_IDSource::_nil();
       mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
