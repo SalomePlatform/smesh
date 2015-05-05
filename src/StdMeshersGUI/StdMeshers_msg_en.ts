@@ -542,10 +542,6 @@ this one for this mesh/sub-mesh.</translation>
         <source>ENF_NODES</source>
         <translation>Enforced nodes</translation>
     </message>
-    <message>
-        <source></source>
-        <translation></translation>
-    </message>
 </context>
 <context>
     <name>StdMeshersGUI_LayerDistributionParamWdg</name>

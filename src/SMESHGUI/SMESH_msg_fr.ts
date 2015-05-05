@@ -934,7 +934,7 @@
     </message>
     <message>
         <source>MEN_SHOW_SCALAR_BAR</source>
-        <translation type="unfinished">Show Scalar Bar</translation>
+        <translation>Afficher la barre d'échelle</translation>
     </message>
     <message>
         <source>MEN_QUADRATIC_REPRESENT</source>
@@ -1861,6 +1861,10 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <translation>IDs des arêtes</translation>
     </message>
     <message>
+        <source>SMESH_ID_EDGES</source>
+        <translation>IDs des arêtes</translation>
+    </message>
+    <message>
         <source>SMESH_ID_ELEMENTS</source>
         <translation>IDs des éléments</translation>
     </message>
@@ -2171,6 +2175,10 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     <message>
         <source>SMESH_OBJECT_MESH</source>
         <translation>Maillage</translation>
+    </message>
+    <message>
+        <source>SMESH_OBJECTS</source>
+        <translation>Objets</translation>
     </message>
     <message>
         <source>SMESH_OBJECT_MESHorSUBMESH</source>
@@ -2583,7 +2591,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>SMESH_SHOW_SCALAR_BAR</source>
-        <translation type="unfinished">Show Scalar Bar</translation>
+        <translation>Afficher la barre d'échelle</translation>
     </message>
     <message>
         <source>SMESH_SMOOTHING</source>
@@ -3299,7 +3307,7 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     </message>
     <message>
         <source>STB_SHOW_SCALAR_BAR</source>
-        <translation type="unfinished">Show Scalar Bar</translation>
+        <translation>Afficher la barre d'échelle</translation>
     </message>
     <message>
         <source>STB_REVOLUTION</source>
@@ -4604,7 +4612,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_BALL_DIAMETER</source>
-        <translation type="unfinished">Default diameter of ball elements</translation>
+        <translation>Diamètre par défaut des éléments particulaires</translation>
     </message>
     <message>
         <source>PREF_BALL_SIZE</source>
@@ -5443,6 +5451,10 @@ Vérifiez la validité des informations données</translation>
         <translation>Faces sur-contraintes</translation>
     </message>
     <message>
+        <source>BELONG_TO_MESH_GROUP</source>
+        <translation>Appartient au groupe du maillage</translation>
+    </message>
+    <message>
         <source>BELONG_TO_CYLINDER</source>
         <translation>Appartient au cylindre</translation>
     </message>
@@ -5835,8 +5847,8 @@ Indiquez un nom non-vide et essayez de nouveau</translation>
 Indiquez-les et essayez de nouveau</translation>
     </message>
     <message>
-        <source>NAME</source>
-        <translation>Nom</translation>
+        <source>RESULT</source>
+        <translation>Résultat</translation>
     </message>
     <message>
         <source>OBJECT_1</source>
@@ -5875,6 +5887,30 @@ Indiquez-les et essayez de nouveau</translation>
     <message>
         <source>ELEMENTS_TYPE</source>
         <translation>Type d&apos;éléments </translation>
+    </message>
+    <message>
+        <source>UNDERLYING_ENTITIES_ONLY</source>
+        <translation>Inclure les entités sous-jacentes uniquement</translation>
+    </message>
+    <message>
+        <source>NUMBER_OF_COMMON_NODES</source>
+        <translation>Nombre de nœuds en commun</translation>
+    </message>
+    <message>
+        <source>ALL</source>
+        <translation>Tout</translation>
+    </message>
+    <message>
+        <source>MAIN</source>
+        <translation>Principal</translation>
+    </message>
+    <message>
+        <source>AT_LEAST_ONE</source>
+        <translation>Au moins un</translation>
+    </message>
+    <message>
+        <source>MAJORITY</source>
+        <translation>La majorité</translation>
     </message>
     <message>
         <source>NODE</source>
@@ -6432,7 +6468,7 @@ Il y a trop peu de points dans le fichier </translation>
         <translation>Prévisualiser</translation>
     </message>
     <message>
-        <source>REVOLUTION_1D</source>
+        <source>REVOLUTION</source>
         <translation>Révolution des éléments 1D</translation>
     </message>
     <message>

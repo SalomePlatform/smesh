@@ -2,13 +2,66 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="fr_FR">
 <context>
-    <name>@default</name>
+    <name>StdMeshersGUI_StdHypothesisCreator</name>
     <message>
-        <source>SMESH_COMMON_RATIO</source>
-        <translation>Taux de croissance</translation>
+        <source>TO_IGNORE_EDGES</source>
+        <translation>Arêtes sans couches limites (entrées / sorties)</translation>
     </message>
     <message>
-        <source>SMESH_GEOMETRIC_1D_TITLE</source>
+        <source>NOT_TO_IGNORE_EDGES</source>
+        <translation>Arêtes avec couche limite (parois)</translation>
+    </message>
+    <message>
+        <source>TO_IGNORE_EDGES_OR_NOT</source>
+        <translation>Les arêtes sélectionnées sont</translation>
+    </message>
+    <message>
+        <source>TO_IGNORE_FACES_OR_NOT</source>
+        <translation>Les face sélectionnées sont</translation>
+    </message>
+    <message>
+        <source>NOT_TO_IGNORE_FACES</source>
+        <translation>Faces avec couche limite (parois)</translation>
+    </message>
+    <message>
+        <source>TO_IGNORE_FACES</source>
+        <translation>Faces sans couche limite (entrées / sorties)</translation>
+    </message>
+    <message>
+        <source>BAD_FACES_WARNING</source>
+        <translation>
+Les faces sélectionnées ne sont pas des sous-géométries de la pièce à mailler (ou de la pièce du sous-maillage). Veuillez plutôt créer une autre hypothèse à la place de celle-ci pour ce maillage/sous-maillage.</translation>
+    </message>
+    <message>
+        <source>BAD_EDGES_WARNING</source>
+        <translation>
+Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à mailler (ou de la pièce du sous-maillage). Veuillez plutôt créer une autre hypothèse à la place de celle-ci pour ce maillage/sous-maillage.</translation>
+    </message>
+    <message>
+        <source>EXTMETH_SURF_OFFSET_SMOOTH</source>
+        <translation>Décalage de la surface + lissage</translation>
+    </message>
+    <message>
+        <source>EXTRUSION_METHOD</source>
+        <translation>Méthode d'extrusion</translation>
+    </message>
+    <message>
+        <source>EXTMETH_NODE_OFFSET</source>
+        <translation>Décalage des Nœuds</translation>
+    </message>
+    <message>
+        <source>EXTMETH_FACE_OFFSET</source>
+        <translation>Décalage de la face</translation>
+    </message>
+</context>
+<context>
+    <name>@default</name>
+    <message>
+        <source>SMESH_ARITHMETIC_1D_HYPOTHESIS</source>
+        <translation>Arithmétique 1D</translation>
+    </message>
+    <message>
+        <source>SMESH_ARITHMETIC_1D_TITLE</source>
         <translation>Construction de l&apos;hypothèse</translation>
     </message>
     <message>
@@ -16,40 +69,12 @@
         <translation>Progression géométrique</translation>
     </message>
     <message>
-        <source>SMESH_EDGES_WITH_LAYERS</source>
-        <translation>Arêtes avec couche limite</translation>
-    </message>
-    <message>
-        <source>SMESH_FACES_WITH_LAYERS</source>
-        <translation>Faces avec couche limite (parois)</translation>
-    </message>
-    <message>
-        <source>SMESH_ADAPTIVE1D_TITLE</source>
+        <source>SMESH_GEOMETRIC_1D_TITLE</source>
         <translation>Construction de l&apos;hypothèse</translation>
     </message>
     <message>
-        <source>SMESH_MAX_SIZE</source>
-        <translation>Taille max</translation>
-    </message>
-    <message>
-        <source>SMESH_MIN_SIZE</source>
-        <translation>Taille min</translation>
-    </message>
-    <message>
-        <source>SMESH_ADAPTIVE1D_HYPOTHESIS</source>
-        <translation>Adaptation géométrique</translation>
-    </message>
-    <message>
-        <source>SMESH_ARITHMETIC_1D_HYPOTHESIS</source>
-        <translation>Arithmétique 1D</translation>
-    </message>
-    <message>
-        <source>SMESH_ARITHMETIC_1D_PARAM</source>
-        <translation>Raison arithmétique</translation>
-    </message>
-    <message>
-        <source>SMESH_ARITHMETIC_1D_TITLE</source>
-        <translation>Construction de l&apos;hypothèse</translation>
+        <source>SMESH_COMMON_RATIO</source>
+        <translation>Taux de croissance</translation>
     </message>
     <message>
         <source>SMESH_AUTOMATIC_LENGTH_HYPOTHESIS</source>
@@ -66,6 +91,22 @@
     <message>
         <source>SMESH_CUT_NEG_MODE</source>
         <translation>Section négative</translation>
+    </message>
+    <message>
+        <source>SMESH_ADAPTIVE1D_HYPOTHESIS</source>
+        <translation>Adaptation géométrique</translation>
+    </message>
+    <message>
+        <source>SMESH_MIN_SIZE</source>
+        <translation>Taille min</translation>
+    </message>
+    <message>
+        <source>SMESH_MAX_SIZE</source>
+        <translation>Taille max</translation>
+    </message>
+    <message>
+        <source>SMESH_ADAPTIVE1D_TITLE</source>
+        <translation>Construction de l&apos;hypothèse</translation>
     </message>
     <message>
         <source>SMESH_DEFLECTION1D_HYPOTHESIS</source>
@@ -208,6 +249,14 @@
         <source>SMESH_EDGES_WO_LAYERS</source>
         <translation>Arêtes sans couche limite
 (entrées et sorties)</translation>
+    </message>
+    <message>
+        <source>SMESH_EDGES_WITH_LAYERS</source>
+        <translation>Arêtes avec couche limite (parois)</translation>
+    </message>
+    <message>
+        <source>SMESH_FACES_WITH_LAYERS</source>
+        <translation>Faces avec couche limite (parois)</translation>
     </message>
     <message>
         <source>SMESH_MAX_LENGTH_TITLE</source>
@@ -470,6 +519,25 @@
     </message>
 </context>
 <context>
+    <name>StdMeshersGUI_QuadrangleParamCreator</name>
+    <message>
+        <source>POINTS</source>
+        <translation>Coordonnées</translation>
+    </message>
+    <message>
+        <source>SHAPES</source>
+        <translation>Points</translation>
+    </message>
+    <message>
+        <source>TRANSITION</source>
+        <translation>Transition</translation>
+    </message>
+    <message>
+        <source>ENF_NODES</source>
+        <translation>Nœuds imposés</translation>
+    </message>
+</context>
+<context>
     <name>StdMeshersGUI_LayerDistributionParamWdg</name>
     <message>
         <source>CHANGE_TYPE</source>
@@ -487,12 +555,12 @@
 <context>
     <name>StdMeshersGUI_CartesianParamCreator</name>
     <message>
-        <source>ADD_EDGES</source>
-        <translation>Ajouter des arêtes</translation>
-    </message>
-    <message>
         <source>THRESHOLD</source>
         <translation>Seuil</translation>
+    </message>
+    <message>
+        <source>ADD_EDGES</source>
+        <translation>Ajouter des arêtes</translation>
     </message>
     <message>
         <source>AXIS_X</source>
@@ -551,30 +619,34 @@
     </message>
 </context>
 <context>
-    <name>StdMeshersGUI_StdHypothesisCreator</name>
+    <name>StdMeshersGUI_PropagationHelperWdg</name>
     <message>
-        <source>TO_IGNORE_EDGES</source>
-        <translation>Arêtes sans couches limites (entrées / sorties)</translation>
+        <source>HELPER</source>
+        <translation>Assistant</translation>
     </message>
     <message>
-        <source>NOT_TO_IGNORE_EDGES</source>
-        <translation>Arêtes avec couche limite (parois)</translation>
+        <source>SHOW_GEOMETRY</source>
+        <translation>Affiche toute la géométrie</translation>
     </message>
     <message>
-        <source>TO_IGNORE_EDGES_OR_NOT</source>
-        <translation>Les arêtes sélectionnées sont</translation>
+        <source>PROPAGATION_CHAINS</source>
+        <translation>Chaînes de propagation</translation>
     </message>
     <message>
-        <source>TO_IGNORE_FACES_OR_NOT</source>
-        <translation>Les face sélectionnées sont</translation>
+        <source>ADD</source>
+        <translation>Ajoute</translation>
     </message>
     <message>
-        <source>NOT_TO_IGNORE_FACES</source>
-        <translation>Faces avec couche limite (parois)</translation>
+        <source>REVERSE</source>
+        <translation>Inverse</translation>
     </message>
     <message>
-        <source>TO_IGNORE_FACES</source>
-        <translation>Faces sans couche limite (entrées / sorties)</translation>
+        <source>NO_CHAINS</source>
+        <translation>(aucune chaîne)</translation>
+    </message>
+    <message>
+        <source>CHAIN_NUM_NB_EDGES</source>
+        <translation>Chaîne %1 (%2 arêtes)</translation>
     </message>
 </context>
 </TS>

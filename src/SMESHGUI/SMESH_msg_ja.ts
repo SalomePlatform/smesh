@@ -221,11 +221,11 @@
     </message>
     <message>
       <source>MEN_ASPECT</source>
-      <translation>レポート フォーム</translation>
+      <translation>アスペクト比</translation>
     </message>
     <message>
       <source>MEN_ASPECT_3D</source>
-      <translation>レポートの 3 D を形成</translation>
+      <translation>3Dアスペクト比</translation>
     </message>
     <message>
       <source>MEN_AUTO_COLOR</source>
@@ -397,7 +397,7 @@
     </message>
     <message>
       <source>MEN_CHOOSE</source>
-      <translation type="unfinished">Choose...</translation>
+      <translation>選択...</translation>
     </message>
     <message>
       <source>MEN_EDIT</source>
@@ -453,7 +453,7 @@
     </message>
     <message>
       <source>MEN_EXTRUSION</source>
-      <translation>Extrusion</translation>
+      <translation>押出し</translation>
     </message>
     <message>
       <source>MEN_EXTRUSION_ALONG</source>
@@ -497,7 +497,7 @@
     </message>
     <message>
       <source>MEN_EQUAL_NODE</source>
-      <translation>二重ノット</translation>
+      <translation>二重ノード</translation>
     </message>
     <message>
       <source>STB_EQUAL_NODE</source>
@@ -901,7 +901,7 @@
     </message>
     <message>
       <source>MEN_REVOLUTION</source>
-      <translation>Revolution</translation>
+      <translation>回転</translation>
     </message>
     <message>
       <source>MEN_ROT</source>
@@ -933,7 +933,7 @@
     </message>
     <message>
       <source>MEN_SHOW_SCALAR_BAR</source>
-      <translation type="unfinished">Show Scalar Bar</translation>
+      <translation>スカラバーの表示</translation>
     </message>
     <message>
       <source>MEN_QUADRATIC_REPRESENT</source>
@@ -981,7 +981,7 @@
     </message>
     <message>
       <source>MEN_TAPER</source>
-      <translation>Cone</translation>
+      <translation>抜き勾配</translation>
     </message>
     <message>
       <source>MEN_TETRA</source>
@@ -1672,6 +1672,10 @@
       <translation>押出、ベクトルに沿って</translation>
     </message>
     <message>
+      <source>SMESH_EXTRUSION_BY_NORMAL</source>
+      <translation>標準押出</translation>
+    </message>
+    <message>
       <source>SMESH_FACE</source>
       <translation>Face</translation>
     </message>
@@ -1824,8 +1828,8 @@
       <translation>このようなディメンションの前提がジオメトリに既に割り当てられています。</translation>
     </message>
     <message>
-      <source>SMESH_ID_DIAGONAL</source>
-      <translation>エッジの Id</translation>
+      <source>SMESH_ID_EDGES</source>
+      <translation>エッジID</translation>
     </message>
     <message>
       <source>SMESH_ID_ELEMENTS</source>
@@ -2140,6 +2144,10 @@
       <translation>Mesh</translation>
     </message>
     <message>
+      <source>SMESH_OBJECTS</source>
+      <translation>オブジェクト</translation>
+    </message>
+    <message>
       <source>SMESH_OBJECT_MESHorSUBMESH</source>
       <translation>メッシュまたはサブメッシュ</translation>
     </message>
@@ -2270,10 +2278,6 @@
     <message>
       <source>SMESH_SHOW_DISTRIBUTION_SCALARBAR</source>
       <translation>分布を表示します。</translation>
-    </message>
-    <message>
-      <source>SMESH_SHOW_SCALAR_BAR</source>
-      <translation type="unfinished">Show Scalar Bar</translation>
     </message>
     <message>
       <source>SMESH_PRECISION</source>
@@ -2550,6 +2554,10 @@
     <message>
       <source>SMESH_SEWING</source>
       <translation>つなぎ合わせ</translation>
+    </message>
+    <message>
+      <source>SMESH_SHOW_SCALAR_BAR</source>
+      <translation>スカラバーの表示</translation>
     </message>
     <message>
       <source>SMESH_SMOOTHING</source>
@@ -3256,10 +3264,6 @@
       <translation>分布を表示します。</translation>
     </message>
     <message>
-      <source>STB_SHOW_SCALAR_BAR</source>
-      <translation type="unfinished">Show Scalar Bar</translation>
-    </message>
-    <message>
       <source>STB_REVOLUTION</source>
       <translation>Revolution</translation>
     </message>
@@ -3294,6 +3298,10 @@
     <message>
       <source>STB_SHOW</source>
       <translation>表示</translation>
+    </message>
+    <message>
+      <source>STB_SHOW_SCALAR_BAR</source>
+      <translation>スカラバーの表示</translation>
     </message>
     <message>
       <source>STB_SHRINK</source>
@@ -4314,7 +4322,7 @@
     </message>
     <message>
       <source>QUADRATIC_REPRESENT_MODE_GROUP</source>
-      <translation>2 D の 2 次要素の表現</translation>
+      <translation>2D二次要素の表現</translation>
     </message>
     <message>
       <source>QUADRATIC_REPRESENT_MODE</source>
@@ -4330,7 +4338,7 @@
     </message>
     <message>
       <source>PREF_DISPLAY_MODE</source>
-      <translation>既定の表示モード</translation>
+      <translation>表示モード</translation>
     </message>
     <message>
       <source>PREF_ELEMENTS</source>
@@ -4554,7 +4562,7 @@
     </message>
     <message>
       <source>PREF_BALL_DIAMETER</source>
-      <translation type="unfinished">Default diameter of ball elements</translation>
+      <translation>ボール要素のデフォルト直径</translation>
     </message>
     <message>
       <source>PREF_BALL_SIZE</source>
@@ -4614,7 +4622,7 @@
     <name>SMESHGUI_AddQuadraticElementDlg</name>
     <message>
       <source>SMESH_ADD_QUADRATIC_EDGE</source>
-      <translation>正方形のエッジを追加します。</translation>
+      <translation>２次エッジの追加</translation>
     </message>
     <message>
       <source>SMESH_ADD_QUADRATIC_HEXAHEDRON</source>
@@ -4630,7 +4638,7 @@
     </message>
     <message>
       <source>SMESH_ADD_QUADRATIC_PYRAMID</source>
-      <translation>四角錐を追加します。</translation>
+      <translation>二次ピラミッドの追加</translation>
     </message>
     <message>
       <source>SMESH_ADD_QUADRATIC_QUADRANGLE</source>
@@ -5113,6 +5121,14 @@
       <source>EXTRUSION_ALONG_LINE</source>
       <translation>線に沿った押出し</translation>
     </message>
+    <message>
+      <source>BY_AVERAGE_NORMAL</source>
+      <translation>平均標準に従う</translation>
+    </message>
+    <message>
+      <source>USE_INPUT_ELEMS_ONLY</source>
+      <translation>入力要素のみ使用</translation>
+    </message>
   </context>
   <context>
     <name>SMESHGUI_FilterDlg</name>
@@ -5361,6 +5377,10 @@
     <message>
       <source>OVER_CONSTRAINED_FACE</source>
       <translation>制約が多すぎるフェース</translation>
+    </message>
+    <message>
+      <source>BELONG_TO_MESH_GROUP</source>
+      <translation>メッシュグループに所属</translation>
     </message>
     <message>
       <source>BELONG_TO_CYLINDER</source>
@@ -5746,8 +5766,8 @@
       <translation>操作の引数されていないそれらを入力し、もう一度やり直してください</translation>
     </message>
     <message>
-      <source>NAME</source>
-      <translation>名前</translation>
+      <source>RESULT</source>
+      <translation>結果</translation>
     </message>
     <message>
       <source>OBJECT_1</source>
@@ -5788,20 +5808,28 @@
       <translation>要素の型</translation>
     </message>
     <message>
-      <source>NODE</source>
-      <translation>ノード</translation>
+      <source>UNDERLYING_ENTITIES_ONLY</source>
+      <translation>基本的なエンティティのみを含める</translation>
     </message>
     <message>
-      <source>EDGE</source>
-      <translation>Edge</translation>
+      <source>NUMBER_OF_COMMON_NODES</source>
+      <translation>共通節点数</translation>
     </message>
     <message>
-      <source>FACE</source>
-      <translation>Face</translation>
+      <source>ALL</source>
+      <translation>すべて</translation>
     </message>
     <message>
-      <source>VOLUME</source>
-      <translation>ボリューム</translation>
+      <source>MAIN</source>
+      <translation>メイン</translation>
+    </message>
+    <message>
+      <source>AT_LEAST_ONE</source>
+      <translation>少なくともひとつ</translation>
+    </message>
+    <message>
+      <source>MAJORITY</source>
+      <translation>多数</translation>
     </message>
   </context>
   <context>
@@ -6319,8 +6347,8 @@
       <translation>プレビュー</translation>
     </message>
     <message>
-      <source>REVOLUTION_1D</source>
-      <translation>1 D 要素の革命</translation>
+      <source>REVOLUTION</source>
+      <translation>回転押出</translation>
     </message>
     <message>
       <source>REVOLUTION_2D</source>
@@ -7014,7 +7042,7 @@
     </message>
     <message>
       <source>NORMAL_VECTOR</source>
-      <translation>通常</translation>
+      <translation>標準</translation>
     </message>
     <message>
       <source>NODE</source>
@@ -7618,11 +7646,11 @@
     </message>
     <message>
       <source>VOLUMES</source>
-      <translation type="unfinished">Volumes</translation>
+      <translation>ボリューム</translation>
     </message>
     <message>
       <source>OUTSIDE_VOLUME_NORMAL</source>
-      <translation type="unfinished">Face normal outside volume</translation>
+      <translation>標準外側ボリュームに面する</translation>
     </message>
   </context>
   <context>
@@ -7633,7 +7661,7 @@
     </message>
     <message>
       <source>NO_VOLUME_OBJECT_SELECTED</source>
-      <translation type="unfinished">No volume object selected</translation>
+      <translation>選択されたボリュームオブジェクトはありません</translation>
     </message>
     <message>
       <source>NO_FACES</source>
@@ -7641,7 +7669,7 @@
     </message>
     <message>
       <source>NO_VOLUMES</source>
-      <translation type="unfinished">Volume object includes no volumes</translation>
+      <translation>ボリュームオブジェクトはボリュームを含んでいません</translation>
     </message>
     <message>
       <source>ZERO_SIZE_VECTOR</source>
@@ -7739,7 +7767,7 @@
     <name>SMESHGUI_DisplayEntitiesDlg</name>
     <message>
       <source>WRN_AT_LEAST_ONE</source>
-      <translation type="unfinished">At least one entity type should be chosen!</translation>
+      <translation>少なくとも一つのエンティティタイプは選択する必要があります！</translation>
     </message>
   </context>
 </TS>
