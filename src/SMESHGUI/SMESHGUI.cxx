@@ -4754,7 +4754,7 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
     PyErr_Print();
   }
   else {
-    PyObjWrapper result = PyObject_CallMethod( pluginsmanager, (char*)"initialize", (char*)"isss",1,"smesh",tr("MEN_MESH").toStdString().c_str(),tr("SMESH_PLUGINS_OTHER").toStdString().c_str());
+    PyObjWrapper result = PyObject_CallMethod( pluginsmanager, (char*)"initialize", (char*)"isss",1,"smesh",tr("MEN_MESH").toUtf8().data(),tr("SMESH_PLUGINS_OTHER").toUtf8().data());
     if ( !result )
       PyErr_Print();
   }
