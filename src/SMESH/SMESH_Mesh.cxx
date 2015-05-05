@@ -2181,9 +2181,9 @@ SMESH_Group* SMESH_Mesh::ConvertToStandalone ( int theGroupID )
     return aGroup;
 
   SMESH_Group* anOldGrp = (*itg).second;
-  SMESHDS_GroupBase* anOldGrpDS = anOldGrp->GetGroupDS();
-  if ( !anOldGrp || !anOldGrpDS )
+  if ( !anOldGrp || !anOldGrp->GetGroupDS() )
     return aGroup;
+  SMESHDS_GroupBase* anOldGrpDS = anOldGrp->GetGroupDS();
 
   // create new standalone group
   aGroup = new SMESH_Group (theGroupID, this, anOldGrpDS->GetType(), anOldGrp->GetName() );

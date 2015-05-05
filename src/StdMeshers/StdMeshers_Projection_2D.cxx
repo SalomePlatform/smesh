@@ -58,6 +58,7 @@
 #include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <TopTools_MapOfShape.hxx>
 #include <TopoDS.hxx>
+#include <TopoDS_Solid.hxx>
 #include <gp_Ax2.hxx>
 #include <gp_Ax3.hxx>
 #include <gp_GTrsf.hxx>
@@ -952,10 +953,165 @@ namespace {
       case 3: helper.AddFace(tgtNodes[0], tgtNodes[2], tgtNodes[1]); break;
       case 4: helper.AddFace(tgtNodes[0], tgtNodes[3], tgtNodes[2], tgtNodes[1]); break;
       }
+    }  // loop on all mesh faces on srcFace
+
+    return true;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Preform projection in case of quadrilateral faces
+   */
+  //================================================================================
+
+  bool projectQuads(const TopoDS_Face&                 tgtFace,
+                    const TopoDS_Face&                 srcFace,
+                    const TSideVector&                 tgtWires,
+                    const TSideVector&                 srcWires,
+                    const TAssocTool::TShapeShapeMap&  shape2ShapeMap,
+                    TAssocTool::TNodeNodeMap&          src2tgtNodes,
+                    const bool                         is1DComputed)
+  {
+    SMESH_Mesh * tgtMesh = tgtWires[0]->GetMesh();
+    SMESH_Mesh * srcMesh = srcWires[0]->GetMesh();
+    SMESHDS_Mesh * tgtMeshDS = tgtMesh->GetMeshDS();
+    SMESHDS_Mesh * srcMeshDS = srcMesh->GetMeshDS();
+
+    if ( srcWires[0]->NbEdges() != 4 )
+      return false;
+    if ( !is1DComputed )
+      return false;
+    for ( int iE = 0; iE < 4; ++iE )
+    {
+      SMESHDS_SubMesh* sm = srcMeshDS->MeshElements( srcWires[0]->Edge( iE ));
+      if ( !sm ) return false;
+      if ( sm->NbNodes() + sm->NbElements() == 0 ) return false;
+    }
+    if ( BRepAdaptor_Surface( tgtFace ).GetType() != GeomAbs_Plane )
+      return false;
+    // if ( BRepAdaptor_Surface( tgtFace ).GetType() == GeomAbs_Plane &&
+    //      BRepAdaptor_Surface( srcFace ).GetType() == GeomAbs_Plane )
+    //   return false; // too easy
+
+    // load EDGEs to SMESH_Block
+
+    SMESH_Block block;
+    TopTools_IndexedMapOfOrientedShape blockSubShapes;
+    {
+      const TopoDS_Solid& box = srcMesh->PseudoShape();
+      TopoDS_Shell shell = TopoDS::Shell( TopExp_Explorer( box, TopAbs_SHELL ).Current() );
+      TopoDS_Vertex v;
+      block.LoadBlockShapes( shell, v, v, blockSubShapes ); // fill all since operator[] is missing
+    }
+    const SMESH_Block::TShapeID srcFaceBID = SMESH_Block::ID_Fxy0;
+    const SMESH_Block::TShapeID tgtFaceBID = SMESH_Block::ID_Fxy1;
+    vector< int > edgeBID;
+    block.GetFaceEdgesIDs( srcFaceBID, edgeBID ); // u0, u1, 0v, 1v
+    blockSubShapes.Substitute( edgeBID[0], srcWires[0]->Edge(0) );
+    blockSubShapes.Substitute( edgeBID[1], srcWires[0]->Edge(2) );
+    blockSubShapes.Substitute( edgeBID[2], srcWires[0]->Edge(3) );
+    blockSubShapes.Substitute( edgeBID[3], srcWires[0]->Edge(1) );
+    block.GetFaceEdgesIDs( tgtFaceBID, edgeBID ); // u0, u1, 0v, 1v
+    blockSubShapes.Substitute( edgeBID[0], tgtWires[0]->Edge(0) );
+    blockSubShapes.Substitute( edgeBID[1], tgtWires[0]->Edge(2) );
+    blockSubShapes.Substitute( edgeBID[2], tgtWires[0]->Edge(3) );
+    blockSubShapes.Substitute( edgeBID[3], tgtWires[0]->Edge(1) );
+    block.LoadFace( srcFace, srcFaceBID, blockSubShapes );
+    block.LoadFace( tgtFace, tgtFaceBID, blockSubShapes );
+
+    // remember connectivity of new faces in terms of ( node-or-XY )
+
+    typedef std::pair< const SMDS_MeshNode*, gp_XYZ > TNodeOrXY; // node-or-XY
+    typedef std::vector< TNodeOrXY* >                 TFaceConn; // face connectivity
+    std::vector< TFaceConn >                    newFacesVec;     // connectivity of all faces
+    std::map< const SMDS_MeshNode*, TNodeOrXY > srcNode2tgtNXY;  // src node -> node-or-XY
+
+    TAssocTool::TNodeNodeMap::iterator                                       srcN_tgtN;
+    std::map< const SMDS_MeshNode*, TNodeOrXY >::iterator                    srcN_tgtNXY;
+    std::pair< std::map< const SMDS_MeshNode*, TNodeOrXY >::iterator, bool > n2n_isNew;
+    TNodeOrXY nullNXY( 0, gp_XYZ(0,0,0) );
+
+    SMESHDS_SubMesh* srcSubDS = srcMeshDS->MeshElements( srcFace );
+    newFacesVec.resize( srcSubDS->NbElements() );
+    int iFaceSrc = 0;
+
+    SMDS_ElemIteratorPtr elemIt = srcSubDS->GetElements();
+    while ( elemIt->more() ) // loop on all mesh faces on srcFace
+    {
+      const SMDS_MeshElement* elem = elemIt->next();
+      TFaceConn& tgtNodes = newFacesVec[ iFaceSrc++ ];
+
+      const int nbN = elem->NbCornerNodes(); 
+      tgtNodes.resize( nbN );
+      for ( int i = 0; i < nbN; ++i ) // loop on nodes of the source element
+      {
+        const SMDS_MeshNode* srcNode = elem->GetNode(i);
+        n2n_isNew = srcNode2tgtNXY.insert( make_pair( srcNode, nullNXY ));
+        TNodeOrXY & tgtNodeOrXY = n2n_isNew.first->second;
+        if ( n2n_isNew.second ) // new src node encounters
+        {
+          srcN_tgtN = src2tgtNodes.find( srcNode );
+          if ( srcN_tgtN != src2tgtNodes.end() )
+          {
+            tgtNodeOrXY.first = srcN_tgtN->second; // tgt node exists
+          }
+          else 
+          {
+            // find XY of src node withing the quadrilateral srcFace
+            if ( !block.ComputeParameters( SMESH_TNodeXYZ( srcNode ),
+                                           tgtNodeOrXY.second, srcFaceBID ))
+              return false;
+          }
+        }
+        tgtNodes[ i ] = & tgtNodeOrXY;
+      }
+    }
+
+    // as all XY are computed, create tgt nodes and faces
+
+    SMESH_MesherHelper helper( *tgtMesh );
+    helper.SetSubShape( tgtFace );
+    if ( is1DComputed )
+      helper.IsQuadraticSubMesh( tgtFace );
+    else
+      helper.SetIsQuadratic( srcSubDS->GetElements()->next()->IsQuadratic() );
+    helper.SetElementsOnShape( true );
+    Handle(Geom_Surface) tgtSurface = BRep_Tool::Surface( tgtFace );
+
+    SMESH_MesherHelper srcHelper( *srcMesh );
+    srcHelper.SetSubShape( srcFace );
+
+    vector< const SMDS_MeshNode* > tgtNodes;
+    gp_XY uv;
+
+    for ( size_t iFaceTgt = 0; iFaceTgt < newFacesVec.size(); ++iFaceTgt )
+    {
+      TFaceConn& tgtConn = newFacesVec[ iFaceTgt ];
+      tgtNodes.resize( tgtConn.size() );
+      for ( size_t iN = 0; iN < tgtConn.size(); ++iN )
+      {
+        const SMDS_MeshNode* & tgtN = tgtConn[ iN ]->first;
+        if ( !tgtN ) // create a node
+        {
+          if ( !block.FaceUV( tgtFaceBID, tgtConn[iN]->second, uv ))
+            return false;
+          gp_Pnt p = tgtSurface->Value( uv.X(), uv.Y() );
+          tgtN = helper.AddNode( p.X(), p.Y(), p.Z(), uv.X(), uv.Y() );
+        }
+        tgtNodes[ tgtNodes.size() - iN - 1] = tgtN; // reversed orientation
+      }
+      switch ( tgtNodes.size() )
+      {
+      case 3: helper.AddFace(tgtNodes[0], tgtNodes[1], tgtNodes[2]); break;
+      case 4: helper.AddFace(tgtNodes[0], tgtNodes[1], tgtNodes[2], tgtNodes[3]); break;
+      default:
+        if ( tgtNodes.size() > 4 )
+          helper.AddPolygonalFace( tgtNodes );
+      }
     }
     return true;
 
-  } // bool projectBy2DSimilarity(...)
+  } // bool projectQuads(...)
 
   //================================================================================
   /*!
@@ -1125,6 +1281,12 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     // projection in case if the faces are similar in 2D space
     projDone = projectBy2DSimilarity( tgtFace, srcFace, tgtWires, srcWires,
                                       shape2ShapeMap, _src2tgtNodes, is1DComputed);
+  }
+  if ( !projDone )
+  {
+    // projection in case of quadrilateral faces
+    // projDone = projectQuads( tgtFace, srcFace, tgtWires, srcWires,
+    //                          shape2ShapeMap, _src2tgtNodes, is1DComputed);
   }
 
   helper.SetSubShape( tgtFace );

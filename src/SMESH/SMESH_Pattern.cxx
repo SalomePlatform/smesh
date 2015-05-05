@@ -540,7 +540,7 @@ static bool isMeshBoundToShape(SMESHDS_Mesh *     aMeshDS,
                                SMESHDS_SubMesh *  aFaceSubmesh,
                                const bool         isMainShape)
 {
-  if ( isMainShape ) {
+  if ( isMainShape && aFaceSubmesh ) {
     // check that all faces are bound to aFaceSubmesh
     if ( aMeshDS->NbFaces() != aFaceSubmesh->NbElements() )
       return false;
@@ -4448,7 +4448,7 @@ void SMESH_Pattern::arrangeBoundaries (list< list< TPoint* > >& boundaryList)
     }
 
     if ( outerBndPos != boundaryList.begin() )
-      boundaryList.splice( boundaryList.begin(), boundaryList, outerBndPos, ++outerBndPos );
+      boundaryList.splice( boundaryList.begin(), boundaryList, outerBndPos );
 
   } // if nbBoundaries > 1
 

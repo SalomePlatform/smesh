@@ -596,6 +596,7 @@ Standard_Boolean SMESH_Block::Values(const math_Vector& theXYZ,
       if ( mag > DBL_MIN )
         dPi /= mag;
       drv[ iP - 1 ] = dPi;
+      // drv[ iP - 1 ] = dPi / 0.001;
     }
     for ( int iP = 0; iP < 3; iP++ ) {
 #if 1
@@ -725,7 +726,7 @@ bool SMESH_Block::ComputeParameters(const gp_Pnt& thePoint,
 
   bool hasHint = ( 0 <= theParamsHint.X() && theParamsHint.X() <= 1 &&
                    0 <= theParamsHint.Y() && theParamsHint.Y() <= 1 &&
-                   0 <= theParamsHint.Y() && theParamsHint.Y() <= 1 );
+                   0 <= theParamsHint.Z() && theParamsHint.Z() <= 1 );
   if ( !hasHint && !myGridComputed )
   {
     // define the first guess by thePoint projection on lines

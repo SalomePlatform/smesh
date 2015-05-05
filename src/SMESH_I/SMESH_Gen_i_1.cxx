@@ -415,14 +415,14 @@ static void addReference (SALOMEDS::Study_ptr   theStudy,
         theTag = tag;
     }
     if ( !theSObject->FindSubObject( theTag, aReferenceSO.inout() ))
-    {
       aReferenceSO = aStudyBuilder->NewObjectToTag( theSObject, theTag );
-      // add reference to the use case tree
-      // (to support tree representation customization and drag-n-drop)
-      SALOMEDS::UseCaseBuilder_wrap useCaseBuilder = theStudy->GetUseCaseBuilder();
-      useCaseBuilder->AppendTo( aReferenceSO->GetFather(), aReferenceSO );
-    }
+
     aStudyBuilder->Addreference( aReferenceSO, aToObjSO );
+
+    // add reference to the use case tree
+    // (to support tree representation customization and drag-n-drop)
+    SALOMEDS::UseCaseBuilder_wrap useCaseBuilder = theStudy->GetUseCaseBuilder();
+    useCaseBuilder->AppendTo( theSObject, aReferenceSO );
   }
 }
 

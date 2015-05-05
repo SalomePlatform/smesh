@@ -56,24 +56,27 @@ namespace UNV{
   {
     assert (in_file.good());
     assert (!ds_name.empty());
-    
+
     std::string olds, news;
-    
+
     in_file.seekg(0);
-    while(true){
+    while(true)
+    {
       in_file >> olds >> news;
       /*
        * a "-1" followed by a number means the beginning of a dataset
        * stop combing at the end of the file
        */
-      while( ((olds != "-1") || (news == "-1") ) && !in_file.eof() ){     
+      while( ((olds != "-1") || (news == "-1")))
+      {
         olds = news;
         in_file >> news;
-      }
-      if(in_file.eof())
-      {
-        in_file.clear();
-        return false;
+
+        if ( in_file.eof() || in_file.fail() )
+        {
+          in_file.clear();
+          return false;
+        }
       }
       if (news == ds_name)
         return true;

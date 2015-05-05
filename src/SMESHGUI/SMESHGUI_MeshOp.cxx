@@ -551,17 +551,17 @@ void SMESHGUI_MeshOp::selectionDone()
         for ( ; aSubShapesIter != aGEOMs.end(); aSubShapesIter++, iSubSh++) {
           QString aSubGeomEntry = (*aSubShapesIter);
           _PTR(SObject) pSubGeom = studyDS()->FindObjectID(aSubGeomEntry.toLatin1().data());
-	 
-	  if( pSubGeom ) { 
-	    SALOMEDS_SObject* sobj = _CAST(SObject,pSubGeom);
-	    if( sobj ) {
-	      GEOM::GEOM_Object_var aSubGeomVar =
-		GEOM::GEOM_Object::_narrow(sobj->GetObject());
-	      if( !aSubGeomVar->_is_nil() ){
-		aSeq[iSubSh] = aSubGeomVar;
-	      }
-	    }
-	  }
+         
+          if( pSubGeom ) { 
+            SALOMEDS_SObject* sobj = _CAST(SObject,pSubGeom);
+            if( sobj ) {
+              GEOM::GEOM_Object_var aSubGeomVar =
+                GEOM::GEOM_Object::_narrow(sobj->GetObject());
+              if( !aSubGeomVar->_is_nil() ){
+                aSeq[iSubSh] = aSubGeomVar;
+              }
+            }
+          }
         }
       } else {
         // get geometry by selected sub-mesh

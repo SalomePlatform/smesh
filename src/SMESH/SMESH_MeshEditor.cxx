@@ -6307,9 +6307,11 @@ SMESH_MeshEditor::MakeExtrElements(TIDSortedElemSet                  theElemSets
     for ( itElem = theElements.begin(); itElem != theElements.end(); itElem++ ) {
       // check element type
       const SMDS_MeshElement* elem = *itElem;
-      SMDSAbs_ElementType   aTypeE = elem->GetType();
-      if ( !elem /*|| ( aTypeE != SMDSAbs_Face && aTypeE != SMDSAbs_Edge )*/ )
+      if ( !elem )
         continue;
+      // SMDSAbs_ElementType aTypeE = elem->GetType();
+      // if ( aTypeE != SMDSAbs_Face && aTypeE != SMDSAbs_Edge )
+      //   continue;
 
       vector<TNodeOfNodeListMapItr> & newNodesItVec = mapElemNewNodes[ elem ];
       newNodesItVec.reserve( elem->NbNodes() );

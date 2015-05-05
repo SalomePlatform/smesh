@@ -39,10 +39,10 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
 
   int nbNodes, nbCells;
   //int i;
-  
+
   char *file2Read = (char *)myFile.c_str();
   FILE* aFileId = fopen(file2Read, "w+");
-  if (aFileId < 0) {
+  if ( !aFileId ) {
     fprintf(stderr, ">> ERREUR : ouverture du fichier %s \n", file2Read);
     return DRS_FAIL;
   }
@@ -50,10 +50,10 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
   /****************************************************************************
    *                       NOMBRES D'OBJETS                                    *
    ****************************************************************************/
-  
+
   /* Combien de noeuds ? */
   nbNodes = myMesh->NbNodes();
-  
+
   /* Combien de mailles, faces ou aretes ? */
   int /*nb_of_nodes,*/ nb_of_edges, nb_of_faces, nb_of_volumes;
   nb_of_edges = myMesh->NbEdges();
@@ -63,14 +63,14 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
   SCRUTE(nb_of_edges);
   SCRUTE(nb_of_faces);
   SCRUTE(nb_of_volumes);
-  
+
   fprintf(stdout, "%d %d\n", nbNodes, nbCells);
   fprintf(aFileId, "%d %d\n", nbNodes, nbCells);
-  
+
   /****************************************************************************
    *                       ECRITURE DES NOEUDS                                 *
    ****************************************************************************/
-  
+
   SMDS_NodeIteratorPtr itNodes=myMesh->nodesIterator();
   while(itNodes->more()){               
     const SMDS_MeshNode * node = itNodes->next();
