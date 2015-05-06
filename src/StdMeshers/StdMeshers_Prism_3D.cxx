@@ -905,7 +905,7 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
       return error( err );
     }
   }
-  return true;
+  return error( COMPERR_OK );
 }
 
 //================================================================================
