@@ -426,17 +426,16 @@ namespace
     const bool isMED = ( theCommandID == SMESHOp::OpExportMED || theCommandID == SMESHOp::OpPopupExportMED );
     const bool isUNV = ( theCommandID == SMESHOp::OpExportUNV || theCommandID == SMESHOp::OpPopupExportUNV );
     const bool isSTL = ( theCommandID == SMESHOp::OpExportSTL || theCommandID == SMESHOp::OpPopupExportSTL );
-  #ifdef WITH_CGNS
+#ifdef WITH_CGNS
     const bool isCGNS= ( theCommandID == SMESHOp::OpExportCGNS || theCommandID == SMESHOp::OpPopupExportCGNS );
-  #else
+#else
     const bool isCGNS= false;
-  #endif
+#endif
     const bool isSAUV= ( theCommandID == SMESHOp::OpExportSAUV || theCommandID == SMESHOp::OpPopupExportSAUV );
     const bool isGMF = ( theCommandID == SMESHOp::OpExportGMF || theCommandID == SMESHOp::OpPopupExportGMF );
 
-    // actually, the following condition can't be met (added for insurance)
-    if( selected.Extent() == 0 ||
-        ( selected.Extent() > 1 && !isMED && !isSTL ))
+    const bool multiMeshSupported = ( isMED || isCGNS ); // file can hold several meshes
+    if ( selected.Extent() == 0 || ( selected.Extent() > 1 && !multiMeshSupported ))
       return;
 
     // get mesh object from selection and check duplication of their names
@@ -4383,9 +4382,9 @@ void SMESHGUI::initialize( CAM_Application* app )
 #ifdef WITH_CGNS
   createPopupItem( SMESHOp::OpPopupExportCGNS, OB, mesh_group, multiple_non_empty, anId );
 #endif
-  createPopupItem( SMESHOp::OpPopupExportSAUV, OB, mesh_group, multiple_non_empty, anId );
-  createPopupItem( SMESHOp::OpPopupExportGMF,  OB, mesh_group, multiple_non_empty, anId );
-  createPopupItem( SMESHOp::OpPopupExportDAT,  OB, mesh_group, multiple_non_empty, anId );
+  createPopupItem( SMESHOp::OpPopupExportSAUV, OB, mesh_group, only_one_non_empty, anId );
+  createPopupItem( SMESHOp::OpPopupExportGMF,  OB, mesh_group, only_one_non_empty, anId );
+  createPopupItem( SMESHOp::OpPopupExportDAT,  OB, mesh_group, only_one_non_empty, anId );
   createPopupItem( SMESHOp::OpDelete,          OB, mesh_part + " " + hyp_alg );
   createPopupItem( SMESHOp::OpDeleteGroup,     OB, group );
   popupMgr()->insert( separator(), -1, 0 );

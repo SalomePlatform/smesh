@@ -35,7 +35,7 @@
 
 /*!
  * \brief Driver reading a mesh from the CGNS file. The mesh to read is selected by 
- *  an index (counted form 0) set via SetMeshId()
+ *  an index (counted from 0) set via SetMeshId()
  */
 class MESHDriverCGNS_EXPORT DriverCGNS_Read : public Driver_SMESHDS_Mesh
 {

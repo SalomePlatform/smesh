@@ -1552,7 +1552,8 @@ void SMESH_Mesh::ExportSTL(const char *        file,
 //================================================================================
 
 void SMESH_Mesh::ExportCGNS(const char *        file,
-                            const SMESHDS_Mesh* meshDS)
+                            const SMESHDS_Mesh* meshDS,
+                            const char *        meshName)
 {
   int res = Driver_Mesh::DRS_FAIL;
 #ifdef WITH_CGNS
@@ -1560,6 +1561,8 @@ void SMESH_Mesh::ExportCGNS(const char *        file,
   myWriter.SetFile( file );
   myWriter.SetMesh( const_cast<SMESHDS_Mesh*>( meshDS ));
   myWriter.SetMeshName( SMESH_Comment("Mesh_") << meshDS->GetPersistentId());
+  if ( meshName && meshName[0] )
+    myWriter.SetMeshName( meshName );
   res = myWriter.Perform();
 #endif
   if ( res != Driver_Mesh::DRS_OK )

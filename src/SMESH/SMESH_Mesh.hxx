@@ -259,7 +259,8 @@ class SMESH_EXPORT SMESH_Mesh
                  const bool          isascii,
                  const SMESHDS_Mesh* meshPart = 0) throw(SALOME_Exception);
   void ExportCGNS(const char *        file,
-                  const SMESHDS_Mesh* mesh);
+                  const SMESHDS_Mesh* mesh,
+                  const char *        meshName = 0);
   void ExportGMF(const char *        file,
                  const SMESHDS_Mesh* mesh,
                  bool                withRequiredGroups = true );

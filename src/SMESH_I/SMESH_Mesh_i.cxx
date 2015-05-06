@@ -2239,9 +2239,10 @@ void SMESH_Mesh_i::CheckGeomGroupModif()
           groupData.push_back
             ( make_pair( TIndexedShape( gog->GetID(),gog->GetShape()), gog->GetType()));
       }
-      // set new shape to mesh -> DS of submeshes and geom groups is deleted
+      // set new shape to mesh -> DS of sub-meshes and geom groups is deleted
+      _impl->ShapeToMesh( TopoDS_Shape() ); // IPAL52730
       _impl->ShapeToMesh( newShape );
-      
+
       // reassign hypotheses
       TShapeHypList::iterator indS_hyps = assignedHyps.begin();
       for ( ; indS_hyps != assignedHyps.end(); ++indS_hyps )
@@ -2258,7 +2259,7 @@ void SMESH_Mesh_i::CheckGeomGroupModif()
           continue;
         for ( hypIt = hyps.begin(); hypIt != hyps.end(); ++hypIt )
           _impl->AddHypothesis( geom._shape, (*hypIt)->GetID());
-        // care of submeshes
+        // care of sub-meshes
         SMESH_subMesh* newSubmesh = _impl->GetSubMesh( geom._shape );
         if ( newID != oldID ) {
           _mapSubMesh   [ newID ] = newSubmesh;
@@ -3577,8 +3578,16 @@ void SMESH_Mesh_i::ExportCGNS(::SMESH::SMESH_IDSource_ptr meshPart,
 
   PrepareForWriting(file,overwrite);
 
+  std::string meshName("");
+  SALOMEDS::Study_var study = _gen_i->GetCurrentStudy();
+  SALOMEDS::SObject_wrap so = _gen_i->ObjectToSObject( study, meshPart );
+  if ( !so->_is_nil() )
+  {
+    CORBA::String_var name = so->GetName();
+    meshName = name.in();
+  }
   SMESH_MeshPartDS partDS( meshPart );
-  _impl->ExportCGNS(file, &partDS);
+  _impl->ExportCGNS(file, &partDS, meshName.c_str() );
 
   TPythonDump() << SMESH::SMESH_Mesh_var(_this()) << ".ExportCGNS( "
                 << meshPart<< ", r'" << file << "', " << overwrite << ")";

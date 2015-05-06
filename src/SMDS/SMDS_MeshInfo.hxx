@@ -128,21 +128,21 @@ inline SMDS_MeshInfo::SMDS_MeshInfo():
   // 0 ------------------  - DON't USE 0!!!
   // 1            .  * .
   // 2         .       *
-  // 3      .     *
-  // 4   *  .  .
+  // 3      .  .  *
+  // 4   *  .
   // 5   *
   // 6   *  .
-  // 7      .  *
+  // 7      .
   // 8   *  .
-  // 9      .  *
+  // 9      .
   // 10  *
   // 11
   // 12  *
   // 13  *
   // 14
   // 15  *
-  // 16     
-  // 17     
+  // 16        *
+  // 17        *
   // 18     *
   // 19     *
   // 20  *   
@@ -158,7 +158,7 @@ inline SMDS_MeshInfo::SMDS_MeshInfo():
   myShift.resize(SMDSAbs_NbElementTypes, 0);
 
   myShift[ SMDSAbs_Face      ] = +15;// 3->18, 4->19, etc.
-  myShift[ SMDSAbs_Edge      ] = +5; // 2->7, 4->9
+  myShift[ SMDSAbs_Edge      ] = +14;// 2->16, 3->17
   myShift[ SMDSAbs_0DElement ] = +2; // 1->3
   myShift[ SMDSAbs_Ball      ] = +1; // 1->2
 
@@ -169,7 +169,7 @@ inline SMDS_MeshInfo::SMDS_MeshInfo():
   myNb[ index( SMDSAbs_Ball,1 )] = & myNbBalls;
 
   myNb[ index( SMDSAbs_Edge,2 )] = & myNbEdges;
-  myNb[ index( SMDSAbs_Edge,4 )] = & myNbQuadEdges;
+  myNb[ index( SMDSAbs_Edge,3 )] = & myNbQuadEdges;
 
   myNb[ index( SMDSAbs_Face,3 )] = & myNbTriangles;
   myNb[ index( SMDSAbs_Face,4 )] = & myNbQuadrangles;
