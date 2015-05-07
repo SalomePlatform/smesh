@@ -140,7 +140,12 @@ static std::string DATAFILE("data.txt");
 static std::string SCRIPTFILE("padder.sh");
 static std::string SEPARATOR(" ");
 
+#ifdef WIN32
+static std::string USER(getenv("USERNAME"));
+#else
 static std::string USER(getenv("USER"));
+#endif
+
 static std::string LOCAL_INPUTDIR("/tmp/spadder.local.inputdir."+USER);
 static std::string LOCAL_RESULTDIR("/tmp/spadder.local.resultdir."+USER);
 static std::string REMOTE_WORKDIR("/tmp/spadder.remote.workdir."+USER);
@@ -685,6 +690,7 @@ char* MeshJobManager_i::getLastErrorMessage() {
 //
 extern "C"
 {
+  MESHJOBMANAGERENGINE_EXPORT
   PortableServer::ObjectId * MeshJobManagerEngine_factory( CORBA::ORB_ptr orb,
                                                            PortableServer::POA_ptr poa,
                                                            PortableServer::ObjectId * contId,
