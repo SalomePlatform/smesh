@@ -394,16 +394,15 @@ namespace {
   {
     double f,l;
     Handle(Geom2d_Curve) c1 = BRep_Tool::CurveOnSurface( E1, F, f, l );
-    gp_Pnt2d uvFirst1 = c1->Value( f );
-    gp_Pnt2d uvLast1  = c1->Value( l );
+    gp_Pnt2d uvLast1 = c1->Value( E1.Orientation() == TopAbs_REVERSED ? f : l );
 
     Handle(Geom2d_Curve) c2 = BRep_Tool::CurveOnSurface( E2, F, f, l );
-    gp_Pnt2d uvFirst2 = c2->Value( E2.Orientation() == TopAbs_REVERSED ? l : f );
-    double tol2 = Max( Precision::PConfusion() * Precision::PConfusion(),
-                       1e-5 * uvLast1.SquareDistance( uvFirst1 ));
+    gp_Pnt2d uvFirst2 = c2->Value( f );
+    gp_Pnt2d uvLast2  = c2->Value( l );
+    double tol2 = 1e-5 * uvLast2.SquareDistance( uvFirst2 );
 
-    return (( uvFirst2.SquareDistance( uvFirst1 ) < tol2 ) ||
-            ( uvFirst2.SquareDistance( uvLast1  ) < tol2 ));
+    return (( uvLast1.SquareDistance( uvFirst2 ) < tol2 ) ||
+            ( uvLast1.SquareDistance( uvLast2 ) < tol2 ));
   }
 
   //================================================================================
@@ -442,7 +441,7 @@ namespace {
     for ( size_t iW = 0; iW < srcWires.size(); ++iW )
     {
       // check ori
-      //bool reverse = false;
+      bool reverse = false;
       StdMeshers_FaceSidePtr srcWire = srcWires[iW];
       // for ( int iE = 0; iE < srcWire->NbEdges(); ++iE )
       // {
@@ -487,8 +486,7 @@ namespace {
           {
             list< TopoDS_Edge >::iterator eIt = tgtEdges.begin();
             std::advance( eIt, index-1 );
-            if ( are2dConnected( tgtEdges.back(), *eIt, tgtFace ))
-              eIt->Reverse();
+            eIt->Reverse();
           }
           else
           {
@@ -1031,7 +1029,7 @@ namespace {
     TAssocTool::TNodeNodeMap::iterator                                       srcN_tgtN;
     std::map< const SMDS_MeshNode*, TNodeOrXY >::iterator                    srcN_tgtNXY;
     std::pair< std::map< const SMDS_MeshNode*, TNodeOrXY >::iterator, bool > n2n_isNew;
-    TNodeOrXY nullNXY( 0, gp_XYZ(0,0,0) );
+    TNodeOrXY nullNXY( (SMDS_MeshNode*)NULL, gp_XYZ(0,0,0) );
 
     SMESHDS_SubMesh* srcSubDS = srcMeshDS->MeshElements( srcFace );
     newFacesVec.resize( srcSubDS->NbElements() );
