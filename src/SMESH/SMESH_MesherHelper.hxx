@@ -482,10 +482,10 @@ public:
                            bool *       isBadTria=0);
   /*!
    * \brief Define a pointer to wrapper over a function of gp_XY class,
-   *       suitable to pass as xyFunPtr to applyIn2D().
+   *       suitable to pass as xyFunPtr to ApplyIn2D().
    *       For exaple gp_XY_FunPtr(Added) defines pointer gp_XY_Added to function
    *       calling gp_XY::Added(gp_XY), which is to be used like following
-   *       applyIn2D(surf, uv1, uv2, gp_XY_Added)
+   *       ApplyIn2D(surf, uv1, uv2, gp_XY_Added)
    */
 #define gp_XY_FunPtr(meth) \
   static gp_XY __gpXY_##meth (const gp_XY& uv1, const gp_XY& uv2) { return uv1.meth( uv2 ); } \
@@ -496,18 +496,26 @@ public:
    *        It takes into account period of the surface. Use gp_XY_FunPtr macro
    *        to easily define pointer to function of gp_XY class.
    */
-  static gp_XY applyIn2D(const Handle(Geom_Surface)& surface,
-                         const gp_XY&                uv1,
-                         const gp_XY&                uv2,
-                         xyFunPtr                    fun,
-                         const bool                  resultInPeriod=true);
-                          
+  static gp_XY ApplyIn2D(Handle(Geom_Surface) surface,
+                         const gp_XY&         uv1,
+                         const gp_XY&         uv2,
+                         xyFunPtr             fun,
+                         const bool           resultInPeriod=true);
+
+  /*!
+   * \brief Move node positions on a FACE within surface period
+   *  \param [in] face - the FACE
+   *  \param [inout] uv - node positions to adjust
+   *  \param [in] nbUV - nb of \a uv
+   */
+  void AdjustByPeriod( const TopoDS_Face& face, gp_XY uv[], const int nbUV );
+
   /*!
    * \brief Check if inFaceNode argument is necessary for call GetNodeUV(F,..)
-    * \retval bool - return true if the face is periodic
-    *
-    * If F is Null, answer about subshape set through IsQuadraticSubMesh() or
-    * SetSubShape()
+   *  \retval bool - return true if the face is periodic
+   *
+   * If F is Null, answer about subshape set through IsQuadraticSubMesh() or
+   * SetSubShape()
    */
   bool GetNodeUVneedInFaceNode(const TopoDS_Face& F = TopoDS_Face()) const;
 

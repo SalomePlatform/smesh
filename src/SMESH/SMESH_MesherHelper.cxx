@@ -813,18 +813,20 @@ namespace
 }
 
 //=======================================================================
-//function : applyIn2D
+//function : ApplyIn2D
 //purpose  : Perform given operation on two 2d points in parameric space of given surface.
 //           It takes into account period of the surface. Use gp_XY_FunPtr macro
 //           to easily define pointer to function of gp_XY class.
 //=======================================================================
 
-gp_XY SMESH_MesherHelper::applyIn2D(const Handle(Geom_Surface)& surface,
-                                    const gp_XY&                uv1,
-                                    const gp_XY&                uv2,
-                                    xyFunPtr                    fun,
-                                    const bool                  resultInPeriod)
+gp_XY SMESH_MesherHelper::ApplyIn2D(Handle(Geom_Surface) surface,
+                                    const gp_XY&         uv1,
+                                    const gp_XY&         uv2,
+                                    xyFunPtr             fun,
+                                    const bool           resultInPeriod)
 {
+  if ( surface->IsKind(STANDARD_TYPE(Geom_RectangularTrimmedSurface )))
+    surface = Handle(Geom_RectangularTrimmedSurface)::DownCast( surface )->BasisSurface();
   Standard_Boolean isUPeriodic = surface.IsNull() ? false : surface->IsUPeriodic();
   Standard_Boolean isVPeriodic = surface.IsNull() ? false : surface->IsVPeriodic();
   if ( !isUPeriodic && !isVPeriodic )
@@ -852,6 +854,31 @@ gp_XY SMESH_MesherHelper::applyIn2D(const Handle(Geom_Surface)& surface,
 
   return res;
 }
+
+//=======================================================================
+//function : AdjustByPeriod
+//purpose  : Move node positions on a FACE within surface period
+//=======================================================================
+
+void SMESH_MesherHelper::AdjustByPeriod( const TopoDS_Face& face, gp_XY uv[], const int nbUV )
+{
+  SMESH_MesherHelper h( *myMesh ), *ph = face.IsSame( myShape ) ? this : &h;
+  ph->SetSubShape( face );
+
+  for ( int iCoo = U_periodic; iCoo <= V_periodic; ++iCoo )
+    if ( ph->GetPeriodicIndex() & iCoo )
+    {
+      const double period = ( ph->myPar2[iCoo-1] - ph->myPar1[iCoo-1] );
+      const double xRef = uv[0].Coord( iCoo );
+      for ( int i = 1; i < nbUV; ++i )
+      {
+        double x = uv[i].Coord( iCoo );
+        double dx = ShapeAnalysis::AdjustByPeriod( x, xRef, period );
+        uv[i].SetCoord( iCoo, x + dx );
+      }
+    }
+}
+
 //=======================================================================
 //function : GetMiddleUV
 //purpose  : Return middle UV taking in account surface period
@@ -862,13 +889,13 @@ gp_XY SMESH_MesherHelper::GetMiddleUV(const Handle(Geom_Surface)& surface,
                                       const gp_XY&                p2)
 {
   // NOTE:
-  // the proper place of getting basic surface seems to be in applyIn2D()
+  // the proper place of getting basic surface seems to be in ApplyIn2D()
   // but we put it here to decrease a risk of regressions just before releasing a version
-  Handle(Geom_Surface) surf = surface;
-  while ( !surf.IsNull() && surf->IsKind(STANDARD_TYPE(Geom_RectangularTrimmedSurface )))
-    surf = Handle(Geom_RectangularTrimmedSurface)::DownCast( surf )->BasisSurface();
+  // Handle(Geom_Surface) surf = surface;
+  // while ( !surf.IsNull() && surf->IsKind(STANDARD_TYPE(Geom_RectangularTrimmedSurface )))
+  //   surf = Handle(Geom_RectangularTrimmedSurface)::DownCast( surf )->BasisSurface();
 
-  return applyIn2D( surf, p1, p2, & AverageUV );
+  return ApplyIn2D( surface, p1, p2, & AverageUV );
 }
 
 //=======================================================================
@@ -1266,14 +1293,24 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
   if ( solidID < 1 && !faceId2nbNodes.empty() ) // SOLID not found
   {
     // find ID of the FACE the four corner nodes belong to
-    itMapWithIdFace = faceId2nbNodes.begin();
-    for ( ; itMapWithIdFace != faceId2nbNodes.end(); ++itMapWithIdFace)
+    itMapWithIdFace = faceId2nbNodes.find( myShapeID ); // IPAL52698
+    if ( itMapWithIdFace != faceId2nbNodes.end() &&
+         itMapWithIdFace->second == 4 )
     {
-      if ( itMapWithIdFace->second == 4 ) 
+      shapeType = TopAbs_FACE;
+      faceID = myShapeID;
+    }
+    else
+    {
+      itMapWithIdFace = faceId2nbNodes.begin();
+      for ( ; itMapWithIdFace != faceId2nbNodes.end(); ++itMapWithIdFace)
       {
-        shapeType = TopAbs_FACE;
-        faceID = (*itMapWithIdFace).first;
-        break;
+        if ( itMapWithIdFace->second == 4 )
+        {
+          shapeType = TopAbs_FACE;
+          faceID = (*itMapWithIdFace).first;
+          break;
+        }
       }
     }
   }
@@ -1291,11 +1328,20 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
   bool toCheck = true;
   if ( !F.IsNull() && !force3d )
   {
-    uvAvg = calcTFI (0.5, 0.5,
-                     GetNodeUV(F,n1,n3,&toCheck), GetNodeUV(F,n2,n4,&toCheck),
-                     GetNodeUV(F,n3,n1,&toCheck), GetNodeUV(F,n4,n2,&toCheck), 
-                     GetNodeUV(F,n12,n3), GetNodeUV(F,n23,n4),
-                     GetNodeUV(F,n34,n2), GetNodeUV(F,n41,n2));
+    gp_XY uv[8] = {
+      GetNodeUV( F,n1,  n3, &toCheck ),
+      GetNodeUV( F,n2,  n4, &toCheck ),
+      GetNodeUV( F,n3,  n1, &toCheck ),
+      GetNodeUV( F,n4,  n2, &toCheck ),
+      GetNodeUV( F,n12, n3 ),
+      GetNodeUV( F,n23, n4 ),
+      GetNodeUV( F,n34, n2 ),
+      GetNodeUV( F,n41, n2 )
+    };
+    AdjustByPeriod( F, uv, 8 ); // put uv[] within a period (IPAL52698)
+
+    uvAvg = calcTFI (0.5, 0.5, uv[0],uv[1],uv[2],uv[3], uv[4],uv[5],uv[6],uv[7] );
+
     TopLoc_Location loc;
     Handle( Geom_Surface ) S = BRep_Tool::Surface( F, loc );
     P = S->Value( uvAvg.X(), uvAvg.Y() ).Transformed( loc );
@@ -1307,7 +1353,7 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
   {
     P = calcTFI (0.5, 0.5,
                  SMESH_TNodeXYZ(n1),  SMESH_TNodeXYZ(n2),
-                 SMESH_TNodeXYZ(n3),  SMESH_TNodeXYZ(n4), 
+                 SMESH_TNodeXYZ(n3),  SMESH_TNodeXYZ(n4),
                  SMESH_TNodeXYZ(n12), SMESH_TNodeXYZ(n23),
                  SMESH_TNodeXYZ(n34), SMESH_TNodeXYZ(n41));
     centralNode = meshDS->AddNode( P.X(), P.Y(), P.Z() );
@@ -1411,14 +1457,24 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
   if ( solidID < 1 && !faceId2nbNodes.empty() ) // SOLID not found
   {
     // find ID of the FACE the four corner nodes belong to
-    itMapWithIdFace = faceId2nbNodes.begin();
-    for ( ; itMapWithIdFace != faceId2nbNodes.end(); ++itMapWithIdFace)
+    itMapWithIdFace = faceId2nbNodes.find( myShapeID ); // IPAL52698
+    if ( itMapWithIdFace != faceId2nbNodes.end() &&
+         itMapWithIdFace->second == 4 )
     {
-      if ( itMapWithIdFace->second == 3 ) 
+      shapeType = TopAbs_FACE;
+      faceID = myShapeID;
+    }
+    else
+    {
+      itMapWithIdFace = faceId2nbNodes.begin();
+      for ( ; itMapWithIdFace != faceId2nbNodes.end(); ++itMapWithIdFace)
       {
-        shapeType = TopAbs_FACE;
-        faceID = (*itMapWithIdFace).first;
-        break;
+        if ( itMapWithIdFace->second == 3 )
+        {
+          shapeType = TopAbs_FACE;
+          faceID = (*itMapWithIdFace).first;
+          break;
+        }
       }
     }
   }
@@ -1430,13 +1486,18 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
   {
     F = TopoDS::Face( meshDS->IndexToShape( faceID ));
     bool checkOK = true, badTria = false;
-    gp_XY uv1  = GetNodeUV( F, n1, n23, &checkOK );
-    gp_XY uv2  = GetNodeUV( F, n2, n31, &checkOK );
-    gp_XY uv3  = GetNodeUV( F, n3, n12, &checkOK );
-    gp_XY uv12 = GetNodeUV( F, n12, n3, &checkOK );
-    gp_XY uv23 = GetNodeUV( F, n23, n1, &checkOK );
-    gp_XY uv31 = GetNodeUV( F, n31, n2, &checkOK );
-    uvAvg = GetCenterUV( uv1,uv2,uv3, uv12,uv23,uv31, &badTria );
+    gp_XY uv[6] = {
+      GetNodeUV( F, n1, n23, &checkOK ),
+      GetNodeUV( F, n2, n31, &checkOK ),
+      GetNodeUV( F, n3, n12, &checkOK ),
+      GetNodeUV( F, n12, n3, &checkOK ),
+      GetNodeUV( F, n23, n1, &checkOK ),
+      GetNodeUV( F, n31, n2, &checkOK )
+    };
+    AdjustByPeriod( F, uv, 6 ); // put uv[] within a period (IPAL52698)
+
+    uvAvg = GetCenterUV( uv[0],uv[1],uv[2], uv[3],uv[4],uv[5], &badTria );
+
     if ( badTria || !checkOK )
       force3d = true;
   }
@@ -2135,7 +2196,7 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
     const SMDS_MeshNode* n26 = GetMediumNode( n2, n6, force3d, TopAbs_SOLID );
     const SMDS_MeshNode* n37 = GetMediumNode( n3, n7, force3d, TopAbs_SOLID );
     const SMDS_MeshNode* n48 = GetMediumNode( n4, n8, force3d, TopAbs_SOLID );
-    if(myCreateBiQuadratic)
+    if ( myCreateBiQuadratic )
     {
       const SMDS_MeshNode* n1234 = GetCentralNode( n1,n2,n3,n4,n12,n23,n34,n41,force3d );
       const SMDS_MeshNode* n1256 = GetCentralNode( n1,n2,n5,n6,n12,n26,n56,n15,force3d );
@@ -2170,9 +2231,9 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
 
       pointsOnShapes[ SMESH_Block::ID_Fxy0 ] = SMESH_TNodeXYZ( n3478 );
       pointsOnShapes[ SMESH_Block::ID_Fxy1 ] = SMESH_TNodeXYZ( n1256 );
-      pointsOnShapes[ SMESH_Block::ID_Fx0z ] = SMESH_TNodeXYZ( n1458 );   
-      pointsOnShapes[ SMESH_Block::ID_Fx1z ] = SMESH_TNodeXYZ( n2367 );   
-      pointsOnShapes[ SMESH_Block::ID_F0yz ] = SMESH_TNodeXYZ( n1234 );    
+      pointsOnShapes[ SMESH_Block::ID_Fx0z ] = SMESH_TNodeXYZ( n1458 );
+      pointsOnShapes[ SMESH_Block::ID_Fx1z ] = SMESH_TNodeXYZ( n2367 );
+      pointsOnShapes[ SMESH_Block::ID_F0yz ] = SMESH_TNodeXYZ( n1234 );
       pointsOnShapes[ SMESH_Block::ID_F1yz ] = SMESH_TNodeXYZ( n5678 );
 
       gp_XYZ centerCube(0.5, 0.5, 0.5);
@@ -2182,27 +2243,27 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
         meshDS->AddNode( nCenterElem.X(), nCenterElem.Y(), nCenterElem.Z() );
       meshDS->SetNodeInVolume( nCenter, myShapeID );
 
-     if(id)
+      if(id)
         elem = meshDS->AddVolumeWithID(n1, n2, n3, n4, n5, n6, n7, n8,
-                                      n12, n23, n34, n41, n56, n67,
-                                      n78, n85, n15, n26, n37, n48,
-                                      n1234, n1256, n2367, n3478, n1458, n5678, nCenter, id);
+                                       n12, n23, n34, n41, n56, n67,
+                                       n78, n85, n15, n26, n37, n48,
+                                       n1234, n1256, n2367, n3478, n1458, n5678, nCenter, id);
       else
         elem = meshDS->AddVolume(n1, n2, n3, n4, n5, n6, n7, n8,
-                                n12, n23, n34, n41, n56, n67,
-                                n78, n85, n15, n26, n37, n48,
-                                n1234, n1256, n2367, n3478, n1458, n5678, nCenter);
+                                 n12, n23, n34, n41, n56, n67,
+                                 n78, n85, n15, n26, n37, n48,
+                                 n1234, n1256, n2367, n3478, n1458, n5678, nCenter);
     }
     else
     {
       if(id)
         elem = meshDS->AddVolumeWithID(n1, n2, n3, n4, n5, n6, n7, n8,
-                                      n12, n23, n34, n41, n56, n67,
-                                      n78, n85, n15, n26, n37, n48, id);
+                                       n12, n23, n34, n41, n56, n67,
+                                       n78, n85, n15, n26, n37, n48, id);
       else
         elem = meshDS->AddVolume(n1, n2, n3, n4, n5, n6, n7, n8,
-                                n12, n23, n34, n41, n56, n67,
-                                n78, n85, n15, n26, n37, n48);
+                                 n12, n23, n34, n41, n56, n67,
+                                 n78, n85, n15, n26, n37, n48);
     }
   }
   if ( mySetElemOnShape && myShapeID > 0 )
@@ -4875,7 +4936,7 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
                 gp_XY uv2  = faceHlp.GetNodeUV( face, link->node2(),     nodeOnFace, &checkUV );
                 gp_XY uv12 = faceHlp.GetMiddleUV( surf, uv1, uv2 );
                 // uvMove = uvm - uv12
-                gp_XY uvMove = applyIn2D(surf, uvm, uv12, gp_XY_Subtracted, /*inPeriod=*/false);
+                gp_XY uvMove = ApplyIn2D(surf, uvm, uv12, gp_XY_Subtracted, /*inPeriod=*/false);
                 ( is1 ? move1 : move0 ).SetCoord( uvMove.X(), uvMove.Y(), 0 );
                 if ( !is1 ) // correct nodeOnFace for move1 (issue 0020919)
                   nodeOnFace = (*(++chain.rbegin()))->_mediumNode;
@@ -4942,7 +5003,7 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
               // compute 3D displacement by 2D one
               Handle(Geom_Surface) s = BRep_Tool::Surface(face,loc);
               gp_XY oldUV   = faceHlp.GetNodeUV( face, (*link1)->_mediumNode, 0, &checkUV );
-              gp_XY newUV   = applyIn2D( s, oldUV, gp_XY( move.X(),move.Y()), gp_XY_Added );
+              gp_XY newUV   = ApplyIn2D( s, oldUV, gp_XY( move.X(),move.Y()), gp_XY_Added );
               gp_Pnt newPnt = s->Value( newUV.X(), newUV.Y());
               move = gp_Vec( XYZ((*link1)->_mediumNode), newPnt.Transformed(loc) );
               if ( SMDS_FacePosition* nPos =
@@ -5051,6 +5112,7 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
         if ( i > 3 && nodes[i]->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE )
           CheckNodeUV( F, nodes[i], uv[ i ], 2*tol, /*force=*/true );
       }
+      AdjustByPeriod( F, uv, 8 ); // put uv[] within a period (IPAL52698)
       // move the central node
       gp_XY uvCent = calcTFI (0.5, 0.5, uv[0],uv[1],uv[2],uv[3],uv[4],uv[5],uv[6],uv[7] );
       gp_Pnt p = surf->Value( uvCent.X(), uvCent.Y() ).Transformed( loc );
@@ -5076,7 +5138,7 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
       // nodes
       nodes.assign( tria->begin_nodes(), tria->end_nodes() );
       // UV
-      bool uvOK = true, badTria;
+      bool uvOK = true, badTria = false;
       for ( int i = 0; i < 6; ++i )
       {
         uv[ i ] = GetNodeUV( F, nodes[i], nodes[(i+1)%3], &uvOK );
@@ -5085,6 +5147,7 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
         if ( nodes[i]->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE )
           CheckNodeUV( F, nodes[i], uv[ i ], 2*tol, /*force=*/true );
       }
+
       // move the central node
       gp_Pnt p;
       if ( !uvOK || badTria )
@@ -5095,6 +5158,7 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
       }
       else
       {
+        AdjustByPeriod( F, uv, 6 ); // put uv[] within a period (IPAL52698)
         gp_XY uvCent = GetCenterUV( uv[0], uv[1], uv[2], uv[3], uv[4], uv[5], &badTria );
         p = surf->Value( uvCent.X(), uvCent.Y() ).Transformed( loc );
       }
