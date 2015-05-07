@@ -5912,22 +5912,6 @@ Indiquez-les et essayez de nouveau</translation>
         <source>MAJORITY</source>
         <translation>La majorité</translation>
     </message>
-    <message>
-        <source>NODE</source>
-        <translation>Nœud</translation>
-    </message>
-    <message>
-        <source>EDGE</source>
-        <translation>Arête</translation>
-    </message>
-    <message>
-        <source>FACE</source>
-        <translation>Face</translation>
-    </message>
-    <message>
-        <source>VOLUME</source>
-        <translation>Volume</translation>
-    </message>
 </context>
 <context>
     <name>SMESHGUI_IntersectGroupsDlg</name>
@@ -7153,15 +7137,15 @@ en raison de leurs types incompatibles:
     </message>
     <message>
         <source>COORDINATES</source>
-        <translation>COORDONNÉES</translation>
+        <translation>Coordonnées</translation>
     </message>
     <message>
         <source>CONNECTIVITY</source>
-        <translation>CONNECTIVITÉ</translation>
+        <translation>Connectivité</translation>
     </message>
     <message>
         <source>GRAVITY_CENTER</source>
-        <translation>CENTRE DE GRAVITÉ</translation>
+        <translation>Centre de gravité</translation>
     </message>
     <message>
         <source>NORMAL_VECTOR</source>
@@ -7173,43 +7157,43 @@ en raison de leurs types incompatibles:
     </message>
     <message>
         <source>0D_ELEMENT</source>
-        <translation>ELÉMENTS 0D</translation>
+        <translation>Eléments 0d</translation>
     </message>
     <message>
         <source>0D_ELEMENTS</source>
-        <translation>ELÉMENTS 0D</translation>
+        <translation>Eléments 0d</translation>
     </message>
     <message>
         <source>BALL_ELEMENT</source>
-        <translation>ELEMENT PARTICULAIRE</translation>
+        <translation>Elément particulaire</translation>
     </message>
     <message>
         <source>BALL_ELEMENTS</source>
-        <translation>ELEMENTS PARTICULAIRES</translation>
+        <translation>Eléments particulaires</translation>
     </message>
     <message>
         <source>EDGE</source>
-        <translation>ARÊTE</translation>
+        <translation>Arête</translation>
     </message>
     <message>
         <source>EDGES</source>
-        <translation>ARÊTES</translation>
+        <translation>Arêtes</translation>
     </message>
     <message>
         <source>FACE</source>
-        <translation>FACE</translation>
+        <translation>Face</translation>
     </message>
     <message>
         <source>FACES</source>
-        <translation>FACES</translation>
+        <translation>Faces</translation>
     </message>
     <message>
         <source>VOLUME</source>
-        <translation>VOLUME</translation>
+        <translation>Volume</translation>
     </message>
     <message>
         <source>VOLUMES</source>
-        <translation>VOLUMES</translation>
+        <translation>Volumes</translation>
     </message>
     <message>
         <source>FREE_NODE</source>
@@ -7217,7 +7201,7 @@ en raison de leurs types incompatibles:
     </message>
     <message>
         <source>TYPE</source>
-        <translation>TYPE</translation>
+        <translation>Type</translation>
     </message>
     <message>
         <source>TRIANGLE</source>
@@ -7257,7 +7241,7 @@ en raison de leurs types incompatibles:
     </message>
     <message>
         <source>QUADRATIC</source>
-        <translation>QUADRATIQUE</translation>
+        <translation>Quadratique</translation>
     </message>
     <message>
         <source>YES</source>
