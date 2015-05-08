@@ -169,8 +169,10 @@ class SMESH_EXPORT SMESH_Mesh
   
   bool MeshExists( int meshId ) const;
   
+  SMESH_Mesh* FindMesh( int meshId ) const;
+
   SMESHDS_Mesh * GetMeshDS() { return _myMeshDS; }
-  
+
   const SMESHDS_Mesh * GetMeshDS() const { return _myMeshDS; }
   
   SMESH_Gen *GetGen()        { return _gen; }

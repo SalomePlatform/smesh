@@ -237,6 +237,26 @@ bool SMESH_Mesh::MeshExists( int meshId ) const
   return _myDocument ? bool( _myDocument->GetMesh( meshId )) : false;
 }
 
+//================================================================================
+/*!
+ * \brief Return a mesh by id
+ */
+//================================================================================
+
+SMESH_Mesh* SMESH_Mesh::FindMesh( int meshId ) const
+{
+  if ( _id == meshId )
+    return (SMESH_Mesh*) this;
+
+  if ( StudyContextStruct *aStudyContext = _gen->GetStudyContext( _studyId ))
+  {
+    std::map < int, SMESH_Mesh * >::iterator i_m = aStudyContext->mapMesh.find( meshId );
+    if ( i_m != aStudyContext->mapMesh.end() )
+      return i_m->second;
+  }
+  return NULL;
+}
+
 //=============================================================================
 /*!
  * \brief Set geometry to be meshed

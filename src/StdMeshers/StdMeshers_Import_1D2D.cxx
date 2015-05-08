@@ -44,11 +44,13 @@
 #include "Utils_SALOME_Exception.hxx"
 #include "utilities.h"
 
+#include <BRepBndLib.hxx>
 #include <BRepClass_FaceClassifier.hxx>
 #include <BRepTools.hxx>
 #include <BRep_Builder.hxx>
 #include <BRep_Tool.hxx>
 #include <Bnd_B2d.hxx>
+#include <Bnd_Box.hxx>
 #include <GeomAPI_ProjectPointOnSurf.hxx>
 #include <GeomAdaptor_Surface.hxx>
 #include <Precision.hxx>
@@ -191,12 +193,13 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
   const bool toCheckOri = (helper.NbAncestors( geomFace, theMesh, TopAbs_SOLID ) == 1 );
 
   Handle(Geom_Surface) surface = BRep_Tool::Surface( geomFace );
-  const bool reverse = 
+  const bool reverse =
     ( helper.GetSubShapeOri( tgtMesh->ShapeToMesh(), geomFace ) == TopAbs_REVERSED );
   gp_Pnt p; gp_Vec du, dv;
 
   BRepClass_FaceClassifier classifier;
   Bnd_B2d bndBox2d;
+  Bnd_Box bndBox3d;
   {
     Standard_Real umin,umax,vmin,vmax;
     BRepTools::UVBounds(geomFace,umin,umax,vmin,vmax);
@@ -212,6 +215,9 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
       bndBox2d.Add( pmax );
     }
     bndBox2d.Enlarge( 1e-2 * Sqrt( bndBox2d.SquareExtent() ));
+
+    BRepBndLib::Add( geomFace, bndBox3d );
+    bndBox3d.Enlarge( 1e-4 * sqrt( bndBox3d.SquareExtent() ));
   }
 
   set<int> subShapeIDs;
@@ -284,9 +290,10 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
     const double groupTol = 0.5 * sqrt( getMinElemSize2( srcGroup ));
     minGroupTol = std::min( groupTol, minGroupTol );
 
-    GeomAdaptor_Surface S( surface );
-    const double clsfTol = Min( S.UResolution( 0.1 * groupTol ),
-                                S.VResolution( 0.1 * groupTol ));
+    //GeomAdaptor_Surface S( surface );
+    // const double clsfTol = Min( S.UResolution( 0.1 * groupTol ), -- issue 0023092
+    //                             S.VResolution( 0.1 * groupTol ));
+    const double clsfTol = BRep_Tool::Tolerance( geomFace );
 
     StdMeshers_Import_1D::TNodeNodeMap::iterator n2nIt;
     pair< StdMeshers_Import_1D::TNodeNodeMap::iterator, bool > it_isnew;
@@ -296,13 +303,16 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
     {
       const SMDS_MeshElement* face = srcElems->next();
 
+      SMDS_MeshElement::iterator node = face->begin_nodes();
+      if ( bndBox3d.IsOut( SMESH_TNodeXYZ( *node )))
+        continue;
+
       // find or create nodes of a new face
       nodeState.resize( face->NbNodes() );
       newNodes.resize( nodeState.size() );
       newNodes.back() = 0;
       int nbCreatedNodes = 0;
       bool isOut = false, isIn = false; // if at least one node isIn - do not classify other nodes
-      SMDS_MeshElement::iterator node = face->begin_nodes();
       for ( size_t i = 0; i < newNodes.size(); ++i, ++node )
       {
         SMESH_TNodeXYZ nXYZ = *node;

@@ -2470,11 +2470,8 @@ void SMESH_subMesh::deleteOwnListeners()
   list< OwnListenerData >::iterator d;
   for ( d = _ownListeners.begin(); d != _ownListeners.end(); ++d )
   {
-    if ( !_father->MeshExists( d->myMeshID ))
-      continue;
-    if ( _father->GetId() == d->myMeshID &&
-         this->GetId()    != d->mySubMeshID &&
-         !_father->GetSubMeshContaining( d->mySubMeshID ))
+    SMESH_Mesh* mesh = _father->FindMesh( d->myMeshID );
+    if ( !mesh || !mesh->GetSubMeshContaining( d->mySubMeshID ))
       continue;
     d->mySubMesh->DeleteEventListener( d->myListener );
   }
