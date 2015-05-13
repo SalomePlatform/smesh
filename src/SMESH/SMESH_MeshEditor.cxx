@@ -3768,8 +3768,11 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
   // smooth elements on each TopoDS_Face separately
   // ===============================================
 
-  set< int >::reverse_iterator fId = faceIdSet.rbegin(); // treate 0 fId at the end
-  for ( ; fId != faceIdSet.rend(); ++fId ) {
+  SMESH_MesherHelper helper( *GetMesh() );
+
+  set< int >::reverse_iterator fId = faceIdSet.rbegin(); // treat 0 fId at the end
+  for ( ; fId != faceIdSet.rend(); ++fId )
+  {
     // get face surface and submesh
     Handle(Geom_Surface) surface;
     SMESHDS_SubMesh* faceSubMesh = 0;
@@ -3777,7 +3780,8 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
     double fToler2 = 0, f,l;
     double u1 = 0, u2 = 0, v1 = 0, v2 = 0;
     bool isUPeriodic = false, isVPeriodic = false;
-    if ( *fId ) {
+    if ( *fId )
+    {
       face = TopoDS::Face( aMesh->IndexToShape( *fId ));
       surface = BRep_Tool::Surface( face );
       faceSubMesh = aMesh->MeshElements( *fId );
@@ -3790,6 +3794,7 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
       if ( isVPeriodic )
         surface->VPeriod();
       surface->Bounds( u1, u2, v1, v2 );
+      helper.SetSubShape( face );
     }
     // ---------------------------------------------------------
     // for elements on a face, find movable and fixed nodes and
@@ -3811,7 +3816,8 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
     int nbElemOnFace = 0;
     itElem = theElems.begin();
     // loop on not yet smoothed elements: look for elems on a face
-    while ( itElem != theElems.end() ) {
+    while ( itElem != theElems.end() )
+    {
       if ( faceSubMesh && nbElemOnFace == faceSubMesh->NbElements() )
         break; // all elements found
 
@@ -3867,12 +3873,15 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
 
       // get nodes to check UV
       list< const SMDS_MeshNode* > uvCheckNodes;
+      const SMDS_MeshNode* nodeInFace = 0;
       itN = elem->nodesIterator();
       nn = 0; nbn =  elem->NbNodes();
       if(elem->IsQuadratic())
         nbn = nbn/2;
       while ( nn++ < nbn ) {
         node = static_cast<const SMDS_MeshNode*>( itN->next() );
+        if ( node->GetPosition()->GetDim() == 2 )
+          nodeInFace = node;
         if ( uvMap.find( node ) == uvMap.end() )
           uvCheckNodes.push_back( node );
         // add nodes of elems sharing node
@@ -3898,41 +3907,21 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
         const SMDS_PositionPtr& pos = node->GetPosition();
         posType = pos ? pos->GetTypeOfPosition() : SMDS_TOP_3DSPACE;
         // get existing UV
-        switch ( posType ) {
-        case SMDS_TOP_FACE: {
-          SMDS_FacePosition* fPos = ( SMDS_FacePosition* ) pos;
-          uv.SetCoord( fPos->GetUParameter(), fPos->GetVParameter() );
-          break;
+        if ( pos )
+        {
+          bool toCheck = true;
+          uv = helper.GetNodeUV( face, node, nodeInFace, &toCheck );
         }
-        case SMDS_TOP_EDGE: {
-          TopoDS_Shape S = aMesh->IndexToShape( node->getshapeId() );
-          Handle(Geom2d_Curve) pcurve;
-          if ( !S.IsNull() && S.ShapeType() == TopAbs_EDGE )
-            pcurve = BRep_Tool::CurveOnSurface( TopoDS::Edge( S ), face, f,l );
-          if ( !pcurve.IsNull() ) {
-            double u = (( SMDS_EdgePosition* ) pos )->GetUParameter();
-            uv = pcurve->Value( u ).XY();
-          }
-          break;
-        }
-        case SMDS_TOP_VERTEX: {
-          TopoDS_Shape S = aMesh->IndexToShape( node->getshapeId() );
-          if ( !S.IsNull() && S.ShapeType() == TopAbs_VERTEX )
-            uv = BRep_Tool::Parameters( TopoDS::Vertex( S ), face ).XY();
-          break;
-        }
-        default:;
-        }
-        // check existing UV
-        bool project = true;
-        gp_Pnt pNode ( node->X(), node->Y(), node->Z() );
-        double dist1 = DBL_MAX, dist2 = 0;
-        if ( posType != SMDS_TOP_3DSPACE ) {
-          dist1 = pNode.SquareDistance( surface->Value( uv.X(), uv.Y() ));
-          project = dist1 > fToler2;
-        }
+        // compute not existing UV
+        bool project = ( posType == SMDS_TOP_3DSPACE );
+        // double dist1 = DBL_MAX, dist2 = 0;
+        // if ( posType != SMDS_TOP_3DSPACE ) {
+        //   dist1 = pNode.SquareDistance( surface->Value( uv.X(), uv.Y() ));
+        //   project = dist1 > fToler2;
+        // }
         if ( project ) { // compute new UV
           gp_XY newUV;
+          gp_Pnt pNode = SMESH_TNodeXYZ( node );
           if ( !getClosestUV( projector, pNode, newUV )) {
             MESSAGE("Node Projection Failed " << node);
           }
@@ -3942,9 +3931,9 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
             if ( isVPeriodic )
               newUV.SetY( ElCLib::InPeriod( newUV.Y(), v1, v2 ));
             // check new UV
-            if ( posType != SMDS_TOP_3DSPACE )
-              dist2 = pNode.SquareDistance( surface->Value( newUV.X(), newUV.Y() ));
-            if ( dist2 < dist1 )
+            // if ( posType != SMDS_TOP_3DSPACE )
+            //   dist2 = pNode.SquareDistance( surface->Value( newUV.X(), newUV.Y() ));
+            // if ( dist2 < dist1 )
               uv = newUV;
           }
         }
@@ -4012,9 +4001,8 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
         uv2 = pcurve->Value( f );
         int iPar = Abs( uv1.X() - uv2.X() ) > Abs( uv1.Y() - uv2.Y() ) ? 1 : 2;
         // assure uv1 < uv2
-        if ( uv1.Coord( iPar ) > uv2.Coord( iPar )) {
-          gp_Pnt2d tmp = uv1; uv1 = uv2; uv2 = tmp;
-        }
+        if ( uv1.Coord( iPar ) > uv2.Coord( iPar ))
+          std::swap( uv1, uv2 );
         // get nodes on seam and its vertices
         list< const SMDS_MeshNode* > seamNodes;
         SMDS_NodeIteratorPtr nSeamIt = sm->GetNodes();
@@ -4064,12 +4052,14 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
                   setMovableNodes.find( n ) == setMovableNodes.end() )
                 continue;
               // add only nodes being closer to uv2 than to uv1
-              gp_Pnt pMid (0.5 * ( n->X() + nSeam->X() ),
-                           0.5 * ( n->Y() + nSeam->Y() ),
-                           0.5 * ( n->Z() + nSeam->Z() ));
-              gp_XY uv;
-              getClosestUV( projector, pMid, uv );
-              if ( uv.Coord( iPar ) > uvMap[ n ]->Coord( iPar ) ) {
+              // gp_Pnt pMid (0.5 * ( n->X() + nSeam->X() ),
+              //              0.5 * ( n->Y() + nSeam->Y() ),
+              //              0.5 * ( n->Z() + nSeam->Z() ));
+              // gp_XY uv;
+              // getClosestUV( projector, pMid, uv );
+              double x = uvMap[ n ]->Coord( iPar );
+              if ( Abs( uv1.Coord( iPar ) - x ) >
+                   Abs( uv2.Coord( iPar ) - x )) {
                 nodesNearSeam.insert( n );
                 nbUseMap2++;
               }
@@ -4178,8 +4168,6 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
     // move medium nodes of quadratic elements
     if ( isQuadratic )
     {
-      SMESH_MesherHelper helper( *GetMesh() );
-      helper.SetSubShape( face );
       vector<const SMDS_MeshNode*> nodes;
       bool checkUV;
       list< const SMDS_MeshElement* >::iterator elemIt = elemsOnFace.begin();

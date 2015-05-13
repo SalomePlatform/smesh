@@ -126,7 +126,7 @@ void SMDS_MeshNode::SetPosition(const SMDS_PositionPtr& aPos)
 
 const SMDS_PositionPtr& SMDS_MeshNode::GetPosition() const
 {
-        return myPosition;
+  return myPosition;
 }
 
 //=======================================================================
@@ -149,30 +149,26 @@ public:
   SMDS_MeshNode_MyInvIterator(SMDS_Mesh *mesh, vtkIdType* cells, int ncells, SMDSAbs_ElementType type) :
     myMesh(mesh), myCells(cells), myNcells(ncells), myType(type), iter(0)
   {
-    //MESSAGE("SMDS_MeshNode_MyInvIterator : ncells " << myNcells);
-    cellList.clear();
+    cellList.reserve( ncells );
     if (type == SMDSAbs_All)
+      cellList.assign( cells, cells + ncells );
+    else
       for (int i = 0; i < ncells; i++)
-        cellList.push_back(cells[i]);
-    else for (int i = 0; i < ncells; i++)
       {
         int vtkId = cells[i];
         int smdsId = myMesh->fromVtkToSmds(vtkId);
         const SMDS_MeshElement* elem = myMesh->FindElement(smdsId);
         if (elem->GetType() == type)
-          {
-            //MESSAGE("Add element vtkId " << vtkId << " " << elem->GetType())
-            cellList.push_back(vtkId);
-          }
+        {
+          cellList.push_back(vtkId);
+        }
       }
     myCells = cellList.empty() ? 0 : &cellList[0];
     myNcells = cellList.size();
-    //MESSAGE("myNcells="<<myNcells);
   }
 
   bool more()
   {
-    //MESSAGE("iter " << iter << " ncells " << myNcells);
     return (iter < myNcells);
   }
 

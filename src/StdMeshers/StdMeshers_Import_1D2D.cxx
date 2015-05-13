@@ -192,11 +192,13 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
   const int shapeID = tgtMesh->ShapeToIndex( geomFace );
   const bool toCheckOri = (helper.NbAncestors( geomFace, theMesh, TopAbs_SOLID ) == 1 );
 
+
   Handle(Geom_Surface) surface = BRep_Tool::Surface( geomFace );
   const bool reverse =
     ( helper.GetSubShapeOri( tgtMesh->ShapeToMesh(), geomFace ) == TopAbs_REVERSED );
   gp_Pnt p; gp_Vec du, dv;
 
+  // BRepClass_FaceClassifier is most time consuming, so minimize its usage
   BRepClass_FaceClassifier classifier;
   Bnd_B2d bndBox2d;
   Bnd_Box bndBox3d;
@@ -217,7 +219,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
     bndBox2d.Enlarge( 1e-2 * Sqrt( bndBox2d.SquareExtent() ));
 
     BRepBndLib::Add( geomFace, bndBox3d );
-    bndBox3d.Enlarge( 1e-4 * sqrt( bndBox3d.SquareExtent() ));
+    bndBox3d.Enlarge( 1e-5 * sqrt( bndBox3d.SquareExtent() ));
   }
 
   set<int> subShapeIDs;
@@ -277,6 +279,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
   vector<TopAbs_State>         nodeState;
   vector<const SMDS_MeshNode*> newNodes; // of a face
   set   <const SMDS_MeshNode*> bndNodes; // nodes classified ON
+  vector<bool>                 isNodeIn; // nodes classified IN, by node ID
 
   for ( size_t iG = 0; iG < srcGroups.size(); ++iG )
   {
@@ -330,6 +333,9 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
         {
           if ( !subShapeIDs.count( newNode->getshapeId() ))
             break; // node is Imported onto other FACE
+          if ( newNode->GetID() < (int) isNodeIn.size() &&
+               isNodeIn[ newNode->GetID() ])
+            isIn = true;
           if ( !isIn && bndNodes.count( *node ))
             nodeState[ i ] = TopAbs_ON;
         }
@@ -362,10 +368,15 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
             newNode = tgtMesh->AddNode( nXYZ.X(), nXYZ.Y(), nXYZ.Z());
             tgtMesh->SetNodeOnFace( newNode, shapeID, uv.X(), uv.Y() );
             nbCreatedNodes++;
+            if ( newNode->GetID() >= (int) isNodeIn.size() )
+            {
+              isNodeIn.push_back( false ); // allow allocate more than newNode->GetID()
+              isNodeIn.resize( newNode->GetID() + 1, false );
+            }
             if ( nodeState[i] == TopAbs_ON )
               bndNodes.insert( *node );
             else
-              isIn = true;
+              isNodeIn[ newNode->GetID() ] = isIn = true;
           }
         }
         if ( !(newNodes[i] = newNode ) || isOut )
