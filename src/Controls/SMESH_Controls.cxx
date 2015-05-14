@@ -1357,10 +1357,10 @@ double Taper::GetValue( const TSequenceOfXYZ& P )
     return 0.;
 
   // Compute taper
-  double J1 = getArea( P( 4 ), P( 1 ), P( 2 ) ) / 2.;
-  double J2 = getArea( P( 3 ), P( 1 ), P( 2 ) ) / 2.;
-  double J3 = getArea( P( 2 ), P( 3 ), P( 4 ) ) / 2.;
-  double J4 = getArea( P( 3 ), P( 4 ), P( 1 ) ) / 2.;
+  double J1 = getArea( P( 4 ), P( 1 ), P( 2 ) );
+  double J2 = getArea( P( 3 ), P( 1 ), P( 2 ) );
+  double J3 = getArea( P( 2 ), P( 3 ), P( 4 ) );
+  double J4 = getArea( P( 3 ), P( 4 ), P( 1 ) );
 
   double JA = 0.25 * ( J1 + J2 + J3 + J4 );
   if ( JA <= theEps )
@@ -1381,7 +1381,7 @@ double Taper::GetValue( const TSequenceOfXYZ& P )
 double Taper::GetBadRate( double Value, int /*nbNodes*/ ) const
 {
   // the taper is in the range [0.0,1.0]
-  // 0.0  = good (no taper)
+  // 0.0 = good (no taper)
   // 1.0 = bad  (les cotes opposes sont allignes)
   return Value;
 }
