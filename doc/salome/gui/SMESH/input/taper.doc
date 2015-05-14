@@ -3,11 +3,10 @@
 \page taper_page Taper
 
 \n \b Taper mesh quality criterion represents the ratio of the areas
-of two triangles separated by a diagonal. So it can be calculated only
-for elements consisting of 4 nodes.
+of two triangles separated by a diagonal within a quadrilateral face.
 
-  <b><center>JA=0.25 * (A1 + A2 + A3 + A4)
-  <br> TAPER= MAX(|A1/JA - 1|, |A2/JA - 1|, |A3/JA - 1|, |A4/JA - 1|)</center></b>
+  <b><center>JA = 0.25 * (A1 + A2 + A3 + A4)
+  <br> TAPER = MAX(|A1/JA - 1|, |A2/JA - 1|, |A3/JA - 1|, |A4/JA - 1|)</center></b>
 
 <br><em>To apply the Taper quality criterion to your mesh:</em>
 

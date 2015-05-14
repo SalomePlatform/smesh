@@ -3,8 +3,7 @@
 \page length_2d_page Length 2D
 
 \n This quality control criterion consists of calculation of length of
-the edges combining the meshing elements (triangles and quadrangles)
-of your mesh.
+the links between corner nodes of mesh faces.
 
 <em>To apply the Length 2D quality criterion to your mesh:</em>
 <ol>
@@ -16,7 +15,8 @@ of your mesh.
 \image html image34.png
 <center><em>"Length 2D" button</em></center>
 
-Your mesh will be displayed in the viewer with its elements colored according to the applied mesh quality control criterion:
+Your mesh will be displayed in the viewer with links colored according
+to the applied mesh quality control criterion:
 
 \image html length2d.png
 </li>

@@ -14,7 +14,7 @@ quadratic meshes.
 <em>To produce a conversion:</em>
 <ol>
 <li>Select a mesh or a sub-mesh in the Object Browser or in the
-Viewer.</li>
+  Viewer.</li>
 <li>From the Modification menu or from the contextual menu in the
   Object Browser choose <b> Convert to/from Quadratic Mesh</b> item,
   or click <em>"Convert to/from quadratic"</em> button in the

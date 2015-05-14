@@ -2,9 +2,8 @@
 
 \page borders_at_multi_connection_page Borders at multi-connection
 
-\n This mesh quality control highlights borders of faces consisting of
-edges belonging to several faces. The amount of faces is specified by
-user.
+\n This mesh quality control highlights segments according to number
+of elements, faces and volumes, the segment belongs to.
 
 \image html image151.gif
 
