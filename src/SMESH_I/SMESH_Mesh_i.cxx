@@ -232,7 +232,25 @@ GEOM::GEOM_Object_ptr SMESH_Mesh_i::GetShapeToMesh()
   try {
     TopoDS_Shape S = _impl->GetMeshDS()->ShapeToMesh();
     if ( !S.IsNull() )
+    {
       aShapeObj = _gen_i->ShapeToGeomObject( S );
+      if ( aShapeObj->_is_nil() )
+      {
+        // S was removed from GEOM_Client by newGroupShape() called by other mesh;
+        // find GEOM_Object by entry (IPAL52735)
+        list<TGeomGroupData>::iterator data = _geomGroupData.begin();
+        for ( ; data != _geomGroupData.end(); ++data )
+          if ( data->_smeshObject->_is_equivalent( _this() ))
+          {
+            SALOMEDS::Study_var study = _gen_i->GetCurrentStudy();
+            if ( study->_is_nil() ) break;
+            SALOMEDS::SObject_wrap so = study->FindObjectID( data->_groupEntry.c_str() );
+            CORBA::Object_var     obj = _gen_i->SObjectToObject( so );
+            aShapeObj = GEOM::GEOM_Object::_narrow( obj );
+            break;
+          }
+      }
+    }
   }
   catch(SALOME_Exception & S_ex) {
     THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
@@ -1953,9 +1971,11 @@ void SMESH_Mesh_i::CheckGeomModif()
   if ( study->_is_nil() ) return;
 
   GEOM::GEOM_Object_var mainGO = _gen_i->ShapeToGeomObject( _impl->GetShapeToMesh() );
-  if ( mainGO->_is_nil() ) return;
+  //if ( mainGO->_is_nil() ) return;
 
-  if ( mainGO->GetType() == GEOM_GROUP ||
+  if ( mainGO->_is_nil() || /* shape was removed from GEOM_Client by newGroupShape()
+                               called by other mesh (IPAL52735) */
+       mainGO->GetType() == GEOM_GROUP ||
        mainGO->GetTick() == _mainShapeTick )
   {
     CheckGeomGroupModif();
@@ -2239,7 +2259,8 @@ void SMESH_Mesh_i::CheckGeomGroupModif()
           groupData.push_back
             ( make_pair( TIndexedShape( gog->GetID(),gog->GetShape()), gog->GetType()));
       }
-      // set new shape to mesh -> DS of sub-meshes and geom groups is deleted
+      // set new shape to mesh -> DS of sub-meshes and geom groups are deleted
+      _impl->Clear();
       _impl->ShapeToMesh( TopoDS_Shape() ); // IPAL52730
       _impl->ShapeToMesh( newShape );
 
