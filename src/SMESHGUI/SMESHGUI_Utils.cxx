@@ -300,7 +300,7 @@ namespace SMESH
     _PTR(ChildIterator) anIter = aStudy->NewChildIterator(theSObject);
     for (int i = 1; anIter->More(); anIter->Next(), i++) {
       _PTR(SObject) aSObj = anIter->Value();
-      if (i >= 4) {
+      /*if (i >= 1)*/ {
         _PTR(ChildIterator) anIter1 = aStudy->NewChildIterator(aSObj);
         for ( ; anIter1->More(); anIter1->Next())
         {
@@ -311,6 +311,8 @@ namespace SMESH
 
           std::string entry = aSObj1->GetID();
           int objType = SMESHGUI_Selection::type( entry.c_str(), aStudy );
+          if ( objType == SMESH::HYPOTHESIS || objType == SMESH::ALGORITHM )
+            continue;
 
           SMESH::SMESH_IDSource_var idSrc = SObjectToInterface<SMESH::SMESH_IDSource>( aSObj1 );
           if ( !idSrc->_is_nil() )

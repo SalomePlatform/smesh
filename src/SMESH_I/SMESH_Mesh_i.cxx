@@ -1973,6 +1973,8 @@ void SMESH_Mesh_i::CheckGeomModif()
   GEOM::GEOM_Object_var mainGO = _gen_i->ShapeToGeomObject( _impl->GetShapeToMesh() );
   //if ( mainGO->_is_nil() ) return;
 
+  // Update after group modification
+
   if ( mainGO->_is_nil() || /* shape was removed from GEOM_Client by newGroupShape()
                                called by other mesh (IPAL52735) */
        mainGO->GetType() == GEOM_GROUP ||
@@ -1981,6 +1983,8 @@ void SMESH_Mesh_i::CheckGeomModif()
     CheckGeomGroupModif();
     return;
   }
+
+  // Update after shape transformation like Translate
 
   GEOM_Client* geomClient = _gen_i->GetShapeReader();
   if ( !geomClient ) return;
