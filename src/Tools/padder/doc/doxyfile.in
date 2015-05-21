@@ -21,7 +21,7 @@
 # Project related configuration options
 #---------------------------------------------------------------------------
 PROJECT_NAME      = "SALOME Mesh User's Guide"
-OUTPUT_DIRECTORY  = SMESH
+OUTPUT_DIRECTORY  = padder
 CREATE_SUBDIRS	  = NO
 OUTPUT_LANGUAGE   = English
 TAB_SIZE          = 5
