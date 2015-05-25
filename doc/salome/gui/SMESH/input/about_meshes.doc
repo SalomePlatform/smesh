@@ -19,29 +19,29 @@ Mesh module provides several ways to create the mesh:
 
     Construction of \subpage constructing_submeshes_page "sub-meshes"
     allows to discretize some sub-shapes of the main shape, for example a face,
-    using different meshing parameters than other sub-shapes.<br>
+    using the meshing parameters that differ from those for other sub-shapes.<br>
     Meshing parameters of meshes and sub-meshes can be 
     \subpage editing_meshes_page "edited". (Upon edition only mesh entities
     generated using changed meshing parameters are removed and will be
     re-computed).<br>
-    \note Algorithms and hypotheses used at mesh level are referred as
-    \a global ones and those used at sub-mesh level are referred as \a
+    \note Algorithms and hypotheses used at mesh level are referred to as
+    \a global ones and those used at sub-mesh level are referred to as \a
     local ones.
   </li>
   <li>Bottom-up way, using \ref modifying_meshes_page "mesh modification"
     operations, especially \ref extrusion_page "extrusion" and \ref
-    revolution_page "revolution". To create an empty mesh not based on
+    revolution_page "revolution". To create an empty mesh not based on a
     geometry, use the same dialog as to \ref constructing_meshes_page
-    "construct the mesh on geometry" but do not specify any geometry
-    nor meshing algorithm.
+    "construct the mesh on geometry" but do not specify a geometry
+    or a meshing algorithm.
   </li>
-  <li>The mesh can be \ref importing_exporting_meshes_page "imported" from
+  <li>The mesh can be \subpage importing_exporting_meshes_page "imported" from
     (and exported to) the file in MED, UNV, STL, CGNS, DAT, GMF and
     SAUVE formats.
   </li>
   <li>The 3D mesh can be generated from the 2D mesh, \ref
     importing_exporting_meshes_page "imported" or manually created. To
-    setup the meshing parameters of a mesh not based on geometry, just
+    setup the meshing parameters of a mesh not based on a geometry, just
     invoke \ref editing_meshes_page "Edit mesh / sub-mesh" command on
     your 3D mesh.
   </li>
@@ -66,29 +66,29 @@ Attractive meshing capabilities include:
   sub-meshes.
 
 The \b structure of a SALOME mesh is described by nodes and elements based on
-these nodes. Geometry of the element is defined by the sequence of
+these nodes. The geometry of an element is defined by the sequence of
 nodes constituting it and
 the <a href="http://www.code-aster.org/outils/med/html/connectivites.html">
   connectivity convention </a> (adopted from MED library). Definition of
-the element basing on elements of lower dimension is NOT supported.
+the element basing on the elements of a lower dimension is NOT supported.
 
 \anchor mesh_entities
 The mesh can include the following entities:
 <ul>
-<li>\b Node &mdash; an entity of a mesh defining a position in 3D
+<li>\b Node &mdash; a mesh entity defining a position in 3D
   space with coordinates (x, y, z).</li>
-<li>\b Edge (or segment) &mdash; 1D element of a mesh linking two nodes.</li>
-<li>\b Face &mdash; 2D element of a mesh representing a part of
+<li>\b Edge (or segment) &mdash; 1D mesh element linking two nodes.</li>
+<li>\b Face &mdash; 2D mesh element representing a part of
   surface bound by links between face nodes. A face can be a
   triangle, quadrangle or polygon.</li>
-<li>\b Volume &mdash; 3D element of a mesh representing a part of 3D
+<li>\b Volume &mdash; 3D mesh element representing a part of 3D
   space bound by volume facets. Nodes of a volume describing each
   facet are defined by
   the <a href="http://www.code-aster.org/outils/med/html/connectivites.html">
   MED connectivity convention.</a> A volume can be a tetrahedron, hexahedron,
   pentahedron, pyramid, hexagonal prism or polyhedron.</li>
-<li>\b 0D element &mdash; element of a mesh defined by one node.</li>
-<li>\b Ball element &mdash; discrete element of a mesh defined by a
+<li>\b 0D element &mdash; mesh element defined by one node.</li>
+<li>\b Ball element &mdash; discrete mesh element defined by a
   node and a diameter.</li>
 </ul>
 
@@ -97,7 +97,7 @@ generated on (if any). The node generated on the geometrical edge or
 surface in addition stores its position in parametric space of the
 associated geometrical entity.
 
-SALOME supports elements of second order, without central node
+SALOME supports elements of second order, without a central node
 (quadratic triangle, quadrangle, tetrahedron, hexahedron, pentahedron
 and pyramid) and with central nodes (bi-quadratic triangle and
 quadrangle and tri-quadratic hexahedron).<br>

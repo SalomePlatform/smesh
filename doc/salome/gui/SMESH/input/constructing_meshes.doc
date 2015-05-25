@@ -2,55 +2,53 @@
 
 \page constructing_meshes_page Constructing meshes
 
-To create a mesh on geometry, at first you create a mesh object by choosing
+To create a mesh on geometry, it is necessary to create a mesh object by choosing
 - a geometrical shape produced in the Geometry module (<em>main shape</em>);
 - <em>meshing parameters</em>, including 
   - \ref basic_meshing_algos_page "meshing algorithms" and
   - \ref about_hypo_page "hypotheses" specifying constraints to be
-    taken into account by chosen meshing algorithms.
+    taken into account by the chosen meshing algorithms.
 
-Then you already can launch mesh generation by invoking \ref
-compute_anchor "Compute" command.
+Then you can launch mesh generation by invoking \ref compute_anchor "Compute" command.
 
 \note Sometimes \a hypotheses term is used to refer to both algorithms
 and hypotheses.
 
-Generation of the mesh on the geometry is performed in the bottom-up
+Mesh generation on the geometry is performed in the bottom-up
 flow: nodes on vertices are created first, then edges are divided into
-segments using nodes on vertices; the segments of the edges is then
-used while meshing faces; then the mesh of the faces is used while meshing
+segments using nodes on vertices; the segments of edges are then
+used to mesh faces; then the mesh of faces is used to mesh
 solids. This automatically assures the conformity of the mesh.
 
-You are to choose a meshing algorithm for every dimension of
-sub-shapes up to the highest dimension you desire to generate. Note
-that some algorithms generate elements of several dimensions while
-others, of only one. But it's not necessary to define meshing
+It is required to choose a meshing algorithm for every dimension of
+sub-shapes up to the highest dimension to be generated. Note
+that some algorithms generate elements of several dimensions, and
+others of only one. It is not necessary to define meshing
 parameters for all dimensions at once; you can start from 1D
 meshing parameters only, compute the 1D mesh, then define 2D meshing
-parameters and compute the 2D mesh (note that 1D mesh won't be
+parameters and compute the 2D mesh (note that 1D mesh will not be
 re-computed).
 
 An algorithm of a certain dimension chosen at mesh creation is applied
-to discretize every sub-shape of this dimension. But you can
+to discretize every sub-shape of this dimension. It is possible to
 specify a different algorithm or hypothesis to be applied to one or
 a group of sub-shapes by creating a \ref constructing_submeshes_page
 "sub-mesh". You can specify no algorithms at all at mesh object
 creation and specify the meshing parameters on sub-meshes only; then
-only sub-shapes for which you defined an algorithm and a needed
-hypothesis (if any) will be discretized.
+only the sub-shapes, for which an algorithm and a hypothesis (if any)
+have been defined will be discretized.
 
-\n Construction of a mesh on some geometry includes at least two (mesh
+\n Construction of a mesh on a geometry includes at least two (mesh
 creation and computing) of the following steps:
 <ul>
-  <li> \ref create_mesh_anchor "Creation of a mesh object" where you
+  <li> \ref create_mesh_anchor "Creation of a mesh object", where you
   can specify meshing parameters to apply to all sub-shapes of the
   main shape.</li>
-  <li> \ref constructing_submeshes_page "Creation of sub-meshes"
-  (optional) where you can specify meshing parameters to apply to
+  <li> \ref constructing_submeshes_page "Creation of sub-meshes",
+  (optional) where you can specify meshing parameters to apply to the
   selected sub-shapes.</li>
   <li> \ref evaluate_anchor "Evaluating mesh size" (optional) can be
-  used to know approximate number of elements before actual generation
-  of them.</li>
+  used to know an approximate number of elements before their actual generation.</li>
   <li> \ref preview_anchor "Previewing the mesh" (optional) can be
   used to generate mesh of only lower dimension(s) in order to
   visually estimate it before full mesh generation, which can be much
@@ -61,8 +59,8 @@ creation and computing) of the following steps:
   <li> \ref compute_anchor "Computing the mesh" uses defined meshing
   parameters to generate mesh elements.</li>
   <li> \ref edit_anchor "Editing the mesh" (optional) can be used to
-  \ref modifying_meshes_page "modify" mesh of lower dimension before
-  \ref compute_anchor "computing" elements of upper dimension.</li>
+  \ref modifying_meshes_page "modify" the mesh of a lower dimension before
+  \ref compute_anchor "computing" elements of an upper dimension.</li>
 </ul>
 
 \anchor create_mesh_anchor
@@ -103,10 +101,10 @@ creation and computing) of the following steps:
     3D sub-shapes (solids) and generate 3D mesh elements
     (tetrahedra, hexahedra etc.)
 
-    As soon as you have selected an algorithm, you can create (or
-    select already created) a hypothesis. A set of accessible
-    hypotheses includes only hypotheses the selected algorithm can take
-    into account.
+    As soon as you have selected an algorithm, you can create a
+    hypothesis (or select an already created one). A set of accessible
+    hypotheses includes only the hypotheses that can be used by the
+    selected algorithm.
 
     \note
     - Some page(s) can be disabled if the geometrical
@@ -115,10 +113,10 @@ creation and computing) of the following steps:
     \b 3D page is disabled.
     - Some algorithms affect the geometry of several dimensions,
     i.e. 1D+2D or 1D+2D+3D. If such an algorithm is selected, the
-    dialog box pages related to the corresponding lower dimensions are
+    dialog pages related to the corresponding lower dimensions are
     disabled.
-    - \b 0D page does not refer to the 0D elements, but to 0D
-    geometry (vertices). Mesh module does not provide algorithms that
+    - \b 0D page refers to 0D geometry (vertices) rather than
+    to 0D elements. Mesh module does not provide algorithms that
     produce 0D elements. Currently \b 0D page provides only one
     algorithm "Segments around vertex" that allows specifying the required
     size of mesh edges about the selected vertex (or vertices).
@@ -126,9 +124,9 @@ creation and computing) of the following steps:
     For example, you need to mesh a 3D object.
 
     First, you can change a default name of your mesh in the \b Name
-    box. Then check that a selected geometrical object, whose name is
-    shown in \b Geometry field, is that you wish to mesh; if not, click
-    the right object in the Object Browser. Click "Select" button
+    box. Then check that the selected geometrical object indicated in
+    \b Geometry field, is what you wish to mesh; if not, select
+    the correct object in the Object Browser. Click "Select" button
     near \b Geometry field if the name of the object has not yet
     appeared in \b Geometry field.
     <center>
@@ -224,11 +222,9 @@ creation and computing) of the following steps:
       </center>
 
       \note 
-      - \a "Automatic" in the names of predefined sets of
-        hypotheses came from previous versions of SALOME where
-        \ref automatic_length_anchor "Automatic Length" hypothesis 
-        was included in these sets, and not that these sets are suitable for
-        meshing any geometry.
+      - \a "Automatic" in the names of predefined sets of hypotheses
+      does not actually mean that they are suitable for meshing any
+      geometry.
       - The list of sets of hypotheses can be shorter than in the
         above image depending on the geometry dimension.
   </li>
@@ -381,18 +377,18 @@ click "Compute" button of the toolbar.
 
 After the mesh computation finishes, the Mesh Computation information
 box appears. If you close this box and click "Compute" button again,
-without previously changing meshing parameters, the mesh is
-NOT re-computed and the Mesh Computation information box with
-the same contents is shown. (To fully re-compute the mesh, invoke \ref
-clear_mesh_anchor "Clear Mesh Data" command before).
+without previously changing meshing parameters, the mesh will NOT be
+re-computed and the Mesh Computation information box will be shown
+with the same contents. (To fully re-compute the mesh, invoke 
+\ref clear_mesh_anchor "Clear Mesh Data" command before). 
 
-In case of a success, the box shows information on number of entities
-of different types in the mesh.
+If the mesh computation has been a success, the box shows information
+on the number of entities of different types in the mesh.
 
 \image html meshcomputationsucceed.png
 
 \anchor meshing_failed_anchor
-If the mesh computation failed, the information about the cause of the
+If the mesh computation has failed, the information about the cause of the
 failure is provided in \b Errors table.
 
 \image html meshcomputationfail.png
@@ -439,12 +435,12 @@ By default, the information box is always shown after mesh computation operation
 \anchor edit_anchor
 <h2>Editing the mesh</h2>
 
-It is possible to \ref modifying_meshes_page "edit the mesh" of
-lower dimension before generation of mesh of higher dimension.
+It is possible to \ref modifying_meshes_page "edit the mesh" of a 
+lower dimension before generation of the mesh of a higher dimension.
 
-For example you can generate 2D mesh, modify it using e.g. 
-\ref pattern_mapping_page, and then generate 3D mesh basing on the
-modified 2D mesh. The workflow is following:
+For example you can generate a 2D mesh, modify it using e.g. 
+\ref pattern_mapping_page, and then generate a 3D mesh basing on the
+modified 2D mesh. The workflow is as follows:
 - Define 1D and 2D meshing algorithms.
 - Compute the mesh. 2D mesh is generated.
 - Apply \ref pattern_mapping_page.
@@ -453,9 +449,9 @@ and hypotheses.
 - Compute the mesh. 3D mesh is generated.
 
 \note Nodes and elements added \ref adding_nodes_and_elements_page
-"manually" can't be used in this workflow because the manually created
-entities are not attached to any geometry and thus (usually) can't be
-found by a mesher paving some geometry.
+"manually" cannot be used in this workflow because the manually created
+entities are not attached to any geometry and thus (usually) cannot be
+found by the mesher paving a geometry.
 
 <b>See Also</b> a sample TUI Script demonstrates the possibility of 
 \ref tui_editing_while_meshing "Intermediate edition while meshing"

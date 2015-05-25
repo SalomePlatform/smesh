@@ -28,12 +28,12 @@
         element will be added to the list. To remove a selected element or
         elements from the list click the \b Remove button. The \b Sort button
         allows to sort the list of elements IDs. The <b>Set filter</b> button
-        allows to apply a definite \ref filtering_elements "filter" to
+        allows to apply a definite \ref filtering_elements "filter" to the
         selection of elements.</li>
       <li><b>Apply to all</b> radio button allows to modify the orientation
         of all elements of the selected mesh.</li>
       <li><b>Select from</b> set of fields allows to choose a sub-mesh or an
-        existing group whose elements then can be added to the list.</li>
+        existing group whose elements can be added to the list.</li>
     </ul>
 
   </li>

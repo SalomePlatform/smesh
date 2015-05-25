@@ -7,7 +7,7 @@ used for meshing entities (1D, 2D, 3D sub-shapes) composing
 geometrical objects.
 
 An algorithm represents either an implementation of a certain meshing
-technique or a interface to a whole meshing program generating elements
+technique or an interface to the whole meshing program generating elements
 of several dimensions.
 
 <ul>
@@ -17,10 +17,10 @@ of several dimensions.
 <li><em>Wire Discretization</em> meshing algorithm - splits an edge into a
 number of mesh segments following an 1D hypothesis.
 </li>
-<li><em>Composite Side Discretization</em> algorithm - allows to apply an 1D
+<li><em>Composite Side Discretization</em> algorithm - allows to apply a 1D
   hypothesis to a whole side of a geometrical face even if it is
-  composed of several edges provided that they form C1 curve and form
-  one side in all faces of the main shape.</li>
+  composed of several edges provided that they form C1 curve in all
+  faces of the main shape.</li>
 </ul>
 
 <li>For meshing of 2D entities (<b>faces</b>):</li>

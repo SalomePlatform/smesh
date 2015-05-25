@@ -11,8 +11,8 @@ and/or hypotheses than those used to generate the mesh on other
 sub-shapes.
 
 Creation of a sub-mesh allows to control individually meshing of a
-certain sub-shape, thus allowing to get mesh locally coarser or finer, to get
-elements of different types in the same mesh etc.
+certain sub-shape, thus to get a locally coarser or finer mesh, to get
+elements of different types in the same mesh, etc.
 
 A sub-shape to create a sub-mesh on should be retrieved from the main shape
 in one of the following ways: <ul>
@@ -33,7 +33,7 @@ compound of solids, starts from searching an algorithm, 1D as for the
 edge. The following sub-shapes are sequentially checked for presence
 of a sub-mesh where 1D algorithm is assigned:
 <ul>
-<li> the \b edge it-self</li>
+<li> the \b edge itself</li>
 <li> <b>groups of edges</b> containing the edge, if any</li>
 <li> \b wires sharing the edge</li>
 <li> \b faces sharing the edge</li>
@@ -43,29 +43,28 @@ of a sub-mesh where 1D algorithm is assigned:
 <li> <b>groups of solids</b> sharing the edge, if any</li>
 <li> the <b>main shape</b></li>
 </ul>
-(This sequence of sub-shapes defines priority of sub-meshes. Thus more
+(This sequence of sub-shapes defines the priority of sub-meshes. Thus more
 local, i.e. assigned to sub-shape of lower dimension, algorithms and
 hypotheses have higher priority during the search of hypotheses to
 apply.)
 
-As soon as an 1D algorithm is found the search stops and the same
-sequence of sub-shapes is checked to find a main and additional 1D
-hypotheses the found 1D algorithm can take into account. 
+As soon as a 1D algorithm is found, the search stops and the same
+sequence of sub-shapes is checked to find the main and additional 1D
+hypotheses, which can be taken into account by the found 1D algorithm. 
 
-The multi-dimensional algorithms have higher priority than
-uni-dimensional algorithms if they are assigned to sub-meshes of the
+The multi-dimensional algorithms have a higher priority than
+uni-dimensional ones if they are assigned to sub-meshes of the
 same priority.
 
 If meshing parameters are defined on sub-meshes of the same priority,
-for example different 1D hypotheses are assigned to two faces sharing
+for example, different 1D hypotheses are assigned to two faces sharing
 an edge, the hypothesis assigned to a sub-shape with a lower ID will
 be used for meshing. You can \ref submesh_order_anchor "change" mutual
 priority of such concurrent sub-meshes. 
 
-
 \n Construction of a sub-mesh consists of:
 <ul>
-<li>Selecting a mesh which will encapsulate your sub-mesh</li>
+<li>Selecting a mesh which will encapsulate the sub-mesh</li>
 <li>Selecting a sub-shape for meshing</li>
 <li>Applying one or several
 \ref about_hypo_page "hypotheses" and 
@@ -94,7 +93,7 @@ Geometry (e.g. a face if the parent mesh has been built on box) of the
 sub-mesh. You can define meshing algorithms and hypotheses in the same way as
 in \ref constructing_meshes_page "Create mesh" dialog. 
 
-Later you can change applied hypotheses or their parameters in 
+Later you can change the applied hypotheses or their parameters in 
 \ref editing_meshes_page "Edit mesh/sub-mesh" dialog. Mesh entities
 generated using changed hypotheses are automatically removed.
 

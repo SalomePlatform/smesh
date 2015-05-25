@@ -27,14 +27,14 @@ criteria. The \b Insert button creates a new criterion before the
 selected criterion. The \b Remove button deletes the selected
 criterion. The \b Clear button deletes all criteria.
 \n Each <b>Entity type</b> has its specific list of criteria, however all
-filters have common syntax. For each criterion you should specify the
-<b>Threshold Value</b> and for numerical criteria whether we search
-for the elements that should be \b More, \b Less or \b Equal to this
+filters have common syntax. The <b>Threshold Value</b> should be specified 
+for most criteria. For numerical criteria it is necessary to indicate if 
+the found elements should be \b More, \b Less or \b Equal to this
 \b Value. You can also reverse the sense of a criterion using \b Unary
 operator \a Not and you should specify logical relations between
 criteria using \b Binary operators \a Or and \a And.
 \n Some criteria have the additional parameter of \b Tolerance.<br> 
-Switching on <b>Insert filter in viewer</b> checkbox limits
+Switching on <b>Insert filter in viewer</b> check-box limits
 selection of elements in the Viewer to the current filter.
 <br>
 In the \b Source field you choose if the filter will be applied to
@@ -72,7 +72,7 @@ algorithm works faster, if this is any other
 shape, the algorithm works slower.
 </li><li>
 <b>Belong to Mesh Group</b> selects entities included into the mesh group
-defined by <b>Threshold Value</b>.
+defined by the <b>Threshold Value</b>.
 </li><li>
 <b>Range of IDs</b> allows selection of entities with the specified
 IDs. 
@@ -102,7 +102,7 @@ defined by the <b>Threshold Value</b>. The list of available geometric
 types depends on the current entity type.
 </li><li>
 <b>Entity type</b> allows selection of elements by their type defined
-as combination of geometry type + number of nodes.
+as a combination of geometry type and the number of nodes.
 </li>
 </ul>
 

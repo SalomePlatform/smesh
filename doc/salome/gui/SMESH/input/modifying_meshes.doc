@@ -58,8 +58,8 @@ transformation operations, giving the possibility to:
 <li>\subpage cut_mesh_by_plane_page "Cut a tetrahedron mesh by a plane".</li>
 </ul>
 
-It is possible to \ref edit_anchor "modify the mesh" of lower
-dimension before generation of mesh of higher dimension.
+\note It is possible to \ref edit_anchor "modify the mesh" of a lower
+dimension before generation of the mesh of a higher dimension.
 
 <p><br></p>
 

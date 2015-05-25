@@ -44,17 +44,17 @@ or in later sessions with this module according to the preferences.
   presentation mode as default.
 
 - <b>Representation of the 2D quadratic elements</b>
-  - <b>Default mode of the 2D quadratic elements</b> combobox - allows
+  - <b>Default mode of the 2D quadratic elements</b> combo-box - allows
     to select lines or arcs for representation of quadratic elements as default.
   - <b>Maximum Angle</b> - maximum deviation angle used by the
     application to build arcs.
 
 - <b>Mesh export</b>
-  - If you toggle <b>Automatically create groups for MED export</b> checkbox,
+  - If you toggle <b>Automatically create groups for MED export</b> check-box,
     this operation will be carried out automatically.
 
 - <b>Mesh computation</b>
-  - <b>Show a computation result notification</b> combobox allows to
+  - <b>Show a computation result notification</b> combo-box allows to
     select the notification mode about a mesh computation result.
     There are 3 possible modes:
     - <b>Never</b> - do not show the result dialog at all;
@@ -132,16 +132,16 @@ or in later sessions with this module according to the preferences.
 \image html pref22.png
 
 - <b>Nodes</b> allows to define default parameters for nodes, which will be applied 
-  for a new created mesh only. Customization of already created meshes can be done using 
-  \ref colors_size_page "Properties dialog box" that is called by click on popup menu of mesh.
+  for a newly created mesh only. Existing meshes can be customized using 
+  \ref colors_size_page "Properties dialog box" available from the context menu of a mesh.
   - <b>Color</b> -  allows to select the color of nodes. Click on the
     colored line to access to the <b>Select Color</b> dialog box.
   - <b>Type of marker</b> - allows to define the shape of nodes.
   - <b>Scale of marker</b> - allows to define the size of nodes.
 
 - <b>Elements</b> allows to define default parameters for different elements, which will be applied 
-  for a new created mesh only. Customization of already created meshes can be done using 
-  \ref colors_size_page "Properties dialog box" that is called by click on popup menu of mesh.
+  for a newly created mesh only. Existing meshes can be customized using 
+  \ref colors_size_page "Properties dialog box" available from the context menu of a mesh.
   - <b>Surface color</b>  - allows to select the surface color of 2D elements
     (seen in Shading mode). Click on the colored line to access to the
     <b>Select Color</b> dialog box.
@@ -175,21 +175,21 @@ or in later sessions with this module according to the preferences.
 - <b>Groups</b>
   - <b>Names color</b> - specifies color of group names to be used in
     3D viewer.
-  - <b>Default color</b> - specifies default group color, which is used 
-  when creating new mesh group (see \ref creating_groups_page "Create Group dialog box").
+  - <b>Default color</b> - specifies the default group color, which is used 
+  to create a new mesh group (see \ref creating_groups_page "Create Group dialog box").
 
 - <b>Numbering</b> allows to define properties of numbering functionality:
   - <b>Nodes</b> - specifies text properties of nodes numbering
     (font family, size, attributes, color).
   - <b>Elements</b> - same for elements.
 
-- <b>Orientation of Faces</b> - allows to define the behavior of
-  <b>Orientation of faces</b> functionality, which will be applied 
-  for a new created mesh only. Customization of already created meshes can be done using 
-  \ref colors_size_page "Properties dialog box" that is called by click on popup menu of mesh.
-  - \b Color - allows to define the color of orientation vertors;
+- <b>Orientation of Faces</b> - allows to define default properties of orientation vectors.
+  These preferences will be applied to the newly created meshes only; properties of existing meshes
+  can be customized using \ref colors_size_page "Properties dialog box"
+  available from the context menu of a mesh.
+  - \b Color - allows to define the color of orientation vectors;
   - \b Scale - allows to define the size of orientation vectors;
-  - <b>3D Vector</b> checkbox allows to choose between 2D planar
+  - <b>3D Vector</b> check-box allows to choose between 2D planar
     and 3D vectors.
 
 <br><h2>Selection Preferences</h2>
@@ -220,9 +220,9 @@ or in later sessions with this module according to the preferences.
 \image html pref24.png
 
 \note The following settings are default and will be applied for 
-a new created mesh only. Customization of already created meshes 
-can be done using local \ref scalar_bar_dlg "Scalar Bar Properties dialog box" 
-that is called by click on popup menu of mesh.
+a newly created mesh only. Existing meshes 
+can be customized using local \ref scalar_bar_dlg "Scalar Bar Properties dialog box" 
+available from the context menu of a mesh.
 
 - <b>Font</b> - in this menu you can set type, face and color for
   the font of <b>Title</b> and <b>Labels</b>.

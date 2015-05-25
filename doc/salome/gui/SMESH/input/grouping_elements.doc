@@ -12,35 +12,36 @@ visualization only and is not exported.
 There are three types of groups different by their internal
 organization:<ol>
 <li><b>Standalone group</b> is a static set of mesh entities. Its
-  contents can be explicitely controlled by the user. Upon removal of
+  contents can be explicitly controlled by the user. Upon removal of
   the entities included into the group, the group becomes empty and
-  the user is to pay efforts to restore its contents. Hence it is
-  resonable to create standalone groups when the mesh generation is
+  its content can be restored only manually. Hence it is
+  reasonable to create standalone groups when the mesh generation is
   finished and mesh quality is verified.
   \warning Creation and edition of large standalone groups in
   \ref creating_groups_page "Create group" dialog using manual edition
   is problematic due to poor performance of the dialog.</li>
-<li><b>Group on geomerty</b> is associated to one or a group of
+  
+<li><b>Group on geometry</b> is associated to a sub-shape or a group of
   sub-shapes of the main shape and includes mesh entities generated on
-  this geometrical entities. The association to geometry is
-  established at group construction and can't be changed. The group
-  contents is always up-to-date without user's efforts, hence the
+  these geometrical entities. The association to a geometry is
+  established at group construction and cannot be changed. The group
+  contents are always updated automatically, hence the
   group can be created even before mesh elements generation.</li>
-<li><b>Group on filter</b> encapsulates a filter which is used to
+<li><b>Group on filter</b> encapsulates a filter, which is used to
   select mesh entities composing the group from the whole
   mesh. Criteria of the filter can be changed at any time. The
-  group contents is always up-to-date without user's efforts, hence
+  group contents are always updated automatically, hence
   the group can be created even before mesh elements generation.</li>
 </ol>
 The group on geometry and group on filter can be converted to
-the standalone group.
+a standalone group.
 
 \image html groups_in_OB.png "Groups of different types look differently in the Object Browser"
 
 The following ways of group creation are possible:
 
 - \subpage creating_groups_page "Create group" dialog allows creation of
-  a group of any of all the three types:
+  a group of any type:
   \ref standalone_group "Standalone group",
   \ref group_on_geom "Group on geometry" and
   \ref group_on_filter "Group on filter" using dedicated tabs.
@@ -49,7 +50,7 @@ The following ways of group creation are possible:
 - Standalone groups of all nodes and elements of the chosen sub-mesh
   (type of elements depends on dimension of sub-mesh geometry) can
   be created using <b>Mesh -> Construct Group</b> menu item (available
-  in context menu as well).
+  from the context menu as well).
 - Standalone groups of any element type can be created basing on nodes
   of other groups - using \subpage group_of_underlying_elements_page
   "Group based on nodes of other groups" dialog.
@@ -69,10 +70,9 @@ The created groups can be later:
 - \ref importing_exporting_meshes_page "Exported" into a file as a
   whole mesh.
 
-In the Object Browser, if groups container item includes more
-than one group, it is possible to sort the groups by name in
-ascending order. For this, select the groups container in the Object
-Browser and choose <b>Sort children</b> context menu item. 
+In the Object Browser, if an item contains more than one child group,
+it is possible to sort the groups by name in ascending order
+using <b>Sort children</b> context menu item. 
 
 \image html smesh_sort_groups.png "Sorting groups"
 

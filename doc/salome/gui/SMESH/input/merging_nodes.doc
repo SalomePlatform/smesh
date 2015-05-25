@@ -39,14 +39,15 @@ In this mode additional controls are available:
 <li>\b Detect button generates the list of coincident nodes for the given
 \b Tolerance.</li>
 <li><b>Coincident nodes</b> is a list of groups of nodes for
-  merging. As result of the operation all nodes of each group will be
-  replaces by the firts node of the group.
+  merging. After the operation all nodes of each group will
+  be united into one node. The first node of a group is kept and
+  the others are removed.
 <ul>
 <li>\b Remove button deletes the selected group from the list.</li>
 <li>\b Add button adds to the list a group of nodes selected in the
 viewer with pressed "Shift" key.</li>
-<li><b>Select all</b> checkbox selects all groups.</li>
-<li><b>Show double nodes IDs</b> checkbox shows/hides identifiers of
+<li><b>Select all</b> check-box selects all groups.</li>
+<li><b>Show double nodes IDs</b> check-box shows/hides identifiers of
 nodes of selected groups in the 3D viewer.</li>
 </ul>
 
@@ -65,15 +66,14 @@ nodes of selected groups in the 3D viewer.</li>
   <br>
   \image html sort.png
   <center>moves the selected node to the first position in the
-    group. This means that all other nodes of the group will be
-    replaced by this one.</center><br>
+    group in order to keep it in the mesh.</center><br>
 </li>
 </ul>
 </li>
 <li>To confirm your choice click \b Apply or <b>Apply and Close</b> button.</li>
 </ol>
 
-\image html merging_nodes1.png "The initial obgect" 
+\image html merging_nodes1.png "The initial object" 
 
 \image html merging_nodes2.png "The object has been merged with a very big tolerance"
 

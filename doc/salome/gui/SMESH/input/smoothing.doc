@@ -3,8 +3,11 @@
 \page smoothing_page Smoothing
 
 \n Smoothing is used to improve quality of 2D mesh by adjusting the
-locations of element corners (nodes). \note Depending on smoothing
-method and mesh geometry smoothing can decrease quality of elements.
+locations of element corners (nodes). 
+
+\note Depending on the chosen method and mesh geometry
+the smoothing can actually decrease the quality of elements and even
+make some elements inverted.
 
 <em>To apply smoothing to the elements of your mesh:</em>
 <ol>

@@ -37,15 +37,16 @@ object selectable in the dialog box. Two elements are considered coincident if t
 <li>\b Detect button generates the list of coincident elements found
   in the selected object.</li>
 <li><b>Coincident elements</b> is a list of groups of elements for
-  merging. As result of the operation all elements of each group will
-  be replaced by the firts element of the group.
+  merging. After the operation all elements of each group will
+  be united into one element. The first element of a group is kept and
+  the others are removed.
 <ul>
 <li>\b Remove button deletes the selected group from the list.</li>
 <li>\b Add button adds to the list a group of elements selected in the
   viewer with pressed "Shift" key.</li>
-<li><b>Select all</b> checkbox selects all groups.</li>
-<li><b>Show double elements IDs</b> checkbox shows/hides identifiers of
-  elements of selected groups in the 3D viewer.</li>
+<li><b>Select all</b> check-box selects all groups.</li>
+<li><b>Show double elements IDs</b> check-box shows/hides identifiers of
+  elements of the selected groups in the 3D viewer.</li>
 </ul></li>
 <li><b>Edit selected group</b> list allows editing the selected group:
 <br><br>
@@ -53,12 +54,11 @@ object selectable in the dialog box. Two elements are considered coincident if t
 <center>adds to the group the elements selected in the viewer.</center>
 <br>
 \image html remove.png
-<center>removes from the group the selected elements.</center>
+<center>removes the selected elements from the group.</center>
 <br>
 \image html sort.png
 <center>moves the selected element to the first position in the
-  group. This means that all other elements of the group will be
-  replaced by this one.</center>
+  group in order to keep it in the mesh.</center>
 <br>
 </li>
 <li>To confirm your choice click \b Apply or <b>Apply and Close</b> button.</li>
