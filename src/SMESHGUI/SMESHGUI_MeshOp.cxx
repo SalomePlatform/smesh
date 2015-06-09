@@ -1496,14 +1496,20 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
       if ( anAvailable.count() == 1 )
         soleCompatible = myAvailableHypData[dim][Algo][0];
       if ( dim == aTopDim && prevAlgo ) {// all available algoritms should be selectable any way
-        if (myDlg->currentMeshType() == MT_ANY)
-          availableHyps( dim, Algo, anAvailable, myAvailableHypData[dim][Algo], 0 );
+        anAvailable.clear();
+        for (int i = 0; i < myFilteredAlgoData[dim].count(); ++i) {
+          HypothesisData* aCurAlgo = myFilteredAlgoData[dim][ i ];
+          anAvailable.append( aCurAlgo->Label );
+        }
       }
       myDlg->tab( dim )->setAvailableHyps( Algo, anAvailable );
       noCompatible = anAvailable.isEmpty();
 
       // restore previously selected algo
-      algoIndex = myAvailableHypData[dim][Algo].indexOf( curAlgo );
+      if (dim == aTopDim && prevAlgo)
+        algoIndex = myFilteredAlgoData[dim].indexOf( curAlgo );
+      else
+        algoIndex = myAvailableHypData[dim][Algo].indexOf( curAlgo );
       if ( !isSubmesh && algoIndex < 0 && soleCompatible && !forward && dim != SMESH::DIM_0D)
         // select the sole compatible algo
         algoIndex = myAvailableHypData[dim][Algo].indexOf( soleCompatible );
@@ -2646,6 +2652,7 @@ void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theI
         algoCur = myAvailableHypData[dim][Algo].at( currentHyp( dim, Algo ) );
       }
       myAvailableHypData[dim][Algo].clear();
+      myFilteredAlgoData[dim].clear();
       anAvailableAlgs.clear();
       if ( dim != SMESH::DIM_2D || currentHyp( SMESH::DIM_3D, Algo ) < 0 ||
            myAvailableHypData[SMESH::DIM_3D][Algo].empty() ||
@@ -2659,6 +2666,7 @@ void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theI
           {
             anAvailableAlgs.append( curAlgo->Label );
             myAvailableHypData[dim][Algo].append( curAlgo );
+            myFilteredAlgoData[dim].append( curAlgo );
           }
         }
         if ( !isNone && algoCur ) {
