@@ -462,7 +462,8 @@ void SMESHGUI_GroupDlg::initDialog( bool create)
   connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()),        this, SLOT(reject()));
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()),  this, SLOT(onObjectSelectionChanged()));
   connect(mySMESHGUI, SIGNAL(SignalVisibilityChanged()),      this, SLOT(onVisibilityChanged()));
-
+  connect(mySMESHGUI, SIGNAL(SignalActivatedViewManager()),   this, SLOT(onOpenView()));
+  connect(mySMESHGUI, SIGNAL(SignalCloseView()),              this, SLOT(onCloseView()));
   rb1->setChecked(true); // VSR !!!
   onGrpTypeChanged(0); // VSR!!!
 
@@ -2249,6 +2250,32 @@ void SMESHGUI_GroupDlg::reject()
 }
 
 //=================================================================================
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_GroupDlg::onOpenView()
+{
+  if ( mySelector ) {
+    SMESH::SetPointRepresentation(false);
+  }
+  else {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+    mySMESHGUI->EmitSignalDeactivateDialog();
+    setEnabled(true);
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_GroupDlg::onCloseView()
+{
+  onDeactivate();
+  mySelector = 0;
+}
+
+//=================================================================================
 // function : onHelp()
 // purpose  :
 //=================================================================================
@@ -2289,6 +2316,10 @@ void SMESHGUI_GroupDlg::onDeactivate()
 void SMESHGUI_GroupDlg::enterEvent (QEvent*)
 {
   if (!isEnabled()) {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+    if ( aViewWindow && !mySelector) {
+      mySelector = aViewWindow->GetSelector();
+    }
     mySMESHGUI->EmitSignalDeactivateDialog();
     setEnabled(true);
     mySelectionMode = grpNoSelection;

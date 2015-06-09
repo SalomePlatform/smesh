@@ -272,7 +272,9 @@ SMESHGUI_SewingDlg::SMESHGUI_SewingDlg( SMESHGUI* theModule )
   connect(mySMESHGUI, SIGNAL (SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
   /* to close dialog if study change */
-  connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(reject()));
+  connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()),      this, SLOT(reject()));
+  connect(mySMESHGUI, SIGNAL(SignalActivatedViewManager()), this, SLOT(onOpenView()));
+  connect(mySMESHGUI, SIGNAL(SignalCloseView()),            this, SLOT(onCloseView()));
 
   connect(LineEdit1, SIGNAL(textChanged(const QString&)), SLOT(onTextChange(const QString&)));
   connect(LineEdit2, SIGNAL(textChanged(const QString&)), SLOT(onTextChange(const QString&)));
@@ -552,6 +554,31 @@ void SMESHGUI_SewingDlg::ClickOnOk()
 }
 
 //=================================================================================
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_SewingDlg::onOpenView()
+{
+  if ( mySelector ) {
+    SMESH::SetPointRepresentation(false);
+  }
+  else {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+    ActivateThisDialog();
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_SewingDlg::onCloseView()
+{
+  DeactivateActiveDialog();
+  mySelector = 0;
+}
+
+//=================================================================================
 // function : reject()
 // purpose  :
 //=================================================================================
@@ -676,7 +703,6 @@ void SMESHGUI_SewingDlg::onTextChange (const QString& theNewText)
             isEvenOneExists = true;
       }
       
-
       mySelector->AddOrRemoveIndex(myActor->getIO(), newIndices, false);
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
         aViewWindow->highlight( myActor->getIO(), true, true );
@@ -741,7 +767,6 @@ void SMESHGUI_SewingDlg::SelectionIntoArgument (bool isSelectionChanged)
 
   // get selected elements/nodes
   int aNbUnits = 0;
-
   if (GetConstructorId() != 3 ||
       (myEditCurrentArgument != LineEdit1 && myEditCurrentArgument != LineEdit4)) {
     aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, IO, aString);
@@ -869,8 +894,13 @@ void SMESHGUI_SewingDlg::ActivateThisDialog()
 //=================================================================================
 void SMESHGUI_SewingDlg::enterEvent (QEvent* e)
 {
-  if (!ConstructorsBox->isEnabled())
+  if (!ConstructorsBox->isEnabled()) {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+    if ( aViewWindow && !mySelector) {
+      mySelector = aViewWindow->GetSelector();
+    }
     ActivateThisDialog();
+  }
 }
 
 //=================================================================================

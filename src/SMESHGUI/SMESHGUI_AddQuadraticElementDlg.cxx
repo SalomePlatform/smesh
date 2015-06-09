@@ -650,6 +650,8 @@ void SMESHGUI_AddQuadraticElementDlg::Init()
   connect(mySMESHGUI, SIGNAL (SignalDeactivateActiveDialog()), SLOT(DeactivateActiveDialog()));
   connect(mySMESHGUI, SIGNAL (SignalStudyFrameChanged()), SLOT(reject()));
   connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), SLOT(reject()));
+  connect(mySMESHGUI, SIGNAL (SignalActivatedViewManager()), SLOT(onOpenView()));
+  connect(mySMESHGUI, SIGNAL (SignalCloseView()), SLOT(onCloseView()));
 
   myCurrentLineEdit = myCornerNodes;
 
@@ -844,6 +846,35 @@ void SMESHGUI_AddQuadraticElementDlg::reject()
   QDialog::reject();
 }
 
+//=================================================================================
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_AddQuadraticElementDlg::onOpenView()
+{
+  if ( mySelector && mySimulation ) {
+    mySimulation->SetVisibility(false);
+    SMESH::SetPointRepresentation(false);
+  }
+  else {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+    mySimulation = new SMESH::TElementSimulationQuad(
+      dynamic_cast<SalomeApp_Application*>( mySMESHGUI->application() ) );
+    ActivateThisDialog();
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_AddQuadraticElementDlg::onCloseView()
+{
+  DeactivateActiveDialog();
+  mySelector = 0;
+  delete mySimulation;
+  mySimulation = 0;
+}
 //=================================================================================
 // function : ClickOnHelp()
 // purpose  :
@@ -1157,12 +1188,17 @@ void SMESHGUI_AddQuadraticElementDlg::ActivateThisDialog()
 // function : enterEvent()
 // purpose  :
 //=================================================================================
-
 void SMESHGUI_AddQuadraticElementDlg::enterEvent (QEvent*)
 {
-  if (GroupConstructors->isEnabled())
-    return;
-  ActivateThisDialog();
+  if ( !GroupConstructors->isEnabled() ) {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+    if ( aViewWindow && !mySelector && !mySimulation) {
+      mySelector = aViewWindow->GetSelector();
+      mySimulation = new SMESH::TElementSimulationQuad(
+        dynamic_cast<SalomeApp_Application*>( mySMESHGUI->application() ) );
+    }
+    ActivateThisDialog();
+  }
 }
 
 //=================================================================================

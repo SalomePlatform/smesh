@@ -346,6 +346,7 @@ void SMESHGUI_MakeNodeAtPointDlg::ConstructorsClicked (int constructorId)
 SMESHGUI_MakeNodeAtPointOp::SMESHGUI_MakeNodeAtPointOp()
 {
   mySimulation = 0;
+  mySMESHGUI = 0;
   myDlg = new SMESHGUI_MakeNodeAtPointDlg;
   myFilter = 0;
   myHelpFileName = "mesh_through_point_page.html";
@@ -395,7 +396,10 @@ void SMESHGUI_MakeNodeAtPointOp::startOperation()
 
   // init simulation with a current View
   if ( mySimulation ) delete mySimulation;
-  mySimulation = new SMESHGUI_MeshEditPreview(SMESH::GetViewWindow( getSMESHGUI() ));
+  mySMESHGUI = getSMESHGUI();
+  mySimulation = new SMESHGUI_MeshEditPreview(SMESH::GetViewWindow( mySMESHGUI ) );
+  connect(mySMESHGUI, SIGNAL (SignalActivatedViewManager()), this, SLOT(onOpenView()));
+  connect(mySMESHGUI, SIGNAL (SignalCloseView()), this, SLOT(onCloseView()));
   vtkProperty* aProp = vtkProperty::New();
   aProp->SetRepresentationToWireframe();
   aProp->SetColor(250, 0, 250);
@@ -463,12 +467,19 @@ int SMESHGUI_MakeNodeAtPointOp::GetConstructorId()
 void SMESHGUI_MakeNodeAtPointOp::stopOperation()
 {
   myNoPreview = true;
-  mySimulation->SetVisibility(false);
+  if ( mySimulation )
+  {
+    mySimulation->SetVisibility(false);
+    delete mySimulation;
+    mySimulation = 0;
+  }
   if ( myMeshActor ) {
     myMeshActor->SetPointRepresentation(false);
     SMESH::RepaintCurrentView();
     myMeshActor = 0;
   }
+  disconnect(mySMESHGUI, SIGNAL (SignalActivatedViewManager()), this, SLOT(onOpenView()));
+  disconnect(mySMESHGUI, SIGNAL (SignalCloseView()), this, SLOT(onCloseView()));
   selectionMgr()->removeFilter( myFilter );
   SMESHGUI_SelectionOp::stopOperation();
 }
@@ -787,7 +798,8 @@ void SMESHGUI_MakeNodeAtPointOp::redisplayPreview()
     aMeshPreviewStruct->elementConnectivities.length(1);
     aMeshPreviewStruct->elementConnectivities[0] = 0;
   }
-
+  if (!mySimulation)
+    mySimulation = new SMESHGUI_MeshEditPreview(SMESH::GetViewWindow( mySMESHGUI ));
   // display data
   if ( aMeshPreviewStruct.operator->() )
   {
@@ -799,6 +811,33 @@ void SMESHGUI_MakeNodeAtPointOp::redisplayPreview()
   }
 
   myNoPreview = false;
+}
+
+//=================================================================================
+/*!
+ * \brief SLOT called when the viewer opened
+ */
+//=================================================================================
+void SMESHGUI_MakeNodeAtPointOp::onOpenView()
+{
+  if ( mySimulation ) {
+    mySimulation->SetVisibility(false);
+    SMESH::SetPointRepresentation(false);
+  }
+  else {
+    mySimulation = new SMESHGUI_MeshEditPreview(SMESH::GetViewWindow( mySMESHGUI ));
+  }
+}
+
+//=================================================================================
+/*!
+ * \brief SLOT called when the viewer closed
+ */
+//=================================================================================
+void SMESHGUI_MakeNodeAtPointOp::onCloseView()
+{
+  delete mySimulation;
+  mySimulation = 0;
 }
 
 //================================================================================

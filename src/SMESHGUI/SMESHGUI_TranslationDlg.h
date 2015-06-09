@@ -146,7 +146,10 @@ private slots:
   void                   onTextChange( const QString& );
   void                   onSelectMesh( bool );
   void                   onActionClicked( int );
+  void                   onOpenView();
+  void                   onCloseView();
   void                   setFilters();
+
 };
 
 #endif // SMESHGUI_TRANSLATIONDLG_H

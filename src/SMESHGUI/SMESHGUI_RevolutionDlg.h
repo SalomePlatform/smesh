@@ -151,6 +151,8 @@ private slots:
   void                      onAngleTextChange( const QString& );
   void                      onSelectVectorMenu( QAction* );
   void                      onSelectVectorButton();
+  void                      onOpenView();
+  void                      onCloseView();
 };
 
 #endif // SMESHGUI_REVOLUTIONDLG_H

@@ -130,6 +130,8 @@ private slots:
   void                        ActivateThisDialog();
   void                        CheckBox( int );
   void                        onTextChange( const QString& );
+  void                        onOpenView();
+  void                        onCloseView();
 };
 
 #endif // SMESHGUI_ADDMESHELEMENTDLG_H

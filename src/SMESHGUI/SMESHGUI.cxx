@@ -2269,6 +2269,26 @@ void SMESHGUI::EmitSignalVisibilityChanged()
  *
  */
 //=============================================================================
+void SMESHGUI::EmitSignalCloseView()
+{
+  emit SignalCloseView();
+}
+
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
+void SMESHGUI::EmitSignalActivatedViewManager()
+{
+  emit SignalActivatedViewManager();
+}
+
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
 QDialog *SMESHGUI::GetActiveDialogBox()
 {
   return myActiveDialogBox;
@@ -4883,6 +4903,7 @@ void SMESHGUI::onViewManagerActivated( SUIT_ViewManager* mgr )
       SUIT_ViewWindow *sf = aViews[i];
       connectView( sf );
     }
+    EmitSignalActivatedViewManager();
   }
 }
 
@@ -6823,6 +6844,7 @@ void SMESHGUI::onViewClosed( SUIT_ViewWindow* pview ) {
   //Crear all Plot2d Viewers if need.
   SMESH::ClearPlot2Viewers(pview);
 #endif
+  EmitSignalCloseView();
 }
 
 void SMESHGUI::message( const QString& msg )

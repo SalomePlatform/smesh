@@ -138,6 +138,8 @@ private slots:
   void                     ActivateThisDialog();
   void                     onTextChange( const QString& );
   void                     onListSelectionChanged();
+  void                     onOpenView();
+  void                     onCloseView();
 };
 
 #endif // SMESHGUI_CREATEPOLYHEDRALVOLUMEDLG_H

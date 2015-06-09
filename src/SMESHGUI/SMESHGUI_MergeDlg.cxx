@@ -570,7 +570,8 @@ void SMESHGUI_MergeDlg::Init()
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
   /* to close dialog if study change */
   connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(reject()));
-
+  connect(mySMESHGUI, SIGNAL (SignalActivatedViewManager()), this,  SLOT(onOpenView()));
+  connect(mySMESHGUI, SIGNAL (SignalCloseView()), this, SLOT(onCloseView()));
   // Init Mesh field from selection
   SelectionIntoArgument();
 
@@ -719,6 +720,31 @@ void SMESHGUI_MergeDlg::reject()
     aViewWindow->SetSelectionMode(ActorSelection);
 
   QDialog::reject();
+}
+
+//=================================================================================
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_MergeDlg::onOpenView()
+{
+  if ( mySelector ) {
+    SMESH::SetPointRepresentation(false);
+  }
+  else {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+    ActivateThisDialog();
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_MergeDlg::onCloseView()
+{
+  DeactivateActiveDialog();
+  mySelector = 0;
 }
 
 //=================================================================================
@@ -1246,10 +1272,15 @@ void SMESHGUI_MergeDlg::ActivateThisDialog()
 // function : enterEvent()
 // purpose  :
 //=================================================================================
-void SMESHGUI_MergeDlg::enterEvent(QEvent*)
+void SMESHGUI_MergeDlg::enterEvent (QEvent*)
 {
-  if (!GroupConstructors->isEnabled())
+  if ( !GroupConstructors->isEnabled() ) {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+    if ( aViewWindow && !mySelector) {
+      mySelector = aViewWindow->GetSelector();
+    }
     ActivateThisDialog();
+  }
 }
 
 //=================================================================================

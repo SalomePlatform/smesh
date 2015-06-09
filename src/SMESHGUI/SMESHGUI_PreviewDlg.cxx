@@ -50,6 +50,8 @@ SMESHGUI_PreviewDlg::SMESHGUI_PreviewDlg(SMESHGUI* theModule) :
   myIsApplyAndClose( false )
 {
   mySimulation = new SMESHGUI_MeshEditPreview(SMESH::GetViewWindow( mySMESHGUI ));
+  connect(mySMESHGUI, SIGNAL(SignalCloseView()),            this, SLOT(onCloseView()));
+  connect(mySMESHGUI, SIGNAL(SignalActivatedViewManager()), this, SLOT(onOpenView()));
 }
 
 //=================================================================================
@@ -66,7 +68,7 @@ SMESHGUI_PreviewDlg::~SMESHGUI_PreviewDlg()
 // purpose  : Show preview in the viewer
 //=================================================================================
 void SMESHGUI_PreviewDlg::showPreview(){
-  if(mySimulation)
+  if(mySimulation && mySimulation->GetActor())
     mySimulation->SetVisibility(true);
 }
 
@@ -75,7 +77,7 @@ void SMESHGUI_PreviewDlg::showPreview(){
 // purpose  : Hide preview in the viewer
 //=================================================================================
 void SMESHGUI_PreviewDlg::hidePreview(){
-  if(mySimulation)
+  if(mySimulation && mySimulation->GetActor())
     mySimulation->SetVisibility(false);
 }
 
@@ -86,7 +88,6 @@ void SMESHGUI_PreviewDlg::hidePreview(){
 void SMESHGUI_PreviewDlg::connectPreviewControl(){
   connect(myPreviewCheckBox, SIGNAL(toggled(bool)), this, SLOT(onDisplaySimulation(bool)));
 }
-
 
 //=================================================================================
 // function : toDisplaySimulation
@@ -124,7 +125,27 @@ bool SMESHGUI_PreviewDlg::isApplyAndClose() const
   return myIsApplyAndClose;
 }
 
+//=================================================================================
+// function : onCloseView()
+// purpose  : SLOT called when close view
+//=================================================================================
+void SMESHGUI_PreviewDlg::onCloseView()
+{
+  if ( mySimulation && mySimulation->GetActor())
+    mySimulation->SetVisibility(false);
+  delete mySimulation;
+  mySimulation=0;
+}
 
+//=================================================================================
+// function : onOpenView()
+// purpose  : SLOT called when open view
+//=================================================================================
+void SMESHGUI_PreviewDlg::onOpenView()
+{
+  if ( !mySimulation)
+    mySimulation = new SMESHGUI_MeshEditPreview(SMESH::GetViewWindow( mySMESHGUI ));
+}
 //=================================================================================
 // class    : SMESHGUI_SMESHGUI_MultiPreviewDlg()
 // purpose  :
@@ -134,6 +155,8 @@ SMESHGUI_MultiPreviewDlg::SMESHGUI_MultiPreviewDlg( SMESHGUI* theModule ) :
   QDialog( SMESH::GetDesktop( theModule ) ),
   myIsApplyAndClose( false )
 {
+  mySimulationList.clear();
+  connect(mySMESHGUI, SIGNAL(SignalCloseView()), this, SLOT(onCloseView()));
 }
 
 //=================================================================================
@@ -152,7 +175,8 @@ SMESHGUI_MultiPreviewDlg::~SMESHGUI_MultiPreviewDlg()
 void SMESHGUI_MultiPreviewDlg::showPreview()
 {
   for ( int i = 0; i < mySimulationList.count(); i++ )
-    mySimulationList[i]->SetVisibility( true );
+    if(mySimulationList[i] && mySimulationList[i]->GetActor())
+      mySimulationList[i]->SetVisibility( true );
 }
 
 //=================================================================================
@@ -162,7 +186,8 @@ void SMESHGUI_MultiPreviewDlg::showPreview()
 void SMESHGUI_MultiPreviewDlg::hidePreview()
 {
   for ( int i = 0; i < mySimulationList.count(); i++ )
-    mySimulationList[i]->SetVisibility( false );
+    if(mySimulationList[i] && mySimulationList[i]->GetActor())
+      mySimulationList[i]->SetVisibility( false );
 }
 
 //=================================================================================
@@ -173,7 +198,6 @@ void SMESHGUI_MultiPreviewDlg::connectPreviewControl()
 {
   connect( myPreviewCheckBox, SIGNAL( toggled( bool ) ), this, SLOT( onDisplaySimulation( bool ) ) );
 }
-
 
 //=================================================================================
 // function : toDisplaySimulation
@@ -226,4 +250,14 @@ void SMESHGUI_MultiPreviewDlg::setSimulationPreview( QList<SMESH::MeshPreviewStr
     mySimulationList << new SMESHGUI_MeshEditPreview( SMESH::GetViewWindow( mySMESHGUI ) );
     mySimulationList[i]->SetData( theMeshPreviewStruct[i].operator->() );
   }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  : SLOT called when close view
+//=================================================================================
+void SMESHGUI_MultiPreviewDlg::onCloseView()
+{
+  qDeleteAll( mySimulationList );
+  mySimulationList.clear();
 }

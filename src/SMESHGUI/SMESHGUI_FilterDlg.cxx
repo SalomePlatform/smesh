@@ -2925,6 +2925,8 @@ void SMESHGUI_FilterDlg::Init (const QList<int>& theTypes, const bool setInViewe
 
   connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), SLOT(onDeactivate()));
   connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(reject()));
+  connect(mySMESHGUI, SIGNAL(SignalActivatedViewManager()), SLOT(onOpenView()));
+  connect(mySMESHGUI, SIGNAL(SignalCloseView()), SLOT(onCloseView()));
   
   updateMainButtons();
   updateSelection();
@@ -3008,6 +3010,29 @@ void SMESHGUI_FilterDlg::reject()
   disconnect(mySelectionMgr, 0, this, 0);
   mySMESHGUI->ResetState();
   QDialog::reject();
+}
+
+//=================================================================================
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_FilterDlg::onOpenView()
+{
+  if ( mySelector ) {
+    SMESH::SetPointRepresentation(false);
+  }
+  else {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_FilterDlg::onCloseView()
+{
+  mySelector = 0;
 }
 
 //=================================================================================

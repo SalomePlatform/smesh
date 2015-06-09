@@ -309,6 +309,8 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   connect(BasePointGrp,       SIGNAL(toggled(bool)), this, SLOT(SetEditCurrentArgument()));
 
   connect(mySMESHGUI,  SIGNAL(SignalCloseAllDialogs()),        SLOT(reject()));
+  connect(mySMESHGUI,  SIGNAL(SignalActivatedViewManager()),   SLOT(onOpenView()));
+  connect(mySMESHGUI,  SIGNAL(SignalCloseView()),              SLOT(onCloseView()));
   connect(mySMESHGUI,  SIGNAL(SignalDeactivateActiveDialog()), SLOT(DeactivateActiveDialog()));
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()),   SLOT(SelectionIntoArgument()));
   connect(SelectorWdg,    SIGNAL(selectionChanged()), this,    SLOT(toDisplaySimulation()));
@@ -585,6 +587,31 @@ void SMESHGUI_ExtrusionAlongPathDlg::reject()
   mySMESHGUI->ResetState();
 
   QDialog::reject();
+}
+
+//=================================================================================
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_ExtrusionAlongPathDlg::onOpenView()
+{
+  if ( mySelector ) {
+    SMESH::SetPointRepresentation(false);
+  }
+  else {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+    ActivateThisDialog();
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_ExtrusionAlongPathDlg::onCloseView()
+{
+  DeactivateActiveDialog();
+  mySelector = 0;
 }
 
 //=======================================================================
@@ -865,12 +892,17 @@ void SMESHGUI_ExtrusionAlongPathDlg::ActivateThisDialog()
 
 //=================================================================================
 // function : enterEvent()
-// purpose  : Mouse enter event
+// purpose  :
 //=================================================================================
 void SMESHGUI_ExtrusionAlongPathDlg::enterEvent (QEvent*)
 {
-  if (!GroupButtons->isEnabled())
+  if ( !GroupButtons->isEnabled() ) {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+    if ( aViewWindow && !mySelector) {
+      mySelector = aViewWindow->GetSelector();
+    }
     ActivateThisDialog();
+  }
 }
 
 //=======================================================================

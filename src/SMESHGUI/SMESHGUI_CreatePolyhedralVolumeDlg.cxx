@@ -353,8 +353,9 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::Init()
   connect( mySelectionMgr, SIGNAL( currentSelectionChanged() ), this, SLOT( SelectionIntoArgument() ) );
   connect( Preview, SIGNAL(toggled(bool)), this, SLOT(ClickOnPreview(bool)));
   /* to close dialog if study change */
-  connect( mySMESHGUI, SIGNAL ( SignalCloseAllDialogs() ), this, SLOT( reject() ) );
-  
+  connect( mySMESHGUI, SIGNAL ( SignalCloseAllDialogs() ),      this, SLOT( reject() ) );
+  connect( mySMESHGUI, SIGNAL ( SignalActivatedViewManager() ), this, SLOT( onOpenView() ) );
+  connect( mySMESHGUI, SIGNAL ( SignalCloseView() ),            this, SLOT( onCloseView() ) );
   ConstructorsClicked(0);
   SelectionIntoArgument();
 }
@@ -611,6 +612,36 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::reject()
   disconnect( mySelectionMgr, 0, this, 0 );
   mySMESHGUI->ResetState();
   QDialog::reject();
+}
+
+//=================================================================================
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_CreatePolyhedralVolumeDlg::onOpenView()
+{
+  if ( mySelector && mySimulation ) {
+    mySimulation->SetVisibility(false);
+    SMESH::SetPointRepresentation(false);
+  }
+  else {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+    mySimulation = new SMESH::TPolySimulation(
+      dynamic_cast<SalomeApp_Application*>( mySMESHGUI->application() ) );
+    ActivateThisDialog();
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_CreatePolyhedralVolumeDlg::onCloseView()
+{
+  DeactivateActiveDialog();
+  mySelector = 0;
+  delete mySimulation;
+  mySimulation = 0;
 }
 
 //=================================================================================
@@ -1027,16 +1058,21 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ActivateThisDialog()
   SelectionIntoArgument();
 }
 
-
 //=================================================================================
 // function : enterEvent()
 // purpose  :
 //=================================================================================
-void SMESHGUI_CreatePolyhedralVolumeDlg::enterEvent(QEvent* e)
+void SMESHGUI_CreatePolyhedralVolumeDlg::enterEvent (QEvent*)
 {
-  if ( ConstructorsBox->isEnabled() )
-    return;  
-  ActivateThisDialog();
+  if ( !ConstructorsBox->isEnabled() ) {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+    if ( aViewWindow && !mySelector && !mySimulation) {
+      mySelector = aViewWindow->GetSelector();
+      mySimulation = new SMESH::TPolySimulation(
+        dynamic_cast<SalomeApp_Application*>( mySMESHGUI->application() ) );
+    }
+    ActivateThisDialog();
+  }
 }
 
 //=================================================================================

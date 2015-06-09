@@ -515,10 +515,13 @@ void SMESHGUI_AddMeshElementDlg::Init()
   connect(SelectButtonC1A1,SIGNAL(clicked()),                     SLOT(SetEditCurrentArgument()));
   connect(LineEditC1A1,    SIGNAL(textChanged(const QString&)),   SLOT(onTextChange(const QString&)));
   connect(mySMESHGUI,      SIGNAL(SignalDeactivateActiveDialog()),SLOT(DeactivateActiveDialog()));
+
   connect(mySelectionMgr,  SIGNAL(currentSelectionChanged()),     SLOT(SelectionIntoArgument()));
   /* to close dialog if study frame change */
   connect(mySMESHGUI,      SIGNAL(SignalStudyFrameChanged()),     SLOT(reject()));
-  connect(mySMESHGUI,      SIGNAL(SignalCloseAllDialogs()),       SLOT(reject()));    
+  connect(mySMESHGUI,      SIGNAL(SignalCloseAllDialogs()),       SLOT(reject()));
+  connect(mySMESHGUI,      SIGNAL(SignalActivatedViewManager()),  SLOT(onOpenView()));
+  connect(mySMESHGUI,      SIGNAL(SignalCloseView()),             SLOT(onCloseView()));
 
   if (Reverse)
     connect(Reverse,       SIGNAL(stateChanged(int)),             SLOT(CheckBox(int)));
@@ -942,9 +945,15 @@ void SMESHGUI_AddMeshElementDlg::ActivateThisDialog()
 //=================================================================================
 void SMESHGUI_AddMeshElementDlg::enterEvent (QEvent*)
 {
-  if (GroupConstructors->isEnabled())
-    return;
-  ActivateThisDialog();
+  if ( !GroupConstructors->isEnabled() ) {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+    if ( aViewWindow && !mySelector && !mySimulation) {
+      mySelector = aViewWindow->GetSelector();
+      mySimulation = new SMESH::TElementSimulation(
+        dynamic_cast<SalomeApp_Application*>( mySMESHGUI->application() ) );
+    }
+    ActivateThisDialog();
+  }
 }
 
 //=================================================================================
@@ -979,7 +988,7 @@ void SMESHGUI_AddMeshElementDlg::keyPressEvent( QKeyEvent* e )
 }
 
 //=================================================================================
-// function : isValid
+// function : onDiameterChanged()
 // purpose  :
 //=================================================================================
 void SMESHGUI_AddMeshElementDlg::onDiameterChanged(){
@@ -987,7 +996,37 @@ void SMESHGUI_AddMeshElementDlg::onDiameterChanged(){
 }
 
 //=================================================================================
-// function : isValid
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_AddMeshElementDlg::onOpenView()
+{
+  if ( mySelector && mySimulation ) {
+    mySimulation->SetVisibility(false);
+    SMESH::SetPointRepresentation(false);
+  }
+  else {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+    mySimulation = new SMESH::TElementSimulation(
+      dynamic_cast<SalomeApp_Application*>( mySMESHGUI->application() ) );
+    ActivateThisDialog();
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_AddMeshElementDlg::onCloseView()
+{
+  DeactivateActiveDialog();
+  mySelector = 0;
+  delete mySimulation;
+  mySimulation = 0;
+}
+
+//=================================================================================
+// function : isValid()
 // purpose  :
 //=================================================================================
 bool SMESHGUI_AddMeshElementDlg::isValid()

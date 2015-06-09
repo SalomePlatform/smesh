@@ -102,6 +102,8 @@ protected slots:
   virtual void              onToAllChk();
   void                      onFilterAccepted();
   virtual void              on3d2dChanged(int);
+  void                      onOpenView();
+  void                      onCloseView();
 
   SMESH::NumericalFunctor_ptr getNumericalFunctor();
 

@@ -397,6 +397,8 @@ void SMESHGUI_MultiEditDlg::Init()
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionDone()));
   connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), SLOT(onDeactivate()));
   connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(reject()));
+  connect(mySMESHGUI, SIGNAL(SignalActivatedViewManager()), SLOT( onOpenView()));
+  connect(mySMESHGUI, SIGNAL(SignalCloseView()), SLOT( onCloseView()));
 
   // dialog controls
   connect(myFilterBtn, SIGNAL(clicked()), SLOT(onFilterBtn()  ));
@@ -475,6 +477,30 @@ void SMESHGUI_MultiEditDlg::reject()
 
   QDialog::reject();
 }
+
+//=================================================================================
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_MultiEditDlg::onOpenView()
+{
+  if(!mySelector) {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+    mySMESHGUI->EmitSignalDeactivateDialog();
+    setEnabled(true);
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_MultiEditDlg::onCloseView()
+{
+  onDeactivate();
+  mySelector = 0;
+}
+
 
 //=================================================================================
 // function : onHelp()
@@ -588,6 +614,10 @@ void SMESHGUI_MultiEditDlg::onDeactivate()
 void SMESHGUI_MultiEditDlg::enterEvent (QEvent*)
 {
   if (!isEnabled()) {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+    if ( aViewWindow && !mySelector) {
+      mySelector = aViewWindow->GetSelector();
+    }
     mySMESHGUI->EmitSignalDeactivateDialog();
     setEnabled(true);
     setSelectionMode();

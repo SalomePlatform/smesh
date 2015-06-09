@@ -140,6 +140,8 @@ private slots:
   void                      onTextChange( const QString& );
   void                      OnAngleAdded();
   void                      OnAngleRemoved();
+  void                      onOpenView();
+  void                      onCloseView();
 };
 
 #endif // SMESHGUI_EXTRUSIONALONGPATHDLG_H

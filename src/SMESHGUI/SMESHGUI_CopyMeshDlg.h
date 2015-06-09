@@ -125,6 +125,8 @@ private slots:
   void                   onTextChange( const QString& );
   void                   onSelectIdSource( bool );
   void                   setFilters();
+  void                   onOpenView();
+  void                   onCloseView();
 };
 
 #endif // SMESHGUI_CopyMeshDLG_H

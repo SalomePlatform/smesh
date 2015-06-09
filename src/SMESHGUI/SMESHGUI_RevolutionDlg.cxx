@@ -296,7 +296,9 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
   connect(SelectorWdg,    SIGNAL(selectionChanged()), this, SLOT(toDisplaySimulation()));
   connect(SelectorWdg,    SIGNAL(selectionChanged()), this, SLOT(CheckIsEnable()));
   /* to close dialog if study change */
-  connect(mySMESHGUI,       SIGNAL(SignalCloseAllDialogs()), this, SLOT(reject()));
+  connect(mySMESHGUI,       SIGNAL(SignalCloseAllDialogs()),      this, SLOT(reject()));
+  connect(mySMESHGUI,       SIGNAL(SignalActivatedViewManager()), this, SLOT(onOpenView()));
+  connect(mySMESHGUI,       SIGNAL(SignalCloseView()),            this, SLOT(onCloseView()));
 
   connect(GroupAngle,        SIGNAL(buttonClicked(int)),   this, SLOT(toDisplaySimulation()));
   connect(SpinBox_Angle,     SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
@@ -518,6 +520,32 @@ void SMESHGUI_RevolutionDlg::reject()
 }
 
 //=================================================================================
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_RevolutionDlg::onOpenView()
+{
+  if ( mySelector ) {
+    mySimulation->SetVisibility(false);
+    SMESH::SetPointRepresentation(false);
+  }
+  else {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+    ActivateThisDialog();
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_RevolutionDlg::onCloseView()
+{
+  DeactivateActiveDialog();
+  mySelector = 0;
+}
+
+//=================================================================================
 // function : ClickOnHelp()
 // purpose  :
 //=================================================================================
@@ -690,8 +718,13 @@ void SMESHGUI_RevolutionDlg::ActivateThisDialog()
 //=================================================================================
 void SMESHGUI_RevolutionDlg::enterEvent (QEvent*)
 {
-  if (!GroupButtons->isEnabled())
+  if (!GroupButtons->isEnabled()) {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+    if ( aViewWindow && !mySelector) {
+      mySelector = aViewWindow->GetSelector();
+    }
     ActivateThisDialog();
+  }
 }
 
 //=================================================================================

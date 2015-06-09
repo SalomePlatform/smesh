@@ -125,6 +125,7 @@ private:
 protected slots:
   virtual void           reject();
 
+
 private slots:
   void                   ClickOnOk();
   bool                   ClickOnApply();
@@ -135,6 +136,8 @@ private slots:
   void                   ActivateThisDialog();
   void                   onTextChange( const QString& );
   void                   onSelectMesh( bool );
+  void                   onOpenView();
+  void                   onCloseView();
   void                   setElemFilters();
   void                   setNodeFilters();
 };

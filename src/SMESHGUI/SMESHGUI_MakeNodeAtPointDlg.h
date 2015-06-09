@@ -73,6 +73,8 @@ private slots:
   void                           onTextChange( const QString& );
   void                           onUpdateDestination();
   void                           onDestCoordChanged();
+  void                           onOpenView();
+  void                           onCloseView();
 
 private:
   int                           GetConstructorId();
@@ -81,6 +83,7 @@ private:
 
   SUIT_SelectionFilter*         myFilter;
   int                           myMeshOldDisplayMode;
+  SMESHGUI*                     mySMESHGUI;
   SMESHGUI_MeshEditPreview*     mySimulation;
   SMESH_Actor*                  myMeshActor;
   bool                          myNoPreview;

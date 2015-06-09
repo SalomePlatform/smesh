@@ -129,6 +129,8 @@ private slots:
   void                    DeactivateActiveDialog();
   void                    ActivateThisDialog();
   void                    onTextChange( const QString& );
+  void                    onOpenView();
+  void                    onCloseView();
 };
 
 #endif // SMESHGUI_SEWINGDLG_H

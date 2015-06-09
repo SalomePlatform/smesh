@@ -171,6 +171,8 @@ protected slots:
   void                      DeactivateActiveDialog();
   void                      ActivateThisDialog();
   void                      onTypeChanged(int);
+  void                      onOpenView();
+  void                      onCloseView();
 };
 
 #endif // SMESHGUI_MergeDlg_H

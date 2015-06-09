@@ -225,6 +225,8 @@ void SMESHGUI_GroupOpDlg::Init()
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionDone()));
   connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), SLOT(onDeactivate()));
   connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(reject()));
+  connect(mySMESHGUI, SIGNAL(SignalActivatedViewManager()), SLOT(onOpenView()));
+  connect(mySMESHGUI, SIGNAL(SignalCloseView()), SLOT(onCloseView()));
 
   // set selection mode
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
@@ -329,6 +331,32 @@ void SMESHGUI_GroupOpDlg::reject()
   mySelectionMgr->clearFilters();
   reset();
   QDialog::reject();
+}
+
+//=================================================================================
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_GroupOpDlg::onOpenView()
+{
+  if ( mySelector ) {
+    SMESH::SetPointRepresentation(false);
+  }
+  else {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+    mySMESHGUI->EmitSignalDeactivateDialog();
+    setEnabled(true);
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_GroupOpDlg::onCloseView()
+{
+  onDeactivate();
+  mySelector = 0;
 }
 
 /*!
@@ -459,8 +487,12 @@ void SMESHGUI_GroupOpDlg::enterEvent(QEvent*)
 {
   mySMESHGUI->EmitSignalDeactivateDialog();
   setEnabled(true);
-  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+  SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+  if ( aViewWindow ) {
     aViewWindow->SetSelectionMode(ActorSelection);
+    if (!mySelector)
+      mySelector = aViewWindow->GetSelector();
+  }
   mySelectionMgr->installFilter(new SMESH_TypeFilter (SMESH::GROUP));
 }
 
@@ -496,7 +528,7 @@ void SMESHGUI_GroupOpDlg::setName( const QString& theName )
 }
 
 /*!
-  \brief Provides reaction on “F1” button pressing
+  \brief Provides reaction on ï¿½F1ï¿½ button pressing
   \param e  key press event
 */
 void SMESHGUI_GroupOpDlg::keyPressEvent( QKeyEvent* e )

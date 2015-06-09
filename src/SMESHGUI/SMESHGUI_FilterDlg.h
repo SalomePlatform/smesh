@@ -255,6 +255,8 @@ private slots:
   void                      onCriterionChanged( const int, const int );
   void                      onThresholdChanged( const int, const int );
   void                      onCurrentChanged( int, int );
+  void                      onOpenView();
+  void                      onCloseView();
 
 private:
 

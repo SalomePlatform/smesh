@@ -120,6 +120,9 @@ private slots:
   void                          onPublishShapeByMeshDlg( SUIT_Operation* );
   void                          onCloseShapeByMeshDlg( SUIT_Operation* );
 
+  void                          onOpenView();
+  void                          onCloseView();
+
 private:
   void                          initDialog( bool );
   void                          init( SMESH::SMESH_Mesh_ptr );

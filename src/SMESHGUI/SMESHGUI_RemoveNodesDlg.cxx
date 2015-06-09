@@ -204,7 +204,9 @@ void SMESHGUI_RemoveNodesDlg::Init()
   connect(mySMESHGUI, SIGNAL (SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
   /* to close dialog if study change */
-  connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(reject()));
+  connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()),      this, SLOT(reject()));
+  connect(mySMESHGUI, SIGNAL (SignalActivatedViewManager()), this, SLOT(onOpenView()));
+  connect(mySMESHGUI, SIGNAL (SignalCloseView()),            this, SLOT(onCloseView()));
   connect(myEditCurrentArgument, SIGNAL(textChanged(const QString&)),
           SLOT(onTextChange(const QString&)));
   
@@ -281,6 +283,32 @@ void SMESHGUI_RemoveNodesDlg::reject()
   mySelectionMgr->clearFilters();
   mySMESHGUI->ResetState();
   QDialog::reject();
+}
+
+
+//=================================================================================
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_RemoveNodesDlg::onOpenView()
+{
+  if ( mySelector) {
+    SMESH::SetPointRepresentation(false);
+  }
+  else {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+    ActivateThisDialog();
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_RemoveNodesDlg::onCloseView()
+{
+  DeactivateActiveDialog();
+  mySelector = 0;
 }
 
 //=================================================================================
@@ -459,8 +487,13 @@ void SMESHGUI_RemoveNodesDlg::ActivateThisDialog()
 //=================================================================================
 void SMESHGUI_RemoveNodesDlg::enterEvent(QEvent*)
 {
-  if (!GroupConstructors->isEnabled())
+  if (!GroupConstructors->isEnabled()) {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+    if ( aViewWindow && !mySelector) {
+      mySelector = aViewWindow->GetSelector();
+    }
     ActivateThisDialog();
+  }
 }
 
 //=================================================================================
