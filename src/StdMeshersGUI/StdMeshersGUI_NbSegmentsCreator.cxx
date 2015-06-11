@@ -25,7 +25,9 @@
 // SMESH includes
 //
 #include "StdMeshersGUI_NbSegmentsCreator.h"
-#include "StdMeshersGUI_DistrPreview.h"
+#ifndef DISABLE_PLOT2DVIEWER
+  #include "StdMeshersGUI_DistrPreview.h"
+#endif
 #include "StdMeshersGUI_DistrTable.h"
 #include "StdMeshersGUI_PropagationHelperWdg.h"
 #include "StdMeshersGUI_SubShapeSelectorWdg.h"
@@ -64,7 +66,9 @@ StdMeshersGUI_NbSegmentsCreator::StdMeshersGUI_NbSegmentsCreator()
   myDistr( 0 ),
   myScale( 0 ),
   myTable( 0 ),
+#ifndef DISABLE_PLOT2DVIEWER
   myPreview( 0 ),
+#endif
   myExpr( 0 ),
   myConvBox( 0 ),
   myConv( 0 ),
@@ -179,12 +183,14 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
   
        // c)  table
   myTable = new StdMeshersGUI_DistrTableFrame( GroupC1 );
+  myTable->setMinimumHeight(220);
   myDistLayout->addWidget( myTable, 1, 0, 2, 1 );
 
+#ifndef DISABLE_PLOT2DVIEWER
        // d) preview
   myPreview = new StdMeshersGUI_DistrPreview( GroupC1, h.in() );  
-  myPreview->setMinimumHeight(220);
   myDistLayout->addWidget( myPreview, 1, 1, 2, 1 );
+#endif
   
   // 5)  conversion (radiogroup)
   myConvBox = new QGroupBox( tr( "SMESH_CONV_MODE" ), GroupC1 );
@@ -449,7 +455,9 @@ void StdMeshersGUI_NbSegmentsCreator::onValueChanged()
   myDirectionWidget->ShowPreview( distr!=0 );
 
   bool isFunc = distr==2 || distr==3;
+#ifndef DISABLE_PLOT2DVIEWER
   myPreview->setShown( isFunc );
+#endif
   myConvBox->setShown( isFunc );
   
   myTable->setShown( distr==2 );
@@ -457,6 +465,7 @@ void StdMeshersGUI_NbSegmentsCreator::onValueChanged()
   myLExpr->setShown( distr==3 );
   myInfo->setShown( distr==3);
 
+#ifndef DISABLE_PLOT2DVIEWER
   //change of preview
   int nbSeg = myNbSeg->value();
   if( distr==2 ) //preview for table-described function
@@ -470,6 +479,7 @@ void StdMeshersGUI_NbSegmentsCreator::onValueChanged()
 
   if( isFunc )
     myPreview->setConversion( StdMeshersGUI_DistrPreview::Conversion( myConv->checkedId() ) );
+#endif
 
   if ( (QtxComboBox*)sender() == myDistr && dlg() ) {
     QApplication::instance()->processEvents();

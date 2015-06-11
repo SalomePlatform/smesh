@@ -3414,6 +3414,11 @@ void SMESHGUI_CtrlInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
       myButtons[4]->setEnabled( true );
       myButtons[5]->setEnabled( true );
     }
+#ifdef DISABLE_PLOT2DVIEWER
+    myMainLayout->setRowStretch(11,0);
+    for( int i=22; i<=24; i++)
+      myMainLayout->itemAt(i)->widget()->setVisible( false );
+#endif
   }
   else {
     myMainLayout->setRowStretch(11,0);
@@ -3436,6 +3441,11 @@ void SMESHGUI_CtrlInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
        myButtons[7]->setEnabled( true );
        myButtons[8]->setEnabled( true );
      }
+#ifdef DISABLE_PLOT2DVIEWER
+    myMainLayout->setRowStretch(16,0);
+    for( int i=32; i<=34; i++)
+      myMainLayout->itemAt(i)->widget()->setVisible( false );
+#endif
   }
   else {
     myMainLayout->setRowStretch(16,0);
@@ -3515,6 +3525,7 @@ void SMESHGUI_CtrlInfo::computeOverConstrainedVolumesInfo()
 
 void SMESHGUI_CtrlInfo::computeAspectRatio()
 {
+#ifndef DISABLE_PLOT2DVIEWER
   myButtons[5]->setEnabled( false );
 
   if ( myObject->_is_nil() ) return;
@@ -3528,10 +3539,12 @@ void SMESHGUI_CtrlInfo::computeAspectRatio()
     myPlot->replot();
   }
   delete aHistogram;
+#endif
 }
 
 void SMESHGUI_CtrlInfo::computeAspectRatio3D()
 {
+#ifndef DISABLE_PLOT2DVIEWER
   myButtons[8]->setEnabled( false );
 
   if ( myObject->_is_nil() ) return;
@@ -3545,6 +3558,7 @@ void SMESHGUI_CtrlInfo::computeAspectRatio3D()
     myPlot3D->replot();
   }
   delete aHistogram;
+#endif
 }
 
 /*!
@@ -3574,6 +3588,7 @@ void SMESHGUI_CtrlInfo::setTolerance( double theTolerance )
   myWidgets[2]->setText("");
 }
 
+#ifndef DISABLE_PLOT2DVIEWER
 Plot2d_Histogram* SMESHGUI_CtrlInfo::getHistogram( SMESH::NumericalFunctor_ptr aNumFun )
 {
   SMESH::SMESH_Mesh_var mesh = myObject->GetMesh();
@@ -3603,6 +3618,7 @@ Plot2d_Histogram* SMESHGUI_CtrlInfo::getHistogram( SMESH::NumericalFunctor_ptr a
   }
   return aHistogram;
 }
+#endif
 
 void SMESHGUI_CtrlInfo::saveInfo( QTextStream &out ) {
   out << QString( 20, '-' ) << "\n";

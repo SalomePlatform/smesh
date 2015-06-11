@@ -152,6 +152,8 @@ button. Also, values are automatically computed if the number of
 nodes / elements does not exceed the "Automatic controls compute limit" set 
 via the "Mesh information" preferences (zero value means that there is no limit).
 
+\note The plot functionality is available only if GUI module is builded with Plot 2D Viewer (set option SALOME_USE_PLOT2DVIEWER to ON when building GUI module).
+
 The button \b "Dump" allows printing the information displayed in the
 dialog box to a .txt file.
 

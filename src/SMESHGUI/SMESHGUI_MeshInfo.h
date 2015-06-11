@@ -28,7 +28,11 @@
 #include "SMESH_SMESHGUI.hxx"
 #include "SMESH_ControlsDef.hxx"
 
-#include <Plot2d_Histogram.h>
+#ifndef DISABLE_PLOT2DVIEWER
+  #include <Plot2d_Histogram.h>
+#else
+  #include <qwt_plot.h>
+#endif
 
 #include <QFrame>
 #include <QDialog>
@@ -310,7 +314,9 @@ private:
   QwtPlot*              createPlot( QWidget* );
   void                  setFontAttributes( QWidget* );
   void                  clearInternal();
+#ifndef DISABLE_PLOT2DVIEWER
   Plot2d_Histogram*     getHistogram( SMESH::NumericalFunctor_ptr functor );
+#endif
   void                  computeNb( int ft, int iBut, int iWdg );
 
 private slots:

@@ -120,8 +120,6 @@
 
 #include <VTKViewer_Algorithm.h>
 
-#include <PyInterp_Interp.h>
-
 #include <SUIT_Desktop.h>
 #include <SUIT_FileDlg.h>
 #include <SUIT_MessageBox.h>
@@ -4768,14 +4766,15 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
 
   // import Python module that manages SMESH plugins (need to be here because SalomePyQt API uses active module)
   PyGILState_STATE gstate = PyGILState_Ensure();
-  PyObjWrapper pluginsmanager = PyImport_ImportModuleNoBlock((char*)"salome_pluginsmanager");
+  PyObject* pluginsmanager = PyImport_ImportModuleNoBlock((char*)"salome_pluginsmanager");
   if ( !pluginsmanager ) {
     PyErr_Print();
   }
   else {
-    PyObjWrapper result = PyObject_CallMethod( pluginsmanager, (char*)"initialize", (char*)"isss",1,"smesh",tr("MEN_MESH").toUtf8().data(),tr("SMESH_PLUGINS_OTHER").toUtf8().data());
+    PyObject* result = PyObject_CallMethod( pluginsmanager, (char*)"initialize", (char*)"isss",1,"smesh",tr("MEN_MESH").toUtf8().data(),tr("SMESH_PLUGINS_OTHER").toUtf8().data());
     if ( !result )
       PyErr_Print();
+    Py_XDECREF(result);
   }
   PyGILState_Release(gstate);
   // end of SMESH plugins loading
@@ -4801,6 +4800,7 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
       connectView( wnd );
   }
 
+  Py_XDECREF(pluginsmanager);
   return res;
 }
 
@@ -4885,7 +4885,9 @@ void SMESHGUI::windows( QMap<int, int>& aMap ) const
 {
   aMap.insert( SalomeApp_Application::WT_ObjectBrowser, Qt::LeftDockWidgetArea );
   aMap.insert( SalomeApp_Application::WT_NoteBook, Qt::LeftDockWidgetArea );
+#ifndef DISABLE_PYCONSOLE
   aMap.insert( SalomeApp_Application::WT_PyConsole, Qt::BottomDockWidgetArea );
+#endif
 }
 
 void SMESHGUI::viewManagers( QStringList& list ) const
