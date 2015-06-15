@@ -236,6 +236,10 @@ class SMESH_EXPORT SMESH_MesherHelper
   static TopAbs_ShapeEnum GetGroupType(const TopoDS_Shape& group,
                                        const bool          avoidCompound=false);
 
+  static TopoDS_Shape GetShapeOfHypothesis( const SMESHDS_Hypothesis * hyp,
+                                            const TopoDS_Shape&        shape,
+                                            SMESH_Mesh*                mesh);
+
 
 public:
   // ---------- PUBLIC INSTANCE METHODS ----------
@@ -243,7 +247,9 @@ public:
   // constructor
   SMESH_MesherHelper(SMESH_Mesh& theMesh);
 
-  SMESH_Mesh* GetMesh() const { return myMesh; }
+  SMESH_Gen*    GetGen() const { return GetMesh()->GetGen(); }
+    
+  SMESH_Mesh*   GetMesh() const { return myMesh; }
     
   SMESHDS_Mesh* GetMeshDS() const { return GetMesh()->GetMeshDS(); }
     

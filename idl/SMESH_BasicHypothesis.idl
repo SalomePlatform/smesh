@@ -1091,6 +1091,13 @@ module StdMeshers
   };
 
   /*!
+   * StdMeshers_QuadFromMedialAxis_1D2D: interface of "Quadrangle (Medial Axis Projection)" algorithm
+   */
+  interface StdMeshers_QuadFromMedialAxis_1D2D : SMESH::SMESH_2D_Algo
+  {
+  };
+
+  /*!
    * StdMeshers_Hexa_3D: interface of "Hexahedron (i,j,k)" algorithm
    */
   interface StdMeshers_Hexa_3D : SMESH::SMESH_3D_Algo

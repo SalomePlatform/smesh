@@ -42,6 +42,8 @@ Hexa        = "Hexa_3D"
 QUADRANGLE  = "Quadrangle_2D"
 ## Algorithm type: Radial Quadrangle 1D-2D algorithm, see StdMeshersBuilder_RadialQuadrangle1D2D
 RADIAL_QUAD = "RadialQuadrangle_1D2D"
+## Algorithm type: Quadrangle (Medial Axis Projection) 1D-2D algorithm, see StdMeshersBuilder_QuadMA_1D2D
+QUAD_MA_PROJ = "QuadFromMedialAxis_1D2D"
 
 # import items of enums
 for e in StdMeshers.QuadType._items: exec('%s = StdMeshers.%s'%(e,e))
@@ -455,9 +457,6 @@ class StdMeshersBuilder_Segment_Python(Mesh_Algorithm):
     algoType   = PYTHON
     ## doc string of the method
     #  @internal
-    docHelper  = "Creates tetrahedron 3D algorithm for solids"
-    ## doc string of the method
-    #  @internal
     docHelper  = "Creates segment 1D algorithm for edges"
 
     ## Private constructor.
@@ -856,7 +855,7 @@ class StdMeshersBuilder_Projection1D2D(StdMeshersBuilder_Projection2D):
     algoType   = "Projection_1D2D"
     ## doc string of the method
     #  @internal
-    docHelper  = "Creates projection 1D-2D algorithm for edges and faces"
+    docHelper  = "Creates projection 1D-2D algorithm for faces"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to
@@ -1115,7 +1114,7 @@ class StdMeshersBuilder_RadialPrism3D(StdMeshersBuilder_Prism3D):
     algoType   = "RadialPrism_3D"
     ## doc string of the method
     #  @internal
-    docHelper  = "Creates prism 3D algorithm for volumes"
+    docHelper  = "Creates Raial Prism 3D algorithm for volumes"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to
@@ -1147,7 +1146,7 @@ class StdMeshersBuilder_RadialQuadrangle1D2D(Mesh_Algorithm):
     algoType   = RADIAL_QUAD
     ## doc string of the method
     #  @internal
-    docHelper  = "Creates quadrangle 1D-2D algorithm for triangular faces"
+    docHelper  = "Creates quadrangle 1D-2D algorithm for faces having a shape of disk or a disk segment"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to
@@ -1258,6 +1257,35 @@ class StdMeshersBuilder_RadialQuadrangle1D2D(Mesh_Algorithm):
 
     pass # end of StdMeshersBuilder_RadialQuadrangle1D2D class
 
+## Defines a Quadrangle (Medial Axis Projection) 1D-2D algorithm
+# 
+#  It is created by calling smeshBuilder.Mesh.Quadrangle(smeshBuilder.QUAD_MA_PROJ,geom=0)
+#
+#  @ingroup l2_algos_quad_ma
+class StdMeshersBuilder_QuadMA_1D2D(Mesh_Algorithm):
+
+    ## name of the dynamic method in smeshBuilder.Mesh class
+    #  @internal
+    meshMethod = "Quadrangle"
+    ## type of algorithm used with helper function in smeshBuilder.Mesh class
+    #  @internal
+    algoType   = QUAD_MA_PROJ
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates quadrangle 1D-2D algorithm for faces"
+
+    ## Private constructor.
+    #  @param mesh parent mesh object algorithm is assigned to
+    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
+    #              if it is @c 0 (default), the algorithm is assigned to the main shape
+    def __init__(self, mesh, geom=0):
+        Mesh_Algorithm.__init__(self)
+        self.Create(mesh, geom, self.algoType)
+        pass
+
+    pass
+
+
 ## Defines a Use Existing Elements 1D algorithm
 #
 #  It is created by calling smeshBuilder.Mesh.UseExisting1DElements(geom=0)
@@ -1327,7 +1355,7 @@ class StdMeshersBuilder_UseExistingElements_1D2D(Mesh_Algorithm):
     isDefault  = True
     ## doc string of the method
     #  @internal
-    docHelper  = "Creates 1D-2D algorithm for edges/faces with reusing of existing mesh elements"
+    docHelper  = "Creates 1D-2D algorithm for faces with reusing of existing mesh elements"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to
@@ -1375,7 +1403,7 @@ class StdMeshersBuilder_Cartesian_3D(Mesh_Algorithm):
     isDefault  = True
     ## doc string of the method
     #  @internal
-    docHelper  = "Creates body fitting 3D algorithm for volumes"
+    docHelper  = "Creates Body Fitting 3D algorithm for volumes"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to
@@ -1505,7 +1533,7 @@ class StdMeshersBuilder_UseExisting_1D(Mesh_Algorithm):
     algoType   = "UseExisting_1D"
     ## doc string of the method
     #  @internal
-    docHelper  = "Creates 1D algorithm for edges with reusing of existing mesh elements"
+    docHelper  = "Creates 1D algorithm allowing batch meshing of edges"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to
@@ -1533,7 +1561,7 @@ class StdMeshersBuilder_UseExisting_2D(Mesh_Algorithm):
     algoType   = "UseExisting_2D"
     ## doc string of the method
     #  @internal
-    docHelper  = "Creates 2D algorithm for faces with reusing of existing mesh elements"
+    docHelper  = "Creates 2D algorithm allowing batch meshing of faces"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to

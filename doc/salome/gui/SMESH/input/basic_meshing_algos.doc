@@ -58,7 +58,8 @@ without geometrical objects.
 
 There is also a number of more specific algorithms:
 <ul>
-<li>\subpage prism_3d_algo_page "for meshing prismatic shapes"</li>
+<li>\subpage prism_3d_algo_page "for meshing prismatic 3D shapes"</li>
+<li>\subpage quad_from_ma_algo_page "for meshing faces with sinuous borders"</li>
 <li>\subpage projection_algos_page "for meshing by projection of another mesh"</li>
 <li>\subpage import_algos_page "for meshing by importing elements from another mesh"</li>
 <li>\subpage radial_prism_algo_page "for meshing geometrical objects with cavities"</li>

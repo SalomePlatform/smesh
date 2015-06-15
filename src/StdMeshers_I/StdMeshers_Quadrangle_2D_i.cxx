@@ -32,6 +32,8 @@
 #include "Utils_CorbaException.hxx"
 #include "utilities.h"
 
+#include "StdMeshers_QuadFromMedialAxis_1D2D.hxx"
+
 using namespace std;
 
 //=============================================================================
@@ -98,3 +100,39 @@ CORBA::Boolean StdMeshers_Quadrangle_2D_i::IsApplicable( const TopoDS_Shape &S,
   return ::StdMeshers_Quadrangle_2D::IsApplicable( S, toCheckAll );
 }
 
+//=============================================================================
+/*!
+ *  StdMeshers_QuadFromMedialAxis_1D2D_i::StdMeshers_QuadFromMedialAxis_1D2D_i
+ *
+ *  Constructor
+ */
+//=============================================================================
+
+StdMeshers_QuadFromMedialAxis_1D2D_i::
+StdMeshers_QuadFromMedialAxis_1D2D_i( PortableServer::POA_ptr thePOA,
+                                      int                     theStudyId,
+                                      ::SMESH_Gen*            theGenImpl )
+  : SALOME::GenericObj_i( thePOA ),
+    SMESH_Hypothesis_i( thePOA ),
+    SMESH_Algo_i( thePOA ),
+    SMESH_2D_Algo_i( thePOA )
+{
+  MESSAGE( "StdMeshers_QuadFromMedialAxis_1D2D_i::StdMeshers_QuadFromMedialAxis_1D2D_i" );
+  myBaseImpl = new ::StdMeshers_QuadFromMedialAxis_1D2D( theGenImpl->GetANewId(),
+                                                         theStudyId,
+                                                         theGenImpl );
+}
+
+//=============================================================================
+/*!
+ *  StdMeshers_QuadFromMedialAxis_1D2D_i::~StdMeshers_QuadFromMedialAxis_1D2D_i
+ *
+ *  Destructor
+ *
+ */
+//=============================================================================
+
+StdMeshers_QuadFromMedialAxis_1D2D_i::~StdMeshers_QuadFromMedialAxis_1D2D_i()
+{
+  MESSAGE( "StdMeshers_QuadFromMedialAxis_1D2D_i::~StdMeshers_QuadFromMedialAxis_1D2D_i" );
+}

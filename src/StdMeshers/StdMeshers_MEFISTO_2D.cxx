@@ -696,7 +696,7 @@ void StdMeshers_MEFISTO_2D::ComputeScaleOnFace(SMESH_Mesh &        aMesh,
   double xmax = -1.e300;
   double ymin = 1.e300;
   double ymax = -1.e300;
-  int nbp = 23;
+  const int nbp = 23;
   scalex = 1;
   scaley = 1;
 
@@ -720,13 +720,8 @@ void StdMeshers_MEFISTO_2D::ComputeScaleOnFace(SMESH_Mesh &        aMesh,
         ymin = p.Y();
       if (p.Y() > ymax)
         ymax = p.Y();
-      //    MESSAGE(" "<< f<<" "<<l<<" "<<param<<" "<<xmin<<" "<<xmax<<" "<<ymin<<" "<<ymax);
     }
   }
-  //   SCRUTE(xmin);
-  //   SCRUTE(xmax);
-  //   SCRUTE(ymin);
-  //   SCRUTE(ymax);
   double xmoy = (xmax + xmin) / 2.;
   double ymoy = (ymax + ymin) / 2.;
   double xsize = xmax - xmin;
@@ -754,23 +749,14 @@ void StdMeshers_MEFISTO_2D::ComputeScaleOnFace(SMESH_Mesh &        aMesh,
   }
   scalex = length_x / xsize;
   scaley = length_y / ysize;
-//   SCRUTE(xsize);
-//   SCRUTE(ysize);
   double xyratio = xsize*scalex/(ysize*scaley);
   const double maxratio = 1.e2;
-  //SCRUTE(xyratio);
   if (xyratio > maxratio) {
-    SCRUTE( scaley );
     scaley *= xyratio / maxratio;
-    SCRUTE( scaley );
   }
   else if (xyratio < 1./maxratio) {
-    SCRUTE( scalex );
     scalex *= 1 / xyratio / maxratio;
-    SCRUTE( scalex );
   }
-  ASSERT(scalex);
-  ASSERT(scaley);
 }
 
 // namespace

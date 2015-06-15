@@ -144,6 +144,10 @@
             <translation>mesh_tree_algo_radial_quadrangle_1D2D.png</translation>
         </message>
 	<message>
+            <source>ICON_SMESH_TREE_ALGO_QuadFromMedialAxis_1D2D</source>
+            <translation>mesh_tree_algo_quad.png</translation>
+        </message>
+	<message>
             <source>ICON_SMESH_TREE_ALGO_Prism_3D</source>
             <translation>mesh_tree_algo_prism.png</translation>
         </message>
