@@ -32,6 +32,7 @@
 #include "SMDS_IteratorOnIterators.hxx"
 #include "SMDS_VolumeTool.hxx"
 #include "SMESH_Block.hxx"
+#include "SMESH_HypoFilter.hxx"
 #include "SMESH_MeshAlgos.hxx"
 #include "SMESH_ProxyMesh.hxx"
 #include "SMESH_subMesh.hxx"
@@ -3204,6 +3205,28 @@ TopAbs_ShapeEnum SMESH_MesherHelper::GetGroupType(const TopoDS_Shape& group,
       return avoidCompound ? GetGroupType( it.Value() ) : it.Value().ShapeType();
   }
   return TopAbs_SHAPE;
+}
+
+//================================================================================
+/*!
+ * \brief Returns a shape, to which a hypothesis used to mesh a given shape is assigned
+ *  \param [in] hyp - the hypothesis
+ *  \param [in] shape - the shape, for meshing which the \a hyp is used
+ *  \param [in] mesh - the mesh
+ *  \return TopoDS_Shape - the shape the \a hyp is assigned to
+ */
+//================================================================================
+
+TopoDS_Shape SMESH_MesherHelper::GetShapeOfHypothesis( const SMESHDS_Hypothesis * hyp,
+                                                       const TopoDS_Shape&        shape,
+                                                       SMESH_Mesh*                mesh)
+{
+  const SMESH_Hypothesis* h = static_cast<const SMESH_Hypothesis*>( hyp );
+  SMESH_HypoFilter hypFilter( SMESH_HypoFilter::Is( h ));
+
+  TopoDS_Shape shapeOfHyp;
+  mesh->GetHypothesis( shape, hypFilter, /*checkAncestors=*/true, &shapeOfHyp );
+  return shapeOfHyp;
 }
 
 //=======================================================================

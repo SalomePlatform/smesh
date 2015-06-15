@@ -119,6 +119,8 @@ struct FaceQuadStruct
 
   FaceQuadStruct ( const TopoDS_Face& F = TopoDS_Face(), const std::string& nm="main" );
   UVPtStruct& UVPt( int i, int j ) { return uv_grid[ i + j * iSize ]; }
+  double&        U( int i, int j ) { return UVPt( i, j ).u; }
+  double&        V( int i, int j ) { return UVPt( i, j ).v; }
   void  shift    ( size_t nb, bool keepUnitOri, bool keepGrid=false );
   int & nbNodeOut( int iSide ) { return side[ iSide ].nbNodeOut; }
   bool  findCell ( const gp_XY& uv, int & i, int & j );

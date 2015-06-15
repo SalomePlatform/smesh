@@ -63,6 +63,7 @@ SET(SMESHUtils_HEADERS
   SMESH_Utils.hxx
   SMESH_TryCatch.hxx
   SMESH_MeshAlgos.hxx
+  SMESH_MAT2d.hxx
 )
 
 # --- sources ---
@@ -76,6 +77,7 @@ SET(SMESHUtils_SOURCES
   SMESH_TryCatch.cxx
   SMESH_File.cxx
   SMESH_MeshAlgos.cxx
+  SMESH_MAT2d.cxx
 )
 
 # --- rules ---

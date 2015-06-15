@@ -311,6 +311,19 @@
       </python-wrap>
     </algorithm>
 
+    <algorithm type     ="QuadFromMedialAxis_1D2D"
+               label-id ="Quadrangle (Medial Axis Projection)"
+               icon-id  ="mesh_algo_quad.png"
+               opt-hypos="ViscousLayers2D"
+               input    ="EDGE"
+               output   ="QUAD"
+               dim      ="2">
+      <python-wrap>
+        <algo>QuadFromMedialAxis_1D2D=Quadrangle(algo=smeshBuilder.QUAD_MA_PROJ)</algo>
+        <hypo>ViscousLayers2D=ViscousLayers2D(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetIgnoreEdges())</hypo>
+      </python-wrap>
+    </algorithm>
+
     <algorithm type     ="Hexa_3D"
                label-id ="Hexahedron (i,j,k)"
                icon-id  ="mesh_algo_hexa.png"

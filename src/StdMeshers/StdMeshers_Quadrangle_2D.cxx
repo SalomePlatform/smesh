@@ -1599,7 +1599,7 @@ void StdMeshers_Quadrangle_2D::shiftQuad(FaceQuadStruct::Ptr& quad, const int nu
 
 //================================================================================
 /*!
- * \brief Rotate sides of a quad by given nb of quartes
+ * \brief Rotate sides of a quad CCW by given nb of quartes
  *  \param nb  - number of rotation quartes
  *  \param ori - to keep orientation of sides as in an unit quad or not
  *  \param keepGrid - if \c true Side::grid is not changed, Side::from and Side::to
@@ -1610,6 +1610,8 @@ void StdMeshers_Quadrangle_2D::shiftQuad(FaceQuadStruct::Ptr& quad, const int nu
 void FaceQuadStruct::shift( size_t nb, bool ori, bool keepGrid )
 {
   if ( nb == 0 ) return;
+
+  nb = nb % NB_QUAD_SIDES;
 
   vector< Side > newSides( side.size() );
   vector< Side* > sidePtrs( side.size() );
@@ -1640,7 +1642,33 @@ void FaceQuadStruct::shift( size_t nb, bool ori, bool keepGrid )
   }
   newSides.swap( side );
 
-  uv_grid.clear();
+  if ( keepGrid && !uv_grid.empty() )
+  {
+    if ( nb == 2 ) // "PI"
+    {
+      std::reverse( uv_grid.begin(), uv_grid.end() );
+    }
+    else
+    {
+      FaceQuadStruct newQuad;
+      newQuad.uv_grid.resize( uv_grid.size() );
+      newQuad.iSize = jSize;
+      newQuad.jSize = iSize;
+      int i, j, iRev, jRev;
+      int *iNew = ( nb == 1 ) ? &jRev : &j;
+      int *jNew = ( nb == 1 ) ? &i : &iRev;
+      for ( i = 0, iRev = iSize-1; i < iSize; ++i, --iRev )
+        for ( j = 0, jRev = jSize-1; j < jSize; ++j, --jRev )
+          newQuad.UVPt( *iNew, *jNew ) = UVPt( i, j );
+
+      std::swap( iSize, jSize );
+      std::swap( uv_grid, newQuad.uv_grid );
+    }
+  }
+  else
+  {
+    uv_grid.clear();
+  }
 }
 
 //=======================================================================

@@ -1,0 +1,30 @@
+/*!
+
+\page quad_from_ma_algo_page Medial Axis Projection Quadrangle meshing algorithm
+
+Medial Axis Projection algorithm can be used for meshing faces with
+sinuous borders and having channel-like shape, for which is it
+difficult to define 1D hypotheses so that generated quadrangles to be
+of good shape.
+
+\image html quad_from_ma_mesh.png "A mesh of a river model"
+
+The algorithm assures good shape of quadrangles by constructing Medial
+Axis between sinuous borders of the face and using it to
+discretize the borders.
+
+\image html quad_from_ma_medial_axis.png "Media Axis between two blue sinuous borders"
+
+The Medial Axis is used in two ways:
+<ol>
+<li>If there is a sub-mesh on either sinuous border, then the nodes of
+  this border are mapped to the opposite border via the Medial
+  Axis.</li>
+<li> If there is no sub-meshes on the sinuous borders, then a part of
+  the Medial Axis that can be mapped to both borders is discretized
+  using a hypothesis assigned to the face or its ancestor shapes,
+  and the division points are mapped from the Medial Axis to the both
+  borders.</li>
+</ol>
+
+*/
