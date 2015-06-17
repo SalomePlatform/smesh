@@ -43,6 +43,7 @@ SET(_link_LIBRARIES
   ${CAS_TKG3d}
   ${CAS_TKGeomBase}
   ${CAS_TKGeomAlgo}
+  ${CAS_TKTopAlgo}
   ${Boost_LIBRARIES}
   SMDS
 )
