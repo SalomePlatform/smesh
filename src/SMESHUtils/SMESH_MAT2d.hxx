@@ -161,7 +161,7 @@ namespace SMESH_MAT2d
    * \brief Face boundary is discretized so that each its segment to correspond to
    *        an edge of MA
    */
-  class Boundary
+  class SMESHUtils_EXPORT Boundary
   {
   public:
 
