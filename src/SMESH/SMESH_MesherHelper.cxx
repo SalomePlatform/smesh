@@ -3397,13 +3397,13 @@ namespace { // Structures used by FixQuadraticElements()
     }
     void SetContinuesFaces() const;
     const QFace* GetContinuesFace( const QFace* face ) const;
-    bool OnBoundary() const;
+    bool   OnBoundary() const;
     gp_XYZ MiddlePnt() const { return ( XYZ( node1() ) + XYZ( node2() )) / 2.; }
     gp_XYZ MediumPnt() const { return XYZ( _mediumNode ); }
 
-    SMDS_TypeOfPosition MediumPos() const
+    SMDS_TypeOfPosition  MediumPos() const
     { return _mediumNode->GetPosition()->GetTypeOfPosition(); }
-    SMDS_TypeOfPosition EndPos(bool isSecond) const
+    SMDS_TypeOfPosition  EndPos(bool isSecond) const
     { return (isSecond ? node2() : node1())->GetPosition()->GetTypeOfPosition(); }
     const SMDS_MeshNode* EndPosNode(SMDS_TypeOfPosition pos) const
     { return EndPos(0) == pos ? node1() : EndPos(1) == pos ? node2() : 0; }
@@ -4952,7 +4952,7 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
               face = TopoDS::Face( f );
               faceHlp.SetSubShape( face );
               Handle(Geom_Surface) surf = BRep_Tool::Surface(face,loc);
-              bool isStraight[2];
+              //bool isStraight[2]; // commented for issue 0023118
               for ( int is1 = 0; is1 < 2; ++is1 ) // move0 or move1
               {
                 TChainLink& link = is1 ? chain.back() : chain.front();
@@ -4965,13 +4965,13 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
                 ( is1 ? move1 : move0 ).SetCoord( uvMove.X(), uvMove.Y(), 0 );
                 if ( !is1 ) // correct nodeOnFace for move1 (issue 0020919)
                   nodeOnFace = (*(++chain.rbegin()))->_mediumNode;
-                isStraight[is1] = isStraightLink( (uv2-uv1).SquareModulus(),
-                                                  10 * uvMove.SquareModulus());
+                // isStraight[is1] = isStraightLink( (uv2-uv1).SquareModulus(),
+                //                                   10 * uvMove.SquareModulus());
               }
-              if ( isStraight[0] && isStraight[1] ) {
-                MSG("2D straight - ignore");
-                continue; // straight - no need to move nodes of internal links
-              }
+              // if ( isStraight[0] && isStraight[1] ) {
+              //   MSG("2D straight - ignore");
+              //   continue; // straight - no need to move nodes of internal links
+              // }
 
               // check if a chain is already fixed
               gp_XY uvm  = faceHlp.GetNodeUV( face, linkOnFace->_mediumNode, 0, &checkUV );
