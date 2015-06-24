@@ -105,6 +105,7 @@ public:
   const _FaceSide* GetSide(const int i) const;
   int size() const { return myChildren.size(); }
   int NbVertices() const;
+  int NbCommonVertices( const TopTools_MapOfShape& VV ) const;
   TopoDS_Vertex FirstVertex() const;
   TopoDS_Vertex LastVertex() const;
   TopoDS_Vertex Vertex(int i) const;
@@ -1172,26 +1173,22 @@ bool _QuadFaceGrid::isContinuousMesh(TopoDS_Edge E1, TopoDS_Edge E2, SMESH_Mesh&
 bool _QuadFaceGrid::needContinuationAtSide( int                        iSide,
                                             const TopTools_MapOfShape& cornerVertices ) const
 {
-  if ( cornerVertices.empty() )
+  if ( cornerVertices.IsEmpty() )
     return false;
 
+  // current solution is rough. Take more care of composite sides!
+
   // check presence of corners at iSide
-  int nbCorners = 0;
   const _FaceSide* side = mySides.GetSide( iSide );
   if ( !side ) return false;
-  int iV, nbV = side->NbVertices();
-  for ( iV = 0; iV < nbV && nbCorners == 0; ++iV )
-    nbCorners += cornerVertices.Contains( side->Vertex( iV ));
+  int nbCorners = side->NbCommonVertices( cornerVertices );
   if ( nbCorners > 0 )
     return false;
 
   // check presence of corners at other sides
-  nbCorners = 0;
-  nbV = mySides.NbVertices();
-  for ( iV = 0; iV < nbV && nbCorners == 0; ++iV )
-    nbCorners += cornerVertices.Contains( mySides.Vertex( iV ));
+  nbCorners = mySides.NbCommonVertices( cornerVertices );
 
-  return ( nbCorners > 0 ); // if nbCorners == 2 additional check is needed!!!
+  return ( 0 < nbCorners && nbCorners <= 2 ); // if nbCorners == 2 additional check is needed!!!
 }
 
 //================================================================================
@@ -1606,8 +1603,23 @@ int _FaceSide::NbVertices() const
 }
 
 //=======================================================================
+//function : NbCommonVertices
+//purpose  : Returns number of my vertices common with the given ones
+//=======================================================================
+
+int _FaceSide::NbCommonVertices( const TopTools_MapOfShape& VV ) const
+{
+  int nbCommon = 0;
+  TopTools_MapIteratorOfMapOfShape vIt ( myVertices );
+  for ( ; vIt.More(); vIt.Next() )
+    nbCommon += ( VV.Contains( vIt.Key() ));
+
+  return nbCommon;
+}
+
+//=======================================================================
 //function : FirstVertex
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 TopoDS_Vertex _FaceSide::FirstVertex() const
