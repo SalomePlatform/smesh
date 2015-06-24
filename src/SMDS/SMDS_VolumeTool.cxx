@@ -43,6 +43,8 @@
 
 using namespace std;
 
+namespace
+{
 // ======================================================
 // Node indices in faces depending on volume orientation
 // making most faces normals external
@@ -349,8 +351,6 @@ static int TriQuadHexa_nbN [] = { 9, 9, 9, 9, 9, 9 };
 // ========================================================
 // to perform some calculations without linkage to CASCADE
 // ========================================================
-namespace
-{
 struct XYZ {
   double x;
   double y;
@@ -1498,6 +1498,7 @@ double SMDS_VolumeTool::MaxLinearSize2() const
 //================================================================================
 /*!
  * \brief fast check that only one volume is build on the face nodes
+ *        This check is valid for conformal meshes only
  */
 //================================================================================
 
@@ -1510,19 +1511,30 @@ bool SMDS_VolumeTool::IsFreeFace( int faceIndex, const SMDS_MeshElement** otherV
 
   const SMDS_MeshNode** nodes = GetFaceNodes( faceIndex );
 
-  const int di = myVolume->IsQuadratic() ? 2 : 1;
-  const SMDS_MeshNode* n1 = nodes[di*0];
-  const SMDS_MeshNode* n2 = nodes[di*1];
-  const SMDS_MeshNode* n3 = nodes[di*2];
+  const int  di = myVolume->IsQuadratic() ? 2 : 1;
+  const int nbN = ( myFaceNbNodes/di <= 4 && !IsPoly()) ? 3 : myFaceNbNodes/di; // nb nodes to check
 
-  SMDS_ElemIteratorPtr eIt = n1->GetInverseElementIterator( SMDSAbs_Volume );
-  SMDS_ElemIteratorPtr nIt;
-  while ( eIt->more() ) {
+  SMDS_ElemIteratorPtr eIt = nodes[0]->GetInverseElementIterator( SMDSAbs_Volume );
+  while ( eIt->more() )
+  {
     const SMDS_MeshElement* vol = eIt->next();
-    if ( vol != myVolume &&
-         vol->GetNodeIndex( n2 ) >= 0 &&
-         vol->GetNodeIndex( n3 ) >= 0 )
+    if ( vol == myVolume )
+      continue;
+    int iN;
+    for ( iN = 1; iN < nbN; ++iN )
+      if ( vol->GetNodeIndex( nodes[ iN*di ]) < 0 )
+        break;
+    if ( iN == nbN ) // nbN nodes are shared with vol
     {
+      // if ( vol->IsPoly() || vol->NbFaces() > 6 ) // vol is polyhed or hex prism 
+      // {
+      //   int nb = myFaceNbNodes;
+      //   if ( myVolume->GetEntityType() != vol->GetEntityType() )
+      //     nb -= ( GetCenterNodeIndex(0) > 0 );
+      //   set<const SMDS_MeshNode*> faceNodes( nodes, nodes + nb );
+      //   if ( SMDS_VolumeTool( vol ).GetFaceIndex( faceNodes ) < 0 )
+      //     continue;
+      // }
       if ( otherVol ) *otherVol = vol;
       return !isFree;
     }

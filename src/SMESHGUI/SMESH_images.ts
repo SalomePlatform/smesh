@@ -220,6 +220,10 @@
             <translation>mesh_biquad_quadrangle.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_QUADRATIC_POLYGON</source>
+            <translation>mesh_quad_polygon.png</translation>
+        </message>
+        <message>
             <source>ICON_DLG_QUADRATIC_TETRAHEDRON</source>
             <translation>mesh_quad_tetrahedron.png</translation>
         </message>

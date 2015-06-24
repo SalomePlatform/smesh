@@ -1783,10 +1783,10 @@ int SMESH_Mesh::NbBiQuadQuadrangles() const throw(SALOME_Exception)
  */
 //================================================================================
 
-int SMESH_Mesh::NbPolygons() const throw(SALOME_Exception)
+int SMESH_Mesh::NbPolygons(SMDSAbs_ElementOrder order) const throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  return _myMeshDS->GetMeshInfo().NbPolygons();
+  return _myMeshDS->GetMeshInfo().NbPolygons(order);
 }
 
 //================================================================================

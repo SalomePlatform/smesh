@@ -2242,11 +2242,11 @@ class Mesh:
     def NbBiQuadQuadrangles(self):
         return self.mesh.NbBiQuadQuadrangles()
 
-    ## Returns the number of polygons in the mesh
+    ## Returns the number of polygons of given order in the mesh
     #  @return an integer value
     #  @ingroup l1_meshinfo
-    def NbPolygons(self):
-        return self.mesh.NbPolygons()
+    def NbPolygons(self, elementOrder = SMESH.ORDER_ANY):
+        return self.mesh.NbPolygons(elementOrder)
 
     ## Returns the number of volumes in the mesh
     #  @return an integer value
@@ -2367,7 +2367,7 @@ class Mesh:
     ## Returns the type of mesh element
     #  @return the value from SMESH::ElementType enumeration
     #  @ingroup l1_meshinfo
-    def GetElementType(self, id, iselem):
+    def GetElementType(self, id, iselem=True):
         return self.mesh.GetElementType(id, iselem)
 
     ## Returns the geometric type of mesh element
@@ -2455,24 +2455,22 @@ class Mesh:
     def GetElementPosition(self,ElemID):
         return self.mesh.GetElementPosition(ElemID)
 
-    ## If the given element is a node, returns the ID of shape
-    #  \n If there is no node for the given ID - returns -1
-    #  @return an integer value
+    ## Returns the ID of the shape, on which the given node was generated.
+    #  @return an integer value > 0 or -1 if there is no node for the given
+    #          ID or the node is not assigned to any geometry
     #  @ingroup l1_meshinfo
     def GetShapeID(self, id):
         return self.mesh.GetShapeID(id)
 
-    ## Returns the ID of the result shape after
-    #  FindShape() from SMESH_MeshEditor for the given element
-    #  \n If there is no element for the given ID - returns -1
-    #  @return an integer value
+    ## Returns the ID of the shape, on which the given element was generated.
+    #  @return an integer value > 0 or -1 if there is no element for the given
+    #          ID or the element is not assigned to any geometry
     #  @ingroup l1_meshinfo
     def GetShapeIDForElem(self,id):
         return self.mesh.GetShapeIDForElem(id)
 
-    ## Returns the number of nodes for the given element
-    #  \n If there is no element for the given ID - returns -1
-    #  @return an integer value
+    ## Returns the number of nodes of the given element
+    #  @return an integer value > 0 or -1 if there is no element for the given ID
     #  @ingroup l1_meshinfo
     def GetElemNbNodes(self, id):
         return self.mesh.GetElemNbNodes(id)
@@ -2498,7 +2496,7 @@ class Mesh:
 
     ## Returns true if the given node is the medium node in one of quadratic elements
     #  @ingroup l1_meshinfo
-    def IsMediumNodeOfAnyElem(self, nodeID, elementType):
+    def IsMediumNodeOfAnyElem(self, nodeID, elementType = SMESH.ALL ):
         return self.mesh.IsMediumNodeOfAnyElem(nodeID, elementType)
 
     ## Returns the number of edges for the given element
@@ -2755,6 +2753,14 @@ class Mesh:
     #  @ingroup l2_modif_add
     def AddPolygonalFace(self, IdsOfNodes):
         return self.editor.AddPolygonalFace(IdsOfNodes)
+
+    ## Adds a quadratic polygonal face to the mesh by the list of node IDs
+    #  @param IdsOfNodes the list of node IDs for creation of the element;
+    #         corner nodes follow first.
+    #  @return the Id of the new face
+    #  @ingroup l2_modif_add
+    def AddQuadPolygonalFace(self, IdsOfNodes):
+        return self.editor.AddQuadPolygonalFace(IdsOfNodes)
 
     ## Creates both simple and quadratic volume (this is determined
     #  by the number of given nodes).
@@ -3990,8 +3996,8 @@ class Mesh:
     ## Creates a symmetrical copy of mesh elements
     #  @param IDsOfElements list of elements ids
     #  @param Mirror is AxisStruct or geom object(point, line, plane)
-    #  @param theMirrorType is  POINT, AXIS or PLANE
-    #  If the Mirror is a geom object this parameter is unnecessary
+    #  @param theMirrorType smeshBuilder.POINT, smeshBuilder.AXIS or smeshBuilder.PLANE
+    #         If the Mirror is a geom object this parameter is unnecessary
     #  @param Copy allows to copy element (Copy is 1) or to replace with its mirroring (Copy is 0)
     #  @param MakeGroups forces the generation of new groups from existing ones (if Copy)
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
@@ -4012,8 +4018,8 @@ class Mesh:
     ## Creates a new mesh by a symmetrical copy of mesh elements
     #  @param IDsOfElements the list of elements ids
     #  @param Mirror is AxisStruct or geom object (point, line, plane)
-    #  @param theMirrorType is  POINT, AXIS or PLANE
-    #  If the Mirror is a geom object this parameter is unnecessary
+    #  @param theMirrorType smeshBuilder.POINT, smeshBuilder.AXIS or smeshBuilder.PLANE
+    #         If the Mirror is a geom object this parameter is unnecessary
     #  @param MakeGroups to generate new groups from existing ones
     #  @param NewMeshName a name of the new mesh to create
     #  @return instance of Mesh class
@@ -4033,8 +4039,8 @@ class Mesh:
     ## Creates a symmetrical copy of the object
     #  @param theObject mesh, submesh or group
     #  @param Mirror AxisStruct or geom object (point, line, plane)
-    #  @param theMirrorType is  POINT, AXIS or PLANE
-    #  If the Mirror is a geom object this parameter is unnecessary
+    #  @param theMirrorType smeshBuilder.POINT, smeshBuilder.AXIS or smeshBuilder.PLANE
+    #         If the Mirror is a geom object this parameter is unnecessary
     #  @param Copy allows copying the element (Copy is 1) or replacing it with its mirror (Copy is 0)
     #  @param MakeGroups forces the generation of new groups from existing ones (if Copy)
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
@@ -4055,8 +4061,8 @@ class Mesh:
     ## Creates a new mesh by a symmetrical copy of the object
     #  @param theObject mesh, submesh or group
     #  @param Mirror AxisStruct or geom object (point, line, plane)
-    #  @param theMirrorType POINT, AXIS or PLANE
-    #  If the Mirror is a geom object this parameter is unnecessary
+    #  @param theMirrorType smeshBuilder.POINT, smeshBuilder.AXIS or smeshBuilder.PLANE
+    #         If the Mirror is a geom object this parameter is unnecessary
     #  @param MakeGroups forces the generation of new groups from existing ones
     #  @param NewMeshName the name of the new mesh to create
     #  @return instance of Mesh class
@@ -4420,8 +4426,9 @@ class Mesh:
     ## Creates Duplicates given elements, i.e. creates new elements based on the 
     #  same nodes as the given ones.
     #  @param theElements - container of elements to duplicate. It can be a Mesh,
-    #         sub-mesh, group, filter or a list of element IDs.
-    # @param theGroupName - a name of group to contain the generated elements.
+    #         sub-mesh, group, filter or a list of element IDs. If \a theElements is
+    #         a Mesh, elements of highest dimension are duplicated
+    #  @param theGroupName - a name of group to contain the generated elements.
     #                    If a group with such a name already exists, the new elements
     #                    are added to the existng group, else a new group is created.
     #                    If \a theGroupName is empty, new elements are not added 

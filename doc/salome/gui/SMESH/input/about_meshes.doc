@@ -97,10 +97,14 @@ generated on (if any). The node generated on the geometrical edge or
 surface in addition stores its position in parametric space of the
 associated geometrical entity.
 
+Mesh entities are identified by integer IDs starting from 1.
+Nodes and elements are countered separately, i.e. there can be a node
+and element with the same ID.
+
 SALOME supports elements of second order, without a central node
-(quadratic triangle, quadrangle, tetrahedron, hexahedron, pentahedron
-and pyramid) and with central nodes (bi-quadratic triangle and
-quadrangle and tri-quadratic hexahedron).<br>
+(quadratic triangle, quadrangle, polygon, tetrahedron, hexahedron,
+pentahedron and pyramid) and with central nodes (bi-quadratic triangle
+and quadrangle and tri-quadratic hexahedron).<br>
 Quadratic mesh can be obtained in two ways:
 - Using a global \ref quadratic_mesh_anchor "Quadratic Mesh"
 hypothesis. (Elements with the central node are not generated in this way).

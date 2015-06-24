@@ -1996,26 +1996,28 @@ SMDS_MeshFace* SMESH_MesherHelper::AddPolygonalFace (const vector<const SMDS_Mes
   SMESHDS_Mesh * meshDS = GetMeshDS();
   SMDS_MeshFace* elem = 0;
 
-  if(!myCreateQuadratic) {
+  if(!myCreateQuadratic)
+  {
     if(id)
       elem = meshDS->AddPolygonalFaceWithID(nodes, id);
     else
       elem = meshDS->AddPolygonalFace(nodes);
   }
-  else {
-    vector<const SMDS_MeshNode*> newNodes;
+  else
+  {
+    vector<const SMDS_MeshNode*> newNodes( nodes.size() * 2 );
+    newNodes = nodes;
     for ( int i = 0; i < nodes.size(); ++i )
     {
       const SMDS_MeshNode* n1 = nodes[i];
       const SMDS_MeshNode* n2 = nodes[(i+1)%nodes.size()];
       const SMDS_MeshNode* n12 = GetMediumNode( n1, n2, force3d, TopAbs_FACE );
-      newNodes.push_back( n1 );
       newNodes.push_back( n12 );
     }
     if(id)
-      elem = meshDS->AddPolygonalFaceWithID(newNodes, id);
+      elem = meshDS->AddQuadPolygonalFaceWithID(newNodes, id);
     else
-      elem = meshDS->AddPolygonalFace(newNodes);
+      elem = meshDS->AddQuadPolygonalFace(newNodes);
   }
   if ( mySetElemOnShape && myShapeID > 0 )
     meshDS->SetMeshElementOnShape( elem, myShapeID );

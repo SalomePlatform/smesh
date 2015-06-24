@@ -170,6 +170,7 @@ SET(SMESH_RESOURCES_FILES
   mesh_quad_edge.png
   mesh_quad_triangle.png
   mesh_quad_quadrangle.png
+  mesh_quad_polygon.png
   mesh_quad_tetrahedron.png
   mesh_quad_pyramid.png
   mesh_quad_pentahedron.png

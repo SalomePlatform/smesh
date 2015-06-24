@@ -960,22 +960,19 @@ namespace MED
 
       MED::TMeshInfo& aMeshInfo = *theInfo.myMeshInfo;
 
-      TValueHolder<TString, char> aMeshName(aMeshInfo.myName);
-      TValueHolder<TElemNum, med_int> anIndex(theInfo.myIndex);
-      TInt aNbElem = (TInt)theInfo.myElemNum->size();
-      TValueHolder<TElemNum, med_int> aConn(theInfo.myConn);
-      TValueHolder<EEntiteMaillage, med_entity_type> anEntity(theInfo.myEntity);
+      TValueHolder<TString, char                       > aMeshName(aMeshInfo.myName);
+      TValueHolder<TElemNum, med_int                   > anIndex  (theInfo.myIndex);
+      TValueHolder<TElemNum, med_int                   > aConn    (theInfo.myConn);
+      TValueHolder<EEntiteMaillage, med_entity_type    > anEntity (theInfo.myEntity);
+      TValueHolder<EGeometrieElement, med_geometry_type> aGeom    (theInfo.myGeom);
       TValueHolder<EConnectivite, med_connectivity_mode> aConnMode(theInfo.myConnMode);
+      TInt aNbElem = (TInt)theInfo.myElemNum->size();
 
       TErr aRet;
-      aRet = MEDmeshPolygonRd(myFile->Id(),
-                              &aMeshName,
-                              MED_NO_DT,
-                              MED_NO_IT,
-                              anEntity,
-                              aConnMode,
-                              &anIndex,
-                              &aConn);
+      aRet = MEDmeshPolygon2Rd(myFile->Id(), &aMeshName,
+                               MED_NO_DT, MED_NO_IT,
+                               anEntity, aGeom,
+                               aConnMode, &anIndex, &aConn);
 
       if(theErr) 
         *theErr = aRet;
@@ -983,18 +980,18 @@ namespace MED
         EXCEPTION(std::runtime_error,"GetPolygoneInfo - MEDmeshPolygonRd(...)");
 
       if(theInfo.myIsElemNames){
-        GetNames(theInfo,aNbElem,theInfo.myEntity,ePOLYGONE,&aRet);
+        GetNames(theInfo,aNbElem,theInfo.myEntity,theInfo.myGeom,&aRet);
         if(theErr) 
           *theErr = aRet;
       }
 
       if(theInfo.myIsElemNum){
-        GetNumeration(theInfo,aNbElem,theInfo.myEntity,ePOLYGONE,&aRet);
+        GetNumeration(theInfo,aNbElem,theInfo.myEntity,theInfo.myGeom,&aRet);
         if(theErr) 
           *theErr = aRet;
       }
 
-      GetFamilies(theInfo,aNbElem,theInfo.myEntity,ePOLYGONE,&aRet);
+      GetFamilies(theInfo,aNbElem,theInfo.myEntity,theInfo.myGeom,&aRet);
       if(theErr) 
         *theErr = aRet;
     }
@@ -1023,37 +1020,32 @@ namespace MED
       MED::TPolygoneInfo& anInfo = const_cast<MED::TPolygoneInfo&>(theInfo);
       MED::TMeshInfo& aMeshInfo = *anInfo.myMeshInfo;
 
-      TValueHolder<TString, char> aMeshName(aMeshInfo.myName);
-      TValueHolder<TElemNum, med_int> anIndex(anInfo.myIndex);
-      TValueHolder<TElemNum, med_int> aConn(anInfo.myConn);
-      TValueHolder<EEntiteMaillage, med_entity_type> anEntity(anInfo.myEntity);
+      TValueHolder<TString, char                       > aMeshName(aMeshInfo.myName);
+      TValueHolder<TElemNum, med_int                   > anIndex  (anInfo.myIndex);
+      TValueHolder<TElemNum, med_int                   > aConn    (anInfo.myConn);
+      TValueHolder<EEntiteMaillage, med_entity_type    > anEntity (anInfo.myEntity);
+      TValueHolder<EGeometrieElement, med_geometry_type> aGeom    (anInfo.myGeom);
       TValueHolder<EConnectivite, med_connectivity_mode> aConnMode(anInfo.myConnMode);
 
-      TErr aRet = MEDmeshPolygonWr(myFile->Id(),
-                                   &aMeshName,
-                                   MED_NO_DT,
-                                   MED_NO_IT,
-                                   MED_UNDEF_DT,
-                                   anEntity,
-                                   aConnMode,
-                                   anInfo.myNbElem + 1,
-                                   &anIndex,
-                                   &aConn);
-      
-      if(theErr) 
+      TErr aRet = MEDmeshPolygon2Wr(myFile->Id(), &aMeshName,
+                                    MED_NO_DT, MED_NO_IT, MED_UNDEF_DT,
+                                    anEntity, aGeom,
+                                    aConnMode, anInfo.myNbElem + 1,
+                                    &anIndex, &aConn);
+      if(theErr)
         *theErr = aRet;
       else if(aRet < 0)
         EXCEPTION(std::runtime_error,"SetPolygoneInfo - MEDmeshPolygonWr(...)");
       
-      SetNames(anInfo,theInfo.myEntity,ePOLYGONE,&aRet);
+      SetNames(anInfo,theInfo.myEntity,anInfo.myGeom,&aRet);
       if(theErr) 
         *theErr = aRet;
       
-      SetNumeration(anInfo,theInfo.myEntity,ePOLYGONE,&aRet);
+      SetNumeration(anInfo,theInfo.myEntity,anInfo.myGeom,&aRet);
       if(theErr) 
         *theErr = aRet;
       
-      SetFamilies(anInfo,theInfo.myEntity,ePOLYGONE,&aRet);
+      SetFamilies(anInfo,theInfo.myEntity,anInfo.myGeom,&aRet);
       if(theErr) 
         *theErr = aRet;
     }
@@ -1094,7 +1086,7 @@ namespace MED
                              MED_NO_DT,
                              MED_NO_IT,
                              med_entity_type(theEntity),
-                             MED_POLYGON,
+                             med_geometry_type(theGeom),
                              MED_CONNECTIVITY,
                              med_connectivity_mode(theConnMode),
                              &chgt,
@@ -1430,16 +1422,14 @@ namespace MED
       }
       return anInfo;
     }
-    
-    
+
+
     //-----------------------------------------------------------------
-    TInt
-    TVWrapper
-    ::GetNbCells(const MED::TMeshInfo& theMeshInfo, 
-                 EEntiteMaillage theEntity, 
-                 EGeometrieElement theGeom, 
-                 EConnectivite theConnMode,
-                 TErr* theErr)
+    TInt TVWrapper::GetNbCells(const MED::TMeshInfo& theMeshInfo,
+                               EEntiteMaillage theEntity,
+                               EGeometrieElement theGeom,
+                               EConnectivite theConnMode,
+                               TErr* theErr)
     {
       TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
 
@@ -1449,48 +1439,50 @@ namespace MED
       MED::TMeshInfo& aMeshInfo = const_cast<MED::TMeshInfo&>(theMeshInfo);
       TValueHolder<TString, char> aMeshName(aMeshInfo.myName);
       med_bool chgt,trsf;
-      if(theGeom!=MED::ePOLYGONE && theGeom!=MED::ePOLYEDRE && theGeom != MED::eBALL)
+      switch ( theGeom )
       {
-        return MEDmeshnEntity(myFile->Id(),
-                              &aMeshName,
-                              MED_NO_DT,
-                              MED_NO_IT,
-                              med_entity_type(theEntity),
-                              med_geometry_type(theGeom),
-                              MED_CONNECTIVITY,
-                              med_connectivity_mode(theConnMode),
-                              &chgt,
-                              &trsf);
-      }
-      else if(theGeom==MED::ePOLYGONE)
+      case MED::ePOLYGONE:
+      case MED::ePOLYGON2:
       {
-        return MEDmeshnEntity(myFile->Id(),&aMeshName,MED_NO_DT,MED_NO_IT,med_entity_type(theEntity),
-                              MED_POLYGON,MED_INDEX_NODE,med_connectivity_mode(theConnMode),&chgt,&trsf)-1;
+        return MEDmeshnEntity(myFile->Id(),&aMeshName,
+                              MED_NO_DT,MED_NO_IT,
+                              med_entity_type(theEntity),med_geometry_type(theGeom),
+                              MED_INDEX_NODE,med_connectivity_mode(theConnMode),
+                              &chgt,&trsf)-1;
       }
-      else if ( theGeom==MED::ePOLYEDRE )
+      case MED::ePOLYEDRE:
       {
-        return MEDmeshnEntity(myFile->Id(),&aMeshName,MED_NO_DT,MED_NO_IT,med_entity_type(theEntity),
-                              MED_POLYHEDRON,MED_INDEX_FACE,med_connectivity_mode(theConnMode),&chgt,&trsf)-1;
+        return MEDmeshnEntity(myFile->Id(),&aMeshName,
+                              MED_NO_DT,MED_NO_IT,
+                              med_entity_type(theEntity),MED_POLYHEDRON,
+                              MED_INDEX_FACE,med_connectivity_mode(theConnMode),
+                              &chgt,&trsf)-1;
       }
-      else if ( theGeom==MED::eBALL )
+      case MED::eBALL:
       {
         return GetNbBalls( theMeshInfo );
+      }
+      default:
+      {
+        return MEDmeshnEntity(myFile->Id(),&aMeshName,
+                              MED_NO_DT,MED_NO_IT,
+                              med_entity_type(theEntity),med_geometry_type(theGeom),
+                              MED_CONNECTIVITY,med_connectivity_mode(theConnMode),
+                              &chgt,&trsf);
+      }
       }
       return 0;
     }
 
 
     //----------------------------------------------------------------------------
-    void
-    TVWrapper
-    ::GetCellInfo(MED::TCellInfo& theInfo,
-                  TErr* theErr)
+    void TVWrapper::GetCellInfo(MED::TCellInfo& theInfo, TErr* theErr)
     {
       TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
 
       if(theErr && *theErr < 0)
         return;
-      
+
       MED::TMeshInfo& aMeshInfo = *theInfo.myMeshInfo;
 
       TValueHolder<TString, char>                        aMeshName    (aMeshInfo.myName);

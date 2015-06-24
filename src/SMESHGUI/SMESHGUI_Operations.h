@@ -145,6 +145,7 @@ namespace SMESHOp {
     OpQuadraticPentahedron   = 4107,   // MENU MODIFICATION - ADD - QUADRATIC PENTAHEDRON
     OpQuadraticHexahedron    = 4108,   // MENU MODIFICATION - ADD - QUADRATIC HEXAHEDRON
     OpTriQuadraticHexahedron = 4109,   // MENU MODIFICATION - ADD - TRIQUADRATIC HEXAHEDRON
+    OpQuadraticPolygon       = 4110,   // MENU MODIFICATION - ADD - QUADRATIC POLYGON
     OpRemoveNodes            = 4200,   // MENU MODIFICATION - REMOVE - NODE
     OpRemoveElements         = 4201,   // MENU MODIFICATION - REMOVE - ELEMENTS
     OpRemoveOrphanNodes      = 4202,   // MENU MODIFICATION - REMOVE - ORPHAN NODES

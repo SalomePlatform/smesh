@@ -3765,13 +3765,13 @@ CORBA::Long SMESH_Mesh_i::NbBiQuadQuadrangles()throw(SALOME::SALOME_Exception)
   return _impl->NbBiQuadQuadrangles();
 }
 
-CORBA::Long SMESH_Mesh_i::NbPolygons()throw(SALOME::SALOME_Exception)
+CORBA::Long SMESH_Mesh_i::NbPolygons(SMESH::ElementOrder order) throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
   if ( _preMeshInfo )
-    return _preMeshInfo->NbPolygons();
+    return _preMeshInfo->NbPolygons((SMDSAbs_ElementOrder) order);
 
-  return _impl->NbPolygons();
+  return _impl->NbPolygons((SMDSAbs_ElementOrder)order);
 }
 
 CORBA::Long SMESH_Mesh_i::NbFacesOfOrder(SMESH::ElementOrder order)
@@ -4851,6 +4851,7 @@ SMESH_Mesh_i::MakeGroupsOfBadInputElements( int         theSubShapeID,
     THROW_SALOME_CORBA_EXCEPTION( "empty group name",SALOME::BAD_PARAM );
 
   SMESH::ListOfGroups_var groups = new SMESH::ListOfGroups;
+  ::SMESH_MeshEditor::ElemFeatures elemType;
 
   // submesh by subshape id
   if ( !_impl->HasShapeToMesh() ) theSubShapeID = 1;
@@ -4883,7 +4884,7 @@ SMESH_Mesh_i::MakeGroupsOfBadInputElements( int         theSubShapeID,
           if ( elem )
           {
             ::SMESH_MeshEditor editor( _impl );
-            elem = editor.AddElement( nodes, elem->GetType(), elem->IsPoly() );
+            elem = editor.AddElement( nodes, elemType.Init( elem ));
           }
         }
         if ( elem )

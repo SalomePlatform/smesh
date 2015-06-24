@@ -605,12 +605,21 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     if ( polyTypesSupported ) {
       aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                                ePOLYGONE,
-                                               nbElemInfo.NbPolygons(),
+                                               nbElemInfo.NbPolygons( ORDER_LINEAR ),
                                                SMDSAbs_Face));
       // we need one more loop on poly elements to count nb of their nodes
       aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                                ePOLYGONE,
-                                               nbElemInfo.NbPolygons(),
+                                               nbElemInfo.NbPolygons( ORDER_LINEAR ),
+                                               SMDSAbs_Face));
+      aTElemTypeDatas.push_back( TElemTypeData(anEntity,
+                                               ePOLYGON2,
+                                               nbElemInfo.NbPolygons( ORDER_QUADRATIC ),
+                                               SMDSAbs_Face));
+      // we need one more loop on QUAD poly elements to count nb of their nodes
+      aTElemTypeDatas.push_back( TElemTypeData(anEntity,
+                                               ePOLYGON2,
+                                               nbElemInfo.NbPolygons( ORDER_QUADRATIC ),
                                                SMDSAbs_Face));
     }
 #ifdef _ELEMENTS_BY_DIM_
@@ -706,9 +715,14 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 
       // Treat POLYGONs
       // ---------------
-      if ( aElemTypeData->_geomType == ePOLYGONE )
+      if ( aElemTypeData->_geomType == ePOLYGONE ||
+           aElemTypeData->_geomType == ePOLYGON2 )
       {
-        elemIterator = myMesh->elementGeomIterator( SMDSGeom_POLYGON );
+        if ( aElemTypeData->_geomType == ePOLYGONE )
+          elemIterator = myMesh->elementEntityIterator( SMDSEntity_Polygon );
+        else
+          elemIterator = myMesh->elementEntityIterator( SMDSEntity_Quad_Polygon );
+
         if ( nbPolygonNodes == 0 ) {
           // Count nb of nodes
           while ( elemIterator->more() ) {
@@ -758,9 +772,10 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
               break;
           }
           myMed->SetPolygoneInfo(aPolygoneInfo);
-        }
 
-      } 
+          nbPolygonNodes = 0; // to treat next polygon type
+        }
+      }
 
       // Treat POLYEDREs
       // ----------------

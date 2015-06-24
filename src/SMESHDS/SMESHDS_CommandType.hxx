@@ -49,6 +49,7 @@ enum SMESHDS_CommandType {
   SMESHDS_AddQuadEdge,
   SMESHDS_AddQuadTriangle,
   SMESHDS_AddQuadQuadrangle,
+  SMESHDS_AddQuadPolygon,
   SMESHDS_AddQuadTetrahedron,
   SMESHDS_AddQuadPyramid,
   SMESHDS_AddQuadPentahedron,

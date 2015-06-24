@@ -2422,6 +2422,7 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::ListOfIDSources& theMeshesArray,
   ::SMESH_MeshEditor aNewEditor(&aLocMesh);
   SMESH::ListOfGroups_var aListOfGroups;
 
+  ::SMESH_MeshEditor::ElemFeatures  elemType;
   std::vector<const SMDS_MeshNode*> aNodesArray;
 
   // loop on sub-meshes
@@ -2476,31 +2477,12 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::ListOfIDSources& theMeshesArray,
       }
 
       // creates a corresponding element on existent nodes in new mesh
-      aNewElem = 0;
-      switch ( anElem->GetEntityType() )
-      {
-      case SMDSEntity_Polyhedra:
-        if ( const SMDS_VtkVolume* aVolume =
-             dynamic_cast<const SMDS_VtkVolume*> (anElem))
-        {
-          aNewElem = aNewMeshDS->AddPolyhedralVolume( aNodesArray,
-                                                      aVolume->GetQuantities() );
-        }
-        break;
-      case SMDSEntity_Ball:
-        if ( const SMDS_BallElement* aBall =
-             dynamic_cast<const SMDS_BallElement*> (anElem))
-        {
-          aNewElem = aNewEditor.AddElement( aNodesArray, SMDSAbs_Ball,
-                                            /*isPoly=*/false, /*id=*/0,
-                                            aBall->GetDiameter() );
-        }
-        break;
-      case SMDSEntity_Node:
-        break;
-      default:
-        aNewElem = aNewEditor.AddElement( aNodesArray, anElem->GetType(), anElem->IsPoly() );
-      }
+      if ( anElem->GetType() == SMDSAbs_Node )
+        aNewElem = 0;
+      else
+        aNewElem =
+          aNewEditor.AddElement( aNodesArray, elemType.Init( anElem, /*basicOnly=*/false ));
+
       if ( aNewElem )
         elemsMap.insert( make_pair( anElem, aNewElem ));
 
@@ -2737,6 +2719,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CopyMesh(SMESH::SMESH_IDSource_ptr meshPart,
   }
   SMESHDS_Mesh* newMeshDS = newMesh_i->GetImpl().GetMeshDS();
   ::SMESH_MeshEditor editor( &newMesh_i->GetImpl() );
+  ::SMESH_MeshEditor::ElemFeatures elemType;
 
   // 3. Get elements to copy
 
@@ -2808,30 +2791,12 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CopyMesh(SMESH::SMESH_IDSource_ptr meshPart,
     // add elements
     if ( elem->GetType() != SMDSAbs_Node )
     {
-      int ID = toKeepIDs ? elem->GetID() : 0;
-      const SMDS_MeshElement * newElem;
-      switch ( elem->GetEntityType() ) {
-      case SMDSEntity_Polyhedra:
-        if ( toKeepIDs )
-          newElem = editor.GetMeshDS()->
-            AddPolyhedralVolumeWithID( nodes,
-                                       static_cast<const SMDS_VtkVolume*>(elem)->GetQuantities(),
-                                       ID);
-        else
-          newElem = editor.GetMeshDS()->
-            AddPolyhedralVolume( nodes,
-                                 static_cast<const SMDS_VtkVolume*>(elem)->GetQuantities());
-        break;
-      case SMDSEntity_Ball:
-        newElem = editor.AddElement( nodes, SMDSAbs_Ball, false, ID,
-                                     static_cast<const SMDS_BallElement*>(elem)->GetDiameter());
-        break;
-      default:
-        newElem = editor.AddElement( nodes,elem->GetType(),elem->IsPoly(),ID);
+      elemType.Init( elem, /*basicOnly=*/false );
+      if ( toKeepIDs ) elemType.SetID( elem->GetID() );
 
+      const SMDS_MeshElement * newElem = editor.AddElement( nodes, elemType );
       if ( toCopyGroups && !toKeepIDs )
         e2eMapByType[ elem->GetType() ].insert( make_pair( elem, newElem ));
-      }
     }
   } // while ( srcElemIt->more() )
 

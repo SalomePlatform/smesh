@@ -39,7 +39,7 @@ public:
 
 private:
   void InverseEntityMode( unsigned int& theOutputMode,
-			  unsigned int theMode );
+                          unsigned int theMode );
 
 private slots:
   void              onOk();

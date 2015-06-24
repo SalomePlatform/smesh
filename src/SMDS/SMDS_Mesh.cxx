@@ -1339,8 +1339,6 @@ SMDS_Mesh::AddPolygonalFaceWithID (const vector<const SMDS_MeshNode*> & nodes,
   }
   else
   {
-    //#ifdef VTK_HAVE_POLYHEDRON
-    //MESSAGE("AddPolygonalFaceWithID vtk " << ID);
     myNodeIds.resize( nodes.size() );
     for ( size_t i = 0; i < nodes.size(); ++i )
       myNodeIds[i] = nodes[i]->getVtkId();
@@ -1354,25 +1352,12 @@ SMDS_Mesh::AddPolygonalFaceWithID (const vector<const SMDS_MeshNode*> & nodes,
       return 0;
     }
     face = facevtk;
-    //#else
-    //    MESSAGE("AddPolygonalFaceWithID smds " << ID);
-    //     for ( int i = 0; i < nodes.size(); ++i )
-    //      if ( !nodes[ i ] ) return 0;
-    //      face = new SMDS_PolygonalFaceOfNodes(nodes);
-    //#endif
+
     adjustmyCellsCapacity(ID);
     myCells[ID] = face;
     myInfo.myNbPolygons++;
   }
 
-  //#ifndef VTK_HAVE_POLYHEDRON
-  //  if (!registerElement(ID, face))
-  //    {
-  //      registerElement(myElementIDFactory->GetFreeID(), face);
-  //      //RemoveElement(face, false);
-  //      //face = NULL;
-  //    }
-  //#endif
   return face;
 }
 
@@ -1384,6 +1369,69 @@ SMDS_Mesh::AddPolygonalFaceWithID (const vector<const SMDS_MeshNode*> & nodes,
 SMDS_MeshFace* SMDS_Mesh::AddPolygonalFace (const vector<const SMDS_MeshNode*> & nodes)
 {
   return SMDS_Mesh::AddPolygonalFaceWithID(nodes, myElementIDFactory->GetFreeID());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Add a quadratic polygon defined by its nodes IDs
+///////////////////////////////////////////////////////////////////////////////
+
+SMDS_MeshFace* SMDS_Mesh::AddQuadPolygonalFaceWithID (const vector<int> & nodes_ids,
+                                                      const int           ID)
+{
+  vector<const SMDS_MeshNode*> nodes( nodes_ids.size() );
+  for ( size_t i = 0; i < nodes.size(); i++) {
+    nodes[i] = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(nodes_ids[i]);
+    if (!nodes[i]) return NULL;
+  }
+  return SMDS_Mesh::AddQuadPolygonalFaceWithID(nodes, ID);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Add a quadratic polygon defined by its nodes
+///////////////////////////////////////////////////////////////////////////////
+
+SMDS_MeshFace*
+SMDS_Mesh::AddQuadPolygonalFaceWithID (const vector<const SMDS_MeshNode*> & nodes,
+                                       const int                            ID)
+{
+  SMDS_MeshFace * face;
+
+  if ( NbFaces() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
+  if (hasConstructionEdges())
+  {
+    MESSAGE("Error : Not implemented");
+    return NULL;
+  }
+  else
+  {
+    myNodeIds.resize( nodes.size() );
+    for ( size_t i = 0; i < nodes.size(); ++i )
+      myNodeIds[i] = nodes[i]->getVtkId();
+
+    SMDS_VtkFace *facevtk = myFacePool->getNew();
+    facevtk->initQuadPoly(myNodeIds, this);
+    if (!this->registerElement(ID,facevtk))
+    {
+      this->myGrid->GetCellTypesArray()->SetValue(facevtk->getVtkId(), VTK_EMPTY_CELL);
+      myFacePool->destroy(facevtk);
+      return 0;
+    }
+    face = facevtk;
+    adjustmyCellsCapacity(ID);
+    myCells[ID] = face;
+    myInfo.myNbQuadPolygons++;
+  }
+  return face;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Add a quadratic polygon defined by its nodes.
+/// An ID is automatically affected to the created face.
+///////////////////////////////////////////////////////////////////////////////
+
+SMDS_MeshFace* SMDS_Mesh::AddQuadPolygonalFace (const vector<const SMDS_MeshNode*> & nodes)
+{
+  return SMDS_Mesh::AddQuadPolygonalFaceWithID(nodes, myElementIDFactory->GetFreeID());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1779,8 +1827,8 @@ SMDS_MeshFace * SMDS_Mesh::createQuadrangle(const SMDS_MeshNode * node1,
 
 void SMDS_Mesh::RemoveNode(const SMDS_MeshNode * node)
 {
-    MESSAGE("RemoveNode");
-        RemoveElement(node, true);
+  MESSAGE("RemoveNode");
+  RemoveElement(node, true);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1789,7 +1837,7 @@ void SMDS_Mesh::RemoveNode(const SMDS_MeshNode * node)
 
 void SMDS_Mesh::Remove0DElement(const SMDS_Mesh0DElement * elem0d)
 {
-    MESSAGE("Remove0DElement");
+  MESSAGE("Remove0DElement");
   RemoveElement(elem0d,true);
 }
 
@@ -1799,8 +1847,8 @@ void SMDS_Mesh::Remove0DElement(const SMDS_Mesh0DElement * elem0d)
 
 void SMDS_Mesh::RemoveEdge(const SMDS_MeshEdge * edge)
 {
-    MESSAGE("RemoveEdge");
-        RemoveElement(edge,true);
+  MESSAGE("RemoveEdge");
+  RemoveElement(edge,true);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1809,8 +1857,8 @@ void SMDS_Mesh::RemoveEdge(const SMDS_MeshEdge * edge)
 
 void SMDS_Mesh::RemoveFace(const SMDS_MeshFace * face)
 {
-    MESSAGE("RemoveFace");
-        RemoveElement(face, true);
+  MESSAGE("RemoveFace");
+  RemoveElement(face, true);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1819,8 +1867,8 @@ void SMDS_Mesh::RemoveFace(const SMDS_MeshFace * face)
 
 void SMDS_Mesh::RemoveVolume(const SMDS_MeshVolume * volume)
 {
-    MESSAGE("RemoveVolume");
-        RemoveElement(volume, true);
+  MESSAGE("RemoveVolume");
+  RemoveElement(volume, true);
 }
 
 //=======================================================================
@@ -1830,8 +1878,8 @@ void SMDS_Mesh::RemoveVolume(const SMDS_MeshVolume * volume)
 
 bool SMDS_Mesh::RemoveFromParent()
 {
-        if (myParent==NULL) return false;
-        else return (myParent->RemoveSubMesh(this));
+  if (myParent==NULL) return false;
+  else return (myParent->RemoveSubMesh(this));
 }
 
 //=======================================================================
@@ -1841,20 +1889,20 @@ bool SMDS_Mesh::RemoveFromParent()
 
 bool SMDS_Mesh::RemoveSubMesh(const SMDS_Mesh * aMesh)
 {
-        bool found = false;
+  bool found = false;
 
-        list<SMDS_Mesh *>::iterator itmsh=myChildren.begin();
-        for (; itmsh!=myChildren.end() && !found; itmsh++)
-        {
-                SMDS_Mesh * submesh = *itmsh;
-                if (submesh == aMesh)
-                {
-                        found = true;
-                        myChildren.erase(itmsh);
-                }
-        }
+  list<SMDS_Mesh *>::iterator itmsh=myChildren.begin();
+  for (; itmsh!=myChildren.end() && !found; itmsh++)
+  {
+    SMDS_Mesh * submesh = *itmsh;
+    if (submesh == aMesh)
+    {
+      found = true;
+      myChildren.erase(itmsh);
+    }
+  }
 
-        return found;
+  return found;
 }
 
 //=======================================================================
@@ -1874,10 +1922,10 @@ bool SMDS_Mesh::ChangeElementNodes(const SMDS_MeshElement * element,
   bool Ok = false;
   SMDS_MeshCell* cell = dynamic_cast<SMDS_MeshCell*>((SMDS_MeshElement*) element);
   if (cell)
-    {
-      Ok = cell->vtkOrder(nodes, nbnodes);
-      Ok = cell->ChangeNodes(nodes, nbnodes);
-    }
+  {
+    Ok = cell->vtkOrder(nodes, nbnodes);
+    Ok = cell->ChangeNodes(nodes, nbnodes);
+  }
 
   if ( Ok ) { // update InverseElements
 

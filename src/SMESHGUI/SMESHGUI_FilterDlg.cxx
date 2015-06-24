@@ -1740,7 +1740,7 @@ static QList<int> entityTypes( const int theType )
     typeIds.append( SMDSEntity_Quad_Quadrangle );
     typeIds.append( SMDSEntity_BiQuad_Quadrangle );
     typeIds.append( SMDSEntity_Polygon );
-    //typeIds.append( SMDSEntity_Quad_Polygon );
+    typeIds.append( SMDSEntity_Quad_Polygon );
     break;
   case SMESH::VOLUME:
     typeIds.append( SMDSEntity_Tetra );

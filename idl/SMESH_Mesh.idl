@@ -66,6 +66,7 @@ module SMESH
       ADD_QUADEDGE,
       ADD_QUADTRIANGLE,
       ADD_QUADQUADRANGLE,
+      ADD_QUADPOLYGON,
       ADD_QUADTETRAHEDRON,
       ADD_QUADPYRAMID,
       ADD_QUADPENTAHEDRON,
@@ -89,18 +90,18 @@ module SMESH
 
   struct PointStruct { double x;
                        double y;
-                       double z; } ;
+                       double z; };
 
   typedef sequence<PointStruct> nodes_array;
 
-  struct DirStruct   { PointStruct PS ; } ;          // analog to OCCT gp_Vec
+  struct DirStruct   { PointStruct PS; };          // analog to OCCT gp_Vec
 
   struct AxisStruct  { double x;
                        double y;
                        double z;
                        double vx;
                        double vy;
-                       double vz; } ;
+                       double vz; };
   /*!
    * Node location on a shape
    */
@@ -132,7 +133,7 @@ module SMESH
     BALL,
     NB_ELEMENT_TYPES
   };
-  typedef sequence<ElementType> array_of_ElementType ;
+  typedef sequence<ElementType> array_of_ElementType;
 
   /*!
    * Enumeration for element geometry type, like SMDSAbs_GeometryType in SMDSAbs_ElementType.hxx
@@ -775,7 +776,7 @@ module SMESH
     long NbBiQuadQuadrangles()
       raises (SALOME::SALOME_Exception);
 
-    long NbPolygons()
+    long NbPolygons(in ElementOrder order)
       raises (SALOME::SALOME_Exception);
 
     long NbVolumes()

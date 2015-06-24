@@ -511,6 +511,14 @@ public:
 
   virtual SMDS_MeshFace* AddPolygonalFace (const std::vector<const SMDS_MeshNode*>& nodes);
 
+  virtual SMDS_MeshFace* AddQuadPolygonalFaceWithID(const std::vector<int> & nodes_ids,
+                                                    const int                ID);
+
+  virtual SMDS_MeshFace* AddQuadPolygonalFaceWithID(const std::vector<const SMDS_MeshNode*> & nodes,
+                                                    const int                                 ID);
+
+  virtual SMDS_MeshFace* AddQuadPolygonalFace(const std::vector<const SMDS_MeshNode*> & nodes);
+
   virtual SMDS_MeshVolume* AddPolyhedralVolumeWithID
                            (const std::vector<int>& nodes_ids,
                             const std::vector<int>& quantities,

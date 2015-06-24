@@ -79,6 +79,7 @@ bool InitEntity2GeomSet()
   aGeomFACESet.insert(eQUAD8);
   aGeomFACESet.insert(eQUAD9);
   aGeomFACESet.insert(ePOLYGONE);
+  aGeomFACESet.insert(ePOLYGON2);
 
   TGeomSet& aGeomMAILLESet = Entity2GeomSet[eMAILLE];
   aGeomMAILLESet.insert(ePOINT1);

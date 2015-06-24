@@ -147,6 +147,7 @@ namespace
       }
       {
         cgTypes[SMDSEntity_Polygon]         = CGNS_ENUMV( NGON_n );
+        cgTypes[SMDSEntity_Quad_Polygon]    = CGNS_ENUMV( NGON_n );
         cgTypes[SMDSEntity_Polyhedra]       = CGNS_ENUMV( NFACE_n );
         cgTypes[SMDSEntity_Hexagonal_Prism] = CGNS_ENUMV( NFACE_n );
       }
@@ -363,6 +364,21 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
         elemData.push_back( elem->NbNodes() );
         for ( int i = 0, nb = elem->NbNodes(); i < nb; ++i )
           elemData.push_back( cgnsID( elem->GetNode(i), n2cgID ));
+        if ( elem->GetID() != cgID )
+          elem2cgID.insert( elem2cgID.end(), make_pair( elem, cgID ));
+        ++cgID;
+        elem = elemIt->more() ? elemIt->next() : 0;
+      }
+      while ( elem && elem->GetEntityType() == elemType );
+
+    else if ( elemType == SMDSEntity_Quad_Polygon ) // QUADRATIC POLYGONS
+      do // write as linear NGON_n
+      {
+        elemData.push_back( elem->NbNodes() );
+        interlace = & SMDS_MeshCell::interlacedSmdsOrder( SMDSEntity_Quad_Polygon,
+                                                          elem->NbNodes() )[0];
+        for ( int i = 0, nb = elem->NbNodes(); i < nb; ++i )
+          elemData.push_back( cgnsID( elem->GetNode( interlace[i] ), n2cgID ));
         if ( elem->GetID() != cgID )
           elem2cgID.insert( elem2cgID.end(), make_pair( elem, cgID ));
         ++cgID;

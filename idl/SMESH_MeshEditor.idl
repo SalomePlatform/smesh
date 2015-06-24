@@ -144,6 +144,13 @@ module SMESH
     long AddPolygonalFace(in long_array IdsOfNodes) raises (SALOME::SALOME_Exception);
 
     /*!
+     * Create a quadratic polygonal face
+     *  \param IdsOfNodes - nodes of the polygon; corner nodes follow first
+     *  \return long - ID of a new polygon
+     */
+    long AddQuadPolygonalFace(in long_array IdsOfNodes) raises (SALOME::SALOME_Exception);
+
+    /*!
      *  Create volume, either linear and quadratic (this is determed
      *  by number of given nodes).
      *  \param IdsOfNodes List of node IDs for creation of element.

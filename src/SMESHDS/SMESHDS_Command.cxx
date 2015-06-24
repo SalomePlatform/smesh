@@ -296,6 +296,28 @@ void SMESHDS_Command::AddPolygonalFace (const int               ElementID,
 }
 
 //=======================================================================
+//function : AddQuadPolygonalFace
+//purpose  :
+//=======================================================================
+void SMESHDS_Command::AddQuadPolygonalFace (const int               ElementID,
+                                            const std::vector<int>& nodes_ids)
+{
+  if ( myType != SMESHDS_AddQuadPolygon) {
+    MESSAGE("SMESHDS_Command::AddQuadraticPolygonalFace : Bad Type");
+    return;
+  }
+  myIntegers.push_back(ElementID);
+
+  int i, nbNodes = nodes_ids.size();
+  myIntegers.push_back(nbNodes);
+  for (i = 0; i < nbNodes; i++) {
+    myIntegers.push_back(nodes_ids[i]);
+  }
+
+  myNumber++;
+}
+
+//=======================================================================
 //function : AddPolyhedralVolume
 //purpose  : 
 //=======================================================================

@@ -793,6 +793,10 @@
         <translation>Polygon</translation>
     </message>
     <message>
+        <source>MEN_QUADRATIC_POLYGON</source>
+        <translation>Quadratic Polygon</translation>
+    </message>
+    <message>
         <source>MEN_POLYHEDRON</source>
         <translation>Polyhedron</translation>
     </message>
@@ -1127,8 +1131,13 @@ Please, select a mesh and try again</translation>
 Please enter a name of new group to be created or choose an existing one.</translation>
     </message>
     <message>
-        <source>MESH_STANDALONE_GRP_CHOSEN</source>
+        <source>MESH_GEOM_GRP_CHOSEN</source>
         <translation>Group on geometry is chosen: %1.
+Do you want to convert it to the standalone group?</translation>
+    </message>
+    <message>
+        <source>MESH_FILTER_GRP_CHOSEN</source>
+        <translation>Group on filter is chosen: %1.
 Do you want to convert it to the standalone group?</translation>
     </message>
     <message>
@@ -1224,6 +1233,14 @@ Please enter correct values and try again</translation>
     <message>
         <source>SMESH_ADD_POLYGON_TITLE</source>
         <translation>Add Polygon</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_QUADRATIC_POLYGON</source>
+        <translation>Add Quadratic polygon</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_QUADRATIC_POLYGON_TITLE</source>
+        <translation>Add Quadratic Polygon</translation>
     </message>
     <message>
         <source>SMESH_ADD_PENTA</source>
@@ -3225,6 +3242,10 @@ Use Display Entity menu command to show them.
         <translation>Polygon</translation>
     </message>
     <message>
+        <source>STB_QUADRATIC_POLYGON</source>
+        <translation>Quadratic Polygon</translation>
+    </message>
+    <message>
         <source>STB_POLYHEDRON</source>
         <translation>Polyhedron</translation>
     </message>
@@ -3879,6 +3900,10 @@ Use Display Entity menu command to show them.
     <message>
         <source>TOP_POLYGON</source>
         <translation>Polygon</translation>
+    </message>
+    <message>
+        <source>TOP_QUADRATIC_POLYGON</source>
+        <translation>Quadratic Polygon</translation>
     </message>
     <message>
         <source>TOP_POLYHEDRON</source>

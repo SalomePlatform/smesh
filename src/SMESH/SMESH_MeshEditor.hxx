@@ -73,21 +73,49 @@ public:
   void                           ClearLastCreated();
   SMESH_ComputeErrorPtr &        GetError() { return myError; }
 
+  // --------------------------------------------------------------------------------
+  struct ElemFeatures //!< Features of element to create
+  {
+    SMDSAbs_ElementType myType;
+    bool                myIsPoly, myIsQuad;
+    int                 myID;
+    double              myBallDiameter;
+    std::vector<int>    myPolyhedQuantities;
+
+    ElemFeatures( SMDSAbs_ElementType type=SMDSAbs_All, bool isPoly=false, bool isQuad=false )
+      :myType( type ), myIsPoly(isPoly), myIsQuad(isQuad), myID(-1), myBallDiameter(0) {}
+
+    ElemFeatures& Init( SMDSAbs_ElementType type, bool isPoly=false, bool isQuad=false )
+    { myType = type; myIsPoly = isPoly; myIsQuad = isQuad; return *this; }
+
+    ElemFeatures& Init( const SMDS_MeshElement* elem, bool basicOnly=true );
+
+    ElemFeatures& Init( double diameter )
+    { myType = SMDSAbs_Ball; myBallDiameter = diameter; return *this; }
+
+    ElemFeatures& Init( vector<int>& quanities, bool isQuad=false )
+    { myType = SMDSAbs_Volume; myIsPoly = 1; myIsQuad = isQuad;
+      myPolyhedQuantities.swap( quanities ); return *this; }
+
+    ElemFeatures& Init( const vector<int>& quanities, bool isQuad=false )
+    { myType = SMDSAbs_Volume; myIsPoly = 1; myIsQuad = isQuad;
+      myPolyhedQuantities = quanities; return *this; }
+
+    ElemFeatures& SetPoly(bool isPoly) { myIsPoly = isPoly; return *this; }
+    ElemFeatures& SetQuad(bool isQuad) { myIsQuad = isQuad; return *this; }
+    ElemFeatures& SetID  (int ID)      { myID = ID; return *this; }
+  };
+
   /*!
    * \brief Add element
    */
   SMDS_MeshElement* AddElement(const std::vector<const SMDS_MeshNode*> & nodes,
-                               const SMDSAbs_ElementType                 type,
-                               const bool                                isPoly,
-                               const int                                 ID = -1,
-                               const double                              ballDiameter=0.);
+                               const ElemFeatures&                       features);
   /*!
    * \brief Add element
    */
-  SMDS_MeshElement* AddElement(const std::vector<int>  & nodeIDs,
-                               const SMDSAbs_ElementType type,
-                               const bool                isPoly,
-                               const int                 ID = -1);
+  SMDS_MeshElement* AddElement(const std::vector<int> & nodeIDs,
+                               const ElemFeatures&      features);
 
   int Remove (const std::list< int >& theElemIDs, const bool isNodes);
   // Remove a node or an element.
@@ -741,11 +769,11 @@ public:
   void LinearAngleVariation(const int     NbSteps,
                             list<double>& theAngles);
 
-  bool doubleNodes( SMESHDS_Mesh*                                           theMeshDS,
-                    const TIDSortedElemSet&                                 theElems,
-                    const TIDSortedElemSet&                                 theNodesNot,
-                    std::map< const SMDS_MeshNode*, const SMDS_MeshNode* >& theNodeNodeMap,
-                    const bool                                              theIsDoubleElem );
+  bool doubleNodes( SMESHDS_Mesh*           theMeshDS,
+                    const TIDSortedElemSet& theElems,
+                    const TIDSortedElemSet& theNodesNot,
+                    TNodeNodeMap&           theNodeNodeMap,
+                    const bool              theIsDoubleElem );
 
   void copyPosition( const SMDS_MeshNode* from,
                      const SMDS_MeshNode* to );

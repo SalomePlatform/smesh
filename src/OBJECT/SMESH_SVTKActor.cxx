@@ -123,7 +123,7 @@ SMESH_SVTKActor
   SVTK::CopyPoints( GetSource(), aSourceDataSet );
   SVTK::CopyPoints( myBallGrid, aSourceDataSet );
   SVTK::CopyPoints( my0DGrid,    aSourceDataSet );
-  
+
 
   int aNbOfParts = theMapIndex.Extent();
 
@@ -143,12 +143,14 @@ SMESH_SVTKActor
       {
         if(aCell->GetCellType() == VTK_VERTEX ) {
           my0DGrid->InsertNextCell(aCell->GetCellType(),aCell->GetPointIds());
-        } else if(aCell->GetCellType() == VTK_POLY_VERTEX ) {
+        }
+        else if(aCell->GetCellType() == VTK_POLY_VERTEX ) {
           vtkIdType newCellId = myBallGrid->InsertNextCell(aCell->GetCellType(),aCell->GetPointIds());
           if(myVisualObj) {
             outputCD->CopyData(cd, myVisualObj->GetElemVTKId(aPartId), newCellId);
           }
-        } else {
+        }
+        else {
           myUnstructuredGrid->InsertNextCell(aCell->GetCellType(),aCell->GetPointIds());
         }
       }

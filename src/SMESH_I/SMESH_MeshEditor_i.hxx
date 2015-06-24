@@ -117,6 +117,8 @@ public:
     throw (SALOME::SALOME_Exception);
   CORBA::Long AddPolygonalFace(const SMESH::long_array & IDsOfNodes)
     throw (SALOME::SALOME_Exception);
+  CORBA::Long AddQuadPolygonalFace(const SMESH::long_array & IDsOfNodes)
+    throw (SALOME::SALOME_Exception);
   CORBA::Long AddVolume(const SMESH::long_array & IDsOfNodes)
     throw (SALOME::SALOME_Exception);
   CORBA::Long AddPolyhedralVolume(const SMESH::long_array & IDsOfNodes,

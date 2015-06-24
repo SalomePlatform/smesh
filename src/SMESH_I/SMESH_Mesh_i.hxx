@@ -315,7 +315,7 @@ public:
   CORBA::Long NbBiQuadQuadrangles()
     throw (SALOME::SALOME_Exception);
 
-  CORBA::Long NbPolygons()
+  CORBA::Long NbPolygons(SMESH::ElementOrder order=SMESH::ORDER_ANY)
     throw (SALOME::SALOME_Exception);
 
   CORBA::Long NbVolumes()

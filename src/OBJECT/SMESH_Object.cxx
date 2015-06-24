@@ -28,14 +28,16 @@
 #include "SMESH_ObjectDef.h"
 #include "SMESH_ActorUtils.h"
 
-#include "SMDS_Mesh.hxx"
-#include "SMDS_PolyhedralVolumeOfNodes.hxx"
 #include "SMDS_BallElement.hxx"
+#include "SMDS_Mesh.hxx"
+#include "SMDS_MeshCell.hxx"
+#include "SMDS_PolyhedralVolumeOfNodes.hxx"
 #include "SMESH_Actor.h"
 #include "SMESH_ControlsDef.hxx"
-#include "SalomeApp_Application.h"
-#include "VTKViewer_ExtractUnstructuredGrid.h"
-#include "VTKViewer_CellLocationsArray.h"
+
+#include <SalomeApp_Application.h>
+#include <VTKViewer_ExtractUnstructuredGrid.h>
+#include <VTKViewer_CellLocationsArray.h>
 
 #include CORBA_SERVER_HEADER(SMESH_Gen)
 #include CORBA_SERVER_HEADER(SALOME_Exception)
@@ -82,48 +84,48 @@ static int MYDEBUGWITHFILES = 0;
 // function : getCellType
 // purpose  : Get type of VTK cell
 //=================================================================================
-static inline vtkIdType getCellType( const SMDSAbs_ElementType theType,
-                                     const bool                thePoly,
-                                     const int                 theNbNodes )
-{
-  switch( theType )
-  {
-    case SMDSAbs_0DElement:         return VTK_VERTEX;
+// static inline vtkIdType getCellType( const SMDSAbs_ElementType theType,
+//                                      const bool                thePoly,
+//                                      const int                 theNbNodes )
+// {
+//   switch( theType )
+//   {
+//     case SMDSAbs_0DElement:         return VTK_VERTEX;
 
-    case SMDSAbs_Ball:              return VTK_POLY_VERTEX;
+//     case SMDSAbs_Ball:              return VTK_POLY_VERTEX;
 
-    case SMDSAbs_Edge: 
-      if( theNbNodes == 2 )         return VTK_LINE;
-      else if ( theNbNodes == 3 )   return VTK_QUADRATIC_EDGE;
-      else return VTK_EMPTY_CELL;
+//     case SMDSAbs_Edge: 
+//       if( theNbNodes == 2 )         return VTK_LINE;
+//       else if ( theNbNodes == 3 )   return VTK_QUADRATIC_EDGE;
+//       else return VTK_EMPTY_CELL;
 
-    case SMDSAbs_Face  :
-      if (thePoly && theNbNodes>2 ) return VTK_POLYGON;
-      else if ( theNbNodes == 3 )   return VTK_TRIANGLE;
-      else if ( theNbNodes == 4 )   return VTK_QUAD;
-      else if ( theNbNodes == 6 )   return VTK_QUADRATIC_TRIANGLE;
-      else if ( theNbNodes == 8 )   return VTK_QUADRATIC_QUAD;
-      else if ( theNbNodes == 9 )   return VTK_BIQUADRATIC_QUAD;
-      else if ( theNbNodes == 7 )   return VTK_BIQUADRATIC_TRIANGLE;
-      else return VTK_EMPTY_CELL;
+//     case SMDSAbs_Face  :
+//       if (thePoly && theNbNodes>2 ) return VTK_POLYGON;
+//       else if ( theNbNodes == 3 )   return VTK_TRIANGLE;
+//       else if ( theNbNodes == 4 )   return VTK_QUAD;
+//       else if ( theNbNodes == 6 )   return VTK_QUADRATIC_TRIANGLE;
+//       else if ( theNbNodes == 8 )   return VTK_QUADRATIC_QUAD;
+//       else if ( theNbNodes == 9 )   return VTK_BIQUADRATIC_QUAD;
+//       else if ( theNbNodes == 7 )   return VTK_BIQUADRATIC_TRIANGLE;
+//       else return VTK_EMPTY_CELL;
       
-    case SMDSAbs_Volume:
-      if (thePoly && theNbNodes>3 ) return VTK_POLYHEDRON; //VTK_CONVEX_POINT_SET;
-      else if ( theNbNodes == 4 )   return VTK_TETRA;
-      else if ( theNbNodes == 5 )   return VTK_PYRAMID;
-      else if ( theNbNodes == 6 )   return VTK_WEDGE;
-      else if ( theNbNodes == 8 )   return VTK_HEXAHEDRON;
-      else if ( theNbNodes == 12 )  return VTK_HEXAGONAL_PRISM;
-      else if ( theNbNodes == 10 )  return VTK_QUADRATIC_TETRA;
-      else if ( theNbNodes == 20 )  return VTK_QUADRATIC_HEXAHEDRON;
-      else if ( theNbNodes == 27 )  return VTK_TRIQUADRATIC_HEXAHEDRON;
-      else if ( theNbNodes == 15 )  return VTK_QUADRATIC_WEDGE;
-      else if ( theNbNodes == 13 )  return VTK_QUADRATIC_PYRAMID; //VTK_CONVEX_POINT_SET;
-      else return VTK_EMPTY_CELL;
+//     case SMDSAbs_Volume:
+//       if (thePoly && theNbNodes>3 ) return VTK_POLYHEDRON; //VTK_CONVEX_POINT_SET;
+//       else if ( theNbNodes == 4 )   return VTK_TETRA;
+//       else if ( theNbNodes == 5 )   return VTK_PYRAMID;
+//       else if ( theNbNodes == 6 )   return VTK_WEDGE;
+//       else if ( theNbNodes == 8 )   return VTK_HEXAHEDRON;
+//       else if ( theNbNodes == 12 )  return VTK_HEXAGONAL_PRISM;
+//       else if ( theNbNodes == 10 )  return VTK_QUADRATIC_TETRA;
+//       else if ( theNbNodes == 20 )  return VTK_QUADRATIC_HEXAHEDRON;
+//       else if ( theNbNodes == 27 )  return VTK_TRIQUADRATIC_HEXAHEDRON;
+//       else if ( theNbNodes == 15 )  return VTK_QUADRATIC_WEDGE;
+//       else if ( theNbNodes == 13 )  return VTK_QUADRATIC_PYRAMID; //VTK_CONVEX_POINT_SET;
+//       else return VTK_EMPTY_CELL;
 
-    default: return VTK_EMPTY_CELL;
-  }
-}
+//     default: return VTK_EMPTY_CELL;
+//   }
+// }
 
 //=================================================================================
 // functions : SMESH_VisualObjDef
@@ -438,23 +440,23 @@ void SMESH_VisualObjDef::buildElemPrs()
   for ( int i = 0; i < nbTypes; i++ ) // iterate through all types of elements
   {
     if ( nbEnts[ aTypes[ i ] ] > 0 ) {
-      
+
       const SMDSAbs_ElementType& aType = aTypes[ i ];
       const TEntityList& aList = anEnts[ aType ];
       TEntityList::const_iterator anIter;
       for ( anIter = aList.begin(); anIter != aList.end(); ++anIter )
       {
         const SMDS_MeshElement* anElem = *anIter;
-        
+
         vtkIdType aNbNodes = anElem->NbNodes();
         anIdList->SetNumberOfIds( aNbNodes );
-        const vtkIdType vtkElemType = getCellType( aType, anElem->IsPoly(), aNbNodes );
-        
+        const vtkIdType vtkElemType = SMDS_MeshCell::toVtkType( anElem->GetEntityType() );
+
         int anId = anElem->GetID();
-        
+
         mySMDS2VTKElems.insert( TMapOfIds::value_type( anId, iElem ) );
         myVTK2SMDSElems.insert( TMapOfIds::value_type( iElem, anId ) );
-        
+
         SMDS_ElemIteratorPtr aNodesIter = anElem->nodesIterator();
         {
           // Convertions connectivities from SMDS to VTK

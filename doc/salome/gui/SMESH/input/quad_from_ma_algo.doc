@@ -13,7 +13,7 @@ The algorithm assures good shape of quadrangles by constructing Medial
 Axis between sinuous borders of the face and using it to
 discretize the borders.
 
-\image html quad_from_ma_medial_axis.png "Media Axis between two blue sinuous borders"
+\image html quad_from_ma_medial_axis.png "Medial Axis between two blue sinuous borders"
 
 The Medial Axis is used in two ways:
 <ol>

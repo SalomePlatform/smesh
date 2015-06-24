@@ -32,7 +32,7 @@ nodal connectivity of elements in the documentation on MED library or
   <li>From the \b Modification menu choose the \b Add item, the
     following associated sub-menu will appear:</li>
 
-  \image html image146.png
+  \image html image152.png
 
 From this sub-menu select the type of element which you would like to add to your mesh.
 
@@ -47,10 +47,13 @@ existing groups of the corresponding type becomes available. By
 default, no group is selected. In this case, when the user presses
 <b>Apply</b> or <b>Apply & Close</b> button, the warning message box
 informs the user about the necessity to input new group name. The
-combo box lists both \ref standalone_group "standalone groups"
-and \ref group_on_geom "groups on geometry". If the user chooses a
-group on geometry, he is warned and proposed to
-\ref convert_to_standalone "convert this group to standalone".
+combo box lists groups of all the 
+\ref grouping_elements_page "three types": both 
+\ref standalone_group "standalone groups",
+\ref group_on_filter "groups on filter", and 
+\ref group_on_geom "groups on geometry". If the user chooses a
+group on geometry or on filter, he is warned and proposed to
+convert this group to standalone.
 If the user rejects conversion operation, it is cancelled and
 a new node/element is not created!
 

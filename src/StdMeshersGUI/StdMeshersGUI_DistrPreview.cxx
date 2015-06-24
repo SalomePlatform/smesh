@@ -106,7 +106,7 @@ StdMeshersGUI_DistrPreview::StdMeshersGUI_DistrPreview( QWidget* p, StdMeshers::
   myDistr->attach( this );
   QPen distrPen = QPen( Qt::blue, 1 );
   QwtSymbol* distrSymbol = new QwtSymbol( QwtSymbol::XCross, QBrush( Qt::blue ),
-		                                  QPen( Qt::blue ), QSize( 5, 5 ) );
+                                                  QPen( Qt::blue ), QSize( 5, 5 ) );
   myDistr->setPen( distrPen );
   myDistr->setSymbol( distrSymbol );
   if( Plot2d_QwtLegendLabel* anItem = getLegendLabel( myDistr ) ) {

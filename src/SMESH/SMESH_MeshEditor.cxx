@@ -137,6 +137,40 @@ void SMESH_MeshEditor::ClearLastCreated()
   myLastCreatedElems.Clear();
 }
 
+//================================================================================
+/*!
+ * \brief Initializes members by an existing element
+ *  \param [in] elem - the source element
+ *  \param [in] basicOnly - if true, does not set additional data of Ball and Polyhedron
+ */
+//================================================================================
+
+SMESH_MeshEditor::ElemFeatures&
+SMESH_MeshEditor::ElemFeatures::Init( const SMDS_MeshElement* elem, bool basicOnly )
+{
+  if ( elem )
+  {
+    myType = elem->GetType();
+    if ( myType == SMDSAbs_Face || myType == SMDSAbs_Volume )
+    {
+      myIsPoly = elem->IsPoly();
+      if ( myIsPoly )
+      {
+        myIsQuad = elem->IsQuadratic();
+        if ( myType == SMDSAbs_Volume && !basicOnly )
+        {
+          vector<int > quant = static_cast<const SMDS_VtkVolume* >( elem )->GetQuantities();
+          myPolyhedQuantities.swap( quant );
+        }
+      }
+    }
+    else if ( myType == SMDSAbs_Ball && !basicOnly )
+    {
+      myBallDiameter = static_cast<const SMDS_BallElement*>(elem)->GetDiameter();
+    }
+  }
+  return *this;
+}
 
 //=======================================================================
 /*!
@@ -146,18 +180,16 @@ void SMESH_MeshEditor::ClearLastCreated()
 
 SMDS_MeshElement*
 SMESH_MeshEditor::AddElement(const vector<const SMDS_MeshNode*> & node,
-                             const SMDSAbs_ElementType            type,
-                             const bool                           isPoly,
-                             const int                            ID,
-                             const double                         ballDiameter)
+                             const ElemFeatures&                  features)
 {
-  //MESSAGE("AddElement " <<node.size() << " " << type << " " << isPoly << " " << ID);
   SMDS_MeshElement* e = 0;
   int nbnode = node.size();
   SMESHDS_Mesh* mesh = GetMeshDS();
-  switch ( type ) {
+  const int ID = features.myID;
+
+  switch ( features.myType ) {
   case SMDSAbs_Face:
-    if ( !isPoly ) {
+    if ( !features.myIsPoly ) {
       if      (nbnode == 3) {
         if ( ID >= 1 ) e = mesh->AddFaceWithID(node[0], node[1], node[2], ID);
         else           e = mesh->AddFace      (node[0], node[1], node[2] );
@@ -190,14 +222,21 @@ SMESH_MeshEditor::AddElement(const vector<const SMDS_MeshNode*> & node,
         else           e = mesh->AddFace      (node[0], node[1], node[2], node[3],
                                                node[4], node[5], node[6], node[7], node[8] );
       }
-    } else {
+    }
+    else if ( !features.myIsQuad )
+    {
       if ( ID >= 1 ) e = mesh->AddPolygonalFaceWithID(node, ID);
       else           e = mesh->AddPolygonalFace      (node    );
+    }
+    else if ( nbnode % 2 == 0 ) // just a protection
+    {
+      if ( ID >= 1 ) e = mesh->AddQuadPolygonalFaceWithID(node, ID);
+      else           e = mesh->AddQuadPolygonalFace      (node    );
     }
     break;
 
   case SMDSAbs_Volume:
-    if ( !isPoly ) {
+    if ( !features.myIsPoly ) {
       if      (nbnode == 4) {
         if ( ID >= 1 ) e = mesh->AddVolumeWithID(node[0], node[1], node[2], node[3], ID);
         else           e = mesh->AddVolume      (node[0], node[1], node[2], node[3] );
@@ -285,6 +324,16 @@ SMESH_MeshEditor::AddElement(const vector<const SMDS_MeshNode*> & node,
                                                  node[24],node[25],node[26] );
       }
     }
+    else if ( !features.myIsQuad )
+    {
+      if ( ID >= 1 ) e = mesh->AddPolyhedralVolumeWithID(node, features.myPolyhedQuantities, ID);
+      else           e = mesh->AddPolyhedralVolume      (node, features.myPolyhedQuantities    );
+    }
+    else
+    {
+      // if ( ID >= 1 ) e = mesh->AddQuadPolyhedralVolumeWithID(node, features.myPolyhedQuantities,ID);
+      // else           e = mesh->AddQuadPolyhedralVolume      (node, features.myPolyhedQuantities   );
+    }
     break;
 
   case SMDSAbs_Edge:
@@ -307,12 +356,12 @@ SMESH_MeshEditor::AddElement(const vector<const SMDS_MeshNode*> & node,
 
   case SMDSAbs_Node:
     if ( ID >= 1 ) e = mesh->AddNodeWithID(node[0]->X(), node[0]->Y(), node[0]->Z(), ID);
-    else           e = mesh->AddNode      (node[0]->X(), node[0]->Y(), node[0]->Z());
+    else           e = mesh->AddNode      (node[0]->X(), node[0]->Y(), node[0]->Z()    );
     break;
 
   case SMDSAbs_Ball:
-    if ( ID >= 1 ) e = mesh->AddBallWithID(node[0], ballDiameter, ID);
-    else           e = mesh->AddBall      (node[0], ballDiameter);
+    if ( ID >= 1 ) e = mesh->AddBallWithID(node[0], features.myBallDiameter, ID);
+    else           e = mesh->AddBall      (node[0], features.myBallDiameter    );
     break;
 
   default:;
@@ -327,10 +376,8 @@ SMESH_MeshEditor::AddElement(const vector<const SMDS_MeshNode*> & node,
  */
 //=======================================================================
 
-SMDS_MeshElement* SMESH_MeshEditor::AddElement(const vector<int> &       nodeIDs,
-                                               const SMDSAbs_ElementType type,
-                                               const bool                isPoly,
-                                               const int                 ID)
+SMDS_MeshElement* SMESH_MeshEditor::AddElement(const vector<int> & nodeIDs,
+                                               const ElemFeatures& features)
 {
   vector<const SMDS_MeshNode*> nodes;
   nodes.reserve( nodeIDs.size() );
@@ -341,7 +388,7 @@ SMDS_MeshElement* SMESH_MeshEditor::AddElement(const vector<int> &       nodeIDs
     else
       return 0;
   }
-  return AddElement( nodes, type, isPoly, ID );
+  return AddElement( nodes, features );
 }
 
 //=======================================================================
@@ -1100,12 +1147,12 @@ bool SMESH_MeshEditor::Reorient (const SMDS_MeshElement * theElem)
   else // other elements
   {
     vector<const SMDS_MeshNode*> nodes( theElem->begin_nodes(), theElem->end_nodes() );
-    const std::vector<int>& interlace = SMDS_MeshCell::reverseSmdsOrder( geomType );
+    const std::vector<int>& interlace = SMDS_MeshCell::reverseSmdsOrder( geomType, nodes.size() );
     if ( interlace.empty() )
     {
-      std::reverse( nodes.begin(), nodes.end() ); // polygon
+      std::reverse( nodes.begin(), nodes.end() ); // obsolete, just in case
     }
-    else if ( interlace.size() > 1 )
+    else
     {
       SMDS_MeshCell::applyInterlace( interlace, nodes );
     }
@@ -4326,7 +4373,7 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
     }
     else
     {
-      const vector<int>& ind = SMDS_MeshCell::reverseSmdsOrder( baseType );
+      const vector<int>& ind = SMDS_MeshCell::reverseSmdsOrder( baseType, nbNodes );
       SMDS_MeshCell::applyInterlace( ind, itNN );
       SMDS_MeshCell::applyInterlace( ind, prevNod );
       SMDS_MeshCell::applyInterlace( ind, nextNod );
@@ -4377,6 +4424,17 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
     iBeforeSame  = ( iSameNode + nbCorners - 1 ) % nbCorners;
     iAfterSame   = ( iSameNode + 1 ) % nbCorners;
     iOpposSame   = ( iSameNode - 2 < 0  ? iSameNode + 2 : iSameNode - 2 );
+  }
+
+  if ( baseType == SMDSEntity_Polygon )
+  {
+    if      ( nbNodes == 3 ) baseType = SMDSEntity_Triangle;
+    else if ( nbNodes == 4 ) baseType = SMDSEntity_Quadrangle;
+  }
+  else if ( baseType == SMDSEntity_Quad_Polygon )
+  {
+    if      ( nbNodes == 6 ) baseType = SMDSEntity_Quad_Triangle;
+    else if ( nbNodes == 8 ) baseType = SMDSEntity_Quad_Quadrangle;
   }
 
   // make new elements
@@ -4524,7 +4582,7 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
         break;
       }
       case SMDSEntity_Quad_Triangle:  // sweep (Bi)Quadratic TRIANGLE --->
-      case SMDSEntity_BiQuad_Triangle: /* ??? */ { 
+      case SMDSEntity_BiQuad_Triangle: /* ??? */ {
         if ( nbDouble+nbSame != 3 ) break;
         if(nbSame==0) {
           // --->  pentahedron with 15 nodes
@@ -4652,7 +4710,7 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
     {
       if ( baseType != SMDSEntity_Polygon )
       {
-        const std::vector<int>& ind = SMDS_MeshCell::interlacedSmdsOrder(baseType);
+        const std::vector<int>& ind = SMDS_MeshCell::interlacedSmdsOrder(baseType,nbNodes);
         SMDS_MeshCell::applyInterlace( ind, prevNod );
         SMDS_MeshCell::applyInterlace( ind, nextNod );
         SMDS_MeshCell::applyInterlace( ind, midlNod );
@@ -4677,21 +4735,30 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
       quantities.push_back( nbNodes );
 
       // side faces
-      for (int iface = 0; iface < nbNodes; iface++)
+      // 3--6--2
+      // |     |
+      // 7     5
+      // |     |
+      // 0--4--1
+      const int iQuad = elem->IsQuadratic();
+      for (int iface = 0; iface < nbNodes; iface += 1+iQuad )
       {
-        const int prevNbNodes = polyedre_nodes.size();
-        int inextface = (iface+1) % nbNodes;
-        polyedre_nodes.push_back( prevNod[inextface] );
-        polyedre_nodes.push_back( prevNod[iface] );
-        if ( prevNod[iface] != nextNod[iface] )
+        const int prevNbNodes = polyedre_nodes.size(); // to detect degenerated face
+        int inextface = (iface+1+iQuad) % nbNodes;
+        int imid      = (iface+1) % nbNodes;
+        polyedre_nodes.push_back( prevNod[inextface] );         // 0
+        if ( iQuad ) polyedre_nodes.push_back( prevNod[imid] ); // 4
+        polyedre_nodes.push_back( prevNod[iface] );             // 1
+        if ( prevNod[iface] != nextNod[iface] ) // 1 != 2
         {
-          if ( midlNod[ iface ]) polyedre_nodes.push_back( midlNod[ iface ]);
-          polyedre_nodes.push_back( nextNod[iface] );
+          if ( midlNod[ iface ]) polyedre_nodes.push_back( midlNod[ iface ]); // 5
+          polyedre_nodes.push_back( nextNod[iface] );                         // 2
         }
-        if ( prevNod[inextface] != nextNod[inextface] )
+        if ( iQuad ) polyedre_nodes.push_back( nextNod[imid] );               // 6
+        if ( prevNod[inextface] != nextNod[inextface] ) // 0 != 3
         {
-          polyedre_nodes.push_back( nextNod[inextface] );
-          if ( midlNod[ inextface ]) polyedre_nodes.push_back( midlNod[ inextface ]);
+          polyedre_nodes.push_back( nextNod[inextface] );                            // 3
+          if ( midlNod[ inextface ]) polyedre_nodes.push_back( midlNod[ inextface ]);// 7
         }
         const int nbFaceNodes = polyedre_nodes.size() - prevNbNodes;
         if ( nbFaceNodes > 2 )
@@ -4701,7 +4768,7 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
       }
       aNewElem = aMesh->AddPolyhedralVolume (polyedre_nodes, quantities);
 
-    } //  // try to create a polyherdal prism
+    } // try to create a polyherdal prism
 
     if ( aNewElem ) {
       newElems.push_back( aNewElem );
@@ -4752,13 +4819,14 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
     const SMDS_MeshElement* el = 0;
     SMDSAbs_ElementType highType = SMDSAbs_Edge; // count most complex elements only
     while ( eIt->more() && nbInitElems < 2 ) {
-      el = eIt->next();
-      SMDSAbs_ElementType type = el->GetType();
+      const SMDS_MeshElement* e = eIt->next();
+      SMDSAbs_ElementType type = e->GetType();
       if ( type == SMDSAbs_Volume || type < highType ) continue;
       if ( type > highType ) {
         nbInitElems = 0;
         highType = type;
       }
+      el = e;
       nbInitElems += elemSet.count(el);
     }
     if ( nbInitElems < 2 ) {
@@ -4773,6 +4841,8 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
 
   // Make a ceiling for each element ie an equal element of last new nodes.
   // Find free links of faces - make edges and sweep them into faces.
+
+  ElemFeatures polyFace( SMDSAbs_Face, /*isPoly=*/true ), anyFace;
 
   TTElemOfElemListMap::iterator  itElem      = newElemsMap.begin();
   TElemOfVecOfNnlmiMap::iterator itElemNodes = elemNewNodesMap.begin();
@@ -4877,7 +4947,7 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
 
     // sweep free links into faces
 
-    if ( hasFreeLinks )  {
+    if ( hasFreeLinks ) {
       list<const SMDS_MeshElement*> & newVolumes = itElem->second;
       int iVol, volNb, nbVolumesByStep = newVolumes.size() / nbSteps;
 
@@ -4911,11 +4981,12 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
             freeInd.push_back( iF );
             // find source edge of a free face iF
             vector<const SMDS_MeshNode*> commonNodes; // shared by the initial and free faces
-            commonNodes.resize( initNodeSet.size(), NULL ); // avoid spoiling memory
-            std::set_intersection( faceNodeSet.begin(), faceNodeSet.end(),
-                                   initNodeSet.begin(), initNodeSet.end(),
-                                   commonNodes.begin());
-            if ( (*v)->IsQuadratic() )
+            vector<const SMDS_MeshNode*>::iterator lastCommom;
+            commonNodes.resize( nbNodes, 0 );
+            lastCommom = std::set_intersection( faceNodeSet.begin(), faceNodeSet.end(),
+                                                initNodeSet.begin(), initNodeSet.end(),
+                                                commonNodes.begin());
+            if ( std::distance( commonNodes.begin(), lastCommom ) == 3 )
               srcEdges.push_back(aMesh->FindEdge (commonNodes[0],commonNodes[1],commonNodes[2]));
             else
               srcEdges.push_back(aMesh->FindEdge (commonNodes[0],commonNodes[1]));
@@ -4931,10 +5002,11 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
         if ( freeInd.empty() )
           continue;
 
-        // create faces for all steps;
+        // create wall faces for all steps;
         // if such a face has been already created by sweep of edge,
         // assure that its orientation is OK
-        for ( int iStep = 0; iStep < nbSteps; iStep++ ) {
+        for ( int iStep = 0; iStep < nbSteps; iStep++ )
+        {
           vTool.Set( *v, /*ignoreCentralNodes=*/false );
           vTool.SetExternalNormal();
           const int nextShift = vTool.IsForward() ? +1 : -1;
@@ -5061,7 +5133,7 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
                 if ( f )
                   aMesh->ChangeElementNodes( f, &polygon_nodes[0], nbn );
                 else
-                  AddElement(polygon_nodes, SMDSAbs_Face, polygon_nodes.size()>4);
+                  AddElement( polygon_nodes, polyFace.SetQuad( (*v)->IsQuadratic() ));
               }
             }
 
@@ -5088,36 +5160,21 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
       aFaceLastNodes.erase( vecNewNodes.back()->second.back() );
       iF = lastVol.GetFaceIndex( aFaceLastNodes );
     }
-    if ( iF >= 0 ) {
+    if ( iF >= 0 )
+    {
       lastVol.SetExternalNormal();
       const SMDS_MeshNode** nodes = lastVol.GetFaceNodes( iF );
-      int nbn = lastVol.NbFaceNodes( iF );
-      // we do not use this->AddElement() because nodes are interlaced
+      const               int nbn = lastVol.NbFaceNodes( iF );
       vector<const SMDS_MeshNode*> nodeVec( nodes, nodes+nbn );
       if ( !hasFreeLinks ||
            !aMesh->FindElement( nodeVec, SMDSAbs_Face, /*noMedium=*/false) )
       {
-        if ( nbn == 3 )
-          myLastCreatedElems.Append(aMesh->AddFace( nodes[0], nodes[1], nodes[2] ));
+        const vector<int>& interlace =
+          SMDS_MeshCell::interlacedSmdsOrder( elem->GetEntityType(), nbn );
+        SMDS_MeshCell::applyInterlaceRev( interlace, nodeVec );
 
-        else if ( nbn == 4 )
-          myLastCreatedElems.Append(aMesh->AddFace( nodes[0], nodes[1], nodes[2], nodes[3]));
-
-        else if ( nbn == 6 && isQuadratic )
-          myLastCreatedElems.Append(aMesh->AddFace( nodes[0], nodes[2], nodes[4],
-                                                    nodes[1], nodes[3], nodes[5]));
-        else if ( nbn == 7 && isQuadratic )
-          myLastCreatedElems.Append(aMesh->AddFace( nodes[0], nodes[2], nodes[4],
-                                                    nodes[1], nodes[3], nodes[5], nodes[6]));
-        else if ( nbn == 8 && isQuadratic )
-          myLastCreatedElems.Append(aMesh->AddFace( nodes[0], nodes[2], nodes[4], nodes[6],
-                                                    nodes[1], nodes[3], nodes[5], nodes[7]));
-        else if ( nbn == 9 && isQuadratic )
-          myLastCreatedElems.Append(aMesh->AddFace( nodes[0], nodes[2], nodes[4], nodes[6],
-                                                    nodes[1], nodes[3], nodes[5], nodes[7],
-                                                    nodes[8]));
-        else
-          myLastCreatedElems.Append(aMesh->AddPolygonalFace( nodeVec ));
+        if ( const SMDS_MeshElement* face = AddElement( nodeVec, anyFace.Init( elem )))
+          myLastCreatedElems.Append( face );
 
         while ( srcElements.Length() < myLastCreatedElems.Length() )
           srcElements.Append( elem );
@@ -5181,7 +5238,6 @@ SMESH_MeshEditor::RotationSweep(TIDSortedElemSet   theElemSets[2],
       SMDS_ElemIteratorPtr itN = elem->nodesIterator();
       while ( itN->more() )
       {
-        // check if a node has been already sweeped
         const SMDS_MeshNode* node = cast2Node( itN->next() );
 
         gp_XYZ aXYZ( node->X(), node->Y(), node->Z() );
@@ -5189,6 +5245,7 @@ SMESH_MeshEditor::RotationSweep(TIDSortedElemSet   theElemSets[2],
         aXYZ.Coord( coord[0], coord[1], coord[2] );
         bool isOnAxis = ( aLine.SquareDistance( aXYZ ) <= aSqTol );
 
+        // check if a node has been already sweeped
         TNodeOfNodeListMapItr nIt =
           mapNewNodes.insert( make_pair( node, list<const SMDS_MeshNode*>() )).first;
         list<const SMDS_MeshNode*>& listNewNodes = nIt->second;
@@ -6551,10 +6608,12 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
     groupPostfix = "transformed";
   }
 
-  SMESH_MeshEditor targetMeshEditor( theTargetMesh );
   SMESHDS_Mesh* aTgtMesh = theTargetMesh ? theTargetMesh->GetMeshDS() : 0;
   SMESHDS_Mesh* aMesh    = GetMeshDS();
 
+  SMESH_MeshEditor targetMeshEditor( theTargetMesh );
+  SMESH_MeshEditor* editor = theTargetMesh ? & targetMeshEditor : theCopy ? this : 0;
+  SMESH_MeshEditor::ElemFeatures elemType;
 
   // map old node to new one
   TNodeNodeMap nodeMap;
@@ -6586,70 +6645,68 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
 
   // loop on elements to transform nodes : first orphan nodes then elems
   TIDSortedElemSet::iterator itElem;
-  TIDSortedElemSet *elements[] = {&orphanNode, &theElems };
+  TIDSortedElemSet *elements[] = { &orphanNode, &theElems };
   for (int i=0; i<2; i++)
-  for ( itElem = elements[i]->begin(); itElem != elements[i]->end(); itElem++ ) {
-    const SMDS_MeshElement* elem = *itElem;
-    if ( !elem )
-      continue;
-
-    // loop on elem nodes
-    SMDS_ElemIteratorPtr itN = elem->nodesIterator();
-    while ( itN->more() ) {
-
-      const SMDS_MeshNode* node = cast2Node( itN->next() );
-      // check if a node has been already transformed
-      pair<TNodeNodeMap::iterator,bool> n2n_isnew =
-        nodeMap.insert( make_pair ( node, node ));
-      if ( !n2n_isnew.second )
+    for ( itElem = elements[i]->begin(); itElem != elements[i]->end(); itElem++ )
+    {
+      const SMDS_MeshElement* elem = *itElem;
+      if ( !elem )
         continue;
 
+      // loop on elem nodes
       double coord[3];
-      coord[0] = node->X();
-      coord[1] = node->Y();
-      coord[2] = node->Z();
-      theTrsf.Transforms( coord[0], coord[1], coord[2] );
-      if ( theTargetMesh ) {
-        const SMDS_MeshNode * newNode = aTgtMesh->AddNode( coord[0], coord[1], coord[2] );
-        n2n_isnew.first->second = newNode;
-        myLastCreatedNodes.Append(newNode);
-        srcNodes.Append( node );
-      }
-      else if ( theCopy ) {
-        const SMDS_MeshNode * newNode = aMesh->AddNode( coord[0], coord[1], coord[2] );
-        n2n_isnew.first->second = newNode;
-        myLastCreatedNodes.Append(newNode);
-        srcNodes.Append( node );
-      }
-      else {
-        aMesh->MoveNode( node, coord[0], coord[1], coord[2] );
-        // node position on shape becomes invalid
-        const_cast< SMDS_MeshNode* > ( node )->SetPosition
-          ( SMDS_SpacePosition::originSpacePosition() );
-      }
+      SMDS_ElemIteratorPtr itN = elem->nodesIterator();
+      while ( itN->more() )
+      {
+        const SMDS_MeshNode* node = cast2Node( itN->next() );
+        // check if a node has been already transformed
+        pair<TNodeNodeMap::iterator,bool> n2n_isnew =
+          nodeMap.insert( make_pair ( node, node ));
+        if ( !n2n_isnew.second )
+          continue;
 
-      // keep inverse elements
-      if ( !theCopy && !theTargetMesh && needReverse ) {
-        SMDS_ElemIteratorPtr invElemIt = node->GetInverseElementIterator();
-        while ( invElemIt->more() ) {
-          const SMDS_MeshElement* iel = invElemIt->next();
-          inverseElemSet.insert( iel );
+        node->GetXYZ( coord );
+        theTrsf.Transforms( coord[0], coord[1], coord[2] );
+        if ( theTargetMesh ) {
+          const SMDS_MeshNode * newNode = aTgtMesh->AddNode( coord[0], coord[1], coord[2] );
+          n2n_isnew.first->second = newNode;
+          myLastCreatedNodes.Append(newNode);
+          srcNodes.Append( node );
+        }
+        else if ( theCopy ) {
+          const SMDS_MeshNode * newNode = aMesh->AddNode( coord[0], coord[1], coord[2] );
+          n2n_isnew.first->second = newNode;
+          myLastCreatedNodes.Append(newNode);
+          srcNodes.Append( node );
+        }
+        else {
+          aMesh->MoveNode( node, coord[0], coord[1], coord[2] );
+          // node position on shape becomes invalid
+          const_cast< SMDS_MeshNode* > ( node )->SetPosition
+            ( SMDS_SpacePosition::originSpacePosition() );
+        }
+
+        // keep inverse elements
+        if ( !theCopy && !theTargetMesh && needReverse ) {
+          SMDS_ElemIteratorPtr invElemIt = node->GetInverseElementIterator();
+          while ( invElemIt->more() ) {
+            const SMDS_MeshElement* iel = invElemIt->next();
+            inverseElemSet.insert( iel );
+          }
         }
       }
-    }
-  }
+    } // loop on elems in { &orphanNode, &theElems };
 
   // either create new elements or reverse mirrored ones
   if ( !theCopy && !needReverse && !theTargetMesh )
     return PGroupIDs();
 
-  TIDSortedElemSet::iterator invElemIt = inverseElemSet.begin();
-  for ( ; invElemIt != inverseElemSet.end(); invElemIt++ )
-    theElems.insert( *invElemIt );
+  theElems.insert( inverseElemSet.begin(),inverseElemSet.end() );
 
   // Replicate or reverse elements
 
   std::vector<int> iForw;
+  vector<const SMDS_MeshNode*> nodes;
   for ( itElem = theElems.begin(); itElem != theElems.end(); itElem++ )
   {
     const SMDS_MeshElement* elem = *itElem;
@@ -6659,123 +6716,45 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
     int                  nbNodes  = elem->NbNodes();
     if ( geomType == SMDSGeom_NONE ) continue; // node
 
-    switch ( geomType ) {
+    nodes.resize( nbNodes );
 
-    case SMDSGeom_POLYGON:  // ---------------------- polygon
+    if ( geomType == SMDSGeom_POLYHEDRA )  // ------------------ polyhedral volume
+    {
+      const SMDS_VtkVolume* aPolyedre = dynamic_cast<const SMDS_VtkVolume*>( elem );
+      if (!aPolyedre)
+        continue;
+      nodes.clear();
+      bool allTransformed = true;
+      int nbFaces = aPolyedre->NbFaces();
+      for (int iface = 1; iface <= nbFaces && allTransformed; iface++)
       {
-        vector<const SMDS_MeshNode*> poly_nodes (nbNodes);
-        int iNode = 0;
-        SMDS_ElemIteratorPtr itN = elem->nodesIterator();
-        while (itN->more()) {
-          const SMDS_MeshNode* node =
-            static_cast<const SMDS_MeshNode*>(itN->next());
+        int nbFaceNodes = aPolyedre->NbFaceNodes(iface);
+        for (int inode = 1; inode <= nbFaceNodes && allTransformed; inode++)
+        {
+          const SMDS_MeshNode* node = aPolyedre->GetFaceNode(iface, inode);
           TNodeNodeMap::iterator nodeMapIt = nodeMap.find(node);
-          if (nodeMapIt == nodeMap.end())
-            break; // not all nodes transformed
-          if (needReverse) {
-            // reverse mirrored faces and volumes
-            poly_nodes[nbNodes - iNode - 1] = (*nodeMapIt).second;
-          } else {
-            poly_nodes[iNode] = (*nodeMapIt).second;
-          }
-          iNode++;
+          if ( nodeMapIt == nodeMap.end() )
+            allTransformed = false; // not all nodes transformed
+          else
+            nodes.push_back((*nodeMapIt).second);
         }
-        if ( iNode != nbNodes )
-          continue; // not all nodes transformed
-
-        if ( theTargetMesh ) {
-          myLastCreatedElems.Append(aTgtMesh->AddPolygonalFace(poly_nodes));
-          srcElems.Append( elem );
-        }
-        else if ( theCopy ) {
-          myLastCreatedElems.Append(aMesh->AddPolygonalFace(poly_nodes));
-          srcElems.Append( elem );
-        }
-        else {
-          aMesh->ChangePolygonNodes(elem, poly_nodes);
-        }
+        if ( needReverse && allTransformed )
+          std::reverse( nodes.end() - nbFaceNodes, nodes.end() );
       }
-      break;
-
-    case SMDSGeom_POLYHEDRA:  // ------------------ polyhedral volume
-      {
-        const SMDS_VtkVolume* aPolyedre =
-          dynamic_cast<const SMDS_VtkVolume*>( elem );
-        if (!aPolyedre) {
-          MESSAGE("Warning: bad volumic element");
-          continue;
-        }
-
-        vector<const SMDS_MeshNode*> poly_nodes; poly_nodes.reserve( nbNodes );
-        vector<int> quantities; quantities.reserve( nbNodes );
-
-        bool allTransformed = true;
-        int nbFaces = aPolyedre->NbFaces();
-        for (int iface = 1; iface <= nbFaces && allTransformed; iface++) {
-          int nbFaceNodes = aPolyedre->NbFaceNodes(iface);
-          for (int inode = 1; inode <= nbFaceNodes && allTransformed; inode++) {
-            const SMDS_MeshNode* node = aPolyedre->GetFaceNode(iface, inode);
-            TNodeNodeMap::iterator nodeMapIt = nodeMap.find(node);
-            if (nodeMapIt == nodeMap.end()) {
-              allTransformed = false; // not all nodes transformed
-            } else {
-              poly_nodes.push_back((*nodeMapIt).second);
-            }
-            if ( needReverse && allTransformed )
-              std::reverse( poly_nodes.end() - nbFaceNodes, poly_nodes.end() );
-          }
-          quantities.push_back(nbFaceNodes);
-        }
-        if ( !allTransformed )
-          continue; // not all nodes transformed
-
-        if ( theTargetMesh ) {
-          myLastCreatedElems.Append(aTgtMesh->AddPolyhedralVolume(poly_nodes, quantities));
-          srcElems.Append( elem );
-        }
-        else if ( theCopy ) {
-          myLastCreatedElems.Append(aMesh->AddPolyhedralVolume(poly_nodes, quantities));
-          srcElems.Append( elem );
-        }
-        else {
-          aMesh->ChangePolyhedronNodes(elem, poly_nodes, quantities);
-        }
-      }
-      break;
-
-    case SMDSGeom_BALL: // -------------------- Ball
-      {
-        if ( !theCopy && !theTargetMesh ) continue;
-
-        TNodeNodeMap::iterator nodeMapIt = nodeMap.find( elem->GetNode(0) );
-        if (nodeMapIt == nodeMap.end())
-          continue; // not all nodes transformed
-
-        double diameter = static_cast<const SMDS_BallElement*>(elem)->GetDiameter();
-        if ( theTargetMesh ) {
-          myLastCreatedElems.Append(aTgtMesh->AddBall( nodeMapIt->second, diameter ));
-          srcElems.Append( elem );
-        }
-        else {
-          myLastCreatedElems.Append(aMesh->AddBall( nodeMapIt->second, diameter ));
-          srcElems.Append( elem );
-        }
-      }
-      break;
-
-    default: // ----------------------- Regular elements
-
+      if ( !allTransformed )
+        continue; // not all nodes transformed
+    }
+    else // ----------------------- the rest element types
+    {
       while ( iForw.size() < nbNodes ) iForw.push_back( iForw.size() );
-      const std::vector<int>& iRev = SMDS_MeshCell::reverseSmdsOrder( elem->GetEntityType() );
-      const std::vector<int>& i = needReverse ? iRev : iForw;
+      const vector<int>& iRev = SMDS_MeshCell::reverseSmdsOrder( elem->GetEntityType(), nbNodes );
+      const vector<int>&    i = needReverse ? iRev : iForw;
 
       // find transformed nodes
-      vector<const SMDS_MeshNode*> nodes(nbNodes);
       int iNode = 0;
       SMDS_ElemIteratorPtr itN = elem->nodesIterator();
       while ( itN->more() ) {
-        const SMDS_MeshNode* node =
-          static_cast<const SMDS_MeshNode*>( itN->next() );
+        const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( itN->next() );
         TNodeNodeMap::iterator nodeMapIt = nodeMap.find( node );
         if ( nodeMapIt == nodeMap.end() )
           break; // not all nodes transformed
@@ -6783,26 +6762,23 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
       }
       if ( iNode != nbNodes )
         continue; // not all nodes transformed
+    }
 
-      if ( theTargetMesh ) {
-        if ( SMDS_MeshElement* copy =
-             targetMeshEditor.AddElement( nodes, elem->GetType(), elem->IsPoly() )) {
-          myLastCreatedElems.Append( copy );
-          srcElems.Append( elem );
-        }
-      }
-      else if ( theCopy ) {
-        if ( AddElement( nodes, elem->GetType(), elem->IsPoly() ))
-          srcElems.Append( elem );
-      }
-      else {
-        // reverse element as it was reversed by transformation
-        if ( nbNodes > 2 )
-          aMesh->ChangeElementNodes( elem, &nodes[0], nbNodes );
-      }
-    } // switch ( geomType )
+    if ( editor ) {
+      // copy in this or a new mesh
+      if ( editor->AddElement( nodes, elemType.Init( elem, /*basicOnly=*/false )))
+        srcElems.Append( elem );
+    }
+    else {
+      // reverse element as it was reversed by transformation
+      if ( nbNodes > 2 )
+        aMesh->ChangeElementNodes( elem, &nodes[0], nbNodes );
+    }
 
   } // loop on elements
+
+  if ( editor && editor != this )
+    myLastCreatedElems = editor->myLastCreatedElems;
 
   PGroupIDs newGroupIDs;
 
@@ -7032,7 +7008,7 @@ void SMESH_MeshEditor::FindCoincidentNodes (TIDSortedNodeSet &   theNodes,
 
 //=======================================================================
 //function : SimplifyFace
-//purpose  :
+//purpose  : split a chain of nodes into several closed chains
 //=======================================================================
 
 int SMESH_MeshEditor::SimplifyFace (const vector<const SMDS_MeshNode *>& faceNodes,
@@ -7164,29 +7140,34 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
   }
   // Change element nodes or remove an element
 
+  set<const SMDS_MeshNode*> nodeSet;
+  vector< const SMDS_MeshNode*> curNodes, uniqueNodes;
+  vector<int> iRepl;
+  ElemFeatures elemType;
+
   set<const SMDS_MeshElement*>::iterator eIt = elems.begin();
-  for ( ; eIt != elems.end(); eIt++ ) {
+  for ( ; eIt != elems.end(); eIt++ )
+  {
     const SMDS_MeshElement* elem = *eIt;
-    //MESSAGE(" ---- inverse elem on node to remove " << elem->GetID());
     int nbNodes = elem->NbNodes();
     int aShapeId = FindShape( elem );
 
-    set<const SMDS_MeshNode*> nodeSet;
-    vector< const SMDS_MeshNode*> curNodes( nbNodes ), uniqueNodes( nbNodes );
+    nodeSet.clear();
+    curNodes.resize( nbNodes );
+    uniqueNodes.resize( nbNodes );
+    iRepl.resize( nbNodes );
     int iUnique = 0, iCur = 0, nbRepl = 0;
-    vector<int> iRepl( nbNodes );
 
     // get new seq of nodes
     SMDS_ElemIteratorPtr itN = elem->nodesIterator();
-    while ( itN->more() ) {
-      const SMDS_MeshNode* n =
-        static_cast<const SMDS_MeshNode*>( itN->next() );
+    while ( itN->more() )
+    {
+      const SMDS_MeshNode* n = static_cast<const SMDS_MeshNode*>( itN->next() );
 
       TNodeNodeMap::iterator nnIt = nodeNodeMap.find( n );
       if ( nnIt != nodeNodeMap.end() ) { // n sticks
         n = (*nnIt).second;
-        // BUG 0020185: begin
-        {
+        { ////////// BUG 0020185: begin
           bool stopRecur = false;
           set<const SMDS_MeshNode*> nodesRecur;
           nodesRecur.insert(n);
@@ -7202,8 +7183,7 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
             else
               stopRecur = true;
           }
-        }
-        // BUG 0020185: end
+        } ////////// BUG 0020185: end
       }
       curNodes[ iCur ] = n;
       bool isUnique = nodeSet.insert( n ).second;
@@ -7218,56 +7198,54 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
 
     bool isOk = true;
     int nbUniqueNodes = nodeSet.size();
-    //MESSAGE("nbNodes nbUniqueNodes " << nbNodes << " " << nbUniqueNodes);
-    if ( nbNodes != nbUniqueNodes ) { // some nodes stick
-      // Polygons and Polyhedral volumes
-      if (elem->IsPoly()) {
+    if ( nbNodes != nbUniqueNodes ) // some nodes stick
+    {
+      if (elem->IsPoly()) // Polygons and Polyhedral volumes
+      {
+        if (elem->GetType() == SMDSAbs_Face) // Polygon
+        {
+          elemType.Init( elem );
+          const bool isQuad = elemType.myIsQuad;
+          if ( isQuad )
+            SMDS_MeshCell::applyInterlace // interlace medium and corner nodes
+              ( SMDS_MeshCell::interlacedSmdsOrder( SMDSEntity_Quad_Polygon, nbNodes ), curNodes );
 
-        if (elem->GetType() == SMDSAbs_Face) {
-          // Polygon
-          vector<const SMDS_MeshNode *> face_nodes (nbNodes);
-          int inode = 0;
-          for (; inode < nbNodes; inode++) {
-            face_nodes[inode] = curNodes[inode];
-          }
-
+          // a polygon can divide into several elements
           vector<const SMDS_MeshNode *> polygons_nodes;
           vector<int> quantities;
-          int nbNew = SimplifyFace(face_nodes, polygons_nodes, quantities);
-          if (nbNew > 0) {
-            inode = 0;
-            for (int iface = 0; iface < nbNew; iface++) {
-              int nbNodes = quantities[iface];
-              vector<const SMDS_MeshNode *> poly_nodes (nbNodes);
-              for (int ii = 0; ii < nbNodes; ii++, inode++) {
-                poly_nodes[ii] = polygons_nodes[inode];
+          int nbNew = SimplifyFace( curNodes, polygons_nodes, quantities );
+          if (nbNew > 0)
+          {
+            vector<const SMDS_MeshNode *> face_nodes;
+            int inode = 0;
+            for (int iface = 0; iface < nbNew; iface++)
+            {
+              int nbNewNodes = quantities[iface];
+              face_nodes.assign( polygons_nodes.begin() + inode,
+                                 polygons_nodes.begin() + inode + nbNewNodes );
+              inode += nbNewNodes;
+              if ( isQuad ) // check if a result elem is a valid quadratic polygon
+              {
+                bool isValid = ( nbNewNodes % 2 == 0 );
+                for ( int i = 0; i < nbNewNodes && isValid; ++i )
+                  isValid = ( elem->IsMediumNode( face_nodes[i]) == bool( i % 2 ));
+                elemType.SetQuad( isValid );
+                if ( isValid ) // put medium nodes after corners
+                  SMDS_MeshCell::applyInterlaceRev
+                    ( SMDS_MeshCell::interlacedSmdsOrder( SMDSEntity_Quad_Polygon,
+                                                          nbNewNodes ), face_nodes );
               }
-              SMDS_MeshElement* newElem = aMesh->AddPolygonalFace(poly_nodes);
-              myLastCreatedElems.Append(newElem);
-              if (aShapeId)
+              SMDS_MeshElement* newElem = AddElement( face_nodes, elemType );
+              if ( aShapeId )
                 aMesh->SetMeshElementOnShape(newElem, aShapeId);
             }
-
-            MESSAGE("ChangeElementNodes MergeNodes Polygon");
-            //aMesh->ChangeElementNodes(elem, &polygons_nodes[inode], quantities[nbNew - 1]);
-            vector<const SMDS_MeshNode *> polynodes(polygons_nodes.begin()+inode,polygons_nodes.end());
-            int quid =0;
-            if (nbNew > 0) quid = nbNew - 1;
-            vector<int> newquant(quantities.begin()+quid, quantities.end());
-            const SMDS_MeshElement* newElem = 0;
-            newElem = aMesh->AddPolyhedralVolume(polynodes, newquant);
-            myLastCreatedElems.Append(newElem);
-            if ( aShapeId && newElem )
-              aMesh->SetMeshElementOnShape( newElem, aShapeId );
-            rmElemIds.push_back(elem->GetID());
           }
-          else {
-            rmElemIds.push_back(elem->GetID());
-          }
+          rmElemIds.push_back(elem->GetID());
 
-        }
-        else if (elem->GetType() == SMDSAbs_Volume) {
-          // Polyhedral volume
+        } // Polygon
+
+        else if (elem->GetType() == SMDSAbs_Volume) // Polyhedral volume
+        {
           if (nbUniqueNodes < 4) {
             rmElemIds.push_back(elem->GetID());
           }
@@ -7302,16 +7280,15 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
               }
 
               if (quantities.size() > 3)
-                {
-                  MESSAGE("ChangeElementNodes MergeNodes Polyhedron");
-                  //aMesh->ChangePolyhedronNodes(elem, poly_nodes, quantities);
-                  const SMDS_MeshElement* newElem = 0;
-                  newElem = aMesh->AddPolyhedralVolume(poly_nodes, quantities);
-                  myLastCreatedElems.Append(newElem);
-                  if ( aShapeId && newElem )
-                    aMesh->SetMeshElementOnShape( newElem, aShapeId );
-                  rmElemIds.push_back(elem->GetID());
-                }
+              {
+                //aMesh->ChangePolyhedronNodes(elem, poly_nodes, quantities);
+                const SMDS_MeshElement* newElem =
+                  aMesh->AddPolyhedralVolume(poly_nodes, quantities);
+                myLastCreatedElems.Append(newElem);
+                if ( aShapeId && newElem )
+                  aMesh->SetMeshElementOnShape( newElem, aShapeId );
+                rmElemIds.push_back(elem->GetID());
+              }
             }
             else {
               rmElemIds.push_back(elem->GetID());
@@ -7710,51 +7687,19 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
 
     } // if ( nbNodes != nbUniqueNodes ) // some nodes stick
 
-    if ( isOk ) { // the elem remains valid after sticking nodes
-      if (elem->IsPoly() && elem->GetType() == SMDSAbs_Volume)
-      {
-        // Change nodes of polyedre
-        const SMDS_VtkVolume* aPolyedre =
-          dynamic_cast<const SMDS_VtkVolume*>( elem );
-        if (aPolyedre) {
-          int nbFaces = aPolyedre->NbFaces();
+    if ( isOk ) // the non-poly elem remains valid after sticking nodes
+    {
+      elemType.Init( elem ).SetID( elem->GetID() );
 
-          vector<const SMDS_MeshNode *> poly_nodes;
-          vector<int> quantities (nbFaces);
+      SMESHDS_SubMesh * sm = aShapeId > 0 ? aMesh->MeshElements(aShapeId) : 0;
+      aMesh->RemoveFreeElement(elem, sm, /*fromGroups=*/false);
 
-          for (int iface = 1; iface <= nbFaces; iface++) {
-            int inode, nbFaceNodes = aPolyedre->NbFaceNodes(iface);
-            quantities[iface - 1] = nbFaceNodes;
-
-            for (inode = 1; inode <= nbFaceNodes; inode++) {
-              const SMDS_MeshNode* curNode = aPolyedre->GetFaceNode(iface, inode);
-
-              TNodeNodeMap::iterator nnIt = nodeNodeMap.find( curNode );
-              if (nnIt != nodeNodeMap.end()) { // curNode sticks
-                curNode = (*nnIt).second;
-              }
-              poly_nodes.push_back(curNode);
-            }
-          }
-          aMesh->ChangePolyhedronNodes( elem, poly_nodes, quantities );
-        }
-      }
-      else // replace non-polyhedron elements
-      {
-        const SMDSAbs_ElementType etyp = elem->GetType();
-        const int elemId               = elem->GetID();
-        const bool isPoly              = (elem->GetEntityType() == SMDSEntity_Polygon);
-        uniqueNodes.resize(nbUniqueNodes);
-
-        SMESHDS_SubMesh * sm = aShapeId > 0 ? aMesh->MeshElements(aShapeId) : 0;
-
-        aMesh->RemoveFreeElement(elem, sm, /*fromGroups=*/false);
-        SMDS_MeshElement* newElem = this->AddElement(uniqueNodes, etyp, isPoly, elemId);
-        if ( sm && newElem )
-          sm->AddElement( newElem );
-        if ( elem != newElem )
-          ReplaceElemInGroups( elem, newElem, aMesh );
-      }
+      uniqueNodes.resize(nbUniqueNodes);
+      SMDS_MeshElement* newElem = this->AddElement( uniqueNodes, elemType );
+      if ( sm && newElem )
+        sm->AddElement( newElem );
+      if ( elem != newElem )
+        ReplaceElemInGroups( elem, newElem, aMesh );
     }
     else {
       // Remove invalid regular element or invalid polygon
@@ -7768,6 +7713,7 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
   Remove( rmElemIds, false );
   Remove( rmNodeIds, true );
 
+  return;
 }
 
 
@@ -8996,7 +8942,7 @@ namespace
 
 //=======================================================================
 /*!
- * \brief Convert elements contained in a submesh to quadratic
+ * \brief Convert elements contained in a sub-mesh to quadratic
  * \return int - nb of checked elements
  */
 //=======================================================================
@@ -9519,6 +9465,8 @@ int SMESH_MeshEditor::removeQuadElem(SMESHDS_SubMesh *    theSm,
 {
   int nbElem = 0;
   SMESHDS_Mesh* meshDS = GetMeshDS();
+  ElemFeatures elemType;
+  vector<const SMDS_MeshNode *> nodes;
 
   while( theItr->more() )
   {
@@ -9526,11 +9474,11 @@ int SMESH_MeshEditor::removeQuadElem(SMESHDS_SubMesh *    theSm,
     nbElem++;
     if( elem && elem->IsQuadratic())
     {
-      int id                    = elem->GetID();
-      int nbCornerNodes         = elem->NbCornerNodes();
-      SMDSAbs_ElementType aType = elem->GetType();
+      // get elem data
+      int nbCornerNodes = elem->NbCornerNodes();
+      nodes.assign( elem->begin_nodes(), elem->end_nodes() );
 
-      vector<const SMDS_MeshNode *> nodes( elem->begin_nodes(), elem->end_nodes() );
+      elemType.Init( elem, /*basicOnly=*/false ).SetID( elem->GetID() ).SetQuad( false );
 
       //remove a quadratic element
       if ( !theSm || !theSm->Contains( elem ))
@@ -9538,13 +9486,13 @@ int SMESH_MeshEditor::removeQuadElem(SMESHDS_SubMesh *    theSm,
       meshDS->RemoveFreeElement( elem, theSm, /*fromGroups=*/false );
 
       // remove medium nodes
-      for ( unsigned i = nbCornerNodes; i < nodes.size(); ++i )
+      for ( size_t i = nbCornerNodes; i < nodes.size(); ++i )
         if ( nodes[i]->NbInverseElements() == 0 )
           meshDS->RemoveFreeNode( nodes[i], theSm );
 
       // add a linear element
       nodes.resize( nbCornerNodes );
-      SMDS_MeshElement * newElem = AddElement( nodes, aType, false, id );
+      SMDS_MeshElement * newElem = AddElement( nodes, elemType );
       ReplaceElemInGroups(elem, newElem, meshDS);
       if( theSm && newElem )
         theSm->AddElement( newElem );
@@ -10135,11 +10083,15 @@ SMESH_MeshEditor::SewSideElements (TIDSortedElemSet&    theSide1,
   if ( aResult != SEW_OK)
     return aResult;
 
-  list< int > nodeIDsToRemove/*, elemIDsToRemove*/;
+  list< int > nodeIDsToRemove;
+  vector< const SMDS_MeshNode*> nodes;
+  ElemFeatures elemType;
+
   // loop on nodes replacement map
   TNodeNodeMap::iterator nReplaceMapIt = nReplaceMap.begin(), nnIt;
   for ( ; nReplaceMapIt != nReplaceMap.end(); nReplaceMapIt++ )
-    if ( (*nReplaceMapIt).first != (*nReplaceMapIt).second ) {
+    if ( (*nReplaceMapIt).first != (*nReplaceMapIt).second )
+    {
       const SMDS_MeshNode* nToRemove = (*nReplaceMapIt).first;
       nodeIDsToRemove.push_back( nToRemove->GetID() );
       // loop on elements sharing nToRemove
@@ -10148,11 +10100,10 @@ SMESH_MeshEditor::SewSideElements (TIDSortedElemSet&    theSide1,
         const SMDS_MeshElement* e = invElemIt->next();
         // get a new suite of nodes: make replacement
         int nbReplaced = 0, i = 0, nbNodes = e->NbNodes();
-        vector< const SMDS_MeshNode*> nodes( nbNodes );
+        nodes.resize( nbNodes );
         SMDS_ElemIteratorPtr nIt = e->nodesIterator();
         while ( nIt->more() ) {
-          const SMDS_MeshNode* n =
-            static_cast<const SMDS_MeshNode*>( nIt->next() );
+          const SMDS_MeshNode* n = static_cast<const SMDS_MeshNode*>( nIt->next() );
           nnIt = nReplaceMap.find( n );
           if ( nnIt != nReplaceMap.end() ) {
             nbReplaced++;
@@ -10164,21 +10115,17 @@ SMESH_MeshEditor::SewSideElements (TIDSortedElemSet&    theSide1,
         //         elemIDsToRemove.push_back( e->GetID() );
         //       else
         if ( nbReplaced )
+        {
+          elemType.Init( e, /*basicOnly=*/false ).SetID( e->GetID() );
+          aMesh->RemoveElement( e );
+
+          if ( SMDS_MeshElement* newElem = this->AddElement( nodes, elemType ))
           {
-            SMDSAbs_ElementType etyp = e->GetType();
-            SMDS_MeshElement* newElem = this->AddElement(nodes, etyp, false);
-            if (newElem)
-              {
-                myLastCreatedElems.Append(newElem);
-                AddToSameGroups(newElem, e, aMesh);
-                int aShapeId = e->getshapeId();
-                if ( aShapeId )
-                  {
-                    aMesh->SetMeshElementOnShape( newElem, aShapeId );
-                  }
-              }
-            aMesh->RemoveElement(e);
+            AddToSameGroups( newElem, e, aMesh );
+            if ( int aShapeId = e->getshapeId() )
+              aMesh->SetMeshElementOnShape( newElem, aShapeId );
           }
+        }
       }
     }
 
@@ -10408,44 +10355,19 @@ void SMESH_MeshEditor::DoubleElements( const TIDSortedElemSet& theElements )
 
   // duplicate elements
 
-  if ( type == SMDSAbs_Ball )
-  {
-    SMDS_UnstructuredGrid* vtkGrid = mesh->getGrid();
-    while ( elemIt->more() )
-    {
-      const SMDS_MeshElement* elem = elemIt->next();
-      if ( elem->GetType() != SMDSAbs_Ball )
-        continue;
-      if (( elem = mesh->AddBall( elem->GetNode(0),
-                                  vtkGrid->GetBallDiameter( elem->getVtkId() ))))
-        myLastCreatedElems.Append( elem );
-    }
-  }
-  else
-  {
-    vector< const SMDS_MeshNode* > nodes;
-    while ( elemIt->more() )
-    {
-      const SMDS_MeshElement* elem = elemIt->next();
-      if ( elem->GetType() != type )
-        continue;
+  ElemFeatures elemType;
 
-      nodes.assign( elem->begin_nodes(), elem->end_nodes() );
+  vector< const SMDS_MeshNode* > nodes;
+  while ( elemIt->more() )
+  {
+    const SMDS_MeshElement* elem = elemIt->next();
+    if ( elem->GetType() != type )
+      continue;
 
-      if ( type == SMDSAbs_Volume  && elem->GetVtkType() == VTK_POLYHEDRON )
-      {
-        std::vector<int> quantities =
-          static_cast< const SMDS_VtkVolume* >( elem )->GetQuantities();
-        elem = mesh->AddPolyhedralVolume( nodes, quantities );
-      }
-      else
-      {
-        AddElement( nodes, type, elem->IsPoly() );
-        elem = 0; // myLastCreatedElems is already filled
-      }
-      if ( elem )
-        myLastCreatedElems.Append( elem );
-    }
+    elemType.Init( elem, /*basicOnly=*/false );
+    nodes.assign( elem->begin_nodes(), elem->end_nodes() );
+
+    AddElement( nodes, elemType );
   }
 }
 
@@ -10476,7 +10398,7 @@ bool SMESH_MeshEditor::DoubleNodes( const TIDSortedElemSet& theElems,
     return false;
 
   bool res = false;
-  std::map< const SMDS_MeshNode*, const SMDS_MeshNode* > anOldNodeToNewNode;
+  TNodeNodeMap anOldNodeToNewNode;
   // duplicate elements and nodes
   res = doubleNodes( aMeshDS, theElems, theNodesNot, anOldNodeToNewNode, true );
   // replce nodes by duplications
@@ -10496,16 +10418,18 @@ bool SMESH_MeshEditor::DoubleNodes( const TIDSortedElemSet& theElems,
 */
 //================================================================================
 
-bool SMESH_MeshEditor::doubleNodes( SMESHDS_Mesh*     theMeshDS,
-                                    const TIDSortedElemSet& theElems,
-                                    const TIDSortedElemSet& theNodesNot,
-                                    std::map< const SMDS_MeshNode*,
-                                    const SMDS_MeshNode* >& theNodeNodeMap,
-                                    const bool theIsDoubleElem )
+bool SMESH_MeshEditor::doubleNodes(SMESHDS_Mesh*           theMeshDS,
+                                   const TIDSortedElemSet& theElems,
+                                   const TIDSortedElemSet& theNodesNot,
+                                   TNodeNodeMap&           theNodeNodeMap,
+                                   const bool              theIsDoubleElem )
 {
   MESSAGE("doubleNodes");
-  // iterate on through element and duplicate them (by nodes duplication)
+  // iterate through element and duplicate them (by nodes duplication)
   bool res = false;
+  std::vector<const SMDS_MeshNode*> newNodes;
+  ElemFeatures elemType;
+
   TIDSortedElemSet::const_iterator elemItr = theElems.begin();
   for ( ;  elemItr != theElems.end(); ++elemItr )
   {
@@ -10513,19 +10437,21 @@ bool SMESH_MeshEditor::doubleNodes( SMESHDS_Mesh*     theMeshDS,
     if (!anElem)
       continue;
 
-    bool isDuplicate = false;
     // duplicate nodes to duplicate element
-    std::vector<const SMDS_MeshNode*> newNodes( anElem->NbNodes() );
+    bool isDuplicate = false;
+    newNodes.resize( anElem->NbNodes() );
     SMDS_ElemIteratorPtr anIter = anElem->nodesIterator();
     int ind = 0;
     while ( anIter->more() )
     {
-
-      SMDS_MeshNode* aCurrNode = (SMDS_MeshNode*)anIter->next();
-      SMDS_MeshNode* aNewNode = aCurrNode;
-      if ( theNodeNodeMap.find( aCurrNode ) != theNodeNodeMap.end() )
-        aNewNode = (SMDS_MeshNode*)theNodeNodeMap[ aCurrNode ];
-      else if ( theIsDoubleElem && theNodesNot.find( aCurrNode ) == theNodesNot.end() )
+      const SMDS_MeshNode* aCurrNode = static_cast<const SMDS_MeshNode*>( anIter->next() );
+      const SMDS_MeshNode*  aNewNode = aCurrNode;
+      TNodeNodeMap::iterator     n2n = theNodeNodeMap.find( aCurrNode );
+      if ( n2n != theNodeNodeMap.end() )
+      {
+        aNewNode = n2n->second;
+      }
+      else if ( theIsDoubleElem && !theNodesNot.count( aCurrNode ))
       {
         // duplicate node
         aNewNode = theMeshDS->AddNode( aCurrNode->X(), aCurrNode->Y(), aCurrNode->Z() );
@@ -10540,9 +10466,9 @@ bool SMESH_MeshEditor::doubleNodes( SMESHDS_Mesh*     theMeshDS,
       continue;
 
     if ( theIsDoubleElem )
-      AddElement(newNodes, anElem->GetType(), anElem->IsPoly());
+      AddElement( newNodes, elemType.Init( anElem, /*basicOnly=*/false ));
     else
-      theMeshDS->ChangeElementNodes( anElem, &newNodes[ 0 ], anElem->NbNodes() );
+      theMeshDS->ChangeElementNodes( anElem, &newNodes[ 0 ], newNodes.size() );
 
     res = true;
   }
@@ -12273,7 +12199,8 @@ bool SMESH_MeshEditor::Make2DMeshFrom3D()
   SMESHDS_Mesh* aMesh = GetMeshDS();
   if (!aMesh)
     return false;
-  //bool res = false;
+
+  ElemFeatures faceType( SMDSAbs_Face );
   int nbFree = 0, nbExisted = 0, nbCreated = 0;
   SMDS_VolumeIteratorPtr vIt = aMesh->volumesIterator();
   while(vIt->more())
@@ -12281,8 +12208,8 @@ bool SMESH_MeshEditor::Make2DMeshFrom3D()
     const SMDS_MeshVolume* volume = vIt->next();
     SMDS_VolumeTool vTool( volume, /*ignoreCentralNodes=*/false );
     vTool.SetExternalNormal();
-    //const bool isPoly = volume->IsPoly();
     const int iQuad = volume->IsQuadratic();
+    faceType.SetQuad( iQuad );
     for ( int iface = 0, n = vTool.NbFaces(); iface < n; iface++ )
     {
       if (!vTool.IsFreeFace(iface))
@@ -12294,22 +12221,27 @@ bool SMESH_MeshEditor::Make2DMeshFrom3D()
       int inode = 0;
       for ( ; inode < nbFaceNodes; inode += iQuad+1)
         nodes.push_back(faceNodes[inode]);
-      if (iQuad) { // add medium nodes
+
+      if (iQuad) // add medium nodes
+      {
         for ( inode = 1; inode < nbFaceNodes; inode += 2)
           nodes.push_back(faceNodes[inode]);
         if ( nbFaceNodes == 9 ) // bi-quadratic quad
           nodes.push_back(faceNodes[8]);
       }
       // add new face based on volume nodes
-      if (aMesh->FindElement( nodes, SMDSAbs_Face, /*noMedium=*/false) ) {
-        nbExisted++;
-        continue; // face already exsist
+      if (aMesh->FindElement( nodes, SMDSAbs_Face, /*noMedium=*/false) )
+      {
+        nbExisted++; // face already exsist
       }
-      AddElement(nodes, SMDSAbs_Face, ( !iQuad && nbFaceNodes/(iQuad+1) > 4 ));
-      nbCreated++;
+      else
+      {
+        AddElement( nodes, faceType.SetPoly( nbFaceNodes/(iQuad+1) > 4 ));
+        nbCreated++;
+      }
     }
   }
-  return ( nbFree==(nbExisted+nbCreated) );
+  return ( nbFree == ( nbExisted + nbCreated ));
 }
 
 namespace
@@ -12371,9 +12303,11 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
   SMDS_VolumeTool vTool;
   TIDSortedElemSet avoidSet;
   const TIDSortedElemSet emptySet, *elemSet = aroundElements ? &elements : &emptySet;
-  int inode;
+  size_t inode;
 
   typedef vector<const SMDS_MeshNode*> TConnectivity;
+  TConnectivity tgtNodes;
+  ElemFeatures elemKind( missType );
 
   SMDS_ElemIteratorPtr eIt;
   if (elements.empty()) eIt = aMesh->elementsIterator(elemType);
@@ -12383,6 +12317,7 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
   {
     const SMDS_MeshElement* elem = eIt->next();
     const int              iQuad = elem->IsQuadratic();
+    elemKind.SetQuad( iQuad );
 
     // ------------------------------------------------------------------------------------
     // 1. For an elem, get present bnd elements and connectivities of missing bnd elements
@@ -12400,7 +12335,7 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
              ( !aroundElements || elements.count( otherVol )))
           continue;
         const SMDS_MeshNode** nn = vTool.GetFaceNodes(iface);
-        const int    nbFaceNodes = vTool.NbFaceNodes (iface);
+        const size_t nbFaceNodes = vTool.NbFaceNodes (iface);
         if ( missType == SMDSAbs_Edge ) // boundary edges
         {
           nodes.resize( 2+iQuad );
@@ -12480,17 +12415,17 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
     if ( targetMesh != myMesh )
       // instead of making a map of nodes in this mesh and targetMesh,
       // we create nodes with same IDs.
-      for ( int i = 0; i < missingBndElems.size(); ++i )
+      for ( size_t i = 0; i < missingBndElems.size(); ++i )
       {
         TConnectivity& srcNodes = missingBndElems[i];
-        TConnectivity  nodes( srcNodes.size() );
-        for ( inode = 0; inode < nodes.size(); ++inode )
-          nodes[inode] = getNodeWithSameID( tgtMeshDS, srcNodes[inode] );
-        if ( aroundElements && tgtEditor.GetMeshDS()->FindElement( nodes,
+        tgtNodes.resize( srcNodes.size() );
+        for ( inode = 0; inode < srcNodes.size(); ++inode )
+          tgtNodes[inode] = getNodeWithSameID( tgtMeshDS, srcNodes[inode] );
+        if ( aroundElements && tgtEditor.GetMeshDS()->FindElement( tgtNodes,
                                                                    missType,
                                                                    /*noMedium=*/false))
           continue;
-        tgtEditor.AddElement(nodes, missType, !iQuad && nodes.size()/(iQuad+1)>4);
+        tgtEditor.AddElement( tgtNodes, elemKind.SetPoly( tgtNodes.size()/(iQuad+1) > 4 ));
         ++nbAddedBnd;
       }
     else
@@ -12501,16 +12436,16 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
                                                                    missType,
                                                                    /*noMedium=*/false))
           continue;
-        SMDS_MeshElement* elem =
-          tgtEditor.AddElement(nodes, missType, !iQuad && nodes.size()/(iQuad+1)>4);
-        ++nbAddedBnd;
+        SMDS_MeshElement* newElem = 
+          tgtEditor.AddElement( nodes, elemKind.SetPoly( nodes.size()/(iQuad+1) > 4 ));
+        nbAddedBnd += bool( newElem );
 
         // try to set a new element to a shape
         if ( myMesh->HasShapeToMesh() )
         {
           bool ok = true;
           set< pair<TopAbs_ShapeEnum, int > > mediumShapes;
-          const int nbN = nodes.size() / (iQuad+1 );
+          const size_t nbN = nodes.size() / (iQuad+1 );
           for ( inode = 0; inode < nbN && ok; ++inode )
           {
             pair<int, TopAbs_ShapeEnum> i_stype =
@@ -12530,7 +12465,7 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
             }
           }
           if ( ok && mediumShapes.begin()->first == missShapeType )
-            aMesh->SetMeshElementOnShape( elem, mediumShapes.begin()->second );
+            aMesh->SetMeshElementOnShape( newElem, mediumShapes.begin()->second );
         }
       }
 
@@ -12541,15 +12476,15 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
       for ( int i = 0 ; i < presentBndElems.size(); ++i )
       {
         const SMDS_MeshElement* e = presentBndElems[i];
-        TConnectivity nodes( e->NbNodes() );
+        tgtNodes.resize( e->NbNodes() );
         for ( inode = 0; inode < nodes.size(); ++inode )
-          nodes[inode] = getNodeWithSameID( tgtMeshDS, e->GetNode(inode) );
-        presentEditor->AddElement(nodes, e->GetType(), e->IsPoly());
+          tgtNodes[inode] = getNodeWithSameID( tgtMeshDS, e->GetNode(inode) );
+        presentEditor->AddElement( tgtNodes, elemKind.Init( e ));
       }
     else // store present elements to add them to a group
       for ( int i = 0 ; i < presentBndElems.size(); ++i )
       {
-        presentEditor->myLastCreatedElems.Append(presentBndElems[i]);
+        presentEditor->myLastCreatedElems.Append( presentBndElems[i] );
       }
 
   } // loop on given elements
@@ -12576,10 +12511,10 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
     while (eIt->more())
     {
       const SMDS_MeshElement* elem = eIt->next();
-      TConnectivity nodes( elem->NbNodes() );
-      for ( inode = 0; inode < nodes.size(); ++inode )
-        nodes[inode] = getNodeWithSameID( tgtMeshDS, elem->GetNode(inode) );
-      tgtEditor.AddElement(nodes, elemType, elem->IsPoly());
+      tgtNodes.resize( elem->NbNodes() );
+      for ( inode = 0; inode < tgtNodes.size(); ++inode )
+        tgtNodes[inode] = getNodeWithSameID( tgtMeshDS, elem->GetNode(inode) );
+      tgtEditor.AddElement( tgtNodes, elemKind.Init( elem ));
 
       tgtEditor.myLastCreatedElems.Clear();
     }

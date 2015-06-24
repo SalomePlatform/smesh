@@ -222,10 +222,11 @@ SMESH_ActorDef::SMESH_ActorDef()
   aFilter = my2DActor->GetExtractUnstructuredGrid();
   aFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
   aFilter->RegisterCellsWithType(VTK_TRIANGLE);
-  aFilter->RegisterCellsWithType(VTK_POLYGON);
   aFilter->RegisterCellsWithType(VTK_QUAD);
+  aFilter->RegisterCellsWithType(VTK_POLYGON);
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_TRIANGLE);
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_QUAD);
+  aFilter->RegisterCellsWithType(VTK_QUADRATIC_POLYGON);
   aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUAD);
   aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_TRIANGLE);
 
@@ -245,10 +246,11 @@ SMESH_ActorDef::SMESH_ActorDef()
   my2DExtActor->SetRepresentation(SMESH_DeviceActor::eInsideframe);
   aFilter = my2DExtActor->GetExtractUnstructuredGrid();
   aFilter->RegisterCellsWithType(VTK_TRIANGLE);
-  aFilter->RegisterCellsWithType(VTK_POLYGON);
   aFilter->RegisterCellsWithType(VTK_QUAD);
+  aFilter->RegisterCellsWithType(VTK_POLYGON);
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_TRIANGLE);
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_QUAD);
+  aFilter->RegisterCellsWithType(VTK_QUADRATIC_POLYGON);
   aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUAD);
   aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_TRIANGLE);
 
@@ -275,10 +277,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
   aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
-//#ifdef VTK_HAVE_POLYHEDRON
-  MESSAGE("RegisterCellsWithType(VTK_POLYHEDRON)");
   aFilter->RegisterCellsWithType(VTK_POLYHEDRON);
-//#endif
 
   my3DExtProp = vtkProperty::New();
   my3DExtProp->DeepCopy(myNormalVProp);
@@ -1565,18 +1564,20 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode)
   if (myEntityMode & eFaces) {
     if (MYDEBUG) MESSAGE("FACES");
     aFilter->RegisterCellsWithType(VTK_TRIANGLE);
-    aFilter->RegisterCellsWithType(VTK_POLYGON);
     aFilter->RegisterCellsWithType(VTK_QUAD);
+    aFilter->RegisterCellsWithType(VTK_POLYGON);
     aFilter->RegisterCellsWithType(VTK_QUADRATIC_TRIANGLE);
     aFilter->RegisterCellsWithType(VTK_QUADRATIC_QUAD);
+    aFilter->RegisterCellsWithType(VTK_QUADRATIC_POLYGON);
     aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUAD);
     aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_TRIANGLE);
 
     aHightFilter->RegisterCellsWithType(VTK_TRIANGLE);
-    aHightFilter->RegisterCellsWithType(VTK_POLYGON);
     aHightFilter->RegisterCellsWithType(VTK_QUAD);
+    aHightFilter->RegisterCellsWithType(VTK_POLYGON);
     aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_TRIANGLE);
     aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_QUAD);
+    aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_POLYGON);
     aHightFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUAD);
     aHightFilter->RegisterCellsWithType(VTK_BIQUADRATIC_TRIANGLE);
   }
@@ -1595,9 +1596,7 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode)
     aFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
     aFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
     aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
-//#ifdef VTK_HAVE_POLYHEDRON
     aFilter->RegisterCellsWithType(VTK_POLYHEDRON);
-//#endif
 
     aHightFilter->RegisterCellsWithType(VTK_TETRA);
     aHightFilter->RegisterCellsWithType(VTK_VOXEL);
@@ -1611,9 +1610,7 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode)
     aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
     aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
     aHightFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
-//#ifdef VTK_HAVE_POLYHEDRON
     aHightFilter->RegisterCellsWithType(VTK_POLYHEDRON);
-//#endif
   }
   aFilter->Update();
   if (MYDEBUG) MESSAGE(aFilter->GetOutput()->GetNumberOfCells());

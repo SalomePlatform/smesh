@@ -95,13 +95,39 @@
 
 namespace
 {
+
+  // Define the sequences of ids
+  static int FirstEdgeIds[] = {0};
+  static int LastEdgeIds[] =  {1};
+
+  static int FirstTriangleIds[] = {0,1,2};
+  static int LastTriangleIds[] =  {1,2,0};
+
+  static int FirstQuadrangleIds[] = {0,1,2,3};
+  static int LastQuadrangleIds[] =  {1,2,3,0};
+
+  static int FirstTetrahedronIds[] = {0,1,2,3,3,3};
+  static int LastTetrahedronIds[] =  {1,2,0,0,1,2};
+
+  static int FirstPyramidIds[] = {0,1,2,3,4,4,4,4};
+  static int LastPyramidIds[] =  {1,2,3,0,0,1,2,3};
+
+  static int FirstPentahedronIds[] = {0,1,2,3,4,5,0,1,2};
+  static int LastPentahedronIds[] =  {1,2,0,4,5,3,3,4,5};
+
+  static int FirstHexahedronIds[] = {0,1,2,3,4,5,6,7,0,1,2,3};
+  static int LastHexahedronIds[] =  {1,2,3,0,5,6,7,4,4,5,6,7};
+
+  static vector<int> FirstPolygonIds;
+  static vector<int> LastPolygonIds;
+
   void ReverseConnectivity( std::vector<vtkIdType> & ids, SMDSAbs_EntityType type,
                             bool toReverse, // inverse element
                             bool toVtkOrder ) // smds connectivity to vtk one
   {
     if ( toReverse ) // first reverse smds order
     {
-      const std::vector<int>& index = SMDS_MeshCell::reverseSmdsOrder(type);
+      const std::vector<int>& index = SMDS_MeshCell::reverseSmdsOrder(type, ids.size());
       SMDS_MeshCell::applyInterlace( index, ids );
     }
     if ( toVtkOrder ) // from smds to vtk connectivity
@@ -113,7 +139,8 @@ namespace
 }
 namespace SMESH
 {
-  class TElementSimulationQuad {
+  class TElementSimulationQuad
+  {
     SalomeApp_Application* myApplication;
     SUIT_ViewWindow* myViewWindow;
     SVTK_ViewWindow* myVTKViewWindow;
@@ -148,7 +175,7 @@ namespace SMESH
       myPreviewActor->PickableOff();
       myPreviewActor->VisibilityOff();
       myPreviewActor->SetMapper(myMapper);
-      
+
       QColor ffc, bfc;
       int delta;
       vtkProperty* myProp = vtkProperty::New();
@@ -249,34 +276,11 @@ namespace SMESH
 
       myGrid->Delete();
 
-//       myProp->Delete();
-//       myBackProp->Delete();
+      //       myProp->Delete();
+      //       myBackProp->Delete();
     }
   };
 }
-
-
-// Define the sequences of ids
-static int FirstEdgeIds[] = {0};
-static int LastEdgeIds[] =  {1};
-
-static int FirstTriangleIds[] = {0,1,2};
-static int LastTriangleIds[] =  {1,2,0};
-
-static int FirstQuadrangleIds[] = {0,1,2,3};
-static int LastQuadrangleIds[] =  {1,2,3,0};
-
-static int FirstTetrahedronIds[] = {0,1,2,3,3,3};
-static int LastTetrahedronIds[] =  {1,2,0,0,1,2};
-
-static int FirstPyramidIds[] = {0,1,2,3,4,4,4,4};
-static int LastPyramidIds[] =  {1,2,3,0,0,1,2,3};
-
-static int FirstPentahedronIds[] = {0,1,2,3,4,5,0,1,2};
-static int LastPentahedronIds[] =  {1,2,0,4,5,3,3,4,5};
-
-static int FirstHexahedronIds[] = {0,1,2,3,4,5,6,7,0,1,2,3};
-static int LastHexahedronIds[] =  {1,2,3,0,5,6,7,4,4,5,6,7};
 
 /*!
   \class BusyLocker
@@ -335,7 +339,6 @@ SMESHGUI_AddQuadraticElementDlg::SMESHGUI_AddQuadraticElementDlg( SMESHGUI* theM
     mySMESHGUI( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
     myGeomType( theType ),
-    //myType( theType ),
     myBusy( false )
 {
   setModal( false );
@@ -358,6 +361,9 @@ SMESHGUI_AddQuadraticElementDlg::SMESHGUI_AddQuadraticElementDlg( SMESHGUI* theM
     break;
   case SMDSEntity_Quad_Quadrangle:
     anElementName = QString("QUADRATIC_QUADRANGLE");
+    break;
+  case SMDSEntity_Quad_Polygon:
+    anElementName = QString("QUADRATIC_POLYGON");
     break;
   case SMDSEntity_BiQuad_Quadrangle:
     anElementName = QString("BIQUADRATIC_QUADRANGLE");
@@ -561,6 +567,11 @@ void SMESHGUI_AddQuadraticElementDlg::Init()
     myNbCenterNodes = 1;
     myHelpFileName = "adding_quadratic_elements_page.html#?"; //Adding_quadrangles
     break;
+  case SMDSEntity_Quad_Polygon:
+    aNumRows = 5;
+    myNbCorners = 0; // no limit
+    myHelpFileName = "adding_quadratic_elements_page.html#?"; //Adding_polygons
+    break;
   case SMDSEntity_Quad_Tetra:
     aNumRows = 6;
     myNbCorners = 4;
@@ -689,6 +700,7 @@ bool SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
     break;
   case SMDSEntity_Quad_Triangle:
   case SMDSEntity_Quad_Quadrangle:
+  case SMDSEntity_Quad_Polygon:
   case SMDSEntity_BiQuad_Triangle:
   case SMDSEntity_BiQuad_Quadrangle:
   case SMDSEntity_Quad_Tetra:
@@ -716,7 +728,7 @@ bool SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
   if ( myReverseCB->isChecked())
     ReverseConnectivity( anIds, myGeomType, /*toReverse=*/true, /*toVtkOrder=*/false );
 
-  int aNumberOfIds =  anIds.size();
+  int aNumberOfIds = anIds.size();
   SMESH::long_array_var anArrayOfIdeces = new SMESH::long_array;
   anArrayOfIdeces->length( aNumberOfIds );
 
@@ -739,7 +751,14 @@ bool SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
       SMESH::SMESH_GroupOnGeom_var aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( myGroups[idx-1] );
       if ( !aGeomGroup->_is_nil() ) {
         int res = SUIT_MessageBox::question( this, tr( "SMESH_WRN_WARNING" ),
-                                             tr( "MESH_STANDALONE_GRP_CHOSEN" ).arg( aGroupName ),
+                                             tr( "MESH_GEOM_GRP_CHOSEN" ).arg( aGroupName ),
+                                             tr( "SMESH_BUT_YES" ), tr( "SMESH_BUT_NO" ), 0, 1 );
+        if ( res == 1 ) return false;
+      }
+      SMESH::SMESH_GroupOnFilter_var aFilterGroup = SMESH::SMESH_GroupOnFilter::_narrow( myGroups[idx-1] );
+      if ( !aFilterGroup->_is_nil() ) {
+        int res = SUIT_MessageBox::question( this, tr( "SMESH_WRN_WARNING" ),
+                                             tr( "MESH_FILTER_GRP_CHOSEN" ).arg( aGroupName ),
                                              tr( "SMESH_BUT_YES" ), tr( "SMESH_BUT_NO" ), 0, 1 );
         if ( res == 1 ) return false;
       }
@@ -748,24 +767,31 @@ bool SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
   }
 
   SMESH::ElementType anElementType;
-  long anElemId = -1;
+  long anElemId = -1, nbElemsBefore = 0;
   SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
   switch (myGeomType) {
   case SMDSEntity_Quad_Edge:
     anElementType = SMESH::EDGE;
+    nbElemsBefore = myMesh->NbEdges();
     anElemId = aMeshEditor->AddEdge(anArrayOfIdeces.inout()); break;
   case SMDSEntity_Quad_Triangle:
   case SMDSEntity_Quad_Quadrangle:
   case SMDSEntity_BiQuad_Triangle:
   case SMDSEntity_BiQuad_Quadrangle:
     anElementType = SMESH::FACE;
+    nbElemsBefore = myMesh->NbFaces();
     anElemId = aMeshEditor->AddFace(anArrayOfIdeces.inout()); break;
+  case SMDSEntity_Quad_Polygon:
+    anElementType = SMESH::FACE;
+    nbElemsBefore = myMesh->NbFaces();
+    anElemId = aMeshEditor->AddQuadPolygonalFace(anArrayOfIdeces.inout()); break;
   case SMDSEntity_Quad_Tetra:
   case SMDSEntity_Quad_Pyramid:
   case SMDSEntity_Quad_Penta:
   case SMDSEntity_Quad_Hexa:
   case SMDSEntity_TriQuad_Hexa:
     anElementType = SMESH::VOLUME;
+    nbElemsBefore = myMesh->NbVolumes();
     anElemId = aMeshEditor->AddVolume(anArrayOfIdeces.inout()); break;
   default: break;
   }
@@ -781,9 +807,17 @@ bool SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
       }
     }
     else {
-      SMESH::SMESH_GroupOnGeom_var aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGroup );
+      SMESH::SMESH_GroupOnGeom_var     aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGroup );
+      SMESH::SMESH_GroupOnFilter_var aFilterGroup = SMESH::SMESH_GroupOnFilter::_narrow( aGroup );
       if ( !aGeomGroup->_is_nil() ) {
         aGroupUsed = myMesh->ConvertToStandalone( aGeomGroup );
+        if ( !aGroupUsed->_is_nil() && idx > 0 ) {
+          myGroups[idx-1] = SMESH::SMESH_GroupBase::_duplicate(aGroupUsed);
+          SMESHGUI::GetSMESHGUI()->getApp()->updateObjectBrowser();
+        }
+      }
+      else if ( !aFilterGroup->_is_nil() ) {
+        aGroupUsed = myMesh->ConvertToStandalone( aFilterGroup );
         if ( !aGroupUsed->_is_nil() && idx > 0 ) {
           myGroups[idx-1] = SMESH::SMESH_GroupBase::_duplicate(aGroupUsed);
           SMESHGUI::GetSMESHGUI()->getApp()->updateObjectBrowser();
@@ -798,6 +832,23 @@ bool SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
       anIdList->length( 1 );
       anIdList[0] = anElemId;
       aGroupUsed->Add( anIdList.inout() );
+    }
+  }
+
+  if ( nbElemsBefore == 0  )
+  {
+    // 1st element of the type has been added, update actor to show this entity
+    unsigned int aMode = myActor->GetEntityMode();
+    switch ( anElementType ) {
+    case SMESH::EDGE:
+      myActor->SetRepresentation(SMESH_Actor::eEdge);
+      myActor->SetEntityMode( aMode |= SMESH_Actor::eEdges ); break;
+    case SMESH::FACE:
+      myActor->SetRepresentation(SMESH_Actor::eSurface);
+      myActor->SetEntityMode( aMode |= SMESH_Actor::eFaces ); break;
+    case SMESH::VOLUME:
+      myActor->SetRepresentation(SMESH_Actor::eSurface);
+      myActor->SetEntityMode( aMode |= SMESH_Actor::eVolumes ); break;
     }
   }
 
@@ -1007,6 +1058,7 @@ void SMESHGUI_AddQuadraticElementDlg::SelectionIntoArgument()
       anElementType = SMESH::EDGE; break;
     case SMDSEntity_Quad_Triangle:
     case SMDSEntity_Quad_Quadrangle:
+    case SMDSEntity_Quad_Polygon:
     case SMDSEntity_BiQuad_Triangle:
     case SMDSEntity_BiQuad_Quadrangle:
       anElementType = SMESH::FACE; break;
@@ -1269,6 +1321,44 @@ void SMESHGUI_AddQuadraticElementDlg::UpdateTable( bool theConersValidity )
 {
   QStringList aListCorners = myCornerNodes->text().split(" ", QString::SkipEmptyParts);
 
+  if ( myGeomType == SMDSEntity_Quad_Polygon )        // POLYGON
+  {
+    if ( aListCorners.count() < 3 )
+      theConersValidity = false;
+
+    if ( aListCorners.count() != myTable->rowCount() && theConersValidity )
+    {
+      // adjust nb of rows for the polygon
+      int oldNbRows = myTable->rowCount();
+      myTable->setRowCount( aListCorners.count() );
+      for ( int row = oldNbRows; row < myTable->rowCount(); row++ )
+      {
+        myTable->setItem( row, 0, new QTableWidgetItem( "" ) );
+        myTable->item( row, 0 )->setFlags(0);
+
+        IdEditItem* anEditItem = new IdEditItem( "" );
+        anEditItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsEnabled);
+        myTable->setItem(row, 1, anEditItem);
+
+        myTable->setItem( row, 2, new QTableWidgetItem( "" ) );
+        myTable->item( row, 2 )->setFlags(0);
+      }
+      myNbCorners = aListCorners.count();
+
+      // fill FirstPolygonIds and LastPolygonIds
+      FirstPolygonIds.resize( aListCorners.count() );
+      LastPolygonIds .resize( aListCorners.count() );
+      for ( int i = 0; i < aListCorners.count(); ++i )
+      {
+        FirstPolygonIds[i] = i;
+        LastPolygonIds [i] = i+1;
+      }
+      LastPolygonIds.back() = 0;
+
+      myNbCorners = aListCorners.count();
+    }
+  }
+
   if ( aListCorners.count() == myNbCorners && theConersValidity )
   {
     myTable->setEnabled( true );
@@ -1294,6 +1384,10 @@ void SMESHGUI_AddQuadraticElementDlg::UpdateTable( bool theConersValidity )
     case SMDSEntity_BiQuad_Quadrangle:
       aFirstColIds = FirstQuadrangleIds;
       aLastColIds  = LastQuadrangleIds;
+      break;
+    case SMDSEntity_Quad_Polygon:
+      aFirstColIds = & FirstPolygonIds[0];
+      aLastColIds  = & LastPolygonIds[0];
       break;
     case SMDSEntity_Quad_Tetra:
       aFirstColIds = FirstTetrahedronIds;

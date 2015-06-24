@@ -213,7 +213,7 @@ void SMESHDS_Mesh::MoveNode(const SMDS_MeshNode *n, double x, double y, double z
 
 //=======================================================================
 //function : ChangeElementNodes
-//purpose  : 
+//purpose  : Changed nodes of an element provided that nb of nodes does not change
 //=======================================================================
 
 bool SMESHDS_Mesh::ChangeElementNodes(const SMDS_MeshElement * elem,
@@ -708,9 +708,9 @@ SMDS_MeshFace* SMESHDS_Mesh::AddPolygonalFaceWithID (const std::vector<int>& nod
   return anElem;
 }
 
-SMDS_MeshFace* SMESHDS_Mesh::AddPolygonalFaceWithID
-                             (const std::vector<const SMDS_MeshNode*>& nodes,
-                              const int                                ID)
+SMDS_MeshFace*
+SMESHDS_Mesh::AddPolygonalFaceWithID (const std::vector<const SMDS_MeshNode*>& nodes,
+                                      const int                                ID)
 {
   SMDS_MeshFace *anElem = SMDS_Mesh::AddPolygonalFaceWithID(nodes, ID);
   if (anElem) {
@@ -724,8 +724,8 @@ SMDS_MeshFace* SMESHDS_Mesh::AddPolygonalFaceWithID
   return anElem;
 }
 
-SMDS_MeshFace* SMESHDS_Mesh::AddPolygonalFace
-                             (const std::vector<const SMDS_MeshNode*>& nodes)
+SMDS_MeshFace*
+SMESHDS_Mesh::AddPolygonalFace (const std::vector<const SMDS_MeshNode*>& nodes)
 {
   SMDS_MeshFace *anElem = SMDS_Mesh::AddPolygonalFace(nodes);
   if (anElem) {
@@ -738,6 +738,53 @@ SMDS_MeshFace* SMESHDS_Mesh::AddPolygonalFace
   }
   return anElem;
 }
+
+
+//=======================================================================
+//function : AddQuadPolygonalFace
+//purpose  : 
+//=======================================================================
+SMDS_MeshFace* SMESHDS_Mesh::AddQuadPolygonalFaceWithID (const std::vector<int>& nodes_ids,
+                                                         const int               ID)
+{
+  SMDS_MeshFace *anElem = SMDS_Mesh::AddQuadPolygonalFaceWithID(nodes_ids, ID);
+  if (anElem) {
+    myScript->AddQuadPolygonalFace(ID, nodes_ids);
+  }
+  return anElem;
+}
+
+SMDS_MeshFace*
+SMESHDS_Mesh::AddQuadPolygonalFaceWithID (const std::vector<const SMDS_MeshNode*>& nodes,
+                                          const int                                ID)
+{
+  SMDS_MeshFace *anElem = SMDS_Mesh::AddQuadPolygonalFaceWithID(nodes, ID);
+  if (anElem) {
+    int i, len = nodes.size();
+    std::vector<int> nodes_ids (len);
+    for (i = 0; i < len; i++) {
+      nodes_ids[i] = nodes[i]->GetID();
+    }
+    myScript->AddQuadPolygonalFace(ID, nodes_ids);
+  }
+  return anElem;
+}
+
+SMDS_MeshFace*
+SMESHDS_Mesh::AddQuadPolygonalFace (const std::vector<const SMDS_MeshNode*>& nodes)
+{
+  SMDS_MeshFace *anElem = SMDS_Mesh::AddQuadPolygonalFace(nodes);
+  if (anElem) {
+    int i, len = nodes.size();
+    std::vector<int> nodes_ids (len);
+    for (i = 0; i < len; i++) {
+      nodes_ids[i] = nodes[i]->GetID();
+    }
+    myScript->AddQuadPolygonalFace(anElem->GetID(), nodes_ids);
+  }
+  return anElem;
+}
+
 
 //=======================================================================
 //function : AddPolyhedralVolume

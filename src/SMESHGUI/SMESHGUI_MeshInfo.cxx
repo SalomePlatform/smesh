@@ -306,11 +306,13 @@ SMESHGUI_MeshInfo::SMESHGUI_MeshInfo( QWidget* parent )
   QLabel*  a2DQuaBiQuad = createField();
   QLabel*  a2DPolLab    = new QLabel( tr( "POLYGONS_LAB" ), this );
   QLabel*  a2DPolTotal  = createField();
+  QLabel*  a2DPolLin    = createField();
+  QLabel*  a2DPolQuad   = createField();
   myWidgets[ index++ ] << a2DLine;
   myWidgets[ index++ ] << a2DLab    << a2DTotal    << a2DLin    << a2DQuad    << a2DBiQuad;
   myWidgets[ index++ ] << a2DTriLab << a2DTriTotal << a2DTriLin << a2DTriQuad << a2DTriBiQuad;
   myWidgets[ index++ ] << a2DQuaLab << a2DQuaTotal << a2DQuaLin << a2DQuaQuad << a2DQuaBiQuad;
-  myWidgets[ index++ ] << a2DPolLab << a2DPolTotal;
+  myWidgets[ index++ ] << a2DPolLab << a2DPolTotal << a2DPolLin << a2DPolQuad;
 
   // ... 3D elements
   QWidget* a3DLine      = createLine();
@@ -414,6 +416,8 @@ SMESHGUI_MeshInfo::SMESHGUI_MeshInfo( QWidget* parent )
   l->addWidget( a2DQuaBiQuad, 17, 4 );
   l->addWidget( a2DPolLab,    18, 0 );
   l->addWidget( a2DPolTotal,  18, 1 );
+  l->addWidget( a2DPolLin,    18, 2 );
+  l->addWidget( a2DPolQuad,   18, 3 );
   l->addWidget( a3DLine,      19, 1, 1, 4 );
   l->addWidget( a3DLab,       20, 0 );
   l->addWidget( a3DTotal,     20, 1 );
@@ -503,8 +507,9 @@ void SMESHGUI_MeshInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
     myWidgets[i1D][iQuadratic]->setProperty( "text", QString::number( info[SMDSEntity_Quad_Edge] ) );
     long nbTriangles     = info[SMDSEntity_Triangle]   + info[SMDSEntity_Quad_Triangle]   + info[SMDSEntity_BiQuad_Triangle];
     long nbQuadrangles   = info[SMDSEntity_Quadrangle] + info[SMDSEntity_Quad_Quadrangle] + info[SMDSEntity_BiQuad_Quadrangle];
+    long nb2DPolygons    = info[SMDSEntity_Polygon]    + info[SMDSEntity_Quad_Polygon];
     long nb2DLinear      = info[SMDSEntity_Triangle]        + info[SMDSEntity_Quadrangle] + info[SMDSEntity_Polygon];
-    long nb2DQuadratic   = info[SMDSEntity_Quad_Triangle]   + info[SMDSEntity_Quad_Quadrangle];
+    long nb2DQuadratic   = info[SMDSEntity_Quad_Triangle]   + info[SMDSEntity_Quad_Quadrangle] + info[SMDSEntity_Quad_Polygon];
     long nb2DBiQuadratic = info[SMDSEntity_BiQuad_Triangle] + info[SMDSEntity_BiQuad_Quadrangle];
     long nb2DTotal       = nb2DLinear + nb2DQuadratic + nb2DBiQuadratic;
 
@@ -520,7 +525,9 @@ void SMESHGUI_MeshInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
     myWidgets[i2DQuadrangles][iLinear]      ->setProperty( "text", QString::number( info[SMDSEntity_Quadrangle] ) );
     myWidgets[i2DQuadrangles][iQuadratic]   ->setProperty( "text", QString::number( info[SMDSEntity_Quad_Quadrangle] ) );
     myWidgets[i2DQuadrangles][iBiQuadratic] ->setProperty( "text", QString::number( info[SMDSEntity_BiQuad_Quadrangle] ) );
-    myWidgets[i2DPolygons][iTotal]          ->setProperty( "text", QString::number( info[SMDSEntity_Polygon] ) );
+    myWidgets[i2DPolygons][iTotal]          ->setProperty( "text", QString::number( nb2DPolygons ));
+    myWidgets[i2DPolygons][iLinear]         ->setProperty( "text", QString::number( info[SMDSEntity_Polygon] ) );
+    myWidgets[i2DPolygons][iQuadratic]      ->setProperty( "text", QString::number( info[SMDSEntity_Quad_Polygon] ) );
     long nbTetrahedrons  = info[SMDSEntity_Tetra]   + info[SMDSEntity_Quad_Tetra];
     long nbHexahedrons   = info[SMDSEntity_Hexa]    + info[SMDSEntity_Quad_Hexa] + info[SMDSEntity_TriQuad_Hexa];
     long nbPyramids      = info[SMDSEntity_Pyramid] + info[SMDSEntity_Quad_Pyramid];
@@ -583,6 +590,8 @@ void SMESHGUI_MeshInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
           myWidgets[i2DQuadrangles][iLinear]      ->setProperty( "text", "?" );
           myWidgets[i2DQuadrangles][iQuadratic]   ->setProperty( "text", "?" );
           myWidgets[i2DQuadrangles][iBiQuadratic] ->setProperty( "text", "?" );
+          myWidgets[i2DPolygons][iLinear]         ->setProperty( "text", "?" );
+          myWidgets[i2DPolygons][iQuadratic]      ->setProperty( "text", "?" );
           myWidgets[i2DPolygons][iTotal]          ->setProperty( "text", "?" );
           myWidgets[iNb][iTotal]                  ->setProperty( "text", "?" );
           myWidgets[iNb][iLinear]                 ->setProperty( "text", "?" );
@@ -712,6 +721,8 @@ void SMESHGUI_MeshInfo::clear()
   myWidgets[i2DQuadrangles][iLinear]      ->setProperty( "text", QString::number( 0 ) );
   myWidgets[i2DQuadrangles][iQuadratic]   ->setProperty( "text", QString::number( 0 ) );
   myWidgets[i2DQuadrangles][iBiQuadratic] ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i2DPolygons][iLinear]         ->setProperty( "text", QString::number( 0 ) );
+  myWidgets[i2DPolygons][iQuadratic]      ->setProperty( "text", QString::number( 0 ) );
   myWidgets[i2DPolygons][iTotal]          ->setProperty( "text", QString::number( 0 ) );
   myWidgets[i3D][iTotal]                  ->setProperty( "text", QString::number( 0 ) );
   myWidgets[i3D][iLinear]                 ->setProperty( "text", QString::number( 0 ) );
@@ -836,6 +847,8 @@ void SMESHGUI_MeshInfo::saveInfo( QTextStream &out )
   out << QString( SPACING_INFO*3, ' ' ) << tr( "BI_QUADRATIC_LAB" ) << ": " << ( myWidgets[i2DQuadrangles][iBiQuadratic]->property( "text" ) ).toString() << "\n";
   out << QString( SPACING_INFO*2, ' ' ) << tr( "POLYGONS_LAB" )     << "\n";
   out << QString( SPACING_INFO*3, ' ' ) << tr( "TOTAL_LAB" )        << ": " << ( myWidgets[i2DPolygons][iTotal]->property( "text" ) ).toString() << "\n";
+  out << QString( SPACING_INFO*3, ' ' ) << tr( "LINEAR_LAB" )       << ": " << ( myWidgets[i2DPolygons][iLinear]->property( "text" ) ).toString() << "\n";
+  out << QString( SPACING_INFO*3, ' ' ) << tr( "QUADRATIC_LAB" )    << ": " << ( myWidgets[i2DPolygons][iQuadratic]->property( "text" ) ).toString() << "\n";
   out << QString( SPACING_INFO,   ' ' ) << tr( "3D_LAB" )           << "\n";
   out << QString( SPACING_INFO*2, ' ' ) << tr( "TOTAL_LAB" )        << ": " << ( myWidgets[i3D][iTotal]->property( "text" ) ).toString() << "\n";
   out << QString( SPACING_INFO*2, ' ' ) << tr( "LINEAR_LAB" )       << ": " << ( myWidgets[i3D][iLinear]->property( "text" ) ).toString() << "\n";

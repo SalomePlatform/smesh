@@ -29,6 +29,7 @@
 #include "SMESH_Gen.hxx"
 #include "SMESH_MAT2d.hxx"
 #include "SMESH_Mesh.hxx"
+#include "SMESH_MeshEditor.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_ProxyMesh.hxx"
 #include "SMESH_subMesh.hxx"
@@ -124,6 +125,34 @@ bool StdMeshers_QuadFromMedialAxis_1D2D::CheckHypothesis(SMESH_Mesh&         aMe
 
 namespace
 {
+  typedef map< const SMDS_MeshNode*, list< const SMDS_MeshNode* > > TMergeMap;
+  
+  //================================================================================
+  /*!
+   * \brief Sinuous face
+   */
+  struct SinuousFace
+  {
+    FaceQuadStruct::Ptr   _quad;
+    vector< TopoDS_Edge > _edges;
+    vector< TopoDS_Edge > _sinuSide[2], _shortSide[2];
+    vector< TopoDS_Edge > _sinuEdges;
+    int                   _nbWires;
+    list< int >           _nbEdgesInWire;
+    TMergeMap             _nodesToMerge;
+
+    SinuousFace( const TopoDS_Face& f ): _quad( new FaceQuadStruct )
+    {
+      list< TopoDS_Edge > edges;
+      _nbWires = SMESH_Block::GetOrderedEdges (f, edges, _nbEdgesInWire);
+      _edges.assign( edges.begin(), edges.end() );
+
+      _quad->side.resize( 4 );
+      _quad->face = f;
+    }
+    const TopoDS_Face& Face() const { return _quad->face; }
+  };
+
   //================================================================================
   /*!
    * \brief Temporary mesh
@@ -135,6 +164,18 @@ namespace
       _myMeshDS = new SMESHDS_Mesh(/*id=*/0, /*isEmbeddedMode=*/true);
     }
   };
+
+  //================================================================================
+  /*!
+   * \brief Return a member of a std::pair
+   */
+  //================================================================================
+
+  template< typename T >
+  T& get( std::pair< T, T >& thePair, bool is2nd )
+  {
+    return is2nd ? thePair.second : thePair.first;
+  }
 
   //================================================================================
   /*!
@@ -331,36 +372,42 @@ namespace
   //================================================================================
   /*!
    * \brief Find EDGEs to discretize using projection from MA
-   *  \param [in] theFace - the FACE to be meshed
-   *  \param [in] theWire - ordered EDGEs of the FACE
-   *  \param [out] theSinuEdges - the EDGEs to discretize using projection from MA
-   *  \param [out] theShortEdges - other EDGEs
+   *  \param [in,out] theSinuFace - the FACE to be meshed
    *  \return bool - OK or not
    *
-   * Is separate all EDGEs into four sides of a quadrangle connected in the order:
+   * It separates all EDGEs into four sides of a quadrangle connected in the order:
    * theSinuEdges[0], theShortEdges[0], theSinuEdges[1], theShortEdges[1]
    */
   //================================================================================
 
   bool getSinuousEdges( SMESH_MesherHelper& theHelper,
-                        const TopoDS_Face&  theFace,
-                        list<TopoDS_Edge>&  theWire,
-                        vector<TopoDS_Edge> theSinuEdges[2],
-                        vector<TopoDS_Edge> theShortEdges[2])
+                        SinuousFace&        theSinuFace)
   {
+    vector<TopoDS_Edge> * theSinuEdges  = & theSinuFace._sinuSide [0];
+    vector<TopoDS_Edge> * theShortEdges = & theSinuFace._shortSide[0];
     theSinuEdges[0].clear();
     theSinuEdges[1].clear();
     theShortEdges[0].clear();
     theShortEdges[1].clear();
-
-    vector<TopoDS_Edge> allEdges( theWire.begin(), theWire.end() );
+   
+    vector<TopoDS_Edge> & allEdges = theSinuFace._edges;
     const size_t nbEdges = allEdges.size();
-    if ( nbEdges < 4 )
+    if ( nbEdges < 4 && theSinuFace._nbWires == 1 )
+      return false;
+
+    if ( theSinuFace._nbWires == 2 ) // ring
+    {
+      size_t nbOutEdges = theSinuFace._nbEdgesInWire.front();
+      theSinuEdges[0].assign ( allEdges.begin(), allEdges.begin() + nbOutEdges );
+      theSinuEdges[1].assign ( allEdges.begin() + nbOutEdges, allEdges.end() );
+      return true;
+    }
+    if ( theSinuFace._nbWires > 2 )
       return false;
 
     // create MedialAxis to find short edges by analyzing MA branches
     double minSegLen = getMinSegLen( theHelper, allEdges );
-    SMESH_MAT2d::MedialAxis ma( theFace, allEdges, minSegLen );
+    SMESH_MAT2d::MedialAxis ma( theSinuFace.Face(), allEdges, minSegLen * 3 );
 
     // in an initial request case, theFace represents a part of a river with almost parallel banks
     // so there should be two branch points
@@ -430,6 +477,10 @@ namespace
          !vCommon.IsSame( theHelper.IthVertex( 1, theSinuEdges[0].back() )))
       theShortEdges[0].swap( theShortEdges[1] );
 
+    theSinuFace._sinuEdges = theSinuEdges[0];
+    theSinuFace._sinuEdges.insert( theSinuFace._sinuEdges.end(),
+                                   theSinuEdges[1].begin(), theSinuEdges[1].end() );
+
     return ( theShortEdges[0].size() > 0 && theShortEdges[1].size() > 0 &&
              theSinuEdges [0].size() > 0 && theSinuEdges [1].size() > 0 );
 
@@ -437,17 +488,17 @@ namespace
     // therefor we use a complex criterion to find TWO short non-sinuous EDGEs
     // and the rest EDGEs will be treated as sinuous.
     // A short edge should have the following features:
-  // a) straight
-  // b) short
-  // c) with convex corners at ends
-  // d) far from the other short EDGE
+    // a) straight
+    // b) short
+    // c) with convex corners at ends
+    // d) far from the other short EDGE
 
-  // vector< double > isStraightEdge( nbEdges, 0 ); // criterion value
+    // vector< double > isStraightEdge( nbEdges, 0 ); // criterion value
 
-  // // a0) evaluate continuity
-  // const double contiWgt = 0.5; // weight of continuity in the criterion
-  // multimap< int, TopoDS_Edge > continuity;
-  // for ( size_t i = 0; i < nbEdges; ++I )
+    // // a0) evaluate continuity
+    // const double contiWgt = 0.5; // weight of continuity in the criterion
+    // multimap< int, TopoDS_Edge > continuity;
+    // for ( size_t i = 0; i < nbEdges; ++I )
     // {
     //   BRepAdaptor_Curve curve( allEdges[i] );
     //   GeomAbs_Shape C = GeomAbs_CN;
@@ -604,21 +655,21 @@ namespace
 
   bool divideMA( SMESH_MesherHelper&            theHelper,
                  const SMESH_MAT2d::MedialAxis& theMA,
-                 const vector<TopoDS_Edge>&     theSinuEdges,
-                 const size_t                   theSinuSide0Size,
+                 const SinuousFace&             theSinuFace,
                  SMESH_Algo*                    the1dAlgo,
                  vector<double>&                theMAParams )
   {
     // check if all EDGEs of one size are meshed, then MA discretization is not needed
     SMESH_Mesh* mesh = theHelper.GetMesh();
     size_t nbComputedEdges[2] = { 0, 0 };
-    for ( size_t i = 1; i < theSinuEdges.size(); ++i )
-    {
-      bool isComputed = ( ! mesh->GetSubMesh( theSinuEdges[i] )->IsEmpty() );
-      nbComputedEdges[ i < theSinuSide0Size ] += isComputed;
-    }
-    if ( nbComputedEdges[0] == theSinuSide0Size ||
-         nbComputedEdges[1] == theSinuEdges.size() - theSinuSide0Size )
+    for ( size_t iS = 0; iS < 2; ++iS )
+      for ( size_t i = 0; i < theSinuFace._sinuSide[iS].size(); ++i )
+      {
+        bool isComputed = ( ! mesh->GetSubMesh( theSinuFace._sinuSide[iS][i] )->IsEmpty() );
+        nbComputedEdges[ iS ] += isComputed;
+      }
+    if ( nbComputedEdges[0] == theSinuFace._sinuSide[0].size() ||
+         nbComputedEdges[1] == theSinuFace._sinuSide[1].size() )
       return true; // discretization is not needed
 
 
@@ -631,13 +682,13 @@ namespace
     // cout << "Write " << file << endl;
 
     // look for a most local hyps assigned to theSinuEdges
-    TopoDS_Edge edge = theSinuEdges[0];
+    TopoDS_Edge edge = theSinuFace._sinuEdges[0];
     int mostSimpleShape = (int) getHypShape( mesh, edge );
-    for ( size_t i = 1; i < theSinuEdges.size(); ++i )
+    for ( size_t i = 1; i < theSinuFace._sinuEdges.size(); ++i )
     {
-      int shapeType = (int) getHypShape( mesh, theSinuEdges[i] );
+      int shapeType = (int) getHypShape( mesh, theSinuFace._sinuEdges[i] );
       if ( shapeType > mostSimpleShape )
-        edge = theSinuEdges[i];
+        edge = theSinuFace._sinuEdges[i];
     }
 
     SMESH_Algo* algo = the1dAlgo;
@@ -664,14 +715,13 @@ namespace
 
   //================================================================================
   /*!
-   * \brief Modifies division parameters on MA to make them coincide with projections
-   *        of VERTEXes to MA for a given pair of opposite EDGEs
+   * \brief Select division parameters on MA and make them coincide at ends with
+   *        projections of VERTEXes to MA for a given pair of opposite EDGEs
    *  \param [in] theEdgePairInd - index of the EDGE pair
    *  \param [in] theDivPoints - the BranchPoint's dividing MA into parts each
    *         corresponding to a unique pair of opposite EDGEs
-   *  \param [in,out] theMAParams - the MA division parameters to modify
-   *  \param [in,out] theParBeg - index of the 1st division point for the given EDGE pair
-   *  \param [in,out] theParEnd - index of the last division point for the given EDGE pair
+   *  \param [in] theMAParams - the MA division parameters
+   *  \param [out] theSelectedMAParams - the selected MA parameters
    *  \return bool - is OK
    */
   //================================================================================
@@ -686,11 +736,49 @@ namespace
       theSelectedMAParams = theMAParams;
       return true;
     }
-    if ( theEdgePairInd > theDivPoints.size() )
+    if ( theEdgePairInd > theDivPoints.size() || theMAParams.empty() )
       return false;
 
-    // TODO
-    return false;
+    // find a range of params to copy
+
+    double par1 = 0;
+    size_t iPar1 = 0;
+    if ( theEdgePairInd > 0 )
+    {
+      const SMESH_MAT2d::BranchPoint& bp = theDivPoints[ theEdgePairInd-1 ];
+      bp._branch->getParameter( bp, par1 );
+      while ( theMAParams[ iPar1 ] < par1 ) ++iPar1;
+      if ( par1 - theMAParams[ iPar1-1 ] < theMAParams[ iPar1 ] - par1 )
+        --iPar1;
+    }
+
+    double par2 = 1;
+    size_t iPar2 = theMAParams.size() - 1;
+    if ( theEdgePairInd < theDivPoints.size() )
+    {
+      const SMESH_MAT2d::BranchPoint& bp = theDivPoints[ theEdgePairInd ];
+      bp._branch->getParameter( bp, par2 );
+      iPar2 = iPar1;
+      while ( theMAParams[ iPar2 ] < par2 ) ++iPar2;
+      if ( par2 - theMAParams[ iPar2-1 ] < theMAParams[ iPar2 ] - par2 )
+        --iPar2;
+    }
+
+    theSelectedMAParams.assign( theMAParams.begin() + iPar1,
+                                theMAParams.begin() + iPar2 + 1 );
+
+    // adjust theSelectedMAParams to fit between par1 and par2
+
+    double d = par1 - theSelectedMAParams[0];
+    double f = ( par2 - par1 ) / ( theSelectedMAParams.back() - theSelectedMAParams[0] );
+
+    for ( size_t i = 0; i < theSelectedMAParams.size(); ++i )
+    {
+      theSelectedMAParams[i] += d;
+      theSelectedMAParams[i] = par1 + ( theSelectedMAParams[i] - par1 ) * f;
+    }
+
+    return true;
   }
 
   //--------------------------------------------------------------------------------
@@ -701,9 +789,14 @@ namespace
     double               _u;
     int                  _edgeInd; // index in theSinuEdges vector
 
-    NodePoint(const SMDS_MeshNode* n=0 ): _node(n), _u(0), _edgeInd(-1) {}
+    NodePoint(): _node(0), _u(0), _edgeInd(-1) {}
+    NodePoint(const SMDS_MeshNode* n, double u, size_t iEdge ): _node(n), _u(u), _edgeInd(iEdge) {}
     NodePoint(double u, size_t iEdge) : _node(0), _u(u), _edgeInd(iEdge) {}
     NodePoint(const SMESH_MAT2d::BoundaryPoint& p) : _node(0), _u(p._param), _edgeInd(p._edgeIndex) {}
+    gp_Pnt Point(const vector< Handle(Geom_Curve) >& curves) const
+    {
+      return curves[ _edgeInd ]->Value( _u );
+    }
   };
 
   //================================================================================
@@ -726,11 +819,12 @@ namespace
 
     double f,l;
     BRep_Tool::Range( theSinuEdges[ theNodePnt._edgeInd ], f,l );
+    const double tol = 1e-3 * ( l - f );
 
     TopoDS_Vertex V;
-    if      ( Abs( f - theNodePnt._u ))
+    if      ( Abs( f - theNodePnt._u ) < tol )
       V = SMESH_MesherHelper::IthVertex( 0, theSinuEdges[ theNodePnt._edgeInd ], /*CumOri=*/false);
-    else if ( Abs( l - theNodePnt._u ))
+    else if ( Abs( l - theNodePnt._u ) < tol )
       V = SMESH_MesherHelper::IthVertex( 1, theSinuEdges[ theNodePnt._edgeInd ], /*CumOri=*/false);
 
     if ( !V.IsNull() )
@@ -752,21 +846,25 @@ namespace
    * \brief Add to the map of NodePoint's those on VERTEXes
    *  \param [in,out] theHelper - the helper
    *  \param [in] theMA - Medial Axis
+   *  \param [in] theMinSegLen - minimal segment length
    *  \param [in] theDivPoints - projections of VERTEXes to MA
    *  \param [in] theSinuEdges - the sinuous EDGEs
    *  \param [in] theSideEdgeIDs - indices of sinuous EDGEs per side
    *  \param [in] theIsEdgeComputed - is sinuous EGDE is meshed
    *  \param [in,out] thePointsOnE - the map to fill
+   *  \param [out] theNodes2Merge - the map of nodes to merge
    */
   //================================================================================
 
   bool projectVertices( SMESH_MesherHelper&                           theHelper,
+                        //const double                                  theMinSegLen,
                         const SMESH_MAT2d::MedialAxis&                theMA,
                         const vector< SMESH_MAT2d::BranchPoint >&     theDivPoints,
                         const vector<TopoDS_Edge>&                    theSinuEdges,
-                        //const vector< int >                           theSideEdgeIDs[2],
+                        const vector< Handle(Geom_Curve) >&           theCurves,
                         const vector< bool >&                         theIsEdgeComputed,
-                        map< double, pair< NodePoint, NodePoint > > & thePointsOnE)
+                        map< double, pair< NodePoint, NodePoint > > & thePointsOnE,
+                        TMergeMap&                                    theNodes2Merge)
   {
     if ( theDivPoints.empty() )
       return true;
@@ -784,29 +882,85 @@ namespace
       if ( !branch.getBoundaryPoints( theDivPoints[i], bp[0], bp[1] ))
         return false;
 
-      NodePoint np[2] = { NodePoint( bp[0] ),
-                          NodePoint( bp[1] ) };
+      NodePoint  np[2] = { NodePoint( bp[0] ),
+                           NodePoint( bp[1] )};
       bool isVertex[2] = { findVertex( np[0], theSinuEdges, meshDS ),
                            findVertex( np[1], theSinuEdges, meshDS )};
 
       map< double, pair< NodePoint, NodePoint > >::iterator u2NP =
         thePointsOnE.insert( make_pair( uMA, make_pair( np[0], np[1]))).first;
 
+      if ( !isVertex[0] && !isVertex[1] ) return false; // error
       if ( isVertex[0] && isVertex[1] )
         continue;
+      const size_t iVertex = isVertex[0] ? 0 : 1;
+      const size_t iNode   = 1 - iVertex;
 
-      bool isOppComputed = theIsEdgeComputed[ np[ isVertex[0] ]._edgeInd ];
-
+      bool isOppComputed = theIsEdgeComputed[ np[ iNode ]._edgeInd ];
       if ( !isOppComputed )
         continue;
 
       // a VERTEX is projected on a meshed EDGE; there are two options:
-      // - a projected point is joined with a closet node if a strip between this and neighbor
-      // projection is wide enough; joining is done by setting the same node to the BoundaryPoint
-      // - a neighbor projection is merged this this one if it too close; a node of deleted
+      // 1) a projected point is joined with a closet node if a strip between this and neighbor
+      // projection is WIDE enough; joining is done by creating a node coincident with the
+      //  existing node which will be merged together after all;
+      // 2) a neighbor projection is merged with this one if it is TOO CLOSE; a node of deleted
       // projection is set to the BoundaryPoint of this projection
 
+      // evaluate distance to neighbor projections
+      const double rShort = 0.2;
+      bool isShortPrev[2], isShortNext[2];
+      map< double, pair< NodePoint, NodePoint > >::iterator u2NPPrev = u2NP, u2NPNext = u2NP;
+      --u2NPPrev; ++u2NPNext;
+      for ( int iS = 0; iS < 2; ++iS ) // side with Vertex and side with Nodes
+      {
+        NodePoint np     = get( u2NP->second,     iS );
+        NodePoint npPrev = get( u2NPPrev->second, iS );
+        NodePoint npNext = get( u2NPNext->second, iS );
+        gp_Pnt     p     = np    .Point( theCurves );
+        gp_Pnt     pPrev = npPrev.Point( theCurves );
+        gp_Pnt     pNext = npNext.Point( theCurves );
+        double  distPrev = p.Distance( pPrev );
+        double  distNext = p.Distance( pNext );
+        double         r = distPrev / ( distPrev + distNext );
+        isShortPrev[iS] = ( r < rShort );
+        isShortNext[iS] = (( 1 - r ) > ( 1 - rShort ));
+      }
 
+      map< double, pair< NodePoint, NodePoint > >::iterator u2NPClose;
+
+      if (( isShortPrev[0] && isShortPrev[1] ) || // option 2) -> remove a too close projection
+          ( isShortNext[0] && isShortNext[1] ))
+      {
+        u2NPClose = isShortPrev[0] ? u2NPPrev : u2NPNext;
+        NodePoint& npProj  = get( u2NP->second, iNode );       // NP of VERTEX projection
+        NodePoint npCloseN = get( u2NPClose->second, iNode);   // NP close to npProj
+        NodePoint npCloseV = get( u2NPClose->second, iVertex); // NP close to VERTEX
+        if ( !npCloseV._node )
+        {
+          npProj = npCloseN;
+          thePointsOnE.erase( isShortPrev[0] ? u2NPPrev : u2NPNext );
+          continue;
+        }
+        else
+        {
+          // can't remove the neighbor projection as it is also from VERTEX, -> option 1)
+        }
+      }
+      // else option 1) - wide enough -> "duplicate" existing node
+      {
+        u2NPClose = isShortPrev[ iNode ] ? u2NPPrev : u2NPNext;
+        NodePoint& npProj   = get( u2NP->second, iNode );       // NP of VERTEX projection
+        NodePoint& npCloseN = get( u2NPClose->second, iNode );  // NP close to npProj
+        // npProj._edgeInd = npCloseN._edgeInd;
+        // npProj._u       = npCloseN._u + 1e-3 * Abs( get( u2NPPrev->second, iNode )._u -
+        //                                             get( u2NPNext->second, iNode )._u );
+        gp_Pnt        p = npProj.Point( theCurves );
+        npProj._node    = meshDS->AddNode( p.X(), p.Y(), p.Z() );
+        meshDS->SetNodeOnEdge( npProj._node, theSinuEdges[ npProj._edgeInd ], npProj._u  );
+
+        theNodes2Merge[ npCloseN._node ].push_back( npProj._node );
+      }
     }
     return true;
   }
@@ -816,6 +970,7 @@ namespace
    * \brief Divide the sinuous EDGEs by projecting the division point of Medial
    *        Axis to the EGDEs
    *  \param [in] theHelper - the helper
+   *  \param [in] theMinSegLen - minimal segment length
    *  \param [in] theMA - the Medial Axis
    *  \param [in] theMAParams - parameters of division points of \a theMA
    *  \param [in] theSinuEdges - the EDGEs to make nodes on
@@ -825,10 +980,10 @@ namespace
   //================================================================================
 
   bool computeSinuEdges( SMESH_MesherHelper&        theHelper,
+                         double                     /*theMinSegLen*/,
                          SMESH_MAT2d::MedialAxis&   theMA,
                          vector<double>&            theMAParams,
-                         const vector<TopoDS_Edge>& theSinuEdges,
-                         const size_t               theSinuSide0Size)
+                         SinuousFace&               theSinuFace)
   {
     if ( theMA.getBranches().size() != 1 )
       return false;
@@ -842,6 +997,7 @@ namespace
     SMESHDS_Mesh* meshDS = theHelper.GetMeshDS();
     double f,l;
 
+    const vector< TopoDS_Edge >& theSinuEdges = theSinuFace._sinuEdges;
     vector< Handle(Geom_Curve) > curves ( theSinuEdges.size() );
     vector< int >                edgeIDs( theSinuEdges.size() );
     vector< bool >            isComputed( theSinuEdges.size() );
@@ -854,8 +1010,23 @@ namespace
       SMESH_subMesh* sm = mesh->GetSubMesh( theSinuEdges[i] );
       edgeIDs   [i] = sm->GetId();
       isComputed[i] = ( !sm->IsEmpty() );
-      // if ( isComputed[i] )
-      //   hasComputed = true;
+      if ( isComputed[i] )
+      {
+        TopAbs_ShapeEnum shape = getHypShape( mesh, theSinuEdges[i] );
+        if ( shape == TopAbs_SHAPE || shape <= TopAbs_FACE )
+        {
+          // EDGE computed using global hypothesis -> clear it
+          bool hasComputedFace = false;
+          PShapeIteratorPtr faceIt = theHelper.GetAncestors( theSinuEdges[i], *mesh, TopAbs_FACE );
+          while ( const TopoDS_Shape* face = faceIt->next() )
+            if (( !face->IsSame( theSinuFace.Face())) &&
+                ( hasComputedFace = !mesh->GetSubMesh( *face )->IsEmpty() ))
+              break;
+          if ( !hasComputedFace )
+            sm->ComputeStateEngine( SMESH_subMesh::CLEAN );
+          isComputed[i] = false;
+        }
+      }
     }
 
     const SMESH_MAT2d::Branch& branch = theMA.getBranches()[0];
@@ -907,7 +1078,7 @@ namespace
         branch.getParameter( brp, maParamLast );
 
         map< double, const SMDS_MeshNode* >::iterator u2n = nodeParams.begin(), u2nEnd = --nodeParams.end();
-        TMAPar2NPoints::iterator pos, end = pointsOnE.end();
+        TMAPar2NPoints::iterator end = pointsOnE.end(), pos = end;
         TMAPar2NPoints::iterator & hint = (maParamLast > maParam1st) ? end : pos;
         for ( ++u2n; u2n != u2nEnd; ++u2n )
         {
@@ -918,7 +1089,7 @@ namespace
           if ( !branch.getParameter( brp, maParam ))
             return false;
 
-          npN = NodePoint( u2n->second );
+          npN = NodePoint( u2n->second, u2n->first, iEdgeComputed );
           npB = NodePoint( bndPnt );
           pos = pointsOnE.insert( hint, make_pair( maParam, make_pair( np0, np1 )));
         }
@@ -950,7 +1121,8 @@ namespace
       ++iEdgePair;
     }
 
-    if ( !projectVertices( theHelper, theMA, divPoints, theSinuEdges, isComputed, pointsOnE ))
+    if ( !projectVertices( theHelper, theMA, divPoints, theSinuEdges, curves,
+                           isComputed, pointsOnE, theSinuFace._nodesToMerge ))
       return false;
 
     // create nodes
@@ -1115,6 +1287,29 @@ namespace
     return true;
   }
 
+  //================================================================================
+  /*!
+   * \brief Remove temporary node
+   */
+  //================================================================================
+
+  void mergeNodes( SMESH_MesherHelper& theHelper,
+                   SinuousFace&        theSinuFace )
+  {
+    SMESH_MeshEditor editor( theHelper.GetMesh() );
+    SMESH_MeshEditor::TListOfListOfNodes nodesGroups;
+
+    TMergeMap::iterator n2nn = theSinuFace._nodesToMerge.begin();
+    for ( ; n2nn != theSinuFace._nodesToMerge.end(); ++n2nn )
+    {
+      nodesGroups.push_back( list< const SMDS_MeshNode* >() );
+      list< const SMDS_MeshNode* > & group = nodesGroups.back();
+
+      group.push_back( n2nn->first );
+      group.splice( group.end(), n2nn->second );
+    }
+    editor.MergeNodes( nodesGroups );
+  }
 
 } // namespace
 
@@ -1181,7 +1376,7 @@ bool StdMeshers_QuadFromMedialAxis_1D2D::computeQuads( SMESH_MesherHelper&      
 
   StdMeshers_Quadrangle_2D::myProxyMesh.reset();
   StdMeshers_Quadrangle_2D::myHelper = 0;
-  
+
   return ok;
 }
 
@@ -1200,37 +1395,49 @@ bool StdMeshers_QuadFromMedialAxis_1D2D::Compute(SMESH_Mesh&         theMesh,
   TopoDS_Face F = TopoDS::Face( theShape );
   if ( F.Orientation() >= TopAbs_INTERNAL ) F.Orientation( TopAbs_FORWARD );
 
-  list< TopoDS_Edge > edges;
-  list< int > nbEdgesInWire;
-  int nbWire = SMESH_Block::GetOrderedEdges (F, edges, nbEdgesInWire);
+  SinuousFace sinuFace( F );
 
-  vector< TopoDS_Edge > sinuSide[2], shortSide[2];
-  if ( nbWire == 1 && getSinuousEdges( helper, F, edges, sinuSide, shortSide ))
+  _progress = 0.01;
+
+  if ( getSinuousEdges( helper, sinuFace ))
   {
-    vector< TopoDS_Edge > sinuEdges  = sinuSide[0];
-    sinuEdges.insert( sinuEdges.end(), sinuSide[1].begin(), sinuSide[1].end() );
-    if ( sinuEdges.size() > 2 )
-      return error(COMPERR_BAD_SHAPE, "Not yet supported case" );
+    _progress = 0.2;
 
-    double minSegLen = getMinSegLen( helper, sinuEdges );
-    SMESH_MAT2d::MedialAxis ma( F, sinuEdges, minSegLen, /*ignoreCorners=*/true );
+    // if ( sinuFace._sinuEdges.size() > 2 )
+    //   return error(COMPERR_BAD_SHAPE, "Not yet supported case" );
+
+    double minSegLen = getMinSegLen( helper, sinuFace._sinuEdges );
+    SMESH_MAT2d::MedialAxis ma( F, sinuFace._sinuEdges, minSegLen, /*ignoreCorners=*/true );
 
     if ( !_regular1D )
       _regular1D = new Algo1D( _studyId, _gen );
     _regular1D->SetSegmentLength( minSegLen );
 
     vector<double> maParams;
-    if ( ! divideMA( helper, ma, sinuEdges, sinuSide[0].size(), _regular1D, maParams ))
+    if ( ! divideMA( helper, ma, sinuFace, _regular1D, maParams ))
       return error(COMPERR_BAD_SHAPE);
 
-    if ( !computeShortEdges( helper, shortSide[0], _regular1D ) ||
-         !computeShortEdges( helper, shortSide[1], _regular1D ))
+    _progress = 0.4;
+
+    if ( !computeShortEdges( helper, sinuFace._shortSide[0], _regular1D ) ||
+         !computeShortEdges( helper, sinuFace._shortSide[1], _regular1D ))
       return error("Failed to mesh short edges");
 
-    if ( !computeSinuEdges( helper, ma, maParams, sinuEdges, sinuSide[0].size() ))
+    _progress = 0.6;
+
+    if ( !computeSinuEdges( helper, minSegLen, ma, maParams, sinuFace ))
       return error("Failed to mesh sinuous edges");
 
-    return computeQuads( helper, F, sinuSide, shortSide );
+    _progress = 0.8;
+
+    bool ok = computeQuads( helper, F, sinuFace._sinuSide, sinuFace._shortSide );
+
+    if ( ok )
+      mergeNodes( helper, sinuFace );
+
+    _progress = 1.;
+
+    return ok;
   }
 
   return error(COMPERR_BAD_SHAPE, "Not implemented so far");

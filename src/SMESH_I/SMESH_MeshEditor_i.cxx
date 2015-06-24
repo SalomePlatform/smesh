@@ -154,20 +154,11 @@ namespace MeshEditor_I {
       }
 
       // creates a corresponding element on copied nodes
-      SMDS_MeshElement* anElemCopy = 0;
-      if ( anElem->IsPoly() && anElem->GetType() == SMDSAbs_Volume )
-      {
-        const SMDS_VtkVolume* ph =
-          dynamic_cast<const SMDS_VtkVolume*> (anElem);
-        if ( ph )
-          anElemCopy = _myMeshDS->AddPolyhedralVolumeWithID
-            (anElemNodesID, ph->GetQuantities(),anElem->GetID());
-      }
-      else {
-        anElemCopy = ::SMESH_MeshEditor(this).AddElement( anElemNodesID,
-                                                          anElem->GetType(),
-                                                          anElem->IsPoly() );
-      }
+      ::SMESH_MeshEditor::ElemFeatures elemType;
+      elemType.Init( anElem, /*basicOnly=*/false );
+      elemType.SetID( anElem->GetID() );
+      SMDS_MeshElement* anElemCopy =
+        ::SMESH_MeshEditor(this).AddElement( anElemNodesID, elemType );
       return anElemCopy;
     }
     //!< Copy a node
@@ -535,7 +526,7 @@ TPreviewMesh * SMESH_MeshEditor_i::getPreviewMesh(SMDSAbs_ElementType previewEle
 
 SMESH::MeshPreviewStruct* SMESH_MeshEditor_i::GetPreviewData()
   throw (SALOME::SALOME_Exception)
-{ 
+{
   SMESH_TRY;
   const bool hasBadElems = ( getEditor().GetError() && getEditor().GetError()->HasBadElems() );
 
@@ -557,7 +548,7 @@ SMESH::MeshPreviewStruct* SMESH_MeshEditor_i::GetPreviewData()
     myPreviewData = new SMESH::MeshPreviewStruct();
     myPreviewData->nodesXYZ.length(aMeshDS->NbNodes());
 
-    
+
     SMDSAbs_ElementType previewType = SMDSAbs_All;
     if ( !hasBadElems )
       if (TPreviewMesh * aPreviewMesh = dynamic_cast< TPreviewMesh* >( getEditor().GetMesh() )) {
@@ -577,7 +568,10 @@ SMESH::MeshPreviewStruct* SMESH_MeshEditor_i::GetPreviewData()
 
     while ( itMeshElems->more() ) {
       const SMDS_MeshElement* aMeshElem = itMeshElems->next();
-      SMDS_NodeIteratorPtr itElemNodes = aMeshElem->nodeIterator();
+      SMDS_NodeIteratorPtr itElemNodes = 
+        (( aMeshElem->GetEntityType() == SMDSEntity_Quad_Polygon ) ?
+         aMeshElem->interlacedNodesIterator() :
+         aMeshElem->nodeIterator() );
       while ( itElemNodes->more() ) {
         const SMDS_MeshNode* aMeshNode = itElemNodes->next();
         int aNodeID = aMeshNode->GetID();
@@ -1059,6 +1053,7 @@ CORBA::Long SMESH_MeshEditor_i::AddFace(const SMESH::long_array & IDsOfNodes)
  *  AddPolygonalFace
  */
 //=============================================================================
+
 CORBA::Long SMESH_MeshEditor_i::AddPolygonalFace (const SMESH::long_array & IDsOfNodes)
   throw (SALOME::SALOME_Exception)
 {
@@ -1071,6 +1066,35 @@ CORBA::Long SMESH_MeshEditor_i::AddPolygonalFace (const SMESH::long_array & IDsO
     nodes[i] = getMeshDS()->FindNode(IDsOfNodes[i]);
 
   const SMDS_MeshElement* elem = getMeshDS()->AddPolygonalFace(nodes);
+
+  // Update Python script
+  TPythonDump() <<"faceID = "<<this<<".AddPolygonalFace( "<<IDsOfNodes<<" )";
+
+  declareMeshModified( /*isReComputeSafe=*/false );
+  return elem ? elem->GetID() : 0;
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+  return 0;
+}
+
+//=============================================================================
+/*!
+ *  AddQuadPolygonalFace
+ */
+//=============================================================================
+
+CORBA::Long SMESH_MeshEditor_i::AddQuadPolygonalFace (const SMESH::long_array & IDsOfNodes)
+  throw (SALOME::SALOME_Exception)
+{
+  SMESH_TRY;
+  initData();
+
+  int NbNodes = IDsOfNodes.length();
+  std::vector<const SMDS_MeshNode*> nodes (NbNodes);
+  for (int i = 0; i < NbNodes; i++)
+    nodes[i] = getMeshDS()->FindNode(IDsOfNodes[i]);
+
+  const SMDS_MeshElement* elem = getMeshDS()->AddQuadPolygonalFace(nodes);
 
   // Update Python script
   TPythonDump() <<"faceID = "<<this<<".AddPolygonalFace( "<<IDsOfNodes<<" )";
