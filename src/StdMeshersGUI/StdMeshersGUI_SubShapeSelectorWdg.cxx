@@ -421,6 +421,8 @@ void StdMeshersGUI_SubShapeSelectorWdg::onListSelectionChanged()
 
   // update remove button
   myRemoveButton->setEnabled( selItems.size() > 0 );
+
+  emit selectionChanged();
 }
 
 //=================================================================================

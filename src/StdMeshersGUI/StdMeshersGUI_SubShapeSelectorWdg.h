@@ -85,6 +85,9 @@ public:
   SMESH_PreviewActorsCollection* GetActorCollection() { return myPreviewActor; }
   void                           ClearSelected();
 
+signals:
+  void                           selectionChanged();
+
 private:
   void                           updateState();
   void                           setFilter();
