@@ -1496,24 +1496,32 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
       if ( anAvailable.count() == 1 )
         soleCompatible = myAvailableHypData[dim][Algo][0];
       if ( dim == aTopDim && prevAlgo ) {// all available algoritms should be selectable any way
-        if (aTopDim == SMESH::DIM_2D) {
+        if (aTopDim == SMESH::DIM_2D && myFilteredAlgoData[dim].count() > 0) {
           anAvailable.clear();
           for (int i = 0; i < myFilteredAlgoData[dim].count(); ++i) {
             HypothesisData* aCurAlgo = myFilteredAlgoData[dim][ i ];
             anAvailable.append( aCurAlgo->Label );
           }
         }
-        if (aTopDim == SMESH::DIM_3D)
+        if (aTopDim == SMESH::DIM_3D && myDlg->currentMeshType() == MT_ANY)
           availableHyps( dim, Algo, anAvailable, myAvailableHypData[dim][Algo], 0 );
       }
       myDlg->tab( dim )->setAvailableHyps( Algo, anAvailable );
       noCompatible = anAvailable.isEmpty();
 
       // restore previously selected algo
-      if (dim == aTopDim && prevAlgo && aTopDim == SMESH::DIM_2D)
+      if (dim == aTopDim && prevAlgo && aTopDim == SMESH::DIM_2D && myFilteredAlgoData[dim].count() > 0) {
         algoIndex = myFilteredAlgoData[dim].indexOf( curAlgo );
-      else
+        setCurrentHyp( dim, Algo, algoIndex);
+        if (algoIndex >= 0)
+          prevAlgo = algoByDim[ dim ] = myFilteredAlgoData[dim][algoIndex];
+        else
+          prevAlgo = algoByDim[ dim ] = 0;
+        continue;
+      }
+      else {
         algoIndex = myAvailableHypData[dim][Algo].indexOf( curAlgo );
+      }
       if ( !isSubmesh && algoIndex < 0 && soleCompatible && !forward && dim != SMESH::DIM_0D)
         // select the sole compatible algo
         algoIndex = myAvailableHypData[dim][Algo].indexOf( soleCompatible );
