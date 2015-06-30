@@ -98,6 +98,7 @@ SET(SMESH_RESOURCES_FILES
   mesh_tetra.png
   mesh_tree_algo_hexa.png
   mesh_tree_algo_mefisto.png
+  mesh_tree_algo_polygon.png
   mesh_tree_algo.png
   mesh_tree_algo_0D.png
   mesh_tree_algo_quad.png

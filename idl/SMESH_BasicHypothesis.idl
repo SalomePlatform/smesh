@@ -1098,6 +1098,13 @@ module StdMeshers
   };
 
   /*!
+   * StdMeshers_PolygonPerFace_2D: interface of "Polygon Per Face" 2D algorithm
+   */
+  interface StdMeshers_PolygonPerFace_2D : SMESH::SMESH_2D_Algo
+  {
+  };
+
+  /*!
    * StdMeshers_Hexa_3D: interface of "Hexahedron (i,j,k)" algorithm
    */
   interface StdMeshers_Hexa_3D : SMESH::SMESH_3D_Algo

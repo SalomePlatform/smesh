@@ -403,13 +403,7 @@ int SMESH_subMesh::computeCost() const
 
 //=============================================================================
 /*!
- * Construct dependence on first level subMeshes. complex shapes (compsolid,
- * shell, wire) are not analysed the same way as simple shapes (solid, face,
- * edge).
- * For collection shapes (compsolid, shell, wire) prepare a list of submeshes
- * with possible multiples occurences. Multiples occurences corresponds to
- * internal frontiers within shapes of the collection and must not be keeped.
- * See FinalizeDependence.
+ * Returns all sub-meshes this one depend on
  */
 //=============================================================================
 
@@ -474,7 +468,7 @@ namespace {
 
 //=============================================================================
 /*!
- * For simple Shapes (solid, face, edge): add subMesh into dependence list.
+ * Add sub-meshes on sub-shapes of a given type into the dependence map.
  */
 //=============================================================================
 

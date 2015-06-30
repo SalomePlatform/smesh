@@ -258,12 +258,9 @@ public:
    * quadratic elements will be created. Also fill myTLinkNodeMap
    */
   bool IsQuadraticSubMesh(const TopoDS_Shape& theShape);
-  /*!
-   * \brief Set order of elements to create without calling IsQuadraticSubMesh()
-   */
 
   /*!
-   * \brief Set myCreateQuadratic flag
+   * \brief Set order of elements to create without calling IsQuadraticSubMesh()
    */
   void SetIsQuadratic(const bool theBuildQuadratic)
   { myCreateQuadratic = theBuildQuadratic; }

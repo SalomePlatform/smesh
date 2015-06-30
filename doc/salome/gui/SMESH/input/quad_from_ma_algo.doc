@@ -22,9 +22,9 @@ The Medial Axis is used in two ways:
   Axis.</li>
 <li> If there is no sub-meshes on the sinuous borders, then a part of
   the Medial Axis that can be mapped to both borders is discretized
-  using a hypothesis assigned to the face or its ancestor shapes,
+  using a 1D hypothesis assigned to the face or its ancestor shapes,
   and the division points are mapped from the Medial Axis to the both
-  borders.</li>
+  borders to find positions of nodes.</li>
 </ol>
 
 */

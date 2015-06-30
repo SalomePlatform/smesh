@@ -78,9 +78,6 @@ class STDMESHERS_I_EXPORT StdMeshers_QuadFromMedialAxis_1D2D_i:
   // Destructor
   virtual ~StdMeshers_QuadFromMedialAxis_1D2D_i();
 
-  // Get implementation
-  //::StdMeshers_Quadrangle_2D* GetImpl();
-
   // Return true if the algorithm is applicable to a shape
   //static CORBA::Boolean IsApplicable(const TopoDS_Shape &S, CORBA::Boolean toCheckAll);
 };

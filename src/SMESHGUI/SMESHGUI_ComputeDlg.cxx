@@ -23,21 +23,19 @@
 //
 #include "SMESHGUI_ComputeDlg.h"
 
+#include "SMDS_Mesh.hxx"
+#include "SMDS_SetIterator.hxx"
 #include "SMESHGUI.h"
 #include "SMESHGUI_GEOMGenUtils.h"
-#include "SMESHGUI_MeshUtils.h"
-#include "SMESHGUI_VTKUtils.h"
-#include "SMESHGUI_MeshInfosBox.h"
 #include "SMESHGUI_HypothesesUtils.h"
 #include "SMESHGUI_MeshEditPreview.h"
-#include "SMESHGUI_MeshOrderOp.h"
+#include "SMESHGUI_MeshInfosBox.h"
 #include "SMESHGUI_MeshOrderDlg.h"
-
+#include "SMESHGUI_MeshOrderOp.h"
+#include "SMESHGUI_MeshUtils.h"
+#include "SMESHGUI_VTKUtils.h"
 #include "SMESH_Actor.h"
 #include "SMESH_ActorUtils.h"
-
-#include <SMDS_SetIterator.hxx>
-#include <SMDS_Mesh.hxx>
 
 // SALOME GEOM includes
 #include <GEOMBase.h>
@@ -67,17 +65,16 @@
 #include CORBA_SERVER_HEADER(SMESH_Group)
 
 // OCCT includes
-#include <BRep_Tool.hxx>
-#include <TopExp.hxx>
-#include <TopExp_Explorer.hxx>
-#include <TopTools_IndexedMapOfShape.hxx>
-#include <TopoDS.hxx>
-
-#include <TopLoc_Location.hxx>
-#include <Poly_Triangulation.hxx>
-#include <Bnd_Box.hxx>
 #include <BRepBndLib.hxx>
 #include <BRepMesh_IncrementalMesh.hxx>
+#include <BRep_Tool.hxx>
+#include <Bnd_Box.hxx>
+#include <Poly_Triangulation.hxx>
+#include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
+#include <TopLoc_Location.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
+#include <TopoDS.hxx>
 
 #include <Standard_ErrorHandler.hxx>
 

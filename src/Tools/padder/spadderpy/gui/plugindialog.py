@@ -50,7 +50,7 @@ all_states = run_states+end_states;
 # The SALOME launcher resource is specified by its name as defined in
 # the file CatalogResources.xml (see root directory of the
 # application). We could have a check box in the dialog to specify
-# wether we want a local execution or a remote one.
+# whether we want a local execution or a remote one.
 resource_name = "localhost"
 from salome.smesh.spadder.configreader import ConfigReader
 

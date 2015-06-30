@@ -1188,7 +1188,7 @@ bool _QuadFaceGrid::needContinuationAtSide( int                        iSide,
   // check presence of corners at other sides
   nbCorners = mySides.NbCommonVertices( cornerVertices );
 
-  return ( 0 < nbCorners && nbCorners <= 2 ); // if nbCorners == 2 additional check is needed!!!
+  return ( 0 < nbCorners && nbCorners <= 3 ); // if nbCorners == 2 additional check is needed!!!
 }
 
 //================================================================================

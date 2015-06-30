@@ -179,10 +179,10 @@ class SMESH_EXPORT SMESH_Algo : public SMESH_Hypothesis
 
   /*!
    * \brief evaluates size of prospective mesh on a shape
-    * \param aMesh - the mesh
-    * \param aShape - the shape
-    * \param aNbElems - prospective number of elements by types
-    * \retval bool - is a success
+   *  \param aMesh - the mesh
+   *  \param aShape - the shape
+   *  \param aResMap - prospective number of elements by SMDSAbs_ElementType by a sub-mesh
+   *  \retval bool - is a success
    */
   virtual bool Evaluate(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape,
                         MapShapeNbElems& aResMap) = 0;

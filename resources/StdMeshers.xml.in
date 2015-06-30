@@ -324,6 +324,19 @@
       </python-wrap>
     </algorithm>
 
+    <algorithm type     ="PolygonPerFace_2D"
+               label-id ="Polygon per Face"
+               icon-id  ="mesh_algo_polygon.png"
+               opt-hypos="ViscousLayers2D"
+               input    ="EDGE"
+               output   ="POLYGON,QUAD,TRIA"
+               dim      ="2">
+      <python-wrap>
+        <algo>PolygonPerFace_2D=Polygon()</algo>
+        <hypo>ViscousLayers2D=ViscousLayers2D(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetIgnoreEdges())</hypo>
+      </python-wrap>
+    </algorithm>
+
     <algorithm type     ="Hexa_3D"
                label-id ="Hexahedron (i,j,k)"
                icon-id  ="mesh_algo_hexa.png"

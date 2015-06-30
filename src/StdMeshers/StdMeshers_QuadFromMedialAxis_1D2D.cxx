@@ -70,7 +70,7 @@ public:
   void SetSegmentLength( double len )
   {
     _value[ BEG_LENGTH_IND ] = len;
-    _value[ PRECISION_IND ] = 1e-7;
+    _value[ PRECISION_IND  ] = 1e-7;
     _hypType = LOCAL_LENGTH;
   }
 };
@@ -95,7 +95,7 @@ StdMeshers_QuadFromMedialAxis_1D2D::StdMeshers_QuadFromMedialAxis_1D2D(int      
   _neededLowerHyps[ 1 ]    = true;  // suppress warning on hiding a global 1D algo
   _neededLowerHyps[ 2 ]    = true;  // suppress warning on hiding a global 2D algo
   _compatibleHypothesis.clear();
-  //_compatibleHypothesis.push_back("ViscousLayers2D");
+  _compatibleHypothesis.push_back("ViscousLayers2D");
 }
 
 //================================================================================
@@ -120,6 +120,7 @@ bool StdMeshers_QuadFromMedialAxis_1D2D::CheckHypothesis(SMESH_Mesh&         aMe
                                                          const TopoDS_Shape& aShape,
                                                          Hypothesis_Status&  aStatus)
 {
+  aStatus = HYP_OK;
   return true; // does not require hypothesis
 }
 
@@ -593,11 +594,11 @@ namespace
   TopoDS_Edge makeEdgeFromMA( SMESH_MesherHelper&            theHelper,
                               const SMESH_MAT2d::MedialAxis& theMA )
   {
-    if ( theMA.getBranches().size() != 1 )
+    if ( theMA.nbBranches() != 1 )
       return TopoDS_Edge();
 
     vector< gp_XY > uv;
-    theMA.getPoints( theMA.getBranches()[0], uv );
+    theMA.getPoints( theMA.getBranch(0), uv );
     if ( uv.size() < 2 )
       return TopoDS_Edge();
 
@@ -812,6 +813,8 @@ namespace
 
   bool findVertex( NodePoint&                  theNodePnt,
                    const vector<TopoDS_Edge>&  theSinuEdges,
+                   size_t                      theEdgeIndPrev,
+                   size_t                      theEdgeIndNext,
                    SMESHDS_Mesh*               theMeshDS)
   {
     if ( theNodePnt._edgeInd >= theSinuEdges.size() )
@@ -826,6 +829,8 @@ namespace
       V = SMESH_MesherHelper::IthVertex( 0, theSinuEdges[ theNodePnt._edgeInd ], /*CumOri=*/false);
     else if ( Abs( l - theNodePnt._u ) < tol )
       V = SMESH_MesherHelper::IthVertex( 1, theSinuEdges[ theNodePnt._edgeInd ], /*CumOri=*/false);
+    else if ( theEdgeIndPrev != theEdgeIndNext )
+      TopExp::CommonVertex( theSinuEdges[theEdgeIndPrev], theSinuEdges[theEdgeIndNext], V );
 
     if ( !V.IsNull() )
     {
@@ -860,6 +865,8 @@ namespace
                         //const double                                  theMinSegLen,
                         const SMESH_MAT2d::MedialAxis&                theMA,
                         const vector< SMESH_MAT2d::BranchPoint >&     theDivPoints,
+                        const vector< std::size_t > &                 theEdgeIDs1,
+                        const vector< std::size_t > &                 theEdgeIDs2,
                         const vector<TopoDS_Edge>&                    theSinuEdges,
                         const vector< Handle(Geom_Curve) >&           theCurves,
                         const vector< bool >&                         theIsEdgeComputed,
@@ -873,8 +880,23 @@ namespace
 
     double uMA;
     SMESH_MAT2d::BoundaryPoint bp[2];
-    const SMESH_MAT2d::Branch& branch = theMA.getBranches()[0];
+    const SMESH_MAT2d::Branch& branch = *theMA.getBranch(0);
 
+    // fill a map holding NodePoint's of ends of theSinuEdges
+    map< double, pair< NodePoint, NodePoint > > extremaNP;
+    map< double, pair< NodePoint, NodePoint > >::iterator u2NP0, u2NP1;
+    if ( !branch.getBoundaryPoints( 0., bp[0], bp[1] ) ||
+         !theMA.getBoundary().moveToClosestEdgeEnd( bp[0] ) ||
+         !theMA.getBoundary().moveToClosestEdgeEnd( bp[1] )) return false;
+    u2NP0 = extremaNP.insert
+      ( make_pair( 0., make_pair( NodePoint( bp[0]), NodePoint( bp[1])))).first;
+    if ( !branch.getBoundaryPoints( 1., bp[0], bp[1] ) ||
+         !theMA.getBoundary().moveToClosestEdgeEnd( bp[0] ) ||
+         !theMA.getBoundary().moveToClosestEdgeEnd( bp[1] )) return false;
+    u2NP1 = extremaNP.insert
+      ( make_pair( 1., make_pair( NodePoint( bp[0]), NodePoint( bp[1])))).first;
+
+    // project theDivPoints
     for ( size_t i = 0; i < theDivPoints.size(); ++i )
     {
       if ( !branch.getParameter( theDivPoints[i], uMA ))
@@ -882,10 +904,14 @@ namespace
       if ( !branch.getBoundaryPoints( theDivPoints[i], bp[0], bp[1] ))
         return false;
 
-      NodePoint  np[2] = { NodePoint( bp[0] ),
-                           NodePoint( bp[1] )};
-      bool isVertex[2] = { findVertex( np[0], theSinuEdges, meshDS ),
-                           findVertex( np[1], theSinuEdges, meshDS )};
+      NodePoint  np[2] = {
+        NodePoint( bp[0] ),
+        NodePoint( bp[1] )
+      };
+      bool isVertex[2] = {
+        findVertex( np[0], theSinuEdges, theEdgeIDs1[i], theEdgeIDs1[i+1], meshDS ),
+        findVertex( np[1], theSinuEdges, theEdgeIDs2[i], theEdgeIDs2[i+1], meshDS )
+      };
 
       map< double, pair< NodePoint, NodePoint > >::iterator u2NP =
         thePointsOnE.insert( make_pair( uMA, make_pair( np[0], np[1]))).first;
@@ -893,8 +919,8 @@ namespace
       if ( !isVertex[0] && !isVertex[1] ) return false; // error
       if ( isVertex[0] && isVertex[1] )
         continue;
-      const size_t iVertex = isVertex[0] ? 0 : 1;
-      const size_t iNode   = 1 - iVertex;
+      const size_t iVert = isVertex[0] ? 0 : 1;
+      const size_t iNode   = 1 - iVert;
 
       bool isOppComputed = theIsEdgeComputed[ np[ iNode ]._edgeInd ];
       if ( !isOppComputed )
@@ -912,6 +938,10 @@ namespace
       bool isShortPrev[2], isShortNext[2];
       map< double, pair< NodePoint, NodePoint > >::iterator u2NPPrev = u2NP, u2NPNext = u2NP;
       --u2NPPrev; ++u2NPNext;
+      bool hasPrev = ( u2NP     != thePointsOnE.begin() );
+      bool hasNext = ( u2NPNext != thePointsOnE.end() );
+      if ( !hasPrev ) u2NPPrev = u2NP0;
+      if ( !hasNext ) u2NPNext = u2NP1;
       for ( int iS = 0; iS < 2; ++iS ) // side with Vertex and side with Nodes
       {
         NodePoint np     = get( u2NP->second,     iS );
@@ -926,6 +956,8 @@ namespace
         isShortPrev[iS] = ( r < rShort );
         isShortNext[iS] = (( 1 - r ) > ( 1 - rShort ));
       }
+      // if ( !hasPrev ) isShortPrev[0] = isShortPrev[1] = false;
+      // if ( !hasNext ) isShortNext[0] = isShortNext[1] = false;
 
       map< double, pair< NodePoint, NodePoint > >::iterator u2NPClose;
 
@@ -933,9 +965,9 @@ namespace
           ( isShortNext[0] && isShortNext[1] ))
       {
         u2NPClose = isShortPrev[0] ? u2NPPrev : u2NPNext;
-        NodePoint& npProj  = get( u2NP->second, iNode );       // NP of VERTEX projection
-        NodePoint npCloseN = get( u2NPClose->second, iNode);   // NP close to npProj
-        NodePoint npCloseV = get( u2NPClose->second, iVertex); // NP close to VERTEX
+        NodePoint& npProj  = get( u2NP->second,      iNode ); // NP of VERTEX projection
+        NodePoint npCloseN = get( u2NPClose->second, iNode ); // NP close to npProj
+        NodePoint npCloseV = get( u2NPClose->second, iVert ); // NP close to VERTEX
         if ( !npCloseV._node )
         {
           npProj = npCloseN;
@@ -947,11 +979,11 @@ namespace
           // can't remove the neighbor projection as it is also from VERTEX, -> option 1)
         }
       }
-      // else option 1) - wide enough -> "duplicate" existing node
+      // else: option 1) - wide enough -> "duplicate" existing node
       {
         u2NPClose = isShortPrev[ iNode ] ? u2NPPrev : u2NPNext;
-        NodePoint& npProj   = get( u2NP->second, iNode );       // NP of VERTEX projection
-        NodePoint& npCloseN = get( u2NPClose->second, iNode );  // NP close to npProj
+        NodePoint& npProj   = get( u2NP->second,      iNode ); // NP of VERTEX projection
+        NodePoint& npCloseN = get( u2NPClose->second, iNode ); // NP close to npProj
         // npProj._edgeInd = npCloseN._edgeInd;
         // npProj._u       = npCloseN._u + 1e-3 * Abs( get( u2NPPrev->second, iNode )._u -
         //                                             get( u2NPNext->second, iNode )._u );
@@ -985,7 +1017,7 @@ namespace
                          vector<double>&            theMAParams,
                          SinuousFace&               theSinuFace)
   {
-    if ( theMA.getBranches().size() != 1 )
+    if ( theMA.nbBranches() != 1 )
       return false;
 
     // normalize theMAParams
@@ -1029,7 +1061,7 @@ namespace
       }
     }
 
-    const SMESH_MAT2d::Branch& branch = theMA.getBranches()[0];
+    const SMESH_MAT2d::Branch& branch = *theMA.getBranch(0);
     SMESH_MAT2d::BoundaryPoint bp[2];
 
     vector< std::size_t > edgeIDs1, edgeIDs2;
@@ -1121,8 +1153,8 @@ namespace
       ++iEdgePair;
     }
 
-    if ( !projectVertices( theHelper, theMA, divPoints, theSinuEdges, curves,
-                           isComputed, pointsOnE, theSinuFace._nodesToMerge ))
+    if ( !projectVertices( theHelper, theMA, divPoints, edgeIDs1, edgeIDs2, theSinuEdges,
+                           curves, isComputed, pointsOnE, theSinuFace._nodesToMerge ))
       return false;
 
     // create nodes

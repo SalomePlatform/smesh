@@ -44,6 +44,8 @@ QUADRANGLE  = "Quadrangle_2D"
 RADIAL_QUAD = "RadialQuadrangle_1D2D"
 ## Algorithm type: Quadrangle (Medial Axis Projection) 1D-2D algorithm, see StdMeshersBuilder_QuadMA_1D2D
 QUAD_MA_PROJ = "QuadFromMedialAxis_1D2D"
+## Algorithm type: Polygon Per Face 2D algorithm, see StdMeshersBuilder_PolygonPerFace
+POLYGON     = "PolygonPerFace_2D"
 
 # import items of enums
 for e in StdMeshers.QuadType._items: exec('%s = StdMeshers.%s'%(e,e))
@@ -66,7 +68,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
     ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = REGULAR
-    ## flag pointing either this algorithm should be used by default in dynamic method
+    ## flag pointing whether this algorithm should be used by default in dynamic method
     #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = True
@@ -424,7 +426,7 @@ class StdMeshersBuilder_CompositeSegment(StdMeshersBuilder_Segment):
     ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = COMPOSITE
-    ## flag pointing either this algorithm should be used by default in dynamic method
+    ## flag pointing whether this algorithm should be used by default in dynamic method
     #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = False
@@ -497,7 +499,7 @@ class StdMeshersBuilder_Triangle_MEFISTO(Mesh_Algorithm):
     ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = MEFISTO
-    ## flag pointing either this algorithm should be used by default in dynamic method
+    ## flag pointing whether this algorithm should be used by default in dynamic method
     #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = True
@@ -551,7 +553,7 @@ class StdMeshersBuilder_Quadrangle(Mesh_Algorithm):
     ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = QUADRANGLE
-    ## flag pointing either this algorithm should be used by default in dynamic method
+    ## flag pointing whether this algorithm should be used by default in dynamic method
     #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = True
@@ -698,7 +700,7 @@ class StdMeshersBuilder_Hexahedron(Mesh_Algorithm):
     ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = Hexa
-    ## flag pointing either this algorithm should be used by default in dynamic method
+    ## flag pointing whether this algorithm should be used by default in dynamic method
     #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = True
@@ -730,7 +732,7 @@ class StdMeshersBuilder_Projection1D(Mesh_Algorithm):
     ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = "Projection_1D"
-    ## flag pointing either this algorithm should be used by default in dynamic method
+    ## flag pointing whether this algorithm should be used by default in dynamic method
     #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = True
@@ -788,7 +790,7 @@ class StdMeshersBuilder_Projection2D(Mesh_Algorithm):
     ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = "Projection_2D"
-    ## flag pointing either this algorithm should be used by default in dynamic method
+    ## flag pointing whether this algorithm should be used by default in dynamic method
     #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = True
@@ -1285,6 +1287,37 @@ class StdMeshersBuilder_QuadMA_1D2D(Mesh_Algorithm):
 
     pass
 
+## Defines a Polygon Per Face 2D algorithm
+# 
+#  It is created by calling smeshBuilder.Mesh.Polygon(geom=0)
+#
+#  @ingroup l2_algos_quad_ma
+class StdMeshersBuilder_PolygonPerFace(Mesh_Algorithm):
+
+    ## name of the dynamic method in smeshBuilder.Mesh class
+    #  @internal
+    meshMethod = "Polygon"
+    ## type of algorithm used with helper function in smeshBuilder.Mesh class
+    #  @internal
+    algoType   = POLYGON
+    ## flag pointing whether this algorithm should be used by default in dynamic method
+    #  of smeshBuilder.Mesh class
+    #  @internal
+    isDefault  = True
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates polygon 2D algorithm for faces"
+
+    ## Private constructor.
+    #  @param mesh parent mesh object algorithm is assigned to
+    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
+    #              if it is @c 0 (default), the algorithm is assigned to the main shape
+    def __init__(self, mesh, geom=0):
+        Mesh_Algorithm.__init__(self)
+        self.Create(mesh, geom, self.algoType)
+        pass
+
+    pass
 
 ## Defines a Use Existing Elements 1D algorithm
 #
@@ -1299,7 +1332,7 @@ class StdMeshersBuilder_UseExistingElements_1D(Mesh_Algorithm):
     ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = "Import_1D"
-    ## flag pointing either this algorithm should be used by default in dynamic method
+    ## flag pointing whether this algorithm should be used by default in dynamic method
     #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = True
@@ -1349,7 +1382,7 @@ class StdMeshersBuilder_UseExistingElements_1D2D(Mesh_Algorithm):
     ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = "Import_1D2D"
-    ## flag pointing either this algorithm should be used by default in dynamic method
+    ## flag pointing whether this algorithm should be used by default in dynamic method
     #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = True
@@ -1397,7 +1430,7 @@ class StdMeshersBuilder_Cartesian_3D(Mesh_Algorithm):
     ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = "Cartesian_3D"
-    ## flag pointing either this algorithm should be used by default in dynamic method
+    ## flag pointing whether this algorithm should be used by default in dynamic method
     #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = True

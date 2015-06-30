@@ -158,20 +158,19 @@ public:
 protected slots:
   virtual void accept();
   virtual void reject();
-  void onHelp(); 
+  void onHelp();
 
-private:
+ private:
   SMESHGUI_GenericHypothesisCreator* myCreator;
   QLabel *myIconLabel, *myTypeLabel;
   QString myHelpFileName;
 };
 
 /*!
- * \brief Class containing information about hypothesis
-*/
-class HypothesisData
+ * \brief Information about a hypothesis
+ */
+struct HypothesisData
 {
-public:
   HypothesisData( const QString&, const QString&, const QString&,
                   const QString&, const QString&, const QString&,
                   const QString&, const QList<int>&, const bool,
