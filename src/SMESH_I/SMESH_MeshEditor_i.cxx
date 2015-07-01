@@ -3952,57 +3952,18 @@ SMESH_MeshEditor_i::ScaleMakeMesh(SMESH::SMESH_IDSource_ptr  theObject,
 
 
 //=======================================================================
-//function : FindCoincidentNodes
+//function : findCoincidentNodes
 //purpose  :
 //=======================================================================
 
-void SMESH_MeshEditor_i::FindCoincidentNodes (CORBA::Double                  Tolerance,
-                                              SMESH::array_of_long_array_out GroupsOfNodes)
-  throw (SALOME::SALOME_Exception)
+void SMESH_MeshEditor_i::
+findCoincidentNodes (TIDSortedNodeSet &             Nodes,
+                     CORBA::Double                  Tolerance,
+                     SMESH::array_of_long_array_out GroupsOfNodes,
+                     CORBA::Boolean                 SeparateCornersAndMedium)
 {
-  SMESH_TRY;
-  initData();
-
   ::SMESH_MeshEditor::TListOfListOfNodes aListOfListOfNodes;
-  TIDSortedNodeSet nodes; // no input nodes
-  getEditor().FindCoincidentNodes( nodes, Tolerance, aListOfListOfNodes );
-
-  GroupsOfNodes = new SMESH::array_of_long_array;
-  GroupsOfNodes->length( aListOfListOfNodes.size() );
-  ::SMESH_MeshEditor::TListOfListOfNodes::iterator llIt = aListOfListOfNodes.begin();
-  for ( CORBA::Long i = 0; llIt != aListOfListOfNodes.end(); llIt++, i++ ) {
-    list< const SMDS_MeshNode* >& aListOfNodes = *llIt;
-    list< const SMDS_MeshNode* >::iterator lIt = aListOfNodes.begin();;
-    SMESH::long_array& aGroup = (*GroupsOfNodes)[ i ];
-    aGroup.length( aListOfNodes.size() );
-    for ( int j = 0; lIt != aListOfNodes.end(); lIt++, j++ )
-      aGroup[ j ] = (*lIt)->GetID();
-  }
-  TPythonDump() << "coincident_nodes = " << this << ".FindCoincidentNodes( "
-                << Tolerance << " )";
-
-  SMESH_CATCH( SMESH::throwCorbaException );
-}
-
-//=======================================================================
-//function : FindCoincidentNodesOnPart
-//purpose  :
-//=======================================================================
-
-void SMESH_MeshEditor_i::FindCoincidentNodesOnPart(SMESH::SMESH_IDSource_ptr      theObject,
-                                                   CORBA::Double                  Tolerance,
-                                                   SMESH::array_of_long_array_out GroupsOfNodes)
-  throw (SALOME::SALOME_Exception)
-{
-  SMESH_TRY;
-  initData();
-
-  TIDSortedNodeSet nodes;
-  idSourceToNodeSet( theObject, getMeshDS(), nodes );
-
-  ::SMESH_MeshEditor::TListOfListOfNodes aListOfListOfNodes;
-  if(!nodes.empty())
-    getEditor().FindCoincidentNodes( nodes, Tolerance, aListOfListOfNodes );
+  getEditor().FindCoincidentNodes( Nodes, Tolerance, aListOfListOfNodes, SeparateCornersAndMedium );
 
   GroupsOfNodes = new SMESH::array_of_long_array;
   GroupsOfNodes->length( aListOfListOfNodes.size() );
@@ -4016,9 +3977,56 @@ void SMESH_MeshEditor_i::FindCoincidentNodesOnPart(SMESH::SMESH_IDSource_ptr    
     for ( int j = 0; lIt != aListOfNodes.end(); lIt++, j++ )
       aGroup[ j ] = (*lIt)->GetID();
   }
+}
+
+//=======================================================================
+//function : FindCoincidentNodes
+//purpose  :
+//=======================================================================
+
+void SMESH_MeshEditor_i::
+FindCoincidentNodes (CORBA::Double                  Tolerance,
+                     SMESH::array_of_long_array_out GroupsOfNodes,
+                     CORBA::Boolean                 SeparateCornersAndMedium)
+  throw (SALOME::SALOME_Exception)
+{
+  SMESH_TRY;
+  initData();
+
+  TIDSortedNodeSet nodes; // no input nodes
+  findCoincidentNodes( nodes, Tolerance, GroupsOfNodes, SeparateCornersAndMedium );
+
+  TPythonDump() << "coincident_nodes = " << this << ".FindCoincidentNodes( "
+                << Tolerance << ", "
+                << SeparateCornersAndMedium << " )";
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+}
+
+//=======================================================================
+//function : FindCoincidentNodesOnPart
+//purpose  :
+//=======================================================================
+
+void SMESH_MeshEditor_i::
+FindCoincidentNodesOnPart(SMESH::SMESH_IDSource_ptr      theObject,
+                          CORBA::Double                  Tolerance,
+                          SMESH::array_of_long_array_out GroupsOfNodes,
+                          CORBA::Boolean                 SeparateCornersAndMedium)
+  throw (SALOME::SALOME_Exception)
+{
+  SMESH_TRY;
+  initData();
+
+  TIDSortedNodeSet nodes;
+  idSourceToNodeSet( theObject, getMeshDS(), nodes );
+
+  findCoincidentNodes( nodes, Tolerance, GroupsOfNodes, SeparateCornersAndMedium );
+
   TPythonDump() << "coincident_nodes_on_part = " << this << ".FindCoincidentNodesOnPart( "
-                <<theObject<<", "
-                << Tolerance << " )";
+                << theObject <<", "
+                << Tolerance << ", "
+                << SeparateCornersAndMedium << " )";
 
   SMESH_CATCH( SMESH::throwCorbaException );
 }
@@ -4034,7 +4042,8 @@ void SMESH_MeshEditor_i::
 FindCoincidentNodesOnPartBut(SMESH::SMESH_IDSource_ptr      theObject,
                              CORBA::Double                  theTolerance,
                              SMESH::array_of_long_array_out theGroupsOfNodes,
-                             const SMESH::ListOfIDSources&  theExceptSubMeshOrGroups)
+                             const SMESH::ListOfIDSources&  theExceptSubMeshOrGroups,
+                             CORBA::Boolean                 theSeparateCornersAndMedium)
   throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
@@ -4045,32 +4054,18 @@ FindCoincidentNodesOnPartBut(SMESH::SMESH_IDSource_ptr      theObject,
 
   for ( int i = 0; i < theExceptSubMeshOrGroups.length(); ++i )
   {
-    TIDSortedNodeSet exceptNodes;
-    idSourceToNodeSet( theExceptSubMeshOrGroups[i], getMeshDS(), exceptNodes );
-    TIDSortedNodeSet::iterator avoidNode = exceptNodes.begin();
-    for ( ; avoidNode != exceptNodes.end(); ++avoidNode)
-      nodes.erase( *avoidNode );
+    SMDS_ElemIteratorPtr nodeIt = myMesh_i->GetElements( theExceptSubMeshOrGroups[i],
+                                                         SMESH::NODE );
+    while ( nodeIt->more() )
+      nodes.erase( cast2Node( nodeIt->next() ));
   }
-  ::SMESH_MeshEditor::TListOfListOfNodes aListOfListOfNodes;
-  if(!nodes.empty())
-    getEditor().FindCoincidentNodes( nodes, theTolerance, aListOfListOfNodes );
+  findCoincidentNodes( nodes, theTolerance, theGroupsOfNodes, theSeparateCornersAndMedium );
 
-  theGroupsOfNodes = new SMESH::array_of_long_array;
-  theGroupsOfNodes->length( aListOfListOfNodes.size() );
-  ::SMESH_MeshEditor::TListOfListOfNodes::iterator llIt = aListOfListOfNodes.begin();
-  for ( CORBA::Long i = 0; llIt != aListOfListOfNodes.end(); llIt++, i++ )
-  {
-    list< const SMDS_MeshNode* >& aListOfNodes = *llIt;
-    list< const SMDS_MeshNode* >::iterator lIt = aListOfNodes.begin();;
-    SMESH::long_array& aGroup = (*theGroupsOfNodes)[ i ];
-    aGroup.length( aListOfNodes.size() );
-    for ( int j = 0; lIt != aListOfNodes.end(); lIt++, j++ )
-      aGroup[ j ] = (*lIt)->GetID();
-  }
   TPythonDump() << "coincident_nodes_on_part = " << this << ".FindCoincidentNodesOnPartBut( "
                 << theObject<<", "
                 << theTolerance << ", "
-                << theExceptSubMeshOrGroups << " )";
+                << theExceptSubMeshOrGroups << ", "
+                << theSeparateCornersAndMedium << " )";
 
   SMESH_CATCH( SMESH::throwCorbaException );
 }

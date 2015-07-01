@@ -2632,11 +2632,12 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::ListOfIDSources& theMeshesArray,
     } // if an IDSource is a mesh
   } //meshes loop
 
-  if (theMergeNodesAndElements) {
-    // merge nodes
+  if (theMergeNodesAndElements) // merge nodes
+  {
     TIDSortedNodeSet aMeshNodes; // no input nodes
     SMESH_MeshEditor::TListOfListOfNodes aGroupsOfNodes;
-    aNewEditor.FindCoincidentNodes( aMeshNodes, theMergeTolerance, aGroupsOfNodes );
+    aNewEditor.FindCoincidentNodes( aMeshNodes, theMergeTolerance, aGroupsOfNodes,
+                                    /*SeparateCornersAndMedium=*/ false );
     aNewEditor.MergeNodes( aGroupsOfNodes );
     // merge elements
     aNewEditor.MergeEqualElements();

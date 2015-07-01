@@ -609,41 +609,44 @@ module SMESH
                                in AxisStruct Axis,
                                in double     AngleInRadians,
                                in boolean    CopyGroups,
-                               in string     MeshName) 
+                               in string     MeshName)
       raises (SALOME::SALOME_Exception);
 
     void RotateObject (in SMESH_IDSource theObject,
                        in AxisStruct     Axis,
                        in double         AngleInRadians,
-                       in boolean        Copy) 
+                       in boolean        Copy)
       raises (SALOME::SALOME_Exception);
     ListOfGroups RotateObjectMakeGroups (in SMESH_IDSource theObject,
                                          in AxisStruct     Axis,
-                                         in double         AngleInRadians) 
+                                         in double         AngleInRadians)
       raises (SALOME::SALOME_Exception);
     SMESH_Mesh RotateObjectMakeMesh (in SMESH_IDSource theObject,
                                      in AxisStruct     Axis,
                                      in double         AngleInRadians,
                                      in boolean        CopyGroups,
-                                     in string         MeshName) 
+                                     in string         MeshName)
       raises (SALOME::SALOME_Exception);
 
     void FindCoincidentNodes (in  double              Tolerance,
-                              out array_of_long_array GroupsOfNodes) 
+                              out array_of_long_array GroupsOfNodes,
+                              in  boolean             SeparateCornersAndMedium)
       raises (SALOME::SALOME_Exception);
 
     void FindCoincidentNodesOnPart (in  SMESH_IDSource      SubMeshOrGroup,
                                     in  double              Tolerance,
-                                    out array_of_long_array GroupsOfNodes) 
+                                    out array_of_long_array GroupsOfNodes,
+                                    in  boolean             SeparateCornersAndMedium)
       raises (SALOME::SALOME_Exception);
 
     void FindCoincidentNodesOnPartBut (in  SMESH_IDSource      SubMeshOrGroup,
                                        in  double              Tolerance,
                                        out array_of_long_array GroupsOfNodes,
-                                       in  ListOfIDSources     ExceptSubMeshOrGroups) 
+                                       in  ListOfIDSources     ExceptSubMeshOrGroups,
+                                       in  boolean             SeparateCornersAndMedium)
       raises (SALOME::SALOME_Exception);
 
-    void MergeNodes (in array_of_long_array GroupsOfNodes) 
+    void MergeNodes (in array_of_long_array GroupsOfNodes)
       raises (SALOME::SALOME_Exception);
 
     /*!

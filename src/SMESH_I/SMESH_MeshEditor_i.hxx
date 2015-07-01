@@ -472,16 +472,19 @@ public:
     throw (SALOME::SALOME_Exception);
 
   void FindCoincidentNodes (CORBA::Double                  Tolerance,
-                            SMESH::array_of_long_array_out GroupsOfNodes)
+                            SMESH::array_of_long_array_out GroupsOfNodes,
+                            CORBA::Boolean                 SeparateCornersAndMedium)
     throw (SALOME::SALOME_Exception);
   void FindCoincidentNodesOnPart(SMESH::SMESH_IDSource_ptr      Object,
                                  CORBA::Double                  Tolerance,
-                                 SMESH::array_of_long_array_out GroupsOfNodes)
+                                 SMESH::array_of_long_array_out GroupsOfNodes,
+                                 CORBA::Boolean                 SeparateCornersAndMedium)
     throw (SALOME::SALOME_Exception);
   void FindCoincidentNodesOnPartBut(SMESH::SMESH_IDSource_ptr      Object,
                                     CORBA::Double                  Tolerance,
                                     SMESH::array_of_long_array_out GroupsOfNodes,
-                                    const SMESH::ListOfIDSources&  ExceptSubMeshOrGroups)
+                                    const SMESH::ListOfIDSources&  ExceptSubMeshOrGroups,
+                                    CORBA::Boolean                 SeparateCornersAndMedium)
     throw (SALOME::SALOME_Exception);
   void MergeNodes (const SMESH::array_of_long_array& GroupsOfNodes)
     throw (SALOME::SALOME_Exception);
@@ -902,6 +905,12 @@ private: //!< private methods
                      const SMDSAbs_ElementType  theType,
                      const bool                 emptyIfIsMesh = false,
                      IDSource_Error*            error = 0);
+
+  void findCoincidentNodes( TIDSortedNodeSet &             Nodes,
+                            CORBA::Double                  Tolerance,
+                            SMESH::array_of_long_array_out GroupsOfNodes,
+                            CORBA::Boolean                 SeparateCornersAndMedium);
+
 
 
  private: //!< fields

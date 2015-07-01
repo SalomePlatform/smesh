@@ -6983,27 +6983,67 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
 
 //================================================================================
 /*!
- * \brief Return list of group of nodes close to each other within theTolerance
- *        Search among theNodes or in the whole mesh if theNodes is empty using
- *        an Octree algorithm
+ *  * \brief Return list of group of nodes close to each other within theTolerance
+ *  *        Search among theNodes or in the whole mesh if theNodes is empty using
+ *  *        an Octree algorithm
+ *  \param [in,out] theNodes - the nodes to treat
+ *  \param [in]     theTolerance - the tolerance
+ *  \param [out]    theGroupsOfNodes - the result groups of coincident nodes
+ *  \param [in]     theSeparateCornersAndMedium - if \c true, in quadratic mesh puts 
+ *         corner and medium nodes in separate groups
  */
 //================================================================================
 
 void SMESH_MeshEditor::FindCoincidentNodes (TIDSortedNodeSet &   theNodes,
                                             const double         theTolerance,
-                                            TListOfListOfNodes & theGroupsOfNodes)
+                                            TListOfListOfNodes & theGroupsOfNodes,
+                                            bool                 theSeparateCornersAndMedium)
 {
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();
 
-  if ( theNodes.empty() )
-  { // get all nodes in the mesh
+  if ( myMesh->NbEdges  ( ORDER_QUADRATIC ) +
+       myMesh->NbFaces  ( ORDER_QUADRATIC ) +
+       myMesh->NbVolumes( ORDER_QUADRATIC ) == 0 )
+    theSeparateCornersAndMedium = false;
+
+  TIDSortedNodeSet& corners = theNodes;
+  TIDSortedNodeSet  medium;
+
+  if ( theNodes.empty() ) // get all nodes in the mesh
+  {
+    TIDSortedNodeSet* nodes[2] = { &corners, &medium };
     SMDS_NodeIteratorPtr nIt = GetMeshDS()->nodesIterator(/*idInceasingOrder=*/true);
-    while ( nIt->more() )
-      theNodes.insert( theNodes.end(),nIt->next());
+    if ( theSeparateCornersAndMedium )
+      while ( nIt->more() )
+      {
+        const SMDS_MeshNode* n = nIt->next();
+        TIDSortedNodeSet* & nodeSet = nodes[ SMESH_MesherHelper::IsMedium( n )];
+        nodeSet->insert( nodeSet->end(), n );
+      }
+    else
+      while ( nIt->more() )
+        theNodes.insert( theNodes.end(),nIt->next() );
+  }
+  else if ( theSeparateCornersAndMedium ) // separate corners from medium nodes
+  {
+    TIDSortedNodeSet::iterator nIt = corners.begin();
+    while ( nIt != corners.end() )
+      if ( SMESH_MesherHelper::IsMedium( *nIt ))
+      {
+        medium.insert( medium.end(), *nIt );
+        corners.erase( nIt++ );
+      }
+      else
+      {
+        ++nIt;
+      }
   }
 
-  SMESH_OctreeNode::FindCoincidentNodes ( theNodes, &theGroupsOfNodes, theTolerance);
+  if ( !corners.empty() )
+    SMESH_OctreeNode::FindCoincidentNodes ( corners, &theGroupsOfNodes, theTolerance );
+  if ( !medium.empty() )
+    SMESH_OctreeNode::FindCoincidentNodes ( medium, &theGroupsOfNodes, theTolerance );
 }
 
 //=======================================================================
@@ -7763,7 +7803,7 @@ void SMESH_MeshEditor::FindEqualElements(TIDSortedElemSet &        theElements,
   { // get all elements in the mesh
     SMDS_ElemIteratorPtr eIt = GetMeshDS()->elementsIterator();
     while ( eIt->more() )
-      theElements.insert( theElements.end(), eIt->next());
+      theElements.insert( theElements.end(), eIt->next() );
   }
 
   vector< TGroupOfElems > arrayOfGroups;
@@ -7771,31 +7811,32 @@ void SMESH_MeshEditor::FindEqualElements(TIDSortedElemSet &        theElements,
   TMapOfNodeSet mapOfNodeSet;
 
   TIDSortedElemSet::iterator elemIt = theElements.begin();
-  for ( int i = 0, j=0; elemIt != theElements.end(); ++elemIt, ++j ) {
+  for ( int i = 0; elemIt != theElements.end(); ++elemIt )
+  {
     const SMDS_MeshElement* curElem = *elemIt;
     SortableElement SE(curElem);
-    int ind = -1;
     // check uniqueness
     pair< TMapOfNodeSet::iterator, bool> pp = mapOfNodeSet.insert(make_pair(SE, i));
-    if( !(pp.second) ) {
+    if ( !pp.second ) { // one more coincident elem
       TMapOfNodeSet::iterator& itSE = pp.first;
-      ind = (*itSE).second;
-      arrayOfGroups[ind].push_back(curElem->GetID());
+      int ind = (*itSE).second;
+      arrayOfGroups[ind].push_back( curElem->GetID() );
     }
     else {
-      groupOfElems.clear();
-      groupOfElems.push_back(curElem->GetID());
-      arrayOfGroups.push_back(groupOfElems);
+      arrayOfGroups.push_back( groupOfElems );
+      arrayOfGroups.back().push_back( curElem->GetID() );
       i++;
     }
   }
 
+  groupOfElems.clear();
   vector< TGroupOfElems >::iterator groupIt = arrayOfGroups.begin();
-  for ( ; groupIt != arrayOfGroups.end(); ++groupIt ) {
-    groupOfElems = *groupIt;
-    if ( groupOfElems.size() > 1 ) {
-      groupOfElems.sort();
-      theGroupsOfElementsID.push_back(groupOfElems);
+  for ( ; groupIt != arrayOfGroups.end(); ++groupIt )
+  {
+    if ( groupIt->size() > 1 ) {
+      //groupOfElems.sort(); -- theElements is sorted already
+      theGroupsOfElementsID.push_back( groupOfElems );
+      theGroupsOfElementsID.back().splice( theGroupsOfElementsID.back().end(), *groupIt );
     }
   }
 }

@@ -21,6 +21,10 @@ then converted to the single node.
 processed.
 <li>\b Tolerance is a maximum distance between nodes sufficient for
 merging.</li>
+<li>Activation of <b>No merge of corner and medium nodes</b> check-box
+  prevents merging medium nodes of quadratic elements with corner
+  nodes. This check-box is enabled provided that the selected mesh
+  includes quadratic elements.</li>
 <li><b>Exclude Groups</b> group box allows to ignore the nodes which
 belong to the specified mesh groups.
 </ul>

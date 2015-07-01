@@ -592,7 +592,8 @@ namespace
   //================================================================================
 
   TopoDS_Edge makeEdgeFromMA( SMESH_MesherHelper&            theHelper,
-                              const SMESH_MAT2d::MedialAxis& theMA )
+                              const SMESH_MAT2d::MedialAxis& theMA,
+                              const double                   theMinSegLen)
   {
     if ( theMA.nbBranches() != 1 )
       return TopoDS_Edge();
@@ -605,14 +606,31 @@ namespace
     TopoDS_Face face = TopoDS::Face( theHelper.GetSubShape() );
     Handle(Geom_Surface) surface = BRep_Tool::Surface( face );
 
-    // cout << "from salome.geom import geomBuilder" << endl;
-    // cout << "geompy = geomBuilder.New(salome.myStudy)" << endl;
-    Handle(TColgp_HArray1OfPnt) points = new TColgp_HArray1OfPnt(1, uv.size());
-    for ( size_t i = 0; i < uv.size(); ++i )
+    vector< gp_Pnt > pnt;
+    pnt.reserve( uv.size() * 2 );
+    pnt.push_back( surface->Value( uv[0].X(), uv[0].Y() ));
+    for ( size_t i = 1; i < uv.size(); ++i )
     {
       gp_Pnt p = surface->Value( uv[i].X(), uv[i].Y() );
+      int nbDiv = int( p.Distance( pnt.back() ) / theMinSegLen );
+      for ( int iD = 1; iD < nbDiv; ++iD )
+      {
+        double  R = iD / double( nbDiv );
+        gp_XY uvR = uv[i-1] * (1 - R) + uv[i] * R;
+        pnt.push_back( surface->Value( uvR.X(), uvR.Y() ));
+      }
+      pnt.push_back( p );
+    }
+
+    // cout << "from salome.geom import geomBuilder" << endl;
+    // cout << "geompy = geomBuilder.New(salome.myStudy)" << endl;
+    Handle(TColgp_HArray1OfPnt) points = new TColgp_HArray1OfPnt(1, pnt.size());
+    for ( size_t i = 0; i < pnt.size(); ++i )
+    {
+      gp_Pnt& p = pnt[i];
       points->SetValue( i+1, p );
-      //cout << "geompy.MakeVertex( "<< p.X()<<", " << p.Y()<<", " << p.Z()<<" )" << endl;
+      // cout << "geompy.MakeVertex( "<< p.X()<<", " << p.Y()<<", " << p.Z()
+      //      <<" theName = 'p_" << i << "')" << endl;
     }
 
     GeomAPI_Interpolate interpol( points, /*isClosed=*/false, gp::Resolution());
@@ -658,6 +676,7 @@ namespace
                  const SMESH_MAT2d::MedialAxis& theMA,
                  const SinuousFace&             theSinuFace,
                  SMESH_Algo*                    the1dAlgo,
+                 const double                   theMinSegLen,
                  vector<double>&                theMAParams )
   {
     // check if all EDGEs of one size are meshed, then MA discretization is not needed
@@ -674,7 +693,7 @@ namespace
       return true; // discretization is not needed
 
 
-    TopoDS_Edge branchEdge = makeEdgeFromMA( theHelper, theMA );
+    TopoDS_Edge branchEdge = makeEdgeFromMA( theHelper, theMA, theMinSegLen );
     if ( branchEdge.IsNull() )
       return false;
 
@@ -1446,7 +1465,7 @@ bool StdMeshers_QuadFromMedialAxis_1D2D::Compute(SMESH_Mesh&         theMesh,
     _regular1D->SetSegmentLength( minSegLen );
 
     vector<double> maParams;
-    if ( ! divideMA( helper, ma, sinuFace, _regular1D, maParams ))
+    if ( ! divideMA( helper, ma, sinuFace, _regular1D, minSegLen, maParams ))
       return error(COMPERR_BAD_SHAPE);
 
     _progress = 0.4;

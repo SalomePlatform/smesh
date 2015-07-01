@@ -5100,6 +5100,10 @@ Please select a group and try again</translation>
         <source>EXCLUDE_GROUPS</source>
         <translation>Exclude Groups</translation>
     </message>
+    <message>
+        <source>SEPARATE_CORNERS_AND_MEDIUM</source>
+        <translation>No merge of corner and medium nodes</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_ExtrusionAlongPathDlg</name>

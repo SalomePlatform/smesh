@@ -125,6 +125,7 @@ private:
   QWidget*                  GroupCoincidentWidget;
   QLabel*                   TextLabelTolerance;
   SMESHGUI_SpinBox*         SpinBoxTolerance;
+  QCheckBox*                SeparateCornersAndMedium;
   QPushButton*              DetectButton;
   QListWidget*              ListCoincident;
   QPushButton*              AddGroupButton;

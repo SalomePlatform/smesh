@@ -4299,31 +4299,39 @@ class Mesh:
 
     ## Finds groups of adjacent nodes within Tolerance.
     #  @param Tolerance the value of tolerance
-    #  @return the list of pairs of nodes IDs (e.g. [[1,12],[25,4]])
+    #  @param SeparateCornerAndMediumNodes if @c True, in quadratic mesh puts
+    #         corner and medium nodes in separate groups thus preventing
+    #         their further merge.
+    #  @return the list of groups of nodes IDs (e.g. [[1,12,13],[4,25]])
     #  @ingroup l2_modif_trsf
-    def FindCoincidentNodes (self, Tolerance):
-        return self.editor.FindCoincidentNodes(Tolerance)
+    def FindCoincidentNodes (self, Tolerance, SeparateCornerAndMediumNodes=False):
+        return self.editor.FindCoincidentNodes( Tolerance, SeparateCornerAndMediumNodes )
 
     ## Finds groups of ajacent nodes within Tolerance.
     #  @param Tolerance the value of tolerance
     #  @param SubMeshOrGroup SubMesh or Group
     #  @param exceptNodes list of either SubMeshes, Groups or node IDs to exclude from search
-    #  @return the list of pairs of nodes IDs (e.g. [[1,12],[25,4]])
+    #  @param SeparateCornerAndMediumNodes if @c True, in quadratic mesh puts
+    #         corner and medium nodes in separate groups thus preventing
+    #         their further merge.
+    #  @return the list of groups of nodes IDs (e.g. [[1,12,13],[4,25]])
     #  @ingroup l2_modif_trsf
-    def FindCoincidentNodesOnPart (self, SubMeshOrGroup, Tolerance, exceptNodes=[]):
+    def FindCoincidentNodesOnPart (self, SubMeshOrGroup, Tolerance,
+                                   exceptNodes=[], SeparateCornerAndMediumNodes=False):
         unRegister = genObjUnRegister()
         if (isinstance( SubMeshOrGroup, Mesh )):
             SubMeshOrGroup = SubMeshOrGroup.GetMesh()
-        if not isinstance( exceptNodes, list):
+        if not isinstance( exceptNodes, list ):
             exceptNodes = [ exceptNodes ]
-        if exceptNodes and isinstance( exceptNodes[0], int):
-            exceptNodes = [ self.GetIDSource( exceptNodes, SMESH.NODE)]
+        if exceptNodes and isinstance( exceptNodes[0], int ):
+            exceptNodes = [ self.GetIDSource( exceptNodes, SMESH.NODE )]
             unRegister.set( exceptNodes )
-        return self.editor.FindCoincidentNodesOnPartBut(SubMeshOrGroup, Tolerance,exceptNodes)
+        return self.editor.FindCoincidentNodesOnPartBut(SubMeshOrGroup, Tolerance,
+                                                        exceptNodes, SeparateCornerAndMediumNodes)
 
     ## Merges nodes
-    #  @param GroupsOfNodes a list of pairs of nodes IDs for merging
-    #         (e.g. [[1,12],[25,4]], then nodes 12 and 4 will be removed and replaced
+    #  @param GroupsOfNodes a list of groups of nodes IDs for merging
+    #         (e.g. [[1,12,13],[25,4]], then nodes 12, 13 and 4 will be removed and replaced
     #         by nodes 1 and 25 correspondingly in all elements and groups
     #  @ingroup l2_modif_trsf
     def MergeNodes (self, GroupsOfNodes):
@@ -4331,7 +4339,7 @@ class Mesh:
 
     ## Finds the elements built on the same nodes.
     #  @param MeshOrSubMeshOrGroup Mesh or SubMesh, or Group of elements for searching
-    #  @return the list of pairs of equal elements IDs (e.g. [[1,12],[25,4]])
+    #  @return the list of groups of equal elements IDs (e.g. [[1,12,13],[4,25]])
     #  @ingroup l2_modif_trsf
     def FindEqualElements (self, MeshOrSubMeshOrGroup=None):
         if not MeshOrSubMeshOrGroup:
@@ -4341,8 +4349,8 @@ class Mesh:
         return self.editor.FindEqualElements( MeshOrSubMeshOrGroup )
 
     ## Merges elements in each given group.
-    #  @param GroupsOfElementsID a list of pairs of elements IDs for merging
-    #        (e.g. [[1,12],[25,4]], then elements 12 and 4 will be removed and
+    #  @param GroupsOfElementsID a list of groups of elements IDs for merging
+    #        (e.g. [[1,12,13],[25,4]], then elements 12, 13 and 4 will be removed and
     #        replaced by elements 1 and 25 in all groups)
     #  @ingroup l2_modif_trsf
     def MergeElements(self, GroupsOfElementsID):

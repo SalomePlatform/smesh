@@ -440,7 +440,8 @@ public:
 
   void FindCoincidentNodes (TIDSortedNodeSet &   theNodes,
                             const double         theTolerance,
-                            TListOfListOfNodes & theGroupsOfNodes);
+                            TListOfListOfNodes & theGroupsOfNodes,
+                            bool                 theSeparateCornersAndMedium);
   // Return list of group of nodes close to each other within theTolerance.
   // Search among theNodes or in the whole mesh if theNodes is empty.
 
