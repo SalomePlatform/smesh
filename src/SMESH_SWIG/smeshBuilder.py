@@ -4773,8 +4773,11 @@ class meshEditor(SMESH._objref_SMESH_MeshEditor):
             return getattr( self.mesh, name )
         if name == "ExtrusionAlongPathObjX":
             return getattr( self.mesh, "ExtrusionAlongPathX" )
-        print name, "NOT FOUND"
+        print name, "meshEditor: attribute '%s' NOT FOUND" % name
         return None
+    def __deepcopy__(self, memo=None):
+        new = self.__class__()
+        return new
     pass
 omniORB.registerObjref(SMESH._objref_SMESH_MeshEditor._NP_RepositoryId, meshEditor)
 
