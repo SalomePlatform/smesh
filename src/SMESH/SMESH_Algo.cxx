@@ -432,16 +432,14 @@ bool SMESH_Algo::GetSortedNodesOnEdge(const SMESHDS_Mesh*                   theM
       const SMDS_EdgePosition* epos =
         static_cast<const SMDS_EdgePosition*>(node->GetPosition());
       theNodes.insert( theNodes.end(), make_pair( epos->GetUParameter(), node ));
-      //MESSAGE("U " << epos->GetUParameter() << " ID " << node->GetID());
       ++nbNodes;
     }
   }
   // add vertex nodes
   TopoDS_Vertex v1, v2;
   TopExp::Vertices(theEdge, v1, v2);
-  const SMDS_MeshNode* n1 = VertexNode( v1, (SMESHDS_Mesh*) theMesh );
-  const SMDS_MeshNode* n2 = VertexNode( v2, (SMESHDS_Mesh*) theMesh );
-  //MESSAGE("Vertices ID " << n1->GetID() << " " << n2->GetID());
+  const SMDS_MeshNode* n1 = VertexNode( v1, eSubMesh, 0 );
+  const SMDS_MeshNode* n2 = VertexNode( v2, eSubMesh, 0 );
   Standard_Real f, l;
   BRep_Tool::Range(theEdge, f, l);
   if ( v1.Orientation() != TopAbs_FORWARD )
@@ -612,6 +610,118 @@ const SMDS_MeshNode* SMESH_Algo::VertexNode(const TopoDS_Vertex& V,
       return nIt->next();
   }
   return 0;
+}
+
+//=======================================================================
+/*!
+ * \brief Return the node built on a vertex.
+ *        A node moved to other geometry by MergeNodes() is also returned.
+ * \param V - the vertex
+ * \param mesh - mesh
+ * \retval const SMDS_MeshNode* - found node or NULL
+ */
+//=======================================================================
+
+const SMDS_MeshNode* SMESH_Algo::VertexNode(const TopoDS_Vertex& V,
+                                            const SMESH_Mesh*    mesh)
+{
+  const SMDS_MeshNode* node = VertexNode( V, mesh->GetMeshDS() );
+
+  if ( !node && mesh->HasModificationsToDiscard() )
+  {
+    PShapeIteratorPtr edgeIt = SMESH_MesherHelper::GetAncestors( V, *mesh, TopAbs_EDGE );
+    while ( const TopoDS_Shape* edge = edgeIt->next() )
+      if ( SMESHDS_SubMesh* edgeSM = mesh->GetMeshDS()->MeshElements( *edge ))
+        if ( edgeSM->NbElements() > 0 )
+          return VertexNode( V, edgeSM, mesh, /*checkV=*/false );
+  }
+  return node;
+}
+
+//=======================================================================
+/*!
+ * \brief Return the node built on a vertex.
+ *        A node moved to other geometry by MergeNodes() is also returned.
+ * \param V - the vertex
+ * \param edgeSM - sub-mesh of a meshed EDGE sharing the vertex
+ * \param checkV - if \c true, presence of a node on the vertex is checked
+ * \retval const SMDS_MeshNode* - found node or NULL
+ */
+//=======================================================================
+
+const SMDS_MeshNode* SMESH_Algo::VertexNode(const TopoDS_Vertex&   V,
+                                            const SMESHDS_SubMesh* edgeSM,
+                                            const SMESH_Mesh*      mesh,
+                                            const bool             checkV)
+{
+  const SMDS_MeshNode* node = checkV ? VertexNode( V, edgeSM->GetParent() ) : 0;
+
+  if ( !node && edgeSM )
+  {
+    // find nodes not shared by mesh segments
+    typedef set< const SMDS_MeshNode* >                       TNodeSet;
+    typedef map< const SMDS_MeshNode*, const SMDS_MeshNode* > TNodeMap;
+    TNodeMap notSharedNodes;
+    TNodeSet otherShapeNodes;
+    vector< const SMDS_MeshNode* > segNodes(3);
+    SMDS_ElemIteratorPtr segIt = edgeSM->GetElements();
+    while ( segIt->more() )
+    {
+      const SMDS_MeshElement* seg = segIt->next();
+      if ( seg->GetType() != SMDSAbs_Edge )
+        return node;
+      segNodes.assign( seg->begin_nodes(), seg->end_nodes() );
+      for ( int i = 0; i < 2; ++i )
+      {
+        const SMDS_MeshNode* n1 = segNodes[i];
+        const SMDS_MeshNode* n2 = segNodes[1-i];
+        pair<TNodeMap::iterator, bool> it2new = notSharedNodes.insert( make_pair( n1, n2 ));
+        if ( !it2new.second ) // n encounters twice
+          notSharedNodes.erase( it2new.first );
+        if ( n1->getshapeId() != edgeSM->GetID() )
+          otherShapeNodes.insert( n1 );
+      }
+    }
+    if ( otherShapeNodes.size() == 1 && notSharedNodes.empty() ) // a closed EDGE
+      return *otherShapeNodes.begin();
+
+    if ( notSharedNodes.size() == 2 ) // two end nodes found
+    {
+      SMESHDS_Mesh*  meshDS = edgeSM->GetParent();
+      const TopoDS_Shape& E = meshDS->IndexToShape( edgeSM->GetID() );
+      if ( E.IsNull() || E.ShapeType() != TopAbs_EDGE )
+        return node;
+      const SMDS_MeshNode* n1 = notSharedNodes.begin ()->first;
+      const SMDS_MeshNode* n2 = notSharedNodes.rbegin()->first;
+      TopoDS_Shape S1 = SMESH_MesherHelper::GetSubShapeByNode( n1, meshDS );
+      if ( S1.ShapeType() == TopAbs_VERTEX && SMESH_MesherHelper::IsSubShape( S1, E ))
+        return n2;
+      TopoDS_Shape S2 = SMESH_MesherHelper::GetSubShapeByNode( n2, meshDS );
+      if ( S2.ShapeType() == TopAbs_VERTEX && SMESH_MesherHelper::IsSubShape( S2, E ))
+        return n1;
+      if ( edgeSM->NbElements() <= 2 || !mesh ) // one-two segments
+      {
+        gp_Pnt pV = BRep_Tool::Pnt( V );
+        double dist1 = pV.SquareDistance( SMESH_TNodeXYZ( n1 ));
+        double dist2 = pV.SquareDistance( SMESH_TNodeXYZ( n2 ));
+        return dist1 < dist2 ? n1 : n2;
+      }
+      if ( mesh )
+      {
+        SMESH_MesherHelper helper( const_cast<SMESH_Mesh&>( *mesh ));
+        const SMDS_MeshNode* n1i = notSharedNodes.begin ()->second;
+        const SMDS_MeshNode* n2i = notSharedNodes.rbegin()->second;
+        const TopoDS_Edge&  edge = TopoDS::Edge( E );
+        bool  posOK = true;
+        double pos1 = helper.GetNodeU( edge, n1i, n2i, &posOK );
+        double pos2 = helper.GetNodeU( edge, n2i, n1i, &posOK );
+        double posV = BRep_Tool::Parameter( V, edge );
+        if ( Abs( pos1 - posV ) < Abs( pos2 - posV )) return n1;
+        else                                          return n2;
+      }
+    }
+  }
+  return node;
 }
 
 //=======================================================================

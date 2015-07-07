@@ -441,32 +441,7 @@ namespace {
     tgtWires.resize( srcWires.size() );
     for ( size_t iW = 0; iW < srcWires.size(); ++iW )
     {
-      // check ori
-      //bool reverse = false;
       StdMeshers_FaceSidePtr srcWire = srcWires[iW];
-      // for ( int iE = 0; iE < srcWire->NbEdges(); ++iE )
-      // {
-      //   if ( srcHelper.IsRealSeam( srcWire->EdgeID( iE )))
-      //     continue;
-      //   TopoDS_Shape srcE = srcWire->Edge( iE );
-      //   TopoDS_Shape tgtE = shape2ShapeMap( srcE, /*isSrc=*/true);
-      //   if ( shape2ShapeMap._assocType == TShapeShapeMap::PROPAGATION ||
-      //        shape2ShapeMap._assocType == TShapeShapeMap::PROPAGATION)
-      //   {
-      //     reverse = false;
-      //   }
-      //   else if ( tgtMesh == srcMesh )
-      //   {
-      //     reverse = (( srcE.Orientation() == srcHelper.GetSubShapeOri( srcFace, srcE )) !=
-      //                ( tgtE.Orientation() == srcHelper.GetSubShapeOri( tgtFace, tgtE )));
-      //   }
-      //   else
-      //   {
-      //     TopoDS_Shape srcEbis = shape2ShapeMap( tgtE, /*isSrc=*/false );
-      //     reverse = ( srcE.Orientation() != srcEbis.Orientation() );
-      //   }
-      //   break;
-      // }
 
       list< TopoDS_Edge > tgtEdges;
       TopTools_IndexedMapOfShape edgeMap; // to detect seam edges
@@ -476,7 +451,6 @@ namespace {
         TopoDS_Edge     tgtE = TopoDS::Edge( shape2ShapeMap( srcE, /*isSrc=*/true));
         TopoDS_Shape srcEbis = shape2ShapeMap( tgtE, /*isSrc=*/false );
         if ( srcE.Orientation() != srcEbis.Orientation() )
-          //if ( reverse )
           tgtE.Reverse();
         // reverse a seam edge encountered for the second time
         const int index = edgeMap.Add( tgtE );
@@ -504,56 +478,58 @@ namespace {
             tgtE = nE.second;
         }
         tgtEdges.push_back( tgtE );
+      }
 
+      tgtWires[ iW ].reset( new StdMeshers_FaceSide( tgtFace, tgtEdges, tgtMesh,
+                                                     /*theIsForward = */ true,
+                                                     /*theIgnoreMediumNodes = */false));
+      StdMeshers_FaceSidePtr tgtWire = tgtWires[ iW ];
 
-        // Fill map of src to tgt nodes with nodes on edges
+      // Fill map of src to tgt nodes with nodes on edges
 
-        if ( srcMesh->GetSubMesh( srcE )->IsEmpty() ||
-             tgtMesh->GetSubMesh( tgtE )->IsEmpty() )
+      for ( int iE = 0; iE < srcWire->NbEdges(); ++iE )
+      {
+        if ( srcMesh->GetSubMesh( srcWire->Edge(iE) )->IsEmpty() ||
+             tgtMesh->GetSubMesh( tgtWire->Edge(iE) )->IsEmpty() )
         {
           // add nodes on VERTEXes for a case of not meshes EDGEs
-          const TopoDS_Shape&  srcV = SMESH_MesherHelper::IthVertex( 0, srcE );
-          const TopoDS_Shape&  tgtV = shape2ShapeMap( srcV, /*isSrc=*/true );
-          const SMDS_MeshNode* srcN = SMESH_Algo::VertexNode( TopoDS::Vertex( srcV ), srcMeshDS );
-          const SMDS_MeshNode* tgtN = SMESH_Algo::VertexNode( TopoDS::Vertex( tgtV ), tgtMeshDS );
+          const SMDS_MeshNode* srcN = srcWire->VertexNode( iE );
+          const SMDS_MeshNode* tgtN = tgtWire->VertexNode( iE );
           if ( srcN && tgtN )
             src2tgtNodes.insert( make_pair( srcN, tgtN ));
         }
         else
         {
-          const bool skipMediumNodes = true;
-          map< double, const SMDS_MeshNode* > srcNodes, tgtNodes;
-          if ( !SMESH_Algo::GetSortedNodesOnEdge( srcMeshDS, srcE, skipMediumNodes, srcNodes) ||
-               !SMESH_Algo::GetSortedNodesOnEdge( tgtMeshDS, tgtE, skipMediumNodes, tgtNodes ))
-            return SMESH_ComputeError::New( COMPERR_BAD_INPUT_MESH,
-                                            "Invalid node parameters on edges");
+          const bool skipMedium = true, isFwd = true;
+          StdMeshers_FaceSide srcEdge( srcFace, srcWire->Edge(iE), srcMesh, isFwd, skipMedium);
+          StdMeshers_FaceSide tgtEdge( tgtFace, tgtWire->Edge(iE), tgtMesh, isFwd, skipMedium);
+          
+          vector< const SMDS_MeshNode* > srcNodes = srcEdge.GetOrderedNodes();
+          vector< const SMDS_MeshNode* > tgtNodes = tgtEdge.GetOrderedNodes();
 
           if (( srcNodes.size() != tgtNodes.size() ) && tgtNodes.size() > 0 )
             return SMESH_ComputeError::New( COMPERR_BAD_INPUT_MESH,
                                             "Different number of nodes on edges");
           if ( !tgtNodes.empty() )
           {
-            map< double, const SMDS_MeshNode* >::iterator u_tn = tgtNodes.begin();
-            if ( srcE.Orientation() == tgtE.Orientation() )
+            vector< const SMDS_MeshNode* >::iterator tn = tgtNodes.begin();
+            if ( srcWire->Edge(iE).Orientation() == tgtWire->Edge(iE).Orientation() )
             {
-              map< double, const SMDS_MeshNode* >::iterator u_sn = srcNodes.begin();
-              for ( ; u_tn != tgtNodes.end(); ++u_tn, ++u_sn)
-                src2tgtNodes.insert( make_pair( u_sn->second, u_tn->second ));
+              vector< const SMDS_MeshNode* >::iterator sn = srcNodes.begin();
+              for ( ; tn != tgtNodes.end(); ++tn, ++sn)
+                src2tgtNodes.insert( make_pair( *sn, *tn ));
             }
             else
             {
-              map< double, const SMDS_MeshNode* >::reverse_iterator u_sn = srcNodes.rbegin();
-              for ( ; u_tn != tgtNodes.end(); ++u_tn, ++u_sn)
-                src2tgtNodes.insert( make_pair( u_sn->second, u_tn->second ));
+              vector< const SMDS_MeshNode* >::reverse_iterator sn = srcNodes.rbegin();
+              for ( ; tn != tgtNodes.end(); ++tn, ++sn)
+                src2tgtNodes.insert( make_pair( *sn, *tn ));
             }
             is1DComputed = true;
           }
         }
       } // loop on EDGEs of a WIRE
 
-      tgtWires[ iW ].reset( new StdMeshers_FaceSide( tgtFace, tgtEdges, tgtMesh,
-                                                     /*theIsForward = */ true,
-                                                     /*theIgnoreMediumNodes = */false));
     } // loop on WIREs
 
     return TError();
@@ -670,7 +646,7 @@ namespace {
     // Make new faces
 
     // prepare the helper to adding quadratic elements if necessary
-    helper.SetSubShape( tgtFace );
+    //helper.SetSubShape( tgtFace );
     helper.IsQuadraticSubMesh( tgtFace );
 
     SMESHDS_SubMesh* srcSubDS = srcMeshDS->MeshElements( srcFace );

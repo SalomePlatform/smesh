@@ -455,7 +455,8 @@ const map < int, SMESH_subMesh * >& SMESH_subMesh::DependsOn()
  */
 //================================================================================
 
-namespace {
+namespace
+{
   int dependsOnMapKey( const SMESH_subMesh* sm )
   {
     int type = sm->GetSubShape().ShapeType();
@@ -479,6 +480,8 @@ void SMESH_subMesh::insertDependence(const TopoDS_Shape aShape,
   for ( ; sub.More(); sub.Next() )
   {
     SMESH_subMesh *aSubMesh = _father->GetSubMesh( sub.Current() );
+    if ( aSubMesh->GetId() == 0 )
+      continue;  // not a sub-shape of the shape to mesh
     int cle = dependsOnMapKey( aSubMesh );
     if ( _mapDepend.find( cle ) == _mapDepend.end())
     {
@@ -597,6 +600,7 @@ SMESH_Hypothesis::Hypothesis_Status
   // le retour des evenement father n'indiquent pas que add ou remove fait
 
   SMESH_Hypothesis::Hypothesis_Status aux_ret, ret = SMESH_Hypothesis::HYP_OK;
+  if ( _Id == 0 ) return ret; // not a sub-shape of the shape to mesh
 
   SMESHDS_Mesh* meshDS =_father->GetMeshDS();
   SMESH_Algo*   algo   = 0;
@@ -1003,8 +1007,8 @@ SMESH_Hypothesis::Hypothesis_Status
 
   // detect algorithm hiding
   //
-  if ( ret == SMESH_Hypothesis::HYP_OK &&
-       ( event == ADD_ALGO || event == ADD_FATHER_ALGO ) &&
+  if ( ret == SMESH_Hypothesis::HYP_OK && 
+       ( event == ADD_ALGO || event == ADD_FATHER_ALGO ) && algo && 
        algo->GetName() == anHyp->GetName() )
   {
     // is algo hidden?

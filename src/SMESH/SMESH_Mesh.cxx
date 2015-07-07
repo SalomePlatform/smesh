@@ -1117,7 +1117,7 @@ throw(SALOME_Exception)
 
 //================================================================================
 /*!
- * \brief Return submeshes of groups containing the given sub-shape
+ * \brief Return sub-meshes of groups containing the given sub-shape
  */
 //================================================================================
 
@@ -1131,8 +1131,8 @@ SMESH_Mesh::GetGroupSubMeshesContaining(const TopoDS_Shape & aSubShape) const
   if ( !subMesh )
     return found;
 
-  // submeshes of groups have max IDs, so search from the map end
-SMESH_subMeshIteratorPtr smIt( _subMeshHolder->GetIterator( /*reverse=*/true ) );
+  // sub-meshes of groups have max IDs, so search from the map end
+  SMESH_subMeshIteratorPtr smIt( _subMeshHolder->GetIterator( /*reverse=*/true ) );
   while ( smIt->more() ) {
     SMESH_subMesh*    sm = smIt->next();
     SMESHDS_SubMesh * ds = sm->GetSubMeshDS();
@@ -1157,6 +1157,12 @@ SMESH_subMeshIteratorPtr smIt( _subMeshHolder->GetIterator( /*reverse=*/true ) )
              SMESH_MesherHelper::IsSubShape( aSubShape, mainSM->GetSubShape() ))
           found.push_back( mainSM );
       }
+  }
+  else // issue 0023068
+  {
+    if ( SMESH_subMesh * mainSM = GetSubMeshContaining(1) )
+      if ( mainSM->GetSubShape().ShapeType() == TopAbs_COMPOUND )
+        found.push_back( mainSM );
   }
   return found;
 }

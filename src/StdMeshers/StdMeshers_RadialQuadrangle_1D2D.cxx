@@ -436,7 +436,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
   TopoDS_Edge CircEdge, LinEdge1, LinEdge2;
   int nbe = analyseFace( aShape, CircEdge, LinEdge1, LinEdge2 );
   Handle(Geom_Circle) aCirc = Handle(Geom_Circle)::DownCast( getCurve( CircEdge ));
-  if( nbe>3 || nbe < 1 || aCirc.IsNull() )
+  if( nbe > 3 || nbe < 1 || aCirc.IsNull() )
     return error("The face must be a full circle or a part of circle (i.e. the number "
                  "of edges is less or equal to 3 and one of them is a circle curve)");
 

@@ -73,8 +73,8 @@ class SMESHDS_EXPORT SMESHDS_SubMesh
   int getSize();
   void compactList();
 
-  SMESHDS_Mesh *GetParent()   { return myParent; }
-  int           GetID() const { return myIndex; }
+  SMESHDS_Mesh* GetParent() const { return const_cast< SMESHDS_Mesh*>( myParent ); }
+  int           GetID()     const { return myIndex; }
 
  private:
   SMESHDS_Mesh * myParent;

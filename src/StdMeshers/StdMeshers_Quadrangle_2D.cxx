@@ -609,7 +609,7 @@ bool StdMeshers_Quadrangle_2D::computeQuadDominant(SMESH_Mesh&         aMesh,
       int g = nbhoriz - 1; // last processed node in the regular grid
 
       ilow = 0;
-      iup = nbhoriz - 1;
+      iup  = nbhoriz - 1;
 
       int stop = 0;
       if ( quad->side[3].grid->Edge(0).IsNull() ) // left side is simulated one
@@ -667,7 +667,7 @@ bool StdMeshers_Quadrangle_2D::computeQuadDominant(SMESH_Mesh&         aMesh,
       for ( ; i > stop; i--) {
         a = uv_e2[i].node;
         b = uv_e2[i - 1].node;
-        gp_Pnt pb (b->X(), b->Y(), b->Z());
+        gp_Pnt pb = SMESH_TNodeXYZ( b );
 
         // find node c in the grid, which will be linked with node b
         int near = g;
@@ -683,7 +683,7 @@ bool StdMeshers_Quadrangle_2D::computeQuadDominant(SMESH_Mesh&         aMesh,
               nk = uv_e1[nbright - 2].node;
             else
               nk = quad->uv_grid[nbhoriz*(nbvertic - 2) + k].node;
-            gp_Pnt pnk (nk->X(), nk->Y(), nk->Z());
+            gp_Pnt pnk = SMESH_TNodeXYZ( nk );
             double dist = pb.Distance(pnk);
             if (dist < mind - eps) {
               c = nk;
@@ -4227,10 +4227,11 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
   theNbDegenEdges = 0;
 
   SMESH_MesherHelper helper( theMesh );
+  StdMeshers_FaceSide faceSide( theFace, theWire, &theMesh, /*isFwd=*/true, /*skipMedium=*/true);
 
   // sort theVertices by angle
   multimap<double, TopoDS_Vertex> vertexByAngle;
-  TopTools_DataMapOfShapeReal angleByVertex;
+  TopTools_DataMapOfShapeReal     angleByVertex;
   TopoDS_Edge prevE = theWire.back();
   if ( SMESH_Algo::isDegenerated( prevE ))
   {
@@ -4242,17 +4243,17 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
     prevE = *edge;
   }
   list<TopoDS_Edge>::iterator edge = theWire.begin();
-  for ( ; edge != theWire.end(); ++edge )
+  for ( int iE = 0; edge != theWire.end(); ++edge, ++iE )
   {
     if ( SMESH_Algo::isDegenerated( *edge ))
     {
       ++theNbDegenEdges;
       continue;
     }
-    TopoDS_Vertex v = helper.IthVertex( 0, *edge );
-    if ( !theConsiderMesh || SMESH_Algo::VertexNode( v, helper.GetMeshDS() ))
+    if ( !theConsiderMesh || faceSide.VertexNode( iE ))
     {
-      double angle = SMESH_MesherHelper::GetAngle( prevE, *edge, theFace, v );
+      TopoDS_Vertex v = helper.IthVertex( 0, *edge );
+      double    angle = SMESH_MesherHelper::GetAngle( prevE, *edge, theFace, v );
       vertexByAngle.insert( make_pair( angle, v ));
       angleByVertex.Bind( v, angle );
     }
@@ -4271,6 +4272,14 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
     triaVertex.Nullify();
 
   // check nb of available corners
+  if ( faceSide.NbEdges() < nbCorners )
+    return error(COMPERR_BAD_SHAPE,
+                 TComm("Face must have 4 sides but not ") << faceSide.NbEdges() );
+
+  const int nbSegments = Max( faceSide.NbPoints()-1, faceSide.NbSegments() );
+  if ( nbSegments < nbCorners )
+    return error(COMPERR_BAD_INPUT_MESH, TComm("Too few boundary nodes: ") << nbSegments);
+
   if ( nbCorners == 3 )
   {
     if ( vertexByAngle.size() < 3 )
