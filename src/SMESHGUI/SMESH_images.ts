@@ -599,6 +599,10 @@
             <source>ICON_SPLIT_TO_TETRA</source>
             <translation>split_into_tetra.png</translation>
         </message>
+        <message>
+            <source>ICON_SPLIT_BIQUAD</source>
+            <translation>split_biquad.png</translation>
+        </message>
 	<message>
             <source>ICON_MEASURE_LENGTH</source>
             <translation>mesh_measure_length.png</translation>

@@ -43,6 +43,8 @@ transformation operations, giving the possibility to:
   triangles.</li>
 <li>\subpage split_to_tetra_page "Split" volumic elements into
   tetrahedra or prisms.</li>
+<li>\subpage split_biquad_to_linear_page "Split bi-quadratic" elements
+  into linear ones without creation of additional nodes.</li>
 <li>\subpage smoothing_page "Smooth" elements, reducung distortions in
   them by adjusting the locations of nodes.</li>
 <li>Create an \subpage extrusion_page "extrusion" along a vector or by

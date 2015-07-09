@@ -203,6 +203,7 @@ SET(SMESH_RESOURCES_FILES
   scale.png
   scale_along_axes.png
   split_into_tetra.png
+  split_biquad.png
   mesh_duplicate_nodes.png
   mesh_duplicate_nodes_with_elem.png
   mesh_duplicate_elem_only.png

@@ -82,6 +82,7 @@
 #include "SMESHGUI_TranslationDlg.h"
 #include "SMESHGUI_TransparencyDlg.h"
 #include "SMESHGUI_DisplayEntitiesDlg.h"
+#include "SMESHGUI_SplitBiQuad.h"
 
 #include "SMESHGUI_FilterUtils.h"
 #include "SMESHGUI_GEOMGenUtils.h"
@@ -2853,6 +2854,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
       break;
     }
+  case SMESHOp::OpSplitBiQuadratic:
   case SMESHOp::OpConvertMeshToQuadratic:
   case SMESHOp::OpCreateBoundaryElements: // create 2D mesh from 3D
   case SMESHOp::OpReorientFaces:
@@ -3942,6 +3944,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpUnionOfTriangles,       "UNION",           "ICON_UNIONTRI" );
   createSMESHAction( SMESHOp::OpCuttingOfQuadrangles,   "CUT",             "ICON_CUTQUAD" );
   createSMESHAction( SMESHOp::OpSplitVolumes,           "SPLIT_TO_TETRA",  "ICON_SPLIT_TO_TETRA" );
+  createSMESHAction( SMESHOp::OpSplitBiQuadratic,       "SPLIT_BIQUAD",    "ICON_SPLIT_BIQUAD" );
   createSMESHAction( SMESHOp::OpSmoothing,              "SMOOTH",          "ICON_DLG_SMOOTHING" );
   createSMESHAction( SMESHOp::OpExtrusion,              "EXTRUSION",       "ICON_EXTRUSION" );
   createSMESHAction( SMESHOp::OpExtrusionAlongAPath,    "EXTRUSION_ALONG", "ICON_EXTRUSION_ALONG" );
@@ -4177,6 +4180,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( SMESHOp::OpUnionOfTriangles,       modifyId, -1 );
   createMenu( SMESHOp::OpCuttingOfQuadrangles,   modifyId, -1 );
   createMenu( SMESHOp::OpSplitVolumes,           modifyId, -1 );
+  createMenu( SMESHOp::OpSplitBiQuadratic,       modifyId, -1 );
   createMenu( SMESHOp::OpSmoothing,              modifyId, -1 );
   createMenu( SMESHOp::OpExtrusion,              modifyId, -1 );
   createMenu( SMESHOp::OpExtrusionAlongAPath ,   modifyId, -1 );
@@ -4312,6 +4316,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( SMESHOp::OpUnionOfTriangles,       modifyTb );
   createTool( SMESHOp::OpCuttingOfQuadrangles,   modifyTb );
   createTool( SMESHOp::OpSplitVolumes,           modifyTb );
+  createTool( SMESHOp::OpSplitBiQuadratic,       modifyTb );
   createTool( SMESHOp::OpSmoothing,              modifyTb );
   createTool( SMESHOp::OpExtrusion,              modifyTb );
   createTool( SMESHOp::OpExtrusionAlongAPath,    modifyTb );
@@ -5480,6 +5485,9 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
   // to do : create operation here
   switch( id )
   {
+    case SMESHOp::OpSplitBiQuadratic:
+      op = new SMESHGUI_SplitBiQuadOp();
+    break;
     case SMESHOp::OpConvertMeshToQuadratic:
       op = new SMESHGUI_ConvToQuadOp();
     break;

@@ -2086,7 +2086,7 @@ void SMESH_MeshEditor_i::SplitVolumesIntoTetra (SMESH::SMESH_IDSource_ptr elems,
  */
 //================================================================================
 
-void SMESH_MeshEditor_i::SplitHexahedraIntoPrisms (SMESH::SMESH_IDSource_ptr  elems,
+void SMESH_MeshEditor_i::SplitHexahedraIntoPrisms( SMESH::SMESH_IDSource_ptr  elems,
                                                    const SMESH::PointStruct & startHexPoint,
                                                    const SMESH::DirStruct&    facetToSplitNormal,
                                                    CORBA::Short               methodFlags,
@@ -2134,6 +2134,44 @@ void SMESH_MeshEditor_i::SplitHexahedraIntoPrisms (SMESH::SMESH_IDSource_ptr  el
                 << facetToSplitNormal<< ", "
                 << methodFlags<< ", "
                 << allDomains << " )";
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+}
+
+//================================================================================
+/*!
+ * \brief Split bi-quadratic elements into linear ones without creation of additional nodes:
+ *   - bi-quadratic triangle will be split into 3 linear quadrangles;
+ *   - bi-quadratic quadrangle will be split into 4 linear quadrangles;
+ *   - tri-quadratic hexahedron will be split into 8 linear hexahedra.
+ *   Quadratic elements of lower dimension  adjacent to the split bi-quadratic element
+ *   will be split in order to keep the mesh conformal.
+ *  \param elems - elements to split
+ */
+//================================================================================
+
+void SMESH_MeshEditor_i::SplitBiQuadraticIntoLinear(const SMESH::ListOfIDSources& theElems)
+  throw (SALOME::SALOME_Exception)
+{
+  SMESH_TRY;
+  initData();
+
+  TIDSortedElemSet elemSet;
+  for ( size_t i = 0; i < theElems.length(); ++i )
+  {
+    SMESH::SMESH_IDSource_ptr elems = theElems[i].in();
+    SMESH::SMESH_Mesh_var      mesh = elems->GetMesh();
+    if ( mesh->GetId() != myMesh_i->GetId() )
+      THROW_SALOME_CORBA_EXCEPTION("Wrong mesh of IDSource", SALOME::BAD_PARAM);
+
+    idSourceToSet( elems, getMeshDS(), elemSet, SMDSAbs_All );
+  }
+  getEditor().SplitBiQuadraticIntoLinear( elemSet );
+
+  declareMeshModified( /*isReComputeSafe=*/true ); // it does not influence Compute()
+
+  TPythonDump() << this << ".SplitBiQuadraticIntoLinear( "
+                << theElems << " )";
 
   SMESH_CATCH( SMESH::throwCorbaException );
 }

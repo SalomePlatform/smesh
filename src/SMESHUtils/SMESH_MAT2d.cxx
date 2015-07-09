@@ -66,8 +66,8 @@ namespace
 
   struct InPoint
   {
-    int _a, _b;
-    double _param;
+    int _a, _b;    // coordinates
+    double _param; // param on EDGE
     InPoint(int x, int y, double param) : _a(x), _b(y), _param(param) {}
     InPoint() : _a(0), _b(0), _param(0) {}
 
@@ -773,7 +773,7 @@ namespace
       inPoints[0]._edges.clear();
     }
 
-    // Divide InSegment's into BndSeg's
+    // Divide InSegment's into BndSeg's (each BndSeg corresponds to one MA edge)
 
     vector< BndSeg > bndSegs;
     bndSegs.reserve( inSegments.size() * 3 );
@@ -791,25 +791,26 @@ namespace
       inPntChecked[ ip0 ] = false;
 
       // segments of InSegment's
-      size_t nbMaEdges = inSeg._edges.size();
+      const size_t nbMaEdges = inSeg._edges.size();
       switch ( nbMaEdges ) {
       case 0: // "around" circle center
         bndSegs.push_back( BndSeg( &inSeg, 0, inSeg._p1->_param )); break;
       case 1:
         bndSegs.push_back( BndSeg( &inSeg, inSeg._edges.back(), inSeg._p1->_param )); break;
       default:
-        vector< double > len;
-        len.push_back(0);
-        for ( e = inSeg._edges.rbegin(); e != inSeg._edges.rend(); ++e )
-          len.push_back( len.back() + length( *e ));
-
+        gp_XY inSegDir( inSeg._p1->_a - inSeg._p0->_a,
+                        inSeg._p1->_b - inSeg._p0->_b );
+        const double inSegLen2 = inSegDir.SquareModulus();
         e = inSeg._edges.rbegin();
-        for ( size_t l = 1; l < len.size(); ++e, ++l )
+        for ( size_t iE = 1; iE < nbMaEdges; ++e, ++iE )
         {
-          double dl = len[l] / len.back();
-          double u  = dl * inSeg._p1->_param + ( 1. - dl ) * inSeg._p0->_param;
+          gp_XY toMA( (*e)->vertex0()->x() - inSeg._p0->_a,
+                      (*e)->vertex0()->y() - inSeg._p0->_b );
+          double r = toMA * inSegDir / inSegLen2;
+          double u = r * inSeg._p1->_param + ( 1. - r ) * inSeg._p0->_param;
           bndSegs.push_back( BndSeg( &inSeg, *e, u ));
         }
+        bndSegs.push_back( BndSeg( &inSeg, *e, inSeg._p1->_param ));
       }
       // segments around 2nd concave point
       size_t ip1 = inSeg._p1->index( inPoints );

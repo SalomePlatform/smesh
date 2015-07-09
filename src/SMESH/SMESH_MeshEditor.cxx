@@ -2239,6 +2239,7 @@ void SMESH_MeshEditor::SplitVolumes (const TFacetOfElem & theElems,
   // map face of volume to it's baricenrtic node
   map< TVolumeFaceKey, const SMDS_MeshNode* > volFace2BaryNode;
   double bc[3];
+  vector<const SMDS_MeshElement* > splitVols;
 
   TFacetOfElem::const_iterator elem2facet = theElems.begin();
   for ( ; elem2facet != theElems.end(); ++elem2facet )
@@ -2314,7 +2315,7 @@ void SMESH_MeshEditor::SplitVolumes (const TFacetOfElem & theElems,
     }
 
     // make new volumes
-    vector<const SMDS_MeshElement* > splitVols( splitMethod._nbSplits ); // splits of a volume
+    splitVols.resize( splitMethod._nbSplits ); // splits of a volume
     const int* volConn = splitMethod._connectivity;
     if ( splitMethod._nbCorners == 4 ) // tetra
       for ( int i = 0; i < splitMethod._nbSplits; ++i, volConn += splitMethod._nbCorners )
@@ -2619,7 +2620,7 @@ void SMESH_MeshEditor::GetHexaFacetsToSplit( TIDSortedElemSet& theHexas,
 
       startHex = curHex;
 
-      // find a facet of startHex to split 
+      // find a facet of startHex to split
 
       set<const SMDS_MeshNode*> lateralNodes;
       vTool.GetFaceNodes( lateralFacet, lateralNodes );
@@ -2649,6 +2650,188 @@ void SMESH_MeshEditor::GetHexaFacetsToSplit( TIDSortedElemSet& theHexas,
         throw SALOME_Exception( THIS_METHOD "facet of a new startHex not found");
     }
   } //   while ( startHex )
+
+  return;
+}
+
+namespace
+{
+  //================================================================================
+  /*!
+   * \brief Selects nodes of several elements according to a given interlace
+   *  \param [in] srcNodes - nodes to select from
+   *  \param [out] tgtNodesVec - array of nodes of several elements to fill in
+   *  \param [in] interlace - indices of nodes for all elements
+   *  \param [in] nbElems - nb of elements
+   *  \param [in] nbNodes - nb of nodes in each element
+   *  \param [in] mesh - the mesh
+   *  \param [out] elemQueue - a list to push elements found by the selected nodes
+   *  \param [in] type - type of elements to look for
+   */
+  //================================================================================
+
+  void selectNodes( const vector< const SMDS_MeshNode* >& srcNodes,
+                    vector< const SMDS_MeshNode* >*       tgtNodesVec,
+                    const int*                            interlace,
+                    const int                             nbElems,
+                    const int                             nbNodes,
+                    SMESHDS_Mesh*                         mesh = 0,
+                    list< const SMDS_MeshElement* >*      elemQueue=0,
+                    SMDSAbs_ElementType                   type=SMDSAbs_All)
+  {
+    for ( int iE = 0; iE < nbElems; ++iE )
+    {
+      vector< const SMDS_MeshNode* >& elemNodes = tgtNodesVec[iE];
+      const int*                         select = & interlace[iE*nbNodes];
+      elemNodes.resize( nbNodes );
+      for ( int iN = 0; iN < nbNodes; ++iN )
+        elemNodes[iN] = srcNodes[ select[ iN ]];
+    }
+    const SMDS_MeshElement* e;
+    if ( elemQueue )
+      for ( int iE = 0; iE < nbElems; ++iE )
+        if (( e = mesh->FindElement( tgtNodesVec[iE], type, /*noMedium=*/false)))
+          elemQueue->push_back( e );
+  }
+}
+
+//=======================================================================
+/*
+ * Split bi-quadratic elements into linear ones without creation of additional nodes
+ *   - bi-quadratic triangle will be split into 3 linear quadrangles;
+ *   - bi-quadratic quadrangle will be split into 4 linear quadrangles;
+ *   - tri-quadratic hexahedron will be split into 8 linear hexahedra;
+ *   Quadratic elements of lower dimension  adjacent to the split bi-quadratic element
+ *   will be split in order to keep the mesh conformal.
+ *  \param elems - elements to split
+ */
+//=======================================================================
+
+void SMESH_MeshEditor::SplitBiQuadraticIntoLinear(TIDSortedElemSet& theElems)
+{
+  vector< const SMDS_MeshNode* > elemNodes(27), subNodes[12], splitNodes[8];
+  vector<const SMDS_MeshElement* > splitElems;
+  list< const SMDS_MeshElement* > elemQueue;
+  list< const SMDS_MeshElement* >::iterator elemIt;
+
+  SMESHDS_Mesh * mesh = GetMeshDS();
+  ElemFeatures *elemType, hexaType(SMDSAbs_Volume), quadType(SMDSAbs_Face), segType(SMDSAbs_Edge);
+  int nbElems, nbNodes;
+
+  TIDSortedElemSet::iterator elemSetIt = theElems.begin();
+  for ( ; elemSetIt != theElems.end(); ++elemSetIt )
+  {
+    elemQueue.clear();
+    elemQueue.push_back( *elemSetIt );
+    for ( elemIt = elemQueue.begin(); elemIt != elemQueue.end(); ++elemIt )
+    {
+      const SMDS_MeshElement* elem = *elemIt;
+      switch( elem->GetEntityType() )
+      {
+      case SMDSEntity_TriQuad_Hexa: // HEX27
+      {
+        elemNodes.assign( elem->begin_nodes(), elem->end_nodes() );
+        nbElems  = nbNodes = 8;
+        elemType = & hexaType;
+
+        // get nodes for new elements
+        static int vInd[8][8] = {{ 0,8,20,11,   16,21,26,24 },
+                                 { 1,9,20,8,    17,22,26,21 },
+                                 { 2,10,20,9,   18,23,26,22 },
+                                 { 3,11,20,10,  19,24,26,23 },
+                                 { 16,21,26,24, 4,12,25,15  },
+                                 { 17,22,26,21, 5,13,25,12  },
+                                 { 18,23,26,22, 6,14,25,13  },
+                                 { 19,24,26,23, 7,15,25,14  }};
+        selectNodes( elemNodes, & splitNodes[0], &vInd[0][0], nbElems, nbNodes );
+
+        // add boundary faces to elemQueue
+        static int fInd[6][9] = {{ 0,1,2,3, 8,9,10,11,   20 },
+                                 { 4,5,6,7, 12,13,14,15, 25 },
+                                 { 0,1,5,4, 8,17,12,16,  21 },
+                                 { 1,2,6,5, 9,18,13,17,  22 },
+                                 { 2,3,7,6, 10,19,14,18, 23 },
+                                 { 3,0,4,7, 11,16,15,19, 24 }};
+        selectNodes( elemNodes, & subNodes[0], &fInd[0][0], 6,9, mesh, &elemQueue, SMDSAbs_Face );
+
+        // add boundary segments to elemQueue
+        static int eInd[12][3] = {{ 0,1,8 }, { 1,2,9 }, { 2,3,10 }, { 3,0,11 },
+                                  { 4,5,12}, { 5,6,13}, { 6,7,14 }, { 7,4,15 },
+                                  { 0,4,16}, { 1,5,17}, { 2,6,18 }, { 3,7,19 }};
+        selectNodes( elemNodes, & subNodes[0], &eInd[0][0], 12,3, mesh, &elemQueue, SMDSAbs_Edge );
+        break;
+      }
+      case SMDSEntity_BiQuad_Triangle: // TRIA7
+      {
+        elemNodes.assign( elem->begin_nodes(), elem->end_nodes() );
+        nbElems = 3;
+        nbNodes = 4;
+        elemType = & quadType;
+
+        // get nodes for new elements
+        static int fInd[3][4] = {{ 0,3,6,5 }, { 1,4,6,3 }, { 2,5,6,4 }};
+        selectNodes( elemNodes, & splitNodes[0], &fInd[0][0], nbElems, nbNodes );
+
+        // add boundary segments to elemQueue
+        static int eInd[3][3] = {{ 0,1,3 }, { 1,2,4 }, { 2,0,5 }};
+        selectNodes( elemNodes, & subNodes[0], &eInd[0][0], 3,3, mesh, &elemQueue, SMDSAbs_Edge );
+        break;
+      }
+      case SMDSEntity_BiQuad_Quadrangle: // QUAD9
+      {
+        elemNodes.assign( elem->begin_nodes(), elem->end_nodes() );
+        nbElems = 4;
+        nbNodes = 4;
+        elemType = & quadType;
+
+        // get nodes for new elements
+        static int fInd[4][4] = {{ 0,4,8,7 }, { 1,5,8,4 }, { 2,6,8,5 }, { 3,7,8,6 }};
+        selectNodes( elemNodes, & splitNodes[0], &fInd[0][0], nbElems, nbNodes );
+
+        // add boundary segments to elemQueue
+        static int eInd[4][3] = {{ 0,1,4 }, { 1,2,5 }, { 2,3,6 }, { 3,0,7 }};
+        selectNodes( elemNodes, & subNodes[0], &eInd[0][0], 4,3, mesh, &elemQueue, SMDSAbs_Edge );
+        break;
+      }
+      case SMDSEntity_Quad_Edge:
+      {
+        if ( elemIt == elemQueue.begin() )
+          continue; // an elem is in theElems
+        elemNodes.assign( elem->begin_nodes(), elem->end_nodes() );
+        nbElems = 2;
+        nbNodes = 2;
+        elemType = & segType;
+
+        // get nodes for new elements
+        static int eInd[2][2] = {{ 0,2 }, { 2,1 }};
+        selectNodes( elemNodes, & splitNodes[0], &eInd[0][0], nbElems, nbNodes );
+        break;
+      }
+      default: continue;
+      } // switch( elem->GetEntityType() )
+
+      // Create new elements
+
+      SMESHDS_SubMesh* subMesh = mesh->MeshElements( elem->getshapeId() );
+
+      splitElems.clear();
+
+      //elemType->SetID( elem->GetID() ); // create an elem with the same ID as a removed one
+      mesh->RemoveFreeElement( elem, subMesh, /*fromGroups=*/false );
+      //splitElems.push_back( AddElement( splitNodes[ 0 ], *elemType ));
+      //elemType->SetID( -1 );
+
+      for ( int iE = 0; iE < nbElems; ++iE )
+        splitElems.push_back( AddElement( splitNodes[ iE ], *elemType ));
+
+
+      ReplaceElemInGroups( elem, splitElems, mesh );
+
+      if ( subMesh )
+        for ( size_t i = 0; i < splitElems.size(); ++i )
+          subMesh->AddElement( splitElems[i] );
+    }
+  }
 }
 
 //=======================================================================

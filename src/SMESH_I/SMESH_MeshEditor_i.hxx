@@ -221,7 +221,7 @@ public:
                              CORBA::Boolean                 outsideNormal)
     throw (SALOME::SALOME_Exception);
 
-  // Split/Join faces
+  // Split/Join
   CORBA::Boolean TriToQuad       (const SMESH::long_array &   IDsOfElements,
                                   SMESH::NumericalFunctor_ptr Criterion,
                                   CORBA::Double               MaxAngle)
@@ -255,6 +255,8 @@ public:
                                           const SMESH::DirStruct&    facetToSplitNormal,
                                           CORBA::Short               methodFlags,
                                           CORBA::Boolean             allDomains)
+    throw (SALOME::SALOME_Exception);
+  void           SplitBiQuadraticIntoLinear(const SMESH::ListOfIDSources& elems)
     throw (SALOME::SALOME_Exception);
 
   CORBA::Boolean Smooth(const SMESH::long_array &              IDsOfElements,

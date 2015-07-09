@@ -221,7 +221,7 @@ public:
 
   /*!
    * \brief For hexahedra that will be split into prisms, finds facets to
-   *        split into triangles 
+   *        split into triangles
    *  \param [in,out] theHexas - the hexahedra
    *  \param [in]     theFacetNormal - facet normal
    *  \param [out]    theFacets - the hexahedra and found facet IDs
@@ -230,6 +230,16 @@ public:
                              const gp_Ax1&     theFacetNormal,
                              TFacetOfElem &    theFacets);
 
+  /*!
+   * \brief Split bi-quadratic elements into linear ones without creation of additional nodes
+   *   - bi-quadratic triangle will be split into 3 linear quadrangles;
+   *   - bi-quadratic quadrangle will be split into 4 linear quadrangles;
+   *   - tri-quadratic hexahedron will be split into 8 linear hexahedra;
+   *   Quadratic elements of lower dimension  adjacent to the split bi-quadratic element
+   *   will be split in order to keep the mesh conformal.
+   *  \param elems - elements to split
+   */
+  void SplitBiQuadraticIntoLinear(TIDSortedElemSet& theElems);
 
   enum SmoothMethod { LAPLACIAN = 0, CENTROIDAL };
 

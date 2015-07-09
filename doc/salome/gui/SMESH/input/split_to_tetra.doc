@@ -7,7 +7,7 @@ tetrahedra or hexahedra into prisms. 2D mesh is modified accordingly.
 
 <em>To split volumes:</em>
 <ol>
-<li>Display a mesh, a sub-mesh or a group in the 3D viewer.</li>
+<li>Select a mesh, a sub-mesh or a group.</li>
 <li>In the \b Modification menu select the <b>Split Volumes</b> item or
 click <em>"Split Volumes"</em> button in the toolbar.
 

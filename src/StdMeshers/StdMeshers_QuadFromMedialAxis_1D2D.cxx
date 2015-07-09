@@ -134,13 +134,14 @@ namespace
    */
   struct SinuousFace
   {
-    FaceQuadStruct::Ptr   _quad;
-    vector< TopoDS_Edge > _edges;
-    vector< TopoDS_Edge > _sinuSide[2], _shortSide[2];
-    vector< TopoDS_Edge > _sinuEdges;
-    int                   _nbWires;
-    list< int >           _nbEdgesInWire;
-    TMergeMap             _nodesToMerge;
+    FaceQuadStruct::Ptr          _quad;
+    vector< TopoDS_Edge >        _edges;
+    vector< TopoDS_Edge >        _sinuSide[2], _shortSide[2];
+    vector< TopoDS_Edge >        _sinuEdges;
+    vector< Handle(Geom_Curve) > _sinuCurves;
+    int                          _nbWires;
+    list< int >                  _nbEdgesInWire;
+    TMergeMap                    _nodesToMerge;
 
     SinuousFace( const TopoDS_Face& f ): _quad( new FaceQuadStruct )
     {
@@ -830,11 +831,11 @@ namespace
    */
   //================================================================================
 
-  bool findVertex( NodePoint&                  theNodePnt,
-                   const vector<TopoDS_Edge>&  theSinuEdges,
-                   size_t                      theEdgeIndPrev,
-                   size_t                      theEdgeIndNext,
-                   SMESHDS_Mesh*               theMeshDS)
+  bool findVertexAndNode( NodePoint&                  theNodePnt,
+                          const vector<TopoDS_Edge>&  theSinuEdges,
+                          SMESHDS_Mesh*               theMeshDS = 0,
+                          size_t                      theEdgeIndPrev = 0,
+                          size_t                      theEdgeIndNext = 0)
   {
     if ( theNodePnt._edgeInd >= theSinuEdges.size() )
       return false;
@@ -851,7 +852,7 @@ namespace
     else if ( theEdgeIndPrev != theEdgeIndNext )
       TopExp::CommonVertex( theSinuEdges[theEdgeIndPrev], theSinuEdges[theEdgeIndNext], V );
 
-    if ( !V.IsNull() )
+    if ( !V.IsNull() && theMeshDS )
     {
       theNodePnt._node = SMESH_Algo::VertexNode( V, theMeshDS );
       if ( !theNodePnt._node )
@@ -860,9 +861,8 @@ namespace
         theNodePnt._node = theMeshDS->AddNode( p.X(), p.Y(), p.Z() );
         theMeshDS->SetNodeOnVertex( theNodePnt._node, V );
       }
-      return true;
     }
-    return false;
+    return !V.IsNull();
   }
 
   //================================================================================
@@ -881,41 +881,44 @@ namespace
   //================================================================================
 
   bool projectVertices( SMESH_MesherHelper&                           theHelper,
-                        //const double                                  theMinSegLen,
                         const SMESH_MAT2d::MedialAxis&                theMA,
                         const vector< SMESH_MAT2d::BranchPoint >&     theDivPoints,
                         const vector< std::size_t > &                 theEdgeIDs1,
                         const vector< std::size_t > &                 theEdgeIDs2,
-                        const vector<TopoDS_Edge>&                    theSinuEdges,
-                        const vector< Handle(Geom_Curve) >&           theCurves,
                         const vector< bool >&                         theIsEdgeComputed,
                         map< double, pair< NodePoint, NodePoint > > & thePointsOnE,
-                        TMergeMap&                                    theNodes2Merge)
+                        SinuousFace&                                  theSinuFace)
   {
-    if ( theDivPoints.empty() )
-      return true;
-
     SMESHDS_Mesh* meshDS = theHelper.GetMeshDS();
+    const vector<TopoDS_Edge>&       theSinuEdges = theSinuFace._sinuEdges;
+    const vector< Handle(Geom_Curve) >& theCurves = theSinuFace._sinuCurves;
 
     double uMA;
     SMESH_MAT2d::BoundaryPoint bp[2];
     const SMESH_MAT2d::Branch& branch = *theMA.getBranch(0);
 
-    // fill a map holding NodePoint's of ends of theSinuEdges
-    map< double, pair< NodePoint, NodePoint > > extremaNP;
-    map< double, pair< NodePoint, NodePoint > >::iterator u2NP0, u2NP1;
+    // add to thePointsOnE NodePoint's of ends of theSinuEdges
     if ( !branch.getBoundaryPoints( 0., bp[0], bp[1] ) ||
          !theMA.getBoundary().moveToClosestEdgeEnd( bp[0] ) ||
          !theMA.getBoundary().moveToClosestEdgeEnd( bp[1] )) return false;
-    u2NP0 = extremaNP.insert
-      ( make_pair( 0., make_pair( NodePoint( bp[0]), NodePoint( bp[1])))).first;
+    NodePoint np0( bp[0]), np1( bp[1] );
+    findVertexAndNode( np0, theSinuEdges, meshDS );
+    findVertexAndNode( np1, theSinuEdges, meshDS );
+    thePointsOnE.insert( make_pair( -0.1, make_pair( np0, np1 )));
+
     if ( !branch.getBoundaryPoints( 1., bp[0], bp[1] ) ||
          !theMA.getBoundary().moveToClosestEdgeEnd( bp[0] ) ||
          !theMA.getBoundary().moveToClosestEdgeEnd( bp[1] )) return false;
-    u2NP1 = extremaNP.insert
-      ( make_pair( 1., make_pair( NodePoint( bp[0]), NodePoint( bp[1])))).first;
+    np0 = bp[0]; np1 = bp[1];
+    findVertexAndNode( np0, theSinuEdges, meshDS );
+    findVertexAndNode( np1, theSinuEdges, meshDS );
+    thePointsOnE.insert( make_pair( 1.1, make_pair( np0, np1)));
 
     // project theDivPoints
+
+    if ( theDivPoints.empty() )
+      return true;
+
     for ( size_t i = 0; i < theDivPoints.size(); ++i )
     {
       if ( !branch.getParameter( theDivPoints[i], uMA ))
@@ -928,8 +931,8 @@ namespace
         NodePoint( bp[1] )
       };
       bool isVertex[2] = {
-        findVertex( np[0], theSinuEdges, theEdgeIDs1[i], theEdgeIDs1[i+1], meshDS ),
-        findVertex( np[1], theSinuEdges, theEdgeIDs2[i], theEdgeIDs2[i+1], meshDS )
+        findVertexAndNode( np[0], theSinuEdges, meshDS, theEdgeIDs1[i], theEdgeIDs1[i+1] ),
+        findVertexAndNode( np[1], theSinuEdges, meshDS, theEdgeIDs2[i], theEdgeIDs2[i+1] )
       };
 
       map< double, pair< NodePoint, NodePoint > >::iterator u2NP =
@@ -957,10 +960,10 @@ namespace
       bool isShortPrev[2], isShortNext[2];
       map< double, pair< NodePoint, NodePoint > >::iterator u2NPPrev = u2NP, u2NPNext = u2NP;
       --u2NPPrev; ++u2NPNext;
-      bool hasPrev = ( u2NP     != thePointsOnE.begin() );
-      bool hasNext = ( u2NPNext != thePointsOnE.end() );
-      if ( !hasPrev ) u2NPPrev = u2NP0;
-      if ( !hasNext ) u2NPNext = u2NP1;
+      // bool hasPrev = ( u2NP     != thePointsOnE.begin() );
+      // bool hasNext = ( u2NPNext != thePointsOnE.end() );
+      // if ( !hasPrev ) u2NPPrev = u2NP0;
+      // if ( !hasNext ) u2NPNext = u2NP1;
       for ( int iS = 0; iS < 2; ++iS ) // side with Vertex and side with Nodes
       {
         NodePoint np     = get( u2NP->second,     iS );
@@ -1003,17 +1006,132 @@ namespace
         u2NPClose = isShortPrev[ iNode ] ? u2NPPrev : u2NPNext;
         NodePoint& npProj   = get( u2NP->second,      iNode ); // NP of VERTEX projection
         NodePoint& npCloseN = get( u2NPClose->second, iNode ); // NP close to npProj
-        // npProj._edgeInd = npCloseN._edgeInd;
+        npProj = npCloseN;
+        npProj._node = 0;
+        //npProj._edgeInd = npCloseN._edgeInd;
         // npProj._u       = npCloseN._u + 1e-3 * Abs( get( u2NPPrev->second, iNode )._u -
         //                                             get( u2NPNext->second, iNode )._u );
-        gp_Pnt        p = npProj.Point( theCurves );
-        npProj._node    = meshDS->AddNode( p.X(), p.Y(), p.Z() );
-        meshDS->SetNodeOnEdge( npProj._node, theSinuEdges[ npProj._edgeInd ], npProj._u  );
+        // gp_Pnt        p = npProj.Point( theCurves );
+        // npProj._node    = meshDS->AddNode( p.X(), p.Y(), p.Z() );
+        // meshDS->SetNodeOnEdge( npProj._node, theSinuEdges[ npProj._edgeInd ], npProj._u  );
 
-        theNodes2Merge[ npCloseN._node ].push_back( npProj._node );
+        //theNodes2Merge[ npCloseN._node ].push_back( npProj._node );
       }
     }
     return true;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Move coincident nodes to make node params on EDGE unique
+   *  \param [in] theHelper - the helper
+   *  \param [in] thePointsOnE - nodes on two opposite river sides
+   *  \param [in] theSinuFace - the sinuous FACE
+   *  \param [out] theNodes2Merge - the map of nodes to merge
+   */
+  //================================================================================
+
+  void separateNodes( SMESH_MesherHelper&                           theHelper,
+                      map< double, pair< NodePoint, NodePoint > > & thePointsOnE,
+                      SinuousFace&                                  theSinuFace )
+  {
+    if ( thePointsOnE.size() < 2 )
+      return;
+
+    SMESHDS_Mesh* meshDS = theHelper.GetMeshDS();
+    const vector<TopoDS_Edge>& theSinuEdges = theSinuFace._sinuEdges;
+
+    typedef map< double, pair< NodePoint, NodePoint > >::iterator TIterator;
+
+    for ( int iSide = 0; iSide < 2; ++iSide )
+    {
+      TIterator u2NP0, u2NP1, u2NP = thePointsOnE.begin();
+      while ( u2NP != thePointsOnE.end() )
+      {
+        while ( u2NP != thePointsOnE.end() &&
+                get( u2NP->second, iSide )._node )
+          ++u2NP; // skip NP with an existing node (VERTEXes must be meshed)
+        if ( u2NP == thePointsOnE.end() )
+          break;
+
+        // find a range of not meshed NP on one EDGE
+        u2NP0 = u2NP;
+        if ( !findVertexAndNode( get( u2NP0->second, iSide ), theSinuEdges ))
+          --u2NP0;
+        int iCurEdge = get( u2NP->second, iSide )._edgeInd;
+        int nbNP = 1;
+        while ( get( u2NP->second, iSide )._edgeInd == iCurEdge &&
+                get( u2NP->second, iSide )._node == 0 )
+          ++u2NP, ++nbNP;
+        u2NP1 = u2NP; // end of not meshed NP on iCurEdge
+
+        // fix parameters of extremity NP of the range
+        NodePoint* np0 = & get( u2NP0->second, iSide );
+        NodePoint* np1 = & get( u2NP1->second, iSide );
+        const TopoDS_Edge& edge = TopoDS::Edge( theSinuFace._sinuEdges[ iCurEdge ]);
+        if ( np0->_node && np0->_edgeInd != iCurEdge )
+        {
+          np0->_u       = theHelper.GetNodeU( edge, np0->_node );
+          np0->_edgeInd = iCurEdge;
+        }
+        if ( np1->_node && np1->_edgeInd != iCurEdge )
+        {
+          np1->_u       = theHelper.GetNodeU( edge, np1->_node );
+          np1->_edgeInd = iCurEdge;
+        }
+
+        // find coincident NPs
+        double f,l;
+        BRep_Tool::Range( edge, f,l );
+        double tol = 1e-2* (l-f) / nbNP;
+        TIterator u2NPEq = thePointsOnE.end();
+        u2NP = u2NP0;
+        for ( ++u2NP; u2NP0 != u2NP1; ++u2NP, ++u2NP0 )
+        {
+          np0 = & get( u2NP0->second, iSide );
+          np1 = & get( u2NP->second,  iSide );
+          bool coincides = ( Abs( np0->_u - np1->_u ) < tol );
+          if ( coincides && u2NPEq == thePointsOnE.end() )
+            u2NPEq = u2NP0;
+
+          if (( u2NPEq != thePointsOnE.end() ) &&
+              ( u2NP == u2NP1 || !coincides ))
+          {
+            if ( !get( u2NPEq->second, iSide )._node )
+              --u2NPEq;
+            if ( coincides && !get( u2NP->second, iSide )._node && u2NP0 != u2NP1 )
+              ++u2NP;
+
+            // distribute nodes between u2NPEq and u2NP
+            size_t nbSeg = std::distance( u2NPEq, u2NP );
+            double    du = 1. / nbSeg * ( get( u2NP->second,   iSide )._u -
+                                          get( u2NPEq->second, iSide )._u );
+            double     u = get( u2NPEq->second, iSide )._u + du;
+
+            const SMDS_MeshNode* closeNode =
+              get(( coincides ? u2NP : u2NPEq )->second, iSide )._node;
+            list< const SMDS_MeshNode* >& eqNodes = theSinuFace._nodesToMerge[ closeNode ];
+
+            for ( ++u2NPEq; u2NPEq != u2NP; ++u2NPEq, u += du )
+            {
+              np0       = & get( u2NPEq->second, iSide );
+              np0->_u   = u;
+              gp_Pnt p  = np0->Point( theSinuFace._sinuCurves );
+              np0->_node = meshDS->AddNode( p.X(), p.Y(), p.Z() );
+              meshDS->SetNodeOnEdge( np0->_node, theSinuEdges[ np0->_edgeInd ], np0->_u  );
+              if ( !closeNode )
+                eqNodes = theSinuFace._nodesToMerge[ closeNode = np0->_node ];
+              else
+                eqNodes.push_back( np0->_node );
+            }
+          }
+        }
+        u2NP = u2NP1;
+        while ( get( u2NP->second, iSide )._edgeInd != iCurEdge )
+          --u2NP;
+        u2NP++;
+      }
+    }
   }
 
   //================================================================================
@@ -1048,11 +1166,12 @@ namespace
     SMESHDS_Mesh* meshDS = theHelper.GetMeshDS();
     double f,l;
 
+    // get data of sinuous EDGEs and remove unnecessary nodes
     const vector< TopoDS_Edge >& theSinuEdges = theSinuFace._sinuEdges;
-    vector< Handle(Geom_Curve) > curves ( theSinuEdges.size() );
+    vector< Handle(Geom_Curve) >& curves      = theSinuFace._sinuCurves;
     vector< int >                edgeIDs( theSinuEdges.size() );
     vector< bool >            isComputed( theSinuEdges.size() );
-    //bool hasComputed = false;
+    curves.resize( theSinuEdges.size(), 0 );
     for ( size_t i = 0; i < theSinuEdges.size(); ++i )
     {
       curves[i] = BRep_Tool::Curve( theSinuEdges[i], f,l );
@@ -1172,9 +1291,11 @@ namespace
       ++iEdgePair;
     }
 
-    if ( !projectVertices( theHelper, theMA, divPoints, edgeIDs1, edgeIDs2, theSinuEdges,
-                           curves, isComputed, pointsOnE, theSinuFace._nodesToMerge ))
+    if ( !projectVertices( theHelper, theMA, divPoints, edgeIDs1, edgeIDs2,
+                           isComputed, pointsOnE, theSinuFace ))
       return false;
+
+    separateNodes( theHelper, pointsOnE, theSinuFace );
 
     // create nodes
     TMAPar2NPoints::iterator u2np = pointsOnE.begin();
@@ -1353,6 +1474,7 @@ namespace
     TMergeMap::iterator n2nn = theSinuFace._nodesToMerge.begin();
     for ( ; n2nn != theSinuFace._nodesToMerge.end(); ++n2nn )
     {
+      if ( !n2nn->first ) continue;
       nodesGroups.push_back( list< const SMDS_MeshNode* >() );
       list< const SMDS_MeshNode* > & group = nodesGroups.back();
 

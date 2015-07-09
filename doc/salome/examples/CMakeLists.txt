@@ -165,6 +165,7 @@ SET(GOOD_TESTS
   transforming_meshes_ex13.py
   use_existing_faces.py
   viewing_meshes_ex02.py
+  split_biquad.py
 )
 
 SET(EXAMPLES_TESTS ${BAD_TESTS} ${GOOD_TESTS} testme.py)

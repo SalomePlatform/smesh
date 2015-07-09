@@ -1089,6 +1089,18 @@
         <translation>Split Volumes</translation>
     </message>
     <message>
+        <source>MEN_SPLIT_BIQUAD</source>
+        <translation>Split bi-quadratic into linear</translation>
+    </message>
+    <message>
+        <source>TOP_SPLIT_BIQUAD</source>
+        <translation>Split bi-quadratic into linear</translation>
+    </message>
+    <message>
+        <source>STB_SPLIT_BIQUAD</source>
+        <translation>Split bi-quadratic into linear</translation>
+    </message>
+    <message>
         <source>MESHERS_FILE_CANT_OPEN</source>
         <translation>Can not open resource file</translation>
     </message>
@@ -4898,6 +4910,33 @@ Do you want to remove all these sub-meshes?</translation>
         <source>SMESH_REJECT_MESH_ORDER</source>
         <translation>The sub-mesh priority changed during preview operation.
 Do you want to restore original sub-mesh priority?</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_SplitBiQuadDlg</name>
+    <message>
+        <source>CAPTION</source>
+        <translation>Split bi-qiadratic into linear</translation>
+    </message>
+    <message>
+        <source>MESH</source>
+        <translation>Mesh, Group or Sub-mesh</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_SplitBiQuadOp</name>
+    <message>
+        <source>MESH_IS_NOT_SELECTED</source>
+        <translation>No object to split is selected.
+Please specify it and try again</translation>
+    </message>
+    <message>
+        <source>REF_IS_NULL</source>
+        <translation>No valid mesh object selected</translation>
+    </message>
+    <message>
+        <source>DIFFERENT_MESHES</source>
+        <translation>Selected objects belong to different meshes</translation>
     </message>
 </context>
 <context>
