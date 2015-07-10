@@ -5143,6 +5143,22 @@ Please select a group and try again</translation>
         <source>SEPARATE_CORNERS_AND_MEDIUM</source>
         <translation>No merge of corner and medium nodes</translation>
     </message>
+    <message>
+        <source>KEEP_NODES</source>
+        <translation>Nodes to keep</translation>
+    </message>
+    <message>
+        <source>GROUP_SUBMESH</source>
+        <translation>Groups and Sub-meshes</translation>
+    </message>
+    <message>
+        <source>SELECT</source>
+        <translation>Select: </translation>
+    </message>
+    <message>
+        <source></source>
+        <translation></translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_ExtrusionAlongPathDlg</name>

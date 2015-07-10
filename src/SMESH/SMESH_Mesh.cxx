@@ -1334,7 +1334,7 @@ bool SMESH_Mesh::HasModificationsToDiscard() const
   // return true if the next Compute() will be partial and
   // existing but changed elements may prevent successful re-compute
   bool hasComputed = false, hasNotComputed = false;
-SMESH_subMeshIteratorPtr smIt( _subMeshHolder->GetIterator() );
+  SMESH_subMeshIteratorPtr smIt( _subMeshHolder->GetIterator() );
   while ( smIt->more() )
   {
     const SMESH_subMesh* aSubMesh = smIt->next();

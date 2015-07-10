@@ -26,7 +26,23 @@ merging.</li>
   nodes. This check-box is enabled provided that the selected mesh
   includes quadratic elements.</li>
 <li><b>Exclude Groups</b> group box allows to ignore the nodes which
-belong to the specified mesh groups.
+belong to the specified mesh groups.</li>
+<li><b>Nodes to keep</b> group box allows to specify nodes to keep in
+  the mesh. (By default a node being the first in a group of
+  coincident nodes is kept.) It is possible to either select nodes in
+  the Viewer or select groups of any element type whose nodes will be
+  kept.
+  <ol>
+    <li>\a Selection button activates selection of nodes to keep.</li>
+    <li><b>Node IDs</b> button activates selection of nodes in the
+      Viewer.</li>
+    <li><b>Groups and Sub-meshes</b> button activates selection of
+      groups and sub-meshes.</li>
+    <li>\b Add button adds selected nodes or groups to the list.</li>
+    <li> Nodes or groups selected in the list can be removed using \b
+      Remove button.</li>
+  </ol>
+</li>
 </ul>
 
 <li><b>Automatic mode:</b>
@@ -77,9 +93,9 @@ nodes of selected groups in the 3D viewer.</li>
 <li>To confirm your choice click \b Apply or <b>Apply and Close</b> button.</li>
 </ol>
 
-\image html merging_nodes1.png "The initial object" 
+\image html merging_nodes1.png "The initial object"
 
-\image html merging_nodes2.png "The object has been merged with a very big tolerance"
+\image html merging_nodes2.png "The object has been merged"
 
 <br><b>See Also</b> a sample TUI Script of a 
 \ref tui_merging_nodes "Merge Nodes" operation.  

@@ -4113,7 +4113,8 @@ FindCoincidentNodesOnPartBut(SMESH::SMESH_IDSource_ptr      theObject,
 //purpose  :
 //=======================================================================
 
-void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfNodes)
+void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfNodes,
+                                     const SMESH::ListOfIDSources&     NodesToKeep)
   throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
@@ -4123,6 +4124,16 @@ void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfN
 
   TPythonDump aTPythonDump;
   aTPythonDump << this << ".MergeNodes([";
+
+  TIDSortedNodeSet setOfNodesToKeep;
+  for ( int i = 0; i < NodesToKeep.length(); ++i )
+  {
+    prepareIdSource( NodesToKeep[i] );
+    SMDS_ElemIteratorPtr nodeIt = myMesh_i->GetElements( NodesToKeep[i], SMESH::NODE );
+    while ( nodeIt->more() )
+      setOfNodesToKeep.insert( setOfNodesToKeep.end(), cast2Node( nodeIt->next() ));
+  }
+
   ::SMESH_MeshEditor::TListOfListOfNodes aListOfListOfNodes;
   for (int i = 0; i < GroupsOfNodes.length(); i++)
   {
@@ -4132,9 +4143,13 @@ void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfN
     for ( int j = 0; j < aNodeGroup.length(); j++ )
     {
       CORBA::Long index = aNodeGroup[ j ];
-      const SMDS_MeshNode * node = aMesh->FindNode(index);
-      if ( node )
-        aListOfNodes.push_back( node );
+      if ( const SMDS_MeshNode * node = aMesh->FindNode( index ))
+      {
+        if ( setOfNodesToKeep.count( node ))
+          aListOfNodes.push_front( node );
+        else
+          aListOfNodes.push_back( node );
+      }
     }
     if ( aListOfNodes.size() < 2 )
       aListOfListOfNodes.pop_back();
@@ -4142,9 +4157,10 @@ void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfN
     if ( i > 0 ) aTPythonDump << ", ";
     aTPythonDump << aNodeGroup;
   }
+
   getEditor().MergeNodes( aListOfListOfNodes );
 
-  aTPythonDump <<  "])";
+  aTPythonDump << "], " << NodesToKeep << ")";
 
   declareMeshModified( /*isReComputeSafe=*/false );
 

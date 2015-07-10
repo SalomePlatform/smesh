@@ -7334,16 +7334,17 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
   // Fill nodeNodeMap and elems
 
   TListOfListOfNodes::iterator grIt = theGroupsOfNodes.begin();
-  for ( ; grIt != theGroupsOfNodes.end(); grIt++ ) {
+  for ( ; grIt != theGroupsOfNodes.end(); grIt++ )
+  {
     list<const SMDS_MeshNode*>& nodes = *grIt;
     list<const SMDS_MeshNode*>::iterator nIt = nodes.begin();
     const SMDS_MeshNode* nToKeep = *nIt;
-    //MESSAGE("node to keep " << nToKeep->GetID());
-    for ( ++nIt; nIt != nodes.end(); nIt++ ) {
+    for ( ++nIt; nIt != nodes.end(); nIt++ )
+    {
       const SMDS_MeshNode* nToRemove = *nIt;
-      nodeNodeMap.insert( TNodeNodeMap::value_type( nToRemove, nToKeep ));
-      if ( nToRemove != nToKeep ) {
-        //MESSAGE("  node to remove " << nToRemove->GetID());
+      nodeNodeMap.insert( make_pair( nToRemove, nToKeep ));
+      if ( nToRemove != nToKeep )
+      {
         rmNodeIds.push_back( nToRemove->GetID() );
         AddToSameGroups( nToKeep, nToRemove, aMesh );
         // set _alwaysComputed to a sub-mesh of VERTEX to enable mesh computing
@@ -7353,7 +7354,6 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
           if ( SMESH_subMesh* sm = myMesh->GetSubMeshContaining( nToRemove->getshapeId() ))
             sm->SetIsAlwaysComputed( true );
       }
-
       SMDS_ElemIteratorPtr invElemIt = nToRemove->GetInverseElementIterator();
       while ( invElemIt->more() ) {
         const SMDS_MeshElement* elem = invElemIt->next();

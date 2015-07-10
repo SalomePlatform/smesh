@@ -95,7 +95,7 @@
 
 namespace
 {
-  enum ActionType { MERGE_NODES, MERGE_ELEMENTS };
+  enum ActionType { MERGE_NODES, MERGE_ELEMENTS, TYPE_AUTO=0, TYPE_MANUAL };
 }
 namespace SMESH
 {
@@ -363,7 +363,7 @@ SMESHGUI_MergeDlg::SMESHGUI_MergeDlg (SMESHGUI* theModule, int theAction)
   GroupMeshLayout->addWidget(LineEditMesh);
 
   /***************************************************************/
-  // Controls for switch dialog behaviour
+  // Controls for switch dialog behaviour (myTypeId)
 
   TypeBox = new QGroupBox( tr( "SMESH_MODE" ), this );
   GroupType = new QButtonGroup( this );
@@ -378,7 +378,7 @@ SMESHGUI_MergeDlg::SMESHGUI_MergeDlg (SMESHGUI* theModule, int theAction)
   aTypeBoxLayout->addWidget( rb1 );
   aTypeBoxLayout->addWidget( rb2 );
 
-  myTypeId = 0;
+  myTypeId = TYPE_AUTO;
 
   /***************************************************************/
   // Controls for coincident elements detecting
@@ -410,6 +410,32 @@ SMESHGUI_MergeDlg::SMESHGUI_MergeDlg (SMESHGUI* theModule, int theAction)
     GroupExcludeLayout->setMargin(MARGIN);
     GroupExcludeLayout->addWidget(ListExclude);
 
+    QGroupBox*  GroupKeep = new QGroupBox(tr("KEEP_NODES"), foo);
+    SelectKeepNodesButton = new QPushButton( GroupKeep );
+    SelectKeepNodesButton->setIcon( IconSelect );
+    QLabel*       selectLabel = new QLabel(tr("SELECT"));
+    QRadioButton*   idsButton = new QRadioButton(tr("NODE_IDS"), GroupKeep);
+    QRadioButton* groupButton = new QRadioButton(tr("GROUP_SUBMESH"), GroupKeep);
+    KeepFromButGroup = new QButtonGroup( this );
+    KeepFromButGroup->addButton( idsButton,   0 );
+    KeepFromButGroup->addButton( groupButton, 1 );
+    groupButton->setChecked( true );
+    KeepList = new QListWidget( GroupKeep );
+    KeepList->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    KeepList->setFlow(QListView::TopToBottom);
+    AddKeepNodesButton    = new QPushButton(tr("SMESH_BUT_ADD"), GroupKeep );
+    RemoveKeepNodesButton = new QPushButton(tr("SMESH_BUT_REMOVE"), GroupKeep );
+    QGridLayout* GroupKeepLayout = new QGridLayout(GroupKeep);
+    GroupKeepLayout->setSpacing( SPACING );
+    GroupKeepLayout->setMargin ( MARGIN );
+    GroupKeepLayout->addWidget( SelectKeepNodesButton, 0, 0 );
+    GroupKeepLayout->addWidget( selectLabel,           0, 1 );
+    GroupKeepLayout->addWidget( idsButton,             0, 2 );
+    GroupKeepLayout->addWidget( groupButton,           0, 3, 1, 2 );
+    GroupKeepLayout->addWidget( KeepList,              1, 0, 2, 4 );
+    GroupKeepLayout->addWidget( AddKeepNodesButton,    1, 4, 1, 1 );
+    GroupKeepLayout->addWidget( RemoveKeepNodesButton, 2, 4, 1, 1 );
+
     QGridLayout* fooLayout = new QGridLayout( foo );
     fooLayout->setSpacing(SPACING);
     fooLayout->setMargin(0);
@@ -417,13 +443,27 @@ SMESHGUI_MergeDlg::SMESHGUI_MergeDlg (SMESHGUI* theModule, int theAction)
     fooLayout->addWidget(SpinBoxTolerance,         0, 1 );
     fooLayout->addWidget(SeparateCornersAndMedium, 1, 0 );
     fooLayout->addWidget(GroupExclude,             2, 0, 1, 2 );
+    fooLayout->addWidget(GroupKeep,                3, 0, 1, 2 );
     aCoincidentLayout->addWidget(foo);
+
+    // Costruction of the logical filter
+    QList<SUIT_SelectionFilter*> aListOfFilters;
+    aListOfFilters << new SMESH_TypeFilter (SMESH::SUBMESH)
+                   << new SMESH_TypeFilter (SMESH::GROUP);
+    mySubMeshOrGroupFilter =
+      new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR, /*takeOwnership=*/true);
   }
   else {
-    TextLabelTolerance = 0;
-    SpinBoxTolerance = 0;
-    GroupExclude = 0;
-    ListExclude = 0;
+    TextLabelTolerance     = 0;
+    SpinBoxTolerance       = 0;
+    GroupExclude           = 0;
+    ListExclude            = 0;
+    KeepFromButGroup       = 0;
+    SelectKeepNodesButton  = 0;
+    AddKeepNodesButton     = 0;
+    RemoveKeepNodesButton  = 0;
+    KeepList               = 0;
+    mySubMeshOrGroupFilter = 0;
   }
 
   GroupCoincidentWidget = new QWidget(GroupCoincident);
@@ -546,7 +586,7 @@ void SMESHGUI_MergeDlg::Init()
 
   GroupType->button(0)->setChecked(true);
 
-  myEditCurrentArgument = (QWidget*)LineEditMesh; 
+  myEditCurrentArgument = (QWidget*)LineEditMesh;
 
   myActor = 0;
   mySubMeshOrGroup = SMESH::SMESH_subMesh::_nil();
@@ -555,13 +595,21 @@ void SMESHGUI_MergeDlg::Init()
 
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
   myIsBusy = false;
-  
+
   /* signals and slots connections */
   connect(buttonOk,     SIGNAL(clicked()), this, SLOT(ClickOnOk()));
   connect(buttonCancel, SIGNAL(clicked()), this, SLOT(reject()));
   connect(buttonApply,  SIGNAL(clicked()), this, SLOT(ClickOnApply()));
   connect(buttonHelp,   SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
 
+  if ( KeepList )
+  {
+    connect(SelectKeepNodesButton, SIGNAL (clicked()), this, SLOT(SetEditCurrentArgument()));
+    connect(KeepFromButGroup, SIGNAL (buttonClicked(int)), SLOT(onKeepNodeSourceChanged(int)));
+    connect(AddKeepNodesButton, SIGNAL (clicked()), this, SLOT(onAddKeepNode()));
+    connect(RemoveKeepNodesButton, SIGNAL (clicked()), this, SLOT(onRemoveKeepNode()));
+    connect(KeepList, SIGNAL (itemSelectionChanged()), this, SLOT(onSelectKeepNode()));
+  }
   connect(SelectMeshButton, SIGNAL (clicked()), this, SLOT(SetEditCurrentArgument()));
   connect(DetectButton, SIGNAL (clicked()), this, SLOT(onDetect()));
   connect(ListCoincident, SIGNAL (itemSelectionChanged()), this, SLOT(onSelectGroup()));
@@ -572,7 +620,7 @@ void SMESHGUI_MergeDlg::Init()
   connect(ListEdit, SIGNAL (itemSelectionChanged()), this, SLOT(onSelectElementFromGroup()));
   connect(AddElemButton, SIGNAL (clicked()), this, SLOT(onAddElement()));
   connect(RemoveElemButton, SIGNAL (clicked()), this, SLOT(onRemoveElement()));
-  connect(SetFirstButton, SIGNAL( clicked() ), this, SLOT( onSetFirst() ) );
+  connect(SetFirstButton, SIGNAL( clicked() ), this, SLOT( onSetFirst()));
   connect(GroupType, SIGNAL(buttonClicked(int)), this, SLOT(onTypeChanged(int)));
 
   connect(mySMESHGUI, SIGNAL (SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
@@ -638,7 +686,7 @@ bool SMESHGUI_MergeDlg::ClickOnApply()
     return false;
 
   try {
-    if (myTypeId == 0)
+    if (myTypeId == TYPE_AUTO)
       onDetect();
 
     SUIT_OverrideCursor aWaitCursor;
@@ -672,12 +720,51 @@ bool SMESHGUI_MergeDlg::ClickOnApply()
       aGroupsOfElements[anArrayNum++] = anIds.inout();
     }
 
+    SMESH::ListOfIDSources_var nodesToKeep;
+    SMESH::IDSource_wrap tmpIdSource;
+    if ( myAction == MERGE_NODES )
+    {
+      nodesToKeep = new SMESH::ListOfIDSources();
+      int i, nb = KeepList->count();
+      if ( isKeepNodesIDsSelection() )
+      {
+        SMESH::long_array_var anIdList = new SMESH::long_array();
+        anIdList->length(nb);
+        for (i = 0; i < nb; i++)
+          anIdList[i] = KeepList->item(i)->text().toInt();
+
+        if ( nb > 0 )
+        {
+          tmpIdSource = aMeshEditor->MakeIDSource( anIdList, SMESH::NODE );
+          nodesToKeep->length( 1 );
+          nodesToKeep[0] = SMESH::SMESH_IDSource::_duplicate( tmpIdSource.in() );
+        }
+      }
+      else
+      {
+        nodesToKeep->length( nb );
+        int nbObj = 0;
+        for (i = 0; i < nb; i++)
+        {
+          QString entry = KeepList->item( i )->data( Qt::UserRole ).toString();
+          Handle(SALOME_InteractiveObject) anIO =
+            new SALOME_InteractiveObject( entry.toStdString().c_str(), "SMESH" );
+          SMESH::SMESH_IDSource_var idSrc =
+            SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( anIO );
+          if ( !idSrc->_is_nil() )
+            nodesToKeep[ nbObj++ ] = SMESH::SMESH_IDSource::_duplicate( idSrc );
+        }
+        nodesToKeep->length( nbObj );
+      }
+      KeepList->clear();
+    }
+
     if( myAction == MERGE_NODES )
-      aMeshEditor->MergeNodes (aGroupsOfElements.inout());
+      aMeshEditor->MergeNodes (aGroupsOfElements.inout(), nodesToKeep);
     else
       aMeshEditor->MergeElements (aGroupsOfElements.inout());
 
-    if ( myTypeId == 0 ) {
+    if ( myTypeId == TYPE_AUTO ) {
       if (myAction == MERGE_NODES )
         SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_INFORMATION"),
                                      tr("SMESH_MERGED_NODES").arg(QString::number(ListCoincident->count()).toLatin1().data()));
@@ -685,18 +772,19 @@ bool SMESHGUI_MergeDlg::ClickOnApply()
         SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_INFORMATION"),
                                      tr("SMESH_MERGED_ELEMENTS").arg(QString::number(ListCoincident->count()).toLatin1().data()));
     }
-      
+    nodesToKeep->length(0); // release before tmpIdSource calls UnRegister()
 
-  } catch(...) {
   }
-  
+  catch(...) {
+  }
+
   ListCoincident->clear();
-  
+
   myEditCurrentArgument = (QWidget*)LineEditMesh;
 
   SMESH::UpdateView();
   SMESHGUI::Modified();
-  
+
   return true;
 }
 
@@ -810,7 +898,7 @@ void SMESHGUI_MergeDlg::updateControls()
 {
   if (ListEdit->count() == 0)
     SetFirstButton->setEnabled(false);
-  bool enable = !(myMesh->_is_nil()) && (ListCoincident->count() || (myTypeId == 0));
+  bool enable = !(myMesh->_is_nil()) && (ListCoincident->count() || (myTypeId == TYPE_AUTO));
   buttonOk->setEnabled(enable);
   buttonApply->setEnabled(enable);
   DetectButton->setEnabled( !myMesh->_is_nil() );
@@ -823,6 +911,13 @@ void SMESHGUI_MergeDlg::updateControls()
                           myMesh->NbVolumesOfOrder( SMESH::ORDER_QUADRATIC ) > 0 ));
 
     SeparateCornersAndMedium->setEnabled( has2ndOrder );
+
+    if ( myEditCurrentArgument != KeepList )
+    {
+      AddKeepNodesButton->setEnabled( false );
+      RemoveKeepNodesButton->setEnabled( false );
+      KeepList->clearSelection();
+    }
   }
 }
 
@@ -1149,13 +1244,31 @@ void SMESHGUI_MergeDlg::SetEditCurrentArgument()
   mySelectionMgr->clearSelected();
   mySelectionMgr->clearFilters();
 
-  if (send == SelectMeshButton) {
+  if (send == SelectMeshButton)
+  {
     myEditCurrentArgument = (QWidget*)LineEditMesh;
     SMESH::SetPointRepresentation(false);
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
       aViewWindow->SetSelectionMode(ActorSelection);
-    if (myTypeId == 1)
+    if (myTypeId == TYPE_MANUAL)
       mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
+  }
+  else if ( send == SelectKeepNodesButton && send )
+  {
+    myEditCurrentArgument = (QWidget*)KeepList;
+    KeepList->setWrapping( isKeepNodesIDsSelection() );
+    if ( isKeepNodesIDsSelection() )
+    {
+      SMESH::SetPointRepresentation( true );
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+        aViewWindow->SetSelectionMode( NodeSelection );
+    }
+    else
+    {
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+        aViewWindow->SetSelectionMode( ActorSelection );
+      mySelectionMgr->installFilter( mySubMeshOrGroupFilter );
+    }
   }
 
   myEditCurrentArgument->setFocus();
@@ -1165,11 +1278,12 @@ void SMESHGUI_MergeDlg::SetEditCurrentArgument()
 
 //=================================================================================
 // function : SelectionIntoArgument()
-// purpose  : Called when selection as changed or other case
+// purpose  : Called when selection has changed or other case
 //=================================================================================
 void SMESHGUI_MergeDlg::SelectionIntoArgument()
 {
-  if (myEditCurrentArgument == (QWidget*)LineEditMesh) {
+  if (myEditCurrentArgument == (QWidget*)LineEditMesh)
+  {
     QString aString = "";
     LineEditMesh->setText(aString);
 
@@ -1196,6 +1310,9 @@ void SMESHGUI_MergeDlg::SelectionIntoArgument()
     myEntry = IO->getEntry();
     myMesh = SMESH::GetMeshByIO(IO);
 
+    if ( myEntry != aCurrentEntry && KeepList )
+      KeepList->clear();
+
     if (myMesh->_is_nil())
       return;
 
@@ -1205,7 +1322,7 @@ void SMESHGUI_MergeDlg::SelectionIntoArgument()
     if (!myActor)
       myActor = SMESH::FindActorByObject(myMesh);
 
-    if ( myActor && myTypeId == 1 && mySelector->IsSelectionEnabled() ) {
+    if ( myActor && myTypeId == TYPE_MANUAL && mySelector->IsSelectionEnabled() ) {
       mySubMeshOrGroup = SMESH::SMESH_IDSource::_nil();
       mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
 
@@ -1245,6 +1362,59 @@ void SMESHGUI_MergeDlg::SelectionIntoArgument()
     }
 
     updateControls();
+  }
+
+  else if (myEditCurrentArgument == (QWidget*)KeepList && KeepList)
+  {
+    AddKeepNodesButton->setEnabled( false );
+    RemoveKeepNodesButton->setEnabled( false );
+    if ( isKeepNodesIDsSelection() )
+    {
+      if (!myMesh->_is_nil() && !myActor)
+        myActor = SMESH::FindActorByObject(myMesh);
+
+      if ( mySelector && myActor )
+      {
+        KeepList->clearSelection();
+        QString anIDs = "";
+        int aNbNodes = SMESH::GetNameOfSelectedNodes(mySelector, myActor->getIO(), anIDs);
+        if (aNbNodes > 0)
+        {
+          QStringList anNodes = anIDs.split( " ", QString::SkipEmptyParts);
+          QList<QListWidgetItem*> listItemsToSel;
+          QListWidgetItem* anItem;
+          int nbFound = 0;
+          for (QStringList::iterator it = anNodes.begin(); it != anNodes.end(); ++it)
+          {
+            QList<QListWidgetItem*> found = KeepList->findItems(*it, Qt::MatchExactly);
+            foreach(anItem, found)
+              if (!anItem->isSelected())
+                listItemsToSel.push_back(anItem);
+            nbFound += found.count();
+          }
+          bool blocked = KeepList->signalsBlocked();
+          KeepList->blockSignals(true);
+          foreach(anItem, listItemsToSel) anItem->setSelected(true);
+          KeepList->blockSignals(blocked);
+          //onSelectKeepNode();
+          AddKeepNodesButton->setEnabled( nbFound < aNbNodes );
+          RemoveKeepNodesButton->setEnabled( nbFound > 0 );
+        }
+      }
+    }
+    else if ( !myMesh->_is_nil() )
+    {
+      SALOME_ListIO aList;
+      mySelectionMgr->selectedObjects(aList);
+      bool hasNewSelected = false;
+      SALOME_ListIteratorOfListIO anIt (aList);
+      for ( ; anIt.More() && !hasNewSelected; anIt.Next())
+        if ( anIt.Value()->hasEntry() )
+          hasNewSelected = isNewKeepNodesGroup( anIt.Value()->getEntry() );
+
+      AddKeepNodesButton->setEnabled( hasNewSelected );
+      //RemoveKeepNodesButton->setEnabled( KeepList->selectedItems().count() );
+    }
   }
 }
 
@@ -1332,7 +1502,8 @@ void SMESHGUI_MergeDlg::onTypeChanged (int id)
   myTypeId = id;
   switch (id)
   {
-  case 0: // automatic
+  case TYPE_AUTO: // automatic
+
     myIdPreview->SetPointsLabeled(false);
     SMESH::SetPointRepresentation(false);
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
@@ -1345,7 +1516,8 @@ void SMESHGUI_MergeDlg::onTypeChanged (int id)
     GroupEdit->hide();
     break;
 
-  case 1: // manual
+  case TYPE_MANUAL: // manual
+
     SMESH::UpdateView();
 
     // Costruction of the logical filter
@@ -1382,4 +1554,169 @@ void SMESHGUI_MergeDlg::onTypeChanged (int id)
   resize(10,10);
 
   SelectionIntoArgument();
+}
+
+//=======================================================================
+//function : isKeepNodesIDsSelection
+//purpose  : Return true of Nodes to keep are selected by IDs
+//=======================================================================
+
+bool SMESHGUI_MergeDlg::isKeepNodesIDsSelection()
+{
+  return KeepFromButGroup && KeepFromButGroup->checkedId() == 0;
+}
+
+//=======================================================================
+//function : isNewKeepNodesGroup
+//purpose  : Return true if an object with given entry is NOT present in KeepList
+//=======================================================================
+
+bool SMESHGUI_MergeDlg::isNewKeepNodesGroup( const char* entry )
+{
+  if ( !entry || isKeepNodesIDsSelection() )
+    return false;
+
+  for ( int i = 0; i < KeepList->count(); i++ )
+    if ( KeepList->item( i )->data( Qt::UserRole ).toString() == entry )
+      return false;
+
+  return true;
+}
+
+//=======================================================================
+//function : onAddKeepNode
+//purpose  : SLOT called when [Add] of Nodes To Keep group is pressed
+//=======================================================================
+
+void SMESHGUI_MergeDlg::onAddKeepNode()
+{
+  if ( myIsBusy )
+    return;
+  myIsBusy = true;
+
+  if ( isKeepNodesIDsSelection() )
+  {
+    //KeepList->clearSelection();
+    QString anIDs = "";
+    int aNbNodes = 0;
+    if ( myActor )
+      aNbNodes = SMESH::GetNameOfSelectedNodes(mySelector, myActor->getIO(), anIDs);
+    if (aNbNodes > 0)
+    {
+      QStringList anNodes = anIDs.split( " ", QString::SkipEmptyParts);
+      QList<QListWidgetItem*> listItemsToSel;
+      QListWidgetItem* anItem;
+      for (QStringList::iterator it = anNodes.begin(); it != anNodes.end(); ++it)
+      {
+        QList<QListWidgetItem*> found = KeepList->findItems(*it, Qt::MatchExactly);
+        if (found.count() == 0) {
+          anItem = new QListWidgetItem(*it);
+          KeepList->addItem(anItem);
+          if (!anItem->isSelected())
+            listItemsToSel.push_back(anItem);
+        }
+        else {
+          foreach(anItem, found)
+            if (!anItem->isSelected())
+              listItemsToSel.push_back(anItem);
+        }
+      }
+      bool blocked = KeepList->signalsBlocked();
+      KeepList->blockSignals(true);
+      foreach(anItem, listItemsToSel) anItem->setSelected(true);
+      KeepList->blockSignals(blocked);
+      //onSelectKeepNode();
+    }
+    RemoveKeepNodesButton->setEnabled( aNbNodes > 0 );
+  }
+  else
+  {
+    SALOME_ListIO aList;
+    mySelectionMgr->selectedObjects(aList);
+    SALOME_ListIteratorOfListIO anIt (aList);
+    for ( ; anIt.More(); anIt.Next()) {
+      Handle(SALOME_InteractiveObject) anIO = anIt.Value();
+      if ( isNewKeepNodesGroup( anIO->getEntry() ))
+      {
+        QListWidgetItem* anItem = new QListWidgetItem( anIO->getName() );
+        anItem->setData( Qt::UserRole, QString( anIO->getEntry() ));
+        KeepList->addItem(anItem);
+      }
+    }
+    //RemoveKeepNodesButton->setEnabled( KeepList->selectedItems().count() );
+  }
+
+  AddKeepNodesButton->setEnabled( false );
+
+  myIsBusy = false;
+}
+
+//=======================================================================
+//function : onRemoveKeepNode
+//purpose  : SLOT called when [Remove] of Nodes To Keep group is pressed
+//=======================================================================
+
+void SMESHGUI_MergeDlg::onRemoveKeepNode()
+{
+  // if ( isKeepNodesIDsSelection() )
+  // {
+  // }
+  // else
+  {
+    QList<QListWidgetItem*> selItems = KeepList->selectedItems();
+    QListWidgetItem* item;
+    foreach(item, selItems) delete item;
+  }
+  if ( isKeepNodesIDsSelection() )
+  {
+    AddKeepNodesButton->setEnabled( false );
+  }
+  RemoveKeepNodesButton->setEnabled( false );
+}
+
+//=======================================================================
+//function : onSelectKeepNode
+//purpose  : SLOT called when selection in KeepList changes
+//=======================================================================
+
+void SMESHGUI_MergeDlg::onSelectKeepNode()
+{
+  if ( myIsBusy || !isEnabled() ) return;
+  myIsBusy = true;
+
+  if ( isKeepNodesIDsSelection() )
+  {
+    if ( myActor )
+    {
+      mySelectionMgr->clearSelected();
+      TColStd_MapOfInteger aIndexes;
+      QList<QListWidgetItem*> selItems = KeepList->selectedItems();
+      QListWidgetItem* anItem;
+      foreach(anItem, selItems) aIndexes.Add(anItem->text().toInt());
+      mySelector->AddOrRemoveIndex(myActor->getIO(), aIndexes, false);
+      SALOME_ListIO aList;
+      aList.Append(myActor->getIO());
+      mySelectionMgr->setSelectedObjects(aList,false);
+
+      AddKeepNodesButton->setEnabled( false );
+      RemoveKeepNodesButton->setEnabled( aIndexes.Extent() > 0 );
+    }
+  }
+  else
+  {
+    RemoveKeepNodesButton->setEnabled( KeepList->selectedItems().count() );
+  }
+  myIsBusy = false;
+}
+
+//=======================================================================
+//function : onKeepNodeSourceChanged
+//purpose  : SLOT called when type of source of Nodes To Keep change from
+//           IDs to groups or vice versa
+//=======================================================================
+
+void SMESHGUI_MergeDlg::onKeepNodeSourceChanged(int isGroup)
+{
+  KeepList->clear();
+  SelectKeepNodesButton->click();
 }

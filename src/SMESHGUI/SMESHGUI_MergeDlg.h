@@ -81,6 +81,8 @@ private:
   void                      enterEvent( QEvent* );              /* mouse enter the QWidget */
   void                      keyPressEvent( QKeyEvent* );
   void                      onEditGroup();
+  bool                      isKeepNodesIDsSelection();
+  bool                      isNewKeepNodesGroup( const char* entry );
 
   void                      FindGravityCenter( TColStd_MapOfInteger&, 
                                                std::list<gp_XYZ>& );
@@ -99,12 +101,13 @@ private:
   SMESH::SMESH_IDSource_var mySubMeshOrGroup;
   SMESH_Actor*              myActor;
   SUIT_SelectionFilter*     myMeshOrSubMeshOrGroupFilter;
+  SUIT_SelectionFilter*     mySubMeshOrGroupFilter;
 
   SMESH::TIdPreview*        myIdPreview;
 
   int                       myAction;
   bool                      myIsBusy;
-  int                       myTypeId;
+  int                       myTypeId; // manual(1) or automatic(0)
 
   // Widgets
   QGroupBox*                GroupConstructors;
@@ -142,6 +145,12 @@ private:
   QGroupBox*                GroupExclude;
   QListWidget*              ListExclude;
 
+  QButtonGroup*             KeepFromButGroup;
+  QPushButton*              SelectKeepNodesButton;
+  QPushButton*              AddKeepNodesButton;
+  QPushButton*              RemoveKeepNodesButton;
+  QListWidget*              KeepList;
+
   QGroupBox*                TypeBox;
   QButtonGroup*             GroupType;
     
@@ -159,6 +168,10 @@ protected slots:
   void                      ClickOnHelp();
   void                      updateControls();
   void                      onDetect();
+  void                      onAddKeepNode();
+  void                      onRemoveKeepNode();
+  void                      onSelectKeepNode();
+  void                      onKeepNodeSourceChanged(int);
   void                      onAddGroup();
   void                      onRemoveGroup();
   void                      onSelectGroup();

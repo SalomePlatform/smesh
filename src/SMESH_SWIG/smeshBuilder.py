@@ -1609,6 +1609,8 @@ class Mesh:
     #  @return SMESH.Hypothesis_Status
     #  @ingroup l2_hypotheses
     def AddHypothesis(self, hyp, geom=0):
+        if isinstance( hyp, geomBuilder.GEOM._objref_GEOM_Object ):
+            hyp, geom = geom, hyp
         if isinstance( hyp, Mesh_Algorithm ):
             hyp = hyp.GetAlgorithm()
             pass
@@ -4428,9 +4430,18 @@ class Mesh:
     #  @param GroupsOfNodes a list of groups of nodes IDs for merging
     #         (e.g. [[1,12,13],[25,4]], then nodes 12, 13 and 4 will be removed and replaced
     #         by nodes 1 and 25 correspondingly in all elements and groups
+    #  @param NodesToKeep nodes to keep in the mesh: a list of groups, sub-meshes or node IDs.
+    #         If @a NodesToKeep does not include a node to keep for some group to merge,
+    #         then the first node in the group is kept.
     #  @ingroup l2_modif_trsf
-    def MergeNodes (self, GroupsOfNodes):
-        self.editor.MergeNodes(GroupsOfNodes)
+    def MergeNodes (self, GroupsOfNodes, NodesToKeep=[]):
+        unRegister = genObjUnRegister()
+        if NodesToKeep:
+            if isinstance( NodesToKeep, list ) and isinstance( NodesToKeep[0], int ):
+                NodesToKeep = self.GetIDSource( NodesToKeep, SMESH.NODE )
+            if not isinstance( NodesToKeep, list ):
+                NodesToKeep = [ NodesToKeep ]
+        self.editor.MergeNodes(GroupsOfNodes,NodesToKeep)
 
     ## Finds the elements built on the same nodes.
     #  @param MeshOrSubMeshOrGroup Mesh or SubMesh, or Group of elements for searching

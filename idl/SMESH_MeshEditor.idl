@@ -658,7 +658,8 @@ module SMESH
                                        in  boolean             SeparateCornersAndMedium)
       raises (SALOME::SALOME_Exception);
 
-    void MergeNodes (in array_of_long_array GroupsOfNodes)
+    void MergeNodes (in array_of_long_array    GroupsOfNodes,
+                     in SMESH::ListOfIDSources NodesToKeep)
       raises (SALOME::SALOME_Exception);
 
     /*!

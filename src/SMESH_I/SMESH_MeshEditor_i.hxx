@@ -488,7 +488,8 @@ public:
                                     const SMESH::ListOfIDSources&  ExceptSubMeshOrGroups,
                                     CORBA::Boolean                 SeparateCornersAndMedium)
     throw (SALOME::SALOME_Exception);
-  void MergeNodes (const SMESH::array_of_long_array& GroupsOfNodes)
+  void MergeNodes (const SMESH::array_of_long_array& GroupsOfNodes,
+                   const SMESH::ListOfIDSources&     NodesToKeep )
     throw (SALOME::SALOME_Exception);
   void FindEqualElements(SMESH::SMESH_IDSource_ptr      Object,
                          SMESH::array_of_long_array_out GroupsOfElementsID)

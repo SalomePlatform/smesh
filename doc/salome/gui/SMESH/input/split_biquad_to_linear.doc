@@ -10,7 +10,7 @@ So that
 - bi-quadratic quadrangle will be split into 4 linear quadrangles;
 - tri-quadratic hexahedron will be split into 8 linear hexahedra;
 - quadratic segments adjacent to the split bi-quadratic element will
-  be split into 2 liner segment.
+  be split into 2 liner segments.
 
 \image html split_biquad_to_linear_mesh.png "Mesh before and after splitting"
 
