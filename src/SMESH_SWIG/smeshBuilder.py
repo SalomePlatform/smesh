@@ -1425,37 +1425,7 @@ class Mesh:
             # Treat compute errors
             computeErrors = self.smeshpyD.GetComputeErrors( self.mesh, geom )
             for err in computeErrors:
-                shapeText = ""
-                if self.mesh.HasShapeToMesh():
-                    try:
-                        mainIOR  = salome.orb.object_to_string(geom)
-                        for sname in salome.myStudyManager.GetOpenStudies():
-                            s = salome.myStudyManager.GetStudyByName(sname)
-                            if not s: continue
-                            mainSO = s.FindObjectIOR(mainIOR)
-                            if not mainSO: continue
-                            if err.subShapeID == 1:
-                                shapeText = ' on "%s"' % mainSO.GetName()
-                            subIt = s.NewChildIterator(mainSO)
-                            while subIt.More():
-                                subSO = subIt.Value()
-                                subIt.Next()
-                                obj = subSO.GetObject()
-                                if not obj: continue
-                                go = obj._narrow( geomBuilder.GEOM._objref_GEOM_Object )
-                                if not go: continue
-                                ids = go.GetSubShapeIndices()
-                                if len(ids) == 1 and ids[0] == err.subShapeID:
-                                    shapeText = ' on "%s"' % subSO.GetName()
-                                    break
-                        if not shapeText:
-                            shape = self.geompyD.GetSubShape( geom, [err.subShapeID])
-                            if shape:
-                                shapeText = " on %s #%s" % (shape.GetShapeType(), err.subShapeID)
-                            else:
-                                shapeText = " on subshape #%s" % (err.subShapeID)
-                    except:
-                        shapeText = " on subshape #%s" % (err.subShapeID)
+                shapeText = " on %s" % self.GetSubShapeName( err.subShapeID )
                 errText = ""
                 stdErrors = ["OK",                   #COMPERR_OK
                              "Invalid input mesh",   #COMPERR_BAD_INPUT_MESH
@@ -1533,14 +1503,101 @@ class Mesh:
             pass
         return ok
 
-    ## Return submesh objects list in meshing order
+    ## Return a name of a sub-shape by its ID
+    #  @param subShapeID a unique ID of a sub-shape
+    #  @return a string describing the sub-shape; possible variants:
+    #  - "Face_12"    (published sub-shape)
+    #  - FACE #3      (not published sub-shape)
+    #  - sub-shape #3 (invalid sub-shape ID)
+    #  - #3           (error in this function)
+    def GetSubShapeName(self, subShapeID ):
+        if not self.mesh.HasShapeToMesh():
+            return ""
+        try:
+            shapeText = ""
+            mainIOR  = salome.orb.object_to_string( self.GetShape() )
+            for sname in salome.myStudyManager.GetOpenStudies():
+                s = salome.myStudyManager.GetStudyByName(sname)
+                if not s: continue
+                mainSO = s.FindObjectIOR(mainIOR)
+                if not mainSO: continue
+                if subShapeID == 1:
+                    shapeText = '"%s"' % mainSO.GetName()
+                subIt = s.NewChildIterator(mainSO)
+                while subIt.More():
+                    subSO = subIt.Value()
+                    subIt.Next()
+                    obj = subSO.GetObject()
+                    if not obj: continue
+                    go = obj._narrow( geomBuilder.GEOM._objref_GEOM_Object )
+                    if not go: continue
+                    try:
+                        ids = self.geompyD.GetSubShapeID( self.GetShape(), go )
+                    except:
+                        continue
+                    if ids == subShapeID:
+                        shapeText = '"%s"' % subSO.GetName()
+                        break
+            if not shapeText:
+                shape = self.geompyD.GetSubShape( self.GetShape(), [subShapeID])
+                if shape:
+                    shapeText = '%s #%s' % (shape.GetShapeType(), subShapeID)
+                else:
+                    shapeText = 'sub-shape #%s' % (subShapeID)
+        except:
+            shapeText = "#%s" % (subShapeID)
+        return shapeText
+
+    ## Return a list of sub-shapes meshing of which failed, grouped into GEOM groups by
+    #  error of an algorithm
+    #  @param publish if @c True, the returned groups will be published in the study
+    #  @return a list of GEOM groups each named after a failed algorithm
+    def GetFailedShapes(self, publish=False):
+
+        algo2shapes = {}
+        computeErrors = self.smeshpyD.GetComputeErrors( self.mesh, self.GetShape() )
+        for err in computeErrors:
+            shape = self.geompyD.GetSubShape( self.GetShape(), [err.subShapeID])
+            if not shape: continue
+            if err.algoName in algo2shapes:
+                algo2shapes[ err.algoName ].append( shape )
+            else:
+                algo2shapes[ err.algoName ] = [ shape ]
+            pass
+
+        groups = []
+        for algoName, shapes in algo2shapes.items():
+            while shapes:
+                groupType = self.smeshpyD.EnumToLong( shapes[0].GetShapeType() )
+                otherTypeShapes = []
+                sameTypeShapes  = []
+                group = self.geompyD.CreateGroup( self.geom, groupType )
+                for shape in shapes:
+                    if shape.GetShapeType() == shapes[0].GetShapeType():
+                        sameTypeShapes.append( shape )
+                    else:
+                        otherTypeShapes.append( shape )
+                self.geompyD.UnionList( group, sameTypeShapes )
+                if otherTypeShapes:
+                    group.SetName( "%s %s" % ( algoName, shapes[0].GetShapeType() ))
+                else:
+                    group.SetName( algoName )
+                groups.append( group )
+                shapes = otherTypeShapes
+            pass
+        if publish:
+            for group in groups:
+                self.geompyD.addToStudyInFather( self.geom, group, group.GetName() )
+        return groups
+
+    ## Return sub-mesh objects list in meshing order
     #  @return list of list of submesh objects
     #  @ingroup l2_construct
     def GetMeshOrder(self):
         return self.mesh.GetMeshOrder()
 
-    ## Return submesh objects list in meshing order
-    #  @return list of list of submesh objects
+    ## Set order in which concurrent sub-meshes sould be meshed
+    #  @param list of sub-meshes
     #  @ingroup l2_construct
     def SetMeshOrder(self, submeshes):
         return self.mesh.SetMeshOrder(submeshes)
