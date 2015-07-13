@@ -4492,12 +4492,7 @@ class Mesh:
     #         then the first node in the group is kept.
     #  @ingroup l2_modif_trsf
     def MergeNodes (self, GroupsOfNodes, NodesToKeep=[]):
-        unRegister = genObjUnRegister()
-        if NodesToKeep:
-            if isinstance( NodesToKeep, list ) and isinstance( NodesToKeep[0], int ):
-                NodesToKeep = self.GetIDSource( NodesToKeep, SMESH.NODE )
-            if not isinstance( NodesToKeep, list ):
-                NodesToKeep = [ NodesToKeep ]
+        # NodesToKeep are converted to SMESH_IDSource in meshEditor.MergeNodes()
         self.editor.MergeNodes(GroupsOfNodes,NodesToKeep)
 
     ## Finds the elements built on the same nodes.
@@ -4935,12 +4930,27 @@ class meshEditor(SMESH._objref_SMESH_MeshEditor):
         if hasattr( self.mesh, name ):
             return getattr( self.mesh, name )
         if name == "ExtrusionAlongPathObjX":
-            return getattr( self.mesh, "ExtrusionAlongPathX" )
-        print name, "meshEditor: attribute '%s' NOT FOUND" % name
+            return getattr( self.mesh, "ExtrusionAlongPathX" ) # other method name
+        print "meshEditor: attribute '%s' NOT FOUND" % name
         return None
     def __deepcopy__(self, memo=None):
         new = self.__class__()
         return new
+    def FindCoincidentNodes(self,*args): # a 2nd arg added (SeparateCornerAndMediumNodes)
+        if len( args ) == 1:
+            return SMESH._objref_SMESH_MeshEditor.FindCoincidentNodes( self, args[0], False )
+        return SMESH._objref_SMESH_MeshEditor.FindCoincidentNodes( self, *args )
+    def MergeNodes(self,*args): # a 2nd arg added (NodesToKeep)
+        if len( args ) == 1:
+            return SMESH._objref_SMESH_MeshEditor.MergeNodes( self, args[0], [] )
+        NodesToKeep = args[1]
+        unRegister  = genObjUnRegister()
+        if NodesToKeep:
+            if isinstance( NodesToKeep, list ) and isinstance( NodesToKeep[0], int ):
+                NodesToKeep = self.MakeIDSource( NodesToKeep, SMESH.NODE )
+            if not isinstance( NodesToKeep, list ):
+                NodesToKeep = [ NodesToKeep ]
+        return SMESH._objref_SMESH_MeshEditor.MergeNodes( self, args[0], NodesToKeep )
     pass
 omniORB.registerObjref(SMESH._objref_SMESH_MeshEditor._NP_RepositoryId, meshEditor)
 

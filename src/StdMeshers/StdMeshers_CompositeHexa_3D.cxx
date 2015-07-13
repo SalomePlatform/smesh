@@ -41,6 +41,7 @@
 #include <Standard_ErrorHandler.hxx>
 #include <Standard_Failure.hxx>
 #include <TopExp_Explorer.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
 #include <TopTools_MapIteratorOfMapOfShape.hxx>
 #include <TopTools_MapOfShape.hxx>
 #include <TopTools_SequenceOfShape.hxx>
@@ -149,7 +150,7 @@ public: //** Methods to find and orient faces of 6 sides of the box **//
   bool Init(const TopoDS_Face& f, SMESH_Mesh& mesh );
 
   //!< try to unite self with other face
-  bool AddContinuousFace( const _QuadFaceGrid& f, const TopTools_MapOfShape& cornerVertices );
+  bool AddContinuousFace( const _QuadFaceGrid& f, const TopTools_MapOfShape& internalEdges );
 
   //!< Try to set the side as bottom hirizontal side
   bool SetBottomSide(const _FaceSide& side, int* sideIndex=0);
@@ -220,10 +221,6 @@ private:
   bool error(const SMESH_ComputeErrorPtr& err)
   { myError = err; return ( !myError || myError->IsOK() ); }
 
-  bool isContinuousMesh(TopoDS_Edge E1, TopoDS_Edge E2, SMESH_Mesh& mesh) const;
-
-  bool needContinuationAtSide( int iSide, const TopTools_MapOfShape& cornerVertices ) const;
-
   bool loadCompositeGrid(SMESH_Mesh& mesh);
 
   bool fillGrid(SMESH_Mesh&                    theMesh,
@@ -283,9 +280,51 @@ bool StdMeshers_CompositeHexa_3D::CheckHypothesis(SMESH_Mesh&         aMesh,
 
 namespace
 {
+
   //================================================================================
   /*!
-   * \brief Finds VERTEXes located and block corners
+   * \brief Checks structure of a quadrangular mesh at the common VERTEX of two EDGEs.
+   *        Returns true if there are two quadrangles near the VERTEX.
+   */
+  //================================================================================
+
+  bool isContinuousMesh(TopoDS_Edge        E1,
+                        TopoDS_Edge        E2,
+                        const TopoDS_Face& F,
+                        const SMESH_Mesh&  mesh)
+  {
+    if (E1.Orientation() > TopAbs_REVERSED) // INTERNAL
+      E1.Orientation( TopAbs_FORWARD );
+    if (E2.Orientation() > TopAbs_REVERSED) // INTERNAL
+      E2.Orientation( TopAbs_FORWARD );
+
+    TopoDS_Vertex V;
+    if ( !TopExp::CommonVertex( E1, E2, V )) return false;
+
+    const SMDS_MeshNode* n = SMESH_Algo::VertexNode( V, mesh.GetMeshDS() );
+    if ( !n ) return false;
+
+    SMESHDS_SubMesh* sm = mesh.GetSubMeshContaining( F )->GetSubMeshDS();
+    if ( !sm ) return false;
+
+    int nbQuads = 0;
+    SMDS_ElemIteratorPtr fIt = n->GetInverseElementIterator(SMDSAbs_Face);
+    while ( fIt->more() )
+    {
+      const SMDS_MeshElement* f = fIt->next();
+      if ( !sm->Contains( f )) continue;
+
+      if ( f->NbCornerNodes() == 4 )
+        ++nbQuads;
+      else
+        return false;
+    }
+    return nbQuads == 2;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Finds VERTEXes located at block corners
    */
   //================================================================================
 
@@ -323,7 +362,87 @@ namespace
         cornerVV.Add( V );
     }
   }
-}
+
+  //================================================================================
+  /*!
+   * \brief Return EDGEs dividing one box side
+   */
+  //================================================================================
+
+  void getInternalEdges( SMESH_Mesh&                mesh,
+                         const TopoDS_Shape&        shape,
+                         const TopTools_MapOfShape& cornerVV,
+                         TopTools_MapOfShape&       internEE)
+  {
+    TopTools_IndexedMapOfShape subEE, subFF;
+    TopExp::MapShapes( shape, TopAbs_EDGE, subEE );
+    TopExp::MapShapes( shape, TopAbs_FACE, subFF );
+
+    TopoDS_Vertex VV[2];
+    TopTools_MapOfShape subChecked;
+    TopTools_MapIteratorOfMapOfShape vIt( cornerVV );
+    for ( ; vIt.More(); vIt.Next() )
+    {
+      TopoDS_Shape V0 = vIt.Key();
+      PShapeIteratorPtr riIt = SMESH_MesherHelper::GetAncestors( V0, mesh, TopAbs_EDGE );
+      while ( const TopoDS_Shape* riE = riIt->next() )
+      {
+        if ( !subEE.Contains( *riE ) || !subChecked.Add( *riE ))
+          continue;
+        TopoDS_Edge ridgeE = TopoDS::Edge( *riE );
+        while ( !ridgeE.IsNull() )
+        {
+          TopExp::Vertices( ridgeE, VV[0], VV[1] );
+          TopoDS_Shape V1 = VV[ V0.IsSame( VV[0] )];
+          if ( cornerVV.Contains( V1 ) )
+            break; // ridgeE reached a corner VERTEX
+
+          // detect internal EDGEs among those sharing V1. There can be 2, 3 or 4 EDGEs and
+          // number of internal EDGEs is N-2
+          TopoDS_Shape nextRidgeE;
+          PShapeIteratorPtr eIt = SMESH_MesherHelper::GetAncestors( V1, mesh, TopAbs_EDGE );
+          while ( const TopoDS_Shape* E = eIt->next() )
+          {
+            if ( E->IsSame( ridgeE ) || !subEE.Contains( *E ) || !subChecked.Add( *E ))
+              continue;
+            // look for FACEs sharing E and ridgeE
+            PShapeIteratorPtr fIt = SMESH_MesherHelper::GetAncestors( *E, mesh, TopAbs_FACE );
+            while ( const TopoDS_Shape* F = fIt->next() )
+            {
+              if ( !SMESH_MesherHelper::IsSubShape( ridgeE, *F ))
+                continue;
+              if ( isContinuousMesh( ridgeE, TopoDS::Edge( *E ), TopoDS::Face( *F ), mesh ))
+              {
+                nextRidgeE = *E;
+              }
+              else
+              {
+                internEE.Add( *E );
+              }
+              break;
+            }
+          }
+          // look for the next ridge EDGE
+          if ( nextRidgeE.IsNull() )
+          {
+            eIt = SMESH_MesherHelper::GetAncestors( V1, mesh, TopAbs_EDGE );
+            while ( const TopoDS_Shape* E = eIt->next() )
+              if ( !ridgeE.IsSame( *E ) && !internEE.Contains( *E ) )
+              {
+                nextRidgeE = *E;
+                break;
+              }
+          }
+          ridgeE = TopoDS::Edge( nextRidgeE );
+          V0 = V1;
+
+        } // check EDGEs around the last VERTEX of ridgeE 
+      } // loop on ridge EDGEs around a corner VERTEX
+    } // loop on on corner VERTEXes
+
+    return;
+  } // getInternalEdges()
+} // namespace
 
 //================================================================================
 /*!
@@ -345,6 +464,8 @@ bool StdMeshers_CompositeHexa_3D::findBoxFaces( const TopoDS_Shape&    shape,
   getBlockCorners( mesh, shape, cornerVertices );
   if ( cornerVertices.Extent() != 8 )
     return false;
+  TopTools_MapOfShape internalEdges;
+  getInternalEdges( mesh, shape, cornerVertices, internalEdges );
 
   list< _QuadFaceGrid >::iterator boxFace;
   TopExp_Explorer exp;
@@ -360,10 +481,10 @@ bool StdMeshers_CompositeHexa_3D::findBoxFaces( const TopoDS_Shape&    shape,
     {
       if ( prevContinuous )
       {
-        if ( prevContinuous->AddContinuousFace( *boxFace, cornerVertices ))
+        if ( prevContinuous->AddContinuousFace( *boxFace, internalEdges ))
           boxFace = --boxFaces.erase( boxFace );
       }
-      else if ( boxFace->AddContinuousFace( f, cornerVertices ))
+      else if ( boxFace->AddContinuousFace( f, internalEdges ))
       {
         prevContinuous = & (*boxFace);
       }
@@ -735,10 +856,10 @@ bool _QuadFaceGrid::Init(const TopoDS_Face& f, SMESH_Mesh& mesh)
         else if ( SMESH_Algo::IsContinuous( sideEdges.front(), edges.back() )) {
           sideEdges.splice( sideEdges.begin(), edges, --edges.end());
         }
-        else if ( isContinuousMesh( sideEdges.back(), edges.front(), mesh )) {
+        else if ( isContinuousMesh( sideEdges.back(), edges.front(), f, mesh )) {
           sideEdges.splice( sideEdges.end(), edges, edges.begin());
         }
-        else if ( isContinuousMesh( sideEdges.front(), edges.back(), mesh )) {
+        else if ( isContinuousMesh( sideEdges.front(), edges.back(), f, mesh )) {
           sideEdges.splice( sideEdges.begin(), edges, --edges.end());
         }
         else {
@@ -768,32 +889,15 @@ bool _QuadFaceGrid::Init(const TopoDS_Face& f, SMESH_Mesh& mesh)
 //================================================================================
 
 bool _QuadFaceGrid::AddContinuousFace( const _QuadFaceGrid&       other,
-                                       const TopTools_MapOfShape& cornerVertices)
+                                       const TopTools_MapOfShape& internalEdges)
 {
   for ( int i = 0; i < 4; ++i )
   {
     const _FaceSide& otherSide = other.GetSide( i );
     int iMyCommon;
-    if ( mySides.Contain( otherSide, &iMyCommon ) ) {
-      // check if normals of two faces are collinear at all vertices of an otherSide
-      const double angleTol = M_PI / 180. / 2.;
-      int iV, nbV = otherSide.NbVertices(), nbCollinear = 0;
-      for ( iV = 0; iV < nbV; ++iV )
-      {
-        TopoDS_Vertex v = otherSide.Vertex( iV );
-        gp_Vec n1, n2;
-        if ( !GetNormal( v, n1 ) || !other.GetNormal( v, n2 ))
-          continue;
-        if ( n1 * n2 < 0 )
-          n1.Reverse();
-        if ( n1.Angle(n2) < angleTol )
-          nbCollinear++;
-        else
-          break;
-      }
-      if ( nbCollinear > 1 || // this face becomes composite if not yet is
-           needContinuationAtSide( iMyCommon, cornerVertices) ||
-           other.needContinuationAtSide( i, cornerVertices ))
+    if ( mySides.Contain( otherSide, &iMyCommon ) )
+    {
+      if ( internalEdges.Contains( otherSide.Edge( 0 )))
       {
         DUMP_VERT("Cont 1", mySides.GetSide(iMyCommon)->FirstVertex());
         DUMP_VERT("Cont 2", mySides.GetSide(iMyCommon)->LastVertex());
@@ -1123,72 +1227,6 @@ bool _QuadFaceGrid::locateChildren()
     return error(ERR_LI("Error in locateChildren()"));
 
   return true;
-}
-
-//================================================================================
-/*!
- * \brief Checks structure of a quadrangular mesh at the common VERTEX of two EDGEs.
- *        Returns true if there are two quadrangles near the VERTEX.
- */
-//================================================================================
-
-bool _QuadFaceGrid::isContinuousMesh(TopoDS_Edge E1, TopoDS_Edge E2, SMESH_Mesh& mesh) const
-{
-  if (E1.Orientation() > TopAbs_REVERSED) // INTERNAL
-    E1.Orientation( TopAbs_FORWARD );
-  if (E2.Orientation() > TopAbs_REVERSED) // INTERNAL
-    E2.Orientation( TopAbs_FORWARD );
-
-  TopoDS_Vertex V;
-  if ( !TopExp::CommonVertex( E1, E2, V )) return false;
-
-  const SMDS_MeshNode* n = SMESH_Algo::VertexNode( V, mesh.GetMeshDS() );
-  if ( !n ) return false;
-
-  SMESHDS_SubMesh* sm = mesh.GetSubMesh( myFace )->GetSubMeshDS();
-  if ( !sm ) return false;
-
-  int nbQuads = 0;
-  SMDS_ElemIteratorPtr fIt = n->GetInverseElementIterator(SMDSAbs_Face);
-  while ( fIt->more() )
-  {
-    const SMDS_MeshElement* f = fIt->next();
-    if ( !sm->Contains( f )) continue; 
-
-    if ( f->NbCornerNodes() == 4 )
-      ++nbQuads;
-    else
-      return false;
-  }
-  return nbQuads == 2;
-}
-
-//================================================================================
-/*!
- * \brief Checks if a continuation FACE is needed at a given side according to
- *        presence of corner VERTEXes
- */
-//================================================================================
-
-bool _QuadFaceGrid::needContinuationAtSide( int                        iSide,
-                                            const TopTools_MapOfShape& cornerVertices ) const
-{
-  if ( cornerVertices.IsEmpty() )
-    return false;
-
-  // current solution is rough. Take more care of composite sides!
-
-  // check presence of corners at iSide
-  const _FaceSide* side = mySides.GetSide( iSide );
-  if ( !side ) return false;
-  int nbCorners = side->NbCommonVertices( cornerVertices );
-  if ( nbCorners > 0 )
-    return false;
-
-  // check presence of corners at other sides
-  nbCorners = mySides.NbCommonVertices( cornerVertices );
-
-  return ( 0 < nbCorners && nbCorners <= 3 ); // if nbCorners == 2 additional check is needed!!!
 }
 
 //================================================================================

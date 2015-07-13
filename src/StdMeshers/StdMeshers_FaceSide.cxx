@@ -113,7 +113,6 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face&   theFace,
 
   int nbDegen = 0;
   list<TopoDS_Edge>::iterator edge = theEdges.begin();
-  TopoDS_Iterator vExp;
   for ( int index = 0; edge != theEdges.end(); ++index, ++edge )
   {
     int i = theIsForward ? index : nbEdges-index-1;
@@ -150,7 +149,7 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face&   theFace,
       }
       else
       {
-        const TopoDS_Vertex& V = TopoDS::Vertex( vExp.Value() );
+        const TopoDS_Vertex& V = SMESH_MesherHelper::IthVertex( 0, *edge );
         Handle(Geom_Curve) C3d = new Geom_Line( BRep_Tool::Pnt( V ), gp::DX() );
         myC3dAdaptor[i].Load( C3d, 0, 0.5 * BRep_Tool::Tolerance( V ));
       }
