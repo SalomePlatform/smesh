@@ -3765,7 +3765,16 @@ CORBA::Long SMESH_Mesh_i::NbBiQuadQuadrangles()throw(SALOME::SALOME_Exception)
   return _impl->NbBiQuadQuadrangles();
 }
 
-CORBA::Long SMESH_Mesh_i::NbPolygons(SMESH::ElementOrder order) throw(SALOME::SALOME_Exception)
+CORBA::Long SMESH_Mesh_i::NbPolygons() throw(SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  if ( _preMeshInfo )
+    return _preMeshInfo->NbPolygons();
+
+  return _impl->NbPolygons();
+}
+
+CORBA::Long SMESH_Mesh_i::NbPolygonsOfOrder(SMESH::ElementOrder order) throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
   if ( _preMeshInfo )

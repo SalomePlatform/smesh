@@ -776,7 +776,10 @@ module SMESH
     long NbBiQuadQuadrangles()
       raises (SALOME::SALOME_Exception);
 
-    long NbPolygons(in ElementOrder order)
+    long NbPolygons()
+      raises (SALOME::SALOME_Exception);
+
+    long NbPolygonsOfOrder(in ElementOrder order)
       raises (SALOME::SALOME_Exception);
 
     long NbVolumes()

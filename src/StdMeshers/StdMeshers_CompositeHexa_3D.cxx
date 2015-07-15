@@ -369,7 +369,7 @@ namespace
    */
   //================================================================================
 
-  void getInternalEdges( SMESH_Mesh&                mesh,
+  bool getInternalEdges( SMESH_Mesh&                mesh,
                          const TopoDS_Shape&        shape,
                          const TopTools_MapOfShape& cornerVV,
                          TopTools_MapOfShape&       internEE)
@@ -436,11 +436,13 @@ namespace
           ridgeE = TopoDS::Edge( nextRidgeE );
           V0 = V1;
 
+          if ( ridgeE.IsNull() )
+            return false;
         } // check EDGEs around the last VERTEX of ridgeE 
       } // loop on ridge EDGEs around a corner VERTEX
     } // loop on on corner VERTEXes
 
-    return;
+    return true;
   } // getInternalEdges()
 } // namespace
 
@@ -463,9 +465,10 @@ bool StdMeshers_CompositeHexa_3D::findBoxFaces( const TopoDS_Shape&    shape,
   TopTools_MapOfShape cornerVertices;
   getBlockCorners( mesh, shape, cornerVertices );
   if ( cornerVertices.Extent() != 8 )
-    return false;
+    return error( COMPERR_BAD_INPUT_MESH, "Can't find 8 corners of a block" );
   TopTools_MapOfShape internalEdges;
-  getInternalEdges( mesh, shape, cornerVertices, internalEdges );
+  if ( !getInternalEdges( mesh, shape, cornerVertices, internalEdges ))
+    return error( COMPERR_BAD_INPUT_MESH, "2D mesh is not suitable for i,j,k hexa meshing" );
 
   list< _QuadFaceGrid >::iterator boxFace;
   TopExp_Explorer exp;

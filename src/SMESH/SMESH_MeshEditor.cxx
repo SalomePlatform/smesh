@@ -5356,8 +5356,7 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
           SMDS_MeshCell::interlacedSmdsOrder( elem->GetEntityType(), nbn );
         SMDS_MeshCell::applyInterlaceRev( interlace, nodeVec );
 
-        if ( const SMDS_MeshElement* face = AddElement( nodeVec, anyFace.Init( elem )))
-          myLastCreatedElems.Append( face );
+        AddElement( nodeVec, anyFace.Init( elem ));
 
         while ( srcElements.Length() < myLastCreatedElems.Length() )
           srcElements.Append( elem );
@@ -12531,7 +12530,7 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
 
   typedef vector<const SMDS_MeshNode*> TConnectivity;
   TConnectivity tgtNodes;
-  ElemFeatures elemKind( missType );
+  ElemFeatures elemKind( missType ), elemToCopy;
 
   SMDS_ElemIteratorPtr eIt;
   if (elements.empty()) eIt = aMesh->elementsIterator(elemType);
@@ -12566,9 +12565,9 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
           for ( int i = 0; i < nbFaceNodes; i += 1+iQuad)
           {
             for ( int j = 0; j < nodes.size(); ++j )
-              nodes[j] =nn[i+j];
+              nodes[j] = nn[ i+j ];
             if ( const SMDS_MeshElement* edge =
-                 aMesh->FindElement(nodes,SMDSAbs_Edge,/*noMedium=*/false))
+                 aMesh->FindElement( nodes, SMDSAbs_Edge, /*noMedium=*/false ))
               presentBndElems.push_back( edge );
             else
               missingBndElems.push_back( nodes );
@@ -12703,7 +12702,7 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
         tgtNodes.resize( e->NbNodes() );
         for ( inode = 0; inode < nodes.size(); ++inode )
           tgtNodes[inode] = getNodeWithSameID( tgtMeshDS, e->GetNode(inode) );
-        presentEditor->AddElement( tgtNodes, elemKind.Init( e ));
+        presentEditor->AddElement( tgtNodes, elemToCopy.Init( e ));
       }
     else // store present elements to add them to a group
       for ( int i = 0 ; i < presentBndElems.size(); ++i )
@@ -12738,7 +12737,7 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
       tgtNodes.resize( elem->NbNodes() );
       for ( inode = 0; inode < tgtNodes.size(); ++inode )
         tgtNodes[inode] = getNodeWithSameID( tgtMeshDS, elem->GetNode(inode) );
-      tgtEditor.AddElement( tgtNodes, elemKind.Init( elem ));
+      tgtEditor.AddElement( tgtNodes, elemToCopy.Init( elem ));
 
       tgtEditor.myLastCreatedElems.Clear();
     }

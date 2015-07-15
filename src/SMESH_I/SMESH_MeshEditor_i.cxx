@@ -6441,9 +6441,9 @@ CORBA::Long SMESH_MeshEditor_i::MakeBoundaryElements(SMESH::Bnd_Dimension dim,
     THROW_SALOME_CORBA_EXCEPTION("Invalid boundary dimension", SALOME::BAD_PARAM);
 
   // separate groups belonging to this and other mesh
-  SMESH::ListOfIDSources_var groupsOfThisMesh = new SMESH::ListOfIDSources;
+  SMESH::ListOfIDSources_var groupsOfThisMesh  = new SMESH::ListOfIDSources;
   SMESH::ListOfIDSources_var groupsOfOtherMesh = new SMESH::ListOfIDSources;
-  groupsOfThisMesh->length( groups.length() );
+  groupsOfThisMesh ->length( groups.length() );
   groupsOfOtherMesh->length( groups.length() );
   int nbGroups = 0, nbGroupsOfOtherMesh = 0;
   for ( int i = 0; i < groups.length(); ++i )

@@ -2359,7 +2359,7 @@ class Mesh:
     #  @return an integer value
     #  @ingroup l1_meshinfo
     def NbPolygons(self, elementOrder = SMESH.ORDER_ANY):
-        return self.mesh.NbPolygons(elementOrder)
+        return self.mesh.NbPolygonsOfOrder(elementOrder)
 
     ## Returns the number of volumes in the mesh
     #  @return an integer value
@@ -4940,6 +4940,10 @@ class meshEditor(SMESH._objref_SMESH_MeshEditor):
         if len( args ) == 1:
             return SMESH._objref_SMESH_MeshEditor.FindCoincidentNodes( self, args[0], False )
         return SMESH._objref_SMESH_MeshEditor.FindCoincidentNodes( self, *args )
+    def FindCoincidentNodesOnPart(self,*args): # a 3d arg added (SeparateCornerAndMediumNodes)
+        if len( args ) == 2:
+            args += False,
+        return SMESH._objref_SMESH_MeshEditor.FindCoincidentNodesOnPart( self, *args )
     def MergeNodes(self,*args): # a 2nd arg added (NodesToKeep)
         if len( args ) == 1:
             return SMESH._objref_SMESH_MeshEditor.MergeNodes( self, args[0], [] )
