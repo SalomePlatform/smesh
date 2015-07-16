@@ -5141,6 +5141,8 @@ SMESH::array_of_ElementType* SMESH_Mesh_i::GetTypes()
   if (_impl->NbVolumes())    types[nbTypes++] = SMESH::VOLUME;
   if (_impl->Nb0DElements()) types[nbTypes++] = SMESH::ELEM0D;
   if (_impl->NbBalls())      types[nbTypes++] = SMESH::BALL;
+  if (_impl->NbNodes() &&
+      nbTypes == 0 )         types[nbTypes++] = SMESH::NODE;
   types->length( nbTypes );
 
   return types._retn();

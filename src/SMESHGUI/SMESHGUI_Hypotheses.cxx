@@ -665,6 +665,7 @@ void SMESHGUI_HypothesisDlg::setCustomFrame( QFrame* f )
 
 void SMESHGUI_HypothesisDlg::accept()
 {
+  SUIT_OverrideCursor wc; // some creators temporary set params to a hyp which can be long
   QString msg;
   if ( myCreator && !myCreator->checkParams( msg ) )
   {

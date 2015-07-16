@@ -2258,8 +2258,11 @@ void SMESHGUI_TreeElemInfo::saveInfo( QTextStream &out )
 /*!
   \brief Contructor
 */
-GrpComputor::GrpComputor( SMESH::SMESH_GroupBase_ptr grp, QTreeWidgetItem* item, QObject* parent )
-  : QObject( parent ), myItem( item )
+GrpComputor::GrpComputor( SMESH::SMESH_GroupBase_ptr grp,
+                          QTreeWidgetItem*           item,
+                          QObject*                   parent,
+                          bool                       toComputeSize)
+  : QObject( parent ), myItem( item ), myToComputeSize( toComputeSize )
 {
   myGroup = SMESH::SMESH_GroupBase::_narrow( grp );
 }
@@ -2272,9 +2275,9 @@ void GrpComputor::compute()
   if ( !CORBA::is_nil( myGroup ) && myItem ) {
     QTreeWidgetItem* item = myItem;
     myItem = 0;
-    int nbNodes = myGroup->GetNumberOfNodes();
+    int nb = myToComputeSize ? myGroup->Size() : myGroup->GetNumberOfNodes();
     item->treeWidget()->removeItemWidget( item, 1 );
-    item->setText( 1, QString::number( nbNodes ));
+    item->setText( 1, QString::number( nb ));
   }
 }
 
@@ -2506,10 +2509,28 @@ void SMESHGUI_AddInfo::groupInfo( SMESH::SMESH_GroupBase_ptr grp, QTreeWidgetIte
     etypeItem->setText( 1, etype );
   }
 
-  // size
+  SMESH::SMESH_Mesh_var mesh = grp->GetMesh();
+  bool            meshLoaded = mesh->IsLoaded();
+
+  // size. Don't call grp->Size() for GroupOnFilter - issue IPAL52831
+  int groupSize = -1;
+  if ( grp->IsNodeInfoAvailable() || CORBA::is_nil( aFltGroup ))
+    groupSize = grp->Size();
+
   QTreeWidgetItem* sizeItem = createItem( parent, Bold );
   sizeItem->setText( 0, tr( "SIZE" ) );
-  sizeItem->setText( 1, QString::number( grp->Size() ) );
+  if ( groupSize > -1 ) {
+    sizeItem->setText( 1, QString::number( groupSize ) );
+  }
+  else {
+    QPushButton* btn = new QPushButton( tr( meshLoaded ? "COMPUTE" : "LOAD"), this );
+    setItemWidget( sizeItem, 1, btn );
+    GrpComputor* comp = new GrpComputor( grp, sizeItem, this, /*size=*/true );
+    connect( btn, SIGNAL( clicked() ), comp, SLOT( compute() ) );
+    myComputors.append( comp );
+    if ( !meshLoaded )
+      connect( btn, SIGNAL( clicked() ), this, SLOT( changeLoadToCompute() ) );
+  }
 
   // color
   SALOMEDS::Color color = grp->GetColor();
@@ -2522,9 +2543,7 @@ void SMESHGUI_AddInfo::groupInfo( SMESH::SMESH_GroupBase_ptr grp, QTreeWidgetIte
     QTreeWidgetItem* nodesItem = createItem( parent, Bold );
     nodesItem->setText( 0, tr( "NB_NODES" ) );
     int nbNodesLimit = SMESHGUI::resourceMgr()->integerValue( "SMESH", "info_groups_nodes_limit", 100000 );
-    SMESH::SMESH_Mesh_var mesh = grp->GetMesh();
-    bool meshLoaded = mesh->IsLoaded();
-    bool toShowNodes = ( grp->IsNodeInfoAvailable() || nbNodesLimit <= 0 || grp->Size() <= nbNodesLimit );
+    bool toShowNodes = groupSize >= 0 ? ( grp->IsNodeInfoAvailable() || nbNodesLimit <= 0 || groupSize <= nbNodesLimit ) : false;
     if ( toShowNodes && meshLoaded ) {
       // already calculated and up-to-date
       nodesItem->setText( 1, QString::number( grp->GetNumberOfNodes() ) );

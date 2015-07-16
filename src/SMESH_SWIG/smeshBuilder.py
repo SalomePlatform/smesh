@@ -2505,8 +2505,8 @@ class Mesh:
     #  @return the list of integer values
     #  @ingroup l1_meshinfo
     def GetSubMeshElementsId(self, Shape):
-        if ( isinstance( Shape, geomBuilder.GEOM._objref_GEOM_Object)):
-            ShapeID = Shape.GetSubShapeIndices()[0]
+        if isinstance( Shape, geomBuilder.GEOM._objref_GEOM_Object):
+            ShapeID = self.geompyD.GetSubShapeID( self.geom, Shape )
         else:
             ShapeID = Shape
         return self.mesh.GetSubMeshElementsId(ShapeID)
@@ -2518,7 +2518,7 @@ class Mesh:
     #  @return the list of integer values
     #  @ingroup l1_meshinfo
     def GetSubMeshNodesId(self, Shape, all):
-        if ( isinstance( Shape, geomBuilder.GEOM._objref_GEOM_Object)):
+        if isinstance( Shape, geomBuilder.GEOM._objref_GEOM_Object):
             ShapeID = self.geompyD.GetSubShapeID( self.geom, Shape )
         else:
             ShapeID = Shape
@@ -2530,8 +2530,8 @@ class Mesh:
     #  @return element type
     #  @ingroup l1_meshinfo
     def GetSubMeshElementType(self, Shape):
-        if ( isinstance( Shape, geomBuilder.GEOM._objref_GEOM_Object)):
-            ShapeID = Shape.GetSubShapeIndices()[0]
+        if isinstance( Shape, geomBuilder.GEOM._objref_GEOM_Object):
+            ShapeID = self.geompyD.GetSubShapeID( self.geom, Shape )
         else:
             ShapeID = Shape
         return self.mesh.GetSubMeshElementType(ShapeID)
@@ -2920,7 +2920,7 @@ class Mesh:
     #  @ingroup l2_modif_add
     def SetNodeOnVertex(self, NodeID, Vertex):
         if ( isinstance( Vertex, geomBuilder.GEOM._objref_GEOM_Object)):
-            VertexID = Vertex.GetSubShapeIndices()[0]
+            VertexID = self.geompyD.GetSubShapeID( self.geom, Vertex )
         else:
             VertexID = Vertex
         try:
@@ -2938,7 +2938,7 @@ class Mesh:
     #  @ingroup l2_modif_add
     def SetNodeOnEdge(self, NodeID, Edge, paramOnEdge):
         if ( isinstance( Edge, geomBuilder.GEOM._objref_GEOM_Object)):
-            EdgeID = Edge.GetSubShapeIndices()[0]
+            EdgeID = self.geompyD.GetSubShapeID( self.geom, Edge )
         else:
             EdgeID = Edge
         try:
@@ -2956,7 +2956,7 @@ class Mesh:
     #  @ingroup l2_modif_add
     def SetNodeOnFace(self, NodeID, Face, u, v):
         if ( isinstance( Face, geomBuilder.GEOM._objref_GEOM_Object)):
-            FaceID = Face.GetSubShapeIndices()[0]
+            FaceID = self.geompyD.GetSubShapeID( self.geom, Face )
         else:
             FaceID = Face
         try:
@@ -2972,7 +2972,7 @@ class Mesh:
     #  @ingroup l2_modif_add
     def SetNodeInVolume(self, NodeID, Solid):
         if ( isinstance( Solid, geomBuilder.GEOM._objref_GEOM_Object)):
-            SolidID = Solid.GetSubShapeIndices()[0]
+            SolidID = self.geompyD.GetSubShapeID( self.geom, Solid )
         else:
             SolidID = Solid
         try:
@@ -2988,7 +2988,7 @@ class Mesh:
     #  @ingroup l2_modif_add
     def SetMeshElementOnShape(self, ElementID, Shape):
         if ( isinstance( Shape, geomBuilder.GEOM._objref_GEOM_Object)):
-            ShapeID = Shape.GetSubShapeIndices()[0]
+            ShapeID = self.geompyD.GetSubShapeID( self.geom, Shape )
         else:
             ShapeID = Shape
         try:
@@ -4589,7 +4589,7 @@ class Mesh:
     def ClearLastCreated(self):
         self.editor.ClearLastCreated()
 
-    ## Creates Duplicates given elements, i.e. creates new elements based on the 
+    ## Creates duplicates of given elements, i.e. creates new elements based on the 
     #  same nodes as the given ones.
     #  @param theElements - container of elements to duplicate. It can be a Mesh,
     #         sub-mesh, group, filter or a list of element IDs. If \a theElements is

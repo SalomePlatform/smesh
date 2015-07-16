@@ -1013,8 +1013,8 @@ namespace SMESH
 
     std::vector< SMESH_GroupBase_i* > myBaseGroups;
   };
-  
-  
+
+
   /*
     FILTER LIBRARY
   */

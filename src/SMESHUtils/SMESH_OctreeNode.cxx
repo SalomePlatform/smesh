@@ -189,6 +189,7 @@ void SMESH_OctreeNode::NodesAround (const SMDS_MeshNode * Node,
 //================================================================================
 /*!
  * \brief Return in dist2Nodes nodes mapped to their square distance from Node
+ *        Tries to find a closest node.
  *  \param node - node to find nodes closest to
  *  \param dist2Nodes - map of found nodes and their distances
  *  \param precision - radius of a sphere to check nodes inside
@@ -239,6 +240,44 @@ bool SMESH_OctreeNode::NodesAround(const gp_XYZ &node,
     }
   }
   return false;
+}
+
+//================================================================================
+/*!
+ * \brief Return a list of nodes close to a point
+ *  \param [in] point - point
+ *  \param [out] nodes - found nodes
+ *  \param [in] precision - allowed distance from \a point
+ */
+//================================================================================
+
+void SMESH_OctreeNode::NodesAround(const gp_XYZ&                      point,
+                                   std::vector<const SMDS_MeshNode*>& nodes,
+                                   double                             precision)
+{
+  if ( isInside( point, precision ))
+  {
+    if ( isLeaf() && NbNodes() )
+    {
+      double minDist2 = precision * precision;
+      TIDSortedNodeSet::iterator nIt = myNodes.begin();
+      for ( ; nIt != myNodes.end(); ++nIt )
+      {
+        SMESH_TNodeXYZ p2( *nIt );
+        double dist2 = ( point - p2 ).SquareModulus();
+        if ( dist2 <= minDist2 )
+          nodes.push_back( p2._node );
+      }
+    }
+    else if ( myChildren )
+    {
+      for (int i = 0; i < 8; i++)
+      {
+        SMESH_OctreeNode* myChild = dynamic_cast<SMESH_OctreeNode*> (myChildren[i]);
+        myChild->NodesAround( point, nodes, precision);
+      }
+    }
+  }
 }
 
 //=============================

@@ -50,6 +50,12 @@ corresponding end nodes of two borders will be merged. Intermediate
 nodes of two borders will be either merged or inserted into faces of
 the opposite border.
 
+In practice the borders to sew often coincide and in this case it is
+difficult to specify the first and the last nodes of a border since
+they coincide with the first and the last nodes of the other
+border. To cope with this, manually \ref merging_nodes_page to fuse
+each pair of coincident nodes into one.
+
 The sewing algorithm is as follows:
 <ol>
 <li>The parameter (U) of each node within a border is computed. So

@@ -250,7 +250,7 @@ class GrpComputor: public QObject
   Q_OBJECT;
 
 public:
-  GrpComputor( SMESH::SMESH_GroupBase_ptr, QTreeWidgetItem*, QObject* );
+  GrpComputor( SMESH::SMESH_GroupBase_ptr, QTreeWidgetItem*, QObject*, bool = false);
   QTreeWidgetItem* getItem() { return myItem; }
 
 public slots:
@@ -259,6 +259,7 @@ public slots:
 private:
   SMESH::SMESH_GroupBase_var myGroup;
   QTreeWidgetItem*           myItem;
+  bool                       myToComputeSize;
 };
 
 class SMESHGUI_EXPORT SMESHGUI_AddInfo : public QTreeWidget

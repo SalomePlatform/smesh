@@ -55,6 +55,9 @@ struct SMESHUtils_EXPORT SMESH_NodeSearcher
 {
   virtual const SMDS_MeshNode* FindClosestTo( const gp_Pnt& pnt ) = 0;
   virtual void MoveNode( const SMDS_MeshNode* node, const gp_Pnt& toPnt ) = 0;
+  virtual int  FindNearPoint(const gp_Pnt&                        point,
+                             const double                         tolerance,
+                             std::vector< const SMDS_MeshNode* >& foundNodes) = 0;
 };
 
 //=======================================================================

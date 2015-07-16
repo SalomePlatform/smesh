@@ -170,6 +170,18 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
 
   //---------------------------------------------------------------------
   /*!
+   * \brief Finds nodes located within a tolerance near a point 
+   */
+  int FindNearPoint(const gp_Pnt&                        point,
+                    const double                         tolerance,
+                    std::vector< const SMDS_MeshNode* >& foundNodes)
+  {
+    myOctreeNode->NodesAround( point.Coord(), foundNodes, tolerance );
+    return foundNodes.size();
+  }
+
+  //---------------------------------------------------------------------
+  /*!
    * \brief Destructor
    */
   ~SMESH_NodeSearcherImpl() { delete myOctreeNode; }
@@ -696,21 +708,21 @@ FindElementsByPoint(const gp_Pnt&                      point,
     if ( !_nodeSearcher )
       _nodeSearcher = new SMESH_NodeSearcherImpl( _mesh );
 
-    const SMDS_MeshNode* closeNode = _nodeSearcher->FindClosestTo( point );
-    if ( !closeNode ) return foundElements.size();
-
-    if ( point.Distance( SMESH_TNodeXYZ( closeNode )) > tolerance )
-      return foundElements.size(); // to far from any node
+    std::vector< const SMDS_MeshNode* > foundNodes;
+    _nodeSearcher->FindNearPoint( point, tolerance, foundNodes );
 
     if ( type == SMDSAbs_Node )
     {
-      foundElements.push_back( closeNode );
+      foundElements.assign( foundNodes.begin(), foundNodes.end() );
     }
     else
     {
-      SMDS_ElemIteratorPtr elemIt = closeNode->GetInverseElementIterator( type );
-      while ( elemIt->more() )
-        foundElements.push_back( elemIt->next() );
+      for ( size_t i = 0; i < foundNodes.size(); ++i )
+      {
+        SMDS_ElemIteratorPtr elemIt = foundNodes[i]->GetInverseElementIterator( type );
+        while ( elemIt->more() )
+          foundElements.push_back( elemIt->next() );
+      }
     }
   }
   // =================================================================================

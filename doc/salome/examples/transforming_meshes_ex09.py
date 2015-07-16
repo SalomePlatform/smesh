@@ -11,35 +11,40 @@ import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 smesh =  smeshBuilder.New(salome.myStudy)
 
-# create two faces of the box
-box1 = geompy.MakeBox(0., 0., 0., 20., 20., 15.)
-facesList1 = geompy.SubShapeAll(box1, geompy.ShapeType["FACE"])
-face1 = facesList1[2]
+# make two not sewed quadranges
+OY0 = geompy.MakeVectorDXDYDZ(0, 1, 0)
+OY1 = geompy.MakeTranslation( OY0, 1, 0, 0, theName="OY1" )
+OY2 = geompy.MakeTranslation( OY0, 1.01, 0, 0, theName="OY2" )
+OY3 = geompy.MakeTranslation( OY0, 2, 0, 0 )
+q1  = geompy.MakeQuad2Edges( OY0, OY1 )
+q2  = geompy.MakeQuad2Edges( OY2, OY3 )
 
-box2 = geompy.MakeBox(0., 5., 0., 20., 20., 15.)
-facesList2 = geompy.SubShapeAll(box2, geompy.ShapeType["FACE"])
-face2 = facesList2[1]
+shape = geompy.MakeCompound( [q1,q2], theName='shape' )
 
-edgesList = geompy.SubShapeAll(face2, geompy.ShapeType["EDGE"])
-edge1 = edgesList[2]
-
-aComp = geompy.MakeCompound([face1, face2])
-geompy.addToStudy(aComp, "Two faces")
-
-# create a mesh on two faces
-mesh = smesh.Mesh(aComp, "Two faces : quadrangle mesh")
-
-algo1D = mesh.Segment()
-algo1D.NumberOfSegments(4)
-algo2D = mesh.Quadrangle()
-
-algo_local = mesh.Segment(edge1)
-algo_local.Arithmetic1D(1, 4)
-algo_local.Propagation()
-
+# make a non-uniform quadrangle mesh on two faces
+mesh = smesh.Mesh(shape, "Two faces : quadrangle mesh")
+mesh.Segment().Arithmetic1D( 0.1, 0.4 )
+mesh.Segment(q1).NumberOfSegments( 5 )
+mesh.Quadrangle()
 mesh.Compute()
 
 # sew free borders
-# FirstNodeID1, SecondNodeID1, LastNodeID1,
-# FirstNodeID2, SecondNodeID2, LastNodeID2, CreatePolygons, CreatePolyedrs
-mesh.SewFreeBorders(6, 21, 5, 1, 12, 3, 0, 0)
+
+segs1 = mesh.GetSubMeshElementsId( OY1 ) # mesh segments generated on borders
+segs2 = mesh.GetSubMeshElementsId( OY2 )
+
+FirstNodeID1  = mesh.GetElemNode( segs1[0], 0 )
+SecondNodeID1 = mesh.GetElemNode( segs1[0], 1 )
+LastNodeID1   = mesh.GetElemNode( segs1[-1], 1 )
+FirstNodeID2  = mesh.GetElemNode( segs2[0], 0 )
+SecondNodeID2 = mesh.GetElemNode( segs2[0], 1 )
+LastNodeID2   = mesh.GetElemNode( segs2[-1], 1 )
+CreatePolygons = True
+CreatePolyedrs = False
+
+res = mesh.SewFreeBorders(FirstNodeID1, SecondNodeID1, LastNodeID1,
+                          FirstNodeID2, SecondNodeID2, LastNodeID2,
+                          CreatePolygons, CreatePolyedrs )
+print res
+print "nb polygons:", mesh.NbPolygons()
+

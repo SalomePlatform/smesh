@@ -2891,6 +2891,11 @@ void SMESHGUI_FilterDlg::Init (const int type, const bool setInViewer)
 //=======================================================================
 void SMESHGUI_FilterDlg::Init (const QList<int>& theTypes, const bool setInViewer)
 {
+  if ( theTypes.empty() )
+  {
+    Init( SMESH::ALL, setInViewer );
+    return;
+  }
   mySourceWg  = 0;
   myTypes     = theTypes;
   myMesh      = SMESH::SMESH_Mesh::_nil();

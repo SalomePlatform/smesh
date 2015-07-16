@@ -517,11 +517,17 @@ void SMESHGUI_RemoveElementsDlg::setFilters()
     SUIT_MessageBox::critical(this,
                               tr("SMESH_ERROR"),
                               tr("NO_MESH_SELECTED"));
-   return;
+    return;
   }
   if ( !myFilterDlg )
     myFilterDlg = new SMESHGUI_FilterDlg( mySMESHGUI, SMESH::ALL );
 
+  QList<int> types;
+  if ( myMesh->NbEdges()   ) types << SMESH::EDGE;
+  if ( myMesh->NbFaces()   ) types << SMESH::FACE;
+  if ( myMesh->NbVolumes() ) types << SMESH::VOLUME;
+
+  myFilterDlg->Init( types );
   myFilterDlg->SetSelection();
   myFilterDlg->SetMesh( myMesh );
   myFilterDlg->SetSourceWg( LineEditC1A1 );
