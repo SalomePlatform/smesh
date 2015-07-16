@@ -412,7 +412,7 @@ void StdMeshersGUI_SubShapeSelectorWdg::onListSelectionChanged()
   if ( !myPreviewActor )
     return;
 
-  mySelectionMgr->clearSelected();
+  //mySelectionMgr->clearSelected();
   TColStd_MapOfInteger aIndexes;
   QList<QListWidgetItem*> selItems = myListWidget->selectedItems();
   QListWidgetItem* anItem;
