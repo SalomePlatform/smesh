@@ -44,6 +44,10 @@
 #include <BRep_Tool.hxx>
 #include <TCollection_AsciiString.hxx>
 #include <OSD.hxx>
+#include <BRepPrimAPI_MakeSphere.hxx>
+#include <BRepPrimAPI_MakeCylinder.hxx>
+#include <BRepPrimAPI_MakeBox.hxx>
+
 
 #ifdef WIN32
  #include <windows.h>
@@ -93,6 +97,7 @@
 #include "SMESH_Mesh_i.hxx"
 #include "SMESH_PreMeshInfo.hxx"
 #include "SMESH_PythonDump.hxx"
+#include "SMESH_ControlsDef.hxx"
 #include "SMESH_TryCatch.hxx" // to include after OCC headers!
 
 #include CORBA_SERVER_HEADER(SMESH_Group)
@@ -5124,6 +5129,193 @@ CORBA::Boolean SMESH_Gen_i::IsApplicable ( const char*           theAlgoType,
 #endif
   return true;
 }
+
+//=================================================================================
+// function : GetInsideSphere
+// purpose  : Collect indices of elements, which are located inside the sphere
+//=================================================================================
+SMESH::long_array* SMESH_Gen_i::GetInsideSphere( SMESH::SMESH_IDSource_ptr meshPart,
+						 SMESH::ElementType     theElemType,
+						 CORBA::Double         theX,
+						 CORBA::Double         theY,
+						 CORBA::Double         theZ,
+						 CORBA::Double         theR) {
+  SMESH::long_array_var aResult = new SMESH::long_array();
+  if(meshPart->_is_nil())
+    return aResult._retn();
+
+  // 1. Create geometrical object
+  gp_Pnt aP( theX, theY, theZ );
+  TopoDS_Shape aShape = BRepPrimAPI_MakeSphere( aP, theR ).Shape();
+
+  std::vector<long> lst =_GetInside(meshPart, theElemType, aShape);
+
+  if( lst.size() > 0 ) {
+    aResult->length( lst.size() );
+    for ( long i = 0; i < lst.size(); i++ ) {
+      aResult[i] = lst[i];
+    }
+  }
+  return aResult._retn();
+}
+
+SMESH::long_array* SMESH_Gen_i::GetInsideBox( SMESH::SMESH_IDSource_ptr meshPart,
+					      SMESH::ElementType        theElemType,
+					      CORBA::Double             theX1, 
+					      CORBA::Double             theY1, 
+					      CORBA::Double             theZ1,
+					      CORBA::Double             theX2,
+					      CORBA::Double             theY2,
+					      CORBA::Double             theZ2) {
+  SMESH::long_array_var aResult = new SMESH::long_array();
+  if( meshPart->_is_nil() )
+    return aResult._retn();
+
+  TopoDS_Shape aShape = BRepPrimAPI_MakeBox( gp_Pnt( theX1, theY1, theZ1 ), gp_Pnt( theX2, theY2, theZ2 ) ).Shape();
+
+  std::vector<long> lst =_GetInside(meshPart, theElemType, aShape);
+
+  if( lst.size() > 0 ) {
+    aResult->length( lst.size() );
+    for ( long i = 0; i < lst.size(); i++ ) {
+      aResult[i] = lst[i];
+    }
+  }
+  return aResult._retn();
+}
+
+SMESH::long_array* SMESH_Gen_i::GetInsideCylinder( SMESH::SMESH_IDSource_ptr meshPart,
+						   SMESH::ElementType        theElemType,
+						   CORBA::Double             theX, 
+						   CORBA::Double             theY, 
+						   CORBA::Double             theZ,
+						   CORBA::Double             theDX, 
+						   CORBA::Double             theDY, 
+						   CORBA::Double             theDZ,
+						   CORBA::Double             theH,
+						   CORBA::Double             theR ){
+  SMESH::long_array_var aResult = new SMESH::long_array();
+  if( meshPart->_is_nil() )
+    return aResult._retn();
+
+  gp_Pnt aP( theX, theY, theZ );
+  gp_Vec aV( theDX, theDY, theDZ );
+  gp_Ax2 anAxes (aP, aV);
+
+  TopoDS_Shape aShape = BRepPrimAPI_MakeCylinder(anAxes, theR, Abs(theH)).Shape();
+
+  std::vector<long> lst =_GetInside(meshPart, theElemType, aShape);
+
+  if( lst.size() > 0 ) {
+    aResult->length( lst.size() );
+    for ( long i = 0; i < lst.size(); i++ ) {
+      aResult[i] = lst[i];
+    }
+  }
+  return aResult._retn();
+}
+
+SMESH::long_array* SMESH_Gen_i::GetInside( SMESH::SMESH_IDSource_ptr meshPart,
+					   SMESH::ElementType        theElemType,
+					   GEOM::GEOM_Object_ptr     theGeom,
+					   CORBA::Double             theTolerance ) {
+  SMESH::long_array_var aResult = new SMESH::long_array();
+  if( meshPart->_is_nil() || theGeom->_is_nil() )
+    return aResult._retn();
+
+  TopoDS_Shape aShape = GeomObjectToShape( theGeom );
+
+  std::vector<long> lst =_GetInside(meshPart, theElemType, aShape, &theTolerance);
+
+  if( lst.size() > 0 ) {
+    aResult->length( lst.size() );
+    for ( long i = 0; i < lst.size(); i++ ) {
+      aResult[i] = lst[i];
+    }
+  }
+  return aResult._retn();
+}
+
+
+
+std::vector<long> SMESH_Gen_i::_GetInside( SMESH::SMESH_IDSource_ptr meshPart,
+					   SMESH::ElementType theElemType,
+					   TopoDS_Shape& aShape,
+					   double* theTolerance) {
+  
+  std::vector<long> res;
+  SMESH::SMESH_Mesh_var mesh = meshPart->GetMesh();
+
+  if ( mesh->_is_nil() ) 
+    return res;
+
+  SMESH_Mesh_i* anImpl = dynamic_cast<SMESH_Mesh_i*>( GetServant( mesh ).in() );
+  if ( !anImpl ) 
+    return res;
+  
+  const SMDS_Mesh* meshDS = anImpl->GetImpl().GetMeshDS();
+
+  if ( !meshDS ) 
+    return res;
+
+  SMDSAbs_ElementType aType = SMDSAbs_ElementType(theElemType);
+  SMESH::Controls::ElementsOnShape* anElementsOnShape = new SMESH::Controls::ElementsOnShape();
+  anElementsOnShape->SetAllNodes( true );
+  anElementsOnShape->SetMesh( meshDS );
+  anElementsOnShape->SetShape( aShape, aType );
+
+  if(theTolerance)
+    anElementsOnShape->SetTolerance(*theTolerance);  
+
+  SMESH::SMESH_Mesh_var msource = SMESH::SMESH_Mesh::_narrow(meshPart);
+  if ( !msource->_is_nil() ) { // Mesh case
+    SMDS_ElemIteratorPtr elemIt = meshDS->elementsIterator( aType );
+    if ( elemIt ) {
+      while ( elemIt->more() ) {
+	const SMDS_MeshElement* anElem = elemIt->next();
+	long anId = anElem->GetID();
+	if ( anElementsOnShape->IsSatisfy( anId ) )
+	  res.push_back( anId );
+      }
+    }
+  }
+  SMESH::SMESH_Group_var gsource = SMESH::SMESH_Group::_narrow(meshPart);
+  if ( !gsource->_is_nil() ) {
+    if(theElemType == SMESH::NODE) {
+      SMESH::long_array_var nodes = gsource->GetNodeIDs();
+      for ( int i = 0; i < nodes->length(); ++i ) {
+	if ( const SMDS_MeshNode* node = meshDS->FindNode( nodes[i] ) ) {
+	  long anId = node->GetID();
+	  if ( anElementsOnShape->IsSatisfy( anId ) )
+	    res.push_back( anId );
+	}
+      }
+    } else if (gsource->GetType() == theElemType || theElemType == SMESH::ALL ) {
+      SMESH::long_array_var elems = gsource->GetListOfID();
+      for ( int i = 0; i < elems->length(); ++i ) {
+	if ( const SMDS_MeshElement* elem = meshDS->FindElement( elems[i] ) ) {
+	  long anId = elem->GetID();
+	  if ( anElementsOnShape->IsSatisfy( anId ) )
+	    res.push_back( anId );
+	}
+      }      
+    }
+  }
+  SMESH::SMESH_subMesh_var smsource = SMESH::SMESH_subMesh::_narrow(meshPart);
+  if ( !smsource->_is_nil() ) {
+    SMESH::long_array_var elems = smsource->GetElementsByType( theElemType );
+    for ( int i = 0; i < elems->length(); ++i ) {
+      const SMDS_MeshElement* elem = ( theElemType == SMESH::NODE ) ? meshDS->FindNode( elems[i] ) : meshDS->FindElement( elems[i] );
+      if (elem) {
+	long anId = elem->GetID();
+	if ( anElementsOnShape->IsSatisfy( anId ) )
+	  res.push_back( anId );
+      }
+    }    
+  }
+  return res;
+}
+
 
 //=================================================================================
 // function : importData

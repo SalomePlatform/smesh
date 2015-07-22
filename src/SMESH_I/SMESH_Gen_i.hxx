@@ -602,10 +602,43 @@ public:
   void Move( const SMESH::sobject_list& what,
              SALOMEDS::SObject_ptr where,
              CORBA::Long row );
+
   CORBA::Boolean IsApplicable ( const char*           theAlgoType,
                                 const char*           theLibName,
                                 GEOM::GEOM_Object_ptr theShapeObject,
                                 CORBA::Boolean        toCheckAll);
+
+  SMESH::long_array* GetInsideSphere( SMESH::SMESH_IDSource_ptr meshPart,
+				      SMESH::ElementType        theElemType,
+				      CORBA::Double             theX,
+				      CORBA::Double             theY,
+				      CORBA::Double             theZ,
+				      CORBA::Double             theR);
+
+  SMESH::long_array* GetInsideBox( SMESH::SMESH_IDSource_ptr meshPart,
+				   SMESH::ElementType        theElemType,
+				   CORBA::Double             theX1, 
+				   CORBA::Double             theY1, 
+				   CORBA::Double             theZ1,
+				   CORBA::Double             theX2,
+				   CORBA::Double             theY2,
+				   CORBA::Double             theZ2);    
+
+  SMESH::long_array* GetInsideCylinder( SMESH::SMESH_IDSource_ptr meshPart,
+					SMESH::ElementType        theElemType,
+					CORBA::Double             theX, 
+					CORBA::Double             theY, 
+					CORBA::Double             theZ,
+					CORBA::Double             theDX, 
+					CORBA::Double             theDY, 
+					CORBA::Double             theDZ,
+					CORBA::Double             theH,
+					CORBA::Double             theR );
+
+  SMESH::long_array* GetInside( SMESH::SMESH_IDSource_ptr meshPart,
+				SMESH::ElementType        theElemType,
+				GEOM::GEOM_Object_ptr     theGeom,
+				CORBA::Double             theTolerance );
 
 private:
   // Get hypothesis creator
@@ -629,6 +662,11 @@ private:
 
   void setCurrentStudy( SALOMEDS::Study_ptr theStudy,
                         bool                theStudyIsBeingClosed=false);
+
+  std::vector<long> _GetInside(SMESH::SMESH_IDSource_ptr meshPart,
+			       SMESH::ElementType     theElemType,
+			       TopoDS_Shape& aShape,
+			       double* theTolerance = NULL);
 
 private:
   static GEOM::GEOM_Gen_var      myGeomGen;
