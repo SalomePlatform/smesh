@@ -113,7 +113,6 @@
 #include <OpUtil.hxx>
 #include <SALOMEDS_Tool.hxx>
 #include <SALOME_Container_i.hxx>
-#include <SALOME_DataContainer_i.hxx>
 #include <SALOME_LifeCycleCORBA.hxx>
 #include <SALOME_NamingService.hxx>
 #include <Utils_CorbaException.hxx>
@@ -300,9 +299,6 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
   mySMESHGen = this;
   myIsHistoricalPythonDump = true;
   myToForgetMeshDataOnHypModif = false;
-
-  myImportedStudyChanged = true;
-  myImportedStudyId      = 0;
 
   // set it in standalone mode only
   //OSD::SetSignal( true );
@@ -938,7 +934,7 @@ void SMESH_Gen_i::SetOption(const char* name, const char* value)
 {
   if ( name && value && strlen( value ) > 0 )
   {
-    string msgToGUI; 
+    string msgToGUI;
     if ( strcmp(name, "historical_python_dump") == 0 )
     {
       myIsHistoricalPythonDump = ( value[0] == '1' || toupper(value[0]) == 'T' ); // 1 || true
@@ -3688,7 +3684,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                         myWriter.AddGroup( aGeomGrp );
                       }
                     }
-                    else if ( SMESH_GroupOnFilter_i* aFilterGrp_i = 
+                    else if ( SMESH_GroupOnFilter_i* aFilterGrp_i =
                               dynamic_cast<SMESH_GroupOnFilter_i*>( myGroupImpl ))
                     {
                       std::string str = aFilterGrp_i->FilterToString();
@@ -4835,7 +4831,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
   if ( !useCaseBuilder->IsUseCaseNode( theComponent ) ) {
     useCaseBuilder->SetRootCurrent();
     useCaseBuilder->Append( theComponent ); // component object is added as the top level item
-    SALOMEDS::ChildIterator_wrap it = study->NewChildIterator( theComponent ); 
+    SALOMEDS::ChildIterator_wrap it = study->NewChildIterator( theComponent );
     for (it->InitEx(true); it->More(); it->Next()) {
       useCaseBuilder->AppendTo( it->Value()->GetFather(), it->Value() );
     }
@@ -4990,8 +4986,6 @@ int SMESH_Gen_i::RegisterObject(CORBA::Object_ptr theObject)
 {
   StudyContext* myStudyContext = GetCurrentStudyContext();
   if ( myStudyContext && !CORBA::is_nil( theObject )) {
-    if (GetCurrentStudyID() == myImportedStudyId)
-      myImportedStudyChanged = true;
     CORBA::String_var iorString = GetORB()->object_to_string( theObject );
     return myStudyContext->addObject( string( iorString.in() ) );
   }
@@ -5052,7 +5046,7 @@ char* SMESH_Gen_i::getVersion()
 
 //=================================================================================
 // function : Move()
-// purpose  : Moves objects to the specified position. 
+// purpose  : Moves objects to the specified position.
 //            Is used in the drag-n-drop functionality.
 //=================================================================================
 void SMESH_Gen_i::Move( const SMESH::sobject_list& what,
@@ -5067,7 +5061,7 @@ void SMESH_Gen_i::Move( const SMESH::sobject_list& what,
   SALOMEDS::SComponent_var father = where->GetFatherComponent();
   std::string dataType = father->ComponentDataType();
   if ( dataType != "SMESH" ) return; // not a SMESH component
-  
+
   SALOMEDS::SObject_var objAfter;
   if ( row >= 0 && useCaseBuilder->HasChildren( where ) ) {
     // insert at given row -> find insertion position
@@ -5078,7 +5072,7 @@ void SMESH_Gen_i::Move( const SMESH::sobject_list& what,
       objAfter = useCaseIt->Value();
     }
   }
-  
+
   for ( int i = 0; i < what.length(); i++ ) {
     SALOMEDS::SObject_var sobj = what[i];
     if ( CORBA::is_nil( sobj ) ) continue; // skip bad object
@@ -5135,11 +5129,11 @@ CORBA::Boolean SMESH_Gen_i::IsApplicable ( const char*           theAlgoType,
 // purpose  : Collect indices of elements, which are located inside the sphere
 //=================================================================================
 SMESH::long_array* SMESH_Gen_i::GetInsideSphere( SMESH::SMESH_IDSource_ptr meshPart,
-						 SMESH::ElementType     theElemType,
-						 CORBA::Double         theX,
-						 CORBA::Double         theY,
-						 CORBA::Double         theZ,
-						 CORBA::Double         theR) {
+                                                 SMESH::ElementType     theElemType,
+                                                 CORBA::Double         theX,
+                                                 CORBA::Double         theY,
+                                                 CORBA::Double         theZ,
+                                                 CORBA::Double         theR) {
   SMESH::long_array_var aResult = new SMESH::long_array();
   if(meshPart->_is_nil())
     return aResult._retn();
@@ -5160,13 +5154,13 @@ SMESH::long_array* SMESH_Gen_i::GetInsideSphere( SMESH::SMESH_IDSource_ptr meshP
 }
 
 SMESH::long_array* SMESH_Gen_i::GetInsideBox( SMESH::SMESH_IDSource_ptr meshPart,
-					      SMESH::ElementType        theElemType,
-					      CORBA::Double             theX1, 
-					      CORBA::Double             theY1, 
-					      CORBA::Double             theZ1,
-					      CORBA::Double             theX2,
-					      CORBA::Double             theY2,
-					      CORBA::Double             theZ2) {
+                                              SMESH::ElementType        theElemType,
+                                              CORBA::Double             theX1,
+                                              CORBA::Double             theY1,
+                                              CORBA::Double             theZ1,
+                                              CORBA::Double             theX2,
+                                              CORBA::Double             theY2,
+                                              CORBA::Double             theZ2) {
   SMESH::long_array_var aResult = new SMESH::long_array();
   if( meshPart->_is_nil() )
     return aResult._retn();
@@ -5185,15 +5179,15 @@ SMESH::long_array* SMESH_Gen_i::GetInsideBox( SMESH::SMESH_IDSource_ptr meshPart
 }
 
 SMESH::long_array* SMESH_Gen_i::GetInsideCylinder( SMESH::SMESH_IDSource_ptr meshPart,
-						   SMESH::ElementType        theElemType,
-						   CORBA::Double             theX, 
-						   CORBA::Double             theY, 
-						   CORBA::Double             theZ,
-						   CORBA::Double             theDX, 
-						   CORBA::Double             theDY, 
-						   CORBA::Double             theDZ,
-						   CORBA::Double             theH,
-						   CORBA::Double             theR ){
+                                                   SMESH::ElementType        theElemType,
+                                                   CORBA::Double             theX,
+                                                   CORBA::Double             theY,
+                                                   CORBA::Double             theZ,
+                                                   CORBA::Double             theDX,
+                                                   CORBA::Double             theDY,
+                                                   CORBA::Double             theDZ,
+                                                   CORBA::Double             theH,
+                                                   CORBA::Double             theR ){
   SMESH::long_array_var aResult = new SMESH::long_array();
   if( meshPart->_is_nil() )
     return aResult._retn();
@@ -5216,9 +5210,9 @@ SMESH::long_array* SMESH_Gen_i::GetInsideCylinder( SMESH::SMESH_IDSource_ptr mes
 }
 
 SMESH::long_array* SMESH_Gen_i::GetInside( SMESH::SMESH_IDSource_ptr meshPart,
-					   SMESH::ElementType        theElemType,
-					   GEOM::GEOM_Object_ptr     theGeom,
-					   CORBA::Double             theTolerance ) {
+                                           SMESH::ElementType        theElemType,
+                                           GEOM::GEOM_Object_ptr     theGeom,
+                                           CORBA::Double             theTolerance ) {
   SMESH::long_array_var aResult = new SMESH::long_array();
   if( meshPart->_is_nil() || theGeom->_is_nil() )
     return aResult._retn();
@@ -5239,23 +5233,23 @@ SMESH::long_array* SMESH_Gen_i::GetInside( SMESH::SMESH_IDSource_ptr meshPart,
 
 
 std::vector<long> SMESH_Gen_i::_GetInside( SMESH::SMESH_IDSource_ptr meshPart,
-					   SMESH::ElementType theElemType,
-					   TopoDS_Shape& aShape,
-					   double* theTolerance) {
-  
+                                           SMESH::ElementType theElemType,
+                                           TopoDS_Shape& aShape,
+                                           double* theTolerance) {
+
   std::vector<long> res;
   SMESH::SMESH_Mesh_var mesh = meshPart->GetMesh();
 
-  if ( mesh->_is_nil() ) 
+  if ( mesh->_is_nil() )
     return res;
 
   SMESH_Mesh_i* anImpl = dynamic_cast<SMESH_Mesh_i*>( GetServant( mesh ).in() );
-  if ( !anImpl ) 
+  if ( !anImpl )
     return res;
-  
+
   const SMDS_Mesh* meshDS = anImpl->GetImpl().GetMeshDS();
 
-  if ( !meshDS ) 
+  if ( !meshDS )
     return res;
 
   SMDSAbs_ElementType aType = SMDSAbs_ElementType(theElemType);
@@ -5265,17 +5259,17 @@ std::vector<long> SMESH_Gen_i::_GetInside( SMESH::SMESH_IDSource_ptr meshPart,
   anElementsOnShape->SetShape( aShape, aType );
 
   if(theTolerance)
-    anElementsOnShape->SetTolerance(*theTolerance);  
+    anElementsOnShape->SetTolerance(*theTolerance);
 
   SMESH::SMESH_Mesh_var msource = SMESH::SMESH_Mesh::_narrow(meshPart);
   if ( !msource->_is_nil() ) { // Mesh case
     SMDS_ElemIteratorPtr elemIt = meshDS->elementsIterator( aType );
     if ( elemIt ) {
       while ( elemIt->more() ) {
-	const SMDS_MeshElement* anElem = elemIt->next();
-	long anId = anElem->GetID();
-	if ( anElementsOnShape->IsSatisfy( anId ) )
-	  res.push_back( anId );
+        const SMDS_MeshElement* anElem = elemIt->next();
+        long anId = anElem->GetID();
+        if ( anElementsOnShape->IsSatisfy( anId ) )
+          res.push_back( anId );
       }
     }
   }
@@ -5284,21 +5278,21 @@ std::vector<long> SMESH_Gen_i::_GetInside( SMESH::SMESH_IDSource_ptr meshPart,
     if(theElemType == SMESH::NODE) {
       SMESH::long_array_var nodes = gsource->GetNodeIDs();
       for ( int i = 0; i < nodes->length(); ++i ) {
-	if ( const SMDS_MeshNode* node = meshDS->FindNode( nodes[i] ) ) {
-	  long anId = node->GetID();
-	  if ( anElementsOnShape->IsSatisfy( anId ) )
-	    res.push_back( anId );
-	}
+        if ( const SMDS_MeshNode* node = meshDS->FindNode( nodes[i] ) ) {
+          long anId = node->GetID();
+          if ( anElementsOnShape->IsSatisfy( anId ) )
+            res.push_back( anId );
+        }
       }
     } else if (gsource->GetType() == theElemType || theElemType == SMESH::ALL ) {
       SMESH::long_array_var elems = gsource->GetListOfID();
       for ( int i = 0; i < elems->length(); ++i ) {
-	if ( const SMDS_MeshElement* elem = meshDS->FindElement( elems[i] ) ) {
-	  long anId = elem->GetID();
-	  if ( anElementsOnShape->IsSatisfy( anId ) )
-	    res.push_back( anId );
-	}
-      }      
+        if ( const SMDS_MeshElement* elem = meshDS->FindElement( elems[i] ) ) {
+          long anId = elem->GetID();
+          if ( anElementsOnShape->IsSatisfy( anId ) )
+            res.push_back( anId );
+        }
+      }
     }
   }
   SMESH::SMESH_subMesh_var smsource = SMESH::SMESH_subMesh::_narrow(meshPart);
@@ -5307,150 +5301,15 @@ std::vector<long> SMESH_Gen_i::_GetInside( SMESH::SMESH_IDSource_ptr meshPart,
     for ( int i = 0; i < elems->length(); ++i ) {
       const SMDS_MeshElement* elem = ( theElemType == SMESH::NODE ) ? meshDS->FindNode( elems[i] ) : meshDS->FindElement( elems[i] );
       if (elem) {
-	long anId = elem->GetID();
-	if ( anElementsOnShape->IsSatisfy( anId ) )
-	  res.push_back( anId );
+        long anId = elem->GetID();
+        if ( anElementsOnShape->IsSatisfy( anId ) )
+          res.push_back( anId );
       }
-    }    
+    }
   }
   return res;
 }
 
-
-//=================================================================================
-// function : importData
-// purpose  : imports mesh data file (the med one) into the SMESH internal data structure
-//=================================================================================
-Engines::ListOfIdentifiers* SMESH_Gen_i::importData(CORBA::Long                   studyId,
-                                                    Engines::DataContainer_ptr    data,
-                                                    const Engines::ListOfOptions& options)
-{
-  Engines::ListOfIdentifiers_var aResultIds = new Engines::ListOfIdentifiers;
-  list<string> aResultList;
-
-  CORBA::Object_var aSMObject = myNS->Resolve( "/myStudyManager" );
-  SALOMEDS::StudyManager_var aStudyManager = SALOMEDS::StudyManager::_narrow( aSMObject );
-  SALOMEDS::Study_var aStudy = aStudyManager->GetStudyByID( studyId );
-  SetCurrentStudy(aStudy);
-
-  // load and store temporary imported file
-  string aFileName = Kernel_Utils::GetTmpFileName();
-  aFileName += string(".") + data->extension();
-  Engines::TMPFile* aFileStream = data->get();
-  const char *aBuffer = (const char*)aFileStream->NP_data();
-#ifdef WIN32
-  std::ofstream aFile(aFileName.c_str(), std::ios::binary);
-#else
-  std::ofstream aFile(aFileName.c_str());
-#endif
-  aFile.write(aBuffer, aFileStream->length());
-  aFile.close();
-
-  // Retrieve mesh names from the file
-  DriverMED_R_SMESHDS_Mesh aReader;
-  aReader.SetFile( aFileName );
-  aReader.SetMeshId(-1);
-  Driver_Mesh::Status aStatus;
-  list<string> aNames = aReader.GetMeshNames(aStatus);
-  SMESH::mesh_array_var aResult = new SMESH::mesh_array();
-  SMESH::DriverMED_ReadStatus aStatus2 = (SMESH::DriverMED_ReadStatus)aStatus;
-  if (aStatus2 == SMESH::DRS_OK) {
-    // Iterate through all meshes and create mesh objects
-    for ( list<string>::iterator it = aNames.begin(); it != aNames.end(); it++ ) {
-      // create mesh
-      SMESH::SMESH_Mesh_var mesh = createMesh();
-
-      // publish mesh in the study
-      SALOMEDS::SObject_var aSO;
-      if (CanPublishInStudy(mesh)) {
-        aSO = PublishMesh(aStudy, mesh.in(), (*it).c_str());
-        aResultList.push_back(aSO->GetID());
-      }
-      // Read mesh data (groups are published automatically by ImportMEDFile())
-      SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( mesh ).in() );
-      ASSERT( meshServant );
-      meshServant->ImportMEDFile( aFileName.c_str(), (*it).c_str() );
-      //meshServant->GetImpl().GetMeshDS()->Modified();
-    }
-  } else {
-    MESSAGE("Opening MED file problems "<<aFileName.c_str())
-    return aResultIds._retn();
-  }
-
-  // remove temporary file 
-#ifdef WIN32
-  DeleteFileA(aFileName.c_str());
-#else
-  unlink(aFileName.c_str());
-#endif
-
-  if (!aResultList.empty()) {
-    aResultIds->length(aResultList.size());
-    list<string>::iterator aListIter = aResultList.begin();
-    for(int a = 0; aListIter != aResultList.end(); aListIter++, a++)
-      aResultIds[a] = aListIter->c_str();
-  }
-  
-  myImportedStudyId = studyId;
-  myImportedStudyChanged = false;
-
-  return aResultIds._retn();
-}
-
-//=================================================================================
-// function : getModifiedData
-// purpose  : exports all geometry of this GEOM module into one BRep file
-//=================================================================================
-Engines::ListOfData* SMESH_Gen_i::getModifiedData(CORBA::Long studyId)
-{
-  Engines::ListOfData_var aResult = new Engines::ListOfData;
-  
-  if (!myImportedStudyChanged) {
-    INFOS("SMESH module data was not changed")
-    return aResult._retn();
-  }
-
-  CORBA::Object_var aSMObject = myNS->Resolve("/myStudyManager");
-  SALOMEDS::StudyManager_var aStudyManager = SALOMEDS::StudyManager::_narrow(aSMObject);
-  SALOMEDS::Study_var aStudy = aStudyManager->GetStudyByID(studyId);
-  SetCurrentStudy(aStudy);
-  SALOMEDS::SComponent_var aComponent = aStudy->FindComponent("SMESH");
-  
-  if (CORBA::is_nil(aComponent))
-    return aResult._retn();
-
-  std::string aFullPath(Kernel_Utils::GetTmpFileName());
-  aFullPath += ".med";
-  StudyContext* myStudyContext = GetCurrentStudyContext();
-
-  SALOMEDS::ChildIterator_var anIter = aStudy->NewChildIterator(aComponent); // check only published meshes
-  int aNumMeshes = 0; // number of meshes in result
-  for(; anIter->More(); anIter->Next()) {
-    SALOMEDS::SObject_var aSO = anIter->Value();
-    CORBA::Object_var anObj = aSO->GetObject();
-    if (!CORBA::is_nil(anObj)) {
-      SMESH::SMESH_Mesh_var aCORBAMesh = SMESH::SMESH_Mesh::_narrow(anObj);
-      if(!aCORBAMesh->_is_nil()) {
-        SMESH_Mesh_i* myImpl = dynamic_cast<SMESH_Mesh_i*>(GetServant(aCORBAMesh).in());
-        if (myImpl) {
-          myImpl->Load();
-          SMESH_Mesh& aMesh = myImpl->GetImpl();
-          CORBA::String_var objName = aSO->GetName();
-          aMesh.ExportMED(aFullPath.c_str(), objName.in(), false, MED::eV2_2, 0);
-          aNumMeshes++;
-        }
-      }
-    }
-  }
-  if (aNumMeshes > 0) { // prepare a container to store files
-    INFOS("Write "<<aNumMeshes<<" meshes to "<<aFullPath.c_str());
-    aResult->length(1);
-    Engines::DataContainer_var aData = (new Engines_DataContainer_i(
-                    aFullPath.c_str(), "", "", true))->_this();
-    aResult[0] = aData;
-  }
-  return aResult._retn();
-}
 
 //=============================================================================
 /*!
