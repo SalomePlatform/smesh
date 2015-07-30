@@ -1617,9 +1617,10 @@ void StdMeshersGUI_StdHypothesisCreator::valueChanged( QWidget* paramWidget)
   }
   else if ( hypType().startsWith( "ViscousLayers" ) && paramWidget->inherits("QButtonGroup"))
   {
-    if ( QLabel* label = getLabel(4) )
+    int widgetNumber = hypType() == "ViscousLayers2D" ? 3 : 4;
+    if ( QLabel* label = getLabel( widgetNumber + 1 ) )
     {
-      bool toIgnore = widget< StdMeshersGUI_RadioButtonsGrpWdg >( 3 )->checkedId();
+      bool toIgnore = widget< StdMeshersGUI_RadioButtonsGrpWdg >( widgetNumber )->checkedId();
       if ( hypType() == "ViscousLayers2D" )
         label->setText( tr( toIgnore ? "SMESH_EDGES_WO_LAYERS" : "SMESH_EDGES_WITH_LAYERS" ));
       else
