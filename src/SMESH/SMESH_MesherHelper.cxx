@@ -192,11 +192,12 @@ bool SMESH_MesherHelper::IsQuadraticSubMesh(const TopoDS_Shape& aSh)
   }
 
   // if ( nbOldLinks == myTLinkNodeMap.size() ) -- 0023068
-  //   myCreateQuadratic = false;
+  if ( myTLinkNodeMap.empty() )
+    myCreateQuadratic = false;
 
-  if(!myCreateQuadratic) {
+  if ( !myCreateQuadratic )
     myTLinkNodeMap.clear();
-  }
+
   SetSubShape( aSh );
 
   return myCreateQuadratic;

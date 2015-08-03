@@ -255,24 +255,27 @@ void StdMeshersGUI_SubShapeSelectorWdg::selectionIntoArgument()
 
       GEOM::GEOM_Object_var aGeomObj = GetGeomObjectByEntry( IO->getEntry() );
       if ( !CORBA::is_nil( aGeomObj ) ) { // Selected Object From Study
-        GEOM::GEOM_Object_var aGeomFatherObj = aGeomObj->GetMainShape();
-        QString aFatherEntry = "";
-        QString aMainFatherEntry = "";
-        TopoDS_Shape shape;
-        if ( !CORBA::is_nil( aGeomFatherObj ) ) {
-          // Get Main Shape
-          GEOM::GEOM_Object_var aGeomMain = GetGeomObjectByEntry( myEntry.c_str() );
-          if ( !CORBA::is_nil( aGeomMain ) && aGeomMain->GetType() == 37 ) {  // Main Shape is a Group
-            GEOM::GEOM_Object_var aMainFatherObj = aGeomMain->GetMainShape();
-            if ( !CORBA::is_nil( aMainFatherObj ) )
-              aMainFatherEntry = aMainFatherObj->GetStudyEntry();
-          }
-          aFatherEntry = aGeomFatherObj->GetStudyEntry();
-        }
+        // commented for IPAL52836
+        //
+        // GEOM::GEOM_Object_var aGeomFatherObj = aGeomObj->GetMainShape();
+        // QString aFatherEntry = "";
+        // QString aMainFatherEntry = "";
+        // TopoDS_Shape shape;
+        // if ( !CORBA::is_nil( aGeomFatherObj ) ) {
+        //   // Get Main Shape
+        //   GEOM::GEOM_Object_var aGeomMain = GetGeomObjectByEntry( myEntry.c_str() );
+        //   if ( !CORBA::is_nil( aGeomMain ) && aGeomMain->GetType() == 37 ) {  // Main Shape is a Group
+        //     GEOM::GEOM_Object_var aMainFatherObj = aGeomMain->GetMainShape();
+        //     if ( !CORBA::is_nil( aMainFatherObj ) )
+        //       aMainFatherEntry = aMainFatherObj->GetStudyEntry();
+        //   }
+        //   aFatherEntry = aGeomFatherObj->GetStudyEntry();
+        // }
 
-        if (( ! aFatherEntry.isEmpty() ) &&
-            ( aFatherEntry == myEntry.c_str() || aFatherEntry == aMainFatherEntry ) )
+        // if (( ! aFatherEntry.isEmpty() ) &&
+        //     ( aFatherEntry == myEntry.c_str() || aFatherEntry == aMainFatherEntry ) )
         {
+          TopoDS_Shape shape;
           if ( aGeomObj->GetType() == 37 /*GEOM_GROUP*/ ) { // Selected Group that belongs the main object
             GEOMBase::GetShape(aGeomObj, shape);
             if ( !shape.IsNull() ) {
