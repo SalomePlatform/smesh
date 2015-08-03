@@ -1591,13 +1591,13 @@ class Mesh:
         return groups
 
     ## Return sub-mesh objects list in meshing order
-    #  @return list of list of submesh objects
+    #  @return list of list of sub-meshes
     #  @ingroup l2_construct
     def GetMeshOrder(self):
         return self.mesh.GetMeshOrder()
 
     ## Set order in which concurrent sub-meshes sould be meshed
-    #  @param list of sub-meshes
+    #  @param submeshes list of sub-meshes
     #  @ingroup l2_construct
     def SetMeshOrder(self, submeshes):
         return self.mesh.SetMeshOrder(submeshes)

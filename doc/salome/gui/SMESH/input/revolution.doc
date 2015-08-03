@@ -6,7 +6,9 @@
 dimension than the input ones.  Boundary elements around generated
 mesh of plus one dimension are additionally created. All created
 elements can be automatically grouped. Revolution can be used to create
-a \ref extrusion_struct "structured mesh from scratch".
+a \ref extrusion_struct "structured mesh from scratch". 
+See \ref extrusion_page page for general information on Revolution
+which can be viewed as extrusion along a circular path.
 
 <em>To apply revolution:</em>
 <ol>

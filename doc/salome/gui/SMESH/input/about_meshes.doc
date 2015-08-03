@@ -43,7 +43,7 @@ Mesh module provides several ways to create the mesh:
     importing_exporting_meshes_page "imported" or manually created. To
     setup the meshing parameters of a mesh not based on a geometry, just
     invoke \ref editing_meshes_page "Edit mesh / sub-mesh" command on
-    your 3D mesh.
+    your 2D mesh.
   </li>
   <li>Several meshes can be \subpage building_compounds_page "combined"
     into a new mesh.
