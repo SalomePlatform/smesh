@@ -513,18 +513,18 @@ namespace {
           if ( !tgtNodes.empty() )
           {
             vector< const SMDS_MeshNode* >::iterator tn = tgtNodes.begin();
-            if ( srcWire->Edge(iE).Orientation() == tgtWire->Edge(iE).Orientation() )
+            //if ( srcWire->Edge(iE).Orientation() == tgtWire->Edge(iE).Orientation() )
             {
               vector< const SMDS_MeshNode* >::iterator sn = srcNodes.begin();
               for ( ; tn != tgtNodes.end(); ++tn, ++sn)
                 src2tgtNodes.insert( make_pair( *sn, *tn ));
             }
-            else
-            {
-              vector< const SMDS_MeshNode* >::reverse_iterator sn = srcNodes.rbegin();
-              for ( ; tn != tgtNodes.end(); ++tn, ++sn)
-                src2tgtNodes.insert( make_pair( *sn, *tn ));
-            }
+            // else
+            // {
+            //   vector< const SMDS_MeshNode* >::reverse_iterator sn = srcNodes.rbegin();
+            //   for ( ; tn != tgtNodes.end(); ++tn, ++sn)
+            //     src2tgtNodes.insert( make_pair( *sn, *tn ));
+            // }
             is1DComputed = true;
           }
         }

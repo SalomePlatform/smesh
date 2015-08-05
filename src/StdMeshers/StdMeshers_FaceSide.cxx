@@ -311,7 +311,9 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
 
     StdMeshers_FaceSide* me = const_cast< StdMeshers_FaceSide* >( this );
     SMESHDS_Mesh*    meshDS = myProxyMesh->GetMeshDS();
-    SMESH_MesherHelper helper( *myProxyMesh->GetMesh() );
+    SMESH_MesherHelper eHelper( *myProxyMesh->GetMesh() );
+    SMESH_MesherHelper fHelper( *myProxyMesh->GetMesh() );
+    fHelper.SetSubShape( myFace );
     bool paramOK;
     double eps = 1e-100;
 
@@ -346,7 +348,8 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
       const double  prevNormPar = ( iE == 0 ? 0 : myNormPar[ iE-1 ]); // normalized param
       if ( node ) // nodes on internal vertices may be missing
       {
-        if ( vertexNodes.insert( node ).second )
+        if ( vertexNodes.insert( node ).second ||
+             fHelper.IsRealSeam( node->getshapeId() ))
           u2node.insert( u2node.end(), make_pair( prevNormPar, node ));
       }
       else if ( iE == 0 )
@@ -373,12 +376,12 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
         u2nodeVec.clear();
         double paramSize = myLast[iE] - myFirst[iE];
         double r         = myNormPar[iE] - prevNormPar;
-        helper.SetSubShape( myEdge[iE] );
-        helper.ToFixNodeParameters( true );
+        eHelper.SetSubShape( myEdge[iE] );
+        eHelper.ToFixNodeParameters( true );
         if ( !myIsUniform[iE] )
           for ( size_t i = 0; i < nodes.size(); ++i )
           {
-            double     u = helper.GetNodeU( myEdge[iE], nodes[i], 0, &paramOK );
+            double     u = eHelper.GetNodeU( myEdge[iE], nodes[i], 0, &paramOK );
             double aLenU = GCPnts_AbscissaPoint::Length( me->myC3dAdaptor[iE], myFirst[iE], u );
             if ( myEdgeLength[iE] < aLenU ) // nonregression test "3D_mesh_NETGEN/G6"
             {
@@ -391,7 +394,7 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
         if ( u2nodeVec.empty() )
           for ( size_t i = 0; i < nodes.size(); ++i )
           {
-            double u = helper.GetNodeU( myEdge[iE], nodes[i], 0, &paramOK );
+            double u = eHelper.GetNodeU( myEdge[iE], nodes[i], 0, &paramOK );
             // paramSize is signed so orientation is taken into account
             double normPar = prevNormPar + r * ( u - myFirst[iE] ) / paramSize;
             u2nodeVec.push_back( make_pair( normPar, nodes[i] ));
@@ -401,10 +404,11 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
       }
     } // loop on myEdge's
 
-    if ( u2node.empty() ) return myPoints;
-
     // Add 2nd VERTEX node for a last EDGE
+    if ( !proxySubMesh.back() )
     {
+      if ( u2node.empty() ) return myPoints;
+
       const SMDS_MeshNode* node;
       if ( IsClosed() )
         node = u2node.begin()->second;
@@ -576,7 +580,9 @@ std::vector<const SMDS_MeshNode*> StdMeshers_FaceSide::GetOrderedNodes(int theEd
     if ( NbEdges() == 0 ) return resultNodes;
 
     SMESHDS_Mesh* meshDS = myProxyMesh->GetMeshDS();
-    SMESH_MesherHelper helper(*myProxyMesh->GetMesh());
+    SMESH_MesherHelper eHelper( *myProxyMesh->GetMesh() );
+    SMESH_MesherHelper fHelper( *myProxyMesh->GetMesh() );
+    fHelper.SetSubShape( myFace );
     bool paramOK = true;
 
     // Sort nodes of all edges putting them into a map
@@ -606,7 +612,8 @@ std::vector<const SMDS_MeshNode*> StdMeshers_FaceSide::GetOrderedNodes(int theEd
       // Add 1st vertex node of a current EDGE
       const SMDS_MeshNode* node = VertexNode( iE );
       if ( node ) { // nodes on internal vertices may be missing
-        if ( vertexNodes.insert( node ).second )
+        if ( vertexNodes.insert( node ).second ||
+             fHelper.IsRealSeam( node->getshapeId() ))
           u2node.insert( make_pair( prevNormPar, node ));
       }
       else if ( iE == 0 )
@@ -632,11 +639,11 @@ std::vector<const SMDS_MeshNode*> StdMeshers_FaceSide::GetOrderedNodes(int theEd
       {
         double paramSize = myLast[iE] - myFirst[iE];
         double r         = myNormPar[iE] - prevNormPar;
-        helper.SetSubShape( myEdge[iE] );
-        helper.ToFixNodeParameters( true );
+        eHelper.SetSubShape( myEdge[iE] );
+        eHelper.ToFixNodeParameters( true );
         for ( size_t i = 0; i < nodes.size(); ++i )
         {
-          double u = helper.GetNodeU( myEdge[iE], nodes[i], 0, &paramOK );
+          double u = eHelper.GetNodeU( myEdge[iE], nodes[i], 0, &paramOK );
           // paramSize is signed so orientation is taken into account
           double normPar = prevNormPar + r * ( u - myFirst[iE] ) / paramSize;
           u2node.insert( u2node.end(), make_pair( normPar, nodes[i] ));
@@ -707,9 +714,8 @@ bool StdMeshers_FaceSide::GetEdgeNodes(size_t                        i,
 
   if ( inlude1stVertex )
   {
-    const SMDS_MeshNode* n0 = VertexNode( i );
-    if ( !n0 ) return false;
-    nodes.push_back( n0 );
+    if ( const SMDS_MeshNode* n0 = VertexNode( i ))
+      nodes.push_back( n0 );
   }
 
   if ( sm && ( sm->NbElements() > 0 || sm->NbNodes() > 0 ))
@@ -764,9 +770,8 @@ bool StdMeshers_FaceSide::GetEdgeNodes(size_t                        i,
 
   if ( inludeLastVertex )
   {
-    const SMDS_MeshNode* n1 = VertexNode( i+1 );
-    if ( !n1 ) return false;
-    nodes.push_back( n1 );
+    if ( const SMDS_MeshNode* n1 = VertexNode( i+1 ))
+      nodes.push_back( n1 );
   }
   return true;
 }
@@ -943,27 +948,43 @@ int StdMeshers_FaceSide::NbPoints(const bool update) const
     me->myNbSegments = 0;
     me->myMissingVertexNodes = false;
 
+    vector<const SMDS_MeshNode*> nodes;
     for ( int i = 0; i < NbEdges(); ++i )
     {
-      if ( const SMESHDS_SubMesh* sm = myProxyMesh->GetSubMesh( Edge(i) )) {
-        int nbN = sm->NbNodes();
-        if ( sm->NbElements() > 0 ) {
-          nbN = sm->NbElements() - 1; // nodes can be moved to other shapes by MergeNodes()
-          if ( !myIgnoreMediumNodes &&
-               sm->GetElements()->next()->IsQuadratic() )
-            nbN += sm->NbElements();
+      if ( const SMESHDS_SubMesh* sm = myProxyMesh->GetSubMesh( Edge(i) ))
+      {
+        if ( sm->NbNodes() == sm->NbElements() - 1 )
+        {
+          me->myNbPonits += sm->NbNodes();
+          if ( myIgnoreMediumNodes && sm->IsQuadratic() )
+            me->myNbPonits -= sm->NbElements();
         }
-        me->myNbPonits   += nbN;
+        else // nodes can be moved to other shapes by MergeNodes()
+        {
+          nodes.clear();
+          GetEdgeNodes( i, nodes, /*v1=*/false, /*v2=*/false );
+          me->myNbPonits += nodes.size();
+        }
         me->myNbSegments += sm->NbElements();
       }
     }
 
+    SMESH_MesherHelper helper( *myProxyMesh->GetMesh() );
+    helper.SetSubShape( myFace );
+
     std::set< const SMDS_MeshNode* > vNodes;
-    for ( int i = 0; i <= NbEdges(); ++i )
+    for ( int i = 0; i <= NbEdges(); ++i ) // nb VERTEXes is more than NbEdges() if !IsClosed()
       if ( const SMDS_MeshNode* n = VertexNode( i ))
-        vNodes.insert( n );
+      {
+        if ( !vNodes.insert( n ).second &&
+             helper.IsRealSeam( n->getshapeId() ) &&
+             i < NbEdges())
+          me->myNbPonits++;
+      }
       else
+      {
         me->myMissingVertexNodes = true;
+      }
     me->myNbPonits += vNodes.size();
 
     if ( IsClosed() )

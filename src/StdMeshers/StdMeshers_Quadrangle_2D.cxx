@@ -4276,9 +4276,12 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
     return error(COMPERR_BAD_SHAPE,
                  TComm("Face must have 4 sides but not ") << faceSide.NbEdges() );
 
-  const int nbSegments = Max( faceSide.NbPoints()-1, faceSide.NbSegments() );
-  if ( nbSegments < nbCorners )
-    return error(COMPERR_BAD_INPUT_MESH, TComm("Too few boundary nodes: ") << nbSegments);
+  if ( theConsiderMesh )
+  {
+    const int nbSegments = Max( faceSide.NbPoints()-1, faceSide.NbSegments() );
+    if ( nbSegments < nbCorners )
+      return error(COMPERR_BAD_INPUT_MESH, TComm("Too few boundary nodes: ") << nbSegments);
+  }
 
   if ( nbCorners == 3 )
   {

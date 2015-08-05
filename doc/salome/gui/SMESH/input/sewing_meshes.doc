@@ -53,8 +53,12 @@ the opposite border.
 In practice the borders to sew often coincide and in this case it is
 difficult to specify the first and the last nodes of a border since
 they coincide with the first and the last nodes of the other
-border. To cope with this, manually \ref merging_nodes_page to fuse
-each pair of coincident nodes into one.
+border. To cope with this,
+\ref merging_nodes_page "merge" coincident nodes into one
+beforehand. Two figures below illustrate this approach.
+\image html sew_using_merge.png "Merge coincident nodes which are difficult to distinguish"
+<br>
+\image html sew_after_merge.png "After merging nodes it is easy to specify border nodes"
 
 The sewing algorithm is as follows:
 <ol>

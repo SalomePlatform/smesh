@@ -46,8 +46,6 @@ using namespace std;
 SMESHDS_SubMesh::SMESHDS_SubMesh(SMESHDS_Mesh *parent, int index)
 {
   myParent = parent;
-  myElements.clear();
-  myNodes.clear();
   myIndex = index;
   myUnusedIdNodes = 0;
   myUnusedIdElements = 0;
@@ -65,61 +63,54 @@ SMESHDS_SubMesh::~SMESHDS_SubMesh()
 
 //=======================================================================
 //function : AddElement
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 void SMESHDS_SubMesh::AddElement(const SMDS_MeshElement * ME)
 {
   if (!IsComplexSubmesh())
+  {
+    if ( ME->GetType() == SMDSAbs_Node )
     {
-      if ( ME->GetType() == SMDSAbs_Node )
+      AddNode( static_cast< const SMDS_MeshNode* >( ME ));
+      return;
+    }
+    int oldShapeId = ME->getshapeId();
+    if ( oldShapeId > 0 )
+    {
+      if (oldShapeId != myIndex)
       {
-        AddNode( static_cast< const SMDS_MeshNode* >( ME ));
+        throw SALOME_Exception
+          (LOCALIZED("add element in subshape already belonging to a subshape"));
+      }
+      int idInSubShape = ME->getIdInShape();
+      if (idInSubShape >= 0)
+      {
+        MESSAGE("add element in subshape already belonging to that subshape "
+                << ME->GetID() << " " << oldShapeId << " " << idInSubShape);
+        // check if ok: do nothing if ok
+        if (idInSubShape >= myElements.size())
+        {
+          throw SALOME_Exception(LOCALIZED("out of bounds"));
+        }
+        if (ME != myElements[idInSubShape])
+        {
+          throw SALOME_Exception(LOCALIZED("not the same element"));
+        }
         return;
       }
-      int oldShapeId = ME->getshapeId();
-      if ( oldShapeId > 0 )
-        {
-          if (oldShapeId != myIndex)
-            {
-              MESSAGE("add element in subshape already belonging to another subshape "
-                << ME->GetID() << " " << oldShapeId << " " << myIndex);
-              throw SALOME_Exception(LOCALIZED("add element in subshape already belonging to a subshape"));
-            }
-          else
-            {
-              int idInSubShape = ME->getIdInShape();
-              if (idInSubShape >= 0)
-                {
-                  MESSAGE("add element in subshape already belonging to that subshape "
-                      << ME->GetID() << " " << oldShapeId << " " << idInSubShape);
-                  // check if ok: do nothing if ok
-                  if (idInSubShape >= myElements.size())
-                    {
-                      MESSAGE("out of bounds " << idInSubShape << " " << myElements.size());
-                      throw SALOME_Exception(LOCALIZED("out of bounds"));
-                    }
-                  if (ME != myElements[idInSubShape])
-                    {
-                      MESSAGE("not the same element");
-                      throw SALOME_Exception(LOCALIZED("not the same element"));
-                    }
-                  MESSAGE("already done, OK, nothing to do");
-                  return;
-                }
-            }
-        }
-
-      SMDS_MeshElement* elem = (SMDS_MeshElement*) (ME);
-      elem->setShapeId(myIndex);
-      elem->setIdInShape(myElements.size());
-      myElements.push_back(ME);
     }
+
+    SMDS_MeshElement* elem = (SMDS_MeshElement*) (ME);
+    elem->setShapeId(myIndex);
+    elem->setIdInShape(myElements.size());
+    myElements.push_back(ME);
+  }
 }
 
 //=======================================================================
 //function : RemoveElement
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 bool SMESHDS_SubMesh::RemoveElement(const SMDS_MeshElement * ME, bool isElemDeleted)
@@ -183,7 +174,7 @@ void SMESHDS_SubMesh::AddNode(const SMDS_MeshNode * N)
 
 //=======================================================================
 //function : RemoveNode
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 bool SMESHDS_SubMesh::RemoveNode(const SMDS_MeshNode * N, bool isNodeDeleted)
@@ -385,29 +376,52 @@ bool SMESHDS_SubMesh::Contains(const SMDS_MeshElement * ME) const
   if (!ME)
     return false;
 
-  if (IsComplexSubmesh())
-    {
-      set<const SMESHDS_SubMesh*>::const_iterator aSubIt = mySubMeshes.begin();
-      for (; aSubIt != mySubMeshes.end(); aSubIt++)
-        if ((*aSubIt)->Contains(ME))
-          return true;
-      return false;
-    }
+  if ( IsComplexSubmesh() )
+  {
+    set<const SMESHDS_SubMesh*>::const_iterator aSubIt = mySubMeshes.begin();
+    for (; aSubIt != mySubMeshes.end(); aSubIt++)
+      if ((*aSubIt)->Contains(ME))
+        return true;
+    return false;
+  }
 
   if (ME->GetType() == SMDSAbs_Node)
-    {
-      int idInShape = ME->getIdInShape();
-      if ((idInShape >= 0) && (idInShape < myNodes.size()))
-        if (myNodes[idInShape] == ME)
-          return true;
-    }
+  {
+    int idInShape = ME->getIdInShape();
+    if ((idInShape >= 0) && (idInShape < myNodes.size()))
+      if (myNodes[idInShape] == ME)
+        return true;
+  }
   else
-    {
-      int idInShape = ME->getIdInShape();
-      if ((idInShape >= 0) && (idInShape < myElements.size()))
-        if (myElements[idInShape] == ME)
-          return true;
-    }
+  {
+    int idInShape = ME->getIdInShape();
+    if ((idInShape >= 0) && (idInShape < myElements.size()))
+      if (myElements[idInShape] == ME)
+        return true;
+  }
+  return false;
+}
+
+//=======================================================================
+//function : IsQuadratic
+//purpose  : Return true if my 1st element is quadratic
+//=======================================================================
+
+bool SMESHDS_SubMesh::IsQuadratic() const
+{
+  if ( IsComplexSubmesh() )
+  {
+    set<const SMESHDS_SubMesh*>::const_iterator aSubIt = mySubMeshes.begin();
+    for (; aSubIt != mySubMeshes.end(); aSubIt++)
+      if ((*aSubIt)->IsQuadratic())
+        return true;
+    return false;
+  }
+
+  for ( size_t i = 0; i < myElements.size(); ++i )
+    if ( myElements[i] )
+      return myElements[i]->IsQuadratic();
+
   return false;
 }
 
