@@ -1872,7 +1872,7 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
     }
   }
   // ----------------------------------------------------------------------
-  else if ( method == "GetSubMesh" ) { // collect submeshes of the mesh
+  else if ( method == "GetSubMesh" ) { // collect sub-meshes of the mesh
     Handle(_pySubMesh) subMesh = theGen->FindSubMesh( theCommand->GetResultValue() );
     if ( !subMesh.IsNull() ) {
       subMesh->SetCreator( this );
@@ -1894,7 +1894,8 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
   // ----------------------------------------------------------------------
   else if ( method == "CreateGroup" ||
             method == "CreateGroupFromGEOM" ||
-            method == "CreateGroupFromFilter" )
+            method == "CreateGroupFromFilter" ||
+            method == "CreateDimGroup" )
   {
     Handle(_pyGroup) group = new _pyGroup( theCommand );
     myGroups.push_back( group );

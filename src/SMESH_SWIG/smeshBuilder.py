@@ -4918,7 +4918,25 @@ class Mesh:
 
     pass # end of Mesh class
 
-## class used to add to SMESH_MeshEditor methods removed from its CORBA API
+
+## class used to compensate change of CORBA API of SMESH_Mesh for backward compatibility
+#  with old dump scripts which call SMESH_Mesh directly and not via smeshBuilder.Mesh
+#
+class meshProxy(SMESH._objref_SMESH_Mesh):
+    def __init__(self):
+        SMESH._objref_SMESH_Mesh.__init__(self)
+    def __deepcopy__(self, memo=None):
+        new = self.__class__()
+        return new
+    def CreateDimGroup(self,*args): # 2 args added: nbCommonNodes, underlyingOnly
+        if len( args ) == 3:
+            args += SMESH.ALL_NODES, True
+        return SMESH._objref_SMESH_Mesh.CreateDimGroup( self, *args )
+    pass
+omniORB.registerObjref(SMESH._objref_SMESH_Mesh._NP_RepositoryId, meshProxy)
+
+## class used to compensate change of CORBA API of SMESH_MeshEditor for backward compatibility
+#  with old dump scripts which call SMESH_MeshEditor directly and not via smeshBuilder.Mesh
 #
 class meshEditor(SMESH._objref_SMESH_MeshEditor):
     def __init__(self):
@@ -4937,12 +4955,10 @@ class meshEditor(SMESH._objref_SMESH_MeshEditor):
         new = self.__class__()
         return new
     def FindCoincidentNodes(self,*args): # a 2nd arg added (SeparateCornerAndMediumNodes)
-        if len( args ) == 1:
-            return SMESH._objref_SMESH_MeshEditor.FindCoincidentNodes( self, args[0], False )
+        if len( args ) == 1: args += False,
         return SMESH._objref_SMESH_MeshEditor.FindCoincidentNodes( self, *args )
     def FindCoincidentNodesOnPart(self,*args): # a 3d arg added (SeparateCornerAndMediumNodes)
-        if len( args ) == 2:
-            args += False,
+        if len( args ) == 2: args += False,
         return SMESH._objref_SMESH_MeshEditor.FindCoincidentNodesOnPart( self, *args )
     def MergeNodes(self,*args): # a 2nd arg added (NodesToKeep)
         if len( args ) == 1:
