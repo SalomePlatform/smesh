@@ -82,28 +82,28 @@ public:
     double              myBallDiameter;
     std::vector<int>    myPolyhedQuantities;
 
-    ElemFeatures( SMDSAbs_ElementType type=SMDSAbs_All, bool isPoly=false, bool isQuad=false )
+    SMESH_EXPORT ElemFeatures( SMDSAbs_ElementType type=SMDSAbs_All, bool isPoly=false, bool isQuad=false )
       :myType( type ), myIsPoly(isPoly), myIsQuad(isQuad), myID(-1), myBallDiameter(0) {}
 
-    ElemFeatures& Init( SMDSAbs_ElementType type, bool isPoly=false, bool isQuad=false )
+    SMESH_EXPORT ElemFeatures& Init( SMDSAbs_ElementType type, bool isPoly=false, bool isQuad=false )
     { myType = type; myIsPoly = isPoly; myIsQuad = isQuad; return *this; }
 
-    ElemFeatures& Init( const SMDS_MeshElement* elem, bool basicOnly=true );
+    SMESH_EXPORT ElemFeatures& Init( const SMDS_MeshElement* elem, bool basicOnly=true );
 
-    ElemFeatures& Init( double diameter )
+    SMESH_EXPORT ElemFeatures& Init( double diameter )
     { myType = SMDSAbs_Ball; myBallDiameter = diameter; return *this; }
 
-    ElemFeatures& Init( vector<int>& quanities, bool isQuad=false )
+    SMESH_EXPORT ElemFeatures& Init( vector<int>& quanities, bool isQuad=false )
     { myType = SMDSAbs_Volume; myIsPoly = 1; myIsQuad = isQuad;
       myPolyhedQuantities.swap( quanities ); return *this; }
 
-    ElemFeatures& Init( const vector<int>& quanities, bool isQuad=false )
+    SMESH_EXPORT ElemFeatures& Init( const vector<int>& quanities, bool isQuad=false )
     { myType = SMDSAbs_Volume; myIsPoly = 1; myIsQuad = isQuad;
       myPolyhedQuantities = quanities; return *this; }
 
-    ElemFeatures& SetPoly(bool isPoly) { myIsPoly = isPoly; return *this; }
-    ElemFeatures& SetQuad(bool isQuad) { myIsQuad = isQuad; return *this; }
-    ElemFeatures& SetID  (int ID)      { myID = ID; return *this; }
+    SMESH_EXPORT ElemFeatures& SetPoly(bool isPoly) { myIsPoly = isPoly; return *this; }
+    SMESH_EXPORT ElemFeatures& SetQuad(bool isQuad) { myIsQuad = isQuad; return *this; }
+    SMESH_EXPORT ElemFeatures& SetID  (int ID)      { myID = ID; return *this; }
   };
 
   /*!
