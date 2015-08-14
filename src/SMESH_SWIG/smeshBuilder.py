@@ -4796,6 +4796,7 @@ class Mesh:
 
     ## Returns value of a functor for a given element
     #  @param funcType an item of SMESH.FunctorType enum
+    #         Type "SMESH.FunctorType._items" in the Python Console to see all items.
     #  @param elemId element or node ID
     #  @param isElem @a elemId is ID of element or node
     #  @return the functor value or zero in case of invalid arguments

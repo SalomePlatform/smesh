@@ -1799,8 +1799,11 @@ bool SMESH_Block::FindBlockShapes(const TopoDS_Shell&         theShell,
     for (  ; eIt.More(); eIt.Next() ) {
       const TopoDS_Edge& e = TopoDS::Edge( eIt.Value() );
       TopoDS_Vertex v = TopExp::FirstVertex( e );
-      if ( v.IsSame( V000 ))
+      if ( v.IsSame( V000 )) {
         v = TopExp::LastVertex( e );
+        if ( v.IsSame( V000 ))
+          return false;
+      }
       val = dir001 * gp_Vec( p000, BRep_Tool::Pnt( v )).Normalized();
       if ( val > maxVal ) {
         V001 = v;

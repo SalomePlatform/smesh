@@ -1571,7 +1571,7 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
              myObjHyps[ dim ][ type ].count() > 0 &&
              curHypType == SMESH::toQStr( myObjHyps[ dim ][ type ].first().first->GetName()) )
         {
-          HypothesisData* hypData = SMESH::GetHypothesisData( curHyp->GetName() );
+          HypothesisData* hypData = SMESH::GetHypothesisData( SMESH::toQStr( curHyp->GetName() ));
           for (int i = 0; i < myAvailableHypData[ dim ][ Algo ].count(); ++i) {
             curAlgo = myAvailableHypData[ dim ][ Algo ][ i ];
             if (curAlgo && hypData && isCompatible(curAlgo, hypData, type))
@@ -1587,7 +1587,7 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
       {
         // check if a selected hyp is compatible with the curAlgo
         if ( !curHyp->_is_nil() ) {
-          HypothesisData* hypData = SMESH::GetHypothesisData( curHyp->GetName() );
+          HypothesisData* hypData = SMESH::GetHypothesisData( SMESH::toQStr( curHyp->GetName() ));
           if ( !isCompatible( curAlgo, hypData, type ))
             curHyp = SMESH::SMESH_Hypothesis::_nil();
         }
@@ -2180,7 +2180,7 @@ void SMESHGUI_MeshOp::readMesh()
     if ( myObjHyps[ dim ][ Algo ].count() > 0 )
     {
       SMESH::SMESH_Hypothesis_var aVar = myObjHyps[ dim ][ Algo ].first().first;
-      HypothesisData* algoData = SMESH::GetHypothesisData( aVar->GetName() );
+      HypothesisData* algoData = SMESH::GetHypothesisData( SMESH::toQStr( aVar->GetName() ));
       aHypIndex = myAvailableHypData[ dim ][ Algo ].indexOf ( algoData );
       //       if ( aHypIndex < 0 && algoData ) {
       //         // assigned algo is incompatible with other algorithms
@@ -2323,7 +2323,7 @@ bool SMESHGUI_MeshOp::editMeshOrSubMesh( QString& theMess )
       SMESH::SMESH_Hypothesis_var anOldAlgo = myObjHyps[ dim ][ Algo ].first().first;
       SMESH::SMESH_Hypothesis_var anAlgoVar = getAlgo( dim );
       if ( anAlgoVar->_is_nil() || // no new algo selected or
-           strcmp(anOldAlgo->GetName(), anAlgoVar->GetName()) ) // algo change
+           SMESH::toQStr(anOldAlgo->GetName()) != SMESH::toQStr(anAlgoVar->GetName())) // algo change
       {
         // remove old algorithm
         SMESH::RemoveHypothesisOrAlgorithmOnMesh ( pObj, myObjHyps[ dim ][ Algo ].first().first );

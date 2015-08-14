@@ -322,11 +322,11 @@ this one for this mesh/sub-mesh.</translation>
     </message>
     <message>
         <source>SMESH_NUMBER_OF_LAYERS_HYPOTHESIS</source>
-        <translation>Radial Prism Parameter</translation>
+        <translation>Radial Discretization</translation>
     </message>
     <message>
         <source>SMESH_NUMBER_OF_LAYERS_2D_HYPOTHESIS</source>
-        <translation>Radial Quadrangle Parameter</translation>
+        <translation>Radial Discretization</translation>
     </message>
     <message>
         <source>SMESH_NUMBER_OF_LAYERS_TITLE</source>

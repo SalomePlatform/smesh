@@ -219,7 +219,7 @@ STDMESHERS_I_EXPORT
     else if (strcmp(aHypName, "Quadrangle_2D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_Quadrangle_2D_i, StdMeshers_Quadrangle_2D_i>;
     else if (strcmp(aHypName, "QuadFromMedialAxis_1D2D") == 0)
-      aCreator = new StdHypothesisCreator_i<StdMeshers_QuadFromMedialAxis_1D2D_i, StdMeshers_Quadrangle_2D_i>;
+      aCreator = new StdHypothesisCreator_i<StdMeshers_QuadFromMedialAxis_1D2D_i, StdMeshers_QuadFromMedialAxis_1D2D_i>;
     else if (strcmp(aHypName, "Hexa_3D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_Hexa_3D_i, StdMeshers_Hexa_3D_i>;
     else if (strcmp(aHypName, "Projection_1D") == 0)

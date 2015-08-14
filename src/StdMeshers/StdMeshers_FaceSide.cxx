@@ -349,19 +349,19 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
       if ( node ) // nodes on internal vertices may be missing
       {
         if ( vertexNodes.insert( node ).second ||
-             fHelper.IsRealSeam( node->getshapeId() ))
+             fHelper.IsRealSeam  ( node->getshapeId() ) ||
+             fHelper.IsDegenShape( node->getshapeId() ))
           u2node.insert( u2node.end(), make_pair( prevNormPar, node ));
       }
       else if ( iE == 0 )
       {
-        if ( nodes.empty() ) {
-          for ( ++iE; iE < myEdge.size(); ++iE )
-            if (( node = VertexNode( iE ))) {
-              u2node.insert( make_pair( prevNormPar, node ));
-              break;
-            }
-          --iE;
-        }
+        for ( ++iE; iE < myEdge.size(); ++iE )
+          if (( node = VertexNode( iE ))) {
+            u2node.insert( make_pair( prevNormPar, node ));
+            break;
+          }
+        --iE;
+
         if ( !node )
           return myPoints;
         vertexNodes.insert( node );
@@ -420,8 +420,11 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
         if ( !node )
           return myPoints;
       }
-      if ( u2node.rbegin()->second == node )
+      if ( u2node.rbegin()->second == node &&
+           !fHelper.IsRealSeam  ( node->getshapeId() ) &&
+           !fHelper.IsDegenShape( node->getshapeId() ))
         u2node.erase( --u2node.end() );
+
       u2node.insert( u2node.end(), make_pair( 1., node ));
     }
 
@@ -587,9 +590,9 @@ std::vector<const SMDS_MeshNode*> StdMeshers_FaceSide::GetOrderedNodes(int theEd
 
     // Sort nodes of all edges putting them into a map
 
-    map< double, const SMDS_MeshNode*>        u2node;
-    vector<const SMDS_MeshNode*>              nodes;
-    set<const SMDS_MeshNode*>                 vertexNodes;
+    map< double, const SMDS_MeshNode*> u2node;
+    vector<const SMDS_MeshNode*>       nodes;
+    set<const SMDS_MeshNode*>          vertexNodes;
     int iE = 0, iEnd = myEdge.size();
     if ( theEdgeInd >= 0 )
     {
@@ -613,7 +616,8 @@ std::vector<const SMDS_MeshNode*> StdMeshers_FaceSide::GetOrderedNodes(int theEd
       const SMDS_MeshNode* node = VertexNode( iE );
       if ( node ) { // nodes on internal vertices may be missing
         if ( vertexNodes.insert( node ).second ||
-             fHelper.IsRealSeam( node->getshapeId() ))
+             fHelper.IsRealSeam  ( node->getshapeId() ) ||
+             fHelper.IsDegenShape( node->getshapeId() ))
           u2node.insert( make_pair( prevNormPar, node ));
       }
       else if ( iE == 0 )
@@ -667,20 +671,26 @@ std::vector<const SMDS_MeshNode*> StdMeshers_FaceSide::GetOrderedNodes(int theEd
         if ( !node )
           return resultNodes;
       }
-      if ( u2node.rbegin()->second == node )
+      if ( u2node.rbegin()->second == node &&
+           !fHelper.IsRealSeam  ( node->getshapeId() ) &&
+           !fHelper.IsDegenShape( node->getshapeId() ))
         u2node.erase( --u2node.end() );
+
       u2node.insert( u2node.end(), make_pair( 1., node ));
     }
 
     // Fill the result vector
 
-    if ( u2node.size() == myNbPonits )
+    if ( theEdgeInd < 0 &&
+         u2node.size() != myNbPonits &&
+         u2node.size() != NbPoints( /*update=*/true ))
     {
-      resultNodes.reserve( u2node.size() );
-      map< double, const SMDS_MeshNode*>::iterator u2n = u2node.begin();
-      for ( ; u2n != u2node.end(); ++u2n )
-        resultNodes.push_back( u2n->second );
+      u2node.clear();
     }
+    resultNodes.reserve( u2node.size() );
+    map< double, const SMDS_MeshNode*>::iterator u2n = u2node.begin();
+    for ( ; u2n != u2node.end(); ++u2n )
+      resultNodes.push_back( u2n->second );
   }
   else
   {
@@ -953,7 +963,7 @@ int StdMeshers_FaceSide::NbPoints(const bool update) const
     {
       if ( const SMESHDS_SubMesh* sm = myProxyMesh->GetSubMesh( Edge(i) ))
       {
-        if ( sm->NbNodes() == sm->NbElements() - 1 )
+        if ( sm->NbNodes() == sm->NbElements()-1 || sm->NbElements() == 0 )
         {
           me->myNbPonits += sm->NbNodes();
           if ( myIgnoreMediumNodes && sm->IsQuadratic() )
@@ -973,12 +983,13 @@ int StdMeshers_FaceSide::NbPoints(const bool update) const
     helper.SetSubShape( myFace );
 
     std::set< const SMDS_MeshNode* > vNodes;
-    for ( int i = 0; i <= NbEdges(); ++i ) // nb VERTEXes is more than NbEdges() if !IsClosed()
+    const int nbV = NbEdges() + !IsClosed();
+    for ( int i = 0; i < nbV; ++i )
       if ( const SMDS_MeshNode* n = VertexNode( i ))
       {
         if ( !vNodes.insert( n ).second &&
-             helper.IsRealSeam( n->getshapeId() ) &&
-             i < NbEdges())
+             ( helper.IsRealSeam  ( n->getshapeId() ) ||
+               helper.IsDegenShape( n->getshapeId() )))
           me->myNbPonits++;
       }
       else

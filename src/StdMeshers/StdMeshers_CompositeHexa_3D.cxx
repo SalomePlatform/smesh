@@ -379,11 +379,12 @@ namespace
     TopExp::MapShapes( shape, TopAbs_FACE, subFF );
 
     TopoDS_Vertex VV[2];
-    TopTools_MapOfShape subChecked;
+    TopTools_MapOfShape subChecked/*, ridgeEE*/;
     TopTools_MapIteratorOfMapOfShape vIt( cornerVV );
     for ( ; vIt.More(); vIt.Next() )
     {
       TopoDS_Shape V0 = vIt.Key();
+      // walk from one corner VERTEX to another along ridge EDGEs
       PShapeIteratorPtr riIt = SMESH_MesherHelper::GetAncestors( V0, mesh, TopAbs_EDGE );
       while ( const TopoDS_Shape* riE = riIt->next() )
       {
@@ -405,7 +406,7 @@ namespace
           {
             if ( E->IsSame( ridgeE ) || !subEE.Contains( *E ) || !subChecked.Add( *E ))
               continue;
-            // look for FACEs sharing E and ridgeE
+            // look for FACEs sharing both E and ridgeE
             PShapeIteratorPtr fIt = SMESH_MesherHelper::GetAncestors( *E, mesh, TopAbs_FACE );
             while ( const TopoDS_Shape* F = fIt->next() )
             {
@@ -422,12 +423,12 @@ namespace
               break;
             }
           }
-          // look for the next ridge EDGE
+          // look for the next ridge EDGE ending at V1
           if ( nextRidgeE.IsNull() )
           {
             eIt = SMESH_MesherHelper::GetAncestors( V1, mesh, TopAbs_EDGE );
             while ( const TopoDS_Shape* E = eIt->next() )
-              if ( !ridgeE.IsSame( *E ) && !internEE.Contains( *E ) )
+              if ( !ridgeE.IsSame( *E ) && !internEE.Contains( *E ) && subEE.Contains( *E ))
               {
                 nextRidgeE = *E;
                 break;
@@ -465,7 +466,7 @@ bool StdMeshers_CompositeHexa_3D::findBoxFaces( const TopoDS_Shape&    shape,
   TopTools_MapOfShape cornerVertices;
   getBlockCorners( mesh, shape, cornerVertices );
   if ( cornerVertices.Extent() != 8 )
-    return error( COMPERR_BAD_INPUT_MESH, "Can't find 8 corners of a block" );
+    return error( COMPERR_BAD_INPUT_MESH, "Can't find 8 corners of a block by 2D mesh" );
   TopTools_MapOfShape internalEdges;
   if ( !getInternalEdges( mesh, shape, cornerVertices, internalEdges ))
     return error( COMPERR_BAD_INPUT_MESH, "2D mesh is not suitable for i,j,k hexa meshing" );

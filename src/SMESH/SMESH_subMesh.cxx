@@ -890,7 +890,7 @@ SMESH_Hypothesis::Hypothesis_Status
         f.AndNot( SMESH_HypoFilter::Is( algo ));
         const SMESH_Hypothesis * prevAlgo = _father->GetHypothesis( this, f, true );
         if (prevAlgo &&
-            string(algo->GetName()) != string(prevAlgo->GetName()) )
+            string( algo->GetName()) != prevAlgo->GetName())
           modifiedHyp = true;
       }
       else
@@ -1216,7 +1216,7 @@ void SMESH_subMesh::cleanDependsOn( SMESH_Algo* algoRequiringCleaning/*=0*/ )
       if ( !sm->IsEmpty() )
       {
         const bool sameShapeType = ( prevShapeType == sm->GetSubShape().ShapeType() );
-        bool keepSubMeshes = ( sameShapeType && toKeepPrevShapeType );
+        bool       keepSubMeshes = ( sameShapeType && toKeepPrevShapeType );
         if ( !sameShapeType )
         {
           // check if the algo allows presence of global algos of dimension the algo
@@ -1239,7 +1239,7 @@ void SMESH_subMesh::cleanDependsOn( SMESH_Algo* algoRequiringCleaning/*=0*/ )
         // remember all sub-meshes of sm
         if ( keepSubMeshes )
         {
-          SMESH_subMeshIteratorPtr smIt2 = getDependsOnIterator(false,true);
+          SMESH_subMeshIteratorPtr smIt2 = getDependsOnIterator(false);
           while ( smIt2->more() )
             smToKeep.insert( smIt2->next() );
         }

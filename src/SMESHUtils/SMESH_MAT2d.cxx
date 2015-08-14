@@ -298,7 +298,7 @@ namespace
       if ( _edge ) // pass branch to an opposite BndSeg
       {
         size_t oppSegIndex = SMESH_MAT2d::Branch::getBndSegment( _edge->twin() );
-        if ( oppSegIndex < bndSegs.size() /*&& bndSegs[ oppSegIndex ]._branchID == theNoBrachID*/ )
+        if ( oppSegIndex < bndSegs.size() && bndSegs[ oppSegIndex ]._branchID == theNoBrachID )
           bndSegs[ oppSegIndex ]._branchID = -branchID;
       }
     }
@@ -773,7 +773,7 @@ namespace
       inPoints[0]._edges.clear();
     }
 
-    // Divide InSegment's into BndSeg's (each BndSeg corresponds to one MA edge)
+    // Divide InSegment's into BndSeg's (so that each BndSeg corresponds to one MA edge)
 
     vector< BndSeg > bndSegs;
     bndSegs.reserve( inSegments.size() * 3 );
@@ -1054,15 +1054,10 @@ namespace
         {
           // no MA edge, bndSeg corresponds to an end point of a branch
           if ( bndPoints._maEdges.empty() )
-          {
-            // should not get here according to algo design???
             edgeInd = 0;
-          }
           else
-          {
             edgeInd = branchEdges[ brID ].size();
-            dInd = bndSegs[ i ]._branchID > 0 ? +1 : -1;
-          }
+          dInd = bndSegs[ i ]._branchID > 0 ? +1 : -1;
         }
 
         bndPoints._maEdges.push_back( make_pair( br, ( 1 + edgeInd ) * dInd ));
@@ -1188,7 +1183,7 @@ void SMESH_MAT2d::MedialAxis::getPoints( const Branch*         branch,
 //================================================================================
 /*!
  * \brief Returns a BranchPoint corresponding to a given point on a geom EDGE
- *  \param [in] iGeomEdge - index of geom EDGE within a vector passed at MA construction
+ *  \param [in] iEdge - index of geom EDGE within a vector passed at MA construction
  *  \param [in] u - parameter of the point on EDGE curve
  *  \param [out] p - the found BranchPoint
  *  \return bool - is OK
@@ -1243,9 +1238,9 @@ bool SMESH_MAT2d::Boundary::getBranchPoint( const std::size_t iEdge,
   const std::pair< const Branch*, int >& maE = points._maEdges[ i ];
   bool maReverse = ( maE.second < 0 );
 
-  p._branch = maE.first;
-  p._iEdge  = ( maReverse ? -maE.second : maE.second ) - 1; // countered from 1 to store sign
-  p._edgeParam = maReverse ? ( 1. - edgeParam ) : edgeParam;
+  p._branch    = maE.first;
+  p._iEdge     = ( maReverse ? -maE.second : maE.second ) - 1; // countered from 1 to store sign
+  p._edgeParam = ( maE.first && maReverse ) ? ( 1. - edgeParam ) : edgeParam;
 
   return true;
 }
@@ -1508,6 +1503,12 @@ bool SMESH_MAT2d::Branch::getBoundaryPoints(const BranchPoint& p,
 
 bool SMESH_MAT2d::Branch::getParameter(const BranchPoint & p, double & u ) const
 {
+  if ( this != p._branch && p._branch )
+    return p._branch->getParameter( p, u );
+
+  if ( isRemoved() )
+    return _proxyPoint._branch->getParameter( _proxyPoint, u );
+
   if ( p._iEdge > _params.size()-1 )
     return false;
   if ( p._iEdge == _params.size()-1 )
