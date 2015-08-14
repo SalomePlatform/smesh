@@ -1599,7 +1599,7 @@ bool SMESH_MeshAlgos::FaceNormal(const SMDS_MeshElement* F, gp_XYZ& normal, bool
     return false;
 
   normal.SetCoord(0,0,0);
-  int nbNodes = F->IsQuadratic() ? F->NbNodes()/2 : F->NbNodes();
+  int nbNodes = F->NbCornerNodes();
   for ( int i = 0; i < nbNodes-2; ++i )
   {
     gp_XYZ p[3];

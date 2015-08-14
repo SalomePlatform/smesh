@@ -41,7 +41,7 @@ using namespace std;
 //purpose  : 
 //=======================================================================
 SMDS_PolygonalFaceOfNodes::SMDS_PolygonalFaceOfNodes
-                          (std::vector<const SMDS_MeshNode *> nodes)
+                          (const std::vector<const SMDS_MeshNode *>& nodes)
 {
   //MESSAGE("******************************************** SMDS_PolygonalFaceOfNodes");
   myNodes = nodes;

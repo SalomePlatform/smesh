@@ -57,7 +57,8 @@ class MESHDRIVERSTL_EXPORT DriverSTL_W_SMDS_Mesh: public Driver_SMDS_Mesh
  private:
   // PRIVATE FIELDS
   bool myIsAscii;
-  std::vector<const SMDS_MeshElement*> myVolumeTrias; // tmp triangles
+  int                                  myNbVolumeTrias;
+  std::vector<const SMDS_MeshElement*> myVolumeFacets; // tmp faces
 };
 
 #endif
