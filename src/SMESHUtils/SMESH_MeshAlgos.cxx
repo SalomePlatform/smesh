@@ -1537,7 +1537,7 @@ SMESH_MeshAlgos::FindFaceInSet(const SMDS_MeshNode*    n1,
                                int*                    n2ind)
 
 {
-  int i1, i2;
+  int i1 = 0, i2 = 0;
   const SMDS_MeshElement* face = 0;
 
   SMDS_ElemIteratorPtr invElemIt = n1->GetInverseElementIterator(SMDSAbs_Face);

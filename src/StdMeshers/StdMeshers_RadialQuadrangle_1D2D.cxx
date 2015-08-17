@@ -930,7 +930,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
   //cout<<"Angles.Length() = "<<Angles.Length()<<"   Points.Length() = "<<Points.Length()<<endl;
   //cout<<"Nodes1.size() = "<<Nodes1.size()<<"   Pnts2d1.Length() = "<<Pnts2d1.Length()<<endl;
   for(; i<Angles.Length(); i++) {
-    vector< const SMDS_MeshNode* > tmpNodes(Nodes1.size());
+    vector< const SMDS_MeshNode* > tmpNodes;
     gp_Trsf aTrsf;
     gp_Ax1 theAxis(P0,gp_Dir(Axis));
     aTrsf.SetRotation( theAxis, Angles.Value(i) );
@@ -948,10 +948,10 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
       aTrsf2d.Transforms( cx, cy );
       // set node on face
       meshDS->SetNodeOnFace( node, faceID, cx, cy );
-      tmpNodes[j-1] = node;
+      tmpNodes.push_back(node);
     }
     // create faces
-    tmpNodes[Points.Length()] = CNodes[i];
+    tmpNodes.push_back( CNodes[i] );
     // quad
     for(j=0; j<Nodes1.size()-1; j++) {
       SMDS_MeshFace* MF;

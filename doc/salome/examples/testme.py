@@ -24,11 +24,21 @@ import unittest, sys, os
 class SalomeSession(object):
     def __init__(self, script):
         import runSalome
-        sys.argv  = ["runSalome.py"]
+        run_script = "runSalome.py"
+        if sys.platform == 'win32':
+            module_dir = os.getenv("KERNEL_ROOT_DIR")
+            if module_dir: run_script = os.path.join(module_dir, "bin", "salome", run_script)
+            pass
+        sys.argv  = [run_script]
         sys.argv += ["--terminal"]
         sys.argv += ["--modules=GEOM,MED,SMESH"]
         sys.argv += ["%s" % script]
+        if sys.platform == 'win32':
+            main_module_path = sys.modules['__main__'].__file__
+            sys.modules['__main__'].__file__ = ''
         clt, d = runSalome.main()
+        if sys.platform == 'win32':
+            sys.modules['__main__'].__file__ = main_module_path
         return
 
     def __del__(self):
