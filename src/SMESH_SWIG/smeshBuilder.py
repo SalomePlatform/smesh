@@ -235,7 +235,7 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo, mesh):
     elif status == HYP_BAD_SUBSHAPE :
         reason = "the shape is neither the main one, nor its sub-shape, nor a valid group"
     elif status == HYP_BAD_GEOMETRY:
-        reason = "geometry mismatches the expectation of the algorithm"
+        reason = "the algorithm is not applicable to this geometry"
     elif status == HYP_HIDDEN_ALGO:
         reason = "it is hidden by an algorithm of an upper dimension, which generates elements of all dimensions"
     elif status == HYP_HIDING_ALGO:
@@ -929,7 +929,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
     ## Creates a numerical functor by its type
     #  @param theCriterion functor type - an item of SMESH.FunctorType enumeration.
     #          Type SMESH.FunctorType._items in the Python Console to see all items.
-    #          Note that not all items corresponds to numerical functors.
+    #          Note that not all items correspond to numerical functors.
     #  @return SMESH_NumericalFunctor
     #  @ingroup l1_controls
     def GetFunctor(self,theCriterion):
@@ -3172,9 +3172,9 @@ class Mesh:
     ## Fuses the neighbouring triangles into quadrangles.
     #  @param IDsOfElements The triangles to be fused.
     #  @param theCriterion  a numerical functor, in terms of enum SMESH.FunctorType, used to
-    #          choose a neighbour to fuse with.
+    #          applied to possible quadrangles to choose a neighbour to fuse with.
     #          Type SMESH.FunctorType._items in the Python Console to see all items.
-    #          Note that not all items corresponds to numerical functors.
+    #          Note that not all items correspond to numerical functors.
     #  @param MaxAngle      is the maximum angle between element normals at which the fusion
     #          is still performed; theMaxAngle is mesured in radians.
     #          Also it could be a name of variable which defines angle in degrees.
@@ -3190,10 +3190,10 @@ class Mesh:
 
     ## Fuses the neighbouring triangles of the object into quadrangles
     #  @param theObject is mesh, submesh or group
-    #  @param theCriterion is a numerical functor, in terms of enum SMESH.FunctorType, used to
-    #          choose a neighbour to fuse with.
+    #  @param theCriterion is a numerical functor, in terms of enum SMESH.FunctorType,
+    #          applied to possible quadrangles to choose a neighbour to fuse with.
     #          Type SMESH.FunctorType._items in the Python Console to see all items.
-    #          Note that not all items corresponds to numerical functors.
+    #          Note that not all items correspond to numerical functors.
     #  @param MaxAngle   a max angle between element normals at which the fusion
     #          is still performed; theMaxAngle is mesured in radians.
     #  @return TRUE in case of success, FALSE otherwise.
@@ -3208,11 +3208,11 @@ class Mesh:
 
     ## Splits quadrangles into triangles.
     #  @param IDsOfElements the faces to be splitted.
-    #  @param theCriterion   is a numerical functor, in terms of enum SMESH.FunctorType, used to
+    #  @param theCriterion is a numerical functor, in terms of enum SMESH.FunctorType, used to
     #         choose a diagonal for splitting. If @a theCriterion is None, which is a default
     #         value, then quadrangles will be split by the smallest diagonal.
     #         Type SMESH.FunctorType._items in the Python Console to see all items.
-    #         Note that not all items corresponds to numerical functors.
+    #         Note that not all items correspond to numerical functors.
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_cutquadr
     def QuadToTri (self, IDsOfElements, theCriterion = None):
@@ -3230,7 +3230,7 @@ class Mesh:
     #         choose a diagonal for splitting. If @a theCriterion is None, which is a default
     #         value, then quadrangles will be split by the smallest diagonal.
     #         Type SMESH.FunctorType._items in the Python Console to see all items.
-    #         Note that not all items corresponds to numerical functors.
+    #         Note that not all items correspond to numerical functors.
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_cutquadr
     def QuadToTriObject (self, theObject, theCriterion = None):
@@ -3283,7 +3283,7 @@ class Mesh:
     #  @param theCriterion  is a numerical functor, in terms of enum SMESH.FunctorType, used to
     #         choose a diagonal for splitting.
     #         Type SMESH.FunctorType._items in the Python Console to see all items.
-    #         Note that not all items corresponds to numerical functors.
+    #         Note that not all items correspond to numerical functors.
     #  @return 1 if 1-3 diagonal is better, 2 if 2-4
     #          diagonal is better, 0 if error occurs.
     #  @ingroup l2_modif_cutquadr

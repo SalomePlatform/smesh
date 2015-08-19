@@ -236,6 +236,10 @@ void SMESHGUI_RemoveElementsDlg::ClickOnApply()
     try {
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
       aResult = aMeshEditor->RemoveElements(anArrayOfIdeces.in());
+
+      if ( myActor && myMesh->NbElements() == 0 )
+        myActor->SetRepresentation(SMESH_Actor::ePoint);
+
     } catch (const SALOME::SALOME_Exception& S_ex) {
       SalomeApp_Tools::QtCatchCorbaException(S_ex);
       myEditCurrentArgument->clear();

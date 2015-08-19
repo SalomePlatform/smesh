@@ -965,7 +965,7 @@ void SMESHDS_Mesh::RemoveElement(const SMDS_MeshElement * elt)
     if ( elt->getshapeId() > 0 )
       subMesh = MeshElements( elt->getshapeId() );
 
-    RemoveFreeElement( elt, subMesh, true);
+    RemoveFreeElement( elt, subMesh, true );
     return;
   }
  
@@ -974,7 +974,7 @@ void SMESHDS_Mesh::RemoveElement(const SMDS_MeshElement * elt)
   list<const SMDS_MeshElement *> removedElems;
   list<const SMDS_MeshElement *> removedNodes;
 
-  SMDS_Mesh::RemoveElement(elt, removedElems, removedNodes, false);
+  SMDS_Mesh::RemoveElement(elt, removedElems, removedNodes, false );
   
   removeFromContainers( this, myGroups, removedElems, false );
 }
@@ -1000,7 +1000,7 @@ void SMESHDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elt,
   myScript->RemoveElement(elt->GetID());
 
   // Rm from group
-  // Node can belong to several groups
+  // Element can belong to several groups
   if ( fromGroups && !myGroups.empty() ) {
     set<SMESHDS_GroupBase*>::iterator GrIt = myGroups.begin();
     for (; GrIt != myGroups.end(); GrIt++) {
@@ -1012,10 +1012,12 @@ void SMESHDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elt,
 
   // Rm from sub-mesh
   // Element should belong to only one sub-mesh
-  if( subMesh )
-    subMesh->RemoveElement(elt, /*deleted=*/false);
+  if ( !subMesh && elt->getshapeId() > 0 )
+    subMesh = MeshElements( elt->getshapeId() );
+  if ( subMesh )
+    subMesh->RemoveElement( elt, /*deleted=*/false );
 
-  SMDS_Mesh::RemoveFreeElement(elt);
+  SMDS_Mesh::RemoveFreeElement( elt );
 }
 
 //================================================================================

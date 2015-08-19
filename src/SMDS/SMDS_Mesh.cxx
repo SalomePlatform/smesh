@@ -2484,7 +2484,7 @@ const SMDS_MeshElement* SMDS_Mesh::FindElement (const vector<const SMDS_MeshNode
       int nbNodesToCheck = noMedium ? e->NbCornerNodes() : e->NbNodes();
       if ( nbNodesToCheck == nodes.size() )
       {
-        for ( int i = 1; e && i < nodes.size(); ++ i )
+        for ( size_t i = 1; e && i < nodes.size(); ++i )
         {
           int nodeIndex = e->GetNodeIndex( nodes[ i ]);
           if ( nodeIndex < 0 || nodeIndex >= nbNodesToCheck )

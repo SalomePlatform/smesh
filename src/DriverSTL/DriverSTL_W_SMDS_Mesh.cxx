@@ -338,7 +338,41 @@ namespace
         ++nbBadTria;
       }
     }
-    return false;
+
+    // the polygon is invalid; add triangles with positive area
+    nbBadTria = 0;
+    while ( nbBadTria < nbVertices )
+    {
+      isGoodTria = v->TriaArea() > minArea;
+      if ( isGoodTria )
+      {
+        v->GetTriaNodes( &nodes[ iN ] );
+        iN += 3;
+        v = v->Delete();
+        if ( --nbVertices == 3 )
+        {
+          // last triangle remains
+          v->GetTriaNodes( &nodes[ iN ] );
+          return true;
+        }
+        nbBadTria = 0;
+      }
+      else
+      {
+        v = v->_next;
+        ++nbBadTria;
+      }
+    }
+
+    // add all the rest triangles
+    while ( nbVertices >= 3 )
+    {
+      v->GetTriaNodes( &nodes[ iN ] );
+      iN += 3;
+      v = v->Delete();
+    }
+    
+    return true;
 
   } // triangulate()
 } // namespace
@@ -394,15 +428,15 @@ static int getTriangles( const SMDS_MeshElement*             face,
   case SMDSEntity_BiQuad_Quadrangle:
     nbTria = ( type == SMDSEntity_BiQuad_Triangle ) ? 6 : 8;
     nodes[ i++ ] = face->GetNode( nbTria );
-    while ( i < 3*(nbTria-1) )
+    for ( i = 3; i < 3*(nbTria-1); i += 3 )
     {
-      nodes[ i++ ] = nodes[ i-2 ];
-      nodes[ i++ ] = nIt->next();
-      nodes[ i++ ] = nodes[ 2 ];
+      nodes[ i+0 ] = nodes[ i-2 ];
+      nodes[ i+1 ] = nIt->next();
+      nodes[ i+2 ] = nodes[ 2 ];
     }
-    nodes[ i++ ] = nodes[ i-2 ];
-    nodes[ i++ ] = nodes[ 0 ];
-    nodes[ i++ ] = nodes[ 2 ];
+    nodes[ i+0 ] = nodes[ i-2 ];
+    nodes[ i+1 ] = nodes[ 0 ];
+    nodes[ i+2 ] = nodes[ 2 ];
     break;
   case SMDSEntity_Triangle:
     nbTria = 1;
