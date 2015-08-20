@@ -487,7 +487,7 @@ namespace SMESH
 //=======================================================================
 
 SMESHGUI_ComputeDlg::SMESHGUI_ComputeDlg( QWidget* parent, bool ForEval )
- : SMESHGUI_Dialog( parent, false, true, Close/* | Help*/ )
+ : SMESHGUI_Dialog( parent, false, true, Close | Help )
 {
   QVBoxLayout* aDlgLay = new QVBoxLayout (mainFrame());
   aDlgLay->setMargin( 0 );
@@ -1482,6 +1482,7 @@ QTableWidget* SMESHGUI_BaseComputeOp::table()
 SMESHGUI_ComputeOp::SMESHGUI_ComputeOp()
  : SMESHGUI_BaseComputeOp()
 {
+  myHelpFileName = "constructing_meshes_page.html#compute_anchor";
 }
 
 
@@ -1551,7 +1552,6 @@ SMESHGUI_PrecomputeOp::SMESHGUI_PrecomputeOp()
  myActiveDlg( 0 ),
  myPreviewDisplayer( 0 )
 {
-  myHelpFileName = "constructing_meshes_page.html#preview_mesh_anchor";
 }
 
 //================================================================================
@@ -1592,6 +1592,8 @@ LightApp_Dialog* SMESHGUI_PrecomputeOp::dlg() const
 
 void SMESHGUI_PrecomputeOp::startOperation()
 {
+  myHelpFileName = "constructing_meshes_page.html#preview_anchor"; // other anchor onCompute()
+
   if ( !myDlg )
   {
     myDlg = new SMESHGUI_PrecomputeDlg( desktop() );
@@ -1778,6 +1780,7 @@ void SMESHGUI_PrecomputeOp::onCompute()
     myOrderMgr->SetMeshOrder();
   myMapShapeId.clear();
   myActiveDlg = computeDlg();
+  myHelpFileName = "constructing_meshes_page.html#compute_anchor";
   computeMesh();
 }
 
@@ -1850,19 +1853,19 @@ void SMESHGUI_PrecomputeOp::onPreview()
   if (myOrderMgr && myOrderMgr->IsOrderChanged())
     myOrderMgr->SetMeshOrder();
 
-  // Compute preview of mesh, 
+  // Compute preview of mesh,
   // i.e. compute mesh till indicated dimension
   int dim = myDlg->getPreviewMode();
-  
+
   SMESH::MemoryReserve aMemoryReserve;
-  
+
   SMESH::compute_error_array_var aCompErrors;
   QString                        aHypErrors;
 
   bool computeFailed = true, memoryLack = false;
 
   SMESHGUI_ComputeDlg* aCompDlg = computeDlg();
-    aCompDlg->myMeshName->setText( aMeshSObj->GetName().c_str() );
+  aCompDlg->myMeshName->setText( aMeshSObj->GetName().c_str() );
 
   SMESHGUI* gui = getSMESHGUI();
   SMESH::SMESH_Gen_var gen = gui->GetSMESHGen();
@@ -2045,6 +2048,7 @@ SMESHGUI_MeshOrderBox* SMESHGUI_PrecomputeDlg::getMeshOrderBox() const
 SMESHGUI_EvaluateOp::SMESHGUI_EvaluateOp()
  : SMESHGUI_BaseComputeOp()
 {
+  myHelpFileName = "constructing_meshes_page.html#evaluate_anchor";
 }
 
 

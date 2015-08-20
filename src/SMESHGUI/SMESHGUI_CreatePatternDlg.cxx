@@ -569,7 +569,7 @@ void SMESHGUI_CreatePatternDlg::onSelectionDone()
 {
   try {
     SALOME_ListIO aList;
-    mySelectionMgr->selectedObjects( aList, SVTK_Viewer::Type() );
+    mySelectionMgr->selectedObjects( aList );
     if ( aList.Extent() != 1 )
       return;
 

@@ -5011,7 +5011,7 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
       el = e;
       nbInitElems += elemSet.count(el);
     }
-    if ( nbInitElems < 2 ) {
+    if ( nbInitElems == 1 ) {
       bool NotCreateEdge = el && el->IsMediumNode(node);
       if(!NotCreateEdge) {
         vector<TNodeOfNodeListMapItr> newNodesItVec( 1, nList );
@@ -7244,19 +7244,17 @@ int SMESH_MeshEditor::SimplifyFace (const vector<const SMDS_MeshNode *>& faceNod
   set<const SMDS_MeshNode*> nodeSet;
 
   // get simple seq of nodes
-  //const SMDS_MeshNode* simpleNodes[ nbNodes ];
   vector<const SMDS_MeshNode*> simpleNodes( nbNodes );
-  int iSimple = 0, nbUnique = 0;
+  int iSimple = 0;
 
   simpleNodes[iSimple++] = faceNodes[0];
-  nbUnique++;
   for (int iCur = 1; iCur < nbNodes; iCur++) {
     if (faceNodes[iCur] != simpleNodes[iSimple - 1]) {
       simpleNodes[iSimple++] = faceNodes[iCur];
-      if (nodeSet.insert( faceNodes[iCur] ).second)
-        nbUnique++;
+      nodeSet.insert( faceNodes[iCur] );
     }
   }
+  int nbUnique = nodeSet.size();
   int nbSimple = iSimple;
   if (simpleNodes[nbSimple - 1] == simpleNodes[0]) {
     nbSimple--;
@@ -7456,6 +7454,8 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
                     ( SMDS_MeshCell::interlacedSmdsOrder( SMDSEntity_Quad_Polygon,
                                                           nbNewNodes ), face_nodes );
               }
+              elemType.SetPoly(( nbNewNodes / ( elemType.myIsQuad + 1 ) > 4 ));
+
               SMDS_MeshElement* newElem = AddElement( face_nodes, elemType );
               if ( aShapeId )
                 aMesh->SetMeshElementOnShape(newElem, aShapeId);
@@ -7472,9 +7472,9 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
           }
           else {
             // each face has to be analyzed in order to check volume validity
-            const SMDS_VtkVolume* aPolyedre =
-              dynamic_cast<const SMDS_VtkVolume*>( elem );
-            if (aPolyedre) {
+            const SMDS_VtkVolume* aPolyedre = dynamic_cast<const SMDS_VtkVolume*>( elem );
+            if (aPolyedre)
+            {
               int nbFaces = aPolyedre->NbFaces();
 
               vector<const SMDS_MeshNode *> poly_nodes;
@@ -7502,7 +7502,6 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
 
               if (quantities.size() > 3)
               {
-                //aMesh->ChangePolyhedronNodes(elem, poly_nodes, quantities);
                 const SMDS_MeshElement* newElem =
                   aMesh->AddPolyhedralVolume(poly_nodes, quantities);
                 myLastCreatedElems.Append(newElem);
