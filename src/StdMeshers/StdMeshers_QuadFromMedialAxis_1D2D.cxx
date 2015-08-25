@@ -542,11 +542,11 @@ namespace
   TopoDS_Edge makeEdgeFromMA( SMESH_MesherHelper&            theHelper,
                               const SMESH_MAT2d::MedialAxis& theMA )
   {
-    if ( theMA.getBranches().size() != 1 )
+    if ( theMA.nbBranches() != 1 )
       return TopoDS_Edge();
 
     vector< gp_XY > uv;
-    theMA.getPoints( theMA.getBranches()[0], uv );
+    theMA.getPoints( theMA.getBranch(0), uv );
     if ( uv.size() < 2 )
       return TopoDS_Edge();
 
@@ -775,7 +775,7 @@ namespace
 
     double uMA;
     SMESH_MAT2d::BoundaryPoint bp[2];
-    const SMESH_MAT2d::Branch& branch = theMA.getBranches()[0];
+    const SMESH_MAT2d::Branch& branch = *theMA.getBranch(0);
 
     for ( size_t i = 0; i < theDivPoints.size(); ++i )
     {
@@ -830,7 +830,7 @@ namespace
                          const vector<TopoDS_Edge>& theSinuEdges,
                          const size_t               theSinuSide0Size)
   {
-    if ( theMA.getBranches().size() != 1 )
+    if ( theMA.nbBranches() != 1 )
       return false;
 
     // normalize theMAParams
@@ -858,7 +858,7 @@ namespace
       //   hasComputed = true;
     }
 
-    const SMESH_MAT2d::Branch& branch = theMA.getBranches()[0];
+    const SMESH_MAT2d::Branch& branch = *theMA.getBranch(0);
     SMESH_MAT2d::BoundaryPoint bp[2];
 
     vector< std::size_t > edgeIDs1, edgeIDs2;
@@ -1248,4 +1248,3 @@ bool StdMeshers_QuadFromMedialAxis_1D2D::Evaluate(SMESH_Mesh &         theMesh,
 {
   return StdMeshers_Quadrangle_2D::Evaluate(theMesh,theShape,theResMap);
 }
-

@@ -88,6 +88,7 @@ namespace SMESH_MAT2d
   /*!
    * \brief Branch is a set of MA edges enclosed between branch points and/or MA ends.
    *        It's main feature is to return two BoundaryPoint's per a point on it.
+   *        Points on a Branch are defined by [0,1] parameter 
    */
   class SMESHUtils_EXPORT Branch
   {
@@ -114,15 +115,20 @@ namespace SMESH_MAT2d
                                std::vector< std::size_t >& edgeIDs2,
                                std::vector< BranchPoint >& divPoints) const;
 
-    // construction
+    bool isRemoved() const { return _proxyPoint._branch; }
+
+  public: // internal: construction
+
     void init( std::vector<const TVDEdge*>&                maEdges,
                const Boundary*                             boundary,
                std::map< const TVDVertex*, BranchEndType > endType);
     void setBranchesToEnds( const std::vector< Branch >&   branches);
+    BranchPoint getPoint( const TVDVertex* vertex ) const;
+    void setRemoved( const BranchPoint& proxyPoint );
 
-    static void setGeomEdge( std::size_t geomIndex, const TVDEdge* maEdge );
-    static std::size_t getGeomEdge( const TVDEdge* maEdge );
-    static void setBndSegment( std::size_t segIndex, const TVDEdge* maEdge );
+    static void        setGeomEdge  ( std::size_t geomIndex, const TVDEdge* maEdge );
+    static std::size_t getGeomEdge  ( const TVDEdge* maEdge );
+    static void        setBndSegment( std::size_t segIndex, const TVDEdge* maEdge );
     static std::size_t getBndSegment( const TVDEdge* maEdge );
 
   private:
@@ -142,6 +148,7 @@ namespace SMESH_MAT2d
     const Boundary*      _boundary; // face boundary
     BranchEnd            _endPoint1;
     BranchEnd            _endPoint2;
+    BranchPoint          _proxyPoint;
   };
 
   //-------------------------------------------------------------------------------------
@@ -173,7 +180,9 @@ namespace SMESH_MAT2d
 
     bool getBranchPoint( const std::size_t iEdge, double u, BranchPoint& p ) const;
 
-    bool IsConcaveSegment( std::size_t iEdge, std::size_t iSeg ) const;
+    bool isConcaveSegment( std::size_t iEdge, std::size_t iSeg ) const;
+
+    bool moveToClosestEdgeEnd( BoundaryPoint& bp ) const;
 
   private:
     std::vector< BndPoints > _pointsPerEdge;
@@ -201,11 +210,12 @@ namespace SMESH_MAT2d
                const std::vector< TopoDS_Edge >& edges,
                const double                      minSegLen,
                const bool                        ignoreCorners = false );
-    const Boundary&                        getBoundary() const { return _boundary; }
-    const std::vector< Branch >&           getBranches() const { return _branch; }
+    std::size_t                            nbBranches() const { return _nbBranches; }
+    const Branch*                          getBranch(size_t i) const;
     const std::vector< const BranchEnd* >& getBranchPoints() const { return _branchPnt; }
+    const Boundary&                        getBoundary() const { return _boundary; }
 
-    void getPoints( const Branch& branch, std::vector< gp_XY >& points) const;
+    void getPoints( const Branch* branch, std::vector< gp_XY >& points) const;
     Adaptor3d_Curve* make3DCurve(const Branch& branch) const;
 
   private:
@@ -214,6 +224,7 @@ namespace SMESH_MAT2d
     TopoDS_Face                     _face;
     TVD                             _vd;
     std::vector< Branch >           _branch;
+    std::size_t                     _nbBranches; // removed branches ignored
     std::vector< const BranchEnd* > _branchPnt;
     Boundary                        _boundary;
     double                          _scale[2];
