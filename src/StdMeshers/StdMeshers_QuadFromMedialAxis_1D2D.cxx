@@ -1259,8 +1259,10 @@ namespace
           }
           list< const SMDS_MeshNode* >& mergeNodes = theSinuFace._nodesToMerge[ existingNode ];
 
-          TIterator u2NPprev = sameU2NP.front(); u2NPprev--;
-          TIterator u2NPnext = sameU2NP.back() ; u2NPnext++;
+          TIterator u2NPprev = sameU2NP.front();
+          TIterator u2NPnext = sameU2NP.back() ;
+          if ( u2NPprev->first > 0. ) --u2NPprev;
+          if ( u2NPnext->first < 1. ) ++u2NPprev;
 
           set< int >::iterator edgeID = edgeInds.begin();
           for ( ; edgeID != edgeInds.end(); ++edgeID )
@@ -1933,7 +1935,7 @@ bool StdMeshers_QuadFromMedialAxis_1D2D::Compute(SMESH_Mesh&         theMesh,
 
   if ( getSinuousEdges( helper, sinuFace ))
   {
-    _progress = 0.2;
+    _progress = 0.4;
 
     double minSegLen = getMinSegLen( helper, sinuFace._sinuEdges );
     SMESH_MAT2d::MedialAxis ma( F, sinuFace._sinuEdges, minSegLen, /*ignoreCorners=*/true );
@@ -1946,7 +1948,7 @@ bool StdMeshers_QuadFromMedialAxis_1D2D::Compute(SMESH_Mesh&         theMesh,
     if ( ! divideMA( helper, ma, sinuFace, _regular1D, minSegLen, maParams ))
       return error(COMPERR_BAD_SHAPE);
 
-    _progress = 0.4;
+    _progress = 0.8;
     if ( _hyp2D )
       _regular1D->SetRadialDistribution( _hyp2D );
 
@@ -1954,12 +1956,12 @@ bool StdMeshers_QuadFromMedialAxis_1D2D::Compute(SMESH_Mesh&         theMesh,
          !computeShortEdges( helper, sinuFace._shortSide[1], _regular1D, _hyp2D, 1 ))
       return error("Failed to mesh short edges");
 
-    _progress = 0.6;
+    _progress = 0.85;
 
     if ( !computeSinuEdges( helper, minSegLen, ma, maParams, sinuFace, _regular1D ))
       return error("Failed to mesh sinuous edges");
 
-    _progress = 0.8;
+    _progress = 0.9;
 
     bool ok = computeQuads( helper, sinuFace._quad );
 

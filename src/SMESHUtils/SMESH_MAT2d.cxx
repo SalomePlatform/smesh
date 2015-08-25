@@ -47,6 +47,7 @@
 #include <TopoDS_Wire.hxx>
 
 #ifdef _DEBUG_
+//#define _MYDEBUG_
 #include "SMESH_File.hxx"
 #include "SMESH_Comment.hxx"
 #endif
@@ -76,6 +77,8 @@ namespace
 
     size_t index( const vector< InPoint >& inPoints ) const { return this - &inPoints[0]; }
     bool operator==( const InPoint& other ) const { return _a == other._a && _b == other._b; }
+    bool operator==( const TVDVertex* v ) const { return ( Abs( _a - v->x() ) < 1. &&
+                                                           Abs( _b - v->y() ) < 1. ); }
   };
   // -------------------------------------------------------------------------------------
 
@@ -105,10 +108,12 @@ namespace
   // check  if a TVDEdge begins at my end or ends at my start
   inline bool InSegment::isConnected( const TVDEdge* edge )
   {
-    return ((Abs( edge->vertex0()->x() - _p1->_a ) < 1.&&
-             Abs( edge->vertex0()->y() - _p1->_b ) < 1.  ) ||
-            (Abs( edge->vertex1()->x() - _p0->_a ) < 1.&&
-             Abs( edge->vertex1()->y() - _p0->_b ) < 1.  ));
+    return (( edge->vertex0() && edge->vertex1() )
+            &&
+            ((Abs( edge->vertex0()->x() - _p1->_a ) < 1.&&
+              Abs( edge->vertex0()->y() - _p1->_b ) < 1.  ) ||
+             (Abs( edge->vertex1()->x() - _p0->_a ) < 1.&&
+              Abs( edge->vertex1()->y() - _p0->_b ) < 1.  )));
   }
 
   // check if a MA TVDEdge is outside of a domain
@@ -147,7 +152,7 @@ namespace
   // }
 
   // -------------------------------------------------------------------------------------
-#ifdef _DEBUG_
+#ifdef _MYDEBUG_
   // writes segments into a txt file readable by voronoi_visualizer
   void inSegmentsToFile( vector< InSegment>& inSegments)
   {
@@ -155,6 +160,7 @@ namespace
       return;
     const char* fileName = "/misc/dn25/salome/eap/salome/misc/Code/C++/MAdebug.txt";
     SMESH_File file(fileName, false );
+    file.remove();
     file.openForWriting();
     SMESH_Comment text;
     text << "0\n"; // nb points
@@ -180,7 +186,7 @@ namespace
     if ( !edge->vertex1() )
       cout << ") -> ( INF, INF";
     else
-      cout << ") -> (" << edge->vertex1()->x() << ", " << edge->vertex1()->y();
+      cout << ") -> ( " << edge->vertex1()->x() << ", " << edge->vertex1()->y();
     cout << ")\t cell=" << edge->cell()
          << " iBnd=" << edge->color()
          << " twin=" << edge->twin()
@@ -253,6 +259,7 @@ namespace boost {
 namespace
 {
   const int theNoBrachID = 0; // std::numeric_limits<int>::max();
+  double theScale[2]; // scale used in bndSegsToMesh()
 
   // -------------------------------------------------------------------------------------
   /*!
@@ -349,7 +356,64 @@ namespace
 
   //================================================================================
   /*!
-   * \brief Computes length of of TVDEdge
+   * \brief debug: to visually check found MA edges
+   */
+  //================================================================================
+
+  void bndSegsToMesh( const vector< BndSeg >& bndSegs )
+  {
+#ifdef _MYDEBUG_
+    if ( !getenv("bndSegsToMesh")) return;
+    map< const TVDVertex *, int > v2Node;
+    map< const TVDVertex *, int >::iterator v2n;
+    set< const TVDEdge* > addedEdges;
+
+    const char* fileName = "/misc/dn25/salome/eap/salome/misc/Code/C++/MAedges.py";
+    SMESH_File file(fileName, false );
+    file.remove();
+    file.openForWriting();
+    SMESH_Comment text;
+    text << "import salome, SMESH\n";
+    text << "salome.salome_init()\n";
+    text << "from salome.smesh import smeshBuilder\n";
+    text << "smesh = smeshBuilder.New(salome.myStudy)\n";
+    text << "m=smesh.Mesh()\n";
+    for ( size_t i = 0; i < bndSegs.size(); ++i )
+    {
+      if ( !bndSegs[i]._edge )
+        text << "# " << i << " NULL edge";
+      else if ( !bndSegs[i]._edge->vertex0() ||
+                !bndSegs[i]._edge->vertex1() )
+        text << "# " << i << " INFINITE edge";
+      else if ( addedEdges.insert( bndSegs[i]._edge ).second &&
+                addedEdges.insert( bndSegs[i]._edge->twin() ).second )
+      {
+        v2n = v2Node.insert( make_pair( bndSegs[i]._edge->vertex0(), v2Node.size() + 1 )).first;
+        int n0 = v2n->second;
+        if ( n0 == v2Node.size() )
+          text << "n" << n0 << " = m.AddNode( "
+               << bndSegs[i]._edge->vertex0()->x() / theScale[0] << ", "
+               << bndSegs[i]._edge->vertex0()->y() / theScale[1] << ", 0 )\n";
+
+        v2n = v2Node.insert( make_pair( bndSegs[i]._edge->vertex1(), v2Node.size() + 1 )).first;
+        int n1 = v2n->second;
+        if ( n1 == v2Node.size() )
+          text << "n" << n1 << " = m.AddNode( "
+               << bndSegs[i]._edge->vertex1()->x() / theScale[0] << ", "
+               << bndSegs[i]._edge->vertex1()->y() / theScale[1] << ", 0 )\n";
+
+        text << "e" << i << " = m.AddEdge([ n" << n0 << ", n" << n1 << " ])\n";
+      }
+    }
+    text << "\n";
+    file.write( text.c_str(), text.size() );
+    cout << "Write " << fileName << endl;
+#endif
+  }
+
+  //================================================================================
+  /*!
+   * \brief Computes length of a TVDEdge
    */
   //================================================================================
 
@@ -593,6 +657,10 @@ namespace
         }
       }
     }
+    // debug
+    theScale[0] = scale[0];
+    theScale[1] = scale[1];
+
     return true;
   }
 
@@ -729,9 +797,12 @@ namespace
           continue;
         inPntChecked[ pInd ] = true;
 
-        const TVDEdge* edge =  // a TVDEdge passing through an end of inSeg
-          is2nd ? maEdges.front()->prev() : maEdges.back()->next();
-        while ( true )
+        const TVDEdge* maE = is2nd ? maEdges.front() : maEdges.back();
+        if ( inPnt == ( is2nd ? maE->vertex0() : maE->vertex1() ))
+          continue;
+        const TVDEdge* edge =  // a secondary TVDEdge connecting inPnt and maE
+          is2nd ? maE->prev() : maE->next();
+        while ( inSeg.isConnected( edge ))
         {
           if ( edge->is_primary() ) break; // this should not happen
           const TVDEdge* edge2 = edge->twin(); // we are in a neighbor cell, add MA edges to inPnt
@@ -825,6 +896,8 @@ namespace
     for ( size_t i = 0; i < bndSegs.size(); ++i )
       bndSegs[i].setIndexToEdge( i );
 
+    bndSegsToMesh( bndSegs ); // debug: visually check found MA edges
+
 
     // Find TVDEdge's of Branches and associate them with bndSegs
 
@@ -839,7 +912,7 @@ namespace
     size_t i1st = 0;
     while ( i1st < bndSegs.size() && !bndSegs[i1st].hasOppositeEdge( noEdgeID ))
       ++i1st;
-    bndSegs[i1st].setBranch( branchID, bndSegs ); // set to the i-th and the opposite bndSeg
+    bndSegs[i1st].setBranch( branchID, bndSegs ); // set to the i-th and to the opposite bndSeg
     branchEdges[ branchID ].push_back( bndSegs[i1st]._edge );
 
     for ( size_t i = i1st+1; i < bndSegs.size(); ++i )
@@ -866,7 +939,7 @@ namespace
           endType.insert( make_pair( bndSegs[i]._edge->vertex1(),
                                      SMESH_MAT2d::BE_BRANCH_POINT ));
       }
-      bndSegs[i].setBranch( branchID, bndSegs ); // set to i-th and the opposite bndSeg
+      bndSegs[i].setBranch( branchID, bndSegs ); // set to i-th and to the opposite bndSeg
       if ( bndSegs[i].hasOppositeEdge( noEdgeID ))
         branchEdges[ bndSegs[i].branchID() ].push_back( bndSegs[i]._edge );
     }
@@ -1066,7 +1139,7 @@ namespace
 
       iSeg = iSegEnd;
 
-    } // loop on all bndSegs
+    } // loop on all bndSegs to construct Boundary
 
     // Initialize branches
 

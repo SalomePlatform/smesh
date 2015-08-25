@@ -3839,7 +3839,7 @@ class Mesh:
 
 
     ## Generates new elements by extrusion of the elements with given ids
-    #  @param IDsOfElements the list of elements ids for extrusion
+    #  @param IDsOfElements the list of ids of elements or nodes for extrusion
     #  @param StepVector vector or DirStruct or 3 vector components, defining
     #         the direction and value of extrusion for one step (the total extrusion
     #         length will be NbOfSteps * ||StepVector||)
@@ -3855,8 +3855,8 @@ class Mesh:
         return self.ExtrusionSweepObjects(n,e,f, StepVector, NbOfSteps, MakeGroups)
 
     ## Generates new elements by extrusion along the normal to a discretized surface or wire
-    #  @param Elements elements to extrude - a list including ids, groups, sub-meshes or a mesh
-    #         Only faces can be extruded so far. Sub-mesh should be a sub-mesh on geom faces.
+    #  @param Elements elements to extrude - a list including ids, groups, sub-meshes or a mesh.
+    #         Only faces can be extruded so far. A sub-mesh should be a sub-mesh on geom faces.
     #  @param StepSize length of one extrusion step (the total extrusion
     #         length will be \a NbOfSteps * \a StepSize ).
     #  @param NbOfSteps number of extrusion steps.
@@ -3892,15 +3892,15 @@ class Mesh:
         return self.editor.ExtrusionByNormal(Elements, StepSize, NbOfSteps,
                                              ByAverageNormal, UseInputElemsOnly, MakeGroups, Dim)
 
-    ## Generates new elements by extrusion of the elements which belong to the object
-    #  @param theObject the object which elements should be processed.
-    #                   It can be a mesh, a sub mesh or a group.
+    ## Generates new elements by extrusion of the elements or nodes which belong to the object
+    #  @param theObject the object whose elements or nodes should be processed.
+    #                   It can be a mesh, a sub-mesh or a group.
     #  @param StepVector vector or DirStruct or 3 vector components, defining
     #         the direction and value of extrusion for one step (the total extrusion
     #         length will be NbOfSteps * ||StepVector||)
     #  @param NbOfSteps the number of steps
     #  @param MakeGroups forces the generation of new groups from existing ones
-    #  @param  IsNodes is True if elements to extrude are nodes
+    #  @param IsNodes is True if elements to extrude are nodes
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     #  @ingroup l2_modif_extrurev
     def ExtrusionSweepObject(self, theObject, StepVector, NbOfSteps, MakeGroups=False, IsNodes=False):
@@ -3909,9 +3909,9 @@ class Mesh:
         else      : e,f, = theObject,theObject
         return self.ExtrusionSweepObjects(n,e,f, StepVector, NbOfSteps, MakeGroups)
 
-    ## Generates new elements by extrusion of the elements which belong to the object
-    #  @param theObject object which elements should be processed.
-    #                   It can be a mesh, a sub mesh or a group.
+    ## Generates new elements by extrusion of edges which belong to the object
+    #  @param theObject object whose 1D elements should be processed.
+    #                   It can be a mesh, a sub-mesh or a group.
     #  @param StepVector vector or DirStruct or 3 vector components, defining
     #         the direction and value of extrusion for one step (the total extrusion
     #         length will be NbOfSteps * ||StepVector||)
@@ -3922,9 +3922,9 @@ class Mesh:
     def ExtrusionSweepObject1D(self, theObject, StepVector, NbOfSteps, MakeGroups=False):
         return self.ExtrusionSweepObjects([],theObject,[], StepVector, NbOfSteps, MakeGroups)
 
-    ## Generates new elements by extrusion of the elements which belong to the object
-    #  @param theObject object which elements should be processed.
-    #                   It can be a mesh, a sub mesh or a group.
+    ## Generates new elements by extrusion of faces which belong to the object
+    #  @param theObject object whose 2D elements should be processed.
+    #                   It can be a mesh, a sub-mesh or a group.
     #  @param StepVector vector or DirStruct or 3 vector components, defining
     #         the direction and value of extrusion for one step (the total extrusion
     #         length will be NbOfSteps * ||StepVector||)
@@ -4000,7 +4000,7 @@ class Mesh:
 
     ## Generates new elements by extrusion of the given elements
     #  The path of extrusion must be a meshed edge.
-    #  @param Base mesh or group, or submesh, or list of ids of elements for extrusion
+    #  @param Base mesh or group, or sub-mesh, or list of ids of elements for extrusion
     #  @param Path - 1D mesh or 1D sub-mesh, along which proceeds the extrusion
     #  @param NodeStart the start node from Path. Defines the direction of extrusion
     #  @param HasAngles allows the shape to be rotated around the path
@@ -4062,7 +4062,7 @@ class Mesh:
 
     ## Generates new elements by extrusion of the elements which belong to the object
     #  The path of extrusion must be a meshed edge.
-    #  @param theObject the object which elements should be processed.
+    #  @param theObject the object whose elements should be processed.
     #                   It can be a mesh, a sub-mesh or a group.
     #  @param PathMesh mesh containing a 1D sub-mesh on the edge, along which the extrusion proceeds
     #  @param PathShape shape(edge) defines the sub-mesh for the path
@@ -4089,10 +4089,10 @@ class Mesh:
         if MakeGroups: return gr,er
         return er
 
-    ## Generates new elements by extrusion of the elements which belong to the object
+    ## Generates new elements by extrusion of mesh segments which belong to the object
     #  The path of extrusion must be a meshed edge.
-    #  @param theObject the object which elements should be processed.
-    #                   It can be a mesh, a sub mesh or a group.
+    #  @param theObject the object whose 1D elements should be processed.
+    #                   It can be a mesh, a sub-mesh or a group.
     #  @param PathMesh mesh containing a 1D sub-mesh on the edge, along which the extrusion proceeds
     #  @param PathShape shape(edge) defines the sub-mesh for the path
     #  @param NodeStart the first or the last node on the edge. Defines the direction of extrusion
@@ -4118,10 +4118,10 @@ class Mesh:
         if MakeGroups: return gr,er
         return er
 
-    ## Generates new elements by extrusion of the elements which belong to the object
+    ## Generates new elements by extrusion of faces which belong to the object
     #  The path of extrusion must be a meshed edge.
-    #  @param theObject the object which elements should be processed.
-    #                   It can be a mesh, a sub mesh or a group.
+    #  @param theObject the object whose 2D elements should be processed.
+    #                   It can be a mesh, a sub-mesh or a group.
     #  @param PathMesh mesh containing a 1D sub-mesh on the edge, along which the extrusion proceeds
     #  @param PathShape shape(edge) defines the sub-mesh for the path
     #  @param NodeStart the first or the last node on the edge. Defines the direction of extrusion

@@ -87,7 +87,7 @@ public:
   void CancelCompute(::SMESH_Mesh &        aMesh,
                      const TopoDS_Shape &  aShape);
 
-  const SMESH_subMesh* GetCurrentSubMesh() const { return _sm_current; }
+  const SMESH_subMesh* GetCurrentSubMesh() const;
 
   /*!
    * \brief evaluates size of prospective mesh on a shape 
@@ -173,8 +173,11 @@ private:
   // default number of segments
   int _nbSegments;
 
-  volatile bool  _compute_canceled;
-  SMESH_subMesh* _sm_current;
+  void setCurrentSubMesh(SMESH_subMesh* sm);
+  void resetCurrentSubMesh();
+
+  volatile bool               _compute_canceled;
+  std::list< SMESH_subMesh* > _sm_current;
 };
 
 #endif

@@ -5002,14 +5002,17 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
     SMDSAbs_ElementType highType = SMDSAbs_Edge; // count most complex elements only
     while ( eIt->more() && nbInitElems < 2 ) {
       const SMDS_MeshElement* e = eIt->next();
-      SMDSAbs_ElementType type = e->GetType();
-      if ( type == SMDSAbs_Volume || type < highType ) continue;
+      SMDSAbs_ElementType  type = e->GetType();
+      if ( type == SMDSAbs_Volume ||
+           type < highType ||
+           !elemSet.count(e))
+        continue;
       if ( type > highType ) {
         nbInitElems = 0;
-        highType = type;
+        highType    = type;
       }
       el = e;
-      nbInitElems += elemSet.count(el);
+      ++nbInitElems;
     }
     if ( nbInitElems == 1 ) {
       bool NotCreateEdge = el && el->IsMediumNode(node);
