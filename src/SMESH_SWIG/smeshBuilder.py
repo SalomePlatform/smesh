@@ -3619,8 +3619,8 @@ class Mesh:
     ## Creates 2D mesh as skin on boundary faces of a 3D mesh
     #  @return TRUE if operation has been completed successfully, FALSE otherwise
     #  @ingroup l2_modif_edit
-    def  Make2DMeshFrom3D(self):
-        return self.editor. Make2DMeshFrom3D()
+    def Make2DMeshFrom3D(self):
+        return self.editor.Make2DMeshFrom3D()
 
     ## Creates missing boundary elements
     #  @param elements - elements whose boundary is to be checked:
@@ -4910,6 +4910,8 @@ class Mesh:
         fun = self._getFunctor( funType )
         if fun:
             if meshPart:
+                if hasattr( meshPart, "SetMesh" ):
+                    meshPart.SetMesh( self.mesh ) # set mesh to filter
                 hist = fun.GetLocalHistogram( 1, False, meshPart )
             else:
                 hist = fun.GetHistogram( 1, False )

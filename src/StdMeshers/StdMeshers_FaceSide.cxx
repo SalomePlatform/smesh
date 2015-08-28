@@ -410,7 +410,7 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
       if ( u2node.empty() ) return myPoints;
 
       const SMDS_MeshNode* node;
-      if ( IsClosed() )
+      if ( IsClosed() && !proxySubMesh[0] )
         node = u2node.begin()->second;
       else
       {

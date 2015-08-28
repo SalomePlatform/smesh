@@ -68,16 +68,16 @@ The following dialog will appear:
       <ul> 
         <li> <b>Angle by Step</b> - the elements are revolved by the
           specified angle at each step (i.e. for Angle=30 and Number of
-          Steps=2, the elements will be extruded by 30 degrees twice for a
-          total of 30*2=60)
-\image html revolutionsn2.png "Example of Revolution with Angle by Step"
+          Steps=3, the elements will be extruded by 30 degrees twice for a
+          total of 30*3=90)
+\image html revolutionsn2.png "Example of Revolution with Angle by Step. Angle=30 and Number of Steps=3"
         </li>
         <li> <b>Total Angle</b> - the elements are revolved by the
           specified angle only once and the number of steps defines the
-          number of iterations (i.e. for Angle=30 and Number of Steps=2,
-          the elements will be revolved by 30/2=15 degrees twice for a
+          number of iterations (i.e. for Angle=30 and Number of Steps=3,
+          the elements will be revolved by 30/3=10 degrees twice for a
           total of 30).
-\image html revolutionsn1.png "Example of Revolution with Total Angle"
+\image html revolutionsn1.png "Example of Revolution with Total Angle. Angle=30 and Number of Steps=3"
         </li>
       </ul>
     </li>

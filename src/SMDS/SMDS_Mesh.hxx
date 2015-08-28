@@ -58,7 +58,7 @@
 
 #define MYASSERT(val) if (!(val)) throw SALOME_Exception(LOCALIZED("assertion not verified"));
 
-class SMDS_EXPORT SMDS_Mesh:public SMDS_MeshObject
+class SMDS_EXPORT SMDS_Mesh : public SMDS_MeshObject
 {
 public:
   friend class SMDS_MeshIDFactory;

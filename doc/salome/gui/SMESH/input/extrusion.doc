@@ -48,6 +48,11 @@ The following dialog will appear:
 
 <li>In this dialog:
 <ul>
+  <li>Use \a Selection button to specify what you are going to
+    select at a given moment, \b Nodes, \b Edges or \b Faces.
+    \image html image120.png
+    <center><em>"Selection" button</em></center>
+  </li>
   <li>Specify \b Nodes, \b Edges and \b Faces, which will be extruded, by one
     of following means:
     <ul>

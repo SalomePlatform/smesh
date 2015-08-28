@@ -807,6 +807,24 @@ GeomAPI_ProjectPointOnSurf& SMESH_MesherHelper::GetProjector(const TopoDS_Face& 
   return *( i_proj->second );
 }
 
+//=======================================================================
+//function : GetSurface
+//purpose  : Return a cached ShapeAnalysis_Surface of a FACE
+//=======================================================================
+
+Handle(ShapeAnalysis_Surface) SMESH_MesherHelper::GetSurface(const TopoDS_Face& F )
+{
+  Handle(Geom_Surface) surface = BRep_Tool::Surface( F );
+  int faceID = GetMeshDS()->ShapeToIndex( F );
+  TID2Surface::iterator i_surf = myFace2Surface.find( faceID );
+  if ( i_surf == myFace2Surface.end() && faceID )
+  {
+    Handle(ShapeAnalysis_Surface) surf( new ShapeAnalysis_Surface( surface ));
+    i_surf = myFace2Surface.insert( make_pair( faceID, surf )).first;
+  }
+  return i_surf->second;
+}
+
 namespace
 {
   gp_XY AverageUV(const gp_XY& uv1, const gp_XY& uv2) { return ( uv1 + uv2 ) / 2.; }
@@ -1581,6 +1599,26 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
   {
     F = TopoDS::Face(meshDS->IndexToShape( faceID = pos.first ));
     uv[0] = GetNodeUV(F,n1,n2, force3d ? 0 : &uvOK[0]);
+    if ( HasDegeneratedEdges() && !force3d ) // IPAL52850 (degen VERTEX not at singularity)
+    {
+      // project middle point to a surface
+      SMESH_TNodeXYZ p1( n1 ), p2( n2 );
+      gp_Pnt pMid = 0.5 * ( p1 + p2 );
+      Handle(ShapeAnalysis_Surface) projector = GetSurface( F );
+      gp_Pnt2d uvMid;
+      if ( uvOK[0] )
+        uvMid = projector->NextValueOfUV( uv[0], pMid, BRep_Tool::Tolerance( F ));
+      else
+        uvMid = projector->ValueOfUV( pMid, getFaceMaxTol( F ));
+      if ( projector->Gap() * projector->Gap() < ( p1 - p2 ).SquareModulus() / 4 )
+      {
+        gp_Pnt pProj = projector->Value( uvMid );
+        n12  = meshDS->AddNode( pProj.X(), pProj.Y(), pProj.Z() );
+        meshDS->SetNodeOnFace( n12, faceID, uvMid.X(), uvMid.Y() );
+        myTLinkNodeMap.insert( make_pair ( link, n12 ));
+        return n12;
+      }
+    }
     uv[1] = GetNodeUV(F,n2,n1, force3d ? 0 : &uvOK[1]);
   }
   else if ( pos.second == TopAbs_EDGE )

@@ -12577,6 +12577,11 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
   TConnectivity tgtNodes;
   ElemFeatures elemKind( missType ), elemToCopy;
 
+  vector<const SMDS_MeshElement*> presentBndElems;
+  vector<TConnectivity>           missingBndElems;
+  vector<int>                     freeFacets;
+  TConnectivity nodes, elemNodes;
+
   SMDS_ElemIteratorPtr eIt;
   if (elements.empty()) eIt = aMesh->elementsIterator(elemType);
   else                  eIt = elemSetIterator( elements );
@@ -12590,18 +12595,24 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
     // ------------------------------------------------------------------------------------
     // 1. For an elem, get present bnd elements and connectivities of missing bnd elements
     // ------------------------------------------------------------------------------------
-    vector<const SMDS_MeshElement*> presentBndElems;
-    vector<TConnectivity>           missingBndElems;
-    TConnectivity nodes, elemNodes;
+    presentBndElems.clear();
+    missingBndElems.clear();
+    freeFacets.clear(); nodes.clear(); elemNodes.clear();
     if ( vTool.Set(elem, /*ignoreCentralNodes=*/true) ) // elem is a volume --------------
     {
-      vTool.SetExternalNormal();
       const SMDS_MeshElement* otherVol = 0;
       for ( int iface = 0, n = vTool.NbFaces(); iface < n; iface++ )
       {
         if ( !vTool.IsFreeFace(iface, &otherVol) &&
              ( !aroundElements || elements.count( otherVol )))
           continue;
+        freeFacets.push_back( iface );
+      }
+      if ( missType == SMDSAbs_Face )
+        vTool.SetExternalNormal();
+      for ( size_t i = 0; i < freeFacets.size(); ++i )
+      {
+        int                iface = freeFacets[i];
         const SMDS_MeshNode** nn = vTool.GetFaceNodes(iface);
         const size_t nbFaceNodes = vTool.NbFaceNodes (iface);
         if ( missType == SMDSAbs_Edge ) // boundary edges
