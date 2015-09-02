@@ -362,14 +362,25 @@ void SMESHGUI_TranslationDlg::Init (bool ResetControls)
   myObjectsNames.clear();
   myMeshes.clear();
 
-  myEditCurrentArgument = 0;
-  LineEditElements->clear();
+  myEditCurrentArgument = LineEditElements;
+  LineEditElements->setFocus();
   myElementsId = "";
   myNbOkElements = 0;
 
   buttonOk->setEnabled(false);
   buttonApply->setEnabled(false);
 
+  if ( !ResetControls && !isApplyAndClose() && // make highlight move upon [Apply] (IPAL20729)
+       myActor && !myActor->getIO().IsNull() &&
+       ActionGroup->button( MOVE_ELEMS_BUTTON )->isChecked() &&
+       !CheckBoxMesh->isChecked() ) // move selected elements
+  {
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    {
+      aViewWindow->highlight( myActor->getIO(), false, false );
+      aViewWindow->highlight( myActor->getIO(), true, true );
+    }
+  }
   myActor = 0;
 
   if (ResetControls) {
@@ -382,12 +393,10 @@ void SMESHGUI_TranslationDlg::Init (bool ResetControls)
 
     ActionGroup->button( MOVE_ELEMS_BUTTON )->setChecked(true);
     CheckBoxMesh->setChecked(false);
-//     MakeGroupsCheck->setChecked(false);
-//     MakeGroupsCheck->setEnabled(false);
     myPreviewCheckBox->setChecked(false);
     onDisplaySimulation(false);
-    onSelectMesh(false);
   }
+  onSelectMesh(CheckBoxMesh->isChecked());
 }
 
 //=================================================================================
@@ -593,7 +602,6 @@ bool SMESHGUI_TranslationDlg::ClickOnApply()
       
     Init(false);
     ConstructorsClicked(GetConstructorId());
-    SelectionIntoArgument();
 
     SMESHGUI::Modified();
   }
@@ -999,7 +1007,6 @@ void SMESHGUI_TranslationDlg::onSelectMesh (bool toSelectMesh)
       aViewWindow->SetSelectionMode( CellSelection );
     LineEditElements->setReadOnly(false);
     LineEditElements->setValidator(myIdValidator);
-    onTextChange(LineEditElements->text());
     hidePreview();
   }
 
@@ -1138,12 +1145,13 @@ bool SMESHGUI_TranslationDlg::isValid()
 // function : onDisplaySimulation
 // purpose  : Show/Hide preview
 //=================================================================================
-void SMESHGUI_TranslationDlg::onDisplaySimulation( bool toDisplayPreview ) {
+void SMESHGUI_TranslationDlg::onDisplaySimulation( bool toDisplayPreview )
+{
   if (myPreviewCheckBox->isChecked() && toDisplayPreview) {
-    
+
     if (isValid() && myNbOkElements) {
       QStringList aListElementsId = myElementsId.split(" ", QString::SkipEmptyParts);
-      
+
       SMESH::long_array_var anElementsId = new SMESH::long_array;
 
       anElementsId->length(aListElementsId.count());
@@ -1179,7 +1187,7 @@ void SMESHGUI_TranslationDlg::onDisplaySimulation( bool toDisplayPreview ) {
         }
         setSimulationPreview( aMeshPreviewStruct );
       } catch (...) {
-        
+
       }
     }
     else {

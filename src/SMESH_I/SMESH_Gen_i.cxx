@@ -339,10 +339,17 @@ SMESH_Gen_i::~SMESH_Gen_i()
   MESSAGE( "SMESH_Gen_i::~SMESH_Gen_i" );
 
   // delete hypothesis creators
-  map<string, GenericHypothesisCreator_i*>::iterator itHyp;
+  map<string, GenericHypothesisCreator_i*>::iterator itHyp, itHyp2;
   for (itHyp = myHypCreatorMap.begin(); itHyp != myHypCreatorMap.end(); itHyp++)
   {
-    delete (*itHyp).second;
+    // same creator can be mapped under different names
+    GenericHypothesisCreator_i* creator = (*itHyp).second;
+    if ( !creator )
+      continue;
+    delete creator;
+    for (itHyp2 = itHyp; itHyp2 != myHypCreatorMap.end(); itHyp2++)
+      if ( creator == (*itHyp2).second )
+        (*itHyp2).second = 0;
   }
   myHypCreatorMap.clear();
 

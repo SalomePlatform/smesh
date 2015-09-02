@@ -244,9 +244,10 @@ class STDMESHERS_EXPORT StdMeshers_Quadrangle_2D: public SMESH_2D_Algo
 
   struct ForcedPoint
   {
-    gp_XY         uv;
-    gp_XYZ        xyz;
-    TopoDS_Vertex vertex;
+    gp_XY                uv;
+    gp_XYZ               xyz;
+    TopoDS_Vertex        vertex;
+    const SMDS_MeshNode* node;
 
     double U() const { return uv.X(); }
     double V() const { return uv.Y(); }

@@ -649,10 +649,10 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
       }
       catch (Standard_Failure& exc) {
       }
-      if ( !uvOK ) {
-        for ( TopExp_Explorer vert(F,TopAbs_VERTEX); !uvOK && vert.More(); vert.Next() )
-          uvOK = ( V == vert.Current() );
-        if ( !uvOK ) {
+      if ( !uvOK )
+      {
+        if ( !IsSubShape( V, F ))
+        {
           MESSAGE ( "SMESH_MesherHelper::GetNodeUV(); Vertex " << vertexID
                     << " not in face " << GetMeshDS()->ShapeToIndex( F ) );
           // get UV of a vertex closest to the node
@@ -669,7 +669,8 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
             }
           }
         }
-        else {
+        else
+        {
           uvOK = false;
           TopTools_ListIteratorOfListOfShape it( myMesh->GetAncestors( V ));
           for ( ; it.More(); it.Next() ) {
@@ -678,12 +679,22 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
               double f,l;
               Handle(Geom2d_Curve) C2d = BRep_Tool::CurveOnSurface(edge, F, f, l);
               if ( !C2d.IsNull() ) {
-                double u = ( V == TopExp::FirstVertex( edge ) ) ?  f : l;
+                double u = ( V == IthVertex( 0, edge )) ?  f : l;
                 uv = C2d->Value( u );
                 uvOK = true;
                 break;
               }
             }
+          }
+          if ( !uvOK && V.Orientation() == TopAbs_INTERNAL )
+          {
+            Handle(ShapeAnalysis_Surface) projector = GetSurface( F );
+            if ( n2 ) uv = GetNodeUV( F, n2 );
+            if ( Precision::IsInfinite( uv.X() ))
+              uv = projector->NextValueOfUV( uv, BRep_Tool::Pnt( V ), BRep_Tool::Tolerance( F ));
+            else
+              uv = projector->ValueOfUV( BRep_Tool::Pnt( V ), BRep_Tool::Tolerance( F ));
+            uvOK = ( projector->Gap() < getFaceMaxTol( F ));
           }
         }
       }
@@ -812,7 +823,7 @@ GeomAPI_ProjectPointOnSurf& SMESH_MesherHelper::GetProjector(const TopoDS_Face& 
 //purpose  : Return a cached ShapeAnalysis_Surface of a FACE
 //=======================================================================
 
-Handle(ShapeAnalysis_Surface) SMESH_MesherHelper::GetSurface(const TopoDS_Face& F )
+Handle(ShapeAnalysis_Surface) SMESH_MesherHelper::GetSurface(const TopoDS_Face& F ) const
 {
   Handle(Geom_Surface) surface = BRep_Tool::Surface( F );
   int faceID = GetMeshDS()->ShapeToIndex( F );

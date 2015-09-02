@@ -32,7 +32,6 @@
 #include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_IdValidator.h"
 #include "SMESHGUI_FilterDlg.h"
-#include "SMESHGUI_MeshEditPreview.h"
 
 #include <SMESH_Actor.h>
 #include <SMESH_TypeFilter.hxx>
@@ -358,14 +357,25 @@ void SMESHGUI_SymmetryDlg::Init (bool ResetControls)
   myObjects.clear();
   myObjectsNames.clear();
 
-  myEditCurrentArgument = 0;
-  LineEditElements->clear();
+  myEditCurrentArgument = LineEditElements;
+  LineEditElements->setFocus();
   myElementsId = "";
   myNbOkElements = 0;
 
   buttonOk->setEnabled(false);
   buttonApply->setEnabled(false);
 
+  if ( !ResetControls && !isApplyAndClose() && // make highlight move upon [Apply] (IPAL20729)
+       myActor && !myActor->getIO().IsNull() &&
+       ActionGroup->button( MOVE_ELEMS_BUTTON )->isChecked() &&
+       !CheckBoxMesh->isChecked() ) // move selected elements
+  {
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    {
+      aViewWindow->highlight( myActor->getIO(), false, false );
+      aViewWindow->highlight( myActor->getIO(), true, true );
+    }
+  }
   myActor = 0;
 
   if (ResetControls) {
@@ -380,11 +390,8 @@ void SMESHGUI_SymmetryDlg::Init (bool ResetControls)
     CheckBoxMesh->setChecked(false);
     myPreviewCheckBox->setChecked(false);
     onDisplaySimulation(false);
-
-//     MakeGroupsCheck->setChecked(false);
-//     MakeGroupsCheck->setEnabled(false);
-    onSelectMesh(false);
   }
+  onSelectMesh(CheckBoxMesh->isChecked());
 }
 
 //=================================================================================
@@ -584,8 +591,6 @@ bool SMESHGUI_SymmetryDlg::ClickOnApply()
         anApp->browseObjects( anEntryList, isApplyAndClose() );
     }
     Init(false);
-    ConstructorsClicked(GetConstructorId());
-    SelectionIntoArgument();
 
     SMESHGUI::Modified();
   }

@@ -252,9 +252,10 @@ namespace
       gp_XY p = _prev->_xy - v->_xy;
       gp_XY t =  this->_xy - v->_xy;
       gp_XY n = _next->_xy - v->_xy;
-      return (( p ^ t ) > 0 &&
-              ( t ^ n ) > 0 &&
-              ( n ^ p ) > 0 );
+      const double tol = -1e-12;
+      return (( p ^ t ) >= tol &&
+              ( t ^ n ) >= tol &&
+              ( n ^ p ) >= tol );
       // return ( Area( _prev, this, v ) > 0 &&
       //          Area( this, _next, v ) > 0 &&
       //          Area( _next, _prev, v ) > 0 );
@@ -370,8 +371,9 @@ namespace
       v->GetTriaNodes( &nodes[ iN ] );
       iN += 3;
       v = v->Delete();
+      --nbVertices;
     }
-    
+
     return true;
 
   } // triangulate()

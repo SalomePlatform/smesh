@@ -532,14 +532,14 @@ public:
   /*!
    * \brief Return a cached ShapeAnalysis_Surface of a FACE
    */
-  Handle(ShapeAnalysis_Surface) GetSurface(const TopoDS_Face& F ); 
+  Handle(ShapeAnalysis_Surface) GetSurface(const TopoDS_Face& F ) const;
 
   /*!
    * \brief Check if shape is a degenerated edge or it's vertex
-    * \param subShape - edge or vertex index in SMESHDS
-    * \retval bool - true if subShape is a degenerated shape
-    *
-    * It works only if IsQuadraticSubMesh() or SetSubShape() has been called
+   *  \param subShape - edge or vertex index in SMESHDS
+   *  \retval bool - true if subShape is a degenerated shape
+   *
+   * It works only if IsQuadraticSubMesh() or SetSubShape() has been called
    */
   bool IsDegenShape(const int subShape) const
   { return myDegenShapeIds.find( subShape ) != myDegenShapeIds.end(); }
@@ -739,7 +739,7 @@ public:
   typedef std::map< int, Handle(ShapeAnalysis_Surface)> TID2Surface;
   typedef std::map< int, GeomAPI_ProjectPointOnSurf* >  TID2ProjectorOnSurf;
   typedef std::map< int, GeomAPI_ProjectPointOnCurve* > TID2ProjectorOnCurve;
-  TID2Surface          myFace2Surface;
+  mutable TID2Surface  myFace2Surface;
   TID2ProjectorOnSurf  myFace2Projector;
   TID2ProjectorOnCurve myEdge2Projector;
 

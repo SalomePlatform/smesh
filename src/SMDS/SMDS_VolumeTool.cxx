@@ -1011,7 +1011,7 @@ bool SMDS_VolumeTool::IsFaceExternal( int faceIndex ) const
     ori = ( minProj < 0 ? +1 : -1 );
     me->myPolyFacetOri[ faceIndex ] = ori;
 
-    if ( !me->myFwdLinks.empty() ) // concave polyhedron; collect oriented links
+    if ( !myFwdLinks.empty() ) // concave polyhedron; collect oriented links
       for ( int i = 0; i < myCurFace.myNbNodes; ++i )
       {
         NLink link( myCurFace.myNodes[i], myCurFace.myNodes[i+1], ori );
@@ -1024,10 +1024,10 @@ bool SMDS_VolumeTool::IsFaceExternal( int faceIndex ) const
 
   // concave polyhedron
 
-  if ( me->myFwdLinks.empty() ) // get links of the least ambiguously oriented facet
+  if ( myFwdLinks.empty() ) // get links of the least ambiguously oriented facet
   {
     for ( size_t i = 0; i < myPolyFacetOri.size() && !ori; ++i )
-      ori = me->myPolyFacetOri[ i ];
+      ori = myPolyFacetOri[ i ];
 
     if ( !ori ) // none facet is oriented yet
     {
@@ -1058,10 +1058,10 @@ bool SMDS_VolumeTool::IsFaceExternal( int faceIndex ) const
         me->myPolyFacetOri[ faceMostConvex ] = ori;
       }
     }
-    // collect links of the oriented facets in me->myFwdLinks
+    // collect links of the oriented facets in myFwdLinks
     for ( size_t iF = 0; iF < myPolyFacetOri.size(); ++iF )
     {
-      ori = me->myPolyFacetOri[ iF ];
+      ori = myPolyFacetOri[ iF ];
       if ( !ori ) continue;
       setFace( iF );
       for ( int i = 0; i < myCurFace.myNbNodes; ++i )
@@ -1079,8 +1079,8 @@ bool SMDS_VolumeTool::IsFaceExternal( int faceIndex ) const
   for ( int i = 0; i < myCurFace.myNbNodes && !ori; ++i )
   {
     NLink link( myCurFace.myNodes[i], myCurFace.myNodes[i+1] );
-    std::map<Link, int>::iterator l2o = me->myFwdLinks.find( link );
-    if ( l2o != me->myFwdLinks.end() )
+    std::map<Link, int>::const_iterator l2o = myFwdLinks.find( link );
+    if ( l2o != myFwdLinks.end() )
       ori = link.myOri * l2o->second * -1;
     links[ i ] = link;
   }
@@ -1089,15 +1089,15 @@ bool SMDS_VolumeTool::IsFaceExternal( int faceIndex ) const
     // orient and collect links of other non-oriented facets
     for ( size_t iF = 0; iF < myPolyFacetOri.size(); ++iF )
     {
-      if ( me->myPolyFacetOri[ iF ] ) continue; // already oriented
+      if ( myPolyFacetOri[ iF ] ) continue; // already oriented
       setFace( iF );
       links2.clear();
       ori = 0;
       for ( int i = 0; i < myCurFace.myNbNodes && !ori; ++i )
       {
         NLink link( myCurFace.myNodes[i], myCurFace.myNodes[i+1] );
-        std::map<Link, int>::iterator l2o = me->myFwdLinks.find( link );
-        if ( l2o != me->myFwdLinks.end() )
+        std::map<Link, int>::const_iterator l2o = myFwdLinks.find( link );
+        if ( l2o != myFwdLinks.end() )
           ori = link.myOri * l2o->second * -1;
         links2.push_back( link );
       }
@@ -1116,8 +1116,8 @@ bool SMDS_VolumeTool::IsFaceExternal( int faceIndex ) const
     ori = 0;
     for ( size_t i = 0; i < links.size() && !ori; ++i )
     {
-      std::map<Link, int>::iterator l2o = me->myFwdLinks.find( links[i] );
-      if ( l2o != me->myFwdLinks.end() )
+      std::map<Link, int>::const_iterator l2o = myFwdLinks.find( links[i] );
+      if ( l2o != myFwdLinks.end() )
         ori = links[i].myOri * l2o->second * -1;
     }
     me->myPolyFacetOri[ faceIndex ] = ori;

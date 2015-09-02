@@ -407,7 +407,7 @@ bool SMESHGUI_SmoothingDlg::ClickOnApply()
     if (aResult) {
       SMESH::Update(myIO, SMESH::eDisplay);
       SMESHGUI::Modified();
-      Init();
+      //Init();
 
       mySelectedObject = SMESH::SMESH_IDSource::_nil();
     }
@@ -560,7 +560,7 @@ void SMESHGUI_SmoothingDlg::onTextChange (const QString& theNewText)
 
 //=================================================================================
 // function : SelectionIntoArgument()
-// purpose  : Called when selection as changed or other case
+// purpose  : Called when selection has changed or other cases
 //=================================================================================
 void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
 {
@@ -594,44 +594,44 @@ void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
   SALOME_ListIO aList;
   mySelectionMgr->selectedObjects(aList);
   int nbSel = aList.Extent();
-  if (nbSel != 1)
-    return;
-
-  Handle(SALOME_InteractiveObject) IO = aList.First();
-
-  if (myEditCurrentArgument == LineEditElements) {
-    myMesh = SMESH::GetMeshByIO(IO);
-    if (myMesh->_is_nil())
-      return;
-    myIO = IO;
-    myActor = SMESH::FindActorByObject(myMesh);
-
-    if (CheckBoxMesh->isChecked()) {
-      SMESH::GetNameOfSelectedIObjects(mySelectionMgr, aString);
-
-      SMESH::SMESH_IDSource_var obj = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( myIO );
-      if ( !CORBA::is_nil( obj ) )
-        mySelectedObject = obj;
-      else
-        return;
-      myNbOkElements = true;
-    } else {
-      // get indices of selected elements
-      TColStd_IndexedMapOfInteger aMapIndex;
-      mySelector->GetIndex(IO,aMapIndex);
-      myNbOkElements = aMapIndex.Extent();
-
-      if (myNbOkElements < 1)
-        return;
-
-      QStringList elements;
-      for ( int i = 0; i < myNbOkElements; ++i )
-        elements << QString::number( aMapIndex( i+1 ) );
-      aString = elements.join(" ");
-    }
-  } else if (myEditCurrentArgument == LineEditNodes && !myMesh->_is_nil() && myIO->isSame(IO) )
+  if (nbSel == 1)
   {
-    myNbOkNodes = SMESH::GetNameOfSelectedNodes(mySelector, IO, aString);
+    Handle(SALOME_InteractiveObject) IO = aList.First();
+
+    if (myEditCurrentArgument == LineEditElements) {
+      myMesh = SMESH::GetMeshByIO(IO);
+      if (myMesh->_is_nil())
+        return;
+      myIO = IO;
+      myActor = SMESH::FindActorByObject(myMesh);
+
+      if (CheckBoxMesh->isChecked()) {
+        SMESH::GetNameOfSelectedIObjects(mySelectionMgr, aString);
+
+        SMESH::SMESH_IDSource_var obj = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( myIO );
+        if ( !CORBA::is_nil( obj ) )
+          mySelectedObject = obj;
+        else
+          return;
+        myNbOkElements = true;
+      } else {
+        // get indices of selected elements
+        TColStd_IndexedMapOfInteger aMapIndex;
+        mySelector->GetIndex(IO,aMapIndex);
+        myNbOkElements = aMapIndex.Extent();
+
+        if (myNbOkElements < 1)
+          return;
+
+        QStringList elements;
+        for ( int i = 0; i < myNbOkElements; ++i )
+          elements << QString::number( aMapIndex( i+1 ) );
+        aString = elements.join(" ");
+      }
+    } else if (myEditCurrentArgument == LineEditNodes && !myMesh->_is_nil() && myIO->isSame(IO) )
+    {
+      myNbOkNodes = SMESH::GetNameOfSelectedNodes(mySelector, IO, aString);
+    }
   }
 
   myEditCurrentArgument->setText(aString);

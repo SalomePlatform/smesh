@@ -32,7 +32,6 @@
 #include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_IdValidator.h"
 #include "SMESHGUI_FilterDlg.h"
-#include "SMESHGUI_MeshEditPreview.h"
 
 #include <SMESH_Actor.h>
 #include <SMESH_TypeFilter.hxx>
@@ -362,9 +361,21 @@ void SMESHGUI_RotationDlg::Init (bool ResetControls)
   buttonOk->setEnabled(false);
   buttonApply->setEnabled(false);
 
+  if ( !ResetControls && !isApplyAndClose() && // make highlight move upon [Apply] (IPAL20729)
+       myActor && !myActor->getIO().IsNull() &&
+       ActionGroup->button( MOVE_ELEMS_BUTTON )->isChecked() &&
+       !CheckBoxMesh->isChecked() ) // move selected elements
+  {
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    {
+      aViewWindow->highlight( myActor->getIO(), false, false );
+      aViewWindow->highlight( myActor->getIO(), true, true );
+    }
+  }
   myActor = 0;
 
-  if (ResetControls) {
+  if (ResetControls)
+  {
     SpinBox_X->SetValue(0.0);
     SpinBox_Y->SetValue(0.0);
     SpinBox_Z->SetValue(0.0);
@@ -378,10 +389,6 @@ void SMESHGUI_RotationDlg::Init (bool ResetControls)
     CheckBoxMesh->setChecked(false);
     myPreviewCheckBox->setChecked(false);
     onDisplaySimulation(false);
-
-//     MakeGroupsCheck->setChecked(false);
-//     MakeGroupsCheck->setEnabled(false);
-//    onSelectMesh(false);
   }
 
   onSelectMesh(CheckBoxMesh->isChecked());
@@ -524,7 +531,6 @@ bool SMESHGUI_RotationDlg::ClickOnApply()
         anApp->browseObjects( anEntryList, isApplyAndClose() );
     }
     Init(false);
-    SelectionIntoArgument();
 
     SMESHGUI::Modified();
   }
@@ -747,52 +753,13 @@ void SMESHGUI_RotationDlg::SelectionIntoArgument()
 
       if ( myMeshes.isEmpty() )
         return;
-      // get IDs from mesh
-        /*
-          SMDS_Mesh* aSMDSMesh = myActor->GetObject()->GetMesh();
-          if (!aSMDSMesh)
-          return;
-
-          for (int i = aSMDSMesh->MinElementID(); i <= aSMDSMesh->MaxElementID(); i++) {
-          const SMDS_MeshElement * e = aSMDSMesh->FindElement(i);
-          if (e) {
-            myElementsId += QString(" %1").arg(i);
-            aNbUnits++;
-          }
-        }
-      } else if (!SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO)->_is_nil()) { //SUBMESH
-      // get submesh
-        SMESH::SMESH_subMesh_var aSubMesh = SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO);
-
-        // get IDs from submesh
-        SMESH::long_array_var anElementsIds = new SMESH::long_array;
-        anElementsIds = aSubMesh->GetElementsId();
-        for (int i = 0; i < anElementsIds->length(); i++) {
-        myElementsId += QString(" %1").arg(anElementsIds[i]);
-          }
-        aNbUnits = anElementsIds->length();
-      } else { // GROUP
-        // get smesh group
-        SMESH::SMESH_GroupBase_var aGroup =
-        SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IO);
-        if (aGroup->_is_nil())
-        return;
-
-          // get IDs from smesh group
-        SMESH::long_array_var anElementsIds = new SMESH::long_array;
-        anElementsIds = aGroup->GetListOfID();
-        for (int i = 0; i < anElementsIds->length(); i++) {
-        myElementsId += QString(" %1").arg(anElementsIds[i]);
-          }
-        aNbUnits = anElementsIds->length();
-        }
-        */
-      } else {
+    }
+    else {
       aNbUnits = SMESH::GetNameOfSelectedElements(mySelector, aList.First(), aString);
       myElementsId = aString;
       if (aNbUnits < 1)
         return;
-      }
+    }
 
     myNbOkElements = true;
 
@@ -800,13 +767,13 @@ void SMESHGUI_RotationDlg::SelectionIntoArgument()
     Handle(SALOME_InteractiveObject) IO = aList.First();
     if ((SMESH::GetMeshByIO(IO))->_is_nil())
       return;
-      
+
     SMESH_Actor* anActor = SMESH::FindActorByObject(SMESH::GetMeshByIO(IO));
     if (!anActor)
       anActor = SMESH::FindActorByEntry(IO->getEntry());
     if (!anActor && !CheckBoxMesh->isChecked())
       return;
-      
+
     aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, IO, aString);
     if (aNbUnits != 1)
       return;
@@ -980,7 +947,6 @@ void SMESHGUI_RotationDlg::onSelectMesh (bool toSelectMesh)
       aViewWindow->SetSelectionMode( CellSelection );
     LineEditElements->setReadOnly(false);
     LineEditElements->setValidator(myIdValidator);
-    onTextChange(LineEditElements->text());
     hidePreview();
   }
 

@@ -898,7 +898,13 @@ void SMESHGUI_MergeDlg::updateControls()
 {
   if (ListEdit->count() == 0)
     SetFirstButton->setEnabled(false);
-  bool enable = !(myMesh->_is_nil()) && (ListCoincident->count() || (myTypeId == TYPE_AUTO));
+
+  bool groupsEmpty = ( myTypeId != TYPE_AUTO );
+  for (int i = 0; i < ListCoincident->count() && groupsEmpty; i++) {
+    QStringList aListIds = ListCoincident->item(i)->text().split(" ", QString::SkipEmptyParts);
+    groupsEmpty = ( aListIds.count() < 2 );
+  }
+  bool enable = ( !myMesh->_is_nil() && !groupsEmpty );
   buttonOk->setEnabled(enable);
   buttonApply->setEnabled(enable);
   DetectButton->setEnabled( !myMesh->_is_nil() );
@@ -973,7 +979,7 @@ void SMESHGUI_MergeDlg::onDetect()
 
       ListCoincident->addItem(anIDs.join(" "));
     }
-   } catch(...) {
+  } catch(...) {
   }
 
   ListCoincident->selectAll();
@@ -997,7 +1003,7 @@ void SMESHGUI_MergeDlg::onSelectGroup()
 
   myIsBusy = true;
   ListEdit->clear();
-  
+
   TColStd_MapOfInteger anIndices;
   QList<QListWidgetItem*> selItems = ListCoincident->selectedItems();
   QListWidgetItem* anItem;
@@ -1010,7 +1016,7 @@ void SMESHGUI_MergeDlg::onSelectGroup()
     for (int i = 0; i < aListIds.count(); i++)
       anIndices.Add(aListIds[i].toInt());
   }
-  
+
   if (selItems.count() == 1) {
     ListEdit->addItems(aListIds);
     ListEdit->selectAll();
