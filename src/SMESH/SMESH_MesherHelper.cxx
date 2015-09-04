@@ -1610,8 +1610,10 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
   {
     F = TopoDS::Face(meshDS->IndexToShape( faceID = pos.first ));
     uv[0] = GetNodeUV(F,n1,n2, force3d ? 0 : &uvOK[0]);
-    if ( HasDegeneratedEdges() && !force3d ) // IPAL52850 (degen VERTEX not at singularity)
+    if (( !force3d ) &&
+        ( HasDegeneratedEdges() || GetSurface( F )->HasSingularities( 1e-7 )))
     {
+      // IPAL52850 (degen VERTEX not at singularity)
       // project middle point to a surface
       SMESH_TNodeXYZ p1( n1 ), p2( n2 );
       gp_Pnt pMid = 0.5 * ( p1 + p2 );

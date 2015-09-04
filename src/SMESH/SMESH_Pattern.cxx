@@ -103,7 +103,7 @@ inline int getInt( const char * theSring )
   int val = strtol( theSring, &ptr, 10 );
   if ( ptr == theSring ||
       // there must not be neither '.' nor ',' nor 'E' ...
-      (*ptr != ' ' && *ptr != '\n' && *ptr != '\0'))
+      (*ptr != ' ' && *ptr != '\n' && *ptr != '\0' && *ptr != '\r'))
     return -1;
 
   return val;
@@ -3554,13 +3554,7 @@ void SMESH_Pattern::
   myPolyElems.reserve( myIdsOnBoundary.size() );
 
   // make a set of refined elements
-  TIDSortedElemSet avoidSet, elemSet;
-  std::vector<const SMDS_MeshElement*>::iterator itv =  myElements.begin();
-  for(; itv!=myElements.end(); itv++) {
-    const SMDS_MeshElement* el = (*itv);
-    avoidSet.insert( el );
-  }
-  //avoidSet.insert( myElements.begin(), myElements.end() );
+  TIDSortedElemSet elemSet, avoidSet( myElements.begin(), myElements.end() );
 
   map< TNodeSet, list< list< int > > >::iterator indListIt, nn_IdList;
 
