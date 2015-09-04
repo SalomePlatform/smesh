@@ -1503,7 +1503,7 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
     if ( isAccessibleDim( aDim - 1 ) ) {
       if ( algoData && myIsOnGeometry ) {
         for (int i = aDim - 1; i >= SMESH::DIM_0D; i--) {
-          if ( isAccessibleDim( i ) ) {
+          if ( isAccessibleDim( i ) && currentHyp( i, Algo ) < 0 ) {
             myDlg->disableTab( i );
             setCurrentHyp(i, Algo, -1);
           }
