@@ -24,7 +24,6 @@ Node quality controls:
 
 Edge quality controls:
 <ul>
-<li>\subpage free_edges_page "Free edges"</li>
 <li>\subpage free_borders_page "Free borders"</li>
 <li>\subpage length_page "Length"</li>
 <li>\subpage borders_at_multi_connection_page "Borders at multi-connection"</li>
@@ -33,6 +32,7 @@ Edge quality controls:
 
 Face quality controls:
 <ul>
+<li>\subpage free_edges_page "Free edges"</li>
 <li>\subpage free_faces_page "Free faces"</li>
 <li>\subpage bare_border_faces_page "Bare border faces"</li>
 <li>\subpage over_constrained_faces_page "Over-constrained faces"</li>

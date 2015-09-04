@@ -1677,7 +1677,7 @@ namespace
         if(!anIO.IsNull()){
           _PTR(SObject) SO = aStudy->FindObjectID( It.Value()->getEntry() );
           if ( SO ) {
-            CORBA::Object_var aObject = SMESH::SObjectToObject( SO );
+            CORBA::Object_var           aObject = SMESH::SObjectToObject( SO );
             SMESH::SMESH_Mesh_var      aMesh    = SMESH::SMESH_Mesh::_narrow( aObject );
             SMESH::SMESH_subMesh_var   aSubMesh = SMESH::SMESH_subMesh::_narrow( aObject );
             SMESH::SMESH_GroupBase_var aGroup   = SMESH::SMESH_GroupBase::_narrow( aObject );
@@ -4366,7 +4366,8 @@ void SMESHGUI::initialize( CAM_Application* app )
     hasElems0d("({'Elem0d'} in elemTypes)"),
     hasEdges("({'Edge'} in elemTypes)"),
     hasFaces("({'Face'} in elemTypes)"),
-    hasVolumes("({'Volume'} in elemTypes)");
+    hasVolumes("({'Volume'} in elemTypes)"),
+    hasFacesOrVolumes("(({'Face'} in elemTypes) || ({'Volume'} in elemTypes)) ");
 
   createPopupItem( SMESHOp::OpFileInformation,      OB, mesh, "&& selcount=1 && isImported" );
   createPopupItem( SMESHOp::OpCreateSubMesh,        OB, mesh, "&& isComputable");
@@ -4577,12 +4578,8 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   aSubId = popupMgr()->insert( tr( "MEN_EDGE_CTRL" ), anId, -1 ); // EDGE CONTROLS
 
-  popupMgr()->insert( action( SMESHOp::OpFreeEdge ), aSubId, -1 );
-  popupMgr()->setRule( action( SMESHOp::OpFreeEdge ), aMeshInVtkHasEdges, QtxPopupMgr::VisibleRule );
-  popupMgr()->setRule( action( SMESHOp::OpFreeEdge ), "controlMode = 'eFreeEdges'", QtxPopupMgr::ToggleRule );
-
   popupMgr()->insert( action( SMESHOp::OpFreeBorder ), aSubId, -1 );
-  popupMgr()->setRule( action( SMESHOp::OpFreeBorder ), aMeshInVtkHasEdges, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( SMESHOp::OpFreeBorder ), aMeshInVTK + "&&" + hasEdges + "&&" + hasFacesOrVolumes, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( SMESHOp::OpFreeBorder ), "controlMode = 'eFreeBorders'", QtxPopupMgr::ToggleRule );
 
   popupMgr()->insert( action( SMESHOp::OpLength ), aSubId, -1 );
@@ -4597,6 +4594,10 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->setRule( action( SMESHOp::OpEqualEdge ), "controlMode = 'eCoincidentElems1D'", QtxPopupMgr::ToggleRule);
 
   aSubId = popupMgr()->insert( tr( "MEN_FACE_CTRL" ), anId, -1 ); // FACE CONTROLS
+
+  popupMgr()->insert( action( SMESHOp::OpFreeEdge ), aSubId, -1 );
+  popupMgr()->setRule( action( SMESHOp::OpFreeEdge ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( SMESHOp::OpFreeEdge ), "controlMode = 'eFreeEdges'", QtxPopupMgr::ToggleRule );
 
   popupMgr()->insert ( action( SMESHOp::OpFreeFace ), aSubId, -1 );
   popupMgr()->setRule( action( SMESHOp::OpFreeFace ), aMeshInVtkHasFaces /*aMeshInVtkHasVolumes*/,

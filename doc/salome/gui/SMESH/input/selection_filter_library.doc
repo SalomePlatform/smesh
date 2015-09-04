@@ -2,9 +2,11 @@
 
 \page selection_filter_library_page Selection filter library
 
-\n Selection filter library is a powerful tool enabling to create
-filters to be used on meshes. You can access to it from the Main Menu
-via <b>Tools / Selection filter library</b>.
+\n Selection filter library allows creating and storing in files
+filters that can be later reused for operations on meshes. You can
+access to it from the Main Menu via <b>Tools / Selection filter library</b>.
+It is also possible to save any filter by invoking the filter library
+from \a Filter dialog launched from any mesh operation.
 
 \image html selectionfilterlibrary.png
 
@@ -20,7 +22,9 @@ filter. By default it is prefixed with the corresponding entity type.
 
 When we use filters during a group creation or another operation (by 
 clicking <b>Set Filter</b> button in the corresponding dialog), the
-menu for setting filters looks as shown below.
+dialog for setting filters looks as shown below.
+
+\image html a-filteronfaces.png
 
 The \b Add button creates a new criterion at the end of the list of
 criteria. The \b Insert button creates a new criterion before the
@@ -55,8 +59,6 @@ in the Library.
 <b>Note:</b> If the button <b>Apply and Close</b> is disabled, there
 is no selected mesh in the Object Browser and the filter can not be
 created. You have to select the mesh and the button will be enabled.
-
-\image html a-filteronfaces.png
 
 Some criteria are applicable to all <b>Entity types</b>:
 <ul><li>
@@ -133,7 +135,7 @@ See also \ref tui_double_nodes_control "Double Nodes quality control".
 The following criteria allow selecting mesh <b>Edges</b>:
 <ul><li>
 <b>Free Borders</b> selects free 1D mesh elements, i.e. edges belonging to 
-one face only. See also a
+one element (face or volume) only. See also a
 \ref free_borders_page "Free Borders quality control".
 </li><li>
 <b>Double edges</b> selects 1D mesh elements basing on the same set of nodes.
@@ -177,8 +179,8 @@ The following criteria allow selecting mesh <b>Faces</b>:
 \ref area_page "Area quality control"), which is more, less or equal (within a given
 <b>Tolerance</b>) to the predefined <b>Threshold Value</b>.
 </li><li>
-<b>Free edges</b> selects 2D mesh elements consisting of edges belonging to 
-one element of mesh only. See also a
+<b>Free edges</b> selects 2D mesh elements having at least one of its
+edges not shared with other faces. See also a
 \ref free_edges_page "Free Edges quality control".
 </li><li>
 <b>Free faces</b> selects 2D mesh elements, which belong to less than two volumes.

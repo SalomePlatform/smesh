@@ -144,12 +144,17 @@ composing your geometrical object. Definition of this hypothesis
 consists of setting the \b length of segments, which will approximate these
 edges, and the \b precision of rounding.
 
-The \b precision parameter is used to round a number of segments,
-calculated by dividing the edge length by the specified \b length of
-segment, to the higher integer if the remainder exceeds the precision
-and to the lower integer otherwise. Use value 0.5 to provide rounding
-to the nearest integer, 1.0 for the lower integer, 0.0 for the higher
-integer. Default value is 1e-07.
+The \b precision parameter is used to round a <em>number of segments</em>,
+calculated by dividing the <em>edge length</em> by the specified \b length of
+segment, to the higher integer if the \a remainder exceeds the \b precision
+and to the lower integer otherwise. <br>
+Use value 0.5 to provide rounding to the nearest integer, 1.0 for the lower integer, 0.0 for the higher integer. Default value is 1e-07.
+
+For example: if <em>edge length</em> is 10.0 and the segment \b length
+is 3.0 then their division gives 10./3. = 3.33(3) and the \a remainder is 0.33(3).
+If \b precision is less than 0.33(3) then the edge is divided into 3 segments.
+If \b precision is more than 0.33(3) then the edge is divided into 4 segments.
+
 
 \image html image41.gif
 

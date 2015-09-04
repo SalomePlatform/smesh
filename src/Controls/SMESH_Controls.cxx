@@ -135,8 +135,8 @@ namespace {
     int aResult0 = 0, aResult1 = 0;
      // last node, it is a medium one in a quadratic edge
     const SMDS_MeshNode* aLastNode = anEdge->GetNode( anEdge->NbNodes() - 1 );
-    const SMDS_MeshNode* aNode0 = anEdge->GetNode( 0 );
-    const SMDS_MeshNode* aNode1 = anEdge->GetNode( 1 );
+    const SMDS_MeshNode*    aNode0 = anEdge->GetNode( 0 );
+    const SMDS_MeshNode*    aNode1 = anEdge->GetNode( 1 );
     if ( aNode1 == aLastNode ) aNode1 = 0;
 
     SMDS_ElemIteratorPtr anElemIter = aLastNode->GetInverseElementIterator();
@@ -2429,26 +2429,15 @@ bool FreeEdges::IsSatisfy( long theId )
   if ( aFace == 0 || aFace->GetType() != SMDSAbs_Face || aFace->NbNodes() < 3 )
     return false;
 
-  SMDS_ElemIteratorPtr anIter;
-  if ( aFace->IsQuadratic() ) {
-    anIter = dynamic_cast<const SMDS_VtkFace*>
-      (aFace)->interlacedNodesElemIterator();
-  }
-  else {
-    anIter = aFace->nodesIterator();
-  }
+  SMDS_NodeIteratorPtr anIter = aFace->interlacedNodesIterator();
   if ( !anIter )
     return false;
 
   int i = 0, nbNodes = aFace->NbNodes();
   std::vector <const SMDS_MeshNode*> aNodes( nbNodes+1 );
   while( anIter->more() )
-  {
-    const SMDS_MeshNode* aNode = (SMDS_MeshNode*)anIter->next();
-    if ( aNode == 0 )
+    if ( ! ( aNodes[ i++ ] = anIter->next() ))
       return false;
-    aNodes[ i++ ] = aNode;
-  }
   aNodes[ nbNodes ] = aNodes[ 0 ];
 
   for ( i = 0; i < nbNodes; i++ )

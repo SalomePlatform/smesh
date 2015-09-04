@@ -5072,8 +5072,10 @@ int StdMeshers_Quadrangle_2D::splitQuad(FaceQuadStruct::Ptr quad, int I, int J)
     //      << " L " << &quad->side[ QUAD_LEFT_SIDE ] << " "<< quad->side[ QUAD_LEFT_SIDE].NbPoints()
     //      << " R " << &quad->side[ QUAD_RIGHT_SIDE ]  << " "<< quad->side[ QUAD_RIGHT_SIDE].NbPoints()<< endl;
 
-    newQuad->side[ QUAD_RIGHT_SIDE ].to = iRgt+1;
-    newQuad->side[ QUAD_LEFT_SIDE  ].to = iLft+1;
+    bool rRev = newQuad->side[ QUAD_RIGHT_SIDE ].IsReversed();
+    bool lRev = newQuad->side[ QUAD_LEFT_SIDE  ].IsReversed();
+    newQuad->side[ QUAD_RIGHT_SIDE ].to = iRgt + ( rRev ? -1 : +1 );
+    newQuad->side[ QUAD_LEFT_SIDE  ].to = iLft + ( lRev ? -1 : +1 );
     newQuad->name = ( TComm("Below J=") << J );
 
     quad->side[ QUAD_RIGHT_SIDE ].from = iRgt;

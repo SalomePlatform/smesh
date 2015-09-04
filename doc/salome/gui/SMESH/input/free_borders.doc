@@ -2,12 +2,14 @@
 
 \page free_borders_page Free borders
 
-\n This mesh quality control highlights borders of faces consisting of
-1D elements (segments) belonging to one face only.
+\n This mesh quality control highlights 1D elements (segments)
+belonging to one element (face or volume) only.
 
 \image html free_borders1.png
 
-In this picture the free borders are displayed in white.
+In this picture the free borders are displayed in red. (Faces are
+explicitly shown via <em>Display Entity</em> menu as all elements but
+segments are hidden upon this control activation).
 
 <br><b>See Also</b> a sample TUI Script of a 
 \ref tui_free_borders "Free Borders quality control" operation.  
