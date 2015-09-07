@@ -1503,7 +1503,8 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
     if ( isAccessibleDim( aDim - 1 ) ) {
       if ( algoData && myIsOnGeometry ) {
         for (int i = aDim - 1; i >= SMESH::DIM_0D; i--) {
-          if ( isAccessibleDim( i ) && currentHyp( i, Algo ) < 0 ) {
+          if ( isAccessibleDim( i ) && ( currentHyp( i, Algo ) < 0 ||
+             algoData->InputTypes.isEmpty() ) ) {
             myDlg->disableTab( i );
             setCurrentHyp(i, Algo, -1);
           }
@@ -1539,10 +1540,6 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
     bool noCompatible = false;
     for ( ; dim * dir <= lastDim * dir; dim += dir)
     {
-      HypothesisData* nextAlgo = 0;
-      if ( myMaxShapeDim == SMESH::DIM_3D && a3DAlgo && dim == SMESH::DIM_2D ) {
-        nextAlgo = a3DAlgo;
-      }
       if ( !isAccessibleDim( dim ))
         continue;
       if ( noCompatible ) { // the selected algo has no compatible ones
@@ -1552,14 +1549,13 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
         algoByDim[ dim ] = 0;
         continue;
       }
+      HypothesisData* nextAlgo = 0;
+      if ( myMaxShapeDim == SMESH::DIM_3D && a3DAlgo && dim == SMESH::DIM_2D ) {
+        nextAlgo = a3DAlgo;
+      }
       // get currently selected algo
       int algoIndex = currentHyp( dim, Algo );
       HypothesisData* curAlgo = hypData( dim, Algo, algoIndex );
-      if ( curAlgo ) { // some algo selected
-        if ( !isCompatible( prevAlgo, curAlgo, Algo ))
-          curAlgo = 0;
-      }
-      // set new available algoritms
 
       QString anCompareType = currentMeshTypeName(myDlg->currentMeshType());
       QString anCurrentCompareType = "";
@@ -1569,13 +1565,15 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
         anCurrentCompareType = (anCompareType == "HEXA" || anCompareType == "QUAD") ? "QUAD" : "TRIA";
         nextAlgo = 0;
       }
+
+      // set new available algoritms
       availableHyps( dim, Algo, anAvailable, myAvailableHypData[dim][Algo], prevAlgo, nextAlgo, anCurrentCompareType);
       HypothesisData* soleCompatible = 0;
       if ( anAvailable.count() == 1 )
         soleCompatible = myAvailableHypData[dim][Algo][0];
       myDlg->tab( dim )->setAvailableHyps( Algo, anAvailable );
       noCompatible = anAvailable.isEmpty();
-        algoIndex = myAvailableHypData[dim][Algo].indexOf( curAlgo );
+      algoIndex = myAvailableHypData[dim][Algo].indexOf( curAlgo );
       if ( !isSubmesh && algoIndex < 0 && soleCompatible && !forward && dim != SMESH::DIM_0D) {
         // select the sole compatible algo
         algoIndex = myAvailableHypData[dim][Algo].indexOf( soleCompatible );
