@@ -1044,7 +1044,7 @@ module SMESH
       raises (SALOME::SALOME_Exception);
     
     /*!
-     * Return type of submesh element
+     * Returns type of mesh element (same as SMESH_Mesh::GetElementType() )
      */
     ElementType GetElementType( in long id, in boolean iselem )
       raises (SALOME::SALOME_Exception);

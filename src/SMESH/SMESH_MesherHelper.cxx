@@ -1359,23 +1359,34 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
   bool toCheck = true;
   if ( !F.IsNull() && !force3d )
   {
-    gp_XY uv[8] = {
-      GetNodeUV( F,n1,  n3, &toCheck ),
-      GetNodeUV( F,n2,  n4, &toCheck ),
-      GetNodeUV( F,n3,  n1, &toCheck ),
-      GetNodeUV( F,n4,  n2, &toCheck ),
-      GetNodeUV( F,n12, n3 ),
-      GetNodeUV( F,n23, n4 ),
-      GetNodeUV( F,n34, n2 ),
-      GetNodeUV( F,n41, n2 )
-    };
-    AdjustByPeriod( F, uv, 8 ); // put uv[] within a period (IPAL52698)
+    Handle(ShapeAnalysis_Surface) surface = GetSurface( F );
+    if ( HasDegeneratedEdges() || surface->HasSingularities( 1e-7 ))
+    {
+      gp_Pnt center = calcTFI (0.5, 0.5, // IPAL0052863
+                               SMESH_TNodeXYZ(n1),  SMESH_TNodeXYZ(n2),
+                               SMESH_TNodeXYZ(n3),  SMESH_TNodeXYZ(n4),
+                               SMESH_TNodeXYZ(n12), SMESH_TNodeXYZ(n23),
+                               SMESH_TNodeXYZ(n34), SMESH_TNodeXYZ(n41));
+      gp_Pnt2d uv12 = GetNodeUV( F, n12, n3, &toCheck );
+      uvAvg = surface->NextValueOfUV( uv12, center, BRep_Tool::Tolerance( F )).XY();
+    }
+    else
+    {
+      gp_XY uv[8] = {
+        GetNodeUV( F,n1,  n3, &toCheck ),
+        GetNodeUV( F,n2,  n4, &toCheck ),
+        GetNodeUV( F,n3,  n1, &toCheck ),
+        GetNodeUV( F,n4,  n2, &toCheck ),
+        GetNodeUV( F,n12, n3 ),
+        GetNodeUV( F,n23, n4 ),
+        GetNodeUV( F,n34, n2 ),
+        GetNodeUV( F,n41, n2 )
+      };
+      AdjustByPeriod( F, uv, 8 ); // put uv[] within a period (IPAL52698)
 
-    uvAvg = calcTFI (0.5, 0.5, uv[0],uv[1],uv[2],uv[3], uv[4],uv[5],uv[6],uv[7] );
-
-    TopLoc_Location loc;
-    Handle( Geom_Surface ) S = BRep_Tool::Surface( F, loc );
-    P = S->Value( uvAvg.X(), uvAvg.Y() ).Transformed( loc );
+      uvAvg = calcTFI (0.5, 0.5, uv[0],uv[1],uv[2],uv[3], uv[4],uv[5],uv[6],uv[7] );
+    }
+    P = surface->Value( uvAvg );
     centralNode = meshDS->AddNode( P.X(), P.Y(), P.Z() );
     // if ( mySetElemOnShape ) node is not elem!
     meshDS->SetNodeOnFace( centralNode, faceID, uvAvg.X(), uvAvg.Y() );
