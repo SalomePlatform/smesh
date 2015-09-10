@@ -4981,6 +4981,13 @@ omniORB.registerObjref(SMESH._objref_SMESH_MeshEditor._NP_RepositoryId, meshEdit
 #
 class Pattern(SMESH._objref_SMESH_Pattern):
 
+    def LoadFromFile(self, patternTextOrFile ):
+        text = patternTextOrFile
+        if os.path.exists( text ):
+            text = open( patternTextOrFile ).read()
+            pass
+        return SMESH._objref_SMESH_Pattern.LoadFromFile( self, text )
+
     def ApplyToMeshFaces(self, theMesh, theFacesIDs, theNodeIndexOnKeyPoint1, theReverse):
         decrFun = lambda i: i-1
         theNodeIndexOnKeyPoint1,Parameters,hasVars = ParseParameters(theNodeIndexOnKeyPoint1, decrFun)
@@ -4992,6 +4999,11 @@ class Pattern(SMESH._objref_SMESH_Pattern):
         theNode000Index,theNode001Index,Parameters,hasVars = ParseParameters(theNode000Index,theNode001Index, decrFun)
         theMesh.SetParameters(Parameters)
         return SMESH._objref_SMESH_Pattern.ApplyToHexahedrons( self, theMesh, theVolumesIDs, theNode000Index, theNode001Index )
+
+    def MakeMesh(self, mesh, CreatePolygons=False, CreatePolyhedra=False):
+        if isinstance( mesh, Mesh ):
+            mesh = mesh.GetMesh()
+        return SMESH._objref_SMESH_Pattern.MakeMesh( self, mesh, CreatePolygons, CreatePolyhedra )
 
 # Registering the new proxy for Pattern
 omniORB.registerObjref(SMESH._objref_SMESH_Pattern._NP_RepositoryId, Pattern)

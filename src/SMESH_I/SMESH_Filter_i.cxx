@@ -839,8 +839,8 @@ BelongToGeom_i::BelongToGeom_i()
 
 BelongToGeom_i::~BelongToGeom_i()
 {
-  delete myShapeName;
-  delete myShapeID;
+  CORBA::string_free( myShapeName );
+  CORBA::string_free( myShapeID );
 }
 
 void BelongToGeom_i::SetGeom( GEOM::GEOM_Object_ptr theGeom )
@@ -872,18 +872,18 @@ FunctorType BelongToGeom_i::GetFunctorType()
 
 void BelongToGeom_i::SetShapeName( const char* theName )
 {
-  delete myShapeName;
-  myShapeName = strdup( theName );
+  CORBA::string_free( myShapeName );
+  myShapeName = CORBA::string_dup( theName );
   myBelongToGeomPtr->SetGeom( getShapeByName( myShapeName ) );
   TPythonDump()<<this<<".SetShapeName('"<<theName<<"')";
 }
 
 void BelongToGeom_i::SetShape( const char* theID, const char* theName )
 {
-  delete myShapeName;
-  delete myShapeID;
-  myShapeName = strdup( theName );
-  myShapeID   = strdup( theID );
+  CORBA::string_free( myShapeName );
+  CORBA::string_free( myShapeID );
+  myShapeName = CORBA::string_dup( theName );
+  myShapeID   = CORBA::string_dup( theID );
   bool hasName = ( theName && theName[0] );
   bool hasID   = ( theID   && theID[0] );
 
@@ -937,8 +937,8 @@ BelongToSurface_i::BelongToSurface_i( const Handle(Standard_Type)& theSurfaceTyp
 
 BelongToSurface_i::~BelongToSurface_i()
 {
-  delete myShapeName;
-  delete myShapeID;
+  CORBA::string_free( myShapeName );
+  CORBA::string_free( myShapeID );
 }
 
 void BelongToSurface_i::SetSurface( GEOM::GEOM_Object_ptr theGeom, ElementType theType )
@@ -964,18 +964,18 @@ void BelongToSurface_i::SetSurface( GEOM::GEOM_Object_ptr theGeom, ElementType t
 
 void BelongToSurface_i::SetShapeName( const char* theName, ElementType theType )
 {
-  delete myShapeName;
-  myShapeName = strdup( theName );
+  CORBA::string_free( myShapeName );
+  myShapeName = CORBA::string_dup( theName );
   myElementsOnSurfacePtr->SetSurface( getShapeByName( myShapeName ), (SMDSAbs_ElementType)theType );
   TPythonDump()<<this<<".SetShapeName('"<<theName<<"',"<<theType<<")";
 }
 
 void BelongToSurface_i::SetShape( const char* theID,  const char* theName, ElementType theType )
 {
-  delete myShapeName;
-  delete myShapeID;
-  myShapeName = strdup( theName );
-  myShapeID   = strdup( theID );
+  CORBA::string_free( myShapeName );
+  CORBA::string_free( myShapeID );
+  myShapeName = CORBA::string_dup( theName );
+  myShapeID   = CORBA::string_dup( theID );
   bool hasName = ( theName && theName[0] );
   bool hasID   = ( theID   && theID[0] );
 
@@ -1109,8 +1109,8 @@ LyingOnGeom_i::LyingOnGeom_i()
 
 LyingOnGeom_i::~LyingOnGeom_i()
 {
-  delete myShapeName;
-  delete myShapeID;
+  CORBA::string_free( myShapeName );
+  CORBA::string_free( myShapeID );
 }
 
 void LyingOnGeom_i::SetGeom( GEOM::GEOM_Object_ptr theGeom )
@@ -1141,20 +1141,20 @@ FunctorType LyingOnGeom_i::GetFunctorType()
 
 void LyingOnGeom_i::SetShapeName( const char* theName )
 {
-  delete myShapeName;
-  myShapeName = strdup( theName );
+  CORBA::string_free( myShapeName );
+  myShapeName = CORBA::string_dup( theName );
   myLyingOnGeomPtr->SetGeom( getShapeByName( myShapeName ) );
   TPythonDump()<<this<<".SetShapeName('"<<theName<<"')";
 }
 
 void LyingOnGeom_i::SetShape( const char* theID, const char* theName )
 {
-  delete myShapeName;
-  delete myShapeID;
-  myShapeName = strdup( theName );
-  myShapeID   = strdup( theID );
+  CORBA::string_free( myShapeName );
+  CORBA::string_free( myShapeID   );
+  myShapeName = CORBA::string_dup( theName );
+  myShapeID   = CORBA::string_dup( theID   );
   bool hasName = ( theName && theName[0] );
-  bool hasID   = ( theID   && theID[0] );
+  bool hasID   = ( theID   && theID[0]   );
 
   TopoDS_Shape S;
   if ( hasName && hasID )
@@ -3672,7 +3672,7 @@ static LDOM_Element createFilterItem( const char*       theName,
 //=======================================================================
 FilterLibrary_i::FilterLibrary_i( const char* theFileName )
 {
-  myFileName = strdup( theFileName );
+  myFileName = CORBA::string_dup( theFileName );
   SMESH::FilterManager_i* aFilterMgr = new SMESH::FilterManager_i();
   myFilterMgr = aFilterMgr->_this();
 
@@ -3713,7 +3713,7 @@ FilterLibrary_i::FilterLibrary_i()
 
 FilterLibrary_i::~FilterLibrary_i()
 {
-  delete myFileName;
+  CORBA::string_free( myFileName );
   //TPythonDump()<<this<<".UnRegister()";
 }
 
@@ -3765,7 +3765,7 @@ Filter_ptr FilterLibrary_i::Copy( const char* theFilterName )
     {
       char a[ 255 ];
       sprintf( a, "%d", val );
-      aCriterion.ThresholdStr = strdup( a );
+      aCriterion.ThresholdStr = CORBA::string_dup( a );
     }
     else
       aCriterion.ThresholdStr = str.GetString();
@@ -3796,8 +3796,8 @@ Filter_ptr FilterLibrary_i::Copy( const char* theFilterName )
 //=======================================================================
 void FilterLibrary_i::SetFileName( const char* theFileName )
 {
-  delete myFileName;
-  myFileName = strdup( theFileName );
+  CORBA::string_free( myFileName );
+  myFileName = CORBA::string_dup( theFileName );
   TPythonDump()<<this<<".SetFileName('"<<theFileName<<"')";
 }
 

@@ -31,9 +31,10 @@
 #include "SMDS_QuadraticFaceOfNodes.hxx"
 #include "SMDS_VolumeTool.hxx"
 #include "SMESHDS_GroupBase.hxx"
+#include "SMESHDS_GroupOnFilter.hxx"
 #include "SMESHDS_Mesh.hxx"
-#include "SMESH_OctreeNode.hxx"
 #include "SMESH_MeshAlgos.hxx"
+#include "SMESH_OctreeNode.hxx"
 
 #include <Basics_Utils.hxx>
 
@@ -2650,7 +2651,7 @@ GroupColor::GroupColor()
 
 bool GroupColor::IsSatisfy( long theId )
 {
-  return (myIDs.find( theId ) != myIDs.end());
+  return myIDs.count( theId );
 }
 
 void GroupColor::SetType( SMDSAbs_ElementType theType )
@@ -2676,7 +2677,7 @@ static bool isEqual( const Quantity_Color& theColor1,
 void GroupColor::SetMesh( const SMDS_Mesh* theMesh )
 {
   myIDs.clear();
-  
+
   const SMESHDS_Mesh* aMesh = dynamic_cast<const SMESHDS_Mesh*>(theMesh);
   if ( !aMesh )
     return;
@@ -2684,19 +2685,23 @@ void GroupColor::SetMesh( const SMDS_Mesh* theMesh )
   int nbGrp = aMesh->GetNbGroups();
   if ( !nbGrp )
     return;
-  
+
   // iterates on groups and find necessary elements ids
   const std::set<SMESHDS_GroupBase*>& aGroups = aMesh->GetGroups();
   set<SMESHDS_GroupBase*>::const_iterator GrIt = aGroups.begin();
-  for (; GrIt != aGroups.end(); GrIt++) {
+  for (; GrIt != aGroups.end(); GrIt++)
+  {
     SMESHDS_GroupBase* aGrp = (*GrIt);
     if ( !aGrp )
       continue;
     // check type and color of group
-    if ( !isEqual( myColor, aGrp->GetColor() ) )
+    if ( !isEqual( myColor, aGrp->GetColor() ))
       continue;
-    if ( myType != SMDSAbs_All && myType != (SMDSAbs_ElementType)aGrp->GetType() )
-      continue;
+
+    // IPAL52867 (prevent infinite recursion via GroupOnFilter)
+    if ( SMESHDS_GroupOnFilter * gof = dynamic_cast< SMESHDS_GroupOnFilter* >( aGrp ))
+      if ( gof->GetPredicate().get() == this )
+        continue;
 
     SMDSAbs_ElementType aGrpElType = (SMDSAbs_ElementType)aGrp->GetType();
     if ( myType == aGrpElType || (myType == SMDSAbs_All && aGrpElType != SMDSAbs_Node) ) {
