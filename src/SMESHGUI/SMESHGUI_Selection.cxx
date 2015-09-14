@@ -355,7 +355,7 @@ QString SMESHGUI_Selection::controlMode() const
     QString mode = myControls[0];
     for( int ind = 1; ind < myControls.count(); ind++ ) {
       if( mode != myControls[ind] )
-        return "eNone";
+        return "eMixed"; // different controls used for different actors
     }
     return mode;
   }

@@ -171,6 +171,7 @@ private slots:
   void                            onOperationCommited( SUIT_Operation* );
   void                            onOperationAborted( SUIT_Operation* );
   void                            onHypothesisEdit( int result );
+  void                            onUpdateControlActions();
 
 signals:
   void                            SignalDeactivateActiveDialog();
