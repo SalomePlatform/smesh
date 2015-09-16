@@ -2377,7 +2377,7 @@ bool SMESHGUI_MeshOp::editMeshOrSubMesh( QString& theMess )
   // First, remove old algos in order to avoid messages on algorithm hiding
   for ( int dim = aDim; dim <= SMESH::DIM_3D; dim++ )
   {
-    if ( isAccessibleDim( dim ) && myObjHyps[ dim ][ Algo ].count() > 0 )
+    if ( /*isAccessibleDim( dim ) &&*/ myObjHyps[ dim ][ Algo ].count() > 0 )
     {
       SMESH::SMESH_Hypothesis_var anOldAlgo = myObjHyps[ dim ][ Algo ].first().first;
       SMESH::SMESH_Hypothesis_var anAlgoVar = getAlgo( dim );
