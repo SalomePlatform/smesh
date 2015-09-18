@@ -79,6 +79,7 @@ SET(SMESHUtils_SOURCES
   SMESH_File.cxx
   SMESH_MeshAlgos.cxx
   SMESH_MAT2d.cxx
+  SMESH_FreeBorders.cxx
 )
 
 # --- rules ---

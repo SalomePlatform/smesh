@@ -439,8 +439,10 @@ struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
   bool                         _outerFacesFound;
   set<const SMDS_MeshElement*> _outerFaces; // empty means "no internal faces at all"
 
-  SMESH_ElementSearcherImpl( SMDS_Mesh& mesh, SMDS_ElemIteratorPtr elemIt=SMDS_ElemIteratorPtr())
-    : _mesh(&mesh),_meshPartIt(elemIt),_ebbTree(0),_nodeSearcher(0),_tolerance(-1),_outerFacesFound(false) {}
+  SMESH_ElementSearcherImpl( SMDS_Mesh&           mesh,
+                             double               tol=-1,
+                             SMDS_ElemIteratorPtr elemIt=SMDS_ElemIteratorPtr())
+    : _mesh(&mesh),_meshPartIt(elemIt),_ebbTree(0),_nodeSearcher(0),_tolerance(tol),_outerFacesFound(false) {}
   virtual ~SMESH_ElementSearcherImpl()
   {
     if ( _ebbTree )      delete _ebbTree;      _ebbTree      = 0;
@@ -1091,32 +1093,22 @@ bool SMESH_MeshAlgos::IsOut( const SMDS_MeshElement* element, const gp_Pnt& poin
 
   // get ordered nodes
 
-  vector< gp_XYZ > xyz;
-  vector<const SMDS_MeshNode*> nodeList;
+  vector< SMESH_TNodeXYZ > xyz;
 
-  SMDS_ElemIteratorPtr nodeIt = element->nodesIterator();
-  if ( element->IsQuadratic() ) {
-    nodeIt = element->interlacedNodesElemIterator();
-    // if (const SMDS_VtkFace* f=dynamic_cast<const SMDS_VtkFace*>(element))
-    //   nodeIt = f->interlacedNodesElemIterator();
-    // else if (const SMDS_VtkEdge*  e =dynamic_cast<const SMDS_VtkEdge*>(element))
-    //   nodeIt = e->interlacedNodesElemIterator();
-  }
+  SMDS_ElemIteratorPtr nodeIt = element->interlacedNodesElemIterator();
   while ( nodeIt->more() )
   {
     SMESH_TNodeXYZ node = nodeIt->next();
     xyz.push_back( node );
-    nodeList.push_back(node._node);
   }
 
-  int i, nbNodes = (int) nodeList.size(); // central node of biquadratic is missing
+  int i, nbNodes = (int) xyz.size(); // central node of biquadratic is missing
 
   if ( element->GetType() == SMDSAbs_Face ) // --------------------------------------------------
   {
     // compute face normal
     gp_Vec faceNorm(0,0,0);
     xyz.push_back( xyz.front() );
-    nodeList.push_back( nodeList.front() );
     for ( i = 0; i < nbNodes; ++i )
     {
       gp_Vec edge1( xyz[i+1], xyz[i]);
@@ -1129,7 +1121,7 @@ bool SMESH_MeshAlgos::IsOut( const SMDS_MeshElement* element, const gp_Pnt& poin
       // degenerated face: point is out if it is out of all face edges
       for ( i = 0; i < nbNodes; ++i )
       {
-        SMDS_LinearEdge edge( nodeList[i], nodeList[i+1] );
+        SMDS_LinearEdge edge( xyz[i]._node, xyz[i+1]._node );
         if ( !IsOut( &edge, point, tol ))
           return false;
       }
@@ -1216,13 +1208,28 @@ bool SMESH_MeshAlgos::IsOut( const SMDS_MeshElement* element, const gp_Pnt& poin
     // (we consider quadratic edge as being composed of two straight parts)
     for ( i = 1; i < nbNodes; ++i )
     {
-      gp_Vec edge( xyz[i-1], xyz[i]);
-      gp_Vec n1p ( xyz[i-1], point);
-      double dist = ( edge ^ n1p ).Magnitude() / edge.Magnitude();
-      if ( dist > tol )
+      gp_Vec edge( xyz[i-1], xyz[i] );
+      gp_Vec n1p ( xyz[i-1], point  );
+      // double dist = ( edge ^ n1p ).Magnitude() / edge.Magnitude();
+      // if ( dist > tol )
+      //   continue;
+      // gp_Vec n2p( xyz[i], point );
+      // if ( fabs( edge.Magnitude() - n1p.Magnitude() - n2p.Magnitude()) > tol )
+      //   continue;
+      double u = ( edge * n1p ) / edge.SquareMagnitude(); // param [0,1] on the edge
+      if ( u < 0. ) {
+        if ( n1p.SquareMagnitude() < tol * tol )
+          return false;
         continue;
-      gp_Vec n2p( xyz[i], point );
-      if ( fabs( edge.Magnitude() - n1p.Magnitude() - n2p.Magnitude()) > tol )
+      }
+      if ( u > 1. ) {
+        if ( point.SquareDistance( xyz[i] ) < tol * tol )
+          return false;
+        continue;
+      }
+      gp_XYZ proj = ( 1. - u ) * xyz[i-1] + u * xyz[i]; // projection of the point on the edge
+      double dist2 = point.SquareDistance( proj );
+      if ( dist2 > tol * tol )
         continue;
       return false; // point is ON this part
     }
@@ -1231,7 +1238,7 @@ bool SMESH_MeshAlgos::IsOut( const SMDS_MeshElement* element, const gp_Pnt& poin
   // Node or 0D element -------------------------------------------------------------------------
   {
     gp_Vec n2p ( xyz[0], point );
-    return n2p.Magnitude() <= tol;
+    return n2p.SquareMagnitude() <= tol * tol;
   }
   return true;
 }
@@ -1650,9 +1657,10 @@ SMESH_NodeSearcher* SMESH_MeshAlgos::GetNodeSearcher(SMDS_Mesh& mesh)
  */
 //=======================================================================
 
-SMESH_ElementSearcher* SMESH_MeshAlgos::GetElementSearcher(SMDS_Mesh& mesh)
+SMESH_ElementSearcher* SMESH_MeshAlgos::GetElementSearcher(SMDS_Mesh& mesh,
+                                                           double     tolerance)
 {
-  return new SMESH_ElementSearcherImpl( mesh );
+  return new SMESH_ElementSearcherImpl( mesh, tolerance );
 }
 
 //=======================================================================
@@ -1662,7 +1670,8 @@ SMESH_ElementSearcher* SMESH_MeshAlgos::GetElementSearcher(SMDS_Mesh& mesh)
 //=======================================================================
 
 SMESH_ElementSearcher* SMESH_MeshAlgos::GetElementSearcher(SMDS_Mesh&           mesh,
-                                                           SMDS_ElemIteratorPtr elemIt)
+                                                           SMDS_ElemIteratorPtr elemIt,
+                                                           double               tolerance)
 {
-  return new SMESH_ElementSearcherImpl( mesh, elemIt );
+  return new SMESH_ElementSearcherImpl( mesh, tolerance, elemIt );
 }

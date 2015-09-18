@@ -29,13 +29,37 @@
 
 module SMESH
 {
+  interface NumericalFunctor;
+
   enum Bnd_Dimension { BND_2DFROM3D, BND_1DFROM3D, BND_1DFROM2D };
+
+
+  struct FreeBorder
+  {
+    SMESH::long_array nodeIDs; // all nodes defining a free border
+    // 1st and last node is same in a closed border
+  };
+  struct FreeBorderPart
+  {
+    short border; // border index within a sequence<FreeBorder>
+    long  node1;  // node index within the border-th FreeBorder
+    long  node2;
+    long  nodeLast;
+  };
+  typedef sequence<FreeBorder>       ListOfFreeBorders;
+  typedef sequence<FreeBorderPart>   FreeBordersGroup;
+  typedef sequence<FreeBordersGroup> ListOfFreeBorderGroups;
+
+  struct CoincidentFreeBorders
+  {
+    ListOfFreeBorders      borders;          // nodes of all free borders
+    ListOfFreeBorderGroups coincidentGroups; // groups of coincident parts of borders
+  };
+
 
   /*!
    * This interface makes modifications on the Mesh - removing elements and nodes etc.
    */
-  interface NumericalFunctor;
-
   interface SMESH_MeshEditor
   {
    /*!
@@ -721,6 +745,21 @@ module SMESH
      * TopAbs_UNKNOWN state means that either mesh is wrong or the analysis fails.
      */
     short GetPointState(in double x, in double y, in double z) 
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns groups of FreeBorder's coincident within the given tolerance.
+     * If the tolerance <= 0.0 then one tenth of an average size of elements adjacent
+     * to free borders being compared is used.
+     */
+    CoincidentFreeBorders FindCoincidentFreeBorders(in double tolerance);
+
+    /*!
+     * Sew FreeBorder's of each group
+     */
+    short SewCoincidentFreeBorders (in CoincidentFreeBorders freeBorders,
+                                    in boolean               createPolygons,
+                                    in boolean               createPolyedrs)
       raises (SALOME::SALOME_Exception);
 
     enum Sew_Error {

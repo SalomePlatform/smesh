@@ -36,6 +36,9 @@
 // IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
+
+#include <vector>
 
 class QButtonGroup;
 class QGroupBox;
@@ -48,6 +51,10 @@ class SMESHGUI;
 class SMESH_Actor;
 class SVTK_Selector;
 class LightApp_SelectionMgr;
+class SMESHGUI_SpinBox;
+class SalomeApp_IntSpinBox;
+class QListWidget;
+class QListWidgetItem;
 
 //=================================================================================
 // class    : SMESHGUI_SewingDlg
@@ -67,7 +74,8 @@ private:
   void                    keyPressEvent( QKeyEvent* );
   int                     GetConstructorId();
   bool                    IsValid();
-  
+  void                    UpdateButtons();
+
   SMESHGUI*               mySMESHGUI;              /* Current SMESHGUI object */
   LightApp_SelectionMgr*  mySelectionMgr;          /* User shape selection */
   int                     myOk1, myOk2, myOk3, myOk4, myOk5, myOk6;    
@@ -114,13 +122,67 @@ private:
   QCheckBox*              CheckBoxPolygons;
   QCheckBox*              CheckBoxPolyedrs;
 
+  QWidget*                SewFreeBordersWidget;
+  QGroupBox*              ModeGroup;
+  QButtonGroup*           ModeButGrp;
+  //QPushButton*            SelectMeshButton;
+  QLineEdit*              LineEditMesh;
+
+  SMESHGUI_SpinBox*       SpinBoxTolerance;
+  QCheckBox*              AutoSewCheck;
+
+  QWidget*                GroupCoincidentWidget;
+  QListWidget*            ListCoincident;
+  QPushButton*            DetectButton;
+  QPushButton*            RemoveGroupButton;
+  QCheckBox*              SelectAllCheck;
+
+  QListWidget*            ListEdit;
+  QButtonGroup*           MoveBorderEndsButGrp;
+  QLineEdit*              BorderEndLine[2];
+  QPushButton*            SwapBut;
+  QPushButton*            SetFirstButton;
+  QPushButton*            RemoveElemButton;
+  SalomeApp_IntSpinBox*   StepSpin;
+
   QString                 myHelpFileName;
 
-protected slots:
+
+  struct BorderGroupDisplayer;
+  std::vector< BorderGroupDisplayer* > myBorderDisplayers;
+  SMESH::CoincidentFreeBorders_var     myBorders;
+  int                                  myCurGroupIndex;
+  int                                  myCurPartIndex;
+  int                                  myStoredRepresentation;
+  unsigned int                         myStoredEntityMode;
+
+  bool                    haveBorders();
+  QString                 getGroupText( int groupIndex );
+  QString                 getPartText( const SMESH::FreeBorderPart& part );
+  void                    showGroup( QListWidgetItem* item );
+  bool                    setCurrentGroup();
+  bool                    setCurrentPart();
+  void                    onGroupChange(bool partChange=false);
+  void                    setDisplayMode();
+  void                    restoreDisplayMode();
+
+
+ protected slots:
   virtual void            reject();
 
-private slots:
+ private slots:
   void                    ConstructorsClicked( int );
+  void                    onModeChange( int );
+  void                    onAutoSew( int );
+  void                    onDetectClicked();
+  void                    onRemoveGroupClicked();
+  void                    onSelectGroup();
+  void                    onSelectAll(int);
+  void                    onSelectBorderPartFromGroup();
+  void                    onSetFirstClicked();
+  void                    onRemoveElemClicked();
+  void                    onMoveBorderEnd(int);
+  void                    onSwapClicked();
   void                    ClickOnOk();
   bool                    ClickOnApply();
   void                    ClickOnHelp();

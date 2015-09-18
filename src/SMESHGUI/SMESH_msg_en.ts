@@ -5141,7 +5141,7 @@ Please select a group and try again</translation>
     </message>
     <message>
         <source>SEPARATE_CORNERS_AND_MEDIUM</source>
-        <translation>No merge of corner and medium nodes</translation>
+        <translation>No merge of corner and medium nodes of quadratic cells</translation>
     </message>
     <message>
         <source>KEEP_NODES</source>
@@ -5154,10 +5154,6 @@ Please select a group and try again</translation>
     <message>
         <source>SELECT</source>
         <translation>Select: </translation>
-    </message>
-    <message>
-        <source></source>
-        <translation></translation>
     </message>
 </context>
 <context>
@@ -6664,6 +6660,42 @@ It is impossible to read point coordinates from file</translation>
     <message>
         <source>SIDE_2</source>
         <translation>Side 2</translation>
+    </message>
+    <message>
+        <source>AUTO_SEWING</source>
+        <translation>Auto Sewing</translation>
+    </message>
+    <message>
+        <source>COINCIDENT_FREE_BORDERS</source>
+        <translation>Coincident Free Borders</translation>
+    </message>
+    <message>
+        <source>DETECT</source>
+        <translation>Detect</translation>
+    </message>
+    <message>
+        <source>SELECT_ALL</source>
+        <translation>Select all</translation>
+    </message>
+    <message>
+        <source>EDIT_SELECTED_GROUP</source>
+        <translation>Edit Selected Group</translation>
+    </message>
+    <message>
+        <source>STEP</source>
+        <translation>Step</translation>
+    </message>
+    <message>
+        <source>NO_BORDERS_TO_SEW</source>
+        <translation>No free borders to sew found</translation>
+    </message>
+    <message>
+        <source>NOT_ALL_BORDERS_SEWED</source>
+        <translation>%1 of %2 groups of borders sewed</translation>
+    </message>
+    <message>
+        <source>ALL_BORDERS_SEWED</source>
+        <translation>%1 group(s) of borders sewed</translation>
     </message>
 </context>
 <context>

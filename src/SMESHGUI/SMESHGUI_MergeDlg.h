@@ -38,25 +38,27 @@
 
 // STL includes
 #include <list>
+#include <vector>
 
 // IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
+class LightApp_SelectionMgr;
+class QButtonGroup;
+class QCheckBox;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
+class QListWidget;
 class QPushButton;
 class QRadioButton;
-class QCheckBox;
-class QListWidget;
-class QButtonGroup;
 class SMESHGUI;
+class SMESHGUI_IdPreview;
 class SMESHGUI_SpinBox;
 class SMESH_Actor;
-class SVTK_Selector;
-class LightApp_SelectionMgr;
 class SUIT_SelectionFilter;
+class SVTK_Selector;
 class TColStd_MapOfInteger;
 
 namespace SMESH
@@ -76,6 +78,8 @@ public:
   SMESHGUI_MergeDlg( SMESHGUI*, int );
   ~SMESHGUI_MergeDlg();
 
+  static QPixmap IconFirst();
+
 private:
   void                      Init();
   void                      enterEvent( QEvent* );              /* mouse enter the QWidget */
@@ -84,7 +88,8 @@ private:
   bool                      isKeepNodesIDsSelection();
   bool                      isNewKeepNodesGroup( const char* entry );
 
-  void                      FindGravityCenter( TColStd_MapOfInteger&, 
+  void                      FindGravityCenter( TColStd_MapOfInteger&,
+                                               std::vector<int>& , 
                                                std::list<gp_XYZ>& );
   // add the centers of gravity of ElemsIdMap elements to the GrCentersXYZ list
 
@@ -103,7 +108,7 @@ private:
   SUIT_SelectionFilter*     myMeshOrSubMeshOrGroupFilter;
   SUIT_SelectionFilter*     mySubMeshOrGroupFilter;
 
-  SMESH::TIdPreview*        myIdPreview;
+  SMESHGUI_IdPreview*       myIdPreview;
 
   int                       myAction;
   bool                      myIsBusy;

@@ -142,6 +142,8 @@ SET(_moc_HEADERS
   SMESHGUI_FieldSelectorWdg.h
   SMESHGUI_DisplayEntitiesDlg.h
   SMESHGUI_SplitBiQuad.h
+  SMESHGUI_PreVisualObj.h
+  SMESHGUI_IdPreview.h
 )
 
 # header files / no moc processing
@@ -251,6 +253,8 @@ SET(_other_SOURCES
   SMESHGUI_FieldSelectorWdg.cxx
   SMESHGUI_DisplayEntitiesDlg.cxx
   SMESHGUI_SplitBiQuad.cxx
+  SMESHGUI_PreVisualObj.cxx
+  SMESHGUI_IdPreview.cxx
 )
 
 # sources / to compile

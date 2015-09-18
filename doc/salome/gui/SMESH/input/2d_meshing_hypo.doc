@@ -38,7 +38,7 @@ the meshed face boundary.
 
 \image html hypo_quad_params_dialog.png "Quadrangle parameters: Transition"
 
-<b>Quadrangle parameters</b> is a hypothesis for Quadrangle (Mapping) algorithm.
+<b>Quadrangle parameters</b> is a hypothesis for \ref quad_ijk_algo_page.
 
 <b>Transition</b> tab is used to define the algorithm of transition
 between opposite sides of the face with a different number of

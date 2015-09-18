@@ -4519,6 +4519,52 @@ class Mesh:
     def MergeEqualElements(self):
         self.editor.MergeEqualElements()
 
+    ## Returns groups of FreeBorder's coincident within the given tolerance.
+    #  @param tolerance the tolerance. If the tolerance <= 0.0 then one tenth of an average
+    #         size of elements adjacent to free borders being compared is used.
+    #  @return SMESH.CoincidentFreeBorders structure
+    #  @ingroup l2_modif_trsf
+    def FindCoincidentFreeBorders (self, tolerance=0.):
+        return self.editor.FindCoincidentFreeBorders( tolerance )
+        
+    ## Sew FreeBorder's of each group
+    #  @param freeBorders either a SMESH.CoincidentFreeBorders structure or a list of lists
+    #         where each enclosed list contains node IDs of a group of coincident free
+    #         borders such that each consequent triple of IDs within a group describes
+    #         a free border in a usual way: n1, n2, nLast - i.e. 1st node, 2nd node and
+    #         last node of a border.
+    #         For example [[1, 2, 10, 20, 21, 40], [11, 12, 15, 55, 54, 41]] describes two
+    #         groups of coincident free borders, each group including two borders.
+    #  @param createPolygons if @c True faces adjacent to free borders are converted to
+    #         polygons if a node of opposite border falls on a face edge, else such
+    #         faces are split into several ones.
+    #  @param createPolyhedra if @c True volumes adjacent to free borders are converted to
+    #         polyhedra if a node of opposite border falls on a volume edge, else such
+    #         volumes, if any, remain intact and the mesh becomes non-conformal.
+    #  @return a number of successfully sewed groups
+    #  @ingroup l2_modif_trsf
+    def SewCoincidentFreeBorders (self, freeBorders, createPolygons=False, createPolyhedra=False):
+        if freeBorders and isinstance( freeBorders, list ):
+            # construct SMESH.CoincidentFreeBorders
+            if isinstance( freeBorders[0], int ):
+                freeBorders = [freeBorders]
+            borders = []
+            coincidentGroups = []
+            for nodeList in freeBorders:
+                if not nodeList or len( nodeList ) % 3:
+                    raise ValueError, "Wrong number of nodes in this group: %s" % nodeList
+                group = []
+                while nodeList:
+                    group.append  ( SMESH.FreeBorderPart( len(borders), 0, 1, 2 ))
+                    borders.append( SMESH.FreeBorder( nodeList[:3] ))
+                    nodeList = nodeList[3:]
+                    pass
+                coincidentGroups.append( group )
+                pass
+            freeBorders = SMESH.CoincidentFreeBorders( borders, coincidentGroups )
+
+        return self.editor.SewCoincidentFreeBorders( freeBorders, createPolygons, createPolyhedra )
+
     ## Sews free borders
     #  @return SMESH::Sew_Error
     #  @ingroup l2_modif_trsf

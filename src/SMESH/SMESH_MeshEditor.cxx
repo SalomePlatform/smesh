@@ -8269,6 +8269,8 @@ bool SMESH_MeshEditor::CheckFreeBorderNodes(const SMDS_MeshNode* theNode1,
 //=======================================================================
 //function : SewFreeBorder
 //purpose  :
+//warning  : for border-to-side sewing theSideSecondNode is considered as
+//           the last side node and theSideThirdNode is not used
 //=======================================================================
 
 SMESH_MeshEditor::Sew_Error

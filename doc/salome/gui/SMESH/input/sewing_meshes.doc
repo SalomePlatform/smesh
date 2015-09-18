@@ -27,7 +27,13 @@ the type of sewing operation you would like to perform.</li>
 \anchor free_borders_anchor
 <h2>Sew free borders</h2>
 
-This functionality allows you to unite two free borders of a 2D mesh.
+This functionality allows you to unite free borders of a 2D mesh.
+
+There are two working modes: \a Automatic and \a Manual. In the \b
+Automatic mode, the program finds free borders coincident within a
+certain tolerance and sew them. Optionally it is possible to adjust
+the found free borders before sewing. In the \b Manual mode you are to
+define borders to sew by picking three nodes of each border.
 
 \image html sewing1.png
 

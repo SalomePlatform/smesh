@@ -28,10 +28,11 @@
 #include "SMESHGUI_MergeDlg.h"
 
 #include "SMESHGUI.h"
-#include "SMESHGUI_Utils.h"
-#include "SMESHGUI_VTKUtils.h"
+#include "SMESHGUI_IdPreview.h"
 #include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_SpinBox.h"
+#include "SMESHGUI_Utils.h"
+#include "SMESHGUI_VTKUtils.h"
 
 #include <SMESH_Actor.h>
 #include <SMESH_TypeFilter.hxx>
@@ -61,34 +62,20 @@
 #include CORBA_SERVER_HEADER(SMESH_Group)
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
-// VTK includes
-#include <vtkUnstructuredGrid.h>
-#include <vtkRenderer.h>
-#include <vtkActor2D.h>
-#include <vtkPoints.h>
-#include <vtkDataSetMapper.h>
-#include <vtkMaskPoints.h>
-#include <vtkSelectVisiblePoints.h>
-#include <vtkLabeledDataMapper.h>
-#include <vtkTextProperty.h>
-#include <vtkIntArray.h>
-#include <vtkProperty2D.h>
-#include <vtkPointData.h>
-
 // Qt includes
 #include <QApplication>
+#include <QButtonGroup>
+#include <QCheckBox>
+#include <QGridLayout>
 #include <QGroupBox>
+#include <QHBoxLayout>
+#include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
 #include <QPushButton>
 #include <QRadioButton>
-#include <QCheckBox>
-#include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <QGridLayout>
-#include <QKeyEvent>
-#include <QButtonGroup>
 
 #define SPACING 6
 #define MARGIN  11
@@ -97,207 +84,26 @@ namespace
 {
   enum ActionType { MERGE_NODES, MERGE_ELEMENTS, TYPE_AUTO=0, TYPE_MANUAL };
 }
-namespace SMESH
+
+
+QPixmap SMESHGUI_MergeDlg::IconFirst()
 {
-  class TIdPreview
-  { // to display in the viewer IDs of the selected elements
-    SVTK_ViewWindow* myViewWindow;
-
-    vtkUnstructuredGrid* myIdGrid;
-    SALOME_Actor* myIdActor;
-
-    vtkUnstructuredGrid* myPointsNumDataSet;
-    vtkMaskPoints* myPtsMaskPoints;
-    vtkSelectVisiblePoints* myPtsSelectVisiblePoints;
-    vtkLabeledDataMapper* myPtsLabeledDataMapper;
-    vtkTextProperty* aPtsTextProp;
-    bool myIsPointsLabeled;
-    vtkActor2D* myPointLabels;
-
-    std::vector<int> myIDs;
-
-  public:
-    TIdPreview(SVTK_ViewWindow* theViewWindow):
-      myViewWindow(theViewWindow)
-    {
-      myIdGrid = vtkUnstructuredGrid::New();
-
-      // Create and display actor
-      vtkDataSetMapper* aMapper = vtkDataSetMapper::New();
-      aMapper->SetInputData( myIdGrid );
-
-      myIdActor = SALOME_Actor::New();
-      myIdActor->SetInfinitive(true);
-      myIdActor->VisibilityOff();
-      myIdActor->PickableOff();
-
-      myIdActor->SetMapper( aMapper );
-      aMapper->Delete();
-
-      myViewWindow->AddActor(myIdActor);
-
-      //Definition of points numbering pipeline
-      myPointsNumDataSet = vtkUnstructuredGrid::New();
-
-      myPtsMaskPoints = vtkMaskPoints::New();
-      myPtsMaskPoints->SetInputData(myPointsNumDataSet);
-      myPtsMaskPoints->SetOnRatio(1);
-
-      myPtsSelectVisiblePoints = vtkSelectVisiblePoints::New();
-      myPtsSelectVisiblePoints->SetInputConnection(myPtsMaskPoints->GetOutputPort());
-      myPtsSelectVisiblePoints->SelectInvisibleOff();
-      myPtsSelectVisiblePoints->SetTolerance(0.1);
-    
-      myPtsLabeledDataMapper = vtkLabeledDataMapper::New();
-      myPtsLabeledDataMapper->SetInputConnection(myPtsSelectVisiblePoints->GetOutputPort());
-      myPtsLabeledDataMapper->SetLabelModeToLabelScalars();
-    
-      vtkTextProperty* aPtsTextProp = vtkTextProperty::New();
-      aPtsTextProp->SetFontFamilyToTimes();
-      static int aPointsFontSize = 12;
-      aPtsTextProp->SetFontSize(aPointsFontSize);
-      aPtsTextProp->SetBold(1);
-      aPtsTextProp->SetItalic(0);
-      aPtsTextProp->SetShadow(0);
-      myPtsLabeledDataMapper->SetLabelTextProperty(aPtsTextProp);
-      aPtsTextProp->Delete();
-  
-      myIsPointsLabeled = false;
-
-      myPointLabels = vtkActor2D::New();
-      myPointLabels->SetMapper(myPtsLabeledDataMapper);
-      myPointLabels->GetProperty()->SetColor(1,1,1);
-      myPointLabels->SetVisibility(myIsPointsLabeled);
-
-      AddToRender(myViewWindow->getRenderer());
-    }
-
-    void SetPointsData ( SMDS_Mesh* theMesh, 
-                         TColStd_MapOfInteger & theNodesIdMap )
-    {
-      vtkPoints* aPoints = vtkPoints::New();
-      aPoints->SetNumberOfPoints(theNodesIdMap.Extent());
-      myIDs.clear();
-      
-      TColStd_MapIteratorOfMapOfInteger idIter( theNodesIdMap );
-      for( int i = 0; idIter.More(); idIter.Next(), i++ ) {
-        const SMDS_MeshNode* aNode = theMesh->FindNode(idIter.Key());
-        aPoints->SetPoint( i, aNode->X(), aNode->Y(), aNode->Z() );
-        myIDs.push_back(idIter.Key());
-      }
-
-      myIdGrid->SetPoints(aPoints);
-
-      aPoints->Delete();
-
-      myIdActor->GetMapper()->Update();
-    }
-
-    void SetElemsData( TColStd_MapOfInteger & theElemsIdMap, 
-                       std::list<gp_XYZ> & aGrCentersXYZ )
-    {
-      vtkPoints* aPoints = vtkPoints::New();
-      aPoints->SetNumberOfPoints(theElemsIdMap.Extent());
-      myIDs.clear();
-      
-      TColStd_MapIteratorOfMapOfInteger idIter( theElemsIdMap );
-      for( ; idIter.More(); idIter.Next() ) {
-        myIDs.push_back(idIter.Key());
-      }
-
-      gp_XYZ aXYZ;
-      std::list<gp_XYZ>::iterator coordIt = aGrCentersXYZ.begin();
-      for( int i = 0; coordIt != aGrCentersXYZ.end(); coordIt++, i++ ) {
-        aXYZ = *coordIt;
-        aPoints->SetPoint( i, aXYZ.X(), aXYZ.Y(), aXYZ.Z() );
-      }
-      myIdGrid->SetPoints(aPoints);
-      aPoints->Delete();
-      
-      myIdActor->GetMapper()->Update();
-    }
-
-    void AddToRender(vtkRenderer* theRenderer)
-    {
-      myIdActor->AddToRender(theRenderer);
-
-      myPtsSelectVisiblePoints->SetRenderer(theRenderer);
-      theRenderer->AddActor2D(myPointLabels);
-    }
-
-    void RemoveFromRender(vtkRenderer* theRenderer)
-    {
-      myIdActor->RemoveFromRender(theRenderer);
-
-      myPtsSelectVisiblePoints->SetRenderer(theRenderer);
-      theRenderer->RemoveActor(myPointLabels);
-    }
-
-    void SetPointsLabeled( bool theIsPointsLabeled, bool theIsActorVisible = true )
-    {
-      myIsPointsLabeled = theIsPointsLabeled && myIdGrid->GetNumberOfPoints();
-      
-      if ( myIsPointsLabeled ) {
-        myPointsNumDataSet->ShallowCopy(myIdGrid);
-        vtkDataSet *aDataSet = myPointsNumDataSet;
-        int aNbElem = myIDs.size();
-        vtkIntArray *anArray = vtkIntArray::New();
-        anArray->SetNumberOfValues( aNbElem );
-        for ( int i = 0; i < aNbElem; i++ )
-          anArray->SetValue( i, myIDs[i] );
-        aDataSet->GetPointData()->SetScalars( anArray );
-        anArray->Delete();
-        myPtsMaskPoints->SetInputData( aDataSet );
-        myPointLabels->SetVisibility( theIsActorVisible );
-      }
-      else {
-        myPointLabels->SetVisibility( false );
-      }
-    }
-    
-    ~TIdPreview()
-    {
-      RemoveFromRender(myViewWindow->getRenderer());
-
-      myIdGrid->Delete();
-
-      myViewWindow->RemoveActor(myIdActor);
-      myIdActor->Delete();
-
-      //Deleting of points numbering pipeline
-      //---------------------------------------
-      myPointsNumDataSet->Delete();
-      
-      //myPtsLabeledDataMapper->RemoveAllInputs();        //vtk 5.0 porting
-      myPtsLabeledDataMapper->Delete();
-
-      //myPtsSelectVisiblePoints->UnRegisterAllOutputs(); //vtk 5.0 porting
-      myPtsSelectVisiblePoints->Delete();
-
-      //myPtsMaskPoints->UnRegisterAllOutputs();          //vtk 5.0 porting
-      myPtsMaskPoints->Delete();
-
-      myPointLabels->Delete();
-
-//       myTimeStamp->Delete();
-    }
-  };
+  static const char * iconFirst[] = {
+    "18 10 2 1",
+    "       g None",
+    ".      g #000000",
+    "         .     .  ",
+    "  ..    ..    ..  ",
+    "  ..   ...   ...  ",
+    "  ..  ....  ....  ",
+    "  .. ..... .....  ",
+    "  .. ..... .....  ",
+    "  ..  ....  ....  ",
+    "  ..   ...   ...  ",
+    "  ..    ..    ..  ",
+    "         .     .  "};
+  return iconFirst;
 }
-
-static const char * IconFirst[] = {
-"18 10 2 1",
-"       g None",
-".      g #000000",
-"         .     .  ",
-"  ..    ..    ..  ",
-"  ..   ...   ...  ",
-"  ..  ....  ....  ",
-"  .. ..... .....  ",
-"  .. ..... .....  ",
-"  ..  ....  ....  ",
-"  ..   ...   ...  ",
-"  ..    ..    ..  ",
-"         .     .  "};
 
 //=================================================================================
 // class    : SMESHGUI_MergeDlg()
@@ -313,7 +119,7 @@ SMESHGUI_MergeDlg::SMESHGUI_MergeDlg (SMESHGUI* theModule, int theAction)
   setAttribute(Qt::WA_DeleteOnClose, true);
   setWindowTitle(myAction == MERGE_ELEMENTS ? tr("SMESH_MERGE_ELEMENTS") : tr("SMESH_MERGE_NODES"));
 
-  myIdPreview = new SMESH::TIdPreview(SMESH::GetViewWindow( mySMESHGUI ));
+  myIdPreview = new SMESHGUI_IdPreview(SMESH::GetViewWindow( mySMESHGUI ));
 
   SUIT_ResourceMgr* aResMgr = SMESH::GetResourceMgr( mySMESHGUI );
   QPixmap IconMergeNodes (aResMgr->loadPixmap("SMESH", tr("ICON_SMESH_MERGE_NODES")));
@@ -511,7 +317,7 @@ SMESHGUI_MergeDlg::SMESHGUI_MergeDlg (SMESHGUI* theModule, int theAction)
   RemoveElemButton = new QPushButton(GroupEdit);
   RemoveElemButton->setIcon(IconRemove);
   SetFirstButton = new QPushButton(GroupEdit);
-  SetFirstButton->setIcon(QPixmap(IconFirst));
+  SetFirstButton->setIcon(IconFirst());
 
   GroupEditLayout->addWidget(ListEdit,         0, 0, 2, 1);
   GroupEditLayout->addWidget(AddElemButton,    0, 1);
@@ -645,8 +451,9 @@ void SMESHGUI_MergeDlg::Init()
 // function : FindGravityCenter()
 // purpose  :
 //=================================================================================
-void SMESHGUI_MergeDlg::FindGravityCenter(TColStd_MapOfInteger & theElemsIdMap, 
-                                          std::list< gp_XYZ > & theGrCentersXYZ)
+void SMESHGUI_MergeDlg::FindGravityCenter(TColStd_MapOfInteger & theElemsIdMap,
+                                          std::vector<int>&      theIDs,
+                                          std::list< gp_XYZ > &  theGrCentersXYZ)
 {
   if (!myActor)
     return;
@@ -658,11 +465,13 @@ void SMESHGUI_MergeDlg::FindGravityCenter(TColStd_MapOfInteger & theElemsIdMap,
 
   int nbNodes;
 
+  theIDs.reserve( theElemsIdMap.Extent() );
   TColStd_MapIteratorOfMapOfInteger idIter( theElemsIdMap );
   for( ; idIter.More(); idIter.Next() ) {
     const SMDS_MeshElement* anElem = aMesh->FindElement(idIter.Key());
     if ( !anElem )
       continue;
+    theIDs.push_back( idIter.Key() );
 
     gp_XYZ anXYZ(0., 0., 0.);
     SMDS_ElemIteratorPtr nodeIt = anElem->nodesIterator();
@@ -948,7 +757,7 @@ void SMESHGUI_MergeDlg::onDetect()
 
     SMESH::SMESH_IDSource_var src;
     if ( mySubMeshOrGroup->_is_nil() ) src = SMESH::SMESH_IDSource::_duplicate( myMesh );
-    else src = SMESH::SMESH_IDSource::_duplicate( mySubMeshOrGroup );
+    else                               src = SMESH::SMESH_IDSource::_duplicate( mySubMeshOrGroup );
 
     switch (myAction) {
     case MERGE_NODES :
@@ -1034,8 +843,9 @@ void SMESHGUI_MergeDlg::onSelectGroup()
     }
     else {
       std::list< gp_XYZ > aGrCentersXYZ;
-      FindGravityCenter(anIndices, aGrCentersXYZ);
-      myIdPreview->SetElemsData( anIndices, aGrCentersXYZ);
+      std::vector<int>    anIDs;
+      FindGravityCenter(anIndices, anIDs, aGrCentersXYZ);
+      myIdPreview->SetElemsData( anIDs, aGrCentersXYZ );
       myIdPreview->SetPointsLabeled(!anIndices.IsEmpty(), myActor->GetVisibility());
     }
   else
@@ -1087,8 +897,9 @@ void SMESHGUI_MergeDlg::onSelectElementFromGroup()
     }
     else {
       std::list< gp_XYZ > aGrCentersXYZ;
-      FindGravityCenter(anIndices, aGrCentersXYZ);
-      myIdPreview->SetElemsData(anIndices, aGrCentersXYZ);
+      std::vector<int>    anIDs;
+      FindGravityCenter(anIndices, anIDs, aGrCentersXYZ);
+      myIdPreview->SetElemsData(anIDs, aGrCentersXYZ);
       myIdPreview->SetPointsLabeled(!anIndices.IsEmpty(), myActor->GetVisibility());
     }
   else 

@@ -14,14 +14,16 @@ in the toolbar.
 <em>"Mesh Information" button</em></center>
 
 The <b>Mesh Information</b> dialog box provides three tab pages:
-- <b>\ref advanced_mesh_infos_anchor "Base Info"</b> - to show base
-information about the selected mesh object.
+- <b>\ref advanced_mesh_infos_anchor "Base Info"</b> - to show
+  base and quantitative information about the selected mesh object.
 - <b>\ref mesh_element_info_anchor "Element Info"</b> - to show
-detailed information about the selected mesh node or element.
-- <b>\ref mesh_addition_info_anchor "Additional Info"</b> - to show additional information available
-for the selected mesh, sub-mesh or group object.
+  detailed information about the selected mesh nodes or elements.
+- <b>\ref mesh_addition_info_anchor "Additional Info"</b> - to show
+  additional information available for the selected mesh, sub-mesh or
+  group object. 
 - <b>\ref mesh_quality_info_anchor "Quality Info"</b> - to show
-overall quality information about the selected mesh, sub-mesh or group object.
+  overall quality information about the selected mesh, sub-mesh or group
+  object. 
 
 \anchor advanced_mesh_infos_anchor
 <h2>Base Information</h2>

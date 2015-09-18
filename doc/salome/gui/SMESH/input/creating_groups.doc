@@ -23,7 +23,9 @@ elements which will form your group:</li>
 </ul>
 <li><b>Name</b> field allows to enter the name of your new group.</li>
 <li><b>Color</b> - allows to assign to the group a certain color. The
-  chosen color is used to display the elements of the group.</li>
+  chosen color is used to display the elements of the group.<br>
+  Activation of <em>Auto Color</em> item in mesh context menu
+  switches on a random choice of a color for a new group.</li>
 </ul>
 Mesh module distinguishes between the three Group types:
 <b>Standalone Group</b>, <b>Group on Geometry</b> and <b>Group on Filter</b>.

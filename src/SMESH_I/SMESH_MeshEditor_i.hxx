@@ -538,6 +538,12 @@ public:
   CORBA::Short GetPointState(CORBA::Double x, CORBA::Double y, CORBA::Double z)
     throw (SALOME::SALOME_Exception);
 
+  SMESH::CoincidentFreeBorders* FindCoincidentFreeBorders(CORBA::Double tolerance);
+  CORBA::Short SewCoincidentFreeBorders(const SMESH::CoincidentFreeBorders& freeBorders,
+                                        CORBA::Boolean                      createPolygons,
+                                        CORBA::Boolean                      createPolyedrs)
+    throw (SALOME::SALOME_Exception);
+
   SMESH::SMESH_MeshEditor::Sew_Error
   SewFreeBorders(CORBA::Long FirstNodeID1,
                  CORBA::Long SecondNodeID1,
@@ -546,15 +552,13 @@ public:
                  CORBA::Long SecondNodeID2,
                  CORBA::Long LastNodeID2,
                  CORBA::Boolean CreatePolygons,
-                 CORBA::Boolean CreatePolyedrs)
-    throw (SALOME::SALOME_Exception);
+                 CORBA::Boolean CreatePolyedrs) throw (SALOME::SALOME_Exception);
   SMESH::SMESH_MeshEditor::Sew_Error
   SewConformFreeBorders(CORBA::Long FirstNodeID1,
                         CORBA::Long SecondNodeID1,
                         CORBA::Long LastNodeID1,
                         CORBA::Long FirstNodeID2,
-                        CORBA::Long SecondNodeID2)
-    throw (SALOME::SALOME_Exception);
+                        CORBA::Long SecondNodeID2) throw (SALOME::SALOME_Exception);
   SMESH::SMESH_MeshEditor::Sew_Error
   SewBorderToSide(CORBA::Long FirstNodeIDOnFreeBorder,
                   CORBA::Long SecondNodeIDOnFreeBorder,
@@ -562,16 +566,14 @@ public:
                   CORBA::Long FirstNodeIDOnSide,
                   CORBA::Long LastNodeIDOnSide,
                   CORBA::Boolean CreatePolygons,
-                  CORBA::Boolean CreatePolyedrs)
-    throw (SALOME::SALOME_Exception);
+                  CORBA::Boolean CreatePolyedrs) throw (SALOME::SALOME_Exception);
   SMESH::SMESH_MeshEditor::Sew_Error
   SewSideElements(const SMESH::long_array& IDsOfSide1Elements,
                   const SMESH::long_array& IDsOfSide2Elements,
                   CORBA::Long NodeID1OfSide1ToMerge,
                   CORBA::Long NodeID1OfSide2ToMerge,
                   CORBA::Long NodeID2OfSide1ToMerge,
-                  CORBA::Long NodeID2OfSide2ToMerge)
-    throw (SALOME::SALOME_Exception);
+                  CORBA::Long NodeID2OfSide2ToMerge) throw (SALOME::SALOME_Exception);
 
   /*!
    * Set new nodes for given element.

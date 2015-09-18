@@ -4573,6 +4573,182 @@ static SMESH::SMESH_MeshEditor::Sew_Error convError( const::SMESH_MeshEditor::Se
 }
 
 //=======================================================================
+/*!
+ * Returns groups of FreeBorder's coincident within the given tolerance.
+ * If the tolerance <= 0.0 then one tenth of an average size of elements adjacent
+ * to free borders being compared is used.
+ */
+//=======================================================================
+
+SMESH::CoincidentFreeBorders*
+SMESH_MeshEditor_i::FindCoincidentFreeBorders(CORBA::Double tolerance)
+{
+  SMESH::CoincidentFreeBorders_var aCFB = new SMESH::CoincidentFreeBorders;
+
+  SMESH_TRY;
+
+  SMESH_MeshAlgos::CoincidentFreeBorders cfb;
+  SMESH_MeshAlgos::FindCoincidentFreeBorders( *getMeshDS(), tolerance, cfb );
+
+  // copy free borders
+  aCFB->borders.length( cfb._borders.size() );
+  for ( size_t i = 0; i < cfb._borders.size(); ++i )
+  {
+    SMESH_MeshAlgos::TFreeBorder& nodes = cfb._borders[i];
+    SMESH::FreeBorder&             aBRD = aCFB->borders[i];
+    aBRD.nodeIDs.length( nodes.size() );
+    for ( size_t iN = 0; iN < nodes.size(); ++iN )
+      aBRD.nodeIDs[ iN ] = nodes[ iN ]->GetID();
+  }
+
+  // copy coincident parts
+  aCFB->coincidentGroups.length( cfb._coincidentGroups.size() );
+  for ( size_t i = 0; i < cfb._coincidentGroups.size(); ++i )
+  {
+    SMESH_MeshAlgos::TCoincidentGroup& grp = cfb._coincidentGroups[i];
+    SMESH::FreeBordersGroup&          aGRP = aCFB->coincidentGroups[i];
+    aGRP.length( grp.size() );
+    for ( size_t iP = 0; iP < grp.size(); ++iP )
+    {
+      SMESH_MeshAlgos::TFreeBorderPart& part = grp[ iP ];
+      SMESH::FreeBorderPart&           aPART = aGRP[ iP ];
+      aPART.border   = part._border;
+      aPART.node1    = part._node1;
+      aPART.node2    = part._node2;
+      aPART.nodeLast = part._nodeLast;
+    }
+  }
+  SMESH_CATCH( SMESH::doNothing );
+
+  TPythonDump() << "CoincidentFreeBorders = "
+                << this << ".FindCoincidentFreeBorders( " << tolerance << " )";
+
+  return aCFB._retn();
+}
+
+//=======================================================================
+/*!
+ * Sew FreeBorder's of each group
+ */
+//=======================================================================
+
+CORBA::Short SMESH_MeshEditor_i::
+SewCoincidentFreeBorders(const SMESH::CoincidentFreeBorders& freeBorders,
+                         CORBA::Boolean                      createPolygons,
+                         CORBA::Boolean                      createPolyhedra)
+  throw (SALOME::SALOME_Exception)
+{
+  CORBA::Short nbSewed = 0;
+
+  SMESH_MeshAlgos::TFreeBorderVec groups;
+  SMESH_MeshAlgos::TFreeBorder    borderNodes; // triples on nodes for every FreeBorderPart
+
+  // check the input
+  for ( CORBA::ULong i = 0; i < freeBorders.coincidentGroups.length(); ++i )
+  {
+    const SMESH::FreeBordersGroup& aGRP = freeBorders.coincidentGroups[ i ];
+    for ( CORBA::ULong iP = 0; iP < aGRP.length(); ++iP )
+    {
+      const SMESH::FreeBorderPart& aPART = aGRP[ iP ];
+      if ( aPART.border < 0 || aPART.border >= freeBorders.borders.length() )
+        THROW_SALOME_CORBA_EXCEPTION("Invalid FreeBorderPart::border index", SALOME::BAD_PARAM);
+
+      const SMESH::FreeBorder& aBRD = freeBorders.borders[ aPART.border ];
+
+      if ( aPART.node1 < 0 || aPART.node1 > aBRD.nodeIDs.length() )
+        THROW_SALOME_CORBA_EXCEPTION("Invalid FreeBorderPart::node1", SALOME::BAD_PARAM);
+      if ( aPART.node2 < 0 || aPART.node2 > aBRD.nodeIDs.length() )
+        THROW_SALOME_CORBA_EXCEPTION("Invalid FreeBorderPart::node2", SALOME::BAD_PARAM);
+      if ( aPART.nodeLast < 0 || aPART.nodeLast > aBRD.nodeIDs.length() )
+        THROW_SALOME_CORBA_EXCEPTION("Invalid FreeBorderPart::nodeLast", SALOME::BAD_PARAM);
+
+      // do not keep these nodes for further sewing as nodes can be removed by the sewing
+      const SMDS_MeshNode* n1 = getMeshDS()->FindNode( aBRD.nodeIDs[ aPART.node1    ]);
+      const SMDS_MeshNode* n2 = getMeshDS()->FindNode( aBRD.nodeIDs[ aPART.node2    ]);
+      const SMDS_MeshNode* n3 = getMeshDS()->FindNode( aBRD.nodeIDs[ aPART.nodeLast ]);
+      if ( !n1)
+        THROW_SALOME_CORBA_EXCEPTION("Nonexistent FreeBorderPart::node1", SALOME::BAD_PARAM);
+      if ( !n2 )
+        THROW_SALOME_CORBA_EXCEPTION("Nonexistent FreeBorderPart::node2", SALOME::BAD_PARAM);
+      if ( !n3 )
+        THROW_SALOME_CORBA_EXCEPTION("Nonexistent FreeBorderPart::nodeLast", SALOME::BAD_PARAM);
+    }
+  }
+
+  //TIDSortedElemSet dummy;
+
+  ::SMESH_MeshEditor::Sew_Error res, ok = ::SMESH_MeshEditor::SEW_OK;
+  for ( CORBA::ULong i = 0; i < freeBorders.coincidentGroups.length(); ++i )
+  {
+    const SMESH::FreeBordersGroup& aGRP = freeBorders.coincidentGroups[ i ];
+    if ( aGRP.length() < 2 )
+      continue;
+
+    //int n1bord2, n2bord2;
+
+    bool groupSewed = false;
+    for ( CORBA::ULong iP = 1; iP < aGRP.length(); ++iP )
+    {
+      const SMESH::FreeBorderPart& aPART_0 = aGRP[ 0 ];
+      const SMESH::FreeBorder&      aBRD_0 = freeBorders.borders[ aPART_0.border ];
+
+      const SMDS_MeshNode* n0 = getMeshDS()->FindNode( aBRD_0.nodeIDs[ aPART_0.node1    ]);
+      const SMDS_MeshNode* n1 = getMeshDS()->FindNode( aBRD_0.nodeIDs[ aPART_0.node2    ]);
+      const SMDS_MeshNode* n2 = getMeshDS()->FindNode( aBRD_0.nodeIDs[ aPART_0.nodeLast ]);
+
+      const SMESH::FreeBorderPart& aPART = aGRP[ iP ];
+      const SMESH::FreeBorder&      aBRD = freeBorders.borders[ aPART.border ];
+
+      const SMDS_MeshNode* n3 = getMeshDS()->FindNode( aBRD.nodeIDs[ aPART.node1    ]);
+      const SMDS_MeshNode* n4 = getMeshDS()->FindNode( aBRD.nodeIDs[ aPART.node2    ]);
+      const SMDS_MeshNode* n5 = getMeshDS()->FindNode( aBRD.nodeIDs[ aPART.nodeLast ]);
+
+      if ( !n0 || !n1 || !n2 || !n3 || !n4 || !n5 )
+        continue;
+
+      // if ( iP == 1 )
+      // {
+      //   n1bord2 = aBRD.nodeIDs[ aPART.node1 ];
+      //   n2bord2 = aBRD.nodeIDs[ aPART.node2 ];
+      // }
+      // else if ( !SMESH_MeshAlgos::FindFaceInSet( n0, n1, dummy, dummy ))
+      // {
+      //   // a face including n0 and n1 was split;
+      //   // find a new face starting at n0 in order to get a new n1
+      //   const SMDS_MeshNode* n1test = getMeshDS()->FindNode( n1bord2 );
+      //   const SMDS_MeshNode* n2test = getMeshDS()->FindNode( n2bord2 );
+      //   if      ( n1test && SMESH_MeshAlgos::FindFaceInSet( n0, n1test, dummy, dummy ))
+      //     n1 = n1test;
+      //   else if ( n2test && SMESH_MeshAlgos::FindFaceInSet( n0, n2test, dummy, dummy ))
+      //     n1 = n2test;
+      //   // else continue; ??????
+      // }
+
+      if ( iP > 1 )
+      {
+        n1 = n2; // at border-to-side sewing only last side node (n1) is needed
+        n2 = 0;  //  and n2 is not used
+      }
+
+      // 1st border moves to 2nd
+      res = getEditor().SewFreeBorder( n3, n4, n5 ,// 1st
+                                       n0 ,n1 ,n2 ,// 2nd
+                                       /*2ndIsFreeBorder=*/ iP == 1,
+                                       createPolygons, createPolyhedra);
+      groupSewed = ( res == ok );
+    }
+    nbSewed += groupSewed;
+  }
+
+  TPythonDump() << "nbSewed = " << this << ".SewCoincidentFreeBorders( "
+                << freeBorders     << ", "
+                << createPolygons  << ", "
+                << createPolyhedra << " )";
+
+  return nbSewed;
+}
+
+//=======================================================================
 //function : SewFreeBorders
 //purpose  :
 //=======================================================================
@@ -4621,14 +4797,14 @@ SMESH_MeshEditor_i::SewFreeBorders(CORBA::Long FirstNodeID1,
 
   SMESH::SMESH_MeshEditor::Sew_Error error =
     convError( getEditor().SewFreeBorder (aBorderFirstNode,
-                                       aBorderSecondNode,
-                                       aBorderLastNode,
-                                       aSide2FirstNode,
-                                       aSide2SecondNode,
-                                       aSide2ThirdNode,
-                                       true,
-                                       CreatePolygons,
-                                       CreatePolyedrs) );
+                                          aBorderSecondNode,
+                                          aBorderLastNode,
+                                          aSide2FirstNode,
+                                          aSide2SecondNode,
+                                          aSide2ThirdNode,
+                                          true,
+                                          CreatePolygons,
+                                          CreatePolyedrs) );
 
 
   declareMeshModified( /*isReComputeSafe=*/false );
@@ -4681,13 +4857,13 @@ SMESH_MeshEditor_i::SewConformFreeBorders(CORBA::Long FirstNodeID1,
 
   SMESH::SMESH_MeshEditor::Sew_Error error =
     convError( getEditor().SewFreeBorder (aBorderFirstNode,
-                                       aBorderSecondNode,
-                                       aBorderLastNode,
-                                       aSide2FirstNode,
-                                       aSide2SecondNode,
-                                       aSide2ThirdNode,
-                                       true,
-                                       false, false) );
+                                          aBorderSecondNode,
+                                          aBorderLastNode,
+                                          aSide2FirstNode,
+                                          aSide2SecondNode,
+                                          aSide2ThirdNode,
+                                          true,
+                                          false, false) );
 
   declareMeshModified( /*isReComputeSafe=*/false );
   return error;
@@ -4743,14 +4919,14 @@ SMESH_MeshEditor_i::SewBorderToSide(CORBA::Long FirstNodeIDOnFreeBorder,
 
   SMESH::SMESH_MeshEditor::Sew_Error error =
     convError( getEditor().SewFreeBorder (aBorderFirstNode,
-                                       aBorderSecondNode,
-                                       aBorderLastNode,
-                                       aSide2FirstNode,
-                                       aSide2SecondNode,
-                                       aSide2ThirdNode,
-                                       false,
-                                       CreatePolygons,
-                                       CreatePolyedrs) );
+                                          aBorderSecondNode,
+                                          aBorderLastNode,
+                                          aSide2FirstNode,
+                                          aSide2SecondNode,
+                                          aSide2ThirdNode,
+                                          false,
+                                          CreatePolygons,
+                                          CreatePolyedrs) );
 
   declareMeshModified( /*isReComputeSafe=*/false );
   return error;
