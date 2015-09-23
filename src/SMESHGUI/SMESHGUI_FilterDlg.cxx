@@ -3547,9 +3547,6 @@ void SMESHGUI_FilterDlg::filterSource (const int theType,
       if (aPred->IsSatisfy(*anIter))
         theResIds.append(*anIter);
   }
-  // set ids to the dialog
-  if (myInitSourceWgOnApply || aSourceId == Dialog)
-    setIdsToWg(mySourceWg, theResIds);
 }
 
 //=======================================================================
@@ -3678,6 +3675,10 @@ void SMESHGUI_FilterDlg::selectInViewer (const int theType, const QList<int>& th
   // insert previously stored filter in viewer if necessary
   if (!aFilter.IsNull())
     SMESH::SetFilter(aFilter);
+
+  // set ids to the dialog
+  if (myInitSourceWgOnApply || mySourceGrp->checkedId() == Dialog)
+    setIdsToWg(mySourceWg, theIds);
 }
 
 //=======================================================================
