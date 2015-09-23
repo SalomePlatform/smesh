@@ -329,14 +329,13 @@ SMESHGUI_SewingDlg::SMESHGUI_SewingDlg( SMESHGUI* theModule )
 
   SelectAllCheck = new QCheckBox(tr("SELECT_ALL"), GroupCoincident);
 
-  aCoincidentLayout->addWidget(ListCoincident,    0, 0, 4, 2);
+  aCoincidentLayout->addWidget(ListCoincident,    0, 0, 5, 2);
   aCoincidentLayout->addWidget(DetectButton,      1, 2);
   aCoincidentLayout->addWidget(RemoveGroupButton, 3, 2);
-  aCoincidentLayout->addWidget(SelectAllCheck,    4, 0);
+  aCoincidentLayout->addWidget(SelectAllCheck,    5, 0);
   aCoincidentLayout->setRowMinimumHeight(1, 10);
-  aCoincidentLayout->setRowStretch      (1, 5);
-
-  GroupCoincidentLayout->addWidget( GroupCoincident );
+  aCoincidentLayout->setRowStretch      (4, 5);
+  aCoincidentLayout->setRowStretch      (5, 0);
 
   /*****************************************/
   // Controls for editing the selected group
@@ -391,8 +390,13 @@ SMESHGUI_SewingDlg::SMESHGUI_SewingDlg( SMESHGUI* theModule )
   GroupEditLayout->addWidget(SwapBut,          1, 7);
   GroupEditLayout->addWidget(StepLabel,        1, 8);
   GroupEditLayout->addWidget(StepSpin,         1, 9);
+  GroupEditLayout->setRowStretch( 0, 1 );
 
+  GroupCoincidentLayout->addWidget( GroupCoincident );
   GroupCoincidentLayout->addWidget( GroupEdit );
+  GroupCoincidentLayout->setRowStretch( 0, 10 );
+  GroupCoincidentLayout->setRowStretch( 1, 1 );
+
   aSewFreeBordersLayout->addWidget( GroupCoincidentWidget );
 
   // layout
@@ -579,6 +583,7 @@ void SMESHGUI_SewingDlg::ConstructorsClicked (int constructorId)
   {
     ModeGroup->hide();
     SewFreeBordersWidget->hide();
+    restoreDisplayMode();
   }
 
   bool isNodeSelection = true;
@@ -673,12 +678,11 @@ void SMESHGUI_SewingDlg::ConstructorsClicked (int constructorId)
     LineEdit4->setValidator(new SMESHGUI_IdValidator(this, 1));
   }
 
-  if ( isNodeSelection )
-  {
-    SMESH::SetPointRepresentation(true);
-    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-      aViewWindow->SetSelectionMode(NodeSelection);
-  }
+  if ( myActor )
+    myActor->SetPointRepresentation( isNodeSelection );
+
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode( isNodeSelection ? NodeSelection : ActorSelection );
 
   UpdateButtons();
 
@@ -700,7 +704,8 @@ void SMESHGUI_SewingDlg::setDisplayMode()
 {
   myStoredEntityMode = 0;
   myStoredRepresentation = -1;
-  if ( myActor )
+
+  if ( myActor && AutoSewCheck->isVisible() && !AutoSewCheck->isChecked() )
   {
     myStoredEntityMode     = myActor->GetEntityMode();
     myStoredRepresentation = myActor->GetRepresentation();
@@ -728,6 +733,9 @@ void SMESHGUI_SewingDlg::restoreDisplayMode()
     myStoredEntityMode = 0;
     myStoredRepresentation = -1;
   }
+  for ( size_t i = 0; i < myBorderDisplayers.size(); ++i )
+    if ( myBorderDisplayers[ i ])
+      myBorderDisplayers[ i ]->Hide();
 }
 
 //=======================================================================
@@ -751,6 +759,12 @@ void SMESHGUI_SewingDlg::onModeChange( int mode )
     if ( !SewFreeBordersWidget->isVisible() )
       SewFreeBordersWidget->show();
   }
+  if ( myActor )
+    myActor->SetPointRepresentation( mode == MODE_MANUAL );
+
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetCurrentVtkView() )
+    aViewWindow->SetSelectionMode( mode == MODE_MANUAL ? NodeSelection : ActorSelection );
+
   onAutoSew( AutoSewCheck->isChecked() );
 
   QApplication::instance()->processEvents();
@@ -773,6 +787,12 @@ void SMESHGUI_SewingDlg::onAutoSew( int isAuto )
   SewFreeBordersWidget->hide();
   if ( ModeButGrp->checkedId() == MODE_AUTO )
     SewFreeBordersWidget->show();
+
+  if ( isAuto )
+    restoreDisplayMode();
+  else
+    setDisplayMode();
+  SMESH::RepaintCurrentView();
 
   UpdateButtons();
 
@@ -847,6 +867,7 @@ QString SMESHGUI_SewingDlg::getGroupText(int groupIndex)
 
 void SMESHGUI_SewingDlg::onDetectClicked()
 {
+  myBusy = true;
   ListCoincident->clear();
 
   if ( myMesh->_is_nil() )
@@ -881,6 +902,7 @@ void SMESHGUI_SewingDlg::onDetectClicked()
     item->setData( GROUP_COLOR, groupColor );
     item->setData( GROUP_INDEX, i );
   }
+  myBusy = false;
 
   onSelectGroup();
 
@@ -894,6 +916,7 @@ void SMESHGUI_SewingDlg::onDetectClicked()
 
 void SMESHGUI_SewingDlg::onRemoveGroupClicked()
 {
+  myBusy = true;
   QList<QListWidgetItem*> selItems = ListCoincident->selectedItems();
   for ( int i = 0; i < selItems.count(); ++i )
   {
@@ -901,10 +924,14 @@ void SMESHGUI_SewingDlg::onRemoveGroupClicked()
     item->setSelected( false );
     int groupIndex = item->data( GROUP_INDEX ).toInt();
     delete item;
-    myBorderDisplayers[ groupIndex ]->Hide();
+    if ( myBorderDisplayers[ groupIndex ])
+      myBorderDisplayers[ groupIndex ]->Hide();
     SMESH::FreeBordersGroup& aGRP = myBorders->coincidentGroups[ myCurGroupIndex ];
     aGRP.length( 0 );
   }
+  myBusy = false;
+
+  onSelectGroup();
   UpdateButtons();
 }
 
@@ -917,7 +944,7 @@ void SMESHGUI_SewingDlg::showGroup( QListWidgetItem* item )
 {
   if ( !item ||
        item->listWidget() != ListCoincident ||
-       !haveBorders() )
+       !haveBorders())
     return;
 
   int    groupIndex = item->data( GROUP_INDEX ).toInt();
@@ -925,10 +952,11 @@ void SMESHGUI_SewingDlg::showGroup( QListWidgetItem* item )
   if ( groupIndex >= 0       &&
        groupIndex < myBorders->coincidentGroups.length() )
   {
-    if ( !myBorderDisplayers[ groupIndex ])
+    if ( !myBorderDisplayers[ groupIndex ] && SMESH::GetCurrentVtkView())
       myBorderDisplayers[ groupIndex ] = new BorderGroupDisplayer( myBorders, groupIndex, groupColor, myMesh );
     bool wholeBorders = setCurrentGroup();
-    myBorderDisplayers[ groupIndex ]->ShowGroup( wholeBorders );
+    if ( myBorderDisplayers[ groupIndex ])
+      myBorderDisplayers[ groupIndex ]->ShowGroup( wholeBorders );
   }
 }
 
@@ -1111,7 +1139,8 @@ void SMESHGUI_SewingDlg::onGroupChange( bool partChange )
   for ( int i = 0; i < ListEdit->count(); ++i )
     ListEdit->item( i )->setText( getPartText( aGRP[ i ]));
 
-  myBorderDisplayers[ myCurGroupIndex ]->Update();
+  if ( myBorderDisplayers[ myCurGroupIndex ])
+    myBorderDisplayers[ myCurGroupIndex ]->Update();
 
   if ( partChange )
     onSelectBorderPartFromGroup();
@@ -1410,6 +1439,7 @@ void SMESHGUI_SewingDlg::onCloseView()
 {
   DeactivateActiveDialog();
   mySelector = 0;
+  myActor = 0;
 
   for ( size_t i = 0; i < myBorderDisplayers.size(); ++i )
   {
@@ -1969,11 +1999,11 @@ void SMESHGUI_SewingDlg::BorderGroupDisplayer::Update()
       myPartActors[ i ] = SMESH_Actor::New( obj, "", "", 1 );
       myPartActors[ i ]->SetEdgeColor( myColor.redF(), myColor.greenF(), myColor.blueF() );
       myPartActors[ i ]->SetLineWidth( 3 * SMESH::GetFloat("SMESH:element_width",1));
-      myPartActors[ i ]->SetPickable( false );
       myPartActors[ i ]->SetNodeColor( myColor.redF(), myColor.greenF(), myColor.blueF() );
       myPartActors[ i ]->SetMarkerStd( VTK::MT_POINT, 13 );
+      myPartActors[ i ]->SetPickable ( false );
       myViewWindow->AddActor( myPartActors[ i ]);
-      myViewWindow->Repaint();
+      //myViewWindow->Repaint();
     }
   }
 }

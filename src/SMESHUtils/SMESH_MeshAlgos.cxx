@@ -1210,19 +1210,13 @@ bool SMESH_MeshAlgos::IsOut( const SMDS_MeshElement* element, const gp_Pnt& poin
     {
       gp_Vec edge( xyz[i-1], xyz[i] );
       gp_Vec n1p ( xyz[i-1], point  );
-      // double dist = ( edge ^ n1p ).Magnitude() / edge.Magnitude();
-      // if ( dist > tol )
-      //   continue;
-      // gp_Vec n2p( xyz[i], point );
-      // if ( fabs( edge.Magnitude() - n1p.Magnitude() - n2p.Magnitude()) > tol )
-      //   continue;
       double u = ( edge * n1p ) / edge.SquareMagnitude(); // param [0,1] on the edge
-      if ( u < 0. ) {
+      if ( u <= 0. ) {
         if ( n1p.SquareMagnitude() < tol * tol )
           return false;
         continue;
       }
-      if ( u > 1. ) {
+      if ( u >= 1. ) {
         if ( point.SquareDistance( xyz[i] ) < tol * tol )
           return false;
         continue;

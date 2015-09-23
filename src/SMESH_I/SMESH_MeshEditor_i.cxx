@@ -4641,11 +4641,12 @@ SewCoincidentFreeBorders(const SMESH::CoincidentFreeBorders& freeBorders,
   CORBA::Short nbSewed = 0;
 
   SMESH_MeshAlgos::TFreeBorderVec groups;
-  SMESH_MeshAlgos::TFreeBorder    borderNodes; // triples on nodes for every FreeBorderPart
+  SMESH_MeshAlgos::TFreeBorder    borderNodes; // triples of nodes for every FreeBorderPart
 
-  // check the input
+  // check the input and collect nodes
   for ( CORBA::ULong i = 0; i < freeBorders.coincidentGroups.length(); ++i )
   {
+    borderNodes.clear();
     const SMESH::FreeBordersGroup& aGRP = freeBorders.coincidentGroups[ i ];
     for ( CORBA::ULong iP = 0; iP < aGRP.length(); ++iP )
     {
@@ -4672,71 +4673,70 @@ SewCoincidentFreeBorders(const SMESH::CoincidentFreeBorders& freeBorders,
         THROW_SALOME_CORBA_EXCEPTION("Nonexistent FreeBorderPart::node2", SALOME::BAD_PARAM);
       if ( !n3 )
         THROW_SALOME_CORBA_EXCEPTION("Nonexistent FreeBorderPart::nodeLast", SALOME::BAD_PARAM);
+
+      borderNodes.push_back( n1 );
+      borderNodes.push_back( n2 );
+      borderNodes.push_back( n3 );
+    }
+    groups.push_back( borderNodes );
+  }
+
+  // SewFreeBorder() can merge nodes, thus nodes stored in 'groups' can become dead;
+  // to get nodes that replace other nodes during merge we create 0D elements
+  // on each node and MergeNodes() will replace underlying nodes of 0D elements by
+  // new ones.
+
+  vector< const SMDS_MeshElement* > tmp0Delems;
+  for ( size_t i = 0; i < groups.size(); ++i )
+  {
+    SMESH_MeshAlgos::TFreeBorder& nodes = groups[i];
+    for ( size_t iN = 0; iN < nodes.size(); ++iN )
+    {
+      SMDS_ElemIteratorPtr it0D = nodes[iN]->GetInverseElementIterator(SMDSAbs_0DElement);
+      if ( it0D->more() )
+        tmp0Delems.push_back( it0D->next() );
+      else
+        tmp0Delems.push_back( getMeshDS()->Add0DElement( nodes[iN] ));
     }
   }
 
-  //TIDSortedElemSet dummy;
+  SMESH_TRY;
 
   ::SMESH_MeshEditor::Sew_Error res, ok = ::SMESH_MeshEditor::SEW_OK;
-  for ( CORBA::ULong i = 0; i < freeBorders.coincidentGroups.length(); ++i )
+  int i0D = 0;
+  for ( size_t i = 0; i < groups.size(); ++i )
   {
-    const SMESH::FreeBordersGroup& aGRP = freeBorders.coincidentGroups[ i ];
-    if ( aGRP.length() < 2 )
-      continue;
-
-    //int n1bord2, n2bord2;
-
-    bool groupSewed = false;
-    for ( CORBA::ULong iP = 1; iP < aGRP.length(); ++iP )
+    bool isBordToBord = true;
+    bool   groupSewed = false;
+    SMESH_MeshAlgos::TFreeBorder& nodes = groups[i];
+    for ( size_t iN = 3; iN+2 < nodes.size(); iN += 3 )
     {
-      const SMESH::FreeBorderPart& aPART_0 = aGRP[ 0 ];
-      const SMESH::FreeBorder&      aBRD_0 = freeBorders.borders[ aPART_0.border ];
+      const SMDS_MeshNode* n0 = tmp0Delems[ i0D + 0 ]->GetNode( 0 );
+      const SMDS_MeshNode* n1 = tmp0Delems[ i0D + 1 ]->GetNode( 0 );
+      const SMDS_MeshNode* n2 = tmp0Delems[ i0D + 2 ]->GetNode( 0 );
 
-      const SMDS_MeshNode* n0 = getMeshDS()->FindNode( aBRD_0.nodeIDs[ aPART_0.node1    ]);
-      const SMDS_MeshNode* n1 = getMeshDS()->FindNode( aBRD_0.nodeIDs[ aPART_0.node2    ]);
-      const SMDS_MeshNode* n2 = getMeshDS()->FindNode( aBRD_0.nodeIDs[ aPART_0.nodeLast ]);
-
-      const SMESH::FreeBorderPart& aPART = aGRP[ iP ];
-      const SMESH::FreeBorder&      aBRD = freeBorders.borders[ aPART.border ];
-
-      const SMDS_MeshNode* n3 = getMeshDS()->FindNode( aBRD.nodeIDs[ aPART.node1    ]);
-      const SMDS_MeshNode* n4 = getMeshDS()->FindNode( aBRD.nodeIDs[ aPART.node2    ]);
-      const SMDS_MeshNode* n5 = getMeshDS()->FindNode( aBRD.nodeIDs[ aPART.nodeLast ]);
+      const SMDS_MeshNode* n3 = tmp0Delems[ i0D + 0 + iN ]->GetNode( 0 );
+      const SMDS_MeshNode* n4 = tmp0Delems[ i0D + 1 + iN ]->GetNode( 0 );
+      const SMDS_MeshNode* n5 = tmp0Delems[ i0D + 2 + iN ]->GetNode( 0 );
 
       if ( !n0 || !n1 || !n2 || !n3 || !n4 || !n5 )
         continue;
 
-      // if ( iP == 1 )
-      // {
-      //   n1bord2 = aBRD.nodeIDs[ aPART.node1 ];
-      //   n2bord2 = aBRD.nodeIDs[ aPART.node2 ];
-      // }
-      // else if ( !SMESH_MeshAlgos::FindFaceInSet( n0, n1, dummy, dummy ))
-      // {
-      //   // a face including n0 and n1 was split;
-      //   // find a new face starting at n0 in order to get a new n1
-      //   const SMDS_MeshNode* n1test = getMeshDS()->FindNode( n1bord2 );
-      //   const SMDS_MeshNode* n2test = getMeshDS()->FindNode( n2bord2 );
-      //   if      ( n1test && SMESH_MeshAlgos::FindFaceInSet( n0, n1test, dummy, dummy ))
-      //     n1 = n1test;
-      //   else if ( n2test && SMESH_MeshAlgos::FindFaceInSet( n0, n2test, dummy, dummy ))
-      //     n1 = n2test;
-      //   // else continue; ??????
-      // }
-
-      if ( iP > 1 )
+      if ( !isBordToBord )
       {
         n1 = n2; // at border-to-side sewing only last side node (n1) is needed
         n2 = 0;  //  and n2 is not used
       }
-
       // 1st border moves to 2nd
       res = getEditor().SewFreeBorder( n3, n4, n5 ,// 1st
                                        n0 ,n1 ,n2 ,// 2nd
-                                       /*2ndIsFreeBorder=*/ iP == 1,
+                                       /*2ndIsFreeBorder=*/ isBordToBord,
                                        createPolygons, createPolyhedra);
       groupSewed = ( res == ok );
+
+      isBordToBord = false;
     }
+    i0D += nodes.size();
     nbSewed += groupSewed;
   }
 
@@ -4744,6 +4744,20 @@ SewCoincidentFreeBorders(const SMESH::CoincidentFreeBorders& freeBorders,
                 << freeBorders     << ", "
                 << createPolygons  << ", "
                 << createPolyhedra << " )";
+
+  SMESH_CATCH( SMESH::doNothing );
+
+  declareMeshModified( /*isReComputeSafe=*/false );
+
+  // remove tmp 0D elements
+  SMESH_TRY;
+  set< const SMDS_MeshElement* > removed0D;
+  for ( size_t i = 0; i < tmp0Delems.size(); ++i )
+  {
+    if ( removed0D.insert( tmp0Delems[i] ).second )
+      getMeshDS()->RemoveFreeElement( tmp0Delems[i], /*sm=*/0, /*fromGroups=*/false );
+  }
+  SMESH_CATCH( SMESH::throwCorbaException );
 
   return nbSewed;
 }

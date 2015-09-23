@@ -139,8 +139,12 @@ const SMDS_MeshNode* SMDS_Mesh0DElement::GetNode(const int ind) const
 //function : ChangeNode
 //purpose  :
 //=======================================================================
-bool SMDS_Mesh0DElement::ChangeNode (const SMDS_MeshNode * node)
+bool SMDS_Mesh0DElement::ChangeNodes(const SMDS_MeshNode* nodes[], const int nbNodes)
 {
-  myNode = node;
-  return true;
+  if ( nbNodes == 1 )
+  {
+    myNode = nodes[0];
+    return true;
+  }
+  return false;
 }

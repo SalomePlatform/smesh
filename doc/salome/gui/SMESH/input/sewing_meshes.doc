@@ -20,8 +20,10 @@ and from its sub-menu select the \b Sewing item.</li>
 <li>Check in the dialog box one of the radio buttons corresponding to
 the type of sewing operation you would like to perform.</li>
 <li>Fill the other fields available in the dialog box.</li>
-<li>Click the \b Apply or <b>Apply and Close</b> button to perform the operation of sewing.</li>
+<li>Click the \b Apply or <b>Apply and Close</b> button to perform the
+  operation of sewing.</li>
 </ol>
+
 
 <br>
 \anchor free_borders_anchor
@@ -31,14 +33,69 @@ This functionality allows you to unite free borders of a 2D mesh.
 
 There are two working modes: \a Automatic and \a Manual. In the \b
 Automatic mode, the program finds free borders coincident within a
-certain tolerance and sew them. Optionally it is possible to adjust
-the found free borders before sewing. In the \b Manual mode you are to
-define borders to sew by picking three nodes of each border.
+specified tolerance and sews them. Optionally it is possible to
+visually check and correct is necessary the found free borders before
+sewing. <br>
+In the \b Manual mode you are to define borders to sew by picking
+three nodes of each of two borders.
 
 \image html sewing1.png
+<center>Default mode is \a Automatic</center>
 
-For sewing free borders you should define three points on each border:
-first, second and the last node:
+To use \b Automatic sewing:
+<ul>
+<li>Specify a mesh you want to sew by selecting it or any its part
+  (group or sub-mesh) in the Object Browser or in the VTK Viewer.</li>
+<li>Specify the \b Tolerance within which free borders are considered
+  coincident. At the default zero \b Tolerance, the tolerance used by
+  the search algorithm is defined as one tenth of an average size of
+  elements adjacent to free borders being compared.</li>
+<li>To visually check the coincident free borders found by the
+  algorithm, switch off <b>Auto Sewing</b> check-box. Then controls
+  to adjust groups of coincident free borders will become available in
+  the dialog.</li>
+
+\image html sewing_auto.png
+<center>Controls to adjust groups of coincident free borders</center>
+
+<li>\b Detect button launches the algorithm of search of coincident
+  free borders.</li>
+<li>The found groups of <b>Coincident Free Borders</b> are shown in a
+  list, a group per a line. Each group has its own color which is used
+  to display the borders of the group in the VTK Viewer. A free border
+  within a group is designated by IDs of its first and last nodes within
+  parenthesis. All borders present in the list will be sewn upon \b
+  Apply.</li>
+<li>\b Remove button removes selected groups from the list.</li>
+<li><b>Select All</b> check-box selects all groups in the list.</li>
+<li>When a group is selected, its borders appear in <b>Edit Selected
+    Group</b> list that allows you to change this group.</li>
+<li>
+\image html sort.png
+<em>Set First</em> button moves the selected border to the
+  first position in the group, as a result other borders will be moved
+  to this border during sewing.
+</li><li>
+\image html remove.png
+<em>Remove Border</em> button removes selected borders from the
+  group. It is active if there are more than two borders in the group.
+</li>
+<li>Selection of a border in the list allows to change its first and
+  last nodes whose IDs appear in two fields below the list. \a Arrow
+  buttons near each field move the corresponding end node by
+  number of nodes defined by \b Step field.</li>
+<li>
+\image html swap.png
+<em>Swap</em> button swaps the first and last nodes of a
+  selected border.
+</li>
+</ul>
+
+For sewing free borders manually you should switch the \b Mode to \b
+Manual and define three points on each border: first, second and the
+last node:
+
+\image html sewing_manual.png
 <ul>
 <li>the first node specifies beginning of the border;</li>
 <li>the second node specifies the part of the border which should be

@@ -7371,8 +7371,8 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
   for ( ; eIt != elems.end(); eIt++ )
   {
     const SMDS_MeshElement* elem = *eIt;
-    int nbNodes = elem->NbNodes();
-    int aShapeId = FindShape( elem );
+    const           int  nbNodes = elem->NbNodes();
+    const           int aShapeId = FindShape( elem );
 
     nodeSet.clear();
     curNodes.resize( nbNodes );
@@ -7912,17 +7912,24 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
 
     if ( isOk ) // the non-poly elem remains valid after sticking nodes
     {
-      elemType.Init( elem ).SetID( elem->GetID() );
+      if ( nbNodes != nbUniqueNodes )
+      {
+        elemType.Init( elem ).SetID( elem->GetID() );
 
-      SMESHDS_SubMesh * sm = aShapeId > 0 ? aMesh->MeshElements(aShapeId) : 0;
-      aMesh->RemoveFreeElement(elem, sm, /*fromGroups=*/false);
+        SMESHDS_SubMesh * sm = aShapeId > 0 ? aMesh->MeshElements(aShapeId) : 0;
+        aMesh->RemoveFreeElement(elem, sm, /*fromGroups=*/false);
 
-      uniqueNodes.resize(nbUniqueNodes);
-      SMDS_MeshElement* newElem = this->AddElement( uniqueNodes, elemType );
-      if ( sm && newElem )
-        sm->AddElement( newElem );
-      if ( elem != newElem )
-        ReplaceElemInGroups( elem, newElem, aMesh );
+        uniqueNodes.resize(nbUniqueNodes);
+        SMDS_MeshElement* newElem = this->AddElement( uniqueNodes, elemType );
+        if ( sm && newElem )
+          sm->AddElement( newElem );
+        if ( elem != newElem )
+          ReplaceElemInGroups( elem, newElem, aMesh );
+      }
+      else
+      {
+        aMesh->ChangeElementNodes( elem, & curNodes[0], nbNodes );
+      }
     }
     else {
       // Remove invalid regular element or invalid polygon
@@ -8749,7 +8756,8 @@ SMESH_MeshEditor::SewFreeBorder (const SMDS_MeshNode* theBordFirstNode,
   }
   // find coincident
   TListOfListOfElementsID equalGroups;
-  FindEqualElements( segments, equalGroups );
+  if ( !segments.empty() )
+    FindEqualElements( segments, equalGroups );
   if ( !equalGroups.empty() )
   {
     // remove from segments those that will be removed

@@ -56,7 +56,8 @@ DriverMED_W_SMESHDS_Mesh::DriverMED_W_SMESHDS_Mesh():
   myDoGroupOfVolumes (false),
   myDoGroupOf0DElems(false),
   myDoGroupOfBalls(false),
-  myAutoDimension(true)
+  myAutoDimension(true),
+  myAddODOnVertices(false)
 {}
 
 void DriverMED_W_SMESHDS_Mesh::SetFile(const std::string& theFileName, 
