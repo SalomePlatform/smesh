@@ -231,9 +231,11 @@ SMESHGUI_MeshInfo::SMESHGUI_MeshInfo( QWidget* parent )
   // object
   QLabel* aNameLab     = new QLabel( tr( "NAME_LAB" ), this );
   QLabel* aName        = createField();
+  aName->setObjectName("meshName");
   aName->setMinimumWidth( 150 );
   QLabel* aObjLab      = new QLabel( tr( "OBJECT_LAB" ), this );
   QLabel* aObj         = createField();
+  aObj->setObjectName("meshType");
   aObj->setMinimumWidth( 150 );
   myWidgets[ index++ ] << aNameLab << aName;
   myWidgets[ index++ ] << aObjLab  << aObj;
@@ -242,6 +244,7 @@ SMESHGUI_MeshInfo::SMESHGUI_MeshInfo( QWidget* parent )
   QWidget* aNodesLine  = createLine();
   QLabel*  aNodesLab   = new QLabel( tr( "NODES_LAB" ), this );
   QLabel*  aNodes      = createField();
+  aNodes->setObjectName("nbNodes");
   myWidgets[ index++ ] << aNodesLine;
   myWidgets[ index++ ] << aNodesLab << aNodes;
 
@@ -258,9 +261,13 @@ SMESHGUI_MeshInfo::SMESHGUI_MeshInfo( QWidget* parent )
   // ... Number elements
   QWidget* aNbLine     = createLine(); 
   QLabel*  aNbTotal    = createField();
+  aNbTotal->setObjectName("totalNbElems");
   QLabel*  aNbLin      = createField();
+  aNbLin->setObjectName("totalNbLinearElems");
   QLabel*  aNbQuad     = createField();
+  aNbQuad->setObjectName("totalNbQuadraticElems");
   QLabel*  aNbBiQuad   = createField();
+  aNbBiQuad->setObjectName("totalNbBiQuadraticElems");
   myWidgets[ index++ ] << aNbLine;
   myWidgets[ index++ ] << new QLabel( "", this ) << aNbTotal << aNbLin << aNbQuad << aNbBiQuad;
 
@@ -268,6 +275,8 @@ SMESHGUI_MeshInfo::SMESHGUI_MeshInfo( QWidget* parent )
   QWidget* a0DLine     = createLine();
   QLabel*  a0DLab      = new QLabel( tr( "0D_LAB" ), this );
   QLabel*  a0DTotal    = createField();
+  a0DTotal->setObjectName("nb0D");
+
   myWidgets[ index++ ] << a0DLine;
   myWidgets[ index++ ] << a0DLab << a0DTotal;
 
@@ -275,6 +284,7 @@ SMESHGUI_MeshInfo::SMESHGUI_MeshInfo( QWidget* parent )
   QWidget* aBallLine     = createLine();
   QLabel*  aBallLab      = new QLabel( tr( "BALL_LAB" ), this );
   QLabel*  aBallTotal    = createField();
+  aBallTotal->setObjectName("nbBall");
   myWidgets[ index++ ] << aBallLine;
   myWidgets[ index++ ] << aBallLab << aBallTotal;
 
@@ -282,8 +292,11 @@ SMESHGUI_MeshInfo::SMESHGUI_MeshInfo( QWidget* parent )
   QWidget* a1DLine     = createLine();
   QLabel*  a1DLab      = new QLabel( tr( "1D_LAB" ), this );
   QLabel*  a1DTotal    = createField();
+  a1DTotal->setObjectName("nb1D");
   QLabel*  a1DLin      = createField();
+  a1DLin->setObjectName("nbLinear1D");
   QLabel*  a1DQuad     = createField();
+  a1DQuad->setObjectName("nbQuadratic1D");
   myWidgets[ index++ ] << a1DLine;
   myWidgets[ index++ ] << a1DLab << a1DTotal << a1DLin << a1DQuad;
 
@@ -291,23 +304,38 @@ SMESHGUI_MeshInfo::SMESHGUI_MeshInfo( QWidget* parent )
   QWidget* a2DLine      = createLine();
   QLabel*  a2DLab       = new QLabel( tr( "2D_LAB" ), this );
   QLabel*  a2DTotal     = createField();
+  a2DTotal->setObjectName("nb2D");
   QLabel*  a2DLin       = createField();
+  a2DLin->setObjectName("nbLinear2D");
   QLabel*  a2DQuad      = createField();
+  a2DQuad->setObjectName("nbQuadratic2D");
   QLabel*  a2DBiQuad    = createField();
+  a2DBiQuad->setObjectName("nbBiQuadratic2D");
   QLabel*  a2DTriLab    = new QLabel( tr( "TRIANGLES_LAB" ), this );
   QLabel*  a2DTriTotal  = createField();
+  a2DTriTotal->setObjectName("nbTriangle");
   QLabel*  a2DTriLin    = createField();
+  a2DTriLin->setObjectName("nbLinearTriangle");
   QLabel*  a2DTriQuad   = createField();
+  a2DTriQuad->setObjectName("nbQuadraticTriangle");
   QLabel*  a2DTriBiQuad = createField();
+    a2DTriBiQuad->setObjectName("nbBiQuadraticTriangle");
   QLabel*  a2DQuaLab    = new QLabel( tr( "QUADRANGLES_LAB" ), this );
   QLabel*  a2DQuaTotal  = createField();
+  a2DQuaTotal->setObjectName("nbQuadrangle");
   QLabel*  a2DQuaLin    = createField();
+  a2DQuaLin->setObjectName("nbLinearQuadrangle");
   QLabel*  a2DQuaQuad   = createField();
+  a2DQuaQuad->setObjectName("nbQuadraticQuadrangle");
   QLabel*  a2DQuaBiQuad = createField();
+  a2DQuaBiQuad->setObjectName("nbBiQuadraticQuadrangle");
   QLabel*  a2DPolLab    = new QLabel( tr( "POLYGONS_LAB" ), this );
   QLabel*  a2DPolTotal  = createField();
+  a2DPolTotal->setObjectName("nbPolygon");
   QLabel*  a2DPolLin    = createField();
+  a2DPolLin->setObjectName("nbLinearPolygon");
   QLabel*  a2DPolQuad   = createField();
+  a2DPolQuad->setObjectName("nbQuadraticPolygon");
   myWidgets[ index++ ] << a2DLine;
   myWidgets[ index++ ] << a2DLab    << a2DTotal    << a2DLin    << a2DQuad    << a2DBiQuad;
   myWidgets[ index++ ] << a2DTriLab << a2DTriTotal << a2DTriLin << a2DTriQuad << a2DTriBiQuad;
@@ -318,30 +346,49 @@ SMESHGUI_MeshInfo::SMESHGUI_MeshInfo( QWidget* parent )
   QWidget* a3DLine      = createLine();
   QLabel*  a3DLab       = new QLabel( tr( "3D_LAB" ), this );
   QLabel*  a3DTotal     = createField();
+  a3DTotal->setObjectName("nb3D");
   QLabel*  a3DLin       = createField();
+  a3DLin->setObjectName("nbLinear3D");
   QLabel*  a3DQuad      = createField();
+  a3DQuad->setObjectName("nbQuadratic3D");
   QLabel*  a3DBiQuad    = createField();
+  a3DBiQuad->setObjectName("nbBiQuadratic3D");
   QLabel*  a3DTetLab    = new QLabel( tr( "TETRAHEDRONS_LAB" ), this );
   QLabel*  a3DTetTotal  = createField();
+  a3DTetTotal->setObjectName("nbTetrahedron");
   QLabel*  a3DTetLin    = createField();
+  a3DTetLin->setObjectName("nbLinearTetrahedron");
   QLabel*  a3DTetQuad   = createField();
+  a3DTetQuad->setObjectName("nbQudraticTetrahedron");
   QLabel*  a3DHexLab    = new QLabel( tr( "HEXAHEDONRS_LAB" ), this );
   QLabel*  a3DHexTotal  = createField();
+  a3DHexTotal->setObjectName("nbHexahedron");
   QLabel*  a3DHexLin    = createField();
+  a3DHexLin->setObjectName("nbLinearHexahedron");
   QLabel*  a3DHexQuad   = createField();
+  a3DHexQuad->setObjectName("nbQuadraticHexahedron");
   QLabel*  a3DHexBiQuad = createField();
+  a3DHexBiQuad->setObjectName("nbBiQuadraticHexahedron");
   QLabel*  a3DPyrLab    = new QLabel( tr( "PYRAMIDS_LAB" ), this );
   QLabel*  a3DPyrTotal  = createField();
+  a3DPyrTotal->setObjectName("nbPyramid");
   QLabel*  a3DPyrLin    = createField();
+  a3DPyrLin->setObjectName("nbLinearPyramid");
   QLabel*  a3DPyrQuad   = createField();
+  a3DPyrQuad->setObjectName("nbQuadraticPyramid");
   QLabel*  a3DPriLab    = new QLabel( tr( "PRISMS_LAB" ), this );
   QLabel*  a3DPriTotal  = createField();
+  a3DPriTotal->setObjectName("nbPrism");
   QLabel*  a3DPriLin    = createField();
+  a3DPriLin->setObjectName("nbLinearPrism");
   QLabel*  a3DPriQuad   = createField();
+  a3DPriQuad->setObjectName("nbQuadraticPrism");
   QLabel*  a3DHexPriLab   = new QLabel( tr( "HEX_PRISMS_LAB" ), this );
   QLabel*  a3DHexPriTotal = createField();
+  a3DHexPriTotal->setObjectName("nbHexagonalPrism");
   QLabel*  a3DPolLab    = new QLabel( tr( "POLYHEDRONS_LAB" ), this );
   QLabel*  a3DPolTotal  = createField();
+  a3DPolTotal->setObjectName("nbPolyhedron");
   myWidgets[ index++ ] << a3DLine;
   myWidgets[ index++ ] << a3DLab    << a3DTotal    << a3DLin    << a3DQuad    << a3DBiQuad;
   myWidgets[ index++ ] << a3DTetLab << a3DTetTotal << a3DTetLin << a3DTetQuad;
