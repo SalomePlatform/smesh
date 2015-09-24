@@ -527,9 +527,11 @@ void SMESHGUI_RemoveElementsDlg::setFilters()
     myFilterDlg = new SMESHGUI_FilterDlg( mySMESHGUI, SMESH::ALL );
 
   QList<int> types;
-  if ( myMesh->NbEdges()   ) types << SMESH::EDGE;
-  if ( myMesh->NbFaces()   ) types << SMESH::FACE;
-  if ( myMesh->NbVolumes() ) types << SMESH::VOLUME;
+  if ( myMesh->NbEdges()     ) types << SMESH::EDGE;
+  if ( myMesh->NbFaces()     ) types << SMESH::FACE;
+  if ( myMesh->NbVolumes()   ) types << SMESH::VOLUME;
+  if ( myMesh->NbBalls()     ) types << SMESH::BALL;
+  if ( myMesh->Nb0DElements()) types << SMESH::ELEM0D;
 
   myFilterDlg->Init( types );
   myFilterDlg->SetSelection();

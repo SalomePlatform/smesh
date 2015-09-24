@@ -322,11 +322,11 @@ SMDS_BallElement* SMDS_Mesh::AddBallWithID(const SMDS_MeshNode * n, double diame
   SMDS_BallElement *ball = myBallPool->getNew();
   ball->init(n->getVtkId(), diameter, this);
   if (!this->registerElement(ID,ball))
-    {
-      this->myGrid->GetCellTypesArray()->SetValue(ball->getVtkId(), VTK_EMPTY_CELL);
-      myBallPool->destroy(ball);
-      return 0;
-    }
+  {
+    this->myGrid->GetCellTypesArray()->SetValue(ball->getVtkId(), VTK_EMPTY_CELL);
+    myBallPool->destroy(ball);
+    return 0;
+  }
   adjustmyCellsCapacity(ID);
   myCells[ID] = ball;
   myInfo.myNbBalls++;

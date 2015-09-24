@@ -47,7 +47,7 @@
 #include <TopoDS_Wire.hxx>
 
 #ifdef _DEBUG_
-//#define _MYDEBUG_
+#define _MYDEBUG_
 #include "SMESH_File.hxx"
 #include "SMESH_Comment.hxx"
 #endif
@@ -381,10 +381,10 @@ namespace
     for ( size_t i = 0; i < bndSegs.size(); ++i )
     {
       if ( !bndSegs[i]._edge )
-        text << "# " << i << " NULL edge";
+        text << "# " << i << " NULL edge\n";
       else if ( !bndSegs[i]._edge->vertex0() ||
                 !bndSegs[i]._edge->vertex1() )
-        text << "# " << i << " INFINITE edge";
+        text << "# " << i << " INFINITE edge\n";
       else if ( addedEdges.insert( bndSegs[i]._edge ).second &&
                 addedEdges.insert( bndSegs[i]._edge->twin() ).second )
       {
@@ -407,7 +407,7 @@ namespace
     }
     text << "\n";
     file.write( text.c_str(), text.size() );
-    cout << "Write " << fileName << endl;
+    cout << "execfile( '" << fileName << "')" << endl;
 #endif
   }
 

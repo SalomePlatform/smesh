@@ -771,9 +771,14 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishGroup (SALOMEDS::Study_ptr    theStudy
       }
       else if ( SMESH::DownCast< SMESH_Group_i* > ( theGroup ))
       {
-        SMESH::array_of_ElementType_var allElemTypes = theMesh->GetTypes();
-        for ( size_t i =0; i < allElemTypes->length() && isEmpty; ++i )
-          isEmpty = ( allElemTypes[i] != theGroup->GetType() );
+        if ( theGroup->GetType() == SMESH::NODE )
+          isEmpty = ( theMesh->NbNodes() == 0 );
+        else
+        {
+          SMESH::array_of_ElementType_var allElemTypes = theMesh->GetTypes();
+          for ( size_t i =0; i < allElemTypes->length() && isEmpty; ++i )
+            isEmpty = ( allElemTypes[i] != theGroup->GetType() );
+        }
       }
       aGroupSO = publish (theStudy, theGroup, aRootSO, 0, pm[isEmpty].c_str() );
     }

@@ -3363,7 +3363,7 @@ bool SMESHGUI_FilterDlg::onApply()
     insertFilterInViewer();
 
     if (!myFilter[ aCurrType ]->GetPredicate()->_is_nil()) {
-      // 
+      //
       bool toFilter = (( SMESH::FindActorByObject( myMesh )) ||
                        ( myInitSourceWgOnApply && mySourceWg ) ||
                        ( mySourceGrp->checkedId() == Dialog && mySourceWg ));
@@ -3372,6 +3372,9 @@ bool SMESHGUI_FilterDlg::onApply()
         filterSource(aCurrType, aResultIds);
         // select in viewer
         selectInViewer(aCurrType, aResultIds);
+        // set ids to the dialog
+        if ( myInitSourceWgOnApply || mySourceGrp->checkedId() == Dialog )
+          setIdsToWg(mySourceWg, aResultIds);
       }
     }
 
@@ -3675,10 +3678,6 @@ void SMESHGUI_FilterDlg::selectInViewer (const int theType, const QList<int>& th
   // insert previously stored filter in viewer if necessary
   if (!aFilter.IsNull())
     SMESH::SetFilter(aFilter);
-
-  // set ids to the dialog
-  if (myInitSourceWgOnApply || mySourceGrp->checkedId() == Dialog)
-    setIdsToWg(mySourceWg, theIds);
 }
 
 //=======================================================================

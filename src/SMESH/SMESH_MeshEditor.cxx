@@ -7912,7 +7912,8 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
 
     if ( isOk ) // the non-poly elem remains valid after sticking nodes
     {
-      if ( nbNodes != nbUniqueNodes )
+      if ( nbNodes != nbUniqueNodes ||
+           !aMesh->ChangeElementNodes( elem, & curNodes[0], nbNodes ))
       {
         elemType.Init( elem ).SetID( elem->GetID() );
 
@@ -7925,10 +7926,6 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
           sm->AddElement( newElem );
         if ( elem != newElem )
           ReplaceElemInGroups( elem, newElem, aMesh );
-      }
-      else
-      {
-        aMesh->ChangeElementNodes( elem, & curNodes[0], nbNodes );
       }
     }
     else {

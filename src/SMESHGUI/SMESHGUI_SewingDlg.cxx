@@ -44,6 +44,7 @@
 // SALOME GUI includes
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
+#include <SALOMEDSClient_Study.hxx>
 #include <SALOME_ListIO.hxx>
 #include <SUIT_Desktop.h>
 #include <SUIT_MessageBox.h>
@@ -282,7 +283,7 @@ SMESHGUI_SewingDlg::SMESHGUI_SewingDlg( SMESHGUI* theModule )
   AutoSewCheck->setChecked( true );
 
   // mesh
-  QGroupBox* GroupMesh = new QGroupBox(tr("SMESH_SELECT_WHOLE_MESH"), SewFreeBordersWidget);
+  QGroupBox* GroupMesh = new QGroupBox(tr("SMESH_MESH"), SewFreeBordersWidget);
   QHBoxLayout* GroupMeshLayout = new QHBoxLayout(GroupMesh);
   GroupMeshLayout->setSpacing(SPACING);
   GroupMeshLayout->setMargin(MARGIN);
@@ -453,8 +454,9 @@ SMESHGUI_SewingDlg::SMESHGUI_SewingDlg( SMESHGUI* theModule )
   myHelpFileName = "sewing_meshes_page.html";
 
   myActor = 0;
-  setDisplayMode();
+  myStoredEntityMode = 0;
 
+  setDisplayMode();
   Init();
 
   /* signals and slots connections */
@@ -571,6 +573,8 @@ void SMESHGUI_SewingDlg::ConstructorsClicked (int constructorId)
     if (CheckBoxPolyedrs->isVisible())
       CheckBoxPolyedrs->hide();
   }
+
+  CheckBoxMerge->setVisible ( constructorId == 3 );
 
   if (( !SubGroup1->isVisible() ) &&
       ( constructorId != 0 || ModeButGrp->checkedId() == MODE_MANUAL ))
@@ -702,6 +706,8 @@ void SMESHGUI_SewingDlg::ConstructorsClicked (int constructorId)
 
 void SMESHGUI_SewingDlg::setDisplayMode()
 {
+  if ( myStoredEntityMode )
+    return;
   myStoredEntityMode = 0;
   myStoredRepresentation = -1;
 
@@ -1640,7 +1646,8 @@ void SMESHGUI_SewingDlg::SelectionIntoArgument (bool isSelectionChanged)
 
   if ( myEditCurrentArgument == LineEditMesh )
   {
-    LineEditMesh->setText( IO->getName() );
+    if ( _PTR(SObject) meshSO = SMESH::FindSObject( myMesh ))
+      LineEditMesh->setText( meshSO->GetName().c_str() );
     ListCoincident->clear();
     if ( AutoSewCheck->isChecked() )
     {

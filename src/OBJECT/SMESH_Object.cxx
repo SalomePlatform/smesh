@@ -570,7 +570,7 @@ vtkUnstructuredGrid* SMESH_VisualObjDef::GetUnstructuredGrid()
   if ( !myLocalGrid && !GetMesh()->isCompacted() )
   {
     GetMesh()->compactMesh();
-        updateEntitiesFlags();
+    updateEntitiesFlags();
     vtkUnstructuredGrid *theGrid = GetMesh()->getGrid();
     myGrid->ShallowCopy(theGrid);
   }

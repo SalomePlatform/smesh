@@ -5120,8 +5120,12 @@ Please select a group and try again</translation>
         <translation>Detect</translation>
     </message>
     <message>
-        <source>EDIT_SELECTED_GROUP</source>
-        <translation>Edit selected group</translation>
+        <source>EDIT_SELECTED_NODE_GROUP</source>
+        <translation>Edit selected group of coincident nodes</translation>
+    </message>
+    <message>
+        <source>EDIT_SELECTED_ELEM_GROUP</source>
+        <translation>Edit selected group of coincident elements</translation>
     </message>
     <message>
         <source>SELECT_ALL</source>
@@ -5137,7 +5141,7 @@ Please select a group and try again</translation>
     </message>
     <message>
         <source>EXCLUDE_GROUPS</source>
-        <translation>Exclude Groups</translation>
+        <translation>Exclude groups from detection</translation>
     </message>
     <message>
         <source>SEPARATE_CORNERS_AND_MEDIUM</source>
@@ -5145,11 +5149,11 @@ Please select a group and try again</translation>
     </message>
     <message>
         <source>KEEP_NODES</source>
-        <translation>Nodes to keep</translation>
+        <translation>Nodes to keep during the merge</translation>
     </message>
     <message>
         <source>GROUP_SUBMESH</source>
-        <translation>Groups and Sub-meshes</translation>
+        <translation>Groups and sub-meshes</translation>
     </message>
     <message>
         <source>SELECT</source>

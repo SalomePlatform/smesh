@@ -115,8 +115,6 @@ private:
   int                       myTypeId; // manual(1) or automatic(0)
 
   // Widgets
-  QGroupBox*                GroupConstructors;
-  QRadioButton*             RadioButton;
 
   QGroupBox*                GroupButtons;
   QPushButton*              buttonOk;
@@ -129,11 +127,12 @@ private:
   QPushButton*              SelectMeshButton;
   QLineEdit*                LineEditMesh;
 
-  QGroupBox*                GroupCoincident;
-  QWidget*                  GroupCoincidentWidget;
-  QLabel*                   TextLabelTolerance;
+  QWidget*                  NodeSpecWidget;
   SMESHGUI_SpinBox*         SpinBoxTolerance;
   QCheckBox*                SeparateCornersAndMedium;
+
+  QGroupBox*                GroupCoincident;
+  //QWidget*                  GroupCoincidentWidget;
   QPushButton*              DetectButton;
   QListWidget*              ListCoincident;
   QPushButton*              AddGroupButton;
@@ -150,6 +149,7 @@ private:
   QGroupBox*                GroupExclude;
   QListWidget*              ListExclude;
 
+  QGroupBox*                GroupKeep;
   QButtonGroup*             KeepFromButGroup;
   QPushButton*              SelectKeepNodesButton;
   QPushButton*              AddKeepNodesButton;
