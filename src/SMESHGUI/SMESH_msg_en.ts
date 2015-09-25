@@ -5311,7 +5311,7 @@ Please select valid object and try again</translation>
     </message>
     <message>
         <source>SHAPE_IS_NOT_A_CYLINDER</source>
-        <translation>&quot;%1&quot; is not a cylinderical face
+        <translation>&quot;%1&quot; is not a cylindrical face
 Please select a cylindrical face and try again</translation>
     </message>
     <message>
