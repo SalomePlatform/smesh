@@ -8751,6 +8751,16 @@ SMESH_MeshEditor::SewFreeBorder (const SMDS_MeshNode* theBordFirstNode,
     else
       newFaces.Append( myLastCreatedElems(i) );
   }
+  // get segments adjacent to merged nodes
+  TListOfListOfNodes::iterator groupIt = nodeGroupsToMerge.begin();
+  for ( ; groupIt != nodeGroupsToMerge.end(); groupIt++ )
+  {
+    const list<const SMDS_MeshNode*>& nodes = *groupIt;
+    SMDS_ElemIteratorPtr segIt = nodes.front()->GetInverseElementIterator( SMDSAbs_Edge );
+    while ( segIt->more() )
+      segments.insert( segIt->next() );
+  }
+
   // find coincident
   TListOfListOfElementsID equalGroups;
   if ( !segments.empty() )

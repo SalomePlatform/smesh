@@ -2912,8 +2912,8 @@ void SMESHGUI_MeshInfoDlg::showInfo( const Handle(SALOME_InteractiveObject)& IO 
 {
   SMESH::SMESH_IDSource_var obj = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO );
   if ( !CORBA::is_nil( obj ) ) {
-    myBaseInfo->showInfo( obj );
-    myAddInfo->showInfo( obj );
+    myAddInfo->showInfo( obj );  // nb of nodes in a group can be computed by myAddInfo,
+    myBaseInfo->showInfo( obj ); // and it will be used by myBaseInfo (IPAL52871)
     myCtrlInfo->showInfo( obj );
 
     myActor = SMESH::FindActorByEntry( IO->getEntry() );

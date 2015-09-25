@@ -298,11 +298,12 @@ void SMESHGUI_Add0DElemsOnAllNodesOp::selectionDone()
   myDlg->myGroupListCmBox->clear();
   myDlg->myGroupListCmBox->addItem( QString() );
   if ( !myIO.IsNull() && myIO->hasEntry()) {
-    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-    _PTR(SObject) meshSO = aStudy->FindObjectID( myIO->getEntry() );
+    SMESH::SMESH_Mesh_var mesh = SMESH::GetMeshByIO( myIO );
+    _PTR(SObject)       meshSO = SMESH::ObjectToSObject( mesh );
     _PTR(SObject) group0DRoot;
-    if ( meshSO->FindSubObject( SMESH::Tag_0DElementsGroups, group0DRoot ))
+    if ( meshSO && meshSO->FindSubObject( SMESH::Tag_0DElementsGroups, group0DRoot ))
     {
+      _PTR(Study)              aStudy = SMESH::GetActiveStudyDocument();
       _PTR(ChildIterator) group0DIter = aStudy->NewChildIterator( group0DRoot );
       for ( ; group0DIter->More(); group0DIter->Next() )
       {
