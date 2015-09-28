@@ -792,6 +792,10 @@
       <translation>多角形</translation>
     </message>
     <message>
+      <source>MEN_QUADRATIC_POLYGON</source>
+      <translation>2次ポリゴン</translation>
+    </message>
+    <message>
       <source>MEN_POLYHEDRON</source>
       <translation>多面体</translation>
     </message>
@@ -1084,6 +1088,18 @@
       <translation>四面体を爆発します。</translation>
     </message>
     <message>
+      <source>MEN_SPLIT_BIQUAD</source>
+      <translation>線形に2次分割</translation>
+    </message>
+    <message>
+      <source>TOP_SPLIT_BIQUAD</source>
+      <translation>線形に2次分割</translation>
+    </message>
+    <message>
+      <source>STB_SPLIT_BIQUAD</source>
+      <translation>線形に2次分割</translation>
+    </message>
+    <message>
       <source>MESHERS_FILE_CANT_OPEN</source>
       <translation>リソース ファイルを開くことができません。</translation>
     </message>
@@ -1124,8 +1140,12 @@
       <translation>グループ名は表示されません。作成または既存のグループを選択して新しいグループの名前を指定します。</translation>
     </message>
     <message>
-      <source>MESH_STANDALONE_GRP_CHOSEN</source>
-      <translation>ジオメトリにリンクされているグループが選択されている： %1。スタンドアロン アレイに変換しますか。</translation>
+      <source>MESH_GEOM_GRP_CHOSEN</source>
+      <translation>ジオメトリグループは次のように選択されています: %1　それをスタンドアロングループに変換したいですか？</translation>
+    </message>
+    <message>
+      <source>MESH_FILTER_GRP_CHOSEN</source>
+      <translation>フィルタ上のグループは次のように選択されています: %1　それをスタンドアロングループに変換したいですか？</translation>
     </message>
     <message>
       <source>NODE_ID</source>
@@ -1218,6 +1238,14 @@
     <message>
       <source>SMESH_ADD_POLYGON_TITLE</source>
       <translation>多角形を追加します。</translation>
+    </message>
+    <message>
+      <source>SMESH_ADD_QUADRATIC_POLYGON</source>
+      <translation>2次ポリゴンの追加</translation>
+    </message>
+    <message>
+      <source>SMESH_ADD_QUADRATIC_POLYGON_TITLE</source>
+      <translation>2次ポリゴンの追加</translation>
     </message>
     <message>
       <source>SMESH_ADD_PENTA</source>
@@ -3188,6 +3216,10 @@
       <translation>多角形</translation>
     </message>
     <message>
+      <source>STB_QUADRATIC_POLYGON</source>
+      <translation>2次ポリゴン</translation>
+    </message>
+    <message>
       <source>STB_POLYHEDRON</source>
       <translation>多面体</translation>
     </message>
@@ -3842,6 +3874,10 @@
     <message>
       <source>TOP_POLYGON</source>
       <translation>多角形</translation>
+    </message>
+    <message>
+      <source>TOP_QUADRATIC_POLYGON</source>
+      <translation>2次ポリゴン</translation>
     </message>
     <message>
       <source>TOP_POLYHEDRON</source>
@@ -4828,6 +4864,32 @@
     </message>
   </context>
   <context>
+    <name>SMESHGUI_SplitBiQuadDlg</name>
+    <message>
+      <source>CAPTION</source>
+      <translation>線形に2次分割</translation>
+    </message>
+    <message>
+      <source>MESH</source>
+      <translation>メッシュ、グループ、あるいはサブメッシュ</translation>
+    </message>
+  </context>
+  <context>
+    <name>SMESHGUI_SplitBiQuadOp</name>
+    <message>
+      <source>MESH_IS_NOT_SELECTED</source>
+      <translation>分割のためのオブジェクトは選択されていません。オブジェクトを指定してから再試行してください。</translation>
+    </message>
+    <message>
+      <source>REF_IS_NULL</source>
+      <translation>有効なメッシュオブジェクトは選択されていません</translation>
+    </message>
+    <message>
+      <source>DIFFERENT_MESHES</source>
+      <translation>異なるメッシュに属したオブジェクトが選択されています</translation>
+    </message>
+  </context>
+  <context>
     <name>SMESHGUI_ConvToQuadDlg</name>
     <message>
       <source>CAPTION</source>
@@ -5022,6 +5084,22 @@
     <message>
       <source>EXCLUDE_GROUPS</source>
       <translation>グループを除外</translation>
+    </message>
+    <message>
+      <source>SEPARATE_CORNERS_AND_MEDIUM</source>
+      <translation>2次セルのコーナ節点と中間節点をマージできません</translation>
+    </message>
+    <message>
+      <source>KEEP_NODES</source>
+      <translation>維持節点</translation>
+    </message>
+    <message>
+      <source>GROUP_SUBMESH</source>
+      <translation>グループとサブメッシュ</translation>
+    </message>
+    <message>
+      <source>SELECT</source>
+      <translation>Select: </translation>
     </message>
   </context>
   <context>
@@ -5476,7 +5554,7 @@
     </message>
     <message>
       <source>ID</source>
-      <translation type="unfinished">ID</translation>
+      <translation>ID</translation>
     </message>
     <message>
       <source>INSERT</source>
@@ -6480,6 +6558,42 @@
     <message>
       <source>SIDE_2</source>
       <translation>エッジ 2</translation>
+    </message>
+    <message>
+      <source>AUTO_SEWING</source>
+      <translation>自動縫合</translation>
+    </message>
+    <message>
+      <source>COINCIDENT_FREE_BORDERS</source>
+      <translation>一致フリー境界</translation>
+    </message>
+    <message>
+      <source>DETECT</source>
+      <translation>検出</translation>
+    </message>
+    <message>
+      <source>SELECT_ALL</source>
+      <translation>すべてを選択</translation>
+    </message>
+    <message>
+      <source>EDIT_SELECTED_GROUP</source>
+      <translation>選択グループを編集</translation>
+    </message>
+    <message>
+      <source>STEP</source>
+      <translation>Step</translation>
+    </message>
+    <message>
+      <source>NO_BORDERS_TO_SEW</source>
+      <translation>縫合できるフリー境界はみつかりません</translation>
+    </message>
+    <message>
+      <source>NOT_ALL_BORDERS_SEWED</source>
+      <translation>境界の %2 グループの%1を縫合しました</translation>
+    </message>
+    <message>
+      <source>ALL_BORDERS_SEWED</source>
+      <translation>境界の %1 グループを縫合しました。</translation>
     </message>
   </context>
   <context>

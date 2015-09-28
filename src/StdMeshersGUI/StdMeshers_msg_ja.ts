@@ -532,10 +532,6 @@
       <source>ENF_NODES</source>
       <translation>強化された節点</translation>
     </message>
-    <message>
-      <source/>
-      <translation type="unfinished"/>
-    </message>
   </context>
   <context>
     <name>StdMeshersGUI_LayerDistributionParamWdg</name>
