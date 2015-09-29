@@ -206,11 +206,11 @@ void SMESHGUI_MeshOp::startOperation()
     for ( int i = SMESH::DIM_0D; i <= SMESH::DIM_3D; i++ )
     {
       connect( myDlg->tab( i ), SIGNAL( createHyp( const int, const int ) ),
-              this, SLOT( onCreateHyp( const int, const int ) ) );
+               this, SLOT( onCreateHyp( const int, const int ) ) );
       connect( myDlg->tab( i ), SIGNAL( editHyp( const int, const int ) ),
-              this, SLOT( onEditHyp( const int, const int ) ) );
+               this, SLOT( onEditHyp( const int, const int ) ) );
       connect( myDlg->tab( i ), SIGNAL( selectAlgo( const int ) ),
-              this, SLOT( onAlgoSelected( const int ) ) );
+               this, SLOT( onAlgoSelected( const int ) ) );
     }
     connect( myDlg, SIGNAL( hypoSet( const QString& )), SLOT( onHypoSet( const QString& )));
     connect( myDlg, SIGNAL( geomSelectionByMesh( bool )), SLOT( onGeomSelectionByMesh( bool )));
@@ -1583,11 +1583,12 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
       // remember current algo
       prevAlgo = algoByDim[ dim ] = hypData( dim, Algo, algoIndex );
     }
-    if ( myMaxShapeDim == SMESH::DIM_3D && forward && algoDim == SMESH::DIM_1D ) {
-    	algoDim = SMESH::DIM_3D;
-    	forward = -1;
-    	a3DAlgo = prevAlgo;
-    	continue;
+    if ( myMaxShapeDim == SMESH::DIM_3D && forward && algoDim == SMESH::DIM_1D )
+    {
+      algoDim = SMESH::DIM_3D;
+      forward = -1;
+      a3DAlgo = prevAlgo;
+      continue;
     }
   }
 

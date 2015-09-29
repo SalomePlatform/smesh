@@ -63,9 +63,9 @@ To use \b Automatic sewing:
 <li>The found groups of <b>Coincident Free Borders</b> are shown in a
   list, a group per a line. Each group has its own color which is used
   to display the borders of the group in the VTK Viewer. A free border
-  within a group is designated by IDs of its first and last nodes within
-  parenthesis. All borders present in the list will be sewn upon \b
-  Apply.</li>
+  within a group is designated by IDs of its first, second and last
+  nodes within parenthesis. All borders present in the list will be
+  sewn upon \b Apply.</li>
 <li>\b Remove button removes selected groups from the list.</li>
 <li><b>Select All</b> check-box selects all groups in the list.</li>
 <li>When a group is selected, its borders appear in <b>Edit Selected

@@ -54,12 +54,13 @@ namespace
 
     BNode(const SMDS_MeshNode * node): SMESH_TNodeXYZ( node ) {}
     const SMDS_MeshNode * Node() const { return _node; }
-    void AddLinked( BEdge* e ) const;
-    void AddClose ( const BEdge* e, double u ) const;
+    void   AddLinked( BEdge* e ) const;
+    void   AddClose ( const BEdge* e, double u ) const;
     BEdge* GetCloseEdge( size_t i ) const { return myCloseEdges[i].first; }
     double GetCloseU( size_t i ) const { return myCloseEdges[i].second; }
     BEdge* GetCloseEdgeOfBorder( int borderID, double * u = 0 ) const;
-    bool IsCloseEdge( const BEdge* ) const;
+    bool   HasCloseEdgeWithNode( const BNode* n ) const;
+    bool   IsCloseEdge( const BEdge*, double * u = 0 ) const;
     bool operator<(const BNode& other) const { return Node()->GetID() < other.Node()->GetID(); }
   };
   /*!
@@ -149,8 +150,8 @@ namespace
       // is1st shows which end of toE is projected on this at u
       double u2;
       const double eps = 0.1;
-      if ( toE == myBNode1->GetCloseEdgeOfBorder( toE->myBorderID, &u2 ) ||
-           toE == myBNode2->GetCloseEdgeOfBorder( toE->myBorderID, &u2 ))
+      if ( myBNode1->IsCloseEdge( toE, &u2 ) ||
+           myBNode2->IsCloseEdge( toE, &u2 ))
         return (( 0 < u2 && u2 < 1 ) &&     // u2 is proj param of myBNode's on toE
                 ( Abs( u2 - int( !is1st )) > eps ));
 
@@ -164,24 +165,59 @@ namespace
       if ( this->myCloseBorders != bordIDs )
         return false;
 
-      eRange[0] = this;
-      while ( eRange[0]->myPrev && eRange[0]->myPrev->myCloseBorders == bordIDs )
+      if ( bordIDs.size() == 1 && bordIDs.count( myBorderID )) // border close to self
       {
-        if ( eRange[0]->myPrev == this /*|| eRange[0]->myPrev->myInGroup*/ )
-          break;
-        eRange[0] = eRange[0]->myPrev;
-      }
-
-      eRange[1] = this;
-      if ( eRange[0]->myPrev != this ) // not closed range
-        while ( eRange[1]->myNext && eRange[1]->myNext->myCloseBorders == bordIDs )
+        double u;
+        eRange[0] = this;
+        while ( eRange[0]->myBNode1->GetCloseEdgeOfBorder( myBorderID, &u ))
         {
-          if ( eRange[1]->myNext == this /*|| eRange[1]->myNext->myInGroup*/ )
+          if ( eRange[0]->myPrev == this || u < 0 || u > 1 )
+            break;
+          eRange[0] = eRange[0]->myPrev;
+        }
+        eRange[1] = this;
+        while ( eRange[1]->myBNode2->GetCloseEdgeOfBorder( myBorderID, &u ))
+        {
+          if ( eRange[1]->myNext == this || u < 0 || u > 1 )
             break;
           eRange[1] = eRange[1]->myNext;
         }
+      }
+      else
+      {
+        eRange[0] = this;
+        while ( eRange[0]->myPrev && eRange[0]->myPrev->myCloseBorders == bordIDs )
+        {
+          if ( eRange[0]->myPrev == this )
+            break;
+          eRange[0] = eRange[0]->myPrev;
+        }
 
-      return ( eRange[0] != eRange[1] );
+        eRange[1] = this;
+        if ( eRange[0]->myPrev != this ) // not closed border
+          while ( eRange[1]->myNext && eRange[1]->myNext->myCloseBorders == bordIDs )
+          {
+            if ( eRange[1]->myNext == this )
+              break;
+            eRange[1] = eRange[1]->myNext;
+          }
+      }
+
+      if ( eRange[0] == eRange[1] )
+      {
+        std::set<int>::iterator closeBord = eRange[0]->myCloseBorders.begin();
+        for ( ; closeBord != eRange[0]->myCloseBorders.end(); ++closeBord )
+        {
+          if ( BEdge* be = eRange[0]->myBNode1->GetCloseEdgeOfBorder( *closeBord ))
+            if ( be->myCloseBorders == eRange[0]->myCloseBorders )
+              return true;
+          if ( BEdge* be = eRange[0]->myBNode2->GetCloseEdgeOfBorder( *closeBord ))
+            if ( be->myCloseBorders == eRange[0]->myCloseBorders )
+              return true;
+        }
+        return false;
+      }
+      return true;
     }
   }; // class BEdge
 
@@ -197,8 +233,7 @@ namespace
     if ( e1->myPrev )
     {
       for ( bord = bordIDs.begin(); bord != bordIDs.end(); ++bord )
-        if ((  *bord != e1->myBorderID ) &&
-            (( be = e1->myBNode1->GetCloseEdgeOfBorder( *bord, &u ))) &&
+        if ((( be = e1->myBNode1->GetCloseEdgeOfBorder( *bord, &u ))) &&
             (  be->myInGroup == groupID ) &&
             (  0 < u && u < 1 ) &&
             (  be->IsOverlappingProjection( e1->myPrev, u, false )))
@@ -206,12 +241,17 @@ namespace
           e1 = e1->myPrev;
           break;
         }
+      if ( bord == bordIDs.end() && // not extended
+           e1->myBNode1->HasCloseEdgeWithNode( e1->myPrev->myBNode1 ))
+      {
+        e1 = e1->myPrev;
+      }
+      e1->myInGroup = groupID;
     }
     if ( e2->myNext )
     {
       for ( bord = bordIDs.begin(); bord != bordIDs.end(); ++bord )
-        if ((  *bord != e2->myBorderID ) &&
-            (( be = e2->myBNode2->GetCloseEdgeOfBorder( *bord, &u ))) &&
+        if ((( be = e2->myBNode2->GetCloseEdgeOfBorder( *bord, &u ))) &&
             (  be->myInGroup == groupID ) &&
             (  0 < u && u < 1 ) &&
             (  be->IsOverlappingProjection( e2->myNext, u, true )))
@@ -219,6 +259,12 @@ namespace
           e2 = e2->myNext;
           break;
         }
+      if ( bord == bordIDs.end() && // not extended
+           e2->myBNode2->HasCloseEdgeWithNode( e2->myNext->myBNode2 ))
+      {
+        e2 = e2->myNext;
+      }
+      e2->myInGroup = groupID;
     }
   }
 
@@ -261,11 +307,22 @@ namespace
     if ( uPtr ) *uPtr = u;
     return e;
   }
-  bool BNode::IsCloseEdge( const BEdge* e ) const
+  bool BNode::HasCloseEdgeWithNode( const BNode* n ) const
+  {
+    for ( size_t i = 0; i < myCloseEdges.size(); ++i )
+      if ( GetCloseEdge( i )->Contains( n ) &&
+           0 < GetCloseU( i ) && GetCloseU( i ) < 1 )
+        return true;
+    return false;
+  }
+  bool BNode::IsCloseEdge( const BEdge* e, double * uPtr ) const
   {
     for ( size_t i = 0; i < myCloseEdges.size(); ++i )
       if ( e == GetCloseEdge( i ) )
+      {
+        if ( uPtr ) *uPtr = GetCloseU( i );
         return true;
+      }
     return false;
   }
 
@@ -315,6 +372,7 @@ void SMESH_MeshAlgos::FindCoincidentFreeBorders(SMDS_Mesh&              mesh,
   // find free links
   typedef NCollection_DataMap<SMESH_TLink, const SMDS_MeshElement*, TLinkHasher > TLink2FaceMap;
   TLink2FaceMap linkMap;
+  int nbSharedLinks = 0;
   SMDS_FaceIteratorPtr faceIt = mesh.facesIterator();
   while ( faceIt->more() )
   {
@@ -327,27 +385,36 @@ void SMESH_MeshAlgos::FindCoincidentFreeBorders(SMDS_Mesh&              mesh,
     {
       const SMDS_MeshNode* n1 = nodeIt->next();
       SMESH_TLink link( n0, n1 );
-      if ( !linkMap.Bind( link, face ))
-        linkMap.UnBind( link );
+      if ( const SMDS_MeshElement** faceInMap = linkMap.ChangeSeek( link ))
+      {
+        nbSharedLinks += bool( *faceInMap );
+        *faceInMap = 0;
+      }
+      else
+      {
+        linkMap.Bind( link, face );
+      }
       n0 = n1;
     }
   }
-  if ( linkMap.IsEmpty() )
+  if ( linkMap.Extent() == nbSharedLinks )
     return;
 
   // form free borders
   std::set   < BNode > bNodes;
-  std::vector< BEdge > bEdges( linkMap.Extent() );
+  std::vector< BEdge > bEdges( linkMap.Extent() - nbSharedLinks );
 
   TLink2FaceMap::Iterator linkIt( linkMap );
-  for ( int iEdge = 0; linkIt.More(); linkIt.Next(), ++iEdge )
+  for ( int iEdge = 0; linkIt.More(); linkIt.Next() )
   {
+    if ( !linkIt.Value() ) continue;
     const SMESH_TLink & link = linkIt.Key();
     std::set< BNode >::iterator n1 = bNodes.insert( BNode( link.node1() )).first;
     std::set< BNode >::iterator n2 = bNodes.insert( BNode( link.node2() )).first;
     bEdges[ iEdge ].Set( &*n1, &*n2, linkIt.Value(), iEdge+1 );
     n1->AddLinked( & bEdges[ iEdge ] );
     n2->AddLinked( & bEdges[ iEdge ] );
+    ++iEdge;
   }
   linkMap.Clear();
 
@@ -563,36 +630,44 @@ void SMESH_MeshAlgos::FindCoincidentFreeBorders(SMDS_Mesh&              mesh,
     }
     beRange[1]->myInGroup = groupID;
 
+    // get starting edge of each close border
+    closeEdges.clear();
+    be = beRange[0];
+    if ( be->myCloseBorders.empty() )
+      be = beRange[0]->myNext;
+    std::set<int>::iterator closeBord = be->myCloseBorders.begin();
+    for ( ; closeBord != be->myCloseBorders.end(); ++closeBord )
+      if ( BEdge* e = be->myBNode2->GetCloseEdgeOfBorder( *closeBord ))
+        closeEdges.push_back( e );
+
+    for ( size_t iE = 0; iE < closeEdges.size(); ++iE )
+      if ( be->myCloseBorders != closeEdges[iE]->myCloseBorders )
+      {
+        closeBord = closeEdges[iE]->myCloseBorders.begin();
+        for ( ; closeBord != closeEdges[iE]->myCloseBorders.end(); ++closeBord )
+          if ( !be->myCloseBorders.count( *closeBord ))
+            if ( BEdge* e = closeEdges[iE]->myBNode2->GetCloseEdgeOfBorder( *closeBord ))
+              if ( std::find( closeEdges.begin(), closeEdges.end(), e ) == closeEdges.end() )
+                closeEdges.push_back( e );
+      }
+
     // add parts of other borders
 
     BEdge* be1st = beRange[0];
-    closeEdges.clear();
-    std::set<int>::iterator closeBord = be1st->myCloseBorders.begin();
-    for ( ; closeBord != be1st->myCloseBorders.end(); ++closeBord )
-      closeEdges.push_back( be1st->myBNode2->GetCloseEdgeOfBorder( *closeBord ));
-
     for ( size_t iE = 0; iE < closeEdges.size(); ++iE )
     {
       be = closeEdges[ iE ];
       if ( !be ) continue;
 
       bool ok = be->GetRangeOfSameCloseBorders( beRange, be->myCloseBorders );
-      if ( !ok && be->myPrev )
-        ok = be->myPrev->GetRangeOfSameCloseBorders( beRange, be1st->myCloseBorders );
-      if ( !ok && be->myNext )
-        ok = be->myNext->GetRangeOfSameCloseBorders( beRange, be1st->myCloseBorders );
+      // if ( !ok && be->myPrev )
+      //   ok = be->myPrev->GetRangeOfSameCloseBorders( beRange, be1st->myCloseBorders );
+      // if ( !ok && be->myNext )
+      //   ok = be->myNext->GetRangeOfSameCloseBorders( beRange, be1st->myCloseBorders );
       if ( !ok )
         continue;
 
       be = beRange[0];
-      if ( be->myCloseBorders != be1st->myCloseBorders )
-      {
-        //add missing edges to closeEdges
-        closeBord = be->myCloseBorders.begin();
-        for ( ; closeBord != be->myCloseBorders.end(); ++closeBord )
-          if ( !be1st->myCloseBorders.count( *closeBord ))
-            closeEdges.push_back( be->myBNode2->GetCloseEdgeOfBorder( *closeBord ));
-      }
 
       ranges.push_back( beRange[0] );
       ranges.push_back( beRange[1] );
@@ -645,9 +720,11 @@ void SMESH_MeshAlgos::FindCoincidentFreeBorders(SMDS_Mesh&              mesh,
           part._node2    = beRange[0]->myID + 1;
           part._nodeLast = beRange[1]->myID + 1;
         }
+        // if ( group[0]._node2 != part._node2 )
         group.push_back( part );
       }
-      foundFreeBordes._coincidentGroups.push_back( group );
+      //if ( group.size() > 1 )
+        foundFreeBordes._coincidentGroups.push_back( group );
     }
     else
     {

@@ -7963,10 +7963,6 @@ public:
   const SMDS_MeshElement* Get() const
   { return myElem; }
 
-  void Set(const SMDS_MeshElement* e) const
-  { myElem = e; }
-
-
 private:
   mutable const SMDS_MeshElement* myElem;
 };

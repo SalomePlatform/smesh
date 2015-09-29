@@ -1115,9 +1115,9 @@ bool _QuadFaceGrid::LoadGrid( SMESH_Mesh& mesh )
 
   // store the rest nodes row by row
 
-  const SMDS_MeshNode* dummy = mesh.GetMeshDS()->AddNode(0,0,0);
-  const SMDS_MeshElement* firstQuad = dummy; // most left face above the last row of found nodes
-  
+  TIDSortedElemSet emptySet, avoidSet;
+  const SMDS_MeshElement* firstQuad = 0; // most left face above the last row of found nodes
+
   int nbFoundNodes = myIndexer._xSize;
   while ( nbFoundNodes != myGrid.size() )
   {
@@ -1134,8 +1134,6 @@ bool _QuadFaceGrid::LoadGrid( SMESH_Mesh& mesh )
     //     o---o  o  o  o  o
     //n1down    n2down
     //
-    TIDSortedElemSet emptySet, avoidSet;
-    avoidSet.insert( firstQuad );
     firstQuad = SMESH_MeshAlgos::FindFaceInSet( n1down, n2down, emptySet, avoidSet);
     while ( firstQuad && !faceSubMesh->Contains( firstQuad )) {
       avoidSet.insert( firstQuad );
@@ -1182,8 +1180,8 @@ bool _QuadFaceGrid::LoadGrid( SMESH_Mesh& mesh )
       n1down = myGrid[ nbFoundNodes - myIndexer._xSize - 1 ];
       n1up   = n2up;
     }
+    avoidSet.clear(); avoidSet.insert( firstQuad );
   }
-  mesh.GetMeshDS()->RemoveNode(dummy);
   DumpGrid(); // debug
 
   return true;

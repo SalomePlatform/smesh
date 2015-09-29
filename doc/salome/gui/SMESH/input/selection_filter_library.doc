@@ -3,7 +3,7 @@
 \page selection_filter_library_page Selection filter library
 
 \n Selection filter library allows creating and storing in files
-filters that can be later reused for operations on meshes. You can
+filters that can be later loaded and used for operations on meshes. You can
 access to it from the Main Menu via <b>Tools / Selection filter library</b>.
 It is also possible to save any filter by invoking the filter library
 from \a Filter dialog launched from any mesh operation.

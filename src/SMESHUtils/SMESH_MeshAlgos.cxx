@@ -1541,10 +1541,8 @@ SMESH_MeshAlgos::FindFaceInSet(const SMDS_MeshNode*    n1,
   const SMDS_MeshElement* face = 0;
 
   SMDS_ElemIteratorPtr invElemIt = n1->GetInverseElementIterator(SMDSAbs_Face);
-  //MESSAGE("n1->GetInverseElementIterator(SMDSAbs_Face) " << invElemIt);
   while ( invElemIt->more() && !face ) // loop on inverse faces of n1
   {
-    //MESSAGE("in while ( invElemIt->more() && !face )");
     const SMDS_MeshElement* elem = invElemIt->next();
     if (avoidSet.count( elem ))
       continue;
@@ -1563,9 +1561,6 @@ SMESH_MeshAlgos::FindFaceInSet(const SMDS_MeshNode*    n1,
     if ( !face && elem->IsQuadratic())
     {
       // analysis for quadratic elements using all nodes
-      // const SMDS_VtkFace* F = dynamic_cast<const SMDS_VtkFace*>(elem);
-      // if (!F) throw SALOME_Exception(LOCALIZED("not an SMDS_VtkFace"));
-      // use special nodes iterator
       SMDS_ElemIteratorPtr anIter = elem->interlacedNodesElemIterator();
       const SMDS_MeshNode* prevN = static_cast<const SMDS_MeshNode*>( anIter->next() );
       for ( i1 = -1, i2 = 0; anIter->more() && !face; i1++, i2++ )

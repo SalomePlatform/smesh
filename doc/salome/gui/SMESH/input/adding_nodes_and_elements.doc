@@ -90,29 +90,35 @@ selecting them in the 3D viewer and click the \b Apply or
 \anchor adding_0delems_on_all_nodes_anchor
 <h2>Making 0D elements on Element Nodes</h2>
 
-There is another way to create 0D elements. It is possible to create 
+There is another way to create 0D elements. It is possible to create
 0D elements on all nodes of the selected mesh, sub-mesh, or a group of elements or nodes.
 
 \image html dlg_0D_on_all_nodes.png
 
-In this dialog 
+In this dialog
 <ul>
   <li> The radio-buttons allow choosing the type of object to create 0D elements on.
     <ul>
-      <li><b> Mesh, sub-mesh, group </b> -  this button allows selecting
-       a mesh, a sub-mesh or a group to create 0D elements on the nodes of its
+      <li><b> Mesh, sub-mesh, group </b> - this button allows selecting
+        a mesh, a sub-mesh or a group to create 0D elements on the nodes of its
         elements. The name of the selected object is shown in the dialog. </li>
       <li><b> Elements </b> - this button allows selecting elements in the
         VTK viewer or typing their IDs in the dialog.</li>
       <li><b> Nodes </b> - this button allows selecting nodes to create
         0D elements on in the VTK viewer or typing their IDs in the dialog.</li>
   </ul></li>
-  <li><b> Set Filter </b> button allows selecting elements or nodes 
-by filtering mesh elements or nodes with different criteria
-(see \ref filtering_elements "Filter usage").</li>
-<li> Switching on <b>Add to group</b> check-box allows specifying the
-  name of the group to which all created or found 0D elements  will be added. You can either select an existing group from
-  a drop-down list, or enter the name of the group to be created.</li>
+  <li><b> Set Filter </b> button allows selecting elements or nodes
+    by filtering mesh elements or nodes with different criteria
+    (see \ref filtering_elements "Filter usage").</li>
+  <li> Switching on <b>Add to group</b> check-box allows specifying the
+    name of the group to which all created or found (existing) 0D elements will
+    be added. You can either select an existing group from a drop-down
+    list, or enter the name of the group to be created. If a selected
+    existing \ref grouping_elements_page "group" is not Standalone
+    (Group On Geometry or Group On Filter) it will be converted to
+    Standalone.
+    \warning If <b>Add to group</b> is activated it has to be filled in.
+</li>
 </ul>
 
 
@@ -124,7 +130,7 @@ by filtering mesh elements or nodes with different criteria
 In this dialog box specify the nodes, which will form your ball elements,
 either by selecting them in the 3D viewer or by manually entering their IDs,
 specify the ball diameter and click the \b Apply or <b>Apply and
-Close</b> button.
+  Close</b> button.
 
 \image html add_ball.png
 

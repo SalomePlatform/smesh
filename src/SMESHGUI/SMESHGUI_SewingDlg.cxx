@@ -54,6 +54,7 @@
 #include <SVTK_ViewModel.h>
 #include <SVTK_ViewWindow.h>
 #include <SalomeApp_IntSpinBox.h>
+#include <SalomeApp_Tools.h>
 
 // OCCT includes
 #include <TColStd_MapOfInteger.hxx>
@@ -832,8 +833,9 @@ QString SMESHGUI_SewingDlg::getPartText(const SMESH::FreeBorderPart& aPART)
     if ( 0 <= aPART.node1    && aPART.node1 < aBRD.nodeIDs.length() &&
          0 <= aPART.nodeLast && aPART.nodeLast < aBRD.nodeIDs.length() )
     {
-      text += QString("( %1 %2 ) ")
+      text += QString("( %1 %2 %3 ) ")
         .arg( aBRD.nodeIDs[ aPART.node1 ] )
+        .arg( aBRD.nodeIDs[ aPART.node2 ] )
         .arg( aBRD.nodeIDs[ aPART.nodeLast ] );
     }
   }
@@ -883,30 +885,30 @@ void SMESHGUI_SewingDlg::onDetectClicked()
 
   SMESH::SMESH_MeshEditor_var editor = myMesh->GetMeshEditor();
   myBorders = editor->FindCoincidentFreeBorders( SpinBoxTolerance->GetValue() );
-  if ( !haveBorders() )
-    return;
-
-  for ( size_t i = 0; i < myBorderDisplayers.size(); ++i )
+  if ( haveBorders() )
   {
-    delete myBorderDisplayers[ i ];
-    myBorderDisplayers[ i ] = 0;
-  }
-  myBorderDisplayers.resize( myBorders->coincidentGroups.length(), 0 );
+    for ( size_t i = 0; i < myBorderDisplayers.size(); ++i )
+    {
+      delete myBorderDisplayers[ i ];
+      myBorderDisplayers[ i ] = 0;
+    }
+    myBorderDisplayers.resize( myBorders->coincidentGroups.length(), 0 );
 
-  for ( CORBA::ULong i = 0; i < myBorders->coincidentGroups.length(); ++i )
-  {
-    QString groupText = getGroupText( i );
-    if ( groupText.isEmpty() )
-      continue;
+    for ( CORBA::ULong i = 0; i < myBorders->coincidentGroups.length(); ++i )
+    {
+      QString groupText = getGroupText( i );
+      if ( groupText.isEmpty() )
+        continue;
 
-    QColor groupColor;
-    groupColor.setHsvF( float(i) / myBorders->coincidentGroups.length(), 1., 1. );
-    QPixmap icon( QSize( 20, 20 ));
-    icon.fill( groupColor );
+      QColor groupColor;
+      groupColor.setHsvF( float(i) / myBorders->coincidentGroups.length(), 1., 1. );
+      QPixmap icon( QSize( 20, 20 ));
+      icon.fill( groupColor );
 
-    QListWidgetItem * item = new QListWidgetItem( icon, groupText, ListCoincident );
-    item->setData( GROUP_COLOR, groupColor );
-    item->setData( GROUP_INDEX, i );
+      QListWidgetItem * item = new QListWidgetItem( icon, groupText, ListCoincident );
+      item->setData( GROUP_COLOR, groupColor );
+      item->setData( GROUP_INDEX, i );
+    }
   }
   myBusy = false;
 
@@ -1389,7 +1391,11 @@ bool SMESHGUI_SewingDlg::ClickOnApply()
         QString msg = tr(QString("ERROR_%1").arg(anError).toLatin1().data());
         SUIT_MessageBox::warning(this, tr("SMESH_WRN_WARNING"), msg);
       }
-    } catch (...) {
+    }
+    catch ( const SALOME::SALOME_Exception& S_ex )
+    {
+      SalomeApp_Tools::QtCatchCorbaException( S_ex );
+      return false;
     }
 
     if (aResult) {
@@ -1887,7 +1893,6 @@ SMESHGUI_SewingDlg::BorderGroupDisplayer::~BorderGroupDisplayer()
     }
   }
   myIdPreview.SetPointsLabeled(false);
-  //myViewWindow->Repaint();
 }
 
 void SMESHGUI_SewingDlg::BorderGroupDisplayer::Hide()
@@ -2010,7 +2015,6 @@ void SMESHGUI_SewingDlg::BorderGroupDisplayer::Update()
       myPartActors[ i ]->SetMarkerStd( VTK::MT_POINT, 13 );
       myPartActors[ i ]->SetPickable ( false );
       myViewWindow->AddActor( myPartActors[ i ]);
-      //myViewWindow->Repaint();
     }
   }
 }

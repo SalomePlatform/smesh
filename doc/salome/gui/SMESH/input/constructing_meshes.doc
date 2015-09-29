@@ -187,13 +187,9 @@ creation and computing) of the following steps:
     which is a 2D object, you do not need to define a 3D Algorithm and
     Hypotheses.
 
-    In the <b>Object Browser</b> the structure of the new mesh will be
+    In the <b>Object Browser</b> the structure of the new mesh is
     displayed as follows:
-
-    <center>
     \image html image88.jpg
-    </center>
-
     It contains: 
     <ul>
       <li>a mesh name (<em>Mesh_mechanic</em>);
@@ -203,6 +199,13 @@ creation and computing) of the following steps:
         to the hypotheses chosen at the construction of the mesh;</li>
       <li><b>Applied algorithms</b> folder containing the references
         to the algorithms chosen at the construction of the mesh.</li> 
+      <li><b>SubMeshes on Face</b> folder containing the sub-meshes
+        defined on geometrical faces. There also can be folders for
+        sub-meshes on vertices, edges, wires, shells, solids and
+        compounds.</li>
+      <li><b>Groups of Faces</b> folder containing the groups of mesh
+        faces. There also can be folders for groups of nodes, edges,
+        volumes 0D elements and balls.</li>
     </ul>
 
     There is an alternative way to assign Algorithms and Hypotheses by
@@ -212,15 +215,25 @@ creation and computing) of the following steps:
     CustomMeshers.xml file located in the home directory. CustomMeshers.xml
     file must describe sets of hypotheses in the
     same way as ${SMESH_ROOT_DIR}/share/salome/resources/smesh/StdMeshers.xml 
-    file does (sets of hypotheses are enclosed between <hypotheses-set-group>
-      tags).
-      
-      <center>
+    file does (sets of hypotheses are enclosed between \<hypotheses-set-group\>
+      tags). For example:
+~~~~~~{.xml}
+    <?xml version='1.0' encoding='us-ascii'?>
+    <!DOCTYPE meshers PUBLIC "" "desktop.dtd">
+    <meshers>
+    <hypotheses-set-group>
+        <hypotheses-set name="My favorite hypotheses"
+                        hypos="AutomaticLength"
+                        algos="CompositeSegment_1D, Quadrangle_2D, GHS3D_3D"/>
+    </hypotheses-set-group>
+    </meshers>
+~~~~~~
+<br>
+<center>
       \image html hypo_sets.png
       List of sets of hypotheses. Tag <em>[custom]</em> is
       automatically added to the sets defined by the user.
-      </center>
-
+</center>
       \note 
       - \a "Automatic" in the names of predefined sets of hypotheses
       does not actually mean that they are suitable for meshing any
