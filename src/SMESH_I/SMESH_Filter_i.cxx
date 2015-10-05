@@ -510,7 +510,6 @@ FunctorType Length2D_i::GetFunctorType()
 
 SMESH::Length2D::Values* Length2D_i::GetValues()
 {
-  INFOS("Length2D_i::GetValues");
   SMESH::Controls::Length2D::TValues aValues;
   (dynamic_cast<SMESH::Controls::Length2D*>(myFunctorPtr.get()))->GetValues( aValues );
 
@@ -530,7 +529,6 @@ SMESH::Length2D::Values* Length2D_i::GetValues()
     aValue.myPnt2 = aVal.myPntId[ 1 ];
   }
 
-  INFOS("Length2D_i::GetValuess~");
   return aResult._retn();
 }
 
@@ -581,7 +579,6 @@ FunctorType MultiConnection2D_i::GetFunctorType()
 
 SMESH::MultiConnection2D::Values* MultiConnection2D_i::GetValues()
 {
-  INFOS("MultiConnection2D_i::GetValues");
   SMESH::Controls::MultiConnection2D::MValues aValues;
   (dynamic_cast<SMESH::Controls::MultiConnection2D*>(myFunctorPtr.get()))->GetValues( aValues );
   
@@ -601,7 +598,6 @@ SMESH::MultiConnection2D::Values* MultiConnection2D_i::GetValues()
     aValue.myNbConnects = (*anIter).second;
   }
 
-  INFOS("Multiconnection2D_i::GetValuess~");
   return aResult._retn();
 }
 
@@ -1218,7 +1214,6 @@ FreeEdges_i::FreeEdges_i()
 
 SMESH::FreeEdges::Borders* FreeEdges_i::GetBorders()
 {
-  INFOS("FreeEdges_i::GetBorders");
   SMESH::Controls::FreeEdges::TBorders aBorders;
   myFreeEdgesPtr->GetBoreders( aBorders );
 
@@ -1237,8 +1232,6 @@ SMESH::FreeEdges::Borders* FreeEdges_i::GetBorders()
     aBorder.myPnt1 = aBord.myPntId[ 0 ];
     aBorder.myPnt2 = aBord.myPntId[ 1 ];
   }
-
-  INFOS("FreeEdges_i::GetBorders~");
   return aResult._retn();
 }
 

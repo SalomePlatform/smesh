@@ -1728,13 +1728,14 @@ void SMESHGUI_PrecomputeOp::initDialog()
 void SMESHGUI_PrecomputeOp::getAssignedAlgos(_PTR(SObject) theMesh,
                                              QMap<int,int>& theModeMap)
 {
-  _PTR(SObject)          aHypRoot;
+  if ( !theMesh ) return;
+  _PTR(SObject)          aHypFolder;
   _PTR(GenericAttribute) anAttr;
   int aPart = SMESH::Tag_RefOnAppliedAlgorithms;
-  if ( theMesh && theMesh->FindSubObject( aPart, aHypRoot ) )
+  if ( theMesh->FindSubObject( aPart, aHypFolder ) )
   {
     _PTR(ChildIterator) anIter =
-      SMESH::GetActiveStudyDocument()->NewChildIterator( aHypRoot );
+      SMESH::GetActiveStudyDocument()->NewChildIterator( aHypFolder );
     for ( ; anIter->More(); anIter->Next() )
     {
       _PTR(SObject) anObj = anIter->Value();
@@ -1743,16 +1744,16 @@ void SMESHGUI_PrecomputeOp::getAssignedAlgos(_PTR(SObject) theMesh,
         anObj = aRefObj;
       else
         continue;
-      
+
       if ( anObj->FindAttribute( anAttr, "AttributeName" ) )
       {
         CORBA::Object_var aVar = _CAST(SObject,anObj)->GetObject();
         if ( CORBA::is_nil( aVar ) )
           continue;
-        
+
+        SMESH::SMESH_Algo_var algo;
         for( int dim = SMESH::DIM_1D; dim <= SMESH::DIM_3D; dim++ )
         {
-          SMESH::SMESH_Algo_var algo;
           switch(dim) {
           case SMESH::DIM_1D: algo = SMESH::SMESH_1D_Algo::_narrow( aVar ); break;
           case SMESH::DIM_2D: algo = SMESH::SMESH_2D_Algo::_narrow( aVar ); break;
@@ -1760,7 +1761,56 @@ void SMESHGUI_PrecomputeOp::getAssignedAlgos(_PTR(SObject) theMesh,
           default: break;
           }
           if ( !algo->_is_nil() )
+          {
             theModeMap[ dim ] = 0;
+            if ( theModeMap.size() == 3 )
+              return;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  // check sub-meshes
+  for ( aPart = SMESH::Tag_SubMeshOnEdge; aPart < SMESH::Tag_LastSubMesh; ++aPart )
+  {
+    if ( !theMesh->FindSubObject( aPart, aHypFolder ))
+      continue;
+
+    _PTR(ChildIterator) anIter =
+      SMESH::GetActiveStudyDocument()->NewChildIterator( aHypFolder );
+    for ( anIter->InitEx(true); anIter->More(); anIter->Next() )
+    {
+      _PTR(SObject) anObj = anIter->Value();
+      _PTR(SObject) aRefObj;
+      if ( anObj->ReferencedObject( aRefObj ) )
+        anObj = aRefObj;
+      else
+        continue;
+
+      if ( anObj->FindAttribute( anAttr, "AttributeName" ))
+      {
+        CORBA::Object_var aVar = _CAST(SObject,anObj)->GetObject();
+        if ( CORBA::is_nil( aVar ) )
+          continue;
+
+        SMESH::SMESH_Algo_var algo;
+        for( int dim = SMESH::DIM_1D; dim <= SMESH::DIM_3D; dim++ )
+        {
+          switch(dim) {
+          case SMESH::DIM_1D: algo = SMESH::SMESH_1D_Algo::_narrow( aVar ); break;
+          case SMESH::DIM_2D: algo = SMESH::SMESH_2D_Algo::_narrow( aVar ); break;
+          case SMESH::DIM_3D: algo = SMESH::SMESH_3D_Algo::_narrow( aVar ); break;
+          default: break;
+          }
+          if ( !algo->_is_nil() )
+          {
+            theModeMap[ dim ] = 0;
+            if ( theModeMap.size() == 3 )
+              return;
+            break;
+          }
         }
       }
     }

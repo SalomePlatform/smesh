@@ -138,7 +138,7 @@ namespace SMESH_MAT2d
                                   std::vector< BranchPoint >&        divPoints,
                                   const std::vector<const TVDEdge*>& maEdges,
                                   const std::vector<const TVDEdge*>& maEdgesTwin,
-                                  size_t &                           i) const;
+                                  int &                              i) const;
 
     // association of _maEdges with boundary segments is stored in this way:
     // index of an EDGE:           TVDEdge->cell()->color()

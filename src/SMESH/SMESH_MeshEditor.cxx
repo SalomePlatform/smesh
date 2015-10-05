@@ -4816,7 +4816,7 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
         else if(nbSame==1) {
           // ---> pyramid + pentahedron - can not be created since it is needed
           // additional middle node at the center of face
-          INFOS( " Sweep for face " << elem->GetID() << " can not be created" );
+          //INFOS( " Sweep for face " << elem->GetID() << " can not be created" );
           return;
         }
         else if( nbSame == 2 ) {
@@ -11666,7 +11666,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
             }
           else
             {
-              INFOS("Quadratic multiple joints not implemented");
+              //INFOS("Quadratic multiple joints not implemented");
               // TODO quadratic nodes
             }
         }

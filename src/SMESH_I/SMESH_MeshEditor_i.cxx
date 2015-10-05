@@ -4700,6 +4700,14 @@ SewCoincidentFreeBorders(const SMESH::CoincidentFreeBorders& freeBorders,
     }
   }
 
+  // cout << endl << "INIT" << endl;
+  // for ( size_t i = 0; i < tmp0Delems.size(); ++i )
+  // {
+  //   cout << i << " ";
+  //   if ( i % 3 == 0 ) cout << "^ ";
+  //   tmp0Delems[i]->GetNode(0)->Print( cout );
+  // }
+
   SMESH_TRY;
 
   ::SMESH_MeshEditor::Sew_Error res, ok = ::SMESH_MeshEditor::SEW_OK;
@@ -4722,6 +4730,20 @@ SewCoincidentFreeBorders(const SMESH::CoincidentFreeBorders& freeBorders,
       if ( !n0 || !n1 || !n2 || !n3 || !n4 || !n5 )
         continue;
 
+      // TIDSortedElemSet emptySet, avoidSet;
+      // if ( !SMESH_MeshAlgos::FindFaceInSet( n0, n1, emptySet, avoidSet))
+      // {
+      //   cout << "WRONG 2nd 1" << endl;
+      //   n0->Print( cout );
+      //   n1->Print( cout );
+      // }
+      // if ( !SMESH_MeshAlgos::FindFaceInSet( n3, n4, emptySet, avoidSet))
+      // {
+      //   cout << "WRONG 2nd 2" << endl;
+      //   n3->Print( cout );
+      //   n4->Print( cout );
+      // }
+
       if ( !isBordToBord )
       {
         n1 = n2; // at border-to-side sewing only last side node (n1) is needed
@@ -4735,6 +4757,13 @@ SewCoincidentFreeBorders(const SMESH::CoincidentFreeBorders& freeBorders,
       groupSewed = ( res == ok );
 
       isBordToBord = false;
+      // cout << endl << "SEWED GROUP " << i << " PART " << iN / 3 << endl;
+      // for ( size_t t = 0; t < tmp0Delems.size(); ++t )
+      // {
+      //   cout << t << " ";
+      //   if ( t % 3 == 0 ) cout << "^ ";
+      //   tmp0Delems[t]->GetNode(0)->Print( cout );
+      // }
     }
     i0D += nodes.size();
     nbSewed += groupSewed;

@@ -1822,12 +1822,12 @@ bool SMESH_subMesh::Evaluate(MapShapeNbElems& aResMap)
   SMESH_Hypothesis::Hypothesis_Status hyp_status;
 
   algo = GetAlgo();
-  if(algo && !aResMap.count(this) )
+  if( algo && !aResMap.count( this ))
   {
     ret = algo->CheckHypothesis((*_father), _subShape, hyp_status);
     if (!ret) return false;
 
-    if (_father->HasShapeToMesh() && algo->NeedDiscreteBoundary())
+    if (_father->HasShapeToMesh() && algo->NeedDiscreteBoundary() )
     {
       // check submeshes needed
       bool subMeshEvaluated = true;
@@ -1845,8 +1845,23 @@ bool SMESH_subMesh::Evaluate(MapShapeNbElems& aResMap)
         return false;
     }
     _computeError = SMESH_ComputeError::New(COMPERR_OK,"",algo);
-    ret = algo->Evaluate((*_father), _subShape, aResMap);
 
+    if ( IsMeshComputed() )
+    {
+      vector<int> & nbEntities = aResMap[ this ];
+      nbEntities.resize( SMDSEntity_Last, 0 );
+      if ( SMESHDS_SubMesh* sm = GetSubMeshDS() )
+      {
+        nbEntities[ SMDSEntity_Node ] = sm->NbNodes();
+        SMDS_ElemIteratorPtr   elemIt = sm->GetElements();
+        while ( elemIt->more() )
+          nbEntities[ elemIt->next()->GetEntityType() ]++;
+      }
+    }
+    else
+    {
+      ret = algo->Evaluate((*_father), _subShape, aResMap);
+    }
     aResMap.insert( make_pair( this,vector<int>(0)));
   }
 

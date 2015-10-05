@@ -943,7 +943,7 @@ bool SMESH_Gen::GetAlgoState(SMESH_Mesh&               theMesh,
   if ( !hasAlgo ) {
     ret = false;
     theErrors.push_back( TAlgoStateError() );
-    theErrors.back().Set( SMESH_Hypothesis::HYP_MISSING, 1, true );
+    theErrors.back().Set( SMESH_Hypothesis::HYP_MISSING, theMesh.HasShapeToMesh() ? 1 : 3, true );
   }
 
   return ret;

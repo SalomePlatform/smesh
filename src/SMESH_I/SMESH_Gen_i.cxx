@@ -268,7 +268,6 @@ GEOM::GEOM_Gen_var SMESH_Gen_i::GetGeomEngine() {
 
 SMESH_Gen_i::SMESH_Gen_i()
 {
-  INFOS( "SMESH_Gen_i::SMESH_Gen_i : default constructor" );
 }
 
 //=============================================================================
@@ -1876,9 +1875,9 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
   try {
     // get mesh servant
     SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( theMesh ).in() );
-    meshServant->Load();
     ASSERT( meshServant );
     if ( meshServant ) {
+      meshServant->Load();
       // NPAL16168: "geometrical group edition from a submesh don't modifiy mesh computation"
       meshServant->CheckGeomModif();
       // get local TopoDS_Shape
@@ -2157,6 +2156,7 @@ SMESH::long_array* SMESH_Gen_i::Evaluate(SMESH::SMESH_Mesh_ptr theMesh,
     SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( theMesh ).in() );
     ASSERT( meshServant );
     if ( meshServant ) {
+      meshServant->Load();
       // NPAL16168: "geometrical group edition from a submesh don't modifiy mesh computation"
       meshServant->CheckGeomModif();
       // get local TopoDS_Shape
@@ -2178,7 +2178,7 @@ SMESH::long_array* SMESH_Gen_i::Evaluate(SMESH::SMESH_Mesh_ptr theMesh,
           {
             SMESH_subMesh* sm = anIt->first;
             SMESH_ComputeErrorPtr& error = sm->GetComputeError();
-            const SMESH_Algo* algo = myGen.GetAlgo( myLocMesh, sm->GetSubShape());
+            const SMESH_Algo* algo = sm->GetAlgo();
             if ( (algo && !error.get()) || error->IsOK() )
               error.reset( new SMESH_ComputeError( COMPERR_ALGO_FAILED,"Failed to evaluate",algo));
           }
@@ -2965,8 +2965,6 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                                       const char*              theURL,
                                       bool                     isMultiFile )
 {
-  INFOS( "SMESH_Gen_i::Save" );
-
   //  ASSERT( theComponent->GetStudy()->StudyId() == myCurrentStudy->StudyId() )
   // san -- in case <myCurrentStudy> differs from theComponent's study,
   // use that of the component
@@ -3908,7 +3906,6 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
   if ( !isMultiFile )
     SALOMEDS_Tool::RemoveTemporaryFiles( tmpDir.ToCString(), aFileSeq.in(), true );
 
-  INFOS( "SMESH_Gen_i::Save() completed" );
   return aStreamFile._retn();
 }
 
@@ -3975,8 +3972,6 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                         const char*              theURL,
                         bool                     isMultiFile )
 {
-  INFOS( "SMESH_Gen_i::Load" );
-
   if ( theComponent->GetStudy()->StudyId() != GetCurrentStudyID() )
     SetCurrentStudy( theComponent->GetStudy() );
 
@@ -3992,11 +3987,6 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
   // Get temporary files location
   TCollection_AsciiString tmpDir =
     ( char* )( isMultiFile ? theURL : SALOMEDS_Tool::GetTmpDir().c_str() );
-
-  INFOS( "THE URL++++++++++++++" );
-  INFOS( theURL );
-  INFOS( "THE TMP PATH+++++++++" );
-  INFOS( tmpDir );
 
   // Convert the stream into sequence of files to process
   SALOMEDS::ListOfFileNames_var aFileSeq = SALOMEDS_Tool::PutStreamToFiles( theStream,
@@ -4844,7 +4834,6 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
     }
   }
 
-  INFOS( "SMESH_Gen_i::Load completed" );
   return true;
 }
 

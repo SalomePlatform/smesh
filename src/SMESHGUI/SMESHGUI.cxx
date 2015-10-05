@@ -4336,34 +4336,34 @@ void SMESHGUI::initialize( CAM_Application* app )
     hasFacesOrVolumes("(({'Face'} in elemTypes) || ({'Volume'} in elemTypes)) ");
 
   createPopupItem( SMESHOp::OpFileInformation,      OB, mesh, "&& selcount=1 && isImported" );
-  createPopupItem( SMESHOp::OpCreateSubMesh,        OB, mesh, "&& isComputable");
-  createPopupItem( SMESHOp::OpEditMeshOrSubMesh,    OB, mesh, "&& isComputable");
-  createPopupItem( SMESHOp::OpEditMeshOrSubMesh,    OB, subMesh, "&& isComputable" );
+  createPopupItem( SMESHOp::OpCreateSubMesh,        OB, mesh, "&& hasGeomReference");
+  createPopupItem( SMESHOp::OpEditMeshOrSubMesh,    OB, mesh );
+  createPopupItem( SMESHOp::OpEditMeshOrSubMesh,    OB, subMesh, "&& hasGeomReference" );
   createPopupItem( SMESHOp::OpEditGroup,            OB, group );
   createPopupItem( SMESHOp::OpEditGeomGroupAsGroup, OB, group, "&& groupType != 'Group'" );
 
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( SMESHOp::OpCompute,                OB, mesh, "&& isComputable" );
-  createPopupItem( SMESHOp::OpPreCompute,             OB, mesh, "&& isComputable && isPreComputable" );
+  createPopupItem( SMESHOp::OpPreCompute,             OB, mesh, "&& isPreComputable" );
   createPopupItem( SMESHOp::OpEvaluate,               OB, mesh, "&& isComputable" );
-  createPopupItem( SMESHOp::OpMeshOrder,              OB, mesh, "&& isComputable" );
+  createPopupItem( SMESHOp::OpMeshOrder,              OB, mesh, "&& isComputable && hasGeomReference" );
   createPopupItem( SMESHOp::OpUpdate,                 OB, mesh_part );
   createPopupItem( SMESHOp::OpMeshInformation,        OB, mesh_part );
   createPopupItem( SMESHOp::OpFindElementByPoint,     OB, mesh_group );
   createPopupItem( SMESHOp::OpOverallMeshQuality,     OB, mesh_part );
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( SMESHOp::OpCreateGroup,            OB, mesh );
-  createPopupItem( SMESHOp::OpCreateGeometryGroup,    OB, mesh );
+  createPopupItem( SMESHOp::OpCreateGeometryGroup,    OB, mesh, "&& hasGeomReference" );
   createPopupItem( SMESHOp::OpConstructGroup,         OB, subMesh );
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( SMESHOp::OpEditHypothesis,         OB, hypo);
   createPopupItem( SMESHOp::OpUnassign,               OB, hyp_alg );     // REMOVE HYPOTHESIS / ALGORITHMS
   popupMgr()->insert( separator(), -1, 0 );
-  createPopupItem( SMESHOp::OpClearMesh,              OB, mesh );
-  popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( SMESHOp::OpConvertMeshToQuadratic, OB, mesh + " " + subMesh );  // convert to quadratic
   createPopupItem( SMESHOp::OpCreateBoundaryElements, OB, mesh + " " + group,      // create 2D mesh from 3D
                    "&& dim>=2");
+  popupMgr()->insert( separator(), -1, 0 );
+  createPopupItem( SMESHOp::OpClearMesh,              OB, mesh );
   popupMgr()->insert( separator(), -1, 0 );
 
   QString only_one_non_empty = QString( " && %1=1 && numberOfNodes>0" ).arg( dc );

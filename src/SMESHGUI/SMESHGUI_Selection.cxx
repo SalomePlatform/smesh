@@ -128,7 +128,7 @@ QVariant SMESHGUI_Selection::parameter( const int ind, const QString& p ) const
   else if ( p=="displayMode" )          val = QVariant( displayMode( ind ) );
   else if ( p=="isComputable" )         val = QVariant( isComputable( ind ) );
   else if ( p=="isPreComputable" )      val = QVariant( isPreComputable( ind ) );
-  else if ( p=="hasReference" )         val = QVariant( hasReference( ind ) );
+  else if ( p=="hasGeomReference" )     val = QVariant( hasGeomReference( ind ) );
   else if ( p=="isImported" )           val = QVariant( isImported( ind ) );
   else if ( p=="facesOrientationMode" ) val = QVariant( facesOrientationMode( ind ) );
   else if ( p=="groupType" )            val = QVariant( groupType( ind ) );
@@ -492,62 +492,58 @@ int SMESHGUI_Selection::dim( int ind ) const
 
 //=======================================================================
 //function : isComputable
-//purpose  : 
+//purpose  : return true for a ready-to-compute mesh
 //=======================================================================
 
 QVariant SMESHGUI_Selection::isComputable( int ind ) const
 {
-  if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] != "Unknown" )
+  if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] == "Mesh" )
   {
+    QMap<int,int> modeMap;
     _PTR(SObject) so = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
-    CORBA::Object_var obj = SMESH::SObjectToObject( so, SMESH::GetActiveStudyDocument() );
-    if( !CORBA::is_nil( obj ) ) {
-      SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( obj );
-      if ( !CORBA::is_nil( mesh ) ) {
-        if ( mesh->HasShapeToMesh() ) {
-          GEOM::GEOM_Object_var shape = SMESH::GetShapeOnMeshOrSubMesh( so );
-          return QVariant( !shape->_is_nil() );
-        }
-        else
-        {
-          return QVariant( mesh->NbFaces() !=0 );
-        }
-      }
-      else
-      {
-        GEOM::GEOM_Object_var shape = SMESH::GetShapeOnMeshOrSubMesh( so );
-        return QVariant( !shape->_is_nil() );
-      }
-    }
+    SMESHGUI_PrecomputeOp::getAssignedAlgos( so, modeMap );
+    return QVariant( modeMap.size() > 0 );
   }
   return QVariant( false );
 }
 
 //=======================================================================
 //function : isPreComputable
-//purpose  : 
+//purpose  : returns true for a mesh with algorithms
 //=======================================================================
 
 QVariant SMESHGUI_Selection::isPreComputable( int ind ) const
 {
-  if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] != "Unknown" )
+  if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] == "Mesh" )
   {
-    QMap<int,int> modeMap;
-    _PTR(SObject) pMesh = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
-    SMESHGUI_PrecomputeOp::getAssignedAlgos( pMesh, modeMap );
-    return QVariant( modeMap.size() > 1 );
+    int maxDim = dim( ind );
+    if ( maxDim < 2 ) // we can preview 1D or 2D
+    {
+      QMap<int,int> modeMap;
+      _PTR(SObject) pMesh = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
+      SMESHGUI_PrecomputeOp::getAssignedAlgos( pMesh, modeMap );
+      if ( modeMap.size() > 1 )
+        return QVariant( ( modeMap.contains( SMESH::DIM_3D )) ||
+                         ( modeMap.contains( SMESH::DIM_2D ) && maxDim < 1 ));
+    }
   }
   return QVariant( false );
 }
 
 //=======================================================================
-//function : hasReference
-//purpose  : 
+//function : hasGeomReference
+//purpose  : returns true for a mesh or sub-mesh on geometry
 //=======================================================================
 
-QVariant SMESHGUI_Selection::hasReference( int ind ) const
+QVariant SMESHGUI_Selection::hasGeomReference( int ind ) const
 {
-  return QVariant( isReference( ind ) );
+  if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] != "Unknown" )
+  {
+    _PTR(SObject) so = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
+    GEOM::GEOM_Object_var shape = SMESH::GetShapeOnMeshOrSubMesh( so );
+    return QVariant( !shape->_is_nil() );
+  }
+  return QVariant( false );
 }
 
 //=======================================================================

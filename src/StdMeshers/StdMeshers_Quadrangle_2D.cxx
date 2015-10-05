@@ -3848,7 +3848,7 @@ void StdMeshers_Quadrangle_2D::updateDegenUV(FaceQuadStruct::Ptr quad)
 
     // Set number of nodes on a degenerated side to be same as on an opposite side
     // ----------------------------------------------------------------------------
-    for ( unsigned i = 0; i < quad->side.size(); ++i )
+    for ( size_t i = 0; i < quad->side.size(); ++i )
     {
       StdMeshers_FaceSidePtr degSide = quad->side[i];
       if ( !myHelper->IsDegenShape( degSide->EdgeID(0) ))

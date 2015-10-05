@@ -149,7 +149,7 @@ Alternatively, it is possible to select <b>Refine selected mesh elements</b>
 check-box and apply the pattern to
 <ul>
   <li> One or several <b>Mesh volumes</b> instead of a geometric 3D object</li>
-  <li> and select two /b Nodes instead of vertices.</li> 
+  <li> and select two \b Nodes instead of vertices.</li> 
 </ul>
 Additionally it is possible to:
 <ul>

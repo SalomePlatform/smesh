@@ -1022,23 +1022,23 @@ namespace
    */
   //================================================================================
 
-  bool projectVertices( SMESH_MesherHelper&                       theHelper,
-                        const SMESH_MAT2d::MedialAxis&            theMA,
-                        const vector< SMESH_MAT2d::BranchPoint >& theDivPoints,
-                        const vector< std::size_t > &             theEdgeIDs1,
-                        const vector< std::size_t > &             theEdgeIDs2,
-                        const vector< bool >&                     theIsEdgeComputed,
-                        TMAPar2NPoints &                          thePointsOnE,
-                        SinuousFace&                              theSinuFace)
+  bool projectVertices( SMESH_MesherHelper&                 theHelper,
+                        const SMESH_MAT2d::MedialAxis&      theMA,
+                        vector< SMESH_MAT2d::BranchPoint >& theDivPoints,
+                        const vector< std::size_t > &       theEdgeIDs1,
+                        const vector< std::size_t > &       theEdgeIDs2,
+                        const vector< bool >&               theIsEdgeComputed,
+                        TMAPar2NPoints &                    thePointsOnE,
+                        SinuousFace&                        theSinuFace)
   {
     SMESHDS_Mesh* meshDS = theHelper.GetMeshDS();
-    const vector<TopoDS_Edge>&       theSinuEdges = theSinuFace._sinuEdges;
+    const vector< TopoDS_Edge >&     theSinuEdges = theSinuFace._sinuEdges;
     const vector< Handle(Geom_Curve) >& theCurves = theSinuFace._sinuCurves;
 
     double uMA;
     SMESH_MAT2d::BoundaryPoint bp[2];
     const SMESH_MAT2d::Branch& branch = *theMA.getBranch(0);
-
+    {
       // add to thePointsOnE NodePoint's of ends of theSinuEdges
       if ( !branch.getBoundaryPoints( 0., bp[0], bp[1] ) ||
            !theMA.getBoundary().moveToClosestEdgeEnd( bp[0] )) return false;
@@ -1048,17 +1048,18 @@ namespace
       findVertexAndNode( np0, theSinuEdges, meshDS );
       findVertexAndNode( np1, theSinuEdges, meshDS );
       thePointsOnE.insert( make_pair( -0.1, make_pair( np0, np1 )));
-
+    }
     if ( !theSinuFace.IsRing() )
     {
       if ( !branch.getBoundaryPoints( 1., bp[0], bp[1] ) ||
            !theMA.getBoundary().moveToClosestEdgeEnd( bp[0] ) ||
            !theMA.getBoundary().moveToClosestEdgeEnd( bp[1] )) return false;
-      np0 = bp[0]; np1 = bp[1];
+      NodePoint np0( bp[0] ), np1( bp[1] );
       findVertexAndNode( np0, theSinuEdges, meshDS );
       findVertexAndNode( np1, theSinuEdges, meshDS );
       thePointsOnE.insert( make_pair( 1.1, make_pair( np0, np1)));
     }
+
     // project theDivPoints
 
     if ( theDivPoints.empty() )
@@ -1087,7 +1088,7 @@ namespace
       if ( isVertex[0] && isVertex[1] )
         continue;
       const size_t iVert = isVertex[0] ? 0 : 1;
-      const size_t iNode   = 1 - iVert;
+      const size_t iNode = 1 - iVert;
 
       bool isOppComputed = theIsEdgeComputed[ np[ iNode ]._edgeInd ];
       if ( !isOppComputed )
@@ -1275,6 +1276,16 @@ namespace
             np = &get( u2NPnext->second, iSide );
             u1 = getUOnEdgeByPoint( *edgeID, np, theSinuFace );
 
+            if ( u0 == u1 )
+            {
+              if ( np->_node ) --u2NPprev;
+              else             ++u2NPnext;
+              np = &get( u2NPprev->second, iSide );
+              u0 = getUOnEdgeByPoint( *edgeID, np, theSinuFace );
+              np = &get( u2NPnext->second, iSide );
+              u1 = getUOnEdgeByPoint( *edgeID, np, theSinuFace );
+            }
+
             // distribute points and create nodes
             double du = ( u1 - u0 ) / ( sameU2NP.size() + 1 );
             double u  = u0 + du;
@@ -1352,8 +1363,8 @@ namespace
       TMAPar2NPoints::const_iterator u2NPdist, u2NP = thePointsOnEdges.begin();
       for ( ; u2NP != thePointsOnEdges.end(); ++u2NP )
       {
-        SMESH_TNodeXYZ xyz( u2NP->second.first._node );
-        dist = xyz.SquareDistance( u2NP->second.second._node );
+        SMESH_TNodeXYZ        xyz( u2NP->second.first._node ); // node out
+        dist = xyz.SquareDistance( u2NP->second.second._node );// node in
         if ( dist > maxDist )
         {
           u2NPdist = u2NP;
@@ -1400,6 +1411,8 @@ namespace
       theFace._quad->side[ 2 ] = theFace._quad->side[ 0 ];
 
       // rotate the IN side if opposite nodes of IN and OUT sides don't match
+      if ( theFace._quad->side[ 1 ].GetUVPtStruct().empty() )
+        return false;
       const SMDS_MeshNode * nIn0 = theFace._quad->side[ 1 ].First().node;
       if ( nIn0 != nIn )
       {
@@ -1418,6 +1431,10 @@ namespace
         uvsNew.insert( uvsNew.end(), uvsIn.begin() + i, uvsIn.end() );
         uvsNew.insert( uvsNew.end(), uvsIn.begin() + 1, uvsIn.begin() + i + 1);
         theFace._quad->side[ 1 ] = StdMeshers_FaceSide::New( uvsNew );
+
+        if ( theFace._quad->side[ 1 ].NbPoints() !=
+             theFace._quad->side[ 3 ].NbPoints())
+          return false;
       }
     } // if ( theShortEdges[0].empty() )
 
@@ -1902,6 +1919,7 @@ bool StdMeshers_QuadFromMedialAxis_1D2D::computeQuads( SMESH_MesherHelper& theHe
 
   // create quadrangles
   bool ok;
+  theHelper.SetElementsOnShape( true );
   if ( nbNodesShort0 == nbNodesShort1 )
     ok = StdMeshers_Quadrangle_2D::computeQuadDominant( *theHelper.GetMesh(),
                                                         theQuad->face, theQuad );

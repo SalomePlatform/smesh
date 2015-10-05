@@ -34,6 +34,7 @@
 #include "SMESHGUI_IdValidator.h"
 #include "SMESHGUI_FilterDlg.h"
 
+#include <SMESH_TypeFilter.hxx>
 #include <SMESH_Actor.h>
 #include <SMDS_Mesh.hxx>
 
@@ -208,14 +209,18 @@ void SMESHGUI_RemoveNodesDlg::Init()
   connect(mySMESHGUI, SIGNAL (SignalActivatedViewManager()), this, SLOT(onOpenView()));
   connect(mySMESHGUI, SIGNAL (SignalCloseView()),            this, SLOT(onCloseView()));
   connect(myEditCurrentArgument, SIGNAL(textChanged(const QString&)),
-          SLOT(onTextChange(const QString&)));
-  
+          this,                  SLOT (onTextChange(const QString&)));
+
   SMESH::SetPointRepresentation(true);
-  
+
+  mySelectionMgr->clearFilters();
+  mySelectionMgr->installFilter( new SMESH_TypeFilter( SMESH::IDSOURCE ));
+
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(NodeSelection);
 
-  SelectionIntoArgument();
+  //SelectionIntoArgument();
+  mySelectionMgr->setSelectedObjects( SALOME_ListIO() );
 }
 
 //=================================================================================
@@ -412,16 +417,16 @@ void SMESHGUI_RemoveNodesDlg::SelectionIntoArgument()
           myBusy = true;
           myEditCurrentArgument->setText(aString);
           myBusy = false;
-          
+
           // OK
-          
+
           myNbOkNodes = nbNodes;
         } // if (nbNodes > 0)
       } // if (myActor)
     } // if (!myMesh->_is_nil())
   } // if (nbSel == 1)
 
-  updateButtons();        
+  updateButtons();
 }
 
 //=================================================================================
@@ -473,6 +478,9 @@ void SMESHGUI_RemoveNodesDlg::ActivateThisDialog()
   GroupButtons->setEnabled(true);
 
   mySMESHGUI->SetActiveDialogBox((QDialog*)this); // ??
+
+  mySelectionMgr->clearFilters();
+  mySelectionMgr->installFilter( new SMESH_TypeFilter( SMESH::IDSOURCE ));
 
   SMESH::SetPointRepresentation(true);
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
