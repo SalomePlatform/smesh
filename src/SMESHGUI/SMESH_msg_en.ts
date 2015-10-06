@@ -1886,6 +1886,10 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Such dimention hypothesis is already assigned to the shape</translation>
     </message>
     <message>
+        <source>SMESH_ID_DIAGONAL</source>
+        <translation>Edges IDs</translation>
+    </message>
+    <message>
         <source>SMESH_ID_EDGES</source>
         <translation>Edge IDs</translation>
     </message>
@@ -3334,6 +3338,10 @@ Use Display Entity menu command to show them.
         <translation>Show Distribution</translation>
     </message>
     <message>
+        <source>STB_SHOW_SCALAR_BAR</source>
+        <translation>Show Scalar bar</translation>
+    </message>
+    <message>
         <source>STB_REVOLUTION</source>
         <translation>Revolution</translation>
     </message>
@@ -3368,10 +3376,6 @@ Use Display Entity menu command to show them.
     <message>
         <source>STB_SHOW</source>
         <translation>Show</translation>
-    </message>
-    <message>
-        <source>STB_SHOW_SCALAR_BAR</source>
-        <translation>Show Scalar Bar</translation>
     </message>
     <message>
         <source>STB_SHRINK</source>
@@ -4916,7 +4920,7 @@ Do you want to restore original sub-mesh priority?</translation>
     <name>SMESHGUI_SplitBiQuadDlg</name>
     <message>
         <source>CAPTION</source>
-        <translation>Split bi-qiadratic into linear</translation>
+        <translation>Split bi-quadratic into linear</translation>
     </message>
     <message>
         <source>MESH</source>

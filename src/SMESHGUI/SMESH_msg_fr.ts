@@ -793,6 +793,10 @@
         <translation>Polygone</translation>
     </message>
     <message>
+        <source>MEN_QUADRATIC_POLYGON</source>
+        <translation>Polygone quadratique</translation>
+    </message>
+    <message>
         <source>MEN_POLYHEDRON</source>
         <translation>Polyèdre</translation>
     </message>
@@ -1085,6 +1089,18 @@
         <translation>Eclater en tétraèdres</translation>
     </message>
     <message>
+        <source>MEN_SPLIT_BIQUAD</source>
+        <translation>Eclater les éléments bi-quadratiques en éléments linéaires</translation>
+    </message>
+    <message>
+        <source>TOP_SPLIT_BIQUAD</source>
+        <translation>Eclater les éléments bi-quadratiques en éléments linéaires</translation>
+    </message>
+    <message>
+        <source>STB_SPLIT_BIQUAD</source>
+        <translation>Eclater les éléments bi-quadratiques en éléments linéaire</translation>
+    </message>
+    <message>
         <source>MESHERS_FILE_CANT_OPEN</source>
         <translation>Impossible d&apos;ouvrir le fichier de ressource</translation>
     </message>
@@ -1127,8 +1143,13 @@ Choisissez un maillage et essayez de nouveau</translation>
 Indiquez le nom d&apos;un nouveau groupe à créer ou choisissez un groupe existant.</translation>
     </message>
     <message>
-        <source>MESH_STANDALONE_GRP_CHOSEN</source>
+        <source>MESH_GEOM_GRP_CHOSEN</source>
         <translation>Un groupe lié à la géométrie est choisi: %1.
+Voulez-vous le convertir en un groupe autonome ?</translation>
+    </message>
+    <message>
+        <source>MESH_FILTER_GRP_CHOSEN</source>
+        <translation>Un groupe lié à un filtre est choisi: %1.
 Voulez-vous le convertir en un groupe autonome ?</translation>
     </message>
     <message>
@@ -1224,6 +1245,14 @@ Merci de les corriger, puis essayez de nouveau</translation>
     <message>
         <source>SMESH_ADD_POLYGON_TITLE</source>
         <translation>Ajouter un polygone</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_QUADRATIC_POLYGON</source>
+        <translation>Ajouter un polygone quadratique</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_QUADRATIC_POLYGON_TITLE</source>
+        <translation>Ajouter un polygone quadratique</translation>
     </message>
     <message>
         <source>SMESH_ADD_PENTA</source>
@@ -3230,6 +3259,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Polygone</translation>
     </message>
     <message>
+        <source>STB_QUADRATIC_POLYGON</source>
+        <translation>Polygone quadratique</translation>
+    </message>
+    <message>
         <source>STB_POLYHEDRON</source>
         <translation>Polyèdre</translation>
     </message>
@@ -3884,6 +3917,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     <message>
         <source>TOP_POLYGON</source>
         <translation>Polygone</translation>
+    </message>
+    <message>
+        <source>TOP_QUADRATIC_POLYGON</source>
+        <translation>Polygone quadratique</translation>
     </message>
     <message>
         <source>TOP_POLYHEDRON</source>
@@ -4881,6 +4918,33 @@ Voulez-vous restaurer la priorité initiale ?</translation>
     </message>
 </context>
 <context>
+    <name>SMESHGUI_SplitBiQuadDlg</name>
+    <message>
+        <source>CAPTION</source>
+        <translation>Eclater les éléments bi-quadratiques en éléments linéaires</translation>
+    </message>
+    <message>
+        <source>MESH</source>
+        <translation>Maillage, groupe ou sous-maillage</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_SplitBiQuadOp</name>
+    <message>
+        <source>MESH_IS_NOT_SELECTED</source>
+        <translation>Pas d'éléments à éclater.
+Sélectionner des éléments et essayer encore</translation>
+    </message>
+    <message>
+        <source>REF_IS_NULL</source>
+        <translation>Aucun maillage valide n'a été sélectionné</translation>
+    </message>
+    <message>
+        <source>DIFFERENT_MESHES</source>
+        <translation>Les éléments sélectionnés appartiennent à différents maillages</translation>
+    </message>
+</context>
+<context>
     <name>SMESHGUI_ConvToQuadDlg</name>
     <message>
         <source>CAPTION</source>
@@ -5061,8 +5125,12 @@ Choisissez un groupe et essayez de nouveau</translation>
         <translation>Détecter</translation>
     </message>
     <message>
-        <source>EDIT_SELECTED_GROUP</source>
-        <translation>Editer le groupe sélectionné</translation>
+        <source>EDIT_SELECTED_NODE_GROUP</source>
+        <translation>Editer le groupe sélectionné de noeuds coïncidents</translation>
+    </message>
+    <message>
+        <source>EDIT_SELECTED_ELEM_GROUP</source>
+        <translation>Editer le groupe sélectionné d'éléments coïncidents</translation>
     </message>
     <message>
         <source>SELECT_ALL</source>
@@ -5078,7 +5146,23 @@ Choisissez un groupe et essayez de nouveau</translation>
     </message>
     <message>
         <source>EXCLUDE_GROUPS</source>
-        <translation>Exclure les groupes</translation>
+        <translation>Exclure les groupes de la détection</translation>
+    </message>
+    <message>
+        <source>SEPARATE_CORNERS_AND_MEDIUM</source>
+        <translation>Pas de fusion du coin et des noeuds moyens des cellules quadratiques</translation>
+    </message>
+    <message>
+        <source>KEEP_NODES</source>
+        <translation>Les noeuds à conserver pendant la fusion</translation>
+    </message>
+    <message>
+        <source>GROUP_SUBMESH</source>
+        <translation>Groupes et sous-maillages</translation>
+    </message>
+    <message>
+        <source>SELECT</source>
+        <translation>Selectionner: </translation>
     </message>
 </context>
 <context>
@@ -6585,6 +6669,42 @@ Il y a trop peu de points dans le fichier </translation>
     <message>
         <source>SIDE_2</source>
         <translation>Bord 2</translation>
+    </message>
+    <message>
+        <source>AUTO_SEWING</source>
+        <translation>Couture automatique</translation>
+    </message>
+    <message>
+        <source>COINCIDENT_FREE_BORDERS</source>
+        <translation>Frontières libres coïncidentes</translation>
+    </message>
+    <message>
+        <source>DETECT</source>
+        <translation>Détecter</translation>
+    </message>
+    <message>
+        <source>SELECT_ALL</source>
+        <translation>Sélectionner tous</translation>
+    </message>
+    <message>
+        <source>EDIT_SELECTED_GROUP</source>
+        <translation>Editer le groupe sélectionné</translation>
+    </message>
+    <message>
+        <source>STEP</source>
+        <translation>Pas</translation>
+    </message>
+    <message>
+        <source>NO_BORDERS_TO_SEW</source>
+        <translation>Pas de frontière libre à coudre</translation>
+    </message>
+    <message>
+        <source>NOT_ALL_BORDERS_SEWED</source>
+        <translation>%1 groupes sur %2 de frontières cousus</translation>
+    </message>
+    <message>
+        <source>ALL_BORDERS_SEWED</source>
+        <translation>%1 groupe(s) de frontières cousu(s)</translation>
     </message>
 </context>
 <context>
